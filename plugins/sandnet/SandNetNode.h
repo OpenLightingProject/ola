@@ -115,8 +115,8 @@ class SandNetNode {
     IPV4Address m_control_addr;
     IPV4Address m_data_addr;
 
-    static const uint16_t CONTROL_PORT = 37895;
-    static const uint16_t DATA_PORT = 37900;
+    static const uint16_t CONTROL_PORT;
+    static const uint16_t DATA_PORT;
     static const char CONTROL_ADDRESS[];
     static const char DATA_ADDRESS[];
     static const char DEFAULT_NODE_NAME[];

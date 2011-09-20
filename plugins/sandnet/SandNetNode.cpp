@@ -41,6 +41,8 @@ using ola::network::NetworkToHost;
 using ola::network::UdpSocket;
 using ola::Callback0;
 
+const uint16_t SandNetNode::CONTROL_PORT = 37895;
+const uint16_t SandNetNode::DATA_PORT = 37900;
 const char SandNetNode::CONTROL_ADDRESS[] = "237.1.1.1";
 const char SandNetNode::DATA_ADDRESS[] = "237.1.2.1";
 const char SandNetNode::DEFAULT_NODE_NAME[] = "ola-SandNet";
