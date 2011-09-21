@@ -29,9 +29,10 @@
 
 #include "ola/Callback.h"
 #include "ola/Logging.h"
+#include "ola/StringUtils.h"
+#include "ola/network/Socket.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
-#include "ola/network/Socket.h"
 
 #include "plugins/usbdmx/AnymaDevice.h"
 #include "plugins/usbdmx/FirmwareLoader.h"

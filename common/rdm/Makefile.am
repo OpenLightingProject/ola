@@ -13,7 +13,7 @@ libolardm_la_SOURCES = DescriptorConsistencyChecker.cpp \
                        PidStore.cpp PidStoreHelper.cpp PidStoreLoader.cpp \
                        RDMAPI.cpp RDMCommand.cpp RDMHelper.cpp \
                        StringMessageBuilder.cpp QueueingRDMController.cpp \
-                       VariableFieldSizeCalculator.cpp
+                       UID.cpp VariableFieldSizeCalculator.cpp
 nodist_libolardm_la_SOURCES = Pids.pb.cc
 libolardm_la_LDFLAGS = $(PROTOBUF_LIBS)
 
