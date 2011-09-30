@@ -7,5 +7,5 @@ Name: libolaserver
 Version: @VERSION@
 Description: Open Lighting Architecture Server
 Requires:
-Libs: -L${libdir} -L${libdir}/olad -lola -lolacommon -lprotobuf @OLA_SERVER_LIBS@
+Libs: -L${libdir} -L${libdir}/olad -lola -lolacommon -lolaserver -lprotobuf @OLA_SERVER_LIBS@
 Cflags: -I${includedir}

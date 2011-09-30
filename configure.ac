@@ -238,9 +238,9 @@ fi
 PLUGIN_LIBS=''
 OLA_SERVER_LIBS=''
 for p in $PLUGINS; do
-  LIB_NAME="libola$p"
-  PLUGIN_LIBS="$PLUGIN_LIBS \$(top_builddir)/plugins/$p/$LIB_NAME.la"
-  OLA_SERVER_LIBS="$OLA_SERVER_LIBS -l$LIB_NAME"
+  LIB_NAME="libola${p}"
+  PLUGIN_LIBS="$PLUGIN_LIBS \$(top_builddir)/plugins/${p}/$LIB_NAME.la"
+  OLA_SERVER_LIBS="$OLA_SERVER_LIBS -lola${p}"
 done
 
 AC_SUBST(PLUGIN_LIBS)
