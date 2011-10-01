@@ -55,8 +55,13 @@ def Usage():
 class ModelCollectorController(object):
   """A controller that fetches data for responders."""
 
-  (EMPTYING_QUEUE, DEVICE_INFO, MODEL_DESCRIPTION, SUPPORTED_PARAMS,
-   SOFTWARE_VERSION_LABEL) = xrange(5)
+  (EMPTYING_QUEUE,
+   DEVICE_INFO,
+   MODEL_DESCRIPTION,
+   SUPPORTED_PARAMS,
+   SOFTWARE_VERSION_LABEL,
+   PERSONALITIES,
+   SENSORS) = xrange(7)
 
   def __init__(self, universe, pid_file):
     self.universe = universe
@@ -68,6 +73,8 @@ class ModelCollectorController(object):
     self.uid = None  # the current uid we're fetching from
     self.outstanding_pid = None
     self.work_state = None
+    self.personalities = []
+    self.sensors = []
 
     # keyed by manufacturer id
     self.data = {}
@@ -76,7 +83,27 @@ class ModelCollectorController(object):
     """Run the collector."""
     self.client.FetchUIDList(self.universe, self._HandleUIDList)
     self.wrapper.Run()
-    pprint.pprint(self.data)
+
+    # strip personality count from info as it's redundant
+    for model_list in self.data.values():
+      for model in model_list:
+        del model['personality_count']
+        del model['sensor_count']
+    return self.data
+
+  def _GetVersion(self):
+    this_device = self.data[self.uid.manufacturer_id][-1]
+    software_versions = this_device['software_versions']
+    return software_versions[software_versions.keys()[0]]
+
+  def _GetPid(self, pid):
+      self.rdm_api.Get(self.universe,
+                       self.uid,
+                       PidStore.ROOT_DEVICE,
+                       pid,
+                       self._RDMRequestComplete)
+      logging.debug('Sent %s request' % pid)
+      self.outstanding_pid = pid
 
   def _HandleUIDList(self, state, uids):
     """Called when the UID list arrives."""
@@ -102,13 +129,18 @@ class ModelCollectorController(object):
       self._HandleSupportedParams(unpacked_data)
     elif self.work_state == self.SOFTWARE_VERSION_LABEL:
       self._HandleSoftwareVersionLabel(unpacked_data)
+    elif self.work_state == self.PERSONALITIES:
+      self._HandlePersonalityData(unpacked_data)
+    elif self.work_state == self.SENSORS:
+      self._HandleSensorData(unpacked_data)
 
   def _HandleDeviceInfo(self, data):
     """Called when we get a DEVICE_INFO response."""
     this_device = self.data[self.uid.manufacturer_id][-1]
     fields = ['device_model',
               'product_category',
-              'personality_count']
+              'personality_count',
+              'sensor_count']
     for field in fields:
       this_device[field] = data[field]
 
@@ -117,6 +149,9 @@ class ModelCollectorController(object):
         'supported_parameters': [],
         'sensors': [],
     }
+
+    self.personalities = list(xrange(1, data['personality_count'] + 1))
+    self.sensors = list(xrange(1, data['sensor_count'] + 1))
     self._NextState()
 
   def _HandleDeviceModelDescription(self, data):
@@ -127,69 +162,65 @@ class ModelCollectorController(object):
 
   def _HandleSupportedParams(self, data):
     """Called when we get a SUPPORTED_PARAMETERS response."""
-    this_device = self.data[self.uid.manufacturer_id][-1]
-    software_versions = this_device['software_versions']
-    this_version = software_versions[software_versions.keys()[0]]
+    this_version = self._GetVersion()
     for param_info in data['params']:
       this_version['supported_parameters'].append(param_info['param_id'])
     self._NextState()
 
   def _HandleSoftwareVersionLabel(self, data):
     """Called when we get a SOFTWARE_VERSION_LABEL response."""
-    this_device = self.data[self.uid.manufacturer_id][-1]
-    software_versions = this_device['software_versions']
-    this_version = software_versions[software_versions.keys()[0]]
+    this_version = self._GetVersion()
     this_version['label'] = data['label']
     self._NextState()
+
+  def _HandlePersonalityData(self, data):
+    """Called when we get a DMX_PERSONALITY_DESCRIPTION response."""
+    this_version = self._GetVersion()
+    this_version['personalities'].append({
+      'description': data['name'],
+      'index': data['personality'],
+      'slot_count': data['slots_required'],
+    })
+    self._FetchNextPersonality()
+
+  def _HandleSensorData(self, data):
+    """Called when we get a SENSOR_DEFINITION response."""
+    this_version = self._GetVersion()
+    this_version['sensors'].append({
+      'description': data['name'],
+      'type': data['type'],
+      'supports_recording': data['supports_recording'],
+    })
+    self._FetchNextSensor()
 
   def _NextState(self):
     """Move to the next state of information fetching."""
     if self.work_state == self.EMPTYING_QUEUE:
       # fetch device info
-      device_info_pid = self.pid_store.GetName('DEVICE_INFO')
-      self.rdm_api.Get(self.universe,
-                       self.uid,
-                       PidStore.ROOT_DEVICE,
-                       device_info_pid,
-                       self._RDMRequestComplete)
-      logging.debug('Sent DEVICE_INFO request')
-      self.outstanding_pid = device_info_pid
+      pid = self.pid_store.GetName('DEVICE_INFO')
+      self._GetPid(pid)
       self.work_state = self.DEVICE_INFO
     elif self.work_state == self.DEVICE_INFO:
       # fetch device model description
-      model_description_pid = self.pid_store.GetName(
-          'DEVICE_MODEL_DESCRIPTION')
-      self.rdm_api.Get(self.universe,
-                       self.uid,
-                       PidStore.ROOT_DEVICE,
-                       model_description_pid,
-                       self._RDMRequestComplete)
-      logging.debug('Sent DEVICE_MODEL_DESCRIPTION request')
-      self.outstanding_pid = model_description_pid
+      pid = self.pid_store.GetName('DEVICE_MODEL_DESCRIPTION')
+      self._GetPid(pid)
       self.work_state = self.MODEL_DESCRIPTION
     elif self.work_state == self.MODEL_DESCRIPTION:
       # fetch supported params
-      supported_params_pid = self.pid_store.GetName(
-          'SUPPORTED_PARAMETERS')
-      self.rdm_api.Get(self.universe,
-                       self.uid,
-                       PidStore.ROOT_DEVICE,
-                       supported_params_pid,
-                       self._RDMRequestComplete)
-      logging.debug('Sent SUPPORTED_PARAMETERS request')
-      self.outstanding_pid = supported_params_pid
+      pid = self.pid_store.GetName('SUPPORTED_PARAMETERS')
+      self._GetPid(pid)
       self.work_state = self.SUPPORTED_PARAMS
     elif self.work_state == self.SUPPORTED_PARAMS:
       # fetch supported params
       pid = self.pid_store.GetName('SOFTWARE_VERSION_LABEL')
-      self.rdm_api.Get(self.universe,
-                       self.uid,
-                       PidStore.ROOT_DEVICE,
-                       pid,
-                       self._RDMRequestComplete)
-      logging.debug('Sent SOFTWARE_VERSION_LABEL request')
-      self.outstanding_pid = pid
+      self._GetPid(pid)
       self.work_state = self.SOFTWARE_VERSION_LABEL
+    elif self.work_state == self.SOFTWARE_VERSION_LABEL:
+      self.work_state = self.PERSONALITIES
+      self._FetchNextPersonality()
+    elif self.work_state == self.PERSONALITIES:
+      self.work_state = self.SENSORS
+      self._FetchNextSensor()
     else:
       # this one is done, onto the next UID
       self._FetchNextUID()
@@ -201,6 +232,8 @@ class ModelCollectorController(object):
       return
 
     self.uid = self.uids.pop()
+    self.personalities = []
+    self.sensors = []
     logging.debug('Fetching data for %s' % self.uid)
     self.work_state = self.EMPTYING_QUEUE
     devices = self.data.setdefault(self.uid.manufacturer_id, [])
@@ -208,6 +241,42 @@ class ModelCollectorController(object):
       'software_versions': {},
     })
     self._FetchQueuedMessages()
+
+  def _FetchNextPersonality(self):
+    """Fetch the info for the next personality, or proceed to the next state if
+       there are none left.
+    """
+    if self.personalities:
+      personality_index = self.personalities.pop(0)
+      pid = self.pid_store.GetName('DMX_PERSONALITY_DESCRIPTION')
+      self.rdm_api.Get(self.universe,
+                       self.uid,
+                       PidStore.ROOT_DEVICE,
+                       pid,
+                       self._RDMRequestComplete,
+                       [personality_index])
+      logging.debug('Sent DMX_PERSONALITY_DESCRIPTION request')
+      self.outstanding_pid = pid
+    else:
+      self._NextState()
+
+  def _FetchNextSensor(self):
+    """Fetch the info for the next sensor, or proceed to the next state if
+       there are none left.
+    """
+    if self.sensors:
+      sensor_index = self.sensors.pop(0)
+      pid = self.pid_store.GetName('SENSOR_DEFINITION')
+      self.rdm_api.Get(self.universe,
+                       self.uid,
+                       PidStore.ROOT_DEVICE,
+                       pid,
+                       self._RDMRequestComplete,
+                       [sensor_index])
+      logging.debug('Sent SENSOR_DEFINITION request')
+      self.outstanding_pid = pid
+    else:
+      self._NextState()
 
   def _FetchQueuedMessages(self):
     """Fetch messages until the queue is empty."""
@@ -338,7 +407,8 @@ def main():
       format='%(message)s')
 
   controller = ModelCollectorController(universe, pid_file)
-  controller.Run()
+  data = controller.Run()
+  pprint.pprint(data)
 
 if __name__ == '__main__':
   main()
