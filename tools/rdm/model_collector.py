@@ -151,7 +151,7 @@ class ModelCollectorController(object):
     }
 
     self.personalities = list(xrange(1, data['personality_count'] + 1))
-    self.sensors = list(xrange(1, data['sensor_count'] + 1))
+    self.sensors = list(xrange(0, data['sensor_count']))
     self._NextState()
 
   def _HandleDeviceModelDescription(self, data):
