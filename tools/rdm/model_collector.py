@@ -87,8 +87,10 @@ class ModelCollectorController(object):
     # strip personality count from info as it's redundant
     for model_list in self.data.values():
       for model in model_list:
-        del model['personality_count']
-        del model['sensor_count']
+        if 'personality_count' in model:
+          del model['personality_count']
+        if 'sensor_count' in model:
+          del model['sensor_count']
     return self.data
 
   def _GetVersion(self):
