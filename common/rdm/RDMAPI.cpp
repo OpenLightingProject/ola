@@ -26,6 +26,7 @@
 #include <vector>
 #include "ola/Callback.h"
 #include "ola/Logging.h"
+#include "ola/StringUtils.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/RDMAPI.h"
 #include "ola/rdm/RDMAPIImplInterface.h"

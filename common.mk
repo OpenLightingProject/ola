@@ -1,6 +1,12 @@
-AM_CPPFLAGS = -I$(top_builddir)/include -Wall -Wformat -W
+# here we define common flags for C++ targets
+COMMON_CXXFLAGS = -I$(top_builddir)/include \
+                  -Wall -Wformat -W \
+                  $(libprotobuf_CFLAGS)
 
-# the genererate protobuf files don't compile with -Werror on win32
+# the genererated protobuf files don't compile with -Werror on win32
 if USING_WIN32_FALSE
-  AM_CPPFLAGS += -Werror
+  COMMON_CXXFLAGS += -Werror
 endif
+
+# AM_CXXFLAGS is used when target_CXXFLAGS isn't defined
+AM_CXXFLAGS = $(COMMON_CXXFLAGS)

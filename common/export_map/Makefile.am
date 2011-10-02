@@ -6,6 +6,7 @@ libolaexportmap_la_SOURCES = ExportMap.cpp
 TESTS = ExportMapTester
 check_PROGRAMS = $(TESTS)
 ExportMapTester_SOURCES = ExportMapTester.cpp ExportMapTest.cpp
-ExportMapTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
-ExportMapTester_LDFLAGS = $(CPPUNIT_LIBS)
-ExportMapTester_LDADD = ./libolaexportmap.la ../utils/libolautils.la
+ExportMapTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+ExportMapTester_LDADD = $(CPPUNIT_LIBS) \
+                        ./libolaexportmap.la \
+                        ../utils/libolautils.la

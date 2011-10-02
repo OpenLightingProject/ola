@@ -24,9 +24,10 @@
 #include <string>
 #include <vector>
 
+#include "ola/StringUtils.h"
 #include "ola/network/NetworkUtils.h"
-#include "ola/rdm/UID.h"
 #include "ola/rdm/RDMAPI.h"
+#include "ola/rdm/UID.h"
 #include "ola/rdm/RDMAPIImplInterface.h"
 
 

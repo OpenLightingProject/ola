@@ -1,6 +1,10 @@
 include $(top_srcdir)/common.mk
 SUBDIRS = www testdata
 
+# Header files
+pkgincludedir = $(includedir)/olad
+pkginclude_HEADERS = OlaDaemon.h OlaServer.h
+
 
 OLASERVER_SOURCES = Client.cpp ClientBroker.cpp Device.cpp DeviceManager.cpp \
                     DmxSource.cpp DynamicPluginLoader.cpp \
@@ -12,7 +16,12 @@ OLASERVER_SOURCES = Client.cpp ClientBroker.cpp Device.cpp DeviceManager.cpp \
 # lib olaserver
 lib_LTLIBRARIES = libolaserver.la
 libolaserver_la_SOURCES = $(OLASERVER_SOURCES) OlaServer.cpp OlaDaemon.cpp
-libolaserver_la_LDFLAGS = $(PROTOBUF_LIBS) ${PLUGIN_LIBS} ${MICROHTTPD_LIBS}
+libolaserver_la_CXXFLAGS = $(COMMON_CXXFLAGS) @OLAD_DEFINES@
+libolaserver_la_LIBADD = $(PLUGIN_LIBS) \
+                         $(libmicrohttpd_LIBS) \
+                         $(top_builddir)/common/libolacommon.la \
+                         $(top_builddir)/common/web/libolaweb.la \
+                         $(top_builddir)/ola/libola.la
 
 if HAVE_LIBMICROHTTPD
 libolaserver_la_SOURCES += HttpServer.cpp HttpServerActions.cpp \
@@ -20,14 +29,6 @@ libolaserver_la_SOURCES += HttpServer.cpp HttpServerActions.cpp \
                            RDMHttpModule.cpp
 endif
 
-libolaserver_la_LIBADD = $(top_builddir)/common/libolacommon.la \
-                         $(top_builddir)/common/web/libolaweb.la \
-                         $(top_builddir)/ola/libola.la
-libolaserver_la_CXXFLAGS = -Wall -Wformat -W @OLAD_DEFINES@ $(libusb_CFLAGS)
-
-# Header files
-pkgincludedir = $(includedir)/olad
-pkginclude_HEADERS = OlaDaemon.h OlaServer.h
 
 EXTRA_DIST = Client.h ClientBroker.h DeviceManager.h DlOpenPluginLoader.h \
              DynamicPluginLoader.h HttpModule.h \
@@ -40,10 +41,8 @@ EXTRA_DIST = Client.h ClientBroker.h DeviceManager.h DlOpenPluginLoader.h \
 # Olad Server
 bin_PROGRAMS = olad
 olad_SOURCES = Olad.cpp
-#olad_CXXFLAGS = -Wall -Werror  -Wformat -W
-olad_CXXFLAGS = -Wall -Wformat -W
-olad_LDFLAGS = -rdynamic -ldl $(PROTOBUF_LIBS) $(UUID_LIBS)
-olad_LDADD = @LIBS@ libolaserver.la \
+olad_LDFLAGS = -rdynamic -ldl
+olad_LDADD = libolaserver.la \
              $(top_builddir)/common/libolacommon.la
 
 # Test Programs
@@ -54,7 +53,7 @@ OlaTester_SOURCES = OlaServerTester.cpp \
                     DmxSourceTest.cpp PluginManagerTest.cpp \
                     PreferencesTest.cpp PortManagerTest.cpp PortTest.cpp \
                     OlaServerServiceImplTest.cpp ClientTest.cpp
-OlaTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
-OlaTester_LDFLAGS = $(CPPUNIT_LIBS)
-OlaTester_LDADD = @LIBS@ $(top_builddir)/olad/libolaserver.la \
+OlaTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+OlaTester_LDADD = $(CPPUNIT_LIBS) \
+                  $(top_builddir)/olad/libolaserver.la \
                   $(top_builddir)/common/libolacommon.la

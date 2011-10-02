@@ -21,17 +21,16 @@
 #ifndef INCLUDE_OLA_RDM_UID_H_
 #define INCLUDE_OLA_RDM_UID_H_
 
-#include <ola/StringUtils.h>
 #include <stdint.h>
 #include <iomanip>
 #include <sstream>
 #include <string>
-#include <vector>
 
 namespace ola {
 namespace rdm {
 
 using std::ostream;
+using std::string;
 
 
 /*
@@ -113,22 +112,7 @@ class UID {
       return uid;
     }
 
-    static UID* FromString(const string &uid) {
-      std::vector<string> tokens;
-      ola::StringSplit(uid, tokens, ":");
-
-      if (tokens.size() != 2 || tokens[0].size() != 4 || tokens[1].size() != 8)
-        return NULL;
-
-      uint16_t esta_id;
-      unsigned int device_id;
-      if (!ola::HexStringToInt(tokens[0], &esta_id))
-        return NULL;
-      if (!ola::HexStringToInt(tokens[1], &device_id))
-        return NULL;
-
-      return new UID(esta_id, device_id);
-    }
+    static UID* FromString(const string &uid);
 
     enum { UID_SIZE = 6 };
 

@@ -22,6 +22,7 @@
 #include <string.h>
 #include <string>
 
+#include "ola/StringUtils.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
 

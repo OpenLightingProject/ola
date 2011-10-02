@@ -9,9 +9,9 @@ EXTRA_DIST = ACNPort.h BaseInflator.h CID.h \
              HeaderSet.h PDU.h PDUTestCommon.h RootHeader.h RootInflator.h \
              RootLayer.h RootPDU.h TransportHeader.h UDPTransport.h
 
-AM_CPPFLAGS += -Wconversion -W
+COMMON_CXXFLAGS += -Wconversion
 
-noinst_LTLIBRARIES = libolae131core.la libolae131tester.la
+noinst_LTLIBRARIES = libolae131core.la
 libolae131core_la_SOURCES = BaseInflator.cpp CID.cpp \
                             DMPAddress.cpp DMPE131Inflator.cpp \
                             DMPE133Inflator.cpp DMPInflator.cpp \
@@ -21,22 +21,14 @@ libolae131core_la_SOURCES = BaseInflator.cpp CID.cpp \
                             E133PDU.cpp PDU.cpp \
                             RootInflator.cpp RootLayer.cpp RootPDU.cpp \
                             UDPTransport.cpp
-libolae131core_la_LIBADD = @LIBS@
-libolae131core_la_CPPFLAGS = $(UUID_CFLAGS) $(OSSP_UUID_CFLAGS) $(AM_CPPFLAGS)
-libolae131tester_la_SOURCES = E131TestFramework.cpp
-libolae131tester_la_CPPFLAGS = $(UUID_CFLAGS) $(OSSP_UUID_CFLAGS) \
-                               $(AM_CPPFLAGS)
-
-# test program
-noinst_PROGRAMS = e131_transmit_test
-e131_transmit_test_SOURCES = e131_transmit_test.cpp
-e131_transmit_test_CPPFLAGS = $(UUID_CFLAGS) $(OSSP_UUID_CFLAGS) \
-                              $(AM_CPPFLAGS)
-e131_transmit_test_LDADD = @LIBS@ \
-                           ./libolae131core.la \
-                           ./libolae131tester.la \
+libolae131core_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(uuid_CFLAGS)
+libolae131core_la_LIBADD = $(uuid_LIBS) \
                            ../../../common/libolacommon.la
-e131_transmit_test_LDFLAGS = $(UUID_LIBS) $(OSSP_UUID_LIBS) $(PROTOBUF_LIBS)
+
+# E1.31 dev programs
+noinst_PROGRAMS = e131_transmit_test
+e131_transmit_test_SOURCES = e131_transmit_test.cpp E131TestFramework.cpp
+e131_transmit_test_LDADD = ./libolae131core.la
 
 # Test programs
 TESTS = E131Tester
@@ -57,12 +49,9 @@ E131Tester_SOURCES = BaseInflatorTest.cpp \
                      RootLayerTest.cpp \
                      RootPDUTest.cpp \
                      UDPTransportTest.cpp
-E131Tester_CPPFLAGS = $(CPPUNIT_CFLAGS) $(UUID_CFLAGS) $(OSSP_UUID_CFLAGS) \
-                      $(AM_CPPFLAGS)
+E131Tester_CPPFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 # For some completely messed up reason on mac CPPUNIT_LIBS has to come after
-# UUID_LIBS. CPPUNIT_LIBS contains -ldl which causes the unittests to fail
-E131Tester_LDFLAGS = $(UUID_LIBS) $(OSSP_UUID_LIBS) $(PROTOBUF_LIBS) \
-                     $(CPPUNIT_LIBS)
-E131Tester_LDADD = @LIBS@ \
-                   ./libolae131core.la \
-                   ../../../common/libolacommon.la
+# the ossp uuid library.
+# CPPUNIT_LIBS contains -ldl which causes the unittests to fail in strange ways
+E131Tester_LDADD = ./libolae131core.la \
+                   $(CPPUNIT_LIBS)
