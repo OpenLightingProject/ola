@@ -6,7 +6,8 @@ libolamessaging_la_SOURCES = Descriptor.cpp \
                              MessagePrinter.cpp \
                              SchemaPrinter.cpp
 
-check_PROGRAMS = DescriptorTester
+TESTS = DescriptorTester
+check_PROGRAMS = $(TESTS)
 DescriptorTester_SOURCES = DescriptorTester.cpp \
                            DescriptorTest.cpp \
                            SchemaPrinterTest.cpp \

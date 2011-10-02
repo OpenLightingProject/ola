@@ -17,7 +17,8 @@ libolardm_la_SOURCES = DescriptorConsistencyChecker.cpp \
 nodist_libolardm_la_SOURCES = Pids.pb.cc
 libolardm_la_LIBADD = $(libprotobuf_LIBS)
 
-check_PROGRAMS = PidStoreTester RDMMessageTester RDMTester
+TESTS = PidStoreTester RDMMessageTester RDMTester
+check_PROGRAMS = $(TESTS)
 RDMTester_SOURCES = RDMAPITest.cpp RDMCommandTest.cpp RDMTester.cpp \
                     QueueingRDMControllerTest.cpp UIDTest.cpp
 RDMTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)

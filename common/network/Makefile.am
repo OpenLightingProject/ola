@@ -12,7 +12,8 @@ endif
 
 EXTRA_DIST = PosixInterfacePicker.h WindowsInterfacePicker.h
 
-check_PROGRAMS = NetworkTester
+TESTS = NetworkTester
+check_PROGRAMS = $(TESTS)
 NetworkTester_SOURCES = IPAddressTest.cpp InterfacePickerTest.cpp \
                         SelectServerTester.cpp SocketTest.cpp \
                         SelectServerTest.cpp NetworkUtilsTest.cpp \
