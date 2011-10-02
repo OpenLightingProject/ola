@@ -7,4 +7,4 @@ EXTRA_DIST = OpenDmxPlugin.h OpenDmxDevice.h OpenDmxPort.h OpenDmxThread.h
 lib_LTLIBRARIES = libolaopendmx.la
 libolaopendmx_la_SOURCES =  OpenDmxPlugin.cpp OpenDmxDevice.cpp \
                             OpenDmxThread.cpp
-libolaopendmx_la_LIBADD = @LIBS@  -lpthread
+libolaopendmx_la_LIBADD = ../../common/libolacommon.la

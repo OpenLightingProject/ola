@@ -27,6 +27,7 @@ extern "C" {
 #endif
 
 enum { DMX_UNIVERSE_SIZE = 512 };
+static const uint8_t DMX512_START_CODE = 0;
 static const int OLA_DEFAULT_PORT = 9010;
 static const uint16_t OPEN_LIGHTING_ESTA_CODE = 0x7a70;
 

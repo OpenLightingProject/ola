@@ -3,26 +3,29 @@ include $(top_srcdir)/common.mk
 HEADER_FILES = AutoStart.h OlaClient.h OlaCallbackClient.h OlaDevice.h \
                OlaClientWrapper.h StreamingClient.h common.h
 
-lib_LTLIBRARIES = libola.la
-libola_la_SOURCES = AutoStart.cpp OlaClient.cpp OlaCallbackClient.cpp \
-                    OlaClientCore.cpp OlaClientWrapper.cpp StreamingClient.cpp
-libola_la_LDFLAGS = -version-info 1:1:0
-libola_la_LIBADD = $(top_builddir)/common/libolacommon.la
-
 pkgincludedir = $(includedir)/ola
 pkginclude_HEADERS = $(HEADER_FILES)
 
 EXTRA_DIST = $(HEADER_FILES) OlaClientCore.h common-h.in
 
+lib_LTLIBRARIES = libola.la
+libola_la_SOURCES = AutoStart.cpp \
+                    OlaClient.cpp \
+                    OlaCallbackClient.cpp \
+                    OlaClientCore.cpp \
+                    OlaClientWrapper.cpp \
+                    StreamingClient.cpp
+libola_la_LDFLAGS = -version-info 1:1:0
+libola_la_LIBADD = $(top_builddir)/common/libolacommon.la
 
 # Test Programs
 TESTS = OlaClientTester
 check_PROGRAMS = $(TESTS)
-OlaClientTester_SOURCES = $(OLASERVER_SOURCES) OlaClientTester.cpp \
+OlaClientTester_SOURCES = OlaClientTester.cpp \
                           StreamingClientTest.cpp
-OlaClientTester_CXXFLAGS = $(CPPUNIT_CFLAGS) $(libusb_CFLAGS)
-OlaClientTester_LDFLAGS = $(CPPUNIT_LIBS) $(PROTOBUF_LIBS)
-OlaClientTester_LDADD = @LIBS@ ${PLUGIN_LIBS} \
+OlaClientTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+OlaClientTester_LDADD = $(CPPUNIT_LIBS) \
+                        $(PLUGIN_LIBS) \
                         $(top_builddir)/common/libolacommon.la \
                         $(top_builddir)/olad/libolaserver.la \
                         ./libola.la
@@ -45,4 +48,3 @@ dist-hook:
 
 install-exec-hook:
 	$(LN_S) -f $(includedir)/ola/OlaClientWrapper.h $(DESTDIR)$(includedir)/ola/SimpleClient.h	
-

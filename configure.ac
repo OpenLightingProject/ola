@@ -51,21 +51,11 @@ AC_CHECK_HEADERS([arpa/inet.h fcntl.h netinet/in.h stdint.h stdlib.h string.h \
 
 AC_PROG_LIBTOOL
 
-# Check for ncurses
-AC_CHECK_LIB([ncurses], [initscr], [have_ncurses="yes"])
-AM_CONDITIONAL(HAVE_NCURSES, test "${have_ncurses}" = "yes")
-
 # windows platform support
 AM_CONDITIONAL(USING_WIN32, test "$host_os" = 'mingw32')
 
 # check for hash_map
 AC_CXX_STL_HASH
-
-# check for pthread support
-AC_CHECK_HEADER([pthread.h],
-                [],
-                [AC_MSG_ERROR([Missing pthread, please install it])])
-LIBS="-lpthread $LIBS"
 
 # check for ipv6 support - taken from unp
 AC_MSG_CHECKING(for IPv6 support)
@@ -155,18 +145,43 @@ if test -z "$PKG_CONFIG"; then
   AC_MSG_ERROR([Missing pkg-config, please install it])
 fi
 
-# check for protobuf support
+# We build a list of plugins that we're going to compile here so the olad
+# knows what to link against.
+PLUGINS="artnet dummy espnet e131 opendmx pathport sandnet shownet stageprofi usbpro"
+
+# LIBRARY: ncurses
+AC_CHECK_LIB([ncurses], [initscr], [have_ncurses="yes"])
+AM_CONDITIONAL(HAVE_NCURSES, test "${have_ncurses}" = "yes")
+
+# LIBRARY: pthread
+AC_CHECK_HEADER([pthread.h],
+                [],
+                [AC_MSG_ERROR([Missing pthread, please install it])])
+LIBS="-lpthread $LIBS"
+
+# LIBRARY: protobuf
 PROTOBUF_SUPPORT([2.3.0])
 
-# check for uuid
+# LIBRARY: uuid
 # uuid handling is quite complex as we can use either the OSSP uuid or the one
 # with e2fsprogs. On top of that the header file is different on different
-#platforms
-use_ossp_uuid="no"
+# platforms.
+
+# first look for uuid using pkg-config
+pkg_config_found_uuid="no"
 PKG_CHECK_MODULES(
-  UUID,
+  base_uuid,
   [uuid],
-  [AC_CHECK_HEADERS(
+  [pkg_config_found_uuid="yes"],
+  [true])
+
+use_ossp_uuid="no"
+if test ${pkg_config_found_uuid} = "yes"; then
+  # uuid was found, now we need to determine which uuid library it is.
+  # First modify the CPPFLAGS to use the correct include location.
+  OLD_CPPFLAGS=$CPPFLAGS
+  CPPFLAGS+=" $base_uuid_CFLAGS"
+  AC_CHECK_HEADERS(
     [ossp/uuid.h],
     [use_ossp_uuid="yes"],
     [AC_CHECK_HEADERS(
@@ -177,10 +192,13 @@ PKG_CHECK_MODULES(
                     [],
                     [use_ossp_uuid="yes"])])],
     []
-  )],
+  )
+  # reset CPPFLAGS
+  CPPFLAGS=$OLD_CPPFLAGS
+else
   # the uuid pkg wasn't found, let's try ossp-uuid instead
-  [PKG_CHECK_MODULES(
-    OSSP_UUID,
+  PKG_CHECK_MODULES(
+    ossp_uuid,
     [ossp-uuid],
     [use_ossp_uuid="yes"],
     # if this fails, then our last chance is to check for uuid/uuid.h (present
@@ -190,18 +208,19 @@ PKG_CHECK_MODULES(
       [],
       [AC_MSG_ERROR([Missing the uuid library])]
     )]
-  )]
-)
+  )
+fi
+# now create the variables we actually use.
+uuid_CFLAGS="${base_uuid_CFLAGS} ${ossp_uuid_CFLAGS}"
+uuid_LIBS="${base_uuid_LIBS} ${ossp_uuid_LIBS}"
+AC_SUBST(uuid_CFLAGS)
+AC_SUBST(uuid_LIBS)
 
 if test "${use_ossp_uuid}" = "yes"; then
   AC_DEFINE(USE_OSSP_UUID, 1, [defined if we should use the ossp uuid lib])
 fi
 
-# check for plugin dependencies. We also build a list of plugins that we're
-# going to compile here so the binary knows what to link against
-PLUGINS="artnet dummy espnet e131 opendmx pathport sandnet shownet stageprofi usbpro"
-
-# check for dmx4linux
+# LIBRARY: dmx4linux
 have_dmx4linux=""
 AC_CHECK_LIB(dmx4linux, DMXdev, [have_dmx4linux="yes"])
 AC_CHECK_HEADER(
@@ -216,8 +235,8 @@ if test "${have_dmx4linux}" = "yes"; then
  AC_DEFINE(HAVE_DMX4LINUX, 1, [define if dmx4linux is installed])
 fi
 
-# check for libusb
-# look for microhttpd if the user asked us to
+# LIBRARY: libusb
+# look for libusb if the user asked us to
 AC_ARG_ENABLE(
   [libusb],
   AS_HELP_STRING([--disable-libusb], [Don't use libusb even if it exists]))
@@ -234,13 +253,52 @@ if test "${have_libusb}" = "yes"; then
  AC_DEFINE(HAVE_LIBUSB, 1, [define if libusb is installed])
 fi
 
-# create a list of plugin libs
+# LIBRARY: openslp
+# This is used for E1.33 support
+# openslp doesn't come use pkg-config, so the users may need to pass CPPFLAGS
+# & LDFLAGS so we can find it.
+AC_ARG_ENABLE(
+  slp,
+  AC_HELP_STRING([--disable-slp], [Disable the SLP tools]),)
+
+openslp_LIBS=""
+have_slp=no
+if test "${enable_slp}" != "no"; then
+  AC_CHECK_LIB([slp], [SLPOpen], [have_slp="yes"])
+fi
+
+AM_CONDITIONAL(HAVE_SLP, test "${have_slp}" = "yes")
+
+if test "${have_slp}" = "yes"; then
+  AC_DEFINE(HAVE_LIBSLP, 1, [define if libslp is installed])
+  openslp_LIBS="-lslp"
+fi
+AC_SUBST(openslp_LIBS)
+
+# LIBRARY: libmicrohttpd
+# look for microhttpd if the user asked us to
+AC_ARG_ENABLE(
+  [http],
+  AS_HELP_STRING([--disable-http], [Disable the built in HTTP server]))
+
+have_microhttpd="no"
+
+if test "${enable_http}" != "no"; then
+  PKG_CHECK_MODULES(libmicrohttpd, [libmicrohttpd], [have_microhttpd="yes"], [true])
+fi
+AM_CONDITIONAL(HAVE_LIBMICROHTTPD, test "${have_microhttpd}" = "yes")
+
+if test "${have_microhttpd}" = "yes"; then
+  AC_DEFINE(HAVE_LIBMICROHTTPD, 1, [define if libmicrohttpd is installed])
+fi
+
+# Now build a list of plugin libs
 PLUGIN_LIBS=''
 OLA_SERVER_LIBS=''
 for p in $PLUGINS; do
-  LIB_NAME="libola$p"
-  PLUGIN_LIBS="$PLUGIN_LIBS \$(top_builddir)/plugins/$p/$LIB_NAME.la"
-  OLA_SERVER_LIBS="$OLA_SERVER_LIBS -l$LIB_NAME"
+  LIB_NAME="libola${p}"
+  PLUGIN_LIBS="$PLUGIN_LIBS \$(top_builddir)/plugins/${p}/$LIB_NAME.la"
+  OLA_SERVER_LIBS="$OLA_SERVER_LIBS -lola${p}"
 done
 
 AC_SUBST(PLUGIN_LIBS)
@@ -278,45 +336,6 @@ if test "${enable_gov}" != "no"; then
   CXXFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
   LDFLAGS="$LDFLAGS -fprofile-arcs"
 fi
-
-# slp - used for E1.33 support
-AC_ARG_ENABLE(
-  slp,
-  AC_HELP_STRING([--disable-slp], [Disable the SLP tools]),)
-
-SLP_LIBS=""
-have_slp=no
-if test "${enable_slp}" != "no"; then
-  AC_CHECK_LIB([slp], [SLPOpen], [have_slp="yes"])
-fi
-
-AM_CONDITIONAL(HAVE_SLP, test "${have_slp}" = "yes")
-
-if test "${have_slp}" = "yes"; then
-  AC_DEFINE(HAVE_LIBSLP, 1, [define if libslp is installed])
-  SLP_LIBS="-lslp"
-fi
-AC_SUBST(SLP_LIBS)
-
-# look for microhttpd if the user asked us to
-AC_ARG_ENABLE(
-  [http],
-  AS_HELP_STRING([--disable-http], [Disable the built in HTTP server]))
-
-MICROHTTPD_LIBS=""
-have_microhttpd="no"
-
-if test "${enable_http}" != "no"; then
-  AC_CHECK_LIB(microhttpd, MHD_start_daemon, [have_microhttpd="yes"])
-fi
-
-AM_CONDITIONAL(HAVE_LIBMICROHTTPD, test "${have_microhttpd}" = "yes")
-
-if test "${have_microhttpd}" = "yes"; then
-  AC_DEFINE(HAVE_LIBMICROHTTPD, 1, [define if libmicrohttpd is installed])
-  MICROHTTPD_LIBS="-lmicrohttpd"
-fi
-AC_SUBST(MICROHTTPD_LIBS)
 
 # Decide if we should build the example programs
 AC_ARG_ENABLE(

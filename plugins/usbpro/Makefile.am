@@ -3,24 +3,15 @@ include $(top_srcdir)/common.mk
 libdir = $(plugindir)
 SUBDIRS = messages
 EXTRA_DIST = ArduinoRGBDevice.h ArduinoWidget.h DmxTriDevice.h DmxTriWidget.h \
-             BaseUsbProUsbWidget.h DmxterDevice.h DmxterWidget.h \
-             EnttecUsbProWidget.h MockUsbWidget.h RobeDevice.h RobeWidget.h \
-             RobeWidgetDetector.h SerialWidgetInterface.h UsbDevice.h \
-             UsbProDevice.h UsbProPlugin.h UsbProWidgetDetector.h \
-             SerialWidgetInterface.h WidgetDetectorInterface.h \
-             WidgetDetectorThread.h
+             DmxterDevice.h DmxterWidget.h MockUsbWidget.h UsbDevice.h \
+             UsbProDevice.h UsbProPlugin.h UsbProWidget.h UsbWidget.h \
+             WidgetDetector.h WidgetDetectorThread.h
 
 # This is a library which doesn't contain any coupling to olad
 noinst_LTLIBRARIES = libolausbprowidget.la
-libolausbprowidget_la_SOURCES = ArduinoWidget.cpp \
-                                DmxTriWidget.cpp \
-                                BaseUsbProWidget.cpp \
-                                DmxterWidget.cpp \
-                                RobeDevice.cpp \
-                                RobeWidget.cpp \
-                                RobeWidgetDetector.cpp \
-                                EnttecUsbProWidget.cpp \
-                                UsbProWidgetDetector.cpp \
+libolausbprowidget_la_SOURCES = ArduinoWidget.cpp DmxTriWidget.cpp \
+                                DmxterWidget.cpp UsbProWidget.cpp \
+                                UsbWidget.cpp WidgetDetector.cpp \
                                 WidgetDetectorThread.cpp
 
 lib_LTLIBRARIES = libolausbpro.la
@@ -37,11 +28,10 @@ UsbProTester_SOURCES = ArduinoWidgetTest.cpp \
                        DmxTriWidgetTest.cpp \
                        DmxterWidgetTest.cpp \
                        MockUsbWidget.cpp \
-                       RobeWidgetTest.cpp \
                        UsbProTester.cpp \
-                       UsbProWidgetDetectorTest.cpp \
                        UsbProWidgetTest.cpp \
-                       UsbWidgetTest.cpp
+                       UsbWidgetTest.cpp \
+                       WidgetDetectorTest.cpp
 
 UsbProTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
 UsbProTester_LDFLAGS = $(CPPUNIT_LIBS) $(PROTOBUF_LIBS)

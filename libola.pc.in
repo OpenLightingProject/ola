@@ -8,4 +8,4 @@ Version: @VERSION@
 Description: Open Lighting Architecture Client
 Requires:
 Libs: -L${libdir} -lola -lolacommon -lprotobuf
-Cflags: -I${includedir}/libola
+Cflags: -I${includedir}

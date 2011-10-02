@@ -18,13 +18,13 @@ NetworkTester_SOURCES = IPAddressTest.cpp InterfacePickerTest.cpp \
                         SelectServerTester.cpp SocketTest.cpp \
                         SelectServerTest.cpp NetworkUtilsTest.cpp \
                         SelectServerThreadTest.cpp
-NetworkTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
-NetworkTester_LDFLAGS = $(CPPUNIT_LIBS)
-NetworkTester_LDADD = ./libolanetwork.la \
+NetworkTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+NetworkTester_LDADD = $(CPPUNIT_LIBS) \
+                      ./libolanetwork.la \
                       ../export_map/libolaexportmap.la \
                       ../logging/liblogging.la \
                       ../utils/libolautils.la
 
 if USING_WIN32
-  NetworkTester_LDFLAGS += -no-undefined -liphlpapi -lnetapi32 -lcap -lws2_32 -ldpnet -lwsock32
+  NetworkTester_LDFLAGS = -no-undefined -liphlpapi -lnetapi32 -lcap -lws2_32 -ldpnet -lwsock32
 endif

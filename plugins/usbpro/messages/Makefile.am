@@ -9,6 +9,7 @@ pkgconfig_DATA = libolausbproconf.pc
 BUILT_SOURCES = UsbProConfigMessages.pb.cc UsbProConfigMessages.pb.h
 
 nodist_libolausbproconf_la_SOURCES = UsbProConfigMessages.pb.cc
+libolausbproconf_la_LIBADD = $(libprotobuf_LIBS)
 
 EXTRA_DIST = UsbProConfigMessages.proto
 

@@ -9,6 +9,7 @@ pkgconfig_DATA = libolaartnetconf.pc
 BUILT_SOURCES = ArtnetConfigMessages.pb.cc ArtnetConfigMessages.pb.h
 
 nodist_libolaartnetconf_la_SOURCES = ArtnetConfigMessages.pb.cc
+libolaartnetconf_la_LIBADD = $(libprotobuf_LIBS)
 
 EXTRA_DIST = ArtnetConfigMessages.proto
 

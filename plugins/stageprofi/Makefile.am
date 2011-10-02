@@ -9,4 +9,4 @@ lib_LTLIBRARIES = libolastageprofi.la
 libolastageprofi_la_SOURCES = StageProfiPlugin.cpp StageProfiDevice.cpp \
                               StageProfiPort.cpp StageProfiWidget.cpp \
                               StageProfiWidgetLan.cpp StageProfiWidgetUsb.cpp
-
+libolastageprofi_la_LIBADD = ../../common/libolacommon.la
