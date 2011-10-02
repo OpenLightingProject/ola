@@ -16,7 +16,8 @@ libolaartnet_la_LIBADD = ./libolaartnetnode.la \
                          messages/libolaartnetconf.la
 
 # Test programs
-check_PROGRAMS = ArtNetTester
+TESTS = ArtNetTester
+check_PROGRAMS = $(TESTS)
 ArtNetTester_SOURCES = ArtNetNodeTest.cpp \
                        ArtNetTester.cpp \
                        MockUdpSocket.cpp

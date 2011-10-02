@@ -8,8 +8,7 @@ noinst_PROGRAMS = e133_controller e133_receiver slp_locate slp_register
 
 e133_receiver_SOURCES = e133-receiver.cpp E133Node.cpp E133Receiver.cpp \
                         SlpThread.cpp
-e133_receiver_LDADD = $(UUID_LIBS) $(OSSP_UUID_LIBS) \
-                      $(libprotobuf_LIBS) $(openslp_LIBS) \
+e133_receiver_LDADD = $(openslp_LIBS) \
                       $(top_builddir)/common/libolacommon.la \
                       $(top_builddir)/plugins/dummy/liboladummyresponder.la \
                       $(top_builddir)/plugins/e131/e131/libolae131core.la
@@ -19,8 +18,7 @@ e133_controller_SOURCES = e133-controller.cpp E133Node.cpp \
                           SlpUrlParser.cpp
 # required for PID_DATA_FILE
 e133_controller_CXXFLAGS = @OLAD_DEFINES@ $(COMMON_CXXFLAGS)
-e133_controller_LDADD = $(UUID_LIBS) $(OSSP_UUID_LIBS) \
-                        $(libprotobuf_LIBS) $(openslp_LIBS) \
+e133_controller_LDADD = $(openslp_LIBS) \
                         $(top_builddir)/common/libolacommon.la \
                         $(top_builddir)/plugins/e131/e131/libolae131core.la
 

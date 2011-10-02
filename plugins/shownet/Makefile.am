@@ -11,7 +11,8 @@ libolashownet_la_SOURCES = ShowNetPlugin.cpp ShowNetDevice.cpp ShowNetPort.cpp\
 libolashownet_la_LIBADD = ../../common/libolacommon.la
 
 # Test Programs
-check_PROGRAMS = ShowNetTester
+TESTS = ShowNetTester
+check_PROGRAMS = $(TESTS)
 ShowNetTester_SOURCES = ShowNetTester.cpp \
                         ShowNetNode.cpp \
                         ShowNetNodeTest.cpp

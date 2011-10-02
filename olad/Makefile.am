@@ -41,12 +41,13 @@ EXTRA_DIST = Client.h ClientBroker.h DeviceManager.h DlOpenPluginLoader.h \
 # Olad Server
 bin_PROGRAMS = olad
 olad_SOURCES = Olad.cpp
-olad_LDFLAGS = -rdynamic -ldl $(UUID_LIBS)
+olad_LDFLAGS = -rdynamic -ldl
 olad_LDADD = libolaserver.la \
              $(top_builddir)/common/libolacommon.la
 
 # Test Programs
-check_PROGRAMS = OlaTester
+TESTS = OlaTester
+check_PROGRAMS = $(TESTS)
 OlaTester_SOURCES = OlaServerTester.cpp \
                     UniverseTest.cpp DeviceTest.cpp DeviceManagerTest.cpp \
                     DmxSourceTest.cpp PluginManagerTest.cpp \
