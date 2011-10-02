@@ -8,13 +8,13 @@ EXTRA_DIST = ShowNetPlugin.h ShowNetDevice.h ShowNetPort.h ShowNetPackets.h \
 lib_LTLIBRARIES = libolashownet.la
 libolashownet_la_SOURCES = ShowNetPlugin.cpp ShowNetDevice.cpp ShowNetPort.cpp\
                            ShowNetNode.cpp
-libolashownet_la_LIBADD = @LIBS@
+libolashownet_la_LIBADD = ../../common/libolacommon.la
 
 # Test Programs
-TESTS = ShowNetTester
-check_PROGRAMS = $(TESTS)
+check_PROGRAMS = ShowNetTester
 ShowNetTester_SOURCES = ShowNetTester.cpp \
-                        ShowNetNode.cpp ShowNetNodeTest.cpp
-ShowNetTester_CXXFLAGS = $(CPPUNIT_CFLAGS)
-ShowNetTester_LDFLAGS = $(CPPUNIT_LIBS) $(PROTOBUF_LIBS)
-ShowNetTester_LDADD = @LIBS@ ../../common/libolacommon.la
+                        ShowNetNode.cpp \
+                        ShowNetNodeTest.cpp
+ShowNetTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+ShowNetTester_LDADD = $(CPPUNIT_LIBS) \
+                      ../../common/libolacommon.la

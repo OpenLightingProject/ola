@@ -1,6 +1,6 @@
 include $(top_srcdir)/common.mk
 
-SUBDIRS = testdata 
+SUBDIRS = testdata
 EXTRA_DIST = DescriptorConsistencyChecker.h GroupSizeCalculator.h Pids.proto \
              PidStoreLoader.h VariableFieldSizeCalculator.h
 
@@ -15,22 +15,24 @@ libolardm_la_SOURCES = DescriptorConsistencyChecker.cpp \
                        StringMessageBuilder.cpp QueueingRDMController.cpp \
                        UID.cpp VariableFieldSizeCalculator.cpp
 nodist_libolardm_la_SOURCES = Pids.pb.cc
-libolardm_la_LDFLAGS = $(PROTOBUF_LIBS)
+libolardm_la_LIBADD = $(libprotobuf_LIBS)
 
-TESTS = RDMTester PidStoreTester RDMMessageTester
-check_PROGRAMS = $(TESTS)
+check_PROGRAMS = PidStoreTester RDMMessageTester RDMTester
 RDMTester_SOURCES = RDMAPITest.cpp RDMCommandTest.cpp RDMTester.cpp \
                     QueueingRDMControllerTest.cpp UIDTest.cpp
-RDMTester_CPPFLAGS = $(CPPUNIT_CFLAGS) $(AM_CPPFLAGS)
-RDMTester_LDFLAGS = $(CPPUNIT_LIBS)
-RDMTester_LDADD = libolardm.la ../logging/liblogging.la \
-                  ../network/libolanetwork.la ../utils/libolautils.la
+RDMTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+RDMTester_LDADD = $(CPPUNIT_LIBS) \
+                  libolardm.la \
+                  ../logging/liblogging.la \
+                  ../network/libolanetwork.la \
+                  ../utils/libolautils.la
 
 PidStoreTester_SOURCES = DescriptorConsistencyCheckerTest.cpp \
                          PidStoreTester.cpp PidStoreTest.cpp
-PidStoreTester_CPPFLAGS = $(CPPUNIT_CFLAGS) $(AM_CPPFLAGS)
-PidStoreTester_LDFLAGS = $(CPPUNIT_LIBS) $(PROTOBUF_LIBS)
-PidStoreTester_LDADD = libolardm.la ../logging/liblogging.la \
+PidStoreTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+PidStoreTester_LDADD = $(CPPUNIT_LIBS) \
+                       libolardm.la \
+                       ../logging/liblogging.la \
                        ../messaging/libolamessaging.la \
                        ../utils/libolautils.la
 
@@ -41,9 +43,10 @@ RDMMessageTester_SOURCES = GroupSizeCalculatorTest.cpp \
                            RDMMessageInterationTest.cpp \
                            StringMessageBuilderTest.cpp \
                            VariableFieldSizeCalculatorTest.cpp
-RDMMessageTester_CPPFLAGS = $(CPPUNIT_CFLAGS) $(AM_CPPFLAGS)
-RDMMessageTester_LDFLAGS = $(CPPUNIT_LIBS) $(PROTOBUF_LIBS)
-RDMMessageTester_LDADD = libolardm.la ../logging/liblogging.la \
+RDMMessageTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+RDMMessageTester_LDADD = $(CPPUNIT_LIBS) \
+                         libolardm.la \
+                          ../logging/liblogging.la \
                           ../messaging/libolamessaging.la \
                           ../network/libolanetwork.la \
                           ../utils/libolautils.la

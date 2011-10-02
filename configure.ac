@@ -161,7 +161,7 @@ PROTOBUF_SUPPORT([2.3.0])
 # check for uuid
 # uuid handling is quite complex as we can use either the OSSP uuid or the one
 # with e2fsprogs. On top of that the header file is different on different
-#platforms
+# platforms.
 use_ossp_uuid="no"
 PKG_CHECK_MODULES(
   UUID,
@@ -217,7 +217,7 @@ if test "${have_dmx4linux}" = "yes"; then
 fi
 
 # check for libusb
-# look for microhttpd if the user asked us to
+# look for libusb if the user asked us to
 AC_ARG_ENABLE(
   [libusb],
   AS_HELP_STRING([--disable-libusb], [Don't use libusb even if it exists]))
@@ -280,11 +280,13 @@ if test "${enable_gov}" != "no"; then
 fi
 
 # slp - used for E1.33 support
+# openslp doesn't come use pkg-config, so the users may need to pass CPPFLAGS
+# & LDFLAGS so we can find it.
 AC_ARG_ENABLE(
   slp,
   AC_HELP_STRING([--disable-slp], [Disable the SLP tools]),)
 
-SLP_LIBS=""
+openslp_LIBS=""
 have_slp=no
 if test "${enable_slp}" != "no"; then
   AC_CHECK_LIB([slp], [SLPOpen], [have_slp="yes"])
@@ -294,29 +296,25 @@ AM_CONDITIONAL(HAVE_SLP, test "${have_slp}" = "yes")
 
 if test "${have_slp}" = "yes"; then
   AC_DEFINE(HAVE_LIBSLP, 1, [define if libslp is installed])
-  SLP_LIBS="-lslp"
+  openslp_LIBS="-lslp"
 fi
-AC_SUBST(SLP_LIBS)
+AC_SUBST(openslp_LIBS)
 
 # look for microhttpd if the user asked us to
 AC_ARG_ENABLE(
   [http],
   AS_HELP_STRING([--disable-http], [Disable the built in HTTP server]))
 
-MICROHTTPD_LIBS=""
 have_microhttpd="no"
 
 if test "${enable_http}" != "no"; then
-  AC_CHECK_LIB(microhttpd, MHD_start_daemon, [have_microhttpd="yes"])
+  PKG_CHECK_MODULES(libmicrohttpd, [libmicrohttpd], [have_microhttpd="yes"], [true])
 fi
-
 AM_CONDITIONAL(HAVE_LIBMICROHTTPD, test "${have_microhttpd}" = "yes")
 
 if test "${have_microhttpd}" = "yes"; then
   AC_DEFINE(HAVE_LIBMICROHTTPD, 1, [define if libmicrohttpd is installed])
-  MICROHTTPD_LIBS="-lmicrohttpd"
 fi
-AC_SUBST(MICROHTTPD_LIBS)
 
 # Decide if we should build the example programs
 AC_ARG_ENABLE(

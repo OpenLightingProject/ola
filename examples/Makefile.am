@@ -18,7 +18,6 @@ bin_PROGRAMS = ola_dev_info ola_usbpro ola_artnet ola_e131 \
 ola_artnet_SOURCES = ola-artnet.cpp
 ola_artnet_LDADD = $(COMMON_LIBS) libolaconfig.la \
                    $(top_builddir)/plugins/artnet/messages/libolaartnetconf.la
-ola_artnet_LDFLAGS = -lprotobuf
 
 ola_dev_info_SOURCES = ola-client.cpp
 
@@ -35,7 +34,7 @@ ola_usbpro_LDADD = $(COMMON_LIBS) libolaconfig.la \
 ola_rdm_get_SOURCES = ola-rdm.cpp
 ola_rdm_get_LDADD = $(top_builddir)/ola/libola.la \
                     $(top_builddir)/common/libolacommon.la
-ola_rdm_get_CXXFLAGS = @OLAD_DEFINES@
+ola_rdm_get_CXXFLAGS = $(COMMON_CXXFLAGS) @OLAD_DEFINES@
 
 ola_rdm_discover_SOURCES = ola-rdm-discover.cpp
 

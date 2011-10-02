@@ -9,6 +9,7 @@ pkgconfig_DATA = libolae131conf.pc
 BUILT_SOURCES = E131ConfigMessages.pb.cc E131ConfigMessages.pb.h
 
 nodist_libolae131conf_la_SOURCES = E131ConfigMessages.pb.cc
+libolae131conf_la_LIBADD = $(libprotobuf_LIBS)
 
 EXTRA_DIST = E131ConfigMessages.proto
 
