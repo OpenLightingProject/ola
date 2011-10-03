@@ -226,14 +226,14 @@ class MockSelectServer: public ola::network::SelectServerInterface {
         ola::Callback0<bool> *closure) {
       (void) ms;
       (void) closure;
-      return ola::network::INVALID_TIMEOUT;
+      return ola::thread::INVALID_TIMEOUT;
     }
     ola::network::timeout_id RegisterSingleTimeout(
         unsigned int ms,
         ola::SingleUseCallback0<void> *closure) {
       (void) ms;
       (void) closure;
-      return ola::network::INVALID_TIMEOUT;
+      return ola::thread::INVALID_TIMEOUT;
     }
     void RemoveTimeout(ola::network::timeout_id id) { (void) id; }
     const TimeStamp *WakeUpTime() const { return m_wake_up; }
