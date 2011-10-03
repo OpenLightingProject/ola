@@ -60,7 +60,7 @@ class VellemanOutputPort: public BasicOutputPort, OlaThread {
     static const unsigned int URB_TIMEOUT_MS = 25;
     static const int CONFIGURATION = 1;
     static const int INTERFACE = 0;
-    static const int UPGRADED_CHUNK_SIZE = 64;
+    static const unsigned int UPGRADED_CHUNK_SIZE = 64;
 
     bool m_term;
     unsigned int m_chunk_size;

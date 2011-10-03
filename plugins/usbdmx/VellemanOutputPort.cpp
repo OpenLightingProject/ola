@@ -174,6 +174,7 @@ bool VellemanOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
   ola::MutexLocker locker(&m_data_mutex);
   m_buffer.Set(buffer);
   return true;
+  (void) priority;
 }
 
 
@@ -220,7 +221,8 @@ bool VellemanOutputPort::SendDMX(const DmxBuffer &buffer) {
     for (n = 0;
          n < max_compressed_channels && n < size - compressed_channel_count
          && !data[n];
-         n++);
+         n++) {
+    }
     usb_data[0] = 4;
     usb_data[1] = n + 1;  // include start code
     memcpy(usb_data + 2, data + n, compressed_channel_count);
@@ -234,7 +236,8 @@ bool VellemanOutputPort::SendDMX(const DmxBuffer &buffer) {
     for (n = 0;
          n < max_compressed_channels && n + i < size - compressed_channel_count
            && !data[i + n];
-         n++);
+         n++) {
+    }
     if (n) {
       // we have leading zeros
       usb_data[0] = 5;

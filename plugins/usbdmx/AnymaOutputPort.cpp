@@ -181,6 +181,7 @@ bool AnymaOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
   ola::MutexLocker locker(&m_data_mutex);
   m_buffer.Set(buffer);
   return true;
+  (void) priority;
 }
 
 

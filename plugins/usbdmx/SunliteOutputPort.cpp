@@ -137,6 +137,7 @@ bool SunliteOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
   m_buffer.Set(buffer);
   m_new_data = true;
   return true;
+  (void) priority;
 }
 
 
@@ -179,8 +180,6 @@ void SunliteOutputPort::InitPacket() {
  * Send DMX to the widget
  */
 bool SunliteOutputPort::SendDMX(const DmxBuffer &buffer) {
-  unsigned int i;
-
   for (unsigned int i = 0; i < buffer.Size(); i++)
     m_packet[(i / CHANNELS_PER_CHUNK) * CHUNK_SIZE +
              ((i / 4) % 5) * 6 + 3 + (i % 4)] = buffer.Get(i);
