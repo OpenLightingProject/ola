@@ -194,7 +194,7 @@ bool EuroliteProOutputPort::SendDMX(const DmxBuffer &buffer) {
   // header
   usb_data[0] = 0x7E;   // Start message delimiter
   usb_data[1] = DMX_LABEL;      // Label
-  usb_data[4] = DMX512_START_CODE;
+  usb_data[4] = ::DMX512_START_CODE;
   buffer.Get(usb_data + 5, &frame_size);
   usb_data[2] = (frame_size + 1) & 0xff;  // Data length LSB.
   usb_data[3] = ((frame_size + 1) >> 8);  // Data length MSB
