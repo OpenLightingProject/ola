@@ -1,3 +1,5 @@
+include $(top_srcdir)/common.mk
+
 libdir = $(plugindir)
 EXTRA_DIST = AnymaDevice.h AnymaOutputPort.h EuroliteProDevice.h \
              EuroliteProOutputPort.h FirmwareLoader.h SunliteDevice.h \

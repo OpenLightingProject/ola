@@ -65,6 +65,7 @@ void libusb_fd_added(int fd, short events, void *data) {
 
   OLA_INFO << "USB new FD: " << fd;
   plugin->AddDeviceDescriptor(fd);
+  (void) events;
 }
 
 
@@ -163,7 +164,6 @@ bool UsbDmxPlugin::LoadFirmware() {
  */
 void UsbDmxPlugin::FindDevices() {
   libusb_device **device_list;
-  libusb_device *found = NULL;
   size_t device_count = libusb_get_device_list(NULL, &device_list);
 
   for (unsigned int i = 0; i < device_count; i++) {
@@ -281,6 +281,7 @@ bool UsbDmxPlugin::AddDeviceDescriptor(int fd) {
   socket->SetOnData(NewCallback(this, &UsbDmxPlugin::SocketReady));
   m_plugin_adaptor->AddReadDescriptor(socket);
   m_descriptors.push_back(socket);
+  return true;
 }
 
 
