@@ -657,5 +657,6 @@ void ArduinoWidgetTest::testErrorConditions() {
     m_ss.Run();
     m_endpoint->Verify();
     delete[] expected_request_frame;
+    delete[] response_frame;
   }
 }

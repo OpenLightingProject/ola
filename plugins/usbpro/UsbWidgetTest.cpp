@@ -13,32 +13,35 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * UsbWidgetTest.cpp
+ * BaseUsbProWidgetTest.cpp
  * Test fixture for the UsbWidget class
  * Copyright (C) 2010 Simon Newton
  */
 
 #include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include <memory>
 #include <string>
 #include <queue>
 
+#include "ola/Logging.h"
 #include "ola/Callback.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/SelectServer.h"
 #include "ola/network/Socket.h"
-#include "plugins/usbpro/UsbWidget.h"
+#include "plugins/usbpro/BaseUsbProWidget.h"
+#include "plugins/usbpro/MockEndpoint.h"
 
 
-using ola::plugin::usbpro::UsbWidget;
+using ola::plugin::usbpro::DispatchingUsbProWidget;
 using ola::network::ConnectedDescriptor;
-using ola::network::PipeDescriptor;
+using std::auto_ptr;
 using std::string;
 using std::queue;
 
 
-class UsbWidgetTest: public CppUnit::TestFixture {
-  CPPUNIT_TEST_SUITE(UsbWidgetTest);
+class BaseUsbProWidgetTest: public CppUnit::TestFixture {
+  CPPUNIT_TEST_SUITE(BaseUsbProWidgetTest);
   CPPUNIT_TEST(testSend);
   CPPUNIT_TEST(testReceive);
   CPPUNIT_TEST(testRemove);
@@ -54,10 +57,10 @@ class UsbWidgetTest: public CppUnit::TestFixture {
 
   private:
     ola::network::SelectServer m_ss;
-    PipeDescriptor m_descriptor;
-    PipeDescriptor *m_other_end;
-    UsbWidget *m_widget;
-    string m_expected;
+    ola::network::PipeDescriptor m_descriptor;
+    auto_ptr<ola::network::PipeDescriptor> m_other_end;
+    auto_ptr<MockEndpoint> m_endpoint;
+    auto_ptr<ola::plugin::usbpro::DispatchingUsbProWidget> m_widget;
     bool m_removed;
 
     typedef struct {
@@ -68,15 +71,13 @@ class UsbWidgetTest: public CppUnit::TestFixture {
 
     queue<expected_message> m_messages;
 
-    void AddExpected(const string &data);
+    void Terminate() { m_ss.Terminate(); }
     void AddExpectedMessage(uint8_t label,
                             unsigned int size,
                             const uint8_t *data);
-    void Receive();
     void ReceiveMessage(uint8_t label,
                         const uint8_t *data,
                         unsigned int size);
-    void Timeout() { m_ss.Terminate(); }
     void DeviceRemoved() {
       m_removed = true;
       m_ss.Terminate();
@@ -84,35 +85,38 @@ class UsbWidgetTest: public CppUnit::TestFixture {
 };
 
 
-CPPUNIT_TEST_SUITE_REGISTRATION(UsbWidgetTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(BaseUsbProWidgetTest);
 
 
-void UsbWidgetTest::setUp() {
+void BaseUsbProWidgetTest::setUp() {
+  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
   m_descriptor.Init();
-  m_other_end = m_descriptor.OppositeEnd();
-
+  m_other_end.reset(m_descriptor.OppositeEnd());
+  m_endpoint.reset(new MockEndpoint(m_other_end.get()));
   m_ss.AddReadDescriptor(&m_descriptor);
-  m_ss.AddReadDescriptor(m_other_end, true);
-  m_widget = new UsbWidget(&m_descriptor);
+  m_ss.AddReadDescriptor(m_other_end.get());
+
+  m_widget.reset(
+      new ola::plugin::usbpro::DispatchingUsbProWidget(
+        &m_descriptor,
+        ola::NewCallback(this, &BaseUsbProWidgetTest::ReceiveMessage)));
+
   m_removed = false;
 
   m_ss.RegisterSingleTimeout(
       30,  // 30ms should be enough
-      ola::NewSingleCallback(this, &UsbWidgetTest::Timeout));
+      ola::NewSingleCallback(this, &BaseUsbProWidgetTest::Terminate));
 }
 
 
-void UsbWidgetTest::tearDown() {
-  delete m_widget;
+void BaseUsbProWidgetTest::tearDown() {
+  m_endpoint->Verify();
+  m_ss.RemoveReadDescriptor(&m_descriptor);
+  m_ss.RemoveReadDescriptor(m_other_end.get());
 }
 
 
-void UsbWidgetTest::AddExpected(const string &data) {
-  m_expected.append(data.data(), data.size());
-}
-
-
-void UsbWidgetTest::AddExpectedMessage(uint8_t label,
+void BaseUsbProWidgetTest::AddExpectedMessage(uint8_t label,
                                        unsigned int size,
                                        const uint8_t *data) {
   expected_message message = {
@@ -123,28 +127,10 @@ void UsbWidgetTest::AddExpectedMessage(uint8_t label,
 }
 
 
-/*
- * Ceceive some data and check it's what we expected.
- */
-void UsbWidgetTest::Receive() {
-  uint8_t buffer[100];
-  unsigned int data_read;
-
-  CPPUNIT_ASSERT(!m_other_end->Receive(buffer, sizeof(buffer), data_read));
-
-  string recieved(reinterpret_cast<char*>(buffer), data_read);
-  CPPUNIT_ASSERT(0 == m_expected.compare(0, data_read, recieved));
-  m_expected.erase(0, data_read);
-
-  if (m_expected.empty())
-    m_ss.Terminate();
-}
-
-
 /**
  * Called when a new message arrives
  */
-void UsbWidgetTest::ReceiveMessage(uint8_t label,
+void BaseUsbProWidgetTest::ReceiveMessage(uint8_t label,
                                    const uint8_t *data,
                                    unsigned int size) {
   CPPUNIT_ASSERT(m_messages.size());
@@ -160,40 +146,51 @@ void UsbWidgetTest::ReceiveMessage(uint8_t label,
 }
 
 
-/**
+/*
  * Test sending works
  */
-void UsbWidgetTest::testSend() {
-  m_other_end->SetOnData(ola::NewCallback(this, &UsbWidgetTest::Receive));
-
-  uint8_t expected[] = {
-    0x7e, 0, 0, 0, 0xe7,
-    0x7e, 0x0a, 0, 0, 0xe7,
-    0x7e, 0x0b, 4, 0, 0xde, 0xad, 0xbe, 0xef, 0xe7,
-  };
-  AddExpected(string(reinterpret_cast<char*>(expected), sizeof(expected)));
+void BaseUsbProWidgetTest::testSend() {
+  // simple empty frame
+  uint8_t expected1[] = {0x7e, 0, 0, 0, 0xe7};
+  m_endpoint->AddExpectedData(
+      expected1,
+      sizeof(expected1),
+      ola::NewSingleCallback(this, &BaseUsbProWidgetTest::Terminate));
   CPPUNIT_ASSERT(m_widget->SendMessage(0, NULL, 0));
-  CPPUNIT_ASSERT(m_widget->SendMessage(10, NULL, 0));
+  m_ss.Run();
+  m_endpoint->Verify();
 
+  // try a different label
+  uint8_t expected2[] = {0x7e, 0x0a, 0, 0, 0xe7};
+  m_endpoint->AddExpectedData(
+      expected2,
+      sizeof(expected2),
+      ola::NewSingleCallback(this, &BaseUsbProWidgetTest::Terminate));
+  CPPUNIT_ASSERT(m_widget->SendMessage(10, NULL, 0));
+  m_ss.Run();
+  m_endpoint->Verify();
+
+  // frame with data
+  uint8_t expected3[] = {0x7e, 0x0b, 4, 0, 0xde, 0xad, 0xbe, 0xef, 0xe7};
+  m_endpoint->AddExpectedData(
+      expected3,
+      sizeof(expected3),
+      ola::NewSingleCallback(this, &BaseUsbProWidgetTest::Terminate));
   uint32_t data = ola::network::HostToNetwork(0xdeadbeef);
   CPPUNIT_ASSERT(m_widget->SendMessage(11,
                                        reinterpret_cast<uint8_t*>(&data),
                                        sizeof(data)));
-
+  // try to send an incorrect frame
   CPPUNIT_ASSERT(!m_widget->SendMessage(10, NULL, 4));
   m_ss.Run();
-
-  CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), m_expected.size());
+  m_endpoint->Verify();
 }
 
 
-/**
+/*
  * Test receiving works.
  */
-void UsbWidgetTest::testReceive() {
-  m_widget->SetMessageHandler(
-      ola::NewCallback(this, &UsbWidgetTest::ReceiveMessage));
-
+void BaseUsbProWidgetTest::testReceive() {
   uint8_t data[] = {
     0x7e, 0, 0, 0, 0xe7,
     0x7e, 0x0b, 4, 0, 0xde, 0xad, 0xbe, 0xef, 0xe7,
@@ -217,7 +214,6 @@ void UsbWidgetTest::testReceive() {
   CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(data)), bytes_sent);
   m_ss.Run();
 
-
   CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), m_messages.size());
 }
 
@@ -225,9 +221,9 @@ void UsbWidgetTest::testReceive() {
 /**
  * Test on remove works.
  */
-void UsbWidgetTest::testRemove() {
+void BaseUsbProWidgetTest::testRemove() {
   m_widget->SetOnRemove(
-      ola::NewSingleCallback(this, &UsbWidgetTest::DeviceRemoved));
+      ola::NewSingleCallback(this, &BaseUsbProWidgetTest::DeviceRemoved));
   m_other_end->Close();
   m_ss.Run();
 
