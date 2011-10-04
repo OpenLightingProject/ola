@@ -3,7 +3,7 @@ include $(top_srcdir)/common.mk
 libdir = $(plugindir)
 SUBDIRS = messages
 EXTRA_DIST = ArduinoRGBDevice.h ArduinoWidget.h DmxTriDevice.h DmxTriWidget.h \
-             BaseUsbProUsbWidget.h DmxterDevice.h DmxterWidget.h \
+             BaseUsbProWidget.h DmxterDevice.h DmxterWidget.h \
              EnttecUsbProWidget.h MockUsbWidget.h RobeDevice.h RobeWidget.h \
              RobeWidgetDetector.h SerialWidgetInterface.h UsbDevice.h \
              UsbProDevice.h UsbSerialPlugin.h UsbProWidgetDetector.h \
@@ -37,9 +37,9 @@ libolausbpro_la_LIBADD = ./libolausbprowidget.la \
 TESTS = SerialUsbTester
 check_PROGRAMS = $(TESTS)
 SerialUsbTester_SOURCES = ArduinoWidgetTest.cpp \
+                          BaseUsbProWidgetTest.cpp \
                           MockEndpoint.cpp \
-                          SerialUsbTester.cpp \
-                          UsbWidgetTest.cpp
+                          SerialUsbTester.cpp
 
 
 #                       DmxTriWidgetTest.cpp \

@@ -14,14 +14,12 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * BaseUsbProWidgetTest.cpp
- * Test fixture for the UsbWidget class
+ * Test fixture for the BaseUsbProWidget class
  * Copyright (C) 2010 Simon Newton
  */
 
-#include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include <memory>
-#include <string>
 #include <queue>
 
 #include "ola/Logging.h"
@@ -33,10 +31,9 @@
 #include "plugins/usbpro/MockEndpoint.h"
 
 
-using ola::plugin::usbpro::DispatchingUsbProWidget;
 using ola::network::ConnectedDescriptor;
+using ola::plugin::usbpro::DispatchingUsbProWidget;
 using std::auto_ptr;
-using std::string;
 using std::queue;
 
 
