@@ -18,17 +18,8 @@
  * Copyright (C) 2011 Simon Newton
  */
 
-#include <errno.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <strings.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <termios.h>
-#include <unistd.h>
-#include <string>
+#include "ola/BaseTypes.h"
 #include "ola/Logging.h"
 #include "plugins/usbpro/RobeWidget.h"
 
@@ -36,6 +27,9 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
+
+// The DMX frames have an extra 4 bytes at the end
+const int RobeWidget::DMX_FRAME_DATA_SIZE = DMX_UNIVERSE_SIZE + 4;
 
 RobeWidget::RobeWidget(ola::network::ConnectedDescriptor *descriptor)
     : m_callback(NULL),
@@ -87,6 +81,22 @@ void RobeWidget::DescriptorReady() {
 }
 
 
+/**
+ * Send DMX
+ * @param buffer the DMX data
+ */
+bool RobeWidget::SendDMX(const DmxBuffer &buffer) {
+  // the data is 512 + an extra 4 bytes
+  uint8_t output_data[DMX_FRAME_DATA_SIZE];
+  memset(output_data, 0, DMX_FRAME_DATA_SIZE);
+  unsigned int length = DMX_UNIVERSE_SIZE;
+  buffer.Get(output_data, &length);
+  return SendMessage(CHANNEL_A_OUT,
+                     reinterpret_cast<uint8_t*>(&output_data),
+                     length + 4);
+}
+
+
 /*
  * Send the msg
  * @return true if successful, false otherwise
@@ -106,12 +116,6 @@ bool RobeWidget::SendMessage(uint8_t packet_type,
   uint8_t crc = SOM + packet_type + (length & 0xFF) + ((length & 0xFF00) >> 8);
   header.header_crc = crc;
 
-  // should really use writev here instead
-  for (unsigned int i = 0; i < sizeof(header); i++) {
-    OLA_INFO << std::hex <<
-      static_cast<int>(*(reinterpret_cast<uint8_t*>(&header) + i));
-  }
-
   ssize_t bytes_sent = m_descriptor->Send(reinterpret_cast<uint8_t*>(&header),
                                           sizeof(header));
 
@@ -122,7 +126,6 @@ bool RobeWidget::SendMessage(uint8_t packet_type,
 
   if (length) {
     unsigned int bytes_sent = m_descriptor->Send(data, length);
-    OLA_INFO << "send";
     if (bytes_sent != length)
       // we've probably screwed framing at this point
       return false;
@@ -131,9 +134,7 @@ bool RobeWidget::SendMessage(uint8_t packet_type,
       crc += data[i];
   }
 
-  OLA_INFO << "send crc";
   bytes_sent = m_descriptor->Send(&crc, sizeof(crc));
-  OLA_INFO << std::hex << static_cast<int>(crc);
   if (bytes_sent != sizeof(crc))
     return false;
   return true;

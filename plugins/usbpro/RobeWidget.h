@@ -23,7 +23,7 @@
 
 #include <stdint.h>
 #include <ola/Callback.h>
-#include <string>
+#include <ola/DmxBuffer.h>
 #include "ola/network/Socket.h"
 #include "plugins/usbpro/SerialWidgetInterface.h"
 
@@ -52,6 +52,8 @@ class RobeWidget: public SerialWidgetInterface {
 
     void DescriptorReady();
 
+    bool SendDMX(const DmxBuffer &buffer);
+
     bool SendMessage(uint8_t label,
                      const uint8_t *data,
                      unsigned int length) const;
@@ -60,8 +62,10 @@ class RobeWidget: public SerialWidgetInterface {
       m_descriptor->Close();
     }
 
+    static const uint8_t CHANNEL_A_OUT = 0x06;
     static const uint8_t INFO_REQUEST = 0x14;
     static const uint8_t INFO_RESPONSE = 0x15;
+    static const int DMX_FRAME_DATA_SIZE;
 
   private:
     typedef enum {

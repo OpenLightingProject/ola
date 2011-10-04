@@ -32,10 +32,6 @@ namespace usbpro {
 
 using std::string;
 
-// frame size is 512 + a 4 byte buffer
-const unsigned int RobeOutputPort::DMX_FRAME_SIZE = DMX_UNIVERSE_SIZE + 4;
-
-
 /*
  * New RobeDevice.
  */
@@ -65,15 +61,7 @@ RobeOutputPort::RobeOutputPort(RobeDevice *parent,
  * Write DMX to the output port
  */
 bool RobeOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
-  uint8_t output_data[DMX_FRAME_SIZE];
-  unsigned int length = DMX_UNIVERSE_SIZE;
-  buffer.Get(output_data, &length);
-  return m_widget->SendMessage(CHANNEL_A_OUT,
-                               reinterpret_cast<uint8_t*>(&output_data),
-                               DMX_FRAME_SIZE);
-
-
-  (void) buffer;
+  m_widget->SendDMX(buffer);
   (void) priority;
   return true;
 }

@@ -61,10 +61,6 @@ class RobeOutputPort: public BasicOutputPort {
 
   private:
     RobeWidget *m_widget;
-    static const unsigned int DMX_FRAME_SIZE;
-    enum {
-      CHANNEL_A_OUT = 0x06,
-    };
 };
 }  // usbpro
 }  // plugin

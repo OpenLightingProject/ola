@@ -90,9 +90,9 @@ class ArduinoWidgetTest: public CppUnit::TestFixture {
                                  unsigned int length = 0);
 
     uint8_t *BuildUsbProMessage(uint8_t label,
-                          const uint8_t *data,
-                          unsigned int data_size,
-                          unsigned int *total_size);
+                                const uint8_t *data,
+                                unsigned int data_size,
+                                unsigned int *total_size);
     uint8_t *PackRDMRequest(const RDMRequest *request, unsigned int *size);
     uint8_t *PackRDMResponse(const RDMResponse *response, unsigned int *size);
     uint8_t *PackRDMError(uint8_t error_code, unsigned int *size);
@@ -172,8 +172,8 @@ void ArduinoWidgetTest::ValidateResponse(
   CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_COMPLETED_OK, code);
   CPPUNIT_ASSERT(response);
   CPPUNIT_ASSERT_EQUAL(
-      sizeof(TEST_RDM_DATA),
-      static_cast<long unsigned int>(response->ParamDataSize()));
+      static_cast<unsigned int>(sizeof(TEST_RDM_DATA)),
+      response->ParamDataSize());
   CPPUNIT_ASSERT(0 == memcmp(TEST_RDM_DATA, response->ParamData(),
                              response->ParamDataSize()));
 
@@ -213,8 +213,8 @@ void ArduinoWidgetTest::ValidateStatus(
 
     if (expected_packets[i] != packets[i]) {
       for (unsigned int j = 0; j < packets[i].size(); j++) {
-        OLA_INFO << std::hex << (int) packets[i][j] << " - " << (int)
-          expected_packets[i][j];
+        OLA_INFO << std::hex << static_cast<int>(packets[i][j]) << " - " <<
+          static_cast<int>(expected_packets[i][j]);
       }
     }
     CPPUNIT_ASSERT(expected_packets[i] == packets[i]);

@@ -32,7 +32,6 @@
 
 
 using ola::network::ConnectedDescriptor;
-using ola::plugin::usbpro::DispatchingUsbProWidget;
 using std::auto_ptr;
 using std::queue;
 
