@@ -198,7 +198,7 @@ void ArduinoWidgetImpl::HandleRDMResponse(const uint8_t *data,
         break;
       case RESPONSE_INVALID_COMMAND:
         OLA_WARN << "USB Device reports invalid command";
-        return;
+        break;
       default:
         OLA_WARN << "Invalid response code from USB device: " <<
           static_cast<int>(data[0]);

@@ -30,7 +30,7 @@
 MockEndpoint::MockEndpoint(ola::network::ConnectedDescriptor *descriptor)
     : m_descriptor(descriptor) {
   m_descriptor->SetOnData(
-            NewCallback(this, &MockEndpoint::DescriptorReady));
+            ola::NewCallback(this, &MockEndpoint::DescriptorReady));
 }
 
 
@@ -43,12 +43,14 @@ MockEndpoint::~MockEndpoint() {
  * Add an expected data frame to the queue.
  */
 void MockEndpoint::AddExpectedData(
-    const uint8_t *expected_data,
-    unsigned int expected_length) {
+    const uint8_t *data,
+    unsigned int length,
+    NotificationCallback *callback) {
   expected_data call = {
     false,
-    {expected_length, expected_data},
-    {0, NULL}
+    {length, data},
+    {0, NULL},
+    callback
   };
   m_expected_data.push(call);
 }
@@ -57,14 +59,15 @@ void MockEndpoint::AddExpectedData(
 /**
  * Add an expected data frame, and when we get it send a response
  */
-void MockEndpoint::AddExpectedDataAndReturn(const uint8_t *expected_data,
-                                            unsigned int expected_length,
+void MockEndpoint::AddExpectedDataAndReturn(const uint8_t *data,
+                                            unsigned int length,
                                             const uint8_t *return_data,
                                             unsigned int return_length) {
   expected_data call = {
     true,
-    {expected_length, expected_data},
-    {return_length, return_data}
+    {length, data},
+    {return_length, return_data},
+    NULL
   };
   m_expected_data.push(call);
 }
@@ -89,19 +92,23 @@ void MockEndpoint::DescriptorReady() {
   m_descriptor->Receive(data, sizeof(data), data_received);
 
   CPPUNIT_ASSERT(!m_expected_data.empty());
-  expected_command call = m_expected_data.front();
+  expected_data call = m_expected_data.front();
   m_expected_data.pop();
-  CPPUNIT_ASSERT_EQUAL(call.expected_command.length, length);
-  CPPUNIT_ASSERT(!memcmp(call.expected_command.data, data, length));
-  bool data_matches = !memcmp(call.expected_command.data, data, length);
+  CPPUNIT_ASSERT_EQUAL(call.expected_data_frame.length, data_received);
+  bool data_matches = !memcmp(call.expected_data_frame.data,
+                              data,
+                              data_received);
   if (!data_matches) {
-    for (unsigned int i = 0; i < length; ++i)
-      OLA_WARN << i << ": 0x" << std:;hex << static_cast<int>(data[i]) << " 0x"
-        << static_cast<int>(call.expected_data.data[i]);
+    for (unsigned int i = 0; i < data_received; ++i)
+      OLA_WARN << i << ": 0x" << std::hex << static_cast<int>(data[i]) << " 0x"
+        << static_cast<int>(call.expected_data_frame.data[i]);
   }
   CPPUNIT_ASSERT(data_matches);
 
   if (call.send_response)
-    CPPUNIT_ASSERT(m_descriptor->Send(call.return_command.data,
-                                      call.return_command.length));
+    CPPUNIT_ASSERT(m_descriptor->Send(call.return_data_frame.data,
+                                      call.return_data_frame.length));
+
+  if (call.callback)
+    call.callback->Run();
 }

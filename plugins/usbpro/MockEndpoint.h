@@ -36,6 +36,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <queue>
 
+#include "ola/Callback.h"
 #include "ola/network/Socket.h"
 
 
@@ -44,13 +45,14 @@
  */
 class MockEndpoint {
   public:
-    explicit MockEndpoint(ola::network::ConnectedDescriptor *descriptor)
-        : m_descriptor(descriptor) {
-    }
+    explicit MockEndpoint(ola::network::ConnectedDescriptor *descriptor);
     ~MockEndpoint();
 
+    typedef ola::SingleUseCallback0<void> NotificationCallback;
+
     void AddExpectedData(const uint8_t *expected_data,
-                         unsigned int expected_length);
+                         unsigned int expected_length,
+                         NotificationCallback *callback = NULL);
 
     void AddExpectedDataAndReturn(const uint8_t *expected_data,
                                   unsigned int expected_length,
@@ -76,6 +78,7 @@ class MockEndpoint {
       bool send_response;
       data_frame expected_data_frame;
       data_frame return_data_frame;
+      NotificationCallback *callback;
     } expected_data;
 
     std::queue<expected_data> m_expected_data;
