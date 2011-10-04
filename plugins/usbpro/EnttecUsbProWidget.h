@@ -61,7 +61,7 @@ class EnttecUsbProWidgetImpl: public BaseUsbProWidget {
     void SetDMXCallback(ola::Callback0<void> *callback);
     void Stop();
 
-    bool SendDMX(const DmxBuffer &buffer) const;
+    bool SendDMX(const DmxBuffer &buffer);
     bool ChangeToReceiveMode(bool change_only);
     const DmxBuffer &FetchDMX() const;
 
@@ -139,7 +139,7 @@ class EnttecUsbProWidget: public SerialWidgetInterface {
 
     void Stop() { m_impl.Stop(); }
 
-    bool SendDMX(const DmxBuffer &buffer) const {
+    bool SendDMX(const DmxBuffer &buffer) {
       return m_impl.SendDMX(buffer);
     }
 

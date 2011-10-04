@@ -29,6 +29,7 @@
 #include <termios.h>
 #include <unistd.h>
 #include <string>
+#include "ola/BaseTypes.h"
 #include "ola/Logging.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
 
@@ -67,6 +68,25 @@ void BaseUsbProWidget::DescriptorReady() {
   while (m_descriptor->DataRemaining() > 0) {
     ReceiveMessage();
   }
+}
+
+
+/*
+ * Send a DMX frame.
+ * @returns true if we sent ok, false otherwise
+ */
+bool BaseUsbProWidget::SendDMX(const DmxBuffer &buffer) {
+  struct {
+    uint8_t start_code;
+    uint8_t dmx[DMX_UNIVERSE_SIZE];
+  } widget_dmx;
+
+  widget_dmx.start_code = DMX512_START_CODE;
+  unsigned int length = DMX_UNIVERSE_SIZE;
+  buffer.Get(widget_dmx.dmx, &length);
+  return SendMessage(DMX_LABEL,
+                     reinterpret_cast<uint8_t*>(&widget_dmx),
+                     length + 1);
 }
 
 

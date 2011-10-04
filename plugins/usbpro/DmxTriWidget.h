@@ -59,8 +59,6 @@ class DmxTriWidgetImpl: public BaseUsbProWidget,
 
     void Stop();
 
-    bool SendDMX(const DmxBuffer &buffer) const;
-
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete);
     void RunRDMDiscovery();

@@ -142,21 +142,10 @@ void EnttecUsbProWidgetImpl::Stop() {
  * Send a DMX message
  * @returns true if we sent ok, false otherwise
  */
-bool EnttecUsbProWidgetImpl::SendDMX(const DmxBuffer &buffer) const {
+bool EnttecUsbProWidgetImpl::SendDMX(const DmxBuffer &buffer) {
   if (!m_active)
     return false;
-
-  struct {
-    uint8_t start_code;
-    uint8_t dmx[DMX_UNIVERSE_SIZE];
-  } widget_dmx;
-
-  widget_dmx.start_code = 0;
-  unsigned int length = DMX_UNIVERSE_SIZE;
-  buffer.Get(widget_dmx.dmx, &length);
-  return SendMessage(BaseUsbProWidget::DMX_LABEL,
-                     reinterpret_cast<uint8_t*>(&widget_dmx),
-                     length + 1);
+  return BaseUsbProWidget::SendDMX(buffer);
 }
 
 

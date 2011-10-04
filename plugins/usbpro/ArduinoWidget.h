@@ -45,8 +45,6 @@ class ArduinoWidgetImpl: public BaseUsbProWidget,
                       uint32_t serial);
     ~ArduinoWidgetImpl();
 
-    bool SendDMX(const DmxBuffer &buffer);
-
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete);
 

@@ -23,8 +23,9 @@
 #define PLUGINS_USBPRO_BASEUSBPROWIDGET_H_
 
 #include <stdint.h>
-#include <ola/Callback.h>
 #include <string>
+#include "ola/DmxBuffer.h"
+#include "ola/Callback.h"
 #include "ola/network/Socket.h"
 #include "plugins/usbpro/SerialWidgetInterface.h"
 
@@ -47,6 +48,9 @@ class BaseUsbProWidget: public SerialWidgetInterface {
       return m_descriptor;
     }
     void DescriptorReady();
+
+    // we locate the SendDMX in the base class since so many widgets share it.
+    virtual bool SendDMX(const DmxBuffer &buffer);
 
     bool SendMessage(uint8_t label,
                      const uint8_t *data,
