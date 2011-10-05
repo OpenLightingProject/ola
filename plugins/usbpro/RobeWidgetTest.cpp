@@ -28,10 +28,8 @@
 #include "ola/DmxBuffer.h"
 #include "ola/Callback.h"
 #include "ola/Logging.h"
-#include "ola/network/SelectServer.h"
-#include "ola/network/Socket.h"
 #include "plugins/usbpro/RobeWidget.h"
-#include "plugins/usbpro/MockEndpoint.h"
+#include "plugins/usbpro/CommonWidgetTest.h"
 
 
 using ola::DmxBuffer;
@@ -40,22 +38,17 @@ using std::auto_ptr;
 using std::string;
 
 
-class RobeWidgetTest: public CppUnit::TestFixture {
+class RobeWidgetTest: public CommonWidgetTest {
   CPPUNIT_TEST_SUITE(RobeWidgetTest);
   CPPUNIT_TEST(testSendDMX);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void setUp();
-    void tearDown();
 
     void testSendDMX();
 
   private:
-    ola::network::SelectServer m_ss;
-    ola::network::PipeDescriptor m_descriptor;
-    auto_ptr<ola::network::PipeDescriptor> m_other_end;
-    auto_ptr<MockEndpoint> m_endpoint;
     auto_ptr<ola::plugin::usbpro::RobeWidget> m_widget;
 
     void Terminate() {
@@ -76,21 +69,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION(RobeWidgetTest);
 
 
 void RobeWidgetTest::setUp() {
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-  m_descriptor.Init();
-  m_other_end.reset(m_descriptor.OppositeEnd());
-  m_endpoint.reset(new MockEndpoint(m_other_end.get()));
-  m_ss.AddReadDescriptor(&m_descriptor);
-  m_ss.AddReadDescriptor(m_other_end.get());
-
+  CommonWidgetTest::setUp();
   m_widget.reset(new ola::plugin::usbpro::RobeWidget(&m_descriptor));
-}
-
-
-void RobeWidgetTest::tearDown() {
-  m_endpoint->Verify();
-  m_ss.RemoveReadDescriptor(&m_descriptor);
-  m_ss.RemoveReadDescriptor(m_other_end.get());
 }
 
 

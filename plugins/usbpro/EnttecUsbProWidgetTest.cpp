@@ -24,17 +24,15 @@
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
-#include "ola/network/SelectServer.h"
-#include "ola/network/Socket.h"
 #include "plugins/usbpro/EnttecUsbProWidget.h"
-#include "plugins/usbpro/MockEndpoint.h"
+#include "plugins/usbpro/CommonWidgetTest.h"
 
 
 using std::auto_ptr;
 using ola::plugin::usbpro::usb_pro_parameters;
 
 
-class EnttecUsbProWidgetTest: public CppUnit::TestFixture {
+class EnttecUsbProWidgetTest: public CommonWidgetTest {
   CPPUNIT_TEST_SUITE(EnttecUsbProWidgetTest);
   CPPUNIT_TEST(testParams);
   CPPUNIT_TEST(testReceiveDMX);
@@ -43,24 +41,15 @@ class EnttecUsbProWidgetTest: public CppUnit::TestFixture {
 
   public:
     void setUp();
-    void tearDown();
 
     void testParams();
     void testReceiveDMX();
     void testChangeMode();
 
   private:
-    ola::network::SelectServer m_ss;
-    ola::network::PipeDescriptor m_descriptor;
-    auto_ptr<ola::network::PipeDescriptor> m_other_end;
-    auto_ptr<MockEndpoint> m_endpoint;
     auto_ptr<ola::plugin::usbpro::EnttecUsbProWidget> m_widget;
 
     void Terminate() { m_ss.Terminate(); }
-    uint8_t *BuildUsbProMessage(uint8_t label,
-                                const uint8_t *data,
-                                unsigned int data_size,
-                                unsigned int *total_size);
     void ValidateParams(bool status, const usb_pro_parameters &params);
     void ValidateDMX(const ola::DmxBuffer *expected_buffer);
 
@@ -79,47 +68,11 @@ CPPUNIT_TEST_SUITE_REGISTRATION(EnttecUsbProWidgetTest);
 
 
 void EnttecUsbProWidgetTest::setUp() {
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-  m_descriptor.Init();
-  m_other_end.reset(m_descriptor.OppositeEnd());
-  m_endpoint.reset(new MockEndpoint(m_other_end.get()));
-  m_ss.AddReadDescriptor(&m_descriptor);
-  m_ss.AddReadDescriptor(m_other_end.get());
-
+  CommonWidgetTest::setUp();
   m_widget.reset(
       new ola::plugin::usbpro::EnttecUsbProWidget(&m_ss, &m_descriptor));
 
   m_got_dmx = false;
-}
-
-
-void EnttecUsbProWidgetTest::tearDown() {
-  m_endpoint->Verify();
-  m_ss.RemoveReadDescriptor(&m_descriptor);
-  m_ss.RemoveReadDescriptor(m_other_end.get());
-}
-
-
-/**
- * Pack data into a Usb Pro style frame.
- * @param label the message label
- * @param data the message data
- * @param data_size the data size
- * @param total_size, pointer which is updated with the message size.
- */
-uint8_t *EnttecUsbProWidgetTest::BuildUsbProMessage(uint8_t label,
-                                                    const uint8_t *data,
-                                                    unsigned int data_size,
-                                                    unsigned int *total_size) {
-  uint8_t *frame = new uint8_t[data_size + HEADER_SIZE + FOOTER_SIZE];
-  frame[0] = 0x7e;  // som
-  frame[1] = label;
-  frame[2] = data_size & 0xff;  // len
-  frame[3] = (data_size + 1) >> 8;  // len hi
-  memcpy(frame + 4, data, data_size);
-  frame[data_size + HEADER_SIZE] = 0xe7;
-  *total_size = data_size + HEADER_SIZE + FOOTER_SIZE;
-  return frame;
 }
 
 

@@ -26,10 +26,8 @@
 
 #include "ola/Callback.h"
 #include "ola/Logging.h"
-#include "ola/network/Socket.h"
-#include "ola/network/SelectServer.h"
 #include "plugins/usbpro/ArduinoWidget.h"
-#include "plugins/usbpro/MockEndpoint.h"
+#include "plugins/usbpro/CommonWidgetTest.h"
 
 
 using ola::plugin::usbpro::ArduinoWidget;
@@ -42,7 +40,7 @@ using std::string;
 using std::vector;
 
 
-class ArduinoWidgetTest: public CppUnit::TestFixture {
+class ArduinoWidgetTest: public CommonWidgetTest {
   CPPUNIT_TEST_SUITE(ArduinoWidgetTest);
   CPPUNIT_TEST(testDiscovery);
   CPPUNIT_TEST(testSendRDMRequest);
@@ -52,7 +50,6 @@ class ArduinoWidgetTest: public CppUnit::TestFixture {
 
   public:
     void setUp();
-    void tearDown();
 
     void testDiscovery();
     void testSendRDMRequest();
@@ -60,17 +57,10 @@ class ArduinoWidgetTest: public CppUnit::TestFixture {
     void testErrorConditions();
 
   private:
-    ola::network::SelectServer m_ss;
-    ola::network::PipeDescriptor m_descriptor;
-    auto_ptr<ola::network::PipeDescriptor> m_other_end;
-    auto_ptr<MockEndpoint> m_endpoint;
     auto_ptr<ola::plugin::usbpro::ArduinoWidget> m_arduino;
     unsigned int m_tod_counter;
     uint8_t m_transaction_number;
 
-    void Terminate() {
-      m_ss.Terminate();
-    }
     void ValidateTod(const ola::rdm::UIDSet &uids);
     void ValidateResponse(ola::rdm::rdm_response_code code,
                           const ola::rdm::RDMResponse *response,
@@ -84,10 +74,6 @@ class ArduinoWidgetTest: public CppUnit::TestFixture {
                                  const uint8_t *data = NULL,
                                  unsigned int length = 0);
 
-    uint8_t *BuildUsbProMessage(uint8_t label,
-                                const uint8_t *data,
-                                unsigned int data_size,
-                                unsigned int *total_size);
     uint8_t *PackRDMRequest(const RDMRequest *request, unsigned int *size);
     uint8_t *PackRDMResponse(const RDMResponse *response, unsigned int *size);
     uint8_t *PackRDMError(uint8_t error_code, unsigned int *size);
@@ -118,13 +104,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(ArduinoWidgetTest);
  * Setup the descriptors, ss and the MockEndpoint
  */
 void ArduinoWidgetTest::setUp() {
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-  m_descriptor.Init();
-  m_other_end.reset(m_descriptor.OppositeEnd());
-  m_endpoint.reset(new MockEndpoint(m_other_end.get()));
-  m_ss.AddReadDescriptor(&m_descriptor);
-  m_ss.AddReadDescriptor(m_other_end.get());
-
+  CommonWidgetTest::setUp();
   m_tod_counter = 0;
   m_transaction_number = 0;
 
@@ -132,16 +112,6 @@ void ArduinoWidgetTest::setUp() {
       &m_descriptor,
       ESTA_ID,
       SERIAL_NUMBER));
-}
-
-
-/**
- * Clean up.
- */
-void ArduinoWidgetTest::tearDown() {
-  m_endpoint->Verify();
-  m_ss.RemoveReadDescriptor(&m_descriptor);
-  m_ss.RemoveReadDescriptor(m_other_end.get());
 }
 
 
@@ -236,29 +206,6 @@ const RDMRequest *ArduinoWidgetTest::NewRequest(const UID &destination,
       296,  // param id
       data,
       length);
-}
-
-
-/**
- * Pack data into a Usb Pro style frame.
- * @param label the message label
- * @param data the message data
- * @param data_size the data size
- * @param total_size, pointer which is updated with the message size.
- */
-uint8_t *ArduinoWidgetTest::BuildUsbProMessage(uint8_t label,
-                                               const uint8_t *data,
-                                               unsigned int data_size,
-                                               unsigned int *total_size) {
-  uint8_t *frame = new uint8_t[data_size + HEADER_SIZE + FOOTER_SIZE];
-  frame[0] = 0x7e;  // som
-  frame[1] = label;
-  frame[2] = data_size & 0xff;  // len
-  frame[3] = (data_size + 1) >> 8;  // len hi
-  memcpy(frame + 4, data, data_size);
-  frame[data_size + HEADER_SIZE] = 0xe7;
-  *total_size = data_size + HEADER_SIZE + FOOTER_SIZE;
-  return frame;
 }
 
 

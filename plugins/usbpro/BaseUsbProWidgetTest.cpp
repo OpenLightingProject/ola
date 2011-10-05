@@ -27,10 +27,8 @@
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
-#include "ola/network/SelectServer.h"
-#include "ola/network/Socket.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
-#include "plugins/usbpro/MockEndpoint.h"
+#include "plugins/usbpro/CommonWidgetTest.h"
 
 
 using ola::DmxBuffer;
@@ -38,7 +36,7 @@ using std::auto_ptr;
 using std::queue;
 
 
-class BaseUsbProWidgetTest: public CppUnit::TestFixture {
+class BaseUsbProWidgetTest: public CommonWidgetTest {
   CPPUNIT_TEST_SUITE(BaseUsbProWidgetTest);
   CPPUNIT_TEST(testSend);
   CPPUNIT_TEST(testSendDMX);
@@ -48,7 +46,6 @@ class BaseUsbProWidgetTest: public CppUnit::TestFixture {
 
   public:
     void setUp();
-    void tearDown();
 
     void testSend();
     void testSendDMX();
@@ -56,10 +53,6 @@ class BaseUsbProWidgetTest: public CppUnit::TestFixture {
     void testRemove();
 
   private:
-    ola::network::SelectServer m_ss;
-    ola::network::PipeDescriptor m_descriptor;
-    auto_ptr<ola::network::PipeDescriptor> m_other_end;
-    auto_ptr<MockEndpoint> m_endpoint;
     auto_ptr<ola::plugin::usbpro::DispatchingUsbProWidget> m_widget;
     bool m_removed;
 
@@ -78,18 +71,12 @@ class BaseUsbProWidgetTest: public CppUnit::TestFixture {
     void ReceiveMessage(uint8_t label,
                         const uint8_t *data,
                         unsigned int size);
-    uint8_t *BuildUsbProMessage(uint8_t label,
-                                const uint8_t *data,
-                                unsigned int data_size,
-                                unsigned int *total_size);
     void DeviceRemoved() {
       m_removed = true;
       m_ss.Terminate();
     }
 
     static const uint8_t DMX_FRAME_LABEL = 0x06;
-    static const unsigned int FOOTER_SIZE = 1;
-    static const unsigned int HEADER_SIZE = 4;
 };
 
 
@@ -97,13 +84,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(BaseUsbProWidgetTest);
 
 
 void BaseUsbProWidgetTest::setUp() {
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-  m_descriptor.Init();
-  m_other_end.reset(m_descriptor.OppositeEnd());
-  m_endpoint.reset(new MockEndpoint(m_other_end.get()));
-  m_ss.AddReadDescriptor(&m_descriptor);
-  m_ss.AddReadDescriptor(m_other_end.get());
-
+  CommonWidgetTest::setUp();
   m_widget.reset(
       new ola::plugin::usbpro::DispatchingUsbProWidget(
         &m_descriptor,
@@ -114,13 +95,6 @@ void BaseUsbProWidgetTest::setUp() {
   m_ss.RegisterSingleTimeout(
       30,  // 30ms should be enough
       ola::NewSingleCallback(this, &BaseUsbProWidgetTest::Terminate));
-}
-
-
-void BaseUsbProWidgetTest::tearDown() {
-  m_endpoint->Verify();
-  m_ss.RemoveReadDescriptor(&m_descriptor);
-  m_ss.RemoveReadDescriptor(m_other_end.get());
 }
 
 
@@ -151,29 +125,6 @@ void BaseUsbProWidgetTest::ReceiveMessage(uint8_t label,
 
   if (m_messages.empty())
     m_ss.Terminate();
-}
-
-
-/**
- * Pack data into a Usb Pro style frame.
- * @param label the message label
- * @param data the message data
- * @param data_size the data size
- * @param total_size, pointer which is updated with the message size.
- */
-uint8_t *BaseUsbProWidgetTest::BuildUsbProMessage(uint8_t label,
-                                                  const uint8_t *data,
-                                                  unsigned int data_size,
-                                                  unsigned int *total_size) {
-  uint8_t *frame = new uint8_t[data_size + HEADER_SIZE + FOOTER_SIZE];
-  frame[0] = 0x7e;  // som
-  frame[1] = label;
-  frame[2] = data_size & 0xff;  // len
-  frame[3] = (data_size + 1) >> 8;  // len hi
-  memcpy(frame + 4, data, data_size);
-  frame[data_size + HEADER_SIZE] = 0xe7;
-  *total_size = data_size + HEADER_SIZE + FOOTER_SIZE;
-  return frame;
 }
 
 

@@ -2,13 +2,13 @@ include $(top_srcdir)/common.mk
 
 libdir = $(plugindir)
 SUBDIRS = messages
-EXTRA_DIST = ArduinoRGBDevice.h ArduinoWidget.h DmxTriDevice.h DmxTriWidget.h \
-             BaseUsbProWidget.h DmxterDevice.h DmxterWidget.h \
-             EnttecUsbProWidget.h MockUsbWidget.h RobeDevice.h RobeWidget.h \
-             RobeWidgetDetector.h SerialWidgetInterface.h UsbDevice.h \
-             UsbProDevice.h UsbSerialPlugin.h UsbProWidgetDetector.h \
-             SerialWidgetInterface.h WidgetDetectorInterface.h \
-             WidgetDetectorThread.h
+EXTRA_DIST = ArduinoRGBDevice.h ArduinoWidget.h BaseUsbProWidget.h \
+             CommonWidgetTest.h DmxTriDevice.h DmxTriWidget.h \
+             DmxterDevice.h DmxterWidget.h EnttecUsbProWidget.h \
+             MockUsbWidget.h RobeDevice.h RobeWidget.h RobeWidgetDetector.h \
+             SerialWidgetInterface.h SerialWidgetInterface.h UsbDevice.h \
+             UsbProDevice.h UsbProWidgetDetector.h UsbSerialPlugin.h \
+             WidgetDetectorInterface.h WidgetDetectorThread.h
 
 # This is a library which doesn't contain any coupling to olad
 noinst_LTLIBRARIES = libolausbprowidget.la
@@ -38,6 +38,7 @@ TESTS = SerialUsbTester
 check_PROGRAMS = $(TESTS)
 SerialUsbTester_SOURCES = ArduinoWidgetTest.cpp \
                           BaseUsbProWidgetTest.cpp \
+                          CommonWidgetTest.cpp \
                           EnttecUsbProWidgetTest.cpp \
                           MockEndpoint.cpp \
                           RobeWidgetTest.cpp \
