@@ -34,7 +34,6 @@
 
 
 using ola::DmxBuffer;
-using ola::network::ConnectedDescriptor;
 using std::auto_ptr;
 using std::queue;
 

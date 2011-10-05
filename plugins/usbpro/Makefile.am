@@ -38,6 +38,7 @@ TESTS = SerialUsbTester
 check_PROGRAMS = $(TESTS)
 SerialUsbTester_SOURCES = ArduinoWidgetTest.cpp \
                           BaseUsbProWidgetTest.cpp \
+                          EnttecUsbProWidgetTest.cpp \
                           MockEndpoint.cpp \
                           RobeWidgetTest.cpp \
                           SerialUsbTester.cpp
@@ -46,8 +47,7 @@ SerialUsbTester_SOURCES = ArduinoWidgetTest.cpp \
 #                       DmxTriWidgetTest.cpp \
 #                       DmxterWidgetTest.cpp \
 #                       MockUsbWidget.cpp \
-#                       UsbProWidgetDetectorTest.cpp \
-#                       UsbProWidgetTest.cpp
+#                       UsbProWidgetDetectorTest.cpp
 
 SerialUsbTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 SerialUsbTester_LDADD = $(CPPUNIT_LIBS) \
