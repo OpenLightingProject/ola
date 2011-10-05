@@ -22,8 +22,10 @@
 #include <memory>
 #include <queue>
 
-#include "ola/Logging.h"
+#include "ola/BaseTypes.h"
+#include "ola/DmxBuffer.h"
 #include "ola/Callback.h"
+#include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/SelectServer.h"
 #include "ola/network/Socket.h"
@@ -31,6 +33,7 @@
 #include "plugins/usbpro/MockEndpoint.h"
 
 
+using ola::DmxBuffer;
 using ola::network::ConnectedDescriptor;
 using std::auto_ptr;
 using std::queue;
@@ -39,6 +42,7 @@ using std::queue;
 class BaseUsbProWidgetTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(BaseUsbProWidgetTest);
   CPPUNIT_TEST(testSend);
+  CPPUNIT_TEST(testSendDMX);
   CPPUNIT_TEST(testReceive);
   CPPUNIT_TEST(testRemove);
   CPPUNIT_TEST_SUITE_END();
@@ -48,6 +52,7 @@ class BaseUsbProWidgetTest: public CppUnit::TestFixture {
     void tearDown();
 
     void testSend();
+    void testSendDMX();
     void testReceive();
     void testRemove();
 
@@ -74,10 +79,18 @@ class BaseUsbProWidgetTest: public CppUnit::TestFixture {
     void ReceiveMessage(uint8_t label,
                         const uint8_t *data,
                         unsigned int size);
+    uint8_t *BuildUsbProMessage(uint8_t label,
+                                const uint8_t *data,
+                                unsigned int data_size,
+                                unsigned int *total_size);
     void DeviceRemoved() {
       m_removed = true;
       m_ss.Terminate();
     }
+
+    static const uint8_t DMX_FRAME_LABEL = 0x06;
+    static const unsigned int FOOTER_SIZE = 1;
+    static const unsigned int HEADER_SIZE = 4;
 };
 
 
@@ -142,6 +155,29 @@ void BaseUsbProWidgetTest::ReceiveMessage(uint8_t label,
 }
 
 
+/**
+ * Pack data into a Usb Pro style frame.
+ * @param label the message label
+ * @param data the message data
+ * @param data_size the data size
+ * @param total_size, pointer which is updated with the message size.
+ */
+uint8_t *BaseUsbProWidgetTest::BuildUsbProMessage(uint8_t label,
+                                                  const uint8_t *data,
+                                                  unsigned int data_size,
+                                                  unsigned int *total_size) {
+  uint8_t *frame = new uint8_t[data_size + HEADER_SIZE + FOOTER_SIZE];
+  frame[0] = 0x7e;  // som
+  frame[1] = label;
+  frame[2] = data_size & 0xff;  // len
+  frame[3] = (data_size + 1) >> 8;  // len hi
+  memcpy(frame + 4, data, data_size);
+  frame[data_size + HEADER_SIZE] = 0xe7;
+  *total_size = data_size + HEADER_SIZE + FOOTER_SIZE;
+  return frame;
+}
+
+
 /*
  * Test sending works
  */
@@ -180,6 +216,53 @@ void BaseUsbProWidgetTest::testSend() {
   CPPUNIT_ASSERT(!m_widget->SendMessage(10, NULL, 4));
   m_ss.Run();
   m_endpoint->Verify();
+}
+
+
+/**
+ * Check that we can send DMX
+ */
+void BaseUsbProWidgetTest::testSendDMX() {
+  // dmx data
+  DmxBuffer buffer;
+  buffer.SetFromString("0,1,2,3,4");
+
+  // expected message
+  uint8_t dmx_frame_data[] = {DMX512_START_CODE, 0, 1, 2, 3, 4};
+  unsigned int size;
+  uint8_t *expected_message = BuildUsbProMessage(DMX_FRAME_LABEL,
+                                                 dmx_frame_data,
+                                                 sizeof(dmx_frame_data),
+                                                 &size);
+
+  // add the expected data, run and verify.
+  m_endpoint->AddExpectedData(
+      expected_message,
+      size,
+      ola::NewSingleCallback(this, &BaseUsbProWidgetTest::Terminate));
+  m_widget->SendDMX(buffer);
+  m_ss.Run();
+  m_endpoint->Verify();
+
+  // now test an empty frame
+  DmxBuffer buffer2;
+  uint8_t empty_frame_data[] = {DMX512_START_CODE};  // just the start code
+  uint8_t *expected_message2 = BuildUsbProMessage(DMX_FRAME_LABEL,
+                                                  empty_frame_data,
+                                                  sizeof(empty_frame_data),
+                                                  &size);
+
+  // add the expected data, run and verify.
+  m_endpoint->AddExpectedData(
+      expected_message2,
+      size,
+      ola::NewSingleCallback(this, &BaseUsbProWidgetTest::Terminate));
+  m_widget->SendDMX(buffer2);
+  m_ss.Run();
+  m_endpoint->Verify();
+
+  delete[] expected_message;
+  delete[] expected_message2;
 }
 
 

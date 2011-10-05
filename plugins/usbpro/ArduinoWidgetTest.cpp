@@ -24,9 +24,7 @@
 #include <string>
 #include <vector>
 
-#include "ola/BaseTypes.h"
 #include "ola/Callback.h"
-#include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
 #include "ola/network/Socket.h"
 #include "ola/network/SelectServer.h"
@@ -34,7 +32,6 @@
 #include "plugins/usbpro/MockEndpoint.h"
 
 
-using ola::DmxBuffer;
 using ola::plugin::usbpro::ArduinoWidget;
 using ola::rdm::GetResponseFromData;
 using ola::rdm::RDMRequest;
@@ -47,7 +44,6 @@ using std::vector;
 
 class ArduinoWidgetTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(ArduinoWidgetTest);
-  CPPUNIT_TEST(testSendDMX);
   CPPUNIT_TEST(testDiscovery);
   CPPUNIT_TEST(testSendRDMRequest);
   CPPUNIT_TEST(testErrorCodes);
@@ -58,7 +54,6 @@ class ArduinoWidgetTest: public CppUnit::TestFixture {
     void setUp();
     void tearDown();
 
-    void testSendDMX();
     void testDiscovery();
     void testSendRDMRequest();
     void testErrorCodes();
@@ -100,7 +95,6 @@ class ArduinoWidgetTest: public CppUnit::TestFixture {
     static const uint16_t ESTA_ID = 0x7890;
     static const uint32_t SERIAL_NUMBER = 0x01020304;
     static const uint8_t RDM_REQUEST_LABEL = 0x52;
-    static const uint8_t DMX_FRAME_LABEL = 0x06;
     static const uint8_t BROADCAST_STATUS_CODE = 1;
     static const unsigned int FOOTER_SIZE = 1;
     static const unsigned int HEADER_SIZE = 4;
@@ -319,53 +313,6 @@ uint8_t *ArduinoWidgetTest::PackRDMError(uint8_t error_code,
                                       sizeof(error_code),
                                       size);
   return frame;
-}
-
-
-/**
- * Check that we can send DMX
- */
-void ArduinoWidgetTest::testSendDMX() {
-  // dmx data
-  DmxBuffer buffer;
-  buffer.SetFromString("0,1,2,3,4");
-
-  // expected message
-  uint8_t dmx_frame_data[] = {DMX512_START_CODE, 0, 1, 2, 3, 4};
-  unsigned int size;
-  uint8_t *expected_message = BuildUsbProMessage(DMX_FRAME_LABEL,
-                                                 dmx_frame_data,
-                                                 sizeof(dmx_frame_data),
-                                                 &size);
-
-  // add the expected data, run and verify.
-  m_endpoint->AddExpectedData(
-      expected_message,
-      size,
-      ola::NewSingleCallback(this, &ArduinoWidgetTest::Terminate));
-  m_arduino->SendDMX(buffer);
-  m_ss.Run();
-  m_endpoint->Verify();
-
-  // now test an empty frame
-  DmxBuffer buffer2;
-  uint8_t empty_frame_data[] = {DMX512_START_CODE};  // just the start code
-  uint8_t *expected_message2 = BuildUsbProMessage(DMX_FRAME_LABEL,
-                                                  empty_frame_data,
-                                                  sizeof(empty_frame_data),
-                                                  &size);
-
-  // add the expected data, run and verify.
-  m_endpoint->AddExpectedData(
-      expected_message2,
-      size,
-      ola::NewSingleCallback(this, &ArduinoWidgetTest::Terminate));
-  m_arduino->SendDMX(buffer2);
-  m_ss.Run();
-  m_endpoint->Verify();
-
-  delete[] expected_message;
-  delete[] expected_message2;
 }
 
 
