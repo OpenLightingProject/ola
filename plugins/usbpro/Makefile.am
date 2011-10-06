@@ -39,13 +39,13 @@ check_PROGRAMS = $(TESTS)
 SerialUsbTester_SOURCES = ArduinoWidgetTest.cpp \
                           BaseUsbProWidgetTest.cpp \
                           CommonWidgetTest.cpp \
+                          DmxTriWidgetTest.cpp \
                           EnttecUsbProWidgetTest.cpp \
                           MockEndpoint.cpp \
                           RobeWidgetTest.cpp \
                           SerialUsbTester.cpp
 
 
-#                       DmxTriWidgetTest.cpp \
 #                       DmxterWidgetTest.cpp \
 #                       MockUsbWidget.cpp \
 #                       UsbProWidgetDetectorTest.cpp
