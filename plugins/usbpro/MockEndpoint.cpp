@@ -41,14 +41,48 @@ MockEndpoint::~MockEndpoint() {
 
 /**
  * Add an expected data frame to the queue.
+ * @param request_data the data we expect in the request
+ * @param request_size the size of the request data
+ * @param callback a callback to run when this frame arrives
  */
 void MockEndpoint::AddExpectedData(
-    const uint8_t *data,
-    unsigned int length,
+    const uint8_t *request_data,
+    unsigned int request_size,
     NotificationCallback *callback) {
   expected_data call = {
     false,
-    {length, data},
+    false,
+    false,
+    {request_size, request_data},
+    {0, NULL},
+    callback
+  };
+  m_expected_data.push(call);
+}
+
+
+/**
+ * Add an expected Usb Pro frame, using the supplied data
+ * @param label the message label
+ * @param request_payload_data the payload data
+ * @param request_payload_size size of the payload data
+ * @param callback a callback to run when this frame arrives
+ */
+void MockEndpoint::AddExpectedUsbProMessage(
+    uint8_t label,
+    const uint8_t *request_payload_data,
+    unsigned int request_payload_size,
+    NotificationCallback *callback) {
+  unsigned int request_size;
+  uint8_t *request = BuildUsbProMessage(label,
+                                        request_payload_data,
+                                        request_payload_size,
+                                        &request_size);
+  expected_data call = {
+    false,
+    true,
+    false,
+    {request_size, request},
     {0, NULL},
     callback
   };
@@ -59,14 +93,56 @@ void MockEndpoint::AddExpectedData(
 /**
  * Add an expected data frame, and when we get it send a response
  */
-void MockEndpoint::AddExpectedDataAndReturn(const uint8_t *data,
-                                            unsigned int length,
-                                            const uint8_t *return_data,
-                                            unsigned int return_length) {
+void MockEndpoint::AddExpectedDataAndReturn(const uint8_t *request_data,
+                                            unsigned int request_size,
+                                            const uint8_t *response_data,
+                                            unsigned int response_size) {
   expected_data call = {
     true,
-    {length, data},
-    {return_length, return_data},
+    false,
+    false,
+    {request_size, request_data},
+    {response_size, response_data},
+    NULL
+  };
+  m_expected_data.push(call);
+}
+
+
+/**
+ * Add an expected Usb Pro frame, using the supplied data. When this arrives
+ * return the supplied Usb Pro Frame.
+ * @param label the request message label
+ * @param request_payload_data the payload data
+ * @param response_payload_size size of the payload data
+ * @param label the response message label
+ * @param response_payload_data the payload data
+ * @param response_payload_size size of the payload data
+ */
+void MockEndpoint::AddExpectedUsbProDataAndReturn(
+    uint8_t request_label,
+    const uint8_t *request_payload_data,
+    unsigned int request_payload_size,
+    uint8_t response_label,
+    const uint8_t *response_payload_data,
+    unsigned int response_payload_size) {
+  unsigned int request_size;
+  uint8_t *request = BuildUsbProMessage(request_label,
+                                        request_payload_data,
+                                        request_payload_size,
+                                        &request_size);
+
+  unsigned int response_size;
+  uint8_t *response = BuildUsbProMessage(response_label,
+                                         response_payload_data,
+                                         response_payload_size,
+                                         &response_size);
+  expected_data call = {
+    true,
+    true,
+    true,
+    {request_size, request},
+    {response_size, response},
     NULL
   };
   m_expected_data.push(call);
@@ -79,6 +155,24 @@ void MockEndpoint::AddExpectedDataAndReturn(const uint8_t *data,
 void MockEndpoint::SendUnsolicited(const uint8_t *data,
                                    unsigned int length) {
   CPPUNIT_ASSERT(m_descriptor->Send(data, length));
+}
+
+
+/**
+ * Send an unsolicited Usb Pro message
+ */
+void MockEndpoint::SendUnsolicitedUsbProData(
+    uint8_t response_label,
+    const uint8_t *response_payload_data,
+    unsigned int response_payload_size) {
+  unsigned int response_size;
+  uint8_t *response = BuildUsbProMessage(response_label,
+                                         response_payload_data,
+                                         response_payload_size,
+                                         &response_size);
+
+  CPPUNIT_ASSERT(m_descriptor->Send(response, response_size));
+  delete[] response;
 }
 
 
@@ -105,10 +199,39 @@ void MockEndpoint::DescriptorReady() {
   }
   CPPUNIT_ASSERT(data_matches);
 
+  if (call.free_request)
+    delete[] call.expected_data_frame.data;
+
   if (call.send_response)
     CPPUNIT_ASSERT(m_descriptor->Send(call.return_data_frame.data,
                                       call.return_data_frame.length));
 
   if (call.callback)
     call.callback->Run();
+
+  if (call.free_response)
+    delete[] call.return_data_frame.data;
+}
+
+
+/**
+ * Pack data into a Usb Pro style frame.
+ * @param label the message label
+ * @param data the message data
+ * @param data_size the data size
+ * @param total_size, pointer which is updated with the message size.
+ */
+uint8_t *MockEndpoint::BuildUsbProMessage(uint8_t label,
+                                          const uint8_t *data,
+                                          unsigned int data_size,
+                                          unsigned int *total_size) {
+  uint8_t *frame = new uint8_t[data_size + HEADER_SIZE + FOOTER_SIZE];
+  frame[0] = 0x7e;  // som
+  frame[1] = label;
+  frame[2] = data_size & 0xff;  // len
+  frame[3] = (data_size + 1) >> 8;  // len hi
+  memcpy(frame + 4, data, data_size);
+  frame[data_size + HEADER_SIZE] = 0xe7;
+  *total_size = data_size + HEADER_SIZE + FOOTER_SIZE;
+  return frame;
 }

@@ -50,17 +50,37 @@ class MockEndpoint {
 
     typedef ola::SingleUseCallback0<void> NotificationCallback;
 
-    void AddExpectedData(const uint8_t *expected_data,
-                         unsigned int expected_length,
+    void AddExpectedData(const uint8_t *request_data,
+                         unsigned int request_size,
                          NotificationCallback *callback = NULL);
 
-    void AddExpectedDataAndReturn(const uint8_t *expected_data,
-                                  unsigned int expected_length,
-                                  const uint8_t *return_data,
-                                  unsigned int return_length);
+    // This does the same as above, but puts the data inside a Usb Pro style
+    // frame.
+    void AddExpectedUsbProMessage(uint8_t label,
+                                  const uint8_t *request_payload_data,
+                                  unsigned int request_payload_size,
+                                  NotificationCallback *callback = NULL);
+
+    void AddExpectedDataAndReturn(const uint8_t *request_data,
+                                  unsigned int request_size,
+                                  const uint8_t *response_data,
+                                  unsigned int response_size);
+
+    // This does the same as above, but puts the data inside a Usb Pro style
+    // frame.
+    void AddExpectedUsbProDataAndReturn(uint8_t request_label,
+                                        const uint8_t *request_payload_data,
+                                        unsigned int request_payload_size,
+                                        uint8_t response_label,
+                                        const uint8_t *response_payload_data,
+                                        unsigned int response_payload_size);
 
     void SendUnsolicited(const uint8_t *data,
                          unsigned int length);
+
+    void SendUnsolicitedUsbProData(uint8_t label,
+                                   const uint8_t *response_payload_data,
+                                   unsigned int response_payload_size);
 
     void Verify() {
       CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), m_expected_data.size());
@@ -76,6 +96,8 @@ class MockEndpoint {
 
     typedef struct {
       bool send_response;
+      bool free_request;
+      bool free_response;
       data_frame expected_data_frame;
       data_frame return_data_frame;
       NotificationCallback *callback;
@@ -83,8 +105,14 @@ class MockEndpoint {
 
     std::queue<expected_data> m_expected_data;
 
-    enum {MAX_DATA_SIZE = 600};
-
     void DescriptorReady();
+    uint8_t *BuildUsbProMessage(uint8_t label,
+                                const uint8_t *data,
+                                unsigned int data_size,
+                                unsigned int *total_size);
+
+    enum {MAX_DATA_SIZE = 600};
+    static const unsigned int FOOTER_SIZE = 1;
+    static const unsigned int HEADER_SIZE = 4;
 };
 #endif  // PLUGINS_USBPRO_MOCKENDPOINT_H_

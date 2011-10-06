@@ -99,8 +99,8 @@ void BaseUsbProWidgetTest::setUp() {
 
 
 void BaseUsbProWidgetTest::AddExpectedMessage(uint8_t label,
-                                       unsigned int size,
-                                       const uint8_t *data) {
+                                              unsigned int size,
+                                              const uint8_t *data) {
   expected_message message = {
     label,
     size,
@@ -113,8 +113,8 @@ void BaseUsbProWidgetTest::AddExpectedMessage(uint8_t label,
  * Called when a new message arrives
  */
 void BaseUsbProWidgetTest::ReceiveMessage(uint8_t label,
-                                   const uint8_t *data,
-                                   unsigned int size) {
+                                          const uint8_t *data,
+                                          unsigned int size) {
   CPPUNIT_ASSERT(m_messages.size());
   expected_message message = m_messages.front();
   m_messages.pop();
@@ -179,17 +179,12 @@ void BaseUsbProWidgetTest::testSendDMX() {
 
   // expected message
   uint8_t dmx_frame_data[] = {DMX512_START_CODE, 0, 1, 2, 3, 4};
-  unsigned int size;
-  uint8_t *expected_message = BuildUsbProMessage(DMX_FRAME_LABEL,
-                                                 dmx_frame_data,
-                                                 sizeof(dmx_frame_data),
-                                                 &size);
-
-  // add the expected data, run and verify.
-  m_endpoint->AddExpectedData(
-      expected_message,
-      size,
+  m_endpoint->AddExpectedUsbProMessage(
+      DMX_FRAME_LABEL,
+      dmx_frame_data,
+      sizeof(dmx_frame_data),
       ola::NewSingleCallback(this, &BaseUsbProWidgetTest::Terminate));
+
   m_widget->SendDMX(buffer);
   m_ss.Run();
   m_endpoint->Verify();
@@ -197,22 +192,14 @@ void BaseUsbProWidgetTest::testSendDMX() {
   // now test an empty frame
   DmxBuffer buffer2;
   uint8_t empty_frame_data[] = {DMX512_START_CODE};  // just the start code
-  uint8_t *expected_message2 = BuildUsbProMessage(DMX_FRAME_LABEL,
-                                                  empty_frame_data,
-                                                  sizeof(empty_frame_data),
-                                                  &size);
-
-  // add the expected data, run and verify.
-  m_endpoint->AddExpectedData(
-      expected_message2,
-      size,
+  m_endpoint->AddExpectedUsbProMessage(
+      DMX_FRAME_LABEL,
+      empty_frame_data,
+      sizeof(empty_frame_data),
       ola::NewSingleCallback(this, &BaseUsbProWidgetTest::Terminate));
   m_widget->SendDMX(buffer2);
   m_ss.Run();
   m_endpoint->Verify();
-
-  delete[] expected_message;
-  delete[] expected_message2;
 }
 
 

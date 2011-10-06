@@ -111,22 +111,13 @@ void EnttecUsbProWidgetTest::testParams() {
   uint8_t get_param_request_data[] = {0, 0};
   uint8_t get_param_response_data[] = {0, 1, 10, 14, 40};
 
-  unsigned int request_size;
-  uint8_t *request_frame = BuildUsbProMessage(GET_PARAM_LABEL,
-                                              get_param_request_data,
-                                              sizeof(get_param_request_data),
-                                              &request_size);
-  unsigned int response_size;
-  uint8_t *response_frame = BuildUsbProMessage(GET_PARAM_LABEL,
-                                               get_param_response_data,
-                                               sizeof(get_param_response_data),
-                                               &response_size);
-
-  m_endpoint->AddExpectedDataAndReturn(
-      request_frame,
-      request_size,
-      response_frame,
-      response_size);
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      GET_PARAM_LABEL,
+      get_param_request_data,
+      sizeof(get_param_request_data),
+      GET_PARAM_LABEL,
+      get_param_response_data,
+      sizeof(get_param_response_data));
 
   m_widget->GetParameters(
       ola::NewSingleCallback(this, &EnttecUsbProWidgetTest::ValidateParams));
@@ -134,27 +125,18 @@ void EnttecUsbProWidgetTest::testParams() {
   m_ss.Run();
   m_endpoint->Verify();
 
-  delete[] request_frame;
-  delete[] response_frame;
-
   // now try a set params request
   uint8_t set_param_request_data[] = {0, 0, 9, 63, 20};
-  request_frame = BuildUsbProMessage(SET_PARAM_LABEL,
-                                     set_param_request_data,
-                                     sizeof(set_param_request_data),
-                                     &request_size);
-
-  m_endpoint->AddExpectedData(
-      request_frame,
-      request_size,
+  m_endpoint->AddExpectedUsbProMessage(
+      SET_PARAM_LABEL,
+      set_param_request_data,
+      sizeof(set_param_request_data),
       ola::NewSingleCallback(this, &EnttecUsbProWidgetTest::Terminate));
 
   CPPUNIT_ASSERT(m_widget->SetParameters(9, 63, 20));
 
   m_ss.Run();
   m_endpoint->Verify();
-
-  delete[] request_frame;
 }
 
 
@@ -173,31 +155,21 @@ void EnttecUsbProWidgetTest::testReceiveDMX() {
     1, 10, 14, 40
   };
 
-  unsigned int dmx_frame_size;
-  uint8_t *dmx_frame = BuildUsbProMessage(RECEIVE_DMX_LABEL,
-                                          dmx_data,
-                                          sizeof(dmx_data),
-                                          &dmx_frame_size);
-
-  m_endpoint->SendUnsolicited(
-      dmx_frame,
-      dmx_frame_size);
+  m_endpoint->SendUnsolicitedUsbProData(
+      RECEIVE_DMX_LABEL,
+      dmx_data,
+      sizeof(dmx_data));
   m_ss.Run();
   m_endpoint->Verify();
   CPPUNIT_ASSERT(m_got_dmx);
 
-  delete[] dmx_frame;
-
   // now try one with the error bit set
   dmx_data[0] = 1;
   m_got_dmx = false;
-  dmx_frame = BuildUsbProMessage(RECEIVE_DMX_LABEL,
-                                 dmx_data,
-                                 sizeof(dmx_data),
-                                 &dmx_frame_size);
-  m_endpoint->SendUnsolicited(
-      dmx_frame,
-      dmx_frame_size);
+  m_endpoint->SendUnsolicitedUsbProData(
+      RECEIVE_DMX_LABEL,
+      dmx_data,
+      sizeof(dmx_data));
   // because this doesn't trigger the callback we have no way to terminate the
   // select server, so we use a timeout, which is nasty, but fails closed
   m_ss.RegisterSingleTimeout(
@@ -207,19 +179,14 @@ void EnttecUsbProWidgetTest::testReceiveDMX() {
   m_endpoint->Verify();
   CPPUNIT_ASSERT(!m_got_dmx);
 
-  delete[] dmx_frame;
-
   // now try a non-0 start code
   dmx_data[0] = 0;
   dmx_data[1] = 0x0a;
   m_got_dmx = false;
-  dmx_frame = BuildUsbProMessage(RECEIVE_DMX_LABEL,
-                                 dmx_data,
-                                 sizeof(dmx_data),
-                                 &dmx_frame_size);
-  m_endpoint->SendUnsolicited(
-      dmx_frame,
-      dmx_frame_size);
+  m_endpoint->SendUnsolicitedUsbProData(
+      RECEIVE_DMX_LABEL,
+      dmx_data,
+      sizeof(dmx_data));
   // use the timeout trick again
   m_ss.RegisterSingleTimeout(
       100,
@@ -227,7 +194,6 @@ void EnttecUsbProWidgetTest::testReceiveDMX() {
   m_ss.Run();
   m_endpoint->Verify();
   CPPUNIT_ASSERT(!m_got_dmx);
-  delete[] dmx_frame;
 
   // now do a change of state packet
   buffer.SetFromString("1,10,22,93,144");
@@ -238,17 +204,13 @@ void EnttecUsbProWidgetTest::testReceiveDMX() {
     0, 0, 0, 0, 0, 0, 0
   };
 
-  dmx_frame = BuildUsbProMessage(CHANGE_OF_STATE_LABEL,
-                                 change_of_state_data,
-                                 sizeof(change_of_state_data),
-                                 &dmx_frame_size);
-  m_endpoint->SendUnsolicited(
-      dmx_frame,
-      dmx_frame_size);
+  m_endpoint->SendUnsolicitedUsbProData(
+      CHANGE_OF_STATE_LABEL,
+      change_of_state_data,
+      sizeof(change_of_state_data));
   m_ss.Run();
   m_endpoint->Verify();
   CPPUNIT_ASSERT(m_got_dmx);
-  delete[] dmx_frame;
 }
 
 
@@ -258,14 +220,10 @@ void EnttecUsbProWidgetTest::testReceiveDMX() {
 void EnttecUsbProWidgetTest::testChangeMode() {
   // first we test 'send always' mode
   uint8_t change_mode_data[] = {0};
-  unsigned int request_size;
-  uint8_t *request_frame = BuildUsbProMessage(CHANGE_MODE_LABEL,
-                                              change_mode_data,
-                                              sizeof(change_mode_data),
-                                              &request_size);
-  m_endpoint->AddExpectedData(
-      request_frame,
-      request_size,
+  m_endpoint->AddExpectedUsbProMessage(
+      CHANGE_MODE_LABEL,
+      change_mode_data,
+      sizeof(change_mode_data),
       ola::NewSingleCallback(this, &EnttecUsbProWidgetTest::Terminate));
 
   m_widget->ChangeToReceiveMode(false);
@@ -273,21 +231,15 @@ void EnttecUsbProWidgetTest::testChangeMode() {
   m_ss.Run();
   m_endpoint->Verify();
 
-  delete[] request_frame;
-
   // now try 'send data on change' mode
   change_mode_data[0] = 1;
-  request_frame = BuildUsbProMessage(CHANGE_MODE_LABEL,
-                                     change_mode_data,
-                                     sizeof(change_mode_data),
-                                     &request_size);
-  m_endpoint->AddExpectedData(
-      request_frame,
-      request_size,
+  m_endpoint->AddExpectedUsbProMessage(
+      CHANGE_MODE_LABEL,
+      change_mode_data,
+      sizeof(change_mode_data),
       ola::NewSingleCallback(this, &EnttecUsbProWidgetTest::Terminate));
 
   m_widget->ChangeToReceiveMode(true);
   m_ss.Run();
   m_endpoint->Verify();
-  delete[] request_frame;
 }
