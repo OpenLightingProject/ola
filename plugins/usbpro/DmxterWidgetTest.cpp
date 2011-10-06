@@ -20,15 +20,14 @@
 
 #include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
-#include <queue>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "ola/Callback.h"
 #include "ola/Logging.h"
-#include "ola/network/SelectServer.h"
 #include "plugins/usbpro/DmxterWidget.h"
-#include "plugins/usbpro/MockUsbWidget.h"
+#include "plugins/usbpro/CommonWidgetTest.h"
 
 
 using ola::plugin::usbpro::DmxterWidget;
@@ -38,7 +37,7 @@ using std::string;
 using std::vector;
 
 
-class DmxterWidgetTest: public CppUnit::TestFixture {
+class DmxterWidgetTest: public CommonWidgetTest {
   CPPUNIT_TEST_SUITE(DmxterWidgetTest);
   CPPUNIT_TEST(testTod);
   CPPUNIT_TEST(testSendRDMRequest);
@@ -57,7 +56,10 @@ class DmxterWidgetTest: public CppUnit::TestFixture {
     void testShutdown();
 
   private:
+    auto_ptr<ola::plugin::usbpro::DmxterWidget> m_widget;
     unsigned int m_tod_counter;
+
+    void Terminate() { m_ss.Terminate(); }
     void ValidateTod(const ola::rdm::UIDSet &uids);
     void ValidateResponse(ola::rdm::rdm_response_code code,
                           const ola::rdm::RDMResponse *response,
@@ -71,16 +73,17 @@ class DmxterWidgetTest: public CppUnit::TestFixture {
                                  const UID &destination,
                                  const uint8_t *data,
                                  unsigned int length);
-
-    ola::network::SelectServer m_ss;
-    MockUsbWidget m_widget;
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(DmxterWidgetTest);
 
 
 void DmxterWidgetTest::setUp() {
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
+  CommonWidgetTest::setUp();
+  m_widget.reset(
+      new ola::plugin::usbpro::DmxterWidget(&m_descriptor,
+                                            0x5253,
+                                            0x12345678));
   m_tod_counter = 0;
 }
 
@@ -95,6 +98,7 @@ void DmxterWidgetTest::ValidateTod(const ola::rdm::UIDSet &uids) {
   CPPUNIT_ASSERT(uids.Contains(uid1));
   CPPUNIT_ASSERT(uids.Contains(uid2));
   m_tod_counter++;
+  m_ss.Terminate();
 }
 
 
@@ -119,6 +123,7 @@ void DmxterWidgetTest::ValidateResponse(
   CPPUNIT_ASSERT(*raw_response == *response);
   delete raw_response;
   delete response;
+  m_ss.Terminate();
 }
 
 
@@ -138,6 +143,7 @@ void DmxterWidgetTest::ValidateStatus(
   for (unsigned int i = 0; i < packets.size(); i++) {
     CPPUNIT_ASSERT(expected_packets[i] == packets[i]);
   }
+  m_ss.Terminate();
 }
 
 
@@ -168,13 +174,12 @@ void DmxterWidgetTest::testTod() {
   uint8_t FULL_DISCOVERY_LABEL = 0x84;
   uint8_t INCREMENTAL_DISCOVERY_LABEL = 0x85;
   uint8_t TOD_LABEL = 0x82;
-  ola::plugin::usbpro::DmxterWidget dmxter(&m_widget, 0, 0);
   uint8_t return_packet[] = {
     0x70, 0x7a, 0xff, 0xff, 0xff, 0x00,
     0x52, 0x52, 0x12, 0x34, 0x56, 0x78,
   };
 
-  m_widget.AddExpectedCall(
+  m_endpoint->AddExpectedUsbProDataAndReturn(
       FULL_DISCOVERY_LABEL,
       NULL,
       0,
@@ -183,11 +188,13 @@ void DmxterWidgetTest::testTod() {
       sizeof(return_packet));
 
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, m_tod_counter);
-  dmxter.RunFullDiscovery(
+  m_widget->RunFullDiscovery(
       ola::NewSingleCallback(this, &DmxterWidgetTest::ValidateTod));
+  m_ss.Run();
+  m_endpoint->Verify();
   CPPUNIT_ASSERT_EQUAL((unsigned int) 1, m_tod_counter);
 
-  m_widget.AddExpectedCall(
+  m_endpoint->AddExpectedUsbProDataAndReturn(
       INCREMENTAL_DISCOVERY_LABEL,
       NULL,
       0,
@@ -195,11 +202,12 @@ void DmxterWidgetTest::testTod() {
       return_packet,
       sizeof(return_packet));
 
-  dmxter.RunIncrementalDiscovery(
+  m_widget->RunIncrementalDiscovery(
       ola::NewSingleCallback(this, &DmxterWidgetTest::ValidateTod));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 2, m_tod_counter);
 
-  m_widget.Verify();
+  m_ss.Run();
+  m_endpoint->Verify();
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 2, m_tod_counter);
 }
 
 
@@ -213,11 +221,7 @@ void DmxterWidgetTest::testSendRDMRequest() {
   UID destination(3, 4);
   UID bcast_destination(3, 0xffffffff);
   UID new_source(0x5253, 0x12345678);
-
   vector<string> packets;
-  ola::plugin::usbpro::DmxterWidget dmxter(&m_widget,
-                                           0x5253,
-                                           0x12345678);
 
   const RDMRequest *request = NewRequest(source, destination, NULL, 0);
 
@@ -243,7 +247,7 @@ void DmxterWidgetTest::testSendRDMRequest() {
     0x04, 0x60  // checksum, filled in below
   };
 
-  m_widget.AddExpectedCall(
+  m_endpoint->AddExpectedUsbProDataAndReturn(
       RDM_REQUEST_LABEL,
       expected_packet,
       size + 1,
@@ -251,10 +255,12 @@ void DmxterWidgetTest::testSendRDMRequest() {
       return_packet,
       sizeof(return_packet));
 
-  dmxter.SendRDMRequest(
+  m_widget->SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateResponse));
+  m_ss.Run();
+  m_endpoint->Verify();
 
   // now check broadcast
   request = NewRequest(source, bcast_destination, NULL, 0);
@@ -266,7 +272,7 @@ void DmxterWidgetTest::testSendRDMRequest() {
         1,  // increment transaction #
         1));
 
-  m_widget.AddExpectedCall(
+  m_endpoint->AddExpectedUsbProDataAndReturn(
       RDM_BROADCAST_REQUEST_LABEL,
       expected_packet,
       size + 1,
@@ -274,7 +280,7 @@ void DmxterWidgetTest::testSendRDMRequest() {
       static_cast<uint8_t*>(NULL),
       0);
 
-  dmxter.SendRDMRequest(
+  m_widget->SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateStatus,
@@ -282,7 +288,8 @@ void DmxterWidgetTest::testSendRDMRequest() {
                              packets));
 
   delete[] expected_packet;
-  m_widget.Verify();
+  m_ss.Run();
+  m_endpoint->Verify();
 }
 
 
@@ -297,9 +304,6 @@ void DmxterWidgetTest::testErrorCodes() {
 
   vector<string> packets;
   packets.push_back("");  // empty string means we didn't get anything back
-  ola::plugin::usbpro::DmxterWidget dmxter(&m_widget,
-                                           0x5253,
-                                           0x12345678);
 
   const RDMRequest *request = NewRequest(source, destination, NULL, 0);
 
@@ -317,7 +321,7 @@ void DmxterWidgetTest::testErrorCodes() {
     0x00, 1,  // checksum failure
   };
 
-  m_widget.AddExpectedCall(
+  m_endpoint->AddExpectedUsbProDataAndReturn(
       RDM_REQUEST_LABEL,
       expected_packet,
       size + 1,
@@ -325,20 +329,21 @@ void DmxterWidgetTest::testErrorCodes() {
       return_packet,
       sizeof(return_packet));
 
-  dmxter.SendRDMRequest(
+  m_widget->SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateStatus,
                              ola::rdm::RDM_CHECKSUM_INCORRECT,
                              packets));
-  m_widget.Verify();
+  m_ss.Run();
+  m_endpoint->Verify();
 
   // update transaction # & checksum
   expected_packet[15]++;
   expected_packet[25] = 0xfa;
   return_packet[1] = 8;  // packet too short
   request = NewRequest(source, destination, NULL, 0);
-  m_widget.AddExpectedCall(
+  m_endpoint->AddExpectedUsbProDataAndReturn(
       RDM_REQUEST_LABEL,
       expected_packet,
       size + 1,
@@ -346,20 +351,21 @@ void DmxterWidgetTest::testErrorCodes() {
       return_packet,
       sizeof(return_packet));
 
-  dmxter.SendRDMRequest(
+  m_widget->SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateStatus,
                              ola::rdm::RDM_PACKET_TOO_SHORT,
                              packets));
-  m_widget.Verify();
+  m_ss.Run();
+  m_endpoint->Verify();
 
   // update transaction # & checksum
   expected_packet[15]++;
   expected_packet[25] = 0xfb;
   return_packet[1] = 12;  // transaction mismatch
   request = NewRequest(source, destination, NULL, 0);
-  m_widget.AddExpectedCall(
+  m_endpoint->AddExpectedUsbProDataAndReturn(
       RDM_REQUEST_LABEL,
       expected_packet,
       size + 1,
@@ -367,20 +373,21 @@ void DmxterWidgetTest::testErrorCodes() {
       return_packet,
       sizeof(return_packet));
 
-  dmxter.SendRDMRequest(
+  m_widget->SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateStatus,
                              ola::rdm::RDM_TRANSACTION_MISMATCH,
                              packets));
-  m_widget.Verify();
+  m_ss.Run();
+  m_endpoint->Verify();
 
   // update transaction # & checksum
   expected_packet[15]++;
   expected_packet[25] = 0xfc;
   return_packet[1] = 17;  // timeout
   request = NewRequest(source, destination, NULL, 0);
-  m_widget.AddExpectedCall(
+  m_endpoint->AddExpectedUsbProDataAndReturn(
       RDM_REQUEST_LABEL,
       expected_packet,
       size + 1,
@@ -388,20 +395,21 @@ void DmxterWidgetTest::testErrorCodes() {
       return_packet,
       sizeof(return_packet));
 
-  dmxter.SendRDMRequest(
+  m_widget->SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateStatus,
                              ola::rdm::RDM_TIMEOUT,
                              packets));
-  m_widget.Verify();
+  m_ss.Run();
+  m_endpoint->Verify();
 
   // update transaction # & checksum
   expected_packet[15]++;
   expected_packet[25] = 0xfd;
   return_packet[1] = 41;  // device mismatch
   request = NewRequest(source, destination, NULL, 0);
-  m_widget.AddExpectedCall(
+  m_endpoint->AddExpectedUsbProDataAndReturn(
       RDM_REQUEST_LABEL,
       expected_packet,
       size + 1,
@@ -409,20 +417,21 @@ void DmxterWidgetTest::testErrorCodes() {
       return_packet,
       sizeof(return_packet));
 
-  dmxter.SendRDMRequest(
+  m_widget->SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateStatus,
                              ola::rdm::RDM_SRC_UID_MISMATCH,
                              packets));
-  m_widget.Verify();
+  m_ss.Run();
+  m_endpoint->Verify();
 
   // update transaction # & checksum
   expected_packet[15]++;
   expected_packet[25] = 0xfe;
   return_packet[1] = 42;  // sub device mismatch
   request = NewRequest(source, destination, NULL, 0);
-  m_widget.AddExpectedCall(
+  m_endpoint->AddExpectedUsbProDataAndReturn(
       RDM_REQUEST_LABEL,
       expected_packet,
       size + 1,
@@ -430,20 +439,20 @@ void DmxterWidgetTest::testErrorCodes() {
       return_packet,
       sizeof(return_packet));
 
-  dmxter.SendRDMRequest(
+  m_widget->SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateStatus,
                              ola::rdm::RDM_SUB_DEVICE_MISMATCH,
                              packets));
-  m_widget.Verify();
+  m_ss.Run();
+  m_endpoint->Verify();
 
   delete[] expected_packet;
-  m_widget.Verify();
 }
 
 
-/**
+/*
  * Check some of the error conditions
  */
 void DmxterWidgetTest::testErrorConditions() {
@@ -451,11 +460,7 @@ void DmxterWidgetTest::testErrorConditions() {
   UID source(1, 2);
   UID destination(3, 4);
   UID new_source(0x5253, 0x12345678);
-
   vector<string> packets;
-  ola::plugin::usbpro::DmxterWidget dmxter(&m_widget,
-                                           0x5253,
-                                           0x12345678);
 
   const RDMRequest *request = NewRequest(source, destination, NULL, 0);
 
@@ -472,7 +477,7 @@ void DmxterWidgetTest::testErrorConditions() {
   // to small to be valid
   uint8_t return_packet[] = {0x00};
 
-  m_widget.AddExpectedCall(
+  m_endpoint->AddExpectedUsbProDataAndReturn(
       RDM_REQUEST_LABEL,
       expected_packet,
       size + 1,
@@ -480,12 +485,15 @@ void DmxterWidgetTest::testErrorConditions() {
       return_packet,
       sizeof(return_packet));
 
-  dmxter.SendRDMRequest(
+  m_widget->SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateStatus,
                              ola::rdm::RDM_INVALID_RESPONSE,
                              packets));
+
+  m_ss.Run();
+  m_endpoint->Verify();
 
   // check mismatched version
   request = NewRequest(source, destination, NULL, 0);
@@ -500,7 +508,7 @@ void DmxterWidgetTest::testErrorConditions() {
   // non-0 version
   uint8_t return_packet2[] = {0x01, 0x11, 0xcc};
 
-  m_widget.AddExpectedCall(
+  m_endpoint->AddExpectedUsbProDataAndReturn(
       RDM_REQUEST_LABEL,
       expected_packet,
       size + 1,
@@ -508,7 +516,7 @@ void DmxterWidgetTest::testErrorConditions() {
       return_packet2,
       sizeof(return_packet2));
 
-  dmxter.SendRDMRequest(
+  m_widget->SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &DmxterWidgetTest::ValidateStatus,
@@ -516,28 +524,39 @@ void DmxterWidgetTest::testErrorConditions() {
                              packets));
 
   delete[] expected_packet;
-  m_widget.Verify();
+  m_ss.Run();
+  m_endpoint->Verify();
 }
 
 
-/**
+/*
  * Check that the shutdown message works
  */
 void DmxterWidgetTest::testShutdown() {
   uint8_t SHUTDOWN_LABEL = 0xf0;
 
-  ola::plugin::usbpro::DmxterWidget dmxter(&m_widget,
-                                           0x5253,
-                                           0x12345678);
-  CPPUNIT_ASSERT(!m_widget.IsClosed());
+  m_descriptor.SetOnClose(
+      ola::NewSingleCallback(this, &DmxterWidgetTest::Terminate));
+  CPPUNIT_ASSERT(m_descriptor.ValidReadDescriptor());
+  CPPUNIT_ASSERT(m_descriptor.ValidWriteDescriptor());
 
   // first try a bad message
   uint8_t data = 1;
-  m_widget.SendUnsolicited(SHUTDOWN_LABEL, &data, 1);
-  CPPUNIT_ASSERT(!m_widget.IsClosed());
+  m_endpoint->SendUnsolicitedUsbProData(SHUTDOWN_LABEL, &data, 1);
+  // an invalid message doesn't generate a callback so we need to set a timer
+  // here.
+  m_ss.RegisterSingleTimeout(
+      30,  // 30ms should be enough
+      ola::NewSingleCallback(this, &DmxterWidgetTest::Terminate));
+  m_ss.Run();
+  m_endpoint->Verify();
+  CPPUNIT_ASSERT(m_descriptor.ValidReadDescriptor());
+  CPPUNIT_ASSERT(m_descriptor.ValidWriteDescriptor());
 
-  // now a valid one
-  m_widget.SendUnsolicited(SHUTDOWN_LABEL, NULL, 0);
-  CPPUNIT_ASSERT(m_widget.IsClosed());
-  m_widget.Verify();
+  // now send a valid shutdown message
+  m_endpoint->SendUnsolicitedUsbProData(SHUTDOWN_LABEL, NULL, 0);
+  m_ss.Run();
+  m_endpoint->Verify();
+  CPPUNIT_ASSERT(!m_descriptor.ValidReadDescriptor());
+  CPPUNIT_ASSERT(!m_descriptor.ValidWriteDescriptor());
 }

@@ -20,7 +20,6 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 #include <memory>
-#include <queue>
 #include <string>
 #include <vector>
 
