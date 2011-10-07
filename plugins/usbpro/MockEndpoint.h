@@ -61,6 +61,13 @@ class MockEndpoint {
                                   unsigned int request_payload_size,
                                   NotificationCallback *callback = NULL);
 
+    // This does the same as above, but puts the data inside a Robe style
+    // frame.
+    void AddExpectedRobeMessage(uint8_t label,
+                                const uint8_t *request_payload_data,
+                                unsigned int request_payload_size,
+                                NotificationCallback *callback = NULL);
+
     void AddExpectedDataAndReturn(const uint8_t *request_data,
                                   unsigned int request_size,
                                   const uint8_t *response_data,
@@ -74,6 +81,15 @@ class MockEndpoint {
                                         uint8_t response_label,
                                         const uint8_t *response_payload_data,
                                         unsigned int response_payload_size);
+
+    // This does the same as above, but puts the data inside a Robe style
+    // frame.
+    void AddExpectedRobeDataAndReturn(uint8_t request_label,
+                                      const uint8_t *request_payload_data,
+                                      unsigned int request_payload_size,
+                                      uint8_t response_label,
+                                      const uint8_t *response_payload_data,
+                                      unsigned int response_payload_size);
 
     void SendUnsolicited(const uint8_t *data,
                          unsigned int length);
@@ -111,8 +127,15 @@ class MockEndpoint {
                                 unsigned int data_size,
                                 unsigned int *total_size);
 
+    uint8_t *BuildRobeMessage(uint8_t label,
+                              const uint8_t *data,
+                              unsigned int data_size,
+                              unsigned int *total_size);
+
     enum {MAX_DATA_SIZE = 600};
     static const unsigned int FOOTER_SIZE = 1;
     static const unsigned int HEADER_SIZE = 4;
+    static const unsigned int ROBE_FOOTER_SIZE = 1;
+    static const unsigned int ROBE_HEADER_SIZE = 5;
 };
 #endif  // PLUGINS_USBPRO_MOCKENDPOINT_H_

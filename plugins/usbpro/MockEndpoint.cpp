@@ -91,6 +91,35 @@ void MockEndpoint::AddExpectedUsbProMessage(
 
 
 /**
+ * Add an expected Robe frame, using the supplied data
+ * @param label the message label
+ * @param request_payload_data the payload data
+ * @param request_payload_size size of the payload data
+ * @param callback a callback to run when this frame arrives
+ */
+void MockEndpoint::AddExpectedRobeMessage(
+    uint8_t label,
+    const uint8_t *request_payload_data,
+    unsigned int request_payload_size,
+    NotificationCallback *callback) {
+  unsigned int request_size;
+  uint8_t *request = BuildRobeMessage(label,
+                                      request_payload_data,
+                                      request_payload_size,
+                                      &request_size);
+  expected_data call = {
+    false,
+    true,
+    false,
+    {request_size, request},
+    {0, NULL},
+    callback
+  };
+  m_expected_data.push(call);
+}
+
+
+/**
  * Add an expected data frame, and when we get it send a response
  */
 void MockEndpoint::AddExpectedDataAndReturn(const uint8_t *request_data,
@@ -146,6 +175,47 @@ void MockEndpoint::AddExpectedUsbProDataAndReturn(
     NULL
   };
   m_expected_data.push(call);
+}
+
+
+/**
+ * Add an expected Robe frame, using the supplied data. When this arrives
+ * return the supplied Robe Frame.
+ * @param label the request message label
+ * @param request_payload_data the payload data
+ * @param response_payload_size size of the payload data
+ * @param label the response message label
+ * @param response_payload_data the payload data
+ * @param response_payload_size size of the payload data
+ */
+void MockEndpoint::AddExpectedRobeDataAndReturn(
+    uint8_t request_label,
+    const uint8_t *request_payload_data,
+    unsigned int request_payload_size,
+    uint8_t response_label,
+    const uint8_t *response_payload_data,
+    unsigned int response_payload_size) {
+  unsigned int request_size;
+  uint8_t *request = BuildRobeMessage(request_label,
+                                      request_payload_data,
+                                      request_payload_size,
+                                      &request_size);
+
+  unsigned int response_size;
+  uint8_t *response = BuildRobeMessage(response_label,
+                                       response_payload_data,
+                                       response_payload_size,
+                                       &response_size);
+  expected_data call = {
+    true,
+    true,
+    true,
+    {request_size, request},
+    {response_size, response},
+    NULL
+  };
+  m_expected_data.push(call);
+
 }
 
 
@@ -233,5 +303,40 @@ uint8_t *MockEndpoint::BuildUsbProMessage(uint8_t label,
   memcpy(frame + 4, data, data_size);
   frame[data_size + HEADER_SIZE] = 0xe7;
   *total_size = data_size + HEADER_SIZE + FOOTER_SIZE;
+  return frame;
+}
+
+
+/**
+ * Pack data into a Robe style frame.
+ * @param label the message label
+ * @param data the message data
+ * @param data_size the data size
+ * @param total_size, pointer which is updated with the message size.
+ */
+uint8_t *MockEndpoint::BuildRobeMessage(uint8_t label,
+                                        const uint8_t *data,
+                                        unsigned int data_size,
+                                        unsigned int *total_size) {
+  uint8_t *frame = new uint8_t[data_size + ROBE_HEADER_SIZE +
+                               ROBE_FOOTER_SIZE];
+  frame[0] = 0xa5;  // som
+  frame[1] = label;
+  frame[2] = data_size & 0xff;  // len
+  frame[3] = (data_size + 1) >> 8;  // len hi
+
+  // header crc
+  uint8_t crc = 0;
+  for (unsigned int i = 0; i < 4; i++)
+    crc += frame[i];
+  frame[4] = crc;
+
+  // data & final crc
+  crc += frame[4];
+  memcpy(frame + ROBE_HEADER_SIZE, data, data_size);
+  for (unsigned int i = 0; i < data_size; i++)
+    crc += data[i];
+  frame[data_size + ROBE_HEADER_SIZE] = crc;
+  *total_size = data_size + ROBE_HEADER_SIZE + ROBE_FOOTER_SIZE;
   return frame;
 }
