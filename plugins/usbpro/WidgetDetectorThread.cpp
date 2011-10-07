@@ -137,6 +137,7 @@ bool WidgetDetectorThread::Join(void *ptr) {
  * This can be called from any thread.
  */
 void WidgetDetectorThread::FreeWidget(SerialWidgetInterface *widget) {
+  m_other_ss->RemoveReadDescriptor(widget->GetDescriptor());
   m_ss.Execute(
       ola::NewSingleCallback(this,
                              &WidgetDetectorThread::InternalFreeWidget,
