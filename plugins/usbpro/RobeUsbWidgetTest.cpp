@@ -200,7 +200,7 @@ void RobeUsbWidgetTest::testReceive() {
     0xaa, 0xbb,  // some random bytes
     0xa5, 0xff, 0xff, 0xff, 0xe7,  // msg is too long
     0xa5, 0xa, 4, 0, 0xb3, 0xa5, 0xa5, 0xa5, 0xa5, 0xfa,  // data contains 0xa5
-    0xa5, 2, 4, 0, 0x00, // bad checksum
+    0xa5, 2, 4, 0, 0x00,  // bad checksum
     0xa5, 2, 4, 0, 0xab, 0xde, 0xad, 0xbe, 0xef, 0xaa,  // bad checksum
   };
 
@@ -226,7 +226,7 @@ void RobeUsbWidgetTest::testReceive() {
  * Test on remove works.
  */
 void RobeUsbWidgetTest::testRemove() {
-  m_widget->SetOnRemove(
+  m_widget->GetDescriptor()->SetOnClose(
       ola::NewSingleCallback(this, &RobeUsbWidgetTest::DeviceRemoved));
   m_other_end->Close();
   m_ss.Run();

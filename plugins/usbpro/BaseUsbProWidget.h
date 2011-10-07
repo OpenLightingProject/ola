@@ -42,8 +42,6 @@ class BaseUsbProWidget: public SerialWidgetInterface {
     explicit BaseUsbProWidget(ola::network::ConnectedDescriptor *descriptor);
     virtual ~BaseUsbProWidget();
 
-    void SetOnRemove(ola::SingleUseCallback0<void> *on_close);
-
     ola::network::ConnectedDescriptor *GetDescriptor() const {
       return m_descriptor;
     }

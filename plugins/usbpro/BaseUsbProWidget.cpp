@@ -54,14 +54,6 @@ BaseUsbProWidget::~BaseUsbProWidget() {
 
 
 /*
- * Set the onRemove handler
- */
-void BaseUsbProWidget::SetOnRemove(ola::SingleUseCallback0<void> *on_close) {
-  m_descriptor->SetOnClose(on_close);
-}
-
-
-/*
  * Read data from the widget
  */
 void BaseUsbProWidget::DescriptorReady() {

@@ -238,7 +238,7 @@ void BaseUsbProWidgetTest::testReceive() {
  * Test on remove works.
  */
 void BaseUsbProWidgetTest::testRemove() {
-  m_widget->SetOnRemove(
+  m_widget->GetDescriptor()->SetOnClose(
       ola::NewSingleCallback(this, &BaseUsbProWidgetTest::DeviceRemoved));
   m_other_end->Close();
   m_ss.Run();

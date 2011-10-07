@@ -64,14 +64,6 @@ void RobeWidget::SetMessageHandler(
 
 
 /*
- * Set the onRemove handler
- */
-void RobeWidget::SetOnRemove(ola::SingleUseCallback0<void> *on_close) {
-  m_descriptor->SetOnClose(on_close);
-}
-
-
-/*
  * Read data from the widget
  */
 void RobeWidget::DescriptorReady() {

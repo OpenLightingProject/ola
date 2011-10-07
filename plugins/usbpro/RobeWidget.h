@@ -48,7 +48,6 @@ class RobeWidget: public SerialWidgetInterface {
     }
 
     void SetMessageHandler(MessageHandler *callback);
-    void SetOnRemove(ola::SingleUseCallback0<void> *on_close);
 
     void DescriptorReady();
 

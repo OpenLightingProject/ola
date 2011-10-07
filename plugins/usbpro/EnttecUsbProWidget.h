@@ -190,10 +190,6 @@ class EnttecUsbProWidget: public SerialWidgetInterface {
       return m_impl.GetDescriptor();
     }
 
-    void SetOnRemove(ola::SingleUseCallback0<void> *on_close) {
-      m_impl.SetOnRemove(on_close);
-    }
-
   private:
     EnttecUsbProWidgetImpl m_impl;
     //  ola::rdm::QueueingRDMController m_controller;

@@ -18,8 +18,8 @@
  * Copyright (C) 2010 Simon Newton
  */
 
-#ifndef PLUGINS_USBPRO_USBDEVICE_H_
-#define PLUGINS_USBPRO_USBDEVICE_H_
+#ifndef PLUGINS_USBPRO_USBSERIALDEVICE_H_
+#define PLUGINS_USBPRO_USBSERIALDEVICE_H_
 
 #include <string>
 #include "ola/Callback.h"
@@ -44,7 +44,7 @@ class UsbSerialDevice: public ola::Device {
     virtual ~UsbSerialDevice() {}
 
     void SetOnRemove(ola::SingleUseCallback0<void> *on_close) {
-      m_widget->SetOnRemove(on_close);
+      m_widget->GetDescriptor()->SetOnClose(on_close);
     }
 
     SerialWidgetInterface *GetWidget() const { return m_widget; }
@@ -55,4 +55,4 @@ class UsbSerialDevice: public ola::Device {
 }  // usbpro
 }  // plugin
 }  // ola
-#endif  // PLUGINS_USBPRO_USBDEVICE_H_
+#endif  // PLUGINS_USBPRO_USBSERIALDEVICE_H_

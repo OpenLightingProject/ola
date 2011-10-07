@@ -113,10 +113,6 @@ class ArduinoWidget: public SerialWidgetInterface,
       return m_impl->GetDescriptor();
     }
 
-    void SetOnRemove(ola::SingleUseCallback0<void> *on_close) {
-      m_impl->SetOnRemove(on_close);
-    }
-
   private:
     // we need to control the order of construction & destruction here so these
     // are pointers.
