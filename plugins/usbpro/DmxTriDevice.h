@@ -36,12 +36,14 @@ namespace usbpro {
  */
 class DmxTriDevice: public UsbSerialDevice {
   public:
-    DmxTriDevice(ola::AbstractPlugin *owner,
+    DmxTriDevice(ola::PluginAdaptor *plugin_adaptor,
+                 ola::AbstractPlugin *owner,
                  const string &name,
                  DmxTriWidget *widget,
                  uint16_t esta_id,
                  uint16_t device_id,
-                 uint32_t serial);
+                 uint32_t serial,
+                 unsigned int fps_limit);
     ~DmxTriDevice() {}
 
     string DeviceId() const { return m_device_id; }

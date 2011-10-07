@@ -280,7 +280,7 @@ int main(int argc, char *argv[]) {
   ss.RegisterSingleTimeout(
       PAUSE_DELAY,
       ola::NewSingleCallback(&transferer, &FirmwareTransferer::StartTransfer));
-  widget.SetOnRemove(
+  widget.GetDescriptor()->SetOnClose(
       ola::NewSingleCallback(&transferer, &FirmwareTransferer::AbortTransfer));
   ss.RegisterSingleTimeout(
       ABORT_TIMEOUT,

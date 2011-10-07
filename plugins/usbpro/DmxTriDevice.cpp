@@ -21,6 +21,7 @@
 #include <string>
 #include "ola/Callback.h"
 #include "ola/Logging.h"
+#include "olad/PortDecorators.h"
 #include "plugins/usbpro/DmxTriDevice.h"
 #include "plugins/usbpro/DmxTriWidget.h"
 
@@ -34,19 +35,25 @@ using std::string;
 /*
  * New DMX TRI device
  */
-DmxTriDevice::DmxTriDevice(ola::AbstractPlugin *owner,
+DmxTriDevice::DmxTriDevice(ola::PluginAdaptor *plugin_adaptor,
+                           ola::AbstractPlugin *owner,
                            const string &name,
                            DmxTriWidget *widget,
                            uint16_t esta_id,
                            uint16_t device_id,
-                           uint32_t serial):
+                           uint32_t serial,
+                           unsigned int fps_limit):
     UsbSerialDevice(owner, name, widget),
     m_tri_widget(widget) {
   std::stringstream str;
   str << std::hex << esta_id << "-" << device_id << "-" << serial;
   m_device_id = str.str();
 
-  ola::BasicOutputPort *output_port = new DmxTriOutputPort(this, widget);
+  ola::OutputPort *output_port = new ThrottledOutputPortDecorator(
+      new DmxTriOutputPort(this, widget),
+      plugin_adaptor->WakeUpTime(),
+      10,  // start with 10 tokens in the bucket
+      fps_limit);
   AddPort(output_port);
 }
 

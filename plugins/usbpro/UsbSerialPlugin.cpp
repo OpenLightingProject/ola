@@ -47,14 +47,16 @@ namespace usbpro {
 using std::auto_ptr;
 
 const char UsbSerialPlugin::DEFAULT_DEVICE_DIR[] = "/dev";
+const char UsbSerialPlugin::DEFAULT_DMX_TRI_FPS_LIMIT[] = "190";
 const char UsbSerialPlugin::DEFAULT_PRO_FPS_LIMIT[] = "190";
 const char UsbSerialPlugin::DEVICE_DIR_KEY[] = "device_dir";
 const char UsbSerialPlugin::DEVICE_PREFIX_KEY[] = "device_prefix";
+const char UsbSerialPlugin::DMX_TRI_FPS_LIMIT_KEY[] = "dmx_tri_fps_limit";
 const char UsbSerialPlugin::LINUX_DEVICE_PREFIX[] = "ttyUSB";
 const char UsbSerialPlugin::MAC_DEVICE_PREFIX[] = "cu.usbserial-";
-const char UsbSerialPlugin::ROBE_DEVICE_NAME[] = "Robe Universal Interface";
 const char UsbSerialPlugin::PLUGIN_NAME[] = "Serial USB";
 const char UsbSerialPlugin::PLUGIN_PREFIX[] = "usbserial";
+const char UsbSerialPlugin::ROBE_DEVICE_NAME[] = "Robe Universal Interface";
 const char UsbSerialPlugin::TRI_USE_RAW_RDM_KEY[] = "tri_use_raw_rdm";
 const char UsbSerialPlugin::USBPRO_DEVICE_NAME[] = "Enttec Usb Pro Device";
 const char UsbSerialPlugin::USB_PRO_FPS_LIMIT_KEY[] = "pro_fps_limit";
@@ -92,8 +94,12 @@ string UsbSerialPlugin::Description() const {
 "device_prefix = ttyUSB\n"
 "The prefix of filenames to consider as devices, multiple keys are allowed\n"
 "\n"
+"dmx_tri_fps_limit = 190\n"
+"The max frames per second to send to a DMX-TRI or RDM-TRI device\n"
+"\n"
 "pro_fps_limit = 190\n"
 "The max frames per second to send to a Usb Pro or DMXKing device\n"
+"\n"
 "tri_use_raw_rdm = [true|false]\n"
 "Bypass RDM handling in the {DMX,RDM}-TRI widgets.\n";
 }
@@ -169,12 +175,14 @@ void UsbSerialPlugin::NewWidget(
   widget->UseRawRDM(
       m_preferences->GetValueAsBool(TRI_USE_RAW_RDM_KEY));
   AddDevice(new DmxTriDevice(
+      m_plugin_adaptor,
       this,
       GetDeviceName(information),
       widget,
       information.esta_id,
       information.device_id,
-      information.serial));
+      information.serial,
+      GetDmxTriFrameLimit()));
 }
 
 
@@ -275,6 +283,11 @@ bool UsbSerialPlugin::SetDefaultPreferences() {
   save |= m_preferences->SetDefaultValue(DEVICE_DIR_KEY, StringValidator(),
                                          DEFAULT_DEVICE_DIR);
 
+  save |= m_preferences->SetDefaultValue(
+      DMX_TRI_FPS_LIMIT_KEY,
+      IntValidator(0, MAX_DMX_TRI_FPS_LIMIT),
+      DEFAULT_DMX_TRI_FPS_LIMIT);
+
   save |= m_preferences->SetDefaultValue(USB_PRO_FPS_LIMIT_KEY,
                                          IntValidator(0, MAX_PRO_FPS_LIMIT),
                                          DEFAULT_PRO_FPS_LIMIT);
@@ -324,6 +337,18 @@ unsigned int UsbSerialPlugin::GetProFrameLimit() {
   if (!StringToInt(m_preferences->GetValue(USB_PRO_FPS_LIMIT_KEY) ,
                    &fps_limit))
     StringToInt(DEFAULT_PRO_FPS_LIMIT, &fps_limit);
+  return fps_limit;
+}
+
+
+/*
+ * Get the Frames per second limit for a tri device
+ */
+unsigned int UsbSerialPlugin::GetDmxTriFrameLimit() {
+  unsigned int fps_limit;
+  if (!StringToInt(m_preferences->GetValue(DMX_TRI_FPS_LIMIT_KEY) ,
+                   &fps_limit))
+    StringToInt(DEFAULT_DMX_TRI_FPS_LIMIT, &fps_limit);
   return fps_limit;
 }
 }  // usbpro

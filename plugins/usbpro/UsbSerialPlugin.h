@@ -64,14 +64,17 @@ class UsbSerialPlugin: public ola::Plugin, public NewWidgetHandler {
     void DeleteDevice(UsbSerialDevice *device);
     string GetDeviceName(const UsbProWidgetInformation &information);
     unsigned int GetProFrameLimit();
+    unsigned int GetDmxTriFrameLimit();
 
     vector<UsbSerialDevice*> m_devices;  // list of our devices
     WidgetDetectorThread m_detector_thread;
 
     static const char DEFAULT_DEVICE_DIR[];
+    static const char DEFAULT_DMX_TRI_FPS_LIMIT[];
     static const char DEFAULT_PRO_FPS_LIMIT[];
     static const char DEVICE_DIR_KEY[];
     static const char DEVICE_PREFIX_KEY[];
+    static const char DMX_TRI_FPS_LIMIT_KEY[];
     static const char LINUX_DEVICE_PREFIX[];
     static const char MAC_DEVICE_PREFIX[];
     static const char PLUGIN_NAME[];
@@ -80,6 +83,7 @@ class UsbSerialPlugin: public ola::Plugin, public NewWidgetHandler {
     static const char TRI_USE_RAW_RDM_KEY[];
     static const char USBPRO_DEVICE_NAME[];
     static const char USB_PRO_FPS_LIMIT_KEY[];
+    static const unsigned int MAX_DMX_TRI_FPS_LIMIT = 1000;
     static const unsigned int MAX_PRO_FPS_LIMIT = 1000;
 
     static const uint16_t ENTTEC_ESTA_ID = 0x454E;
