@@ -42,7 +42,6 @@ class SerialWidgetInterface {
 
     virtual ola::network::ConnectedDescriptor *GetDescriptor() const = 0;
     virtual void SetOnRemove(ola::SingleUseCallback0<void> *on_close) = 0;
-    virtual void CloseDescriptor() = 0;
 };
 }  // usbpro
 }  // plugin

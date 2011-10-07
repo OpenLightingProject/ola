@@ -56,8 +56,6 @@ class BaseUsbProWidget: public SerialWidgetInterface {
                      const uint8_t *data,
                      unsigned int length) const;
 
-    void CloseDescriptor();
-
     static ola::network::ConnectedDescriptor *OpenDevice(const string &path);
 
     static const uint8_t DMX_LABEL = 6;

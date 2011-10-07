@@ -128,11 +128,6 @@ bool BaseUsbProWidget::SendMessage(uint8_t label,
 }
 
 
-void BaseUsbProWidget::CloseDescriptor() {
-  m_descriptor->Close();
-}
-
-
 /**
  * Open a path and apply the settings required for talking to widgets.
  */

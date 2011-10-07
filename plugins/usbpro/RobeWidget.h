@@ -58,10 +58,6 @@ class RobeWidget: public SerialWidgetInterface {
                      const uint8_t *data,
                      unsigned int length) const;
 
-    void CloseDescriptor() {
-      m_descriptor->Close();
-    }
-
     static const uint8_t CHANNEL_A_OUT = 0x06;
     static const uint8_t INFO_REQUEST = 0x14;
     static const uint8_t INFO_RESPONSE = 0x15;

@@ -194,8 +194,6 @@ class EnttecUsbProWidget: public SerialWidgetInterface {
       m_impl.SetOnRemove(on_close);
     }
 
-    void CloseDescriptor() { m_impl.CloseDescriptor(); }
-
   private:
     EnttecUsbProWidgetImpl m_impl;
     //  ola::rdm::QueueingRDMController m_controller;

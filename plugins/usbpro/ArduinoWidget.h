@@ -117,8 +117,6 @@ class ArduinoWidget: public SerialWidgetInterface,
       m_impl->SetOnRemove(on_close);
     }
 
-    void CloseDescriptor() { m_impl->CloseDescriptor(); }
-
   private:
     // we need to control the order of construction & destruction here so these
     // are pointers.

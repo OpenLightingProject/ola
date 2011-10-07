@@ -400,7 +400,7 @@ void DmxterWidgetImpl::HandleShutdown(const uint8_t *data,
     OLA_INFO << "Received shutdown message from Dmxter";
     // this closed descriptor will be detected the the ss, which will then
     // invoke the on_close callback, removing the device.
-    CloseDescriptor();
+    GetDescriptor()->Close();
   }
 }
 
