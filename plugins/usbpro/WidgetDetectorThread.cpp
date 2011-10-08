@@ -55,9 +55,13 @@ namespace usbpro {
  */
 WidgetDetectorThread::WidgetDetectorThread(
   NewWidgetHandler *handler,
-  ola::network::SelectServerInterface *ss)
+  ola::network::SelectServerInterface *ss,
+  unsigned int usb_pro_timeout,
+  unsigned int robe_timeout)
     : m_other_ss(ss),
-      m_handler(handler) {
+      m_handler(handler),
+      m_usb_pro_timeout(usb_pro_timeout),
+      m_robe_timeout(robe_timeout) {
   if (!m_handler)
     OLA_FATAL << "No new widget handler registered.";
 }
@@ -93,11 +97,13 @@ void *WidgetDetectorThread::Run() {
     m_widget_detectors.push_back(new UsbProWidgetDetector(
         &m_ss,
         ola::NewCallback(this, &WidgetDetectorThread::UsbProWidgetReady),
-        ola::NewCallback(this, &WidgetDetectorThread::DescriptorFailed)));
+        ola::NewCallback(this, &WidgetDetectorThread::DescriptorFailed),
+        m_usb_pro_timeout));
     m_widget_detectors.push_back(new RobeWidgetDetector(
         &m_ss,
         ola::NewCallback(this, &WidgetDetectorThread::RobeWidgetReady),
-        ola::NewCallback(this, &WidgetDetectorThread::DescriptorFailed)));
+        ola::NewCallback(this, &WidgetDetectorThread::DescriptorFailed),
+        m_robe_timeout));
   }
   RunScan();
   m_ss.RegisterRepeatingTimeout(
@@ -164,11 +170,20 @@ bool WidgetDetectorThread::RunScan() {
       continue;
 
     OLA_INFO << "new descriptor @ " << descriptor << " for " << *it;
-    m_active_descriptors[descriptor] = DescriptorInfo(*it, -1);
-    m_active_paths.insert(*it);
-    PerformNextDiscoveryStep(descriptor);
+    PerformDiscovery(*it, descriptor);
   }
   return true;
+}
+
+
+/**
+ * Start the discovery sequence for a descriptor.
+ */
+void WidgetDetectorThread::PerformDiscovery(const string &path,
+                                            ConnectedDescriptor *descriptor) {
+  m_active_descriptors[descriptor] = DescriptorInfo(path, -1);
+  m_active_paths.insert(path);
+  PerformNextDiscoveryStep(descriptor);
 }
 
 

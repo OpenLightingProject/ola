@@ -76,7 +76,9 @@ class NewWidgetHandler {
 class WidgetDetectorThread: public ola::OlaThread {
   public:
     explicit WidgetDetectorThread(NewWidgetHandler *widget_handler,
-                                  ola::network::SelectServerInterface *ss);
+                                  ola::network::SelectServerInterface *ss,
+                                  unsigned int usb_pro_timeout = 200,
+                                  unsigned int robe_timeout = 200);
     ~WidgetDetectorThread() {}
 
     // Must be called before Run()
@@ -94,6 +96,11 @@ class WidgetDetectorThread: public ola::OlaThread {
     // Can be called from any thread.
     void FreeWidget(SerialWidgetInterface *widget);
 
+  protected:
+    virtual bool RunScan();
+    void PerformDiscovery(const string &path,
+                          ConnectedDescriptor *descriptor);
+
   private:
     ola::network::SelectServerInterface *m_other_ss;
     ola::network::SelectServer m_ss;  // ss for this thread
@@ -101,6 +108,8 @@ class WidgetDetectorThread: public ola::OlaThread {
     string m_directory;  // directory to look for widgets in
     vector<string> m_prefixes;  // prefixes to try
     NewWidgetHandler *m_handler;
+    unsigned int m_usb_pro_timeout;
+    unsigned int m_robe_timeout;
 
     // those paths that are either in discovery, or in use
     set<string> m_active_paths;
@@ -112,7 +121,6 @@ class WidgetDetectorThread: public ola::OlaThread {
     // the descriptors that are in the discovery process
     ActiveDescriptors m_active_descriptors;
 
-    bool RunScan();
     void FindCandiateDevices(vector<string> *device_paths);
 
     // called when we find new widgets of a particular type

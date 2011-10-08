@@ -46,7 +46,8 @@ SerialUsbTester_SOURCES = ArduinoWidgetTest.cpp \
                           RobeWidgetTest.cpp \
                           RobeWidgetDetectorTest.cpp \
                           SerialUsbTester.cpp \
-                          UsbProWidgetDetectorTest.cpp
+                          UsbProWidgetDetectorTest.cpp \
+                          WidgetDetectorThreadTest.cpp
 
 SerialUsbTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 SerialUsbTester_LDADD = $(CPPUNIT_LIBS) \
