@@ -86,13 +86,6 @@ class UsbProWidgetDetector: public WidgetDetectorInterface {
     bool Discover(ola::network::ConnectedDescriptor *descriptor);
 
   private:
-    typedef struct {
-      uint8_t id_low;
-      uint8_t id_high;
-      char text[32];
-      uint8_t terminator;
-    } id_response;
-
     // Hold the discovery state for a widget
     class DiscoveryState {
       public:

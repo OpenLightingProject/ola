@@ -137,11 +137,18 @@ void RobeWidgetDetector::HandleMessage(RobeWidget *widget,
 void RobeWidgetDetector::HandleInfoMessage(RobeWidget *widget,
                                            const uint8_t *data,
                                            unsigned int length) {
+  struct {
+    uint8_t hardware_version;
+    uint8_t software_version;
+    uint8_t eeprom_version;
+    uint8_t empty;
+    uint8_t empty2;
+  } info_response;
+
   WidgetStateMap::iterator iter = m_widgets.find(widget);
   if (iter == m_widgets.end())
     return;
 
-  info_response_t info_response;
   if (length != sizeof(info_response)) {
     OLA_WARN << "Info response size " << length << " != " <<
       sizeof(info_response);

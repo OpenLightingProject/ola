@@ -263,7 +263,12 @@ void UsbProWidgetDetector::HandleIdResponse(DispatchingUsbProWidget *widget,
                                             unsigned int length,
                                             const uint8_t *data,
                                             bool is_device) {
-  id_response response;
+  struct {
+    uint8_t id_low;
+    uint8_t id_high;
+    char text[32];
+    uint8_t terminator;
+  } response;
   memset(&response, 0, sizeof(response));
   memcpy(&response, data, length);
 

@@ -82,14 +82,6 @@ class RobeWidgetDetector: public WidgetDetectorInterface {
     bool Discover(ola::network::ConnectedDescriptor *descriptor);
 
   private:
-    typedef struct {
-      uint8_t hardware_version;
-      uint8_t software_version;
-      uint8_t eeprom_version;
-      uint8_t empty;
-      uint8_t empty2;
-    } info_response_t;
-
     // Hold the discovery state for a widget
     class DiscoveryState {
       public:
