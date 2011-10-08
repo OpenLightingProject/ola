@@ -60,6 +60,8 @@ string ArtNetPortHelper::Description(const Universe *universe,
 
   std::stringstream str;
   str << "ArtNet Universe " <<
+    static_cast<int>(m_node->NetAddress()) << ":" <<
+    static_cast<int>(m_node->SubnetAddress()) << ":" <<
     static_cast<int>(m_node->GetPortUniverse(direction, port_id));
   return str.str();
 }
