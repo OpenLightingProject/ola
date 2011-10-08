@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * RobeWidgetDetector.cpp
- * Handles creating RobeWidget objects.
+ * Runs the Robe discovery routine and handles creating RobeWidget objects.
  * Copyright (C) 2011 Simon Newton
  *
  * This class accepts a ConnectedDescriptor and runs the discovery process
@@ -22,6 +22,14 @@
  *
  * The discovery process sends the following request messages:
  *   - INFO_REQUEST
+ *   - RDM_UID_REQUEST
+ *
+ * Early Robe Universe Interface widgets are 'locked' meaning they can only be
+ * used with the Robe software. You can unlocked these by upgrading the widget
+ * firmware, see http://www.robe.cz/nc/support/search-for/DSU%20RUNIT/.
+ *
+ * The newer WTX widgets aren't locked. We can tell the type of widget from the
+ * RDM UID.
  */
 
 
