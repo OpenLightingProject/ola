@@ -22,6 +22,7 @@
 #define PLUGINS_USBPRO_ROBEWIDGETDETECTOR_H_
 
 #include <ola/Callback.h>
+#include <ola/rdm/UID.h>
 #include <ola/thread/SchedulingExecutorInterface.h>
 #include <map>
 #include <string>
@@ -36,11 +37,26 @@ namespace usbpro {
 /*
  * Contains information about the Robe USB device.
 */
-typedef struct {
-  uint8_t hardware_version;
-  uint8_t software_version;
-  uint8_t eeprom_version;
-} RobeWidgetInformation;
+class RobeWidgetInformation {
+  public:
+    RobeWidgetInformation()
+        : uid(0, 0),
+          hardware_version(0),
+          software_version(0),
+          eeprom_version(0) {
+    }
+    RobeWidgetInformation(const RobeWidgetInformation &other):
+        uid(other.uid),
+        hardware_version(other.hardware_version),
+        software_version(other.software_version),
+        eeprom_version(other.eeprom_version) {
+    }
+
+    ola::rdm::UID uid;
+    uint8_t hardware_version;
+    uint8_t software_version;
+    uint8_t eeprom_version;
+};
 
 
 /*
@@ -72,22 +88,58 @@ class RobeWidgetDetector: public WidgetDetectorInterface {
       uint8_t empty2;
     } info_response_t;
 
+    // Hold the discovery state for a widget
+    class DiscoveryState {
+      public:
+        DiscoveryState():
+          discovery_state(INFO_SENT),
+          timeout_id(ola::thread::INVALID_TIMEOUT) {
+        }
+        ~DiscoveryState() {}
+
+        typedef enum {
+          INFO_SENT,
+          UID_SENT,
+        } widget_state;
+
+        RobeWidgetInformation information;
+        widget_state discovery_state;
+        ola::thread::timeout_id timeout_id;
+    };
+
     ola::thread::SchedulingExecutorInterface *m_scheduler;
     const unsigned int m_timeout_ms;
     SuccessHandler *m_callback;
     FailureHandler *m_failure_callback;
 
-    typedef std::map<RobeWidget*, ola::thread::timeout_id> WidgetTimeoutMap;
-    WidgetTimeoutMap m_widgets;
+    typedef std::map<RobeWidget*, DiscoveryState> WidgetStateMap;
+    WidgetStateMap m_widgets;
 
     void HandleMessage(RobeWidget *widget,
                        uint8_t label,
                        const uint8_t *data,
                        unsigned int length);
+    void HandleInfoMessage(RobeWidget *widget,
+                           const uint8_t *data,
+                           unsigned int length);
+    void HandleUidMessage(RobeWidget *widget,
+                          const uint8_t *data,
+                          unsigned int length);
     void WidgetRemoved(RobeWidget *widget);
     void FailWidget(RobeWidget *widget);
     void CleanupWidget(RobeWidget *widget);
     void DispatchWidget(RobeWidget *widget, const RobeWidgetInformation *info);
+    void RemoveTimeout(DiscoveryState *discovery_state);
+    void SetupTimeout(RobeWidget *widget,
+                      DiscoveryState *discovery_state);
+    bool IsUnlocked(const RobeWidgetInformation &info);
+
+    static const uint32_t MODEL_MASK = 0xffff0000;
+    static const uint32_t RUI_DEVICE_PREFIX = 0x01000000;
+    static const uint32_t WTX_DEVICE_PREFIX = 0x02000000;
+    // 0x14 is good, 0xe is bad. actual version is probably somewhere in
+    // between.
+    static const uint8_t RUI_MIN_UNLOCKED_SOFTWARE_VERSION = 0x14;
 };
 }  // usbpro
 }  // plugin

@@ -23,6 +23,7 @@
 
 #include "ola/Callback.h"
 #include "ola/Logging.h"
+#include "ola/rdm/UID.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/usbpro/CommonWidgetTest.h"
 #include "plugins/usbpro/RobeWidget.h"
@@ -33,18 +34,25 @@ using ola::network::ConnectedDescriptor;
 using ola::plugin::usbpro::RobeWidget;
 using ola::plugin::usbpro::RobeWidgetDetector;
 using ola::plugin::usbpro::RobeWidgetInformation;
+using ola::rdm::UID;
 
 
 class RobeWidgetDetectorTest: public CommonWidgetTest {
   CPPUNIT_TEST_SUITE(RobeWidgetDetectorTest);
-  CPPUNIT_TEST(testDiscovery);
+  CPPUNIT_TEST(testRUIDevice);
+  CPPUNIT_TEST(testLockedRUIDevice);
+  CPPUNIT_TEST(testWTXDevice);
+  CPPUNIT_TEST(testUnknownDevice);
   CPPUNIT_TEST(testTimeout);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void setUp();
 
-    void testDiscovery();
+    void testRUIDevice();
+    void testLockedRUIDevice();
+    void testWTXDevice();
+    void testUnknownDevice();
     void testTimeout();
 
   private:
@@ -60,6 +68,8 @@ class RobeWidgetDetectorTest: public CommonWidgetTest {
 
     static const uint8_t INFO_REQUEST_LABEL = 0x14;
     static const uint8_t INFO_RESPONSE_LABEL = 0x15;
+    static const uint8_t UID_REQUEST_LABEL = 0x24;
+    static const uint8_t UID_RESPONSE_LABEL = 0x25;
 };
 
 
@@ -97,7 +107,6 @@ void RobeWidgetDetectorTest::NewWidget(RobeWidget *widget,
 
 
 void RobeWidgetDetectorTest::FailedWidget(ConnectedDescriptor *descriptor) {
-  OLA_INFO << "bad";
   CPPUNIT_ASSERT_EQUAL(
       static_cast<ConnectedDescriptor*>(&m_descriptor),
       descriptor);
@@ -107,10 +116,12 @@ void RobeWidgetDetectorTest::FailedWidget(ConnectedDescriptor *descriptor) {
 
 
 /*
- * Check that discovery works.
+ * Check that discovery works with a RUI device.
  */
-void RobeWidgetDetectorTest::testDiscovery() {
-  uint8_t info_data[] = {1, 2, 3, 0, 0};
+void RobeWidgetDetectorTest::testRUIDevice() {
+  // software version unlocked (>= 0x14)
+  uint8_t info_data[] = {1, 0x14, 3, 0, 0};
+  uint8_t uid_data[] = {0x52, 0x53, 1, 0, 0, 10};
   m_endpoint->AddExpectedRobeDataAndReturn(
       INFO_REQUEST_LABEL,
       NULL,
@@ -118,6 +129,81 @@ void RobeWidgetDetectorTest::testDiscovery() {
       INFO_RESPONSE_LABEL,
       info_data,
       sizeof(info_data));
+  m_endpoint->AddExpectedRobeDataAndReturn(
+      UID_REQUEST_LABEL,
+      NULL,
+      0,
+      UID_RESPONSE_LABEL,
+      uid_data,
+      sizeof(uid_data));
+
+  m_detector->Discover(&m_descriptor);
+  m_ss.Run();
+
+  CPPUNIT_ASSERT(m_found_widget);
+  CPPUNIT_ASSERT(!m_failed_widget);
+
+  CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(1),
+                       m_device_info.hardware_version);
+  CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(20),
+                       m_device_info.software_version);
+  CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(3),
+                       m_device_info.eeprom_version);
+  CPPUNIT_ASSERT_EQUAL(UID(0x5253, 0x100000a),
+                       m_device_info.uid);
+}
+
+
+/*
+ * Check that discovery fails with a locked RUI device.
+ */
+void RobeWidgetDetectorTest::testLockedRUIDevice() {
+  // software version locked (0xe)
+  uint8_t info_data[] = {1, 0xe, 3, 0, 0};
+  uint8_t uid_data[] = {0x52, 0x53, 1, 0, 0, 10};
+  m_endpoint->AddExpectedRobeDataAndReturn(
+      INFO_REQUEST_LABEL,
+      NULL,
+      0,
+      INFO_RESPONSE_LABEL,
+      info_data,
+      sizeof(info_data));
+  m_endpoint->AddExpectedRobeDataAndReturn(
+      UID_REQUEST_LABEL,
+      NULL,
+      0,
+      UID_RESPONSE_LABEL,
+      uid_data,
+      sizeof(uid_data));
+
+  m_detector->Discover(&m_descriptor);
+  m_ss.Run();
+
+  CPPUNIT_ASSERT(!m_found_widget);
+  CPPUNIT_ASSERT(m_failed_widget);
+}
+
+
+/*
+ * Check that discovery works with a WTX device.
+ */
+void RobeWidgetDetectorTest::testWTXDevice() {
+  uint8_t info_data[] = {1, 2, 3, 0, 0};
+  uint8_t uid_data[] = {0x52, 0x53, 2, 0, 0, 10};
+  m_endpoint->AddExpectedRobeDataAndReturn(
+      INFO_REQUEST_LABEL,
+      NULL,
+      0,
+      INFO_RESPONSE_LABEL,
+      info_data,
+      sizeof(info_data));
+  m_endpoint->AddExpectedRobeDataAndReturn(
+      UID_REQUEST_LABEL,
+      NULL,
+      0,
+      UID_RESPONSE_LABEL,
+      uid_data,
+      sizeof(uid_data));
 
   m_detector->Discover(&m_descriptor);
   m_ss.Run();
@@ -131,8 +217,38 @@ void RobeWidgetDetectorTest::testDiscovery() {
                        m_device_info.software_version);
   CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(3),
                        m_device_info.eeprom_version);
+  CPPUNIT_ASSERT_EQUAL(UID(0x5253, 0x200000a),
+                       m_device_info.uid);
 }
 
+
+/*
+ * Check that discovery fails for an unknown device.
+ */
+void RobeWidgetDetectorTest::testUnknownDevice() {
+  uint8_t info_data[] = {1, 2, 3, 0, 0};
+  uint8_t uid_data[] = {0x52, 0x53, 3, 0, 0, 10};
+  m_endpoint->AddExpectedRobeDataAndReturn(
+      INFO_REQUEST_LABEL,
+      NULL,
+      0,
+      INFO_RESPONSE_LABEL,
+      info_data,
+      sizeof(info_data));
+  m_endpoint->AddExpectedRobeDataAndReturn(
+      UID_REQUEST_LABEL,
+      NULL,
+      0,
+      UID_RESPONSE_LABEL,
+      uid_data,
+      sizeof(uid_data));
+
+  m_detector->Discover(&m_descriptor);
+  m_ss.Run();
+
+  CPPUNIT_ASSERT(!m_found_widget);
+  CPPUNIT_ASSERT(m_failed_widget);
+}
 
 /**
  * Check a widget that fails to respond

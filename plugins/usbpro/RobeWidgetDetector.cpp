@@ -30,6 +30,7 @@
 
 #include "ola/Logging.h"
 #include "ola/network/Socket.h"
+#include "ola/rdm/UID.h"
 #include "plugins/usbpro/RobeWidget.h"
 #include "plugins/usbpro/RobeWidgetDetector.h"
 
@@ -65,9 +66,9 @@ RobeWidgetDetector::RobeWidgetDetector(
  * Fail any widgets that are still in the discovery process.
  */
 RobeWidgetDetector::~RobeWidgetDetector() {
-  WidgetTimeoutMap::iterator iter;
+  WidgetStateMap::iterator iter;
   for (iter = m_widgets.begin(); iter != m_widgets.end(); ++iter) {
-    m_scheduler->RemoveTimeout(iter->second);
+    RemoveTimeout(&iter->second);
     CleanupWidget(iter->first);
   }
   m_widgets.clear();
@@ -101,10 +102,7 @@ bool RobeWidgetDetector::Discover(
                          widget));
 
   // Register a timeout for this widget
-  m_widgets[widget] = m_scheduler->RegisterSingleTimeout(
-      m_timeout_ms,
-      NewSingleCallback(this,
-                        &RobeWidgetDetector::FailWidget, widget));
+  SetupTimeout(widget, &m_widgets[widget]);
   return true;
 }
 
@@ -116,42 +114,87 @@ void RobeWidgetDetector::HandleMessage(RobeWidget *widget,
                                        uint8_t label,
                                        const uint8_t *data,
                                        unsigned int length) {
-  if (label != RobeWidget::INFO_RESPONSE) {
-    OLA_WARN << "Unknown response label: 0x" << std::hex <<
-      static_cast<int>(label) << ", size is " << length;
-    return;
+  switch (label) {
+    case RobeWidget::INFO_RESPONSE:
+      HandleInfoMessage(widget, data, length);
+      break;
+    case RobeWidget::UID_RESPONSE:
+      HandleUidMessage(widget, data, length);
+      break;
+    default:
+      OLA_WARN << "Unknown response label: 0x" << std::hex <<
+        static_cast<int>(label) << ", size is " << length;
   }
+}
 
-  WidgetTimeoutMap::iterator iter = m_widgets.find(widget);
-  if (iter == m_widgets.end()) {
-    OLA_WARN << "Can't find robe widget in active map";
-  } else {
-    m_scheduler->RemoveTimeout(iter->second);
-    m_widgets.erase(iter);
-  }
+
+/**
+ * Handle a INFO message
+ */
+void RobeWidgetDetector::HandleInfoMessage(RobeWidget *widget,
+                                           const uint8_t *data,
+                                           unsigned int length) {
+  WidgetStateMap::iterator iter = m_widgets.find(widget);
+  if (iter == m_widgets.end())
+    return;
 
   info_response_t info_response;
-  RobeWidgetInformation information = {0, 0, 0};
-
-  if (length == sizeof(info_response)) {
+  if (length != sizeof(info_response)) {
+    OLA_WARN << "Info response size " << length << " != " <<
+      sizeof(info_response);
+    return;
+  } else {
     memcpy(reinterpret_cast<uint8_t*>(&info_response),
            data,
            sizeof(info_response));
-    information.hardware_version = info_response.hardware_version;
-    information.software_version = info_response.software_version;
-    information.eeprom_version = info_response.eeprom_version;
-  } else {
-    OLA_WARN << "Info response size " << length << " != " <<
-      sizeof(info_response);
+    iter->second.information.hardware_version = info_response.hardware_version;
+    iter->second.information.software_version = info_response.software_version;
+    iter->second.information.eeprom_version = info_response.eeprom_version;
   }
 
-  OLA_INFO << "Detected Robe Device: Hardware version: 0x" << std::hex <<
-    static_cast<int>(information.hardware_version) << ", software version: 0x"
-    << static_cast<int>(information.software_version) << ", eeprom version 0x"
-    << static_cast<int>(information.eeprom_version);
+  RemoveTimeout(&iter->second);
+  SetupTimeout(widget, &iter->second);
+  widget->SendMessage(RobeWidget::UID_REQUEST, NULL, 0);
+}
+
+
+/**
+ * Handle a RDM UID Message
+ */
+void RobeWidgetDetector::HandleUidMessage(RobeWidget *widget,
+                                          const uint8_t *data,
+                                          unsigned int length) {
+  WidgetStateMap::iterator iter = m_widgets.find(widget);
+  if (iter == m_widgets.end())
+    return;
+
+  if (length != ola::rdm::UID::UID_SIZE) {
+    OLA_INFO << "Robe widget returned invalid UID size: " << length;
+    return;
+  }
+
+  iter->second.information.uid = ola::rdm::UID(data);
+
+  if (!IsUnlocked(iter->second.information)) {
+    OLA_WARN << "This Robe widget isn't unlocked, please visit "
+      "http://www.robe.cz/nc/support/search-for/DSU%20RUNIT/ to download "
+      "the new firmware.";
+    return;
+  }
+
+  // ok this is a good interface at this point
+  RemoveTimeout(&iter->second);
 
   const RobeWidgetInformation *widget_info = new RobeWidgetInformation(
-      information);
+      iter->second.information);
+  m_widgets.erase(iter);
+
+  OLA_INFO << "Detected Robe Device, UID : " << widget_info->uid <<
+    ", Hardware version: 0x" << std::hex <<
+    static_cast<int>(widget_info->hardware_version) << ", software version: 0x"
+    << static_cast<int>(widget_info->software_version) << ", eeprom version 0x"
+    << static_cast<int>(widget_info->eeprom_version);
+
   // given that we've been called via the widget's stack, schedule execution of
   // the method that deletes the widget.
   m_scheduler->Execute(
@@ -176,9 +219,9 @@ void RobeWidgetDetector::WidgetRemoved(RobeWidget *widget) {
  * invalid message.
  */
 void RobeWidgetDetector::FailWidget(RobeWidget *widget) {
-  WidgetTimeoutMap::iterator iter = m_widgets.find(widget);
+  WidgetStateMap::iterator iter = m_widgets.find(widget);
   if (iter != m_widgets.end()) {
-    m_scheduler->RemoveTimeout(iter->second);
+    m_scheduler->RemoveTimeout(&iter->second);
     m_widgets.erase(iter);
   }
   CleanupWidget(widget);
@@ -209,6 +252,45 @@ void RobeWidgetDetector::DispatchWidget(
   } else {
     OLA_FATAL << "No listener provided, leaking descriptor";
     FailWidget(widget);
+  }
+}
+
+
+/**
+ * Remove a timeout for a widget.
+ */
+void RobeWidgetDetector::RemoveTimeout(DiscoveryState *discovery_state) {
+  if (discovery_state->timeout_id != ola::thread::INVALID_TIMEOUT)
+    m_scheduler->RemoveTimeout(discovery_state->timeout_id);
+}
+
+
+/**
+ * Setup a timeout for a widget
+ */
+void RobeWidgetDetector::SetupTimeout(RobeWidget *widget,
+                                      DiscoveryState *discovery_state) {
+  discovery_state->timeout_id = m_scheduler->RegisterSingleTimeout(
+      m_timeout_ms,
+      NewSingleCallback(this,
+                        &RobeWidgetDetector::FailWidget, widget));
+}
+
+
+/**
+ * Returns true if the Robe interface is 'unlocked'.
+ */
+bool RobeWidgetDetector::IsUnlocked(const RobeWidgetInformation &info) {
+  switch (info.uid.DeviceId() & MODEL_MASK) {
+    case RUI_DEVICE_PREFIX:
+      // RUI are unlocked past a certain version #
+      return info.software_version >= RUI_MIN_UNLOCKED_SOFTWARE_VERSION;
+    case WTX_DEVICE_PREFIX:
+      // WTX devices are all unlocked
+      return true;
+    default:
+      // default to no
+      return false;
   }
 }
 }  // usbpro

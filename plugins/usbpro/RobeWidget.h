@@ -60,6 +60,8 @@ class RobeWidget: public SerialWidgetInterface {
     static const uint8_t CHANNEL_A_OUT = 0x06;
     static const uint8_t INFO_REQUEST = 0x14;
     static const uint8_t INFO_RESPONSE = 0x15;
+    static const uint8_t UID_REQUEST = 0x24;
+    static const uint8_t UID_RESPONSE = 0x25;
     static const int DMX_FRAME_DATA_SIZE;
 
   private:
