@@ -23,6 +23,7 @@
 
 #include <string>
 #include "ola/DmxBuffer.h"
+#include "olad/TokenBucket.h"
 #include "plugins/usbpro/ArduinoWidget.h"
 #include "plugins/usbpro/UsbSerialDevice.h"
 
@@ -58,12 +59,19 @@ class ArduinoRGBOutputPort: public BasicOutputPort {
   public:
     ArduinoRGBOutputPort(ArduinoRGBDevice *parent,
                          ArduinoWidget *widget,
-                         uint32_t serial);
+                         uint32_t serial,
+                         const TimeStamp *wake_time,
+                         unsigned int initial_count,
+                         unsigned int rate);
 
     string Description() const { return m_description; }
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
-      return m_widget->SendDMX(buffer);
+      if (m_bucket.GetToken(*m_wake_time))
+        return m_widget->SendDMX(buffer);
+      else
+        OLA_INFO << "Port rated limited, dropping frame";
+      return true;
       (void) priority;
     }
 
@@ -88,6 +96,8 @@ class ArduinoRGBOutputPort: public BasicOutputPort {
 
   private:
     ArduinoWidget *m_widget;
+    TokenBucket m_bucket;
+    const TimeStamp *m_wake_time;
     string m_description;
 };
 }  // usbpro

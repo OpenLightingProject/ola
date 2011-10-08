@@ -23,6 +23,7 @@
 
 #include <string>
 #include "ola/DmxBuffer.h"
+#include "olad/TokenBucket.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/Port.h"
 
@@ -125,13 +126,22 @@ class UsbProOutputPort: public BasicOutputPort {
     UsbProOutputPort(UsbProDevice *parent,
                      EnttecUsbProWidget *widget,
                      unsigned int id,
-                     const string &path)
+                     const string &path,
+                     const TimeStamp *wake_time,
+                     unsigned int initial_count,
+                     unsigned int rate)
         : BasicOutputPort(parent, id),
           m_path(path),
-          m_widget(widget) {}
+          m_widget(widget),
+          m_bucket(initial_count, rate, rate, *wake_time),
+          m_wake_time(wake_time) {}
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
-      return m_widget->SendDMX(buffer);
+      if (m_bucket.GetToken(*m_wake_time))
+        return m_widget->SendDMX(buffer);
+      else
+        OLA_INFO << "Port rated limited, dropping frame";
+      return true;
       (void) priority;
     }
 
@@ -146,6 +156,8 @@ class UsbProOutputPort: public BasicOutputPort {
   private:
     string m_path;
     EnttecUsbProWidget *m_widget;
+    TokenBucket m_bucket;
+    const TimeStamp *m_wake_time;
 };
 }  // usbpro
 }  // plugin

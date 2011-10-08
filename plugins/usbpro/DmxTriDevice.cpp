@@ -21,7 +21,6 @@
 #include <string>
 #include "ola/Callback.h"
 #include "ola/Logging.h"
-#include "olad/PortDecorators.h"
 #include "plugins/usbpro/DmxTriDevice.h"
 #include "plugins/usbpro/DmxTriWidget.h"
 
@@ -49,8 +48,9 @@ DmxTriDevice::DmxTriDevice(ola::PluginAdaptor *plugin_adaptor,
   str << std::hex << esta_id << "-" << device_id << "-" << serial;
   m_device_id = str.str();
 
-  ola::OutputPort *output_port = new ThrottledOutputPortDecorator(
-      new DmxTriOutputPort(this, widget),
+  ola::OutputPort *output_port = new DmxTriOutputPort(
+      this,
+      widget,
       plugin_adaptor->WakeUpTime(),
       10,  // start with 10 tokens in the bucket
       fps_limit);
@@ -81,10 +81,15 @@ void DmxTriDevice::PrePortStop() {
  * New DmxTriOutputPort
  */
 DmxTriOutputPort::DmxTriOutputPort(DmxTriDevice *parent,
-                                   DmxTriWidget *widget)
+                                   DmxTriWidget *widget,
+                                   const TimeStamp *wake_time,
+                                   unsigned int initial_count,
+                                   unsigned int rate)
     : BasicOutputPort(parent, 0),
       m_device(parent),
-      m_tri_widget(widget) {
+      m_tri_widget(widget),
+      m_bucket(initial_count, rate, rate, *wake_time),
+      m_wake_time(wake_time) {
   m_tri_widget->SetUIDListCallback(
       ola::NewCallback(
         static_cast<BasicOutputPort*>(this), &DmxTriOutputPort::NewUIDList));
@@ -105,7 +110,11 @@ DmxTriOutputPort::~DmxTriOutputPort() {
  */
 bool DmxTriOutputPort::WriteDMX(const DmxBuffer &buffer,
                                 uint8_t priority) {
-  return m_tri_widget->SendDMX(buffer);
+  if (m_bucket.GetToken(*m_wake_time))
+    return m_tri_widget->SendDMX(buffer);
+  else
+    OLA_INFO << "Port rated limited, dropping frame";
+  return true;
   (void) priority;
 }
 

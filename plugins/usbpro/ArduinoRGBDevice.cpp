@@ -24,7 +24,6 @@
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
 #include "ola/network/SelectServerInterface.h"
-#include "olad/PortDecorators.h"
 #include "plugins/usbpro/ArduinoRGBDevice.h"
 
 namespace ola {
@@ -49,8 +48,10 @@ ArduinoRGBDevice::ArduinoRGBDevice(ola::network::SelectServerInterface *ss,
   str << std::hex << esta_id << "-" << device_id << "-" << serial;
   m_device_id = str.str();
 
-  OutputPort *output_port = new ThrottledOutputPortDecorator(
-      new ArduinoRGBOutputPort(this, widget, serial),
+  OutputPort *output_port = new ArduinoRGBOutputPort(
+      this,
+      widget,
+      serial,
       ss->WakeUpTime(),
       5,  // start with 5 tokens in the bucket
       20);  // 22 frames per second seems to be the limit
@@ -60,9 +61,14 @@ ArduinoRGBDevice::ArduinoRGBDevice(ola::network::SelectServerInterface *ss,
 
 ArduinoRGBOutputPort::ArduinoRGBOutputPort(ArduinoRGBDevice *parent,
                                            ArduinoWidget *widget,
-                                           uint32_t serial)
+                                           uint32_t serial,
+                                           const TimeStamp *wake_time,
+                                           unsigned int initial_count,
+                                           unsigned int rate)
     : BasicOutputPort(parent, 0, true),
-      m_widget(widget) {
+      m_widget(widget),
+      m_bucket(initial_count, rate, rate, *wake_time),
+      m_wake_time(wake_time) {
   std::stringstream str;
   str << "Serial #: 0x" <<  std::setfill('0') << std::setw(8) << std::hex <<
     serial;

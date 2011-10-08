@@ -30,7 +30,6 @@
 #include "ola/BaseTypes.h"
 #include "ola/Callback.h"
 #include "ola/Logging.h"
-#include "olad/PortDecorators.h"
 #include "olad/Preferences.h"
 #include "plugins/usbpro/UsbProDevice.h"
 #include "plugins/usbpro/UsbProWidgetDetector.h"
@@ -87,8 +86,11 @@ UsbProDevice::UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
         &InputPort::DmxChanged));
   AddPort(input_port);
 
-  OutputPort *output_port = new ThrottledOutputPortDecorator(
-      new UsbProOutputPort(this, m_pro_widget, 0, ""),
+  OutputPort *output_port = new UsbProOutputPort(
+      this,
+      m_pro_widget,
+      0,
+      "",
       plugin_adaptor->WakeUpTime(),
       10,  // start with 10 tokens in the bucket
       fps_limit);  // 200 frames per second seems to be the limit

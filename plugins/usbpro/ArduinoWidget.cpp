@@ -25,7 +25,6 @@
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
 #include "ola/rdm/RDMCommand.h"
-#include "olad/PortDecorators.h"
 #include "plugins/usbpro/ArduinoRGBDevice.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
 
