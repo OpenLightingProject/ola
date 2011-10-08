@@ -63,9 +63,9 @@ RobeWidgetDetector::RobeWidgetDetector(
       m_timeout_ms(timeout),
       m_callback(on_success),
       m_failure_callback(on_failure) {
-  if (!m_callback)
+  if (!on_success)
     OLA_WARN << "on_success callback not set, this will leak memory!";
-  if (!m_failure_callback)
+  if (!on_failure)
     OLA_WARN << "on_failure callback not set, this will leak memory!";
 }
 
@@ -80,11 +80,6 @@ RobeWidgetDetector::~RobeWidgetDetector() {
     CleanupWidget(iter->first);
   }
   m_widgets.clear();
-
-  if (m_callback)
-    delete m_callback;
-  if (m_failure_callback)
-    delete m_failure_callback;
 }
 
 
@@ -243,7 +238,7 @@ void RobeWidgetDetector::CleanupWidget(RobeWidget *widget) {
   ola::network::ConnectedDescriptor *descriptor = widget->GetDescriptor();
   descriptor->SetOnClose(NULL);
   delete widget;
-  if (m_failure_callback)
+  if (m_failure_callback.get())
     m_failure_callback->Run(descriptor);
 }
 
@@ -254,7 +249,7 @@ void RobeWidgetDetector::CleanupWidget(RobeWidget *widget) {
 void RobeWidgetDetector::DispatchWidget(
     RobeWidget *widget,
     const RobeWidgetInformation *info) {
-  if (m_callback) {
+  if (m_callback.get()) {
     widget->GetDescriptor()->SetOnClose(NULL);
     m_callback->Run(widget, info);
   } else {

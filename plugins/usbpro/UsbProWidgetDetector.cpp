@@ -80,9 +80,9 @@ UsbProWidgetDetector::UsbProWidgetDetector(
       m_callback(on_success),
       m_failure_callback(on_failure),
       m_timeout_ms(message_interval) {
-  if (!m_callback)
+  if (!on_success)
     OLA_WARN << "on_success callback not set, this will leak memory!";
-  if (!m_failure_callback)
+  if (!on_failure)
     OLA_WARN << "on_failure callback not set, this will leak memory!";
 }
 
@@ -94,16 +94,11 @@ UsbProWidgetDetector::~UsbProWidgetDetector() {
   WidgetStateMap::iterator iter;
   for (iter = m_widgets.begin(); iter != m_widgets.end(); ++iter) {
     iter->first->GetDescriptor()->SetOnClose(NULL);
-    if (m_failure_callback)
+    if (m_failure_callback.get())
       m_failure_callback->Run(iter->first->GetDescriptor());
     RemoveTimeout(&iter->second);
   }
   m_widgets.clear();
-
-  if (m_callback)
-    delete m_callback;
-  if (m_failure_callback)
-    delete m_failure_callback;
 }
 
 
@@ -177,7 +172,7 @@ void UsbProWidgetDetector::WidgetRemoved(DispatchingUsbProWidget *widget) {
   delete widget;
   descriptor->SetOnClose(NULL);
   descriptor->Close();
-  if (m_failure_callback)
+  if (m_failure_callback.get())
     m_failure_callback->Run(descriptor);
 }
 
@@ -248,7 +243,7 @@ void UsbProWidgetDetector::DiscoveryTimeout(DispatchingUsbProWidget *widget) {
           widget->GetDescriptor();
         descriptor->SetOnClose(NULL);
         delete widget;
-        if (m_failure_callback)
+        if (m_failure_callback.get())
           m_failure_callback->Run(descriptor);
         m_widgets.erase(iter);
     }
@@ -353,7 +348,7 @@ void UsbProWidgetDetector::DispatchWidget(
   ola::network::ConnectedDescriptor *descriptor = widget->GetDescriptor();
   descriptor->SetOnClose(NULL);
   delete widget;
-  if (m_callback) {
+  if (m_callback.get()) {
     m_callback->Run(descriptor, info);
   } else {
     delete info;

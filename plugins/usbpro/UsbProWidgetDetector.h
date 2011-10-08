@@ -24,6 +24,7 @@
 
 #include <ola/thread/SchedulingExecutorInterface.h>
 #include <map>
+#include <memory>
 #include <string>
 #include "ola/Callback.h"
 #include "plugins/usbpro/WidgetDetectorInterface.h"
@@ -31,6 +32,8 @@
 namespace ola {
 namespace plugin {
 namespace usbpro {
+
+using std::auto_ptr;
 
 class DispatchingUsbProWidget;
 
@@ -111,8 +114,8 @@ class UsbProWidgetDetector: public WidgetDetectorInterface {
     };
 
     ola::thread::SchedulingExecutorInterface *m_scheduler;
-    SuccessHandler *m_callback;
-    FailureHandler *m_failure_callback;
+    auto_ptr<SuccessHandler> m_callback;
+    auto_ptr<FailureHandler> m_failure_callback;
 
     typedef std::map<DispatchingUsbProWidget*, DiscoveryState> WidgetStateMap;
     WidgetStateMap m_widgets;

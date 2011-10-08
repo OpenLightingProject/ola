@@ -24,6 +24,7 @@
 #include <ola/Callback.h>
 #include <ola/rdm/UID.h>
 #include <ola/thread/SchedulingExecutorInterface.h>
+#include <memory>
 #include <map>
 #include <string>
 #include "plugins/usbpro/RobeWidget.h"
@@ -33,6 +34,7 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
+using std::auto_ptr;
 
 /*
  * Contains information about the Robe USB device.
@@ -109,8 +111,8 @@ class RobeWidgetDetector: public WidgetDetectorInterface {
 
     ola::thread::SchedulingExecutorInterface *m_scheduler;
     const unsigned int m_timeout_ms;
-    SuccessHandler *m_callback;
-    FailureHandler *m_failure_callback;
+    auto_ptr<SuccessHandler> m_callback;
+    auto_ptr<FailureHandler> m_failure_callback;
 
     typedef std::map<RobeWidget*, DiscoveryState> WidgetStateMap;
     WidgetStateMap m_widgets;
