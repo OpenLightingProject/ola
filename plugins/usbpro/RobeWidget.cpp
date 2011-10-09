@@ -117,13 +117,11 @@ bool RobeWidget::SendMessage(uint8_t packet_type,
   memcpy(frame + sizeof(message_header), data, length);
   frame[frame_size - 1] = crc;
 
-  OLA_INFO << "start send";
   ssize_t bytes_sent = m_descriptor->Send(frame, frame_size);
   if (bytes_sent != frame_size)
     // we've probably screwed framing at this point
     return false;
 
-  OLA_INFO << "send complete";
   return true;
 }
 
