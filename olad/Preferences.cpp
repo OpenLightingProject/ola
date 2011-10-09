@@ -313,7 +313,8 @@ void FilePreferenceSaverThread::Syncronize() {
   m_ss.Execute(NewSingleCallback(
         this,
         &FilePreferenceSaverThread::CompleteSyncronization,
-        &condition_var));
+        &condition_var,
+        &syncronize_mutex));
   condition_var.Wait(&syncronize_mutex);
 }
 
@@ -345,7 +346,12 @@ void FilePreferenceSaverThread::SaveToFile(
  * Notify the blocked thread we're done
  */
 void FilePreferenceSaverThread::CompleteSyncronization(
-    ConditionVariable *condition) {
+    ConditionVariable *condition,
+    Mutex *mutex) {
+  // calling lock here forces us to block until Wait() is called on the
+  // condition_var.
+  mutex->Lock();
+  mutex->Unlock();
   condition->Signal();
 }
 

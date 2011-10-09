@@ -233,7 +233,8 @@ class FilePreferenceSaverThread: public OlaThread {
     ola::network::SelectServer m_ss;
 
     void SaveToFile(const string *filename, const PreferencesMap *preferences);
-    void CompleteSyncronization(ConditionVariable *condition);
+    void CompleteSyncronization(ConditionVariable *condition,
+                                Mutex *mutex);
 };
 
 

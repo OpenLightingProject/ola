@@ -209,7 +209,6 @@ void PreferencesTest::testLoad() {
 void PreferencesTest::testSave() {
   ola::FilePreferenceSaverThread saver_thread;
   saver_thread.Start();
-  FileBackedPreferencesFactory factory("");
   FileBackedPreferences *preferences = new FileBackedPreferences(
       "./testdata", "output", &saver_thread);
   preferences->Clear();
