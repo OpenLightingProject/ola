@@ -93,6 +93,7 @@ class BaseUsbProWidget: public SerialWidgetInterface {
 
     static const uint8_t EOM = 0xe7;
     static const uint8_t SOM = 0x7e;
+    static const unsigned int HEADER_SIZE;
 };
 
 

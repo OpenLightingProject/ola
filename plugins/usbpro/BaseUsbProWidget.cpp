@@ -37,6 +37,9 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
+const unsigned int BaseUsbProWidget::HEADER_SIZE =
+  sizeof(BaseUsbProWidget::message_header);
+
 
 BaseUsbProWidget::BaseUsbProWidget(
     ola::network::ConnectedDescriptor *descriptor)
@@ -92,30 +95,24 @@ bool BaseUsbProWidget::SendMessage(uint8_t label,
   if (length && !data)
     return false;
 
-  message_header header;
-  header.som = SOM;
-  header.label = label;
-  header.len = length & 0xFF;
-  header.len_hi = (length & 0xFF00) >> 8;
+  ssize_t frame_size = HEADER_SIZE + length + 1;
+  uint8_t frame[frame_size];
+  message_header *header = reinterpret_cast<message_header*>(frame);
+  header->som = SOM;
+  header->label = label;
+  header->len = length & 0xFF;
+  header->len_hi = (length & 0xFF00) >> 8;
 
-  // should really use writev here instead
-  ssize_t bytes_sent = m_descriptor->Send(reinterpret_cast<uint8_t*>(&header),
-                                      sizeof(header));
-  if (bytes_sent != sizeof(header))
+  memcpy(frame + sizeof(message_header), data, length);
+  frame[frame_size - 1] = EOM;
+
+  OLA_INFO << "start send";
+  ssize_t bytes_sent = m_descriptor->Send(frame, frame_size);
+  if (bytes_sent != frame_size)
     // we've probably screwed framing at this point
     return false;
 
-  if (length) {
-    unsigned int bytes_sent = m_descriptor->Send(data, length);
-    if (bytes_sent != length)
-      // we've probably screwed framing at this point
-      return false;
-  }
-
-  uint8_t eom = EOM;
-  bytes_sent = m_descriptor->Send(&eom, sizeof(EOM));
-  if (bytes_sent != sizeof(EOM))
-    return false;
+  OLA_INFO << "send complete";
   return true;
 }
 

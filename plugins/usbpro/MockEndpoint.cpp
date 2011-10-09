@@ -251,13 +251,33 @@ void MockEndpoint::SendUnsolicitedUsbProData(
  * expected and if there is return data send it.
  */
 void MockEndpoint::DescriptorReady() {
-  uint8_t data[MAX_DATA_SIZE];
-  unsigned int data_received;
-  m_descriptor->Receive(data, sizeof(data), data_received);
-
   CPPUNIT_ASSERT(!m_expected_data.empty());
   expected_data call = m_expected_data.front();
   m_expected_data.pop();
+
+  uint8_t data[call.expected_data_frame.length];
+  unsigned int data_received = 0;
+
+  OLA_INFO << "expect " << call.expected_data_frame.length;
+  while (data_received != call.expected_data_frame.length) {
+    unsigned int offset = data_received;
+    if (call.expected_data_frame.length - offset > 100) {
+      OLA_INFO << data_received;
+      OLA_INFO << call.expected_data_frame.length;
+      CPPUNIT_ASSERT(false);
+    }
+
+    OLA_INFO << "waiting on " << (call.expected_data_frame.length - offset) <<
+      " bytes";
+    OLA_INFO << "requesting " << call.expected_data_frame.length - offset;
+    m_descriptor->Receive(data + offset, call.expected_data_frame.length - offset, data_received);
+    OLA_INFO << "got " << data_received;
+    data_received += offset;
+
+  }
+
+  OLA_INFO << "ok";
+
   CPPUNIT_ASSERT_EQUAL(call.expected_data_frame.length, data_received);
   bool data_matches = !memcmp(call.expected_data_frame.data,
                               data,

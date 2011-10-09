@@ -96,6 +96,7 @@ class RobeWidget: public SerialWidgetInterface {
     void ReceiveMessage();
 
     static const uint8_t SOM = 0xa5;
+    static const unsigned int HEADER_SIZE;
 };
 }  // usbpro
 }  // plugin

@@ -30,6 +30,8 @@ namespace usbpro {
 
 // The DMX frames have an extra 4 bytes at the end
 const int RobeWidget::DMX_FRAME_DATA_SIZE = DMX_UNIVERSE_SIZE + 4;
+const unsigned int RobeWidget::HEADER_SIZE =
+  sizeof(RobeWidget::message_header);
 
 RobeWidget::RobeWidget(ola::network::ConnectedDescriptor *descriptor)
     : m_callback(NULL),
@@ -99,36 +101,29 @@ bool RobeWidget::SendMessage(uint8_t packet_type,
   if (length && !data)
     return false;
 
-  message_header header;
-  header.som = SOM;
-  header.packet_type = packet_type;
-  header.len = length & 0xFF;
-  header.len_hi = (length & 0xFF00) >> 8;
-
+  ssize_t frame_size = HEADER_SIZE + length + 1;
+  uint8_t frame[frame_size];
+  message_header *header = reinterpret_cast<message_header*>(frame);
+  header->som = SOM;
+  header->packet_type = packet_type;
+  header->len = length & 0xFF;
+  header->len_hi = (length & 0xFF00) >> 8;
   uint8_t crc = SOM + packet_type + (length & 0xFF) + ((length & 0xFF00) >> 8);
-  header.header_crc = crc;
-
-  ssize_t bytes_sent = m_descriptor->Send(reinterpret_cast<uint8_t*>(&header),
-                                          sizeof(header));
-
+  header->header_crc = crc;
   crc += crc;
-  if (bytes_sent != sizeof(header))
+  for (unsigned int i = 0; i < length; i++)
+    crc += data[i];
+
+  memcpy(frame + sizeof(message_header), data, length);
+  frame[frame_size - 1] = crc;
+
+  OLA_INFO << "start send";
+  ssize_t bytes_sent = m_descriptor->Send(frame, frame_size);
+  if (bytes_sent != frame_size)
     // we've probably screwed framing at this point
     return false;
 
-  if (length) {
-    unsigned int bytes_sent = m_descriptor->Send(data, length);
-    if (bytes_sent != length)
-      // we've probably screwed framing at this point
-      return false;
-
-    for (unsigned int i = 0; i < length; i++)
-      crc += data[i];
-  }
-
-  bytes_sent = m_descriptor->Send(&crc, sizeof(crc));
-  if (bytes_sent != sizeof(crc))
-    return false;
+  OLA_INFO << "send complete";
   return true;
 }
 
