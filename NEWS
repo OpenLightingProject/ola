@@ -5,6 +5,7 @@ X/Y/2011 ola-0.8.13
  * Large cleanup of the build rules
  * Added a script to collect device model information using RDM
  * Added a basic show recorder program
+ * Add TX support for the Robe Universal Interface - #148
 
 3/9/2011 ola-0.8.12
  * Add the generic messaging framework and use it to handle RDM PIDs
