@@ -88,7 +88,7 @@ void RobeWidgetDetectorTest::setUp() {
       10));
 
   m_ss.RegisterSingleTimeout(
-      40,  // 40ms should be enough
+      4000,  // This should only take 40ms, but on slow platforms takes longer
       ola::NewSingleCallback(this, &RobeWidgetDetectorTest::Timeout));
 }
 
