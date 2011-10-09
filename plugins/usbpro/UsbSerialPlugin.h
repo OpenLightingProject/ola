@@ -18,8 +18,8 @@
  * Copyright (C) 2006  Simon Newton
  */
 
-#ifndef PLUGINS_USBPRO_USBPROPLUGIN_H_
-#define PLUGINS_USBPRO_USBPROPLUGIN_H_
+#ifndef PLUGINS_USBPRO_USBSERIALPLUGIN_H_
+#define PLUGINS_USBPRO_USBSERIALPLUGIN_H_
 
 #include <string>
 #include <vector>
@@ -83,12 +83,11 @@ class UsbSerialPlugin: public ola::Plugin, public NewWidgetHandler {
     static const char TRI_USE_RAW_RDM_KEY[];
     static const char USBPRO_DEVICE_NAME[];
     static const char USB_PRO_FPS_LIMIT_KEY[];
+    static const uint16_t ENTTEC_ESTA_ID;
     static const unsigned int MAX_DMX_TRI_FPS_LIMIT = 1000;
     static const unsigned int MAX_PRO_FPS_LIMIT = 1000;
-
-    static const uint16_t ENTTEC_ESTA_ID = 0x454E;
 };
 }  // usbpro
 }  // plugin
 }  // ola
-#endif  // PLUGINS_USBPRO_USBPROPLUGIN_H_
+#endif  // PLUGINS_USBPRO_USBSERIALPLUGIN_H_

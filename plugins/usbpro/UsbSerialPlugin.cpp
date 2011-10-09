@@ -60,6 +60,7 @@ const char UsbSerialPlugin::ROBE_DEVICE_NAME[] = "Robe Universal Interface";
 const char UsbSerialPlugin::TRI_USE_RAW_RDM_KEY[] = "tri_use_raw_rdm";
 const char UsbSerialPlugin::USBPRO_DEVICE_NAME[] = "Enttec Usb Pro Device";
 const char UsbSerialPlugin::USB_PRO_FPS_LIMIT_KEY[] = "pro_fps_limit";
+const uint16_t UsbSerialPlugin::ENTTEC_ESTA_ID = 0x454E;
 
 UsbSerialPlugin::UsbSerialPlugin(PluginAdaptor *plugin_adaptor)
     : Plugin(plugin_adaptor),
