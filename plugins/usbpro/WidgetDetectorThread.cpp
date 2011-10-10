@@ -297,10 +297,11 @@ void WidgetDetectorThread::UsbProWidgetReady(
  * Called when we discovery a robe widget.
  */
 void WidgetDetectorThread::RobeWidgetReady(
-    RobeWidget *widget,
+    ConnectedDescriptor *descriptor,
     const RobeWidgetInformation *info) {
-  // we're no longer interested in events from this widget
-  m_ss.RemoveReadDescriptor(widget->GetDescriptor());
+  // we're no longer interested in events from this descriptor
+  m_ss.RemoveReadDescriptor(descriptor);
+  RobeWidget *widget = new RobeWidget(descriptor, m_other_ss, info->uid);
 
   if (m_handler) {
     DispatchWidget(widget, info);

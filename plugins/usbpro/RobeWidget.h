@@ -22,10 +22,16 @@
 #define PLUGINS_USBPRO_ROBEWIDGET_H_
 
 #include <stdint.h>
-#include <ola/Callback.h>
-#include <ola/DmxBuffer.h>
+#include "ola/Callback.h"
+#include "ola/DmxBuffer.h"
 #include "ola/network/Socket.h"
-#include "plugins/usbpro/SerialWidgetInterface.h"
+#include "ola/rdm/QueueingRDMController.h"
+#include "ola/rdm/RDMCommand.h"
+#include "ola/rdm/RDMControllerInterface.h"
+#include "ola/rdm/UID.h"
+#include "ola/rdm/UIDSet.h"
+#include "ola/thread/SchedulingExecutorInterface.h"
+#include "plugins/usbpro/BaseRobeWidget.h"
 
 namespace ola {
 namespace plugin {
@@ -33,70 +39,81 @@ namespace usbpro {
 
 
 /*
- * A Robe USB Widget.
+ * A Robe USB Widget implementation.
  */
-class RobeWidget: public SerialWidgetInterface {
+class RobeWidgetImpl: public BaseRobeWidget,
+                      public ola::rdm::DiscoverableRDMControllerInterface {
   public:
-    explicit RobeWidget(ola::network::ConnectedDescriptor *descriptor);
-    ~RobeWidget();
-
-    typedef ola::Callback3<void, uint8_t, const uint8_t*, unsigned int>
-      MessageHandler;
-
-    ola::network::ConnectedDescriptor *GetDescriptor() const {
-      return m_descriptor;
-    }
-
-    void SetMessageHandler(MessageHandler *callback);
-
-    void DescriptorReady();
+    explicit RobeWidgetImpl(ola::network::ConnectedDescriptor *descriptor,
+                            ola::thread::SchedulingExecutorInterface *ss,
+                            const ola::rdm::UID &uid);
+    ~RobeWidgetImpl() {}
 
     bool SendDMX(const DmxBuffer &buffer);
 
-    bool SendMessage(uint8_t label,
-                     const uint8_t *data,
-                     unsigned int length) const;
+    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+                        ola::rdm::RDMCallback *on_complete);
+    bool RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
+    bool RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
 
-    static const uint8_t CHANNEL_A_OUT = 0x06;
-    static const uint8_t INFO_REQUEST = 0x14;
-    static const uint8_t INFO_RESPONSE = 0x15;
-    static const uint8_t UID_REQUEST = 0x24;
-    static const uint8_t UID_RESPONSE = 0x25;
     static const int DMX_FRAME_DATA_SIZE;
 
   private:
-    typedef enum {
-      PRE_SOM,
-      RECV_PACKET_TYPE,
-      RECV_SIZE_LO,
-      RECV_SIZE_HI,
-      RECV_HEADER_CRC,
-      RECV_BODY,
-      RECV_CRC,
-    } receive_state;
+    ola::rdm::UIDSet m_uids;
+    ola::thread::SchedulingExecutorInterface *m_ss;
+    ola::rdm::RDMCallback *m_rdm_request_callback;
+    const ola::rdm::RDMRequest *m_pending_request;
+    const ola::rdm::UID m_uid;
+    uint8_t m_transaction_number;
 
-    enum {MAX_DATA_SIZE = 522};
+    void HandleMessage(uint8_t label,
+                       const uint8_t *data,
+                       unsigned int length);
+    void HandleRDMResponse(const uint8_t *data,
+                           unsigned int length);
 
-    typedef struct {
-      uint8_t som;
-      uint8_t packet_type;
-      uint8_t len;
-      uint8_t len_hi;
-      uint8_t header_crc;
-    } message_header;
+    static const unsigned int RDM_REQUEST_PADDING_BYTES = 4;
+};
 
-    ola::Callback3<void, uint8_t, const uint8_t*, unsigned int> *m_callback;
-    ola::network::ConnectedDescriptor *m_descriptor;
-    receive_state m_state;
-    unsigned int m_bytes_received, m_data_size;
-    uint8_t m_crc;
-    message_header m_header;
-    uint8_t m_recv_buffer[MAX_DATA_SIZE];
 
-    void ReceiveMessage();
+/*
+ * A Robe Widget. This mostly just wraps the implementation.
+ */
+class RobeWidget: public SerialWidgetInterface,
+                  public ola::rdm::DiscoverableRDMControllerInterface {
+  public:
+    RobeWidget(ola::network::ConnectedDescriptor *descriptor,
+               ola::thread::SchedulingExecutorInterface *ss,
+               const ola::rdm::UID &uid,
+               unsigned int queue_size = 20);
+    ~RobeWidget();
 
-    static const uint8_t SOM = 0xa5;
-    static const unsigned int HEADER_SIZE;
+    ola::network::ConnectedDescriptor *GetDescriptor() const {
+      return m_impl->GetDescriptor();
+    }
+
+    bool SendDMX(const DmxBuffer &buffer) {
+      return m_impl->SendDMX(buffer);
+    }
+
+    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+                        ola::rdm::RDMCallback *on_complete) {
+      m_controller->SendRDMRequest(request, on_complete);
+    }
+
+    bool RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+      return m_impl->RunFullDiscovery(callback);
+    }
+
+    bool RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+      return m_impl->RunIncrementalDiscovery(callback);
+    }
+
+  private:
+    // we need to control the order of construction & destruction here so these
+    // are pointers.
+    RobeWidgetImpl *m_impl;
+    ola::rdm::DiscoverableQueueingRDMController *m_controller;
 };
 }  // usbpro
 }  // plugin

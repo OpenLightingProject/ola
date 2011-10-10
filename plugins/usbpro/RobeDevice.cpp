@@ -39,7 +39,8 @@ RobeDevice::RobeDevice(ola::network::SelectServerInterface *ss,
                        ola::AbstractPlugin *owner,
                        const string &name,
                        RobeWidget *widget)
-    : UsbSerialDevice(owner, name, widget) {
+    : UsbSerialDevice(owner, name, widget),
+      m_robe_widget(widget) {
   std::stringstream str;
   str << 1;
   m_device_id = str.str();
@@ -50,6 +51,19 @@ RobeDevice::RobeDevice(ola::network::SelectServerInterface *ss,
 }
 
 
+/*
+ * Kick off the RDM discovery process
+ */
+bool RobeDevice::StartHook() {
+  // start the discovery process to populate the TOD
+  m_robe_widget->RunFullDiscovery(NULL);
+  return true;
+}
+
+
+/**
+ * Create a new Robe Output Port
+ */
 RobeOutputPort::RobeOutputPort(RobeDevice *parent,
                                RobeWidget *widget)
     : BasicOutputPort(parent, 0, true),

@@ -13,17 +13,15 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * BaseUsbProWidget.h
- * Read and Write to a USB Serial Widget that uses the Enttec Usb Pro frame
- * layout.
- * Copyright (C) 2010 Simon Newton
+ * BaseRobeWidget.h
+ * Read and Write to a USB Widget that implements the Robe frame format.
+ * Copyright (C) 2011 Simon Newton
  */
 
-#ifndef PLUGINS_USBPRO_BASEUSBPROWIDGET_H_
-#define PLUGINS_USBPRO_BASEUSBPROWIDGET_H_
+#ifndef PLUGINS_USBPRO_BASEROBEWIDGET_H_
+#define PLUGINS_USBPRO_BASEROBEWIDGET_H_
 
 #include <stdint.h>
-#include <string>
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/network/Socket.h"
@@ -35,85 +33,86 @@ namespace usbpro {
 
 
 /*
- * A widget that implements the Usb Pro frame format.
+ * A widget that implements the Robe frame format.
  */
-class BaseUsbProWidget: public SerialWidgetInterface {
+class BaseRobeWidget: public SerialWidgetInterface {
   public:
-    explicit BaseUsbProWidget(ola::network::ConnectedDescriptor *descriptor);
-    virtual ~BaseUsbProWidget();
+    explicit BaseRobeWidget(ola::network::ConnectedDescriptor *descriptor);
+    virtual ~BaseRobeWidget();
 
     ola::network::ConnectedDescriptor *GetDescriptor() const {
       return m_descriptor;
     }
-    void DescriptorReady();
-
-    // we locate the SendDMX in the base class since so many widgets share it.
-    virtual bool SendDMX(const DmxBuffer &buffer);
 
     bool SendMessage(uint8_t label,
                      const uint8_t *data,
                      unsigned int length) const;
 
-    static ola::network::ConnectedDescriptor *OpenDevice(const string &path);
-
-    static const uint8_t DMX_LABEL = 6;
-    static const uint8_t SERIAL_LABEL = 10;
-    static const uint8_t MANUFACTURER_LABEL = 77;
-    static const uint8_t DEVICE_LABEL = 78;
+    static const uint8_t CHANNEL_A_OUT = 0x06;
+    static const uint8_t INFO_REQUEST = 0x14;
+    static const uint8_t INFO_RESPONSE = 0x15;
+    static const uint8_t RDM_DISCOVERY = 0x12;
+    static const uint8_t RDM_DISCOVERY_RESPONSE = 0x13;
+    static const uint8_t RDM_REQUEST = 0x10;
+    static const uint8_t RDM_RESPONSE = 0x11;
+    static const uint8_t UID_REQUEST = 0x24;
+    static const uint8_t UID_RESPONSE = 0x25;
 
   private:
     typedef enum {
       PRE_SOM,
-      RECV_LABEL,
+      RECV_PACKET_TYPE,
       RECV_SIZE_LO,
       RECV_SIZE_HI,
+      RECV_HEADER_CRC,
       RECV_BODY,
-      RECV_EOM,
+      RECV_CRC,
     } receive_state;
 
-    enum {MAX_DATA_SIZE = 600};
+    enum {MAX_DATA_SIZE = 522};
 
     typedef struct {
       uint8_t som;
-      uint8_t label;
+      uint8_t packet_type;
       uint8_t len;
       uint8_t len_hi;
+      uint8_t header_crc;
     } message_header;
 
     ola::network::ConnectedDescriptor *m_descriptor;
     receive_state m_state;
-    unsigned int m_bytes_received;
+    unsigned int m_bytes_received, m_data_size;
+    uint8_t m_crc;
     message_header m_header;
     uint8_t m_recv_buffer[MAX_DATA_SIZE];
 
+    void DescriptorReady();
     void ReceiveMessage();
     virtual void HandleMessage(uint8_t label,
                                const uint8_t *data,
                                unsigned int length) = 0;
 
-    static const uint8_t EOM = 0xe7;
-    static const uint8_t SOM = 0x7e;
+    static const uint8_t SOM = 0xa5;
     static const unsigned int HEADER_SIZE;
 };
 
 
-/**
- * A Usb Pro Widget that can execute a callback when it receives messages.
- * This is used for discovery.
+/*
+ * DispatchingRobeWidget
  */
-class DispatchingUsbProWidget: public BaseUsbProWidget {
+class DispatchingRobeWidget: public BaseRobeWidget {
   public:
     typedef ola::Callback3<void,
                            uint8_t,
                            const uint8_t*,
                            unsigned int> MessageCallback;
-    DispatchingUsbProWidget(ola::network::ConnectedDescriptor *descriptor,
-                            MessageCallback *callback)
-        : BaseUsbProWidget(descriptor),
+    DispatchingRobeWidget(ola::network::ConnectedDescriptor *descriptor,
+                          MessageCallback *callback = NULL)
+        : BaseRobeWidget(descriptor),
           m_callback(callback) {
     }
 
-    ~DispatchingUsbProWidget() {
+    ~DispatchingRobeWidget() {
       if (m_callback)
         delete m_callback;
     }
@@ -136,4 +135,4 @@ class DispatchingUsbProWidget: public BaseUsbProWidget {
 }  // usbpro
 }  // plugin
 }  // ola
-#endif  // PLUGINS_USBPRO_BASEUSBPROWIDGET_H_
+#endif  // PLUGINS_USBPRO_BASEROBEWIDGET_H_

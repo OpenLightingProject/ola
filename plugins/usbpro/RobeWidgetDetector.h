@@ -27,7 +27,7 @@
 #include <memory>
 #include <map>
 #include <string>
-#include "plugins/usbpro/RobeWidget.h"
+#include "plugins/usbpro/BaseRobeWidget.h"
 #include "plugins/usbpro/WidgetDetectorInterface.h"
 
 namespace ola {
@@ -67,7 +67,7 @@ class RobeWidgetInformation {
 class RobeWidgetDetector: public WidgetDetectorInterface {
   public:
     typedef ola::Callback2<void,
-                           RobeWidget*,
+                           ola::network::ConnectedDescriptor*,
                            const RobeWidgetInformation*> SuccessHandler;
     typedef ola::Callback1<void,
                            ola::network::ConnectedDescriptor*> FailureHandler;
@@ -106,25 +106,26 @@ class RobeWidgetDetector: public WidgetDetectorInterface {
     auto_ptr<SuccessHandler> m_callback;
     auto_ptr<FailureHandler> m_failure_callback;
 
-    typedef std::map<RobeWidget*, DiscoveryState> WidgetStateMap;
+    typedef std::map<DispatchingRobeWidget*, DiscoveryState> WidgetStateMap;
     WidgetStateMap m_widgets;
 
-    void HandleMessage(RobeWidget *widget,
+    void HandleMessage(DispatchingRobeWidget *widget,
                        uint8_t label,
                        const uint8_t *data,
                        unsigned int length);
-    void HandleInfoMessage(RobeWidget *widget,
+    void HandleInfoMessage(DispatchingRobeWidget *widget,
                            const uint8_t *data,
                            unsigned int length);
-    void HandleUidMessage(RobeWidget *widget,
+    void HandleUidMessage(DispatchingRobeWidget *widget,
                           const uint8_t *data,
                           unsigned int length);
-    void WidgetRemoved(RobeWidget *widget);
-    void FailWidget(RobeWidget *widget);
-    void CleanupWidget(RobeWidget *widget);
-    void DispatchWidget(RobeWidget *widget, const RobeWidgetInformation *info);
+    void WidgetRemoved(DispatchingRobeWidget *widget);
+    void FailWidget(DispatchingRobeWidget *widget);
+    void CleanupWidget(DispatchingRobeWidget *widget);
+    void DispatchWidget(DispatchingRobeWidget *widget,
+                        const RobeWidgetInformation *info);
     void RemoveTimeout(DiscoveryState *discovery_state);
-    void SetupTimeout(RobeWidget *widget,
+    void SetupTimeout(DispatchingRobeWidget *widget,
                       DiscoveryState *discovery_state);
     bool IsUnlocked(const RobeWidgetInformation &info);
 

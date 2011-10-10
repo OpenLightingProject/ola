@@ -61,7 +61,7 @@ class RobeWidgetDetectorTest: public CommonWidgetTest {
     bool m_found_widget;
     bool m_failed_widget;
 
-    void NewWidget(RobeWidget *widget,
+    void NewWidget(ConnectedDescriptor *descriptor,
                    const RobeWidgetInformation *info);
     void FailedWidget(ConnectedDescriptor *descriptor);
     void Timeout() { m_ss.Terminate(); }
@@ -93,15 +93,14 @@ void RobeWidgetDetectorTest::setUp() {
 }
 
 
-void RobeWidgetDetectorTest::NewWidget(RobeWidget *widget,
+void RobeWidgetDetectorTest::NewWidget(ConnectedDescriptor *descriptor,
                                        const RobeWidgetInformation *info) {
   CPPUNIT_ASSERT_EQUAL(
       static_cast<ConnectedDescriptor*>(&m_descriptor),
-      widget->GetDescriptor());
+      descriptor);
   m_found_widget = true;
   m_device_info = *info;
   m_ss.Terminate();
-  delete widget;
   delete info;
 }
 

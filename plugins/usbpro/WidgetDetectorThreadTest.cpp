@@ -20,6 +20,7 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 #include <memory>
+#include <string>
 
 #include "ola/Callback.h"
 #include "ola/Logging.h"
@@ -31,12 +32,14 @@
 #include "plugins/usbpro/DmxterWidget.h"
 #include "plugins/usbpro/EnttecUsbProWidget.h"
 #include "plugins/usbpro/MockEndpoint.h"
+#include "plugins/usbpro/BaseRobeWidget.h"
 #include "plugins/usbpro/RobeWidget.h"
 #include "plugins/usbpro/WidgetDetectorThread.h"
 
 using ola::network::ConnectedDescriptor;
 using ola::network::UnixSocket;
 using ola::plugin::usbpro::ArduinoWidget;
+using ola::plugin::usbpro::BaseRobeWidget;
 using ola::plugin::usbpro::BaseUsbProWidget;
 using ola::plugin::usbpro::DmxTriWidget;
 using ola::plugin::usbpro::DmxterWidget;
@@ -369,17 +372,17 @@ void WidgetDetectorThreadTest::testRobeWidget() {
   uint8_t info_data[] = {1, 2, 3, 0, 0};
   uint8_t uid_data[] = {0x52, 0x53, 2, 0, 0, 10};
   m_endpoint->AddExpectedRobeDataAndReturn(
-      RobeWidget::INFO_REQUEST,
+      BaseRobeWidget::INFO_REQUEST,
       NULL,
       0,
-      RobeWidget::INFO_RESPONSE,
+      BaseRobeWidget::INFO_RESPONSE,
       info_data,
       sizeof(info_data));
   m_endpoint->AddExpectedRobeDataAndReturn(
-      RobeWidget::UID_REQUEST,
+      BaseRobeWidget::UID_REQUEST,
       NULL,
       0,
-      RobeWidget::UID_RESPONSE,
+      BaseRobeWidget::UID_RESPONSE,
       uid_data,
       sizeof(uid_data));
 
@@ -402,7 +405,7 @@ void WidgetDetectorThreadTest::testTimeout() {
   m_endpoint->AddExpectedUsbProMessage(BaseUsbProWidget::SERIAL_LABEL,
                                        NULL,
                                        0);
-  m_endpoint->AddExpectedRobeMessage(RobeWidget::INFO_REQUEST,
+  m_endpoint->AddExpectedRobeMessage(BaseRobeWidget::INFO_REQUEST,
                                      NULL,
                                      0);
   m_thread->Start();

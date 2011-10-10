@@ -215,7 +215,6 @@ void MockEndpoint::AddExpectedRobeDataAndReturn(
     NULL
   };
   m_expected_data.push(call);
-
 }
 
 
@@ -264,7 +263,9 @@ void MockEndpoint::DescriptorReady() {
       CPPUNIT_ASSERT(false);
     }
 
-    m_descriptor->Receive(data + offset, call.expected_data_frame.length - offset, data_received);
+    m_descriptor->Receive(data + offset,
+                          call.expected_data_frame.length - offset,
+                          data_received);
     data_received += offset;
   }
 

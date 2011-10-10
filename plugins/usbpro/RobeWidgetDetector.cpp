@@ -90,11 +90,11 @@ RobeWidgetDetector::~RobeWidgetDetector() {
  */
 bool RobeWidgetDetector::Discover(
     ola::network::ConnectedDescriptor *descriptor) {
-  RobeWidget *widget = new RobeWidget(descriptor);
-  widget->SetMessageHandler(
+  DispatchingRobeWidget *widget = new DispatchingRobeWidget(descriptor);
+  widget->SetHandler(
     NewCallback(this, &RobeWidgetDetector::HandleMessage, widget));
 
-  if (!widget->SendMessage(RobeWidget::INFO_REQUEST, NULL, 0)) {
+  if (!widget->SendMessage(BaseRobeWidget::INFO_REQUEST, NULL, 0)) {
     delete widget;
     return false;
   }
@@ -113,15 +113,15 @@ bool RobeWidgetDetector::Discover(
 /*
  * Called by the widgets when they receive a response.
  */
-void RobeWidgetDetector::HandleMessage(RobeWidget *widget,
+void RobeWidgetDetector::HandleMessage(DispatchingRobeWidget *widget,
                                        uint8_t label,
                                        const uint8_t *data,
                                        unsigned int length) {
   switch (label) {
-    case RobeWidget::INFO_RESPONSE:
+    case BaseRobeWidget::INFO_RESPONSE:
       HandleInfoMessage(widget, data, length);
       break;
-    case RobeWidget::UID_RESPONSE:
+    case BaseRobeWidget::UID_RESPONSE:
       HandleUidMessage(widget, data, length);
       break;
     default:
@@ -134,7 +134,7 @@ void RobeWidgetDetector::HandleMessage(RobeWidget *widget,
 /**
  * Handle a INFO message
  */
-void RobeWidgetDetector::HandleInfoMessage(RobeWidget *widget,
+void RobeWidgetDetector::HandleInfoMessage(DispatchingRobeWidget *widget,
                                            const uint8_t *data,
                                            unsigned int length) {
   struct {
@@ -164,14 +164,14 @@ void RobeWidgetDetector::HandleInfoMessage(RobeWidget *widget,
 
   RemoveTimeout(&iter->second);
   SetupTimeout(widget, &iter->second);
-  widget->SendMessage(RobeWidget::UID_REQUEST, NULL, 0);
+  widget->SendMessage(BaseRobeWidget::UID_REQUEST, NULL, 0);
 }
 
 
 /**
  * Handle a RDM UID Message
  */
-void RobeWidgetDetector::HandleUidMessage(RobeWidget *widget,
+void RobeWidgetDetector::HandleUidMessage(DispatchingRobeWidget *widget,
                                           const uint8_t *data,
                                           unsigned int length) {
   WidgetStateMap::iterator iter = m_widgets.find(widget);
@@ -218,7 +218,7 @@ void RobeWidgetDetector::HandleUidMessage(RobeWidget *widget,
 /**
  * Called if a widget is removed.
  */
-void RobeWidgetDetector::WidgetRemoved(RobeWidget *widget) {
+void RobeWidgetDetector::WidgetRemoved(DispatchingRobeWidget *widget) {
   widget->GetDescriptor()->Close();
   FailWidget(widget);
 }
@@ -228,7 +228,7 @@ void RobeWidgetDetector::WidgetRemoved(RobeWidget *widget) {
  * Called if a widget fails to respond in a given interval or responds with an
  * invalid message.
  */
-void RobeWidgetDetector::FailWidget(RobeWidget *widget) {
+void RobeWidgetDetector::FailWidget(DispatchingRobeWidget *widget) {
   WidgetStateMap::iterator iter = m_widgets.find(widget);
   if (iter != m_widgets.end()) {
     m_scheduler->RemoveTimeout(&iter->second);
@@ -241,7 +241,7 @@ void RobeWidgetDetector::FailWidget(RobeWidget *widget) {
 /**
  * Delete a widget and run the failure callback.
  */
-void RobeWidgetDetector::CleanupWidget(RobeWidget *widget) {
+void RobeWidgetDetector::CleanupWidget(DispatchingRobeWidget *widget) {
   ola::network::ConnectedDescriptor *descriptor = widget->GetDescriptor();
   descriptor->SetOnClose(NULL);
   delete widget;
@@ -254,14 +254,16 @@ void RobeWidgetDetector::CleanupWidget(RobeWidget *widget) {
  * Called once we have confirmed a new widget
  */
 void RobeWidgetDetector::DispatchWidget(
-    RobeWidget *widget,
+    DispatchingRobeWidget *widget,
     const RobeWidgetInformation *info) {
+  ola::network::ConnectedDescriptor *descriptor = widget->GetDescriptor();
+  descriptor->SetOnClose(NULL);
+  delete widget;
   if (m_callback.get()) {
-    widget->GetDescriptor()->SetOnClose(NULL);
-    m_callback->Run(widget, info);
+    m_callback->Run(descriptor, info);
   } else {
     OLA_FATAL << "No listener provided, leaking descriptor";
-    FailWidget(widget);
+    delete info;
   }
 }
 
@@ -278,7 +280,7 @@ void RobeWidgetDetector::RemoveTimeout(DiscoveryState *discovery_state) {
 /**
  * Setup a timeout for a widget
  */
-void RobeWidgetDetector::SetupTimeout(RobeWidget *widget,
+void RobeWidgetDetector::SetupTimeout(DispatchingRobeWidget *widget,
                                       DiscoveryState *discovery_state) {
   discovery_state->timeout_id = m_scheduler->RegisterSingleTimeout(
       m_timeout_ms,

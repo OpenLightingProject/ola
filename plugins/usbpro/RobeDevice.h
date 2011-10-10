@@ -43,8 +43,11 @@ class RobeDevice: public UsbSerialDevice {
 
     string DeviceId() const { return m_device_id; }
 
+    bool StartHook();
+
   private:
     string m_device_id;
+    RobeWidget *m_robe_widget;
 };
 
 
@@ -58,6 +61,25 @@ class RobeOutputPort: public BasicOutputPort {
 
     string Description() const { return ""; }
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
+
+    void HandleRDMRequest(const ola::rdm::RDMRequest *request,
+                          ola::rdm::RDMCallback *callback) {
+      return m_widget->SendRDMRequest(request, callback);
+    }
+
+    void RunFullDiscovery() {
+      ola::rdm::RDMDiscoveryCallback *callback = ola::NewSingleCallback(
+          static_cast<BasicOutputPort*>(this),
+          &RobeOutputPort::NewUIDList);
+      m_widget->RunFullDiscovery(callback);
+    }
+
+    void RunIncrementalDiscovery() {
+      ola::rdm::RDMDiscoveryCallback *callback = ola::NewSingleCallback(
+          static_cast<BasicOutputPort*>(this),
+          &RobeOutputPort::NewUIDList);
+      m_widget->RunIncrementalDiscovery(callback);
+    }
 
   private:
     RobeWidget *m_widget;

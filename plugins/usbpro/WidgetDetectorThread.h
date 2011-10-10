@@ -126,7 +126,7 @@ class WidgetDetectorThread: public ola::OlaThread {
     // called when we find new widgets of a particular type
     void UsbProWidgetReady(ConnectedDescriptor *descriptor,
                            const UsbProWidgetInformation *info);
-    void RobeWidgetReady(RobeWidget *widget,
+    void RobeWidgetReady(ConnectedDescriptor *descriptor,
                          const RobeWidgetInformation *info);
 
     void DescriptorFailed(ConnectedDescriptor *descriptor);

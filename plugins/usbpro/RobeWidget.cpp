@@ -19,59 +19,34 @@
  */
 
 #include <string.h>
+#include <string>
+#include <vector>
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
+#include "ola/rdm/UID.h"
+#include "ola/rdm/UIDSet.h"
 #include "plugins/usbpro/RobeWidget.h"
 
 namespace ola {
 namespace plugin {
 namespace usbpro {
 
+using ola::rdm::UID;
 
 // The DMX frames have an extra 4 bytes at the end
-const int RobeWidget::DMX_FRAME_DATA_SIZE = DMX_UNIVERSE_SIZE + 4;
-const unsigned int RobeWidget::HEADER_SIZE =
-  sizeof(RobeWidget::message_header);
+const int RobeWidgetImpl::DMX_FRAME_DATA_SIZE = DMX_UNIVERSE_SIZE + 4;
 
-RobeWidget::RobeWidget(ola::network::ConnectedDescriptor *descriptor)
-    : m_callback(NULL),
-      m_descriptor(descriptor),
-      m_state(PRE_SOM),
-      m_bytes_received(0) {
-  m_descriptor->SetOnData(NewCallback(this, &RobeWidget::DescriptorReady));
-}
-
-
-RobeWidget::~RobeWidget() {
-  if (m_callback)
-    delete m_callback;
-  // don't delete because ownership is transferred to the ss so that device
-  // removal works correctly. If you delete the descriptor the OnClose closure
-  // will be deleted, which breaks if it's already running.
-  m_descriptor->SetOnClose(NULL);
-  m_descriptor = NULL;
-}
-
-
-/**
- * Set the closure to be called when we receive a message from the widget
- * @param callback the closure to run, ownership is transferred.
- */
-void RobeWidget::SetMessageHandler(
-    ola::Callback3<void, uint8_t, const uint8_t*, unsigned int> *callback) {
-  if (m_callback)
-    delete m_callback;
-  m_callback = callback;
-}
-
-
-/*
- * Read data from the widget
- */
-void RobeWidget::DescriptorReady() {
-  while (m_descriptor->DataRemaining() > 0) {
-    ReceiveMessage();
-  }
+RobeWidgetImpl::RobeWidgetImpl(ola::network::ConnectedDescriptor *descriptor,
+                               ola::thread::SchedulingExecutorInterface *ss,
+                               const ola::rdm::UID &uid)
+    : BaseRobeWidget(descriptor),
+      m_ss(ss),
+      m_rdm_request_callback(NULL),
+      m_pending_request(NULL),
+      m_uid(uid),
+      m_transaction_number(0) {
+  ola::rdm::UID mock_uid(0x00a1, 0x00020020);
+  m_uids.AddUID(mock_uid);
 }
 
 
@@ -79,7 +54,7 @@ void RobeWidget::DescriptorReady() {
  * Send DMX
  * @param buffer the DMX data
  */
-bool RobeWidget::SendDMX(const DmxBuffer &buffer) {
+bool RobeWidgetImpl::SendDMX(const DmxBuffer &buffer) {
   // the data is 512 + an extra 4 bytes
   uint8_t output_data[DMX_FRAME_DATA_SIZE];
   memset(output_data, 0, DMX_FRAME_DATA_SIZE);
@@ -91,133 +66,146 @@ bool RobeWidget::SendDMX(const DmxBuffer &buffer) {
 }
 
 
-/*
- * Send the msg
- * @return true if successful, false otherwise
+/**
+ * Send a RDM Message
  */
-bool RobeWidget::SendMessage(uint8_t packet_type,
-                             const uint8_t *data,
-                             unsigned int length) const {
-  if (length && !data)
-    return false;
+void RobeWidgetImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
+                                    ola::rdm::RDMCallback *on_complete) {
+  std::vector<string> packets;
+  if (m_rdm_request_callback) {
+    OLA_FATAL << "Previous request hasn't completed yet, dropping request";
+    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
+    delete request;
+    return;
+  }
 
-  ssize_t frame_size = HEADER_SIZE + length + 1;
-  uint8_t frame[frame_size];
-  message_header *header = reinterpret_cast<message_header*>(frame);
-  header->som = SOM;
-  header->packet_type = packet_type;
-  header->len = length & 0xFF;
-  header->len_hi = (length & 0xFF00) >> 8;
-  uint8_t crc = SOM + packet_type + (length & 0xFF) + ((length & 0xFF00) >> 8);
-  header->header_crc = crc;
-  crc += crc;
-  for (unsigned int i = 0; i < length; i++)
-    crc += data[i];
+  // if we can't find this UID, fail now.
+  const UID &dest_uid = request->DestinationUID();
+  if (!dest_uid.IsBroadcast() && !m_uids.Contains(dest_uid)) {
+    on_complete->Run(ola::rdm::RDM_UNKNOWN_UID, NULL, packets);
+    delete request;
+    return;
+  }
 
-  memcpy(frame + sizeof(message_header), data, length);
-  frame[frame_size - 1] = crc;
+  // prepare the buffer for the RDM data, we don't need to include the start
+  // code. We need to include 4 bytes at the end, these bytes can be any value.
+  unsigned int data_size = request->Size() + RDM_REQUEST_PADDING_BYTES;
+  uint8_t *data = new uint8_t[data_size];
 
-  ssize_t bytes_sent = m_descriptor->Send(frame, frame_size);
-  if (bytes_sent != frame_size)
-    // we've probably screwed framing at this point
-    return false;
+  bool r = request->PackWithControllerParams(data,
+                                             &data_size,
+                                             m_uid,
+                                             m_transaction_number++,
+                                             1);
 
+  if (r) {
+    m_rdm_request_callback = on_complete;
+    m_pending_request = request;
+    if (SendMessage(BaseRobeWidget::RDM_REQUEST, data, data_size +
+                    RDM_REQUEST_PADDING_BYTES)) {
+      delete[] data;
+      return;
+    }
+  } else {
+    OLA_WARN << "Failed to pack message, dropping request";
+  }
+  m_rdm_request_callback = NULL;
+  m_pending_request = NULL;
+  delete[] data;
+  delete request;
+  on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
+}
+
+
+/**
+ * Perform full discovery.
+ */
+bool RobeWidgetImpl::RunFullDiscovery(
+    ola::rdm::RDMDiscoveryCallback *callback) {
+  OLA_INFO << "Full discovery";
+  if (callback)
+    callback->Run(m_uids);
   return true;
 }
 
 
-/*
- * Read the data and handle the messages.
+/**
+ * Perform incremental discovery.
  */
-void RobeWidget::ReceiveMessage() {
-  unsigned int count;
+bool RobeWidgetImpl::RunIncrementalDiscovery(
+    ola::rdm::RDMDiscoveryCallback *callback) {
+  OLA_INFO << "Incremental discovery";
+  if (callback)
+    callback->Run(m_uids);
+  return true;
+}
 
-  switch (m_state) {
-    case PRE_SOM:
-      do {
-        m_descriptor->Receive(&m_header.som, 1, count);
-        if (count != 1)
-          return;
-      } while (m_header.som != SOM);
-      m_state = RECV_PACKET_TYPE;
-    case RECV_PACKET_TYPE:
-      m_descriptor->Receive(&m_header.packet_type, 1, count);
-      if (count != 1)
-        return;
-      m_state = RECV_SIZE_LO;
-    case RECV_SIZE_LO:
-      m_descriptor->Receive(&m_header.len, 1, count);
-      if (count != 1)
-        return;
-      m_state = RECV_SIZE_HI;
-    case RECV_SIZE_HI:
-      m_descriptor->Receive(&m_header.len_hi, 1, count);
-      if (count != 1)
-        return;
 
-      m_data_size = (m_header.len_hi << 8) + m_header.len;
-      if (m_data_size > MAX_DATA_SIZE) {
-        m_state = PRE_SOM;
-        return;
-      }
-
-      m_bytes_received = 0;
-      m_state = RECV_HEADER_CRC;
-    case RECV_HEADER_CRC:
-      m_descriptor->Receive(&m_header.header_crc, 1, count);
-      if (count != 1)
-        return;
-
-      m_crc = SOM + m_header.packet_type + m_header.len + m_header.len_hi;
-      if (m_crc != m_header.header_crc) {
-        OLA_WARN << "Mismatched header crc: " <<
-          static_cast<int>(m_crc) << " != " <<
-          static_cast<int>(m_header.header_crc);
-        m_state = PRE_SOM;
-        return;
-      }
-      m_crc += m_header.header_crc;
-
-      if (m_data_size)
-        m_state = RECV_BODY;
-      else
-        m_state = RECV_CRC;
-    case RECV_BODY:
-      m_descriptor->Receive(
-          reinterpret_cast<uint8_t*>(&m_recv_buffer) + m_bytes_received,
-          m_data_size - m_bytes_received,
-          count);
-
-      if (!count)
-        return;
-
-      m_bytes_received += count;
-      if (m_bytes_received != m_data_size)
-        return;
-
-      m_state = RECV_CRC;
-    case RECV_CRC:
-      // check this is a valid frame
-      uint8_t crc;
-      m_descriptor->Receive(&crc, 1, count);
-      if (count != 1)
-        return;
-
-      for (unsigned int i = 0; i < m_data_size; i++)
-        m_crc += m_recv_buffer[i];
-
-      if (m_crc != crc) {
-        OLA_WARN << "Mismatched header crc: " <<
-          std::hex << static_cast<int>(m_crc) << " != " <<
-          std::hex << static_cast<int>(crc);
-      } else if (m_callback) {
-        m_callback->Run(m_header.packet_type,
-                        m_data_size ? m_recv_buffer : NULL,
-                        m_data_size);
-      }
-      m_state = PRE_SOM;
+/**
+ * Handle a Robe message
+ */
+void RobeWidgetImpl::HandleMessage(uint8_t label,
+                                   const uint8_t *data,
+                                   unsigned int length) {
+  switch (label) {
+    case BaseRobeWidget::RDM_RESPONSE:
+      HandleRDMResponse(data, length);
+      return;
+    default:
+      OLA_INFO << "Unknown message from Robe widget " << std::hex <<
+        static_cast<unsigned int>(label);
   }
-  return;
+}
+
+
+/**
+ * Handle a RDM response
+ */
+void RobeWidgetImpl::HandleRDMResponse(const uint8_t *data,
+                                       unsigned int length) {
+  std::vector<std::string> packets;
+  if (m_rdm_request_callback == NULL) {
+    OLA_FATAL << "Got a RDM response but no callback to run!";
+    return;
+  }
+  ola::rdm::RDMCallback *callback = m_rdm_request_callback;
+  m_rdm_request_callback = NULL;
+  const ola::rdm::RDMRequest *request = m_pending_request;
+  m_pending_request = NULL;
+
+  string packet;
+  packet.assign(reinterpret_cast<const char*>(data), length);
+  packets.push_back(packet);
+
+  // try to inflate
+  ola::rdm::rdm_response_code response_code;
+  ola::rdm::RDMResponse *response = ola::rdm::RDMResponse::InflateFromData(
+      packet,
+      &response_code,
+      m_pending_request);
+  callback->Run(response_code, response, packets);
+  delete request;
+}
+
+
+/**
+ * RobeWidget Constructor
+ */
+RobeWidget::RobeWidget(ola::network::ConnectedDescriptor *descriptor,
+                       ola::thread::SchedulingExecutorInterface *ss,
+                       const ola::rdm::UID &uid,
+                       unsigned int queue_size) {
+  m_impl = new RobeWidgetImpl(descriptor, ss, uid);
+  m_controller = new ola::rdm::DiscoverableQueueingRDMController(m_impl,
+                                                                 queue_size);
+}
+
+
+RobeWidget::~RobeWidget() {
+  // delete the controller after the impl because the controller owns the
+  // callback
+  delete m_impl;
+  delete m_controller;
 }
 }  // usbpro
 }  // plugin
