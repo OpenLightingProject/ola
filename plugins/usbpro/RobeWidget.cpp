@@ -79,18 +79,11 @@ void RobeWidgetImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
     return;
   }
 
-  // if we can't find this UID, fail now.
-  const UID &dest_uid = request->DestinationUID();
-  if (!dest_uid.IsBroadcast() && !m_uids.Contains(dest_uid)) {
-    on_complete->Run(ola::rdm::RDM_UNKNOWN_UID, NULL, packets);
-    delete request;
-    return;
-  }
-
   // prepare the buffer for the RDM data, we don't need to include the start
   // code. We need to include 4 bytes at the end, these bytes can be any value.
   unsigned int data_size = request->Size() + RDM_REQUEST_PADDING_BYTES;
   uint8_t *data = new uint8_t[data_size];
+  memset(data, 0, data_size);
 
   bool r = request->PackWithControllerParams(data,
                                              &data_size,
@@ -98,22 +91,34 @@ void RobeWidgetImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
                                              m_transaction_number++,
                                              1);
 
-  if (r) {
-    m_rdm_request_callback = on_complete;
-    m_pending_request = request;
-    if (SendMessage(BaseRobeWidget::RDM_REQUEST, data, data_size +
-                    RDM_REQUEST_PADDING_BYTES)) {
-      delete[] data;
-      return;
-    }
-  } else {
+  if (!r) {
     OLA_WARN << "Failed to pack message, dropping request";
+    delete[] data;
+    delete request;
+    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
+    return;
   }
-  m_rdm_request_callback = NULL;
-  m_pending_request = NULL;
+
+  m_rdm_request_callback = on_complete;
+  m_pending_request = request;
+  if (!SendMessage(BaseRobeWidget::RDM_REQUEST, data, data_size +
+                  RDM_REQUEST_PADDING_BYTES)) {
+    m_rdm_request_callback = NULL;
+    m_pending_request = NULL;
+    delete[] data;
+    delete request;
+    on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
+    return;
+  }
+
   delete[] data;
-  delete request;
-  on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
+  // sent ok
+  if (request->DestinationUID().IsBroadcast()) {
+    m_rdm_request_callback = NULL;
+    delete m_pending_request;
+    m_pending_request = NULL;
+    on_complete->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
+  }
 }
 
 
@@ -182,7 +187,7 @@ void RobeWidgetImpl::HandleRDMResponse(const uint8_t *data,
   ola::rdm::RDMResponse *response = ola::rdm::RDMResponse::InflateFromData(
       packet,
       &response_code,
-      m_pending_request);
+      request);
   callback->Run(response_code, response, packets);
   delete request;
 }

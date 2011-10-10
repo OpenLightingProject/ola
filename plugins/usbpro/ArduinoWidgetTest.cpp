@@ -70,7 +70,7 @@ class ArduinoWidgetTest: public CommonWidgetTest {
                         ola::rdm::rdm_response_code code,
                         const ola::rdm::RDMResponse *response,
                         const vector<string> &packets);
-    const RDMRequest *NewRequest(const UID &DESTINATION,
+    const RDMRequest *NewRequest(const UID &destination,
                                  const uint8_t *data = NULL,
                                  unsigned int length = 0);
 
