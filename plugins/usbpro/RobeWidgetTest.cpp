@@ -25,9 +25,10 @@
 #include <vector>
 
 #include "ola/BaseTypes.h"
-#include "ola/DmxBuffer.h"
 #include "ola/Callback.h"
+#include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
+#include "ola/rdm/UID.h"
 #include "plugins/usbpro/RobeWidget.h"
 #include "plugins/usbpro/CommonWidgetTest.h"
 
@@ -65,7 +66,9 @@ CPPUNIT_TEST_SUITE_REGISTRATION(RobeWidgetTest);
 
 void RobeWidgetTest::setUp() {
   CommonWidgetTest::setUp();
-  m_widget.reset(new ola::plugin::usbpro::RobeWidget(&m_descriptor, &m_ss));
+  ola::rdm::UID uid(0, 1);
+  m_widget.reset(
+      new ola::plugin::usbpro::RobeWidget(&m_descriptor, &m_ss, uid));
 }
 
 
