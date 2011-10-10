@@ -85,11 +85,14 @@ void RobeWidgetImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
   uint8_t *data = new uint8_t[data_size];
   memset(data, 0, data_size);
 
+  unsigned int this_transaction_number = m_transaction_number++;
+  unsigned int port_id = 1;
+
   bool r = request->PackWithControllerParams(data,
                                              &data_size,
                                              m_uid,
-                                             m_transaction_number++,
-                                             1);
+                                             this_transaction_number,
+                                             port_id);
 
   if (!r) {
     OLA_WARN << "Failed to pack message, dropping request";
@@ -100,7 +103,12 @@ void RobeWidgetImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
   }
 
   m_rdm_request_callback = on_complete;
-  m_pending_request = request;
+  // convert the request into one that matches this widget
+  m_pending_request = request->DuplicateWithControllerParams(
+      m_uid,
+      this_transaction_number,
+      port_id);
+  delete request;
   if (!SendMessage(BaseRobeWidget::RDM_REQUEST, data, data_size +
                   RDM_REQUEST_PADDING_BYTES)) {
     m_rdm_request_callback = NULL;
@@ -113,7 +121,7 @@ void RobeWidgetImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
 
   delete[] data;
   // sent ok
-  if (request->DestinationUID().IsBroadcast()) {
+  if (m_pending_request->DestinationUID().IsBroadcast()) {
     m_rdm_request_callback = NULL;
     delete m_pending_request;
     m_pending_request = NULL;
