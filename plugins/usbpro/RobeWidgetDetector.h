@@ -135,6 +135,8 @@ class RobeWidgetDetector: public WidgetDetectorInterface {
     // 0x14 is good, 0xe is bad. actual version is probably somewhere in
     // between.
     static const uint8_t RUI_MIN_UNLOCKED_SOFTWARE_VERSION = 0x14;
+    // we need at least v 11 for decent RDM support
+    static const uint8_t WTX_MIN_SOFTWARE_VERSION = 0x0b;
 };
 }  // usbpro
 }  // plugin

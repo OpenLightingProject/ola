@@ -298,8 +298,7 @@ bool RobeWidgetDetector::IsUnlocked(const RobeWidgetInformation &info) {
       // RUI are unlocked past a certain version #
       return info.software_version >= RUI_MIN_UNLOCKED_SOFTWARE_VERSION;
     case WTX_DEVICE_PREFIX:
-      // WTX devices are all unlocked
-      return true;
+      return info.software_version >= WTX_MIN_SOFTWARE_VERSION;
     default:
       // default to no
       return false;

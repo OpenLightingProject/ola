@@ -40,6 +40,8 @@ void CommonWidgetTest::tearDown() {
   m_endpoint->Verify();
   m_ss.RemoveReadDescriptor(&m_descriptor);
   m_ss.RemoveReadDescriptor(m_other_end.get());
+  m_other_end.get()->Close();
+  m_descriptor.Close();
 }
 
 

@@ -41,6 +41,7 @@ class RobeWidgetDetectorTest: public CommonWidgetTest {
   CPPUNIT_TEST_SUITE(RobeWidgetDetectorTest);
   CPPUNIT_TEST(testRUIDevice);
   CPPUNIT_TEST(testLockedRUIDevice);
+  CPPUNIT_TEST(testOldWTXDevice);
   CPPUNIT_TEST(testWTXDevice);
   CPPUNIT_TEST(testUnknownDevice);
   CPPUNIT_TEST(testTimeout);
@@ -51,6 +52,7 @@ class RobeWidgetDetectorTest: public CommonWidgetTest {
 
     void testRUIDevice();
     void testLockedRUIDevice();
+    void testOldWTXDevice();
     void testWTXDevice();
     void testUnknownDevice();
     void testTimeout();
@@ -184,10 +186,39 @@ void RobeWidgetDetectorTest::testLockedRUIDevice() {
 
 
 /*
+ * Check that discovery fails with an old WTX device.
+ */
+void RobeWidgetDetectorTest::testOldWTXDevice() {
+  uint8_t info_data[] = {1, 2, 3, 0, 0};
+  uint8_t uid_data[] = {0x52, 0x53, 2, 0, 0, 10};
+  m_endpoint->AddExpectedRobeDataAndReturn(
+      INFO_REQUEST_LABEL,
+      NULL,
+      0,
+      INFO_RESPONSE_LABEL,
+      info_data,
+      sizeof(info_data));
+  m_endpoint->AddExpectedRobeDataAndReturn(
+      UID_REQUEST_LABEL,
+      NULL,
+      0,
+      UID_RESPONSE_LABEL,
+      uid_data,
+      sizeof(uid_data));
+
+  m_detector->Discover(&m_descriptor);
+  m_ss.Run();
+
+  CPPUNIT_ASSERT(!m_found_widget);
+  CPPUNIT_ASSERT(m_failed_widget);
+}
+
+
+/*
  * Check that discovery works with a WTX device.
  */
 void RobeWidgetDetectorTest::testWTXDevice() {
-  uint8_t info_data[] = {1, 2, 3, 0, 0};
+  uint8_t info_data[] = {1, 11, 3, 0, 0};
   uint8_t uid_data[] = {0x52, 0x53, 2, 0, 0, 10};
   m_endpoint->AddExpectedRobeDataAndReturn(
       INFO_REQUEST_LABEL,
@@ -212,7 +243,7 @@ void RobeWidgetDetectorTest::testWTXDevice() {
 
   CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(1),
                        m_device_info.hardware_version);
-  CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(2),
+  CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(11),
                        m_device_info.software_version);
   CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(3),
                        m_device_info.eeprom_version);

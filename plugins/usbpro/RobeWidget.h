@@ -65,18 +65,13 @@ class RobeWidgetImpl: public BaseRobeWidget,
     const ola::rdm::RDMRequest *m_pending_request;
     const ola::rdm::UID m_uid;
     uint8_t m_transaction_number;
-    ola::thread::timeout_id m_timeout_id;
 
     void HandleMessage(uint8_t label,
                        const uint8_t *data,
                        unsigned int length);
     void HandleRDMResponse(const uint8_t *data,
                            unsigned int length);
-    void TimeoutRequest();
-
-    static const unsigned int RDM_REQUEST_PADDING_BYTES = 4;
-    // This should be 2.8ms but scheduling makes things difficult.
-    static const unsigned int RDM_TIMEOUT_MS = 30;
+    static const unsigned int RDM_PADDING_BYTES = 4;
 };
 
 

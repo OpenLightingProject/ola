@@ -44,8 +44,7 @@ RobeWidgetImpl::RobeWidgetImpl(ola::network::ConnectedDescriptor *descriptor,
       m_rdm_request_callback(NULL),
       m_pending_request(NULL),
       m_uid(uid),
-      m_transaction_number(0),
-      m_timeout_id(ola::thread::INVALID_TIMEOUT) {
+      m_transaction_number(0) {
   ola::rdm::UID mock_uid(0x00a1, 0x00020020);
   m_uids.AddUID(mock_uid);
 }
@@ -82,7 +81,7 @@ void RobeWidgetImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
 
   // prepare the buffer for the RDM data, we don't need to include the start
   // code. We need to include 4 bytes at the end, these bytes can be any value.
-  unsigned int data_size = request->Size() + RDM_REQUEST_PADDING_BYTES;
+  unsigned int data_size = request->Size() + RDM_PADDING_BYTES;
   uint8_t *data = new uint8_t[data_size];
   memset(data, 0, data_size);
 
@@ -111,7 +110,7 @@ void RobeWidgetImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
       port_id);
   delete request;
   if (!SendMessage(BaseRobeWidget::RDM_REQUEST, data, data_size +
-                  RDM_REQUEST_PADDING_BYTES)) {
+                  RDM_PADDING_BYTES)) {
     m_rdm_request_callback = NULL;
     m_pending_request = NULL;
     delete[] data;
@@ -127,10 +126,6 @@ void RobeWidgetImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
     delete m_pending_request;
     m_pending_request = NULL;
     on_complete->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
-  } else {
-    m_timeout_id = m_ss->RegisterSingleTimeout(
-      RDM_TIMEOUT_MS,
-      ola::NewSingleCallback(this, &RobeWidgetImpl::TimeoutRequest));
   }
 }
 
@@ -181,8 +176,6 @@ void RobeWidgetImpl::HandleMessage(uint8_t label,
  */
 void RobeWidgetImpl::HandleRDMResponse(const uint8_t *data,
                                        unsigned int length) {
-  // remove the current timeout
-  m_ss->RemoveTimeout(m_timeout_id);
   std::vector<std::string> packets;
   if (m_rdm_request_callback == NULL) {
     OLA_FATAL << "Got a RDM response but no callback to run!";
@@ -192,6 +185,13 @@ void RobeWidgetImpl::HandleRDMResponse(const uint8_t *data,
   m_rdm_request_callback = NULL;
   const ola::rdm::RDMRequest *request = m_pending_request;
   m_pending_request = NULL;
+
+  if (length == RDM_PADDING_BYTES) {
+    // this indicates that no request was recieved
+    callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
+    delete request;
+    return;
+  }
 
   string packet;
   packet.assign(reinterpret_cast<const char*>(data), length);
@@ -205,24 +205,6 @@ void RobeWidgetImpl::HandleRDMResponse(const uint8_t *data,
       request);
   callback->Run(response_code, response, packets);
   delete request;
-}
-
-
-/**
- * Timeout the current request
- */
-void RobeWidgetImpl::TimeoutRequest() {
-  OLA_INFO << "RDM request timed out";
-  ola::rdm::RDMCallback *callback = m_rdm_request_callback;
-  m_rdm_request_callback = NULL;
-  delete m_pending_request;
-  m_pending_request = NULL;
-
-  std::vector<string> packets;
-  if (callback)
-    callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
-  else
-    OLA_WARN << "Missing callback for request timeout.";
 }
 
 

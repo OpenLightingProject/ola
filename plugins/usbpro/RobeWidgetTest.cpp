@@ -304,7 +304,6 @@ void RobeWidgetTest::testSendRDMRequest() {
       rdm_request,
       &expected_request_frame_size);
 
-  OLA_INFO << "sending bcast request";
   // add the expected response, send and verify
   m_endpoint->AddExpectedRobeMessage(
       BaseRobeWidget::RDM_REQUEST,

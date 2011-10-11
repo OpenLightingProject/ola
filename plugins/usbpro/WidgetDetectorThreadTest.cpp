@@ -185,7 +185,7 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
       m_thread->FreeWidget(widget);
       CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(1),
                            information.hardware_version);
-      CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(2),
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(11),
                            information.software_version);
       CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(3),
                            information.eeprom_version);
@@ -369,7 +369,7 @@ void WidgetDetectorThreadTest::testRobeWidget() {
                                        0);
 
   // robe messages
-  uint8_t info_data[] = {1, 2, 3, 0, 0};
+  uint8_t info_data[] = {1, 11, 3, 0, 0};
   uint8_t uid_data[] = {0x52, 0x53, 2, 0, 0, 10};
   m_endpoint->AddExpectedRobeDataAndReturn(
       BaseRobeWidget::INFO_REQUEST,
