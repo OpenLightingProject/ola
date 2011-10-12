@@ -35,6 +35,10 @@ static const uint8_t ACK_OVERFLOW = 3;
 
 
 typedef enum {
+  // discovery
+  PID_DISC_UNIQUE_BRANCH = 0x0001,
+  PID_DISC_MUTE = 0x0002,
+  PID_DISC_UN_MUTE = 0x0003,
   // network managment
   PID_PROXIED_DEVICES = 0x0010,
   PID_PROXIED_DEVICE_COUNT = 0x0011,
