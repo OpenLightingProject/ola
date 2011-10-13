@@ -1,7 +1,9 @@
 # here we define common flags for C++ targets
-COMMON_CXXFLAGS = -I$(top_builddir)/include \
-                  -Wall -Wformat -W \
-                  $(libprotobuf_CFLAGS)
+WARNING_CXXFLAGS = -I$(top_builddir)/include \
+                   -Wall -Wformat -W \
+                   $(libprotobuf_CFLAGS)
+
+COMMON_CXXFLAGS = $(WARNING_CXXFLAGS)
 
 # the genererated protobuf files don't compile with -Werror on win32
 if USING_WIN32_FALSE
