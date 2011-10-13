@@ -379,6 +379,82 @@ RDMResponse *GetResponseWithPid(const RDMRequest *request,
                                 unsigned int length,
                                 uint8_t type = RDM_ACK,
                                 uint8_t outstanding_messages = 0);
+
+/**
+ * The base classes for discovery commands
+ */
+class RDMDiscoveryCommand: private RDMCommand {
+  public:
+    unsigned int Size() const {
+      return RDMCommand::Size();
+    }
+
+    bool Pack(uint8_t *buffer, unsigned int *size) const {
+      return RDMCommand::Pack(buffer, size);
+    }
+
+    RDMCommandClass CommandClass() const { return DISCOVER_COMMAND; }
+    rdm_message_type CommandType() const { return RDM_REQUEST; }
+
+  protected:
+    RDMDiscoveryCommand(const UID &source,
+                        const UID &destination,
+                        uint8_t transaction_number,
+                        uint8_t port_id,
+                        uint16_t param_id,
+                        const uint8_t *data,
+                        unsigned int length)
+        : RDMCommand(source,
+                     destination,
+                     transaction_number,
+                     port_id,
+                     0,  // message count
+                     ROOT_RDM_DEVICE,
+                     param_id,
+                     data,
+                     length) {
+    }
+};
+
+
+/*
+ * The Mute command.
+ */
+class MuteRequest: public RDMDiscoveryCommand {
+  public:
+    MuteRequest(const UID &source,
+                const UID &destination,
+                uint8_t transaction_number,
+                uint8_t port_id = 1)
+        : RDMDiscoveryCommand(source,
+                              destination,
+                              transaction_number,
+                              port_id,
+                              PID_DISC_MUTE,
+                              NULL,
+                              0) {
+    }
+};
+
+
+/*
+ * The UnMute command.
+ */
+class UnMuteRequest: public RDMDiscoveryCommand {
+  public:
+    UnMuteRequest(const UID &source,
+                  const UID &destination,
+                  uint8_t transaction_number,
+                  uint8_t port_id = 1)
+        : RDMDiscoveryCommand(source,
+                              destination,
+                              transaction_number,
+                              port_id,
+                              PID_DISC_UN_MUTE,
+                              NULL,
+                              0) {
+    }
+};
 }  // rdm
 }  // ola
 #endif  // INCLUDE_OLA_RDM_RDMCOMMAND_H_

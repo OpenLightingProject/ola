@@ -692,4 +692,4 @@ RDMResponse *GetResponseWithPid(const RDMRequest *request,
   }
 }
 }  // rdm
-}  //  ola
+}  // ola

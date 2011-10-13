@@ -38,6 +38,8 @@ using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::RDMSetRequest;
 using ola::rdm::RDMSetResponse;
+using ola::rdm::MuteRequest;
+using ola::rdm::UnMuteRequest;
 using ola::rdm::UID;
 using std::string;
 
@@ -51,6 +53,8 @@ class RDMCommandTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testCombineResponses);
   CPPUNIT_TEST(testPackWithParams);
   CPPUNIT_TEST(testGuessMessageType);
+  CPPUNIT_TEST(testUnMuteRequest);
+  CPPUNIT_TEST(testMuteCommand);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -64,6 +68,8 @@ class RDMCommandTest: public CppUnit::TestFixture {
     void testCombineResponses();
     void testPackWithParams();
     void testGuessMessageType();
+    void testUnMuteRequest();
+    void testMuteCommand();
 
   private:
     void PackAndVerify(const RDMCommand &command,
@@ -75,6 +81,8 @@ class RDMCommandTest: public CppUnit::TestFixture {
     static uint8_t EXPECTED_GET_BUFFER[];
     static uint8_t EXPECTED_SET_BUFFER[];
     static uint8_t EXPECTED_GET_RESPONSE_BUFFER[];
+    static uint8_t EXPECTED_MUTE_REQUEST[];
+    static uint8_t EXPECTED_UNMUTE_REQUEST[];
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(RDMCommandTest);
@@ -90,24 +98,44 @@ uint8_t RDMCommandTest::EXPECTED_GET_BUFFER[] = {
 };
 
 uint8_t RDMCommandTest::EXPECTED_SET_BUFFER[] = {
-    1, 28,  // sub code & length
-    0, 3, 0, 0, 0, 4,   // dst uid
-    0, 1, 0, 0, 0, 2,   // src uid
-    0, 1, 0, 0, 10,  // transaction, port id, msg count & sub device
-    0x30, 1, 40, 4,  // command, param id, param data length
-    0xa5, 0xa5, 0xa5, 0xa5,  // param data
-    0, 0  // checksum, filled in below
+  1, 28,  // sub code & length
+  0, 3, 0, 0, 0, 4,   // dst uid
+  0, 1, 0, 0, 0, 2,   // src uid
+  0, 1, 0, 0, 10,  // transaction, port id, msg count & sub device
+  0x30, 1, 40, 4,  // command, param id, param data length
+  0xa5, 0xa5, 0xa5, 0xa5,  // param data
+  0, 0  // checksum, filled in below
 };
 
 
 uint8_t RDMCommandTest::EXPECTED_GET_RESPONSE_BUFFER[] = {
-    1, 28,  // sub code & length
-    0, 3, 0, 0, 0, 4,   // dst uid
-    0, 1, 0, 0, 0, 2,   // src uid
-    0, 1, 0, 0, 10,  // transaction, port id, msg count & sub device
-    0x21, 1, 40, 4,  // command, param id, param data length
-    0x5a, 0x5a, 0x5a, 0x5a,  // param data
-    0, 0  // checksum, filled in below
+  1, 28,  // sub code & length
+  0, 3, 0, 0, 0, 4,   // dst uid
+  0, 1, 0, 0, 0, 2,   // src uid
+  0, 1, 0, 0, 10,  // transaction, port id, msg count & sub device
+  0x21, 1, 40, 4,  // command, param id, param data length
+  0x5a, 0x5a, 0x5a, 0x5a,  // param data
+  0, 0  // checksum, filled in below
+};
+
+
+uint8_t RDMCommandTest::EXPECTED_MUTE_REQUEST[] = {
+  1, 24,  // sub code & length
+  0, 3, 0, 0, 0, 4,   // dst uid
+  0, 1, 0, 0, 0, 2,   // src uid
+  1, 1, 0, 0, 0,  // transaction, port id, msg count & sub device
+  0x10, 0, 2, 0,  // command, param id, param data length
+  0, 0  // checksum, filled in below
+};
+
+
+uint8_t RDMCommandTest::EXPECTED_UNMUTE_REQUEST[] = {
+  1, 24,  // sub code & length
+  0, 3, 0, 0, 0, 4,   // dst uid
+  0, 1, 0, 0, 0, 2,   // src uid
+  1, 1, 0, 0, 0,  // transaction, port id, msg count & sub device
+  0x10, 0, 3, 0,  // command, param id, param data length
+  0, 0  // checksum, filled in below
 };
 
 
@@ -120,6 +148,10 @@ void RDMCommandTest::setUp() {
   UpdateChecksum(EXPECTED_SET_BUFFER, sizeof(EXPECTED_SET_BUFFER));
   UpdateChecksum(EXPECTED_GET_RESPONSE_BUFFER,
                  sizeof(EXPECTED_GET_RESPONSE_BUFFER));
+  UpdateChecksum(EXPECTED_MUTE_REQUEST,
+                 sizeof(EXPECTED_MUTE_REQUEST));
+  UpdateChecksum(EXPECTED_UNMUTE_REQUEST,
+                 sizeof(EXPECTED_UNMUTE_REQUEST));
 }
 
 
@@ -847,4 +879,68 @@ void RDMCommandTest::testGuessMessageType() {
         EXPECTED_GET_RESPONSE_BUFFER,
         sizeof(EXPECTED_GET_RESPONSE_BUFFER)));
   CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_RESPONSE, message_type);
+}
+
+
+/**
+ * Check the mute command
+ */
+void RDMCommandTest::testMuteCommand() {
+  UID source(1, 2);
+  UID destination(3, 4);
+
+  MuteRequest request(
+      source,
+      destination,
+      1);
+
+  CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_REQUEST, request.CommandType());
+  CPPUNIT_ASSERT_EQUAL(RDMCommand::DISCOVER_COMMAND, request.CommandClass());
+
+  // test pack
+  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(25), request.Size());
+  unsigned int length = request.Size();
+  uint8_t *data = new uint8_t[length];
+  CPPUNIT_ASSERT(request.Pack(data, &length));
+
+  bool matches = !memcmp(data, EXPECTED_MUTE_REQUEST, length);
+  if (!matches) {
+    for (unsigned int i = 0; i < length; i++)
+      OLA_INFO << std::hex << static_cast<int>(data[i]) << " " <<
+        static_cast<int>(EXPECTED_MUTE_REQUEST[i]);
+  }
+  CPPUNIT_ASSERT(matches);
+  delete[] data;
+}
+
+
+/**
+ * Check the UnMute Command
+ */
+void RDMCommandTest::testUnMuteRequest() {
+  UID source(1, 2);
+  UID destination(3, 4);
+
+  UnMuteRequest request(
+      source,
+      destination,
+      1);
+
+  CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_REQUEST, request.CommandType());
+  CPPUNIT_ASSERT_EQUAL(RDMCommand::DISCOVER_COMMAND, request.CommandClass());
+
+  // test pack
+  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(25), request.Size());
+  unsigned int length = request.Size();
+  uint8_t *data = new uint8_t[length];
+  CPPUNIT_ASSERT(request.Pack(data, &length));
+
+  bool matches = !memcmp(data, EXPECTED_UNMUTE_REQUEST, length);
+  if (!matches) {
+    for (unsigned int i = 0; i < length; i++)
+      OLA_INFO << std::hex << static_cast<int>(data[i]) << " " <<
+        static_cast<int>(EXPECTED_UNMUTE_REQUEST[i]);
+  }
+  CPPUNIT_ASSERT(matches);
+  delete[] data;
 }
