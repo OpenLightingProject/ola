@@ -124,6 +124,7 @@ class RDMCommand {
               const UID &source,
               uint8_t transaction_number,
               uint8_t port_id) const;
+    void SetParamData(const uint8_t *data, unsigned int length);
 
     static rdm_response_code VerifyData(
         const uint8_t *data,
@@ -414,11 +415,31 @@ class RDMDiscoveryCommand: private RDMCommand {
                      data,
                      length) {
     }
+
+    void SetData(const uint8_t *data, unsigned int length) {
+      RDMCommand::SetParamData(data, length);
+    }
 };
 
 
 /*
- * The Mute command.
+ * The discovery unique branch request
+ */
+class DiscoveryUniqueBranchRequest: public RDMDiscoveryCommand {
+  public:
+    DiscoveryUniqueBranchRequest(const UID &source,
+                                 const UID &lower,
+                                 const UID &upper,
+                                 uint8_t transaction_number,
+                                 uint8_t port_id = 1);
+  private:
+    // this holds the upper and lower uid data
+    uint8_t m_param_data[UID::UID_SIZE * 2];
+};
+
+
+/*
+ * The Mute request.
  */
 class MuteRequest: public RDMDiscoveryCommand {
   public:
@@ -438,7 +459,7 @@ class MuteRequest: public RDMDiscoveryCommand {
 
 
 /*
- * The UnMute command.
+ * The UnMute request.
  */
 class UnMuteRequest: public RDMDiscoveryCommand {
   public:

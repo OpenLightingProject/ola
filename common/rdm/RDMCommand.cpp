@@ -23,6 +23,7 @@
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/RDMCommand.h"
+#include "ola/rdm/UID.h"
 
 namespace ola {
 namespace rdm {
@@ -48,16 +49,7 @@ RDMCommand::RDMCommand(const UID &source,
     m_param_id(param_id),
     m_data(NULL),
     m_data_length(length) {
-  if (length > MAX_PARAM_DATA_LENGTH) {
-    OLA_WARN << "Attempt to create RDM message with a length > " <<
-      MAX_PARAM_DATA_LENGTH << ", was; " << length;
-    m_data_length = MAX_PARAM_DATA_LENGTH;
-  }
-
-  if (m_data_length > 0 && data != NULL) {
-    m_data = new uint8_t[m_data_length];
-    memcpy(m_data, data, m_data_length);
-  }
+  SetParamData(data, length);
 }
 
 
@@ -185,6 +177,25 @@ bool RDMCommand::Pack(string *buffer,
   if (r)
     buffer->assign(reinterpret_cast<char*>(data), size);
   return r;
+}
+
+
+void RDMCommand::SetParamData(const uint8_t *data, unsigned int length) {
+  if (length > MAX_PARAM_DATA_LENGTH) {
+    OLA_WARN << "Attempt to create RDM message with a length > " <<
+      MAX_PARAM_DATA_LENGTH << ", was; " << length;
+    m_data_length = MAX_PARAM_DATA_LENGTH;
+  } else {
+    m_data_length = length;
+  }
+
+  if (m_data_length > 0 && data != NULL) {
+    if (m_data)
+      delete[] m_data;
+
+    m_data = new uint8_t[m_data_length];
+    memcpy(m_data, data, m_data_length);
+  }
 }
 
 
@@ -690,6 +701,29 @@ RDMResponse *GetResponseWithPid(const RDMRequest *request,
       data,
       length);
   }
+}
+
+
+/**
+ * Constructor for the DiscoveryUniqueBranchRequest
+ */
+DiscoveryUniqueBranchRequest::DiscoveryUniqueBranchRequest(
+    const UID &source,
+    const UID &lower,
+    const UID &upper,
+    uint8_t transaction_number,
+    uint8_t port_id)
+    : RDMDiscoveryCommand(source,
+                          UID::AllDevices(),
+                          transaction_number,
+                          port_id,
+                          PID_DISC_UNIQUE_BRANCH,
+                          NULL,
+                          0) {
+    unsigned int length = sizeof(m_param_data);
+    lower.Pack(m_param_data, length);
+    upper.Pack(m_param_data + UID::UID_SIZE, length - UID::UID_SIZE);
+    SetData(m_param_data, sizeof(m_param_data));
 }
 }  // rdm
 }  // ola

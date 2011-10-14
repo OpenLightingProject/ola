@@ -30,6 +30,7 @@
 #include "ola/rdm/UID.h"
 
 using ola::network::HostToNetwork;
+using ola::rdm::DiscoveryUniqueBranchRequest;
 using ola::rdm::GuessMessageType;
 using ola::rdm::RDMCommand;
 using ola::rdm::RDMGetRequest;
@@ -53,6 +54,7 @@ class RDMCommandTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testCombineResponses);
   CPPUNIT_TEST(testPackWithParams);
   CPPUNIT_TEST(testGuessMessageType);
+  CPPUNIT_TEST(testDiscoveryCommand);
   CPPUNIT_TEST(testUnMuteRequest);
   CPPUNIT_TEST(testMuteCommand);
   CPPUNIT_TEST_SUITE_END();
@@ -68,6 +70,7 @@ class RDMCommandTest: public CppUnit::TestFixture {
     void testCombineResponses();
     void testPackWithParams();
     void testGuessMessageType();
+    void testDiscoveryCommand();
     void testUnMuteRequest();
     void testMuteCommand();
 
@@ -78,9 +81,16 @@ class RDMCommandTest: public CppUnit::TestFixture {
     void UpdateChecksum(uint8_t *expected,
                         unsigned int expected_length);
 
+    bool VerifyMatches(
+        const uint8_t *data1,
+        unsigned int data1_length,
+        const uint8_t *data2,
+        unsigned int datq2_length);
+
     static uint8_t EXPECTED_GET_BUFFER[];
     static uint8_t EXPECTED_SET_BUFFER[];
     static uint8_t EXPECTED_GET_RESPONSE_BUFFER[];
+    static uint8_t EXPECTED_DISCOVERY_REQUEST[];
     static uint8_t EXPECTED_MUTE_REQUEST[];
     static uint8_t EXPECTED_UNMUTE_REQUEST[];
 };
@@ -119,6 +129,18 @@ uint8_t RDMCommandTest::EXPECTED_GET_RESPONSE_BUFFER[] = {
 };
 
 
+uint8_t RDMCommandTest::EXPECTED_DISCOVERY_REQUEST[] = {
+  1, 36,  // sub code & length
+  255, 255, 255, 255, 255, 255,   // dst uid
+  0, 1, 0, 0, 0, 2,   // src uid
+  1, 1, 0, 0, 0,  // transaction, port id, msg count & sub device
+  0x10, 0, 1, 12,  // command, param id, param data length
+  1, 2, 0, 0, 3, 4,  // lower uid
+  5, 6, 0, 0, 7, 8,  // upper uid
+  0, 0  // checksum, filled in below
+};
+
+
 uint8_t RDMCommandTest::EXPECTED_MUTE_REQUEST[] = {
   1, 24,  // sub code & length
   0, 3, 0, 0, 0, 4,   // dst uid
@@ -148,10 +170,36 @@ void RDMCommandTest::setUp() {
   UpdateChecksum(EXPECTED_SET_BUFFER, sizeof(EXPECTED_SET_BUFFER));
   UpdateChecksum(EXPECTED_GET_RESPONSE_BUFFER,
                  sizeof(EXPECTED_GET_RESPONSE_BUFFER));
+  UpdateChecksum(EXPECTED_DISCOVERY_REQUEST,
+                 sizeof(EXPECTED_DISCOVERY_REQUEST));
   UpdateChecksum(EXPECTED_MUTE_REQUEST,
                  sizeof(EXPECTED_MUTE_REQUEST));
   UpdateChecksum(EXPECTED_UNMUTE_REQUEST,
                  sizeof(EXPECTED_UNMUTE_REQUEST));
+}
+
+
+/**
+ * Verify two memory locations match.
+ */
+bool RDMCommandTest::VerifyMatches(
+    const uint8_t *data1,
+    unsigned int data1_length,
+    const uint8_t *data2,
+    unsigned int data2_length) {
+  bool matches = data1_length == data2_length;
+  if (!matches) {
+    OLA_INFO << "Size " << data1_length << " != " << data2_length;
+    return matches;
+  }
+
+  matches = !memcmp(data1, data2, data1_length);
+  if (!matches) {
+    for (unsigned int i = 0; i < data1_length; i++)
+      OLA_INFO << std::hex << static_cast<int>(data1[i]) << " " <<
+        static_cast<int>(data2[i]);
+  }
+  return matches;
 }
 
 
@@ -424,6 +472,7 @@ void RDMCommandTest::testResponseInflation() {
   memcpy(bad_packet, EXPECTED_GET_RESPONSE_BUFFER,
          sizeof(EXPECTED_GET_RESPONSE_BUFFER));
   bad_packet[22] = 255;
+  delete command;
 
   command = RDMResponse::InflateFromData(
       bad_packet,
@@ -883,6 +932,40 @@ void RDMCommandTest::testGuessMessageType() {
 
 
 /**
+ * Check the discovery command
+ */
+void RDMCommandTest::testDiscoveryCommand() {
+  UID source(1, 2);
+  UID lower(0x0102, 0x0304);
+  UID upper(0x0506, 0x0708);
+
+  DiscoveryUniqueBranchRequest request(
+      source,
+      lower,
+      upper,
+      1);
+
+  CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_REQUEST, request.CommandType());
+  CPPUNIT_ASSERT_EQUAL(RDMCommand::DISCOVER_COMMAND, request.CommandClass());
+
+  // test pack
+  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(37), request.Size());
+  unsigned int length = request.Size();
+
+  uint8_t *data = new uint8_t[length];
+  CPPUNIT_ASSERT(request.Pack(data, &length));
+
+  bool matches = VerifyMatches(
+      EXPECTED_DISCOVERY_REQUEST,
+      sizeof(EXPECTED_DISCOVERY_REQUEST),
+      data,
+      length);
+  CPPUNIT_ASSERT(matches);
+  delete[] data;
+}
+
+
+/**
  * Check the mute command
  */
 void RDMCommandTest::testMuteCommand() {
@@ -903,12 +986,11 @@ void RDMCommandTest::testMuteCommand() {
   uint8_t *data = new uint8_t[length];
   CPPUNIT_ASSERT(request.Pack(data, &length));
 
-  bool matches = !memcmp(data, EXPECTED_MUTE_REQUEST, length);
-  if (!matches) {
-    for (unsigned int i = 0; i < length; i++)
-      OLA_INFO << std::hex << static_cast<int>(data[i]) << " " <<
-        static_cast<int>(EXPECTED_MUTE_REQUEST[i]);
-  }
+  bool matches = VerifyMatches(
+      EXPECTED_MUTE_REQUEST,
+      sizeof(EXPECTED_MUTE_REQUEST),
+      data,
+      length);
   CPPUNIT_ASSERT(matches);
   delete[] data;
 }
@@ -935,12 +1017,11 @@ void RDMCommandTest::testUnMuteRequest() {
   uint8_t *data = new uint8_t[length];
   CPPUNIT_ASSERT(request.Pack(data, &length));
 
-  bool matches = !memcmp(data, EXPECTED_UNMUTE_REQUEST, length);
-  if (!matches) {
-    for (unsigned int i = 0; i < length; i++)
-      OLA_INFO << std::hex << static_cast<int>(data[i]) << " " <<
-        static_cast<int>(EXPECTED_UNMUTE_REQUEST[i]);
-  }
+  bool matches = VerifyMatches(
+      EXPECTED_UNMUTE_REQUEST,
+      sizeof(EXPECTED_UNMUTE_REQUEST),
+      data,
+      length);
   CPPUNIT_ASSERT(matches);
   delete[] data;
 }
