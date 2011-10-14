@@ -505,8 +505,11 @@ void DmxTriWidgetImpl::HandleDiscoveryAutoResponse(uint8_t return_code,
                                                    const uint8_t *data,
                                                    unsigned int length) {
   if (return_code != EC_NO_ERROR) {
-    OLA_WARN << "DMX_TRI discovery returned error " <<
-      static_cast<int>(return_code);
+    if (return_code == EC_UNKNOWN_COMMAND)
+      OLA_INFO << "This DMX-TRI doesn't support RDM";
+    else
+      OLA_WARN << "DMX_TRI discovery returned error " <<
+        static_cast<int>(return_code);
     StopDiscovery();
   }
   (void) data;
