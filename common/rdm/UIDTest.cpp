@@ -33,12 +33,14 @@ using ola::rdm::UIDSet;
 class UIDTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(UIDTest);
   CPPUNIT_TEST(testUID);
+  CPPUNIT_TEST(testUIDInequalities);
   CPPUNIT_TEST(testUIDSet);
   CPPUNIT_TEST(testUIDParse);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void testUID();
+    void testUIDInequalities();
     void testUIDSet();
     void testUIDParse();
 };
@@ -101,6 +103,33 @@ void UIDTest::testUID() {
 
   delete[] buffer;
 }
+
+
+/*
+ * Test the UIDs inequalities work
+ */
+void UIDTest::testUIDInequalities() {
+  uint16_t MOCK_ESTA_ID = 0x7a70;
+
+  UID uid1(MOCK_ESTA_ID, 0);
+  UID uid2(MOCK_ESTA_ID, 1);
+  UID uid3(MOCK_ESTA_ID, 2);
+  UID uid4(MOCK_ESTA_ID, 0xffffffff);
+  UID uid5(MOCK_ESTA_ID - 1, 0xffffffff);
+
+  CPPUNIT_ASSERT(uid1 < uid2);
+  CPPUNIT_ASSERT(uid1 < uid3);
+  CPPUNIT_ASSERT(uid2 < uid3);
+  CPPUNIT_ASSERT(uid1 < uid4);
+  CPPUNIT_ASSERT(uid2 < uid4);
+  CPPUNIT_ASSERT(uid3 < uid4);
+
+  CPPUNIT_ASSERT(uid5 < uid1);
+  CPPUNIT_ASSERT(uid5 < uid2);
+  CPPUNIT_ASSERT(uid5 < uid3);
+  CPPUNIT_ASSERT(uid5 < uid4);
+}
+
 
 /*
  * Test the UIDSet

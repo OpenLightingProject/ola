@@ -133,7 +133,7 @@ class UID {
       return cmp(a.m_uid.esta_id, b.m_uid.esta_id);
     }
 
-    int cmp(int a, int b) const {
+    int cmp(uint32_t a, uint32_t b) const {
       if (a == b)
         return 0;
       return a < b ? -1 : 1;
