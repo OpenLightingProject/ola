@@ -1,7 +1,8 @@
 include $(top_srcdir)/common.mk
 
 SUBDIRS = testdata
-EXTRA_DIST = DescriptorConsistencyChecker.h GroupSizeCalculator.h Pids.proto \
+EXTRA_DIST = DescriptorConsistencyChecker.h DiscoveryAgentTestHelper.h \
+             GroupSizeCalculator.h Pids.proto \
              PidStoreLoader.h VariableFieldSizeCalculator.h
 
 BUILT_SOURCES = Pids.pb.cc Pids.pb.h
