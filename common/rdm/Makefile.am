@@ -8,6 +8,7 @@ BUILT_SOURCES = Pids.pb.cc Pids.pb.h
 
 noinst_LTLIBRARIES = libolardm.la
 libolardm_la_SOURCES = DescriptorConsistencyChecker.cpp \
+                       DiscoveryAgent.cpp \
                        GroupSizeCalculator.cpp \
                        MessageSerializer.cpp MessageDeserializer.cpp \
                        PidStore.cpp PidStoreHelper.cpp PidStoreLoader.cpp \
@@ -17,8 +18,16 @@ libolardm_la_SOURCES = DescriptorConsistencyChecker.cpp \
 nodist_libolardm_la_SOURCES = Pids.pb.cc
 libolardm_la_LIBADD = $(libprotobuf_LIBS)
 
-TESTS = PidStoreTester RDMMessageTester RDMTester
+TESTS = DiscoveryAgentTester PidStoreTester RDMMessageTester RDMTester
 check_PROGRAMS = $(TESTS)
+
+DiscoveryAgentTester_SOURCES = DiscoveryAgentTester.cpp DiscoveryAgentTest.cpp
+DiscoveryAgentTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+DiscoveryAgentTester_LDADD = $(CPPUNIT_LIBS) \
+                             libolardm.la \
+                             ../logging/liblogging.la \
+                             ../utils/libolautils.la
+
 RDMTester_SOURCES = RDMAPITest.cpp RDMCommandTest.cpp RDMTester.cpp \
                     QueueingRDMControllerTest.cpp UIDTest.cpp
 RDMTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
