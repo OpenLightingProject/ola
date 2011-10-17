@@ -23,6 +23,7 @@
 #include <vector>
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
+#include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
 #include "plugins/usbpro/RobeWidget.h"
@@ -32,6 +33,7 @@ namespace plugin {
 namespace usbpro {
 
 using ola::rdm::UID;
+using ola::rdm::UIDSet;
 
 // The DMX frames have an extra 4 bytes at the end
 const int RobeWidgetImpl::DMX_FRAME_DATA_SIZE = DMX_UNIVERSE_SIZE + 4;
@@ -42,11 +44,13 @@ RobeWidgetImpl::RobeWidgetImpl(ola::network::ConnectedDescriptor *descriptor,
     : BaseRobeWidget(descriptor),
       m_ss(ss),
       m_rdm_request_callback(NULL),
+      m_mute_callback(NULL),
+      m_unmute_callback(NULL),
+      m_branch_callback(NULL),
+      m_discovery_agent(this),
       m_pending_request(NULL),
       m_uid(uid),
       m_transaction_number(0) {
-  ola::rdm::UID mock_uid(0x00a1, 0x00020020);
-  m_uids.AddUID(mock_uid);
 }
 
 
@@ -136,8 +140,10 @@ void RobeWidgetImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
 bool RobeWidgetImpl::RunFullDiscovery(
     ola::rdm::RDMDiscoveryCallback *callback) {
   OLA_INFO << "Full discovery";
-  if (callback)
-    callback->Run(m_uids);
+  m_discovery_agent.StartFullDiscovery(
+    ola::NewSingleCallback(this,
+                           &RobeWidgetImpl::DiscoveryComplete,
+                           callback));
   return true;
 }
 
@@ -148,9 +154,84 @@ bool RobeWidgetImpl::RunFullDiscovery(
 bool RobeWidgetImpl::RunIncrementalDiscovery(
     ola::rdm::RDMDiscoveryCallback *callback) {
   OLA_INFO << "Incremental discovery";
-  if (callback)
-    callback->Run(m_uids);
+  m_discovery_agent.StartIncrementalDiscovery(
+    ola::NewSingleCallback(this,
+                           &RobeWidgetImpl::DiscoveryComplete,
+                           callback));
   return true;
+}
+
+
+
+/**
+ * Mute a responder
+ * @param target the UID to mute
+ * @param MuteDeviceCallback the callback to run once the mute request
+ * completes.
+ */
+void RobeWidgetImpl::MuteDevice(const UID &target,
+                                MuteDeviceCallback *mute_complete) {
+  ola::rdm::MuteRequest mute_request(
+      m_uid,
+      target,
+      m_transaction_number++);
+  unsigned int length = mute_request.Size();
+  uint8_t data[length + RDM_PADDING_BYTES];
+  memset(data, 0, length + RDM_PADDING_BYTES);
+  mute_request.Pack(data, &length);
+  OLA_DEBUG << "Muting " << target;
+  bool r = SendMessage(RDM_REQUEST,
+                       data,
+                       length + RDM_PADDING_BYTES);
+  if (r)
+    m_mute_callback = mute_complete;
+  else
+    mute_complete->Run(false);
+}
+
+
+/**
+ * Unmute all responders
+ * @param UnMuteDeviceCallback the callback to run once the unmute request
+ * completes.
+ */
+void RobeWidgetImpl::UnMuteAll(UnMuteDeviceCallback *unmute_complete) {
+  ola::rdm::UnMuteRequest unmute_request(
+      m_uid,
+      ola::rdm::UID::AllDevices(),
+      m_transaction_number);
+
+  unsigned int length = unmute_request.Size();
+  uint8_t data[length + RDM_PADDING_BYTES];
+  memset(data, 0, length + RDM_PADDING_BYTES);
+  unmute_request.Pack(data, &length);
+  OLA_DEBUG << "UnMuting all devices";
+  SendMessage(RDM_REQUEST,
+              data,
+              length + RDM_PADDING_BYTES);
+  m_unmute_callback = unmute_complete;
+}
+
+
+/**
+ * Send a Discovery Unique Branch
+ */
+void RobeWidgetImpl::Branch(const UID &lower,
+                            const UID &upper,
+                            BranchCallback *callback) {
+  ola::rdm::DiscoveryUniqueBranchRequest branch_request(
+      m_uid,
+      lower,
+      upper,
+      m_transaction_number);
+
+  unsigned int length = branch_request.Size();
+  uint8_t data[length + RDM_PADDING_BYTES];
+  branch_request.Pack(data, &length);
+  SendMessage(RDM_DISCOVERY,
+              data,
+              length + RDM_PADDING_BYTES);
+  m_branch_callback = callback;
 }
 
 
@@ -163,6 +244,9 @@ void RobeWidgetImpl::HandleMessage(uint8_t label,
   switch (label) {
     case BaseRobeWidget::RDM_RESPONSE:
       HandleRDMResponse(data, length);
+      return;
+    case BaseRobeWidget::RDM_DISCOVERY_RESPONSE:
+      HandleDiscoveryResponse(data, length);
       return;
     default:
       OLA_INFO << "Unknown message from Robe widget " << std::hex <<
@@ -177,6 +261,21 @@ void RobeWidgetImpl::HandleMessage(uint8_t label,
 void RobeWidgetImpl::HandleRDMResponse(const uint8_t *data,
                                        unsigned int length) {
   std::vector<std::string> packets;
+  if (m_unmute_callback) {
+    UnMuteDeviceCallback *callback = m_unmute_callback;
+    m_unmute_callback = NULL;
+    callback->Run();
+    return;
+  }
+
+  if (m_mute_callback) {
+    MuteDeviceCallback *callback = m_mute_callback;
+    m_mute_callback = NULL;
+    // TODO(simon): actually check the response here
+    callback->Run(length > RDM_PADDING_BYTES);
+    return;
+  }
+
   if (m_rdm_request_callback == NULL) {
     OLA_FATAL << "Got a RDM response but no callback to run!";
     return;
@@ -205,6 +304,42 @@ void RobeWidgetImpl::HandleRDMResponse(const uint8_t *data,
       request);
   callback->Run(response_code, response, packets);
   delete request;
+}
+
+
+/**
+ * Handle a response to a Discovery unique branch request
+ */
+void RobeWidgetImpl::HandleDiscoveryResponse(const uint8_t *data,
+                                             unsigned int length) {
+  if (m_branch_callback) {
+    BranchCallback *callback = m_branch_callback;
+    m_branch_callback = NULL;
+    // there are always 4 bytes padded on the end of the response
+    if (length <= RDM_PADDING_BYTES)
+      callback->Run(NULL, 0);
+    else
+      callback->Run(data, length - RDM_PADDING_BYTES);
+  } else {
+    OLA_WARN << "Got response to DUB but no callback defined!";
+  }
+}
+
+
+/**
+ * Called when the discovery process finally completes
+ * @param callback the callback passed to StartFullDiscovery or
+ * StartIncrementalDiscovery that we should execute.
+ * @param status true if discovery worked, false otherwise
+ * @param uids the UIDSet of UIDs that were found.
+ */
+void RobeWidgetImpl::DiscoveryComplete(
+    ola::rdm::RDMDiscoveryCallback *callback,
+    bool status,
+    const UIDSet &uids) {
+  if (callback)
+    callback->Run(uids);
+  (void) status;
 }
 
 

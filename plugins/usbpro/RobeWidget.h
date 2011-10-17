@@ -25,6 +25,7 @@
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/network/Socket.h"
+#include "ola/rdm/DiscoveryAgent.h"
 #include "ola/rdm/QueueingRDMController.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMControllerInterface.h"
@@ -32,6 +33,9 @@
 #include "ola/rdm/UIDSet.h"
 #include "ola/thread/SchedulingExecutorInterface.h"
 #include "plugins/usbpro/BaseRobeWidget.h"
+
+class RobeWidgetTest;
+
 
 namespace ola {
 namespace plugin {
@@ -42,7 +46,8 @@ namespace usbpro {
  * A Robe USB Widget implementation.
  */
 class RobeWidgetImpl: public BaseRobeWidget,
-                      public ola::rdm::DiscoverableRDMControllerInterface {
+                      public ola::rdm::DiscoverableRDMControllerInterface,
+                      public ola::rdm::DiscoveryTargetInterface {
   public:
     explicit RobeWidgetImpl(ola::network::ConnectedDescriptor *descriptor,
                             ola::thread::SchedulingExecutorInterface *ss,
@@ -56,12 +61,23 @@ class RobeWidgetImpl: public BaseRobeWidget,
     bool RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
     bool RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
 
+    // The following are the implementation of DiscoveryTargetInterface
+    void MuteDevice(const ola::rdm::UID &target,
+                    MuteDeviceCallback *mute_complete);
+    void UnMuteAll(UnMuteDeviceCallback *unmute_complete);
+    void Branch(const ola::rdm::UID &lower,
+                const ola::rdm::UID &upper,
+                BranchCallback *callback);
+
     static const int DMX_FRAME_DATA_SIZE;
 
   private:
-    ola::rdm::UIDSet m_uids;
     ola::thread::SchedulingExecutorInterface *m_ss;
     ola::rdm::RDMCallback *m_rdm_request_callback;
+    MuteDeviceCallback *m_mute_callback;
+    UnMuteDeviceCallback *m_unmute_callback;
+    BranchCallback *m_branch_callback;
+    ola::rdm::DiscoveryAgent m_discovery_agent;
     const ola::rdm::RDMRequest *m_pending_request;
     const ola::rdm::UID m_uid;
     uint8_t m_transaction_number;
@@ -71,6 +87,11 @@ class RobeWidgetImpl: public BaseRobeWidget,
                        unsigned int length);
     void HandleRDMResponse(const uint8_t *data,
                            unsigned int length);
+    void HandleDiscoveryResponse(const uint8_t *data,
+                                 unsigned int length);
+    void DiscoveryComplete(ola::rdm::RDMDiscoveryCallback *callback,
+                           bool status,
+                           const ola::rdm::UIDSet &uids);
     static const unsigned int RDM_PADDING_BYTES = 4;
 };
 
@@ -107,6 +128,9 @@ class RobeWidget: public SerialWidgetInterface,
     bool RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
       return m_impl->RunIncrementalDiscovery(callback);
     }
+
+    // the tests access the implementation directly.
+    friend class ::RobeWidgetTest;
 
   private:
     // we need to control the order of construction & destruction here so these

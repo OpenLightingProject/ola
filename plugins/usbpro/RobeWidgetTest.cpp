@@ -38,9 +38,13 @@ using ola::DmxBuffer;
 using ola::plugin::usbpro::BaseRobeWidget;
 using ola::plugin::usbpro::RobeWidget;
 using ola::rdm::GetResponseFromData;
+using ola::rdm::DiscoveryUniqueBranchRequest;
+using ola::rdm::MuteRequest;
+using ola::rdm::RDMDiscoveryCommand;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
+using ola::rdm::UnMuteRequest;
 using std::auto_ptr;
 using std::string;
 using std::vector;
@@ -50,6 +54,8 @@ class RobeWidgetTest: public CommonWidgetTest {
   CPPUNIT_TEST_SUITE(RobeWidgetTest);
   CPPUNIT_TEST(testSendDMX);
   CPPUNIT_TEST(testSendRDMRequest);
+  CPPUNIT_TEST(testMuteDevice);
+  CPPUNIT_TEST(testUnMuteAll);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -57,6 +63,9 @@ class RobeWidgetTest: public CommonWidgetTest {
 
     void testSendDMX();
     void testSendRDMRequest();
+    void testMuteDevice();
+    void testUnMuteAll();
+    void testBranch();
 
   private:
     auto_ptr<ola::plugin::usbpro::RobeWidget> m_widget;
@@ -71,6 +80,8 @@ class RobeWidgetTest: public CommonWidgetTest {
                                  const uint8_t *data = NULL,
                                  unsigned int length = 0);
     uint8_t *PackRDMRequest(const RDMRequest *request, unsigned int *size);
+    uint8_t *PackDiscoveryReqest(const RDMDiscoveryCommand *request,
+                                 unsigned int *size);
     uint8_t *PackRDMResponse(const RDMResponse *response, unsigned int *size);
     void ValidateResponse(ola::rdm::rdm_response_code code,
                           const ola::rdm::RDMResponse *response,
@@ -80,6 +91,13 @@ class RobeWidgetTest: public CommonWidgetTest {
                         ola::rdm::rdm_response_code code,
                         const ola::rdm::RDMResponse *response,
                         const vector<string> &packets);
+    void ValidateMuteStatus(bool expected,
+                            bool actual);
+    void ValidateBranchStatus(const uint8_t *expected_data,
+                              unsigned int length,
+                              const uint8_t *actual_data,
+                              unsigned int actual_length);
+    void CallbackComplete() { m_ss.Terminate(); }
 
     static const UID BCAST_DESTINATION;
     static const UID DESTINATION;
@@ -88,6 +106,7 @@ class RobeWidgetTest: public CommonWidgetTest {
     static const uint32_t SERIAL_NUMBER = 0x01020304;
     static const uint8_t DMX_FRAME_LABEL = 0x06;
     static const uint8_t TEST_RDM_DATA[];
+    static const uint8_t TEST_MUTE_RESPONSE_DATA[];
     static const unsigned int FOOTER_SIZE = 1;
     static const unsigned int HEADER_SIZE = 5;
     static const unsigned int PADDING_SIZE = 4;
@@ -98,6 +117,7 @@ const UID RobeWidgetTest::SOURCE(1, 2);
 const UID RobeWidgetTest::DESTINATION(ESTA_ID, SERIAL_NUMBER);
 const UID RobeWidgetTest::BCAST_DESTINATION(ESTA_ID, 0xffffffff);
 const uint8_t RobeWidgetTest::TEST_RDM_DATA[] = {0x5a, 0x5a, 0x5a, 0x5a};
+const uint8_t RobeWidgetTest::TEST_MUTE_RESPONSE_DATA[] = {0, 0};
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION(RobeWidgetTest);
@@ -138,6 +158,23 @@ const RDMRequest *RobeWidgetTest::NewRequest(const UID &destination,
  */
 uint8_t *RobeWidgetTest::PackRDMRequest(const RDMRequest *request,
                                         unsigned int *size) {
+  unsigned int request_size = request->Size() + PADDING_SIZE;
+  uint8_t *rdm_data = new uint8_t[request_size];
+  memset(rdm_data, 0, request_size);
+  CPPUNIT_ASSERT(request->Pack(
+        rdm_data,
+        &request_size));
+  *size = request_size + PADDING_SIZE;
+  return rdm_data;
+}
+
+
+/**
+ * Pack a RDM Discovery Command
+ */
+uint8_t *RobeWidgetTest::PackDiscoveryReqest(
+    const RDMDiscoveryCommand *request,
+    unsigned int *size) {
   unsigned int request_size = request->Size() + PADDING_SIZE;
   uint8_t *rdm_data = new uint8_t[request_size];
   memset(rdm_data, 0, request_size);
@@ -222,6 +259,26 @@ void RobeWidgetTest::ValidateStatus(
     CPPUNIT_ASSERT(expected_packets[i] == packets[i]);
   }
   m_received_code = expected_code;
+  m_ss.Terminate();
+}
+
+
+/**
+ * Validate that a mute response matches what we expect
+ */
+void RobeWidgetTest::ValidateMuteStatus(bool expected,
+                                        bool actual) {
+  CPPUNIT_ASSERT_EQUAL(expected, actual);
+  m_ss.Terminate();
+}
+
+
+void RobeWidgetTest::ValidateBranchStatus(const uint8_t *expected_data,
+                                          unsigned int length,
+                                          const uint8_t *actual_data,
+                                          unsigned int actual_length) {
+  CPPUNIT_ASSERT_EQUAL(length, actual_length);
+  CPPUNIT_ASSERT(!memcmp(expected_data, actual_data, length));
   m_ss.Terminate();
 }
 
@@ -326,4 +383,181 @@ void RobeWidgetTest::testSendRDMRequest() {
 
   // cleanup time
   delete[] expected_bcast_request_frame;
+}
+
+
+/**
+ * Test mute device
+ */
+void RobeWidgetTest::testMuteDevice() {
+  // first test when a device doesn't respond
+  const MuteRequest mute_request(SOURCE,
+                                 DESTINATION,
+                                 m_transaction_number++);
+  unsigned int expected_request_frame_size;
+  uint8_t *expected_request_frame = PackDiscoveryReqest(
+      &mute_request,
+      &expected_request_frame_size);
+
+  // response, we get PADDING_SIZE bytes when nothing else is returned
+  uint8_t response_frame[PADDING_SIZE];
+  memset(response_frame, 0, PADDING_SIZE);
+
+  // add the expected response, send and verify
+  m_endpoint->AddExpectedRobeDataAndReturn(
+      BaseRobeWidget::RDM_REQUEST,
+      expected_request_frame,
+      expected_request_frame_size,
+      BaseRobeWidget::RDM_RESPONSE,
+      response_frame,
+      PADDING_SIZE);
+
+  m_widget.get()->m_impl->MuteDevice(
+      DESTINATION,
+      ola::NewSingleCallback(this,
+                             &RobeWidgetTest::ValidateMuteStatus,
+                             false));
+  m_ss.Run();
+  m_endpoint->Verify();
+  delete[] expected_request_frame;
+
+  OLA_INFO << "next";
+  // now try an actual mute response
+  const MuteRequest mute_request2(SOURCE,
+                                  DESTINATION,
+                                  m_transaction_number++);
+  expected_request_frame = PackDiscoveryReqest(
+      &mute_request2,
+      &expected_request_frame_size);
+
+  // We can really return anything as long as it's > 4 bytes
+  // TODO(simon): make this better
+  uint8_t mute_response_frame[] = {0, 0, 0, 0, 0, 0};
+
+  // add the expected response, send and verify
+  m_endpoint->AddExpectedRobeDataAndReturn(
+      BaseRobeWidget::RDM_REQUEST,
+      expected_request_frame,
+      expected_request_frame_size,
+      BaseRobeWidget::RDM_RESPONSE,
+      mute_response_frame,
+      sizeof(mute_response_frame));
+
+  m_widget.get()->m_impl->MuteDevice(
+      DESTINATION,
+      ola::NewSingleCallback(this,
+                             &RobeWidgetTest::ValidateMuteStatus,
+                             true));
+  m_ss.Run();
+  m_endpoint->Verify();
+  delete[] expected_request_frame;
+}
+
+
+/**
+ * Test the unmute all request works
+ */
+void RobeWidgetTest::testUnMuteAll() {
+  const UnMuteRequest unmute_request(SOURCE,
+                                     UID::AllDevices(),
+                                     m_transaction_number++);
+  unsigned int expected_request_frame_size;
+  uint8_t *expected_request_frame = PackDiscoveryReqest(
+      &unmute_request,
+      &expected_request_frame_size);
+
+  // response, we get PADDING_SIZE bytes when nothing else is returned
+  uint8_t response_frame[PADDING_SIZE];
+  memset(response_frame, 0, PADDING_SIZE);
+
+  // add the expected response, send and verify
+  m_endpoint->AddExpectedRobeDataAndReturn(
+      BaseRobeWidget::RDM_REQUEST,
+      expected_request_frame,
+      expected_request_frame_size,
+      BaseRobeWidget::RDM_RESPONSE,
+      response_frame,
+      PADDING_SIZE);
+
+  m_widget.get()->m_impl->UnMuteAll(
+      ola::NewSingleCallback(this,
+                             &RobeWidgetTest::CallbackComplete));
+  m_ss.Run();
+  m_endpoint->Verify();
+  delete[] expected_request_frame;
+}
+
+
+/**
+ * Test the DUB request works
+ */
+void RobeWidgetTest::testBranch() {
+  // first test when no devices respond
+  const DiscoveryUniqueBranchRequest discovery_request(
+      SOURCE,
+      UID(0, 0),
+      UID::AllDevices(),
+      m_transaction_number++);
+  unsigned int expected_request_frame_size;
+  uint8_t *expected_request_frame = PackDiscoveryReqest(
+      &discovery_request,
+      &expected_request_frame_size);
+
+  // response, we get PADDING_SIZE bytes when nothing else is returned
+  uint8_t response_frame[PADDING_SIZE];
+  memset(response_frame, 0, PADDING_SIZE);
+
+  // add the expected response, send and verify
+  m_endpoint->AddExpectedRobeDataAndReturn(
+      BaseRobeWidget::RDM_REQUEST,
+      expected_request_frame,
+      expected_request_frame_size,
+      BaseRobeWidget::RDM_RESPONSE,
+      response_frame,
+      PADDING_SIZE);
+
+  m_widget.get()->m_impl->Branch(
+      UID(0, 0),
+      UID::AllDevices(),
+      ola::NewSingleCallback(this,
+                             &RobeWidgetTest::ValidateBranchStatus,
+                             static_cast<const uint8_t*>(NULL),
+                             static_cast<unsigned int>(0)));
+  m_ss.Run();
+  m_endpoint->Verify();
+  delete[] expected_request_frame;
+
+  // now try an actual response, the data doesn't actually have to be valid
+  // because it's just passed straight to the callback.
+  const DiscoveryUniqueBranchRequest discovery_request2(
+      SOURCE,
+      UID(0, 0),
+      UID::AllDevices(),
+      m_transaction_number++);
+  expected_request_frame = PackDiscoveryReqest(
+      &discovery_request2,
+      &expected_request_frame_size);
+
+  // the response, can be anything really, last 4 bytes is trimmed
+  uint8_t response_frame2[] = {1, 2, 3, 4, 0, 0, 0, 0};
+
+  // add the expected response, send and verify
+  m_endpoint->AddExpectedRobeDataAndReturn(
+      BaseRobeWidget::RDM_REQUEST,
+      expected_request_frame,
+      expected_request_frame_size,
+      BaseRobeWidget::RDM_RESPONSE,
+      response_frame2,
+      sizeof(response_frame2));
+
+  m_widget.get()->m_impl->Branch(
+      UID(0, 0),
+      UID::AllDevices(),
+      ola::NewSingleCallback(this,
+                             &RobeWidgetTest::ValidateBranchStatus,
+                             static_cast<const uint8_t*>(response_frame2),
+                             static_cast<unsigned int>(0)));
+  m_ss.Run();
+  m_endpoint->Verify();
+  delete[] expected_request_frame;
 }

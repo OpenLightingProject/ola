@@ -39,14 +39,13 @@ RobeDevice::RobeDevice(ola::network::SelectServerInterface *ss,
                        ola::AbstractPlugin *owner,
                        const string &name,
                        RobeWidget *widget)
-    : UsbSerialDevice(owner, name, widget),
-      m_robe_widget(widget) {
+    : UsbSerialDevice(owner, name, widget) {
   std::stringstream str;
   str << 1;
   m_device_id = str.str();
 
-  RobeOutputPort *output_port = new RobeOutputPort(this, widget);
-  AddPort(output_port);
+  m_robe_port = new RobeOutputPort(this, widget);
+  AddPort(m_robe_port);
   (void) ss;
 }
 
@@ -55,8 +54,9 @@ RobeDevice::RobeDevice(ola::network::SelectServerInterface *ss,
  * Kick off the RDM discovery process
  */
 bool RobeDevice::StartHook() {
-  // start the discovery process to populate the TOD
-  m_robe_widget->RunFullDiscovery(NULL);
+  // Start full discovery even if this port isn't patched since it can take a
+  // while.
+  m_robe_port->RunFullDiscovery();
   return true;
 }
 

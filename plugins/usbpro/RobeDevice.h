@@ -47,7 +47,7 @@ class RobeDevice: public UsbSerialDevice {
 
   private:
     string m_device_id;
-    RobeWidget *m_robe_widget;
+    class RobeOutputPort *m_robe_port;
 };
 
 
