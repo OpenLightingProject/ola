@@ -22,6 +22,7 @@
 #define COMMON_RDM_DISCOVERYAGENTTESTHELPER_H_
 
 #include <cppunit/extensions/HelperMacros.h>
+#include <string.h>
 #include <vector>
 
 #include "ola/Logging.h"
