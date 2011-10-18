@@ -240,9 +240,9 @@ int main(int argc, char *argv[]) {
   if (opts.help)
     DisplayHelpAndExit(opts);
 
-  int check = static_cast<int>(opts.playback) +
-              static_cast<int>(opts.record) +
-              static_cast<int>(opts.verify);
+  int check = (opts.playback ? 1 : 0) +
+              (opts.record ? 1 : 0) +
+              (opts.verify ? 1 : 0);
 
   if (check > 1) {
     OLA_FATAL << "Only one of --record or --playback must be provided";
