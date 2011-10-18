@@ -68,8 +68,11 @@ int ParseOptions(int argc, char *argv[], options *opts) {
       {0, 0, 0, 0}
   };
 
-  opts->level = ola::OLA_LOG_INFO;
   opts->help = false;
+  opts->level = ola::OLA_LOG_INFO;
+  opts->playback = false;
+  opts->record = false;
+  opts->verify = false;
 
   int c, ll;
   int option_index = 0;
