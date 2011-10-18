@@ -34,6 +34,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/resource.h>
+#include <sysexits.h>
 #include <unistd.h>
 #include <iostream>
 #include <string>
@@ -44,6 +45,7 @@
 using ola::OlaDaemon;
 using std::string;
 using std::cout;
+using std::cerr;
 using std::endl;
 
 // the daemon
@@ -76,7 +78,7 @@ static void sig_segv(int signo) {
 
   backtrace_symbols_fd(array, size, STDERR_FILENO);
   #endif
-  exit(1);
+  exit(EX_SOFTWARE);
   (void) signo;
 }
 
@@ -189,7 +191,7 @@ static void DisplayHelp() {
  * @param argv
  * @param opts  pointer to the options struct
  */
-static void ParseOptions(int argc, char *argv[], ola_options *opts) {
+static bool ParseOptions(int argc, char *argv[], ola_options *opts) {
   static struct option long_options[] = {
       {"config-dir", required_argument, 0, 'c'},
       {"help", no_argument, 0, 'h'},
@@ -204,6 +206,7 @@ static void ParseOptions(int argc, char *argv[], ola_options *opts) {
       {0, 0, 0, 0}
     };
 
+  bool options_valid = true;
   int c, ll;
   int option_index = 0;
 
@@ -251,6 +254,8 @@ static void ParseOptions(int argc, char *argv[], ola_options *opts) {
             opts->level = ola::OLA_LOG_DEBUG;
             break;
           default :
+            cerr << "Invalid log level " << optarg << endl;
+            options_valid = false;
             break;
         }
         break;
@@ -266,6 +271,7 @@ static void ParseOptions(int argc, char *argv[], ola_options *opts) {
        break;
     }
   }
+  return options_valid;
 }
 
 
@@ -282,15 +288,15 @@ static int Daemonise() {
 
   if (getrlimit(RLIMIT_NOFILE, &rl) < 0) {
     OLA_FATAL << "Could not determine file limit";
-    exit(1);
+    exit(EX_OSFILE);
   }
 
   // fork
   if ((pid = fork()) < 0) {
     OLA_FATAL << "Could not fork\n";
-    exit(1);
+    exit(EX_OSERR);
   } else if (pid != 0) {
-    exit(0);
+    exit(EX_OK);
   }
 
   // start a new session
@@ -302,20 +308,20 @@ static int Daemonise() {
 
   if (sigaction(SIGHUP, &sa, NULL) < 0) {
     OLA_FATAL << "Could not install signal\n";
-    exit(1);
+    exit(EX_OSERR);
   }
 
   if ((pid= fork()) < 0) {
     OLA_FATAL << "Could not fork\n";
-    exit(1);
+    exit(EX_OSERR);
   } else if (pid != 0) {
-    exit(0);
+    exit(EX_OK);
   }
 
   // change the current working directory
   if (chdir("/") < 0) {
     OLA_FATAL << "Can't change directory to /";
-    exit(1);
+    exit(EX_OSERR);
   }
 
   // close all fds
@@ -332,7 +338,7 @@ static int Daemonise() {
   if (fd0 != 0 || fd1 != 1 || fd2 != 2) {
     OLA_FATAL << "Unexpected file descriptors: " << fd0 << ", " << fd1 << ", "
       << fd2;
-    exit(1);
+    exit(EX_OSERR);
   }
 
   return 0;
@@ -358,11 +364,14 @@ static void Setup(int argc, char*argv[], ola_options *opts) {
   opts->http_data_dir = "";
   opts->config_dir = "";
 
-  ParseOptions(argc, argv, opts);
+  if (!ParseOptions(argc, argv, opts)) {
+    DisplayHelp();
+    exit(EX_USAGE);
+  }
 
   if (opts->help) {
     DisplayHelp();
-    exit(0);
+    exit(EX_OK);
   }
 
   // setup the logging
