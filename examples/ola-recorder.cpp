@@ -64,7 +64,7 @@ int ParseOptions(int argc, char *argv[], options *opts) {
   static struct option long_options[] = {
       {"help", no_argument, 0, 'h'},
       {"delay", required_argument, 0, 'd'},
-      {"interations", required_argument, 0, 'i'},
+      {"iterations", required_argument, 0, 'i'},
       {"log-level", required_argument, 0, 'l'},
       {"playback", required_argument, 0, 'p'},
       {"record", required_argument, 0, 'r'},
