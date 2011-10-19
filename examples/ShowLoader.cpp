@@ -29,6 +29,7 @@
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
 #include <fstream>
+#include <ios>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -78,20 +79,32 @@ bool ShowLoader::Load() {
 
 
 /**
+ * Reset to the start of the show
+ */
+void ShowLoader::Reset() {
+  m_show_file.clear();
+  m_show_file.seekg(0, std::ios::beg);
+  // skip over the first line
+  string line;
+  ReadLine(&line);
+}
+
+
+/**
  * Get the next time offset
  * @param timeout a pointer to the timeout in ms
  */
-bool ShowLoader::NextTimeout(unsigned int *timeout) {
+ShowLoader::State ShowLoader::NextTimeout(unsigned int *timeout) {
   string line;
   ReadLine(&line);
   if (line.empty())
-    return false;
+    return END_OF_FILE;
 
   if (!ola::StringToInt(line, timeout, true)) {
     OLA_WARN << "Line " << m_line << ": Invalid timeout: " << line;
-    return false;
+    return INVALID_LINE;
   }
-  return true;
+  return OK;
 }
 
 
@@ -100,27 +113,28 @@ bool ShowLoader::NextTimeout(unsigned int *timeout) {
  * @param universe the universe to send on
  * @param data the DMX data
  */
-bool ShowLoader::NextFrame(unsigned int *universe, DmxBuffer *data) {
+ShowLoader::State ShowLoader::NextFrame(unsigned int *universe,
+                                        DmxBuffer *data) {
   string line;
   ReadLine(&line);
 
   if (line.empty())
-    return false;
+    return END_OF_FILE;
 
   vector<string> inputs;
   ola::StringSplit(line, inputs);
 
   if (inputs.size() != 2) {
     OLA_WARN << "Line " << m_line << " invalid: " << line;
-    return false;
+    return INVALID_LINE;
   }
 
   if (!ola::StringToInt(inputs[0], universe, true)) {
     OLA_WARN << "Line " << m_line << " invalid: " << line;
-    return false;
+    return INVALID_LINE;
   }
 
-  return data->SetFromString(inputs[1]);
+  return (data->SetFromString(inputs[1]) ? OK : INVALID_LINE);
 }
 
 

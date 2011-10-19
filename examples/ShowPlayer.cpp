@@ -45,12 +45,14 @@ using ola::DmxBuffer;
 
 
 ShowPlayer::ShowPlayer(const string &filename)
-    : m_loader(filename) {
+    : m_loader(filename),
+      m_infinte_loop(false),
+      m_iteration_remaining(0),
+      m_loop_delay(0) {
 }
 
 
-ShowPlayer::~ShowPlayer() {
-}
+ShowPlayer::~ShowPlayer() {}
 
 
 /**
@@ -72,7 +74,11 @@ int ShowPlayer::Init() {
 /**
  * Playback the show
  */
-int ShowPlayer::Playback() {
+int ShowPlayer::Playback(unsigned int iterations,
+                         unsigned int delay) {
+  m_infinte_loop = iterations == 0;
+  m_iteration_remaining = iterations;
+  m_loop_delay = delay;
   SendNextFrame();
   m_client.GetSelectServer()->Run();
   return EX_OK;
@@ -86,35 +92,66 @@ int ShowPlayer::Playback() {
 void ShowPlayer::SendNextFrame() {
   DmxBuffer buffer;
   unsigned int universe;
-  bool ok = m_loader.NextFrame(&universe, &buffer);
-  if (!ok) {
-    m_client.GetSelectServer()->Terminate();
-    return;
+  ShowLoader::State state = m_loader.NextFrame(&universe, &buffer);
+  switch (state) {
+    case ShowLoader::END_OF_FILE:
+      HandleEndOfFile();
+      return;
+    case ShowLoader::INVALID_LINE:
+      m_client.GetSelectServer()->Terminate();
+      return;
+    default:
+      {}
   }
 
-  bool timeout_ok = RegisterNextTimeout();
+  state = RegisterNextTimeout();
 
-  if (ok) {
-    OLA_INFO << "Universe: " << universe << ": " << buffer.ToString();
-    m_client.GetClient()->SendDmx(universe, buffer);
+  OLA_INFO << "Universe: " << universe << ": " << buffer.ToString();
+  m_client.GetClient()->SendDmx(universe, buffer);
+
+  switch (state) {
+    case ShowLoader::END_OF_FILE:
+      HandleEndOfFile();
+      return;
+    case ShowLoader::INVALID_LINE:
+      m_client.GetSelectServer()->Terminate();
+      return;
+    default:
+      {}
   }
-
-  if (!timeout_ok)
-    m_client.GetSelectServer()->Terminate();
 }
 
 
 /**
  * Get the next time offset
  */
-bool ShowPlayer::RegisterNextTimeout() {
+ShowLoader::State ShowPlayer::RegisterNextTimeout() {
   unsigned int timeout;
-  if (!m_loader.NextTimeout(&timeout))
-    return false;
+  ShowLoader::State state = m_loader.NextTimeout(&timeout);
+  if (state != ShowLoader::OK)
+    return state;
 
   OLA_INFO << "Registering timeout for " << timeout << "ms";
   m_client.GetSelectServer()->RegisterSingleTimeout(
       timeout,
       ola::NewSingleCallback(this, &ShowPlayer::SendNextFrame));
-  return true;
+  return state;
+}
+
+
+/**
+ * Handle the case where we reach the end of file
+ */
+void ShowPlayer::HandleEndOfFile() {
+  m_iteration_remaining--;
+  if (m_infinte_loop || m_iteration_remaining > 0) {
+    m_loader.Reset();
+    m_client.GetSelectServer()->RegisterSingleTimeout(
+        m_loop_delay,
+        ola::NewSingleCallback(this, &ShowPlayer::SendNextFrame));
+    return;
+  } else {
+    // stop the show
+    m_client.GetSelectServer()->Terminate();
+  }
 }

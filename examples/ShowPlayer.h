@@ -42,15 +42,20 @@ class ShowPlayer {
     ~ShowPlayer();
 
     int Init();
-    int Playback();
+    int Playback(unsigned int iterations,
+                 unsigned int delay);
 
     void SendNextFrame();
 
   private:
     ola::OlaCallbackClientWrapper m_client;
     ShowLoader m_loader;
+    bool m_infinte_loop;
+    unsigned int m_iteration_remaining;
+    unsigned int m_loop_delay;
 
-    bool RegisterNextTimeout();
+    ShowLoader::State RegisterNextTimeout();
     bool ReadNextFrame(unsigned int *universe, ola::DmxBuffer *data);
+    void HandleEndOfFile();
 };
 #endif  // EXAMPLES_SHOWPLAYER_H_

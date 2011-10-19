@@ -49,6 +49,9 @@ typedef struct {
   bool playback;
   bool record;
   bool verify;
+  // 0 means infinite looping
+  unsigned int loop_iterations;
+  unsigned int loop_delay;
   string file;
   string universes;
 } options;
@@ -60,6 +63,8 @@ typedef struct {
 int ParseOptions(int argc, char *argv[], options *opts) {
   static struct option long_options[] = {
       {"help", no_argument, 0, 'h'},
+      {"delay", required_argument, 0, 'd'},
+      {"interations", required_argument, 0, 'i'},
       {"log-level", required_argument, 0, 'l'},
       {"playback", required_argument, 0, 'p'},
       {"record", required_argument, 0, 'r'},
@@ -71,6 +76,8 @@ int ParseOptions(int argc, char *argv[], options *opts) {
   opts->help = false;
   opts->level = ola::OLA_LOG_INFO;
   opts->playback = false;
+  opts->loop_iterations = 1;
+  opts->loop_delay = 0;
   opts->record = false;
   opts->verify = false;
 
@@ -78,7 +85,11 @@ int ParseOptions(int argc, char *argv[], options *opts) {
   int option_index = 0;
 
   while (1) {
-    c = getopt_long(argc, argv, "hl:p:r:u:v:", long_options, &option_index);
+    c = getopt_long(argc,
+                    argv,
+                    "d:hi:l:p:r:u:v:",
+                    long_options,
+                    &option_index);
 
     if (c == -1)
       break;
@@ -86,8 +97,14 @@ int ParseOptions(int argc, char *argv[], options *opts) {
     switch (c) {
       case 0:
         break;
+      case 'd':
+        opts->loop_delay = atoi(optarg);
+        break;
       case 'h':
         opts->help = true;
+        break;
+      case 'i':
+        opts->loop_iterations = atoi(optarg);
         break;
       case 'l':
         ll = atoi(optarg);
@@ -147,12 +164,17 @@ void DisplayHelpAndExit(const options &opts) {
   "\n"
   "Record a series of universes, or playback a previously recorded show.\n"
   "\n"
-  "  -h, --help               Display this help message and exit.\n"
-  "  -l, --log-level <level>  Set the loggging level 0 .. 4 .\n"
-  "  -r, --record <file>      Path to a file to record data\n"
-  "  -p, --playback <file>    Path to a file from which to playback data\n"
-  "  -u, --universes <list>   Comma separated list of universes to record.\n"
-  "  -v, --verify <file>      Path to a file to verify\n"
+  "  -h, --help              Display this help message and exit.\n"
+  "  -l, --log-level <level> Set the loggging level 0 .. 4 .\n"
+  "  -r, --record <file>     Path to a file to record data\n"
+  "  -p, --playback <file>   Path to a file from which to playback data\n"
+  "  -u, --universes <list>  Comma separated list of universes to record.\n"
+  "  -v, --verify <file>     Path to a file to verify\n"
+  "\n"
+  "Additional Playback Options:\n"
+  "  -d, --delay             Delay in ms between successive iterations.\n"
+  "  -i, --iterations        Number of times to repeat the show, 0: unlimited."
+  "\n"
   << endl;
   exit(0);
 }
@@ -204,12 +226,15 @@ int VerifyShow(const string &filename) {
   unsigned int universe;
   ola::DmxBuffer buffer;
   unsigned int timeout;
+  ShowLoader::State state;
   while (true) {
-    if (!loader.NextFrame(&universe, &buffer))
+    state = loader.NextFrame(&universe, &buffer);
+    if (state != ShowLoader::OK)
       break;
     frames_by_universe[universe]++;
 
-    if (!loader.NextTimeout(&timeout))
+    state = loader.NextTimeout(&timeout);
+    if (state != ShowLoader::OK)
       break;
     total_time += timeout;
   }
@@ -256,7 +281,8 @@ int main(int argc, char *argv[]) {
     ShowPlayer player(opts.file);
     int status = player.Init();
     if (!status)
-      status = player.Playback();
+      status = player.Playback(opts.loop_iterations,
+                               opts.loop_delay);
     return status;
   } else if (opts.verify) {
     return VerifyShow(opts.file);

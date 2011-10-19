@@ -36,10 +36,17 @@ class ShowLoader {
     explicit ShowLoader(const string &filename);
     ~ShowLoader();
 
-    bool Load();
+    typedef enum {
+      OK,
+      INVALID_LINE,
+      END_OF_FILE,
+    } State;
 
-    bool NextTimeout(unsigned int *timeout);
-    bool NextFrame(unsigned int *universe, ola::DmxBuffer *data);
+    bool Load();
+    void Reset();
+
+    State NextTimeout(unsigned int *timeout);
+    State NextFrame(unsigned int *universe, ola::DmxBuffer *data);
 
   private:
     const string m_filename;
