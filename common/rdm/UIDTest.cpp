@@ -35,6 +35,7 @@ class UIDTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testUID);
   CPPUNIT_TEST(testUIDInequalities);
   CPPUNIT_TEST(testUIDSet);
+  CPPUNIT_TEST(testUIDSetUnion);
   CPPUNIT_TEST(testUIDParse);
   CPPUNIT_TEST_SUITE_END();
 
@@ -42,6 +43,7 @@ class UIDTest: public CppUnit::TestFixture {
     void testUID();
     void testUIDInequalities();
     void testUIDSet();
+    void testUIDSetUnion();
     void testUIDParse();
 };
 
@@ -172,6 +174,29 @@ void UIDTest::testUIDSet() {
 
   difference = set3.SetDifference(set1);
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, difference.Size());
+}
+
+
+/*
+ * Test the UIDSet Union method.
+ */
+void UIDTest::testUIDSetUnion() {
+  UIDSet set1, set2, expected;
+
+  UID uid(1, 2);
+  UID uid2(2, 10);
+  UID uid3(3, 10);
+  UID uid4(4, 10);
+  set1.AddUID(uid);
+  set2.AddUID(uid2);
+  set2.AddUID(uid3);
+  set2.AddUID(uid4);
+  set1.Union(set2);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 4, set1.Size());
+  CPPUNIT_ASSERT(set1.Contains(uid));
+  CPPUNIT_ASSERT(set1.Contains(uid2));
+  CPPUNIT_ASSERT(set1.Contains(uid3));
+  CPPUNIT_ASSERT(set1.Contains(uid4));
 }
 
 

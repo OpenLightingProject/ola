@@ -80,6 +80,16 @@ class UIDSet {
       return m_uids.find(uid) != m_uids.end();
     }
 
+    void Union(const UIDSet &other) {
+      set<UID> result = m_uids;
+      set_union(m_uids.begin(),
+                m_uids.end(),
+                other.Begin(),
+                other.End(),
+                inserter(result, result.begin()));
+      m_uids = result;
+    }
+
     Iterator Begin() const {
       return m_uids.begin();
     }
