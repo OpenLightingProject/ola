@@ -70,6 +70,7 @@ class MockResponder: public MockResponderInterface {
 
     const UID& GetUID() const { return m_uid; }
     void UnMute() { m_muted = false; }
+
     virtual bool Mute(const UID &uid) {
       if (m_uid == uid) {
         m_muted = true;
@@ -77,6 +78,7 @@ class MockResponder: public MockResponderInterface {
       }
       return false;
     }
+
     bool FormResponse(const UID &lower,
                       const UID &upper,
                       uint8_t *data,
@@ -109,7 +111,6 @@ class MockResponder: public MockResponderInterface {
       OrAndChecksum(data, 18, device_id | 0xaa, &checksum);
       OrAndChecksum(data, 19, device_id | 0x55, &checksum);
 
-
       data[20] |= (checksum >> 8) | 0xaa;
       data[21] |= (checksum >> 8) | 0x55;
       data[22] |= checksum | 0xaa;
@@ -131,7 +132,6 @@ class MockResponder: public MockResponderInterface {
     bool m_muted;
 
   private:
-
     void OrAndChecksum(uint8_t *data,
                        unsigned int offset,
                        uint8_t value,
@@ -196,6 +196,38 @@ class NonMutingResponder: public MockResponder {
     }
 
     bool Mute(const UID&) { return false; }
+};
+
+
+/**
+ * A responder that only mutes after N attempts
+ */
+class FlakeyMutingResponder: public MockResponder {
+  public:
+    explicit FlakeyMutingResponder(const UID &uid,
+                                  unsigned int threshold = 2)
+        : MockResponder(uid),
+          m_threshold(threshold),
+          m_attempts(0) {
+    }
+
+    bool Mute(const UID &uid) {
+      if (m_uid != uid)
+        return false;
+
+      m_attempts++;
+      if (m_attempts > m_threshold) {
+        m_muted = true;
+        return true;
+      }
+      return false;
+    }
+
+    void Reset() { m_attempts = 0; }
+
+  private:
+    unsigned int m_threshold;
+    unsigned int m_attempts;
 };
 
 
@@ -288,7 +320,6 @@ class MockDiscoveryTarget: public ola::rdm::DiscoveryTargetInterface {
       ResponderList::const_iterator iter = m_responders.begin();
       for (; iter != m_responders.end(); ++iter)
         (*iter)->UnMute();
-      OLA_INFO << "un muted all";
       unmute_complete->Run();
     }
 
@@ -303,10 +334,6 @@ class MockDiscoveryTarget: public ola::rdm::DiscoveryTargetInterface {
         valid |= (*iter)->FormResponse(lower, upper, data, data_size);
       }
 
-      /*
-      OLA_INFO << "in branch (" << lower << ", " << upper << ") valid was  " <<
-        valid;
-      */
       if (valid)
         callback->Run(data, data_size);
       else

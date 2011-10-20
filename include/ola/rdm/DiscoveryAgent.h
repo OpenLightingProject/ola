@@ -89,12 +89,14 @@ class DiscoveryAgent {
             upper(upper),
             parent(parent),
             attempt(0),
+            failures(0),
             branch_corrupt(false) {
       }
       UID lower;
       UID upper;
       UIDRange *parent;  // the parent Range
       unsigned int attempt;  // the # of attempts for this branch
+      unsigned int failures;
       bool branch_corrupt;  // true if this branch contains a bad device
     };
 
@@ -102,6 +104,8 @@ class DiscoveryAgent {
 
     DiscoveryTargetInterface *m_target;
     UIDSet m_uids;
+    // uids that are misbehaved in some way
+    UIDSet m_bad_uids;
     DiscoveryCompleteCallback *m_on_complete;
     // uids to mute during incremental discovery
     std::queue<UID> m_uids_to_mute;
@@ -113,25 +117,29 @@ class DiscoveryAgent {
     // The stack of UIDRanges
     UIDRanges m_uid_ranges;
     UID m_muting_uid;  // the uid we're currently trying to mute
+    unsigned int m_mute_attempts;
     bool m_tree_corrupt;  // true if there was a problem with discovery
 
     void InitDiscovery(DiscoveryCompleteCallback *on_complete,
                        bool incremental);
 
-    void IncrementalMuteComplete(bool status);
     void UnMuteComplete();
+    void MaybeMuteNextDevice();
+    void IncrementalMuteComplete(bool status);
+    void SendDiscovery();
+
     void BranchComplete(const uint8_t *data, unsigned int length);
     void BranchMuteComplete(bool status);
-    void MaybeMuteNextDevice();
-    void SendDiscovery();
     void HandleCollision();
-    void FreeCurrentRange(bool got_response_in_current_range);
+    void FreeCurrentRange();
 
     static const unsigned int MAX_DUB_RESPONSE_SIZE = 24;
     static const unsigned int MIN_DUB_RESPONSE_SIZE = 17;
-    // The maximum number of times we'll perform discovery on a branch.
-    // Reaching this limit usually means there is a bad responder on the line.
-    static const unsigned int MAX_BRANCH_ATTEMPTS = 10;
+    // The maximum number of times we'll perform discovery on a branch when we
+    // get an inconsistent result (responder not muting, etc.)
+    static const unsigned int MAX_BRANCH_FAILURES = 5;
+    // The number of times we'll attempt to mute a UID
+    static const unsigned int MAX_MUTE_ATTEMPTS = 5;
 };
 }  // rdm
 }  // ola

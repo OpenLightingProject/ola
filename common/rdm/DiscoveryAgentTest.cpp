@@ -42,8 +42,9 @@ class DiscoveryAgentTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSingleResponder);
   CPPUNIT_TEST(testMultipleResponders);
   CPPUNIT_TEST(testObnoxiousResponder);
-  CPPUNIT_TEST(testBipolarResponder);
+  // CPPUNIT_TEST(testBipolarResponder);
   CPPUNIT_TEST(testNonMutingResponder);
+  CPPUNIT_TEST(testFlakeyResponder);
   CPPUNIT_TEST(testProxy);
   CPPUNIT_TEST_SUITE_END();
 
@@ -58,10 +59,11 @@ class DiscoveryAgentTest: public CppUnit::TestFixture {
     void testObnoxiousResponder();
     void testBipolarResponder();
     void testNonMutingResponder();
+    void testFlakeyResponder();
     void testProxy();
 
     void setUp() {
-      ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
+      ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
     }
 
   private:
@@ -223,7 +225,7 @@ void DiscoveryAgentTest::testObnoxiousResponder() {
   ResponderList responders;
   uids.AddUID(UID(0x7a70, 0x00002002));
   PopulateResponderListFromUIDs(uids, &responders);
-  // add the ObnoxiousResponder
+  // add the ObnoxiousResponders
   UID obnoxious_uid = UID(0x7a77, 0x00002002);
   UID obnoxious_uid2 = UID(0x7a77, 0x00003030);
   uids.AddUID(obnoxious_uid);
@@ -233,7 +235,7 @@ void DiscoveryAgentTest::testObnoxiousResponder() {
   MockDiscoveryTarget target(responders);
 
   DiscoveryAgent agent(&target);
-  OLA_INFO << "starting discovery with two responder";
+  OLA_INFO << "starting discovery with obnoxious responder";
   agent.StartFullDiscovery(
       ola::NewSingleCallback(this,
                              &DiscoveryAgentTest::DiscoveryFailed,
@@ -312,18 +314,81 @@ void DiscoveryAgentTest::testNonMutingResponder() {
 
 
 /**
+ * Test a responder that only acks a mute request after N attempts.
+ */
+void DiscoveryAgentTest::testFlakeyResponder() {
+  UIDSet uids;
+  ResponderList responders;
+  uids.AddUID(UID(0x7a70, 0x00002002));
+  PopulateResponderListFromUIDs(uids, &responders);
+  // add the NonMutingResponders
+  UID flakey_uid = UID(0x7a77, 0x00002002);
+  UID flakey_uid2 = UID(0x7a77, 0x00003030);
+  uids.AddUID(flakey_uid);
+  uids.AddUID(flakey_uid2);
+  FlakeyMutingResponder *flakey_responder1 = new FlakeyMutingResponder(
+      flakey_uid);
+  FlakeyMutingResponder *flakey_responder2 = new FlakeyMutingResponder(
+      flakey_uid2);
+  responders.push_back(flakey_responder1);
+  responders.push_back(flakey_responder2);
+  MockDiscoveryTarget target(responders);
+
+  DiscoveryAgent agent(&target);
+  OLA_INFO << "starting discovery with flakey responder";
+  agent.StartFullDiscovery(
+      ola::NewSingleCallback(this,
+                             &DiscoveryAgentTest::DiscoverySuccessful,
+                             static_cast<const UIDSet*>(&uids)));
+  CPPUNIT_ASSERT(m_callback_run);
+  m_callback_run = false;
+
+  // now try incremental
+  flakey_responder1->Reset();
+  flakey_responder2->Reset();
+  OLA_INFO << "starting incremental discovery with flakey responder list";
+  agent.StartIncrementalDiscovery(
+      ola::NewSingleCallback(this,
+                             &DiscoveryAgentTest::DiscoverySuccessful,
+                             static_cast<const UIDSet*>(&uids)));
+  CPPUNIT_ASSERT(m_callback_run);
+}
+
+
+/**
  * Test a proxy.
  */
 void DiscoveryAgentTest::testProxy() {
-  UIDSet uids;
-  ResponderList proxied_responders, responders;
-  uids.AddUID(UID(0x7a70, 0x00002002));
-  uids.AddUID(UID(0x8080, 0x00001234));
-  PopulateResponderListFromUIDs(uids, &proxied_responders);
-  // add the Proxy
+  UIDSet proxied_uids, proxied_uids2;
+  ResponderList proxied_responders, proxied_responders2, responders;
+  proxied_uids.AddUID(UID(0x7a70, 0x00002002));
+  proxied_uids.AddUID(UID(0x8080, 0x00001234));
+  proxied_uids.AddUID(UID(0x9000, 0x00005678));
+  proxied_uids.AddUID(UID(0x1020, 0x00005678));
+  PopulateResponderListFromUIDs(proxied_uids, &proxied_responders);
+  proxied_uids2.AddUID(UID(0x7a71, 0x00002002));
+  proxied_uids2.AddUID(UID(0x8081, 0x00001234));
+  proxied_uids2.AddUID(UID(0x9001, 0x00005678));
+  proxied_uids2.AddUID(UID(0x1021, 0x00005678));
+  PopulateResponderListFromUIDs(proxied_uids2, &proxied_responders2);
+  // add the two proxies
+  UIDSet uids(proxied_uids);
+  uids.Union(proxied_uids2);
   UID proxy_uid = UID(0x1010, 0x00002002);
   uids.AddUID(proxy_uid);
   responders.push_back(new ProxyResponder(proxy_uid, proxied_responders));
+  UID proxy_uid2 = UID(0x1010, 0x00001999);
+  uids.AddUID(proxy_uid2);
+  responders.push_back(new ProxyResponder(proxy_uid2, proxied_responders2));
+
+  // add some other responders
+  UID responder(0x0001, 0x00000001);
+  UID responder2(0x0001, 0x10000001);
+  uids.AddUID(responder);
+  uids.AddUID(responder2);
+  responders.push_back(new MockResponder(responder));
+  responders.push_back(new MockResponder(responder2));
+
   MockDiscoveryTarget target(responders);
 
   DiscoveryAgent agent(&target);
