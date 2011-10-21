@@ -90,6 +90,7 @@ class DiscoveryAgent {
             parent(parent),
             attempt(0),
             failures(0),
+            uids_discovered(0),
             branch_corrupt(false) {
       }
       UID lower;
@@ -97,6 +98,7 @@ class DiscoveryAgent {
       UIDRange *parent;  // the parent Range
       unsigned int attempt;  // the # of attempts for this branch
       unsigned int failures;
+      unsigned int uids_discovered;
       bool branch_corrupt;  // true if this branch contains a bad device
     };
 
@@ -135,8 +137,15 @@ class DiscoveryAgent {
 
     static const unsigned int MAX_DUB_RESPONSE_SIZE = 24;
     static const unsigned int MIN_DUB_RESPONSE_SIZE = 17;
-    // The maximum number of times we'll perform discovery on a branch when we
-    // get an inconsistent result (responder not muting, etc.)
+    /*
+     * The maximum numbers of times we'll retry discovery if we get a
+     * collision, but after splitting the range in two no nodes can be found.
+     */
+    static const unsigned int MAX_EMPTY_BRANCH_ATTEMPTS = 5;
+    /*
+     * The maximum number of times we'll perform discovery on a branch when we
+     * get an inconsistent result (responder not muting, etc.)
+     */
     static const unsigned int MAX_BRANCH_FAILURES = 5;
     // The number of times we'll attempt to mute a UID
     static const unsigned int MAX_MUTE_ATTEMPTS = 5;

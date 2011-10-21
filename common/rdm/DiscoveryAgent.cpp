@@ -193,9 +193,13 @@ void DiscoveryAgent::SendDiscovery() {
     return;
   }
   UIDRange *range = m_uid_ranges.top();
-  range->attempt++;
+  if (range->uids_discovered == 0) {
+    range->attempt++;
+  }
 
-  if (range->failures == MAX_BRANCH_FAILURES || range->branch_corrupt) {
+  if (range->failures == MAX_BRANCH_FAILURES ||
+      range->attempt == MAX_EMPTY_BRANCH_ATTEMPTS ||
+      range->branch_corrupt) {
     // limit reached, move on to the next branch
     OLA_DEBUG << "Hit failure limit for (" << range->lower << ", " <<
       range->upper << ")";
@@ -205,7 +209,8 @@ void DiscoveryAgent::SendDiscovery() {
     SendDiscovery();
   } else {
     OLA_DEBUG << "DUB " << range->lower << " - " << range->upper <<
-      ", attempt " << range->attempt << ", failures " << range->failures <<
+      ", attempt " << range->attempt << ", uids found: " <<
+      range->uids_discovered << ", failures " << range->failures <<
       ", corrupted " << range->branch_corrupt;
     m_target->Branch(range->lower, range->upper, m_branch_callback);
   }
@@ -326,6 +331,7 @@ void DiscoveryAgent::BranchMuteComplete(bool status) {
   m_mute_attempts++;
   if (status) {
     m_uids.AddUID(m_muting_uid);
+    m_uid_ranges.top()->uids_discovered++;
   } else {
     // failed to mute, if we haven't reached the limit try it again
     if (m_mute_attempts < MAX_MUTE_ATTEMPTS) {
@@ -369,6 +375,7 @@ void DiscoveryAgent::HandleCollision() {
   OLA_INFO << " collision, spliting into: " << lower_uid << " - " << mid_uid <<
     " , " << mid_plus_one_uid << " - " << upper_uid;
 
+  range->uids_discovered = 0;
   // add both ranges to the stack
   m_uid_ranges.push(new UIDRange(lower_uid, mid_uid, range));
   m_uid_ranges.push(new UIDRange(mid_plus_one_uid, upper_uid, range));
@@ -387,6 +394,8 @@ void DiscoveryAgent::FreeCurrentRange() {
       OLA_INFO << "top of tree is corrupted";
       m_tree_corrupt = true;
     }
+  } else {
+    range->parent->uids_discovered += range->uids_discovered;
   }
   delete range;
   m_uid_ranges.pop();

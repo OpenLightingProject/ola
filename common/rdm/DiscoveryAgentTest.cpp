@@ -42,7 +42,7 @@ class DiscoveryAgentTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSingleResponder);
   CPPUNIT_TEST(testMultipleResponders);
   CPPUNIT_TEST(testObnoxiousResponder);
-  // CPPUNIT_TEST(testBipolarResponder);
+  CPPUNIT_TEST(testBipolarResponder);
   CPPUNIT_TEST(testNonMutingResponder);
   CPPUNIT_TEST(testFlakeyResponder);
   CPPUNIT_TEST(testProxy);
