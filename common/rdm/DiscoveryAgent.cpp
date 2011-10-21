@@ -29,8 +29,8 @@
  *       separately.
  *
  * We also track responders that fail to ack a mute request (we attempt to mute
- * MAX_MUTE_ATTEMPTS times) and branchs that contain responders which continue
- * to responder once mutes. The latter causes a branch to be marked as corrupt,
+ * MAX_MUTE_ATTEMPTS times) and branches that contain responders which continue
+ * to responde once muted. The latter causes a branch to be marked as corrupt,
  * which prevents us from looping forver.
  */
 
