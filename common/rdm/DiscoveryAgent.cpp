@@ -16,6 +16,22 @@
  * DiscoveryAgent.cpp
  * Implements the RDM Discovery algorithm.
  * Copyright (C) 2011 Simon Newton
+ *
+ * The discovery process goes something like this:
+ *   - if incremental, copy all previously discovered UIDs to the mute list
+ *   - push (0, 0xffffffffffff) onto the resolution stack
+ *   - unmute all
+ *   - mute all previously discovered UIDs, for any that fail to mute remove
+ *     them from the UIDSet.
+ *   - Send a discovery unique branch message
+ *     - If we get a valid response, mute, and send the same branch again
+ *     - If we get a collision, split the UID range, and try each branch
+ *       separately.
+ *
+ * We also track responders that fail to ack a mute request (we attempt to mute
+ * MAX_MUTE_ATTEMPTS times) and branchs that contain responders which continue
+ * to responder once mutes. The latter causes a branch to be marked as corrupt,
+ * which prevents us from looping forver.
  */
 
 #include "ola/Callback.h"
@@ -44,7 +60,8 @@ DiscoveryAgent::DiscoveryAgent(DiscoveryTargetInterface *target)
         ola::NewCallback(this, &DiscoveryAgent::BranchMuteComplete)),
       m_branch_callback(
         ola::NewCallback(this, &DiscoveryAgent::BranchComplete)),
-      m_muting_uid(0, 0) {
+      m_muting_uid(0, 0),
+      m_mute_attempts(0) {
 }
 
 
@@ -88,18 +105,20 @@ void DiscoveryAgent::InitDiscovery(
     DiscoveryCompleteCallback *on_complete,
     bool incremental) {
   if (m_on_complete) {
+    OLA_WARN << "Discovery procedure already running";
     UIDSet uids;
-    OLA_WARN << "Discovery already running";
     on_complete->Run(false, uids);
     return;
   }
   m_on_complete = on_complete;
 
+  // this should be empty, but clear it out anyway
   while (!m_uids_to_mute.empty())
     m_uids_to_mute.pop();
 
+  // this should also be empty
   while (!m_uid_ranges.empty())
-    FreeCurrentRange(false);
+    FreeCurrentRange();
 
   if (incremental) {
     UIDSet::Iterator iter = m_uids.Begin();
@@ -109,11 +128,11 @@ void DiscoveryAgent::InitDiscovery(
     m_uids.Clear();
   }
 
+  m_bad_uids.Clear();
   m_tree_corrupt = false;
 
-  // push the first ranges on to the branch stack
+  // push the first range on to the branch stack
   UID lower(0, 0);
-  m_uid_ranges.push(new UIDRange(lower, UID::AllDevices(), NULL));
   m_uid_ranges.push(new UIDRange(lower, UID::AllDevices(), NULL));
 
   m_target->UnMuteAll(m_unmute_callback);
@@ -121,23 +140,75 @@ void DiscoveryAgent::InitDiscovery(
 
 
 /**
+ * Called when the UnMute completes. This starts muting previously known
+ * devices, or proceeeds immediately to the DUB stage if there are none.
+ */
+void DiscoveryAgent::UnMuteComplete() {
+  MaybeMuteNextDevice();
+}
+
+
+/**
+ * If any previously discovered devices remain, mute them. Otherwise proceed to
+ * the branch phase.
+ */
+void DiscoveryAgent::MaybeMuteNextDevice() {
+  if (m_uids_to_mute.empty()) {
+    SendDiscovery();
+  } else {
+    m_muting_uid = m_uids_to_mute.front();
+    m_uids_to_mute.pop();
+    OLA_DEBUG << "Muting previously discovered responder: " << m_muting_uid;
+    m_target->MuteDevice(m_muting_uid, m_incremental_mute_callback);
+  }
+}
+
+
+/**
  * Called when we mute a device during incremental discovery.
  */
 void DiscoveryAgent::IncrementalMuteComplete(bool status) {
-  OLA_INFO << "mute complete";
   if (!status) {
     m_uids.RemoveUID(m_muting_uid);
     OLA_WARN << "Mute of " << m_muting_uid << " failed, device has gone";
+  } else {
+    OLA_DEBUG << "Muted " << m_muting_uid;
   }
   MaybeMuteNextDevice();
 }
 
 
 /**
- * Called when the UnMute completes
+ * Send a Discovery Unique Branch request.
  */
-void DiscoveryAgent::UnMuteComplete() {
-  MaybeMuteNextDevice();
+void DiscoveryAgent::SendDiscovery() {
+  if (m_uid_ranges.empty()) {
+    // we're hit the end of the stack, now we're done
+    if (m_on_complete) {
+      m_on_complete->Run(!m_tree_corrupt, m_uids);
+      m_on_complete = NULL;
+    } else {
+      OLA_WARN << "Discovery complete but no callback";
+    }
+    return;
+  }
+  UIDRange *range = m_uid_ranges.top();
+  range->attempt++;
+
+  if (range->failures == MAX_BRANCH_FAILURES || range->branch_corrupt) {
+    // limit reached, move on to the next branch
+    OLA_DEBUG << "Hit failure limit for (" << range->lower << ", " <<
+      range->upper << ")";
+    if (range->parent)
+      range->parent->branch_corrupt = true;
+    FreeCurrentRange();
+    SendDiscovery();
+  } else {
+    OLA_DEBUG << "DUB " << range->lower << " - " << range->upper <<
+      ", attempt " << range->attempt << ", failures " << range->failures <<
+      ", corrupted " << range->branch_corrupt;
+    m_target->Branch(range->lower, range->upper, m_branch_callback);
+  }
 }
 
 
@@ -149,7 +220,7 @@ void DiscoveryAgent::UnMuteComplete() {
 void DiscoveryAgent::BranchComplete(const uint8_t *data, unsigned int length) {
   if (length == 0) {
     // timeout
-    FreeCurrentRange(false);
+    FreeCurrentRange();
     SendDiscovery();
     return;
   }
@@ -224,16 +295,24 @@ void DiscoveryAgent::BranchComplete(const uint8_t *data, unsigned int length) {
     ((response->euid3 & response->euid2) << 8) +
     (response->euid1 & response->euid0);
 
+  UIDRange *range = m_uid_ranges.top();
+
   // we store this as an instance variable so we don't have to create a new
   // callback each time.
   UID located_uid = UID(manufacturer_id, device_id);
   if (m_uids.Contains(located_uid)) {
     OLA_WARN << "Previous muted responder " << located_uid <<
       " continues to respond";
+    range->failures++;
     // ignore this and continue on to the next branch.
+    SendDiscovery();
+  } else if (m_bad_uids.Contains(located_uid)) {
+    // we've already tried this one
+    range->failures++;
     SendDiscovery();
   } else {
     m_muting_uid = located_uid;
+    m_mute_attempts = 0;
     OLA_INFO << "muting " << m_muting_uid;
     m_target->MuteDevice(m_muting_uid, m_branch_mute_callback);
   }
@@ -244,58 +323,23 @@ void DiscoveryAgent::BranchComplete(const uint8_t *data, unsigned int length) {
  * Called when we successfull mute a device during the branch phase
  */
 void DiscoveryAgent::BranchMuteComplete(bool status) {
-  if (status)
+  m_mute_attempts++;
+  if (status) {
     m_uids.AddUID(m_muting_uid);
-
-  FreeCurrentRange(true);
-  SendDiscovery();
-}
-
-
-/**
- * If any previously discovered devices remain, mute them. Otherwise proceed to
- * the branch phase.
- */
-void DiscoveryAgent::MaybeMuteNextDevice() {
-  if (m_uids_to_mute.empty()) {
-    SendDiscovery();
   } else {
-    m_muting_uid = m_uids_to_mute.front();
-    m_uids_to_mute.pop();
-    OLA_INFO << "muting " << m_muting_uid;
-    m_target->MuteDevice(m_muting_uid, m_incremental_mute_callback);
-  }
-}
-
-
-/**
- * Send a Discovery Unique Branch request.
- */
-void DiscoveryAgent::SendDiscovery() {
-  if (m_uid_ranges.empty()) {
-    // we're hit the end of the stack, now we're done
-    if (m_on_complete) {
-      m_on_complete->Run(!m_tree_corrupt, m_uids);
-      m_on_complete = NULL;
+    // failed to mute, if we haven't reached the limit try it again
+    if (m_mute_attempts < MAX_MUTE_ATTEMPTS) {
+      OLA_INFO << "muting " << m_muting_uid;
+      m_target->MuteDevice(m_muting_uid, m_branch_mute_callback);
+      return;
     } else {
-      OLA_WARN << "Discovery complete but no callback";
+      // this UID is bad, either it was a phantom or it doesn't response to
+      // mute commands
+      OLA_INFO << m_muting_uid << " didn't respond to MUTE, marking as bad";
+      m_bad_uids.AddUID(m_muting_uid);
     }
-    return;
   }
-  UIDRange *range = m_uid_ranges.top();
-  range->attempt++;
-  OLA_INFO << "DUB " << range->lower << " - " << range->upper << ", attempt "
-    << range->attempt << ", corrupted " << range->branch_corrupt;
-
-  if (range->attempt == MAX_BRANCH_ATTEMPTS || range->branch_corrupt) {
-    // limit reached, move on to the next branch
-    if (range->parent)
-      range->parent->branch_corrupt = true;
-    FreeCurrentRange(false);
-    SendDiscovery();
-  } else {
-    m_target->Branch(range->lower, range->upper, m_branch_callback);
-  }
+  SendDiscovery();
 }
 
 
@@ -308,6 +352,7 @@ void DiscoveryAgent::HandleCollision() {
   UID upper_uid = range->upper;
 
   if (lower_uid == upper_uid) {
+    range->failures++;
     OLA_WARN << "end of tree reached!!!";
     return;
   }
@@ -334,14 +379,11 @@ void DiscoveryAgent::HandleCollision() {
 /**
  * Deletes the current range from the stack, and pops it.
  */
-void DiscoveryAgent::FreeCurrentRange(bool got_response_in_current_range) {
+void DiscoveryAgent::FreeCurrentRange() {
   UIDRange *range = m_uid_ranges.top();
   if (m_uid_ranges.size() == 1) {
     // top of stack
-    if (got_response_in_current_range) {
-      OLA_INFO << "not freeeing, going round again";
-      return;
-    } else if (range->branch_corrupt) {
+    if (range->branch_corrupt) {
       OLA_INFO << "top of tree is corrupted";
       m_tree_corrupt = true;
     }
