@@ -92,7 +92,7 @@ UsbProDevice::UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
       0,
       "",
       plugin_adaptor->WakeUpTime(),
-      10,  // start with 10 tokens in the bucket
+      5,  // allow up to 5 burst frames
       fps_limit);  // 200 frames per second seems to be the limit
 
   AddPort(output_port);

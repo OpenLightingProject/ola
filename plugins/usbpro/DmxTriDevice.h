@@ -65,7 +65,7 @@ class DmxTriOutputPort: public BasicOutputPort {
     DmxTriOutputPort(DmxTriDevice *parent,
                      DmxTriWidget *widget,
                      const TimeStamp *wake_time,
-                     unsigned int initial_count,
+                     unsigned int max_burst,
                      unsigned int rate);
 
     ~DmxTriOutputPort();

@@ -52,7 +52,7 @@ DmxTriDevice::DmxTriDevice(ola::PluginAdaptor *plugin_adaptor,
       this,
       widget,
       plugin_adaptor->WakeUpTime(),
-      10,  // start with 10 tokens in the bucket
+      5,  // only allow up to 5 burst frames
       fps_limit);
   AddPort(output_port);
 }
@@ -83,12 +83,12 @@ void DmxTriDevice::PrePortStop() {
 DmxTriOutputPort::DmxTriOutputPort(DmxTriDevice *parent,
                                    DmxTriWidget *widget,
                                    const TimeStamp *wake_time,
-                                   unsigned int initial_count,
+                                   unsigned int max_burst,
                                    unsigned int rate)
     : BasicOutputPort(parent, 0),
       m_device(parent),
       m_tri_widget(widget),
-      m_bucket(initial_count, rate, rate, *wake_time),
+      m_bucket(max_burst, rate, max_burst, *wake_time),
       m_wake_time(wake_time) {
   m_tri_widget->SetUIDListCallback(
       ola::NewCallback(

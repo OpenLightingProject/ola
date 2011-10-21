@@ -128,12 +128,12 @@ class UsbProOutputPort: public BasicOutputPort {
                      unsigned int id,
                      const string &path,
                      const TimeStamp *wake_time,
-                     unsigned int initial_count,
+                     unsigned int max_burst,
                      unsigned int rate)
         : BasicOutputPort(parent, id),
           m_path(path),
           m_widget(widget),
-          m_bucket(initial_count, rate, rate, *wake_time),
+          m_bucket(max_burst, rate, max_burst, *wake_time),
           m_wake_time(wake_time) {}
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
