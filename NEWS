@@ -1,4 +1,4 @@
-X/Y/2011 ola-0.8.13
+22/10/2011 ola-0.8.13
  * Attempt to reconnect to usb devices periodically - #143
  * Add support for ArtNet 3 - #144
  * Add support for the Eurolite USB Pro - thanks Harry F
