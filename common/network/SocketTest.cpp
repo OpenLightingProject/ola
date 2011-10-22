@@ -210,7 +210,9 @@ void SocketTest::testTcpSocketClientClose() {
   string ip_address = "127.0.0.1";
   uint16_t server_port = 9010;
   TcpAcceptingSocket socket(ip_address, server_port);
-  CPPUNIT_ASSERT(socket.Listen());
+  CPPUNIT_ASSERT_MESSAGE(
+      "Check for another instance of olad running",
+      socket.Listen());
   CPPUNIT_ASSERT(!socket.Listen());
 
   socket.SetOnAccept(ola::NewCallback(this, &SocketTest::NewConnectionSend));
@@ -238,7 +240,9 @@ void SocketTest::testTcpSocketServerClose() {
   string ip_address = "127.0.0.1";
   uint16_t server_port = 9010;
   TcpAcceptingSocket socket(ip_address, server_port);
-  CPPUNIT_ASSERT(socket.Listen());
+  CPPUNIT_ASSERT_MESSAGE(
+      "Check for another instance of olad running",
+      socket.Listen());
   CPPUNIT_ASSERT(!socket.Listen());
 
   socket.SetOnAccept(
