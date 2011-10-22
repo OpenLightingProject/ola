@@ -41,6 +41,14 @@ bool MockUdpSocket::Init() {
 }
 
 
+bool MockUdpSocket::Bind(const IPV4Address&,
+                         unsigned short port) {
+  m_bound_to_port = true;
+  m_port = port;
+  return true;
+}
+
+
 bool MockUdpSocket::Bind(unsigned short port) {
   m_bound_to_port = true;
   m_port = port;

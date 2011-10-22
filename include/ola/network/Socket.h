@@ -392,6 +392,8 @@ class UdpSocketInterface: public BidirectionalFileDescriptor {
     UdpSocketInterface(): BidirectionalFileDescriptor() {}
     ~UdpSocketInterface() {}
     virtual bool Init() = 0;
+    virtual bool Bind(const IPV4Address &ip,
+                      unsigned short port) = 0;
     virtual bool Bind(unsigned short port = INADDR_ANY) = 0;
     virtual bool Close() = 0;
     virtual int ReadDescriptor() const = 0;
@@ -434,6 +436,8 @@ class UdpSocket: public UdpSocketInterface {
                  m_bound_to_port(false) {}
     ~UdpSocket() { Close(); }
     bool Init();
+    bool Bind(const IPV4Address &ip,
+              unsigned short port);
     bool Bind(unsigned short port = INADDR_ANY);
     bool Close();
     int ReadDescriptor() const { return m_fd; }

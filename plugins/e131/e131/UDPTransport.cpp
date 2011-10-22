@@ -58,7 +58,7 @@ bool UDPTransport::Init(const ola::network::Interface &interface) {
   if (!m_socket.Init())
     return false;
 
-  if (!m_socket.Bind(m_port))
+  if (!m_socket.Bind(interface.ip_address, m_port))
     return false;
 
   if (!m_socket.EnableBroadcast())

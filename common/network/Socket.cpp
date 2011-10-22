@@ -526,7 +526,8 @@ bool UdpSocket::Init() {
 /*
  * Bind this socket to an external address/port
  */
-bool UdpSocket::Bind(unsigned short port) {
+bool UdpSocket::Bind(const IPV4Address &ip,
+                     unsigned short port) {
   if (m_fd == INVALID_DESCRIPTOR)
     return false;
 
@@ -563,7 +564,7 @@ bool UdpSocket::Bind(unsigned short port) {
   memset(&servAddr, 0x00, sizeof(servAddr));
   servAddr.sin_family = AF_INET;
   servAddr.sin_port = HostToNetwork(port);
-  servAddr.sin_addr.s_addr = HostToNetwork(static_cast<uint32_t>(INADDR_ANY));
+  servAddr.sin_addr.s_addr = ip.AsInt();
 
   OLA_DEBUG << "Binding to " << AddressToString(servAddr.sin_addr) << ":" <<
     port;
@@ -574,6 +575,14 @@ bool UdpSocket::Bind(unsigned short port) {
   }
   m_bound_to_port = true;
   return true;
+}
+
+
+/*
+ * Bind this socket to an address/port using the any address
+ */
+bool UdpSocket::Bind(unsigned short port) {
+  return Bind(IPV4Address::WildCard(), port);
 }
 
 
