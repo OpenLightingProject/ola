@@ -62,6 +62,9 @@ ssize_t MockUdpSocket::SendTo(const uint8_t *buffer,
                               unsigned int size,
                               const ola::network::IPV4Address &ip_address,
                               unsigned short port) const {
+  if (m_discard_mode)
+    return size;
+
   OLA_INFO << "sending packet of size " << size;
   CPPUNIT_ASSERT(m_expected_calls.size());
   expected_call call = m_expected_calls.front();

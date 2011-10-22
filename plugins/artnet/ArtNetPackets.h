@@ -54,6 +54,7 @@ typedef enum artnet_packet_type_e {
   ARTNET_TODCONTROL = 0x8200,
   ARTNET_RDM = 0x8300,
   ARTNET_RDM_SUB = 0x8400,
+  ARTNET_TIME_CODE = 0x9700,
   ARTNET_IP_PROGRAM = 0xf800,
   ARTNET_IP_PROGRAM_REPLY = 0xf900,
 } artnet_packet_type;
@@ -102,6 +103,19 @@ struct artnet_reply_s {
 
 typedef struct artnet_reply_s artnet_reply_t;
 
+
+struct artnet_timecode_s {
+  uint16_t version;
+  uint8_t  filler;
+  uint8_t  filler2;
+  uint8_t  frames;
+  uint8_t  seconds;
+  uint8_t  minutes;
+  uint8_t  hours;
+  uint8_t  type;
+} __attribute__((packed));
+
+typedef struct artnet_timecode_s artnet_timecode_t;
 
 struct artnet_dmx_s {
   uint16_t version;
@@ -228,6 +242,7 @@ typedef struct {
   union {
     artnet_poll_t poll;
     artnet_reply_t reply;
+    artnet_timecode_t timecode;
     artnet_dmx_t dmx;
     artnet_todrequest_t tod_request;
     artnet_toddata_t tod_data;

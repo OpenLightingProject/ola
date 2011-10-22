@@ -671,6 +671,29 @@ bool ArtNetNodeImpl::SetOutputPortRDMHandlers(
 }
 
 
+/**
+ * Send a timecode packet
+ */
+bool ArtNetNodeImpl::SendTimeCode(const ola::timecode::TimeCode &timecode) {
+  artnet_packet packet;
+  PopulatePacketHeader(&packet, ARTNET_TIME_CODE);
+  memset(&packet.data.timecode, 0, sizeof(packet.data.timecode));
+  packet.data.timecode.version = HostToNetwork(ARTNET_VERSION);
+
+  packet.data.timecode.frames = timecode.Frames();
+  packet.data.timecode.seconds = timecode.Seconds();
+  packet.data.timecode.minutes = timecode.Minutes();
+  packet.data.timecode.hours = timecode.Hours();
+  packet.data.timecode.type = timecode.Type();
+  if (!SendPacket(packet,
+                  sizeof(packet.data.timecode),
+                  m_interface.bcast_address)) {
+    OLA_INFO << "Failed to send ArtTimeCode";
+    return false;
+  }
+  return true;
+}
+
 /*
  * Called when there is data on this socket
  */

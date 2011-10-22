@@ -31,6 +31,7 @@
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/SelectServer.h"
 #include "ola/network/Socket.h"
+#include "ola/timecode/TimeCode.h"
 #include "plugins/artnet/ArtNetNode.h"
 #include "plugins/artnet/MockUdpSocket.h"
 
@@ -40,22 +41,26 @@ using ola::plugin::artnet::ArtNetNode;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
+using ola::timecode::TimeCode;
 using std::string;
 
 
 class ArtNetNodeTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(ArtNetNodeTest);
   CPPUNIT_TEST(testBasicBehaviour);
+  CPPUNIT_TEST(testTimeCode);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void setUp();
 
     void testBasicBehaviour();
+    void testTimeCode();
 
   private:
     static const uint8_t POLL_MESSAGE[];
     static const uint8_t POLL_REPLY_MESSAGE[];
+    static const uint8_t TIMECODE_MESSAGE[];
     static const uint16_t ARTNET_PORT = 6454;
 };
 
@@ -104,6 +109,15 @@ const uint8_t ArtNetNodeTest::POLL_REPLY_MESSAGE[] = {
   8,
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
   0  // filler
+};
+
+
+const uint8_t ArtNetNodeTest::TIMECODE_MESSAGE[] = {
+  'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+  0x00, 0x97,
+  0x0, 14,
+  0, 0,
+  11, 30, 20, 10, 3
 };
 
 
@@ -188,7 +202,6 @@ void ArtNetNodeTest::testBasicBehaviour() {
     (uint8_t) 0x22,
     node.GetPortUniverse(ola::plugin::artnet::ARTNET_INPUT_PORT, 1));
   socket->Verify();
-  return;
 
   // check sending a poll works
   socket->AddExpectedData(
@@ -200,4 +213,47 @@ void ArtNetNodeTest::testBasicBehaviour() {
   socket->Verify();
 
   CPPUNIT_ASSERT(node.Stop());
+}
+
+
+/**
+ * test Timecode sending works
+ */
+void ArtNetNodeTest::testTimeCode() {
+  ola::network::Interface interface;
+  uint8_t mac_address[] = {0x0a, 0x0b, 0x0c, 0x12, 0x34, 0x56};
+
+  CPPUNIT_ASSERT(IPV4Address::FromString("10.0.0.1", &interface.ip_address));
+  CPPUNIT_ASSERT(
+      IPV4Address::FromString("10.255.255.255", &interface.bcast_address));
+  memcpy(&interface.hw_address, mac_address, sizeof(mac_address));
+
+  ola::network::SelectServer ss;
+  MockUdpSocket *socket = new MockUdpSocket();
+  socket->SetDiscardMode(true);
+
+  ArtNetNode node(interface,
+                  &ss,
+                  false,
+                  20,
+                  socket);
+
+  IPV4Address bcast_destination;
+  CPPUNIT_ASSERT(IPV4Address::FromString("10.255.255.255",
+                                         &bcast_destination));
+
+  CPPUNIT_ASSERT(node.Start());
+  socket->Verify();
+  socket->SetDiscardMode(false);
+
+  socket->AddExpectedData(
+    TIMECODE_MESSAGE,
+    sizeof(TIMECODE_MESSAGE),
+    bcast_destination,
+    ARTNET_PORT);
+
+  TimeCode t1(TimeCode::SMPTE, 10, 20, 30, 11);
+  node.SendTimeCode(t1);
+
+  socket->Verify();
 }

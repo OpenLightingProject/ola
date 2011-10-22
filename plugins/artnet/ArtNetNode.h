@@ -38,6 +38,7 @@
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/UIDSet.h"
+#include "ola/timecode/TimeCode.h"
 #include "plugins/artnet/ArtNetPackets.h"
 
 namespace ola {
@@ -133,8 +134,8 @@ class ArtNetNodeImpl {
         ola::Callback0<void> *on_flush,
         ola::Callback2<void, const RDMRequest*, RDMCallback*> *on_rdm_request);
 
-    // socket management
-    void SocketReady();
+    // send time code
+    bool SendTimeCode(const ola::timecode::TimeCode &timecode);
 
   private:
     struct GenericPort {
@@ -202,6 +203,7 @@ class ArtNetNodeImpl {
 
     ArtNetNodeImpl(const ArtNetNodeImpl&);
     ArtNetNodeImpl& operator=(const ArtNetNodeImpl&);
+    void SocketReady();
     bool SendPollReply(const IPV4Address &destination);
     bool SendIPReply(const IPV4Address &destination);
     void HandlePacket(const IPV4Address &source_address,
@@ -410,6 +412,10 @@ class ArtNetNode {
         ola::Callback2<void, const RDMRequest*, RDMCallback*> *on_rdm_request) {
       return m_impl.SetOutputPortRDMHandlers(port_id, on_discover, on_flush,
           on_rdm_request);
+  }
+
+  bool SendTimeCode(const ola::timecode::TimeCode &timecode) {
+    return m_impl.SendTimeCode(timecode);
   }
 
   private:

@@ -39,7 +39,8 @@ class MockUdpSocket: public ola::network::UdpSocketInterface {
                      m_init_called(false),
                      m_bound_to_port(false),
                      m_broadcast_set(false),
-                     m_port(0) {}
+                     m_port(0),
+                     m_discard_mode(false) {}
     ~MockUdpSocket() { Close(); }
 
     // These are the socket methods
@@ -70,6 +71,7 @@ class MockUdpSocket: public ola::network::UdpSocketInterface {
 
     bool SetTos(uint8_t tos);
 
+    void SetDiscardMode(bool discard_mode) { m_discard_mode = discard_mode; }
 
     // these are methods used for verification
     void AddExpectedData(const uint8_t *data,
@@ -100,6 +102,7 @@ class MockUdpSocket: public ola::network::UdpSocketInterface {
     uint8_t m_tos;
     mutable std::queue<expected_call> m_expected_calls;
     IPV4Address m_interface;
+    bool m_discard_mode;
 };
 
 
