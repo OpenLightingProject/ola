@@ -2562,8 +2562,10 @@ class SetRealTimeClockWithNoData(OptionalParameterTestFixture):
   PID = 'REAL_TIME_CLOCK'
 
   def Test(self):
-    self.AddIfSetSupported(
-        self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
+    self.AddIfSetSupported([
+        self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+        self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
+    ])
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
 
 
