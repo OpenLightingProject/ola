@@ -7,7 +7,7 @@ EXTRA_DIST = ArduinoRGBDevice.h ArduinoWidget.h BaseUsbProWidget.h \
              DmxTriWidget.h DmxterDevice.h DmxterWidget.h \
              EnttecUsbProWidget.h RobeDevice.h RobeWidget.h \
              RobeWidgetDetector.h SerialWidgetInterface.h \
-             SerialWidgetInterface.h UsbDevice.h UsbProDevice.h \
+             SerialWidgetInterface.h UsbSerialDevice.h UsbProDevice.h \
              UsbProWidgetDetector.h UsbSerialPlugin.h \
              WidgetDetectorInterface.h WidgetDetectorThread.h
 
