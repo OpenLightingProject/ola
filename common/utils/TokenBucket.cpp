@@ -44,9 +44,9 @@ bool TokenBucket::GetToken(const TimeStamp &now) {
  */
 unsigned int TokenBucket::Count(const TimeStamp &now) {
   int64_t delta = (now - m_last).AsInt();
-  unsigned int tokens = delta * m_rate / USEC_IN_SECONDS;
+  uint64_t tokens = delta * m_rate / USEC_IN_SECONDS;
 
-  m_count = std::min(m_max, m_count + tokens);
+  m_count = std::min(static_cast<uint64_t>(m_max), m_count + tokens);
   if (tokens)
     m_last += ola::TimeInterval(tokens * USEC_IN_SECONDS / m_rate);
   return m_count;

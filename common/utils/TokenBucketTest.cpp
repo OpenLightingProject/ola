@@ -22,6 +22,7 @@
 
 #include "ola/Clock.h"
 #include "olad/TokenBucket.h"
+#include "ola/Logging.h"
 
 
 using ola::TimeInterval;
@@ -38,6 +39,10 @@ class TokenBucketTest: public CppUnit::TestFixture {
   public:
     void testTokenBucket();
     void testTokenBucketTwo();
+
+    void setUp() {
+      ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
+    }
 };
 
 
@@ -79,6 +84,7 @@ void TokenBucketTest::testTokenBucketTwo() {
   TimeInterval ten_ms(10000);
   TimeInterval one_hundred_ms(100000);
   TimeInterval one_second(1000000);
+  TimeInterval five_minutes(5 * 60 * 1000000);
   ola::Clock::CurrentTime(&now);
   TokenBucket bucket(0, 40, 40, now);  // one every 25ms
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, bucket.Count(now));
@@ -99,4 +105,18 @@ void TokenBucketTest::testTokenBucketTwo() {
   CPPUNIT_ASSERT_EQUAL((unsigned int) 10, bucket.Count(now));
   now += one_second;
   CPPUNIT_ASSERT_EQUAL((unsigned int) 40, bucket.Count(now));
+
+  // now try a very long duration
+  now += five_minutes;
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 40, bucket.Count(now));
+
+  // take 10 tokens from the bucket
+  for (unsigned int i = 0; i < 10; i++) {
+    CPPUNIT_ASSERT(bucket.GetToken(now));
+  }
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 30, bucket.Count(now));
+
+  // add a bit of time
+  now += ten_ms;
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 30, bucket.Count(now));
 }
