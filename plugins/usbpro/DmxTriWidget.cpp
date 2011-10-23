@@ -714,12 +714,13 @@ void DmxTriWidgetImpl::HandleQueuedGetResponse(uint8_t return_code,
   memcpy(reinterpret_cast<uint8_t*>(&pid), data, sizeof(pid));
   pid = NetworkToHost(pid);
 
+  data += 2;
+  length -= 2;
+
   OLA_INFO << "Received queued message response with code 0x" <<
     std::hex << static_cast<int>(return_code) << ", " << std::dec << length <<
     " bytes, param " << std::hex << pid;
 
-  data += 2;
-  length -= 2;
   if (!length)
     data = NULL;
   HandleGenericRDMResponse(return_code, pid, data, length);
