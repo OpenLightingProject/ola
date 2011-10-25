@@ -801,8 +801,9 @@ class SetNonAsciiDeviceLabel(TestMixins.SetLabelMixin,
 
   def ExpectedResults(self):
     return [
-      self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+      self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE),
       self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
+      self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
       self.AckSetResult(action=self.VerifySet)
     ]
 
