@@ -47,7 +47,7 @@ namespace usbpro {
 using std::auto_ptr;
 
 const char UsbSerialPlugin::DEFAULT_DEVICE_DIR[] = "/dev";
-const char UsbSerialPlugin::DEFAULT_DMX_TRI_FPS_LIMIT[] = "190";
+const char UsbSerialPlugin::DEFAULT_DMX_TRI_FPS_LIMIT[] = "40";
 const char UsbSerialPlugin::DEFAULT_PRO_FPS_LIMIT[] = "190";
 const char UsbSerialPlugin::DEVICE_DIR_KEY[] = "device_dir";
 const char UsbSerialPlugin::DEVICE_PREFIX_KEY[] = "device_prefix";
