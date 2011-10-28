@@ -23,6 +23,7 @@
 #include <ola/Logging.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
+#include <sysexits.h>
 #include <ola/network/SelectServer.h>
 
 
@@ -48,7 +49,7 @@ typedef struct {
   int uni;         // universe id
   bool help;       // show the help
   bool full;       // full discovery
-  bool incremental; // incremental discovery
+  bool incremental;  // incremental discovery
   string cmd;      // argv[0]
 } options;
 
@@ -190,17 +191,19 @@ int main(int argc, char *argv[]) {
 
   ParseOptions(argc, argv, &opts);
 
-  if (opts.help)
+  if (opts.help) {
     DisplayGetUIDsHelp(opts);
+    exit(EX_OK);
+  }
 
   if (opts.full && opts.incremental) {
     cerr << "Only one of -i and -f can be specified" << endl;
-    exit(1);
+    exit(EX_USAGE);
   }
 
   if (!ola_client.Setup()) {
     OLA_FATAL << "Setup failed";
-    exit(1);
+    exit(EX_UNAVAILABLE);
   }
 
   OlaCallbackClient *client = ola_client.GetClient();
@@ -208,5 +211,5 @@ int main(int argc, char *argv[]) {
 
   if (FetchUIDs(client, opts))
     ss->Run();
-  return 0;
+  return EX_OK;
 }
