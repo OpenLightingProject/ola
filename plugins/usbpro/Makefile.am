@@ -5,9 +5,10 @@ SUBDIRS = messages
 EXTRA_DIST = ArduinoRGBDevice.h ArduinoWidget.h BaseUsbProWidget.h \
              BaseRobeWidget.h CommonWidgetTest.h DmxTriDevice.h \
              DmxTriWidget.h DmxterDevice.h DmxterWidget.h \
-             EnttecUsbProWidget.h MockEndpoint.h RobeDevice.h \
-             RobeWidget.h RobeWidgetDetector.h SerialWidgetInterface.h \
-             SerialWidgetInterface.h UsbSerialDevice.h UsbProDevice.h \
+             EnttecUsbProWidget.h GenericUsbProWidget.h MockEndpoint.h \
+             RobeDevice.h RobeWidget.h RobeWidgetDetector.h \
+             SerialWidgetInterface.h SerialWidgetInterface.h \
+             UsbSerialDevice.h UsbProDevice.h \
              UsbProWidgetDetector.h UsbSerialPlugin.h \
              WidgetDetectorInterface.h WidgetDetectorThread.h
 
@@ -18,6 +19,7 @@ libolausbprowidget_la_SOURCES = ArduinoWidget.cpp \
                                 BaseRobeWidget.cpp \
                                 BaseUsbProWidget.cpp \
                                 DmxterWidget.cpp \
+                                GenericUsbProWidget.cpp \
                                 RobeDevice.cpp \
                                 RobeWidget.cpp \
                                 RobeWidgetDetector.cpp \

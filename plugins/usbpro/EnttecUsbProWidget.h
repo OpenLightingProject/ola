@@ -29,46 +29,23 @@
 #include "ola/rdm/QueueingRDMController.h"
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/UIDSet.h"
-#include "plugins/usbpro/BaseUsbProWidget.h"
+#include "plugins/usbpro/GenericUsbProWidget.h"
 
 namespace ola {
 namespace plugin {
 namespace usbpro {
-
-typedef struct {
-  uint8_t firmware;
-  uint8_t firmware_high;
-  uint8_t break_time;
-  uint8_t mab_time;
-  uint8_t rate;
-} usb_pro_parameters;
-
-typedef ola::SingleUseCallback2<void, bool, const usb_pro_parameters&>
-  usb_pro_params_callback;
 
 /*
  * An Enttec DMX USB PRO Widget implementation. We separate the Widget from the
  * implementation so we can leverage the QueueingRDMController when we add RDM
  * support one day.
  */
-class EnttecUsbProWidgetImpl: public BaseUsbProWidget {
+class EnttecUsbProWidgetImpl: public GenericUsbProWidget {
   // : public ola::rdm::RDMControllerInterface {
   public:
     EnttecUsbProWidgetImpl(ola::thread::SchedulerInterface *scheduler,
                            ola::network::ConnectedDescriptor *descriptor);
-    ~EnttecUsbProWidgetImpl();
-
-    void SetDMXCallback(ola::Callback0<void> *callback);
-    void Stop();
-
-    bool SendDMX(const DmxBuffer &buffer);
-    bool ChangeToReceiveMode(bool change_only);
-    const DmxBuffer &FetchDMX() const;
-
-    void GetParameters(usb_pro_params_callback *callback);
-    bool SetParameters(uint8_t break_time,
-                       uint8_t mab_time,
-                       uint8_t rate);
+    ~EnttecUsbProWidgetImpl() {}
 
     /*
      * TODO(simon): add RDM support
@@ -81,28 +58,14 @@ class EnttecUsbProWidgetImpl: public BaseUsbProWidget {
 
   private:
     ola::thread::SchedulerInterface *m_scheduler;
-    bool m_active;
     // ola::thread::timeout_id m_rdm_timeout_id;
-    DmxBuffer m_input_buffer;
-    ola::Callback0<void> *m_dmx_callback;
-    std::deque<usb_pro_params_callback*> m_outstanding_param_callbacks;
     /*
     ola::Callback1<void, const ola::rdm::UIDSet&> *m_uid_set_callback;
     ola::Callback0<void> *m_discovery_callback;
     ola::rdm::RDMCallback *m_rdm_request_callback;
     const ola::rdm::RDMRequest *m_pending_request;
     uint8_t m_transaction_number;
-    */
 
-    void HandleMessage(uint8_t label,
-                       const uint8_t *data,
-                       unsigned int length);
-
-    void HandleParameters(const uint8_t *data, unsigned int length);
-    void HandleDMX(const uint8_t *data, unsigned int length);
-    void HandleDMXDiff(const uint8_t *data, unsigned int length);
-
-    /*
     bool InDiscoveryMode() const;
     bool SendDiscoveryStart();
     bool SendDiscoveryStat();
@@ -117,13 +80,6 @@ class EnttecUsbProWidgetImpl: public BaseUsbProWidget {
                                  const uint8_t *data,
                                  unsigned int length);
     */
-
-    static const uint8_t REPROGRAM_FIRMWARE_LABEL = 2;
-    static const uint8_t PARAMETERS_LABEL = 3;
-    static const uint8_t SET_PARAMETERS_LABEL = 4;
-    static const uint8_t RECEIVED_DMX_LABEL = 5;
-    static const uint8_t DMX_RX_MODE_LABEL = 8;
-    static const uint8_t DMX_CHANGED_LABEL = 9;
 };
 
 
