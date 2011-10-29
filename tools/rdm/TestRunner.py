@@ -182,7 +182,7 @@ class TestRunner(object):
 
     # maps device properties to the tests that provide them
     self._property_map = {}
-    self._all_tests = []  # list of all test classes
+    self._all_tests = set()  # set of all test classes
 
     # Used to flush the queued message queue
     self._message_fetcher = QueuedMessageFetcher(universe,
@@ -204,14 +204,15 @@ class TestRunner(object):
         raise DuplicatePropertyException(
             '%s is declared in more than one test' % property)
       self._property_map[property] = test_class
-    self._all_tests.append(test_class)
+    self._all_tests.add(test_class)
 
-  def RunTests(self, filter=None):
+  def RunTests(self, filter=None, no_factory_defaults=False):
     """Run all the tests.
 
     Args:
       filter: If not None, limit the tests to those in the list and their
         dependancies.
+      no_factory_defaults: Avoid running the SET factory defaults test.
 
     Returns:
       A tuple in the form (tests, device), where tests is a list of tests that
@@ -223,6 +224,12 @@ class TestRunner(object):
     else:
       tests_to_run = [test for test in self._all_tests
                       if test.__name__ in filter]
+
+    if no_factory_defaults:
+      factory_default_tests = set(['ResetFactoryDefaults',
+                                   'ResetFactoryDefaultsWithData'])
+      tests_to_run = [test for test in tests_to_run
+                      if test.__name__ not in factory_default_tests]
 
     deps_map = self._InstantiateTests(device, tests_to_run)
     tests = self._TopologicalSort(deps_map)
