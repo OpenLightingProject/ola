@@ -36,6 +36,8 @@
 #include "plugins/usbpro/DmxterDevice.h"
 #include "plugins/usbpro/RobeDevice.h"
 #include "plugins/usbpro/RobeWidgetDetector.h"
+#include "plugins/usbpro/UltraDMXProDevice.h"
+#include "plugins/usbpro/UltraDMXProWidget.h"
 #include "plugins/usbpro/UsbProDevice.h"
 #include "plugins/usbpro/UsbSerialPlugin.h"
 
@@ -49,6 +51,7 @@ using std::auto_ptr;
 const char UsbSerialPlugin::DEFAULT_DEVICE_DIR[] = "/dev";
 const char UsbSerialPlugin::DEFAULT_DMX_TRI_FPS_LIMIT[] = "40";
 const char UsbSerialPlugin::DEFAULT_PRO_FPS_LIMIT[] = "190";
+const char UsbSerialPlugin::DEFAULT_ULTRA_FPS_LIMIT[] = "40";
 const char UsbSerialPlugin::DEVICE_DIR_KEY[] = "device_dir";
 const char UsbSerialPlugin::DEVICE_PREFIX_KEY[] = "device_prefix";
 const char UsbSerialPlugin::DMX_TRI_FPS_LIMIT_KEY[] = "dmx_tri_fps_limit";
@@ -60,6 +63,7 @@ const char UsbSerialPlugin::ROBE_DEVICE_NAME[] = "Robe Universal Interface";
 const char UsbSerialPlugin::TRI_USE_RAW_RDM_KEY[] = "tri_use_raw_rdm";
 const char UsbSerialPlugin::USBPRO_DEVICE_NAME[] = "Enttec Usb Pro Device";
 const char UsbSerialPlugin::USB_PRO_FPS_LIMIT_KEY[] = "pro_fps_limit";
+const char UsbSerialPlugin::ULTRA_FPS_LIMIT_KEY[] = "ultra_fps_limit";
 const uint16_t UsbSerialPlugin::ENTTEC_ESTA_ID = 0x454E;
 
 UsbSerialPlugin::UsbSerialPlugin(PluginAdaptor *plugin_adaptor)
@@ -80,7 +84,7 @@ string UsbSerialPlugin::Description() const {
 "includes:\n"
 " - Arduino RGB Mixer\n"
 " - DMX-TRI & RDM-TRI\n"
-" - DMXking USB DMX512-A\n"
+" - DMXking USB DMX512-A, Ultra DMX, Ultra DMX Pro\n"
 " - DMXter4 & mini DMXter\n"
 " - Enttec DMX USB Pro\n"
 " - Robe Universe Interface\n"
@@ -102,7 +106,11 @@ string UsbSerialPlugin::Description() const {
 "The max frames per second to send to a Usb Pro or DMXKing device\n"
 "\n"
 "tri_use_raw_rdm = [true|false]\n"
-"Bypass RDM handling in the {DMX,RDM}-TRI widgets.\n";
+"Bypass RDM handling in the {DMX,RDM}-TRI widgets.\n"
+"\n"
+"ultra_fps_limit = 40\n"
+"The max frames per second to send to a Ultra DMX Pro device\n"
+"\n";
 }
 
 
@@ -216,6 +224,23 @@ void UsbSerialPlugin::NewWidget(
 }
 
 
+/**
+ * A New Ultra DMX Pro Widget
+ */
+void UsbSerialPlugin::NewWidget(UltraDMXProWidget *widget,
+                                const UsbProWidgetInformation &information) {
+  AddDevice(new UltraDMXProDevice(
+      m_plugin_adaptor,
+      this,
+      GetDeviceName(information),
+      widget,
+      information.esta_id,
+      information.device_id,
+      information.serial,
+      GetUltraDMXProFrameLimit()));
+}
+
+
 /*
  * Add a new device to the list
  * @param device the new UsbSerialDevice
@@ -293,6 +318,10 @@ bool UsbSerialPlugin::SetDefaultPreferences() {
                                          IntValidator(0, MAX_PRO_FPS_LIMIT),
                                          DEFAULT_PRO_FPS_LIMIT);
 
+  save |= m_preferences->SetDefaultValue(ULTRA_FPS_LIMIT_KEY,
+                                         IntValidator(0, MAX_ULTRA_FPS_LIMIT),
+                                         DEFAULT_ULTRA_FPS_LIMIT);
+
   save |= m_preferences->SetDefaultValue(TRI_USE_RAW_RDM_KEY,
                                          BoolValidator(),
                                          BoolValidator::DISABLED);
@@ -350,6 +379,18 @@ unsigned int UsbSerialPlugin::GetDmxTriFrameLimit() {
   if (!StringToInt(m_preferences->GetValue(DMX_TRI_FPS_LIMIT_KEY) ,
                    &fps_limit))
     StringToInt(DEFAULT_DMX_TRI_FPS_LIMIT, &fps_limit);
+  return fps_limit;
+}
+
+
+/*
+ * Get the Frames per second limit for a Ultra DMX Pro Device
+ */
+unsigned int UsbSerialPlugin::GetUltraDMXProFrameLimit() {
+  unsigned int fps_limit;
+  if (!StringToInt(m_preferences->GetValue(ULTRA_FPS_LIMIT_KEY) ,
+                   &fps_limit))
+    StringToInt(DEFAULT_ULTRA_FPS_LIMIT, &fps_limit);
   return fps_limit;
 }
 }  // usbpro

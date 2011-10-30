@@ -34,6 +34,7 @@
 #include "plugins/usbpro/MockEndpoint.h"
 #include "plugins/usbpro/BaseRobeWidget.h"
 #include "plugins/usbpro/RobeWidget.h"
+#include "plugins/usbpro/UltraDMXProWidget.h"
 #include "plugins/usbpro/WidgetDetectorThread.h"
 
 using ola::network::ConnectedDescriptor;
@@ -47,6 +48,7 @@ using ola::plugin::usbpro::EnttecUsbProWidget;
 using ola::plugin::usbpro::NewWidgetHandler;
 using ola::plugin::usbpro::RobeWidget;
 using ola::plugin::usbpro::RobeWidgetInformation;
+using ola::plugin::usbpro::UltraDMXProWidget;
 using ola::plugin::usbpro::UsbProWidgetInformation;
 using ola::plugin::usbpro::WidgetDetectorThread;
 using ola::rdm::UID;
@@ -89,6 +91,7 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
   CPPUNIT_TEST(testDmxterWidget);
   CPPUNIT_TEST(testUsbProWidget);
   CPPUNIT_TEST(testRobeWidget);
+  CPPUNIT_TEST(testUltraDmxWidget);
   CPPUNIT_TEST(testTimeout);
   CPPUNIT_TEST(testClose);
   CPPUNIT_TEST_SUITE_END();
@@ -102,6 +105,7 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
     void testDmxterWidget();
     void testUsbProWidget();
     void testRobeWidget();
+    void testUltraDmxWidget();
     void testTimeout();
     void testClose();
 
@@ -118,6 +122,7 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
       DMX_TRI,
       DMXTER,
       ROBE,
+      ULTRA_DMX,
     } WidgetType;
 
     WidgetType m_received_widget_type;
@@ -192,6 +197,20 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
       CPPUNIT_ASSERT_EQUAL(UID(0x5253, 0x200000a),
                            information.uid);
       m_received_widget_type = ROBE;
+      m_ss.Terminate();
+    }
+    void NewWidget(UltraDMXProWidget *widget,
+                   const UsbProWidgetInformation &information) {
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0x6a6b),
+                           information.esta_id);
+      CPPUNIT_ASSERT_EQUAL(string("DMXking.com"), information.manufacturer);
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0x2),
+                           information.device_id);
+      CPPUNIT_ASSERT_EQUAL(string("ultraDMX Pro"), information.device);
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint32_t>(0x12345678),
+                           information.serial);
+      m_thread->FreeWidget(widget);
+      m_received_widget_type = ULTRA_DMX;
       m_ss.Terminate();
     }
 };
@@ -389,6 +408,41 @@ void WidgetDetectorThreadTest::testRobeWidget() {
   m_thread->Start();
   m_ss.Run();
   CPPUNIT_ASSERT_EQUAL(ROBE, m_received_widget_type);
+}
+
+
+/**
+ * Check that we can locate an Ultra DMX widget.
+ */
+void WidgetDetectorThreadTest::testUltraDmxWidget() {
+  uint8_t serial_data[] = {0x78, 0x56, 0x34, 0x12};
+  uint8_t manufacturer_data[] = "\153\152DMXking.com";
+  uint8_t device_data[] = "\002\000ultraDMX Pro";
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      BaseUsbProWidget::MANUFACTURER_LABEL,
+      NULL,
+      0,
+      BaseUsbProWidget::MANUFACTURER_LABEL,
+      manufacturer_data,
+      sizeof(manufacturer_data));
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      BaseUsbProWidget::DEVICE_LABEL,
+      NULL,
+      0,
+      BaseUsbProWidget::DEVICE_LABEL,
+      device_data,
+      sizeof(device_data));
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      BaseUsbProWidget::SERIAL_LABEL,
+      NULL,
+      0,
+      BaseUsbProWidget::SERIAL_LABEL,
+      serial_data,
+      sizeof(serial_data));
+
+  m_thread->Start();
+  m_ss.Run();
+  CPPUNIT_ASSERT_EQUAL(ULTRA_DMX, m_received_widget_type);
 }
 
 

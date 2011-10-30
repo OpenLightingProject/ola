@@ -38,6 +38,7 @@
 #include "plugins/usbpro/EnttecUsbProWidget.h"
 #include "plugins/usbpro/RobeWidget.h"
 #include "plugins/usbpro/RobeWidgetDetector.h"
+#include "plugins/usbpro/UltraDMXProWidget.h"
 #include "plugins/usbpro/UsbProWidgetDetector.h"
 #include "plugins/usbpro/WidgetDetectorThread.h"
 
@@ -239,7 +240,15 @@ void WidgetDetectorThread::UsbProWidgetReady(
 
   switch (information->esta_id) {
     case DMX_KING_ESTA_ID:
-      if (information->device_id == DMX_KING_DEVICE_ID) {
+      if (information->device_id == DMX_KING_ULTRA_PRO_ID) {
+        // The Ultra device has two outputs
+        DispatchWidget(
+            new UltraDMXProWidget(
+              m_other_ss,
+              descriptor),
+            information);
+        return;
+      } else {
         // DMXKing devices are drop in replacements for a Usb Pro
         DispatchWidget(
             new EnttecUsbProWidget(

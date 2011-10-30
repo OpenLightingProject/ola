@@ -8,6 +8,7 @@ EXTRA_DIST = ArduinoRGBDevice.h ArduinoWidget.h BaseUsbProWidget.h \
              EnttecUsbProWidget.h GenericUsbProWidget.h MockEndpoint.h \
              RobeDevice.h RobeWidget.h RobeWidgetDetector.h \
              SerialWidgetInterface.h SerialWidgetInterface.h \
+             UltraDMXProDevice.h UltraDMXProWidget.h \
              UsbSerialDevice.h UsbProDevice.h \
              UsbProWidgetDetector.h UsbSerialPlugin.h \
              WidgetDetectorInterface.h WidgetDetectorThread.h
@@ -24,6 +25,8 @@ libolausbprowidget_la_SOURCES = ArduinoWidget.cpp \
                                 RobeWidget.cpp \
                                 RobeWidgetDetector.cpp \
                                 EnttecUsbProWidget.cpp \
+                                UltraDMXProDevice.cpp \
+                                UltraDMXProWidget.cpp \
                                 UsbProWidgetDetector.cpp \
                                 WidgetDetectorThread.cpp
 libolausbprowidget_la_LIBADD = ../../common/libolacommon.la
@@ -52,6 +55,7 @@ SerialUsbTester_SOURCES = ArduinoWidgetTest.cpp \
                           RobeWidgetDetectorTest.cpp \
                           SerialUsbTester.cpp \
                           UsbProWidgetDetectorTest.cpp \
+                          UltraDMXProWidgetTest.cpp \
                           WidgetDetectorThreadTest.cpp
 
 SerialUsbTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)

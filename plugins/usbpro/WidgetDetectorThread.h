@@ -67,6 +67,8 @@ class NewWidgetHandler {
                            const UsbProWidgetInformation &information) = 0;
     virtual void NewWidget(class RobeWidget *widget,
                            const RobeWidgetInformation &information) = 0;
+    virtual void NewWidget(class UltraDMXProWidget *widget,
+                           const UsbProWidgetInformation &information) = 0;
 };
 
 
@@ -146,7 +148,11 @@ class WidgetDetectorThread: public ola::OlaThread {
     // This is how device identification is done, see
     // http://opendmx.net/index.php/USB_Protocol_Extensions
     // OPEN_LIGHTING_ESTA_CODE is in BaseTypes.h
-    static const uint16_t DMX_KING_DEVICE_ID = 0;
+    static const uint16_t DMX_KING_DMX512_ID = 0;
+    static const uint16_t DMX_KING_ULTRA_ID = 1;
+    static const uint16_t DMX_KING_ULTRA_PRO_ID = 2;
+    static const uint16_t DMX_KING_ULTRA_MICRO_ID = 3;
+    static const uint16_t DMX_KING_ULTRA_RDM_ID = 4;
     static const uint16_t DMX_KING_ESTA_ID = 0x6a6b;
     static const uint16_t GODDARD_DMXTER4_ID = 0x444d;
     static const uint16_t GODDARD_ESTA_ID = 0x4744;

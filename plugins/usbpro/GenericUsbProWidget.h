@@ -59,7 +59,7 @@ class GenericUsbProWidget: public BaseUsbProWidget {
     void SetDMXCallback(ola::Callback0<void> *callback);
     void Stop();
 
-    bool SendDMX(const DmxBuffer &buffer);
+    virtual bool SendDMX(const DmxBuffer &buffer);
     bool ChangeToReceiveMode(bool change_only);
     const DmxBuffer &FetchDMX() const;
 
