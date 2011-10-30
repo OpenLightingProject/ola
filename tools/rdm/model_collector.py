@@ -49,6 +49,8 @@ def Usage():
     -d, --debug               Print extra debug info.
     -h, --help                Display this help message and exit.
     --pid_file                The PID data store to use.
+    --skip_queued_messages    Don't attempt to fetch queued messages for the
+                              device.
     -u, --universe <universe> Universe number.""")
 
 
@@ -63,7 +65,7 @@ class ModelCollectorController(object):
    PERSONALITIES,
    SENSORS) = xrange(7)
 
-  def __init__(self, universe, pid_file):
+  def __init__(self, universe, pid_file, skip_queued_messages):
     self.universe = universe
     self.pid_store = PidStore.GetStore(pid_file)
     self.wrapper = ClientWrapper()
@@ -75,6 +77,7 @@ class ModelCollectorController(object):
     self.work_state = None
     self.personalities = []
     self.sensors = []
+    self.skip_queued_messages = skip_queued_messages
 
     # keyed by manufacturer id
     self.data = {}
@@ -237,12 +240,17 @@ class ModelCollectorController(object):
     self.personalities = []
     self.sensors = []
     logging.debug('Fetching data for %s' % self.uid)
-    self.work_state = self.EMPTYING_QUEUE
     devices = self.data.setdefault(self.uid.manufacturer_id, [])
     devices.append({
       'software_versions': {},
     })
-    self._FetchQueuedMessages()
+
+    self.work_state = self.EMPTYING_QUEUE
+    if self.skip_queued_messages:
+      # proceed to the fetch now
+      self._NextState()
+    else:
+      self._FetchQueuedMessages()
 
   def _FetchNextPersonality(self):
     """Fetch the info for the next personality, or proceed to the next state if
@@ -378,9 +386,10 @@ class ModelCollectorController(object):
 
 def main():
   try:
-    opts, args = getopt.getopt(sys.argv[1:],
-                               'dhp:u:',
-                               ['debug', 'help', 'pid_file=', 'universe='])
+    opts, args = getopt.getopt(
+        sys.argv[1:],
+        'dhp:u:',
+        ['debug', 'help', 'skip_queued_messages', 'pid_file=', 'universe='])
   except getopt.GetoptError, err:
     print str(err)
     Usage()
@@ -389,12 +398,15 @@ def main():
   universe = None
   pid_file = None
   level = logging.INFO
+  skip_queued_messages = False
   for o, a in opts:
     if o in ('-d', '--debug'):
       level = logging.DEBUG
     elif o in ('-h', '--help'):
       Usage()
       sys.exit()
+    elif o in ('--skip_queued_messages'):
+      skip_queued_messages = True
     elif o in ('--pid_file',):
       pid_file = a
     elif o in ('-u', '--universe'):
@@ -408,7 +420,9 @@ def main():
       level=level,
       format='%(message)s')
 
-  controller = ModelCollectorController(universe, pid_file)
+  controller = ModelCollectorController(universe,
+                                        pid_file,
+                                        skip_queued_messages)
   data = controller.Run()
   pprint.pprint(data)
 

@@ -59,6 +59,8 @@ def ParseOptions():
                     help='Skip the check for multiple devices.')
   parser.add_option('-t', '--tests', metavar='TEST1,TEST2',
                     help='A comma separated list of tests to run.')
+  parser.add_option('--no-factory-defaults', action='store_true',
+                    help="Don't run the SET factory defaults tests")
   parser.add_option('-w', '--broadcast_write_delay', default=0,
                     type='int',
                     help='The time in ms to wait after sending broadcast set'
@@ -226,7 +228,7 @@ def main():
     if issubclass(obj, ResponderTest.ResponderTestFixture):
       runner.RegisterTest(obj)
 
-  tests, device = runner.RunTests(test_filter)
+  tests, device = runner.RunTests(test_filter, options.no_factory_defaults)
   DisplaySummary(tests)
 
 
