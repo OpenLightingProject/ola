@@ -2,6 +2,7 @@ X/Y/2011 ola-0.8.14
  * fix a bug in the port limiter
  * minor RDM test fixes
  * change the default limit for the TRI devices to 40fps
+ * add support for the ultraDMX Pro devices
 
 22/10/2011 ola-0.8.13
  * Attempt to reconnect to usb devices periodically - #143
