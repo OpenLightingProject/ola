@@ -3,6 +3,7 @@
  * minor RDM test fixes
  * change the default limit for the TRI devices to 40fps
  * add support for the ultraDMX Pro devices
+ * add an option to skip factory defaults in the RDM tests
 
 22/10/2011 ola-0.8.13
  * Attempt to reconnect to usb devices periodically - #143
