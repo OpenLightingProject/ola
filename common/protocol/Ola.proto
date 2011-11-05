@@ -288,6 +288,24 @@ message RDMResponse {
   repeated bytes raw_response = 8;
 }
 
+
+// timecode
+
+enum TimeCodeType {
+  TIMECODE_FILM = 0;   // 24fps
+  TIMECODE_EBU = 1;    // 25fps
+  TIMECODE_DF = 2;     // 29.97fps
+  TIMECODE_SMPTE = 3;  // 30fps
+};
+
+message TimeCode {
+  required uint32 hours = 1;
+  required uint32 minutes = 2;
+  required uint32 seconds = 3;
+  required uint32 frames = 4;
+  required TimeCodeType type = 5;
+}
+
 // Services
 
 // RPCs handled by the OLA Server
@@ -310,11 +328,11 @@ service OlaServerService {
   rpc ForceDiscovery (DiscoveryRequest) returns (Ack);
   rpc SetSourceUID (UID) returns (Ack);
 
-  // There are two different RDM calls, the first returns a simplified response
-  // the second returns the entire response and is used for testing and queued
-  // messages.
   rpc RDMCommand (RDMRequest) returns (RDMResponse);
   rpc StreamDmxData (DmxData) returns (STREAMING_NO_RESPONSE);
+
+  // timecode
+  rpc SendTimeCode(TimeCode) returns (Ack);
 }
 
 // RPCs handled by the OLA Client

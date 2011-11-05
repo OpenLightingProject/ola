@@ -770,6 +770,45 @@ bool OlaClientCore::RDMSet(
 }
 
 
+/**
+ * Send TimeCode data.
+ * @param callback the Callback to invoke when this completes
+ * @param timecode The timecode data.
+ * @return true on success, false on failure
+ */
+bool OlaClientCore::SendTimeCode(
+    ola::SingleUseCallback1<void, const string&> *callback,
+    const ola::timecode::TimeCode &timecode) {
+  if (!m_connected) {
+    delete callback;
+    return false;
+  }
+
+  if (!timecode.IsValid()) {
+    OLA_WARN << "Invalid timecode: " << timecode;
+    delete callback;
+    return false;
+  }
+
+  SimpleRpcController *controller = new SimpleRpcController();
+  ola::proto::TimeCode request;
+  ola::proto::Ack *reply = new ola::proto::Ack();
+
+  request.set_type(static_cast<ola::proto::TimeCodeType>(timecode.Type()));
+  request.set_hours(timecode.Hours());
+  request.set_minutes(timecode.Minutes());
+  request.set_seconds(timecode.Seconds());
+  request.set_frames(timecode.Frames());
+
+  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+      this,
+      &ola::OlaClientCore::HandleAck,
+      NewArgs<ack_args>(controller, reply, callback));
+  m_stub->SendTimeCode(controller, &request, reply, cb);
+  return true;
+}
+
+
 /*
  * Called when new DMX data arrives
  */

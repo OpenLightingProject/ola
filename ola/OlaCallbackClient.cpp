@@ -474,6 +474,19 @@ bool OlaCallbackClient::RDMSet(RDMAPIImplInterface::rdm_callback *callback,
 }
 
 
+/**
+ * Send TimeCode data.
+ * @param callback the Callback to invoke when this completes
+ * @param timecode The timecode data.
+ * @return true on success, false on failure
+ */
+bool OlaCallbackClient::SendTimeCode(
+    ola::SingleUseCallback1<void, const string&> *callback,
+    const ola::timecode::TimeCode &timecode) {
+  return m_core->SendTimeCode(callback, timecode);
+}
+
+
 /*
  * Send an RDM Set Command and get the pid it returns
  * @param callback the Callback to invoke when this completes

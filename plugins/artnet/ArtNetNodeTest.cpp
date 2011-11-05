@@ -32,6 +32,7 @@
 #include "ola/network/SelectServer.h"
 #include "ola/network/Socket.h"
 #include "ola/timecode/TimeCode.h"
+#include "ola/timecode/TimeCodeEnums.h"
 #include "plugins/artnet/ArtNetNode.h"
 #include "plugins/artnet/MockUdpSocket.h"
 
@@ -252,7 +253,7 @@ void ArtNetNodeTest::testTimeCode() {
     bcast_destination,
     ARTNET_PORT);
 
-  TimeCode t1(TimeCode::SMPTE, 10, 20, 30, 11);
+  TimeCode t1(ola::timecode::TIMECODE_SMPTE, 10, 20, 30, 11);
   node.SendTimeCode(t1);
 
   socket->Verify();

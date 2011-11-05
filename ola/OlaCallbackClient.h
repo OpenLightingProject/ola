@@ -31,6 +31,7 @@
 #include <ola/rdm/RDMAPIImplInterface.h>
 #include <ola/rdm/UID.h>
 #include <ola/rdm/UIDSet.h>
+#include <ola/timecode/TimeCode.h>
 
 #include <string>
 #include <vector>
@@ -187,6 +188,10 @@ class OlaCallbackClient: public ola::rdm::RDMAPIImplInterface {
                 uint16_t pid,
                 const uint8_t *data,
                 unsigned int data_length);
+
+    // timecode
+    bool SendTimeCode(ola::SingleUseCallback1<void, const string&> *callback,
+                      const ola::timecode::TimeCode &timecode);
 
   private:
     OlaCallbackClient(const OlaCallbackClient&);

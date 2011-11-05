@@ -37,6 +37,7 @@
 #include "ola/rdm/RDMAPIImplInterface.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
+#include "ola/timecode/TimeCode.h"
 
 namespace ola {
 
@@ -193,6 +194,10 @@ class OlaClientCore: public ola::proto::OlaClientService {
                 uint16_t pid,
                 const uint8_t *data,
                 unsigned int data_length);
+
+    // timecode
+    bool SendTimeCode(ola::SingleUseCallback1<void, const string&> *callback,
+                      const ola::timecode::TimeCode &timecode);
 
     /*
      * This is called by the channel when new DMX data turns up

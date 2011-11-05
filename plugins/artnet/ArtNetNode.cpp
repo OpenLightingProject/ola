@@ -842,6 +842,9 @@ void ArtNetNodeImpl::HandlePacket(const IPV4Address &source_address,
     case ARTNET_RDM_SUB:
       // Not implemented
       break;
+    case ARTNET_TIME_CODE:
+      // Not implemented
+      break;
     default:
       OLA_INFO << "ArtNet got unknown packet " << std::hex <<
         LittleEndianToHost(packet.op_code);

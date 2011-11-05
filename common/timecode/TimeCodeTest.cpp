@@ -22,9 +22,15 @@
 #include <string>
 
 #include "ola/timecode/TimeCode.h"
+#include "ola/timecode/TimeCodeEnums.h"
 
 using ola::timecode::TimeCode;
 using std::string;
+
+using ola::timecode::TIMECODE_FILM;
+using ola::timecode::TIMECODE_EBU;
+using ola::timecode::TIMECODE_DF;
+using ola::timecode::TIMECODE_SMPTE;
 
 class TimeCodeTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(TimeCodeTest);
@@ -44,8 +50,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TimeCodeTest);
  * Test the TimeCodes work.
  */
 void TimeCodeTest::testTimeCode() {
-  TimeCode t1(TimeCode::FILM, 0, 0, 0, 0);
-  CPPUNIT_ASSERT_EQUAL(TimeCode::FILM, t1.Type());
+  TimeCode t1(TIMECODE_FILM, 0, 0, 0, 0);
+  CPPUNIT_ASSERT_EQUAL(TIMECODE_FILM, t1.Type());
   CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), t1.Hours());
   CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), t1.Minutes());
   CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), t1.Seconds());
@@ -55,7 +61,7 @@ void TimeCodeTest::testTimeCode() {
 
   TimeCode t2(t1);
   CPPUNIT_ASSERT_EQUAL(t1, t2);
-  TimeCode t3(TimeCode::SMPTE, 10, 9, 12, 14);
+  TimeCode t3(TIMECODE_SMPTE, 10, 9, 12, 14);
   CPPUNIT_ASSERT_EQUAL(string("10:09:12:14"), t3.AsString());
   CPPUNIT_ASSERT(t3.IsValid());
   CPPUNIT_ASSERT(t1 != t3);
@@ -67,15 +73,15 @@ void TimeCodeTest::testTimeCode() {
  * test invalid codes
  */
 void TimeCodeTest::testIsValid() {
-  TimeCode t1(TimeCode::FILM, 0, 0, 0, 24);
+  TimeCode t1(TIMECODE_FILM, 0, 0, 0, 24);
   CPPUNIT_ASSERT(!t1.IsValid());
 
-  TimeCode t2(TimeCode::EBU, 0, 0, 0, 25);
+  TimeCode t2(TIMECODE_EBU, 0, 0, 0, 25);
   CPPUNIT_ASSERT(!t2.IsValid());
 
-  TimeCode t3(TimeCode::DF, 0, 0, 0, 30);
+  TimeCode t3(TIMECODE_DF, 0, 0, 0, 30);
   CPPUNIT_ASSERT(!t3.IsValid());
 
-  TimeCode t4(TimeCode::SMPTE, 0, 0, 0, 30);
+  TimeCode t4(TIMECODE_SMPTE, 0, 0, 0, 30);
   CPPUNIT_ASSERT(!t4.IsValid());
 }

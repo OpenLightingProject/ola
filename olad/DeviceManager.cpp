@@ -22,14 +22,15 @@
 #include <stdio.h>
 #include <errno.h>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
+#include "olad/DeviceManager.h"
 #include "olad/Port.h"
 #include "olad/PortManager.h"
-#include "olad/DeviceManager.h"
 
 namespace ola {
 
@@ -110,7 +111,20 @@ bool DeviceManager::RegisterDevice(AbstractDevice *device) {
   OLA_INFO << "Installed device: " << device->Name() << ":" <<
     device->UniqueId();
 
-  RestoreDevicePortSettings(device);
+  vector<InputPort*> input_ports;
+  device->InputPorts(&input_ports);
+  RestorePortSettings(input_ports);
+
+  vector<OutputPort*> output_ports;
+  device->OutputPorts(&output_ports);
+  RestorePortSettings(output_ports);
+
+  // look for timecode ports and add them to the set
+  vector<OutputPort*>::const_iterator output_iter = output_ports.begin();
+  for (; output_iter != output_ports.end(); ++output_iter)
+    if ((*output_iter)->SupportsTimeCode())
+      m_timecode_ports.insert(*output_iter);
+
   return true;
 }
 
@@ -129,7 +143,7 @@ bool DeviceManager::UnregisterDevice(const string &device_id) {
     return false;
   }
 
-  SaveDevicePortSettings(iter->second.device);
+  ReleaseDevice(iter->second.device);
   map<unsigned int, AbstractDevice*>::iterator alias_iter =
     m_alias_map.find(iter->second.alias);
 
@@ -226,10 +240,21 @@ device_alias_pair DeviceManager::GetDevice(const string &unique_id) const {
 void DeviceManager::UnregisterAllDevices() {
   map<string, device_alias_pair>::iterator iter;
   for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
-    SaveDevicePortSettings(iter->second.device);
+    ReleaseDevice(iter->second.device);
     iter->second.device = NULL;
   }
   m_alias_map.clear();
+}
+
+
+/**
+ * Send timecode to all ports that support it. This is a bit of a hack right
+ * now.
+ */
+void DeviceManager::SendTimeCode(const ola::timecode::TimeCode &timecode) {
+  set<OutputPort*>::iterator iter = m_timecode_ports.begin();
+  for (; iter != m_timecode_ports.end(); iter++)
+    (*iter)->SendTimeCode(timecode);
 }
 
 
@@ -237,7 +262,7 @@ void DeviceManager::UnregisterAllDevices() {
  * Save the port universe patchings for a device
  * @param device the device to save the settings for
  */
-void DeviceManager::SaveDevicePortSettings(const AbstractDevice *device) {
+void DeviceManager::ReleaseDevice(const AbstractDevice *device) {
   if (!m_port_preferences || !device)
     return;
 
@@ -251,32 +276,17 @@ void DeviceManager::SaveDevicePortSettings(const AbstractDevice *device) {
   vector<InputPort*>::const_iterator input_iter = input_ports.begin();
   for (; input_iter != input_ports.end(); ++input_iter)
     SavePortPriority(**input_iter);
+
   vector<OutputPort*>::const_iterator output_iter = output_ports.begin();
-  for (; output_iter != output_ports.end(); ++output_iter)
+  for (; output_iter != output_ports.end(); ++output_iter) {
     SavePortPriority(**output_iter);
-}
 
-
-/*
- * Restore the port universe patchings for a list of ports.
- */
-void DeviceManager::RestoreDevicePortSettings(AbstractDevice *device) {
-  if (!m_port_preferences || !device)
-    return;
-
-  vector<InputPort*> input_ports;
-  vector<OutputPort*> output_ports;
-  device->InputPorts(&input_ports);
-  device->OutputPorts(&output_ports);
-  RestorePortPatchings(input_ports);
-  RestorePortPatchings(output_ports);
-
-  vector<InputPort*>::const_iterator input_iter = input_ports.begin();
-  for (; input_iter != input_ports.end(); ++input_iter)
-    RestorePortPriority(*input_iter);
-  vector<OutputPort*>::const_iterator output_iter = output_ports.begin();
-  for (; output_iter != output_ports.end(); ++output_iter)
-    RestorePortPriority(*output_iter);
+    // remove from the timecode port set
+    set<OutputPort*>::iterator timecode_iter = m_timecode_ports.find(
+        *output_iter);
+    if (timecode_iter != m_timecode_ports.end())
+      m_timecode_ports.erase(timecode_iter);
+  }
 }
 
 
@@ -359,10 +369,14 @@ void DeviceManager::RestorePortPriority(Port *port) const {
  * Restore the patching information for a port.
  */
 template <class PortClass>
-void DeviceManager::RestorePortPatchings(
+void DeviceManager::RestorePortSettings(
     const vector<PortClass*> &ports) const {
+  if (!m_port_preferences)
+    return;
+
   typename vector<PortClass*>::const_iterator iter = ports.begin();
   while (iter != ports.end()) {
+    RestorePortPriority(*iter);
     PortClass *port = *iter;
     iter++;
 

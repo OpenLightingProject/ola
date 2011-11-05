@@ -23,11 +23,12 @@
 
 #include <string>
 #include <vector>
-#include <olad/PluginAdaptor.h>  // NOLINT
 #include <ola/DmxBuffer.h>  // NOLINT
 #include <ola/rdm/RDMCommand.h>  // NOLINT
 #include <ola/rdm/RDMControllerInterface.h>  // NOLINT
+#include <ola/timecode/TimeCode.h>  // NOLINT
 #include <olad/DmxSource.h>  // NOLINT
+#include <olad/PluginAdaptor.h>  // NOLINT
 #include <olad/PortConstants.h>  // NOLINT
 #include <olad/Universe.h>  // NOLINT
 
@@ -111,6 +112,10 @@ class OutputPort: public Port {
     virtual void RunFullDiscovery() = 0;
     virtual void RunIncrementalDiscovery() = 0;
     virtual void NewUIDList(const ola::rdm::UIDSet &uids) = 0;
+
+    // timecode support
+    virtual bool SupportsTimeCode() const = 0;
+    virtual bool SendTimeCode(const ola::timecode::TimeCode &timecode) = 0;
 };
 
 
@@ -212,6 +217,15 @@ class BasicOutputPort: public OutputPort {
     virtual void RunFullDiscovery();
     virtual void RunIncrementalDiscovery();
     virtual void NewUIDList(const ola::rdm::UIDSet &uids);
+
+    virtual bool SupportsTimeCode() const {
+      return false;
+    }
+
+    virtual bool SendTimeCode(const ola::timecode::TimeCode &) {
+      // noop
+      return true;
+    }
 
     virtual void UniverseNameChanged(const string &new_name) {
       (void) new_name;

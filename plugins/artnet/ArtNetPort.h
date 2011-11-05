@@ -93,6 +93,16 @@ class ArtNetOutputPort: public BasicOutputPort {
       return m_helper.Description(GetUniverse(), PortId());
     }
 
+    // only the first output port supports timecode, otherwise we send it
+    // multiple times.
+    bool SupportsTimeCode() const {
+      return PortId() == 0;
+    }
+
+    bool SendTimeCode(const ola::timecode::TimeCode &timecode) {
+      return m_helper.GetNode()->SendTimeCode(timecode);
+    }
+
   private:
     ArtNetPortHelper m_helper;
 };

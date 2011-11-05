@@ -29,6 +29,8 @@
 #include "ola/Logging.h"
 #include "ola/rdm/UIDSet.h"
 #include "ola/rdm/RDMCommand.h"
+#include "ola/timecode/TimeCode.h"
+#include "ola/timecode/TimeCodeEnums.h"
 #include "olad/Client.h"
 #include "olad/Device.h"
 #include "olad/DeviceManager.h"
@@ -687,6 +689,29 @@ void OlaServerServiceImpl::SetSourceUID(
   done->Run();
   (void) controller;
   (void) response;
+}
+
+
+/**
+ * Send Timecode
+ */
+void OlaServerServiceImpl::SendTimeCode(RpcController* controller,
+                                        const ::ola::proto::TimeCode* request,
+                                        ::ola::proto::Ack*,
+                                        ::google::protobuf::Closure* done) {
+  ola::timecode::TimeCode time_code(
+    static_cast<ola::timecode::TimeCodeType>(request->type()),
+    request->hours(),
+    request->minutes(),
+    request->seconds(),
+    request->frames());
+
+  if (time_code.IsValid()) {
+    m_device_manager->SendTimeCode(time_code);
+  } else {
+    controller->SetFailed("Invalid TimeCode");
+  }
+  done->Run();
 }
 
 

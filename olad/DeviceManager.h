@@ -31,8 +31,10 @@
 #define OLAD_DEVICEMANAGER_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
+#include "ola/timecode/TimeCode.h"
 #include "olad/Device.h"
 #include "olad/Preferences.h"
 
@@ -65,6 +67,8 @@ class DeviceManager {
     device_alias_pair GetDevice(const string &unique_id) const;
     void UnregisterAllDevices();
 
+    void SendTimeCode(const ola::timecode::TimeCode &timecode);
+
     static const unsigned int MISSING_DEVICE_ALIAS;
     static const char PRIORITY_VALUE_SUFFIX[];
     static const char PRIORITY_MODE_SUFFIX[];
@@ -75,10 +79,11 @@ class DeviceManager {
     map<string, device_alias_pair> m_devices;  // map device_ids to devices
     map<unsigned int, AbstractDevice*> m_alias_map;  // map alias to devices
     unsigned int m_next_device_alias;
+    std::set<class OutputPort*> m_timecode_ports;
 
     DeviceManager(const DeviceManager&);
     DeviceManager& operator=(const DeviceManager&);
-    void SaveDevicePortSettings(const AbstractDevice *device);
+    void ReleaseDevice(const AbstractDevice *device);
     void RestoreDevicePortSettings(AbstractDevice *device);
 
     template <class PortClass>
@@ -88,7 +93,7 @@ class DeviceManager {
     void RestorePortPriority(Port *port) const;
 
     template <class PortClass>
-    void RestorePortPatchings(const vector<PortClass*> &ports) const;
+    void RestorePortSettings(const vector<PortClass*> &ports) const;
 
     static const char PORT_PREFERENCES[];
     static const unsigned int FIRST_DEVICE_ALIAS = 1;

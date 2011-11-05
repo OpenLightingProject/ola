@@ -23,6 +23,7 @@
 #include <string>
 #include "ola/Logging.h"
 #include "ola/timecode/TimeCode.h"
+#include "ola/timecode/TimeCodeEnums.h"
 
 namespace ola {
 namespace timecode {
@@ -58,16 +59,16 @@ bool TimeCode::IsValid() const {
     return false;
 
   switch (m_type) {
-    case FILM:
+    case TIMECODE_FILM:
       return m_frames < 24;
-    case EBU:
+    case TIMECODE_EBU:
       return m_frames < 25;
-    case DF:
+    case TIMECODE_DF:
       return m_frames < 30;
-    case SMPTE:
+    case TIMECODE_SMPTE:
       return m_frames < 30;
   }
-  return true;
+  return false;
 }
 
 string TimeCode::AsString() const {

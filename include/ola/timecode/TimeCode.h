@@ -21,6 +21,7 @@
 #ifndef INCLUDE_OLA_TIMECODE_TIMECODE_H_
 #define INCLUDE_OLA_TIMECODE_TIMECODE_H_
 
+#include <ola/timecode/TimeCodeEnums.h>
 #include <stdint.h>
 #include <sstream>
 #include <string>
@@ -31,13 +32,6 @@ namespace timecode {
 
 class TimeCode {
   public:
-    typedef enum {
-      FILM,  // 24fps
-      EBU,   // 25fps
-      DF,    // 29.97fps
-      SMPTE,  // 30fps
-    } TimeCodeType;
-
     TimeCode(TimeCodeType type, uint8_t hours, uint8_t minutes,
              uint8_t seconds, uint8_t frames)
         : m_type(type),

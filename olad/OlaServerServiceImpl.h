@@ -140,6 +140,12 @@ class OlaServerServiceImpl {
                       ola::proto::Ack* response,
                       google::protobuf::Closure* done);
 
+    void SendTimeCode(RpcController* controller,
+                      const ::ola::proto::TimeCode* request,
+                      ::ola::proto::Ack* response,
+                      ::google::protobuf::Closure* done);
+
+  private:
     void HandleRDMResponse(RpcController* controller,
                            ola::proto::RDMResponse* response,
                            google::protobuf::Closure* done,
@@ -148,7 +154,6 @@ class OlaServerServiceImpl {
                            const ola::rdm::RDMResponse *rdm_response,
                            const std::vector<std::string> &packets);
 
-  private:
     void MissingUniverseError(RpcController* controller,
                               google::protobuf::Closure* done);
     void MissingPluginError(RpcController* controller,
@@ -319,6 +324,13 @@ class OlaClientService: public ola::proto::OlaServerService {
                       const ::ola::proto::UID* request,
                       ola::proto::Ack* response,
                       google::protobuf::Closure* done);
+
+    void SendTimeCode(RpcController* controller,
+                      const ::ola::proto::TimeCode* request,
+                      ::ola::proto::Ack* response,
+                      ::google::protobuf::Closure* done) {
+      m_impl->SendTimeCode(controller, request, response, done);
+    }
 
     Client *GetClient() const { return m_client; }
 
