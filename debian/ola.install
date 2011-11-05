@@ -1,4 +1,6 @@
+usr/bin/*
 usr/lib/libola*.so.?
 usr/lib/libola*.so.?.?.*
 usr/lib/olad/libola*.so.?
 usr/lib/olad/libola*.so.?.?.*
+usr/share/olad/*

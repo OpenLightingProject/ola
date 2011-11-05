@@ -1,31 +1,37 @@
 Source: ola
 Priority: extra
-Maintainer: Simon Newton <nomis52@gmail.com>
+Maintainer: RenZO <renzo@imaginux.com>
 Build-Depends: debhelper (>= 7), autotools-dev
 Standards-Version: 3.8.0
 Section: libs
 Homepage: http://code.google.com/p/linux-lighting/
 
-Package: libola-dev
+Package: ola-dev
 Section: libdevel
 Architecture: any
-Depends: libola1 (= ${binary:Version})
+Depends: ola (= ${binary:Version})
 Description: Open Lighting Architecture
  The Open Lighting Architecture (OLA) provides a plugin framework for
  distributing DMX512 control signals on Mac and Linux.
+ .
+ OLA is written and maintained by Simon Newton <nomis52@gmail.com>
 
-Package: libola1
+Package: ola-python
 Section: libs
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Open Lighting Architecture Library
+Architecture: all
+Depends: ola (= ${binary:Version}), python
+Description: Open Lighting Architecture (Python Classes)
  The Open Lighting Architecture (OLA) provides a plugin framework for
  distributing DMX512 control signals on Mac and Linux.
+ .
+ OLA is written and maintained by Simon Newton <nomis52@gmail.com>
 
-Package: olad
+Package: ola
 Section: electronics
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Open Lighting Architecture Daemon
+Description: Open Lighting Architecture
  The Open Lighting Architecture (OLA) provides a plugin framework for
  distributing DMX512 control signals on Mac and Linux.
+ .
+ OLA is written and maintained by Simon Newton <nomis52@gmail.com>
