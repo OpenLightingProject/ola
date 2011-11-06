@@ -44,6 +44,7 @@ PidStoreLocation.py:
 clean-local:
 	rm -f ArtnetConfigMessages_pb2.* Ola_pb2.* Pids_pb2.* UsbProConfigMessages_pb2.* PidStoreLocation.py
 
+TESTS_ENVIRONMENT = $(PYTHON)
 TESTS = UIDTest.py
 
 endif
