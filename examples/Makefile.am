@@ -8,7 +8,6 @@ if BUILD_EXAMPLES
 # The following should match what pkg-config --libs libola returns
 COMMON_LIBS = $(top_builddir)/common/libolacommon.la \
               $(top_builddir)/ola/libola.la
-AM_LDFLAGS = -lprotobuf
 LDADD = $(COMMON_LIBS)
 
 bin_PROGRAMS = ola_dev_info ola_usbpro ola_artnet ola_e131 \
