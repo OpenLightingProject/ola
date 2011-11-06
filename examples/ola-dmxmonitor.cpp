@@ -17,6 +17,8 @@
  *
  * Modified by Simon Newton (nomis52<AT>gmail.com) to use ola
  *
+ * The (void) before attrset is due to a bug in curses. See
+ * http://www.mail-archive.com/debian-bugs-dist@lists.debian.org/msg682294.html
  */
 
 #ifdef HAVE_CONFIG_H
@@ -387,7 +389,7 @@ void DmxMonitor::Mask() {
   int channel = first_channel;
 
   /* clear headline */
-  attrset(palette[HEADLINE]);
+  (void) attrset(palette[HEADLINE]);
   move(0, 0);
   for (x = 0; x < COLS; x++)
     addch(' ');
@@ -398,7 +400,7 @@ void DmxMonitor::Mask() {
   }
 
   /* write channel numbers */
-  attrset(palette[CHANNEL]);
+  (void) attrset(palette[CHANNEL]);
   for (y = 1; y < LINES && channel < DMX_UNIVERSE_SIZE &&
        i < channels_per_screen; y+=2) {
     move(y, 0);
@@ -433,9 +435,14 @@ void DmxMonitor::Values() {
         i < channels_per_screen; x++, z++, i++) {
       const int d = m_buffer.Get(z);
       switch (d) {
-        case 0: attrset(palette[ZERO]); break;
-        case 255: attrset(palette[FULL]); break;
-        default: attrset(palette[NORM]);
+        case 0:
+          (void) attrset(palette[ZERO]);
+          break;
+        case 255:
+          (void) attrset(palette[FULL]);
+          break;
+        default:
+          (void) attrset(palette[NORM]);
       }
       if (z == current_channel)
         attron(A_REVERSE);
