@@ -32,21 +32,23 @@
 #include <malloc.h>
 #endif
 #include <signal.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
+#include <sys/timeb.h>
 #include <termios.h>
 #include <time.h>
-#include <sys/timeb.h>
 
-#include <string>
 #include <ola/Callback.h>
 #include <ola/DmxBuffer.h>
 #include <ola/OlaClient.h>
 #include <ola/OlaClientWrapper.h>
 #include <ola/network/SelectServer.h>
+
+#include <string>
 
 using ola::SimpleClient;
 using ola::OlaClient;
@@ -73,12 +75,12 @@ enum {
   DISP_MODE_MAX,
 };
 
-int MAXCHANNELS=512;
-unsigned int MAXFKEY=12;
+int MAXCHANNELS = 512;
+unsigned int MAXFKEY = 12;
 
 int universe = 0;
 
-typedef unsigned char dmx_t ;
+typedef unsigned char dmx_t;
 
 static dmx_t *dmx;
 static dmx_t *dmxsave;
@@ -87,16 +89,16 @@ static dmx_t *dmxundo;
 static int display_mode = DISP_MODE_DMX;
 static int current_channel = 0;    /* channel cursor is positioned on */
 static int first_channel = 0;    /* channel in upper left corner */
-static int channels_per_line=80/4;
-static int channels_per_screen=80/4*24/2;
-static int undo_possible=0;
-static int current_cue=0;    /* select with F keys */
-static float fadetime=1.0f;
-static int fading=0;        /* percentage counter of fade process */
-static int palette_number=0;
+static int channels_per_line = 80 / 4;
+static int channels_per_screen = 80 / 4 * 24 / 2;
+static int undo_possible = 0;
+static int current_cue = 0;    /* select with F keys */
+static float fadetime = 1.0f;
+static int fading = 0;        /* percentage counter of fade process */
+static int palette_number = 0;
 static int palette[MAXCOLOR];
 string error_str;
-static int channels_offset=1;
+static int channels_offset = 1;
 
 OlaClient *client;
 SelectServer *ss;
@@ -111,17 +113,19 @@ void DMXsleep(int usec) {
 }
 
 // returns the time in milliseconds
-unsigned long timeGetTime() {
+uint64_t timeGetTime() {
 #ifdef HAVE_GETTIMEOFDAY
   struct timeval tv;
   gettimeofday(&tv, NULL);
-  return (unsigned long)tv.tv_sec*1000UL + (unsigned long)tv.tv_usec/1000;
+  return (static_cast<uint64_t>(tv.tv_sec) * 1000UL +
+          static_cast<uint64_t>(tv.tv_usec / 1000));
 
 #else
 # ifdef HAVE_FTIME
   struct timeb t;
   ftime(&t);
-  return (unsigned long)t.time*1000UL+(unsigned long)t.millitm;
+  return (static_cast<uint64_t>(t.time) * 1000UL +
+          static_cast<uint64_t>(t.millitm);
 # else
 
 # endif
@@ -144,30 +148,35 @@ void set() {
 
 /* display the channels numbers */
 void mask() {
-  int i=0,x,y,z=first_channel;
+  int i = 0;
+  int x, y;
+  int z = first_channel;
 
   erase();
 
   /* clear headline */
   (void) attrset(palette[HEADLINE]);
   move(0, 0);
-  for (x=0; x<COLS; x++)
+  for (x = 0; x < COLS; x++)
     addch(' ');
 
   /* write channel numbers */
   (void) attrset(palette[CHANNEL]);
-  for (y=1; y<LINES && z<MAXCHANNELS && i<channels_per_screen; y+=2) {
+  for (y = 1; y < LINES && z < MAXCHANNELS && i < channels_per_screen;
+       y += 2) {
     move(y, 0);
-    for (x=0; x<channels_per_line && z<MAXCHANNELS && i<channels_per_screen;
+    for (x = 0;
+         x < channels_per_line && z < MAXCHANNELS && i < channels_per_screen;
          x++, i++, z++) {
-      switch(display_mode) {
+      switch (display_mode) {
         case DISP_MODE_DMX:
         case DISP_MODE_DEC:
         default:
-          printw("%03d ", z+channels_offset); break;
-
+          printw("%03d ", z + channels_offset);
+          break;
         case DISP_MODE_HEX:
-          printw("%03X ", z+channels_offset); break;
+          printw("%03X ", z + channels_offset);
+          break;
         }
     }
   }
@@ -175,36 +184,40 @@ void mask() {
 
 /* update the screen */
 void values() {
-  int i=0,x,y,z=first_channel;
+  int i = 0;
+  int x, y;
+  int z = first_channel;
 
   /* headline */
-  if (COLS>24) {
-    time_t t=time(NULL);
-    struct tm *tt=localtime(&t);
-    char *s=asctime(tt);
-    s[strlen(s)-1] = 0; /* strip newline at end of string */
+  if (COLS > 24) {
+    time_t t = time(NULL);
+    struct tm tt;
+    localtime_r(&t, &tt);
+    char s[32];
+    asctime_r(&tt, s);
+    s[strlen(s) - 1] = 0; /* strip newline at end of string */
 
     (void) attrset(palette[HEADLINE]);
     mvprintw(0, 1, "%s", s);
   }
-  if (COLS>31) {
+  if (COLS > 31) {
     (void) attrset(palette[HEADLINE]);
     printw(" cue:");
     (void) attrset(palette[HEADEMPH]);
     printw("%02i", current_cue + 1);
   }
-  if (COLS>44) {
+  if (COLS > 44) {
     (void) attrset(palette[HEADLINE]);
     printw(" fadetime:");
     (void) attrset(palette[HEADEMPH]);
     printw("%1.1f", fadetime);
   }
-  if (COLS>55) {
+  if (COLS > 55) {
     if (fading) {
       (void) attrset(palette[HEADLINE]);
       printw(" fading:");
       (void) attrset(palette[HEADEMPH]);
-      printw("%02i%%", (fading<100) ? fading: 99);
+      printw("%02i%%", (fading < 100) ? fading: 99);
     } else {
       (void) attrset(palette[HEADLINE]);
       printw("           ");
@@ -219,11 +232,13 @@ void values() {
   }
 
   /* values */
-  for (y=2; y<LINES && z<MAXCHANNELS && i<channels_per_screen; y+=2) {
-    move(y,0);
-    for (x=0; x<channels_per_line && z<MAXCHANNELS && i<channels_per_screen;
+  for (y = 2; y < LINES && z < MAXCHANNELS && i < channels_per_screen;
+       y += 2) {
+    move(y, 0);
+    for (x = 0;
+         x < channels_per_line && z < MAXCHANNELS && i < channels_per_screen;
          x++, z++, i++) {
-      const int d=dmx[z];
+      const int d = dmx[z];
       switch (d) {
         case 0:
           (void) attrset(palette[ZERO]);
@@ -234,29 +249,34 @@ void values() {
         default:
           (void) attrset(palette[NORM]);
       }
-      if (z==current_channel)
+      if (z == current_channel)
         attron(A_REVERSE);
       switch (display_mode) {
         case DISP_MODE_HEX:
-          if (d==0)
+          if (d == 0)
             addstr("    ");
           else
             printw(" %02x ", d);
           break;
         case DISP_MODE_DEC:
-          if (d==0)
+          if (d == 0)
             addstr("    ");
-          else if (d<100)
+          else if (d < 100)
             printw(" %02d ", d);
           else
             printw("%03d ", d);
           break;
         case DISP_MODE_DMX:
         default:
-          switch(d) {
-            case 0: addstr("    "); break;
-            case 255: addstr(" FL "); break;
-            default: printw(" %02d ", (d*100)/255);
+          switch (d) {
+            case 0:
+              addstr("    ");
+              break;
+            case 255:
+              addstr(" FL ");
+              break;
+            default:
+              printw(" %02d ", (d * 100) / 255);
           }
       }
     }
@@ -301,33 +321,34 @@ void crossfade(unsigned int new_cue) {
 
   /* try to find the last channel value > 0, so we don't have to
      crossfade large blocks of 0s */
-  for(i=MAXCHANNELS-1; i>=0; max=i, i--)
+  for (i = MAXCHANNELS - 1; i >= 0; max = i, i--)
     if (dmxold[i]||dmxnew[i])
       break;
 
   {
-    const unsigned long tstart=timeGetTime();
-    const unsigned long tend=tstart+(int)(fadetime*1000.0);
-    unsigned long t=tstart;
-    while(t<=tend)
-      {
+    const uint64_t tstart = timeGetTime();
+    const uint64_t tend = tstart + static_cast<int>(fadetime * 1000.0);
+    uint64_t t = tstart;
+    while (t <= tend) {
     /* calculate new cue */
-    t=timeGetTime();
+    t = timeGetTime();
     {
-      const float p = (float)(t-tstart) / 1000.0f / fadetime;
+      const float p = static_cast<float>(t - tstart) / 1000.0f / fadetime;
       const float q = 1.0f - p;
-      for (i=0; i<max; i++)
+      for (i = 0; i < max; i++)
         if (dmxold[i] || dmxnew[i]) /* avoid calculating with only 0 */
-          dmx[i] = (int)((float)dmxold[i]*q + (float)dmxnew[i]*p);
+          dmx[i] = static_cast<int>(static_cast<float>(dmxold[i]) * q +
+                                    static_cast<float>(dmxnew[i]) * p);
       setall();
 
       /* update screen */
-      fading=(int)(p*100.0f);
+      fading = static_cast<int>(p * 100.0f);
       values();
       refresh();
       DMXsleep(100000);
 
-      t=timeGetTime();        /* get current time, because the last time is too old (due to the sleep) */
+      // get current time, because the last time is too old (due to the sleep)
+      t = timeGetTime();
     }
       }
     fading = 0;
@@ -491,10 +512,10 @@ void stdin_ready() {
 
     case KEY_NPAGE:
       undoprep();
-      if (dmx[current_channel]==255)
-        dmx[current_channel]=0xe0;
+      if (dmx[current_channel] == 255)
+        dmx[current_channel] = 0xe0;
       else if (dmx[current_channel] > 0x10)
-        dmx[current_channel]-=0x10;
+        dmx[current_channel] -= 0x10;
       else
         dmx[current_channel] = 0;
       set();
@@ -510,20 +531,20 @@ void stdin_ready() {
 
     case ' ':
       undoprep();
-      if (dmx[current_channel]<128)
-        dmx[current_channel]=255;
+      if (dmx[current_channel] < 128)
+        dmx[current_channel] = 255;
       else
-        dmx[current_channel]=0;
+        dmx[current_channel] = 0;
       set();
       break;
 
     case '0' ... '9':
-      fadetime=c-'0';
+      fadetime = c -'0';
       break;
 
     case KEY_HOME:
-      current_channel=0;
-      first_channel=0;
+      current_channel = 0;
+      first_channel = 0;
       mask();
       break;
 
@@ -531,7 +552,7 @@ void stdin_ready() {
       if (current_channel < MAXCHANNELS-1) {
         current_channel++;
         if (current_channel >= first_channel+channels_per_screen) {
-          first_channel+=channels_per_line;
+          first_channel += channels_per_line;
           mask();
         }
       }
@@ -541,46 +562,46 @@ void stdin_ready() {
       if (current_channel > 0) {
         current_channel--;
         if (current_channel < first_channel) {
-          first_channel-=channels_per_line;
-          if (first_channel<0)
-            first_channel=0;
+          first_channel -= channels_per_line;
+          if (first_channel < 0)
+            first_channel = 0;
           mask();
         }
       }
       break;
 
     case KEY_DOWN:
-      current_channel+=channels_per_line;
-      if (current_channel>=MAXCHANNELS)
-        current_channel=MAXCHANNELS-1;
+      current_channel += channels_per_line;
+      if (current_channel >= MAXCHANNELS)
+        current_channel = MAXCHANNELS - 1;
       if (current_channel >= first_channel+channels_per_screen) {
-        first_channel+=channels_per_line;
+        first_channel += channels_per_line;
         mask();
       }
       break;
 
     case KEY_UP:
-      current_channel-=channels_per_line;
-      if (current_channel<0)
-        current_channel=0;
+      current_channel -= channels_per_line;
+      if (current_channel < 0)
+        current_channel = 0;
       if (current_channel < first_channel) {
-        first_channel-=channels_per_line;
-        if (first_channel<0)
-          first_channel=0;
+        first_channel -= channels_per_line;
+        if (first_channel < 0)
+          first_channel = 0;
         mask();
       }
       break;
 
     case KEY_IC:
       undoprep();
-      for (n = MAXCHANNELS-1; n>current_channel && n>0; n--)
-        dmx[n]=dmx[n-1];
+      for (n = MAXCHANNELS - 1; n>current_channel && n > 0; n--)
+        dmx[n]=dmx[n - 1];
       setall();
       break;
     case KEY_DC:
       undoprep();
-      for(n=current_channel; n<MAXCHANNELS-1; n++)
-        dmx[n]=dmx[n+1];
+      for (n = current_channel; n < MAXCHANNELS - 1; n++)
+        dmx[n] = dmx[n + 1];
       setall();
       break;
     case 'B':
@@ -597,14 +618,14 @@ void stdin_ready() {
       break;
     case 'M':
     case 'm':
-      if (++display_mode>=DISP_MODE_MAX)
-        display_mode=0;
+      if (++display_mode >= DISP_MODE_MAX)
+        display_mode = 0;
       mask();
       break;
     case 'N':
     case 'n':
-      if (++channels_offset>1)
-        channels_offset=0;
+      if (++channels_offset > 1)
+        channels_offset = 0;
       mask();
       break;
     case 'P':
@@ -619,7 +640,8 @@ void stdin_ready() {
     case 'q':
       ss->Terminate();
     default:
-      if (c >= (int) KEY_F(1) && c <= (int) KEY_F(MAXFKEY))
+      if (c >= static_cast<int>(KEY_F(1)) &&
+          c <= static_cast<int>(KEY_F(MAXFKEY)))
         crossfade(c - KEY_F(1));
       break;
   }
@@ -627,28 +649,30 @@ void stdin_ready() {
   refresh();
 }
 
-int main (int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
   int optc;
 
   signal(SIGWINCH, terminalresize);
   atexit(cleanup);
 
-  /* alloc */
-  dmx = (dmx_t*) calloc(MAXCHANNELS+10, sizeof(dmx_t)); /* 10 bytes security, for file IO routines, will be optimized and checked later */
+  // 10 bytes security, for file IO routines, will be optimized and checked
+  // later
+  dmx = reinterpret_cast<dmx_t*>(calloc(MAXCHANNELS+10, sizeof(dmx_t)));
   CHECK(dmx);
 
-  dmxsave = (dmx_t*)  calloc(MAXCHANNELS*MAXFKEY, sizeof(dmx_t));
+  dmxsave = reinterpret_cast<dmx_t*>(
+      calloc(MAXCHANNELS * MAXFKEY, sizeof(dmx_t)));
   CHECK(dmxsave);
 
-  dmxundo = (dmx_t*) calloc(MAXCHANNELS, sizeof(dmx_t));
+  dmxundo = reinterpret_cast<dmx_t*>(calloc(MAXCHANNELS, sizeof(dmx_t)));
   CHECK(dmxundo);
 
   // parse options
-  while ((optc = getopt (argc, argv, "u:")) != EOF) {
+  while ((optc = getopt(argc, argv, "u:")) != EOF) {
     switch (optc) {
       case 'u':
-         universe = atoi(optarg) ;
-         break ;
+         universe = atoi(optarg);
+         break;
       default:
          break;
     }
@@ -671,7 +695,7 @@ int main (int argc, char *argv[]) {
   /* init curses */
   w = initscr();
   if (!w) {
-    printf ("unable to open main-screen\n");
+    printf("unable to open main-screen\n");
     return 1;
   }
 
