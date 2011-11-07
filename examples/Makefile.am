@@ -15,19 +15,19 @@ bin_PROGRAMS = ola_dev_info ola_usbpro ola_artnet ola_e131 \
                ola_recorder ola_timecode
 
 ola_artnet_SOURCES = ola-artnet.cpp
-ola_artnet_LDADD = $(COMMON_LIBS) libolaconfig.la \
+ola_artnet_LDADD = $(COMMON_LIBS) $(libprotobuf_LIBS) libolaconfig.la \
                    $(top_builddir)/plugins/artnet/messages/libolaartnetconf.la
 
 ola_dev_info_SOURCES = ola-client.cpp
 
 ola_e131_SOURCES = ola-e131.cpp
-ola_e131_LDADD = $(COMMON_LIBS) libolaconfig.la \
+ola_e131_LDADD = $(COMMON_LIBS) $(libprotobuf_LIBS) libolaconfig.la \
                  $(top_builddir)/plugins/e131/messages/libolae131conf.la
 
 ola_streaming_client_SOURCES = ola-streaming-client.cpp
 
 ola_usbpro_SOURCES = ola-usbpro.cpp
-ola_usbpro_LDADD = $(COMMON_LIBS) libolaconfig.la \
+ola_usbpro_LDADD = $(COMMON_LIBS) $(libprotobuf_LIBS) libolaconfig.la \
                    $(top_builddir)/plugins/usbpro/messages/libolausbproconf.la
 
 ola_rdm_get_SOURCES = ola-rdm.cpp
