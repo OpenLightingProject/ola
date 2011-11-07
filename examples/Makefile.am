@@ -1,13 +1,18 @@
 include $(top_srcdir)/common.mk
 
+# Note: gcc 4.6.1 is pretty strict about library ordering. Libraries need to be
+# ordered in the order they are used. i.e. a library should depend on things to
+# the right, not the left.
+# See http://www.network-theory.co.uk/docs/gccintro/gccintro_18.html
+
 EXTRA_DIST = OlaConfigurator.h ShowLoader.h ShowPlayer.h ShowRecorder.h \
              ShowSaver.h
 
 if BUILD_EXAMPLES
 
 # The following should match what pkg-config --libs libola returns
-COMMON_LIBS = $(top_builddir)/common/libolacommon.la \
-              $(top_builddir)/ola/libola.la
+COMMON_LIBS = $(top_builddir)/ola/libola.la \
+              $(top_builddir)/common/libolacommon.la
 LDADD = $(COMMON_LIBS)
 
 bin_PROGRAMS = ola_dev_info ola_usbpro ola_artnet ola_e131 \
@@ -15,24 +20,22 @@ bin_PROGRAMS = ola_dev_info ola_usbpro ola_artnet ola_e131 \
                ola_recorder ola_timecode
 
 ola_artnet_SOURCES = ola-artnet.cpp
-ola_artnet_LDADD = $(COMMON_LIBS) $(libprotobuf_LIBS) libolaconfig.la \
+ola_artnet_LDADD = libolaconfig.la $(COMMON_LIBS) $(libprotobuf_LIBS) \
                    $(top_builddir)/plugins/artnet/messages/libolaartnetconf.la
 
 ola_dev_info_SOURCES = ola-client.cpp
 
 ola_e131_SOURCES = ola-e131.cpp
-ola_e131_LDADD = $(COMMON_LIBS) $(libprotobuf_LIBS) libolaconfig.la \
+ola_e131_LDADD = libolaconfig.la $(COMMON_LIBS) $(libprotobuf_LIBS) \
                  $(top_builddir)/plugins/e131/messages/libolae131conf.la
 
 ola_streaming_client_SOURCES = ola-streaming-client.cpp
 
 ola_usbpro_SOURCES = ola-usbpro.cpp
-ola_usbpro_LDADD = $(COMMON_LIBS) $(libprotobuf_LIBS) libolaconfig.la \
+ola_usbpro_LDADD = libolaconfig.la $(COMMON_LIBS) $(libprotobuf_LIBS) \
                    $(top_builddir)/plugins/usbpro/messages/libolausbproconf.la
 
 ola_rdm_get_SOURCES = ola-rdm.cpp
-ola_rdm_get_LDADD = $(top_builddir)/ola/libola.la \
-                    $(top_builddir)/common/libolacommon.la
 ola_rdm_get_CXXFLAGS = $(COMMON_CXXFLAGS) @OLAD_DEFINES@
 
 ola_rdm_discover_SOURCES = ola-rdm-discover.cpp
