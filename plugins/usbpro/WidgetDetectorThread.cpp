@@ -59,7 +59,8 @@ WidgetDetectorThread::WidgetDetectorThread(
   ola::network::SelectServerInterface *ss,
   unsigned int usb_pro_timeout,
   unsigned int robe_timeout)
-    : m_other_ss(ss),
+    : OlaThread(),
+      m_other_ss(ss),
       m_handler(handler),
       m_is_running(false),
       m_usb_pro_timeout(usb_pro_timeout),
