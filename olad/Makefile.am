@@ -54,6 +54,6 @@ OlaTester_SOURCES = OlaServerTester.cpp \
                     PreferencesTest.cpp PortManagerTest.cpp PortTest.cpp \
                     OlaServerServiceImplTest.cpp ClientTest.cpp
 OlaTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-OlaTester_LDADD = $(CPPUNIT_LIBS) \
+OlaTester_LDADD = $(CPPUNIT_LIBS) $(libprotobuf_LIBS) \
                   $(top_builddir)/olad/libolaserver.la \
                   $(top_builddir)/common/libolacommon.la
