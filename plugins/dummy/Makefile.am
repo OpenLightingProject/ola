@@ -17,5 +17,5 @@ DummyPluginTester_SOURCES = DummyPluginTester.cpp DummyPortTest.cpp
 DummyPluginTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 DummyPluginTester_LDADD = $(CPPUNIT_LIBS) \
                           ./liboladummy.la \
-                          ../../common/libolacommon.la \
-                          $(top_builddir)/olad/libolaserver.la
+                          $(top_builddir)/olad/libolaserver.la \
+                          ../../common/libolacommon.la
