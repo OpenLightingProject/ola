@@ -98,6 +98,9 @@ class WidgetDetectorThread: public ola::OlaThread {
     // Can be called from any thread.
     void FreeWidget(SerialWidgetInterface *widget);
 
+    // blocks until the thread is running
+    void WaitUntilRunning();
+
   protected:
     virtual bool RunScan();
     void PerformDiscovery(const string &path,
@@ -110,8 +113,11 @@ class WidgetDetectorThread: public ola::OlaThread {
     string m_directory;  // directory to look for widgets in
     vector<string> m_prefixes;  // prefixes to try
     NewWidgetHandler *m_handler;
+    bool m_is_running;
     unsigned int m_usb_pro_timeout;
     unsigned int m_robe_timeout;
+    Mutex m_mutex;
+    ConditionVariable m_condition;
 
     // those paths that are either in discovery, or in use
     set<string> m_active_paths;
@@ -142,6 +148,8 @@ class WidgetDetectorThread: public ola::OlaThread {
     // All of these are called in a separate thread.
     template<typename WidgetType, typename InfoType>
     void SignalNewWidget(WidgetType *widget, const InfoType *information);
+
+    void MarkAsRunning();
 
     static const unsigned int SCAN_INTERVAL_MS = 20000;
 

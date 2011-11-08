@@ -271,6 +271,7 @@ bool UsbSerialPlugin::StartHook() {
     OLA_FATAL << "Failed to start the widget discovery thread";
     return false;
   }
+  m_detector_thread.WaitUntilRunning();
   return true;
 }
 

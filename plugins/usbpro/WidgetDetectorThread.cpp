@@ -61,6 +61,7 @@ WidgetDetectorThread::WidgetDetectorThread(
   unsigned int robe_timeout)
     : m_other_ss(ss),
       m_handler(handler),
+      m_is_running(false),
       m_usb_pro_timeout(usb_pro_timeout),
       m_robe_timeout(robe_timeout) {
   if (!m_handler)
@@ -110,6 +111,8 @@ void *WidgetDetectorThread::Run() {
   m_ss.RegisterRepeatingTimeout(
       SCAN_INTERVAL_MS,
       ola::NewCallback(this, &WidgetDetectorThread::RunScan));
+  m_ss.Execute(
+      ola::NewSingleCallback(this, &WidgetDetectorThread::MarkAsRunning));
   m_ss.Run();
 
   vector<WidgetDetectorInterface*>::const_iterator iter =
@@ -149,6 +152,17 @@ void WidgetDetectorThread::FreeWidget(SerialWidgetInterface *widget) {
       ola::NewSingleCallback(this,
                              &WidgetDetectorThread::InternalFreeWidget,
                              widget));
+}
+
+
+/**
+ * Block until the thread is up and running
+ */
+void WidgetDetectorThread::WaitUntilRunning() {
+  m_mutex.Lock();
+  if (!m_is_running)
+    m_condition.Wait(&m_mutex);
+  m_mutex.Unlock();
 }
 
 
@@ -418,6 +432,17 @@ void WidgetDetectorThread::SignalNewWidget(WidgetType *widget,
   delete information;
   m_other_ss->AddReadDescriptor(widget->GetDescriptor());
   m_handler->NewWidget(widget, info);
+}
+
+
+/**
+ * Mark this thread as running
+ */
+void WidgetDetectorThread::MarkAsRunning() {
+  m_mutex.Lock();
+  m_is_running = true;
+  m_mutex.Unlock();
+  m_condition.Signal();
 }
 }  // usbpro
 }  // plugin
