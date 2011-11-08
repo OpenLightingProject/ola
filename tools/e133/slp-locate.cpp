@@ -142,8 +142,8 @@ void DisplayHelpAndExit(char arg[]) {
  * Terminate on interrupt.
  */
 static void InteruptSignal(int signo) {
-  signo = 0;
   ss.Terminate();
+  (void) signo;
 }
 
 
