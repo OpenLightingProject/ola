@@ -1,9 +1,9 @@
 SOURCES = TimeCode.h
+BUILT_SOURCES = TimeCodeEnums.h
 
-pkginclude_HEADERS = $(SOURCES)
+pkginclude_HEADERS = $(SOURCES) $(BUILT_SOURCES)
 pkgincludedir = $(includedir)/ola/timecode/
 
-BUILT_SOURCES = TimeCodeEnums.h
 
 EXTRA_DIST = $(SOURCES) make_timecode.sh
 
