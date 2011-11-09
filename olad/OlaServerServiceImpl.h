@@ -154,14 +154,10 @@ class OlaServerServiceImpl {
                            const ola::rdm::RDMResponse *rdm_response,
                            const std::vector<std::string> &packets);
 
-    void MissingUniverseError(RpcController* controller,
-                              google::protobuf::Closure* done);
-    void MissingPluginError(RpcController* controller,
-                            google::protobuf::Closure* done);
-    void MissingDeviceError(RpcController* controller,
-                            google::protobuf::Closure* done);
-    void MissingPortError(RpcController* controller,
-                          google::protobuf::Closure* done);
+    void MissingUniverseError(RpcController* controller);
+    void MissingPluginError(RpcController* controller);
+    void MissingDeviceError(RpcController* controller);
+    void MissingPortError(RpcController* controller);
 
     void AddPlugin(class AbstractPlugin *plugin,
                    ola::proto::PluginListReply* response) const;

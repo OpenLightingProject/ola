@@ -1,7 +1,8 @@
 SUBDIRS = network rdm thread web messaging timecode
 
-SOURCES = ActionQueue.h BaseTypes.h Callback.h Clock.h DmxBuffer.h \
-          ExportMap.h Logging.h OlaThread.h RunLengthEncoder.h StringUtils.h
+SOURCES = ActionQueue.h BaseTypes.h Callback.h CallbackRunner.h Clock.h \
+          DmxBuffer.h ExportMap.h Logging.h OlaThread.h RunLengthEncoder.h \
+          StringUtils.h
 
 BUILT_SOURCES = plugin_id.h
 
