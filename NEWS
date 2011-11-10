@@ -1,3 +1,9 @@
+X/Y/2011 ola-0.8.15
+ * Add basic timecode TX support
+ * Fix some build issues with newer versions of gcc
+ * Update debian package configs
+ * Fix the python tests so they pass with macports
+
 2/11/2011 ola-0.8.14
  * fix a bug in the port limiter
  * minor RDM test fixes
