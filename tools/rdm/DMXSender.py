@@ -22,28 +22,33 @@ import array
 import logging
 
 class DMXSender(object):
-  def __init__(self, ola_wrapper, universe, frame_rate):
+  def __init__(self, ola_wrapper, universe, frame_rate, slot_count):
     """Create a new DMXSender:
 
     Args:
       ola_wrapper: the ClientWrapper to use
       universe: universe number to send on
       frame_rate: frames per second
+      slot_count: number of slots to send
     """
     self._wrapper = ola_wrapper
     self._universe = universe
     self._data = array.array('B')
-    self._data.append(0)
     self._frame_count = 0
+    self._slot_count = max(0, min(int(slot_count), 512))
 
-    if (frame_rate > 0):
-      logging.info('Sending %d fps of DMX data' % frame_rate)
+    if (frame_rate > 0 and slot_count > 0):
+      logging.info('Sending %d fps of DMX data with %d slots' %
+                   (frame_rate, self._slot_count))
+      for i in xrange(0, self._slot_count):
+        self._data.append(0)
       self._frame_interval = 1000 / frame_rate
       self.SendDMXFrame()
 
   def SendDMXFrame(self):
     """Send the next DMX Frame."""
-    self._data[0] = self._frame_count % 255
+    for i in xrange(0, self._slot_count):
+      self._data[i] = self._frame_count % 255
     self._frame_count += 1
     self._wrapper.Client().SendDmx(self._universe,
                                    self._data,

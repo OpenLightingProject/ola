@@ -49,6 +49,8 @@ def ParseOptions():
     production lighting rig.
   """)
   parser = OptionParser(usage, description=description)
+  parser.add_option('-c', '--slot_count', default=10,
+                    help='Number of slots to send when sending DMX.')
   parser.add_option('-d', '--debug', action='store_true',
                     help='Print debug information to assist in diagnosing '
                          'failures.')
@@ -232,7 +234,10 @@ def main():
     if issubclass(obj, ResponderTest.ResponderTestFixture):
       runner.RegisterTest(obj)
 
-  dmx_sender = DMXSender(wrapper, options.universe, options.dmx_frame_rate)
+  dmx_sender = DMXSender(wrapper,
+                         options.universe,
+                         options.dmx_frame_rate,
+                         options.slot_count)
 
   tests, device = runner.RunTests(test_filter, options.no_factory_defaults)
   DisplaySummary(tests)
