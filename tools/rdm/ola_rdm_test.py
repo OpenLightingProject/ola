@@ -29,6 +29,7 @@ import re
 import sys
 import textwrap
 import time
+from DMXSender import DMXSender
 from TestState import TestState
 from ola import PidStore
 from ola.ClientWrapper import ClientWrapper
@@ -51,6 +52,9 @@ def ParseOptions():
   parser.add_option('-d', '--debug', action='store_true',
                     help='Print debug information to assist in diagnosing '
                          'failures.')
+  parser.add_option('-f', '--dmx_frame_rate', default=0,
+                    type='int',
+                    help='Send DMX frames at this rate in the background.')
   parser.add_option('-l', '--log', metavar='FILE',
                     help='Also log to the file named FILE.uid.timestamp.')
   parser.add_option('-p', '--pid_file', metavar='FILE',
@@ -227,6 +231,8 @@ def main():
       continue
     if issubclass(obj, ResponderTest.ResponderTestFixture):
       runner.RegisterTest(obj)
+
+  dmx_sender = DMXSender(wrapper, options.universe, options.dmx_frame_rate)
 
   tests, device = runner.RunTests(test_filter, options.no_factory_defaults)
   DisplaySummary(tests)
