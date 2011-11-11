@@ -48,6 +48,7 @@ RobeWidgetImpl::RobeWidgetImpl(ola::network::ConnectedDescriptor *descriptor,
       m_unmute_callback(NULL),
       m_branch_callback(NULL),
       m_discovery_agent(this),
+      m_dmx_callback(NULL),
       m_pending_request(NULL),
       m_uid(uid),
       m_transaction_number(0) {
@@ -162,6 +163,19 @@ bool RobeWidgetImpl::RunIncrementalDiscovery(
 }
 
 
+/**
+ * Change to receive mode.
+ */
+bool RobeWidgetImpl::ChangeToReceiveMode() {
+  m_buffer.Reset();
+  return SendMessage(DMX_IN_REQUEST, NULL, 0);
+}
+
+
+void RobeWidgetImpl::SetDmxCallback(Callback0<void> *callback) {
+  m_dmx_callback.reset(callback);
+}
+
 
 /**
  * Mute a responder
@@ -247,6 +261,9 @@ void RobeWidgetImpl::HandleMessage(uint8_t label,
       return;
     case BaseRobeWidget::RDM_DISCOVERY_RESPONSE:
       HandleDiscoveryResponse(data, length);
+      return;
+    case DMX_IN_RESPONSE:
+      HandleDmxFrame(data, length);
       return;
     default:
       OLA_INFO << "Unknown message from Robe widget " << std::hex <<
@@ -340,6 +357,16 @@ void RobeWidgetImpl::DiscoveryComplete(
   if (callback)
     callback->Run(uids);
   (void) status;
+}
+
+
+/**
+ * Handle DMX data
+ */
+void RobeWidgetImpl::HandleDmxFrame(const uint8_t *data, unsigned int length) {
+  m_buffer.Set(data, length);
+  if (m_dmx_callback.get())
+    m_dmx_callback->Run();
 }
 
 

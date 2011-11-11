@@ -57,6 +57,8 @@ class BaseRobeWidget: public SerialWidgetInterface {
     static const uint8_t RDM_RESPONSE = 0x11;
     static const uint8_t UID_REQUEST = 0x24;
     static const uint8_t UID_RESPONSE = 0x25;
+    static const uint8_t DMX_IN_REQUEST = 0x04;
+    static const uint8_t DMX_IN_RESPONSE = 0x05;
 
   private:
     typedef enum {

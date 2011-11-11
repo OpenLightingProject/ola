@@ -246,6 +246,23 @@ void MockEndpoint::SendUnsolicitedUsbProData(
 
 
 /**
+ * Send an unsolicited Robe messages
+ */
+void MockEndpoint::SendUnsolicitedRobeData(
+    uint8_t response_label,
+    const uint8_t *response_payload_data,
+    unsigned int response_payload_size) {
+  unsigned int response_size;
+  uint8_t *response = BuildRobeMessage(response_label,
+                                       response_payload_data,
+                                       response_payload_size,
+                                       &response_size);
+  CPPUNIT_ASSERT(m_descriptor->Send(response, response_size));
+  delete[] response;
+}
+
+
+/**
  * Called when there is new data available. Make sure it matches what we
  * expected and if there is return data send it.
  */

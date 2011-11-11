@@ -98,6 +98,10 @@ class MockEndpoint {
                                    const uint8_t *response_payload_data,
                                    unsigned int response_payload_size);
 
+    void SendUnsolicitedRobeData(uint8_t label,
+                                 const uint8_t *response_payload_data,
+                                 unsigned int response_payload_size);
+
     void Verify() {
       CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), m_expected_data.size());
     }

@@ -22,6 +22,7 @@
 #define PLUGINS_USBPRO_ROBEWIDGET_H_
 
 #include <stdint.h>
+#include <memory>
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/network/Socket.h"
@@ -41,6 +42,7 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
+using std::auto_ptr;
 
 /*
  * A Robe USB Widget implementation.
@@ -61,6 +63,14 @@ class RobeWidgetImpl: public BaseRobeWidget,
     bool RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
     bool RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
 
+    // incoming DMX methods
+    bool ChangeToReceiveMode();
+    // ownership of the callback is transferred
+    void SetDmxCallback(Callback0<void> *callback);
+    const DmxBuffer &FetchDMX() {
+      return m_buffer;
+    }
+
     // The following are the implementation of DiscoveryTargetInterface
     void MuteDevice(const ola::rdm::UID &target,
                     MuteDeviceCallback *mute_complete);
@@ -78,6 +88,8 @@ class RobeWidgetImpl: public BaseRobeWidget,
     UnMuteDeviceCallback *m_unmute_callback;
     BranchCallback *m_branch_callback;
     ola::rdm::DiscoveryAgent m_discovery_agent;
+    auto_ptr<Callback0<void> > m_dmx_callback;
+    DmxBuffer m_buffer;
     const ola::rdm::RDMRequest *m_pending_request;
     const ola::rdm::UID m_uid;
     uint8_t m_transaction_number;
@@ -92,6 +104,7 @@ class RobeWidgetImpl: public BaseRobeWidget,
     void DiscoveryComplete(ola::rdm::RDMDiscoveryCallback *callback,
                            bool status,
                            const ola::rdm::UIDSet &uids);
+    void HandleDmxFrame(const uint8_t *data, unsigned int length);
     static const unsigned int RDM_PADDING_BYTES = 4;
 };
 
@@ -127,6 +140,18 @@ class RobeWidget: public SerialWidgetInterface,
 
     bool RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
       return m_impl->RunIncrementalDiscovery(callback);
+    }
+
+    bool ChangeToReceiveMode() {
+      return m_impl->ChangeToReceiveMode();
+    }
+
+    void SetDmxCallback(Callback0<void> *callback) {
+      m_impl->SetDmxCallback(callback);
+    }
+
+    const DmxBuffer& FetchDMX() {
+      return m_impl->FetchDMX();
     }
 
     // the tests access the implementation directly.

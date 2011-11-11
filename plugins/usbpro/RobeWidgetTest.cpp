@@ -56,6 +56,7 @@ class RobeWidgetTest: public CommonWidgetTest {
   CPPUNIT_TEST(testSendRDMRequest);
   CPPUNIT_TEST(testMuteDevice);
   CPPUNIT_TEST(testUnMuteAll);
+  CPPUNIT_TEST(testReceive);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -66,13 +67,20 @@ class RobeWidgetTest: public CommonWidgetTest {
     void testMuteDevice();
     void testUnMuteAll();
     void testBranch();
+    void testReceive();
 
   private:
     auto_ptr<ola::plugin::usbpro::RobeWidget> m_widget;
     uint8_t m_transaction_number;
     ola::rdm::rdm_response_code m_received_code;
+    bool m_new_dmx_data;
 
     void Terminate() {
+      m_ss.Terminate();
+    }
+
+    void NewDMXData() {
+      m_new_dmx_data = true;
       m_ss.Terminate();
     }
 
@@ -104,6 +112,8 @@ class RobeWidgetTest: public CommonWidgetTest {
     static const UID SOURCE;
     static const uint16_t ESTA_ID = 0x7890;
     static const uint32_t SERIAL_NUMBER = 0x01020304;
+    static const uint8_t DMX_IN_REQUEST_LABEL = 0x04;
+    static const uint8_t DMX_IN_RESPONSE_LABEL = 0x05;
     static const uint8_t DMX_FRAME_LABEL = 0x06;
     static const uint8_t TEST_RDM_DATA[];
     static const uint8_t TEST_MUTE_RESPONSE_DATA[];
@@ -128,6 +138,7 @@ void RobeWidgetTest::setUp() {
   m_widget.reset(
       new ola::plugin::usbpro::RobeWidget(&m_descriptor, &m_ss, SOURCE));
   m_transaction_number = 0;
+  m_new_dmx_data = false;
 }
 
 
@@ -421,7 +432,6 @@ void RobeWidgetTest::testMuteDevice() {
   m_endpoint->Verify();
   delete[] expected_request_frame;
 
-  OLA_INFO << "next";
   // now try an actual mute response
   const MuteRequest mute_request2(SOURCE,
                                   DESTINATION,
@@ -561,3 +571,35 @@ void RobeWidgetTest::testBranch() {
   m_endpoint->Verify();
   delete[] expected_request_frame;
 }
+
+
+/*
+ * Test receiving works.
+ */
+void RobeWidgetTest::testReceive() {
+  DmxBuffer buffer;
+  buffer.SetFromString("0,1,2,3,4");
+
+  // change to recv mode & setup the callback
+  m_endpoint->AddExpectedRobeMessage(
+      DMX_IN_REQUEST_LABEL,
+      NULL,
+      0,
+      ola::NewSingleCallback(this, &RobeWidgetTest::Terminate));
+  m_widget->ChangeToReceiveMode();
+  m_ss.Run();
+  m_endpoint->Verify();
+  m_widget->SetDmxCallback(
+      ola::NewCallback(this, &RobeWidgetTest::NewDMXData));
+  CPPUNIT_ASSERT(!m_new_dmx_data);
+
+  // now send some data
+  m_endpoint->SendUnsolicitedRobeData(DMX_IN_RESPONSE_LABEL,
+                                      buffer.GetRaw(),
+                                      buffer.Size());
+  m_ss.Run();
+  CPPUNIT_ASSERT(m_new_dmx_data);
+  const DmxBuffer &new_data = m_widget->FetchDMX();
+  CPPUNIT_ASSERT(buffer == new_data);
+}
+
