@@ -77,8 +77,8 @@ void DeRegisterCallback(ola::network::SelectServer *ss, bool ok) {
  * Terminate cleanly on interrupt.
  */
 static void InteruptSignal(int signo) {
-  signo = 0;
   ss.Terminate();
+  (void) signo;
 }
 
 

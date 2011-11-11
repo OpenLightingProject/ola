@@ -264,9 +264,9 @@ SimpleE133Node *simple_node;
  * Terminate cleanly on interrupt.
  */
 static void InteruptSignal(int signo) {
-  signo = 0;
   if (simple_node)
     simple_node->Stop();
+  (void) signo;
 }
 
 

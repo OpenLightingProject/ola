@@ -28,6 +28,7 @@
 #include <string>
 #include <vector>
 
+#include "ola/CallbackRunner.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "olad/Plugin.h"
@@ -132,24 +133,23 @@ void E131Device::Configure(RpcController *controller,
                            const string &request,
                            string *response,
                            google::protobuf::Closure *done) {
-    Request request_pb;
-    if (!request_pb.ParseFromString(request)) {
-      controller->SetFailed("Invalid Request");
-      done->Run();
-      return;
-    }
+  CallbackRunner<google::protobuf::Closure> runner(done);
+  Request request_pb;
+  if (!request_pb.ParseFromString(request)) {
+    controller->SetFailed("Invalid Request");
+    return;
+  }
 
-    switch (request_pb.type()) {
-      case ola::plugin::e131::Request::E131_PORT_INFO:
-        HandlePortStatusRequest(response);
-        break;
-      case ola::plugin::e131::Request::E131_PREVIEW_MODE:
-        HandlePreviewMode(&request_pb, response);
-        break;
-      default:
-        controller->SetFailed("Invalid Request");
-    }
-    done->Run();
+  switch (request_pb.type()) {
+    case ola::plugin::e131::Request::E131_PORT_INFO:
+      HandlePortStatusRequest(response);
+      break;
+    case ola::plugin::e131::Request::E131_PREVIEW_MODE:
+      HandlePreviewMode(&request_pb, response);
+      break;
+    default:
+      controller->SetFailed("Invalid Request");
+  }
 }
 
 

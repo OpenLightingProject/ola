@@ -24,6 +24,7 @@
 #include <vector>
 #include "common/protocol/Ola.pb.h"
 #include "ola/Callback.h"
+#include "ola/CallbackRunner.h"
 #include "ola/DmxBuffer.h"
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
@@ -67,9 +68,12 @@ using ola::proto::UniverseInfo;
 using ola::proto::UniverseInfoReply;
 using ola::proto::UniverseNameRequest;
 using ola::proto::UniverseRequest;
+using ola::CallbackRunner;
 using ola::rdm::UIDSet;
 using ola::rdm::RDMResponse;
 
+
+typedef CallbackRunner<google::protobuf::Closure> ClosureRunner;
 
 OlaServerServiceImpl::~OlaServerServiceImpl() {
 }
@@ -83,15 +87,14 @@ void OlaServerServiceImpl::GetDmx(
     const UniverseRequest* request,
     DmxData* response,
     google::protobuf::Closure* done) {
-
+  ClosureRunner runner(done);
   Universe *universe = m_universe_store->GetUniverse(request->universe());
   if (!universe)
-    return MissingUniverseError(controller, done);
+    return MissingUniverseError(controller);
 
   const DmxBuffer buffer = universe->GetDMX();
   response->set_data(buffer.Get());
   response->set_universe(request->universe());
-  done->Run();
 }
 
 
@@ -102,23 +105,20 @@ void OlaServerServiceImpl::GetDmx(
 void OlaServerServiceImpl::RegisterForDmx(
     RpcController* controller,
     const RegisterDmxRequest* request,
-    Ack* response,
+    Ack*,
     google::protobuf::Closure* done,
     Client *client) {
-
+  ClosureRunner runner(done);
   Universe *universe = m_universe_store->GetUniverseOrCreate(
       request->universe());
   if (!universe)
-    return MissingUniverseError(controller, done);
+    return MissingUniverseError(controller);
 
   if (request->action() == ola::proto::REGISTER) {
     universe->AddSinkClient(client);
   } else {
     universe->RemoveSinkClient(client);
   }
-  done->Run();
-
-  (void) response;
 }
 
 
@@ -128,13 +128,13 @@ void OlaServerServiceImpl::RegisterForDmx(
 void OlaServerServiceImpl::UpdateDmxData(
     RpcController* controller,
     const DmxData* request,
-    Ack* response,
+    Ack*,
     google::protobuf::Closure* done,
     Client *client) {
-
+  ClosureRunner runner(done);
   Universe *universe = m_universe_store->GetUniverse(request->universe());
   if (!universe)
-    return MissingUniverseError(controller, done);
+    return MissingUniverseError(controller);
 
   if (client) {
     DmxBuffer buffer;
@@ -150,8 +150,6 @@ void OlaServerServiceImpl::UpdateDmxData(
     client->DMXRecieved(request->universe(), source);
     universe->SourceClientDataChanged(client);
   }
-  done->Run();
-  (void) response;
 }
 
 
@@ -159,10 +157,10 @@ void OlaServerServiceImpl::UpdateDmxData(
  * Handle a streaming DMX update, we don't send responses for this
  */
 void OlaServerServiceImpl::StreamDmxData(
-    RpcController* controller,
+    RpcController*,
     const ::ola::proto::DmxData* request,
-    ::ola::proto::STREAMING_NO_RESPONSE* response,
-    ::google::protobuf::Closure* done,
+    ::ola::proto::STREAMING_NO_RESPONSE*,
+    ::google::protobuf::Closure*,
     Client *client) {
 
   Universe *universe = m_universe_store->GetUniverse(request->universe());
@@ -184,9 +182,6 @@ void OlaServerServiceImpl::StreamDmxData(
     client->DMXRecieved(request->universe(), source);
     universe->SourceClientDataChanged(client);
   }
-  (void) controller;
-  (void) response;
-  (void) done;
 }
 
 
@@ -196,16 +191,14 @@ void OlaServerServiceImpl::StreamDmxData(
 void OlaServerServiceImpl::SetUniverseName(
     RpcController* controller,
     const UniverseNameRequest* request,
-    Ack* response,
+    Ack*,
     google::protobuf::Closure* done) {
-
+  ClosureRunner runner(done);
   Universe *universe = m_universe_store->GetUniverse(request->universe());
   if (!universe)
-    return MissingUniverseError(controller, done);
+    return MissingUniverseError(controller);
 
   universe->SetName(request->name());
-  done->Run();
-  (void) response;
 }
 
 
@@ -215,18 +208,16 @@ void OlaServerServiceImpl::SetUniverseName(
 void OlaServerServiceImpl::SetMergeMode(
     RpcController* controller,
     const MergeModeRequest* request,
-    Ack* response,
+    Ack*,
     google::protobuf::Closure* done) {
-
+  ClosureRunner runner(done);
   Universe *universe = m_universe_store->GetUniverse(request->universe());
   if (!universe)
-    return MissingUniverseError(controller, done);
+    return MissingUniverseError(controller);
 
   Universe::merge_mode mode = request->merge_mode() == ola::proto::HTP ?
     Universe::MERGE_HTP : Universe::MERGE_LTP;
   universe->SetMergeMode(mode);
-  done->Run();
-  (void) response;
 }
 
 
@@ -236,20 +227,20 @@ void OlaServerServiceImpl::SetMergeMode(
 void OlaServerServiceImpl::PatchPort(
     RpcController* controller,
     const PatchPortRequest* request,
-    Ack* response,
+    Ack*,
     google::protobuf::Closure* done) {
-
+  ClosureRunner runner(done);
   AbstractDevice *device =
     m_device_manager->GetDevice(request->device_alias());
 
   if (!device)
-    return MissingDeviceError(controller, done);
+    return MissingDeviceError(controller);
 
   bool result;
   if (request->is_output()) {
     OutputPort *port = device->GetOutputPort(request->port_id());
     if (!port)
-      return MissingPortError(controller, done);
+      return MissingPortError(controller);
 
     if (request->action() == ola::proto::PATCH)
       result = m_port_manager->PatchPort(port, request->universe());
@@ -258,7 +249,7 @@ void OlaServerServiceImpl::PatchPort(
   } else {
     InputPort *port = device->GetInputPort(request->port_id());
     if (!port)
-      return MissingPortError(controller, done);
+      return MissingPortError(controller);
 
     if (request->action() == ola::proto::PATCH)
       result = m_port_manager->PatchPort(port, request->universe());
@@ -268,8 +259,6 @@ void OlaServerServiceImpl::PatchPort(
 
   if (!result)
     controller->SetFailed("Patch port request failed");
-  (void) response;
-  done->Run();
 }
 
 
@@ -279,14 +268,14 @@ void OlaServerServiceImpl::PatchPort(
 void OlaServerServiceImpl::SetPortPriority(
     RpcController* controller,
     const ola::proto::PortPriorityRequest* request,
-    Ack* response,
+    Ack*,
     google::protobuf::Closure* done) {
-
+  ClosureRunner runner(done);
   AbstractDevice *device =
     m_device_manager->GetDevice(request->device_alias());
 
   if (!device)
-    return MissingDeviceError(controller, done);
+    return MissingDeviceError(controller);
 
   bool status;
 
@@ -301,7 +290,6 @@ void OlaServerServiceImpl::SetPortPriority(
         "wasn't specified";
       controller->SetFailed(
           "Invalid SetPortPriority request, see logs for more info");
-      done->Run();
       return;
     }
   }
@@ -309,7 +297,7 @@ void OlaServerServiceImpl::SetPortPriority(
   if (request->is_output()) {
     OutputPort *port = device->GetOutputPort(request->port_id());
     if (!port)
-      return MissingPortError(controller, done);
+      return MissingPortError(controller);
 
     if (inherit_mode)
       status = m_port_manager->SetPriorityInherit(port);
@@ -318,7 +306,7 @@ void OlaServerServiceImpl::SetPortPriority(
   } else {
     InputPort *port = device->GetInputPort(request->port_id());
     if (!port)
-      return MissingPortError(controller, done);
+      return MissingPortError(controller);
 
     if (inherit_mode)
       status = m_port_manager->SetPriorityInherit(port);
@@ -329,8 +317,6 @@ void OlaServerServiceImpl::SetPortPriority(
   if (!status)
     controller->SetFailed(
         "Invalid SetPortPriority request, see logs for more info");
-  done->Run();
-  (void) response;
 }
 
 
@@ -342,14 +328,14 @@ void OlaServerServiceImpl::GetUniverseInfo(
     const OptionalUniverseRequest* request,
     UniverseInfoReply* response,
     google::protobuf::Closure* done) {
-
+  ClosureRunner runner(done);
   UniverseInfo *universe_info;
 
   if (request->has_universe()) {
     // return info for a single universe
     Universe *universe = m_universe_store->GetUniverse(request->universe());
     if (!universe)
-      return MissingUniverseError(controller, done);
+      return MissingUniverseError(controller);
 
     universe_info = response->add_universe();
     universe_info->set_universe(universe->UniverseId());
@@ -376,7 +362,6 @@ void OlaServerServiceImpl::GetUniverseInfo(
       universe_info->set_rdm_devices((*iter)->UIDCount());
     }
   }
-  done->Run();
 }
 
 
@@ -384,19 +369,17 @@ void OlaServerServiceImpl::GetUniverseInfo(
  * Return info on available plugins
  */
 void OlaServerServiceImpl::GetPlugins(
-    RpcController* controller,
-    const PluginListRequest* request,
+    RpcController*,
+    const PluginListRequest*,
     PluginListReply* response,
     google::protobuf::Closure* done) {
+  ClosureRunner runner(done);
   vector<AbstractPlugin*> plugin_list;
   vector<AbstractPlugin*>::const_iterator iter;
   m_plugin_manager->Plugins(&plugin_list);
 
   for (iter = plugin_list.begin(); iter != plugin_list.end(); ++iter)
     AddPlugin(*iter, response);
-  done->Run();
-  (void) request;
-  (void) controller;
 }
 
 
@@ -408,7 +391,7 @@ void OlaServerServiceImpl::GetPluginDescription(
     const ola::proto::PluginDescriptionRequest* request,
     ola::proto::PluginDescriptionReply* response,
     google::protobuf::Closure* done) {
-
+  ClosureRunner runner(done);
   AbstractPlugin *plugin =
     m_plugin_manager->GetPlugin((ola_plugin_id) request->plugin_id());
 
@@ -418,17 +401,17 @@ void OlaServerServiceImpl::GetPluginDescription(
   } else {
     controller->SetFailed("Plugin not loaded");
   }
-  done->Run();
 }
 
 
 /*
  * Return information on available devices
  */
-void OlaServerServiceImpl::GetDeviceInfo(RpcController* controller,
+void OlaServerServiceImpl::GetDeviceInfo(RpcController*,
                                          const DeviceInfoRequest* request,
                                          DeviceInfoReply* response,
                                          google::protobuf::Closure* done) {
+  ClosureRunner runner(done);
   vector<device_alias_pair> device_list = m_device_manager->Devices();
   vector<device_alias_pair>::const_iterator iter;
 
@@ -441,8 +424,6 @@ void OlaServerServiceImpl::GetDeviceInfo(RpcController* controller,
       AddDevice(iter->device, iter->alias, response);
     }
   }
-  (void) controller;
-  done->Run();
 }
 
 
@@ -454,6 +435,7 @@ void OlaServerServiceImpl::GetCandidatePorts(
     const ola::proto::OptionalUniverseRequest* request,
     ola::proto::DeviceInfoReply* response,
     google::protobuf::Closure* done) {
+  ClosureRunner runner(done);
   vector<device_alias_pair> device_list = m_device_manager->Devices();
   vector<device_alias_pair>::const_iterator iter;
 
@@ -463,7 +445,7 @@ void OlaServerServiceImpl::GetCandidatePorts(
     universe = m_universe_store->GetUniverse(request->universe());
 
     if (!universe)
-      return MissingUniverseError(controller, done);
+      return MissingUniverseError(controller);
   }
 
   vector<InputPort*> input_ports;
@@ -553,7 +535,6 @@ void OlaServerServiceImpl::GetCandidatePorts(
         break;
     }
   }
-  done->Run();
 }
 
 
@@ -566,8 +547,11 @@ void OlaServerServiceImpl::ConfigureDevice(RpcController* controller,
                                            google::protobuf::Closure* done) {
   AbstractDevice *device =
     m_device_manager->GetDevice(request->device_alias());
-  if (!device)
-    return MissingDeviceError(controller, done);
+  if (!device) {
+    MissingDeviceError(controller);
+    done->Run();
+    return;
+  }
 
   device->Configure(controller,
                     request->data(),
@@ -582,9 +566,10 @@ void OlaServerServiceImpl::GetUIDs(RpcController* controller,
                                    const ola::proto::UniverseRequest* request,
                                    ola::proto::UIDListReply* response,
                                    google::protobuf::Closure* done) {
+  ClosureRunner runner(done);
   Universe *universe = m_universe_store->GetUniverse(request->universe());
   if (!universe)
-    return MissingUniverseError(controller, done);
+    return MissingUniverseError(controller);
 
   response->set_universe(request->universe());
   UIDSet uid_set;
@@ -596,7 +581,6 @@ void OlaServerServiceImpl::GetUIDs(RpcController* controller,
     uid->set_esta_id(iter->ManufacturerId());
     uid->set_device_id(iter->DeviceId());
   }
-  done->Run();
 }
 
 
@@ -606,16 +590,14 @@ void OlaServerServiceImpl::GetUIDs(RpcController* controller,
 void OlaServerServiceImpl::ForceDiscovery(
     RpcController* controller,
     const ola::proto::DiscoveryRequest* request,
-    ola::proto::Ack* response,
+    ola::proto::Ack*,
     google::protobuf::Closure* done) {
-
+  ClosureRunner runner(done);
   Universe *universe = m_universe_store->GetUniverse(request->universe());
-  if (!universe)
-    return MissingUniverseError(controller, done);
-
-  universe->RunRDMDiscovery(request->full());
-  done->Run();
-  (void) response;
+  if (universe)
+    universe->RunRDMDiscovery(request->full());
+  else
+    MissingUniverseError(controller);
 }
 
 
@@ -630,8 +612,11 @@ void OlaServerServiceImpl::RDMCommand(
     const UID *uid,
     class Client *client) {
   Universe *universe = m_universe_store->GetUniverse(request->universe());
-  if (!universe)
-    return MissingUniverseError(controller, done);
+  if (!universe) {
+    MissingUniverseError(controller);
+    done->Run();
+    return;
+  }
 
   UID source_uid = uid ? *uid : m_uid;
   UID destination(request->uid().esta_id(),
@@ -679,16 +664,13 @@ void OlaServerServiceImpl::RDMCommand(
  * Set this client's source UID
  */
 void OlaServerServiceImpl::SetSourceUID(
-    RpcController* controller,
+    RpcController*,
     const ::ola::proto::UID* request,
-    ola::proto::Ack* response,
+    ola::proto::Ack*,
     google::protobuf::Closure* done) {
-
+  ClosureRunner runner(done);
   UID source_uid(request->esta_id(), request->device_id());
   m_uid = source_uid;
-  done->Run();
-  (void) controller;
-  (void) response;
 }
 
 
@@ -699,6 +681,7 @@ void OlaServerServiceImpl::SendTimeCode(RpcController* controller,
                                         const ::ola::proto::TimeCode* request,
                                         ::ola::proto::Ack*,
                                         ::google::protobuf::Closure* done) {
+  ClosureRunner runner(done);
   ola::timecode::TimeCode time_code(
     static_cast<ola::timecode::TimeCodeType>(request->type()),
     request->hours(),
@@ -711,7 +694,6 @@ void OlaServerServiceImpl::SendTimeCode(RpcController* controller,
   } else {
     controller->SetFailed("Invalid TimeCode");
   }
-  done->Run();
 }
 
 
@@ -720,14 +702,14 @@ void OlaServerServiceImpl::SendTimeCode(RpcController* controller,
  * timed out and normal response messages.
  */
 void OlaServerServiceImpl::HandleRDMResponse(
-    RpcController* controller,
+    RpcController*,
     ola::proto::RDMResponse* response,
     google::protobuf::Closure* done,
     bool include_raw_packets,
     ola::rdm::rdm_response_code code,
     const RDMResponse *rdm_response,
     const vector<string> &packets) {
-
+  ClosureRunner runner(done);
   response->set_response_code(
       static_cast<ola::proto::RDMResponseCode>(code));
 
@@ -781,40 +763,27 @@ void OlaServerServiceImpl::HandleRDMResponse(
       response->add_raw_response(*iter);
     }
   }
-  done->Run();
-  (void) controller;
 }
 
 
 // Private methods
 //-----------------------------------------------------------------------------
-void OlaServerServiceImpl::MissingUniverseError(
-    RpcController* controller,
-    google::protobuf::Closure* done) {
+void OlaServerServiceImpl::MissingUniverseError(RpcController* controller) {
   controller->SetFailed("Universe doesn't exist");
-  done->Run();
 }
 
-void OlaServerServiceImpl::MissingDeviceError(
-    RpcController* controller,
-    google::protobuf::Closure* done) {
+void OlaServerServiceImpl::MissingDeviceError(RpcController* controller) {
   controller->SetFailed("Device doesn't exist");
-  done->Run();
 }
 
 
-void OlaServerServiceImpl::MissingPluginError(
-    RpcController* controller,
-    google::protobuf::Closure* done) {
+void OlaServerServiceImpl::MissingPluginError(RpcController* controller) {
   controller->SetFailed("Plugin doesn't exist");
-  done->Run();
 }
 
 
-void OlaServerServiceImpl::MissingPortError(RpcController* controller,
-                                            google::protobuf::Closure* done) {
+void OlaServerServiceImpl::MissingPortError(RpcController* controller) {
   controller->SetFailed("Port doesn't exist");
-  done->Run();
 }
 
 

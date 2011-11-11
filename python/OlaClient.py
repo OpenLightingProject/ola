@@ -592,6 +592,36 @@ class OlaClient(Ola_pb2.OlaClientService):
     done = lambda x, y: self._ConfigureDeviceComplete(callback, x, y)
     self._stub.ConfigureDevice(controller, request, done)
 
+
+  def SendTimeCode(self,
+                   time_code_type,
+                   hours,
+                   minutes,
+                   seconds,
+                   frames,
+                   callback=None):
+    """Send Time Code Data,
+
+    Args:
+      time_code_type: One of OlaClient.TIMECODE_FILM, OlaClient.TIMECODE_EBU,
+        OlaClient.TIMECODE_DF or OlaClient.TIMECODE_SMPTE
+      hours: the hours
+      minutes: the minutes
+      seconds: the seconds
+      frames: the frame count
+      callback: The function to call once complete, takes one argument, a
+        RequestStatus object.
+    """
+    controller = SimpleRpcController()
+    request = Ola_pb2.TimeCode()
+    request.type = time_code_type
+    request.hours = hours
+    request.minutes = minutes
+    request.seconds = seconds
+    request.frames = frames
+    done = lambda x, y: self._AckMessageComplete(callback, x, y)
+    self._stub.SendTimeCode(controller, request, done)
+
   def UpdateDmxData(self, controller, request, callback):
     """Called when we receive new DMX data.
 
@@ -850,6 +880,10 @@ class OlaClient(Ola_pb2.OlaClientService):
 for value in Ola_pb2._PATCHACTION.values:
   setattr(OlaClient, value.name, value.number)
 for value in Ola_pb2._REGISTERACTION.values:
+  setattr(OlaClient, value.name, value.number)
+
+# populate time code enums
+for value in Ola_pb2._TIMECODETYPE.values:
   setattr(OlaClient, value.name, value.number)
 
 # populate the RDM response codes & types

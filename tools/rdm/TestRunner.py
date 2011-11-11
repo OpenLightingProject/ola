@@ -95,6 +95,7 @@ class QueuedMessageFetcher(object):
     # implement some basic endless loop checking
     self._limit = limit
     self._counter = 0
+    self._outstanding_ack_timers = 0
 
     store = PidStore.GetStore()
     self._queued_message_pid = store.GetName('QUEUED_MESSAGE')
@@ -119,21 +120,28 @@ class QueuedMessageFetcher(object):
                          self._HandleResponse,
                          ['advisory'])
 
+  def _AckTimerExpired(self):
+    self._outstanding_ack_timers -= 1
+    self._FetchQueuedMessage()
+
   def _HandleResponse(self, response, unpacked_data, unpack_exception):
     if not response.status.Succeeded():
       # this indicates a transport error
       logging.error('Error: %s' % response.status.message)
-      self._wrapper.StopIfNoEvents()
+      if (self._outstanding_ack_timers == 0):
+        self._wrapper.Stop()
       return
 
     if response.response_code != OlaClient.RDM_COMPLETED_OK:
       logging.error('Error: %s' % response.ResponseCodeAsString())
-      self._wrapper.StopIfNoEvents()
+      if (self._outstanding_ack_timers == 0):
+        self._wrapper.Stop()
       return
 
     if response.response_type == OlaClient.RDM_ACK_TIMER:
       logging.debug('Got ACK TIMER set to %d ms' % response.ack_timer)
-      self._wrapper.AddEvent(response.ack_timer, self._FetchQueuedMessage)
+      self._wrapper.AddEvent(response.ack_timer, self._AckTimerExpired)
+      self._outstanding_ack_timers += 1
       self._wrapper.Reset()
       return
 
@@ -143,7 +151,8 @@ class QueuedMessageFetcher(object):
         response.nack_reason == RDMNack.NR_UNKNOWN_PID and
         response.command_class == PidStore.RDM_GET and
         response.pid == self._queued_message_pid.value):
-      self._wrapper.StopIfNoEvents()
+      if (self._outstanding_ack_timers == 0):
+        self._wrapper.Stop()
       return
 
     # Stop if we get a message with no status messages in it.
@@ -151,7 +160,8 @@ class QueuedMessageFetcher(object):
         response.command_class == PidStore.RDM_GET and
         response.pid == self._status_message_pid.value and
         unpacked_data.get('messages', []) == []):
-      self._wrapper.StopIfNoEvents()
+      if (self._outstanding_ack_timers == 0):
+        self._wrapper.Stop()
       if response.queued_messages:
         logging.error(
            'Got a empty status message but the queued message count is %d' %

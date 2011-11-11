@@ -15,7 +15,10 @@ TESTS = DummyPluginTester
 check_PROGRAMS = $(TESTS)
 DummyPluginTester_SOURCES = DummyPluginTester.cpp DummyPortTest.cpp
 DummyPluginTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-DummyPluginTester_LDADD = $(CPPUNIT_LIBS) \
-                          ./liboladummy.la \
-                          ../../common/libolacommon.la \
-                          $(top_builddir)/olad/libolaserver.la
+# it's unclear to me why liboladummyresponder has to be included here
+# but if it isn't, the test breaks with gcc 4.6.1
+DummyPluginTester_LDADD = ./liboladummy.la \
+                          ./liboladummyresponder.la \
+                          $(CPPUNIT_LIBS) \
+                          $(top_builddir)/olad/libolaserver.la \
+                          ../../common/libolacommon.la

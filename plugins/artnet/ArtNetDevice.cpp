@@ -34,6 +34,7 @@
 #include <string>
 
 #include "ola/Callback.h"
+#include "ola/CallbackRunner.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
 #include "ola/network/InterfacePicker.h"
@@ -161,21 +162,20 @@ void ArtNetDevice::Configure(RpcController *controller,
                              const string &request,
                              string *response,
                              Closure *done) {
-    Request request_pb;
-    if (!request_pb.ParseFromString(request)) {
-      controller->SetFailed("Invalid Request");
-      done->Run();
-      return;
-    }
+  CallbackRunner<Closure> runner(done);
+  Request request_pb;
+  if (!request_pb.ParseFromString(request)) {
+    controller->SetFailed("Invalid Request");
+    return;
+  }
 
-    switch (request_pb.type()) {
-      case ola::plugin::artnet::Request::ARTNET_OPTIONS_REQUEST:
-        HandleOptions(&request_pb, response);
-        break;
-      default:
-        controller->SetFailed("Invalid Request");
-    }
-    done->Run();
+  switch (request_pb.type()) {
+    case ola::plugin::artnet::Request::ARTNET_OPTIONS_REQUEST:
+      HandleOptions(&request_pb, response);
+      break;
+    default:
+      controller->SetFailed("Invalid Request");
+  }
 }
 
 

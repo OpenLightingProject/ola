@@ -272,6 +272,7 @@ void WidgetDetectorThreadTest::testArduinoWidget() {
       sizeof(serial_data));
 
   m_thread->Start();
+  m_thread->WaitUntilRunning();
   m_ss.Run();
   CPPUNIT_ASSERT_EQUAL(ARDUINO, m_received_widget_type);
 }
@@ -307,6 +308,7 @@ void WidgetDetectorThreadTest::testDmxTriWidget() {
       sizeof(serial_data));
 
   m_thread->Start();
+  m_thread->WaitUntilRunning();
   m_ss.Run();
   CPPUNIT_ASSERT_EQUAL(DMX_TRI, m_received_widget_type);
 }
@@ -342,6 +344,7 @@ void WidgetDetectorThreadTest::testDmxterWidget() {
       sizeof(serial_data));
 
   m_thread->Start();
+  m_thread->WaitUntilRunning();
   m_ss.Run();
   CPPUNIT_ASSERT_EQUAL(DMXTER, m_received_widget_type);
 }
@@ -367,6 +370,7 @@ void WidgetDetectorThreadTest::testUsbProWidget() {
       sizeof(serial_data));
 
   m_thread->Start();
+  m_thread->WaitUntilRunning();
   m_ss.Run();
   CPPUNIT_ASSERT_EQUAL(ENTTEC, m_received_widget_type);
 }
@@ -406,6 +410,7 @@ void WidgetDetectorThreadTest::testRobeWidget() {
       sizeof(uid_data));
 
   m_thread->Start();
+  m_thread->WaitUntilRunning();
   m_ss.Run();
   CPPUNIT_ASSERT_EQUAL(ROBE, m_received_widget_type);
 }
@@ -441,6 +446,7 @@ void WidgetDetectorThreadTest::testUltraDmxWidget() {
       sizeof(serial_data));
 
   m_thread->Start();
+  m_thread->WaitUntilRunning();
   m_ss.Run();
   CPPUNIT_ASSERT_EQUAL(ULTRA_DMX, m_received_widget_type);
 }
@@ -463,6 +469,7 @@ void WidgetDetectorThreadTest::testTimeout() {
                                      NULL,
                                      0);
   m_thread->Start();
+  m_thread->WaitUntilRunning();
   m_ss.Run();
   CPPUNIT_ASSERT_EQUAL(NONE, m_received_widget_type);
 }
@@ -474,6 +481,7 @@ void WidgetDetectorThreadTest::testTimeout() {
 void WidgetDetectorThreadTest::testClose() {
   m_ss.RemoveReadDescriptor(m_other_end.get());
   m_thread->Start();
+  m_thread->WaitUntilRunning();
   // possible race condition here
   m_other_end->Close();
   m_ss.Run();

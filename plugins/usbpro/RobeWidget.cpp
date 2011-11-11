@@ -241,6 +241,7 @@ void RobeWidgetImpl::Branch(const UID &lower,
 
   unsigned int length = branch_request.Size();
   uint8_t data[length + RDM_PADDING_BYTES];
+  memset(data + length, 0, RDM_PADDING_BYTES);
   branch_request.Pack(data, &length);
   SendMessage(RDM_DISCOVERY,
               data,
