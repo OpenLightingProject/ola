@@ -36,18 +36,49 @@ namespace usbpro {
  */
 class RobeDevice: public UsbSerialDevice {
   public:
-    RobeDevice(ola::network::SelectServerInterface *ss,
+    RobeDevice(ola::PluginAdaptor *plugin_adaptor,
                ola::AbstractPlugin *owner,
                const string &name,
                RobeWidget *widget);
 
     string DeviceId() const { return m_device_id; }
 
-    bool StartHook();
-
   private:
     string m_device_id;
-    class RobeOutputPort *m_robe_port;
+    class RobeOutputPort *m_output_port;
+    class RobeInputPort *m_input_port;
+};
+
+
+/*
+ * The Input port
+ */
+class RobeInputPort: public BasicInputPort {
+  public:
+    RobeInputPort(RobeDevice *parent,
+                  RobeWidget *widget,
+                  ola::PluginAdaptor *plugin_adaptor)
+        : BasicInputPort(parent, 0, plugin_adaptor),
+          m_widget(widget) {
+      m_widget->SetDmxCallback(NewCallback(
+        static_cast<BasicInputPort*>(this),
+        &BasicInputPort::DmxChanged));
+    }
+
+    const DmxBuffer &ReadDMX() const {
+      return m_widget->FetchDMX();
+    }
+
+    void PostSetUniverse(Universe*, Universe *new_universe) {
+      if (new_universe)
+        m_widget->ChangeToReceiveMode();
+    }
+
+    string Description() const { return ""; }
+
+  private:
+    string m_path;
+    RobeWidget *m_widget;
 };
 
 
@@ -61,6 +92,11 @@ class RobeOutputPort: public BasicOutputPort {
 
     string Description() const { return ""; }
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
+
+    void PostSetUniverse(Universe*, Universe *new_universe) {
+      if (new_universe)
+        RunFullDiscovery();
+    }
 
     void HandleRDMRequest(const ola::rdm::RDMRequest *request,
                           ola::rdm::RDMCallback *callback) {

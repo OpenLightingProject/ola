@@ -35,7 +35,7 @@ using std::string;
 /*
  * New RobeDevice.
  */
-RobeDevice::RobeDevice(ola::network::SelectServerInterface *ss,
+RobeDevice::RobeDevice(ola::PluginAdaptor *plugin_adaptor,
                        ola::AbstractPlugin *owner,
                        const string &name,
                        RobeWidget *widget)
@@ -44,20 +44,10 @@ RobeDevice::RobeDevice(ola::network::SelectServerInterface *ss,
   str << 1;
   m_device_id = str.str();
 
-  m_robe_port = new RobeOutputPort(this, widget);
-  AddPort(m_robe_port);
-  (void) ss;
-}
-
-
-/*
- * Kick off the RDM discovery process
- */
-bool RobeDevice::StartHook() {
-  // Start full discovery even if this port isn't patched since it can take a
-  // while.
-  m_robe_port->RunFullDiscovery();
-  return true;
+  m_output_port = new RobeOutputPort(this, widget);
+  AddPort(m_output_port);
+  m_input_port = new RobeInputPort(this, widget, plugin_adaptor);
+  AddPort(m_input_port);
 }
 
 
