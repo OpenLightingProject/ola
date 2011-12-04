@@ -66,24 +66,24 @@ ola.common.Server.EventType = {
   UNIVERSE_LIST_EVENT: 'universe_list_change'
 };
 
-ola.common.Server.SERVER_INFO_URL = '/json/server_stats';
-ola.common.Server.PLUGIN_INFO_URL = '/json/plugin_info';
-ola.common.Server.UNIVERSE_INFO_URL = '/json/universe_info';
-ola.common.Server.PLUGIN_UNIVERSE_LIST_URL = '/json/universe_plugin_list';
-ola.common.Server.RELOAD_PLUGINS_URL = '/reload';
-ola.common.Server.STOP_SERVER_URL = '/quit';
-ola.common.Server.AVAILBLE_PORTS_URL = '/json/get_ports';
-ola.common.Server.UIDS_URL = '/json/rdm/uids';
-ola.common.Server.RDM_DISCOVERY_URL = '/rdm/run_discovery';
-ola.common.Server.RDM_SECTIONS_URL = '/json/rdm/supported_sections';
-ola.common.Server.RDM_GET_SECTION_INFO_URL = '/json/rdm/section_info';
-ola.common.Server.RDM_SET_SECTION_INFO_URL = '/json/rdm/set_section_info';
-ola.common.Server.RDM_UID_IDENTIFY = '/json/rdm/uid_identify';
-ola.common.Server.RDM_UID_INFO = '/json/rdm/uid_info';
-ola.common.Server.RDM_UID_PERSONALITY = '/json/rdm/uid_personalities';
-ola.common.Server.NEW_UNIVERSE_URL = '/new_universe';
-ola.common.Server.MODIFY_UNIVERSE_URL = '/modify_universe';
-ola.common.Server.SET_DMX_URL = '/set_dmx';
+ola.common.Server.SERVER_INFO_URL = 'json/server_stats';
+ola.common.Server.PLUGIN_INFO_URL = 'json/plugin_info';
+ola.common.Server.UNIVERSE_INFO_URL = 'json/universe_info';
+ola.common.Server.PLUGIN_UNIVERSE_LIST_URL = 'json/universe_plugin_list';
+ola.common.Server.RELOAD_PLUGINS_URL = 'reload';
+ola.common.Server.STOP_SERVER_URL = 'quit';
+ola.common.Server.AVAILBLE_PORTS_URL = 'json/get_ports';
+ola.common.Server.UIDS_URL = 'json/rdm/uids';
+ola.common.Server.RDM_DISCOVERY_URL = 'rdm/run_discovery';
+ola.common.Server.RDM_SECTIONS_URL = 'json/rdm/supported_sections';
+ola.common.Server.RDM_GET_SECTION_INFO_URL = 'json/rdm/section_info';
+ola.common.Server.RDM_SET_SECTION_INFO_URL = 'json/rdm/set_section_info';
+ola.common.Server.RDM_UID_IDENTIFY = 'json/rdm/uid_identify';
+ola.common.Server.RDM_UID_INFO = 'json/rdm/uid_info';
+ola.common.Server.RDM_UID_PERSONALITY = 'json/rdm/uid_personalities';
+ola.common.Server.NEW_UNIVERSE_URL = 'new_universe';
+ola.common.Server.MODIFY_UNIVERSE_URL = 'modify_universe';
+ola.common.Server.SET_DMX_URL = 'set_dmx';
 // This should be more than the max # of RDM sections we ever expect
 ola.common.Server.REQUEST_QUEUE_LIMIT = 30;
 
