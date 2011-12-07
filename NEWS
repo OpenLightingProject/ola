@@ -3,6 +3,8 @@ X/Y/2011 ola-0.8.15
  * Fix some build issues with newer versions of gcc
  * Update debian package configs
  * Fix the python tests so they pass with macports
+ * Fix compile errors on new versions of clang
+ * Use relative paths in the web UI so they work behind re-writing proxies
 
 2/11/2011 ola-0.8.14
  * fix a bug in the port limiter
