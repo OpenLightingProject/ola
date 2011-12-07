@@ -120,7 +120,7 @@ def GenerateBase(number_of_args):
   print '  public:'
   print '    virtual ~SingleUseCallback%d() {}' % number_of_args
   print '    void Run(%s) {' % arg_list
-  print '      DoRun(%s);' % args
+  print '      this->DoRun(%s);' % args
   print '      delete this;'
   print '    }'
   print '};'

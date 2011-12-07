@@ -65,7 +65,7 @@ class SingleUseCallback0<void>: public BaseCallback0<void> {
   public:
     virtual ~SingleUseCallback0() {}
     void Run() {
-      DoRun();
+      this->DoRun();
       delete this;
     }
 };
@@ -679,7 +679,7 @@ class SingleUseCallback1<void, Arg0>: public BaseCallback1<void, Arg0> {
   public:
     virtual ~SingleUseCallback1() {}
     void Run(Arg0 arg0) {
-      DoRun(arg0);
+      this->DoRun(arg0);
       delete this;
     }
 };
@@ -1313,7 +1313,7 @@ class SingleUseCallback2<void, Arg0, Arg1>: public BaseCallback2<void, Arg0, Arg
   public:
     virtual ~SingleUseCallback2() {}
     void Run(Arg0 arg0, Arg1 arg1) {
-      DoRun(arg0, arg1);
+      this->DoRun(arg0, arg1);
       delete this;
     }
 };
@@ -1967,7 +1967,7 @@ class SingleUseCallback3<void, Arg0, Arg1, Arg2>: public BaseCallback3<void, Arg
   public:
     virtual ~SingleUseCallback3() {}
     void Run(Arg0 arg0, Arg1 arg1, Arg2 arg2) {
-      DoRun(arg0, arg1, arg2);
+      this->DoRun(arg0, arg1, arg2);
       delete this;
     }
 };
@@ -2641,7 +2641,7 @@ class SingleUseCallback4<void, Arg0, Arg1, Arg2, Arg3>: public BaseCallback4<voi
   public:
     virtual ~SingleUseCallback4() {}
     void Run(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) {
-      DoRun(arg0, arg1, arg2, arg3);
+      this->DoRun(arg0, arg1, arg2, arg3);
       delete this;
     }
 };
