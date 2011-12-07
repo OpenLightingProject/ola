@@ -155,9 +155,11 @@ void MessageSerializer::IntVisit(
   CheckForFreeSpace(sizeof(int_type));
   int_type value;
   if (message->GetDescriptor()->IsLittleEndian())
-    value = ola::network::HostToLittleEndian(message->Value());
+    value = ola::network::HostToLittleEndian(
+        static_cast<int_type>(message->Value()));
   else
-    value = ola::network::HostToNetwork(message->Value());
+    value = ola::network::HostToNetwork(
+        static_cast<int_type>(message->Value()));
 
 
   uint8_t *ptr = reinterpret_cast<uint8_t*>(&value);
