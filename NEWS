@@ -5,6 +5,9 @@ X/Y/2011 ola-0.8.15
  * Fix the python tests so they pass with macports
  * Fix compile errors on new versions of clang
  * Use relative paths in the web UI so they work behind re-writing proxies
+ * Add DMX IN support for the Robe widget
+ * Add an option to send DMX during RDM tests
+ * Fix a race condition in the WidgetDectectorThreadTest
 
 2/11/2011 ola-0.8.14
  * fix a bug in the port limiter
