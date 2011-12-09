@@ -49,11 +49,6 @@ ola.mobile.ControllerTab = function() {
                      ola.common.Server.EventType.UNIVERSE_LIST_EVENT,
                      this._updateUniverseList,
                      false, this);
-
-  goog.events.listen(this.ola_server,
-                     ola.common.Server.EventType.UNIVERSE_EVENT,
-                     this._updateFromData,
-                     false, this);
 };
 
 
@@ -100,7 +95,9 @@ ola.mobile.ControllerTab.prototype._updateUniverseList = function(e) {
     this.universe_list = new ola.common.SortedList(
         universe_container,
         new ola.UniverseControlFactory(
-          function(item) { tab._universeSelected(item.id()); }));
+          function(item) {
+            tab._universeSelected(item.id(), item.name());
+          }));
   }
 
   var items = new Array();
@@ -116,26 +113,16 @@ ola.mobile.ControllerTab.prototype._updateUniverseList = function(e) {
 /**
  * Called when a universe is selected
  */
-ola.mobile.ControllerTab.prototype._universeSelected = function(universe_id) {
-   this._hideAllFrames();
-   this.active_universe = universe_id;
-   this.ola_server.FetchUniverseInfo(this.active_universe);
-   this.controller_frame.setAsBusy();
-   this.controller_frame.Show();
-}
-
-
-/**
- * Called when a universe is updated
- */
-ola.mobile.ControllerTab.prototype._updateFromData = function(e) {
-  if (e.universe['id'] != this.active_universe) {
-    return;
-  }
+ola.mobile.ControllerTab.prototype._universeSelected = function(
+    universe_id,
+    universe_name) {
+  this._hideAllFrames();
+  this.active_universe = universe_id;
 
   this.keypad = new ola.mobile.KeypadController(
-      e.universe['name'],
-      e.universe['id']);
+    universe_name,
+    universe_id);
   this.controller_frame.Clear();
   this.controller_frame.element.appendChild(this.keypad.table);
+  this.controller_frame.Show();
 }
