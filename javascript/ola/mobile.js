@@ -36,7 +36,7 @@ ola.MobileUI = function() {
   this.tabPane.addPage(new goog.ui.TabPane.TabPage(
     goog.dom.$('tab_page_3'), 'Plugins'));
   this.tabPane.addPage(new goog.ui.TabPane.TabPage(
-    goog.dom.$('tab_page_4'), 'Controller'));
+    goog.dom.$('tab_page_4'), 'DMX Keypad'));
   goog.events.listen(this.tabPane, goog.ui.TabPane.Events.CHANGE,
                      this._updateSelectedTab, false, this);
 
