@@ -82,6 +82,9 @@ ola.mobile.KeypadParser.prototype.parse = function(str) {
     if (isNaN(end)) {
       return false;
     }
+    if (end <= start) {
+      return false;
+    }
     if (this._constraint(i, 1, 512)) {
       this.values[1] = end;
     } else {
@@ -143,6 +146,7 @@ ola.mobile.KeypadParser.prototype.execute = function() {
   return true;
 }
 
+
 /**
  * Executes the command parsed by the parser. This method
  * is called once DMX values are retrieved by the server.
@@ -153,11 +157,11 @@ ola.mobile.KeypadParser.prototype._execute = function(e) {
   var dmx_values = e['dmx'];
 
   if (this.values[1] == -1) {
-    this.values[1] = this.values[0];
-  }
-
-  for (i=this.values[0]; i <= this.values[1]; ++i) {
-    dmx_values[i - 1] = this.values[2];
+    dmx_values[this.values[0] - 1] = this.values[2];
+  } else {
+    for (i = this.values[0]; i <= this.values[1]; ++i) {
+      dmx_values[i-1] = this.values[2];
+    }
   }
 
   // Send the values to OLA
