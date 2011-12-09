@@ -59,8 +59,26 @@ ola.mobile.KeypadController.prototype._button = function(value) {
  */
 ola.mobile.KeypadController.prototype._buttonAction = function(name) {
   if (name == "<") {
-    // Go Backward
+    // Go Backward. Must scan for whitespace
     var end = this.command_input.value.length - 1;
+     if (isNaN(parseInt(this.command_input.value.substr(end, 1)))) {
+       var c = this.command_input.value.substr(end - 1, 1);
+       var length = 0;
+       switch (c) {
+         case 'L': // FULL
+           length = 3;
+           break;
+         case '@':
+           length = 2;
+           break;
+         case 'U': // THRU
+           length = 5;
+           break;
+         default:
+           length = 0;
+       }
+       end -= length;
+    }
     this.command_input.value = this.command_input.value.substr(0, end);
     this._buttonAction('');
   } else if (name == "ENTER") {
@@ -74,10 +92,6 @@ ola.mobile.KeypadController.prototype._buttonAction = function(name) {
     if (this.parser.parse(command) == true) {
       // Add it to the command textbox
       this.command_input.value = command;
-    } else {
-      alert("failed");
-      // Reparse without the command
-      this._buttonAction('');
     }
   }
 }
