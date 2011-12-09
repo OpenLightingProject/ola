@@ -63,6 +63,7 @@ class OlaHttpServer {
     int ModifyUniverse(const HttpRequest *request, HttpResponse *response);
 
     int DisplayIndex(const HttpRequest *request, HttpResponse *response);
+    int GetDmx(const HttpRequest *request, HttpResponse *response);
     int HandleSetDmx(const HttpRequest *request, HttpResponse *response);
     int DisplayDebug(const HttpRequest *request, HttpResponse *response);
     int DisplayQuit(const HttpRequest *request, HttpResponse *response);
@@ -123,6 +124,10 @@ class OlaHttpServer {
 
     OlaHttpServer(const OlaHttpServer&);
     OlaHttpServer& operator=(const OlaHttpServer&);
+
+    void HandleGetDmx(HttpResponse *response,
+                      const DmxBuffer &buffer,
+                      const string &error);
 
     void HandleBoolResponse(HttpResponse *response,
                             const string &error);

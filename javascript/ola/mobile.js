@@ -13,6 +13,7 @@ goog.require('ola.common.Server.EventType');
 goog.require('ola.common.ServerStats');
 goog.require('ola.mobile.UniverseTab');
 goog.require('ola.mobile.PluginTab');
+goog.require('ola.mobile.ControllerTab');
 
 goog.provide('ola.mobile');
 
@@ -34,13 +35,15 @@ ola.MobileUI = function() {
     goog.dom.$('tab_page_2'), 'RDM'));
   this.tabPane.addPage(new goog.ui.TabPane.TabPage(
     goog.dom.$('tab_page_3'), 'Plugins'));
-
+  this.tabPane.addPage(new goog.ui.TabPane.TabPage(
+    goog.dom.$('tab_page_4'), 'Controller'));
   goog.events.listen(this.tabPane, goog.ui.TabPane.Events.CHANGE,
                      this._updateSelectedTab, false, this);
 
   this.server_stats = new ola.common.ServerStats();
   this.universe_tab = new ola.mobile.UniverseTab();
   this.plugin_tab = new ola.mobile.PluginTab();
+  this.controller_tab = new ola.mobile.ControllerTab();
 };
 
 
@@ -55,8 +58,10 @@ ola.MobileUI.prototype._updateSelectedTab = function() {
     this.ola_server.UpdateServerInfo();
   } else if (selected_tab == 1) {
     this.universe_tab.update();
-  } else {
+  } else if (selected_tab == 2){
     this.plugin_tab.update();
+  } else {
+    this.controller_tab.update();
   }
 }
 

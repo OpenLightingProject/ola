@@ -84,6 +84,7 @@ ola.common.Server.RDM_UID_PERSONALITY = 'json/rdm/uid_personalities';
 ola.common.Server.NEW_UNIVERSE_URL = 'new_universe';
 ola.common.Server.MODIFY_UNIVERSE_URL = 'modify_universe';
 ola.common.Server.SET_DMX_URL = 'set_dmx';
+ola.common.Server.GET_DMX_URL = 'get_dmx';
 // This should be more than the max # of RDM sections we ever expect
 ola.common.Server.REQUEST_QUEUE_LIMIT = 30;
 
@@ -356,8 +357,8 @@ ola.common.Server.prototype.fetchUids = function(universe_id, callback) {
  *   completes.
  */
 ola.common.Server.prototype.rdmGetUIDInfo = function(universe_id,
-                                                         uid,
-                                                         callback) {
+                                                     uid,
+                                                     callback) {
   var url = (ola.common.Server.RDM_UID_INFO + '?id=' + universe_id +
       '&uid=' + uid);
   this._initiateRequest(url, callback);
@@ -433,6 +434,22 @@ ola.common.Server.prototype.modifyUniverse = function(universe_id,
   var url = ola.common.Server.MODIFY_UNIVERSE_URL;
   this._initiateRequest(url, callback, 'POST', post_data);
 };
+
+
+/**
+ * Get the dmx values for a universe
+ * @param {number} universe_id the id of the universe to get values for.
+ * @param {function(e)} callback the callback to invoke when complete.
+ */
+ola.common.Server.prototype.getChannelValues = function(universe_id,
+                                                        callback) {
+  var url = ola.common.Server.GET_DMX_URL + '?u=' + universe_id;
+  this._initiateRequest(
+      url,
+      function(e) {
+        callback(e.target.getResponseJson());
+      });
+}
 
 
 /**

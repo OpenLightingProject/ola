@@ -26,6 +26,7 @@
 #include "ola/ActionQueue.h"
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
+#include "olad/DmxSource.h"
 #include "olad/HttpServerActions.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
@@ -83,6 +84,7 @@ OlaHttpServer::OlaHttpServer(ExportMap *export_map,
   RegisterHandler("/new_universe", &OlaHttpServer::CreateNewUniverse);
   RegisterHandler("/modify_universe", &OlaHttpServer::ModifyUniverse);
   RegisterHandler("/set_dmx", &OlaHttpServer::HandleSetDmx);
+  RegisterHandler("/get_dmx", &OlaHttpServer::GetDmx);
 
   // json endpoints for the new UI
   RegisterHandler("/json/server_stats", &OlaHttpServer::JsonServerStats);
@@ -400,6 +402,29 @@ int OlaHttpServer::DisplayIndex(const HttpRequest *request,
   (void) request;
 }
 
+
+/*
+ * Handle the get dmx command
+ * @param request the HttpRequest
+ * @param response the HttpResponse
+ * @returns MHD_NO or MHD_YES
+ */
+int OlaHttpServer::GetDmx(const HttpRequest *request,
+                          HttpResponse *response) {
+  string uni_id = request->GetParameter("u");
+  unsigned int universe_id;
+  if (!StringToInt(uni_id, &universe_id))
+    return m_server.ServeNotFound(response);
+  int ok = m_client.FetchDmx(universe_id,
+                             NewSingleCallback(this,
+                                               &OlaHttpServer::HandleGetDmx,
+                                               response));
+
+  if (!ok)
+    return m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
+
+  return MHD_YES;
+}
 
 /*
  * Handle the set dmx command
@@ -840,6 +865,29 @@ void OlaHttpServer::SendModifyUniverseResponse(HttpResponse *response,
     delete action_queue;
     delete response;
   }
+}
+
+
+/*
+ * Callback for m_client.FetchDmx called by GetDmx
+ * @param response the HttpResponse
+ * @param buffer the DmxBuffer
+ * @param error Error message
+ */
+void OlaHttpServer::HandleGetDmx(HttpResponse *response,
+                                 const DmxBuffer &buffer,
+                                 const string &error) {
+  stringstream str;
+  str << "{" << endl;
+  str << "  \"dmx\": [" << buffer.ToString() << "]," << endl;
+  str << "  \"error\": \"" << error << "\"" << endl;
+  str << "}";
+
+  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
+  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->Append(str.str());
+  response->Send();
+  delete response;
 }
 
 
