@@ -32,90 +32,145 @@
  *      Values range between 0 and 255.
  */
 
-goog.require('ola.common.Server');
-goog.require('ola.common.Server.EventType');
-
+goog.provide('ola.mobile.KeypadCommand');
 goog.provide('ola.mobile.KeypadParser');
+
+/**
+ * Create a new KeypadCommand
+ * @param {number} the starting slot
+ * @param {number} the end slot, or undefined if this is a single slot command.
+ * @param {number} the slot value
+ * @constructor
+ */
+ola.mobile.KeypadCommand = function(start, end, value) {
+  this.start = start;
+  this.end = end == undefined ? start : end;
+  this.value = value;
+};
+
+
+/**
+ * Check if this command is valid
+ * @return {bool} true if the command if valid, false otherwise.
+ */
+ola.mobile.KeypadCommand.prototype.isValid = function() {
+  return (
+      (this.start >= 1 && this.start <= 512) &&
+      (this.value >= 0 && this.value <= 255) &&
+      (this.end == undefined ||
+       (this.end >= 1 && this.end <= 512 && this.end >= this.start))
+  );
+};
 
 
 /**
  * The KeypadParser class
- * @param {number} universe_id Universe ID
  * @constructor
  */
-ola.mobile.KeypadParser = function(universe_id) {
-  this.universe_id = universe_id;
-  this.values = [-1, -1, -1]; // Start, End, Value
-  this.regex = new RegExp(/(([0-9]{1,3})( THRU ([0-9]{0,3}))?)( @ ([0-9]{0,3}))?$/);
-}
+ola.mobile.KeypadParser = function() {
+  this.full_command_regex = new RegExp(
+      /(?:([0-9]{1,3})(?:\s+THRU\s+([0-9]{0,3}))?)\s+@\s+([0-9]{0,3})$/);
+  // similar to above, but allows for partially completed commands
+  this.partial_command_regex = new RegExp(
+     /(?:([0-9]{1,3})(?:\s+THRU\s+([0-9]{0,3}))?)(?:\s+@\s+([0-9]{0,3}))?$/);
+};
+
+
+// The maximum slot number
+ola.mobile.KeypadParser.MAX_SLOT = 512;
+// The maximum slot value
+ola.mobile.KeypadParser.MAX_VALUE = 255;
+
 
 /**
- * parse function. Can parse incomplete commands.
- * Returns false on parser error
+ * Parse a full command
+ * @return {bool} true if the command is valid, false otherwise
  */
-ola.mobile.KeypadParser.prototype.parse = function(str) {
-  // It's empty so we can return true really
+ola.mobile.KeypadParser.prototype.parsePartialCommand = function(str) {
   if (str.length == 0) {
-    this.values = [-1, -1, -1];
-    return true;
+    return false;
   }
 
-  // Syntax
-  var result = this.regex.exec(this._aliases(str));
+  var result = this.partial_command_regex.exec(this._aliases(str));
   if (result == null) {
     return false;
   }
 
-  // Values
-  var start = parseInt(result[2]);
-  if (isNaN(start) && result[2] != null) {
-    return false
-  }
-  if (this._constraint(start, 1, 512)) {
-    this.values[0] = start;
-  } else {
-    return false;
-  }
-
-  if (typeof result[4] != 'undefined' && result[4] != '') {
-    var end = parseInt(result[4]);
-    if (isNaN(end)) {
-      return false;
-    }
-    if (this._constraint(end, 1, 512)) {
-      this.values[1] = end;
-    } else {
+  var start_token = result[1];
+  if (start_token != undefined) {
+    var start = this._intOrUndefined(result[1]);
+    if (start == undefined || start == 0 ||
+        start > ola.mobile.KeypadParser.MAX_SLOT) {
       return false;
     }
   }
 
-  if (typeof result[5] != 'undefined' && result[5] == ' @ ') {
-    if (end <= start) {
+  var end_token = result[2];
+  if (end_token != undefined) {
+    var end = this._intOrUndefined(result[2]);
+    if (end == undefined || end == 0 ||
+        end > ola.mobile.KeypadParser.MAX_SLOT) {
       return false;
     }
   }
 
-  if (typeof result[6] != 'undefined' && result[6] != '') {
-    var value = parseInt(result[6]);
-    if (isNaN(value)) {
-      return false;
-    }
-    if (this._constraint(value, 0, 255)) {
-      this.values[2] = value;
-    } else {
+  var value_token = result[3];
+  if (value_token != undefined && value_token != '') {
+    var value = this._intOrUndefined(result[3]);
+    if (value == undefined || value > ola.mobile.KeypadParser.MAX_VALUE) {
       return false;
     }
   }
   return true;
-}
+};
 
 
 /**
- * Checks if a number is within a constraint
+ * Parse a full command
+ * @return {KeypadCommand|undefined} Returns a KeypadCommand or undefined on
+ * error. If returned, the KeypadCommand is guarenteed to be valid.
  */
-ola.mobile.KeypadParser.prototype._constraint = function(n, lower, upper) {
-  return n >= lower && n <= upper;
-}
+ola.mobile.KeypadParser.prototype.parseFullCommand = function(str) {
+  // It's empty so we can return true really
+  if (str.length == 0) {
+    return undefined;
+  }
+
+  var result = this.full_command_regex.exec(this._aliases(str));
+  if (result == null) {
+    return undefined;
+  }
+
+  var start = this._intOrUndefined(result[1]);
+  var end = this._intOrUndefined(result[2]);
+  var value = this._intOrUndefined(result[3]);
+
+  if (start == undefined || value == undefined) {
+    return undefined;
+  }
+
+  if (result[2] != undefined) {
+    // was a range
+    if (end == undefined)
+      return false;
+  }
+
+  var command = new ola.mobile.KeypadCommand(start, end, value);
+  return command.isValid() ? command : undefined;
+};
+
+
+/**
+ * Convert a string to an int, or return undefined
+ * @param {string} token the string to convert
+ * @return {number|undefined}
+ */
+ola.mobile.KeypadParser.prototype._intOrUndefined = function(token) {
+  if (token == null || token == undefined)
+    return undefined;
+  var i = parseInt(token);
+  return isNaN(i) ? undefined : i;
+};
 
 
 /**
@@ -128,47 +183,4 @@ ola.mobile.KeypadParser.prototype._aliases = function(str) {
   str = str.replace("@ +", "@ 255");
   str = str.replace("@ FULL", "@ 255");
   return str;
-}
-
-
-/**
- * Execute the command parsed by parser previously.
- * Note: parse() must always be called before execute()
- * This just asks ola for current dmx values before
- * running _execute() where the real work happens
- */
-ola.mobile.KeypadParser.prototype.execute = function() {
-  if (this.values[0] == -1 || this.values[1] == -1 || this.values[2] == -1) {
-    return false;
-  }
-
-  var tab = this;
-  ola.common.Server.getInstance().getChannelValues(
-      this.universe_id,
-      function(e){ tab._execute(e); });
-  return true;
-}
-
-
-/**
- * Executes the command parsed by the parser. This method
- * is called once DMX values are retrieved by the server.
- * Resets the command parameters so execute() cannot be
- * called again
- */
-ola.mobile.KeypadParser.prototype._execute = function(e) {
-  var dmx_values = e['dmx'];
-
-  if (this.values[1] == -1) {
-    dmx_values[this.values[0] - 1] = this.values[2];
-  } else {
-    for (i = this.values[0]; i <= this.values[1]; ++i) {
-      dmx_values[i-1] = this.values[2];
-    }
-  }
-
-  // Send the values to OLA
-  ola.common.Server.getInstance().setChannelValues(this.universe_id,
-                                                   dmx_values);
-  this.values = [-1, -1, -1];
-}
+};

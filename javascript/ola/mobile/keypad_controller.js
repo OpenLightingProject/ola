@@ -23,6 +23,8 @@ goog.require('goog.events.KeyHandler');
 goog.require('goog.ui.Button');
 goog.require('goog.ui.Container');
 
+goog.require('ola.common.Server');
+goog.require('ola.common.Server.EventType');
 goog.require('ola.mobile.KeypadParser');
 
 goog.provide('ola.mobile.KeypadController');
@@ -34,7 +36,8 @@ goog.provide('ola.mobile.KeypadController');
  * @constructor
  */
 ola.mobile.KeypadController = function(name, universe_id) {
-  this.parser = new ola.mobile.KeypadParser(universe_id);
+  this.universe_id = universe_id;
+  this.parser = new ola.mobile.KeypadParser();
   this.table = goog.dom.createElement('table');
   this._caption(name);
   this._display();
@@ -129,13 +132,14 @@ ola.mobile.KeypadController.prototype._buttonAction = function(name) {
     this._buttonAction('');
   } else if (name == "ENTER") {
     // Execute
-    if (this.parser.parse(this.command_input.value) == true) {
-      this.parser.execute();
+    var command = this.parser.parseFullCommand(this.command_input.value);
+    if (command != undefined) {
+      this.execute(command);
       this.command_input.value = '';
     }
   } else {
     var command = this.command_input.value + name;
-    if (this.parser.parse(command) == true) {
+    if (this.parser.parsePartialCommand(command) == true) {
       // Add it to the command textbox
       this.command_input.value = command;
     }
@@ -208,3 +212,40 @@ ola.mobile.KeypadController.prototype._keypad = function() {
   entertd.colSpan = '3';
   this.table.appendChild(entertd);
 }
+
+
+/**
+ * Execute a KeypadCommand.
+ * This asks ola for current dmx values before
+ * running _execute() where the real work happens.
+ * @param {KeypadCommand} the command to execute.
+ */
+ola.mobile.KeypadController.prototype.execute = function(command) {
+  var tab = this;
+  ola.common.Server.getInstance().getChannelValues(
+      this.universe_id,
+      function(e){ tab._execute(e, command); });
+  return true;
+};
+
+
+/**
+ * Executes the KeypadCommand. This method
+ * is called once DMX values are retrieved by the server.
+ * @param {KeypadCommand} the command to execute.
+ */
+ola.mobile.KeypadController.prototype._execute = function(e, command) {
+  var dmx_values = e['dmx'];
+
+  if (command.start == command.end) {
+    dmx_values[command.start - 1] = command.value;
+  } else {
+    for (i = command.start; i <= command.end; ++i) {
+      dmx_values[i - 1] = command.value;
+    }
+  }
+
+  // Send the values to OLA
+  ola.common.Server.getInstance().setChannelValues(this.universe_id,
+                                                   dmx_values);
+};
