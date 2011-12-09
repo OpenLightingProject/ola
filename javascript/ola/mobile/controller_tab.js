@@ -58,7 +58,7 @@ ola.mobile.ControllerTab = function() {
 ola.mobile.ControllerTab.prototype._resetState = function() {
   this.universe_list = undefined;
   this.active_universe = undefined;
-}
+};
 
 /**
  * Hide all frames
@@ -107,7 +107,7 @@ ola.mobile.ControllerTab.prototype._updateUniverseList = function(e) {
   }
 
   this.universe_list.updateFromData(items);
-}
+};
 
 
 /**
@@ -125,4 +125,4 @@ ola.mobile.ControllerTab.prototype._universeSelected = function(
   this.controller_frame.Clear();
   this.controller_frame.element.appendChild(this.keypad.table);
   this.controller_frame.Show();
-}
+};

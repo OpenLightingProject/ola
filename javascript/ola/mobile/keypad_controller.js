@@ -42,7 +42,7 @@ ola.mobile.KeypadController = function(name, universe_id) {
   this._caption(name);
   this._display();
   this._keypad();
-}
+};
 
 
 /**
@@ -56,7 +56,7 @@ ola.mobile.KeypadController.prototype._button = function(value) {
                       false,
                       this);
    return button;
-}
+};
 
 /**
  * Input event. Triggered when text is entered into text box.
@@ -100,7 +100,7 @@ ola.mobile.KeypadController.prototype._textEntry = function(key) {
   if (autocomplete != null) {
    this.command_input.value = text + autocomplete;
   }
-}
+};
 
 
 /**
@@ -144,7 +144,7 @@ ola.mobile.KeypadController.prototype._buttonAction = function(name) {
       this.command_input.value = command;
     }
   }
-}
+};
 
 /**
  * Caption of the Table
@@ -153,7 +153,7 @@ ola.mobile.KeypadController.prototype._caption = function(title) {
   var caption = goog.dom.createElement('caption');
   caption.innerHTML = title;
   this.table.appendChild(caption);
-}
+};
 
 /**
  * First tr row
@@ -179,7 +179,7 @@ ola.mobile.KeypadController.prototype._display = function() {
 
   tr.appendChild(td);
   this.table.appendChild(tr);
-}
+};
 
 
 /**
@@ -211,7 +211,7 @@ ola.mobile.KeypadController.prototype._keypad = function() {
   button.render(entertd);
   entertd.colSpan = '3';
   this.table.appendChild(entertd);
-}
+};
 
 
 /**
