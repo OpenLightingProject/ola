@@ -100,9 +100,11 @@ ola.mobile.KeypadController.prototype._display = function() {
   td.colSpan = '4';
 
   this.command_input = goog.dom.createElement('input');
+  this.command_input.type = "text";
   td.appendChild(this.command_input);
 
   var button = this._button('<');
+  button.addClassName('backspace-button');
   button.render(td);
 
   tr.appendChild(td);
