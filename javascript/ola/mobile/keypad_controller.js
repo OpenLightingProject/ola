@@ -63,27 +63,31 @@ ola.mobile.KeypadController.prototype._textEntry = function(key) {
   var autocomplete = null;
 
   switch (key) {
-    // If it's an enter key, run _buttonAction('ENTER')
-    case goog.events.KeyCodes.ENTER:
-     this._buttonAction('ENTER');
-     break;
-
-    // If it's the F key, autocomplete "FULL"
-    case goog.events.KeyCodes.F:
-    case goog.events.KeyCodes.NUM_PLUS:
-     autocomplete = 'FULL';
-     break;
-
-    // If it's the T or > keys, autocomplete "THRU"
-    case goog.events.KeyCodes.T:
-    case goog.events.KeyCodes.NUM_MINUS:
-      autocomplete = 'THRU';
+    case goog.events.KeyCodes.SPACE:
       break;
 
-    // If it's the A or * keys, autocomplete "ALL"
-    case goog.events.KeyCodes.A:
-    case goog.events.KeyCodes.NUM_MULTIPLY:
-      autocomplete = 'ALL @ ';
+    case goog.events.KeyCodes.ENTER:
+      this._buttonAction('ENTER');
+      return;
+
+    default:
+      return;
+  }
+
+  var key = text.substr(text.length-1, 1);
+
+  switch (key) {
+    case 'F':
+      autocomplete = 'ULL';
+      break;
+
+    // If it's the T or > keys, autocomplete "THRU"
+    case 'T':
+      autocomplete = 'HRU';
+      break;
+
+    case 'A':
+      autocomplete = 'LL @';
       break;
 
     default:
