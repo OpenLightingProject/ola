@@ -18,6 +18,8 @@
  */
 
 goog.require('goog.events');
+goog.require('goog.events.KeyCodes');
+goog.require('goog.events.KeyHandler');
 goog.require('goog.ui.Button');
 goog.require('goog.ui.Container');
 
@@ -51,6 +53,46 @@ ola.mobile.KeypadController.prototype._button = function(value) {
                       false,
                       this);
    return button;
+}
+
+/**
+ * Input event. Triggered when text is entered into text box.
+ */
+ola.mobile.KeypadController.prototype._textEntry = function(key) {
+  var text = this.command_input.value;
+  var autocomplete = null;
+
+  switch (key) {
+    // If it's an enter key, run _buttonAction('ENTER')
+    case goog.events.KeyCodes.ENTER:
+     this._buttonAction('ENTER');
+     break;
+
+    // If it's the F key, autocomplete "FULL"
+    case goog.events.KeyCodes.F:
+    case goog.events.KeyCodes.NUM_PLUS:
+     autocomplete = 'FULL';
+     break;
+
+    // If it's the T or > keys, autocomplete "THRU"
+    case goog.events.KeyCodes.T:
+    case goog.events.KeyCodes.NUM_MINUS:
+      autocomplete = 'THRU';
+      break;
+
+    // If it's the A or * keys, autocomplete "ALL"
+    case goog.events.KeyCodes.A:
+    case goog.events.KeyCodes.NUM_MULTIPLY:
+      autocomplete = 'ALL @ ';
+      break;
+
+    default:
+      autocomplete = null;
+  }
+
+  if (autocomplete != null) {
+   this.command_input.value = text + autocomplete;
+  }
 }
 
 
@@ -116,6 +158,12 @@ ola.mobile.KeypadController.prototype._display = function() {
   this.command_input = goog.dom.createElement('input');
   this.command_input.type = "text";
   td.appendChild(this.command_input);
+
+   var key_handler = new goog.events.KeyHandler(this.command_input);
+   goog.events.listen(key_handler,'key',
+                      function(e) { this._textEntry(e.keyCode); },
+                      true,
+                      this);
 
   var button = this._button('<');
   button.addClassName('backspace-button');
