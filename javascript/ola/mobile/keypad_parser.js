@@ -82,12 +82,15 @@ ola.mobile.KeypadParser.prototype.parse = function(str) {
     if (isNaN(end)) {
       return false;
     }
-    if (end <= start) {
-      return false;
-    }
-    if (this._constraint(i, 1, 512)) {
+    if (this._constraint(end, 1, 512)) {
       this.values[1] = end;
     } else {
+      return false;
+    }
+  }
+
+  if (typeof result[5] != 'undefined' && result[5] == ' @ ') {
+    if (end <= start) {
       return false;
     }
   }
