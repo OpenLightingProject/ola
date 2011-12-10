@@ -106,7 +106,7 @@ ola.mobile.KeypadParser.prototype.parsePartialCommand = function(str) {
   }
 
   var end_token = result[2];
-  if (end_token != undefined) {
+  if (end_token != undefined && end_token != '') {
     var end = this._intOrUndefined(result[2]);
     if (end == undefined || end == 0 ||
         end > ola.mobile.KeypadParser.MAX_SLOT) {
