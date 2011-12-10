@@ -1,2 +1,2 @@
-usr/lib/python*/site-packages/ola/*.py
-usr/lib/python*/site-packages/ola/rpc/*.py
+usr/lib/python*/{dest,site}-packages/ola/*.py
+usr/lib/python*/{dest,site}-packages/ola/rpc/*.py
