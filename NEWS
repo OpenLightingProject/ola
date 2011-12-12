@@ -1,14 +1,14 @@
 X/Y/2011 ola-0.8.15
- * Add basic timecode TX support
- * Fix some build issues with newer versions of gcc
- * Update debian package configs
- * Fix the python tests so they pass with macports
- * Fix compile errors on new versions of clang
- * Use relative paths in the web UI so they work behind re-writing proxies
- * Add DMX IN support for the Robe widget
- * Add an option to send DMX during RDM tests
- * Fix a race condition in the WidgetDectectorThreadTest
+ * Add DMX IN support for the Robe widget - #156
+ * Add an option to send DMX during RDM tests - #153
+ * Add basic support for sending ArtNet timecode - #150
  * Added a DMX keypad to the mobile UI, thanks to Chris Stranex
+ * Fix a race condition in the WidgetDectectorThreadTest
+ * Fix compile errors with new versions of clang
+ * Fix compile errors with new versions of gcc - #158
+ * Fix the python tests so they pass with macports
+ * Update debian package configs
+ * Use relative paths in the web UI so they work behind proxies - #163
 
 2/11/2011 ola-0.8.14
  * fix a bug in the port limiter
