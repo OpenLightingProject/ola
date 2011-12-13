@@ -38,6 +38,7 @@ using std::ostream;
 
 /*
  * Represents a IPv4 Address.
+ * All methods use network byte order unless otherwise mentioned.
  */
 class IPV4Address {
   public:
