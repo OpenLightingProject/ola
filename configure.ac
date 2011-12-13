@@ -355,6 +355,7 @@ AM_CONDITIONAL(BUILD_PYTHON_LIBS, test "${build_python_libs}" = "yes")
 
 if test "${build_python_libs}" = "yes"; then
  AM_PATH_PYTHON(2.4)
+ AX_PYTHON_MODULE("google.protobuf", "fatal")
 fi
 
 AC_OUTPUT_COMMANDS([
