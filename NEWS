@@ -1,4 +1,4 @@
-X/Y/2011 ola-0.8.15
+12/12/2011 ola-0.8.15
  * Add DMX IN support for the Robe widget - #156
  * Add an option to send DMX during RDM tests - #153
  * Add basic support for sending ArtNet timecode - #150
