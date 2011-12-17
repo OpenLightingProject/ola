@@ -8,6 +8,7 @@ libolacommon_la_LIBADD = export_map/libolaexportmap.la \
                          rdm/libolardm.la \
                          rpc/libstreamrpcchannel.la \
                          timecode/libtimecode.la \
+                         thread/libthread.la \
                          utils/libolautils.la
 
 SUBDIRS = export_map logging protocol rdm rpc network utils web messaging \

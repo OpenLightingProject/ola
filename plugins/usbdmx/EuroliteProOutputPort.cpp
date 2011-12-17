@@ -55,7 +55,7 @@ EuroliteProOutputPort::EuroliteProOutputPort(EuroliteProDevice *parent,
  */
 EuroliteProOutputPort::~EuroliteProOutputPort() {
   {
-    ola::MutexLocker locker(&m_term_mutex);
+    ola::thread::MutexLocker locker(&m_term_mutex);
     m_term = true;
   }
   Join();
@@ -124,7 +124,7 @@ bool EuroliteProOutputPort::Start() {
   }
 
   m_usb_handle = usb_handle;
-  bool ret = OlaThread::Start();
+  bool ret = ola::thread::Thread::Start();
   if (!ret) {
     OLA_WARN << "pthread create failed";
     libusb_release_interface(m_usb_handle, 0);
@@ -146,13 +146,13 @@ void *EuroliteProOutputPort::Run() {
 
   while (1) {
     {
-      ola::MutexLocker locker(&m_term_mutex);
+      ola::thread::MutexLocker locker(&m_term_mutex);
       if (m_term)
         break;
     }
 
     {
-      ola::MutexLocker locker(&m_data_mutex);
+      ola::thread::MutexLocker locker(&m_data_mutex);
       buffer.Set(m_buffer);
     }
 
@@ -177,7 +177,7 @@ void *EuroliteProOutputPort::Run() {
  */
 bool EuroliteProOutputPort::WriteDMX(const DmxBuffer &buffer,
                                      uint8_t priority) {
-  ola::MutexLocker locker(&m_data_mutex);
+  ola::thread::MutexLocker locker(&m_data_mutex);
   m_buffer.Set(buffer);
   return true;
   (void) priority;

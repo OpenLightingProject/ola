@@ -13,27 +13,28 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * OlaThread.h
+ * Thread.h
  * A thread object.
  * Copyright (C) 2010 Simon Newton
  */
 
-#ifndef INCLUDE_OLA_OLATHREAD_H_
-#define INCLUDE_OLA_OLATHREAD_H_
+#ifndef INCLUDE_OLA_THREAD_THREAD_H_
+#define INCLUDE_OLA_THREAD_THREAD_H_
 
 #include <pthread.h>
 
 namespace ola {
+namespace thread {
 
 typedef pthread_t ThreadId;
 
 /**
  * A thread object to be subclassed.
  */
-class OlaThread {
+class Thread {
   public:
-    OlaThread(): m_thread_id(), m_running(false) {}
-    virtual ~OlaThread() {}
+    Thread(): m_thread_id(), m_running(false) {}
+    virtual ~Thread() {}
 
     virtual bool Start();
     virtual bool Join(void *ptr = NULL);
@@ -110,5 +111,6 @@ class ConditionVariable {
     ConditionVariable(const ConditionVariable&);
     ConditionVariable& operator=(const ConditionVariable&);
 };
+}  // thread
 }  // ola
-#endif  // INCLUDE_OLA_OLATHREAD_H_
+#endif  // INCLUDE_OLA_THREAD_THREAD_H_

@@ -21,9 +21,9 @@
 #ifndef INCLUDE_OLA_THREAD_THREADPOOL_H_
 #define INCLUDE_OLA_THREAD_THREADPOOL_H_
 
-#include <ola/OlaThread.h>
 #include <ola/Callback.h>
 #include <ola/thread/ConsumerThread.h>
+#include <ola/thread/Thread.h>
 #include <queue>
 #include <vector>
 
@@ -47,8 +47,8 @@ class ThreadPool {
     queue<Action> m_callback_queue;
     unsigned int m_thread_count;
     bool m_shutdown;
-    ola::Mutex m_mutex;
-    ola::ConditionVariable m_condition_var;
+    Mutex m_mutex;
+    ConditionVariable m_condition_var;
     std::vector<ConsumerThread*> m_threads;
 
     void JoinAllThreads();

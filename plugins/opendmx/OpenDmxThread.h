@@ -23,13 +23,13 @@
 
 #include <string>
 #include "ola/DmxBuffer.h"
-#include "ola/OlaThread.h"
+#include "ola/thread/Thread.h"
 
 namespace ola {
 namespace plugin {
 namespace opendmx {
 
-class OpenDmxThread: public ola::OlaThread {
+class OpenDmxThread: public ola::thread::Thread {
   public:
     explicit OpenDmxThread(const string &path);
     ~OpenDmxThread() {}
@@ -43,9 +43,9 @@ class OpenDmxThread: public ola::OlaThread {
     string m_path;
     DmxBuffer m_buffer;
     bool m_term;
-    ola::Mutex m_mutex;
-    ola::Mutex m_term_mutex;
-    ola::ConditionVariable m_term_cond;
+    ola::thread::Mutex m_mutex;
+    ola::thread::Mutex m_term_mutex;
+    ola::thread::ConditionVariable m_term_cond;
 
     static const int INVALID_FD = -1;
 };

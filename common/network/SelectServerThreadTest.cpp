@@ -23,16 +23,16 @@
 
 #include "ola/Callback.h"
 #include "ola/Logging.h"
-#include "ola/OlaThread.h"
+#include "ola/thread/Thread.h"
 #include "ola/network/SelectServer.h"
 #include "ola/network/Socket.h"
 
 using ola::network::SelectServer;
 using ola::network::UdpSocket;
-using ola::ThreadId;
+using ola::thread::ThreadId;
 
 
-class TestThread: public ola::OlaThread {
+class TestThread: public ola::thread::Thread {
   public:
     TestThread(SelectServer *ss,
                ThreadId ss_thread_id)
@@ -43,12 +43,12 @@ class TestThread: public ola::OlaThread {
 
     void *Run() {
       m_ss->Execute(
-          NewSingleCallback(this, &TestThread::TestCallback));
+          ola::NewSingleCallback(this, &TestThread::TestCallback));
       return NULL;
     }
 
     void TestCallback() {
-      CPPUNIT_ASSERT_EQUAL(m_ss_thread_id, ola::OlaThread::Self());
+      CPPUNIT_ASSERT_EQUAL(m_ss_thread_id, ola::thread::Thread::Self());
       m_callback_executed = true;
       m_ss->Terminate();
     }
@@ -95,9 +95,9 @@ void SelectServerThreadTest::tearDown() {
  * Check that a callback from the SelectServer thread executes.
  */
 void SelectServerThreadTest::testSameThreadCallback() {
-  TestThread test_thread(&m_ss, ola::OlaThread::Self());
+  TestThread test_thread(&m_ss, ola::thread::Thread::Self());
   m_ss.Execute(
-      NewSingleCallback(&test_thread, &TestThread::TestCallback));
+      ola::NewSingleCallback(&test_thread, &TestThread::TestCallback));
   CPPUNIT_ASSERT(!test_thread.CallbackRun());
   m_ss.Run();
   CPPUNIT_ASSERT(test_thread.CallbackRun());
@@ -109,7 +109,7 @@ void SelectServerThreadTest::testSameThreadCallback() {
  * SelectServer thread.
  */
 void SelectServerThreadTest::testDifferentThreadCallback() {
-  TestThread test_thread(&m_ss, ola::OlaThread::Self());
+  TestThread test_thread(&m_ss, ola::thread::Thread::Self());
   test_thread.Start();
   CPPUNIT_ASSERT(!test_thread.CallbackRun());
   m_ss.Run();

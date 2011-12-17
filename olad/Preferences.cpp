@@ -33,7 +33,7 @@
 #include <vector>
 
 #include "ola/Logging.h"
-#include "ola/OlaThread.h"
+#include "ola/thread/Thread.h"
 #include "ola/StringUtils.h"
 #include "olad/Preferences.h"
 
@@ -42,6 +42,9 @@ namespace ola {
 using std::ifstream;
 using std::ofstream;
 using std::pair;
+using ola::thread::Mutex;
+using ola::thread::ConditionVariable;
+
 
 const char BoolValidator::ENABLED[] = "true";
 const char BoolValidator::DISABLED[] = "false";
@@ -297,7 +300,7 @@ void *FilePreferenceSaverThread::Run() {
  */
 bool FilePreferenceSaverThread::Join(void *ptr) {
   m_ss.Terminate();
-  return OlaThread::Join(ptr);
+  return Thread::Join(ptr);
 }
 
 

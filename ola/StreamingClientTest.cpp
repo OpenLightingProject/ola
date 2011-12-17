@@ -23,15 +23,15 @@
 
 #include "ola/StreamingClient.h"
 #include "ola/DmxBuffer.h"
-#include "ola/OlaThread.h"
+#include "ola/thread/Thread.h"
 #include "ola/Logging.h"
 #include "olad/OlaDaemon.h"
 
 
 static unsigned int TEST_UNIVERSE = 1;
 
-using ola::ConditionVariable;
-using ola::Mutex;
+using ola::thread::ConditionVariable;
+using ola::thread::Mutex;
 using ola::OlaDaemon;
 
 
@@ -56,10 +56,10 @@ CPPUNIT_TEST_SUITE_REGISTRATION(StreamingClientTest);
 /*
  * The thread that the OlaServer runs in.
  */
-class OlaServerThread: public ola::OlaThread {
+class OlaServerThread: public ola::thread::Thread {
   public:
     OlaServerThread() :
-        OlaThread(),
+        Thread(),
         m_olad(NULL),
         m_is_running(false) {
     }
@@ -111,7 +111,7 @@ bool OlaServerThread::Setup() {
 void *OlaServerThread::Run() {
   if (m_olad) {
     m_olad->GetSelectServer()->Execute(
-        NewSingleCallback(this, &OlaServerThread::MarkAsStarted));
+        ola::NewSingleCallback(this, &OlaServerThread::MarkAsStarted));
     m_olad->Run();
     m_olad->Shutdown();
   }

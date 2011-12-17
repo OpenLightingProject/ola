@@ -25,7 +25,7 @@
 #include <libusb.h>
 #include <string>
 #include "ola/DmxBuffer.h"
-#include "ola/OlaThread.h"
+#include "ola/thread/Thread.h"
 #include "olad/Port.h"
 
 namespace ola {
@@ -33,7 +33,7 @@ namespace plugin {
 namespace usbdmx {
 
 
-class EuroliteProOutputPort: public BasicOutputPort, OlaThread {
+class EuroliteProOutputPort: public BasicOutputPort, ola::thread::Thread {
   public:
     EuroliteProOutputPort(class EuroliteProDevice *parent,
                           unsigned int id,
@@ -61,8 +61,8 @@ class EuroliteProOutputPort: public BasicOutputPort, OlaThread {
     libusb_device *m_usb_device;
     libusb_device_handle *m_usb_handle;
     DmxBuffer m_buffer;
-    ola::Mutex m_data_mutex;
-    ola::Mutex m_term_mutex;
+    ola::thread::Mutex m_data_mutex;
+    ola::thread::Mutex m_term_mutex;
 
     bool SendDMX(const DmxBuffer &buffer_old);
 

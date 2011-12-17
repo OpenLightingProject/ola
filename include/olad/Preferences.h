@@ -23,7 +23,7 @@
 #define INCLUDE_OLAD_PREFERENCES_H_
 
 #include <ola/Logging.h>
-#include <ola/OlaThread.h>
+#include <ola/thread/Thread.h>
 #include <ola/network/SelectServer.h>
 
 #include <map>
@@ -217,7 +217,7 @@ class MemoryPreferencesFactory: public PreferencesFactory {
 /**
  * The thread that saves preferences
  */
-class FilePreferenceSaverThread: public OlaThread {
+class FilePreferenceSaverThread: public ola::thread::Thread {
   public:
     typedef multimap<string, string> PreferencesMap;
     FilePreferenceSaverThread();
@@ -233,8 +233,8 @@ class FilePreferenceSaverThread: public OlaThread {
     ola::network::SelectServer m_ss;
 
     void SaveToFile(const string *filename, const PreferencesMap *preferences);
-    void CompleteSyncronization(ConditionVariable *condition,
-                                Mutex *mutex);
+    void CompleteSyncronization(ola::thread::ConditionVariable *condition,
+                                ola::thread::Mutex *mutex);
 };
 
 

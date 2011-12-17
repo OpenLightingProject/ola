@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 #include "ola/Callback.h"
-#include "ola/OlaThread.h"
+#include "ola/thread/Thread.h"
 #include "ola/network/SelectServer.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
 #include "plugins/usbpro/RobeWidget.h"
@@ -44,6 +44,8 @@ using std::set;
 using std::string;
 using std::vector;
 using ola::network::ConnectedDescriptor;
+using ola::thread::ConditionVariable;
+using ola::thread::Mutex;
 
 
 /**
@@ -75,7 +77,7 @@ class NewWidgetHandler {
 /*
  * Discovers new USB Serial widgets and calls the handler.
  */
-class WidgetDetectorThread: public ola::OlaThread {
+class WidgetDetectorThread: public ola::thread::Thread {
   public:
     explicit WidgetDetectorThread(NewWidgetHandler *widget_handler,
                                   ola::network::SelectServerInterface *ss,

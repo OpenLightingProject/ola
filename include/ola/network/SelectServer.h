@@ -29,9 +29,9 @@
 #include <ola/Callback.h>  // NOLINT
 #include <ola/Clock.h>  // NOLINT
 #include <ola/ExportMap.h>  // NOLINT
-#include <ola/OlaThread.h>  // NOLINT
 #include <ola/network/SelectServerInterface.h>  // NOLINT
 #include <ola/network/Socket.h>  // NOLINT
+#include <ola/thread/Thread.h>  // NOLINT
 
 namespace ola {
 namespace network {
@@ -213,7 +213,7 @@ class SelectServer: public SelectServerInterface {
     TimeStamp *m_wake_up_time;
     LoopClosureSet m_loop_closures;
     std::queue<ola::BaseCallback0<void>*> m_incoming_queue;
-    ola::Mutex m_incoming_mutex;
+    ola::thread::Mutex m_incoming_mutex;
     LoopbackDescriptor m_incoming_descriptor;
 
     SelectServer(const SelectServer&);

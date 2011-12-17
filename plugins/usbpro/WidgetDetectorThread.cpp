@@ -59,7 +59,7 @@ WidgetDetectorThread::WidgetDetectorThread(
   ola::network::SelectServerInterface *ss,
   unsigned int usb_pro_timeout,
   unsigned int robe_timeout)
-    : OlaThread(),
+    : ola::thread::Thread(),
       m_other_ss(ss),
       m_handler(handler),
       m_is_running(false),
@@ -139,7 +139,7 @@ void *WidgetDetectorThread::Run() {
  */
 bool WidgetDetectorThread::Join(void *ptr) {
   m_ss.Terminate();
-  return OlaThread::Join(ptr);
+  return ola::thread::Thread::Join(ptr);
 }
 
 

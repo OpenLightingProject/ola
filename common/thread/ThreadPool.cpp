@@ -19,15 +19,13 @@
  */
 
 #include "ola/Logging.h"
-#include "ola/OlaThread.h"
+#include "ola/thread/Thread.h"
 #include "ola/thread/ThreadPool.h"
 #include "ola/thread/ConsumerThread.h"
 
 namespace ola {
 namespace thread {
 
-
-using ola::MutexLocker;
 
 /**
  * Clean up
@@ -58,7 +56,6 @@ bool ThreadPool::Init() {
       JoinAllThreads();
       return false;
     }
-    OLA_INFO << "Started " << thread->Id();
     m_threads.push_back(thread);
   }
   return true;

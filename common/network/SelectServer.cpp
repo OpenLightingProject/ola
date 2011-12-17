@@ -374,7 +374,7 @@ void SelectServer::RunInLoop(Callback0<void> *closure) {
  */
 void SelectServer::Execute(ola::BaseCallback0<void> *closure) {
   {
-    MutexLocker locker(&m_incoming_mutex);
+    ola::thread::MutexLocker locker(&m_incoming_mutex);
     m_incoming_queue.push(closure);
   }
 

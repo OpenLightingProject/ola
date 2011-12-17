@@ -13,22 +13,23 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * OlaThread.cpp
+ * Thread.cpp
  * A simple thread class
  * Copyright (C) 2010 Simon Newton
  */
 
 #include <pthread.h>
 #include "ola/Logging.h"
-#include "ola/OlaThread.h"
+#include "ola/thread/Thread.h"
 
 namespace ola {
+namespace thread {
 
 /*
  * Called by the new thread
  */
 void *StartThread(void *d) {
-  OlaThread *thread = static_cast<OlaThread*>(d);
+  Thread *thread = static_cast<Thread*>(d);
   return thread->Run();
 }
 
@@ -36,10 +37,10 @@ void *StartThread(void *d) {
 /*
  * Start this thread
  */
-bool OlaThread::Start() {
+bool Thread::Start() {
   int ret = pthread_create(&m_thread_id,
                            NULL,
-                           ola::StartThread,
+                           ola::thread::StartThread,
                            static_cast<void*>(this));
   if (ret) {
     OLA_WARN << "pthread create failed";
@@ -53,7 +54,7 @@ bool OlaThread::Start() {
 /*
  * Join this thread
  */
-bool OlaThread::Join(void *ptr) {
+bool Thread::Join(void *ptr) {
   if (m_running) {
     int ret = pthread_join(m_thread_id, &ptr);
     m_running = false;
@@ -172,4 +173,5 @@ void ConditionVariable::Signal() {
 void ConditionVariable::Broadcast() {
   pthread_cond_broadcast(&m_condition);
 }
+}  // thread
 }  // ola

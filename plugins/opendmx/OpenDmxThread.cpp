@@ -40,12 +40,14 @@ namespace plugin {
 namespace opendmx {
 
 using std::string;
+using ola::thread::Mutex;
+using ola::thread::MutexLocker;
 
 /*
  * Create a new OpenDmxThread object
  */
 OpenDmxThread::OpenDmxThread(const string &path)
-    : OlaThread(),
+    : ola::thread::Thread(),
     m_fd(INVALID_FD),
     m_path(path),
     m_term(false) {
@@ -120,7 +122,7 @@ void *OpenDmxThread::Run() {
  */
 bool OpenDmxThread::Stop() {
   {
-    ola::MutexLocker locker(&m_mutex);
+    MutexLocker locker(&m_mutex);
     m_term = true;
   }
   m_term_cond.Signal();
@@ -133,7 +135,7 @@ bool OpenDmxThread::Stop() {
  *
  */
 bool OpenDmxThread::WriteDmx(const DmxBuffer &buffer) {
-  ola::MutexLocker locker(&m_mutex);
+  MutexLocker locker(&m_mutex);
   m_buffer = buffer;
   return true;
 }

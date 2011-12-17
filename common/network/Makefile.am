@@ -23,6 +23,7 @@ NetworkTester_LDADD = $(CPPUNIT_LIBS) \
                       ./libolanetwork.la \
                       ../export_map/libolaexportmap.la \
                       ../logging/liblogging.la \
+                      ../thread/libthread.la \
                       ../utils/libolautils.la
 
 if USING_WIN32

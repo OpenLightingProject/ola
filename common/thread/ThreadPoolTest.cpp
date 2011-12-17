@@ -26,12 +26,12 @@
 
 #include "ola/Callback.h"
 #include "ola/Logging.h"
-#include "ola/OlaThread.h"
+#include "ola/thread/Thread.h"
 #include "ola/thread/ThreadPool.h"
 
 
-using ola::Mutex;
-using ola::MutexLocker;
+using ola::thread::Mutex;
+using ola::thread::MutexLocker;
 using ola::thread::ThreadPool;
 
 

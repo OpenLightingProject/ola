@@ -22,7 +22,7 @@
 #define INCLUDE_OLA_THREAD_CONSUMERTHREAD_H_
 
 #include <ola/Callback.h>
-#include <ola/OlaThread.h>
+#include <ola/thread/Thread.h>
 #include <queue>
 
 namespace ola {
@@ -34,7 +34,7 @@ using std::queue;
  * A thread which waits on a queue, and when actions (callbacks) become
  * available, it pulls them from the queue and executes them.
  */
-class ConsumerThread: public ola::OlaThread {
+class ConsumerThread: public ola::thread::Thread {
   public :
     typedef BaseCallback0<void>* Action;
     /**
@@ -49,7 +49,7 @@ class ConsumerThread: public ola::OlaThread {
                    const bool *shutdown,
                    Mutex *mutex,
                    ConditionVariable *condition_var)
-        : OlaThread(),
+        : Thread(),
           m_callback_queue(callback_queue),
           m_shutdown(shutdown),
           m_mutex(mutex),

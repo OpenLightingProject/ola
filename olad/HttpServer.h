@@ -23,7 +23,7 @@
 #define OLAD_HTTPSERVER_H_
 
 #include <ola/Callback.h>
-#include <ola/OlaThread.h>
+#include <ola/thread/Thread.h>
 #include <ola/network/SelectServer.h>
 // 0.4.6 of microhttp doesn't include stdarg so we do it here.
 #include <stdarg.h>
@@ -112,7 +112,7 @@ class HttpResponse {
 /*
  * The base HTTP Server
  */
-class HttpServer: public OlaThread {
+class HttpServer: public ola::thread::Thread {
   public:
     typedef ola::Callback2<int, const HttpRequest*, HttpResponse*>
       BaseHttpCallback;

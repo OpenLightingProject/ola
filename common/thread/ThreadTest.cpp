@@ -13,36 +13,36 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * OlaThreadTest.cpp
- * Test fixture for the OlaThread class
+ * ThreadTest.cpp
+ * Test fixture for the Thread class
  * Copyright (C) 2010 Simon Newton
  */
 
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "ola/OlaThread.h"
+#include "ola/thread/Thread.h"
 
-using ola::ConditionVariable;
-using ola::Mutex;
-using ola::MutexLocker;
-using ola::OlaThread;
+using ola::thread::ConditionVariable;
+using ola::thread::Mutex;
+using ola::thread::MutexLocker;
+using ola::thread::Thread;
 
-class OlaThreadTest: public CppUnit::TestFixture {
-  CPPUNIT_TEST_SUITE(OlaThreadTest);
-  CPPUNIT_TEST(testOlaThread);
+class ThreadTest: public CppUnit::TestFixture {
+  CPPUNIT_TEST_SUITE(ThreadTest);
+  CPPUNIT_TEST(testThread);
   CPPUNIT_TEST(testConditionVariable);
   CPPUNIT_TEST_SUITE_END();
 
   public:
-    void testOlaThread();
+    void testThread();
     void testConditionVariable();
 };
 
 
-class MockThread: public OlaThread {
+class MockThread: public Thread {
   public:
     MockThread()
-        : OlaThread(),
+        : Thread(),
           m_thread_ran(false),
           m_mutex() {
     }
@@ -65,13 +65,13 @@ class MockThread: public OlaThread {
 };
 
 
-CPPUNIT_TEST_SUITE_REGISTRATION(OlaThreadTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(ThreadTest);
 
 
 /*
  * Check that basic thread functionality works.
  */
-void OlaThreadTest::testOlaThread() {
+void ThreadTest::testThread() {
   MockThread thread;
   CPPUNIT_ASSERT(!thread.HasRan());
   thread.Start();
@@ -81,7 +81,7 @@ void OlaThreadTest::testOlaThread() {
 }
 
 
-class MockConditionThread: public OlaThread {
+class MockConditionThread: public Thread {
   public:
     MockConditionThread(
         Mutex *mutex,
@@ -110,7 +110,7 @@ class MockConditionThread: public OlaThread {
 /**
  * Check that a condition variable works
  */
-void OlaThreadTest::testConditionVariable() {
+void ThreadTest::testConditionVariable() {
   Mutex mutex;
   ConditionVariable condition;
   MockConditionThread thread(&mutex, &condition);

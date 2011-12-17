@@ -84,7 +84,7 @@ SLPBoolean ServiceCallback(SLPHandle slp_handle,
 SlpThread::SlpThread(ola::network::SelectServer *ss,
                      slp_discovery_callback *discovery_callback,
                      unsigned int refresh_time)
-    : OlaThread(),
+    : ola:thread::Thread(),
       m_main_ss(ss),
       m_init_ok(false),
       m_refresh_time(refresh_time),
@@ -126,7 +126,7 @@ bool SlpThread::Init() {
 bool SlpThread::Start() {
   if (!m_init_ok)
     return false;
-  return OlaThread::Start();
+  return ola::thread::Thread::Start();
 }
 
 
@@ -135,7 +135,7 @@ bool SlpThread::Start() {
  */
 bool SlpThread::Join(void *ptr) {
   m_ss.Terminate();
-  return OlaThread::Join(ptr);
+  return ola::thread::Thread::Join(ptr);
 }
 
 

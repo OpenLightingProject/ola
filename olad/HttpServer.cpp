@@ -344,7 +344,7 @@ int HttpResponse::Send() {
  * @param data_dir the directory to serve static content from
  */
 HttpServer::HttpServer(unsigned int port, const string &data_dir)
-    : OlaThread(),
+    : Thread(),
       m_httpd(NULL),
       m_default_handler(NULL),
       m_port(port),
