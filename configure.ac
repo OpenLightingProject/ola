@@ -421,6 +421,7 @@ AC_OUTPUT( Makefile\
     common/rdm/Makefile\
     common/rdm/testdata/Makefile \
     common/rpc/Makefile\
+    common/thread/Makefile\
     common/timecode/Makefile\
     common/utils/Makefile\
     common/web/Makefile\

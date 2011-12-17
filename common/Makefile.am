@@ -11,4 +11,4 @@ libolacommon_la_LIBADD = export_map/libolaexportmap.la \
                          utils/libolautils.la
 
 SUBDIRS = export_map logging protocol rdm rpc network utils web messaging \
-          timecode
+          thread timecode
