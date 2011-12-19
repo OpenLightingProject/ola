@@ -27,10 +27,12 @@
 class ContextTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(ContextTest);
   CPPUNIT_TEST(testContext);
+  CPPUNIT_TEST(testAsString);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void testContext();
+    void testAsString();
 };
 
 
@@ -62,4 +64,21 @@ void ContextTest::testContext() {
   CPPUNIT_ASSERT(context.Lookup(VARIABLE_ONE, &value));
   CPPUNIT_ASSERT_EQUAL(BAR_VALUE, value);
   CPPUNIT_ASSERT(!context.Lookup(VARIABLE_TWO, &value));
+}
+
+
+/**
+ * Check we can convert to a string
+ */
+void ContextTest::testAsString() {
+  Context context;
+  const string VARIABLE_ONE = "one";
+  const string VARIABLE_TWO = "two";
+  const string FOO_VALUE = "foo";
+  const string BAR_VALUE = "bar";
+
+  context.Update(VARIABLE_ONE, FOO_VALUE);
+  context.Update(VARIABLE_TWO, BAR_VALUE);
+
+  CPPUNIT_ASSERT_EQUAL(string("one=foo, two=bar"), context.AsString());
 }

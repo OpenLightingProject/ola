@@ -45,6 +45,9 @@ class Context {
     bool Lookup(const string &name, string *value) const;
     void Update(const string &name, const string &value);
 
+    string AsString() const;
+    friend std::ostream& operator<<(std::ostream &out, const Context&);
+
   private:
     typedef HASH_NAMESPACE::HASH_MAP_CLASS<string, string> VariableMap;
     VariableMap m_variables;

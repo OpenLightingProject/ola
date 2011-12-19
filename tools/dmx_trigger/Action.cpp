@@ -20,10 +20,12 @@
 #include <ola/Logging.h>
 #include <algorithm>
 #include <string>
+#include <vector>
 
 #include "tools/dmx_trigger/Action.h"
 
 using std::string;
+using std::vector;
 
 
 /**
@@ -56,6 +58,39 @@ bool Context::Lookup(const string &name, string *value) const {
  */
 void Context::Update(const string &name, const string &value) {
   m_variables[name] = value;
+}
+
+
+/**
+ * Convert this context to a string
+ */
+string Context::AsString() const {
+  vector<string> keys;
+  keys.reserve(m_variables.size());
+
+  VariableMap::const_iterator map_iter = m_variables.begin();
+  for (; map_iter != m_variables.end(); ++map_iter)
+    keys.push_back(map_iter->first);
+
+  sort(keys.begin(), keys.end());
+
+  std::stringstream str;
+  vector<string>::const_iterator iter = keys.begin();
+  for (; iter != keys.end(); ++iter) {
+    if (iter != keys.begin())
+      str << ", ";
+    map_iter = m_variables.find(*iter);
+    str << *iter << "=" << map_iter->second;
+  }
+  return str.str();
+}
+
+
+/**
+ * Stream operator
+ */
+std::ostream& operator<<(std::ostream &out, const Context &c) {
+  return out << c.AsString();
 }
 
 
