@@ -155,6 +155,10 @@ class SlotActions {
 
     string IntervalsAsString() const;
 
+    bool operator<(const SlotActions &other) const {
+      return m_slot_offset < other.m_slot_offset;
+    };
+
   private:
     Action *m_default_action;
     uint16_t m_slot_offset;
