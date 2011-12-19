@@ -59,7 +59,9 @@ class Context {
  */
 class Action {
   public:
-    Action() {}
+    Action()
+      : m_ref_count(0) {
+    }
     virtual ~Action() {}
 
     void Ref() {
@@ -67,6 +69,8 @@ class Action {
     }
     void DeRef() {
       m_ref_count--;
+      if (m_ref_count == 0)
+        delete this;
     }
     virtual void Execute(Context *context, uint8_t slot_value) = 0;
 
