@@ -21,37 +21,14 @@
 #ifndef TOOLS_DMX_TRIGGER_ACTION_H_
 #define TOOLS_DMX_TRIGGER_ACTION_H_
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
 #include <stdint.h>
 #include <sstream>
 #include <string>
 #include <vector>
-#include HASH_MAP_H
+
+#include "tools/dmx_trigger/Context.h"
 
 using std::string;
-
-
-/**
- * A context is a collection of variables and their values.
- */
-class Context {
-  public:
-    Context() {}
-    ~Context();
-
-    bool Lookup(const string &name, string *value) const;
-    void Update(const string &name, const string &value);
-
-    string AsString() const;
-    friend std::ostream& operator<<(std::ostream &out, const Context&);
-
-  private:
-    typedef HASH_NAMESPACE::HASH_MAP_CLASS<string, string> VariableMap;
-    VariableMap m_variables;
-};
 
 
 /*
@@ -104,10 +81,11 @@ class VariableAssignmentAction: public Action {
 
 /**
  * A shell command action
-class ShellCommandAction(const string 
+class ShellCommandAction: public Action {
+  public:
+    ShellCommandAction(const string &command);
 
-
-    void Execute();
+    void Execute(Context *context, uint8_t slot_value);
 
   private:
 
