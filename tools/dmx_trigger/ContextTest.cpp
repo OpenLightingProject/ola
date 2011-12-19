@@ -27,11 +27,13 @@
 class ContextTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(ContextTest);
   CPPUNIT_TEST(testContext);
+  CPPUNIT_TEST(testSlotOffsetAndValue);
   CPPUNIT_TEST(testAsString);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void testContext();
+    void testSlotOffsetAndValue();
     void testAsString();
 };
 
@@ -64,6 +66,27 @@ void ContextTest::testContext() {
   CPPUNIT_ASSERT(context.Lookup(VARIABLE_ONE, &value));
   CPPUNIT_ASSERT_EQUAL(BAR_VALUE, value);
   CPPUNIT_ASSERT(!context.Lookup(VARIABLE_TWO, &value));
+}
+
+
+/**
+ * Check that the magic slot variables work.
+ */
+void ContextTest::testSlotOffsetAndValue() {
+  Context context;
+  string value;
+
+  CPPUNIT_ASSERT(!context.Lookup(Context::SLOT_VALUE_VARIABLE, &value));
+  CPPUNIT_ASSERT(!context.Lookup(Context::SLOT_OFFSET_VARIABLE, &value));
+
+  context.SetSlotOffset(1);
+  context.SetSlotValue(100);
+
+  CPPUNIT_ASSERT(context.Lookup(Context::SLOT_OFFSET_VARIABLE, &value));
+  CPPUNIT_ASSERT_EQUAL(string("1"), value);
+
+  CPPUNIT_ASSERT(context.Lookup(Context::SLOT_VALUE_VARIABLE, &value));
+  CPPUNIT_ASSERT_EQUAL(string("100"), value);
 }
 
 

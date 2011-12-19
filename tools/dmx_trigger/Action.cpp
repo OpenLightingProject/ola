@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "tools/dmx_trigger/Action.h"
+#include "tools/dmx_trigger/VariableInterpolator.h"
 
 using std::string;
 using std::vector;
@@ -32,9 +33,15 @@ using std::vector;
  * Assign the value to the variable.
  */
 void VariableAssignmentAction::Execute(Context *context, uint8_t) {
-  // TODO(simon): add support for substituting the slot value
-  if (context)
-    context->Update(m_variable, m_value);
+  string interpolated_value;
+  bool ok = InterpolateVariables(m_value, &interpolated_value, *context);
+
+  if (ok) {
+    if (context)
+      context->Update(m_variable, interpolated_value);
+  } else {
+    OLA_WARN << "Failed to expand variables in " << m_value;
+  }
 }
 
 
@@ -193,6 +200,12 @@ bool SlotActions::SetDefaultAction(Action *action) {
  * @param value the value to look up.
  */
 void SlotActions::TakeAction(Context *context, uint8_t value) {
+  // set the context correctly
+  if (context) {
+    context->SetSlotOffset(m_slot_offset);
+    context->SetSlotValue(value);
+  }
+
   ActionInterval *action_interval = LocateMatchingAction(value);
   if (action_interval) {
     Action *action = action_interval->GetAction();

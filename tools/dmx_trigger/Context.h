@@ -25,6 +25,7 @@
 #  include <config.h>
 #endif
 
+#include <stdint.h>
 #include <sstream>
 #include <string>
 #include HASH_MAP_H
@@ -43,8 +44,14 @@ class Context {
     bool Lookup(const string &name, string *value) const;
     void Update(const string &name, const string &value);
 
+    void SetSlotValue(uint8_t value);
+    void SetSlotOffset(uint16_t offset);
+
     string AsString() const;
     friend std::ostream& operator<<(std::ostream &out, const Context&);
+
+    static const char SLOT_VALUE_VARIABLE[];
+    static const char SLOT_OFFSET_VARIABLE[];
 
   private:
     typedef HASH_NAMESPACE::HASH_MAP_CLASS<string, string> VariableMap;

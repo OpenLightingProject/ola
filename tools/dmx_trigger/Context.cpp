@@ -24,7 +24,11 @@
 #include "tools/dmx_trigger/Context.h"
 
 using std::string;
+using std::stringstream;
 using std::vector;
+
+const char Context::SLOT_VALUE_VARIABLE[] = "slot_value";
+const char Context::SLOT_OFFSET_VARIABLE[] = "slot_offset";
 
 
 /**
@@ -57,6 +61,26 @@ bool Context::Lookup(const string &name, string *value) const {
  */
 void Context::Update(const string &name, const string &value) {
   m_variables[name] = value;
+}
+
+
+/**
+ * Set the slot value variable
+ */
+void Context::SetSlotValue(uint8_t value) {
+  stringstream str;
+  str << static_cast<int>(value);
+  m_variables[SLOT_VALUE_VARIABLE] = str.str();
+}
+
+
+/**
+ * Set the slot offset variable
+ */
+void Context::SetSlotOffset(uint16_t offset) {
+  stringstream str;
+  str << static_cast<int>(offset);
+  m_variables[SLOT_OFFSET_VARIABLE] = str.str();
 }
 
 

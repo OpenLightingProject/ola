@@ -26,11 +26,13 @@
 
 class ActionTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(ActionTest);
-  CPPUNIT_TEST(testVariableAssignmentAction);
+  CPPUNIT_TEST(testVariableAssignment);
+  CPPUNIT_TEST(testVariableAssignmentInterpolation);
   CPPUNIT_TEST_SUITE_END();
 
   public:
-    void testVariableAssignmentAction();
+    void testVariableAssignment();
+    void testVariableAssignmentInterpolation();
 };
 
 
@@ -40,7 +42,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(ActionTest);
 /*
  * Check that the VariableAssignmentActions work.
  */
-void ActionTest::testVariableAssignmentAction() {
+void ActionTest::testVariableAssignment() {
   const string VARIABLE_ONE = "one";
   const string FOO_VALUE = "foo";
   const string BAR_VALUE = "bar";
@@ -63,4 +65,24 @@ void ActionTest::testVariableAssignmentAction() {
 
   CPPUNIT_ASSERT(context.Lookup(VARIABLE_ONE, &value));
   CPPUNIT_ASSERT_EQUAL(BAR_VALUE, value);
+}
+
+
+/**
+ * Check that variable interpolation works with the VariableAssignmentAction
+ */
+void ActionTest::testVariableAssignmentInterpolation() {
+  const string VARIABLE_NAME = "var1";
+  const string ASSIGNMENT_STRING = "${slot_offset} = ${slot_value}";
+
+  Context context;
+  context.Update(Context::SLOT_OFFSET_VARIABLE, "1");
+  context.Update(Context::SLOT_VALUE_VARIABLE, "100");
+  string value;
+
+  VariableAssignmentAction action(VARIABLE_NAME, ASSIGNMENT_STRING);
+  action.Execute(&context, 1);
+
+  CPPUNIT_ASSERT(context.Lookup(VARIABLE_NAME, &value));
+  CPPUNIT_ASSERT_EQUAL(string("1 = 100"), value);
 }
