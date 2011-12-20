@@ -13,7 +13,8 @@ libdmxtrigger_la_LIBADD = $(top_builddir)/common/libolacommon.la
 noinst_PROGRAMS = dmx_trigger
 
 dmx_trigger_SOURCES = dmx-trigger.cpp
-dmx_trigger_LDADD = $(top_builddir)/common/libolacommon.la \
+dmx_trigger_LDADD = $(top_builddir)/ola/libola.la \
+                    $(top_builddir)/common/libolacommon.la \
                     ./libdmxtrigger.la
 
 # Test Programs

@@ -22,17 +22,23 @@
 #include <sysexits.h>
 #include <signal.h>
 
+#include <ola/Callback.h>
+#include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
+#include <ola/OlaCallbackClient.h>
+#include <ola/OlaClientWrapper.h>
 
 #include <iostream>
 #include <string>
 #include <vector>
 
 #include "tools/dmx_trigger/Action.h"
+#include "tools/dmx_trigger/DMXTrigger.h"
 #include "tools/dmx_trigger/Context.h"
 
 using std::cout;
 using std::endl;
+using ola::DmxBuffer;
 
 typedef struct {
   bool help;
@@ -146,6 +152,24 @@ bool InstallSignals() {
 }
 
 
+/**
+ * The DMX Handler, this calls the trigger if the universes match.
+ */
+void NewDmx(unsigned int our_universe,
+            DMXTrigger *trigger,
+            unsigned int universe,
+            const DmxBuffer &data,
+            const std::string &error) {
+  if (universe == our_universe) {
+    OLA_INFO << "Received " << (int) data.Size() <<
+      " channels for universe " << (int) universe;
+    if (error.empty())
+      trigger->NewDMX(data);
+  }
+  (void) error;
+}
+
+
 /*
  * Main
  */
@@ -164,16 +188,34 @@ int main(int argc, char *argv[]) {
   if (!InstallSignals())
     exit(EX_OSERR);
 
-  // scratch pad
-  SlotActions slot_actions(1);
+  ola::OlaCallbackClientWrapper wrapper;
 
+  if (!wrapper.Setup())
+    exit(EX_UNAVAILABLE);
+
+  // all slots
+  vector<SlotActions*> slots;
+
+  // actions for slot 0
+  SlotActions slot_actions(0);
+
+  // the `ls' action
   vector<string> args;
-  args.push_back("10");
   CommandAction *action = new CommandAction("ls", args);
-  slot_actions.AddAction(0, 100, action);
+  slot_actions.AddAction(100, 255, action);
 
-  // now try and action
-  slot_actions.TakeAction(NULL, 10);
+  slots.push_back(&slot_actions);
 
-  sleep(4);
+  // setup the context and trigger
+  Context context;
+  DMXTrigger trigger(&context, slots);
+
+  // register for DMX
+  ola::OlaCallbackClient *client = wrapper.GetClient();
+  client->SetDmxCallback(
+      ola::NewCallback(&NewDmx, opts.universe, &trigger));
+  client->RegisterUniverse(opts.universe, ola::REGISTER, NULL);
+
+  // run forever
+  wrapper.GetSelectServer()->Run();
 }
