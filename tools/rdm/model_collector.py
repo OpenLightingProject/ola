@@ -32,12 +32,6 @@ from ola.OlaClient import OlaClient, RDMNack
 from ola.RDMAPI import RDMAPI
 from ola.UID import UID
 
-"""
-Still to collect:
-   - supported params
-   - personality info
-"""
-
 def Usage():
   print textwrap.dedent("""\
   Usage: model_collector.py --universe <universe>
