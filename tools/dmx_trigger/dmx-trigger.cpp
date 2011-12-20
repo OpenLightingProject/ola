@@ -19,8 +19,9 @@
 
 #include <errno.h>
 #include <getopt.h>
-#include <sysexits.h>
 #include <signal.h>
+#include <sys/wait.h>
+#include <sysexits.h>
 
 #include <ola/Callback.h>
 #include <ola/DmxBuffer.h>
