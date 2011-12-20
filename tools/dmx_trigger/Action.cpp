@@ -59,7 +59,8 @@ void CommandAction::Execute(Context *context, uint8_t) {
     return;
   } else if (pid) {
     // parent
-    // TODO(simon): handle these pids somehow
+    if (m_reaper)
+      m_reaper->AddPid(pid);
     FreeArgList(args);
     return;
   }

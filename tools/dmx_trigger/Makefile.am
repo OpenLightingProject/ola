@@ -1,10 +1,11 @@
 include $(top_srcdir)/common.mk
 
-EXTRA_DIST = Actions.h Context.h VariableInterpolator.h
+EXTRA_DIST = Actions.h Context.h ProcessReaper.h VariableInterpolator.h
 
 lib_LTLIBRARIES = libdmxtrigger.la
 libdmxtrigger_la_SOURCES = Action.cpp \
                            Context.cpp \
+                           ProcessReaper.cpp \
                            VariableInterpolator.cpp
 libdmxtrigger_la_LIBADD = $(top_builddir)/common/libolacommon.la
 
