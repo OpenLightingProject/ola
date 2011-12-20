@@ -29,6 +29,7 @@
 #include "tools/dmx_trigger/Context.h"
 
 using std::string;
+using std::vector;
 
 
 /*
@@ -80,18 +81,27 @@ class VariableAssignmentAction: public Action {
 
 
 /**
- * A shell command action
-class ShellCommandAction: public Action {
-  public:
-    ShellCommandAction(const string &command);
-
-    void Execute(Context *context, uint8_t slot_value);
-
-  private:
-
-};
+ * Command Action. This action executes a command.
  */
+class CommandAction: public Action {
+  public:
+    CommandAction(const string &command,
+                  const vector<string> &arguments)
+        : m_command(command),
+          m_arguments(arguments) {
+    }
+    virtual ~CommandAction() {}
 
+    virtual void Execute(Context *context, uint8_t slot_value);
+
+  protected:
+    const string m_command;
+    vector<string> m_arguments;
+
+    char **BuildArgList(const Context *context);
+    void FreeArgList(char **args);
+    char *StringToDynamicChar(const string &str);
+};
 
 
 /**
@@ -163,7 +173,7 @@ class SlotActions {
     Action *m_default_action;
     uint16_t m_slot_offset;
 
-    typedef std::vector<ActionInterval*> ActionVector;
+    typedef vector<ActionInterval*> ActionVector;
     ActionVector m_actions;
 
     bool ValueWithinIntervals(uint8_t value,

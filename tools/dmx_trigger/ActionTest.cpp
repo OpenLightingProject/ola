@@ -19,24 +19,101 @@
  */
 
 #include <cppunit/extensions/HelperMacros.h>
+#include <ola/Logging.h>
+#include <sstream>
 #include <string>
+#include <vector>
 
 #include "tools/dmx_trigger/Action.h"
+
+using std::vector;
+using std::string;
 
 
 class ActionTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(ActionTest);
   CPPUNIT_TEST(testVariableAssignment);
   CPPUNIT_TEST(testVariableAssignmentInterpolation);
+  CPPUNIT_TEST(testCommandAction);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void testVariableAssignment();
     void testVariableAssignmentInterpolation();
+    void testCommandAction();
+
+    void setUp() {
+      ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
+    }
 };
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION(ActionTest);
+
+
+/**
+ * A Mock CommandAction which doesn't fork and exec
+ */
+class MockCommandAction: CommandAction {
+  public:
+    MockCommandAction(const string &command,
+                      const vector<string> &args)
+      : CommandAction(command, args) {
+    }
+
+    void Execute(Context *context, uint8_t slot_value);
+    void CheckArgs(unsigned long line, const char* args[]);
+
+  private:
+    vector<string> m_interpolated_args;
+};
+
+
+/**
+ * Build the list of args and save it.
+ */
+void MockCommandAction::Execute(Context *context, uint8_t) {
+  m_interpolated_args.clear();
+
+  char **args = BuildArgList(context);
+  char **ptr = args;
+  while (*ptr)
+    m_interpolated_args.push_back(string(*ptr++));
+  FreeArgList(args);
+}
+
+
+/**
+ * Check what we got matches what we expected
+ */
+void MockCommandAction::CheckArgs(unsigned long line, const char* args[]) {
+  std::stringstream str;
+  str << "From ActionTest.cpp:" << line;
+  const char **ptr = args;
+  vector<string>::const_iterator iter = m_interpolated_args.begin();
+  while (*ptr && iter != m_interpolated_args.end())
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(), string(*ptr++), *iter++);
+
+  if (iter != m_interpolated_args.end()) {
+    str << ", got extra args: ";
+    while (iter != m_interpolated_args.end()) {
+      str << *iter;
+      iter++;
+      if (iter != m_interpolated_args.end())
+        str << ", ";
+    }
+    CPPUNIT_FAIL(str.str());
+  } else if (*ptr) {
+    str << ", missing args: ";
+    while (*ptr) {
+      str << *ptr++;
+      if (*ptr)
+        str << ", ";
+    }
+    CPPUNIT_FAIL(str.str());
+  }
+  m_interpolated_args.clear();
+}
 
 
 /*
@@ -85,4 +162,32 @@ void ActionTest::testVariableAssignmentInterpolation() {
 
   CPPUNIT_ASSERT(context.Lookup(VARIABLE_NAME, &value));
   CPPUNIT_ASSERT_EQUAL(string("1 = 100"), value);
+}
+
+
+/**
+ * Test the command action
+ */
+void ActionTest::testCommandAction() {
+  Context context;
+  vector<string> args;
+  args.push_back("one");
+  args.push_back("two");
+  MockCommandAction action("echo", args);
+  action.Execute(&context, 0);
+
+  const char *expected_args[] = {"echo", "one", "two", NULL};
+  action.CheckArgs(__LINE__, expected_args);
+
+  // now check interpolated variables
+  args.push_back("_${slot_offset}_");
+  args.push_back("_${slot_value}_");
+  MockCommandAction action2("echo", args);
+
+  context.SetSlotOffset(1);
+  context.SetSlotValue(100);
+  action2.Execute(&context, 0);
+
+  const char *expected_args2[] = {"echo", "one", "two", "_1_", "_100_", NULL};
+  action2.CheckArgs(__LINE__, expected_args2);
 }

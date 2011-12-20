@@ -18,6 +18,8 @@
  */
 
 #include <ola/Logging.h>
+#include <string.h>
+#include <unistd.h>
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -42,6 +44,77 @@ void VariableAssignmentAction::Execute(Context *context, uint8_t) {
   } else {
     OLA_WARN << "Failed to expand variables in " << m_value;
   }
+}
+
+
+/**
+ * Execute the command
+ */
+void CommandAction::Execute(Context *context, uint8_t) {
+  pid_t pid;
+  char **args = BuildArgList(context);
+
+  if ((pid = fork()) < 0) {
+    OLA_FATAL << "Could not fork to exec " << m_command;
+    return;
+  } else if (pid) {
+    // parent
+    // TODO(simon): handle these pids somehow
+    FreeArgList(args);
+    return;
+  }
+
+  execvp(m_command.c_str(), args);
+}
+
+
+/**
+ * Interpolate all the arguments, and return a pointer to an array of char*
+ * pointers which can be passed to exec()
+ */
+char **CommandAction::BuildArgList(const Context *context) {
+  // we need to add the command here as the first arg, also +1 for the NULL
+  unsigned int array_size = m_arguments.size() + 2;
+  char **args = new char*[array_size];
+  memset(args, 0, sizeof(char*) * array_size);
+
+  args[0] = StringToDynamicChar(m_command);
+
+  vector<string>::const_iterator iter = m_arguments.begin();
+  unsigned int i = 1;
+  for (; iter != m_arguments.end(); i++, iter++) {
+    string result;
+    if (!InterpolateVariables(*iter, &result, *context)) {
+      FreeArgList(args);
+      return NULL;
+    }
+    args[i] = StringToDynamicChar(result);
+  }
+  return args;
+}
+
+
+/**
+ * Free the arg array.
+ */
+void CommandAction::FreeArgList(char **args) {
+  char **ptr = args;
+  while (*ptr)
+    delete[] *ptr++;
+  delete[] args;
+}
+
+
+/**
+ * Build a null terminated char* on the heap from a string.
+ * @param str the string object to convert
+ * @returns a new[] char with the contents of the string.
+ */
+char *CommandAction::StringToDynamicChar(const string &str) {
+  unsigned int str_size = str.size() + 1;
+  char *s = new char[str_size];
+  strncpy(s, str.c_str(), str_size);
+  return s;
 }
 
 
