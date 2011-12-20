@@ -27,7 +27,6 @@
 #include <vector>
 
 #include "tools/dmx_trigger/Context.h"
-#include "tools/dmx_trigger/ProcessReaper.h"
 
 using std::string;
 using std::vector;
@@ -86,11 +85,9 @@ class VariableAssignmentAction: public Action {
  */
 class CommandAction: public Action {
   public:
-    CommandAction(ProcessReaper *reaper,
-                  const string &command,
+    CommandAction(const string &command,
                   const vector<string> &arguments)
-        : m_reaper(reaper),
-          m_command(command),
+        : m_command(command),
           m_arguments(arguments) {
     }
     virtual ~CommandAction() {}
@@ -98,7 +95,6 @@ class CommandAction: public Action {
     virtual void Execute(Context *context, uint8_t slot_value);
 
   protected:
-    ProcessReaper *m_reaper;
     const string m_command;
     vector<string> m_arguments;
 

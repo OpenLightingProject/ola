@@ -59,8 +59,7 @@ void CommandAction::Execute(Context *context, uint8_t) {
     return;
   } else if (pid) {
     // parent
-    if (m_reaper)
-      m_reaper->AddPid(pid);
+    OLA_DEBUG << "child for " << m_command << " is " << pid;
     FreeArgList(args);
     return;
   }

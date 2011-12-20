@@ -58,7 +58,7 @@ class MockCommandAction: CommandAction {
   public:
     MockCommandAction(const string &command,
                       const vector<string> &args)
-      : CommandAction(NULL, command, args) {
+      : CommandAction(command, args) {
     }
 
     void Execute(Context *context, uint8_t slot_value);
