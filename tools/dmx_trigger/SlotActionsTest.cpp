@@ -20,13 +20,12 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 #include <ola/Logging.h>
-#include <queue>
 #include <sstream>
 #include <string>
 
 #include "tools/dmx_trigger/Action.h"
+#include "tools/dmx_trigger/MockAction.h"
 
-using std::queue;
 
 class SlotActionsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(SlotActionsTest);
@@ -65,35 +64,6 @@ class BadAction: public Action {
       str << "Incorrect action called for " << static_cast<int>(slot_value);
       CPPUNIT_FAIL(str.str());
     }
-};
-
-
-/**
- * The MockAction we use for testing.
- */
-class MockAction: public Action {
-  public:
-    MockAction() : Action() {}
-
-    void Execute(Context*, uint8_t slot_value) {
-      m_values.push(slot_value);
-    }
-
-    void CheckForValue(unsigned long line, uint8_t expected_value) {
-      std::stringstream str;
-      str << "Line " << line;
-      CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(),
-                                   static_cast<size_t>(1),
-                                   m_values.size());
-      uint8_t value = m_values.front();
-      CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(), expected_value, value);
-      m_values.pop();
-    }
-
-    bool NoCalls() const { return m_values.empty(); }
-
-  private:
-    queue<uint8_t> m_values;
 };
 
 

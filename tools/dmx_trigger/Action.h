@@ -163,6 +163,8 @@ class SlotActions {
     }
     ~SlotActions();
 
+    uint16_t SlotOffset() const { return m_slot_offset; }
+
     bool AddAction(uint8_t lower, uint8_t upper, Action *action);
     bool SetDefaultAction(Action *action);
     void TakeAction(Context *context, uint8_t value);
