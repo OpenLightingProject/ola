@@ -104,9 +104,9 @@ void ParseOptions(int argc, char *argv[], options *opts) {
  * Display the help message
  */
 void DisplayHelpAndExit(char *argv[]) {
-  cout << "Usage: " << argv[0] << " [options] <pid_name> [param_data]\n"
+  cout << "Usage: " << argv[0] << " [options] <config_file>\n"
   "\n"
-  "Search for a UID registered in SLP Send it a E1.33 Message.\n"
+  "Run programs based on the values in a DMX stream.\n"
   "\n"
   "  -h, --help                Display this help message and exit.\n"
   "  -l, --log-level <level>   Set the loggging level 0 .. 4.\n"
@@ -117,7 +117,7 @@ void DisplayHelpAndExit(char *argv[]) {
 
 
 /*
- * Catch SIGCHLD
+ * Catch SIGCHLD.
  */
 static void CatchSIGCHLD(int signo) {
   pid_t pid;
@@ -129,7 +129,7 @@ static void CatchSIGCHLD(int signo) {
 
 
 /*
- * Catch SIGCHLD
+ * Install the SIGCHLD handler.
  */
 bool InstallSignals() {
   struct sigaction act, oact;
