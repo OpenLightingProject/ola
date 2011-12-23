@@ -16,16 +16,53 @@
  * ParserActions.cpp
  * Copyright (C) 2011 Simon Newton
  *
- * These functions all called by the parser.
+ * These functions all called by the parser. They modify the globals defined in
+ * ParserGlobals.h
  */
 
+#include <ola/BaseTypes.h>
 #include <ola/Logging.h>
+#include <stdint.h>
+#include <sysexits.h>
 #include <string>
 #include <vector>
+#include "tools/dmx_trigger/Action.h"
+#include "tools/dmx_trigger/ConfigCommon.h"
+#include "tools/dmx_trigger/Context.h"
 #include "tools/dmx_trigger/ParserActions.h"
+#include "tools/dmx_trigger/ParserGlobals.h"
 
 using std::string;
 using std::vector;
+
+extern int yylineno;  // defined and maintained in lex.yy.cpp
+
+
+/**
+ * Lookup the SlotActions objects associated with a slot offset. This creates
+ * one if it doesn't already exist.
+ * @param slot the slot offset to lookup
+ * @return A SlotActions object
+ */
+SlotActions *LookupSlot(uint16_t slot) {
+  SlotActionMap::iterator iter = global_slot_actions.find(slot);
+  if (iter != global_slot_actions.end())
+    return iter->second;
+
+  SlotActions *actions = new SlotActions(slot);
+  global_slot_actions[slot] = actions;
+  return actions;
+}
+
+/**
+ * Check a slot offset is valid
+ */
+void CheckSlotOffset(unsigned int slot) {
+  if (slot >= DMX_UNIVERSE_SIZE) {
+    OLA_FATAL << "Line " << yylineno << ": slot offset " << slot << " invalid";
+    exit(EX_DATAERR);
+  }
+}
 
 
 /**
@@ -34,13 +71,12 @@ using std::vector;
  */
 void SetDefaultValue(vector<string> *input) {
   if (input->size() != 2) {
-    OLA_INFO << "Assignment incorrect";
-    exit(1);
+    OLA_FATAL << "Line " << yylineno << ": assignment size != 2. Size is " <<
+       input->size();
+    exit(EX_DATAERR);
   }
 
-  // change the context
-  OLA_INFO << "Setting " << (*input)[0] << " = !" <<
-      (*input)[1] << "!";
+  global_context->Update((*input)[0], (*input)[1]);
 
   // delete the pointer since we're done
   delete input;
@@ -53,35 +89,73 @@ void SetDefaultValue(vector<string> *input) {
  * @returns a VariableAssignmentAction object
  */
 Action *CreateAssignmentAction(vector<string> *input) {
-  OLA_INFO << "Creating assignment action: " << (*input)[0] << " = " <<
-      (*input)[1];
+  if (input->size() != 2) {
+    OLA_FATAL << "Line " << yylineno <<
+      ": assignment action size != 2. Size is " << input->size();
+    exit(EX_DATAERR);
+  }
 
+  Action *action = new VariableAssignmentAction((*input)[0], (*input)[1]);
   delete input;
-  return NULL;
-}
-
-
-Action *CreateCommandAction(const string &command, vector<string> *input) {
-  OLA_INFO << "Creating command action: " << command;
-  OLA_INFO << "  Args:";
-  for (unsigned int i = 0; i < input->size(); i++)
-    OLA_INFO << "    " << (*input)[i];
-  delete input;
-  return NULL;
+  return action;
 }
 
 
 /**
- * Associate an action with a set of values on a particular slot
+ * Create a new CommandAction.
+ * @param command the command to run
+ * @param args a list of arguments for the command
+ * @returns a CommandAction object
+ */
+Action *CreateCommandAction(const string &command, vector<string> *args) {
+  Action *action = new CommandAction(command, *args);
+  delete args;
+  return action;
+}
+
+
+/**
+ * Create a new ValueInterval object
+ * @param lower the lower bound
+ * @param upper the upper bound
+ * @returns a new ValueInterval object
+ */
+ValueInterval *CreateInterval(unsigned int lower, unsigned int upper) {
+  if (lower > upper) {
+    OLA_FATAL << "Line " << yylineno << ": invalid interval " << lower << "-"
+        << upper;
+    exit(EX_DATAERR);
+  }
+  if (upper > UINT8_MAX) {
+    OLA_FATAL << "Line " << yylineno << ": invalid DMX value " << upper;
+    exit(EX_DATAERR);
+  }
+  return new ValueInterval(lower, upper);
+}
+
+
+/**
+ * Associate an action with a set of values on a particular slot.
  * @param slot the slot offset
- * @param slot_values a vector of 
+ * @param slot_values a vector of ValueIntervals to trigger this action
  * @param action the Action object to use
  */
 void SetSlotAction(unsigned int slot,
-                   vector<ValueInterval*> *slot_values,
+                   IntervalList *slot_intervals,
                    Action *action) {
-  OLA_INFO << "Channel " << slot << ", action " << action;
-  (void) slot_values;
+  CheckSlotOffset(slot);
+  SlotActions *slot_actions = LookupSlot(slot);
+
+  IntervalList::iterator iter = slot_intervals->begin();
+  for (; iter != slot_intervals->end(); iter++) {
+    if (!slot_actions->AddAction(**iter, action)) {
+      OLA_FATAL << "Line " << yylineno << ": value " << **iter <<
+         " collides with existing values.";
+      exit(EX_DATAERR);
+    }
+    delete  *iter;
+  }
+  delete slot_intervals;
 }
 
 
@@ -91,6 +165,11 @@ void SetSlotAction(unsigned int slot,
  * @param action the action to use as the default
  */
 void SetDefaultAction(unsigned int slot, Action *action) {
-  OLA_INFO << "Channel " << slot << " default action is " << action;
-  // lookup SlotActions given the channel
+  CheckSlotOffset(slot);
+  SlotActions *slot_actions = LookupSlot(slot);
+  if (slot_actions->SetDefaultAction(action)) {
+    OLA_FATAL << "Multiple default actions defined for slot " << slot <<
+        ", line " << yylineno;
+    exit(EX_DATAERR);
+  }
 }

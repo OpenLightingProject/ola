@@ -13,30 +13,23 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * ParserActions.h
+ * ParserGlobals.cpp
  * Copyright (C) 2011 Simon Newton
  *
- * These functions all called by the parser.
+ * Unfortunately we have to use global variables because there isn't a way
+ * to pass in data during the parse stage.
  */
 
-#ifndef TOOLS_DMX_TRIGGER_PARSERACTIONS_H_
-#define TOOLS_DMX_TRIGGER_PARSERACTIONS_H_
+#ifndef TOOLS_DMX_TRIGGER_PARSERGLOBALS_H_
+#define TOOLS_DMX_TRIGGER_PARSERGLOBALS_H_
 
-#include <string>
-#include <vector>
+#include <map>
 
-using std::string;
-using std::vector;
+// The context object
+extern class Context *global_context;
 
-class Action;
+// A map of slot offsets to SlotAction objects
+typedef std::map<uint16_t, class SlotActions*> SlotActionMap;
+extern SlotActionMap global_slot_actions;
 
-void SetDefaultValue(vector<string> *input);
-Action *CreateAssignmentAction(vector<string> *input);
-Action *CreateCommandAction(const string &command, vector<string> *input);
-ValueInterval *CreateInterval(unsigned int lower, unsigned int upper);
-void SetSlotAction(unsigned int slot,
-                   vector<class ValueInterval*> *slot_values,
-                   Action *action);
-void SetDefaultAction(unsigned int slot, Action *action);
-
-#endif  // TOOLS_DMX_TRIGGER_PARSERACTIONS_H_
+#endif  // TOOLS_DMX_TRIGGER_PARSERGLOBALS_H_

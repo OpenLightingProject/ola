@@ -9,8 +9,8 @@ int yylex(void);
 
 %union{
   unsigned int int_val;
-  std::string *str_val;
-  std::vector<std::string> *str_list;
+  string *str_val;
+  vector<string> *str_list;
   class Action *action;
   IntervalList *interval_list;
   ValueInterval *interval;
@@ -84,8 +84,8 @@ slot_values:
 ;
 
 slot_value_range:
-      INTEGER_LITERAL { $$ = new ValueInterval($1, $1); }
-    | INTEGER_LITERAL '-' INTEGER_LITERAL { $$ = new ValueInterval($1, $3); }
+      INTEGER_LITERAL { $$ = CreateInterval($1, $1); }
+    | INTEGER_LITERAL '-' INTEGER_LITERAL { $$ = CreateInterval($1, $3); }
 ;
 
 action:
@@ -129,11 +129,11 @@ full_path:
 extern int column;
 
 int yyerror(string s) {
-  extern int yylineno;  // defined and maintained in lex.c
-  extern char *yytext;  // defined and maintained in lex.c
+  extern int yylineno;  // defined and maintained in lex.yy.cpp
+  extern char *yytext;  // defined and maintained in lex.yy.cpp
 
-  OLA_FATAL << "ERROR: " << s << " at symbol \"" << yytext;
-  OLA_FATAL << "\" on line " << yylineno << " column " << column;
+  OLA_FATAL << "ERROR: " << s << " at symbol \"" << yytext <<
+      "\" on line " << yylineno << " column " << column;
   exit(1);
 }
 
