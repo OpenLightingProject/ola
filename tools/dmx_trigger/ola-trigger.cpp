@@ -270,4 +270,9 @@ int main(int argc, char *argv[]) {
 
   // start the client
   wrapper.GetSelectServer()->Run();
+
+  // cleanup
+  vector<SlotActions*>::iterator action_iter = slot_actions.begin();
+  for (; action_iter != slot_actions.end(); ++action_iter)
+    delete *action_iter;
 }
