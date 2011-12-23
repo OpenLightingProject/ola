@@ -13,17 +13,14 @@ libdmxtrigger_la_SOURCES = Action.cpp \
                            VariableInterpolator.cpp
 libdmxtrigger_la_LIBADD = $(top_builddir)/common/libolacommon.la
 
-noinst_PROGRAMS = dmx_trigger foo
+noinst_PROGRAMS = dmx_trigger
 
-dmx_trigger_SOURCES = dmx-trigger.cpp
+dmx_trigger_SOURCES = ParserActions.cpp config.tab.cpp dmx-trigger.cpp \
+                      lex.yy.cpp
 dmx_trigger_LDADD = $(top_builddir)/ola/libola.la \
                     $(top_builddir)/common/libolacommon.la \
-                    ./libdmxtrigger.la
-
-foo_SOURCES = foo.cpp ParserActions.cpp config.tab.cpp lex.yy.cpp
-foo_LDADD = $(top_builddir)/common/libolacommon.la \
-            ./libdmxtrigger.la \
-            $(LEXLIB)
+                    ./libdmxtrigger.la \
+                    $(LEXLIB)
 
 lex.yy.cpp: config.lex
 	$(LEX) -o lex.yy.cpp config.lex

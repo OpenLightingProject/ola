@@ -28,23 +28,38 @@
 #include <ola/Logging.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
+#include <ola/network/SelectServer.h>
 
 #include <iostream>
+#include <map>
 #include <string>
 #include <vector>
 
 #include "tools/dmx_trigger/Action.h"
-#include "tools/dmx_trigger/DMXTrigger.h"
 #include "tools/dmx_trigger/Context.h"
+#include "tools/dmx_trigger/DMXTrigger.h"
+#include "tools/dmx_trigger/ParserGlobals.h"
 
-using std::cout;
-using std::endl;
 using ola::DmxBuffer;
+using std::map;
+using std::vector;
 
+// prototype of bison-generated parser function
+int yyparse();
+
+// globals modified by the config parser
+Context *global_context;
+SlotActionMap global_slot_actions;
+
+// The SelectServer to kill when we catch SIGINT
+ola::network::SelectServer *ss = NULL;
+
+// The options struct
 typedef struct {
   bool help;
   ola::log_level log_level;
   unsigned int universe;
+  vector<string> args;  // extra args
 } options;
 
 
@@ -103,6 +118,10 @@ void ParseOptions(int argc, char *argv[], options *opts) {
        break;
     }
   }
+
+  int index = optind;
+  for (; index < argc; index++)
+    opts->args.push_back(argv[index]);
   return;
 }
 
@@ -111,14 +130,14 @@ void ParseOptions(int argc, char *argv[], options *opts) {
  * Display the help message
  */
 void DisplayHelpAndExit(char *argv[]) {
-  cout << "Usage: " << argv[0] << " [options] <config_file>\n"
+  std::cout << "Usage: " << argv[0] << " [options] <config_file>\n"
   "\n"
   "Run programs based on the values in a DMX stream.\n"
   "\n"
   "  -h, --help                Display this help message and exit.\n"
   "  -l, --log-level <level>   Set the loggging level 0 .. 4.\n"
-  "  -u, --universe <universe> The universe to use (> 0).\n"
-  << endl;
+  "  -u, --universe <universe> The universe to use.\n"
+  << std::endl;
   exit(0);
 }
 
@@ -131,6 +150,18 @@ static void CatchSIGCHLD(int signo) {
   do {
     pid = waitpid(-1, NULL, WNOHANG);
   } while (pid > 0);
+  (void) signo;
+}
+
+
+/*
+ * Terminate cleanly on interrupt
+ */
+static void CatchSIGINT(int signo) {
+  // there is a race condition here if you send the signal before we call Run()
+  // it's not a huge deal though.
+  if (ss)
+    ss->Terminate();
   (void) signo;
 }
 
@@ -149,6 +180,16 @@ bool InstallSignals() {
     OLA_WARN << "Failed to install signal SIGCHLD";
     return false;
   }
+
+  act.sa_handler = CatchSIGINT;
+  if (sigaction(SIGINT, &act, &oact) < 0) {
+    OLA_WARN << "Failed to install signal SIGINT";
+    return false;
+  }
+  if (sigaction(SIGTERM, &act, &oact) < 0) {
+    OLA_WARN << "Failed to install signal SIGTERM";
+    return false;
+  }
   return true;
 }
 
@@ -162,8 +203,6 @@ void NewDmx(unsigned int our_universe,
             const DmxBuffer &data,
             const std::string &error) {
   if (universe == our_universe) {
-    OLA_INFO << "Received " << (int) data.Size() <<
-      " channels for universe " << (int) universe;
     if (error.empty())
       trigger->NewDMX(data);
   }
@@ -184,33 +223,44 @@ int main(int argc, char *argv[]) {
   if (opts.help)
     DisplayHelpAndExit(argv);
 
+  if (opts.args.size() != 1)
+    DisplayHelpAndExit(argv);
+
   ola::InitLogging(opts.log_level, ola::OLA_LOG_STDERR);
 
-  if (!InstallSignals())
-    exit(EX_OSERR);
+  // setup the defaut context
+  global_context = new Context();
+  OLA_INFO << "Loading config from " << opts.args[0];
 
+  // open the config file
+  if ((argc > 1) && (freopen(argv[1], "r", stdin) == NULL)) {
+    OLA_FATAL << argv[0] << ": File " << argv[1] << " cannot be opened.\n";
+    exit(EX_DATAERR);
+  }
+
+  yyparse();
+
+  // if we got to this stage the config is ok, setup the client
   ola::OlaCallbackClientWrapper wrapper;
 
   if (!wrapper.Setup())
     exit(EX_UNAVAILABLE);
 
-  // all slots
-  vector<SlotActions*> slots;
+  ss = wrapper.GetSelectServer();
 
-  // actions for slot 0
-  SlotActions slot_actions(0);
+  if (!InstallSignals())
+    exit(EX_OSERR);
 
-  // the `ls' action
-  vector<string> args;
-  CommandAction *action = new CommandAction("ls", args);
-  ValueInterval interval(100, 255);
-  slot_actions.AddAction(interval, action);
-
-  slots.push_back(&slot_actions);
+  // create the vector of SlotActions
+  vector<SlotActions*> slot_actions;
+  slot_actions.reserve(global_slot_actions.size());
+  SlotActionMap::const_iterator iter = global_slot_actions.begin();
+  for (; iter != global_slot_actions.end(); ++iter)
+    slot_actions.push_back(iter->second);
 
   // setup the context and trigger
   Context context;
-  DMXTrigger trigger(&context, slots);
+  DMXTrigger trigger(&context, slot_actions);
 
   // register for DMX
   ola::OlaCallbackClient *client = wrapper.GetClient();
@@ -218,6 +268,6 @@ int main(int argc, char *argv[]) {
       ola::NewCallback(&NewDmx, opts.universe, &trigger));
   client->RegisterUniverse(opts.universe, ola::REGISTER, NULL);
 
-  // run forever
+  // start the client
   wrapper.GetSelectServer()->Run();
 }
