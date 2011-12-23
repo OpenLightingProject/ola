@@ -1,7 +1,10 @@
 include $(top_srcdir)/common.mk
 
-EXTRA_DIST = Actions.h Context.h DMXTrigger.h MockAction.h \
-             VariableInterpolator.h
+EXTRA_DIST = Actions.h ConfigCommon.h Context.h DMXTrigger.h MockAction.h \
+             ParserActions.h VariableInterpolator.h \
+             config.lex config.ypp
+
+BUILT_SOURCES = config.tab.cpp config.tab.h lex.yy.cpp
 
 lib_LTLIBRARIES = libdmxtrigger.la
 libdmxtrigger_la_SOURCES = Action.cpp \
@@ -10,12 +13,27 @@ libdmxtrigger_la_SOURCES = Action.cpp \
                            VariableInterpolator.cpp
 libdmxtrigger_la_LIBADD = $(top_builddir)/common/libolacommon.la
 
-noinst_PROGRAMS = dmx_trigger
+noinst_PROGRAMS = dmx_trigger foo
 
 dmx_trigger_SOURCES = dmx-trigger.cpp
 dmx_trigger_LDADD = $(top_builddir)/ola/libola.la \
                     $(top_builddir)/common/libolacommon.la \
                     ./libdmxtrigger.la
+
+foo_SOURCES = foo.cpp ParserActions.cpp config.tab.cpp lex.yy.cpp
+foo_LDADD = $(top_builddir)/common/libolacommon.la \
+            ./libdmxtrigger.la \
+            $(LEXLIB)
+
+lex.yy.cpp: config.lex
+	$(LEX) -o lex.yy.cpp config.lex
+
+config.tab.cpp config.tab.h: config.ypp
+	$(YACC) --defines=config.tab.h --output-file=config.tab.cpp config.ypp
+
+clean-local:
+	rm -f lex.yy.c config.tab.cpp config.tab.h
+
 
 # Test Programs
 TESTS = ActionTester

@@ -16,6 +16,8 @@ AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
+AC_PROG_LEX
+AC_PROG_YACC
 AC_LIBTOOL_WIN32_DLL
 
 # Checks for typedefs, structures, and compiler characteristics.
