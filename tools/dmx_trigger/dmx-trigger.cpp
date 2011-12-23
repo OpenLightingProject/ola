@@ -203,7 +203,8 @@ int main(int argc, char *argv[]) {
   // the `ls' action
   vector<string> args;
   CommandAction *action = new CommandAction("ls", args);
-  slot_actions.AddAction(100, 255, action);
+  ValueInterval interval(100, 255);
+  slot_actions.AddAction(interval, action);
 
   slots.push_back(&slot_actions);
 

@@ -55,7 +55,8 @@ void DMXTriggerTest::testTrigger() {
   vector<SlotActions*> slots;
   SlotActions slot_actions(2);
   MockAction *action = new MockAction();
-  slot_actions.AddAction(10, 20, action);
+  ValueInterval interval(10, 20);
+  slot_actions.AddAction(interval, action);
   slots.push_back(&slot_actions);
 
   Context context;

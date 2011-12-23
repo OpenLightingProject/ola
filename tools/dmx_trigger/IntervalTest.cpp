@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * IntervalTest.cpp
- * Test fixture for the ActionInterval class.
+ * Test fixture for the ValueInterval class.
  * Copyright (C) 2011 Simon Newton
  */
 
@@ -46,7 +46,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(IntervalTest);
  * Check that lower and upper work.
  */
 void IntervalTest::testLowerUpper() {
-  ActionInterval interval(0, 10, NULL);
+  ValueInterval interval(0, 10);
   CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), interval.Lower());
   CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(10), interval.Upper());
 }
@@ -56,18 +56,18 @@ void IntervalTest::testLowerUpper() {
  * Check that contains works
  */
 void IntervalTest::testContains() {
-  ActionInterval interval(0, 10, NULL);
+  ValueInterval interval(0, 10);
   for (uint8_t i = 0; i <= 10; i++)
     CPPUNIT_ASSERT(interval.Contains(i));
   CPPUNIT_ASSERT(!interval.Contains(11));
 
-  ActionInterval interval2(10, 10, NULL);
+  ValueInterval interval2(10, 10);
   CPPUNIT_ASSERT(!interval2.Contains(0));
   CPPUNIT_ASSERT(!interval2.Contains(9));
   CPPUNIT_ASSERT(interval2.Contains(10));
   CPPUNIT_ASSERT(!interval2.Contains(11));
 
-  ActionInterval interval3(234, 255, NULL);
+  ValueInterval interval3(234, 255);
   CPPUNIT_ASSERT(!interval3.Contains(0));
   CPPUNIT_ASSERT(!interval3.Contains(233));
   for (uint8_t i = 234; i != 0; i++)
@@ -79,10 +79,10 @@ void IntervalTest::testContains() {
  * Check that Intersects works
  */
 void IntervalTest::testIntersects() {
-  ActionInterval interval(0, 10, NULL);
-  ActionInterval interval2(10, 10, NULL);
-  ActionInterval interval3(5, 6, NULL);
-  ActionInterval interval4(11, 20, NULL);
+  ValueInterval interval(0, 10);
+  ValueInterval interval2(10, 10);
+  ValueInterval interval3(5, 6);
+  ValueInterval interval4(11, 20);
   CPPUNIT_ASSERT(interval.Intersects(interval2));
   CPPUNIT_ASSERT(interval2.Intersects(interval));
   CPPUNIT_ASSERT(interval.Intersects(interval3));
@@ -102,9 +102,9 @@ void IntervalTest::testIntersects() {
  * Check the less than operator works.
  */
 void IntervalTest::testLessThan() {
-  ActionInterval interval1(0, 10, NULL);
-  ActionInterval interval2(11, 12, NULL);
-  ActionInterval interval3(14, 15, NULL);
+  ValueInterval interval1(0, 10);
+  ValueInterval interval2(11, 12);
+  ValueInterval interval3(14, 15);
 
   CPPUNIT_ASSERT(interval1 < interval2);
   CPPUNIT_ASSERT(interval1 < interval3);

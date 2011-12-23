@@ -29,7 +29,6 @@
 
 class SlotActionsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(SlotActionsTest);
-  CPPUNIT_TEST(testInvalidIntervalAddition);
   CPPUNIT_TEST(testIntersectingIntervalAddition);
   CPPUNIT_TEST(testIntervalAddition);
   CPPUNIT_TEST(testActionMatching);
@@ -37,7 +36,6 @@ class SlotActionsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
   public:
-    void testInvalidIntervalAddition();
     void testIntersectingIntervalAddition();
     void testIntervalAddition();
     void testActionMatching();
@@ -68,46 +66,37 @@ class BadAction: public Action {
 
 
 /**
- * Check we can't add invalid Intervals
- */
-void SlotActionsTest::testInvalidIntervalAddition() {
-  SlotActions slot_actions(0);
-  CPPUNIT_ASSERT(!slot_actions.AddAction(20, 10, NULL));
-}
-
-
-/**
  * Chech that we don't add Intervals which intersect
  */
 void SlotActionsTest::testIntersectingIntervalAddition() {
   SlotActions slot_actions(0);
-  CPPUNIT_ASSERT(slot_actions.AddAction(10, 20, NULL));
+  CPPUNIT_ASSERT(slot_actions.AddAction(ValueInterval(10, 20), NULL));
 
-  CPPUNIT_ASSERT(!slot_actions.AddAction(10, 20, NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(8, 10, NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(10, 10, NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(10, 11, NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(10, 25, NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(15, 25, NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(19, 20, NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(20, 20, NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(20, 25, NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(10, 20), NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(8, 10), NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(10, 10), NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(10, 11), NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(10, 25), NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(15, 25), NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(19, 20), NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(20, 20), NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(20, 25), NULL));
 
   // now add another interval
-  CPPUNIT_ASSERT(slot_actions.AddAction(30, 35, NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(29, 30, NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(30, 30, NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(30, 35, NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(34, 35, NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(34, 36, NULL));
+  CPPUNIT_ASSERT(slot_actions.AddAction(ValueInterval(30, 35), NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(29, 30), NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(30, 30), NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(30, 35), NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(34, 35), NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(34, 36), NULL));
 
   // and another one
-  CPPUNIT_ASSERT(slot_actions.AddAction(40, 45, NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(29, 30, NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(30, 30, NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(30, 35, NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(34, 35, NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(34, 36, NULL));
+  CPPUNIT_ASSERT(slot_actions.AddAction(ValueInterval(40, 45), NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(29, 30), NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(30, 30), NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(30, 35), NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(34, 35), NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(34, 36), NULL));
 }
 
 
@@ -116,34 +105,34 @@ void SlotActionsTest::testIntersectingIntervalAddition() {
  */
 void SlotActionsTest::testIntervalAddition() {
   SlotActions slot_actions(0);
-  CPPUNIT_ASSERT(slot_actions.AddAction(10, 20, NULL));
+  CPPUNIT_ASSERT(slot_actions.AddAction(ValueInterval(10, 20), NULL));
   CPPUNIT_ASSERT_EQUAL(string("[10, 20]"), slot_actions.IntervalsAsString());
 
   // add before the begining
-  CPPUNIT_ASSERT(slot_actions.AddAction(5, 6, NULL));
+  CPPUNIT_ASSERT(slot_actions.AddAction(ValueInterval(5, 6), NULL));
   CPPUNIT_ASSERT_EQUAL(string("[5, 6], [10, 20]"),
                        slot_actions.IntervalsAsString());
 
   // add at the end
-  CPPUNIT_ASSERT(slot_actions.AddAction(100, 104, NULL));
+  CPPUNIT_ASSERT(slot_actions.AddAction(ValueInterval(100, 104), NULL));
   CPPUNIT_ASSERT_EQUAL(string("[5, 6], [10, 20], [100, 104]"),
                        slot_actions.IntervalsAsString());
 
   // now try adding some in the middle
-  CPPUNIT_ASSERT(slot_actions.AddAction(80, 82, NULL));
+  CPPUNIT_ASSERT(slot_actions.AddAction(ValueInterval(80, 82), NULL));
   CPPUNIT_ASSERT_EQUAL(string("[5, 6], [10, 20], [80, 82], [100, 104]"),
                        slot_actions.IntervalsAsString());
 
-  CPPUNIT_ASSERT(slot_actions.AddAction(76, 76, NULL));
+  CPPUNIT_ASSERT(slot_actions.AddAction(ValueInterval(76, 76), NULL));
   CPPUNIT_ASSERT_EQUAL(string("[5, 6], [10, 20], 76, [80, 82], [100, 104]"),
                        slot_actions.IntervalsAsString());
 
-  CPPUNIT_ASSERT(slot_actions.AddAction(70, 72, NULL));
+  CPPUNIT_ASSERT(slot_actions.AddAction(ValueInterval(70, 72), NULL));
   CPPUNIT_ASSERT_EQUAL(
       string("[5, 6], [10, 20], [70, 72], 76, [80, 82], [100, 104]"),
       slot_actions.IntervalsAsString());
 
-  CPPUNIT_ASSERT(slot_actions.AddAction(65, 69, NULL));
+  CPPUNIT_ASSERT(slot_actions.AddAction(ValueInterval(65, 69), NULL));
   CPPUNIT_ASSERT_EQUAL(
       string("[5, 6], [10, 20], [65, 69], [70, 72], 76, [80, 82], [100, 104]"),
       slot_actions.IntervalsAsString());
@@ -157,7 +146,7 @@ void SlotActionsTest::testActionMatching() {
   SlotActions slot_actions(0);
 
   MockAction *action1 = new MockAction();
-  slot_actions.AddAction(10, 20, action1);
+  slot_actions.AddAction(ValueInterval(10, 20), action1);
 
   MockAction *default_action = new MockAction();
   slot_actions.SetDefaultAction(default_action);
@@ -183,7 +172,7 @@ void SlotActionsTest::testActionMatching() {
   default_action->CheckForValue(__LINE__, 21);
 
   // add another action
-  slot_actions.AddAction(30, 40, action1);
+  slot_actions.AddAction(ValueInterval(30, 40), action1);
 
   slot_actions.TakeAction(NULL, 30);
   action1->CheckForValue(__LINE__, 30);
@@ -198,7 +187,7 @@ void SlotActionsTest::testActionMatching() {
   CPPUNIT_ASSERT(default_action->NoCalls());
 
   // and another
-  slot_actions.AddAction(23, 27, action1);
+  slot_actions.AddAction(ValueInterval(23, 27), action1);
 
   slot_actions.TakeAction(NULL, 23);
   action1->CheckForValue(__LINE__, 23);
