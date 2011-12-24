@@ -20,8 +20,10 @@
  * ParserGlobals.h
  */
 
+#define __STDC_LIMIT_MACROS  // for UINT8_MAX & friends
 #include <ola/BaseTypes.h>
 #include <ola/Logging.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <sysexits.h>
 #include <string>
