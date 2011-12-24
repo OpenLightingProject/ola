@@ -19,8 +19,8 @@
  * These functions all called by the parser.
  */
 
-#ifndef TOOLS_DMX_TRIGGER_PARSERACTIONS_H_
-#define TOOLS_DMX_TRIGGER_PARSERACTIONS_H_
+#ifndef TOOLS_OLA_TRIGGER_PARSERACTIONS_H_
+#define TOOLS_OLA_TRIGGER_PARSERACTIONS_H_
 
 #include <string>
 #include <vector>
@@ -39,4 +39,4 @@ void SetSlotAction(unsigned int slot,
                    Action *action);
 void SetDefaultAction(unsigned int slot, Action *action);
 
-#endif  // TOOLS_DMX_TRIGGER_PARSERACTIONS_H_
+#endif  // TOOLS_OLA_TRIGGER_PARSERACTIONS_H_

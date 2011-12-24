@@ -24,6 +24,7 @@
 #include <sys/wait.h>
 #include <sysexits.h>
 
+#include <ola/BaseTypes.h>
 #include <ola/Callback.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
@@ -60,8 +61,12 @@ typedef struct {
   bool help;
   ola::log_level log_level;
   unsigned int universe;
+  unsigned int offset;
   vector<string> args;  // extra args
 } options;
+
+
+typedef vector<SlotActions*> SlotActionsList;
 
 
 /*
@@ -71,6 +76,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
   static struct option long_options[] = {
       {"help", no_argument, 0, 'h'},
       {"log-level", required_argument, 0, 'l'},
+      {"offset", required_argument, 0, 'o'},
       {"universe", required_argument, 0, 'u'},
       {0, 0, 0, 0}
     };
@@ -78,7 +84,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
   int option_index = 0;
 
   while (1) {
-    int c = getopt_long(argc, argv, "hl:u:", long_options, &option_index);
+    int c = getopt_long(argc, argv, "hl:o:u:", long_options, &option_index);
 
     if (c == -1)
       break;
@@ -110,6 +116,9 @@ void ParseOptions(int argc, char *argv[], options *opts) {
             break;
         }
         break;
+      case 'o':
+        opts->offset = atoi(optarg);
+        break;
       case 'u':
         opts->universe = atoi(optarg);
         break;
@@ -135,9 +144,11 @@ void DisplayHelpAndExit(char *argv[]) {
   "\n"
   "Run programs based on the values in a DMX stream.\n"
   "\n"
-  "  -h, --help                Display this help message and exit.\n"
-  "  -l, --log-level <level>   Set the loggging level 0 .. 4.\n"
-  "  -u, --universe <universe> The universe to use.\n"
+  "  -h, --help                 Display this help message and exit.\n"
+  "  -l, --log-level <level>    Set the loggging level 0 .. 4.\n"
+  "  -o, --offset <slot_offset> Apply an offset to the slot numbers. Valid\n"
+  "                             offsets are 0 to 512, default is 0.\n"
+  "  -u, --universe <universe>  The universe to use, defaults to 1"
   << std::endl;
   exit(0);
 }
@@ -211,6 +222,52 @@ void NewDmx(unsigned int our_universe,
 }
 
 
+/**
+ * Delete all the slot actions in the vector.
+ */
+void FreeSlotActions(SlotActionsList *slot_actions) {
+  SlotActionsList::iterator action_iter = slot_actions->begin();
+  for (; action_iter != slot_actions->end(); ++action_iter)
+    delete *action_iter;
+  slot_actions->clear();
+}
+
+
+/**
+ * Build a vector of SlotActions from the global_slot_actions map with the
+ * offset applied.
+ *
+ * The clears the global_slot_actions map.
+ * @returns true if the offset was applied correctly, false otherwise.
+ */
+bool ApplyOffset(uint16_t offset, SlotActionsList *all_slot_actions) {
+  bool ok = true;
+  all_slot_actions->reserve(global_slot_actions.size());
+  SlotActionMap::const_iterator iter = global_slot_actions.begin();
+  for (; iter != global_slot_actions.end(); ++iter) {
+    SlotActions *slot_actions = iter->second;
+    if (slot_actions->SlotOffset() + offset >= DMX_UNIVERSE_SIZE) {
+      OLA_FATAL << "Slot " << slot_actions->SlotOffset() << " + offset " <<
+        offset << " is greater than " << DMX_UNIVERSE_SIZE - 1;
+      ok = false;
+      break;
+    }
+    slot_actions->SetSlotOffset(slot_actions->SlotOffset() + offset);
+    all_slot_actions->push_back(slot_actions);
+  }
+
+  if (!ok) {
+    all_slot_actions->clear();
+    for (iter = global_slot_actions.begin(); iter != global_slot_actions.end();
+         ++iter)
+      delete iter->second;
+  }
+
+  global_slot_actions.clear();
+  return ok;
+}
+
+
 /*
  * Main
  */
@@ -218,11 +275,17 @@ int main(int argc, char *argv[]) {
   options opts;
   opts.log_level = ola::OLA_LOG_INFO;
   opts.universe = 1;
+  opts.offset = 0;
   opts.help = false;
   ParseOptions(argc, argv, &opts);
 
   if (opts.help)
     DisplayHelpAndExit(argv);
+
+  if (opts.offset >= DMX_UNIVERSE_SIZE) {
+    std::cerr << "Invalid slot offset: " << opts.offset << std::endl;
+    DisplayHelpAndExit(argv);
+  }
 
   if (opts.args.size() != 1)
     DisplayHelpAndExit(argv);
@@ -234,8 +297,8 @@ int main(int argc, char *argv[]) {
   OLA_INFO << "Loading config from " << opts.args[0];
 
   // open the config file
-  if ((argc > 1) && (freopen(argv[1], "r", stdin) == NULL)) {
-    OLA_FATAL << argv[0] << ": File " << argv[1] << " cannot be opened.\n";
+  if (freopen(opts.args[0].c_str(), "r", stdin) == NULL) {
+    OLA_FATAL << "File " << opts.args[0] << " cannot be opened.\n";
     exit(EX_DATAERR);
   }
 
@@ -253,27 +316,21 @@ int main(int argc, char *argv[]) {
     exit(EX_OSERR);
 
   // create the vector of SlotActions
-  vector<SlotActions*> slot_actions;
-  slot_actions.reserve(global_slot_actions.size());
-  SlotActionMap::const_iterator iter = global_slot_actions.begin();
-  for (; iter != global_slot_actions.end(); ++iter)
-    slot_actions.push_back(iter->second);
+  SlotActionsList slot_actions;
+  if (ApplyOffset(opts.offset, &slot_actions)) {
+    // setup the trigger
+    DMXTrigger trigger(global_context, slot_actions);
 
-  // setup the context and trigger
-  Context context;
-  DMXTrigger trigger(&context, slot_actions);
+    // register for DMX
+    ola::OlaCallbackClient *client = wrapper.GetClient();
+    client->SetDmxCallback(
+        ola::NewCallback(&NewDmx, opts.universe, &trigger));
+    client->RegisterUniverse(opts.universe, ola::REGISTER, NULL);
 
-  // register for DMX
-  ola::OlaCallbackClient *client = wrapper.GetClient();
-  client->SetDmxCallback(
-      ola::NewCallback(&NewDmx, opts.universe, &trigger));
-  client->RegisterUniverse(opts.universe, ola::REGISTER, NULL);
-
-  // start the client
-  wrapper.GetSelectServer()->Run();
+    // start the client
+    wrapper.GetSelectServer()->Run();
+  }
 
   // cleanup
-  vector<SlotActions*>::iterator action_iter = slot_actions.begin();
-  for (; action_iter != slot_actions.end(); ++action_iter)
-    delete *action_iter;
+  FreeSlotActions(&slot_actions);
 }

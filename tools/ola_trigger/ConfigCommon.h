@@ -28,8 +28,8 @@
  * both lex.yy.c and config.tab.cpp. It's a bit messy but it works.
  */
 
-#ifndef TOOLS_DMX_TRIGGER_CONFIGCOMMON_H_
-#define TOOLS_DMX_TRIGGER_CONFIGCOMMON_H_
+#ifndef TOOLS_OLA_TRIGGER_CONFIGCOMMON_H_
+#define TOOLS_OLA_TRIGGER_CONFIGCOMMON_H_
 
 #include <string>
 #include <vector>
@@ -40,4 +40,4 @@ using std::vector;
 
 typedef vector<ValueInterval*> IntervalList;
 
-#endif  // TOOLS_DMX_TRIGGER_CONFIGCOMMON_H_
+#endif  // TOOLS_OLA_TRIGGER_CONFIGCOMMON_H_

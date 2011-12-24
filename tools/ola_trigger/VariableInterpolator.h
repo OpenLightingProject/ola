@@ -18,8 +18,8 @@
  */
 
 
-#ifndef TOOLS_DMX_TRIGGER_VARIABLEINTERPOLATOR_H_
-#define TOOLS_DMX_TRIGGER_VARIABLEINTERPOLATOR_H_
+#ifndef TOOLS_OLA_TRIGGER_VARIABLEINTERPOLATOR_H_
+#define TOOLS_OLA_TRIGGER_VARIABLEINTERPOLATOR_H_
 
 #include <string>
 #include "tools/ola_trigger/Context.h"
@@ -30,4 +30,4 @@ bool InterpolateVariables(const string &input,
                           string *output,
                           const Context &context);
 
-#endif  // TOOLS_DMX_TRIGGER_VARIABLEINTERPOLATOR_H_
+#endif  // TOOLS_OLA_TRIGGER_VARIABLEINTERPOLATOR_H_

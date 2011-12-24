@@ -18,8 +18,8 @@
  */
 
 
-#ifndef TOOLS_DMX_TRIGGER_ACTION_H_
-#define TOOLS_DMX_TRIGGER_ACTION_H_
+#ifndef TOOLS_OLA_TRIGGER_ACTION_H_
+#define TOOLS_OLA_TRIGGER_ACTION_H_
 
 #include <stdint.h>
 #include <sstream>
@@ -150,6 +150,7 @@ class SlotActions {
     }
     ~SlotActions();
 
+    void SetSlotOffset(uint16_t offset) { m_slot_offset = offset; }
     uint16_t SlotOffset() const { return m_slot_offset; }
 
     bool AddAction(const ValueInterval &interval, Action *action);
@@ -213,4 +214,4 @@ class SlotActions {
     string IntervalsAsString(const ActionVector::const_iterator &start,
                              const ActionVector::const_iterator &end) const;
 };
-#endif  // TOOLS_DMX_TRIGGER_ACTION_H_
+#endif  // TOOLS_OLA_TRIGGER_ACTION_H_

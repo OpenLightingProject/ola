@@ -18,8 +18,8 @@
  * Copyright (C) 2011 Simon Newton
  */
 
-#ifndef TOOLS_DMX_TRIGGER_MOCKACTION_H_
-#define TOOLS_DMX_TRIGGER_MOCKACTION_H_
+#ifndef TOOLS_OLA_TRIGGER_MOCKACTION_H_
+#define TOOLS_OLA_TRIGGER_MOCKACTION_H_
 
 #include <cppunit/extensions/HelperMacros.h>
 #include <queue>
@@ -57,4 +57,4 @@ class MockAction: public Action {
   private:
     queue<uint8_t> m_values;
 };
-#endif  // TOOLS_DMX_TRIGGER_MOCKACTION_H_
+#endif  // TOOLS_OLA_TRIGGER_MOCKACTION_H_

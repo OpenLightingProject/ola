@@ -20,8 +20,8 @@
  * to pass in data during the parse stage.
  */
 
-#ifndef TOOLS_DMX_TRIGGER_PARSERGLOBALS_H_
-#define TOOLS_DMX_TRIGGER_PARSERGLOBALS_H_
+#ifndef TOOLS_OLA_TRIGGER_PARSERGLOBALS_H_
+#define TOOLS_OLA_TRIGGER_PARSERGLOBALS_H_
 
 #include <map>
 
@@ -32,4 +32,4 @@ extern class Context *global_context;
 typedef std::map<uint16_t, class SlotActions*> SlotActionMap;
 extern SlotActionMap global_slot_actions;
 
-#endif  // TOOLS_DMX_TRIGGER_PARSERGLOBALS_H_
+#endif  // TOOLS_OLA_TRIGGER_PARSERGLOBALS_H_

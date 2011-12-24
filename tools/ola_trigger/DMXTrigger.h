@@ -18,8 +18,8 @@
  */
 
 
-#ifndef TOOLS_DMX_TRIGGER_DMXTRIGGER_H_
-#define TOOLS_DMX_TRIGGER_DMXTRIGGER_H_
+#ifndef TOOLS_OLA_TRIGGER_DMXTRIGGER_H_
+#define TOOLS_OLA_TRIGGER_DMXTRIGGER_H_
 
 #include <ola/DmxBuffer.h>
 #include <vector>
@@ -46,4 +46,4 @@ class DMXTrigger {
     DmxBuffer m_last_buffer;
     SlotActionVector m_slot_actions;  // kept sorted
 };
-#endif  // TOOLS_DMX_TRIGGER_DMXTRIGGER_H_
+#endif  // TOOLS_OLA_TRIGGER_DMXTRIGGER_H_
