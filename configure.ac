@@ -16,7 +16,6 @@ AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
-AC_PROG_YACC
 AC_LIBTOOL_WIN32_DLL
 
 # Checks for typedefs, structures, and compiler characteristics.
@@ -63,6 +62,14 @@ AC_PROG_LEX
 if test "${LEX}" = ":"; then
  AC_MSG_ERROR([lex not found, please install flex or lex])
 fi
+
+# check for bison
+BISON=""
+AC_CHECK_PROG(BISON, [bison -V], bison)
+if test "${BISON}" != "bison"; then
+ AC_MSG_ERROR([bison not found, please install it])
+fi
+AC_SUBST(BISON)
 
 # check for ipv6 support - taken from unp
 AC_MSG_CHECKING(for IPv6 support)
