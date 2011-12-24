@@ -16,7 +16,6 @@ AC_PROG_CPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
-AC_PROG_LEX
 AC_PROG_YACC
 AC_LIBTOOL_WIN32_DLL
 
@@ -58,6 +57,12 @@ AM_CONDITIONAL(USING_WIN32, test "$host_os" = 'mingw32')
 
 # check for hash_map
 AC_CXX_STL_HASH
+
+# check for lex
+AC_PROG_LEX
+if test "${LEX}" = ":"; then
+ AC_MSG_ERROR([lex not found, please install flex or lex])
+fi
 
 # check for ipv6 support - taken from unp
 AC_MSG_CHECKING(for IPv6 support)
