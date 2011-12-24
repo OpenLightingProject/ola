@@ -28,11 +28,11 @@
 #include <sysexits.h>
 #include <string>
 #include <vector>
-#include "tools/dmx_trigger/Action.h"
-#include "tools/dmx_trigger/ConfigCommon.h"
-#include "tools/dmx_trigger/Context.h"
-#include "tools/dmx_trigger/ParserActions.h"
-#include "tools/dmx_trigger/ParserGlobals.h"
+#include "tools/ola_trigger/Action.h"
+#include "tools/ola_trigger/ConfigCommon.h"
+#include "tools/ola_trigger/Context.h"
+#include "tools/ola_trigger/ParserActions.h"
+#include "tools/ola_trigger/ParserGlobals.h"
 
 using std::string;
 using std::vector;

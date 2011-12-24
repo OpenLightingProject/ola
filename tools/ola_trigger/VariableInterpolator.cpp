@@ -19,7 +19,7 @@
 
 #include <ola/Logging.h>
 #include <string>
-#include "tools/dmx_trigger/VariableInterpolator.h"
+#include "tools/ola_trigger/VariableInterpolator.h"
 
 using std::string;
 

@@ -21,7 +21,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "tools/dmx_trigger/DMXTrigger.h"
+#include "tools/ola_trigger/DMXTrigger.h"
 
 using ola::DmxBuffer;
 

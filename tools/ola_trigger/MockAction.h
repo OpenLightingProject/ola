@@ -25,7 +25,7 @@
 #include <queue>
 #include <sstream>
 
-#include "tools/dmx_trigger/Action.h"
+#include "tools/ola_trigger/Action.h"
 
 using std::queue;
 

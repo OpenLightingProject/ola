@@ -20,7 +20,7 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "tools/dmx_trigger/Action.h"
+#include "tools/ola_trigger/Action.h"
 
 
 class IntervalTest: public CppUnit::TestFixture {

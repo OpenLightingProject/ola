@@ -13,37 +13,21 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * DMXTrigger.h
+ * VariableInterpolator.h
  * Copyright (C) 2011 Simon Newton
  */
 
 
-#ifndef TOOLS_DMX_TRIGGER_DMXTRIGGER_H_
-#define TOOLS_DMX_TRIGGER_DMXTRIGGER_H_
+#ifndef TOOLS_DMX_TRIGGER_VARIABLEINTERPOLATOR_H_
+#define TOOLS_DMX_TRIGGER_VARIABLEINTERPOLATOR_H_
 
-#include <ola/DmxBuffer.h>
-#include <vector>
+#include <string>
+#include "tools/ola_trigger/Context.h"
 
-#include "tools/dmx_trigger/Action.h"
+using std::string;
 
-using ola::DmxBuffer;
+bool InterpolateVariables(const string &input,
+                          string *output,
+                          const Context &context);
 
-
-/*
- * The class which manages the triggering.
- */
-class DMXTrigger {
-  public:
-    typedef std::vector<SlotActions*> SlotActionVector;
-
-    DMXTrigger(Context *context, const SlotActionVector &actions);
-    ~DMXTrigger() {}
-
-    void NewDMX(const DmxBuffer &data);
-
-  private:
-    Context *m_context;
-    DmxBuffer m_last_buffer;
-    SlotActionVector m_slot_actions;  // kept sorted
-};
-#endif  // TOOLS_DMX_TRIGGER_DMXTRIGGER_H_
+#endif  // TOOLS_DMX_TRIGGER_VARIABLEINTERPOLATOR_H_

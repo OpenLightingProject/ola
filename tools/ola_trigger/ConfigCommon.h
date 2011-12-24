@@ -33,7 +33,7 @@
 
 #include <string>
 #include <vector>
-#include "tools/dmx_trigger/Action.h"
+#include "tools/ola_trigger/Action.h"
 
 using std::string;
 using std::vector;

@@ -26,7 +26,7 @@
 #include <string>
 #include <vector>
 
-#include "tools/dmx_trigger/Context.h"
+#include "tools/ola_trigger/Context.h"
 
 using std::string;
 using std::vector;

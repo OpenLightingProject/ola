@@ -24,8 +24,8 @@
 #include <string>
 #include <vector>
 
-#include "tools/dmx_trigger/Action.h"
-#include "tools/dmx_trigger/VariableInterpolator.h"
+#include "tools/ola_trigger/Action.h"
+#include "tools/ola_trigger/VariableInterpolator.h"
 
 using std::string;
 using std::vector;

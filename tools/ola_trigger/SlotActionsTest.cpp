@@ -23,8 +23,8 @@
 #include <sstream>
 #include <string>
 
-#include "tools/dmx_trigger/Action.h"
-#include "tools/dmx_trigger/MockAction.h"
+#include "tools/ola_trigger/Action.h"
+#include "tools/ola_trigger/MockAction.h"
 
 
 class SlotActionsTest: public CppUnit::TestFixture {
