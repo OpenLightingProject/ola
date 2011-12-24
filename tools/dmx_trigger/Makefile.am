@@ -6,20 +6,20 @@ EXTRA_DIST = Actions.h ConfigCommon.h Context.h DMXTrigger.h MockAction.h \
 
 BUILT_SOURCES = config.tab.cpp config.tab.h lex.yy.cpp
 
-lib_LTLIBRARIES = libdmxtrigger.la
-libdmxtrigger_la_SOURCES = Action.cpp \
+lib_LTLIBRARIES = libolatrigger.la
+libolatrigger_la_SOURCES = Action.cpp \
                            Context.cpp \
                            DMXTrigger.cpp \
                            VariableInterpolator.cpp
-libdmxtrigger_la_LIBADD = $(top_builddir)/common/libolacommon.la
+libolatrigger_la_LIBADD = $(top_builddir)/common/libolacommon.la
 
-noinst_PROGRAMS = dmx_trigger
+bin_PROGRAMS = ola_trigger
 
-dmx_trigger_SOURCES = ParserActions.cpp config.tab.cpp dmx-trigger.cpp \
+ola_trigger_SOURCES = ParserActions.cpp config.tab.cpp ola-trigger.cpp \
                       lex.yy.cpp
-dmx_trigger_LDADD = $(top_builddir)/ola/libola.la \
+ola_trigger_LDADD = $(top_builddir)/ola/libola.la \
                     $(top_builddir)/common/libolacommon.la \
-                    ./libdmxtrigger.la \
+                    ./libolatrigger.la \
                     $(LEXLIB)
 
 lex.yy.cpp: config.lex
@@ -41,4 +41,4 @@ ActionTester_SOURCES = ActionTester.cpp ActionTest.cpp ContextTest.cpp \
 ActionTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 ActionTester_LDADD = $(CPPUNIT_LIBS) \
                      $(top_builddir)/common/libolacommon.la \
-                     ./libdmxtrigger.la
+                     ./libolatrigger.la
