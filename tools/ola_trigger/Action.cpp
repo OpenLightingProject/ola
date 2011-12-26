@@ -39,8 +39,10 @@ void VariableAssignmentAction::Execute(Context *context, uint8_t) {
   bool ok = InterpolateVariables(m_value, &interpolated_value, *context);
 
   if (ok) {
-    if (context)
+    if (context) {
+      OLA_INFO << "Setting " << m_variable << " to \"" << interpolated_value << "\"";
       context->Update(m_variable, interpolated_value);
+    }
   } else {
     OLA_WARN << "Failed to expand variables in " << m_value;
   }
