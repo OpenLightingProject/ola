@@ -54,6 +54,20 @@ void CommandAction::Execute(Context *context, uint8_t) {
   pid_t pid;
   char **args = BuildArgList(context);
 
+  if (ola::LogLevel() == ola::OLA_LOG_INFO) {
+    std::stringstream str;
+    char **ptr = args;
+    str << "Executing: " << m_command << " : [";
+    ptr++;  // skip over argv[0]
+    while (*ptr) {
+      str << "\"" << *ptr++ << "\"";
+      if (*ptr)
+        str << ", ";
+    }
+    str << "]";
+    OLA_INFO << str.str();
+  }
+
   if ((pid = fork()) < 0) {
     OLA_FATAL << "Could not fork to exec " << m_command;
     return;
