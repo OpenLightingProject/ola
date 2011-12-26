@@ -32,11 +32,13 @@ using ola::DmxBuffer;
 
 class DMXTriggerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(DMXTriggerTest);
-  CPPUNIT_TEST(testTrigger);
+  CPPUNIT_TEST(testRisingEdgeTrigger);
+  CPPUNIT_TEST(testFallingEdgeTrigger);
   CPPUNIT_TEST_SUITE_END();
 
   public:
-    void testTrigger();
+    void testRisingEdgeTrigger();
+    void testFallingEdgeTrigger();
 
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
@@ -48,15 +50,16 @@ CPPUNIT_TEST_SUITE_REGISTRATION(DMXTriggerTest);
 
 
 /**
- * Check that triggering works correctly.
+ * Check that triggering on a rising edge works correctly.
  */
-void DMXTriggerTest::testTrigger() {
+void DMXTriggerTest::testRisingEdgeTrigger() {
   // setup the actions
   vector<SlotActions*> slots;
   SlotActions slot_actions(2);
   MockAction *action = new MockAction();
+  BadAction *bad_action = new BadAction();
   ValueInterval interval(10, 20);
-  slot_actions.AddAction(interval, action);
+  slot_actions.AddAction(interval, action, bad_action);
   slots.push_back(&slot_actions);
 
   Context context;
@@ -68,12 +71,13 @@ void DMXTriggerTest::testTrigger() {
   trigger.NewDMX(buffer);
   CPPUNIT_ASSERT(action->NoCalls());
 
-  // trigger
+  // trigger rising edge
   buffer.SetFromString("0,0,10");
   trigger.NewDMX(buffer);
   action->CheckForValue(__LINE__, 10);
 
   // now send the same again
+  CPPUNIT_ASSERT(action->NoCalls());
   trigger.NewDMX(buffer);
   CPPUNIT_ASSERT(action->NoCalls());
 
@@ -91,4 +95,58 @@ void DMXTriggerTest::testTrigger() {
   buffer.SetFromString("10,100,10,20");
   trigger.NewDMX(buffer);
   CPPUNIT_ASSERT(action->NoCalls());
+}
+
+
+/**
+ * Test that falling edges trigger
+ */
+void DMXTriggerTest::testFallingEdgeTrigger() {
+  // setup the actions
+  vector<SlotActions*> slots;
+  SlotActions slot_actions(2);
+  MockAction *rising_action = new MockAction();
+  MockAction *falling_action = new MockAction();
+  ValueInterval interval(10, 20);
+  slot_actions.AddAction(interval, rising_action, falling_action);
+  slots.push_back(&slot_actions);
+
+  Context context;
+  DMXTrigger trigger(&context, slots);
+  DmxBuffer buffer;
+
+  // trigger
+  buffer.SetFromString("0,0,20");
+  trigger.NewDMX(buffer);
+  rising_action->CheckForValue(__LINE__, 20);
+  CPPUNIT_ASSERT(falling_action->NoCalls());
+
+  // trigger a falling edge
+  buffer.SetFromString("0,0,19");
+  trigger.NewDMX(buffer);
+  CPPUNIT_ASSERT(rising_action->NoCalls());
+  falling_action->CheckForValue(__LINE__, 19);
+
+  // now send the same again
+  trigger.NewDMX(buffer);
+  CPPUNIT_ASSERT(rising_action->NoCalls());
+  CPPUNIT_ASSERT(falling_action->NoCalls());
+
+  // shorten the frame
+  buffer.SetFromString("0,0");
+  trigger.NewDMX(buffer);
+  CPPUNIT_ASSERT(rising_action->NoCalls());
+  CPPUNIT_ASSERT(falling_action->NoCalls());
+
+  // lengthen again
+  buffer.SetFromString("0,0,19,0");
+  trigger.NewDMX(buffer);
+  rising_action->CheckForValue(__LINE__, 19);
+  CPPUNIT_ASSERT(falling_action->NoCalls());
+
+  // change everything else
+  buffer.SetFromString("10,100,19,20");
+  trigger.NewDMX(buffer);
+  CPPUNIT_ASSERT(rising_action->NoCalls());
+  CPPUNIT_ASSERT(falling_action->NoCalls());
 }

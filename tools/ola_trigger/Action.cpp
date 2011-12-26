@@ -150,8 +150,10 @@ SlotActions::~SlotActions() {
     delete iter->interval;
   m_actions.clear();
 
-  if (m_default_action)
-    m_default_action->DeRef();
+  if (m_default_rising_action)
+    m_default_rising_action->DeRef();
+  if (m_default_falling_action)
+    m_default_falling_action->DeRef();
 }
 
 
@@ -164,10 +166,12 @@ SlotActions::~SlotActions() {
  * @returns true if the interval was added, false otherwise.
  */
 bool SlotActions::AddAction(const ValueInterval &interval_arg,
-                            Action *action) {
+                            Action *rising_action,
+                            Action *falling_action) {
   ActionInterval action_interval(
       new ValueInterval(interval_arg),
-      action);
+      rising_action,
+      falling_action);
 
   if (m_actions.empty()) {
     m_actions.push_back(action_interval);
@@ -244,40 +248,50 @@ bool SlotActions::AddAction(const ValueInterval &interval_arg,
 
 
 /**
- * Set the default action. If a default already exists this replaces it.
+ * Set the default rising action. If a default already exists this replaces it.
  * @param action the action to install as the default
  * @returns true if there was already a default action.
  */
-bool SlotActions::SetDefaultAction(Action *action) {
-  bool previous_default_set = false;
-  action->Ref();
+bool SlotActions::SetDefaultRisingAction(Action *action) {
+  return SetDefaultAction(&m_default_rising_action, action);
+}
 
-  if (m_default_action) {
-    previous_default_set = true;
-    action->DeRef();
-  }
-  m_default_action = action;
-  return previous_default_set;
+
+/**
+ * Set the default falling action. If a default already exists this replaces
+ * it.
+ * @param action the action to install as the default
+ * @returns true if there was already a default action.
+ */
+bool SlotActions::SetDefaultFallingAction(Action *action) {
+  return SetDefaultAction(&m_default_falling_action, action);
 }
 
 
 /**
  * Lookup the action for a value, and if we find one, execute it. Otherwise
  * execute the default action if there is one.
+ * @param context the Context to use
  * @param value the value to look up.
+ * @param edge_type either RISING or FALLING
  */
-void SlotActions::TakeAction(Context *context, uint8_t value) {
+void SlotActions::TakeAction(Context *context,
+                             uint8_t value,
+                             EdgeType edge_type) {
   // set the context correctly
   if (context) {
     context->SetSlotOffset(m_slot_offset);
     context->SetSlotValue(value);
   }
 
-  Action *action = LocateMatchingAction(value);
+  Action *action = LocateMatchingAction(value, edge_type);
   if (action) {
     action->Execute(context, value);
-  } else if (m_default_action) {
-    m_default_action->Execute(context, value);
+  } else {
+    if (edge_type == RISING && m_default_rising_action)
+      m_default_rising_action->Execute(context, value);
+    else if (edge_type == FALLING && m_default_falling_action)
+      m_default_falling_action->Execute(context, value);
   }
 }
 
@@ -318,9 +332,10 @@ bool SlotActions::IntervalsIntersect(const ValueInterval *a1,
 /**
  * Given a value, find the matching ValueInterval.
  * @param value the value to search for
+ * @param edge_type either RISING or FALLING
  * @returns the Action matching the value,  or NULL if there isn't one.
  */
-Action *SlotActions::LocateMatchingAction(uint8_t value) {
+Action *SlotActions::LocateMatchingAction(uint8_t value, EdgeType edge_type) {
   if (m_actions.empty())
     return NULL;
 
@@ -333,10 +348,10 @@ Action *SlotActions::LocateMatchingAction(uint8_t value) {
   // ok, we know the value lies between the intervals we have, first exclude
   // the endpoints
   if (lower->interval->Contains(value))
-    return lower->action;
+    return edge_type == RISING ? lower->rising_action : lower->falling_action;
 
   if (upper->interval->Contains(value))
-    return upper->action;
+    return edge_type == RISING ? upper->rising_action : upper->falling_action;
 
   // value isn't at the lower or upper interval, but lies somewhere between
   // the two.
@@ -351,7 +366,7 @@ Action *SlotActions::LocateMatchingAction(uint8_t value) {
       return NULL;
 
     if (mid->interval->Contains(value)) {
-      return mid->action;
+      return edge_type == RISING ? mid->rising_action : mid->falling_action;
     } else if (value <= mid->interval->Lower()) {
       upper = mid;
     } else if (value >= mid->interval->Upper()) {
@@ -383,4 +398,21 @@ string SlotActions::IntervalsAsString(
     str << *(iter->interval);
   }
   return str.str();
+}
+
+
+/**
+ * Set one of the default actions.
+ */
+bool SlotActions::SetDefaultAction(Action **action_to_set,
+                                   Action *new_action) {
+  bool previous_default_set = false;
+  new_action->Ref();
+
+  if (*action_to_set) {
+    previous_default_set = true;
+    (*action_to_set)->DeRef();
+  }
+  *action_to_set = new_action;
+  return previous_default_set;
 }

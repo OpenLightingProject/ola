@@ -48,7 +48,10 @@ class MockAction: public Action {
                                    static_cast<size_t>(1),
                                    m_values.size());
       uint8_t value = m_values.front();
-      CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(), expected_value, value);
+      CPPUNIT_ASSERT_EQUAL_MESSAGE(
+          str.str(),
+          static_cast<int>(expected_value),
+          static_cast<int>(value));
       m_values.pop();
     }
 
@@ -56,5 +59,20 @@ class MockAction: public Action {
 
   private:
     queue<uint8_t> m_values;
+};
+
+
+/**
+ * An action that should never be run.
+ */
+class BadAction: public Action {
+  public:
+    BadAction() : Action() {}
+
+    void Execute(Context*, uint8_t slot_value) {
+      std::stringstream str;
+      str << "Incorrect action called for " << static_cast<int>(slot_value);
+      CPPUNIT_FAIL(str.str());
+    }
 };
 #endif  // TOOLS_OLA_TRIGGER_MOCKACTION_H_

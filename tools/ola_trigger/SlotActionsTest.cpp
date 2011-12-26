@@ -51,52 +51,37 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SlotActionsTest);
 
 
 /**
- * An action that should never be run.
- */
-class BadAction: public Action {
-  public:
-    BadAction() : Action() {}
-
-    void Execute(Context*, uint8_t slot_value) {
-      std::stringstream str;
-      str << "Incorrect action called for " << static_cast<int>(slot_value);
-      CPPUNIT_FAIL(str.str());
-    }
-};
-
-
-/**
  * Chech that we don't add Intervals which intersect
  */
 void SlotActionsTest::testIntersectingIntervalAddition() {
   SlotActions slot_actions(0);
-  CPPUNIT_ASSERT(slot_actions.AddAction(ValueInterval(10, 20), NULL));
+  CPPUNIT_ASSERT(slot_actions.AddAction(ValueInterval(10, 20), NULL, NULL));
 
-  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(10, 20), NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(8, 10), NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(10, 10), NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(10, 11), NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(10, 25), NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(15, 25), NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(19, 20), NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(20, 20), NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(20, 25), NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(10, 20), NULL, NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(8, 10), NULL, NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(10, 10), NULL, NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(10, 11), NULL, NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(10, 25), NULL, NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(15, 25), NULL, NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(19, 20), NULL, NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(20, 20), NULL, NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(20, 25), NULL, NULL));
 
   // now add another interval
-  CPPUNIT_ASSERT(slot_actions.AddAction(ValueInterval(30, 35), NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(29, 30), NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(30, 30), NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(30, 35), NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(34, 35), NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(34, 36), NULL));
+  CPPUNIT_ASSERT(slot_actions.AddAction(ValueInterval(30, 35), NULL, NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(29, 30), NULL, NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(30, 30), NULL, NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(30, 35), NULL, NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(34, 35), NULL, NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(34, 36), NULL, NULL));
 
   // and another one
-  CPPUNIT_ASSERT(slot_actions.AddAction(ValueInterval(40, 45), NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(29, 30), NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(30, 30), NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(30, 35), NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(34, 35), NULL));
-  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(34, 36), NULL));
+  CPPUNIT_ASSERT(slot_actions.AddAction(ValueInterval(40, 45), NULL, NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(29, 30), NULL, NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(30, 30), NULL, NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(30, 35), NULL, NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(34, 35), NULL, NULL));
+  CPPUNIT_ASSERT(!slot_actions.AddAction(ValueInterval(34, 36), NULL, NULL));
 }
 
 
@@ -105,34 +90,34 @@ void SlotActionsTest::testIntersectingIntervalAddition() {
  */
 void SlotActionsTest::testIntervalAddition() {
   SlotActions slot_actions(0);
-  CPPUNIT_ASSERT(slot_actions.AddAction(ValueInterval(10, 20), NULL));
+  CPPUNIT_ASSERT(slot_actions.AddAction(ValueInterval(10, 20), NULL, NULL));
   CPPUNIT_ASSERT_EQUAL(string("[10, 20]"), slot_actions.IntervalsAsString());
 
   // add before the begining
-  CPPUNIT_ASSERT(slot_actions.AddAction(ValueInterval(5, 6), NULL));
+  CPPUNIT_ASSERT(slot_actions.AddAction(ValueInterval(5, 6), NULL, NULL));
   CPPUNIT_ASSERT_EQUAL(string("[5, 6], [10, 20]"),
                        slot_actions.IntervalsAsString());
 
   // add at the end
-  CPPUNIT_ASSERT(slot_actions.AddAction(ValueInterval(100, 104), NULL));
+  CPPUNIT_ASSERT(slot_actions.AddAction(ValueInterval(100, 104), NULL, NULL));
   CPPUNIT_ASSERT_EQUAL(string("[5, 6], [10, 20], [100, 104]"),
                        slot_actions.IntervalsAsString());
 
   // now try adding some in the middle
-  CPPUNIT_ASSERT(slot_actions.AddAction(ValueInterval(80, 82), NULL));
+  CPPUNIT_ASSERT(slot_actions.AddAction(ValueInterval(80, 82), NULL, NULL));
   CPPUNIT_ASSERT_EQUAL(string("[5, 6], [10, 20], [80, 82], [100, 104]"),
                        slot_actions.IntervalsAsString());
 
-  CPPUNIT_ASSERT(slot_actions.AddAction(ValueInterval(76, 76), NULL));
+  CPPUNIT_ASSERT(slot_actions.AddAction(ValueInterval(76, 76), NULL, NULL));
   CPPUNIT_ASSERT_EQUAL(string("[5, 6], [10, 20], 76, [80, 82], [100, 104]"),
                        slot_actions.IntervalsAsString());
 
-  CPPUNIT_ASSERT(slot_actions.AddAction(ValueInterval(70, 72), NULL));
+  CPPUNIT_ASSERT(slot_actions.AddAction(ValueInterval(70, 72), NULL, NULL));
   CPPUNIT_ASSERT_EQUAL(
       string("[5, 6], [10, 20], [70, 72], 76, [80, 82], [100, 104]"),
       slot_actions.IntervalsAsString());
 
-  CPPUNIT_ASSERT(slot_actions.AddAction(ValueInterval(65, 69), NULL));
+  CPPUNIT_ASSERT(slot_actions.AddAction(ValueInterval(65, 69), NULL, NULL));
   CPPUNIT_ASSERT_EQUAL(
       string("[5, 6], [10, 20], [65, 69], [70, 72], 76, [80, 82], [100, 104]"),
       slot_actions.IntervalsAsString());
@@ -145,70 +130,136 @@ void SlotActionsTest::testIntervalAddition() {
 void SlotActionsTest::testActionMatching() {
   SlotActions slot_actions(0);
 
-  MockAction *action1 = new MockAction();
-  slot_actions.AddAction(ValueInterval(10, 20), action1);
+  MockAction *rising_action1 = new MockAction();
+  MockAction *falling_action1 = new MockAction();
+  slot_actions.AddAction(
+      ValueInterval(10, 20), rising_action1, falling_action1);
 
-  MockAction *default_action = new MockAction();
-  slot_actions.SetDefaultAction(default_action);
+  MockAction *default_rising_action = new MockAction();
+  CPPUNIT_ASSERT(!slot_actions.SetDefaultRisingAction(default_rising_action));
+  MockAction *default_falling_action = new MockAction();
+  CPPUNIT_ASSERT(
+      !slot_actions.SetDefaultFallingAction(default_falling_action));
 
-  slot_actions.TakeAction(NULL, 10);
-  action1->CheckForValue(__LINE__, 10);
-  CPPUNIT_ASSERT(default_action->NoCalls());
+  slot_actions.TakeAction(NULL, 10, SlotActions::RISING);
+  rising_action1->CheckForValue(__LINE__, 10);
+  CPPUNIT_ASSERT(falling_action1->NoCalls());
+  CPPUNIT_ASSERT(default_rising_action->NoCalls());
+  CPPUNIT_ASSERT(default_falling_action->NoCalls());
 
-  slot_actions.TakeAction(NULL, 20);
-  action1->CheckForValue(__LINE__, 20);
-  CPPUNIT_ASSERT(default_action->NoCalls());
+  slot_actions.TakeAction(NULL, 20, SlotActions::RISING);
+  rising_action1->CheckForValue(__LINE__, 20);
+  CPPUNIT_ASSERT(falling_action1->NoCalls());
+  CPPUNIT_ASSERT(default_rising_action->NoCalls());
+  CPPUNIT_ASSERT(default_falling_action->NoCalls());
 
-  slot_actions.TakeAction(NULL, 0);
-  CPPUNIT_ASSERT(action1->NoCalls());
-  default_action->CheckForValue(__LINE__, 0);
+  slot_actions.TakeAction(NULL, 2, SlotActions::FALLING);
+  CPPUNIT_ASSERT(rising_action1->NoCalls());
+  CPPUNIT_ASSERT(falling_action1->NoCalls());
+  CPPUNIT_ASSERT(default_rising_action->NoCalls());
+  default_falling_action->CheckForValue(__LINE__, 2);
 
-  slot_actions.TakeAction(NULL, 9);
-  CPPUNIT_ASSERT(action1->NoCalls());
-  default_action->CheckForValue(__LINE__, 9);
+  slot_actions.TakeAction(NULL, 9, SlotActions::RISING);
+  CPPUNIT_ASSERT(rising_action1->NoCalls());
+  CPPUNIT_ASSERT(falling_action1->NoCalls());
+  default_rising_action->CheckForValue(__LINE__, 9);
+  CPPUNIT_ASSERT(default_falling_action->NoCalls());
 
-  slot_actions.TakeAction(NULL, 21);
-  CPPUNIT_ASSERT(action1->NoCalls());
-  default_action->CheckForValue(__LINE__, 21);
+  slot_actions.TakeAction(NULL, 21, SlotActions::RISING);
+  CPPUNIT_ASSERT(rising_action1->NoCalls());
+  CPPUNIT_ASSERT(falling_action1->NoCalls());
+  default_rising_action->CheckForValue(__LINE__, 21);
+  CPPUNIT_ASSERT(default_falling_action->NoCalls());
 
   // add another action
-  slot_actions.AddAction(ValueInterval(30, 40), action1);
+  MockAction *rising_action2 = new MockAction();
+  MockAction *falling_action2 = new MockAction();
+  CPPUNIT_ASSERT(slot_actions.AddAction(
+        ValueInterval(30, 40), rising_action2, falling_action2));
 
-  slot_actions.TakeAction(NULL, 30);
-  action1->CheckForValue(__LINE__, 30);
-  CPPUNIT_ASSERT(default_action->NoCalls());
+  slot_actions.TakeAction(NULL, 30, SlotActions::RISING);
+  CPPUNIT_ASSERT(rising_action1->NoCalls());
+  CPPUNIT_ASSERT(falling_action1->NoCalls());
+  rising_action2->CheckForValue(__LINE__, 30);
+  CPPUNIT_ASSERT(falling_action2->NoCalls());
+  CPPUNIT_ASSERT(default_rising_action->NoCalls());
+  CPPUNIT_ASSERT(default_falling_action->NoCalls());
 
-  slot_actions.TakeAction(NULL, 35);
-  action1->CheckForValue(__LINE__, 35);
-  CPPUNIT_ASSERT(default_action->NoCalls());
+  slot_actions.TakeAction(NULL, 35, SlotActions::RISING);
+  CPPUNIT_ASSERT(rising_action1->NoCalls());
+  CPPUNIT_ASSERT(falling_action1->NoCalls());
+  rising_action2->CheckForValue(__LINE__, 35);
+  CPPUNIT_ASSERT(falling_action2->NoCalls());
+  CPPUNIT_ASSERT(default_rising_action->NoCalls());
+  CPPUNIT_ASSERT(default_falling_action->NoCalls());
 
-  slot_actions.TakeAction(NULL, 40);
-  action1->CheckForValue(__LINE__, 40);
-  CPPUNIT_ASSERT(default_action->NoCalls());
+  slot_actions.TakeAction(NULL, 40, SlotActions::RISING);
+  CPPUNIT_ASSERT(rising_action1->NoCalls());
+  CPPUNIT_ASSERT(falling_action1->NoCalls());
+  rising_action2->CheckForValue(__LINE__, 40);
+  CPPUNIT_ASSERT(falling_action2->NoCalls());
+  CPPUNIT_ASSERT(default_rising_action->NoCalls());
+  CPPUNIT_ASSERT(default_falling_action->NoCalls());
 
-  // and another
-  slot_actions.AddAction(ValueInterval(23, 27), action1);
+  // and another two actions
+  MockAction *rising_action3 = new MockAction();
+  CPPUNIT_ASSERT(
+      slot_actions.AddAction(ValueInterval(23, 27), rising_action3, NULL));
 
-  slot_actions.TakeAction(NULL, 23);
-  action1->CheckForValue(__LINE__, 23);
-  CPPUNIT_ASSERT(default_action->NoCalls());
+  MockAction *falling_action3 = new MockAction();
+  CPPUNIT_ASSERT(
+      slot_actions.AddAction(ValueInterval(28, 29), NULL, falling_action3));
 
-  slot_actions.TakeAction(NULL, 25);
-  action1->CheckForValue(__LINE__, 25);
-  CPPUNIT_ASSERT(default_action->NoCalls());
+  slot_actions.TakeAction(NULL, 28, SlotActions::FALLING);
+  CPPUNIT_ASSERT(rising_action1->NoCalls());
+  CPPUNIT_ASSERT(falling_action1->NoCalls());
+  CPPUNIT_ASSERT(rising_action2->NoCalls());
+  CPPUNIT_ASSERT(falling_action2->NoCalls());
+  CPPUNIT_ASSERT(rising_action3->NoCalls());
+  falling_action3->CheckForValue(__LINE__, 28);
+  CPPUNIT_ASSERT(default_rising_action->NoCalls());
+  CPPUNIT_ASSERT(default_falling_action->NoCalls());
 
-  slot_actions.TakeAction(NULL, 27);
-  action1->CheckForValue(__LINE__, 27);
-  CPPUNIT_ASSERT(default_action->NoCalls());
+  slot_actions.TakeAction(NULL, 25, SlotActions::FALLING);
+  CPPUNIT_ASSERT(rising_action1->NoCalls());
+  CPPUNIT_ASSERT(falling_action1->NoCalls());
+  CPPUNIT_ASSERT(rising_action2->NoCalls());
+  CPPUNIT_ASSERT(falling_action2->NoCalls());
+  CPPUNIT_ASSERT(rising_action3->NoCalls());
+  CPPUNIT_ASSERT(falling_action3->NoCalls());
+  CPPUNIT_ASSERT(default_rising_action->NoCalls());
+  default_falling_action->CheckForValue(__LINE__, 25);
+
+  slot_actions.TakeAction(NULL, 27, SlotActions::RISING);
+  CPPUNIT_ASSERT(rising_action1->NoCalls());
+  CPPUNIT_ASSERT(falling_action1->NoCalls());
+  CPPUNIT_ASSERT(rising_action2->NoCalls());
+  CPPUNIT_ASSERT(falling_action2->NoCalls());
+  rising_action3->CheckForValue(__LINE__, 27);
+  CPPUNIT_ASSERT(falling_action3->NoCalls());
+  CPPUNIT_ASSERT(default_rising_action->NoCalls());
+  CPPUNIT_ASSERT(default_falling_action->NoCalls());
 
   // check the default case
-  slot_actions.TakeAction(NULL, 22);
-  CPPUNIT_ASSERT(action1->NoCalls());
-  default_action->CheckForValue(__LINE__, 22);
+  slot_actions.TakeAction(NULL, 22, SlotActions::FALLING);
+  CPPUNIT_ASSERT(rising_action1->NoCalls());
+  CPPUNIT_ASSERT(falling_action1->NoCalls());
+  CPPUNIT_ASSERT(rising_action2->NoCalls());
+  CPPUNIT_ASSERT(falling_action2->NoCalls());
+  CPPUNIT_ASSERT(rising_action3->NoCalls());
+  CPPUNIT_ASSERT(falling_action3->NoCalls());
+  CPPUNIT_ASSERT(default_rising_action->NoCalls());
+  default_falling_action->CheckForValue(__LINE__, 22);
 
-  slot_actions.TakeAction(NULL, 28);
-  CPPUNIT_ASSERT(action1->NoCalls());
-  default_action->CheckForValue(__LINE__, 28);
+  slot_actions.TakeAction(NULL, 28, SlotActions::RISING);
+  CPPUNIT_ASSERT(rising_action1->NoCalls());
+  CPPUNIT_ASSERT(falling_action1->NoCalls());
+  CPPUNIT_ASSERT(rising_action2->NoCalls());
+  CPPUNIT_ASSERT(falling_action2->NoCalls());
+  CPPUNIT_ASSERT(rising_action3->NoCalls());
+  CPPUNIT_ASSERT(falling_action3->NoCalls());
+  default_rising_action->CheckForValue(__LINE__, 28);
+  CPPUNIT_ASSERT(default_falling_action->NoCalls());
 }
 
 
@@ -218,12 +269,47 @@ void SlotActionsTest::testActionMatching() {
 void SlotActionsTest::testDefaultAction() {
   SlotActions slot_actions(1);
 
-  MockAction *default_action = new MockAction();
-  CPPUNIT_ASSERT(!slot_actions.SetDefaultAction(default_action));
+  MockAction *default_rising_action = new MockAction();
+  MockAction *default_falling_action = new MockAction();
+  CPPUNIT_ASSERT(!slot_actions.SetDefaultRisingAction(default_rising_action));
+  CPPUNIT_ASSERT(
+      !slot_actions.SetDefaultFallingAction(default_falling_action));
 
-  slot_actions.TakeAction(NULL, 100);
-  default_action->CheckForValue(__LINE__, 100);
+  // signal a rising edge
+  slot_actions.TakeAction(NULL, 100, SlotActions::RISING);
+  default_rising_action->CheckForValue(__LINE__, 100);
+  CPPUNIT_ASSERT(default_falling_action->NoCalls());
 
-  // now try to add another default one
-  CPPUNIT_ASSERT(slot_actions.SetDefaultAction(default_action));
+  // signal a falling edge
+  slot_actions.TakeAction(NULL, 100, SlotActions::FALLING);
+  CPPUNIT_ASSERT(default_rising_action->NoCalls());
+  default_falling_action->CheckForValue(__LINE__, 100);
+
+  // now try to add another default one, ref the existing actions otherwise
+  // we'll delete them
+  default_rising_action->Ref();
+  default_falling_action->Ref();
+  MockAction *default_rising_action2 = new MockAction();
+  MockAction *default_falling_action2 = new MockAction();
+  CPPUNIT_ASSERT(
+      slot_actions.SetDefaultRisingAction(default_rising_action2));
+  CPPUNIT_ASSERT(
+      slot_actions.SetDefaultFallingAction(default_falling_action2));
+
+  // make sure the new actions are used
+  slot_actions.TakeAction(NULL, 100, SlotActions::RISING);
+  CPPUNIT_ASSERT(default_rising_action->NoCalls());
+  CPPUNIT_ASSERT(default_falling_action->NoCalls());
+  default_rising_action2->CheckForValue(__LINE__, 100);
+  CPPUNIT_ASSERT(default_falling_action2->NoCalls());
+
+  // signal a falling edge
+  slot_actions.TakeAction(NULL, 100, SlotActions::FALLING);
+  CPPUNIT_ASSERT(default_rising_action->NoCalls());
+  CPPUNIT_ASSERT(default_falling_action->NoCalls());
+  CPPUNIT_ASSERT(default_rising_action2->NoCalls());
+  default_falling_action2->CheckForValue(__LINE__, 100);
+
+  default_rising_action->DeRef();
+  default_falling_action->DeRef();
 }

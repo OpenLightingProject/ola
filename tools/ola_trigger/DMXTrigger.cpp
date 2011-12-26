@@ -18,6 +18,7 @@
  */
 
 #include <ola/DmxBuffer.h>
+#include <ola/Logging.h>
 #include <algorithm>
 #include <vector>
 
@@ -51,20 +52,28 @@ void DMXTrigger::NewDMX(const DmxBuffer &data) {
     uint8_t dmx_value = data.Get(slot_number);
 
     // compare to the last buffer
-    if (m_last_buffer.Size() <= slot_number ||
-        m_last_buffer.Get(slot_number) != dmx_value) {
-      // fire the trigger
-      (*iter)->TakeAction(m_context, dmx_value);
+    if (slot_number <= m_last_buffer.Size()) {
+      uint8_t old_value = m_last_buffer.Get(slot_number);
+      if (old_value != dmx_value)
+        // fire the trigger
+        (*iter)->TakeAction(
+            m_context,
+            dmx_value,
+            dmx_value > old_value ? SlotActions::RISING : SlotActions::FALLING);
+    } else {
+      /*
+       * The last frame was too short and didn't contain this slot, trigger a
+       * RISING action.
+       * Note: This will cause a trigger to fire if the frame size shrinks.
+       * I'm not sure if this is the behavior we want.
+       * e.g. Assuming something triggers when slot 2 > 0:
+       * [0, 0, 0]
+       * [0, 0, 10]  // trigger
+       * [0, 0]
+       * [0, 0, 10]  // trigger again
+       */
+        (*iter)->TakeAction(m_context, dmx_value, SlotActions::RISING);
     }
   }
-  /*
-   * Note: This will cause a trigger to fire if the frame size shrinks.
-   * I'm not sure if this is the behavior we want.
-   * e.g. Assuming something triggers when slot 2 > 0:
-   * [0, 0, 0]
-   * [0, 0, 10]  // trigger
-   * [0, 0]
-   * [0, 0, 10]  // trigger again
-   */
   m_last_buffer = data;
 }

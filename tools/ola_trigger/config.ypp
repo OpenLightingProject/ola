@@ -14,6 +14,7 @@ int yylex(void);
   class Action *action;
   IntervalList *interval_list;
   ValueInterval *interval;
+  pair<Action*, Action*> *action_pair;
 }
 
 %start  config
@@ -29,9 +30,13 @@ int yylex(void);
 %type <str_list> arguments
 %type <str_val> argument
 %type <str_list> assignment
-%type <action> action;
-%type <interval_list> slot_values;
-%type <interval> slot_value_range;
+%type <action> action
+%type <action_pair> actions
+%type <action> falling_action
+%type <action> optional_falling_action
+%type <interval_list> slot_values_match
+%type <interval_list> slot_values
+%type <interval> slot_value_range
 
 %%
 config :
@@ -46,7 +51,7 @@ line :
 
 expression :
       assignment { SetDefaultValue($1); }
-    | slot_action
+    | action_directive
 ;
 
 assignment :
@@ -69,13 +74,20 @@ optional_whitespace:
     | WHITESPACE
 ;
 
-slot_action:
-      INTEGER_LITERAL WHITESPACE slot_values WHITESPACE action {
-        SetSlotAction($1, $3, $5);
+action_directive:
+      INTEGER_LITERAL WHITESPACE slot_values_match WHITESPACE actions {
+        if ($3 == NULL) {
+          SetDefaultAction($1, $5->first, $5->second);
+        } else {
+          SetSlotAction($1, $3, $5->first, $5->second);
+        }
+        delete $5;
       }
-    | INTEGER_LITERAL WHITESPACE '%' WHITESPACE action {
-        SetDefaultAction($1, $5);
-      }
+;
+
+slot_values_match:
+      '%' { $$ = NULL; }
+    | slot_values { $$ = $1; }
 ;
 
 slot_values:
@@ -86,6 +98,23 @@ slot_values:
 slot_value_range:
       INTEGER_LITERAL { $$ = CreateInterval($1, $1); }
     | INTEGER_LITERAL '-' INTEGER_LITERAL { $$ = CreateInterval($1, $3); }
+;
+
+actions:
+      action { $$ = new ActionPair($1, $1); }
+    | falling_action { $$ = new ActionPair(NULL, $1); }
+    | '+' action optional_falling_action {
+        $$ = new pair<Action*, Action*>($2, $3);
+      }
+;
+
+falling_action:
+    '-' action { $$ = $2; }
+;
+
+optional_falling_action:
+      /* empty */ { $$ = NULL; }
+    | WHITESPACE falling_action { $$ = $2; }
 ;
 
 action:

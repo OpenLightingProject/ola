@@ -29,12 +29,16 @@ whitespace   [ \t]
                     s->erase(s->size() - 1, 1);
                     yylval.str_val = s;
                     return QUOTED_VALUE; }
-^#[^\n]*          {}
+\'(\\.|[^\\'])*\' { count();
+                    string *s = new string(++yytext);
+                    s->erase(s->size() - 1, 1);
+                    yylval.str_val = s;
+                    return QUOTED_VALUE; }
+^#[^\n]*             {}
 {whitespace}+#[^\n]* {}
 {whitespace}+     { count(); return WHITESPACE; }
 \n                { count(); yylineno++; return NEW_LINE; }
-[%=,`\-/]         { count(); return (int) yytext[0]; }
-.                 { count(); return (int) yytext[0]; }
+[%=,`\-/+]         { count(); return (int) yytext[0]; }
 
 %%
 

@@ -144,13 +144,14 @@ ValueInterval *CreateInterval(unsigned int lower, unsigned int upper) {
  */
 void SetSlotAction(unsigned int slot,
                    IntervalList *slot_intervals,
-                   Action *action) {
+                   Action *rising_action,
+                   Action *falling_action) {
   CheckSlotOffset(slot);
   SlotActions *slot_actions = LookupSlot(slot);
 
   IntervalList::iterator iter = slot_intervals->begin();
   for (; iter != slot_intervals->end(); iter++) {
-    if (!slot_actions->AddAction(**iter, action)) {
+    if (!slot_actions->AddAction(**iter, rising_action, falling_action)) {
       OLA_FATAL << "Line " << yylineno << ": value " << **iter <<
          " collides with existing values.";
       exit(EX_DATAERR);
@@ -166,12 +167,23 @@ void SetSlotAction(unsigned int slot,
  * @param slot the slot offset
  * @param action the action to use as the default
  */
-void SetDefaultAction(unsigned int slot, Action *action) {
+void SetDefaultAction(unsigned int slot,
+                      Action *rising_action,
+                      Action *falling_action) {
   CheckSlotOffset(slot);
   SlotActions *slot_actions = LookupSlot(slot);
-  if (slot_actions->SetDefaultAction(action)) {
-    OLA_FATAL << "Multiple default actions defined for slot " << slot <<
-        ", line " << yylineno;
-    exit(EX_DATAERR);
+  if (rising_action) {
+    if (slot_actions->SetDefaultRisingAction(rising_action)) {
+      OLA_FATAL << "Multiple default rising actions defined for slot " << slot
+          << ", line " << yylineno;
+      exit(EX_DATAERR);
+    }
+  }
+  if (falling_action) {
+    if (slot_actions->SetDefaultFallingAction(falling_action)) {
+      OLA_FATAL << "Multiple default falling actions defined for slot " << slot
+          << ", line " << yylineno;
+      exit(EX_DATAERR);
+    }
   }
 }

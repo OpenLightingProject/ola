@@ -25,6 +25,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <ola/Logging.h>
 
 #include "tools/ola_trigger/Context.h"
 
@@ -144,8 +145,14 @@ class ValueInterval {
  */
 class SlotActions {
   public:
+    typedef enum {
+      RISING,
+      FALLING,
+    } EdgeType;
+
     explicit SlotActions(uint16_t slot_offset)
-      : m_default_action(NULL),
+      : m_default_rising_action(NULL),
+        m_default_falling_action(NULL),
         m_slot_offset(slot_offset) {
     }
     ~SlotActions();
@@ -153,9 +160,12 @@ class SlotActions {
     void SetSlotOffset(uint16_t offset) { m_slot_offset = offset; }
     uint16_t SlotOffset() const { return m_slot_offset; }
 
-    bool AddAction(const ValueInterval &interval, Action *action);
-    bool SetDefaultAction(Action *action);
-    void TakeAction(Context *context, uint8_t value);
+    bool AddAction(const ValueInterval &interval,
+                   Action *rising_action,
+                   Action *falling_action);
+    bool SetDefaultRisingAction(Action *action);
+    bool SetDefaultFallingAction(Action *action);
+    void TakeAction(Context *context, uint8_t value, EdgeType edge_type);
 
     string IntervalsAsString() const;
 
@@ -164,42 +174,63 @@ class SlotActions {
     };
 
   private:
-    Action *m_default_action;
+    Action *m_default_rising_action;
+    Action *m_default_falling_action;
     uint16_t m_slot_offset;
 
     class ActionInterval {
       public:
-        ActionInterval(const ValueInterval *interval, Action *action)
+        ActionInterval(const ValueInterval *interval,
+                       Action *rising_action,
+                       Action *falling_action)
             : interval(interval),
-              action(action) {
-          if (action)
-            action->Ref();
+              rising_action(rising_action),
+              falling_action(falling_action) {
+          if (rising_action)
+            rising_action->Ref();
+          if (falling_action)
+            falling_action->Ref();
         }
 
         ActionInterval(const ActionInterval &other)
             : interval(other.interval),
-              action(other.action) {
-          if (action)
-            action->Ref();
+              rising_action(other.rising_action),
+              falling_action(other.falling_action) {
+          if (rising_action)
+            rising_action->Ref();
+          if (falling_action)
+            falling_action->Ref();
         }
 
         ~ActionInterval() {
-          if (action)
-            action->DeRef();
+          if (rising_action)
+            rising_action->DeRef();
+          if (falling_action)
+            falling_action->DeRef();
         }
 
         ActionInterval &operator=(const ActionInterval &other) {
           if (this != &other) {
             interval = other.interval;
-            action = other.action;
-            if (action)
-              action->Ref();
+
+            if (rising_action)
+              rising_action->DeRef();
+            rising_action = other.rising_action;
+            if (rising_action)
+              rising_action->Ref();
+
+            if (falling_action)
+              falling_action->DeRef();
+            falling_action = other.falling_action;
+            if (falling_action)
+              falling_action->Ref();
           }
           return *this;
         }
 
         const ValueInterval *interval;
-        Action *action;
+        Action *rising_action;
+        Action *falling_action;
     };
 
     typedef vector<ActionInterval> ActionVector;
@@ -210,8 +241,9 @@ class SlotActions {
                               const ValueInterval &upper_interval);
     bool IntervalsIntersect(const ValueInterval *a1,
                             const ValueInterval *a2);
-    Action *LocateMatchingAction(uint8_t value);
+    Action *LocateMatchingAction(uint8_t value, EdgeType edge_type);
     string IntervalsAsString(const ActionVector::const_iterator &start,
                              const ActionVector::const_iterator &end) const;
+    bool SetDefaultAction(Action **action_to_set, Action *new_action);
 };
 #endif  // TOOLS_OLA_TRIGGER_ACTION_H_

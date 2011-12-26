@@ -36,7 +36,10 @@ Action *CreateCommandAction(const string &command, vector<string> *input);
 ValueInterval *CreateInterval(unsigned int lower, unsigned int upper);
 void SetSlotAction(unsigned int slot,
                    vector<class ValueInterval*> *slot_values,
-                   Action *action);
-void SetDefaultAction(unsigned int slot, Action *action);
+                   Action *rising_action,
+                   Action *falling_action);
+void SetDefaultAction(unsigned int slot,
+                      Action *rising_action,
+                      Action *falling_action);
 
 #endif  // TOOLS_OLA_TRIGGER_PARSERACTIONS_H_
