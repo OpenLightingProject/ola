@@ -56,7 +56,7 @@ typedef ola::Callback2<void, bool, const url_vector&> slp_discovery_callback;
 /**
  * A thread which handles SLP events.
  */
-class SlpThread: public ola::thread:Thread {
+class SlpThread: public ola::thread::Thread {
   public:
     explicit SlpThread(ola::network::SelectServer *ss,
                        slp_discovery_callback *discovery_callback = NULL,
