@@ -37,7 +37,7 @@ TESTS = ActionTester
 check_PROGRAMS = $(TESTS)
 ActionTester_SOURCES = ActionTester.cpp ActionTest.cpp ContextTest.cpp \
                        DMXTriggerTest.cpp IntervalTest.cpp \
-                       SlotActionsTest.cpp VariableInterpolatorTest.cpp
+                       SlotTest.cpp VariableInterpolatorTest.cpp
 ActionTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 ActionTester_LDADD = $(CPPUNIT_LIBS) \
                      $(top_builddir)/common/libolacommon.la \

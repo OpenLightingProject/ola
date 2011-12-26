@@ -22,10 +22,10 @@
 #define TOOLS_OLA_TRIGGER_ACTION_H_
 
 #include <stdint.h>
+#include <ola/Logging.h>
 #include <sstream>
 #include <string>
 #include <vector>
-#include <ola/Logging.h>
 
 #include "tools/ola_trigger/Context.h"
 
@@ -143,19 +143,16 @@ class ValueInterval {
 /**
  * The set of intervals and their actions.
  */
-class SlotActions {
+class Slot {
   public:
-    typedef enum {
-      RISING,
-      FALLING,
-    } EdgeType;
-
-    explicit SlotActions(uint16_t slot_offset)
+    explicit Slot(uint16_t slot_offset)
       : m_default_rising_action(NULL),
         m_default_falling_action(NULL),
-        m_slot_offset(slot_offset) {
+        m_slot_offset(slot_offset),
+        m_old_value(0),
+        m_old_value_defined(false) {
     }
-    ~SlotActions();
+    ~Slot();
 
     void SetSlotOffset(uint16_t offset) { m_slot_offset = offset; }
     uint16_t SlotOffset() const { return m_slot_offset; }
@@ -165,11 +162,11 @@ class SlotActions {
                    Action *falling_action);
     bool SetDefaultRisingAction(Action *action);
     bool SetDefaultFallingAction(Action *action);
-    void TakeAction(Context *context, uint8_t value, EdgeType edge_type);
+    void TakeAction(Context *context, uint8_t value);
 
     string IntervalsAsString() const;
 
-    bool operator<(const SlotActions &other) const {
+    bool operator<(const Slot &other) const {
       return m_slot_offset < other.m_slot_offset;
     };
 
@@ -177,6 +174,8 @@ class SlotActions {
     Action *m_default_rising_action;
     Action *m_default_falling_action;
     uint16_t m_slot_offset;
+    uint8_t m_old_value;
+    bool m_old_value_defined;
 
     class ActionInterval {
       public:
@@ -241,7 +240,7 @@ class SlotActions {
                               const ValueInterval &upper_interval);
     bool IntervalsIntersect(const ValueInterval *a1,
                             const ValueInterval *a2);
-    Action *LocateMatchingAction(uint8_t value, EdgeType edge_type);
+    Action *LocateMatchingAction(uint8_t value, bool rising);
     string IntervalsAsString(const ActionVector::const_iterator &start,
                              const ActionVector::const_iterator &end) const;
     bool SetDefaultAction(Action **action_to_set, Action *new_action);

@@ -29,7 +29,7 @@
 extern class Context *global_context;
 
 // A map of slot offsets to SlotAction objects
-typedef std::map<uint16_t, class SlotActions*> SlotActionMap;
-extern SlotActionMap global_slot_actions;
+typedef std::map<uint16_t, class Slot*> SlotActionMap;
+extern SlotActionMap global_slots;
 
 #endif  // TOOLS_OLA_TRIGGER_PARSERGLOBALS_H_

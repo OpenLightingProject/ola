@@ -51,7 +51,7 @@ int yyparse();
 
 // globals modified by the config parser
 Context *global_context;
-SlotActionMap global_slot_actions;
+SlotActionMap global_slots;
 
 // The SelectServer to kill when we catch SIGINT
 ola::network::SelectServer *ss = NULL;
@@ -66,7 +66,7 @@ typedef struct {
 } options;
 
 
-typedef vector<SlotActions*> SlotActionsList;
+typedef vector<Slot*> SlotList;
 
 
 /*
@@ -225,45 +225,45 @@ void NewDmx(unsigned int our_universe,
 /**
  * Delete all the slot actions in the vector.
  */
-void FreeSlotActions(SlotActionsList *slot_actions) {
-  SlotActionsList::iterator action_iter = slot_actions->begin();
-  for (; action_iter != slot_actions->end(); ++action_iter)
+void FreeSlot(SlotList *slots) {
+  SlotList::iterator action_iter = slots->begin();
+  for (; action_iter != slots->end(); ++action_iter)
     delete *action_iter;
-  slot_actions->clear();
+  slots->clear();
 }
 
 
 /**
- * Build a vector of SlotActions from the global_slot_actions map with the
+ * Build a vector of Slot from the global_slots map with the
  * offset applied.
  *
- * The clears the global_slot_actions map.
+ * The clears the global_slots map.
  * @returns true if the offset was applied correctly, false otherwise.
  */
-bool ApplyOffset(uint16_t offset, SlotActionsList *all_slot_actions) {
+bool ApplyOffset(uint16_t offset, SlotList *all_slots) {
   bool ok = true;
-  all_slot_actions->reserve(global_slot_actions.size());
-  SlotActionMap::const_iterator iter = global_slot_actions.begin();
-  for (; iter != global_slot_actions.end(); ++iter) {
-    SlotActions *slot_actions = iter->second;
-    if (slot_actions->SlotOffset() + offset >= DMX_UNIVERSE_SIZE) {
-      OLA_FATAL << "Slot " << slot_actions->SlotOffset() << " + offset " <<
+  all_slots->reserve(global_slots.size());
+  SlotActionMap::const_iterator iter = global_slots.begin();
+  for (; iter != global_slots.end(); ++iter) {
+    Slot *slots = iter->second;
+    if (slots->SlotOffset() + offset >= DMX_UNIVERSE_SIZE) {
+      OLA_FATAL << "Slot " << slots->SlotOffset() << " + offset " <<
         offset << " is greater than " << DMX_UNIVERSE_SIZE - 1;
       ok = false;
       break;
     }
-    slot_actions->SetSlotOffset(slot_actions->SlotOffset() + offset);
-    all_slot_actions->push_back(slot_actions);
+    slots->SetSlotOffset(slots->SlotOffset() + offset);
+    all_slots->push_back(slots);
   }
 
   if (!ok) {
-    all_slot_actions->clear();
-    for (iter = global_slot_actions.begin(); iter != global_slot_actions.end();
+    all_slots->clear();
+    for (iter = global_slots.begin(); iter != global_slots.end();
          ++iter)
       delete iter->second;
   }
 
-  global_slot_actions.clear();
+  global_slots.clear();
   return ok;
 }
 
@@ -315,11 +315,11 @@ int main(int argc, char *argv[]) {
   if (!InstallSignals())
     exit(EX_OSERR);
 
-  // create the vector of SlotActions
-  SlotActionsList slot_actions;
-  if (ApplyOffset(opts.offset, &slot_actions)) {
+  // create the vector of Slot
+  SlotList slots;
+  if (ApplyOffset(opts.offset, &slots)) {
     // setup the trigger
-    DMXTrigger trigger(global_context, slot_actions);
+    DMXTrigger trigger(global_context, slots);
 
     // register for DMX
     ola::OlaCallbackClient *client = wrapper.GetClient();
@@ -332,5 +332,5 @@ int main(int argc, char *argv[]) {
   }
 
   // cleanup
-  FreeSlotActions(&slot_actions);
+  FreeSlot(&slots);
 }

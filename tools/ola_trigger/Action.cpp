@@ -40,7 +40,8 @@ void VariableAssignmentAction::Execute(Context *context, uint8_t) {
 
   if (ok) {
     if (context) {
-      OLA_INFO << "Setting " << m_variable << " to \"" << interpolated_value << "\"";
+      OLA_INFO << "Setting " << m_variable << " to \"" << interpolated_value
+          << "\"";
       context->Update(m_variable, interpolated_value);
     }
   } else {
@@ -160,7 +161,7 @@ std::ostream& operator<<(std::ostream &out, const ValueInterval &i) {
 /**
  * Cleanup
  */
-SlotActions::~SlotActions() {
+Slot::~Slot() {
   ActionVector::iterator iter = m_actions.begin();
   for (; iter != m_actions.end(); iter++)
     delete iter->interval;
@@ -181,7 +182,7 @@ SlotActions::~SlotActions() {
  *   interval.
  * @returns true if the interval was added, false otherwise.
  */
-bool SlotActions::AddAction(const ValueInterval &interval_arg,
+bool Slot::AddAction(const ValueInterval &interval_arg,
                             Action *rising_action,
                             Action *falling_action) {
   ActionInterval action_interval(
@@ -268,7 +269,7 @@ bool SlotActions::AddAction(const ValueInterval &interval_arg,
  * @param action the action to install as the default
  * @returns true if there was already a default action.
  */
-bool SlotActions::SetDefaultRisingAction(Action *action) {
+bool Slot::SetDefaultRisingAction(Action *action) {
   return SetDefaultAction(&m_default_rising_action, action);
 }
 
@@ -279,7 +280,7 @@ bool SlotActions::SetDefaultRisingAction(Action *action) {
  * @param action the action to install as the default
  * @returns true if there was already a default action.
  */
-bool SlotActions::SetDefaultFallingAction(Action *action) {
+bool Slot::SetDefaultFallingAction(Action *action) {
   return SetDefaultAction(&m_default_falling_action, action);
 }
 
@@ -289,26 +290,35 @@ bool SlotActions::SetDefaultFallingAction(Action *action) {
  * execute the default action if there is one.
  * @param context the Context to use
  * @param value the value to look up.
- * @param edge_type either RISING or FALLING
  */
-void SlotActions::TakeAction(Context *context,
-                             uint8_t value,
-                             EdgeType edge_type) {
+void Slot::TakeAction(Context *context,
+                      uint8_t value) {
+  if (m_old_value_defined && value == m_old_value)
+    // nothing to do
+    return;
+
   // set the context correctly
   if (context) {
     context->SetSlotOffset(m_slot_offset);
     context->SetSlotValue(value);
   }
 
-  Action *action = LocateMatchingAction(value, edge_type);
+  bool rising = true;
+  if (m_old_value_defined)
+    rising = value > m_old_value;
+
+  Action *action = LocateMatchingAction(value, rising);
   if (action) {
     action->Execute(context, value);
   } else {
-    if (edge_type == RISING && m_default_rising_action)
+    if (rising && m_default_rising_action)
       m_default_rising_action->Execute(context, value);
-    else if (edge_type == FALLING && m_default_falling_action)
+    else if (!rising && m_default_falling_action)
       m_default_falling_action->Execute(context, value);
   }
+
+  m_old_value_defined = true;
+  m_old_value = value;
 }
 
 
@@ -316,7 +326,7 @@ void SlotActions::TakeAction(Context *context,
  * Return the intervals as a string, useful for debugging
  * @returns the intervals as a string.
  */
-string SlotActions::IntervalsAsString() const {
+string Slot::IntervalsAsString() const {
   return IntervalsAsString(m_actions.begin(), m_actions.end());
 }
 
@@ -325,9 +335,9 @@ string SlotActions::IntervalsAsString() const {
  * Given two interval iterators, first and last, return true if the value is
  * contained within the lower and upper bounds of the intervals.
  */
-bool SlotActions::ValueWithinIntervals(uint8_t value,
-                                       const ValueInterval &lower_interval,
-                                       const ValueInterval &upper_interval) {
+bool Slot::ValueWithinIntervals(uint8_t value,
+                                const ValueInterval &lower_interval,
+                                const ValueInterval &upper_interval) {
   return lower_interval.Lower() <= value && value <= upper_interval.Upper();
 }
 
@@ -335,8 +345,8 @@ bool SlotActions::ValueWithinIntervals(uint8_t value,
 /**
  * Check if two ValueIntervals intersect.
  */
-bool SlotActions::IntervalsIntersect(const ValueInterval *a1,
-                                     const ValueInterval *a2) {
+bool Slot::IntervalsIntersect(const ValueInterval *a1,
+                              const ValueInterval *a2) {
   if (a1->Intersects(*a2)) {
     OLA_WARN << "Interval " << *a1 << " overlaps " << *a2;
     return true;
@@ -348,10 +358,10 @@ bool SlotActions::IntervalsIntersect(const ValueInterval *a1,
 /**
  * Given a value, find the matching ValueInterval.
  * @param value the value to search for
- * @param edge_type either RISING or FALLING
+ * @param rising, true if the new value is rising, false otherwise.
  * @returns the Action matching the value,  or NULL if there isn't one.
  */
-Action *SlotActions::LocateMatchingAction(uint8_t value, EdgeType edge_type) {
+Action *Slot::LocateMatchingAction(uint8_t value, bool rising) {
   if (m_actions.empty())
     return NULL;
 
@@ -364,10 +374,10 @@ Action *SlotActions::LocateMatchingAction(uint8_t value, EdgeType edge_type) {
   // ok, we know the value lies between the intervals we have, first exclude
   // the endpoints
   if (lower->interval->Contains(value))
-    return edge_type == RISING ? lower->rising_action : lower->falling_action;
+    return rising ? lower->rising_action : lower->falling_action;
 
   if (upper->interval->Contains(value))
-    return edge_type == RISING ? upper->rising_action : upper->falling_action;
+    return rising ? upper->rising_action : upper->falling_action;
 
   // value isn't at the lower or upper interval, but lies somewhere between
   // the two.
@@ -382,7 +392,7 @@ Action *SlotActions::LocateMatchingAction(uint8_t value, EdgeType edge_type) {
       return NULL;
 
     if (mid->interval->Contains(value)) {
-      return edge_type == RISING ? mid->rising_action : mid->falling_action;
+      return rising ? mid->rising_action : mid->falling_action;
     } else if (value <= mid->interval->Lower()) {
       upper = mid;
     } else if (value >= mid->interval->Upper()) {
@@ -403,7 +413,7 @@ Action *SlotActions::LocateMatchingAction(uint8_t value, EdgeType edge_type) {
  * @param end an iterator pointing to the last interval
  * @return a string version of the intervals.
  */
-string SlotActions::IntervalsAsString(
+string Slot::IntervalsAsString(
     const ActionVector::const_iterator &start,
     const ActionVector::const_iterator &end) const {
   ActionVector::const_iterator iter = start;
@@ -420,8 +430,8 @@ string SlotActions::IntervalsAsString(
 /**
  * Set one of the default actions.
  */
-bool SlotActions::SetDefaultAction(Action **action_to_set,
-                                   Action *new_action) {
+bool Slot::SetDefaultAction(Action **action_to_set,
+                            Action *new_action) {
   bool previous_default_set = false;
   new_action->Ref();
 

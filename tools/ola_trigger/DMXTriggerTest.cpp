@@ -54,13 +54,13 @@ CPPUNIT_TEST_SUITE_REGISTRATION(DMXTriggerTest);
  */
 void DMXTriggerTest::testRisingEdgeTrigger() {
   // setup the actions
-  vector<SlotActions*> slots;
-  SlotActions slot_actions(2);
+  vector<Slot*> slots;
+  Slot slot(2);
   MockAction *action = new MockAction();
   BadAction *bad_action = new BadAction();
   ValueInterval interval(10, 20);
-  slot_actions.AddAction(interval, action, bad_action);
-  slots.push_back(&slot_actions);
+  slot.AddAction(interval, action, bad_action);
+  slots.push_back(&slot);
 
   Context context;
   DMXTrigger trigger(&context, slots);
@@ -89,7 +89,7 @@ void DMXTriggerTest::testRisingEdgeTrigger() {
   // lengthen again
   buffer.SetFromString("0,0,10,0");
   trigger.NewDMX(buffer);
-  action->CheckForValue(__LINE__, 10);
+  CPPUNIT_ASSERT(action->NoCalls());
 
   // change everything else
   buffer.SetFromString("10,100,10,20");
@@ -103,13 +103,13 @@ void DMXTriggerTest::testRisingEdgeTrigger() {
  */
 void DMXTriggerTest::testFallingEdgeTrigger() {
   // setup the actions
-  vector<SlotActions*> slots;
-  SlotActions slot_actions(2);
+  vector<Slot*> slots;
+  Slot slot(2);
   MockAction *rising_action = new MockAction();
   MockAction *falling_action = new MockAction();
   ValueInterval interval(10, 20);
-  slot_actions.AddAction(interval, rising_action, falling_action);
-  slots.push_back(&slot_actions);
+  slot.AddAction(interval, rising_action, falling_action);
+  slots.push_back(&slot);
 
   Context context;
   DMXTrigger trigger(&context, slots);
@@ -141,12 +141,18 @@ void DMXTriggerTest::testFallingEdgeTrigger() {
   // lengthen again
   buffer.SetFromString("0,0,19,0");
   trigger.NewDMX(buffer);
-  rising_action->CheckForValue(__LINE__, 19);
+  CPPUNIT_ASSERT(rising_action->NoCalls());
   CPPUNIT_ASSERT(falling_action->NoCalls());
 
   // change everything else
   buffer.SetFromString("10,100,19,20");
   trigger.NewDMX(buffer);
   CPPUNIT_ASSERT(rising_action->NoCalls());
+  CPPUNIT_ASSERT(falling_action->NoCalls());
+
+  // change once more
+  buffer.SetFromString("10,100,20,20");
+  trigger.NewDMX(buffer);
+  rising_action->CheckForValue(__LINE__, 20);
   CPPUNIT_ASSERT(falling_action->NoCalls());
 }

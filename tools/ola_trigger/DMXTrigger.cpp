@@ -31,10 +31,10 @@ using ola::DmxBuffer;
  * Create a new trigger
  */
 DMXTrigger::DMXTrigger(Context *context,
-                       const SlotActionVector &actions)
+                       const SlotVector &actions)
     : m_context(context),
-      m_slot_actions(actions) {
-  sort(m_slot_actions.begin(), m_slot_actions.end());
+      m_slots(actions) {
+  sort(m_slots.begin(), m_slots.end());
 }
 
 
@@ -42,38 +42,13 @@ DMXTrigger::DMXTrigger(Context *context,
  * Called when new DMX arrives.
  */
 void DMXTrigger::NewDMX(const DmxBuffer &data) {
-  SlotActionVector::iterator iter = m_slot_actions.begin();
-  for (; iter != m_slot_actions.end(); iter++) {
+  SlotVector::iterator iter = m_slots.begin();
+  for (; iter != m_slots.end(); iter++) {
     uint16_t slot_number = (*iter)->SlotOffset();
     if (slot_number >= data.Size()) {
       // the DMX frame was too small
       break;
     }
-    uint8_t dmx_value = data.Get(slot_number);
-
-    // compare to the last buffer
-    if (slot_number <= m_last_buffer.Size()) {
-      uint8_t old_value = m_last_buffer.Get(slot_number);
-      if (old_value != dmx_value)
-        // fire the trigger
-        (*iter)->TakeAction(
-            m_context,
-            dmx_value,
-            dmx_value > old_value ? SlotActions::RISING : SlotActions::FALLING);
-    } else {
-      /*
-       * The last frame was too short and didn't contain this slot, trigger a
-       * RISING action.
-       * Note: This will cause a trigger to fire if the frame size shrinks.
-       * I'm not sure if this is the behavior we want.
-       * e.g. Assuming something triggers when slot 2 > 0:
-       * [0, 0, 0]
-       * [0, 0, 10]  // trigger
-       * [0, 0]
-       * [0, 0, 10]  // trigger again
-       */
-        (*iter)->TakeAction(m_context, dmx_value, SlotActions::RISING);
-    }
+    (*iter)->TakeAction(m_context, data.Get(slot_number));
   }
-  m_last_buffer = data;
 }

@@ -34,16 +34,15 @@ using ola::DmxBuffer;
  */
 class DMXTrigger {
   public:
-    typedef std::vector<SlotActions*> SlotActionVector;
+    typedef std::vector<Slot*> SlotVector;
 
-    DMXTrigger(Context *context, const SlotActionVector &actions);
+    DMXTrigger(Context *context, const SlotVector &actions);
     ~DMXTrigger() {}
 
     void NewDMX(const DmxBuffer &data);
 
   private:
     Context *m_context;
-    DmxBuffer m_last_buffer;
-    SlotActionVector m_slot_actions;  // kept sorted
+    SlotVector m_slots;  // kept sorted
 };
 #endif  // TOOLS_OLA_TRIGGER_DMXTRIGGER_H_

@@ -41,18 +41,18 @@ extern int yylineno;  // defined and maintained in lex.yy.cpp
 
 
 /**
- * Lookup the SlotActions objects associated with a slot offset. This creates
+ * Lookup the Slot objects associated with a slot offset. This creates
  * one if it doesn't already exist.
  * @param slot the slot offset to lookup
- * @return A SlotActions object
+ * @return A Slot object
  */
-SlotActions *LookupSlot(uint16_t slot) {
-  SlotActionMap::iterator iter = global_slot_actions.find(slot);
-  if (iter != global_slot_actions.end())
+Slot *LookupSlot(uint16_t slot) {
+  SlotActionMap::iterator iter = global_slots.find(slot);
+  if (iter != global_slots.end())
     return iter->second;
 
-  SlotActions *actions = new SlotActions(slot);
-  global_slot_actions[slot] = actions;
+  Slot *actions = new Slot(slot);
+  global_slots[slot] = actions;
   return actions;
 }
 
@@ -147,11 +147,11 @@ void SetSlotAction(unsigned int slot,
                    Action *rising_action,
                    Action *falling_action) {
   CheckSlotOffset(slot);
-  SlotActions *slot_actions = LookupSlot(slot);
+  Slot *slots = LookupSlot(slot);
 
   IntervalList::iterator iter = slot_intervals->begin();
   for (; iter != slot_intervals->end(); iter++) {
-    if (!slot_actions->AddAction(**iter, rising_action, falling_action)) {
+    if (!slots->AddAction(**iter, rising_action, falling_action)) {
       OLA_FATAL << "Line " << yylineno << ": value " << **iter <<
          " collides with existing values.";
       exit(EX_DATAERR);
@@ -171,16 +171,16 @@ void SetDefaultAction(unsigned int slot,
                       Action *rising_action,
                       Action *falling_action) {
   CheckSlotOffset(slot);
-  SlotActions *slot_actions = LookupSlot(slot);
+  Slot *slots = LookupSlot(slot);
   if (rising_action) {
-    if (slot_actions->SetDefaultRisingAction(rising_action)) {
+    if (slots->SetDefaultRisingAction(rising_action)) {
       OLA_FATAL << "Multiple default rising actions defined for slot " << slot
           << ", line " << yylineno;
       exit(EX_DATAERR);
     }
   }
   if (falling_action) {
-    if (slot_actions->SetDefaultFallingAction(falling_action)) {
+    if (slots->SetDefaultFallingAction(falling_action)) {
       OLA_FATAL << "Multiple default falling actions defined for slot " << slot
           << ", line " << yylineno;
       exit(EX_DATAERR);
