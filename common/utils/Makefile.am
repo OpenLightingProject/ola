@@ -10,7 +10,7 @@ libolautils_la_SOURCES = ActionQueue.cpp \
 TESTS = UtilsTester
 check_PROGRAMS = $(TESTS)
 UtilsTester_SOURCES = ActionQueueTest.cpp ClockTest.cpp CallbackTest.cpp \
-                      DmxBufferTest.cpp \
+                      DmxBufferTest.cpp MultiCallbackTest.cpp \
                       RunLengthEncoderTest.cpp  StringUtilsTest.cpp \
                       TokenBucketTest.cpp UtilsTester.cpp
 UtilsTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
