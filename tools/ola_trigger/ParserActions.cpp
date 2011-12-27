@@ -60,7 +60,7 @@ Slot *LookupSlot(uint16_t slot) {
  * Check a slot offset is valid
  */
 void CheckSlotOffset(unsigned int slot) {
-  if (slot >= DMX_UNIVERSE_SIZE) {
+  if (slot == 0 || slot > DMX_UNIVERSE_SIZE) {
     OLA_FATAL << "Line " << yylineno << ": slot offset " << slot << " invalid";
     exit(EX_DATAERR);
   }
@@ -147,6 +147,7 @@ void SetSlotAction(unsigned int slot,
                    Action *rising_action,
                    Action *falling_action) {
   CheckSlotOffset(slot);
+  slot--;  // convert from 1 to 0 indexed slots
   Slot *slots = LookupSlot(slot);
 
   IntervalList::iterator iter = slot_intervals->begin();
@@ -171,18 +172,19 @@ void SetDefaultAction(unsigned int slot,
                       Action *rising_action,
                       Action *falling_action) {
   CheckSlotOffset(slot);
+  slot--;  // convert from 1 to 0 indexed slots
   Slot *slots = LookupSlot(slot);
   if (rising_action) {
     if (slots->SetDefaultRisingAction(rising_action)) {
-      OLA_FATAL << "Multiple default rising actions defined for slot " << slot
-          << ", line " << yylineno;
+      OLA_FATAL << "Multiple default rising actions defined for slot " <<
+        slot + 1 << ", line " << yylineno;
       exit(EX_DATAERR);
     }
   }
   if (falling_action) {
     if (slots->SetDefaultFallingAction(falling_action)) {
-      OLA_FATAL << "Multiple default falling actions defined for slot " << slot
-          << ", line " << yylineno;
+      OLA_FATAL << "Multiple default falling actions defined for slot " <<
+        slot + 1 << ", line " << yylineno;
       exit(EX_DATAERR);
     }
   }

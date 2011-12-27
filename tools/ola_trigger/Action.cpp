@@ -299,7 +299,7 @@ void Slot::TakeAction(Context *context,
 
   // set the context correctly
   if (context) {
-    context->SetSlotOffset(m_slot_offset);
+    context->SetSlotOffset(m_slot_offset + 1);
     context->SetSlotValue(value);
   }
 
