@@ -96,6 +96,7 @@ class DiscoverableQueueingRDMController: public QueueingRDMController {
     bool CheckForBlockingCondition();
     void StartRDMDiscovery();
     void DiscoveryComplete(const ola::rdm::UIDSet &uids);
+    void RunCallback(const ola::rdm::UIDSet &uids);
 };
 }  // rdm
 }  // ola

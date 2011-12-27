@@ -313,21 +313,31 @@ void DiscoverableQueueingRDMController::StartRDMDiscovery() {
   if (!ret) {
     OLA_WARN << "Failed to trigger discovery, flushing uid set";
     UIDSet set;
-    if (m_discovery_callback)
-      m_discovery_callback->Run(set);
-    m_discovery_callback = NULL;
-    m_discovery_state = FREE;
+    RunCallback(set);
   }
 }
 
 
+/**
+ * Called when discovery completes
+ */
 void DiscoverableQueueingRDMController::DiscoveryComplete(
     const ola::rdm::UIDSet &uids) {
-  m_discovery_state = FREE;
-  if (m_discovery_callback)
-    m_discovery_callback->Run(uids);
-  m_discovery_callback = NULL;
+  RunCallback(uids);
   MaybeSendRDMRequest();
+}
+
+
+/**
+ * Actually run the discovery callback, this must be reentrant.
+ */
+void DiscoverableQueueingRDMController::RunCallback(
+    const ola::rdm::UIDSet &uids) {
+  m_discovery_state = FREE;
+  RDMDiscoveryCallback *callback = m_discovery_callback;
+  m_discovery_callback = NULL;
+  if (callback)
+    callback->Run(uids);
 }
 }  // rdm
 }  // ola
