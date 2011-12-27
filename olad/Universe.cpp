@@ -403,17 +403,12 @@ void Universe::RunRDMDiscovery(bool full) {
     OLA_INFO << "Incremental RDM discovery triggered for universe " <<
       m_universe_id;
 
-  // the multicallback that indicated when discovery is done
-  BaseCallback0<void> *discovery_complete = NewMultiCallback(
-      m_output_ports.size(),
-      NewCallback(this, &Universe::DiscoveryComplete));
-
   vector<OutputPort*>::iterator iter;
   for (iter = m_output_ports.begin(); iter != m_output_ports.end(); ++iter)
     if (full)
-      (*iter)->RunFullDiscovery(discovery_complete);
+      (*iter)->RunFullDiscovery();
     else
-      (*iter)->RunIncrementalDiscovery(discovery_complete);
+      (*iter)->RunIncrementalDiscovery();
 
   // somehow detect when this is done and then send new UIDSets
 }
