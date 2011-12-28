@@ -1277,6 +1277,7 @@ void ArtNetNodeImpl::HandleRDMResponse(unsigned int port_id,
 
   // at this point we've decided it's for us
   input_port.pending_request = NULL;
+  delete request;
   ola::rdm::RDMCallback *callback = input_port.rdm_request_callback;
   input_port.rdm_request_callback = NULL;
   std::vector<string> packets;
