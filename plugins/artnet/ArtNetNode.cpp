@@ -71,15 +71,14 @@ ArtNetNodeImpl::ArtNetNodeImpl(const ola::network::Interface &interface,
       m_ss(ss),
       m_always_broadcast(always_broadcast),
       m_interface(interface),
-      m_socket(socket),
-      m_discovery_timeout(ola::thread::INVALID_TIMEOUT) {
-
+      m_socket(socket) {
   // reset all the port structures
   for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
     m_input_ports[i].universe_address = 0;
     m_input_ports[i].sequence_number = 0;
     m_input_ports[i].enabled = false;
     m_input_ports[i].discovery_callback = NULL;
+    m_input_ports[i].discovery_timeout = ola::thread::INVALID_TIMEOUT;
     m_input_ports[i].tod_callback = NULL;
     m_input_ports[i].rdm_request_callback = NULL;
     m_input_ports[i].pending_request = NULL;
@@ -144,11 +143,6 @@ bool ArtNetNodeImpl::Stop() {
   if (!m_running)
     return false;
 
-  if (m_discovery_timeout != ola::thread::INVALID_TIMEOUT) {
-    m_ss->RemoveTimeout(m_discovery_timeout);
-    m_discovery_timeout = ola::thread::INVALID_TIMEOUT;
-  }
-
   // clean up any in-flight rdm requests
   std::vector<std::string> packets;
   for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
@@ -156,6 +150,11 @@ bool ArtNetNodeImpl::Stop() {
     if (port.rdm_send_timeout != ola::thread::INVALID_TIMEOUT) {
       m_ss->RemoveTimeout(port.rdm_send_timeout);
       port.rdm_send_timeout = ola::thread::INVALID_TIMEOUT;
+    }
+
+    if (port.discovery_timeout != ola::thread::INVALID_TIMEOUT) {
+      m_ss->RemoveTimeout(port.discovery_timeout);
+      port.discovery_timeout = ola::thread::INVALID_TIMEOUT;
     }
 
     if (port.rdm_request_callback)
@@ -1618,6 +1617,20 @@ void ArtNetNodeImpl::UpdatePortFromTodPacket(uint8_t port_id,
         ++iter;
       }
     }
+
+    // mark this node as complete
+    set<IPV4Address>::iterator ip_iter =
+      port.discovery_node_set.find(source_address);
+    if (ip_iter != port.discovery_node_set.end()) {
+      port.discovery_node_set.erase(ip_iter);
+      // if the set is now 0, and it was non-0 initally and we have a
+      // discovery_callback, then we can short circuit the discovery
+      // process
+      if (port.discovery_node_set.empty() && port.discovery_callback) {
+        m_ss->RemoveTimeout(port.discovery_timeout);
+        ReleaseDiscoveryLock(port_id);
+      }
+    }
   }
 
   // Removing uids from multi-block messages is much harder as you need to
@@ -1638,23 +1651,34 @@ void ArtNetNodeImpl::UpdatePortFromTodPacket(uint8_t port_id,
  */
 bool ArtNetNodeImpl::StartDiscoveryProcess(uint8_t port_id,
                                            RDMDiscoveryCallback *callback) {
-  if (m_input_ports[port_id].discovery_callback) {
+  InputPort &port = m_input_ports[port_id];
+  if (port.discovery_callback) {
     OLA_FATAL <<
       "ArtNet UID discovery already running, something has gone wrong with "
          << "the DiscoverableQueueingRDMController.";
-    RunRDMCallbackWithUIDs(m_input_ports[port_id].uids, callback);
+    RunRDMCallbackWithUIDs(port.uids, callback);
     return false;
   }
 
-  m_input_ports[port_id].discovery_callback = callback;
+  port.discovery_callback = callback;
 
   // increment the count of all current uids
-  uid_map::iterator iter = m_input_ports[port_id].uids.begin();
-  for (; iter != m_input_ports[port_id].uids.end(); ++iter) {
+  uid_map::iterator iter = port.uids.begin();
+  for (; iter != port.uids.end(); ++iter) {
     iter->second.second++;
   }
 
-  m_discovery_timeout = m_ss->RegisterSingleTimeout(
+  // populate the discovery set with the nodes we know about, this allows us to
+  // 'finish' the discovery process when we receive ArtTod packets from all
+  // these nodes. If ArtTod packets arrive after discovery completes, we'll
+  // call the unsolicited handler
+  port.discovery_node_set.clear();
+  map<IPV4Address, TimeStamp>::const_iterator node_iter =
+      port.subscribed_nodes.begin();
+  for (; node_iter != port.subscribed_nodes.end(); node_iter++)
+    port.discovery_node_set.insert(node_iter->first);
+
+  port.discovery_timeout = m_ss->RegisterSingleTimeout(
       RDM_TOD_TIMEOUT_MS,
       ola::NewSingleCallback(this,
                              &ArtNetNodeImpl::ReleaseDiscoveryLock,
@@ -1667,9 +1691,10 @@ bool ArtNetNodeImpl::StartDiscoveryProcess(uint8_t port_id,
  * Called when the discovery process times out.
  */
 void ArtNetNodeImpl::ReleaseDiscoveryLock(uint8_t port_id) {
-  OLA_INFO << "Discovery process timeout";
-  m_discovery_timeout = ola::thread::INVALID_TIMEOUT;
+  OLA_INFO << "Artnet RDM discovery complete";
   InputPort &port = m_input_ports[port_id];
+  port.discovery_timeout = ola::thread::INVALID_TIMEOUT;
+  port.discovery_node_set.clear();
 
   // delete all uids that have reached the max count
   bool changed = false;

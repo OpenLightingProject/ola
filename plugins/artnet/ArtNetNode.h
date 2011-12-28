@@ -23,6 +23,7 @@
 
 #include <map>
 #include <queue>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -55,6 +56,7 @@ using ola::rdm::UID;
 using ola::rdm::UIDSet;
 using std::map;
 using std::queue;
+using std::set;
 using std::string;
 
 
@@ -158,6 +160,10 @@ class ArtNetNodeImpl {
       // NULL if discovery isn't running, otherwise the callback to run when it
       // finishes
       ola::rdm::RDMDiscoveryCallback *discovery_callback;
+      // The set of nodes we're expecting a response from
+      set<IPV4Address> discovery_node_set;
+      // the timeout_id for the discovery timer
+      ola::thread::timeout_id discovery_timeout;
       // The callback to run if we receive an TOD and the discovery process
       // isn't running
       ola::rdm::RDMDiscoveryCallback *tod_callback;
@@ -205,7 +211,6 @@ class ArtNetNodeImpl {
     OutputPort m_output_ports[ARTNET_MAX_PORTS];
     ola::network::Interface m_interface;
     ola::network::UdpSocketInterface *m_socket;
-    ola::thread::timeout_id m_discovery_timeout;
 
     ArtNetNodeImpl(const ArtNetNodeImpl&);
     ArtNetNodeImpl& operator=(const ArtNetNodeImpl&);
@@ -296,7 +301,7 @@ class ArtNetNodeImpl {
     // seconds after which a node is marked as inactive for the dmx merging
     static const unsigned int NODE_TIMEOUT = 31;
     // mseconds we wait for a TodData packet before declaring a node missing
-    static const unsigned int RDM_TOD_TIMEOUT_MS = 10000;
+    static const unsigned int RDM_TOD_TIMEOUT_MS = 4000;
     // Number of missed TODs before we decide a UID has gone
     static const unsigned int RDM_MISSED_TODDATA_LIMIT = 3;
     // The maximum number of requests we'll allow in the queue. This is a per
