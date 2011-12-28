@@ -48,6 +48,7 @@ namespace artnet {
 using ola::network::IPV4Address;
 using ola::rdm::RDMCallback;
 using ola::rdm::RDMCommand;
+using ola::rdm::RDMDiscoveryCallback;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
@@ -114,12 +115,14 @@ class ArtNetNodeImpl {
 
     // The following apply to Input Ports (those which send data)
     bool SendDMX(uint8_t port_id, const ola::DmxBuffer &buffer);
-    bool SendTodRequest(uint8_t port_id);
-    bool ForceDiscovery(uint8_t port_id);
+    void RunFullDiscovery(uint8_t port_id,
+                          ola::rdm::RDMDiscoveryCallback *callback);
+    void RunIncrementalDiscovery(uint8_t port_id,
+                                 ola::rdm::RDMDiscoveryCallback *callback);
     void SendRDMRequest(uint8_t port_id,
                         const RDMRequest *request,
                         RDMCallback *on_complete);
-    bool SetInputPortRDMHandlers(
+    bool SetUnsolicatedUIDSetHandler(
         uint8_t port_id,
         ola::Callback1<void, const ola::rdm::UIDSet&> *on_tod);
 
@@ -152,9 +155,12 @@ class ArtNetNodeImpl {
     struct InputPort: public GenericPort {
       map<IPV4Address, TimeStamp> subscribed_nodes;
       uid_map uids;  // used to keep track of the UIDs
-      // Called when we have a new TOD
-      ola::Callback1<void, const ola::rdm::UIDSet&> *on_tod;
-      bool discovery_running;
+      // NULL if discovery isn't running, otherwise the callback to run when it
+      // finishes
+      ola::rdm::RDMDiscoveryCallback *discovery_callback;
+      // The callback to run if we receive an TOD and the discovery process
+      // isn't running
+      ola::rdm::RDMDiscoveryCallback *tod_callback;
       // the in-flight request and it's callback
       ola::rdm::RDMCallback *rdm_request_callback;
       const ola::rdm::RDMRequest *pending_request;
@@ -266,9 +272,12 @@ class ArtNetNodeImpl {
                                  const IPV4Address &source_address,
                                  const artnet_toddata_t &packet,
                                  unsigned int packet_size);
-    bool GrabDiscoveryLock(uint8_t port_id);
+    bool StartDiscoveryProcess(uint8_t port_id,
+                               ola::rdm::RDMDiscoveryCallback *callback);
     void ReleaseDiscoveryLock(uint8_t port_id);
-    void NotifyClientOfNewTod(uint8_t port_id);
+    void RunDiscoveryCallbackForPort(uint8_t port_id);
+    void RunRDMCallbackWithUIDs(const uid_map &uids,
+                                ola::rdm::RDMDiscoveryCallback *callback);
 
     bool InitNetwork();
 
@@ -304,7 +313,8 @@ class ArtNetNodeImpl {
  * This glues the ArtNetNodeImpl together with the QueueingRDMController.
  * The ArtNetNodeImpl takes a port id so we need this extra layer.
  */
-class ArtNetNodeImplRDMWrapper: public ola::rdm::RDMControllerInterface {
+class ArtNetNodeImplRDMWrapper
+    : public ola::rdm::DiscoverableRDMControllerInterface {
   public:
     ArtNetNodeImplRDMWrapper(ArtNetNodeImpl *impl, uint8_t port_id):
       m_impl(impl),
@@ -315,6 +325,14 @@ class ArtNetNodeImplRDMWrapper: public ola::rdm::RDMControllerInterface {
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete) {
       m_impl->SendRDMRequest(m_port_id, request, on_complete);
+    }
+
+    void RunFullDiscovery(RDMDiscoveryCallback *callback) {
+      m_impl->RunFullDiscovery(m_port_id, callback);
+    };
+
+    void RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
+      m_impl->RunIncrementalDiscovery(m_port_id, callback);
     }
 
   private:
@@ -381,19 +399,22 @@ class ArtNetNode {
     bool SendDMX(uint8_t port_id, const ola::DmxBuffer &buffer) {
       return m_impl.SendDMX(port_id, buffer);
     }
-    bool SendTodRequest(uint8_t port_id) {
-      return m_impl.SendTodRequest(port_id);
-    }
-    bool ForceDiscovery(uint8_t port_id) {
-      return m_impl.ForceDiscovery(port_id);
-    }
+    void RunFullDiscovery(uint8_t port_id,
+                          ola::rdm::RDMDiscoveryCallback *callback);
+    void RunIncrementalDiscovery(uint8_t port_id,
+                                 ola::rdm::RDMDiscoveryCallback *callback);
     void SendRDMRequest(uint8_t port_id,
                         const RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete);
-    bool SetInputPortRDMHandlers(
+
+    /*
+     * This handler is called if we recieve ArtTod packets and a discovery
+     * process isn't running.
+     */
+    bool SetUnsolicatedUIDSetHandler(
         uint8_t port_id,
         ola::Callback1<void, const ola::rdm::UIDSet&> *on_tod) {
-      return m_impl.SetInputPortRDMHandlers(port_id, on_tod);
+      return m_impl.SetUnsolicatedUIDSetHandler(port_id, on_tod);
     }
 
     // The following apply to Output Ports (those which receive data);
@@ -410,8 +431,10 @@ class ArtNetNode {
         ola::Callback0<void> *on_discover,
         ola::Callback0<void> *on_flush,
         ola::Callback2<void, const RDMRequest*, RDMCallback*> *on_rdm_request) {
-      return m_impl.SetOutputPortRDMHandlers(port_id, on_discover, on_flush,
-          on_rdm_request);
+      return m_impl.SetOutputPortRDMHandlers(port_id,
+                                             on_discover,
+                                             on_flush,
+                                             on_rdm_request);
   }
 
   bool SendTimeCode(const ola::timecode::TimeCode &timecode) {
@@ -421,7 +444,8 @@ class ArtNetNode {
   private:
     ArtNetNodeImpl m_impl;
     ArtNetNodeImplRDMWrapper *m_wrappers[ARTNET_MAX_PORTS];
-    ola::rdm::QueueingRDMController *m_controllers[ARTNET_MAX_PORTS];
+    ola::rdm::DiscoverableQueueingRDMController
+        *m_controllers[ARTNET_MAX_PORTS];
 };
 }  // artnet
 }  // plugin

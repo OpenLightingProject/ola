@@ -664,7 +664,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     request = Ola_pb2.DiscoveryRequest()
     request.universe = universe
     request.full = full
-    done = lambda x, y: self._AckMessageComplete(callback, x, y)
+    done = lambda x, y: self._FetchUIDsComplete(callback, x, y)
     self._stub.ForceDiscovery(controller, request, done)
 
   def RDMGet(self, universe, uid, sub_device, param_id, callback, data = ''):
@@ -851,7 +851,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     Args:
       callback: the callback to run
       controller: an RpcController
-      response: an DeviceConfigReply message.
+      response: an UIDListReply message.
     """
     if not callback:
       return

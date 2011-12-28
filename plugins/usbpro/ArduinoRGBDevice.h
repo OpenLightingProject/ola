@@ -66,31 +66,24 @@ class ArduinoRGBOutputPort: public BasicOutputPort {
 
     string Description() const { return m_description; }
 
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
+    bool WriteDMX(const DmxBuffer &buffer, uint8_t) {
       if (m_bucket.GetToken(*m_wake_time))
         return m_widget->SendDMX(buffer);
       else
         OLA_INFO << "Port rated limited, dropping frame";
       return true;
-      (void) priority;
     }
 
-    void HandleRDMRequest(const ola::rdm::RDMRequest *request,
-                          ola::rdm::RDMCallback *callback) {
+    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+                        ola::rdm::RDMCallback *callback) {
       return m_widget->SendRDMRequest(request, callback);
     }
 
-    void RunFullDiscovery() {
-      ola::rdm::RDMDiscoveryCallback *callback = ola::NewSingleCallback(
-          static_cast<BasicOutputPort*>(this),
-          &ArduinoRGBOutputPort::NewUIDList);
+    void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
       m_widget->RunFullDiscovery(callback);
     }
 
-    void RunIncrementalDiscovery() {
-      ola::rdm::RDMDiscoveryCallback *callback = ola::NewSingleCallback(
-          static_cast<BasicOutputPort*>(this),
-          &ArduinoRGBOutputPort::NewUIDList);
+    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
       m_widget->RunIncrementalDiscovery(callback);
     }
 

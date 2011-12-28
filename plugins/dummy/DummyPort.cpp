@@ -54,32 +54,32 @@ bool DummyPort::WriteDMX(const DmxBuffer &buffer,
 /*
  * This returns a single device
  */
-void DummyPort::RunFullDiscovery() {
-  RunDiscovery();
+void DummyPort::RunFullDiscovery(RDMDiscoveryCallback *callback) {
+  RunDiscovery(callback);
 }
 
 
 /*
  * This returns a single device
  */
-void DummyPort::RunIncrementalDiscovery() {
-  RunDiscovery();
+void DummyPort::RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
+  RunDiscovery(callback);
 }
 
 
 /*
  * Handle an RDM Request
  */
-void DummyPort::HandleRDMRequest(const ola::rdm::RDMRequest *request,
-                                 ola::rdm::RDMCallback *callback) {
+void DummyPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
+                               ola::rdm::RDMCallback *callback) {
   m_responder.SendRDMRequest(request, callback);
 }
 
 
-void DummyPort::RunDiscovery() {
+void DummyPort::RunDiscovery(RDMDiscoveryCallback *callback) {
   ola::rdm::UIDSet uid_set;
   uid_set.AddUID(m_responder.UID());
-  NewUIDList(uid_set);
+  callback->Run(uid_set);
 }
 }  // dummy
 }  // plugin

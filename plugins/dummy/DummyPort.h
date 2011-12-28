@@ -44,13 +44,13 @@ class DummyPort: public BasicOutputPort {
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     string Description() const { return "Dummy Port"; }
-    void RunFullDiscovery();
-    void RunIncrementalDiscovery();
-    void HandleRDMRequest(const ola::rdm::RDMRequest *request,
-                          ola::rdm::RDMCallback *callback);
+    void RunFullDiscovery(RDMDiscoveryCallback *callback);
+    void RunIncrementalDiscovery(RDMDiscoveryCallback *callback);
+    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+                        ola::rdm::RDMCallback *callback);
 
   private:
-    void RunDiscovery();
+    void RunDiscovery(RDMDiscoveryCallback *callback);
 
     DmxBuffer m_buffer;
     DummyResponder m_responder;

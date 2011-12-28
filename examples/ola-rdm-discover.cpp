@@ -61,7 +61,7 @@ SelectServer *ss;
  * @param universes a vector of OlaUniverses
  */
 void UIDList(const ola::rdm::UIDSet &uids,
-                       const string &error) {
+             const string &error) {
   if (error.empty()) {
     UIDSet::Iterator iter = uids.Begin();
     for (; iter != uids.End(); ++iter) {
@@ -70,16 +70,6 @@ void UIDList(const ola::rdm::UIDSet &uids,
   } else {
     cout << error << endl;
   }
-  ss->Terminate();
-}
-
-
-/*
- * Called once we get an ack for the discovery request
- */
-void ForceRDMDiscoveryComplete(const string &error) {
-  if (!error.empty())
-    cout << error << endl;
   ss->Terminate();
 }
 
@@ -166,12 +156,12 @@ bool FetchUIDs(OlaCallbackClient *client, const options &opts) {
     return client->RunDiscovery(
         opts.uni,
         true,
-        ola::NewSingleCallback(&ForceRDMDiscoveryComplete));
+        ola::NewSingleCallback(&UIDList));
   } else if (opts.incremental) {
     return client->RunDiscovery(
         opts.uni,
         false,
-        ola::NewSingleCallback(&ForceRDMDiscoveryComplete));
+        ola::NewSingleCallback(&UIDList));
   } else {
     return client->FetchUIDList(
         opts.uni,

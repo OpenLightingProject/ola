@@ -182,8 +182,9 @@ int RDMHttpModule::RunRDMDiscovery(const HttpRequest *request,
       universe_id,
       !incremental,
       NewSingleCallback(this,
-                        &RDMHttpModule::HandleBoolResponse,
-                        response));
+                        &RDMHttpModule::HandleUIDList,
+                        response,
+                        universe_id));
 
   if (!ok)
     return m_server->ServeError(response, BACKEND_DISCONNECTED_ERROR);
@@ -1873,7 +1874,7 @@ void RDMHttpModule::GetPersonalityLabelHandler(
  * Send the response to a dmx personality section
  */
 void RDMHttpModule::SendSectionPersonalityResponse(HttpResponse *response,
-                                                  personality_info *info) {
+                                                   personality_info *info) {
   JsonSection section;
   SelectItem *item = new SelectItem("Personality", GENERIC_UINT_FIELD);
 

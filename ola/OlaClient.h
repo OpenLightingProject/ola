@@ -135,9 +135,11 @@ class OlaClientObserver {
       (void) uids;
       (void) error;
     }
-    virtual void ForceRDMDiscoveryComplete(unsigned int universe,
-                                           const string &error) {
+    virtual void RDMDiscoveryComplete(unsigned int universe,
+                                      const ola::rdm::UIDSet &uids,
+                                      const string &error) {
       (void) universe;
+      (void) uids;
       (void) error;
     }
     virtual void SetSourceUIDComplete(const string &error) {

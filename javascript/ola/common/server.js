@@ -262,9 +262,8 @@ ola.common.Server.prototype.createUniverse = function(universe_id,
 
 
 /**
- * Trigger RDM discovery for this universe. The discovery command is
- *   asyncronous and at the moment there is no way to check if discovery has
- *   completed.
+ * Trigger RDM discovery for this universe. This returns when discovery
+ *   completes.
  * @param {number} universe_id the ID of the universe to run discovery for.
  * @param {boolean} full true if we should do full discovery, false for
  *   incremental.

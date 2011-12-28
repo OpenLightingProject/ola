@@ -224,11 +224,10 @@ void ArduinoWidgetImpl::HandleRDMResponse(const uint8_t *data,
 /**
  * Return the UID Set to the client
  */
-bool ArduinoWidgetImpl::GetUidSet(ola::rdm::RDMDiscoveryCallback *callback) {
+void ArduinoWidgetImpl::GetUidSet(ola::rdm::RDMDiscoveryCallback *callback) {
   ola::rdm::UIDSet uid_set;
   uid_set.AddUID(m_uid);
   callback->Run(uid_set);
-  return true;
 }
 
 

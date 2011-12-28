@@ -48,7 +48,6 @@ class DmxTriDevice: public UsbSerialDevice {
     ~DmxTriDevice() {}
 
     string DeviceId() const { return m_device_id; }
-    bool StartHook();
     void PrePortStop();
 
   private:
@@ -73,17 +72,18 @@ class DmxTriOutputPort: public BasicOutputPort {
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     string Description() const { return ""; }
 
-    void HandleRDMRequest(const ola::rdm::RDMRequest *request,
-                          ola::rdm::RDMCallback *callback);
-
-    void PostSetUniverse(Universe *old_universe, Universe *new_universe) {
-      if (new_universe)
-        m_tri_widget->SendUIDUpdate();
-      (void) old_universe;
+    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+                        ola::rdm::RDMCallback *callback) {
+      m_tri_widget->SendRDMRequest(request, callback);
     }
 
-    void RunRDMDiscovery();
-    void RunIncrementalDiscovery();
+    void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+      m_tri_widget->RunFullDiscovery(callback);
+    }
+
+    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+      m_tri_widget->RunIncrementalDiscovery(callback);
+    }
 
   private:
     DmxTriDevice *m_device;

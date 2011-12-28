@@ -571,7 +571,7 @@ void OlaServerServiceImpl::GetUIDs(RpcController* controller,
   if (!universe)
     return MissingUniverseError(controller);
 
-  response->set_universe(request->universe());
+  response->set_universe(universe->UniverseId());
   UIDSet uid_set;
   universe->GetUIDs(&uid_set);
 
@@ -590,14 +590,23 @@ void OlaServerServiceImpl::GetUIDs(RpcController* controller,
 void OlaServerServiceImpl::ForceDiscovery(
     RpcController* controller,
     const ola::proto::DiscoveryRequest* request,
-    ola::proto::Ack*,
+    ola::proto::UIDListReply *response,
     google::protobuf::Closure* done) {
-  ClosureRunner runner(done);
   Universe *universe = m_universe_store->GetUniverse(request->universe());
-  if (universe)
-    universe->RunRDMDiscovery(request->full());
-  else
+
+  if (universe) {
+    unsigned int universe_id = request->universe();
+    universe->RunRDMDiscovery(
+        NewSingleCallback(this,
+                          &OlaServerServiceImpl::RDMDiscoveryComplete,
+                          universe_id,
+                          done,
+                          response),
+        request->full());
+  } else {
+    ClosureRunner runner(done);
     MissingUniverseError(controller);
+  }
 }
 
 
@@ -651,7 +660,6 @@ void OlaServerServiceImpl::RDMCommand(
     NewSingleCallback(
         this,
         &OlaServerServiceImpl::HandleRDMResponse,
-        controller,
         response,
         done,
         request->include_raw_response());
@@ -697,12 +705,13 @@ void OlaServerServiceImpl::SendTimeCode(RpcController* controller,
 }
 
 
+// Private methods
+//-----------------------------------------------------------------------------
 /*
  * Handle an RDM Response, this includes broadcast messages, messages that
  * timed out and normal response messages.
  */
 void OlaServerServiceImpl::HandleRDMResponse(
-    RpcController*,
     ola::proto::RDMResponse* response,
     google::protobuf::Closure* done,
     bool include_raw_packets,
@@ -766,8 +775,26 @@ void OlaServerServiceImpl::HandleRDMResponse(
 }
 
 
-// Private methods
-//-----------------------------------------------------------------------------
+/**
+ * Called when RDM discovery completes
+ */
+void OlaServerServiceImpl::RDMDiscoveryComplete(
+    unsigned int universe_id,
+    google::protobuf::Closure* done,
+    ola::proto::UIDListReply *response,
+    const UIDSet &uids) {
+  ClosureRunner runner(done);
+
+  response->set_universe(universe_id);
+  UIDSet::Iterator iter = uids.Begin();
+  for (; iter != uids.End(); ++iter) {
+    ola::proto::UID *uid = response->add_uid();
+    uid->set_esta_id(iter->ManufacturerId());
+    uid->set_device_id(iter->DeviceId());
+  }
+}
+
+
 void OlaServerServiceImpl::MissingUniverseError(RpcController* controller) {
   controller->SetFailed("Universe doesn't exist");
 }

@@ -44,26 +44,21 @@ using std::queue;
  * implementation so we can leverage the QueueingRDMController.
  */
 class DmxTriWidgetImpl: public BaseUsbProWidget,
-                        public ola::rdm::RDMControllerInterface {
+                        public ola::rdm::DiscoverableRDMControllerInterface {
   public:
     DmxTriWidgetImpl(ola::thread::SchedulerInterface *executor,
                      ola::network::ConnectedDescriptor *descriptor,
                      bool use_raw_rdm);
     ~DmxTriWidgetImpl();
 
-    void SetUIDListCallback(
-        ola::Callback1<void, const ola::rdm::UIDSet&> *callback);
-    void SetDiscoveryCallback(
-        ola::Callback0<void> *callback);
     void UseRawRDM(bool use_raw_rdm) { m_use_raw_rdm = use_raw_rdm; }
 
     void Stop();
 
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete);
-    void RunRDMDiscovery();
-    void SendUIDUpdate();
-    bool CheckDiscoveryStatus();
+    void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
+    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
 
   private:
     ola::thread::SchedulerInterface *m_scheduler;
@@ -72,13 +67,14 @@ class DmxTriWidgetImpl: public BaseUsbProWidget,
     unsigned int m_uid_count;
     uint16_t m_last_esta_id;
     bool m_use_raw_rdm;
-
-    ola::Callback1<void, const ola::rdm::UIDSet&> *m_uid_set_callback;
-    ola::Callback0<void> *m_discovery_callback;
+    ola::rdm::RDMDiscoveryCallback *m_discovery_callback;
     ola::rdm::RDMCallback *m_rdm_request_callback;
     const ola::rdm::RDMRequest *m_pending_request;
     uint8_t m_transaction_number;
 
+    void RunDiscoveryCallback(ola::rdm::RDMDiscoveryCallback *callback);
+    bool CheckDiscoveryStatus();
+    void RunRDMDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
     void HandleMessage(uint8_t label,
                        const uint8_t *data,
                        unsigned int length);
@@ -194,24 +190,17 @@ class DmxTriWidget: public SerialWidgetInterface {
       return m_impl->SendDMX(buffer);
     }
 
-    void SetUIDListCallback(
-        ola::Callback1<void, const ola::rdm::UIDSet&> *callback) {
-      m_impl->SetUIDListCallback(callback);
-    }
-
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete) {
       m_controller->SendRDMRequest(request, on_complete);
     }
 
-    void RunRDMDiscovery() {
-      // pause rdm sending
-      m_controller->Pause();
-      m_impl->RunRDMDiscovery();
+    void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+      m_controller->RunFullDiscovery(callback);
     }
 
-    void SendUIDUpdate() {
-      m_impl->SendUIDUpdate();
+    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+      m_controller->RunIncrementalDiscovery(callback);
     }
 
     ola::network::ConnectedDescriptor *GetDescriptor() const {
@@ -222,7 +211,7 @@ class DmxTriWidget: public SerialWidgetInterface {
     // we need to control the order of construction & destruction here so these
     // are pointers.
     DmxTriWidgetImpl *m_impl;
-    ola::rdm::QueueingRDMController *m_controller;
+    ola::rdm::DiscoverableQueueingRDMController *m_controller;
 
     void ResumeRDMCommands() {
       m_controller->Resume();

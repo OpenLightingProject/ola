@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 #include "ola/Logging.h"
+#include "ola/rdm/UIDSet.h"
 #include "olad/Device.h"
 #include "olad/Port.h"
 #include "olad/PortBroker.h"
@@ -119,15 +120,15 @@ void BasicInputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request,
 /*
  * Trigger the RDM Discovery procedure for this universe
  */
-void BasicInputPort::TriggerRDMDiscovery(bool full) {
-  if (m_universe)
-    m_universe->RunRDMDiscovery(full);
-}
-
-
-void BasicOutputPort::NewUIDList(const ola::rdm::UIDSet &uids) {
-  if (m_universe)
-    m_universe->NewUIDList(uids, this);
+void BasicInputPort::TriggerRDMDiscovery(
+    ola::rdm::RDMDiscoveryCallback *on_complete,
+    bool full) {
+  if (m_universe) {
+    m_universe->RunRDMDiscovery(on_complete, full);
+  } else {
+    ola::rdm::UIDSet uids;
+    on_complete->Run(uids);
+  }
 }
 
 
@@ -156,7 +157,8 @@ bool BasicOutputPort::SetUniverse(Universe *new_universe) {
     m_universe = new_universe;
     PostSetUniverse(old_universe, new_universe);
     if (m_discover_on_patch)
-      RunIncrementalDiscovery();
+      RunIncrementalDiscovery(
+          NewSingleCallback(this, &BasicOutputPort::UpdateUIDs));
     return true;
   }
   return false;
@@ -186,8 +188,8 @@ bool BasicOutputPort::SetPriority(uint8_t priority) {
 /*
  * Handle an RDMRequest, subclasses can implement this to support RDM
  */
-void BasicOutputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request,
-                                       ola::rdm::RDMCallback *callback) {
+void BasicOutputPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
+                                     ola::rdm::RDMCallback *callback) {
   // broadcasts go to every port
   std::vector<std::string> packets;
   if (request->DestinationUID().IsBroadcast()) {
@@ -205,14 +207,30 @@ void BasicOutputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request,
 /*
  * This is a noop for ports that don't support RDM
  */
-void BasicOutputPort::RunFullDiscovery() {
+void BasicOutputPort::RunFullDiscovery(
+    ola::rdm::RDMDiscoveryCallback *on_complete) {
+  ola::rdm::UIDSet uids;
+  on_complete->Run(uids);
 }
 
 
 /*
  * This is a noop for ports that don't support RDM
  */
-void BasicOutputPort::RunIncrementalDiscovery() {
+void BasicOutputPort::RunIncrementalDiscovery(
+    ola::rdm::RDMDiscoveryCallback *on_complete) {
+  ola::rdm::UIDSet uids;
+  on_complete->Run(uids);
+}
+
+
+/**
+ * Called when the discovery triggered by patching completes
+ */
+void BasicOutputPort::UpdateUIDs(const ola::rdm::UIDSet &uids) {
+  Universe *universe = GetUniverse();
+  if (universe)
+    universe->NewUIDList(this, uids);
 }
 
 

@@ -127,7 +127,7 @@ class OlaServerServiceImpl {
                  google::protobuf::Closure* done);
     void ForceDiscovery(RpcController* controller,
                         const ola::proto::DiscoveryRequest* request,
-                        ola::proto::Ack* response,
+                        ola::proto::UIDListReply* response,
                         google::protobuf::Closure* done);
     void RDMCommand(RpcController* controller,
                     const ::ola::proto::RDMRequest* request,
@@ -146,13 +146,16 @@ class OlaServerServiceImpl {
                       ::google::protobuf::Closure* done);
 
   private:
-    void HandleRDMResponse(RpcController* controller,
-                           ola::proto::RDMResponse* response,
+    void HandleRDMResponse(ola::proto::RDMResponse* response,
                            google::protobuf::Closure* done,
                            bool include_raw_packets,
                            ola::rdm::rdm_response_code code,
                            const ola::rdm::RDMResponse *rdm_response,
                            const std::vector<std::string> &packets);
+    void RDMDiscoveryComplete(unsigned int universe,
+                              google::protobuf::Closure* done,
+                              ola::proto::UIDListReply *response,
+                              const ola::rdm::UIDSet &uids);
 
     void MissingUniverseError(RpcController* controller);
     void MissingPluginError(RpcController* controller);
@@ -304,7 +307,7 @@ class OlaClientService: public ola::proto::OlaServerService {
 
     void ForceDiscovery(RpcController* controller,
                         const ola::proto::DiscoveryRequest* request,
-                        ola::proto::Ack* response,
+                        ola::proto::UIDListReply* response,
                         google::protobuf::Closure* done) {
       m_impl->ForceDiscovery(controller, request, response, done);
     }

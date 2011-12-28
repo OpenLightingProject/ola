@@ -138,28 +138,26 @@ void RobeWidgetImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
 /**
  * Perform full discovery.
  */
-bool RobeWidgetImpl::RunFullDiscovery(
+void RobeWidgetImpl::RunFullDiscovery(
     ola::rdm::RDMDiscoveryCallback *callback) {
   OLA_INFO << "Full discovery";
   m_discovery_agent.StartFullDiscovery(
     ola::NewSingleCallback(this,
                            &RobeWidgetImpl::DiscoveryComplete,
                            callback));
-  return true;
 }
 
 
 /**
  * Perform incremental discovery.
  */
-bool RobeWidgetImpl::RunIncrementalDiscovery(
+void RobeWidgetImpl::RunIncrementalDiscovery(
     ola::rdm::RDMDiscoveryCallback *callback) {
   OLA_INFO << "Incremental discovery";
   m_discovery_agent.StartIncrementalDiscovery(
     ola::NewSingleCallback(this,
                            &RobeWidgetImpl::DiscoveryComplete,
                            callback));
-  return true;
 }
 
 

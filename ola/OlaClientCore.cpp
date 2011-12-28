@@ -595,7 +595,7 @@ bool OlaClientCore::FetchDmx(
 bool OlaClientCore::FetchUIDList(
     unsigned int universe,
     SingleUseCallback2<void,
-                       const ola::rdm::UIDSet&,
+                       const UIDSet&,
                        const string&> *callback) {
   if (!m_connected) {
     delete callback;
@@ -625,7 +625,9 @@ bool OlaClientCore::FetchUIDList(
 bool OlaClientCore::RunDiscovery(
     unsigned int universe,
     bool full,
-    ola::SingleUseCallback1<void, const string&> *callback) {
+    ola::SingleUseCallback2<void,
+                            const UIDSet&,
+                            const string&> *callback) {
   if (!m_connected) {
     delete callback;
     return false;
@@ -633,15 +635,15 @@ bool OlaClientCore::RunDiscovery(
 
   ola::proto::DiscoveryRequest request;
   SimpleRpcController *controller = new SimpleRpcController();
-  ola::proto::Ack *reply = new ola::proto::Ack();
+  ola::proto::UIDListReply *reply = new ola::proto::UIDListReply();
 
   request.set_universe(universe);
   request.set_full(full);
 
   google::protobuf::Closure *cb = google::protobuf::NewCallback(
       this,
-      &ola::OlaClientCore::HandleAck,
-      NewArgs<ack_args>(controller, reply, callback));
+      &ola::OlaClientCore::HandleUIDList,
+      NewArgs<uid_list_args>(controller, reply, callback));
   m_stub->ForceDiscovery(controller, &request, reply, cb);
   return true;
 }

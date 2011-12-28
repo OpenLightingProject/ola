@@ -38,6 +38,7 @@
 #include <algorithm>
 
 #include "ola/Logging.h"
+#include "ola/MultiCallback.h"
 #include "olad/Client.h"
 #include "olad/UniverseStore.h"
 #include "olad/Port.h"
@@ -353,8 +354,8 @@ bool Universe::SourceClientDataChanged(Client *client) {
 void Universe::SendRDMRequest(const ola::rdm::RDMRequest *request,
                               ola::rdm::RDMCallback *callback) {
   OLA_INFO << "Got a RDM request for " << request->DestinationUID() <<
-    " with command " << std::hex << request->CommandClass() << " and param " <<
-    request->ParamId();
+    " with command " << std::hex << request->CommandClass() << " and param 0x"
+    << std::hex << request->ParamId();
 
   if (m_export_map)
     (*m_export_map->GetUIntMapVar(K_UNIVERSE_RDM_REQUESTS))[
@@ -371,7 +372,7 @@ void Universe::SendRDMRequest(const ola::rdm::RDMRequest *request,
     for (port_iter = m_output_ports.begin(); port_iter != m_output_ports.end();
          ++port_iter) {
       // because each port deletes the request, we need to copy it here
-      (*port_iter)->HandleRDMRequest(
+      (*port_iter)->SendRDMRequest(
           request->Duplicate(),
           NewSingleCallback(this, &Universe::HandleBroadcastAck, tracker));
     }
@@ -387,7 +388,7 @@ void Universe::SendRDMRequest(const ola::rdm::RDMRequest *request,
       callback->Run(ola::rdm::RDM_UNKNOWN_UID, NULL, packets);
       delete request;
     } else {
-      iter->second->HandleRDMRequest(request, callback);
+      iter->second->SendRDMRequest(request, callback);
     }
   }
 }
@@ -396,46 +397,49 @@ void Universe::SendRDMRequest(const ola::rdm::RDMRequest *request,
 /*
  * Trigger RDM discovery for this universe
  */
-void Universe::RunRDMDiscovery(bool full) {
+void Universe::RunRDMDiscovery(RDMDiscoveryCallback *on_complete, bool full) {
   if (full)
     OLA_INFO << "Full RDM discovery triggered for universe " << m_universe_id;
   else
     OLA_INFO << "Incremental RDM discovery triggered for universe " <<
       m_universe_id;
 
+  // we need to make a copy of the ports first, because the callback may run at
+  // any time so we need to guard against the port list changing.
+  vector<OutputPort*> output_ports(m_output_ports.size());
+  copy(m_output_ports.begin(), m_output_ports.end(), output_ports.begin());
+
+  // the multicallback that indicates when discovery is done
+  BaseCallback0<void> *discovery_complete = NewMultiCallback(
+      output_ports.size(),
+      NewSingleCallback(this, &Universe::DiscoveryComplete, on_complete));
+
+  // Send Discovery requests to all ports, as each of these return they'll
+  // update the UID map. When all ports callbacks have run, the MultiCallback
+  // will trigger, running the DiscoveryCallback.
   vector<OutputPort*>::iterator iter;
-  for (iter = m_output_ports.begin(); iter != m_output_ports.end(); ++iter)
-    if (full)
-      (*iter)->RunFullDiscovery();
-    else
-      (*iter)->RunIncrementalDiscovery();
-
-  // somehow detect when this is done and then send new UIDSets
-}
-
-
-/*
- * Returns the complete UIDSet for this universe
- */
-void Universe::GetUIDs(ola::rdm::UIDSet *uids) const {
-  map<UID, OutputPort*>::const_iterator iter = m_output_uids.begin();
-  for (; iter != m_output_uids.end(); ++iter)
-    uids->AddUID(iter->first);
-}
-
-
-/**
- * Return the number of uids in the universe
- */
-unsigned int Universe::UIDCount() const {
-  return m_output_uids.size();
+  for (iter = output_ports.begin(); iter != output_ports.end(); ++iter) {
+    if (full) {
+      (*iter)->RunFullDiscovery(
+          NewSingleCallback(this,
+                            &Universe::PortDiscoveryComplete,
+                            discovery_complete,
+                            *iter));
+    } else {
+      (*iter)->RunIncrementalDiscovery(
+          NewSingleCallback(this,
+                            &Universe::PortDiscoveryComplete,
+                            discovery_complete,
+                            *iter));
+    }
+  }
 }
 
 
 /*
  * Update the UID : port mapping with this new data
  */
-void Universe::NewUIDList(const ola::rdm::UIDSet &uids, OutputPort *port) {
+void Universe::NewUIDList(OutputPort *port, const ola::rdm::UIDSet &uids) {
   map<UID, OutputPort*>::iterator iter = m_output_uids.begin();
   while (iter != m_output_uids.end()) {
     if (iter->second == port && !uids.Contains(iter->first))
@@ -457,6 +461,24 @@ void Universe::NewUIDList(const ola::rdm::UIDSet &uids, OutputPort *port) {
   if (m_export_map)
     (*m_export_map->GetUIntMapVar(K_UNIVERSE_UID_COUNT_VAR))[m_universe_id_str]
       = m_output_uids.size();
+}
+
+
+/*
+ * Returns the complete UIDSet for this universe
+ */
+void Universe::GetUIDs(ola::rdm::UIDSet *uids) const {
+  map<UID, OutputPort*>::const_iterator iter = m_output_uids.begin();
+  for (; iter != m_output_uids.end(); ++iter)
+    uids->AddUID(iter->first);
+}
+
+
+/**
+ * Return the number of uids in the universe
+ */
+unsigned int Universe::UIDCount() const {
+  return m_output_uids.size();
 }
 
 
@@ -574,7 +596,7 @@ bool Universe::RemoveClient(Client *client, bool is_source) {
 
 /*
  * HTP Merge all sources (clients/ports)
- * @pre sources.sizez >= 2
+ * @pre sources.size >= 2
  * @param sources the list of DmxSources to merge
  */
 void Universe::HTPMergeSources(const vector<DmxSource> &sources) {
@@ -683,6 +705,27 @@ bool Universe::MergeAll(const InputPort *port, const Client *client) {
     }
   }
   return true;
+}
+
+
+/**
+ * Called when discovery completes on a single ports.
+ */
+void Universe::PortDiscoveryComplete(BaseCallback0<void> *on_complete,
+                                 OutputPort *output_port,
+                                 const ola::rdm::UIDSet &uids) {
+  NewUIDList(output_port, uids);
+  on_complete->Run();
+}
+
+
+/**
+ * Called when discovery completes on all ports.
+ */
+void Universe::DiscoveryComplete(RDMDiscoveryCallback *on_complete) {
+  ola::rdm::UIDSet uids;
+  GetUIDs(&uids);
+  on_complete->Run(uids);
 }
 
 

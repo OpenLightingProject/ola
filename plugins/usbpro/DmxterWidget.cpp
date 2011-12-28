@@ -132,52 +132,30 @@ void DmxterWidgetImpl::SendRDMRequest(const RDMRequest *request,
 /**
  * Trigger full RDM discovery for the widget.
  */
-bool DmxterWidgetImpl::RunFullDiscovery(
+void DmxterWidgetImpl::RunFullDiscovery(
     ola::rdm::RDMDiscoveryCallback *callback) {
   m_discovery_callback = callback;
   if (!SendMessage(FULL_DISCOVERY_LABEL, NULL, 0)) {
     OLA_WARN << "Failed to send full dmxter discovery command";
-    delete callback;
     m_discovery_callback = NULL;
-    return false;
+    // return the existing set of UIDs
+    callback->Run(m_uids);
   }
-  return true;
 }
 
 
 /**
  * Trigger incremental RDM discovery for the widget.
  */
-bool DmxterWidgetImpl::RunIncrementalDiscovery(
+void DmxterWidgetImpl::RunIncrementalDiscovery(
     ola::rdm::RDMDiscoveryCallback *callback) {
   m_discovery_callback = callback;
   if (!SendMessage(INCREMENTAL_DISCOVERY_LABEL, NULL, 0)) {
     OLA_WARN << "Failed to send incremental dmxter discovery command";
     m_discovery_callback = NULL;
-    delete callback;
-    return false;
+    // return the existing set of UIDs
+    callback->Run(m_uids);
   }
-  return true;
-}
-
-
-/**
- * Run the UID Set callback with the current list of UIDs
- */
-void DmxterWidgetImpl::SendUIDUpdate() {
-  if (m_discovery_callback) {
-    m_discovery_callback->Run(m_uids);
-    m_discovery_callback = NULL;
-  }
-}
-
-
-/**
- * Send a TOD request to the widget
- */
-void DmxterWidgetImpl::SendTodRequest() {
-  SendMessage(TOD_LABEL, NULL, 0);
-  OLA_INFO << "Sent TOD request";
 }
 
 
@@ -225,7 +203,11 @@ void DmxterWidgetImpl::HandleTodResponse(const uint8_t *data,
     OLA_INFO << "added " << uid.ToString();
     m_uids.AddUID(uid);
   }
-  SendUIDUpdate();
+  if (m_discovery_callback) {
+    ola::rdm::RDMDiscoveryCallback *callback = m_discovery_callback;
+    m_discovery_callback = NULL;
+    callback->Run(m_uids);
+  }
 }
 
 

@@ -248,12 +248,10 @@ void DmxTriWidgetTest::PopulateTod() {
       expected_fetch_response2,
       sizeof(expected_fetch_response2));
 
-  m_widget->SetUIDListCallback(
-      ola::NewCallback(this, &DmxTriWidgetTest::ValidateTod));
-
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, m_tod_counter);
   m_expect_uids_in_tod = true;
-  m_widget->RunRDMDiscovery();
+  m_widget->RunFullDiscovery(
+      ola::NewSingleCallback(this, &DmxTriWidgetTest::ValidateTod));
   m_ss.Run();
   m_endpoint->Verify();
 }
@@ -264,10 +262,7 @@ void DmxTriWidgetTest::PopulateTod() {
  */
 void DmxTriWidgetTest::testTod() {
   PopulateTod();
-
   CPPUNIT_ASSERT_EQUAL((unsigned int) 1, m_tod_counter);
-  m_widget->SendUIDUpdate();
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 2, m_tod_counter);
   m_endpoint->Verify();
 
   // check that where there are no devices, things work
@@ -303,9 +298,10 @@ void DmxTriWidgetTest::testTod() {
       sizeof(stat_nil_devices_ack));
 
   m_expect_uids_in_tod = false;
-  m_widget->RunRDMDiscovery();
+  m_widget->RunFullDiscovery(
+      ola::NewSingleCallback(this, &DmxTriWidgetTest::ValidateTod));
   m_ss.Run();
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 3, m_tod_counter);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 2, m_tod_counter);
   m_endpoint->Verify();
 
   // check that an error behaves like we expect
@@ -327,9 +323,10 @@ void DmxTriWidgetTest::testTod() {
       sizeof(stat_error_ack));
 
   m_expect_uids_in_tod = false;
-  m_widget->RunRDMDiscovery();
+  m_widget->RunFullDiscovery(
+      ola::NewSingleCallback(this, &DmxTriWidgetTest::ValidateTod));
   m_ss.Run();
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 4, m_tod_counter);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 3, m_tod_counter);
   m_endpoint->Verify();
 }
 

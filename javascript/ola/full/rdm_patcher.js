@@ -444,11 +444,11 @@ ola.RDMPatcher.prototype._render = function() {
   // update the status line
   var status_line;
   if (first_free_channel == ola.RDMPatcher.NUMBER_OF_CHANNELS) {
-    status_line = 'No channels free';
+    status_line = 'No slots free';
   } else {
     first_free_channel++;
     last_free_channel++;
-    status_line = ('Free channels: first: ' + first_free_channel + ', last: ' +
+    status_line = ('Free slots: first: ' + first_free_channel + ', last: ' +
       last_free_channel + ', max contiguous: ' + max_unused_channels);
   }
   this.status_line.innerHTML = status_line;
@@ -527,7 +527,7 @@ ola.RDMPatcher.prototype._renderSlot = function(tr, slot_data, start_channel) {
       if (device.overflows()) {
         div.className = 'patcher_overflow_device';
         div.title = 'Device overflows the ' + ola.RDMPatcher.NUMBER_OF_CHANNELS
-          + ' channel limit';
+          + ' slot limit';
       } else {
         div.className = 'patcher_device';
       }
