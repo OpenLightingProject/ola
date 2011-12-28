@@ -23,7 +23,7 @@
 #include <ola/DmxBuffer.h>
 #include <vector>
 #include "tools/ola_trigger/Action.h"
-#include "tools/ola_trigger/DmxTrigger.h"
+#include "tools/ola_trigger/DMXTrigger.h"
 #include "tools/ola_trigger/MockAction.h"
 
 using std::vector;
