@@ -982,7 +982,7 @@ void QueueingRDMControllerTest::testRequestAndDiscovery() {
   mock_controller.Verify();
 
   // now finish the discovery
-  mock_controller.AddExpectedCall(get_request,
+  mock_controller.AddExpectedCall(get_request2,
                                   ola::rdm::RDM_COMPLETED_OK,
                                   &expected_command,
                                   "foo");
