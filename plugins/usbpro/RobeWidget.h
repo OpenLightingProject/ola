@@ -56,6 +56,8 @@ class RobeWidgetImpl: public BaseRobeWidget,
                             const ola::rdm::UID &uid);
     ~RobeWidgetImpl() {}
 
+    void Stop();
+
     bool SendDMX(const DmxBuffer &buffer);
 
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
@@ -120,6 +122,8 @@ class RobeWidget: public SerialWidgetInterface,
                const ola::rdm::UID &uid,
                unsigned int queue_size = 20);
     ~RobeWidget();
+
+    void Stop() { m_impl->Stop(); }
 
     ola::network::ConnectedDescriptor *GetDescriptor() const {
       return m_impl->GetDescriptor();

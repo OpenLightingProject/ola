@@ -88,9 +88,11 @@ void DmxTriWidgetImpl::Stop() {
   // timeout any existing message
   if (m_rdm_request_callback) {
     std::vector<string> packets;
-    m_rdm_request_callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
+    ola::rdm::RDMCallback *callback = m_rdm_request_callback;
     m_rdm_request_callback = NULL;
+    callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
   }
+
   if (m_pending_request) {
     delete m_pending_request;
     m_pending_request = NULL;

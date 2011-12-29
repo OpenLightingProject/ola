@@ -41,6 +41,7 @@ class UltraDMXProWidget: public GenericUsbProWidget {
     UltraDMXProWidget(ola::thread::SchedulerInterface *scheduler,
                        ola::network::ConnectedDescriptor *descriptor);
     ~UltraDMXProWidget() {}
+    void Stop() { GenericStop(); }
 
     bool SendDMX(const DmxBuffer &buffer);
     bool SendSecondaryDMX(const DmxBuffer &buffer);

@@ -47,18 +47,7 @@ GenericUsbProWidget::GenericUsbProWidget(
  * Shutdown
  */
 GenericUsbProWidget::~GenericUsbProWidget() {
-  Stop();
-
-  if (m_dmx_callback)
-    delete m_dmx_callback;
-
-  // empty params struct
-  usb_pro_parameters params;
-  while (!m_outstanding_param_callbacks.empty()) {
-    usb_pro_params_callback* &callback = m_outstanding_param_callbacks.front();
-    callback->Run(false, params);
-    m_outstanding_param_callbacks.pop_front();
-  }
+  GenericStop();
 }
 
 
@@ -75,8 +64,21 @@ void GenericUsbProWidget::SetDMXCallback(ola::Callback0<void> *callback) {
 /**
  * Stop the rdm discovery process if it's running
  */
-void GenericUsbProWidget::Stop() {
+void GenericUsbProWidget::GenericStop() {
   m_active = false;
+
+  if (m_dmx_callback) {
+    delete m_dmx_callback;
+    m_dmx_callback = NULL;
+  }
+
+  // empty params struct
+  usb_pro_parameters params;
+  while (!m_outstanding_param_callbacks.empty()) {
+    usb_pro_params_callback *callback = m_outstanding_param_callbacks.front();
+    m_outstanding_param_callbacks.pop_front();
+    callback->Run(false, params);
+  }
 }
 
 

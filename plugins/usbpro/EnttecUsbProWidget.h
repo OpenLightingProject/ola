@@ -47,6 +47,8 @@ class EnttecUsbProWidgetImpl: public GenericUsbProWidget {
                            ola::network::ConnectedDescriptor *descriptor);
     ~EnttecUsbProWidgetImpl() {}
 
+    void Stop() { GenericStop(); }
+
     /*
      * TODO(simon): add RDM support
     void SendRDMRequest(const ola::rdm::RDMRequest *request,

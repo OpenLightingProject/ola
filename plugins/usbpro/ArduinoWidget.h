@@ -45,6 +45,8 @@ class ArduinoWidgetImpl: public BaseUsbProWidget,
                       uint32_t serial);
     ~ArduinoWidgetImpl();
 
+    void Stop();
+
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete);
 
@@ -91,6 +93,8 @@ class ArduinoWidget: public SerialWidgetInterface,
                   uint32_t serial,
                   unsigned int queue_size = 20);
     ~ArduinoWidget();
+
+    void Stop() { m_impl->Stop(); }
 
     bool SendDMX(const DmxBuffer &buffer) {
       return m_impl->SendDMX(buffer);

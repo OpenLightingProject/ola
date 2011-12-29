@@ -68,18 +68,33 @@ DmxterWidgetImpl::DmxterWidgetImpl(
  * Clean up
  */
 DmxterWidgetImpl::~DmxterWidgetImpl() {
+  Stop();
+}
+
+
+/**
+ * Stop the widget
+ */
+void DmxterWidgetImpl::Stop() {
   // timeout any existing message
   std::vector<std::string> packets;
-  if (m_rdm_request_callback)
-    m_rdm_request_callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
+  if (m_rdm_request_callback) {
+    ola::rdm::RDMCallback *callback = m_rdm_request_callback;
+    m_rdm_request_callback = NULL;
+    callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
+  }
 
   if (m_discovery_callback) {
     ola::rdm::UIDSet uids;
-    m_discovery_callback->Run(uids);
+    ola::rdm::RDMDiscoveryCallback *callback = m_discovery_callback;
+    m_discovery_callback = NULL;
+    callback->Run(uids);
   }
 
-  if (m_pending_request)
+  if (m_pending_request) {
     delete m_pending_request;
+    m_pending_request = NULL;
+  }
 }
 
 

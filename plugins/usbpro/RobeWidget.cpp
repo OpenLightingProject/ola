@@ -56,6 +56,31 @@ RobeWidgetImpl::RobeWidgetImpl(ola::network::ConnectedDescriptor *descriptor,
 
 
 /**
+ * Stop the widget.
+ */
+void RobeWidgetImpl::Stop() {
+  std::vector<std::string> packets;
+  if (m_rdm_request_callback) {
+    ola::rdm::RDMCallback *callback = m_rdm_request_callback;
+    m_rdm_request_callback = NULL;
+    callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
+  }
+
+  if (m_mute_callback)
+    delete m_mute_callback;
+  if (m_unmute_callback)
+    delete m_unmute_callback;
+  if (m_branch_callback)
+    delete m_branch_callback;
+
+  if (m_pending_request) {
+    delete m_pending_request;
+    m_pending_request = NULL;
+  }
+}
+
+
+/**
  * Send DMX
  * @param buffer the DMX data
  */

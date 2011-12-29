@@ -73,6 +73,14 @@ DiscoveryAgent::~DiscoveryAgent() {
   delete m_incremental_mute_callback;
   delete m_branch_mute_callback;
   delete m_branch_callback;
+  if (m_on_complete)
+    delete m_on_complete;
+
+  while (!m_uid_ranges.empty()) {
+    UIDRange *range = m_uid_ranges.top();
+    delete range;
+    m_uid_ranges.pop();
+  }
 }
 
 

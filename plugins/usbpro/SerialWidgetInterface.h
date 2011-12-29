@@ -40,6 +40,8 @@ class SerialWidgetInterface {
     SerialWidgetInterface() {}
     virtual ~SerialWidgetInterface() {}
 
+    // The Stop() method should clear out any callbacks
+    virtual void Stop() = 0;
     virtual ola::network::ConnectedDescriptor *GetDescriptor() const = 0;
 };
 }  // usbpro

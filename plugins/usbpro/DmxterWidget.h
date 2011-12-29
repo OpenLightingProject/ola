@@ -45,6 +45,8 @@ class DmxterWidgetImpl: public BaseUsbProWidget,
                      uint32_t serial);
     ~DmxterWidgetImpl();
 
+    void Stop();
+
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete);
 
@@ -130,6 +132,8 @@ class DmxterWidget: public SerialWidgetInterface,
                  uint32_t serial,
                  unsigned int queue_size = 20);
     ~DmxterWidget();
+
+    void Stop() { m_impl->Stop(); }
 
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete) {
