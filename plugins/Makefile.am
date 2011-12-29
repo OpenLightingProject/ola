@@ -1,3 +1,3 @@
 # usbpro before e131 due to test dependencies
 SUBDIRS = usbpro artnet dmx4linux dummy e131 espnet opendmx \
-          pathport sandnet shownet stageprofi usbdmx
+          pathport sandnet shownet stageprofi usbdmx ftdidmx
