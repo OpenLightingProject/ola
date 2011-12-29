@@ -66,6 +66,7 @@ class ArtNetDevice: public Device {
 
   protected:
     bool StartHook();
+    void PrePortStop();
     void PostPortStop();
 
   private:

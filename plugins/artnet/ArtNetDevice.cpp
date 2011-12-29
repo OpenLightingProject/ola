@@ -137,15 +137,22 @@ bool ArtNetDevice::StartHook() {
 }
 
 
-/*
- * Stop this device
+/**
+ * Stop this device. This is called before the ports are deleted
  */
-void ArtNetDevice::PostPortStop() {
+void ArtNetDevice::PrePortStop() {
   if (m_timeout_id != ola::thread::INVALID_TIMEOUT) {
     m_plugin_adaptor->RemoveTimeout(m_timeout_id);
     m_timeout_id = ola::thread::INVALID_TIMEOUT;
   }
   m_node->Stop();
+}
+
+
+/*
+ * Stop this device
+ */
+void ArtNetDevice::PostPortStop() {
   delete m_node;
   m_node = NULL;
 }

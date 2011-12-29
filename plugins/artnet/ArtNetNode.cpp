@@ -147,21 +147,31 @@ bool ArtNetNodeImpl::Stop() {
   std::vector<std::string> packets;
   for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
     InputPort &port = m_input_ports[i];
-    if (port.rdm_send_timeout != ola::thread::INVALID_TIMEOUT) {
-      m_ss->RemoveTimeout(port.rdm_send_timeout);
-      port.rdm_send_timeout = ola::thread::INVALID_TIMEOUT;
-    }
 
+    // clean up discovery state
     if (port.discovery_timeout != ola::thread::INVALID_TIMEOUT) {
       m_ss->RemoveTimeout(port.discovery_timeout);
       port.discovery_timeout = ola::thread::INVALID_TIMEOUT;
     }
 
-    if (port.rdm_request_callback)
-      port.rdm_request_callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
+    if (port.discovery_callback)
+      RunDiscoveryCallbackForPort(i);
+
+    // clean up request state
+    if (port.rdm_send_timeout != ola::thread::INVALID_TIMEOUT) {
+      m_ss->RemoveTimeout(port.rdm_send_timeout);
+      port.rdm_send_timeout = ola::thread::INVALID_TIMEOUT;
+    }
+
     if (port.pending_request) {
       delete port.pending_request;
       port.pending_request = NULL;
+    }
+
+    if (port.rdm_request_callback) {
+      RDMCallback *callback = port.rdm_request_callback;
+      port.rdm_request_callback = NULL;
+      callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
     }
   }
 
