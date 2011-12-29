@@ -17,9 +17,6 @@ goog.require('ola.mobile.ControllerTab');
 
 goog.provide('ola.mobile');
 
-var ola = ola || {};
-
-
 /**
  * Setup the OLA ola_ui widgets
  * @constructor

@@ -46,8 +46,6 @@ goog.require('ola.UniverseControl');
 goog.provide('ola.OlaUi');
 goog.provide('ola.Setup');
 
-var ola = ola || {};
-
 ola.LIST_UPDATE_INTERVAL_MS = 5000;
 
 ola.HOME_FRAME_ID = 'home_frame';
