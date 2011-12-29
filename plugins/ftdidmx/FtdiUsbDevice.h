@@ -1,0 +1,169 @@
+/*
+  This program is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License
+  Version 2 as published by the Free Software Foundation.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details. The license is
+  in the file "COPYING".
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+  This class is based on QLCFTDI class from
+
+  Q Light Controller
+  qlcftdi.h
+
+  Copyright (C) Heikki Junnila
+
+  Only standard CPP conversion was changed and function name changed
+  to follow OLA coding standards.
+
+  by
+  Rui Barreiros
+*/
+
+#ifndef __PLUGINS_FTDIDMX_FTDIUSBDEVICE_H
+#define __PLUGINS_FTDIDMX_FTDIUSBDEVICE_H
+
+#include <string>
+#include <vector>
+#include "ola/DmxBuffer.h"
+
+#ifdef FTD2XX
+#   ifdef WIN32
+#       include <windows.h>
+#   endif
+#   include <ftd2xx.h>
+#else
+#   include <ftdi.h>
+#endif
+
+namespace ola {
+namespace plugin {
+namespace ftdidmx {
+
+using std::string;
+using std::vector;
+
+class FtdiUsbDeviceInfo
+{
+ public:
+  FtdiUsbDeviceInfo(string name, string serial, int unsigned id) : m_name(name), m_serial(serial), m_id(id) {}
+  virtual ~FtdiUsbDeviceInfo() {}
+  
+  string Name() const { return m_name; }
+  string Serial() const { return m_serial; }
+  int unsigned Id() const { return m_id; }
+
+  string Description() const { return m_name + " with serial number : " + m_serial +" "; }
+  
+ private:
+  string m_name;
+  string m_serial;
+  int unsigned m_id;
+};
+
+class FtdiUsbDevice
+{
+  /************************************************************************
+   * Widget enumeration
+   ************************************************************************/
+ public:
+  static const int VID = 0x0403; //! FTDI Vendor ID
+  static const int PID = 0x6001; //! FTDI Product ID
+  
+  /**
+   * Compose a list of available widgets
+   *
+   * @return A list of enttec-compabitble devices
+   */
+  static vector <FtdiUsbDeviceInfo> Widgets();
+
+  /************************************************************************
+   * Construction & Generic Information
+   ************************************************************************/
+ public:
+  /**
+   * Construct a new FtdiUsbDevice instance for one widget.
+   *
+   * @param serial The widget's USB serial number
+   * @param name The widget's USB name (description)
+   * @param id The ID of the device (used only when FTD2XX is the backend)
+   */
+  FtdiUsbDevice(const string& serial, const string& name, uint32_t id = 0);
+
+  /** Destructor */
+  virtual ~FtdiUsbDevice();
+
+  /** Get the widget's USB serial number */
+  string Serial() const { return m_serial; }
+
+  /** Get the widget's USB name */
+  string Name() const { return m_name; }
+
+  /** Get the widget's FTD2XX ID number */
+  uint32_t Id() const { return m_id; }
+
+ private:
+  string m_serial;
+  string m_name;
+  uint32_t m_id;
+
+  /************************************************************************
+   * FTDI Interface Methods
+   ************************************************************************/
+ public:
+  /** Open the widget */
+  bool Open();
+
+  /** Close the widget */
+  bool Close();
+
+  /** Check if the widget is open */
+  bool IsOpen() const;
+
+  /** Reset the communications line */
+  bool Reset();
+
+  /** Setup communications line for 8N2 traffic */
+  bool SetLineProperties();
+
+  /** Set 250kbps baud rate */
+  bool SetBaudRate();
+
+  /** Disable flow control */
+  bool SetFlowControl();
+
+  /** Clear the RTS bit */
+  bool ClearRts();
+
+  /** Purge TX & RX buffers */
+  bool PurgeBuffers();
+
+  /** Toggle communications line BREAK condition on/off */
+  bool SetBreak(bool on);
+
+  /** Write data to a previously-opened line */
+  bool Write(const ola::DmxBuffer& data);
+
+  /** Read data from a previously-opened line */
+  bool Read(unsigned char* buff, int size);
+
+ private:
+#ifdef FTD2XX
+  FT_HANDLE m_handle;
+#else
+  struct ftdi_context m_handle;
+#endif
+};
+
+}
+}
+}
+
+#endif
