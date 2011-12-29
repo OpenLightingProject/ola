@@ -76,6 +76,7 @@ class DiscoveryAgent {
     typedef ola::SingleUseCallback2<void, bool, const UIDSet&>
       DiscoveryCompleteCallback;
 
+    void Abort();
     void StartFullDiscovery(DiscoveryCompleteCallback *on_complete);
     void StartIncrementalDiscovery(DiscoveryCompleteCallback *on_complete);
 

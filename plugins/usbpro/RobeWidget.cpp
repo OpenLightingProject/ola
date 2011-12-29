@@ -66,12 +66,7 @@ void RobeWidgetImpl::Stop() {
     callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
   }
 
-  if (m_mute_callback)
-    delete m_mute_callback;
-  if (m_unmute_callback)
-    delete m_unmute_callback;
-  if (m_branch_callback)
-    delete m_branch_callback;
+  m_discovery_agent.Abort();
 
   if (m_pending_request) {
     delete m_pending_request;
