@@ -56,12 +56,14 @@ class RobeWidgetImpl: public BaseRobeWidget,
                             const ola::rdm::UID &uid);
     ~RobeWidgetImpl() {}
 
+    void Stop();
+
     bool SendDMX(const DmxBuffer &buffer);
 
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete);
-    bool RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
-    bool RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
+    void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
+    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
 
     // incoming DMX methods
     bool ChangeToReceiveMode();
@@ -121,6 +123,8 @@ class RobeWidget: public SerialWidgetInterface,
                unsigned int queue_size = 20);
     ~RobeWidget();
 
+    void Stop() { m_impl->Stop(); }
+
     ola::network::ConnectedDescriptor *GetDescriptor() const {
       return m_impl->GetDescriptor();
     }
@@ -134,12 +138,12 @@ class RobeWidget: public SerialWidgetInterface,
       m_controller->SendRDMRequest(request, on_complete);
     }
 
-    bool RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
-      return m_impl->RunFullDiscovery(callback);
+    void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+      m_impl->RunFullDiscovery(callback);
     }
 
-    bool RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
-      return m_impl->RunIncrementalDiscovery(callback);
+    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+      m_impl->RunIncrementalDiscovery(callback);
     }
 
     bool ChangeToReceiveMode() {

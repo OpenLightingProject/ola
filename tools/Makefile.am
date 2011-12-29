@@ -1,1 +1,1 @@
-SUBDIRS = dmx_trigger e133 rdm usbpro
+SUBDIRS = ola_trigger e133 rdm usbpro

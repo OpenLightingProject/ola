@@ -24,11 +24,14 @@
 #include <ola/rdm/RDMControllerInterface.h>
 #include <queue>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace ola {
 namespace rdm {
 
+using std::pair;
+using std::vector;
 
 /*
  * A RDM controller that only sends a single request at a time. This also
@@ -42,6 +45,8 @@ class QueueingRDMController: public RDMControllerInterface {
 
     void Pause();
     void Resume();
+
+    // This can be called multiple times and the requests will be queued.
     void SendRDMRequest(const RDMRequest *request, RDMCallback *on_complete);
 
   protected:
@@ -57,18 +62,25 @@ class QueueingRDMController: public RDMControllerInterface {
     bool m_active;  // true if the controller is active
     RDMCallback *m_callback;
     const ola::rdm::RDMResponse *m_response;
-    std::vector<std::string> m_packets;
+    vector<std::string> m_packets;
 
+    virtual void TakeNextAction();
+    virtual bool CheckForBlockingCondition();
     void MaybeSendRDMRequest();
     void DispatchNextRequest();
-    virtual bool CheckForBlockingCondition();
 
     void HandleRDMResponse(rdm_response_code status,
                            const ola::rdm::RDMResponse *response,
-                           const std::vector<std::string> &packets);
+                           const vector<std::string> &packets);
 };
 
 
+/**
+ * The DiscoverableQueueingRDMController also handles discovery, and ensures
+ * that only a single discovery or RDM request sequence occurs at once.
+ *
+ * In this model discovery has a higher precedence that RDM messages.
+ */
 class DiscoverableQueueingRDMController: public QueueingRDMController {
   public:
     DiscoverableQueueingRDMController(
@@ -77,23 +89,22 @@ class DiscoverableQueueingRDMController: public QueueingRDMController {
 
     ~DiscoverableQueueingRDMController() {}
 
-    bool RunFullDiscovery(RDMDiscoveryCallback *callback);
-    bool RunIncrementalDiscovery(RDMDiscoveryCallback *callback);
+    // These can be called multiple times and the requests will be queued
+    void RunFullDiscovery(RDMDiscoveryCallback *callback);
+    void RunIncrementalDiscovery(RDMDiscoveryCallback *callback);
 
   private:
-    typedef enum {
-      FREE,
-      PENDING,
-      RUNNING,
-    } discovery_state;
+    typedef vector<RDMDiscoveryCallback*> DiscoveryCallbacks;
+    typedef vector<pair<bool, RDMDiscoveryCallback*> >
+        PendingDiscoveryCallbacks;
 
     DiscoverableRDMControllerInterface *m_discoverable_controller;
-    discovery_state m_discovery_state;
-    RDMDiscoveryCallback *m_discovery_callback;
-    bool m_full_discovery;
+    DiscoveryCallbacks m_discovery_callbacks;
+    PendingDiscoveryCallbacks m_pending_discovery_callbacks;
 
-    bool GenericDiscovery(RDMDiscoveryCallback *callback, bool full);
+    void TakeNextAction();
     bool CheckForBlockingCondition();
+    void GenericDiscovery(RDMDiscoveryCallback *callback, bool full);
     void StartRDMDiscovery();
     void DiscoveryComplete(const ola::rdm::UIDSet &uids);
 };

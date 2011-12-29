@@ -115,6 +115,10 @@ class DispatchingRobeWidget: public BaseRobeWidget {
     }
 
     ~DispatchingRobeWidget() {
+      Stop();
+    }
+
+    void Stop() {
       if (m_callback)
         delete m_callback;
     }

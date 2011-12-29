@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 
-#include "tools/dmx_trigger/Action.h"
+#include "tools/ola_trigger/Action.h"
 
 using std::vector;
 using std::string;

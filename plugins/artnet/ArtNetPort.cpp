@@ -104,7 +104,8 @@ void ArtNetInputPort::PostSetUniverse(Universe *old_universe,
   }
 
   if (new_universe)
-    RespondWithTod();
+    TriggerRDMDiscovery(
+        NewSingleCallback(this, &ArtNetInputPort::SendTODWithUIDs));
 }
 
 
@@ -115,6 +116,14 @@ void ArtNetInputPort::RespondWithTod() {
   ola::rdm::UIDSet uids;
   if (GetUniverse())
     GetUniverse()->GetUIDs(&uids);
+  SendTODWithUIDs(uids);
+}
+
+
+/**
+ * Send a list of UIDs in a TOD
+ */
+void ArtNetInputPort::SendTODWithUIDs(const ola::rdm::UIDSet &uids) {
   m_helper.GetNode()->SendTod(PortId(), uids);
 }
 
@@ -123,7 +132,8 @@ void ArtNetInputPort::RespondWithTod() {
  * Run the RDM discovery routine
  */
 void ArtNetInputPort::TriggerDiscovery() {
-  TriggerRDMDiscovery();
+  TriggerRDMDiscovery(
+      NewSingleCallback(this, &ArtNetInputPort::SendTODWithUIDs));
 }
 
 /*
@@ -147,8 +157,8 @@ bool ArtNetOutputPort::WriteDMX(const DmxBuffer &buffer,
 /*
  * Handle an RDMRequest
  */
-void ArtNetOutputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request,
-                                        ola::rdm::RDMCallback *on_complete) {
+void ArtNetOutputPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
+                                      ola::rdm::RDMCallback *on_complete) {
   // Discovery requests aren't proxied
   std::vector<std::string> packets;
   if (request->CommandClass() == RDMCommand::DISCOVER_COMMAND) {
@@ -164,19 +174,21 @@ void ArtNetOutputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request,
 /*
  * Run the full RDM discovery process
  */
-void ArtNetOutputPort::RunFullDiscovery() {
-  m_helper.GetNode()->ForceDiscovery(PortId());
+void ArtNetOutputPort::RunFullDiscovery(
+    ola::rdm::RDMDiscoveryCallback *callback) {
+  m_helper.GetNode()->RunFullDiscovery(PortId(), callback);
 }
 
 
 /*
  * Run the incremental RDM discovery process
  */
-void ArtNetOutputPort::RunIncrementalDiscovery() {
+void ArtNetOutputPort::RunIncrementalDiscovery(
+    ola::rdm::RDMDiscoveryCallback *callback) {
   // ArtNet nodes seem to run incremental discovery in the background. The
   // protocol doesn't provide a way of triggering incremental discovery so we
   // just do a full flush.
-  m_helper.GetNode()->ForceDiscovery(PortId());
+  m_helper.GetNode()->RunIncrementalDiscovery(PortId(), callback);
 }
 
 
@@ -185,21 +197,17 @@ void ArtNetOutputPort::RunIncrementalDiscovery() {
  */
 void ArtNetOutputPort::PostSetUniverse(Universe *old_universe,
                                        Universe *new_universe) {
-  (void) old_universe;
   m_helper.PostSetUniverse(new_universe, PortId());
 
   if (new_universe && !old_universe) {
-    m_helper.GetNode()->SetInputPortRDMHandlers(
+    m_helper.GetNode()->SetUnsolicatedUIDSetHandler(
         PortId(),
         ola::NewCallback(
           static_cast<ola::BasicOutputPort*>(this),
-          &ArtNetOutputPort::NewUIDList));
+          &ArtNetOutputPort::UpdateUIDs));
   } else if (!new_universe) {
-    m_helper.GetNode()->SetInputPortRDMHandlers(PortId(), NULL);
+    m_helper.GetNode()->SetUnsolicatedUIDSetHandler(PortId(), NULL);
   }
-
-  if (new_universe)
-    m_helper.GetNode()->SendTodRequest(PortId());
 }
 }  // artnet
 }  // plugin

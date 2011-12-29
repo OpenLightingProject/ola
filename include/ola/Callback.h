@@ -33,7 +33,6 @@ class BaseCallback0 {
   public:
     virtual ~BaseCallback0() {}
     virtual ReturnType Run() = 0;
-    virtual ReturnType DoRun() = 0;
 };
 
 
@@ -43,6 +42,8 @@ class Callback0: public BaseCallback0<ReturnType> {
   public:
     virtual ~Callback0() {}
     ReturnType Run() { return this->DoRun(); }
+  private:
+    virtual ReturnType DoRun() = 0;
 };
 
 
@@ -56,6 +57,8 @@ class SingleUseCallback0: public BaseCallback0<ReturnType> {
       delete this;
       return ret;
     }
+  private:
+    virtual ReturnType DoRun() = 0;
 };
 
 
@@ -68,6 +71,8 @@ class SingleUseCallback0<void>: public BaseCallback0<void> {
       this->DoRun();
       delete this;
     }
+  private:
+    virtual void DoRun() = 0;
 };
 
 
@@ -647,7 +652,6 @@ class BaseCallback1 {
   public:
     virtual ~BaseCallback1() {}
     virtual ReturnType Run(Arg0 arg0) = 0;
-    virtual ReturnType DoRun(Arg0 arg0) = 0;
 };
 
 
@@ -657,6 +661,8 @@ class Callback1: public BaseCallback1<ReturnType, Arg0> {
   public:
     virtual ~Callback1() {}
     ReturnType Run(Arg0 arg0) { return this->DoRun(arg0); }
+  private:
+    virtual ReturnType DoRun(Arg0 arg0) = 0;
 };
 
 
@@ -670,6 +676,8 @@ class SingleUseCallback1: public BaseCallback1<ReturnType, Arg0> {
       delete this;
       return ret;
     }
+  private:
+    virtual ReturnType DoRun(Arg0 arg0) = 0;
 };
 
 
@@ -682,6 +690,8 @@ class SingleUseCallback1<void, Arg0>: public BaseCallback1<void, Arg0> {
       this->DoRun(arg0);
       delete this;
     }
+  private:
+    virtual void DoRun(Arg0 arg0) = 0;
 };
 
 
@@ -1281,7 +1291,6 @@ class BaseCallback2 {
   public:
     virtual ~BaseCallback2() {}
     virtual ReturnType Run(Arg0 arg0, Arg1 arg1) = 0;
-    virtual ReturnType DoRun(Arg0 arg0, Arg1 arg1) = 0;
 };
 
 
@@ -1291,6 +1300,8 @@ class Callback2: public BaseCallback2<ReturnType, Arg0, Arg1> {
   public:
     virtual ~Callback2() {}
     ReturnType Run(Arg0 arg0, Arg1 arg1) { return this->DoRun(arg0, arg1); }
+  private:
+    virtual ReturnType DoRun(Arg0 arg0, Arg1 arg1) = 0;
 };
 
 
@@ -1304,6 +1315,8 @@ class SingleUseCallback2: public BaseCallback2<ReturnType, Arg0, Arg1> {
       delete this;
       return ret;
     }
+  private:
+    virtual ReturnType DoRun(Arg0 arg0, Arg1 arg1) = 0;
 };
 
 
@@ -1316,6 +1329,8 @@ class SingleUseCallback2<void, Arg0, Arg1>: public BaseCallback2<void, Arg0, Arg
       this->DoRun(arg0, arg1);
       delete this;
     }
+  private:
+    virtual void DoRun(Arg0 arg0, Arg1 arg1) = 0;
 };
 
 
@@ -1935,7 +1950,6 @@ class BaseCallback3 {
   public:
     virtual ~BaseCallback3() {}
     virtual ReturnType Run(Arg0 arg0, Arg1 arg1, Arg2 arg2) = 0;
-    virtual ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2) = 0;
 };
 
 
@@ -1945,6 +1959,8 @@ class Callback3: public BaseCallback3<ReturnType, Arg0, Arg1, Arg2> {
   public:
     virtual ~Callback3() {}
     ReturnType Run(Arg0 arg0, Arg1 arg1, Arg2 arg2) { return this->DoRun(arg0, arg1, arg2); }
+  private:
+    virtual ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2) = 0;
 };
 
 
@@ -1958,6 +1974,8 @@ class SingleUseCallback3: public BaseCallback3<ReturnType, Arg0, Arg1, Arg2> {
       delete this;
       return ret;
     }
+  private:
+    virtual ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2) = 0;
 };
 
 
@@ -1970,6 +1988,8 @@ class SingleUseCallback3<void, Arg0, Arg1, Arg2>: public BaseCallback3<void, Arg
       this->DoRun(arg0, arg1, arg2);
       delete this;
     }
+  private:
+    virtual void DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2) = 0;
 };
 
 
@@ -2609,7 +2629,6 @@ class BaseCallback4 {
   public:
     virtual ~BaseCallback4() {}
     virtual ReturnType Run(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) = 0;
-    virtual ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) = 0;
 };
 
 
@@ -2619,6 +2638,8 @@ class Callback4: public BaseCallback4<ReturnType, Arg0, Arg1, Arg2, Arg3> {
   public:
     virtual ~Callback4() {}
     ReturnType Run(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) { return this->DoRun(arg0, arg1, arg2, arg3); }
+  private:
+    virtual ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) = 0;
 };
 
 
@@ -2632,6 +2653,8 @@ class SingleUseCallback4: public BaseCallback4<ReturnType, Arg0, Arg1, Arg2, Arg
       delete this;
       return ret;
     }
+  private:
+    virtual ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) = 0;
 };
 
 
@@ -2644,6 +2667,8 @@ class SingleUseCallback4<void, Arg0, Arg1, Arg2, Arg3>: public BaseCallback4<voi
       this->DoRun(arg0, arg1, arg2, arg3);
       delete this;
     }
+  private:
+    virtual void DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) = 0;
 };
 
 

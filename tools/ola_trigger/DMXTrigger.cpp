@@ -13,21 +13,42 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * VariableInterpolator.h
+ * DMXTrigger.cpp
  * Copyright (C) 2011 Simon Newton
  */
 
+#include <ola/DmxBuffer.h>
+#include <ola/Logging.h>
+#include <algorithm>
+#include <vector>
 
-#ifndef TOOLS_DMX_TRIGGER_VARIABLEINTERPOLATOR_H_
-#define TOOLS_DMX_TRIGGER_VARIABLEINTERPOLATOR_H_
+#include "tools/ola_trigger/DMXTrigger.h"
 
-#include <string>
-#include "tools/dmx_trigger/Context.h"
+using ola::DmxBuffer;
 
-using std::string;
 
-bool InterpolateVariables(const string &input,
-                          string *output,
-                          const Context &context);
+/**
+ * Create a new trigger
+ */
+DMXTrigger::DMXTrigger(Context *context,
+                       const SlotVector &actions)
+    : m_context(context),
+      m_slots(actions) {
+  sort(m_slots.begin(), m_slots.end());
+}
 
-#endif  // TOOLS_DMX_TRIGGER_VARIABLEINTERPOLATOR_H_
+
+/**
+ * Called when new DMX arrives.
+ */
+void DMXTrigger::NewDMX(const DmxBuffer &data) {
+  SlotVector::iterator iter = m_slots.begin();
+  for (; iter != m_slots.end(); iter++) {
+    uint16_t slot_number = (*iter)->SlotOffset();
+    if (slot_number >= data.Size()) {
+      // the DMX frame was too small
+      break;
+    }
+    (*iter)->TakeAction(m_context, data.Get(slot_number));
+  }
+}

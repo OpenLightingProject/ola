@@ -45,13 +45,13 @@ class DmxterWidgetImpl: public BaseUsbProWidget,
                      uint32_t serial);
     ~DmxterWidgetImpl();
 
+    void Stop();
+
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete);
 
-    bool RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
-    bool RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
-    void SendUIDUpdate();
-    void SendTodRequest();
+    void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
+    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
 
   private:
     ola::rdm::UID m_uid;
@@ -133,25 +133,19 @@ class DmxterWidget: public SerialWidgetInterface,
                  unsigned int queue_size = 20);
     ~DmxterWidget();
 
+    void Stop() { m_impl->Stop(); }
+
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete) {
       m_controller->SendRDMRequest(request, on_complete);
     }
 
-    bool RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
-      return m_controller->RunFullDiscovery(callback);
+    void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+      m_controller->RunFullDiscovery(callback);
     }
 
-    bool RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
-      return m_controller->RunIncrementalDiscovery(callback);
-    }
-
-    void SendUIDUpdate() {
-      return m_impl->SendUIDUpdate();
-    }
-
-    void SendTodRequest() {
-      return m_impl->SendTodRequest();
+    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+      m_controller->RunIncrementalDiscovery(callback);
     }
 
     ola::network::ConnectedDescriptor *GetDescriptor() const {

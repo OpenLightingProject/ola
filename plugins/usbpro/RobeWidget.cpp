@@ -56,6 +56,26 @@ RobeWidgetImpl::RobeWidgetImpl(ola::network::ConnectedDescriptor *descriptor,
 
 
 /**
+ * Stop the widget.
+ */
+void RobeWidgetImpl::Stop() {
+  std::vector<std::string> packets;
+  if (m_rdm_request_callback) {
+    ola::rdm::RDMCallback *callback = m_rdm_request_callback;
+    m_rdm_request_callback = NULL;
+    callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
+  }
+
+  m_discovery_agent.Abort();
+
+  if (m_pending_request) {
+    delete m_pending_request;
+    m_pending_request = NULL;
+  }
+}
+
+
+/**
  * Send DMX
  * @param buffer the DMX data
  */
@@ -138,28 +158,26 @@ void RobeWidgetImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
 /**
  * Perform full discovery.
  */
-bool RobeWidgetImpl::RunFullDiscovery(
+void RobeWidgetImpl::RunFullDiscovery(
     ola::rdm::RDMDiscoveryCallback *callback) {
   OLA_INFO << "Full discovery";
   m_discovery_agent.StartFullDiscovery(
     ola::NewSingleCallback(this,
                            &RobeWidgetImpl::DiscoveryComplete,
                            callback));
-  return true;
 }
 
 
 /**
  * Perform incremental discovery.
  */
-bool RobeWidgetImpl::RunIncrementalDiscovery(
+void RobeWidgetImpl::RunIncrementalDiscovery(
     ola::rdm::RDMDiscoveryCallback *callback) {
   OLA_INFO << "Incremental discovery";
   m_discovery_agent.StartIncrementalDiscovery(
     ola::NewSingleCallback(this,
                            &RobeWidgetImpl::DiscoveryComplete,
                            callback));
-  return true;
 }
 
 

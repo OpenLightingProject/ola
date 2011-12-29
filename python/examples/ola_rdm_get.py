@@ -203,8 +203,8 @@ class InteractiveModeController(cmd.Cmd):
   def _DisplayUids(self, state, uids):
     self._uids = []
     if state.Succeeded():
+      self._UpdateUids(uids)
       for uid in uids:
-        self._uids.append(uid)
         print str(uid)
     self.wrapper.Stop()
 
@@ -218,8 +218,15 @@ class InteractiveModeController(cmd.Cmd):
     self.client.RunRDMDiscovery(self._universe, False, self._DiscoveryDone)
     self.wrapper.Run()
 
-  def _DiscoveryDone(self, state):
+  def _DiscoveryDone(self, state, uids):
+    if state.Succeeded():
+      self._UpdateUids(uids)
     self.wrapper.Stop()
+
+  def _UpdateUids(self, uids):
+    self._uids = []
+    for uid in uids:
+      self._uids.append(uid)
 
   def do_list(self, line):
     """List the pids available."""

@@ -77,7 +77,6 @@ def GenerateBase(number_of_args):
   print '  public:'
   print '    virtual ~BaseCallback%d() {}' % number_of_args
   print '    virtual ReturnType Run(%s) = 0;' % arg_list
-  print '    virtual ReturnType DoRun(%s) = 0;' % arg_list
   print '};'
   print ''
   print ''
@@ -91,6 +90,8 @@ def GenerateBase(number_of_args):
   print '    virtual ~Callback%d() {}' % number_of_args
   print ('    ReturnType Run(%s) { return this->DoRun(%s); }' %
          (arg_list, args))
+  print '  private:'
+  print '    virtual ReturnType DoRun(%s) = 0;' % arg_list
   print '};'
   print ''
   print ''
@@ -107,6 +108,8 @@ def GenerateBase(number_of_args):
   print '      delete this;'
   print '      return ret;'
   print '    }'
+  print '  private:'
+  print '    virtual ReturnType DoRun(%s) = 0;' % arg_list
   print '};'
   print ''
   print ''
@@ -123,6 +126,8 @@ def GenerateBase(number_of_args):
   print '      this->DoRun(%s);' % args
   print '      delete this;'
   print '    }'
+  print '  private:'
+  print '    virtual void DoRun(%s) = 0;' % arg_list
   print '};'
   print ''
   print ''

@@ -43,6 +43,10 @@ class UsbSerialDevice: public ola::Device {
 
     virtual ~UsbSerialDevice() {}
 
+    void PrePortStop() {
+      m_widget->Stop();
+    }
+
     void SetOnRemove(ola::SingleUseCallback0<void> *on_close) {
       m_widget->GetDescriptor()->SetOnClose(on_close);
     }

@@ -54,7 +54,7 @@ class DmxterDevice: public UsbSerialDevice {
 class DmxterOutputPort: public BasicOutputPort {
   public:
     DmxterOutputPort(DmxterDevice *parent, DmxterWidget *widget)
-        : BasicOutputPort(parent, 0),
+        : BasicOutputPort(parent, 0, true),
           m_widget(widget) {}
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
@@ -64,29 +64,17 @@ class DmxterOutputPort: public BasicOutputPort {
       (void) buffer;
     }
 
-    void HandleRDMRequest(const ola::rdm::RDMRequest *request,
-                          ola::rdm::RDMCallback *callback) {
+    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+                        ola::rdm::RDMCallback *callback) {
       m_widget->SendRDMRequest(request, callback);
     }
 
-    void PostSetUniverse(Universe *old_universe, Universe *new_universe) {
-      if (new_universe)
-        RunFullDiscovery();
-      (void) old_universe;
+    void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *on_complete) {
+      m_widget->RunFullDiscovery(on_complete);
     }
 
-    void RunFullDiscovery() {
-      ola::rdm::RDMDiscoveryCallback *callback = ola::NewSingleCallback(
-          static_cast<BasicOutputPort*>(this),
-          &DmxterOutputPort::NewUIDList);
-      m_widget->RunFullDiscovery(callback);
-    }
-
-    void RunIncrementalDiscovery() {
-      ola::rdm::RDMDiscoveryCallback *callback = ola::NewSingleCallback(
-          static_cast<BasicOutputPort*>(this),
-          &DmxterOutputPort::NewUIDList);
-      m_widget->RunIncrementalDiscovery(callback);
+    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *on_complete) {
+      m_widget->RunIncrementalDiscovery(on_complete);
     }
 
     string Description() const { return "RDM Only"; }

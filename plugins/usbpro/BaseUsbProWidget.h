@@ -114,6 +114,10 @@ class DispatchingUsbProWidget: public BaseUsbProWidget {
     }
 
     ~DispatchingUsbProWidget() {
+      Stop();
+    }
+
+    void Stop() {
       if (m_callback)
         delete m_callback;
     }

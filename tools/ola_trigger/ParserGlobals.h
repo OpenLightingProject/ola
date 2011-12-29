@@ -13,37 +13,23 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * DMXTrigger.h
+ * ParserGlobals.cpp
  * Copyright (C) 2011 Simon Newton
+ *
+ * Unfortunately we have to use global variables because there isn't a way
+ * to pass in data during the parse stage.
  */
 
+#ifndef TOOLS_OLA_TRIGGER_PARSERGLOBALS_H_
+#define TOOLS_OLA_TRIGGER_PARSERGLOBALS_H_
 
-#ifndef TOOLS_DMX_TRIGGER_DMXTRIGGER_H_
-#define TOOLS_DMX_TRIGGER_DMXTRIGGER_H_
+#include <map>
 
-#include <ola/DmxBuffer.h>
-#include <vector>
+// The context object
+extern class Context *global_context;
 
-#include "tools/dmx_trigger/Action.h"
+// A map of slot offsets to SlotAction objects
+typedef std::map<uint16_t, class Slot*> SlotActionMap;
+extern SlotActionMap global_slots;
 
-using ola::DmxBuffer;
-
-
-/*
- * The class which manages the triggering.
- */
-class DMXTrigger {
-  public:
-    typedef std::vector<SlotActions*> SlotActionVector;
-
-    DMXTrigger(Context *context, const SlotActionVector &actions);
-    ~DMXTrigger() {}
-
-    void NewDMX(const DmxBuffer &data);
-
-  private:
-    Context *m_context;
-    DmxBuffer m_last_buffer;
-    SlotActionVector m_slot_actions;  // kept sorted
-};
-#endif  // TOOLS_DMX_TRIGGER_DMXTRIGGER_H_
+#endif  // TOOLS_OLA_TRIGGER_PARSERGLOBALS_H_

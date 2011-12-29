@@ -18,8 +18,8 @@
  */
 
 
-#ifndef TOOLS_DMX_TRIGGER_CONTEXT_H_
-#define TOOLS_DMX_TRIGGER_CONTEXT_H_
+#ifndef TOOLS_OLA_TRIGGER_CONTEXT_H_
+#define TOOLS_OLA_TRIGGER_CONTEXT_H_
 
 #if HAVE_CONFIG_H
 #  include <config.h>
@@ -57,4 +57,4 @@ class Context {
     typedef HASH_NAMESPACE::HASH_MAP_CLASS<string, string> VariableMap;
     VariableMap m_variables;
 };
-#endif  // TOOLS_DMX_TRIGGER_CONTEXT_H_
+#endif  // TOOLS_OLA_TRIGGER_CONTEXT_H_

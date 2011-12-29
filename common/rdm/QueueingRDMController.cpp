@@ -20,6 +20,7 @@
 
 #include <string.h>
 #include <string>
+#include <utility>
 #include <vector>
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
@@ -114,23 +115,19 @@ void QueueingRDMController::SendRDMRequest(const RDMRequest *request,
   outstanding_request.request = request;
   outstanding_request.on_complete = on_complete;
   m_pending_requests.push(outstanding_request);
-  MaybeSendRDMRequest();
+  TakeNextAction();
 }
 
 
-/*
- * If we're not paused, send the next request.
+/**
+ * Do the next action.
  */
-void QueueingRDMController::MaybeSendRDMRequest() {
-  if (!m_active || m_pending_requests.empty() || m_rdm_request_pending)
-    return;
-
+void QueueingRDMController::TakeNextAction() {
   if (CheckForBlockingCondition())
     return;
 
-  m_rdm_request_pending = true;
-  DispatchNextRequest();
-}
+  MaybeSendRDMRequest();
+};
 
 
 /**
@@ -140,17 +137,31 @@ void QueueingRDMController::MaybeSendRDMRequest() {
  * @returns true if some other action is running, false otherwise.
  */
 bool QueueingRDMController::CheckForBlockingCondition() {
-  return false;
+  return !m_active || m_rdm_request_pending;
 }
 
 
 /*
- * Send the next RDM request, this assumes that SetFilter has been called
+ * If we're not paused, send the next request.
+ */
+void QueueingRDMController::MaybeSendRDMRequest() {
+  if (m_pending_requests.empty())
+    return;
+
+  m_rdm_request_pending = true;
+  DispatchNextRequest();
+}
+
+
+/*
+ * Send the next RDM request.
  */
 void QueueingRDMController::DispatchNextRequest() {
   outstanding_rdm_request outstanding_request = m_pending_requests.front();
   // We have to make a copy here because we pass ownership of the request to
   // the underlying controller.
+  // We need to have the original request because we use it if we receive an
+  // ACK_OVERFLOW.
   m_controller->SendRDMRequest(outstanding_request.request->Duplicate(),
                                m_callback);
 }
@@ -213,7 +224,7 @@ void QueueingRDMController::HandleRDMResponse(
   m_response = NULL;
   delete outstanding_request.request;
   m_pending_requests.pop();
-  MaybeSendRDMRequest();
+  TakeNextAction();
 }
 
 
@@ -225,109 +236,106 @@ DiscoverableQueueingRDMController::DiscoverableQueueingRDMController(
         DiscoverableRDMControllerInterface *controller,
         unsigned int max_queue_size)
     : QueueingRDMController(controller, max_queue_size),
-      m_discoverable_controller(controller),
-      m_discovery_state(FREE),
-      m_discovery_callback(NULL),
-      m_full_discovery(false) {
+      m_discoverable_controller(controller) {
 }
 
 
 /**
  * Run the full RDM discovery routine. This will either run immediately or
  * after the current request completes.
- * If this returns false the callback is deleted without being run.
  */
-bool DiscoverableQueueingRDMController::RunFullDiscovery(
+void DiscoverableQueueingRDMController::RunFullDiscovery(
     RDMDiscoveryCallback *callback) {
-  return GenericDiscovery(callback, true);
+  GenericDiscovery(callback, true);
 }
 
 
 /**
  * Run the incremental RDM discovery routine. This will either run immediately
  * or after the current request completes.
- * If this returns false the callback is deleted without being run.
  */
-bool DiscoverableQueueingRDMController::RunIncrementalDiscovery(
+void DiscoverableQueueingRDMController::RunIncrementalDiscovery(
     RDMDiscoveryCallback *callback) {
-  return GenericDiscovery(callback, false);
+  GenericDiscovery(callback, false);
+}
+
+
+/**
+ * Override this so we can prioritize the discovery requests.
+ */
+void DiscoverableQueueingRDMController::TakeNextAction() {
+  if (CheckForBlockingCondition())
+    return;
+
+  // prioritize discovery above RDM requests
+  if (!m_pending_discovery_callbacks.empty())
+    StartRDMDiscovery();
+  else
+    MaybeSendRDMRequest();
+}
+
+
+/**
+ * Block if either a RDM request is pending, or another discovery process is
+ * running.
+ */
+bool DiscoverableQueueingRDMController::CheckForBlockingCondition() {
+  return (QueueingRDMController::CheckForBlockingCondition() ||
+          !m_discovery_callbacks.empty());
 }
 
 
 /**
  * The generic discovery routine
  */
-bool DiscoverableQueueingRDMController::GenericDiscovery(
+void DiscoverableQueueingRDMController::GenericDiscovery(
     RDMDiscoveryCallback *callback,
     bool full) {
-
-  if (m_discovery_state != FREE) {
-    OLA_INFO << "RDM discovery already running.";
-    delete callback;
-    return false;
-  }
-
-  m_discovery_callback = callback;
-  m_full_discovery = full;
-  m_discovery_state = PENDING;
-
-  if (!m_rdm_request_pending) {
-    StartRDMDiscovery();
-  }
-  return true;
+  m_pending_discovery_callbacks.push_back(
+      pair<bool, RDMDiscoveryCallback*>(full, callback));
+  TakeNextAction();
 }
 
 
 /**
- * Checks for a pending discovery request and runs that if required
- */
-bool DiscoverableQueueingRDMController::CheckForBlockingCondition() {
-  switch (m_discovery_state) {
-    case FREE:
-      return false;
-    case PENDING:
-      StartRDMDiscovery();
-      return true;
-    case RUNNING:
-      return true;
-  }
-  return true;
-}
-
-
-/**
- * Run the rdm discovery routine for the underlying controller
+ * Run the rdm discovery routine for the underlying controller.
+ * @pre m_pending_discovery_callbacks is not empty()
  */
 void DiscoverableQueueingRDMController::StartRDMDiscovery() {
-  m_discovery_state = RUNNING;
+  bool full = false;
+  m_discovery_callbacks.reserve(m_pending_discovery_callbacks.size());
+
+  PendingDiscoveryCallbacks::iterator iter =
+    m_pending_discovery_callbacks.begin();
+  for (; iter != m_pending_discovery_callbacks.end(); iter++) {
+    full |= iter->first;
+    m_discovery_callbacks.push_back(iter->second);
+  }
+  m_pending_discovery_callbacks.clear();
+
   RDMDiscoveryCallback *callback = NewSingleCallback(
       this,
       &DiscoverableQueueingRDMController::DiscoveryComplete);
 
-  bool ret;
-  if (m_full_discovery)
-    ret = m_discoverable_controller->RunFullDiscovery(callback);
+  if (full)
+    m_discoverable_controller->RunFullDiscovery(callback);
   else
-    ret = m_discoverable_controller->RunIncrementalDiscovery(callback);
-
-  if (!ret) {
-    OLA_WARN << "Failed to trigger discovery, flushing uid set";
-    UIDSet set;
-    if (m_discovery_callback)
-      m_discovery_callback->Run(set);
-    m_discovery_callback = NULL;
-    m_discovery_state = FREE;
-  }
+    m_discoverable_controller->RunIncrementalDiscovery(callback);
 }
 
 
+/**
+ * Called when discovery completes
+ */
 void DiscoverableQueueingRDMController::DiscoveryComplete(
     const ola::rdm::UIDSet &uids) {
-  m_discovery_state = FREE;
-  if (m_discovery_callback)
-    m_discovery_callback->Run(uids);
-  m_discovery_callback = NULL;
-  MaybeSendRDMRequest();
+  DiscoveryCallbacks::iterator iter = m_discovery_callbacks.begin();
+  for (; iter != m_discovery_callbacks.end(); ++iter) {
+    if (*iter)
+      (*iter)->Run(uids);
+  }
+  m_discovery_callbacks.clear();
+  TakeNextAction();
 }
 }  // rdm
 }  // ola

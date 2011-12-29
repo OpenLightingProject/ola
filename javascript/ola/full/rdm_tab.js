@@ -164,15 +164,7 @@ ola.RDMTab.prototype._newUIDs = function(e) {
         e.target.getLastError());
     return;
   }
-
-  var obj = e.target.getResponseJson();
-  var uids = obj['uids'];
-
-  var items = new Array();
-  for (var i = 0; i < uids.length; ++i) {
-    items.push(new ola.common.UidItem(uids[i]));
-  }
-  this.uid_list.updateFromData(items);
+  this._updateUIDList(e);
 };
 
 
@@ -190,24 +182,40 @@ ola.RDMTab.prototype._discoveryButtonClicked = function(full) {
 
   var dialog = ola.Dialog.getInstance();
   dialog.setAsBusy();
+  dialog.setTitle('RDM Discovery Running...');
   dialog.setVisible(true);
 };
 
 
 /**
- * Called when the discovery request returns. This doesn't actually mean that
- * the discovery process has completed, just that it's started.
+ * Called when the discovery request returns.
  * @private
  */
 ola.RDMTab.prototype._discoveryComplete = function(e) {
   var dialog = ola.Dialog.getInstance();
   dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
   if (e.target.getStatus() == 200) {
-    dialog.setTitle('Discovery Process Started');
-    dialog.setContent('The discovery process has begun.');
+    dialog.setVisible(false);
+    this._updateUIDList(e)
   } else {
     dialog.setTitle('Failed to Start Discovery Process');
     dialog.setContent(e.target.getLastUri() + ' : ' + e.target.getLastError());
+    dialog.setVisible(true);
   }
-  dialog.setVisible(true);
+};
+
+
+/**
+ * Update the UID list from a http response
+ * @private
+ */
+ola.RDMTab.prototype._updateUIDList = function(e) {
+  var obj = e.target.getResponseJson();
+  var uids = obj['uids'];
+
+  var items = new Array();
+  for (var i = 0; i < uids.length; ++i) {
+    items.push(new ola.common.UidItem(uids[i]));
+  }
+  this.uid_list.updateFromData(items);
 };

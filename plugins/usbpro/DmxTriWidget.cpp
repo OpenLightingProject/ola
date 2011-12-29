@@ -42,6 +42,7 @@ using std::string;
 using ola::network::NetworkToHost;
 using ola::network::HostToNetwork;
 using ola::rdm::RDMCommand;
+using ola::rdm::RDMDiscoveryCallback;
 using ola::rdm::RDMRequest;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
@@ -60,7 +61,6 @@ DmxTriWidgetImpl::DmxTriWidgetImpl(
       m_uid_count(0),
       m_last_esta_id(UID::ALL_MANUFACTURERS),
       m_use_raw_rdm(use_raw_rdm),
-      m_uid_set_callback(NULL),
       m_discovery_callback(NULL),
       m_rdm_request_callback(NULL),
       m_pending_request(NULL),
@@ -77,27 +77,6 @@ DmxTriWidgetImpl::~DmxTriWidgetImpl() {
 
 
 /**
- * Set the callback used when the UIDSet changes
- */
-void DmxTriWidgetImpl::SetUIDListCallback(
-    ola::Callback1<void, const ola::rdm::UIDSet&> *callback) {
-  if (m_uid_set_callback)
-    delete m_uid_set_callback;
-  m_uid_set_callback = callback;
-}
-
-
-/**
- * Set the callback to be run when discovery completes
- */
-void DmxTriWidgetImpl::SetDiscoveryCallback(ola::Callback0<void> *callback) {
-  if (m_discovery_callback)
-    delete m_discovery_callback;
-  m_discovery_callback = callback;
-}
-
-
-/**
  * Stop the rdm discovery process if it's running
  */
 void DmxTriWidgetImpl::Stop() {
@@ -109,22 +88,20 @@ void DmxTriWidgetImpl::Stop() {
   // timeout any existing message
   if (m_rdm_request_callback) {
     std::vector<string> packets;
-    m_rdm_request_callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
+    ola::rdm::RDMCallback *callback = m_rdm_request_callback;
     m_rdm_request_callback = NULL;
+    callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
   }
+
   if (m_pending_request) {
     delete m_pending_request;
     m_pending_request = NULL;
   }
 
-  if (m_uid_set_callback) {
-    delete m_uid_set_callback;
-    m_uid_set_callback = NULL;
-  }
-
   if (m_discovery_callback) {
-    delete m_discovery_callback;
+    RDMDiscoveryCallback *callback = m_discovery_callback;
     m_discovery_callback = NULL;
+    RunDiscoveryCallback(callback);
   }
 }
 
@@ -179,16 +156,40 @@ void DmxTriWidgetImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
 }
 
 
+/**
+ * Start the discovery process
+ */
+void DmxTriWidgetImpl::RunFullDiscovery(RDMDiscoveryCallback *callback) {
+  RunRDMDiscovery(callback);
+}
+
+
+/**
+ * Start incremental discovery, which on the TRI is the same as full.
+ */
+void DmxTriWidgetImpl::RunIncrementalDiscovery(
+    RDMDiscoveryCallback *callback) {
+  RunRDMDiscovery(callback);
+}
+
+
 /*
  * Kick off the discovery process if it's not already running
  */
-void DmxTriWidgetImpl::RunRDMDiscovery() {
-  if (InDiscoveryMode())
-    // process already running
+void DmxTriWidgetImpl::RunRDMDiscovery(RDMDiscoveryCallback *callback) {
+  if (m_discovery_callback) {
+    OLA_FATAL << "Call to RunFullDiscovery while discovery is already running"
+      << ", the DiscoverableQueueingRDMController has broken!";
+    // the best we can do is run the callback now
+    RunDiscoveryCallback(callback);
     return;
+  }
 
+  m_discovery_callback = callback;
   if (!SendDiscoveryStart()) {
     OLA_WARN << "Failed to begin RDM discovery";
+    m_discovery_callback = NULL;
+    RunDiscoveryCallback(callback);
     return;
   }
 
@@ -202,14 +203,16 @@ void DmxTriWidgetImpl::RunRDMDiscovery() {
 /**
  * Call the UIDSet handler with the latest UID list.
  */
-void DmxTriWidgetImpl::SendUIDUpdate() {
+void DmxTriWidgetImpl::RunDiscoveryCallback(RDMDiscoveryCallback *callback) {
+  if (!callback)
+    return;
+
   UIDSet uid_set;
   map<UID, uint8_t>::iterator iter = m_uid_index_map.begin();
   for (; iter != m_uid_index_map.end(); ++iter) {
     uid_set.AddUID(iter->first);
   }
-  if (m_uid_set_callback)
-    m_uid_set_callback->Run(uid_set);
+  callback->Run(uid_set);
 }
 
 
@@ -542,12 +545,11 @@ void DmxTriWidgetImpl::HandleDiscoverStatResponse(uint8_t return_code,
       if (m_uid_count) {
         FetchNextUID();
       } else {
-        if (m_discovery_callback)
-          m_discovery_callback->Run();
-        SendUIDUpdate();
+        RDMDiscoveryCallback *callback = m_discovery_callback;
+        m_discovery_callback= NULL;
+        RunDiscoveryCallback(callback);
       }
     }
-
   } else {
     // These are all fatal
     switch (return_code) {
@@ -566,9 +568,9 @@ void DmxTriWidgetImpl::HandleDiscoverStatResponse(uint8_t return_code,
     // clear out the old map
     m_uid_index_map.clear();
     StopDiscovery();
-    if (m_discovery_callback)
-      m_discovery_callback->Run();
-    SendUIDUpdate();
+    RDMDiscoveryCallback *callback = m_discovery_callback;
+    m_discovery_callback = NULL;
+    RunDiscoveryCallback(callback);
   }
 }
 
@@ -605,11 +607,9 @@ void DmxTriWidgetImpl::HandleRemoteUIDResponse(uint8_t return_code,
   if (m_uid_count) {
     FetchNextUID();
   } else {
-    // notify the universe
-    if (m_discovery_callback)
-      m_discovery_callback->Run();
-
-    SendUIDUpdate();
+    RDMDiscoveryCallback *callback = m_discovery_callback;
+    m_discovery_callback = NULL;
+    RunDiscoveryCallback(callback);
   }
 }
 
@@ -915,9 +915,8 @@ DmxTriWidget::DmxTriWidget(ola::thread::SchedulerInterface *scheduler,
                            unsigned int queue_size,
                            bool use_raw_rdm) {
   m_impl = new DmxTriWidgetImpl(scheduler, descriptor, use_raw_rdm);
-  m_controller = new ola::rdm::QueueingRDMController(m_impl, queue_size);
-  m_impl->SetDiscoveryCallback(
-      NewCallback(this, &DmxTriWidget::ResumeRDMCommands));
+  m_controller = new ola::rdm::DiscoverableQueueingRDMController(m_impl,
+                                                                 queue_size);
 }
 
 

@@ -93,27 +93,16 @@ class RobeOutputPort: public BasicOutputPort {
     string Description() const { return ""; }
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
-    void PostSetUniverse(Universe*, Universe *new_universe) {
-      if (new_universe)
-        RunFullDiscovery();
+    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+                        ola::rdm::RDMCallback *callback) {
+      m_widget->SendRDMRequest(request, callback);
     }
 
-    void HandleRDMRequest(const ola::rdm::RDMRequest *request,
-                          ola::rdm::RDMCallback *callback) {
-      return m_widget->SendRDMRequest(request, callback);
-    }
-
-    void RunFullDiscovery() {
-      ola::rdm::RDMDiscoveryCallback *callback = ola::NewSingleCallback(
-          static_cast<BasicOutputPort*>(this),
-          &RobeOutputPort::NewUIDList);
+    void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
       m_widget->RunFullDiscovery(callback);
     }
 
-    void RunIncrementalDiscovery() {
-      ola::rdm::RDMDiscoveryCallback *callback = ola::NewSingleCallback(
-          static_cast<BasicOutputPort*>(this),
-          &RobeOutputPort::NewUIDList);
+    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
       m_widget->RunIncrementalDiscovery(callback);
     }
 

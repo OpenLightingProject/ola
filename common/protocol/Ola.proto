@@ -326,7 +326,7 @@ service OlaServerService {
   rpc UpdateDmxData (DmxData) returns (Ack);
   rpc GetDmx (UniverseRequest) returns (DmxData);
   rpc GetUIDs (UniverseRequest) returns (UIDListReply);
-  rpc ForceDiscovery (DiscoveryRequest) returns (Ack);
+  rpc ForceDiscovery (DiscoveryRequest) returns (UIDListReply);
   rpc SetSourceUID (UID) returns (Ack);
 
   rpc RDMCommand (RDMRequest) returns (RDMResponse);

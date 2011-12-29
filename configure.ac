@@ -57,6 +57,20 @@ AM_CONDITIONAL(USING_WIN32, test "$host_os" = 'mingw32')
 # check for hash_map
 AC_CXX_STL_HASH
 
+# check for lex
+AC_PROG_LEX
+if test "${LEX}" = ":"; then
+ AC_MSG_ERROR([lex not found, please install flex or lex])
+fi
+
+# check for bison
+BISON=""
+AC_CHECK_PROG(BISON, [bison -V], bison)
+if test "${BISON}" != "bison"; then
+ AC_MSG_ERROR([bison not found, please install it])
+fi
+AC_SUBST(BISON)
+
 # check for ipv6 support - taken from unp
 AC_MSG_CHECKING(for IPv6 support)
 AC_CACHE_VAL(ac_cv_ipv6,
@@ -480,7 +494,7 @@ AC_OUTPUT( Makefile\
     plugins/usbpro/messages/Makefile \
     plugins/usbpro/messages/libolausbproconf.pc \
     tools/Makefile \
-    tools/dmx_trigger/Makefile \
+    tools/ola_trigger/Makefile \
     tools/e133/Makefile \
     tools/rdm/Makefile \
     tools/usbpro/Makefile \

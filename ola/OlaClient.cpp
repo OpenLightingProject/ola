@@ -166,7 +166,7 @@ bool OlaClient::RunDiscovery(unsigned int universe, bool full) {
         universe,
         full,
         NewSingleCallback(m_observer,
-                          &OlaClientObserver::ForceRDMDiscoveryComplete,
+                          &OlaClientObserver::RDMDiscoveryComplete,
                           universe));
   else
     return m_core->RunDiscovery(universe, full, NULL);

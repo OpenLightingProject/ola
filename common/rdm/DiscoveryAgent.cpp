@@ -69,10 +69,30 @@ DiscoveryAgent::DiscoveryAgent(DiscoveryTargetInterface *target)
  * Clean up
  */
 DiscoveryAgent::~DiscoveryAgent() {
+  Abort();
   delete m_unmute_callback;
   delete m_incremental_mute_callback;
   delete m_branch_mute_callback;
   delete m_branch_callback;
+}
+
+
+/**
+ * Cancel the running discovery
+ */
+void DiscoveryAgent::Abort() {
+  while (!m_uid_ranges.empty()) {
+    UIDRange *range = m_uid_ranges.top();
+    delete range;
+    m_uid_ranges.pop();
+  }
+
+  if (m_on_complete) {
+    DiscoveryCompleteCallback *callback = m_on_complete;
+    m_on_complete = NULL;
+    UIDSet uids;
+    callback->Run(false, uids);
+  }
 }
 
 

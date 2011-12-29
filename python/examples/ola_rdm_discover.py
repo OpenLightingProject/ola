@@ -78,15 +78,10 @@ def main():
         print str(uid)
     wrapper.Stop()
 
-  def discovery_done(state):
-    if not state.Succeeded():
-      print state.message
-    wrapper.Stop()
-
   if full_discovery:
-    client.RunRDMDiscovery(universe, True, discovery_done)
+    client.RunRDMDiscovery(universe, True, show_uids)
   elif incremental_discovery:
-    client.RunRDMDiscovery(universe, False, discovery_done)
+    client.RunRDMDiscovery(universe, False, show_uids)
   else:
     client.FetchUIDList(universe, show_uids)
   wrapper.Run()

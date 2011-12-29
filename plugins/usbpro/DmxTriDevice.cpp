@@ -59,15 +59,6 @@ DmxTriDevice::DmxTriDevice(ola::PluginAdaptor *plugin_adaptor,
 
 
 /*
- * Kick off the RDM discovery process
- */
-bool DmxTriDevice::StartHook() {
-  m_tri_widget->RunRDMDiscovery();
-  return true;
-}
-
-
-/*
  * Remove the rdm timeout if it's still running
  */
 void DmxTriDevice::PrePortStop() {
@@ -85,62 +76,30 @@ DmxTriOutputPort::DmxTriOutputPort(DmxTriDevice *parent,
                                    const TimeStamp *wake_time,
                                    unsigned int max_burst,
                                    unsigned int rate)
-    : BasicOutputPort(parent, 0),
+    : BasicOutputPort(parent, 0, true),
       m_device(parent),
       m_tri_widget(widget),
       m_bucket(max_burst, rate, max_burst, *wake_time),
       m_wake_time(wake_time) {
-  m_tri_widget->SetUIDListCallback(
-      ola::NewCallback(
-        static_cast<BasicOutputPort*>(this), &DmxTriOutputPort::NewUIDList));
 }
 
 
 /*
  * Shutdown
  */
-DmxTriOutputPort::~DmxTriOutputPort() {
-  m_tri_widget->SetUIDListCallback(NULL);
-}
+DmxTriOutputPort::~DmxTriOutputPort() {}
 
 
 /*
  * Send a dmx frame
  * @returns true if we sent ok, false otherwise
  */
-bool DmxTriOutputPort::WriteDMX(const DmxBuffer &buffer,
-                                uint8_t priority) {
+bool DmxTriOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t) {
   if (m_bucket.GetToken(*m_wake_time))
     return m_tri_widget->SendDMX(buffer);
   else
     OLA_INFO << "Port rated limited, dropping frame";
   return true;
-  (void) priority;
-}
-
-
-/*
- * Handle an RDM Request, ownership of the request object is transferred to us.
- */
-void DmxTriOutputPort::HandleRDMRequest(const ola::rdm::RDMRequest *request,
-                                        ola::rdm::RDMCallback *callback) {
-  m_tri_widget->SendRDMRequest(request, callback);
-}
-
-
-/*
- * Kick off the discovery process if it's not already running
- */
-void DmxTriOutputPort::RunRDMDiscovery() {
-  m_tri_widget->RunRDMDiscovery();
-}
-
-
-/**
- * Incremental discovery isn't supported
- */
-void DmxTriOutputPort::RunIncrementalDiscovery() {
-  m_tri_widget->RunRDMDiscovery();
 }
 }  // usbpro
 }  // plugin

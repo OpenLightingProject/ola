@@ -87,13 +87,11 @@ class DiscoverableRDMControllerInterface: public RDMControllerInterface {
     virtual ~DiscoverableRDMControllerInterface() {}
 
     /**
-     * These methods trigger RDM discovery. In the event that this returns an
-     * error the callback is deleted without being run.
-     * @returns true if discovery started, false if there was an error
+     * These methods trigger RDM discovery. The callback may run immediately.
      */
-    virtual bool RunFullDiscovery(RDMDiscoveryCallback *callback) = 0;
+    virtual void RunFullDiscovery(RDMDiscoveryCallback *callback) = 0;
 
-    virtual bool RunIncrementalDiscovery(RDMDiscoveryCallback *callback) = 0;
+    virtual void RunIncrementalDiscovery(RDMDiscoveryCallback *callback) = 0;
 };
 }  // rdm
 }  // ola

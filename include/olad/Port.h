@@ -96,7 +96,7 @@ class InputPort: public Port {
 /*
  * The Output Port interface, for ports that send data from the OLA system.
  */
-class OutputPort: public Port {
+class OutputPort: public Port, ola::rdm::DiscoverableRDMControllerInterface {
   public:
     virtual ~OutputPort() {}
 
@@ -106,12 +106,14 @@ class OutputPort: public Port {
     // Called if the universe name changes
     virtual void UniverseNameChanged(const string &new_name) = 0;
 
-    // Handle RDMRequests, ownership of the request object is transferred
-    virtual void HandleRDMRequest(const ola::rdm::RDMRequest *request,
-                                  ola::rdm::RDMCallback *callback) = 0;
-    virtual void RunFullDiscovery() = 0;
-    virtual void RunIncrementalDiscovery() = 0;
-    virtual void NewUIDList(const ola::rdm::UIDSet &uids) = 0;
+    // Methods from DiscoverableRDMControllerInterface
+    // Ownership of the request object is transferred
+    virtual void SendRDMRequest(const ola::rdm::RDMRequest *request,
+                                ola::rdm::RDMCallback *callback) = 0;
+    virtual void RunFullDiscovery(
+        ola::rdm::RDMDiscoveryCallback *on_complete) = 0;
+    virtual void RunIncrementalDiscovery(
+        ola::rdm::RDMDiscoveryCallback *on_complete) = 0;
 
     // timecode support
     virtual bool SupportsTimeCode() const = 0;
@@ -144,7 +146,8 @@ class BasicInputPort: public InputPort {
     // rdm methods, the child class provides HandleRDMResponse
     void HandleRDMRequest(const ola::rdm::RDMRequest *request,
                           ola::rdm::RDMCallback *callback);
-    void TriggerRDMDiscovery(bool full = true);
+    void TriggerRDMDiscovery(ola::rdm::RDMDiscoveryCallback *on_complete,
+                             bool full = true);
 
     port_priority_capability PriorityCapability() const {
       return SupportsPriorities() ? CAPABILITY_FULL : CAPABILITY_STATIC;
@@ -160,18 +163,9 @@ class BasicInputPort: public InputPort {
     }
 
     // override this to cancel the SetUniverse operation.
-    virtual bool PreSetUniverse(Universe *old_universe,
-                                Universe *new_universe) {
-      (void) old_universe;
-      (void) new_universe;
-      return true;
-    }
+    virtual bool PreSetUniverse(Universe *, Universe *) { return true; }
 
-    virtual void PostSetUniverse(Universe *old_universe,
-                                 Universe *new_universe) {
-      (void) old_universe;
-      (void) new_universe;
-    }
+    virtual void PostSetUniverse(Universe *, Universe *) {}
 
   protected:
     // indicates whether this port supports priorities, default to no
@@ -211,22 +205,6 @@ class BasicOutputPort: public OutputPort {
     void SetPriorityMode(port_priority_mode mode) { m_priority_mode = mode; }
     port_priority_mode GetPriorityMode() const { return m_priority_mode; }
 
-    // rdm methods, the child class provides HandleRDMRequest and
-    virtual void HandleRDMRequest(const ola::rdm::RDMRequest *request,
-                                  ola::rdm::RDMCallback *callback);
-    virtual void RunFullDiscovery();
-    virtual void RunIncrementalDiscovery();
-    virtual void NewUIDList(const ola::rdm::UIDSet &uids);
-
-    virtual bool SupportsTimeCode() const {
-      return false;
-    }
-
-    virtual bool SendTimeCode(const ola::timecode::TimeCode &) {
-      // noop
-      return true;
-    }
-
     virtual void UniverseNameChanged(const string &new_name) {
       (void) new_name;
     }
@@ -235,23 +213,31 @@ class BasicOutputPort: public OutputPort {
       return SupportsPriorities() ? CAPABILITY_FULL : CAPABILITY_NONE;
     }
 
-    // Subclasses can override this to cancel the SetUniverse operation.
-    virtual bool PreSetUniverse(Universe *old_universe,
-                                Universe *new_universe) {
-      (void) old_universe;
-      (void) new_universe;
-      return true;
+    // DiscoverableRDMControllerInterface methods
+    virtual void SendRDMRequest(const ola::rdm::RDMRequest *request,
+                                ola::rdm::RDMCallback *callback);
+    virtual void RunFullDiscovery(
+        ola::rdm::RDMDiscoveryCallback *on_complete);
+    virtual void RunIncrementalDiscovery(
+        ola::rdm::RDMDiscoveryCallback *on_complete);
+
+    // TimeCode
+    virtual bool SupportsTimeCode() const {
+      return false;
     }
 
-    virtual void PostSetUniverse(Universe *old_universe,
-                                 Universe *new_universe) {
-      (void) old_universe;
-      (void) new_universe;
+    virtual bool SendTimeCode(const ola::timecode::TimeCode &) {
+      return true;  // no op
     }
+
+    // Subclasses can override this to cancel the SetUniverse operation.
+    virtual bool PreSetUniverse(Universe *, Universe *) { return true; }
+    virtual void PostSetUniverse(Universe *, Universe *) { }
 
   protected:
     // indicates whether this port supports priorities, default to no
     virtual bool SupportsPriorities() const { return false; }
+    void UpdateUIDs(const ola::rdm::UIDSet &uids);
 
   private:
     const unsigned int m_port_id;
@@ -264,6 +250,7 @@ class BasicOutputPort: public OutputPort {
 
     BasicOutputPort(const BasicOutputPort&);
     BasicOutputPort& operator=(const BasicOutputPort&);
+
 };
 
 

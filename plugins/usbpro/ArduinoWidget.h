@@ -45,15 +45,17 @@ class ArduinoWidgetImpl: public BaseUsbProWidget,
                       uint32_t serial);
     ~ArduinoWidgetImpl();
 
+    void Stop();
+
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete);
 
-    bool RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
-      return GetUidSet(callback);
+    void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+      GetUidSet(callback);
     }
 
-    bool RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
-      return GetUidSet(callback);
+    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+      GetUidSet(callback);
     }
 
   private:
@@ -66,7 +68,7 @@ class ArduinoWidgetImpl: public BaseUsbProWidget,
                        const uint8_t *data,
                        unsigned int length);
     void HandleRDMResponse(const uint8_t *data, unsigned int length);
-    bool GetUidSet(ola::rdm::RDMDiscoveryCallback *callback);
+    void GetUidSet(ola::rdm::RDMDiscoveryCallback *callback);
 
     static const uint8_t RDM_REQUEST_LABEL;
 
@@ -92,6 +94,8 @@ class ArduinoWidget: public SerialWidgetInterface,
                   unsigned int queue_size = 20);
     ~ArduinoWidget();
 
+    void Stop() { m_impl->Stop(); }
+
     bool SendDMX(const DmxBuffer &buffer) {
       return m_impl->SendDMX(buffer);
     }
@@ -101,12 +105,12 @@ class ArduinoWidget: public SerialWidgetInterface,
       m_controller->SendRDMRequest(request, on_complete);
     }
 
-    bool RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
-      return m_impl->RunFullDiscovery(callback);
+    void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+      m_impl->RunFullDiscovery(callback);
     }
 
-    bool RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
-      return m_impl->RunIncrementalDiscovery(callback);
+    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+      m_impl->RunIncrementalDiscovery(callback);
     }
 
     ola::network::ConnectedDescriptor *GetDescriptor() const {

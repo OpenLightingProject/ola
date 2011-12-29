@@ -371,7 +371,9 @@ bool OlaCallbackClient::FetchUIDList(
 bool OlaCallbackClient::RunDiscovery(
     unsigned int universe,
     bool full,
-    ola::SingleUseCallback1<void, const string&> *callback) {
+    ola::SingleUseCallback2<void,
+                            const ola::rdm::UIDSet&,
+                            const string&> *callback) {
   return m_core->RunDiscovery(universe, full, callback);
 }
 

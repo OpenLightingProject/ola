@@ -35,8 +35,10 @@
 
 namespace ola {
 
-using std::set;
 using ola::rdm::UID;
+using std::pair;
+using std::set;
+using ola::rdm::RDMDiscoveryCallback;
 
 class Client;
 class InputPort;
@@ -99,10 +101,11 @@ class Universe: public ola::rdm::RDMControllerInterface {
     // RDM methods
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
-    void RunRDMDiscovery(bool full = true);
+    void RunRDMDiscovery(RDMDiscoveryCallback *on_complete,
+                         bool full = true);
+    void NewUIDList(OutputPort *port, const ola::rdm::UIDSet &uids);
     void GetUIDs(ola::rdm::UIDSet *uids) const;
     unsigned int UIDCount() const;
-    void NewUIDList(const ola::rdm::UIDSet &uids, OutputPort *port);
 
     bool operator==(const Universe &other) {
       return m_universe_id == other.UniverseId();
@@ -121,27 +124,12 @@ class Universe: public ola::rdm::RDMControllerInterface {
     static const char K_UNIVERSE_UID_COUNT_VAR[];
 
   private:
-    Universe(const Universe&);
-    Universe& operator=(const Universe&);
-    bool UpdateDependants();
-    void UpdateName();
-    void UpdateMode();
-    bool RemoveClient(Client *client, bool is_source);
-    bool AddClient(Client *client, bool is_source);
-    void HTPMergeSources(const vector<DmxSource> &sources);
-    bool MergeAll(const InputPort *port, const Client *client);
-
     typedef struct {
       unsigned int expected_count;
       unsigned int current_count;
       bool failed;
       ola::rdm::RDMCallback *callback;
     } broadcast_request_tracker;
-
-    void HandleBroadcastAck(broadcast_request_tracker *tracker,
-                            ola::rdm::rdm_response_code code,
-                            const ola::rdm::RDMResponse *response,
-                            const std::vector<std::string> &packets);
 
     string m_universe_name;
     unsigned int m_universe_id;
@@ -156,6 +144,24 @@ class Universe: public ola::rdm::RDMControllerInterface {
     DmxBuffer m_buffer;
     ExportMap *m_export_map;
     map<UID, OutputPort*> m_output_uids;
+
+    Universe(const Universe&);
+    Universe& operator=(const Universe&);
+    void HandleBroadcastAck(broadcast_request_tracker *tracker,
+                            ola::rdm::rdm_response_code code,
+                            const ola::rdm::RDMResponse *response,
+                            const std::vector<std::string> &packets);
+    bool UpdateDependants();
+    void UpdateName();
+    void UpdateMode();
+    bool RemoveClient(Client *client, bool is_source);
+    bool AddClient(Client *client, bool is_source);
+    void HTPMergeSources(const vector<DmxSource> &sources);
+    bool MergeAll(const InputPort *port, const Client *client);
+    void PortDiscoveryComplete(BaseCallback0<void> *on_complete,
+                               OutputPort *output_port,
+                               const ola::rdm::UIDSet &uids);
+    void DiscoveryComplete(RDMDiscoveryCallback *on_complete);
 
     template<class PortClass>
     bool GenericAddPort(PortClass *port,

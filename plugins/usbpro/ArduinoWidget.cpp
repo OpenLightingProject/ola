@@ -66,13 +66,27 @@ ArduinoWidgetImpl::ArduinoWidgetImpl(
  * Clean up
  */
 ArduinoWidgetImpl::~ArduinoWidgetImpl() {
+  Stop();
+}
+
+
+
+/**
+ * Stop the widget
+ */
+void ArduinoWidgetImpl::Stop() {
   // timeout any existing message
   std::vector<std::string> packets;
-  if (m_rdm_request_callback)
-    m_rdm_request_callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
+  if (m_rdm_request_callback) {
+    ola::rdm::RDMCallback *callback = m_rdm_request_callback;
+    m_rdm_request_callback = NULL;
+    callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
+  }
 
-  if (m_pending_request)
+  if (m_pending_request) {
     delete m_pending_request;
+    m_pending_request = NULL;
+  }
 }
 
 
@@ -224,11 +238,10 @@ void ArduinoWidgetImpl::HandleRDMResponse(const uint8_t *data,
 /**
  * Return the UID Set to the client
  */
-bool ArduinoWidgetImpl::GetUidSet(ola::rdm::RDMDiscoveryCallback *callback) {
+void ArduinoWidgetImpl::GetUidSet(ola::rdm::RDMDiscoveryCallback *callback) {
   ola::rdm::UIDSet uid_set;
   uid_set.AddUID(m_uid);
   callback->Run(uid_set);
-  return true;
 }
 
 

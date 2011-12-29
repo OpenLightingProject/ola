@@ -84,7 +84,7 @@ SLPBoolean ServiceCallback(SLPHandle slp_handle,
 SlpThread::SlpThread(ola::network::SelectServer *ss,
                      slp_discovery_callback *discovery_callback,
                      unsigned int refresh_time)
-    : ola:thread::Thread(),
+    : ola::thread::Thread(),
       m_main_ss(ss),
       m_init_ok(false),
       m_refresh_time(refresh_time),
@@ -279,10 +279,10 @@ void SlpThread::DiscoveryRequest() {
                              &SlpThread::DiscoveryTriggered));
 
   m_main_ss->Execute(
-      NewSingleCallback(this,
-                        &SlpThread::DiscoveryActionComplete,
-                        ok,
-                        urls));
+      ola::NewSingleCallback(this,
+                             &SlpThread::DiscoveryActionComplete,
+                             ok,
+                             urls));
 }
 
 
