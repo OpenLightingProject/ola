@@ -30,14 +30,33 @@ namespace thread {
  */
 void *StartThread(void *d) {
   Thread *thread = static_cast<Thread*>(d);
-  return thread->Run();
+  return thread->_InternalRun();
 }
 
 
 /*
- * Start this thread
+ * Start this thread. This only returns only the thread is running.
  */
 bool Thread::Start() {
+  MutexLocker locker(&m_mutex);
+  if (m_running) {
+    OLA_WARN << "Attempt to start already running thread";
+    return false;
+  }
+
+  if (FastStart()) {
+    m_condition.Wait(&m_mutex);
+    return true;
+  }
+  return false;
+}
+
+
+/**
+ * This launches a new thread and returns immediately. Don't use this unless
+ * you know what you're doing as it introduces a race condition with Join()
+ */
+bool Thread::FastStart() {
   int ret = pthread_create(&m_thread_id,
                            NULL,
                            ola::thread::StartThread,
@@ -46,132 +65,41 @@ bool Thread::Start() {
     OLA_WARN << "pthread create failed";
     return false;
   }
-  m_running = true;
   return true;
 }
 
 
 /*
  * Join this thread
+ * @returns false if the thread wasn't running or didn't stop, true otherwise.
  */
 bool Thread::Join(void *ptr) {
-  if (m_running) {
-    int ret = pthread_join(m_thread_id, &ptr);
-    m_running = false;
-    return 0 == ret;
+  {
+    MutexLocker locker(&m_mutex);
+    if (!m_running)
+      return false;
   }
-  return false;
+  int ret = pthread_join(m_thread_id, &ptr);
+  m_running = false;
+  return 0 == ret;
+}
+
+bool Thread::IsRunning() {
+  MutexLocker locker(&m_mutex);
+  return m_running;
 }
 
 
 /**
- * Construct a new mutex object
+ * Mark the thread as running and call the main Run method
  */
-Mutex::Mutex() {
-  pthread_mutex_init(&m_mutex, NULL);
-}
-
-
-/**
- * Clean up
- */
-Mutex::~Mutex() {
-  pthread_mutex_destroy(&m_mutex);
-}
-
-
-/**
- * Lock this mutex
- */
-void Mutex::Lock() {
-  pthread_mutex_lock(&m_mutex);
-}
-
-
-/**
- * Try and lock this mutex
- * @return true if we got the lock, false otherwise
- */
-bool Mutex::TryLock() {
-  int i = pthread_mutex_trylock(&m_mutex);
-  return i == 0;
-}
-
-
-/**
- * Unlock this mutex
- */
-void Mutex::Unlock() {
-  pthread_mutex_unlock(&m_mutex);
-}
-
-
-/**
- * Create a new MutexLocker and lock the mutex.
- */
-MutexLocker::MutexLocker(Mutex *mutex)
-    : m_mutex(mutex) {
-  m_mutex->Lock();
-}
-
-/**
- * Destroy this MutexLocker and unlock the mutex
- */
-MutexLocker::~MutexLocker() {
-  m_mutex->Unlock();
-}
-
-
-/**
- * New ConditionVariable
- */
-ConditionVariable::ConditionVariable() {
-  pthread_cond_init(&m_condition, NULL);
-}
-
-
-/**
- * Clean up
- */
-ConditionVariable::~ConditionVariable() {
-  pthread_cond_destroy(&m_condition);
-}
-
-
-/**
- * Wait on a condition variable
- * @param mutex the mutex that is locked
- */
-void ConditionVariable::Wait(Mutex *mutex) {
-  pthread_cond_wait(&m_condition, &mutex->m_mutex);
-}
-
-
-/**
- * Timed Wait
- * @param mutex the mutex that is locked
- * @param wait_time the time to sleep
- * @returns true if we received a signal, false if the timeout expired.
- */
-bool ConditionVariable::TimedWait(Mutex *mutex, struct timespec *wait_time) {
-  int i = pthread_cond_timedwait(&m_condition, &mutex->m_mutex, wait_time);
-  return i == 0;
-}
-
-
-/**
- * Wake up a single listener
- */
-void ConditionVariable::Signal() {
-  pthread_cond_signal(&m_condition);
-}
-
-
-/**
- * Wake up all listeners
- */
-void ConditionVariable::Broadcast() {
-  pthread_cond_broadcast(&m_condition);
+void *Thread::_InternalRun() {
+  {
+    MutexLocker locker(&m_mutex);
+    m_running = true;
+  }
+  m_condition.Signal();
+  return Run();
 }
 }  // thread
 }  // ola
