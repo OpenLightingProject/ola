@@ -94,6 +94,7 @@ vector<FtdiWidgetInfo> FtdiWidget::Widgets() {
     i++;
   }
 
+  ftdi_list_free(&list);
   ftdi_deinit(&ftdi);
   return widgetList;
 }
