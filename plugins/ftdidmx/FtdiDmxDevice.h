@@ -25,8 +25,7 @@
 #include "ola/DmxBuffer.h"
 #include "olad/Device.h"
 #include "olad/Preferences.h"
-
-#include "plugins/ftdidmx/FtdiUsbDevice.h"
+#include "plugins/ftdidmx/FtdiWidget.h"
 
 namespace ola {
 namespace plugin {
@@ -38,20 +37,20 @@ using ola::Device;
 class FtdiDmxDevice : public Device {
  public:
   FtdiDmxDevice(AbstractPlugin *owner,
-                FtdiUsbDeviceInfo &devInfo,
+                FtdiWidgetInfo &devInfo,
                 Preferences *preferences);
   virtual ~FtdiDmxDevice();
 
   string DeviceId() const { return m_device->Serial(); }
-  FtdiUsbDevice* GetWidget() { return m_device; }
+  FtdiWidget* GetWidget() { return m_device; }
   string Description() const { return m_devInfo.Description(); }
 
  protected:
   bool StartHook();
 
  private:
-  FtdiUsbDevice *m_device;
-  FtdiUsbDeviceInfo m_devInfo;
+  FtdiWidget *m_device;
+  FtdiWidgetInfo m_devInfo;
   Preferences *m_preferences;
 };
 }

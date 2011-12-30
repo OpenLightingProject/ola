@@ -25,7 +25,7 @@
 #include "olad/PluginAdaptor.h"
 #include "plugins/ftdidmx/FtdiDmxPlugin.h"
 #include "plugins/ftdidmx/FtdiDmxDevice.h"
-#include "plugins/ftdidmx/FtdiUsbDevice.h"
+#include "plugins/ftdidmx/FtdiWidget.h"
 
 namespace ola {
 namespace plugin {
@@ -84,11 +84,11 @@ void FtdiDmxPlugin::DeleteDevice(FtdiDmxDevice *device) {
 }
 
 bool FtdiDmxPlugin::StartHook() {
-  vector<FtdiUsbDeviceInfo> devices = FtdiUsbDevice::Widgets();
+  vector<FtdiWidgetInfo> devices = FtdiWidget::Widgets();
 
-  for (vector<FtdiUsbDeviceInfo>::iterator iter = devices.begin();
+  for (vector<FtdiWidgetInfo>::iterator iter = devices.begin();
        iter != devices.end(); ++iter) {
-    FtdiUsbDeviceInfo nfo = (*iter);
+    FtdiWidgetInfo nfo = (*iter);
     AddDevice(new FtdiDmxDevice(this, nfo, m_preferences));
   }
 

@@ -38,11 +38,7 @@ FtdiDmxThread::FtdiDmxThread(FtdiDmxDevice *device, Preferences *preferences)
 }
 
 FtdiDmxThread::~FtdiDmxThread() {
-  {
-    ola::thread::MutexLocker locker(&m_term_mutex);
-    m_term = true;
-  }
-  Join();
+  Stop();
 }
 
 void FtdiDmxThread::SetupPreferences() {
@@ -67,7 +63,10 @@ void FtdiDmxThread::CheckTimeGranularity() {
 }
 
 bool FtdiDmxThread::Stop() {
-  m_isRunning = false;
+  {
+    ola::thread::MutexLocker locker(&m_term_mutex);
+    m_term = true;
+  }
   return Join();
 }
 

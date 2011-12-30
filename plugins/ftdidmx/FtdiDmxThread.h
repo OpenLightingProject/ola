@@ -51,9 +51,9 @@ class FtdiDmxThread : public ola::thread::Thread {
     TimerGranularity m_granularity;
     FtdiDmxDevice *m_device;
     int unsigned m_frequency;
+    Preferences *m_preferences;
     bool m_term;
     DmxBuffer m_buffer;
-    Preferences *m_preferences;
     ola::thread::Mutex m_term_mutex;
 };
 }

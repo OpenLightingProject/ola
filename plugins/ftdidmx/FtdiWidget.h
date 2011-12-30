@@ -55,6 +55,10 @@ class FtdiWidgetInfo {
  public:
   FtdiWidgetInfo(string name, string serial, int unsigned id) :
     m_name(name), m_serial(serial), m_id(id) {}
+
+  FtdiWidgetInfo(const FtdiWidgetInfo &info) :
+    m_name(info.Name()), m_serial(info.Serial()), m_id(info.Id()) {}
+
   virtual ~FtdiWidgetInfo() {}
 
   string Name() const { return m_name; }
@@ -63,6 +67,13 @@ class FtdiWidgetInfo {
 
   string Description() const {
     return m_name + " with serial number : " + m_serial +" ";
+  }
+
+  FtdiWidgetInfo& operator=(const FtdiWidgetInfo &other) {
+    m_name = other.Name();
+    m_serial = other.Serial();
+    m_id = other.Id();
+    return *this;
   }
 
  private:
