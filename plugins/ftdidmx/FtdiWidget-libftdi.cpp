@@ -82,10 +82,12 @@ vector<FtdiWidgetInfo> FtdiWidget::Widgets() {
                          name, sizeof(name),
                          serial, sizeof(serial));
 
-    string v = vendor;
+    string v = string(vendor);
+    string sname = string(name);
+    string sserial = string(serial);
     std::transform(v.begin(), v.end(), v.begin(), ::toupper);
     if (std::string::npos != v.find("FTDI")) {
-      widgetList.push_back(FtdiWidgetInfo(name, serial, i));
+      widgetList.push_back(FtdiWidgetInfo(sname, sserial, i));
     }
 
     list = list->next;

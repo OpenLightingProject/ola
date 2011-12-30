@@ -53,7 +53,7 @@ using std::vector;
 
 class FtdiWidgetInfo {
  public:
-  FtdiWidgetInfo(string name, string serial, int unsigned id) :
+  FtdiWidgetInfo(string &name, string &serial, int unsigned id) :
     m_name(name), m_serial(serial), m_id(id) {}
 
   FtdiWidgetInfo(const FtdiWidgetInfo &info) :
@@ -162,7 +162,7 @@ class FtdiWidget {
   bool SetBreak(bool on);
 
   /** Write data to a previously-opened line */
-  bool Write(const ola::DmxBuffer& data);
+  bool Write(const ola::DmxBuffer &data);
 
   /** Read data from a previously-opened line */
   bool Read(unsigned char* buff, int size);
