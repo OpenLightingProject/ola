@@ -27,12 +27,8 @@
   Rui Barreiros
 */
 
-#ifndef __PLUGINS_FTDIDMX_FTDIUSBDEVICE_H
-#define __PLUGINS_FTDIDMX_FTDIUSBDEVICE_H
-
-#include <string>
-#include <vector>
-#include "ola/DmxBuffer.h"
+#ifndef PLUGINS_FTDIDMX_FTDIUSBDEVICE_H_
+#define PLUGINS_FTDIDMX_FTDIUSBDEVICE_H_
 
 #ifdef FTD2XX
 #   ifdef WIN32
@@ -43,6 +39,11 @@
 #   include <ftdi.h>
 #endif
 
+#include <string>
+#include <vector>
+
+#include "ola/DmxBuffer.h"
+
 namespace ola {
 namespace plugin {
 namespace ftdidmx {
@@ -50,55 +51,56 @@ namespace ftdidmx {
 using std::string;
 using std::vector;
 
-class FtdiUsbDeviceInfo
-{
+class FtdiWidgetInfo {
  public:
-  FtdiUsbDeviceInfo(string name, string serial, int unsigned id) : m_name(name), m_serial(serial), m_id(id) {}
-  virtual ~FtdiUsbDeviceInfo() {}
-  
+  FtdiWidgetInfo(string name, string serial, int unsigned id) :
+    m_name(name), m_serial(serial), m_id(id) {}
+  virtual ~FtdiWidgetInfo() {}
+
   string Name() const { return m_name; }
   string Serial() const { return m_serial; }
   int unsigned Id() const { return m_id; }
 
-  string Description() const { return m_name + " with serial number : " + m_serial +" "; }
-  
+  string Description() const {
+    return m_name + " with serial number : " + m_serial +" ";
+  }
+
  private:
   string m_name;
   string m_serial;
   int unsigned m_id;
 };
 
-class FtdiUsbDevice
-{
+class FtdiWidget {
   /************************************************************************
    * Widget enumeration
    ************************************************************************/
  public:
-  static const int VID = 0x0403; //! FTDI Vendor ID
-  static const int PID = 0x6001; //! FTDI Product ID
-  
+  static const int VID = 0x0403;  // ! FTDI Vendor ID
+  static const int PID = 0x6001;  // ! FTDI Product ID
+
   /**
    * Compose a list of available widgets
    *
    * @return A list of enttec-compabitble devices
    */
-  static vector <FtdiUsbDeviceInfo> Widgets();
+  static vector <FtdiWidgetInfo> Widgets();
 
   /************************************************************************
    * Construction & Generic Information
    ************************************************************************/
  public:
   /**
-   * Construct a new FtdiUsbDevice instance for one widget.
+   * Construct a new FtdiWidget instance for one widget.
    *
    * @param serial The widget's USB serial number
    * @param name The widget's USB name (description)
    * @param id The ID of the device (used only when FTD2XX is the backend)
    */
-  FtdiUsbDevice(const string& serial, const string& name, uint32_t id = 0);
+  FtdiWidget(const string& serial, const string& name, uint32_t id = 0);
 
   /** Destructor */
-  virtual ~FtdiUsbDevice();
+  virtual ~FtdiWidget();
 
   /** Get the widget's USB serial number */
   string Serial() const { return m_serial; }
@@ -161,9 +163,8 @@ class FtdiUsbDevice
   struct ftdi_context m_handle;
 #endif
 };
-
 }
 }
 }
 
-#endif
+#endif  // PLUGINS_FTDIDMX_FTDIUSBDEVICE_H_

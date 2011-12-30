@@ -19,6 +19,7 @@
  */
 
 #include <math.h>
+#include <string>
 
 #include "ola/Clock.h"
 #include "ola/StringUtils.h"
@@ -29,70 +30,92 @@ namespace ola {
 namespace plugin {
 namespace ftdidmx {
 
-void FtdiDmxThread::SetupPreferences()
-{
+FtdiDmxThread::FtdiDmxThread(FtdiDmxDevice *device, Preferences *preferences)
+  : m_device(device),
+    m_preferences(preferences),
+    m_term(false) {
+  SetupPreferences(); 
+}
+
+FtdiDmxThread::~FtdiDmxThread() {
+  {
+    ola::thread::MutexLocker locker(&m_term_mutex);
+    m_term = true;
+  }
+  Join();
+}
+
+void FtdiDmxThread::SetupPreferences() {
   string value = m_preferences->GetValue(FtdiDmxPlugin::K_FREQUENCY);
 
   if (!ola::StringToInt(value, &m_frequency))
     ola::StringToInt(FtdiDmxPlugin::DEFAULT_FREQUENCY, &m_frequency);
 }
 
-void FtdiDmxThread::CheckTimeGranularity()
-{
+void FtdiDmxThread::CheckTimeGranularity() {
   TimeStamp ts1, ts2;
   Clock::CurrentTime(&ts1);
   usleep(1000);
   Clock::CurrentTime(&ts2);
-  
+
   TimeInterval interval = ts2 - ts1;
-  if(interval.InMilliSeconds() > 3) {
+  if (interval.InMilliSeconds() > 3) {
     m_granularity = Bad;
   } else {
     m_granularity = Good;
   }
 }
 
-bool FtdiDmxThread::Stop()
-{
+bool FtdiDmxThread::Stop() {
   m_isRunning = false;
   return Join();
 }
 
-bool FtdiDmxThread::WriteDMX(const DmxBuffer &buffer)
-{
+bool FtdiDmxThread::WriteDMX(const DmxBuffer &buffer) {
   m_buffer = buffer;
   return true;
 }
 
-void *FtdiDmxThread::Run()
-{
+void *FtdiDmxThread::Run() {
   TimeStamp ts1, ts2;
   CheckTimeGranularity();
-  int frameTime = (int) floor(((double)1000 / m_frequency) + (double)0.5);
-  
-  // Setup the device
-  if(m_device->GetWidget()->Open() == false) OLA_WARN << "Error Opening device";
-  if(m_device->GetWidget()->Reset() == false) OLA_WARN << "Error Resetting device";
-  if(m_device->GetWidget()->SetBaudRate() == false) OLA_WARN << "Error Setting baudrate";
-  if(m_device->GetWidget()->SetLineProperties() == false) OLA_WARN << "Error setting line properties";
-  if(m_device->GetWidget()->SetFlowControl() == false) OLA_WARN << "Error setting flow control";
-  if(m_device->GetWidget()->PurgeBuffers() == false) OLA_WARN << "Error purging buffers";
-  if(m_device->GetWidget()->ClearRts() == false) OLA_WARN << "Error clearing rts";
+  int frameTime = static_cast<int>(floor(
+    (static_cast<double>(1000) / m_frequency) + static_cast<double>(0.5)));
 
-  m_isRunning = true;
-  while(m_isRunning == true)
-  {
-    Clock::CurrentTime(&ts1);
+  // Setup the device
+  if (m_device->GetWidget()->Open() == false)
+    OLA_WARN << "Error Opening device";
+  if (m_device->GetWidget()->Reset() == false)
+    OLA_WARN << "Error Resetting device";
+  if (m_device->GetWidget()->SetBaudRate() == false)
+    OLA_WARN << "Error Setting baudrate";
+  if (m_device->GetWidget()->SetLineProperties() == false)
+    OLA_WARN << "Error setting line properties";
+  if (m_device->GetWidget()->SetFlowControl() == false)
+    OLA_WARN << "Error setting flow control";
+  if (m_device->GetWidget()->PurgeBuffers() == false)
+    OLA_WARN << "Error purging buffers";
+  if (m_device->GetWidget()->ClearRts() == false)
+    OLA_WARN << "Error clearing rts";
+
+  while (1) {
+    {
+      ola::thread::MutexLocker locker(&m_term_mutex);
+      if (m_term)
+	break;
+    }
     
-    if(m_device->GetWidget()->SetBreak(true) == false)
+    Clock::CurrentTime(&ts1);
+
+    if (m_device->GetWidget()->SetBreak(true) == false)
       goto framesleep;
 
-    if(m_granularity == Good)
+    if (m_granularity == Good)
       usleep(DMX_BREAK);
 
-    if(m_device->GetWidget()->SetBreak(false) == false)
+    if (m_device->GetWidget()->SetBreak(false) == false)
       goto framesleep;
-      
+
     if (m_granularity == Good)
       usleep(DMX_MAB);
 
@@ -104,28 +127,22 @@ void *FtdiDmxThread::Run()
     Clock::CurrentTime(&ts2);
     TimeInterval elapsed = ts2 - ts1;
 
-    if (m_granularity == Good)
-    {
-      while (elapsed.InMilliSeconds() < frameTime) 
-      { 
-	usleep(1000);
-	Clock::CurrentTime(&ts2);
-	elapsed = ts2 - ts1;
+    if (m_granularity == Good) {
+      while (elapsed.InMilliSeconds() < frameTime) {
+        usleep(1000);
+        Clock::CurrentTime(&ts2);
+        elapsed = ts2 - ts1;
       }
-    }
-    else
-    {
-      while (elapsed.InMilliSeconds() < frameTime) 
-      { 
-	Clock::CurrentTime(&ts2);
-	elapsed = ts2 - ts1;
+    } else {
+      while (elapsed.InMilliSeconds() < frameTime) {
+        Clock::CurrentTime(&ts2);
+        elapsed = ts2 - ts1;
       }
     }
   }
 
   return NULL;
 }
-
 }
 }
 }

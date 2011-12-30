@@ -18,6 +18,8 @@
  * Copyright (C) 2011 Rui Barreiros
  */
 
+#include <vector>
+#include <string>
 
 #include "olad/Preferences.h"
 #include "olad/PluginAdaptor.h"
@@ -43,15 +45,13 @@ extern "C" ola::AbstractPlugin* create(PluginAdaptor *plugin_adaptor) {
   return new FtdiDmxPlugin(plugin_adaptor);
 }
 
-FtdiDmxPlugin::FtdiDmxPlugin(PluginAdaptor *plugin_adaptor) : Plugin(plugin_adaptor)
-{
+FtdiDmxPlugin::FtdiDmxPlugin(PluginAdaptor *plugin_adaptor)
+  : Plugin(plugin_adaptor) {
   m_devices.clear();
 }
 
-void FtdiDmxPlugin::AddDevice(FtdiDmxDevice *device)
-{
-  if(!device->Start())
-  {
+void FtdiDmxPlugin::AddDevice(FtdiDmxDevice *device) {
+  if (!device->Start()) {
     delete device;
     return;
   }
@@ -60,18 +60,15 @@ void FtdiDmxPlugin::AddDevice(FtdiDmxDevice *device)
   m_plugin_adaptor->RegisterDevice(device);
 }
 
-void FtdiDmxPlugin::DeviceRemoved(FtdiDmxDevice *device)
-{
+void FtdiDmxPlugin::DeviceRemoved(FtdiDmxDevice *device) {
   vector<FtdiDmxDevice*>::iterator iter;
-  
-  for(iter = m_devices.begin(); iter != m_devices.end(); ++iter)
-  {
-    if(*iter == device)
+
+  for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
+    if (*iter == device)
       break;
   }
 
-  if(iter == m_devices.end())
-  {
+  if (iter == m_devices.end()) {
     OLA_WARN << "Couldn't find the removed device!";
     return;
   }
@@ -80,19 +77,17 @@ void FtdiDmxPlugin::DeviceRemoved(FtdiDmxDevice *device)
   m_devices.erase(iter);
 }
 
-void FtdiDmxPlugin::DeleteDevice(FtdiDmxDevice *device)
-{
+void FtdiDmxPlugin::DeleteDevice(FtdiDmxDevice *device) {
   m_plugin_adaptor->UnregisterDevice(device);
   device->Stop();
   delete device;
 }
 
-bool FtdiDmxPlugin::StartHook()
-{
+bool FtdiDmxPlugin::StartHook() {
   vector<FtdiUsbDeviceInfo> devices = FtdiUsbDevice::Widgets();
-  
-  for(vector<FtdiUsbDeviceInfo>::iterator iter = devices.begin(); iter != devices.end(); ++iter)
-  {
+
+  for (vector<FtdiUsbDeviceInfo>::iterator iter = devices.begin();
+       iter != devices.end(); ++iter) {
     FtdiUsbDeviceInfo nfo = (*iter);
     AddDevice(new FtdiDmxDevice(this, nfo, m_preferences));
   }
@@ -100,21 +95,18 @@ bool FtdiDmxPlugin::StartHook()
   return true;
 }
 
-bool FtdiDmxPlugin::StopHook()
-{
+bool FtdiDmxPlugin::StopHook() {
   vector<FtdiDmxDevice*>::iterator iter;
-  
-  for(iter = m_devices.begin(); iter != m_devices.end(); ++iter)
-  {
+
+  for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
     DeleteDevice((*iter));
   }
-  
+
   m_devices.clear();
   return true;
 }
 
-string FtdiDmxPlugin::Description() const 
-{
+string FtdiDmxPlugin::Description() const {
   return
     "FTDI USB Chipset DMX Plugin\n"
     "---------------------------\n"
@@ -127,21 +119,20 @@ string FtdiDmxPlugin::Description() const
     "The DMX stream frequency (30hz to 44hz max are the usual)\n";
 }
 
-bool FtdiDmxPlugin::SetDefaultPreferences()
-{
-  if(!m_preferences)
+bool FtdiDmxPlugin::SetDefaultPreferences() {
+  if (!m_preferences)
     return false;
 
-  if(m_preferences->SetDefaultValue(FtdiDmxPlugin::K_FREQUENCY, IntValidator(30, 44), DEFAULT_FREQUENCY))
+  if (m_preferences->SetDefaultValue(FtdiDmxPlugin::K_FREQUENCY,
+                                     IntValidator(30, 44),
+                                     DEFAULT_FREQUENCY))
     m_preferences->Save();
 
-  if(m_preferences->GetValue(FtdiDmxPlugin::K_FREQUENCY).empty())
+  if (m_preferences->GetValue(FtdiDmxPlugin::K_FREQUENCY).empty())
     return false;
 
   return true;
 }
-
-
 }
 }
 }

@@ -26,31 +26,27 @@
 namespace ola {
 namespace plugin {
 namespace ftdidmx {
-  
+
 using std::string;
 
 FtdiDmxDevice::FtdiDmxDevice(AbstractPlugin *owner,
-			     FtdiUsbDeviceInfo &devInfo,
-			     Preferences *preferences) :
+                             FtdiUsbDeviceInfo &devInfo,
+                             Preferences *preferences) :
   Device(owner, devInfo.Description()),
   m_devInfo(devInfo),
-  m_preferences(preferences)
-{
+  m_preferences(preferences) {
   m_device = new FtdiUsbDevice(devInfo.Serial(), devInfo.Name(), devInfo.Id());
 }
- 
-FtdiDmxDevice::~FtdiDmxDevice()
-{
-  if(m_device->IsOpen()) m_device->Close();
-  //delete m_device;
+
+FtdiDmxDevice::~FtdiDmxDevice() {
+  if (m_device->IsOpen()) m_device->Close();
+  delete m_device;
 }
- 
-bool FtdiDmxDevice::StartHook()
-{
+
+bool FtdiDmxDevice::StartHook() {
   AddPort(new FtdiDmxOutputPort(this, m_devInfo.Id(), m_preferences));
   return true;
 }
-
 }
 }
 }

@@ -32,16 +32,16 @@
 namespace ola {
 namespace plugin {
 namespace ftdidmx {
-  
+
 class FtdiDmxThread : public ola::thread::Thread {
   public:
-    FtdiDmxThread(FtdiDmxDevice *device, Preferences *preferences) : m_device(device), m_preferences(preferences) { SetupPreferences(); }
-    ~FtdiDmxThread() {}
+    FtdiDmxThread(FtdiDmxDevice *device, Preferences *preferences);
+    ~FtdiDmxThread();
 
     bool Stop();
     void *Run();
     bool WriteDMX(const DmxBuffer &buffer);
-    
+
   private:
     void CheckTimeGranularity();
     void SetupPreferences();
@@ -51,13 +51,13 @@ class FtdiDmxThread : public ola::thread::Thread {
     TimerGranularity m_granularity;
     FtdiDmxDevice *m_device;
     int unsigned m_frequency;
-    bool m_isRunning;
+    bool m_term;
     DmxBuffer m_buffer;
     Preferences *m_preferences;
+    ola::thread::Mutex m_term_mutex;
 };
-
 }
 }
 }
 
-#endif
+#endif  // PLUGINS_FTDIDMX_FTDIDMXTHREAD_H_

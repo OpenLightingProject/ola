@@ -35,16 +35,17 @@ namespace ftdidmx {
 using std::string;
 using ola::Device;
 
-class FtdiDmxDevice : public Device
-{
+class FtdiDmxDevice : public Device {
  public:
-  FtdiDmxDevice(AbstractPlugin *owner, FtdiUsbDeviceInfo &devInfo, Preferences *preferences);
+  FtdiDmxDevice(AbstractPlugin *owner,
+                FtdiUsbDeviceInfo &devInfo,
+                Preferences *preferences);
   virtual ~FtdiDmxDevice();
 
   string DeviceId() const { return m_device->Serial(); }
   FtdiUsbDevice* GetWidget() { return m_device; }
   string Description() const { return m_devInfo.Description(); }
-  
+
  protected:
   bool StartHook();
 
@@ -52,11 +53,9 @@ class FtdiDmxDevice : public Device
   FtdiUsbDevice *m_device;
   FtdiUsbDeviceInfo m_devInfo;
   Preferences *m_preferences;
-
 };
-
 }
 }
 }
 
-#endif
+#endif  // PLUGINS_FTDIDMX_FTDIDMXDEVICE_H_

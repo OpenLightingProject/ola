@@ -18,10 +18,12 @@
  * Copyright (C) 2011 Rui Barreiros
  */
 
-#ifndef __PLUGINS_FTDIDMX_FTDIDMXPLUGIN_H
-#define __PLUGINS_FTDIDMX_FTDIDMXPLUGIN_H
+#ifndef PLUGINS_FTDIDMX_FTDIDMXPLUGIN_H_
+#define PLUGINS_FTDIDMX_FTDIDMXPLUGIN_H_
 
 #include <string>
+#include <vector>
+
 #include "olad/Plugin.h"
 #include "ola/plugin_id.h"
 
@@ -33,12 +35,10 @@ namespace ftdidmx {
 
 using ola::PluginAdaptor;
 
-class FtdiDmxPlugin : public Plugin
-{
-  
+class FtdiDmxPlugin : public Plugin {
  public:
   explicit FtdiDmxPlugin(PluginAdaptor *plugin_adaptor);
-  
+
   ola_plugin_id Id() const { return OLA_PLUGIN_FTDIDMX; }
   string Name() const { return PLUGIN_NAME; }
   string PluginPrefix() const { return PLUGIN_PREFIX; }
@@ -51,7 +51,7 @@ class FtdiDmxPlugin : public Plugin
 
   static const char DEFAULT_FREQUENCY[];
   static const char K_FREQUENCY[];
-  
+
  private:
   bool StartHook();
   bool StopHook();
@@ -62,9 +62,8 @@ class FtdiDmxPlugin : public Plugin
   static const char PLUGIN_NAME[];
   static const char PLUGIN_PREFIX[];
 };
-
 }
 }
 }
 
-#endif
+#endif  // PLUGINS_FTDIDMX_FTDIDMXPLUGIN_H_
