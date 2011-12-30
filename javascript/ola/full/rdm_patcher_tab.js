@@ -17,10 +17,10 @@
  * Copyright (C) 2010 Simon Newton
  */
 
-goog.require('goog.ui.Toolbar');
 goog.require('goog.dom');
+goog.require('goog.ui.Toolbar');
 goog.require('goog.ui.ToolbarButton');
-goog.require('goog.ui.ToolbarMenuButton')
+goog.require('goog.ui.ToolbarMenuButton');
 goog.require('goog.ui.ToolbarSeparator');
 
 goog.require('ola.Dialog');
@@ -36,6 +36,7 @@ goog.provide('ola.RDMPatcherTab');
 /**
  * The tab for the RDM patcher.
  * @constructor
+ * @param {Element} element the DOM element to use.
  */
 ola.RDMPatcherTab = function(element) {
   ola.common.BaseUniverseTab.call(this, element);
@@ -43,14 +44,14 @@ ola.RDMPatcherTab = function(element) {
   var toolbar = new goog.ui.Toolbar();
   toolbar.decorate(goog.dom.$('patcher_toolbar'));
 
-  var autopatch_button = toolbar.getChild('autoPatchButton')
+  var autopatch_button = toolbar.getChild('autoPatchButton');
   autopatch_button.setTooltip('Automatically Patch Devices');
   goog.events.listen(autopatch_button,
                      goog.ui.Component.EventType.ACTION,
                      function() { this._autoPatchButtonClicked(); },
                      false,
                      this);
-  var refresh_button = toolbar.getChild('patcherRefreshButton')
+  var refresh_button = toolbar.getChild('patcherRefreshButton');
   refresh_button.setTooltip('Refresh Devices');
   goog.events.listen(refresh_button,
                      goog.ui.Component.EventType.ACTION,
@@ -69,7 +70,7 @@ ola.RDMPatcherTab = function(element) {
   this.loading_div = goog.dom.createElement('div');
   this.loading_div.style.width = '100%';
   this.loading_div.style.textAlign = 'center';
-  this.loading_div.innerHTML = '<img src="/loader.gif"><br>Loading...</div>'
+  this.loading_div.innerHTML = '<img src="/loader.gif"><br>Loading...</div>';
   this.loading_div.style.marginTop = '10px';
   goog.dom.appendChild(goog.dom.$('patcher_div'), this.loading_div);
 };

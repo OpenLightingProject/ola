@@ -17,8 +17,8 @@
  * Copyright (C) 2010 Simon Newton
  */
 
-goog.require('goog.ui.AnimatedZippy');
 goog.require('goog.events');
+goog.require('goog.ui.AnimatedZippy');
 
 goog.require('ola.AvailablePort');
 goog.require('ola.AvailablePortTable');
@@ -110,6 +110,7 @@ ola.UniverseSettingsTab.prototype._updateView = function() {
 
 /**
  * Update the tab from a Universe object
+ * @param {Object} e the event object.
  */
 ola.UniverseSettingsTab.prototype._updateFromData = function(e) {
   if (this.getUniverse() != e.universe['id']) {
@@ -136,11 +137,10 @@ ola.UniverseSettingsTab.prototype._updateFromData = function(e) {
  * Create a priority setting object from a port component
  * @param {Object} port_component the port component to generate the setting
  *   from.
- * @param {Array.<Object>} setting_list the list to add the setting to
- * @private
+ * @param {Array.<Object>} setting_list the list to add the setting to.
  */
-ola.UniverseSettingsTab.prototype._generatePrioritySettingFromComponent = function(
-    port_component, setting_list) {
+ola.UniverseSettingsTab.prototype._generatePrioritySettingFromComponent =
+    function(port_component, setting_list) {
   var priority = port_component.priority();
   if (priority != undefined) {
     var priority_setting = new Object();
@@ -158,9 +158,11 @@ ola.UniverseSettingsTab.prototype._generatePrioritySettingFromComponent = functi
 
 /**
  * Called when the save button is clicked
- * @private
+ * @param {boolean} remove_confirmed true if the user confirmed the removal of
+ *   this universe.
  */
-ola.UniverseSettingsTab.prototype._saveButtonClicked = function(remove_confirmed) {
+ola.UniverseSettingsTab.prototype._saveButtonClicked = function(
+    remove_confirmed) {
   var dialog = ola.Dialog.getInstance();
 
   var port_priorities = new Array();
@@ -242,6 +244,7 @@ ola.UniverseSettingsTab.prototype._saveButtonClicked = function(remove_confirmed
 
 /**
  * Called when the universe removal is confirmed
+ * @param {Object} e the event object.
  */
 ola.UniverseSettingsTab.prototype._removeConfirmed = function(e) {
   var dialog = ola.Dialog.getInstance();
@@ -255,12 +258,12 @@ ola.UniverseSettingsTab.prototype._removeConfirmed = function(e) {
     dialog.setVisible(false);
     this._saveButtonClicked(true);
   }
-}
+};
 
 
 /**
  * Called when the changes are saved
- * @private
+ * @param {Object} e the event object.
  */
 ola.UniverseSettingsTab.prototype._saveCompleted = function(e) {
   var dialog = ola.Dialog.getInstance();
@@ -269,7 +272,7 @@ ola.UniverseSettingsTab.prototype._saveCompleted = function(e) {
     if (this.was_removed && this.on_remove) {
       this.on_remove();
     }
-    this._updateView()
+    this._updateView();
   } else {
     dialog.setTitle('Failed to Save Settings');
     dialog.setContent(e.target.getLastUri() + ' : ' + e.target.getLastError());

@@ -18,7 +18,7 @@
  */
 
 goog.require('goog.dom');
-goog.require('goog.ui.Checkbox')
+goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.Control');
 goog.require('goog.ui.Option');
 goog.require('goog.ui.Select');
@@ -30,7 +30,6 @@ goog.provide('ola.common.SectionRenderer');
  * Generate the html for an item
  * @param {Element} table the table object to add the row to.
  * @param {Object} item_info the data for the item.
- * @private
  */
 ola.common.SectionRenderer.RenderItem = function(table, item_info) {
   var type = item_info['type'];

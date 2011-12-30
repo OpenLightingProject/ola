@@ -84,6 +84,7 @@ ola.mobile.ControllerTab.prototype.update = function() {
 
 /**
  * Called when a list of universes is received
+ * @param {Object} e the event object.
  */
 ola.mobile.ControllerTab.prototype._updateUniverseList = function(e) {
   if (this.universe_list == undefined) {
@@ -112,6 +113,8 @@ ola.mobile.ControllerTab.prototype._updateUniverseList = function(e) {
 
 /**
  * Called when a universe is selected
+ * @param {number} universe_id the id of the universe selected.
+ * @param {string} universe_name the name of the universe selected.
  */
 ola.mobile.ControllerTab.prototype._universeSelected = function(
     universe_id,

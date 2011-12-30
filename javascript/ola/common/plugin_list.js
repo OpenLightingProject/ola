@@ -19,9 +19,9 @@
 
 goog.require('ola.common.DataItem');
 
-goog.provide('ola.common.PluginItem');
 goog.provide('ola.common.PluginControl');
 goog.provide('ola.common.PluginControlFactory');
+goog.provide('ola.common.PluginItem');
 
 
 /**
@@ -61,14 +61,23 @@ ola.common.PluginItem.prototype.compare = function(other) {
     return -1;
   }
   return 0;
-}
+};
 
 /**
  * An Plugin navigation control element.
  * @constructor
+ * @param {Object} item the item to add.
+ * @param {function()} callback the function to run when the item is clicked.
+ * @param {goog.ui.ControlRenderer=} opt_renderer Renderer used to render or
+ *     decorate the component; defaults to {@link goog.ui.ControlRenderer}.
+ * @param {goog.dom.DomHelper=} opt_domHelper An optional DOM helper.
  */
 ola.PluginControl = function(item, callback, opt_renderer, opt_domHelper) {
-  ola.common.GenericControl.call(this, item, callback, opt_renderer, opt_domHelper);
+  ola.common.GenericControl.call(this,
+                                 item,
+                                 callback,
+                                 opt_renderer,
+                                 opt_domHelper);
   this.setContent(item.name());
 };
 goog.inherits(ola.PluginControl, ola.common.GenericControl);
@@ -85,7 +94,7 @@ ola.PluginControl.prototype.enterDocument = function() {
 
 /**
  * A factory which produces PluginControls
- * @param {function()} the funtion called when the control is clicked.
+ * @param {function()} callback the funtion called when the control is clicked.
  * @constructor
  */
 ola.common.PluginControlFactory = function(callback) {
@@ -94,7 +103,8 @@ ola.common.PluginControlFactory = function(callback) {
 
 
 /**
- * @return {ola.PluginControl} an instance of a PluginRow
+ * @param {Object} data The new data for the row.
+ * @return {ola.PluginControl} an instance of a PluginRow.
  */
 ola.common.PluginControlFactory.prototype.newComponent = function(data) {
   return new ola.PluginControl(data, this.callback);

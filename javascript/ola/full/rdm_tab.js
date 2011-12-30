@@ -17,18 +17,18 @@
  * Copyright (C) 2010 Simon Newton
  */
 
+goog.require('goog.Timer');
 goog.require('goog.dom');
 goog.require('goog.events');
 goog.require('goog.math');
-goog.require('goog.Timer');
-goog.require('goog.ui.Container');
 goog.require('goog.ui.Component');
-goog.require('goog.ui.Toolbar');
-goog.require('goog.ui.ToolbarButton');
-goog.require('goog.ui.ToolbarMenuButton')
-goog.require('goog.ui.ToolbarSeparator');
+goog.require('goog.ui.Container');
 goog.require('goog.ui.SplitPane');
 goog.require('goog.ui.SplitPane.Orientation');
+goog.require('goog.ui.Toolbar');
+goog.require('goog.ui.ToolbarButton');
+goog.require('goog.ui.ToolbarMenuButton');
+goog.require('goog.ui.ToolbarSeparator');
 
 goog.require('ola.Dialog');
 goog.require('ola.RDMAttributesPanel');
@@ -53,7 +53,7 @@ ola.RDMTab = function(element) {
   var toolbar = new goog.ui.Toolbar();
   toolbar.decorate(goog.dom.$('rdm_toolbar'));
 
-  var discovery_button = toolbar.getChild('discoveryButton')
+  var discovery_button = toolbar.getChild('discoveryButton');
   discovery_button.setTooltip('Run full RDM discovery for this universe');
   goog.events.listen(discovery_button,
                      goog.ui.Component.EventType.ACTION,
@@ -62,7 +62,7 @@ ola.RDMTab = function(element) {
                      this);
 
   var incremental_discovery_button = toolbar.getChild(
-      'incrementalDiscoveryButton')
+      'incrementalDiscoveryButton');
   incremental_discovery_button.setTooltip(
       'Run incremental RDM discovery for this universe');
   goog.events.listen(incremental_discovery_button,
@@ -88,7 +88,7 @@ ola.RDMTab = function(element) {
   this.uid_list = new ola.common.SortedList(
       uid_container,
       new ola.common.UidControlFactory(
-        function (item) { rdm_panel.showUID(item); }));
+        function(item) { rdm_panel.showUID(item); }));
 
   // setup the uid timer
   this.uid_timer = new goog.Timer(ola.RDMTab.UID_REFRESH_INTERVAL);
@@ -102,6 +102,10 @@ ola.RDMTab = function(element) {
 goog.inherits(ola.RDMTab, ola.common.BaseUniverseTab);
 
 
+/**
+ * How often to refresh the list of UIDs.
+ * @type {number}
+ */
 ola.RDMTab.UID_REFRESH_INTERVAL = 5000;
 
 /**
@@ -142,7 +146,6 @@ ola.RDMTab.prototype.setActive = function(state) {
 
 /**
  * Fetch the uid list
- * @private
  */
 ola.RDMTab.prototype._updateUidList = function() {
   var tab = this;
@@ -156,7 +159,7 @@ ola.RDMTab.prototype._updateUidList = function() {
 
 /**
  * Update the UID list
- * @private
+ * @param {Object} e the event object.
  */
 ola.RDMTab.prototype._newUIDs = function(e) {
   if (e.target.getStatus() != 200) {
@@ -170,7 +173,6 @@ ola.RDMTab.prototype._newUIDs = function(e) {
 
 /**
  * Called when the discovery button is clicked.
- * @private
  */
 ola.RDMTab.prototype._discoveryButtonClicked = function(full) {
   var server = ola.common.Server.getInstance();
@@ -189,14 +191,14 @@ ola.RDMTab.prototype._discoveryButtonClicked = function(full) {
 
 /**
  * Called when the discovery request returns.
- * @private
+ * @param {Object} e the event object.
  */
 ola.RDMTab.prototype._discoveryComplete = function(e) {
   var dialog = ola.Dialog.getInstance();
   dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
   if (e.target.getStatus() == 200) {
     dialog.setVisible(false);
-    this._updateUIDList(e)
+    this._updateUIDList(e);
   } else {
     dialog.setTitle('Failed to Start Discovery Process');
     dialog.setContent(e.target.getLastUri() + ' : ' + e.target.getLastError());
@@ -207,7 +209,7 @@ ola.RDMTab.prototype._discoveryComplete = function(e) {
 
 /**
  * Update the UID list from a http response
- * @private
+ * @param {Object} e the event object.
  */
 ola.RDMTab.prototype._updateUIDList = function(e) {
   var obj = e.target.getResponseJson();

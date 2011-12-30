@@ -21,18 +21,17 @@ goog.require('goog.events');
 goog.require('goog.ui.Container');
 
 goog.require('ola.BaseFrame');
+goog.require('ola.common.PluginControlFactory');
+goog.require('ola.common.PluginItem');
 goog.require('ola.common.Server');
 goog.require('ola.common.Server.EventType');
 goog.require('ola.common.SortedList');
-goog.require('ola.common.PluginItem');
-goog.require('ola.common.PluginControlFactory');
 
 goog.provide('ola.mobile.PluginTab');
 
 
 /**
  * The class representing the Universe frame
- * @param {string} element_id the id of the element to use for this frame.
  * @constructor
  */
 ola.mobile.PluginTab = function() {
@@ -79,6 +78,7 @@ ola.mobile.PluginTab.prototype.update = function() {
 
 /**
  * Called when a new list of plugins is received.
+ * @param {Object} e the event object.
  */
 ola.mobile.PluginTab.prototype._updatePluginList = function(e) {
   if (this.plugin_list == undefined) {
@@ -103,7 +103,8 @@ ola.mobile.PluginTab.prototype._updatePluginList = function(e) {
 
 
 /**
- * Called when a plugin is selected
+ * Called when a plugin is selected.
+ * @param {number} plugin_id the id of the plugin selected.
  */
 ola.mobile.PluginTab.prototype._pluginSelected = function(plugin_id) {
   this._hideAllFrames();
@@ -115,6 +116,7 @@ ola.mobile.PluginTab.prototype._pluginSelected = function(plugin_id) {
 
 /**
  * Called when new plugin info is available
+ * @param {Object} e the event object.
  */
 ola.mobile.PluginTab.prototype._updatePluginInfo = function(e) {
   this.plugin_info_frame.Clear();

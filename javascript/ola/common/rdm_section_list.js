@@ -19,9 +19,9 @@
 
 goog.require('ola.common.DataItem');
 
-goog.provide('ola.common.RdmSectionItem');
 goog.provide('ola.common.RdmSectionControl');
 goog.provide('ola.common.RdmSectionControlFactory');
+goog.provide('ola.common.RdmSectionItem');
 
 
 /**
@@ -38,15 +38,20 @@ goog.inherits(ola.common.RdmSectionItem, ola.common.DataItem);
 
 
 /**
- * Get the id of this universe.
+ * Get the id of this section.
  * @return {number} the uid id.
  */
 ola.common.RdmSectionItem.prototype.id = function() { return this._id; };
+
+/**
+ * Get the hint for this section
+ * @return {string} the section hint.
+ */
 ola.common.RdmSectionItem.prototype.hint = function() { return this._hint; };
 
 /**
  * Return the uid as a string
- * @return {number} the uid as a string
+ * @return {number} the uid as a string.
  */
 ola.common.RdmSectionItem.prototype.toString = function() {
   return this._name;
@@ -72,9 +77,21 @@ ola.common.RdmSectionItem.prototype.compare = function(other) {
 /**
  * An section navigation control element.
  * @constructor
+ * @param {Object} item the item to add.
+ * @param {function()} callback the function to run when the item is clicked.
+ * @param {goog.ui.ControlRenderer=} opt_renderer Renderer used to render or
+ *     decorate the component; defaults to {@link goog.ui.ControlRenderer}.
+ * @param {goog.dom.DomHelper=} opt_domHelper An optional DOM helper.
  */
-ola.common.RdmSectionControl = function(item, callback, opt_renderer, opt_domHelper) {
-  ola.common.GenericControl.call(this, item, callback, opt_renderer, opt_domHelper);
+ola.common.RdmSectionControl = function(item,
+                                        callback,
+                                        opt_renderer,
+                                        opt_domHelper) {
+  ola.common.GenericControl.call(this,
+                                 item,
+                                 callback,
+                                 opt_renderer,
+                                 opt_domHelper);
   this.setContent(item.toString());
 };
 goog.inherits(ola.common.RdmSectionControl, ola.common.GenericControl);
@@ -91,6 +108,7 @@ ola.common.RdmSectionControl.prototype.enterDocument = function() {
 
 /**
  * Update this item with from new data.
+ * @param {Object} item the item to add.
  */
 ola.common.RdmSectionControl.prototype.update = function(item) {
   this.setContent(item.toString());
@@ -111,7 +129,7 @@ ola.common.RdmSectionControlFactory = function(callback) {
 /**
  * Create a new RdmSectionControl object from some data
  * @param {Object} data the data to use for the control.
- * @return {ola.common.RdmSectionControl}
+ * @return {ola.common.RdmSectionControl} A new RdmSectionControl.
  */
 ola.common.RdmSectionControlFactory.prototype.newComponent = function(data) {
   return new ola.common.RdmSectionControl(data, this.callback);

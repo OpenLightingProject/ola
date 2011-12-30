@@ -34,6 +34,7 @@ goog.provide('ola.PortTable');
  * A row in the available ports list.
  * @param {Object} data the data to build this row from.
  * @constructor
+ * @param {goog.dom.DomHelper=} opt_domHelper An optional DOM helper.
  */
 ola.Port = function(data, opt_domHelper) {
   goog.ui.Component.call(this, opt_domHelper);
@@ -224,6 +225,7 @@ ola.Port.prototype.priorityMode = function() {
 
 /**
  * Called when the port priority changes
+ * @param {Object} e the event object.
  */
 ola.Port.prototype._prioritySelectChanged = function(e) {
   if (this.priority_select.getSelectedIndex()) {
@@ -240,6 +242,7 @@ ola.Port.prototype._prioritySelectChanged = function(e) {
 /**
  * An available port table component.
  * @constructor
+ * @param {goog.dom.DomHelper=} opt_domHelper An optional DOM helper.
  */
 ola.PortTable = function(opt_domHelper) {
   goog.ui.Component.call(this, opt_domHelper);

@@ -34,6 +34,7 @@ goog.provide('ola.UniverseFrame');
 /**
  * The class representing the Universe frame
  * @param {string} element_id the id of the element to use for this frame.
+ * @param {Object} ola_ui the OlaUI object.
  * @constructor
  */
 ola.UniverseFrame = function(element_id, ola_ui) {
@@ -44,7 +45,7 @@ ola.UniverseFrame = function(element_id, ola_ui) {
   // setup the tab pane
   this.tabPane = new goog.ui.TabPane(goog.dom.$(element_id + '_tab_pane'));
   this.tabPane.addPage(new goog.ui.TabPane.TabPage(
-    goog.dom.$('tab_page_1'), "Settings"));
+    goog.dom.$('tab_page_1'), 'Settings'));
   this.tabPane.addPage(new goog.ui.TabPane.TabPage(
     goog.dom.$('tab_page_2'), 'RDM'));
   this.tabPane.addPage(new goog.ui.TabPane.TabPage(
@@ -84,6 +85,7 @@ goog.inherits(ola.UniverseFrame, ola.BaseFrame);
 
 /**
  * Set the size of the split pane to match the parent element
+ * @param {Object} e the event object.
  */
 ola.UniverseFrame.prototype.setSplitPaneSize = function(e) {
   var big_frame = goog.dom.$('ola-splitpane-content');
@@ -97,8 +99,8 @@ ola.UniverseFrame.prototype.setSplitPaneSize = function(e) {
 /**
  * Show this frame. We extend the base method so we can populate the correct
  * tab.
- * @param universe_id {number} the universe id to show
- * @param opt_select_main_tab {boolean} set to true to display the main tab
+ * @param {number} universe_id the universe id to show.
+ * @param {boolean} opt_select_main_tab set to true to display the main tab.
  */
 ola.UniverseFrame.prototype.Show = function(universe_id, opt_select_main_tab) {
   if (this.current_universe != universe_id) {
@@ -130,7 +132,7 @@ ola.UniverseFrame.prototype.Hide = function() {
 
 /**
  * Update the tab that was selected
- * @private
+ * @param {Object} e the event object.
  */
 ola.UniverseFrame.prototype._updateSelectedTab = function(e) {
   if (!this.IsVisible()) {
@@ -152,7 +154,7 @@ ola.UniverseFrame.prototype._updateSelectedTab = function(e) {
 /**
  * Called when new universes are available. We use this to detect if this
  * universe has been deleted.
- * @private
+ * @param {Object} e the event object.
  */
 ola.UniverseFrame.prototype._newUniverseList = function(e) {
   var found = false;
@@ -171,4 +173,4 @@ ola.UniverseFrame.prototype._newUniverseList = function(e) {
     dialog.setVisible(true);
     this.ola_ui.ShowHome();
   }
-}
+};

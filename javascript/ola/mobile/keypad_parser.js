@@ -37,9 +37,10 @@ goog.provide('ola.mobile.KeypadParser');
 
 /**
  * Create a new KeypadCommand
- * @param {number} the starting slot
- * @param {number} the end slot, or undefined if this is a single slot command.
- * @param {number} the slot value
+ * @param {number} start the starting slot.
+ * @param {number} end the end slot, or undefined if this is a single slot
+ *   command.
+ * @param {number} value the slot value.
  * @constructor
  */
 ola.mobile.KeypadCommand = function(start, end, value) {
@@ -76,15 +77,23 @@ ola.mobile.KeypadParser = function() {
 };
 
 
-// The maximum slot number
+/**
+ * The maximum slot number.
+ * @type {number}
+ */
 ola.mobile.KeypadParser.MAX_SLOT = 512;
-// The maximum slot value
+
+/**
+ * The maximum slot value.
+ * @type {number}
+ */
 ola.mobile.KeypadParser.MAX_VALUE = 255;
 
 
 /**
  * Parse a full command
- * @return {bool} true if the command is valid, false otherwise
+ * @param {string} str the input string.
+ * @return {bool} true if the command is valid, false otherwise.
  */
 ola.mobile.KeypadParser.prototype.parsePartialCommand = function(str) {
   if (str.length == 0) {
@@ -127,6 +136,7 @@ ola.mobile.KeypadParser.prototype.parsePartialCommand = function(str) {
 
 /**
  * Parse a full command
+ * @param {string} str the input string.
  * @return {KeypadCommand|undefined} Returns a KeypadCommand or undefined on
  * error. If returned, the KeypadCommand is guarenteed to be valid.
  */
@@ -162,8 +172,8 @@ ola.mobile.KeypadParser.prototype.parseFullCommand = function(str) {
 
 /**
  * Convert a string to an int, or return undefined
- * @param {string} token the string to convert
- * @return {number|undefined}
+ * @param {string} token the string to convert.
+ * @return {number|undefined} The integer, or undefined.
  */
 ola.mobile.KeypadParser.prototype._intOrUndefined = function(token) {
   if (token == null || token == undefined)
@@ -174,13 +184,15 @@ ola.mobile.KeypadParser.prototype._intOrUndefined = function(token) {
 
 
 /**
- * Converts aliases
+ * Converts aliases.
+ * @param {string} str the input string.
+ * @return {string} the output string.
  */
 ola.mobile.KeypadParser.prototype._aliases = function(str) {
-  str = str.replace(">", "THRU");
-  str = str.replace("*", "1 THRU 512");
-  str = str.replace("ALL", "1 THRU 512");
-  str = str.replace("@ +", "@ 255");
-  str = str.replace("@ FULL", "@ 255");
+  str = str.replace('>', 'THRU');
+  str = str.replace('*', '1 THRU 512');
+  str = str.replace('ALL', '1 THRU 512');
+  str = str.replace('@ +', '@ 255');
+  str = str.replace('@ FULL', '@ 255');
   return str;
 };

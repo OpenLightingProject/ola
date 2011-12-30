@@ -82,7 +82,7 @@ ola.DmxConsole.prototype.resetConsole = function() {
     this.data[i] = 0;
   }
   this.slider_offset = 0;
-}
+};
 
 
 /**
@@ -217,7 +217,7 @@ ola.DmxConsole.prototype.update = function() {
   for (var i = 0; i < data_length; ++i) {
     this._setCellValue(i, this.data[i]);
   }
-}
+};
 
 /**
  * Called when the next page button is clicked
