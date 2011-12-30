@@ -102,9 +102,9 @@ FtdiWidget::~FtdiWidget() {
     Close();
 }
 
-vector<FtdiWidgetInfo> FtdiWidget::Widgets() {
+FtdiWidgetInfoVector FtdiWidget::Widgets() {
   int i = 0;
-  vector <FtdiWidgetInfo> widgetList;
+  FtdiWidgetInfoVector widgetList;
 
   /* Find out the number of FTDI devices present */
   DWORD num = 0;

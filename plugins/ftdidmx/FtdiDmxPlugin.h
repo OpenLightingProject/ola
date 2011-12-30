@@ -34,6 +34,7 @@ namespace plugin {
 namespace ftdidmx {
 
 using ola::PluginAdaptor;
+typedef vector<FtdiDmxDevice*> FtdiDeviceVector;
 
 class FtdiDmxPlugin : public Plugin {
  public:
@@ -57,7 +58,7 @@ class FtdiDmxPlugin : public Plugin {
   bool StopHook();
   bool SetDefaultPreferences();
 
-  vector<FtdiDmxDevice*> m_devices;
+  FtdiDeviceVector m_devices;
 
   static const char PLUGIN_NAME[];
   static const char PLUGIN_PREFIX[];

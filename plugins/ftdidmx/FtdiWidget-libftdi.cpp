@@ -61,9 +61,9 @@ FtdiWidget::~FtdiWidget() {
   ftdi_deinit(&m_handle);
 }
 
-vector<FtdiWidgetInfo> FtdiWidget::Widgets() {
+FtdiWidgetInfoVector FtdiWidget::Widgets() {
   int i = 0;
-  vector <FtdiWidgetInfo> widgetList;
+  FtdiWidgetInfoVector widgetList;
   struct ftdi_device_list* list = 0;
   struct ftdi_context ftdi;
   ftdi_init(&ftdi);

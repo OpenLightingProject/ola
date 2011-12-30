@@ -82,6 +82,8 @@ class FtdiWidgetInfo {
   int unsigned m_id;
 };
 
+typedef vector<FtdiWidgetInfo> FtdiWidgetInfoVector;
+
 class FtdiWidget {
   /************************************************************************
    * Widget enumeration
@@ -95,7 +97,7 @@ class FtdiWidget {
    *
    * @return A list of enttec-compabitble devices
    */
-  static vector <FtdiWidgetInfo> Widgets();
+  static FtdiWidgetInfoVector Widgets();
 
   /************************************************************************
    * Construction & Generic Information

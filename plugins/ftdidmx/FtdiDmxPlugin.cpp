@@ -60,23 +60,6 @@ void FtdiDmxPlugin::AddDevice(FtdiDmxDevice *device) {
   m_plugin_adaptor->RegisterDevice(device);
 }
 
-void FtdiDmxPlugin::DeviceRemoved(FtdiDmxDevice *device) {
-  vector<FtdiDmxDevice*>::iterator iter;
-
-  for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
-    if (*iter == device)
-      break;
-  }
-
-  if (iter == m_devices.end()) {
-    OLA_WARN << "Couldn't find the removed device!";
-    return;
-  }
-
-  DeleteDevice(device);
-  m_devices.erase(iter);
-}
-
 void FtdiDmxPlugin::DeleteDevice(FtdiDmxDevice *device) {
   m_plugin_adaptor->UnregisterDevice(device);
   device->Stop();
@@ -84,19 +67,18 @@ void FtdiDmxPlugin::DeleteDevice(FtdiDmxDevice *device) {
 }
 
 bool FtdiDmxPlugin::StartHook() {
-  vector<FtdiWidgetInfo> devices = FtdiWidget::Widgets();
+  FtdiWidgetInfoVector devices = FtdiWidget::Widgets();
 
-  for (vector<FtdiWidgetInfo>::iterator iter = devices.begin();
+  for (FtdiWidgetInfoVector::iterator iter = devices.begin();
        iter != devices.end(); ++iter) {
-    FtdiWidgetInfo nfo = (*iter);
-    AddDevice(new FtdiDmxDevice(this, nfo, m_preferences));
+    AddDevice(new FtdiDmxDevice(this, *iter, m_preferences));
   }
 
   return true;
 }
 
 bool FtdiDmxPlugin::StopHook() {
-  vector<FtdiDmxDevice*>::iterator iter;
+  FtdiDeviceVector::iterator iter;
 
   for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
     DeleteDevice((*iter));
