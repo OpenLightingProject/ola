@@ -35,12 +35,11 @@ FtdiDmxDevice::FtdiDmxDevice(AbstractPlugin *owner,
   Device(owner, devInfo.Description()),
   m_devInfo(devInfo),
   m_preferences(preferences) {
-  m_device = new FtdiWidget(devInfo.Serial(), devInfo.Name(), devInfo.Id());
+  auto_ptr<ola::plugin::ftdidmx::FtdiWidget> m_device (new FtdiWidget(devInfo.Serial(), devInfo.Name(), devInfo.Id()));
 }
 
 FtdiDmxDevice::~FtdiDmxDevice() {
   if (m_device->IsOpen()) m_device->Close();
-  delete m_device;
 }
 
 bool FtdiDmxDevice::StartHook() {
