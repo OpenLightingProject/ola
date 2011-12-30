@@ -53,7 +53,7 @@ using std::vector;
 
 class FtdiWidgetInfo {
  public:
-  FtdiWidgetInfo(string &name, string &serial, int unsigned id) :
+  FtdiWidgetInfo(const string &name, const string &serial, int unsigned id) :
     m_name(name), m_serial(serial), m_id(id) {}
 
   FtdiWidgetInfo(const FtdiWidgetInfo &info) :

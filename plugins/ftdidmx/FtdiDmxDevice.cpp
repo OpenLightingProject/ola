@@ -35,7 +35,8 @@ FtdiDmxDevice::FtdiDmxDevice(AbstractPlugin *owner,
   Device(owner, devInfo.Description()),
   m_devInfo(devInfo),
   m_preferences(preferences) {
-  auto_ptr<ola::plugin::ftdidmx::FtdiWidget> m_device (new FtdiWidget(devInfo.Serial(), devInfo.Name(), devInfo.Id()));
+  auto_ptr<ola::plugin::ftdidmx::FtdiWidget>
+    m_device(new FtdiWidget(devInfo.Serial(), devInfo.Name(), devInfo.Id()));
 }
 
 FtdiDmxDevice::~FtdiDmxDevice() {

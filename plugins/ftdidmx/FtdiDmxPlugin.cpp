@@ -20,6 +20,7 @@
 
 #include <vector>
 #include <string>
+#include <memory>
 
 #include "olad/Preferences.h"
 #include "olad/PluginAdaptor.h"
@@ -32,6 +33,7 @@ namespace plugin {
 namespace ftdidmx {
 
 using ola::PluginAdaptor;
+using std::auto_ptr;
 
 const char FtdiDmxPlugin::PLUGIN_NAME[] = "FTDI USB Chipset Serial DMX";
 const char FtdiDmxPlugin::PLUGIN_PREFIX[] = "ftdidmx";
@@ -52,7 +54,7 @@ FtdiDmxPlugin::FtdiDmxPlugin(PluginAdaptor *plugin_adaptor)
 
 void FtdiDmxPlugin::AddDevice(FtdiDmxDevice *device) {
   if (!device->Start()) {
-    delete device;
+    // delete device;
     return;
   }
 
@@ -63,7 +65,7 @@ void FtdiDmxPlugin::AddDevice(FtdiDmxDevice *device) {
 void FtdiDmxPlugin::DeleteDevice(FtdiDmxDevice *device) {
   m_plugin_adaptor->UnregisterDevice(device);
   device->Stop();
-  delete device;
+  // delete device;
 }
 
 bool FtdiDmxPlugin::StartHook() {

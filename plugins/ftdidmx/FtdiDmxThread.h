@@ -21,9 +21,6 @@
 #ifndef PLUGINS_FTDIDMX_FTDIDMXTHREAD_H_
 #define PLUGINS_FTDIDMX_FTDIDMXTHREAD_H_
 
-#define DMX_MAB 16
-#define DMX_BREAK 110
-
 #include "ola/DmxBuffer.h"
 #include "olad/Preferences.h"
 #include "ola/thread/Thread.h"
@@ -55,6 +52,10 @@ class FtdiDmxThread : public ola::thread::Thread {
     bool m_term;
     DmxBuffer m_buffer;
     ola::thread::Mutex m_term_mutex;
+
+    static const uint32_t DMX_MAB = 16;
+    static const uint32_t DMX_BREAK = 110;
+
 };
 }
 }

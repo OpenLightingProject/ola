@@ -34,7 +34,7 @@ FtdiDmxThread::FtdiDmxThread(FtdiDmxDevice *device, Preferences *preferences)
   : m_device(device),
     m_preferences(preferences),
     m_term(false) {
-  SetupPreferences(); 
+  SetupPreferences();
 }
 
 FtdiDmxThread::~FtdiDmxThread() {
@@ -101,9 +101,9 @@ void *FtdiDmxThread::Run() {
     {
       ola::thread::MutexLocker locker(&m_term_mutex);
       if (m_term)
-	break;
+        break;
     }
-    
+
     Clock::CurrentTime(&ts1);
 
     if (m_device->GetWidget()->SetBreak(true) == false)
