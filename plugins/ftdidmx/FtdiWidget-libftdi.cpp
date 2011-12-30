@@ -16,7 +16,7 @@
   This class is based on QLCFTDI class from
 
   Q Light Controller
-  qlcftdi-libftdi.h
+  qlcftdi-libftdi.cpp
 
   Copyright (C) Heikki Junnila
 
