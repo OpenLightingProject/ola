@@ -39,7 +39,6 @@ goog.provide('ola.mobile.UniverseTab');
 
 /**
  * The class representing the Universe frame
- * @param {string} element_id the id of the element to use for this frame.
  * @constructor
  */
 ola.mobile.UniverseTab = function() {
@@ -95,6 +94,7 @@ ola.mobile.UniverseTab.prototype.update = function() {
 
 /**
  * Called when a new list of universes is received.
+ * @param {Object} e the event object.
  */
 ola.mobile.UniverseTab.prototype._updateUniverseList = function(e) {
   if (this.universe_list == undefined) {
@@ -120,6 +120,7 @@ ola.mobile.UniverseTab.prototype._updateUniverseList = function(e) {
 
 /**
  * Called when a universe is selected
+ * @param {number} universe_id the id of the universe selected.
  */
 ola.mobile.UniverseTab.prototype._universeSelected = function(universe_id) {
   this._hideAllFrames();
@@ -140,6 +141,7 @@ ola.mobile.UniverseTab.prototype._universeSelected = function(universe_id) {
 
 /**
  * Called when a new list of uids is received.
+ * @param {Object} e the event object.
  */
 ola.mobile.UniverseTab.prototype._updateUidList = function(e) {
   if (e.target.getStatus() != 200) {
@@ -179,6 +181,7 @@ ola.mobile.UniverseTab.prototype._updateUidList = function(e) {
 
 /**
  * Called when a uid is selected
+ * @param {Object} uid the UID selected.
  */
 ola.mobile.UniverseTab.prototype._uidSelected = function(uid) {
   this._hideAllFrames();
@@ -197,6 +200,7 @@ ola.mobile.UniverseTab.prototype._uidSelected = function(uid) {
 
 /**
  * Called when a list of supported sections is received.
+ * @param {Object} e the event object.
  */
 ola.mobile.UniverseTab.prototype._updateSupportedSections = function(e) {
   if (this.rdm_list == undefined) {
@@ -233,6 +237,7 @@ ola.mobile.UniverseTab.prototype._updateSupportedSections = function(e) {
 
 /**
  * Called when a section is selected
+ * @param {Object} section the Section object.
  */
 ola.mobile.UniverseTab.prototype._sectionSelected = function(section) {
   this._hideAllFrames();
@@ -260,12 +265,13 @@ ola.mobile.UniverseTab.prototype._loadSection = function() {
 
 /**
  * Called when a section is ready to be drawn
+ * @param {Object} e the event object.
  */
 ola.mobile.UniverseTab.prototype._updateSection = function(e) {
   var section_response = e.target.getResponseJson();
 
   this.rdm_section_frame.Clear();
-  var div= this.rdm_section_frame.element;
+  var div = this.rdm_section_frame.element;
   div.innerHTML = '';
 
   if (section_response['error']) {
@@ -382,11 +388,12 @@ ola.mobile.UniverseTab.prototype._saveSection = function() {
       this.active_section.hint(),
       data,
       function(e) { tab._saveSectionComplete(e); });
-}
+};
 
 
 /**
  * Called when the save section completes.
+ * @param {Object} e the event object.
  */
 ola.mobile.UniverseTab.prototype._saveSectionComplete = function(e) {
   var response = e.target.getResponseJson();

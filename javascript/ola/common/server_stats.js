@@ -44,6 +44,7 @@ ola.common.ServerStats = function(element_id) {
 
 /**
  * Update the home frame with new server data
+ * @param {Object} e the event object.
  */
 ola.common.ServerStats.prototype._updateServerInfo = function(e) {
   goog.dom.$('server_hostname').innerHTML = e.server_info['hostname'];

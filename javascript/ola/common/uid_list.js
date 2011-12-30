@@ -19,9 +19,9 @@
 
 goog.require('ola.common.DataItem');
 
-goog.provide('ola.common.UidItem');
 goog.provide('ola.common.UidControl');
 goog.provide('ola.common.UidControlFactory');
+goog.provide('ola.common.UidItem');
 
 
 /**
@@ -40,8 +40,9 @@ goog.inherits(ola.common.UidItem, ola.common.DataItem);
 
 /**
  * Get the device name
+ * @return {string} the name of the device.
  */
-ola.common.UidItem.prototype.deviceName = function() { return this._device; }
+ola.common.UidItem.prototype.deviceName = function() { return this._device; };
 
 
 /**
@@ -54,7 +55,7 @@ ola.common.UidItem.prototype.id = function() { return this.asString(); };
 /**
  * Convert a number to the hex representation
  * @param {number} n the number to convert.
- * @param {number} padding the length to pad to
+ * @param {number} padding the length to pad to.
  * @return {string} the hex representation of the number.
  */
 ola.common.UidItem.prototype._toHex = function(n, padding) {
@@ -71,7 +72,7 @@ ola.common.UidItem.prototype._toHex = function(n, padding) {
 
 /**
  * Return the string representation of the uid.
- * @return {string} the uid
+ * @return {string} the uid.
  */
 ola.common.UidItem.prototype.asString = function() {
   return (this._toHex(this._manufacturer_id, 4) + ':' +
@@ -81,27 +82,27 @@ ola.common.UidItem.prototype.asString = function() {
 
 /**
  * Return the uid as a string
- * @return {number} the uid as a string
+ * @return {number} the uid as a string.
  */
 ola.common.UidItem.prototype.toString = function() {
-  var uid = "";
+  var uid = '';
   if (this._manufacturer) {
     uid += this._manufacturer;
   }
   if (this._manufacturer && this._device) {
-    uid += ", ";
+    uid += ', ';
   }
   if (this._device) {
     uid += this._device;
   }
   if (this._manufacturer || this._device) {
-    uid += " [";
+    uid += ' [';
   }
 
   uid += this.asString();
 
   if (this._manufacturer || this._device) {
-    uid += "]";
+    uid += ']';
   }
   return uid;
 };
@@ -125,9 +126,18 @@ ola.common.UidItem.prototype.compare = function(other) {
 /**
  * An UID navigation control element.
  * @constructor
+ * @param {Object} item the item to add.
+ * @param {function()} callback the function to run when the item is clicked.
+ * @param {goog.ui.ControlRenderer=} opt_renderer Renderer used to render or
+ *     decorate the component; defaults to {@link goog.ui.ControlRenderer}.
+ * @param {goog.dom.DomHelper=} opt_domHelper An optional DOM helper.
  */
 ola.common.UidControl = function(item, callback, opt_renderer, opt_domHelper) {
-  ola.common.GenericControl.call(this, item, callback, opt_renderer, opt_domHelper);
+  ola.common.GenericControl.call(this,
+                                 item,
+                                 callback,
+                                 opt_renderer,
+                                 opt_domHelper);
   this.setContent(item.toString());
 };
 goog.inherits(ola.common.UidControl, ola.common.GenericControl);
@@ -144,6 +154,7 @@ ola.common.UidControl.prototype.enterDocument = function() {
 
 /**
  * Update this item with from new data.
+ * @param {Object} item the item to update this control object with.
  */
 ola.common.UidControl.prototype.update = function(item) {
   // We don't expect the uid to change here.
@@ -165,7 +176,7 @@ ola.common.UidControlFactory = function(callback) {
 /**
  * Create a new UidControl object from some data
  * @param {Object} data the data to use for the control.
- * @return {ola.common.UidControl}
+ * @return {ola.common.UidControl} The new UidControl object.
  */
 ola.common.UidControlFactory.prototype.newComponent = function(data) {
   return new ola.common.UidControl(data, this.callback);

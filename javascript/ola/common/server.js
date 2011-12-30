@@ -28,6 +28,10 @@ goog.provide('ola.common.Server.EventType');
 /**
  * A pending request.
  * @constructor
+ * @param {string} url the URL to fetch.
+ * @param {function()} callback the function to run when the request completes.
+ * @param {string=} opt_method 'GET' or 'POST'.
+ * @param {string=} opt_content The post form data.
  */
 ola.common.Request = function(url,
                               callback,
@@ -58,6 +62,10 @@ goog.inherits(ola.common.Server, goog.events.EventTarget);
 goog.addSingletonGetter(ola.common.Server);
 
 
+/**
+ * Events for the Server object.
+ * @type {Object}
+ */
 ola.common.Server.EventType = {
   PLUGIN_EVENT: 'plugin_change',
   PLUGIN_LIST_EVENT: 'plugin_list_change',
@@ -66,31 +74,132 @@ ola.common.Server.EventType = {
   UNIVERSE_LIST_EVENT: 'universe_list_change'
 };
 
+/**
+ * The url for the server stats
+ * @type {string}
+ */
 ola.common.Server.SERVER_INFO_URL = 'json/server_stats';
+
+/**
+ * The url for the plugin info
+ * @type {string}
+ */
 ola.common.Server.PLUGIN_INFO_URL = 'json/plugin_info';
+
+/**
+ * The url for the universe info.
+ * @type {string}
+ */
 ola.common.Server.UNIVERSE_INFO_URL = 'json/universe_info';
+
+/**
+ * The url to fetch the list of universes.
+ * @type {string}
+ */
 ola.common.Server.PLUGIN_UNIVERSE_LIST_URL = 'json/universe_plugin_list';
+
+/**
+ * The url to reload the server
+ * @type {string}
+ */
 ola.common.Server.RELOAD_PLUGINS_URL = 'reload';
+
+/**
+ * The url to stop the server.
+ * @type {string}
+ */
 ola.common.Server.STOP_SERVER_URL = 'quit';
+
+/**
+ * The url for the universe info.
+ * @type {string}
+ */
 ola.common.Server.AVAILBLE_PORTS_URL = 'json/get_ports';
+
+/**
+ * The url to fetch the list of UIDs.
+ * @type {string}
+ */
 ola.common.Server.UIDS_URL = 'json/rdm/uids';
+
+/**
+ * The url to trigger discovery.
+ * @type {string}
+ */
 ola.common.Server.RDM_DISCOVERY_URL = 'rdm/run_discovery';
+
+/**
+ * The url to fetch the RDM sections.
+ * @type {string}
+ */
 ola.common.Server.RDM_SECTIONS_URL = 'json/rdm/supported_sections';
+
+/**
+ * The url to fetch the contents of a section.
+ * @type {string}
+ */
 ola.common.Server.RDM_GET_SECTION_INFO_URL = 'json/rdm/section_info';
+
+/**
+ * The url to set the RDM settings.
+ * @type {string}
+ */
 ola.common.Server.RDM_SET_SECTION_INFO_URL = 'json/rdm/set_section_info';
+
+/**
+ * The url to toggle RDM identify mode.
+ * @type {string}
+ */
 ola.common.Server.RDM_UID_IDENTIFY = 'json/rdm/uid_identify';
+
+/**
+ * The url to fetch information about a RDM UID (responder).
+ * @type {string}
+ */
 ola.common.Server.RDM_UID_INFO = 'json/rdm/uid_info';
+
+/**
+ * The url to change the personality of a responder
+ * @type {string}
+ */
 ola.common.Server.RDM_UID_PERSONALITY = 'json/rdm/uid_personalities';
+
+/**
+ * The url to create a new universe.
+ * @type {string}
+ */
+
 ola.common.Server.NEW_UNIVERSE_URL = 'new_universe';
+
+/**
+ * The url to change the settings of a universe.
+ * @type {string}
+ */
 ola.common.Server.MODIFY_UNIVERSE_URL = 'modify_universe';
+
+/**
+ * The url to set the DMX values.
+ * @type {string}
+ */
 ola.common.Server.SET_DMX_URL = 'set_dmx';
+
+/**
+ * The url to return the current DMX values
+ * @type {string}
+ */
 ola.common.Server.GET_DMX_URL = 'get_dmx';
-// This should be more than the max # of RDM sections we ever expect
+
+/**
+ * The request queue size.
+ * This should be more than the max # of RDM sections we ever expect
+ * @type {number}
+ */
 ola.common.Server.REQUEST_QUEUE_LIMIT = 30;
 
 /**
  * This event is fired when the server info changes
  * @constructor
+ * @param {Object} server_info the server info.
  */
 ola.common.ServerInfoChangeEvent = function(server_info) {
   goog.events.Event.call(this, ola.common.Server.EventType.SERVER_INFO_EVENT);
@@ -102,6 +211,7 @@ goog.inherits(ola.common.ServerInfoChangeEvent, goog.events.Event);
 /**
  * This event is fired when the plugin list changes
  * @constructor
+ * @param {Array.<Object>} new_list the list of Plugin  objects.
  */
 ola.PluginListChangeEvent = function(new_list) {
   goog.events.Event.call(this, ola.common.Server.EventType.PLUGIN_LIST_EVENT);
@@ -113,9 +223,11 @@ goog.inherits(ola.PluginListChangeEvent, goog.events.Event);
 /**
  * This event is fired when the universe list changes
  * @constructor
+ * @param {Array.<Object>} new_list the list of Universe objects.
  */
 ola.UniverseListChangeEvent = function(new_list) {
-  goog.events.Event.call(this, ola.common.Server.EventType.UNIVERSE_LIST_EVENT);
+  goog.events.Event.call(this,
+                         ola.common.Server.EventType.UNIVERSE_LIST_EVENT);
   this.universes = new_list;
 };
 goog.inherits(ola.PluginListChangeEvent, goog.events.Event);
@@ -124,6 +236,7 @@ goog.inherits(ola.PluginListChangeEvent, goog.events.Event);
 /**
  * This event is fired when the plugin info is available
  * @constructor
+ * @param {Object} plugin the new Plugin object.
  */
 ola.PluginChangeEvent = function(plugin) {
   goog.events.Event.call(this, ola.common.Server.EventType.PLUGIN_EVENT);
@@ -135,6 +248,7 @@ goog.inherits(ola.PluginChangeEvent, goog.events.Event);
 /**
  * This event is fired when the universe info is available
  * @constructor
+ * @param {Object} universe the Universe object.
  */
 ola.UniverseChangeEvent = function(universe) {
   goog.events.Event.call(this, ola.common.Server.EventType.UNIVERSE_EVENT);
@@ -145,6 +259,8 @@ goog.inherits(ola.UniverseChangeEvent, goog.events.Event);
 
 /**
  * Check if this universe is active
+ * @param {number} universe_id the ID of the universe to check.
+ * @return {boolean} true if the universe exists, false otherwise.
  */
 ola.common.Server.prototype.CheckIfUniverseExists = function(universe_id) {
   return this.universes[universe_id] != undefined;
@@ -178,7 +294,7 @@ ola.common.Server.prototype.reloadPlugins = function(callback) {
  * @param {function(Object)} callback the function to call when the request
  * completes.
  */
-ola.common.Server.prototype.stopServer = function (callback) {
+ola.common.Server.prototype.stopServer = function(callback) {
   this._initiateRequest(ola.common.Server.STOP_SERVER_URL, callback);
 };
 
@@ -190,7 +306,7 @@ ola.common.Server.prototype.FetchUniversePluginList = function() {
   var on_complete = function(e) {
     if (e.target.getStatus() != 200) {
       ola.logger.info('Request failed: ' + e.target.getLastUri() + ' : ' +
-          e.target.getLastError())
+          e.target.getLastError());
       return;
     }
     var obj = e.target.getResponseJson();
@@ -203,12 +319,14 @@ ola.common.Server.prototype.FetchUniversePluginList = function() {
     this.dispatchEvent(new ola.PluginListChangeEvent(obj['plugins']));
     this.dispatchEvent(new ola.UniverseListChangeEvent(obj['universes']));
   }
-  this._initiateRequest(ola.common.Server.PLUGIN_UNIVERSE_LIST_URL, on_complete);
+  this._initiateRequest(ola.common.Server.PLUGIN_UNIVERSE_LIST_URL,
+                        on_complete);
 };
 
 
 /**
  * Fetch the info for a plugin
+ * @param {number} plugin_id the id of the plugin to fetch.
  */
 ola.common.Server.prototype.FetchPluginInfo = function(plugin_id) {
   var on_complete = function(e) {
@@ -222,6 +340,7 @@ ola.common.Server.prototype.FetchPluginInfo = function(plugin_id) {
 
 /**
  * Fetch the info for a universe
+ * @param {number} universe_id the id of the universe to fetch.
  */
 ola.common.Server.prototype.FetchUniverseInfo = function(universe_id) {
   var on_complete = function(e) {
@@ -234,10 +353,12 @@ ola.common.Server.prototype.FetchUniverseInfo = function(universe_id) {
 
 
 /**
- * Fetch the available pors
- * @param {number=} opt_universe an optional universe id
+ * Fetch the available ports.
+ * @param {number=} opt_universe an optional universe id.
+ * @param {function()} callback the callback to invoke when complete.
  */
-ola.common.Server.prototype.fetchAvailablePorts = function(opt_universe, callback) {
+ola.common.Server.prototype.fetchAvailablePorts = function(opt_universe,
+                                                           callback) {
   var url = ola.common.Server.AVAILBLE_PORTS_URL;
   if (opt_universe != undefined) {
     url += '?id=' + opt_universe;
@@ -248,6 +369,11 @@ ola.common.Server.prototype.fetchAvailablePorts = function(opt_universe, callbac
 
 /**
  * Create a new universe
+ * @param {number} universe_id the ID of the universe.
+ * @param {string} name the new universe name.
+ * @param {Array.<number>} port_ids a list of ports to patch to this universe.
+ * @param {function(Object)} callback the function to call when the request
+ *   completes.
  */
 ola.common.Server.prototype.createUniverse = function(universe_id,
                                                       name,
@@ -291,8 +417,8 @@ ola.common.Server.prototype.runRDMDiscovery = function(universe_id,
 ola.common.Server.prototype.rdmGetSupportedSections = function(universe_id,
                                                                uid,
                                                                callback) {
-  var url = (ola.common.Server.RDM_SECTIONS_URL + '?id=' + universe_id + '&uid=' +
-      uid);
+  var url = (ola.common.Server.RDM_SECTIONS_URL + '?id=' + universe_id +
+      '&uid=' + uid);
   this._initiateRequest(url, callback);
 };
 
@@ -311,8 +437,9 @@ ola.common.Server.prototype.rdmGetSectionInfo = function(universe_id,
                                                          section_name,
                                                          hint,
                                                          callback) {
-  var url = (ola.common.Server.RDM_GET_SECTION_INFO_URL + '?id=' + universe_id +
-      '&uid=' + uid + '&section=' + section_name + '&hint=' + hint);
+  var url = (ola.common.Server.RDM_GET_SECTION_INFO_URL + '?id=' +
+      universe_id + '&uid=' + uid + '&section=' + section_name + '&hint=' +
+      hint);
   this._initiateRequest(url, callback);
 };
 
@@ -322,7 +449,8 @@ ola.common.Server.prototype.rdmGetSectionInfo = function(universe_id,
  * @param {number} universe_id the ID of the universe.
  * @param {string} uid the string representation of a UID.
  * @param {string} section_name the section to get.
- * @param {data} data passed back to the server
+ * @param {string} hint a cookie to pass back to the server.
+ * @param {data} data passed back to the server.
  * @param {function(Object)} callback the function to call when the discovery
  *   request is ack'ed.
  */
@@ -332,15 +460,18 @@ ola.common.Server.prototype.rdmSetSectionInfo = function(universe_id,
                                                          hint,
                                                          data,
                                                          callback) {
-  var url = (ola.common.Server.RDM_SET_SECTION_INFO_URL + '?id=' + universe_id +
-      '&uid=' + uid + '&section=' + section_name + '&hint=' + hint + '&' +
-      data);
+  var url = (ola.common.Server.RDM_SET_SECTION_INFO_URL + '?id=' +
+      universe_id + '&uid=' + uid + '&section=' + section_name + '&hint=' +
+      hint + '&' + data);
   this._initiateRequest(url, callback);
 };
 
 
 /**
  * Fetch the uids for a universe
+ * @param {number} universe_id the ID of the universe.
+ * @param {function(Object)} callback the function to call when the request
+ *   completes.
  */
 ola.common.Server.prototype.fetchUids = function(universe_id, callback) {
   var url = ola.common.Server.UIDS_URL + '?id=' + universe_id;
@@ -401,8 +532,8 @@ ola.common.Server.prototype.rdmGetUIDPersonalities = function(universe_id,
  * @param {number} universe_id the id of the universe to modify.
  * @param {string} universe_name the new name.
  * @param {string} merge_mode HTP or LTP.
- * @param {Array.<{{id: string, mode: string, priority: number}}> port_priorities
- *   an array of new port priorities.
+ * @param {Array.<{{id: string, mode: string, priority: number}}>
+ *   port_priorities an array of new port priorities.
  * @param {Array.<string>} ports_to_remove list of port ids to remove.
  * @param {Array.<string>} ports_to_add list of port ids to add.
  * @param {function()} callback the callback to invoke when complete.
@@ -448,7 +579,7 @@ ola.common.Server.prototype.getChannelValues = function(universe_id,
       function(e) {
         callback(e.target.getResponseJson());
       });
-}
+};
 
 
 /**
@@ -467,7 +598,8 @@ ola.common.Server.prototype.setChannelValues = function(universe_id, data) {
 /**
  * Check if a request completed properly and if not, show a dialog.
  * This checks just the HTTP code.
- * @return {boolean} true if ok, false otherwise
+ * @param {Object} e the event object.
+ * @return {boolean} true if ok, false otherwise.
  */
 ola.common.Server.prototype.checkStatusDialog = function(e) {
   if (e.target.getStatus() != 200) {
@@ -483,6 +615,7 @@ ola.common.Server.prototype.checkStatusDialog = function(e) {
  * Check if a request completed properly and if not, show a dialog.
  * This checks both the HTTP code, and the existance of the 'error' property in
  * the response.
+ * @param {Object} e the event object.
  * @return {object} The JSON output, or undefined if an error occured.
  */
 ola.common.Server.prototype.checkForErrorDialog = function(e) {
@@ -505,6 +638,7 @@ ola.common.Server.prototype.checkForErrorDialog = function(e) {
  * Check if a request completed properly and if not log the error
  * This checks both the HTTP code, and the existance of the 'error' property in
  * the response.
+ * @param {Object} e the event object.
  * @return {object} The JSON output, or undefined if an error occured.
  */
 ola.common.Server.prototype.checkForErrorLog = function(e) {
@@ -525,6 +659,7 @@ ola.common.Server.prototype.checkForErrorLog = function(e) {
 
 /**
  * Show the error dialog
+ * @param {string} message the error message.
  */
 ola.common.Server.prototype._showErrorDialog = function(message) {
   var dialog = ola.Dialog.getInstance();
@@ -537,11 +672,11 @@ ola.common.Server.prototype._showErrorDialog = function(message) {
 
 /**
  * Initiate a JSON request
- * @param url the url to fetch.
- * @param callback the callback to invoke when the request completes.
- * @param opt_method {string=} 'GET' or 'POST'.
- * @param opt_content {string=} The post form data.
- * @private
+ * @param {string} url the url to fetch.
+ * @param {function()} callback the callback to invoke when the request
+ *   completes.
+ * @param {string=} opt_method 'GET' or 'POST'.
+ * @param {string=} opt_content The post form data.
  */
 ola.common.Server.prototype._initiateRequest = function(url,
                                                         callback,
@@ -567,8 +702,16 @@ ola.common.Server.prototype._initiateRequest = function(url,
         return;
       var r = t.request_queue.shift();
       if (r.callback)
-        goog.events.listen(xhr, goog.net.EventType.COMPLETE, r.callback, false, t);
-      goog.events.listen(xhr, goog.net.EventType.READY, t._cleanupRequest, false, t);
+        goog.events.listen(xhr,
+                           goog.net.EventType.COMPLETE,
+                           r.callback,
+                           false,
+                           t);
+      goog.events.listen(xhr,
+                         goog.net.EventType.READY,
+                         t._cleanupRequest,
+                         false,
+                         t);
       xhr.send(r.url, r.opt_method, r.opt_content);
     },
     1);
@@ -578,7 +721,7 @@ ola.common.Server.prototype._initiateRequest = function(url,
 /**
  * Clean up from a request, this removes the listener and returns the channel
  * to the pool.
- * @private
+ * @param {Object} e the event object.
  */
 ola.common.Server.prototype._cleanupRequest = function(e) {
   var xhr = e.target;

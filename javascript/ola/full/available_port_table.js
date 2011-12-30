@@ -42,7 +42,7 @@ goog.inherits(ola.AvailablePort, goog.ui.Component);
 
 /**
  * This component can't be used to decorate
- * @return {bool} false
+ * @return {bool} false.
  */
 ola.AvailablePort.prototype.canDecorate = function() {
   return false;
@@ -103,7 +103,7 @@ ola.AvailablePort.prototype.dispose = function() {
 
 /**
  * Get the port id for this item
- * @return {string} the id of this port
+ * @return {string} the id of this port.
  */
 ola.AvailablePort.prototype.portId = function() {
   return this.data['id'];
@@ -131,7 +131,7 @@ goog.inherits(ola.AvailablePortTable, goog.ui.Component);
 
 /**
  * Create the dom for the AvailablePortTable
- * @param {Element} element the dom element to decorate.
+ * @param {Element} container the dom element to decorate.
  */
 ola.AvailablePortTable.prototype.createDom = function(container) {
   this.decorateInternal(this.dom_.createElement('tbody'));
@@ -148,7 +148,7 @@ ola.AvailablePortTable.prototype.decorateInternal = function(element) {
 
 /**
  * Check if we can decorate an element.
- * @param {Element} element the dom element to check
+ * @param {Element} element the dom element to check.
  * @return {boolean} true if this element can be decorated, false otherwise.
  */
 ola.AvailablePortTable.prototype.canDecorate = function(element) {

@@ -24,11 +24,11 @@ goog.require('goog.ui.CustomButton');
 goog.require('ola.BaseFrame');
 goog.require('ola.Dialog');
 goog.require('ola.LoggerWindow');
+goog.require('ola.UniverseItem');
 goog.require('ola.common.Server');
 goog.require('ola.common.Server.EventType');
 goog.require('ola.common.ServerStats');
 goog.require('ola.common.SortedList');
-goog.require('ola.UniverseItem');
 
 goog.provide('ola.HomeFrame');
 
@@ -36,6 +36,7 @@ goog.provide('ola.HomeFrame');
 /**
  * A container that uses the tbody element
  * @constructor
+ * @param {goog.dom.DomHelper=} opt_domHelper An optional DOM helper.
  */
 ola.TableContainer = function(opt_domHelper) {
   goog.ui.Component.call(this, opt_domHelper);
@@ -45,6 +46,7 @@ goog.inherits(ola.TableContainer, goog.ui.Component);
 
 /**
  * Create the dom for the TableContainer
+ * @param {Element} container Not used.
  */
 ola.TableContainer.prototype.createDom = function(container) {
   this.decorateInternal(this.dom_.createElement('tbody'));
@@ -53,6 +55,7 @@ ola.TableContainer.prototype.createDom = function(container) {
 
 /**
  * Decorate an existing element
+ * @param {Element} element the element to decorate.
  */
 ola.TableContainer.prototype.decorateInternal = function(element) {
   ola.TableContainer.superClass_.decorateInternal.call(this, element);
@@ -62,6 +65,7 @@ ola.TableContainer.prototype.decorateInternal = function(element) {
 /**
  * Check if we can decorate an element.
  * @param {Element} element the dom element to check.
+ * @return {boolean} True if the element is a TBODY.
  */
 ola.TableContainer.prototype.canDecorate = function(element) {
   return element.tagName == 'TBODY';
@@ -72,6 +76,7 @@ ola.TableContainer.prototype.canDecorate = function(element) {
  * A line in the active universe list.
  * @param {ola.UniverseItem} universe_item the item to use for this row.
  * @constructor
+ * @param {goog.dom.DomHelper=} opt_domHelper An optional DOM helper.
  */
 ola.UniverseRow = function(universe_item, opt_domHelper) {
   goog.ui.Component.call(this, opt_domHelper);
@@ -82,13 +87,14 @@ goog.inherits(ola.UniverseRow, goog.ui.Component);
 
 /**
  * Return the underlying UniverseItem
- * @return {ola.UniverseItem}
+ * @return {ola.UniverseItem} The underlying item object.
  */
 ola.UniverseRow.prototype.item = function() { return this._item; };
 
 
 /**
  * This component can't be used to decorate
+ * @return {boolean} always false.
  */
 ola.UniverseRow.prototype.canDecorate = function() { return false; };
 
@@ -134,6 +140,7 @@ ola.UniverseRowFactory = function() {};
 
 
 /**
+ * @param {Object} data the data for the new row.
  * @return {ola.UniverseRow} an instance of a UniverseRow.
  */
 ola.UniverseRowFactory.prototype.newComponent = function(data) {
@@ -154,20 +161,21 @@ ola.HomeFrame = function(element_id) {
   goog.ui.decorate(reload_button);
   goog.events.listen(reload_button,
                      goog.events.EventType.CLICK,
-                     this._reloadButtonClicked,
+                     this.reloadButtonClicked,
                      false, this);
 
   var stop_button = goog.dom.$('stop_button');
   goog.ui.decorate(stop_button);
   goog.events.listen(stop_button,
                      goog.events.EventType.CLICK,
-                     this._stopButtonClicked,
+                     this.stopButtonClicked,
                      false, this);
 
   var new_universe_button = goog.dom.$('new_universe_button');
   goog.ui.decorate(new_universe_button);
 
-  goog.events.listen(ola_server, ola.common.Server.EventType.UNIVERSE_LIST_EVENT,
+  goog.events.listen(ola_server,
+                     ola.common.Server.EventType.UNIVERSE_LIST_EVENT,
                      this._universeListChanged,
                      false, this);
 
@@ -183,6 +191,7 @@ goog.inherits(ola.HomeFrame, ola.BaseFrame);
 
 /**
  * Update the universe set
+ * @param {Object} e the event object.
  */
 ola.HomeFrame.prototype._universeListChanged = function(e) {
   var items = new Array();
@@ -195,13 +204,13 @@ ola.HomeFrame.prototype._universeListChanged = function(e) {
 
 /**
  * Called when the stop button is clicked
- * @private
+ * @param {Object} e the event object.
  */
-ola.HomeFrame.prototype._stopButtonClicked = function(e) {
+ola.HomeFrame.prototype.stopButtonClicked = function(e) {
   var dialog = ola.Dialog.getInstance();
 
   goog.events.listen(dialog, goog.ui.Dialog.EventType.SELECT,
-      this._stopServerConfirmed, false, this);
+      this.stopServerConfirmed, false, this);
 
   dialog.setTitle('Please confirm');
   dialog.setButtonSet(goog.ui.Dialog.ButtonSet.YES_NO);
@@ -213,30 +222,29 @@ ola.HomeFrame.prototype._stopButtonClicked = function(e) {
 
 /**
  * Called when the stop dialog exits.
- * @private
+ * @param {Object} e the event object.
  */
-ola.HomeFrame.prototype._stopServerConfirmed = function(e) {
+ola.HomeFrame.prototype.stopServerConfirmed = function(e) {
   var dialog = ola.Dialog.getInstance();
 
   goog.events.unlisten(dialog, goog.ui.Dialog.EventType.SELECT,
-      this._stopServerConfirmed, false, this);
+      this.stopServerConfirmed, false, this);
 
   if (e.key == goog.ui.Dialog.DefaultButtonKeys.YES) {
     dialog.setAsBusy();
     dialog.setVisible(true);
     var frame = this;
     ola.common.Server.getInstance().stopServer(
-      function(e) { frame._stopServerComplete(e); });
-    return false;
+      function(e) { frame.stopServerComplete(e); });
   }
 };
 
 
 /**
  * Update the home frame with new server data
- * @private
+ * @param {Object} e the event object.
  */
-ola.HomeFrame.prototype._stopServerComplete = function(e) {
+ola.HomeFrame.prototype.stopServerComplete = function(e) {
   var dialog = ola.Dialog.getInstance();
   if (e.target.getStatus() == 200) {
     dialog.setVisible(false);
@@ -250,23 +258,23 @@ ola.HomeFrame.prototype._stopServerComplete = function(e) {
 
 /**
  * Called when the reload button is clicked
- * @private
+ * @param {Object} e the event object.
  */
-ola.HomeFrame.prototype._reloadButtonClicked = function(e) {
+ola.HomeFrame.prototype.reloadButtonClicked = function(e) {
   var dialog = ola.Dialog.getInstance();
   dialog.setAsBusy();
   dialog.setVisible(true);
   var frame = this;
   ola.common.Server.getInstance().reloadPlugins(
-      function(e) { frame._pluginReloadComplete(e); });
+      function(e) { frame.pluginReloadComplete(e); });
 };
 
 
 /**
  * Update the home frame with new server data
- * @private
+ * @param {Object} e the event object.
  */
-ola.HomeFrame.prototype._pluginReloadComplete = function(e) {
+ola.HomeFrame.prototype.pluginReloadComplete = function(e) {
   var dialog = ola.Dialog.getInstance();
   if (e.target.getStatus() == 200) {
     dialog.setVisible(false);

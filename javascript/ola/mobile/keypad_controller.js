@@ -31,8 +31,8 @@ goog.provide('ola.mobile.KeypadController');
 
 /**
  * The Keypad Controller class.
- * @param {string} name Universe Name
- * @param {number} id Universe Id
+ * @param {string} name Universe Name.
+ * @param {number} universe_id Universe Id.
  * @constructor
  */
 ola.mobile.KeypadController = function(name, universe_id) {
@@ -47,19 +47,24 @@ ola.mobile.KeypadController = function(name, universe_id) {
 
 /**
  * Button
+ * @param {string} value the caption for the button.
+ * @return {Element} the new Button element.
  */
 ola.mobile.KeypadController.prototype._button = function(value) {
    var button = new goog.ui.Button(goog.ui.FlatButtonRenderer);
    button.setContent(value);
-   goog.events.listen(button,goog.ui.Component.EventType.ACTION,
+   goog.events.listen(button,
+                      goog.ui.Component.EventType.ACTION,
                       function() { this._buttonAction(value); },
                       false,
                       this);
    return button;
 };
 
+
 /**
  * Input event. Triggered when text is entered into text box.
+ * @param {string} key the key that was pressed.
  */
 ola.mobile.KeypadController.prototype._textEntry = function(key) {
   var text = this.command_input.value;
@@ -77,14 +82,14 @@ ola.mobile.KeypadController.prototype._textEntry = function(key) {
       return;
   }
 
-  var key = text.substr(text.length-1, 1);
+  var key = text.substr(text.length - 1, 1);
 
   switch (key) {
     case 'F':
       autocomplete = 'ULL';
       break;
 
-    // If it's the T or > keys, autocomplete "THRU"
+    // If it's the T or > keys, autocomplete 'THRU'
     case 'T':
       autocomplete = 'HRU';
       break;
@@ -105,9 +110,10 @@ ola.mobile.KeypadController.prototype._textEntry = function(key) {
 
 /**
  * Button event. Triggered when a button is pushed.
+ * @param {string} name the button that was pressed.
  */
 ola.mobile.KeypadController.prototype._buttonAction = function(name) {
-  if (name == "<") {
+  if (name == '<') {
     // Go Backward. Must scan for whitespace
     var end = this.command_input.value.length - 1;
      if (isNaN(parseInt(this.command_input.value.substr(end, 1)))) {
@@ -130,7 +136,7 @@ ola.mobile.KeypadController.prototype._buttonAction = function(name) {
     }
     this.command_input.value = this.command_input.value.substr(0, end);
     this._buttonAction('');
-  } else if (name == "ENTER") {
+  } else if (name == 'ENTER') {
     // Execute
     var command = this.parser.parseFullCommand(this.command_input.value);
     if (command != undefined) {
@@ -148,6 +154,7 @@ ola.mobile.KeypadController.prototype._buttonAction = function(name) {
 
 /**
  * Caption of the Table
+ * @param {string} title the title for the table.
  */
 ola.mobile.KeypadController.prototype._caption = function(title) {
   var caption = goog.dom.createElement('caption');
@@ -164,11 +171,11 @@ ola.mobile.KeypadController.prototype._display = function() {
   td.colSpan = '4';
 
   this.command_input = goog.dom.createElement('input');
-  this.command_input.type = "text";
+  this.command_input.type = 'text';
   td.appendChild(this.command_input);
 
    var key_handler = new goog.events.KeyHandler(this.command_input);
-   goog.events.listen(key_handler,'key',
+   goog.events.listen(key_handler, 'key',
                       function(e) { this._textEntry(e.keyCode); },
                       true,
                       this);
@@ -186,13 +193,14 @@ ola.mobile.KeypadController.prototype._display = function() {
  * The main keypad button matrix
  */
 ola.mobile.KeypadController.prototype._keypad = function() {
-  var values = ['7','8','9',' THRU ','4','5','6',' @ ','1','2','3','FULL','0','ENTER'];
+  var values = ['7', '8', '9', ' THRU ', '4', '5', '6', ' @ ', '1', '2', '3',
+                'FULL', '0', 'ENTER'];
 
   for (i = 0; i < 3; ++i) {
     var tr = goog.dom.createElement('tr');
     for (x = 0; x < 4; ++x) {
       var td = goog.dom.createElement('td');
-      var button = this._button(values[(i*4)+x]);
+      var button = this._button(values[(i * 4) + x]);
       button.render(td);
       tr.appendChild(td);
     }
@@ -218,21 +226,21 @@ ola.mobile.KeypadController.prototype._keypad = function() {
  * Execute a KeypadCommand.
  * This asks ola for current dmx values before
  * running _execute() where the real work happens.
- * @param {KeypadCommand} the command to execute.
+ * @param {KeypadCommand} command the command to execute.
  */
 ola.mobile.KeypadController.prototype.execute = function(command) {
   var tab = this;
   ola.common.Server.getInstance().getChannelValues(
       this.universe_id,
-      function(e){ tab._execute(e, command); });
-  return true;
+      function(e) { tab._execute(e, command); });
 };
 
 
 /**
  * Executes the KeypadCommand. This method
  * is called once DMX values are retrieved by the server.
- * @param {KeypadCommand} the command to execute.
+ * @param {Object} e the event object.
+ * @param {KeypadCommand} command the command to execute.
  */
 ola.mobile.KeypadController.prototype._execute = function(e, command) {
   var dmx_values = e['dmx'];

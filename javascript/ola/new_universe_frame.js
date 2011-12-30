@@ -33,6 +33,7 @@ goog.provide('ola.NewUniverseFrame');
  * The class representing the Universe frame
  * @param {string} element_id the id of the element to use for this frame.
  * @constructor
+ * @param {Object} ola_ui The OlaUI object.
  */
 ola.NewUniverseFrame = function(element_id, ola_ui) {
   ola.BaseFrame.call(this, element_id);
@@ -49,7 +50,7 @@ ola.NewUniverseFrame = function(element_id, ola_ui) {
   goog.ui.decorate(confirm_button);
   goog.events.listen(confirm_button,
                      goog.events.EventType.CLICK,
-                     this._addUniverseButtonClicked,
+                     this.addUniverseButtonClicked,
                      false, this);
 
   this.available_ports = new ola.AvailablePortTable();
@@ -63,8 +64,8 @@ goog.inherits(ola.NewUniverseFrame, ola.BaseFrame);
  */
 ola.NewUniverseFrame.prototype.Show = function() {
   // clear out the fields
-  goog.dom.$('new_universe_id').value = ''
-  goog.dom.$('new_universe_name').value = ''
+  goog.dom.$('new_universe_id').value = '';
+  goog.dom.$('new_universe_name').value = '';
   this.available_ports.update();
   ola.UniverseFrame.superClass_.Show.call(this);
 };
@@ -72,9 +73,9 @@ ola.NewUniverseFrame.prototype.Show = function() {
 
 /**
  * Called when the add universe button is clicked
- * @private
+ * @param {Object} e The event object.
  */
-ola.NewUniverseFrame.prototype._addUniverseButtonClicked = function(e) {
+ola.NewUniverseFrame.prototype.addUniverseButtonClicked = function(e) {
   var dialog = ola.Dialog.getInstance();
   var universe_id_input = goog.dom.$('new_universe_id');
   var universe_id = parseInt(universe_id_input.value);
@@ -113,7 +114,7 @@ ola.NewUniverseFrame.prototype._addUniverseButtonClicked = function(e) {
       universe_id,
       universe_name,
       selected_ports,
-      function(e) { frame._newUniverseComplete(e); });
+      function(e) { frame.newUniverseComplete(e); });
   dialog.setAsBusy();
   dialog.setVisible(true);
 };
@@ -121,9 +122,9 @@ ola.NewUniverseFrame.prototype._addUniverseButtonClicked = function(e) {
 
 /**
  * Called when the new universe action completes.
- * @private
+ * @param {Object} e The event object.
  */
-ola.NewUniverseFrame.prototype._newUniverseComplete = function(e) {
+ola.NewUniverseFrame.prototype.newUniverseComplete = function(e) {
   var dialog = ola.Dialog.getInstance();
   if (e.target.getStatus() != 200) {
     dialog.setTitle('New Universe Failed');

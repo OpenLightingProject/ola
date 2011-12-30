@@ -25,9 +25,18 @@ goog.provide('ola.UniverseControl');
 /**
  * An Universe navigation control element.
  * @constructor
+ * @param {Object} item the item to add.
+ * @param {function()} callback the function to run when the item is clicked.
+ * @param {goog.ui.ControlRenderer=} opt_renderer Renderer used to render or
+ *     decorate the component; defaults to {@link goog.ui.ControlRenderer}.
+ * @param {goog.dom.DomHelper=} opt_domHelper An optional DOM helper.
  */
 ola.UniverseControl = function(item, callback, opt_renderer, opt_domHelper) {
-  ola.common.GenericControl.call(this, item, callback, opt_renderer, opt_domHelper);
+  ola.common.GenericControl.call(this,
+                                 item,
+                                 callback,
+                                 opt_renderer,
+                                 opt_domHelper);
   this.setContent(item.name());
 };
 goog.inherits(ola.UniverseControl, ola.common.GenericControl);
@@ -44,7 +53,7 @@ ola.UniverseControl.prototype.enterDocument = function() {
 
 /**
  * A factory which produces UniverseControls
- * @param {function()} the funtion called when the control is clicked.
+ * @param {function()} callback the funtion called when the control is clicked.
  * @constructor
  */
 ola.UniverseControlFactory = function(callback) {
@@ -53,8 +62,10 @@ ola.UniverseControlFactory = function(callback) {
 
 
 /**
- * @return {ola.UniverseControl} an instance of a UniverseRow
+ * Create a new UniverseControl
+ * @param {Object} item The item for the control.
+ * @return {ola.UniverseControl} an instance of a UniverseRow.
  */
-ola.UniverseControlFactory.prototype.newComponent = function(data) {
-  return new ola.UniverseControl(data, this.callback);
+ola.UniverseControlFactory.prototype.newComponent = function(item) {
+  return new ola.UniverseControl(item, this.callback);
 };

@@ -1,4 +1,5 @@
-SOURCES = ConsumerThread.h ExecutorInterface.h SchedulingExecutorInterface.h \
+SOURCES = ConsumerThread.h ExecutorInterface.h Mutex.h \
+          SchedulingExecutorInterface.h \
           SchedulerInterface.h Thread.h ThreadPool.h
 
 EXTRA_DIST = $(SOURCES)

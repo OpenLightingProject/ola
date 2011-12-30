@@ -29,31 +29,57 @@ goog.require('goog.ui.Control');
 goog.require('goog.ui.SplitPane');
 goog.require('goog.ui.SplitPane.Orientation');
 
-goog.require('ola.common.GenericControl');
 goog.require('ola.HomeFrame');
 goog.require('ola.LoggerWindow');
 goog.require('ola.NewUniverseFrame');
-goog.require('ola.common.PluginControlFactory');
 goog.require('ola.PluginFrame');
+goog.require('ola.UniverseControl');
+goog.require('ola.UniverseFrame');
+goog.require('ola.UniverseItem');
+goog.require('ola.common.GenericControl');
+goog.require('ola.common.PluginControlFactory');
 goog.require('ola.common.PluginItem');
 goog.require('ola.common.Server');
 goog.require('ola.common.Server.EventType');
 goog.require('ola.common.SortedList');
-goog.require('ola.UniverseFrame');
-goog.require('ola.UniverseItem');
-goog.require('ola.UniverseControl');
 
 goog.provide('ola.OlaUi');
 goog.provide('ola.Setup');
 
-var ola = ola || {};
-
+/**
+ * How often to update the universe / plugin list
+ * @type {number}
+ */
 ola.LIST_UPDATE_INTERVAL_MS = 5000;
 
+/**
+ * The id of the home frame
+ * @type {string}
+ */
 ola.HOME_FRAME_ID = 'home_frame';
+
+/**
+ * The id of the universe frame
+ * @type {string}
+ */
 ola.UNIVERSE_FRAME_ID = 'universe_frame';
+
+/**
+ * The id of the plugin frame
+ * @type {string}
+ */
 ola.PLUGIN_FRAME_ID = 'plugin_frame';
+
+/**
+ * The id of the split pane
+ * @type {string}
+ */
 ola.SPLIT_PANE_ID = 'split_pane';
+
+/**
+ * The id of the new universe frame
+ * @type {string}
+ */
 ola.NEW_UNIVERSE_FRAME_ID = 'new_universe_frame';
 
 
@@ -101,7 +127,6 @@ ola.OlaUI = function() {
 
 /**
  * Setup the navigation section of the UI
- * @private
  */
 ola.OlaUI.prototype._SetupNavigation = function() {
   var home_control = goog.dom.$('home_control');
@@ -155,6 +180,7 @@ ola.OlaUI.prototype._SetupNavigation = function() {
 
 /**
  * Update universe list.
+ * @param {Object} e the event object.
  */
 ola.OlaUI.prototype._updateUniverseList = function(e) {
   var items = new Array();
@@ -168,6 +194,7 @@ ola.OlaUI.prototype._updateUniverseList = function(e) {
 
 /**
  * Update the plugin list
+ * @param {Object} e the event object.
  */
 ola.OlaUI.prototype._updatePluginList = function(e) {
   var items = new Array();
@@ -176,12 +203,11 @@ ola.OlaUI.prototype._updatePluginList = function(e) {
     items.push(item);
   }
   this.plugin_list.updateFromData(items);
-}
+};
 
 
 /**
  * Display the home frame
- * @private
  */
 ola.OlaUI.prototype.ShowHome = function() {
   this._HideAllFrames();
@@ -191,8 +217,8 @@ ola.OlaUI.prototype.ShowHome = function() {
 
 /**
  * Display the universe frame
- * @param universe_id {number} the ID of the universe to load in the frame.
- * @param opt_select_main_tab {boolean} set to true to display the main tab.
+ * @param {number} universe_id the ID of the universe to load in the frame.
+ * @param {boolean} opt_select_main_tab set to true to display the main tab.
  */
 ola.OlaUI.prototype.ShowUniverse = function(universe_id, opt_select_main_tab) {
   this._HideAllFrames();
@@ -202,7 +228,6 @@ ola.OlaUI.prototype.ShowUniverse = function(universe_id, opt_select_main_tab) {
 
 /**
  * Display the new universe frame
- * @private
  */
 ola.OlaUI.prototype._ShowNewUniverse = function() {
   this._HideAllFrames();
@@ -212,8 +237,7 @@ ola.OlaUI.prototype._ShowNewUniverse = function() {
 
 /**
  * Display the plugin frame
- * @param plugin_id the ID of the plugin to show in the frame.
- * @private
+ * @param {number} plugin_id the ID of the plugin to show in the frame.
  */
 ola.OlaUI.prototype._ShowPlugin = function(plugin_id) {
   this.ola_server.FetchPluginInfo(plugin_id);
@@ -223,8 +247,7 @@ ola.OlaUI.prototype._ShowPlugin = function(plugin_id) {
 
 
 /**
- * Hide all the frames
- * @private
+ * Hide all the frames.
  */
 ola.OlaUI.prototype._HideAllFrames = function() {
   this.home_frame.Hide();
@@ -236,7 +259,7 @@ ola.OlaUI.prototype._HideAllFrames = function() {
 
 /**
  * Update the UI size. This is called when the window size changes
- * @private
+ * @param {Object} e the event object.
  */
 ola.OlaUI.prototype._UpdateUI = function(e) {
   var size = this.vsm.getSize();
@@ -246,6 +269,9 @@ ola.OlaUI.prototype._UpdateUI = function(e) {
 };
 
 
+/**
+ * The main setup function.
+ */
 ola.Setup = function() {
   var ola_ui = new ola.OlaUI();
 };

@@ -1,0 +1,135 @@
+                            Developer Information
+###############################################################################
+
+This file provides some information for developers looking to submit patches to
+OLA. The first section contains some general notes, and the latter
+sections address particular languages.
+
+
+General
+===============================================================================
+
+Code Reviews
+------------
+
+To have patches reviewed, please open an issue with 'Type-Review' at
+http://code.google.com/p/linux-lighting/issues/list
+
+Licensing
+---------
+
+Think carefully about the license for each file. Code to be used by clients
+(./ola , ./python) should be under the LGPL, so that it may be used in
+commercial projects.
+
+Plugins and code used solely in olad should be under the GPL.
+
+Unittests
+---------
+
+Unittests are *highly* encouraged. At the very least please make sure any
+changes don't break the tests.
+
+The tests are performed with `make check` in the root ola directory. The same
+command can be run within a sub directory to only run a particular set of
+tests.
+
+
+C++
+===============================================================================
+
+The bulk of OLA code is written in C++. This includes the daemon olad, and
+plugins.
+
+http://www.opendmx.net/index.php/OLA_developer_info describes many of the
+underlying classes used.
+
+Endian Issues
+-------------
+
+Be aware that OLA runs on big endian systems. When dealing with wire formats
+always use the functions in include/ola/network/NetworkUtils.h to convert.
+
+Non x86 platforms
+-----------------
+
+OLA also runs on more than just x86. Some platforms like ARM can't de-reference
+pointers which aren't aligned.
+
+For example:
+
+struct f {
+  uint8_t value1;
+  uint16_t value2;
+} __attribute__((packed));
+
+struct f foo = {1, 2};
+uint16_t *ptr = &foo.value2;
+// Bug! Will not be true on all platforms.
+if (*ptr == 2)
+
+http://www.aleph1.co.uk/chapter-10-arm-structured-alignment-faq has a good
+explanation.
+
+
+Style / Coding Standards
+------------------------
+
+We use the Google C++ Style Guide:
+  http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml
+
+Please run the cpplint.py script on all files before requesting a review.
+
+cpplint.py can be downloaded here:
+  http://google-styleguide.googlecode.com/svn/trunk/cpplint/cpplint.py
+
+Run it with:
+   --filter=-legal/copyright,-readability/streams
+
+Race Conditions
+---------------
+
+If possible, code should be tested with slower machines (embedded platforms,
+virtual machines etc.). This has discovered up race conditions in the past.
+
+Valgrind
+--------
+
+All code must be tested with valgrind to ensure it doesn't leak memory.
+
+
+Javascript
+===============================================================================
+
+Javascript is used for the olad web UI. Instructions for building the
+javascript can be found in javascript/README.
+
+Closure Compiler
+----------------
+
+The closure compiler catches many errors. The javascript code should build
+cleanly.
+
+Style / Coding Standards
+------------------------
+
+We use the Google Javascript style guide:
+  http://google-styleguide.googlecode.com/svn/trunk/javascriptguide.xml
+
+A javascript linter can be downloaded from:
+  http://code.google.com/closure/utilities/docs/linter_howto.html
+
+Please make sure all Javascript code is lint clean.
+
+
+Python
+===============================================================================
+
+Python is used for tools like the RDM responder tests and the device model
+collector. To enable these a OLA Python API is provided.
+
+Style / Coding Standards
+------------------------
+
+We use the Google Javascript style guide:
+  http://google-styleguide.googlecode.com/svn/trunk/pyguide.html

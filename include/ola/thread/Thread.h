@@ -22,6 +22,7 @@
 #define INCLUDE_OLA_THREAD_THREAD_H_
 
 #include <pthread.h>
+#include <ola/thread/Mutex.h>
 
 namespace ola {
 namespace thread {
@@ -37,79 +38,26 @@ class Thread {
     virtual ~Thread() {}
 
     virtual bool Start();
+    virtual bool FastStart();
     virtual bool Join(void *ptr = NULL);
-    bool IsRunning() const { return m_running; }
+    bool IsRunning();
 
-    // Sub classes implement this.
-    virtual void *Run() = 0;
     ThreadId Id() const { return m_thread_id; }
 
+    // Called by pthread_create
+    void *_InternalRun();
+
     static inline ThreadId Self() { return pthread_self(); }
+
+  protected:
+    // Sub classes implement this.
+    virtual void *Run() = 0;
 
   private:
     pthread_t m_thread_id;
     bool m_running;
-};
-
-
-/**
- * A Mutex object
- */
-class Mutex {
-  public:
-    friend class ConditionVariable;
-
-    Mutex();
-    ~Mutex();
-
-    void Lock();
-    bool TryLock();
-    void Unlock();
-
-  private:
-    pthread_mutex_t m_mutex;
-
-    Mutex(const Mutex&);
-    Mutex& operator=(const Mutex&);
-};
-
-
-/**
- * A convenience class to lock mutexes. The mutex is unlocked when this object
- * is destroyed.
- */
-class MutexLocker {
-  public:
-    explicit MutexLocker(Mutex *mutex);
-    ~MutexLocker();
-
-  private:
-    Mutex *m_mutex;
-
-    MutexLocker(const MutexLocker&);
-    MutexLocker& operator=(const MutexLocker&);
-};
-
-
-/**
- * A condition variable
- */
-class ConditionVariable {
-  public:
-    ConditionVariable();
-    ~ConditionVariable();
-
-    void Wait(Mutex *mutex);
-    bool TimedWait(Mutex *mutex, struct timespec *wait_time);
-
-    void Signal();
-    void Broadcast();
-
-  private:
-    pthread_cond_t m_condition;
-
-    ConditionVariable(const ConditionVariable&);
-    ConditionVariable& operator=(const ConditionVariable&);
+    Mutex m_mutex;  // protects m_running
+    ConditionVariable m_condition;  // use to wait for the thread to start
 };
 }  // thread
 }  // ola

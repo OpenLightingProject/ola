@@ -49,14 +49,22 @@ ola.common.DataItem.prototype.compare = function(other) {
     return -1;
   }
   return 0;
-}
+};
 
 
 /**
  * An Generic navigation control element.
  * @constructor
+ * @param {Object} item the item to add.
+ * @param {function()} callback the function to run when the item is clicked.
+ * @param {goog.ui.ControlRenderer=} opt_renderer Renderer used to render or
+ *     decorate the component; defaults to {@link goog.ui.ControlRenderer}.
+ * @param {goog.dom.DomHelper=} opt_domHelper An optional DOM helper.
  */
-ola.common.GenericControl = function(item, callback, opt_renderer, opt_domHelper) {
+ola.common.GenericControl = function(item,
+                                     callback,
+                                     opt_renderer,
+                                     opt_domHelper) {
   goog.ui.Control.call(this, '', opt_renderer, opt_domHelper);
   this._item = item;
   this.callback = callback;
@@ -66,13 +74,14 @@ goog.inherits(ola.common.GenericControl, goog.ui.Control);
 
 /**
  * Return the underlying GenericItem
- * @return {ola.GenericItem}
+ * @return {ola.GenericItem} The item for this control.
  */
 ola.common.GenericControl.prototype.item = function() { return this._item; };
 
 
 /**
  * This component can't be used to decorate
+ * @return {boolean} Always false.
  */
 ola.common.GenericControl.prototype.canDecorate = function() { return false; };
 
@@ -92,7 +101,7 @@ ola.common.GenericControl.prototype.enterDocument = function() {
 
 /**
  * Update this item with from new data
- * @param {ola.GenericItem} the new item to update from.
+ * @param {ola.GenericItem} item the new item to update from.
  */
 ola.common.GenericControl.prototype.update = function(item) {
   this.setContent(item.name());

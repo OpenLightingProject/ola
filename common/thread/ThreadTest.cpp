@@ -74,9 +74,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(ThreadTest);
 void ThreadTest::testThread() {
   MockThread thread;
   CPPUNIT_ASSERT(!thread.HasRan());
-  thread.Start();
+  CPPUNIT_ASSERT(thread.Start());
+  // starting twice must fail
+  CPPUNIT_ASSERT(!thread.Start());
   CPPUNIT_ASSERT(thread.IsRunning());
   CPPUNIT_ASSERT(thread.Join());
+  CPPUNIT_ASSERT(!thread.IsRunning());
   CPPUNIT_ASSERT(thread.HasRan());
 }
 

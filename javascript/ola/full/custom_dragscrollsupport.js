@@ -27,7 +27,7 @@ goog.provide('ola.CustomDragScrollSupport');
 ola.CustomDragScrollSupport = function(containerNode, opt_verticalMargin) {
   goog.fx.DragScrollSupport.call(this, containerNode, opt_verticalMargin,
                                  true);
-}
+};
 goog.inherits(ola.CustomDragScrollSupport, goog.fx.DragScrollSupport);
 
 

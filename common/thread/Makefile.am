@@ -1,7 +1,7 @@
 include $(top_srcdir)/common.mk
 
 noinst_LTLIBRARIES = libthread.la
-libthread_la_SOURCES = ConsumerThread.cpp Thread.cpp ThreadPool.cpp
+libthread_la_SOURCES = ConsumerThread.cpp Mutex.cpp Thread.cpp ThreadPool.cpp
 
 TESTS = ThreadTester
 check_PROGRAMS = $(TESTS)
