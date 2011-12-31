@@ -52,6 +52,7 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(ArtNetNodeTest);
   CPPUNIT_TEST(testBasicBehaviour);
   CPPUNIT_TEST(testBroadcastSendDMX);
+  CPPUNIT_TEST(testNonBroadcastSendDMX);
   CPPUNIT_TEST(testTimeCode);
   CPPUNIT_TEST_SUITE_END();
 
@@ -60,6 +61,7 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
 
     void testBasicBehaviour();
     void testBroadcastSendDMX();
+    void testNonBroadcastSendDMX();
     void testTimeCode();
 
   private:
@@ -232,7 +234,7 @@ void ArtNetNodeTest::testBasicBehaviour() {
 
 
 /**
- * check sending DMX works.
+ * Check sending DMX using broadcast works.
  */
 void ArtNetNodeTest::testBroadcastSendDMX() {
   ola::network::Interface interface = CreateInterface();
@@ -303,6 +305,200 @@ void ArtNetNodeTest::testBroadcastSendDMX() {
   // attempt to send an empty fram
   DmxBuffer empty_buffer;
   CPPUNIT_ASSERT(node.SendDMX(port_id, empty_buffer));
+  socket->Verify();
+}
+
+
+/**
+ * Check sending DMX using unicast works.
+ */
+void ArtNetNodeTest::testNonBroadcastSendDMX() {
+  ola::network::Interface interface = CreateInterface();
+  ola::network::SelectServer ss;
+  MockUdpSocket *socket = new MockUdpSocket();
+  socket->SetDiscardMode(true);
+
+  ArtNetNode node(interface,
+                  &ss,
+                  false,
+                  20,
+                  socket);
+
+  uint8_t port_id = 1;
+  node.SetNetAddress(4);
+  node.SetSubnetAddress(2);
+  node.SetPortUniverse(ola::plugin::artnet::ARTNET_INPUT_PORT, port_id, 3);
+
+  CPPUNIT_ASSERT(node.Start());
+  socket->Verify();
+  socket->SetDiscardMode(false);
+
+  DmxBuffer dmx;
+  dmx.SetFromString("0,1,2,3,4,5");
+  // we don't expect any data here because there are no nodes active
+  CPPUNIT_ASSERT(node.SendDMX(port_id, dmx));
+  socket->Verify();
+
+  const uint8_t poll_reply_message[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x21,
+    10, 0, 0, 10,
+    0x36, 0x19,
+    0, 0,
+    4, 2,  // subnet address
+    0x4, 0x31,  // oem
+    0,
+    0xd2,
+    0x70, 0x7a,  // esta
+    'P', 'e', 'e', 'r', ' ', '1', 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,  // short name
+    'T', 'h', 'i', 's', ' ', 'i', 's', ' ', 't', 'h', 'e', ' ',
+    'v', 'e', 'r', 'y', ' ', 'l', 'o', 'n', 'g', ' ',
+    'n', 'a', 'm', 'e',
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // long name
+    '#', '0', '0', '0', '1', ' ', '[', '0', ']', ' ', 'O', 'L', 'A',
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0,  // node report
+    0, 4,  // num ports
+    0x80, 0x80, 0x80, 0x80,  // 4 output ports
+    8, 8, 8, 8,
+    0, 0, 0, 0,
+    0x0, 0x0, 0x0, 0x0,  // swin
+    0x23, 0x0, 0x0, 0x0,  // swout
+    0, 0, 0, 0, 0, 0, 0,  // video, macro, remote, spare, style
+    0x12, 0x34, 0x56, 0x12, 0x34, 0x56,  // mac address
+    0xa, 0x0, 0x0, 0xa,
+    0,
+    8,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0  // filler
+  };
+  IPV4Address peer_ip;
+  ola::network::IPV4Address::FromString("10.0.0.10", &peer_ip);
+
+  // Fake an ArtPollReply
+  socket->AddReceivedData(
+      poll_reply_message,
+      sizeof(poll_reply_message),
+      peer_ip,
+      6454);
+  socket->PerformRead();
+
+  // now send a DMX frame, this should get unicast
+  const uint8_t DMX_MESSAGE[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x50,
+    0x0, 14,
+    0,  // seq #
+    1,  // physical port
+    0x23, 4,  // subnet & net address
+    0, 6,  // dmx length
+    0, 1, 2, 3, 4, 5
+  };
+  socket->AddExpectedData(
+    DMX_MESSAGE,
+    sizeof(DMX_MESSAGE),
+    peer_ip,
+    ARTNET_PORT);
+  CPPUNIT_ASSERT(node.SendDMX(port_id, dmx));
+  socket->Verify();
+
+  // add another peer
+  const uint8_t poll_reply_message2[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x21,
+    10, 0, 0, 11,
+    0x36, 0x19,
+    0, 0,
+    4, 2,  // subnet address
+    0x4, 0x31,  // oem
+    0,
+    0xd2,
+    0x70, 0x7a,  // esta
+    'P', 'e', 'e', 'r', ' ', '2', 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,  // short name
+    'T', 'h', 'i', 's', ' ', 'i', 's', ' ', 't', 'h', 'e', ' ',
+    'v', 'e', 'r', 'y', ' ', 'l', 'o', 'n', 'g', ' ',
+    'n', 'a', 'm', 'e',
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // long name
+    '#', '0', '0', '0', '1', ' ', '[', '0', ']', ' ', 'O', 'L', 'A',
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0,  // node report
+    0, 4,  // num ports
+    0x80, 0x80, 0x80, 0x80,  // 4 output ports
+    8, 8, 8, 8,
+    0, 0, 0, 0,
+    0x0, 0x0, 0x0, 0x0,  // swin
+    0x23, 0x0, 0x0, 0x0,  // swout
+    0, 0, 0, 0, 0, 0, 0,  // video, macro, remote, spare, style
+    0x12, 0x34, 0x56, 0x12, 0x34, 0x56,  // mac address
+    0xa, 0x0, 0x0, 0xb,
+    0,
+    8,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0  // filler
+  };
+  IPV4Address peer_ip2;
+  ola::network::IPV4Address::FromString("10.0.0.11", &peer_ip2);
+
+  // Fake an ArtPollReply
+  socket->AddReceivedData(
+      poll_reply_message2,
+      sizeof(poll_reply_message2),
+      peer_ip2,
+      6454);
+  socket->PerformRead();
+
+  // now send another DMX frame, this should get unicast twice
+  const uint8_t DMX_MESSAGE2[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x50,
+    0x0, 14,
+    1,  // seq #
+    1,  // physical port
+    0x23, 4,  // subnet & net address
+    0, 6,  // dmx length
+    10, 11, 12, 0, 1, 2
+  };
+  dmx.SetFromString("10,11,12,0,1,2");
+  socket->AddExpectedData(
+    DMX_MESSAGE2,
+    sizeof(DMX_MESSAGE2),
+    peer_ip,
+    ARTNET_PORT);
+  socket->AddExpectedData(
+    DMX_MESSAGE2,
+    sizeof(DMX_MESSAGE2),
+    peer_ip2,
+    ARTNET_PORT);
+  CPPUNIT_ASSERT(node.SendDMX(port_id, dmx));
+  socket->Verify();
+
+  // now adjust the broadcast threshold
+  node.SetBroadcastThreshold(2);
+
+  // now send another DMX frame, this should get broadcast
+  const uint8_t DMX_MESSAGE3[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x50,
+    0x0, 14,
+    2,  // seq #
+    1,  // physical port
+    0x23, 4,  // subnet & net address
+    0, 6,  // dmx length
+    11, 13, 14, 7, 8, 9
+  };
+  dmx.SetFromString("11,13,14,7,8,9");
+  socket->AddExpectedData(
+    DMX_MESSAGE3,
+    sizeof(DMX_MESSAGE3),
+    interface.bcast_address,
+    ARTNET_PORT);
+  CPPUNIT_ASSERT(node.SendDMX(port_id, dmx));
   socket->Verify();
 }
 

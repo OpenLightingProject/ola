@@ -80,6 +80,13 @@ class MockUdpSocket: public ola::network::UdpSocketInterface {
                          unsigned int size,
                          const IPV4Address &ip,
                          uint16_t port);
+
+    // this can be fetched by calling PerformRead() on the socket
+    void AddReceivedData(const uint8_t *data,
+                         unsigned int size,
+                         const IPV4Address &ip,
+                         uint16_t port);
+
     void Verify();
 
     bool CheckNetworkParamsMatch(bool init_called,
@@ -97,12 +104,15 @@ class MockUdpSocket: public ola::network::UdpSocketInterface {
       uint16_t port;
     } expected_call;
 
+    typedef expected_call received_data;
+
     bool m_init_called;
     bool m_bound_to_port;
     bool m_broadcast_set;
     uint16_t m_port;
     uint8_t m_tos;
     mutable std::queue<expected_call> m_expected_calls;
+    mutable std::queue<received_data> m_received_data;
     IPV4Address m_interface;
     bool m_discard_mode;
 };

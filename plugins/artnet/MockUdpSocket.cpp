@@ -121,11 +121,17 @@ bool MockUdpSocket::RecvFrom(uint8_t *buffer,
                              ssize_t *data_read,
                              ola::network::IPV4Address &source,
                              uint16_t &port) const {
-  // not implemented yet
-  (void) buffer;
-  (void) data_read;
-  (void) source;
-  (void) port;
+  CPPUNIT_ASSERT(m_received_data.size());
+  const received_data &new_data = m_received_data.front();
+
+  CPPUNIT_ASSERT(*data_read >= new_data.size);
+  unsigned int size = std::min(new_data.size,
+                               static_cast<unsigned int>(*data_read));
+  memcpy(buffer, new_data.data, size);
+  *data_read = new_data.size;
+  source = new_data.address;
+  port = new_data.port;
+  m_received_data.pop();
   return true;
 }
 
@@ -165,16 +171,6 @@ bool MockUdpSocket::SetTos(uint8_t tos) {
   return true;
 }
 
-/*
-void MockUdpSocket::NewData(uint8_t *buffer,
-                            ssize_t *data_read,
-                            struct sockaddr_in &source) {
-  m_buffer = buffer;
-  m_available = *data_read;
-  m_source = source;
-  OnData()->Run();
-}
-*/
 
 void MockUdpSocket::AddExpectedData(const uint8_t *data,
                                     unsigned int size,
@@ -182,6 +178,15 @@ void MockUdpSocket::AddExpectedData(const uint8_t *data,
                                     uint16_t port) {
   expected_call call = {data, size, ip, port};
   m_expected_calls.push(call);
+}
+
+
+void MockUdpSocket::AddReceivedData(const uint8_t *data,
+                                    unsigned int size,
+                                    const IPV4Address &ip,
+                                    uint16_t port) {
+  expected_call call = {data, size, ip, port};
+  m_received_data.push(call);
 }
 
 
