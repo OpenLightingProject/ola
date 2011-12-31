@@ -23,8 +23,9 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <string.h>
 #include <algorithm>
-#include <string>
+#include <iostream>
 #include <queue>
+#include <string>
 
 #include "ola/Logging.h"
 #include "ola/network/IPV4Address.h"
@@ -78,13 +79,22 @@ ssize_t MockUdpSocket::SendTo(const uint8_t *buffer,
   expected_call call = m_expected_calls.front();
 
   CPPUNIT_ASSERT_EQUAL(call.size, size);
-  /*
-  unsigned int min_size = std::min(size, call.size);
-  for (unsigned int i = 0; i < min_size; i++)
-    OLA_INFO << i << ": " << (int) call.data[i] << ", " << (int) buffer[i] <<
-      (call.data[i] != buffer[i] ? " !!!!" : "");
-  */
-  CPPUNIT_ASSERT_EQUAL(0, memcmp(call.data, buffer, size));
+  if (memcmp(call.data, buffer, size) != 0) {
+    unsigned int min_size = std::min(size, call.size);
+    for (unsigned int i = 0; i < min_size; i++) {
+      if (call.data[i] != buffer[i]) {
+        std::stringstream str;
+        str << "Offset " << i << ": 0x" << std::hex <<
+          static_cast<int>(call.data[i]) << " != 0x" <<
+          static_cast<int>(buffer[i]);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(
+            str.str(),
+            static_cast<int>(call.data[i]),
+            static_cast<int>(buffer[i]));
+      }
+      CPPUNIT_ASSERT_EQUAL(call.data[i], buffer[i]);
+    }
+  }
   CPPUNIT_ASSERT_EQUAL(call.address, ip_address);
   CPPUNIT_ASSERT_EQUAL(call.port, port);
   m_expected_calls.pop();

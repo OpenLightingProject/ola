@@ -260,16 +260,16 @@ bool ArtNetNodeImpl::SetSubnetAddress(uint8_t subnet_address) {
 
 
 /*
- * Set the universe for a port
+ * Set the universe for a port.
+ * @param type ARTNET_INPUT_PORT or ARTNET_OUTPUT_PORT
+ * @param port_id a port id between 0 and ARTNET_MAX_PORTS - 1
+ * @param universe_id the new universe id.
  */
 bool ArtNetNodeImpl::SetPortUniverse(artnet_port_type type,
                                      uint8_t port_id,
                                      uint8_t universe_id) {
-  if (port_id > ARTNET_MAX_PORTS) {
-    OLA_WARN << "Port index of out bounds: " << port_id << " > " <<
-      ARTNET_MAX_PORTS;
+  if (!CheckPortId(port_id))
     return false;
-  }
 
   if (type == ARTNET_INPUT_PORT) {
     uint8_t old_universe = m_input_ports[port_id].universe_address;
@@ -305,14 +305,13 @@ bool ArtNetNodeImpl::SetPortUniverse(artnet_port_type type,
 
 /*
  * Return the current universe address for a port
+ * @param type ARTNET_INPUT_PORT or ARTNET_OUTPUT_PORT
+ * @param port_id a port id between 0 and ARTNET_MAX_PORTS - 1
  */
 uint8_t ArtNetNodeImpl::GetPortUniverse(artnet_port_type type,
                                         uint8_t port_id) {
-  if (port_id > ARTNET_MAX_PORTS) {
-    OLA_WARN << "Port index of out bounds: " << port_id << " > " <<
-      ARTNET_MAX_PORTS;
-    return 0;
-  }
+  if (!CheckPortId(port_id))
+    return false;
 
   if (type == ARTNET_INPUT_PORT)
     return m_input_ports[port_id].universe_address;
@@ -326,11 +325,8 @@ uint8_t ArtNetNodeImpl::GetPortUniverse(artnet_port_type type,
  */
 bool ArtNetNodeImpl::SetMergeMode(uint8_t port_id,
                                   artnet_merge_mode merge_mode) {
-  if (port_id > ARTNET_MAX_PORTS) {
-    OLA_WARN << "Port index of out bounds: " << port_id << " > " <<
-      ARTNET_MAX_PORTS;
+  if (!CheckPortId(port_id))
     return false;
-  }
 
   m_output_ports[port_id].merge_mode = merge_mode;
   if (m_running && m_send_reply_on_change) {
@@ -389,21 +385,25 @@ bool ArtNetNodeImpl::SendDMX(uint8_t port_id, const DmxBuffer &buffer) {
 
   packet.data.poll.version = HostToNetwork(ARTNET_VERSION);
   packet.data.dmx.sequence = m_input_ports[port_id].sequence_number;
-  packet.data.dmx.physical = 1 + port_id;
+  packet.data.dmx.physical = port_id;
   packet.data.dmx.universe = m_input_ports[port_id].universe_address;
   packet.data.dmx.net = m_net_address;
-  unsigned int buffer_size = sizeof(packet.data.dmx.data);
-  packet.data.dmx.length[0] = buffer_size >> 8;
-  packet.data.dmx.length[1] = buffer_size & 0xff;
+
+  unsigned int buffer_size = buffer.Size();
   buffer.Get(packet.data.dmx.data, &buffer_size);
 
-  // the packet size needs to be a multiple of two, correct here if needed
-  if (buffer_size % 2)
+  // the dmx frame size needs to be a multiple of two, correct here if needed
+  if (buffer_size % 2) {
+    packet.data.dmx.data[buffer_size] = 0;
     buffer_size++;
+  }
+  packet.data.dmx.length[0] = buffer_size >> 8;
+  packet.data.dmx.length[1] = buffer_size & 0xff;
+
   unsigned int size = sizeof(packet.data.dmx) - DMX_UNIVERSE_SIZE + buffer_size;
 
   bool sent_ok = false;
-  if (m_input_ports[port_id].subscribed_nodes.size() >= BROADCAST_THRESHOLD ||
+  if (m_input_ports[port_id].subscribed_nodes.size() >= m_broadcast_threshold ||
       m_always_broadcast) {
     sent_ok = SendPacket(packet, size, m_interface.bcast_address);
     m_input_ports[port_id].sequence_number++;
@@ -577,11 +577,8 @@ void ArtNetNodeImpl::SendRDMRequest(uint8_t port_id,
 bool ArtNetNodeImpl::SetUnsolicatedUIDSetHandler(
     uint8_t port_id,
     ola::Callback1<void, const ola::rdm::UIDSet&> *tod_callback) {
-  if (port_id > ARTNET_MAX_PORTS) {
-    OLA_WARN << "Port index of out bounds: " << port_id << " > " <<
-      ARTNET_MAX_PORTS;
+  if (!CheckPortId(port_id))
     return false;
-  }
 
   if (m_input_ports[port_id].tod_callback)
     delete m_input_ports[port_id].tod_callback;
@@ -599,11 +596,8 @@ bool ArtNetNodeImpl::SetUnsolicatedUIDSetHandler(
 bool ArtNetNodeImpl::SetDMXHandler(uint8_t port_id,
                                    DmxBuffer *buffer,
                                    Callback0<void> *on_data) {
-  if (port_id > ARTNET_MAX_PORTS) {
-    OLA_WARN << "Port index of out bounds: " << port_id << " > " <<
-      ARTNET_MAX_PORTS;
+  if (!CheckPortId(port_id))
     return false;
-  }
 
   if (m_output_ports[port_id].on_data)
     delete m_output_ports[port_id].on_data;
@@ -673,12 +667,8 @@ bool ArtNetNodeImpl::SetOutputPortRDMHandlers(
     ola::Callback0<void> *on_discover,
     ola::Callback0<void> *on_flush,
     ola::Callback2<void, const RDMRequest*, RDMCallback*> *on_rdm_request) {
-
-  if (port_id > ARTNET_MAX_PORTS) {
-    OLA_WARN << "Port index of out bounds: " << port_id << " > " <<
-      ARTNET_MAX_PORTS;
+  if (!CheckPortId(port_id))
     return false;
-  }
 
   if (m_output_ports[port_id].on_discover)
     delete m_output_ports[port_id].on_discover;
@@ -1533,15 +1523,26 @@ bool ArtNetNodeImpl::CheckPortState(uint8_t port_id,
   if (!m_running)
     return false;
 
-  if (port_id > ARTNET_MAX_PORTS) {
-    OLA_WARN << "Port index of out bounds: " << port_id << " > " <<
-      ARTNET_MAX_PORTS;
+  if (!CheckPortId(port_id))
     return false;
-  }
 
   if ((is_output && !m_output_ports[port_id].enabled) ||
       (!is_output && !m_input_ports[port_id].enabled)) {
     OLA_INFO << "Attempt to send " << action << " on an inactive port";
+    return false;
+  }
+  return true;
+}
+
+
+/**
+ * Check that the port_id is valid
+ * @return true if the port id is valid, false otherwise
+ */
+bool ArtNetNodeImpl::CheckPortId(uint8_t port_id) {
+  if (port_id >= ARTNET_MAX_PORTS) {
+    OLA_WARN << "Port index of out bounds: " <<
+      static_cast<int>(port_id) << " >= " << ARTNET_MAX_PORTS;
     return false;
   }
   return true;
@@ -1778,13 +1779,12 @@ ArtNetNode::~ArtNetNode() {
  */
 void ArtNetNode::RunFullDiscovery(uint8_t port_id,
                                   RDMDiscoveryCallback *callback) {
-  if (port_id > ARTNET_MAX_PORTS) {
+  if (!CheckPortId(port_id)) {
     ola::rdm::UIDSet uids;
-    OLA_WARN << "Port index of out bounds: " << port_id << " > " <<
-      ARTNET_MAX_PORTS;
     callback->Run(uids);
+  } else {
+    m_controllers[port_id]->RunFullDiscovery(callback);
   }
-  m_controllers[port_id]->RunFullDiscovery(callback);
 }
 
 
@@ -1793,13 +1793,12 @@ void ArtNetNode::RunFullDiscovery(uint8_t port_id,
  */
 void ArtNetNode::RunIncrementalDiscovery(uint8_t port_id,
                                          RDMDiscoveryCallback *callback) {
-  if (port_id > ARTNET_MAX_PORTS) {
+  if (!CheckPortId(port_id)) {
     ola::rdm::UIDSet uids;
-    OLA_WARN << "Port index of out bounds: " << port_id << " > " <<
-      ARTNET_MAX_PORTS;
     callback->Run(uids);
+  } else {
+    m_controllers[port_id]->RunIncrementalDiscovery(callback);
   }
-  m_controllers[port_id]->RunIncrementalDiscovery(callback);
 }
 
 
@@ -1808,14 +1807,27 @@ void ArtNetNode::RunIncrementalDiscovery(uint8_t port_id,
  */
 void ArtNetNode::SendRDMRequest(uint8_t port_id, const RDMRequest *request,
                                 ola::rdm::RDMCallback *on_complete) {
-  if (port_id > ARTNET_MAX_PORTS) {
+  if (!CheckPortId(port_id)) {
     std::vector<std::string> packets;
-    OLA_WARN << "Port index of out bounds: " << port_id << " > " <<
-      ARTNET_MAX_PORTS;
     on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
     delete request;
+  } else {
+    m_controllers[port_id]->SendRDMRequest(request, on_complete);
   }
-  m_controllers[port_id]->SendRDMRequest(request, on_complete);
+}
+
+
+/**
+ * Check that the port_id is valid
+ * @return true if the port id is valid, false otherwise
+ */
+bool ArtNetNode::CheckPortId(uint8_t port_id) {
+  if (port_id >= ARTNET_MAX_PORTS) {
+    OLA_WARN << "Port index of out bounds: " << static_cast<int>(port_id) <<
+      " >= " << ARTNET_MAX_PORTS;
+    return false;
+  }
+  return true;
 }
 }  // artnet
 }  // plugin

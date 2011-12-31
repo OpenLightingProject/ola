@@ -37,6 +37,7 @@
 #include "plugins/artnet/MockUdpSocket.h"
 
 
+using ola::DmxBuffer;
 using ola::network::IPV4Address;
 using ola::network::Interface;
 using ola::plugin::artnet::ArtNetNode;
@@ -50,6 +51,7 @@ using std::string;
 class ArtNetNodeTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(ArtNetNodeTest);
   CPPUNIT_TEST(testBasicBehaviour);
+  CPPUNIT_TEST(testBroadcastSendDMX);
   CPPUNIT_TEST(testTimeCode);
   CPPUNIT_TEST_SUITE_END();
 
@@ -57,6 +59,7 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
     void setUp();
 
     void testBasicBehaviour();
+    void testBroadcastSendDMX();
     void testTimeCode();
 
   private:
@@ -69,6 +72,7 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(ArtNetNodeTest);
+
 
 const uint8_t ArtNetNodeTest::POLL_MESSAGE[] = {
   'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
@@ -84,7 +88,7 @@ const uint8_t ArtNetNodeTest::POLL_REPLY_MESSAGE[] = {
   10, 0, 0, 1,
   0x36, 0x19,
   0, 0,
-  0, 2,  // subnet address
+  4, 2,  // subnet address
   0x4, 0x31,  // oem
   0,
   0xd2,
@@ -163,9 +167,14 @@ void ArtNetNodeTest::testBasicBehaviour() {
   CPPUNIT_ASSERT_EQUAL(
     string("This is the very long name"),
     node.LongName());
+  node.SetNetAddress(4);
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 4, node.NetAddress());
   node.SetSubnetAddress(2);
   CPPUNIT_ASSERT_EQUAL((uint8_t) 2, node.SubnetAddress());
+
   node.SetPortUniverse(ola::plugin::artnet::ARTNET_OUTPUT_PORT, 0, 3);
+  CPPUNIT_ASSERT(
+      !node.SetPortUniverse(ola::plugin::artnet::ARTNET_OUTPUT_PORT, 4, 3));
   CPPUNIT_ASSERT_EQUAL(
     (uint8_t) 0x23,
     node.GetPortUniverse(ola::plugin::artnet::ARTNET_OUTPUT_PORT, 0));
@@ -223,11 +232,86 @@ void ArtNetNodeTest::testBasicBehaviour() {
 
 
 /**
- * test Timecode sending works
+ * check sending DMX works.
+ */
+void ArtNetNodeTest::testBroadcastSendDMX() {
+  ola::network::Interface interface = CreateInterface();
+  ola::network::SelectServer ss;
+  MockUdpSocket *socket = new MockUdpSocket();
+  socket->SetDiscardMode(true);
+
+  ArtNetNode node(interface,
+                  &ss,
+                  true,  // always broadcast dmx
+                  20,
+                  socket);
+
+  uint8_t port_id = 1;
+  node.SetNetAddress(4);
+  node.SetSubnetAddress(2);
+  node.SetPortUniverse(ola::plugin::artnet::ARTNET_INPUT_PORT, port_id, 3);
+
+  CPPUNIT_ASSERT(node.Start());
+  socket->Verify();
+  socket->SetDiscardMode(false);
+
+  const uint8_t DMX_MESSAGE[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x50,
+    0x0, 14,
+    0,  // seq #
+    1,  // physical port
+    0x23, 4,  // subnet & net address
+    0, 6,  // dmx length
+    0, 1, 2, 3, 4, 5
+  };
+  socket->AddExpectedData(
+    DMX_MESSAGE,
+    sizeof(DMX_MESSAGE),
+    interface.bcast_address,
+    ARTNET_PORT);
+
+  DmxBuffer dmx;
+  dmx.SetFromString("0,1,2,3,4,5");
+  CPPUNIT_ASSERT(node.SendDMX(port_id, dmx));
+  socket->Verify();
+
+  // now send an odd sized dmx frame, we should pad this to a multiple of two
+  const uint8_t DMX_MESSAGE2[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x50,
+    0x0, 14,
+    1,  // seq #
+    1,  // physical port
+    0x23, 4,  // subnet & net address
+    0, 6,  // dmx length
+    0, 1, 2, 3, 4, 0
+  };
+  socket->AddExpectedData(
+    DMX_MESSAGE2,
+    sizeof(DMX_MESSAGE2),
+    interface.bcast_address,
+    ARTNET_PORT);
+  dmx.SetFromString("0,1,2,3,4");
+  CPPUNIT_ASSERT(node.SendDMX(port_id, dmx));
+  socket->Verify();
+
+  // attempt to send on a invalid port
+  CPPUNIT_ASSERT(!node.SendDMX(4, dmx));
+  socket->Verify();
+
+  // attempt to send an empty fram
+  DmxBuffer empty_buffer;
+  CPPUNIT_ASSERT(node.SendDMX(port_id, empty_buffer));
+  socket->Verify();
+}
+
+
+/**
+ * check Timecode sending works
  */
 void ArtNetNodeTest::testTimeCode() {
   ola::network::Interface interface = CreateInterface();
-
   ola::network::SelectServer ss;
   MockUdpSocket *socket = new MockUdpSocket();
   socket->SetDiscardMode(true);
@@ -249,7 +333,7 @@ void ArtNetNodeTest::testTimeCode() {
     ARTNET_PORT);
 
   TimeCode t1(ola::timecode::TIMECODE_SMPTE, 10, 20, 30, 11);
-  node.SendTimeCode(t1);
+  CPPUNIT_ASSERT(node.SendTimeCode(t1));
 
   socket->Verify();
 }

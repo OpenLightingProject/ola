@@ -273,6 +273,7 @@ class ArtNetNodeImpl {
     bool CheckInputPortState(uint8_t port_id, const string &action);
     bool CheckOutputPortState(uint8_t port_id, const string &action);
     bool CheckPortState(uint8_t port_id, const string &action, bool is_output);
+    bool CheckPortId(uint8_t port_id);
     void UpdatePortFromTodPacket(uint8_t port_id,
                                  const IPV4Address &source_address,
                                  const artnet_toddata_t &packet,
@@ -451,6 +452,8 @@ class ArtNetNode {
     ArtNetNodeImplRDMWrapper *m_wrappers[ARTNET_MAX_PORTS];
     ola::rdm::DiscoverableQueueingRDMController
         *m_controllers[ARTNET_MAX_PORTS];
+
+    bool CheckPortId(uint8_t port_id);
 };
 }  // artnet
 }  // plugin
