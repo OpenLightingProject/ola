@@ -38,6 +38,7 @@
 
 
 using ola::network::IPV4Address;
+using ola::network::Interface;
 using ola::plugin::artnet::ArtNetNode;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
@@ -63,6 +64,8 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
     static const uint8_t POLL_REPLY_MESSAGE[];
     static const uint8_t TIMECODE_MESSAGE[];
     static const uint16_t ARTNET_PORT = 6454;
+
+    Interface CreateInterface();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(ArtNetNodeTest);
@@ -128,16 +131,22 @@ void ArtNetNodeTest::setUp() {
 
 
 /**
+ * Creates a mock interface for us to use.
+ */
+Interface ArtNetNodeTest::CreateInterface() {
+  ola::network::InterfaceBuilder interface_builder;
+  CPPUNIT_ASSERT(interface_builder.SetAddress("10.0.0.1"));
+  CPPUNIT_ASSERT(interface_builder.SetSubnetMask("255.0.0.0"));
+  CPPUNIT_ASSERT(interface_builder.SetBroadcast("10.255.255.255"));
+  CPPUNIT_ASSERT(interface_builder.SetHardwareAddress("0a:0b:0c:12:34:56"));
+  return interface_builder.Construct();
+}
+
+/**
  * Check that the discovery sequence works correctly.
  */
 void ArtNetNodeTest::testBasicBehaviour() {
-  ola::network::Interface interface;
-  uint8_t mac_address[] = {0x0a, 0x0b, 0x0c, 0x12, 0x34, 0x56};
-
-  CPPUNIT_ASSERT(IPV4Address::FromString("10.0.0.1", &interface.ip_address));
-  CPPUNIT_ASSERT(
-      IPV4Address::FromString("10.255.255.255", &interface.bcast_address));
-  memcpy(&interface.hw_address, mac_address, sizeof(mac_address));
+  ola::network::Interface interface = CreateInterface();
 
   ola::network::SelectServer ss;
   MockUdpSocket *socket = new MockUdpSocket();
@@ -164,10 +173,6 @@ void ArtNetNodeTest::testBasicBehaviour() {
     (uint8_t) 0x20,
     node.GetPortUniverse(ola::plugin::artnet::ARTNET_OUTPUT_PORT, 1));
 
-  IPV4Address bcast_destination;
-  CPPUNIT_ASSERT(IPV4Address::FromString("10.255.255.255",
-                                         &bcast_destination));
-
   CPPUNIT_ASSERT(node.Start());
   socket->Verify();
   CPPUNIT_ASSERT(socket->CheckNetworkParamsMatch(true, true, 6454, true));
@@ -176,7 +181,7 @@ void ArtNetNodeTest::testBasicBehaviour() {
   socket->AddExpectedData(
     static_cast<const uint8_t*>(POLL_MESSAGE),
     sizeof(POLL_MESSAGE),
-    bcast_destination,
+    interface.bcast_address,
     ARTNET_PORT);
 
   // now we should see an unsolicted poll reply sent because conditions have
@@ -192,7 +197,7 @@ void ArtNetNodeTest::testBasicBehaviour() {
   socket->AddExpectedData(
     static_cast<uint8_t*>(expected_poll_reply_packet),
     sizeof(expected_poll_reply_packet),
-    bcast_destination,
+    interface.bcast_address,
     ARTNET_PORT);
 
   node.SetPortUniverse(ola::plugin::artnet::ARTNET_INPUT_PORT, 1, 2);
@@ -208,7 +213,7 @@ void ArtNetNodeTest::testBasicBehaviour() {
   socket->AddExpectedData(
     static_cast<const uint8_t*>(POLL_MESSAGE),
     sizeof(POLL_MESSAGE),
-    bcast_destination,
+    interface.bcast_address,
     ARTNET_PORT);
   CPPUNIT_ASSERT(node.SendPoll());
   socket->Verify();
@@ -221,13 +226,7 @@ void ArtNetNodeTest::testBasicBehaviour() {
  * test Timecode sending works
  */
 void ArtNetNodeTest::testTimeCode() {
-  ola::network::Interface interface;
-  uint8_t mac_address[] = {0x0a, 0x0b, 0x0c, 0x12, 0x34, 0x56};
-
-  CPPUNIT_ASSERT(IPV4Address::FromString("10.0.0.1", &interface.ip_address));
-  CPPUNIT_ASSERT(
-      IPV4Address::FromString("10.255.255.255", &interface.bcast_address));
-  memcpy(&interface.hw_address, mac_address, sizeof(mac_address));
+  ola::network::Interface interface = CreateInterface();
 
   ola::network::SelectServer ss;
   MockUdpSocket *socket = new MockUdpSocket();
@@ -239,10 +238,6 @@ void ArtNetNodeTest::testTimeCode() {
                   20,
                   socket);
 
-  IPV4Address bcast_destination;
-  CPPUNIT_ASSERT(IPV4Address::FromString("10.255.255.255",
-                                         &bcast_destination));
-
   CPPUNIT_ASSERT(node.Start());
   socket->Verify();
   socket->SetDiscardMode(false);
@@ -250,7 +245,7 @@ void ArtNetNodeTest::testTimeCode() {
   socket->AddExpectedData(
     TIMECODE_MESSAGE,
     sizeof(TIMECODE_MESSAGE),
-    bcast_destination,
+    interface.bcast_address,
     ARTNET_PORT);
 
   TimeCode t1(ola::timecode::TIMECODE_SMPTE, 10, 20, 30, 11);
