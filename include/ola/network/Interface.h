@@ -29,12 +29,19 @@ namespace network {
 
 enum { MAC_LENGTH = 6 };
 
+using std::string;
+
 /*
  * Represents an interface.
  */
 class Interface {
   public:
     Interface();
+    Interface(const string &name,
+              const IPV4Address &ip_address,
+              const IPV4Address &broadcast_address,
+              const IPV4Address &subnet_mask,
+              const uint8_t *hw_address);
     Interface(const Interface &other);
     Interface& operator=(const Interface &other);
     bool operator==(const Interface &other);
@@ -44,6 +51,47 @@ class Interface {
     IPV4Address bcast_address;
     IPV4Address subnet_mask;
     uint8_t hw_address[MAC_LENGTH];
+};
+
+
+/**
+ * An InterfaceBuilder, this can construct Interface objects
+ */
+class InterfaceBuilder {
+  public:
+    InterfaceBuilder();
+    ~InterfaceBuilder() {}
+
+    void SetName(const string &name) { m_name = name; }
+
+    bool SetAddress(const string &ip_address);
+    void SetAddress(const IPV4Address &ip_address) {
+      m_ip_address = ip_address;
+    }
+
+    bool SetBroadcast(const string &broadcast_address);
+    void SetBroadcast(const IPV4Address &broadcast_address) {
+      m_broadcast_address = broadcast_address;
+    }
+
+    bool SetSubnetMask(const string &mask);
+    void SetSubnetMask(const IPV4Address &mask) {
+      m_subnet_mask = mask;
+    }
+
+    bool SetHardwareAddress(const string &mac_address);
+
+    void Reset();
+    Interface Construct();
+
+  private:
+    std::string m_name;
+    IPV4Address m_ip_address;
+    IPV4Address m_broadcast_address;
+    IPV4Address m_subnet_mask;
+    uint8_t m_hw_address[MAC_LENGTH];
+
+    bool SetAddress(const string &str, IPV4Address *target);
 };
 }  // network
 }  // ola
