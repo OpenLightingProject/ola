@@ -448,9 +448,11 @@ bool ArtNetNodeImpl::SendDMX(uint8_t port_id, const DmxBuffer &buffer) {
  */
 void ArtNetNodeImpl::RunFullDiscovery(uint8_t port_id,
                                       RDMDiscoveryCallback *callback) {
-  if (!CheckInputPortState(port_id, "ArtTodControl"))
-    // TODO(simon) need to run the callback here
+  if (!CheckInputPortState(port_id, "ArtTodControl")) {
+    UIDSet uids;
+    callback->Run(uids);
     return;
+  }
 
   if (!StartDiscoveryProcess(port_id, callback))
     return;
@@ -480,9 +482,11 @@ void ArtNetNodeImpl::RunFullDiscovery(uint8_t port_id,
 void ArtNetNodeImpl::RunIncrementalDiscovery(
     uint8_t port_id,
     ola::rdm::RDMDiscoveryCallback *callback) {
-  if (!CheckInputPortState(port_id, "ArtTodRequest"))
-    // TODO(simon) need to run the callback here
+  if (!CheckInputPortState(port_id, "ArtTodRequest")) {
+    UIDSet uids;
+    callback->Run(uids);
     return;
+  }
 
   if (!StartDiscoveryProcess(port_id, callback))
     return;

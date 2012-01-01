@@ -31,6 +31,9 @@
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/SelectServer.h"
 #include "ola/network/Socket.h"
+#include "ola/rdm/RDMCommand.h"
+#include "ola/rdm/UID.h"
+#include "ola/rdm/UIDSet.h"
 #include "ola/timecode/TimeCode.h"
 #include "ola/timecode/TimeCodeEnums.h"
 #include "plugins/artnet/ArtNetNode.h"
@@ -44,6 +47,7 @@ using ola::plugin::artnet::ArtNetNode;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
+using ola::rdm::UIDSet;
 using ola::timecode::TimeCode;
 using std::string;
 
@@ -56,6 +60,9 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testReceiveDMX);
   CPPUNIT_TEST(testHTPMerge);
   CPPUNIT_TEST(testLTPMerge);
+  CPPUNIT_TEST(testControllerDiscovery);
+  CPPUNIT_TEST(testControllerIncrementalDiscovery);
+  CPPUNIT_TEST(testResponderDiscovery);
   CPPUNIT_TEST(testTimeCode);
   CPPUNIT_TEST_SUITE_END();
 
@@ -72,12 +79,19 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
     void testReceiveDMX();
     void testHTPMerge();
     void testLTPMerge();
+    void testControllerDiscovery();
+    void testControllerIncrementalDiscovery();
+    void testResponderDiscovery();
     void testTimeCode();
 
   private:
     ola::MockClock m_clock;
     ola::network::SelectServer ss;
     bool m_got_dmx;
+    bool m_discovery_done;
+    bool m_tod_flush;
+    bool m_tod_request;
+    UIDSet m_uids;
 
     Interface CreateInterface();
 
@@ -88,9 +102,21 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
       m_got_dmx = true;
     }
 
+    void DiscoveryComplete(const UIDSet &uids) {
+      m_uids = uids;
+      m_discovery_done = true;
+    }
+
+    void TodRequest() {
+      m_tod_request = true;
+    }
+
+    void Flush() {
+      m_tod_flush = true;
+    }
+
     static const uint8_t POLL_MESSAGE[];
     static const uint8_t POLL_REPLY_MESSAGE[];
-    static const uint8_t TIMECODE_MESSAGE[];
     static const uint16_t ARTNET_PORT = 6454;
 };
 
@@ -143,18 +169,12 @@ const uint8_t ArtNetNodeTest::POLL_REPLY_MESSAGE[] = {
 };
 
 
-const uint8_t ArtNetNodeTest::TIMECODE_MESSAGE[] = {
-  'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
-  0x00, 0x97,
-  0x0, 14,
-  0, 0,
-  11, 30, 20, 10, 3
-};
-
-
 void ArtNetNodeTest::setUp() {
   ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
   m_got_dmx = false;
+  m_discovery_done = false;
+  m_tod_flush = false;
+  m_tod_request = false;
 }
 
 
@@ -1045,6 +1065,461 @@ void ArtNetNodeTest::testLTPMerge() {
 
 
 /**
+ * Check the node can act as an RDM controller.
+ */
+void ArtNetNodeTest::testControllerDiscovery() {
+  ola::network::Interface interface = CreateInterface();
+  MockUdpSocket *socket = new MockUdpSocket();
+  socket->SetDiscardMode(true);
+
+  ArtNetNode node(interface,
+                  &ss,
+                  true,  // always broadcast dmx
+                  20,
+                  socket);
+
+  uint8_t port_id = 1;
+  node.SetNetAddress(4);
+  node.SetSubnetAddress(2);
+  node.SetPortUniverse(ola::plugin::artnet::ARTNET_INPUT_PORT, port_id, 3);
+
+  CPPUNIT_ASSERT(node.Start());
+  socket->Verify();
+  socket->SetDiscardMode(false);
+
+  // setup peers
+  IPV4Address peer_ip, peer_ip2;
+  ola::network::IPV4Address::FromString("10.0.0.10", &peer_ip);
+  ola::network::IPV4Address::FromString("10.0.0.11", &peer_ip2);
+
+  const uint8_t tod_control[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x82,
+    0x0, 14,
+    0, 0,
+    0, 0, 0, 0, 0, 0, 0,
+    4,  // net
+    1,  // flush
+    0x23
+  };
+
+  socket->AddExpectedData(
+    tod_control,
+    sizeof(tod_control),
+    interface.bcast_address,
+    ARTNET_PORT);
+
+  node.RunFullDiscovery(
+      port_id,
+      ola::NewSingleCallback(this, &ArtNetNodeTest::DiscoveryComplete));
+  CPPUNIT_ASSERT(!m_discovery_done);
+
+  // now advance the clock and run the select server
+  m_clock.AdvanceTime(5, 0);  // tod timeout is 4s
+  ss.RunOnce(0, 0);  // update the wake up time
+  CPPUNIT_ASSERT(m_discovery_done);
+
+  UIDSet uids;
+  CPPUNIT_ASSERT_EQUAL(uids, m_uids);
+
+  // now run discovery again, this time returning a ArtTod from a peer
+  m_discovery_done = false;
+
+  socket->AddExpectedData(
+    tod_control,
+    sizeof(tod_control),
+    interface.bcast_address,
+    ARTNET_PORT);
+
+  node.RunFullDiscovery(
+      port_id,
+      ola::NewSingleCallback(this, &ArtNetNodeTest::DiscoveryComplete));
+  CPPUNIT_ASSERT(!m_discovery_done);
+
+  // send a ArtTod
+  const uint8_t art_tod1[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x81,
+    0x0, 14,
+    1,  // rdm standard
+    1,  // first port
+    0, 0, 0, 0, 0, 0, 0,
+    4,  // net
+    0,  // full tod
+    0x23,  // universe address
+    0, 3,  // uid count
+    0,  // block count
+    3,  // uid count
+    0x7a, 0x70, 0, 0, 0, 0,
+    0x7a, 0x70, 0, 0, 0, 1,
+    0x7a, 0x70, 0, 0, 0, 2,
+  };
+
+  socket->AddReceivedData(
+      art_tod1,
+      sizeof(art_tod1),
+      peer_ip,
+      6454);
+  socket->PerformRead();
+  CPPUNIT_ASSERT(!m_discovery_done);
+
+  // now advance the clock and run the select server
+  m_clock.AdvanceTime(5, 0);  // tod timeout is 4s
+  ss.RunOnce(0, 0);  // update the wake up time
+  CPPUNIT_ASSERT(m_discovery_done);
+
+  UID uid1(0x7a70, 0);
+  UID uid2(0x7a70, 1);
+  UID uid3(0x7a70, 2);
+  uids.AddUID(uid1);
+  uids.AddUID(uid2);
+  uids.AddUID(uid3);
+  CPPUNIT_ASSERT_EQUAL(uids, m_uids);
+
+  // now run discovery again, removing one UID, and moving another from peer1
+  // to peer2
+  m_discovery_done = false;
+
+  socket->AddExpectedData(
+    tod_control,
+    sizeof(tod_control),
+    interface.bcast_address,
+    ARTNET_PORT);
+
+  node.RunFullDiscovery(
+      port_id,
+      ola::NewSingleCallback(this, &ArtNetNodeTest::DiscoveryComplete));
+  CPPUNIT_ASSERT(!m_discovery_done);
+
+  // send a ArtTod
+  const uint8_t art_tod2[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x81,
+    0x0, 14,
+    1,  // rdm standard
+    1,  // first port
+    0, 0, 0, 0, 0, 0, 0,
+    4,  // net
+    0,  // full tod
+    0x23,  // universe address
+    0, 1,  // uid count
+    0,  // block count
+    1,  // uid count
+    0x7a, 0x70, 0, 0, 0, 0,
+  };
+
+  socket->AddReceivedData(
+      art_tod2,
+      sizeof(art_tod2),
+      peer_ip,
+      6454);
+  socket->PerformRead();
+
+  const uint8_t art_tod3[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x81,
+    0x0, 14,
+    1,  // rdm standard
+    1,  // first port
+    0, 0, 0, 0, 0, 0, 0,
+    4,  // net
+    0,  // full tod
+    0x23,  // universe address
+    0, 1,  // uid count
+    0,  // block count
+    1,  // uid count
+    0x7a, 0x70, 0, 0, 0, 1,
+  };
+
+  socket->AddReceivedData(
+      art_tod3,
+      sizeof(art_tod3),
+      peer_ip2,
+      6454);
+  socket->PerformRead();
+  CPPUNIT_ASSERT(!m_discovery_done);
+
+  // now advance the clock and run the select server
+  m_clock.AdvanceTime(5, 0);  // tod timeout is 4s
+  ss.RunOnce(0, 0);  // update the wake up time
+  CPPUNIT_ASSERT(m_discovery_done);
+
+  uids.Clear();
+  uids.AddUID(uid1);
+  uids.AddUID(uid2);
+  CPPUNIT_ASSERT_EQUAL(uids, m_uids);
+
+  // finally try discovery for a invalid port id
+  m_discovery_done = false;
+  node.RunFullDiscovery(
+      4,
+      ola::NewSingleCallback(this, &ArtNetNodeTest::DiscoveryComplete));
+  CPPUNIT_ASSERT(m_discovery_done);
+  uids.Clear();
+  CPPUNIT_ASSERT_EQUAL(uids, m_uids);
+}
+
+
+/**
+ * Check that incremental discovery works
+ */
+void ArtNetNodeTest::testControllerIncrementalDiscovery() {
+  ola::network::Interface interface = CreateInterface();
+  MockUdpSocket *socket = new MockUdpSocket();
+  socket->SetDiscardMode(true);
+
+  ArtNetNode node(interface,
+                  &ss,
+                  true,  // always broadcast dmx
+                  20,
+                  socket);
+
+  uint8_t port_id = 1;
+  node.SetNetAddress(4);
+  node.SetSubnetAddress(2);
+  node.SetPortUniverse(ola::plugin::artnet::ARTNET_INPUT_PORT, port_id, 3);
+
+  CPPUNIT_ASSERT(node.Start());
+  socket->Verify();
+  socket->SetDiscardMode(false);
+
+  // setup peers
+  IPV4Address peer_ip;
+  ola::network::IPV4Address::FromString("10.0.0.10", &peer_ip);
+
+  const uint8_t tod_request[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x80,
+    0x0, 14,
+    0, 0,
+    0, 0, 0, 0, 0, 0, 0,
+    4,  // net
+    0,  // full
+    1,  // universe array size
+    0x23,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  };
+
+  socket->AddExpectedData(
+    tod_request,
+    sizeof(tod_request),
+    interface.bcast_address,
+    ARTNET_PORT);
+
+  node.RunIncrementalDiscovery(
+      port_id,
+      ola::NewSingleCallback(this, &ArtNetNodeTest::DiscoveryComplete));
+  CPPUNIT_ASSERT(!m_discovery_done);
+
+  // send a ArtTod
+  const uint8_t art_tod1[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x81,
+    0x0, 14,
+    1,  // rdm standard
+    1,  // first port
+    0, 0, 0, 0, 0, 0, 0,
+    4,  // net
+    0,  // full tod
+    0x23,  // universe address
+    0, 1,  // uid count
+    0,  // block count
+    1,  // uid count
+    0x7a, 0x70, 0, 0, 0, 0,
+  };
+
+  socket->AddReceivedData(
+      art_tod1,
+      sizeof(art_tod1),
+      peer_ip,
+      6454);
+  socket->PerformRead();
+  CPPUNIT_ASSERT(!m_discovery_done);
+
+  // now advance the clock and run the select server
+  m_clock.AdvanceTime(5, 0);  // tod timeout is 4s
+  ss.RunOnce(0, 0);  // update the wake up time
+  CPPUNIT_ASSERT(m_discovery_done);
+
+  UIDSet uids;
+  UID uid1(0x7a70, 0);
+  uids.AddUID(uid1);
+  CPPUNIT_ASSERT_EQUAL(uids, m_uids);
+
+  // finally try discovery for a invalid port id
+  m_discovery_done = false;
+  node.RunIncrementalDiscovery(
+      4,
+      ola::NewSingleCallback(this, &ArtNetNodeTest::DiscoveryComplete));
+  CPPUNIT_ASSERT(m_discovery_done);
+  uids.Clear();
+  CPPUNIT_ASSERT_EQUAL(uids, m_uids);
+}
+
+
+/**
+ * Check that we respond to Tod messages
+ */
+void ArtNetNodeTest::testResponderDiscovery() {
+  ola::network::Interface interface = CreateInterface();
+  MockUdpSocket *socket = new MockUdpSocket();
+  socket->SetDiscardMode(true);
+
+  ArtNetNode node(interface,
+                  &ss,
+                  false,
+                  20,
+                  socket);
+
+  uint8_t port_id = 1;
+  node.SetNetAddress(4);
+  node.SetSubnetAddress(2);
+  node.SetPortUniverse(ola::plugin::artnet::ARTNET_OUTPUT_PORT, port_id, 3);
+
+  DmxBuffer input_buffer;
+  node.SetDMXHandler(port_id,
+                     &input_buffer,
+                     ola::NewCallback(this, &ArtNetNodeTest::NewDmx));
+
+  CPPUNIT_ASSERT(node.Start());
+  socket->Verify();
+  socket->SetDiscardMode(false);
+
+  CPPUNIT_ASSERT(node.SetOutputPortRDMHandlers(
+      port_id,
+      ola::NewCallback(this, &ArtNetNodeTest::TodRequest),
+      ola::NewCallback(this, &ArtNetNodeTest::Flush),
+      NULL));
+
+  IPV4Address peer_ip;
+  ola::network::IPV4Address::FromString("10.0.0.10", &peer_ip);
+
+  const uint8_t tod_request[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x80,
+    0x0, 14,
+    0, 0,
+    0, 0, 0, 0, 0, 0, 0,
+    4,  // net
+    0,  // full
+    1,  // universe array size
+    0x23,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  };
+
+  CPPUNIT_ASSERT(!m_tod_request);
+  socket->AddReceivedData(
+      tod_request,
+      sizeof(tod_request),
+      peer_ip,
+      6454);
+  socket->PerformRead();
+
+  CPPUNIT_ASSERT(m_tod_request);
+
+  // now respond with a Tod
+  const uint8_t art_tod1[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x81,
+    0x0, 14,
+    1,  // rdm standard
+    2,  // first port
+    0, 0, 0, 0, 0, 0, 0,
+    4,  // net
+    0,  // full tod
+    0x23,  // universe address
+    0, 1,  // uid count
+    0,  // block count
+    1,  // uid count
+    0x7a, 0x70, 0, 0, 0, 0,
+  };
+
+  socket->AddExpectedData(
+    art_tod1,
+    sizeof(art_tod1),
+    interface.bcast_address,
+    ARTNET_PORT);
+
+  UIDSet uids;
+  UID uid1(0x7a70, 0);
+  uids.AddUID(uid1);
+  CPPUNIT_ASSERT(node.SendTod(port_id, uids));
+
+  // try a tod request a universe that doesn't match ours
+  m_tod_request = false;
+  const uint8_t tod_request2[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x80,
+    0x0, 14,
+    0, 0,
+    0, 0, 0, 0, 0, 0, 0,
+    4,  // net
+    0,  // full
+    2,  // universe array size
+    0x13, 0x24,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  };
+
+  CPPUNIT_ASSERT(!m_tod_request);
+  socket->AddReceivedData(
+      tod_request2,
+      sizeof(tod_request2),
+      peer_ip,
+      6454);
+  socket->PerformRead();
+  CPPUNIT_ASSERT(!m_tod_request);
+
+  // now check TodControl
+  CPPUNIT_ASSERT(!m_tod_flush);
+
+  const uint8_t tod_control[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x82,
+    0x0, 14,
+    0, 0,
+    0, 0, 0, 0, 0, 0, 0,
+    4,  // net
+    1,  // flush
+    0x23
+  };
+
+  socket->AddReceivedData(
+      tod_control,
+      sizeof(tod_control),
+      peer_ip,
+      6454);
+  socket->PerformRead();
+
+  CPPUNIT_ASSERT(m_tod_flush);
+
+  // try a tod control a universe that doesn't match ours
+  m_tod_flush = false;
+  CPPUNIT_ASSERT(!m_tod_flush);
+  const uint8_t tod_control2[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x82,
+    0x0, 14,
+    0, 0,
+    0, 0, 0, 0, 0, 0, 0,
+    4,  // net
+    1,  // flush
+    0x13
+  };
+
+  socket->AddReceivedData(
+      tod_control2,
+      sizeof(tod_control2),
+      peer_ip,
+      6454);
+  socket->PerformRead();
+  CPPUNIT_ASSERT(!m_tod_flush);
+}
+
+
+/**
  * Check Timecode sending works
  */
 void ArtNetNodeTest::testTimeCode() {
@@ -1062,9 +1537,17 @@ void ArtNetNodeTest::testTimeCode() {
   socket->Verify();
   socket->SetDiscardMode(false);
 
+  const uint8_t timecode_message[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x97,
+    0x0, 14,
+    0, 0,
+    11, 30, 20, 10, 3
+  };
+
   socket->AddExpectedData(
-    TIMECODE_MESSAGE,
-    sizeof(TIMECODE_MESSAGE),
+    timecode_message,
+    sizeof(timecode_message),
     interface.bcast_address,
     ARTNET_PORT);
 
