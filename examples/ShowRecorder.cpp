@@ -104,7 +104,7 @@ void ShowRecorder::NewFrame(unsigned int universe,
   }
 
   ola::TimeStamp now;
-  ola::Clock::CurrentTime(&now);
+  m_clock.CurrentTime(&now);
   m_saver.NewFrame(now, universe, data);
 }
 

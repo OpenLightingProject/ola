@@ -18,6 +18,7 @@
  *  Copyright (C) 2011 Simon Newton
  */
 
+#include <ola/Clock.h>
 #include <ola/DmxBuffer.h>
 #include <ola/OlaClientWrapper.h>
 #include <string>
@@ -48,6 +49,7 @@ class ShowRecorder {
     ola::OlaCallbackClientWrapper m_client;
     ShowSaver m_saver;
     std::vector<unsigned int> m_universes;
+    ola::Clock m_clock;
 
     void NewFrame(unsigned int universe,
                   const ola::DmxBuffer &data,

@@ -88,7 +88,7 @@ Universe *UniverseStore::GetUniverseOrCreate(unsigned int universe_id) {
   Universe *universe = GetUniverse(universe_id);
 
   if (!universe) {
-    universe = new Universe(universe_id, this, m_export_map);
+    universe = new Universe(universe_id, this, m_export_map, &m_clock);
 
     if (universe) {
       pair<unsigned int, Universe*> pair(universe_id, universe);

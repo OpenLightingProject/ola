@@ -60,6 +60,10 @@ using ola::thread::INVALID_TIMEOUT;
 using ola::thread::timeout_id;
 using std::max;
 
+
+
+
+
 /*
  * Constructor
  * @param export_map an ExportMap to update
@@ -67,15 +71,15 @@ using std::max;
  * time.
  */
 SelectServer::SelectServer(ExportMap *export_map,
-                           TimeStamp *wake_up_time)
+                           Clock *clock)
     : m_terminate(false),
       m_is_running(false),
-      m_free_wake_up_time(false),
       m_poll_interval(POLL_INTERVAL_SECOND, POLL_INTERVAL_USECOND),
       m_export_map(export_map),
       m_loop_iterations(NULL),
       m_loop_time(NULL),
-      m_wake_up_time(wake_up_time) {
+      m_clock(clock),
+      m_free_clock(false) {
 
   if (m_export_map) {
     m_export_map->GetIntegerVar(K_READ_DESCRIPTOR_VAR);
@@ -84,9 +88,9 @@ SelectServer::SelectServer(ExportMap *export_map,
     m_loop_iterations = m_export_map->GetCounterVar(K_LOOP_COUNT);
   }
 
-  if (!m_wake_up_time) {
-    m_wake_up_time = new TimeStamp();
-    m_free_wake_up_time = true;
+  if (!m_clock) {
+    m_clock = new Clock;
+    m_free_clock = true;
   }
 
   // TODO(simon): this should really be in an Init() method.
@@ -102,8 +106,8 @@ SelectServer::SelectServer(ExportMap *export_map,
  */
 SelectServer::~SelectServer() {
   UnregisterAll();
-  if (m_free_wake_up_time)
-    delete m_wake_up_time;
+  if (m_free_clock)
+    delete m_clock;
 }
 
 
@@ -315,7 +319,7 @@ timeout_id SelectServer::RegisterRepeatingTimeout(
   if (m_export_map)
     (*m_export_map->GetIntegerVar(K_TIMER_VAR))++;
 
-  Event *event = new RepeatingEvent(ms, closure);
+  Event *event = new RepeatingEvent(ms, m_clock, closure);
   m_events.push(event);
   return event;
 }
@@ -337,7 +341,7 @@ timeout_id SelectServer::RegisterSingleTimeout(
   if (m_export_map)
     (*m_export_map->GetIntegerVar(K_TIMER_VAR))++;
 
-  Event *event = new SingleEvent(ms, closure);
+  Event *event = new SingleEvent(ms, m_clock, closure);
   m_events.push(event);
   return event;
 }
@@ -406,15 +410,15 @@ bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
   maxsd = 0;
   FD_ZERO(&r_fds);
   FD_ZERO(&w_fds);
-  Clock::CurrentTime(&now);
+  m_clock->CurrentTime(&now);
   now = CheckTimeouts(now);
 
   // adding descriptors should be the last thing we do, they may have changed
   // due to timeouts above.
   AddDescriptorsToSet(&r_fds, &w_fds, &maxsd);
 
-  if (m_wake_up_time->IsSet()) {
-    TimeInterval loop_time = now - *m_wake_up_time;
+  if (m_wake_up_time.IsSet()) {
+    TimeInterval loop_time = now - m_wake_up_time;
     OLA_DEBUG << "ss process time was " << loop_time.ToString();
     if (m_loop_time)
       (*m_loop_time) += loop_time.AsInt();
@@ -437,7 +441,7 @@ bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
   switch (select(maxsd + 1, &r_fds, &w_fds, NULL, &tv)) {
     case 0:
       // timeout
-      Clock::CurrentTime(m_wake_up_time);
+      m_clock->CurrentTime(&m_wake_up_time);
       return true;
     case -1:
       if (errno == EINTR)
@@ -445,10 +449,10 @@ bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
       OLA_WARN << "select() error, " << strerror(errno);
       return false;
     default:
-      Clock::CurrentTime(m_wake_up_time);
+      m_clock->CurrentTime(&m_wake_up_time);
       CheckDescriptors(&r_fds, &w_fds);
-      Clock::CurrentTime(m_wake_up_time);
-      CheckTimeouts(*m_wake_up_time);
+      m_clock->CurrentTime(&m_wake_up_time);
+      CheckTimeouts(m_wake_up_time);
   }
   return true;
 }
@@ -630,7 +634,7 @@ TimeStamp SelectServer::CheckTimeouts(const TimeStamp &current_time) {
       if (m_export_map)
         (*m_export_map->GetIntegerVar(K_TIMER_VAR))--;
     }
-    Clock::CurrentTime(&now);
+    m_clock->CurrentTime(&now);
   }
   return now;
 }

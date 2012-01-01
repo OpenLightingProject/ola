@@ -42,90 +42,6 @@ using std::priority_queue;
 using std::string;
 
 
-/*
- * These are timer events, they are used inside the SelectServer class
- */
-class Event {
-  public:
-    explicit Event(unsigned int ms):
-      m_interval(ms * 1000) {
-      TimeStamp now;
-      Clock::CurrentTime(&now);
-      m_next = now + m_interval;
-    }
-    virtual ~Event() {}
-    virtual bool Trigger() = 0;
-
-    void UpdateTime(const TimeStamp &now) {
-      m_next = now + m_interval;
-    }
-
-    TimeStamp NextTime() const { return m_next; }
-
-  private:
-    TimeInterval m_interval;
-    TimeStamp m_next;
-};
-
-
-// An event that only happens once
-class SingleEvent: public Event {
-  public:
-    SingleEvent(unsigned int ms, ola::BaseCallback0<void> *closure):
-      Event(ms),
-      m_closure(closure) {
-    }
-
-    virtual ~SingleEvent() {
-      if (m_closure)
-        delete m_closure;
-    }
-
-    bool Trigger() {
-      if (m_closure) {
-        m_closure->Run();
-        // it's deleted itself at this point
-        m_closure = NULL;
-      }
-      return false;
-    }
-
-  private:
-    ola::BaseCallback0<void> *m_closure;
-};
-
-
-/*
- * An event that occurs more than once. The closure can return false to
- * indicate that it should not be called again.
- */
-class RepeatingEvent: public Event {
-  public:
-    RepeatingEvent(unsigned int ms, ola::BaseCallback0<bool> *closure):
-      Event(ms),
-      m_closure(closure) {
-    }
-    ~RepeatingEvent() {
-      delete m_closure;
-    }
-    bool Trigger() {
-      if (!m_closure)
-        return false;
-      return m_closure->Run();
-    }
-
-  private:
-    ola::BaseCallback0<bool> *m_closure;
-};
-
-
-struct ltevent {
-  bool operator()(Event *e1, Event *e2) const {
-    return e1->NextTime() > e2->NextTime();
-  }
-};
-
-
 /**
  * This is the core of the event driven system. The SelectServer is responsible
  * for invoking Callbacks when events occur. All methods except Execute() and
@@ -136,11 +52,11 @@ class SelectServer: public SelectServerInterface {
     enum Direction {READ, WRITE};
 
     SelectServer(ExportMap *export_map = NULL,
-                 TimeStamp *wake_up_time = NULL);
+                 Clock *clock = NULL);
     ~SelectServer();
 
     bool IsRunning() const { return !m_terminate; }
-    const TimeStamp *WakeUpTime() const { return m_wake_up_time; }
+    const TimeStamp *WakeUpTime() const { return &m_wake_up_time; }
 
     void Terminate();
 
@@ -177,6 +93,86 @@ class SelectServer: public SelectServerInterface {
     static const char K_LOOP_COUNT[];
 
   private :
+    /*
+     * These are timer events, they are used inside the SelectServer class
+     */
+    class Event {
+      public:
+        explicit Event(unsigned int ms, const Clock *clock):
+          m_interval(ms * 1000) {
+          TimeStamp now;
+          clock->CurrentTime(&now);
+          m_next = now + m_interval;
+        }
+        virtual ~Event() {}
+        virtual bool Trigger() = 0;
+
+        void UpdateTime(const TimeStamp &now) {
+          m_next = now + m_interval;
+        }
+
+        TimeStamp NextTime() const { return m_next; }
+
+      private:
+        TimeInterval m_interval;
+        TimeStamp m_next;
+    };
+
+    // An event that only happens once
+    class SingleEvent: public Event {
+      public:
+        SingleEvent(unsigned int ms,
+                    const Clock *clock,
+                    ola::BaseCallback0<void> *closure):
+          Event(ms, clock),
+          m_closure(closure) {
+        }
+
+        virtual ~SingleEvent() {
+          if (m_closure)
+            delete m_closure;
+        }
+
+        bool Trigger() {
+          if (m_closure) {
+            m_closure->Run();
+            // it's deleted itself at this point
+            m_closure = NULL;
+          }
+          return false;
+        }
+
+      private:
+        ola::BaseCallback0<void> *m_closure;
+    };
+
+
+    /*
+     * An event that occurs more than once. The closure can return false to
+     * indicate that it should not be called again.
+     */
+    class RepeatingEvent: public Event {
+      public:
+        RepeatingEvent(unsigned int ms,
+                       const Clock *clock,
+                       ola::BaseCallback0<bool> *closure):
+          Event(ms, clock),
+          m_closure(closure) {
+        }
+        ~RepeatingEvent() {
+          delete m_closure;
+        }
+        bool Trigger() {
+          if (!m_closure)
+            return false;
+          return m_closure->Run();
+        }
+
+      private:
+        ola::BaseCallback0<bool> *m_closure;
+    };
+
+
     typedef struct {
       ConnectedDescriptor *descriptor;
       bool delete_on_close;
@@ -190,6 +186,12 @@ class SelectServer: public SelectServerInterface {
       }
     };
 
+    struct ltevent {
+      bool operator()(Event *e1, Event *e2) const {
+        return e1->NextTime() > e2->NextTime();
+      }
+    };
+
     typedef std::set<ReadFileDescriptor*> ReadDescriptorSet;
     typedef std::set<WriteFileDescriptor*> WriteDescriptorSet;
     typedef std::set<connected_descriptor_t, connected_descriptor_t_lt>
@@ -197,7 +199,6 @@ class SelectServer: public SelectServerInterface {
     typedef std::set<ola::Callback0<void>*> LoopClosureSet;
 
     bool m_terminate, m_is_running;
-    bool m_free_wake_up_time;
     TimeInterval m_poll_interval;
     unsigned int m_next_id;
     ReadDescriptorSet m_read_descriptors;
@@ -210,7 +211,9 @@ class SelectServer: public SelectServerInterface {
     event_queue_t m_events;
     CounterVariable *m_loop_iterations;
     CounterVariable *m_loop_time;
-    TimeStamp *m_wake_up_time;
+    TimeStamp m_wake_up_time;
+    Clock *m_clock;
+    bool m_free_clock;
     LoopClosureSet m_loop_closures;
     std::queue<ola::BaseCallback0<void>*> m_incoming_queue;
     ola::thread::Mutex m_incoming_mutex;

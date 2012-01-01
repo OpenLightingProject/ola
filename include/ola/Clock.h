@@ -15,7 +15,7 @@
  *
  * Timing.h
  * Interface for the Clock & TimeStamp classes
- * Copyright (C) 2005-2010 Simon Newton
+ * Copyright (C) 2005-2012 Simon Newton
  */
 
 #ifndef INCLUDE_OLA_CLOCK_H_
@@ -75,6 +75,13 @@ class TimeInterval {
       return *this;
     }
 
+    TimeInterval& operator+=(const TimeInterval& other) {
+      if (this != &other) {
+        timeradd(&m_interval, &other.m_interval, &m_interval);
+      }
+      return *this;
+    }
+
     bool operator==(const TimeInterval &other) const {
       return timercmp(&m_interval, &other.m_interval, ==);
     }
@@ -83,8 +90,20 @@ class TimeInterval {
       return !(*this == other);
     }
 
+    bool operator>(const TimeInterval &other) const {
+      return timercmp(&m_interval, &other.m_interval, >);
+    }
+
+    bool operator>=(const TimeInterval &other) const {
+      return timercmp(&m_interval, &other.m_interval, >=);
+    }
+
     bool operator<(const TimeInterval &other) const {
       return timercmp(&m_interval, &other.m_interval, <);
+    }
+
+    bool operator<=(const TimeInterval &other) const {
+      return timercmp(&m_interval, &other.m_interval, <=);
     }
 
     std::string ToString() const {
@@ -181,17 +200,20 @@ class TimeStamp {
       return timercmp(&m_tv, &other.m_tv, >);
     }
 
+    bool operator>=(const TimeStamp &other) const {
+      return timercmp(&m_tv, &other.m_tv, >=);
+    }
+
     bool operator<(const TimeStamp &other) const {
       return timercmp(&m_tv, &other.m_tv, <);
     }
 
+    bool operator<=(const TimeStamp &other) const {
+      return timercmp(&m_tv, &other.m_tv, <=);
+    }
+
     TimeStamp &operator+=(const TimeInterval &interval) {
-      m_tv.tv_sec = m_tv.tv_sec + interval.m_interval.tv_sec;
-      m_tv.tv_usec = m_tv.tv_usec + interval.m_interval.tv_usec;
-      if (m_tv.tv_usec >= USEC_IN_SECONDS) {
-        m_tv.tv_sec++;
-        m_tv.tv_usec -= USEC_IN_SECONDS;
-      }
+      timeradd(&m_tv, &interval.m_interval, &m_tv);
       return *this;
     }
 
@@ -236,6 +258,9 @@ class TimeStamp {
   private:
     struct timeval m_tv;
 
+    /**
+     * We don't use timersub here because windows doesn't define it.
+     */
     void TimerSub(const struct timeval &tv1, const struct timeval &tv2,
                   struct timeval *result) const {
       result->tv_sec = tv1.tv_sec - tv2.tv_sec;
@@ -253,11 +278,42 @@ class TimeStamp {
  */
 class Clock {
   public:
-    static void CurrentTime(TimeStamp *timestamp) {
+    Clock() {}
+    virtual ~Clock() {}
+    virtual void CurrentTime(TimeStamp *timestamp) const {
       struct timeval tv;
       gettimeofday(&tv, NULL);
       *timestamp = tv;
     }
+
+  private:
+    Clock(const Clock &other);
+    Clock& operator=(const Clock &other);
+};
+
+
+/**
+ * A Mock Clock used for testing
+ */
+class MockClock: public Clock {
+  public:
+    MockClock()
+        : Clock() {
+    }
+
+    // Advance the time
+    void AdvanceTime(const TimeInterval &interval) {
+      m_offset += interval;
+    }
+
+    void CurrentTime(TimeStamp *timestamp) const {
+      struct timeval tv;
+      gettimeofday(&tv, NULL);
+      *timestamp = tv;
+      *timestamp += m_offset;
+    }
+  private:
+    TimeInterval m_offset;
 };
 }  // ola
 #endif  // INCLUDE_OLA_CLOCK_H_
