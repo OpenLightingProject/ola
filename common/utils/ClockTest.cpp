@@ -149,7 +149,7 @@ void ClockTest::testMockClock() {
   CPPUNIT_ASSERT(one_second <= (second - first));
 
   TimeInterval ten_point_five_seconds(10, 500000);
-  clock.AdvanceTime(ten_point_five_seconds);
+  clock.AdvanceTime(10, 500000);
 
   TimeStamp third;
   clock.CurrentTime(&third);

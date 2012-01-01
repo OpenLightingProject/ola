@@ -306,6 +306,11 @@ class MockClock: public Clock {
       m_offset += interval;
     }
 
+    void AdvanceTime(unsigned int sec, unsigned int usec) {
+      TimeInterval interval(sec, usec);
+      m_offset += interval;
+    }
+
     void CurrentTime(TimeStamp *timestamp) const {
       struct timeval tv;
       gettimeofday(&tv, NULL);
