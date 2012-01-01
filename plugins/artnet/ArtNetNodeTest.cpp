@@ -54,6 +54,7 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testBroadcastSendDMX);
   CPPUNIT_TEST(testNonBroadcastSendDMX);
   CPPUNIT_TEST(testReceiveDMX);
+  CPPUNIT_TEST(testDMXMerge);
   CPPUNIT_TEST(testTimeCode);
   CPPUNIT_TEST_SUITE_END();
 
@@ -68,6 +69,7 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
     void testBroadcastSendDMX();
     void testNonBroadcastSendDMX();
     void testReceiveDMX();
+    void testDMXMerge();
     void testTimeCode();
 
   private:
@@ -611,6 +613,236 @@ void ArtNetNodeTest::testReceiveDMX() {
   socket->PerformRead();
   CPPUNIT_ASSERT(m_got_dmx);
   CPPUNIT_ASSERT_EQUAL(string("0,1,2,3,4,5"), input_buffer.ToString());
+}
+
+
+/**
+ * Check that merging works
+ */
+void ArtNetNodeTest::testDMXMerge() {
+  ola::network::Interface interface = CreateInterface();
+  MockUdpSocket *socket = new MockUdpSocket();
+  socket->SetDiscardMode(true);
+
+  IPV4Address peer_ip, peer_ip2, peer_ip3;
+  ola::network::IPV4Address::FromString("10.0.0.10", &peer_ip);
+  ola::network::IPV4Address::FromString("10.0.0.11", &peer_ip2);
+  ola::network::IPV4Address::FromString("10.0.0.12", &peer_ip3);
+
+  ArtNetNode node(interface,
+                  &ss,
+                  false,
+                  20,
+                  socket);
+
+  uint8_t port_id = 1;
+  node.SetNetAddress(4);
+  node.SetSubnetAddress(2);
+  node.SetPortUniverse(ola::plugin::artnet::ARTNET_OUTPUT_PORT, port_id, 3);
+
+  DmxBuffer input_buffer;
+  node.SetDMXHandler(port_id,
+                     &input_buffer,
+                     ola::NewCallback(this, &ArtNetNodeTest::NewDmx));
+
+  CPPUNIT_ASSERT(node.Start());
+  socket->Verify();
+  socket->SetDiscardMode(false);
+
+  // 'receive' a DMX message from the first peer
+  uint8_t source1_message1[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x50,
+    0x0, 14,
+    0,  // seq #
+    1,  // physical port
+    0x23, 4,  // subnet & net address
+    0, 6,  // dmx length
+    0, 1, 2, 3, 4, 5
+  };
+
+  socket->AddReceivedData(
+      source1_message1,
+      sizeof(source1_message1),
+      peer_ip,
+      6454);
+  CPPUNIT_ASSERT(!m_got_dmx);
+  ss.RunOnce(0, 0);  // update the wake up time
+  socket->PerformRead();
+  CPPUNIT_ASSERT(m_got_dmx);
+  CPPUNIT_ASSERT_EQUAL(string("0,1,2,3,4,5"), input_buffer.ToString());
+
+  // receive a message from a second peer
+  uint8_t source2_message1[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x50,
+    0x0, 14,
+    0,  // seq #
+    1,  // physical port
+    0x23, 4,  // subnet & net address
+    0, 6,  // dmx length
+    5, 4, 3, 2, 1, 0
+  };
+
+  socket->AddReceivedData(
+      source2_message1,
+      sizeof(source2_message1),
+      peer_ip2,
+      6454);
+  m_got_dmx = false;
+  CPPUNIT_ASSERT(!m_got_dmx);
+
+  // this will engage merge mode, so the node will send an ArtPolReply
+  uint8_t poll_reply_message[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x21,
+    10, 0, 0, 1,
+    0x36, 0x19,
+    0, 0,
+    4, 2,  // subnet address
+    0x4, 0x31,  // oem
+    0,
+    0xd2,
+    0x70, 0x7a,  // esta
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // short name
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // long name
+    '#', '0', '0', '0', '1', ' ', '[', '1', ']', ' ', 'O', 'L', 'A',
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0,  // node report
+    0, 4,  // num ports
+    0xc0, 0xc0, 0xc0, 0xc0,
+    8, 8, 8, 8,
+    0, 0x88, 0, 0,  // 0x88 indicates we're merging data
+    0x20, 0x20, 0x20, 0x20,  // swin
+    0x20, 0x23, 0x20, 0x20,  // swout
+    0, 0, 0, 0, 0, 0, 0,  // video, macro, remote, spare, style
+    0xa, 0xb, 0xc, 0x12, 0x34, 0x56,  // mac address
+    0xa, 0x0, 0x0, 0x1,
+    0,
+    8,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0  // filler
+  };
+
+  socket->AddExpectedData(
+    static_cast<const uint8_t*>(poll_reply_message),
+    sizeof(poll_reply_message),
+    interface.bcast_address,
+    ARTNET_PORT);
+
+  ss.RunOnce(0, 0);  // update the wake up time
+  socket->PerformRead();
+  CPPUNIT_ASSERT(m_got_dmx);
+  CPPUNIT_ASSERT_EQUAL(string("5,4,3,3,4,5"), input_buffer.ToString());
+
+  // send a packet from a third source, this shouldn't result in any new dmx
+  const uint8_t source3_message1[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x50,
+    0x0, 14,
+    0,  // seq #
+    1,  // physical port
+    0x23, 4,  // subnet & net address
+    0, 4,  // dmx length
+    255, 255, 255, 0
+  };
+  socket->AddReceivedData(
+      source3_message1,
+      sizeof(source3_message1),
+      peer_ip3,
+      6454);
+  m_got_dmx = false;
+  CPPUNIT_ASSERT(!m_got_dmx);
+  ss.RunOnce(0, 0);  // update the wake up time
+  socket->PerformRead();
+  CPPUNIT_ASSERT(!m_got_dmx);
+  CPPUNIT_ASSERT_EQUAL(string("5,4,3,3,4,5"), input_buffer.ToString());
+
+  // now send another packet from the first source
+  uint8_t source1_message2[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x50,
+    0x0, 14,
+    1,  // seq #
+    1,  // physical port
+    0x23, 4,  // subnet & net address
+    0, 8,  // dmx length
+    10, 11, 12, 1, 2, 1, 0, 0
+  };
+
+  socket->AddReceivedData(
+      source1_message2,
+      sizeof(source1_message2),
+      peer_ip,
+      6454);
+  m_got_dmx = false;
+  CPPUNIT_ASSERT(!m_got_dmx);
+  ss.RunOnce(0, 0);  // update the wake up time
+  socket->PerformRead();
+  CPPUNIT_ASSERT(m_got_dmx);
+  CPPUNIT_ASSERT_EQUAL(string("10,11,12,2,2,1,0,0"),
+                       input_buffer.ToString());
+
+
+  // now advance the clock by half the merge timeout
+  m_clock.AdvanceTime(5, 0);
+
+  // now send another packet from the first source
+  uint8_t source1_message3[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x50,
+    0x0, 14,
+    2,  // seq #
+    1,  // physical port
+    0x23, 4,  // subnet & net address
+    0, 8,  // dmx length
+    0, 1, 2, 3, 4, 5, 7, 9
+  };
+
+  socket->AddReceivedData(
+      source1_message3,
+      sizeof(source1_message3),
+      peer_ip,
+      6454);
+  m_got_dmx = false;
+  CPPUNIT_ASSERT(!m_got_dmx);
+  ss.RunOnce(0, 0);  // update the wake up time
+  socket->PerformRead();
+  CPPUNIT_ASSERT(m_got_dmx);
+  CPPUNIT_ASSERT_EQUAL(string("5,4,3,3,4,5,7,9"),
+                       input_buffer.ToString());
+
+  // now advance the clock so the second source times out
+  m_clock.AdvanceTime(6, 0);
+
+  // now send another packet from the first source
+  uint8_t source1_message4[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x50,
+    0x0, 14,
+    3,  // seq #
+    1,  // physical port
+    0x23, 4,  // subnet & net address
+    0, 8,  // dmx length
+    0, 1, 2, 3, 4, 5, 7, 9
+  };
+
+  socket->AddReceivedData(
+      source1_message4,
+      sizeof(source1_message4),
+      peer_ip,
+      6454);
+  m_got_dmx = false;
+  CPPUNIT_ASSERT(!m_got_dmx);
+  ss.RunOnce(0, 0);  // update the wake up time
+  socket->PerformRead();
+  CPPUNIT_ASSERT(m_got_dmx);
+  CPPUNIT_ASSERT_EQUAL(string("0,1,2,3,4,5,7,9"),
+                       input_buffer.ToString());
 }
 
 
