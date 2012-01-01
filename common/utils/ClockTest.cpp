@@ -28,17 +28,22 @@ class ClockTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(ClockTest);
   CPPUNIT_TEST(testTimeStamp);
   CPPUNIT_TEST(testTimeInterval);
+  CPPUNIT_TEST(testClock);
+  CPPUNIT_TEST(testMockClock);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void testTimeStamp();
     void testTimeInterval();
+    void testClock();
+    void testMockClock();
 };
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION(ClockTest);
 
 using ola::Clock;
+using ola::MockClock;
 using ola::TimeStamp;
 using ola::TimeInterval;
 using std::string;
@@ -48,12 +53,13 @@ using std::string;
  * Test the TimeStamp class
  */
 void ClockTest::testTimeStamp() {
+  Clock clock;
   TimeStamp timestamp, timestamp2;
   CPPUNIT_ASSERT(!timestamp.IsSet());
   CPPUNIT_ASSERT(!timestamp2.IsSet());
 
   // test assignment & copy constructor
-  Clock::CurrentTime(&timestamp);
+  clock.CurrentTime(&timestamp);
   CPPUNIT_ASSERT(timestamp.IsSet());
   timestamp2 = timestamp;
   CPPUNIT_ASSERT(timestamp2.IsSet());
@@ -66,7 +72,7 @@ void ClockTest::testTimeStamp() {
   // Windows only seems to have ms resolution, to make the tests pass we need
   // to sleep here
   usleep(1000);
-  Clock::CurrentTime(&timestamp3);
+  clock.CurrentTime(&timestamp3);
   CPPUNIT_ASSERT(timestamp3 != timestamp);
   CPPUNIT_ASSERT(timestamp3 > timestamp);
   CPPUNIT_ASSERT(timestamp < timestamp3);
@@ -107,4 +113,46 @@ void ClockTest::testTimeInterval() {
   TimeInterval interval5(1, 600000);  // 1.6s
   CPPUNIT_ASSERT(interval4 != interval5);
   CPPUNIT_ASSERT(interval4 < interval5);
+}
+
+
+/**
+ * test the clock
+ */
+void ClockTest::testClock() {
+  Clock clock;
+  TimeStamp first;
+  clock.CurrentTime(&first);
+  sleep(1);
+
+  TimeStamp second;
+  clock.CurrentTime(&second);
+  CPPUNIT_ASSERT(first < second);
+}
+
+
+/**
+ * test the Mock Clock
+ */
+void ClockTest::testMockClock() {
+  MockClock clock;
+
+  TimeStamp first;
+  clock.CurrentTime(&first);
+
+  TimeInterval one_second(1, 0);
+  clock.AdvanceTime(one_second);
+
+  TimeStamp second;
+  clock.CurrentTime(&second);
+  CPPUNIT_ASSERT(first < second);
+  CPPUNIT_ASSERT(one_second <= (second - first));
+
+  TimeInterval ten_point_five_seconds(10, 500000);
+  clock.AdvanceTime(ten_point_five_seconds);
+
+  TimeStamp third;
+  clock.CurrentTime(&third);
+  CPPUNIT_ASSERT(second < third);
+  CPPUNIT_ASSERT(ten_point_five_seconds <= (third - second));
 }

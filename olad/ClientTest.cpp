@@ -47,6 +47,9 @@ class ClientTest: public CppUnit::TestFixture {
   public:
     void testSendDMX();
     void testGetSetDMX();
+
+  private:
+    ola::Clock m_clock;
 };
 
 
@@ -109,7 +112,7 @@ void ClientTest::testGetSetDMX() {
   Client client(NULL);
 
   ola::TimeStamp timestamp;
-  ola::Clock::CurrentTime(&timestamp);
+  m_clock.CurrentTime(&timestamp);
   ola::DmxSource source(buffer, timestamp, 100);
 
   // check get/set works

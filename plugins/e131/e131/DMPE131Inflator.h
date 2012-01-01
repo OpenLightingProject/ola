@@ -73,6 +73,7 @@ class DMPE131Inflator: public DMPInflator {
     std::map<unsigned int, universe_handler> m_handlers;
     class E131Layer *m_e131_layer;
     bool m_ignore_preview;
+    ola::Clock m_clock;
 
     bool TrackSourceIfRequired(universe_handler *universe_data,
                                const HeaderSet &headers,

@@ -39,6 +39,9 @@ class PortTest: public CppUnit::TestFixture {
   public:
     void testOutputPortPriorities();
     void testInputPortPriorities();
+
+  private:
+    Clock m_clock;
 };
 
 
@@ -94,7 +97,7 @@ void PortTest::testInputPortPriorities() {
   port_manager.PatchPort(&input_port, universe_id);
 
   ola::DmxBuffer buffer("foo bar baz");
-  Clock::CurrentTime(&time_stamp);
+  m_clock.CurrentTime(&time_stamp);
   input_port.WriteDMX(buffer);
   input_port.DmxChanged();
 
@@ -108,7 +111,7 @@ void PortTest::testInputPortPriorities() {
   uint8_t new_priority = 120;
   port_manager.SetPriorityOverride(&input_port, new_priority);
 
-  Clock::CurrentTime(&time_stamp);
+  m_clock.CurrentTime(&time_stamp);
   input_port.WriteDMX(buffer);
   input_port.DmxChanged();
   CPPUNIT_ASSERT_EQUAL(new_priority, universe->ActivePriority());
@@ -116,7 +119,7 @@ void PortTest::testInputPortPriorities() {
   new_priority = 0;
   port_manager.SetPriorityOverride(&input_port, new_priority);
 
-  Clock::CurrentTime(&time_stamp);
+  m_clock.CurrentTime(&time_stamp);
   input_port.WriteDMX(buffer);
   input_port.DmxChanged();
   CPPUNIT_ASSERT_EQUAL(new_priority, universe->ActivePriority());
@@ -128,13 +131,13 @@ void PortTest::testInputPortPriorities() {
 
   // the default mode is inherit
   input_port2.SetInheritedPriority(99);
-  Clock::CurrentTime(&time_stamp);
+  m_clock.CurrentTime(&time_stamp);
   input_port2.WriteDMX(buffer);
   input_port2.DmxChanged();
   CPPUNIT_ASSERT_EQUAL((uint8_t) 99, universe->ActivePriority());
 
   input_port2.SetInheritedPriority(123);
-  Clock::CurrentTime(&time_stamp);
+  m_clock.CurrentTime(&time_stamp);
   input_port2.WriteDMX(buffer);
   input_port2.DmxChanged();
   CPPUNIT_ASSERT_EQUAL((uint8_t) 123, universe->ActivePriority());
@@ -142,7 +145,7 @@ void PortTest::testInputPortPriorities() {
   // now try override mode
   new_priority = 108;
   port_manager.SetPriorityOverride(&input_port2, new_priority);
-  Clock::CurrentTime(&time_stamp);
+  m_clock.CurrentTime(&time_stamp);
   input_port2.WriteDMX(buffer);
   input_port2.DmxChanged();
   CPPUNIT_ASSERT_EQUAL(new_priority,  universe->ActivePriority());
