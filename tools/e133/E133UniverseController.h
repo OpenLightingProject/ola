@@ -129,6 +129,7 @@ class E133UniverseController: public ola::rdm::RDMControllerInterface,
     unsigned int m_universe;
     E133RequestContainer m_requests;
     uid_state m_squawk_state;
+    ola::Clock m_clock;
 
     bool PackRDMRequest(const ola::rdm::RDMRequest *request,
                         uint8_t **rdm_data,

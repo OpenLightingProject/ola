@@ -124,7 +124,7 @@ bool MockUdpSocket::RecvFrom(uint8_t *buffer,
   CPPUNIT_ASSERT(m_received_data.size());
   const received_data &new_data = m_received_data.front();
 
-  CPPUNIT_ASSERT(*data_read >= new_data.size);
+  CPPUNIT_ASSERT(static_cast<unsigned int>(*data_read) >= new_data.size);
   unsigned int size = std::min(new_data.size,
                                static_cast<unsigned int>(*data_read));
   memcpy(buffer, new_data.data, size);
