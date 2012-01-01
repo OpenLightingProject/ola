@@ -1401,13 +1401,22 @@ void ArtNetNodeImpl::UpdatePortFromSource(OutputPort *port,
                                           const DMXSource &source) {
   TimeStamp merge_time_threshold = (
       *m_ss->WakeUpTime() - TimeInterval(MERGE_TIMEOUT, 0));
+  // the index of the first empty slot, of MAX_MERGE_SOURCES if we're already
+  // tracking MAX_MERGE_SOURCES sources.
   unsigned int first_empty_slot = MAX_MERGE_SOURCES;
+  // the index for this source, or MAX_MERGE_SOURCES if it wasn't found
   unsigned int source_slot = MAX_MERGE_SOURCES;
   unsigned int active_sources = 0;
 
+  // locate the source within the list of tracked sources, also find the first
+  // empty source location in case this source is new, and timeout any sources
+  // we haven't heard from.
   for (unsigned int i = 0; i < MAX_MERGE_SOURCES; i++) {
-    if (port->sources[i].address == source.address)
+    if (port->sources[i].address == source.address) {
       source_slot = i;
+      continue;
+    }
+
     // timeout old sources
     if (port->sources[i].timestamp < merge_time_threshold)
       port->sources[i].address = IPV4Address();
@@ -1419,6 +1428,7 @@ void ArtNetNodeImpl::UpdatePortFromSource(OutputPort *port,
   }
 
   if (source_slot == MAX_MERGE_SOURCES) {
+    // this is a new source
     if (first_empty_slot == MAX_MERGE_SOURCES) {
       // No room at the inn
       OLA_WARN << "Max merge sources reached, ignoring";

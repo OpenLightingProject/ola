@@ -441,11 +441,12 @@ class ArtNetNode {
                                              on_discover,
                                              on_flush,
                                              on_rdm_request);
-  }
+    }
 
-  bool SendTimeCode(const ola::timecode::TimeCode &timecode) {
-    return m_impl.SendTimeCode(timecode);
-  }
+    // Time Code methods
+    bool SendTimeCode(const ola::timecode::TimeCode &timecode) {
+      return m_impl.SendTimeCode(timecode);
+    }
 
   private:
     ArtNetNodeImpl m_impl;

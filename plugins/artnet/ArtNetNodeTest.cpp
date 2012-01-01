@@ -53,24 +53,41 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testBasicBehaviour);
   CPPUNIT_TEST(testBroadcastSendDMX);
   CPPUNIT_TEST(testNonBroadcastSendDMX);
+  CPPUNIT_TEST(testReceiveDMX);
   CPPUNIT_TEST(testTimeCode);
   CPPUNIT_TEST_SUITE_END();
 
   public:
+    ArtNetNodeTest()
+        : CppUnit::TestFixture(),
+          ss(NULL, &m_clock) {
+    }
     void setUp();
 
     void testBasicBehaviour();
     void testBroadcastSendDMX();
     void testNonBroadcastSendDMX();
+    void testReceiveDMX();
     void testTimeCode();
 
   private:
+    ola::MockClock m_clock;
+    ola::network::SelectServer ss;
+    bool m_got_dmx;
+
+    Interface CreateInterface();
+
+    /**
+     * Called when new DMX arrives
+     */
+    void NewDmx() {
+      m_got_dmx = true;
+    }
+
     static const uint8_t POLL_MESSAGE[];
     static const uint8_t POLL_REPLY_MESSAGE[];
     static const uint8_t TIMECODE_MESSAGE[];
     static const uint16_t ARTNET_PORT = 6454;
-
-    Interface CreateInterface();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(ArtNetNodeTest);
@@ -133,6 +150,7 @@ const uint8_t ArtNetNodeTest::TIMECODE_MESSAGE[] = {
 
 void ArtNetNodeTest::setUp() {
   ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
+  m_got_dmx = false;
 }
 
 
@@ -148,13 +166,13 @@ Interface ArtNetNodeTest::CreateInterface() {
   return interface_builder.Construct();
 }
 
+
 /**
  * Check that the discovery sequence works correctly.
  */
 void ArtNetNodeTest::testBasicBehaviour() {
   ola::network::Interface interface = CreateInterface();
 
-  ola::network::SelectServer ss;
   MockUdpSocket *socket = new MockUdpSocket();
 
   ArtNetNode node(interface,
@@ -238,7 +256,6 @@ void ArtNetNodeTest::testBasicBehaviour() {
  */
 void ArtNetNodeTest::testBroadcastSendDMX() {
   ola::network::Interface interface = CreateInterface();
-  ola::network::SelectServer ss;
   MockUdpSocket *socket = new MockUdpSocket();
   socket->SetDiscardMode(true);
 
@@ -314,7 +331,6 @@ void ArtNetNodeTest::testBroadcastSendDMX() {
  */
 void ArtNetNodeTest::testNonBroadcastSendDMX() {
   ola::network::Interface interface = CreateInterface();
-  ola::network::SelectServer ss;
   MockUdpSocket *socket = new MockUdpSocket();
   socket->SetDiscardMode(true);
 
@@ -504,11 +520,105 @@ void ArtNetNodeTest::testNonBroadcastSendDMX() {
 
 
 /**
- * check Timecode sending works
+ * Check that receiving DMX works
+ */
+void ArtNetNodeTest::testReceiveDMX() {
+  ola::network::Interface interface = CreateInterface();
+  MockUdpSocket *socket = new MockUdpSocket();
+  socket->SetDiscardMode(true);
+
+  ArtNetNode node(interface,
+                  &ss,
+                  false,
+                  20,
+                  socket);
+
+  uint8_t port_id = 1;
+  node.SetNetAddress(4);
+  node.SetSubnetAddress(2);
+  node.SetPortUniverse(ola::plugin::artnet::ARTNET_OUTPUT_PORT, port_id, 3);
+
+  DmxBuffer input_buffer;
+  node.SetDMXHandler(port_id,
+                     &input_buffer,
+                     ola::NewCallback(this, &ArtNetNodeTest::NewDmx));
+
+  CPPUNIT_ASSERT(node.Start());
+  socket->Verify();
+  socket->SetDiscardMode(false);
+
+  // 'receive' a DMX message
+  uint8_t DMX_MESSAGE[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x50,
+    0x0, 14,
+    0,  // seq #
+    1,  // physical port
+    0x23, 4,  // subnet & net address
+    0, 6,  // dmx length
+    0, 1, 2, 3, 4, 5
+  };
+
+  IPV4Address peer_ip;
+  ola::network::IPV4Address::FromString("10.0.0.11", &peer_ip);
+
+  socket->AddReceivedData(
+      DMX_MESSAGE,
+      sizeof(DMX_MESSAGE),
+      peer_ip,
+      6454);
+  CPPUNIT_ASSERT(!m_got_dmx);
+  socket->PerformRead();
+  CPPUNIT_ASSERT(m_got_dmx);
+  CPPUNIT_ASSERT_EQUAL(string("0,1,2,3,4,5"), input_buffer.ToString());
+
+  // now send a second frame
+  uint8_t DMX_MESSAGE2[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x50,
+    0x0, 14,
+    1,  // different seq # this time
+    1,  // physical port
+    0x23, 4,  // subnet & net address
+    0, 6,  // dmx length
+    5, 4, 3, 2, 1, 0
+  };
+
+  socket->AddReceivedData(
+      DMX_MESSAGE2,
+      sizeof(DMX_MESSAGE2),
+      peer_ip,
+      6454);
+
+  m_got_dmx = false;
+  socket->PerformRead();
+  CPPUNIT_ASSERT(m_got_dmx);
+  CPPUNIT_ASSERT_EQUAL(string("5,4,3,2,1,0"), input_buffer.ToString());
+
+  // now advance the clock by more than the merge timeout (10s)
+  m_clock.AdvanceTime(11, 0);
+
+  // send another message, but first update the seq #
+  DMX_MESSAGE[12] = 2;
+
+  socket->AddReceivedData(
+      DMX_MESSAGE,
+      sizeof(DMX_MESSAGE),
+      peer_ip,
+      6454);
+  m_got_dmx = false;
+  CPPUNIT_ASSERT(!m_got_dmx);
+  socket->PerformRead();
+  CPPUNIT_ASSERT(m_got_dmx);
+  CPPUNIT_ASSERT_EQUAL(string("0,1,2,3,4,5"), input_buffer.ToString());
+}
+
+
+/**
+ * Check Timecode sending works
  */
 void ArtNetNodeTest::testTimeCode() {
   ola::network::Interface interface = CreateInterface();
-  ola::network::SelectServer ss;
   MockUdpSocket *socket = new MockUdpSocket();
   socket->SetDiscardMode(true);
 
