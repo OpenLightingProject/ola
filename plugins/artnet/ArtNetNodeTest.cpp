@@ -151,6 +151,16 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
       (void) packets;
     }
 
+    void ReceiveFromPeer(const uint8_t *data,
+                         unsigned int data_size,
+                         const IPV4Address &address) {
+      m_socket->ReceiveData(
+          data,
+          data_size,
+          address,
+          ARTNET_PORT);
+    }
+
     static const uint8_t POLL_MESSAGE[];
     static const uint8_t POLL_REPLY_MESSAGE[];
     static const uint16_t ARTNET_PORT = 6454;
@@ -429,11 +439,7 @@ void ArtNetNodeTest::testNonBroadcastSendDMX() {
   };
 
   // Fake an ArtPollReply
-  m_socket->ReceiveData(
-      poll_reply_message,
-      sizeof(poll_reply_message),
-      peer_ip,
-      6454);
+  ReceiveFromPeer(poll_reply_message, sizeof(poll_reply_message), peer_ip);
 
   // now send a DMX frame, this should get unicast
   const uint8_t DMX_MESSAGE[] = {
@@ -493,11 +499,7 @@ void ArtNetNodeTest::testNonBroadcastSendDMX() {
   };
 
   // Fake an ArtPollReply
-  m_socket->ReceiveData(
-      poll_reply_message2,
-      sizeof(poll_reply_message2),
-      peer_ip2,
-      6454);
+  ReceiveFromPeer(poll_reply_message2, sizeof(poll_reply_message2), peer_ip2);
 
   // now send another DMX frame, this should get unicast twice
   const uint8_t DMX_MESSAGE2[] = {
@@ -583,11 +585,7 @@ void ArtNetNodeTest::testReceiveDMX() {
   };
 
   CPPUNIT_ASSERT(!m_got_dmx);
-  m_socket->ReceiveData(
-      DMX_MESSAGE,
-      sizeof(DMX_MESSAGE),
-      peer_ip,
-      6454);
+  ReceiveFromPeer(DMX_MESSAGE, sizeof(DMX_MESSAGE), peer_ip);
   CPPUNIT_ASSERT(m_got_dmx);
   CPPUNIT_ASSERT_EQUAL(string("0,1,2,3,4,5"), input_buffer.ToString());
 
@@ -604,11 +602,7 @@ void ArtNetNodeTest::testReceiveDMX() {
   };
 
   m_got_dmx = false;
-  m_socket->ReceiveData(
-      DMX_MESSAGE2,
-      sizeof(DMX_MESSAGE2),
-      peer_ip,
-      6454);
+  ReceiveFromPeer(DMX_MESSAGE2, sizeof(DMX_MESSAGE2), peer_ip);
   CPPUNIT_ASSERT(m_got_dmx);
   CPPUNIT_ASSERT_EQUAL(string("5,4,3,2,1,0"), input_buffer.ToString());
 
@@ -620,11 +614,7 @@ void ArtNetNodeTest::testReceiveDMX() {
 
   m_got_dmx = false;
   CPPUNIT_ASSERT(!m_got_dmx);
-  m_socket->ReceiveData(
-      DMX_MESSAGE,
-      sizeof(DMX_MESSAGE),
-      peer_ip,
-      6454);
+  ReceiveFromPeer(DMX_MESSAGE, sizeof(DMX_MESSAGE), peer_ip);
   CPPUNIT_ASSERT(m_got_dmx);
   CPPUNIT_ASSERT_EQUAL(string("0,1,2,3,4,5"), input_buffer.ToString());
 }
@@ -665,11 +655,7 @@ void ArtNetNodeTest::testHTPMerge() {
 
   CPPUNIT_ASSERT(!m_got_dmx);
   ss.RunOnce(0, 0);  // update the wake up time
-  m_socket->ReceiveData(
-      source1_message1,
-      sizeof(source1_message1),
-      peer_ip,
-      6454);
+  ReceiveFromPeer(source1_message1, sizeof(source1_message1), peer_ip);
   CPPUNIT_ASSERT(m_got_dmx);
   CPPUNIT_ASSERT_EQUAL(string("0,1,2,3,4,5"), input_buffer.ToString());
 
@@ -731,11 +717,7 @@ void ArtNetNodeTest::testHTPMerge() {
     ARTNET_PORT);
 
   ss.RunOnce(0, 0);  // update the wake up time
-  m_socket->ReceiveData(
-      source2_message1,
-      sizeof(source2_message1),
-      peer_ip2,
-      6454);
+  ReceiveFromPeer(source2_message1, sizeof(source2_message1), peer_ip2);
   CPPUNIT_ASSERT(m_got_dmx);
   CPPUNIT_ASSERT_EQUAL(string("5,4,3,3,4,5"), input_buffer.ToString());
 
@@ -753,11 +735,7 @@ void ArtNetNodeTest::testHTPMerge() {
   m_got_dmx = false;
   CPPUNIT_ASSERT(!m_got_dmx);
   ss.RunOnce(0, 0);  // update the wake up time
-  m_socket->ReceiveData(
-      source3_message1,
-      sizeof(source3_message1),
-      peer_ip3,
-      6454);
+  ReceiveFromPeer(source3_message1, sizeof(source3_message1), peer_ip3);
   CPPUNIT_ASSERT(!m_got_dmx);
   CPPUNIT_ASSERT_EQUAL(string("5,4,3,3,4,5"), input_buffer.ToString());
 
@@ -776,11 +754,7 @@ void ArtNetNodeTest::testHTPMerge() {
   m_got_dmx = false;
   CPPUNIT_ASSERT(!m_got_dmx);
   ss.RunOnce(0, 0);  // update the wake up time
-  m_socket->ReceiveData(
-      source1_message2,
-      sizeof(source1_message2),
-      peer_ip,
-      6454);
+  ReceiveFromPeer(source1_message2, sizeof(source1_message2), peer_ip);
   CPPUNIT_ASSERT(m_got_dmx);
   CPPUNIT_ASSERT_EQUAL(string("10,11,12,2,2,1,0,0"),
                        input_buffer.ToString());
@@ -804,11 +778,7 @@ void ArtNetNodeTest::testHTPMerge() {
   m_got_dmx = false;
   CPPUNIT_ASSERT(!m_got_dmx);
   ss.RunOnce(0, 0);  // update the wake up time
-  m_socket->ReceiveData(
-      source1_message3,
-      sizeof(source1_message3),
-      peer_ip,
-      6454);
+  ReceiveFromPeer(source1_message3, sizeof(source1_message3), peer_ip);
   CPPUNIT_ASSERT(m_got_dmx);
   CPPUNIT_ASSERT_EQUAL(string("5,4,3,3,4,5,7,9"),
                        input_buffer.ToString());
@@ -831,11 +801,7 @@ void ArtNetNodeTest::testHTPMerge() {
   m_got_dmx = false;
   CPPUNIT_ASSERT(!m_got_dmx);
   ss.RunOnce(0, 0);  // update the wake up time
-  m_socket->ReceiveData(
-      source1_message4,
-      sizeof(source1_message4),
-      peer_ip,
-      6454);
+  ReceiveFromPeer(source1_message4, sizeof(source1_message4), peer_ip);
   CPPUNIT_ASSERT(m_got_dmx);
   CPPUNIT_ASSERT_EQUAL(string("0,1,2,3,4,5,7,9"),
                        input_buffer.ToString());
@@ -921,11 +887,7 @@ void ArtNetNodeTest::testLTPMerge() {
 
   CPPUNIT_ASSERT(!m_got_dmx);
   ss.RunOnce(0, 0);  // update the wake up time
-  m_socket->ReceiveData(
-      source1_message1,
-      sizeof(source1_message1),
-      peer_ip,
-      6454);
+  ReceiveFromPeer(source1_message1, sizeof(source1_message1), peer_ip);
   CPPUNIT_ASSERT(m_got_dmx);
   CPPUNIT_ASSERT_EQUAL(string("0,1,2,3,4,5"), input_buffer.ToString());
 
@@ -987,11 +949,7 @@ void ArtNetNodeTest::testLTPMerge() {
     ARTNET_PORT);
 
   ss.RunOnce(0, 0);  // update the wake up time
-  m_socket->ReceiveData(
-      source2_message1,
-      sizeof(source2_message1),
-      peer_ip2,
-      6454);
+  ReceiveFromPeer(source2_message1, sizeof(source2_message1), peer_ip2);
   CPPUNIT_ASSERT(m_got_dmx);
   CPPUNIT_ASSERT_EQUAL(string("5,4,3,2,1,0"), input_buffer.ToString());
 
@@ -1013,11 +971,7 @@ void ArtNetNodeTest::testLTPMerge() {
   m_got_dmx = false;
   CPPUNIT_ASSERT(!m_got_dmx);
   ss.RunOnce(0, 0);  // update the wake up time
-  m_socket->ReceiveData(
-      source1_message2,
-      sizeof(source1_message2),
-      peer_ip,
-      6454);
+  ReceiveFromPeer(source1_message2, sizeof(source1_message2), peer_ip);
   CPPUNIT_ASSERT(m_got_dmx);
   CPPUNIT_ASSERT_EQUAL(string("0,1,2,3,4,5,7,9"),
                        input_buffer.ToString());
@@ -1103,11 +1057,7 @@ void ArtNetNodeTest::testControllerDiscovery() {
     0x7a, 0x70, 0, 0, 0, 2,
   };
 
-  m_socket->ReceiveData(
-      art_tod1,
-      sizeof(art_tod1),
-      peer_ip,
-      6454);
+  ReceiveFromPeer(art_tod1, sizeof(art_tod1), peer_ip);
   CPPUNIT_ASSERT(!m_discovery_done);
 
   // now advance the clock and run the select server
@@ -1155,11 +1105,7 @@ void ArtNetNodeTest::testControllerDiscovery() {
     0x7a, 0x70, 0, 0, 0, 0,
   };
 
-  m_socket->ReceiveData(
-      art_tod2,
-      sizeof(art_tod2),
-      peer_ip,
-      6454);
+  ReceiveFromPeer(art_tod2, sizeof(art_tod2), peer_ip);
 
   const uint8_t art_tod3[] = {
     'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
@@ -1177,11 +1123,7 @@ void ArtNetNodeTest::testControllerDiscovery() {
     0x7a, 0x70, 0, 0, 0, 1,
   };
 
-  m_socket->ReceiveData(
-      art_tod3,
-      sizeof(art_tod3),
-      peer_ip2,
-      6454);
+  ReceiveFromPeer(art_tod3, sizeof(art_tod3), peer_ip2);
   CPPUNIT_ASSERT(!m_discovery_done);
 
   // now advance the clock and run the select server
@@ -1263,11 +1205,7 @@ void ArtNetNodeTest::testControllerIncrementalDiscovery() {
     0x7a, 0x70, 0, 0, 0, 0,
   };
 
-  m_socket->ReceiveData(
-      art_tod1,
-      sizeof(art_tod1),
-      peer_ip,
-      6454);
+  ReceiveFromPeer(art_tod1, sizeof(art_tod1), peer_ip);
   CPPUNIT_ASSERT(!m_discovery_done);
 
   // now advance the clock and run the select server
@@ -1330,11 +1268,7 @@ void ArtNetNodeTest::testUnsolicitedTod() {
     0x7a, 0x70, 0, 0, 0, 0,
   };
 
-  m_socket->ReceiveData(
-      art_tod,
-      sizeof(art_tod),
-      peer_ip,
-      6454);
+  ReceiveFromPeer(art_tod, sizeof(art_tod), peer_ip);
 
   CPPUNIT_ASSERT(m_discovery_done);
   UIDSet uids;
@@ -1380,11 +1314,7 @@ void ArtNetNodeTest::testResponderDiscovery() {
   };
 
   CPPUNIT_ASSERT(!m_tod_request);
-  m_socket->ReceiveData(
-      tod_request,
-      sizeof(tod_request),
-      peer_ip,
-      6454);
+  ReceiveFromPeer(tod_request, sizeof(tod_request), peer_ip);
 
   CPPUNIT_ASSERT(m_tod_request);
 
@@ -1433,11 +1363,7 @@ void ArtNetNodeTest::testResponderDiscovery() {
   };
 
   CPPUNIT_ASSERT(!m_tod_request);
-  m_socket->ReceiveData(
-      tod_request2,
-      sizeof(tod_request2),
-      peer_ip,
-      6454);
+  ReceiveFromPeer(tod_request2, sizeof(tod_request2), peer_ip);
   CPPUNIT_ASSERT(!m_tod_request);
 
   // now check TodControl
@@ -1454,11 +1380,7 @@ void ArtNetNodeTest::testResponderDiscovery() {
     0x23
   };
 
-  m_socket->ReceiveData(
-      tod_control,
-      sizeof(tod_control),
-      peer_ip,
-      6454);
+  ReceiveFromPeer(tod_control, sizeof(tod_control), peer_ip);
 
   CPPUNIT_ASSERT(m_tod_flush);
 
@@ -1476,11 +1398,7 @@ void ArtNetNodeTest::testResponderDiscovery() {
     0x13
   };
 
-  m_socket->ReceiveData(
-      tod_control2,
-      sizeof(tod_control2),
-      peer_ip,
-      6454);
+  ReceiveFromPeer(tod_control2, sizeof(tod_control2), peer_ip);
   CPPUNIT_ASSERT(!m_tod_flush);
 }
 
@@ -1527,11 +1445,7 @@ void ArtNetNodeTest::testRDMResponder() {
 
   CPPUNIT_ASSERT(!m_rdm_request);
   CPPUNIT_ASSERT(!m_rdm_callback);
-  m_socket->ReceiveData(
-      rdm_request,
-      sizeof(rdm_request),
-      peer_ip,
-      6454);
+  ReceiveFromPeer(rdm_request, sizeof(rdm_request), peer_ip);
 
   CPPUNIT_ASSERT(m_rdm_request);
   CPPUNIT_ASSERT(m_rdm_callback);
@@ -1626,11 +1540,7 @@ void ArtNetNodeTest::testRDMController() {
     0x7a, 0x70, 0, 0, 0, 0,
   };
 
-  m_socket->ReceiveData(
-      art_tod,
-      sizeof(art_tod),
-      peer_ip,
-      6454);
+  ReceiveFromPeer(art_tod, sizeof(art_tod), peer_ip);
 
   // create a new RDM request
   UID source(1, 2);
@@ -1697,11 +1607,7 @@ void ArtNetNodeTest::testRDMController() {
   };
 
   CPPUNIT_ASSERT(!m_rdm_response);
-  m_socket->ReceiveData(
-      rdm_response,
-      sizeof(rdm_response),
-      peer_ip,
-      6454);
+  ReceiveFromPeer(rdm_response, sizeof(rdm_response), peer_ip);
 
   CPPUNIT_ASSERT(m_rdm_response);
   delete m_rdm_response;
