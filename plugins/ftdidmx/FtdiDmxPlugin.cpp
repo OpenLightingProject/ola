@@ -55,7 +55,6 @@ FtdiDmxPlugin::FtdiDmxPlugin(PluginAdaptor *plugin_adaptor)
 
 void FtdiDmxPlugin::AddDevice(FtdiDmxDevice *device) {
   if (!device->Start()) {
-    // delete device;
     return;
   }
 
@@ -66,7 +65,6 @@ void FtdiDmxPlugin::AddDevice(FtdiDmxDevice *device) {
 void FtdiDmxPlugin::DeleteDevice(FtdiDmxDevice *device) {
   m_plugin_adaptor->UnregisterDevice(device);
   device->Stop();
-  // delete device;
 }
 
 bool FtdiDmxPlugin::StartHook() {

@@ -43,14 +43,14 @@ class FtdiDmxDevice : public Device {
                 unsigned int freq);
   virtual ~FtdiDmxDevice();
 
-  string DeviceId() const { return m_device->Serial(); }
+  string DeviceId() const { return m_device.get()->Serial(); }
   string Description() const { return m_devInfo.Description(); }
 
  protected:
   bool StartHook();
 
  private:
-  FtdiWidget *m_device;
+  auto_ptr<FtdiWidget> m_device;
   FtdiWidgetInfo m_devInfo;
   unsigned int m_frequency;
 };

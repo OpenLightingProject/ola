@@ -19,6 +19,7 @@
  */
 
 #include <string>
+#include <memory>
 #include "ola/Logging.h"
 #include "plugins/ftdidmx/FtdiDmxDevice.h"
 #include "plugins/ftdidmx/FtdiDmxPort.h"
@@ -35,16 +36,15 @@ FtdiDmxDevice::FtdiDmxDevice(AbstractPlugin *owner,
   Device(owner, devInfo.Description()),
   m_devInfo(devInfo),
   m_frequency(freq) {
-  m_device = new FtdiWidget(devInfo.Serial(), devInfo.Name(), devInfo.Id());
+  auto_ptr<FtdiWidget> m_device(new FtdiWidget(devInfo.Serial(), devInfo.Name(), devInfo.Id()));
 }
 
 FtdiDmxDevice::~FtdiDmxDevice() {
   if (m_device->IsOpen()) m_device->Close();
-  delete m_device;
 }
 
 bool FtdiDmxDevice::StartHook() {
-  AddPort(new FtdiDmxOutputPort(this, m_device, m_devInfo.Id(), m_frequency));
+  AddPort(new FtdiDmxOutputPort(this, m_device.get(), m_devInfo.Id(), m_frequency));
   return true;
 }
 }

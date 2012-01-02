@@ -42,9 +42,11 @@ FtdiDmxThread::~FtdiDmxThread() {
 
 void FtdiDmxThread::CheckTimeGranularity() {
   TimeStamp ts1, ts2;
-  Clock::CurrentTime(&ts1);
+  MockClock clock;
+
+  clock.CurrentTime(&ts1);
   usleep(1000);
-  Clock::CurrentTime(&ts2);
+  clock.CurrentTime(&ts2);
 
   TimeInterval interval = ts2 - ts1;
   if (interval.InMilliSeconds() > 3) {
@@ -72,6 +74,7 @@ bool FtdiDmxThread::WriteDMX(const DmxBuffer &buffer) {
 
 void *FtdiDmxThread::Run() {
   TimeStamp ts1, ts2;
+  MockClock clock;
   CheckTimeGranularity();
   int frameTime = static_cast<int>(floor(
     (static_cast<double>(1000) / m_frequency) + static_cast<double>(0.5)));
@@ -99,7 +102,7 @@ void *FtdiDmxThread::Run() {
         break;
     }
 
-    Clock::CurrentTime(&ts1);
+    clock.CurrentTime(&ts1);
 
     if (m_device->SetBreak(true) == false)
       goto framesleep;
@@ -118,18 +121,18 @@ void *FtdiDmxThread::Run() {
 
   framesleep:
     // Sleep for the remainder of the DMX frame time
-    Clock::CurrentTime(&ts2);
+    clock.CurrentTime(&ts2);
     TimeInterval elapsed = ts2 - ts1;
 
     if (m_granularity == Good) {
       while (elapsed.InMilliSeconds() < frameTime) {
         usleep(1000);
-        Clock::CurrentTime(&ts2);
+        clock.CurrentTime(&ts2);
         elapsed = ts2 - ts1;
       }
     } else {
       while (elapsed.InMilliSeconds() < frameTime) {
-        Clock::CurrentTime(&ts2);
+        clock.CurrentTime(&ts2);
         elapsed = ts2 - ts1;
       }
     }
