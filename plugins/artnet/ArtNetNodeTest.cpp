@@ -77,7 +77,14 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
   public:
     ArtNetNodeTest()
         : CppUnit::TestFixture(),
-          ss(NULL, &m_clock) {
+          ss(NULL, &m_clock),
+          m_got_dmx(false),
+          m_discovery_done(false),
+          m_tod_flush(false),
+          m_tod_request(false),
+          m_rdm_request(NULL),
+          m_rdm_callback(NULL),
+          m_rdm_response(NULL) {
     }
     void setUp();
 
@@ -106,8 +113,8 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
     const RDMRequest *m_rdm_request;
     RDMCallback *m_rdm_callback;
     const RDMResponse *m_rdm_response;
-
-    Interface CreateInterface();
+    Interface interface;
+    IPV4Address peer_ip, peer_ip2, peer_ip3;
 
     /**
      * Called when new DMX arrives
@@ -198,26 +205,16 @@ const uint8_t ArtNetNodeTest::POLL_REPLY_MESSAGE[] = {
 
 void ArtNetNodeTest::setUp() {
   ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-  m_got_dmx = false;
-  m_discovery_done = false;
-  m_tod_flush = false;
-  m_tod_request = false;
-  m_rdm_request = NULL;
-  m_rdm_callback = NULL;
-  m_rdm_response = NULL;
-}
-
-
-/**
- * Creates a mock interface for us to use.
- */
-Interface ArtNetNodeTest::CreateInterface() {
   ola::network::InterfaceBuilder interface_builder;
   CPPUNIT_ASSERT(interface_builder.SetAddress("10.0.0.1"));
   CPPUNIT_ASSERT(interface_builder.SetSubnetMask("255.0.0.0"));
   CPPUNIT_ASSERT(interface_builder.SetBroadcast("10.255.255.255"));
   CPPUNIT_ASSERT(interface_builder.SetHardwareAddress("0a:0b:0c:12:34:56"));
-  return interface_builder.Construct();
+  interface = interface_builder.Construct();
+
+  ola::network::IPV4Address::FromString("10.0.0.10", &peer_ip);
+  ola::network::IPV4Address::FromString("10.0.0.11", &peer_ip2);
+  ola::network::IPV4Address::FromString("10.0.0.12", &peer_ip3);
 }
 
 
@@ -225,8 +222,6 @@ Interface ArtNetNodeTest::CreateInterface() {
  * Check that the discovery sequence works correctly.
  */
 void ArtNetNodeTest::testBasicBehaviour() {
-  ola::network::Interface interface = CreateInterface();
-
   MockUdpSocket *socket = new MockUdpSocket();
 
   ArtNetNode node(interface,
@@ -309,7 +304,6 @@ void ArtNetNodeTest::testBasicBehaviour() {
  * Check sending DMX using broadcast works.
  */
 void ArtNetNodeTest::testBroadcastSendDMX() {
-  ola::network::Interface interface = CreateInterface();
   MockUdpSocket *socket = new MockUdpSocket();
   socket->SetDiscardMode(true);
 
@@ -384,7 +378,6 @@ void ArtNetNodeTest::testBroadcastSendDMX() {
  * Check sending DMX using unicast works.
  */
 void ArtNetNodeTest::testNonBroadcastSendDMX() {
-  ola::network::Interface interface = CreateInterface();
   MockUdpSocket *socket = new MockUdpSocket();
   socket->SetDiscardMode(true);
 
@@ -445,8 +438,6 @@ void ArtNetNodeTest::testNonBroadcastSendDMX() {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0  // filler
   };
-  IPV4Address peer_ip;
-  ola::network::IPV4Address::FromString("10.0.0.10", &peer_ip);
 
   // Fake an ArtPollReply
   socket->ReceiveData(
@@ -511,8 +502,6 @@ void ArtNetNodeTest::testNonBroadcastSendDMX() {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0  // filler
   };
-  IPV4Address peer_ip2;
-  ola::network::IPV4Address::FromString("10.0.0.11", &peer_ip2);
 
   // Fake an ArtPollReply
   socket->ReceiveData(
@@ -575,7 +564,6 @@ void ArtNetNodeTest::testNonBroadcastSendDMX() {
  * Check that receiving DMX works
  */
 void ArtNetNodeTest::testReceiveDMX() {
-  ola::network::Interface interface = CreateInterface();
   MockUdpSocket *socket = new MockUdpSocket();
   socket->SetDiscardMode(true);
 
@@ -610,9 +598,6 @@ void ArtNetNodeTest::testReceiveDMX() {
     0, 6,  // dmx length
     0, 1, 2, 3, 4, 5
   };
-
-  IPV4Address peer_ip;
-  ola::network::IPV4Address::FromString("10.0.0.11", &peer_ip);
 
   CPPUNIT_ASSERT(!m_got_dmx);
   socket->ReceiveData(
@@ -666,14 +651,8 @@ void ArtNetNodeTest::testReceiveDMX() {
  * Check that merging works
  */
 void ArtNetNodeTest::testHTPMerge() {
-  ola::network::Interface interface = CreateInterface();
   MockUdpSocket *socket = new MockUdpSocket();
   socket->SetDiscardMode(true);
-
-  IPV4Address peer_ip, peer_ip2, peer_ip3;
-  ola::network::IPV4Address::FromString("10.0.0.10", &peer_ip);
-  ola::network::IPV4Address::FromString("10.0.0.11", &peer_ip2);
-  ola::network::IPV4Address::FromString("10.0.0.12", &peer_ip3);
 
   ArtNetNode node(interface,
                   &ss,
@@ -890,13 +869,8 @@ void ArtNetNodeTest::testHTPMerge() {
  * Check that LTP merging works
  */
 void ArtNetNodeTest::testLTPMerge() {
-  ola::network::Interface interface = CreateInterface();
   MockUdpSocket *socket = new MockUdpSocket();
   socket->SetDiscardMode(true);
-
-  IPV4Address peer_ip, peer_ip2, peer_ip3;
-  ola::network::IPV4Address::FromString("10.0.0.10", &peer_ip);
-  ola::network::IPV4Address::FromString("10.0.0.11", &peer_ip2);
 
   ArtNetNode node(interface,
                   &ss,
@@ -1083,7 +1057,6 @@ void ArtNetNodeTest::testLTPMerge() {
  * Check the node can act as an RDM controller.
  */
 void ArtNetNodeTest::testControllerDiscovery() {
-  ola::network::Interface interface = CreateInterface();
   MockUdpSocket *socket = new MockUdpSocket();
   socket->SetDiscardMode(true);
 
@@ -1101,11 +1074,6 @@ void ArtNetNodeTest::testControllerDiscovery() {
   CPPUNIT_ASSERT(node.Start());
   socket->Verify();
   socket->SetDiscardMode(false);
-
-  // setup peers
-  IPV4Address peer_ip, peer_ip2;
-  ola::network::IPV4Address::FromString("10.0.0.10", &peer_ip);
-  ola::network::IPV4Address::FromString("10.0.0.11", &peer_ip2);
 
   const uint8_t tod_control[] = {
     'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
@@ -1276,7 +1244,6 @@ void ArtNetNodeTest::testControllerDiscovery() {
  * Check that incremental discovery works
  */
 void ArtNetNodeTest::testControllerIncrementalDiscovery() {
-  ola::network::Interface interface = CreateInterface();
   MockUdpSocket *socket = new MockUdpSocket();
   socket->SetDiscardMode(true);
 
@@ -1294,10 +1261,6 @@ void ArtNetNodeTest::testControllerIncrementalDiscovery() {
   CPPUNIT_ASSERT(node.Start());
   socket->Verify();
   socket->SetDiscardMode(false);
-
-  // setup peers
-  IPV4Address peer_ip;
-  ola::network::IPV4Address::FromString("10.0.0.10", &peer_ip);
 
   const uint8_t tod_request[] = {
     'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
@@ -1373,7 +1336,6 @@ void ArtNetNodeTest::testControllerIncrementalDiscovery() {
  * Check that unsolicated TOD messages work
  */
 void ArtNetNodeTest::testUnsolicitedTod() {
-  ola::network::Interface interface = CreateInterface();
   MockUdpSocket *socket = new MockUdpSocket();
   socket->SetDiscardMode(true);
 
@@ -1391,9 +1353,6 @@ void ArtNetNodeTest::testUnsolicitedTod() {
   CPPUNIT_ASSERT(node.SetUnsolicatedUIDSetHandler(
       port_id,
       ola::NewCallback(this, &ArtNetNodeTest::DiscoveryComplete)));
-
-  IPV4Address peer_ip;
-  ola::network::IPV4Address::FromString("10.0.0.10", &peer_ip);
 
   CPPUNIT_ASSERT(node.Start());
   socket->Verify();
@@ -1435,7 +1394,6 @@ void ArtNetNodeTest::testUnsolicitedTod() {
  * Check that we respond to Tod messages
  */
 void ArtNetNodeTest::testResponderDiscovery() {
-  ola::network::Interface interface = CreateInterface();
   MockUdpSocket *socket = new MockUdpSocket();
   socket->SetDiscardMode(true);
 
@@ -1459,9 +1417,6 @@ void ArtNetNodeTest::testResponderDiscovery() {
       ola::NewCallback(this, &ArtNetNodeTest::TodRequest),
       ola::NewCallback(this, &ArtNetNodeTest::Flush),
       NULL));
-
-  IPV4Address peer_ip;
-  ola::network::IPV4Address::FromString("10.0.0.10", &peer_ip);
 
   const uint8_t tod_request[] = {
     'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
@@ -1587,7 +1542,6 @@ void ArtNetNodeTest::testResponderDiscovery() {
  * Check that we respond to Tod messages
  */
 void ArtNetNodeTest::testRDMResponder() {
-  ola::network::Interface interface = CreateInterface();
   MockUdpSocket *socket = new MockUdpSocket();
   socket->SetDiscardMode(true);
 
@@ -1611,9 +1565,6 @@ void ArtNetNodeTest::testRDMResponder() {
       NULL,
       NULL,
       ola::NewCallback(this, &ArtNetNodeTest::HandleRDM)));
-
-  IPV4Address peer_ip;
-  ola::network::IPV4Address::FromString("10.0.0.10", &peer_ip);
 
   const uint8_t rdm_request[] = {
     'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
@@ -1705,7 +1656,6 @@ void ArtNetNodeTest::testRDMResponder() {
  * Check that the node works as a RDM controller.
  */
 void ArtNetNodeTest::testRDMController() {
-  ola::network::Interface interface = CreateInterface();
   MockUdpSocket *socket = new MockUdpSocket();
   socket->SetDiscardMode(true);
 
@@ -1725,8 +1675,6 @@ void ArtNetNodeTest::testRDMController() {
   socket->SetDiscardMode(false);
 
   // We need to send a TodData so we populate the node's UID map
-  IPV4Address peer_ip;
-  ola::network::IPV4Address::FromString("10.0.0.10", &peer_ip);
   const uint8_t art_tod[] = {
     'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
     0x00, 0x81,
@@ -1829,7 +1777,6 @@ void ArtNetNodeTest::testRDMController() {
  * Check Timecode sending works
  */
 void ArtNetNodeTest::testTimeCode() {
-  ola::network::Interface interface = CreateInterface();
   MockUdpSocket *socket = new MockUdpSocket();
   socket->SetDiscardMode(true);
 
