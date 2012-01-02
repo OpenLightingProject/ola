@@ -204,6 +204,7 @@ void ArtNetNodeTest::setUp() {
   m_tod_request = false;
   m_rdm_request = NULL;
   m_rdm_callback = NULL;
+  m_rdm_response = NULL;
 }
 
 
