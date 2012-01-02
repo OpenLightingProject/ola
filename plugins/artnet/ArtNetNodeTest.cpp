@@ -70,7 +70,8 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testUnsolicitedTod);
   CPPUNIT_TEST(testResponderDiscovery);
   CPPUNIT_TEST(testRDMResponder);
-  CPPUNIT_TEST(testRDMController);
+  CPPUNIT_TEST(testRDMRequest);
+  CPPUNIT_TEST(testRDMRequestTimeout);
   CPPUNIT_TEST(testTimeCode);
   CPPUNIT_TEST_SUITE_END();
 
@@ -101,7 +102,8 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
     void testUnsolicitedTod();
     void testResponderDiscovery();
     void testRDMResponder();
-    void testRDMController();
+    void testRDMRequest();
+    void testRDMRequestTimeout();
     void testTimeCode();
 
   private:
@@ -146,6 +148,14 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
       (void) packets;
     }
 
+    void ExpectTimeout(ola::rdm::rdm_response_code status,
+                       const RDMResponse *response,
+                       const std::vector<string> &packets) {
+      CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_TIMEOUT, status);
+      CPPUNIT_ASSERT(NULL == response);
+      (void) packets;
+    }
+
     void ExpectedSend(const uint8_t *data,
                       unsigned int data_size,
                       const IPV4Address &address) {
@@ -180,6 +190,66 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
           ola::plugin::artnet::ARTNET_OUTPUT_PORT,
           m_port_id,
           3);
+    }
+
+    // This sends a tod data so 7s70:00000000 is insert into the tod
+    void PopulateTod() {
+      SocketVerifier verifer(m_socket);
+      const uint8_t art_tod[] = {
+        'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+        0x00, 0x81,
+        0x0, 14,
+        1,  // rdm standard
+        1,  // first port
+        0, 0, 0, 0, 0, 0, 0,
+        4,  // net
+        0,  // full tod
+        0x23,  // universe address
+        0, 1,  // uid count
+        0,  // block count
+        1,  // uid count
+        0x7a, 0x70, 0, 0, 0, 0,
+      };
+
+      ReceiveFromPeer(art_tod, sizeof(art_tod), peer_ip);
+    }
+
+    void SendRDMRequest(ArtNetNode *node,
+                        RDMCallback *callback) {
+      UID source(1, 2);
+      UID destination(0x7a70, 0);
+
+      const RDMGetRequest *request = new RDMGetRequest(
+          source,
+          destination,
+          0,  // transaction #
+          1,  // port id
+          0,  // message count
+          10,  // sub device
+          296,  // param id
+          NULL,  // data
+          0);  // data length
+
+      const uint8_t rdm_request[] = {
+        'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+        0x00, 0x83,
+        0x0, 14,
+        1, 0,
+        0, 0, 0, 0, 0, 0, 0,
+        4,  // net
+        0,  // process
+        0x23,
+        // rdm data
+        1, 24,  // sub code & length
+        0x7a, 0x70, 0, 0, 0, 0,   // dst uid
+        0, 1, 0, 0, 0, 2,   // src uid
+        0, 1, 0, 0, 10,  // transaction, port id, msg count & sub device
+        0x20, 0x1, 0x28, 0,  // command, param id, param data length
+        0x02, 0x26
+      };
+
+      ExpectedSend(rdm_request, sizeof(rdm_request), peer_ip);
+      node->SendRDMRequest(m_port_id, request, callback);
     }
 
     static const uint8_t POLL_MESSAGE[];
@@ -1521,7 +1591,7 @@ void ArtNetNodeTest::testRDMResponder() {
 /**
  * Check that the node works as a RDM controller.
  */
-void ArtNetNodeTest::testRDMController() {
+void ArtNetNodeTest::testRDMRequest() {
   m_socket->SetDiscardMode(true);
   ArtNetNode node(interface, &ss, true, 20, m_socket);
   SetupInputPort(&node);
@@ -1530,66 +1600,13 @@ void ArtNetNodeTest::testRDMController() {
   m_socket->SetDiscardMode(false);
 
   // We need to send a TodData so we populate the node's UID map
-  {
-    SocketVerifier verifer(m_socket);
-    const uint8_t art_tod[] = {
-      'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
-      0x00, 0x81,
-      0x0, 14,
-      1,  // rdm standard
-      1,  // first port
-      0, 0, 0, 0, 0, 0, 0,
-      4,  // net
-      0,  // full tod
-      0x23,  // universe address
-      0, 1,  // uid count
-      0,  // block count
-      1,  // uid count
-      0x7a, 0x70, 0, 0, 0, 0,
-    };
-
-    ReceiveFromPeer(art_tod, sizeof(art_tod), peer_ip);
-  }
+  PopulateTod();
 
   // create a new RDM request
   {
     SocketVerifier verifer(m_socket);
-    UID source(1, 2);
-    UID destination(0x7a70, 0);
-
-    const RDMGetRequest *request = new RDMGetRequest(
-        source,
-        destination,
-        0,  // transaction #
-        1,  // port id
-        0,  // message count
-        10,  // sub device
-        296,  // param id
-        NULL,  // data
-        0);  // data length
-
-    const uint8_t rdm_request[] = {
-      'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
-      0x00, 0x83,
-      0x0, 14,
-      1, 0,
-      0, 0, 0, 0, 0, 0, 0,
-      4,  // net
-      0,  // process
-      0x23,
-      // rdm data
-      1, 24,  // sub code & length
-      0x7a, 0x70, 0, 0, 0, 0,   // dst uid
-      0, 1, 0, 0, 0, 2,   // src uid
-      0, 1, 0, 0, 10,  // transaction, port id, msg count & sub device
-      0x20, 0x1, 0x28, 0,  // command, param id, param data length
-      0x02, 0x26
-    };
-
-    ExpectedSend(rdm_request, sizeof(rdm_request), peer_ip);
-    node.SendRDMRequest(
-      m_port_id,
-      request,
+    SendRDMRequest(
+      &node,
       ola::NewSingleCallback(this, &ArtNetNodeTest::FinalizeRDM));
   }
 
@@ -1620,6 +1637,33 @@ void ArtNetNodeTest::testRDMController() {
     CPPUNIT_ASSERT(m_rdm_response);
     delete m_rdm_response;
   }
+}
+
+
+/**
+ * Check that requests timeout if we don't get a response.
+ */
+void ArtNetNodeTest::testRDMRequestTimeout() {
+  m_socket->SetDiscardMode(true);
+  ArtNetNode node(interface, &ss, true, 20, m_socket);
+  SetupInputPort(&node);
+  CPPUNIT_ASSERT(node.Start());
+  m_socket->Verify();
+  m_socket->SetDiscardMode(false);
+
+  // We need to send a TodData so we populate the node's UID map
+  PopulateTod();
+
+  // create a new RDM request
+  {
+    SocketVerifier verifer(m_socket);
+    SendRDMRequest(
+        &node,
+        ola::NewSingleCallback(this, &ArtNetNodeTest::ExpectTimeout));
+  }
+
+  m_clock.AdvanceTime(3, 0);  // timeout is 2s
+  ss.RunOnce(0, 0);
 }
 
 
