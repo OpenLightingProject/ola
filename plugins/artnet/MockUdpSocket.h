@@ -82,10 +82,10 @@ class MockUdpSocket: public ola::network::UdpSocketInterface {
                          uint16_t port);
 
     // this can be fetched by calling PerformRead() on the socket
-    void AddReceivedData(const uint8_t *data,
-                         unsigned int size,
-                         const IPV4Address &ip,
-                         uint16_t port);
+    void ReceiveData(const uint8_t *data,
+                     unsigned int size,
+                     const IPV4Address &ip,
+                     uint16_t port);
 
     void Verify();
 

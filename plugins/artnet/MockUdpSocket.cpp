@@ -180,12 +180,13 @@ void MockUdpSocket::AddExpectedData(const uint8_t *data,
 }
 
 
-void MockUdpSocket::AddReceivedData(const uint8_t *data,
-                                    unsigned int size,
-                                    const IPV4Address &ip,
-                                    uint16_t port) {
+void MockUdpSocket::ReceiveData(const uint8_t *data,
+                                unsigned int size,
+                                const IPV4Address &ip,
+                                uint16_t port) {
   expected_call call = {data, size, ip, port};
   m_received_data.push(call);
+  PerformRead();
 }
 
 
