@@ -72,6 +72,8 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testRDMResponder);
   CPPUNIT_TEST(testRDMRequest);
   CPPUNIT_TEST(testRDMRequestTimeout);
+  CPPUNIT_TEST(testRDMRequestIPMismatch);
+  CPPUNIT_TEST(testRDMRequestUIDMismatch);
   CPPUNIT_TEST(testTimeCode);
   CPPUNIT_TEST_SUITE_END();
 
@@ -80,6 +82,7 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
         : CppUnit::TestFixture(),
           ss(NULL, &m_clock),
           m_got_dmx(false),
+          m_got_rdm_timeout(false),
           m_discovery_done(false),
           m_tod_flush(false),
           m_tod_request(false),
@@ -104,12 +107,15 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
     void testRDMResponder();
     void testRDMRequest();
     void testRDMRequestTimeout();
+    void testRDMRequestIPMismatch();
+    void testRDMRequestUIDMismatch();
     void testTimeCode();
 
   private:
     ola::MockClock m_clock;
     ola::network::SelectServer ss;
     bool m_got_dmx;
+    bool m_got_rdm_timeout;
     bool m_discovery_done;
     bool m_tod_flush;
     bool m_tod_request;
@@ -154,6 +160,7 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
       CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_TIMEOUT, status);
       CPPUNIT_ASSERT(NULL == response);
       (void) packets;
+      m_got_rdm_timeout = true;
     }
 
     void ExpectedSend(const uint8_t *data,
@@ -1641,7 +1648,7 @@ void ArtNetNodeTest::testRDMRequest() {
 
 
 /**
- * Check that requests timeout if we don't get a response.
+ * Check that request times out if we don't get a response.
  */
 void ArtNetNodeTest::testRDMRequestTimeout() {
   m_socket->SetDiscardMode(true);
@@ -1664,6 +1671,117 @@ void ArtNetNodeTest::testRDMRequestTimeout() {
 
   m_clock.AdvanceTime(3, 0);  // timeout is 2s
   ss.RunOnce(0, 0);
+  CPPUNIT_ASSERT(m_got_rdm_timeout);
+}
+
+
+/**
+ * Check we don't accept responses from a different src IP
+ */
+void ArtNetNodeTest::testRDMRequestIPMismatch() {
+  m_socket->SetDiscardMode(true);
+  ArtNetNode node(interface, &ss, true, 20, m_socket);
+  SetupInputPort(&node);
+  CPPUNIT_ASSERT(node.Start());
+  m_socket->Verify();
+  m_socket->SetDiscardMode(false);
+
+  // We need to send a TodData so we populate the node's UID map
+  PopulateTod();
+
+  // create a new RDM request
+  {
+    SocketVerifier verifer(m_socket);
+    SendRDMRequest(
+      &node,
+      ola::NewSingleCallback(this, &ArtNetNodeTest::ExpectTimeout));
+  }
+
+  // send a response from a different IP
+  {
+    SocketVerifier verifer(m_socket);
+    const uint8_t rdm_response[] = {
+      'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+      0x00, 0x83,
+      0x0, 14,
+      1, 0,
+      0, 0, 0, 0, 0, 0, 0,
+      4,  // net
+      0,  // process
+      0x23,
+      // rdm data
+      1, 28,  // sub code & length
+      0, 1, 0, 0, 0, 2,   // dst uid
+      0x7a, 0x70, 0, 0, 0, 0,   // src uid
+      0, 0, 0, 0, 10,  // transaction, port id, msg count & sub device
+      0x21, 1, 40, 4,  // command, param id, param data length
+      0x5a, 0xa5, 0x5a, 0xa5,  // param data
+      0x4, 0x2c  // checksum, filled in below
+    };
+
+    CPPUNIT_ASSERT(!m_rdm_response);
+    ReceiveFromPeer(rdm_response, sizeof(rdm_response), peer_ip2);
+    CPPUNIT_ASSERT(!m_rdm_response);
+  }
+
+  m_clock.AdvanceTime(3, 0);  // timeout is 2s
+  ss.RunOnce(0, 0);
+  CPPUNIT_ASSERT(m_got_rdm_timeout);
+}
+
+
+/**
+ * Check we don't accept responses with a different UID
+ */
+void ArtNetNodeTest::testRDMRequestUIDMismatch() {
+  m_socket->SetDiscardMode(true);
+  ArtNetNode node(interface, &ss, true, 20, m_socket);
+  SetupInputPort(&node);
+  CPPUNIT_ASSERT(node.Start());
+  m_socket->Verify();
+  m_socket->SetDiscardMode(false);
+
+  // We need to send a TodData so we populate the node's UID map
+  PopulateTod();
+
+  // create a new RDM request
+  {
+    SocketVerifier verifer(m_socket);
+    SendRDMRequest(
+      &node,
+      ola::NewSingleCallback(this, &ArtNetNodeTest::ExpectTimeout));
+  }
+
+  // send a response from a different IP
+  {
+    SocketVerifier verifer(m_socket);
+    const uint8_t rdm_response[] = {
+      'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+      0x00, 0x83,
+      0x0, 14,
+      1, 0,
+      0, 0, 0, 0, 0, 0, 0,
+      4,  // net
+      0,  // process
+      0x23,
+      // rdm data
+      1, 28,  // sub code & length
+      0, 1, 0, 0, 0, 2,   // dst uid
+      0x7a, 0x70, 0, 0, 0, 1,   // src uid
+      0, 0, 0, 0, 10,  // transaction, port id, msg count & sub device
+      0x21, 1, 40, 4,  // command, param id, param data length
+      0x5a, 0xa5, 0x5a, 0xa5,  // param data
+      0x4, 0x2d  // checksum, filled in below
+    };
+
+    CPPUNIT_ASSERT(!m_rdm_response);
+    ReceiveFromPeer(rdm_response, sizeof(rdm_response), peer_ip);
+    CPPUNIT_ASSERT(!m_rdm_response);
+  }
+
+  m_clock.AdvanceTime(3, 0);  // timeout is 2s
+  ss.RunOnce(0, 0);
+  CPPUNIT_ASSERT(m_got_rdm_timeout);
 }
 
 

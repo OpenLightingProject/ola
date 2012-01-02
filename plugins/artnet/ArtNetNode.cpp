@@ -1233,8 +1233,9 @@ void ArtNetNodeImpl::HandleRDMResponse(unsigned int port_id,
   const RDMRequest *request = input_port.pending_request;
   if (request->SourceUID() != response->DestinationUID() ||
       request->DestinationUID() != response->SourceUID()) {
-    OLA_INFO << "Got response from/to unexpected UID: " <<
-      response->SourceUID() << " -> " << response->DestinationUID();
+    OLA_INFO << "Got response from/to unexpected UID: req " <<
+      request->SourceUID() << " -> " << request->DestinationUID() << ", res "
+      << response->SourceUID() << " -> " << response->DestinationUID();
     delete response;
     return;
   }
