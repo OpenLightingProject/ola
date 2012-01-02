@@ -71,7 +71,6 @@ bool FtdiDmxPlugin::StartHook() {
 
   FtdiWidgetInfoVector::const_iterator iter;
   for (iter = widgets.begin(); iter != widgets.end(); ++iter) {
-    OLA_INFO << "here";
     AddDevice(new FtdiDmxDevice(this, *iter, GetFrequency()));
   }
   return true;
