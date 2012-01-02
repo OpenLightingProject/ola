@@ -67,7 +67,7 @@ FtdiWidget::~FtdiWidget() {
  * Build a list of all attached ftdi devices
  */
 void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
-  int i = 0;
+  int i = -1;
 
   widgets->clear();
   struct ftdi_device_list* list = NULL;
@@ -77,6 +77,9 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
 
   while (list != NULL) {
     struct usb_device* dev = list->dev;
+    list = list->next;
+    i++;
+
     if (!dev) {
       OLA_WARN << "Device returned from ftdi_usb_find_all was NULL";
       continue;
@@ -111,8 +114,6 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
     if (std::string::npos != v.find("FTDI")) {
       widgets->push_back(FtdiWidgetInfo(sname, sserial, i));
     }
-    list = list->next;
-    i++;
   }
 
   ftdi_list_free(&list);
