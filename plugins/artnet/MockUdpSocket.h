@@ -118,4 +118,19 @@ class MockUdpSocket: public ola::network::UdpSocketInterface {
 };
 
 
+/**
+ * This can be used to break the tests into sections.
+ */
+class SocketVerifier {
+  public:
+    explicit SocketVerifier(MockUdpSocket *socket)
+        : m_socket(socket) {
+    }
+    ~SocketVerifier() {
+      m_socket->Verify();
+    }
+
+  private:
+    MockUdpSocket *m_socket;
+};
 #endif  // PLUGINS_ARTNET_MOCKUDPSOCKET_H_
