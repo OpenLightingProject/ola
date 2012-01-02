@@ -1,0 +1,182 @@
+/*
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Library General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ * Interface.cpp
+ * Represents network interface.
+ * Copyright (C) 2005-2009 Simon Newton
+ */
+
+#include <string.h>
+#include <string>
+#include <vector>
+
+#include "ola/StringUtils.h"
+#include "ola/network/InterfacePicker.h"
+#include "ola/network/NetworkUtils.h"
+
+#ifdef WIN32
+#include "common/network/WindowsInterfacePicker.h"
+#else
+#include "common/network/PosixInterfacePicker.h"
+#endif
+
+namespace ola {
+namespace network {
+
+using std::string;
+using std::vector;
+
+
+Interface::Interface() {
+  memset(hw_address, 0, MAC_LENGTH);
+}
+
+
+Interface::Interface(const string &name,
+                     const IPV4Address &ip_address,
+                     const IPV4Address &broadcast_address,
+                     const IPV4Address &subnet_mask,
+                     const uint8_t *arg_hw_address):
+  name(name),
+  ip_address(ip_address),
+  bcast_address(broadcast_address),
+  subnet_mask(subnet_mask) {
+  memcpy(hw_address, arg_hw_address, MAC_LENGTH);
+}
+
+
+Interface::Interface(const Interface &other) {
+  name = other.name;
+  ip_address = other.ip_address;
+  bcast_address = other.bcast_address;
+  subnet_mask = other.subnet_mask;
+  memcpy(hw_address, other.hw_address, MAC_LENGTH);
+}
+
+
+Interface& Interface::operator=(const Interface &other) {
+  if (this != &other) {
+    name = other.name;
+    ip_address = other.ip_address;
+    bcast_address = other.bcast_address;
+    subnet_mask = other.subnet_mask;
+    memcpy(hw_address, other.hw_address, MAC_LENGTH);
+  }
+  return *this;
+}
+
+
+bool Interface::operator==(const Interface &other) {
+  return (name == other.name &&
+          ip_address == other.ip_address &&
+          subnet_mask == other.subnet_mask);
+}
+
+
+/**
+ * Create a new interface builder
+ */
+InterfaceBuilder::InterfaceBuilder()
+  : m_ip_address(0),
+    m_broadcast_address(0),
+    m_subnet_mask(0) {
+  memset(m_hw_address, 0, MAC_LENGTH);
+}
+
+
+/**
+ * Set the address of the interface to build.
+ */
+bool InterfaceBuilder::SetAddress(const string &ip_address) {
+  return SetAddress(ip_address, &m_ip_address);
+}
+
+
+/**
+ * Set the broadcast address of the interface to build.
+ */
+bool InterfaceBuilder::SetBroadcast(const string &broadcast_address) {
+  return SetAddress(broadcast_address, &m_broadcast_address);
+}
+
+
+/**
+ * Set the subnet mask of the interface to build.
+ */
+bool InterfaceBuilder::SetSubnetMask(const string &mask) {
+  return SetAddress(mask, &m_subnet_mask);
+}
+
+
+/**
+ * Sets the hardware (mac) address.
+ * @param mac_address a string in the form 'nn:nn:nn:nn:nn:nn' or
+ * 'nn.nn.nn.nn.nn.nn'
+ */
+bool InterfaceBuilder::SetHardwareAddress(const string &mac_address) {
+  vector<string> tokens;
+  ola::StringSplit(mac_address, tokens, ":.");
+  if (tokens.size() != MAC_LENGTH)
+    return false;
+
+  uint8_t tmp_address[MAC_LENGTH];
+  for (unsigned int i = 0; i < MAC_LENGTH; i++) {
+    if (!ola::HexStringToInt(tokens[i], tmp_address + i))
+      return false;
+  }
+  memcpy(m_hw_address, tmp_address, MAC_LENGTH);
+  return true;
+}
+
+
+/**
+ * Reset the builder object
+ */
+void InterfaceBuilder::Reset() {
+  m_name = "";
+  memset(m_hw_address, 0, MAC_LENGTH);
+  m_ip_address = IPV4Address(0);
+  m_broadcast_address = IPV4Address(0);
+  m_subnet_mask = IPV4Address(0);
+}
+
+
+/**
+ * Return a new interface object.
+ * Maybe in the future we should check that the broadcast address, ip address
+ * and netmask are consistent. We could even infer the broadcast_address if it
+ * isn't provided.
+ */
+Interface InterfaceBuilder::Construct() {
+  return Interface(m_name,
+                   m_ip_address,
+                   m_broadcast_address,
+                   m_subnet_mask,
+                   m_hw_address);
+}
+
+
+/**
+ * Set a IPV4Address object from a string
+ */
+bool InterfaceBuilder::SetAddress(const string &str, IPV4Address *target) {
+  IPV4Address tmp_address;
+  if (!IPV4Address::FromString(str, &tmp_address))
+    return false;
+  *target = tmp_address;
+  return true;
+}
+}  // network
+}  // ola

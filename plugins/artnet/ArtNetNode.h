@@ -273,6 +273,7 @@ class ArtNetNodeImpl {
     bool CheckInputPortState(uint8_t port_id, const string &action);
     bool CheckOutputPortState(uint8_t port_id, const string &action);
     bool CheckPortState(uint8_t port_id, const string &action, bool is_output);
+    bool CheckPortId(uint8_t port_id);
     void UpdatePortFromTodPacket(uint8_t port_id,
                                  const IPV4Address &source_address,
                                  const artnet_toddata_t &packet,
@@ -440,17 +441,20 @@ class ArtNetNode {
                                              on_discover,
                                              on_flush,
                                              on_rdm_request);
-  }
+    }
 
-  bool SendTimeCode(const ola::timecode::TimeCode &timecode) {
-    return m_impl.SendTimeCode(timecode);
-  }
+    // Time Code methods
+    bool SendTimeCode(const ola::timecode::TimeCode &timecode) {
+      return m_impl.SendTimeCode(timecode);
+    }
 
   private:
     ArtNetNodeImpl m_impl;
     ArtNetNodeImplRDMWrapper *m_wrappers[ARTNET_MAX_PORTS];
     ola::rdm::DiscoverableQueueingRDMController
         *m_controllers[ARTNET_MAX_PORTS];
+
+    bool CheckPortId(uint8_t port_id);
 };
 }  // artnet
 }  // plugin

@@ -52,7 +52,8 @@ class Universe: public ola::rdm::RDMControllerInterface {
     };
 
     Universe(unsigned int uid, class UniverseStore *store,
-             ExportMap *export_map);
+             ExportMap *export_map,
+             Clock *clock);
     ~Universe();
 
     // Properties for this universe
@@ -144,6 +145,7 @@ class Universe: public ola::rdm::RDMControllerInterface {
     DmxBuffer m_buffer;
     ExportMap *m_export_map;
     map<UID, OutputPort*> m_output_uids;
+    Clock *m_clock;
 
     Universe(const Universe&);
     Universe& operator=(const Universe&);

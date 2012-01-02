@@ -23,8 +23,9 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <string.h>
 #include <algorithm>
-#include <string>
+#include <iostream>
 #include <queue>
+#include <string>
 
 #include "ola/Logging.h"
 #include "ola/network/IPV4Address.h"
@@ -73,18 +74,26 @@ ssize_t MockUdpSocket::SendTo(const uint8_t *buffer,
   if (m_discard_mode)
     return size;
 
-  OLA_INFO << "sending packet of size " << size;
   CPPUNIT_ASSERT(m_expected_calls.size());
   expected_call call = m_expected_calls.front();
 
   CPPUNIT_ASSERT_EQUAL(call.size, size);
-  /*
-  unsigned int min_size = std::min(size, call.size);
-  for (unsigned int i = 0; i < min_size; i++)
-    OLA_INFO << i << ": " << (int) call.data[i] << ", " << (int) buffer[i] <<
-      (call.data[i] != buffer[i] ? " !!!!" : "");
-  */
-  CPPUNIT_ASSERT_EQUAL(0, memcmp(call.data, buffer, size));
+  if (memcmp(call.data, buffer, size) != 0) {
+    unsigned int min_size = std::min(size, call.size);
+    for (unsigned int i = 0; i < min_size; i++) {
+      if (call.data[i] != buffer[i]) {
+        std::stringstream str;
+        str << "Offset " << i << ": 0x" << std::hex <<
+          static_cast<int>(call.data[i]) << " != 0x" <<
+          static_cast<int>(buffer[i]);
+        CPPUNIT_ASSERT_EQUAL_MESSAGE(
+            str.str(),
+            static_cast<int>(call.data[i]),
+            static_cast<int>(buffer[i]));
+      }
+      CPPUNIT_ASSERT_EQUAL(call.data[i], buffer[i]);
+    }
+  }
   CPPUNIT_ASSERT_EQUAL(call.address, ip_address);
   CPPUNIT_ASSERT_EQUAL(call.port, port);
   m_expected_calls.pop();
@@ -111,11 +120,17 @@ bool MockUdpSocket::RecvFrom(uint8_t *buffer,
                              ssize_t *data_read,
                              ola::network::IPV4Address &source,
                              uint16_t &port) const {
-  // not implemented yet
-  (void) buffer;
-  (void) data_read;
-  (void) source;
-  (void) port;
+  CPPUNIT_ASSERT(m_received_data.size());
+  const received_data &new_data = m_received_data.front();
+
+  CPPUNIT_ASSERT(static_cast<unsigned int>(*data_read) >= new_data.size);
+  unsigned int size = std::min(new_data.size,
+                               static_cast<unsigned int>(*data_read));
+  memcpy(buffer, new_data.data, size);
+  *data_read = new_data.size;
+  source = new_data.address;
+  port = new_data.port;
+  m_received_data.pop();
   return true;
 }
 
@@ -155,16 +170,6 @@ bool MockUdpSocket::SetTos(uint8_t tos) {
   return true;
 }
 
-/*
-void MockUdpSocket::NewData(uint8_t *buffer,
-                            ssize_t *data_read,
-                            struct sockaddr_in &source) {
-  m_buffer = buffer;
-  m_available = *data_read;
-  m_source = source;
-  OnData()->Run();
-}
-*/
 
 void MockUdpSocket::AddExpectedData(const uint8_t *data,
                                     unsigned int size,
@@ -172,6 +177,16 @@ void MockUdpSocket::AddExpectedData(const uint8_t *data,
                                     uint16_t port) {
   expected_call call = {data, size, ip, port};
   m_expected_calls.push(call);
+}
+
+
+void MockUdpSocket::ReceiveData(const uint8_t *data,
+                                unsigned int size,
+                                const IPV4Address &ip,
+                                uint16_t port) {
+  expected_call call = {data, size, ip, port};
+  m_received_data.push(call);
+  PerformRead();
 }
 
 

@@ -77,6 +77,8 @@ class OlaServerServiceImplTest: public CppUnit::TestFixture {
 
   private:
     ola::rdm::UID m_uid;
+    ola::Clock m_clock;
+
     void CallGetDmx(OlaServerServiceImpl *impl,
                     int universe_id,
                     class GetDmxCheck &check);
@@ -397,13 +399,13 @@ void OlaServerServiceImplTest::testUpdateDmxData() {
   DmxBuffer dmx_data2("different data hmm");
 
   // Update a universe that doesn't exist
-  ola::Clock::CurrentTime(&time1);
+  m_clock.CurrentTime(&time1);
   CallUpdateDmxData(&service1, universe_id, dmx_data, missing_universe_check);
   Universe *universe = store.GetUniverse(universe_id);
   CPPUNIT_ASSERT(!universe);
 
   // Update a universe that exists
-  ola::Clock::CurrentTime(&time1);
+  m_clock.CurrentTime(&time1);
   universe = store.GetUniverseOrCreate(universe_id);
   CallUpdateDmxData(&service1, universe_id, dmx_data, ack_check);
   CPPUNIT_ASSERT(dmx_data == universe->GetDMX());
@@ -418,7 +420,7 @@ void OlaServerServiceImplTest::testUpdateDmxData() {
   CPPUNIT_ASSERT(dmx_data == universe->GetDMX());
 
   // Now send a new update
-  ola::Clock::CurrentTime(&time1);
+  m_clock.CurrentTime(&time1);
   CallUpdateDmxData(&service2, universe_id, dmx_data2, ack_check);
   CPPUNIT_ASSERT(dmx_data2 == universe->GetDMX());
 }

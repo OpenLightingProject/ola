@@ -179,7 +179,7 @@ void E133UniverseController::SendRDMRequest(const RDMRequest *request,
   }
 
   ola::TimeStamp expiry_time;
-  ola::Clock::CurrentTime(&expiry_time);
+  m_clock.CurrentTime(&expiry_time);
   PendingE133Request pending_request(
       request,
       handler,

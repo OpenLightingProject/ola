@@ -24,6 +24,7 @@
 #include <time.h>
 #include <string>
 #include <vector>
+#include "ola/Clock.h"
 #include "ola/ExportMap.h"
 #include "ola/OlaCallbackClient.h"
 #include "ola/network/Interface.h"
@@ -121,6 +122,7 @@ class OlaHttpServer {
     ola::network::Interface m_interface;
     RDMHttpModule m_rdm_module;
     time_t m_start_time_t;
+    Clock m_clock;
 
     OlaHttpServer(const OlaHttpServer&);
     OlaHttpServer& operator=(const OlaHttpServer&);

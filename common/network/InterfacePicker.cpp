@@ -39,39 +39,6 @@ using std::string;
 using std::vector;
 
 
-Interface::Interface() {
-  memset(hw_address, 0, MAC_LENGTH);
-}
-
-
-Interface::Interface(const Interface &other) {
-  name = other.name;
-  ip_address = other.ip_address;
-  bcast_address = other.bcast_address;
-  subnet_mask = other.subnet_mask;
-  memcpy(hw_address, other.hw_address, MAC_LENGTH);
-}
-
-
-Interface& Interface::operator=(const Interface &other) {
-  if (this != &other) {
-    name = other.name;
-    ip_address = other.ip_address;
-    bcast_address = other.bcast_address;
-    subnet_mask = other.subnet_mask;
-    memcpy(hw_address, other.hw_address, MAC_LENGTH);
-  }
-  return *this;
-}
-
-
-bool Interface::operator==(const Interface &other) {
-  return (name == other.name &&
-          ip_address == other.ip_address &&
-          subnet_mask == other.subnet_mask);
-}
-
-
 /*
  * Select an interface to use
  * @param interface, the interface to populate

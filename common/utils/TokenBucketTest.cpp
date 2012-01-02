@@ -25,6 +25,7 @@
 #include "ola/Logging.h"
 
 
+using ola::Clock;
 using ola::TimeInterval;
 using ola::TimeStamp;
 using ola::TokenBucket;
@@ -54,10 +55,11 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TokenBucketTest);
  */
 void TokenBucketTest::testTokenBucket() {
   TimeStamp now;
+  Clock clock;
   TimeInterval ten_ms(10000);
   TimeInterval one_hundred_ms(100000);
   TimeInterval one_second(1000000);
-  ola::Clock::CurrentTime(&now);
+  clock.CurrentTime(&now);
   TokenBucket bucket(0, 10, 10, now);  // one every 100ms
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, bucket.Count(now));
 
@@ -81,11 +83,12 @@ void TokenBucketTest::testTokenBucket() {
 
 void TokenBucketTest::testTokenBucketTwo() {
   TimeStamp now;
+  Clock clock;
   TimeInterval ten_ms(10000);
   TimeInterval one_hundred_ms(100000);
   TimeInterval one_second(1000000);
   TimeInterval five_minutes(5 * 60 * 1000000);
-  ola::Clock::CurrentTime(&now);
+  clock.CurrentTime(&now);
   TokenBucket bucket(0, 40, 40, now);  // one every 25ms
   CPPUNIT_ASSERT_EQUAL((unsigned int) 0, bucket.Count(now));
 

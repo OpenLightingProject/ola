@@ -66,13 +66,15 @@ const char Universe::K_UNIVERSE_SOURCE_CLIENTS_VAR[] =
  * @param export_map the ExportMap that we update
  */
 Universe::Universe(unsigned int universe_id, UniverseStore *store,
-                   ExportMap *export_map)
+                   ExportMap *export_map,
+                   Clock *clock)
     : m_universe_name(""),
       m_universe_id(universe_id),
       m_active_priority(DmxSource::PRIORITY_MIN),
       m_merge_mode(Universe::MERGE_LTP),
       m_universe_store(store),
-      m_export_map(export_map) {
+      m_export_map(export_map),
+      m_clock(clock) {
   stringstream universe_id_str, universe_name_str;
   universe_id_str << universe_id;
   m_universe_id_str = universe_id_str.str();
@@ -625,7 +627,7 @@ bool Universe::MergeAll(const InputPort *port, const Client *client) {
 
   m_active_priority = DmxSource::PRIORITY_MIN;
   TimeStamp now;
-  Clock::CurrentTime(&now);
+  m_clock->CurrentTime(&now);
   bool changed_source_is_active = false;
 
   // Find the highest active ports
