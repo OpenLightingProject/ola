@@ -48,6 +48,7 @@ using ola::network::Interface;
 using ola::plugin::artnet::ArtNetNode;
 using ola::rdm::RDMCallback;
 using ola::rdm::RDMCommand;
+using ola::rdm::RDMGetRequest;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
@@ -66,8 +67,10 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testLTPMerge);
   CPPUNIT_TEST(testControllerDiscovery);
   CPPUNIT_TEST(testControllerIncrementalDiscovery);
+  CPPUNIT_TEST(testUnsolicitedTod);
   CPPUNIT_TEST(testResponderDiscovery);
   CPPUNIT_TEST(testRDMResponder);
+  CPPUNIT_TEST(testRDMController);
   CPPUNIT_TEST(testTimeCode);
   CPPUNIT_TEST_SUITE_END();
 
@@ -86,8 +89,10 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
     void testLTPMerge();
     void testControllerDiscovery();
     void testControllerIncrementalDiscovery();
+    void testUnsolicitedTod();
     void testResponderDiscovery();
     void testRDMResponder();
+    void testRDMController();
     void testTimeCode();
 
   private:
@@ -100,6 +105,7 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
     UIDSet m_uids;
     const RDMRequest *m_rdm_request;
     RDMCallback *m_rdm_callback;
+    const RDMResponse *m_rdm_response;
 
     Interface CreateInterface();
 
@@ -126,6 +132,14 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
     void HandleRDM(const RDMRequest *request, RDMCallback *callback) {
       m_rdm_request = request;
       m_rdm_callback = callback;
+    }
+
+    void FinalizeRDM(ola::rdm::rdm_response_code status,
+                     const RDMResponse *response,
+                     const std::vector<string> &packets) {
+      CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_COMPLETED_OK, status);
+      m_rdm_response = response;
+      (void) packets;
     }
 
     static const uint8_t POLL_MESSAGE[];
@@ -1374,6 +1388,69 @@ void ArtNetNodeTest::testControllerIncrementalDiscovery() {
 
 
 /**
+ * Check that unsolicated TOD messages work
+ */
+void ArtNetNodeTest::testUnsolicitedTod() {
+  ola::network::Interface interface = CreateInterface();
+  MockUdpSocket *socket = new MockUdpSocket();
+  socket->SetDiscardMode(true);
+
+  ArtNetNode node(interface,
+                  &ss,
+                  true,
+                  20,
+                  socket);
+
+  uint8_t port_id = 1;
+  node.SetNetAddress(4);
+  node.SetSubnetAddress(2);
+  node.SetPortUniverse(ola::plugin::artnet::ARTNET_INPUT_PORT, port_id, 3);
+
+  CPPUNIT_ASSERT(node.SetUnsolicatedUIDSetHandler(
+      port_id,
+      ola::NewCallback(this, &ArtNetNodeTest::DiscoveryComplete)));
+
+  IPV4Address peer_ip;
+  ola::network::IPV4Address::FromString("10.0.0.10", &peer_ip);
+
+  CPPUNIT_ASSERT(node.Start());
+  socket->Verify();
+  socket->SetDiscardMode(false);
+
+  CPPUNIT_ASSERT(!m_discovery_done);
+
+  // receive a ArtTod
+  const uint8_t art_tod[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x81,
+    0x0, 14,
+    1,  // rdm standard
+    1,  // first port
+    0, 0, 0, 0, 0, 0, 0,
+    4,  // net
+    0,  // full tod
+    0x23,  // universe address
+    0, 1,  // uid count
+    0,  // block count
+    1,  // uid count
+    0x7a, 0x70, 0, 0, 0, 0,
+  };
+
+  socket->AddReceivedData(
+      art_tod,
+      sizeof(art_tod),
+      peer_ip,
+      6454);
+  socket->PerformRead();
+
+  CPPUNIT_ASSERT(m_discovery_done);
+  UIDSet uids;
+  UID uid1(0x7a70, 0);
+  uids.AddUID(uid1);
+}
+
+
+/**
  * Check that we respond to Tod messages
  */
 void ArtNetNodeTest::testResponderDiscovery() {
@@ -1645,6 +1722,132 @@ void ArtNetNodeTest::testRDMResponder() {
   // clean up
   delete m_rdm_request;
   m_rdm_request = NULL;
+}
+
+
+/**
+ * Check that the node works as a RDM controller.
+ */
+void ArtNetNodeTest::testRDMController() {
+  ola::network::Interface interface = CreateInterface();
+  MockUdpSocket *socket = new MockUdpSocket();
+  socket->SetDiscardMode(true);
+
+  ArtNetNode node(interface,
+                  &ss,
+                  true,  // always broadcast dmx
+                  20,
+                  socket);
+
+  uint8_t port_id = 1;
+  node.SetNetAddress(4);
+  node.SetSubnetAddress(2);
+  node.SetPortUniverse(ola::plugin::artnet::ARTNET_INPUT_PORT, port_id, 3);
+
+  CPPUNIT_ASSERT(node.Start());
+  socket->Verify();
+  socket->SetDiscardMode(false);
+
+  // We need to send a TodData so we populate the node's UID map
+  IPV4Address peer_ip;
+  ola::network::IPV4Address::FromString("10.0.0.10", &peer_ip);
+  const uint8_t art_tod[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x81,
+    0x0, 14,
+    1,  // rdm standard
+    1,  // first port
+    0, 0, 0, 0, 0, 0, 0,
+    4,  // net
+    0,  // full tod
+    0x23,  // universe address
+    0, 1,  // uid count
+    0,  // block count
+    1,  // uid count
+    0x7a, 0x70, 0, 0, 0, 0,
+  };
+
+  socket->AddReceivedData(
+      art_tod,
+      sizeof(art_tod),
+      peer_ip,
+      6454);
+  socket->PerformRead();
+
+  // create a new RDM request
+  UID source(1, 2);
+  UID destination(0x7a70, 0);
+
+  const RDMGetRequest *request = new RDMGetRequest(
+      source,
+      destination,
+      0,  // transaction #
+      1,  // port id
+      0,  // message count
+      10,  // sub device
+      296,  // param id
+      NULL,  // data
+      0);  // data length
+
+  const uint8_t rdm_request[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x83,
+    0x0, 14,
+    1, 0,
+    0, 0, 0, 0, 0, 0, 0,
+    4,  // net
+    0,  // process
+    0x23,
+    // rdm data
+    1, 24,  // sub code & length
+    0x7a, 0x70, 0, 0, 0, 0,   // dst uid
+    0, 1, 0, 0, 0, 2,   // src uid
+    0, 1, 0, 0, 10,  // transaction, port id, msg count & sub device
+    0x20, 0x1, 0x28, 0,  // command, param id, param data length
+    0x02, 0x26
+  };
+
+  socket->AddExpectedData(
+    rdm_request,
+    sizeof(rdm_request),
+    peer_ip,
+    ARTNET_PORT);
+
+  node.SendRDMRequest(
+    port_id,
+    request,
+    ola::NewSingleCallback(this, &ArtNetNodeTest::FinalizeRDM));
+
+  // now send a response
+  const uint8_t rdm_response[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x83,
+    0x0, 14,
+    1, 0,
+    0, 0, 0, 0, 0, 0, 0,
+    4,  // net
+    0,  // process
+    0x23,
+    // rdm data
+    1, 28,  // sub code & length
+    0, 1, 0, 0, 0, 2,   // dst uid
+    0x7a, 0x70, 0, 0, 0, 0,   // dst uid
+    0, 0, 0, 0, 10,  // transaction, port id, msg count & sub device
+    0x21, 1, 40, 4,  // command, param id, param data length
+    0x5a, 0xa5, 0x5a, 0xa5,  // param data
+    0x4, 0x2c  // checksum, filled in below
+  };
+
+  socket->AddReceivedData(
+      rdm_response,
+      sizeof(rdm_response),
+      peer_ip,
+      6454);
+  CPPUNIT_ASSERT(!m_rdm_response);
+  socket->PerformRead();
+
+  CPPUNIT_ASSERT(m_rdm_response);
+  delete m_rdm_response;
 }
 
 
