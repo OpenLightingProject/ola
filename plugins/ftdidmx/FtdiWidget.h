@@ -124,6 +124,9 @@ class FtdiWidget {
   /** Get the widget's FTD2XX ID number */
   uint32_t Id() const { return m_id; }
 
+  string Description() const
+  { return m_name + " with serial number : " + m_serial +" "; }
+
  private:
   string m_serial;
   string m_name;

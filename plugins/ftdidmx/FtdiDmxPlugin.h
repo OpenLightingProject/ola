@@ -57,6 +57,7 @@ class FtdiDmxPlugin : public Plugin {
   bool StartHook();
   bool StopHook();
   bool SetDefaultPreferences();
+  unsigned int GetFrequency();
 
   FtdiDeviceVector m_devices;
 

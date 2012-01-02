@@ -31,20 +31,20 @@ using std::string;
 
 FtdiDmxDevice::FtdiDmxDevice(AbstractPlugin *owner,
                              FtdiWidgetInfo &devInfo,
-                             Preferences *preferences) :
+                             unsigned int freq) :
   Device(owner, devInfo.Description()),
   m_devInfo(devInfo),
-  m_preferences(preferences) {
-  auto_ptr<ola::plugin::ftdidmx::FtdiWidget>
-    m_device(new FtdiWidget(devInfo.Serial(), devInfo.Name(), devInfo.Id()));
+  m_frequency(freq) {
+  m_device = new FtdiWidget(devInfo.Serial(), devInfo.Name(), devInfo.Id());
 }
 
 FtdiDmxDevice::~FtdiDmxDevice() {
   if (m_device->IsOpen()) m_device->Close();
+  delete m_device;
 }
 
 bool FtdiDmxDevice::StartHook() {
-  AddPort(new FtdiDmxOutputPort(this, m_devInfo.Id(), m_preferences));
+  AddPort(new FtdiDmxOutputPort(this, m_device, m_devInfo.Id(), m_frequency));
   return true;
 }
 }

@@ -23,29 +23,21 @@
 
 #include "ola/Clock.h"
 #include "ola/StringUtils.h"
-#include "plugins/ftdidmx/FtdiDmxPlugin.h"
+#include "plugins/ftdidmx/FtdiWidget.h"
 #include "plugins/ftdidmx/FtdiDmxThread.h"
 
 namespace ola {
 namespace plugin {
 namespace ftdidmx {
 
-FtdiDmxThread::FtdiDmxThread(FtdiDmxDevice *device, Preferences *preferences)
+FtdiDmxThread::FtdiDmxThread(FtdiWidget *device, unsigned int freq)
   : m_device(device),
-    m_preferences(preferences),
-    m_term(false) {
-  SetupPreferences();
+    m_term(false),
+    m_frequency(freq) {
 }
 
 FtdiDmxThread::~FtdiDmxThread() {
   Stop();
-}
-
-void FtdiDmxThread::SetupPreferences() {
-  string value = m_preferences->GetValue(FtdiDmxPlugin::K_FREQUENCY);
-
-  if (!ola::StringToInt(value, &m_frequency))
-    ola::StringToInt(FtdiDmxPlugin::DEFAULT_FREQUENCY, &m_frequency);
 }
 
 void FtdiDmxThread::CheckTimeGranularity() {
@@ -71,8 +63,11 @@ bool FtdiDmxThread::Stop() {
 }
 
 bool FtdiDmxThread::WriteDMX(const DmxBuffer &buffer) {
-  m_buffer = buffer;
-  return true;
+  {
+    ola::thread::MutexLocker locker(&m_buffer_mutex);
+    m_buffer = buffer;
+    return true;
+  }
 }
 
 void *FtdiDmxThread::Run() {
@@ -82,19 +77,19 @@ void *FtdiDmxThread::Run() {
     (static_cast<double>(1000) / m_frequency) + static_cast<double>(0.5)));
 
   // Setup the device
-  if (m_device->GetWidget()->Open() == false)
+  if (m_device->Open() == false)
     OLA_WARN << "Error Opening device";
-  if (m_device->GetWidget()->Reset() == false)
+  if (m_device->Reset() == false)
     OLA_WARN << "Error Resetting device";
-  if (m_device->GetWidget()->SetBaudRate() == false)
+  if (m_device->SetBaudRate() == false)
     OLA_WARN << "Error Setting baudrate";
-  if (m_device->GetWidget()->SetLineProperties() == false)
+  if (m_device->SetLineProperties() == false)
     OLA_WARN << "Error setting line properties";
-  if (m_device->GetWidget()->SetFlowControl() == false)
+  if (m_device->SetFlowControl() == false)
     OLA_WARN << "Error setting flow control";
-  if (m_device->GetWidget()->PurgeBuffers() == false)
+  if (m_device->PurgeBuffers() == false)
     OLA_WARN << "Error purging buffers";
-  if (m_device->GetWidget()->ClearRts() == false)
+  if (m_device->ClearRts() == false)
     OLA_WARN << "Error clearing rts";
 
   while (1) {
@@ -106,19 +101,19 @@ void *FtdiDmxThread::Run() {
 
     Clock::CurrentTime(&ts1);
 
-    if (m_device->GetWidget()->SetBreak(true) == false)
+    if (m_device->SetBreak(true) == false)
       goto framesleep;
 
     if (m_granularity == Good)
       usleep(DMX_BREAK);
 
-    if (m_device->GetWidget()->SetBreak(false) == false)
+    if (m_device->SetBreak(false) == false)
       goto framesleep;
 
     if (m_granularity == Good)
       usleep(DMX_MAB);
 
-    if (m_device->GetWidget()->Write(m_buffer) == false)
+    if (m_device->Write(m_buffer) == false)
       goto framesleep;
 
   framesleep:

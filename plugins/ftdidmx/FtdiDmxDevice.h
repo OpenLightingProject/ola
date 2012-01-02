@@ -40,20 +40,19 @@ class FtdiDmxDevice : public Device {
  public:
   FtdiDmxDevice(AbstractPlugin *owner,
                 FtdiWidgetInfo &devInfo,
-                Preferences *preferences);
+                unsigned int freq);
   virtual ~FtdiDmxDevice();
 
-  string DeviceId() const { return m_device.get()->Serial(); }
-  FtdiWidget* GetWidget() { return m_device.get(); }
+  string DeviceId() const { return m_device->Serial(); }
   string Description() const { return m_devInfo.Description(); }
 
  protected:
   bool StartHook();
 
  private:
-  auto_ptr<ola::plugin::ftdidmx::FtdiWidget> m_device;
+  FtdiWidget *m_device;
   FtdiWidgetInfo m_devInfo;
-  Preferences *m_preferences;
+  unsigned int m_frequency;
 };
 }
 }

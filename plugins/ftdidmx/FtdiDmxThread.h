@@ -24,7 +24,7 @@
 #include "ola/DmxBuffer.h"
 #include "olad/Preferences.h"
 #include "ola/thread/Thread.h"
-#include "plugins/ftdidmx/FtdiDmxDevice.h"
+#include "plugins/ftdidmx/FtdiWidget.h"
 
 namespace ola {
 namespace plugin {
@@ -32,7 +32,7 @@ namespace ftdidmx {
 
 class FtdiDmxThread : public ola::thread::Thread {
   public:
-    FtdiDmxThread(FtdiDmxDevice *device, Preferences *preferences);
+    FtdiDmxThread(FtdiWidget *device, unsigned int freq);
     ~FtdiDmxThread();
 
     bool Stop();
@@ -41,21 +41,20 @@ class FtdiDmxThread : public ola::thread::Thread {
 
   private:
     void CheckTimeGranularity();
-    void SetupPreferences();
 
     enum TimerGranularity { Unknown, Good, Bad };
 
     TimerGranularity m_granularity;
-    FtdiDmxDevice *m_device;
+    FtdiWidget *m_device;
+    bool m_term;
     int unsigned m_frequency;
     Preferences *m_preferences;
-    bool m_term;
     DmxBuffer m_buffer;
     ola::thread::Mutex m_term_mutex;
+    ola::thread::Mutex m_buffer_mutex;
 
     static const uint32_t DMX_MAB = 16;
     static const uint32_t DMX_BREAK = 110;
-
 };
 }
 }

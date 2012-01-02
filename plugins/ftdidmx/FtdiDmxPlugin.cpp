@@ -22,6 +22,7 @@
 #include <string>
 #include <memory>
 
+#include "ola/StringUtils.h"
 #include "olad/Preferences.h"
 #include "olad/PluginAdaptor.h"
 #include "plugins/ftdidmx/FtdiDmxPlugin.h"
@@ -73,7 +74,7 @@ bool FtdiDmxPlugin::StartHook() {
 
   for (FtdiWidgetInfoVector::iterator iter = devices.begin();
        iter != devices.end(); ++iter) {
-    AddDevice(new FtdiDmxDevice(this, *iter, m_preferences));
+    AddDevice(new FtdiDmxDevice(this, *iter, GetFrequency()));
   }
 
   return true;
@@ -116,6 +117,15 @@ bool FtdiDmxPlugin::SetDefaultPreferences() {
     return false;
 
   return true;
+}
+
+int unsigned FtdiDmxPlugin::GetFrequency() {
+  unsigned int frequency;
+
+  if (!StringToInt(m_preferences->GetValue(K_FREQUENCY) ,
+                   &frequency))
+    StringToInt(DEFAULT_FREQUENCY, &frequency);
+  return frequency;
 }
 }
 }
