@@ -39,23 +39,22 @@ using std::auto_ptr;
 class FtdiDmxDevice : public Device {
  public:
   FtdiDmxDevice(AbstractPlugin *owner,
-                FtdiWidgetInfo &devInfo,
-                unsigned int freq);
-  virtual ~FtdiDmxDevice();
+                const FtdiWidgetInfo &widget_info,
+                unsigned int frequency);
+  ~FtdiDmxDevice();
 
-  string DeviceId() const { return m_device.get()->Serial(); }
-  string Description() const { return m_devInfo.Description(); }
+  string DeviceId() const { return m_device->Serial(); }
+  string Description() const { return m_widget_info.Description(); }
 
  protected:
   bool StartHook();
 
  private:
   auto_ptr<FtdiWidget> m_device;
-  FtdiWidgetInfo m_devInfo;
+  const FtdiWidgetInfo m_widget_info;
   unsigned int m_frequency;
 };
-}
-}
-}
-
+}  // ftdidmx
+}  // plugin
+}  // ola
 #endif  // PLUGINS_FTDIDMX_FTDIDMXDEVICE_H_

@@ -35,30 +35,29 @@ namespace plugin {
 namespace ftdidmx {
 
 class FtdiDmxOutputPort : public ola::BasicOutputPort {
- public:
-  ~FtdiDmxOutputPort() { m_thread.Stop(); }
+  public:
+    FtdiDmxOutputPort(FtdiDmxDevice *parent,
+                      FtdiWidget *device,
+                      unsigned int id,
+                      unsigned int freq)
+        : BasicOutputPort(parent, id),
+          m_device(device),
+          m_thread(device, freq) {
+      m_thread.Start();
+    }
+    ~FtdiDmxOutputPort() { m_thread.Stop(); }
 
-  explicit FtdiDmxOutputPort(FtdiDmxDevice *parent,
-                             FtdiWidget *device,
-                             unsigned int id,
-                             unsigned int freq) :
-      BasicOutputPort(parent, id),
-      m_device(device),
-      m_thread(device, freq)
-      { m_thread.Start(); }
+    bool WriteDMX(const ola::DmxBuffer &buffer, uint8_t) {
+      return m_thread.WriteDMX(buffer);
+    }
 
-  bool WriteDMX(const ola::DmxBuffer &buffer, uint8_t priority) {
-    (void) priority;
-    return m_thread.WriteDMX(buffer);
-  }
+    string Description() const { return m_device->Description(); }
 
-  string Description() const { return m_device->Description(); }
-
- private:
-  FtdiWidget *m_device;
-  FtdiDmxThread m_thread;
+  private:
+    FtdiWidget *m_device;
+    FtdiDmxThread m_thread;
 };
-}
-}
-}
+}  // ftdidmx
+}  // plugin
+}  // ola
 #endif  // PLUGINS_FTDIDMX_FTDIDMXPORT_H_

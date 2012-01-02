@@ -31,22 +31,29 @@ namespace ftdidmx {
 using std::string;
 
 FtdiDmxDevice::FtdiDmxDevice(AbstractPlugin *owner,
-                             FtdiWidgetInfo &devInfo,
-                             unsigned int freq) :
-  Device(owner, devInfo.Description()),
-  m_devInfo(devInfo),
-  m_frequency(freq) {
-  auto_ptr<FtdiWidget> m_device(new FtdiWidget(devInfo.Serial(), devInfo.Name(), devInfo.Id()));
+                             const FtdiWidgetInfo &widget_info,
+                             unsigned int frequency)
+    : Device(owner, widget_info.Description()),
+      m_widget_info(widget_info),
+      m_frequency(frequency) {
+  m_device.reset(
+      new FtdiWidget(widget_info.Serial(),
+                     widget_info.Name(),
+                     widget_info.Id()));
 }
 
 FtdiDmxDevice::~FtdiDmxDevice() {
-  if (m_device->IsOpen()) m_device->Close();
+  if (m_device->IsOpen())
+    m_device->Close();
 }
 
 bool FtdiDmxDevice::StartHook() {
-  AddPort(new FtdiDmxOutputPort(this, m_device.get(), m_devInfo.Id(), m_frequency));
+  AddPort(new FtdiDmxOutputPort(this,
+                                m_device.get(),
+                                m_widget_info.Id(),
+                                m_frequency));
   return true;
 }
-}
-}
-}
+}  // ftdidmx
+}  // plugin
+}  // ola

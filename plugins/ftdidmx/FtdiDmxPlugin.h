@@ -33,12 +33,12 @@ namespace ola {
 namespace plugin {
 namespace ftdidmx {
 
-using ola::PluginAdaptor;
-typedef vector<FtdiDmxDevice*> FtdiDeviceVector;
 
 class FtdiDmxPlugin : public Plugin {
  public:
-  explicit FtdiDmxPlugin(PluginAdaptor *plugin_adaptor);
+  explicit FtdiDmxPlugin(ola::PluginAdaptor *plugin_adaptor)
+      : Plugin(plugin_adaptor) {
+  }
 
   ola_plugin_id Id() const { return OLA_PLUGIN_FTDIDMX; }
   string Name() const { return PLUGIN_NAME; }
@@ -50,22 +50,22 @@ class FtdiDmxPlugin : public Plugin {
   void AddDevice(FtdiDmxDevice *device);
   void DeleteDevice(FtdiDmxDevice *device);
 
-  static const char DEFAULT_FREQUENCY[];
-  static const char K_FREQUENCY[];
-
  private:
+  typedef vector<FtdiDmxDevice*> FtdiDeviceVector;
+
+  FtdiDeviceVector m_devices;
+
   bool StartHook();
   bool StopHook();
   bool SetDefaultPreferences();
   unsigned int GetFrequency();
 
-  FtdiDeviceVector m_devices;
-
+  static const char DEFAULT_FREQUENCY[];
+  static const char K_FREQUENCY[];
   static const char PLUGIN_NAME[];
   static const char PLUGIN_PREFIX[];
 };
-}
-}
-}
-
+}  // ftdidmx
+}  // plugin
+}  // ola
 #endif  // PLUGINS_FTDIDMX_FTDIDMXPLUGIN_H_

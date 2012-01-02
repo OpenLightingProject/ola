@@ -13,14 +13,13 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * FtdiDmxPlugin.h
+ * FtdiDmxPlugin.cpp
  * The FTDI usb chipset DMX plugin for ola
  * Copyright (C) 2011 Rui Barreiros
  */
 
 #include <vector>
 #include <string>
-#include <memory>
 
 #include "ola/StringUtils.h"
 #include "olad/Preferences.h"
@@ -33,70 +32,75 @@ namespace ola {
 namespace plugin {
 namespace ftdidmx {
 
-using ola::PluginAdaptor;
-using std::auto_ptr;
 
-const char FtdiDmxPlugin::PLUGIN_NAME[] = "FTDI USB Chipset Serial DMX";
-const char FtdiDmxPlugin::PLUGIN_PREFIX[] = "ftdidmx";
 const char FtdiDmxPlugin::DEFAULT_FREQUENCY[] = "30";
 const char FtdiDmxPlugin::K_FREQUENCY[] = "frequency";
+const char FtdiDmxPlugin::PLUGIN_NAME[] = "FTDI USB Chipset Serial DMX";
+const char FtdiDmxPlugin::PLUGIN_PREFIX[] = "ftdidmx";
 
 /*
  * Entry point to this plugin
  */
-extern "C" ola::AbstractPlugin* create(PluginAdaptor *plugin_adaptor) {
+extern "C" ola::AbstractPlugin* create(ola::PluginAdaptor *plugin_adaptor) {
   return new FtdiDmxPlugin(plugin_adaptor);
 }
 
-FtdiDmxPlugin::FtdiDmxPlugin(PluginAdaptor *plugin_adaptor)
-  : Plugin(plugin_adaptor) {
-  m_devices.clear();
-}
 
+/**
+ * Attempt to start a device and, if successfull, register it
+ * Ownership of the FtdiDmxDevice is transfered to us here.
+ */
 void FtdiDmxPlugin::AddDevice(FtdiDmxDevice *device) {
-  if (!device->Start()) {
-    return;
+  if (device->Start()) {
+    m_devices.push_back(device);
+    m_plugin_adaptor->RegisterDevice(device);
+  } else {
+    OLA_WARN << "Failed to start FTDI device " << device->Description();
+    delete device;
   }
-
-  m_devices.push_back(device);
-  m_plugin_adaptor->RegisterDevice(device);
 }
 
-void FtdiDmxPlugin::DeleteDevice(FtdiDmxDevice *device) {
-  m_plugin_adaptor->UnregisterDevice(device);
-  device->Stop();
-}
 
+/**
+ * Fetch a list of all FTDI widgets and create a new device for each of them.
+ */
 bool FtdiDmxPlugin::StartHook() {
-  FtdiWidgetInfoVector devices;
+  typedef vector<FtdiWidgetInfo> FtdiWidgetInfoVector;
+  FtdiWidgetInfoVector widgets;
+  FtdiWidget::Widgets(&widgets);
 
-  FtdiWidget::Widgets(&devices);
-
-  for (FtdiWidgetInfoVector::iterator iter = devices.begin();
-       iter != devices.end(); ++iter) {
+  FtdiWidgetInfoVector::const_iterator iter;
+  for (iter = widgets.begin(); iter != widgets.end(); ++iter) {
+    OLA_INFO << "here";
     AddDevice(new FtdiDmxDevice(this, *iter, GetFrequency()));
   }
-
   return true;
 }
 
+
+/**
+ * Stop all the devices.
+ */
 bool FtdiDmxPlugin::StopHook() {
   FtdiDeviceVector::iterator iter;
-
   for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
-    DeleteDevice((*iter));
+    m_plugin_adaptor->UnregisterDevice(*iter);
+    (*iter)->Stop();
   }
-
   m_devices.clear();
   return true;
 }
 
+
+/**
+ * Return a description for this plugin.
+ */
 string FtdiDmxPlugin::Description() const {
   return
     "FTDI USB Chipset DMX Plugin\n"
     "---------------------------\n"
     "This plugin is compatible with Enttec OpenDmx and all other\n"
-    "FTDI chipset based USB to DMX converters where the plugin\n"
+    "FTDI chipset based USB to DMX converters where the host\n"
     "needs to create the DMX stream itself and not the interface\n"
     "(the interface has no microprocessor to do so)\n\n"
     "--- Config file : ola-ftdidmx.conf ---\n\n"
@@ -104,12 +108,16 @@ string FtdiDmxPlugin::Description() const {
     "The DMX stream frequency (30hz to 44hz max are the usual)\n";
 }
 
+
+/**
+ * Set the default preferences
+ */
 bool FtdiDmxPlugin::SetDefaultPreferences() {
   if (!m_preferences)
     return false;
 
   if (m_preferences->SetDefaultValue(FtdiDmxPlugin::K_FREQUENCY,
-                                     IntValidator(30, 44),
+                                     IntValidator(1, 44),
                                      DEFAULT_FREQUENCY))
     m_preferences->Save();
 
@@ -119,14 +127,17 @@ bool FtdiDmxPlugin::SetDefaultPreferences() {
   return true;
 }
 
+
+/**
+ * Return the frequency as specified in the config file.
+ */
 int unsigned FtdiDmxPlugin::GetFrequency() {
   unsigned int frequency;
 
-  if (!StringToInt(m_preferences->GetValue(K_FREQUENCY) ,
-                   &frequency))
+  if (!StringToInt(m_preferences->GetValue(K_FREQUENCY), &frequency))
     StringToInt(DEFAULT_FREQUENCY, &frequency);
   return frequency;
 }
-}
-}
-}
+}  // ftdidmx
+}  // plugin
+}  // ola

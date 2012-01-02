@@ -44,53 +44,73 @@ namespace plugin {
 namespace ftdidmx {
 
 using std::string;
+using std::vector;
 
 FtdiWidget::FtdiWidget(const string& serial,
-                             const string& name,
-                             uint32_t id)
-  : m_serial(serial)
-  , m_name(name)
-  , m_id(id) {
+                       const string& name,
+                       uint32_t id)
+    : m_serial(serial),
+      m_name(name),
+      m_id(id) {
   bzero(&m_handle, sizeof(struct ftdi_context));
   ftdi_init(&m_handle);
 }
 
 FtdiWidget::~FtdiWidget() {
-  if (IsOpen() == true)
+  if (IsOpen())
     Close();
   ftdi_deinit(&m_handle);
 }
 
-void FtdiWidget::Widgets(FtdiWidgetInfoVector *widgets) {
+
+/**
+ * Build a list of all attached ftdi devices
+ */
+void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
   int i = 0;
 
   widgets->clear();
-  struct ftdi_device_list* list = 0;
+  struct ftdi_device_list* list = NULL;
   struct ftdi_context ftdi;
   ftdi_init(&ftdi);
   ftdi_usb_find_all(&ftdi, &list, FtdiWidget::VID, FtdiWidget::PID);
 
   while (list != NULL) {
     struct usb_device* dev = list->dev;
-    assert(dev != NULL);
+    if (!dev) {
+      OLA_WARN << "Device returned from ftdi_usb_find_all was NULL";
+      continue;
+    }
 
     char serial[256];
     char name[256];
     char vendor[256];
 
-    ftdi_usb_get_strings(&ftdi, dev,
-                         vendor, sizeof(vendor),
-                         name, sizeof(name),
-                         serial, sizeof(serial));
+    int r = ftdi_usb_get_strings(&ftdi, dev,
+                                 vendor, sizeof(vendor),
+                                 name, sizeof(name),
+                                 serial, sizeof(serial));
+
+    if (r) {
+      OLA_WARN << "Unable to fetch string information from USB device: " <<
+        ftdi_get_error_string(&ftdi);
+      continue;
+    }
+
 
     string v = string(vendor);
     string sname = string(name);
     string sserial = string(serial);
+    if (sserial == "?") {
+      // this means there wasn't a serial number
+      sserial.clear();
+    }
+    OLA_INFO << "Found FTDI device. Vendor: '" << v << "', Name: '" << sname <<
+      "', Serial: '" << sserial << "'";
     std::transform(v.begin(), v.end(), v.begin(), ::toupper);
     if (std::string::npos != v.find("FTDI")) {
       widgets->push_back(FtdiWidgetInfo(sname, sserial, i));
     }
-
     list = list->next;
     i++;
   }
@@ -215,6 +235,6 @@ bool FtdiWidget::Read(unsigned char *buff, int size) {
     return true;
   }
 }
-}
-}
-}
+}  // ftdidmx
+}  // plugin
+}  // ola

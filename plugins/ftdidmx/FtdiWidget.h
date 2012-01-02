@@ -49,138 +49,137 @@ namespace plugin {
 namespace ftdidmx {
 
 using std::string;
-using std::vector;
 
+/**
+ * This class holds information about an attached ftdi chip
+ */
 class FtdiWidgetInfo {
- public:
-  FtdiWidgetInfo(const string &name, const string &serial, int unsigned id) :
-    m_name(name), m_serial(serial), m_id(id) {}
+  public:
+    FtdiWidgetInfo(const string &name, const string &serial, int unsigned id)
+      : m_name(name),
+        m_serial(serial),
+        m_id(id) {
+    }
 
-  FtdiWidgetInfo(const FtdiWidgetInfo &info) :
-    m_name(info.Name()), m_serial(info.Serial()), m_id(info.Id()) {}
+    FtdiWidgetInfo(const FtdiWidgetInfo &info)
+      : m_name(info.Name()),
+        m_serial(info.Serial()),
+        m_id(info.Id()) {
+    }
 
-  virtual ~FtdiWidgetInfo() {}
+    virtual ~FtdiWidgetInfo() {}
 
-  string Name() const { return m_name; }
-  string Serial() const { return m_serial; }
-  int unsigned Id() const { return m_id; }
+    string Name() const { return m_name; }
+    string Serial() const { return m_serial; }
+    int unsigned Id() const { return m_id; }
 
-  string Description() const {
-    return m_name + " with serial number : " + m_serial +" ";
-  }
+    string Description() const {
+      return m_name + " with serial number : " + m_serial + " ";
+    }
 
-  FtdiWidgetInfo& operator=(const FtdiWidgetInfo &other) {
-    m_name = other.Name();
-    m_serial = other.Serial();
-    m_id = other.Id();
-    return *this;
-  }
+    FtdiWidgetInfo& operator=(const FtdiWidgetInfo &other) {
+      if (this != &other) {
+        m_name = other.Name();
+        m_serial = other.Serial();
+        m_id = other.Id();
+      }
+      return *this;
+    }
 
- private:
-  string m_name;
-  string m_serial;
-  int unsigned m_id;
+  private:
+    string m_name;
+    string m_serial;
+    int unsigned m_id;
 };
 
-typedef vector<FtdiWidgetInfo> FtdiWidgetInfoVector;
 
+/**
+ * An FTDI widget
+ */
 class FtdiWidget {
-  /************************************************************************
-   * Widget enumeration
-   ************************************************************************/
- public:
-  static const int VID = 0x0403;  // ! FTDI Vendor ID
-  static const int PID = 0x6001;  // ! FTDI Product ID
+  public:
+    static const int VID = 0x0403;  // FTDI Vendor ID
+    static const int PID = 0x6001;  // FTDI Product ID
 
-  /**
-   * Compose a list of available widgets
-   *
-   * @return A list of enttec-compabitble devices
-   */
-  static void Widgets(FtdiWidgetInfoVector *widgets);
+    /**
+     * Construct a new FtdiWidget instance for one widget.
+     * @param serial The widget's USB serial number
+     * @param name The widget's USB name (description)
+     * @param id The ID of the device (used only when FTD2XX is the backend)
+     */
+    FtdiWidget(const string& serial, const string& name, uint32_t id = 0);
 
-  /************************************************************************
-   * Construction & Generic Information
-   ************************************************************************/
- public:
-  /**
-   * Construct a new FtdiWidget instance for one widget.
-   *
-   * @param serial The widget's USB serial number
-   * @param name The widget's USB name (description)
-   * @param id The ID of the device (used only when FTD2XX is the backend)
-   */
-  FtdiWidget(const string& serial, const string& name, uint32_t id = 0);
+    /** Destructor */
+    virtual ~FtdiWidget();
 
-  /** Destructor */
-  virtual ~FtdiWidget();
+    /** Get the widget's USB serial number */
+    string Serial() const { return m_serial; }
 
-  /** Get the widget's USB serial number */
-  string Serial() const { return m_serial; }
+    /** Get the widget's USB name */
+    string Name() const { return m_name; }
 
-  /** Get the widget's USB name */
-  string Name() const { return m_name; }
+    /** Get the widget's FTD2XX ID number */
+    uint32_t Id() const { return m_id; }
 
-  /** Get the widget's FTD2XX ID number */
-  uint32_t Id() const { return m_id; }
+    string Description() const {
+      return m_name + " with serial number : " + m_serial +" ";
+    }
 
-  string Description() const
-  { return m_name + " with serial number : " + m_serial +" "; }
+    /**
+     * Build a list of available ftdi widgets.
+     * @param widgets a pointer to a vector of FtdiWidgetInfo objects.
+     */
+    static void Widgets(std::vector<FtdiWidgetInfo> *widgets);
 
- private:
-  string m_serial;
-  string m_name;
-  uint32_t m_id;
+  public:
+    /** Open the widget */
+    bool Open();
 
-  /************************************************************************
-   * FTDI Interface Methods
-   ************************************************************************/
- public:
-  /** Open the widget */
-  bool Open();
+    /** Close the widget */
+    bool Close();
 
-  /** Close the widget */
-  bool Close();
+    /** Check if the widget is open */
+    bool IsOpen() const;
 
-  /** Check if the widget is open */
-  bool IsOpen() const;
+    /** Reset the communications line */
+    bool Reset();
 
-  /** Reset the communications line */
-  bool Reset();
+    /** Setup communications line for 8N2 traffic */
+    bool SetLineProperties();
 
-  /** Setup communications line for 8N2 traffic */
-  bool SetLineProperties();
+    /** Set 250kbps baud rate */
+    bool SetBaudRate();
 
-  /** Set 250kbps baud rate */
-  bool SetBaudRate();
+    /** Disable flow control */
+    bool SetFlowControl();
 
-  /** Disable flow control */
-  bool SetFlowControl();
+    /** Clear the RTS bit */
+    bool ClearRts();
 
-  /** Clear the RTS bit */
-  bool ClearRts();
+    /** Purge TX & RX buffers */
+    bool PurgeBuffers();
 
-  /** Purge TX & RX buffers */
-  bool PurgeBuffers();
+    /** Toggle communications line BREAK condition on/off */
+    bool SetBreak(bool on);
 
-  /** Toggle communications line BREAK condition on/off */
-  bool SetBreak(bool on);
+    /** Write data to a previously-opened line */
+    bool Write(const ola::DmxBuffer &data);
 
-  /** Write data to a previously-opened line */
-  bool Write(const ola::DmxBuffer &data);
+    /** Read data from a previously-opened line */
+    bool Read(unsigned char* buff, int size);
 
-  /** Read data from a previously-opened line */
-  bool Read(unsigned char* buff, int size);
+  private:
+    string m_serial;
+    string m_name;
+    uint32_t m_id;
 
- private:
 #ifdef FTD2XX
-  FT_HANDLE m_handle;
+    FT_HANDLE m_handle;
 #else
-  struct ftdi_context m_handle;
+    struct ftdi_context m_handle;
 #endif
 };
-}
-}
-}
-
+}  // ftdidmx
+}  // plugin
+}  // ola
 #endif  // PLUGINS_FTDIDMX_FTDIWIDGET_H_
