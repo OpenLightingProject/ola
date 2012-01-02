@@ -84,7 +84,8 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
           m_tod_request(false),
           m_rdm_request(NULL),
           m_rdm_callback(NULL),
-          m_rdm_response(NULL) {
+          m_rdm_response(NULL),
+          m_socket(new MockUdpSocket()) {
     }
     void setUp();
 
@@ -115,6 +116,7 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
     const RDMResponse *m_rdm_response;
     Interface interface;
     IPV4Address peer_ip, peer_ip2, peer_ip3;
+    MockUdpSocket *m_socket;
 
     /**
      * Called when new DMX arrives
@@ -222,13 +224,7 @@ void ArtNetNodeTest::setUp() {
  * Check that the discovery sequence works correctly.
  */
 void ArtNetNodeTest::testBasicBehaviour() {
-  MockUdpSocket *socket = new MockUdpSocket();
-
-  ArtNetNode node(interface,
-                  &ss,
-                  false,
-                  20,
-                  socket);
+  ArtNetNode node(interface, &ss, false, 20, m_socket);
 
   node.SetShortName("Short Name");
   CPPUNIT_ASSERT_EQUAL(string("Short Name"), node.ShortName());
@@ -252,11 +248,11 @@ void ArtNetNodeTest::testBasicBehaviour() {
     node.GetPortUniverse(ola::plugin::artnet::ARTNET_OUTPUT_PORT, 1));
 
   CPPUNIT_ASSERT(node.Start());
-  socket->Verify();
-  CPPUNIT_ASSERT(socket->CheckNetworkParamsMatch(true, true, 6454, true));
+  m_socket->Verify();
+  CPPUNIT_ASSERT(m_socket->CheckNetworkParamsMatch(true, true, 6454, true));
 
   // now enable an input port and check that we send a poll
-  socket->AddExpectedData(
+  m_socket->AddExpectedData(
     static_cast<const uint8_t*>(POLL_MESSAGE),
     sizeof(POLL_MESSAGE),
     interface.bcast_address,
@@ -272,7 +268,7 @@ void ArtNetNodeTest::testBasicBehaviour() {
   expected_poll_reply_packet[179] = 0;  // good input
   expected_poll_reply_packet[187] = 0x22;  // swin
 
-  socket->AddExpectedData(
+  m_socket->AddExpectedData(
     static_cast<uint8_t*>(expected_poll_reply_packet),
     sizeof(expected_poll_reply_packet),
     interface.bcast_address,
@@ -285,16 +281,16 @@ void ArtNetNodeTest::testBasicBehaviour() {
   CPPUNIT_ASSERT_EQUAL(
     (uint8_t) 0x22,
     node.GetPortUniverse(ola::plugin::artnet::ARTNET_INPUT_PORT, 1));
-  socket->Verify();
+  m_socket->Verify();
 
   // check sending a poll works
-  socket->AddExpectedData(
+  m_socket->AddExpectedData(
     static_cast<const uint8_t*>(POLL_MESSAGE),
     sizeof(POLL_MESSAGE),
     interface.bcast_address,
     ARTNET_PORT);
   CPPUNIT_ASSERT(node.SendPoll());
-  socket->Verify();
+  m_socket->Verify();
 
   CPPUNIT_ASSERT(node.Stop());
 }
@@ -304,14 +300,13 @@ void ArtNetNodeTest::testBasicBehaviour() {
  * Check sending DMX using broadcast works.
  */
 void ArtNetNodeTest::testBroadcastSendDMX() {
-  MockUdpSocket *socket = new MockUdpSocket();
-  socket->SetDiscardMode(true);
+  m_socket->SetDiscardMode(true);
 
   ArtNetNode node(interface,
                   &ss,
                   true,  // always broadcast dmx
                   20,
-                  socket);
+                  m_socket);
 
   uint8_t port_id = 1;
   node.SetNetAddress(4);
@@ -319,8 +314,8 @@ void ArtNetNodeTest::testBroadcastSendDMX() {
   node.SetPortUniverse(ola::plugin::artnet::ARTNET_INPUT_PORT, port_id, 3);
 
   CPPUNIT_ASSERT(node.Start());
-  socket->Verify();
-  socket->SetDiscardMode(false);
+  m_socket->Verify();
+  m_socket->SetDiscardMode(false);
 
   const uint8_t DMX_MESSAGE[] = {
     'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
@@ -332,7 +327,7 @@ void ArtNetNodeTest::testBroadcastSendDMX() {
     0, 6,  // dmx length
     0, 1, 2, 3, 4, 5
   };
-  socket->AddExpectedData(
+  m_socket->AddExpectedData(
     DMX_MESSAGE,
     sizeof(DMX_MESSAGE),
     interface.bcast_address,
@@ -341,7 +336,7 @@ void ArtNetNodeTest::testBroadcastSendDMX() {
   DmxBuffer dmx;
   dmx.SetFromString("0,1,2,3,4,5");
   CPPUNIT_ASSERT(node.SendDMX(port_id, dmx));
-  socket->Verify();
+  m_socket->Verify();
 
   // now send an odd sized dmx frame, we should pad this to a multiple of two
   const uint8_t DMX_MESSAGE2[] = {
@@ -354,23 +349,23 @@ void ArtNetNodeTest::testBroadcastSendDMX() {
     0, 6,  // dmx length
     0, 1, 2, 3, 4, 0
   };
-  socket->AddExpectedData(
+  m_socket->AddExpectedData(
     DMX_MESSAGE2,
     sizeof(DMX_MESSAGE2),
     interface.bcast_address,
     ARTNET_PORT);
   dmx.SetFromString("0,1,2,3,4");
   CPPUNIT_ASSERT(node.SendDMX(port_id, dmx));
-  socket->Verify();
+  m_socket->Verify();
 
   // attempt to send on a invalid port
   CPPUNIT_ASSERT(!node.SendDMX(4, dmx));
-  socket->Verify();
+  m_socket->Verify();
 
   // attempt to send an empty fram
   DmxBuffer empty_buffer;
   CPPUNIT_ASSERT(node.SendDMX(port_id, empty_buffer));
-  socket->Verify();
+  m_socket->Verify();
 }
 
 
@@ -378,14 +373,8 @@ void ArtNetNodeTest::testBroadcastSendDMX() {
  * Check sending DMX using unicast works.
  */
 void ArtNetNodeTest::testNonBroadcastSendDMX() {
-  MockUdpSocket *socket = new MockUdpSocket();
-  socket->SetDiscardMode(true);
-
-  ArtNetNode node(interface,
-                  &ss,
-                  false,
-                  20,
-                  socket);
+  m_socket->SetDiscardMode(true);
+  ArtNetNode node(interface, &ss, false, 20, m_socket);
 
   uint8_t port_id = 1;
   node.SetNetAddress(4);
@@ -393,14 +382,14 @@ void ArtNetNodeTest::testNonBroadcastSendDMX() {
   node.SetPortUniverse(ola::plugin::artnet::ARTNET_INPUT_PORT, port_id, 3);
 
   CPPUNIT_ASSERT(node.Start());
-  socket->Verify();
-  socket->SetDiscardMode(false);
+  m_socket->Verify();
+  m_socket->SetDiscardMode(false);
 
   DmxBuffer dmx;
   dmx.SetFromString("0,1,2,3,4,5");
   // we don't expect any data here because there are no nodes active
   CPPUNIT_ASSERT(node.SendDMX(port_id, dmx));
-  socket->Verify();
+  m_socket->Verify();
 
   const uint8_t poll_reply_message[] = {
     'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
@@ -440,7 +429,7 @@ void ArtNetNodeTest::testNonBroadcastSendDMX() {
   };
 
   // Fake an ArtPollReply
-  socket->ReceiveData(
+  m_socket->ReceiveData(
       poll_reply_message,
       sizeof(poll_reply_message),
       peer_ip,
@@ -457,13 +446,13 @@ void ArtNetNodeTest::testNonBroadcastSendDMX() {
     0, 6,  // dmx length
     0, 1, 2, 3, 4, 5
   };
-  socket->AddExpectedData(
+  m_socket->AddExpectedData(
     DMX_MESSAGE,
     sizeof(DMX_MESSAGE),
     peer_ip,
     ARTNET_PORT);
   CPPUNIT_ASSERT(node.SendDMX(port_id, dmx));
-  socket->Verify();
+  m_socket->Verify();
 
   // add another peer
   const uint8_t poll_reply_message2[] = {
@@ -504,7 +493,7 @@ void ArtNetNodeTest::testNonBroadcastSendDMX() {
   };
 
   // Fake an ArtPollReply
-  socket->ReceiveData(
+  m_socket->ReceiveData(
       poll_reply_message2,
       sizeof(poll_reply_message2),
       peer_ip2,
@@ -522,18 +511,18 @@ void ArtNetNodeTest::testNonBroadcastSendDMX() {
     10, 11, 12, 0, 1, 2
   };
   dmx.SetFromString("10,11,12,0,1,2");
-  socket->AddExpectedData(
+  m_socket->AddExpectedData(
     DMX_MESSAGE2,
     sizeof(DMX_MESSAGE2),
     peer_ip,
     ARTNET_PORT);
-  socket->AddExpectedData(
+  m_socket->AddExpectedData(
     DMX_MESSAGE2,
     sizeof(DMX_MESSAGE2),
     peer_ip2,
     ARTNET_PORT);
   CPPUNIT_ASSERT(node.SendDMX(port_id, dmx));
-  socket->Verify();
+  m_socket->Verify();
 
   // now adjust the broadcast threshold
   node.SetBroadcastThreshold(2);
@@ -550,13 +539,13 @@ void ArtNetNodeTest::testNonBroadcastSendDMX() {
     11, 13, 14, 7, 8, 9
   };
   dmx.SetFromString("11,13,14,7,8,9");
-  socket->AddExpectedData(
+  m_socket->AddExpectedData(
     DMX_MESSAGE3,
     sizeof(DMX_MESSAGE3),
     interface.bcast_address,
     ARTNET_PORT);
   CPPUNIT_ASSERT(node.SendDMX(port_id, dmx));
-  socket->Verify();
+  m_socket->Verify();
 }
 
 
@@ -564,14 +553,8 @@ void ArtNetNodeTest::testNonBroadcastSendDMX() {
  * Check that receiving DMX works
  */
 void ArtNetNodeTest::testReceiveDMX() {
-  MockUdpSocket *socket = new MockUdpSocket();
-  socket->SetDiscardMode(true);
-
-  ArtNetNode node(interface,
-                  &ss,
-                  false,
-                  20,
-                  socket);
+  m_socket->SetDiscardMode(true);
+  ArtNetNode node(interface, &ss, false, 20, m_socket);
 
   uint8_t port_id = 1;
   node.SetNetAddress(4);
@@ -584,8 +567,8 @@ void ArtNetNodeTest::testReceiveDMX() {
                      ola::NewCallback(this, &ArtNetNodeTest::NewDmx));
 
   CPPUNIT_ASSERT(node.Start());
-  socket->Verify();
-  socket->SetDiscardMode(false);
+  m_socket->Verify();
+  m_socket->SetDiscardMode(false);
 
   // 'receive' a DMX message
   uint8_t DMX_MESSAGE[] = {
@@ -600,7 +583,7 @@ void ArtNetNodeTest::testReceiveDMX() {
   };
 
   CPPUNIT_ASSERT(!m_got_dmx);
-  socket->ReceiveData(
+  m_socket->ReceiveData(
       DMX_MESSAGE,
       sizeof(DMX_MESSAGE),
       peer_ip,
@@ -621,7 +604,7 @@ void ArtNetNodeTest::testReceiveDMX() {
   };
 
   m_got_dmx = false;
-  socket->ReceiveData(
+  m_socket->ReceiveData(
       DMX_MESSAGE2,
       sizeof(DMX_MESSAGE2),
       peer_ip,
@@ -637,7 +620,7 @@ void ArtNetNodeTest::testReceiveDMX() {
 
   m_got_dmx = false;
   CPPUNIT_ASSERT(!m_got_dmx);
-  socket->ReceiveData(
+  m_socket->ReceiveData(
       DMX_MESSAGE,
       sizeof(DMX_MESSAGE),
       peer_ip,
@@ -651,14 +634,8 @@ void ArtNetNodeTest::testReceiveDMX() {
  * Check that merging works
  */
 void ArtNetNodeTest::testHTPMerge() {
-  MockUdpSocket *socket = new MockUdpSocket();
-  socket->SetDiscardMode(true);
-
-  ArtNetNode node(interface,
-                  &ss,
-                  false,
-                  20,
-                  socket);
+  m_socket->SetDiscardMode(true);
+  ArtNetNode node(interface, &ss, false, 20, m_socket);
 
   uint8_t port_id = 1;
   node.SetNetAddress(4);
@@ -671,8 +648,8 @@ void ArtNetNodeTest::testHTPMerge() {
                      ola::NewCallback(this, &ArtNetNodeTest::NewDmx));
 
   CPPUNIT_ASSERT(node.Start());
-  socket->Verify();
-  socket->SetDiscardMode(false);
+  m_socket->Verify();
+  m_socket->SetDiscardMode(false);
 
   // 'receive' a DMX message from the first peer
   uint8_t source1_message1[] = {
@@ -688,7 +665,7 @@ void ArtNetNodeTest::testHTPMerge() {
 
   CPPUNIT_ASSERT(!m_got_dmx);
   ss.RunOnce(0, 0);  // update the wake up time
-  socket->ReceiveData(
+  m_socket->ReceiveData(
       source1_message1,
       sizeof(source1_message1),
       peer_ip,
@@ -747,14 +724,14 @@ void ArtNetNodeTest::testHTPMerge() {
     0  // filler
   };
 
-  socket->AddExpectedData(
+  m_socket->AddExpectedData(
     static_cast<const uint8_t*>(poll_reply_message),
     sizeof(poll_reply_message),
     interface.bcast_address,
     ARTNET_PORT);
 
   ss.RunOnce(0, 0);  // update the wake up time
-  socket->ReceiveData(
+  m_socket->ReceiveData(
       source2_message1,
       sizeof(source2_message1),
       peer_ip2,
@@ -776,7 +753,7 @@ void ArtNetNodeTest::testHTPMerge() {
   m_got_dmx = false;
   CPPUNIT_ASSERT(!m_got_dmx);
   ss.RunOnce(0, 0);  // update the wake up time
-  socket->ReceiveData(
+  m_socket->ReceiveData(
       source3_message1,
       sizeof(source3_message1),
       peer_ip3,
@@ -799,7 +776,7 @@ void ArtNetNodeTest::testHTPMerge() {
   m_got_dmx = false;
   CPPUNIT_ASSERT(!m_got_dmx);
   ss.RunOnce(0, 0);  // update the wake up time
-  socket->ReceiveData(
+  m_socket->ReceiveData(
       source1_message2,
       sizeof(source1_message2),
       peer_ip,
@@ -827,7 +804,7 @@ void ArtNetNodeTest::testHTPMerge() {
   m_got_dmx = false;
   CPPUNIT_ASSERT(!m_got_dmx);
   ss.RunOnce(0, 0);  // update the wake up time
-  socket->ReceiveData(
+  m_socket->ReceiveData(
       source1_message3,
       sizeof(source1_message3),
       peer_ip,
@@ -854,7 +831,7 @@ void ArtNetNodeTest::testHTPMerge() {
   m_got_dmx = false;
   CPPUNIT_ASSERT(!m_got_dmx);
   ss.RunOnce(0, 0);  // update the wake up time
-  socket->ReceiveData(
+  m_socket->ReceiveData(
       source1_message4,
       sizeof(source1_message4),
       peer_ip,
@@ -869,14 +846,8 @@ void ArtNetNodeTest::testHTPMerge() {
  * Check that LTP merging works
  */
 void ArtNetNodeTest::testLTPMerge() {
-  MockUdpSocket *socket = new MockUdpSocket();
-  socket->SetDiscardMode(true);
-
-  ArtNetNode node(interface,
-                  &ss,
-                  false,
-                  20,
-                  socket);
+  m_socket->SetDiscardMode(true);
+  ArtNetNode node(interface, &ss, false, 20, m_socket);
 
   uint8_t port_id = 1;
   node.SetNetAddress(4);
@@ -889,8 +860,8 @@ void ArtNetNodeTest::testLTPMerge() {
                      ola::NewCallback(this, &ArtNetNodeTest::NewDmx));
 
   CPPUNIT_ASSERT(node.Start());
-  socket->Verify();
-  socket->SetDiscardMode(false);
+  m_socket->Verify();
+  m_socket->SetDiscardMode(false);
 
   // switch to LTP merge mode, this will trigger an art poll reply
   uint8_t poll_reply_message[] = {
@@ -928,13 +899,13 @@ void ArtNetNodeTest::testLTPMerge() {
     0  // filler
   };
 
-  socket->AddExpectedData(
+  m_socket->AddExpectedData(
     static_cast<const uint8_t*>(poll_reply_message),
     sizeof(poll_reply_message),
     interface.bcast_address,
     ARTNET_PORT);
   node.SetMergeMode(port_id, ola::plugin::artnet::ARTNET_MERGE_LTP);
-  socket->Verify();
+  m_socket->Verify();
 
   // 'receive' a DMX message from the first peer
   uint8_t source1_message1[] = {
@@ -950,7 +921,7 @@ void ArtNetNodeTest::testLTPMerge() {
 
   CPPUNIT_ASSERT(!m_got_dmx);
   ss.RunOnce(0, 0);  // update the wake up time
-  socket->ReceiveData(
+  m_socket->ReceiveData(
       source1_message1,
       sizeof(source1_message1),
       peer_ip,
@@ -1009,14 +980,14 @@ void ArtNetNodeTest::testLTPMerge() {
     0  // filler
   };
 
-  socket->AddExpectedData(
+  m_socket->AddExpectedData(
     static_cast<const uint8_t*>(poll_reply_message2),
     sizeof(poll_reply_message2),
     interface.bcast_address,
     ARTNET_PORT);
 
   ss.RunOnce(0, 0);  // update the wake up time
-  socket->ReceiveData(
+  m_socket->ReceiveData(
       source2_message1,
       sizeof(source2_message1),
       peer_ip2,
@@ -1042,7 +1013,7 @@ void ArtNetNodeTest::testLTPMerge() {
   m_got_dmx = false;
   CPPUNIT_ASSERT(!m_got_dmx);
   ss.RunOnce(0, 0);  // update the wake up time
-  socket->ReceiveData(
+  m_socket->ReceiveData(
       source1_message2,
       sizeof(source1_message2),
       peer_ip,
@@ -1057,14 +1028,8 @@ void ArtNetNodeTest::testLTPMerge() {
  * Check the node can act as an RDM controller.
  */
 void ArtNetNodeTest::testControllerDiscovery() {
-  MockUdpSocket *socket = new MockUdpSocket();
-  socket->SetDiscardMode(true);
-
-  ArtNetNode node(interface,
-                  &ss,
-                  true,  // always broadcast dmx
-                  20,
-                  socket);
+  m_socket->SetDiscardMode(true);
+  ArtNetNode node(interface, &ss, true, 20, m_socket);
 
   uint8_t port_id = 1;
   node.SetNetAddress(4);
@@ -1072,8 +1037,8 @@ void ArtNetNodeTest::testControllerDiscovery() {
   node.SetPortUniverse(ola::plugin::artnet::ARTNET_INPUT_PORT, port_id, 3);
 
   CPPUNIT_ASSERT(node.Start());
-  socket->Verify();
-  socket->SetDiscardMode(false);
+  m_socket->Verify();
+  m_socket->SetDiscardMode(false);
 
   const uint8_t tod_control[] = {
     'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
@@ -1086,7 +1051,7 @@ void ArtNetNodeTest::testControllerDiscovery() {
     0x23
   };
 
-  socket->AddExpectedData(
+  m_socket->AddExpectedData(
     tod_control,
     sizeof(tod_control),
     interface.bcast_address,
@@ -1108,7 +1073,7 @@ void ArtNetNodeTest::testControllerDiscovery() {
   // now run discovery again, this time returning a ArtTod from a peer
   m_discovery_done = false;
 
-  socket->AddExpectedData(
+  m_socket->AddExpectedData(
     tod_control,
     sizeof(tod_control),
     interface.bcast_address,
@@ -1138,7 +1103,7 @@ void ArtNetNodeTest::testControllerDiscovery() {
     0x7a, 0x70, 0, 0, 0, 2,
   };
 
-  socket->ReceiveData(
+  m_socket->ReceiveData(
       art_tod1,
       sizeof(art_tod1),
       peer_ip,
@@ -1162,7 +1127,7 @@ void ArtNetNodeTest::testControllerDiscovery() {
   // to peer2
   m_discovery_done = false;
 
-  socket->AddExpectedData(
+  m_socket->AddExpectedData(
     tod_control,
     sizeof(tod_control),
     interface.bcast_address,
@@ -1190,7 +1155,7 @@ void ArtNetNodeTest::testControllerDiscovery() {
     0x7a, 0x70, 0, 0, 0, 0,
   };
 
-  socket->ReceiveData(
+  m_socket->ReceiveData(
       art_tod2,
       sizeof(art_tod2),
       peer_ip,
@@ -1212,7 +1177,7 @@ void ArtNetNodeTest::testControllerDiscovery() {
     0x7a, 0x70, 0, 0, 0, 1,
   };
 
-  socket->ReceiveData(
+  m_socket->ReceiveData(
       art_tod3,
       sizeof(art_tod3),
       peer_ip2,
@@ -1244,14 +1209,8 @@ void ArtNetNodeTest::testControllerDiscovery() {
  * Check that incremental discovery works
  */
 void ArtNetNodeTest::testControllerIncrementalDiscovery() {
-  MockUdpSocket *socket = new MockUdpSocket();
-  socket->SetDiscardMode(true);
-
-  ArtNetNode node(interface,
-                  &ss,
-                  true,  // always broadcast dmx
-                  20,
-                  socket);
+  m_socket->SetDiscardMode(true);
+  ArtNetNode node(interface, &ss, true, 20, m_socket);
 
   uint8_t port_id = 1;
   node.SetNetAddress(4);
@@ -1259,8 +1218,8 @@ void ArtNetNodeTest::testControllerIncrementalDiscovery() {
   node.SetPortUniverse(ola::plugin::artnet::ARTNET_INPUT_PORT, port_id, 3);
 
   CPPUNIT_ASSERT(node.Start());
-  socket->Verify();
-  socket->SetDiscardMode(false);
+  m_socket->Verify();
+  m_socket->SetDiscardMode(false);
 
   const uint8_t tod_request[] = {
     'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
@@ -1276,7 +1235,7 @@ void ArtNetNodeTest::testControllerIncrementalDiscovery() {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
   };
 
-  socket->AddExpectedData(
+  m_socket->AddExpectedData(
     tod_request,
     sizeof(tod_request),
     interface.bcast_address,
@@ -1304,7 +1263,7 @@ void ArtNetNodeTest::testControllerIncrementalDiscovery() {
     0x7a, 0x70, 0, 0, 0, 0,
   };
 
-  socket->ReceiveData(
+  m_socket->ReceiveData(
       art_tod1,
       sizeof(art_tod1),
       peer_ip,
@@ -1336,14 +1295,8 @@ void ArtNetNodeTest::testControllerIncrementalDiscovery() {
  * Check that unsolicated TOD messages work
  */
 void ArtNetNodeTest::testUnsolicitedTod() {
-  MockUdpSocket *socket = new MockUdpSocket();
-  socket->SetDiscardMode(true);
-
-  ArtNetNode node(interface,
-                  &ss,
-                  true,
-                  20,
-                  socket);
+  m_socket->SetDiscardMode(true);
+  ArtNetNode node(interface, &ss, true, 20, m_socket);
 
   uint8_t port_id = 1;
   node.SetNetAddress(4);
@@ -1355,8 +1308,8 @@ void ArtNetNodeTest::testUnsolicitedTod() {
       ola::NewCallback(this, &ArtNetNodeTest::DiscoveryComplete)));
 
   CPPUNIT_ASSERT(node.Start());
-  socket->Verify();
-  socket->SetDiscardMode(false);
+  m_socket->Verify();
+  m_socket->SetDiscardMode(false);
 
   CPPUNIT_ASSERT(!m_discovery_done);
 
@@ -1377,7 +1330,7 @@ void ArtNetNodeTest::testUnsolicitedTod() {
     0x7a, 0x70, 0, 0, 0, 0,
   };
 
-  socket->ReceiveData(
+  m_socket->ReceiveData(
       art_tod,
       sizeof(art_tod),
       peer_ip,
@@ -1394,14 +1347,8 @@ void ArtNetNodeTest::testUnsolicitedTod() {
  * Check that we respond to Tod messages
  */
 void ArtNetNodeTest::testResponderDiscovery() {
-  MockUdpSocket *socket = new MockUdpSocket();
-  socket->SetDiscardMode(true);
-
-  ArtNetNode node(interface,
-                  &ss,
-                  false,
-                  20,
-                  socket);
+  m_socket->SetDiscardMode(true);
+  ArtNetNode node(interface, &ss, false, 20, m_socket);
 
   uint8_t port_id = 1;
   node.SetNetAddress(4);
@@ -1409,8 +1356,8 @@ void ArtNetNodeTest::testResponderDiscovery() {
   node.SetPortUniverse(ola::plugin::artnet::ARTNET_OUTPUT_PORT, port_id, 3);
 
   CPPUNIT_ASSERT(node.Start());
-  socket->Verify();
-  socket->SetDiscardMode(false);
+  m_socket->Verify();
+  m_socket->SetDiscardMode(false);
 
   CPPUNIT_ASSERT(node.SetOutputPortRDMHandlers(
       port_id,
@@ -1433,7 +1380,7 @@ void ArtNetNodeTest::testResponderDiscovery() {
   };
 
   CPPUNIT_ASSERT(!m_tod_request);
-  socket->ReceiveData(
+  m_socket->ReceiveData(
       tod_request,
       sizeof(tod_request),
       peer_ip,
@@ -1458,7 +1405,7 @@ void ArtNetNodeTest::testResponderDiscovery() {
     0x7a, 0x70, 0, 0, 0, 0,
   };
 
-  socket->AddExpectedData(
+  m_socket->AddExpectedData(
     art_tod1,
     sizeof(art_tod1),
     interface.bcast_address,
@@ -1486,7 +1433,7 @@ void ArtNetNodeTest::testResponderDiscovery() {
   };
 
   CPPUNIT_ASSERT(!m_tod_request);
-  socket->ReceiveData(
+  m_socket->ReceiveData(
       tod_request2,
       sizeof(tod_request2),
       peer_ip,
@@ -1507,7 +1454,7 @@ void ArtNetNodeTest::testResponderDiscovery() {
     0x23
   };
 
-  socket->ReceiveData(
+  m_socket->ReceiveData(
       tod_control,
       sizeof(tod_control),
       peer_ip,
@@ -1529,7 +1476,7 @@ void ArtNetNodeTest::testResponderDiscovery() {
     0x13
   };
 
-  socket->ReceiveData(
+  m_socket->ReceiveData(
       tod_control2,
       sizeof(tod_control2),
       peer_ip,
@@ -1542,14 +1489,8 @@ void ArtNetNodeTest::testResponderDiscovery() {
  * Check that we respond to Tod messages
  */
 void ArtNetNodeTest::testRDMResponder() {
-  MockUdpSocket *socket = new MockUdpSocket();
-  socket->SetDiscardMode(true);
-
-  ArtNetNode node(interface,
-                  &ss,
-                  false,
-                  20,
-                  socket);
+  m_socket->SetDiscardMode(true);
+  ArtNetNode node(interface, &ss, false, 20, m_socket);
 
   uint8_t port_id = 1;
   node.SetNetAddress(4);
@@ -1557,8 +1498,8 @@ void ArtNetNodeTest::testRDMResponder() {
   node.SetPortUniverse(ola::plugin::artnet::ARTNET_OUTPUT_PORT, port_id, 3);
 
   CPPUNIT_ASSERT(node.Start());
-  socket->Verify();
-  socket->SetDiscardMode(false);
+  m_socket->Verify();
+  m_socket->SetDiscardMode(false);
 
   CPPUNIT_ASSERT(node.SetOutputPortRDMHandlers(
       port_id,
@@ -1586,7 +1527,7 @@ void ArtNetNodeTest::testRDMResponder() {
 
   CPPUNIT_ASSERT(!m_rdm_request);
   CPPUNIT_ASSERT(!m_rdm_callback);
-  socket->ReceiveData(
+  m_socket->ReceiveData(
       rdm_request,
       sizeof(rdm_request),
       peer_ip,
@@ -1631,7 +1572,7 @@ void ArtNetNodeTest::testRDMResponder() {
     0x5a, 0xa5, 0x5a, 0xa5,  // param data
     0x3, 0x49  // checksum, filled in below
   };
-  socket->AddExpectedData(
+  m_socket->AddExpectedData(
     rdm_response,
     sizeof(rdm_response),
     peer_ip,
@@ -1656,14 +1597,8 @@ void ArtNetNodeTest::testRDMResponder() {
  * Check that the node works as a RDM controller.
  */
 void ArtNetNodeTest::testRDMController() {
-  MockUdpSocket *socket = new MockUdpSocket();
-  socket->SetDiscardMode(true);
-
-  ArtNetNode node(interface,
-                  &ss,
-                  true,  // always broadcast dmx
-                  20,
-                  socket);
+  m_socket->SetDiscardMode(true);
+  ArtNetNode node(interface, &ss, true, 20, m_socket);
 
   uint8_t port_id = 1;
   node.SetNetAddress(4);
@@ -1671,8 +1606,8 @@ void ArtNetNodeTest::testRDMController() {
   node.SetPortUniverse(ola::plugin::artnet::ARTNET_INPUT_PORT, port_id, 3);
 
   CPPUNIT_ASSERT(node.Start());
-  socket->Verify();
-  socket->SetDiscardMode(false);
+  m_socket->Verify();
+  m_socket->SetDiscardMode(false);
 
   // We need to send a TodData so we populate the node's UID map
   const uint8_t art_tod[] = {
@@ -1691,7 +1626,7 @@ void ArtNetNodeTest::testRDMController() {
     0x7a, 0x70, 0, 0, 0, 0,
   };
 
-  socket->ReceiveData(
+  m_socket->ReceiveData(
       art_tod,
       sizeof(art_tod),
       peer_ip,
@@ -1730,7 +1665,7 @@ void ArtNetNodeTest::testRDMController() {
     0x02, 0x26
   };
 
-  socket->AddExpectedData(
+  m_socket->AddExpectedData(
     rdm_request,
     sizeof(rdm_request),
     peer_ip,
@@ -1762,7 +1697,7 @@ void ArtNetNodeTest::testRDMController() {
   };
 
   CPPUNIT_ASSERT(!m_rdm_response);
-  socket->ReceiveData(
+  m_socket->ReceiveData(
       rdm_response,
       sizeof(rdm_response),
       peer_ip,
@@ -1777,18 +1712,12 @@ void ArtNetNodeTest::testRDMController() {
  * Check Timecode sending works
  */
 void ArtNetNodeTest::testTimeCode() {
-  MockUdpSocket *socket = new MockUdpSocket();
-  socket->SetDiscardMode(true);
-
-  ArtNetNode node(interface,
-                  &ss,
-                  false,
-                  20,
-                  socket);
+  m_socket->SetDiscardMode(true);
+  ArtNetNode node(interface, &ss, false, 20, m_socket);
 
   CPPUNIT_ASSERT(node.Start());
-  socket->Verify();
-  socket->SetDiscardMode(false);
+  m_socket->Verify();
+  m_socket->SetDiscardMode(false);
 
   const uint8_t timecode_message[] = {
     'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
@@ -1798,7 +1727,7 @@ void ArtNetNodeTest::testTimeCode() {
     11, 30, 20, 10, 3
   };
 
-  socket->AddExpectedData(
+  m_socket->AddExpectedData(
     timecode_message,
     sizeof(timecode_message),
     interface.bcast_address,
@@ -1807,5 +1736,5 @@ void ArtNetNodeTest::testTimeCode() {
   TimeCode t1(ola::timecode::TIMECODE_SMPTE, 10, 20, 30, 11);
   CPPUNIT_ASSERT(node.SendTimeCode(t1));
 
-  socket->Verify();
+  m_socket->Verify();
 }
