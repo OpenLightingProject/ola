@@ -39,7 +39,7 @@ class FtdiDmxOutputPort : public ola::BasicOutputPort {
   ~FtdiDmxOutputPort() { m_thread.Stop(); }
 
   explicit FtdiDmxOutputPort(FtdiDmxDevice *parent,
-			     FtdiWidget *device,
+                             FtdiWidget *device,
                              unsigned int id,
                              unsigned int freq) :
       BasicOutputPort(parent, id),

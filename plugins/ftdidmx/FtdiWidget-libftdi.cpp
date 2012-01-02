@@ -61,9 +61,10 @@ FtdiWidget::~FtdiWidget() {
   ftdi_deinit(&m_handle);
 }
 
-FtdiWidgetInfoVector FtdiWidget::Widgets() {
+void FtdiWidget::Widgets(FtdiWidgetInfoVector *widgets) {
   int i = 0;
-  FtdiWidgetInfoVector widgetList;
+
+  widgets->clear();
   struct ftdi_device_list* list = 0;
   struct ftdi_context ftdi;
   ftdi_init(&ftdi);
@@ -87,7 +88,7 @@ FtdiWidgetInfoVector FtdiWidget::Widgets() {
     string sserial = string(serial);
     std::transform(v.begin(), v.end(), v.begin(), ::toupper);
     if (std::string::npos != v.find("FTDI")) {
-      widgetList.push_back(FtdiWidgetInfo(sname, sserial, i));
+      widgets->push_back(FtdiWidgetInfo(sname, sserial, i));
     }
 
     list = list->next;
@@ -96,7 +97,6 @@ FtdiWidgetInfoVector FtdiWidget::Widgets() {
 
   ftdi_list_free(&list);
   ftdi_deinit(&ftdi);
-  return widgetList;
 }
 
 bool FtdiWidget::Open() {

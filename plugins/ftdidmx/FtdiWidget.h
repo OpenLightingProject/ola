@@ -97,7 +97,7 @@ class FtdiWidget {
    *
    * @return A list of enttec-compabitble devices
    */
-  static FtdiWidgetInfoVector Widgets();
+  static void Widgets(FtdiWidgetInfoVector *widgets);
 
   /************************************************************************
    * Construction & Generic Information

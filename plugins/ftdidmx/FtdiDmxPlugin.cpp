@@ -70,7 +70,9 @@ void FtdiDmxPlugin::DeleteDevice(FtdiDmxDevice *device) {
 }
 
 bool FtdiDmxPlugin::StartHook() {
-  FtdiWidgetInfoVector devices = FtdiWidget::Widgets();
+  FtdiWidgetInfoVector devices;
+
+  FtdiWidget::Widgets(&devices);
 
   for (FtdiWidgetInfoVector::iterator iter = devices.begin();
        iter != devices.end(); ++iter) {

@@ -102,9 +102,9 @@ FtdiWidget::~FtdiWidget() {
     Close();
 }
 
-FtdiWidgetInfoVector FtdiWidget::Widgets() {
+void FtdiWidget::Widgets(FtdiWidgetInfoVector *widgets) {
   int i = 0;
-  FtdiWidgetInfoVector widgetList;
+  widgets->clear();
 
   /* Find out the number of FTDI devices present */
   DWORD num = 0;
@@ -128,12 +128,11 @@ FtdiWidgetInfoVector FtdiWidget::Widgets() {
         continue;
 
       if (vendor.toUpper().contains("FTDI") == true)
-        widgetList.push_back(FtdiWidgetInfo(name, serial, i);
+        widgets->push_back(FtdiWidgetInfo(name, serial, i);
     }
   }
 
   delete [] devInfo;
-  return widgetList;
 }
 
 bool FtdiWidget::Open() {
