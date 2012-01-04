@@ -22,7 +22,6 @@
 #define PLUGINS_FTDIDMX_FTDIDMXDEVICE_H_
 
 #include <string>
-#include <memory>
 #include "ola/DmxBuffer.h"
 #include "olad/Device.h"
 #include "olad/Preferences.h"
@@ -34,7 +33,6 @@ namespace ftdidmx {
 
 using std::string;
 using ola::Device;
-using std::auto_ptr;
 
 class FtdiDmxDevice : public Device {
  public:
@@ -43,14 +41,14 @@ class FtdiDmxDevice : public Device {
                 unsigned int freq);
   virtual ~FtdiDmxDevice();
 
-  string DeviceId() const { return m_device.get()->Serial(); }
+  string DeviceId() const { return m_device->Serial(); }
   string Description() const { return m_devInfo.Description(); }
 
  protected:
   bool StartHook();
 
  private:
-  auto_ptr<FtdiWidget> m_device;
+  FtdiWidget *m_device;
   FtdiWidgetInfo m_devInfo;
   unsigned int m_frequency;
 };
