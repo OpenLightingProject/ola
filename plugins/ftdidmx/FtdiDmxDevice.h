@@ -37,23 +37,22 @@ using ola::Device;
 class FtdiDmxDevice : public Device {
  public:
   FtdiDmxDevice(AbstractPlugin *owner,
-                FtdiWidgetInfo &devInfo,
-                unsigned int freq);
-  virtual ~FtdiDmxDevice();
+                const FtdiWidgetInfo &widget_info,
+                unsigned int frequency);
+  ~FtdiDmxDevice();
 
   string DeviceId() const { return m_device->Serial(); }
-  string Description() const { return m_devInfo.Description(); }
+  string Description() const { return m_widget_info.Description(); }
 
  protected:
   bool StartHook();
 
  private:
-  FtdiWidget *m_device;
-  FtdiWidgetInfo m_devInfo;
+  auto_ptr<FtdiWidget> m_device;
+  const FtdiWidgetInfo m_widget_info;
   unsigned int m_frequency;
 };
-}
-}
-}
-
+}  // ftdidmx
+}  // plugin
+}  // ola
 #endif  // PLUGINS_FTDIDMX_FTDIDMXDEVICE_H_

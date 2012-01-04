@@ -22,9 +22,7 @@
 #define PLUGINS_FTDIDMX_FTDIDMXTHREAD_H_
 
 #include "ola/DmxBuffer.h"
-#include "olad/Preferences.h"
 #include "ola/thread/Thread.h"
-#include "plugins/ftdidmx/FtdiWidget.h"
 
 namespace ola {
 namespace plugin {
@@ -32,7 +30,7 @@ namespace ftdidmx {
 
 class FtdiDmxThread : public ola::thread::Thread {
   public:
-    FtdiDmxThread(FtdiWidget *device, unsigned int freq);
+    FtdiDmxThread(FtdiWidget *widget, unsigned int frequency);
     ~FtdiDmxThread();
 
     bool Stop();
@@ -40,24 +38,22 @@ class FtdiDmxThread : public ola::thread::Thread {
     bool WriteDMX(const DmxBuffer &buffer);
 
   private:
-    void CheckTimeGranularity();
-
-    enum TimerGranularity { Unknown, Good, Bad };
+    enum TimerGranularity { UNKNOWN, GOOD, BAD };
 
     TimerGranularity m_granularity;
-    FtdiWidget *m_device;
+    FtdiWidget *m_widget;
     bool m_term;
     int unsigned m_frequency;
-    Preferences *m_preferences;
     DmxBuffer m_buffer;
     ola::thread::Mutex m_term_mutex;
     ola::thread::Mutex m_buffer_mutex;
 
+    void CheckTimeGranularity();
+
     static const uint32_t DMX_MAB = 16;
     static const uint32_t DMX_BREAK = 110;
 };
-}
-}
-}
-
+}  // ftdidmx
+}  // plugin
+}  // ola
 #endif  // PLUGINS_FTDIDMX_FTDIDMXTHREAD_H_

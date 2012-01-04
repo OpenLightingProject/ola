@@ -22,6 +22,7 @@
 #include <string>
 
 #include "ola/Clock.h"
+#include "ola/Logging.h"
 #include "ola/StringUtils.h"
 #include "plugins/ftdidmx/FtdiWidget.h"
 #include "plugins/ftdidmx/FtdiDmxThread.h"
@@ -30,32 +31,21 @@ namespace ola {
 namespace plugin {
 namespace ftdidmx {
 
-FtdiDmxThread::FtdiDmxThread(FtdiWidget *device, unsigned int freq)
-  : m_device(device),
+FtdiDmxThread::FtdiDmxThread(FtdiWidget *widget, unsigned int frequency)
+  : m_granularity(UNKNOWN),
+    m_widget(widget),
     m_term(false),
-    m_frequency(freq) {
+    m_frequency(frequency) {
 }
 
 FtdiDmxThread::~FtdiDmxThread() {
   Stop();
 }
 
-void FtdiDmxThread::CheckTimeGranularity() {
-  TimeStamp ts1, ts2;
-  MockClock clock;
 
-  clock.CurrentTime(&ts1);
-  usleep(1000);
-  clock.CurrentTime(&ts2);
-
-  TimeInterval interval = ts2 - ts1;
-  if (interval.InMilliSeconds() > 3) {
-    m_granularity = Bad;
-  } else {
-    m_granularity = Good;
-  }
-}
-
+/**
+ * Stop this thread
+ */
 bool FtdiDmxThread::Stop() {
   {
     ola::thread::MutexLocker locker(&m_term_mutex);
@@ -64,6 +54,10 @@ bool FtdiDmxThread::Stop() {
   return Join();
 }
 
+
+/**
+ * Copy a DMXBuffer to the output thread
+ */
 bool FtdiDmxThread::WriteDMX(const DmxBuffer &buffer) {
   {
     ola::thread::MutexLocker locker(&m_buffer_mutex);
@@ -72,27 +66,31 @@ bool FtdiDmxThread::WriteDMX(const DmxBuffer &buffer) {
   }
 }
 
+
+/**
+ * The method called by the thread
+ */
 void *FtdiDmxThread::Run() {
   TimeStamp ts1, ts2;
-  MockClock clock;
+  Clock clock;
   CheckTimeGranularity();
   int frameTime = static_cast<int>(floor(
     (static_cast<double>(1000) / m_frequency) + static_cast<double>(0.5)));
 
-  // Setup the device
-  if (m_device->Open() == false)
-    OLA_WARN << "Error Opening device";
-  if (m_device->Reset() == false)
-    OLA_WARN << "Error Resetting device";
-  if (m_device->SetBaudRate() == false)
+  // Setup the widget
+  if (m_widget->Open() == false)
+    OLA_WARN << "Error Opening widget";
+  if (m_widget->Reset() == false)
+    OLA_WARN << "Error Resetting widget";
+  if (m_widget->SetBaudRate() == false)
     OLA_WARN << "Error Setting baudrate";
-  if (m_device->SetLineProperties() == false)
+  if (m_widget->SetLineProperties() == false)
     OLA_WARN << "Error setting line properties";
-  if (m_device->SetFlowControl() == false)
+  if (m_widget->SetFlowControl() == false)
     OLA_WARN << "Error setting flow control";
-  if (m_device->PurgeBuffers() == false)
+  if (m_widget->PurgeBuffers() == false)
     OLA_WARN << "Error purging buffers";
-  if (m_device->ClearRts() == false)
+  if (m_widget->ClearRts() == false)
     OLA_WARN << "Error clearing rts";
 
   while (1) {
@@ -104,19 +102,19 @@ void *FtdiDmxThread::Run() {
 
     clock.CurrentTime(&ts1);
 
-    if (m_device->SetBreak(true) == false)
+    if (!m_widget->SetBreak(true))
       goto framesleep;
 
-    if (m_granularity == Good)
+    if (m_granularity == GOOD)
       usleep(DMX_BREAK);
 
-    if (m_device->SetBreak(false) == false)
+    if (!m_widget->SetBreak(false))
       goto framesleep;
 
-    if (m_granularity == Good)
+    if (m_granularity == GOOD)
       usleep(DMX_MAB);
 
-    if (m_device->Write(m_buffer) == false)
+    if (!m_widget->Write(m_buffer))
       goto framesleep;
 
   framesleep:
@@ -124,7 +122,7 @@ void *FtdiDmxThread::Run() {
     clock.CurrentTime(&ts2);
     TimeInterval elapsed = ts2 - ts1;
 
-    if (m_granularity == Good) {
+    if (m_granularity == GOOD) {
       while (elapsed.InMilliSeconds() < frameTime) {
         usleep(1000);
         clock.CurrentTime(&ts2);
@@ -137,9 +135,26 @@ void *FtdiDmxThread::Run() {
       }
     }
   }
-
   return NULL;
 }
+
+
+/**
+ * Check the granularity of usleep.
+ */
+void FtdiDmxThread::CheckTimeGranularity() {
+  TimeStamp ts1, ts2;
+  Clock clock;
+
+  clock.CurrentTime(&ts1);
+  usleep(1000);
+  clock.CurrentTime(&ts2);
+
+  TimeInterval interval = ts2 - ts1;
+  m_granularity = interval.InMilliSeconds() > 3 ? BAD : GOOD;
+  OLA_INFO << "Granularity for ftdi thread is " <<
+    (m_granularity == GOOD ? "GOOD" : "BAD");
 }
-}
-}
+}  // ftdidmx
+}  // plugin
+}  // ola
