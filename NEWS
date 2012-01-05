@@ -3,6 +3,7 @@ x/y/2012 ola-0.8.16
  * Added the ola_trigger program
  * Changed the ForceDiscovery rpc to only return once discovery completes
  * Fixed ArtNet RDM discovery so DMXWorkshop works correctly - #160
+ * Add an option for using the limited broadcast address for ArtNet dmx data
 
 12/12/2011 ola-0.8.15
  * Add DMX IN support for the Robe widget - #156
