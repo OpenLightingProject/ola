@@ -43,7 +43,7 @@ class FtdiDmxDevice : public Device {
                 unsigned int frequency);
   ~FtdiDmxDevice();
 
-  string DeviceId() const { return m_device.get()->Serial(); }
+  string DeviceId() const { return m_device->Serial(); }
   string Description() const { return m_widget_info.Description(); }
 
  protected:
