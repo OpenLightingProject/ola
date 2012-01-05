@@ -59,17 +59,18 @@ const char ArtNetNodeImpl::ARTNET_ID[] = "Art-Net";
  */
 ArtNetNodeImpl::ArtNetNodeImpl(const ola::network::Interface &interface,
                                ola::network::SelectServerInterface *ss,
-                               bool always_broadcast,
+                               const ArtNetNodeOptions &options,
                                ola::network::UdpSocketInterface *socket)
     : m_running(false),
       m_net_address(0),
       m_send_reply_on_change(true),
       m_short_name(""),
       m_long_name(""),
-      m_broadcast_threshold(BROADCAST_THRESHOLD),
+      m_broadcast_threshold(options.broadcast_threshold),
       m_unsolicited_replies(0),
       m_ss(ss),
-      m_always_broadcast(always_broadcast),
+      m_always_broadcast(options.always_broadcast),
+      m_use_limited_broadcast_address(options.use_limited_broadcast_address),
       m_interface(interface),
       m_socket(socket) {
   // reset all the port structures
@@ -405,7 +406,12 @@ bool ArtNetNodeImpl::SendDMX(uint8_t port_id, const DmxBuffer &buffer) {
   bool sent_ok = false;
   if (m_input_ports[port_id].subscribed_nodes.size() >= m_broadcast_threshold ||
       m_always_broadcast) {
-    sent_ok = SendPacket(packet, size, m_interface.bcast_address);
+    sent_ok = SendPacket(
+        packet,
+        size,
+        m_use_limited_broadcast_address ?
+          IPV4Address::Broadcast() :
+          m_interface.bcast_address);
     m_input_ports[port_id].sequence_number++;
   } else {
     map<IPV4Address, TimeStamp>::iterator iter =
@@ -1768,15 +1774,14 @@ void ArtNetNodeImpl::RunRDMCallbackWithUIDs(const uid_map &uids,
  */
 ArtNetNode::ArtNetNode(const ola::network::Interface &interface,
                        ola::network::SelectServerInterface *ss,
-                       bool always_broadcast,
-                       unsigned int rdm_queue_size,
+                       const ArtNetNodeOptions &options,
                        ola::network::UdpSocketInterface *socket):
-    m_impl(interface, ss, always_broadcast, socket) {
+    m_impl(interface, ss, options, socket) {
   for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
     m_wrappers[i] = new ArtNetNodeImplRDMWrapper(&m_impl, i);
     m_controllers[i] = new ola::rdm::DiscoverableQueueingRDMController(
         m_wrappers[i],
-        rdm_queue_size);
+        options.rdm_queue_size);
   }
 }
 

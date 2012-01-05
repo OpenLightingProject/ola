@@ -46,6 +46,7 @@ using ola::DmxBuffer;
 using ola::network::IPV4Address;
 using ola::network::Interface;
 using ola::plugin::artnet::ArtNetNode;
+using ola::plugin::artnet::ArtNetNodeOptions;
 using ola::rdm::RDMCallback;
 using ola::rdm::RDMCommand;
 using ola::rdm::RDMGetRequest;
@@ -61,6 +62,7 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(ArtNetNodeTest);
   CPPUNIT_TEST(testBasicBehaviour);
   CPPUNIT_TEST(testBroadcastSendDMX);
+  CPPUNIT_TEST(testLimitedBroadcastDMX);
   CPPUNIT_TEST(testNonBroadcastSendDMX);
   CPPUNIT_TEST(testReceiveDMX);
   CPPUNIT_TEST(testHTPMerge);
@@ -90,12 +92,14 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
           m_rdm_callback(NULL),
           m_rdm_response(NULL),
           m_port_id(1),
+          broadcast_ip(IPV4Address::Broadcast()),
           m_socket(new MockUdpSocket()) {
     }
     void setUp();
 
     void testBasicBehaviour();
     void testBroadcastSendDMX();
+    void testLimitedBroadcastDMX();
     void testNonBroadcastSendDMX();
     void testReceiveDMX();
     void testHTPMerge();
@@ -126,6 +130,7 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
     uint8_t m_port_id;
     Interface interface;
     IPV4Address peer_ip, peer_ip2, peer_ip3;
+    IPV4Address broadcast_ip;
     MockUdpSocket *m_socket;
 
     /**
@@ -179,7 +184,6 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
       ss.RunOnce(0, 0);  // update the wake up time
       m_socket->ReceiveData(data, data_size, address, ARTNET_PORT);
     }
-
 
     void SetupInputPort(ArtNetNode *node) {
       node->SetNetAddress(4);
@@ -345,7 +349,8 @@ void ArtNetNodeTest::setUp() {
  * Check that the discovery sequence works correctly.
  */
 void ArtNetNodeTest::testBasicBehaviour() {
-  ArtNetNode node(interface, &ss, false, 20, m_socket);
+  ArtNetNodeOptions node_options;
+  ArtNetNode node(interface, &ss, node_options, m_socket);
 
   node.SetShortName("Short Name");
   CPPUNIT_ASSERT_EQUAL(string("Short Name"), node.ShortName());
@@ -412,11 +417,9 @@ void ArtNetNodeTest::testBasicBehaviour() {
 void ArtNetNodeTest::testBroadcastSendDMX() {
   m_socket->SetDiscardMode(true);
 
-  ArtNetNode node(interface,
-                  &ss,
-                  true,  // always broadcast dmx
-                  20,
-                  m_socket);
+  ArtNetNodeOptions node_options;
+  node_options.always_broadcast = true;
+  ArtNetNode node(interface, &ss, node_options, m_socket);
   SetupInputPort(&node);
 
   CPPUNIT_ASSERT(node.Start());
@@ -475,13 +478,50 @@ void ArtNetNodeTest::testBroadcastSendDMX() {
   }
 }
 
+/*
+ * Check sending DMX using the limited broadcast address.
+ */
+void ArtNetNodeTest::testLimitedBroadcastDMX() {
+  m_socket->SetDiscardMode(true);
+
+  ArtNetNodeOptions node_options;
+  node_options.always_broadcast = true;
+  node_options.use_limited_broadcast_address = true;
+  ArtNetNode node(interface, &ss, node_options, m_socket);
+  SetupInputPort(&node);
+
+  CPPUNIT_ASSERT(node.Start());
+  m_socket->Verify();
+  m_socket->SetDiscardMode(false);
+
+  {
+    SocketVerifier verifer(m_socket);
+    const uint8_t DMX_MESSAGE[] = {
+      'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+      0x00, 0x50,
+      0x0, 14,
+      0,  // seq #
+      1,  // physical port
+      0x23, 4,  // subnet & net address
+      0, 6,  // dmx length
+      0, 1, 2, 3, 4, 5
+    };
+    ExpectedSend(DMX_MESSAGE, sizeof(DMX_MESSAGE), broadcast_ip);
+
+    DmxBuffer dmx;
+    dmx.SetFromString("0,1,2,3,4,5");
+    CPPUNIT_ASSERT(node.SendDMX(m_port_id, dmx));
+  }
+}
+
 
 /**
  * Check sending DMX using unicast works.
  */
 void ArtNetNodeTest::testNonBroadcastSendDMX() {
   m_socket->SetDiscardMode(true);
-  ArtNetNode node(interface, &ss, false, 20, m_socket);
+  ArtNetNodeOptions node_options;
+  ArtNetNode node(interface, &ss, node_options, m_socket);
   SetupInputPort(&node);
   CPPUNIT_ASSERT(node.Start());
   m_socket->Verify();
@@ -645,7 +685,8 @@ void ArtNetNodeTest::testNonBroadcastSendDMX() {
  */
 void ArtNetNodeTest::testReceiveDMX() {
   m_socket->SetDiscardMode(true);
-  ArtNetNode node(interface, &ss, false, 20, m_socket);
+  ArtNetNodeOptions node_options;
+  ArtNetNode node(interface, &ss, node_options, m_socket);
   SetupOutputPort(&node);
   DmxBuffer input_buffer;
   node.SetDMXHandler(m_port_id,
@@ -718,7 +759,8 @@ void ArtNetNodeTest::testReceiveDMX() {
  */
 void ArtNetNodeTest::testHTPMerge() {
   m_socket->SetDiscardMode(true);
-  ArtNetNode node(interface, &ss, false, 20, m_socket);
+  ArtNetNodeOptions node_options;
+  ArtNetNode node(interface, &ss, node_options, m_socket);
   SetupOutputPort(&node);
   DmxBuffer input_buffer;
   node.SetDMXHandler(m_port_id,
@@ -909,7 +951,8 @@ void ArtNetNodeTest::testHTPMerge() {
  */
 void ArtNetNodeTest::testLTPMerge() {
   m_socket->SetDiscardMode(true);
-  ArtNetNode node(interface, &ss, false, 20, m_socket);
+  ArtNetNodeOptions node_options;
+  ArtNetNode node(interface, &ss, node_options, m_socket);
   SetupOutputPort(&node);
   DmxBuffer input_buffer;
   node.SetDMXHandler(m_port_id,
@@ -1076,7 +1119,8 @@ void ArtNetNodeTest::testLTPMerge() {
  */
 void ArtNetNodeTest::testControllerDiscovery() {
   m_socket->SetDiscardMode(true);
-  ArtNetNode node(interface, &ss, true, 20, m_socket);
+  ArtNetNodeOptions node_options;
+  ArtNetNode node(interface, &ss, node_options, m_socket);
   SetupInputPort(&node);
   CPPUNIT_ASSERT(node.Start());
   m_socket->Verify();
@@ -1239,7 +1283,8 @@ void ArtNetNodeTest::testControllerDiscovery() {
  */
 void ArtNetNodeTest::testControllerIncrementalDiscovery() {
   m_socket->SetDiscardMode(true);
-  ArtNetNode node(interface, &ss, true, 20, m_socket);
+  ArtNetNodeOptions node_options;
+  ArtNetNode node(interface, &ss, node_options, m_socket);
   SetupInputPort(&node);
   CPPUNIT_ASSERT(node.Start());
   m_socket->Verify();
@@ -1322,7 +1367,8 @@ void ArtNetNodeTest::testControllerIncrementalDiscovery() {
  */
 void ArtNetNodeTest::testUnsolicitedTod() {
   m_socket->SetDiscardMode(true);
-  ArtNetNode node(interface, &ss, true, 20, m_socket);
+  ArtNetNodeOptions node_options;
+  ArtNetNode node(interface, &ss, node_options, m_socket);
   SetupInputPort(&node);
   CPPUNIT_ASSERT(node.SetUnsolicatedUIDSetHandler(
       m_port_id,
@@ -1369,7 +1415,8 @@ void ArtNetNodeTest::testUnsolicitedTod() {
  */
 void ArtNetNodeTest::testResponderDiscovery() {
   m_socket->SetDiscardMode(true);
-  ArtNetNode node(interface, &ss, false, 20, m_socket);
+  ArtNetNodeOptions node_options;
+  ArtNetNode node(interface, &ss, node_options, m_socket);
   SetupOutputPort(&node);
   CPPUNIT_ASSERT(node.Start());
   m_socket->Verify();
@@ -1500,7 +1547,8 @@ void ArtNetNodeTest::testResponderDiscovery() {
  */
 void ArtNetNodeTest::testRDMResponder() {
   m_socket->SetDiscardMode(true);
-  ArtNetNode node(interface, &ss, false, 20, m_socket);
+  ArtNetNodeOptions node_options;
+  ArtNetNode node(interface, &ss, node_options, m_socket);
   SetupOutputPort(&node);
   CPPUNIT_ASSERT(node.Start());
   m_socket->Verify();
@@ -1600,7 +1648,8 @@ void ArtNetNodeTest::testRDMResponder() {
  */
 void ArtNetNodeTest::testRDMRequest() {
   m_socket->SetDiscardMode(true);
-  ArtNetNode node(interface, &ss, true, 20, m_socket);
+  ArtNetNodeOptions node_options;
+  ArtNetNode node(interface, &ss, node_options, m_socket);
   SetupInputPort(&node);
   CPPUNIT_ASSERT(node.Start());
   m_socket->Verify();
@@ -1652,7 +1701,8 @@ void ArtNetNodeTest::testRDMRequest() {
  */
 void ArtNetNodeTest::testRDMRequestTimeout() {
   m_socket->SetDiscardMode(true);
-  ArtNetNode node(interface, &ss, true, 20, m_socket);
+  ArtNetNodeOptions node_options;
+  ArtNetNode node(interface, &ss, node_options, m_socket);
   SetupInputPort(&node);
   CPPUNIT_ASSERT(node.Start());
   m_socket->Verify();
@@ -1680,7 +1730,8 @@ void ArtNetNodeTest::testRDMRequestTimeout() {
  */
 void ArtNetNodeTest::testRDMRequestIPMismatch() {
   m_socket->SetDiscardMode(true);
-  ArtNetNode node(interface, &ss, true, 20, m_socket);
+  ArtNetNodeOptions node_options;
+  ArtNetNode node(interface, &ss, node_options, m_socket);
   SetupInputPort(&node);
   CPPUNIT_ASSERT(node.Start());
   m_socket->Verify();
@@ -1735,7 +1786,8 @@ void ArtNetNodeTest::testRDMRequestIPMismatch() {
  */
 void ArtNetNodeTest::testRDMRequestUIDMismatch() {
   m_socket->SetDiscardMode(true);
-  ArtNetNode node(interface, &ss, true, 20, m_socket);
+  ArtNetNodeOptions node_options;
+  ArtNetNode node(interface, &ss, node_options, m_socket);
   SetupInputPort(&node);
   CPPUNIT_ASSERT(node.Start());
   m_socket->Verify();
@@ -1790,7 +1842,8 @@ void ArtNetNodeTest::testRDMRequestUIDMismatch() {
  */
 void ArtNetNodeTest::testTimeCode() {
   m_socket->SetDiscardMode(true);
-  ArtNetNode node(interface, &ss, false, 20, m_socket);
+  ArtNetNodeOptions node_options;
+  ArtNetNode node(interface, &ss, node_options, m_socket);
 
   CPPUNIT_ASSERT(node.Start());
   m_socket->Verify();

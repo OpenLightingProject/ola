@@ -56,6 +56,7 @@ using ola::plugin::artnet::Request;
 using ola::plugin::artnet::Reply;
 
 const char ArtNetDevice::K_ALWAYS_BROADCAST_KEY[] = "always_broadcast";
+const char ArtNetDevice::K_LIMITED_BROADCAST_KEY[] = "use_limited_broadcast";
 const char ArtNetDevice::K_DEVICE_NAME[] = "ArtNet";
 const char ArtNetDevice::K_IP_KEY[] = "ip";
 const char ArtNetDevice::K_LONG_NAME_KEY[] = "long_name";
@@ -102,10 +103,13 @@ bool ArtNetDevice::StartHook() {
   }
   delete picker;
 
-  m_node = new ArtNetNode(
-      interface,
-      m_plugin_adaptor,
-      m_preferences->GetValueAsBool(K_ALWAYS_BROADCAST_KEY));
+  ArtNetNodeOptions node_options;
+  node_options.always_broadcast = m_preferences->GetValueAsBool(
+      K_ALWAYS_BROADCAST_KEY);
+  node_options.use_limited_broadcast_address = m_preferences->GetValueAsBool(
+      K_LIMITED_BROADCAST_KEY);
+
+  m_node = new ArtNetNode(interface, m_plugin_adaptor, node_options);
   m_node->SetNetAddress(net);
   m_node->SetSubnetAddress(subnet);
   m_node->SetShortName(m_preferences->GetValue(K_SHORT_NAME_KEY));

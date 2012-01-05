@@ -144,7 +144,12 @@ string ArtNetPlugin::Description() const {
 "The short name of the node (first 17 chars will be used)\n"
 "\n"
 "subnet = 0\n"
-"The ArtNet subnet to use (0-15).\n";
+"The ArtNet subnet to use (0-15).\n"
+"\n"
+"use_limited_broadcast = [true|false]\n"
+"When broadcasting, use the limited broadcast address (255.255.255.255) \n"
+"rather than the subnet directed broadcast address. Some devices which \n"
+"don't follow the ArtNet spec require this.\n";
 }
 
 
@@ -172,6 +177,9 @@ bool ArtNetPlugin::SetDefaultPreferences() {
                                          IntValidator(0, 15),
                                          ARTNET_SUBNET);
   save |= m_preferences->SetDefaultValue(ArtNetDevice::K_ALWAYS_BROADCAST_KEY,
+                                         BoolValidator(),
+                                         BoolValidator::DISABLED);
+  save |= m_preferences->SetDefaultValue(ArtNetDevice::K_LIMITED_BROADCAST_KEY,
                                          BoolValidator(),
                                          BoolValidator::DISABLED);
 

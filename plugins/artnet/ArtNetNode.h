@@ -76,11 +76,27 @@ typedef enum {
 static const uint8_t ARTNET_DISABLE_PORT = 0xf0;
 
 
+class ArtNetNodeOptions {
+  public:
+    ArtNetNodeOptions()
+        : always_broadcast(false),
+          use_limited_broadcast_address(false),
+          rdm_queue_size(20),
+          broadcast_threshold(30) {
+    }
+
+    bool always_broadcast;
+    bool use_limited_broadcast_address;
+    unsigned int rdm_queue_size;
+    unsigned int broadcast_threshold;
+};
+
+
 class ArtNetNodeImpl {
   public:
     ArtNetNodeImpl(const ola::network::Interface &interface,
                    ola::network::SelectServerInterface *ss,
-                   bool always_broadcast = false,
+                   const ArtNetNodeOptions &options,
                    ola::network::UdpSocketInterface *socket = NULL);
     virtual ~ArtNetNodeImpl();
 
@@ -206,6 +222,7 @@ class ArtNetNodeImpl {
     unsigned int m_unsolicited_replies;
     ola::network::SelectServerInterface *m_ss;
     bool m_always_broadcast;
+    bool m_use_limited_broadcast_address;
 
     InputPort m_input_ports[ARTNET_MAX_PORTS];
     OutputPort m_output_ports[ARTNET_MAX_PORTS];
@@ -291,7 +308,6 @@ class ArtNetNodeImpl {
     static const uint16_t ARTNET_PORT = 6454;
     static const uint16_t OEM_CODE = 0x0431;
     static const uint16_t ARTNET_VERSION = 14;
-    static const unsigned int BROADCAST_THRESHOLD = 30;  // picked randomly...
     // after not receiving a PollReply after this many seconds we declare the
     // node as dead. This is set to 3x the POLL_INTERVAL in ArtNetDevice.
     static const uint8_t NODE_CODE = 0x00;
@@ -354,8 +370,7 @@ class ArtNetNode {
   public:
     ArtNetNode(const ola::network::Interface &interface,
                ola::network::SelectServerInterface *ss,
-               bool always_broadcast = false,
-               unsigned int rdm_queue_size = 20,
+               const ArtNetNodeOptions &options,
                ola::network::UdpSocketInterface *socket = NULL);
     virtual ~ArtNetNode();
 
