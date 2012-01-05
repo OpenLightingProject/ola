@@ -1269,6 +1269,7 @@ void ArtNetNodeImpl::HandleRDMResponse(unsigned int port_id,
       request->ParamId() != ola::rdm::PID_QUEUED_MESSAGE) {
     OLA_INFO << "Invalid return CC in response to get, was " <<
       static_cast<int>(response->CommandClass());
+    delete response;
     return;
   }
 
@@ -1276,12 +1277,14 @@ void ArtNetNodeImpl::HandleRDMResponse(unsigned int port_id,
       response->CommandClass() != RDMCommand::SET_COMMAND_RESPONSE) {
     OLA_INFO << "Invalid return CC in response to set, was " <<
       static_cast<int>(response->CommandClass());
+    delete response;
     return;
   }
 
   if (input_port.rdm_ip_destination != m_interface.bcast_address &&
       input_port.rdm_ip_destination != source_address) {
     OLA_INFO << "IP address of RDM response didn't match";
+    delete response;
     return;
   }
 
