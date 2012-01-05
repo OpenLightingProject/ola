@@ -112,6 +112,10 @@ class IPV4Address {
       return IPV4Address(INADDR_ANY);
     }
 
+    static IPV4Address Broadcast() {
+      return IPV4Address(INADDR_NONE);
+    }
+
   private:
     struct in_addr m_address;
 };

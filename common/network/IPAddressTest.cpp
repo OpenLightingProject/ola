@@ -35,10 +35,14 @@ using std::string;
 class IPAddressTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(IPAddressTest);
   CPPUNIT_TEST(testIPV4Address);
+  CPPUNIT_TEST(testWildcard);
+  CPPUNIT_TEST(testBroadcast);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void testIPV4Address();
+    void testWildcard();
+    void testBroadcast();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(IPAddressTest);
@@ -110,4 +114,28 @@ void IPAddressTest::testIPV4Address() {
     CPPUNIT_ASSERT_EQUAL(string("192.168.1.1"), addresses[1].ToString());
     CPPUNIT_ASSERT_EQUAL(string("172.16.4.1"), addresses[2].ToString());
   }
+}
+
+
+/*
+ * Test the wildcard address works.
+ */
+void IPAddressTest::testWildcard() {
+  IPV4Address wildcard_address;
+  CPPUNIT_ASSERT_EQUAL(string("0.0.0.0"), wildcard_address.ToString());
+  CPPUNIT_ASSERT(0 == wildcard_address.Address().s_addr);
+  CPPUNIT_ASSERT(wildcard_address.IsWildcard());
+
+  IPV4Address wildcard_address2 = IPV4Address::WildCard();
+  CPPUNIT_ASSERT_EQUAL(wildcard_address, wildcard_address2);
+}
+
+
+/*
+ * Test the broadcast address works.
+ */
+void IPAddressTest::testBroadcast() {
+  IPV4Address broadcast_address = IPV4Address::Broadcast();
+  CPPUNIT_ASSERT_EQUAL(string("255.255.255.255"),
+                       broadcast_address.ToString());
 }
