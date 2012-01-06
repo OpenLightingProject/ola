@@ -150,7 +150,8 @@ void UsbProWidgetDetector::HandleMessage(DispatchingUsbProWidget *widget,
       HandleSerialResponse(widget, length, data);
       break;
     default:
-      OLA_WARN << "Unknown response label";
+      OLA_WARN << "Unknown response label: 0x" << std::hex <<
+        static_cast<int>(label) << ", length " << length;
   }
 }
 

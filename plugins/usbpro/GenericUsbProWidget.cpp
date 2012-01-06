@@ -144,8 +144,8 @@ void GenericUsbProWidget::GetParameters(usb_pro_params_callback *callback) {
  * immediately.
  */
 bool GenericUsbProWidget::SetParameters(uint8_t break_time,
-                                           uint8_t mab_time,
-                                           uint8_t rate) {
+                                        uint8_t mab_time,
+                                        uint8_t rate) {
   struct widget_params_s {
     uint16_t length;
     uint8_t break_time;
@@ -174,8 +174,8 @@ bool GenericUsbProWidget::SetParameters(uint8_t break_time,
  * Handle a message received from the widget
  */
 void GenericUsbProWidget::HandleMessage(uint8_t label,
-                                           const uint8_t *data,
-                                           unsigned int length) {
+                                        const uint8_t *data,
+                                        unsigned int length) {
   switch (label) {
     case REPROGRAM_FIRMWARE_LABEL:
       break;
@@ -191,7 +191,8 @@ void GenericUsbProWidget::HandleMessage(uint8_t label,
     case BaseUsbProWidget::SERIAL_LABEL:
       break;
     default:
-      OLA_WARN << "Unknown message type " << label;
+      OLA_WARN << "Unknown message type 0x" << std::hex <<
+        static_cast<int>(label) << ", length " << length;
   }
 }
 
@@ -200,7 +201,7 @@ void GenericUsbProWidget::HandleMessage(uint8_t label,
  * Called when we get new parameters from the widget.
  */
 void GenericUsbProWidget::HandleParameters(const uint8_t *data,
-                                              unsigned int length) {
+                                           unsigned int length) {
   if (m_outstanding_param_callbacks.empty())
     return;
 
@@ -230,7 +231,7 @@ void GenericUsbProWidget::HandleParameters(const uint8_t *data,
  * Handle the dmx frame
  */
 void GenericUsbProWidget::HandleDMX(const uint8_t *data,
-                                        unsigned int length) {
+                                    unsigned int length) {
   typedef struct {
     uint8_t status;
     uint8_t dmx[DMX_UNIVERSE_SIZE + 1];
@@ -262,7 +263,7 @@ void GenericUsbProWidget::HandleDMX(const uint8_t *data,
  * Handle the dmx change of state frame
  */
 void GenericUsbProWidget::HandleDMXDiff(const uint8_t *data,
-                                            unsigned int length) {
+                                        unsigned int length) {
   typedef struct {
     uint8_t start;
     uint8_t changed[5];
