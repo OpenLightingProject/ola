@@ -89,6 +89,8 @@ class WidgetDetectorThread: public ola::thread::Thread {
     void SetDeviceDirectory(const string &directory);
     // Must be called before Run()
     void SetDevicePrefixes(const vector<string> &prefixes);
+    // Must be called before Run()
+    void SetIgnoredDevices(const vector<string> &devices);
 
     // Start the thread, this will call the SuccessHandler whenever a new
     // Widget is located.
@@ -114,6 +116,7 @@ class WidgetDetectorThread: public ola::thread::Thread {
     vector<WidgetDetectorInterface*> m_widget_detectors;
     string m_directory;  // directory to look for widgets in
     vector<string> m_prefixes;  // prefixes to try
+    set<string> m_ignored_devices;  // devices to ignore
     NewWidgetHandler *m_handler;
     bool m_is_running;
     unsigned int m_usb_pro_timeout;

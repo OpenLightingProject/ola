@@ -55,6 +55,7 @@ const char UsbSerialPlugin::DEFAULT_ULTRA_FPS_LIMIT[] = "40";
 const char UsbSerialPlugin::DEVICE_DIR_KEY[] = "device_dir";
 const char UsbSerialPlugin::DEVICE_PREFIX_KEY[] = "device_prefix";
 const char UsbSerialPlugin::DMX_TRI_FPS_LIMIT_KEY[] = "dmx_tri_fps_limit";
+const char UsbSerialPlugin::IGNORED_DEVICES_KEY[] = "ignore_device";
 const char UsbSerialPlugin::LINUX_DEVICE_PREFIX[] = "ttyUSB";
 const char UsbSerialPlugin::MAC_DEVICE_PREFIX[] = "cu.usbserial-";
 const char UsbSerialPlugin::PLUGIN_NAME[] = "Serial USB";
@@ -101,6 +102,9 @@ string UsbSerialPlugin::Description() const {
 "\n"
 "dmx_tri_fps_limit = 190\n"
 "The max frames per second to send to a DMX-TRI or RDM-TRI device\n"
+"\n"
+"ignore_device = /dev/ttyUSB\n"
+"Ignore the device matching this string. Multiple keys are allowed.\n"
 "\n"
 "pro_fps_limit = 190\n"
 "The max frames per second to send to a Usb Pro or DMXKing device\n"
@@ -263,6 +267,10 @@ void UsbSerialPlugin::AddDevice(UsbSerialDevice *device) {
  * Start the plugin
  */
 bool UsbSerialPlugin::StartHook() {
+  const vector<string> ignored_devices =
+      m_preferences->GetMultipleValue(IGNORED_DEVICES_KEY);
+  m_detector_thread.SetIgnoredDevices(ignored_devices);
+
   m_detector_thread.SetDeviceDirectory(
       m_preferences->GetValue(DEVICE_DIR_KEY));
   m_detector_thread.SetDevicePrefixes(
