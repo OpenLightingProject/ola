@@ -328,8 +328,8 @@ void BaseInflatorTest::testInflatePDUBlock() {
   data[3] = 0x21;
   memcpy(data + length_size + PDU::TWO_BYTES, PDU_DATA,
          sizeof(PDU_DATA));
-  CPPUNIT_ASSERT_EQUAL(static_cast<int>(data_size),
-                        inflator.InflatePDUBlock(header_set, data, data_size));
+  CPPUNIT_ASSERT_EQUAL(data_size,
+                       inflator.InflatePDUBlock(header_set, data, data_size));
   CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), inflator.BlocksHandled());
   delete[] data;
 
@@ -349,7 +349,7 @@ void BaseInflatorTest::testInflatePDUBlock() {
   memcpy(data + data_size + length_size + PDU::TWO_BYTES, PDU_DATA,
          sizeof(PDU_DATA));
   CPPUNIT_ASSERT_EQUAL(
-      2 * static_cast<int>(data_size),
+      2 * data_size,
       inflator.InflatePDUBlock(header_set, data, 2 * data_size));
   delete[] data;
   CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(3), inflator.BlocksHandled());
@@ -371,8 +371,8 @@ void BaseInflatorTest::testInflatePDUBlock() {
   memcpy(data + 2 * (length_size + PDU::TWO_BYTES),
          PDU_DATA,
          sizeof(PDU_DATA));
-  CPPUNIT_ASSERT_EQUAL(static_cast<int>(pdu_size),
-                        inflator.InflatePDUBlock(header_set, data, pdu_size));
+  CPPUNIT_ASSERT_EQUAL(pdu_size,
+                       inflator.InflatePDUBlock(header_set, data, pdu_size));
   CPPUNIT_ASSERT_EQUAL((unsigned int) 3, inflator.BlocksHandled());
   CPPUNIT_ASSERT_EQUAL((unsigned int) 1, child_inflator.BlocksHandled());
   delete[] data;

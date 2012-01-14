@@ -64,9 +64,9 @@ class BaseInflator {
     /*
      * Parse a block of PDU data
      */
-    virtual int InflatePDUBlock(HeaderSet &headers,
-                                const uint8_t *data,
-                                unsigned int len);
+    virtual unsigned int InflatePDUBlock(HeaderSet &headers,
+                                         const uint8_t *data,
+                                         unsigned int len);
 
     // masks for the flag fields
     // This indicates a 20 bit length field (default is 12 bits)

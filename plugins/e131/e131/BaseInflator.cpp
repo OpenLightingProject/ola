@@ -76,7 +76,7 @@ BaseInflator *BaseInflator::GetInflator(uint32_t proto) const {
  * @param length length of the data
  * @returns the amount of data used
  */
-int BaseInflator::InflatePDUBlock(HeaderSet &headers,
+unsigned int BaseInflator::InflatePDUBlock(HeaderSet &headers,
                                   const uint8_t *data,
                                   unsigned int length) {
   unsigned int offset = 0;
@@ -135,14 +135,17 @@ bool BaseInflator::DecodeLength(const uint8_t *data,
       return false;
     }
     bytes_used = 3;
-    pdu_length = (data[2] + (data[1] << 8) + ((data[0] & LENGTH_MASK) << 16));
+    pdu_length =(data[2] +
+        static_cast<unsigned int>(data[1] << 8) +
+        static_cast<unsigned int>((data[0] & LENGTH_MASK) << 16));
   } else {
     if (length < 2) {
       OLA_WARN << "PDU length " << length << " < 2";
       return false;
     }
     bytes_used = 2;
-    pdu_length = data[1] + ((data[0] & LENGTH_MASK) << 8);
+    pdu_length = data[1] + static_cast<unsigned int>(
+        (data[0] & LENGTH_MASK) << 8);
   }
   if (pdu_length < bytes_used) {
     OLA_WARN << "PDU length was set to " << pdu_length << " but " << bytes_used
@@ -177,11 +180,14 @@ bool BaseInflator::DecodeVector(uint8_t flags, const uint8_t *data,
         vector = *data;
         break;
       case PDU::TWO_BYTES:
-        vector = data[1] + (data[0] << 8);
+        vector = data[1] + static_cast<unsigned int>(data[0] << 8);
         break;
       case PDU::FOUR_BYTES:
         // careful: we can't cast to a uint32 because this isn't word aligned
-        vector = data[3] + (data[2] << 8) + (data[1] << 16) + (data[0] << 24);
+        vector = data[3] +
+          static_cast<unsigned int>(data[2] << 8) +
+          static_cast<unsigned int>(data[1] << 16) +
+          static_cast<unsigned int>(data[0] << 24);
         break;
       default:
         OLA_WARN << "unknown vector size " << m_vector_size;

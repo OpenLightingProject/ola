@@ -58,7 +58,7 @@ class TimeInterval {
       m_interval = other.m_interval;
     }
 
-    TimeInterval(unsigned int sec, unsigned int usec) {
+    TimeInterval(int64_t sec, int32_t usec) {
       m_interval.tv_sec = sec;
       m_interval.tv_usec = usec;
     }
@@ -114,12 +114,12 @@ class TimeInterval {
     }
 
     int64_t AsInt() const {
-      return (m_interval.tv_sec * static_cast<uint64_t>(USEC_IN_SECONDS) +
+      return (m_interval.tv_sec * static_cast<int64_t>(USEC_IN_SECONDS) +
               m_interval.tv_usec);
     }
 
     int64_t InMilliSeconds() const {
-      return (m_interval.tv_sec * static_cast<uint64_t>(ONE_THOUSAND) +
+      return (m_interval.tv_sec * static_cast<int64_t>(ONE_THOUSAND) +
               m_interval.tv_usec / ONE_THOUSAND);
     }
 
@@ -136,7 +136,7 @@ class TimeInterval {
     }
 
   private:
-    void Set(uint64_t interval_useconds) {
+    void Set(int64_t interval_useconds) {
 #ifdef HAVE_TIME_T
       m_interval.tv_sec = static_cast<time_t>(
           interval_useconds / USEC_IN_SECONDS);
@@ -306,7 +306,7 @@ class MockClock: public Clock {
       m_offset += interval;
     }
 
-    void AdvanceTime(unsigned int sec, unsigned int usec) {
+    void AdvanceTime(int64_t sec, int32_t usec) {
       TimeInterval interval(sec, usec);
       m_offset += interval;
     }

@@ -50,7 +50,7 @@ unsigned int PDU::Size() const {
  */
 bool PDU::Pack(uint8_t *buffer, unsigned int &length) const {
   unsigned int size = Size();
-  int offset = 0;
+  unsigned int offset = 0;
 
   if (length < size) {
     OLA_WARN << "PDU Pack: buffer too small, required " << size << ", got "

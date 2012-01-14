@@ -113,7 +113,7 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
   unsigned int length_remaining = pdu_len - available_length;
   int start_code = -1;
   if (e131_header.UsingRev2())
-    start_code = address->Start();
+    start_code = static_cast<int>(address->Start());
   else if (length_remaining && address->Number())
     start_code = *(data + available_length);
 
@@ -299,8 +299,8 @@ bool DMPE131Inflator::TrackSourceIfRequired(
 
   } else {
     // We already know about this one, check the seq #
-    int8_t seq_diff = static_cast<uint8_t>(e131_header.Sequence() -
-                                           iter->sequence);
+    int8_t seq_diff = static_cast<int8_t>(e131_header.Sequence() -
+                                          iter->sequence);
     if (seq_diff <= 0 && seq_diff > SEQUENCE_DIFF_THRESHOLD) {
       OLA_INFO << "Old packet received, ignoring, this # " <<
         static_cast<int>(e131_header.Sequence()) << ", last " <<
