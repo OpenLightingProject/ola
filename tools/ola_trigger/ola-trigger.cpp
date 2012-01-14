@@ -145,7 +145,7 @@ void DisplayHelpAndExit(char *argv[]) {
   "Run programs based on the values in a DMX stream.\n"
   "\n"
   "  -h, --help                 Display this help message and exit.\n"
-  "  -l, --log-level <level>    Set the loggging level 0 .. 4.\n"
+  "  -l, --log-level <level>    Set the logging level 0 .. 4.\n"
   "  -o, --offset <slot_offset> Apply an offset to the slot numbers. Valid\n"
   "                             offsets are 0 to 512, default is 0.\n"
   "  -u, --universe <universe>  The universe to use, defaults to 1"
