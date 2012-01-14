@@ -338,7 +338,7 @@ void DisplayHelpAndExit(char *argv[]) {
   "  -a, --dump-all     Dump all packets (default is just RDM)\n"
   "  -d <device_path>   The path to the device.\n"
   "  -h, --help         Display this help message and exit.\n"
-  "  -l, --log-level <level>  Set the loggging level 0 .. 4.\n"
+  "  -l, --log-level <level>  Set the logging level 0 .. 4.\n"
   "  -v, --verbose      Show more packet details\n"
   << endl;
   exit(0);

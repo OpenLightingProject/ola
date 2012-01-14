@@ -131,7 +131,7 @@ void DisplayHelpAndExit(char arg[]) {
   "Locate E1.33 services.\n"
   "\n"
   "  -h, --help               Display this help message and exit.\n"
-  "  -l, --log-level <level>  Set the loggging level 0 .. 4.\n"
+  "  -l, --log-level <level>  Set the logging level 0 .. 4.\n"
   "  -r, --refresh <seconds>  How often to check for new/expired services.\n"
   << std::endl;
   exit(EX_USAGE);
