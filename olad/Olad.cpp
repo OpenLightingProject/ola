@@ -172,7 +172,7 @@ static void DisplayHelp() {
   "  -d, --http-data-dir      Path to the static content.\n"
   "  -f, --daemon             Fork into background.\n"
   "  -h, --help               Display this help message and exit.\n"
-  "  -l, --log-level <level>  Set the loggging level 0 .. 4 .\n"
+  "  -l, --log-level <level>  Set the logging level 0 .. 4 .\n"
   "  -p, --http-port          Port to run the http server on (default " <<
     ola::OlaServer::DEFAULT_HTTP_PORT << ")\n" <<
   "  -r, --rpc-port           Port to listen for RPCs on (default " <<
