@@ -231,7 +231,7 @@ void RobeWidgetImpl::UnMuteAll(UnMuteDeviceCallback *unmute_complete) {
   ola::rdm::UnMuteRequest unmute_request(
       m_uid,
       ola::rdm::UID::AllDevices(),
-      m_transaction_number);
+      m_transaction_number++);
 
   unsigned int length = unmute_request.Size();
   uint8_t data[length + RDM_PADDING_BYTES];
@@ -255,7 +255,7 @@ void RobeWidgetImpl::Branch(const UID &lower,
       m_uid,
       lower,
       upper,
-      m_transaction_number);
+      m_transaction_number++);
 
   unsigned int length = branch_request.Size();
   uint8_t data[length + RDM_PADDING_BYTES];

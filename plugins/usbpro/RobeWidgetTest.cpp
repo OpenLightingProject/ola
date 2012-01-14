@@ -57,6 +57,7 @@ class RobeWidgetTest: public CommonWidgetTest {
   CPPUNIT_TEST(testMuteDevice);
   CPPUNIT_TEST(testUnMuteAll);
   CPPUNIT_TEST(testReceive);
+  CPPUNIT_TEST(testBranch);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -519,12 +520,12 @@ void RobeWidgetTest::testBranch() {
 
   // add the expected response, send and verify
   m_endpoint->AddExpectedRobeDataAndReturn(
-      BaseRobeWidget::RDM_REQUEST,
+      BaseRobeWidget::RDM_DISCOVERY,
       expected_request_frame,
       expected_request_frame_size,
-      BaseRobeWidget::RDM_RESPONSE,
-      response_frame,
-      PADDING_SIZE);
+      BaseRobeWidget::RDM_DISCOVERY_RESPONSE,
+      NULL,
+      0);
 
   m_widget.get()->m_impl->Branch(
       UID(0, 0),
@@ -553,20 +554,22 @@ void RobeWidgetTest::testBranch() {
 
   // add the expected response, send and verify
   m_endpoint->AddExpectedRobeDataAndReturn(
-      BaseRobeWidget::RDM_REQUEST,
+      BaseRobeWidget::RDM_DISCOVERY,
       expected_request_frame,
       expected_request_frame_size,
-      BaseRobeWidget::RDM_RESPONSE,
+      BaseRobeWidget::RDM_DISCOVERY_RESPONSE,
       response_frame2,
       sizeof(response_frame2));
 
   m_widget.get()->m_impl->Branch(
       UID(0, 0),
       UID::AllDevices(),
-      ola::NewSingleCallback(this,
-                             &RobeWidgetTest::ValidateBranchStatus,
-                             static_cast<const uint8_t*>(response_frame2),
-                             static_cast<unsigned int>(0)));
+      ola::NewSingleCallback(
+        this,
+        &RobeWidgetTest::ValidateBranchStatus,
+        static_cast<const uint8_t*>(response_frame2),
+        // minus the 4 padding bytes
+        static_cast<unsigned int>(sizeof(response_frame2) - 4)));
   m_ss.Run();
   m_endpoint->Verify();
   delete[] expected_request_frame;
