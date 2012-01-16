@@ -58,7 +58,7 @@ class TimeInterval {
       m_interval = other.m_interval;
     }
 
-    TimeInterval(int64_t sec, int32_t usec) {
+    TimeInterval(int32_t sec, int32_t usec) {
       m_interval.tv_sec = sec;
       m_interval.tv_usec = usec;
     }
@@ -306,7 +306,7 @@ class MockClock: public Clock {
       m_offset += interval;
     }
 
-    void AdvanceTime(int64_t sec, int32_t usec) {
+    void AdvanceTime(int32_t sec, int32_t usec) {
       TimeInterval interval(sec, usec);
       m_offset += interval;
     }
