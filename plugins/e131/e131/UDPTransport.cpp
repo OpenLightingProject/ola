@@ -144,7 +144,7 @@ void UDPTransport::Receive() {
 
   m_inflator->InflatePDUBlock(header_set,
                               m_recv_buffer + DATA_OFFSET,
-                              static_cast<unsigned int>(size - DATA_OFFSET));
+                              static_cast<unsigned int>(size) - DATA_OFFSET);
   return;
 }
 
