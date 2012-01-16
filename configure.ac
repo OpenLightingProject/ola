@@ -484,6 +484,7 @@ AC_OUTPUT( Makefile\
     tools/ola_trigger/Makefile \
     tools/e133/Makefile \
     tools/rdm/Makefile \
+    tools/rdmpro/Makefile \
     tools/usbpro/Makefile \
     libola.pc \
     libolaserver.pc \
