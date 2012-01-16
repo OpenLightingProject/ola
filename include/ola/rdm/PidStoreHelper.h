@@ -44,7 +44,8 @@ using std::vector;
 
 class PidStoreHelper {
   public:
-    explicit PidStoreHelper(const string &pid_file);
+    explicit PidStoreHelper(const string &pid_file,
+                            unsigned int initial_indent = 0);
     ~PidStoreHelper();
 
     bool Init();

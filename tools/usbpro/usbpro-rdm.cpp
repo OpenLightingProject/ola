@@ -14,82 +14,161 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * usbpro-rdm.cpp
- * A very simple RDM sniffer for USB Pro like devices
+ * RDM Sniffer software for the Enttec RDM Pro.
  * Copyright (C) 2010 Simon Newton
  */
 
-#include <errno.h>
-#include <fcntl.h>
 #include <getopt.h>
 #include <string.h>
 #include <sysexits.h>
-#include <termios.h>
-#include <ola/Logging.h>
+
+#include <ola/BaseTypes.h>
 #include <ola/Callback.h>
+#include <ola/Logging.h>
 #include <ola/network/NetworkUtils.h>
 #include <ola/network/SelectServer.h>
+#include <ola/rdm/PidStoreHelper.h>
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/RDMHelper.h>
 #include <ola/rdm/RDMResponseCodes.h>
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "plugins/usbpro/BaseUsbProWidget.h"
 
+using std::auto_ptr;
 using std::cout;
 using std::endl;
 using std::string;
+using std::stringstream;
+using std::vector;
 using ola::network::SelectServerInterface;
 using ola::plugin::usbpro::DispatchingUsbProWidget;
+using ola::messaging::Descriptor;
+using ola::messaging::Message;
+using ola::rdm::PidDescriptor;
+using ola::rdm::PidStoreHelper;
 using ola::rdm::RDMCommand;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 
-static const char DEFAULT_DEVICE[] = "/dev/ttyUSB0";
-
 typedef struct {
   bool help;
-  bool dump_all;
-  bool verbose;
   ola::log_level log_level;
-  string device;
+  vector<string> args;  // extra args
 } options;
+
+
+/**
+ * A list of bytes
+ */
+class ByteStream {
+  public:
+    ByteStream() {}
+    virtual ~ByteStream() {}
+
+    void AddByte(uint8_t byte) { m_bytes.push_back(byte); }
+    uint8_t& operator[](unsigned int offset) { return m_bytes[offset]; }
+    void Reset() { m_bytes.clear(); }
+    unsigned int Size() { return m_bytes.size(); }
+
+  private:
+    vector<uint8_t> m_bytes;
+};
 
 
 class RDMSniffer {
   public:
+    struct RDMSnifferOptions {
+      // DMX Options
+      bool display_dmx_frames;  // display DMX frames
+      // limit the number of dmx slots displayed
+      uint16_t dmx_slot_limit;
+
+      // RDM Options
+      bool display_rdm_frames;  // display RDM frames
+      bool summarize_rdm_frames;  // only display a one line summary
+      bool unpack_param_data;  // display the unpacked RDM param data
+
+      // Non DMX / RDM Frames
+      // display non-RDM alternate start code frames
+      bool display_non_rdm_asc_frames;
+
+      // the file with the pid data
+      string pid_file;
+    };
+
+    static void InitOptions(RDMSnifferOptions *options) {
+      options->display_dmx_frames = false;
+      options->dmx_slot_limit = DMX_UNIVERSE_SIZE;
+      options->display_rdm_frames = true;
+      options->summarize_rdm_frames = true;
+      options->unpack_param_data = false;
+      options->unpack_param_data = true;
+      options->display_non_rdm_asc_frames = true;
+      options->pid_file = PID_DATA_FILE;
+    }
+
     RDMSniffer(SelectServerInterface *ss,
-               bool dump_all,
-               bool verbose);
+               const RDMSnifferOptions &options);
 
     void HandleMessage(uint8_t label,
                        const uint8_t *data,
                        unsigned int length);
 
   private:
+    typedef enum {
+      IDLE,
+      BREAK,
+      MAB,
+      DATA,
+    } SnifferState;
+
     SelectServerInterface *m_ss;
-    bool m_dump_all;
-    bool m_verbose;
+    uint64_t m_time_offset;  // microseconds since we started.
+    SnifferState m_state;
+    ByteStream m_frame;
+    RDMSnifferOptions m_options;
+    PidStoreHelper m_pid_helper;
 
-    void DumpRawPacket(unsigned int length, const uint8_t *data);
-    void DumpRequest(unsigned int length, const uint8_t *data);
-    void DumpResponse(unsigned int length, const uint8_t *data);
-    void DumpDiscover(unsigned int length, const uint8_t *data);
+    void ProcessTuple(uint8_t control_byte, uint8_t data_byte);
+    void ProcessFrame();
 
-    static const uint8_t RECEIVED_DMX_LABEL = 5;
-    static const uint8_t DRAFT_START_CODE = 0xf0;
+    void DisplayDmxFrame();
+    void DisplayAlternateFrame();
+    void DisplayRDMFrame();
+    void DisplayRDMRequest(unsigned int start, unsigned int end);
+    void DisplayRDMResponse(unsigned int start, unsigned int end);
+    void DisplayRawData(unsigned int start, unsigned int end);
+    void DisplayParamData(const uint8_t *data, unsigned int size);
+    void DisplayUnpackedParamData(const PidDescriptor *pid_descriptor,
+                                  bool is_get,
+                                  const uint8_t *data,
+                                  unsigned int length);
+
+    static const uint8_t SNIFFER_PACKET = 0x81;
+    static const uint8_t SNIFFER_PACKET_SIZE = 200;
+    // if the high bit is set, this is a data byte, otherwise it's a control
+    // byte
+    static const uint8_t DATA_MASK = 0x80;
+    static const uint8_t BYTES_PER_LINE = 8;
 };
 
 
 RDMSniffer::RDMSniffer(SelectServerInterface *ss,
-                       bool dump_all,
-                       bool verbose):
-    m_ss(ss),
-    m_dump_all(dump_all),
-    m_verbose(verbose) {
+                       const RDMSnifferOptions &options)
+    : m_ss(ss),
+      m_time_offset(0),
+      m_state(IDLE),
+      m_options(options),
+      m_pid_helper(options.pid_file, 4) {
+  if (!m_pid_helper.Init())
+    OLA_WARN << "Failed to init PidStore";
 }
 
 
@@ -99,119 +178,263 @@ RDMSniffer::RDMSniffer(SelectServerInterface *ss,
 void RDMSniffer::HandleMessage(uint8_t label,
                                const uint8_t *data,
                                unsigned int length) {
-  if (label != RECEIVED_DMX_LABEL) {
-    OLA_INFO << "Not a RECEIVED_DMX_LABEL, was " << static_cast<int>(label);
+  if (label != SNIFFER_PACKET) {
+    OLA_WARN << "Not a SNIFFER_PACKET, was " << static_cast<int>(label);
     return;
   }
 
-  if (!length) {
-    if (m_dump_all)
-      OLA_INFO << "Zero sized packet";
+  if (length != SNIFFER_PACKET_SIZE) {
+    OLA_WARN << "Strange packet size. Was " <<
+      static_cast<unsigned int>(length) << ", expected " <<
+      static_cast<unsigned int>(SNIFFER_PACKET_SIZE);
     return;
   }
 
-  if (data[0]) {
-    OLA_INFO << "Error: " << static_cast<int>(data[0]);
-    return;
+  for (unsigned int i = 0; i < length; i+= 2) {
+    /*
+    OLA_INFO << m_state << " " << std::hex << (data[i] & DATA_MASK ? "data  " : "control") << " " << (int)
+      (data[i]) << " " << (int) data[i+1];
+    */
+    ProcessTuple(data[i], data[i + 1]);
   }
+}
 
-  length--;
-  data++;
 
-  if (!length) {
-    if (m_dump_all)
-      OLA_INFO << "Zero sized packet";
-    return;
-  }
-
-  switch (data[0]) {
-    case 0:
-      if (m_dump_all)
-        OLA_INFO << "DMX packet";
-      return;
-    case DRAFT_START_CODE:
-      if (m_dump_all) {
-        cout << "Draft RDM packet: ";
-        DumpRawPacket(length, data);
+/**
+ * This processes each (control, data) tuple according to the state machine
+ */
+void RDMSniffer::ProcessTuple(uint8_t control_byte, uint8_t data_byte) {
+  if (control_byte & DATA_MASK) {
+    // this is an actual byte of data
+    switch (m_state) {
+      case IDLE:
+      case MAB:
+        m_state = DATA;
+        m_frame.Reset();
+      case DATA:
+        m_frame.AddByte(data_byte);
+        break;
+      default:
+        OLA_WARN << "Unknown transition from state " << m_state <<
+          ", with data 0x" << std::hex << static_cast<int>(control_byte) <<
+          " 0x" << static_cast<int>(data_byte);
+    }
+  } else {
+    // control byte
+    if (data_byte == 0) {
+      switch (m_state) {
+        case BREAK:
+          m_state = MAB;
+          break;
+        default:
+          OLA_WARN << "Unknown transition from state " << m_state <<
+            ", with data 0x" << std::hex << static_cast<int>(control_byte) <<
+            " 0x" << static_cast<int>(data_byte);
       }
-      return;
+    } else if (data_byte == 1) {
+      switch (m_state) {
+        case IDLE:
+          m_state = BREAK;
+          break;
+        case DATA:
+          ProcessFrame();
+          m_state = BREAK;
+          break;
+        default:
+          OLA_WARN << "Unknown transition from state " << m_state <<
+            ", with data 0x" << std::hex << static_cast<int>(control_byte) <<
+            " 0x" << static_cast<int>(data_byte);
+      }
+    } else if (data_byte == 2) {
+      switch (m_state) {
+        case IDLE:
+        case BREAK:
+        case MAB:
+          break;
+        case DATA:
+          m_state = IDLE;
+          ProcessFrame();
+      }
+    } else {
+      OLA_WARN << "Unknown transition from state " << m_state <<
+        ", with data 0x" << std::hex << static_cast<int>(control_byte) <<
+        " 0x" << static_cast<int>(data_byte);
+    }
+  }
+}
+
+
+/**
+ * Process a frame based on what start code is has.
+ */
+void RDMSniffer::ProcessFrame() {
+  switch (m_frame[0]) {
+    case DMX512_START_CODE:
+      if (m_options.display_dmx_frames)
+        DisplayDmxFrame();
+      break;
     case RDMCommand::START_CODE:
+      DisplayRDMFrame();
       break;
     default:
-      if (m_dump_all)
-        OLA_INFO << "Packet with start code " << static_cast<int>(data[0]);
-      return;
+      if (m_options.display_non_rdm_asc_frames)
+        DisplayAlternateFrame();
   }
+}
 
-  if (length < 21) {
-    cout << "Short packet: ";
-    DumpRawPacket(length, data);
+
+/**
+ * Display a DMX Frame
+ */
+void RDMSniffer::DisplayDmxFrame() {
+  unsigned int dmx_slot_count = m_frame.Size() - 1;
+  cout << "DMX " << std::dec;
+  if (m_options.dmx_slot_limit < dmx_slot_count)
+    cout << m_options.dmx_slot_limit << "/";
+  cout << dmx_slot_count << ":" << std::hex;
+  unsigned int slots_to_display = std::min(
+      dmx_slot_count,
+      static_cast<unsigned int>(m_options.dmx_slot_limit));
+
+  DisplayRawData(1, 1 + slots_to_display);
+}
+
+
+/**
+ * Display a non (DMX/RDM) frame
+ */
+void RDMSniffer::DisplayAlternateFrame() {
+  unsigned int slot_count = m_frame.Size() - 1;
+  cout << "SC 0x" << std::hex << std::setw(2) << static_cast<int>(m_frame[0])
+    << " " << std::dec << slot_count << ":" << std::hex;
+  unsigned int slots_to_display = std::min(
+      slot_count,
+      static_cast<unsigned int>(m_options.dmx_slot_limit));
+  DisplayRawData(1, 1 + slots_to_display);
+}
+
+
+/**
+ * Display an RDM Frame.
+ */
+void RDMSniffer::DisplayRDMFrame() {
+  unsigned int slot_count = m_frame.Size() - 1;
+  cout << "RDM " << std::dec << slot_count << ": " << std::hex;
+
+  if (slot_count < 21) {
+    DisplayRawData(1, slot_count);
     return;
   }
 
-  uint8_t command_class = data[20];
-
-  switch (command_class) {
+  switch (m_frame[20]) {
     case RDMCommand::GET_COMMAND:
     case RDMCommand::SET_COMMAND:
-      DumpRequest(length - 1, data + 1);
-      return;
+      DisplayRDMRequest(1, slot_count);
+      break;
     case RDMCommand::GET_COMMAND_RESPONSE:
     case RDMCommand::SET_COMMAND_RESPONSE:
-      DumpResponse(length - 1, data + 1);
+      DisplayRDMResponse(1, slot_count);
       return;
     case RDMCommand::DISCOVER_COMMAND:
+    /*
     case RDMCommand::DISCOVER_COMMAND_RESPONSE:
       DumpDiscover(length - 1, data + 1);
       return;
+    */
     default:
-      DumpRawPacket(length -1, data + 1);
+      DisplayRawData(1, slot_count);
   }
 }
 
 
-void RDMSniffer::DumpRawPacket(unsigned int length, const uint8_t *data) {
-  for (unsigned int i = 0; i < length; ++i)
-    cout << std::hex << static_cast<int>(data[i]) << " ";
-  cout << endl;
-}
+/**
+ * Display an RDM Request.
+ */
+void RDMSniffer::DisplayRDMRequest(unsigned int start, unsigned int end) {
+  auto_ptr<RDMRequest> request(
+      RDMRequest::InflateFromData(&m_frame[start], end - start + 1));
+  if (!request.get()) {
+    DisplayRawData(start, end);
+    return;
+  }
 
+  const PidDescriptor *descriptor = m_pid_helper.GetDescriptor(
+       request->ParamId(),
+       request->DestinationUID().ManufacturerId());
 
-void RDMSniffer::DumpRequest(unsigned int length, const uint8_t *data) {
-  RDMRequest *request = RDMRequest::InflateFromData(data, length);
-  if (request) {
-    cout << (request->CommandClass() == RDMCommand::GET_COMMAND ? "GET" :
-             "SET");
-    cout << " src: " << request->SourceUID() << ", dst: " <<
-      request->DestinationUID() << ", sub-device: " << std::dec <<
-      request->SubDevice() << ", transaction: " <<
-      static_cast<int>(request->TransactionNumber()) << ", port: " << std::dec
-      << static_cast<int>(request->PortId()) << ", PID 0x" << std::hex <<
-      std::setfill('0') << std::setw(4) << request->ParamId();
-    if (m_verbose) {
-      cout << ", pdl: " << std::dec << request->ParamDataSize() <<
-        ", param data: ";
-      const uint8_t *param_data = request->ParamData();
-      for (unsigned int i = 0; i < request->ParamDataSize(); ++i)
-        cout << std::hex << static_cast<int>(param_data[i]) << " ";
-    }
-    cout << endl;
+  if (m_options.summarize_rdm_frames) {
+    cout <<
+      request->SourceUID() << " -> " << request->DestinationUID() << " " <<
+      (request->CommandClass() == RDMCommand::GET_COMMAND ? "GET" : "SET") <<
+      ", sub-device: " << std::dec << request->SubDevice() <<
+      ", tn: " << static_cast<int>(request->TransactionNumber()) <<
+      ", port: " << std::dec << static_cast<int>(request->PortId()) <<
+      ", PID 0x" << std::hex << std::setfill('0') << std::setw(4) <<
+        request->ParamId();
+      if (descriptor)
+        cout << " (" << descriptor->Name() << ")";
+      cout << ", pdl: " << std::dec << request->ParamDataSize() << endl;
   } else {
-    DumpRawPacket(length, data);
+    cout << endl;
+    cout << "  Sub start code : 0x" << std::hex <<
+      static_cast<unsigned int>(m_frame[start]) << endl;
+    cout << "  Message length : " <<
+      static_cast<unsigned int>(m_frame[start + 1]) << endl;
+    cout << "  Dest UID       : " << request->DestinationUID() << endl;
+    cout << "  Source UID     : " << request->SourceUID() << endl;
+    cout << "  Transaction #  : " << std::dec <<
+      static_cast<unsigned int>(request->TransactionNumber()) << endl;
+    cout << "  Port ID        : " << std::dec <<
+      static_cast<unsigned int>(request->PortId()) << endl;
+    cout << "  Message count  : " << std::dec <<
+      static_cast<unsigned int>(request->MessageCount()) << endl;
+    cout << "  Sub device     : " << std::dec << request->SubDevice() << endl;
+    cout << "  Command class  : " <<
+      (request->CommandClass() == RDMCommand::GET_COMMAND ? "GET" : "SET") <<
+      endl;
+
+    cout << "  Param ID       : 0x" << std::setfill('0') << std::setw(4) <<
+      std::hex << request->ParamId();
+    if (descriptor)
+      cout << " (" << descriptor->Name() << ")";
+    cout << endl;
+    cout << "  Param data len : " << std::dec << request->ParamDataSize() <<
+      endl;
+    if (request->ParamDataSize()) {
+      cout << "  Param data:" << endl;
+      DisplayParamData(request->ParamData(), request->ParamDataSize());
+    }
   }
 }
 
 
-void RDMSniffer::DumpResponse(unsigned int length, const uint8_t *data) {
+/**
+ * Display an RDM response
+ */
+void RDMSniffer::DisplayRDMResponse(unsigned int start, unsigned int end) {
   ola::rdm::rdm_response_code code;
-  RDMResponse *response = RDMResponse::InflateFromData(data, length, &code);
-  if (response) {
-    cout << (response->CommandClass() == RDMCommand::GET_COMMAND_RESPONSE ?
-        "GET_RESPONSE" : "SET_RESPONSE");
-    cout << " src: " << response->SourceUID() << ", dst: " <<
-      response->DestinationUID() << ", sub-device: " << std::dec <<
-      response->SubDevice() << ", transaction: " <<
-      static_cast<int>(response->TransactionNumber()) << ", response type: ";
+  unsigned int length = end - start + 1;
+  auto_ptr<RDMResponse> response(
+      RDMResponse::InflateFromData(&m_frame[start], length, &code));
+
+  if (!response.get()) {
+    DisplayRawData(start, end);
+    return;
+  }
+
+  const PidDescriptor *descriptor = m_pid_helper.GetDescriptor(
+       response->ParamId(),
+       response->SourceUID().ManufacturerId());
+
+  bool is_get = response->CommandClass() == RDMCommand::GET_COMMAND_RESPONSE;
+
+  if (m_options.summarize_rdm_frames) {
+    cout <<
+      response->SourceUID() << " -> " << response->DestinationUID() << " " <<
+      (is_get ? "GET_RESPONSE" : "SET_RESPONSE") <<
+      ", sub-device: " << std::dec << response->SubDevice() <<
+      ", tn: " << static_cast<int>(response->TransactionNumber()) <<
+      ", response type: ";
 
     switch (response->ResponseType()) {
       case ola::rdm::RDM_ACK:
@@ -224,7 +447,7 @@ void RDMSniffer::DumpResponse(unsigned int length, const uint8_t *data) {
         if (length >= 26) {
           uint16_t reason;
           memcpy(reinterpret_cast<uint8_t*>(&reason),
-                 reinterpret_cast<const void*>(data + 23),
+                 reinterpret_cast<const void*>(&m_frame[start + 23]),
                  sizeof(reason));
           reason = ola::network::NetworkToHost(reason);
           cout << "NACK (" << ola::rdm::NackReasonToString(reason) << ")";
@@ -240,40 +463,151 @@ void RDMSniffer::DumpResponse(unsigned int length, const uint8_t *data) {
     }
     cout << ", PID 0x" << std::hex <<
       std::setfill('0') << std::setw(4) << response->ParamId();
-    if (m_verbose) {
-      cout << ", pdl: " << std::dec << response->ParamDataSize() <<
-        ", param data: ";
-      const uint8_t *param_data = response->ParamData();
-      for (unsigned int i = 0; i < response->ParamDataSize(); ++i)
-        cout << std::hex << static_cast<int>(param_data[i]) << " ";
-    }
+    if (descriptor)
+      cout << " (" << descriptor->Name() << ")";
+    cout << ", pdl: " << std::dec << response->ParamDataSize() << endl;
+  } else {
     cout << endl;
+    cout << "  Sub start code : 0x" << std::hex <<
+      static_cast<unsigned int>(m_frame[start]) << endl;
+    cout << "  Message length : " <<
+      static_cast<unsigned int>(m_frame[start + 1]) << endl;
+    cout << "  Dest UID       : " << response->DestinationUID() << endl;
+    cout << "  Source UID     : " << response->SourceUID() << endl;
+    cout << "  Transaction #  : " << std::dec <<
+      static_cast<unsigned int>(response->TransactionNumber()) << endl;
+    cout << "  Response Type  : ";
+    switch (response->ResponseType()) {
+      case ola::rdm::RDM_ACK:
+        cout << "ACK";
+        break;
+      case ola::rdm::RDM_ACK_TIMER:
+        cout << "ACK TIMER";
+        break;
+      case ola::rdm::RDM_NACK_REASON:
+        if (length >= 26) {
+          uint16_t reason;
+          memcpy(reinterpret_cast<uint8_t*>(&reason),
+                 reinterpret_cast<const void*>(&m_frame[start + 23]),
+                 sizeof(reason));
+          reason = ola::network::NetworkToHost(reason);
+          cout << "NACK (" << ola::rdm::NackReasonToString(reason) << ")";
+        } else {
+          cout << "Malformed NACK ";
+        }
+        break;
+      case ola::rdm::ACK_OVERFLOW:
+        cout << "ACK OVERFLOW";
+        break;
+      default:
+        cout << "Unknown (" << response->ResponseType() << ")";
+    }
+    cout  << endl;
+    cout << "  Message count  : " << std::dec <<
+      static_cast<unsigned int>(response->MessageCount()) << endl;
+    cout << "  Sub device     : " << std::dec << response->SubDevice() << endl;
+    cout << "  Command class  : " << (is_get ? "GET_RESPONSE" : "SET_RESPONSE")
+      << endl;
+
+    cout << "  Param ID       : 0x" << std::setfill('0') << std::setw(4) <<
+      std::hex << response->ParamId();
+    if (descriptor)
+      cout << " (" << descriptor->Name() << ")";
+    cout << endl;
+    cout << "  Param data len : " << std::dec << response->ParamDataSize() <<
+      endl;
+    DisplayUnpackedParamData(descriptor, is_get,
+                             response->ParamData(),
+                             response->ParamDataSize());
+  }
+}
+
+void RDMSniffer::DisplayRawData(unsigned int start, unsigned int end) {
+  for (unsigned int i = start; i < end; i++)
+    cout << std::hex << std::setw(2) << static_cast<int>(m_frame[i]) << " ";
+  cout << endl;
+}
+
+
+/**
+ * Display parameter data in hex and ascii
+ */
+void RDMSniffer::DisplayParamData(const uint8_t *data, unsigned int size) {
+  stringstream raw;
+  raw << std::setw(2) << std::hex;
+  stringstream ascii;
+  for (unsigned int i = 0; i != size; i++) {
+    raw << static_cast<unsigned int>(data[i]) << " ";
+    ascii << data[i];
+
+    if (i % BYTES_PER_LINE == BYTES_PER_LINE - 1) {
+      cout << "    " << raw.str() << " " << ascii.str() << endl;
+      raw.str("");
+      ascii.str("");
+    }
+  }
+  if (size % BYTES_PER_LINE != 0) {
+    // pad if needed
+    raw << string(' ', 3 * (BYTES_PER_LINE - (size % BYTES_PER_LINE)));
+    cout << "    " << raw.str() << " " << ascii.str() << endl;
   }
 }
 
 
-void RDMSniffer::DumpDiscover(unsigned int length, const uint8_t *data) {
-  DumpRawPacket(length, data);
+void RDMSniffer::DisplayUnpackedParamData(const PidDescriptor *pid_descriptor,
+                                          bool is_get,
+                                          const uint8_t *data,
+                                          unsigned int length) {
+  if (!length)
+    return;
+
+  cout << "  Param data:" << endl;
+  if (m_options.unpack_param_data && pid_descriptor) {
+    const Descriptor *descriptor =
+        is_get ? pid_descriptor->GetResponse() : pid_descriptor->SetResponse();
+
+    if (descriptor) {
+      auto_ptr<const Message> message(
+          m_pid_helper.DeserializeMessage(descriptor, data, length));
+
+      if (message.get()) {
+        cout << m_pid_helper.MessageToString(message.get());
+        return;
+      }
+    }
+  }
+  DisplayParamData(data, length);
 }
 
 
 /*
+void RDMSniffer::DumpDiscover(unsigned int length, const uint8_t *data) {
+  DumpRawPacket(length, data);
+}
+*/
+
+/*
  * Parse our command line options
  */
-void ParseOptions(int argc, char *argv[], options *opts) {
+void ParseOptions(int argc,
+                  char *argv[],
+                  options *opts,
+                  RDMSniffer::RDMSnifferOptions *sniffer_options) {
   static struct option long_options[] = {
-      {"dump-all", no_argument, 0, 'a'},
-      {"device", required_argument, 0, 'd'},
+      {"display-asc", no_argument, 0, 'a'},
+      {"display-dmx", no_argument, 0, 'd'},
+      {"dmx-slot-limit", required_argument, 0, 's'},
+      {"full-rdm", no_argument, 0, 'r'},
       {"help", no_argument, 0, 'h'},
       {"log-level", required_argument, 0, 'l'},
-      {"verbose", no_argument, 0, 'v'},
+      {"unpack-params", no_argument, 0, 'u'},
       {0, 0, 0, 0}
     };
 
   int option_index = 0;
 
   while (1) {
-    int c = getopt_long(argc, argv, "ad:hl:v", long_options, &option_index);
+    int c = getopt_long(argc, argv, "adhl:s:ru", long_options, &option_index);
 
     if (c == -1)
       break;
@@ -282,10 +616,10 @@ void ParseOptions(int argc, char *argv[], options *opts) {
       case 0:
         break;
       case 'a':
-        opts->dump_all = true;
+        sniffer_options->display_non_rdm_asc_frames = true;
         break;
       case 'd':
-        opts->device = optarg;
+        sniffer_options->display_dmx_frames = true;
         break;
       case 'h':
         opts->help = true;
@@ -313,8 +647,14 @@ void ParseOptions(int argc, char *argv[], options *opts) {
             break;
         }
         break;
-      case 'v':
-        opts->verbose = true;
+      case 's':
+        sniffer_options->dmx_slot_limit = atoi(optarg);
+        break;
+      case 'r':
+        sniffer_options->summarize_rdm_frames = false;
+        break;
+      case 'u':
+        sniffer_options->unpack_param_data = true;
         break;
       case '?':
         break;
@@ -322,6 +662,10 @@ void ParseOptions(int argc, char *argv[], options *opts) {
        break;
     }
   }
+
+  int index = optind;
+  for (; index < argc; index++)
+    opts->args.push_back(argv[index]);
   return;
 }
 
@@ -330,16 +674,17 @@ void ParseOptions(int argc, char *argv[], options *opts) {
  * Display the help message
  */
 void DisplayHelpAndExit(char *argv[]) {
-  cout << "Usage: " << argv[0] <<
-  " -d <device>\n"
+  cout << "Usage: " << argv[0] << " [options] <device>\n"
   "\n"
-  "Dump RDM traffic from a Enttec USB Pro device.\n"
+  "Sniff traffic from a Enttec RDM Pro device.\n"
   "\n"
-  "  -a, --dump-all     Dump all packets (default is just RDM)\n"
-  "  -d <device_path>   The path to the device.\n"
-  "  -h, --help         Display this help message and exit.\n"
+  "  -a, --display-asc   Display non-RDM alternate start code frames\n"
+  "  -d, --display-dmx   Display DMX Frames (default false)\n"
+  "  --dmx-slot-limit N  Only display N slots\n"
+  "  -h, --help          Display this help message and exit.\n"
   "  -l, --log-level <level>  Set the logging level 0 .. 4.\n"
-  "  -v, --verbose      Show more packet details\n"
+  "  -r, --full-rdm      Display the full RDM frame\n"
+  "  -u, --unpack-params Unpack parameter data.\n"
   << endl;
   exit(0);
 }
@@ -354,27 +699,32 @@ void Stop(ola::network::SelectServer *ss) {
  * Dump RDM data
  */
 int main(int argc, char *argv[]) {
+  RDMSniffer::RDMSnifferOptions sniffer_options;
+  RDMSniffer::InitOptions(&sniffer_options);
   options opts;
-  opts.dump_all = false;
-  opts.verbose = false;
   opts.log_level = ola::OLA_LOG_INFO;
   opts.help = false;
-  opts.device = DEFAULT_DEVICE;
-  ParseOptions(argc, argv, &opts);
+  ParseOptions(argc, argv, &opts, &sniffer_options);
 
   if (opts.help)
     DisplayHelpAndExit(argv);
+
+  if (opts.args.size() != 1)
+    DisplayHelpAndExit(argv);
+  const string device = opts.args[0];
+
   ola::InitLogging(opts.log_level, ola::OLA_LOG_STDERR);
 
   ola::network::ConnectedDescriptor *descriptor =
-      ola::plugin::usbpro::BaseUsbProWidget::OpenDevice(opts.device);
+      ola::plugin::usbpro::BaseUsbProWidget::OpenDevice(device);
   if (!descriptor)
     exit(EX_UNAVAILABLE);
 
   ola::network::SelectServer ss;
   descriptor->SetOnClose(ola::NewSingleCallback(&Stop, &ss));
   ss.AddReadDescriptor(descriptor);
-  RDMSniffer sniffer(&ss, opts.dump_all, opts.verbose);
+
+  RDMSniffer sniffer(&ss, sniffer_options);
   DispatchingUsbProWidget widget(
       descriptor,
       ola::NewCallback(&sniffer, &RDMSniffer::HandleMessage));

@@ -64,8 +64,9 @@ class MessagePrinter: public MessageVisitor {
  */
 class GenericMessagePrinter: public MessagePrinter {
   public:
-    explicit GenericMessagePrinter(unsigned int indent_size = DEFAULT_INDENT)
-        : m_indent(0),
+    GenericMessagePrinter(unsigned int indent_size = DEFAULT_INDENT,
+                          unsigned int initial_indent = 0)
+        : m_indent(initial_indent),
           m_indent_size(indent_size) {
     }
     ~GenericMessagePrinter() {}
@@ -81,6 +82,8 @@ class GenericMessagePrinter: public MessagePrinter {
     virtual void Visit(const GroupMessageField*);
     virtual void PostVisit(const GroupMessageField*);
 
+    static const unsigned int DEFAULT_INDENT = 2;
+
   private:
     unsigned int m_indent, m_indent_size;
 
@@ -93,7 +96,6 @@ class GenericMessagePrinter: public MessagePrinter {
                    const string &label,
                    int8_t multipler);
     void AppendMultipler(int8_t multipler);
-    static const unsigned int DEFAULT_INDENT = 2;
 };
 }  // messaging
 }  // ola

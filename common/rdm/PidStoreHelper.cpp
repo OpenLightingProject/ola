@@ -35,9 +35,11 @@ using std::vector;
 /**
  * Set up a new PidStoreHelper object
  */
-PidStoreHelper::PidStoreHelper(const string &pid_file)
+PidStoreHelper::PidStoreHelper(const string &pid_file,
+                               unsigned int initial_indent)
     : m_pid_file(pid_file),
-      m_root_store(NULL) {
+      m_root_store(NULL),
+      m_message_printer(initial_indent) {
 }
 
 
