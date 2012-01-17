@@ -1617,7 +1617,6 @@ void ArtNetNodeImpl::UpdatePortFromTodPacket(uint8_t port_id,
 
   InputPort &port = m_input_ports[port_id];
   OLA_DEBUG << "Got TOD data packet with " << uid_count << " uids";
-  bool changed = false;
   uid_map &port_uids = port.uids;
   UIDSet uid_set;
 
@@ -1627,7 +1626,6 @@ void ArtNetNodeImpl::UpdatePortFromTodPacket(uint8_t port_id,
     uid_map::iterator iter = port_uids.find(uid);
     if (iter == port_uids.end()) {
       port_uids[uid] = std::pair<IPV4Address, uint8_t>(source_address, 0);
-      changed = true;
     } else {
       if (iter->second.first != source_address) {
         OLA_WARN << "UID " << uid << " changed from " <<
@@ -1647,7 +1645,6 @@ void ArtNetNodeImpl::UpdatePortFromTodPacket(uint8_t port_id,
       if (iter->second.first == source_address &&
           !uid_set.Contains(iter->first)) {
         port_uids.erase(iter++);
-        changed = true;
       } else {
         ++iter;
       }
@@ -1732,11 +1729,9 @@ void ArtNetNodeImpl::ReleaseDiscoveryLock(uint8_t port_id) {
   port.discovery_node_set.clear();
 
   // delete all uids that have reached the max count
-  bool changed = false;
   uid_map::iterator iter = port.uids.begin();
   while (iter != port.uids.end()) {
     if (iter->second.second == RDM_MISSED_TODDATA_LIMIT) {
-      changed = true;
       port.uids.erase(iter++);
     } else {
       ++iter;
