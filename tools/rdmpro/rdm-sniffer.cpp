@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * usbpro-rdm.cpp
+ * rdm-sniffer.cpp
  * RDM Sniffer software for the Enttec RDM Pro.
  * Copyright (C) 2010 Simon Newton
  */
@@ -33,7 +33,6 @@
 #include <ola/rdm/RDMHelper.h>
 #include <ola/rdm/RDMResponseCodes.h>
 
-#include <fstream>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -114,8 +113,7 @@ class RDMSniffer {
       options->pid_file = PID_DATA_FILE;
     }
 
-    RDMSniffer(SelectServerInterface *ss,
-               const RDMSnifferOptions &options);
+    RDMSniffer(SelectServerInterface *ss, const RDMSnifferOptions &options);
 
     void HandleMessage(uint8_t label,
                        const uint8_t *data,
@@ -130,7 +128,6 @@ class RDMSniffer {
     } SnifferState;
 
     SelectServerInterface *m_ss;
-    uint64_t m_time_offset;  // microseconds since we started.
     SnifferState m_state;
     ByteStream m_frame;
     RDMSnifferOptions m_options;
@@ -145,11 +142,10 @@ class RDMSniffer {
     void DisplayRDMRequest(unsigned int start, unsigned int end);
     void DisplayRDMResponse(unsigned int start, unsigned int end);
     void DisplayRawData(unsigned int start, unsigned int end);
-    void DisplayParamData(const uint8_t *data, unsigned int size);
-    void DisplayUnpackedParamData(const PidDescriptor *pid_descriptor,
-                                  bool is_get,
-                                  const uint8_t *data,
-                                  unsigned int length);
+    void DisplayParamData(const PidDescriptor *pid_descriptor,
+                          bool is_get,
+                          const uint8_t *data,
+                          unsigned int length);
 
     static const uint8_t SNIFFER_PACKET = 0x81;
     static const uint8_t SNIFFER_PACKET_SIZE = 200;
@@ -163,7 +159,6 @@ class RDMSniffer {
 RDMSniffer::RDMSniffer(SelectServerInterface *ss,
                        const RDMSnifferOptions &options)
     : m_ss(ss),
-      m_time_offset(0),
       m_state(IDLE),
       m_options(options),
       m_pid_helper(options.pid_file, 4) {
@@ -361,11 +356,12 @@ void RDMSniffer::DisplayRDMRequest(unsigned int start, unsigned int end) {
   const PidDescriptor *descriptor = m_pid_helper.GetDescriptor(
        request->ParamId(),
        request->DestinationUID().ManufacturerId());
+  bool is_get = request->CommandClass() == RDMCommand::GET_COMMAND_RESPONSE;
 
   if (m_options.summarize_rdm_frames) {
     cout <<
       request->SourceUID() << " -> " << request->DestinationUID() << " " <<
-      (request->CommandClass() == RDMCommand::GET_COMMAND ? "GET" : "SET") <<
+      (is_get ? "GET" : "SET") <<
       ", sub-device: " << std::dec << request->SubDevice() <<
       ", tn: " << static_cast<int>(request->TransactionNumber()) <<
       ", port: " << std::dec << static_cast<int>(request->PortId()) <<
@@ -389,10 +385,7 @@ void RDMSniffer::DisplayRDMRequest(unsigned int start, unsigned int end) {
     cout << "  Message count  : " << std::dec <<
       static_cast<unsigned int>(request->MessageCount()) << endl;
     cout << "  Sub device     : " << std::dec << request->SubDevice() << endl;
-    cout << "  Command class  : " <<
-      (request->CommandClass() == RDMCommand::GET_COMMAND ? "GET" : "SET") <<
-      endl;
-
+    cout << "  Command class  : " << (is_get ? "GET" : "SET") << endl;
     cout << "  Param ID       : 0x" << std::setfill('0') << std::setw(4) <<
       std::hex << request->ParamId();
     if (descriptor)
@@ -400,10 +393,10 @@ void RDMSniffer::DisplayRDMRequest(unsigned int start, unsigned int end) {
     cout << endl;
     cout << "  Param data len : " << std::dec << request->ParamDataSize() <<
       endl;
-    if (request->ParamDataSize()) {
-      cout << "  Param data:" << endl;
-      DisplayParamData(request->ParamData(), request->ParamDataSize());
-    }
+    DisplayParamData(descriptor,
+                     is_get,
+                     request->ParamData(),
+                     request->ParamDataSize());
   }
 }
 
@@ -516,12 +509,17 @@ void RDMSniffer::DisplayRDMResponse(unsigned int start, unsigned int end) {
     cout << endl;
     cout << "  Param data len : " << std::dec << response->ParamDataSize() <<
       endl;
-    DisplayUnpackedParamData(descriptor, is_get,
-                             response->ParamData(),
-                             response->ParamDataSize());
+    DisplayParamData(descriptor,
+                     is_get,
+                     response->ParamData(),
+                     response->ParamDataSize());
   }
 }
 
+
+/**
+ * Dump out the raw data if we couldn't parse it correctly.
+ */
 void RDMSniffer::DisplayRawData(unsigned int start, unsigned int end) {
   for (unsigned int i = start; i < end; i++)
     cout << std::hex << std::setw(2) << static_cast<int>(m_frame[i]) << " ";
@@ -532,32 +530,10 @@ void RDMSniffer::DisplayRawData(unsigned int start, unsigned int end) {
 /**
  * Display parameter data in hex and ascii
  */
-void RDMSniffer::DisplayParamData(const uint8_t *data, unsigned int size) {
-  stringstream raw;
-  raw << std::setw(2) << std::hex;
-  stringstream ascii;
-  for (unsigned int i = 0; i != size; i++) {
-    raw << static_cast<unsigned int>(data[i]) << " ";
-    ascii << data[i];
-
-    if (i % BYTES_PER_LINE == BYTES_PER_LINE - 1) {
-      cout << "    " << raw.str() << " " << ascii.str() << endl;
-      raw.str("");
-      ascii.str("");
-    }
-  }
-  if (size % BYTES_PER_LINE != 0) {
-    // pad if needed
-    raw << string(' ', 3 * (BYTES_PER_LINE - (size % BYTES_PER_LINE)));
-    cout << "    " << raw.str() << " " << ascii.str() << endl;
-  }
-}
-
-
-void RDMSniffer::DisplayUnpackedParamData(const PidDescriptor *pid_descriptor,
-                                          bool is_get,
-                                          const uint8_t *data,
-                                          unsigned int length) {
+void RDMSniffer::DisplayParamData(const PidDescriptor *pid_descriptor,
+                                  bool is_get,
+                                  const uint8_t *data,
+                                  unsigned int length) {
   if (!length)
     return;
 
@@ -576,7 +552,26 @@ void RDMSniffer::DisplayUnpackedParamData(const PidDescriptor *pid_descriptor,
       }
     }
   }
-  DisplayParamData(data, length);
+
+  // otherwise just display the raw data
+  stringstream raw;
+  raw << std::setw(2) << std::hex;
+  stringstream ascii;
+  for (unsigned int i = 0; i != length; i++) {
+    raw << static_cast<unsigned int>(data[i]) << " ";
+    ascii << data[i];
+
+    if (i % BYTES_PER_LINE == BYTES_PER_LINE - 1) {
+      cout << "    " << raw.str() << " " << ascii.str() << endl;
+      raw.str("");
+      ascii.str("");
+    }
+  }
+  if (length % BYTES_PER_LINE != 0) {
+    // pad if needed
+    raw << string(' ', 3 * (BYTES_PER_LINE - (length % BYTES_PER_LINE)));
+    cout << "    " << raw.str() << " " << ascii.str() << endl;
+  }
 }
 
 
