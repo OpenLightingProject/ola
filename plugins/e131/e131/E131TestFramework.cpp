@@ -80,7 +80,7 @@ bool StateManager::Init() {
   m_ss->AddReadDescriptor(&m_stdin_descriptor);
   tcgetattr(STDIN_FILENO, &m_old_tc);
   termios new_tc = m_old_tc;
-  new_tc.c_lflag &= static_cast<uint64_t>(~ICANON & ~ECHO);
+  new_tc.c_lflag &= static_cast<tcflag_t>(~ICANON & ~ECHO);
   tcsetattr(STDIN_FILENO, TCSANOW, &new_tc);
 
   // tick every 200ms
