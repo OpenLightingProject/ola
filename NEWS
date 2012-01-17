@@ -3,7 +3,13 @@ x/y/2012 ola-0.8.16
  * Added the ola_trigger program
  * Changed the ForceDiscovery rpc to only return once discovery completes
  * Fixed ArtNet RDM discovery so DMXWorkshop works correctly - #160
+ * Fixed a memory leak in the ArtNet RDM implementation
  * Add an option for using the limited broadcast address for ArtNet dmx data
+ * Add an option to ignore specific USB serial devices
+ * Added a program to sniff traffic using the RDM USB Pro
+ * Added many more unit tests for the ArtNet plugin
+ * Fixed build warnings found by newer versions of clang
+ * Fix a bug in the RDM discovery code for the Robe Widget
 
 12/12/2011 ola-0.8.15
  * Add DMX IN support for the Robe widget - #156
