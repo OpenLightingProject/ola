@@ -32,6 +32,7 @@
 #include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/RDMHelper.h>
 #include <ola/rdm/RDMResponseCodes.h>
+#include <ola/rdm/UID.h>
 
 #include <iostream>
 #include <memory>
@@ -53,8 +54,10 @@ using ola::messaging::Message;
 using ola::rdm::PidDescriptor;
 using ola::rdm::PidStoreHelper;
 using ola::rdm::RDMCommand;
+using ola::rdm::RDMDiscoveryCommand;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
+using ola::rdm::UID;
 
 typedef struct {
   bool help;
@@ -141,6 +144,7 @@ class RDMSniffer {
     void DisplayRDMFrame();
     void DisplayRDMRequest(unsigned int start, unsigned int end);
     void DisplayRDMResponse(unsigned int start, unsigned int end);
+    void DisplayDiscoveryCommand(unsigned int start, unsigned int end);
     void DisplayRawData(unsigned int start, unsigned int end);
     void DisplayParamData(const PidDescriptor *pid_descriptor,
                           bool is_get,
@@ -260,7 +264,7 @@ void RDMSniffer::ProcessTuple(uint8_t control_byte, uint8_t data_byte) {
 
 
 /**
- * Process a frame based on what start code is has.
+ * Process a frame based on what start code it has.
  */
 void RDMSniffer::ProcessFrame() {
   switch (m_frame[0]) {
@@ -331,6 +335,8 @@ void RDMSniffer::DisplayRDMFrame() {
       DisplayRDMResponse(1, slot_count);
       return;
     case RDMCommand::DISCOVER_COMMAND:
+      DisplayDiscoveryCommand(1, slot_count);
+      break;
     /*
     case RDMCommand::DISCOVER_COMMAND_RESPONSE:
       DumpDiscover(length - 1, data + 1);
@@ -518,6 +524,83 @@ void RDMSniffer::DisplayRDMResponse(unsigned int start, unsigned int end) {
 
 
 /**
+ * Display the discover unique branch command
+ */
+void RDMSniffer::DisplayDiscoveryCommand(unsigned int start,
+                                         unsigned int end) {
+  unsigned int length = end - start + 1;
+  auto_ptr<RDMDiscoveryCommand> request(
+      RDMDiscoveryCommand::InflateFromData(&m_frame[start], length));
+
+  if (!request.get()) {
+    DisplayRawData(start, end);
+    return;
+  }
+
+  string param_name;
+  switch (request->ParamId()) {
+    case ola::rdm::PID_DISC_UNIQUE_BRANCH:
+      param_name = "DISC_UNIQUE_BRANCH";
+      break;
+    case ola::rdm::PID_DISC_MUTE:
+      param_name = "DISC_MUTE";
+      break;
+    case ola::rdm::PID_DISC_UN_MUTE:
+      param_name = "DISC_UN_MUTE";
+      break;
+  }
+
+  if (m_options.summarize_rdm_frames) {
+    cout <<
+      request->SourceUID() << " -> " << request->DestinationUID() <<
+      " DISCOVERY_COMMAND" <<
+      ", tn: " << static_cast<int>(request->TransactionNumber()) <<
+      ", PID 0x" << std::hex << std::setfill('0') << std::setw(4) <<
+        request->ParamId();
+      if (!param_name.empty())
+        cout << " (" << param_name << ")";
+      if (request->ParamId() == ola::rdm::PID_DISC_UNIQUE_BRANCH &&
+          request->ParamDataSize() == 2 * UID::UID_SIZE) {
+        const uint8_t *param_data = request->ParamData();
+        UID lower(param_data);
+        UID upper(param_data + UID::UID_SIZE);
+        cout << ", (" << lower << ", " << upper << ")";
+      } else {
+        cout << ", pdl: " << std::dec << request->ParamDataSize();
+      }
+      cout << endl;
+  } else {
+    cout << endl;
+    cout << "  Sub start code : 0x" << std::hex <<
+      static_cast<unsigned int>(m_frame[start]) << endl;
+    cout << "  Message length : " <<
+      static_cast<unsigned int>(m_frame[start + 1]) << endl;
+    cout << "  Dest UID       : " << request->DestinationUID() << endl;
+    cout << "  Source UID     : " << request->SourceUID() << endl;
+    cout << "  Transaction #  : " << std::dec <<
+      static_cast<unsigned int>(request->TransactionNumber()) << endl;
+    cout << "  Port ID        : " << std::dec <<
+      static_cast<unsigned int>(request->PortId()) << endl;
+    cout << "  Message count  : " << std::dec <<
+      static_cast<unsigned int>(request->MessageCount()) << endl;
+    cout << "  Sub device     : " << std::dec << request->SubDevice() << endl;
+    cout << "  Command class  : DISCOVERY_COMMAND" << endl;
+    cout << "  Param ID       : 0x" << std::setfill('0') << std::setw(4) <<
+      std::hex << request->ParamId();
+    if (!param_name.empty())
+      cout << " (" << param_name << ")";
+    cout << endl;
+    cout << "  Param data len : " << std::dec << request->ParamDataSize() <<
+      endl;
+    DisplayParamData(NULL,
+                     false,
+                     request->ParamData(),
+                     request->ParamDataSize());
+  }
+}
+
+
+/**
  * Dump out the raw data if we couldn't parse it correctly.
  */
 void RDMSniffer::DisplayRawData(unsigned int start, unsigned int end) {
@@ -558,8 +641,12 @@ void RDMSniffer::DisplayParamData(const PidDescriptor *pid_descriptor,
   raw << std::setw(2) << std::hex;
   stringstream ascii;
   for (unsigned int i = 0; i != length; i++) {
-    raw << static_cast<unsigned int>(data[i]) << " ";
-    ascii << data[i];
+    raw << std::setw(2) << std::setfill('0') <<
+      static_cast<unsigned int>(data[i]) << " ";
+    if (data[i] >= ' ' && data[i] <= '~')
+      ascii << data[i];
+    else
+      ascii << ".";
 
     if (i % BYTES_PER_LINE == BYTES_PER_LINE - 1) {
       cout << "    " << raw.str() << " " << ascii.str() << endl;
@@ -569,7 +656,7 @@ void RDMSniffer::DisplayParamData(const PidDescriptor *pid_descriptor,
   }
   if (length % BYTES_PER_LINE != 0) {
     // pad if needed
-    raw << string(' ', 3 * (BYTES_PER_LINE - (length % BYTES_PER_LINE)));
+    raw << string(3 * (BYTES_PER_LINE - (length % BYTES_PER_LINE)), ' ');
     cout << "    " << raw.str() << " " << ascii.str() << endl;
   }
 }
