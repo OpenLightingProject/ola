@@ -1,6 +1,6 @@
 include $(top_srcdir)/common.mk
 
-EXTRA_DIST = Actions.h ConfigCommon.h Context.h DMXTrigger.h MockAction.h \
+EXTRA_DIST = Action.h ConfigCommon.h Context.h DMXTrigger.h MockAction.h \
              ParserActions.h VariableInterpolator.h \
              config.lex config.ypp
 
