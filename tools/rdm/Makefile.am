@@ -1,6 +1,9 @@
 include $(top_srcdir)/common.mk
 
-EXTRA_DIST = ExpectedResults.py \
+EXTRA_DIST = \
+	     DMXSender.py \
+	     model_collector.py \
+             ExpectedResults.py \
              ResponderTest.py \
              TestCategory.py \
              TestDefinitions.py \
@@ -8,3 +11,4 @@ EXTRA_DIST = ExpectedResults.py \
              TestRunner.py \
              TestState.py \
              ola_rdm_test.py
+
