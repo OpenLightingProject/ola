@@ -362,7 +362,7 @@ void RDMSniffer::DisplayRDMRequest(unsigned int start, unsigned int end) {
   const PidDescriptor *descriptor = m_pid_helper.GetDescriptor(
        request->ParamId(),
        request->DestinationUID().ManufacturerId());
-  bool is_get = request->CommandClass() == RDMCommand::GET_COMMAND_RESPONSE;
+  bool is_get = request->CommandClass() == RDMCommand::GET_COMMAND;
 
   if (m_options.summarize_rdm_frames) {
     cout <<
