@@ -55,7 +55,8 @@ class OlaDaemon {
     OlaDaemon(const OlaDaemon&);
     OlaDaemon& operator=(const OlaDaemon&);
 
-    bool InitDefaultConfigDir();
+    string DefaultConfigDir();
+    bool InitConfigDir(const string &path);
 
     vector<class PluginLoader *> m_plugin_loaders;
     class SelectServer *m_ss;
