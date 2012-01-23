@@ -374,6 +374,7 @@ void ArtNetNodeTest::testBasicBehaviour() {
     node.GetPortUniverse(ola::plugin::artnet::ARTNET_OUTPUT_PORT, 1));
 
   CPPUNIT_ASSERT(node.Start());
+  ss.RemoveReadDescriptor(m_socket);
   m_socket->Verify();
   CPPUNIT_ASSERT(m_socket->CheckNetworkParamsMatch(true, true, 6454, true));
 
@@ -423,6 +424,7 @@ void ArtNetNodeTest::testBroadcastSendDMX() {
   SetupInputPort(&node);
 
   CPPUNIT_ASSERT(node.Start());
+  ss.RemoveReadDescriptor(m_socket);
   m_socket->Verify();
   m_socket->SetDiscardMode(false);
 
@@ -491,6 +493,7 @@ void ArtNetNodeTest::testLimitedBroadcastDMX() {
   SetupInputPort(&node);
 
   CPPUNIT_ASSERT(node.Start());
+  ss.RemoveReadDescriptor(m_socket);
   m_socket->Verify();
   m_socket->SetDiscardMode(false);
 
@@ -524,6 +527,7 @@ void ArtNetNodeTest::testNonBroadcastSendDMX() {
   ArtNetNode node(interface, &ss, node_options, m_socket);
   SetupInputPort(&node);
   CPPUNIT_ASSERT(node.Start());
+  ss.RemoveReadDescriptor(m_socket);
   m_socket->Verify();
   m_socket->SetDiscardMode(false);
 
@@ -694,6 +698,7 @@ void ArtNetNodeTest::testReceiveDMX() {
                      ola::NewCallback(this, &ArtNetNodeTest::NewDmx));
 
   CPPUNIT_ASSERT(node.Start());
+  ss.RemoveReadDescriptor(m_socket);
   m_socket->Verify();
   m_socket->SetDiscardMode(false);
 
@@ -768,6 +773,7 @@ void ArtNetNodeTest::testHTPMerge() {
                      ola::NewCallback(this, &ArtNetNodeTest::NewDmx));
 
   CPPUNIT_ASSERT(node.Start());
+  ss.RemoveReadDescriptor(m_socket);
   m_socket->Verify();
   m_socket->SetDiscardMode(false);
 
@@ -960,6 +966,7 @@ void ArtNetNodeTest::testLTPMerge() {
                      ola::NewCallback(this, &ArtNetNodeTest::NewDmx));
 
   CPPUNIT_ASSERT(node.Start());
+  ss.RemoveReadDescriptor(m_socket);
   m_socket->Verify();
   m_socket->SetDiscardMode(false);
 
@@ -1123,6 +1130,7 @@ void ArtNetNodeTest::testControllerDiscovery() {
   ArtNetNode node(interface, &ss, node_options, m_socket);
   SetupInputPort(&node);
   CPPUNIT_ASSERT(node.Start());
+  ss.RemoveReadDescriptor(m_socket);
   m_socket->Verify();
   m_socket->SetDiscardMode(false);
 
@@ -1287,6 +1295,7 @@ void ArtNetNodeTest::testControllerIncrementalDiscovery() {
   ArtNetNode node(interface, &ss, node_options, m_socket);
   SetupInputPort(&node);
   CPPUNIT_ASSERT(node.Start());
+  ss.RemoveReadDescriptor(m_socket);
   m_socket->Verify();
   m_socket->SetDiscardMode(false);
 
@@ -1375,6 +1384,7 @@ void ArtNetNodeTest::testUnsolicitedTod() {
       ola::NewCallback(this, &ArtNetNodeTest::DiscoveryComplete)));
 
   CPPUNIT_ASSERT(node.Start());
+  ss.RemoveReadDescriptor(m_socket);
   m_socket->Verify();
   m_socket->SetDiscardMode(false);
 
@@ -1419,6 +1429,7 @@ void ArtNetNodeTest::testResponderDiscovery() {
   ArtNetNode node(interface, &ss, node_options, m_socket);
   SetupOutputPort(&node);
   CPPUNIT_ASSERT(node.Start());
+  ss.RemoveReadDescriptor(m_socket);
   m_socket->Verify();
   m_socket->SetDiscardMode(false);
 
@@ -1551,6 +1562,7 @@ void ArtNetNodeTest::testRDMResponder() {
   ArtNetNode node(interface, &ss, node_options, m_socket);
   SetupOutputPort(&node);
   CPPUNIT_ASSERT(node.Start());
+  ss.RemoveReadDescriptor(m_socket);
   m_socket->Verify();
   m_socket->SetDiscardMode(false);
 
@@ -1652,6 +1664,7 @@ void ArtNetNodeTest::testRDMRequest() {
   ArtNetNode node(interface, &ss, node_options, m_socket);
   SetupInputPort(&node);
   CPPUNIT_ASSERT(node.Start());
+  ss.RemoveReadDescriptor(m_socket);
   m_socket->Verify();
   m_socket->SetDiscardMode(false);
 
@@ -1705,6 +1718,7 @@ void ArtNetNodeTest::testRDMRequestTimeout() {
   ArtNetNode node(interface, &ss, node_options, m_socket);
   SetupInputPort(&node);
   CPPUNIT_ASSERT(node.Start());
+  ss.RemoveReadDescriptor(m_socket);
   m_socket->Verify();
   m_socket->SetDiscardMode(false);
 
@@ -1734,6 +1748,7 @@ void ArtNetNodeTest::testRDMRequestIPMismatch() {
   ArtNetNode node(interface, &ss, node_options, m_socket);
   SetupInputPort(&node);
   CPPUNIT_ASSERT(node.Start());
+  ss.RemoveReadDescriptor(m_socket);
   m_socket->Verify();
   m_socket->SetDiscardMode(false);
 
@@ -1790,6 +1805,7 @@ void ArtNetNodeTest::testRDMRequestUIDMismatch() {
   ArtNetNode node(interface, &ss, node_options, m_socket);
   SetupInputPort(&node);
   CPPUNIT_ASSERT(node.Start());
+  ss.RemoveReadDescriptor(m_socket);
   m_socket->Verify();
   m_socket->SetDiscardMode(false);
 
@@ -1846,6 +1862,7 @@ void ArtNetNodeTest::testTimeCode() {
   ArtNetNode node(interface, &ss, node_options, m_socket);
 
   CPPUNIT_ASSERT(node.Start());
+  ss.RemoveReadDescriptor(m_socket);
   m_socket->Verify();
   m_socket->SetDiscardMode(false);
 
