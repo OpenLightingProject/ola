@@ -1,3 +1,8 @@
+XX/01/2012 ola-0.8.17
+ * fix a bug in the RDM sniffer
+ * change olad not to fail if it can't create the preferences directory
+ * fix the ArtNetTest if stdin receives data
+
 19/01/2012 ola-0.8.16
  * Added a configure test for the python google.protobuf module
  * Added the ola_trigger program
