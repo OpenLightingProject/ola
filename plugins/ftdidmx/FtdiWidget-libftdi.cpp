@@ -121,12 +121,23 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
 }
 
 bool FtdiWidget::Open() {
-  if (ftdi_usb_open_desc(&m_handle, FtdiWidget::VID, FtdiWidget::PID,
-                         Name().c_str(), Serial().c_str()) < 0) {
-    OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
-    return false;
+  if(Serial().empty()) {
+    OLA_WARN << Name() << " has no serial number, " 
+      "might cause issues with multiple devices";
+    if(ftdi_usb_open(&m_handle, FtdiWidget::VID, FtdiWidget::PID) < 0) {
+      OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
+      return false;
+    } else {
+      return true;
+    }
   } else {
-    return true;
+    if (ftdi_usb_open_desc(&m_handle, FtdiWidget::VID, FtdiWidget::PID,
+			   Name().c_str(), Serial().c_str()) < 0) {
+      OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
+      return false;
+    } else {
+      return true;
+    }
   }
 }
 
