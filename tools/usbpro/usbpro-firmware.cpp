@@ -224,7 +224,7 @@ void DisplayHelpAndExit(char *argv[]) {
   "  -d <device_path>   The path to the device.\n"
   "  -f <firmware_file> The path to the firmware to use.\n"
   "  -h, --help         Display this help message and exit.\n"
-  "  -l, --log-level <level>  Set the loggging level 0 .. 4.\n"
+  "  -l, --log-level <level>  Set the logging level 0 .. 4.\n"
   << endl;
   exit(0);
 }

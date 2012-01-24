@@ -462,7 +462,7 @@ TcpSocket* TcpSocket::Connect(const std::string &ip_address,
   if (connect(sd, (struct sockaddr*) &server_address, length)) {
     OLA_WARN << "connect to " << ip_address << ":" << port << " failed, "
       << strerror(errno);
-    return false;
+    return NULL;
   }
   TcpSocket *socket = new TcpSocket(sd);
   socket->SetReadNonBlocking();

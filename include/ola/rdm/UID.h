@@ -53,8 +53,10 @@ class UID {
 
     explicit UID(const uint8_t *data) {
       m_uid.esta_id = static_cast<uint16_t>((data[0] << 8) + data[1]);
-      m_uid.device_id = ((data[2] << 24) + (data[3] << 16) + (data[4] << 8) +
-          data[5]);
+      m_uid.device_id = static_cast<uint32_t>(data[2] << 24) +
+                        static_cast<uint32_t>(data[3] << 16) +
+                        static_cast<uint32_t>(data[4] << 8) +
+                        data[5];
     }
 
     bool operator==(const UID &other) const {

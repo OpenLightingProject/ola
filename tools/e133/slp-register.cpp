@@ -162,7 +162,7 @@ void DisplayHelpAndExit(char arg[]) {
   "7a70:00000001 (default ip) or 7a70:00000001@192.168.1.1\n"
   "\n"
   "  -h, --help               Display this help message and exit.\n"
-  "  -l, --log-level <level>  Set the loggging level 0 .. 4.\n"
+  "  -l, --log-level <level>  Set the logging level 0 .. 4.\n"
   "  -t, --timeout <seconds>  The value to use for the service lifetime\n"
   << std::endl;
   exit(EX_USAGE);

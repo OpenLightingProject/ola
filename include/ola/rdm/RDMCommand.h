@@ -382,9 +382,9 @@ RDMResponse *GetResponseWithPid(const RDMRequest *request,
                                 uint8_t outstanding_messages = 0);
 
 /**
- * The base classes for discovery commands
+ * The base class for discovery commands.
  */
-class RDMDiscoveryCommand: private RDMCommand {
+class RDMDiscoveryCommand: public RDMCommand {
   public:
     unsigned int Size() const {
       return RDMCommand::Size();
@@ -396,12 +396,19 @@ class RDMDiscoveryCommand: private RDMCommand {
 
     RDMCommandClass CommandClass() const { return DISCOVER_COMMAND; }
     rdm_message_type CommandType() const { return RDM_REQUEST; }
+    uint8_t PortId() const { return m_port_id; }
+
+    static RDMDiscoveryCommand* InflateFromData(const uint8_t *data,
+                                                unsigned int length);
+    static RDMDiscoveryCommand* InflateFromData(const string &data);
 
   protected:
     RDMDiscoveryCommand(const UID &source,
                         const UID &destination,
                         uint8_t transaction_number,
                         uint8_t port_id,
+                        uint8_t message_count,
+                        uint16_t sub_device,
                         uint16_t param_id,
                         const uint8_t *data,
                         unsigned int length)
@@ -409,8 +416,8 @@ class RDMDiscoveryCommand: private RDMCommand {
                      destination,
                      transaction_number,
                      port_id,
-                     0,  // message count
-                     ROOT_RDM_DEVICE,
+                     message_count,
+                     sub_device,
                      param_id,
                      data,
                      length) {
@@ -451,6 +458,8 @@ class MuteRequest: public RDMDiscoveryCommand {
                               destination,
                               transaction_number,
                               port_id,
+                              0,  // message count
+                              ROOT_RDM_DEVICE,
                               PID_DISC_MUTE,
                               NULL,
                               0) {
@@ -471,6 +480,8 @@ class UnMuteRequest: public RDMDiscoveryCommand {
                               destination,
                               transaction_number,
                               port_id,
+                              0,  // message count
+                              ROOT_RDM_DEVICE,
                               PID_DISC_UN_MUTE,
                               NULL,
                               0) {

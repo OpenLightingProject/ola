@@ -56,6 +56,11 @@ using std::string;
  * A RDM specific printer that transforms field names
  */
 class RDMMessagePrinter: public GenericMessagePrinter {
+  public:
+    explicit RDMMessagePrinter(unsigned int initial_ident = 0)
+      : GenericMessagePrinter(GenericMessagePrinter::DEFAULT_INDENT,
+                              initial_ident) {
+    }
   protected:
     string TransformLabel(const string &label) {
       string new_label = label;

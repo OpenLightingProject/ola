@@ -91,6 +91,19 @@ void WidgetDetectorThread::SetDevicePrefixes(const vector<string> &prefixes) {
 
 
 /**
+ * Set the list of devices we wish to ignore
+ * @param devices a list of devices paths, e.g. /dev/ttyUSB0.NNNNNN
+ */
+void WidgetDetectorThread::SetIgnoredDevices(const vector<string> &devices) {
+  m_ignored_devices.clear();
+  vector<string>::const_iterator iter = devices.begin();
+  for (; iter != devices.end(); ++iter) {
+    m_ignored_devices.insert(*iter);
+  }
+}
+
+
+/**
  * Run the discovery thread.
  */
 void *WidgetDetectorThread::Run() {
@@ -178,6 +191,8 @@ bool WidgetDetectorThread::RunScan() {
   vector<string>::iterator it;
   for (it = device_paths.begin(); it != device_paths.end(); ++it) {
     if (m_active_paths.find(*it) != m_active_paths.end())
+      continue;
+    if (m_ignored_devices.find(*it) != m_ignored_devices.end())
       continue;
     OLA_INFO << "Found potential USB Serial device at " << *it;
     ola::network::ConnectedDescriptor *descriptor =

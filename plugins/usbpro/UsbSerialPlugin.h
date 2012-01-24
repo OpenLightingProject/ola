@@ -79,6 +79,7 @@ class UsbSerialPlugin: public ola::Plugin, public NewWidgetHandler {
     static const char DEVICE_DIR_KEY[];
     static const char DEVICE_PREFIX_KEY[];
     static const char DMX_TRI_FPS_LIMIT_KEY[];
+    static const char IGNORED_DEVICES_KEY[];
     static const char LINUX_DEVICE_PREFIX[];
     static const char MAC_DEVICE_PREFIX[];
     static const char PLUGIN_NAME[];

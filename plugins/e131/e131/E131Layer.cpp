@@ -118,8 +118,11 @@ bool E131Layer::LeaveUniverse(unsigned int universe) {
  * @return true if this is a valid E1.31 universe, false otherwise
  */
 bool E131Layer::UniverseIP(unsigned int universe, IPV4Address *addr) {
-  *addr = IPV4Address(HostToNetwork(239 << 24 | 255 << 16 |
-                      (universe & 0xFF00) | (universe & 0xFF)));
+  *addr = IPV4Address(
+      HostToNetwork(239U << 24 |
+                    255U << 16 |
+                    (universe & 0xFF00) |
+                    (universe & 0xFF)));
   if (universe && (universe & 0xFFFF) != 0xFFFF)
     return true;
 

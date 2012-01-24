@@ -6,7 +6,7 @@ AC_INIT(configure.ac)
 AC_CONFIG_AUX_DIR(config)
 AC_SUBST(ac_aux_dir)
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(ola, 0.8.15)
+AM_INIT_AUTOMAKE(ola, 0.8.16)
 
 # Checks for programs.
 AC_LANG(C++)
@@ -501,6 +501,7 @@ AC_OUTPUT( Makefile\
     tools/ola_trigger/Makefile \
     tools/e133/Makefile \
     tools/rdm/Makefile \
+    tools/rdmpro/Makefile \
     tools/usbpro/Makefile \
     libola.pc \
     libolaserver.pc \

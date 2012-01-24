@@ -151,10 +151,12 @@ void OlaServerThread::MarkAsStarted() {
  * Startup the Ola server
  */
 void StreamingClientTest::setUp() {
-  ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
+  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
   m_server_thread = new OlaServerThread();
   if (m_server_thread->Setup())
     m_server_thread->Start();
+  else
+    CPPUNIT_FAIL("Failed to setup OlaDaemon");
 }
 
 

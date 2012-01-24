@@ -705,6 +705,52 @@ RDMResponse *GetResponseWithPid(const RDMRequest *request,
 
 
 /**
+ * Inflate a discovery command
+ */
+RDMDiscoveryCommand* RDMDiscoveryCommand::InflateFromData(
+    const uint8_t *data,
+    unsigned int length) {
+  rdm_command_message command_message;
+  rdm_response_code code = VerifyData(data, length, &command_message);
+  if (code != RDM_COMPLETED_OK)
+    return NULL;
+
+  uint16_t sub_device = ((command_message.sub_device[0] << 8) +
+    command_message.sub_device[1]);
+  uint16_t param_id = ((command_message.param_id[0] << 8) +
+    command_message.param_id[1]);
+
+  RDMCommandClass command_class = ConvertCommandClass(
+    command_message.command_class);
+
+  if (command_class == DISCOVER_COMMAND) {
+    return new RDMDiscoveryCommand(
+        UID(command_message.source_uid),
+        UID(command_message.destination_uid),
+        command_message.transaction_number,  // transaction #
+        command_message.port_id,  // port id
+        command_message.message_count,  // message count
+        sub_device,
+        param_id,
+        data + sizeof(rdm_command_message),
+        command_message.param_data_length);  // data length
+  } else {
+    OLA_WARN << "Expected a RDM discovery command but got " << command_class;
+    return NULL;
+  }
+}
+
+
+/**
+ * Inflate a discovery command from some data.
+ */
+RDMDiscoveryCommand* RDMDiscoveryCommand::InflateFromData(const string &data) {
+  return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
+                         data.size());
+}
+
+
+/**
  * Constructor for the DiscoveryUniqueBranchRequest
  */
 DiscoveryUniqueBranchRequest::DiscoveryUniqueBranchRequest(
@@ -717,6 +763,8 @@ DiscoveryUniqueBranchRequest::DiscoveryUniqueBranchRequest(
                           UID::AllDevices(),
                           transaction_number,
                           port_id,
+                          0,  // message count
+                          ROOT_RDM_DEVICE,
                           PID_DISC_UNIQUE_BRANCH,
                           NULL,
                           0) {

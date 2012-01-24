@@ -2,6 +2,8 @@
 #include "ConfigCommon.h"
 #include "config.tab.h"
 
+#define YY_NO_INPUT
+
 void count();
 %}
 

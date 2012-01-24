@@ -177,7 +177,7 @@ void DisplayHelpAndExit(char *argv[]) {
   "  -h, --help                Display this help message and exit.\n"
   "  -t, --target <ip>         IP to send the message to, this overrides SLP\n"
   "  -i, --ip                  The IP address to listen on.\n"
-  "  -l, --log-level <level>   Set the loggging level 0 .. 4.\n"
+  "  -l, --log-level <level>   Set the logging level 0 .. 4.\n"
   "  -p, --pids                List the available pids for this device\n"
   "  -s, --set                 Perform a SET (default is GET)\n"
   "  -u, --universe <universe> The universe to use (> 0).\n"

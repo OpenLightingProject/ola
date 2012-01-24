@@ -335,7 +335,8 @@ void FilePreferenceSaverThread::SaveToFile(
   ofstream pref_file(filename->data());
 
   if (!pref_file.is_open()) {
-    OLA_INFO << "Could not open " << *filename_ptr << ": " << strerror(errno);
+    OLA_WARN << "Could not open " << *filename_ptr << ": " << strerror(errno);
+    return;
   }
 
   for (iter = pref_map->begin(); iter != pref_map->end(); ++iter) {

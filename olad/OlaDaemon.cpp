@@ -89,10 +89,18 @@ bool OlaDaemon::Init() {
       m_accepting_socket || m_server)
     return false;
 
-  if (m_config_dir.empty() && !InitDefaultConfigDir()) {
-    return false;
+  if (m_config_dir.empty()) {
+    const string default_dir = DefaultConfigDir();
+    if (default_dir.empty()) {
+      OLA_FATAL << "Unable to determine home directory";
+      return false;
+    } else {
+      m_config_dir = default_dir;
+    }
   }
-
+  // ignore the return code so this isn't fatal
+  // in macports the home directory isn't writeable
+  InitConfigDir(m_config_dir);
   OLA_INFO << "Using configs in " << m_config_dir;
   m_preferences_factory = new FileBackedPreferencesFactory(m_config_dir);
 
@@ -172,7 +180,7 @@ void OlaDaemon::ReloadPlugins() {
 /**
  * Return the home directory for the current user
  */
-bool OlaDaemon::InitDefaultConfigDir() {
+string OlaDaemon::DefaultConfigDir() {
   struct passwd pwd, *pwd_ptr;
   unsigned int size = 1024;
   bool ok = false;
@@ -191,32 +199,33 @@ bool OlaDaemon::InitDefaultConfigDir() {
         break;
       default:
         delete[] buffer;
-        return false;
+        return "";
     }
   }
 
   string home_dir = pwd_ptr->pw_dir;
   delete[] buffer;
+  return home_dir + "/" + OLA_CONFIG_DIR;
+}
 
-  if (chdir(home_dir.data())) {
-    OLA_FATAL << "Couldn't chdir to " << home_dir;
-    return false;
-  }
 
-  if (chdir(OLA_CONFIG_DIR)) {
+/**
+ * Create the config dir if it doesn't exist. This doesn't create parent
+ * directories.
+ */
+bool OlaDaemon::InitConfigDir(const string &path) {
+  if (chdir(path.c_str())) {
     // try and create it
-    if (mkdir(OLA_CONFIG_DIR, 0755)) {
-      OLA_FATAL << "Couldn't mkdir " << home_dir << "/" << OLA_CONFIG_DIR;
+    if (mkdir(path.c_str(), 0755)) {
+      OLA_FATAL << "Couldn't mkdir " << path;
       return false;
     }
 
-    if (chdir(OLA_CONFIG_DIR)) {
-      OLA_FATAL << home_dir << "/" << OLA_CONFIG_DIR << " doesn't exist";
+    if (chdir(path.c_str())) {
+      OLA_FATAL << path << " doesn't exist";
       return false;
     }
   }
-
-  m_config_dir = home_dir + "/" + OLA_CONFIG_DIR;
   return true;
 }
 }  // ola

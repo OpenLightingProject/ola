@@ -1,7 +1,7 @@
 include $(top_srcdir)/common.mk
 
-EXTRA_DIST = Actions.h ConfigCommon.h Context.h DMXTrigger.h MockAction.h \
-             ParserActions.h VariableInterpolator.h \
+EXTRA_DIST = Action.h ConfigCommon.h Context.h DMXTrigger.h MockAction.h \
+             ParserActions.h ParserGlobals.h VariableInterpolator.h \
              config.lex config.ypp
 
 BUILT_SOURCES = config.tab.cpp config.tab.h lex.yy.cpp

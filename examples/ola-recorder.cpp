@@ -165,7 +165,7 @@ void DisplayHelpAndExit(const options &opts) {
   "Record a series of universes, or playback a previously recorded show.\n"
   "\n"
   "  -h, --help              Display this help message and exit.\n"
-  "  -l, --log-level <level> Set the loggging level 0 .. 4 .\n"
+  "  -l, --log-level <level> Set the logging level 0 .. 4 .\n"
   "  -r, --record <file>     Path to a file to record data\n"
   "  -p, --playback <file>   Path to a file from which to playback data\n"
   "  -u, --universes <list>  Comma separated list of universes to record.\n"

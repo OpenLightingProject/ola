@@ -273,12 +273,12 @@ class NodeVarySequenceNumber: public NodeAction {
         m_chance(chance),
         m_good(good_value),
         m_bad(bad_value) {
-      srand((unsigned)time(0) * getpid());
+      srand(static_cast<uint32_t>(time(0)) * static_cast<uint32_t>(getpid()));
     }
 
     void Tick() {
-      int random = (rand() / (RAND_MAX / m_chance));
-      if (!m_counter || random % m_chance) {
+      int random = (rand() / static_cast<int>((RAND_MAX / m_chance)));
+      if (!m_counter || random % static_cast<int>(m_chance)) {
         // start off with good data
         DmxBuffer output;
         output.SetRangeToValue(0, m_good, DMX_UNIVERSE_SIZE);
