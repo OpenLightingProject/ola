@@ -321,8 +321,10 @@ void OlaServer::SocketClosed(ola::network::ConnectedDescriptor *socket) {
   map<int, OlaClientService*>::iterator iter;
   iter = m_sd_to_service.find(socket->ReadDescriptor());
 
-  if (iter == m_sd_to_service.end())
-    OLA_INFO << "A socket was closed but we didn't find the client";
+  if (iter == m_sd_to_service.end()) {
+    OLA_WARN << "A socket was closed but we didn't find the client";
+    return;
+  }
 
   (*m_export_map->GetIntegerVar(K_CLIENT_VAR))--;
   CleanupConnection(iter->second);
