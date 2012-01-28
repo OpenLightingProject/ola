@@ -117,8 +117,14 @@ bool EuroliteProOutputPort::Start() {
   str << bus_number << "-" << device_address;
   m_serial = str.str();
 
-  if (libusb_claim_interface(usb_handle, 0)) {
-    OLA_WARN << "Failed to claim Eurolite usb device";
+  int error = libusb_claim_interface(usb_handle, 0);
+
+  if (error) {
+    if (error == LIBUSB_ERROR_BUSY) {
+      OLA_WARN << "Eurolite device in use by another program";
+    } else {
+      OLA_WARN << "Failed to claim Eurolite usb device, error: " << error;
+    }
     libusb_close(usb_handle);
     return false;
   }
