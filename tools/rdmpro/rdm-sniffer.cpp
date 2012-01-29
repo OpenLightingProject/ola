@@ -35,6 +35,7 @@
 #include <ola/rdm/UID.h>
 
 #include <iostream>
+#include <fstream>
 #include <memory>
 #include <string>
 #include <vector>
@@ -42,6 +43,7 @@
 #include "plugins/usbpro/BaseUsbProWidget.h"
 
 using std::auto_ptr;
+using std::cerr;
 using std::cout;
 using std::endl;
 using std::string;
@@ -63,6 +65,7 @@ typedef struct {
   bool help;
   ola::log_level log_level;
   vector<string> args;  // extra args
+  string read_file;  // file to read data from
 } options;
 
 
@@ -103,6 +106,8 @@ class RDMSniffer {
 
       // the file with the pid data
       string pid_file;
+
+      string write_file;  // write to this file if set
     };
 
     static void InitOptions(RDMSnifferOptions *options) {
@@ -114,13 +119,16 @@ class RDMSniffer {
       options->unpack_param_data = true;
       options->display_non_rdm_asc_frames = true;
       options->pid_file = PID_DATA_FILE;
+      options->write_file = "";
     }
 
-    RDMSniffer(SelectServerInterface *ss, const RDMSnifferOptions &options);
+    explicit RDMSniffer(const RDMSnifferOptions &options);
 
     void HandleMessage(uint8_t label,
                        const uint8_t *data,
                        unsigned int length);
+
+    void ParseFile(const string &filename);
 
   private:
     typedef enum {
@@ -130,7 +138,6 @@ class RDMSniffer {
       DATA,
     } SnifferState;
 
-    SelectServerInterface *m_ss;
     SnifferState m_state;
     ByteStream m_frame;
     RDMSnifferOptions m_options;
@@ -160,10 +167,8 @@ class RDMSniffer {
 };
 
 
-RDMSniffer::RDMSniffer(SelectServerInterface *ss,
-                       const RDMSnifferOptions &options)
-    : m_ss(ss),
-      m_state(IDLE),
+RDMSniffer::RDMSniffer(const RDMSnifferOptions &options)
+    : m_state(IDLE),
       m_options(options),
       m_pid_helper(options.pid_file, 4) {
   if (!m_pid_helper.Init())
@@ -171,12 +176,57 @@ RDMSniffer::RDMSniffer(SelectServerInterface *ss,
 }
 
 
+/**
+ * Interpret data from a save file
+ */
+void RDMSniffer::ParseFile(const string &filename) {
+  uint16_t length;
+  uint32_t size;
+  uint8_t label;
+  std::ifstream read_file;
+
+  read_file.open(filename.c_str(), std::ios::in | std::ios::binary);
+  if (!read_file.is_open()) {
+    OLA_WARN << "Could not open file: " << filename;
+    return;
+  }
+
+  read_file.seekg(0, std::ios::end);
+  size = read_file.tellg();
+  read_file.seekg(0, std::ios::beg);
+
+  while (read_file.tellg() < size) {
+    read_file.read(reinterpret_cast<char*>(&label), sizeof(label));
+    read_file.read(reinterpret_cast<char*>(&length), sizeof(length));
+    length = ola::network::NetworkToHost(length);
+    uint8_t *buffer = new uint8_t[length];
+    read_file.read(reinterpret_cast<char*>(buffer), length);
+    HandleMessage(label, buffer, length);
+    delete[] buffer;
+  }
+  read_file.close();
+}
+
 /*
  * Handle the widget replies
  */
 void RDMSniffer::HandleMessage(uint8_t label,
                                const uint8_t *data,
                                unsigned int length) {
+  if (!m_options.write_file.empty()) {
+    uint16_t write_length = ola::network::HostToNetwork(
+        static_cast<uint16_t>(length));
+
+    std::ofstream write_file;
+    write_file.open(m_options.write_file.c_str(),
+                    std::ios::out | std::ios::binary | std::ios::app);
+    write_file.write(reinterpret_cast<char*>(&label), sizeof(label));
+    write_file.write(reinterpret_cast<char*>(&write_length),
+                     sizeof(write_length));
+    write_file.write(reinterpret_cast<const char*>(data), length);
+      write_file.close();
+  }
+
   if (label != SNIFFER_PACKET) {
     OLA_WARN << "Not a SNIFFER_PACKET, was " << static_cast<int>(label);
     return;
@@ -663,12 +713,6 @@ void RDMSniffer::DisplayParamData(const PidDescriptor *pid_descriptor,
 
 
 /*
-void RDMSniffer::DumpDiscover(unsigned int length, const uint8_t *data) {
-  DumpRawPacket(length, data);
-}
-*/
-
-/*
  * Parse our command line options
  */
 void ParseOptions(int argc,
@@ -683,13 +727,16 @@ void ParseOptions(int argc,
       {"help", no_argument, 0, 'h'},
       {"log-level", required_argument, 0, 'l'},
       {"unpack-params", no_argument, 0, 'u'},
+      {"write-raw-dump", required_argument, 0, 'w'},
+      {"parse-raw-dump", required_argument, 0, 'p'},
       {0, 0, 0, 0}
     };
 
   int option_index = 0;
 
   while (1) {
-    int c = getopt_long(argc, argv, "adhl:s:ru", long_options, &option_index);
+    int c = getopt_long(argc, argv, "adhl:s:ruw:p:", long_options,
+                        &option_index);
 
     if (c == -1)
       break;
@@ -738,6 +785,16 @@ void ParseOptions(int argc,
       case 'u':
         sniffer_options->unpack_param_data = true;
         break;
+      case 'w':
+        if (!opts->read_file.empty())
+          return;
+        sniffer_options->write_file = optarg;
+        break;
+      case 'p':
+        if (!sniffer_options->write_file.empty())
+          return;
+        opts->read_file = optarg;
+        break;
       case '?':
         break;
       default:
@@ -767,6 +824,8 @@ void DisplayHelpAndExit(char *argv[]) {
   "  -l, --log-level <level>  Set the logging level 0 .. 4.\n"
   "  -r, --full-rdm      Display the full RDM frame\n"
   "  -u, --unpack-params Unpack parameter data.\n"
+  "  -w, --write-raw-dump <file>  Write data to binary file.\n"
+  "  -p, --parse-raw-dump <file>  Parse data from binary file.\n"
   << endl;
   exit(0);
 }
@@ -791,11 +850,32 @@ int main(int argc, char *argv[]) {
   if (opts.help)
     DisplayHelpAndExit(argv);
 
+  ola::InitLogging(opts.log_level, ola::OLA_LOG_STDERR);
+
+  // if we're writing to a file
+  if (!sniffer_options.write_file.empty()) {
+    std::ofstream file;
+    file.open(sniffer_options.write_file.c_str(),
+              std::ios::out | std::ios::binary);
+    if (!file.is_open()) {
+      cerr << "Could not open file for writing: " << sniffer_options.write_file
+        << endl;
+      exit(EX_UNAVAILABLE);
+    }
+  }
+
+  RDMSniffer sniffer(sniffer_options);
+
+  if (!opts.read_file.empty()) {
+    // we're reading from a file
+    sniffer.ParseFile(opts.read_file);
+    return EX_OK;
+  }
+
   if (opts.args.size() != 1)
     DisplayHelpAndExit(argv);
-  const string device = opts.args[0];
 
-  ola::InitLogging(opts.log_level, ola::OLA_LOG_STDERR);
+  const string device = opts.args[0];
 
   ola::network::ConnectedDescriptor *descriptor =
       ola::plugin::usbpro::BaseUsbProWidget::OpenDevice(device);
@@ -806,7 +886,6 @@ int main(int argc, char *argv[]) {
   descriptor->SetOnClose(ola::NewSingleCallback(&Stop, &ss));
   ss.AddReadDescriptor(descriptor);
 
-  RDMSniffer sniffer(&ss, sniffer_options);
   DispatchingUsbProWidget widget(
       descriptor,
       ola::NewCallback(&sniffer, &RDMSniffer::HandleMessage));
