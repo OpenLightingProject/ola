@@ -56,7 +56,8 @@ typedef enum {
   KINET_SET_NAME = 0x0006,
   // KINET_?? = 0x000a;
   KINET_DMX = 0x0101,
-  // KINET_?? = 0x0109;  // seen at the very start
+  // KINET_PORTOUT = 0x0108;  // portout
+  // KINET_PORTOUT_SYNC = 0x0109;  // portout_sync
   // KINET_?? = 0x0201;  // seems to be a discovery packet
   // KINET_?? = 0x0203;  // get dmx address?
 } kinet_packet_type;
@@ -69,7 +70,7 @@ struct kinet_header {
   uint32_t magic;
   uint16_t version;
   uint16_t type;  // see kinet_packet_type above
-  uint32_t padding;  // always set to 0
+  uint32_t padding;  // always set to 0, seq #, most of the time it's 0, not implemented in most supplies
 } __attribute__((packed));
 
 
@@ -126,7 +127,37 @@ struct kinet_get_address {
 
 // A KiNet DMX packet
 struct kinet_dmx {
-  // TODO(simon): fill this in
+  uint8_t port // should be set to 0 for v1
+  uint8_t flags; // set to 0
+  uint16_t timerVal; // set to 0
+  uint32_t universe;
+  uint8_t [513]; // payload inc start code
+} __attribute__((packed));
+
+
+struct kinet_port_out_flags {
+  uint16_t flags;
+    // little endian
+    // first bit is undefined  0:1;
+    // second bit is for 16 bit data, set to 0  :1;
+    // third is shall hold for sync packet :: 1;
+
+};
+
+
+struct kinet_port_out_sync {
+  uint32_t padding;
+}
+
+// A KiNet DMX port out packet
+struct kinet_port_out {
+  uint32_t universe;
+  uint8_t port; // 1- 16
+  uint8_t pad; // set to 0
+  portoutflags flags;
+  uint16_t length; // little endian
+  uint16_t startCode; // 0x0fff for chomASIC products, 0x0000 otherwise
+  uint8_t payload[512];
 } __attribute__((packed));
 
 
