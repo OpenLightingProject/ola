@@ -69,6 +69,9 @@ class EuroliteProOutputPort: public BasicOutputPort, ola::thread::Thread {
     bool GetDescriptorString(libusb_device_handle *usb_handle,
                              uint8_t desc_index,
                              string *data);
+
+    // 513 + header + code + size(2) + footer
+    enum { FRAME_SIZE = 518 };
 };
 }  // usbdmx
 }  // plugin
