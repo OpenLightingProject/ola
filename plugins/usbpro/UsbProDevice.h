@@ -48,8 +48,6 @@ class UsbProDevice: public UsbSerialDevice {
                  ola::AbstractPlugin *owner,
                  const string &name,
                  EnttecUsbProWidget *widget,
-                 uint16_t esta_id,
-                 uint16_t device_id,
                  uint32_t serial,
                  unsigned int fps_limit);
 
@@ -130,7 +128,7 @@ class UsbProOutputPort: public BasicOutputPort {
                      const TimeStamp *wake_time,
                      unsigned int max_burst,
                      unsigned int rate)
-        : BasicOutputPort(parent, id),
+        : BasicOutputPort(parent, id, true),
           m_path(path),
           m_widget(widget),
           m_bucket(max_burst, rate, max_burst, *wake_time),
@@ -149,6 +147,19 @@ class UsbProOutputPort: public BasicOutputPort {
       if (!new_universe)
         m_widget->ChangeToReceiveMode(false);
       (void) old_universe;
+    }
+
+    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+                        ola::rdm::RDMCallback *callback) {
+      m_widget->SendRDMRequest(request, callback);
+    }
+
+    void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+      m_widget->RunFullDiscovery(callback);
+    }
+
+    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+      m_widget->RunIncrementalDiscovery(callback);
     }
 
     string Description() const { return m_path; }

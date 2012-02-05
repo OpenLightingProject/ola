@@ -89,7 +89,6 @@ class UsbSerialPlugin: public ola::Plugin, public NewWidgetHandler {
     static const char USBPRO_DEVICE_NAME[];
     static const char USB_PRO_FPS_LIMIT_KEY[];
     static const char ULTRA_FPS_LIMIT_KEY[];
-    static const uint16_t ENTTEC_ESTA_ID;
     static const unsigned int MAX_DMX_TRI_FPS_LIMIT = 1000;
     static const unsigned int MAX_PRO_FPS_LIMIT = 1000;
     static const unsigned int MAX_ULTRA_FPS_LIMIT = 1000;

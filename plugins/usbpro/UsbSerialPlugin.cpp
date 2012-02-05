@@ -65,7 +65,6 @@ const char UsbSerialPlugin::TRI_USE_RAW_RDM_KEY[] = "tri_use_raw_rdm";
 const char UsbSerialPlugin::USBPRO_DEVICE_NAME[] = "Enttec Usb Pro Device";
 const char UsbSerialPlugin::USB_PRO_FPS_LIMIT_KEY[] = "pro_fps_limit";
 const char UsbSerialPlugin::ULTRA_FPS_LIMIT_KEY[] = "ultra_fps_limit";
-const uint16_t UsbSerialPlugin::ENTTEC_ESTA_ID = 0x454E;
 
 UsbSerialPlugin::UsbSerialPlugin(PluginAdaptor *plugin_adaptor)
     : Plugin(plugin_adaptor),
@@ -172,8 +171,6 @@ void UsbSerialPlugin::NewWidget(
       this,
       device_name,
       widget,
-      information.esta_id ? information.esta_id : ENTTEC_ESTA_ID,
-      information.device_id ? information.device_id : 0,
       information.serial,
       GetProFrameLimit()));
 }

@@ -26,137 +26,149 @@
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/thread/SchedulerInterface.h"
+#include "ola/rdm/DiscoveryAgent.h"
 #include "ola/rdm/QueueingRDMController.h"
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/UIDSet.h"
 #include "plugins/usbpro/GenericUsbProWidget.h"
 
+class EnttecUsbProWidgetTest;
+
 namespace ola {
 namespace plugin {
 namespace usbpro {
 
+
 /*
  * An Enttec DMX USB PRO Widget implementation. We separate the Widget from the
- * implementation so we can leverage the QueueingRDMController when we add RDM
- * support one day.
+ * implementation so we can use the QueueingRDMController.
  */
-class EnttecUsbProWidgetImpl: public GenericUsbProWidget {
-  // : public ola::rdm::RDMControllerInterface {
+class EnttecUsbProWidgetImpl
+    : public GenericUsbProWidget,
+      public ola::rdm::DiscoverableRDMControllerInterface,
+      public ola::rdm::DiscoveryTargetInterface {
   public:
     EnttecUsbProWidgetImpl(ola::thread::SchedulerInterface *scheduler,
-                           ola::network::ConnectedDescriptor *descriptor);
-    ~EnttecUsbProWidgetImpl() {}
+                           ola::network::ConnectedDescriptor *descriptor,
+                           uint16_t esta_id,
+                           uint32_t serial);
+    ~EnttecUsbProWidgetImpl() { Stop(); }
 
-    void Stop() { GenericStop(); }
+    void Stop();
 
-    /*
-     * TODO(simon): add RDM support
+    // the following are from DiscoverableRDMControllerInterface
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete);
-    void bool RunFullDiscovery(RDMDiscoveryCallback *callback);
-    void RunIncrementalDiscovery(RDMDiscoveryCallback *callback);
-    bool CheckDiscoveryStatus();
-    */
+    void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
+    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
+
+    // The following are the implementation of DiscoveryTargetInterface
+    void MuteDevice(const ola::rdm::UID &target,
+                    MuteDeviceCallback *mute_complete);
+    void UnMuteAll(UnMuteDeviceCallback *unmute_complete);
+    void Branch(const ola::rdm::UID &lower,
+                const ola::rdm::UID &upper,
+                BranchCallback *callback);
+
+    // We override handle message to catch the incomming RDM frames
+    void HandleMessage(uint8_t label,
+                       const uint8_t *data,
+                       unsigned int length);
 
   private:
-    ola::thread::SchedulerInterface *m_scheduler;
-    // ola::thread::timeout_id m_rdm_timeout_id;
-    /*
-    ola::Callback1<void, const ola::rdm::UIDSet&> *m_uid_set_callback;
-    ola::Callback0<void> *m_discovery_callback;
-    ola::rdm::RDMCallback *m_rdm_request_callback;
-    const ola::rdm::RDMRequest *m_pending_request;
+    ola::rdm::DiscoveryAgent m_discovery_agent;
+    const ola::rdm::UID m_uid;
     uint8_t m_transaction_number;
+    ola::rdm::RDMCallback *m_rdm_request_callback;
+    MuteDeviceCallback *m_mute_callback;
+    UnMuteDeviceCallback *m_unmute_callback;
+    BranchCallback *m_branch_callback;
+    const ola::rdm::RDMRequest *m_pending_request;
+    // holds the discovery response while we're waiting for the timeout message
+    const uint8_t *m_discovery_response;
+    unsigned int m_discovery_response_size;
 
-    bool InDiscoveryMode() const;
-    bool SendDiscoveryStart();
-    bool SendDiscoveryStat();
-    void FetchNextUID();
-    void DispatchRequest(const ola::rdm::RDMRequest *request,
-                         ola::rdm::RDMCallback *callback);
-    void DispatchQueuedGet(const ola::rdm::RDMRequest* request,
-                           ola::rdm::RDMCallback *callback);
-    void StopDiscovery();
+    void HandleRDMTimeout(unsigned int length);
+    void HandleIncommingDataMessage(const uint8_t *data, unsigned int length);
+    void DiscoveryComplete(ola::rdm::RDMDiscoveryCallback *callback,
+                           bool status,
+                           const ola::rdm::UIDSet &uids);
 
-    void HandleRemoteRDMResponse(uint8_t return_code,
-                                 const uint8_t *data,
-                                 unsigned int length);
-    */
+    static const uint8_t RDM_PACKET = 7;
+    static const uint8_t RDM_TIMEOUT_PACKET = 12;
+    static const uint8_t RDM_DISCOVERY_PACKET = 11;
 };
 
 
 /*
- * An Usb Pro Widget
+ * An Enttec Usb Pro Widget
  */
-class EnttecUsbProWidget: public SerialWidgetInterface {
+class EnttecUsbProWidget: public SerialWidgetInterface,
+                          public ola::rdm::DiscoverableRDMControllerInterface {
   public:
     EnttecUsbProWidget(ola::thread::SchedulerInterface *scheduler,
                        ola::network::ConnectedDescriptor *descriptor,
+                       uint16_t esta_id,
+                       uint32_t serial,
                        unsigned int queue_size = 20);
-    ~EnttecUsbProWidget() {}
+    ~EnttecUsbProWidget();
 
-    void Stop() { m_impl.Stop(); }
+    void Stop() { m_impl->Stop(); }
 
     bool SendDMX(const DmxBuffer &buffer) {
-      return m_impl.SendDMX(buffer);
+      return m_impl->SendDMX(buffer);
     }
 
     const DmxBuffer &FetchDMX() const {
-      return m_impl.FetchDMX();
+      return m_impl->FetchDMX();
     }
 
     void SetDMXCallback(
         ola::Callback0<void> *callback) {
-      m_impl.SetDMXCallback(callback);
+      m_impl->SetDMXCallback(callback);
     }
 
     bool ChangeToReceiveMode(bool change_only) {
-      return m_impl.ChangeToReceiveMode(change_only);
+      return m_impl->ChangeToReceiveMode(change_only);
     }
 
     void GetParameters(usb_pro_params_callback *callback) {
-      m_impl.GetParameters(callback);
+      m_impl->GetParameters(callback);
     }
 
     bool SetParameters(uint8_t break_time,
                        uint8_t mab_time,
                        uint8_t rate) {
-      return m_impl.SetParameters(break_time, mab_time, rate);
-    }
-
-    /*
-    void SetUIDListCallback(
-        ola::Callback1<void, const ola::rdm::UIDSet&> *callback) {
-      m_impl.SetUIDListCallback(callback);
+      return m_impl->SetParameters(break_time, mab_time, rate);
     }
 
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete) {
-      m_controller.SendRDMRequest(request, on_complete);
+      m_controller->SendRDMRequest(request, on_complete);
     }
 
-    bool RunFullDiscovery(RDMDiscoveryCallback *callback) {
-      m_controller.RunFullDiscovery(callback);
+    void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+      m_impl->RunFullDiscovery(callback);
     }
 
-    bool RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
-      m_controller.RunIncrementalDiscovery(callback);
+    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+      m_impl->RunIncrementalDiscovery(callback);
     }
-    */
 
     ola::network::ConnectedDescriptor *GetDescriptor() const {
-      return m_impl.GetDescriptor();
+      return m_impl->GetDescriptor();
     }
+
+    static const uint16_t ENTTEC_ESTA_ID;
+
+    // the tests access the implementation directly.
+    friend class ::EnttecUsbProWidgetTest;
 
   private:
-    EnttecUsbProWidgetImpl m_impl;
-    //  ola::rdm::QueueingRDMController m_controller;
-
-    /*
-    void ResumeRDMCommands() {
-      m_controller.Resume();
-    }
-    */
+    // we need to control the order of construction & destruction here so these
+    // are pointers.
+    EnttecUsbProWidgetImpl *m_impl;
+    ola::rdm::QueueingRDMController *m_controller;
 };
 }  // usbpro
 }  // plugin

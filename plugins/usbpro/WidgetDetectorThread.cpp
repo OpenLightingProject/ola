@@ -283,7 +283,9 @@ void WidgetDetectorThread::UsbProWidgetReady(
         DispatchWidget(
             new EnttecUsbProWidget(
               m_other_ss,
-              descriptor),
+              descriptor,
+              information->esta_id,
+              information->serial),
             information);
         return;
       }
@@ -327,7 +329,9 @@ void WidgetDetectorThread::UsbProWidgetReady(
   DispatchWidget(
       new EnttecUsbProWidget(
         m_other_ss,
-        descriptor),
+        descriptor,
+        information->esta_id,
+        information->serial),
       information);
 }
 

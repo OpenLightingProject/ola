@@ -52,8 +52,6 @@ UsbProDevice::UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
                            ola::AbstractPlugin *owner,
                            const string &name,
                            EnttecUsbProWidget *widget,
-                           uint16_t esta_id,
-                           uint16_t device_id,
                            uint32_t serial,
                            unsigned int fps_limit):
     UsbSerialDevice(owner, name, widget),
@@ -97,8 +95,6 @@ UsbProDevice::UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
 
   AddPort(output_port);
   Start();  // this does nothing but set IsEnabled() to true
-  (void) esta_id;
-  (void) device_id;
 }
 
 
