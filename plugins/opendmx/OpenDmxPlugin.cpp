@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <string>
+#include <vector>
 
 #include "ola/Logging.h"
 #include "olad/PluginAdaptor.h"
@@ -36,6 +37,7 @@ namespace plugin {
 namespace opendmx {
 
 using ola::PluginAdaptor;
+using std::vector;
 
 const char OpenDmxPlugin::OPENDMX_DEVICE_PATH[] = "/dev/dmx0";
 const char OpenDmxPlugin::OPENDMX_DEVICE_NAME[] = "OpenDmx USB Device";
@@ -54,28 +56,35 @@ extern "C" ola::AbstractPlugin* create(PluginAdaptor *plugin_adaptor) {
 
 /*
  * Start the plugin
- * For now we just have one device.
  * TODO: scan /dev for devices?
- *   Need to get multi-device support working first :)
- * Remember to fix DeviceId() when multiple devices are supported
  */
 bool OpenDmxPlugin::StartHook() {
-  int fd;
+  vector<string> devices = m_preferences->GetMultipleValue(DEVICE_KEY);
+  vector<string>::const_iterator iter = devices.begin();
 
-  /* create new ola device */
-  // first check if it's there
-  string device_path = m_preferences->GetValue(DEVICE_KEY);
-  fd = open(device_path.data(), O_WRONLY);
+  // start counting device ids from 0
+  unsigned int device_id = 0;
 
-  if (fd >= 0) {
-    close(fd);
-    m_device = new OpenDmxDevice(this, OPENDMX_DEVICE_NAME,
-                                 device_path);
-
-    m_device->Start();
-    m_plugin_adaptor->RegisterDevice(m_device);
-  } else {
-    OLA_WARN << "Could not open " << device_path << " " << strerror(errno);
+  for (; iter != devices.end(); ++iter) {
+    // first check if it's there
+    int fd = open(iter->c_str(), O_WRONLY);
+    if (fd >= 0) {
+      close(fd);
+      OpenDmxDevice *device = new OpenDmxDevice(
+          this,
+          OPENDMX_DEVICE_NAME,
+          *iter,
+          device_id++);
+      if (device->Start()) {
+        m_devices.push_back(device);
+        m_plugin_adaptor->RegisterDevice(device);
+      } else {
+        OLA_WARN << "Failed to start OpenDmxDevice for " << *iter;
+        delete device;
+      }
+    } else {
+      OLA_WARN << "Could not open " << *iter << " " << strerror(errno);
+    }
   }
   return true;
 }
@@ -86,19 +95,20 @@ bool OpenDmxPlugin::StartHook() {
  * @return true on success, false on failure
  */
 bool OpenDmxPlugin::StopHook() {
-  if (m_device) {
-    m_plugin_adaptor->UnregisterDevice(m_device);
-    bool ret = m_device->Stop();
-    delete m_device;
-    return ret;
+  bool ret = true;
+  DeviceList::iterator iter = m_devices.begin();
+  for (; iter != m_devices.end(); ++iter) {
+    m_plugin_adaptor->UnregisterDevice(*iter);
+    ret &= (*iter)->Stop();
+    delete *iter;
   }
-  return true;
+  m_devices.clear();
+  return ret;
 }
 
 
 /*
  * Return the description for this plugin
- *
  */
 string OpenDmxPlugin::Description() const {
     return
@@ -110,7 +120,7 @@ string OpenDmxPlugin::Description() const {
 "--- Config file : ola-opendmx.conf ---\n"
 "\n"
 "device = /dev/dmx0\n"
-"The path to the open dmx usb device.\n";
+"The path to the open dmx usb device. Multiple entries are supported.\n";
 }
 
 

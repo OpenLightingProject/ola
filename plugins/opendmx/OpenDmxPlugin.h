@@ -22,6 +22,7 @@
 #define PLUGINS_OPENDMX_OPENDMXPLUGIN_H_
 
 #include <string>
+#include <vector>
 #include "olad/Plugin.h"
 #include "ola/plugin_id.h"
 
@@ -36,8 +37,8 @@ class OpenDmxDevice;
 class OpenDmxPlugin: public Plugin {
   public:
     explicit OpenDmxPlugin(PluginAdaptor *plugin_adaptor):
-      Plugin(plugin_adaptor),
-      m_device(NULL) {}
+      Plugin(plugin_adaptor) {
+    }
 
     string Name() const { return PLUGIN_NAME; }
     string Description() const;
@@ -49,7 +50,8 @@ class OpenDmxPlugin: public Plugin {
     bool StopHook();
     bool SetDefaultPreferences();
 
-    OpenDmxDevice *m_device;  // only have one device
+    typedef std::vector<OpenDmxDevice*> DeviceList;
+    DeviceList m_devices;
     static const char PLUGIN_NAME[];
     static const char PLUGIN_PREFIX[];
     static const char OPENDMX_DEVICE_PATH[];

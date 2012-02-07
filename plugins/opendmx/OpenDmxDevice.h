@@ -35,16 +35,18 @@ class OpenDmxDevice: public ola::Device {
   public:
     OpenDmxDevice(ola::AbstractPlugin *owner,
                   const string &name,
-                  const string &path);
+                  const string &path,
+                  unsigned int device_id);
 
     // we only support one widget for now
-    string DeviceId() const { return "1"; }
+    string DeviceId() const { return m_device_id; }
 
   protected:
     bool StartHook();
 
   private:
     string m_path;
+    string m_device_id;
 };
 }  // opendmx
 }  // plugins

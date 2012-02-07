@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <iostream>
 #include <string>
 
 #include "plugins/opendmx/OpenDmxDevice.h"
@@ -41,10 +42,15 @@ using ola::Device;
  */
 OpenDmxDevice::OpenDmxDevice(AbstractPlugin *owner,
                              const string &name,
-                             const string &path):
-  Device(owner, name),
-  m_path(path) {
+                             const string &path,
+                             unsigned int device_id)
+    : Device(owner, name),
+      m_path(path) {
+  std::stringstream str;
+  str << device_id;
+  m_device_id = str.str();
 }
+
 
 
 /*
