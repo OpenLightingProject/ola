@@ -2,6 +2,7 @@ X/Y/2012 ola-0.8.18
  * Added RDM support for the Enttec USB Pro - #146
  * Added support for reading/writing sniffer logs to a file
  * Fixed a bug in the Eurolite device - #165
+ * Added support for multiple Open DMX USB devices (still Linux Only) - #166
 
 23/01/2012 ola-0.8.17
  * fix a bug in the RDM sniffer
