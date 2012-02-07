@@ -81,6 +81,11 @@ void PreferencesTest::testValidators() {
   CPPUNIT_ASSERT(!set_validator.IsValid("zero"));
   CPPUNIT_ASSERT(!set_validator.IsValid("three"));
 
+  // a string validator that allows empty strings
+  StringValidator string_validator2(true);
+  CPPUNIT_ASSERT(string_validator2.IsValid("foo"));
+  CPPUNIT_ASSERT(string_validator2.IsValid(""));
+
   BoolValidator bool_validator;
   CPPUNIT_ASSERT(bool_validator.IsValid("true"));
   CPPUNIT_ASSERT(bool_validator.IsValid("false"));

@@ -57,8 +57,14 @@ class Validator {
  */
 class StringValidator: public Validator {
   public:
-    StringValidator(): Validator() {}
+    explicit StringValidator(bool empty_ok = false)
+      : Validator(),
+        m_empty_ok(empty_ok) {
+    }
     bool IsValid(const string &value) const;
+
+  private:
+    const bool m_empty_ok;
 };
 
 
