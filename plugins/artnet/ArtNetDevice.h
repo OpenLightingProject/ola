@@ -77,6 +77,9 @@ class ArtNetDevice: public Device {
     ola::thread::timeout_id m_timeout_id;
 
     void HandleOptions(Request *request, string *response);
+    void HandleNodeList(Request *request,
+                        string *response,
+                        RpcController *controller);
 };
 }  // arntnet
 }  // plugin

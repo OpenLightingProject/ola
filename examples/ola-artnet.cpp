@@ -20,6 +20,7 @@
 
 #include <errno.h>
 #include <getopt.h>
+#include <ola/network/IPV4Address.h>
 #include <ola/plugin_id.h>
 #include <plugins/artnet/messages/ArtnetConfigMessages.pb.h>
 #include <iostream>
@@ -42,6 +43,8 @@ typedef struct {
   int subnet;       // the subnet
   bool has_net;
   int net;  // the net address
+  unsigned int universe;
+  bool fetch_node_list;
 } options;
 
 
@@ -56,7 +59,10 @@ class ArtnetConfigurator: public OlaConfigurator {
     void HandleConfigResponse(const string &reply, const string &error);
     void SendConfigRequest();
   private:
+    void SendOptionRequest();
+    void SendNodeListRequest();
     void DisplayOptions(const ola::plugin::artnet::OptionsReply &reply);
+    void DisplayNodeList(const ola::plugin::artnet::NodeListReply &reply);
     options m_options;
 };
 
@@ -80,17 +86,30 @@ void ArtnetConfigurator::HandleConfigResponse(const string &reply,
       reply_pb.has_options()) {
     DisplayOptions(reply_pb.options());
     return;
+  } else if (reply_pb.type() ==
+               ola::plugin::artnet::Reply::ARTNET_NODE_LIST_REPLY &&
+             reply_pb.has_node_list()) {
+    DisplayNodeList(reply_pb.node_list());
+  } else {
+    cout << "Invalid response type or missing options field" << endl;
   }
-  cout << "Invalid response type or missing options field" << endl;
 }
 
 
 /*
- * Send a get parameters request
- * @param device_id the device to send the request to
- * @param client the OLAClient
+ * Send a request
  */
 void ArtnetConfigurator::SendConfigRequest() {
+  if (m_options.fetch_node_list)
+    SendNodeListRequest();
+  else
+    SendOptionRequest();
+}
+
+/**
+ * Send an options request, which may involve setting options
+ */
+void ArtnetConfigurator::SendOptionRequest() {
   ola::plugin::artnet::Request request;
   request.set_type(ola::plugin::artnet::Request::ARTNET_OPTIONS_REQUEST);
   ola::plugin::artnet::OptionsRequest *options = request.mutable_options();
@@ -107,6 +126,19 @@ void ArtnetConfigurator::SendConfigRequest() {
 }
 
 
+/**
+ * Send a request for the node list
+ */
+void ArtnetConfigurator::SendNodeListRequest() {
+  ola::plugin::artnet::Request request;
+  request.set_type(ola::plugin::artnet::Request::ARTNET_NODE_LIST_REQUEST);
+  ola::plugin::artnet::NodeListRequest *node_list_request =
+    request.mutable_node_list();
+  node_list_request->set_universe(m_options.universe);
+  SendMessage(request);
+}
+
+
 /*
  * Display the widget parameters
  */
@@ -116,6 +148,20 @@ void ArtnetConfigurator::DisplayOptions(
   cout << "Long Name: " << reply.long_name() << endl;
   cout << "Subnet: " << reply.subnet() << endl;
   cout << "Net: " << reply.net() << endl;
+}
+
+
+/**
+ * Display the list of discovered nodes
+ */
+void ArtnetConfigurator::DisplayNodeList(
+    const ola::plugin::artnet::NodeListReply &reply) {
+  unsigned int nodes = reply.node_size();
+  for (unsigned int i = 0; i < nodes; i++) {
+    const ola::plugin::artnet::OutputNode &node = reply.node(i);
+    ola::network::IPV4Address address(node.ip_address());
+    cout << address << endl;
+  }
 }
 
 
@@ -130,6 +176,7 @@ int ParseOptions(int argc, char *argv[], options *opts) {
       {"name",      required_argument,  0, 'n'},
       {"subnet",    required_argument,  0, 's'},
       {"net",       required_argument,  0, 'e'},
+      {"universes", required_argument, 0, 'u'},
       {0, 0, 0, 0}
     };
 
@@ -137,7 +184,7 @@ int ParseOptions(int argc, char *argv[], options *opts) {
   int option_index = 0;
 
   while (1) {
-    c = getopt_long(argc, argv, "d:e:hl:n:s:v", long_options, &option_index);
+    c = getopt_long(argc, argv, "d:e:hl:n:s:u:", long_options, &option_index);
     if (c == -1)
       break;
 
@@ -166,6 +213,10 @@ int ParseOptions(int argc, char *argv[], options *opts) {
         opts->subnet = atoi(optarg);
         opts->has_subnet = true;
         break;
+      case 'u':
+        opts->universe = atoi(optarg);
+        opts->fetch_node_list = true;
+        break;
       case '?':
         break;
     }
@@ -181,11 +232,12 @@ void DisplayHelpAndExit(const options &opts) {
   cout << "Usage: " << opts.command <<
     " -d <dev_id> -n <name> -l <long_name> -s <subnet>\n\n"
     "Configure ArtNet Devices managed by OLA.\n\n"
-    "  -e, --net       Set the net paramenter of the ArtNet device\n"
+    "  -e, --net       Set the net parameter of the ArtNet device\n"
     "  -h, --help      Display this help message and exit.\n"
     "  -l, --long_name Set the long name of the ArtNet device\n"
     "  -n, --name      Set the name of the ArtNet device\n"
-    "  -s, --subnet    Set the subnet of the ArtNet device\n" <<
+    "  -s, --subnet    Set the subnet of the ArtNet device\n"
+    "  -u, --universe  List the IPs of devices for this universe\n" <<
     endl;
   exit(0);
 }
@@ -203,6 +255,8 @@ int main(int argc, char*argv[]) {
   opts.has_long_name = false;
   opts.has_subnet = false;
   opts.has_net = false;
+  opts.fetch_node_list = false;
+  opts.universe = 0;
 
   ParseOptions(argc, argv, &opts);
 

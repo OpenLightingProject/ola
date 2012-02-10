@@ -56,6 +56,7 @@ using ola::rdm::UID;
 using ola::rdm::UIDSet;
 using ola::timecode::TimeCode;
 using std::string;
+using std::vector;
 
 
 class ArtNetNodeTest: public CppUnit::TestFixture {
@@ -153,7 +154,7 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
 
     void FinalizeRDM(ola::rdm::rdm_response_code status,
                      const RDMResponse *response,
-                     const std::vector<string> &packets) {
+                     const vector<string> &packets) {
       CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_COMPLETED_OK, status);
       m_rdm_response = response;
       (void) packets;
@@ -161,7 +162,7 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
 
     void ExpectTimeout(ola::rdm::rdm_response_code status,
                        const RDMResponse *response,
-                       const std::vector<string> &packets) {
+                       const vector<string> &packets) {
       CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_TIMEOUT, status);
       CPPUNIT_ASSERT(NULL == response);
       (void) packets;
@@ -537,6 +538,9 @@ void ArtNetNodeTest::testNonBroadcastSendDMX() {
   CPPUNIT_ASSERT(node.SendDMX(m_port_id, dmx));
   m_socket->Verify();
 
+  // used to check GetSubscribedNodes()
+  vector<IPV4Address> node_addresses;
+
   {
     SocketVerifier verifer(m_socket);
     const uint8_t poll_reply_message[] = {
@@ -579,6 +583,12 @@ void ArtNetNodeTest::testNonBroadcastSendDMX() {
 
     // Fake an ArtPollReply
     ReceiveFromPeer(poll_reply_message, sizeof(poll_reply_message), peer_ip);
+
+    // check the node list is up to date
+    node_addresses.clear();
+    node.GetSubscribedNodes(m_port_id, &node_addresses);
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), node_addresses.size());
+    CPPUNIT_ASSERT_EQUAL(peer_ip, node_addresses[0]);
 
     // send a DMX frame, this should get unicast
     const uint8_t DMX_MESSAGE[] = {
@@ -640,6 +650,13 @@ void ArtNetNodeTest::testNonBroadcastSendDMX() {
     ReceiveFromPeer(poll_reply_message2,
                     sizeof(poll_reply_message2),
                     peer_ip2);
+
+    // check the node list is up to date
+    node_addresses.clear();
+    node.GetSubscribedNodes(m_port_id, &node_addresses);
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), node_addresses.size());
+    CPPUNIT_ASSERT_EQUAL(peer_ip, node_addresses[0]);
+    CPPUNIT_ASSERT_EQUAL(peer_ip2, node_addresses[1]);
   }
 
   // send another DMX frame, this should get unicast twice
@@ -1645,7 +1662,7 @@ void ArtNetNodeTest::testRDMResponder() {
     RDMResponse *response = GetResponseFromData(m_rdm_request,
                                                 param_data,
                                                 sizeof(param_data));
-    std::vector<string> packets;
+    vector<string> packets;
     m_rdm_callback->Run(ola::rdm::RDM_COMPLETED_OK, response, packets);
 
     // clean up

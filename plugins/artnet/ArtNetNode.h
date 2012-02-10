@@ -143,6 +143,8 @@ class ArtNetNodeImpl {
     bool SetUnsolicatedUIDSetHandler(
         uint8_t port_id,
         ola::Callback1<void, const ola::rdm::UIDSet&> *on_tod);
+    void GetSubscribedNodes(uint8_t port_id,
+                            std::vector<IPV4Address> *node_addresses);
 
     // The following apply to Output Ports (those which receive data);
     bool SetDMXHandler(uint8_t port_id,
@@ -436,6 +438,10 @@ class ArtNetNode {
         uint8_t port_id,
         ola::Callback1<void, const ola::rdm::UIDSet&> *on_tod) {
       return m_impl.SetUnsolicatedUIDSetHandler(port_id, on_tod);
+    }
+    void GetSubscribedNodes(uint8_t port_id,
+                            std::vector<IPV4Address> *node_addresses) {
+      m_impl.GetSubscribedNodes(port_id, node_addresses);
     }
 
     // The following apply to Output Ports (those which receive data);
