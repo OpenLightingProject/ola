@@ -11,3 +11,4 @@ Makefile
 Makefile.in
 .deps
 .libs
+include/ola/rdm/RDMResponseCodes.h
