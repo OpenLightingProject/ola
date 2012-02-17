@@ -47,7 +47,7 @@ class MockUdpSocket: public ola::network::UdpSocketInterface {
     bool Init();
     bool Bind(const IPV4Address &ip,
               unsigned short port);
-    bool Bind(unsigned short port = INADDR_ANY);
+    bool Bind(unsigned short port = 0);
     bool Close();
     int ReadDescriptor() const;
     int WriteDescriptor() const;
