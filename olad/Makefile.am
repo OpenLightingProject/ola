@@ -7,7 +7,8 @@ pkginclude_HEADERS = OlaDaemon.h OlaServer.h
 
 
 OLASERVER_SOURCES = Client.cpp ClientBroker.cpp Device.cpp DeviceManager.cpp \
-                    DmxSource.cpp DynamicPluginLoader.cpp \
+                    DmxSource.cpp \
+		    DynamicPluginLoader.cpp \
                     OlaServerServiceImpl.cpp \
                     Plugin.cpp PluginAdaptor.cpp PluginManager.cpp \
                     Preferences.cpp Port.cpp PortBroker.cpp PortManager.cpp \
@@ -30,13 +31,15 @@ libolaserver_la_SOURCES += HttpServer.cpp HttpServerActions.cpp \
 endif
 
 
-EXTRA_DIST = Client.h ClientBroker.h DeviceManager.h DlOpenPluginLoader.h \
+EXTRA_DIST = Client.h ClientBroker.h DeviceManager.h \
+             DlOpenPluginLoader.cpp DlOpenPluginLoader.h \
              DynamicPluginLoader.h HttpModule.h \
              HttpServer.h HttpServerActions.h \
              OlaHttpServer.h OlaVersion.h \
              OlaServerServiceImpl.h PluginLoader.h PluginManager.h \
              PortManager.h RDMHttpModule.h TestCommon.h \
-             UniverseStore.h
+             UniverseStore.h \
+	     main_test.cpp
 
 # Olad Server
 bin_PROGRAMS = olad
