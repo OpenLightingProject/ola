@@ -1,8 +1,8 @@
 include $(top_srcdir)/common.mk
 
 EXTRA_DIST = \
-	     DMXSender.py \
-	     model_collector.py \
+             DMXSender.py \
+             model_collector.py \
              ExpectedResults.py \
              ResponderTest.py \
              TestCategory.py \

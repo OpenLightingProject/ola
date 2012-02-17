@@ -1,21 +1,20 @@
 wwwdir = $(www_datadir)
 
 dist_www_DATA = back.png \
-		console_values.html \
-		discovery.png \
-		hide_sections.png \
-		light_bulb.png \
-		light_bulb_off.png \
-		show_sections.png \
 		blank.gif \
 		button-bg.png \
+		console_values.html \
 		custombutton.css \
+		discovery.png \
 		editortoolbar.png \
 		expander.png \
 		forward.png \
 		handle.vertical.png \
+		hide_sections.png \
 		incremental-discovery.png \
 		landing.html \
+		light_bulb.png \
+		light_bulb_off.png \
 		loader-mini.gif \
 		loader.gif \
 		logo-mini.png \
@@ -25,6 +24,7 @@ dist_www_DATA = back.png \
 		ola.html \
 		ola.js \
 		refresh.png \
+		show_sections.png \
 		tick.gif \
 		toolbar-bg.png \
 		toolbar.css \

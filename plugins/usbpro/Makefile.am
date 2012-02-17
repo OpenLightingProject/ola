@@ -51,7 +51,6 @@ SerialUsbTester_SOURCES = ArduinoWidgetTest.cpp \
                           DmxterWidgetTest.cpp \
                           EnttecUsbProWidgetTest.cpp \
                           MockEndpoint.cpp \
-			  RobeUsbWidgetTest.cpp \
                           RobeWidgetTest.cpp \
                           RobeWidgetDetectorTest.cpp \
                           SerialUsbTester.cpp \

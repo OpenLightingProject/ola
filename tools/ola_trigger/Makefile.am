@@ -3,9 +3,9 @@ include $(top_srcdir)/common.mk
 EXTRA_DIST = Action.h ConfigCommon.h Context.h DMXTrigger.h MockAction.h \
              ParserActions.h ParserGlobals.h VariableInterpolator.h \
              config.lex config.ypp \
-	     contrib/mac_itunes.conf \
-	     contrib/mac_volume.conf \
-	     example.conf
+             contrib/mac_itunes.conf \
+             contrib/mac_volume.conf \
+             example.conf
 
 BUILT_SOURCES = config.tab.cpp config.tab.h lex.yy.cpp
 
