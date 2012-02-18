@@ -28,6 +28,7 @@
 #include <string.h>
 #include <map>
 #include <vector>
+#include <utility>
 
 #include "ola/network/Socket.h"
 #include "common/protocol/Ola.pb.h"
