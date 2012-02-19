@@ -20,6 +20,7 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <map>
+#include <utility>
 #include "common/protocol/Ola.pb.h"
 #include "ola/Logging.h"
 #include "olad/Client.h"

@@ -24,6 +24,7 @@
 #include <map>
 #include <queue>
 #include <string>
+#include <utility>
 #include <vector>
 #include "ola/OlaCallbackClient.h"
 #include "ola/rdm/RDMAPI.h"

@@ -131,7 +131,7 @@ void *WidgetDetectorThread::Run() {
 
   vector<WidgetDetectorInterface*>::const_iterator iter =
   m_widget_detectors.begin();
-  for (;iter != m_widget_detectors.end(); ++iter)
+  for (; iter != m_widget_detectors.end(); ++iter)
     // this will trigger a call to InternalFreeWidget for any remaining widgets
     delete *iter;
 

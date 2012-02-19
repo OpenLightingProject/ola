@@ -22,6 +22,7 @@
 #include <string.h>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"

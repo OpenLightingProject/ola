@@ -141,7 +141,6 @@ struct kinet_port_out_flags {
     // first bit is undefined  0:1;
     // second bit is for 16 bit data, set to 0  :1;
     // third is shall hold for sync packet :: 1;
-
 };
 
 
