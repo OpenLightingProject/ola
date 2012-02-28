@@ -50,6 +50,7 @@ typedef struct {
   bool http_enable_quit;  // enable /quit
   unsigned int http_port;  // port to run the http server on
   std::string http_data_dir;  // directory that contains the static content
+  std::string interface;
 } ola_server_options;
 
 

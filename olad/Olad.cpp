@@ -63,6 +63,7 @@ typedef struct {
   int rpc_port;
   string http_data_dir;
   string config_dir;
+  string interface;
 } ola_options;
 
 
@@ -172,6 +173,7 @@ static void DisplayHelp() {
   "  -d, --http-data-dir      Path to the static content.\n"
   "  -f, --daemon             Fork into background.\n"
   "  -h, --help               Display this help message and exit.\n"
+  "  -i, --interface <interface name|ip> Network interface to use.\n"
   "  -l, --log-level <level>  Set the logging level 0 .. 4 .\n"
   "  -p, --http-port          Port to run the http server on (default " <<
     ola::OlaServer::DEFAULT_HTTP_PORT << ")\n" <<
@@ -197,6 +199,7 @@ static bool ParseOptions(int argc, char *argv[], ola_options *opts) {
       {"help", no_argument, 0, 'h'},
       {"http-data-dir", required_argument, 0, 'd'},
       {"http-port", required_argument, 0, 'p'},
+      {"interface", required_argument, 0, 'i'},
       {"log-level", required_argument, 0, 'l'},
       {"no-daemon", no_argument, 0, 'f'},
       {"no-http", no_argument, &opts->httpd, 0},
@@ -211,7 +214,7 @@ static bool ParseOptions(int argc, char *argv[], ola_options *opts) {
   int option_index = 0;
 
   while (1) {
-    c = getopt_long(argc, argv, "c:d:fhl:p:sr:", long_options, &option_index);
+    c = getopt_long(argc, argv, "c:d:fhi:l:p:sr:", long_options, &option_index);
     if (c == -1)
       break;
 
@@ -230,6 +233,9 @@ static bool ParseOptions(int argc, char *argv[], ola_options *opts) {
       case 'h':
         opts->help = true;
         break;
+      case 'i':
+	opts->interface = optarg;
+	break;
       case 's':
         opts->output = ola::OLA_LOG_SYSLOG;
         break;
@@ -363,6 +369,7 @@ static void Setup(int argc, char*argv[], ola_options *opts) {
   opts->rpc_port = ola::OlaDaemon::DEFAULT_RPC_PORT;
   opts->http_data_dir = "";
   opts->config_dir = "";
+  opts->interface = "";
 
   if (!ParseOptions(argc, argv, opts)) {
     DisplayHelp();
@@ -429,6 +436,7 @@ int main(int argc, char *argv[]) {
   ola_options.http_enable_quit = opts.http_quit;
   ola_options.http_port = opts.http_port;
   ola_options.http_data_dir = opts.http_data_dir;
+  ola_options.interface = opts.interface;
 
   olad = new OlaDaemon(ola_options, &export_map, opts.rpc_port,
                        opts.config_dir);

@@ -207,7 +207,7 @@ bool OlaServer::Init() {
   ola::network::Interface iface;
   ola::network::InterfacePicker *picker =
     ola::network::InterfacePicker::NewPicker();
-  if (!picker->ChooseInterface(&iface, "")) {
+  if (!picker->ChooseInterface(&iface, m_options.interface)) {
     OLA_WARN << "No network interface found";
   } else {
     // default to using the ip as a id
