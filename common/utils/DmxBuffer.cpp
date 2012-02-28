@@ -385,12 +385,12 @@ string DmxBuffer::ToString() const {
 bool DmxBuffer::Init() {
   try {
     m_data = new uint8_t[DMX_UNIVERSE_SIZE];
-  } catch (std::bad_alloc &ex) {
+  } catch(std::bad_alloc &ex) {
     return false;
   }
   try {
     m_ref_count = new unsigned int;
-  } catch (std::bad_alloc &ex) {
+  } catch(std::bad_alloc &ex) {
     delete[] m_data;
     return false;
   }
