@@ -234,8 +234,8 @@ static bool ParseOptions(int argc, char *argv[], ola_options *opts) {
         opts->help = true;
         break;
       case 'i':
-	opts->interface = optarg;
-	break;
+        opts->interface = optarg;
+        break;
       case 's':
         opts->output = ola::OLA_LOG_SYSLOG;
         break;
