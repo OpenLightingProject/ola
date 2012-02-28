@@ -211,7 +211,7 @@ static bool ParseOptions(int argc, char *argv[], ola_options *opts) {
   int option_index = 0;
 
   while (1) {
-    c = getopt_long(argc, argv, "c:l:p:fd:hsr:", long_options, &option_index);
+    c = getopt_long(argc, argv, "c:d:fhl:p:sr:", long_options, &option_index);
     if (c == -1)
       break;
 
