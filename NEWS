@@ -5,6 +5,7 @@ X/Y/2012 ola-0.8.18
  * Added support for multiple Open DMX USB devices (still Linux Only) - #166
  * Fixed a build error in the StageProfi widget - #169
  * Added an option to choose the NIC olad uses - #173
+ * Add support for listing remote ArtNet nodes - #167
 
 23/01/2012 ola-0.8.17
  * fix a bug in the RDM sniffer
