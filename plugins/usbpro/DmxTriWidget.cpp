@@ -514,6 +514,9 @@ void DmxTriWidgetImpl::HandleDiscoveryAutoResponse(uint8_t return_code,
       OLA_WARN << "DMX_TRI discovery returned error " <<
         static_cast<int>(return_code);
     StopDiscovery();
+    RDMDiscoveryCallback *callback = m_discovery_callback;
+    m_discovery_callback = NULL;
+    RunDiscoveryCallback(callback);
   }
   (void) data;
   (void) length;

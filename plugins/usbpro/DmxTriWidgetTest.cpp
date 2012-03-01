@@ -41,6 +41,7 @@ using std::vector;
 class DmxTriWidgetTest: public CommonWidgetTest {
   CPPUNIT_TEST_SUITE(DmxTriWidgetTest);
   CPPUNIT_TEST(testTod);
+  CPPUNIT_TEST(testLockedTod);
   CPPUNIT_TEST(testSendRDM);
   CPPUNIT_TEST(testSendRDMErrors);
   CPPUNIT_TEST(testSendRDMBroadcast);
@@ -54,6 +55,7 @@ class DmxTriWidgetTest: public CommonWidgetTest {
     void setUp();
 
     void testTod();
+    void testLockedTod();
     void testSendRDM();
     void testSendRDMErrors();
     void testSendRDMBroadcast();
@@ -327,6 +329,28 @@ void DmxTriWidgetTest::testTod() {
       ola::NewSingleCallback(this, &DmxTriWidgetTest::ValidateTod));
   m_ss.Run();
   CPPUNIT_ASSERT_EQUAL((unsigned int) 3, m_tod_counter);
+  m_endpoint->Verify();
+}
+
+
+/**
+ * Check that the discovery works when the widget doesn't support RDM
+ */
+void DmxTriWidgetTest::testLockedTod() {
+  uint8_t expected_discovery = 0x33;
+  uint8_t discovery_ack[] = {0x33, 0x02};
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      EXTENDED_LABEL,
+      &expected_discovery,
+      sizeof(expected_discovery),
+      EXTENDED_LABEL,
+      discovery_ack,
+      sizeof(discovery_ack));
+
+  m_expect_uids_in_tod = false;
+  m_widget->RunFullDiscovery(
+      ola::NewSingleCallback(this, &DmxTriWidgetTest::ValidateTod));
+  m_ss.Run();
   m_endpoint->Verify();
 }
 
