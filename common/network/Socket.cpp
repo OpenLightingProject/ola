@@ -86,7 +86,7 @@ void BidirectionalFileDescriptor::PerformRead() {
     m_on_read->Run();
   else
     OLA_FATAL << "FileDescriptor " << ReadDescriptor() <<
-      "is ready but no handler attached, this is bad!";
+      " is ready but no handler attached, this is bad!";
 }
 
 
@@ -95,7 +95,7 @@ void BidirectionalFileDescriptor::PerformWrite() {
     m_on_write->Run();
   else
     OLA_FATAL << "FileDescriptor " << WriteDescriptor() <<
-      "is ready but no write handler attached, this is bad!";
+      " is ready but no write handler attached, this is bad!";
 }
 
 

@@ -313,13 +313,29 @@ bool SelectServer::RemoveWriteDescriptor(WriteFileDescriptor *descriptor) {
 timeout_id SelectServer::RegisterRepeatingTimeout(
     unsigned int ms,
     ola::Callback0<bool> *closure) {
+  return RegisterRepeatingTimeout(TimeInterval(ms * 1000), closure);
+}
+
+
+/*
+ * Register a repeating timeout function. Returning 0 from the closure will
+ * cancel this timeout.
+ * @param TimeInterval the delay before the closure will be run.
+ * @param closure the closure to call when the event triggers. Ownership is
+ * given up to the select server - make sure nothing else uses this closure.
+ * @returns the identifier for this timeout, this can be used to remove it
+ * later.
+ */
+timeout_id SelectServer::RegisterRepeatingTimeout(
+    const TimeInterval &interval,
+    ola::Callback0<bool> *closure) {
   if (!closure)
     return INVALID_TIMEOUT;
 
   if (m_export_map)
     (*m_export_map->GetIntegerVar(K_TIMER_VAR))++;
 
-  Event *event = new RepeatingEvent(ms, m_clock, closure);
+  Event *event = new RepeatingEvent(interval, m_clock, closure);
   m_events.push(event);
   return event;
 }
@@ -335,13 +351,27 @@ timeout_id SelectServer::RegisterRepeatingTimeout(
 timeout_id SelectServer::RegisterSingleTimeout(
     unsigned int ms,
     ola::SingleUseCallback0<void> *closure) {
+  return RegisterSingleTimeout(TimeInterval(ms * 1000), closure);
+}
+
+
+/*
+ * Register a single use timeout function.
+ * @param interval the delay between function calls
+ * @param closure the closure to call when the event triggers
+ * @returns the identifier for this timeout, this can be used to remove it
+ * later.
+ */
+timeout_id SelectServer::RegisterSingleTimeout(
+    const TimeInterval &interval,
+    ola::SingleUseCallback0<void> *closure) {
   if (!closure)
     return INVALID_TIMEOUT;
 
   if (m_export_map)
     (*m_export_map->GetIntegerVar(K_TIMER_VAR))++;
 
-  Event *event = new SingleEvent(ms, m_clock, closure);
+  Event *event = new SingleEvent(interval, m_clock, closure);
   m_events.push(event);
   return event;
 }

@@ -23,6 +23,7 @@
 #define INCLUDE_OLA_THREAD_SCHEDULERINTERFACE_H_
 
 #include <ola/Callback.h>
+#include <ola/Clock.h>
 
 namespace ola {
 namespace thread {
@@ -39,9 +40,17 @@ class SchedulerInterface {
     virtual timeout_id RegisterRepeatingTimeout(
         unsigned int ms,
         Callback0<bool> *closure) = 0;
+    virtual timeout_id RegisterRepeatingTimeout(
+        const ola::TimeInterval &interval,
+        Callback0<bool> *closure) = 0;
+
     virtual timeout_id RegisterSingleTimeout(
         unsigned int ms,
         SingleUseCallback0<void> *closure) = 0;
+    virtual timeout_id RegisterSingleTimeout(
+        const ola::TimeInterval &interval,
+        SingleUseCallback0<void> *closure) = 0;
+
     virtual void RemoveTimeout(timeout_id id) = 0;
 };
 }  // thread

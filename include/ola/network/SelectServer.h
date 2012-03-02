@@ -76,7 +76,12 @@ class SelectServer: public SelectServerInterface {
 
     timeout_id RegisterRepeatingTimeout(unsigned int ms,
                                         ola::Callback0<bool> *closure);
+    timeout_id RegisterRepeatingTimeout(const ola::TimeInterval &interval,
+                                        ola::Callback0<bool> *closure);
+
     timeout_id RegisterSingleTimeout(unsigned int ms,
+                                     ola::SingleUseCallback0<void> *closure);
+    timeout_id RegisterSingleTimeout(const ola::TimeInterval &interval,
                                      ola::SingleUseCallback0<void> *closure);
     void RemoveTimeout(timeout_id id);
 
@@ -98,8 +103,8 @@ class SelectServer: public SelectServerInterface {
      */
     class Event {
       public:
-        explicit Event(unsigned int ms, const Clock *clock):
-          m_interval(ms * 1000) {
+        explicit Event(const TimeInterval &interval, const Clock *clock)
+            : m_interval(interval) {
           TimeStamp now;
           clock->CurrentTime(&now);
           m_next = now + m_interval;
@@ -121,10 +126,10 @@ class SelectServer: public SelectServerInterface {
     // An event that only happens once
     class SingleEvent: public Event {
       public:
-        SingleEvent(unsigned int ms,
+        SingleEvent(const TimeInterval &interval,
                     const Clock *clock,
                     ola::BaseCallback0<void> *closure):
-          Event(ms, clock),
+          Event(interval, clock),
           m_closure(closure) {
         }
 
@@ -153,10 +158,10 @@ class SelectServer: public SelectServerInterface {
      */
     class RepeatingEvent: public Event {
       public:
-        RepeatingEvent(unsigned int ms,
+        RepeatingEvent(const TimeInterval &interval,
                        const Clock *clock,
                        ola::BaseCallback0<bool> *closure):
-          Event(ms, clock),
+          Event(interval, clock),
           m_closure(closure) {
         }
         ~RepeatingEvent() {

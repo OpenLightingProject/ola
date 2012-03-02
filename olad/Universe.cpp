@@ -714,8 +714,8 @@ bool Universe::MergeAll(const InputPort *port, const Client *client) {
  * Called when discovery completes on a single ports.
  */
 void Universe::PortDiscoveryComplete(BaseCallback0<void> *on_complete,
-                                 OutputPort *output_port,
-                                 const ola::rdm::UIDSet &uids) {
+                                     OutputPort *output_port,
+                                     const ola::rdm::UIDSet &uids) {
   NewUIDList(output_port, uids);
   on_complete->Run();
 }
