@@ -39,7 +39,7 @@ class DMPInflator;
 class E131Layer {
   public:
     E131Layer(ola::network::UdpSocket *socket,
-              class RootLayer *root_layer);
+              class RootSender *root_layer);
     ~E131Layer() {}
 
     bool SendDMP(const E131Header &header, const DMPPDU *pdu);
@@ -50,7 +50,7 @@ class E131Layer {
     ola::network::UdpSocket *m_socket;
     PreamblePacker m_packer;
     OutgoingUDPTransportImpl m_transport_impl;
-    class RootLayer *m_root_layer;
+    class RootSender *m_root_sender;
 
     E131Layer(const E131Layer&);
     E131Layer& operator=(const E131Layer&);

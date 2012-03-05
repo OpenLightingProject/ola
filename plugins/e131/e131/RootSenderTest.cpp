@@ -13,8 +13,8 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * RootLayerTest.cpp
- * Test fixture for the RootLayer class
+ * RootSenderTest.cpp
+ * Test fixture for the RootSender class
  * Copyright (C) 2005-2009 Simon Newton
  */
 
@@ -28,7 +28,7 @@
 #include "ola/network/Socket.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
 #include "plugins/e131/e131/RootInflator.h"
-#include "plugins/e131/e131/RootLayer.h"
+#include "plugins/e131/e131/RootSender.h"
 #include "plugins/e131/e131/UDPTransport.h"
 
 namespace ola {
@@ -37,66 +37,66 @@ namespace e131 {
 
 using ola::network::IPV4Address;
 
-class RootLayerTest: public CppUnit::TestFixture {
-  CPPUNIT_TEST_SUITE(RootLayerTest);
-  CPPUNIT_TEST(testRootLayer);
-  CPPUNIT_TEST(testRootLayerWithCustomCID);
+class RootSenderTest: public CppUnit::TestFixture {
+  CPPUNIT_TEST_SUITE(RootSenderTest);
+  CPPUNIT_TEST(testRootSender);
+  CPPUNIT_TEST(testRootSenderWithCustomCID);
   CPPUNIT_TEST_SUITE_END();
 
   public:
-    RootLayerTest(): TestFixture(), m_ss(NULL) {}
-    void testRootLayer();
-    void testRootLayerWithCustomCID();
+    RootSenderTest(): TestFixture(), m_ss(NULL) {}
+    void testRootSender();
+    void testRootSenderWithCustomCID();
     void setUp();
     void tearDown();
     void Stop();
     void FatalStop() { CPPUNIT_ASSERT(false); }
 
   private:
-    void testRootLayerWithCIDs(const CID &root_cid, const CID &send_cid);
+    void testRootSenderWithCIDs(const CID &root_cid, const CID &send_cid);
     ola::network::SelectServer *m_ss;
     static const int ABORT_TIMEOUT_IN_MS = 1000;
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION(RootLayerTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(RootSenderTest);
 
-void RootLayerTest::setUp() {
+void RootSenderTest::setUp() {
   m_ss = new ola::network::SelectServer();
 }
 
-void RootLayerTest::tearDown() {
+void RootSenderTest::tearDown() {
   delete m_ss;
 }
 
-void RootLayerTest::Stop() {
+void RootSenderTest::Stop() {
   if (m_ss)
     m_ss->Terminate();
 }
 
 
 /*
- * Test the RootLayer
+ * Test the RootSender
  */
-void RootLayerTest::testRootLayer() {
+void RootSenderTest::testRootSender() {
   CID cid = CID::Generate();
-  testRootLayerWithCIDs(cid, cid);
+  testRootSenderWithCIDs(cid, cid);
 }
 
 
 /*
  * Test the method to send using a custom cid works
  */
-void RootLayerTest::testRootLayerWithCustomCID() {
+void RootSenderTest::testRootSenderWithCustomCID() {
   CID cid = CID::Generate();
   CID send_cid = CID::Generate();
-  testRootLayerWithCIDs(cid, send_cid);
+  testRootSenderWithCIDs(cid, send_cid);
 }
 
 
-void RootLayerTest::testRootLayerWithCIDs(const CID &root_cid,
-                                          const CID &send_cid) {
+void RootSenderTest::testRootSenderWithCIDs(const CID &root_cid,
+                                            const CID &send_cid) {
   std::auto_ptr<Callback0<void> > stop_closure(
-      NewCallback(this, &RootLayerTest::Stop));
+      NewCallback(this, &RootSenderTest::Stop));
 
   // inflators
   MockInflator inflator(send_cid, stop_closure.get());
@@ -104,7 +104,7 @@ void RootLayerTest::testRootLayerWithCIDs(const CID &root_cid,
   CPPUNIT_ASSERT(root_inflator.AddInflator(&inflator));
 
   // sender
-  RootLayer layer(root_cid);
+  RootSender root_sender(root_cid);
 
   // setup the socket
   ola::network::UdpSocket socket;
@@ -128,17 +128,17 @@ void RootLayerTest::testRootLayerWithCIDs(const CID &root_cid,
   MockPDU mock_pdu(4, 8);
 
   if (root_cid == send_cid)
-    CPPUNIT_ASSERT(layer.SendPDU(MockPDU::TEST_VECTOR,
-                                 mock_pdu,
-                                 &outgoing_udp_transport));
+    CPPUNIT_ASSERT(root_sender.SendPDU(MockPDU::TEST_VECTOR,
+                                       mock_pdu,
+                                       &outgoing_udp_transport));
   else
-    CPPUNIT_ASSERT(layer.SendPDU(MockPDU::TEST_VECTOR,
-                                 mock_pdu,
-                                 send_cid,
-                                 &outgoing_udp_transport));
+    CPPUNIT_ASSERT(root_sender.SendPDU(MockPDU::TEST_VECTOR,
+                                       mock_pdu,
+                                       send_cid,
+                                       &outgoing_udp_transport));
 
   SingleUseCallback0<void> *closure =
-    NewSingleCallback(this, &RootLayerTest::FatalStop);
+    NewSingleCallback(this, &RootSenderTest::FatalStop);
   m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS, closure);
   m_ss->Run();
 }

@@ -35,7 +35,7 @@ namespace e131 {
 
 class E133Layer {
   public:
-    explicit E133Layer(class RootLayer *root_layer);
+    explicit E133Layer(class RootSender *root_layer);
     ~E133Layer() {}
 
     bool SendDMP(const E133Header &header,
@@ -44,7 +44,7 @@ class E133Layer {
     bool SetInflator(class DMPE133Inflator *inflator);
 
   private:
-    class RootLayer *m_root_layer;
+    class RootSender *m_root_sender;
     E133Inflator m_e133_inflator;
 
     E133Layer(const E133Layer&);

@@ -13,32 +13,28 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * RootLayer.h
- * The RootLayer class manages the sending of RootLayer PDUs.
+ * RootSender.h
+ * The RootSender class manages the sending of Root Layer PDUs.
  * Copyright (C) 2007 Simon Newton
  */
 
-#ifndef PLUGINS_E131_E131_ROOTLAYER_H_
-#define PLUGINS_E131_E131_ROOTLAYER_H_
+#ifndef PLUGINS_E131_E131_ROOTSENDER_H_
+#define PLUGINS_E131_E131_ROOTSENDER_H_
 
-#include "ola/network/IPV4Address.h"
-#include "plugins/e131/e131/ACNPort.h"
 #include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/PDU.h"
 #include "plugins/e131/e131/RootPDU.h"
-#include "plugins/e131/e131/RootInflator.h"
 #include "plugins/e131/e131/Transport.h"
 
 namespace ola {
 namespace plugin {
 namespace e131 {
 
-using ola::network::IPV4Address;
 
-class RootLayer {
+class RootSender {
   public:
-    explicit RootLayer(const CID &cid);
-    ~RootLayer() {}
+    explicit RootSender(const CID &cid);
+    ~RootSender() {}
 
     // Convenience method to encapsulate & send a single PDU
     bool SendPDU(unsigned int vector,
@@ -62,10 +58,10 @@ class RootLayer {
     PDUBlock<PDU> m_root_block;
     RootPDU m_root_pdu;
 
-    RootLayer(const RootLayer&);
-    RootLayer& operator=(const RootLayer&);
+    RootSender(const RootSender&);
+    RootSender& operator=(const RootSender&);
 };
 }  // e131
 }  // plugin
 }  // ola
-#endif  // PLUGINS_E131_E131_ROOTLAYER_H_
+#endif  // PLUGINS_E131_E131_ROOTSENDER_H_

@@ -26,7 +26,7 @@
 #include "plugins/e131/e131/E131Inflator.h"
 #include "plugins/e131/e131/E131Layer.h"
 #include "plugins/e131/e131/E131PDU.h"
-#include "plugins/e131/e131/RootLayer.h"
+#include "plugins/e131/e131/RootSender.h"
 #include "plugins/e131/e131/UDPTransport.h"
 
 namespace ola {
@@ -41,11 +41,11 @@ using ola::network::HostToNetwork;
  * @param root_layer the root layer to use
  */
 E131Layer::E131Layer(ola::network::UdpSocket *socket,
-                     RootLayer *root_layer)
+                     RootSender *root_layer)
     : m_socket(socket),
       m_transport_impl(socket, &m_packer),
-      m_root_layer(root_layer) {
-  if (!m_root_layer)
+      m_root_sender(root_layer) {
+  if (!m_root_sender)
     OLA_WARN << "root_layer is null, this won't work";
 }
 
@@ -56,7 +56,7 @@ E131Layer::E131Layer(ola::network::UdpSocket *socket,
  * @param dmp_pdu the DMPPDU to send
  */
 bool E131Layer::SendDMP(const E131Header &header, const DMPPDU *dmp_pdu) {
-  if (!m_root_layer)
+  if (!m_root_sender)
     return false;
 
   IPV4Address addr;
@@ -71,7 +71,7 @@ bool E131Layer::SendDMP(const E131Header &header, const DMPPDU *dmp_pdu) {
   unsigned int vector = E131Inflator::E131_VECTOR;
   if (header.UsingRev2())
     vector = E131InflatorRev2::E131_REV2_VECTOR;
-  return m_root_layer->SendPDU(vector, pdu, &transport);
+  return m_root_sender->SendPDU(vector, pdu, &transport);
 }
 
 

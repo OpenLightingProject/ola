@@ -26,7 +26,7 @@
 #include "plugins/e131/e131/E133Inflator.h"
 #include "plugins/e131/e131/E133Layer.h"
 #include "plugins/e131/e131/E133PDU.h"
-#include "plugins/e131/e131/RootLayer.h"
+#include "plugins/e131/e131/RootSender.h"
 
 namespace ola {
 namespace plugin {
@@ -38,9 +38,9 @@ using ola::network::HostToNetwork;
  * Create a new E133Layer
  * @param root_layer the root layer to use
  */
-E133Layer::E133Layer(RootLayer *root_layer)
-    : m_root_layer(root_layer) {
-  if (!m_root_layer)
+E133Layer::E133Layer(RootSender *root_layer)
+    : m_root_sender(root_layer) {
+  if (!m_root_sender)
     OLA_WARN << "root_layer is null, this won't work";
 }
 
@@ -54,12 +54,12 @@ E133Layer::E133Layer(RootLayer *root_layer)
 bool E133Layer::SendDMP(const E133Header &header,
                         const DMPPDU *dmp_pdu,
                         OutgoingTransport *transport) {
-  if (!m_root_layer)
+  if (!m_root_sender)
     return false;
 
   E133PDU pdu(DMPInflator::DMP_VECTOR, header, dmp_pdu);
   unsigned int vector = E133Inflator::E133_VECTOR;
-  return m_root_layer->SendPDU(vector, pdu, transport);
+  return m_root_sender->SendPDU(vector, pdu, transport);
 }
 }  // e131
 }  // plugin

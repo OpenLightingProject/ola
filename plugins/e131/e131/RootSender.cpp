@@ -13,14 +13,14 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * RootLayer.cpp
- * The RootLayer.
+ * RootSender.cpp
+ * The RootSender class manages the sending of Root Layer PDUs.
  * Copyright (C) 2007 Simon Newton
  */
 
 #include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include "ola/Logging.h"
-#include "plugins/e131/e131/RootLayer.h"
+#include "plugins/e131/e131/RootSender.h"
 #include "plugins/e131/e131/Transport.h"
 
 namespace ola {
@@ -29,10 +29,10 @@ namespace e131 {
 
 
 /*
- * Create a new RootLayer
+ * Create a new RootSender
  * @param cid The CID to send in the Root PDU.
  */
-RootLayer::RootLayer(const CID &cid)
+RootSender::RootSender(const CID &cid)
     : m_root_pdu(0) {
   m_root_pdu.Cid(cid);
 }
@@ -44,9 +44,9 @@ RootLayer::RootLayer(const CID &cid)
  * @param pdu the pdu to send.
  * @param transport the OutgoingTransport to use when sending the message.
  */
-bool RootLayer::SendPDU(unsigned int vector,
-                        const PDU &pdu,
-                        OutgoingTransport *transport) {
+bool RootSender::SendPDU(unsigned int vector,
+                         const PDU &pdu,
+                         OutgoingTransport *transport) {
   m_working_block.Clear();
   m_working_block.AddPDU(&pdu);
   return SendPDUBlock(vector, m_working_block, transport);
@@ -60,10 +60,10 @@ bool RootLayer::SendPDU(unsigned int vector,
  * @param cid the cid to send from
  * @param transport the OutgoingTransport to use when sending the message.
  */
-bool RootLayer::SendPDU(unsigned int vector,
-                        const PDU &pdu,
-                        const CID &cid,
-                        OutgoingTransport *transport) {
+bool RootSender::SendPDU(unsigned int vector,
+                         const PDU &pdu,
+                         const CID &cid,
+                         OutgoingTransport *transport) {
   if (!transport)
     return false;
 
@@ -83,9 +83,9 @@ bool RootLayer::SendPDU(unsigned int vector,
  * @param block the PDUBlock to send.
  * @param transport the OutgoingTransport to use when sending the message.
  */
-bool RootLayer::SendPDUBlock(unsigned int vector,
-                             const PDUBlock<PDU> &block,
-                             OutgoingTransport *transport) {
+bool RootSender::SendPDUBlock(unsigned int vector,
+                              const PDUBlock<PDU> &block,
+                              OutgoingTransport *transport) {
   if (!transport)
     return false;
 
