@@ -37,7 +37,7 @@ class DMPE133Inflator: public DMPInflator {
   friend class DMPE133InflatorTest;
 
   public:
-    explicit DMPE133Inflator(class E133Layer *e133_layer);
+    DMPE133Inflator();
     ~DMPE133Inflator();
 
     typedef ola::Callback3<void,
@@ -62,7 +62,6 @@ class DMPE133Inflator: public DMPInflator {
     typedef std::map<unsigned int, RDMMessageHandler*> universe_handler_map;
     universe_handler_map m_rdm_handlers;
     RDMMessageHandler *m_management_handler;
-    class E133Layer *m_e133_layer;
 };
 }  // e131
 }  // plugin

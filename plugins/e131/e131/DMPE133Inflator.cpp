@@ -27,7 +27,6 @@
 #include "plugins/e131/e131/DMPE133Inflator.h"
 #include "plugins/e131/e131/DMPHeader.h"
 #include "plugins/e131/e131/DMPPDU.h"
-#include "plugins/e131/e131/E133Layer.h"
 
 namespace ola {
 namespace plugin {
@@ -35,10 +34,9 @@ namespace e131 {
 
 using std::string;
 
-DMPE133Inflator::DMPE133Inflator(E133Layer *e133_layer)
+DMPE133Inflator::DMPE133Inflator()
     : DMPInflator(),
-      m_management_handler(NULL),
-      m_e133_layer(e133_layer) {
+      m_management_handler(NULL) {
 }
 
 
