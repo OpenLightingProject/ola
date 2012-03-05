@@ -46,7 +46,6 @@ DMPE131Inflator::~DMPE131Inflator() {
   map<unsigned int, universe_handler>::iterator iter;
   for (iter = m_handlers.begin(); iter != m_handlers.end(); ++iter) {
     delete iter->second.closure;
-    m_e131_layer->LeaveUniverse(iter->first);
   }
   m_handlers.clear();
 }
@@ -189,7 +188,6 @@ bool DMPE131Inflator::SetHandler(unsigned int universe,
     handler.active_priority = 0;
     handler.priority = priority;
     m_handlers[universe] = handler;
-    m_e131_layer->JoinUniverse(universe);
   } else {
     Callback0<void> *old_closure = iter->second.closure;
     iter->second.closure = closure;
@@ -213,11 +211,24 @@ bool DMPE131Inflator::RemoveHandler(unsigned int universe) {
   if (iter != m_handlers.end()) {
     Callback0<void> *old_closure = iter->second.closure;
     m_handlers.erase(iter);
-    m_e131_layer->LeaveUniverse(universe);
     delete old_closure;
     return true;
   }
   return false;
+}
+
+
+/**
+ * Get the list of registered universes
+ * @param universes a pointer to a vector which is populated with the list of
+ *   universes that have handlers installed.
+ */
+void DMPE131Inflator::RegisteredUniverses(vector<unsigned int> *universes) {
+  universes->clear();
+  map<unsigned int, universe_handler>::iterator iter;
+  for (iter = m_handlers.begin(); iter != m_handlers.end(); ++iter) {
+    universes->push_back(iter->first);
+  }
 }
 
 

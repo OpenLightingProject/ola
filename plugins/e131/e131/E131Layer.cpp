@@ -27,22 +27,24 @@
 #include "plugins/e131/e131/E131Layer.h"
 #include "plugins/e131/e131/E131PDU.h"
 #include "plugins/e131/e131/RootLayer.h"
+#include "plugins/e131/e131/UDPTransport.h"
 
 namespace ola {
 namespace plugin {
 namespace e131 {
 
-using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
+using ola::network::HostToNetwork;
 
 /*
  * Create a new E131Layer
  * @param root_layer the root layer to use
  */
-E131Layer::E131Layer(RootLayer *root_layer)
-    : m_root_layer(root_layer) {
-  m_root_layer->AddInflator(&m_e131_inflator);
-  m_root_layer->AddInflator(&m_e131_rev2_inflator);
+E131Layer::E131Layer(ola::network::UdpSocket *socket,
+                     RootLayer *root_layer)
+    : m_socket(socket),
+      m_transport_impl(socket, &m_packer),
+      m_root_layer(root_layer) {
   if (!m_root_layer)
     OLA_WARN << "root_layer is null, this won't work";
 }
@@ -63,51 +65,13 @@ bool E131Layer::SendDMP(const E131Header &header, const DMPPDU *dmp_pdu) {
     return false;
   }
 
+  OutgoingUDPTransport transport(&m_transport_impl, addr);
+
   E131PDU pdu(DMPInflator::DMP_VECTOR, header, dmp_pdu);
   unsigned int vector = E131Inflator::E131_VECTOR;
   if (header.UsingRev2())
     vector = E131InflatorRev2::E131_REV2_VECTOR;
-  return m_root_layer->SendPDU(vector, pdu, addr);
-}
-
-
-/*
- * Set the DMPInflator to use
- */
-bool E131Layer::SetInflator(DMPE131Inflator *inflator) {
-  bool ret = !m_e131_inflator.AddInflator(inflator);
-  ret &= m_e131_rev2_inflator.AddInflator(inflator);
-  return ret;
-}
-
-
-/*
- * Join a universe.
- */
-bool E131Layer::JoinUniverse(unsigned int universe) {
-  IPV4Address addr;
-
-  if (!m_root_layer)
-    return false;
-
-  if (UniverseIP(universe, &addr))
-    return m_root_layer->JoinMulticast(addr);
-  return false;
-}
-
-
-/*
- * Leave a universe
- */
-bool E131Layer::LeaveUniverse(unsigned int universe) {
-  IPV4Address addr;
-
-  if (!m_root_layer)
-    return false;
-
-  if (UniverseIP(universe, &addr))
-    return m_root_layer->LeaveMulticast(addr);
-  return false;
+  return m_root_layer->SendPDU(vector, pdu, &transport);
 }
 
 

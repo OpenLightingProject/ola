@@ -13,14 +13,13 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * UDPTransport.h
- * The UDPTransport class
+ * OutgoingUDPTransport.cpp
+ * The OutgoingUDPTransport class
  * Copyright (C) 2007 Simon Newton
  */
 
 #include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <string.h>
-#include <string>
 
 #include "ola/Callback.h"
 #include "ola/Logging.h"
@@ -37,103 +36,70 @@ namespace e131 {
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
 
-const char UDPTransport::ACN_PACKET_ID[] = "ASC-E1.17\0\0\0";
-
 /*
- * Clean up
+ * Send a block of PDU messages.
+ * @param pdu_block the block of pdus to send
  */
-UDPTransport::~UDPTransport() {
-  m_socket.Close();
-  if (m_send_buffer)
-    delete[] m_send_buffer;
-  if (m_recv_buffer)
-    delete[] m_recv_buffer;
+bool OutgoingUDPTransport::Send(const PDUBlock<PDU> &pdu_block) {
+  return m_impl->Send(pdu_block, m_destination, m_port);
 }
 
 
 /*
- * Setup the UDP Transport
- */
-bool UDPTransport::Init(const ola::network::Interface &interface) {
-  if (!m_socket.Init())
-    return false;
-
-  if (!m_socket.Bind(m_port))
-    return false;
-
-  if (!m_socket.EnableBroadcast())
-    return false;
-
-  m_socket.SetOnData(NewCallback(this, &UDPTransport::Receive));
-
-  if (!m_send_buffer) {
-    m_send_buffer = new uint8_t[MAX_DATAGRAM_SIZE];
-    memset(m_send_buffer, 0 , DATA_OFFSET);
-    uint16_t *ptr = reinterpret_cast<uint16_t*>(m_send_buffer);
-    *ptr++ = HostToNetwork(PREAMBLE_SIZE);
-    *ptr = HostToNetwork(POSTABLE_SIZE);
-    strncpy(reinterpret_cast<char*>(m_send_buffer + PREAMBLE_OFFSET),
-            ACN_PACKET_ID,
-            strlen(ACN_PACKET_ID));
-  }
-
-  if (!m_recv_buffer)
-    m_recv_buffer = new uint8_t[MAX_DATAGRAM_SIZE];
-
-  m_interface = interface;
-  return true;
-}
-
-
-/*
- * Send a block of PDU messages, this may send separate packets if the size of
- * the block is greater than the MAX_DATAGRAM_SIZE.
+ * Send a block of PDU messages using UDP.
  * @param pdu_block the block of pdus to send
  * @param destination the ipv4 address to send to
  * @param port the destination port to send to
  */
-bool UDPTransport::Send(const PDUBlock<PDU> &pdu_block,
-                        const IPV4Address &destination,
-                        uint16_t port) {
-  if (!m_send_buffer) {
-    OLA_WARN << "Send called the transport hasn't been initialized";
-    return false;
-  }
+bool OutgoingUDPTransportImpl::Send(const PDUBlock<PDU> &pdu_block,
+                                    const IPV4Address &destination,
+                                    uint16_t port) {
+  unsigned int data_size;
+  const uint8_t *data = m_packer->Pack(pdu_block, &data_size);
 
-  unsigned int size = MAX_DATAGRAM_SIZE - DATA_OFFSET;
-  if (!pdu_block.Pack(m_send_buffer + DATA_OFFSET, size)) {
-    OLA_WARN << "Failed to pack E1.31 PDU";
+  if (!data)
     return false;
-  }
 
-  return m_socket.SendTo(m_send_buffer, DATA_OFFSET + size,
-                         destination,
-                         port);
+  return m_socket->SendTo(data, data_size, destination, port);
+}
+
+
+
+IncomingUDPTransport::IncomingUDPTransport(ola::network::UdpSocket *socket,
+                                           BaseInflator *inflator)
+    : m_socket(socket),
+      m_inflator(inflator),
+      m_recv_buffer(NULL) {
+  m_acn_header[0] = PreamblePacker::PREAMBLE_SIZE >> 8;
+  m_acn_header[1] = PreamblePacker::PREAMBLE_SIZE;
+  m_acn_header[2] = PreamblePacker::POSTABLE_SIZE >> 8;
+  m_acn_header[3] = PreamblePacker::POSTABLE_SIZE;
+  memcpy(m_acn_header + PreamblePacker::PREAMBLE_OFFSET,
+         PreamblePacker::ACN_PACKET_ID,
+         PreamblePacker::DATA_OFFSET - PreamblePacker::PREAMBLE_OFFSET);
 }
 
 
 /*
  * Called when new data arrives.
  */
-void UDPTransport::Receive() {
-  if (!m_recv_buffer) {
-    OLA_WARN << "Receive called the transport hasn't been initialized";
-    return;
-  }
+void IncomingUDPTransport::Receive() {
+  if (!m_recv_buffer)
+    m_recv_buffer = new uint8_t[PreamblePacker::MAX_DATAGRAM_SIZE];
 
-  ssize_t size = MAX_DATAGRAM_SIZE;
+  ssize_t size = PreamblePacker::MAX_DATAGRAM_SIZE;
   ola::network::IPV4Address src_address;
   uint16_t src_port;
 
-  if (!m_socket.RecvFrom(m_recv_buffer, &size, src_address, src_port))
+  if (!m_socket->RecvFrom(m_recv_buffer, &size, src_address, src_port))
     return;
 
-  if (size < (ssize_t) DATA_OFFSET) {
+  if (size < (ssize_t) PreamblePacker::DATA_OFFSET) {
     OLA_WARN << "short ACN frame, discarding";
     return;
   }
 
-  if (memcmp(m_recv_buffer, m_send_buffer, DATA_OFFSET)) {
+  if (memcmp(m_recv_buffer, m_acn_header, PreamblePacker::DATA_OFFSET)) {
     OLA_WARN << "ACN header is bad, discarding";
     return;
   }
@@ -142,20 +108,11 @@ void UDPTransport::Receive() {
   TransportHeader transport_header(src_address, src_port);
   header_set.SetTransportHeader(transport_header);
 
-  m_inflator->InflatePDUBlock(header_set,
-                              m_recv_buffer + DATA_OFFSET,
-                              static_cast<unsigned int>(size) - DATA_OFFSET);
+  m_inflator->InflatePDUBlock(
+      header_set,
+      m_recv_buffer + PreamblePacker::DATA_OFFSET,
+      static_cast<unsigned int>(size) - PreamblePacker::DATA_OFFSET);
   return;
-}
-
-
-bool UDPTransport::JoinMulticast(const IPV4Address &group) {
-  return m_socket.JoinMulticast(m_interface.ip_address, group);
-}
-
-
-bool UDPTransport::LeaveMulticast(const IPV4Address &group) {
-  return m_socket.LeaveMulticast(m_interface.ip_address, group);
 }
 }  // e131
 }  // plugin

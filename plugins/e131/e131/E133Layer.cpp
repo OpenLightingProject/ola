@@ -40,7 +40,6 @@ using ola::network::HostToNetwork;
  */
 E133Layer::E133Layer(RootLayer *root_layer)
     : m_root_layer(root_layer) {
-  m_root_layer->AddInflator(&m_e133_inflator);
   if (!m_root_layer)
     OLA_WARN << "root_layer is null, this won't work";
 }
@@ -50,27 +49,17 @@ E133Layer::E133Layer(RootLayer *root_layer)
  * Send a DMPPDU
  * @param header the E133Header
  * @param dmp_pdu the DMPPDU to send
- * @param destination the ipv4 address to send to
- * @param port the destination port to send to
+ * @param transport the OutgoingTransport to use when sending the message.
  */
 bool E133Layer::SendDMP(const E133Header &header,
                         const DMPPDU *dmp_pdu,
-                        const ola::network::IPV4Address &destination,
-                        uint16_t destination_port) {
+                        OutgoingTransport *transport) {
   if (!m_root_layer)
     return false;
 
   E133PDU pdu(DMPInflator::DMP_VECTOR, header, dmp_pdu);
   unsigned int vector = E133Inflator::E133_VECTOR;
-  return m_root_layer->SendPDU(vector, pdu, destination, destination_port);
-}
-
-
-/*
- * Set the DMPInflator to use
- */
-bool E133Layer::SetInflator(DMPE133Inflator *inflator) {
-  return m_e133_inflator.AddInflator(inflator);
+  return m_root_layer->SendPDU(vector, pdu, transport);
 }
 }  // e131
 }  // plugin

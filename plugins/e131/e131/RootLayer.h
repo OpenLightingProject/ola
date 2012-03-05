@@ -14,9 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * RootLayer.h
- * Interface for the RootLayer class, this abstracts the encapsulation and
- * sending of PDUs contained within RootPDUs as well as the setting of
- * inflators.
+ * The RootLayer class manages the sending of RootLayer PDUs.
  * Copyright (C) 2007 Simon Newton
  */
 
@@ -29,6 +27,7 @@
 #include "plugins/e131/e131/PDU.h"
 #include "plugins/e131/e131/RootPDU.h"
 #include "plugins/e131/e131/RootInflator.h"
+#include "plugins/e131/e131/Transport.h"
 
 namespace ola {
 namespace plugin {
@@ -38,37 +37,27 @@ using ola::network::IPV4Address;
 
 class RootLayer {
   public:
-    RootLayer(class UDPTransport *transport, const CID &cid);
+    explicit RootLayer(const CID &cid);
     ~RootLayer() {}
-
-    bool AddInflator(BaseInflator *inflator);
 
     // Convenience method to encapsulate & send a single PDU
     bool SendPDU(unsigned int vector,
                  const PDU &pdu,
-                 const IPV4Address &destination,
-                 uint16_t port = ACN_PORT);
+                 OutgoingTransport *transport);
     // Use for testing to force a message from a particular cid
     bool SendPDU(unsigned int vector,
                  const PDU &pdu,
                  const CID &cid,
-                 const IPV4Address &destination,
-                 uint16_t port = ACN_PORT);
+                 OutgoingTransport *transport);
     // Encapsulation & send a block of PDUs
     bool SendPDUBlock(unsigned int vector,
                       const PDUBlock<PDU> &block,
-                      const IPV4Address &destination,
-                      uint16_t port = ACN_PORT);
+                      OutgoingTransport *transport);
 
     // TODO(simon): add methods to queue and send PDUs/blocks with different
     // vectors
 
-    bool JoinMulticast(const IPV4Address &group);
-    bool LeaveMulticast(const IPV4Address &group);
-
   private:
-    class UDPTransport *m_transport;
-    RootInflator m_root_inflator;
     PDUBlock<PDU> m_working_block;
     PDUBlock<PDU> m_root_block;
     RootPDU m_root_pdu;

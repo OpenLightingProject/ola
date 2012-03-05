@@ -20,9 +20,12 @@
 
 #include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <cppunit/extensions/HelperMacros.h>
+#include <memory>
+
 #include "ola/network/InterfacePicker.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/SelectServer.h"
+#include "ola/network/Socket.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
 #include "plugins/e131/e131/RootInflator.h"
 #include "plugins/e131/e131/RootLayer.h"
@@ -92,31 +95,52 @@ void RootLayerTest::testRootLayerWithCustomCID() {
 
 void RootLayerTest::testRootLayerWithCIDs(const CID &root_cid,
                                           const CID &send_cid) {
-  ola::network::Interface interface;
-  UDPTransport transport;
-  CPPUNIT_ASSERT(transport.Init(interface));
-  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(transport.GetSocket()));
-  RootLayer layer(&transport, root_cid);
+  std::auto_ptr<Callback0<void> > stop_closure(
+      NewCallback(this, &RootLayerTest::Stop));
 
-  Callback0<void> *stop_closure = NewCallback(this, &RootLayerTest::Stop);
-  MockInflator inflator(send_cid, stop_closure);
-  CPPUNIT_ASSERT(layer.AddInflator(&inflator));
+  // inflators
+  MockInflator inflator(send_cid, stop_closure.get());
+  RootInflator root_inflator;
+  CPPUNIT_ASSERT(root_inflator.AddInflator(&inflator));
 
-  MockPDU mock_pdu(4, 8);
+  // sender
+  RootLayer layer(root_cid);
+
+  // setup the socket
+  ola::network::UdpSocket socket;
+  CPPUNIT_ASSERT(socket.Init());
+  CPPUNIT_ASSERT(socket.Bind(ACN_PORT));
+  CPPUNIT_ASSERT(socket.EnableBroadcast());
+
+  IncomingUDPTransport incoming_udp_transport(&socket, &root_inflator);
+  socket.SetOnData(NewCallback(&incoming_udp_transport,
+                               &IncomingUDPTransport::Receive));
+  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&socket));
+
+  // outgoing transport
   IPV4Address addr;
   CPPUNIT_ASSERT(IPV4Address::FromString("255.255.255.255", &addr));
 
+  OutgoingUDPTransportImpl udp_transport_impl(&socket);
+  OutgoingUDPTransport outgoing_udp_transport(&udp_transport_impl, addr);
+
+  // now actually send some data
+  MockPDU mock_pdu(4, 8);
+
   if (root_cid == send_cid)
-    CPPUNIT_ASSERT(layer.SendPDU(MockPDU::TEST_VECTOR, mock_pdu, addr));
+    CPPUNIT_ASSERT(layer.SendPDU(MockPDU::TEST_VECTOR,
+                                 mock_pdu,
+                                 &outgoing_udp_transport));
   else
-    CPPUNIT_ASSERT(layer.SendPDU(MockPDU::TEST_VECTOR, mock_pdu, send_cid,
-                                 addr));
+    CPPUNIT_ASSERT(layer.SendPDU(MockPDU::TEST_VECTOR,
+                                 mock_pdu,
+                                 send_cid,
+                                 &outgoing_udp_transport));
 
   SingleUseCallback0<void> *closure =
     NewSingleCallback(this, &RootLayerTest::FatalStop);
   m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS, closure);
   m_ss->Run();
-  delete stop_closure;
 }
 }  // e131
 }  // plugin

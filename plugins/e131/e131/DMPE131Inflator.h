@@ -48,6 +48,8 @@ class DMPE131Inflator: public DMPInflator {
                     uint8_t *priority, ola::Callback0<void> *handler);
     bool RemoveHandler(unsigned int universe);
 
+    void RegisteredUniverses(std::vector<unsigned int> *universes);
+
   protected:
     virtual bool HandlePDUData(uint32_t vector,
                                HeaderSet &headers,

@@ -23,9 +23,12 @@
 #ifndef PLUGINS_E131_E131_E131LAYER_H_
 #define PLUGINS_E131_E131_E131LAYER_H_
 
+#include "ola/network/Socket.h"
 #include "plugins/e131/e131/DMPPDU.h"
 #include "plugins/e131/e131/E131Header.h"
-#include "plugins/e131/e131/E131Inflator.h"
+#include "plugins/e131/e131/PreamblePacker.h"
+#include "plugins/e131/e131/Transport.h"
+#include "plugins/e131/e131/UDPTransport.h"
 
 namespace ola {
 namespace plugin {
@@ -35,23 +38,22 @@ class DMPInflator;
 
 class E131Layer {
   public:
-    explicit E131Layer(class RootLayer *root_layer);
+    E131Layer(ola::network::UdpSocket *socket,
+              class RootLayer *root_layer);
     ~E131Layer() {}
 
     bool SendDMP(const E131Header &header, const DMPPDU *pdu);
-    bool SetInflator(class DMPE131Inflator *inflator);
-    bool JoinUniverse(unsigned int universe);
-    bool LeaveUniverse(unsigned int universe);
+    bool UniverseIP(unsigned int universe,
+                    class ola::network::IPV4Address *addr);
 
   private:
+    ola::network::UdpSocket *m_socket;
+    PreamblePacker m_packer;
+    OutgoingUDPTransportImpl m_transport_impl;
     class RootLayer *m_root_layer;
-    E131Inflator m_e131_inflator;
-    E131InflatorRev2 m_e131_rev2_inflator;
 
     E131Layer(const E131Layer&);
     E131Layer& operator=(const E131Layer&);
-    bool UniverseIP(unsigned int universe,
-                    class ola::network::IPV4Address *addr);
 };
 }  // e131
 }  // plugin

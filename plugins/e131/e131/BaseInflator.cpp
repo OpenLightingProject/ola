@@ -77,8 +77,8 @@ BaseInflator *BaseInflator::GetInflator(uint32_t proto) const {
  * @returns the amount of data used
  */
 unsigned int BaseInflator::InflatePDUBlock(HeaderSet &headers,
-                                  const uint8_t *data,
-                                  unsigned int length) {
+                                           const uint8_t *data,
+                                           unsigned int length) {
   unsigned int offset = 0;
   ResetPDUFields();
 

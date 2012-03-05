@@ -6,8 +6,9 @@ EXTRA_DIST = ACNPort.h BaseInflator.h CID.h \
              E131Header.h E131Includes.h E131Inflator.h E131Layer.h \
              E131Node.h E131PDU.h E131TestFramework.h \
              E133Header.h E133Inflator.h E133Layer.h E133PDU.h \
-             HeaderSet.h PDU.h PDUTestCommon.h RootHeader.h RootInflator.h \
-             RootLayer.h RootPDU.h TransportHeader.h UDPTransport.h
+             HeaderSet.h PreamblePacker.h PDU.h PDUTestCommon.h RootHeader.h \
+             RootInflator.h RootLayer.h RootPDU.h TCPTransport.h Transport.h \
+             TransportHeader.h UDPTransport.h
 
 COMMON_CXXFLAGS += -Wconversion
 
@@ -18,8 +19,11 @@ libolae131core_la_SOURCES = BaseInflator.cpp CID.cpp \
                             DMPPDU.cpp \
                             E131Inflator.cpp E131Layer.cpp E131Node.cpp \
                             E131PDU.cpp E133Inflator.cpp E133Layer.cpp \
-                            E133PDU.cpp PDU.cpp \
+                            E133PDU.cpp \
+                            PreamblePacker.cpp \
+                            PDU.cpp \
                             RootInflator.cpp RootLayer.cpp RootPDU.cpp \
+                            TCPTransport.cpp \
                             UDPTransport.cpp
 libolae131core_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(uuid_CFLAGS)
 libolae131core_la_LIBADD = $(uuid_LIBS) \

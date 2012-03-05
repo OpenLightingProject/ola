@@ -27,6 +27,7 @@
 #include "plugins/e131/e131/ACNPort.h"
 #include "plugins/e131/e131/E133Header.h"
 #include "plugins/e131/e131/E133Inflator.h"
+#include "plugins/e131/e131/Transport.h"
 
 namespace ola {
 namespace plugin {
@@ -39,8 +40,7 @@ class E133Layer {
 
     bool SendDMP(const E133Header &header,
                  const class DMPPDU *pdu,
-                 const ola::network::IPV4Address &destination,
-                 uint16_t destination_port = ACN_PORT);
+                 OutgoingTransport *transport);
     bool SetInflator(class DMPE133Inflator *inflator);
 
   private:

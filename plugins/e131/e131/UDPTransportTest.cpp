@@ -20,6 +20,7 @@
 
 #include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <cppunit/extensions/HelperMacros.h>
+#include <memory>
 
 #include "ola/Logging.h"
 #include "ola/network/InterfacePicker.h"
@@ -74,26 +75,38 @@ void UDPTransportTest::Stop() {
  */
 void UDPTransportTest::testUDPTransport() {
   CID cid;
-  Callback0<void> *stop_closure = NewCallback(this, &UDPTransportTest::Stop);
-  MockInflator inflator(cid, stop_closure);
-  ola::network::Interface interface;
-  UDPTransport transport(&inflator);
-  CPPUNIT_ASSERT(transport.Init(interface));
-  m_ss->AddReadDescriptor(transport.GetSocket());
+  std::auto_ptr<Callback0<void> > stop_closure(
+      NewCallback(this, &UDPTransportTest::Stop));
+  MockInflator inflator(cid, stop_closure.get());
 
+  // setup the socket
+  ola::network::UdpSocket socket;
+  CPPUNIT_ASSERT(socket.Init());
+  CPPUNIT_ASSERT(socket.Bind(ACN_PORT));
+  CPPUNIT_ASSERT(socket.EnableBroadcast());
+
+  IncomingUDPTransport incoming_udp_transport(&socket, &inflator);
+  socket.SetOnData(NewCallback(&incoming_udp_transport,
+                               &IncomingUDPTransport::Receive));
+  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&socket));
+
+  // outgoing transport
+  IPV4Address addr;
+  CPPUNIT_ASSERT(IPV4Address::FromString("255.255.255.255", &addr));
+
+  OutgoingUDPTransportImpl udp_transport_impl(&socket);
+  OutgoingUDPTransport outgoing_udp_transport(&udp_transport_impl, addr);
+
+  // now actually send some data
   PDUBlock<PDU> pdu_block;
   MockPDU mock_pdu(4, 8);
   pdu_block.AddPDU(&mock_pdu);
-
-  IPV4Address addr;
-  CPPUNIT_ASSERT(IPV4Address::FromString("255.255.255.255", &addr));
-  CPPUNIT_ASSERT(transport.Send(pdu_block, addr));
+  CPPUNIT_ASSERT(outgoing_udp_transport.Send(pdu_block));
 
   SingleUseCallback0<void> *closure =
     NewSingleCallback(this, &UDPTransportTest::FatalStop);
   m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS, closure);
   m_ss->Run();
-  delete stop_closure;
 }
 }  // e131
 }  // plugin
