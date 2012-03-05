@@ -1,4 +1,5 @@
-SOURCES = IPV4Address.h Interface.h InterfacePicker.h NetworkUtils.h Socket.h \
+SOURCES = IPV4Address.h HealthCheckedConnection.h Interface.h \
+          InterfacePicker.h NetworkUtils.h Socket.h \
           SelectServer.h SelectServerInterface.h
 
 EXTRA_DIST = $(SOURCES)

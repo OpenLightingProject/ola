@@ -48,9 +48,17 @@ class SelectServerInterface: public ola::thread::SchedulingExecutorInterface {
     virtual ola::thread::timeout_id RegisterRepeatingTimeout(
         unsigned int ms,
         Callback0<bool> *closure) = 0;
+    virtual ola::thread::timeout_id RegisterRepeatingTimeout(
+        const ola::TimeInterval &interval,
+        ola::Callback0<bool> *closure) = 0;
+
     virtual ola::thread::timeout_id RegisterSingleTimeout(
         unsigned int ms,
         SingleUseCallback0<void> *closure) = 0;
+    virtual ola::thread::timeout_id RegisterSingleTimeout(
+        const ola::TimeInterval &interval,
+        SingleUseCallback0<void> *closure) = 0;
+
     virtual void RemoveTimeout(ola::thread::timeout_id id) = 0;
 
     virtual const TimeStamp *WakeUpTime() const = 0;

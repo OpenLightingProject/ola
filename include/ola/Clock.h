@@ -297,9 +297,7 @@ class Clock {
  */
 class MockClock: public Clock {
   public:
-    MockClock()
-        : Clock() {
-    }
+    MockClock() : Clock() {}
 
     // Advance the time
     void AdvanceTime(const TimeInterval &interval) {

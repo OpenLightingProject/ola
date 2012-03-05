@@ -81,11 +81,11 @@ SLPBoolean ServiceCallback(SLPHandle slp_handle,
  * Create a new resolver thread. This doesn't actually start it.
  * @param ss the select server to use to handle the callbacks.
  */
-SlpThread::SlpThread(ola::network::SelectServer *ss,
+SlpThread::SlpThread(ola::thread::ExecutorInterface *executor,
                      slp_discovery_callback *discovery_callback,
                      unsigned int refresh_time)
     : ola::thread::Thread(),
-      m_main_ss(ss),
+      m_executor(executor),
       m_init_ok(false),
       m_refresh_time(refresh_time),
       m_discovery_callback(discovery_callback),
@@ -278,7 +278,7 @@ void SlpThread::DiscoveryRequest() {
       ola::NewSingleCallback(this,
                              &SlpThread::DiscoveryTriggered));
 
-  m_main_ss->Execute(
+  m_executor->Execute(
       ola::NewSingleCallback(this,
                              &SlpThread::DiscoveryActionComplete,
                              ok,
@@ -304,7 +304,7 @@ void SlpThread::RegisterRequest(slp_registration_callback *callback,
     if (iter->second.lifetime == lifetime) {
       OLA_INFO << "New lifetime of " << url << " matches current registration,"
         << " ignoring update";
-      m_main_ss->Execute(
+      m_executor->Execute(
           NewSingleCallback(this,
                             &SlpThread::SimpleActionComplete,
                             callback,
@@ -326,7 +326,7 @@ void SlpThread::RegisterRequest(slp_registration_callback *callback,
   bool ok = PerformRegistration(url, lifetime, &(iter->second.timeout));
 
   // mark as done
-  m_main_ss->Execute(
+  m_executor->Execute(
       NewSingleCallback(this,
                         &SlpThread::SimpleActionComplete,
                         callback,
@@ -405,7 +405,7 @@ void SlpThread::DeregisterRequest(slp_registration_callback *callback,
     ok = false;
   }
 
-  m_main_ss->Execute(
+  m_executor->Execute(
       NewSingleCallback(this,
                         &SlpThread::SimpleActionComplete,
                         callback,

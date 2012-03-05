@@ -1,7 +1,8 @@
 include $(top_srcdir)/common.mk
 
 noinst_LTLIBRARIES = libolanetwork.la
-libolanetwork_la_SOURCES = IPV4Address.cpp Interface.cpp InterfacePicker.cpp \
+libolanetwork_la_SOURCES = IPV4Address.cpp HealthCheckedConnection.cpp \
+                           Interface.cpp InterfacePicker.cpp \
                            NetworkUtils.cpp SelectServer.cpp Socket.cpp
 
 if USING_WIN32
@@ -12,8 +13,19 @@ endif
 
 EXTRA_DIST = PosixInterfacePicker.h WindowsInterfacePicker.h
 
-TESTS = NetworkTester
+TESTS = NetworkTester HealthCheckedConnectionTester
 check_PROGRAMS = $(TESTS)
+
+HealthCheckedConnectionTester_SOURCES = HealthCheckedConnectionTest.cpp \
+                                        HealthCheckedConnectionTester.cpp
+HealthCheckedConnectionTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+HealthCheckedConnectionTester_LDADD = $(CPPUNIT_LIBS) \
+                                      ./libolanetwork.la \
+                                      ../export_map/libolaexportmap.la \
+                                      ../logging/liblogging.la \
+                                      ../thread/libthread.la \
+                                      ../utils/libolautils.la
+
 NetworkTester_SOURCES = IPAddressTest.cpp InterfaceTest.cpp \
                         InterfacePickerTest.cpp SelectServerTester.cpp \
                         SocketTest.cpp SelectServerTest.cpp \

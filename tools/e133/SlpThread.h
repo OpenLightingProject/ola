@@ -36,6 +36,7 @@
 #include <ola/thread/Thread.h>
 #include <ola/network/SelectServer.h>
 #include <ola/network/Socket.h>
+#include <ola/thread/ExecutorInterface.h>
 
 #include <map>
 #include <queue>
@@ -58,7 +59,7 @@ typedef ola::Callback2<void, bool, const url_vector&> slp_discovery_callback;
  */
 class SlpThread: public ola::thread::Thread {
   public:
-    explicit SlpThread(ola::network::SelectServer *ss,
+    explicit SlpThread(ola::thread::ExecutorInterface *ss,
                        slp_discovery_callback *discovery_callback = NULL,
                        unsigned int refresh_time = DISCOVERY_INTERVAL_S);
     ~SlpThread();
@@ -91,7 +92,7 @@ class SlpThread: public ola::thread::Thread {
     typedef std::map<string, url_registration_state>  url_state_map;
 
     ola::network::SelectServer m_ss;
-    ola::network::SelectServer *m_main_ss;
+    ola::thread::ExecutorInterface *m_executor;
     bool m_init_ok;
     unsigned int m_refresh_time;
     SLPHandle m_slp_handle;

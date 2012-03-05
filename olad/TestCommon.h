@@ -222,17 +222,23 @@ class MockSelectServer: public ola::network::SelectServerInterface {
     }
 
     ola::network::timeout_id RegisterRepeatingTimeout(
-        unsigned int ms,
-        ola::Callback0<bool> *closure) {
-      (void) ms;
-      (void) closure;
+        unsigned int,
+        ola::Callback0<bool> *) {
+      return ola::thread::INVALID_TIMEOUT;
+    }
+    ola::network::timeout_id RegisterRepeatingTimeout(
+        const ola::TimeInterval&,
+        ola::Callback0<bool>*) {
       return ola::thread::INVALID_TIMEOUT;
     }
     ola::network::timeout_id RegisterSingleTimeout(
-        unsigned int ms,
-        ola::SingleUseCallback0<void> *closure) {
-      (void) ms;
-      (void) closure;
+        unsigned int,
+        ola::SingleUseCallback0<void> *) {
+      return ola::thread::INVALID_TIMEOUT;
+    }
+    ola::network::timeout_id RegisterSingleTimeout(
+        const ola::TimeInterval&,
+        ola::SingleUseCallback0<void> *) {
       return ola::thread::INVALID_TIMEOUT;
     }
     void RemoveTimeout(ola::network::timeout_id id) { (void) id; }

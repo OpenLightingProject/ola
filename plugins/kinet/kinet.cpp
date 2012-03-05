@@ -70,7 +70,9 @@ struct kinet_header {
   uint32_t magic;
   uint16_t version;
   uint16_t type;  // see kinet_packet_type above
-  uint32_t padding;  // always set to 0, seq #, most of the time it's 0, not implemented in most supplies
+  uint32_t padding;  // always set to 0, seq #,
+                     // most of the time it's 0,
+                     // not implemented in most supplies
 } __attribute__((packed));
 
 
@@ -127,11 +129,11 @@ struct kinet_get_address {
 
 // A KiNet DMX packet
 struct kinet_dmx {
-  uint8_t port // should be set to 0 for v1
-  uint8_t flags; // set to 0
-  uint16_t timerVal; // set to 0
+  uint8_t port;  // should be set to 0 for v1
+  uint8_t flags;  // set to 0
+  uint16_t timerVal;  // set to 0
   uint32_t universe;
-  uint8_t [513]; // payload inc start code
+  uint8_t [513];  // payload inc start code
 } __attribute__((packed));
 
 
@@ -151,11 +153,11 @@ struct kinet_port_out_sync {
 // A KiNet DMX port out packet
 struct kinet_port_out {
   uint32_t universe;
-  uint8_t port; // 1- 16
-  uint8_t pad; // set to 0
+  uint8_t port;        // 1- 16
+  uint8_t pad;         // set to 0
   portoutflags flags;
-  uint16_t length; // little endian
-  uint16_t startCode; // 0x0fff for chomASIC products, 0x0000 otherwise
+  uint16_t length;     // little endian
+  uint16_t startCode;  // 0x0fff for chomASIC products, 0x0000 otherwise
   uint8_t payload[512];
 } __attribute__((packed));
 

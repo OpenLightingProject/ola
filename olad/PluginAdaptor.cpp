@@ -119,6 +119,19 @@ timeout_id PluginAdaptor::RegisterRepeatingTimeout(
 
 
 /*
+ * Register a repeating timeout
+ * @param interval the time between function calls
+ * @param closure the OlaClosure to call when the timeout expires
+ * @return a timeout_id on success or K_INVALID_TIMEOUT on failure
+ */
+timeout_id PluginAdaptor::RegisterRepeatingTimeout(
+    const TimeInterval &interval,
+    Callback0<bool> *closure) {
+  return m_ss->RegisterRepeatingTimeout(interval, closure);
+}
+
+
+/*
  * Register a single timeout
  * @param ms the time between function calls
  * @param closure the OlaClosure to call when the timeout expires
@@ -128,6 +141,19 @@ timeout_id PluginAdaptor::RegisterSingleTimeout(
     unsigned int ms,
     SingleUseCallback0<void> *closure) {
   return m_ss->RegisterSingleTimeout(ms, closure);
+}
+
+
+/*
+ * Register a single timeout
+ * @param interval the time between function calls
+ * @param closure the OlaClosure to call when the timeout expires
+ * @return a timeout_id on success or K_INVALID_TIMEOUT on failure
+ */
+timeout_id PluginAdaptor::RegisterSingleTimeout(
+    const TimeInterval &interval,
+    SingleUseCallback0<void> *closure) {
+  return m_ss->RegisterSingleTimeout(interval, closure);
 }
 
 

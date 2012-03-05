@@ -48,7 +48,11 @@ class PluginAdaptor: public ola::network::SelectServerInterface {
 
     timeout_id RegisterRepeatingTimeout(unsigned int ms,
                                         Callback0<bool> *closure);
+    timeout_id RegisterRepeatingTimeout(const TimeInterval &interval,
+                                        Callback0<bool> *closure);
     timeout_id RegisterSingleTimeout(unsigned int ms,
+                                     SingleUseCallback0<void> *closure);
+    timeout_id RegisterSingleTimeout(const TimeInterval &interval,
                                      SingleUseCallback0<void> *closure);
     void RemoveTimeout(timeout_id id);
 
