@@ -30,7 +30,7 @@
 #include "ola/network/Socket.h"
 #include "plugins/e131/e131/ACNPort.h"
 #include "plugins/e131/e131/CID.h"
-#include "plugins/e131/e131/E131Layer.h"
+#include "plugins/e131/e131/E131Sender.h"
 #include "plugins/e131/e131/E131Inflator.h"
 #include "plugins/e131/e131/RootInflator.h"
 #include "plugins/e131/e131/RootSender.h"
@@ -95,7 +95,7 @@ class E131Node {
     uint16_t m_udp_port;
     // senders
     RootSender m_root_sender;
-    E131Layer m_e131_layer;
+    E131Sender m_e131_sender;
     // inflators
     RootInflator m_root_inflator;
     E131Inflator m_e131_inflator;

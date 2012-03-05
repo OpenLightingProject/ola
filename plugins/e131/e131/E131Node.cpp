@@ -60,8 +60,8 @@ E131Node::E131Node(const string &ip_address,
       m_dscp(dscp_value),
       m_udp_port(port),
       m_root_sender(m_cid),
-      m_e131_layer(&m_socket, &m_root_sender),
-      m_dmp_inflator(&m_e131_layer, ignore_preview),
+      m_e131_sender(&m_socket, &m_root_sender),
+      m_dmp_inflator(ignore_preview),
       m_incoming_udp_transport(&m_socket, &m_root_inflator),
       m_send_buffer(NULL) {
 
@@ -227,7 +227,7 @@ bool E131Node::SendDMXWithSequenceOffset(uint16_t universe,
                     false,  // terminated
                     m_use_rev2);
 
-  bool result = m_e131_layer.SendDMP(header, pdu);
+  bool result = m_e131_sender.SendDMP(header, pdu);
   if (result && !sequence_offset)
     settings->sequence++;
   delete pdu;
@@ -279,7 +279,7 @@ bool E131Node::StreamTerminated(uint16_t universe,
                     true,  // terminated
                     false);
 
-  bool result = m_e131_layer.SendDMP(header, pdu);
+  bool result = m_e131_sender.SendDMP(header, pdu);
   // only update if we were previously tracking this universe
   if (result && iter != m_tx_universes.end())
     iter->second.sequence++;
@@ -299,7 +299,7 @@ bool E131Node::SetHandler(unsigned int universe,
                           uint8_t *priority,
                           Callback0<void> *closure) {
   IPV4Address addr;
-  if (!m_e131_layer.UniverseIP(universe, &addr)) {
+  if (!m_e131_sender.UniverseIP(universe, &addr)) {
     OLA_WARN << "Unable to determine multicast group for universe " <<
       universe;
     return false;
@@ -321,7 +321,7 @@ bool E131Node::SetHandler(unsigned int universe,
  */
 bool E131Node::RemoveHandler(unsigned int universe) {
   IPV4Address addr;
-  if (!m_e131_layer.UniverseIP(universe, &addr)) {
+  if (!m_e131_sender.UniverseIP(universe, &addr)) {
     OLA_WARN << "Unable to determine multicast group for universe " <<
       universe;
     return false;

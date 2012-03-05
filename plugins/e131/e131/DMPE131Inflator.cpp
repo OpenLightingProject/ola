@@ -28,7 +28,6 @@
 #include "plugins/e131/e131/DMPE131Inflator.h"
 #include "plugins/e131/e131/DMPHeader.h"
 #include "plugins/e131/e131/DMPPDU.h"
-#include "plugins/e131/e131/E131Layer.h"
 
 namespace ola {
 namespace plugin {
