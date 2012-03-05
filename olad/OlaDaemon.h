@@ -31,7 +31,7 @@
 
 namespace ola {
 
-using ola::network::AcceptingSocket;
+using ola::network::TcpAcceptingSocket;
 using ola::network::SelectServer;
 
 class OlaDaemon {
@@ -62,7 +62,7 @@ class OlaDaemon {
     class SelectServer *m_ss;
     class OlaServer *m_server;
     class PreferencesFactory *m_preferences_factory;
-    class AcceptingSocket *m_accepting_socket;
+    class TcpAcceptingSocket *m_accepting_socket;
     class OlaClientServiceFactory *m_service_factory;
     ola_server_options m_options;
     class ExportMap *m_export_map;

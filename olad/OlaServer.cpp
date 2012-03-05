@@ -189,11 +189,6 @@ bool OlaServer::Init() {
     return false;
 
   if (m_accepting_socket) {
-    if (!m_accepting_socket->Listen()) {
-      OLA_FATAL << "Could not listen on the RPC port, you probably have " <<
-        "another instance of olad running";
-      return false;
-    }
     m_accepting_socket->SetOnAccept(
       ola::NewCallback(this, &OlaServer::NewConnection));
     m_ss->AddReadDescriptor(m_accepting_socket);
