@@ -497,6 +497,9 @@ class TcpAcceptingSocket: public AcceptingSocket {
     bool Listen(const std::string &address,
                 unsigned short port,
                 int backlog = 10);
+    bool Listen(const IPV4Address &address,
+                unsigned short port,
+                int backlog = 10);
     int ReadDescriptor() const { return m_sd; }
     bool Close();
     void PerformRead();

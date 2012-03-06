@@ -869,6 +869,24 @@ TcpAcceptingSocket::~TcpAcceptingSocket() {
 bool TcpAcceptingSocket::Listen(const std::string &address,
                                 unsigned short port,
                                 int backlog) {
+  IPV4Address ip_address;
+  if (!IPV4Address::FromString(address, &ip_address))
+    return false;
+
+  return Listen(ip_address, port, backlog);
+}
+
+
+/*
+ * Start listening
+ * @param address the address to listen on
+ * @param port the port to listen on
+ * @param backlog the backlog
+ * @return true if it succeeded, false otherwise
+ */
+bool TcpAcceptingSocket::Listen(const IPV4Address &address,
+                                unsigned short port,
+                                int backlog) {
   struct sockaddr_in server_address;
   int reuse_flag = 1;
 
@@ -879,8 +897,6 @@ bool TcpAcceptingSocket::Listen(const std::string &address,
   memset(&server_address, 0x00, sizeof(server_address));
   server_address.sin_family = AF_INET;
   server_address.sin_port = HostToNetwork(port);
-  if (!StringToAddress(address, server_address.sin_addr))
-    return false;
 
   int sd = socket(AF_INET, SOCK_STREAM, 0);
   if (sd < 0) {
