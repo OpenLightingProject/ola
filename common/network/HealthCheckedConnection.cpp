@@ -38,6 +38,10 @@ HealthCheckedConnection::HealthCheckedConnection(
 
 
 HealthCheckedConnection::~HealthCheckedConnection() {
+  if (m_send_timeout_id != ola::thread::INVALID_TIMEOUT)
+    m_scheduler->RemoveTimeout(m_send_timeout_id);
+  if (m_receive_timeout_id != ola::thread::INVALID_TIMEOUT)
+    m_scheduler->RemoveTimeout(m_receive_timeout_id);
 }
 
 
