@@ -373,6 +373,17 @@ if test "${build_python_libs}" = "yes"; then
  AX_PYTHON_MODULE("google.protobuf", "fatal")
 fi
 
+# Java API, this requires Maven
+AC_ARG_ENABLE(java-libs,
+              AC_HELP_STRING([--enable-java-libs],
+                             [Build the Java interface]),
+              [build_java_libs="yes"]
+             )
+MAVEN_SUPPORT([3.0.0])
+
+AM_CONDITIONAL(BUILD_JAVA_LIBS, test "${build_java_libs}" = "yes")
+
+# common.h
 AC_OUTPUT_COMMANDS([
   if test -n "$CONFIG_FILES" && test -n "$CONFIG_HEADERS"; then
     # If both these vars are non-empty, then config.status wasn't run by
@@ -453,6 +464,7 @@ AC_OUTPUT( Makefile\
     include/ola/timecode/Makefile\
     include/ola/web/Makefile\
     include/olad/Makefile\
+    java/Makefile \
     ola/Makefile \
     python/Makefile \
     python/rpc/Makefile \

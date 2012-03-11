@@ -98,6 +98,17 @@ Valgrind
 All code must be tested with valgrind to ensure it doesn't leak memory.
 
 
+Java
+===============================================================================
+
+An experimental Java API is provided.
+
+Style / Coding Standards
+------------------------
+
+Please follow the Sun Java style guide.
+
+
 Javascript
 ===============================================================================
 
