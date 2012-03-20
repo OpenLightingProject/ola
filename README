@@ -26,14 +26,18 @@ If you have pthreads installed this library *should* be thread safe (currently
 implemented with one big lock).
 
 
-Libraries in Other Languages (Python)
+Python Module
 -------------------------------------------------------------------------------
 
-There are experimental Python libraries you can build by running configure with
---enable-python-libs. For examples see the tests directory.
+The Python module can be built by running configure with
+--enable-python-libs. There are examples on how to use the Python API in
+python/examples.
 
-The python library seems to be working well. Perl isn't supported as the
-current version of SWIG doesn't support Perl directors.
+Java Library
+-------------------------------------------------------------------------------
+
+There is an experimental Java library which can be built by running configure
+with --enable-java-libs.
 
 
 Credits
@@ -49,3 +53,4 @@ Thanks to the following people/organisations:
     protocol
  - Florian from eventa.ag who donated a StageProfi and a USBDMX2
  - Hamish Dumbreck for jese.co.uk who donated a DMX-TRI
+ - Davy Vanherbergen who provided the Java API
