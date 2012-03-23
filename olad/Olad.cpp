@@ -421,10 +421,12 @@ int main(int argc, char *argv[]) {
   ola::ExportMap export_map;
   Setup(argc, argv, &opts);
 
+  #ifndef OLAD_SKIP_ROOT_CHECK
   if (!geteuid()) {
     OLA_FATAL << "Attempting to run as root, aborting.";
     return -1;
   }
+  #endif
 
   InitExportMap(&export_map, argc, argv);
 
