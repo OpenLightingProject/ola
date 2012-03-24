@@ -383,6 +383,19 @@ MAVEN_SUPPORT([3.0.0])
 
 AM_CONDITIONAL(BUILD_JAVA_LIBS, test "${build_java_libs}" = "yes")
 
+# Enable running as root
+AC_ARG_ENABLE(
+  root_check,
+  AC_HELP_STRING([--disable-root-check],
+                 [Disable the check that prevents olad from running as root]),
+)
+
+if test "${enable_root_check}" == "no"; then
+ AC_DEFINE(OLAD_SKIP_ROOT_CHECK,
+           1,
+           [Defined if olad is allowed to run as root])
+fi
+
 # common.h
 AC_OUTPUT_COMMANDS([
   if test -n "$CONFIG_FILES" && test -n "$CONFIG_HEADERS"; then
