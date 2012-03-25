@@ -55,6 +55,7 @@ class DmxTriWidgetImpl: public BaseUsbProWidget,
 
     void Stop();
 
+    bool SendDMX(const DmxBuffer &buffer);
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete);
     void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
@@ -71,7 +72,10 @@ class DmxTriWidgetImpl: public BaseUsbProWidget,
     ola::rdm::RDMCallback *m_rdm_request_callback;
     const ola::rdm::RDMRequest *m_pending_request;
     uint8_t m_transaction_number;
+    DmxBuffer m_outgoing_dmx;
+    bool m_waiting_for_tx_ack;
 
+    void SendDMXBuffer(const DmxBuffer &buffer);
     void RunDiscoveryCallback(ola::rdm::RDMDiscoveryCallback *callback);
     bool CheckDiscoveryStatus();
     void RunRDMDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
@@ -90,6 +94,7 @@ class DmxTriWidgetImpl: public BaseUsbProWidget,
                            ola::rdm::RDMCallback *callback);
     void StopDiscovery();
 
+    void HandleSingleTXResponse(uint8_t return_code);
     void HandleDiscoveryAutoResponse(uint8_t return_code,
                                      const uint8_t *data,
                                      unsigned int length);
@@ -159,6 +164,7 @@ class DmxTriWidgetImpl: public BaseUsbProWidget,
 
     static const unsigned int DATA_OFFSET = 2;  // first two bytes are CI & RC
     static const uint8_t EXTENDED_COMMAND_LABEL = 88;  // 'X'
+    static const uint8_t SINGLE_TX_COMMAND_ID = 0x21;
     static const uint8_t DISCOVER_AUTO_COMMAND_ID = 0x33;
     static const uint8_t DISCOVER_STATUS_COMMAND_ID = 0x34;
     static const uint8_t REMOTE_UID_COMMAND_ID = 0x35;

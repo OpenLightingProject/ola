@@ -24,11 +24,13 @@
 #include <vector>
 
 #include "ola/Callback.h"
+#include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
 #include "plugins/usbpro/DmxTriWidget.h"
 #include "plugins/usbpro/CommonWidgetTest.h"
 
 
+using ola::DmxBuffer;
 using ola::plugin::usbpro::DmxTriWidget;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
@@ -42,6 +44,7 @@ class DmxTriWidgetTest: public CommonWidgetTest {
   CPPUNIT_TEST_SUITE(DmxTriWidgetTest);
   CPPUNIT_TEST(testTod);
   CPPUNIT_TEST(testLockedTod);
+  CPPUNIT_TEST(testSendDMX);
   CPPUNIT_TEST(testSendRDM);
   CPPUNIT_TEST(testSendRDMErrors);
   CPPUNIT_TEST(testSendRDMBroadcast);
@@ -56,6 +59,7 @@ class DmxTriWidgetTest: public CommonWidgetTest {
 
     void testTod();
     void testLockedTod();
+    void testSendDMX();
     void testSendRDM();
     void testSendRDMErrors();
     void testSendRDMBroadcast();
@@ -69,6 +73,9 @@ class DmxTriWidgetTest: public CommonWidgetTest {
     unsigned int m_tod_counter;
     bool m_expect_uids_in_tod;
 
+    void AckSingleTX();
+    void AckSingleTxAndTerminate();
+    void AckSingleTxAndExpectData();
     void PopulateTod();
     void ValidateTod(const ola::rdm::UIDSet &uids);
     void ValidateResponse(ola::rdm::rdm_response_code expected_code,
@@ -199,6 +206,32 @@ const RDMRequest *DmxTriWidgetTest::NewQueuedMessageRequest(
       ola::rdm::PID_QUEUED_MESSAGE,
       &code,
       sizeof(code));
+}
+
+void DmxTriWidgetTest::AckSingleTX() {
+  uint8_t ack_response[] = {0x21, 0};
+  m_endpoint->SendUnsolicitedUsbProData(
+      EXTENDED_LABEL,
+      ack_response,
+      sizeof(ack_response));
+}
+
+
+void DmxTriWidgetTest::AckSingleTxAndTerminate() {
+  AckSingleTX();
+  m_ss.Terminate();
+}
+
+
+void DmxTriWidgetTest::AckSingleTxAndExpectData() {
+  AckSingleTX();
+  uint8_t expected_dmx_command[] = {0x21, 0x00, 0x00, 3, 2, 3, 45};
+  m_endpoint->AddExpectedUsbProMessage(
+      EXTENDED_LABEL,
+      expected_dmx_command,
+      sizeof(expected_dmx_command),
+      ola::NewSingleCallback(this,
+                             &DmxTriWidgetTest::AckSingleTxAndTerminate));
 }
 
 
@@ -356,7 +389,36 @@ void DmxTriWidgetTest::testLockedTod() {
 
 
 /**
- * Check that we send messages correctly.
+ * Check that we send DMX correctly.
+ */
+void DmxTriWidgetTest::testSendDMX() {
+  DmxBuffer data, data2, data3;
+  data.SetFromString("1,2,3,45");
+  data2.SetFromString("2,2,3,45");
+  data3.SetFromString("3,2,3,45");
+
+  m_widget->SendDMX(data);
+  m_widget->SendDMX(data2);
+  m_widget->SendDMX(data3);
+
+  uint8_t expected_dmx_command1[] = {0x21, 0x00, 0x00, 1, 2, 3, 45};
+  m_endpoint->AddExpectedUsbProMessage(
+      EXTENDED_LABEL,
+      expected_dmx_command1,
+      sizeof(expected_dmx_command1),
+      ola::NewSingleCallback(this,
+                             &DmxTriWidgetTest::AckSingleTxAndExpectData));
+
+  m_ss.Run();
+  // The ss may terminate before the widget has a chance to read from the
+  // descriptor. Run the ss once more to catch this case.
+  m_ss.RunOnce();
+  m_endpoint->Verify();
+}
+
+
+/**
+ * Check that we send RDM messages correctly.
  */
 void DmxTriWidgetTest::testSendRDM() {
   UID source(1, 2);

@@ -34,26 +34,21 @@ using std::string;
 /*
  * New DMX TRI device
  */
-DmxTriDevice::DmxTriDevice(ola::PluginAdaptor *plugin_adaptor,
-                           ola::AbstractPlugin *owner,
+DmxTriDevice::DmxTriDevice(ola::AbstractPlugin *owner,
                            const string &name,
                            DmxTriWidget *widget,
                            uint16_t esta_id,
                            uint16_t device_id,
-                           uint32_t serial,
-                           unsigned int fps_limit):
-    UsbSerialDevice(owner, name, widget),
-    m_tri_widget(widget) {
+                           uint32_t serial)
+    : UsbSerialDevice(owner, name, widget),
+      m_tri_widget(widget) {
   std::stringstream str;
   str << std::hex << esta_id << "-" << device_id << "-" << serial;
   m_device_id = str.str();
 
   ola::OutputPort *output_port = new DmxTriOutputPort(
       this,
-      widget,
-      plugin_adaptor->WakeUpTime(),
-      5,  // only allow up to 5 burst frames
-      fps_limit);
+      widget);
   AddPort(output_port);
 }
 
@@ -72,15 +67,10 @@ void DmxTriDevice::PrePortStop() {
  * New DmxTriOutputPort
  */
 DmxTriOutputPort::DmxTriOutputPort(DmxTriDevice *parent,
-                                   DmxTriWidget *widget,
-                                   const TimeStamp *wake_time,
-                                   unsigned int max_burst,
-                                   unsigned int rate)
+                                   DmxTriWidget *widget)
     : BasicOutputPort(parent, 0, true),
       m_device(parent),
-      m_tri_widget(widget),
-      m_bucket(max_burst, rate, max_burst, *wake_time),
-      m_wake_time(wake_time) {
+      m_tri_widget(widget) {
 }
 
 
@@ -95,11 +85,7 @@ DmxTriOutputPort::~DmxTriOutputPort() {}
  * @returns true if we sent ok, false otherwise
  */
 bool DmxTriOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t) {
-  if (m_bucket.GetToken(*m_wake_time))
-    return m_tri_widget->SendDMX(buffer);
-  else
-    OLA_INFO << "Port rated limited, dropping frame";
-  return true;
+  return m_tri_widget->SendDMX(buffer);
 }
 }  // usbpro
 }  // plugin

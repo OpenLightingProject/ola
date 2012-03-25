@@ -23,7 +23,6 @@
 
 #include <string>
 #include "ola/DmxBuffer.h"
-#include "olad/TokenBucket.h"
 #include "plugins/usbpro/DmxTriWidget.h"
 #include "plugins/usbpro/UsbSerialDevice.h"
 
@@ -37,14 +36,12 @@ namespace usbpro {
  */
 class DmxTriDevice: public UsbSerialDevice {
   public:
-    DmxTriDevice(ola::PluginAdaptor *plugin_adaptor,
-                 ola::AbstractPlugin *owner,
+    DmxTriDevice(ola::AbstractPlugin *owner,
                  const string &name,
                  DmxTriWidget *widget,
                  uint16_t esta_id,
                  uint16_t device_id,
-                 uint32_t serial,
-                 unsigned int fps_limit);
+                 uint32_t serial);
     ~DmxTriDevice() {}
 
     string DeviceId() const { return m_device_id; }
@@ -62,10 +59,7 @@ class DmxTriDevice: public UsbSerialDevice {
 class DmxTriOutputPort: public BasicOutputPort {
   public:
     DmxTriOutputPort(DmxTriDevice *parent,
-                     DmxTriWidget *widget,
-                     const TimeStamp *wake_time,
-                     unsigned int max_burst,
-                     unsigned int rate);
+                     DmxTriWidget *widget);
 
     ~DmxTriOutputPort();
 
@@ -88,8 +82,6 @@ class DmxTriOutputPort: public BasicOutputPort {
   private:
     DmxTriDevice *m_device;
     DmxTriWidget *m_tri_widget;
-    TokenBucket m_bucket;
-    const TimeStamp *m_wake_time;
 };
 }  // usbpro
 }  // plugin
