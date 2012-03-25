@@ -379,7 +379,9 @@ AC_ARG_ENABLE(java-libs,
                              [Build the Java interface]),
               [build_java_libs="yes"]
              )
-MAVEN_SUPPORT([3.0.0])
+if test "${build_java_libs}" == "yes"; then
+  MAVEN_SUPPORT([3.0.0])
+fi
 
 AM_CONDITIONAL(BUILD_JAVA_LIBS, test "${build_java_libs}" = "yes")
 
