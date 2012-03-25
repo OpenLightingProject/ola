@@ -50,11 +50,10 @@ bool E133Inflator::DecodeHeader(HeaderSet &headers,
       raw_header.source[E133Header::SOURCE_NAME_LEN - 1] = 0x00;
       E133Header header(
           raw_header.source,
-          raw_header.priority,
-          raw_header.sequence,
-          NetworkToHost(raw_header.universe),
-          raw_header.options & E133Header::RDM_MANAGEMENT_MASK,
-          raw_header.options & E133Header::RDM_SQUAWK_MASK);
+          NetworkToHost(raw_header.sequence),
+          NetworkToHost(raw_header.endpoint),
+          raw_header.options & E133Header::E133_RX_ACK_MASK,
+          raw_header.options & E133Header::E133_TIMEOUT_MASK);
       m_last_header = header;
       m_last_header_valid = true;
       headers.SetE133Header(header);

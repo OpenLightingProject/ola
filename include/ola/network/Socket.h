@@ -481,8 +481,6 @@ class UdpSocket: public UdpSocketInterface {
  */
 class AcceptingSocket: public ReadFileDescriptor {
   public:
-    virtual bool Listen() = 0;
-
     // Set the on Accept closure
     virtual void SetOnAccept(
         ola::Callback1<void, ConnectedDescriptor*> *on_accept) = 0;
@@ -494,11 +492,14 @@ class AcceptingSocket: public ReadFileDescriptor {
  */
 class TcpAcceptingSocket: public AcceptingSocket {
   public:
-    TcpAcceptingSocket(const std::string &address,
-                       unsigned short port,
-                       int backlog = 10);
+    TcpAcceptingSocket();
     ~TcpAcceptingSocket();
-    bool Listen();
+    bool Listen(const std::string &address,
+                unsigned short port,
+                int backlog = 10);
+    bool Listen(const IPV4Address &address,
+                unsigned short port,
+                int backlog = 10);
     int ReadDescriptor() const { return m_sd; }
     bool Close();
     void PerformRead();
@@ -511,9 +512,7 @@ class TcpAcceptingSocket: public AcceptingSocket {
     }
 
   private:
-    std::string m_address;
-    uint16_t m_port;
-    int m_sd, m_backlog;
+    int m_sd;
     ola::Callback1<void, ConnectedDescriptor*> *m_on_accept;
 
     TcpAcceptingSocket(const TcpAcceptingSocket &other);

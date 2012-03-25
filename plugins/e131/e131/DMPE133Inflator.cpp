@@ -27,7 +27,6 @@
 #include "plugins/e131/e131/DMPE133Inflator.h"
 #include "plugins/e131/e131/DMPHeader.h"
 #include "plugins/e131/e131/DMPPDU.h"
-#include "plugins/e131/e131/E133Layer.h"
 
 namespace ola {
 namespace plugin {
@@ -35,22 +34,19 @@ namespace e131 {
 
 using std::string;
 
-DMPE133Inflator::DMPE133Inflator(E133Layer *e133_layer)
-    : DMPInflator(),
-      m_management_handler(NULL),
-      m_e133_layer(e133_layer) {
+DMPE133Inflator::DMPE133Inflator()
+    : DMPInflator() {
 }
 
 
 DMPE133Inflator::~DMPE133Inflator() {
-  universe_handler_map::iterator rdm_iter;
+  endpoint_handler_map::iterator rdm_iter;
   for (rdm_iter = m_rdm_handlers.begin();
        rdm_iter != m_rdm_handlers.end();
        ++rdm_iter) {
     delete rdm_iter->second;
   }
   m_rdm_handlers.clear();
-  RemoveRDMManagementHandler();
 }
 
 
@@ -67,11 +63,18 @@ bool DMPE133Inflator::HandlePDUData(uint32_t vector,
   }
 
   E133Header e133_header = headers.GetE133Header();
-  universe_handler_map::iterator universe_iter =
-      m_rdm_handlers.find(e133_header.Universe());
+  endpoint_handler_map::iterator endpoint_iter =
+      m_rdm_handlers.find(e133_header.Endpoint());
 
-  if (universe_iter == m_rdm_handlers.end() && !e133_header.IsManagement())
+  if (endpoint_iter == m_rdm_handlers.end()) {
+    if (!e133_header.Endpoint()) {
+      OLA_WARN << "Received E1.33 message for Endpoint 0 but no handler set!";
+    } else {
+      OLA_DEBUG << "Received E1.33 message for Endpoint " <<
+        e133_header.Endpoint() << ", no handler set";
+    }
     return true;
+  }
 
   DMPHeader dmp_header = headers.GetDMPHeader();
 
@@ -115,44 +118,38 @@ bool DMPE133Inflator::HandlePDUData(uint32_t vector,
   string rdm_message(reinterpret_cast<const char*>(rdm_message_data),
                      rdm_message_length);
 
-  if (e133_header.IsManagement()) {
-    m_management_handler->Run(headers.GetTransportHeader(),
-                              e133_header,
-                              rdm_message);
-  } else {
-    universe_iter->second->Run(headers.GetTransportHeader(),
-                               e133_header,
-                               rdm_message);
-  }
+  endpoint_iter->second->Run(headers.GetTransportHeader(),
+                             e133_header,
+                             rdm_message);
   return true;
 }
 
 
 /**
- * Set the RDM Handler for a universe, ownership of the handler is transferred.
- * @param universe the universe handler to remove
+ * Set the RDM Handler for an endpoint, ownership of the handler is transferred.
+ * @param endpoint the endpoint to use the handler for
  * @param handler the callback to invoke when there is rdm data for this
  * universe.
  * @return true if added, false otherwise
  */
-bool DMPE133Inflator::SetRDMHandler(unsigned int universe,
+bool DMPE133Inflator::SetRDMHandler(uint16_t endpoint,
                                     RDMMessageHandler *handler) {
   if (!handler)
     return false;
 
-  RemoveRDMHandler(universe);
-  m_rdm_handlers[universe] = handler;
+  RemoveRDMHandler(endpoint);
+  m_rdm_handlers[endpoint] = handler;
   return true;
 }
 
 
 /**
- * Remove the RDM handler for a universe
- * @param universe the universe handler to remove
+ * Remove the RDM handler for an endpoint
+ * @param endpoint the endpoint to remove the handler for.
  * @return true if removed, false if it didn't exist
  */
-bool DMPE133Inflator::RemoveRDMHandler(unsigned int universe) {
-  universe_handler_map::iterator iter = m_rdm_handlers.find(universe);
+bool DMPE133Inflator::RemoveRDMHandler(uint16_t endpoint) {
+  endpoint_handler_map::iterator iter = m_rdm_handlers.find(endpoint);
 
   if (iter != m_rdm_handlers.end()) {
     delete iter->second;
@@ -160,30 +157,6 @@ bool DMPE133Inflator::RemoveRDMHandler(unsigned int universe) {
     return true;
   }
   return false;
-}
-
-
-/**
- * Set the mangagement RDM Handler, ownership of the handler is transferred.
- * @param handler the callback to invoke when there is mangagement rdm data for
- * this universe.
- */
-bool DMPE133Inflator::SetRDMManagementHandler(RDMMessageHandler *handler) {
-  if (!handler)
-    return false;
-
-  RemoveRDMManagementHandler();
-  m_management_handler = handler;
-  return true;
-}
-
-
-/**
- * Remove the RDM mangagement handle.
- */
-void DMPE133Inflator::RemoveRDMManagementHandler() {
-  delete m_management_handler;
-  m_management_handler = NULL;
 }
 }  // e131
 }  // plugin

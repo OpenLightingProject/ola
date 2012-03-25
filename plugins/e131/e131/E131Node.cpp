@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * E131Node.cpp
- * A E131 node
+ * A E1.31 node
  * Copyright (C) 2005-2009 Simon Newton
  */
 
@@ -33,17 +33,20 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
-using std::map;
-using std::string;
 using ola::Callback0;
 using ola::DmxBuffer;
+using std::map;
+using std::string;
 
 
 /*
- * Create a new node
+ * Create a new E1.31 node
  * @param ip_address the IP address to prefer to listen on
  * @param cid, the CID to use, if not provided we generate one
- * one.
+ * @param use_rev2 send using Rev2 rather than the final standard
+ * @param ignore_preview ignore received data with the preview bit set
+ * @param dscp_value the DSCP value to tag outgoing packets with
+ * @param port the UDP port to bind to, defaults to ACN_PORT
  */
 E131Node::E131Node(const string &ip_address,
                    const CID &cid,
@@ -55,10 +58,11 @@ E131Node::E131Node(const string &ip_address,
       m_cid(cid),
       m_use_rev2(use_rev2),
       m_dscp(dscp_value),
-      m_transport(port),
-      m_root_layer(&m_transport, m_cid),
-      m_e131_layer(&m_root_layer),
-      m_dmp_inflator(&m_e131_layer, ignore_preview),
+      m_udp_port(port),
+      m_root_sender(m_cid),
+      m_e131_sender(&m_socket, &m_root_sender),
+      m_dmp_inflator(ignore_preview),
+      m_incoming_udp_transport(&m_socket, &m_root_inflator),
       m_send_buffer(NULL) {
 
   if (!m_use_rev2) {
@@ -66,6 +70,12 @@ E131Node::E131Node(const string &ip_address,
     m_send_buffer = new uint8_t[DMX_UNIVERSE_SIZE + 1];
     m_send_buffer[0] = 0;  // start code is 0
   }
+
+  // setup all the inflators
+  m_root_inflator.AddInflator(&m_e131_inflator);
+  m_root_inflator.AddInflator(&m_e131_rev2_inflator);
+  m_e131_inflator.AddInflator(&m_dmp_inflator);
+  m_e131_rev2_inflator.AddInflator(&m_dmp_inflator);
 }
 
 
@@ -73,6 +83,14 @@ E131Node::E131Node(const string &ip_address,
  * Cleanup
  */
 E131Node::~E131Node() {
+  // remove handlers for all universes. This also leaves the multicast groups.
+  vector<unsigned int> universes;
+  m_dmp_inflator.RegisteredUniverses(&universes);
+  vector<unsigned int>::const_iterator iter = universes.begin();
+  for (; iter != universes.end(); ++iter) {
+    RemoveHandler(*iter);
+  }
+
   Stop();
   if (m_send_buffer)
     delete[] m_send_buffer;
@@ -92,15 +110,22 @@ bool E131Node::Start() {
   }
   delete picker;
 
-  if (!m_transport.Init(m_interface)) {
+  if (!m_socket.Init()) {
     return false;
   }
 
-  ola::network::UdpSocket *socket = m_transport.GetSocket();
-  socket->SetTos(m_dscp);
-  socket->SetMulticastInterface(m_interface.ip_address);
+  if (!m_socket.Bind(m_udp_port))
+    return false;
 
-  m_e131_layer.SetInflator(&m_dmp_inflator);
+  if (!m_socket.EnableBroadcast())
+    return false;
+
+  m_socket.SetTos(m_dscp);
+  m_socket.SetMulticastInterface(m_interface.ip_address);
+
+  m_socket.SetOnData(NewCallback(&m_incoming_udp_transport,
+                                 &IncomingUDPTransport::Receive));
+
   return true;
 }
 
@@ -202,7 +227,7 @@ bool E131Node::SendDMXWithSequenceOffset(uint16_t universe,
                     false,  // terminated
                     m_use_rev2);
 
-  bool result = m_e131_layer.SendDMP(header, pdu);
+  bool result = m_e131_sender.SendDMP(header, pdu);
   if (result && !sequence_offset)
     settings->sequence++;
   delete pdu;
@@ -254,7 +279,7 @@ bool E131Node::StreamTerminated(uint16_t universe,
                     true,  // terminated
                     false);
 
-  bool result = m_e131_layer.SendDMP(header, pdu);
+  bool result = m_e131_sender.SendDMP(header, pdu);
   // only update if we were previously tracking this universe
   if (result && iter != m_tx_universes.end())
     iter->second.sequence++;
@@ -273,6 +298,18 @@ bool E131Node::SetHandler(unsigned int universe,
                           DmxBuffer *buffer,
                           uint8_t *priority,
                           Callback0<void> *closure) {
+  IPV4Address addr;
+  if (!m_e131_sender.UniverseIP(universe, &addr)) {
+    OLA_WARN << "Unable to determine multicast group for universe " <<
+      universe;
+    return false;
+  }
+
+  if (!m_socket.JoinMulticast(m_interface.ip_address, addr)) {
+    OLA_WARN << "Failed to join multicast group " << addr;
+    return false;
+  }
+
   return m_dmp_inflator.SetHandler(universe, buffer, priority, closure);
 }
 
@@ -283,6 +320,18 @@ bool E131Node::SetHandler(unsigned int universe,
  * @param true if removed, false if it didn't exist
  */
 bool E131Node::RemoveHandler(unsigned int universe) {
+  IPV4Address addr;
+  if (!m_e131_sender.UniverseIP(universe, &addr)) {
+    OLA_WARN << "Unable to determine multicast group for universe " <<
+      universe;
+    return false;
+  }
+
+  if (!m_socket.LeaveMulticast(m_interface.ip_address, addr)) {
+    OLA_WARN << "Failed to leave multicast group " << addr;
+    return false;
+  }
+
   return m_dmp_inflator.RemoveHandler(universe);
 }
 

@@ -27,10 +27,13 @@
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/network/Interface.h"
+#include "ola/network/Socket.h"
 #include "plugins/e131/e131/ACNPort.h"
 #include "plugins/e131/e131/CID.h"
-#include "plugins/e131/e131/E131Layer.h"
-#include "plugins/e131/e131/RootLayer.h"
+#include "plugins/e131/e131/E131Sender.h"
+#include "plugins/e131/e131/E131Inflator.h"
+#include "plugins/e131/e131/RootInflator.h"
+#include "plugins/e131/e131/RootSender.h"
 #include "plugins/e131/e131/UDPTransport.h"
 #include "plugins/e131/e131/DMPE131Inflator.h"
 
@@ -75,7 +78,7 @@ class E131Node {
 
     const ola::network::Interface &GetInterface() const { return m_interface; }
 
-    ola::network::UdpSocket* GetSocket() { return m_transport.GetSocket(); }
+    ola::network::UdpSocket* GetSocket() { return &m_socket; }
 
   private:
     typedef struct {
@@ -85,13 +88,21 @@ class E131Node {
 
     string m_preferred_ip;
     ola::network::Interface m_interface;
+    ola::network::UdpSocket m_socket;
     CID m_cid;
     bool m_use_rev2;
     uint8_t m_dscp;
-    UDPTransport m_transport;
-    RootLayer m_root_layer;
-    E131Layer m_e131_layer;
+    uint16_t m_udp_port;
+    // senders
+    RootSender m_root_sender;
+    E131Sender m_e131_sender;
+    // inflators
+    RootInflator m_root_inflator;
+    E131Inflator m_e131_inflator;
+    E131InflatorRev2 m_e131_rev2_inflator;
     DMPE131Inflator m_dmp_inflator;
+
+    IncomingUDPTransport m_incoming_udp_transport;
     std::map<unsigned int, tx_universe> m_tx_universes;
     uint8_t *m_send_buffer;
 

@@ -841,18 +841,10 @@ bool UdpSocket::SetTos(uint8_t tos) {
 
 /*
  * Create a new TcpListeningSocket
- * @param address the address to listen on
- * @param port the port to listen on
- * @param backlog the backlog
  */
-TcpAcceptingSocket::TcpAcceptingSocket(const std::string &address,
-                                       unsigned short port,
-                                       int backlog)
+TcpAcceptingSocket::TcpAcceptingSocket()
     : AcceptingSocket(),
-      m_address(address),
-      m_port(port),
       m_sd(INVALID_DESCRIPTOR),
-      m_backlog(backlog),
       m_on_accept(NULL) {
 }
 
@@ -869,9 +861,32 @@ TcpAcceptingSocket::~TcpAcceptingSocket() {
 
 /*
  * Start listening
+ * @param address the address to listen on
+ * @param port the port to listen on
+ * @param backlog the backlog
  * @return true if it succeeded, false otherwise
  */
-bool TcpAcceptingSocket::Listen() {
+bool TcpAcceptingSocket::Listen(const std::string &address,
+                                unsigned short port,
+                                int backlog) {
+  IPV4Address ip_address;
+  if (!IPV4Address::FromString(address, &ip_address))
+    return false;
+
+  return Listen(ip_address, port, backlog);
+}
+
+
+/*
+ * Start listening
+ * @param address the address to listen on
+ * @param port the port to listen on
+ * @param backlog the backlog
+ * @return true if it succeeded, false otherwise
+ */
+bool TcpAcceptingSocket::Listen(const IPV4Address &address,
+                                unsigned short port,
+                                int backlog) {
   struct sockaddr_in server_address;
   int reuse_flag = 1;
 
@@ -881,9 +896,7 @@ bool TcpAcceptingSocket::Listen() {
   // setup
   memset(&server_address, 0x00, sizeof(server_address));
   server_address.sin_family = AF_INET;
-  server_address.sin_port = HostToNetwork(m_port);
-  if (!StringToAddress(m_address, server_address.sin_addr))
-    return false;
+  server_address.sin_port = HostToNetwork(port);
 
   int sd = socket(AF_INET, SOCK_STREAM, 0);
   if (sd < 0) {
@@ -904,14 +917,14 @@ bool TcpAcceptingSocket::Listen() {
 
   if (bind(sd, (struct sockaddr *) &server_address,
            sizeof(server_address)) == -1) {
-    OLA_WARN << "bind to " << m_address << ":" << m_port << " failed, "
+    OLA_WARN << "bind to " << address << ":" << port << " failed, "
       << strerror(errno);
     close(sd);
     return false;
   }
 
-  if (listen(sd, m_backlog)) {
-    OLA_WARN << "listen on " << m_address << ":" << m_port << " failed, "
+  if (listen(sd, backlog)) {
+    OLA_WARN << "listen on " << address << ":" << port << " failed, "
       << strerror(errno);
     return false;
   }

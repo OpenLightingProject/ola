@@ -1,3 +1,9 @@
+X/X/2012 ola-0.8.19
+ * Simple Java API
+ * Configure time flag to disable the root check
+ * Refactor of the E1.31 code to enable E1.33 later
+ * Switched to using the standard command set for TRI devices - #171
+
 01/03/2012 ola-0.8.18
  * Added RDM support for the Enttec USB Pro - #146
  * Added support for reading/writing RDM sniffer logs to a file

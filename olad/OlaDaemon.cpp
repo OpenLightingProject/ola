@@ -110,7 +110,12 @@ bool OlaDaemon::Init() {
   // Order is important here as we won't load the same plugin twice.
   m_plugin_loaders.push_back(new DynamicPluginLoader());
 
-  m_accepting_socket = new TcpAcceptingSocket("127.0.0.1", m_rpc_port);
+  m_accepting_socket = new TcpAcceptingSocket();
+  if (!m_accepting_socket->Listen("127.0.0.1", m_rpc_port)) {
+    OLA_FATAL << "Could not listen on the RPC port, you probably have " <<
+      "another instance of olad running";
+    return false;
+  }
 
   m_server = new OlaServer(m_service_factory,
                            m_plugin_loaders,

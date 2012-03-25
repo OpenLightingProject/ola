@@ -37,58 +37,51 @@ class E133Header {
   public:
     E133Header() {}
     E133Header(const string &source,
-               uint8_t priority,
-               uint8_t sequence,
-               uint16_t universe,
-               bool is_management = false,
-               bool is_squawk = false)
+               uint32_t sequence,
+               uint16_t endpoint,
+               bool rx_ack = false,
+               bool timeout = false)
         : m_source(source),
-          m_priority(priority),
           m_sequence(sequence),
-          m_universe(universe),
-          m_is_management(is_management),
-          m_is_squawk(is_squawk) {
+          m_endpoint(endpoint),
+          m_rx_ack(rx_ack),
+          m_timeout(timeout) {
     }
     ~E133Header() {}
 
     const string Source() const { return m_source; }
-    uint8_t Priority() const { return m_priority; }
-    uint8_t Sequence() const { return m_sequence; }
-    uint16_t Universe() const { return m_universe; }
-    bool IsManagement() const { return m_is_management; }
-    bool IsSquawk() const { return m_is_squawk; }
+    uint32_t Sequence() const { return m_sequence; }
+    uint16_t Endpoint() const { return m_endpoint; }
+    bool RxAcknowledge() const { return m_rx_ack; }
+    bool Timeout() const { return m_timeout; }
 
     bool operator==(const E133Header &other) const {
       return m_source == other.m_source &&
-        m_priority == other.m_priority &&
         m_sequence == other.m_sequence &&
-        m_universe == other.m_universe &&
-        m_is_management == other.m_is_management &&
-        m_is_squawk == other.m_is_squawk;
+        m_endpoint == other.m_endpoint &&
+        m_rx_ack == other.m_rx_ack &&
+        m_timeout == other.m_timeout;
     }
 
     enum { SOURCE_NAME_LEN = 64 };
 
     struct e133_pdu_header_s {
       char source[SOURCE_NAME_LEN];
-      uint8_t priority;
-      uint16_t reserved;
-      uint8_t sequence;
+      uint32_t sequence;
+      uint16_t endpoint;
       uint8_t options;
-      uint16_t universe;
     } __attribute__((packed));
     typedef struct e133_pdu_header_s e133_pdu_header;
 
-    static const uint8_t RDM_MANAGEMENT_MASK = 0x20;
-    static const uint8_t RDM_SQUAWK_MASK = 0x10;
+    static const uint8_t E133_RX_ACK_MASK = 0x80;
+    static const uint8_t E133_TIMEOUT_MASK = 0x40;
 
   private:
     string m_source;
-    uint8_t m_priority;
-    uint8_t m_sequence;
-    uint16_t m_universe;
-    bool m_is_management;
-    bool m_is_squawk;
+    uint32_t m_sequence;
+    uint16_t m_endpoint;
+    bool m_rx_ack;
+    bool m_timeout;
 };
 }  // e131
 }  // plugin

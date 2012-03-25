@@ -37,7 +37,7 @@ class DMPE133Inflator: public DMPInflator {
   friend class DMPE133InflatorTest;
 
   public:
-    explicit DMPE133Inflator(class E133Layer *e133_layer);
+    DMPE133Inflator();
     ~DMPE133Inflator();
 
     typedef ola::Callback3<void,
@@ -46,11 +46,8 @@ class DMPE133Inflator: public DMPInflator {
                            const std::string&  // rdm data
                           > RDMMessageHandler;
 
-    bool SetRDMHandler(unsigned int universe, RDMMessageHandler *handler);
-    bool RemoveRDMHandler(unsigned int universe);
-
-    bool SetRDMManagementHandler(RDMMessageHandler *handler);
-    void RemoveRDMManagementHandler();
+    bool SetRDMHandler(uint16_t endpoint, RDMMessageHandler *handler);
+    bool RemoveRDMHandler(uint16_t endpoint);
 
   protected:
     virtual bool HandlePDUData(uint32_t vector,
@@ -59,10 +56,8 @@ class DMPE133Inflator: public DMPInflator {
                                unsigned int pdu_len);
 
   private:
-    typedef std::map<unsigned int, RDMMessageHandler*> universe_handler_map;
-    universe_handler_map m_rdm_handlers;
-    RDMMessageHandler *m_management_handler;
-    class E133Layer *m_e133_layer;
+    typedef std::map<uint16_t, RDMMessageHandler*> endpoint_handler_map;
+    endpoint_handler_map m_rdm_handlers;
 };
 }  // e131
 }  // plugin

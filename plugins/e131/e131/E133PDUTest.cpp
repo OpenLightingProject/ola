@@ -54,7 +54,7 @@ const unsigned int E133PDUTest::TEST_VECTOR = 39;
  */
 void E133PDUTest::testSimpleE133PDU() {
   const string source = "foo source";
-  E133Header header(source, 1, 2, 6000);
+  E133Header header(source, 101, 2, false, false);
   E133PDU pdu(TEST_VECTOR, header, NULL);
 
   CPPUNIT_ASSERT_EQUAL((unsigned int) 71, pdu.HeaderSize());
@@ -76,12 +76,17 @@ void E133PDUTest::testSimpleE133PDU() {
                        actual_value);
 
   CPPUNIT_ASSERT(!memcmp(&data[6], source.data(), source.length()));
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 1, data[6 + E133Header::SOURCE_NAME_LEN]);
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 2, data[9 + E133Header::SOURCE_NAME_LEN]);
-  uint16_t actual_universe;
-  memcpy(&actual_universe, data + 11 + E133Header::SOURCE_NAME_LEN,
-         sizeof(actual_universe));
-  CPPUNIT_ASSERT_EQUAL(HostToNetwork((uint16_t) 6000), actual_universe);
+  // universe
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, data[6 + E133Header::SOURCE_NAME_LEN]);
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, data[6 + E133Header::SOURCE_NAME_LEN + 1]);
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, data[6 + E133Header::SOURCE_NAME_LEN + 2]);
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 101,
+                       data[6 + E133Header::SOURCE_NAME_LEN + 3]);
+  // endpoint
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, data[6 + E133Header::SOURCE_NAME_LEN + 4]);
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 2, data[6 + E133Header::SOURCE_NAME_LEN + 5]);
+  // options
+  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, data[6 + E133Header::SOURCE_NAME_LEN + 6]);
 
   // test undersized buffer
   bytes_used = size - 1;
