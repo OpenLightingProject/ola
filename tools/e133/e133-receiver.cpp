@@ -27,6 +27,7 @@
 #include <signal.h>
 #include <string.h>
 #include <sysexits.h>
+#include <termios.h>
 
 #include <ola/BaseTypes.h>
 #include <ola/Logging.h>
@@ -168,18 +169,22 @@ class SimpleE133Node {
 
   private:
     ola::network::SelectServer m_ss;
+    ola::network::UnmanagedFileDescriptor m_stdin_descriptor;
     SlpThread m_slp_thread;
     E133Device m_e133_device;
     ola::plugin::dummy::DummyResponder m_responder;
     uint16_t m_lifetime;
     UID m_uid;
     string m_service_name;
+    termios m_old_tc;
 
     SimpleE133Node(const SimpleE133Node&);
     SimpleE133Node operator=(const SimpleE133Node&);
 
     void RegisterCallback(bool ok);
     void DeRegisterCallback(bool ok);
+
+    void Input();
 };
 
 
@@ -188,7 +193,8 @@ class SimpleE133Node {
  */
 SimpleE133Node::SimpleE133Node(const IPV4Address &ip_address,
                                const options &opts)
-    : m_slp_thread(&m_ss),
+    : m_stdin_descriptor(STDIN_FILENO),
+      m_slp_thread(&m_ss),
       m_e133_device(&m_ss, ip_address),
       m_responder(*opts.uid),
       m_lifetime(opts.lifetime),
@@ -202,6 +208,7 @@ SimpleE133Node::SimpleE133Node(const IPV4Address &ip_address,
 
 
 SimpleE133Node::~SimpleE133Node() {
+  tcsetattr(STDIN_FILENO, TCSANOW, &m_old_tc);
   m_slp_thread.Join();
   m_slp_thread.Cleanup();
 }
@@ -211,6 +218,14 @@ SimpleE133Node::~SimpleE133Node() {
  * Init this node
  */
 bool SimpleE133Node::Init() {
+  // setup notifications for stdin & turn off buffering
+  m_stdin_descriptor.SetOnData(ola::NewCallback(this, &SimpleE133Node::Input));
+  m_ss.AddReadDescriptor(&m_stdin_descriptor);
+  tcgetattr(STDIN_FILENO, &m_old_tc);
+  termios new_tc = m_old_tc;
+  new_tc.c_lflag &= static_cast<tcflag_t>(~ICANON & ~ECHO);
+  tcsetattr(STDIN_FILENO, TCSANOW, &new_tc);
+
   if (!m_e133_device.Init()) {
     return false;
   }
@@ -259,6 +274,20 @@ void SimpleE133Node::RegisterCallback(bool ok) {
 void SimpleE133Node::DeRegisterCallback(bool ok) {
   OLA_INFO << "in deregister callback, state is " << ok;
   m_ss.Terminate();
+}
+
+
+/**
+ * Called when there is data on stdin.
+ */
+void SimpleE133Node::Input() {
+  switch (getchar()) {
+    case ' ':
+      OLA_INFO << "This would send a unsolicated message";
+      break;
+    default:
+      break;
+  }
 }
 
 
