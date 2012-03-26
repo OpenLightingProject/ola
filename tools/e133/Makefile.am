@@ -3,6 +3,7 @@ include $(top_srcdir)/common.mk
 EXTRA_DIST = E133Endpoint.h E133Device.h \
              E133HealthCheckedConnection.h \
              E133UniverseController.h \
+             RootEndpoint.h \
              SlpConstants.h SlpThread.h SlpUrlParser.h
 
 if HAVE_SLP
@@ -11,6 +12,7 @@ noinst_PROGRAMS = e133_receiver slp_locate slp_register
 e133_receiver_SOURCES = e133-receiver.cpp \
                         E133Device.cpp \
                         E133HealthCheckedConnection.cpp \
+                        RootEndpoint.cpp \
                         SlpThread.cpp
 e133_receiver_LDADD = $(openslp_LIBS) \
                       $(top_builddir)/common/libolacommon.la \

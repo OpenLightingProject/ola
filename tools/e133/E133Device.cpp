@@ -287,7 +287,12 @@ void E133Device::EndpointRequestComplete(
         false,
         ranged_chunks);
 
-  // TODO(simon): support timeouts here
+  /*
+   * TODO(simon): support timeouts here
+   * We need to map RDMResponseCodes to E133 errors:
+   *  - RDM_UNKNOWN_UID -> timeout
+   */ 
+
   ola::plugin::e131::E133Header header(
       "foo bar",
       sequence_number,

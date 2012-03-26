@@ -43,6 +43,7 @@
 #include "plugins/e131/e131/ACNPort.h"
 
 #include "tools/e133/E133Device.h"
+#include "tools/e133/RootEndpoint.h"
 #include "tools/e133/SlpThread.h"
 
 using std::string;
@@ -172,6 +173,7 @@ class SimpleE133Node {
     ola::network::UnmanagedFileDescriptor m_stdin_descriptor;
     SlpThread m_slp_thread;
     E133Device m_e133_device;
+    RootEndpoint m_root_endpoint;
     ola::plugin::dummy::DummyResponder m_responder;
     uint16_t m_lifetime;
     UID m_uid;
@@ -196,6 +198,7 @@ SimpleE133Node::SimpleE133Node(const IPV4Address &ip_address,
     : m_stdin_descriptor(STDIN_FILENO),
       m_slp_thread(&m_ss),
       m_e133_device(&m_ss, ip_address),
+      m_root_endpoint(*opts.uid),
       m_responder(*opts.uid),
       m_lifetime(opts.lifetime),
       m_uid(*opts.uid) {
@@ -229,11 +232,13 @@ bool SimpleE133Node::Init() {
   if (!m_e133_device.Init()) {
     return false;
   }
-  // m_e133_device.RegisterEndpoint(0, ...);  // root endpoint
-  // m_e133_device.RegisterEndpoint(1, ...);  // single endpoint with our
-  // responder
-  OLA_INFO << "service is " << m_service_name;
 
+  // register endpoints
+  m_e133_device.RegisterEndpoint(0, &m_root_endpoint);  // root endpoint
+  // m_e133_device.RegisterEndpoint(1, ...);  // single endpoint with our
+
+  // register in SLP
+  OLA_INFO << "service is " << m_service_name;
   if (!m_slp_thread.Init()) {
     OLA_WARN << "SlpThread Init() failed";
     return false;
