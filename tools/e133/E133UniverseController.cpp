@@ -81,7 +81,7 @@ const char E133UniverseController::UNIVERSE_SQUAWK_IP_ADDRESS[] =
     "239.255.250.0";
 
 E133UniverseController::E133UniverseController(unsigned int universe)
-    : m_e133_layer(NULL),
+    : m_e133_sender(NULL),
       m_universe(universe) {
   if (!universe)
     OLA_FATAL <<
@@ -150,7 +150,7 @@ void E133UniverseController::CheckForStaleRequests(const ola::TimeStamp *now) {
 void E133UniverseController::SendRDMRequest(const RDMRequest *request,
                                             ola::rdm::RDMCallback *handler) {
   std::vector<std::string> raw_packets;
-  if (!m_e133_layer) {
+  if (!m_e133_sender) {
     OLA_FATAL << "e133 layer is null, UniverseController not registered!";
     handler->Run(ola::rdm::RDM_UNKNOWN_UID, NULL, raw_packets);
     delete request;
@@ -350,9 +350,9 @@ bool E133UniverseController::SendDataToUid(uid_state &uid_info,
                     false,  // management
                     false);  // squawk
 
-  bool result = m_e133_layer->SendDMP(header,
-                                      pdu,
-                                      uid_info.ip_address);
+  bool result = m_e133_sender->SendDMP(header,
+                                       pdu,
+                                       uid_info.ip_address);
 
   delete pdu;
   return result;

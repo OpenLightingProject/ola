@@ -28,10 +28,10 @@
 #include <string>
 
 #include "plugins/e131/e131/E133Header.h"
-#include "plugins/e131/e131/E133Layer.h"
+#include "plugins/e131/e131/E133Sender.h"
 #include "plugins/e131/e131/TransportHeader.h"
 
-#include "E133Component.h"
+#include "E133Endpoint.h"
 
 #ifndef TOOLS_E133_E133UNIVERSECONTROLLER_H_
 #define TOOLS_E133_E133UNIVERSECONTROLLER_H_
@@ -39,7 +39,7 @@
 
 using ola::network::IPV4Address;
 using ola::rdm::UID;
-using ola::plugin::e131::E133Layer;
+using ola::plugin::e131::E133Sender;
 
 
 /**
@@ -94,12 +94,12 @@ class E133RequestContainer {
  * A RDM Controller for a single E1.33 universe
  */
 class E133UniverseController: public ola::rdm::RDMControllerInterface,
-                              public E133Component {
+                              public E133Endpoint {
   public:
     explicit E133UniverseController(unsigned int universe);
 
     unsigned int Universe() const { return m_universe; }
-    void SetE133Layer(E133Layer *e133_layer) { m_e133_layer = e133_layer; }
+    void SetE133Sender(E133Sender *e133_sender) { m_e133_sender = e133_sender; }
 
     // For now we use these to populate the uid map. This will get replaced by
     // the discovery code later.
@@ -125,7 +125,7 @@ class E133UniverseController: public ola::rdm::RDMControllerInterface,
     typedef std::map<UID, uid_state> uid_state_map;
 
     uid_state_map m_uid_state_map;
-    E133Layer *m_e133_layer;
+    E133Sender *m_e133_sender;
     unsigned int m_universe;
     E133RequestContainer m_requests;
     uid_state m_squawk_state;

@@ -23,7 +23,6 @@
  */
 
 #include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
-#include <errno.h>
 #include <getopt.h>
 #include <signal.h>
 #include <string.h>
@@ -32,20 +31,24 @@
 #include <ola/BaseTypes.h>
 #include <ola/Logging.h>
 #include <ola/network/SelectServer.h>
+#include <ola/network/InterfacePicker.h>
 #include <ola/rdm/UID.h>
 
-#include <string>
 #include <iostream>
+#include <memory>
+#include <string>
 
 #include "plugins/dummy/DummyResponder.h"
 #include "plugins/e131/e131/ACNPort.h"
 
-#include "tools/e133/E133Node.h"
-#include "tools/e133/E133Receiver.h"
+#include "tools/e133/E133Device.h"
 #include "tools/e133/SlpThread.h"
 
 using std::string;
 using ola::rdm::UID;
+using std::auto_ptr;
+using ola::network::IPV4Address;
+
 
 typedef struct {
   bool help;
@@ -155,7 +158,8 @@ void DisplayHelpAndExit(char *argv[]) {
  */
 class SimpleE133Node {
   public:
-    explicit SimpleE133Node(const options &opts);
+    explicit SimpleE133Node(const IPV4Address &ip_address,
+                            const options &opts);
     ~SimpleE133Node();
 
     bool Init();
@@ -165,9 +169,8 @@ class SimpleE133Node {
   private:
     ola::network::SelectServer m_ss;
     SlpThread m_slp_thread;
-    E133Node m_e133_node;
+    E133Device m_e133_device;
     ola::plugin::dummy::DummyResponder m_responder;
-    E133Receiver m_receiver;
     uint16_t m_lifetime;
     UID m_uid;
     string m_service_name;
@@ -183,13 +186,18 @@ class SimpleE133Node {
 /**
  * Constructor
  */
-SimpleE133Node::SimpleE133Node(const options &opts)
+SimpleE133Node::SimpleE133Node(const IPV4Address &ip_address,
+                               const options &opts)
     : m_slp_thread(&m_ss),
-      m_e133_node(&m_ss, opts.ip_address, ola::plugin::e131::ACN_PORT),
+      m_e133_device(&m_ss, ip_address),
       m_responder(*opts.uid),
-      m_receiver(opts.universe, &m_responder),
       m_lifetime(opts.lifetime),
       m_uid(*opts.uid) {
+  std::stringstream str;
+  str << ip_address << ":" << ola::plugin::e131::ACN_PORT << "/"
+    << std::setfill('0') << std::setw(4) << std::hex
+    << m_uid.ManufacturerId() << std::setw(8) << m_uid.DeviceId();
+  m_service_name = str.str();
 }
 
 
@@ -203,16 +211,12 @@ SimpleE133Node::~SimpleE133Node() {
  * Init this node
  */
 bool SimpleE133Node::Init() {
-  if (!m_e133_node.Init()) {
+  if (!m_e133_device.Init()) {
     return false;
   }
-  m_e133_node.RegisterComponent(&m_receiver);
-
-  std::stringstream str;
-  str << m_e133_node.V4Address() << ":" << ola::plugin::e131::ACN_PORT << "/"
-    << std::setfill('0') << std::setw(4) << std::hex
-    << m_uid.ManufacturerId() << std::setw(8) << m_uid.DeviceId();
-  m_service_name = str.str();
+  // m_e133_device.RegisterEndpoint(0, ...);  // root endpoint
+  // m_e133_device.RegisterEndpoint(1, ...);  // single endpoint with our
+  // responder
   OLA_INFO << "service is " << m_service_name;
 
   if (!m_slp_thread.Init()) {
@@ -290,7 +294,18 @@ int main(int argc, char *argv[]) {
     opts.uid = new ola::rdm::UID(OPEN_LIGHTING_ESTA_CODE, 0xffffff00);
   }
 
-  SimpleE133Node node(opts);
+  ola::network::Interface interface;
+
+  {
+    auto_ptr<const ola::network::InterfacePicker> picker(
+      ola::network::InterfacePicker::NewPicker());
+    if (!picker->ChooseInterface(&interface, opts.ip_address)) {
+      OLA_INFO << "Failed to find an interface";
+      exit(EX_UNAVAILABLE);
+    }
+  }
+
+  SimpleE133Node node(interface.ip_address, opts);
   simple_node = &node;
 
   if (!node.Init())

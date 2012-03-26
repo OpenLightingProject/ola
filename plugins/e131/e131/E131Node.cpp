@@ -125,7 +125,6 @@ bool E131Node::Start() {
 
   m_socket.SetOnData(NewCallback(&m_incoming_udp_transport,
                                  &IncomingUDPTransport::Receive));
-
   return true;
 }
 
