@@ -33,7 +33,8 @@ using ola::rdm::RDMCallback;
 class RootEndpoint: public E133EndpointInterface {
   public:
     explicit RootEndpoint(const ola::rdm::UID &uid,
-                          const class EndpointManager *endpoint_manager);
+                          const class EndpointManager *endpoint_manager,
+                          class TCPConnectionStats *tcp_stats);
     ~RootEndpoint() {}
 
     void SendRDMRequest(const RDMRequest *request,
@@ -42,6 +43,7 @@ class RootEndpoint: public E133EndpointInterface {
   private:
     ola::rdm::UID m_uid;
     const class EndpointManager *m_endpoint_manager;
+    class TCPConnectionStats *m_tcp_stats;
 
     void HandleEndpointList(const RDMRequest *request,
                             RDMCallback *on_complete);

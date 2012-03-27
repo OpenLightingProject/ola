@@ -52,7 +52,8 @@ class E133Device {
   public:
     E133Device(ola::network::SelectServerInterface *ss,
                const ola::network::IPV4Address &ip_address,
-               class EndpointManager *endpoint_manager);
+               class EndpointManager *endpoint_manager,
+               class TCPConnectionStats *tcp_stats);
     ~E133Device();
 
     void SetRootEndpoint(E133EndpointInterface *endpoint);
@@ -64,6 +65,8 @@ class E133Device {
     auto_ptr<ola::Callback1<void, uint16_t> > m_register_endpoint_callback;
     auto_ptr<ola::Callback1<void, uint16_t> > m_unregister_endpoint_callback;
     E133EndpointInterface *m_root_endpoint;
+
+    class TCPConnectionStats *m_tcp_stats;
 
     // The Node's CID
     ola::plugin::e131::CID m_cid;

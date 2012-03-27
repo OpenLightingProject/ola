@@ -40,6 +40,7 @@
 #include "tools/e133/E133Endpoint.h"
 #include "tools/e133/E133HealthCheckedConnection.h";
 #include "tools/e133/EndpointManager.h"
+#include "tools/e133/TCPConnectionStats.h"
 
 using ola::NewCallback;
 using ola::network::HealthCheckedConnection;
@@ -52,11 +53,13 @@ using std::vector;
 
 E133Device::E133Device(ola::network::SelectServerInterface *ss,
                        const ola::network::IPV4Address &ip_address,
-                       EndpointManager *endpoint_manager)
+                       EndpointManager *endpoint_manager,
+                       TCPConnectionStats *tcp_stats)
     : m_endpoint_manager(endpoint_manager),
       m_register_endpoint_callback(NULL),
       m_unregister_endpoint_callback(NULL),
       m_root_endpoint(NULL),
+      m_tcp_stats(tcp_stats),
       m_cid(ola::plugin::e131::CID::Generate()),
       m_health_check_interval(2, 0),
       m_tcp_descriptor(NULL),
@@ -160,6 +163,11 @@ void E133Device::NewTCPConnection(
     return;
   }
 
+  if (m_tcp_stats) {
+    m_tcp_stats->connection_events++;
+    // TODO(simon): update ip_address here - we need to know the peer address
+  }
+
   m_health_checked_connection = new
     E133HealthCheckedConnection(
         &m_e133_sender,
@@ -209,6 +217,8 @@ void E133Device::UnRegisterEndpoint(uint16_t endpoint_id) {
  */
 void E133Device::TCPConnectionUnhealthy() {
   OLA_INFO << "TCP connection went unhealthy, closing";
+  if (m_tcp_stats)
+    m_tcp_stats->unhealthy_events++;
 
   delete m_health_checked_connection;
   m_health_checked_connection = NULL;

@@ -32,6 +32,7 @@
 #include "tools/e133/E133Endpoint.h"
 #include "tools/e133/EndpointManager.h"
 #include "tools/e133/RootEndpoint.h"
+#include "tools/e133/TCPConnectionStats.h"
 
 using ola::rdm::RDMCallback;
 using ola::rdm::RDMRequest;
@@ -46,10 +47,12 @@ typedef std::vector<std::string> RDMPackets;
  * Create a new RootEndpoint
  */
 RootEndpoint::RootEndpoint(const ola::rdm::UID &uid,
-                           const class EndpointManager *endpoint_manager)
+                           const class EndpointManager *endpoint_manager,
+                           TCPConnectionStats *tcp_stats)
     : E133EndpointInterface(),
       m_uid(uid),
-      m_endpoint_manager(endpoint_manager) {
+      m_endpoint_manager(endpoint_manager),
+      m_tcp_stats(tcp_stats) {
 }
 
 

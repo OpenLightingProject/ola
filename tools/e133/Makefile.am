@@ -4,7 +4,8 @@ EXTRA_DIST = E133Endpoint.h E133Device.h \
              E133HealthCheckedConnection.h \
              E133UniverseController.h \
              RootEndpoint.h \
-             SlpConstants.h SlpThread.h SlpUrlParser.h
+             SlpConstants.h SlpThread.h SlpUrlParser.h \
+             TCPConnectionStats.h
 
 if HAVE_SLP
 noinst_PROGRAMS = e133_receiver slp_locate slp_register

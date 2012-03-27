@@ -46,6 +46,7 @@
 #include "tools/e133/EndpointManager.h"
 #include "tools/e133/RootEndpoint.h"
 #include "tools/e133/SlpThread.h"
+#include "tools/e133/TCPConnectionStats.h"
 
 using std::string;
 using ola::rdm::UID;
@@ -174,6 +175,7 @@ class SimpleE133Node {
     ola::network::UnmanagedFileDescriptor m_stdin_descriptor;
     SlpThread m_slp_thread;
     EndpointManager m_endpoint_manager;
+    TCPConnectionStats m_tcp_stats;
     E133Device m_e133_device;
     RootEndpoint m_root_endpoint;
     E133Endpoint m_first_endpoint;
@@ -200,8 +202,8 @@ SimpleE133Node::SimpleE133Node(const IPV4Address &ip_address,
                                const options &opts)
     : m_stdin_descriptor(STDIN_FILENO),
       m_slp_thread(&m_ss),
-      m_e133_device(&m_ss, ip_address, &m_endpoint_manager),
-      m_root_endpoint(*opts.uid, &m_endpoint_manager),
+      m_e133_device(&m_ss, ip_address, &m_endpoint_manager, &m_tcp_stats),
+      m_root_endpoint(*opts.uid, &m_endpoint_manager, &m_tcp_stats),
       m_responder(*opts.uid),
       m_lifetime(opts.lifetime),
       m_uid(*opts.uid) {
