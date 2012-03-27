@@ -17,18 +17,55 @@
  * Copyright (C) 2012 Simon Newton
  */
 
+#include <stdint.h>
+#include <string>
 #include "ola/rdm/RDMControllerInterface.h"
 
 #ifndef TOOLS_E133_E133ENDPOINT_H_
 #define TOOLS_E133_E133ENDPOINT_H_
 
+using std::string;
+
+
+static const uint16_t ROOT_E133_ENDPOINT = 0;
+
 /**
- * An E1.33 Endpoint which can be registered with the E133Device.
- * Endpoints are tasked with handling E1.33 / RDM requests.
+ * The base class for E1.33 Endpoints.
+ * Endpoints are tasked with handling RDM requests.
  */
-class E133Endpoint: public ola::rdm::RDMControllerInterface {
+class E133EndpointInterface: public ola::rdm::RDMControllerInterface {
   public:
-    E133Endpoint() {}
-    virtual ~E133Endpoint() {}
+    E133EndpointInterface() {}
+    virtual ~E133EndpointInterface() {}
+};
+
+
+
+/**
+ * A non-root endpoint, which has properties like a label, identify mode etc.
+ */
+class E133Endpoint: public E133EndpointInterface {
+  public:
+    E133Endpoint();
+    ~E133Endpoint() {}
+
+    bool IdentifyMode() const { return m_identify_mode; }
+    void SetIdentifyMode(bool identify_on) { m_identify_mode = identify_on; }
+
+    uint16_t Universe() const { return m_universe; }
+    void SetUniverse(uint16_t universe) { m_universe = universe; }
+
+    string Label() const { return m_endpoint_label; }
+    void SetLabel(const string &endpoint_label) {
+      m_endpoint_label = endpoint_label;
+    }
+
+    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+                        ola::rdm::RDMCallback *on_complete);
+
+  private:
+    bool m_identify_mode;
+    uint16_t m_universe;
+    string m_endpoint_label;
 };
 #endif  // TOOLS_E133_E133ENDPOINT_H_

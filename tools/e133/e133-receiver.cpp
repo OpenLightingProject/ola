@@ -43,6 +43,7 @@
 #include "plugins/e131/e131/ACNPort.h"
 
 #include "tools/e133/E133Device.h"
+#include "tools/e133/EndpointManager.h"
 #include "tools/e133/RootEndpoint.h"
 #include "tools/e133/SlpThread.h"
 
@@ -172,8 +173,10 @@ class SimpleE133Node {
     ola::network::SelectServer m_ss;
     ola::network::UnmanagedFileDescriptor m_stdin_descriptor;
     SlpThread m_slp_thread;
+    EndpointManager m_endpoint_manager;
     E133Device m_e133_device;
     RootEndpoint m_root_endpoint;
+    E133Endpoint m_first_endpoint;
     ola::plugin::dummy::DummyResponder m_responder;
     uint16_t m_lifetime;
     UID m_uid;
@@ -197,8 +200,8 @@ SimpleE133Node::SimpleE133Node(const IPV4Address &ip_address,
                                const options &opts)
     : m_stdin_descriptor(STDIN_FILENO),
       m_slp_thread(&m_ss),
-      m_e133_device(&m_ss, ip_address),
-      m_root_endpoint(*opts.uid),
+      m_e133_device(&m_ss, ip_address, &m_endpoint_manager),
+      m_root_endpoint(*opts.uid, &m_endpoint_manager),
       m_responder(*opts.uid),
       m_lifetime(opts.lifetime),
       m_uid(*opts.uid) {
@@ -211,6 +214,7 @@ SimpleE133Node::SimpleE133Node(const IPV4Address &ip_address,
 
 
 SimpleE133Node::~SimpleE133Node() {
+  m_endpoint_manager.UnRegisterEndpoint(1);
   tcsetattr(STDIN_FILENO, TCSANOW, &m_old_tc);
   m_slp_thread.Join();
   m_slp_thread.Cleanup();
@@ -233,9 +237,10 @@ bool SimpleE133Node::Init() {
     return false;
   }
 
-  // register endpoints
-  m_e133_device.RegisterEndpoint(0, &m_root_endpoint);  // root endpoint
-  // m_e133_device.RegisterEndpoint(1, ...);  // single endpoint with our
+  // register the root endpoint
+  m_e133_device.SetRootEndpoint(&m_root_endpoint);
+  // add a single endpoint
+  m_endpoint_manager.RegisterEndpoint(1, &m_first_endpoint);
 
   // register in SLP
   OLA_INFO << "service is " << m_service_name;
@@ -287,8 +292,11 @@ void SimpleE133Node::DeRegisterCallback(bool ok) {
  */
 void SimpleE133Node::Input() {
   switch (getchar()) {
-    case ' ':
-      OLA_INFO << "This would send a unsolicated message";
+    case 's':
+      OLA_INFO << "This would send a unsolicited message";
+      break;
+    case 'q':
+      m_ss.Terminate();
       break;
     default:
       break;
@@ -356,6 +364,11 @@ int main(int argc, char *argv[]) {
     delete opts.uid;
     return false;
   }
+
+  OLA_INFO << "---------------  Controls  ----------------";
+  OLA_INFO << " q - Quit";
+  OLA_INFO << " s - Send Status Message";
+  OLA_INFO << "-------------------------------------------";
 
   node.Run();
 

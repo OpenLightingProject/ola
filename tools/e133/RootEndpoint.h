@@ -24,18 +24,39 @@
 #ifndef TOOLS_E133_ROOTENDPOINT_H_
 #define TOOLS_E133_ROOTENDPOINT_H_
 
+using ola::rdm::RDMRequest;
+using ola::rdm::RDMCallback;
+
 /**
  * The root endpoint responsible for handling PIDs defined in E1.33.
  */
-class RootEndpoint: public E133Endpoint {
+class RootEndpoint: public E133EndpointInterface {
   public:
-    explicit RootEndpoint(const ola::rdm::UID &uid);
+    explicit RootEndpoint(const ola::rdm::UID &uid,
+                          const class EndpointManager *endpoint_manager);
     ~RootEndpoint() {}
 
-    void SendRDMRequest(const ola::rdm::RDMRequest *request,
-                        ola::rdm::RDMCallback *on_complete);
+    void SendRDMRequest(const RDMRequest *request,
+                        RDMCallback *on_complete);
 
   private:
     ola::rdm::UID m_uid;
+    const class EndpointManager *m_endpoint_manager;
+
+    void HandleEndpointList(const RDMRequest *request,
+                            RDMCallback *on_complete);
+    void HandleEndpointIdentify(const RDMRequest *request,
+                                RDMCallback *on_complete);
+    void HandleEndpointLabel(const RDMRequest *request,
+                             RDMCallback *on_complete);
+    void HandleTCPCommsStatus(const RDMRequest *request,
+                              RDMCallback *on_complete);
+    void HandleUnknownPID(const RDMRequest *request,
+                          RDMCallback *on_complete);
+
+    bool CheckForBroadcastSubdeviceOrData(const RDMRequest *request,
+                                          RDMCallback *callback);
+    void RunRDMCallback(RDMCallback *callback,
+                        ola::rdm::RDMResponse *response);
 };
 #endif  // TOOLS_E133_ROOTENDPOINT_H_

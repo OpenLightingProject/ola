@@ -18,14 +18,9 @@
  * Copyright (C) 2011 Simon Newton
  */
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
 #ifndef TOOLS_E133_E133DEVICE_H_
 #define TOOLS_E133_E133DEVICE_H_
 
-#include HASH_MAP_H
 
 #include <string>
 #include <vector>
@@ -42,9 +37,12 @@
 #include "plugins/e131/e131/RootInflator.h"
 #include "plugins/e131/e131/RootSender.h"
 #include "plugins/e131/e131/UDPTransport.h"
+
+#include "tools/e133/E133Endpoint.h";
 #include "tools/e133/E133HealthCheckedConnection.h";
 
 using std::string;
+using std::auto_ptr;
 
 /**
  * A E1.33 Device.
@@ -53,25 +51,24 @@ using std::string;
 class E133Device {
   public:
     E133Device(ola::network::SelectServerInterface *ss,
-               const ola::network::IPV4Address &ip_address);
+               const ola::network::IPV4Address &ip_address,
+               class EndpointManager *endpoint_manager);
     ~E133Device();
+
+    void SetRootEndpoint(E133EndpointInterface *endpoint);
 
     bool Init();
 
-    bool RegisterEndpoint(uint16_t endpoint, class E133Endpoint *endpoint);
-    void UnRegisterEndpoint(uint16_t endpoint);
-
   private:
-    // hash_map of non-root endpoints
-    typedef HASH_NAMESPACE::HASH_MAP_CLASS<
-      uint16_t,
-      class E133Endpoint*> endpoint_map;
-    endpoint_map m_endpoint_map;
+    class EndpointManager *m_endpoint_manager;
+    auto_ptr<ola::Callback1<void, uint16_t> > m_register_endpoint_callback;
+    auto_ptr<ola::Callback1<void, uint16_t> > m_unregister_endpoint_callback;
+    E133EndpointInterface *m_root_endpoint;
 
     // The Node's CID
     ola::plugin::e131::CID m_cid;
 
-    // Frequncy of TCP health checking
+    // Frequency of TCP health checking
     ola::TimeInterval m_health_check_interval;
     ola::network::ConnectedDescriptor *m_tcp_descriptor;
     E133HealthCheckedConnection *m_health_checked_connection;
@@ -102,6 +99,9 @@ class E133Device {
 
     void NewTCPConnection(ola::network::ConnectedDescriptor *descriptor);
     void TCPConnectionUnhealthy();
+
+    void RegisterEndpoint(uint16_t endpoint_id);
+    void UnRegisterEndpoint(uint16_t endpoint_id);
 
     void EndpointRequest(
         uint16_t endpoint_id,

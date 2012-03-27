@@ -11,7 +11,9 @@ noinst_PROGRAMS = e133_receiver slp_locate slp_register
 
 e133_receiver_SOURCES = e133-receiver.cpp \
                         E133Device.cpp \
+                        E133Endpoint.cpp \
                         E133HealthCheckedConnection.cpp \
+                        EndpointManager.cpp \
                         RootEndpoint.cpp \
                         SlpThread.cpp
 e133_receiver_LDADD = $(openslp_LIBS) \

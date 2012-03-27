@@ -39,6 +39,7 @@
 #include "tools/e133/E133Device.h"
 #include "tools/e133/E133Endpoint.h"
 #include "tools/e133/E133HealthCheckedConnection.h";
+#include "tools/e133/EndpointManager.h"
 
 using ola::NewCallback;
 using ola::network::HealthCheckedConnection;
@@ -46,11 +47,17 @@ using ola::plugin::e131::DMPAddressData;
 using ola::plugin::e131::TwoByteRangeDMPAddress;
 using std::auto_ptr;
 using std::string;
+using std::vector;
 
 
 E133Device::E133Device(ola::network::SelectServerInterface *ss,
-                       const ola::network::IPV4Address &ip_address)
-    : m_cid(ola::plugin::e131::CID::Generate()),
+                       const ola::network::IPV4Address &ip_address,
+                       EndpointManager *endpoint_manager)
+    : m_endpoint_manager(endpoint_manager),
+      m_register_endpoint_callback(NULL),
+      m_unregister_endpoint_callback(NULL),
+      m_root_endpoint(NULL),
+      m_cid(ola::plugin::e131::CID::Generate()),
       m_health_check_interval(2, 0),
       m_tcp_descriptor(NULL),
       m_health_checked_connection(NULL),
@@ -60,21 +67,53 @@ E133Device::E133Device(ola::network::SelectServerInterface *ss,
       m_outgoing_udp_transport(&m_udp_socket),
       m_root_sender(m_cid),
       m_e133_sender(&m_root_sender) {
+
+  m_register_endpoint_callback.reset(NewCallback(
+      this,
+      &E133Device::RegisterEndpoint));
+  m_unregister_endpoint_callback.reset(NewCallback(
+      this,
+      &E133Device::UnRegisterEndpoint));
+  m_endpoint_manager->RegisterNotification(
+      EndpointManager::ADD,
+      m_register_endpoint_callback.get());
+  m_endpoint_manager->RegisterNotification(
+      EndpointManager::REMOVE,
+      m_unregister_endpoint_callback.get());
 }
 
 
 E133Device::~E133Device() {
-  // de-register all endpoints with the DMP layer
-  endpoint_map::iterator iter = m_endpoint_map.begin();
-  for (; iter != m_endpoint_map.end(); ++iter) {
-    m_dmp_inflator.RemoveRDMHandler(iter->first);
+  vector<uint16_t> endpoints;
+  m_endpoint_manager->EndpointIDs(&endpoints);
+  if (endpoints.size()) {
+    OLA_WARN << "Some endpoints weren't removed correctly";
+    vector<uint16_t>::iterator iter = endpoints.begin();
+    for (; iter != endpoints.end(); ++iter) {
+      m_dmp_inflator.RemoveRDMHandler(*iter);
+    }
   }
-  m_endpoint_map.clear();
+
+  m_endpoint_manager->UnRegisterNotification(
+      m_register_endpoint_callback.get());
+  m_endpoint_manager->UnRegisterNotification(
+      m_unregister_endpoint_callback.get());
 }
 
 
+/**
+ * Set the Root Endpoint, ownership is not transferred
+ */
+void E133Device::SetRootEndpoint(E133EndpointInterface *endpoint) {
+  m_root_endpoint = endpoint;
+}
+
+
+/**
+ * Init the device.
+ */
 bool E133Device::Init() {
-  OLA_INFO << "Attempting to start E1.33 at " << m_ip_address;
+  OLA_INFO << "Attempting to start E1.33 device at " << m_ip_address;
 
   // setup the TCP socket
   m_tcp_socket.SetOnAccept(NewCallback(this, &E133Device::NewTCPConnection));
@@ -104,43 +143,6 @@ bool E133Device::Init() {
   m_ss->AddReadDescriptor(&m_udp_socket);
   m_ss->AddReadDescriptor(&m_tcp_socket);
   return true;
-}
-
-
-/**
- * Register a E133UniverseEndpoint
- * @param endpoint_id the endpoint index
- * @param endpoint E133UniverseEndpoint to register
- * @return true if the registration succeeded, false otherwise.
- */
-bool E133Device::RegisterEndpoint(uint16_t endpoint_id,
-                                  E133Endpoint *endpoint) {
-  if (!endpoint_id) {
-    OLA_WARN << "Can't unregister the root endpoint";
-  }
-
-  endpoint_map::iterator iter = m_endpoint_map.find(endpoint_id);
-  if (iter == m_endpoint_map.end()) {
-    m_endpoint_map[endpoint_id] = endpoint;
-    m_dmp_inflator.SetRDMHandler(
-        endpoint_id,
-        NewCallback(this, &E133Device::EndpointRequest, endpoint_id));
-    return true;
-  }
-  return false;
-}
-
-
-/**
- * Unregister a E133Endpoint
- * @param endpoint_id the index of the endpont to de-register
- */
-void E133Device::UnRegisterEndpoint(uint16_t endpoint_id) {
-  endpoint_map::iterator iter = m_endpoint_map.find(endpoint_id);
-  if (iter != m_endpoint_map.end()) {
-    m_dmp_inflator.RemoveRDMHandler(endpoint_id);
-    m_endpoint_map.erase(iter);
-  }
 }
 
 
@@ -183,6 +185,26 @@ void E133Device::NewTCPConnection(
 
 
 /**
+ * Caled when new endpoints are added
+ */
+void E133Device::RegisterEndpoint(uint16_t endpoint_id) {
+  OLA_INFO << "Endpoint " << endpoint_id << " has been added";
+  m_dmp_inflator.SetRDMHandler(
+      endpoint_id,
+      NewCallback(this, &E133Device::EndpointRequest, endpoint_id));
+}
+
+
+/**
+ * Called when endpoints are removed
+ */
+void E133Device::UnRegisterEndpoint(uint16_t endpoint_id) {
+  OLA_INFO << "Endpoint " << endpoint_id << " has been removed";
+  m_dmp_inflator.RemoveRDMHandler(endpoint_id);
+}
+
+
+/**
  * Called when the TCP connection goes unhealthy.
  */
 void E133Device::TCPConnectionUnhealthy() {
@@ -208,8 +230,8 @@ void E133Device::EndpointRequest(
   OLA_INFO << "Got request for to endpoint " << endpoint_id << "from " <<
     transport_header.SourceIP();
 
-  endpoint_map::iterator iter = m_endpoint_map.find(endpoint_id);
-  if (iter == m_endpoint_map.end()) {
+  E133Endpoint *endpoint = m_endpoint_manager->GetEndpoint(endpoint_id);
+  if (!endpoint) {
     OLA_INFO << "Request to endpoint " << endpoint_id <<
       " but no Endpoint has been registered, this is a bug!";
     return;
@@ -225,7 +247,7 @@ void E133Device::EndpointRequest(
     return;
   }
 
-  iter->second->SendRDMRequest(
+  endpoint->SendRDMRequest(
       request,
       ola::NewSingleCallback(this,
                              &E133Device::EndpointRequestComplete,
