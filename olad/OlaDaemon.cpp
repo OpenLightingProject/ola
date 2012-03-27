@@ -41,7 +41,6 @@
 namespace ola {
 
 using ola::network::TcpAcceptingSocket;
-using ola::network::AcceptingSocket;
 using ola::network::SelectServer;
 
 const char OlaDaemon::K_RPC_PORT_VAR[] = "rpc-port";

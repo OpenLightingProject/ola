@@ -470,6 +470,27 @@ TcpSocket* TcpSocket::Connect(const std::string &ip_address,
 }
 
 
+/**
+ * Get the remote IPAddress and port for this socket
+ */
+bool TcpSocket::GetPeer(IPV4Address *address, uint16_t *port) {
+  struct sockaddr_in remote_address;
+  socklen_t length = sizeof(remote_address);
+  int r = getpeername(m_sd,
+                      (struct sockaddr*) &remote_address,
+                      &length);
+  if (r) {
+    OLA_WARN << "Failed to get peer information for fd: " << m_sd << ", " <<
+      strerror(errno);
+    return false;
+  }
+
+  *address = IPV4Address(remote_address.sin_addr);
+  *port = remote_address.sin_port;
+  return true;
+}
+
+
 /*
  * Close this TcpSocket
  */
@@ -843,7 +864,7 @@ bool UdpSocket::SetTos(uint8_t tos) {
  * Create a new TcpListeningSocket
  */
 TcpAcceptingSocket::TcpAcceptingSocket()
-    : AcceptingSocket(),
+    : ReadFileDescriptor(),
       m_sd(INVALID_DESCRIPTOR),
       m_on_accept(NULL) {
 }

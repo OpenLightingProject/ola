@@ -64,13 +64,13 @@ class OlaServer {
               class PreferencesFactory *preferences_factory,
               ola::network::SelectServer *ss,
               ola_server_options *ola_options,
-              ola::network::AcceptingSocket *socket = NULL,
+              ola::network::TcpAcceptingSocket *socket = NULL,
               ExportMap *export_map = NULL);
     ~OlaServer();
     bool Init();
     void ReloadPlugins();
     void StopServer() { m_ss->Terminate(); }
-    void NewConnection(ola::network::ConnectedDescriptor *socket);
+    void NewConnection(ola::network::TcpSocket *socket);
     void SocketClosed(ola::network::ConnectedDescriptor *socket);
     bool RunHousekeeping();
     void CheckForReload();
@@ -85,12 +85,13 @@ class OlaServer {
     bool StartHttpServer(const ola::network::Interface &interface);
 #endif
     void StopPlugins();
+    void InternalNewConnection(ola::network::ConnectedDescriptor *descriptor);
     void CleanupConnection(class OlaClientService *service);
 
     class OlaClientServiceFactory *m_service_factory;
     vector<class PluginLoader*> m_plugin_loaders;
     ola::network::SelectServer *m_ss;
-    ola::network::AcceptingSocket *m_accepting_socket;
+    ola::network::TcpAcceptingSocket *m_accepting_socket;
 
     class DeviceManager *m_device_manager;
     class PluginManager *m_plugin_manager;

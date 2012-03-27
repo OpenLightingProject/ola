@@ -31,7 +31,6 @@
 #include "ola/network/Socket.h"
 
 using std::string;
-using ola::network::AcceptingSocket;
 using ola::network::ConnectedDescriptor;
 using ola::network::IPV4Address;
 using ola::network::LoopbackDescriptor;
@@ -84,8 +83,8 @@ class SocketTest: public CppUnit::TestFixture {
     void Receive(ConnectedDescriptor *socket);
     void ReceiveAndSend(ConnectedDescriptor *socket);
     void ReceiveSendAndClose(ConnectedDescriptor *socket);
-    void NewConnectionSend(ConnectedDescriptor *socket);
-    void NewConnectionSendAndClose(ConnectedDescriptor *socket);
+    void NewConnectionSend(TcpSocket *socket);
+    void NewConnectionSendAndClose(TcpSocket *socket);
     void UdpReceiveAndTerminate(UdpSocket *socket);
     void UdpReceiveAndSend(UdpSocket *socket);
 
@@ -96,7 +95,7 @@ class SocketTest: public CppUnit::TestFixture {
 
   private:
     SelectServer *m_ss;
-    AcceptingSocket *m_accepting_socket;
+    TcpAcceptingSocket *m_accepting_socket;
     ola::SingleUseCallback0<void> *m_timeout_closure;
 
     void SocketClientClose(ConnectedDescriptor *socket,
@@ -370,8 +369,12 @@ void SocketTest::ReceiveSendAndClose(ConnectedDescriptor *socket) {
 /*
  * Accept a new connection and send some test data
  */
-void SocketTest::NewConnectionSend(ConnectedDescriptor *new_socket) {
+void SocketTest::NewConnectionSend(TcpSocket *new_socket) {
   CPPUNIT_ASSERT(new_socket);
+  IPV4Address address;
+  uint16_t port;
+  CPPUNIT_ASSERT(new_socket->GetPeer(&address, &port));
+  OLA_INFO << "Connection from " << address << ":" << port;
   ssize_t bytes_sent = new_socket->Send(
       static_cast<const uint8_t*>(test_cstring),
       sizeof(test_cstring));
@@ -385,8 +388,12 @@ void SocketTest::NewConnectionSend(ConnectedDescriptor *new_socket) {
 /*
  * Accept a new connect, send some data and close
  */
-void SocketTest::NewConnectionSendAndClose(ConnectedDescriptor *new_socket) {
+void SocketTest::NewConnectionSendAndClose(TcpSocket *new_socket) {
   CPPUNIT_ASSERT(new_socket);
+  IPV4Address address;
+  uint16_t port;
+  CPPUNIT_ASSERT(new_socket->GetPeer(&address, &port));
+  OLA_INFO << "Connection from " << address << ":" << port;
   ssize_t bytes_sent = new_socket->Send(
       static_cast<const uint8_t*>(test_cstring),
       sizeof(test_cstring));

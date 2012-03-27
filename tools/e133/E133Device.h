@@ -100,7 +100,7 @@ class E133Device {
     ola::plugin::e131::RootSender m_root_sender;
     ola::plugin::e131::E133Sender m_e133_sender;
 
-    void NewTCPConnection(ola::network::ConnectedDescriptor *descriptor);
+    void NewTCPConnection(ola::network::TcpSocket *descriptor);
     void TCPConnectionUnhealthy();
 
     void RegisterEndpoint(uint16_t endpoint_id);

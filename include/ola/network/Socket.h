@@ -351,6 +351,8 @@ class TcpSocket: public ConnectedDescriptor {
     static TcpSocket* Connect(const std::string &ip_address,
                               unsigned short port);
 
+    bool GetPeer(IPV4Address *address, uint16_t *port);
+
   protected:
     bool IsSocket() const { return true; }
 
@@ -477,20 +479,9 @@ class UdpSocket: public UdpSocketInterface {
 
 
 /*
- * A FileDescriptor creates new FileDescriptors when clients connect.
- */
-class AcceptingSocket: public ReadFileDescriptor {
-  public:
-    // Set the on Accept closure
-    virtual void SetOnAccept(
-        ola::Callback1<void, ConnectedDescriptor*> *on_accept) = 0;
-};
-
-
-/*
  * A TCP accepting socket
  */
-class TcpAcceptingSocket: public AcceptingSocket {
+class TcpAcceptingSocket: public ReadFileDescriptor {
   public:
     TcpAcceptingSocket();
     ~TcpAcceptingSocket();
@@ -505,7 +496,7 @@ class TcpAcceptingSocket: public AcceptingSocket {
     void PerformRead();
 
     // Set the on Accept closure
-    void SetOnAccept(ola::Callback1<void, ConnectedDescriptor*> *on_accept) {
+    void SetOnAccept(ola::Callback1<void, TcpSocket*> *on_accept) {
       if (m_on_accept)
         delete m_on_accept;
       m_on_accept = on_accept;
@@ -513,7 +504,7 @@ class TcpAcceptingSocket: public AcceptingSocket {
 
   private:
     int m_sd;
-    ola::Callback1<void, ConnectedDescriptor*> *m_on_accept;
+    ola::Callback1<void, TcpSocket*> *m_on_accept;
 
     TcpAcceptingSocket(const TcpAcceptingSocket &other);
     TcpAcceptingSocket& operator=(const TcpAcceptingSocket &other);

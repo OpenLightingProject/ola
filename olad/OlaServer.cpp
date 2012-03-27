@@ -79,7 +79,7 @@ OlaServer::OlaServer(OlaClientServiceFactory *factory,
                      PreferencesFactory *preferences_factory,
                      ola::network::SelectServer *select_server,
                      ola_server_options *ola_options,
-                     ola::network::AcceptingSocket *socket,
+                     ola::network::TcpAcceptingSocket *socket,
                      ExportMap *export_map)
     : m_service_factory(factory),
       m_plugin_loaders(plugin_loaders),
@@ -283,30 +283,10 @@ void OlaServer::ReloadPlugins() {
  * Add a new ConnectedDescriptor to this Server.
  * @param socket the new ConnectedDescriptor
  */
-void OlaServer::NewConnection(ola::network::ConnectedDescriptor *socket) {
+void OlaServer::NewConnection(ola::network::TcpSocket *socket) {
   if (!socket)
     return;
-
-  StreamRpcChannel *channel = new StreamRpcChannel(NULL, socket, m_export_map);
-  socket->SetOnClose(NewSingleCallback(this, &OlaServer::SocketClosed, socket));
-  OlaClientService_Stub *stub = new OlaClientService_Stub(channel);
-  Client *client = new Client(stub);
-  OlaClientService *service = m_service_factory->New(client, m_service_impl);
-  m_broker->AddClient(client);
-  channel->SetService(service);
-
-  map<int, OlaClientService*>::const_iterator iter;
-  iter = m_sd_to_service.find(socket->ReadDescriptor());
-
-  if (iter != m_sd_to_service.end())
-    OLA_INFO << "New socket but the client already exists!";
-
-  pair<int, OlaClientService*> pair(socket->ReadDescriptor(), service);
-  m_sd_to_service.insert(pair);
-
-  // This hands off ownership to the select server
-  m_ss->AddReadDescriptor(socket, true);
-  (*m_export_map->GetIntegerVar(K_CLIENT_VAR))++;
+  InternalNewConnection(socket);
 }
 
 
@@ -381,7 +361,7 @@ bool OlaServer::StartHttpServer(const ola::network::Interface &iface) {
   if (m_httpd->Init()) {
     m_httpd->Start();
     // register the pipe descriptor as a client
-    NewConnection(pipe_descriptor);
+    InternalNewConnection(pipe_descriptor);
     return true;
   } else {
     pipe_descriptor->Close();
@@ -407,6 +387,36 @@ void OlaServer::StopPlugins() {
     }
     m_device_manager->UnregisterAllDevices();
   }
+}
+
+
+/*
+ * Add a new ConnectedDescriptor to this Server.
+ * @param socket the new ConnectedDescriptor
+ */
+void OlaServer::InternalNewConnection(
+    ola::network::ConnectedDescriptor *socket) {
+  StreamRpcChannel *channel = new StreamRpcChannel(NULL, socket, m_export_map);
+  socket->SetOnClose(
+      NewSingleCallback(this, &OlaServer::SocketClosed, socket));
+  OlaClientService_Stub *stub = new OlaClientService_Stub(channel);
+  Client *client = new Client(stub);
+  OlaClientService *service = m_service_factory->New(client, m_service_impl);
+  m_broker->AddClient(client);
+  channel->SetService(service);
+
+  map<int, OlaClientService*>::const_iterator iter;
+  iter = m_sd_to_service.find(socket->ReadDescriptor());
+
+  if (iter != m_sd_to_service.end())
+    OLA_INFO << "New socket but the client already exists!";
+
+  pair<int, OlaClientService*> pair(socket->ReadDescriptor(), service);
+  m_sd_to_service.insert(pair);
+
+  // This hands off ownership to the select server
+  m_ss->AddReadDescriptor(socket, true);
+  (*m_export_map->GetIntegerVar(K_CLIENT_VAR))++;
 }
 
 

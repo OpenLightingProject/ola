@@ -22,6 +22,7 @@
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/network/HealthCheckedConnection.h>
+#include <ola/network/IPV4Address.h>
 #include <ola/network/SelectServerInterface.h>
 #include <ola/rdm/RDMControllerInterface.h>
 #include <ola/rdm/RDMHelper.h>
@@ -44,6 +45,7 @@
 
 using ola::NewCallback;
 using ola::network::HealthCheckedConnection;
+using ola::network::IPV4Address;
 using ola::plugin::e131::DMPAddressData;
 using ola::plugin::e131::TwoByteRangeDMPAddress;
 using std::auto_ptr;
@@ -153,8 +155,13 @@ bool E133Device::Init() {
  * Called when we get a new TCP connection.
  */
 void E133Device::NewTCPConnection(
-    ola::network::ConnectedDescriptor *descriptor) {
-  OLA_INFO << "New TCP connection to E1.33 Node";
+    ola::network::TcpSocket *descriptor) {
+  IPV4Address ip_address;
+  uint16_t port;
+  if (descriptor->GetPeer(&ip_address, &port))
+    OLA_INFO << "New TCP connection from " << ip_address << ":" << port;
+  else
+    OLA_WARN << "New TCP connection but failed to determine peer address";
 
   if (m_health_checked_connection) {
     OLA_WARN << "Already got a TCP connection open, closing this one";
@@ -165,7 +172,7 @@ void E133Device::NewTCPConnection(
 
   if (m_tcp_stats) {
     m_tcp_stats->connection_events++;
-    // TODO(simon): update ip_address here - we need to know the peer address
+    m_tcp_stats->ip_address = ip_address;
   }
 
   m_health_checked_connection = new
