@@ -102,6 +102,7 @@ class E133Device {
 
     void NewTCPConnection(ola::network::TcpSocket *descriptor);
     void TCPConnectionUnhealthy();
+    void TCPConnectionClosed();
 
     void RegisterEndpoint(uint16_t endpoint_id);
     void UnRegisterEndpoint(uint16_t endpoint_id);

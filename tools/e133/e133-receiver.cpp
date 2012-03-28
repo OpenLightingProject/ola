@@ -192,6 +192,7 @@ class SimpleE133Node {
     void DeRegisterCallback(bool ok);
 
     void Input();
+    void DumpTCPStats();
 };
 
 
@@ -294,15 +295,28 @@ void SimpleE133Node::DeRegisterCallback(bool ok) {
  */
 void SimpleE133Node::Input() {
   switch (getchar()) {
+    case 'q':
+      m_ss.Terminate();
+      break;
     case 's':
       OLA_INFO << "This would send a unsolicited message";
       break;
-    case 'q':
-      m_ss.Terminate();
+    case 't':
+      DumpTCPStats();
       break;
     default:
       break;
   }
+}
+
+
+/**
+ * Dump the TCP stats
+ */
+void SimpleE133Node::DumpTCPStats() {
+  OLA_INFO << "IP: " << m_tcp_stats.ip_address;
+  OLA_INFO << "Connection Unhealthy Events: " << m_tcp_stats.unhealthy_events;
+  OLA_INFO << "Connection Events: " << m_tcp_stats.connection_events;
 }
 
 
@@ -370,6 +384,7 @@ int main(int argc, char *argv[]) {
   OLA_INFO << "---------------  Controls  ----------------";
   OLA_INFO << " q - Quit";
   OLA_INFO << " s - Send Status Message";
+  OLA_INFO << " t - Dump TCP stats";
   OLA_INFO << "-------------------------------------------";
 
   node.Run();

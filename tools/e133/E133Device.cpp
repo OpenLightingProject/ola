@@ -175,6 +175,9 @@ void E133Device::NewTCPConnection(
     m_tcp_stats->ip_address = ip_address;
   }
 
+  descriptor->SetOnClose(
+      ola::NewSingleCallback(this, &E133Device::TCPConnectionClosed));
+
   m_health_checked_connection = new
     E133HealthCheckedConnection(
         &m_e133_sender,
@@ -200,6 +203,38 @@ void E133Device::NewTCPConnection(
 
 
 /**
+ * Called when the TCP connection goes unhealthy.
+ */
+void E133Device::TCPConnectionUnhealthy() {
+  OLA_INFO << "TCP connection went unhealthy, closing";
+  if (m_tcp_stats)
+    m_tcp_stats->unhealthy_events++;
+
+  m_ss->RemoveReadDescriptor(m_tcp_descriptor);
+  m_tcp_descriptor->Close();
+
+  ola::network::ConnectedDescriptor::OnCloseCallback *callback =
+    m_tcp_descriptor->TransferOnClose();
+  callback->Run();
+}
+
+
+/**
+ * Called when the TCP connection is closed
+ */
+void E133Device::TCPConnectionClosed() {
+  OLA_INFO << "TCP conection closed";
+  m_tcp_stats->ip_address = IPV4Address();
+
+  delete m_health_checked_connection;
+  m_health_checked_connection = NULL;
+
+  delete m_tcp_descriptor;
+  m_tcp_descriptor = NULL;
+}
+
+
+/**
  * Caled when new endpoints are added
  */
 void E133Device::RegisterEndpoint(uint16_t endpoint_id) {
@@ -216,23 +251,6 @@ void E133Device::RegisterEndpoint(uint16_t endpoint_id) {
 void E133Device::UnRegisterEndpoint(uint16_t endpoint_id) {
   OLA_INFO << "Endpoint " << endpoint_id << " has been removed";
   m_dmp_inflator.RemoveRDMHandler(endpoint_id);
-}
-
-
-/**
- * Called when the TCP connection goes unhealthy.
- */
-void E133Device::TCPConnectionUnhealthy() {
-  OLA_INFO << "TCP connection went unhealthy, closing";
-  if (m_tcp_stats)
-    m_tcp_stats->unhealthy_events++;
-
-  delete m_health_checked_connection;
-  m_health_checked_connection = NULL;
-
-  m_ss->RemoveReadDescriptor(m_tcp_descriptor);
-  delete m_tcp_descriptor;
-  m_tcp_descriptor = NULL;
 }
 
 
