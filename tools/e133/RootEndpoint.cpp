@@ -106,6 +106,7 @@ void RootEndpoint::HandleSupportedParams(const RDMRequest *request,
     return;
 
   uint16_t supported_params[] = {
+    // add ENDPOINT_PROXIED_DEVICES here
     ola::rdm::PID_ENDPOINT_LIST,
     ola::rdm::PID_ENDPOINT_IDENTIFY,
     ola::rdm::PID_ENDPOINT_LABEL,

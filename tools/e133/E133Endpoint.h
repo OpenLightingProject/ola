@@ -40,7 +40,6 @@ class E133EndpointInterface: public ola::rdm::RDMControllerInterface {
 };
 
 
-
 /**
  * A non-root endpoint, which has properties like a label, identify mode etc.
  */
