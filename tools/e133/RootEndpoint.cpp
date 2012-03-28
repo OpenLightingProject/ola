@@ -34,6 +34,7 @@
 #include "tools/e133/RootEndpoint.h"
 #include "tools/e133/TCPConnectionStats.h"
 
+using ola::network::HostToNetwork;
 using ola::rdm::RDMCallback;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
@@ -75,6 +76,9 @@ void RootEndpoint::SendRDMRequest(const RDMRequest *request_ptr,
 
   OLA_INFO << "Received Request for root endpoint";
   switch (request->ParamId()) {
+    case ola::rdm::PID_SUPPORTED_PARAMETERS:
+      HandleSupportedParams(request.get(), on_complete);
+      break;
     case ola::rdm::PID_ENDPOINT_LIST:
       HandleEndpointList(request.get(), on_complete);
       break;
@@ -94,11 +98,38 @@ void RootEndpoint::SendRDMRequest(const RDMRequest *request_ptr,
 
 
 /**
+ * Handle PID_SUPPORTED_PARAMETERS
+ */
+void RootEndpoint::HandleSupportedParams(const RDMRequest *request,
+                                         RDMCallback *on_complete) {
+  if (!SanityCheckGet(request, on_complete, 0))
+    return;
+
+  uint16_t supported_params[] = {
+    ola::rdm::PID_ENDPOINT_LIST,
+    ola::rdm::PID_ENDPOINT_IDENTIFY,
+    ola::rdm::PID_ENDPOINT_LABEL,
+    ola::rdm::PID_TCP_COMMS_STATUS,
+  };
+
+  for (unsigned int i = 0; i < sizeof(supported_params) / 2; i++)
+    supported_params[i] = HostToNetwork(supported_params[i]);
+
+  RDMResponse *response = GetResponseFromData(
+      request,
+      reinterpret_cast<uint8_t*>(supported_params),
+      sizeof(supported_params));
+
+  RunRDMCallback(on_complete, response);
+}
+
+
+/**
  * Handle PID_ENDPOINT_LIST.
  */
 void RootEndpoint::HandleEndpointList(const ola::rdm::RDMRequest *request,
                                       ola::rdm::RDMCallback *on_complete) {
-  if (!CheckForBroadcastSubdeviceOrData(request, on_complete))
+  if (!SanityCheckGet(request, on_complete, 0))
     return;
 
   vector<uint16_t> endpoints;
@@ -122,8 +153,68 @@ void RootEndpoint::HandleEndpointList(const ola::rdm::RDMRequest *request,
  */
 void RootEndpoint::HandleEndpointIdentify(const ola::rdm::RDMRequest *request,
                                           ola::rdm::RDMCallback *on_complete) {
-  // TODO(simon): add me
-  HandleUnknownPID(request, on_complete);
+  struct endpoint_identify_message_s {
+    uint16_t endpoint_number;
+    uint8_t identify_mode;
+  } __attribute__((packed));
+  struct endpoint_identify_message_s endpoint_identify_message;
+
+  RDMPackets packets;
+  uint16_t endpoint_id;
+  if (!SanityCheckGetOrSet(request,
+                           on_complete,
+                           sizeof(endpoint_id),
+                           sizeof(endpoint_identify_message),
+                           sizeof(endpoint_identify_message)))
+    return;
+
+  memcpy(reinterpret_cast<uint8_t*>(&endpoint_id),
+         request->ParamData(),
+         sizeof(endpoint_id));
+  endpoint_id = HostToNetwork(endpoint_id);
+
+  E133Endpoint *endpoint = m_endpoint_manager->GetEndpoint(endpoint_id);
+
+  // endpoint not found
+  if (!endpoint) {
+    if (request->DestinationUID().IsBroadcast()) {
+      on_complete->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
+      return;
+    } else {
+      RDMResponse *response = NackWithReason(request,
+                                             ola::rdm::NR_DATA_OUT_OF_RANGE);
+      RunRDMCallback(on_complete, response);
+      return;
+    }
+  }
+
+  if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
+    // SET
+    memcpy(reinterpret_cast<uint8_t*>(&endpoint_identify_message),
+           request->ParamData(),
+           sizeof(endpoint_identify_message));
+
+    endpoint->SetIdentifyMode(endpoint_identify_message.identify_mode);
+
+    if (request->DestinationUID().IsBroadcast()) {
+      on_complete->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
+      return;
+    } else {
+      RDMResponse *response = GetResponseFromData(request, NULL, 0);
+      RunRDMCallback(on_complete, response);
+      return;
+    }
+  } else {
+    // GET
+    endpoint_identify_message.endpoint_number = HostToNetwork(endpoint_id);
+    endpoint_identify_message.identify_mode = endpoint->IdentifyMode();
+    RDMResponse *response = GetResponseFromData(
+        request,
+        reinterpret_cast<uint8_t*>(&endpoint_identify_message),
+        sizeof(endpoint_identify_message));
+
+    RunRDMCallback(on_complete, response);
+  }
 }
 
 
@@ -142,14 +233,46 @@ void RootEndpoint::HandleEndpointLabel(const ola::rdm::RDMRequest *request,
  */
 void RootEndpoint::HandleTCPCommsStatus(const RDMRequest *request,
                                         RDMCallback *on_complete) {
-  // TODO(simon): add me
-  HandleUnknownPID(request, on_complete);
+  struct tcp_stats_message_s {
+    uint32_t ip_address;
+    uint16_t unhealthy_events;
+    uint16_t connection_events;
+  } __attribute__((packed));
+  struct tcp_stats_message_s tcp_stats_message;
 
-  /*
-   * remote_v4_address
-   * connection_unhealthy_events
-   * connection_establishments
-   */
+  RDMPackets packets;
+  if (!SanityCheckGetOrSet(request,
+                           on_complete,
+                           0,
+                           sizeof(tcp_stats_message),
+                           sizeof(tcp_stats_message)))
+    return;
+
+  if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
+    // A SET message resets the counters
+    tcp_stats_message.unhealthy_events = 0;
+    tcp_stats_message.connection_events = 0;
+
+    if (request->DestinationUID().IsBroadcast()) {
+      on_complete->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
+      return;
+    } else {
+      RDMResponse *response = GetResponseFromData(request, NULL, 0);
+      RunRDMCallback(on_complete, response);
+    }
+  } else {
+    // GET
+    tcp_stats_message.ip_address = m_tcp_stats->ip_address.AsInt();
+    tcp_stats_message.unhealthy_events = m_tcp_stats->unhealthy_events;
+    tcp_stats_message.connection_events = m_tcp_stats->connection_events;
+
+    RDMResponse *response = GetResponseFromData(
+        request,
+        reinterpret_cast<uint8_t*>(&tcp_stats_message),
+        sizeof(tcp_stats_message));
+
+    RunRDMCallback(on_complete, response);
+  }
 }
 
 
@@ -169,18 +292,16 @@ void RootEndpoint::HandleUnknownPID(const RDMRequest *request,
 
 
 /**
- * Check for the following:
- *   - the callback was non-null
- *   - broadcast request
- *   - request with a sub device set
- *   - request with data
- * And return the correct NACK reason
+ * Perform sanity checks a GET only request, sending the correct NACK if any
+ * checks fail.
+ * @param get_length, NACK if the data length doesn't match
  * @returns true is this request was ok, false if we nack'ed it
  */
-bool RootEndpoint::CheckForBroadcastSubdeviceOrData(
-    const RDMRequest *request,
-    RDMCallback *callback) {
+bool RootEndpoint::SanityCheckGet(const RDMRequest *request,
+                                  RDMCallback *callback,
+                                  unsigned int get_length) {
   if (request->DestinationUID().IsBroadcast()) {
+    // don't take any action for broadcast GETs
     RDMPackets packets;
     callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
     return false;
@@ -191,8 +312,61 @@ bool RootEndpoint::CheckForBroadcastSubdeviceOrData(
     response = NackWithReason(request, ola::rdm::NR_UNSUPPORTED_COMMAND_CLASS);
   } else if (request->SubDevice()) {
     response = NackWithReason(request, ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
-  } else if (request->ParamDataSize()) {
+  } else if (request->ParamDataSize() != get_length) {
     response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+  }
+
+  if (response) {
+    RunRDMCallback(callback, response);
+    return false;
+  }
+  return true;
+}
+
+
+/**
+ * Perform sanity checks for a GET/SET request, sending the correct NACK if any
+ * checks fail
+ * @param get_length, NACK if the data length doesn't match
+ * @param min_set_length, NACK if the data length doesn't match
+ * @param max_set_length, NACK if the data length doesn't match
+ * @returns true is this request was ok, false if we nack'ed it
+ */
+bool RootEndpoint::SanityCheckGetOrSet(
+    const RDMRequest *request,
+    RDMCallback *callback,
+    unsigned int get_length,
+    unsigned int min_set_length,
+    unsigned int max_set_length) {
+  RDMPackets packets;
+  RDMResponse *response = NULL;
+
+  if (request->CommandClass() != ola::rdm::RDMCommand::SET_COMMAND) {
+    // SET
+    if (request->SubDevice()) {
+      response = NackWithReason(request, ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
+    } else if (request->ParamDataSize() < min_set_length ||
+               request->ParamDataSize() > max_set_length) {
+      response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    }
+
+    if (response && request->DestinationUID().IsBroadcast()) {
+      callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
+      return false;
+    }
+  } else {
+    // GET
+    // don't take any action for broadcast GETs
+    if (request->DestinationUID().IsBroadcast()) {
+      callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
+      return false;
+    }
+
+    if (request->SubDevice()) {
+      response = NackWithReason(request, ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
+    } else if (request->ParamDataSize() != get_length) {
+      response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    }
   }
 
   if (response) {

@@ -45,6 +45,8 @@ class RootEndpoint: public E133EndpointInterface {
     const class EndpointManager *m_endpoint_manager;
     class TCPConnectionStats *m_tcp_stats;
 
+    void HandleSupportedParams(const RDMRequest *request,
+                               RDMCallback *on_complete);
     void HandleEndpointList(const RDMRequest *request,
                             RDMCallback *on_complete);
     void HandleEndpointIdentify(const RDMRequest *request,
@@ -56,8 +58,14 @@ class RootEndpoint: public E133EndpointInterface {
     void HandleUnknownPID(const RDMRequest *request,
                           RDMCallback *on_complete);
 
-    bool CheckForBroadcastSubdeviceOrData(const RDMRequest *request,
-                                          RDMCallback *callback);
+    bool SanityCheckGet(const RDMRequest *request,
+                        RDMCallback *callback,
+                        unsigned int data_length);
+    bool SanityCheckGetOrSet(const RDMRequest *request,
+                             RDMCallback *callback,
+                             unsigned int get_length,
+                             unsigned int min_set_length,
+                             unsigned int max_set_length);
     void RunRDMCallback(RDMCallback *callback,
                         ola::rdm::RDMResponse *response);
 };
