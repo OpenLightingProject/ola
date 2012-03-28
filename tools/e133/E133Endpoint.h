@@ -43,9 +43,10 @@ class E133EndpointInterface: public ola::rdm::RDMControllerInterface {
 /**
  * A non-root endpoint, which has properties like a label, identify mode etc.
  */
-class E133Endpoint: public E133EndpointInterface {
+class E133Endpoint: public E133EndpointInterface,
+                           ola::rdm::DiscoverableRDMControllerInterface {
   public:
-    E133Endpoint();
+    E133Endpoint(DiscoverableRDMControllerInterface *controller);
     ~E133Endpoint() {}
 
     bool IdentifyMode() const { return m_identify_mode; }
@@ -59,6 +60,9 @@ class E133Endpoint: public E133EndpointInterface {
       m_endpoint_label = endpoint_label;
     }
 
+    void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
+    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
+
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *on_complete);
 
@@ -66,5 +70,6 @@ class E133Endpoint: public E133EndpointInterface {
     bool m_identify_mode;
     uint16_t m_universe;
     string m_endpoint_label;
+    DiscoverableRDMControllerInterface *m_controller;
 };
 #endif  // TOOLS_E133_E133ENDPOINT_H_

@@ -205,6 +205,7 @@ SimpleE133Node::SimpleE133Node(const IPV4Address &ip_address,
       m_slp_thread(&m_ss),
       m_e133_device(&m_ss, ip_address, &m_endpoint_manager, &m_tcp_stats),
       m_root_endpoint(*opts.uid, &m_endpoint_manager, &m_tcp_stats),
+      m_first_endpoint(NULL),  // NO CONTROLLER FOR NOW!
       m_responder(*opts.uid),
       m_lifetime(opts.lifetime),
       m_uid(*opts.uid) {

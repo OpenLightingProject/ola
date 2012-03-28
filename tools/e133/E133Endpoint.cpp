@@ -19,6 +19,7 @@
 
 #include <ola/Logging.h>
 #include <ola/rdm/UID.h>
+#include <ola/rdm/UIDSet.h>
 #include <memory>
 #include <string>
 #include <vector>
@@ -28,14 +29,44 @@ using ola::rdm::RDMCallback;
 using ola::rdm::RDMRequest;
 using std::auto_ptr;
 using std::string;
+using ola::rdm::RDMDiscoveryCallback;
 
 typedef std::vector<std::string> RDMPackets;
 
 
-E133Endpoint::E133Endpoint()
+E133Endpoint::E133Endpoint(DiscoverableRDMControllerInterface *controller)
     : m_identify_mode(false),
       m_universe(0),
-      m_endpoint_label("") {
+      m_endpoint_label(""),
+      m_controller(controller) {
+}
+
+
+/**
+ * Run full discovery for this endpoint
+ */
+void E133Endpoint::RunFullDiscovery(RDMDiscoveryCallback *callback) {
+  if (m_controller) {
+    m_controller->RunFullDiscovery(callback);
+    return;
+  }
+
+  ola::rdm::UIDSet uid_set;
+  callback->Run(uid_set);
+}
+
+
+/**
+ * Run incremental discovery for this endpoint
+ */
+void E133Endpoint::RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
+  if (m_controller) {
+    m_controller->RunIncrementalDiscovery(callback);
+    return;
+  }
+
+  ola::rdm::UIDSet uid_set;
+  callback->Run(uid_set);
 }
 
 
