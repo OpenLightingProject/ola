@@ -348,6 +348,8 @@ class TcpSocket: public ConnectedDescriptor {
     int WriteDescriptor() const { return m_sd; }
     bool Close();
 
+    static TcpSocket* Connect(const IPV4Address &ip_address,
+                              unsigned short port);
     static TcpSocket* Connect(const std::string &ip_address,
                               unsigned short port);
 

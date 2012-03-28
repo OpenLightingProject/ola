@@ -438,7 +438,7 @@ bool UnixSocket::CloseClient() {
  * @param ip_address the IP to connect to
  * @param port the port to connect to
  */
-TcpSocket* TcpSocket::Connect(const std::string &ip_address,
+TcpSocket* TcpSocket::Connect(const IPV4Address &ip_address,
                               unsigned short port) {
   struct sockaddr_in server_address;
   socklen_t length = sizeof(server_address);
@@ -453,11 +453,7 @@ TcpSocket* TcpSocket::Connect(const std::string &ip_address,
   memset(&server_address, 0x00, sizeof(server_address));
   server_address.sin_family = AF_INET;
   server_address.sin_port = HostToNetwork(port);
-
-  if (!StringToAddress(ip_address, server_address.sin_addr)) {
-    close(sd);
-    return NULL;
-  }
+  server_address.sin_addr.s_addr = ip_address.AsInt();
 
   if (connect(sd, (struct sockaddr*) &server_address, length)) {
     OLA_WARN << "connect to " << ip_address << ":" << port << " failed, "
@@ -467,6 +463,20 @@ TcpSocket* TcpSocket::Connect(const std::string &ip_address,
   TcpSocket *socket = new TcpSocket(sd);
   socket->SetReadNonBlocking();
   return socket;
+}
+
+/*
+ * Connect
+ * @param ip_address the IP to connect to
+ * @param port the port to connect to
+ */
+TcpSocket* TcpSocket::Connect(const std::string &ip_address,
+                              unsigned short port) {
+  IPV4Address address;
+  if (!IPV4Address::FromString(ip_address, &address))
+    return NULL;
+
+  return TcpSocket::Connect(address, port);
 }
 
 
