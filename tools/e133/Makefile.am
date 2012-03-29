@@ -8,7 +8,7 @@ EXTRA_DIST = E133Endpoint.h E133Device.h \
              TCPConnectionStats.h
 
 if HAVE_SLP
-noinst_PROGRAMS = e133_receiver slp_locate slp_register
+noinst_PROGRAMS = e133_monitor e133_receiver slp_locate slp_register
 
 e133_receiver_SOURCES = e133-receiver.cpp \
                         E133Device.cpp \
@@ -21,6 +21,15 @@ e133_receiver_LDADD = $(openslp_LIBS) \
                       $(top_builddir)/common/libolacommon.la \
                       $(top_builddir)/plugins/dummy/liboladummyresponder.la \
                       $(top_builddir)/plugins/e131/e131/libolae131core.la
+
+e133_monitor_SOURCES = e133-monitor.cpp \
+                       E133HealthCheckedConnection.cpp \
+                       SlpThread.cpp \
+                       SlpUrlParser.cpp
+e133_monitor_CXXFLAGS = @OLAD_DEFINES@ $(COMMON_CXXFLAGS)
+e133_monitor_LDADD = $(openslp_LIBS) \
+                     $(top_builddir)/common/libolacommon.la \
+                     $(top_builddir)/plugins/e131/e131/libolae131core.la
 
 #e133_controller_SOURCES = e133-controller.cpp E133Device.cpp \
 #                          E133UniverseController.cpp SlpThread.cpp \

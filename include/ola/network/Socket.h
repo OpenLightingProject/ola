@@ -224,7 +224,7 @@ class ConnectedDescriptor: public BidirectionalFileDescriptor {
 
   protected:
     virtual bool IsSocket() const = 0;
-    bool SetNonBlocking(int fd);
+    static bool SetNonBlocking(int fd);
     bool SetNoSigPipe(int fd);
 
     ConnectedDescriptor(const ConnectedDescriptor &other);
@@ -339,27 +339,45 @@ class UnixSocket: public ConnectedDescriptor {
  */
 class TcpSocket: public ConnectedDescriptor {
   public:
-    explicit TcpSocket(int sd): m_sd(sd) {
-      SetNoSigPipe(sd);
-    }
+    enum tcp_socket_state {
+      CONNECTING,
+      CONNECTED,
+      FAILED,
+    };
+
     ~TcpSocket() { Close(); }
 
     int ReadDescriptor() const { return m_sd; }
     int WriteDescriptor() const { return m_sd; }
     bool Close();
 
-    static TcpSocket* Connect(const IPV4Address &ip_address,
-                              unsigned short port);
-    static TcpSocket* Connect(const std::string &ip_address,
-                              unsigned short port);
+    tcp_socket_state SocketState() const { return m_socket_state; }
+    int CheckIfConnected();
 
     bool GetPeer(IPV4Address *address, uint16_t *port);
+
+    static TcpSocket* Connect(const IPV4Address &ip_address,
+                              unsigned short port,
+                              bool blocking = true);
+    static TcpSocket* Connect(const std::string &ip_address,
+                              unsigned short port,
+                              bool blocking = true);
+
+    friend class TcpAcceptingSocket;
 
   protected:
     bool IsSocket() const { return true; }
 
   private:
     int m_sd;
+    tcp_socket_state m_socket_state;
+
+    explicit TcpSocket(int sd, tcp_socket_state socket_state)
+        : m_sd(sd),
+          m_socket_state(socket_state) {
+      SetNoSigPipe(sd);
+    }
+
     TcpSocket(const TcpSocket &other);
     TcpSocket& operator=(const TcpSocket &other);
 };

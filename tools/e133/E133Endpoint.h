@@ -46,7 +46,7 @@ class E133EndpointInterface: public ola::rdm::RDMControllerInterface {
 class E133Endpoint: public E133EndpointInterface,
                            ola::rdm::DiscoverableRDMControllerInterface {
   public:
-    E133Endpoint(DiscoverableRDMControllerInterface *controller);
+    explicit E133Endpoint(DiscoverableRDMControllerInterface *controller);
     ~E133Endpoint() {}
 
     bool IdentifyMode() const { return m_identify_mode; }

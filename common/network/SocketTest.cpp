@@ -219,6 +219,7 @@ void SocketTest::testTcpSocketClientClose() {
 
   TcpSocket *client_socket = TcpSocket::Connect(ip_address, server_port);
   CPPUNIT_ASSERT(client_socket);
+  CPPUNIT_ASSERT_EQUAL(client_socket->SocketState(), TcpSocket::CONNECTED);
   client_socket->SetOnData(ola::NewCallback(
         this, &SocketTest::ReceiveAndClose,
         static_cast<ConnectedDescriptor*>(client_socket)));
@@ -251,6 +252,7 @@ void SocketTest::testTcpSocketServerClose() {
   // The client socket checks the response and terminates on close
   TcpSocket *client_socket = TcpSocket::Connect(ip_address, server_port);
   CPPUNIT_ASSERT(client_socket);
+  CPPUNIT_ASSERT_EQUAL(client_socket->SocketState(), TcpSocket::CONNECTED);
 
   client_socket->SetOnData(ola::NewCallback(
         this, &SocketTest::Receive,

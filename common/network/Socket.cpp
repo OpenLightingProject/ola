@@ -433,52 +433,6 @@ bool UnixSocket::CloseClient() {
 // TcpSocket
 // ------------------------------------------------
 
-/*
- * Connect
- * @param ip_address the IP to connect to
- * @param port the port to connect to
- */
-TcpSocket* TcpSocket::Connect(const IPV4Address &ip_address,
-                              unsigned short port) {
-  struct sockaddr_in server_address;
-  socklen_t length = sizeof(server_address);
-
-  int sd = socket(AF_INET, SOCK_STREAM, 0);
-  if (sd < 0) {
-    OLA_WARN << "socket() failed, " << strerror(errno);
-    return NULL;
-  }
-
-  // setup
-  memset(&server_address, 0x00, sizeof(server_address));
-  server_address.sin_family = AF_INET;
-  server_address.sin_port = HostToNetwork(port);
-  server_address.sin_addr.s_addr = ip_address.AsInt();
-
-  if (connect(sd, (struct sockaddr*) &server_address, length)) {
-    OLA_WARN << "connect to " << ip_address << ":" << port << " failed, "
-      << strerror(errno);
-    return NULL;
-  }
-  TcpSocket *socket = new TcpSocket(sd);
-  socket->SetReadNonBlocking();
-  return socket;
-}
-
-/*
- * Connect
- * @param ip_address the IP to connect to
- * @param port the port to connect to
- */
-TcpSocket* TcpSocket::Connect(const std::string &ip_address,
-                              unsigned short port) {
-  IPV4Address address;
-  if (!IPV4Address::FromString(ip_address, &address))
-    return NULL;
-
-  return TcpSocket::Connect(address, port);
-}
-
 
 /**
  * Get the remote IPAddress and port for this socket
@@ -510,6 +464,98 @@ bool TcpSocket::Close() {
     m_sd = INVALID_DESCRIPTOR;
   }
   return true;
+}
+
+
+/**
+ * Check if this socket is connected
+ * @return 0 if the socket is connected, otherwise an error code (see
+ * SO_ERROR).
+ */
+int TcpSocket::CheckIfConnected() {
+  if (m_sd == INVALID_DESCRIPTOR)
+    return EBADF;
+  if (m_socket_state == CONNECTED)
+    return 0;
+
+  int error;
+  socklen_t len;
+  len = sizeof(error);
+  int r = getsockopt(m_sd, SOL_SOCKET, SO_ERROR, &error, &len);
+  if (r < 0) {
+    error = errno;
+    Close();
+    return error;
+  }
+
+  if (error) {
+    Close();
+    return error;
+  }
+  return 0;
+}
+
+
+/*
+ * Connect
+ * @param ip_address the IP to connect to
+ * @param port the port to connect to
+ * @param blocking whether to block on connect or not
+ */
+TcpSocket* TcpSocket::Connect(const IPV4Address &ip_address,
+                              unsigned short port,
+                              bool blocking) {
+  struct sockaddr_in server_address;
+  socklen_t length = sizeof(server_address);
+
+  int sd = socket(AF_INET, SOCK_STREAM, 0);
+  if (sd < 0) {
+    OLA_WARN << "socket() failed, " << strerror(errno);
+    return NULL;
+  }
+
+  // setup
+  memset(&server_address, 0x00, sizeof(server_address));
+  server_address.sin_family = AF_INET;
+  server_address.sin_port = HostToNetwork(port);
+  server_address.sin_addr.s_addr = ip_address.AsInt();
+
+  if (!blocking)
+    SetNonBlocking(sd);
+
+  int r = connect(sd, (struct sockaddr*) &server_address, length);
+
+  tcp_socket_state socket_state = CONNECTED;
+
+  if (r) {
+    if (!blocking && errno == EINPROGRESS) {
+      socket_state = CONNECTING;
+    } else {
+      OLA_WARN << "connect to " << ip_address << ":" << port << " failed, "
+        << strerror(errno);
+      return NULL;
+    }
+  }
+  TcpSocket *socket = new TcpSocket(sd, socket_state);
+  if (blocking)
+    socket->SetReadNonBlocking();
+  return socket;
+}
+
+/*
+ * Connect
+ * @param ip_address the IP to connect to
+ * @param port the port to connect to
+ * @param blocking whether to block on connect or not
+ */
+TcpSocket* TcpSocket::Connect(const std::string &ip_address,
+                              unsigned short port,
+                              bool blocking) {
+  IPV4Address address;
+  if (!IPV4Address::FromString(ip_address, &address))
+    return NULL;
+
+  return TcpSocket::Connect(address, port, blocking);
 }
 
 
@@ -998,7 +1044,7 @@ void TcpAcceptingSocket::PerformRead() {
   }
 
   if (m_on_accept) {
-    TcpSocket *socket = new TcpSocket(sd);
+    TcpSocket *socket = new TcpSocket(sd, TcpSocket::CONNECTED);
     socket->SetReadNonBlocking();
     m_on_accept->Run(socket);
   } else {
