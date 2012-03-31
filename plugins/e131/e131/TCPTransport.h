@@ -64,6 +64,28 @@ class TCPTransport: public OutgoingTransport {
     TCPTransport(const TCPTransport&);
     TCPTransport& operator=(const TCPTransport&);
 };
+
+
+
+/**
+ * IncomingTCPTransport is responsible for receiving over TCP
+ * TODO(simon): this is a complete hack. Clean this up.
+ */
+class IncomingTCPTransport {
+  public:
+    explicit IncomingTCPTransport(class BaseInflator *inflator);
+    ~IncomingTCPTransport() {
+      if (m_recv_buffer)
+        delete[] m_recv_buffer;
+    }
+
+    void Receive(ola::network::TcpSocket *socket);
+
+  private:
+    class BaseInflator *m_inflator;
+    uint8_t *m_recv_buffer;
+    uint8_t m_acn_header[PreamblePacker::DATA_OFFSET];
+};
 }  // e131
 }  // plugin
 }  // ola

@@ -95,6 +95,8 @@ class OutgoingUDPTransportImpl {
 
 /**
  * IncomingUDPTransport is responsible for receiving over UDP
+ * TODO(simon): pass the socket as an argument to receive so we can reuse the
+ * transport for multiple sockets.
  */
 class IncomingUDPTransport {
   public:
