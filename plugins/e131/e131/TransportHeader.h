@@ -35,24 +35,40 @@ namespace e131 {
  */
 class TransportHeader {
   public:
-    TransportHeader() {}
+    enum TransportType {
+      TCP,
+      UDP,
+    };
 
-    explicit TransportHeader(const ola::network::IPV4Address &src_ip,
-                             uint16_t source_port)
+    TransportHeader() {}
+    TransportHeader(const ola::network::IPV4Address &src_ip,
+                    uint16_t source_port,
+                    TransportType type)
         : m_src_ip(src_ip),
-          m_src_port(source_port) {}
+          m_src_port(source_port),
+          m_transport_type(type) {}
 
     ~TransportHeader() {}
     const ola::network::IPV4Address& SourceIP() const { return m_src_ip; }
     uint16_t SourcePort() const { return m_src_port; }
+    TransportType Transport() const { return m_transport_type; }
 
     bool operator==(const TransportHeader &other) const {
       return (m_src_ip == other.m_src_ip &&
-              m_src_port == other.m_src_port);
+              m_src_port == other.m_src_port &&
+              m_transport_type == other.m_transport_type);
     }
+
+    void operator=(const TransportHeader &other) {
+      m_src_ip = other.m_src_ip;
+      m_src_port = other.m_src_port;
+      m_transport_type = other.m_transport_type;
+    }
+
   private:
     ola::network::IPV4Address m_src_ip;
     uint16_t m_src_port;
+    TransportType m_transport_type;
 };
 }  // e131
 }  // plugin

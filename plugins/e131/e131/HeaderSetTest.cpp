@@ -71,9 +71,10 @@ void HeaderSetTest::testTransportHeader() {
   IPV4Address address;
   uint16_t port = 42;
   CPPUNIT_ASSERT(IPV4Address::FromString("192.168.1.1", &address));
-  TransportHeader header(address, port);
+  TransportHeader header(address, port, TransportHeader::UDP);
   CPPUNIT_ASSERT(address == header.SourceIP());
   CPPUNIT_ASSERT_EQUAL(port, header.SourcePort());
+  CPPUNIT_ASSERT_EQUAL(TransportHeader::UDP, header.Transport());
 
   // test copy and assign
   TransportHeader header2 = header;
