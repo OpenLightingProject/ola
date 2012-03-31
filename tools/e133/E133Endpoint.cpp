@@ -42,6 +42,11 @@ E133Endpoint::E133Endpoint(DiscoverableRDMControllerInterface *controller)
 }
 
 
+void E133Endpoint::SetIdentifyMode(bool identify_on) {
+  m_identify_mode = identify_on;
+  OLA_INFO << "IDENTIFY MODE " << (identify_on ? "ON" : "OFF");
+}
+
 /**
  * Run full discovery for this endpoint
  */

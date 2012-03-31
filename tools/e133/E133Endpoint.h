@@ -50,7 +50,7 @@ class E133Endpoint: public E133EndpointInterface,
     ~E133Endpoint() {}
 
     bool IdentifyMode() const { return m_identify_mode; }
-    void SetIdentifyMode(bool identify_on) { m_identify_mode = identify_on; }
+    void SetIdentifyMode(bool identify_on);
 
     uint16_t Universe() const { return m_universe; }
     void SetUniverse(uint16_t universe) { m_universe = universe; }
