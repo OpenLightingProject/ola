@@ -38,6 +38,7 @@ using ola::network::HostToNetwork;
 using ola::rdm::RDMCallback;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
+using ola::rdm::UID;
 using std::auto_ptr;
 using std::vector;
 
@@ -47,7 +48,7 @@ typedef std::vector<std::string> RDMPackets;
 /**
  * Create a new RootEndpoint
  */
-RootEndpoint::RootEndpoint(const ola::rdm::UID &uid,
+RootEndpoint::RootEndpoint(const UID &uid,
                            const class EndpointManager *endpoint_manager,
                            TCPConnectionStats *tcp_stats)
     : E133EndpointInterface(),
@@ -66,7 +67,13 @@ void RootEndpoint::SendRDMRequest(const RDMRequest *request_ptr,
                                   RDMCallback *on_complete) {
   auto_ptr<const RDMRequest> request(request_ptr);
 
-  if (request->DestinationUID() != m_uid) {
+  const UID dst_uid = request->DestinationUID();
+  bool for_us = (dst_uid == m_uid ||
+                 dst_uid.IsBroadcast() &&
+                 (dst_uid.ManufacturerId() == UID::ALL_MANUFACTURERS ||
+                  dst_uid.ManufacturerId() == m_uid.ManufacturerId()));
+
+  if (!for_us) {
     OLA_WARN << "Got a request to the root endpoint for the incorrect UID." <<
       "Expected " << m_uid << ", got " << request->DestinationUID();
     RDMPackets packets;
@@ -74,7 +81,8 @@ void RootEndpoint::SendRDMRequest(const RDMRequest *request_ptr,
     return;
   }
 
-  OLA_INFO << "Received Request for root endpoint";
+  OLA_INFO << "Received Request for root endpoint: PID "<< std::hex <<
+    request->ParamId();
   switch (request->ParamId()) {
     case ola::rdm::PID_SUPPORTED_PARAMETERS:
       HandleSupportedParams(request.get(), on_complete);
@@ -201,7 +209,11 @@ void RootEndpoint::HandleEndpointIdentify(const ola::rdm::RDMRequest *request,
       on_complete->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
       return;
     } else {
-      RDMResponse *response = GetResponseFromData(request, NULL, 0);
+      uint16_t return_data = HostToNetwork(endpoint_id);
+      RDMResponse *response = GetResponseFromData(
+          request,
+          reinterpret_cast<uint8_t*>(&return_data),
+          sizeof(return_data));
       RunRDMCallback(on_complete, response);
       return;
     }
@@ -245,14 +257,14 @@ void RootEndpoint::HandleTCPCommsStatus(const RDMRequest *request,
   if (!SanityCheckGetOrSet(request,
                            on_complete,
                            0,
-                           sizeof(tcp_stats_message),
-                           sizeof(tcp_stats_message)))
+                           0,
+                           0))
     return;
 
   if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
     // A SET message resets the counters
-    tcp_stats_message.unhealthy_events = 0;
-    tcp_stats_message.connection_events = 0;
+    m_tcp_stats->unhealthy_events = 0;
+    m_tcp_stats->connection_events = 0;
 
     if (request->DestinationUID().IsBroadcast()) {
       on_complete->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
@@ -264,8 +276,10 @@ void RootEndpoint::HandleTCPCommsStatus(const RDMRequest *request,
   } else {
     // GET
     tcp_stats_message.ip_address = m_tcp_stats->ip_address.AsInt();
-    tcp_stats_message.unhealthy_events = m_tcp_stats->unhealthy_events;
-    tcp_stats_message.connection_events = m_tcp_stats->connection_events;
+    tcp_stats_message.unhealthy_events =
+      HostToNetwork(m_tcp_stats->unhealthy_events);
+    tcp_stats_message.connection_events =
+      HostToNetwork(m_tcp_stats->connection_events);
 
     RDMResponse *response = GetResponseFromData(
         request,
@@ -342,7 +356,7 @@ bool RootEndpoint::SanityCheckGetOrSet(
   RDMPackets packets;
   RDMResponse *response = NULL;
 
-  if (request->CommandClass() != ola::rdm::RDMCommand::SET_COMMAND) {
+  if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
     // SET
     if (request->SubDevice()) {
       response = NackWithReason(request, ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
