@@ -100,6 +100,25 @@ class BoolFieldDescriptor: public FieldDescriptor {
 
 
 /**
+ * A FieldDescriptor that represents a IPv4 Address
+ */
+class IPV4FieldDescriptor: public FieldDescriptor {
+  public:
+    explicit IPV4FieldDescriptor(const string &name)
+        : FieldDescriptor(name) {
+    }
+
+    bool FixedSize() const { return true; }
+    bool LimitedSize() const { return true; }
+    unsigned int MaxSize() const { return 4; }
+
+    void Accept(FieldDescriptorVisitor &visitor) const {
+      visitor.Visit(this);
+    }
+};
+
+
+/**
  * A FieldDescriptor that represents a string
  */
 class StringFieldDescriptor: public FieldDescriptor {

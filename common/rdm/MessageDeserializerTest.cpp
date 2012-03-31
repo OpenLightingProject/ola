@@ -32,6 +32,7 @@
 
 
 using ola::messaging::BoolFieldDescriptor;
+using ola::messaging::IPV4FieldDescriptor;
 using ola::messaging::Descriptor;
 using ola::messaging::FieldDescriptor;
 using ola::messaging::FieldDescriptorGroup;

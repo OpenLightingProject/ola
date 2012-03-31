@@ -2686,7 +2686,7 @@ pid {
   }
   get_response {
     field {
-      type: UINT32
+      type: IPV4
       name: "ip"
     }
     field {

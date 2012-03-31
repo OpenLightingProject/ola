@@ -23,6 +23,7 @@
 #include <ola/StringUtils.h>
 #include <ola/messaging/Descriptor.h>
 #include <ola/messaging/Message.h>
+#include <ola/network/IPV4Address.h>
 #include <ola/rdm/StringMessageBuilder.h>
 #include <string>
 #include <vector>
@@ -143,6 +144,26 @@ void StringMessageBuilder::Visit(
 
   m_groups.top().push_back(
       new ola::messaging::BoolMessageField(descriptor, value));
+}
+
+
+/**
+ * IPV4 Addresses
+ */
+void StringMessageBuilder::Visit(
+    const ola::messaging::IPV4FieldDescriptor *descriptor) {
+  if (StopParsing())
+    return;
+
+  string token = m_inputs[m_offset++];
+  ola::network::IPV4Address ip_address;
+  if (!ola::network::IPV4Address::FromString(token, &ip_address)) {
+    SetError(descriptor->Name());
+    return;
+  }
+
+  m_groups.top().push_back(
+      new ola::messaging::IPV4MessageField(descriptor, ip_address));
 }
 
 

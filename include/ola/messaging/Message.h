@@ -23,6 +23,7 @@
 
 #include <ola/messaging/Descriptor.h>
 #include <ola/messaging/MessageVisitor.h>
+#include <ola/network/IPV4Address.h>
 #include <string>
 #include <vector>
 
@@ -89,6 +90,38 @@ class BoolMessageField: public MessageFieldInterface {
   private:
     const BoolFieldDescriptor *m_descriptor;
     bool m_value;
+};
+
+
+/**
+ * A MessageField that represents a IPv4 Address
+ */
+class IPV4MessageField: public MessageFieldInterface {
+  public:
+    IPV4MessageField(const IPV4FieldDescriptor *descriptor,
+                     const ola::network::IPV4Address &value)
+        : m_descriptor(descriptor),
+          m_value(value) {
+    }
+
+    IPV4MessageField(const IPV4FieldDescriptor *descriptor,
+                     uint32_t value)
+        : m_descriptor(descriptor),
+          m_value(ola::network::IPV4Address(value)) {
+    }
+
+    const IPV4FieldDescriptor *GetDescriptor() const {
+      return m_descriptor;
+    }
+    ola::network::IPV4Address Value() const { return m_value; }
+
+    void Accept(MessageVisitor &visitor) const {
+      visitor.Visit(this);
+    }
+
+  private:
+    const IPV4FieldDescriptor *m_descriptor;
+    ola::network::IPV4Address m_value;
 };
 
 

@@ -39,6 +39,7 @@ class MessagePrinter: public MessageVisitor {
     std::string AsString(const class Message *message);
 
     virtual void Visit(const BoolMessageField*) {}
+    virtual void Visit(const IPV4MessageField*) {}
     virtual void Visit(const StringMessageField*) {}
     virtual void Visit(const BasicMessageField<uint8_t>*) {}
     virtual void Visit(const BasicMessageField<uint16_t>*) {}
@@ -72,6 +73,7 @@ class GenericMessagePrinter: public MessagePrinter {
     ~GenericMessagePrinter() {}
 
     virtual void Visit(const BoolMessageField*);
+    virtual void Visit(const IPV4MessageField*);
     virtual void Visit(const StringMessageField*);
     virtual void Visit(const BasicMessageField<uint8_t>*);
     virtual void Visit(const BasicMessageField<uint16_t>*);

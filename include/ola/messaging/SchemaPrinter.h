@@ -49,6 +49,7 @@ class SchemaPrinter: public FieldDescriptorVisitor {
     void Reset() { m_str.str(""); }
 
     void Visit(const BoolFieldDescriptor*);
+    void Visit(const IPV4FieldDescriptor*);
     void Visit(const StringFieldDescriptor*);
     void Visit(const UInt8FieldDescriptor*);
     void Visit(const UInt16FieldDescriptor*);

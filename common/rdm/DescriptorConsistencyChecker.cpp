@@ -35,6 +35,12 @@ void DescriptorConsistencyChecker::Visit(
     const ola::messaging::BoolFieldDescriptor*) {
 }
 
+
+void DescriptorConsistencyChecker::Visit(
+    const ola::messaging::IPV4FieldDescriptor*) {
+}
+
+
 void DescriptorConsistencyChecker::Visit(
   const ola::messaging::StringFieldDescriptor *descriptor) {
     if (!descriptor->FixedSize()) {

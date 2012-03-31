@@ -35,6 +35,7 @@ using ola::messaging::BoolFieldDescriptor;
 using ola::messaging::Descriptor;
 using ola::messaging::FieldDescriptor;
 using ola::messaging::FieldDescriptorGroup;
+using ola::messaging::IPV4FieldDescriptor;
 using ola::messaging::Int16FieldDescriptor;
 using ola::messaging::Int32FieldDescriptor;
 using ola::messaging::Int8FieldDescriptor;
@@ -115,6 +116,7 @@ void StringBuilderTest::testSimpleBuilder() {
   fields.push_back(new BoolFieldDescriptor("bool4"));
   fields.push_back(new BoolFieldDescriptor("bool5"));
   fields.push_back(new BoolFieldDescriptor("bool6"));
+  fields.push_back(new IPV4FieldDescriptor("ip1"));
   fields.push_back(new UInt8FieldDescriptor("uint8"));
   fields.push_back(new UInt16FieldDescriptor("uint16"));
   fields.push_back(new UInt32FieldDescriptor("uint32"));
@@ -133,6 +135,7 @@ void StringBuilderTest::testSimpleBuilder() {
   inputs.push_back("0");
   inputs.push_back("TRUE");
   inputs.push_back("FALSE");
+  inputs.push_back("10.0.0.1");
   inputs.push_back("255");
   inputs.push_back("300");
   inputs.push_back("66000");
@@ -151,7 +154,7 @@ void StringBuilderTest::testSimpleBuilder() {
 
   string expected = (
       "bool1: true\nbool2: false\nbool3: true\nbool4: false\nbool5: true\n"
-      "bool6: false\nuint8: 255\nuint16: 300\nuint32: 66000\n"
+      "bool6: false\nip1: 10.0.0.1\nuint8: 255\nuint16: 300\nuint32: 66000\n"
       "int8: -128\nint16: -300\nint32: -66000\nstring: foo\n"
       "hex uint16: 1024\n");
   CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(message.get()));

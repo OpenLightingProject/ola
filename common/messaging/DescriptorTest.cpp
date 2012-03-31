@@ -29,6 +29,7 @@ using std::vector;
 
 
 using ola::messaging::BoolFieldDescriptor;
+using ola::messaging::IPV4FieldDescriptor;
 using ola::messaging::FieldDescriptor;
 using ola::messaging::FieldDescriptorGroup;
 using ola::messaging::StringFieldDescriptor;
@@ -65,6 +66,14 @@ void DescriptorTest::testFieldDescriptors() {
   CPPUNIT_ASSERT_EQUAL(true, bool_descriptor.LimitedSize());
   CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1),
                        bool_descriptor.MaxSize());
+
+  // IPv4 address
+  BoolFieldDescriptor ipv4_descriptor("ipv4");
+  CPPUNIT_ASSERT_EQUAL(string("ipv4"), ipv4_descriptor.Name());
+  CPPUNIT_ASSERT_EQUAL(true, ipv4_descriptor.FixedSize());
+  CPPUNIT_ASSERT_EQUAL(true, ipv4_descriptor.LimitedSize());
+  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1),
+                       ipv4_descriptor.MaxSize());
 
   // string
   StringFieldDescriptor string_descriptor("string", 10, 32);
