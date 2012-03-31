@@ -37,7 +37,8 @@ class DMPE133Inflator: public DMPInflator {
   friend class DMPE133InflatorTest;
 
   public:
-    DMPE133Inflator();
+    DMPE133Inflator(
+        ola::Callback1<void, const TransportHeader&> *on_data = NULL);
     ~DMPE133Inflator();
 
     typedef ola::Callback3<void,
@@ -58,6 +59,7 @@ class DMPE133Inflator: public DMPInflator {
   private:
     typedef std::map<uint16_t, RDMMessageHandler*> endpoint_handler_map;
     endpoint_handler_map m_rdm_handlers;
+    ola::Callback1<void, const TransportHeader&> *m_on_data;
 };
 }  // e131
 }  // plugin

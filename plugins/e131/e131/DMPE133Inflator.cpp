@@ -34,8 +34,10 @@ namespace e131 {
 
 using std::string;
 
-DMPE133Inflator::DMPE133Inflator()
-    : DMPInflator() {
+DMPE133Inflator::DMPE133Inflator(
+    ola::Callback1<void, const TransportHeader&> *on_data)
+    : DMPInflator(),
+      m_on_data(on_data) {
 }
 
 
@@ -57,6 +59,10 @@ bool DMPE133Inflator::HandlePDUData(uint32_t vector,
                                     HeaderSet &headers,
                                     const uint8_t *data,
                                     unsigned int pdu_len) {
+  // if we have a callback registered notify that we got some data
+  if (m_on_data)
+    m_on_data->Run(headers.GetTransportHeader());
+
   if (vector != DMP_SET_PROPERTY_VECTOR) {
     OLA_INFO << "not a set property msg: " << vector;
     return true;
