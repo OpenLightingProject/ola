@@ -29,6 +29,7 @@ namespace plugin {
 namespace e131 {
 
 const uint16_t ACN_PORT = 5568;
+const uint16_t E133_PORT = 5569;
 
 }  // e131
 }  // plugin
