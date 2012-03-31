@@ -271,9 +271,9 @@ void SimpleE133Monitor::AddIP(const IPV4Address &ip_address) {
   }
 
   OLA_INFO << "Opening TCP connection to " << ip_address << ":" <<
-    ola::plugin::e131::ACN_PORT;
+    ola::plugin::e131::E133_PORT;
   TcpSocket *socket = TcpSocket::Connect(ip_address,
-                                         ola::plugin::e131::ACN_PORT,
+                                         ola::plugin::e131::E133_PORT,
                                          false);
 
   NodeTCPState *node_state = new NodeTCPState();
