@@ -597,6 +597,14 @@ void StringUtilsTest::testCustomCapitalizeLabel() {
   CPPUNIT_ASSERT_EQUAL(string("Mini Dmxter Device"), label3);
 
   string label4 = "this-is_a_test";
-  CapitalizeLabel(&label4);
+  CustomCapitalizeLabel(&label4);
   CPPUNIT_ASSERT_EQUAL(string("This Is A Test"), label4);
+
+  string label5 = "ip_address";
+  CustomCapitalizeLabel(&label5);
+  CPPUNIT_ASSERT_EQUAL(string("IP Address"), label5);
+
+  string label6 = "controller_ip_address";
+  CustomCapitalizeLabel(&label6);
+  CPPUNIT_ASSERT_EQUAL(string("Controller IP Address"), label6);
 };

@@ -415,27 +415,36 @@ void CapitalizeLabel(string *s) {
  * @param s a string to transform.
  */
 void CustomCapitalizeLabel(string *s) {
-  size_t last_match = 0;
-  size_t size = s->size();
+  static const char* const transforms[] = {
+    "dmx",
+    "ip",
+    NULL
+  };
+  const size_t size = s->size();
+  const char* const *transform = transforms;
+  while (*transform) {
+    size_t last_match = 0;
+    const string ancronym(*transform);
+    const size_t ancronym_size = ancronym.size();
 
-  const string ancronym = "dmx";
-  size_t ancronym_size = ancronym.size();
+    while (true) {
+      size_t match_position = s->find(ancronym, last_match);
+      if (match_position == string::npos)
+        break;
+      last_match = match_position + 1;
+      size_t end_position = match_position + ancronym_size;
 
-  while (true) {
-    size_t match_position = s->find(ancronym, last_match);
-    if (match_position == string::npos)
-      break;
-    last_match = match_position + 1;
-    size_t end_position = match_position + ancronym_size;
-
-    if ((match_position == 0 || ispunct(s->at(match_position - 1))) &&
-        (end_position == size || ispunct(s->at(end_position)))) {
-      while (match_position < end_position) {
-        s->at(match_position) = toupper(s->at(match_position));
-        match_position++;
+      if ((match_position == 0 || ispunct(s->at(match_position - 1))) &&
+          (end_position == size || ispunct(s->at(end_position)))) {
+        while (match_position < end_position) {
+          s->at(match_position) = toupper(s->at(match_position));
+          match_position++;
+        }
       }
     }
+    transform++;
   }
+
   CapitalizeLabel(s);
 }
 }  // ola
