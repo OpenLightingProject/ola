@@ -123,7 +123,7 @@ bool E133Device::Init() {
   // setup the TCP socket
   m_tcp_socket.SetOnAccept(NewCallback(this, &E133Device::NewTCPConnection));
   bool listen_ok = m_tcp_socket.Listen(m_ip_address,
-                                       ola::plugin::e131::ACN_PORT);
+                                       ola::plugin::e131::E133_PORT);
   if (!listen_ok) {
     m_tcp_socket.Close();
     return false;
