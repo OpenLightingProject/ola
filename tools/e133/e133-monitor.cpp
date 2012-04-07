@@ -346,6 +346,7 @@ void SimpleE133Monitor::OnTCPConnect(IPV4Address ip_address,
   if (error) {
     OLA_INFO << "Failed to connect to " << ip_address << ": " <<
       strerror(error);
+    // TODO(simon): add retry logic here
     return;
   }
 
