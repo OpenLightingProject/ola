@@ -39,7 +39,7 @@
 
 #include "tools/e133/E133Device.h"
 #include "tools/e133/E133Endpoint.h"
-#include "tools/e133/E133HealthCheckedConnection.h";
+#include "tools/e133/E133HealthCheckedConnection.h"
 #include "tools/e133/EndpointManager.h"
 #include "tools/e133/TCPConnectionStats.h"
 

@@ -69,9 +69,9 @@ void RootEndpoint::SendRDMRequest(const RDMRequest *request_ptr,
 
   const UID dst_uid = request->DestinationUID();
   bool for_us = (dst_uid == m_uid ||
-                 dst_uid.IsBroadcast() &&
-                 (dst_uid.ManufacturerId() == UID::ALL_MANUFACTURERS ||
-                  dst_uid.ManufacturerId() == m_uid.ManufacturerId()));
+                 (dst_uid.IsBroadcast() &&
+                  (dst_uid.ManufacturerId() == UID::ALL_MANUFACTURERS ||
+                   dst_uid.ManufacturerId() == m_uid.ManufacturerId())));
 
   if (!for_us) {
     OLA_WARN << "Got a request to the root endpoint for the incorrect UID." <<

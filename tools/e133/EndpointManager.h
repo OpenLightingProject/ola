@@ -47,7 +47,7 @@ class EndpointManager {
     ~EndpointManager() {}
 
     // register and unregister endpoints
-    bool RegisterEndpoint(uint16_t endpoint,
+    bool RegisterEndpoint(uint16_t endpoint_id,
                           class E133Endpoint *endpoint);
     void UnRegisterEndpoint(uint16_t endpoint);
 
