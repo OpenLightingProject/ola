@@ -95,8 +95,7 @@ void MessageDeserializerTest::testEmpty() {
       NULL,
       0));
   CPPUNIT_ASSERT(empty_message.get());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0),
-                       empty_message->FieldCount());
+  CPPUNIT_ASSERT_EQUAL(0u, empty_message->FieldCount());
 
   // now and try to pass in too much data
   const uint8_t data[] = {0, 1, 2};
@@ -152,8 +151,7 @@ void MessageDeserializerTest::testSimpleBigEndian() {
       big_endian_data,
       sizeof(big_endian_data)));
   CPPUNIT_ASSERT(message.get());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(7),
-                       message->FieldCount());
+  CPPUNIT_ASSERT_EQUAL(7u, message->FieldCount());
 
   const string expected = (
       "bool: false\nuint8: 10\nint8: -10\nuint16: 300\nint16: -502\n"
@@ -206,8 +204,7 @@ void MessageDeserializerTest::testSimpleLittleEndian() {
       little_endian_data,
       sizeof(little_endian_data)));
   CPPUNIT_ASSERT(message.get());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(7),
-                       message->FieldCount());
+  CPPUNIT_ASSERT_EQUAL(7u, message->FieldCount());
 
   const string expected = (
       "bool: true\nuint8: 10\nint8: -10\nuint16: 300\nint16: -502\n"
@@ -250,8 +247,7 @@ void MessageDeserializerTest::testString() {
       data,
       sizeof(data)));
   CPPUNIT_ASSERT(message.get());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(2),
-                       message->FieldCount());
+  CPPUNIT_ASSERT_EQUAL(2u, message->FieldCount());
 
   const string expected = (
       "string: 0123456789\nstring: this is a longer string\n");
@@ -263,8 +259,7 @@ void MessageDeserializerTest::testString() {
       data,
       19));
   CPPUNIT_ASSERT(message2.get());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(2),
-                       message2->FieldCount());
+  CPPUNIT_ASSERT_EQUAL(2u, message2->FieldCount());
 
   const string expected2 = (
       "string: 0123456789\nstring: this is a\n");
@@ -294,8 +289,7 @@ void MessageDeserializerTest::testWithGroups() {
       data,
       0));
   CPPUNIT_ASSERT(message.get());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0),
-                       message->FieldCount());
+  CPPUNIT_ASSERT_EQUAL(0u, message->FieldCount());
 
   // message with not enough data
   CPPUNIT_ASSERT(!m_deserializer.InflateMessage(
@@ -309,7 +303,7 @@ void MessageDeserializerTest::testWithGroups() {
       data,
       2));
   CPPUNIT_ASSERT(message2.get());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1),
+  CPPUNIT_ASSERT_EQUAL(1u,
                        message2->FieldCount());
 
   const string expected = "group {\n  bool: false\n  uint8: 10\n}\n";
@@ -327,8 +321,7 @@ void MessageDeserializerTest::testWithGroups() {
       data,
       4));
   CPPUNIT_ASSERT(message3.get());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(2),
-                       message3->FieldCount());
+  CPPUNIT_ASSERT_EQUAL(2u, message3->FieldCount());
 
   const string expected2 = (
       "group {\n  bool: false\n  uint8: 10\n}\n"
@@ -341,7 +334,7 @@ void MessageDeserializerTest::testWithGroups() {
       data,
       6));
   CPPUNIT_ASSERT(message4.get());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(3),
+  CPPUNIT_ASSERT_EQUAL(3u,
                        message4->FieldCount());
 
   const string expected3 = (
@@ -378,8 +371,7 @@ void MessageDeserializerTest::testWithNestedFixedGroups() {
       data,
       0));
   CPPUNIT_ASSERT(message.get());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0),
-                       message->FieldCount());
+  CPPUNIT_ASSERT_EQUAL(0u, message->FieldCount());
 
   // message with not enough data
   CPPUNIT_ASSERT(!m_deserializer.InflateMessage(
@@ -397,8 +389,7 @@ void MessageDeserializerTest::testWithNestedFixedGroups() {
       data,
       3));
   CPPUNIT_ASSERT(message2.get());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1),
-                       message2->FieldCount());
+  CPPUNIT_ASSERT_EQUAL(1u, message2->FieldCount());
 
   const string expected = (
       " {\n  uint8: 0\n  bar {\n    bool: false\n  }\n  bar {\n"
@@ -411,8 +402,7 @@ void MessageDeserializerTest::testWithNestedFixedGroups() {
       data,
       sizeof(data)));
   CPPUNIT_ASSERT(message3.get());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(4),
-                       message3->FieldCount());
+  CPPUNIT_ASSERT_EQUAL(4u, message3->FieldCount());
 
   const string expected2 = (
       " {\n  uint8: 0\n  bar {\n    bool: false\n  }\n  bar {\n"

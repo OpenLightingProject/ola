@@ -89,7 +89,7 @@ void GroupSizeCalculatorTest::testSimpleCases() {
   unsigned int token_count, group_repeat_count;
   CPPUNIT_ASSERT(
       m_static_calculator.CalculateTokensRequired(&descriptor, &token_count));
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(8), token_count);
+  CPPUNIT_ASSERT_EQUAL(8u, token_count);
 
   CPPUNIT_ASSERT_EQUAL(
       GroupSizeCalculator::INSUFFICIENT_TOKENS,
@@ -143,11 +143,11 @@ void GroupSizeCalculatorTest::testWithFixedGroups() {
   // first check the static calculator
   CPPUNIT_ASSERT(
       m_static_calculator.CalculateTokensRequired(fixed_group, &token_count));
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(2), token_count);
+  CPPUNIT_ASSERT_EQUAL(2u, token_count);
 
   CPPUNIT_ASSERT(
       m_static_calculator.CalculateTokensRequired(fixed_group2, &token_count));
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(3), token_count);
+  CPPUNIT_ASSERT_EQUAL(3u, token_count);
 
   // now check the main calculator
   vector<const FieldDescriptor*> fields;
@@ -232,7 +232,7 @@ void GroupSizeCalculatorTest::testSingleVariableSizedGroup() {
         3,
         &descriptor,
         &group_repeat_count));
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), group_repeat_count);
+  CPPUNIT_ASSERT_EQUAL(0u, group_repeat_count);
 
   CPPUNIT_ASSERT_EQUAL(
       GroupSizeCalculator::SINGLE_VARIABLE_GROUP,
@@ -240,7 +240,7 @@ void GroupSizeCalculatorTest::testSingleVariableSizedGroup() {
         5,
         &descriptor,
         &group_repeat_count));
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), group_repeat_count);
+  CPPUNIT_ASSERT_EQUAL(1u, group_repeat_count);
 
   CPPUNIT_ASSERT_EQUAL(
       GroupSizeCalculator::SINGLE_VARIABLE_GROUP,
@@ -248,7 +248,7 @@ void GroupSizeCalculatorTest::testSingleVariableSizedGroup() {
         7,
         &descriptor,
         &group_repeat_count));
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(2), group_repeat_count);
+  CPPUNIT_ASSERT_EQUAL(2u, group_repeat_count);
 
   CPPUNIT_ASSERT_EQUAL(
       GroupSizeCalculator::EXTRA_TOKENS,
@@ -287,12 +287,12 @@ void GroupSizeCalculatorTest::testMultipleVariableSizedGroups() {
   CPPUNIT_ASSERT(
       m_static_calculator.CalculateTokensRequired(variable_group,
                                                   &token_count));
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(2), token_count);
+  CPPUNIT_ASSERT_EQUAL(2u, token_count);
 
   CPPUNIT_ASSERT(
       m_static_calculator.CalculateTokensRequired(variable_group2,
                                                   &token_count));
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(3), token_count);
+  CPPUNIT_ASSERT_EQUAL(3u, token_count);
 
   // now check the main calculator.
   CPPUNIT_ASSERT_EQUAL(
