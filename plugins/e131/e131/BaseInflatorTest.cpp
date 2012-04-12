@@ -330,7 +330,7 @@ void BaseInflatorTest::testInflatePDUBlock() {
          sizeof(PDU_DATA));
   CPPUNIT_ASSERT_EQUAL(data_size,
                        inflator.InflatePDUBlock(header_set, data, data_size));
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), inflator.BlocksHandled());
+  CPPUNIT_ASSERT_EQUAL(1u, inflator.BlocksHandled());
   delete[] data;
 
   // inflate a multi-pdu block
@@ -352,7 +352,7 @@ void BaseInflatorTest::testInflatePDUBlock() {
       2 * data_size,
       inflator.InflatePDUBlock(header_set, data, 2 * data_size));
   delete[] data;
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(3), inflator.BlocksHandled());
+  CPPUNIT_ASSERT_EQUAL(3u, inflator.BlocksHandled());
 
   // inflate with nested inflators
   TestInflator child_inflator(289);
