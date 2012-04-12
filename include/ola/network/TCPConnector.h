@@ -25,6 +25,7 @@
 #include <ola/network/IPV4Address.h>
 #include <ola/network/SelectServerInterface.h>
 #include <ola/network/Socket.h>
+#include <set>
 
 
 namespace ola {
@@ -36,18 +37,21 @@ namespace network {
 class TCPConnector {
   public:
     explicit TCPConnector(SelectServerInterface *ss);
-    ~TCPConnector() {}
+    ~TCPConnector();
 
     typedef ola::SingleUseCallback2<void, TcpSocket*, int> TCPConnectCallback;
+    typedef const void* TCPConnectionID;
 
-    void Connect(const IPV4Address &ip,
+    TCPConnectionID Connect(const IPV4Address &ip,
                  uint16_t port,
                  const ola::TimeInterval &timeout,
                  TCPConnectCallback *callback);
 
-  private:
-    ola::network::SelectServerInterface *m_ss;
+    bool Cancel(TCPConnectionID id);
+    void CancelAll();
+    unsigned int ConnectionsPending() const { return m_connections.size(); }
 
+  private:
     /**
      * A TCP socket waiting to connect.
      */
@@ -79,8 +83,15 @@ class TCPConnector {
         int m_fd;
     };
 
+    typedef std::set<PendingTCPConnection*> ConnectionSet;
+
+    ola::network::SelectServerInterface *m_ss;
+    ConnectionSet m_connections;
+
+
     void SocketWritable(PendingTCPConnection *connection);
     void FreePendingConnection(PendingTCPConnection *connection);
+    void Timeout(const ConnectionSet::iterator &iter);
     void TimeoutEvent(PendingTCPConnection *connection);
 };
 }  // network

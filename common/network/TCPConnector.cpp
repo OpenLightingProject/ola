@@ -32,6 +32,14 @@ TCPConnector::TCPConnector(SelectServerInterface *ss)
 
 
 /**
+ * Clean up
+ */
+TCPConnector::~TCPConnector() {
+  CancelAll();
+}
+
+
+/**
  * Perform a non-blocking connect.
  * on_connect may be called immediately if the address is local.
  * on_failure will be called immediately if an error occurs
@@ -39,11 +47,14 @@ TCPConnector::TCPConnector(SelectServerInterface *ss)
  * @param port the port to connect to
  * @param timeout the time to wait before declaring the connection a failure
  * @param callback the callback to run when the connection completes or fails
+ * @returns the ID for this connection, or 0 if the callback has already
+ * run.
  */
-void TCPConnector::Connect(const IPV4Address &ip_address,
-                           uint16_t port,
-                           const ola::TimeInterval &timeout,
-                           TCPConnectCallback *callback) {
+TCPConnector::TCPConnectionID TCPConnector::Connect(
+    const IPV4Address &ip_address,
+    uint16_t port,
+    const ola::TimeInterval &timeout,
+    TCPConnectCallback *callback) {
   struct sockaddr_in server_address;
   socklen_t length = sizeof(server_address);
 
@@ -52,7 +63,7 @@ void TCPConnector::Connect(const IPV4Address &ip_address,
     int error = errno;
     OLA_WARN << "socket() failed, " << strerror(error);
     callback->Run(NULL, error);
-    return;
+    return 0;
   }
 
   // setup
@@ -69,13 +80,14 @@ void TCPConnector::Connect(const IPV4Address &ip_address,
       int error = errno;
       OLA_WARN << "connect to " << ip_address << ":" << port << " failed, "
         << strerror(error);
+      close(sd);
       callback->Run(NULL, error);
-      return;
+      return 0;
     }
   } else {
     // connect returned immediately
     callback->Run(new TcpSocket(sd), 0);
-    return;
+    return 0;
   }
 
   PendingTCPConnection *connection = new PendingTCPConnection(
@@ -84,11 +96,44 @@ void TCPConnector::Connect(const IPV4Address &ip_address,
     sd,
     callback);
 
+  m_connections.insert(connection);
+
   connection->timeout_id = m_ss->RegisterSingleTimeout(
     timeout,
     ola::NewSingleCallback(this, &TCPConnector::TimeoutEvent, connection));
 
   m_ss->AddWriteDescriptor(connection);
+  return connection;
+}
+
+
+/**
+ * Cancel a pending TCP connection
+ * @param id the TCPConnectionID
+ * @return true if this connection was cancelled, false if the id wasn't valid.
+ */
+bool TCPConnector::Cancel(TCPConnectionID id) {
+  PendingTCPConnection *connection =
+    const_cast<PendingTCPConnection*>(
+        reinterpret_cast<const PendingTCPConnection*>(id));
+  ConnectionSet::iterator iter = m_connections.find(connection);
+  if (iter == m_connections.end())
+    return false;
+
+  Timeout(iter);
+  m_connections.erase(iter);
+  return true;
+}
+
+
+/**
+ * Abort all pending TCP connections
+ */
+void TCPConnector::CancelAll() {
+  ConnectionSet::iterator iter = m_connections.begin();
+  for (; iter != m_connections.end(); ++iter)
+    Timeout(iter);
+  m_connections.clear();
 }
 
 
@@ -118,6 +163,10 @@ void TCPConnector::SocketWritable(PendingTCPConnection *connection) {
     connection->callback->Run(new TcpSocket(connection->WriteDescriptor()), 0);
   }
 
+  ConnectionSet::iterator iter = m_connections.find(connection);
+  if (iter != m_connections.end())
+    m_connections.erase(iter);
+
   // we're already within the PendingTCPConnection's call stack here
   // schedule the deletion to run later
   m_ss->Execute(
@@ -135,15 +184,30 @@ void TCPConnector::FreePendingConnection(PendingTCPConnection *connection) {
 }
 
 
-/**
- * Called when the connect() times out.
- */
-void TCPConnector::TimeoutEvent(PendingTCPConnection *connection) {
+
+void TCPConnector::Timeout(const ConnectionSet::iterator &iter) {
+  PendingTCPConnection *connection = *iter;
+  m_ss->RemoveTimeout(connection->timeout_id);
   m_ss->RemoveWriteDescriptor(connection);
   connection->Close();
   TCPConnectCallback *callback = connection->callback;
   delete connection;
   callback->Run(NULL, ETIMEDOUT);
+}
+
+
+/**
+ * Called when the connect() times out.
+ */
+void TCPConnector::TimeoutEvent(PendingTCPConnection *connection) {
+  ConnectionSet::iterator iter = m_connections.find(connection);
+  if (iter == m_connections.end()) {
+    OLA_FATAL <<
+      "Timeout triggered but couldn't find the connection this refers to";
+  }
+
+  Timeout(iter);
+  m_connections.erase(iter);
 }
 
 
