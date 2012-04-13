@@ -62,7 +62,7 @@ void E133InflatorTest::testDecodeHeader() {
   const string source_name = "foobar";
 
   strncpy(header.source, source_name.data(), source_name.size() + 1);
-  header.sequence = HostToNetwork(static_cast<uint32_t>(72650));
+  header.sequence = HostToNetwork(72650u);
   header.endpoint = HostToNetwork(static_cast<uint16_t>(42));
 
   CPPUNIT_ASSERT(inflator.DecodeHeader(header_set,

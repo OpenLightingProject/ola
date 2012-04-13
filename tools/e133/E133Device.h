@@ -39,8 +39,8 @@
 #include "plugins/e131/e131/TCPTransport.h"
 #include "plugins/e131/e131/UDPTransport.h"
 
-#include "tools/e133/E133Endpoint.h";
-#include "tools/e133/E133HealthCheckedConnection.h";
+#include "tools/e133/E133Endpoint.h"
+#include "tools/e133/E133HealthCheckedConnection.h"
 
 using std::string;
 using std::auto_ptr;

@@ -64,32 +64,27 @@ void DescriptorTest::testFieldDescriptors() {
   CPPUNIT_ASSERT_EQUAL(string("bool"), bool_descriptor.Name());
   CPPUNIT_ASSERT_EQUAL(true, bool_descriptor.FixedSize());
   CPPUNIT_ASSERT_EQUAL(true, bool_descriptor.LimitedSize());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1),
-                       bool_descriptor.MaxSize());
+  CPPUNIT_ASSERT_EQUAL(1u, bool_descriptor.MaxSize());
 
   // IPv4 address
   BoolFieldDescriptor ipv4_descriptor("ipv4");
   CPPUNIT_ASSERT_EQUAL(string("ipv4"), ipv4_descriptor.Name());
   CPPUNIT_ASSERT_EQUAL(true, ipv4_descriptor.FixedSize());
   CPPUNIT_ASSERT_EQUAL(true, ipv4_descriptor.LimitedSize());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1),
-                       ipv4_descriptor.MaxSize());
+  CPPUNIT_ASSERT_EQUAL(1u, ipv4_descriptor.MaxSize());
 
   // string
   StringFieldDescriptor string_descriptor("string", 10, 32);
   CPPUNIT_ASSERT_EQUAL(string("string"), string_descriptor.Name());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(10),
-                       string_descriptor.MinSize());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(32),
-                       string_descriptor.MaxSize());
+  CPPUNIT_ASSERT_EQUAL(10u, string_descriptor.MinSize());
+  CPPUNIT_ASSERT_EQUAL(32u, string_descriptor.MaxSize());
   CPPUNIT_ASSERT_EQUAL(false, string_descriptor.FixedSize());
   CPPUNIT_ASSERT_EQUAL(true, string_descriptor.LimitedSize());
 
   // uint8_t
   UInt8FieldDescriptor uint8_descriptor("uint8", false, 10);
   CPPUNIT_ASSERT_EQUAL(string("uint8"), uint8_descriptor.Name());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1),
-                       uint8_descriptor.MaxSize());
+  CPPUNIT_ASSERT_EQUAL(1u, uint8_descriptor.MaxSize());
   CPPUNIT_ASSERT_EQUAL(false, uint8_descriptor.IsLittleEndian());
   CPPUNIT_ASSERT_EQUAL(static_cast<int8_t>(10),
                        uint8_descriptor.Multiplier());
@@ -98,8 +93,7 @@ void DescriptorTest::testFieldDescriptors() {
 
   UInt8FieldDescriptor uint8_descriptor2("uint8", true, -1);
   CPPUNIT_ASSERT_EQUAL(string("uint8"), uint8_descriptor2.Name());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1),
-                       uint8_descriptor2.MaxSize());
+  CPPUNIT_ASSERT_EQUAL(1u, uint8_descriptor2.MaxSize());
   CPPUNIT_ASSERT_EQUAL(true, uint8_descriptor2.IsLittleEndian());
   CPPUNIT_ASSERT_EQUAL(static_cast<int8_t>(-1),
                        uint8_descriptor2.Multiplier());
@@ -109,8 +103,7 @@ void DescriptorTest::testFieldDescriptors() {
   // uint16_t
   UInt16FieldDescriptor uint16_descriptor("uint16", false, 10);
   CPPUNIT_ASSERT_EQUAL(string("uint16"), uint16_descriptor.Name());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(2),
-                       uint16_descriptor.MaxSize());
+  CPPUNIT_ASSERT_EQUAL(2u, uint16_descriptor.MaxSize());
   CPPUNIT_ASSERT_EQUAL(false, uint16_descriptor.IsLittleEndian());
   CPPUNIT_ASSERT_EQUAL(static_cast<int8_t>(10),
                        uint16_descriptor.Multiplier());
@@ -119,8 +112,7 @@ void DescriptorTest::testFieldDescriptors() {
 
   UInt16FieldDescriptor uint16_descriptor2("uint16", true, -1);
   CPPUNIT_ASSERT_EQUAL(string("uint16"), uint16_descriptor2.Name());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(2),
-                       uint16_descriptor2.MaxSize());
+  CPPUNIT_ASSERT_EQUAL(2u, uint16_descriptor2.MaxSize());
   CPPUNIT_ASSERT_EQUAL(true, uint16_descriptor2.IsLittleEndian());
   CPPUNIT_ASSERT_EQUAL(static_cast<int8_t>(-1),
                        uint16_descriptor2.Multiplier());
@@ -130,8 +122,7 @@ void DescriptorTest::testFieldDescriptors() {
   // uint32_t
   UInt32FieldDescriptor uint32_descriptor("uint32", false, 10);
   CPPUNIT_ASSERT_EQUAL(string("uint32"), uint32_descriptor.Name());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(4),
-                       uint32_descriptor.MaxSize());
+  CPPUNIT_ASSERT_EQUAL(4u, uint32_descriptor.MaxSize());
   CPPUNIT_ASSERT_EQUAL(false, uint32_descriptor.IsLittleEndian());
   CPPUNIT_ASSERT_EQUAL(static_cast<int8_t>(10),
                        uint32_descriptor.Multiplier());
@@ -140,8 +131,7 @@ void DescriptorTest::testFieldDescriptors() {
 
   UInt32FieldDescriptor uint32_descriptor2("uint32", true, -1);
   CPPUNIT_ASSERT_EQUAL(string("uint32"), uint32_descriptor2.Name());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(4),
-                       uint32_descriptor2.MaxSize());
+  CPPUNIT_ASSERT_EQUAL(4u, uint32_descriptor2.MaxSize());
   CPPUNIT_ASSERT_EQUAL(true, uint32_descriptor2.IsLittleEndian());
   CPPUNIT_ASSERT_EQUAL(static_cast<int8_t>(-1),
                        uint32_descriptor2.Multiplier());
@@ -167,15 +157,11 @@ void DescriptorTest::testFieldDescriptorGroup() {
   FieldDescriptorGroup group_descriptor("group", fields, 0, 3);
   CPPUNIT_ASSERT_EQUAL(false, group_descriptor.FixedSize());
   CPPUNIT_ASSERT_EQUAL(true, group_descriptor.LimitedSize());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(6),
-                       group_descriptor.MaxSize());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(2),
-                       group_descriptor.FieldCount());
+  CPPUNIT_ASSERT_EQUAL(6u, group_descriptor.MaxSize());
+  CPPUNIT_ASSERT_EQUAL(2u, group_descriptor.FieldCount());
   CPPUNIT_ASSERT_EQUAL(true, group_descriptor.FixedBlockSize());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(2),
-                       group_descriptor.BlockSize());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(2),
-                       group_descriptor.MaxBlockSize());
+  CPPUNIT_ASSERT_EQUAL(2u, group_descriptor.BlockSize());
+  CPPUNIT_ASSERT_EQUAL(2u, group_descriptor.MaxBlockSize());
   CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0),
                        group_descriptor.MinBlocks());
   CPPUNIT_ASSERT_EQUAL(static_cast<int16_t>(3),
@@ -202,15 +188,11 @@ void DescriptorTest::testFieldDescriptorGroup() {
   FieldDescriptorGroup group_descriptor2("group", fields2, 2, 2);
   CPPUNIT_ASSERT_EQUAL(true, group_descriptor2.FixedSize());
   CPPUNIT_ASSERT_EQUAL(true, group_descriptor2.LimitedSize());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(8),
-                       group_descriptor2.MaxSize());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(3),
-                       group_descriptor2.FieldCount());
+  CPPUNIT_ASSERT_EQUAL(8u, group_descriptor2.MaxSize());
+  CPPUNIT_ASSERT_EQUAL(3u, group_descriptor2.FieldCount());
   CPPUNIT_ASSERT_EQUAL(true, group_descriptor2.FixedBlockSize());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(4),
-                       group_descriptor2.BlockSize());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(4),
-                       group_descriptor2.MaxBlockSize());
+  CPPUNIT_ASSERT_EQUAL(4u, group_descriptor2.BlockSize());
+  CPPUNIT_ASSERT_EQUAL(4u, group_descriptor2.MaxBlockSize());
   CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(2),
                        group_descriptor2.MinBlocks());
   CPPUNIT_ASSERT_EQUAL(static_cast<int16_t>(2),
@@ -235,15 +217,11 @@ void DescriptorTest::testFieldDescriptorGroup() {
   FieldDescriptorGroup group_descriptor3("group", fields3, 0, 2);
   CPPUNIT_ASSERT_EQUAL(false, group_descriptor3.FixedSize());
   CPPUNIT_ASSERT_EQUAL(true, group_descriptor3.LimitedSize());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(66),
-                       group_descriptor3.MaxSize());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(2),
-                       group_descriptor3.FieldCount());
+  CPPUNIT_ASSERT_EQUAL(66u, group_descriptor3.MaxSize());
+  CPPUNIT_ASSERT_EQUAL(2u, group_descriptor3.FieldCount());
   CPPUNIT_ASSERT_EQUAL(false, group_descriptor3.FixedBlockSize());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0),
-                       group_descriptor3.BlockSize());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(33),
-                       group_descriptor3.MaxBlockSize());
+  CPPUNIT_ASSERT_EQUAL(0u, group_descriptor3.BlockSize());
+  CPPUNIT_ASSERT_EQUAL(33u, group_descriptor3.MaxBlockSize());
   CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0),
                        group_descriptor3.MinBlocks());
   CPPUNIT_ASSERT_EQUAL(static_cast<int16_t>(2),
@@ -265,15 +243,11 @@ void DescriptorTest::testFieldDescriptorGroup() {
   FieldDescriptorGroup group_descriptor4("group", fields4, 2, 2);
   CPPUNIT_ASSERT_EQUAL(false, group_descriptor4.FixedSize());
   CPPUNIT_ASSERT_EQUAL(true, group_descriptor4.LimitedSize());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(66),
-                       group_descriptor4.MaxSize());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(2),
-                       group_descriptor4.FieldCount());
+  CPPUNIT_ASSERT_EQUAL(66u, group_descriptor4.MaxSize());
+  CPPUNIT_ASSERT_EQUAL(2u, group_descriptor4.FieldCount());
   CPPUNIT_ASSERT_EQUAL(false, group_descriptor4.FixedBlockSize());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0),
-                       group_descriptor4.BlockSize());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(33),
-                       group_descriptor4.MaxBlockSize());
+  CPPUNIT_ASSERT_EQUAL(0u, group_descriptor4.BlockSize());
+  CPPUNIT_ASSERT_EQUAL(33u, group_descriptor4.MaxBlockSize());
   CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(2),
                        group_descriptor4.MinBlocks());
   CPPUNIT_ASSERT_EQUAL(static_cast<int16_t>(2),
@@ -296,15 +270,11 @@ void DescriptorTest::testFieldDescriptorGroup() {
     FieldDescriptorGroup::UNLIMITED_BLOCKS);
   CPPUNIT_ASSERT_EQUAL(false, group_descriptor5.FixedSize());
   CPPUNIT_ASSERT_EQUAL(false, group_descriptor5.LimitedSize());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0),
-                       group_descriptor5.MaxSize());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1),
-                       group_descriptor5.FieldCount());
+  CPPUNIT_ASSERT_EQUAL(0u, group_descriptor5.MaxSize());
+  CPPUNIT_ASSERT_EQUAL(1u, group_descriptor5.FieldCount());
   CPPUNIT_ASSERT_EQUAL(true, group_descriptor5.FixedBlockSize());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1),
-                       group_descriptor5.BlockSize());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1),
-                       group_descriptor5.MaxBlockSize());
+  CPPUNIT_ASSERT_EQUAL(1u, group_descriptor5.BlockSize());
+  CPPUNIT_ASSERT_EQUAL(1u, group_descriptor5.MaxBlockSize());
   CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0),
                        group_descriptor5.MinBlocks());
   CPPUNIT_ASSERT_EQUAL(

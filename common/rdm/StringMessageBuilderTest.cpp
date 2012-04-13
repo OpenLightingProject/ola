@@ -212,7 +212,7 @@ void StringBuilderTest::testBuilderWithGroups() {
 
   // verify
   CPPUNIT_ASSERT(message.get());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), message->FieldCount());
+  CPPUNIT_ASSERT_EQUAL(1u, message->FieldCount());
 
   string expected = (
       "group {\n  bool: true\n  uint8: 10\n}\n");
@@ -231,7 +231,7 @@ void StringBuilderTest::testBuilderWithGroups() {
 
   // verify
   CPPUNIT_ASSERT(message2.get());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(3), message2->FieldCount());
+  CPPUNIT_ASSERT_EQUAL(3u, message2->FieldCount());
 
   string expected2 = (
       "group {\n  bool: true\n  uint8: 10\n}\n"
@@ -279,7 +279,7 @@ void StringBuilderTest::testBuilderWithNestedGroups() {
 
   // verify
   CPPUNIT_ASSERT(message.get());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1), message->FieldCount());
+  CPPUNIT_ASSERT_EQUAL(1u, message->FieldCount());
 
   string expected = (
       " {\n  int16: 1\n  bar {\n    bool: true\n  }\n"

@@ -1,6 +1,12 @@
-SOURCES = IPV4Address.h HealthCheckedConnection.h Interface.h \
-          InterfacePicker.h NetworkUtils.h Socket.h \
-          SelectServer.h SelectServerInterface.h
+SOURCES = HealthCheckedConnection.h \
+          IPV4Address.h \
+          Interface.h \
+          InterfacePicker.h \
+          NetworkUtils.h \
+          SelectServer.h \
+          SelectServerInterface.h \
+          Socket.h \
+          TCPConnector.h
 
 EXTRA_DIST = $(SOURCES)
 pkginclude_HEADERS = $(SOURCES)

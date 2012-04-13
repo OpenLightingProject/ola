@@ -40,6 +40,7 @@
 #include <ola/network/NetworkUtils.h>
 #include <ola/network/SelectServer.h>
 #include <ola/network/Socket.h>
+#include <ola/network/TCPConnector.h>
 #include <ola/rdm/PidStoreHelper.h>
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMEnums.h>
@@ -209,6 +210,7 @@ class SimpleE133Monitor {
     PidStoreHelper *m_pid_helper;
     ola::network::SelectServer m_ss;
     SlpThread m_slp_thread;
+    ola::network::TCPConnector m_connector;
 
     // hash_map of ips to TCP Connection State
     typedef HASH_NAMESPACE::HASH_MAP_CLASS<uint32_t, NodeTCPState*> ip_map;
@@ -236,9 +238,9 @@ class SimpleE133Monitor {
      * a node we have a connection to. Think about this.
      */
     void DiscoveryCallback(bool status, const vector<string> &urls);
-    void SocketConnectionEvent(IPV4Address address);
-    void SocketConnected(const IPV4Address &address,
-                         NodeTCPState *node_state);
+    void OnTCPConnect(IPV4Address address,
+                      TcpSocket *socket,
+                      int error);
     void SocketUnhealthy(NodeTCPState *node_state);
     void SocketClosed(IPV4Address address);
     void E133DataReceived(const ola::plugin::e131::TransportHeader &header);
@@ -252,8 +254,12 @@ class SimpleE133Monitor {
                          const ola::rdm::RDMResponse *response,
                          const std::vector<std::string> &packets);
     */
+
+    static const ola::TimeInterval TCP_CONNECT_TIMEOUT;
 };
 
+// 5 second connect() timeout
+const ola::TimeInterval SimpleE133Monitor::TCP_CONNECT_TIMEOUT(5, 0);
 
 
 SimpleE133Monitor::SimpleE133Monitor(
@@ -262,6 +268,7 @@ SimpleE133Monitor::SimpleE133Monitor(
       m_slp_thread(
         &m_ss,
         ola::NewCallback(this, &SimpleE133Monitor::DiscoveryCallback)),
+      m_connector(&m_ss),
       m_cid(ola::plugin::e131::CID::Generate()),
       m_root_sender(m_cid),
       m_e133_sender(&m_root_sender),
@@ -317,34 +324,17 @@ void SimpleE133Monitor::AddIP(const IPV4Address &ip_address) {
 
   OLA_INFO << "Opening TCP connection to " << ip_address << ":" <<
     ola::plugin::e131::E133_PORT;
-  TcpSocket *socket = TcpSocket::Connect(ip_address,
-                                         ola::plugin::e131::E133_PORT,
-                                         false);
 
   NodeTCPState *node_state = new NodeTCPState();
   node_state->connection_attempts++;
   m_ip_map[ip_address.AsInt()] = node_state;
 
-  if (!socket) {
-    OLA_INFO << "Failed to open socket";
-    return;
-  }
-
-  node_state->socket = socket;
-
-  // it connected immediately
-  if (socket->SocketState() == TcpSocket::CONNECTED) {
-    OLA_INFO << "connected now";
-    SocketConnected(ip_address, node_state);
-    return;
-  }
-
-  // we need to wait for a event
-  socket->SetOnWritable(
-    NewCallback(this,
-                &SimpleE133Monitor::SocketConnectionEvent,
-                ip_address));
-  m_ss.AddWriteDescriptor(socket);
+  // start the non-blocking connect
+  m_connector.Connect(
+      ip_address,
+      ola::plugin::e131::E133_PORT,
+      TCP_CONNECT_TIMEOUT,
+      NewSingleCallback(this, &SimpleE133Monitor::OnTCPConnect, ip_address));
 }
 
 
@@ -383,70 +373,58 @@ void SimpleE133Monitor::DiscoveryCallback(bool ok,
 
 
 /**
- * Called when a pending tcp connection becomes writeable
+ * Called when a TCP socket is connected.
  */
-void SimpleE133Monitor::SocketConnectionEvent(IPV4Address ip_address) {
-  OLA_INFO << "Event for " << ip_address;
-
+void SimpleE133Monitor::OnTCPConnect(IPV4Address ip_address,
+                                     TcpSocket *socket,
+                                     int error) {
   ip_map::iterator iter = m_ip_map.find(ip_address.AsInt());
   if (iter == m_ip_map.end()) {
     OLA_FATAL << "Unable to locate socket for " << ip_address;
+    if (socket) {
+      socket->Close();
+      delete socket;
+    }
     return;
   }
 
-  TcpSocket *socket = iter->second->socket;
-  m_ss.RemoveWriteDescriptor(socket);
-  socket->SetOnWritable(NULL);
-
-  int error = socket->CheckIfConnected();
   if (error) {
-    OLA_WARN << "Failed to connect to " << ip_address << " error " <<
+    OLA_INFO << "Failed to connect to " << ip_address << ": " <<
       strerror(error);
-    delete socket;
-    iter->second->socket = NULL;
+    // TODO(simon): add retry logic here
     return;
   }
 
-  SocketConnected(ip_address, iter->second);
-}
+  iter->second->socket = socket;
 
-
-/**
- * Called when a TCP socket is connected.
- */
-void SimpleE133Monitor::SocketConnected(const IPV4Address &address,
-                                        NodeTCPState *node_state) {
-  OLA_INFO << "Connection to " << address << " is complete.";
-  TcpSocket *socket = node_state->socket;
-
-  // setup the health checked channel
+  // setup the health checked channel here
   TimeInterval heartbeat_interval(2, 0);
   E133HealthCheckedConnection *health_checked_connection =
       new E133HealthCheckedConnection(
           &m_e133_sender,
           NewSingleCallback(this,
                             &SimpleE133Monitor::SocketUnhealthy,
-                            node_state),
+                            iter->second),
           socket,
           &m_ss,
           heartbeat_interval);
   if (!health_checked_connection->Setup()) {
-    OLA_WARN << "Failed to setup heartbeat controller for " << address;
+    OLA_WARN << "Failed to setup heartbeat controller for " << ip_address;
     delete health_checked_connection;
     socket->Close();
     delete socket;
-    node_state->socket = NULL;
+    iter->second->socket = NULL;
     return;
   }
 
-  if (node_state->health_checked_connection) {
+  if (iter->second->health_checked_connection) {
     // warn
-    OLA_WARN << "pre-existing health_checked_connection for " << address <<
+    OLA_WARN << "pre-existing health_checked_connection for " << ip_address <<
         ", this is a bug and we'll leak memory!";
   }
-  node_state->health_checked_connection = health_checked_connection;
+  iter->second->health_checked_connection = health_checked_connection;
   socket->SetOnClose(
-    NewSingleCallback(this, &SimpleE133Monitor::SocketClosed, address));
+    NewSingleCallback(this, &SimpleE133Monitor::SocketClosed, ip_address));
 
   socket->SetOnData(
       NewCallback(&m_incoming_tcp_transport,

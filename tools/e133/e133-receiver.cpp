@@ -23,6 +23,7 @@
 #include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <getopt.h>
 #include <signal.h>
+#include <stdio.h>
 #include <string.h>
 #include <sysexits.h>
 #include <termios.h>

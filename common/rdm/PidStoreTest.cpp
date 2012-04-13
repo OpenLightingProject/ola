@@ -226,8 +226,7 @@ void PidStoreTest::testPidStoreLoad() {
   const PidStore *open_lighting_store =
     root_store->ManufacturerStore(OPEN_LIGHTING_ESTA_CODE);
   CPPUNIT_ASSERT(open_lighting_store);
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0),
-                       open_lighting_store->PidCount());
+  CPPUNIT_ASSERT_EQUAL(0u, open_lighting_store->PidCount());
 
   // lookup by value
   CPPUNIT_ASSERT(root_store->GetDescriptor(16));
@@ -268,12 +267,10 @@ void PidStoreTest::testPidStoreLoad() {
 
   // check GET descriptors
   const Descriptor *get_request = pid_descriptor->GetRequest();
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0),
-                      get_request->FieldCount());
+  CPPUNIT_ASSERT_EQUAL(0u, get_request->FieldCount());
 
   const Descriptor *get_response = pid_descriptor->GetResponse();
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1),
-                       get_response->FieldCount());
+  CPPUNIT_ASSERT_EQUAL(1u, get_response->FieldCount());
   const FieldDescriptor *proxied_group = get_response->GetField(0);
   CPPUNIT_ASSERT(proxied_group);
 
@@ -285,15 +282,11 @@ void PidStoreTest::testPidStoreLoad() {
   // check all the group properties
   CPPUNIT_ASSERT(!group_descriptor->FixedSize());
   CPPUNIT_ASSERT(!group_descriptor->LimitedSize());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0),
-                       group_descriptor->MaxSize());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(2),
-                       group_descriptor->FieldCount());
+  CPPUNIT_ASSERT_EQUAL(0u, group_descriptor->MaxSize());
+  CPPUNIT_ASSERT_EQUAL(2u, group_descriptor->FieldCount());
   CPPUNIT_ASSERT(group_descriptor->FixedBlockSize());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(6),
-                       group_descriptor->BlockSize());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(6),
-                       group_descriptor->MaxBlockSize());
+  CPPUNIT_ASSERT_EQUAL(6u, group_descriptor->BlockSize());
+  CPPUNIT_ASSERT_EQUAL(6u, group_descriptor->MaxBlockSize());
   CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0),
                        group_descriptor->MinBlocks());
   CPPUNIT_ASSERT_EQUAL(FieldDescriptorGroup::UNLIMITED_BLOCKS,
@@ -368,8 +361,7 @@ void PidStoreTest::testPidStoreFileLoad() {
   const PidStore *open_lighting_store =
     root_store->ManufacturerStore(OPEN_LIGHTING_ESTA_CODE);
   CPPUNIT_ASSERT(open_lighting_store);
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(1),
-                       open_lighting_store->PidCount());
+  CPPUNIT_ASSERT_EQUAL(1u, open_lighting_store->PidCount());
 
   const PidDescriptor *serial_number = open_lighting_store->LookupPID(
       "SERIAL_NUMBER");
