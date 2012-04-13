@@ -36,6 +36,7 @@
 #include "plugins/e131/e131/E133Sender.h"
 #include "plugins/e131/e131/RootInflator.h"
 #include "plugins/e131/e131/RootSender.h"
+#include "plugins/e131/e131/TCPTransport.h"
 #include "plugins/e131/e131/UDPTransport.h"
 
 #include "tools/e133/E133Endpoint.h";
@@ -92,9 +93,9 @@ class E133Device {
     ola::plugin::e131::DMPE133Inflator m_dmp_inflator;
 
     // transports
-    // ola::plugin::e131::UDPTransport m_transport;
     ola::plugin::e131::IncomingUDPTransport m_incoming_udp_transport;
     ola::plugin::e131::OutgoingUDPTransportImpl m_outgoing_udp_transport;
+    ola::plugin::e131::IncomingTCPTransport m_incoming_tcp_transport;
 
     // senders
     ola::plugin::e131::RootSender m_root_sender;
@@ -103,6 +104,7 @@ class E133Device {
     void NewTCPConnection(ola::network::TcpSocket *descriptor);
     void TCPConnectionUnhealthy();
     void TCPConnectionClosed();
+    void E133DataReceived(const ola::plugin::e131::TransportHeader &header);
 
     void RegisterEndpoint(uint16_t endpoint_id);
     void UnRegisterEndpoint(uint16_t endpoint_id);

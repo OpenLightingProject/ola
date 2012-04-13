@@ -55,6 +55,13 @@
 #include HASH_MAP_H
 
 #include "plugins/e131/e131/ACNPort.h"
+#include "plugins/e131/e131/CID.h"
+#include "plugins/e131/e131/DMPE133Inflator.h"
+#include "plugins/e131/e131/E133Inflator.h"
+#include "plugins/e131/e131/E133Sender.h"
+#include "plugins/e131/e131/RootInflator.h"
+#include "plugins/e131/e131/RootSender.h"
+#include "plugins/e131/e131/TCPTransport.h"
 
 #include "tools/e133/E133HealthCheckedConnection.h"
 #include "tools/e133/SlpThread.h"
@@ -79,6 +86,7 @@ typedef struct {
   bool help;
   ola::log_level log_level;
   string target_addresses;
+  string pid_file;
 } options;
 
 
@@ -89,6 +97,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
   static struct option long_options[] = {
       {"help", no_argument, 0, 'h'},
       {"log-level", required_argument, 0, 'l'},
+      {"pid-file", required_argument, 0, 'p'},
       {"targets", required_argument, 0, 't'},
       {0, 0, 0, 0}
     };
@@ -96,7 +105,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
   int option_index = 0;
 
   while (1) {
-    int c = getopt_long(argc, argv, "hl:t:", long_options, &option_index);
+    int c = getopt_long(argc, argv, "hl:p:t:", long_options, &option_index);
 
     if (c == -1)
       break;
@@ -128,6 +137,9 @@ void ParseOptions(int argc, char *argv[], options *opts) {
             break;
         }
         break;
+      case 'p':
+        opts->pid_file = optarg;
+        break;
       case 't':
         opts->target_addresses = optarg;
         break;
@@ -150,6 +162,7 @@ void DisplayHelpAndExit(char *argv[]) {
   "\n"
   "  -h, --help                Display this help message and exit.\n"
   "  -t, --targets <ip>,<ip>   List of IPs to connect to, overrides SLP\n"
+  "  -p, --pid-file            The file to read PID definitiions from\n"
   "  -l, --log-level <level>   Set the logging level 0 .. 4.\n"
   << endl;
   exit(0);
@@ -201,6 +214,21 @@ class SimpleE133Monitor {
     typedef HASH_NAMESPACE::HASH_MAP_CLASS<uint32_t, NodeTCPState*> ip_map;
     ip_map m_ip_map;
 
+    // The Controller's CID
+    ola::plugin::e131::CID m_cid;
+
+    // senders
+    ola::plugin::e131::RootSender m_root_sender;
+    ola::plugin::e131::E133Sender m_e133_sender;
+
+    // inflators
+    ola::plugin::e131::RootInflator m_root_inflator;
+    ola::plugin::e131::E133Inflator m_e133_inflator;
+    ola::plugin::e131::DMPE133Inflator m_dmp_inflator;
+
+    // transports
+    ola::plugin::e131::IncomingTCPTransport m_incoming_tcp_transport;
+
     /*
      * TODO: be careful about passing pointer to the NodeTCPState in callbacks
      * when we start removing stale entries this is going to break!
@@ -213,6 +241,12 @@ class SimpleE133Monitor {
                          NodeTCPState *node_state);
     void SocketUnhealthy(NodeTCPState *node_state);
     void SocketClosed(IPV4Address address);
+    void E133DataReceived(const ola::plugin::e131::TransportHeader &header);
+
+    void EndpointRequest(
+        const ola::plugin::e131::TransportHeader &transport_header,
+        const ola::plugin::e131::E133Header &e133_header,
+        const string &raw_request);
     /*
     void RequestCallback(ola::rdm::rdm_response_code rdm_code,
                          const ola::rdm::RDMResponse *response,
@@ -227,7 +261,18 @@ SimpleE133Monitor::SimpleE133Monitor(
     : m_pid_helper(pid_helper),
       m_slp_thread(
         &m_ss,
-        ola::NewCallback(this, &SimpleE133Monitor::DiscoveryCallback)) {
+        ola::NewCallback(this, &SimpleE133Monitor::DiscoveryCallback)),
+      m_cid(ola::plugin::e131::CID::Generate()),
+      m_root_sender(m_cid),
+      m_e133_sender(&m_root_sender),
+      m_dmp_inflator(NewCallback(this, &SimpleE133Monitor::E133DataReceived)),
+      m_incoming_tcp_transport(&m_root_inflator) {
+  m_root_inflator.AddInflator(&m_e133_inflator);
+  m_e133_inflator.AddInflator(&m_dmp_inflator);
+
+  m_dmp_inflator.SetRDMHandler(
+      0,
+      NewCallback(this, &SimpleE133Monitor::EndpointRequest));
 }
 
 
@@ -289,7 +334,7 @@ void SimpleE133Monitor::AddIP(const IPV4Address &ip_address) {
 
   // it connected immediately
   if (socket->SocketState() == TcpSocket::CONNECTED) {
-    OLA_INFO << "done now";
+    OLA_INFO << "connected now";
     SocketConnected(ip_address, node_state);
     return;
   }
@@ -374,12 +419,11 @@ void SimpleE133Monitor::SocketConnected(const IPV4Address &address,
   OLA_INFO << "Connection to " << address << " is complete.";
   TcpSocket *socket = node_state->socket;
 
-
-  // setup the health checked channel here
+  // setup the health checked channel
   TimeInterval heartbeat_interval(2, 0);
   E133HealthCheckedConnection *health_checked_connection =
       new E133HealthCheckedConnection(
-          NULL,  // no sender for now :)
+          &m_e133_sender,
           NewSingleCallback(this,
                             &SimpleE133Monitor::SocketUnhealthy,
                             node_state),
@@ -403,8 +447,12 @@ void SimpleE133Monitor::SocketConnected(const IPV4Address &address,
   node_state->health_checked_connection = health_checked_connection;
   socket->SetOnClose(
     NewSingleCallback(this, &SimpleE133Monitor::SocketClosed, address));
+
+  socket->SetOnData(
+      NewCallback(&m_incoming_tcp_transport,
+                  &ola::plugin::e131::IncomingTCPTransport::Receive,
+                  socket));
   m_ss.AddReadDescriptor(socket);
-  // SET ON READ here
 }
 
 
@@ -423,6 +471,7 @@ void SimpleE133Monitor::SocketUnhealthy(NodeTCPState *node_state) {
   SocketClosed(peer_address);
 }
 
+
 /**
  * Called when a socket is closed
  */
@@ -435,11 +484,49 @@ void SimpleE133Monitor::SocketClosed(IPV4Address ip_address) {
     return;
   }
 
+  delete iter->second->health_checked_connection;
+  iter->second->health_checked_connection = NULL;
+
   TcpSocket *socket = iter->second->socket;
   m_ss.RemoveReadDescriptor(socket);
   delete socket;
   iter->second->socket = NULL;
   m_ss.Terminate();
+}
+
+
+/**
+ * Called when we receive E1.33 data. If this arrived over TCP we notify the
+ * health checked connection.
+ */
+void SimpleE133Monitor::E133DataReceived(
+    const ola::plugin::e131::TransportHeader &header) {
+  if (header.Transport() != ola::plugin::e131::TransportHeader::TCP)
+    return;
+
+  ip_map::iterator iter = m_ip_map.find(header.SourceIP().AsInt());
+  if (iter == m_ip_map.end()) {
+    OLA_FATAL << "Received data but unable to lookup socket for " <<
+      header.SourceIP();
+    return;
+  }
+
+  if (iter->second->health_checked_connection)
+    iter->second->health_checked_connection->HeartbeatReceived();
+}
+
+
+/**
+ * We received data to endpoint 0
+ */
+void SimpleE133Monitor::EndpointRequest(
+    const ola::plugin::e131::TransportHeader &transport_header,
+    const ola::plugin::e131::E133Header &e133_header,
+    const string &raw_request) {
+
+  OLA_INFO << "got message from " << transport_header.SourceIP();
+  (void) e133_header;
+  (void) raw_request;
 }
 
 
@@ -509,10 +596,11 @@ void SimpleE133Monitor::RequestCallback(
  */
 int main(int argc, char *argv[]) {
   options opts;
+  opts.pid_file = PID_DATA_FILE;
   opts.log_level = ola::OLA_LOG_WARN;
   opts.help = false;
   ParseOptions(argc, argv, &opts);
-  PidStoreHelper pid_helper(PID_DATA_FILE);
+  PidStoreHelper pid_helper(opts.pid_file);
 
   if (opts.help)
     DisplayHelpAndExit(argv);

@@ -68,10 +68,15 @@ E133Device::E133Device(ola::network::SelectServerInterface *ss,
       m_health_checked_connection(NULL),
       m_ss(ss),
       m_ip_address(ip_address),
+      m_dmp_inflator(NewCallback(this, &E133Device::E133DataReceived)),
       m_incoming_udp_transport(&m_udp_socket, &m_root_inflator),
       m_outgoing_udp_transport(&m_udp_socket),
+      m_incoming_tcp_transport(&m_root_inflator),
       m_root_sender(m_cid),
       m_e133_sender(&m_root_sender) {
+
+  m_root_inflator.AddInflator(&m_e133_inflator);
+  m_e133_inflator.AddInflator(&m_dmp_inflator);
 
   m_register_endpoint_callback.reset(NewCallback(
       this,
@@ -111,6 +116,12 @@ E133Device::~E133Device() {
  */
 void E133Device::SetRootEndpoint(E133EndpointInterface *endpoint) {
   m_root_endpoint = endpoint;
+  // register the root enpoint
+  m_dmp_inflator.SetRDMHandler(
+      0,
+      NewCallback(this,
+                  &E133Device::EndpointRequest,
+                  static_cast<uint16_t>(0)));
 }
 
 
@@ -123,7 +134,7 @@ bool E133Device::Init() {
   // setup the TCP socket
   m_tcp_socket.SetOnAccept(NewCallback(this, &E133Device::NewTCPConnection));
   bool listen_ok = m_tcp_socket.Listen(m_ip_address,
-                                       ola::plugin::e131::ACN_PORT);
+                                       ola::plugin::e131::E133_PORT);
   if (!listen_ok) {
     m_tcp_socket.Close();
     return false;
@@ -135,14 +146,14 @@ bool E133Device::Init() {
     return false;
   }
 
-  if (!m_udp_socket.Bind(ola::plugin::e131::ACN_PORT)) {
+  if (!m_udp_socket.Bind(ola::plugin::e131::E133_PORT)) {
     m_tcp_socket.Close();
     return false;
   }
 
   m_udp_socket.SetOnData(
-      NewCallback(&m_incoming_udp_transport,
-                  &ola::plugin::e131::IncomingUDPTransport::Receive));
+        NewCallback(&m_incoming_udp_transport,
+                    &ola::plugin::e131::IncomingUDPTransport::Receive));
 
   // add both to the Select Server
   m_ss->AddReadDescriptor(&m_udp_socket);
@@ -198,6 +209,11 @@ void E133Device::NewTCPConnection(
   // send a heartbeat message to indicate this is the live connection
   m_health_checked_connection->SendHeartbeat();
   m_tcp_descriptor = descriptor;
+
+  descriptor->SetOnData(
+      NewCallback(&m_incoming_tcp_transport,
+                  &ola::plugin::e131::IncomingTCPTransport::Receive,
+                  descriptor));
   m_ss->AddReadDescriptor(descriptor);
 }
 
@@ -235,6 +251,20 @@ void E133Device::TCPConnectionClosed() {
 
 
 /**
+ * Called when we receive E1.33 data. If this arrived over TCP we notify the
+ * health checked connection.
+ */
+void E133Device::E133DataReceived(
+    const ola::plugin::e131::TransportHeader &header) {
+  OLA_INFO << "got some E1.33 data from " << header.SourceIP();
+  if (header.Transport() == ola::plugin::e131::TransportHeader::TCP &&
+      m_health_checked_connection) {
+    m_health_checked_connection->HeartbeatReceived();
+  }
+}
+
+
+/**
  * Caled when new endpoints are added
  */
 void E133Device::RegisterEndpoint(uint16_t endpoint_id) {
@@ -262,10 +292,15 @@ void E133Device::EndpointRequest(
     const ola::plugin::e131::TransportHeader &transport_header,
     const ola::plugin::e131::E133Header &e133_header,
     const std::string &raw_request) {
-  OLA_INFO << "Got request for to endpoint " << endpoint_id << "from " <<
+  OLA_INFO << "Got request for to endpoint " << endpoint_id << " from " <<
     transport_header.SourceIP();
 
-  E133Endpoint *endpoint = m_endpoint_manager->GetEndpoint(endpoint_id);
+  E133EndpointInterface *endpoint = NULL;
+  if (endpoint_id)
+    endpoint = m_endpoint_manager->GetEndpoint(endpoint_id);
+  else
+    endpoint = m_root_endpoint;
+
   if (!endpoint) {
     OLA_INFO << "Request to endpoint " << endpoint_id <<
       " but no Endpoint has been registered, this is a bug!";
@@ -306,10 +341,13 @@ void E133Device::EndpointRequestComplete(
     const std::vector<std::string> &packets) {
   auto_ptr<const ola::rdm::RDMResponse> response(response_ptr);
 
+  // TODO(simon): map internal status codes to E1.33 codes once these are added
+  // to the spec
   if (response_code != ola::rdm::RDM_COMPLETED_OK) {
-    OLA_WARN << "E1.33 request failed with code " <<
-      ola::rdm::ResponseCodeToString(response_code) <<
-      ", dropping request";
+    if (response_code != ola::rdm::RDM_WAS_BROADCAST)
+      OLA_WARN << "E1.33 request failed with code " <<
+        ola::rdm::ResponseCodeToString(response_code) <<
+        ", dropping request";
     return;
   }
 

@@ -18,8 +18,6 @@
  *
  * This creates a E1.33 receiver with one (emulated) RDM responder. The node is
  * registered in slp and the RDM responder responds to E1.33 commands.
- *
- * TODO(simon): Implement the node management commands.
  */
 
 #include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
@@ -193,6 +191,7 @@ class SimpleE133Node {
 
     void Input();
     void DumpTCPStats();
+    void SendUnsolicited();
 };
 
 
@@ -300,7 +299,7 @@ void SimpleE133Node::Input() {
       m_ss.Terminate();
       break;
     case 's':
-      OLA_INFO << "This would send a unsolicited message";
+      SendUnsolicited();
       break;
     case 't':
       DumpTCPStats();
@@ -318,6 +317,16 @@ void SimpleE133Node::DumpTCPStats() {
   OLA_INFO << "IP: " << m_tcp_stats.ip_address;
   OLA_INFO << "Connection Unhealthy Events: " << m_tcp_stats.unhealthy_events;
   OLA_INFO << "Connection Events: " << m_tcp_stats.connection_events;
+}
+
+
+/**
+ * Send an unsolicted message on the TCP connection
+ */
+void SimpleE133Node::SendUnsolicited() {
+  OLA_INFO << "This would send a unsolicited message";
+
+
 }
 
 
