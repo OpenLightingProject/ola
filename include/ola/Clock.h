@@ -27,6 +27,7 @@
 
 #include <stdint.h>
 #include <sys/time.h>
+
 #include <iomanip>
 #include <ostream>
 #include <sstream>
@@ -80,6 +81,12 @@ class TimeInterval {
         timeradd(&m_interval, &other.m_interval, &m_interval);
       }
       return *this;
+    }
+
+    TimeInterval operator*(unsigned int i) {
+      int64_t as_int = (*this).AsInt();
+      as_int *= i;
+      return TimeInterval(as_int);
     }
 
     bool operator==(const TimeInterval &other) const {
