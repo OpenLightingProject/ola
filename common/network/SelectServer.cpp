@@ -472,6 +472,7 @@ bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
     case 0:
       // timeout
       m_clock->CurrentTime(&m_wake_up_time);
+      CheckTimeouts(m_wake_up_time);
       return true;
     case -1:
       if (errno == EINTR)

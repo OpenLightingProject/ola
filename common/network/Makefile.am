@@ -1,7 +1,8 @@
 include $(top_srcdir)/common.mk
 
 noinst_LTLIBRARIES = libolanetwork.la
-libolanetwork_la_SOURCES = HealthCheckedConnection.cpp \
+libolanetwork_la_SOURCES = ExponentialTCPConnector.cpp \
+                           HealthCheckedConnection.cpp \
                            IPV4Address.cpp \
                            Interface.cpp \
                            InterfacePicker.cpp \
@@ -18,7 +19,7 @@ endif
 
 EXTRA_DIST = PosixInterfacePicker.h WindowsInterfacePicker.h
 
-TESTS = NetworkTester HealthCheckedConnectionTester
+TESTS = HealthCheckedConnectionTester NetworkTester TCPConnectorTester
 check_PROGRAMS = $(TESTS)
 
 HealthCheckedConnectionTester_SOURCES = HealthCheckedConnectionTest.cpp \
@@ -31,11 +32,14 @@ HealthCheckedConnectionTester_LDADD = $(CPPUNIT_LIBS) \
                                       ../thread/libthread.la \
                                       ../utils/libolautils.la
 
-NetworkTester_SOURCES = IPAddressTest.cpp InterfaceTest.cpp \
-                        InterfacePickerTest.cpp SelectServerTester.cpp \
-                        SocketTest.cpp SelectServerTest.cpp \
-                        NetworkUtilsTest.cpp SelectServerThreadTest.cpp \
-                        TCPConnectorTest.cpp
+NetworkTester_SOURCES = IPAddressTest.cpp \
+                        InterfacePickerTest.cpp \
+                        InterfaceTest.cpp \
+                        NetworkUtilsTest.cpp \
+                        SelectServerTest.cpp \
+                        SelectServerTester.cpp \
+                        SelectServerThreadTest.cpp \
+                        SocketTest.cpp
 NetworkTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 NetworkTester_LDADD = $(CPPUNIT_LIBS) \
                       ./libolanetwork.la \
@@ -47,3 +51,14 @@ NetworkTester_LDADD = $(CPPUNIT_LIBS) \
 if USING_WIN32
   NetworkTester_LDFLAGS = -no-undefined -liphlpapi -lnetapi32 -lcap -lws2_32 -ldpnet -lwsock32
 endif
+
+TCPConnectorTester_SOURCES = ExponentialTCPConnectorTest.cpp \
+                             TCPConnectorTest.cpp \
+                             TCPConnectorTester.cpp
+TCPConnectorTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+TCPConnectorTester_LDADD = $(CPPUNIT_LIBS) \
+                           ./libolanetwork.la \
+                           ../export_map/libolaexportmap.la \
+                           ../logging/liblogging.la \
+                           ../thread/libthread.la \
+                           ../utils/libolautils.la

@@ -43,9 +43,9 @@ class TCPConnector {
     typedef const void* TCPConnectionID;
 
     TCPConnectionID Connect(const IPV4Address &ip,
-                 uint16_t port,
-                 const ola::TimeInterval &timeout,
-                 TCPConnectCallback *callback);
+                            uint16_t port,
+                            const ola::TimeInterval &timeout,
+                            TCPConnectCallback *callback);
 
     bool Cancel(TCPConnectionID id);
     void CancelAll();

@@ -1,4 +1,5 @@
-SOURCES = HealthCheckedConnection.h \
+SOURCES = ExponentialTCPConnector.h\
+          HealthCheckedConnection.h \
           IPV4Address.h \
           Interface.h \
           InterfacePicker.h \
