@@ -40,7 +40,6 @@
 #include <ola/network/NetworkUtils.h>
 #include <ola/network/SelectServer.h>
 #include <ola/network/Socket.h>
-#include <ola/network/TCPConnector.h>
 #include <ola/rdm/PidStoreHelper.h>
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMEnums.h>
@@ -65,6 +64,7 @@
 #include "plugins/e131/e131/TCPTransport.h"
 
 #include "tools/e133/E133HealthCheckedConnection.h"
+#include "tools/e133/E133TCPConnector.h"
 #include "tools/e133/SlpThread.h"
 #include "tools/e133/SlpUrlParser.h"
 
@@ -210,7 +210,8 @@ class SimpleE133Monitor {
     PidStoreHelper *m_pid_helper;
     ola::network::SelectServer m_ss;
     SlpThread m_slp_thread;
-    ola::network::TCPConnector m_connector;
+    E133TCPConnector m_connector;
+    ola::network::LinearBackoffPolicy m_backoff_policy;
 
     // hash_map of ips to TCP Connection State
     typedef HASH_NAMESPACE::HASH_MAP_CLASS<uint32_t, NodeTCPState*> ip_map;
@@ -238,9 +239,7 @@ class SimpleE133Monitor {
      * a node we have a connection to. Think about this.
      */
     void DiscoveryCallback(bool status, const vector<string> &urls);
-    void OnTCPConnect(IPV4Address address,
-                      TcpSocket *socket,
-                      int error);
+    void OnTCPConnect(IPV4Address address, uint16_t port, TcpSocket *socket);
     void SocketUnhealthy(NodeTCPState *node_state);
     void SocketClosed(IPV4Address address);
     void E133DataReceived(const ola::plugin::e131::TransportHeader &header);
@@ -256,10 +255,14 @@ class SimpleE133Monitor {
     */
 
     static const ola::TimeInterval TCP_CONNECT_TIMEOUT;
+    static const ola::TimeInterval INITIAL_TCP_RETRY_DELAY;
+    static const ola::TimeInterval MAX_TCP_RETRY_DELAY;
 };
 
 // 5 second connect() timeout
 const ola::TimeInterval SimpleE133Monitor::TCP_CONNECT_TIMEOUT(5, 0);
+const ola::TimeInterval SimpleE133Monitor::INITIAL_TCP_RETRY_DELAY(5, 0);
+const ola::TimeInterval SimpleE133Monitor::MAX_TCP_RETRY_DELAY(60, 0);
 
 
 SimpleE133Monitor::SimpleE133Monitor(
@@ -268,7 +271,10 @@ SimpleE133Monitor::SimpleE133Monitor(
       m_slp_thread(
         &m_ss,
         ola::NewCallback(this, &SimpleE133Monitor::DiscoveryCallback)),
-      m_connector(&m_ss),
+      m_connector(&m_ss,
+                  NewCallback(this, &SimpleE133Monitor::OnTCPConnect),
+                  TCP_CONNECT_TIMEOUT),
+      m_backoff_policy(INITIAL_TCP_RETRY_DELAY, MAX_TCP_RETRY_DELAY),
       m_cid(ola::plugin::e131::CID::Generate()),
       m_root_sender(m_cid),
       m_e133_sender(&m_root_sender),
@@ -330,11 +336,10 @@ void SimpleE133Monitor::AddIP(const IPV4Address &ip_address) {
   m_ip_map[ip_address.AsInt()] = node_state;
 
   // start the non-blocking connect
-  m_connector.Connect(
+  m_connector.AddEndpoint(
       ip_address,
       ola::plugin::e131::E133_PORT,
-      TCP_CONNECT_TIMEOUT,
-      NewSingleCallback(this, &SimpleE133Monitor::OnTCPConnect, ip_address));
+      &m_backoff_policy);
 }
 
 
@@ -376,8 +381,8 @@ void SimpleE133Monitor::DiscoveryCallback(bool ok,
  * Called when a TCP socket is connected.
  */
 void SimpleE133Monitor::OnTCPConnect(IPV4Address ip_address,
-                                     TcpSocket *socket,
-                                     int error) {
+                                     uint16_t,
+                                     TcpSocket *socket) {
   ip_map::iterator iter = m_ip_map.find(ip_address.AsInt());
   if (iter == m_ip_map.end()) {
     OLA_FATAL << "Unable to locate socket for " << ip_address;
@@ -385,13 +390,6 @@ void SimpleE133Monitor::OnTCPConnect(IPV4Address ip_address,
       socket->Close();
       delete socket;
     }
-    return;
-  }
-
-  if (error) {
-    OLA_INFO << "Failed to connect to " << ip_address << ": " <<
-      strerror(error);
-    // TODO(simon): add retry logic here
     return;
   }
 

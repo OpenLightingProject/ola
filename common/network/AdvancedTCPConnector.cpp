@@ -41,8 +41,8 @@ AdvancedTCPConnector::AdvancedTCPConnector(
     ola::network::SelectServerInterface *ss,
     OnConnect *on_connect,
     const ola::TimeInterval &connection_timeout)
-    : m_ss(ss),
-      m_on_connect(on_connect),
+    : m_on_connect(on_connect),
+      m_ss(ss),
       m_connector(ss),
       m_connection_timeout(connection_timeout) {
 }
@@ -201,11 +201,22 @@ void AdvancedTCPConnector::TakeAction(const IPPortPair &key,
   } else {
     // error
     info->failed_attempts++;
-    info->retry_timeout = m_ss->RegisterSingleTimeout(
-        info->policy->BackOffTime(info->failed_attempts),
-        ola::NewSingleCallback(this, &AdvancedTCPConnector::RetryTimeout,
-          key));
+    ScheduleRetry(key, info);
   }
+}
+
+
+/**
+ * Schedule the re-try attempt for this connection
+ */
+void AdvancedTCPConnector::ScheduleRetry(const IPPortPair &key,
+                                         ConnectionInfo *info) {
+  info->retry_timeout = m_ss->RegisterSingleTimeout(
+      info->policy->BackOffTime(info->failed_attempts),
+      ola::NewSingleCallback(
+        this,
+        &AdvancedTCPConnector::RetryTimeout,
+        key));
 }
 
 

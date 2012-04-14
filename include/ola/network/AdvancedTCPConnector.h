@@ -17,8 +17,8 @@
  * Copyright (C) 2012 Simon Newton
  */
 
-#ifndef INCLUDE_OLA_NETWORK_EXPONENTIALTCPCONNECTOR_H_
-#define INCLUDE_OLA_NETWORK_EXPONENTIALTCPCONNECTOR_H_
+#ifndef INCLUDE_OLA_NETWORK_ADVANCEDTCPCONNECTOR_H_
+#define INCLUDE_OLA_NETWORK_ADVANCEDTCPCONNECTOR_H_
 
 #include <math.h>
 
@@ -135,9 +135,9 @@ class AdvancedTCPConnector {
      */
     typedef ola::Callback3<void, IPV4Address, uint16_t, TcpSocket*> OnConnect;
 
-    AdvancedTCPConnector(ola::network::SelectServerInterface *ss,
-                            OnConnect *on_connect,
-                            const ola::TimeInterval &connection_timeout);
+    AdvancedTCPConnector(SelectServerInterface *ss,
+                         OnConnect *on_connect,
+                         const ola::TimeInterval &connection_timeout);
     virtual ~AdvancedTCPConnector();
 
     void AddEndpoint(const IPV4Address &ip_address,
@@ -169,11 +169,13 @@ class AdvancedTCPConnector {
       ConnectionState state;
       unsigned int failed_attempts;
       ola::thread::timeout_id retry_timeout;
-      ola::network::TCPConnector::TCPConnectionID connection_id;
+      TCPConnector::TCPConnectionID connection_id;
       BackOffPolicy *policy;
     } ConnectionInfo;
 
     typedef std::pair<IPV4Address, uint16_t> IPPortPair;
+
+    OnConnect *m_on_connect;
 
     /**
      * Sub classes can override this to tune the behavior
@@ -182,12 +184,12 @@ class AdvancedTCPConnector {
                             ConnectionInfo *info,
                             TcpSocket *socket,
                             int error);
+    void ScheduleRetry(const IPPortPair &key, ConnectionInfo *info);
 
   private:
+    SelectServerInterface *m_ss;
 
-    ola::network::SelectServerInterface *m_ss;
-    OnConnect *m_on_connect;
-    ola::network::TCPConnector m_connector;
+    TCPConnector m_connector;
     const ola::TimeInterval m_connection_timeout;
 
     typedef std::map<IPPortPair, ConnectionInfo*> ConnectionMap;
@@ -198,6 +200,6 @@ class AdvancedTCPConnector {
     void AttemptConnection(const IPPortPair &key, ConnectionInfo *state);
     void AbortConnection(ConnectionInfo *state);
 };
-#endif  // INCLUDE_OLA_NETWORK_EXPONENTIALTCPCONNECTOR_H_
 }  // network
 }  // ola
+#endif  // INCLUDE_OLA_NETWORK_ADVANCEDTCPCONNECTOR_H_
