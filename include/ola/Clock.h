@@ -83,7 +83,7 @@ class TimeInterval {
       return *this;
     }
 
-    TimeInterval operator*(unsigned int i) {
+    TimeInterval operator*(unsigned int i) const {
       int64_t as_int = (*this).AsInt();
       as_int *= i;
       return TimeInterval(as_int);
