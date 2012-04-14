@@ -1,7 +1,7 @@
 include $(top_srcdir)/common.mk
 
 noinst_LTLIBRARIES = libolanetwork.la
-libolanetwork_la_SOURCES = ExponentialTCPConnector.cpp \
+libolanetwork_la_SOURCES = AdvancedTCPConnector.cpp \
                            HealthCheckedConnection.cpp \
                            IPV4Address.cpp \
                            Interface.cpp \
@@ -52,7 +52,7 @@ if USING_WIN32
   NetworkTester_LDFLAGS = -no-undefined -liphlpapi -lnetapi32 -lcap -lws2_32 -ldpnet -lwsock32
 endif
 
-TCPConnectorTester_SOURCES = ExponentialTCPConnectorTest.cpp \
+TCPConnectorTester_SOURCES = AdvancedTCPConnectorTest.cpp \
                              TCPConnectorTest.cpp \
                              TCPConnectorTester.cpp
 TCPConnectorTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)

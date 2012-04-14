@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * ExponentialTCPConnector.h
+ * AdvancedTCPConnector.h
  * Copyright (C) 2012 Simon Newton
  */
 
@@ -117,7 +117,7 @@ class ExponentialBackoffPolicy: public BackOffPolicy {
 
 /**
  * Manages the TCP connections to ip:ports.
- * The ExponentialTCPConnector failed_attempts to open connections to ip:ports,
+ * The AdvancedTCPConnector failed_attempts to open connections to ip:ports,
  * backing off exponentially if we can't connect.
  *
  * Limitiations:
@@ -125,7 +125,7 @@ class ExponentialBackoffPolicy: public BackOffPolicy {
  *  This class should work fine for a small number of TCP connections (100 or
  *   so). It'll need to be re-written if we want to support 1000s.
  */
-class ExponentialTCPConnector {
+class AdvancedTCPConnector {
   public:
     /**
      * This is run when a connection is successfull
@@ -135,10 +135,10 @@ class ExponentialTCPConnector {
      */
     typedef ola::Callback3<void, IPV4Address, uint16_t, TcpSocket*> OnConnect;
 
-    ExponentialTCPConnector(ola::network::SelectServerInterface *ss,
+    AdvancedTCPConnector(ola::network::SelectServerInterface *ss,
                             OnConnect *on_connect,
                             const ola::TimeInterval &connection_timeout);
-    virtual ~ExponentialTCPConnector();
+    virtual ~AdvancedTCPConnector();
 
     void AddEndpoint(const IPV4Address &ip_address,
                      uint16_t port,

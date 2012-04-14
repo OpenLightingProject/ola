@@ -1,4 +1,4 @@
-SOURCES = ExponentialTCPConnector.h\
+SOURCES = AdvancedTCPConnector.h\
           HealthCheckedConnection.h \
           IPV4Address.h \
           Interface.h \

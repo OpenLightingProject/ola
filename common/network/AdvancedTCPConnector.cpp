@@ -13,13 +13,13 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * ExponentialTCPConnector.cpp
+ * AdvancedTCPConnector.cpp
  * Copyright (C) 2012 Simon Newton
  */
 
 #include <ola/Callback.h>
 #include <ola/Logging.h>
-#include <ola/network/ExponentialTCPConnector.h>
+#include <ola/network/AdvancedTCPConnector.h>
 #include <ola/network/TCPConnector.h>
 #include <ola/thread/SchedulerInterface.h>
 
@@ -31,13 +31,13 @@ using std::pair;
 
 
 /**
- * Create a new ExponentialTCPConnector
+ * Create a new AdvancedTCPConnector
  * @param ss the SelectServerInterface to use for scheduling
  * @param on_connect the Callback to execute when a connection is successfull
  * @param connection_timeout the timeout for TCP connects
  * @param max_backoff the maximum time to wait between connects.
  */
-ExponentialTCPConnector::ExponentialTCPConnector(
+AdvancedTCPConnector::AdvancedTCPConnector(
     ola::network::SelectServerInterface *ss,
     OnConnect *on_connect,
     const ola::TimeInterval &connection_timeout)
@@ -51,7 +51,7 @@ ExponentialTCPConnector::ExponentialTCPConnector(
 /**
  * Cancel all outstanding connections.
  */
-ExponentialTCPConnector::~ExponentialTCPConnector() {
+AdvancedTCPConnector::~AdvancedTCPConnector() {
   ConnectionMap::iterator iter = m_connections.begin();
   for (; iter != m_connections.end(); ++iter) {
     AbortConnection(iter->second);
@@ -74,10 +74,10 @@ ExponentialTCPConnector::~ExponentialTCPConnector() {
  * @param backoff_policy the BackOffPolicy to use for this connection.
  * @param paused true if we don't want to immediately connect to this peer.
  */
-void ExponentialTCPConnector::AddEndpoint(const IPV4Address &ip_address,
-                                          uint16_t port,
-                                          BackOffPolicy *backoff_policy,
-                                          bool paused) {
+void AdvancedTCPConnector::AddEndpoint(const IPV4Address &ip_address,
+                                       uint16_t port,
+                                       BackOffPolicy *backoff_policy,
+                                       bool paused) {
   IPPortPair key(ip_address, port);
   ConnectionMap::iterator iter = m_connections.find(key);
   if (iter != m_connections.end())
@@ -104,8 +104,8 @@ void ExponentialTCPConnector::AddEndpoint(const IPV4Address &ip_address,
  * @param ip_address the IP of the host to remove
  * @param port the port to remove
  */
-void ExponentialTCPConnector::RemoveEndpoint(const IPV4Address &ip_address,
-                                             uint16_t port) {
+void AdvancedTCPConnector::RemoveEndpoint(const IPV4Address &ip_address,
+                                          uint16_t port) {
   IPPortPair key(ip_address, port);
   ConnectionMap::iterator iter = m_connections.find(key);
   if (iter == m_connections.end())
@@ -123,7 +123,7 @@ void ExponentialTCPConnector::RemoveEndpoint(const IPV4Address &ip_address,
  * @param port the port to remove
  * @returns true if this endpoint was found, false otherwise.
  */
-bool ExponentialTCPConnector::GetEndpointState(
+bool AdvancedTCPConnector::GetEndpointState(
     const IPV4Address &ip_address,
     uint16_t port,
     ConnectionState *connected,
@@ -145,9 +145,9 @@ bool ExponentialTCPConnector::GetEndpointState(
  * @param port the port that is now distributed
  * @param pause if true, don't immediately try to reconnect.
  */
-void ExponentialTCPConnector::Disconnect(const IPV4Address &ip_address,
-                                         uint16_t port,
-                                         bool pause) {
+void AdvancedTCPConnector::Disconnect(const IPV4Address &ip_address,
+                                      uint16_t port,
+                                      bool pause) {
   IPPortPair key(ip_address, port);
   ConnectionMap::iterator iter = m_connections.find(key);
   if (iter == m_connections.end())
@@ -173,8 +173,8 @@ void ExponentialTCPConnector::Disconnect(const IPV4Address &ip_address,
 /**
  * Resume trying to connect to a ip:port pair.
  */
-void ExponentialTCPConnector::Resume(const IPV4Address &ip_address,
-                                     uint16_t port) {
+void AdvancedTCPConnector::Resume(const IPV4Address &ip_address,
+                                  uint16_t port) {
   IPPortPair key(ip_address, port);
   ConnectionMap::iterator iter = m_connections.find(key);
   if (iter == m_connections.end())
@@ -190,10 +190,10 @@ void ExponentialTCPConnector::Resume(const IPV4Address &ip_address,
 /**
  * Decide what to do when a connection fails, completes or times out.
  */
-void ExponentialTCPConnector::TakeAction(const IPPortPair &key,
-                                         ConnectionInfo *info,
-                                         TcpSocket *socket,
-                                         int) {
+void AdvancedTCPConnector::TakeAction(const IPPortPair &key,
+                                      ConnectionInfo *info,
+                                      TcpSocket *socket,
+                                      int) {
   if (socket) {
     // ok
     info->state = CONNECTED;
@@ -203,7 +203,7 @@ void ExponentialTCPConnector::TakeAction(const IPPortPair &key,
     info->failed_attempts++;
     info->retry_timeout = m_ss->RegisterSingleTimeout(
         info->policy->BackOffTime(info->failed_attempts),
-        ola::NewSingleCallback(this, &ExponentialTCPConnector::RetryTimeout,
+        ola::NewSingleCallback(this, &AdvancedTCPConnector::RetryTimeout,
           key));
   }
 }
@@ -212,7 +212,7 @@ void ExponentialTCPConnector::TakeAction(const IPPortPair &key,
 /**
  * Called when it's time to retry
  */
-void ExponentialTCPConnector::RetryTimeout(IPPortPair key) {
+void AdvancedTCPConnector::RetryTimeout(IPPortPair key) {
   ConnectionMap::iterator iter = m_connections.find(key);
   if (iter == m_connections.end()) {
     OLA_FATAL << "Re-connect timer expired but unable to find state entry for "
@@ -227,9 +227,9 @@ void ExponentialTCPConnector::RetryTimeout(IPPortPair key) {
 /**
  * Called by the TCPConnector when a connection is ready or it times out.
  */
-void ExponentialTCPConnector::ConnectionResult(IPPortPair key,
-                                               TcpSocket *socket,
-                                               int error) {
+void AdvancedTCPConnector::ConnectionResult(IPPortPair key,
+                                            TcpSocket *socket,
+                                            int error) {
   if (socket) {
     OLA_INFO << "TCP Connection established to " << key.first << ":" <<
       key.second;
@@ -254,14 +254,14 @@ void ExponentialTCPConnector::ConnectionResult(IPPortPair key,
 /**
  * Initiate a connection to this ip:port pair
  */
-void ExponentialTCPConnector::AttemptConnection(const IPPortPair &key,
-                                                ConnectionInfo *state) {
+void AdvancedTCPConnector::AttemptConnection(const IPPortPair &key,
+                                             ConnectionInfo *state) {
   state->connection_id = m_connector.Connect(
       key.first,
       key.second,
       m_connection_timeout,
       ola::NewSingleCallback(this,
-                             &ExponentialTCPConnector::ConnectionResult,
+                             &AdvancedTCPConnector::ConnectionResult,
                              key));
 }
 
@@ -270,7 +270,7 @@ void ExponentialTCPConnector::AttemptConnection(const IPPortPair &key,
  * Abort and clean up a pending connection
  * @param state the ConnectionInfo to cleanup.
  */
-void ExponentialTCPConnector::AbortConnection(ConnectionInfo *state) {
+void AdvancedTCPConnector::AbortConnection(ConnectionInfo *state) {
   if (state->connection_id) {
     if (!m_connector.Cancel(state->connection_id))
       OLA_WARN << "Failed to cancel connection " << state->connection_id;
