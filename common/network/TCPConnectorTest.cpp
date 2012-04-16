@@ -171,11 +171,14 @@ void TCPConnectorTest::testNonBlockingConnectFailure() {
  * Test a non-blocking TCP connect for an invalid port.
  */
 void TCPConnectorTest::testNonBlockingConnectError() {
+  IPV4Address bcast_address;
+  CPPUNIT_ASSERT(IPV4Address::FromString("255.255.255.255", &bcast_address));
+
   // attempt a non-blocking connect, hopefully nothing is running on port 9010
   TCPConnector connector(m_ss);
   TimeInterval connect_timeout(0, CONNECT_TIMEOUT_IN_MS * 1000);
   TCPConnector::TCPConnectionID id = connector.Connect(
-      m_localhost,
+      bcast_address,
       0,
       connect_timeout,
       ola::NewSingleCallback(this, &TCPConnectorTest::OnConnectFailure));
