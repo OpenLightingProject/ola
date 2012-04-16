@@ -141,7 +141,7 @@ class IncomingTCPTransport {
                          ola::network::TcpSocket *socket);
     ~IncomingTCPTransport() {}
 
-    void Receive();
+    void Receive() { m_transport->Receive(); }
 
   private:
     std::auto_ptr<IncommingStreamTransport> m_transport;
