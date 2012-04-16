@@ -122,15 +122,15 @@ class MockInflator: public BaseInflator {
 
   protected:
     void ResetHeaderField() {}
-    bool DecodeHeader(HeaderSet &headers,
+    bool DecodeHeader(HeaderSet &,
                       const uint8_t *data,
-                      unsigned int length,
+                      unsigned int,
                       unsigned int &bytes_used) {
-      bytes_used = 4;
-      memcpy(&m_last_header, data, sizeof(m_last_header));
+      if (data) {
+        bytes_used = 4;
+        memcpy(&m_last_header, data, sizeof(m_last_header));
+      }
       return true;
-      (void) headers;
-      (void) length;
     }
 
     bool HandlePDUData(uint32_t vector, HeaderSet &headers,

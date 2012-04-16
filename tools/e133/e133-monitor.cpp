@@ -178,6 +178,7 @@ class NodeTCPState {
     NodeTCPState()
       : socket(NULL),
         health_checked_connection(NULL),
+        transport(NULL),
         connection_attempts(0) {
     }
     ~NodeTCPState() {
@@ -187,6 +188,7 @@ class NodeTCPState {
     // public for now
     TcpSocket *socket;
     E133HealthCheckedConnection *health_checked_connection;
+    ola::plugin::e131::IncomingTCPTransport *transport;
     unsigned int connection_attempts;
 };
 
@@ -214,8 +216,8 @@ class SimpleE133Monitor {
     ola::network::LinearBackoffPolicy m_backoff_policy;
 
     // hash_map of ips to TCP Connection State
-    typedef HASH_NAMESPACE::HASH_MAP_CLASS<uint32_t, NodeTCPState*> ip_map;
-    ip_map m_ip_map;
+    typedef HASH_NAMESPACE::HASH_MAP_CLASS<uint32_t, NodeTCPState*> IPMap;
+    IPMap m_IPMap;
 
     // The Controller's CID
     ola::plugin::e131::CID m_cid;
@@ -228,9 +230,6 @@ class SimpleE133Monitor {
     ola::plugin::e131::RootInflator m_root_inflator;
     ola::plugin::e131::E133Inflator m_e133_inflator;
     ola::plugin::e131::DMPE133Inflator m_dmp_inflator;
-
-    // transports
-    ola::plugin::e131::IncomingTCPTransport m_incoming_tcp_transport;
 
     /*
      * TODO: be careful about passing pointer to the NodeTCPState in callbacks
@@ -278,8 +277,7 @@ SimpleE133Monitor::SimpleE133Monitor(
       m_cid(ola::plugin::e131::CID::Generate()),
       m_root_sender(m_cid),
       m_e133_sender(&m_root_sender),
-      m_dmp_inflator(NewCallback(this, &SimpleE133Monitor::E133DataReceived)),
-      m_incoming_tcp_transport(&m_root_inflator) {
+      m_dmp_inflator(NewCallback(this, &SimpleE133Monitor::E133DataReceived)) {
   m_root_inflator.AddInflator(&m_e133_inflator);
   m_e133_inflator.AddInflator(&m_dmp_inflator);
 
@@ -291,11 +289,11 @@ SimpleE133Monitor::SimpleE133Monitor(
 
 SimpleE133Monitor::~SimpleE133Monitor() {
   // close out all tcp sockets and free state
-  ip_map::iterator iter = m_ip_map.begin();
-  for ( ; iter != m_ip_map.end(); ++iter) {
+  IPMap::iterator iter = m_IPMap.begin();
+  for ( ; iter != m_IPMap.end(); ++iter) {
     delete iter->second;
   }
-  m_ip_map.clear();
+  m_IPMap.clear();
 
   m_slp_thread.Join();
   m_slp_thread.Cleanup();
@@ -322,8 +320,8 @@ void SimpleE133Monitor::PopulateResponderList() {
 
 
 void SimpleE133Monitor::AddIP(const IPV4Address &ip_address) {
-  ip_map::iterator iter = m_ip_map.find(ip_address.AsInt());
-  if (iter != m_ip_map.end()) {
+  IPMap::iterator iter = m_IPMap.find(ip_address.AsInt());
+  if (iter != m_IPMap.end()) {
     // the IP already exists
     return;
   }
@@ -333,7 +331,7 @@ void SimpleE133Monitor::AddIP(const IPV4Address &ip_address) {
 
   NodeTCPState *node_state = new NodeTCPState();
   node_state->connection_attempts++;
-  m_ip_map[ip_address.AsInt()] = node_state;
+  m_IPMap[ip_address.AsInt()] = node_state;
 
   // start the non-blocking connect
   m_connector.AddEndpoint(
@@ -383,8 +381,8 @@ void SimpleE133Monitor::DiscoveryCallback(bool ok,
 void SimpleE133Monitor::OnTCPConnect(IPV4Address ip_address,
                                      uint16_t,
                                      TcpSocket *socket) {
-  ip_map::iterator iter = m_ip_map.find(ip_address.AsInt());
-  if (iter == m_ip_map.end()) {
+  IPMap::iterator iter = m_IPMap.find(ip_address.AsInt());
+  if (iter == m_IPMap.end()) {
     OLA_FATAL << "Unable to locate socket for " << ip_address;
     if (socket) {
       socket->Close();
@@ -424,10 +422,13 @@ void SimpleE133Monitor::OnTCPConnect(IPV4Address ip_address,
   socket->SetOnClose(
     NewSingleCallback(this, &SimpleE133Monitor::SocketClosed, ip_address));
 
+  iter->second->transport = new ola::plugin::e131::IncomingTCPTransport(
+      &m_root_inflator,
+      socket);
+
   socket->SetOnData(
-      NewCallback(&m_incoming_tcp_transport,
-                  &ola::plugin::e131::IncomingTCPTransport::Receive,
-                  socket));
+      NewCallback(iter->second->transport,
+                  &ola::plugin::e131::IncomingTCPTransport::Receive));
   m_ss.AddReadDescriptor(socket);
 }
 
@@ -437,10 +438,10 @@ void SimpleE133Monitor::OnTCPConnect(IPV4Address ip_address,
  */
 void SimpleE133Monitor::SocketUnhealthy(NodeTCPState *node_state) {
   OLA_INFO << "connection went unhealthy";
+  // TODO(simon): clean this up
   delete node_state->health_checked_connection;
   node_state->health_checked_connection = NULL;
 
-  // TODO(simon): clean this up
   IPV4Address peer_address;
   uint16_t port;
   node_state->socket->GetPeer(&peer_address, &port);
@@ -454,14 +455,17 @@ void SimpleE133Monitor::SocketUnhealthy(NodeTCPState *node_state) {
 void SimpleE133Monitor::SocketClosed(IPV4Address ip_address) {
   OLA_INFO << "connection to " << ip_address << " was closed";
 
-  ip_map::iterator iter = m_ip_map.find(ip_address.AsInt());
-  if (iter == m_ip_map.end()) {
+  IPMap::iterator iter = m_IPMap.find(ip_address.AsInt());
+  if (iter == m_IPMap.end()) {
     OLA_FATAL << "Unable to locate socket for " << ip_address;
     return;
   }
 
   delete iter->second->health_checked_connection;
   iter->second->health_checked_connection = NULL;
+
+  delete iter->second->transport;
+  iter->second->transport = NULL;
 
   TcpSocket *socket = iter->second->socket;
   m_ss.RemoveReadDescriptor(socket);
@@ -480,8 +484,8 @@ void SimpleE133Monitor::E133DataReceived(
   if (header.Transport() != ola::plugin::e131::TransportHeader::TCP)
     return;
 
-  ip_map::iterator iter = m_ip_map.find(header.SourceIP().AsInt());
-  if (iter == m_ip_map.end()) {
+  IPMap::iterator iter = m_IPMap.find(header.SourceIP().AsInt());
+  if (iter == m_IPMap.end()) {
     OLA_FATAL << "Received data but unable to lookup socket for " <<
       header.SourceIP();
     return;

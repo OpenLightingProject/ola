@@ -22,6 +22,7 @@
 #ifndef PLUGINS_E131_E131_TCPTRANSPORT_H_
 #define PLUGINS_E131_E131_TCPTRANSPORT_H_
 
+#include <memory>
 #include "ola/network/Socket.h"
 #include "plugins/e131/e131/PDU.h"
 #include "plugins/e131/e131/PreamblePacker.h"
@@ -66,25 +67,84 @@ class TCPTransport: public OutgoingTransport {
 };
 
 
+/**
+ * Read ACN messages from a stream. Generally you want to use the
+ * IncomingTCPTransport directly. This class is used for testing.
+ */
+class IncommingStreamTransport {
+  public:
+    /**
+     * The E1.33 headers require an IP address and a port
+     */
+    IncommingStreamTransport(class BaseInflator *inflator,
+                             ola::network::ConnectedDescriptor *descriptor,
+                             const IPV4Address &ip_address,
+                             uint16_t port);
+    ~IncommingStreamTransport();
+
+    void Receive();
+
+  private:
+    TransportHeader m_transport_header;
+    class BaseInflator *m_inflator;
+    ola::network::ConnectedDescriptor *m_descriptor;
+    // end points to the byte after the data
+    uint8_t *m_buffer_start, *m_buffer_end, *m_data_start, *m_data_end;
+
+    void IncreaseBufferSize(unsigned int new_size);
+    bool ReadChunk();
+    void LookAheadForHeader();
+    void RealignBuffer();
+
+    /**
+     * Return the available space in the buffer, this will not be contiguous
+     * unless m_data_start == m_buffer_start
+     */
+    inline unsigned int AvailableBufferSpace() const {
+      return ContiguousSpace() + (
+          m_data_start ? m_data_start - m_buffer_start : 0);
+    }
+
+    /**
+     * Returns the free contiguous space at the end of the buffer.
+     */
+    inline unsigned int ContiguousSpace() const {
+      return m_data_start ? m_buffer_end - m_data_end : 0;
+    }
+
+    /**
+     * Return the amount of data in the buffer
+     */
+    inline unsigned int DataLength() const {
+      return m_data_start ? m_data_end - m_data_start : 0;
+    }
+
+    /**
+     * Return the size of the buffer
+     */
+    inline unsigned int BufferSize() const {
+      return m_buffer_end - m_buffer_start;
+    }
+
+    // TODO(simon): tune this once we have an idea of what the sizes will be
+    static const unsigned int INITIAL_SIZE = 500;
+    static const unsigned int ACN_HEADER_SIZE;
+};
+
 
 /**
- * IncomingTCPTransport is responsible for receiving over TCP
- * TODO(simon): this is a complete hack. Clean this up.
+ * IncomingTCPTransport is responsible for receiving ACN over TCP.
  */
 class IncomingTCPTransport {
   public:
-    explicit IncomingTCPTransport(class BaseInflator *inflator);
-    ~IncomingTCPTransport() {
-      if (m_recv_buffer)
-        delete[] m_recv_buffer;
-    }
+    IncomingTCPTransport(class BaseInflator *inflator,
+                         ola::network::TcpSocket *socket);
+    ~IncomingTCPTransport() {}
 
-    void Receive(ola::network::TcpSocket *socket);
+    void Receive() { m_transport->Receive(); }
 
   private:
-    class BaseInflator *m_inflator;
-    uint8_t *m_recv_buffer;
-    uint8_t m_acn_header[PreamblePacker::DATA_OFFSET];
+    std::auto_ptr<IncommingStreamTransport> m_transport;
 };
 }  // e131
 }  // plugin

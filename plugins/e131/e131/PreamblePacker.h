@@ -44,12 +44,9 @@ class PreamblePacker {
     const uint8_t *Pack(const PDUBlock<PDU> &pdu_block,
                         unsigned int *length);
 
-    static const char ACN_PACKET_ID[];  // ASC-E1.17\0\0\0
+    static const uint8_t ACN_HEADER[];
+    static const unsigned int ACN_HEADER_SIZE;
     static const unsigned int MAX_DATAGRAM_SIZE = 1472;
-    static const uint16_t PREAMBLE_SIZE = 0x10;
-    static const uint16_t POSTABLE_SIZE = 0;
-    static const unsigned int PREAMBLE_OFFSET = 4;
-    static const unsigned int DATA_OFFSET = PREAMBLE_OFFSET + 12;
 
   private:
     uint8_t *m_send_buffer;

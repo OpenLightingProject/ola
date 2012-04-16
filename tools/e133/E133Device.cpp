@@ -71,7 +71,7 @@ E133Device::E133Device(ola::network::SelectServerInterface *ss,
       m_dmp_inflator(NewCallback(this, &E133Device::E133DataReceived)),
       m_incoming_udp_transport(&m_udp_socket, &m_root_inflator),
       m_outgoing_udp_transport(&m_udp_socket),
-      m_incoming_tcp_transport(&m_root_inflator),
+      m_incoming_tcp_transport(NULL),
       m_root_sender(m_cid),
       m_e133_sender(&m_root_sender) {
 
@@ -206,14 +206,17 @@ void E133Device::NewTCPConnection(
     return;
   }
 
+  m_incoming_tcp_transport = new ola::plugin::e131::IncomingTCPTransport(
+      &m_root_inflator,
+      descriptor);
+
   // send a heartbeat message to indicate this is the live connection
   m_health_checked_connection->SendHeartbeat();
   m_tcp_descriptor = descriptor;
 
   descriptor->SetOnData(
-      NewCallback(&m_incoming_tcp_transport,
-                  &ola::plugin::e131::IncomingTCPTransport::Receive,
-                  descriptor));
+      NewCallback(m_incoming_tcp_transport,
+                  &ola::plugin::e131::IncomingTCPTransport::Receive));
   m_ss->AddReadDescriptor(descriptor);
 }
 
@@ -244,6 +247,9 @@ void E133Device::TCPConnectionClosed() {
 
   delete m_health_checked_connection;
   m_health_checked_connection = NULL;
+
+  delete m_incoming_tcp_transport;
+  m_incoming_tcp_transport = NULL;
 
   delete m_tcp_descriptor;
   m_tcp_descriptor = NULL;

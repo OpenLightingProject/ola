@@ -76,6 +76,7 @@ void E133HealthCheckedConnection::SendHeartbeat() {
   bool result = m_sender->SendDMP(header, pdu, &transport);
   if (!result)
     OLA_WARN << "Failed to send E1.33 response";
+  delete pdu;
 }
 
 
