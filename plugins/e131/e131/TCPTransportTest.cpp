@@ -40,6 +40,10 @@ class TCPTransportTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSinglePDUWithExtraData);
   CPPUNIT_TEST(testMultiplePDUs);
   CPPUNIT_TEST(testMultiplePDUsWithExtraData);
+  // TODO(simon): fix this.
+  // This isn't supported by the current Transport
+  // We're waiting for resolution on RLP over TCP
+  // CPPUNIT_TEST(testSinglePDUBlock);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -48,6 +52,7 @@ class TCPTransportTest: public CppUnit::TestFixture {
     void testSinglePDUWithExtraData();
     void testMultiplePDUs();
     void testMultiplePDUsWithExtraData();
+    void testSinglePDUBlock();
     void setUp();
 
     void Stop();
@@ -65,6 +70,7 @@ class TCPTransportTest: public CppUnit::TestFixture {
     auto_ptr<IncommingStreamTransport> m_transport;
 
     void SendPDU(unsigned int line);
+    void SendPDUBlock(unsigned int line);
 
     static const int ABORT_TIMEOUT_IN_MS = 1000;
 };
@@ -172,6 +178,18 @@ void TCPTransportTest::testMultiplePDUsWithExtraData() {
 
 
 /**
+ * Send a block of PDUs
+ */
+void TCPTransportTest::testSinglePDUBlock() {
+  SendPDUBlock(__LINE__);
+
+  m_loopback.CloseClient();
+  m_ss->Run();
+  CPPUNIT_ASSERT_EQUAL(3u, m_pdus_received);
+}
+
+
+/**
  * Send a PDU
  */
 void TCPTransportTest::SendPDU(unsigned int line) {
@@ -183,6 +201,27 @@ void TCPTransportTest::SendPDU(unsigned int line) {
   PDUBlock<PDU> pdu_block;
   MockPDU mock_pdu(4, 8);
   pdu_block.AddPDU(&mock_pdu);
+  CPPUNIT_ASSERT_MESSAGE(str.str(), outgoing_transport.Send(pdu_block));
+}
+
+
+/**
+ * Send a block of PDUs
+ */
+void TCPTransportTest::SendPDUBlock(unsigned int line) {
+  std::stringstream str;
+  str << "Line " << line;
+  TCPTransport outgoing_transport(&m_loopback);
+
+  // now actually send some data
+  PDUBlock<PDU> pdu_block;
+  MockPDU mock_pdu1(1, 2);
+  MockPDU mock_pdu2(2, 4);
+  MockPDU mock_pdu3(3, 6);
+
+  pdu_block.AddPDU(&mock_pdu1);
+  pdu_block.AddPDU(&mock_pdu2);
+  pdu_block.AddPDU(&mock_pdu3);
   CPPUNIT_ASSERT_MESSAGE(str.str(), outgoing_transport.Send(pdu_block));
 }
 }  // e131
