@@ -247,6 +247,7 @@ bool BaseInflator::InflatePDU(HeaderSet &headers,
   // TODO(simon): handle the crazy DFLAG here
 
   data_offset += header_bytes_used;
+
   BaseInflator *inflator = GetInflator(vector);
   if (inflator) {
     return inflator->InflatePDUBlock(headers, data + data_offset,
@@ -263,9 +264,7 @@ bool BaseInflator::InflatePDU(HeaderSet &headers,
  * before either the next inflator or handle_data is called.
  * @return false will cease processing this PDU
  */
-bool BaseInflator::PostHeader(uint32_t vector, HeaderSet &headers) {
-  (void) vector;
-  (void) headers;
+bool BaseInflator::PostHeader(uint32_t, HeaderSet &) {
   return true;
 }
 
@@ -274,14 +273,11 @@ bool BaseInflator::PostHeader(uint32_t vector, HeaderSet &headers) {
  * The base handle data method - does nothing
  */
 bool BaseInflator::HandlePDUData(uint32_t vector,
-                                 HeaderSet &headers,
-                                 const uint8_t *data,
-                                 unsigned int pdu_length) {
+                                 HeaderSet &,
+                                 const uint8_t *,
+                                 unsigned int) {
   OLA_WARN << "In BaseInflator::HandlePDUData, someone forgot to add" <<
     " a handler, vector id " << vector;
-  (void) headers;
-  (void) data;
-  (void) pdu_length;
   return false;
 }
 }  // e131

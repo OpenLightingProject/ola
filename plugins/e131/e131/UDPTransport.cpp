@@ -70,13 +70,6 @@ IncomingUDPTransport::IncomingUDPTransport(ola::network::UdpSocket *socket,
     : m_socket(socket),
       m_inflator(inflator),
       m_recv_buffer(NULL) {
-  m_acn_header[0] = PreamblePacker::PREAMBLE_SIZE >> 8;
-  m_acn_header[1] = PreamblePacker::PREAMBLE_SIZE;
-  m_acn_header[2] = PreamblePacker::POSTABLE_SIZE >> 8;
-  m_acn_header[3] = PreamblePacker::POSTABLE_SIZE;
-  memcpy(m_acn_header + PreamblePacker::PREAMBLE_OFFSET,
-         PreamblePacker::ACN_PACKET_ID,
-         PreamblePacker::DATA_OFFSET - PreamblePacker::PREAMBLE_OFFSET);
 }
 
 
@@ -94,12 +87,13 @@ void IncomingUDPTransport::Receive() {
   if (!m_socket->RecvFrom(m_recv_buffer, &size, src_address, src_port))
     return;
 
-  if (size < (ssize_t) PreamblePacker::DATA_OFFSET) {
+  ssize_t header_size = PreamblePacker::ACN_HEADER_SIZE;
+  if (size < header_size) {
     OLA_WARN << "short ACN frame, discarding";
     return;
   }
 
-  if (memcmp(m_recv_buffer, m_acn_header, PreamblePacker::DATA_OFFSET)) {
+  if (memcmp(m_recv_buffer, PreamblePacker::ACN_HEADER, header_size)) {
     OLA_WARN << "ACN header is bad, discarding";
     return;
   }
@@ -112,8 +106,8 @@ void IncomingUDPTransport::Receive() {
 
   m_inflator->InflatePDUBlock(
       header_set,
-      m_recv_buffer + PreamblePacker::DATA_OFFSET,
-      static_cast<unsigned int>(size) - PreamblePacker::DATA_OFFSET);
+      m_recv_buffer + header_size,
+      static_cast<unsigned int>(size) - header_size);
   return;
 }
 }  // e131

@@ -37,7 +37,14 @@ namespace e131 {
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
 
-const char PreamblePacker::ACN_PACKET_ID[] = "ASC-E1.17\0\0\0";
+const uint8_t PreamblePacker::ACN_HEADER[] = {
+  0x00, 0x10,
+  0x00, 0x00,
+  0x41, 0x53, 0x43, 0x2d,
+  0x45, 0x31, 0x2e, 0x31,
+  0x37, 0x00, 0x00, 0x00
+};
+const unsigned int PreamblePacker::ACN_HEADER_SIZE = sizeof(ACN_HEADER);
 
 /*
  * Clean up
@@ -59,12 +66,12 @@ const uint8_t *PreamblePacker::Pack(const PDUBlock<PDU> &pdu_block,
   if (!m_send_buffer)
     Init();
 
-  unsigned int size = MAX_DATAGRAM_SIZE - DATA_OFFSET;
-  if (!pdu_block.Pack(m_send_buffer + DATA_OFFSET, size)) {
+  unsigned int size = MAX_DATAGRAM_SIZE - sizeof(ACN_HEADER);
+  if (!pdu_block.Pack(m_send_buffer + sizeof(ACN_HEADER), size)) {
     OLA_WARN << "Failed to pack E1.31 PDU";
     return NULL;
   }
-  *length = DATA_OFFSET + size;
+  *length = sizeof(ACN_HEADER) + size;
   return m_send_buffer;
 }
 
@@ -75,13 +82,10 @@ const uint8_t *PreamblePacker::Pack(const PDUBlock<PDU> &pdu_block,
 void PreamblePacker::Init() {
   if (!m_send_buffer) {
     m_send_buffer = new uint8_t[MAX_DATAGRAM_SIZE];
-    memset(m_send_buffer, 0, DATA_OFFSET);
-    uint16_t *ptr = reinterpret_cast<uint16_t*>(m_send_buffer);
-    *ptr++ = HostToNetwork(PREAMBLE_SIZE);
-    *ptr = HostToNetwork(POSTABLE_SIZE);
-    strncpy(reinterpret_cast<char*>(m_send_buffer + PREAMBLE_OFFSET),
-            ACN_PACKET_ID,
-            strlen(ACN_PACKET_ID));
+    memset(m_send_buffer + sizeof(ACN_HEADER),
+           0,
+           MAX_DATAGRAM_SIZE - sizeof(ACN_HEADER));
+    memcpy(m_send_buffer, ACN_HEADER, sizeof(ACN_HEADER));
   }
 }
 }  // e131

@@ -113,7 +113,6 @@ class IncomingUDPTransport {
     ola::network::UdpSocket *m_socket;
     class BaseInflator *m_inflator;
     uint8_t *m_recv_buffer;
-    uint8_t m_acn_header[PreamblePacker::DATA_OFFSET];
 };
 }  // e131
 }  // plugin
