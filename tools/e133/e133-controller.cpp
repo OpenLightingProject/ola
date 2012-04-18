@@ -55,10 +55,10 @@
 
 #include "plugins/e131/e131/ACNPort.h"
 #include "plugins/e131/e131/CID.h"
-#include "plugins/e131/e131/DMPE133Inflator.h"
-#include "plugins/e131/e131/DMPPDU.h"
 #include "plugins/e131/e131/E133Inflator.h"
 #include "plugins/e131/e131/E133Sender.h"
+#include "plugins/e131/e131/RDMInflator.h"
+#include "plugins/e131/e131/RDMPDU.h"
 #include "plugins/e131/e131/RootInflator.h"
 #include "plugins/e131/e131/RootSender.h"
 #include "plugins/e131/e131/UDPTransport.h"
@@ -70,9 +70,7 @@
 using ola::network::IPV4Address;
 using ola::NewCallback;
 using ola::network::UdpSocket;
-using ola::plugin::e131::DMPAddressData;
 using ola::plugin::e131::E133_PORT;
-using ola::plugin::e131::TwoByteRangeDMPAddress;
 using ola::rdm::PidStoreHelper;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
@@ -248,7 +246,7 @@ class SimpleE133Controller {
     // inflators
     ola::plugin::e131::RootInflator m_root_inflator;
     ola::plugin::e131::E133Inflator m_e133_inflator;
-    ola::plugin::e131::DMPE133Inflator m_dmp_inflator;
+    ola::plugin::e131::RDMInflator m_rdm_inflator;
 
     // sockets & transports
     UdpSocket m_udp_socket;
@@ -300,7 +298,7 @@ SimpleE133Controller::SimpleE133Controller(
       m_pid_helper(pid_helper),
       m_uid_list_updated(false) {
   m_root_inflator.AddInflator(&m_e133_inflator);
-  m_e133_inflator.AddInflator(&m_dmp_inflator);
+  m_e133_inflator.AddInflator(&m_rdm_inflator);
 }
 
 
@@ -471,33 +469,7 @@ bool SimpleE133Controller::SendRequest(const UID &uid,
   OLA_INFO << "Sending to " << iter->second << ":" << E133_PORT << "/" << uid
       << "/" << endpoint;
 
-  unsigned int data_size = request->Size();
-  uint8_t *rdm_data = new uint8_t[data_size + 1];
-  rdm_data[0] = ola::rdm::RDMCommand::START_CODE;
-  if (!request->Pack(rdm_data + 1, &data_size)) {
-    OLA_WARN << "Failed to pack RDM request, aborting send";
-    delete[] rdm_data;
-    delete request;
-    return false;
-  }
-  data_size++;  // account for start code
-
-  // setup the DMP PDU
-  ola::plugin::e131::TwoByteRangeDMPAddress range_addr(0,
-                                                       1,
-                                                       (uint16_t) data_size);
-  DMPAddressData<TwoByteRangeDMPAddress> range_chunk(
-        &range_addr,
-        rdm_data,
-        data_size);
-  vector<DMPAddressData<TwoByteRangeDMPAddress> > ranged_chunks;
-  ranged_chunks.push_back(range_chunk);
-  const ola::plugin::e131::DMPPDU *pdu =
-    ola::plugin::e131::NewRangeDMPSetProperty<uint16_t>(
-        true,
-        false,
-        ranged_chunks);
-
+  const ola::plugin::e131::RDMPDU pdu(request);
   ola::plugin::e131::E133Header header(
       "E1.33 Controller",
       0,  // seq #
@@ -508,14 +480,14 @@ bool SimpleE133Controller::SendRequest(const UID &uid,
   ola::plugin::e131::OutgoingUDPTransport transport(&m_outgoing_udp_transport,
                                                     iter->second,
                                                     E133_PORT);
-  bool result = m_e133_sender.SendDMP(header, pdu, &transport);
+  bool result = m_e133_sender.SendRDM(header, &pdu, &transport);
   if (!result) {
     OLA_WARN << "Failed to send E1.33 request";
     return false;
   }
 
   // register a callback to catch the response
-  m_dmp_inflator.SetRDMHandler(
+  m_rdm_inflator.SetRDMHandler(
       endpoint,
       NewCallback(this,
                   &SimpleE133Controller::HandlePacket));
