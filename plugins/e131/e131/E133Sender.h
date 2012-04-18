@@ -15,8 +15,7 @@
  *
  * E133Sender.h
  * Interface for the E133Sender class, this abstracts the encapsulation and
- * sending of DMP PDUs contained within E133PDUs as well as the setting of
- * the DMP inflator inflator.
+ * sending of PDUs contained within E133PDUs.
  * Copyright (C) 2011 Simon Newton
  */
 

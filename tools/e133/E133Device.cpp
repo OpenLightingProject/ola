@@ -363,8 +363,7 @@ void E133Device::EndpointRequestComplete(
       "foo bar",
       sequence_number,
       endpoint_id,
-      false,  // rx_ack
-      false);  // timeout
+      false);  // rx_ack
 
   ola::plugin::e131::OutgoingUDPTransport transport(&m_outgoing_udp_transport,
                                                     src_ip,

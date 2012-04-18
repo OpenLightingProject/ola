@@ -39,13 +39,11 @@ class E133Header {
     E133Header(const string &source,
                uint32_t sequence,
                uint16_t endpoint,
-               bool rx_ack = false,
-               bool timeout = false)
+               bool rx_ack = false)
         : m_source(source),
           m_sequence(sequence),
           m_endpoint(endpoint),
-          m_rx_ack(rx_ack),
-          m_timeout(timeout) {
+          m_rx_ack(rx_ack) {
     }
     ~E133Header() {}
 
@@ -53,14 +51,12 @@ class E133Header {
     uint32_t Sequence() const { return m_sequence; }
     uint16_t Endpoint() const { return m_endpoint; }
     bool RxAcknowledge() const { return m_rx_ack; }
-    bool Timeout() const { return m_timeout; }
 
     bool operator==(const E133Header &other) const {
       return m_source == other.m_source &&
         m_sequence == other.m_sequence &&
         m_endpoint == other.m_endpoint &&
-        m_rx_ack == other.m_rx_ack &&
-        m_timeout == other.m_timeout;
+        m_rx_ack == other.m_rx_ack;
     }
 
     enum { SOURCE_NAME_LEN = 64 };
@@ -74,14 +70,12 @@ class E133Header {
     typedef struct e133_pdu_header_s e133_pdu_header;
 
     static const uint8_t E133_RX_ACK_MASK = 0x80;
-    static const uint8_t E133_TIMEOUT_MASK = 0x40;
 
   private:
     string m_source;
     uint32_t m_sequence;
     uint16_t m_endpoint;
     bool m_rx_ack;
-    bool m_timeout;
 };
 }  // e131
 }  // plugin

@@ -56,8 +56,7 @@ void E133HealthCheckedConnection::SendHeartbeat() {
       "foo bar",
       0,
       0,
-      false,  // rx_ack
-      false);  // timeout
+      false);  // rx_ack
 
   bool result = m_sender->SendRDM(header, &pdu, &transport);
   if (!result)
