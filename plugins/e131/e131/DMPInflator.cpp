@@ -36,9 +36,9 @@ namespace e131 {
  * @returns true if successful, false otherwise
  */
 bool DMPInflator::DecodeHeader(HeaderSet &headers,
-                                const uint8_t *data,
-                                unsigned int length,
-                                unsigned int &bytes_used) {
+                               const uint8_t *data,
+                               unsigned int length,
+                               unsigned int &bytes_used) {
   if (data) {
     // the header bit was set, decode it
     if (length >= DMPHeader::DMP_HEADER_SIZE) {

@@ -31,9 +31,9 @@
 #include "ola/network/Socket.h"
 #include "ola/rdm/RDMControllerInterface.h"
 #include "plugins/e131/e131/CID.h"
-#include "plugins/e131/e131/DMPE133Inflator.h"
 #include "plugins/e131/e131/E133Inflator.h"
 #include "plugins/e131/e131/E133Sender.h"
+#include "plugins/e131/e131/RDMInflator.h"
 #include "plugins/e131/e131/RootInflator.h"
 #include "plugins/e131/e131/RootSender.h"
 #include "plugins/e131/e131/TCPTransport.h"
@@ -90,7 +90,7 @@ class E133Device {
     // inflators
     ola::plugin::e131::RootInflator m_root_inflator;
     ola::plugin::e131::E133Inflator m_e133_inflator;
-    ola::plugin::e131::DMPE133Inflator m_dmp_inflator;
+    ola::plugin::e131::RDMInflator m_rdm_inflator;
 
     // transports
     ola::plugin::e131::IncomingUDPTransport m_incoming_udp_transport;

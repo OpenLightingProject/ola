@@ -56,7 +56,7 @@
 
 #include "plugins/e131/e131/ACNPort.h"
 #include "plugins/e131/e131/CID.h"
-#include "plugins/e131/e131/DMPE133Inflator.h"
+#include "plugins/e131/e131/RDMInflator.h"
 #include "plugins/e131/e131/E133Inflator.h"
 #include "plugins/e131/e131/E133Sender.h"
 #include "plugins/e131/e131/RootInflator.h"
@@ -229,7 +229,7 @@ class SimpleE133Monitor {
     // inflators
     ola::plugin::e131::RootInflator m_root_inflator;
     ola::plugin::e131::E133Inflator m_e133_inflator;
-    ola::plugin::e131::DMPE133Inflator m_dmp_inflator;
+    ola::plugin::e131::RDMInflator m_rdm_inflator;
 
     /*
      * TODO: be careful about passing pointer to the NodeTCPState in callbacks
@@ -277,11 +277,11 @@ SimpleE133Monitor::SimpleE133Monitor(
       m_cid(ola::plugin::e131::CID::Generate()),
       m_root_sender(m_cid),
       m_e133_sender(&m_root_sender),
-      m_dmp_inflator(NewCallback(this, &SimpleE133Monitor::E133DataReceived)) {
+      m_rdm_inflator(NewCallback(this, &SimpleE133Monitor::E133DataReceived)) {
   m_root_inflator.AddInflator(&m_e133_inflator);
-  m_e133_inflator.AddInflator(&m_dmp_inflator);
+  m_e133_inflator.AddInflator(&m_rdm_inflator);
 
-  m_dmp_inflator.SetRDMHandler(
+  m_rdm_inflator.SetRDMHandler(
       0,
       NewCallback(this, &SimpleE133Monitor::EndpointRequest));
 }

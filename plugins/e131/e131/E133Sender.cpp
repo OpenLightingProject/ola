@@ -20,19 +20,17 @@
 
 #include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include "ola/Logging.h"
-#include "ola/network/NetworkUtils.h"
-#include "plugins/e131/e131/DMPE133Inflator.h"
-#include "plugins/e131/e131/DMPPDU.h"
 #include "plugins/e131/e131/E133Inflator.h"
-#include "plugins/e131/e131/E133Sender.h"
 #include "plugins/e131/e131/E133PDU.h"
+#include "plugins/e131/e131/E133Sender.h"
+#include "plugins/e131/e131/RDMInflator.h"
+#include "plugins/e131/e131/RDMPDU.h"
 #include "plugins/e131/e131/RootSender.h"
 
 namespace ola {
 namespace plugin {
 namespace e131 {
 
-using ola::network::HostToNetwork;
 
 /*
  * Create a new E133Sender
@@ -46,18 +44,18 @@ E133Sender::E133Sender(RootSender *root_sender)
 
 
 /*
- * Send a DMPPDU
+ * Send a RDM PDU
  * @param header the E133Header
- * @param dmp_pdu the DMPPDU to send
+ * @param rdm_pdu the RDMPDU to send
  * @param transport the OutgoingTransport to use when sending the message.
  */
-bool E133Sender::SendDMP(const E133Header &header,
-                        const DMPPDU *dmp_pdu,
-                        OutgoingTransport *transport) {
+bool E133Sender::SendRDM(const E133Header &header,
+                         const RDMPDU *rdm_pdu,
+                         OutgoingTransport *transport) {
   if (!m_root_sender)
     return false;
 
-  E133PDU pdu(DMPInflator::DMP_VECTOR, header, dmp_pdu);
+  E133PDU pdu(RDMInflator::RDM_VECTOR, header, rdm_pdu);
   unsigned int vector = E133Inflator::E133_VECTOR;
   return m_root_sender->SendPDU(vector, pdu, transport);
 }

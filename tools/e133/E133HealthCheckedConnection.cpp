@@ -18,17 +18,12 @@
  */
 
 #include <ola/Logging.h>
-#include <vector>
 
-#include "plugins/e131/e131/DMPPDU.h"
 #include "plugins/e131/e131/E133Sender.h"
+#include "plugins/e131/e131/RDMPDU.h"
 #include "plugins/e131/e131/TCPTransport.h"
 #include "tools/e133/E133HealthCheckedConnection.h"
 
-
-using ola::plugin::e131::DMPAddressData;
-using ola::plugin::e131::TwoByteRangeDMPAddress;
-using std::vector;
 
 E133HealthCheckedConnection::E133HealthCheckedConnection(
   E133Sender *sender,
@@ -55,17 +50,8 @@ void E133HealthCheckedConnection::SendHeartbeat() {
 
   ola::plugin::e131::TCPTransport transport(m_descriptor);
 
-  // setup the DMP PDU, no data
-  ola::plugin::e131::TwoByteRangeDMPAddress range_addr(0, 1, 0);
-  DMPAddressData<TwoByteRangeDMPAddress> range_chunk(&range_addr, NULL, 0);
-  vector<DMPAddressData<TwoByteRangeDMPAddress> > ranged_chunks;
-  ranged_chunks.push_back(range_chunk);
-  const ola::plugin::e131::DMPPDU *pdu =
-    ola::plugin::e131::NewRangeDMPSetProperty<uint16_t>(
-        true,
-        false,
-        ranged_chunks);
-
+  // no data in this PDU
+  const ola::plugin::e131::RDMPDU pdu(NULL);
   ola::plugin::e131::E133Header header(
       "foo bar",
       0,
@@ -73,10 +59,9 @@ void E133HealthCheckedConnection::SendHeartbeat() {
       false,  // rx_ack
       false);  // timeout
 
-  bool result = m_sender->SendDMP(header, pdu, &transport);
+  bool result = m_sender->SendRDM(header, &pdu, &transport);
   if (!result)
     OLA_WARN << "Failed to send E1.33 response";
-  delete pdu;
 }
 
 

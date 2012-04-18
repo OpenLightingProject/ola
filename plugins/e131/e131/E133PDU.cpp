@@ -23,7 +23,7 @@
 #include <ola/Logging.h>
 #include <ola/network/NetworkUtils.h>
 #include "plugins/e131/e131/E133PDU.h"
-#include "plugins/e131/e131/DMPPDU.h"
+#include "plugins/e131/e131/RDMPDU.h"
 
 namespace ola {
 namespace plugin {
@@ -43,8 +43,8 @@ unsigned int E133PDU::HeaderSize() const {
  * Size of the data portion
  */
 unsigned int E133PDU::DataSize() const {
-  if (m_dmp_pdu)
-    return m_dmp_pdu->Size();
+  if (m_rdm_pdu)
+    return m_rdm_pdu->Size();
   return 0;
 }
 
@@ -80,8 +80,8 @@ bool E133PDU::PackHeader(uint8_t *data, unsigned int &length) const {
  * Pack the data portion.
  */
 bool E133PDU::PackData(uint8_t *data, unsigned int &length) const {
-  if (m_dmp_pdu)
-    return m_dmp_pdu->Pack(data, length);
+  if (m_rdm_pdu)
+    return m_rdm_pdu->Pack(data, length);
   length = 0;
   return true;
 }

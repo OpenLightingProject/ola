@@ -32,8 +32,7 @@
 #include <vector>
 
 #include "plugins/e131/e131/CID.h"
-#include "plugins/e131/e131/DMPAddress.h"
-#include "plugins/e131/e131/DMPPDU.h"
+#include "plugins/e131/e131/RDMPDU.h"
 #include "plugins/e131/e131/E133Header.h"
 #include "plugins/e131/e131/UDPTransport.h"
 
@@ -46,8 +45,6 @@
 using ola::NewCallback;
 using ola::network::HealthCheckedConnection;
 using ola::network::IPV4Address;
-using ola::plugin::e131::DMPAddressData;
-using ola::plugin::e131::TwoByteRangeDMPAddress;
 using std::auto_ptr;
 using std::string;
 using std::vector;
@@ -68,7 +65,7 @@ E133Device::E133Device(ola::network::SelectServerInterface *ss,
       m_health_checked_connection(NULL),
       m_ss(ss),
       m_ip_address(ip_address),
-      m_dmp_inflator(NewCallback(this, &E133Device::E133DataReceived)),
+      m_rdm_inflator(NewCallback(this, &E133Device::E133DataReceived)),
       m_incoming_udp_transport(&m_udp_socket, &m_root_inflator),
       m_outgoing_udp_transport(&m_udp_socket),
       m_incoming_tcp_transport(NULL),
@@ -76,7 +73,7 @@ E133Device::E133Device(ola::network::SelectServerInterface *ss,
       m_e133_sender(&m_root_sender) {
 
   m_root_inflator.AddInflator(&m_e133_inflator);
-  m_e133_inflator.AddInflator(&m_dmp_inflator);
+  m_e133_inflator.AddInflator(&m_rdm_inflator);
 
   m_register_endpoint_callback.reset(NewCallback(
       this,
@@ -100,7 +97,7 @@ E133Device::~E133Device() {
     OLA_WARN << "Some endpoints weren't removed correctly";
     vector<uint16_t>::iterator iter = endpoints.begin();
     for (; iter != endpoints.end(); ++iter) {
-      m_dmp_inflator.RemoveRDMHandler(*iter);
+      m_rdm_inflator.RemoveRDMHandler(*iter);
     }
   }
 
@@ -117,7 +114,7 @@ E133Device::~E133Device() {
 void E133Device::SetRootEndpoint(E133EndpointInterface *endpoint) {
   m_root_endpoint = endpoint;
   // register the root enpoint
-  m_dmp_inflator.SetRDMHandler(
+  m_rdm_inflator.SetRDMHandler(
       0,
       NewCallback(this,
                   &E133Device::EndpointRequest,
@@ -275,7 +272,7 @@ void E133Device::E133DataReceived(
  */
 void E133Device::RegisterEndpoint(uint16_t endpoint_id) {
   OLA_INFO << "Endpoint " << endpoint_id << " has been added";
-  m_dmp_inflator.SetRDMHandler(
+  m_rdm_inflator.SetRDMHandler(
       endpoint_id,
       NewCallback(this, &E133Device::EndpointRequest, endpoint_id));
 }
@@ -286,7 +283,7 @@ void E133Device::RegisterEndpoint(uint16_t endpoint_id) {
  */
 void E133Device::UnRegisterEndpoint(uint16_t endpoint_id) {
   OLA_INFO << "Endpoint " << endpoint_id << " has been removed";
-  m_dmp_inflator.RemoveRDMHandler(endpoint_id);
+  m_rdm_inflator.RemoveRDMHandler(endpoint_id);
 }
 
 
@@ -344,11 +341,14 @@ void E133Device::EndpointRequestComplete(
     uint16_t endpoint_id,
     ola::rdm::rdm_response_code response_code,
     const ola::rdm::RDMResponse *response_ptr,
-    const std::vector<std::string> &packets) {
+    const std::vector<std::string>&) {
   auto_ptr<const ola::rdm::RDMResponse> response(response_ptr);
 
-  // TODO(simon): map internal status codes to E1.33 codes once these are added
-  // to the spec
+  /*
+   * TODO(simon): map internal status codes to E1.33 codes once these are added
+   * to the spec.
+   *  - RDM_UNKNOWN_UID -> timeout
+   */
   if (response_code != ola::rdm::RDM_COMPLETED_OK) {
     if (response_code != ola::rdm::RDM_WAS_BROADCAST)
       OLA_WARN << "E1.33 request failed with code " <<
@@ -357,42 +357,7 @@ void E133Device::EndpointRequestComplete(
     return;
   }
 
-  OLA_INFO << "rdm size is " << response->Size();
-
-  // TODO(simon): handle the ack overflow case here
-  // For now we just send back one packet.
-  unsigned int actual_size = response->Size();
-  uint8_t *rdm_data = new uint8_t[actual_size + 1];
-  rdm_data[0] = ola::rdm::RDMCommand::START_CODE;
-
-  if (!response->Pack(rdm_data + 1, &actual_size)) {
-    OLA_WARN << "Failed to pack RDM response, aborting send";
-    delete[] rdm_data;
-    return;
-  }
-  unsigned int rdm_data_size = actual_size + 1;
-
-  ola::plugin::e131::TwoByteRangeDMPAddress range_addr(0,
-                                                       1,
-                                                       rdm_data_size);
-  DMPAddressData<
-    TwoByteRangeDMPAddress> range_chunk(
-        &range_addr,
-        rdm_data,
-        rdm_data_size);
-  std::vector<DMPAddressData<TwoByteRangeDMPAddress> > ranged_chunks;
-  ranged_chunks.push_back(range_chunk);
-  const ola::plugin::e131::DMPPDU *pdu =
-    ola::plugin::e131::NewRangeDMPSetProperty<uint16_t>(
-        true,
-        false,
-        ranged_chunks);
-
-  /*
-   * TODO(simon): support timeouts here
-   * We need to map RDMResponseCodes to E133 errors:
-   *  - RDM_UNKNOWN_UID -> timeout
-   */ 
+  const ola::plugin::e131::RDMPDU pdu(response_ptr);
 
   ola::plugin::e131::E133Header header(
       "foo bar",
@@ -404,13 +369,7 @@ void E133Device::EndpointRequestComplete(
   ola::plugin::e131::OutgoingUDPTransport transport(&m_outgoing_udp_transport,
                                                     src_ip,
                                                     src_port);
-  bool result = m_e133_sender.SendDMP(header, pdu, &transport);
+  bool result = m_e133_sender.SendRDM(header, &pdu, &transport);
   if (!result)
     OLA_WARN << "Failed to send E1.33 response";
-
-  // send response back to src ip:port with correct seq #
-  delete[] rdm_data;
-  delete pdu;
-
-  (void) packets;
 }

@@ -13,43 +13,41 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * E133PDU.h
- * Interface for the E133PDU class
- * Copyright (C) 2011 Simon Newton
+ * RDMPDU.h
+ * Interface for the RDMPDU class
+ * Copyright (C) 2012 Simon Newton
  */
 
-#ifndef PLUGINS_E131_E131_E133PDU_H_
-#define PLUGINS_E131_E131_E133PDU_H_
+#ifndef PLUGINS_E131_E131_RDMPDU_H_
+#define PLUGINS_E131_E131_RDMPDU_H_
 
+#include <ola/rdm/RDMCommand.h>
 #include "plugins/e131/e131/PDU.h"
-#include "plugins/e131/e131/E133Header.h"
+#include "plugins/e131/e131/RDMInflator.h"
 
 namespace ola {
 namespace plugin {
 namespace e131 {
 
-class RDMPDU;
+class DMPPDU;
 
-class E133PDU: public PDU {
+class RDMPDU: public PDU {
   public:
-    E133PDU(unsigned int vector,
-            const E133Header &header,
-            const RDMPDU *rdm_pdu):
-      PDU(vector),
-      m_header(header),
-      m_rdm_pdu(rdm_pdu) {}
-    ~E133PDU() {}
+    explicit RDMPDU(const ola::rdm::RDMCommand *command):
+      PDU(RDMInflator::RDM_DATA_VECTOR),
+      m_command(command) {
+    }
+    ~RDMPDU() {}
 
-    unsigned int HeaderSize() const;
+    unsigned int HeaderSize() const { return 0; }
     unsigned int DataSize() const;
     bool PackHeader(uint8_t *data, unsigned int &length) const;
     bool PackData(uint8_t *data, unsigned int &length) const;
 
   private:
-    E133Header m_header;
-    const RDMPDU *m_rdm_pdu;
+    const ola::rdm::RDMCommand *m_command;
 };
 }  // e131
 }  // plugin
 }  // ola
-#endif  // PLUGINS_E131_E131_E133PDU_H_
+#endif  // PLUGINS_E131_E131_RDMPDU_H_

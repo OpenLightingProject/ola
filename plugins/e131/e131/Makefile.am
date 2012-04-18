@@ -1,27 +1,30 @@
 include $(top_srcdir)/common.mk
 
 EXTRA_DIST = ACNPort.h BaseInflator.h CID.h \
-             DMPE131Inflator.h DMPE133Inflator.h DMPAddress.h DMPHeader.h \
+             DMPE131Inflator.h DMPAddress.h DMPHeader.h \
              DMPInflator.h DMPPDU.h \
              E131Header.h E131Includes.h E131Inflator.h E131Sender.h \
              E131Node.h E131PDU.h E131TestFramework.h \
              E133Header.h E133Inflator.h E133Sender.h E133PDU.h \
-             HeaderSet.h PreamblePacker.h PDU.h PDUTestCommon.h RootHeader.h \
-             RootInflator.h RootSender.h RootPDU.h TCPTransport.h Transport.h \
-             TransportHeader.h UDPTransport.h
+             HeaderSet.h PreamblePacker.h PDU.h PDUTestCommon.h \
+             RDMInflator.h RDMPDU.h \
+             RootHeader.h RootInflator.h RootSender.h RootPDU.h \
+             TCPTransport.h Transport.h TransportHeader.h UDPTransport.h
 
 COMMON_CXXFLAGS += -Wconversion
 
 noinst_LTLIBRARIES = libolae131core.la
 libolae131core_la_SOURCES = BaseInflator.cpp CID.cpp \
                             DMPAddress.cpp DMPE131Inflator.cpp \
-                            DMPE133Inflator.cpp DMPInflator.cpp \
+                            DMPInflator.cpp \
                             DMPPDU.cpp \
                             E131Inflator.cpp E131Sender.cpp E131Node.cpp \
                             E131PDU.cpp E133Inflator.cpp E133Sender.cpp \
                             E133PDU.cpp \
                             PreamblePacker.cpp \
                             PDU.cpp \
+                            RDMInflator.cpp \
+                            RDMPDU.cpp \
                             RootInflator.cpp RootSender.cpp RootPDU.cpp \
                             TCPTransport.cpp \
                             UDPTransport.cpp

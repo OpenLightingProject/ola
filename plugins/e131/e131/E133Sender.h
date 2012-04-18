@@ -20,8 +20,8 @@
  * Copyright (C) 2011 Simon Newton
  */
 
-#ifndef PLUGINS_E131_E131_E133LAYER_H_
-#define PLUGINS_E131_E131_E133LAYER_H_
+#ifndef PLUGINS_E131_E131_E133SENDER_H_
+#define PLUGINS_E131_E131_E133SENDER_H_
 
 #include "ola/network/IPV4Address.h"
 #include "plugins/e131/e131/ACNPort.h"
@@ -38,10 +38,9 @@ class E133Sender {
     explicit E133Sender(class RootSender *root_sender);
     ~E133Sender() {}
 
-    bool SendDMP(const E133Header &header,
-                 const class DMPPDU *pdu,
+    bool SendRDM(const E133Header &header,
+                 const class RDMPDU *pdu,
                  OutgoingTransport *transport);
-    bool SetInflator(class DMPE133Inflator *inflator);
 
   private:
     class RootSender *m_root_sender;
@@ -53,4 +52,4 @@ class E133Sender {
 }  // e131
 }  // plugin
 }  // ola
-#endif  // PLUGINS_E131_E131_E133LAYER_H_
+#endif  // PLUGINS_E131_E131_E133SENDER_H_
