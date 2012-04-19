@@ -48,7 +48,7 @@ void E133HealthCheckedConnection::SendHeartbeat() {
   // which means we need to be syncronized with the actual messages sent over
   // the tcp connection.
 
-  ola::plugin::e131::TCPTransport transport(m_descriptor);
+  ola::plugin::e131::OutgoingStreamTransport transport(m_descriptor);
 
   // no data in this PDU
   const ola::plugin::e131::RDMPDU pdu(NULL);

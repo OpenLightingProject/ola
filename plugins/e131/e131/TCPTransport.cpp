@@ -38,7 +38,7 @@ const unsigned int IncommingStreamTransport::ACN_HEADER_SIZE =
  * Send a block of PDU messages.
  * @param pdu_block the block of pdus to send
  */
-bool TCPTransport::Send(const PDUBlock<PDU> &pdu_block) {
+bool OutgoingStreamTransport::Send(const PDUBlock<PDU> &pdu_block) {
   unsigned int data_size;
   const uint8_t *data = m_packer->Pack(pdu_block, &data_size);
 

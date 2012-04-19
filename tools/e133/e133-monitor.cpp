@@ -205,7 +205,7 @@ class SimpleE133Monitor {
     void PopulateResponderList();
     void AddIP(const IPV4Address &ip_address);
 
-    void Run();
+    void Run() { m_ss.Run(); }
     void Stop() { m_ss.Terminate(); }
 
   private:
@@ -338,14 +338,6 @@ void SimpleE133Monitor::AddIP(const IPV4Address &ip_address) {
       ip_address,
       ola::plugin::e131::E133_PORT,
       &m_backoff_policy);
-}
-
-
-/**
- * Run the controller and wait for the responses (or timeouts)
- */
-void SimpleE133Monitor::Run() {
-  m_ss.Run();
 }
 
 

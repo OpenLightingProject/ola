@@ -195,7 +195,7 @@ void TCPTransportTest::testSinglePDUBlock() {
 void TCPTransportTest::SendPDU(unsigned int line) {
   std::stringstream str;
   str << "Line " << line;
-  TCPTransport outgoing_transport(&m_loopback);
+  OutgoingStreamTransport outgoing_transport(&m_loopback);
 
   // now actually send some data
   PDUBlock<PDU> pdu_block;
@@ -211,7 +211,7 @@ void TCPTransportTest::SendPDU(unsigned int line) {
 void TCPTransportTest::SendPDUBlock(unsigned int line) {
   std::stringstream str;
   str << "Line " << line;
-  TCPTransport outgoing_transport(&m_loopback);
+  OutgoingStreamTransport outgoing_transport(&m_loopback);
 
   // now actually send some data
   PDUBlock<PDU> pdu_block;

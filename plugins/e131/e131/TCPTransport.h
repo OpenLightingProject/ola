@@ -35,12 +35,11 @@ namespace e131 {
 using ola::network::IPV4Address;
 
 /*
- * Transport ACN messages over a stream socket. This is named TCPSocket, but we
- * can use any ConnectedDescriptor.
+ * Transport ACN messages over a stream.
  */
-class TCPTransport: public OutgoingTransport {
+class OutgoingStreamTransport: public OutgoingTransport {
   public:
-    TCPTransport(ola::network::ConnectedDescriptor *descriptor,
+    OutgoingStreamTransport(ola::network::ConnectedDescriptor *descriptor,
                  PreamblePacker *packer = NULL)
         : m_descriptor(descriptor),
           m_packer(packer),
@@ -50,7 +49,7 @@ class TCPTransport: public OutgoingTransport {
         m_free_packer = true;
       }
     }
-    ~TCPTransport() {
+    ~OutgoingStreamTransport() {
       if (m_free_packer)
         delete m_packer;
     }
@@ -62,8 +61,8 @@ class TCPTransport: public OutgoingTransport {
     PreamblePacker *m_packer;
     bool m_free_packer;
 
-    TCPTransport(const TCPTransport&);
-    TCPTransport& operator=(const TCPTransport&);
+    OutgoingStreamTransport(const OutgoingStreamTransport&);
+    OutgoingStreamTransport& operator=(const OutgoingStreamTransport&);
 };
 
 
