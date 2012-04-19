@@ -54,7 +54,7 @@ const unsigned int E133PDUTest::TEST_VECTOR = 39;
  */
 void E133PDUTest::testSimpleE133PDU() {
   const string source = "foo source";
-  E133Header header(source, 101, 2, false, false);
+  E133Header header(source, 101, 2, false);
   E133PDU pdu(TEST_VECTOR, header, NULL);
 
   CPPUNIT_ASSERT_EQUAL((unsigned int) 71, pdu.HeaderSize());

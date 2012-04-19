@@ -75,7 +75,6 @@ void E133InflatorTest::testDecodeHeader() {
   CPPUNIT_ASSERT_EQUAL((uint32_t) 72650, decoded_header.Sequence());
   CPPUNIT_ASSERT_EQUAL((uint16_t) 42, decoded_header.Endpoint());
   CPPUNIT_ASSERT(!decoded_header.RxAcknowledge());
-  CPPUNIT_ASSERT(!decoded_header.Timeout());
 
   // try an undersized header
   CPPUNIT_ASSERT(!inflator.DecodeHeader(header_set,
@@ -92,7 +91,6 @@ void E133InflatorTest::testDecodeHeader() {
   CPPUNIT_ASSERT_EQUAL((uint32_t) 72650, decoded_header.Sequence());
   CPPUNIT_ASSERT_EQUAL((uint16_t) 42, decoded_header.Endpoint());
   CPPUNIT_ASSERT(!decoded_header.RxAcknowledge());
-  CPPUNIT_ASSERT(!decoded_header.Timeout());
 
   inflator.ResetHeaderField();
   CPPUNIT_ASSERT(!inflator.DecodeHeader(header_set2, NULL, 0, bytes_used));
@@ -105,7 +103,7 @@ void E133InflatorTest::testDecodeHeader() {
  */
 void E133InflatorTest::testInflatePDU() {
   const string source = "foobar source";
-  E133Header header(source, 2370, 2, true, true);
+  E133Header header(source, 2370, 2, true);
   // TODO(simon): pass a DMP msg here as well
   E133PDU pdu(3, header, NULL);
   CPPUNIT_ASSERT_EQUAL((unsigned int) 77, pdu.Size());
