@@ -3,7 +3,6 @@ include $(top_srcdir)/common.mk
 EXTRA_DIST = E133Endpoint.h E133Device.h \
              E133HealthCheckedConnection.h \
              E133StreamSender.h \
-             E133TCPConnector.h \
              RootEndpoint.h \
              SlpConstants.h SlpThread.h SlpUrlParser.h \
              TCPConnectionStats.h
@@ -28,7 +27,6 @@ e133_receiver_LDADD = $(openslp_LIBS) \
 e133_monitor_SOURCES = e133-monitor.cpp \
                        E133HealthCheckedConnection.cpp \
                        E133StreamSender.cpp \
-                       E133TCPConnector.cpp \
                        SlpThread.cpp \
                        SlpUrlParser.cpp
 e133_monitor_CXXFLAGS = @OLAD_DEFINES@ $(COMMON_CXXFLAGS)

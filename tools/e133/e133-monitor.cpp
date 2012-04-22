@@ -36,6 +36,7 @@
 #include <ola/Clock.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
+#include <ola/network/AdvancedTCPConnector.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/NetworkUtils.h>
 #include <ola/network/SelectServer.h>
@@ -64,7 +65,6 @@
 
 #include "tools/e133/E133Endpoint.h"
 #include "tools/e133/E133HealthCheckedConnection.h"
-#include "tools/e133/E133TCPConnector.h"
 #include "tools/e133/SlpThread.h"
 #include "tools/e133/SlpUrlParser.h"
 
@@ -214,7 +214,7 @@ class SimpleE133Monitor {
     PidStoreHelper *m_pid_helper;
     ola::network::SelectServer m_ss;
     SlpThread m_slp_thread;
-    E133TCPConnector m_connector;
+    ola::network::AdvancedTCPConnector m_connector;
     ola::network::LinearBackoffPolicy m_backoff_policy;
 
     // hash_map of ips to TCP Connection State
@@ -240,6 +240,8 @@ class SimpleE133Monitor {
      */
     void DiscoveryCallback(bool status, const vector<string> &urls);
     void OnTCPConnect(IPV4Address address, uint16_t port, TcpSocket *socket);
+    void ReceiveTCPData(IPV4Address ip_address,
+                        ola::plugin::e131::IncomingTCPTransport *transport);
     void SocketUnhealthy(IPV4Address address);
     void SocketClosed(IPV4Address address);
     void E133DataReceived(const ola::plugin::e131::TransportHeader &header);
@@ -426,9 +428,25 @@ void SimpleE133Monitor::OnTCPConnect(IPV4Address ip_address,
       socket);
 
   socket->SetOnData(
-      NewCallback(iter->second->in_transport,
-                  &ola::plugin::e131::IncomingTCPTransport::Receive));
+      NewCallback(this,
+                  &SimpleE133Monitor::ReceiveTCPData,
+                  ip_address,
+                  iter->second->in_transport));
   m_ss.AddReadDescriptor(socket);
+}
+
+
+/**
+ * Receive data on a TCP connection
+ */
+void SimpleE133Monitor::ReceiveTCPData(
+    IPV4Address ip_address,
+    ola::plugin::e131::IncomingTCPTransport *transport) {
+  bool ok = transport->Receive();
+  if (!ok) {
+    OLA_WARN << "TCP STREAM IS BAD!!!";
+    SocketClosed(ip_address);
+  }
 }
 
 
@@ -500,7 +518,6 @@ void SimpleE133Monitor::EndpointRequest(
     const ola::plugin::e131::TransportHeader &transport_header,
     const ola::plugin::e131::E133Header &e133_header,
     const string &raw_request) {
-
   OLA_INFO << "got message from " << transport_header.SourceIP();
 
   // Inflate and print the message here
