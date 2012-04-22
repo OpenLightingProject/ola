@@ -236,7 +236,8 @@ class SelectServer: public SelectServerInterface {
 
     static const int K_MS_IN_SECOND = 1000;
     static const int K_US_IN_SECOND = 1000000;
-    static const unsigned int POLL_INTERVAL_SECOND = 1;
+    // the maximum time we'll wait in the select call
+    static const unsigned int POLL_INTERVAL_SECOND = 10;
     static const unsigned int POLL_INTERVAL_USECOND = 0;
 };
 }  // network
