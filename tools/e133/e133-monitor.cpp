@@ -398,7 +398,8 @@ void SimpleE133Monitor::OnTCPConnect(IPV4Address ip_address,
 
   E133HealthCheckedConnection *health_checked_connection =
       new E133HealthCheckedConnection(
-          e133_sender,
+          outgoing_transport,
+          &m_root_sender,
           NewSingleCallback(this,
                             &SimpleE133Monitor::SocketUnhealthy,
                             ip_address),

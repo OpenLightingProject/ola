@@ -41,6 +41,7 @@
 
 #include "tools/e133/E133Endpoint.h"
 #include "tools/e133/E133HealthCheckedConnection.h"
+#include "tools/e133/E133StreamSender.h"
 
 using std::string;
 using std::auto_ptr;
@@ -73,7 +74,6 @@ class E133Device {
     ola::plugin::e131::CID m_cid;
 
     // Frequency of TCP health checking
-    ola::TimeInterval m_health_check_interval;
     ola::network::ConnectedDescriptor *m_tcp_descriptor;
     ola::plugin::e131::OutgoingStreamTransport *m_outgoing_tcp_transport;
     E133HealthCheckedConnection *m_health_checked_connection;

@@ -40,6 +40,9 @@ class RootSender {
     bool SendPDU(unsigned int vector,
                  const PDU &pdu,
                  OutgoingTransport *transport);
+    // Send a RootPDU with no data
+    bool SendEmpty(unsigned int vector,
+                   OutgoingTransport *transport);
     // Use for testing to force a message from a particular cid
     bool SendPDU(unsigned int vector,
                  const PDU &pdu,

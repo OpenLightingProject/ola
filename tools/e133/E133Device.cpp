@@ -62,7 +62,6 @@ E133Device::E133Device(ola::network::SelectServerInterface *ss,
       m_root_endpoint(NULL),
       m_tcp_stats(tcp_stats),
       m_cid(ola::plugin::e131::CID::Generate()),
-      m_health_check_interval(2, 0),
       m_tcp_descriptor(NULL),
       m_outgoing_tcp_transport(NULL),
       m_health_checked_connection(NULL),
@@ -198,10 +197,10 @@ void E133Device::NewTCPConnection(
 
   m_health_checked_connection = new
     E133HealthCheckedConnection(
-        &m_e133_sender,
+        m_outgoing_tcp_transport,
+        &m_root_sender,
         ola::NewSingleCallback(this, &E133Device::TCPConnectionUnhealthy),
-        m_ss,
-        m_health_check_interval);
+        m_ss);
   if (!m_health_checked_connection->Setup()) {
     OLA_WARN <<
       "Failed to setup HealthCheckedConnection, closing TCP connection";

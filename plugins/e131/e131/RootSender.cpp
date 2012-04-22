@@ -54,6 +54,18 @@ bool RootSender::SendPDU(unsigned int vector,
 
 
 /*
+ * Send a RootPDU with no data.
+ * @param vector the vector to use at the root level
+ * @param transport the OutgoingTransport to use when sending the message.
+ */
+bool RootSender::SendEmpty(unsigned int vector,
+                           OutgoingTransport *transport) {
+  m_working_block.Clear();
+  return SendPDUBlock(vector, m_working_block, transport);
+}
+
+
+/*
  * This is used to inject a packet from a different CID.
  * @param vector the vector to use at the root level
  * @param pdu the pdu to send.

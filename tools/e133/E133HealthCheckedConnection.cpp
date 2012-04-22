@@ -19,23 +19,30 @@
 
 #include <ola/Logging.h>
 
-#include "plugins/e131/e131/RDMInflator.h"
-#include "plugins/e131/e131/RDMPDU.h"
-#include "tools/e133/E133Endpoint.h"
+#include "plugins/e131/e131/RootSender.h"
 #include "tools/e133/E133HealthCheckedConnection.h"
-#include "tools/e133/E133StreamSender.h"
 
 /**
- * Create a new E1.33 Health Checked Connection
+ * Create a new E1.33 Health Checked Connection.
+ * @param transport the transport to send heartbeats on
+ * @param sender the RootSender to use when sending heartbeats
+ * @param on_timeout the callback to run when the heartbeats don't arrive
+ * @param scheduler A SchedulerInterface used to control the timers
+ * @param vector the vector to use in the RootPDUs
+ * @param heartbeat_interval the TimeInterval between heartbeats
  */
 E133HealthCheckedConnection::E133HealthCheckedConnection(
-  E133StreamSender *sender,
+  ola::plugin::e131::OutgoingStreamTransport *transport,
+  ola::plugin::e131::RootSender *sender,
   ola::SingleUseCallback0<void> *on_timeout,
   ola::thread::SchedulerInterface *scheduler,
-  const ola::TimeInterval timeout_interval)
-    : HealthCheckedConnection(scheduler, timeout_interval),
-      m_on_timeout(on_timeout),
-      m_sender(sender) {
+  unsigned int vector,
+  const ola::TimeInterval heartbeat_interval)
+    : HealthCheckedConnection(scheduler, heartbeat_interval),
+      m_vector(vector),
+      m_transport(transport),
+      m_sender(sender),
+      m_on_timeout(on_timeout) {
 }
 
 
@@ -44,15 +51,8 @@ E133HealthCheckedConnection::E133HealthCheckedConnection(
  */
 void E133HealthCheckedConnection::SendHeartbeat() {
   OLA_INFO << "Sending heartbeat";
-
-  // heartbeats are just empty RDM messages
-  const ola::plugin::e131::RDMPDU pdu(NULL);
-  bool result = m_sender->Send(
-    ola::plugin::e131::RDMInflator::RDM_VECTOR,
-    ROOT_E133_ENDPOINT,
-    pdu);
-  if (!result)
-    OLA_WARN << "Failed to send E1.33 response";
+  if (!m_sender->SendEmpty(m_vector, m_transport))
+    OLA_WARN << "Failed to send heartbeat";
 }
 
 
@@ -60,7 +60,7 @@ void E133HealthCheckedConnection::SendHeartbeat() {
  * Called if the connection is declared dead
  */
 void E133HealthCheckedConnection::HeartbeatTimeout() {
-  OLA_INFO << "E1.33 TCP connection is dead";
+  OLA_INFO << "TCP connection heartbeat timeout";
   if (m_on_timeout)
     m_on_timeout->Run();
 }
