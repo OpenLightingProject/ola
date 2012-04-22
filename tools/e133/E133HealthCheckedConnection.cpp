@@ -19,19 +19,21 @@
 
 #include <ola/Logging.h>
 
-#include "plugins/e131/e131/E133Sender.h"
+#include "plugins/e131/e131/RDMInflator.h"
 #include "plugins/e131/e131/RDMPDU.h"
-#include "plugins/e131/e131/TCPTransport.h"
+#include "tools/e133/E133Endpoint.h"
 #include "tools/e133/E133HealthCheckedConnection.h"
+#include "tools/e133/E133StreamSender.h"
 
-
+/**
+ * Create a new E1.33 Health Checked Connection
+ */
 E133HealthCheckedConnection::E133HealthCheckedConnection(
-  E133Sender *sender,
+  E133StreamSender *sender,
   ola::SingleUseCallback0<void> *on_timeout,
-  ola::network::ConnectedDescriptor *descriptor,
   ola::thread::SchedulerInterface *scheduler,
   const ola::TimeInterval timeout_interval)
-    : HealthCheckedConnection(descriptor, scheduler, timeout_interval),
+    : HealthCheckedConnection(scheduler, timeout_interval),
       m_on_timeout(on_timeout),
       m_sender(sender) {
 }
@@ -43,22 +45,12 @@ E133HealthCheckedConnection::E133HealthCheckedConnection(
 void E133HealthCheckedConnection::SendHeartbeat() {
   OLA_INFO << "Sending heartbeat";
 
-  // TODO(simon): fix this
-  // This is a bit tricky because we need decent sequence number support here,
-  // which means we need to be syncronized with the actual messages sent over
-  // the tcp connection.
-
-  ola::plugin::e131::OutgoingStreamTransport transport(m_descriptor);
-
-  // no data in this PDU
+  // heartbeats are just empty RDM messages
   const ola::plugin::e131::RDMPDU pdu(NULL);
-  ola::plugin::e131::E133Header header(
-      "foo bar",
-      0,
-      0,
-      false);  // rx_ack
-
-  bool result = m_sender->SendRDM(header, &pdu, &transport);
+  bool result = m_sender->Send(
+    ola::plugin::e131::RDMInflator::RDM_VECTOR,
+    ROOT_E133_ENDPOINT,
+    pdu);
   if (!result)
     OLA_WARN << "Failed to send E1.33 response";
 }

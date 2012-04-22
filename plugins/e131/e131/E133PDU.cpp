@@ -43,9 +43,7 @@ unsigned int E133PDU::HeaderSize() const {
  * Size of the data portion
  */
 unsigned int E133PDU::DataSize() const {
-  if (m_rdm_pdu)
-    return m_rdm_pdu->Size();
-  return 0;
+  return m_pdu ? m_pdu->Size() : 0;
 }
 
 
@@ -79,8 +77,8 @@ bool E133PDU::PackHeader(uint8_t *data, unsigned int &length) const {
  * Pack the data portion.
  */
 bool E133PDU::PackData(uint8_t *data, unsigned int &length) const {
-  if (m_rdm_pdu)
-    return m_rdm_pdu->Pack(data, length);
+  if (m_pdu)
+    return m_pdu->Pack(data, length);
   length = 0;
   return true;
 }

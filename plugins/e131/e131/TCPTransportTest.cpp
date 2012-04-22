@@ -37,19 +37,19 @@ using std::auto_ptr;
 class TCPTransportTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(TCPTransportTest);
   CPPUNIT_TEST(testSinglePDU);
-  CPPUNIT_TEST(testSinglePDUWithExtraData);
+  CPPUNIT_TEST(testShortPreamble);
+  CPPUNIT_TEST(testBadPreamble);
+  CPPUNIT_TEST(testZeroLengthPDUBlock);
   CPPUNIT_TEST(testMultiplePDUs);
-  CPPUNIT_TEST(testMultiplePDUsWithExtraData);
-  // TODO(simon): fix this.
-  // This isn't supported by the current Transport
-  // We're waiting for resolution on RLP over TCP
-  // CPPUNIT_TEST(testSinglePDUBlock);
+  CPPUNIT_TEST(testSinglePDUBlock);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     TCPTransportTest(): TestFixture(), m_ss(NULL) {}
     void testSinglePDU();
-    void testSinglePDUWithExtraData();
+    void testShortPreamble();
+    void testBadPreamble();
+    void testZeroLengthPDUBlock();
     void testMultiplePDUs();
     void testMultiplePDUsWithExtraData();
     void testSinglePDUBlock();
@@ -58,9 +58,11 @@ class TCPTransportTest: public CppUnit::TestFixture {
     void Stop();
     void FatalStop() { CPPUNIT_ASSERT(false); }
     void PDUReceived() { m_pdus_received++; }
+    void Receive();
 
   private:
     unsigned int m_pdus_received;
+    bool m_stream_ok;
     ola::network::IPV4Address m_localhost;
     auto_ptr<ola::network::SelectServer> m_ss;
     ola::network::LoopbackDescriptor m_loopback;
@@ -69,6 +71,7 @@ class TCPTransportTest: public CppUnit::TestFixture {
     auto_ptr<MockInflator> m_inflator;
     auto_ptr<IncommingStreamTransport> m_transport;
 
+    void SendEmptyPDUBLock(unsigned int line);
     void SendPDU(unsigned int line);
     void SendPDUBlock(unsigned int line);
 
@@ -80,6 +83,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TCPTransportTest);
 void TCPTransportTest::setUp() {
   ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
   m_pdus_received = 0;
+  m_stream_ok = true;
 
   CPPUNIT_ASSERT(IPV4Address::FromString("127.0.0.1", &m_localhost));
 
@@ -105,7 +109,7 @@ void TCPTransportTest::setUp() {
   CPPUNIT_ASSERT(m_loopback.Init());
   m_loopback.SetOnClose(NewSingleCallback(this, &TCPTransportTest::Stop));
   m_loopback.SetOnData(
-      NewCallback(m_transport.get(), &IncommingStreamTransport::Receive));
+      NewCallback(this, &TCPTransportTest::Receive));
   CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&m_loopback));
 }
 
@@ -119,6 +123,15 @@ void TCPTransportTest::Stop() {
 }
 
 
+/**
+ * Receive data and terminate if the stream is bad.
+ */
+void TCPTransportTest::Receive() {
+  m_stream_ok = m_transport->Receive();
+  if (!m_stream_ok)
+    m_ss->Terminate();
+}
+
 /*
  * Send a single PDU.
  */
@@ -126,20 +139,56 @@ void TCPTransportTest::testSinglePDU() {
   SendPDU(__LINE__);
   m_loopback.CloseClient();
   m_ss->Run();
+  CPPUNIT_ASSERT(m_stream_ok);
   CPPUNIT_ASSERT_EQUAL(1u, m_pdus_received);
 }
 
 
 /**
- * Send some bogus data, followed by a PDU.
+ * Test a short preamble.
  */
-void TCPTransportTest::testSinglePDUWithExtraData() {
-  uint8_t bogus_data[] = {1, 2, 3, 4, 5, 0, 0x10, 0, 0, 0x41, 0x53, 0x43};
+void TCPTransportTest::testShortPreamble() {
+  uint8_t bogus_data[] = {
+    1, 2, 3, 4,
+    1, 2, 3, 4};
   m_loopback.Send(bogus_data, sizeof(bogus_data));
+
+  m_loopback.CloseClient();
+  m_ss->Run();
+  CPPUNIT_ASSERT(m_stream_ok);
+  CPPUNIT_ASSERT_EQUAL(0u, m_pdus_received);
+}
+
+
+/**
+ * Test bogus data, this should show up as an invalid stream
+ */
+void TCPTransportTest::testBadPreamble() {
+  uint8_t bogus_data[] = {
+    1, 2, 3, 4,
+    5, 0, 1, 0,
+    0, 4, 5, 6,
+    7, 8, 9, 0,
+    1, 2, 3, 4};
+  m_loopback.Send(bogus_data, sizeof(bogus_data));
+
+  m_loopback.CloseClient();
+  m_ss->Run();
+  CPPUNIT_ASSERT(!m_stream_ok);
+  CPPUNIT_ASSERT_EQUAL(0u, m_pdus_received);
+}
+
+
+/**
+ * Test a 0-length PDU block
+ */
+void TCPTransportTest::testZeroLengthPDUBlock() {
+  SendEmptyPDUBLock(__LINE__);
   SendPDU(__LINE__);
 
   m_loopback.CloseClient();
   m_ss->Run();
+  CPPUNIT_ASSERT(m_stream_ok);
   CPPUNIT_ASSERT_EQUAL(1u, m_pdus_received);
 }
 
@@ -154,26 +203,8 @@ void TCPTransportTest::testMultiplePDUs() {
 
   m_loopback.CloseClient();
   m_ss->Run();
+  CPPUNIT_ASSERT(m_stream_ok);
   CPPUNIT_ASSERT_EQUAL(3u, m_pdus_received);
-}
-
-
-/**
- * Send multiple PDUs with extra data between them
- */
-void TCPTransportTest::testMultiplePDUsWithExtraData() {
-  uint8_t bogus_data[] = {1, 2, 3, 4, 5, 0, 0x10, 0, 0, 0x41, 0x53, 0x43};
-  unsigned int PDU_LIMIT = 20;
-
-  for (unsigned int i = 0; i < PDU_LIMIT; i++) {
-    m_loopback.Send(bogus_data, sizeof(bogus_data));
-    SendPDU(__LINE__);
-  }
-  m_loopback.Send(bogus_data, sizeof(bogus_data));
-
-  m_loopback.CloseClient();
-  m_ss->Run();
-  CPPUNIT_ASSERT_EQUAL(PDU_LIMIT, m_pdus_received);
 }
 
 
@@ -185,7 +216,22 @@ void TCPTransportTest::testSinglePDUBlock() {
 
   m_loopback.CloseClient();
   m_ss->Run();
+  CPPUNIT_ASSERT(m_stream_ok);
   CPPUNIT_ASSERT_EQUAL(3u, m_pdus_received);
+}
+
+
+/**
+ * Send empty PDU block.
+ */
+void TCPTransportTest::SendEmptyPDUBLock(unsigned int line) {
+  std::stringstream str;
+  str << "Line " << line;
+  OutgoingStreamTransport outgoing_transport(&m_loopback);
+
+  // now actually send some data
+  PDUBlock<PDU> pdu_block;
+  CPPUNIT_ASSERT_MESSAGE(str.str(), outgoing_transport.Send(pdu_block));
 }
 
 

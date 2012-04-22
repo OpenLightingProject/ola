@@ -34,10 +34,10 @@ class E133PDU: public PDU {
   public:
     E133PDU(unsigned int vector,
             const E133Header &header,
-            const RDMPDU *rdm_pdu):
+            const PDU *pdu):
       PDU(vector),
       m_header(header),
-      m_rdm_pdu(rdm_pdu) {}
+      m_pdu(pdu) {}
     ~E133PDU() {}
 
     unsigned int HeaderSize() const;
@@ -47,7 +47,7 @@ class E133PDU: public PDU {
 
   private:
     E133Header m_header;
-    const RDMPDU *m_rdm_pdu;
+    const PDU *m_pdu;
 };
 }  // e131
 }  // plugin

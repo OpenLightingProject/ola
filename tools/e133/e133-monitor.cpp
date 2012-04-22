@@ -58,7 +58,6 @@
 #include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/RDMInflator.h"
 #include "plugins/e131/e131/E133Inflator.h"
-#include "plugins/e131/e131/E133Sender.h"
 #include "plugins/e131/e131/RootInflator.h"
 #include "plugins/e131/e131/RootSender.h"
 #include "plugins/e131/e131/TCPTransport.h"
@@ -67,6 +66,7 @@
 #include "tools/e133/E133TCPConnector.h"
 #include "tools/e133/SlpThread.h"
 #include "tools/e133/SlpUrlParser.h"
+#include "tools/e133/E133StreamSender.h"
 
 using ola::NewCallback;
 using ola::NewSingleCallback;
@@ -82,6 +82,7 @@ using std::cout;
 using std::endl;
 using std::string;
 using std::vector;
+using ola::plugin::e131::OutgoingStreamTransport;
 
 typedef struct {
   bool help;
@@ -178,7 +179,9 @@ class NodeTCPState {
     NodeTCPState()
       : socket(NULL),
         health_checked_connection(NULL),
-        transport(NULL),
+        e133_sender(NULL),
+        in_transport(NULL),
+        out_transport(NULL),
         connection_attempts(0) {
     }
     ~NodeTCPState() {
@@ -188,7 +191,9 @@ class NodeTCPState {
     // public for now
     TcpSocket *socket;
     E133HealthCheckedConnection *health_checked_connection;
-    ola::plugin::e131::IncomingTCPTransport *transport;
+    E133StreamSender *e133_sender;
+    ola::plugin::e131::IncomingTCPTransport *in_transport;
+    ola::plugin::e131::OutgoingStreamTransport *out_transport;
     unsigned int connection_attempts;
 };
 
@@ -217,14 +222,13 @@ class SimpleE133Monitor {
 
     // hash_map of ips to TCP Connection State
     typedef HASH_NAMESPACE::HASH_MAP_CLASS<uint32_t, NodeTCPState*> IPMap;
-    IPMap m_IPMap;
+    IPMap m_ip_map;
 
     // The Controller's CID
     ola::plugin::e131::CID m_cid;
 
     // senders
     ola::plugin::e131::RootSender m_root_sender;
-    ola::plugin::e131::E133Sender m_e133_sender;
 
     // inflators
     ola::plugin::e131::RootInflator m_root_inflator;
@@ -239,7 +243,7 @@ class SimpleE133Monitor {
      */
     void DiscoveryCallback(bool status, const vector<string> &urls);
     void OnTCPConnect(IPV4Address address, uint16_t port, TcpSocket *socket);
-    void SocketUnhealthy(NodeTCPState *node_state);
+    void SocketUnhealthy(IPV4Address address);
     void SocketClosed(IPV4Address address);
     void E133DataReceived(const ola::plugin::e131::TransportHeader &header);
 
@@ -256,12 +260,14 @@ class SimpleE133Monitor {
     static const ola::TimeInterval TCP_CONNECT_TIMEOUT;
     static const ola::TimeInterval INITIAL_TCP_RETRY_DELAY;
     static const ola::TimeInterval MAX_TCP_RETRY_DELAY;
+    static const char SOURCE_NAME[];
 };
 
 // 5 second connect() timeout
 const ola::TimeInterval SimpleE133Monitor::TCP_CONNECT_TIMEOUT(5, 0);
 const ola::TimeInterval SimpleE133Monitor::INITIAL_TCP_RETRY_DELAY(5, 0);
 const ola::TimeInterval SimpleE133Monitor::MAX_TCP_RETRY_DELAY(60, 0);
+const char SimpleE133Monitor::SOURCE_NAME[] = "OLA Monitor";
 
 
 SimpleE133Monitor::SimpleE133Monitor(
@@ -276,8 +282,7 @@ SimpleE133Monitor::SimpleE133Monitor(
       m_backoff_policy(INITIAL_TCP_RETRY_DELAY, MAX_TCP_RETRY_DELAY),
       m_cid(ola::plugin::e131::CID::Generate()),
       m_root_sender(m_cid),
-      m_e133_sender(&m_root_sender),
-      m_rdm_inflator(NewCallback(this, &SimpleE133Monitor::E133DataReceived)) {
+      m_root_inflator(NewCallback(this, &SimpleE133Monitor::E133DataReceived)) {
   m_root_inflator.AddInflator(&m_e133_inflator);
   m_e133_inflator.AddInflator(&m_rdm_inflator);
 
@@ -289,11 +294,11 @@ SimpleE133Monitor::SimpleE133Monitor(
 
 SimpleE133Monitor::~SimpleE133Monitor() {
   // close out all tcp sockets and free state
-  IPMap::iterator iter = m_IPMap.begin();
-  for ( ; iter != m_IPMap.end(); ++iter) {
+  IPMap::iterator iter = m_ip_map.begin();
+  for ( ; iter != m_ip_map.end(); ++iter) {
     delete iter->second;
   }
-  m_IPMap.clear();
+  m_ip_map.clear();
 
   m_slp_thread.Join();
   m_slp_thread.Cleanup();
@@ -320,8 +325,8 @@ void SimpleE133Monitor::PopulateResponderList() {
 
 
 void SimpleE133Monitor::AddIP(const IPV4Address &ip_address) {
-  IPMap::iterator iter = m_IPMap.find(ip_address.AsInt());
-  if (iter != m_IPMap.end()) {
+  IPMap::iterator iter = m_ip_map.find(ip_address.AsInt());
+  if (iter != m_ip_map.end()) {
     // the IP already exists
     return;
   }
@@ -331,7 +336,7 @@ void SimpleE133Monitor::AddIP(const IPV4Address &ip_address) {
 
   NodeTCPState *node_state = new NodeTCPState();
   node_state->connection_attempts++;
-  m_IPMap[ip_address.AsInt()] = node_state;
+  m_ip_map[ip_address.AsInt()] = node_state;
 
   // start the non-blocking connect
   m_connector.AddEndpoint(
@@ -373,8 +378,8 @@ void SimpleE133Monitor::DiscoveryCallback(bool ok,
 void SimpleE133Monitor::OnTCPConnect(IPV4Address ip_address,
                                      uint16_t,
                                      TcpSocket *socket) {
-  IPMap::iterator iter = m_IPMap.find(ip_address.AsInt());
-  if (iter == m_IPMap.end()) {
+  IPMap::iterator iter = m_ip_map.find(ip_address.AsInt());
+  if (iter == m_ip_map.end()) {
     OLA_FATAL << "Unable to locate socket for " << ip_address;
     if (socket) {
       socket->Close();
@@ -383,43 +388,55 @@ void SimpleE133Monitor::OnTCPConnect(IPV4Address ip_address,
     return;
   }
 
-  iter->second->socket = socket;
+  NodeTCPState *node_state = iter->second;
 
-  // setup the health checked channel here
-  TimeInterval heartbeat_interval(2, 0);
+  OutgoingStreamTransport *outgoing_transport = new OutgoingStreamTransport(
+      socket);
+  E133StreamSender *e133_sender = new E133StreamSender(&m_root_sender,
+                                                       string(SOURCE_NAME));
+  e133_sender->SetTransport(outgoing_transport);
+
   E133HealthCheckedConnection *health_checked_connection =
       new E133HealthCheckedConnection(
-          &m_e133_sender,
+          e133_sender,
           NewSingleCallback(this,
                             &SimpleE133Monitor::SocketUnhealthy,
-                            iter->second),
-          socket,
-          &m_ss,
-          heartbeat_interval);
+                            ip_address),
+          &m_ss);
   if (!health_checked_connection->Setup()) {
     OLA_WARN << "Failed to setup heartbeat controller for " << ip_address;
     delete health_checked_connection;
+    delete e133_sender;
+    delete outgoing_transport;
     socket->Close();
     delete socket;
-    iter->second->socket = NULL;
     return;
   }
 
-  if (iter->second->health_checked_connection) {
-    // warn
-    OLA_WARN << "pre-existing health_checked_connection for " << ip_address <<
-        ", this is a bug and we'll leak memory!";
-  }
-  iter->second->health_checked_connection = health_checked_connection;
+  if (node_state->health_checked_connection)
+    OLA_WARN << "pre-existing health_checked_connection for " << ip_address;
+
+  if (node_state->e133_sender)
+    OLA_WARN << "pre-existing e133_sender for " << ip_address;
+
+  if (node_state->out_transport)
+    OLA_WARN << "pre-existing out_transport for " << ip_address;
+
+  node_state->socket = socket;
+  node_state->health_checked_connection = health_checked_connection;
+  node_state->e133_sender = e133_sender;
+  node_state->out_transport = outgoing_transport;
+
   socket->SetOnClose(
     NewSingleCallback(this, &SimpleE133Monitor::SocketClosed, ip_address));
 
-  iter->second->transport = new ola::plugin::e131::IncomingTCPTransport(
+  // setup the incoming transport and register callbacks
+  node_state->in_transport = new ola::plugin::e131::IncomingTCPTransport(
       &m_root_inflator,
       socket);
 
   socket->SetOnData(
-      NewCallback(iter->second->transport,
+      NewCallback(iter->second->in_transport,
                   &ola::plugin::e131::IncomingTCPTransport::Receive));
   m_ss.AddReadDescriptor(socket);
 }
@@ -428,16 +445,9 @@ void SimpleE133Monitor::OnTCPConnect(IPV4Address ip_address,
 /**
  * Called when a connection is deemed unhealthy.
  */
-void SimpleE133Monitor::SocketUnhealthy(NodeTCPState *node_state) {
-  OLA_INFO << "connection went unhealthy";
-  // TODO(simon): clean this up
-  delete node_state->health_checked_connection;
-  node_state->health_checked_connection = NULL;
-
-  IPV4Address peer_address;
-  uint16_t port;
-  node_state->socket->GetPeer(&peer_address, &port);
-  SocketClosed(peer_address);
+void SimpleE133Monitor::SocketUnhealthy(IPV4Address ip_address) {
+  OLA_INFO << "connection to " << ip_address << " went unhealthy";
+  SocketClosed(ip_address);
 }
 
 
@@ -447,22 +457,30 @@ void SimpleE133Monitor::SocketUnhealthy(NodeTCPState *node_state) {
 void SimpleE133Monitor::SocketClosed(IPV4Address ip_address) {
   OLA_INFO << "connection to " << ip_address << " was closed";
 
-  IPMap::iterator iter = m_IPMap.find(ip_address.AsInt());
-  if (iter == m_IPMap.end()) {
+  IPMap::iterator iter = m_ip_map.find(ip_address.AsInt());
+  if (iter == m_ip_map.end()) {
     OLA_FATAL << "Unable to locate socket for " << ip_address;
     return;
   }
 
-  delete iter->second->health_checked_connection;
-  iter->second->health_checked_connection = NULL;
+  NodeTCPState *node_state = iter->second;
 
-  delete iter->second->transport;
-  iter->second->transport = NULL;
+  delete node_state->health_checked_connection;
+  node_state->health_checked_connection = NULL;
 
-  TcpSocket *socket = iter->second->socket;
+  delete node_state->e133_sender;
+  node_state->e133_sender = NULL;
+
+  delete node_state->out_transport;
+  node_state->out_transport = NULL;
+
+  delete node_state->in_transport;
+  node_state->in_transport = NULL;
+
+  TcpSocket *socket = node_state->socket;
   m_ss.RemoveReadDescriptor(socket);
   delete socket;
-  iter->second->socket = NULL;
+  node_state->socket = NULL;
   m_ss.Terminate();
 }
 
@@ -476,8 +494,8 @@ void SimpleE133Monitor::E133DataReceived(
   if (header.Transport() != ola::plugin::e131::TransportHeader::TCP)
     return;
 
-  IPMap::iterator iter = m_IPMap.find(header.SourceIP().AsInt());
-  if (iter == m_IPMap.end()) {
+  IPMap::iterator iter = m_ip_map.find(header.SourceIP().AsInt());
+  if (iter == m_ip_map.end()) {
     OLA_FATAL << "Received data but unable to lookup socket for " <<
       header.SourceIP();
     return;

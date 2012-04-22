@@ -21,11 +21,10 @@
 #define TOOLS_E133_E133HEALTHCHECKEDCONNECTION_H_
 
 #include <ola/Callback.h>
+#include <ola/Clock.h>
 #include <ola/network/HealthCheckedConnection.h>
-#include "plugins/e131/e131/E133Sender.h"
+#include "tools/e133/E133StreamSender.h"
 
-
-using ola::plugin::e131::E133Sender;
 
 /**
  * An E1.33 health checked connection.
@@ -33,11 +32,13 @@ using ola::plugin::e131::E133Sender;
 class E133HealthCheckedConnection
     : public ola::network::HealthCheckedConnection {
   public:
-    E133HealthCheckedConnection(E133Sender *e133_sender,
-                                ola::SingleUseCallback0<void> *on_timeout,
-                                ola::network::ConnectedDescriptor *descriptor,
-                                ola::thread::SchedulerInterface *scheduler,
-                                const ola::TimeInterval timeout_interval);
+    E133HealthCheckedConnection(
+        E133StreamSender *e133_sender,
+        ola::SingleUseCallback0<void> *on_timeout,
+        ola::thread::SchedulerInterface *scheduler,
+        const ola::TimeInterval timeout_interval =
+          ola::TimeInterval(E133_HEARTBEAT_INTERVAL, 0));
+
     ~E133HealthCheckedConnection() {}
 
     void SendHeartbeat();
@@ -45,6 +46,9 @@ class E133HealthCheckedConnection
 
   private:
     ola::SingleUseCallback0<void> *m_on_timeout;
-    E133Sender *m_sender;
+    E133StreamSender *m_sender;
+
+    // The default interval in seconds for sending heartbeat messages.
+    static const unsigned int E133_HEARTBEAT_INTERVAL = 2;
 };
 #endif  // TOOLS_E133_E133HEALTHCHECKEDCONNECTION_H_

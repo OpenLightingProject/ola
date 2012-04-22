@@ -32,8 +32,10 @@
 #include <vector>
 
 #include "plugins/e131/e131/CID.h"
-#include "plugins/e131/e131/RDMPDU.h"
 #include "plugins/e131/e131/E133Header.h"
+#include "plugins/e131/e131/E133PDU.h"
+#include "plugins/e131/e131/RDMPDU.h"
+#include "plugins/e131/e131/RDMInflator.h"
 #include "plugins/e131/e131/UDPTransport.h"
 
 #include "tools/e133/E133Device.h"
@@ -62,15 +64,16 @@ E133Device::E133Device(ola::network::SelectServerInterface *ss,
       m_cid(ola::plugin::e131::CID::Generate()),
       m_health_check_interval(2, 0),
       m_tcp_descriptor(NULL),
+      m_outgoing_tcp_transport(NULL),
       m_health_checked_connection(NULL),
       m_ss(ss),
       m_ip_address(ip_address),
-      m_rdm_inflator(NewCallback(this, &E133Device::E133DataReceived)),
+      m_root_inflator(NewCallback(this, &E133Device::E133DataReceived)),
       m_incoming_udp_transport(&m_udp_socket, &m_root_inflator),
       m_outgoing_udp_transport(&m_udp_socket),
       m_incoming_tcp_transport(NULL),
       m_root_sender(m_cid),
-      m_e133_sender(&m_root_sender) {
+      m_e133_sender(&m_root_sender, string("OLA Device")) {
 
   m_root_inflator.AddInflator(&m_e133_inflator);
   m_e133_inflator.AddInflator(&m_rdm_inflator);
@@ -178,6 +181,13 @@ void E133Device::NewTCPConnection(
     return;
   }
 
+  if (m_outgoing_tcp_transport)
+    OLA_WARN << "Already have a OutgoingTCPTransport";
+
+  m_outgoing_tcp_transport = new
+    ola::plugin::e131::OutgoingStreamTransport(descriptor);
+  m_e133_sender.SetTransport(m_outgoing_tcp_transport);
+
   if (m_tcp_stats) {
     m_tcp_stats->connection_events++;
     m_tcp_stats->ip_address = ip_address;
@@ -190,7 +200,6 @@ void E133Device::NewTCPConnection(
     E133HealthCheckedConnection(
         &m_e133_sender,
         ola::NewSingleCallback(this, &E133Device::TCPConnectionUnhealthy),
-        descriptor,
         m_ss,
         m_health_check_interval);
   if (!m_health_checked_connection->Setup()) {
@@ -225,6 +234,9 @@ void E133Device::TCPConnectionUnhealthy() {
   OLA_INFO << "TCP connection went unhealthy, closing";
   if (m_tcp_stats)
     m_tcp_stats->unhealthy_events++;
+
+  delete m_outgoing_tcp_transport;
+  m_outgoing_tcp_transport = NULL;
 
   m_ss->RemoveReadDescriptor(m_tcp_descriptor);
   m_tcp_descriptor->Close();
@@ -357,7 +369,7 @@ void E133Device::EndpointRequestComplete(
     return;
   }
 
-  const ola::plugin::e131::RDMPDU pdu(response_ptr);
+  const ola::plugin::e131::RDMPDU rdm_pdu(response_ptr);
 
   ola::plugin::e131::E133Header header(
       "foo bar",
@@ -365,10 +377,16 @@ void E133Device::EndpointRequestComplete(
       endpoint_id,
       false);  // rx_ack
 
+  ola::plugin::e131::E133PDU pdu(ola::plugin::e131::RDMInflator::RDM_VECTOR,
+                                 header,
+                                 &rdm_pdu);
   ola::plugin::e131::OutgoingUDPTransport transport(&m_outgoing_udp_transport,
                                                     src_ip,
                                                     src_port);
-  bool result = m_e133_sender.SendRDM(header, &pdu, &transport);
+  bool result = m_root_sender.SendPDU(
+      ola::plugin::e131::E133Inflator::E133_VECTOR,
+      pdu,
+      &transport);
   if (!result)
     OLA_WARN << "Failed to send E1.33 response";
 }

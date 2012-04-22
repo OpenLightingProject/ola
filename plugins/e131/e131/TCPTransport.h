@@ -15,8 +15,18 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * TCPTransport.h
- * Interface for the TCPTransport class
  * Copyright (C) 2012 Simon Newton
+ *
+ * This defines the OutgoingStreamTransport and IncommingStreamTransport for
+ * sending and receiving PDUs over stream connections.
+ *
+ * When receiving, the BaseInflator is passed a header containing the source IP
+ * & port (since many higher layer protocols require this). When using the
+ * IncommingStreamTransport you need to provide a fake ip:port pair.
+ *
+ * It's unlikely you want to use IncomingTCPTransport directly, since all
+ * real world connections are TCP (rather than pipes etc.). The
+ * IncommingStreamTransport is separate because it assists in testing.
  */
 
 #ifndef PLUGINS_E131_E131_TCPTRANSPORT_H_
@@ -25,41 +35,39 @@
 #include <memory>
 #include "ola/network/Socket.h"
 #include "plugins/e131/e131/PDU.h"
-#include "plugins/e131/e131/PreamblePacker.h"
 #include "plugins/e131/e131/Transport.h"
 
 namespace ola {
 namespace plugin {
 namespace e131 {
 
-using ola::network::IPV4Address;
 
 /*
- * Transport ACN messages over a stream.
+ * Transport ACN messages over a stream. This class uses an internal buffer to
+ * pack & send the messages. There is plenty of room for optimizations. :)
  */
 class OutgoingStreamTransport: public OutgoingTransport {
   public:
-    OutgoingStreamTransport(ola::network::ConnectedDescriptor *descriptor,
-                 PreamblePacker *packer = NULL)
+    explicit OutgoingStreamTransport(
+        ola::network::ConnectedDescriptor *descriptor)
         : m_descriptor(descriptor),
-          m_packer(packer),
-          m_free_packer(false) {
-      if (!m_packer) {
-        m_packer = new PreamblePacker();
-        m_free_packer = true;
-      }
+          m_buffer(NULL),
+          m_buffer_size(0) {
     }
     ~OutgoingStreamTransport() {
-      if (m_free_packer)
-        delete m_packer;
+      if (m_buffer)
+        delete[] m_buffer;
     }
 
     bool Send(const PDUBlock<PDU> &pdu_block);
 
   private:
     ola::network::ConnectedDescriptor *m_descriptor;
-    PreamblePacker *m_packer;
-    bool m_free_packer;
+    uint8_t *m_buffer;
+    unsigned int m_buffer_size;
+
+    bool ExpandBuffer(unsigned int size);
+    bool SendOrClose(const uint8_t *data, unsigned int length);
 
     OutgoingStreamTransport(const OutgoingStreamTransport&);
     OutgoingStreamTransport& operator=(const OutgoingStreamTransport&);
@@ -72,50 +80,66 @@ class OutgoingStreamTransport: public OutgoingTransport {
  */
 class IncommingStreamTransport {
   public:
-    /**
-     * The E1.33 headers require an IP address and a port
-     */
     IncommingStreamTransport(class BaseInflator *inflator,
                              ola::network::ConnectedDescriptor *descriptor,
-                             const IPV4Address &ip_address,
+                             const ola::network::IPV4Address &ip_address,
                              uint16_t port);
     ~IncommingStreamTransport();
 
-    void Receive();
+    bool Receive();
 
   private:
+    // The receiver is a state machine.
+    typedef enum {
+      WAITING_FOR_PREAMBLE,
+      WAITING_FOR_PDU_FLAGS,
+      WAITING_FOR_PDU_LENGTH,
+      WAITING_FOR_PDU,
+    } RXState;
+
+    typedef enum {
+      TWO_BYTES = 2,
+      THREE_BYTES = 3,
+    } PDULengthSize;
+
     TransportHeader m_transport_header;
     class BaseInflator *m_inflator;
     ola::network::ConnectedDescriptor *m_descriptor;
+
     // end points to the byte after the data
-    uint8_t *m_buffer_start, *m_buffer_end, *m_data_start, *m_data_end;
+    uint8_t *m_buffer_start, *m_buffer_end, *m_data_end;
+    // the amount of data we need before we can move to the next stage
+    unsigned int m_outstanding_data;
+    // the state we're currently in
+    RXState m_state;
+    unsigned int m_block_size;
+    unsigned int m_consumed_block_size;
+    bool m_stream_valid;
+    PDULengthSize m_pdu_length_size;
+    unsigned int m_pdu_size;
+
+    void HandlePreamble();
+    void HandlePDUFlags();
+    void HandlePDULength();
+    void HandlePDU();
 
     void IncreaseBufferSize(unsigned int new_size);
-    bool ReadChunk();
-    void LookAheadForHeader();
-    void RealignBuffer();
+    void ReadRequiredData();
+    void EnterWaitingForPreamble();
+    void EnterWaitingForPDU();
 
     /**
-     * Return the available space in the buffer, this will not be contiguous
-     * unless m_data_start == m_buffer_start
+     * Returns the free space at the end of the buffer.
      */
-    inline unsigned int AvailableBufferSpace() const {
-      return ContiguousSpace() + (
-          m_data_start ? m_data_start - m_buffer_start : 0);
-    }
-
-    /**
-     * Returns the free contiguous space at the end of the buffer.
-     */
-    inline unsigned int ContiguousSpace() const {
-      return m_data_start ? m_buffer_end - m_data_end : 0;
+    inline unsigned int FreeSpace() const {
+      return m_buffer_start ? m_buffer_end - m_data_end : 0;
     }
 
     /**
      * Return the amount of data in the buffer
      */
     inline unsigned int DataLength() const {
-      return m_data_start ? m_data_end - m_data_start : 0;
+      return m_buffer_start ? m_data_end - m_buffer_start : 0;
     }
 
     /**
@@ -125,9 +149,8 @@ class IncommingStreamTransport {
       return m_buffer_end - m_buffer_start;
     }
 
-    // TODO(simon): tune this once we have an idea of what the sizes will be
-    static const unsigned int INITIAL_SIZE = 500;
-    static const unsigned int ACN_HEADER_SIZE;
+    static const unsigned int INITIAL_SIZE;
+    static const unsigned int PDU_BLOCK_SIZE = 4;
 };
 
 

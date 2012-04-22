@@ -56,7 +56,7 @@ bool RDMPDU::PackHeader(uint8_t *, unsigned int &length) const {
 bool RDMPDU::PackData(uint8_t *data, unsigned int &length) const {
   if (!m_command) {
     length = 0;
-    return false;
+    return true;
   }
 
   unsigned int size = length;

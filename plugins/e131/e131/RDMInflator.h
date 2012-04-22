@@ -35,15 +35,13 @@ class RDMInflator: public BaseInflator {
   friend class RDMInflatorTest;
 
   public:
-    typedef ola::Callback1<void, const TransportHeader&> OnDataCallback;
-
     typedef ola::Callback3<void,
                            const TransportHeader&,  // src ip & port
                            const E133Header&,  // the E1.33 header
                            const std::string&  // rdm data
                           > RDMMessageHandler;
 
-    explicit RDMInflator(OnDataCallback *on_data = NULL);
+    explicit RDMInflator();
     ~RDMInflator();
 
     uint32_t Id() const { return RDM_VECTOR; }
@@ -71,7 +69,6 @@ class RDMInflator: public BaseInflator {
     typedef std::map<uint16_t, RDMMessageHandler*> endpoint_handler_map;
 
     endpoint_handler_map m_rdm_handlers;
-    OnDataCallback *m_on_data;
 };
 }  // e131
 }  // plugin

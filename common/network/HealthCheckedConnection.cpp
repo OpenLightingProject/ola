@@ -14,7 +14,6 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * HealthCheckedConnection.cpp
- * 
  * Copyright (C) 2012 Simon Newton
  */
 
@@ -26,11 +25,9 @@ namespace ola {
 namespace network {
 
 HealthCheckedConnection::HealthCheckedConnection(
-  ConnectedDescriptor *descriptor,
   ola::thread::SchedulerInterface *scheduler,
   const ola::TimeInterval timeout_interval)
-    : m_descriptor(descriptor),
-      m_scheduler(scheduler),
+    : m_scheduler(scheduler),
       m_heartbeat_interval(timeout_interval),
       m_send_timeout_id(ola::thread::INVALID_TIMEOUT),
       m_receive_timeout_id(ola::thread::INVALID_TIMEOUT) {

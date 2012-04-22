@@ -75,6 +75,7 @@ class E133Device {
     // Frequency of TCP health checking
     ola::TimeInterval m_health_check_interval;
     ola::network::ConnectedDescriptor *m_tcp_descriptor;
+    ola::plugin::e131::OutgoingStreamTransport *m_outgoing_tcp_transport;
     E133HealthCheckedConnection *m_health_checked_connection;
 
     // the RDM device to handle requests to the Root Endpoint
@@ -99,7 +100,7 @@ class E133Device {
 
     // senders
     ola::plugin::e131::RootSender m_root_sender;
-    ola::plugin::e131::E133Sender m_e133_sender;
+    ReliableE133StreamSender m_e133_sender;
 
     void NewTCPConnection(ola::network::TcpSocket *descriptor);
     void TCPConnectionUnhealthy();

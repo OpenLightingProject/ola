@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * TCPTransport.cpp
- * The TCPTransport class
+ * The classes for transporting ACN over TCP.
  * Copyright (C) 2012 Simon Newton
  */
 
@@ -24,35 +24,105 @@
 #include <algorithm>
 #include "plugins/e131/e131/BaseInflator.h"
 #include "plugins/e131/e131/HeaderSet.h"
-#include "plugins/e131/e131/PreamblePacker.h"
 #include "plugins/e131/e131/TCPTransport.h"
 
 namespace ola {
 namespace plugin {
 namespace e131 {
 
-const unsigned int IncommingStreamTransport::ACN_HEADER_SIZE =
-  PreamblePacker::ACN_HEADER_SIZE;
+const uint8_t ACN_HEADER[] = {
+  0x00, 0x14,  // preamble size
+  0x00, 0x00,  // post amble size
+  0x41, 0x53, 0x43, 0x2d,
+  0x45, 0x31, 0x2e, 0x31,
+  0x37, 0x00, 0x00, 0x00
+  // For TCP, the next 4 bytes are the block size
+};
+
+const unsigned int ACN_HEADER_SIZE = sizeof(ACN_HEADER);
+
+// TODO(simon): tune this once we have an idea of what the sizes will be
+const unsigned int IncommingStreamTransport::INITIAL_SIZE = 500;
+
 
 /*
- * Send a block of PDU messages.
+ * Send a block of PDU messages over a stream.
  * @param pdu_block the block of pdus to send
  */
 bool OutgoingStreamTransport::Send(const PDUBlock<PDU> &pdu_block) {
-  unsigned int data_size;
-  const uint8_t *data = m_packer->Pack(pdu_block, &data_size);
-
-  if (!data)
+  if (!SendOrClose(ACN_HEADER, ACN_HEADER_SIZE))
     return false;
 
-  // TODO(simon): rather than just attempting to send we should buffer here.
-  return m_descriptor->Send(data, data_size);
+  unsigned int pdu_block_size = pdu_block.Size();
+  unsigned int pdu_block_header = HostToNetwork(pdu_block_size);
+
+  OLA_INFO << "PDU BLOCK SIZE IS " << pdu_block_size;
+
+  if (!SendOrClose(reinterpret_cast<uint8_t*>(&pdu_block_header),
+                   sizeof(pdu_block_header)))
+    return false;
+
+  /*
+   * TODO(simon): there is plenty of scope for optimizing memory use when
+   * sending. Since PDUs exist to be sent, we should add a
+   * PDU::Send(descriptor). Think about how this interacts with non-blocking
+   * sends though, we'll probably need some sort of OutputVector and a
+   * descriptor class that supports it.
+   *
+   * Anyway for now we just use a buffer and send it.
+   */
+  if (!ExpandBuffer(pdu_block.Size()))
+    m_descriptor->Close();
+
+  if (!pdu_block.Pack(m_buffer, pdu_block_size)) {
+    OLA_WARN << "Failed to pack PDU for TCP Transmission";
+    m_descriptor->Close();
+    return false;
+  }
+
+  return SendOrClose(m_buffer, pdu_block_size);
 }
 
 
+/**
+ * Make sure our buffer is at least size
+ */
+bool OutgoingStreamTransport::ExpandBuffer(unsigned int size) {
+  if (size >= m_buffer_size && m_buffer)
+    return true;
+
+  if (m_buffer)
+    delete[] m_buffer;
+
+  m_buffer = new uint8_t[size];
+  return true;
+}
+
 
 /**
- * Create a new IncommingStreamTransport
+ * Send some data, and if we can't close the descriptor.
+ * TODO(simon): fix this so rather than closing we wait until the descriptor is
+ * writeable. This means we'll have to buffer the data.
+ * @returns true if the data was sent, false if we ended up closing
+ */
+bool OutgoingStreamTransport::SendOrClose(const uint8_t *data,
+                                          unsigned int length) {
+  ssize_t bytes_sent = m_descriptor->Send(data, length);
+
+  if (bytes_sent != length) {
+    m_descriptor->Close();
+    return false;
+  }
+  return true;
+}
+
+
+/**
+ * Create a new IncommingStreamTransport.
+ * @param inflator the inflator to call for each PDU
+ * @param descriptor the descriptor to read from
+ * @param ip_address the IP to use in the transport header
+ * @param port the port to use in the transport header
  */
 IncommingStreamTransport::IncommingStreamTransport(
     BaseInflator *inflator,
@@ -64,8 +134,12 @@ IncommingStreamTransport::IncommingStreamTransport(
       m_descriptor(descriptor),
       m_buffer_start(NULL),
       m_buffer_end(NULL),
-      m_data_start(NULL),
-      m_data_end(NULL) {
+      m_data_end(NULL),
+      m_block_size(0),
+      m_consumed_block_size(0),
+      m_stream_valid(true),
+      m_pdu_length_size(TWO_BYTES) {
+  EnterWaitingForPreamble();
 }
 
 
@@ -80,103 +154,159 @@ IncommingStreamTransport::~IncommingStreamTransport() {
 
 /**
  * Read from this stream, looking for ACN messages.
+ * @returns false if the stream is no longer consistent. At this point the
+ * caller should close the descriptor since the data is no longer valid.
  */
-void IncommingStreamTransport::Receive() {
-  if (!m_buffer_start)
-    IncreaseBufferSize(INITIAL_SIZE);
-
-  if (!m_buffer_start)
-    // all we can do here is return and hope on the next iteration we have more
-    // memory.
-    return;
-
+bool IncommingStreamTransport::Receive() {
   while (true) {
-    OLA_INFO << "-- start iteration";
-    uint8_t *old_data_end = m_data_end;
-    if (!ReadChunk())
-      // error
-      return;
+    OLA_INFO << "start read, outstanding bytes is " << m_outstanding_data;
+    // Read as much as we need
+    ReadRequiredData();
 
-    OLA_DEBUG << "read " << (m_data_end - old_data_end) << " bytes";
-    if (m_data_end == old_data_end) {
-      // no further data
-      // maybe realign the data here, it's cheaper to do it now than once we've
-      // read more
-      OLA_DEBUG << "no more data, realigning & returning";
-      RealignBuffer();
-      return;
+    OLA_INFO << "done read, bytes outstanding is " << m_outstanding_data;
+
+    // if we still don't have enough, return
+    if (m_stream_valid == false || m_outstanding_data)
+      return m_stream_valid;
+
+    OLA_INFO << "state is " << m_state;
+
+    switch (m_state) {
+      case WAITING_FOR_PREAMBLE:
+        HandlePreamble();
+        break;
+      case WAITING_FOR_PDU_FLAGS:
+        HandlePDUFlags();
+        break;
+      case WAITING_FOR_PDU_LENGTH:
+        HandlePDULength();
+        break;
+      case WAITING_FOR_PDU:
+        HandlePDU();
+        break;
     }
+    if (!m_stream_valid)
+      return false;
+  }
+}
 
-    OLA_INFO << (unsigned int*) m_data_start;
-    OLA_INFO << (unsigned int*) m_data_end;
-    OLA_DEBUG << "have " << DataLength() << ", offset at " <<
-      (m_data_start - m_buffer_start);
 
-    while (true) {
-      // process as many ACN frames as we can before we exhaust all the data
-      LookAheadForHeader();
+/**
+ * Handle the Preamble data.
+ * @pre 20 bytes in the buffer
+ */
+void IncommingStreamTransport::HandlePreamble() {
+  OLA_INFO << "in handle preamble, data len is " << DataLength();
 
-      unsigned int data_length = DataLength();
-      if (data_length == 0) {
-        // all data was consumed, reset the buffer for the next read
-        m_data_start = m_buffer_start;
-        m_data_end = m_buffer_start - 1;
-        OLA_DEBUG << "no header found in data, next iteration";
-        break;
-      }
+  if (memcmp(m_buffer_start, ACN_HEADER, ACN_HEADER_SIZE) != 0) {
+    OLA_INFO << "bad ACN header";
+    m_stream_valid = false;
+    return;
+  }
 
-      uint16_t message_length;
-      if (data_length <= ACN_HEADER_SIZE + sizeof(message_length)) {
-        // realign at this point
-        // not enough data yet, try to read some more
-        OLA_INFO << "possible header found @ " << (unsigned int*) m_data_start
-          << " but not enough data, realigning";
-        RealignBuffer();
-        break;
-      }
+  // read the PDU block length
+  memcpy(reinterpret_cast<void*>(&m_block_size),
+         m_buffer_start + ACN_HEADER_SIZE,
+         sizeof(m_block_size));
+  m_block_size = ola::network::NetworkToHost(m_block_size);
+  OLA_INFO << "pdu block size is " << m_block_size;
 
-      // read length
-      message_length = ((m_data_start[ACN_HEADER_SIZE] & 0x0F) << 8) +
-                       m_data_start[ACN_HEADER_SIZE + 1];
-      OLA_INFO << "header ok, message length is " << message_length;
+  if (m_block_size) {
+    m_consumed_block_size = 0;
+    EnterWaitingForPDU();
+  } else {
+    EnterWaitingForPreamble();
+  }
+}
 
-      unsigned int packet_data_in_buffer = data_length - ACN_HEADER_SIZE;
-      OLA_DEBUG << "packet data in buffer: " << packet_data_in_buffer <<
-        ", contig space " << ContiguousSpace() << ", total free " <<
-        AvailableBufferSpace();
 
-      if (message_length <= packet_data_in_buffer) {
-        // we have all the data we're looking for
-        OLA_DEBUG << "got all our data, time to inflate";
+/**
+ * Handle the PDU Flag data, this allows us to figure out how many bytes we
+ * need to read the length.
+ * @pre 1 byte in the buffer
+ */
+void IncommingStreamTransport::HandlePDUFlags() {
+  OLA_INFO << "Reading PDU flags, data size is " << DataLength();
+  m_pdu_length_size = (*m_buffer_start  & BaseInflator::LFLAG_MASK) ?
+    THREE_BYTES : TWO_BYTES;
+  m_outstanding_data += static_cast<int>(m_pdu_length_size) - 1;
+  OLA_INFO << "PDU length size is " << static_cast<int>(m_pdu_length_size) <<
+    " bytes";
+  m_state = WAITING_FOR_PDU_LENGTH;
+}
 
-        HeaderSet header_set;
-        header_set.SetTransportHeader(m_transport_header);
-        OLA_DEBUG << "inflating";
-        unsigned int data_consumed = m_inflator->InflatePDUBlock(
-            header_set,
-            &m_data_start[ACN_HEADER_SIZE],
-            message_length);
-        OLA_DEBUG << "inflator consumed " << data_consumed << "bytes";
-        m_data_start += data_consumed;
-        // this frame is done, attempt to process the next one
-        continue;
-      }
 
-      // not enough data, check that we have enough space to read it in
-      if (message_length > packet_data_in_buffer + ContiguousSpace()) {
-        // not enough space remaining at end of buffer
-        if (message_length > packet_data_in_buffer + AvailableBufferSpace()) {
-          // realigning won't help, we need to grow the buffer
-          OLA_DEBUG << "growing buffer to " << message_length + ACN_HEADER_SIZE;
-          // The max size for 2^12 is 4k which seems reasonable.
-          IncreaseBufferSize(message_length + ACN_HEADER_SIZE);
-        } else {
-          OLA_DEBUG << "realigning buffer";
-          RealignBuffer();
-        }
-        break;
-      }
-    }
+/**
+ * Handle the PDU Length data.
+ * @pre 2 or 3 bytes of data in the buffer, depending on m_pdu_length_size
+ */
+void IncommingStreamTransport::HandlePDULength() {
+  if (m_pdu_length_size == THREE_BYTES) {
+    m_pdu_size = (
+      m_buffer_start[2] +
+      static_cast<unsigned int>(m_buffer_start[1] << 8) +
+      static_cast<unsigned int>((m_buffer_start[0] & BaseInflator::LENGTH_MASK)
+        << 16));
+  } else {
+    m_pdu_size = m_buffer_start[1] + static_cast<unsigned int>(
+        (m_buffer_start[0] & BaseInflator::LENGTH_MASK) << 8);
+  }
+  OLA_INFO << "PDU size is " << m_pdu_size;
+
+  if (m_pdu_size < static_cast<unsigned int>(m_pdu_length_size)) {
+    OLA_WARN << "PDU length was set to " << m_pdu_size << " but " <<
+      static_cast<unsigned int>(m_pdu_length_size) <<
+      " bytes were used in the header";
+    m_stream_valid = false;
+    return;
+  }
+
+  m_outstanding_data += (
+    m_pdu_size - static_cast<unsigned int>(m_pdu_length_size));
+  OLA_INFO << "Processed length, now waiting on another " << m_outstanding_data
+    << " bytes";
+  m_state = WAITING_FOR_PDU;
+}
+
+
+/**
+ * Handle a PDU
+ * @pre m_pdu_size bytes in the buffer
+ */
+void IncommingStreamTransport::HandlePDU() {
+  OLA_INFO << "Got PDU, data length is " << DataLength() << ", expected " <<
+    m_pdu_size;
+
+  if (DataLength() != m_pdu_size) {
+    OLA_WARN << "PDU size doesn't match the available data";
+    m_stream_valid = false;
+    return;
+  }
+
+  HeaderSet header_set;
+  header_set.SetTransportHeader(m_transport_header);
+  OLA_DEBUG << "inflating";
+
+  unsigned int data_consumed = m_inflator->InflatePDUBlock(
+      header_set,
+      m_buffer_start,
+      m_pdu_size);
+  OLA_DEBUG << "inflator consumed " << data_consumed << "bytes";
+
+  if (m_pdu_size != data_consumed) {
+    OLA_WARN << "PDU inflation size mismatch, " << m_pdu_size << " != "
+    << data_consumed;
+    m_stream_valid = false;
+    return;
+  }
+
+  m_consumed_block_size += data_consumed;
+
+  if (m_consumed_block_size == m_block_size) {
+    // all PDUs in this block have been processed
+    EnterWaitingForPreamble();
+  } else {
+    EnterWaitingForPDU();
   }
 }
 
@@ -187,6 +317,8 @@ void IncommingStreamTransport::Receive() {
 void IncommingStreamTransport::IncreaseBufferSize(unsigned int new_size) {
   if (new_size <= BufferSize())
     return;
+
+  new_size = std::max(new_size, INITIAL_SIZE);
 
   unsigned int data_length = DataLength();
   if (!m_buffer_start)
@@ -199,77 +331,58 @@ void IncommingStreamTransport::IncreaseBufferSize(unsigned int new_size) {
   if (m_buffer_start) {
     if (data_length > 0)
       // this moves the data to the start of the buffer if it wasn't already
-      memcpy(buffer, m_data_start, data_length);
+      memcpy(buffer, m_buffer_start, data_length);
     delete[] m_buffer_start;
   }
 
   m_buffer_start = buffer;
   m_buffer_end = buffer + new_size;
-  m_data_start = buffer;
   m_data_end = buffer + data_length;
 }
 
 
 /**
- * Read data until we fill up our buffer or no data remains
- * @returns false if there was an error, true otherwise
+ * Read data until we reach the number of bytes we required or there is no more
+ * data to be read
  */
-bool IncommingStreamTransport::ReadChunk() {
+void IncommingStreamTransport::ReadRequiredData() {
+  if (m_outstanding_data == 0)
+    return;
+
+  if (m_outstanding_data > FreeSpace())
+    IncreaseBufferSize(DataLength() + m_outstanding_data);
+
   unsigned int data_read;
-  OLA_INFO << "contig space is " << ContiguousSpace();
-  int ok = m_descriptor->Receive(
-      m_data_end,
-      ContiguousSpace(),
-      data_read);
+  int ok = m_descriptor->Receive(m_data_end,
+                                 m_outstanding_data,
+                                 data_read);
+
   if (ok != 0)
     OLA_WARN << "tcp rx failed";
-  OLA_DEBUG << "actually read " << data_read;
+  OLA_DEBUG << "read " << data_read;
   m_data_end += data_read;
-  OLA_INFO << "m_data_end is now " << (unsigned int*) m_data_end;
-  return ok == 0;
+  m_outstanding_data -= data_read;
 }
 
 
 /**
- * Look through the data to locate the ACN header.
- * This method increments m_data_start until all data is searched, or we find a
- * potential header match.
+ * Enter the wait-for-preamble state
  */
-void IncommingStreamTransport::LookAheadForHeader() {
-  // Valid ACN messages start with PreamblePacker::ACN_HEADER
-  while (true) {
-    while (*m_data_start && m_data_start <= m_data_end)
-      m_data_start++;
-
-    if (m_data_start > m_data_end)
-      // no data left
-      return;
-
-    unsigned int cmp_length = std::min(DataLength(), ACN_HEADER_SIZE);
-
-    if (memcmp(m_data_start, PreamblePacker::ACN_HEADER, cmp_length) == 0)
-      // we have a possible start-of-frame, return
-      return;
-
-    // otherwise move on to the next byte
-    m_data_start++;
-  }
+void IncommingStreamTransport::EnterWaitingForPreamble() {
+  m_data_end = m_buffer_start;
+  m_state = WAITING_FOR_PREAMBLE;
+  m_outstanding_data = ACN_HEADER_SIZE + PDU_BLOCK_SIZE;
 }
 
 
 /**
- * Re-align the buffer so the data starts from the beginning
+ * Enter the wait-for-pdu state
  */
-void IncommingStreamTransport::RealignBuffer() {
-  unsigned int data_length = DataLength();
-
-  // allocate new buffer and copy the data over
-  if (data_length > 0 && m_data_start != m_buffer_start)
-    // this moves the data to the start of the buffer if it wasn't already
-    memcpy(m_buffer_start, m_data_start, data_length);
-
-  m_data_start = m_buffer_start;
-  m_data_end = m_data_start + data_length;
+void IncommingStreamTransport::EnterWaitingForPDU() {
+  m_state = WAITING_FOR_PDU_FLAGS;
+  m_data_end = m_buffer_start;
+  // we need 1 byte to read the flags
+  m_outstanding_data = 1;
 }
 
 

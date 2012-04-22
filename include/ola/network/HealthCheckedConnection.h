@@ -44,7 +44,6 @@
 
 #include <ola/Callback.h>
 #include <ola/Clock.h>
-#include <ola/network/Socket.h>
 #include <ola/thread/SchedulerInterface.h>
 
 
@@ -57,8 +56,7 @@ namespace network {
  */
 class HealthCheckedConnection {
   public:
-    HealthCheckedConnection(ConnectedDescriptor *descriptor,
-                            ola::thread::SchedulerInterface *scheduler,
+    HealthCheckedConnection(ola::thread::SchedulerInterface *scheduler,
                             const ola::TimeInterval timeout_interval);
     virtual ~HealthCheckedConnection();
 
@@ -103,9 +101,6 @@ class HealthCheckedConnection {
      * This is called when we don't receive a health check within the interval.
      */
     virtual void HeartbeatTimeout() = 0;
-
-  protected:
-    ConnectedDescriptor *m_descriptor;
 
   private:
     ola::thread::SchedulerInterface *m_scheduler;

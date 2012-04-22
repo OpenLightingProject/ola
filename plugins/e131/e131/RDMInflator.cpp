@@ -39,9 +39,8 @@ using std::string;
  * @param on_data a callback which is run when ever we receive a packet. This
  * is used for healthchecking but should be removed.
  */
-RDMInflator::RDMInflator(OnDataCallback *on_data)
-    : BaseInflator(PDU::FOUR_BYTES),
-      m_on_data(on_data) {
+RDMInflator::RDMInflator()
+    : BaseInflator(PDU::FOUR_BYTES) {
 }
 
 
@@ -118,10 +117,6 @@ bool RDMInflator::HandlePDUData(uint32_t vector,
                                 HeaderSet &headers,
                                 const uint8_t *data,
                                 unsigned int pdu_len) {
-  // if we have a callback registered notify that we got some data
-  if (m_on_data)
-    m_on_data->Run(headers.GetTransportHeader());
-
   if (vector != RDM_DATA_VECTOR) {
     OLA_INFO << "Not a RDM message, vector was " << vector;
     return true;

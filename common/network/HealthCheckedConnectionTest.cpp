@@ -57,7 +57,8 @@ class MockHealthCheckedConnection: public HealthCheckedConnection {
                                 const ola::TimeInterval timeout_interval,
                                 const Options &options,
                                 MockClock *clock)
-        : HealthCheckedConnection(descriptor, scheduler, timeout_interval),
+        : HealthCheckedConnection(scheduler, timeout_interval),
+          m_descriptor(descriptor),
           m_ss(scheduler),
           m_options(options),
           m_next_heartbeat(0),
@@ -97,6 +98,7 @@ class MockHealthCheckedConnection: public HealthCheckedConnection {
     bool ChannelOk() const { return m_channel_ok; }
 
   private:
+    ola::network::ConnectedDescriptor *m_descriptor;
     SelectServer *m_ss;
     Options m_options;
     uint8_t m_next_heartbeat;
