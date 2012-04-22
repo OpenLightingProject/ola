@@ -160,17 +160,17 @@ IncommingStreamTransport::~IncommingStreamTransport() {
  */
 bool IncommingStreamTransport::Receive() {
   while (true) {
-    OLA_INFO << "start read, outstanding bytes is " << m_outstanding_data;
+    OLA_DEBUG << "start read, outstanding bytes is " << m_outstanding_data;
     // Read as much as we need
     ReadRequiredData();
 
-    OLA_INFO << "done read, bytes outstanding is " << m_outstanding_data;
+    OLA_DEBUG << "done read, bytes outstanding is " << m_outstanding_data;
 
     // if we still don't have enough, return
     if (m_stream_valid == false || m_outstanding_data)
       return m_stream_valid;
 
-    OLA_INFO << "state is " << m_state;
+    OLA_DEBUG << "state is " << m_state;
 
     switch (m_state) {
       case WAITING_FOR_PREAMBLE:
@@ -197,10 +197,10 @@ bool IncommingStreamTransport::Receive() {
  * @pre 20 bytes in the buffer
  */
 void IncommingStreamTransport::HandlePreamble() {
-  OLA_INFO << "in handle preamble, data len is " << DataLength();
+  OLA_DEBUG << "in handle preamble, data len is " << DataLength();
 
   if (memcmp(m_buffer_start, ACN_HEADER, ACN_HEADER_SIZE) != 0) {
-    OLA_INFO << "bad ACN header";
+    OLA_WARN << "bad ACN header";
     m_stream_valid = false;
     return;
   }
@@ -210,7 +210,7 @@ void IncommingStreamTransport::HandlePreamble() {
          m_buffer_start + ACN_HEADER_SIZE,
          sizeof(m_block_size));
   m_block_size = ola::network::NetworkToHost(m_block_size);
-  OLA_INFO << "pdu block size is " << m_block_size;
+  OLA_DEBUG << "pdu block size is " << m_block_size;
 
   if (m_block_size) {
     m_consumed_block_size = 0;
@@ -227,11 +227,11 @@ void IncommingStreamTransport::HandlePreamble() {
  * @pre 1 byte in the buffer
  */
 void IncommingStreamTransport::HandlePDUFlags() {
-  OLA_INFO << "Reading PDU flags, data size is " << DataLength();
+  OLA_DEBUG << "Reading PDU flags, data size is " << DataLength();
   m_pdu_length_size = (*m_buffer_start  & BaseInflator::LFLAG_MASK) ?
     THREE_BYTES : TWO_BYTES;
   m_outstanding_data += static_cast<int>(m_pdu_length_size) - 1;
-  OLA_INFO << "PDU length size is " << static_cast<int>(m_pdu_length_size) <<
+  OLA_DEBUG << "PDU length size is " << static_cast<int>(m_pdu_length_size) <<
     " bytes";
   m_state = WAITING_FOR_PDU_LENGTH;
 }
@@ -252,7 +252,7 @@ void IncommingStreamTransport::HandlePDULength() {
     m_pdu_size = m_buffer_start[1] + static_cast<unsigned int>(
         (m_buffer_start[0] & BaseInflator::LENGTH_MASK) << 8);
   }
-  OLA_INFO << "PDU size is " << m_pdu_size;
+  OLA_DEBUG << "PDU size is " << m_pdu_size;
 
   if (m_pdu_size < static_cast<unsigned int>(m_pdu_length_size)) {
     OLA_WARN << "PDU length was set to " << m_pdu_size << " but " <<
@@ -264,7 +264,7 @@ void IncommingStreamTransport::HandlePDULength() {
 
   m_outstanding_data += (
     m_pdu_size - static_cast<unsigned int>(m_pdu_length_size));
-  OLA_INFO << "Processed length, now waiting on another " << m_outstanding_data
+  OLA_DEBUG << "Processed length, now waiting on another " << m_outstanding_data
     << " bytes";
   m_state = WAITING_FOR_PDU;
 }
@@ -286,7 +286,6 @@ void IncommingStreamTransport::HandlePDU() {
 
   HeaderSet header_set;
   header_set.SetTransportHeader(m_transport_header);
-  OLA_DEBUG << "inflating";
 
   unsigned int data_consumed = m_inflator->InflatePDUBlock(
       header_set,
@@ -327,8 +326,6 @@ void IncommingStreamTransport::IncreaseBufferSize(unsigned int new_size) {
 
   // allocate new buffer and copy the data over
   uint8_t *buffer = new uint8_t[new_size];
-  OLA_INFO << "new buffer at 0x" << (unsigned int*) buffer <<
-    ", data length was " << data_length;
   if (m_buffer_start) {
     if (data_length > 0)
       // this moves the data to the start of the buffer if it wasn't already
