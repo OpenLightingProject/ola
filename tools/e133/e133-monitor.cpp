@@ -62,11 +62,11 @@
 #include "plugins/e131/e131/RootSender.h"
 #include "plugins/e131/e131/TCPTransport.h"
 
+#include "tools/e133/E133Endpoint.h"
 #include "tools/e133/E133HealthCheckedConnection.h"
 #include "tools/e133/E133TCPConnector.h"
 #include "tools/e133/SlpThread.h"
 #include "tools/e133/SlpUrlParser.h"
-#include "tools/e133/E133StreamSender.h"
 
 using ola::NewCallback;
 using ola::NewSingleCallback;
@@ -164,7 +164,7 @@ void DisplayHelpAndExit(char *argv[]) {
   "\n"
   "  -h, --help                Display this help message and exit.\n"
   "  -t, --targets <ip>,<ip>   List of IPs to connect to, overrides SLP\n"
-  "  -p, --pid-file            The file to read PID definitiions from\n"
+  "  -p, --pid-file            The file to read PID definitions from\n"
   "  -l, --log-level <level>   Set the logging level 0 .. 4.\n"
   << endl;
   exit(0);
@@ -179,7 +179,6 @@ class NodeTCPState {
     NodeTCPState()
       : socket(NULL),
         health_checked_connection(NULL),
-        e133_sender(NULL),
         in_transport(NULL),
         out_transport(NULL),
         connection_attempts(0) {
@@ -191,7 +190,6 @@ class NodeTCPState {
     // public for now
     TcpSocket *socket;
     E133HealthCheckedConnection *health_checked_connection;
-    E133StreamSender *e133_sender;
     ola::plugin::e131::IncomingTCPTransport *in_transport;
     ola::plugin::e131::OutgoingStreamTransport *out_transport;
     unsigned int connection_attempts;
@@ -199,7 +197,7 @@ class NodeTCPState {
 
 
 /**
- * A very simple E1.33 Controller
+ * A very simple E1.33 Controller that acts as a passive monitor.
  */
 class SimpleE133Monitor {
   public:
@@ -211,7 +209,6 @@ class SimpleE133Monitor {
     void AddIP(const IPV4Address &ip_address);
 
     void Run() { m_ss.Run(); }
-    void Stop() { m_ss.Terminate(); }
 
   private:
     PidStoreHelper *m_pid_helper;
@@ -251,11 +248,6 @@ class SimpleE133Monitor {
         const ola::plugin::e131::TransportHeader &transport_header,
         const ola::plugin::e131::E133Header &e133_header,
         const string &raw_request);
-    /*
-    void RequestCallback(ola::rdm::rdm_response_code rdm_code,
-                         const ola::rdm::RDMResponse *response,
-                         const std::vector<std::string> &packets);
-    */
 
     static const ola::TimeInterval TCP_CONNECT_TIMEOUT;
     static const ola::TimeInterval INITIAL_TCP_RETRY_DELAY;
@@ -265,11 +257,16 @@ class SimpleE133Monitor {
 
 // 5 second connect() timeout
 const ola::TimeInterval SimpleE133Monitor::TCP_CONNECT_TIMEOUT(5, 0);
+// retry TCP connects after 5 seconds
 const ola::TimeInterval SimpleE133Monitor::INITIAL_TCP_RETRY_DELAY(5, 0);
+// we grow the retry interval to a max of 60 seconds
 const ola::TimeInterval SimpleE133Monitor::MAX_TCP_RETRY_DELAY(60, 0);
 const char SimpleE133Monitor::SOURCE_NAME[] = "OLA Monitor";
 
 
+/**
+ * Setup a new Monitori
+ */
 SimpleE133Monitor::SimpleE133Monitor(
     PidStoreHelper *pid_helper)
     : m_pid_helper(pid_helper),
@@ -287,7 +284,7 @@ SimpleE133Monitor::SimpleE133Monitor(
   m_e133_inflator.AddInflator(&m_rdm_inflator);
 
   m_rdm_inflator.SetRDMHandler(
-      0,
+      ROOT_E133_ENDPOINT,
       NewCallback(this, &SimpleE133Monitor::EndpointRequest));
 }
 
@@ -392,9 +389,6 @@ void SimpleE133Monitor::OnTCPConnect(IPV4Address ip_address,
 
   OutgoingStreamTransport *outgoing_transport = new OutgoingStreamTransport(
       socket);
-  E133StreamSender *e133_sender = new E133StreamSender(&m_root_sender,
-                                                       string(SOURCE_NAME));
-  e133_sender->SetTransport(outgoing_transport);
 
   E133HealthCheckedConnection *health_checked_connection =
       new E133HealthCheckedConnection(
@@ -407,7 +401,6 @@ void SimpleE133Monitor::OnTCPConnect(IPV4Address ip_address,
   if (!health_checked_connection->Setup()) {
     OLA_WARN << "Failed to setup heartbeat controller for " << ip_address;
     delete health_checked_connection;
-    delete e133_sender;
     delete outgoing_transport;
     socket->Close();
     delete socket;
@@ -417,15 +410,11 @@ void SimpleE133Monitor::OnTCPConnect(IPV4Address ip_address,
   if (node_state->health_checked_connection)
     OLA_WARN << "pre-existing health_checked_connection for " << ip_address;
 
-  if (node_state->e133_sender)
-    OLA_WARN << "pre-existing e133_sender for " << ip_address;
-
   if (node_state->out_transport)
     OLA_WARN << "pre-existing out_transport for " << ip_address;
 
   node_state->socket = socket;
   node_state->health_checked_connection = health_checked_connection;
-  node_state->e133_sender = e133_sender;
   node_state->out_transport = outgoing_transport;
 
   socket->SetOnClose(
@@ -468,9 +457,6 @@ void SimpleE133Monitor::SocketClosed(IPV4Address ip_address) {
 
   delete node_state->health_checked_connection;
   node_state->health_checked_connection = NULL;
-
-  delete node_state->e133_sender;
-  node_state->e133_sender = NULL;
 
   delete node_state->out_transport;
   node_state->out_transport = NULL;
@@ -516,70 +502,11 @@ void SimpleE133Monitor::EndpointRequest(
     const string &raw_request) {
 
   OLA_INFO << "got message from " << transport_header.SourceIP();
+
+  // Inflate and print the message here
   (void) e133_header;
   (void) raw_request;
 }
-
-
-/**
- * Called when the RDM command completes
-void SimpleE133Monitor::RequestCallback(
-    ola::rdm::rdm_response_code rdm_code,
-    const ola::rdm::RDMResponse *response,
-    const std::vector<std::string> &packets) {
-  cout << "RDM callback executed with code: " <<
-    ola::rdm::ResponseCodeToString(rdm_code) << endl;
-
-  if (!--m_responses_to_go)
-    m_ss.Terminate();
-
-  if (rdm_code == ola::rdm::RDM_COMPLETED_OK) {
-    const ola::rdm::PidDescriptor *pid_descriptor = m_pid_helper->GetDescriptor(
-        response->ParamId(),
-        response->SourceUID().ManufacturerId());
-    const ola::messaging::Descriptor *descriptor = NULL;
-    const ola::messaging::Message *message = NULL;
-
-    if (pid_descriptor) {
-      switch (response->CommandClass()) {
-        case ola::rdm::RDMCommand::GET_COMMAND_RESPONSE:
-          descriptor = pid_descriptor->GetResponse();
-          break;
-        case ola::rdm::RDMCommand::SET_COMMAND_RESPONSE:
-          descriptor = pid_descriptor->SetResponse();
-          break;
-        default:
-          OLA_WARN << "Unknown command class " << response->CommandClass();
-      }
-    }
-    if (descriptor) {
-      message = m_pid_helper->DeserializeMessage(descriptor,
-                                                 response->ParamData(),
-                                                 response->ParamDataSize());
-    }
-
-
-    if (message) {
-      cout << response->SourceUID() << " -> " << response->DestinationUID() <<
-        endl;
-      cout << m_pid_helper->MessageToString(message);
-    } else {
-      cout << response->SourceUID() << " -> " << response->DestinationUID()
-        << ", TN: " << static_cast<int>(response->TransactionNumber()) <<
-        ", Msg Count: " << static_cast<int>(response->MessageCount()) <<
-        ", sub dev: " << response->SubDevice() << ", param 0x" << std::hex <<
-        response->ParamId() << ", data len: " <<
-        std::dec << static_cast<int>(response->ParamDataSize()) << endl;
-    }
-
-    if (message)
-      delete message;
-  }
-  delete response;
-
-  (void) packets;
-}
- */
 
 
 /*
@@ -622,7 +549,6 @@ int main(int argc, char *argv[]) {
     exit(EX_UNAVAILABLE);
 
   if (targets.empty()) {
-    // this blocks while the slp thread does it's thing
     monitor.PopulateResponderList();
   } else {
     // manually add the responder IPs
