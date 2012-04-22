@@ -12,3 +12,6 @@ endif
 
 # AM_CXXFLAGS is used when target_CXXFLAGS isn't defined
 AM_CXXFLAGS = $(COMMON_CXXFLAGS)
+
+COMMON_TESTING_LIBS = $(CPPUNIT_LIBS) \
+                      $(top_builddir)/common/testing/libolatesting.la

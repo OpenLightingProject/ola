@@ -463,6 +463,7 @@ AC_OUTPUT( Makefile\
     common/rdm/testdata/Makefile \
     common/rpc/Makefile\
     common/thread/Makefile\
+    common/testing/Makefile\
     common/timecode/Makefile\
     common/utils/Makefile\
     common/web/Makefile\
@@ -476,6 +477,7 @@ AC_OUTPUT( Makefile\
     include/ola/network/Makefile\
     include/ola/rdm/Makefile\
     include/ola/thread/Makefile\
+    include/ola/testing/Makefile\
     include/ola/timecode/Makefile\
     include/ola/web/Makefile\
     include/olad/Makefile\

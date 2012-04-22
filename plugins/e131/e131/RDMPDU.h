@@ -29,15 +29,22 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
-class DMPPDU;
-
+/**
+ * An RDM PDU carries a RDMCommand.
+ */
 class RDMPDU: public PDU {
   public:
+    /**
+     * Ownership of the command is transferred here
+     */
     explicit RDMPDU(const ola::rdm::RDMCommand *command):
-      PDU(RDMInflator::RDM_DATA_VECTOR),
+      PDU(RDMInflator::RDM_DATA_VECTOR, ONE_BYTE),
       m_command(command) {
     }
-    ~RDMPDU() {}
+    ~RDMPDU() {
+      if (m_command)
+        delete m_command;
+    }
 
     unsigned int HeaderSize() const { return 0; }
     unsigned int DataSize() const;
