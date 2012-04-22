@@ -115,7 +115,7 @@ void RDMPDUTest::testSimpleRDMPDU() {
 
   uint8_t expected_data[] = {
     0x70, 0x1d, TEST_VECTOR,
-    1, 24,  // sub code & length
+    0xcc, 1, 24,  // start code, sub code & length
     0, 3, 0, 0, 0, 4,   // dst uid
     0, 1, 0, 0, 0, 2,   // src uid
     0, 1, 0, 0, 10,  // transaction, port id, msg count & sub device
@@ -159,7 +159,7 @@ void RDMPDUTest::testRDMPDUWithData() {
 
   uint8_t expected_data[] = {
     0x70, 0x21, TEST_VECTOR,
-    1, 0x1c,  // sub code & length
+    0xcc, 1, 0x1c,  // sub code & length
     0, 3, 0, 0, 0, 4,   // dst uid
     0, 1, 0, 0, 0, 2,   // src uid
     0, 1, 0, 0, 10,  // transaction, port id, msg count & sub device

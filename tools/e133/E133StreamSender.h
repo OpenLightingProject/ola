@@ -89,9 +89,9 @@ class ReliableE133StreamSender: public E133StreamSender {
 
     void Acknowledge(unsigned int sequence);
 
-    bool SendReliability(unsigned int vector,
-                         uint16_t endpoint,
-                         const class ola::plugin::e131::PDU *pdu);
+    bool SendReliably(unsigned int vector,
+                      uint16_t endpoint,
+                      const class ola::plugin::e131::PDU *pdu);
 
     unsigned int BufferSize() const;
     unsigned int FreeSize() const;

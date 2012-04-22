@@ -98,7 +98,7 @@ bool E133StreamSender::SendPDU(unsigned int vector,
 
   return m_root_sender->SendPDU(
       ola::plugin::e131::E133Inflator::E133_VECTOR,
-      *pdu,
+      e133_pdu,
       m_transport);
 }
 
@@ -148,14 +148,10 @@ void ReliableE133StreamSender::Acknowledge(unsigned int sequence) {
  * @param endpoint the endpoint to address this PDU to
  * @param pdu the PDU itself, ownership is transferred if this returns true.
  */
-bool ReliableE133StreamSender::SendReliability(
+bool ReliableE133StreamSender::SendReliably(
     unsigned int vector,
     uint16_t endpoint,
     const ola::plugin::e131::PDU *pdu) {
-  PendingMessage *message = new PendingMessage;
-  message->vector = vector;
-  message->endpoint = endpoint;
-  message->pdu = pdu;
 
   unsigned int our_sequence_number = m_next_sequence_number++;
   PendingMessageMap::iterator iter =
@@ -165,6 +161,11 @@ bool ReliableE133StreamSender::SendReliability(
     OLA_WARN << "Sequence number collision!";
     return false;
   }
+
+  PendingMessage *message = new PendingMessage;
+  message->vector = vector;
+  message->endpoint = endpoint;
+  message->pdu = pdu;
 
   m_unacked_messages[our_sequence_number] = message;
 

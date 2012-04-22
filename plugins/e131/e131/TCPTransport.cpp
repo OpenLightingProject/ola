@@ -56,7 +56,7 @@ bool OutgoingStreamTransport::Send(const PDUBlock<PDU> &pdu_block) {
   unsigned int pdu_block_size = pdu_block.Size();
   unsigned int pdu_block_header = HostToNetwork(pdu_block_size);
 
-  OLA_INFO << "PDU BLOCK SIZE IS " << pdu_block_size;
+  OLA_DEBUG << "TCP TX: block size is " << pdu_block_size;
 
   if (!SendOrClose(reinterpret_cast<uint8_t*>(&pdu_block_header),
                    sizeof(pdu_block_header)))
@@ -71,7 +71,7 @@ bool OutgoingStreamTransport::Send(const PDUBlock<PDU> &pdu_block) {
    *
    * Anyway for now we just use a buffer and send it.
    */
-  if (!ExpandBuffer(pdu_block.Size()))
+  if (!ExpandBuffer(pdu_block_size))
     m_descriptor->Close();
 
   if (!pdu_block.Pack(m_buffer, pdu_block_size)) {
@@ -88,12 +88,13 @@ bool OutgoingStreamTransport::Send(const PDUBlock<PDU> &pdu_block) {
  * Make sure our buffer is at least size
  */
 bool OutgoingStreamTransport::ExpandBuffer(unsigned int size) {
-  if (size >= m_buffer_size && m_buffer)
+  if (size <= m_buffer_size && m_buffer)
     return true;
 
   if (m_buffer)
     delete[] m_buffer;
 
+  m_buffer_size = size;
   m_buffer = new uint8_t[size];
   return true;
 }
@@ -291,7 +292,7 @@ void IncommingStreamTransport::HandlePDU() {
       header_set,
       m_buffer_start,
       m_pdu_size);
-  OLA_DEBUG << "inflator consumed " << data_consumed << "bytes";
+  OLA_DEBUG << "inflator consumed " << data_consumed << " bytes";
 
   if (m_pdu_size != data_consumed) {
     OLA_WARN << "PDU inflation size mismatch, " << m_pdu_size << " != "

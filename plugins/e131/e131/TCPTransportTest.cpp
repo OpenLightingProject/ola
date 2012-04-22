@@ -42,6 +42,7 @@ class TCPTransportTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testZeroLengthPDUBlock);
   CPPUNIT_TEST(testMultiplePDUs);
   CPPUNIT_TEST(testSinglePDUBlock);
+  CPPUNIT_TEST(testBufferExpansion);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -53,6 +54,7 @@ class TCPTransportTest: public CppUnit::TestFixture {
     void testMultiplePDUs();
     void testMultiplePDUsWithExtraData();
     void testSinglePDUBlock();
+    void testBufferExpansion();
     void setUp();
 
     void Stop();
@@ -218,6 +220,36 @@ void TCPTransportTest::testSinglePDUBlock() {
   m_ss->Run();
   CPPUNIT_ASSERT(m_stream_ok);
   CPPUNIT_ASSERT_EQUAL(3u, m_pdus_received);
+}
+
+
+/**
+ * Test that we expand the buffer correctly when required
+ */
+void TCPTransportTest::testBufferExpansion() {
+  OutgoingStreamTransport outgoing_transport(&m_loopback);
+
+  // first send a single PDU
+  PDUBlock<PDU> pdu_block;
+  MockPDU mock_pdu(4, 8);
+  pdu_block.AddPDU(&mock_pdu);
+  CPPUNIT_ASSERT(outgoing_transport.Send(pdu_block));
+
+  // now follow up with a block
+  pdu_block.Clear();
+  MockPDU mock_pdu1(1, 2);
+  MockPDU mock_pdu2(2, 4);
+  MockPDU mock_pdu3(3, 6);
+  pdu_block.AddPDU(&mock_pdu1);
+  pdu_block.AddPDU(&mock_pdu2);
+  pdu_block.AddPDU(&mock_pdu3);
+
+  CPPUNIT_ASSERT(outgoing_transport.Send(pdu_block));
+
+  m_loopback.CloseClient();
+  m_ss->Run();
+  CPPUNIT_ASSERT(m_stream_ok);
+  CPPUNIT_ASSERT_EQUAL(4u, m_pdus_received);
 }
 
 

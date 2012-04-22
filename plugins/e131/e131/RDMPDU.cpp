@@ -59,9 +59,10 @@ bool RDMPDU::PackData(uint8_t *data, unsigned int &length) const {
     return true;
   }
 
-  unsigned int size = length;
-  bool r = m_command->Pack(data, &size);
-  length = size;
+  data[0] = ola::rdm::RDMCommand::START_CODE;
+  length--;
+  bool r = m_command->Pack(data + 1, &length);
+  length++;
   return r;
 }
 }  // ola

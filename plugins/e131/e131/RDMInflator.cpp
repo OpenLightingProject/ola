@@ -40,7 +40,7 @@ using std::string;
  * is used for healthchecking but should be removed.
  */
 RDMInflator::RDMInflator()
-    : BaseInflator(PDU::FOUR_BYTES) {
+    : BaseInflator(PDU::ONE_BYTE) {
 }
 
 
