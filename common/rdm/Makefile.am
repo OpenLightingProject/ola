@@ -8,7 +8,8 @@ EXTRA_DIST = DescriptorConsistencyChecker.h DiscoveryAgentTestHelper.h \
 BUILT_SOURCES = Pids.pb.cc Pids.pb.h
 
 noinst_LTLIBRARIES = libolardm.la
-libolardm_la_SOURCES = DescriptorConsistencyChecker.cpp \
+libolardm_la_SOURCES = CommandPrinter.cpp \
+                       DescriptorConsistencyChecker.cpp \
                        DiscoveryAgent.cpp \
                        GroupSizeCalculator.cpp \
                        MessageSerializer.cpp MessageDeserializer.cpp \
