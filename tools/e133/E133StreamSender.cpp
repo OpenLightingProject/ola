@@ -197,7 +197,7 @@ unsigned int ReliableE133StreamSender::FreeSize() const {
 void ReliableE133StreamSender::NewTransport() {
   if (m_transport) {
     // try to send all the pdus in the queue
-    OLA_WARN << "New transport, sending any un-acked messages";
+    OLA_INFO << "New transport, sending any un-acked messages";
     PendingMessageMap::iterator iter = m_unacked_messages.begin();
     for (; iter != m_unacked_messages.end(); iter++)
       SendPDU(iter->second->vector,

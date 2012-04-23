@@ -54,6 +54,8 @@ using ola::network::IPV4Address;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
 using std::auto_ptr;
+using std::cout;
+using std::endl;
 using std::string;
 
 
@@ -144,7 +146,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
  * Display the help message
  */
 void DisplayHelpAndExit(char *argv[]) {
-  std::cout << "Usage: " << argv[0] << " [options]\n"
+  cout << "Usage: " << argv[0] << " [options]\n"
   "\n"
   "Run a very simple E1.33 Responder.\n"
   "\n"
@@ -154,7 +156,7 @@ void DisplayHelpAndExit(char *argv[]) {
   "  -t, --timeout <seconds>   The value to use for the service lifetime\n"
   "  -u, --universe <universe> The universe to respond on (> 0).\n"
   "  --uid <uid>               The UID of the responder.\n"
-  << std::endl;
+  << endl;
   exit(0);
 }
 
@@ -321,9 +323,10 @@ void SimpleE133Node::Input() {
  * Dump the TCP stats
  */
 void SimpleE133Node::DumpTCPStats() {
-  OLA_INFO << "IP: " << m_tcp_stats.ip_address;
-  OLA_INFO << "Connection Unhealthy Events: " << m_tcp_stats.unhealthy_events;
-  OLA_INFO << "Connection Events: " << m_tcp_stats.connection_events;
+  cout << "IP: " << m_tcp_stats.ip_address << endl;
+  cout << "Connection Unhealthy Events: " << m_tcp_stats.unhealthy_events <<
+    endl;
+  cout << "Connection Events: " << m_tcp_stats.connection_events << endl;
 }
 
 
@@ -424,12 +427,12 @@ int main(int argc, char *argv[]) {
     return false;
   }
 
-  OLA_INFO << "---------------  Controls  ----------------";
-  OLA_INFO << " c - Close the TCP connection";
-  OLA_INFO << " q - Quit";
-  OLA_INFO << " s - Send Status Message";
-  OLA_INFO << " t - Dump TCP stats";
-  OLA_INFO << "-------------------------------------------";
+  cout << "---------------  Controls  ----------------\n";
+  cout << " c - Close the TCP connection\n";
+  cout << " q - Quit\n";
+  cout << " s - Send Status Message\n";
+  cout << " t - Dump TCP stats\n";
+  cout << "-------------------------------------------\n";
 
   node.Run();
 
