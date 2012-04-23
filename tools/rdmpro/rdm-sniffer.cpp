@@ -117,7 +117,6 @@ class RDMSniffer {
       options->dmx_slot_limit = DMX_UNIVERSE_SIZE;
       options->display_rdm_frames = true;
       options->summarize_rdm_frames = true;
-      options->unpack_param_data = false;
       options->unpack_param_data = true;
       options->display_non_rdm_asc_frames = true;
       options->pid_file = PID_DATA_FILE;
@@ -486,7 +485,6 @@ void ParseOptions(int argc,
       {"full-rdm", no_argument, 0, 'r'},
       {"help", no_argument, 0, 'h'},
       {"log-level", required_argument, 0, 'l'},
-      {"unpack-params", no_argument, 0, 'u'},
       {"write-raw-dump", required_argument, 0, 'w'},
       {"parse-raw-dump", required_argument, 0, 'p'},
       {0, 0, 0, 0}
@@ -542,9 +540,6 @@ void ParseOptions(int argc,
       case 'r':
         sniffer_options->summarize_rdm_frames = false;
         break;
-      case 'u':
-        sniffer_options->unpack_param_data = true;
-        break;
       case 'w':
         if (!opts->read_file.empty())
           return;
@@ -583,7 +578,6 @@ void DisplayHelpAndExit(char *argv[]) {
   "  -h, --help          Display this help message and exit.\n"
   "  -l, --log-level <level>  Set the logging level 0 .. 4.\n"
   "  -r, --full-rdm      Display the full RDM frame\n"
-  "  -u, --unpack-params Unpack parameter data.\n"
   "  -w, --write-raw-dump <file>  Write data to binary file.\n"
   "  -p, --parse-raw-dump <file>  Parse data from binary file.\n"
   << endl;
