@@ -572,7 +572,7 @@ void SimpleE133Monitor::EndpointRequest(
                                        request.get());
       ok = true;
     }
-  } else if (response_type == RDMCommand::GET_COMMAND_RESPONSE |
+  } else if (response_type == RDMCommand::GET_COMMAND_RESPONSE ||
              response_type == RDMCommand::SET_COMMAND_RESPONSE) {
     ola::rdm::rdm_response_code code;
     auto_ptr<RDMResponse> response(
