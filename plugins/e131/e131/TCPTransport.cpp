@@ -110,7 +110,7 @@ bool OutgoingStreamTransport::SendOrClose(const uint8_t *data,
                                           unsigned int length) {
   ssize_t bytes_sent = m_descriptor->Send(data, length);
 
-  if (bytes_sent != length) {
+  if (static_cast<unsigned int>(bytes_sent) != length) {
     m_descriptor->Close();
     return false;
   }
