@@ -130,7 +130,7 @@ bool RDMInflator::HandlePDUData(uint32_t vector,
     if (!e133_header.Endpoint()) {
       OLA_WARN << "Received E1.33 message for Endpoint 0 but no handler set!";
     } else {
-      OLA_DEBUG << "Received E1.33 message for Endpoint " <<
+      OLA_INFO << "Received E1.33 message for Endpoint " <<
         e133_header.Endpoint() << ", no handler set";
     }
     return true;

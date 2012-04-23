@@ -91,8 +91,8 @@ bool E133StreamSender::SendPDU(unsigned int vector,
                                unsigned int sequence_number,
                                const class ola::plugin::e131::PDU *pdu) {
   ola::plugin::e131::E133Header header(m_source_name,
-                                       endpoint,
                                        sequence_number,
+                                       endpoint,
                                        false);
   ola::plugin::e131::E133PDU e133_pdu(vector, header, pdu);
 
