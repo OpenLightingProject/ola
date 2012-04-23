@@ -62,6 +62,9 @@ class E133Device {
 
     bool Init();
 
+    void SendStatusMessage(const ola::rdm::RDMCommand *command);
+    bool CloseTCPConnection();
+
   private:
     class EndpointManager *m_endpoint_manager;
     auto_ptr<ola::Callback1<void, uint16_t> > m_register_endpoint_callback;
@@ -73,7 +76,7 @@ class E133Device {
     // The Node's CID
     ola::plugin::e131::CID m_cid;
 
-    // Frequency of TCP health checking
+    // TCP connection classes
     ola::network::ConnectedDescriptor *m_tcp_descriptor;
     ola::plugin::e131::OutgoingStreamTransport *m_outgoing_tcp_transport;
     E133HealthCheckedConnection *m_health_checked_connection;
@@ -103,9 +106,10 @@ class E133Device {
     ReliableE133StreamSender m_e133_sender;
 
     void NewTCPConnection(ola::network::TcpSocket *descriptor);
+    void ReceiveTCPData(ola::plugin::e131::IncomingTCPTransport *transpport);
     void TCPConnectionUnhealthy();
     void TCPConnectionClosed();
-    void E133DataReceived(const ola::plugin::e131::TransportHeader &header);
+    void RLPDataReceived(const ola::plugin::e131::TransportHeader &header);
 
     void RegisterEndpoint(uint16_t endpoint_id);
     void UnRegisterEndpoint(uint16_t endpoint_id);

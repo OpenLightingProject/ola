@@ -275,7 +275,7 @@ void IncommingStreamTransport::HandlePDULength() {
  * @pre m_pdu_size bytes in the buffer
  */
 void IncommingStreamTransport::HandlePDU() {
-  OLA_INFO << "Got PDU, data length is " << DataLength() << ", expected " <<
+  OLA_DEBUG << "Got PDU, data length is " << DataLength() << ", expected " <<
     m_pdu_size;
 
   if (DataLength() != m_pdu_size) {

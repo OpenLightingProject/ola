@@ -47,6 +47,7 @@
 using ola::NewCallback;
 using ola::network::HealthCheckedConnection;
 using ola::network::IPV4Address;
+using ola::plugin::e131::RDMPDU;
 using std::auto_ptr;
 using std::string;
 using std::vector;
@@ -67,7 +68,7 @@ E133Device::E133Device(ola::network::SelectServerInterface *ss,
       m_health_checked_connection(NULL),
       m_ss(ss),
       m_ip_address(ip_address),
-      m_root_inflator(NewCallback(this, &E133Device::E133DataReceived)),
+      m_root_inflator(NewCallback(this, &E133Device::RLPDataReceived)),
       m_incoming_udp_transport(&m_udp_socket, &m_root_inflator),
       m_outgoing_udp_transport(&m_udp_socket),
       m_incoming_tcp_transport(NULL),
@@ -162,6 +163,43 @@ bool E133Device::Init() {
 
 
 /**
+ * Send an unsolicated RDM message on the TCP channel.
+ * @param command the RDM command to send, ownership is transferred.
+ */
+void E133Device::SendStatusMessage(const ola::rdm::RDMCommand *command) {
+  const RDMPDU *rdm_pdu = new RDMPDU(command);
+
+  bool ok = m_e133_sender.SendReliably(
+      ola::plugin::e131::RDMInflator::RDM_VECTOR,
+      ROOT_E133_ENDPOINT,
+      rdm_pdu);
+  if (!ok)
+    delete rdm_pdu;
+}
+
+
+/**
+ * Close the master's TCP connection.
+ * @return, true if there was a connection to close, false otherwise
+ */
+bool E133Device::CloseTCPConnection() {
+  if (!m_tcp_descriptor)
+    return false;
+
+  delete m_outgoing_tcp_transport;
+  m_outgoing_tcp_transport = NULL;
+
+  m_ss->RemoveReadDescriptor(m_tcp_descriptor);
+  m_tcp_descriptor->Close();
+
+  ola::network::ConnectedDescriptor::OnCloseCallback *callback =
+    m_tcp_descriptor->TransferOnClose();
+  callback->Run();
+  return true;
+}
+
+
+/**
  * Called when we get a new TCP connection.
  */
 void E133Device::NewTCPConnection(
@@ -220,9 +258,22 @@ void E133Device::NewTCPConnection(
   m_tcp_descriptor = descriptor;
 
   descriptor->SetOnData(
-      NewCallback(m_incoming_tcp_transport,
-                  &ola::plugin::e131::IncomingTCPTransport::Receive));
+      NewCallback(this,
+                  &E133Device::ReceiveTCPData,
+                  m_incoming_tcp_transport));
   m_ss->AddReadDescriptor(descriptor);
+}
+
+
+/**
+ * Called when there is new TCP data available
+ */
+void E133Device::ReceiveTCPData(
+    ola::plugin::e131::IncomingTCPTransport *transport) {
+  bool ok = transport->Receive();
+  if (!ok) {
+    OLA_WARN << "TCP STREAM IS BAD!!!";
+  }
 }
 
 
@@ -234,15 +285,7 @@ void E133Device::TCPConnectionUnhealthy() {
   if (m_tcp_stats)
     m_tcp_stats->unhealthy_events++;
 
-  delete m_outgoing_tcp_transport;
-  m_outgoing_tcp_transport = NULL;
-
-  m_ss->RemoveReadDescriptor(m_tcp_descriptor);
-  m_tcp_descriptor->Close();
-
-  ola::network::ConnectedDescriptor::OnCloseCallback *callback =
-    m_tcp_descriptor->TransferOnClose();
-  callback->Run();
+  CloseTCPConnection();
 }
 
 
@@ -268,9 +311,9 @@ void E133Device::TCPConnectionClosed() {
  * Called when we receive E1.33 data. If this arrived over TCP we notify the
  * health checked connection.
  */
-void E133Device::E133DataReceived(
+void E133Device::RLPDataReceived(
     const ola::plugin::e131::TransportHeader &header) {
-  OLA_INFO << "got some E1.33 data from " << header.SourceIP();
+  OLA_INFO << "Got Root PDU from " << header.SourceIP();
   if (header.Transport() == ola::plugin::e131::TransportHeader::TCP &&
       m_health_checked_connection) {
     m_health_checked_connection->HeartbeatReceived();
@@ -353,8 +396,6 @@ void E133Device::EndpointRequestComplete(
     ola::rdm::rdm_response_code response_code,
     const ola::rdm::RDMResponse *response_ptr,
     const std::vector<std::string>&) {
-  auto_ptr<const ola::rdm::RDMResponse> response(response_ptr);
-
   /*
    * TODO(simon): map internal status codes to E1.33 codes once these are added
    * to the spec.
@@ -365,10 +406,12 @@ void E133Device::EndpointRequestComplete(
       OLA_WARN << "E1.33 request failed with code " <<
         ola::rdm::ResponseCodeToString(response_code) <<
         ", dropping request";
+    delete response_ptr;
     return;
   }
 
-  const ola::plugin::e131::RDMPDU rdm_pdu(response_ptr);
+  // rdm_pdu now owns the response_ptr
+  const RDMPDU rdm_pdu(response_ptr);
 
   ola::plugin::e131::E133Header header(
       "foo bar",

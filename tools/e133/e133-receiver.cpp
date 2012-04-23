@@ -30,8 +30,10 @@
 
 #include <ola/BaseTypes.h>
 #include <ola/Logging.h>
-#include <ola/network/SelectServer.h>
 #include <ola/network/InterfacePicker.h>
+#include <ola/network/NetworkUtils.h>
+#include <ola/network/SelectServer.h>
+#include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/UID.h>
 
 #include <iostream>
@@ -47,10 +49,12 @@
 #include "tools/e133/SlpThread.h"
 #include "tools/e133/TCPConnectionStats.h"
 
-using std::string;
+using ola::network::HostToNetwork;
+using ola::network::IPV4Address;
+using ola::rdm::RDMResponse;
 using ola::rdm::UID;
 using std::auto_ptr;
-using ola::network::IPV4Address;
+using std::string;
 
 
 typedef struct {
@@ -237,9 +241,8 @@ bool SimpleE133Node::Init() {
   new_tc.c_lflag &= static_cast<tcflag_t>(~ICANON & ~ECHO);
   tcsetattr(STDIN_FILENO, TCSANOW, &new_tc);
 
-  if (!m_e133_device.Init()) {
+  if (!m_e133_device.Init())
     return false;
-  }
 
   // register the root endpoint
   m_e133_device.SetRootEndpoint(&m_root_endpoint);
@@ -296,6 +299,9 @@ void SimpleE133Node::DeRegisterCallback(bool ok) {
  */
 void SimpleE133Node::Input() {
   switch (getchar()) {
+    case 'c':
+      m_e133_device.CloseTCPConnection();
+      break;
     case 'q':
       m_ss.Terminate();
       break;
@@ -325,9 +331,35 @@ void SimpleE133Node::DumpTCPStats() {
  * Send an unsolicted message on the TCP connection
  */
 void SimpleE133Node::SendUnsolicited() {
-  OLA_INFO << "This would send a unsolicited message";
+  OLA_INFO << "Sending unsolicited TCP stats message";
 
+  struct tcp_stats_message_s {
+    uint32_t ip_address;
+    uint16_t unhealthy_events;
+    uint16_t connection_events;
+  } __attribute__((packed));
 
+  struct tcp_stats_message_s tcp_stats_message;
+
+  tcp_stats_message.ip_address = m_tcp_stats.ip_address.AsInt();
+  tcp_stats_message.unhealthy_events =
+    HostToNetwork(m_tcp_stats.unhealthy_events);
+  tcp_stats_message.connection_events =
+    HostToNetwork(m_tcp_stats.connection_events);
+
+  UID bcast_uid = UID::AllDevices();
+  const RDMResponse *response = new ola::rdm::RDMGetResponse(
+      m_uid,
+      bcast_uid,
+      0,  // transaction number
+      ola::rdm::RDM_ACK,
+      0,  // message count
+      ola::rdm::ROOT_RDM_DEVICE,
+      ola::rdm::PID_TCP_COMMS_STATUS,
+      reinterpret_cast<const uint8_t*>(&tcp_stats_message),
+      sizeof(tcp_stats_message));
+
+  m_e133_device.SendStatusMessage(response);
 }
 
 
@@ -393,6 +425,7 @@ int main(int argc, char *argv[]) {
   }
 
   OLA_INFO << "---------------  Controls  ----------------";
+  OLA_INFO << " c - Close the TCP connection";
   OLA_INFO << " q - Quit";
   OLA_INFO << " s - Send Status Message";
   OLA_INFO << " t - Dump TCP stats";
