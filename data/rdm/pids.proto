@@ -3062,7 +3062,7 @@ pid {
   }
   get_response {
     field {
-      type: UINT32
+      type: IPV4
       name: "controller_ip"
       label {
         value: 0
