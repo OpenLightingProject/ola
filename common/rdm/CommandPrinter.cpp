@@ -104,6 +104,7 @@ void CommandPrinter::DisplayRequest(uint8_t sub_start_code,
       << endl;
     DisplayParamData(descriptor,
                      unpack_param_data,
+                     true,
                      is_get,
                      request->ParamData(),
                      request->ParamDataSize());
@@ -213,6 +214,7 @@ void CommandPrinter::DisplayResponse(uint8_t sub_start_code,
       << endl;
     DisplayParamData(descriptor,
                      unpack_param_data,
+                     false,
                      is_get,
                      response->ParamData(),
                      response->ParamDataSize());
@@ -291,6 +293,7 @@ void CommandPrinter::DisplayDiscovery(uint8_t sub_start_code,
       << endl;
     DisplayParamData(NULL,
                      unpack_param_data,
+                     true,
                      false,
                      command->ParamData(),
                      command->ParamDataSize());
@@ -333,6 +336,7 @@ void CommandPrinter::DisplayRawData(const uint8_t *data, unsigned int length) {
 void CommandPrinter::DisplayParamData(
     const PidDescriptor *pid_descriptor,
     bool unpack_param_data,
+    bool is_request,
     bool is_get,
     const uint8_t *param_data,
     unsigned int data_length) {
@@ -341,8 +345,13 @@ void CommandPrinter::DisplayParamData(
 
   *m_output << "  Param data:" << endl;
   if (unpack_param_data && pid_descriptor) {
-    const Descriptor *descriptor =
-        is_get ? pid_descriptor->GetResponse() : pid_descriptor->SetResponse();
+    const Descriptor *descriptor = NULL;
+    if (is_request)
+      descriptor = (is_get ?
+          pid_descriptor->GetRequest() : pid_descriptor->GetRequest());
+    else
+      descriptor = (is_get ?
+         pid_descriptor->GetResponse() : pid_descriptor->SetResponse());
 
     if (descriptor) {
       auto_ptr<const Message> message(

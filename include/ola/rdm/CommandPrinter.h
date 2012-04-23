@@ -63,6 +63,7 @@ class CommandPrinter {
     void DisplayParamData(
         const class PidDescriptor *pid_descriptor,
         bool unpack_param_data,
+        bool is_request,
         bool is_get,
         const uint8_t *param_data,
         unsigned int param_length);
