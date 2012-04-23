@@ -37,16 +37,22 @@ class CommandPrinter {
                    class PidStoreHelper *pid_helper);
     ~CommandPrinter() {}
 
-    void DisplayRequest(uint8_t start_code,
+    void DisplayRequest(uint8_t sub_start_code,
                         uint8_t message_length,
                         const class RDMRequest *request,
                         bool summarize = false,
                         bool unpack_param_data = true);
-    void DisplayResponse(uint8_t start_code,
+    void DisplayResponse(uint8_t sub_start_code,
                          uint8_t message_length,
                          const class RDMResponse *response,
                          bool summarize = false,
                          bool unpack_param_data = true);
+
+    void DisplayDiscovery(uint8_t sub_start_code,
+                          uint8_t message_length,
+                          const class RDMDiscoveryCommand *command,
+                          bool summarize = false,
+                          bool unpack_param_data = true);
 
     void DisplayRawData(const uint8_t *data, unsigned int length);
 

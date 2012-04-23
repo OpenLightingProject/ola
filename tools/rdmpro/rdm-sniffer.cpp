@@ -27,6 +27,7 @@
 #include <ola/Logging.h>
 #include <ola/network/NetworkUtils.h>
 #include <ola/network/SelectServer.h>
+#include <ola/rdm/CommandPrinter.h>
 #include <ola/rdm/PidStoreHelper.h>
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMEnums.h>
@@ -53,6 +54,7 @@ using ola::network::SelectServerInterface;
 using ola::plugin::usbpro::DispatchingUsbProWidget;
 using ola::messaging::Descriptor;
 using ola::messaging::Message;
+using ola::rdm::CommandPrinter;
 using ola::rdm::PidDescriptor;
 using ola::rdm::PidStoreHelper;
 using ola::rdm::RDMCommand;
@@ -142,6 +144,7 @@ class RDMSniffer {
     ByteStream m_frame;
     RDMSnifferOptions m_options;
     PidStoreHelper m_pid_helper;
+    CommandPrinter m_command_printer;
 
     void ProcessTuple(uint8_t control_byte, uint8_t data_byte);
     void ProcessFrame();
@@ -153,10 +156,6 @@ class RDMSniffer {
     void DisplayRDMResponse(unsigned int start, unsigned int end);
     void DisplayDiscoveryCommand(unsigned int start, unsigned int end);
     void DisplayRawData(unsigned int start, unsigned int end);
-    void DisplayParamData(const PidDescriptor *pid_descriptor,
-                          bool is_get,
-                          const uint8_t *data,
-                          unsigned int length);
 
     static const uint8_t SNIFFER_PACKET = 0x81;
     static const uint8_t SNIFFER_PACKET_SIZE = 200;
@@ -170,7 +169,8 @@ class RDMSniffer {
 RDMSniffer::RDMSniffer(const RDMSnifferOptions &options)
     : m_state(IDLE),
       m_options(options),
-      m_pid_helper(options.pid_file, 4) {
+      m_pid_helper(options.pid_file, 4),
+      m_command_printer(&cout, &m_pid_helper) {
   if (!m_pid_helper.Init())
     OLA_WARN << "Failed to init PidStore";
 }
@@ -368,12 +368,14 @@ void RDMSniffer::DisplayAlternateFrame() {
  */
 void RDMSniffer::DisplayRDMFrame() {
   unsigned int slot_count = m_frame.Size() - 1;
-  cout << "RDM " << std::dec << slot_count << ": " << std::hex;
 
   if (slot_count < 21) {
     DisplayRawData(1, slot_count);
     return;
   }
+
+  if (!m_options.summarize_rdm_frames)
+    cout << "---------------------------------------" << endl;
 
   switch (m_frame[20]) {
     case RDMCommand::GET_COMMAND:
@@ -404,171 +406,37 @@ void RDMSniffer::DisplayRDMFrame() {
 void RDMSniffer::DisplayRDMRequest(unsigned int start, unsigned int end) {
   auto_ptr<RDMRequest> request(
       RDMRequest::InflateFromData(&m_frame[start], end - start + 1));
-  if (!request.get()) {
-    DisplayRawData(start, end);
-    return;
-  }
 
-  const PidDescriptor *descriptor = m_pid_helper.GetDescriptor(
-       request->ParamId(),
-       request->DestinationUID().ManufacturerId());
-  bool is_get = request->CommandClass() == RDMCommand::GET_COMMAND;
-
-  if (m_options.summarize_rdm_frames) {
-    cout <<
-      request->SourceUID() << " -> " << request->DestinationUID() << " " <<
-      (is_get ? "GET" : "SET") <<
-      ", sub-device: " << std::dec << request->SubDevice() <<
-      ", tn: " << static_cast<int>(request->TransactionNumber()) <<
-      ", port: " << std::dec << static_cast<int>(request->PortId()) <<
-      ", PID 0x" << std::hex << std::setfill('0') << std::setw(4) <<
-        request->ParamId();
-      if (descriptor)
-        cout << " (" << descriptor->Name() << ")";
-      cout << ", pdl: " << std::dec << request->ParamDataSize() << endl;
+  if (request.get()) {
+    m_command_printer.DisplayRequest(
+        m_frame[start],
+        m_frame[start + 1],
+        request.get(),
+        m_options.summarize_rdm_frames,
+        m_options.unpack_param_data);
   } else {
-    cout << endl;
-    cout << "  Sub start code : 0x" << std::hex <<
-      static_cast<unsigned int>(m_frame[start]) << endl;
-    cout << "  Message length : " <<
-      static_cast<unsigned int>(m_frame[start + 1]) << endl;
-    cout << "  Dest UID       : " << request->DestinationUID() << endl;
-    cout << "  Source UID     : " << request->SourceUID() << endl;
-    cout << "  Transaction #  : " << std::dec <<
-      static_cast<unsigned int>(request->TransactionNumber()) << endl;
-    cout << "  Port ID        : " << std::dec <<
-      static_cast<unsigned int>(request->PortId()) << endl;
-    cout << "  Message count  : " << std::dec <<
-      static_cast<unsigned int>(request->MessageCount()) << endl;
-    cout << "  Sub device     : " << std::dec << request->SubDevice() << endl;
-    cout << "  Command class  : " << (is_get ? "GET" : "SET") << endl;
-    cout << "  Param ID       : 0x" << std::setfill('0') << std::setw(4) <<
-      std::hex << request->ParamId();
-    if (descriptor)
-      cout << " (" << descriptor->Name() << ")";
-    cout << endl;
-    cout << "  Param data len : " << std::dec << request->ParamDataSize() <<
-      endl;
-    DisplayParamData(descriptor,
-                     is_get,
-                     request->ParamData(),
-                     request->ParamDataSize());
+    DisplayRawData(start, end);
   }
 }
 
 
 /**
- * Display an RDM response
+ * Display an RDM response.
  */
 void RDMSniffer::DisplayRDMResponse(unsigned int start, unsigned int end) {
   ola::rdm::rdm_response_code code;
-  unsigned int length = end - start + 1;
   auto_ptr<RDMResponse> response(
-      RDMResponse::InflateFromData(&m_frame[start], length, &code));
+      RDMResponse::InflateFromData(&m_frame[start], end - start + 1, &code));
 
-  if (!response.get()) {
-    DisplayRawData(start, end);
-    return;
-  }
-
-  const PidDescriptor *descriptor = m_pid_helper.GetDescriptor(
-       response->ParamId(),
-       response->SourceUID().ManufacturerId());
-
-  bool is_get = response->CommandClass() == RDMCommand::GET_COMMAND_RESPONSE;
-
-  if (m_options.summarize_rdm_frames) {
-    cout <<
-      response->SourceUID() << " -> " << response->DestinationUID() << " " <<
-      (is_get ? "GET_RESPONSE" : "SET_RESPONSE") <<
-      ", sub-device: " << std::dec << response->SubDevice() <<
-      ", tn: " << static_cast<int>(response->TransactionNumber()) <<
-      ", response type: ";
-
-    switch (response->ResponseType()) {
-      case ola::rdm::RDM_ACK:
-        cout << "ACK";
-        break;
-      case ola::rdm::RDM_ACK_TIMER:
-        cout << "ACK TIMER";
-        break;
-      case ola::rdm::RDM_NACK_REASON:
-        if (length >= 26) {
-          uint16_t reason;
-          memcpy(reinterpret_cast<uint8_t*>(&reason),
-                 reinterpret_cast<const void*>(&m_frame[start + 23]),
-                 sizeof(reason));
-          reason = ola::network::NetworkToHost(reason);
-          cout << "NACK (" << ola::rdm::NackReasonToString(reason) << ")";
-        } else {
-          cout << "Malformed NACK ";
-        }
-        break;
-      case ola::rdm::ACK_OVERFLOW:
-        cout << "ACK OVERFLOW";
-        break;
-      default:
-        cout << "Unknown (" << response->ResponseType() << ")";
-    }
-    cout << ", PID 0x" << std::hex <<
-      std::setfill('0') << std::setw(4) << response->ParamId();
-    if (descriptor)
-      cout << " (" << descriptor->Name() << ")";
-    cout << ", pdl: " << std::dec << response->ParamDataSize() << endl;
+  if (response.get()) {
+    m_command_printer.DisplayResponse(
+        m_frame[start],
+        m_frame[start + 1],
+        response.get(),
+        m_options.summarize_rdm_frames,
+        m_options.unpack_param_data);
   } else {
-    cout << endl;
-    cout << "  Sub start code : 0x" << std::hex <<
-      static_cast<unsigned int>(m_frame[start]) << endl;
-    cout << "  Message length : " <<
-      static_cast<unsigned int>(m_frame[start + 1]) << endl;
-    cout << "  Dest UID       : " << response->DestinationUID() << endl;
-    cout << "  Source UID     : " << response->SourceUID() << endl;
-    cout << "  Transaction #  : " << std::dec <<
-      static_cast<unsigned int>(response->TransactionNumber()) << endl;
-    cout << "  Response Type  : ";
-    switch (response->ResponseType()) {
-      case ola::rdm::RDM_ACK:
-        cout << "ACK";
-        break;
-      case ola::rdm::RDM_ACK_TIMER:
-        cout << "ACK TIMER";
-        break;
-      case ola::rdm::RDM_NACK_REASON:
-        if (length >= 26) {
-          uint16_t reason;
-          memcpy(reinterpret_cast<uint8_t*>(&reason),
-                 reinterpret_cast<const void*>(&m_frame[start + 23]),
-                 sizeof(reason));
-          reason = ola::network::NetworkToHost(reason);
-          cout << "NACK (" << ola::rdm::NackReasonToString(reason) << ")";
-        } else {
-          cout << "Malformed NACK ";
-        }
-        break;
-      case ola::rdm::ACK_OVERFLOW:
-        cout << "ACK OVERFLOW";
-        break;
-      default:
-        cout << "Unknown (" << response->ResponseType() << ")";
-    }
-    cout  << endl;
-    cout << "  Message count  : " << std::dec <<
-      static_cast<unsigned int>(response->MessageCount()) << endl;
-    cout << "  Sub device     : " << std::dec << response->SubDevice() << endl;
-    cout << "  Command class  : " << (is_get ? "GET_RESPONSE" : "SET_RESPONSE")
-      << endl;
-
-    cout << "  Param ID       : 0x" << std::setfill('0') << std::setw(4) <<
-      std::hex << response->ParamId();
-    if (descriptor)
-      cout << " (" << descriptor->Name() << ")";
-    cout << endl;
-    cout << "  Param data len : " << std::dec << response->ParamDataSize() <<
-      endl;
-    DisplayParamData(descriptor,
-                     is_get,
-                     response->ParamData(),
-                     response->ParamDataSize());
+    DisplayRawData(start, end);
   }
 }
 
@@ -578,74 +446,18 @@ void RDMSniffer::DisplayRDMResponse(unsigned int start, unsigned int end) {
  */
 void RDMSniffer::DisplayDiscoveryCommand(unsigned int start,
                                          unsigned int end) {
-  unsigned int length = end - start + 1;
-  auto_ptr<RDMDiscoveryCommand> request(
-      RDMDiscoveryCommand::InflateFromData(&m_frame[start], length));
+  auto_ptr<RDMDiscoveryCommand> command(
+      RDMDiscoveryCommand::InflateFromData(&m_frame[start], end - start + 1));
 
-  if (!request.get()) {
-    DisplayRawData(start, end);
-    return;
-  }
-
-  string param_name;
-  switch (request->ParamId()) {
-    case ola::rdm::PID_DISC_UNIQUE_BRANCH:
-      param_name = "DISC_UNIQUE_BRANCH";
-      break;
-    case ola::rdm::PID_DISC_MUTE:
-      param_name = "DISC_MUTE";
-      break;
-    case ola::rdm::PID_DISC_UN_MUTE:
-      param_name = "DISC_UN_MUTE";
-      break;
-  }
-
-  if (m_options.summarize_rdm_frames) {
-    cout <<
-      request->SourceUID() << " -> " << request->DestinationUID() <<
-      " DISCOVERY_COMMAND" <<
-      ", tn: " << static_cast<int>(request->TransactionNumber()) <<
-      ", PID 0x" << std::hex << std::setfill('0') << std::setw(4) <<
-        request->ParamId();
-      if (!param_name.empty())
-        cout << " (" << param_name << ")";
-      if (request->ParamId() == ola::rdm::PID_DISC_UNIQUE_BRANCH &&
-          request->ParamDataSize() == 2 * UID::UID_SIZE) {
-        const uint8_t *param_data = request->ParamData();
-        UID lower(param_data);
-        UID upper(param_data + UID::UID_SIZE);
-        cout << ", (" << lower << ", " << upper << ")";
-      } else {
-        cout << ", pdl: " << std::dec << request->ParamDataSize();
-      }
-      cout << endl;
+  if (command.get()) {
+    m_command_printer.DisplayDiscovery(
+        m_frame[start],
+        m_frame[start + 1],
+        command.get(),
+        m_options.summarize_rdm_frames,
+        m_options.unpack_param_data);
   } else {
-    cout << endl;
-    cout << "  Sub start code : 0x" << std::hex <<
-      static_cast<unsigned int>(m_frame[start]) << endl;
-    cout << "  Message length : " <<
-      static_cast<unsigned int>(m_frame[start + 1]) << endl;
-    cout << "  Dest UID       : " << request->DestinationUID() << endl;
-    cout << "  Source UID     : " << request->SourceUID() << endl;
-    cout << "  Transaction #  : " << std::dec <<
-      static_cast<unsigned int>(request->TransactionNumber()) << endl;
-    cout << "  Port ID        : " << std::dec <<
-      static_cast<unsigned int>(request->PortId()) << endl;
-    cout << "  Message count  : " << std::dec <<
-      static_cast<unsigned int>(request->MessageCount()) << endl;
-    cout << "  Sub device     : " << std::dec << request->SubDevice() << endl;
-    cout << "  Command class  : DISCOVERY_COMMAND" << endl;
-    cout << "  Param ID       : 0x" << std::setfill('0') << std::setw(4) <<
-      std::hex << request->ParamId();
-    if (!param_name.empty())
-      cout << " (" << param_name << ")";
-    cout << endl;
-    cout << "  Param data len : " << std::dec << request->ParamDataSize() <<
-      endl;
-    DisplayParamData(NULL,
-                     false,
-                     request->ParamData(),
-                     request->ParamDataSize());
+    DisplayRawData(start, end);
   }
 }
 
@@ -657,58 +469,6 @@ void RDMSniffer::DisplayRawData(unsigned int start, unsigned int end) {
   for (unsigned int i = start; i < end; i++)
     cout << std::hex << std::setw(2) << static_cast<int>(m_frame[i]) << " ";
   cout << endl;
-}
-
-
-/**
- * Display parameter data in hex and ascii
- */
-void RDMSniffer::DisplayParamData(const PidDescriptor *pid_descriptor,
-                                  bool is_get,
-                                  const uint8_t *data,
-                                  unsigned int length) {
-  if (!length)
-    return;
-
-  cout << "  Param data:" << endl;
-  if (m_options.unpack_param_data && pid_descriptor) {
-    const Descriptor *descriptor =
-        is_get ? pid_descriptor->GetResponse() : pid_descriptor->SetResponse();
-
-    if (descriptor) {
-      auto_ptr<const Message> message(
-          m_pid_helper.DeserializeMessage(descriptor, data, length));
-
-      if (message.get()) {
-        cout << m_pid_helper.MessageToString(message.get());
-        return;
-      }
-    }
-  }
-
-  // otherwise just display the raw data
-  stringstream raw;
-  raw << std::setw(2) << std::hex;
-  stringstream ascii;
-  for (unsigned int i = 0; i != length; i++) {
-    raw << std::setw(2) << std::setfill('0') <<
-      static_cast<unsigned int>(data[i]) << " ";
-    if (data[i] >= ' ' && data[i] <= '~')
-      ascii << data[i];
-    else
-      ascii << ".";
-
-    if (i % BYTES_PER_LINE == BYTES_PER_LINE - 1) {
-      cout << "    " << raw.str() << " " << ascii.str() << endl;
-      raw.str("");
-      ascii.str("");
-    }
-  }
-  if (length % BYTES_PER_LINE != 0) {
-    // pad if needed
-    raw << string(3 * (BYTES_PER_LINE - (length % BYTES_PER_LINE)), ' ');
-    cout << "    " << raw.str() << " " << ascii.str() << endl;
-  }
 }
 
 

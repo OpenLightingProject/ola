@@ -50,14 +50,14 @@ CommandPrinter::CommandPrinter(std::ostream *output,
 
 /**
  * Write out a RDM Request
- * @param start_code the start code for this message
+ * @param sub_start_code the start code for this message
  * @param message_length the length of the RDM message
  * @param request the request to format
  * @param summarize enable the one line summary
  * @param unpack_param_data if the summary isn't enabled, this controls if we
  *   unpack and display parameter data.
  */
-void CommandPrinter::DisplayRequest(uint8_t start_code,
+void CommandPrinter::DisplayRequest(uint8_t sub_start_code,
                                     uint8_t message_length,
                                     const RDMRequest *request,
                                     bool summarize,
@@ -81,7 +81,7 @@ void CommandPrinter::DisplayRequest(uint8_t start_code,
       *m_output << ", pdl: " << std::dec << request->ParamDataSize() << endl;
   } else {
     *m_output << "  Sub start code : 0x" << std::hex <<
-      static_cast<unsigned int>(start_code) << endl;
+      static_cast<unsigned int>(sub_start_code) << endl;
     *m_output << "  Message length : " <<
       static_cast<unsigned int>(message_length) << endl;
     *m_output << "  Dest UID       : " << request->DestinationUID() << endl;
@@ -113,14 +113,14 @@ void CommandPrinter::DisplayRequest(uint8_t start_code,
 
 /**
  * Write out a RDM Response
- * @param start_code the start code for this message
+ * @param sub_start_code the start code for this message
  * @param message_length the length of the RDM message
  * @param response the response to format
  * @param summarize enable the one line summary
  * @param unpack_param_data if the summary isn't enabled, this controls if we
  *   unpack and display parameter data.
  */
-void CommandPrinter::DisplayResponse(uint8_t start_code,
+void CommandPrinter::DisplayResponse(uint8_t sub_start_code,
                                      uint8_t message_length,
                                      const RDMResponse *response,
                                      bool summarize,
@@ -167,7 +167,7 @@ void CommandPrinter::DisplayResponse(uint8_t start_code,
     *m_output << ", pdl: " << std::dec << response->ParamDataSize() << endl;
   } else {
     *m_output << "  Sub start code : 0x" << std::hex <<
-      static_cast<unsigned int>(start_code) << endl;
+      static_cast<unsigned int>(sub_start_code) << endl;
     *m_output << "  Message length : " <<
       static_cast<unsigned int>(message_length) << endl;
     *m_output << "  Dest UID       : " << response->DestinationUID() << endl;
@@ -216,6 +216,84 @@ void CommandPrinter::DisplayResponse(uint8_t start_code,
                      is_get,
                      response->ParamData(),
                      response->ParamDataSize());
+  }
+}
+
+
+/**
+ * Write out a RDM discovery command
+ * @param sub_start_code the start code for this message
+ * @param message_length the length of the RDM message
+ * @param response the response to format
+ * @param summarize enable the one line summary
+ * @param unpack_param_data if the summary isn't enabled, this controls if we
+ *   unpack and display parameter data.
+ */
+void CommandPrinter::DisplayDiscovery(uint8_t sub_start_code,
+                                      uint8_t message_length,
+                                      const RDMDiscoveryCommand *command,
+                                      bool summarize,
+                                      bool unpack_param_data) {
+  string param_name;
+  switch (command->ParamId()) {
+    case ola::rdm::PID_DISC_UNIQUE_BRANCH:
+      param_name = "DISC_UNIQUE_BRANCH";
+      break;
+    case ola::rdm::PID_DISC_MUTE:
+      param_name = "DISC_MUTE";
+      break;
+    case ola::rdm::PID_DISC_UN_MUTE:
+      param_name = "DISC_UN_MUTE";
+      break;
+  }
+
+  if (summarize) {
+    *m_output <<
+      command->SourceUID() << " -> " << command->DestinationUID() <<
+      " DISCOVERY_COMMAND" <<
+      ", tn: " << static_cast<int>(command->TransactionNumber()) <<
+      ", PID 0x" << std::hex << std::setfill('0') << std::setw(4) <<
+        command->ParamId();
+      if (!param_name.empty())
+        *m_output << " (" << param_name << ")";
+      if (command->ParamId() == ola::rdm::PID_DISC_UNIQUE_BRANCH &&
+          command->ParamDataSize() == 2 * UID::UID_SIZE) {
+        const uint8_t *param_data = command->ParamData();
+        UID lower(param_data);
+        UID upper(param_data + UID::UID_SIZE);
+        *m_output << ", (" << lower << ", " << upper << ")";
+      } else {
+        *m_output << ", pdl: " << std::dec << command->ParamDataSize();
+      }
+      *m_output << endl;
+  } else {
+    *m_output << "  Sub start code : 0x" << std::hex <<
+      static_cast<unsigned int>(sub_start_code) << endl;
+    *m_output << "  Message length : " <<
+      static_cast<unsigned int>(message_length) << endl;
+    *m_output << "  Dest UID       : " << command->DestinationUID() << endl;
+    *m_output << "  Source UID     : " << command->SourceUID() << endl;
+    *m_output << "  Transaction #  : " << std::dec <<
+      static_cast<unsigned int>(command->TransactionNumber()) << endl;
+    *m_output << "  Port ID        : " << std::dec <<
+      static_cast<unsigned int>(command->PortId()) << endl;
+    *m_output << "  Message count  : " << std::dec <<
+      static_cast<unsigned int>(command->MessageCount()) << endl;
+    *m_output << "  Sub device     : " << std::dec << command->SubDevice()
+      << endl;
+    *m_output << "  Command class  : DISCOVERY_COMMAND" << endl;
+    *m_output << "  Param ID       : 0x" << std::setfill('0') << std::setw(4)
+      << std::hex << command->ParamId();
+    if (!param_name.empty())
+      *m_output << " (" << param_name << ")";
+    *m_output << endl;
+    *m_output << "  Param data len : " << std::dec << command->ParamDataSize()
+      << endl;
+    DisplayParamData(NULL,
+                     unpack_param_data,
+                     false,
+                     command->ParamData(),
+                     command->ParamDataSize());
   }
 }
 
