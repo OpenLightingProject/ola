@@ -2481,6 +2481,643 @@ pid {
   }
   set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
 }
+pid {
+  name: "ENDPOINT_LIST"
+  value: 32736
+  get_request {
+  }
+  get_response {
+    field {
+      type: GROUP
+      name: "endpoints"
+      field {
+        type: UINT16
+        name: "endpoint_id"
+      }
+    }
+  }
+  get_sub_device_range: ROOT_DEVICE
+}
+pid {
+  name: "ENDPOINT_TO_UNIVERSE"
+  value: 32737
+  get_request {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      range {
+        min: 1
+        max: 65534
+      }
+    }
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      range {
+        min: 1
+        max: 65534
+      }
+    }
+    field {
+      type: UINT16
+      name: "universe"
+      label {
+        value: 65535
+        label: "Composite"
+      }
+      range {
+        min: 1
+        max: 65535
+      }
+    }
+    field {
+      type: BOOL
+      name: "identify_state"
+    }
+  }
+  get_sub_device_range: ROOT_DEVICE
+  set_request {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      label {
+        value: 65535
+        label: "All Endpoints"
+      }
+      range {
+        min: 1
+        max: 65535
+      }
+    }
+    field {
+      type: UINT16
+      name: "universe"
+      label {
+        value: 65535
+        label: "Composite"
+      }
+      range {
+        min: 1
+        max: 65535
+      }
+    }
+  }
+  set_response {
+  }
+  set_sub_device_range: ROOT_DEVICE
+}
+pid {
+  name: "RDM_TRAFFIC_ENABLE"
+  value: 32738
+  get_request {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      range {
+        min: 1
+        max: 65534
+      }
+    }
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      range {
+        min: 1
+        max: 65534
+      }
+    }
+    field {
+      type: BOOL
+      name: "rdm_enabled"
+    }
+  }
+  get_sub_device_range: ROOT_DEVICE
+  set_request {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      label {
+        value: 65535
+        label: "All Endpoints"
+      }
+      range {
+        min: 1
+        max: 65535
+      }
+    }
+    field {
+      type: BOOL
+      name: "rdm_enabled"
+    }
+  }
+  set_response {
+  }
+  set_sub_device_range: ROOT_DEVICE
+}
+pid {
+  name: "ENDPOINT_FUNCTION"
+  value: 32739
+  get_request {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      range {
+        min: 1
+        max: 65534
+      }
+    }
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      range {
+        min: 1
+        max: 65534
+      }
+    }
+    field {
+      type: UINT8
+      name: "endpoint_function"
+      label {
+        value: 0
+        label: "Disabled"
+      }
+      label {
+        value: 1
+        label: "Input"
+      }
+      label {
+        value: 2
+        label: "Output"
+      }
+    }
+  }
+  get_sub_device_range: ROOT_DEVICE
+  set_request {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      label {
+        value: 65535
+        label: "All Endpoints"
+      }
+      range {
+        min: 1
+        max: 65535
+      }
+    }
+    field {
+      type: UINT8
+      name: "endpoint_function"
+      label {
+        value: 0
+        label: "Disabled"
+      }
+      label {
+        value: 1
+        label: "Input"
+      }
+      label {
+        value: 2
+        label: "Output"
+      }
+    }
+  }
+  set_response {
+  }
+  set_sub_device_range: ROOT_DEVICE
+}
+pid {
+  name: "ENDPOINT_LABEL"
+  value: 32740
+  get_request {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      range {
+        min: 1
+        max: 65534
+      }
+    }
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      range {
+        min: 1
+        max: 65534
+      }
+    }
+    field {
+      type: STRING
+      name: "endpoint_label"
+      max_size: 32
+    }
+  }
+  get_sub_device_range: ROOT_DEVICE
+  set_request {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      label {
+        value: 65535
+        label: "All Endpoints"
+      }
+      range {
+        min: 1
+        max: 65535
+      }
+    }
+    field {
+      type: STRING
+      name: "endpoint_label"
+      max_size: 32
+    }
+  }
+  set_response {
+  }
+  set_sub_device_range: ROOT_DEVICE
+}
+pid {
+  name: "INITIATE_DISCOVERY"
+  value: 32741
+  get_request {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      range {
+        min: 1
+        max: 65534
+      }
+    }
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      range {
+        min: 1
+        max: 65534
+      }
+    }
+    field {
+      type: UINT16
+      name: "device_count"
+      label {
+        value: 65535
+        label: "Not Supported"
+      }
+    }
+    field {
+      type: UINT8
+      name: "discovery_state"
+      label {
+        value: 0
+        label: "Not Run"
+      }
+      label {
+        value: 1
+        label: "Completed"
+      }
+      label {
+        value: 2
+        label: "Incremental"
+      }
+      label {
+        value: 3
+        label: "Full"
+      }
+    }
+  }
+  get_sub_device_range: ROOT_DEVICE
+  set_request {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      label {
+        value: 65535
+        label: "All Endpoints"
+      }
+      range {
+        min: 1
+        max: 65535
+      }
+    }
+    field {
+      type: UINT8
+      name: "discovery_state"
+      label {
+        value: 0
+        label: "Not Run"
+      }
+      label {
+        value: 1
+        label: "Completed"
+      }
+      label {
+        value: 2
+        label: "Incremental"
+      }
+      label {
+        value: 3
+        label: "Full"
+      }
+    }
+  }
+  set_response {
+  }
+  set_sub_device_range: ROOT_DEVICE
+}
+pid {
+  name: "ENDPOINT_TIMING"
+  value: 32742
+  get_request {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      range {
+        min: 1
+        max: 65534
+      }
+    }
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      range {
+        min: 1
+        max: 65534
+      }
+    }
+    field {
+      type: UINT8
+      name: "current_setting"
+    }
+    field {
+      type: UINT8
+      name: "number_of_settings"
+    }
+  }
+  get_sub_device_range: ROOT_DEVICE
+  set_request {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      label {
+        value: 65535
+        label: "All Endpoints"
+      }
+      range {
+        min: 1
+        max: 65535
+      }
+    }
+    field {
+      type: UINT8
+      name: "timing_setting"
+    }
+  }
+  set_response {
+  }
+  set_sub_device_range: ROOT_DEVICE
+}
+pid {
+  name: "ENDPOINT_TIMING_DESCRIPTION"
+  value: 32743
+  get_request {
+    field {
+      type: UINT8
+      name: "timing_setting"
+    }
+  }
+  get_response {
+    field {
+      type: UINT8
+      name: "timing_setting"
+    }
+    field {
+      type: STRING
+      name: "description"
+      max_size: 32
+    }
+  }
+  get_sub_device_range: ROOT_DEVICE
+}
+pid {
+  name: "BINDING_CONTROL_FIELDS"
+  value: 32744
+  get_request {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      range {
+        min: 1
+        max: 65534
+      }
+    }
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      range {
+        min: 1
+        max: 65534
+      }
+    }
+    field {
+      type: GROUP
+      name: "endpoints"
+      field {
+        type: UINT16
+        name: "manufacturer_id"
+      }
+      field {
+        type: UINT32
+        name: "device_id"
+      }
+      field {
+        type: UINT16
+        name: "control_bits"
+      }
+      field {
+        type: UINT16
+        name: "binding_uid_manufacturer_id"
+      }
+      field {
+        type: UINT32
+        name: "binding_uid_device_id"
+      }
+    }
+  }
+  get_sub_device_range: ROOT_DEVICE
+}
+pid {
+  name: "IDENTIFY_ENDPOINT"
+  value: 32745
+  get_request {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      range {
+        min: 1
+        max: 65534
+      }
+    }
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      range {
+        min: 1
+        max: 65534
+      }
+    }
+    field {
+      type: BOOL
+      name: "identify_state"
+    }
+  }
+  get_sub_device_range: ROOT_DEVICE
+  set_request {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      range {
+        min: 1
+        max: 65534
+      }
+    }
+    field {
+      type: BOOL
+      name: "identify_state"
+    }
+  }
+  set_response {
+  }
+  set_sub_device_range: ROOT_DEVICE
+}
+pid {
+  name: "BACKGROUND_DISCOVERY"
+  value: 32746
+  get_request {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      range {
+        min: 1
+        max: 65534
+      }
+    }
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      range {
+        min: 1
+        max: 65534
+      }
+    }
+    field {
+      type: BOOL
+      name: "background_discovery"
+    }
+  }
+  get_sub_device_range: ROOT_DEVICE
+  set_request {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      label {
+        value: 65535
+        label: "All Endpoints"
+      }
+      range {
+        min: 1
+        max: 65535
+      }
+    }
+    field {
+      type: BOOL
+      name: "background_discovery"
+    }
+  }
+  set_response {
+  }
+  set_sub_device_range: ROOT_DEVICE
+}
+pid {
+  name: "TCP_COMMS_STATUS"
+  value: 32747
+  get_request {
+  }
+  get_response {
+    field {
+      type: UINT32
+      name: "controller_ip"
+      label {
+        value: 0
+        label: "No Connection"
+      }
+    }
+    field {
+      type: UINT16
+      name: "unhealthy_events"
+    }
+    field {
+      type: UINT16
+      name: "connection_events"
+    }
+  }
+  get_sub_device_range: ROOT_DEVICE
+  set_request {
+  }
+  set_response {
+  }
+  set_sub_device_range: ROOT_DEVICE
+}
+pid {
+  name: "E133_DEVICE_INFO"
+  value: 32748
+  get_request {
+  }
+  get_response {
+    field {
+      type: UINT8
+      name: "protocol_major"
+    }
+    field {
+      type: UINT8
+      name: "protocol_minor"
+    }
+    field {
+      type: UINT16
+      name: "device_model"
+    }
+    field {
+      type: UINT16
+      name: "product_category"
+    }
+    field {
+      type: UINT32
+      name: "software_version"
+    }
+    field {
+      type: UINT8
+      name: "sensor_count"
+    }
+  }
+  get_sub_device_range: ROOT_OR_SUBDEVICE
+}
 manufacturer {
   manufacturer_id: 161
   manufacturer_name: "Creative Lighting And Sound Systems Pty Ltd."
@@ -4026,6 +4663,7 @@ manufacturer {
       field {
         type: STRING
         name: "generator_state"
+        min_size: 0
         max_size: 20
       }
     }
@@ -7940,4 +8578,4 @@ manufacturer {
     set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
   }
 }
-version: 1333594824
+version: 1333675719
