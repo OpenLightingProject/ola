@@ -599,7 +599,7 @@ int main(int argc, char *argv[]) {
   opts.log_level = ola::OLA_LOG_WARN;
   opts.help = false;
   ParseOptions(argc, argv, &opts);
-  PidStoreHelper pid_helper(opts.pid_file);
+  PidStoreHelper pid_helper(opts.pid_file, 4);
 
   if (opts.help)
     DisplayHelpAndExit(argv);
