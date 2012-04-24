@@ -39,7 +39,10 @@ class RootInflator: public BaseInflator {
       : BaseInflator(),
         m_on_data(on_data) {
     }
-    ~RootInflator() {}
+    ~RootInflator() {
+      if (m_on_data)
+        delete m_on_data;
+    }
     uint32_t Id() const { return 0; }  // no effect for the root inflator
 
   protected:
