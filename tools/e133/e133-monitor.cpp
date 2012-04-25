@@ -568,9 +568,7 @@ void SimpleE133Monitor::EndpointRequest(
     auto_ptr<RDMRequest> request(
         RDMRequest::InflateFromData(rdm_data, slot_count));
     if (request.get()) {
-      m_command_printer.DisplayRequest(RDMCommand::START_CODE,
-                                       rdm_data[1],
-                                       request.get());
+      m_command_printer.DisplayRequest(request.get());
       ok = true;
     }
   } else if (response_type == RDMCommand::GET_COMMAND_RESPONSE ||
@@ -579,9 +577,7 @@ void SimpleE133Monitor::EndpointRequest(
     auto_ptr<RDMResponse> response(
         RDMResponse::InflateFromData(rdm_data, slot_count, &code));
     if (response.get()) {
-      m_command_printer.DisplayResponse(RDMCommand::START_CODE,
-                                        rdm_data[1],
-                                        response.get());
+      m_command_printer.DisplayResponse(response.get());
       ok = true;
     }
   }

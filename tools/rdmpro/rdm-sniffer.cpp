@@ -408,8 +408,6 @@ void RDMSniffer::DisplayRDMRequest(unsigned int start, unsigned int end) {
 
   if (request.get()) {
     m_command_printer.DisplayRequest(
-        m_frame[start],
-        m_frame[start + 1],
         request.get(),
         m_options.summarize_rdm_frames,
         m_options.unpack_param_data);
@@ -429,8 +427,6 @@ void RDMSniffer::DisplayRDMResponse(unsigned int start, unsigned int end) {
 
   if (response.get()) {
     m_command_printer.DisplayResponse(
-        m_frame[start],
-        m_frame[start + 1],
         response.get(),
         m_options.summarize_rdm_frames,
         m_options.unpack_param_data);
@@ -450,8 +446,6 @@ void RDMSniffer::DisplayDiscoveryCommand(unsigned int start,
 
   if (command.get()) {
     m_command_printer.DisplayDiscovery(
-        m_frame[start],
-        m_frame[start + 1],
         command.get(),
         m_options.summarize_rdm_frames,
         m_options.unpack_param_data);

@@ -51,16 +51,12 @@ CommandPrinter::CommandPrinter(std::ostream *output,
 
 /**
  * Write out a RDM Request
- * @param sub_start_code the start code for this message
- * @param message_length the length of the RDM message
  * @param request the request to format
  * @param summarize enable the one line summary
  * @param unpack_param_data if the summary isn't enabled, this controls if we
  *   unpack and display parameter data.
  */
-void CommandPrinter::DisplayRequest(uint8_t sub_start_code,
-                                    uint8_t message_length,
-                                    const RDMRequest *request,
+void CommandPrinter::DisplayRequest(const RDMRequest *request,
                                     bool summarize,
                                     bool unpack_param_data) {
   const PidDescriptor *descriptor = m_pid_helper->GetDescriptor(
@@ -81,10 +77,6 @@ void CommandPrinter::DisplayRequest(uint8_t sub_start_code,
         *m_output << " (" << descriptor->Name() << ")";
       *m_output << ", pdl: " << std::dec << request->ParamDataSize() << endl;
   } else {
-    *m_output << "  Sub start code : 0x" << std::hex <<
-      static_cast<unsigned int>(sub_start_code) << endl;
-    *m_output << "  Message length : " <<
-      static_cast<unsigned int>(message_length) << endl;
     *m_output << "  Dest UID       : " << request->DestinationUID() << endl;
     *m_output << "  Source UID     : " << request->SourceUID() << endl;
     *m_output << "  Transaction #  : " << std::dec <<
@@ -115,16 +107,12 @@ void CommandPrinter::DisplayRequest(uint8_t sub_start_code,
 
 /**
  * Write out a RDM Response
- * @param sub_start_code the start code for this message
- * @param message_length the length of the RDM message
  * @param response the response to format
  * @param summarize enable the one line summary
  * @param unpack_param_data if the summary isn't enabled, this controls if we
  *   unpack and display parameter data.
  */
-void CommandPrinter::DisplayResponse(uint8_t sub_start_code,
-                                     uint8_t message_length,
-                                     const RDMResponse *response,
+void CommandPrinter::DisplayResponse(const RDMResponse *response,
                                      bool summarize,
                                      bool unpack_param_data) {
   const PidDescriptor *descriptor = m_pid_helper->GetDescriptor(
@@ -168,10 +156,6 @@ void CommandPrinter::DisplayResponse(uint8_t sub_start_code,
       *m_output << " (" << descriptor->Name() << ")";
     *m_output << ", pdl: " << std::dec << response->ParamDataSize() << endl;
   } else {
-    *m_output << "  Sub start code : 0x" << std::hex <<
-      static_cast<unsigned int>(sub_start_code) << endl;
-    *m_output << "  Message length : " <<
-      static_cast<unsigned int>(message_length) << endl;
     *m_output << "  Dest UID       : " << response->DestinationUID() << endl;
     *m_output << "  Source UID     : " << response->SourceUID() << endl;
     *m_output << "  Transaction #  : " << std::dec <<
@@ -225,16 +209,12 @@ void CommandPrinter::DisplayResponse(uint8_t sub_start_code,
 
 /**
  * Write out a RDM discovery command
- * @param sub_start_code the start code for this message
- * @param message_length the length of the RDM message
  * @param response the response to format
  * @param summarize enable the one line summary
  * @param unpack_param_data if the summary isn't enabled, this controls if we
  *   unpack and display parameter data.
  */
-void CommandPrinter::DisplayDiscovery(uint8_t sub_start_code,
-                                      uint8_t message_length,
-                                      const RDMDiscoveryCommand *command,
+void CommandPrinter::DisplayDiscovery(const RDMDiscoveryCommand *command,
                                       bool summarize,
                                       bool unpack_param_data) {
   string param_name;
@@ -270,10 +250,6 @@ void CommandPrinter::DisplayDiscovery(uint8_t sub_start_code,
       }
       *m_output << endl;
   } else {
-    *m_output << "  Sub start code : 0x" << std::hex <<
-      static_cast<unsigned int>(sub_start_code) << endl;
-    *m_output << "  Message length : " <<
-      static_cast<unsigned int>(message_length) << endl;
     *m_output << "  Dest UID       : " << command->DestinationUID() << endl;
     *m_output << "  Source UID     : " << command->SourceUID() << endl;
     *m_output << "  Transaction #  : " << std::dec <<

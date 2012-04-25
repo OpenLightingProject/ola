@@ -39,6 +39,7 @@
 #include <ola/network/NetworkUtils.h>
 #include <ola/network/SelectServer.h>
 #include <ola/network/Socket.h>
+#include <ola/rdm/CommandPrinter.h>
 #include <ola/rdm/PidStoreHelper.h>
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMEnums.h>
@@ -264,6 +265,7 @@ class SimpleE133Controller {
     UID m_src_uid;
     SlpThread m_slp_thread;
     PidStoreHelper *m_pid_helper;
+    ola::rdm::CommandPrinter m_command_printer;
     bool m_uid_list_updated;
 
     void DiscoveryCallback(bool status, const vector<string> &urls);
@@ -296,6 +298,7 @@ SimpleE133Controller::SimpleE133Controller(
         &m_ss,
         ola::NewCallback(this, &SimpleE133Controller::DiscoveryCallback)),
       m_pid_helper(pid_helper),
+      m_command_printer(&cout, m_pid_helper),
       m_uid_list_updated(false) {
   m_root_inflator.AddInflator(&m_e133_inflator);
   m_e133_inflator.AddInflator(&m_rdm_inflator);
@@ -531,7 +534,7 @@ void SimpleE133Controller::HandlePacket(
 void SimpleE133Controller::RequestCallback(
     ola::rdm::rdm_response_code rdm_code,
     const RDMResponse *response_ptr,
-    const std::vector<std::string> &packets) {
+    const std::vector<std::string>&) {
   auto_ptr<const RDMResponse> response(response_ptr);
   OLA_INFO << "RDM callback executed with code: " <<
     ola::rdm::ResponseCodeToString(rdm_code);
@@ -553,7 +556,6 @@ void SimpleE133Controller::RequestCallback(
       response->ParamId(),
       response->SourceUID().ManufacturerId());
   const ola::messaging::Descriptor *descriptor = NULL;
-  const ola::messaging::Message *message = NULL;
 
   if (pid_descriptor) {
     switch (response->CommandClass()) {
@@ -567,29 +569,18 @@ void SimpleE133Controller::RequestCallback(
         OLA_WARN << "Unknown command class " << response->CommandClass();
     }
   }
-  if (descriptor) {
-    message = m_pid_helper->DeserializeMessage(descriptor,
-                                               response->ParamData(),
-                                               response->ParamDataSize());
-  }
 
+  auto_ptr<const ola::messaging::Message> message;
+  if (descriptor)
+    message.reset(m_pid_helper->DeserializeMessage(descriptor,
+                                                   response->ParamData(),
+                                                   response->ParamDataSize()));
 
-  if (message) {
+  if (message.get())
     cout << response->SourceUID() << " -> " << response->DestinationUID() <<
-      endl;
-    cout << m_pid_helper->MessageToString(message);
-  } else {
-    cout << response->SourceUID() << " -> " << response->DestinationUID()
-      << ", TN: " << static_cast<int>(response->TransactionNumber()) <<
-      ", Msg Count: " << static_cast<int>(response->MessageCount()) <<
-      ", sub dev: " << response->SubDevice() << ", param 0x" << std::hex <<
-      response->ParamId() << ", data len: " <<
-      std::dec << static_cast<int>(response->ParamDataSize()) << endl;
-  }
-
-  if (message)
-    delete message;
-  (void) packets;
+      endl << m_pid_helper->MessageToString(message.get());
+  else
+    m_command_printer.DisplayResponse(response.get(), true);
 }
 
 
