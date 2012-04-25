@@ -185,6 +185,7 @@ class ConnectedDescriptor: public BidirectionalFileDescriptor {
     }
 
     virtual ssize_t Send(const uint8_t *buffer, unsigned int size) const;
+    virtual ssize_t SendV(const struct iovec *iov, int iocnt) const;
     virtual int Receive(uint8_t *buffer,
                         unsigned int size,
                         unsigned int &data_read);
