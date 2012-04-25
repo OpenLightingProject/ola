@@ -1,4 +1,4 @@
-SUBDIRS = network rdm thread web messaging testing timecode
+SUBDIRS = network io rdm thread web messaging testing timecode
 
 SOURCES = ActionQueue.h BaseTypes.h Callback.h CallbackRunner.h Clock.h \
           DmxBuffer.h ExportMap.h Logging.h MultiCallback.h \

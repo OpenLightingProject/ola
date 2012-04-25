@@ -455,6 +455,7 @@ _EOF_
 AC_OUTPUT( Makefile\
     common/Makefile\
     common/export_map/Makefile\
+    common/io/Makefile\
     common/logging/Makefile\
     common/messaging/Makefile\
     common/network/Makefile\
@@ -462,8 +463,8 @@ AC_OUTPUT( Makefile\
     common/rdm/Makefile\
     common/rdm/testdata/Makefile \
     common/rpc/Makefile\
-    common/thread/Makefile\
     common/testing/Makefile\
+    common/thread/Makefile\
     common/timecode/Makefile\
     common/utils/Makefile\
     common/web/Makefile\
@@ -473,6 +474,7 @@ AC_OUTPUT( Makefile\
     debian/Makefile\
     include/Makefile\
     include/ola/Makefile\
+    include/ola/io/Makefile\
     include/ola/messaging/Makefile\
     include/ola/network/Makefile\
     include/ola/rdm/Makefile\
