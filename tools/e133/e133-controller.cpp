@@ -577,8 +577,11 @@ void SimpleE133Controller::RequestCallback(
                                                    response->ParamDataSize()));
 
   if (message.get())
-    cout << response->SourceUID() << " -> " << response->DestinationUID() <<
-      endl << m_pid_helper->MessageToString(message.get());
+    cout << m_pid_helper->PrettyPrintMessage(
+        response->SourceUID().ManufacturerId(),
+        response->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND_RESPONSE,
+        response->ParamId(),
+        message.get());
   else
     m_command_printer.DisplayResponse(response.get(), true);
 }
