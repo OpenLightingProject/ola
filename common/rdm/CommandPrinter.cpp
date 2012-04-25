@@ -18,11 +18,12 @@
  * Copyright (C) 2012 Simon Newton
  */
 
+#include <ola/StringUtils.h>
+#include <ola/network/NetworkUtils.h>
 #include <ola/rdm/CommandPrinter.h>
 #include <ola/rdm/PidStore.h>
 #include <ola/rdm/PidStoreHelper.h>
 #include <ola/rdm/RDMCommand.h>
-#include <ola/network/NetworkUtils.h>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -302,35 +303,6 @@ void CommandPrinter::DisplayDiscovery(uint8_t sub_start_code,
 
 
 /**
- * Display raw data
- */
-void CommandPrinter::DisplayRawData(const uint8_t *data, unsigned int length) {
-  stringstream raw;
-  raw << std::setw(2) << std::hex;
-  stringstream ascii;
-  for (unsigned int i = 0; i != length; i++) {
-    raw << std::setw(2) << std::setfill('0') <<
-      static_cast<unsigned int>(data[i]) << " ";
-    if (data[i] >= ' ' && data[i] <= '~')
-      ascii << data[i];
-    else
-      ascii << ".";
-
-    if (i % BYTES_PER_LINE == BYTES_PER_LINE - 1) {
-      *m_output << "    " << raw.str() << " " << ascii.str() << endl;
-      raw.str("");
-      ascii.str("");
-    }
-  }
-  if (length % BYTES_PER_LINE != 0) {
-    // pad if needed
-    raw << string(3 * (BYTES_PER_LINE - (length % BYTES_PER_LINE)), ' ');
-    *m_output << "    " << raw.str() << " " << ascii.str() << endl;
-  }
-}
-
-
-/**
  * Format parameter data.
  */
 void CommandPrinter::DisplayParamData(
@@ -364,8 +336,8 @@ void CommandPrinter::DisplayParamData(
     }
   }
 
-  // otherwise just display the raw data
-  DisplayRawData(param_data, data_length);
+  // otherwise just display the raw data, indent 4, 8 bytes per line
+  ola::FormatData(m_output, param_data, data_length, 4, 8);
 }
 
 

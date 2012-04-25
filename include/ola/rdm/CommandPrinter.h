@@ -54,8 +54,6 @@ class CommandPrinter {
                           bool summarize = false,
                           bool unpack_param_data = true);
 
-    void DisplayRawData(const uint8_t *data, unsigned int length);
-
   private:
     std::ostream *m_output;
     PidStoreHelper *m_pid_helper;
@@ -68,8 +66,6 @@ class CommandPrinter {
         const uint8_t *param_data,
         unsigned int param_length);
     bool GetNackReason(const class RDMResponse *response, uint16_t *reason);
-
-    static const uint8_t BYTES_PER_LINE = 8;
 };
 }  // rdm
 }  // ola

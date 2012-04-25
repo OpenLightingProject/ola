@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <sys/uio.h>
 #include <deque>
+#include <iostream>
 #include <queue>
 
 namespace ola {
@@ -53,7 +54,7 @@ class IOBuffer {
 
     void Purge();
 
-    // string Dump(otream &output);
+    void Dump(std::ostream *output);
 
   private:
     typedef std::deque<uint8_t*> BlockVector;

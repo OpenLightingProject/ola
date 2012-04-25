@@ -36,6 +36,7 @@
 #include <ola/Clock.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
+#include <ola/Stringutils.h>
 #include <ola/network/AdvancedTCPConnector.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/NetworkUtils.h>
@@ -586,7 +587,7 @@ void SimpleE133Monitor::EndpointRequest(
   }
 
   if (!ok)
-    m_command_printer.DisplayRawData(rdm_data, slot_count);
+    ola::FormatData(&cout, rdm_data, slot_count, 2);
 }
 
 

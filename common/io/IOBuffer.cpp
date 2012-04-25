@@ -20,10 +20,12 @@
 
 
 #include <ola/Logging.h>
+#include <ola/StringUtils.h>
 #include <ola/io/IOBuffer.h>
 #include <stdint.h>
 #include <algorithm>
 #include <deque>
+#include <iostream>
 #include <queue>
 
 namespace ola {
@@ -236,6 +238,19 @@ void IOBuffer::Purge() {
     delete[] block;
     m_free_blocks.pop();
   }
+}
+
+
+/**
+ * Dump this IOBuffer as a human readable string
+ */
+void IOBuffer::Dump(std::ostream *output) {
+  // for now just alloc memory for the entire thing
+  unsigned int length = Size();
+  uint8_t *tmp = new uint8_t[length];
+  length = Peek(tmp, length);
+  ola::FormatData(output, tmp, length);
+  delete[] tmp;
 }
 
 

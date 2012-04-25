@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <algorithm>
 #include <functional>
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -32,6 +33,7 @@
 
 namespace ola {
 
+using std::endl;
 using std::string;
 using std::stringstream;
 using std::vector;
@@ -446,5 +448,45 @@ void CustomCapitalizeLabel(string *s) {
   }
 
   CapitalizeLabel(s);
+}
+
+
+/**
+ * Write formatted output data to the ostream
+ * @param out the ostream to write to
+ * @param data pointer to the data
+ * @param length length of the data
+ * @param indent the number of spaces to prefix each line with
+ * @param byte_per_line the number of bytes to display per line
+ *
+ * The data is printed in two columns, hex on the left, ascii on the right.
+ * Non ascii values are printed as .
+ */
+void FormatData(std::ostream *out,
+                const uint8_t *data,
+                unsigned int length,
+                unsigned int indent,
+                unsigned int byte_per_line) {
+  stringstream raw, ascii;
+  raw << std::setw(2) << std::hex;
+  for (unsigned int i = 0; i != length; i++) {
+    raw << std::setfill('0') << std::setw(2) <<
+        static_cast<unsigned int>(data[i]) << " ";
+    if (data[i] >= ' ' && data[i] <= '~')
+      ascii << data[i];
+    else
+      ascii << ".";
+
+    if (i % byte_per_line == byte_per_line - 1) {
+      *out << string(indent, ' ') << raw.str() << " " << ascii.str() << endl;
+      raw.str("");
+      ascii.str("");
+    }
+  }
+  if (length % byte_per_line != 0) {
+    // pad if needed
+    raw << string(3 * (byte_per_line - (length % byte_per_line)), ' ');
+    *out << string(indent, ' ') << raw.str() << " " << ascii.str() << endl;
+  }
 }
 }  // ola

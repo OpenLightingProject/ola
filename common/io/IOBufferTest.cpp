@@ -20,6 +20,8 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 #include <memory>
+#include <iostream>
+#include <string>
 
 #include "ola/Logging.h"
 #include "ola/io/IOBuffer.h"
@@ -28,18 +30,18 @@
 using ola::io::IOBuffer;
 using ola::testing::ASSERT_DATA_EQUALS;
 using std::auto_ptr;
+using std::string;
 
 
 class IOBufferTest: public CppUnit::TestFixture {
   public:
     CPPUNIT_TEST_SUITE(IOBufferTest);
-    /*
     CPPUNIT_TEST(testBasicAppend);
     CPPUNIT_TEST(testBlockOverflow);
     CPPUNIT_TEST(testPop);
     CPPUNIT_TEST(testPeek);
-    */
     CPPUNIT_TEST(testIOVec);
+    CPPUNIT_TEST(testDump);
     CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -50,6 +52,7 @@ class IOBufferTest: public CppUnit::TestFixture {
     void testPop();
     void testPeek();
     void testIOVec();
+    void testDump();
 
   private:
     auto_ptr<IOBuffer> m_buffer;
@@ -292,4 +295,23 @@ void IOBufferTest::testIOVec() {
   delete[] output2;
 
   m_buffer->FreeIOVec(vector);
+}
+
+
+/**
+ * Test dumping to a ostream works
+ */
+void IOBufferTest::testDump() {
+  m_buffer.reset(new IOBuffer(4));
+  uint8_t data1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
+
+  m_buffer->Append(data1, sizeof(data1));
+  CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
+
+  std::stringstream str;
+  m_buffer->Dump(&str);
+  CPPUNIT_ASSERT_EQUAL(
+      string("00 01 02 03 04 05 06 07  ........\n"
+             "08                       .\n"),
+      str.str());
 }
