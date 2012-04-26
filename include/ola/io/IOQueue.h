@@ -13,13 +13,13 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * IOBuffer.h
- * A non-contigous memory buffer
+ * IOQueue.h
+ * A non-contigous memory buffer that operates as a queue.
  * Copyright (C) 2012 Simon Newton
  */
 
-#ifndef INCLUDE_OLA_IO_IOBUFFER_H_
-#define INCLUDE_OLA_IO_IOBUFFER_H_
+#ifndef INCLUDE_OLA_IO_IOQUEUE_H_
+#define INCLUDE_OLA_IO_IOQUEUE_H_
 
 #include <stdint.h>
 #include <sys/uio.h>
@@ -32,12 +32,12 @@ namespace io {
 
 
 /**
- * IOBuffer.
+ * IOQueue.
  */
-class IOBuffer {
+class IOQueue {
   public:
-    explicit IOBuffer(unsigned int block_size = DEFAULT_BLOCK_SIZE);
-    ~IOBuffer();
+    explicit IOQueue(unsigned int block_size = DEFAULT_BLOCK_SIZE);
+    ~IOQueue();
 
     unsigned int Size() const;
     bool Empty() const {
@@ -113,12 +113,12 @@ class IOBuffer {
     void PopBlock();
 
     // no copying / assignment for now
-    IOBuffer(const IOBuffer&);
-    IOBuffer& operator=(const IOBuffer&);
+    IOQueue(const IOQueue&);
+    IOQueue& operator=(const IOQueue&);
 
     // default to 1k blocks
     static const unsigned int DEFAULT_BLOCK_SIZE = 1024;
 };
 }  // io
 }  // ola
-#endif  // INCLUDE_OLA_IO_IOBUFFER_H_
+#endif  // INCLUDE_OLA_IO_IOQUEUE_H_

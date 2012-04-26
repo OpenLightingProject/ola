@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * IOBuffer.cpp
+ * IOQueue.cpp
  * A non-contigous memory buffer
  * Copyright (C) 2012 Simon Newton
  */
@@ -21,7 +21,7 @@
 
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
-#include <ola/io/IOBuffer.h>
+#include <ola/io/IOQueue.h>
 #include <stdint.h>
 #include <algorithm>
 #include <deque>
@@ -35,10 +35,10 @@ using std::min;
 
 
 /**
- * IOBuffer.
+ * IOQueue.
  * @param block_size the size of blocks to use.
  */
-IOBuffer::IOBuffer(unsigned int block_size)
+IOQueue::IOQueue(unsigned int block_size)
     : m_block_size(block_size),
       m_first(NULL),
       m_last(NULL) {
@@ -48,7 +48,7 @@ IOBuffer::IOBuffer(unsigned int block_size)
 /**
  * Clean up
  */
-IOBuffer::~IOBuffer() {
+IOQueue::~IOQueue() {
   Purge();
 
   BlockVector::iterator iter = m_blocks.begin();
@@ -62,7 +62,7 @@ IOBuffer::~IOBuffer() {
 /**
  * Return the amount of data in the buffer
  */
-unsigned int IOBuffer::Size() const {
+unsigned int IOQueue::Size() const {
   if (m_blocks.empty())
     return 0;
 
@@ -75,7 +75,7 @@ unsigned int IOBuffer::Size() const {
 /**
  * Append (length) bytes of data to the buffer
  */
-void IOBuffer::Append(const uint8_t *data, unsigned int length) {
+void IOQueue::Append(const uint8_t *data, unsigned int length) {
   unsigned int offset = 0;
 
   OLA_INFO << "free space in block in " << FreeSpaceInLastBlock();
@@ -112,7 +112,7 @@ void IOBuffer::Append(const uint8_t *data, unsigned int length) {
 /**
  * Copy the first n bytes into the region pointed to by data
  */
-unsigned int IOBuffer::Peek(uint8_t *data, unsigned int n) const {
+unsigned int IOQueue::Peek(uint8_t *data, unsigned int n) const {
   if (n > Size()) {
     OLA_WARN << "Attempt to peek " << n << " bytes, size is only " << Size();
     n = Size();
@@ -155,7 +155,7 @@ unsigned int IOBuffer::Peek(uint8_t *data, unsigned int n) const {
 /**
  * Remove the first n bytes from the buffer
  */
-void IOBuffer::Pop(unsigned int n) {
+void IOQueue::Pop(unsigned int n) {
   if (n > Size()) {
     OLA_WARN << "Attempt to pop " << n << " bytes, size is only " << Size();
     n = Size();
@@ -180,13 +180,13 @@ void IOBuffer::Pop(unsigned int n) {
 
 
 /**
- * Return this IOBuffer as an array of iovec structures.
+ * Return this IOQueue as an array of iovec structures.
  * Note: The iovec array points at internal memory structures. This array is
  * invalidated when any non-const methods are called (Append, Pop etc.)
  *
  * Free the iovec array with FreeIOVec()
  */
-const struct iovec *IOBuffer::AsIOVec(int *iocnt) {
+const struct iovec *IOQueue::AsIOVec(int *iocnt) {
   *iocnt = m_blocks.size();
   struct iovec *vector = new struct iovec[*iocnt];
 
@@ -215,15 +215,15 @@ const struct iovec *IOBuffer::AsIOVec(int *iocnt) {
 /**
  * Free a iovec structure
  */
-void IOBuffer::FreeIOVec(const struct iovec *iov) {
+void IOQueue::FreeIOVec(const struct iovec *iov) {
   delete[] iov;
 }
 
 
 /**
- * Append an iov to this IOBuffer
+ * Append an iov to this IOQueue
  */
-void IOBuffer::AppendIOVec(const struct iovec *iov, int iocnt) {
+void IOQueue::AppendIOVec(const struct iovec *iov, int iocnt) {
   for (int i = 0; i < iocnt; iov++, i++)
     Append(reinterpret_cast<const uint8_t*>(iov->iov_base), iov->iov_len);
 }
@@ -232,7 +232,7 @@ void IOBuffer::AppendIOVec(const struct iovec *iov, int iocnt) {
 /**
  * Purge any free blocks
  */
-void IOBuffer::Purge() {
+void IOQueue::Purge() {
   while (!m_free_blocks.empty()) {
     uint8_t *block = m_free_blocks.front();
     delete[] block;
@@ -242,9 +242,9 @@ void IOBuffer::Purge() {
 
 
 /**
- * Dump this IOBuffer as a human readable string
+ * Dump this IOQueue as a human readable string
  */
-void IOBuffer::Dump(std::ostream *output) {
+void IOQueue::Dump(std::ostream *output) {
   // for now just alloc memory for the entire thing
   unsigned int length = Size();
   uint8_t *tmp = new uint8_t[length];
@@ -257,7 +257,7 @@ void IOBuffer::Dump(std::ostream *output) {
 /**
  * Append another block.
  */
-void IOBuffer::AppendBlock() {
+void IOQueue::AppendBlock() {
   uint8_t *block = NULL;
   if (m_free_blocks.empty()) {
     block = new uint8_t[m_block_size];
@@ -288,7 +288,7 @@ void IOBuffer::AppendBlock() {
  * Remove the first block
  * @pre m_blocks is not empty
  */
-void IOBuffer::PopBlock() {
+void IOQueue::PopBlock() {
   uint8_t *free_block = m_blocks.front();
   m_free_blocks.push(free_block);
   m_blocks.pop_front();

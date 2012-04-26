@@ -13,8 +13,8 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * IOBufferTest.cpp
- * Test fixture for the IOBuffer class.
+ * IOQueueTest.cpp
+ * Test fixture for the IOQueue class.
  * Copyright (C) 2012 Simon Newton
  */
 
@@ -24,18 +24,18 @@
 #include <string>
 
 #include "ola/Logging.h"
-#include "ola/io/IOBuffer.h"
+#include "ola/io/IOQueue.h"
 #include "ola/testing/TestUtils.h"
 
-using ola::io::IOBuffer;
+using ola::io::IOQueue;
 using ola::testing::ASSERT_DATA_EQUALS;
 using std::auto_ptr;
 using std::string;
 
 
-class IOBufferTest: public CppUnit::TestFixture {
+class IOQueueTest: public CppUnit::TestFixture {
   public:
-    CPPUNIT_TEST_SUITE(IOBufferTest);
+    CPPUNIT_TEST_SUITE(IOQueueTest);
     CPPUNIT_TEST(testBasicAppend);
     CPPUNIT_TEST(testBlockOverflow);
     CPPUNIT_TEST(testPop);
@@ -55,25 +55,25 @@ class IOBufferTest: public CppUnit::TestFixture {
     void testDump();
 
   private:
-    auto_ptr<IOBuffer> m_buffer;
+    auto_ptr<IOQueue> m_buffer;
 
     unsigned int SumLengthOfIOVec(const struct iovec *iov, int iocnt);
 };
 
 
-CPPUNIT_TEST_SUITE_REGISTRATION(IOBufferTest);
+CPPUNIT_TEST_SUITE_REGISTRATION(IOQueueTest);
 
 
-void IOBufferTest::setUp() {
+void IOQueueTest::setUp() {
   ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-  m_buffer.reset(new IOBuffer());
+  m_buffer.reset(new IOQueue());
 }
 
 
 /**
  * Sum up the length of data in a iovec
  */
-unsigned int IOBufferTest::SumLengthOfIOVec(const struct iovec *iov,
+unsigned int IOQueueTest::SumLengthOfIOVec(const struct iovec *iov,
                                             int iocnt) {
   unsigned int sum = 0;
   for (int i = 0; i < iocnt; iov++, i++)
@@ -85,7 +85,7 @@ unsigned int IOBufferTest::SumLengthOfIOVec(const struct iovec *iov,
 /*
  * Check that basic appending works.
  */
-void IOBufferTest::testBasicAppend() {
+void IOQueueTest::testBasicAppend() {
   CPPUNIT_ASSERT_EQUAL(0u, m_buffer->Size());
   uint8_t data1[] = {0, 1, 2, 3, 4};
 
@@ -103,9 +103,9 @@ void IOBufferTest::testBasicAppend() {
 /*
  * Check that overflowing blocks works
  */
-void IOBufferTest::testBlockOverflow() {
+void IOQueueTest::testBlockOverflow() {
   // block size of 4
-  m_buffer.reset(new IOBuffer(4));
+  m_buffer.reset(new IOQueue(4));
   uint8_t data1[] = {0, 1, 2, 3, 4};
   uint8_t data2[] = {5, 6, 7, 8, 9};
   uint8_t data3[] = {0xa, 0xb, 0xc, 0xd, 0xe};
@@ -136,7 +136,7 @@ void IOBufferTest::testBlockOverflow() {
 /**
  * Test that Pop behaves
  */
-void IOBufferTest::testPop() {
+void IOQueueTest::testPop() {
   uint8_t data1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 
   m_buffer->Append(data1, sizeof(data1));
@@ -167,7 +167,7 @@ void IOBufferTest::testPop() {
 
   // Now try a buffer with smaller blocks
   OLA_INFO << "new";
-  m_buffer.reset(new IOBuffer(4));
+  m_buffer.reset(new IOQueue(4));
   m_buffer->Append(data1, sizeof(data1));
   CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
 
@@ -187,7 +187,7 @@ void IOBufferTest::testPop() {
 /**
  * Test that Peek behaves
  */
-void IOBufferTest::testPeek() {
+void IOQueueTest::testPeek() {
   uint8_t data1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 
   m_buffer->Append(data1, sizeof(data1));
@@ -214,7 +214,7 @@ void IOBufferTest::testPeek() {
   CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
 
   // Now try a buffer with smaller blocks
-  m_buffer.reset(new IOBuffer(4));
+  m_buffer.reset(new IOQueue(4));
   m_buffer->Append(data1, sizeof(data1));
   CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
 
@@ -256,7 +256,7 @@ void IOBufferTest::testPeek() {
 /**
  * Test getting / setting iovecs work.
  */
-void IOBufferTest::testIOVec() {
+void IOQueueTest::testIOVec() {
   uint8_t data1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 
   m_buffer->Append(data1, sizeof(data1));
@@ -270,7 +270,7 @@ void IOBufferTest::testIOVec() {
   m_buffer->FreeIOVec(vector);
 
   // try a smaller block size
-  m_buffer.reset(new IOBuffer(4));
+  m_buffer.reset(new IOQueue(4));
   m_buffer->Append(data1, sizeof(data1));
   CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
 
@@ -280,7 +280,7 @@ void IOBufferTest::testIOVec() {
   CPPUNIT_ASSERT_EQUAL(9u, SumLengthOfIOVec(vector, iocnt));
 
   // test append
-  IOBuffer target_buffer;
+  IOQueue target_buffer;
   target_buffer.AppendIOVec(vector, iocnt);
   CPPUNIT_ASSERT_EQUAL(9u, target_buffer.Size());
 
@@ -301,8 +301,8 @@ void IOBufferTest::testIOVec() {
 /**
  * Test dumping to a ostream works
  */
-void IOBufferTest::testDump() {
-  m_buffer.reset(new IOBuffer(4));
+void IOQueueTest::testDump() {
+  m_buffer.reset(new IOQueue(4));
   uint8_t data1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 
   m_buffer->Append(data1, sizeof(data1));
