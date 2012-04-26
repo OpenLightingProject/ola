@@ -29,7 +29,6 @@
 #include "olad/Port.h"
 #include "olad/PortBroker.h"
 #include "olad/PortManager.h"
-#include "ola/network/SelectServerInterface.h"
 #include "olad/Preferences.h"
 #include "olad/TestCommon.h"
 #include "olad/Universe.h"
