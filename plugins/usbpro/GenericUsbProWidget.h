@@ -53,7 +53,7 @@ typedef ola::SingleUseCallback2<void, bool, const usb_pro_parameters&>
 class GenericUsbProWidget: public BaseUsbProWidget {
   public:
     GenericUsbProWidget(ola::thread::SchedulerInterface *scheduler,
-                        ola::network::ConnectedDescriptor *descriptor);
+                        ola::io::ConnectedDescriptor *descriptor);
     ~GenericUsbProWidget();
 
     void SetDMXCallback(ola::Callback0<void> *callback);

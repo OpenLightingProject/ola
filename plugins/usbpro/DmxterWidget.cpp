@@ -52,7 +52,7 @@ const uint8_t DmxterWidgetImpl::SHUTDOWN_LABAEL = 0xf0;
  * @param serial the 4 byte serial which forms part of the UID
  */
 DmxterWidgetImpl::DmxterWidgetImpl(
-    ola::network::ConnectedDescriptor *descriptor,
+    ola::io::ConnectedDescriptor *descriptor,
     uint16_t esta_id,
     uint32_t serial)
     : BaseUsbProWidget(descriptor),
@@ -405,7 +405,7 @@ void DmxterWidgetImpl::HandleShutdown(const uint8_t *data,
 /**
  * DmxterWidget Constructor
  */
-DmxterWidget::DmxterWidget(ola::network::ConnectedDescriptor *descriptor,
+DmxterWidget::DmxterWidget(ola::io::ConnectedDescriptor *descriptor,
                            uint16_t esta_id,
                            uint32_t serial,
                            unsigned int queue_size) {

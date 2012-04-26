@@ -71,7 +71,7 @@ TCPConnector::TCPConnectionID TCPConnector::Connect(
   server_address.sin_port = HostToNetwork(port);
   server_address.sin_addr.s_addr = ip_address.AsInt();
 
-  ConnectedDescriptor::SetNonBlocking(sd);
+  ola::io::ConnectedDescriptor::SetNonBlocking(sd);
 
   int r = connect(sd, (struct sockaddr*) &server_address, length);
 

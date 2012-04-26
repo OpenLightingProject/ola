@@ -33,12 +33,17 @@
 #include <vector>
 
 #include "ola/Logging.h"
+#include "ola/io/Descriptor.h"
 #include "ola/network/SelectServer.h"
 #include "ola/network/Socket.h"
 
 
 namespace ola {
 namespace network {
+
+using ola::io::ConnectedDescriptor;
+using ola::io::ReadFileDescriptor;
+using ola::io::WriteFileDescriptor;
 
 // # of descriptors registered
 const char SelectServer::K_READ_DESCRIPTOR_VAR[] = "ss-read-descriptors";

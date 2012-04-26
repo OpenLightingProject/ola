@@ -41,7 +41,7 @@ namespace ola {
 using std::string;
 using std::vector;
 using ola::rdm::RDMAPIImplInterface;
-using ola::network::ConnectedDescriptor;
+using ola::io::ConnectedDescriptor;
 
 OlaCallbackClient::OlaCallbackClient(ConnectedDescriptor *descriptor) {
   m_core = new OlaClientCore(descriptor);

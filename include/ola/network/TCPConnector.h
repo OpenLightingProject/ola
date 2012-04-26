@@ -22,6 +22,7 @@
 
 #include <ola/Callback.h>
 #include <ola/Clock.h>
+#include <ola/io/Descriptor.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/SelectServerInterface.h>
 #include <ola/network/Socket.h>
@@ -55,7 +56,7 @@ class TCPConnector {
     /**
      * A TCP socket waiting to connect.
      */
-    class PendingTCPConnection: public WriteFileDescriptor {
+    class PendingTCPConnection: public ola::io::WriteFileDescriptor {
       public:
         PendingTCPConnection(TCPConnector *connector,
                              const IPV4Address &ip,

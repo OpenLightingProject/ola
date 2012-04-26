@@ -17,9 +17,9 @@
  * This allows unittest of data received on a ConnectedDescriptor. The general
  * use case is:
  *
- * ola::network::PipeSocket pipe;
+ * ola::io::PipeSocket pipe;
  * pipe.Init();
- * ola::network::PipeSocket *other_end = pip.OppositeEnd();
+ * ola::io::PipeSocket *other_end = pip.OppositeEnd();
  * MockEndpoint endpoint(other_end)
  * ola::network::SelectServer ss;
  * ss.AddReadDescriptor(&pipe);
@@ -37,7 +37,7 @@
 #include <queue>
 
 #include "ola/Callback.h"
-#include "ola/network/Socket.h"
+#include "ola/io/Descriptor.h"
 
 
 /**
@@ -45,7 +45,7 @@
  */
 class MockEndpoint {
   public:
-    explicit MockEndpoint(ola::network::ConnectedDescriptor *descriptor);
+    explicit MockEndpoint(ola::io::ConnectedDescriptor *descriptor);
     ~MockEndpoint();
 
     typedef ola::SingleUseCallback0<void> NotificationCallback;
@@ -107,7 +107,7 @@ class MockEndpoint {
     }
 
   private:
-    ola::network::ConnectedDescriptor *m_descriptor;
+    ola::io::ConnectedDescriptor *m_descriptor;
 
     typedef struct {
       unsigned int length;

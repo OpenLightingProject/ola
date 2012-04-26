@@ -33,6 +33,7 @@
 #define PLUGINS_E131_E131_TCPTRANSPORT_H_
 
 #include <memory>
+#include "ola/io/Descriptor.h"
 #include "ola/network/Socket.h"
 #include "plugins/e131/e131/PDU.h"
 #include "plugins/e131/e131/Transport.h"
@@ -49,7 +50,7 @@ namespace e131 {
 class OutgoingStreamTransport: public OutgoingTransport {
   public:
     explicit OutgoingStreamTransport(
-        ola::network::ConnectedDescriptor *descriptor)
+        ola::io::ConnectedDescriptor *descriptor)
         : m_descriptor(descriptor),
           m_buffer(NULL),
           m_buffer_size(0) {
@@ -62,7 +63,7 @@ class OutgoingStreamTransport: public OutgoingTransport {
     bool Send(const PDUBlock<PDU> &pdu_block);
 
   private:
-    ola::network::ConnectedDescriptor *m_descriptor;
+    ola::io::ConnectedDescriptor *m_descriptor;
     uint8_t *m_buffer;
     unsigned int m_buffer_size;
 
@@ -81,7 +82,7 @@ class OutgoingStreamTransport: public OutgoingTransport {
 class IncommingStreamTransport {
   public:
     IncommingStreamTransport(class BaseInflator *inflator,
-                             ola::network::ConnectedDescriptor *descriptor,
+                             ola::io::ConnectedDescriptor *descriptor,
                              const ola::network::IPV4Address &ip_address,
                              uint16_t port);
     ~IncommingStreamTransport();
@@ -104,7 +105,7 @@ class IncommingStreamTransport {
 
     TransportHeader m_transport_header;
     class BaseInflator *m_inflator;
-    ola::network::ConnectedDescriptor *m_descriptor;
+    ola::io::ConnectedDescriptor *m_descriptor;
 
     // end points to the byte after the data
     uint8_t *m_buffer_start, *m_buffer_end, *m_data_end;

@@ -680,7 +680,7 @@ int main(int argc, char *argv[]) {
 
   /* set up ola connection */
   SimpleClient ola_client;
-  ola::network::UnmanagedFileDescriptor stdin_descriptor(0);
+  ola::io::UnmanagedFileDescriptor stdin_descriptor(0);
   stdin_descriptor.SetOnData(ola::NewCallback(&stdin_ready));
 
   if (!ola_client.Setup()) {

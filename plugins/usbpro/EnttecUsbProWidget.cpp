@@ -49,7 +49,7 @@ const uint16_t EnttecUsbProWidget::ENTTEC_ESTA_ID = 0x454E;
  */
 EnttecUsbProWidgetImpl::EnttecUsbProWidgetImpl(
   ola::thread::SchedulerInterface *scheduler,
-  ola::network::ConnectedDescriptor *descriptor,
+  ola::io::ConnectedDescriptor *descriptor,
   uint16_t esta_id,
   uint32_t serial)
     : GenericUsbProWidget(scheduler, descriptor),
@@ -401,7 +401,7 @@ void EnttecUsbProWidgetImpl::DiscoveryComplete(
  */
 EnttecUsbProWidget::EnttecUsbProWidget(
     ola::thread::SchedulerInterface *scheduler,
-    ola::network::ConnectedDescriptor *descriptor,
+    ola::io::ConnectedDescriptor *descriptor,
     uint16_t esta_id,
     uint32_t serial,
     unsigned int queue_size) {

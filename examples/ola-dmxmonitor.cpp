@@ -126,7 +126,7 @@ class DmxMonitor {
     unsigned int m_universe;
     unsigned int m_counter;
     int m_palette_number;
-    ola::network::UnmanagedFileDescriptor m_stdin_descriptor;
+    ola::io::UnmanagedFileDescriptor m_stdin_descriptor;
     struct timeval m_last_data;
     WINDOW *m_window;
     WINDOW *m_data_loss_window;

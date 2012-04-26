@@ -21,21 +21,20 @@
 #ifndef PLUGINS_USBDMX_USBDMXPLUGIN_H_
 #define PLUGINS_USBDMX_USBDMXPLUGIN_H_
 
-//#include <libusb.h>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
 #include "ola/plugin_id.h"
 #include "olad/Plugin.h"
-#include "ola/network/Socket.h"
+#include "ola/io/Descriptor.h"
 
 namespace ola {
 namespace plugin {
 
 namespace usbdmx {
 
-using ola::network::ConnectedDescriptor;
+using ola::io::ConnectedDescriptor;
 
 class UsbDmxPlugin: public ola::Plugin {
   public:
@@ -60,7 +59,7 @@ class UsbDmxPlugin: public ola::Plugin {
     bool SetDefaultPreferences();
     vector<class UsbDevice*> m_devices;  // list of our devices
     struct libusb_context *m_usb_context;
-    vector<ola::network::DeviceDescriptor*> m_descriptors;
+    vector<ola::io::DeviceDescriptor*> m_descriptors;
     set<pair<uint8_t, uint8_t> > m_registered_devices;
 
     static const char PLUGIN_NAME[];

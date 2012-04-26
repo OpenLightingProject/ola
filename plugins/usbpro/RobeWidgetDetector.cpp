@@ -37,7 +37,7 @@
 #include <map>
 
 #include "ola/Logging.h"
-#include "ola/network/Socket.h"
+#include "ola/io/Descriptor.h"
 #include "ola/rdm/UID.h"
 #include "plugins/usbpro/RobeWidget.h"
 #include "plugins/usbpro/RobeWidgetDetector.h"
@@ -89,7 +89,7 @@ RobeWidgetDetector::~RobeWidgetDetector() {
  * @return true if the process started ok, false otherwise.
  */
 bool RobeWidgetDetector::Discover(
-    ola::network::ConnectedDescriptor *descriptor) {
+    ola::io::ConnectedDescriptor *descriptor) {
   DispatchingRobeWidget *widget = new DispatchingRobeWidget(descriptor);
   widget->SetHandler(
     NewCallback(this, &RobeWidgetDetector::HandleMessage, widget));
@@ -242,7 +242,7 @@ void RobeWidgetDetector::FailWidget(DispatchingRobeWidget *widget) {
  * Delete a widget and run the failure callback.
  */
 void RobeWidgetDetector::CleanupWidget(DispatchingRobeWidget *widget) {
-  ola::network::ConnectedDescriptor *descriptor = widget->GetDescriptor();
+  ola::io::ConnectedDescriptor *descriptor = widget->GetDescriptor();
   descriptor->SetOnClose(NULL);
   delete widget;
   if (m_failure_callback.get())
@@ -256,7 +256,7 @@ void RobeWidgetDetector::CleanupWidget(DispatchingRobeWidget *widget) {
 void RobeWidgetDetector::DispatchWidget(
     DispatchingRobeWidget *widget,
     const RobeWidgetInformation *info) {
-  ola::network::ConnectedDescriptor *descriptor = widget->GetDescriptor();
+  ola::io::ConnectedDescriptor *descriptor = widget->GetDescriptor();
   descriptor->SetOnClose(NULL);
   delete widget;
   if (m_callback.get()) {

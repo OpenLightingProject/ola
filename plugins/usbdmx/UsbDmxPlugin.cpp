@@ -30,7 +30,7 @@
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
-#include "ola/network/Socket.h"
+#include "ola/io/Descriptor.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
 
@@ -48,7 +48,7 @@ namespace ola {
 namespace plugin {
 namespace usbdmx {
 
-using ola::network::DeviceDescriptor;
+using ola::io::DeviceDescriptor;
 
 const char UsbDmxPlugin::PLUGIN_NAME[] = "USB";
 const char UsbDmxPlugin::PLUGIN_PREFIX[] = "usbdmx";

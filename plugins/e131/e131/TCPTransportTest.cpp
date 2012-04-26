@@ -67,7 +67,7 @@ class TCPTransportTest: public CppUnit::TestFixture {
     bool m_stream_ok;
     ola::network::IPV4Address m_localhost;
     auto_ptr<ola::network::SelectServer> m_ss;
-    ola::network::LoopbackDescriptor m_loopback;
+    ola::io::LoopbackDescriptor m_loopback;
     CID m_cid;
     auto_ptr<Callback0<void> > m_rx_callback;
     auto_ptr<MockInflator> m_inflator;

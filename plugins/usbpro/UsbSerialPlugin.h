@@ -23,7 +23,7 @@
 
 #include <string>
 #include <vector>
-#include "ola/network/Socket.h"
+#include "ola/io/Descriptor.h"
 #include "ola/plugin_id.h"
 #include "olad/Plugin.h"
 #include "plugins/usbpro/UsbSerialDevice.h"
@@ -33,7 +33,7 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
-using ola::network::ConnectedDescriptor;
+using ola::io::ConnectedDescriptor;
 
 class UsbSerialPlugin: public ola::Plugin, public NewWidgetHandler {
   public:

@@ -127,7 +127,7 @@ bool OutgoingStreamTransport::SendOrClose(const uint8_t *data,
  */
 IncommingStreamTransport::IncommingStreamTransport(
     BaseInflator *inflator,
-    ola::network::ConnectedDescriptor *descriptor,
+    ola::io::ConnectedDescriptor *descriptor,
     const IPV4Address &ip_address,
     uint16_t port)
     : m_transport_header(ip_address, port, TransportHeader::TCP),

@@ -26,6 +26,7 @@ check_PROGRAMS = $(TESTS)
 COMMON_TEST_LDADD = $(CPPUNIT_LIBS) \
                     ./libolanetwork.la \
                     ../export_map/libolaexportmap.la \
+                    ../io/libolaio.la \
                     ../logging/liblogging.la \
                     ../thread/libthread.la \
                     ../utils/libolautils.la

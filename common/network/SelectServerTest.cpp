@@ -30,7 +30,7 @@
 
 using ola::ExportMap;
 using ola::IntegerVariable;
-using ola::network::LoopbackDescriptor;
+using ola::io::LoopbackDescriptor;
 using ola::network::SelectServer;
 using ola::network::UdpSocket;
 

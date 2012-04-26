@@ -30,7 +30,7 @@ namespace usbpro {
  */
 UltraDMXProWidget::UltraDMXProWidget(
   ola::thread::SchedulerInterface *scheduler,
-  ola::network::ConnectedDescriptor *descriptor)
+  ola::io::ConnectedDescriptor *descriptor)
     : GenericUsbProWidget(scheduler, descriptor) {
 }
 

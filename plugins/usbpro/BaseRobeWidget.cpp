@@ -30,7 +30,7 @@ namespace usbpro {
 const unsigned int BaseRobeWidget::HEADER_SIZE =
   sizeof(BaseRobeWidget::message_header);
 
-BaseRobeWidget::BaseRobeWidget(ola::network::ConnectedDescriptor *descriptor)
+BaseRobeWidget::BaseRobeWidget(ola::io::ConnectedDescriptor *descriptor)
     : m_descriptor(descriptor),
       m_state(PRE_SOM),
       m_bytes_received(0) {

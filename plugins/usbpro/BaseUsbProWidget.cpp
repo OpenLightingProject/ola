@@ -42,7 +42,7 @@ const unsigned int BaseUsbProWidget::HEADER_SIZE =
 
 
 BaseUsbProWidget::BaseUsbProWidget(
-    ola::network::ConnectedDescriptor *descriptor)
+    ola::io::ConnectedDescriptor *descriptor)
     : m_descriptor(descriptor),
       m_state(PRE_SOM),
       m_bytes_received(0) {
@@ -118,7 +118,7 @@ bool BaseUsbProWidget::SendMessage(uint8_t label,
 /**
  * Open a path and apply the settings required for talking to widgets.
  */
-ola::network::ConnectedDescriptor *BaseUsbProWidget::OpenDevice(
+ola::io::ConnectedDescriptor *BaseUsbProWidget::OpenDevice(
     const string &path) {
   struct termios newtio;
   int fd = open(path.data(), O_RDWR | O_NONBLOCK | O_NOCTTY);
@@ -133,7 +133,7 @@ ola::network::ConnectedDescriptor *BaseUsbProWidget::OpenDevice(
   cfsetospeed(&newtio, B115200);
   tcsetattr(fd, TCSANOW, &newtio);
 
-  return new ola::network::DeviceDescriptor(fd);
+  return new ola::io::DeviceDescriptor(fd);
 }
 
 

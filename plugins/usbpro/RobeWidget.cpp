@@ -38,7 +38,7 @@ using ola::rdm::UIDSet;
 // The DMX frames have an extra 4 bytes at the end
 const int RobeWidgetImpl::DMX_FRAME_DATA_SIZE = DMX_UNIVERSE_SIZE + 4;
 
-RobeWidgetImpl::RobeWidgetImpl(ola::network::ConnectedDescriptor *descriptor,
+RobeWidgetImpl::RobeWidgetImpl(ola::io::ConnectedDescriptor *descriptor,
                                ola::thread::SchedulingExecutorInterface *ss,
                                const ola::rdm::UID &uid)
     : BaseRobeWidget(descriptor),
@@ -392,7 +392,7 @@ void RobeWidgetImpl::HandleDmxFrame(const uint8_t *data, unsigned int length) {
 /**
  * RobeWidget Constructor
  */
-RobeWidget::RobeWidget(ola::network::ConnectedDescriptor *descriptor,
+RobeWidget::RobeWidget(ola::io::ConnectedDescriptor *descriptor,
                        ola::thread::SchedulingExecutorInterface *ss,
                        const ola::rdm::UID &uid,
                        unsigned int queue_size) {

@@ -40,7 +40,7 @@ namespace usbpro {
 class DmxterWidgetImpl: public BaseUsbProWidget,
                         public ola::rdm::DiscoverableRDMControllerInterface {
   public:
-    DmxterWidgetImpl(ola::network::ConnectedDescriptor *descriptor,
+    DmxterWidgetImpl(ola::io::ConnectedDescriptor *descriptor,
                      uint16_t esta_id,
                      uint32_t serial);
     ~DmxterWidgetImpl();
@@ -127,7 +127,7 @@ class DmxterWidgetImpl: public BaseUsbProWidget,
 class DmxterWidget: public SerialWidgetInterface,
                     public ola::rdm::DiscoverableRDMControllerInterface {
   public:
-    DmxterWidget(ola::network::ConnectedDescriptor *descriptor,
+    DmxterWidget(ola::io::ConnectedDescriptor *descriptor,
                  uint16_t esta_id,
                  uint32_t serial,
                  unsigned int queue_size = 20);
@@ -148,7 +148,7 @@ class DmxterWidget: public SerialWidgetInterface,
       m_controller->RunIncrementalDiscovery(callback);
     }
 
-    ola::network::ConnectedDescriptor *GetDescriptor() const {
+    ola::io::ConnectedDescriptor *GetDescriptor() const {
       return m_impl->GetDescriptor();
     }
 

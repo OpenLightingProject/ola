@@ -23,8 +23,9 @@
 #define OLAD_HTTPSERVER_H_
 
 #include <ola/Callback.h>
-#include <ola/thread/Thread.h>
+#include <ola/io/Descriptor.h>
 #include <ola/network/SelectServer.h>
+#include <ola/thread/Thread.h>
 // 0.4.6 of microhttp doesn't include stdarg so we do it here.
 #include <stdarg.h>
 #include <stdint.h>
@@ -161,20 +162,20 @@ class HttpServer: public ola::thread::Thread {
     HttpServer& operator=(const HttpServer&);
 
     struct unmanaged_socket_lt {
-      bool operator()(const ola::network::UnmanagedFileDescriptor *s1,
-                      const ola::network::UnmanagedFileDescriptor *s2) const {
+      bool operator()(const ola::io::UnmanagedFileDescriptor *s1,
+                      const ola::io::UnmanagedFileDescriptor *s2) const {
         return s1->ReadDescriptor() < s2->ReadDescriptor();
       }
     };
 
-    ola::network::UnmanagedFileDescriptor *NewSocket(fd_set *r_set,
-                                                     fd_set *w_set,
-                                                     int fd);
+    ola::io::UnmanagedFileDescriptor *NewSocket(fd_set *r_set,
+                                                fd_set *w_set,
+                                                int fd);
 
     struct MHD_Daemon *m_httpd;
     ola::network::SelectServer m_select_server;
 
-    std::set<ola::network::UnmanagedFileDescriptor*, unmanaged_socket_lt>
+    std::set<ola::io::UnmanagedFileDescriptor*, unmanaged_socket_lt>
         m_sockets;
 
     map<string, BaseHttpCallback*> m_handlers;

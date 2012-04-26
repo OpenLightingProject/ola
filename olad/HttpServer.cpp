@@ -28,6 +28,7 @@
 #include <vector>
 #include "olad/HttpServer.h"
 #include "ola/Logging.h"
+#include "ola/io/Descriptor.h"
 
 namespace ola {
 
@@ -35,7 +36,7 @@ using std::ifstream;
 using std::pair;
 using std::set;
 using std::string;
-using ola::network::UnmanagedFileDescriptor;
+using ola::io::UnmanagedFileDescriptor;
 
 const char HttpServer::CONTENT_TYPE_PLAIN[] = "text/plain";
 const char HttpServer::CONTENT_TYPE_HTML[] = "text/html";

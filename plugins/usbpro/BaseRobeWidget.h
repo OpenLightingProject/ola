@@ -24,7 +24,7 @@
 #include <stdint.h>
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
-#include "ola/network/Socket.h"
+#include "ola/io/Descriptor.h"
 #include "plugins/usbpro/SerialWidgetInterface.h"
 
 namespace ola {
@@ -37,10 +37,10 @@ namespace usbpro {
  */
 class BaseRobeWidget: public SerialWidgetInterface {
   public:
-    explicit BaseRobeWidget(ola::network::ConnectedDescriptor *descriptor);
+    explicit BaseRobeWidget(ola::io::ConnectedDescriptor *descriptor);
     virtual ~BaseRobeWidget();
 
-    ola::network::ConnectedDescriptor *GetDescriptor() const {
+    ola::io::ConnectedDescriptor *GetDescriptor() const {
       return m_descriptor;
     }
 
@@ -81,7 +81,7 @@ class BaseRobeWidget: public SerialWidgetInterface {
       uint8_t header_crc;
     } message_header;
 
-    ola::network::ConnectedDescriptor *m_descriptor;
+    ola::io::ConnectedDescriptor *m_descriptor;
     receive_state m_state;
     unsigned int m_bytes_received, m_data_size;
     uint8_t m_crc;
@@ -108,7 +108,7 @@ class DispatchingRobeWidget: public BaseRobeWidget {
                            uint8_t,
                            const uint8_t*,
                            unsigned int> MessageCallback;
-    DispatchingRobeWidget(ola::network::ConnectedDescriptor *descriptor,
+    DispatchingRobeWidget(ola::io::ConnectedDescriptor *descriptor,
                           MessageCallback *callback = NULL)
         : BaseRobeWidget(descriptor),
           m_callback(callback) {

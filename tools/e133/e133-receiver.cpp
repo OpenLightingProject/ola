@@ -177,7 +177,7 @@ class SimpleE133Node {
 
   private:
     ola::network::SelectServer m_ss;
-    ola::network::UnmanagedFileDescriptor m_stdin_descriptor;
+    ola::io::UnmanagedFileDescriptor m_stdin_descriptor;
     SlpThread m_slp_thread;
     EndpointManager m_endpoint_manager;
     TCPConnectionStats m_tcp_stats;

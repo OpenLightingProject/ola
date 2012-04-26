@@ -26,7 +26,7 @@
 #include <string>
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
-#include "ola/network/Socket.h"
+#include "ola/io/Descriptor.h"
 #include "plugins/usbpro/SerialWidgetInterface.h"
 
 namespace ola {
@@ -39,10 +39,10 @@ namespace usbpro {
  */
 class BaseUsbProWidget: public SerialWidgetInterface {
   public:
-    explicit BaseUsbProWidget(ola::network::ConnectedDescriptor *descriptor);
+    explicit BaseUsbProWidget(ola::io::ConnectedDescriptor *descriptor);
     virtual ~BaseUsbProWidget();
 
-    ola::network::ConnectedDescriptor *GetDescriptor() const {
+    ola::io::ConnectedDescriptor *GetDescriptor() const {
       return m_descriptor;
     }
     void DescriptorReady();
@@ -54,7 +54,7 @@ class BaseUsbProWidget: public SerialWidgetInterface {
                      const uint8_t *data,
                      unsigned int length) const;
 
-    static ola::network::ConnectedDescriptor *OpenDevice(const string &path);
+    static ola::io::ConnectedDescriptor *OpenDevice(const string &path);
 
     static const uint8_t DMX_LABEL = 6;
     static const uint8_t SERIAL_LABEL = 10;
@@ -80,7 +80,7 @@ class BaseUsbProWidget: public SerialWidgetInterface {
       uint8_t len_hi;
     } message_header;
 
-    ola::network::ConnectedDescriptor *m_descriptor;
+    ola::io::ConnectedDescriptor *m_descriptor;
     receive_state m_state;
     unsigned int m_bytes_received;
     message_header m_header;
@@ -107,7 +107,7 @@ class DispatchingUsbProWidget: public BaseUsbProWidget {
                            uint8_t,
                            const uint8_t*,
                            unsigned int> MessageCallback;
-    DispatchingUsbProWidget(ola::network::ConnectedDescriptor *descriptor,
+    DispatchingUsbProWidget(ola::io::ConnectedDescriptor *descriptor,
                             MessageCallback *callback)
         : BaseUsbProWidget(descriptor),
           m_callback(callback) {

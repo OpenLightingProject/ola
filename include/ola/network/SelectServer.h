@@ -29,6 +29,7 @@
 #include <ola/Callback.h>  // NOLINT
 #include <ola/Clock.h>  // NOLINT
 #include <ola/ExportMap.h>  // NOLINT
+#include <ola/io/Descriptor.h>  // NOLINT
 #include <ola/network/SelectServerInterface.h>  // NOLINT
 #include <ola/network/Socket.h>  // NOLINT
 #include <ola/thread/Thread.h>  // NOLINT
@@ -37,6 +38,9 @@ namespace ola {
 namespace network {
 
 using ola::ExportMap;
+using ola::io::ConnectedDescriptor;
+using ola::io::ReadFileDescriptor;
+using ola::io::WriteFileDescriptor;
 using ola::thread::timeout_id;
 using std::priority_queue;
 using std::string;
@@ -179,7 +183,7 @@ class SelectServer: public SelectServerInterface {
 
 
     typedef struct {
-      ConnectedDescriptor *descriptor;
+      ola::io::ConnectedDescriptor *descriptor;
       bool delete_on_close;
     } connected_descriptor_t;
 
@@ -222,7 +226,7 @@ class SelectServer: public SelectServerInterface {
     LoopClosureSet m_loop_closures;
     std::queue<ola::BaseCallback0<void>*> m_incoming_queue;
     ola::thread::Mutex m_incoming_mutex;
-    LoopbackDescriptor m_incoming_descriptor;
+    ola::io::LoopbackDescriptor m_incoming_descriptor;
 
     SelectServer(const SelectServer&);
     SelectServer operator=(const SelectServer&);

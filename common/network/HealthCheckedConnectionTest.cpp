@@ -32,7 +32,7 @@ using ola::NewCallback;
 using ola::NewSingleCallback;
 using ola::TimeInterval;
 using ola::network::HealthCheckedConnection;
-using ola::network::LoopbackDescriptor;
+using ola::io::LoopbackDescriptor;
 using ola::network::SelectServer;
 
 
@@ -52,7 +52,7 @@ class MockHealthCheckedConnection: public HealthCheckedConnection {
       options->abort_on_failure = true;
     }
 
-    MockHealthCheckedConnection(ola::network::ConnectedDescriptor *descriptor,
+    MockHealthCheckedConnection(ola::io::ConnectedDescriptor *descriptor,
                                 SelectServer *scheduler,
                                 const ola::TimeInterval timeout_interval,
                                 const Options &options,
@@ -98,7 +98,7 @@ class MockHealthCheckedConnection: public HealthCheckedConnection {
     bool ChannelOk() const { return m_channel_ok; }
 
   private:
-    ola::network::ConnectedDescriptor *m_descriptor;
+    ola::io::ConnectedDescriptor *m_descriptor;
     SelectServer *m_ss;
     Options m_options;
     uint8_t m_next_heartbeat;

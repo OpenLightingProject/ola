@@ -25,7 +25,7 @@
 #include <memory>
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
-#include "ola/network/Socket.h"
+#include "ola/io/Descriptor.h"
 #include "ola/rdm/DiscoveryAgent.h"
 #include "ola/rdm/QueueingRDMController.h"
 #include "ola/rdm/RDMCommand.h"
@@ -51,7 +51,7 @@ class RobeWidgetImpl: public BaseRobeWidget,
                       public ola::rdm::DiscoverableRDMControllerInterface,
                       public ola::rdm::DiscoveryTargetInterface {
   public:
-    explicit RobeWidgetImpl(ola::network::ConnectedDescriptor *descriptor,
+    explicit RobeWidgetImpl(ola::io::ConnectedDescriptor *descriptor,
                             ola::thread::SchedulingExecutorInterface *ss,
                             const ola::rdm::UID &uid);
     ~RobeWidgetImpl() {}
@@ -117,7 +117,7 @@ class RobeWidgetImpl: public BaseRobeWidget,
 class RobeWidget: public SerialWidgetInterface,
                   public ola::rdm::DiscoverableRDMControllerInterface {
   public:
-    RobeWidget(ola::network::ConnectedDescriptor *descriptor,
+    RobeWidget(ola::io::ConnectedDescriptor *descriptor,
                ola::thread::SchedulingExecutorInterface *ss,
                const ola::rdm::UID &uid,
                unsigned int queue_size = 20);
@@ -125,7 +125,7 @@ class RobeWidget: public SerialWidgetInterface,
 
     void Stop() { m_impl->Stop(); }
 
-    ola::network::ConnectedDescriptor *GetDescriptor() const {
+    ola::io::ConnectedDescriptor *GetDescriptor() const {
       return m_impl->GetDescriptor();
     }
 

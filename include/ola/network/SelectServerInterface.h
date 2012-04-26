@@ -23,10 +23,15 @@
 
 #include <ola/Clock.h>  // NOLINT
 #include <ola/Callback.h>  // NOLINT
+#include <ola/io/Descriptor.h>  // NOLINT
 #include <ola/thread/SchedulingExecutorInterface.h>  // NOLINT
 
 namespace ola {
 namespace network {
+
+using ola::io::ConnectedDescriptor;
+using ola::io::ReadFileDescriptor;
+using ola::io::WriteFileDescriptor;
 
 class SelectServerInterface: public ola::thread::SchedulingExecutorInterface {
   public :

@@ -49,7 +49,7 @@ class EnttecUsbProWidgetImpl
       public ola::rdm::DiscoveryTargetInterface {
   public:
     EnttecUsbProWidgetImpl(ola::thread::SchedulerInterface *scheduler,
-                           ola::network::ConnectedDescriptor *descriptor,
+                           ola::io::ConnectedDescriptor *descriptor,
                            uint16_t esta_id,
                            uint32_t serial);
     ~EnttecUsbProWidgetImpl() { Stop(); }
@@ -107,7 +107,7 @@ class EnttecUsbProWidget: public SerialWidgetInterface,
                           public ola::rdm::DiscoverableRDMControllerInterface {
   public:
     EnttecUsbProWidget(ola::thread::SchedulerInterface *scheduler,
-                       ola::network::ConnectedDescriptor *descriptor,
+                       ola::io::ConnectedDescriptor *descriptor,
                        uint16_t esta_id,
                        uint32_t serial,
                        unsigned int queue_size = 20);
@@ -155,7 +155,7 @@ class EnttecUsbProWidget: public SerialWidgetInterface,
       m_impl->RunIncrementalDiscovery(callback);
     }
 
-    ola::network::ConnectedDescriptor *GetDescriptor() const {
+    ola::io::ConnectedDescriptor *GetDescriptor() const {
       return m_impl->GetDescriptor();
     }
 

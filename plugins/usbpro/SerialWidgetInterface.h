@@ -25,7 +25,7 @@
 #include <stdint.h>
 #include <ola/Callback.h>
 #include <string>
-#include "ola/network/Socket.h"
+#include "ola/io/Descriptor.h"
 
 namespace ola {
 namespace plugin {
@@ -42,7 +42,7 @@ class SerialWidgetInterface {
 
     // The Stop() method should clear out any callbacks
     virtual void Stop() = 0;
-    virtual ola::network::ConnectedDescriptor *GetDescriptor() const = 0;
+    virtual ola::io::ConnectedDescriptor *GetDescriptor() const = 0;
 };
 }  // usbpro
 }  // plugin

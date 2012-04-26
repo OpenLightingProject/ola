@@ -28,7 +28,7 @@
 #include "common/rpc/TestService.pb.h"
 
 using google::protobuf::NewCallback;
-using ola::network::LoopbackDescriptor;
+using ola::io::LoopbackDescriptor;
 using ola::network::SelectServer;
 using ola::rpc::EchoReply;
 using ola::rpc::EchoRequest;

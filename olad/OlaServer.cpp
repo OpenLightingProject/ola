@@ -293,7 +293,7 @@ void OlaServer::NewConnection(ola::network::TcpSocket *socket) {
 /*
  * Called when a socket is closed
  */
-void OlaServer::SocketClosed(ola::network::ConnectedDescriptor *socket) {
+void OlaServer::SocketClosed(ola::io::ConnectedDescriptor *socket) {
   map<int, OlaClientService*>::iterator iter;
   iter = m_sd_to_service.find(socket->ReadDescriptor());
 
@@ -342,8 +342,7 @@ bool OlaServer::StartHttpServer(const ola::network::Interface &iface) {
 
   // create a pipe socket for the http server to communicate with the main
   // server on.
-  ola::network::PipeDescriptor *pipe_descriptor =
-    new ola::network::PipeDescriptor();
+  ola::io::PipeDescriptor *pipe_descriptor = new ola::io::PipeDescriptor();
   if (!pipe_descriptor->Init()) {
     delete pipe_descriptor;
     return false;
@@ -395,7 +394,7 @@ void OlaServer::StopPlugins() {
  * @param socket the new ConnectedDescriptor
  */
 void OlaServer::InternalNewConnection(
-    ola::network::ConnectedDescriptor *socket) {
+    ola::io::ConnectedDescriptor *socket) {
   StreamRpcChannel *channel = new StreamRpcChannel(NULL, socket, m_export_map);
   socket->SetOnClose(
       NewSingleCallback(this, &OlaServer::SocketClosed, socket));

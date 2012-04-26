@@ -25,7 +25,7 @@
 #include <string>
 
 #include "ola/Callback.h"
-#include "ola/network/Socket.h"
+#include "ola/io/Descriptor.h"
 #include "plugins/stageprofi/StageProfiWidgetUsb.h"
 
 namespace ola {
@@ -47,7 +47,7 @@ bool StageProfiWidgetUsb::Connect(const std::string &path) {
   tcgetattr(fd, &newtio);
   cfsetospeed(&newtio, B38400);
   tcsetattr(fd, TCSANOW, &newtio);
-  m_socket = new ola::network::DeviceDescriptor(fd);
+  m_socket = new ola::io::DeviceDescriptor(fd);
   m_socket->SetOnData(
       NewCallback<StageProfiWidget>(this, &StageProfiWidget::SocketReady));
   return true;

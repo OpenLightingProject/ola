@@ -67,10 +67,10 @@ class RobeWidgetInformation {
 class RobeWidgetDetector: public WidgetDetectorInterface {
   public:
     typedef ola::Callback2<void,
-                           ola::network::ConnectedDescriptor*,
+                           ola::io::ConnectedDescriptor*,
                            const RobeWidgetInformation*> SuccessHandler;
     typedef ola::Callback1<void,
-                           ola::network::ConnectedDescriptor*> FailureHandler;
+                           ola::io::ConnectedDescriptor*> FailureHandler;
 
     RobeWidgetDetector(
         ola::thread::SchedulingExecutorInterface *scheduler,
@@ -79,7 +79,7 @@ class RobeWidgetDetector: public WidgetDetectorInterface {
         unsigned int timeout = 200);
     ~RobeWidgetDetector();
 
-    bool Discover(ola::network::ConnectedDescriptor *descriptor);
+    bool Discover(ola::io::ConnectedDescriptor *descriptor);
 
   private:
     // Hold the discovery state for a widget

@@ -39,7 +39,7 @@
 
 namespace ola {
 
-namespace network {
+namespace io {
 class ConnectedDescriptor;
 }
 
@@ -159,7 +159,7 @@ class OlaClientObserver {
  */
 class OlaClient: public ola::rdm::RDMAPIImplInterface {
   public:
-    explicit OlaClient(ola::network::ConnectedDescriptor *descriptor);
+    explicit OlaClient(ola::io::ConnectedDescriptor *descriptor);
     ~OlaClient();
 
     bool Setup();

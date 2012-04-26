@@ -35,7 +35,7 @@ namespace usbpro {
  */
 GenericUsbProWidget::GenericUsbProWidget(
   ola::thread::SchedulerInterface *scheduler,
-  ola::network::ConnectedDescriptor *descriptor)
+  ola::io::ConnectedDescriptor *descriptor)
     : BaseUsbProWidget(descriptor),
       m_scheduler(scheduler),
       m_active(true),

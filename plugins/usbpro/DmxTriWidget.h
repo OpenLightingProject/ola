@@ -47,7 +47,7 @@ class DmxTriWidgetImpl: public BaseUsbProWidget,
                         public ola::rdm::DiscoverableRDMControllerInterface {
   public:
     DmxTriWidgetImpl(ola::thread::SchedulerInterface *executor,
-                     ola::network::ConnectedDescriptor *descriptor,
+                     ola::io::ConnectedDescriptor *descriptor,
                      bool use_raw_rdm);
     ~DmxTriWidgetImpl();
 
@@ -184,7 +184,7 @@ class DmxTriWidgetImpl: public BaseUsbProWidget,
 class DmxTriWidget: public SerialWidgetInterface {
   public:
     DmxTriWidget(ola::thread::SchedulerInterface *ss,
-                 ola::network::ConnectedDescriptor *descriptor,
+                 ola::io::ConnectedDescriptor *descriptor,
                  unsigned int queue_size = 20,
                  bool use_raw_rdm = false);
     ~DmxTriWidget();
@@ -209,7 +209,7 @@ class DmxTriWidget: public SerialWidgetInterface {
       m_controller->RunIncrementalDiscovery(callback);
     }
 
-    ola::network::ConnectedDescriptor *GetDescriptor() const {
+    ola::io::ConnectedDescriptor *GetDescriptor() const {
       return m_impl->GetDescriptor();
     }
 

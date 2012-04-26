@@ -53,7 +53,7 @@ using ola::rdm::UIDSet;
  */
 DmxTriWidgetImpl::DmxTriWidgetImpl(
     ola::thread::SchedulerInterface *scheduler,
-    ola::network::ConnectedDescriptor *descriptor,
+    ola::io::ConnectedDescriptor *descriptor,
     bool use_raw_rdm)
     : BaseUsbProWidget(descriptor),
       m_scheduler(scheduler),
@@ -973,7 +973,7 @@ bool DmxTriWidgetImpl::ReturnCodeToNackReason(
  * DmxTriWidget Constructor
  */
 DmxTriWidget::DmxTriWidget(ola::thread::SchedulerInterface *scheduler,
-                           ola::network::ConnectedDescriptor *descriptor,
+                           ola::io::ConnectedDescriptor *descriptor,
                            unsigned int queue_size,
                            bool use_raw_rdm) {
   m_impl = new DmxTriWidgetImpl(scheduler, descriptor, use_raw_rdm);

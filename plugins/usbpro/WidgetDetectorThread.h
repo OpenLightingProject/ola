@@ -27,8 +27,9 @@
 #include <string>
 #include <vector>
 #include "ola/Callback.h"
-#include "ola/thread/Thread.h"
+#include "ola/io/Descriptor.h"
 #include "ola/network/SelectServer.h"
+#include "ola/thread/Thread.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
 #include "plugins/usbpro/RobeWidget.h"
 #include "plugins/usbpro/RobeWidgetDetector.h"
@@ -43,7 +44,7 @@ namespace usbpro {
 using std::set;
 using std::string;
 using std::vector;
-using ola::network::ConnectedDescriptor;
+using ola::io::ConnectedDescriptor;
 using ola::thread::ConditionVariable;
 using ola::thread::Mutex;
 
