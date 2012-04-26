@@ -46,13 +46,13 @@
 #include <ola/DmxBuffer.h>
 #include <ola/OlaClient.h>
 #include <ola/OlaClientWrapper.h>
-#include <ola/network/SelectServer.h>
+#include <ola/io/SelectServer.h>
 
 #include <string>
 
 using ola::SimpleClient;
 using ola::OlaClient;
-using ola::network::SelectServer;
+using ola::io::SelectServer;
 using std::string;
 
 /* color names used */

@@ -27,10 +27,10 @@
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
+#include "ola/io/SelectServer.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/Interface.h"
 #include "ola/network/NetworkUtils.h"
-#include "ola/network/SelectServer.h"
 #include "ola/network/Socket.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMResponseCodes.h"
@@ -118,7 +118,7 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
 
   private:
     ola::MockClock m_clock;
-    ola::network::SelectServer ss;
+    ola::io::SelectServer ss;
     bool m_got_dmx;
     bool m_got_rdm_timeout;
     bool m_discovery_done;

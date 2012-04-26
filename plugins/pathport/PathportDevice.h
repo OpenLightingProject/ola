@@ -23,7 +23,7 @@
 
 #include <string>
 #include "olad/Device.h"
-#include "ola/network/SelectServer.h"
+#include "ola/io/SelectServer.h"
 #include "plugins/pathport/PathportNode.h"
 
 namespace ola {
@@ -55,7 +55,7 @@ class PathportDevice: public ola::Device {
     class Preferences *m_preferences;
     class PluginAdaptor *m_plugin_adaptor;
     PathportNode *m_node;
-    ola::network::timeout_id m_timeout_id;
+    ola::thread::timeout_id m_timeout_id;
 
     static const char PATHPORT_DEVICE_NAME[];
     static const uint32_t PORTS_PER_DEVICE = 8;

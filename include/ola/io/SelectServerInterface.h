@@ -18,8 +18,8 @@
  * Copyright (C) 2010 Simon Newton
  */
 
-#ifndef INCLUDE_OLA_NETWORK_SELECTSERVERINTERFACE_H_
-#define INCLUDE_OLA_NETWORK_SELECTSERVERINTERFACE_H_
+#ifndef INCLUDE_OLA_IO_SELECTSERVERINTERFACE_H_
+#define INCLUDE_OLA_IO_SELECTSERVERINTERFACE_H_
 
 #include <ola/Clock.h>  // NOLINT
 #include <ola/Callback.h>  // NOLINT
@@ -27,11 +27,7 @@
 #include <ola/thread/SchedulingExecutorInterface.h>  // NOLINT
 
 namespace ola {
-namespace network {
-
-using ola::io::ConnectedDescriptor;
-using ola::io::ReadFileDescriptor;
-using ola::io::WriteFileDescriptor;
+namespace io {
 
 class SelectServerInterface: public ola::thread::SchedulingExecutorInterface {
   public :
@@ -68,6 +64,6 @@ class SelectServerInterface: public ola::thread::SchedulingExecutorInterface {
 
     virtual const TimeStamp *WakeUpTime() const = 0;
 };
-}  // network
+}  // io
 }  // ola
-#endif  // INCLUDE_OLA_NETWORK_SELECTSERVERINTERFACE_H_
+#endif  // INCLUDE_OLA_IO_SELECTSERVERINTERFACE_H_

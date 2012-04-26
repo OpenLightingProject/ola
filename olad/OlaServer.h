@@ -30,8 +30,8 @@
 #include <vector>
 
 #include "ola/ExportMap.h"
+#include "ola/io/SelectServer.h"
 #include "ola/network/InterfacePicker.h"
-#include "ola/network/SelectServer.h"
 #include "ola/network/Socket.h"
 #include "ola/plugin_id.h"
 #include "ola/rdm/UID.h"
@@ -62,7 +62,7 @@ class OlaServer {
     OlaServer(class OlaClientServiceFactory *factory,
               const vector<class PluginLoader*> &plugin_loaders,
               class PreferencesFactory *preferences_factory,
-              ola::network::SelectServer *ss,
+              ola::io::SelectServer *ss,
               ola_server_options *ola_options,
               ola::network::TcpAcceptingSocket *socket = NULL,
               ExportMap *export_map = NULL);
@@ -71,7 +71,7 @@ class OlaServer {
     void ReloadPlugins();
     void StopServer() { m_ss->Terminate(); }
     void NewConnection(ola::network::TcpSocket *socket);
-    void SocketClosed(ola::network::ConnectedDescriptor *socket);
+    void SocketClosed(ola::io::ConnectedDescriptor *socket);
     bool RunHousekeeping();
     void CheckForReload();
 
@@ -85,12 +85,12 @@ class OlaServer {
     bool StartHttpServer(const ola::network::Interface &interface);
 #endif
     void StopPlugins();
-    void InternalNewConnection(ola::network::ConnectedDescriptor *descriptor);
+    void InternalNewConnection(ola::io::ConnectedDescriptor *descriptor);
     void CleanupConnection(class OlaClientService *service);
 
     class OlaClientServiceFactory *m_service_factory;
     vector<class PluginLoader*> m_plugin_loaders;
-    ola::network::SelectServer *m_ss;
+    ola::io::SelectServer *m_ss;
     ola::network::TcpAcceptingSocket *m_accepting_socket;
 
     class DeviceManager *m_device_manager;
@@ -108,7 +108,7 @@ class OlaServer {
     bool m_reload_plugins;
     bool m_init_run;
     bool m_free_export_map;
-    ola::network::timeout_id m_housekeeping_timeout;
+    ola::thread::timeout_id m_housekeeping_timeout;
     std::map<int, class OlaClientService*> m_sd_to_service;
     OlaHttpServer_t *m_httpd;
     ola_server_options m_options;

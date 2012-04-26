@@ -182,66 +182,66 @@ class TestMockPlugin: public ola::Plugin {
  * We mock this out so we can manipulate the wake up time. It was either this
  * or the mocking the plugin adaptor.
  */
-class MockSelectServer: public ola::network::SelectServerInterface {
+class MockSelectServer: public ola::io::SelectServerInterface {
   public:
     explicit MockSelectServer(const TimeStamp *wake_up):
       SelectServerInterface(),
       m_wake_up(wake_up) {}
     ~MockSelectServer() {}
 
-    bool AddReadDescriptor(ola::network::ReadFileDescriptor *descriptor) {
+    bool AddReadDescriptor(ola::io::ReadFileDescriptor *descriptor) {
       (void) descriptor;
       return true;
     }
 
-    bool AddReadDescriptor(ola::network::ConnectedDescriptor *descriptor,
+    bool AddReadDescriptor(ola::io::ConnectedDescriptor *descriptor,
                    bool delete_on_close = false) {
       (void) descriptor;
       (void) delete_on_close;
       return true;
     }
 
-    bool RemoveReadDescriptor(ola::network::ReadFileDescriptor *descriptor) {
+    bool RemoveReadDescriptor(ola::io::ReadFileDescriptor *descriptor) {
       (void) descriptor;
       return true;
     }
 
-    bool RemoveReadDescriptor(ola::network::ConnectedDescriptor *descriptor) {
+    bool RemoveReadDescriptor(ola::io::ConnectedDescriptor *descriptor) {
       (void) descriptor;
       return true;
     }
 
-    bool AddWriteDescriptor(ola::network::WriteFileDescriptor *descriptor) {
+    bool AddWriteDescriptor(ola::io::WriteFileDescriptor *descriptor) {
       (void) descriptor;
       return true;
     }
 
-    bool RemoveWriteDescriptor(ola::network::WriteFileDescriptor *descriptor) {
+    bool RemoveWriteDescriptor(ola::io::WriteFileDescriptor *descriptor) {
       (void) descriptor;
       return true;
     }
 
-    ola::network::timeout_id RegisterRepeatingTimeout(
+    ola::thread::timeout_id RegisterRepeatingTimeout(
         unsigned int,
         ola::Callback0<bool> *) {
       return ola::thread::INVALID_TIMEOUT;
     }
-    ola::network::timeout_id RegisterRepeatingTimeout(
+    ola::thread::timeout_id RegisterRepeatingTimeout(
         const ola::TimeInterval&,
         ola::Callback0<bool>*) {
       return ola::thread::INVALID_TIMEOUT;
     }
-    ola::network::timeout_id RegisterSingleTimeout(
+    ola::thread::timeout_id RegisterSingleTimeout(
         unsigned int,
         ola::SingleUseCallback0<void> *) {
       return ola::thread::INVALID_TIMEOUT;
     }
-    ola::network::timeout_id RegisterSingleTimeout(
+    ola::thread::timeout_id RegisterSingleTimeout(
         const ola::TimeInterval&,
         ola::SingleUseCallback0<void> *) {
       return ola::thread::INVALID_TIMEOUT;
     }
-    void RemoveTimeout(ola::network::timeout_id id) { (void) id; }
+    void RemoveTimeout(ola::thread::timeout_id id) { (void) id; }
     const TimeStamp *WakeUpTime() const { return m_wake_up; }
 
     void Execute(ola::BaseCallback0<void> *callback) {

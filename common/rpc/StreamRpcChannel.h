@@ -25,7 +25,7 @@
 #include <google/protobuf/service.h>
 #include <ola/Callback.h>
 #include <ola/io/Descriptor.h>
-#include <ola/network/SelectServer.h>
+#include <ola/io/SelectServer.h>
 #include "ola/ExportMap.h"
 #include "config.h"
 #include HASH_MAP_H

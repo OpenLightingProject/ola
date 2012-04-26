@@ -27,18 +27,18 @@
 #include "ola/Callback.h"
 #include "ola/Clock.h"
 #include "ola/Logging.h"
+#include "ola/io/SelectServer.h"
 #include "ola/network/AdvancedTCPConnector.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
-#include "ola/network/SelectServer.h"
 #include "ola/network/Socket.h"
 
 using ola::TimeInterval;
+using ola::io::SelectServer;
 using ola::network::ExponentialBackoffPolicy;
 using ola::network::AdvancedTCPConnector;
 using ola::network::IPV4Address;
 using ola::network::LinearBackoffPolicy;
-using ola::network::SelectServer;
 using ola::network::StringToAddress;
 using ola::network::TcpAcceptingSocket;
 using ola::network::TcpSocket;

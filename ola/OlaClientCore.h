@@ -44,7 +44,7 @@ namespace ola {
 class OlaClientCoreServiceImpl;
 
 using std::string;
-using ola::network::ConnectedDescriptor;
+using ola::io::ConnectedDescriptor;
 using ola::rpc::SimpleRpcController;
 using ola::rpc::StreamRpcChannel;
 

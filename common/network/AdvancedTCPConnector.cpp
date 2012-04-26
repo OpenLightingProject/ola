@@ -19,9 +19,9 @@
 
 #include <ola/Callback.h>
 #include <ola/Logging.h>
+#include <ola/io/SelectServerInterface.h>
 #include <ola/network/AdvancedTCPConnector.h>
 #include <ola/network/TCPConnector.h>
-#include <ola/thread/SchedulerInterface.h>
 
 
 namespace ola {
@@ -38,7 +38,7 @@ using std::pair;
  * @param max_backoff the maximum time to wait between connects.
  */
 AdvancedTCPConnector::AdvancedTCPConnector(
-    ola::network::SelectServerInterface *ss,
+    ola::io::SelectServerInterface *ss,
     OnConnect *on_connect,
     const ola::TimeInterval &connection_timeout)
     : m_on_connect(on_connect),

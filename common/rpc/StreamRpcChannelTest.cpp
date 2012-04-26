@@ -21,7 +21,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <google/protobuf/stubs/common.h>
 #include <string>
-#include "ola/network/SelectServer.h"
+#include "ola/io/SelectServer.h"
 #include "ola/network/Socket.h"
 #include "common/rpc/StreamRpcChannel.h"
 #include "common/rpc/SimpleRpcController.h"
@@ -29,7 +29,7 @@
 
 using google::protobuf::NewCallback;
 using ola::io::LoopbackDescriptor;
-using ola::network::SelectServer;
+using ola::io::SelectServer;
 using ola::rpc::EchoReply;
 using ola::rpc::EchoRequest;
 using ola::rpc::STREAMING_NO_RESPONSE;

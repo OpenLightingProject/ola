@@ -21,7 +21,7 @@
 #ifndef PLUGINS_USBPRO_DMXTERWIDGET_H_
 #define PLUGINS_USBPRO_DMXTERWIDGET_H_
 
-#include "ola/network/SelectServerInterface.h"
+#include "ola/io/SelectServerInterface.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
 #include "ola/rdm/RDMControllerInterface.h"

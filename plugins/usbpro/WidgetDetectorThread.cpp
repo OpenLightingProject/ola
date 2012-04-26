@@ -56,7 +56,7 @@ namespace usbpro {
  */
 WidgetDetectorThread::WidgetDetectorThread(
   NewWidgetHandler *handler,
-  ola::network::SelectServerInterface *ss,
+  ola::io::SelectServerInterface *ss,
   unsigned int usb_pro_timeout,
   unsigned int robe_timeout)
     : ola::thread::Thread(),

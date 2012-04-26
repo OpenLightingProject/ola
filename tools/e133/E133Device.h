@@ -26,8 +26,8 @@
 #include <vector>
 
 #include "ola/Clock.h"
+#include "ola/io/SelectServerInterface.h"
 #include "ola/network/IPV4Address.h"
-#include "ola/network/SelectServerInterface.h"
 #include "ola/network/Socket.h"
 #include "ola/rdm/RDMControllerInterface.h"
 #include "plugins/e131/e131/CID.h"
@@ -52,7 +52,7 @@ using std::auto_ptr;
  */
 class E133Device {
   public:
-    E133Device(ola::network::SelectServerInterface *ss,
+    E133Device(ola::io::SelectServerInterface *ss,
                const ola::network::IPV4Address &ip_address,
                class EndpointManager *endpoint_manager,
                class TCPConnectionStats *tcp_stats);
@@ -77,7 +77,7 @@ class E133Device {
     ola::plugin::e131::CID m_cid;
 
     // TCP connection classes
-    ola::network::ConnectedDescriptor *m_tcp_descriptor;
+    ola::io::ConnectedDescriptor *m_tcp_descriptor;
     ola::plugin::e131::OutgoingStreamTransport *m_outgoing_tcp_transport;
     E133HealthCheckedConnection *m_health_checked_connection;
 
@@ -86,7 +86,7 @@ class E133Device {
 
     // network members
     const string m_preferred_ip;
-    ola::network::SelectServerInterface *m_ss;
+    ola::io::SelectServerInterface *m_ss;
     ola::network::IPV4Address m_ip_address;
     ola::network::UdpSocket m_udp_socket;
     ola::network::TcpAcceptingSocket m_tcp_socket;

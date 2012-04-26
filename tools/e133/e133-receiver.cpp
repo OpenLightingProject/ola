@@ -30,9 +30,9 @@
 
 #include <ola/BaseTypes.h>
 #include <ola/Logging.h>
+#include <ola/io/SelectServer.h>
 #include <ola/network/InterfacePicker.h>
 #include <ola/network/NetworkUtils.h>
-#include <ola/network/SelectServer.h>
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/UID.h>
 
@@ -176,7 +176,7 @@ class SimpleE133Node {
     void Stop() { m_ss.Terminate(); }
 
   private:
-    ola::network::SelectServer m_ss;
+    ola::io::SelectServer m_ss;
     ola::io::UnmanagedFileDescriptor m_stdin_descriptor;
     SlpThread m_slp_thread;
     EndpointManager m_endpoint_manager;

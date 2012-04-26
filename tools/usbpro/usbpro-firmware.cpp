@@ -25,7 +25,7 @@
 #include <termios.h>
 #include <ola/Logging.h>
 #include <ola/Callback.h>
-#include <ola/network/SelectServer.h>
+#include <ola/io/SelectServer.h>
 
 #include <iostream>
 #include <fstream>
@@ -38,7 +38,7 @@ using std::endl;
 using std::ifstream;
 using std::string;
 using ola::plugin::usbpro::DispatchingUsbProWidget;
-using ola::network::SelectServer;
+using ola::io::SelectServer;
 
 static const char DEFAULT_DEVICE[] = "/dev/ttyUSB0";
 static const char DEFAULT_FIRMWARE[] = "main.bin";
@@ -57,7 +57,7 @@ class FirmwareTransferer {
   public:
     FirmwareTransferer(ifstream *file,
                        DispatchingUsbProWidget *widget,
-                       ola::network::SelectServer *ss):
+                       SelectServer *ss):
         m_sucessful(false),
         m_firmware(file),
         m_widget(widget),
@@ -230,7 +230,7 @@ void DisplayHelpAndExit(char *argv[]) {
 }
 
 
-void Stop(ola::network::SelectServer *ss) {
+void Stop(SelectServer *ss) {
   ss->Terminate();
 }
 
@@ -258,9 +258,9 @@ int main(int argc, char *argv[]) {
     exit(1);
   }
 
-  ola::network::SelectServer ss;
+  SelectServer ss;
 
-  ola::network::ConnectedDescriptor *descriptor =
+  ola::io::ConnectedDescriptor *descriptor =
      ola::plugin::usbpro::BaseUsbProWidget::OpenDevice(opts.device);
   if (!descriptor)
     exit(EX_UNAVAILABLE);

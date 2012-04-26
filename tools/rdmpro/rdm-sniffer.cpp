@@ -25,8 +25,8 @@
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>
 #include <ola/Logging.h>
+#include <ola/io/SelectServer.h>
 #include <ola/network/NetworkUtils.h>
-#include <ola/network/SelectServer.h>
 #include <ola/rdm/CommandPrinter.h>
 #include <ola/rdm/PidStoreHelper.h>
 #include <ola/rdm/RDMCommand.h>
@@ -50,7 +50,7 @@ using std::endl;
 using std::string;
 using std::stringstream;
 using std::vector;
-using ola::network::SelectServerInterface;
+using ola::io::SelectServerInterface;
 using ola::plugin::usbpro::DispatchingUsbProWidget;
 using ola::messaging::Descriptor;
 using ola::messaging::Message;
@@ -579,7 +579,7 @@ void DisplayHelpAndExit(char *argv[]) {
 }
 
 
-void Stop(ola::network::SelectServer *ss) {
+void Stop(ola::io::SelectServer *ss) {
   ss->Terminate();
 }
 
@@ -625,12 +625,12 @@ int main(int argc, char *argv[]) {
 
   const string device = opts.args[0];
 
-  ola::network::ConnectedDescriptor *descriptor =
+  ola::io::ConnectedDescriptor *descriptor =
       ola::plugin::usbpro::BaseUsbProWidget::OpenDevice(device);
   if (!descriptor)
     exit(EX_UNAVAILABLE);
 
-  ola::network::SelectServer ss;
+  ola::io::SelectServer ss;
   descriptor->SetOnClose(ola::NewSingleCallback(&Stop, &ss));
   ss.AddReadDescriptor(descriptor);
 

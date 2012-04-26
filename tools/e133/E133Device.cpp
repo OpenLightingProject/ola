@@ -21,9 +21,9 @@
 
 #include <ola/Callback.h>
 #include <ola/Logging.h>
+#include <ola/io/SelectServerInterface.h>
 #include <ola/network/HealthCheckedConnection.h>
 #include <ola/network/IPV4Address.h>
-#include <ola/network/SelectServerInterface.h>
 #include <ola/rdm/RDMControllerInterface.h>
 #include <ola/rdm/RDMHelper.h>
 
@@ -53,7 +53,7 @@ using std::string;
 using std::vector;
 
 
-E133Device::E133Device(ola::network::SelectServerInterface *ss,
+E133Device::E133Device(ola::io::SelectServerInterface *ss,
                        const ola::network::IPV4Address &ip_address,
                        EndpointManager *endpoint_manager,
                        TCPConnectionStats *tcp_stats)
@@ -192,7 +192,7 @@ bool E133Device::CloseTCPConnection() {
   m_ss->RemoveReadDescriptor(m_tcp_descriptor);
   m_tcp_descriptor->Close();
 
-  ola::network::ConnectedDescriptor::OnCloseCallback *callback =
+  ola::io::ConnectedDescriptor::OnCloseCallback *callback =
     m_tcp_descriptor->TransferOnClose();
   callback->Run();
   return true;

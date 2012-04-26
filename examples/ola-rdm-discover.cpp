@@ -24,7 +24,7 @@
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
 #include <sysexits.h>
-#include <ola/network/SelectServer.h>
+#include <ola/io/SelectServer.h>
 
 
 #include <iostream>
@@ -40,7 +40,7 @@ using std::string;
 using std::vector;
 using ola::OlaCallbackClient;
 using ola::OlaCallbackClientWrapper;
-using ola::network::SelectServer;
+using ola::io::SelectServer;
 using ola::rdm::UIDSet;
 
 static const int INVALID_VALUE = -1;

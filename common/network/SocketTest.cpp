@@ -26,15 +26,15 @@
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/io/Descriptor.h"
+#include "ola/io/SelectServer.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
-#include "ola/network/SelectServer.h"
 #include "ola/network/Socket.h"
 
 using std::string;
 using ola::io::ConnectedDescriptor;
+using ola::io::SelectServer;
 using ola::network::IPV4Address;
-using ola::network::SelectServer;
 using ola::network::StringToAddress;
 using ola::network::TcpAcceptingSocket;
 using ola::network::TcpSocket;

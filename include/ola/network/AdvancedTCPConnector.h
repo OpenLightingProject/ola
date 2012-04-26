@@ -23,7 +23,7 @@
 #include <math.h>
 
 #include <ola/Callback.h>
-#include <ola/thread/SchedulerInterface.h>
+#include <ola/io/SelectServerInterface.h>
 #include <ola/network/TCPConnector.h>
 #include <map>
 
@@ -135,7 +135,7 @@ class AdvancedTCPConnector {
      */
     typedef ola::Callback3<void, IPV4Address, uint16_t, TcpSocket*> OnConnect;
 
-    AdvancedTCPConnector(SelectServerInterface *ss,
+    AdvancedTCPConnector(ola::io::SelectServerInterface *ss,
                          OnConnect *on_connect,
                          const ola::TimeInterval &connection_timeout);
     virtual ~AdvancedTCPConnector();
@@ -187,7 +187,7 @@ class AdvancedTCPConnector {
     void ScheduleRetry(const IPPortPair &key, ConnectionInfo *info);
 
   private:
-    SelectServerInterface *m_ss;
+    ola::io::SelectServerInterface *m_ss;
 
     TCPConnector m_connector;
     const ola::TimeInterval m_connection_timeout;

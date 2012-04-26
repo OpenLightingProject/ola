@@ -60,7 +60,7 @@ const char ArtNetNodeImpl::ARTNET_ID[] = "Art-Net";
  * @param subnet_address the ArtNet 'subnet' address, 4 bits.
  */
 ArtNetNodeImpl::ArtNetNodeImpl(const ola::network::Interface &interface,
-                               ola::network::SelectServerInterface *ss,
+                               ola::io::SelectServerInterface *ss,
                                const ArtNetNodeOptions &options,
                                ola::network::UdpSocketInterface *socket)
     : m_running(false),
@@ -1800,7 +1800,7 @@ void ArtNetNodeImpl::RunRDMCallbackWithUIDs(const uid_map &uids,
  * DmxTriWidget Constructor
  */
 ArtNetNode::ArtNetNode(const ola::network::Interface &interface,
-                       ola::network::SelectServerInterface *ss,
+                       ola::io::SelectServerInterface *ss,
                        const ArtNetNodeOptions &options,
                        ola::network::UdpSocketInterface *socket):
     m_impl(interface, ss, options, socket) {

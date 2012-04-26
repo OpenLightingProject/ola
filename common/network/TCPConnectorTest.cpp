@@ -26,16 +26,16 @@
 #include "ola/Callback.h"
 #include "ola/Clock.h"
 #include "ola/Logging.h"
+#include "ola/io/SelectServer.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
-#include "ola/network/SelectServer.h"
 #include "ola/network/Socket.h"
 #include "ola/network/TCPConnector.h"
 
 using ola::TimeInterval;
-using ola::network::ConnectedDescriptor;
+using ola::io::ConnectedDescriptor;
 using ola::network::IPV4Address;
-using ola::network::SelectServer;
+using ola::io::SelectServer;
 using ola::network::StringToAddress;
 using ola::network::TCPConnector;
 using ola::network::TcpAcceptingSocket;

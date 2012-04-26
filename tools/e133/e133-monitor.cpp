@@ -37,10 +37,10 @@
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
 #include <ola/Stringutils.h>
+#include <ola/io/SelectServer.h>
 #include <ola/network/AdvancedTCPConnector.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/NetworkUtils.h>
-#include <ola/network/SelectServer.h>
 #include <ola/network/Socket.h>
 #include <ola/rdm/CommandPrinter.h>
 #include <ola/rdm/PidStoreHelper.h>
@@ -218,7 +218,7 @@ class SimpleE133Monitor {
 
   private:
     ola::rdm::CommandPrinter m_command_printer;
-    ola::network::SelectServer m_ss;
+    ola::io::SelectServer m_ss;
     SlpThread m_slp_thread;
     ola::network::AdvancedTCPConnector m_connector;
     ola::network::LinearBackoffPolicy m_backoff_policy;

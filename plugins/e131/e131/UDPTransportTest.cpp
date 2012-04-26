@@ -23,9 +23,9 @@
 #include <memory>
 
 #include "ola/Logging.h"
+#include "ola/io/SelectServer.h"
 #include "ola/network/InterfacePicker.h"
 #include "ola/network/NetworkUtils.h"
-#include "ola/network/SelectServer.h"
 #include "ola/network/Socket.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
 #include "plugins/e131/e131/UDPTransport.h"
@@ -50,14 +50,14 @@ class UDPTransportTest: public CppUnit::TestFixture {
     void FatalStop() { CPPUNIT_ASSERT(false); }
 
   private:
-    ola::network::SelectServer *m_ss;
+    ola::io::SelectServer *m_ss;
     static const int ABORT_TIMEOUT_IN_MS = 1000;
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(UDPTransportTest);
 
 void UDPTransportTest::setUp() {
-  m_ss = new ola::network::SelectServer();
+  m_ss = new ola::io::SelectServer();
 }
 
 void UDPTransportTest::tearDown() {

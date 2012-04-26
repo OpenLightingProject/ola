@@ -23,7 +23,7 @@
 #include <string>
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
-#include "ola/network/SelectServerInterface.h"
+#include "ola/io/SelectServerInterface.h"
 #include "plugins/usbpro/ArduinoRGBDevice.h"
 
 namespace ola {
@@ -36,7 +36,7 @@ using std::string;
 /*
  * New Arduino RGB Device
  */
-ArduinoRGBDevice::ArduinoRGBDevice(ola::network::SelectServerInterface *ss,
+ArduinoRGBDevice::ArduinoRGBDevice(ola::io::SelectServerInterface *ss,
                                    ola::AbstractPlugin *owner,
                                    const string &name,
                                    ArduinoWidget *widget,

@@ -4,8 +4,6 @@ SOURCES = AdvancedTCPConnector.h\
           Interface.h \
           InterfacePicker.h \
           NetworkUtils.h \
-          SelectServer.h \
-          SelectServerInterface.h \
           Socket.h \
           TCPConnector.h
 

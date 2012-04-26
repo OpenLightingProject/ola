@@ -18,8 +18,8 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef INCLUDE_OLA_NETWORK_SELECTSERVER_H_
-#define INCLUDE_OLA_NETWORK_SELECTSERVER_H_
+#ifndef INCLUDE_OLA_IO_SELECTSERVER_H_
+#define INCLUDE_OLA_IO_SELECTSERVER_H_
 
 #include <queue>
 #include <set>
@@ -30,17 +30,14 @@
 #include <ola/Clock.h>  // NOLINT
 #include <ola/ExportMap.h>  // NOLINT
 #include <ola/io/Descriptor.h>  // NOLINT
-#include <ola/network/SelectServerInterface.h>  // NOLINT
+#include <ola/io/SelectServerInterface.h>  // NOLINT
 #include <ola/network/Socket.h>  // NOLINT
 #include <ola/thread/Thread.h>  // NOLINT
 
 namespace ola {
-namespace network {
+namespace io {
 
 using ola::ExportMap;
-using ola::io::ConnectedDescriptor;
-using ola::io::ReadFileDescriptor;
-using ola::io::WriteFileDescriptor;
 using ola::thread::timeout_id;
 using std::priority_queue;
 using std::string;
@@ -183,7 +180,7 @@ class SelectServer: public SelectServerInterface {
 
 
     typedef struct {
-      ola::io::ConnectedDescriptor *descriptor;
+      ConnectedDescriptor *descriptor;
       bool delete_on_close;
     } connected_descriptor_t;
 
@@ -226,7 +223,7 @@ class SelectServer: public SelectServerInterface {
     LoopClosureSet m_loop_closures;
     std::queue<ola::BaseCallback0<void>*> m_incoming_queue;
     ola::thread::Mutex m_incoming_mutex;
-    ola::io::LoopbackDescriptor m_incoming_descriptor;
+    LoopbackDescriptor m_incoming_descriptor;
 
     SelectServer(const SelectServer&);
     SelectServer operator=(const SelectServer&);
@@ -244,6 +241,6 @@ class SelectServer: public SelectServerInterface {
     static const unsigned int POLL_INTERVAL_SECOND = 10;
     static const unsigned int POLL_INTERVAL_USECOND = 0;
 };
-}  // network
+}  // io
 }  // ola
-#endif  // INCLUDE_OLA_NETWORK_SELECTSERVER_H_
+#endif  // INCLUDE_OLA_IO_SELECTSERVER_H_

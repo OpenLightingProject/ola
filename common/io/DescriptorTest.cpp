@@ -25,9 +25,7 @@
 
 #include "ola/Callback.h"
 #include "ola/Logging.h"
-#include "ola/network/IPV4Address.h"
-#include "ola/network/NetworkUtils.h"
-#include "ola/network/SelectServer.h"
+#include "ola/io/SelectServer.h"
 #include "ola/network/Socket.h"
 
 using std::string;
@@ -35,12 +33,7 @@ using ola::io::ConnectedDescriptor;
 using ola::io::LoopbackDescriptor;
 using ola::io::PipeDescriptor;
 using ola::io::UnixSocket;
-using ola::network::IPV4Address;
-using ola::network::SelectServer;
-using ola::network::StringToAddress;
-using ola::network::TcpAcceptingSocket;
-using ola::network::TcpSocket;
-using ola::network::UdpSocket;
+using ola::io::SelectServer;
 
 static const unsigned char test_cstring[] = "Foo";
 // used to set a timeout which aborts the tests

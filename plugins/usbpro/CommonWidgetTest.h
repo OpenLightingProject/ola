@@ -23,7 +23,7 @@
 
 #include "ola/Logging.h"
 #include "ola/io/Descriptor.h"
-#include "ola/network/SelectServer.h"
+#include "ola/io/SelectServer.h"
 #include "plugins/usbpro/MockEndpoint.h"
 
 
@@ -39,7 +39,7 @@ class CommonWidgetTest: public CppUnit::TestFixture {
     virtual void tearDown();
 
   protected:
-    ola::network::SelectServer m_ss;
+    ola::io::SelectServer m_ss;
     ola::io::PipeDescriptor m_descriptor;
     auto_ptr<ola::io::PipeDescriptor> m_other_end;
     auto_ptr<MockEndpoint> m_endpoint;

@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * SelectServerTester.h
- * Runs all the RPC tests
+ * Runs all the SelectServer tests
  * Copyright (C) 2005-2008 Simon Newton
  */
 

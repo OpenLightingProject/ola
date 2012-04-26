@@ -23,8 +23,8 @@
 #include <ola/Callback.h>
 #include <ola/Clock.h>
 #include <ola/io/Descriptor.h>
+#include <ola/io/SelectServerInterface.h>
 #include <ola/network/IPV4Address.h>
-#include <ola/network/SelectServerInterface.h>
 #include <ola/network/Socket.h>
 #include <set>
 
@@ -37,7 +37,7 @@ namespace network {
  */
 class TCPConnector {
   public:
-    explicit TCPConnector(SelectServerInterface *ss);
+    explicit TCPConnector(ola::io::SelectServerInterface *ss);
     ~TCPConnector();
 
     typedef ola::SingleUseCallback2<void, TcpSocket*, int> TCPConnectCallback;
@@ -86,7 +86,7 @@ class TCPConnector {
 
     typedef std::set<PendingTCPConnection*> ConnectionSet;
 
-    ola::network::SelectServerInterface *m_ss;
+    ola::io::SelectServerInterface *m_ss;
     ConnectionSet m_connections;
 
 

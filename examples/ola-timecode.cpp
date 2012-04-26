@@ -35,7 +35,7 @@
 
 using ola::OlaCallbackClientWrapper;
 using ola::StringToInt;
-using ola::network::SelectServer;
+using ola::io::SelectServer;
 using ola::timecode::TimeCode;
 using std::string;
 using std::vector;
@@ -110,7 +110,7 @@ void DisplayHelpAndExit(char arg[]) {
 /**
  * Called on when we return from sending timecode data.
  */
-void TimeCodeDone(ola::network::SelectServer *ss,
+void TimeCodeDone(ola::io::SelectServer *ss,
                   const string &status) {
   OLA_WARN << status;
   ss->Terminate();

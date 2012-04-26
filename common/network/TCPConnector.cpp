@@ -26,7 +26,7 @@
 namespace ola {
 namespace network {
 
-TCPConnector::TCPConnector(SelectServerInterface *ss)
+TCPConnector::TCPConnector(ola::io::SelectServerInterface *ss)
     : m_ss(ss) {
 }
 

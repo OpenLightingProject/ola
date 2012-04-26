@@ -49,7 +49,7 @@
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
 #include <ola/DmxBuffer.h>
-#include <ola/network/SelectServer.h>
+#include <ola/io/SelectServer.h>
 
 #include <string>
 #include <iostream>
@@ -57,7 +57,7 @@
 using ola::DmxBuffer;
 using ola::OlaCallbackClient;
 using ola::OlaCallbackClientWrapper;
-using ola::network::SelectServer;
+using ola::io::SelectServer;
 using std::string;
 
 /* color names used */

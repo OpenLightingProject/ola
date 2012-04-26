@@ -23,7 +23,7 @@
 #include <memory>
 
 #include "ola/Logging.h"
-#include "ola/network/SelectServer.h"
+#include "ola/io/SelectServer.h"
 #include "ola/network/Socket.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
 #include "plugins/e131/e131/TCPTransport.h"
@@ -66,7 +66,7 @@ class TCPTransportTest: public CppUnit::TestFixture {
     unsigned int m_pdus_received;
     bool m_stream_ok;
     ola::network::IPV4Address m_localhost;
-    auto_ptr<ola::network::SelectServer> m_ss;
+    auto_ptr<ola::io::SelectServer> m_ss;
     ola::io::LoopbackDescriptor m_loopback;
     CID m_cid;
     auto_ptr<Callback0<void> > m_rx_callback;
@@ -102,7 +102,7 @@ void TCPTransportTest::setUp() {
                                    9999));
 
   // SelectServer
-  m_ss.reset(new ola::network::SelectServer());
+  m_ss.reset(new ola::io::SelectServer());
   m_ss->RegisterSingleTimeout(
       ABORT_TIMEOUT_IN_MS,
       NewSingleCallback(this, &TCPTransportTest::FatalStop));

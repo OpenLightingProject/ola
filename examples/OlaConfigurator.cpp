@@ -19,6 +19,7 @@
  */
 
 #include <ola/Callback.h>
+#include <ola/io/SelectServer.h>
 #include <stdlib.h>
 #include <iostream>
 #include <string>
@@ -29,7 +30,7 @@
 using ola::NewSingleCallback;
 using ola::OlaCallbackClient;
 using ola::OlaDevice;
-using ola::network::SelectServer;
+using ola::io::SelectServer;
 using std::cout;
 using std::endl;
 using std::string;

@@ -22,10 +22,10 @@
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
+#include <ola/io/SelectServer.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/Interface.h>
 #include <ola/network/InterfacePicker.h>
-#include <ola/network/SelectServer.h>
 #include <ola/rdm/UID.h>
 #include <signal.h>
 #include <sysexits.h>
@@ -52,7 +52,7 @@ typedef struct {
 
 // stupid globals for now
 SlpThread *thread;
-ola::network::SelectServer ss;
+ola::io::SelectServer ss;
 unsigned int registrations_active;
 
 /**
@@ -66,7 +66,7 @@ void RegisterCallback(bool ok) {
 /**
  * Called when a de-registration request completes.
  */
-void DeRegisterCallback(ola::network::SelectServer *ss, bool ok) {
+void DeRegisterCallback(ola::io::SelectServer *ss, bool ok) {
   OLA_INFO << "in deregister callback, state is " << ok;
   if (--registrations_active == 0)
     ss->Terminate();

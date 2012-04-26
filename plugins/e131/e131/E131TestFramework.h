@@ -30,12 +30,12 @@
 #include "ola/BaseTypes.h"
 #include "ola/DmxBuffer.h"
 #include "ola/io/Descriptor.h"
-#include "ola/network/SelectServer.h"
+#include "ola/io/SelectServer.h"
 #include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/E131Node.h"
 
 using ola::DmxBuffer;
-using ola::network::SelectServer;
+using ola::io::SelectServer;
 using ola::plugin::e131::CID;
 using ola::plugin::e131::E131Node;
 using std::cout;

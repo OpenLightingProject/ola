@@ -339,7 +339,7 @@ void SlpThread::RegisterRequest(slp_registration_callback *callback,
  */
 bool SlpThread::PerformRegistration(const string &url,
                                     unsigned short lifetime,
-                                    ola::network::timeout_id *timeout) {
+                                    ola::thread::timeout_id *timeout) {
   std::stringstream str;
   str << E133_SLP_SERVICE_NAME << "://" << url;
   SLPError callbackerr = SLP_OK;

@@ -7,7 +7,6 @@ libolanetwork_la_SOURCES = AdvancedTCPConnector.cpp \
                            Interface.cpp \
                            InterfacePicker.cpp \
                            NetworkUtils.cpp \
-                           SelectServer.cpp \
                            Socket.cpp \
                            TCPConnector.cpp
 
@@ -27,6 +26,7 @@ COMMON_TEST_LDADD = $(CPPUNIT_LIBS) \
                     ./libolanetwork.la \
                     ../export_map/libolaexportmap.la \
                     ../io/libolaio.la \
+                    ../io/libolaio.la \
                     ../logging/liblogging.la \
                     ../thread/libthread.la \
                     ../utils/libolautils.la
@@ -40,9 +40,7 @@ NetworkTester_SOURCES = IPAddressTest.cpp \
                         InterfacePickerTest.cpp \
                         InterfaceTest.cpp \
                         NetworkUtilsTest.cpp \
-                        SelectServerTest.cpp \
-                        SelectServerTester.cpp \
-                        SelectServerThreadTest.cpp \
+                        NetworkTester.cpp \
                         SocketTest.cpp
 NetworkTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 NetworkTester_LDADD = $(COMMON_TEST_LDADD)

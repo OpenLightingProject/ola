@@ -77,7 +77,7 @@ const unsigned int OlaServer::K_HOUSEKEEPING_TIMEOUT_MS = 10000;
 OlaServer::OlaServer(OlaClientServiceFactory *factory,
                      const vector<PluginLoader*> &plugin_loaders,
                      PreferencesFactory *preferences_factory,
-                     ola::network::SelectServer *select_server,
+                     ola::io::SelectServer *select_server,
                      ola_server_options *ola_options,
                      ola::network::TcpAcceptingSocket *socket,
                      ExportMap *export_map)

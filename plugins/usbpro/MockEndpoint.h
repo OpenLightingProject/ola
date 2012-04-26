@@ -21,7 +21,7 @@
  * pipe.Init();
  * ola::io::PipeSocket *other_end = pip.OppositeEnd();
  * MockEndpoint endpoint(other_end)
- * ola::network::SelectServer ss;
+ * ola::io::SelectServer ss;
  * ss.AddReadDescriptor(&pipe);
  * ss.AddReadDescriptor(other_end);
  * // Do the test here

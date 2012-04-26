@@ -35,9 +35,9 @@
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>
 #include <ola/Logging.h>
+#include <ola/io/SelectServer.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/NetworkUtils.h>
-#include <ola/network/SelectServer.h>
 #include <ola/network/Socket.h>
 #include <ola/rdm/CommandPrinter.h>
 #include <ola/rdm/PidStoreHelper.h>
@@ -239,7 +239,7 @@ class SimpleE133Controller {
 
   private:
     SimpleE133ControllerOptions m_options;
-    ola::network::SelectServer m_ss;
+    ola::io::SelectServer m_ss;
 
     // The Controller's CID
     ola::plugin::e131::CID m_cid;

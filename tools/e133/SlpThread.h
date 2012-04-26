@@ -34,7 +34,7 @@
 #include <slp.h>
 #include <ola/Callback.h>
 #include <ola/thread/Thread.h>
-#include <ola/network/SelectServer.h>
+#include <ola/io/SelectServer.h>
 #include <ola/network/Socket.h>
 #include <ola/thread/ExecutorInterface.h>
 
@@ -87,17 +87,17 @@ class SlpThread: public ola::thread::Thread {
   private:
     typedef struct {
       unsigned short lifetime;
-      ola::network::timeout_id timeout;
+      ola::thread::timeout_id timeout;
     } url_registration_state;
     typedef std::map<string, url_registration_state>  url_state_map;
 
-    ola::network::SelectServer m_ss;
+    ola::io::SelectServer m_ss;
     ola::thread::ExecutorInterface *m_executor;
     bool m_init_ok;
     unsigned int m_refresh_time;
     SLPHandle m_slp_handle;
     slp_discovery_callback *m_discovery_callback;
-    ola::network::timeout_id m_discovery_timeout;
+    ola::thread::timeout_id m_discovery_timeout;
     url_state_map m_url_map;
 
     void RequestComplete();
@@ -109,7 +109,7 @@ class SlpThread: public ola::thread::Thread {
                          unsigned short lifetime);
     bool PerformRegistration(const string &url,
                              unsigned short lifetime,
-                             ola::network::timeout_id *timeout);
+                             ola::thread::timeout_id *timeout);
     void DeregisterRequest(slp_registration_callback *callback,
                            const string url);
     void DiscoveryActionComplete(bool ok, url_vector *urls);

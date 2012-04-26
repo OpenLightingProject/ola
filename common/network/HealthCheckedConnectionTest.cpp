@@ -23,8 +23,8 @@
 #include "ola/Callback.h"
 #include "ola/Clock.h"
 #include "ola/Logging.h"
+#include "ola/io/SelectServer.h"
 #include "ola/network/HealthCheckedConnection.h"
-#include "ola/network/SelectServer.h"
 #include "ola/network/Socket.h"
 
 using ola::MockClock;
@@ -33,7 +33,7 @@ using ola::NewSingleCallback;
 using ola::TimeInterval;
 using ola::network::HealthCheckedConnection;
 using ola::io::LoopbackDescriptor;
-using ola::network::SelectServer;
+using ola::io::SelectServer;
 
 
 class MockHealthCheckedConnection: public HealthCheckedConnection {

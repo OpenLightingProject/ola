@@ -24,7 +24,7 @@
 
 #include <ola/Callback.h>
 #include <ola/io/Descriptor.h>
-#include <ola/network/SelectServer.h>
+#include <ola/io/SelectServer.h>
 #include <ola/thread/Thread.h>
 // 0.4.6 of microhttp doesn't include stdarg so we do it here.
 #include <stdarg.h>
@@ -153,7 +153,7 @@ class HttpServer: public ola::thread::Thread {
     static const char CONTENT_TYPE_JS[];
 
     // Expose the SelectServer
-    ola::network::SelectServer *SelectServer() {
+    ola::io::SelectServer *SelectServer() {
       return &m_select_server;
     }
 
@@ -173,7 +173,7 @@ class HttpServer: public ola::thread::Thread {
                                                 int fd);
 
     struct MHD_Daemon *m_httpd;
-    ola::network::SelectServer m_select_server;
+    ola::io::SelectServer m_select_server;
 
     std::set<ola::io::UnmanagedFileDescriptor*, unmanaged_socket_lt>
         m_sockets;

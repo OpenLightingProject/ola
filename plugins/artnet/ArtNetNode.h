@@ -33,7 +33,7 @@
 #include "ola/DmxBuffer.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/Interface.h"
-#include "ola/network/SelectServerInterface.h"
+#include "ola/io/SelectServerInterface.h"
 #include "ola/network/Socket.h"
 #include "ola/rdm/QueueingRDMController.h"
 #include "ola/rdm/RDMCommand.h"
@@ -95,7 +95,7 @@ class ArtNetNodeOptions {
 class ArtNetNodeImpl {
   public:
     ArtNetNodeImpl(const ola::network::Interface &interface,
-                   ola::network::SelectServerInterface *ss,
+                   ola::io::SelectServerInterface *ss,
                    const ArtNetNodeOptions &options,
                    ola::network::UdpSocketInterface *socket = NULL);
     virtual ~ArtNetNodeImpl();
@@ -222,7 +222,7 @@ class ArtNetNodeImpl {
     string m_long_name;
     unsigned int m_broadcast_threshold;
     unsigned int m_unsolicited_replies;
-    ola::network::SelectServerInterface *m_ss;
+    ola::io::SelectServerInterface *m_ss;
     bool m_always_broadcast;
     bool m_use_limited_broadcast_address;
 
@@ -371,7 +371,7 @@ class ArtNetNodeImplRDMWrapper
 class ArtNetNode {
   public:
     ArtNetNode(const ola::network::Interface &interface,
-               ola::network::SelectServerInterface *ss,
+               ola::io::SelectServerInterface *ss,
                const ArtNetNodeOptions &options,
                ola::network::UdpSocketInterface *socket = NULL);
     virtual ~ArtNetNode();
