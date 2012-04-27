@@ -2065,17 +2065,31 @@ class SetDeviceHours(TestMixins.SetUInt32Mixin,
   CATEGORY = TestCategory.POWER_LAMP_SETTINGS
   PID = 'DEVICE_HOURS'
   EXPECTED_FIELD = 'hours'
+  PROVIDES = ['set_device_hours_supported']
   REQUIRES = ['device_hours']
 
   def OldValue(self):
     return self.Property('device_hours')
 
+  def VerifyResult(self, response, fields):
+    if response.command_class == PidStore.RDM_SET:
+      self.SetProperty('set_device_hours_supported',
+                       response.WasAcked())
 
-class SetDeviceHoursWithNoData(TestMixins.SetWithNoDataMixin,
-                               OptionalParameterTestFixture):
+
+class SetDeviceHoursWithNoData(OptionalParameterTestFixture):
   """Set the device hours with no param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DEVICE_HOURS'
+  REQUIRES = ['set_device_hours_supported']
+
+  def Test(self):
+    if self.Property('set_device_hours_supported'):
+      expected_result= RDMNack.NR_FORMAT_ERROR
+    else:
+      expected_result= RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
+    self.AddIfSetSupported(self.NackSetResult(expected_result));
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
 
 
 # Lamp Hours
@@ -2294,8 +2308,7 @@ class SetDevicePowerCycles(TestMixins.SetUInt32Mixin,
     self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.NewValue()])
 
 
-class SetDevicePowerCyclesWithNoData(TestMixins.SetWithNoDataMixin,
-                                     OptionalParameterTestFixture):
+class SetDevicePowerCyclesWithNoData(OptionalParameterTestFixture):
   """Set the device power_cycles with no param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DEVICE_POWER_CYCLES'
