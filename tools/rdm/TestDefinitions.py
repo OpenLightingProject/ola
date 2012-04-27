@@ -1548,14 +1548,17 @@ class SetDefaultSlotInfo(TestMixins.UnsupportedSetMixin,
 class CheckSensorConsistency(ResponderTestFixture):
   """Check that sensor support is consistent."""
   CATEGORY = TestCategory.SENSORS
-  REQUIRES = ['sensor_count', 'supported_parameters']
+  REQUIRES = ['sensor_count', 'sensor_recording_supported',
+              'supported_parameters']
 
   def IsSupported(self, pid):
     return pid.value in self.Property('supported_parameters')
 
-  def CheckConsistency(self, pid_name):
+  def CheckConsistency(self, pid_name, check_for_support = True):
     pid = self.LookupPid(pid_name)
-    if (not self.IsSupported(pid)) and self.Property('sensor_count') > 0:
+    if (check_for_support and
+        (not self.IsSupported(pid)) and
+        self.Property('sensor_count')) > 0:
       self.AddAdvisory('%s not supported but sensor count was  > 0' % pid)
     if self.IsSupported(pid) and self.Property('sensor_count') == 0:
       self.AddAdvisory('%s supported but sensor count was 0' % pid)
@@ -1563,7 +1566,8 @@ class CheckSensorConsistency(ResponderTestFixture):
   def Test(self):
     self.CheckConsistency('SENSOR_DEFINITION')
     self.CheckConsistency('SENSOR_VALUE')
-    self.CheckConsistency('RECORD_SENSORS')
+    self.CheckConsistency('RECORD_SENSORS',
+                          self.Property('sensor_recording_supported'))
     self.SetPassed()
     self.Stop()
 
@@ -1575,8 +1579,9 @@ class GetSensorDefinition(OptionalParameterTestFixture):
   CATEGORY = TestCategory.SENSORS
   PID = 'SENSOR_DEFINITION'
   REQUIRES = ['sensor_count']
-  PROVIDES = ['sensor_definitions']
+  PROVIDES = ['sensor_definitions', 'sensor_recording_supported']
   MAX_SENSOR_INDEX = 0xfe
+  RECORDED_VALUE_MASK = 0x01
 
   PREDICATE_DICT = {
       '==': operator.eq,
@@ -1609,6 +1614,13 @@ class GetSensorDefinition(OptionalParameterTestFixture):
                           (len(self._sensors), self.Property('sensor_count')))
 
         self.SetProperty('sensor_definitions', self._sensors)
+
+        supports_recording = False
+        for sensor_def in self._sensors.itervalues():
+          supports_recording |= (
+              sensor_def['supports_recording'] & self.RECORDED_VALUE_MASK)
+        self.SetProperty('sensor_recording_supported', supports_recording)
+
         self._MissingSensorWarning()
         self.Stop()
         return
@@ -2009,18 +2021,12 @@ class RecordAllSensorValues(OptionalParameterTestFixture):
   """Set RECORD_SENSORS with sensor number set to 0xff."""
   CATEGORY = TestCategory.SENSORS
   PID = 'RECORD_SENSORS'
-  REQUIRES = ['sensor_definitions']
+  REQUIRES = ['sensor_recording_supported']
 
-  RECORDED_VALUE_MASK = 0x01
   ALL_SENSORS = 0xff
 
   def Test(self):
-    supports_recording = False
-    for sensor_def in self.Property('sensor_definitions').values():
-      supports_recording |= (
-          sensor_def['supports_recording'] & self.RECORDED_VALUE_MASK)
-
-    if supports_recording:
+    if self.Property('sensor_recording_supported'):
       self.AddIfSetSupported(self.AckSetResult())
     else:
       self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
