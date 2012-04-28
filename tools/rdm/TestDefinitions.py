@@ -3002,6 +3002,7 @@ class SetIdentifyMode(TestMixins.SetMixin, OptionalParameterTestFixture):
   REQUIRES = ['identify_mode']
   LOUD = 0xff
   QUIET = 0x00
+  EXPECTED_FIELD = 'identify_mode'
 
   def OldValue(self):
     return self.Property('identify_mode')
