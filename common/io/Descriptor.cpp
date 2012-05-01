@@ -217,9 +217,9 @@ ssize_t ConnectedDescriptor::SendV(const struct iovec *iov, int iocnt) const {
     struct msghdr message;
     message.msg_name = NULL;
     message.msg_namelen = 0;
-    message.msg_iov = iov;
+    message.msg_iov = (struct iovec*) iov;
     message.msg_iovlen = iocnt;
-    bytes_sent = sendmsg(WriteDescriptor(), message, MSG_NOSIGNAL);
+    bytes_sent = sendmsg(WriteDescriptor(), (const struct msghdr*) &message, MSG_NOSIGNAL);
   } else {
 #else
   {
