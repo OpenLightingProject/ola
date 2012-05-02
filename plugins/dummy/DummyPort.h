@@ -38,12 +38,10 @@ namespace dummy {
 class DummyPort: public BasicOutputPort {
   public:
     DummyPort(DummyDevice *parent, unsigned int id):
-      BasicOutputPort(parent, id, true) {
-	m_responders[ola::rdm::UID(OPEN_LIGHTING_ESTA_CODE, 0xfffeeee0)] = new DummyResponder(ola::rdm::UID(OPEN_LIGHTING_ESTA_CODE, 0xfffeeee0));
-	m_responders[ola::rdm::UID(OPEN_LIGHTING_ESTA_CODE, 0xffffffaa)] = new DummyResponder(ola::rdm::UID(OPEN_LIGHTING_ESTA_CODE, 0xffffffaa));
-	m_responders[ola::rdm::UID(OPEN_LIGHTING_ESTA_CODE, 0xffff7f0b)] = new DummyResponder(ola::rdm::UID(OPEN_LIGHTING_ESTA_CODE, 0xffff7f0b));
-      }
- 
+      BasicOutputPort(parent, id, true),
+      m_responder(ola::rdm::UID(OPEN_LIGHTING_ESTA_CODE, 0xffffff00)) {
+    }
+
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     string Description() const { return "Dummy Port"; }
     void RunFullDiscovery(RDMDiscoveryCallback *callback);
@@ -55,7 +53,7 @@ class DummyPort: public BasicOutputPort {
     void RunDiscovery(RDMDiscoveryCallback *callback);
 
     DmxBuffer m_buffer;
-    map<ola::rdm::UID, DummyResponder*> m_responders;
+    DummyResponder m_responder;
 };
 }  // dummy
 }  // plugin

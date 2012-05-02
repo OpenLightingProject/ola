@@ -44,7 +44,7 @@ bool DummyPort::WriteDMX(const DmxBuffer &buffer,
 
   str << "Dummy port: got " << buffer.Size() << " bytes: ";
   for (unsigned int i = 0;
-       i < m_responders.begin()->second->Footprint() && i < data.size(); i++)
+       i < m_responder.Footprint() && i < data.size(); i++)
     str << "0x" << std::hex << 0 + (uint8_t) data.at(i) << " ";
   OLA_INFO << str.str();
   return true;
@@ -72,15 +72,13 @@ void DummyPort::RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
  */
 void DummyPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
                                ola::rdm::RDMCallback *callback) {
-  m_responders[request->DestinationUID()]->SendRDMRequest(request, callback);
+  m_responder.SendRDMRequest(request, callback);
 }
 
 
 void DummyPort::RunDiscovery(RDMDiscoveryCallback *callback) {
   ola::rdm::UIDSet uid_set;
-  for (map<ola::rdm::UID, DummyResponder*>::iterator i = m_responders.begin(); i != m_responders.end(); i++) {
-    uid_set.AddUID(i->second->UID());
-  }
+  uid_set.AddUID(m_responder.UID());
   callback->Run(uid_set);
 }
 }  // dummy
