@@ -22,6 +22,7 @@
 #define PLUGINS_DUMMY_DUMMYPORT_H_
 
 #include <string>
+#include <map>
 #include "ola/BaseTypes.h"
 #include "ola/DmxBuffer.h"
 #include "ola/rdm/RDMControllerInterface.h"
@@ -35,25 +36,27 @@ namespace ola {
 namespace plugin {
 namespace dummy {
 
+typedef ola::rdm::UID RESPONDER_UID;
+typedef map<RESPONDER_UID, DummyResponder*> UID_RESPONDER_MAP;
+
 class DummyPort: public BasicOutputPort {
   public:
-    DummyPort(DummyDevice *parent, unsigned int id):
-      BasicOutputPort(parent, id, true),
-      m_responder(ola::rdm::UID(OPEN_LIGHTING_ESTA_CODE, 0xffffff00)) {
-    }
-
+    DummyPort(DummyDevice *parent, unsigned int id);
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     string Description() const { return "Dummy Port"; }
     void RunFullDiscovery(RDMDiscoveryCallback *callback);
     void RunIncrementalDiscovery(RDMDiscoveryCallback *callback);
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
+    static const unsigned int NUMBER_OF_RESPONDERS = 10;
+    static const unsigned int START_ADDRESS = 0xffffff00;
+    virtual ~DummyPort();
 
   private:
     void RunDiscovery(RDMDiscoveryCallback *callback);
 
     DmxBuffer m_buffer;
-    DummyResponder m_responder;
+    UID_RESPONDER_MAP m_responders;
 };
 }  // dummy
 }  // plugin

@@ -30,6 +30,15 @@ namespace plugin {
 namespace dummy {
 
 
+DummyPort::DummyPort(DummyDevice *parent, unsigned int id)
+  : BasicOutputPort(parent, id, true) {
+    for (unsigned int i = 0; i < DummyPort::NUMBER_OF_RESPONDERS; i++) {
+      RESPONDER_UID uid(OPEN_LIGHTING_ESTA_CODE, DummyPort::START_ADDRESS + i);
+      m_responders[uid] = new DummyResponder(uid);
+    }
+}
+
+
 /*
  * Write operation
  * @param  data  pointer to the dmx data
@@ -44,7 +53,7 @@ bool DummyPort::WriteDMX(const DmxBuffer &buffer,
 
   str << "Dummy port: got " << buffer.Size() << " bytes: ";
   for (unsigned int i = 0;
-       i < m_responder.Footprint() && i < data.size(); i++)
+       i < m_responders.begin()->second->Footprint() && i < data.size(); i++)
     str << "0x" << std::hex << 0 + (uint8_t) data.at(i) << " ";
   OLA_INFO << str.str();
   return true;
@@ -72,14 +81,28 @@ void DummyPort::RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
  */
 void DummyPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
                                ola::rdm::RDMCallback *callback) {
-  m_responder.SendRDMRequest(request, callback);
+  RESPONDER_UID destUID = request->DestinationUID();
+  if (m_responders.count(destUID) > 0) {
+    m_responders[destUID]->SendRDMRequest(request, callback);
+  }
 }
 
 
 void DummyPort::RunDiscovery(RDMDiscoveryCallback *callback) {
   ola::rdm::UIDSet uid_set;
-  uid_set.AddUID(m_responder.UID());
+  for (UID_RESPONDER_MAP::iterator i = m_responders.begin();
+    i != m_responders.end(); i++) {
+    uid_set.AddUID(i->second->UID());
+  }
   callback->Run(uid_set);
+}
+
+
+DummyPort::~DummyPort() {
+  if (!m_responders.empty()) {
+    m_responders.clear();
+  }
+  delete &m_responders;
 }
 }  // dummy
 }  // plugin
