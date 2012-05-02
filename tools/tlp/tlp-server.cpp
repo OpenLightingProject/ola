@@ -18,6 +18,7 @@
  */
 
 #include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
+#include <stdio.h>
 #include <errno.h>
 #include <getopt.h>
 #include <signal.h>
@@ -28,7 +29,6 @@
 #include <ola/Callback.h>
 #include <ola/Clock.h>
 #include <ola/Logging.h>
-#include <ola/Stringutils.h>
 #include <ola/io/SelectServer.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/InterfacePicker.h>
@@ -334,7 +334,6 @@ bool TLPServer::Init() {
   tcsetattr(STDIN_FILENO, TCSANOW, &new_tc);
 
   // setup the accepting TCP socket
-  IPV4Address wildcard_address = IPV4Address::WildCard();
   if (!m_tcp_accept_socket.Listen(m_iface_address, TLP_PORT)) {
     return false;
   }
