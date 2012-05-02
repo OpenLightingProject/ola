@@ -21,7 +21,9 @@
 #include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 
 #include <ola/Logging.h>
+#include <ola/StringUtils.h>
 #include <algorithm>
+#include <iostream>
 #include "plugins/e131/e131/BaseInflator.h"
 #include "plugins/e131/e131/HeaderSet.h"
 #include "plugins/e131/e131/TCPTransport.h"
@@ -200,6 +202,8 @@ void IncommingStreamTransport::HandlePreamble() {
   OLA_DEBUG << "in handle preamble, data len is " << DataLength();
 
   if (memcmp(m_buffer_start, ACN_HEADER, ACN_HEADER_SIZE) != 0) {
+    ola::FormatData(&std::cout, m_buffer_start, ACN_HEADER_SIZE);
+    ola::FormatData(&std::cout, ACN_HEADER, ACN_HEADER_SIZE);
     OLA_WARN << "bad ACN header";
     m_stream_valid = false;
     return;

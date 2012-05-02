@@ -23,6 +23,7 @@
 #include <ola/StringUtils.h>
 #include <ola/io/IOQueue.h>
 #include <stdint.h>
+#include <string.h>
 #include <algorithm>
 #include <deque>
 #include <iostream>
@@ -294,7 +295,6 @@ void IOQueue::PopBlock() {
   uint8_t *free_block = m_blocks.front();
   m_free_blocks.push(free_block);
   m_blocks.pop_front();
-  BlockVector::iterator iter = m_blocks.begin();
   m_first = *(m_blocks.begin());
 }
 }  // io
