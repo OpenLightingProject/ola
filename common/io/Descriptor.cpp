@@ -184,7 +184,7 @@ int ConnectedDescriptor::DataRemaining() const {
  * @return the number of bytes sent
  */
 ssize_t ConnectedDescriptor::Send(const uint8_t *buffer,
-                                  unsigned int size) const {
+                                  unsigned int size) {
   if (!ValidWriteDescriptor())
     return 0;
 
@@ -197,37 +197,6 @@ ssize_t bytes_sent;
     bytes_sent = write(WriteDescriptor(), buffer, size);
 
   if (bytes_sent < 0 || static_cast<unsigned int>(bytes_sent) != size)
-    OLA_INFO << "Failed to send on " << WriteDescriptor() << ": " <<
-      strerror(errno);
-  return bytes_sent;
-}
-
-
-/**
- * Send an iovec.
- * @returns the number of bytes sent.
- */
-ssize_t ConnectedDescriptor::SendV(const struct iovec *iov, int iocnt) const {
-  if (!ValidWriteDescriptor())
-    return 0;
-
-  ssize_t bytes_sent;
-#if HAVE_DECL_MSG_NOSIGNAL
-  if (IsSocket()) {
-    struct msghdr message;
-    message.msg_name = NULL;
-    message.msg_namelen = 0;
-    message.msg_iov = iov;
-    message.msg_iovlen = iocnt;
-    bytes_sent = sendmsg(WriteDescriptor(), message, MSG_NOSIGNAL);
-  } else {
-#else
-  {
-#endif
-    bytes_sent = writev(WriteDescriptor(), iov, iocnt);
-  }
-
-  if (bytes_sent < 0)
     OLA_INFO << "Failed to send on " << WriteDescriptor() << ": " <<
       strerror(errno);
   return bytes_sent;
@@ -275,6 +244,37 @@ int ConnectedDescriptor::Receive(uint8_t *buffer,
  */
 bool ConnectedDescriptor::IsClosed() const {
   return DataRemaining() == 0;
+}
+
+
+/**
+ * Send an iovec.
+ * @returns the number of bytes sent.
+ */
+ssize_t ConnectedDescriptor::SendV(const struct iovec *iov, int iocnt) {
+  if (!ValidWriteDescriptor())
+    return 0;
+
+  ssize_t bytes_sent;
+#if HAVE_DECL_MSG_NOSIGNAL
+  if (IsSocket()) {
+    struct msghdr message;
+    message.msg_name = NULL;
+    message.msg_namelen = 0;
+    message.msg_iov = iov;
+    message.msg_iovlen = iocnt;
+    bytes_sent = sendmsg(WriteDescriptor(), message, MSG_NOSIGNAL);
+  } else {
+#else
+  {
+#endif
+    bytes_sent = writev(WriteDescriptor(), iov, iocnt);
+  }
+
+  if (bytes_sent < 0)
+    OLA_INFO << "Failed to send on " << WriteDescriptor() << ": " <<
+      strerror(errno);
+  return bytes_sent;
 }
 
 

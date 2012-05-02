@@ -38,10 +38,11 @@
 #include <netinet/in.h>
 #endif
 
+#include <ola/Callback.h>
+#include <ola/io/Descriptor.h>
+#include <ola/io/BufferedWriteDescriptor.h>
+#include <ola/network/IPV4Address.h>
 #include <string>
-#include <ola/Callback.h>  // NOLINT
-#include <ola/io/Descriptor.h>  // NOLINT
-#include <ola/network/IPV4Address.h>  // NOLINT
 
 
 namespace ola {
@@ -83,6 +84,10 @@ class TcpSocket: public ola::io::ConnectedDescriptor {
     TcpSocket(const TcpSocket &other);
     TcpSocket& operator=(const TcpSocket &other);
 };
+
+
+// Create a buffered version of the TCP Socket.
+typedef ola::io::BufferedOutputDescriptor<TcpSocket> BufferedTCPSocket;
 
 
 /*

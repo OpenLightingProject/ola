@@ -30,11 +30,31 @@
 namespace ola {
 namespace io {
 
+/**
+ * OutputStream
+ * An OutputStream is a class that you can write data to. The consumer of the
+ * data is not defined. This is similar to ostream.
+ */
+class OutputStream {
+  public:
+    virtual ~OutputStream() {}
+
+    virtual bool Empty() const = 0;
+
+    // The size
+    virtual unsigned int Size() const = 0;
+
+    // Append some data to this OutputQueue
+    virtual void Write(const uint8_t *data, unsigned int length) = 0;
+
+    // TODO(simon): maybe add operator<< methods for primitives here
+};
+
 
 /**
  * IOQueue.
  */
-class IOQueue {
+class IOQueue: public OutputStream {
   public:
     explicit IOQueue(unsigned int block_size = DEFAULT_BLOCK_SIZE);
     ~IOQueue();
@@ -44,7 +64,7 @@ class IOQueue {
       return m_blocks.empty();
     }
 
-    void Append(const uint8_t *data, unsigned int length);
+    void Write(const uint8_t *data, unsigned int length);
     unsigned int Peek(uint8_t *data, unsigned int length) const;
     void Pop(unsigned int n);
 

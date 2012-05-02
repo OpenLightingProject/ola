@@ -50,6 +50,10 @@
 #include <string>
 #include <ola/Callback.h>  // NOLINT
 
+extern "C" {
+  struct iovec;
+}
+
 
 namespace ola {
 namespace io {
@@ -170,8 +174,8 @@ class ConnectedDescriptor: public BidirectionalFileDescriptor {
         delete m_on_close;
     }
 
-    virtual ssize_t Send(const uint8_t *buffer, unsigned int size) const;
-    virtual ssize_t SendV(const struct iovec *iov, int iocnt) const;
+    virtual ssize_t Send(const uint8_t *buffer, unsigned int size);
+    virtual ssize_t SendV(const struct iovec *iov, int iocnt);
     virtual int Receive(uint8_t *buffer,
                         unsigned int size,
                         unsigned int &data_read);
