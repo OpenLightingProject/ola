@@ -1,5 +1,6 @@
 SOURCES = Descriptor.h \
           IOQueue.h \
+          OutputStream.h \
           SelectServer.h \
           SelectServerInterface.h
 

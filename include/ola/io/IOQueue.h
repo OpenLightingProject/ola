@@ -21,6 +21,7 @@
 #ifndef INCLUDE_OLA_IO_IOQUEUE_H_
 #define INCLUDE_OLA_IO_IOQUEUE_H_
 
+#include <ola/io/OutputStream.h>
 #include <stdint.h>
 #include <sys/uio.h>
 #include <deque>
@@ -29,27 +30,6 @@
 
 namespace ola {
 namespace io {
-
-/**
- * OutputStream
- * An OutputStream is a class that you can write data to. The consumer of the
- * data is not defined. This is similar to ostream.
- */
-class OutputStream {
-  public:
-    virtual ~OutputStream() {}
-
-    virtual bool Empty() const = 0;
-
-    // The size
-    virtual unsigned int Size() const = 0;
-
-    // Append some data to this OutputQueue
-    virtual void Write(const uint8_t *data, unsigned int length) = 0;
-
-    // TODO(simon): maybe add operator<< methods for primitives here
-};
-
 
 /**
  * IOQueue.
@@ -65,6 +45,37 @@ class IOQueue: public OutputStream {
     }
 
     void Write(const uint8_t *data, unsigned int length);
+
+    OutputStream& operator<<(uint8_t i) {
+      Write(&i, sizeof(i));
+      return *this;
+    }
+
+    OutputStream& operator<<(uint16_t i) {
+      Write(reinterpret_cast<uint8_t*>(&i), sizeof(i));
+      return *this;
+    }
+
+    OutputStream& operator<<(uint32_t i) {
+      Write(reinterpret_cast<uint8_t*>(&i), sizeof(i));
+      return *this;
+    }
+
+    OutputStream& operator<<(int8_t i) {
+      Write(reinterpret_cast<uint8_t*>(&i), sizeof(i));
+      return *this;
+    }
+
+    OutputStream& operator<<(int16_t i) {
+      Write(reinterpret_cast<uint8_t*>(&i), sizeof(i));
+      return *this;
+    }
+
+    OutputStream& operator<<(int32_t i) {
+      Write(reinterpret_cast<uint8_t*>(&i), sizeof(i));
+      return *this;
+    }
+
     unsigned int Peek(uint8_t *data, unsigned int length) const;
     void Pop(unsigned int n);
 

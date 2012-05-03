@@ -25,9 +25,11 @@
 
 #include "ola/Logging.h"
 #include "ola/io/IOQueue.h"
+#include "ola/network/NetworkUtils.h"
 #include "ola/testing/TestUtils.h"
 
 using ola::io::IOQueue;
+using ola::network::HostToNetwork;
 using ola::testing::ASSERT_DATA_EQUALS;
 using std::auto_ptr;
 using std::string;
@@ -37,6 +39,7 @@ class IOQueueTest: public CppUnit::TestFixture {
   public:
     CPPUNIT_TEST_SUITE(IOQueueTest);
     CPPUNIT_TEST(testBasicWrite);
+    CPPUNIT_TEST(testWritePrimatives);
     CPPUNIT_TEST(testBlockOverflow);
     CPPUNIT_TEST(testPop);
     CPPUNIT_TEST(testPeek);
@@ -48,6 +51,7 @@ class IOQueueTest: public CppUnit::TestFixture {
     void setUp();
     void tearDown() {}
     void testBasicWrite();
+    void testWritePrimatives();
     void testBlockOverflow();
     void testPop();
     void testPeek();
@@ -101,6 +105,32 @@ void IOQueueTest::testBasicWrite() {
 
 
 /*
+ * Check that the << operators work
+ */
+void IOQueueTest::testWritePrimatives() {
+  CPPUNIT_ASSERT_EQUAL(0u, m_buffer->Size());
+
+  (*m_buffer) << HostToNetwork(4);
+  CPPUNIT_ASSERT_EQUAL(4u, m_buffer->Size());
+
+  (*m_buffer) << HostToNetwork(1u <<31);
+  CPPUNIT_ASSERT_EQUAL(8u, m_buffer->Size());
+
+  (*m_buffer) << HostToNetwork(static_cast<uint8_t>(10)) <<
+    HostToNetwork(static_cast<uint16_t>(2400));
+  CPPUNIT_ASSERT_EQUAL(11u, m_buffer->Size());
+
+  // confirm this matches what we expect
+  const unsigned int DATA_SIZE = 20;
+  uint8_t *output_data = new uint8_t[DATA_SIZE];
+
+  uint8_t data1[] = {0, 0, 0, 4, 0x80, 0, 0, 0, 0xa, 0x9, 0x60};
+  unsigned int output_size = m_buffer->Peek(output_data, m_buffer->Size());
+  ASSERT_DATA_EQUALS(__LINE__, data1, sizeof(data1), output_data, output_size);
+}
+
+
+/*
  * Check that overflowing blocks works
  */
 void IOQueueTest::testBlockOverflow() {
@@ -128,8 +158,6 @@ void IOQueueTest::testBlockOverflow() {
   CPPUNIT_ASSERT_EQUAL(11u, m_buffer->Size());
   m_buffer->Write(data2, sizeof(data2));
   CPPUNIT_ASSERT_EQUAL(16u, m_buffer->Size());
-
-  // test what happens when we peek too much
 }
 
 

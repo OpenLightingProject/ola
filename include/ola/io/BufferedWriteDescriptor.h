@@ -14,20 +14,18 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * BufferedOutputDescriptor.h
- * 
  * Copyright (C) 2012 Simon Newton
- *
  */
 
 #ifndef INCLUDE_OLA_IO_BUFFEREDWRITEDESCRIPTOR_H_
 #define INCLUDE_OLA_IO_BUFFEREDWRITEDESCRIPTOR_H_
 
 #include <stdint.h>
-
-#include <string>
 #include <ola/Callback.h>
 #include <ola/io/IOQueue.h>
 #include <ola/io/SelectServerInterface.h>
+
+#include <string>
 
 
 namespace ola {
@@ -46,7 +44,7 @@ namespace io {
 template <typename Parent>
 class BufferedOutputDescriptor: public Parent, OutputStream {
   public:
-    BufferedOutputDescriptor(SelectServerInterface *ss = NULL)
+    explicit BufferedOutputDescriptor(SelectServerInterface *ss = NULL)
       : m_associated(false),
         m_ss(ss) {
     }
@@ -71,7 +69,38 @@ class BufferedOutputDescriptor: public Parent, OutputStream {
     // Methods from OutputStream
     bool Empty() const { return m_output_buffer.Empty(); }
     unsigned int Size() const { return m_output_buffer.Size(); }
-    void Write(const uint8_t *data, unsigned int length) { Send(data, length);
+    void Write(const uint8_t *data, unsigned int length) {
+      Send(data, length);
+    }
+
+    OutputStream& operator<<(uint8_t i) {
+      Send(&i, sizeof(i));
+      return *this;
+    }
+
+    OutputStream& operator<<(uint16_t i) {
+      Send(reinterpret_cast<uint8_t*>(&i), sizeof(i));
+      return *this;
+    }
+
+    OutputStream& operator<<(uint32_t i) {
+      Send(reinterpret_cast<uint8_t*>(&i), sizeof(i));
+      return *this;
+    }
+
+    OutputStream& operator<<(int8_t i) {
+      Send(reinterpret_cast<uint8_t*>(&i), sizeof(i));
+      return *this;
+    }
+
+    OutputStream& operator<<(int16_t i) {
+      Send(reinterpret_cast<uint8_t*>(&i), sizeof(i));
+      return *this;
+    }
+
+    OutputStream& operator<<(int32_t i) {
+      Send(reinterpret_cast<uint8_t*>(&i), sizeof(i));
+      return *this;
     }
 
     // We override Send() and buffer the data.
