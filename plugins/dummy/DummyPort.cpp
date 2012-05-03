@@ -32,8 +32,8 @@ namespace dummy {
 
 DummyPort::DummyPort(DummyDevice *parent, unsigned int id)
   : BasicOutputPort(parent, id, true) {
-    for (unsigned int i = 0; i < DummyPort::NUMBER_OF_RESPONDERS; i++) {
-      RESPONDER_UID uid(OPEN_LIGHTING_ESTA_CODE, DummyPort::START_ADDRESS + i);
+    for (unsigned int i = 0; i < DummyPort::kNumberOfResponders; i++) {
+      UID uid(OPEN_LIGHTING_ESTA_CODE, DummyPort::kStartAddress + i);
       m_responders[uid] = new DummyResponder(uid);
     }
 }
@@ -81,16 +81,17 @@ void DummyPort::RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
  */
 void DummyPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
                                ola::rdm::RDMCallback *callback) {
-  RESPONDER_UID destUID = request->DestinationUID();
-  if (m_responders.count(destUID) > 0) {
-    m_responders[destUID]->SendRDMRequest(request, callback);
+  UID dest = request->DestinationUID();
+  ResponderMap::iterator i = m_responders.find(dest);
+  if (i != m_responders.end()) {
+    i->second->SendRDMRequest(request, callback);
   }
 }
 
 
 void DummyPort::RunDiscovery(RDMDiscoveryCallback *callback) {
   ola::rdm::UIDSet uid_set;
-  for (UID_RESPONDER_MAP::iterator i = m_responders.begin();
+  for (ResponderMap::iterator i = m_responders.begin();
     i != m_responders.end(); i++) {
     uid_set.AddUID(i->second->UID());
   }
@@ -99,10 +100,10 @@ void DummyPort::RunDiscovery(RDMDiscoveryCallback *callback) {
 
 
 DummyPort::~DummyPort() {
-  if (!m_responders.empty()) {
-    m_responders.clear();
+  for (ResponderMap::iterator i = m_responders.begin();
+      i != m_responders.end(); i++) {
+    delete i->second;
   }
-  delete &m_responders;
 }
 }  // dummy
 }  // plugin

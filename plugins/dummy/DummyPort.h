@@ -32,31 +32,31 @@
 #include "plugins/dummy/DummyDevice.h"
 #include "plugins/dummy/DummyResponder.h"
 
+using ola::rdm::UID;
+
 namespace ola {
 namespace plugin {
 namespace dummy {
 
-typedef ola::rdm::UID RESPONDER_UID;
-typedef map<RESPONDER_UID, DummyResponder*> UID_RESPONDER_MAP;
-
 class DummyPort: public BasicOutputPort {
   public:
     DummyPort(DummyDevice *parent, unsigned int id);
+    virtual ~DummyPort();
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     string Description() const { return "Dummy Port"; }
     void RunFullDiscovery(RDMDiscoveryCallback *callback);
     void RunIncrementalDiscovery(RDMDiscoveryCallback *callback);
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
-    static const unsigned int NUMBER_OF_RESPONDERS = 10;
-    static const unsigned int START_ADDRESS = 0xffffff00;
-    virtual ~DummyPort();
+    static const unsigned int kNumberOfResponders = 10;
+    static const unsigned int kStartAddress = 0xffffff00;
 
   private:
+    typedef map<UID, DummyResponder *> ResponderMap;
     void RunDiscovery(RDMDiscoveryCallback *callback);
 
     DmxBuffer m_buffer;
-    UID_RESPONDER_MAP m_responders;
+    ResponderMap m_responders;
 };
 }  // dummy
 }  // plugin
