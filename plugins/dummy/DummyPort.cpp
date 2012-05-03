@@ -21,6 +21,7 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 #include "ola/Logging.h"
 #include "ola/rdm/UIDSet.h"
 #include "plugins/dummy/DummyPort.h"
@@ -85,6 +86,10 @@ void DummyPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
   ResponderMap::iterator i = m_responders.find(dest);
   if (i != m_responders.end()) {
     i->second->SendRDMRequest(request, callback);
+  } else {
+    std::vector<std::string> packets;
+    callback->Run(ola::rdm::RDM_UNKNOWN_UID, NULL, packets);
+    delete request;
   }
 }
 
