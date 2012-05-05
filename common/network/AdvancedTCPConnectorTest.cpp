@@ -85,6 +85,7 @@ class AdvancedTCPConnectorTest: public CppUnit::TestFixture {
   private:
     ola::MockClock m_clock;
     SelectServer *m_ss;
+    auto_ptr<ola::network::TCPSocketFactory> m_tcp_socket_factory;
     IPV4Address m_localhost;
     ola::thread::timeout_id m_timeout_id;
     TcpSocket *m_connected_socket;
@@ -97,7 +98,7 @@ class AdvancedTCPConnectorTest: public CppUnit::TestFixture {
                       unsigned int failed_attempts);
     void SetupListeningSocket(TcpAcceptingSocket *socket);
     void AcceptedConnection(TcpSocket *socket);
-    void OnConnect(IPV4Address address, uint16_t port, TcpSocket *socket);
+    void OnConnect(TcpSocket *socket);
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(AdvancedTCPConnectorTest);
@@ -107,6 +108,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION(AdvancedTCPConnectorTest);
  * Setup the select server
  */
 void AdvancedTCPConnectorTest::setUp() {
+  m_tcp_socket_factory.reset(new ola::network::TCPSocketFactory(
+      ola::NewCallback(this, &AdvancedTCPConnectorTest::OnConnect)));
   m_connected_socket = NULL;
   ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
 
@@ -173,7 +176,7 @@ void AdvancedTCPConnectorTest::testConnect() {
 
   AdvancedTCPConnector connector(
       m_ss,
-      ola::NewCallback(this, &AdvancedTCPConnectorTest::OnConnect),
+      m_tcp_socket_factory.get(),
       TimeInterval(0, CONNECT_TIMEOUT_IN_MS * 1000));
 
   // 5 per attempt, up to a max of 30
@@ -217,7 +220,7 @@ void AdvancedTCPConnectorTest::testPause() {
 
   AdvancedTCPConnector connector(
       m_ss,
-      ola::NewCallback(this, &AdvancedTCPConnectorTest::OnConnect),
+      m_tcp_socket_factory.get(),
       TimeInterval(0, CONNECT_TIMEOUT_IN_MS * 1000));
 
   // 5 per attempt, up to a max of 30
@@ -272,10 +275,10 @@ void AdvancedTCPConnectorTest::testBackoff() {
 
   AdvancedTCPConnector connector(
       m_ss,
-      ola::NewCallback(this, &AdvancedTCPConnectorTest::OnConnect),
+      m_tcp_socket_factory.get(),
       TimeInterval(0, CONNECT_TIMEOUT_IN_MS * 1000));
 
-  // 5 per attempt, up to a max of 30
+  // 5s per attempt, up to a max of 30
   LinearBackoffPolicy policy(TimeInterval(5, 0), TimeInterval(30, 0));
   connector.AddEndpoint(m_localhost, SERVER_PORT, &policy);
   CPPUNIT_ASSERT_EQUAL(1u, connector.EndpointCount());
@@ -302,6 +305,9 @@ void AdvancedTCPConnectorTest::testBackoff() {
   ConfirmState(__LINE__, connector, m_localhost, SERVER_PORT,
                AdvancedTCPConnector::DISCONNECTED, 2);
 
+  // run once more to clean up
+  m_ss->RunOnce(0, 10000);
+
   // clean up
   connector.RemoveEndpoint(m_localhost, SERVER_PORT);
   CPPUNIT_ASSERT_EQUAL(0u, connector.EndpointCount());
@@ -318,7 +324,7 @@ void AdvancedTCPConnectorTest::testEarlyDestruction() {
   {
     AdvancedTCPConnector connector(
         m_ss,
-        ola::NewCallback(this, &AdvancedTCPConnectorTest::OnConnect),
+        m_tcp_socket_factory.get(),
         TimeInterval(0, CONNECT_TIMEOUT_IN_MS * 1000));
 
     connector.AddEndpoint(m_localhost, SERVER_PORT, &policy);
@@ -392,12 +398,13 @@ void AdvancedTCPConnectorTest::AcceptedConnection(TcpSocket *new_socket) {
 /*
  * Called when a connection completes or times out.
  */
-void AdvancedTCPConnectorTest::OnConnect(IPV4Address address,
-                                            uint16_t port,
-                                            TcpSocket *socket) {
+void AdvancedTCPConnectorTest::OnConnect(TcpSocket *socket) {
   CPPUNIT_ASSERT(socket);
+
+  IPV4Address address;
+  uint16_t port;
+  CPPUNIT_ASSERT(socket->GetPeer(&address, &port));
   CPPUNIT_ASSERT_EQUAL(m_localhost, address);
-  (void) port;
 
   m_connected_socket = socket;
   m_ss->Terminate();

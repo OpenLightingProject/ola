@@ -62,7 +62,7 @@ TCPConnector::TCPConnectionID TCPConnector::Connect(
   if (sd < 0) {
     int error = errno;
     OLA_WARN << "socket() failed, " << strerror(error);
-    callback->Run(NULL, error);
+    callback->Run(-1, error);
     return 0;
   }
 
@@ -81,12 +81,12 @@ TCPConnector::TCPConnectionID TCPConnector::Connect(
       OLA_WARN << "connect to " << ip_address << ":" << port << " failed, "
         << strerror(error);
       close(sd);
-      callback->Run(NULL, error);
+      callback->Run(-1, error);
       return 0;
     }
   } else {
     // connect returned immediately
-    callback->Run(new TcpSocket(sd), 0);
+    callback->Run(sd, 0);
     return 0;
   }
 
@@ -158,9 +158,9 @@ void TCPConnector::SocketWritable(PendingTCPConnection *connection) {
     OLA_WARN << "Failed to connect to " << connection->ip_address << " error "
       << strerror(error);
     connection->Close();
-    connection->callback->Run(NULL, error);
+    connection->callback->Run(-1, error);
   } else {
-    connection->callback->Run(new TcpSocket(connection->WriteDescriptor()), 0);
+    connection->callback->Run(connection->WriteDescriptor(), 0);
   }
 
   ConnectionSet::iterator iter = m_connections.find(connection);
@@ -192,7 +192,7 @@ void TCPConnector::Timeout(const ConnectionSet::iterator &iter) {
   connection->Close();
   TCPConnectCallback *callback = connection->callback;
   delete connection;
-  callback->Run(NULL, ETIMEDOUT);
+  callback->Run(-1, ETIMEDOUT);
 }
 
 

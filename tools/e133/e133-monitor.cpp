@@ -42,6 +42,7 @@
 #include <ola/network/IPV4Address.h>
 #include <ola/network/NetworkUtils.h>
 #include <ola/network/Socket.h>
+#include <ola/network/TCPSocketFactory.h>
 #include <ola/rdm/CommandPrinter.h>
 #include <ola/rdm/PidStoreHelper.h>
 #include <ola/rdm/RDMCommand.h>
@@ -220,6 +221,7 @@ class SimpleE133Monitor {
     ola::rdm::CommandPrinter m_command_printer;
     ola::io::SelectServer m_ss;
     SlpThread m_slp_thread;
+    ola::network::TCPSocketFactory m_tcp_socket_factory;
     ola::network::AdvancedTCPConnector m_connector;
     ola::network::LinearBackoffPolicy m_backoff_policy;
 
@@ -245,7 +247,7 @@ class SimpleE133Monitor {
      * a node we have a connection to. Think about this.
      */
     void DiscoveryCallback(bool status, const vector<string> &urls);
-    void OnTCPConnect(IPV4Address address, uint16_t port, TcpSocket *socket);
+    void OnTCPConnect(TcpSocket *socket);
     void ReceiveTCPData(IPV4Address ip_address,
                         ola::plugin::e131::IncomingTCPTransport *transport);
     void SocketUnhealthy(IPV4Address address);
@@ -281,9 +283,8 @@ SimpleE133Monitor::SimpleE133Monitor(
       m_slp_thread(
         &m_ss,
         ola::NewCallback(this, &SimpleE133Monitor::DiscoveryCallback)),
-      m_connector(&m_ss,
-                  NewCallback(this, &SimpleE133Monitor::OnTCPConnect),
-                  TCP_CONNECT_TIMEOUT),
+      m_tcp_socket_factory(NewCallback(this, &SimpleE133Monitor::OnTCPConnect)),
+      m_connector(&m_ss, &m_tcp_socket_factory, TCP_CONNECT_TIMEOUT),
       m_backoff_policy(INITIAL_TCP_RETRY_DELAY, MAX_TCP_RETRY_DELAY),
       m_cid(ola::plugin::e131::CID::Generate()),
       m_root_sender(m_cid),
@@ -381,9 +382,11 @@ void SimpleE133Monitor::DiscoveryCallback(bool ok,
  * Called when a TCP socket is connected. Note that we're not the master at
  * this point. That only happens if we receive data on the connection.
  */
-void SimpleE133Monitor::OnTCPConnect(IPV4Address ip_address,
-                                     uint16_t,
-                                     TcpSocket *socket) {
+void SimpleE133Monitor::OnTCPConnect(TcpSocket *socket) {
+  IPV4Address ip_address;
+  uint16_t port;
+  socket->GetPeer(&ip_address, &port);
+
   IPMap::iterator iter = m_ip_map.find(ip_address.AsInt());
   if (iter == m_ip_map.end()) {
     OLA_FATAL << "Unable to locate socket for " << ip_address;

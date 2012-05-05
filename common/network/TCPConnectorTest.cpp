@@ -84,8 +84,8 @@ class TCPConnectorTest: public CppUnit::TestFixture {
     ola::SingleUseCallback0<void> *m_timeout_closure;
 
     void AcceptedConnection(TcpSocket *socket);
-    void OnConnect(TcpSocket *socket, int error);
-    void OnConnectFailure(TcpSocket *socket, int error);
+    void OnConnect(int fd, int error);
+    void OnConnectFailure(int fd, int error);
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TCPConnectorTest);
@@ -253,16 +253,15 @@ void TCPConnectorTest::AcceptedConnection(TcpSocket *new_socket) {
 /**
  * Called when a connection completes or times out.
  */
-void TCPConnectorTest::OnConnect(TcpSocket *socket, int error) {
+void TCPConnectorTest::OnConnect(int fd, int error) {
   if (error) {
     std::stringstream str;
     str << "Failed to connect: " << strerror(error);
     CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(), 0, error);
     m_ss->Terminate();
   } else {
-    CPPUNIT_ASSERT(socket);
-    socket->Close();
-    delete socket;
+    CPPUNIT_ASSERT(fd >= 0);
+    close(fd);
   }
 }
 
@@ -270,9 +269,9 @@ void TCPConnectorTest::OnConnect(TcpSocket *socket, int error) {
 /**
  * Called when a connection completes or times out.
  */
-void TCPConnectorTest::OnConnectFailure(TcpSocket *socket, int error) {
+void TCPConnectorTest::OnConnectFailure(int fd, int error) {
   // The error could be one of many things, right now we just check it's non-0
   CPPUNIT_ASSERT(error != 0);
-  CPPUNIT_ASSERT(!socket);
+  CPPUNIT_ASSERT(fd == -1);
   m_ss->Terminate();
 }
