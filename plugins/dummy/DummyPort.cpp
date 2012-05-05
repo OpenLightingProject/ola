@@ -21,6 +21,7 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 #include "ola/Logging.h"
 #include "ola/rdm/UIDSet.h"
 #include "plugins/dummy/DummyPort.h"
@@ -28,6 +29,15 @@
 namespace ola {
 namespace plugin {
 namespace dummy {
+
+
+DummyPort::DummyPort(DummyDevice *parent, unsigned int id)
+  : BasicOutputPort(parent, id, true) {
+    for (unsigned int i = 0; i < DummyPort::kNumberOfResponders; i++) {
+      UID uid(OPEN_LIGHTING_ESTA_CODE, DummyPort::kStartAddress + i);
+      m_responders[uid] = new DummyResponder(uid);
+    }
+}
 
 
 /*
@@ -44,7 +54,7 @@ bool DummyPort::WriteDMX(const DmxBuffer &buffer,
 
   str << "Dummy port: got " << buffer.Size() << " bytes: ";
   for (unsigned int i = 0;
-       i < m_responder.Footprint() && i < data.size(); i++)
+       i < m_responders.begin()->second->Footprint() && i < data.size(); i++)
     str << "0x" << std::hex << 0 + (uint8_t) data.at(i) << " ";
   OLA_INFO << str.str();
   return true;
@@ -72,14 +82,33 @@ void DummyPort::RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
  */
 void DummyPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
                                ola::rdm::RDMCallback *callback) {
-  m_responder.SendRDMRequest(request, callback);
+  UID dest = request->DestinationUID();
+  ResponderMap::iterator i = m_responders.find(dest);
+  if (i != m_responders.end()) {
+    i->second->SendRDMRequest(request, callback);
+  } else {
+    std::vector<std::string> packets;
+    callback->Run(ola::rdm::RDM_UNKNOWN_UID, NULL, packets);
+    delete request;
+  }
 }
 
 
 void DummyPort::RunDiscovery(RDMDiscoveryCallback *callback) {
   ola::rdm::UIDSet uid_set;
-  uid_set.AddUID(m_responder.UID());
+  for (ResponderMap::iterator i = m_responders.begin();
+    i != m_responders.end(); i++) {
+    uid_set.AddUID(i->second->UID());
+  }
   callback->Run(uid_set);
+}
+
+
+DummyPort::~DummyPort() {
+  for (ResponderMap::iterator i = m_responders.begin();
+      i != m_responders.end(); i++) {
+    delete i->second;
+  }
 }
 }  // dummy
 }  // plugin
