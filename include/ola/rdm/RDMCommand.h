@@ -22,6 +22,7 @@
 #define INCLUDE_OLA_RDM_RDMCOMMAND_H_
 
 #include <stdint.h>
+#include <ola/io/OutputStream.h>
 #include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/RDMResponseCodes.h>
 #include <ola/rdm/UID.h>
@@ -81,6 +82,7 @@ class RDMCommand {
     unsigned int Size() const;
     bool Pack(uint8_t *buffer, unsigned int *size) const;
     bool Pack(string *data) const;
+    void Write(ola::io::OutputStream *stream) const;
 
     static const uint8_t START_CODE = 0xcc;
     enum { MAX_PARAM_DATA_LENGTH = 231 };
