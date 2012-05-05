@@ -84,6 +84,7 @@ OlaServer::OlaServer(OlaClientServiceFactory *factory,
     : m_service_factory(factory),
       m_plugin_loaders(plugin_loaders),
       m_ss(select_server),
+      m_tcp_socket_factory(ola::NewCallback(this, &OlaServer::NewConnection)),
       m_accepting_socket(socket),
       m_device_manager(NULL),
       m_plugin_manager(NULL),
@@ -189,8 +190,7 @@ bool OlaServer::Init() {
     return false;
 
   if (m_accepting_socket) {
-    m_accepting_socket->SetOnAccept(
-      ola::NewCallback(this, &OlaServer::NewConnection));
+    m_accepting_socket->SetFactory(&m_tcp_socket_factory);
     m_ss->AddReadDescriptor(m_accepting_socket);
   }
 

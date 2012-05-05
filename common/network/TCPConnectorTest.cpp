@@ -31,6 +31,7 @@
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/Socket.h"
 #include "ola/network/TCPConnector.h"
+#include "ola/network/TCPSocketFactory.h"
 
 using ola::TimeInterval;
 using ola::io::ConnectedDescriptor;
@@ -120,9 +121,9 @@ void TCPConnectorTest::tearDown() {
 void TCPConnectorTest::testNonBlockingConnect() {
   uint16_t server_port = 9010;
 
-  TcpAcceptingSocket listening_socket;
-  listening_socket.SetOnAccept(
+  ola::network::TCPSocketFactory socket_factory(
       ola::NewCallback(this, &TCPConnectorTest::AcceptedConnection));
+  TcpAcceptingSocket listening_socket(&socket_factory);
   CPPUNIT_ASSERT_MESSAGE(
       "Check for another instance of olad running",
       listening_socket.Listen(m_localhost, server_port));

@@ -5,7 +5,8 @@ SOURCES = AdvancedTCPConnector.h\
           InterfacePicker.h \
           NetworkUtils.h \
           Socket.h \
-          TCPConnector.h
+          TCPConnector.h \
+          TCPSocketFactory.h
 
 EXTRA_DIST = $(SOURCES)
 pkginclude_HEADERS = $(SOURCES)

@@ -32,6 +32,7 @@
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/Socket.h"
+#include "ola/network/TCPSocketFactory.h"
 
 using ola::TimeInterval;
 using ola::io::SelectServer;
@@ -165,7 +166,9 @@ void AdvancedTCPConnectorTest::testExponentialBackoffPolicy() {
  * Test that a TCP Connect works.
  */
 void AdvancedTCPConnectorTest::testConnect() {
-  TcpAcceptingSocket listening_socket;
+  ola::network::TCPSocketFactory socket_factory(
+      ola::NewCallback(this, &AdvancedTCPConnectorTest::AcceptedConnection));
+  TcpAcceptingSocket listening_socket(&socket_factory);
   SetupListeningSocket(&listening_socket);
 
   AdvancedTCPConnector connector(
@@ -207,7 +210,9 @@ void AdvancedTCPConnectorTest::testConnect() {
  * Test that pausing a connection works.
  */
 void AdvancedTCPConnectorTest::testPause() {
-  TcpAcceptingSocket listening_socket;
+  ola::network::TCPSocketFactory socket_factory(
+      ola::NewCallback(this, &AdvancedTCPConnectorTest::AcceptedConnection));
+  TcpAcceptingSocket listening_socket(&socket_factory);
   SetupListeningSocket(&listening_socket);
 
   AdvancedTCPConnector connector(
@@ -358,8 +363,6 @@ void AdvancedTCPConnectorTest::ConfirmState(
  */
 void AdvancedTCPConnectorTest::SetupListeningSocket(
     TcpAcceptingSocket *listening_socket) {
-  listening_socket->SetOnAccept(
-      ola::NewCallback(this, &AdvancedTCPConnectorTest::AcceptedConnection));
   CPPUNIT_ASSERT_MESSAGE(
       "Check for another instance of olad running",
       listening_socket->Listen(m_localhost, SERVER_PORT));

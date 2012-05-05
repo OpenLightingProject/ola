@@ -30,6 +30,7 @@
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/Socket.h"
+#include "ola/network/TCPSocketFactory.h"
 
 using std::string;
 using ola::io::ConnectedDescriptor;
@@ -122,13 +123,14 @@ void SocketTest::tearDown() {
 void SocketTest::testTcpSocketClientClose() {
   string ip_address = "127.0.0.1";
   uint16_t server_port = 9010;
-  TcpAcceptingSocket socket;
+  ola::network::TCPSocketFactory socket_factory(
+      ola::NewCallback(this, &SocketTest::NewConnectionSend));
+  TcpAcceptingSocket socket(&socket_factory);
   CPPUNIT_ASSERT_MESSAGE(
       "Check for another instance of olad running",
       socket.Listen(ip_address, server_port));
   CPPUNIT_ASSERT(!socket.Listen(ip_address, server_port));
 
-  socket.SetOnAccept(ola::NewCallback(this, &SocketTest::NewConnectionSend));
   CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&socket));
 
   TcpSocket *client_socket = TcpSocket::Connect(ip_address, server_port);
@@ -152,14 +154,14 @@ void SocketTest::testTcpSocketClientClose() {
 void SocketTest::testTcpSocketServerClose() {
   string ip_address = "127.0.0.1";
   uint16_t server_port = 9010;
-  TcpAcceptingSocket socket;
+  ola::network::TCPSocketFactory socket_factory(
+      ola::NewCallback(this, &SocketTest::NewConnectionSendAndClose));
+  TcpAcceptingSocket socket(&socket_factory);
   CPPUNIT_ASSERT_MESSAGE(
       "Check for another instance of olad running",
       socket.Listen(ip_address, server_port));
   CPPUNIT_ASSERT(!socket.Listen(ip_address, server_port));
 
-  socket.SetOnAccept(
-      ola::NewCallback(this, &SocketTest::NewConnectionSendAndClose));
   CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&socket));
 
   // The client socket checks the response and terminates on close

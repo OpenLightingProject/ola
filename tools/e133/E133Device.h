@@ -29,6 +29,7 @@
 #include "ola/io/SelectServerInterface.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/Socket.h"
+#include "ola/network/TCPSocketFactory.h"
 #include "ola/rdm/RDMControllerInterface.h"
 #include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/E133Inflator.h"
@@ -89,6 +90,7 @@ class E133Device {
     ola::io::SelectServerInterface *m_ss;
     ola::network::IPV4Address m_ip_address;
     ola::network::UdpSocket m_udp_socket;
+    ola::network::TCPSocketFactory m_tcp_socket_factory;
     ola::network::TcpAcceptingSocket m_tcp_socket;
 
     // inflators
