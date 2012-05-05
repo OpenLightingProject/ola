@@ -22,6 +22,7 @@
 #define PLUGINS_E131_E131_PDU_H_
 
 #include <stdint.h>
+#include <ola/io/OutputStream.h>
 #include <vector>
 
 namespace ola {
@@ -29,8 +30,12 @@ namespace plugin {
 namespace e131 {
 
 
+using ola::io::OutputStream;
+
+
 /*
  * The Base PDU class
+ * TODO(simon): make this into a template based on vector size.
  */
 class PDU {
   public:
@@ -61,6 +66,13 @@ class PDU {
     virtual bool Pack(uint8_t *data, unsigned int &length) const;
     virtual bool PackHeader(uint8_t *data, unsigned int &length) const = 0;
     virtual bool PackData(uint8_t *data, unsigned int &length) const = 0;
+
+    /**
+     * Write the PDU to an OutputStream
+     */
+    virtual void Write(OutputStream *stream) const;
+    virtual void PackHeader(OutputStream *stream) const = 0;
+    virtual void PackData(OutputStream *stream) const = 0;
 
     // This indicates a vector is present
     static const uint8_t VFLAG_MASK = 0x40;
@@ -107,6 +119,11 @@ class PDUBlock {
      */
     bool Pack(uint8_t *data, unsigned int &length) const;
 
+    /**
+     * Write this PDU block to an OutputStream
+     */
+    void Write(OutputStream *stream) const;
+
   private:
     std::vector<const C*> m_pdus;
     unsigned int m_size;
@@ -132,6 +149,21 @@ bool PDUBlock<C>::Pack(uint8_t *data, unsigned int &length) const {
   }
   length = i;
   return status;
+}
+
+
+/*
+ * Write this block of PDUs to an OutputStream.
+ * @param stream the OutputStream to write to
+ * @return true on success, false on failure
+ */
+template <class C>
+void PDUBlock<C>::Write(OutputStream *stream) const {
+  typename std::vector<const C*>::const_iterator iter;
+  for (iter = m_pdus.begin(); iter != m_pdus.end(); ++iter) {
+    // TODO(simon): optimize repeated headers & vectors here
+    (*iter)->Write(stream);
+  }
 }
 }  // e131
 }  // plugin

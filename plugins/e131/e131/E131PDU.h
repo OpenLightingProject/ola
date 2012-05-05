@@ -45,6 +45,9 @@ class E131PDU: public PDU {
     bool PackHeader(uint8_t *data, unsigned int &length) const;
     bool PackData(uint8_t *data, unsigned int &length) const;
 
+    void PackHeader(OutputStream *stream) const;
+    void PackData(OutputStream *stream) const;
+
   private:
     E131Header m_header;
     const DMPPDU *m_dmp_pdu;

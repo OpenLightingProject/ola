@@ -54,6 +54,25 @@ bool RootPDU::PackData(uint8_t *data, unsigned int &length) const {
 }
 
 
+/*
+ * Pack the header into a buffer.
+ */
+void RootPDU::PackHeader(OutputStream *stream) const {
+  uint8_t cid[CID::CID_LENGTH];
+  m_cid.Pack(cid);
+  stream->Write(cid, CID::CID_LENGTH);
+}
+
+
+/*
+ * Pack the data into a buffer
+ */
+void RootPDU::PackData(OutputStream *stream) const {
+  if (m_block)
+    m_block->Write(stream);
+}
+
+
 void RootPDU::SetBlock(const PDUBlock<PDU> *block) {
   m_block = block;
   m_block_size = m_block ? block->Size() : 0;

@@ -51,6 +51,9 @@ class RDMPDU: public PDU {
     bool PackHeader(uint8_t *data, unsigned int &length) const;
     bool PackData(uint8_t *data, unsigned int &length) const;
 
+    void PackHeader(OutputStream*) const {}
+    void PackData(OutputStream *stream) const;
+
   private:
     const ola::rdm::RDMCommand *m_command;
 };

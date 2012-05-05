@@ -48,6 +48,9 @@ class RootPDU: public PDU {
     bool PackHeader(uint8_t *data, unsigned int &length) const;
     bool PackData(uint8_t *data, unsigned int &length) const;
 
+    void PackHeader(OutputStream *stream) const;
+    void PackData(OutputStream *stream) const;
+
     const CID &Cid() const { return m_cid; }
     const CID &Cid(const CID &cid) { return m_cid = cid; }
     void SetBlock(const PDUBlock<PDU> *block);

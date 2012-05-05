@@ -109,6 +109,41 @@ bool PDU::Pack(uint8_t *buffer, unsigned int &length) const {
   length = offset;
   return true;
 }
+
+
+/**
+ * Write this PDU to an OutputStream.
+ */
+void PDU::Write(OutputStream *stream) const {
+  unsigned int size = Size();
+
+  if (size <= TWOB_LENGTH_LIMIT) {
+    uint16_t flags_and_length = (
+        ((VFLAG_MASK | HFLAG_MASK | DFLAG_MASK) << 8) | size);
+    *stream << HostToNetwork(flags_and_length);
+  } else {
+    uint8_t vhl_flags = (VFLAG_MASK | HFLAG_MASK | DFLAG_MASK |
+                         ((size & 0x0f0000) >> 16));
+    *stream << vhl_flags;
+    *stream << (uint8_t) ((size & 0xff00) >> 8);
+    *stream << (uint8_t) (size & 0xff);
+  }
+
+  switch (m_vector_size) {
+    case PDU::ONE_BYTE:
+      *stream << static_cast<uint8_t>(m_vector);
+      break;
+    case PDU::TWO_BYTES:
+      *stream << HostToNetwork(static_cast<uint16_t>(m_vector));
+      break;
+    case PDU::FOUR_BYTES:
+      *stream << HostToNetwork(m_vector);
+      break;
+  }
+
+  PackHeader(stream);
+  PackData(stream);
+}
 }  // e131
 }  // plugin
 }  // ola

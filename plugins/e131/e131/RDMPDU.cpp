@@ -65,6 +65,18 @@ bool RDMPDU::PackData(uint8_t *data, unsigned int &length) const {
   length++;
   return r;
 }
+
+
+/*
+ * Pack the data into a buffer
+ */
+void RDMPDU::PackData(OutputStream *stream) const {
+  if (!m_command)
+    return;
+
+  (*stream) << ola::rdm::RDMCommand::START_CODE;
+  m_command->Write(stream);
+}
 }  // ola
 }  // e131
 }  // plugin
