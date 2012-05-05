@@ -119,11 +119,12 @@ void PDU::Write(OutputStream *stream) const {
 
   if (size <= TWOB_LENGTH_LIMIT) {
     uint16_t flags_and_length = (
-        ((VFLAG_MASK | HFLAG_MASK | DFLAG_MASK) << 8) | size);
+        static_cast<uint16_t>(size) |
+        ((VFLAG_MASK | HFLAG_MASK | DFLAG_MASK) << 8u));
     *stream << HostToNetwork(flags_and_length);
   } else {
     uint8_t vhl_flags = (VFLAG_MASK | HFLAG_MASK | DFLAG_MASK |
-                         ((size & 0x0f0000) >> 16));
+                         static_cast<uint8_t>((size & 0x0f0000) >> 16));
     *stream << vhl_flags;
     *stream << (uint8_t) ((size & 0xff00) >> 8);
     *stream << (uint8_t) (size & 0xff);
