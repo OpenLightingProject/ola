@@ -79,36 +79,23 @@ unsigned int IOQueue::Size() const {
 void IOQueue::Write(const uint8_t *data, unsigned int length) {
   unsigned int offset = 0;
 
-  OLA_INFO << "free space in last block is " << FreeSpaceInLastBlock();
   // use up any remaining space in this block
   unsigned int free_space = FreeSpaceInLastBlock();
   if (free_space > 0) {
     unsigned int data_to_copy = min(free_space, length);
-    OLA_INFO << "filling " << data_to_copy << " in last block";
     memcpy(m_last, data, data_to_copy);
     m_last += data_to_copy;
     offset += data_to_copy;
   }
-
-  if (offset != length)
-    OLA_INFO << "out of blocks, offset is " << offset;
 
   // add new blocks as needed
   while (offset != length) {
     AppendBlock();
     unsigned int data_to_copy = std::min(m_block_size, length - offset);
     memcpy(m_last, data + offset, data_to_copy);
-    OLA_INFO << "copying " << data_to_copy << " bytes";
     m_last += data_to_copy;
     offset += data_to_copy;
   }
-
-  /*
-  OLA_INFO << FreeSpaceInFirstBlock();
-  OLA_INFO << SizeOfFirstBlock();
-  OLA_INFO << FreeSpaceInLastBlock();
-  OLA_INFO << SizeOfLastLBlock();
-  */
 }
 
 
@@ -127,8 +114,6 @@ unsigned int IOQueue::Peek(uint8_t *data, unsigned int n) const {
 
   // copy as much as we need from the first block
   memcpy(data, m_first, amount_to_copy);
-  OLA_INFO << "copied " << amount_to_copy << " from the first block of size "
-    << size_of_first;
   if (n <= size_of_first)
     return n;
 
@@ -140,7 +125,6 @@ unsigned int IOQueue::Peek(uint8_t *data, unsigned int n) const {
   while (offset < n) {
     iter++;
     amount_to_copy = n - offset;
-    OLA_INFO << "amount to copy is " << amount_to_copy;
     if (amount_to_copy > m_block_size) {
       // entire block
       memcpy(data + offset, *iter, m_block_size);
@@ -168,8 +152,6 @@ void IOQueue::Pop(unsigned int n) {
   while (offset < n) {
     unsigned int size_of_first = SizeOfFirstBlock();
     unsigned int amount_to_remove = n - offset;
-    OLA_INFO << "amount to remove is " << amount_to_remove <<
-      ", size of first block is " << size_of_first;
     if (amount_to_remove >= size_of_first) {
       // entire block
       PopBlock();
@@ -264,14 +246,11 @@ void IOQueue::AppendBlock() {
   uint8_t *block = NULL;
   if (m_free_blocks.empty()) {
     block = new uint8_t[m_block_size];
-    OLA_INFO << "new block alloced at @" << (int*) block;
+    OLA_DEBUG << "new block allocated at @" << (int*) block;
   } else {
-    OLA_INFO << "recycle old block";
     block = m_free_blocks.front();
     m_free_blocks.pop();
   }
-
-  OLA_INFO << "appending block @ " << (int*) block;
 
   if (m_blocks.empty()) {
     m_first = block;
@@ -283,7 +262,6 @@ void IOQueue::AppendBlock() {
   }
 
   m_last = block;
-  OLA_INFO << "last points to @" << (int*) m_last;
 }
 
 
