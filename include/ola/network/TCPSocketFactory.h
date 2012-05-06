@@ -58,6 +58,7 @@ class GenericTCPSocketFactory: public TCPSocketFactoryInterface {
 
     void NewTCPSocket(int fd) {
       SocketType *socket = new SocketType(fd);
+      socket->SetReadNonBlocking();
       m_new_socket->Run(socket);
     }
 
