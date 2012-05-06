@@ -25,6 +25,7 @@
 #include <ola/Callback.h>
 #include <ola/io/SelectServerInterface.h>
 #include <ola/network/TCPConnector.h>
+#include <ola/network/TCPSocketFactory.h>
 #include <map>
 
 
@@ -136,7 +137,7 @@ class AdvancedTCPConnector {
     typedef ola::Callback3<void, IPV4Address, uint16_t, TcpSocket*> OnConnect;
 
     AdvancedTCPConnector(ola::io::SelectServerInterface *ss,
-                         OnConnect *on_connect,
+                         TCPSocketFactoryInterface *socket_factory,
                          const ola::TimeInterval &connection_timeout);
     virtual ~AdvancedTCPConnector();
 
@@ -175,14 +176,14 @@ class AdvancedTCPConnector {
 
     typedef std::pair<IPV4Address, uint16_t> IPPortPair;
 
-    OnConnect *m_on_connect;
+    TCPSocketFactoryInterface *m_socket_factory;
 
     /**
      * Sub classes can override this to tune the behavior
      */
     virtual void TakeAction(const IPPortPair &key,
                             ConnectionInfo *info,
-                            TcpSocket *socket,
+                            int fd,
                             int error);
     void ScheduleRetry(const IPPortPair &key, ConnectionInfo *info);
 
@@ -196,7 +197,7 @@ class AdvancedTCPConnector {
     ConnectionMap m_connections;
 
     void RetryTimeout(IPPortPair key);
-    void ConnectionResult(IPPortPair key, TcpSocket *socket, int error);
+    void ConnectionResult(IPPortPair key, int fd, int error);
     void AttemptConnection(const IPPortPair &key, ConnectionInfo *state);
     void AbortConnection(ConnectionInfo *state);
 };

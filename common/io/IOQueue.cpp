@@ -76,10 +76,10 @@ unsigned int IOQueue::Size() const {
 /**
  * Append (length) bytes of data to the buffer
  */
-void IOQueue::Append(const uint8_t *data, unsigned int length) {
+void IOQueue::Write(const uint8_t *data, unsigned int length) {
   unsigned int offset = 0;
 
-  OLA_INFO << "free space in block in " << FreeSpaceInLastBlock();
+  OLA_INFO << "free space in last block is " << FreeSpaceInLastBlock();
   // use up any remaining space in this block
   unsigned int free_space = FreeSpaceInLastBlock();
   if (free_space > 0) {
@@ -89,7 +89,9 @@ void IOQueue::Append(const uint8_t *data, unsigned int length) {
     m_last += data_to_copy;
     offset += data_to_copy;
   }
-  OLA_INFO << "out of blocks, offset is " << offset;
+
+  if (offset != length)
+    OLA_INFO << "out of blocks, offset is " << offset;
 
   // add new blocks as needed
   while (offset != length) {
@@ -226,7 +228,7 @@ void IOQueue::FreeIOVec(const struct iovec *iov) {
  */
 void IOQueue::AppendIOVec(const struct iovec *iov, int iocnt) {
   for (int i = 0; i < iocnt; iov++, i++)
-    Append(reinterpret_cast<const uint8_t*>(iov->iov_base), iov->iov_len);
+    Write(reinterpret_cast<const uint8_t*>(iov->iov_base), iov->iov_len);
 }
 
 

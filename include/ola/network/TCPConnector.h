@@ -40,7 +40,7 @@ class TCPConnector {
     explicit TCPConnector(ola::io::SelectServerInterface *ss);
     ~TCPConnector();
 
-    typedef ola::SingleUseCallback2<void, TcpSocket*, int> TCPConnectCallback;
+    typedef ola::SingleUseCallback2<void, int, int> TCPConnectCallback;
     typedef const void* TCPConnectionID;
 
     TCPConnectionID Connect(const IPV4Address &ip,

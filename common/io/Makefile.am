@@ -5,7 +5,8 @@ libolaio_la_SOURCES = Descriptor.cpp \
                       IOQueue.cpp \
                       SelectServer.cpp
 
-TESTS = DescriptorTester IOQueueTester SelectServerTester
+TESTS = BufferedDescriptorTester DescriptorTester IOQueueTester \
+        SelectServerTester
 check_PROGRAMS = $(TESTS)
 
 COMMON_TEST_LDADD = $(CPPUNIT_LIBS) \
@@ -17,7 +18,6 @@ COMMON_TEST_LDADD = $(CPPUNIT_LIBS) \
                     ../utils/libolautils.la \
                     ./libolaio.la
 
-
 IOQueueTester_SOURCES = IOQueueTest.cpp \
                         IOQueueTester.cpp
 IOQueueTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
@@ -28,6 +28,11 @@ DescriptorTester_SOURCES = DescriptorTest.cpp \
 DescriptorTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 DescriptorTester_LDADD = $(COMMON_TEST_LDADD)
 
+
+BufferedDescriptorTester_SOURCES = BufferedDescriptorTest.cpp \
+                                   BufferedDescriptorTester.cpp
+BufferedDescriptorTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+BufferedDescriptorTester_LDADD = $(COMMON_TEST_LDADD)
 
 SelectServerTester_SOURCES = SelectServerTest.cpp \
                              SelectServerTester.cpp \

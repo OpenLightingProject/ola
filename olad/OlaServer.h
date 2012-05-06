@@ -33,6 +33,7 @@
 #include "ola/io/SelectServer.h"
 #include "ola/network/InterfacePicker.h"
 #include "ola/network/Socket.h"
+#include "ola/network/TCPSocketFactory.h"
 #include "ola/plugin_id.h"
 #include "ola/rdm/UID.h"
 
@@ -91,6 +92,7 @@ class OlaServer {
     class OlaClientServiceFactory *m_service_factory;
     vector<class PluginLoader*> m_plugin_loaders;
     ola::io::SelectServer *m_ss;
+    ola::network::TCPSocketFactory m_tcp_socket_factory;
     ola::network::TcpAcceptingSocket *m_accepting_socket;
 
     class DeviceManager *m_device_manager;

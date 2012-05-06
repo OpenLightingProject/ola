@@ -21,6 +21,7 @@
 #ifndef INCLUDE_OLA_IO_IOQUEUE_H_
 #define INCLUDE_OLA_IO_IOQUEUE_H_
 
+#include <ola/io/OutputStream.h>
 #include <stdint.h>
 #include <sys/uio.h>
 #include <deque>
@@ -30,11 +31,10 @@
 namespace ola {
 namespace io {
 
-
 /**
  * IOQueue.
  */
-class IOQueue {
+class IOQueue: public OutputStream {
   public:
     explicit IOQueue(unsigned int block_size = DEFAULT_BLOCK_SIZE);
     ~IOQueue();
@@ -44,7 +44,38 @@ class IOQueue {
       return m_blocks.empty();
     }
 
-    void Append(const uint8_t *data, unsigned int length);
+    void Write(const uint8_t *data, unsigned int length);
+
+    OutputStream& operator<<(uint8_t i) {
+      Write(&i, sizeof(i));
+      return *this;
+    }
+
+    OutputStream& operator<<(uint16_t i) {
+      Write(reinterpret_cast<uint8_t*>(&i), sizeof(i));
+      return *this;
+    }
+
+    OutputStream& operator<<(uint32_t i) {
+      Write(reinterpret_cast<uint8_t*>(&i), sizeof(i));
+      return *this;
+    }
+
+    OutputStream& operator<<(int8_t i) {
+      Write(reinterpret_cast<uint8_t*>(&i), sizeof(i));
+      return *this;
+    }
+
+    OutputStream& operator<<(int16_t i) {
+      Write(reinterpret_cast<uint8_t*>(&i), sizeof(i));
+      return *this;
+    }
+
+    OutputStream& operator<<(int32_t i) {
+      Write(reinterpret_cast<uint8_t*>(&i), sizeof(i));
+      return *this;
+    }
+
     unsigned int Peek(uint8_t *data, unsigned int length) const;
     void Pop(unsigned int n);
 

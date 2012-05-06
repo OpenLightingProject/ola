@@ -40,8 +40,9 @@
 #include <string>
 
 #include "ola/Logging.h"
-#include "ola/network/Socket.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/network/Socket.h"
+#include "ola/network/TCPSocketFactory.h"
 
 namespace ola {
 namespace network {
@@ -477,10 +478,10 @@ bool UdpSocket::SetTos(uint8_t tos) {
 /*
  * Create a new TcpListeningSocket
  */
-TcpAcceptingSocket::TcpAcceptingSocket()
+TcpAcceptingSocket::TcpAcceptingSocket(TCPSocketFactoryInterface *factory)
     : ReadFileDescriptor(),
       m_sd(ola::io::INVALID_DESCRIPTOR),
-      m_on_accept(NULL) {
+      m_factory(factory) {
 }
 
 
@@ -489,8 +490,6 @@ TcpAcceptingSocket::TcpAcceptingSocket()
  */
 TcpAcceptingSocket::~TcpAcceptingSocket() {
   Close();
-  if (m_on_accept)
-    delete m_on_accept;
 }
 
 
@@ -601,13 +600,10 @@ void TcpAcceptingSocket::PerformRead() {
     return;
   }
 
-  if (m_on_accept) {
-    TcpSocket *socket = new TcpSocket(sd);
-    socket->SetReadNonBlocking();
-    m_on_accept->Run(socket);
+  if (m_factory) {
+    m_factory->NewTCPSocket(sd);
   } else {
-    OLA_WARN <<
-      "Accepted new TCP Connection but no OnAccept handler registered";
+    OLA_WARN << "Accepted new TCP Connection but no factory registered";
     close(sd);
   }
 }

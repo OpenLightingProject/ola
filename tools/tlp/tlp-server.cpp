@@ -34,6 +34,7 @@
 #include <ola/network/InterfacePicker.h>
 #include <ola/network/NetworkUtils.h>
 #include <ola/network/Socket.h>
+#include <ola/network/TCPSocketFactory.h>
 #include <ola/rdm/UID.h>
 
 #include <algorithm>
@@ -224,6 +225,7 @@ class TLPServer {
     typedef vector<NodeEntry*> NodeList;
 
     ola::io::SelectServer m_ss;
+    ola::network::TCPSocketFactory m_tcp_socket_factory;
     TcpAcceptingSocket m_tcp_accept_socket;
     TCPSocketList m_tcp_sockets;
     IPV4Address m_multicast_address;
@@ -282,7 +284,9 @@ class TLPServer {
  * @param iface_address the IPv4 address of the interface we should use.
  */
 TLPServer::TLPServer(const IPV4Address &iface_address)
-    : m_iface_address(iface_address),
+    : m_tcp_socket_factory(NewCallback(this, &TLPServer::NewTCPConnection)),
+      m_tcp_accept_socket(&m_tcp_socket_factory),
+      m_iface_address(iface_address),
       m_stdin_descriptor(STDIN_FILENO),
       m_cid(ola::plugin::e131::CID::Generate()),
       m_root_sender(m_cid),
@@ -338,8 +342,6 @@ bool TLPServer::Init() {
     return false;
   }
 
-  m_tcp_accept_socket.SetOnAccept(
-      NewCallback(this, &TLPServer::NewTCPConnection));
   m_ss.AddReadDescriptor(&m_tcp_accept_socket);
 
   // setup the UDP socket

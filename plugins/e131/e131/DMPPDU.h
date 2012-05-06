@@ -51,6 +51,7 @@ class DMPPDU: public PDU {
 
     unsigned int HeaderSize() const { return DMPHeader::DMP_HEADER_SIZE; }
     bool PackHeader(uint8_t *data, unsigned int &length) const;
+    void PackHeader(OutputStream *stream) const;
 
   protected:
     DMPHeader m_header;
@@ -86,6 +87,12 @@ class DMPGetProperty: public DMPPDU {
       }
       length = offset;
       return true;
+    }
+
+    void PackData(OutputStream *stream) const {
+      typename vector<Address>::const_iterator iter;
+      for (iter = m_addresses.begin(); iter != m_addresses.end(); ++iter)
+        iter->Write(stream);
     }
 
   private:
@@ -225,6 +232,12 @@ class DMPSetProperty: public DMPPDU {
       }
       length = offset;
       return true;
+    }
+
+    void PackData(OutputStream *stream) const {
+      typename AddressDataChunks::const_iterator iter;
+      for (iter = m_chunks.begin(); iter != m_chunks.end(); ++iter)
+        iter->Write(stream);
     }
 
   private:

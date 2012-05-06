@@ -35,8 +35,10 @@ RDMTester_SOURCES = RDMAPITest.cpp RDMCommandTest.cpp RDMTester.cpp \
 RDMTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 RDMTester_LDADD = $(CPPUNIT_LIBS) \
                   libolardm.la \
+                  ../io/libolaio.la \
                   ../logging/liblogging.la \
                   ../network/libolanetwork.la \
+                  ../testing/libolatesting.la \
                   ../utils/libolautils.la
 
 PidStoreTester_SOURCES = DescriptorConsistencyCheckerTest.cpp \

@@ -25,9 +25,11 @@
 
 #include "ola/Logging.h"
 #include "ola/io/IOQueue.h"
+#include "ola/network/NetworkUtils.h"
 #include "ola/testing/TestUtils.h"
 
 using ola::io::IOQueue;
+using ola::network::HostToNetwork;
 using ola::testing::ASSERT_DATA_EQUALS;
 using std::auto_ptr;
 using std::string;
@@ -36,7 +38,8 @@ using std::string;
 class IOQueueTest: public CppUnit::TestFixture {
   public:
     CPPUNIT_TEST_SUITE(IOQueueTest);
-    CPPUNIT_TEST(testBasicAppend);
+    CPPUNIT_TEST(testBasicWrite);
+    CPPUNIT_TEST(testWritePrimatives);
     CPPUNIT_TEST(testBlockOverflow);
     CPPUNIT_TEST(testPop);
     CPPUNIT_TEST(testPeek);
@@ -47,7 +50,8 @@ class IOQueueTest: public CppUnit::TestFixture {
   public:
     void setUp();
     void tearDown() {}
-    void testBasicAppend();
+    void testBasicWrite();
+    void testWritePrimatives();
     void testBlockOverflow();
     void testPop();
     void testPeek();
@@ -85,11 +89,11 @@ unsigned int IOQueueTest::SumLengthOfIOVec(const struct iovec *iov,
 /*
  * Check that basic appending works.
  */
-void IOQueueTest::testBasicAppend() {
+void IOQueueTest::testBasicWrite() {
   CPPUNIT_ASSERT_EQUAL(0u, m_buffer->Size());
   uint8_t data1[] = {0, 1, 2, 3, 4};
 
-  m_buffer->Append(data1, sizeof(data1));
+  m_buffer->Write(data1, sizeof(data1));
   CPPUNIT_ASSERT_EQUAL(5u, m_buffer->Size());
 
   m_buffer->Pop(1);
@@ -97,6 +101,32 @@ void IOQueueTest::testBasicAppend() {
 
   m_buffer->Pop(4);
   CPPUNIT_ASSERT_EQUAL(0u, m_buffer->Size());
+}
+
+
+/*
+ * Check that the << operators work
+ */
+void IOQueueTest::testWritePrimatives() {
+  CPPUNIT_ASSERT_EQUAL(0u, m_buffer->Size());
+
+  (*m_buffer) << HostToNetwork(4);
+  CPPUNIT_ASSERT_EQUAL(4u, m_buffer->Size());
+
+  (*m_buffer) << HostToNetwork(1u <<31);
+  CPPUNIT_ASSERT_EQUAL(8u, m_buffer->Size());
+
+  (*m_buffer) << HostToNetwork(static_cast<uint8_t>(10)) <<
+    HostToNetwork(static_cast<uint16_t>(2400));
+  CPPUNIT_ASSERT_EQUAL(11u, m_buffer->Size());
+
+  // confirm this matches what we expect
+  const unsigned int DATA_SIZE = 20;
+  uint8_t *output_data = new uint8_t[DATA_SIZE];
+
+  uint8_t data1[] = {0, 0, 0, 4, 0x80, 0, 0, 0, 0xa, 0x9, 0x60};
+  unsigned int output_size = m_buffer->Peek(output_data, m_buffer->Size());
+  ASSERT_DATA_EQUALS(__LINE__, data1, sizeof(data1), output_data, output_size);
 }
 
 
@@ -110,13 +140,13 @@ void IOQueueTest::testBlockOverflow() {
   uint8_t data2[] = {5, 6, 7, 8, 9};
   uint8_t data3[] = {0xa, 0xb, 0xc, 0xd, 0xe};
 
-  m_buffer->Append(data1, sizeof(data1));
+  m_buffer->Write(data1, sizeof(data1));
   CPPUNIT_ASSERT_EQUAL(5u, m_buffer->Size());
 
-  m_buffer->Append(data2, sizeof(data2));
+  m_buffer->Write(data2, sizeof(data2));
   CPPUNIT_ASSERT_EQUAL(10u, m_buffer->Size());
 
-  m_buffer->Append(data3, sizeof(data3));
+  m_buffer->Write(data3, sizeof(data3));
   CPPUNIT_ASSERT_EQUAL(15u, m_buffer->Size());
 
   OLA_INFO << "pop";
@@ -124,12 +154,10 @@ void IOQueueTest::testBlockOverflow() {
   CPPUNIT_ASSERT_EQUAL(6u, m_buffer->Size());
 
   // append some more data
-  m_buffer->Append(data1, sizeof(data1));
+  m_buffer->Write(data1, sizeof(data1));
   CPPUNIT_ASSERT_EQUAL(11u, m_buffer->Size());
-  m_buffer->Append(data2, sizeof(data2));
+  m_buffer->Write(data2, sizeof(data2));
   CPPUNIT_ASSERT_EQUAL(16u, m_buffer->Size());
-
-  // test what happens when we peek too much
 }
 
 
@@ -139,7 +167,7 @@ void IOQueueTest::testBlockOverflow() {
 void IOQueueTest::testPop() {
   uint8_t data1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 
-  m_buffer->Append(data1, sizeof(data1));
+  m_buffer->Write(data1, sizeof(data1));
   CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
   CPPUNIT_ASSERT(!m_buffer->Empty());
 
@@ -153,7 +181,7 @@ void IOQueueTest::testPop() {
   CPPUNIT_ASSERT(m_buffer->Empty());
 
   // add the data back, then try to pop off more than we have
-  m_buffer->Append(data1, sizeof(data1));
+  m_buffer->Write(data1, sizeof(data1));
   CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
   CPPUNIT_ASSERT(!m_buffer->Empty());
 
@@ -162,13 +190,13 @@ void IOQueueTest::testPop() {
   CPPUNIT_ASSERT(m_buffer->Empty());
 
   // one more time
-  m_buffer->Append(data1, sizeof(data1));
+  m_buffer->Write(data1, sizeof(data1));
   CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
 
   // Now try a buffer with smaller blocks
   OLA_INFO << "new";
   m_buffer.reset(new IOQueue(4));
-  m_buffer->Append(data1, sizeof(data1));
+  m_buffer->Write(data1, sizeof(data1));
   CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
 
   // pop the same amount as the first block size
@@ -190,7 +218,7 @@ void IOQueueTest::testPop() {
 void IOQueueTest::testPeek() {
   uint8_t data1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 
-  m_buffer->Append(data1, sizeof(data1));
+  m_buffer->Write(data1, sizeof(data1));
   CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
   CPPUNIT_ASSERT(!m_buffer->Empty());
 
@@ -215,7 +243,7 @@ void IOQueueTest::testPeek() {
 
   // Now try a buffer with smaller blocks
   m_buffer.reset(new IOQueue(4));
-  m_buffer->Append(data1, sizeof(data1));
+  m_buffer->Write(data1, sizeof(data1));
   CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
 
   // peek at he same amount as the first block size
@@ -259,7 +287,7 @@ void IOQueueTest::testPeek() {
 void IOQueueTest::testIOVec() {
   uint8_t data1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 
-  m_buffer->Append(data1, sizeof(data1));
+  m_buffer->Write(data1, sizeof(data1));
   CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
   CPPUNIT_ASSERT(!m_buffer->Empty());
 
@@ -271,7 +299,7 @@ void IOQueueTest::testIOVec() {
 
   // try a smaller block size
   m_buffer.reset(new IOQueue(4));
-  m_buffer->Append(data1, sizeof(data1));
+  m_buffer->Write(data1, sizeof(data1));
   CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
 
   OLA_INFO << "as iovec";
@@ -305,7 +333,7 @@ void IOQueueTest::testDump() {
   m_buffer.reset(new IOQueue(4));
   uint8_t data1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 
-  m_buffer->Append(data1, sizeof(data1));
+  m_buffer->Write(data1, sizeof(data1));
   CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
 
   std::stringstream str;

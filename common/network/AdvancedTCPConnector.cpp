@@ -33,15 +33,15 @@ using std::pair;
 /**
  * Create a new AdvancedTCPConnector
  * @param ss the SelectServerInterface to use for scheduling
- * @param on_connect the Callback to execute when a connection is successfull
+ * @param socket_factory the factory to use for creating new sockets
  * @param connection_timeout the timeout for TCP connects
  * @param max_backoff the maximum time to wait between connects.
  */
 AdvancedTCPConnector::AdvancedTCPConnector(
     ola::io::SelectServerInterface *ss,
-    OnConnect *on_connect,
+    TCPSocketFactoryInterface *socket_factory,
     const ola::TimeInterval &connection_timeout)
-    : m_on_connect(on_connect),
+    : m_socket_factory(socket_factory),
       m_ss(ss),
       m_connector(ss),
       m_connection_timeout(connection_timeout) {
@@ -58,9 +58,6 @@ AdvancedTCPConnector::~AdvancedTCPConnector() {
     delete iter->second;
   }
   m_connections.clear();
-
-  if (m_on_connect)
-    delete m_on_connect;
 }
 
 
@@ -192,12 +189,12 @@ void AdvancedTCPConnector::Resume(const IPV4Address &ip_address,
  */
 void AdvancedTCPConnector::TakeAction(const IPPortPair &key,
                                       ConnectionInfo *info,
-                                      TcpSocket *socket,
+                                      int fd,
                                       int) {
-  if (socket) {
+  if (fd != -1) {
     // ok
     info->state = CONNECTED;
-    m_on_connect->Run(key.first, key.second, socket);
+    m_socket_factory->NewTCPSocket(fd);
   } else {
     // error
     info->failed_attempts++;
@@ -239,9 +236,9 @@ void AdvancedTCPConnector::RetryTimeout(IPPortPair key) {
  * Called by the TCPConnector when a connection is ready or it times out.
  */
 void AdvancedTCPConnector::ConnectionResult(IPPortPair key,
-                                            TcpSocket *socket,
+                                            int fd,
                                             int error) {
-  if (socket) {
+  if (fd != -1) {
     OLA_INFO << "TCP Connection established to " << key.first << ":" <<
       key.second;
   }
@@ -249,16 +246,12 @@ void AdvancedTCPConnector::ConnectionResult(IPPortPair key,
   ConnectionMap::iterator iter = m_connections.find(key);
   if (iter == m_connections.end()) {
     OLA_FATAL << "Unable to find state for " << key.first << ":" <<
-      key.second;
-    if (socket) {
-      socket->Close();
-      delete socket;
-    }
+      key.second << ", leaking sockets";
     return;
   }
 
   iter->second->connection_id = 0;
-  TakeAction(iter->first, iter->second, socket, error);
+  TakeAction(iter->first, iter->second, fd, error);
 }
 
 

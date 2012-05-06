@@ -184,7 +184,7 @@ int ConnectedDescriptor::DataRemaining() const {
  * @return the number of bytes sent
  */
 ssize_t ConnectedDescriptor::Send(const uint8_t *buffer,
-                                  unsigned int size) const {
+                                  unsigned int size) {
   if (!ValidWriteDescriptor())
     return 0;
 
@@ -207,7 +207,7 @@ ssize_t bytes_sent;
  * Send an iovec.
  * @returns the number of bytes sent.
  */
-ssize_t ConnectedDescriptor::SendV(const struct iovec *iov, int iocnt) const {
+ssize_t ConnectedDescriptor::SendV(const struct iovec *iov, int iocnt) {
   if (!ValidWriteDescriptor())
     return 0;
 
@@ -217,7 +217,7 @@ ssize_t ConnectedDescriptor::SendV(const struct iovec *iov, int iocnt) const {
     struct msghdr message;
     message.msg_name = NULL;
     message.msg_namelen = 0;
-    message.msg_iov = (struct iovec*) iov;
+    message.msg_iov = const_cast<struct iovec*>(iov);
     message.msg_iovlen = iocnt;
     bytes_sent = sendmsg(WriteDescriptor(), &message, MSG_NOSIGNAL);
   } else {
@@ -276,7 +276,6 @@ int ConnectedDescriptor::Receive(uint8_t *buffer,
 bool ConnectedDescriptor::IsClosed() const {
   return DataRemaining() == 0;
 }
-
 
 // LoopbackDescriptor
 // ------------------------------------------------

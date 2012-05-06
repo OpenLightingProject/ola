@@ -82,6 +82,31 @@ bool E133PDU::PackData(uint8_t *data, unsigned int &length) const {
   length = 0;
   return true;
 }
+
+
+/*
+ * Pack the header into a buffer.
+ */
+void E133PDU::PackHeader(OutputStream *stream) const {
+  E133Header::e133_pdu_header header;
+  strncpy(header.source, m_header.Source().data(),
+          E133Header::SOURCE_NAME_LEN);
+  header.sequence = HostToNetwork(m_header.Sequence());
+  header.endpoint = HostToNetwork(m_header.Endpoint());
+  header.options = static_cast<uint8_t>(
+      m_header.RxAcknowledge() ? E133Header::E133_RX_ACK_MASK : 0);
+  stream->Write(reinterpret_cast<uint8_t*>(&header),
+                sizeof(E133Header::e133_pdu_header));
+}
+
+
+/*
+ * Pack the data into a buffer
+ */
+void E133PDU::PackData(OutputStream *stream) const {
+  if (m_pdu)
+    m_pdu->Write(stream);
+}
 }  // ola
 }  // e131
 }  // plugin

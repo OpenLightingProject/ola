@@ -68,6 +68,8 @@ E133Device::E133Device(ola::io::SelectServerInterface *ss,
       m_health_checked_connection(NULL),
       m_ss(ss),
       m_ip_address(ip_address),
+      m_tcp_socket_factory(NewCallback(this, &E133Device::NewTCPConnection)),
+      m_tcp_socket(&m_tcp_socket_factory),
       m_root_inflator(NewCallback(this, &E133Device::RLPDataReceived)),
       m_incoming_udp_transport(&m_udp_socket, &m_root_inflator),
       m_outgoing_udp_transport(&m_udp_socket),
@@ -132,7 +134,6 @@ bool E133Device::Init() {
   OLA_INFO << "Attempting to start E1.33 device at " << m_ip_address;
 
   // setup the TCP socket
-  m_tcp_socket.SetOnAccept(NewCallback(this, &E133Device::NewTCPConnection));
   bool listen_ok = m_tcp_socket.Listen(m_ip_address,
                                        ola::plugin::e131::E133_PORT);
   if (!listen_ok) {

@@ -38,10 +38,11 @@
 #include <netinet/in.h>
 #endif
 
+#include <ola/Callback.h>
+#include <ola/io/Descriptor.h>
+#include <ola/io/BufferedWriteDescriptor.h>
+#include <ola/network/IPV4Address.h>
 #include <string>
-#include <ola/Callback.h>  // NOLINT
-#include <ola/io/Descriptor.h>  // NOLINT
-#include <ola/network/IPV4Address.h>  // NOLINT
 
 
 namespace ola {
@@ -53,6 +54,11 @@ namespace network {
  */
 class TcpSocket: public ola::io::ConnectedDescriptor {
   public:
+    explicit TcpSocket(int sd)
+        : m_sd(sd) {
+      SetNoSigPipe(sd);
+    }
+
     ~TcpSocket() { Close(); }
 
     int ReadDescriptor() const { return m_sd; }
@@ -66,23 +72,19 @@ class TcpSocket: public ola::io::ConnectedDescriptor {
     static TcpSocket* Connect(const std::string &ip_address,
                               unsigned short port);
 
-    friend class TcpAcceptingSocket;
-    friend class TCPConnector;
-
   protected:
     bool IsSocket() const { return true; }
 
   private:
     int m_sd;
 
-    explicit TcpSocket(int sd)
-        : m_sd(sd) {
-      SetNoSigPipe(sd);
-    }
-
     TcpSocket(const TcpSocket &other);
     TcpSocket& operator=(const TcpSocket &other);
 };
+
+
+// Create a buffered version of the TCP Socket.
+typedef ola::io::BufferedOutputDescriptor<TcpSocket> BufferedTCPSocket;
 
 
 /*
@@ -183,7 +185,7 @@ class UdpSocket: public UdpSocketInterface {
  */
 class TcpAcceptingSocket: public ola::io::ReadFileDescriptor {
   public:
-    TcpAcceptingSocket();
+    explicit TcpAcceptingSocket(class TCPSocketFactoryInterface *factory);
     ~TcpAcceptingSocket();
     bool Listen(const std::string &address,
                 unsigned short port,
@@ -195,16 +197,13 @@ class TcpAcceptingSocket: public ola::io::ReadFileDescriptor {
     bool Close();
     void PerformRead();
 
-    // Set the on Accept closure
-    void SetOnAccept(ola::Callback1<void, TcpSocket*> *on_accept) {
-      if (m_on_accept)
-        delete m_on_accept;
-      m_on_accept = on_accept;
+    void SetFactory(class TCPSocketFactoryInterface *factory) {
+      m_factory = factory;
     }
 
   private:
     int m_sd;
-    ola::Callback1<void, TcpSocket*> *m_on_accept;
+    class TCPSocketFactoryInterface *m_factory;
 
     TcpAcceptingSocket(const TcpAcceptingSocket &other);
     TcpAcceptingSocket& operator=(const TcpAcceptingSocket &other);
