@@ -328,7 +328,6 @@ void E133Device::TCPConnectionClosed() {
  */
 void E133Device::RLPDataReceived(
     const ola::plugin::e131::TransportHeader &header) {
-  OLA_INFO << "Got Root PDU from " << header.SourceIP();
   if (header.Transport() == ola::plugin::e131::TransportHeader::TCP &&
       m_health_checked_connection) {
     m_health_checked_connection->HeartbeatReceived();
