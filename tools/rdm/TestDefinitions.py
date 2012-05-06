@@ -1282,13 +1282,16 @@ class SetStartAddress(TestMixins.SetStartAddressMixin, ResponderTestFixture):
     self.start_address = 1
 
     if footprint == 0 or current_address == 0xffff:
-      result = self.NackSetResult(RDMNack.NR_UNKNOWN_PID)
+      results = [
+          self.NackSetResult(RDMNack.NR_UNKNOWN_PID),
+          self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE)
+      ]
     else:
       self.start_address = self.CalculateNewAddress(current_address, footprint)
-      result = self.AckSetResult(action=self.VerifySet)
+      results = self.AckSetResult(action=self.VerifySet)
 
     self._test_state = self.SET
-    self.AddExpectedResults(result)
+    self.AddExpectedResults(results)
     self.SendSet(ROOT_DEVICE, self.pid, [self.start_address])
 
   def VerifyResult(self, response, fields):
