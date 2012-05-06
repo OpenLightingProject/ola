@@ -158,11 +158,14 @@ void AdvancedTCPConnector::Disconnect(const IPV4Address &ip_address,
   if (pause) {
     iter->second->state = PAUSED;
   } else {
-    // We try to re-connect immediately. If we have a large number of
-    // connections we should stagger the re-connects. For now we assume we'll
-    // have < 100  connections, so it's not a problem.
+    // schedule a retry as if this endpoint failed once
     iter->second->state = DISCONNECTED;
-    AttemptConnection(iter->first, iter->second);
+    iter->second->retry_timeout = m_ss->RegisterSingleTimeout(
+        iter->second->policy->BackOffTime(1),
+        ola::NewSingleCallback(
+          this,
+          &AdvancedTCPConnector::RetryTimeout,
+          iter->first));
   }
 }
 
