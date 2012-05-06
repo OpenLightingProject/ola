@@ -33,6 +33,7 @@
 #define PLUGINS_E131_E131_TCPTRANSPORT_H_
 
 #include <memory>
+#include "ola/io/OutputStream.h"
 #include "ola/io/Descriptor.h"
 #include "ola/network/Socket.h"
 #include "plugins/e131/e131/PDU.h"
@@ -44,31 +45,34 @@ namespace e131 {
 
 
 /*
- * Transport ACN messages over a stream. This class uses an internal buffer to
- * pack & send the messages. There is plenty of room for optimizations. :)
+ * Transport ACN messages over a stream.
+ * This uses an OutputBuffer to build the messages. The reason for this is so
+ * that we can know before attempting to send how much data is buffered. This
+ * allows us to limit the growth of the buffers and cleanly drop messages,
+ * thereby not breaking the framing.
  */
 class OutgoingStreamTransport: public OutgoingTransport {
   public:
-    explicit OutgoingStreamTransport(
-        ola::io::ConnectedDescriptor *descriptor)
-        : m_descriptor(descriptor),
-          m_buffer(NULL),
-          m_buffer_size(0) {
+    /**
+     * Setup a new transport
+     * @param descriptor the BufferedOutputDescriptor to write to
+     * @param max_buffer_size the max size that the userspace buffer is allowed
+     * to consume. Once we hit this limit we start dropping requests. Note that
+     * this doesn't include kernel buffers, so you need to account for that.
+     */
+    OutgoingStreamTransport(
+        ola::io::OutputStream *stream,
+        unsigned int max_buffer_size = 2 << 10)  // default to 2k
+        : m_stream(stream),
+          m_max_buffer_size(max_buffer_size) {
     }
-    ~OutgoingStreamTransport() {
-      if (m_buffer)
-        delete[] m_buffer;
-    }
+    ~OutgoingStreamTransport() {}
 
     bool Send(const PDUBlock<PDU> &pdu_block);
 
   private:
-    ola::io::ConnectedDescriptor *m_descriptor;
-    uint8_t *m_buffer;
-    unsigned int m_buffer_size;
-
-    bool ExpandBuffer(unsigned int size);
-    bool SendOrClose(const uint8_t *data, unsigned int length);
+    ola::io::OutputStream *m_stream;
+    unsigned int m_max_buffer_size;
 
     OutgoingStreamTransport(const OutgoingStreamTransport&);
     OutgoingStreamTransport& operator=(const OutgoingStreamTransport&);

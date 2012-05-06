@@ -23,6 +23,7 @@
 
 #include <ola/Callback.h>
 #include <ola/network/Socket.h>
+#include <ola/network/BufferedTCPSocket.h>
 
 namespace ola {
 namespace network {

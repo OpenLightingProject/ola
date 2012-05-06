@@ -23,8 +23,8 @@
 #include <memory>
 
 #include "ola/Logging.h"
+#include "ola/io/BufferedWriteDescriptor.h"
 #include "ola/io/SelectServer.h"
-#include "ola/network/Socket.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
 #include "plugins/e131/e131/TCPTransport.h"
 
@@ -67,7 +67,7 @@ class TCPTransportTest: public CppUnit::TestFixture {
     bool m_stream_ok;
     ola::network::IPV4Address m_localhost;
     auto_ptr<ola::io::SelectServer> m_ss;
-    ola::io::LoopbackDescriptor m_loopback;
+    ola::io::BufferedLoopbackDescriptor m_loopback;
     CID m_cid;
     auto_ptr<Callback0<void> > m_rx_callback;
     auto_ptr<MockInflator> m_inflator;
@@ -84,7 +84,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TCPTransportTest);
 
 void TCPTransportTest::setUp() {
   ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
-  m_pdus_received = 0;
   m_stream_ok = true;
 
   CPPUNIT_ASSERT(IPV4Address::FromString("127.0.0.1", &m_localhost));
@@ -108,6 +107,7 @@ void TCPTransportTest::setUp() {
       NewSingleCallback(this, &TCPTransportTest::FatalStop));
 
   // loopback descriptor
+  m_loopback.AssociateSelectServer(m_ss.get());
   CPPUNIT_ASSERT(m_loopback.Init());
   m_loopback.SetOnClose(NewSingleCallback(this, &TCPTransportTest::Stop));
   m_loopback.SetOnData(
@@ -139,8 +139,9 @@ void TCPTransportTest::Receive() {
  */
 void TCPTransportTest::testSinglePDU() {
   SendPDU(__LINE__);
+  m_ss->RunOnce(1, 0);
   m_loopback.CloseClient();
-  m_ss->Run();
+  m_ss->RunOnce(1, 0);
   CPPUNIT_ASSERT(m_stream_ok);
   CPPUNIT_ASSERT_EQUAL(1u, m_pdus_received);
 }
@@ -155,8 +156,9 @@ void TCPTransportTest::testShortPreamble() {
     1, 2, 3, 4};
   m_loopback.Send(bogus_data, sizeof(bogus_data));
 
+  m_ss->RunOnce(1, 0);
   m_loopback.CloseClient();
-  m_ss->Run();
+  m_ss->RunOnce(1, 0);
   CPPUNIT_ASSERT(m_stream_ok);
   CPPUNIT_ASSERT_EQUAL(0u, m_pdus_received);
 }
@@ -174,8 +176,9 @@ void TCPTransportTest::testBadPreamble() {
     1, 2, 3, 4};
   m_loopback.Send(bogus_data, sizeof(bogus_data));
 
+  m_ss->RunOnce(1, 0);
   m_loopback.CloseClient();
-  m_ss->Run();
+  m_ss->RunOnce(1, 0);
   CPPUNIT_ASSERT(!m_stream_ok);
   CPPUNIT_ASSERT_EQUAL(0u, m_pdus_received);
 }
@@ -188,8 +191,9 @@ void TCPTransportTest::testZeroLengthPDUBlock() {
   SendEmptyPDUBLock(__LINE__);
   SendPDU(__LINE__);
 
+  m_ss->RunOnce(1, 0);
   m_loopback.CloseClient();
-  m_ss->Run();
+  m_ss->RunOnce(1, 0);
   CPPUNIT_ASSERT(m_stream_ok);
   CPPUNIT_ASSERT_EQUAL(1u, m_pdus_received);
 }
@@ -203,8 +207,9 @@ void TCPTransportTest::testMultiplePDUs() {
   SendPDU(__LINE__);
   SendPDU(__LINE__);
 
+  m_ss->RunOnce(1, 0);
   m_loopback.CloseClient();
-  m_ss->Run();
+  m_ss->RunOnce(1, 0);
   CPPUNIT_ASSERT(m_stream_ok);
   CPPUNIT_ASSERT_EQUAL(3u, m_pdus_received);
 }
@@ -216,8 +221,9 @@ void TCPTransportTest::testMultiplePDUs() {
 void TCPTransportTest::testSinglePDUBlock() {
   SendPDUBlock(__LINE__);
 
+  m_ss->RunOnce(1, 0);
   m_loopback.CloseClient();
-  m_ss->Run();
+  m_ss->RunOnce(1, 0);
   CPPUNIT_ASSERT(m_stream_ok);
   CPPUNIT_ASSERT_EQUAL(3u, m_pdus_received);
 }
@@ -246,8 +252,9 @@ void TCPTransportTest::testBufferExpansion() {
 
   CPPUNIT_ASSERT(outgoing_transport.Send(pdu_block));
 
+  m_ss->RunOnce(1, 0);
   m_loopback.CloseClient();
-  m_ss->Run();
+  m_ss->RunOnce(1, 0);
   CPPUNIT_ASSERT(m_stream_ok);
   CPPUNIT_ASSERT_EQUAL(4u, m_pdus_received);
 }
