@@ -180,18 +180,12 @@ void E133Device::SendStatusMessage(const ola::rdm::RDMCommand *command) {
 
 
 /**
- * Close the master's TCP connection.
- * @return, true if there was a connection to close, false otherwise
+ * Force close the master's TCP connection.
+ * @return, true if there was a connection to close, false otherwise.
  */
 bool E133Device::CloseTCPConnection() {
   if (!m_tcp_descriptor)
     return false;
-
-  delete m_outgoing_tcp_transport;
-  m_outgoing_tcp_transport = NULL;
-
-  m_ss->RemoveReadDescriptor(m_tcp_descriptor);
-  m_tcp_descriptor->Close();
 
   ola::io::ConnectedDescriptor::OnCloseCallback *callback =
     m_tcp_descriptor->TransferOnClose();
@@ -204,7 +198,7 @@ bool E133Device::CloseTCPConnection() {
  * Called when we get a new TCP connection.
  */
 void E133Device::NewTCPConnection(
-    ola::network::TcpSocket *descriptor) {
+    ola::network::BufferedTCPSocket *descriptor) {
   IPV4Address ip_address;
   uint16_t port;
   if (descriptor->GetPeer(&ip_address, &port))
@@ -218,6 +212,8 @@ void E133Device::NewTCPConnection(
     delete descriptor;
     return;
   }
+
+  descriptor->AssociateSelectServer(m_ss);
 
   if (m_outgoing_tcp_transport)
     OLA_WARN << "Already have a OutgoingTCPTransport";
@@ -240,6 +236,8 @@ void E133Device::NewTCPConnection(
         &m_root_sender,
         ola::NewSingleCallback(this, &E133Device::TCPConnectionUnhealthy),
         m_ss);
+
+  // this sends a heartbeat message to indicate this is the live connection
   if (!m_health_checked_connection->Setup()) {
     OLA_WARN <<
       "Failed to setup HealthCheckedConnection, closing TCP connection";
@@ -254,8 +252,6 @@ void E133Device::NewTCPConnection(
       &m_root_inflator,
       descriptor);
 
-  // send a heartbeat message to indicate this is the live connection
-  m_health_checked_connection->SendHeartbeat();
   m_tcp_descriptor = descriptor;
 
   descriptor->SetOnData(
@@ -274,6 +270,7 @@ void E133Device::ReceiveTCPData(
   bool ok = transport->Receive();
   if (!ok) {
     OLA_WARN << "TCP STREAM IS BAD!!!";
+    CloseTCPConnection();
   }
 }
 
@@ -291,18 +288,35 @@ void E133Device::TCPConnectionUnhealthy() {
 
 
 /**
- * Called when the TCP connection is closed
+ * Close and cleanup the TCP connection. This can be triggered one of three
+ * ways:
+ *  - remote end closes the connection
+ *  - the local end decides to close the connection
+ *  - the heartbeats time out
  */
 void E133Device::TCPConnectionClosed() {
   OLA_INFO << "TCP conection closed";
+
+  // zero out the master's IP
   m_tcp_stats->ip_address = IPV4Address();
+
+  m_ss->RemoveReadDescriptor(m_tcp_descriptor);
+  m_tcp_descriptor->Close();
+
+  // shutdown the tx side
+  m_e133_sender.SetTransport(NULL);
+  delete m_outgoing_tcp_transport;
+  m_outgoing_tcp_transport = NULL;
 
   delete m_health_checked_connection;
   m_health_checked_connection = NULL;
 
+  // shutdown the rx side
+
   delete m_incoming_tcp_transport;
   m_incoming_tcp_transport = NULL;
 
+  // finally delete the socket
   delete m_tcp_descriptor;
   m_tcp_descriptor = NULL;
 }
@@ -314,7 +328,6 @@ void E133Device::TCPConnectionClosed() {
  */
 void E133Device::RLPDataReceived(
     const ola::plugin::e131::TransportHeader &header) {
-  OLA_INFO << "Got Root PDU from " << header.SourceIP();
   if (header.Transport() == ola::plugin::e131::TransportHeader::TCP &&
       m_health_checked_connection) {
     m_health_checked_connection->HeartbeatReceived();

@@ -46,7 +46,8 @@ bool HealthCheckedConnection::Setup() {
   // setup the RX timeout
   ResumeTimer();
 
-  // pretend we just send a heartbeat
+  // send a heartbeat now and setup the TX timer
+  SendHeartbeat();
   HeartbeatSent();
   return true;
 }

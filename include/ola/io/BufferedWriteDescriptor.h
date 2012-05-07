@@ -32,27 +32,13 @@ namespace ola {
 namespace io {
 
 
-/**
- * A BufferedOutputDescriptor inherits from a ConnectedDescriptor (why?) and
- * buffers the data in an IOQueue. When the queue is non-empty the class will
- * associate itself with the given SelectServer and perform non-blocking, on
- * demand writes.
- *
- * @tparam Parent the parent class to inherit from. The parent must provide a
- * Send() method to perform the actual write.
- */
-template <typename Parent>
-class BufferedOutputDescriptor: public Parent, OutputStream {
+class DescriptorStream: public OutputStream {
   public:
-    explicit BufferedOutputDescriptor(SelectServerInterface *ss = NULL)
+    explicit DescriptorStream(SelectServerInterface *ss = NULL)
       : m_associated(false),
         m_ss(ss) {
     }
-
-    bool Close() {
-      Disassociate();
-      return Parent::Close();
-    }
+    virtual ~DescriptorStream() {}
 
     /**
      * Associate a select server with this descriptor.
@@ -65,6 +51,9 @@ class BufferedOutputDescriptor: public Parent, OutputStream {
       if (!m_output_buffer.Empty())
         Associate();
     }
+
+    // Provided by the child class
+    virtual ssize_t Send(const uint8_t *buffer, unsigned int size) = 0;
 
     // Methods from OutputStream
     bool Empty() const { return m_output_buffer.Empty(); }
@@ -103,6 +92,37 @@ class BufferedOutputDescriptor: public Parent, OutputStream {
       return *this;
     }
 
+  protected:
+    bool m_associated;
+    IOQueue m_output_buffer;
+    SelectServerInterface *m_ss;
+
+    virtual void Associate() = 0;
+    virtual void Disassociate() = 0;
+};
+
+
+/**
+ * A BufferedOutputDescriptor inherits from a ConnectedDescriptor (why?) and
+ * buffers the data in an IOQueue. When the queue is non-empty the class will
+ * associate itself with the given SelectServer and perform non-blocking, on
+ * demand writes.
+ *
+ * @tparam Parent the parent class to inherit from. The parent must provide a
+ * SendV() method to perform the actual write.
+ */
+template <typename Parent>
+class BufferedOutputDescriptor: public Parent, public DescriptorStream {
+  public:
+    explicit BufferedOutputDescriptor(SelectServerInterface *ss = NULL)
+      : DescriptorStream(ss) {
+    }
+
+    bool Close() {
+      Disassociate();
+      return Parent::Close();
+    }
+
     // We override Send() and buffer the data.
     ssize_t Send(const uint8_t *buffer, unsigned int size) {
       m_output_buffer.Write(buffer, size);
@@ -122,10 +142,7 @@ class BufferedOutputDescriptor: public Parent, OutputStream {
         Disassociate();
     }
 
-  private:
-    bool m_associated;
-    IOQueue m_output_buffer;
-    SelectServerInterface *m_ss;
+  protected:
 
     void Associate() {
       m_ss->AddWriteDescriptor(this);

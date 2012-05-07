@@ -23,6 +23,7 @@
 
 #include <ola/Callback.h>
 #include <ola/network/Socket.h>
+#include <ola/network/BufferedTCPSocket.h>
 
 namespace ola {
 namespace network {
@@ -58,6 +59,7 @@ class GenericTCPSocketFactory: public TCPSocketFactoryInterface {
 
     void NewTCPSocket(int fd) {
       SocketType *socket = new SocketType(fd);
+      socket->SetReadNonBlocking();
       m_new_socket->Run(socket);
     }
 

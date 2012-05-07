@@ -52,70 +52,17 @@ const unsigned int IncommingStreamTransport::INITIAL_SIZE = 500;
  * @param pdu_block the block of pdus to send
  */
 bool OutgoingStreamTransport::Send(const PDUBlock<PDU> &pdu_block) {
-  if (!SendOrClose(ACN_HEADER, ACN_HEADER_SIZE))
-    return false;
-
   unsigned int pdu_block_size = pdu_block.Size();
-  unsigned int pdu_block_header = HostToNetwork(pdu_block_size);
+  unsigned int total_message_size = (
+      ACN_HEADER_SIZE + sizeof(pdu_block_size) + pdu_block.Size());
+  if (m_stream->Size() + total_message_size > m_max_buffer_size)
+    return false;
 
   OLA_DEBUG << "TCP TX: block size is " << pdu_block_size;
-
-  if (!SendOrClose(reinterpret_cast<uint8_t*>(&pdu_block_header),
-                   sizeof(pdu_block_header)))
-    return false;
-
-  /*
-   * TODO(simon): there is plenty of scope for optimizing memory use when
-   * sending. Since PDUs exist to be sent, we should add a
-   * PDU::Send(descriptor). Think about how this interacts with non-blocking
-   * sends though, we'll probably need some sort of OutputVector and a
-   * descriptor class that supports it.
-   *
-   * Anyway for now we just use a buffer and send it.
-   */
-  if (!ExpandBuffer(pdu_block_size))
-    m_descriptor->Close();
-
-  if (!pdu_block.Pack(m_buffer, pdu_block_size)) {
-    OLA_WARN << "Failed to pack PDU for TCP Transmission";
-    m_descriptor->Close();
-    return false;
-  }
-
-  return SendOrClose(m_buffer, pdu_block_size);
-}
-
-
-/**
- * Make sure our buffer is at least size
- */
-bool OutgoingStreamTransport::ExpandBuffer(unsigned int size) {
-  if (size <= m_buffer_size && m_buffer)
-    return true;
-
-  if (m_buffer)
-    delete[] m_buffer;
-
-  m_buffer_size = size;
-  m_buffer = new uint8_t[size];
-  return true;
-}
-
-
-/**
- * Send some data, and if we can't close the descriptor.
- * TODO(simon): fix this so rather than closing we wait until the descriptor is
- * writeable. This means we'll have to buffer the data.
- * @returns true if the data was sent, false if we ended up closing
- */
-bool OutgoingStreamTransport::SendOrClose(const uint8_t *data,
-                                          unsigned int length) {
-  ssize_t bytes_sent = m_descriptor->Send(data, length);
-
-  if (static_cast<unsigned int>(bytes_sent) != length) {
-    m_descriptor->Close();
-    return false;
-  }
+  // Write the ACN header, the block length and the block data
+  m_stream->Write(ACN_HEADER, ACN_HEADER_SIZE);
+  *m_stream << HostToNetwork(pdu_block_size);
+  pdu_block.Write(m_stream);
   return true;
 }
 

@@ -39,6 +39,7 @@ E133HealthCheckedConnection::E133HealthCheckedConnection(
   unsigned int vector,
   const ola::TimeInterval heartbeat_interval)
     : HealthCheckedConnection(scheduler, heartbeat_interval),
+      m_in_timeout(false),
       m_vector(vector),
       m_transport(transport),
       m_sender(sender),
@@ -61,6 +62,7 @@ void E133HealthCheckedConnection::SendHeartbeat() {
  */
 void E133HealthCheckedConnection::HeartbeatTimeout() {
   OLA_INFO << "TCP connection heartbeat timeout";
+  m_in_timeout = true;
   if (m_on_timeout)
     m_on_timeout->Run();
 }

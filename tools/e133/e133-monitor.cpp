@@ -74,7 +74,7 @@
 using ola::NewCallback;
 using ola::NewSingleCallback;
 using ola::network::IPV4Address;
-using ola::network::TcpSocket;
+using ola::network::BufferedTCPSocket;
 using ola::rdm::PidStoreHelper;
 using ola::rdm::RDMCommand;
 using ola::rdm::RDMRequest;
@@ -194,7 +194,7 @@ class NodeTCPState {
     }
 
     // public for now
-    TcpSocket *socket;
+    BufferedTCPSocket *socket;
     E133HealthCheckedConnection *health_checked_connection;
     ola::plugin::e131::IncomingTCPTransport *in_transport;
     ola::plugin::e131::OutgoingStreamTransport *out_transport;
@@ -221,7 +221,7 @@ class SimpleE133Monitor {
     ola::rdm::CommandPrinter m_command_printer;
     ola::io::SelectServer m_ss;
     SlpThread m_slp_thread;
-    ola::network::TCPSocketFactory m_tcp_socket_factory;
+    ola::network::BufferedTCPSocketFactory m_tcp_socket_factory;
     ola::network::AdvancedTCPConnector m_connector;
     ola::network::LinearBackoffPolicy m_backoff_policy;
 
@@ -247,12 +247,12 @@ class SimpleE133Monitor {
      * a node we have a connection to. Think about this.
      */
     void DiscoveryCallback(bool status, const vector<string> &urls);
-    void OnTCPConnect(TcpSocket *socket);
+    void OnTCPConnect(BufferedTCPSocket *socket);
     void ReceiveTCPData(IPV4Address ip_address,
                         ola::plugin::e131::IncomingTCPTransport *transport);
     void SocketUnhealthy(IPV4Address address);
     void SocketClosed(IPV4Address address);
-    void E133DataReceived(const ola::plugin::e131::TransportHeader &header);
+    void RLPDataReceived(const ola::plugin::e131::TransportHeader &header);
 
     void EndpointRequest(
         const ola::plugin::e131::TransportHeader &transport_header,
@@ -288,7 +288,7 @@ SimpleE133Monitor::SimpleE133Monitor(
       m_backoff_policy(INITIAL_TCP_RETRY_DELAY, MAX_TCP_RETRY_DELAY),
       m_cid(ola::plugin::e131::CID::Generate()),
       m_root_sender(m_cid),
-      m_root_inflator(NewCallback(this, &SimpleE133Monitor::E133DataReceived)) {
+      m_root_inflator(NewCallback(this, &SimpleE133Monitor::RLPDataReceived)) {
   m_root_inflator.AddInflator(&m_e133_inflator);
   m_e133_inflator.AddInflator(&m_rdm_inflator);
 
@@ -382,7 +382,7 @@ void SimpleE133Monitor::DiscoveryCallback(bool ok,
  * Called when a TCP socket is connected. Note that we're not the master at
  * this point. That only happens if we receive data on the connection.
  */
-void SimpleE133Monitor::OnTCPConnect(TcpSocket *socket) {
+void SimpleE133Monitor::OnTCPConnect(BufferedTCPSocket *socket) {
   IPV4Address ip_address;
   uint16_t port;
   socket->GetPeer(&ip_address, &port);
@@ -475,7 +475,7 @@ void SimpleE133Monitor::SocketClosed(IPV4Address ip_address) {
   delete node_state->in_transport;
   node_state->in_transport = NULL;
 
-  TcpSocket *socket = node_state->socket;
+  BufferedTCPSocket *socket = node_state->socket;
   m_ss.RemoveReadDescriptor(socket);
   delete socket;
   node_state->socket = NULL;
@@ -489,7 +489,7 @@ void SimpleE133Monitor::SocketClosed(IPV4Address ip_address) {
  * Called when we receive E1.33 data. If this arrived over TCP we notify the
  * health checked connection.
  */
-void SimpleE133Monitor::E133DataReceived(
+void SimpleE133Monitor::RLPDataReceived(
     const ola::plugin::e131::TransportHeader &header) {
   if (header.Transport() != ola::plugin::e131::TransportHeader::TCP)
     return;
@@ -515,6 +515,7 @@ void SimpleE133Monitor::E133DataReceived(
   node_state->am_master = true;
   OLA_INFO << "Now the master controller for " << header.SourceIP();
 
+  node_state->socket->AssociateSelectServer(&m_ss);
   OutgoingStreamTransport *outgoing_transport = new OutgoingStreamTransport(
       node_state->socket);
 

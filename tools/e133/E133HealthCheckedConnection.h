@@ -52,12 +52,16 @@ class E133HealthCheckedConnection
         const ola::TimeInterval heartbeat_interval =
           ola::TimeInterval(E133_HEARTBEAT_INTERVAL, 0));
 
-    ~E133HealthCheckedConnection() {}
+    ~E133HealthCheckedConnection() {
+      if (m_on_timeout && !m_in_timeout)
+        delete m_on_timeout;
+    }
 
     void SendHeartbeat();
     void HeartbeatTimeout();
 
   private:
+    bool m_in_timeout;
     unsigned int m_vector;
     ola::plugin::e131::OutgoingStreamTransport *m_transport;
     ola::plugin::e131::RootSender *m_sender;

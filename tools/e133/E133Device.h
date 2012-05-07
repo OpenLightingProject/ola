@@ -90,7 +90,7 @@ class E133Device {
     ola::io::SelectServerInterface *m_ss;
     ola::network::IPV4Address m_ip_address;
     ola::network::UdpSocket m_udp_socket;
-    ola::network::TCPSocketFactory m_tcp_socket_factory;
+    ola::network::BufferedTCPSocketFactory m_tcp_socket_factory;
     ola::network::TcpAcceptingSocket m_tcp_socket;
 
     // inflators
@@ -107,7 +107,7 @@ class E133Device {
     ola::plugin::e131::RootSender m_root_sender;
     ReliableE133StreamSender m_e133_sender;
 
-    void NewTCPConnection(ola::network::TcpSocket *descriptor);
+    void NewTCPConnection(ola::network::BufferedTCPSocket *descriptor);
     void ReceiveTCPData(ola::plugin::e131::IncomingTCPTransport *transpport);
     void TCPConnectionUnhealthy();
     void TCPConnectionClosed();
