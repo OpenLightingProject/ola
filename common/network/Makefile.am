@@ -23,13 +23,7 @@ check_PROGRAMS = $(TESTS)
 
 # required for all tests
 COMMON_TEST_LDADD = $(CPPUNIT_LIBS) \
-                    ./libolanetwork.la \
-                    ../export_map/libolaexportmap.la \
-                    ../io/libolaio.la \
-                    ../io/libolaio.la \
-                    ../logging/liblogging.la \
-                    ../thread/libthread.la \
-                    ../utils/libolautils.la
+                    ../libolacommon.la
 
 HealthCheckedConnectionTester_SOURCES = HealthCheckedConnectionTest.cpp \
                                         HealthCheckedConnectionTester.cpp

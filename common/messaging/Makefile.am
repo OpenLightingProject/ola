@@ -14,7 +14,4 @@ DescriptorTester_SOURCES = DescriptorTester.cpp \
                            MessagePrinterTest.cpp
 DescriptorTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 DescriptorTester_LDADD = $(CPPUNIT_LIBS) \
-                         libolamessaging.la \
-                         ../logging/liblogging.la \
-                         ../network/libolanetwork.la \
-                         ../utils/libolautils.la
+                         ../libolacommon.la

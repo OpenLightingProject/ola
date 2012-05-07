@@ -10,13 +10,7 @@ TESTS = BufferedDescriptorTester DescriptorTester IOQueueTester \
 check_PROGRAMS = $(TESTS)
 
 COMMON_TEST_LDADD = $(CPPUNIT_LIBS) \
-                    ../export_map/libolaexportmap.la \
-                    ../logging/liblogging.la \
-                    ../network/libolanetwork.la \
-                    ../testing/libolatesting.la \
-                    ../thread/libthread.la \
-                    ../utils/libolautils.la \
-                    ./libolaio.la
+                    ../libolacommon.la
 
 IOQueueTester_SOURCES = IOQueueTest.cpp \
                         IOQueueTester.cpp
