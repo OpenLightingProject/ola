@@ -23,6 +23,7 @@
 
 #include <string>
 #include <map>
+#include <vector>
 #include "ola/BaseTypes.h"
 #include "ola/DmxBuffer.h"
 #include "ola/rdm/RDMControllerInterface.h"
@@ -52,8 +53,19 @@ class DummyPort: public BasicOutputPort {
     static const unsigned int kStartAddress = 0xffffff00;
 
   private:
+    typedef struct {
+      unsigned int expected_count;
+      unsigned int current_count;
+      bool failed;
+      ola::rdm::RDMCallback *callback;
+    } broadcast_request_tracker;
+
     typedef map<UID, DummyResponder *> ResponderMap;
     void RunDiscovery(RDMDiscoveryCallback *callback);
+    void HandleBroadcastAck(broadcast_request_tracker *tracker,
+                            ola::rdm::rdm_response_code code,
+                            const ola::rdm::RDMResponse *response,
+                            const std::vector<std::string> &packets);
 
     DmxBuffer m_buffer;
     ResponderMap m_responders;

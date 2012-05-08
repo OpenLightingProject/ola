@@ -84,9 +84,16 @@ void DummyPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
                                ola::rdm::RDMCallback *callback) {
   UID dest = request->DestinationUID();
   if (dest.IsBroadcast()) {
+    broadcast_request_tracker *tracker = new broadcast_request_tracker;
+    tracker->expected_count = DummyPort::kNumberOfResponders;
+    tracker->current_count = 0;
+    tracker->failed = false;
+    tracker->callback = callback;
     for (ResponderMap::iterator i = m_responders.begin();
         i != m_responders.end(); i++) {
-      i->second->SendRDMRequest(request->Duplicate(), callback);
+      i->second->SendRDMRequest(
+        request->Duplicate(),
+        NewSingleCallback(this, &DummyPort::HandleBroadcastAck, tracker));
     }
     delete request;
   } else {
@@ -109,6 +116,26 @@ void DummyPort::RunDiscovery(RDMDiscoveryCallback *callback) {
     uid_set.AddUID(i->second->UID());
   }
   callback->Run(uid_set);
+}
+
+
+void DummyPort::HandleBroadcastAck(broadcast_request_tracker *tracker,
+                                  ola::rdm::rdm_response_code code,
+                                  const ola::rdm::RDMResponse *response,
+                                  const std::vector<std::string> &packets) {
+  tracker->current_count++;
+  if (code != ola::rdm::RDM_WAS_BROADCAST)
+    tracker->failed = true;
+  if (tracker->current_count == tracker->expected_count) {
+    // all ports have completed
+    tracker->callback->Run(
+        tracker->failed ?  ola::rdm::RDM_FAILED_TO_SEND :
+          ola::rdm::RDM_WAS_BROADCAST,
+        NULL,
+        packets);
+    delete tracker;
+  }
+  (void) response;
 }
 
 
