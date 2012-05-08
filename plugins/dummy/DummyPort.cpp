@@ -86,8 +86,9 @@ void DummyPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
   if (dest.IsBroadcast()) {
     for (ResponderMap::iterator i = m_responders.begin();
         i != m_responders.end(); i++) {
-      i->second->SendRDMRequest(request, callback);
+      i->second->SendRDMRequest(request->Duplicate(), callback);
     }
+    delete request;
   } else {
       ResponderMap::iterator i = m_responders.find(dest);
       if (i != m_responders.end()) {
