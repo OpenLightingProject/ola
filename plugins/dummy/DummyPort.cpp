@@ -83,13 +83,20 @@ void DummyPort::RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
 void DummyPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
                                ola::rdm::RDMCallback *callback) {
   UID dest = request->DestinationUID();
-  ResponderMap::iterator i = m_responders.find(dest);
-  if (i != m_responders.end()) {
-    i->second->SendRDMRequest(request, callback);
+  if (dest.IsBroadcast()) {
+    for (ResponderMap::iterator i = m_responders.begin();
+        i != m_responders.end(); i++) {
+      i->second->SendRDMRequest(request, callback);
+    }
   } else {
-    std::vector<std::string> packets;
-    callback->Run(ola::rdm::RDM_UNKNOWN_UID, NULL, packets);
-    delete request;
+      ResponderMap::iterator i = m_responders.find(dest);
+      if (i != m_responders.end()) {
+        i->second->SendRDMRequest(request, callback);
+      } else {
+          std::vector<std::string> packets;
+          callback->Run(ola::rdm::RDM_UNKNOWN_UID, NULL, packets);
+          delete request;
+      }
   }
 }
 
