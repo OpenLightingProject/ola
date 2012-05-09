@@ -85,12 +85,12 @@ void DummyPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
   UID dest = request->DestinationUID();
   if (dest.IsBroadcast()) {
     broadcast_request_tracker *tracker = new broadcast_request_tracker;
-    tracker->expected_count = DummyPort::kNumberOfResponders;
+    tracker->expected_count = m_responders.size();
     tracker->current_count = 0;
     tracker->failed = false;
     tracker->callback = callback;
     for (ResponderMap::iterator i = m_responders.begin();
-        i != m_responders.end(); i++) {
+         i != m_responders.end(); i++) {
       i->second->SendRDMRequest(
         request->Duplicate(),
         NewSingleCallback(this, &DummyPort::HandleBroadcastAck, tracker));
@@ -120,9 +120,9 @@ void DummyPort::RunDiscovery(RDMDiscoveryCallback *callback) {
 
 
 void DummyPort::HandleBroadcastAck(broadcast_request_tracker *tracker,
-                                  ola::rdm::rdm_response_code code,
-                                  const ola::rdm::RDMResponse *response,
-                                  const std::vector<std::string> &packets) {
+                                   ola::rdm::rdm_response_code code,
+                                   const ola::rdm::RDMResponse *response,
+                                   const std::vector<std::string> &packets) {
   tracker->current_count++;
   if (code != ola::rdm::RDM_WAS_BROADCAST)
     tracker->failed = true;
