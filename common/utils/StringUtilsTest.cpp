@@ -1,5 +1,5 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
+*  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
  *  (at your option) any later version.
@@ -24,12 +24,11 @@
 #include <vector>
 #include "ola/StringUtils.h"
 
-using std::string;
-using std::vector;
 using ola::CapitalizeLabel;
 using ola::CustomCapitalizeLabel;
 using ola::Escape;
 using ola::EscapeString;
+using ola::FormatData;
 using ola::HexStringToInt;
 using ola::IntToString;
 using ola::PrefixedHexStringToInt;
@@ -39,6 +38,8 @@ using ola::StringToInt;
 using ola::StringTrim;
 using ola::ToLower;
 using ola::ToUpper;
+using std::string;
+using std::vector;
 
 class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(StringUtilsTest);
@@ -59,6 +60,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testToUpper);
   CPPUNIT_TEST(testCapitalizeLabel);
   CPPUNIT_TEST(testCustomCapitalizeLabel);
+  CPPUNIT_TEST(testFormatData);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -79,6 +81,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
     void testToUpper();
     void testCapitalizeLabel();
     void testCustomCapitalizeLabel();
+    void testFormatData();
 };
 
 
@@ -597,6 +600,45 @@ void StringUtilsTest::testCustomCapitalizeLabel() {
   CPPUNIT_ASSERT_EQUAL(string("Mini Dmxter Device"), label3);
 
   string label4 = "this-is_a_test";
-  CapitalizeLabel(&label4);
+  CustomCapitalizeLabel(&label4);
   CPPUNIT_ASSERT_EQUAL(string("This Is A Test"), label4);
+
+  string label5 = "ip_address";
+  CustomCapitalizeLabel(&label5);
+  CPPUNIT_ASSERT_EQUAL(string("IP Address"), label5);
+
+  string label6 = "controller_ip_address";
+  CustomCapitalizeLabel(&label6);
+  CPPUNIT_ASSERT_EQUAL(string("Controller IP Address"), label6);
 };
+
+
+void StringUtilsTest::testFormatData() {
+  uint8_t data[] = {0, 'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd',
+                    1, 2};
+  std::stringstream str;
+  FormatData(&str, data, sizeof(data));
+  CPPUNIT_ASSERT_EQUAL(
+      string("00 48 65 6c 6c 6f 20 57  .Hello W\n"
+             "6f 72 6c 64 01 02        orld..\n"),
+      str.str());
+
+  // try 4 bytes per line with a 2 space indent
+  str.str("");
+  FormatData(&str, data, sizeof(data), 2, 4);
+  CPPUNIT_ASSERT_EQUAL(
+      string("  00 48 65 6c  .Hel\n"
+             "  6c 6f 20 57  lo W\n"
+             "  6f 72 6c 64  orld\n"
+             "  01 02        ..\n"),
+      str.str());
+
+  str.str("");
+  // try ending on the block boundary
+  uint8_t data1[] = {'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o'};
+  FormatData(&str, data1, sizeof(data1), 0, 4);
+  CPPUNIT_ASSERT_EQUAL(
+      string("48 65 6c 6c  Hell\n"
+             "6f 20 57 6f  o Wo\n"),
+      str.str());
+}

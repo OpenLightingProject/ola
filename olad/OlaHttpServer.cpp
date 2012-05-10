@@ -38,7 +38,7 @@
 
 namespace ola {
 
-using ola::network::ConnectedDescriptor;
+using ola::io::ConnectedDescriptor;
 using std::cout;
 using std::endl;
 using std::string;

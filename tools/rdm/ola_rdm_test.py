@@ -193,7 +193,7 @@ def main():
 
     if len(uids) > 1:
       logging.info(
-          'The following devices were detected and will be reconfigued')
+          'The following devices were detected and will be reconfigured')
       for uid in uids:
         logging.info(' %s' % uid)
 

@@ -27,8 +27,9 @@
 #include <string>
 #include <vector>
 #include "ola/Callback.h"
+#include "ola/io/Descriptor.h"
+#include "ola/io/SelectServer.h"
 #include "ola/thread/Thread.h"
-#include "ola/network/SelectServer.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
 #include "plugins/usbpro/RobeWidget.h"
 #include "plugins/usbpro/RobeWidgetDetector.h"
@@ -43,7 +44,7 @@ namespace usbpro {
 using std::set;
 using std::string;
 using std::vector;
-using ola::network::ConnectedDescriptor;
+using ola::io::ConnectedDescriptor;
 using ola::thread::ConditionVariable;
 using ola::thread::Mutex;
 
@@ -80,7 +81,7 @@ class NewWidgetHandler {
 class WidgetDetectorThread: public ola::thread::Thread {
   public:
     explicit WidgetDetectorThread(NewWidgetHandler *widget_handler,
-                                  ola::network::SelectServerInterface *ss,
+                                  ola::io::SelectServerInterface *ss,
                                   unsigned int usb_pro_timeout = 200,
                                   unsigned int robe_timeout = 200);
     ~WidgetDetectorThread() {}
@@ -111,8 +112,8 @@ class WidgetDetectorThread: public ola::thread::Thread {
                           ConnectedDescriptor *descriptor);
 
   private:
-    ola::network::SelectServerInterface *m_other_ss;
-    ola::network::SelectServer m_ss;  // ss for this thread
+    ola::io::SelectServerInterface *m_other_ss;
+    ola::io::SelectServer m_ss;  // ss for this thread
     vector<WidgetDetectorInterface*> m_widget_detectors;
     string m_directory;  // directory to look for widgets in
     vector<string> m_prefixes;  // prefixes to try

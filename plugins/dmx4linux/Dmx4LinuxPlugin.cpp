@@ -282,7 +282,7 @@ bool Dmx4LinuxPlugin::SetupDevices() {
     m_in_devices_count = info.max_in_universes;
     try {
       m_in_buffer = new uint8_t[DMX_UNIVERSE_SIZE * info.max_in_universes];
-    } catch (std::bad_alloc& ex) {
+    } catch(std::bad_alloc& ex) {
       m_in_buffer = NULL;
     }
   }

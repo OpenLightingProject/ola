@@ -53,7 +53,7 @@ using ola::rdm::UIDSet;
  */
 DmxTriWidgetImpl::DmxTriWidgetImpl(
     ola::thread::SchedulerInterface *scheduler,
-    ola::network::ConnectedDescriptor *descriptor,
+    ola::io::ConnectedDescriptor *descriptor,
     bool use_raw_rdm)
     : BaseUsbProWidget(descriptor),
       m_scheduler(scheduler),
@@ -64,7 +64,8 @@ DmxTriWidgetImpl::DmxTriWidgetImpl(
       m_discovery_callback(NULL),
       m_rdm_request_callback(NULL),
       m_pending_request(NULL),
-      m_transaction_number(0) {
+      m_transaction_number(0),
+      m_waiting_for_tx_ack(false) {
 }
 
 
@@ -103,6 +104,23 @@ void DmxTriWidgetImpl::Stop() {
     m_discovery_callback = NULL;
     RunDiscoveryCallback(callback);
   }
+}
+
+
+/**
+ * Send a DMX frame.
+ */
+bool DmxTriWidgetImpl::SendDMX(const DmxBuffer &buffer) {
+  if (m_waiting_for_tx_ack) {
+    // just update the buffer
+    if (m_outgoing_dmx.Size())
+      OLA_INFO << "TRI widget dropping frame";
+    m_outgoing_dmx.Set(buffer);
+  } else {
+    // send
+    SendDMXBuffer(buffer);
+  }
+  return true;
 }
 
 
@@ -200,6 +218,28 @@ void DmxTriWidgetImpl::RunRDMDiscovery(RDMDiscoveryCallback *callback) {
 }
 
 
+
+/**
+ * Send this dmx buffer using the TRI command set.
+ */
+void DmxTriWidgetImpl::SendDMXBuffer(const DmxBuffer &buffer) {
+  // CommandID, Options, Start Code + data
+  uint8_t send_buffer[3 + DMX_UNIVERSE_SIZE];
+  send_buffer[0] = SINGLE_TX_COMMAND_ID;
+  send_buffer[1] = 0;  // return when processed
+  send_buffer[2] = DMX512_START_CODE;
+
+  unsigned int length = DMX_UNIVERSE_SIZE;
+  buffer.Get(send_buffer + 3, &length);
+
+  bool r = SendMessage(EXTENDED_COMMAND_LABEL,
+                       send_buffer,
+                       length + 3);
+  if (r)
+    m_waiting_for_tx_ack = true;
+}
+
+
 /**
  * Call the UIDSet handler with the latest UID list.
  */
@@ -243,6 +283,9 @@ void DmxTriWidgetImpl::HandleMessage(uint8_t label,
     data = length ? data + DATA_OFFSET: NULL;
 
     switch (command_id) {
+      case SINGLE_TX_COMMAND_ID:
+        HandleSingleTXResponse(return_code);
+        break;
       case DISCOVER_AUTO_COMMAND_ID:
         HandleDiscoveryAutoResponse(return_code, data, length);
         break;
@@ -501,6 +544,22 @@ void DmxTriWidgetImpl::StopDiscovery() {
 }
 
 
+/**
+ * Handle the response from Single TX.
+ */
+void DmxTriWidgetImpl::HandleSingleTXResponse(uint8_t return_code) {
+  if (return_code != EC_NO_ERROR)
+    OLA_WARN << "Error sending DMX data. TRI return code was 0x" << std::hex <<
+        static_cast<int>(return_code);
+  m_waiting_for_tx_ack = false;
+
+  if (m_outgoing_dmx.Size()) {
+    SendDMXBuffer(m_outgoing_dmx);
+    m_outgoing_dmx.Reset();
+  }
+}
+
+
 /*
  * Handle the response from calling DiscoAuto
  */
@@ -514,6 +573,9 @@ void DmxTriWidgetImpl::HandleDiscoveryAutoResponse(uint8_t return_code,
       OLA_WARN << "DMX_TRI discovery returned error " <<
         static_cast<int>(return_code);
     StopDiscovery();
+    RDMDiscoveryCallback *callback = m_discovery_callback;
+    m_discovery_callback = NULL;
+    RunDiscoveryCallback(callback);
   }
   (void) data;
   (void) length;
@@ -911,7 +973,7 @@ bool DmxTriWidgetImpl::ReturnCodeToNackReason(
  * DmxTriWidget Constructor
  */
 DmxTriWidget::DmxTriWidget(ola::thread::SchedulerInterface *scheduler,
-                           ola::network::ConnectedDescriptor *descriptor,
+                           ola::io::ConnectedDescriptor *descriptor,
                            unsigned int queue_size,
                            bool use_raw_rdm) {
   m_impl = new DmxTriWidgetImpl(scheduler, descriptor, use_raw_rdm);

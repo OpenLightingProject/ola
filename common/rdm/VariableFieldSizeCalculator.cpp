@@ -118,6 +118,11 @@ void VariableFieldSizeCalculator::Visit(
 
 
 void VariableFieldSizeCalculator::Visit(
+    const ola::messaging::IPV4FieldDescriptor *descriptor) {
+  m_fixed_size_sum += descriptor->MaxSize();
+}
+
+void VariableFieldSizeCalculator::Visit(
     const ola::messaging::StringFieldDescriptor *descriptor) {
   if (descriptor->FixedSize())
     m_fixed_size_sum += descriptor->MaxSize();

@@ -32,7 +32,7 @@ class E133Inflator: public BaseInflator {
   friend class E133InflatorTest;
 
   public:
-    static const unsigned int E133_VECTOR = 42;
+    static const unsigned int E133_VECTOR = 5;
 
     E133Inflator()
         : BaseInflator(),

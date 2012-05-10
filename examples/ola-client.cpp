@@ -24,7 +24,7 @@
 #include <ola/Logging.h>
 #include <ola/OlaClient.h>
 #include <ola/OlaClientWrapper.h>
-#include <ola/network/SelectServer.h>
+#include <ola/io/SelectServer.h>
 #include <olad/PortConstants.h>
 
 
@@ -45,7 +45,7 @@ using ola::OlaInputPort;
 using ola::OlaOutputPort;
 using ola::SimpleClient;
 using ola::OlaClient;
-using ola::network::SelectServer;
+using ola::io::SelectServer;
 
 static const int INVALID_VALUE = -1;
 

@@ -24,8 +24,8 @@
 
 #include "ola/Callback.h"
 #include "ola/Logging.h"
-#include "ola/network/SelectServer.h"
-#include "ola/network/Socket.h"
+#include "ola/io/Descriptor.h"
+#include "ola/io/SelectServer.h"
 #include "ola/rdm/UID.h"
 #include "plugins/usbpro/ArduinoWidget.h"
 #include "plugins/usbpro/DmxTriWidget.h"
@@ -37,8 +37,8 @@
 #include "plugins/usbpro/UltraDMXProWidget.h"
 #include "plugins/usbpro/WidgetDetectorThread.h"
 
-using ola::network::ConnectedDescriptor;
-using ola::network::UnixSocket;
+using ola::io::ConnectedDescriptor;
+using ola::io::UnixSocket;
 using ola::plugin::usbpro::ArduinoWidget;
 using ola::plugin::usbpro::BaseRobeWidget;
 using ola::plugin::usbpro::BaseUsbProWidget;
@@ -63,10 +63,10 @@ using std::string;
 class MockWidgetDetectorThread: public WidgetDetectorThread {
   public:
     MockWidgetDetectorThread(NewWidgetHandler *widget_handler,
-                             ola::network::SelectServerInterface *ss)
+                             ola::io::SelectServerInterface *ss)
           // set very short timeouts since this is a unittest
         : WidgetDetectorThread(widget_handler, ss, 10, 10),
-          m_descriptor(new ola::network::UnixSocket()) {
+          m_descriptor(new ola::io::UnixSocket()) {
       m_descriptor->Init();
     }
 
@@ -110,10 +110,10 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
     void testClose();
 
   private:
-    ola::network::SelectServer m_ss;
+    ola::io::SelectServer m_ss;
     auto_ptr<MockEndpoint> m_endpoint;
     auto_ptr<MockWidgetDetectorThread> m_thread;
-    auto_ptr<ola::network::UnixSocket> m_other_end;
+    auto_ptr<ola::io::UnixSocket> m_other_end;
 
     typedef enum {
       NONE,

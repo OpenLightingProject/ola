@@ -21,6 +21,7 @@
 #ifndef PLUGINS_E131_E131_ROOTINFLATOR_H_
 #define PLUGINS_E131_E131_ROOTINFLATOR_H_
 
+#include <ola/Callback.h>
 #include "plugins/e131/e131/BaseInflator.h"
 
 namespace ola {
@@ -29,8 +30,19 @@ namespace e131 {
 
 class RootInflator: public BaseInflator {
   public:
-    RootInflator(): BaseInflator() {}
-    ~RootInflator() {}
+    typedef ola::Callback1<void, const TransportHeader&> OnDataCallback;
+
+    /**
+     * The OnDataCallback is a hook for the health checking mechanism
+     */
+    RootInflator(OnDataCallback *on_data = NULL)
+      : BaseInflator(),
+        m_on_data(on_data) {
+    }
+    ~RootInflator() {
+      if (m_on_data)
+        delete m_on_data;
+    }
     uint32_t Id() const { return 0; }  // no effect for the root inflator
 
   protected:
@@ -38,9 +50,12 @@ class RootInflator: public BaseInflator {
     bool DecodeHeader(HeaderSet &headers, const uint8_t *data,
                       unsigned int len, unsigned int &bytes_used);
 
-    virtual void ResetHeaderField();
+    void ResetHeaderField();
+    bool PostHeader(uint32_t vector, HeaderSet &headers);
+
   private :
     RootHeader m_last_hdr;
+    OnDataCallback *m_on_data;
 };
 }  // e131
 }  // plugin

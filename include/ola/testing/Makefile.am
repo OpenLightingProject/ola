@@ -1,0 +1,3 @@
+SOURCES = TestUtils.h
+
+EXTRA_DIST = $(SOURCES)

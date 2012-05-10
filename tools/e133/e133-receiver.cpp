@@ -18,34 +18,46 @@
  *
  * This creates a E1.33 receiver with one (emulated) RDM responder. The node is
  * registered in slp and the RDM responder responds to E1.33 commands.
- *
- * TODO(simon): Implement the node management commands.
  */
 
 #include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
-#include <errno.h>
 #include <getopt.h>
 #include <signal.h>
+#include <stdio.h>
 #include <string.h>
 #include <sysexits.h>
+#include <termios.h>
 
 #include <ola/BaseTypes.h>
 #include <ola/Logging.h>
-#include <ola/network/SelectServer.h>
+#include <ola/io/SelectServer.h>
+#include <ola/network/InterfacePicker.h>
+#include <ola/network/NetworkUtils.h>
+#include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/UID.h>
 
-#include <string>
 #include <iostream>
+#include <memory>
+#include <string>
 
 #include "plugins/dummy/DummyResponder.h"
 #include "plugins/e131/e131/ACNPort.h"
 
-#include "tools/e133/E133Node.h"
-#include "tools/e133/E133Receiver.h"
+#include "tools/e133/E133Device.h"
+#include "tools/e133/EndpointManager.h"
+#include "tools/e133/RootEndpoint.h"
 #include "tools/e133/SlpThread.h"
+#include "tools/e133/TCPConnectionStats.h"
 
-using std::string;
+using ola::network::HostToNetwork;
+using ola::network::IPV4Address;
+using ola::rdm::RDMResponse;
 using ola::rdm::UID;
+using std::auto_ptr;
+using std::cout;
+using std::endl;
+using std::string;
+
 
 typedef struct {
   bool help;
@@ -134,7 +146,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
  * Display the help message
  */
 void DisplayHelpAndExit(char *argv[]) {
-  std::cout << "Usage: " << argv[0] << " [options]\n"
+  cout << "Usage: " << argv[0] << " [options]\n"
   "\n"
   "Run a very simple E1.33 Responder.\n"
   "\n"
@@ -144,7 +156,7 @@ void DisplayHelpAndExit(char *argv[]) {
   "  -t, --timeout <seconds>   The value to use for the service lifetime\n"
   "  -u, --universe <universe> The universe to respond on (> 0).\n"
   "  --uid <uid>               The UID of the responder.\n"
-  << std::endl;
+  << endl;
   exit(0);
 }
 
@@ -155,7 +167,8 @@ void DisplayHelpAndExit(char *argv[]) {
  */
 class SimpleE133Node {
   public:
-    explicit SimpleE133Node(const options &opts);
+    explicit SimpleE133Node(const IPV4Address &ip_address,
+                            const options &opts);
     ~SimpleE133Node();
 
     bool Init();
@@ -163,37 +176,56 @@ class SimpleE133Node {
     void Stop() { m_ss.Terminate(); }
 
   private:
-    ola::network::SelectServer m_ss;
+    ola::io::SelectServer m_ss;
+    ola::io::UnmanagedFileDescriptor m_stdin_descriptor;
     SlpThread m_slp_thread;
-    E133Node m_e133_node;
+    EndpointManager m_endpoint_manager;
+    TCPConnectionStats m_tcp_stats;
+    E133Device m_e133_device;
+    RootEndpoint m_root_endpoint;
+    E133Endpoint m_first_endpoint;
     ola::plugin::dummy::DummyResponder m_responder;
-    E133Receiver m_receiver;
     uint16_t m_lifetime;
     UID m_uid;
     string m_service_name;
+    termios m_old_tc;
 
     SimpleE133Node(const SimpleE133Node&);
     SimpleE133Node operator=(const SimpleE133Node&);
 
     void RegisterCallback(bool ok);
     void DeRegisterCallback(bool ok);
+
+    void Input();
+    void DumpTCPStats();
+    void SendUnsolicited();
 };
 
 
 /**
  * Constructor
  */
-SimpleE133Node::SimpleE133Node(const options &opts)
-    : m_slp_thread(&m_ss),
-      m_e133_node(&m_ss, opts.ip_address, ola::plugin::e131::ACN_PORT),
+SimpleE133Node::SimpleE133Node(const IPV4Address &ip_address,
+                               const options &opts)
+    : m_stdin_descriptor(STDIN_FILENO),
+      m_slp_thread(&m_ss),
+      m_e133_device(&m_ss, ip_address, &m_endpoint_manager, &m_tcp_stats),
+      m_root_endpoint(*opts.uid, &m_endpoint_manager, &m_tcp_stats),
+      m_first_endpoint(NULL),  // NO CONTROLLER FOR NOW!
       m_responder(*opts.uid),
-      m_receiver(opts.universe, &m_responder),
       m_lifetime(opts.lifetime),
       m_uid(*opts.uid) {
+  std::stringstream str;
+  str << ip_address << ":" << ola::plugin::e131::ACN_PORT << "/"
+    << std::setfill('0') << std::setw(4) << std::hex
+    << m_uid.ManufacturerId() << std::setw(8) << m_uid.DeviceId();
+  m_service_name = str.str();
 }
 
 
 SimpleE133Node::~SimpleE133Node() {
+  m_endpoint_manager.UnRegisterEndpoint(1);
+  tcsetattr(STDIN_FILENO, TCSANOW, &m_old_tc);
   m_slp_thread.Join();
   m_slp_thread.Cleanup();
 }
@@ -203,18 +235,24 @@ SimpleE133Node::~SimpleE133Node() {
  * Init this node
  */
 bool SimpleE133Node::Init() {
-  if (!m_e133_node.Init()) {
+  // setup notifications for stdin & turn off buffering
+  m_stdin_descriptor.SetOnData(ola::NewCallback(this, &SimpleE133Node::Input));
+  m_ss.AddReadDescriptor(&m_stdin_descriptor);
+  tcgetattr(STDIN_FILENO, &m_old_tc);
+  termios new_tc = m_old_tc;
+  new_tc.c_lflag &= static_cast<tcflag_t>(~ICANON & ~ECHO);
+  tcsetattr(STDIN_FILENO, TCSANOW, &new_tc);
+
+  if (!m_e133_device.Init())
     return false;
-  }
-  m_e133_node.RegisterComponent(&m_receiver);
 
-  std::stringstream str;
-  str << m_e133_node.V4Address() << ":" << ola::plugin::e131::ACN_PORT << "/"
-    << std::setfill('0') << std::setw(4) << std::hex
-    << m_uid.ManufacturerId() << std::setw(8) << m_uid.DeviceId();
-  m_service_name = str.str();
+  // register the root endpoint
+  m_e133_device.SetRootEndpoint(&m_root_endpoint);
+  // add a single endpoint
+  m_endpoint_manager.RegisterEndpoint(1, &m_first_endpoint);
+
+  // register in SLP
   OLA_INFO << "service is " << m_service_name;
-
   if (!m_slp_thread.Init()) {
     OLA_WARN << "SlpThread Init() failed";
     return false;
@@ -258,6 +296,76 @@ void SimpleE133Node::DeRegisterCallback(bool ok) {
 }
 
 
+/**
+ * Called when there is data on stdin.
+ */
+void SimpleE133Node::Input() {
+  switch (getchar()) {
+    case 'c':
+      m_e133_device.CloseTCPConnection();
+      break;
+    case 'q':
+      m_ss.Terminate();
+      break;
+    case 's':
+      SendUnsolicited();
+      break;
+    case 't':
+      DumpTCPStats();
+      break;
+    default:
+      break;
+  }
+}
+
+
+/**
+ * Dump the TCP stats
+ */
+void SimpleE133Node::DumpTCPStats() {
+  cout << "IP: " << m_tcp_stats.ip_address << endl;
+  cout << "Connection Unhealthy Events: " << m_tcp_stats.unhealthy_events <<
+    endl;
+  cout << "Connection Events: " << m_tcp_stats.connection_events << endl;
+}
+
+
+/**
+ * Send an unsolicted message on the TCP connection
+ */
+void SimpleE133Node::SendUnsolicited() {
+  OLA_INFO << "Sending unsolicited TCP stats message";
+
+  struct tcp_stats_message_s {
+    uint32_t ip_address;
+    uint16_t unhealthy_events;
+    uint16_t connection_events;
+  } __attribute__((packed));
+
+  struct tcp_stats_message_s tcp_stats_message;
+
+  tcp_stats_message.ip_address = m_tcp_stats.ip_address.AsInt();
+  tcp_stats_message.unhealthy_events =
+    HostToNetwork(m_tcp_stats.unhealthy_events);
+  tcp_stats_message.connection_events =
+    HostToNetwork(m_tcp_stats.connection_events);
+
+  UID bcast_uid = UID::AllDevices();
+  const RDMResponse *response = new ola::rdm::RDMGetResponse(
+      m_uid,
+      bcast_uid,
+      0,  // transaction number
+      ola::rdm::RDM_ACK,
+      0,  // message count
+      ola::rdm::ROOT_RDM_DEVICE,
+      ola::rdm::PID_TCP_COMMS_STATUS,
+      reinterpret_cast<const uint8_t*>(&tcp_stats_message),
+      sizeof(tcp_stats_message));
+
+  m_e133_device.SendStatusMessage(response);
+}
+
+
 SimpleE133Node *simple_node;
 
 /*
@@ -290,7 +398,18 @@ int main(int argc, char *argv[]) {
     opts.uid = new ola::rdm::UID(OPEN_LIGHTING_ESTA_CODE, 0xffffff00);
   }
 
-  SimpleE133Node node(opts);
+  ola::network::Interface interface;
+
+  {
+    auto_ptr<const ola::network::InterfacePicker> picker(
+      ola::network::InterfacePicker::NewPicker());
+    if (!picker->ChooseInterface(&interface, opts.ip_address)) {
+      OLA_INFO << "Failed to find an interface";
+      exit(EX_UNAVAILABLE);
+    }
+  }
+
+  SimpleE133Node node(interface.ip_address, opts);
   simple_node = &node;
 
   if (!node.Init())
@@ -307,6 +426,13 @@ int main(int argc, char *argv[]) {
     delete opts.uid;
     return false;
   }
+
+  cout << "---------------  Controls  ----------------\n";
+  cout << " c - Close the TCP connection\n";
+  cout << " q - Quit\n";
+  cout << " s - Send Status Message\n";
+  cout << " t - Dump TCP stats\n";
+  cout << "-------------------------------------------\n";
 
   node.Run();
 

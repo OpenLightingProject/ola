@@ -27,6 +27,7 @@ RpcTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 RpcTester_LDADD = $(CPPUNIT_LIBS) \
                   ./libstreamrpcchannel.la \
                   ../export_map/libolaexportmap.la \
+                  ../io/libolaio.la \
                   ../logging/liblogging.la \
                   ../network/libolanetwork.la \
                   ../thread/libthread.la \

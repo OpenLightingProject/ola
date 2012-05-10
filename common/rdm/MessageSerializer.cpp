@@ -68,6 +68,15 @@ void MessageSerializer::Visit(
 
 
 void MessageSerializer::Visit(
+    const ola::messaging::IPV4MessageField *message) {
+  CheckForFreeSpace(4);
+  uint32_t data = message->Value().AsInt();
+  memcpy(m_data + m_offset, reinterpret_cast<uint8_t*>(&data), sizeof(data));
+  m_offset += sizeof(data);
+}
+
+
+void MessageSerializer::Visit(
     const ola::messaging::StringMessageField *message) {
   unsigned int size = std::min(
       static_cast<unsigned int>(message->Value().size()),

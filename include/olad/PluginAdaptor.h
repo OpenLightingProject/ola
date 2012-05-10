@@ -24,31 +24,35 @@
 #include <string>
 #include <ola/Clock.h>  // NOLINT
 #include <ola/Callback.h>  // NOLINT
-#include <ola/network/SelectServerInterface.h>  // NOLINT
+#include <ola/io/SelectServerInterface.h>  // NOLINT
 
 namespace ola {
 
 using ola::thread::timeout_id;
 
-class PluginAdaptor: public ola::network::SelectServerInterface {
+class PluginAdaptor: public ola::io::SelectServerInterface {
   public:
     PluginAdaptor(class DeviceManager *device_manager,
-                  ola::network::SelectServerInterface *select_server,
+                  ola::io::SelectServerInterface *select_server,
                   class PreferencesFactory *preferences_factory,
                   class PortBrokerInterface *port_broker);
 
     // The following methods are part of the SelectServerInterface
-    bool AddReadDescriptor(ola::network::ReadFileDescriptor *descriptor);
-    bool AddReadDescriptor(ola::network::ConnectedDescriptor *descriptor,
+    bool AddReadDescriptor(ola::io::ReadFileDescriptor *descriptor);
+    bool AddReadDescriptor(ola::io::ConnectedDescriptor *descriptor,
                    bool delete_on_close = false);
-    bool RemoveReadDescriptor(ola::network::ReadFileDescriptor *descriptor);
-    bool RemoveReadDescriptor(ola::network::ConnectedDescriptor *descriptor);
-    bool AddWriteDescriptor(ola::network::WriteFileDescriptor *descriptor);
-    bool RemoveWriteDescriptor(ola::network::WriteFileDescriptor *descriptor);
+    bool RemoveReadDescriptor(ola::io::ReadFileDescriptor *descriptor);
+    bool RemoveReadDescriptor(ola::io::ConnectedDescriptor *descriptor);
+    bool AddWriteDescriptor(ola::io::WriteFileDescriptor *descriptor);
+    bool RemoveWriteDescriptor(ola::io::WriteFileDescriptor *descriptor);
 
     timeout_id RegisterRepeatingTimeout(unsigned int ms,
                                         Callback0<bool> *closure);
+    timeout_id RegisterRepeatingTimeout(const TimeInterval &interval,
+                                        Callback0<bool> *closure);
     timeout_id RegisterSingleTimeout(unsigned int ms,
+                                     SingleUseCallback0<void> *closure);
+    timeout_id RegisterSingleTimeout(const TimeInterval &interval,
                                      SingleUseCallback0<void> *closure);
     void RemoveTimeout(timeout_id id);
 
@@ -69,7 +73,7 @@ class PluginAdaptor: public ola::network::SelectServerInterface {
     PluginAdaptor& operator=(const PluginAdaptor&);
 
     DeviceManager *m_device_manager;
-    ola::network::SelectServerInterface *m_ss;
+    ola::io::SelectServerInterface *m_ss;
     class PreferencesFactory *m_preferences_factory;
     class PortBrokerInterface *m_port_broker;
 };

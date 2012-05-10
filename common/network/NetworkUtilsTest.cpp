@@ -20,8 +20,11 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
+#include <string>
+
 #include "ola/network/NetworkUtils.h"
 #include "ola/Logging.h"
+
 
 using ola::network::HardwareAddressToString;
 using ola::network::HostToLittleEndian;

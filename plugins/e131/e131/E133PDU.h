@@ -28,16 +28,16 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
-class DMPPDU;
+class RDMPDU;
 
 class E133PDU: public PDU {
   public:
     E133PDU(unsigned int vector,
             const E133Header &header,
-            const DMPPDU *dmp_pdu):
+            const PDU *pdu):
       PDU(vector),
       m_header(header),
-      m_dmp_pdu(dmp_pdu) {}
+      m_pdu(pdu) {}
     ~E133PDU() {}
 
     unsigned int HeaderSize() const;
@@ -45,9 +45,12 @@ class E133PDU: public PDU {
     bool PackHeader(uint8_t *data, unsigned int &length) const;
     bool PackData(uint8_t *data, unsigned int &length) const;
 
+    void PackHeader(OutputStream *stream) const;
+    void PackData(OutputStream *stream) const;
+
   private:
     E133Header m_header;
-    const DMPPDU *m_dmp_pdu;
+    const PDU *m_pdu;
 };
 }  // e131
 }  // plugin

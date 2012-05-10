@@ -26,8 +26,8 @@
 #define OLA_STREAMINGCLIENT_H_
 
 #include <ola/DmxBuffer.h>
+#include <ola/io/SelectServer.h>
 #include <ola/network/Socket.h>
-#include <ola/network/SelectServer.h>
 
 namespace ola {
 
@@ -39,8 +39,8 @@ namespace proto {
   class OlaServerService_Stub;
 }
 
+using ola::io::SelectServer;
 using ola::network::TcpSocket;
-using ola::network::SelectServer;
 
 /*
  * StreamingClient opens a connection and then sends data over the socket.

@@ -117,8 +117,14 @@ bool EuroliteProOutputPort::Start() {
   str << bus_number << "-" << device_address;
   m_serial = str.str();
 
-  if (libusb_claim_interface(usb_handle, 0)) {
-    OLA_WARN << "Failed to claim Eurolite usb device";
+  int error = libusb_claim_interface(usb_handle, 0);
+
+  if (error) {
+    if (error == LIBUSB_ERROR_BUSY) {
+      OLA_WARN << "Eurolite device in use by another program";
+    } else {
+      OLA_WARN << "Failed to claim Eurolite usb device, error: " << error;
+    }
     libusb_close(usb_handle);
     return false;
   }
@@ -189,7 +195,7 @@ bool EuroliteProOutputPort::WriteDMX(const DmxBuffer &buffer,
  * @return true on success, false on failure
  */
 bool EuroliteProOutputPort::SendDMX(const DmxBuffer &buffer) {
-  uint8_t usb_data[518];  // 512 + start_code (1) + header (4) + footer (1)
+  uint8_t usb_data[FRAME_SIZE];
   unsigned int frame_size = buffer.Size();
 
   // header
@@ -197,16 +203,17 @@ bool EuroliteProOutputPort::SendDMX(const DmxBuffer &buffer) {
   usb_data[1] = DMX_LABEL;      // Label
   usb_data[4] = DMX512_START_CODE;
   buffer.Get(usb_data + 5, &frame_size);
-  usb_data[2] = (frame_size + 1) & 0xff;  // Data length LSB.
-  usb_data[3] = ((frame_size + 1) >> 8);  // Data length MSB
-  usb_data[frame_size + 4] =  0xE7;  // End message delimiter
+  usb_data[2] = (DMX_UNIVERSE_SIZE + 1) & 0xff;  // Data length LSB.
+  usb_data[3] = ((DMX_UNIVERSE_SIZE + 1) >> 8);  // Data length MSB
+  memset(usb_data + 5 + frame_size, 0, DMX_UNIVERSE_SIZE - frame_size);
+  usb_data[FRAME_SIZE - 1] =  0xE7;  // End message delimiter
 
   int transferred = 0;
   int ret = libusb_bulk_transfer(
         m_usb_handle,
         ENDPOINT,
         usb_data,
-        frame_size + 4 + 1,  // frame + header + footer
+        FRAME_SIZE,
         &transferred,
         URB_TIMEOUT_MS);
 

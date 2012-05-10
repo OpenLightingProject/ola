@@ -162,6 +162,47 @@ bool RDMCommand::Pack(uint8_t *buffer, unsigned int *size, const UID &source,
 }
 
 
+/**
+ * Write this RDMCommand to an output stream
+ */
+void RDMCommand::Write(ola::io::OutputStream *stream) const {
+  unsigned int packet_length = (sizeof(rdm_command_message) +
+    m_data_length);  // size of packet excluding start code + checksum
+
+  rdm_command_message message;
+  message.sub_start_code = SUB_START_CODE;
+  message.message_length = packet_length + 1;  // add in start code as well
+  m_destination.Pack(message.destination_uid, UID::UID_SIZE);
+  m_source.Pack(message.source_uid, UID::UID_SIZE);
+  message.transaction_number = m_transaction_number;
+  message.port_id = m_port_id;
+  message.message_count = m_message_count;
+  message.sub_device[0] = m_sub_device >> 8;
+  message.sub_device[1] = m_sub_device & 0xff;
+  message.command_class = CommandClass();
+  message.param_id[0] = m_param_id >> 8;
+  message.param_id[1] = m_param_id & 0xff;
+  message.param_data_length = m_data_length;
+
+  unsigned int checksum_value = START_CODE;
+
+  // checksum & write out the header
+  const uint8_t *ptr = reinterpret_cast<uint8_t*>(&message);
+  for (unsigned int i = 0; i != sizeof(message); i++)
+    checksum_value += ptr[i];
+
+  stream->Write(reinterpret_cast<uint8_t*>(&message), sizeof(message));
+
+  // checksum & write out the data
+  for (unsigned int i = 0; i != m_data_length; i++)
+    checksum_value += m_data[i];
+  stream->Write(m_data, m_data_length);
+
+  uint16_t checksum = static_cast<uint16_t>(checksum_value);
+  *stream << ola::network::HostToNetwork(checksum);
+}
+
+
 bool RDMCommand::Pack(string *buffer,
                       const UID &source,
                       uint8_t transaction_number,

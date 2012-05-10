@@ -105,13 +105,11 @@ class UID {
     }
 
     static UID AllDevices() {
-      UID uid(ALL_MANUFACTURERS, ALL_DEVICES);
-      return uid;
+      return UID(ALL_MANUFACTURERS, ALL_DEVICES);
     }
 
     static UID AllManufactureDevices(uint16_t esta_id) {
-      UID uid(esta_id, ALL_DEVICES);
-      return uid;
+      return UID(esta_id, ALL_DEVICES);
     }
 
     static UID* FromString(const string &uid);

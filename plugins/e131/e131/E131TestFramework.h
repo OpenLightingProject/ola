@@ -29,13 +29,13 @@
 #include <vector>
 #include "ola/BaseTypes.h"
 #include "ola/DmxBuffer.h"
-#include "ola/network/SelectServer.h"
-#include "ola/network/Socket.h"
+#include "ola/io/Descriptor.h"
+#include "ola/io/SelectServer.h"
 #include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/E131Node.h"
 
 using ola::DmxBuffer;
-using ola::network::SelectServer;
+using ola::io::SelectServer;
 using ola::plugin::e131::CID;
 using ola::plugin::e131::E131Node;
 using std::cout;
@@ -336,7 +336,7 @@ class StateManager {
     E131Node *m_local_node, *m_node1, *m_node2;
     SelectServer *m_ss;
     std::vector<TestState*> m_states;
-    ola::network::UnmanagedFileDescriptor m_stdin_descriptor;
+    ola::io::UnmanagedFileDescriptor m_stdin_descriptor;
     DmxBuffer m_recv_buffer;
     std::vector<TestState*> m_failed_tests;
 

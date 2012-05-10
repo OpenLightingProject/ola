@@ -401,6 +401,12 @@ class UInt32(IntAtom):
     super(UInt32, self).__init__(name, 'I', 0xffffffff, **kwargs)
 
 
+class IPV4(IntAtom):
+  """A four-byte IPV4 address."""
+  def __init__(self, name, **kwargs):
+    super(IPV4, self).__init__(name, 'I', 0xffffffff, **kwargs)
+
+
 class String(Atom):
   """A string field."""
   def __init__(self, name, **kwargs):
@@ -559,6 +565,11 @@ class Group(Atom):
         break
     return (can_determine_size and self._min is not None and
             self._min == self._max)
+
+  @property
+  def size(self):
+    # only valid if FixedSize() == True
+    return self.min
 
   def Pack(self, args):
     """Pack the args into binary data.
@@ -966,6 +977,8 @@ class PidStore(object):
       return Int32(field.name, **args);
     elif field.type == Pids_pb2.UINT32:
       return UInt32(field.name, **args);
+    elif field.type == Pids_pb2.IPV4:
+      return IPV4(field.name, **args);
     elif field.type == Pids_pb2.GROUP:
       if not field.field:
         raise InvalidPidFormat('Missing child fields for %s' % field.name)

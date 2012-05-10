@@ -32,11 +32,13 @@
 #include <string.h>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "ola/Callback.h"
 #include "ola/CallbackRunner.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
+#include "ola/network/IPV4Address.h"
 #include "ola/network/InterfacePicker.h"
 #include "ola/network/NetworkUtils.h"
 #include "olad/PluginAdaptor.h"
@@ -52,8 +54,10 @@ namespace artnet {
 using google::protobuf::RpcController;
 using google::protobuf::Closure;
 using ola::network::AddressToString;
+using ola::network::IPV4Address;
 using ola::plugin::artnet::Request;
 using ola::plugin::artnet::Reply;
+using std::vector;
 
 const char ArtNetDevice::K_ALWAYS_BROADCAST_KEY[] = "always_broadcast";
 const char ArtNetDevice::K_LIMITED_BROADCAST_KEY[] = "use_limited_broadcast";
@@ -184,6 +188,9 @@ void ArtNetDevice::Configure(RpcController *controller,
     case ola::plugin::artnet::Request::ARTNET_OPTIONS_REQUEST:
       HandleOptions(&request_pb, response);
       break;
+    case ola::plugin::artnet::Request::ARTNET_NODE_LIST_REQUEST:
+      HandleNodeList(&request_pb, response, controller);
+      break;
     default:
       controller->SetFailed("Invalid Request");
   }
@@ -219,6 +226,44 @@ void ArtNetDevice::HandleOptions(Request *request, string *response) {
   options_reply->set_long_name(m_node->LongName());
   options_reply->set_subnet(m_node->SubnetAddress());
   options_reply->set_net(m_node->NetAddress());
+  reply.SerializeToString(response);
+}
+
+
+/**
+ * Handle a node list request
+ */
+void ArtNetDevice::HandleNodeList(Request *request,
+                                  string *response,
+                                  RpcController *controller) {
+  if (!request->has_node_list()) {
+    controller->SetFailed("Missing NodeListRequest");
+    return;
+  }
+
+  unsigned int universe_id = request->node_list().universe();
+  vector<IPV4Address> node_addresses;
+
+  vector<OutputPort*> output_ports;
+  OutputPorts(&output_ports);
+  vector<OutputPort*>::const_iterator port_iter = output_ports.begin();
+  for (; port_iter != output_ports.end(); port_iter++) {
+    Universe *universe = (*port_iter)->GetUniverse();
+    if (universe && universe->UniverseId() == universe_id) {
+      m_node->GetSubscribedNodes((*port_iter)->PortId(), &node_addresses);
+      break;
+    }
+  }
+
+  ola::plugin::artnet::Reply reply;
+  reply.set_type(ola::plugin::artnet::Reply::ARTNET_NODE_LIST_REPLY);
+  ola::plugin::artnet::NodeListReply *node_list_reply =
+    reply.mutable_node_list();
+  vector<IPV4Address>::const_iterator iter = node_addresses.begin();
+  for (; iter != node_addresses.end(); ++iter) {
+    OutputNode *node = node_list_reply->add_node();
+    node->set_ip_address(iter->AsInt());
+  }
   reply.SerializeToString(response);
 }
 }  // artnet

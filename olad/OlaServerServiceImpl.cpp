@@ -768,7 +768,7 @@ void OlaServerServiceImpl::HandleRDMResponse(
 
   if (include_raw_packets) {
     vector<string>::const_iterator iter = packets.begin();
-    for (;iter != packets.end(); ++iter) {
+    for (; iter != packets.end(); ++iter) {
       response->add_raw_response(*iter);
     }
   }

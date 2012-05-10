@@ -71,9 +71,10 @@ void HeaderSetTest::testTransportHeader() {
   IPV4Address address;
   uint16_t port = 42;
   CPPUNIT_ASSERT(IPV4Address::FromString("192.168.1.1", &address));
-  TransportHeader header(address, port);
+  TransportHeader header(address, port, TransportHeader::UDP);
   CPPUNIT_ASSERT(address == header.SourceIP());
   CPPUNIT_ASSERT_EQUAL(port, header.SourcePort());
+  CPPUNIT_ASSERT_EQUAL(TransportHeader::UDP, header.Transport());
 
   // test copy and assign
   TransportHeader header2 = header;
@@ -164,47 +165,38 @@ void HeaderSetTest::testE131Header() {
  * test the E1.33 Header
  */
 void HeaderSetTest::testE133Header() {
-  E133Header header("foo", 1, 2, 2050);
+  E133Header header("foo", 9840, 2, false);
   CPPUNIT_ASSERT("foo" == header.Source());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 1, header.Priority());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 2, header.Sequence());
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 2050, header.Universe());
-  CPPUNIT_ASSERT_EQUAL(false, header.IsManagement());
-  CPPUNIT_ASSERT_EQUAL(false, header.IsSquawk());
+  CPPUNIT_ASSERT_EQUAL((uint32_t) 9840, header.Sequence());
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 2, header.Endpoint());
+  CPPUNIT_ASSERT_EQUAL(false, header.RxAcknowledge());
 
   // test copy and assign
   E133Header header2 = header;
   CPPUNIT_ASSERT(header.Source() == header2.Source());
-  CPPUNIT_ASSERT_EQUAL(header.Priority(), header2.Priority());
   CPPUNIT_ASSERT_EQUAL(header.Sequence(), header2.Sequence());
-  CPPUNIT_ASSERT_EQUAL(header.Universe(), header2.Universe());
-  CPPUNIT_ASSERT_EQUAL(false, header2.IsManagement());
-  CPPUNIT_ASSERT_EQUAL(false, header2.IsSquawk());
+  CPPUNIT_ASSERT_EQUAL(header.Endpoint(), header2.Endpoint());
+  CPPUNIT_ASSERT_EQUAL(false, header2.RxAcknowledge());
 
   E133Header header3(header);
   CPPUNIT_ASSERT(header.Source() == header3.Source());
-  CPPUNIT_ASSERT_EQUAL(header.Priority(), header3.Priority());
   CPPUNIT_ASSERT_EQUAL(header.Sequence(), header3.Sequence());
-  CPPUNIT_ASSERT_EQUAL(header.Universe(), header3.Universe());
+  CPPUNIT_ASSERT_EQUAL(header.Endpoint(), header3.Endpoint());
   CPPUNIT_ASSERT(header == header3);
 
-  // test a header with the management bit set
-  E133Header header4("foo", 1, 2, 2050, true);
+  // test a header with the RX ack bit set
+  E133Header header4("foo", 123456, 42, true);
   CPPUNIT_ASSERT("foo" == header4.Source());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 1, header4.Priority());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 2, header4.Sequence());
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 2050, header4.Universe());
-  CPPUNIT_ASSERT_EQUAL(true, header4.IsManagement());
-  CPPUNIT_ASSERT_EQUAL(false, header4.IsSquawk());
+  CPPUNIT_ASSERT_EQUAL((uint32_t) 123456, header4.Sequence());
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 42, header4.Endpoint());
+  CPPUNIT_ASSERT_EQUAL(true, header4.RxAcknowledge());
 
   // test a header with the squawk bit set
-  E133Header header5("foo", 1, 2, 2050, false, true);
+  E133Header header5("foo", 123456, 42, false);
   CPPUNIT_ASSERT("foo" == header5.Source());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 1, header5.Priority());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 2, header5.Sequence());
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 2050, header5.Universe());
-  CPPUNIT_ASSERT_EQUAL(false, header5.IsManagement());
-  CPPUNIT_ASSERT_EQUAL(true, header5.IsSquawk());
+  CPPUNIT_ASSERT_EQUAL((uint32_t) 123456, header5.Sequence());
+  CPPUNIT_ASSERT_EQUAL((uint16_t) 42, header5.Endpoint());
+  CPPUNIT_ASSERT_EQUAL(false, header5.RxAcknowledge());
 }
 
 
@@ -248,7 +240,7 @@ void HeaderSetTest::testHeaderSet() {
   HeaderSet headers;
   RootHeader root_header;
   E131Header e131_header("e131", 1, 2, 6001);
-  E133Header e133_header("foo", 1, 2, 2050, true);
+  E133Header e133_header("foo", 1, 2050, true);
   DMPHeader dmp_header(false, false, NON_RANGE, ONE_BYTES);
 
   // test the root header component

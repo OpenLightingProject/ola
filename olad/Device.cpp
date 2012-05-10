@@ -24,6 +24,7 @@
 #include <google/protobuf/service.h>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ola/Logging.h"

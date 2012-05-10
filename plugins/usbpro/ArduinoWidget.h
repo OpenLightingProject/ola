@@ -40,7 +40,7 @@ namespace usbpro {
 class ArduinoWidgetImpl: public BaseUsbProWidget,
                          public ola::rdm::DiscoverableRDMControllerInterface {
   public:
-    ArduinoWidgetImpl(ola::network::ConnectedDescriptor *descriptor,
+    ArduinoWidgetImpl(ola::io::ConnectedDescriptor *descriptor,
                       uint16_t esta_id,
                       uint32_t serial);
     ~ArduinoWidgetImpl();
@@ -88,7 +88,7 @@ class ArduinoWidgetImpl: public BaseUsbProWidget,
 class ArduinoWidget: public SerialWidgetInterface,
                      public ola::rdm::DiscoverableRDMControllerInterface {
   public:
-    ArduinoWidget(ola::network::ConnectedDescriptor *descriptor,
+    ArduinoWidget(ola::io::ConnectedDescriptor *descriptor,
                   uint16_t esta_id,
                   uint32_t serial,
                   unsigned int queue_size = 20);
@@ -113,7 +113,7 @@ class ArduinoWidget: public SerialWidgetInterface,
       m_impl->RunIncrementalDiscovery(callback);
     }
 
-    ola::network::ConnectedDescriptor *GetDescriptor() const {
+    ola::io::ConnectedDescriptor *GetDescriptor() const {
       return m_impl->GetDescriptor();
     }
 

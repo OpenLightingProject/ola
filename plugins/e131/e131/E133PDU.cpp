@@ -23,7 +23,7 @@
 #include <ola/Logging.h>
 #include <ola/network/NetworkUtils.h>
 #include "plugins/e131/e131/E133PDU.h"
-#include "plugins/e131/e131/DMPPDU.h"
+#include "plugins/e131/e131/RDMPDU.h"
 
 namespace ola {
 namespace plugin {
@@ -43,9 +43,7 @@ unsigned int E133PDU::HeaderSize() const {
  * Size of the data portion
  */
 unsigned int E133PDU::DataSize() const {
-  if (m_dmp_pdu)
-    return m_dmp_pdu->Size();
-  return 0;
+  return m_pdu ? m_pdu->Size() : 0;
 }
 
 
@@ -65,12 +63,10 @@ bool E133PDU::PackHeader(uint8_t *data, unsigned int &length) const {
   E133Header::e133_pdu_header header;
   strncpy(header.source, m_header.Source().data(),
           E133Header::SOURCE_NAME_LEN);
-  header.priority = m_header.Priority();
-  header.reserved = 0;
-  header.sequence = m_header.Sequence();
+  header.sequence = HostToNetwork(m_header.Sequence());
+  header.endpoint = HostToNetwork(m_header.Endpoint());
   header.options = static_cast<uint8_t>(
-      m_header.IsManagement() ? E133Header::RDM_MANAGEMENT_MASK : 0);
-  header.universe = HostToNetwork(m_header.Universe());
+      m_header.RxAcknowledge() ? E133Header::E133_RX_ACK_MASK : 0);
   length = sizeof(E133Header::e133_pdu_header);
   memcpy(data, &header, length);
   return true;
@@ -81,10 +77,35 @@ bool E133PDU::PackHeader(uint8_t *data, unsigned int &length) const {
  * Pack the data portion.
  */
 bool E133PDU::PackData(uint8_t *data, unsigned int &length) const {
-  if (m_dmp_pdu)
-    return m_dmp_pdu->Pack(data, length);
+  if (m_pdu)
+    return m_pdu->Pack(data, length);
   length = 0;
   return true;
+}
+
+
+/*
+ * Pack the header into a buffer.
+ */
+void E133PDU::PackHeader(OutputStream *stream) const {
+  E133Header::e133_pdu_header header;
+  strncpy(header.source, m_header.Source().data(),
+          E133Header::SOURCE_NAME_LEN);
+  header.sequence = HostToNetwork(m_header.Sequence());
+  header.endpoint = HostToNetwork(m_header.Endpoint());
+  header.options = static_cast<uint8_t>(
+      m_header.RxAcknowledge() ? E133Header::E133_RX_ACK_MASK : 0);
+  stream->Write(reinterpret_cast<uint8_t*>(&header),
+                sizeof(E133Header::e133_pdu_header));
+}
+
+
+/*
+ * Pack the data into a buffer
+ */
+void E133PDU::PackData(OutputStream *stream) const {
+  if (m_pdu)
+    m_pdu->Write(stream);
 }
 }  // ola
 }  // e131

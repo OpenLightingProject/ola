@@ -111,6 +111,21 @@ void MessageDeserializer::Visit(
 
 
 void MessageDeserializer::Visit(
+    const ola::messaging::IPV4FieldDescriptor *descriptor) {
+  if (!CheckForData(4))
+    return;
+
+  uint32_t data;
+  memcpy(&data, m_data + m_offset, sizeof(data));
+  m_offset += sizeof(data);
+  m_message_stack.top().push_back(
+    new ola::messaging::IPV4MessageField(
+      descriptor,
+      ola::network::IPV4Address(data)));
+}
+
+
+void MessageDeserializer::Visit(
     const ola::messaging::StringFieldDescriptor *descriptor) {
   unsigned int string_size;
 

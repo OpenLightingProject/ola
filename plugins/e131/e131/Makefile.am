@@ -1,25 +1,32 @@
 include $(top_srcdir)/common.mk
 
 EXTRA_DIST = ACNPort.h BaseInflator.h CID.h \
-             DMPE131Inflator.h DMPE133Inflator.h DMPAddress.h DMPHeader.h \
+             DMPE131Inflator.h DMPAddress.h DMPHeader.h \
              DMPInflator.h DMPPDU.h \
-             E131Header.h E131Includes.h E131Inflator.h E131Layer.h \
+             E131Header.h E131Includes.h E131Inflator.h E131Sender.h \
              E131Node.h E131PDU.h E131TestFramework.h \
-             E133Header.h E133Inflator.h E133Layer.h E133PDU.h \
-             HeaderSet.h PDU.h PDUTestCommon.h RootHeader.h RootInflator.h \
-             RootLayer.h RootPDU.h TransportHeader.h UDPTransport.h
+             E133Header.h E133Inflator.h E133Sender.h E133PDU.h \
+             HeaderSet.h PreamblePacker.h PDU.h PDUTestCommon.h \
+             RDMInflator.h RDMPDU.h \
+             RootHeader.h RootInflator.h RootSender.h RootPDU.h \
+             TCPTransport.h Transport.h TransportHeader.h UDPTransport.h
 
 COMMON_CXXFLAGS += -Wconversion
 
 noinst_LTLIBRARIES = libolae131core.la
 libolae131core_la_SOURCES = BaseInflator.cpp CID.cpp \
                             DMPAddress.cpp DMPE131Inflator.cpp \
-                            DMPE133Inflator.cpp DMPInflator.cpp \
+                            DMPInflator.cpp \
                             DMPPDU.cpp \
-                            E131Inflator.cpp E131Layer.cpp E131Node.cpp \
-                            E131PDU.cpp E133Inflator.cpp E133Layer.cpp \
-                            E133PDU.cpp PDU.cpp \
-                            RootInflator.cpp RootLayer.cpp RootPDU.cpp \
+                            E131Inflator.cpp E131Sender.cpp E131Node.cpp \
+                            E131PDU.cpp E133Inflator.cpp E133Sender.cpp \
+                            E133PDU.cpp \
+                            PreamblePacker.cpp \
+                            PDU.cpp \
+                            RDMInflator.cpp \
+                            RDMPDU.cpp \
+                            RootInflator.cpp RootSender.cpp RootPDU.cpp \
+                            TCPTransport.cpp \
                             UDPTransport.cpp
 libolae131core_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(uuid_CFLAGS)
 libolae131core_la_LIBADD = $(uuid_LIBS) \
@@ -31,8 +38,9 @@ e131_transmit_test_SOURCES = e131_transmit_test.cpp E131TestFramework.cpp
 e131_transmit_test_LDADD = ./libolae131core.la
 
 # Test programs
-TESTS = E131Tester
+TESTS = E131Tester E133Tester TransportTester
 check_PROGRAMS = $(TESTS)
+
 E131Tester_SOURCES = BaseInflatorTest.cpp \
                      CIDTest.cpp \
                      DMPAddressTest.cpp \
@@ -41,17 +49,26 @@ E131Tester_SOURCES = BaseInflatorTest.cpp \
                      E131InflatorTest.cpp \
                      E131PDUTest.cpp \
                      E131Tester.cpp \
-                     E133InflatorTest.cpp \
-                     E133PDUTest.cpp \
                      HeaderSetTest.cpp \
                      PDUTest.cpp \
                      RootInflatorTest.cpp \
-                     RootLayerTest.cpp \
-                     RootPDUTest.cpp \
-                     UDPTransportTest.cpp
+                     RootPDUTest.cpp
+                     RootSenderTest.cpp \
 E131Tester_CPPFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 # For some completely messed up reason on mac CPPUNIT_LIBS has to come after
 # the ossp uuid library.
 # CPPUNIT_LIBS contains -ldl which causes the unittests to fail in strange ways
-E131Tester_LDADD = ./libolae131core.la \
-                   $(CPPUNIT_LIBS)
+E131Tester_LDADD = ./libolae131core.la $(COMMON_TESTING_LIBS)
+
+E133Tester_SOURCES = E133InflatorTest.cpp \
+                     E133PDUTest.cpp \
+                     E133Tester.cpp \
+                     RDMPDUTest.cpp
+E133Tester_CPPFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+E133Tester_LDADD = ./libolae131core.la $(COMMON_TESTING_LIBS)
+
+TransportTester_SOURCES = TCPTransportTest.cpp \
+                          TransportTester.cpp \
+                          UDPTransportTest.cpp
+TransportTester_CPPFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+TransportTester_LDADD = ./libolae131core.la $(COMMON_TESTING_LIBS)

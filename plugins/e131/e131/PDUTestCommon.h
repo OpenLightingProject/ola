@@ -22,6 +22,7 @@
 #define PLUGINS_E131_E131_PDUTESTCOMMON_H_
 
 #include "ola/Callback.h"
+#include "ola/io/OutputStream.h"
 #include "plugins/e131/e131/BaseInflator.h"
 #include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/PDU.h"
@@ -48,16 +49,21 @@ class FakePDU: public PDU {
       length = sizeof(m_value);
       return true;
     }
-    bool PackHeader(uint8_t *data, unsigned int &length) const {
+
+    bool PackHeader(uint8_t*, unsigned int&) const {
       return true;
-      (void) data;
-      (void) length;
     }
-    bool PackData(uint8_t *data, unsigned int &length) const {
+
+    bool PackData(uint8_t*, unsigned int&) const {
       return true;
-      (void) data;
-      (void) length;
     }
+
+    void Write(ola::io::OutputStream *stream) const {
+      *stream << HostToNetwork(m_value);
+    }
+
+    void PackHeader(ola::io::OutputStream*) const {}
+    void PackData(ola::io::OutputStream*) const {}
 
   private:
     unsigned int m_value;
@@ -88,6 +94,11 @@ class MockPDU: public PDU {
       return true;
     }
 
+    void PackHeader(ola::io::OutputStream *stream) const {
+      stream->Write(reinterpret_cast<const uint8_t*>(&m_header),
+                    sizeof(m_header));
+    }
+
     bool PackData(uint8_t *data, unsigned int &length) const {
       if (length < DataSize()) {
         length = 0;
@@ -96,6 +107,11 @@ class MockPDU: public PDU {
       memcpy(data, &m_value, sizeof(m_value));
       length = DataSize();
       return true;
+    }
+
+    void PackData(ola::io::OutputStream *stream) const {
+      stream->Write(reinterpret_cast<const uint8_t*>(&m_value),
+                    sizeof(m_value));
     }
 
     // This is used to id 'Mock' PDUs in the higher level protocol
@@ -122,15 +138,15 @@ class MockInflator: public BaseInflator {
 
   protected:
     void ResetHeaderField() {}
-    bool DecodeHeader(HeaderSet &headers,
+    bool DecodeHeader(HeaderSet &,
                       const uint8_t *data,
-                      unsigned int length,
+                      unsigned int,
                       unsigned int &bytes_used) {
-      bytes_used = 4;
-      memcpy(&m_last_header, data, sizeof(m_last_header));
+      if (data) {
+        bytes_used = 4;
+        memcpy(&m_last_header, data, sizeof(m_last_header));
+      }
       return true;
-      (void) headers;
-      (void) length;
     }
 
     bool HandlePDUData(uint32_t vector, HeaderSet &headers,

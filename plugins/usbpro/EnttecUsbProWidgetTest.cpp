@@ -20,15 +20,29 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
+#include "ola/rdm/UID.h"
 #include "plugins/usbpro/EnttecUsbProWidget.h"
 #include "plugins/usbpro/CommonWidgetTest.h"
 
+using ola::plugin::usbpro::EnttecUsbProWidget;
+using ola::rdm::DiscoveryUniqueBranchRequest;
+using ola::rdm::GetResponseFromData;
+using ola::rdm::MuteRequest;
+using ola::rdm::RDMDiscoveryCommand;
+using ola::rdm::RDMRequest;
+using ola::rdm::RDMResponse;
+using ola::rdm::UID;
+using ola::rdm::UnMuteRequest;
 
 using std::auto_ptr;
+using std::string;
+using std::vector;
 using ola::plugin::usbpro::usb_pro_parameters;
 
 
@@ -37,6 +51,10 @@ class EnttecUsbProWidgetTest: public CommonWidgetTest {
   CPPUNIT_TEST(testParams);
   CPPUNIT_TEST(testReceiveDMX);
   CPPUNIT_TEST(testChangeMode);
+  CPPUNIT_TEST(testSendRDMRequest);
+  CPPUNIT_TEST(testMuteDevice);
+  CPPUNIT_TEST(testUnMuteAll);
+  CPPUNIT_TEST(testBranch);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -45,9 +63,39 @@ class EnttecUsbProWidgetTest: public CommonWidgetTest {
     void testParams();
     void testReceiveDMX();
     void testChangeMode();
+    void testSendRDMRequest();
+    void testMuteDevice();
+    void testUnMuteAll();
+    void testBranch();
 
   private:
-    auto_ptr<ola::plugin::usbpro::EnttecUsbProWidget> m_widget;
+    auto_ptr<EnttecUsbProWidget> m_widget;
+    uint8_t m_transaction_number;
+    ola::rdm::rdm_response_code m_received_code;
+
+    const RDMRequest *NewRequest(const UID &destination,
+                                 const uint8_t *data = NULL,
+                                 unsigned int length = 0);
+    uint8_t *PackRDMRequest(const RDMRequest *request, unsigned int *size);
+    uint8_t *PackDiscoveryReqest(const RDMDiscoveryCommand *request,
+                                 unsigned int *size);
+    uint8_t *PackRDMResponse(const RDMResponse *response, unsigned int *size);
+    void ValidateResponse(ola::rdm::rdm_response_code code,
+                          const ola::rdm::RDMResponse *response,
+                          const vector<string> &packets);
+    void ValidateStatus(ola::rdm::rdm_response_code expected_code,
+                        vector<string> expected_packets,
+                        ola::rdm::rdm_response_code code,
+                        const ola::rdm::RDMResponse *response,
+                        const vector<string> &packets);
+    void ValidateMuteStatus(bool expected,
+                            bool actual);
+    void ValidateBranchStatus(const uint8_t *expected_data,
+                              unsigned int length,
+                              const uint8_t *actual_data,
+                              unsigned int actual_length);
+    void SendResponseAndTimeout(const uint8_t *response_data,
+                                unsigned int length);
 
     void Terminate() { m_ss.Terminate(); }
     void ValidateParams(bool status, const usb_pro_parameters &params);
@@ -55,14 +103,30 @@ class EnttecUsbProWidgetTest: public CommonWidgetTest {
 
     bool m_got_dmx;
 
+    static const UID BCAST_DESTINATION;
+    static const UID DESTINATION;
+    static const UID SOURCE;
+    static const uint16_t ESTA_ID = 0x00a1;
+    static const uint32_t SERIAL_NUMBER = 0x01020304;
     static const uint8_t CHANGE_MODE_LABEL = 8;
     static const uint8_t CHANGE_OF_STATE_LABEL = 9;
     static const uint8_t GET_PARAM_LABEL = 3;
+    static const uint8_t RDM_DISCOVERY_PACKET = 11;
+    static const uint8_t RDM_PACKET = 7;
+    static const uint8_t RDM_TIMEOUT_PACKET = 12;
     static const uint8_t RECEIVE_DMX_LABEL = 5;
     static const uint8_t SET_PARAM_LABEL = 4;
+    static const uint8_t TEST_RDM_DATA[];
     static const unsigned int FOOTER_SIZE = 1;
     static const unsigned int HEADER_SIZE = 4;
 };
+
+const UID EnttecUsbProWidgetTest::DESTINATION(ESTA_ID, SERIAL_NUMBER);
+const UID EnttecUsbProWidgetTest::BCAST_DESTINATION(ESTA_ID, 0xffffffff);
+const UID EnttecUsbProWidgetTest::SOURCE(EnttecUsbProWidget::ENTTEC_ESTA_ID,
+                                         1);
+const uint8_t EnttecUsbProWidgetTest::TEST_RDM_DATA[] =
+  { 0x5a, 0x5a, 0x5a, 0x5a};
 
 CPPUNIT_TEST_SUITE_REGISTRATION(EnttecUsbProWidgetTest);
 
@@ -70,9 +134,192 @@ CPPUNIT_TEST_SUITE_REGISTRATION(EnttecUsbProWidgetTest);
 void EnttecUsbProWidgetTest::setUp() {
   CommonWidgetTest::setUp();
   m_widget.reset(
-      new ola::plugin::usbpro::EnttecUsbProWidget(&m_ss, &m_descriptor));
+      new EnttecUsbProWidget(
+          &m_ss,
+          &m_descriptor,
+          EnttecUsbProWidget::ENTTEC_ESTA_ID,
+          1));
 
+  m_transaction_number = 0;
   m_got_dmx = false;
+}
+
+
+/*
+ * Helper method to create new GetRDMRequest objects.
+ * @param destination the destination UID
+ * @param data the RDM Request data
+ * @param length the size of the RDM data.
+ */
+const RDMRequest *EnttecUsbProWidgetTest::NewRequest(const UID &destination,
+                                                     const uint8_t *data,
+                                                     unsigned int length) {
+  return new ola::rdm::RDMGetRequest(
+      SOURCE,
+      destination,
+      m_transaction_number++,  // transaction #
+      1,  // port id
+      0,  // message count
+      10,  // sub device
+      296,  // param id
+      data,
+      length);
+}
+
+
+/**
+ * Pack a RDM request into a buffer
+ */
+uint8_t *EnttecUsbProWidgetTest::PackRDMRequest(const RDMRequest *request,
+                                                unsigned int *size) {
+  unsigned int request_size = request->Size();
+  uint8_t *rdm_data = new uint8_t[request_size + 1];
+  rdm_data[0] = ola::rdm::RDMCommand::START_CODE;
+  memset(&rdm_data[1], 0, request_size);
+  CPPUNIT_ASSERT(request->Pack(
+        &rdm_data[1],
+        &request_size));
+  *size = request_size + 1;
+  return rdm_data;
+}
+
+
+/**
+ * Pack a RDM Discovery Command
+ */
+uint8_t *EnttecUsbProWidgetTest::PackDiscoveryReqest(
+    const RDMDiscoveryCommand *request,
+    unsigned int *size) {
+  unsigned int request_size = request->Size();
+  uint8_t *rdm_data = new uint8_t[request_size + 1];
+  memset(rdm_data, 0, request_size);
+  rdm_data[0] = ola::rdm::RDMCommand::START_CODE;
+  memset(&rdm_data[1], 0, request_size);
+  CPPUNIT_ASSERT(request->Pack(
+        &rdm_data[1],
+        &request_size));
+  *size = request_size + 1;
+  return rdm_data;
+}
+
+
+/**
+ * Pack a RDM Response into a buffer
+ */
+uint8_t *EnttecUsbProWidgetTest::PackRDMResponse(const RDMResponse *response,
+                                                 unsigned int *size) {
+  unsigned int response_size = response->Size();
+  uint8_t *rdm_data = new uint8_t[response_size + 2];
+  rdm_data[0] = 0;  // status ok
+  rdm_data[1] = ola::rdm::RDMCommand::START_CODE;
+  memset(&rdm_data[2], 0, response_size);
+  CPPUNIT_ASSERT(response->Pack(
+        &rdm_data[2],
+        &response_size));
+  *size = response_size + 2;
+  return rdm_data;
+}
+
+
+/*
+ * Check the response matches what we expected.
+ */
+void EnttecUsbProWidgetTest::ValidateResponse(
+    ola::rdm::rdm_response_code code,
+    const ola::rdm::RDMResponse *response,
+    const vector<string> &packets) {
+  CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_COMPLETED_OK, code);
+  CPPUNIT_ASSERT(response);
+  CPPUNIT_ASSERT_EQUAL(
+      static_cast<unsigned int>(sizeof(TEST_RDM_DATA)),
+      response->ParamDataSize());
+  CPPUNIT_ASSERT(0 == memcmp(TEST_RDM_DATA, response->ParamData(),
+                             response->ParamDataSize()));
+
+  CPPUNIT_ASSERT_EQUAL((size_t) 1, packets.size());
+  ola::rdm::rdm_response_code raw_code;
+  auto_ptr<ola::rdm::RDMResponse> raw_response(
+    ola::rdm::RDMResponse::InflateFromData(packets[0], &raw_code));
+  CPPUNIT_ASSERT(*(raw_response.get()) == *response);
+  delete response;
+  m_ss.Terminate();
+}
+
+
+/*
+ * Check that this request returned the expected status code
+ * @param expected_code the expected widget status code
+ * @param expected_code a list of expected packets
+ * @param code the actual status code returns
+ * @param response the RDMResponse object, or NULL
+ * @param packets the actual packets involved
+ */
+void EnttecUsbProWidgetTest::ValidateStatus(
+    ola::rdm::rdm_response_code expected_code,
+    vector<string> expected_packets,
+    ola::rdm::rdm_response_code code,
+    const ola::rdm::RDMResponse *response,
+    const vector<string> &packets) {
+  CPPUNIT_ASSERT_EQUAL(expected_code, code);
+  CPPUNIT_ASSERT(!response);
+
+  CPPUNIT_ASSERT_EQUAL(expected_packets.size(), packets.size());
+  for (unsigned int i = 0; i < packets.size(); i++) {
+    if (expected_packets[i].size() != packets[i].size())
+      OLA_INFO << expected_packets[i].size() << " != " << packets[i].size();
+    CPPUNIT_ASSERT_EQUAL(expected_packets[i].size(), packets[i].size());
+
+    if (expected_packets[i] != packets[i]) {
+      for (unsigned int j = 0; j < packets[i].size(); j++) {
+        OLA_INFO << std::hex << static_cast<int>(packets[i][j]) << " - " <<
+          static_cast<int>(expected_packets[i][j]);
+      }
+    }
+    CPPUNIT_ASSERT(expected_packets[i] == packets[i]);
+  }
+  m_received_code = expected_code;
+  m_ss.Terminate();
+}
+
+
+/**
+ * Validate that a mute response matches what we expect
+ */
+void EnttecUsbProWidgetTest::ValidateMuteStatus(bool expected,
+                                                bool actual) {
+  CPPUNIT_ASSERT_EQUAL(expected, actual);
+  m_ss.Terminate();
+}
+
+
+
+/**
+ * Validate that a branch request returns what we expect.
+ */
+void EnttecUsbProWidgetTest::ValidateBranchStatus(const uint8_t *expected_data,
+                                                  unsigned int length,
+                                                  const uint8_t *actual_data,
+                                                  unsigned int actual_length) {
+  CPPUNIT_ASSERT_EQUAL(length, actual_length);
+  CPPUNIT_ASSERT(!memcmp(expected_data, actual_data, length));
+  m_ss.Terminate();
+}
+
+
+/**
+ * Send a RDM response message, followed by a RDM timeout message
+ */
+void EnttecUsbProWidgetTest::SendResponseAndTimeout(
+    const uint8_t *response_data,
+    unsigned int length) {
+  m_endpoint->SendUnsolicitedUsbProData(
+    RECEIVE_DMX_LABEL,
+    response_data,
+    length);
+  m_endpoint->SendUnsolicitedUsbProData(
+    RDM_TIMEOUT_PACKET,
+    NULL,
+    0);
 }
 
 
@@ -242,4 +489,241 @@ void EnttecUsbProWidgetTest::testChangeMode() {
   m_widget->ChangeToReceiveMode(true);
   m_ss.Run();
   m_endpoint->Verify();
+}
+
+
+/**
+ * Check that we send RDM messages correctly.
+ */
+void EnttecUsbProWidgetTest::testSendRDMRequest() {
+  // request
+  const RDMRequest *rdm_request = NewRequest(DESTINATION);
+  unsigned int expected_request_frame_size;
+  uint8_t *expected_request_frame = PackRDMRequest(
+      rdm_request,
+      &expected_request_frame_size);
+
+  // response
+  auto_ptr<const RDMResponse> response(
+    GetResponseFromData(rdm_request, TEST_RDM_DATA, sizeof(TEST_RDM_DATA)));
+  unsigned int response_size;
+  uint8_t *response_frame = PackRDMResponse(response.get(), &response_size);
+
+  // add the expected response, send and verify
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      RDM_PACKET,
+      expected_request_frame,
+      expected_request_frame_size,
+      RECEIVE_DMX_LABEL,
+      response_frame,
+      response_size);
+
+  m_widget->SendRDMRequest(
+      rdm_request,
+      ola::NewSingleCallback(this, &EnttecUsbProWidgetTest::ValidateResponse));
+  m_ss.Run();
+  m_endpoint->Verify();
+
+  delete[] expected_request_frame;
+  delete[] response_frame;
+
+  // now check broadcast messages
+  // request
+  rdm_request = NewRequest(BCAST_DESTINATION);
+  uint8_t *expected_bcast_request_frame = PackRDMRequest(
+      rdm_request,
+      &expected_request_frame_size);
+
+  // add the expected response, send and verify
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      RDM_PACKET,
+      expected_bcast_request_frame,
+      expected_request_frame_size,
+      RDM_TIMEOUT_PACKET,
+      NULL,
+      0);
+
+  vector<string> packets;
+  m_received_code = ola::rdm::RDM_COMPLETED_OK;
+  m_widget->SendRDMRequest(
+      rdm_request,
+      ola::NewSingleCallback(this,
+                             &EnttecUsbProWidgetTest::ValidateStatus,
+                             ola::rdm::RDM_WAS_BROADCAST,
+                             packets));
+  m_ss.Run();
+  CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_WAS_BROADCAST, m_received_code);
+  m_endpoint->Verify();
+
+  // cleanup time
+  delete[] expected_bcast_request_frame;
+}
+
+
+/**
+ * Test mute device
+ */
+void EnttecUsbProWidgetTest::testMuteDevice() {
+  // first test when a device doesn't respond
+  const MuteRequest mute_request(SOURCE,
+                                 DESTINATION,
+                                 m_transaction_number++);
+  unsigned int expected_request_frame_size;
+  uint8_t *expected_request_frame = PackDiscoveryReqest(
+      &mute_request,
+      &expected_request_frame_size);
+
+  // add the expected response, send and verify
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      RDM_PACKET,
+      expected_request_frame,
+      expected_request_frame_size,
+      RDM_TIMEOUT_PACKET,
+      NULL,
+      0);
+
+  m_widget.get()->m_impl->MuteDevice(
+      DESTINATION,
+      ola::NewSingleCallback(this,
+                             &EnttecUsbProWidgetTest::ValidateMuteStatus,
+                             false));
+  m_ss.Run();
+  m_endpoint->Verify();
+  delete[] expected_request_frame;
+
+  // now try an actual mute response
+  const MuteRequest mute_request2(SOURCE,
+                                  DESTINATION,
+                                  m_transaction_number++);
+  expected_request_frame = PackDiscoveryReqest(
+      &mute_request2,
+      &expected_request_frame_size);
+
+  // We can really return anything
+  // TODO(simon): make this better
+  uint8_t mute_response_frame[] = {
+      0,
+      ola::rdm::RDMCommand::START_CODE,
+      0};
+
+  // add the expected response, send and verify
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      RDM_PACKET,
+      expected_request_frame,
+      expected_request_frame_size,
+      RECEIVE_DMX_LABEL,
+      mute_response_frame,
+      sizeof(mute_response_frame));
+
+  m_widget.get()->m_impl->MuteDevice(
+      DESTINATION,
+      ola::NewSingleCallback(this,
+                             &EnttecUsbProWidgetTest::ValidateMuteStatus,
+                             true));
+  m_ss.Run();
+  m_endpoint->Verify();
+  delete[] expected_request_frame;
+}
+
+
+/**
+ * Test the unmute all request works
+ */
+void EnttecUsbProWidgetTest::testUnMuteAll() {
+  const UnMuteRequest unmute_request(SOURCE,
+                                     UID::AllDevices(),
+                                     m_transaction_number++);
+  unsigned int expected_request_frame_size;
+  uint8_t *expected_request_frame = PackDiscoveryReqest(
+      &unmute_request,
+      &expected_request_frame_size);
+
+  // add the expected response, send and verify
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      RDM_PACKET,
+      expected_request_frame,
+      expected_request_frame_size,
+      RDM_TIMEOUT_PACKET,
+      NULL,
+      0);
+
+  m_widget.get()->m_impl->UnMuteAll(
+      ola::NewSingleCallback(this,
+                             &EnttecUsbProWidgetTest::Terminate));
+  m_ss.Run();
+  m_endpoint->Verify();
+  delete[] expected_request_frame;
+}
+
+
+/**
+ * Test the DUB request works
+ */
+void EnttecUsbProWidgetTest::testBranch() {
+  // first test when no devices respond
+  const DiscoveryUniqueBranchRequest discovery_request(
+      SOURCE,
+      UID(0, 0),
+      UID::AllDevices(),
+      m_transaction_number++);
+  unsigned int expected_request_frame_size;
+  uint8_t *expected_request_frame = PackDiscoveryReqest(
+      &discovery_request,
+      &expected_request_frame_size);
+
+  // add the expected response, send and verify
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      RDM_DISCOVERY_PACKET,
+      expected_request_frame,
+      expected_request_frame_size,
+      RDM_TIMEOUT_PACKET,
+      NULL,
+      0);
+
+  m_widget.get()->m_impl->Branch(
+      UID(0, 0),
+      UID::AllDevices(),
+      ola::NewSingleCallback(this,
+                             &EnttecUsbProWidgetTest::ValidateBranchStatus,
+                             static_cast<const uint8_t*>(NULL),
+                             static_cast<unsigned int>(0)));
+  m_ss.Run();
+  m_endpoint->Verify();
+  delete[] expected_request_frame;
+
+  // now try an actual response, the data doesn't actually have to be valid
+  // because it's just passed straight to the callback.
+  const DiscoveryUniqueBranchRequest discovery_request2(
+      SOURCE,
+      UID(0, 0),
+      UID::AllDevices(),
+      m_transaction_number++);
+  expected_request_frame = PackDiscoveryReqest(
+      &discovery_request2,
+      &expected_request_frame_size);
+
+  // the response, can be anything really, only the first byte counts
+  uint8_t response_frame2[] = {0, 1, 2, 3, 4};
+
+  m_endpoint->AddExpectedUsbProMessage(
+      RDM_DISCOVERY_PACKET,
+      expected_request_frame,
+      expected_request_frame_size,
+      ola::NewSingleCallback(
+        this,
+        &EnttecUsbProWidgetTest::SendResponseAndTimeout,
+        static_cast<const uint8_t*>(response_frame2),
+        static_cast<unsigned int>(sizeof(response_frame2))));
+
+  m_widget.get()->m_impl->Branch(
+      UID(0, 0),
+      UID::AllDevices(),
+      ola::NewSingleCallback(
+        this,
+        &EnttecUsbProWidgetTest::ValidateBranchStatus,
+        static_cast<const uint8_t*>(&response_frame2[1]),
+        static_cast<unsigned int>(sizeof(response_frame2) - 1)));
+  m_ss.Run();
+  m_endpoint->Verify();
+  delete[] expected_request_frame;
 }

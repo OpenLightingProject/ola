@@ -8,7 +8,8 @@ EXTRA_DIST = DescriptorConsistencyChecker.h DiscoveryAgentTestHelper.h \
 BUILT_SOURCES = Pids.pb.cc Pids.pb.h
 
 noinst_LTLIBRARIES = libolardm.la
-libolardm_la_SOURCES = DescriptorConsistencyChecker.cpp \
+libolardm_la_SOURCES = CommandPrinter.cpp \
+                       DescriptorConsistencyChecker.cpp \
                        DiscoveryAgent.cpp \
                        GroupSizeCalculator.cpp \
                        MessageSerializer.cpp MessageDeserializer.cpp \
@@ -34,8 +35,10 @@ RDMTester_SOURCES = RDMAPITest.cpp RDMCommandTest.cpp RDMTester.cpp \
 RDMTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 RDMTester_LDADD = $(CPPUNIT_LIBS) \
                   libolardm.la \
+                  ../io/libolaio.la \
                   ../logging/liblogging.la \
                   ../network/libolanetwork.la \
+                  ../testing/libolatesting.la \
                   ../utils/libolautils.la
 
 PidStoreTester_SOURCES = DescriptorConsistencyCheckerTest.cpp \

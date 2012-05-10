@@ -27,12 +27,12 @@
 
 #include <ola/OlaClient.h>
 #include <ola/OlaCallbackClient.h>
-#include <ola/network/SelectServer.h>
+#include <ola/io/SelectServer.h>
 #include <ola/network/Socket.h>
 
 namespace ola {
 
-using ola::network::SelectServer;
+using ola::io::SelectServer;
 using ola::network::TcpSocket;
 
 /*

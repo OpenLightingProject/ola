@@ -33,7 +33,7 @@
 #include "ola/DmxBuffer.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/Interface.h"
-#include "ola/network/SelectServerInterface.h"
+#include "ola/io/SelectServerInterface.h"
 #include "ola/network/Socket.h"
 #include "ola/rdm/QueueingRDMController.h"
 #include "ola/rdm/RDMCommand.h"
@@ -95,7 +95,7 @@ class ArtNetNodeOptions {
 class ArtNetNodeImpl {
   public:
     ArtNetNodeImpl(const ola::network::Interface &interface,
-                   ola::network::SelectServerInterface *ss,
+                   ola::io::SelectServerInterface *ss,
                    const ArtNetNodeOptions &options,
                    ola::network::UdpSocketInterface *socket = NULL);
     virtual ~ArtNetNodeImpl();
@@ -143,6 +143,8 @@ class ArtNetNodeImpl {
     bool SetUnsolicatedUIDSetHandler(
         uint8_t port_id,
         ola::Callback1<void, const ola::rdm::UIDSet&> *on_tod);
+    void GetSubscribedNodes(uint8_t port_id,
+                            std::vector<IPV4Address> *node_addresses);
 
     // The following apply to Output Ports (those which receive data);
     bool SetDMXHandler(uint8_t port_id,
@@ -220,7 +222,7 @@ class ArtNetNodeImpl {
     string m_long_name;
     unsigned int m_broadcast_threshold;
     unsigned int m_unsolicited_replies;
-    ola::network::SelectServerInterface *m_ss;
+    ola::io::SelectServerInterface *m_ss;
     bool m_always_broadcast;
     bool m_use_limited_broadcast_address;
 
@@ -369,7 +371,7 @@ class ArtNetNodeImplRDMWrapper
 class ArtNetNode {
   public:
     ArtNetNode(const ola::network::Interface &interface,
-               ola::network::SelectServerInterface *ss,
+               ola::io::SelectServerInterface *ss,
                const ArtNetNodeOptions &options,
                ola::network::UdpSocketInterface *socket = NULL);
     virtual ~ArtNetNode();
@@ -436,6 +438,10 @@ class ArtNetNode {
         uint8_t port_id,
         ola::Callback1<void, const ola::rdm::UIDSet&> *on_tod) {
       return m_impl.SetUnsolicatedUIDSetHandler(port_id, on_tod);
+    }
+    void GetSubscribedNodes(uint8_t port_id,
+                            std::vector<IPV4Address> *node_addresses) {
+      m_impl.GetSubscribedNodes(port_id, node_addresses);
     }
 
     // The following apply to Output Ports (those which receive data);

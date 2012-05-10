@@ -21,7 +21,7 @@
 #include <getopt.h>
 #include <ola/Callback.h>
 #include <ola/Logging.h>
-#include <ola/network/SelectServer.h>
+#include <ola/io/SelectServer.h>
 #include <signal.h>
 #include <sysexits.h>
 
@@ -44,7 +44,7 @@ typedef struct {
 
 
 // globals
-ola::network::SelectServer ss;
+ola::io::SelectServer ss;
 
 // Called when we receive a new url list.
 void DiscoveryDone(bool ok, const std::vector<std::string> &urls) {

@@ -25,20 +25,18 @@
 
 #include "ola/Callback.h"
 #include "ola/Logging.h"
+#include "ola/io/Descriptor.h"
+#include "ola/io/SelectServer.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
-#include "ola/network/SelectServer.h"
 #include "ola/network/Socket.h"
+#include "ola/network/TCPSocketFactory.h"
 
 using std::string;
-using ola::network::AcceptingSocket;
-using ola::network::ConnectedDescriptor;
+using ola::io::ConnectedDescriptor;
+using ola::io::SelectServer;
 using ola::network::IPV4Address;
-using ola::network::LoopbackDescriptor;
-using ola::network::PipeDescriptor;
-using ola::network::SelectServer;
 using ola::network::StringToAddress;
-using ola::network::UnixSocket;
 using ola::network::TcpAcceptingSocket;
 using ola::network::TcpSocket;
 using ola::network::UdpSocket;
@@ -50,11 +48,6 @@ static const int ABORT_TIMEOUT_IN_MS = 1000;
 class SocketTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(SocketTest);
 
-  CPPUNIT_TEST(testLoopbackDescriptor);
-  CPPUNIT_TEST(testPipeDescriptorClientClose);
-  CPPUNIT_TEST(testPipeDescriptorServerClose);
-  CPPUNIT_TEST(testUnixSocketClientClose);
-  CPPUNIT_TEST(testUnixSocketServerClose);
   CPPUNIT_TEST(testTcpSocketClientClose);
   CPPUNIT_TEST(testTcpSocketServerClose);
   CPPUNIT_TEST(testUdpSocket);
@@ -63,11 +56,6 @@ class SocketTest: public CppUnit::TestFixture {
   public:
     void setUp();
     void tearDown();
-    void testLoopbackDescriptor();
-    void testPipeDescriptorClientClose();
-    void testPipeDescriptorServerClose();
-    void testUnixSocketClientClose();
-    void testUnixSocketServerClose();
     void testTcpSocketClientClose();
     void testTcpSocketServerClose();
     void testUdpSocket();
@@ -84,8 +72,8 @@ class SocketTest: public CppUnit::TestFixture {
     void Receive(ConnectedDescriptor *socket);
     void ReceiveAndSend(ConnectedDescriptor *socket);
     void ReceiveSendAndClose(ConnectedDescriptor *socket);
-    void NewConnectionSend(ConnectedDescriptor *socket);
-    void NewConnectionSendAndClose(ConnectedDescriptor *socket);
+    void NewConnectionSend(TcpSocket *socket);
+    void NewConnectionSendAndClose(TcpSocket *socket);
     void UdpReceiveAndTerminate(UdpSocket *socket);
     void UdpReceiveAndSend(UdpSocket *socket);
 
@@ -96,7 +84,6 @@ class SocketTest: public CppUnit::TestFixture {
 
   private:
     SelectServer *m_ss;
-    AcceptingSocket *m_accepting_socket;
     ola::SingleUseCallback0<void> *m_timeout_closure;
 
     void SocketClientClose(ConnectedDescriptor *socket,
@@ -129,79 +116,6 @@ void SocketTest::tearDown() {
 
 
 /*
- * Test a loopback socket works correctly
- */
-void SocketTest::testLoopbackDescriptor() {
-  LoopbackDescriptor socket;
-  CPPUNIT_ASSERT(socket.Init());
-  CPPUNIT_ASSERT(!socket.Init());
-  socket.SetOnData(ola::NewCallback(this, &SocketTest::ReceiveAndTerminate,
-                                   static_cast<ConnectedDescriptor*>(&socket)));
-  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&socket));
-
-  ssize_t bytes_sent = socket.Send(
-      static_cast<const uint8_t*>(test_cstring),
-      sizeof(test_cstring));
-  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
-  m_ss->Run();
-  m_ss->RemoveReadDescriptor(&socket);
-}
-
-
-/*
- * Test a pipe socket works correctly.
- * The client sends some data and expects the same data to be returned. The
- * client then closes the connection.
- */
-void SocketTest::testPipeDescriptorClientClose() {
-  PipeDescriptor socket;
-  CPPUNIT_ASSERT(socket.Init());
-  CPPUNIT_ASSERT(!socket.Init());
-  SocketClientClose(&socket, socket.OppositeEnd());
-}
-
-
-/*
- * Test a pipe socket works correctly.
- * The client sends some data. The server echos the data and closes the
- * connection.
- */
-void SocketTest::testPipeDescriptorServerClose() {
-  PipeDescriptor socket;
-  CPPUNIT_ASSERT(socket.Init());
-  CPPUNIT_ASSERT(!socket.Init());
-
-  SocketServerClose(&socket, socket.OppositeEnd());
-}
-
-
-/*
- * Test a unix socket works correctly.
- * The client sends some data and expects the same data to be returned. The
- * client then closes the connection.
- */
-void SocketTest::testUnixSocketClientClose() {
-  UnixSocket socket;
-  CPPUNIT_ASSERT(socket.Init());
-  CPPUNIT_ASSERT(!socket.Init());
-  SocketClientClose(&socket, socket.OppositeEnd());
-}
-
-
-/*
- * Test a unix socket works correctly.
- * The client sends some data. The server echos the data and closes the
- * connection.
- */
-void SocketTest::testUnixSocketServerClose() {
-  UnixSocket socket;
-  CPPUNIT_ASSERT(socket.Init());
-  CPPUNIT_ASSERT(!socket.Init());
-  SocketServerClose(&socket, socket.OppositeEnd());
-}
-
-
-/*
  * Test TCP sockets work correctly.
  * The client connects and the server sends some data. The client checks the
  * data matches and then closes the connection.
@@ -209,13 +123,14 @@ void SocketTest::testUnixSocketServerClose() {
 void SocketTest::testTcpSocketClientClose() {
   string ip_address = "127.0.0.1";
   uint16_t server_port = 9010;
-  TcpAcceptingSocket socket(ip_address, server_port);
+  ola::network::TCPSocketFactory socket_factory(
+      ola::NewCallback(this, &SocketTest::NewConnectionSend));
+  TcpAcceptingSocket socket(&socket_factory);
   CPPUNIT_ASSERT_MESSAGE(
       "Check for another instance of olad running",
-      socket.Listen());
-  CPPUNIT_ASSERT(!socket.Listen());
+      socket.Listen(ip_address, server_port));
+  CPPUNIT_ASSERT(!socket.Listen(ip_address, server_port));
 
-  socket.SetOnAccept(ola::NewCallback(this, &SocketTest::NewConnectionSend));
   CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&socket));
 
   TcpSocket *client_socket = TcpSocket::Connect(ip_address, server_port);
@@ -239,14 +154,14 @@ void SocketTest::testTcpSocketClientClose() {
 void SocketTest::testTcpSocketServerClose() {
   string ip_address = "127.0.0.1";
   uint16_t server_port = 9010;
-  TcpAcceptingSocket socket(ip_address, server_port);
+  ola::network::TCPSocketFactory socket_factory(
+      ola::NewCallback(this, &SocketTest::NewConnectionSendAndClose));
+  TcpAcceptingSocket socket(&socket_factory);
   CPPUNIT_ASSERT_MESSAGE(
       "Check for another instance of olad running",
-      socket.Listen());
-  CPPUNIT_ASSERT(!socket.Listen());
+      socket.Listen(ip_address, server_port));
+  CPPUNIT_ASSERT(!socket.Listen(ip_address, server_port));
 
-  socket.SetOnAccept(
-      ola::NewCallback(this, &SocketTest::NewConnectionSendAndClose));
   CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&socket));
 
   // The client socket checks the response and terminates on close
@@ -370,8 +285,12 @@ void SocketTest::ReceiveSendAndClose(ConnectedDescriptor *socket) {
 /*
  * Accept a new connection and send some test data
  */
-void SocketTest::NewConnectionSend(ConnectedDescriptor *new_socket) {
+void SocketTest::NewConnectionSend(TcpSocket *new_socket) {
   CPPUNIT_ASSERT(new_socket);
+  IPV4Address address;
+  uint16_t port;
+  CPPUNIT_ASSERT(new_socket->GetPeer(&address, &port));
+  OLA_INFO << "Connection from " << address << ":" << port;
   ssize_t bytes_sent = new_socket->Send(
       static_cast<const uint8_t*>(test_cstring),
       sizeof(test_cstring));
@@ -385,8 +304,12 @@ void SocketTest::NewConnectionSend(ConnectedDescriptor *new_socket) {
 /*
  * Accept a new connect, send some data and close
  */
-void SocketTest::NewConnectionSendAndClose(ConnectedDescriptor *new_socket) {
+void SocketTest::NewConnectionSendAndClose(TcpSocket *new_socket) {
   CPPUNIT_ASSERT(new_socket);
+  IPV4Address address;
+  uint16_t port;
+  CPPUNIT_ASSERT(new_socket->GetPeer(&address, &port));
+  OLA_INFO << "Connection from " << address << ":" << port;
   ssize_t bytes_sent = new_socket->Send(
       static_cast<const uint8_t*>(test_cstring),
       sizeof(test_cstring));

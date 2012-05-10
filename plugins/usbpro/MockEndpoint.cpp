@@ -27,7 +27,7 @@
 #include "plugins/usbpro/MockEndpoint.h"
 
 
-MockEndpoint::MockEndpoint(ola::network::ConnectedDescriptor *descriptor)
+MockEndpoint::MockEndpoint(ola::io::ConnectedDescriptor *descriptor)
     : m_descriptor(descriptor) {
   m_descriptor->SetOnData(
             ola::NewCallback(this, &MockEndpoint::DescriptorReady));

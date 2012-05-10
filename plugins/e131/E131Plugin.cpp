@@ -174,7 +174,7 @@ bool E131Plugin::SetDefaultPreferences() {
       BoolValidator(),
       BoolValidator::ENABLED);
 
-  save |= m_preferences->SetDefaultValue(IP_KEY, StringValidator(), "");
+  save |= m_preferences->SetDefaultValue(IP_KEY, StringValidator(true), "");
 
   save |= m_preferences->SetDefaultValue(
       PREPEND_HOSTNAME_KEY,

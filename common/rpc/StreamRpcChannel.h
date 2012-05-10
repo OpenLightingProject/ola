@@ -23,9 +23,9 @@
 
 #include <stdint.h>
 #include <google/protobuf/service.h>
-#include <ola/network/Socket.h>
-#include <ola/network/SelectServer.h>
 #include <ola/Callback.h>
+#include <ola/io/Descriptor.h>
+#include <ola/io/SelectServer.h>
 #include "ola/ExportMap.h"
 #include "config.h"
 #include HASH_MAP_H
@@ -91,7 +91,7 @@ class StreamRpcChannel: public RpcChannel {
    */
   public :
     StreamRpcChannel(Service *service,
-                     ola::network::ConnectedDescriptor *descriptor,
+                     ola::io::ConnectedDescriptor *descriptor,
                      ExportMap *export_map = NULL);
     ~StreamRpcChannel();
 
@@ -133,7 +133,7 @@ class StreamRpcChannel: public RpcChannel {
     Service *m_service;  // service to dispatch requests to
     SingleUseCallback0<void> *m_on_close;
     // the descriptor to read/write to.
-    class ola::network::ConnectedDescriptor *m_descriptor;
+    class ola::io::ConnectedDescriptor *m_descriptor;
     uint32_t m_seq;  // sequence number
     uint8_t *m_buffer;  // buffer for incomming msgs
     unsigned int m_buffer_size;  // size of the buffer

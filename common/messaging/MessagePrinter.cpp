@@ -50,6 +50,13 @@ void GenericMessagePrinter::Visit(const BoolMessageField *message) {
 }
 
 
+void GenericMessagePrinter::Visit(const IPV4MessageField *message) {
+  Stream() << string(m_indent, ' ') <<
+    TransformLabel(message->GetDescriptor()->Name()) << ": "
+    << message->Value() << endl;
+}
+
+
 void GenericMessagePrinter::Visit(const StringMessageField *message) {
   Stream() << string(m_indent, ' ') <<
     TransformLabel(message->GetDescriptor()->Name()) << ": "

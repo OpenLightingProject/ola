@@ -30,6 +30,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ola/Logging.h"
@@ -56,7 +57,7 @@ const char FileBackedPreferences::OLA_CONFIG_SUFFIX[] = ".conf";
 //-----------------------------------------------------------------------------
 
 bool StringValidator::IsValid(const string &value) const {
-  return !value.empty();
+  return m_empty_ok || !value.empty();
 }
 
 

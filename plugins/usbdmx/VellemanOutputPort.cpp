@@ -265,7 +265,7 @@ bool VellemanOutputPort::SendDMX(const DmxBuffer &buffer) {
 
   } else {
     // else we use the 3 message type to send one at a time
-    for (;i != size; i++) {
+    for (; i != size; i++) {
       usb_data[0] = 3;
       usb_data[1] = data[i];
       if (!SendDataChunk(usb_data))

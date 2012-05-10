@@ -22,12 +22,12 @@
 #ifndef PLUGINS_E131_E131_UDPTRANSPORT_H_
 #define PLUGINS_E131_E131_UDPTRANSPORT_H_
 
-#include <string>
 #include "ola/network/IPV4Address.h"
-#include "ola/network/Interface.h"
 #include "ola/network/Socket.h"
 #include "plugins/e131/e131/ACNPort.h"
 #include "plugins/e131/e131/PDU.h"
+#include "plugins/e131/e131/PreamblePacker.h"
+#include "plugins/e131/e131/Transport.h"
 
 namespace ola {
 namespace plugin {
@@ -36,52 +36,83 @@ namespace e131 {
 using ola::network::IPV4Address;
 
 /*
- * Used to send and recv PDUs over UDP
+ * The OutgoingUDPTransport is a small shim that provides the options to
+ * UDPTransportImpl.
  */
-class UDPTransport {
+class OutgoingUDPTransport: public OutgoingTransport {
   public:
-    explicit UDPTransport(uint16_t port = ACN_PORT):
-      m_inflator(NULL),
-      m_port(port),
-      m_send_buffer(NULL),
-      m_recv_buffer(NULL) {
+    OutgoingUDPTransport(class OutgoingUDPTransportImpl *impl,
+                         const IPV4Address &destination,
+                         uint16_t port = ACN_PORT)
+        : m_impl(impl),
+          m_destination(destination),
+          m_port(port) {
     }
+    ~OutgoingUDPTransport() {}
 
-    UDPTransport(class BaseInflator *inflator,
-                 uint16_t port = ACN_PORT):
-      m_inflator(inflator),
-      m_port(port),
-      m_send_buffer(NULL),
-      m_recv_buffer(NULL) {
-    }
-    ~UDPTransport();
-
-    bool Init(const ola::network::Interface &interface);
-    bool Send(const PDUBlock<PDU> &pdu_block,
-              const IPV4Address &destination,
-              uint16_t port = ACN_PORT);
-    ola::network::UdpSocket *GetSocket() { return &m_socket; }
-    void SetInflator(class BaseInflator *inflator) { m_inflator = inflator; }
-    void Receive();
-
-    bool JoinMulticast(const IPV4Address &group);
-    bool LeaveMulticast(const IPV4Address &group);
+    bool Send(const PDUBlock<PDU> &pdu_block);
 
   private:
-    ola::network::UdpSocket m_socket;
-    ola::network::Interface m_interface;
-    class BaseInflator *m_inflator;
+    class OutgoingUDPTransportImpl *m_impl;
+    IPV4Address m_destination;
     uint16_t m_port;
-    uint8_t *m_send_buffer;
-    uint8_t *m_recv_buffer;
 
-    static const char ACN_PACKET_ID[];  // ASC-E1.17\0\0\0
-    // TODO(simon): add MTU discovery?
-    static const unsigned int MAX_DATAGRAM_SIZE = 1472;
-    static const uint16_t PREAMBLE_SIZE = 0x10;
-    static const uint16_t POSTABLE_SIZE = 0;
-    static const unsigned int PREAMBLE_OFFSET = 4;
-    static const unsigned int DATA_OFFSET = PREAMBLE_OFFSET + 12;
+    OutgoingUDPTransport(const OutgoingUDPTransport&);
+    OutgoingUDPTransport& operator=(const OutgoingUDPTransport&);
+};
+
+
+/**
+ * OutgoingUDPTransportImpl is the class that actually does the sending.
+ */
+class OutgoingUDPTransportImpl {
+  public:
+    OutgoingUDPTransportImpl(ola::network::UdpSocket *socket,
+                             PreamblePacker *packer = NULL)
+        : m_socket(socket),
+          m_packer(packer),
+          m_free_packer(false) {
+      if (!m_packer) {
+        m_packer = new PreamblePacker();
+        m_free_packer = true;
+      }
+    }
+    ~OutgoingUDPTransportImpl() {
+      if (m_free_packer)
+        delete m_packer;
+    }
+
+    bool Send(const PDUBlock<PDU> &pdu_block,
+              const IPV4Address &destination,
+              uint16_t port);
+
+  private:
+    ola::network::UdpSocket *m_socket;
+    PreamblePacker *m_packer;
+    bool m_free_packer;
+};
+
+
+/**
+ * IncomingUDPTransport is responsible for receiving over UDP
+ * TODO(simon): pass the socket as an argument to receive so we can reuse the
+ * transport for multiple sockets.
+ */
+class IncomingUDPTransport {
+  public:
+    IncomingUDPTransport(ola::network::UdpSocket *socket,
+                         class BaseInflator *inflator);
+    ~IncomingUDPTransport() {
+      if (m_recv_buffer)
+        delete[] m_recv_buffer;
+    }
+
+    void Receive();
+
+  private:
+    ola::network::UdpSocket *m_socket;
+    class BaseInflator *m_inflator;
+    uint8_t *m_recv_buffer;
 };
 }  // e131
 }  // plugin

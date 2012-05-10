@@ -115,7 +115,7 @@ void RDMMessageInterationTest::testProxiedDevices() {
   unsigned int data_length;
   const uint8_t *data = m_serializer.SerializeMessage(message, &data_length);
   CPPUNIT_ASSERT(data);
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(18), data_length);
+  CPPUNIT_ASSERT_EQUAL(18u, data_length);
 
   const Message *inflated_message = m_deserializer.InflateMessage(
       descriptor,
@@ -164,7 +164,7 @@ void RDMMessageInterationTest::testDeviceInfoRequest() {
   unsigned int data_length;
   const uint8_t *data = m_serializer.SerializeMessage(message, &data_length);
   CPPUNIT_ASSERT(data);
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(19), data_length);
+  CPPUNIT_ASSERT_EQUAL(19u, data_length);
 
   const Message *inflated_message = m_deserializer.InflateMessage(
       descriptor,
@@ -204,7 +204,7 @@ void RDMMessageInterationTest::testDeviceModelDescription() {
   unsigned int data_length;
   const uint8_t *data = m_serializer.SerializeMessage(message, &data_length);
   CPPUNIT_ASSERT(data);
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(16), data_length);
+  CPPUNIT_ASSERT_EQUAL(16u, data_length);
 
   const Message *inflated_message = m_deserializer.InflateMessage(
       descriptor,
@@ -250,7 +250,7 @@ void RDMMessageInterationTest::testParameterDescription() {
   unsigned int data_length;
   const uint8_t *data = m_serializer.SerializeMessage(message, &data_length);
   CPPUNIT_ASSERT(data);
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(29), data_length);
+  CPPUNIT_ASSERT_EQUAL(29u, data_length);
 
   const Message *inflated_message = m_deserializer.InflateMessage(
       descriptor,

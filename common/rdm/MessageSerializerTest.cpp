@@ -157,7 +157,7 @@ void MessageSerializerTest::testSimple() {
   const uint8_t *data = serializer.SerializeMessage(message.get(),
                                                     &packed_length);
   CPPUNIT_ASSERT(data);
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(18), packed_length);
+  CPPUNIT_ASSERT_EQUAL(18u, packed_length);
 
   uint8_t expected[] = {
     1, 1, -3, 1, 44, 254, 112,
@@ -194,7 +194,7 @@ void MessageSerializerTest::testString() {
   const uint8_t *data = serializer.SerializeMessage(message.get(),
                                                     &packed_length);
   CPPUNIT_ASSERT(data);
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(31), packed_length);
+  CPPUNIT_ASSERT_EQUAL(31u, packed_length);
 
   uint8_t expected[] = "foo bar\0\0\0long long foo bar baz";
   ConfirmData(__LINE__,
@@ -237,7 +237,7 @@ void MessageSerializerTest::testLittleEndian() {
   const uint8_t *data = serializer.SerializeMessage(message.get(),
                                                     &packed_length);
   CPPUNIT_ASSERT(data);
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(14), packed_length);
+  CPPUNIT_ASSERT_EQUAL(14u, packed_length);
 
   uint8_t expected[] = {
     1, -3, 44, 1, 112, 254,
@@ -278,7 +278,7 @@ void MessageSerializerTest::testWithGroups() {
   const uint8_t *data = serializer.SerializeMessage(message.get(),
                                                     &packed_length);
   CPPUNIT_ASSERT(data);
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(2), packed_length);
+  CPPUNIT_ASSERT_EQUAL(2u, packed_length);
   uint8_t expected[] = {1, 10};
   ConfirmData(__LINE__,
               expected,
@@ -298,7 +298,7 @@ void MessageSerializerTest::testWithGroups() {
   auto_ptr<const Message> message2(BuildMessage(descriptor, inputs2));
   data = serializer.SerializeMessage(message2.get(), &packed_length);
   CPPUNIT_ASSERT(data);
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(6), packed_length);
+  CPPUNIT_ASSERT_EQUAL(6u, packed_length);
   uint8_t expected2[] = {1, 10, 1, 42, 0, 240};
   ConfirmData(__LINE__,
               expected2,
@@ -340,7 +340,7 @@ void MessageSerializerTest::testWithNestedGroups() {
   const uint8_t *data = serializer.SerializeMessage(message.get(),
                                                     &packed_length);
   CPPUNIT_ASSERT(data);
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(8), packed_length);
+  CPPUNIT_ASSERT_EQUAL(8u, packed_length);
   uint8_t expected[] = {0, 1, 1, 1, 0, 2, 1, 0};
   ConfirmData(__LINE__,
               expected,

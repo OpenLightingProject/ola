@@ -29,7 +29,7 @@
 #include "plugins/usbpro/UsbProWidgetDetector.h"
 
 
-using ola::network::ConnectedDescriptor;
+using ola::io::ConnectedDescriptor;
 using ola::plugin::usbpro::UsbProWidgetInformation;
 using ola::plugin::usbpro::UsbProWidgetDetector;
 using std::string;

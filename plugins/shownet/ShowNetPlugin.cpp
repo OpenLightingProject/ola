@@ -110,7 +110,7 @@ bool ShowNetPlugin::SetDefaultPreferences() {
   bool save = false;
 
   save |= m_preferences->SetDefaultValue(ShowNetDevice::IP_KEY,
-                                         StringValidator(), "");
+                                         StringValidator(true), "");
   save |= m_preferences->SetDefaultValue(SHOWNET_NAME_KEY, StringValidator(),
                                          SHOWNET_NODE_NAME);
 

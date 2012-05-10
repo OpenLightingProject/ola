@@ -23,7 +23,7 @@
 
 
 namespace ola {
-namespace network {
+namespace io {
   class ConnectedDescriptor;
 }
 
@@ -41,7 +41,7 @@ class WidgetDetectorInterface {
     WidgetDetectorInterface() {}
     virtual ~WidgetDetectorInterface() {}
 
-    virtual bool Discover(ola::network::ConnectedDescriptor *descriptor) = 0;
+    virtual bool Discover(ola::io::ConnectedDescriptor *descriptor) = 0;
 };
 }  // usbpro
 }  // plugin

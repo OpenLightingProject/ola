@@ -28,7 +28,7 @@
 
 namespace ola {
 
-using ola::network::SelectServerInterface;
+using ola::io::SelectServerInterface;
 
 /*
  * Create a new PluginAdaptor
@@ -53,7 +53,7 @@ PluginAdaptor::PluginAdaptor(DeviceManager *device_manager,
  * @return true on sucess, false on failure.
  */
 bool PluginAdaptor::AddReadDescriptor(
-    ola::network::ReadFileDescriptor *descriptor) {
+    ola::io::ReadFileDescriptor *descriptor) {
   return m_ss->AddReadDescriptor(descriptor);
 }
 
@@ -63,7 +63,7 @@ bool PluginAdaptor::AddReadDescriptor(
  * @return true on sucess, false on failure.
  */
 bool PluginAdaptor::AddReadDescriptor(
-    ola::network::ConnectedDescriptor *descriptor,
+    ola::io::ConnectedDescriptor *descriptor,
     bool delete_on_close) {
   return m_ss->AddReadDescriptor(descriptor, delete_on_close);
 }
@@ -73,7 +73,7 @@ bool PluginAdaptor::AddReadDescriptor(
  * Remove a descriptor from the select server
  */
 bool PluginAdaptor::RemoveReadDescriptor(
-    ola::network::ReadFileDescriptor *descriptor) {
+    ola::io::ReadFileDescriptor *descriptor) {
   return m_ss->RemoveReadDescriptor(descriptor);
 }
 
@@ -82,7 +82,7 @@ bool PluginAdaptor::RemoveReadDescriptor(
  * Remove a descriptor from the select server
  */
 bool PluginAdaptor::RemoveReadDescriptor(
-    ola::network::ConnectedDescriptor *descriptor) {
+    ola::io::ConnectedDescriptor *descriptor) {
   return m_ss->RemoveReadDescriptor(descriptor);
 }
 
@@ -91,7 +91,7 @@ bool PluginAdaptor::RemoveReadDescriptor(
  * Register a WriteFileDescriptor with the SelectServer
  */
 bool PluginAdaptor::AddWriteDescriptor(
-    ola::network::WriteFileDescriptor *descriptor) {
+    ola::io::WriteFileDescriptor *descriptor) {
   return m_ss->AddWriteDescriptor(descriptor);
 }
 
@@ -100,7 +100,7 @@ bool PluginAdaptor::AddWriteDescriptor(
  * Remove a descriptor from the select server
  */
 bool PluginAdaptor::RemoveWriteDescriptor(
-    ola::network::WriteFileDescriptor *descriptor) {
+    ola::io::WriteFileDescriptor *descriptor) {
   return m_ss->RemoveWriteDescriptor(descriptor);
 }
 
@@ -119,6 +119,19 @@ timeout_id PluginAdaptor::RegisterRepeatingTimeout(
 
 
 /*
+ * Register a repeating timeout
+ * @param interval the time between function calls
+ * @param closure the OlaClosure to call when the timeout expires
+ * @return a timeout_id on success or K_INVALID_TIMEOUT on failure
+ */
+timeout_id PluginAdaptor::RegisterRepeatingTimeout(
+    const TimeInterval &interval,
+    Callback0<bool> *closure) {
+  return m_ss->RegisterRepeatingTimeout(interval, closure);
+}
+
+
+/*
  * Register a single timeout
  * @param ms the time between function calls
  * @param closure the OlaClosure to call when the timeout expires
@@ -128,6 +141,19 @@ timeout_id PluginAdaptor::RegisterSingleTimeout(
     unsigned int ms,
     SingleUseCallback0<void> *closure) {
   return m_ss->RegisterSingleTimeout(ms, closure);
+}
+
+
+/*
+ * Register a single timeout
+ * @param interval the time between function calls
+ * @param closure the OlaClosure to call when the timeout expires
+ * @return a timeout_id on success or K_INVALID_TIMEOUT on failure
+ */
+timeout_id PluginAdaptor::RegisterSingleTimeout(
+    const TimeInterval &interval,
+    SingleUseCallback0<void> *closure) {
+  return m_ss->RegisterSingleTimeout(interval, closure);
 }
 
 

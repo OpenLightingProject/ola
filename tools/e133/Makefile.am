@@ -1,21 +1,42 @@
 include $(top_srcdir)/common.mk
 
-EXTRA_DIST = E133Component.h E133Node.h E133Receiver.h \
-             E133UniverseController.h SlpConstants.h SlpThread.h SlpUrlParser.h
+EXTRA_DIST = E133Endpoint.h E133Device.h \
+             E133HealthCheckedConnection.h \
+             E133StreamSender.h \
+             RootEndpoint.h \
+             SlpConstants.h SlpThread.h SlpUrlParser.h \
+             TCPConnectionStats.h
 
 if HAVE_SLP
-noinst_PROGRAMS = e133_controller e133_receiver slp_locate slp_register
+noinst_PROGRAMS = e133_controller e133_monitor e133_receiver \
+                  slp_locate slp_register
 
-e133_receiver_SOURCES = e133-receiver.cpp E133Node.cpp E133Receiver.cpp \
+e133_receiver_SOURCES = e133-receiver.cpp \
+                        E133Device.cpp \
+                        E133Endpoint.cpp \
+                        E133HealthCheckedConnection.cpp \
+                        E133StreamSender.cpp \
+                        EndpointManager.cpp \
+                        RootEndpoint.cpp \
                         SlpThread.cpp
 e133_receiver_LDADD = $(openslp_LIBS) \
                       $(top_builddir)/common/libolacommon.la \
                       $(top_builddir)/plugins/dummy/liboladummyresponder.la \
                       $(top_builddir)/plugins/e131/e131/libolae131core.la
 
-e133_controller_SOURCES = e133-controller.cpp E133Node.cpp \
-                          E133UniverseController.cpp SlpThread.cpp \
-                          SlpUrlParser.cpp
+e133_monitor_SOURCES = e133-monitor.cpp \
+                       E133HealthCheckedConnection.cpp \
+                       E133StreamSender.cpp \
+                       SlpThread.cpp \
+                       SlpUrlParser.cpp
+e133_monitor_CXXFLAGS = @OLAD_DEFINES@ $(COMMON_CXXFLAGS)
+e133_monitor_LDADD = $(openslp_LIBS) \
+                     $(top_builddir)/common/libolacommon.la \
+                     $(top_builddir)/plugins/e131/e131/libolae131core.la
+
+e133_controller_SOURCES = e133-controller.cpp \
+                          SlpThread.cpp SlpUrlParser.cpp
+
 # required for PID_DATA_FILE
 e133_controller_CXXFLAGS = @OLAD_DEFINES@ $(COMMON_CXXFLAGS)
 e133_controller_LDADD = $(openslp_LIBS) \

@@ -44,7 +44,7 @@
 #include <string>
 
 #include "ola/Logging.h"
-#include "ola/network/Socket.h"
+#include "ola/io/Descriptor.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/usbpro/UsbProWidgetDetector.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
@@ -108,7 +108,7 @@ UsbProWidgetDetector::~UsbProWidgetDetector() {
  * @return true if the process started ok, false otherwise.
  */
 bool UsbProWidgetDetector::Discover(
-    ola::network::ConnectedDescriptor *descriptor) {
+    ola::io::ConnectedDescriptor *descriptor) {
   DispatchingUsbProWidget *widget = new DispatchingUsbProWidget(
       descriptor,
       NULL);
@@ -169,7 +169,7 @@ void UsbProWidgetDetector::WidgetRemoved(DispatchingUsbProWidget *widget) {
     m_widgets.erase(iter);
   }
 
-  ola::network::ConnectedDescriptor *descriptor = widget->GetDescriptor();
+  ola::io::ConnectedDescriptor *descriptor = widget->GetDescriptor();
   delete widget;
   descriptor->SetOnClose(NULL);
   descriptor->Close();
@@ -240,7 +240,7 @@ void UsbProWidgetDetector::DiscoveryTimeout(DispatchingUsbProWidget *widget) {
         OLA_WARN << "Usb Widget didn't respond to messages, esta id " <<
           iter->second.information.esta_id << ", device id " <<
           iter->second.information.device_id;
-        ola::network::ConnectedDescriptor *descriptor =
+        ola::io::ConnectedDescriptor *descriptor =
           widget->GetDescriptor();
         descriptor->SetOnClose(NULL);
         delete widget;
@@ -351,7 +351,7 @@ void UsbProWidgetDetector::HandleSerialResponse(
 void UsbProWidgetDetector::DispatchWidget(
     DispatchingUsbProWidget *widget,
     const UsbProWidgetInformation *info) {
-  ola::network::ConnectedDescriptor *descriptor = widget->GetDescriptor();
+  ola::io::ConnectedDescriptor *descriptor = widget->GetDescriptor();
   descriptor->SetOnClose(NULL);
   delete widget;
   if (m_callback.get()) {

@@ -1,0 +1,14 @@
+INSTALL
+*.o
+*.lo
+*.la
+*.pb.cc
+*.ph.h
+*.swp
+autom4te.cache/
+aclocal.m4
+Makefile
+Makefile.in
+.deps
+.libs
+include/ola/rdm/RDMResponseCodes.h

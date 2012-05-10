@@ -39,7 +39,7 @@ namespace usbpro {
 class UltraDMXProWidget: public GenericUsbProWidget {
   public:
     UltraDMXProWidget(ola::thread::SchedulerInterface *scheduler,
-                       ola::network::ConnectedDescriptor *descriptor);
+                       ola::io::ConnectedDescriptor *descriptor);
     ~UltraDMXProWidget() {}
     void Stop() { GenericStop(); }
 

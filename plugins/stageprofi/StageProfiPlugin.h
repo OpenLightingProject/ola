@@ -31,7 +31,7 @@ namespace ola {
 namespace plugin {
 namespace stageprofi {
 
-using ola::network::ConnectedDescriptor;
+using ola::io::ConnectedDescriptor;
 using std::string;
 
 class StageProfiDevice;

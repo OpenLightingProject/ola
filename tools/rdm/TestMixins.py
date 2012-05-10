@@ -215,8 +215,9 @@ class SetOversizedLabelMixin(object):
   def Test(self):
     self.verify_result = False
     self.AddIfSetSupported([
-      self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
       self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
+      self.NackSetResult(RDMNack.NR_PACKET_SIZE_UNSUPPORTED),
+      self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
       self.AckSetResult(action=self.VerifySet),
     ])
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, self.LONG_STRING)

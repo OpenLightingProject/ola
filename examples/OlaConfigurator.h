@@ -33,7 +33,7 @@
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
 #include <ola/OlaDevice.h>
-#include <ola/network/SelectServer.h>
+#include <ola/io/SelectServer.h>
 
 #include <string>
 #include <vector>
@@ -86,6 +86,6 @@ class OlaConfigurator {
   private:
     ola::OlaCallbackClientWrapper *m_client_wrapper;
     ola::OlaCallbackClient *m_client;
-    ola::network::SelectServer *m_ss;
+    ola::io::SelectServer *m_ss;
 };
 #endif  // EXAMPLES_OLACONFIGURATOR_H_

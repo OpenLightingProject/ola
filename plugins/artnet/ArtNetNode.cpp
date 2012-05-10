@@ -23,6 +23,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ola/BaseTypes.h"
@@ -46,6 +47,7 @@ using ola::network::UdpSocket;
 using ola::rdm::RDMDiscoveryCallback;
 using std::pair;
 using std::string;
+using std::vector;
 
 
 const char ArtNetNodeImpl::ARTNET_ID[] = "Art-Net";
@@ -58,7 +60,7 @@ const char ArtNetNodeImpl::ARTNET_ID[] = "Art-Net";
  * @param subnet_address the ArtNet 'subnet' address, 4 bits.
  */
 ArtNetNodeImpl::ArtNetNodeImpl(const ola::network::Interface &interface,
-                               ola::network::SelectServerInterface *ss,
+                               ola::io::SelectServerInterface *ss,
                                const ArtNetNodeOptions &options,
                                ola::network::UdpSocketInterface *socket)
     : m_running(false),
@@ -145,7 +147,7 @@ bool ArtNetNodeImpl::Stop() {
     return false;
 
   // clean up any in-flight rdm requests
-  std::vector<std::string> packets;
+  vector<std::string> packets;
   for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
     InputPort &port = m_input_ports[i];
 
@@ -525,7 +527,7 @@ void ArtNetNodeImpl::RunIncrementalDiscovery(
 void ArtNetNodeImpl::SendRDMRequest(uint8_t port_id,
                                     const RDMRequest *request,
                                     RDMCallback *on_complete) {
-  std::vector<std::string> packets;
+  vector<std::string> packets;
   if (!CheckInputPortState(port_id, "ArtRDM")) {
     on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
     delete request;
@@ -594,6 +596,30 @@ bool ArtNetNodeImpl::SetUnsolicatedUIDSetHandler(
     delete m_input_ports[port_id].tod_callback;
   m_input_ports[port_id].tod_callback = tod_callback;
   return true;
+}
+
+
+/**
+ * Populate the vector with a list of IP addresses that are known to be
+ * listening for the universe that this port is sending
+ */
+void ArtNetNodeImpl::GetSubscribedNodes(
+    uint8_t port_id,
+    vector<IPV4Address> *node_addresses) {
+  if (!CheckPortId(port_id))
+    return;
+
+  map<IPV4Address, TimeStamp> &subscribed_nodes =
+  m_input_ports[port_id].subscribed_nodes;
+
+  map<IPV4Address, TimeStamp>::const_iterator iter = subscribed_nodes.begin();
+  for (; iter != subscribed_nodes.end(); ++iter) {
+    TimeStamp last_heard_threshold = (
+        *m_ss->WakeUpTime() - TimeInterval(NODE_TIMEOUT, 0));
+    if (iter->second >= last_heard_threshold) {
+      node_addresses->push_back(iter->first);
+    }
+  }
 }
 
 
@@ -899,6 +925,9 @@ void ArtNetNodeImpl::HandlePollPacket(const IPV4Address &source_address,
 void ArtNetNodeImpl::HandleReplyPacket(const IPV4Address &source_address,
                                        const artnet_reply_t &packet,
                                        unsigned int packet_size) {
+  if (m_interface.ip_address == source_address)
+    return;
+
   // older versions don't have the bind_ip and the extra filler, make sure we
   // support these
   unsigned int minimum_reply_size = (
@@ -1180,7 +1209,7 @@ void ArtNetNodeImpl::RDMRequestCompletion(
     uint8_t universe_address,
     ola::rdm::rdm_response_code code,
     const RDMResponse *response,
-    const std::vector<std::string> &packets) {
+    const vector<std::string> &packets) {
   if (!CheckOutputPortState(port_id, "ArtRDM")) {
     if (response)
       delete response;
@@ -1293,7 +1322,7 @@ void ArtNetNodeImpl::HandleRDMResponse(unsigned int port_id,
   delete request;
   ola::rdm::RDMCallback *callback = input_port.rdm_request_callback;
   input_port.rdm_request_callback = NULL;
-  std::vector<string> packets;
+  vector<string> packets;
   packets.push_back(response_data);
 
   // remove the timeout
@@ -1382,7 +1411,7 @@ void ArtNetNodeImpl::TimeoutRDMRequest(uint8_t port_id) {
   port.pending_request = NULL;
   ola::rdm::RDMCallback *callback = port.rdm_request_callback;
   port.rdm_request_callback = NULL;
-  std::vector<std::string> packets;
+  vector<std::string> packets;
   callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
 }
 
@@ -1771,7 +1800,7 @@ void ArtNetNodeImpl::RunRDMCallbackWithUIDs(const uid_map &uids,
  * DmxTriWidget Constructor
  */
 ArtNetNode::ArtNetNode(const ola::network::Interface &interface,
-                       ola::network::SelectServerInterface *ss,
+                       ola::io::SelectServerInterface *ss,
                        const ArtNetNodeOptions &options,
                        ola::network::UdpSocketInterface *socket):
     m_impl(interface, ss, options, socket) {
@@ -1826,7 +1855,7 @@ void ArtNetNode::RunIncrementalDiscovery(uint8_t port_id,
 void ArtNetNode::SendRDMRequest(uint8_t port_id, const RDMRequest *request,
                                 ola::rdm::RDMCallback *on_complete) {
   if (!CheckPortId(port_id)) {
-    std::vector<std::string> packets;
+    vector<std::string> packets;
     on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
     delete request;
   } else {

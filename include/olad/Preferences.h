@@ -24,7 +24,7 @@
 
 #include <ola/Logging.h>
 #include <ola/thread/Thread.h>
-#include <ola/network/SelectServer.h>
+#include <ola/io/SelectServer.h>
 
 #include <map>
 #include <vector>
@@ -57,8 +57,14 @@ class Validator {
  */
 class StringValidator: public Validator {
   public:
-    StringValidator(): Validator() {}
+    explicit StringValidator(bool empty_ok = false)
+      : Validator(),
+        m_empty_ok(empty_ok) {
+    }
     bool IsValid(const string &value) const;
+
+  private:
+    const bool m_empty_ok;
 };
 
 
@@ -230,7 +236,7 @@ class FilePreferenceSaverThread: public ola::thread::Thread {
     void Syncronize();
 
   private:
-    ola::network::SelectServer m_ss;
+    ola::io::SelectServer m_ss;
 
     void SaveToFile(const string *filename, const PreferencesMap *preferences);
     void CompleteSyncronization(ola::thread::ConditionVariable *condition,

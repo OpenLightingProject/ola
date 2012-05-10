@@ -49,7 +49,7 @@
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
 #include <ola/DmxBuffer.h>
-#include <ola/network/SelectServer.h>
+#include <ola/io/SelectServer.h>
 
 #include <string>
 #include <iostream>
@@ -57,7 +57,7 @@
 using ola::DmxBuffer;
 using ola::OlaCallbackClient;
 using ola::OlaCallbackClientWrapper;
-using ola::network::SelectServer;
+using ola::io::SelectServer;
 using std::string;
 
 /* color names used */
@@ -126,7 +126,7 @@ class DmxMonitor {
     unsigned int m_universe;
     unsigned int m_counter;
     int m_palette_number;
-    ola::network::UnmanagedFileDescriptor m_stdin_descriptor;
+    ola::io::UnmanagedFileDescriptor m_stdin_descriptor;
     struct timeval m_last_data;
     WINDOW *m_window;
     WINDOW *m_data_loss_window;

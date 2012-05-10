@@ -39,6 +39,7 @@ enum FieldType {
   INT8 = 7;
   INT16 = 8;
   INT32 = 9;
+  IPV4 = 10;
 }
 
 // A value which has a label applied

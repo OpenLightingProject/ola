@@ -56,6 +56,11 @@ void ToLower(string *s);
 void ToUpper(string *s);
 void CapitalizeLabel(string *s);
 void CustomCapitalizeLabel(string *s);
+void FormatData(std::ostream *out,
+                const uint8_t *data,
+                unsigned int length,
+                unsigned int indent = 0,
+                unsigned int byte_per_line = 8);
 
 /**
  * Convert a hex string, prefixed with 0x to an int type.

@@ -46,13 +46,13 @@
 #include <ola/DmxBuffer.h>
 #include <ola/OlaClient.h>
 #include <ola/OlaClientWrapper.h>
-#include <ola/network/SelectServer.h>
+#include <ola/io/SelectServer.h>
 
 #include <string>
 
 using ola::SimpleClient;
 using ola::OlaClient;
-using ola::network::SelectServer;
+using ola::io::SelectServer;
 using std::string;
 
 /* color names used */
@@ -680,7 +680,7 @@ int main(int argc, char *argv[]) {
 
   /* set up ola connection */
   SimpleClient ola_client;
-  ola::network::UnmanagedFileDescriptor stdin_descriptor(0);
+  ola::io::UnmanagedFileDescriptor stdin_descriptor(0);
   stdin_descriptor.SetOnData(ola::NewCallback(&stdin_ready));
 
   if (!ola_client.Setup()) {

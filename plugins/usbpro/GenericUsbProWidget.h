@@ -53,7 +53,7 @@ typedef ola::SingleUseCallback2<void, bool, const usb_pro_parameters&>
 class GenericUsbProWidget: public BaseUsbProWidget {
   public:
     GenericUsbProWidget(ola::thread::SchedulerInterface *scheduler,
-                        ola::network::ConnectedDescriptor *descriptor);
+                        ola::io::ConnectedDescriptor *descriptor);
     ~GenericUsbProWidget();
 
     void SetDMXCallback(ola::Callback0<void> *callback);
@@ -73,6 +73,9 @@ class GenericUsbProWidget: public BaseUsbProWidget {
     virtual void HandleMessage(uint8_t label,
                                const uint8_t *data,
                                unsigned int length);
+    void HandleDMX(const uint8_t *data, unsigned int length);
+
+    static const uint8_t RECEIVED_DMX_LABEL = 5;
 
   private:
     ola::thread::SchedulerInterface *m_scheduler;
@@ -82,13 +85,11 @@ class GenericUsbProWidget: public BaseUsbProWidget {
     std::deque<usb_pro_params_callback*> m_outstanding_param_callbacks;
 
     void HandleParameters(const uint8_t *data, unsigned int length);
-    void HandleDMX(const uint8_t *data, unsigned int length);
     void HandleDMXDiff(const uint8_t *data, unsigned int length);
 
     static const uint8_t REPROGRAM_FIRMWARE_LABEL = 2;
     static const uint8_t PARAMETERS_LABEL = 3;
     static const uint8_t SET_PARAMETERS_LABEL = 4;
-    static const uint8_t RECEIVED_DMX_LABEL = 5;
     static const uint8_t DMX_RX_MODE_LABEL = 8;
     static const uint8_t DMX_CHANGED_LABEL = 9;
 };

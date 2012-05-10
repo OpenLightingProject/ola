@@ -30,9 +30,10 @@
 #include <vector>
 
 #include "ola/ExportMap.h"
+#include "ola/io/SelectServer.h"
 #include "ola/network/InterfacePicker.h"
-#include "ola/network/SelectServer.h"
 #include "ola/network/Socket.h"
+#include "ola/network/TCPSocketFactory.h"
 #include "ola/plugin_id.h"
 #include "ola/rdm/UID.h"
 
@@ -50,6 +51,7 @@ typedef struct {
   bool http_enable_quit;  // enable /quit
   unsigned int http_port;  // port to run the http server on
   std::string http_data_dir;  // directory that contains the static content
+  std::string interface;
 } ola_server_options;
 
 
@@ -61,16 +63,16 @@ class OlaServer {
     OlaServer(class OlaClientServiceFactory *factory,
               const vector<class PluginLoader*> &plugin_loaders,
               class PreferencesFactory *preferences_factory,
-              ola::network::SelectServer *ss,
+              ola::io::SelectServer *ss,
               ola_server_options *ola_options,
-              ola::network::AcceptingSocket *socket = NULL,
+              ola::network::TcpAcceptingSocket *socket = NULL,
               ExportMap *export_map = NULL);
     ~OlaServer();
     bool Init();
     void ReloadPlugins();
     void StopServer() { m_ss->Terminate(); }
-    void NewConnection(ola::network::ConnectedDescriptor *socket);
-    void SocketClosed(ola::network::ConnectedDescriptor *socket);
+    void NewConnection(ola::network::TcpSocket *socket);
+    void SocketClosed(ola::io::ConnectedDescriptor *socket);
     bool RunHousekeeping();
     void CheckForReload();
 
@@ -84,12 +86,14 @@ class OlaServer {
     bool StartHttpServer(const ola::network::Interface &interface);
 #endif
     void StopPlugins();
+    void InternalNewConnection(ola::io::ConnectedDescriptor *descriptor);
     void CleanupConnection(class OlaClientService *service);
 
     class OlaClientServiceFactory *m_service_factory;
     vector<class PluginLoader*> m_plugin_loaders;
-    ola::network::SelectServer *m_ss;
-    ola::network::AcceptingSocket *m_accepting_socket;
+    ola::io::SelectServer *m_ss;
+    ola::network::TCPSocketFactory m_tcp_socket_factory;
+    ola::network::TcpAcceptingSocket *m_accepting_socket;
 
     class DeviceManager *m_device_manager;
     class PluginManager *m_plugin_manager;
@@ -106,7 +110,7 @@ class OlaServer {
     bool m_reload_plugins;
     bool m_init_run;
     bool m_free_export_map;
-    ola::network::timeout_id m_housekeeping_timeout;
+    ola::thread::timeout_id m_housekeeping_timeout;
     std::map<int, class OlaClientService*> m_sd_to_service;
     OlaHttpServer_t *m_httpd;
     ola_server_options m_options;

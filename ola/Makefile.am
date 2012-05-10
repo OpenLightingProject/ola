@@ -41,6 +41,8 @@ stamp-common: $(srcdir)/common-h.in $(top_builddir)/config.status
 	  $(SHELL) ./config.status
 	echo timestamp > $@
 ## @end 2
+distclean-local:
+	rm -f $(builddir)/common.h $(builddir)/stamp-common
 
 # Don't distribute common.h, since it is build host dependent!
 dist-hook:

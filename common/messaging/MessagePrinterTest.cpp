@@ -35,6 +35,8 @@ using ola::messaging::BoolMessageField;
 using ola::messaging::FieldDescriptor;
 using ola::messaging::FieldDescriptorGroup;
 using ola::messaging::GroupMessageField;
+using ola::messaging::IPV4FieldDescriptor;
+using ola::messaging::IPV4MessageField;
 using ola::messaging::Int8FieldDescriptor;
 using ola::messaging::Int16FieldDescriptor;
 using ola::messaging::Int8MessageField;
@@ -77,6 +79,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(GenericMessagePrinterTest);
 void GenericMessagePrinterTest::testSimplePrinter() {
   // setup some fields
   BoolFieldDescriptor bool_descriptor("On/Off");
+  IPV4FieldDescriptor ipv4_descriptor("ip");
   StringFieldDescriptor string_descriptor("Name", 0, 32);
   UInt32FieldDescriptor uint32_descriptor("Id");
   UInt8FieldDescriptor uint8_descriptor("Count", false, -3);
@@ -86,6 +89,7 @@ void GenericMessagePrinterTest::testSimplePrinter() {
   // try a simple print first
   vector<const ola::messaging::MessageFieldInterface*> fields;
   fields.push_back(new BoolMessageField(&bool_descriptor, false));
+  fields.push_back(new IPV4MessageField(&ipv4_descriptor, 0x0100000a));
   fields.push_back(new StringMessageField(&string_descriptor, "foobar"));
   fields.push_back(new UInt32MessageField(&uint32_descriptor, 42));
   fields.push_back(new UInt8MessageField(&uint8_descriptor, 4));
@@ -94,8 +98,8 @@ void GenericMessagePrinterTest::testSimplePrinter() {
 
   Message message(fields);
   string expected = (
-      "On/Off: false\nName: foobar\nId: 42\nCount: 4 x 10 ^ -3\n"
-      "Delta: 10 x 10 ^ 1\nRate: 10 x 10 ^ -1\n");
+      "On/Off: false\nip: 10.0.0.1\nName: foobar\nId: 42\n"
+      "Count: 4 x 10 ^ -3\nDelta: 10 x 10 ^ 1\nRate: 10 x 10 ^ -1\n");
   CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(&message));
 }
 

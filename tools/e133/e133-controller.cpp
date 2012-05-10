@@ -35,9 +35,11 @@
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>
 #include <ola/Logging.h>
+#include <ola/io/SelectServer.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/NetworkUtils.h>
-#include <ola/network/SelectServer.h>
+#include <ola/network/Socket.h>
+#include <ola/rdm/CommandPrinter.h>
 #include <ola/rdm/PidStoreHelper.h>
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMEnums.h>
@@ -46,20 +48,33 @@
 
 #include <algorithm>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "plugins/e131/e131/ACNPort.h"
 
-#include "tools/e133/E133Node.h"
-#include "tools/e133/E133UniverseController.h"
+#include "plugins/e131/e131/ACNPort.h"
+#include "plugins/e131/e131/CID.h"
+#include "plugins/e131/e131/E133Inflator.h"
+#include "plugins/e131/e131/E133Sender.h"
+#include "plugins/e131/e131/RDMInflator.h"
+#include "plugins/e131/e131/RDMPDU.h"
+#include "plugins/e131/e131/RootInflator.h"
+#include "plugins/e131/e131/RootSender.h"
+#include "plugins/e131/e131/UDPTransport.h"
+
+#include "tools/e133/E133Endpoint.h"
 #include "tools/e133/SlpThread.h"
 #include "tools/e133/SlpUrlParser.h"
 
 using ola::network::IPV4Address;
+using ola::NewCallback;
+using ola::network::UdpSocket;
+using ola::plugin::e131::E133_PORT;
 using ola::rdm::PidStoreHelper;
 using ola::rdm::RDMRequest;
+using ola::rdm::RDMResponse;
 using ola::rdm::UID;
 using std::auto_ptr;
 using std::cout;
@@ -68,11 +83,11 @@ using std::string;
 using std::vector;
 
 typedef struct {
+  uint16_t endpoint;
   bool help;
-  bool list_pids;
-  bool rdm_set;
   ola::log_level log_level;
-  unsigned int universe;
+  bool rdm_set;
+  string pid_file;
   string ip_address;
   string target_address;
   UID *uid;
@@ -87,13 +102,13 @@ typedef struct {
 void ParseOptions(int argc, char *argv[], options *opts) {
   int uid_set = 0;
   static struct option long_options[] = {
+      {"endpoint", required_argument, 0, 'e'},
       {"help", no_argument, 0, 'h'},
       {"ip", required_argument, 0, 'i'},
       {"log-level", required_argument, 0, 'l'},
-      {"pids", no_argument, 0, 'p'},
+      {"pid-file", required_argument, 0, 'p'},
       {"set", no_argument, 0, 's'},
       {"target", required_argument, 0, 't'},
-      {"universe", required_argument, 0, 'u'},
       {"uid", required_argument, &uid_set, 1},
       {0, 0, 0, 0}
     };
@@ -101,7 +116,10 @@ void ParseOptions(int argc, char *argv[], options *opts) {
   int option_index = 0;
 
   while (1) {
-    int c = getopt_long(argc, argv, "hi:l:pst:u:", long_options, &option_index);
+    int c = getopt_long(argc, argv,
+                        "e:hi:l:p:st:",
+                        long_options,
+                        &option_index);
 
     if (c == -1)
       break;
@@ -110,6 +128,9 @@ void ParseOptions(int argc, char *argv[], options *opts) {
       case 0:
         if (uid_set)
           opts->uid = UID::FromString(optarg);
+        break;
+      case 'e':
+        opts->endpoint = atoi(optarg);
         break;
       case 'h':
         opts->help = true;
@@ -141,16 +162,13 @@ void ParseOptions(int argc, char *argv[], options *opts) {
         }
         break;
       case 'p':
-        opts->list_pids = true;
+        opts->pid_file = optarg;
         break;
       case 's':
         opts->rdm_set = true;
         break;
       case 't':
         opts->target_address = optarg;
-        break;
-      case 'u':
-        opts->universe = atoi(optarg);
         break;
       case '?':
         break;
@@ -174,13 +192,13 @@ void DisplayHelpAndExit(char *argv[]) {
   "\n"
   "Search for a UID registered in SLP Send it a E1.33 Message.\n"
   "\n"
+  "  -e, --endpoint <endpoint> The endpoint to use.\n"
   "  -h, --help                Display this help message and exit.\n"
   "  -t, --target <ip>         IP to send the message to, this overrides SLP\n"
   "  -i, --ip                  The IP address to listen on.\n"
   "  -l, --log-level <level>   Set the logging level 0 .. 4.\n"
-  "  -p, --pids                List the available pids for this device\n"
+  "  -p, --pid-file            The file to read PID definitiions from\n"
   "  -s, --set                 Perform a SET (default is GET)\n"
-  "  -u, --universe <universe> The universe to use (> 0).\n"
   "  --uid <uid>               The UID of the device to control.\n"
   << endl;
   exit(0);
@@ -193,8 +211,12 @@ void DisplayHelpAndExit(char *argv[]) {
  */
 class SimpleE133Controller {
   public:
-    explicit SimpleE133Controller(const options &opts,
-                                  PidStoreHelper *pid_helper);
+    struct SimpleE133ControllerOptions {
+      IPV4Address controller_ip;
+    };
+
+    SimpleE133Controller(const SimpleE133ControllerOptions &options,
+                         PidStoreHelper *pid_helper);
     ~SimpleE133Controller();
 
     bool Init();
@@ -205,60 +227,109 @@ class SimpleE133Controller {
 
     // very basic methods for sending RDM requests
     void SendGetRequest(const UID &dst_uid,
+                        uint16_t endpoint,
                         uint16_t pid,
                         const uint8_t *data,
                         unsigned int data_length);
     void SendSetRequest(const UID &dst_uid,
+                        uint16_t endpoint,
                         uint16_t pid,
                         const uint8_t *data,
                         unsigned int data_length);
 
   private:
-    PidStoreHelper *m_pid_helper;
-    ola::network::SelectServer m_ss;
-    SlpThread m_slp_thread;
-    E133Node m_e133_node;
-    E133UniverseController m_controller;
+    SimpleE133ControllerOptions m_options;
+    ola::io::SelectServer m_ss;
+
+    // The Controller's CID
+    ola::plugin::e131::CID m_cid;
+
+    // inflators
+    ola::plugin::e131::RootInflator m_root_inflator;
+    ola::plugin::e131::E133Inflator m_e133_inflator;
+    ola::plugin::e131::RDMInflator m_rdm_inflator;
+
+    // sockets & transports
+    UdpSocket m_udp_socket;
+    ola::plugin::e131::IncomingUDPTransport m_incoming_udp_transport;
+    ola::plugin::e131::OutgoingUDPTransportImpl m_outgoing_udp_transport;
+
+    // senders
+    ola::plugin::e131::RootSender m_root_sender;
+    ola::plugin::e131::E133Sender m_e133_sender;
+
+    // hash_map of UIDs to IPs
+    typedef std::map<UID, IPV4Address> uid_to_ip_map;
+    uid_to_ip_map m_uid_to_ip;
+
     UID m_src_uid;
-    unsigned int m_responses_to_go;
-    unsigned int m_transaction_number;
+    SlpThread m_slp_thread;
+    PidStoreHelper *m_pid_helper;
+    ola::rdm::CommandPrinter m_command_printer;
     bool m_uid_list_updated;
 
     void DiscoveryCallback(bool status, const vector<string> &urls);
+    bool SendRequest(const UID &uid, uint16_t endpoint, RDMRequest *request);
+    void HandlePacket(
+        const ola::plugin::e131::TransportHeader &transport_header,
+        const ola::plugin::e131::E133Header &e133_header,
+        const std::string &raw_response);
     void RequestCallback(ola::rdm::rdm_response_code rdm_code,
-                         const ola::rdm::RDMResponse *response,
-                         const std::vector<std::string> &packets);
+                         const RDMResponse *response,
+                         const vector<std::string> &packets);
+    void HandleNack(const RDMResponse *response);
 };
 
 
-
+/**
+ * Setup our simple controller
+ */
 SimpleE133Controller::SimpleE133Controller(
-    const options &opts,
+    const SimpleE133ControllerOptions &options,
     PidStoreHelper *pid_helper)
-    : m_pid_helper(pid_helper),
+    : m_options(options),
+      m_cid(ola::plugin::e131::CID::Generate()),
+      m_incoming_udp_transport(&m_udp_socket, &m_root_inflator),
+      m_outgoing_udp_transport(&m_udp_socket),
+      m_root_sender(m_cid),
+      m_e133_sender(&m_root_sender),
+      m_src_uid(OPEN_LIGHTING_ESTA_CODE, 0xabcdabcd),
       m_slp_thread(
         &m_ss,
         ola::NewCallback(this, &SimpleE133Controller::DiscoveryCallback)),
-      m_e133_node(&m_ss, opts.ip_address, ola::plugin::e131::ACN_PORT + 1),
-      m_controller(opts.universe),
-      m_src_uid(OPEN_LIGHTING_ESTA_CODE, 0xabcdabcd),
-      m_responses_to_go(0),
-      m_transaction_number(0),
+      m_pid_helper(pid_helper),
+      m_command_printer(&cout, m_pid_helper),
       m_uid_list_updated(false) {
-  m_e133_node.RegisterComponent(&m_controller);
+  m_root_inflator.AddInflator(&m_e133_inflator);
+  m_e133_inflator.AddInflator(&m_rdm_inflator);
 }
 
 
+/**
+ * Tear down
+ */
 SimpleE133Controller::~SimpleE133Controller() {
-  m_e133_node.UnRegisterComponent(&m_controller);
   m_slp_thread.Join();
   m_slp_thread.Cleanup();
 }
 
 
+/**
+ * Start up the controller
+ */
 bool SimpleE133Controller::Init() {
-  if (!m_e133_node.Init())
+  if (!m_udp_socket.Init())
     return false;
+
+  if (!m_udp_socket.Bind(m_options.controller_ip, 0)) {
+    OLA_INFO << "Failed to bind to UDP port";
+    return false;
+  }
+
+  m_udp_socket.SetOnData(
+      NewCallback(&m_incoming_udp_transport,
+                  &ola::plugin::e131::IncomingUDPTransport::Receive));
+  m_ss.AddReadDescriptor(&m_udp_socket);
 
   if (!m_slp_thread.Init()) {
     OLA_WARN << "SlpThread Init() failed";
@@ -283,7 +354,8 @@ void SimpleE133Controller::PopulateResponderList() {
 
 
 void SimpleE133Controller::AddUID(const UID &uid, const IPV4Address &ip) {
-  m_controller.AddUID(uid, ip);
+  OLA_INFO << "adding UID " << uid << " @ " << ip;
+  m_uid_to_ip[uid] = ip;
 }
 
 
@@ -291,14 +363,76 @@ void SimpleE133Controller::AddUID(const UID &uid, const IPV4Address &ip) {
  * Run the controller and wait for the responses (or timeouts)
  */
 void SimpleE133Controller::Run() {
-  if (m_responses_to_go)
-    m_ss.Run();
+  m_ss.Run();
 }
 
 
+/**
+ * Send a GET request
+ */
+void SimpleE133Controller::SendGetRequest(const UID &dst_uid,
+                                          uint16_t endpoint,
+                                          uint16_t pid,
+                                          const uint8_t *data,
+                                          unsigned int length) {
+  // send a second one
+  ola::rdm::RDMGetRequest *command = new ola::rdm::RDMGetRequest(
+      m_src_uid,
+      dst_uid,
+      0,  // transaction #
+      1,  // port id
+      0,  // message count
+      ola::rdm::ROOT_RDM_DEVICE,  // sub device
+      pid,  // param id
+      data,  // data
+      length);  // data length
 
+  if (!SendRequest(dst_uid, endpoint, command)) {
+    OLA_FATAL << "Failed to send request";
+    m_ss.Terminate();
+  } else if (dst_uid.IsBroadcast()) {
+    OLA_INFO << "Request broadcast";
+    m_ss.Terminate();
+  } else {
+    OLA_INFO << "Request sent, waiting for response";
+  }
+}
+
+
+/**
+ * Send a SET request
+ */
+void SimpleE133Controller::SendSetRequest(const UID &dst_uid,
+                                          uint16_t endpoint,
+                                          uint16_t pid,
+                                          const uint8_t *data,
+                                          unsigned int data_length) {
+  ola::rdm::RDMSetRequest *command = new ola::rdm::RDMSetRequest(
+      m_src_uid,
+      dst_uid,
+      0,  // transaction #
+      1,  // port id
+      0,  // message count
+      ola::rdm::ROOT_RDM_DEVICE,  // sub device
+      pid,  // param id
+      data,  // data
+      data_length);  // data length
+
+  if (!SendRequest(dst_uid, endpoint, command)) {
+    OLA_FATAL << "Failed to send request";
+    m_ss.Terminate();
+  } else {
+    OLA_INFO << "Request sent";
+  }
+}
+
+
+/**
+ * Called when SLP discovery completes.
+ */
 void SimpleE133Controller::DiscoveryCallback(bool ok,
                                              const vector<string> &urls) {
+  OLA_INFO << "in slp cb " << ok;
   if (ok) {
     vector<string>::const_iterator iter;
     UID uid(0, 0);
@@ -313,7 +447,7 @@ void SimpleE133Controller::DiscoveryCallback(bool ok,
         continue;
       }
       OLA_INFO << "Adding " << uid << "@" << ip;
-      m_controller.AddUID(uid, ip);
+      AddUID(uid, ip);
     }
   }
   m_uid_list_updated = true;
@@ -322,124 +456,152 @@ void SimpleE133Controller::DiscoveryCallback(bool ok,
 
 
 /**
+ * Send an RDM Request.
+ * This packs the data into a ACN structure and sends it.
+ */
+bool SimpleE133Controller::SendRequest(const UID &uid,
+                                       uint16_t endpoint,
+                                       RDMRequest *request) {
+  uid_to_ip_map::const_iterator iter = m_uid_to_ip.find(uid);
+  if (iter == m_uid_to_ip.end()) {
+    OLA_WARN << "UID " << uid << " not found";
+    delete request;
+    return false;
+  }
+
+  OLA_INFO << "Sending to " << iter->second << ":" << E133_PORT << "/" << uid
+      << "/" << endpoint;
+
+  const ola::plugin::e131::RDMPDU pdu(request);
+  ola::plugin::e131::E133Header header(
+      "E1.33 Controller",
+      0,  // seq #
+      endpoint,
+      false);  // rx_ack
+
+  ola::plugin::e131::OutgoingUDPTransport transport(&m_outgoing_udp_transport,
+                                                    iter->second,
+                                                    E133_PORT);
+  bool result = m_e133_sender.SendRDM(header, &pdu, &transport);
+  if (!result) {
+    OLA_WARN << "Failed to send E1.33 request";
+    return false;
+  }
+
+  // register a callback to catch the response
+  m_rdm_inflator.SetRDMHandler(
+      endpoint,
+      NewCallback(this,
+                  &SimpleE133Controller::HandlePacket));
+  return true;
+}
+
+
+
+/**
+ * Handle a RDM response addressed to this universe
+ */
+void SimpleE133Controller::HandlePacket(
+    const ola::plugin::e131::TransportHeader &transport_header,
+    const ola::plugin::e131::E133Header &e133_header,
+    const std::string &raw_response) {
+  // don't bother checking anything here
+  (void) e133_header;
+
+  // try to locate the pending request
+  OLA_INFO << "Got data from " << transport_header.SourceIP();
+
+  // attempt to unpack as a response
+  ola::rdm::rdm_response_code response_code;
+  const RDMResponse *response = RDMResponse::InflateFromData(
+    reinterpret_cast<const uint8_t*>(raw_response.data()),
+    raw_response.size(),
+    &response_code);
+
+  if (!response) {
+    OLA_WARN << "Failed to unpack E1.33 RDM message, ignoring request.";
+    return;
+  }
+
+  std::vector<std::string> raw_packets;
+  raw_packets.push_back(raw_response);
+  RequestCallback(response_code, response, raw_packets);
+}
+
+/**
  * Called when the RDM command completes
  */
 void SimpleE133Controller::RequestCallback(
     ola::rdm::rdm_response_code rdm_code,
-    const ola::rdm::RDMResponse *response,
-    const std::vector<std::string> &packets) {
-  cout << "RDM callback executed with code: " <<
-    ola::rdm::ResponseCodeToString(rdm_code) << endl;
+    const RDMResponse *response_ptr,
+    const std::vector<std::string>&) {
+  auto_ptr<const RDMResponse> response(response_ptr);
+  OLA_INFO << "RDM callback executed with code: " <<
+    ola::rdm::ResponseCodeToString(rdm_code);
 
-  if (!--m_responses_to_go)
-    m_ss.Terminate();
+  m_ss.Terminate();
 
-  if (rdm_code == ola::rdm::RDM_COMPLETED_OK) {
-    const ola::rdm::PidDescriptor *pid_descriptor = m_pid_helper->GetDescriptor(
-        response->ParamId(),
-        response->SourceUID().ManufacturerId());
-    const ola::messaging::Descriptor *descriptor = NULL;
-    const ola::messaging::Message *message = NULL;
+  if (rdm_code != ola::rdm::RDM_COMPLETED_OK)
+    return;
 
-    if (pid_descriptor) {
-      switch (response->CommandClass()) {
-        case ola::rdm::RDMCommand::GET_COMMAND_RESPONSE:
-          descriptor = pid_descriptor->GetResponse();
-          break;
-        case ola::rdm::RDMCommand::SET_COMMAND_RESPONSE:
-          descriptor = pid_descriptor->SetResponse();
-          break;
-        default:
-          OLA_WARN << "Unknown command class " << response->CommandClass();
-      }
-    }
-    if (descriptor) {
-      message = m_pid_helper->DeserializeMessage(descriptor,
-                                                 response->ParamData(),
-                                                 response->ParamDataSize());
-    }
-
-
-    if (message) {
-      cout << response->SourceUID() << " -> " << response->DestinationUID() <<
-        endl;
-      cout << m_pid_helper->MessageToString(message);
-    } else {
-      cout << response->SourceUID() << " -> " << response->DestinationUID()
-        << ", TN: " << static_cast<int>(response->TransactionNumber()) <<
-        ", Msg Count: " << static_cast<int>(response->MessageCount()) <<
-        ", sub dev: " << response->SubDevice() << ", param 0x" << std::hex <<
-        response->ParamId() << ", data len: " <<
-        std::dec << static_cast<int>(response->ParamDataSize()) << endl;
-    }
-
-    if (message)
-      delete message;
+  switch (response->ResponseType()) {
+    case ola::rdm::RDM_NACK_REASON:
+      HandleNack(response.get());
+      return;
+    default:
+      break;
   }
-  delete response;
 
-  (void) packets;
-}
+  const ola::rdm::PidDescriptor *pid_descriptor = m_pid_helper->GetDescriptor(
+      response->ParamId(),
+      response->SourceUID().ManufacturerId());
+  const ola::messaging::Descriptor *descriptor = NULL;
 
+  if (pid_descriptor) {
+    switch (response->CommandClass()) {
+      case ola::rdm::RDMCommand::GET_COMMAND_RESPONSE:
+        descriptor = pid_descriptor->GetResponse();
+        break;
+      case ola::rdm::RDMCommand::SET_COMMAND_RESPONSE:
+        descriptor = pid_descriptor->SetResponse();
+        break;
+      default:
+        OLA_WARN << "Unknown command class " << response->CommandClass();
+    }
+  }
 
-void SimpleE133Controller::SendGetRequest(const UID &dst_uid,
-                                          uint16_t pid,
-                                          const uint8_t *data,
-                                          unsigned int length) {
-  // send a second one
-  ola::rdm::RDMGetRequest *command = new ola::rdm::RDMGetRequest(
-      m_src_uid,
-      dst_uid,
-      m_transaction_number++,  // transaction #
-      1,  // port id
-      0,  // message count
-      ola::rdm::ROOT_RDM_DEVICE,  // sub device
-      pid,  // param id
-      data,  // data
-      length);  // data length
+  auto_ptr<const ola::messaging::Message> message;
+  if (descriptor)
+    message.reset(m_pid_helper->DeserializeMessage(descriptor,
+                                                   response->ParamData(),
+                                                   response->ParamDataSize()));
 
-  m_controller.SendRDMRequest(
-      command,
-      ola::NewSingleCallback(this, &SimpleE133Controller::RequestCallback));
-  m_responses_to_go++;
-}
-
-
-
-void SimpleE133Controller::SendSetRequest(const UID &dst_uid,
-                                          uint16_t pid,
-                                          const uint8_t *data,
-                                          unsigned int data_length) {
-  ola::rdm::RDMSetRequest *command = new ola::rdm::RDMSetRequest(
-      m_src_uid,
-      dst_uid,
-      m_transaction_number++,  // transaction #
-      1,  // port id
-      0,  // message count
-      ola::rdm::ROOT_RDM_DEVICE,  // sub device
-      pid,  // param id
-      data,  // data
-      data_length);  // data length
-
-  m_controller.SendRDMRequest(
-      command,
-      ola::NewSingleCallback(this, &SimpleE133Controller::RequestCallback));
-  m_responses_to_go++;
+  if (message.get())
+    cout << m_pid_helper->PrettyPrintMessage(
+        response->SourceUID().ManufacturerId(),
+        response->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND_RESPONSE,
+        response->ParamId(),
+        message.get());
+  else
+    m_command_printer.DisplayResponse(response.get(), true);
 }
 
 
 /**
- * List the available pids for a device
+ * Handle a NACK response
  */
-void ListPids(uint16_t manufacturer_id, const PidStoreHelper &pid_helper) {
-  vector<string> pid_names;
-  pid_helper.SupportedPids(manufacturer_id, &pid_names);
-  sort(pid_names.begin(), pid_names.end());
-
-  vector<string>::const_iterator iter = pid_names.begin();
-  for (; iter != pid_names.end(); ++iter) {
-    std::cout << *iter << std::endl;
+void SimpleE133Controller::HandleNack(const RDMResponse *response) {
+  uint16_t param;
+  if (response->ParamDataSize() != sizeof(param)) {
+    OLA_WARN << "Request NACKed but has invalid PDL size of " <<
+      response->ParamDataSize();
+  } else {
+    memcpy(&param, response->ParamData(), sizeof(param));
+    param = ola::network::NetworkToHost(param);
   }
+
+  OLA_INFO << "Request NACKed: " <<
+    ola::rdm::NackReasonToString(param);
 }
 
 
@@ -449,25 +611,32 @@ void ListPids(uint16_t manufacturer_id, const PidStoreHelper &pid_helper) {
 int main(int argc, char *argv[]) {
   options opts;
   opts.log_level = ola::OLA_LOG_WARN;
-  opts.universe = 1;
+  opts.endpoint = ROOT_E133_ENDPOINT;
   opts.help = false;
-  opts.list_pids = false;
+  opts.pid_file = PID_DATA_FILE;
   opts.rdm_set = false;
   opts.uid = NULL;
   ParseOptions(argc, argv, &opts);
-  PidStoreHelper pid_helper(PID_DATA_FILE);
+  PidStoreHelper pid_helper(opts.pid_file);
 
   if (opts.help)
     DisplayHelpAndExit(argv);
 
   ola::InitLogging(opts.log_level, ola::OLA_LOG_STDERR);
 
+  // convert the controller's IP address, or use the wildcard if not specified
+  IPV4Address controller_ip = IPV4Address::WildCard();
+  if (!opts.ip_address.empty() &&
+      !IPV4Address::FromString(opts.ip_address, &controller_ip))
+    DisplayHelpAndExit(argv);
+
+  // convert the node's IP address if specified
   IPV4Address target_ip;
-  if (!opts.list_pids &&
-      !opts.target_address.empty() &&
+  if (!opts.target_address.empty() &&
       !IPV4Address::FromString(opts.target_address, &target_ip))
     DisplayHelpAndExit(argv);
 
+  // check the UID
   if (!opts.uid) {
     OLA_FATAL << "Invalid UID";
     exit(EX_USAGE);
@@ -475,13 +644,9 @@ int main(int argc, char *argv[]) {
   UID dst_uid(*opts.uid);
   delete opts.uid;
 
+  // Make sure we can load our PIDs
   if (!pid_helper.Init())
     exit(EX_OSFILE);
-
-  if (opts.list_pids) {
-    ListPids(dst_uid.ManufacturerId(), pid_helper);
-    exit(EX_OK);
-  }
 
   if (opts.args.size() < 1) {
     DisplayHelpAndExit(argv);
@@ -525,16 +690,21 @@ int main(int argc, char *argv[]) {
     exit(EX_USAGE);
   }
 
-  SimpleE133Controller controller(opts, &pid_helper);
-  if (!controller.Init())
-    exit(EX_UNAVAILABLE);
+  SimpleE133Controller::SimpleE133ControllerOptions controller_options;
+  controller_options.controller_ip = controller_ip;
 
-  if (opts.target_address.empty())
-    // this blocks while the slp thread does it's thing
-    controller.PopulateResponderList();
-  else
+  SimpleE133Controller controller(controller_options, &pid_helper);
+  if (!controller.Init()) {
+    OLA_FATAL << "Failed to init controller";
+    exit(EX_UNAVAILABLE);
+  }
+
+  if (target_ip.AsInt())
     // manually add the responder address
     controller.AddUID(dst_uid, target_ip);
+  else
+    // this blocks while the slp thread does it's thing
+    controller.PopulateResponderList();
 
   // convert the message to binary form
   unsigned int param_data_length;
@@ -545,11 +715,13 @@ int main(int argc, char *argv[]) {
   // send the message
   if (opts.rdm_set) {
     controller.SendSetRequest(dst_uid,
+                              opts.endpoint,
                               pid_descriptor->Value(),
                               param_data,
                               param_data_length);
   } else {
     controller.SendGetRequest(dst_uid,
+                              opts.endpoint,
                               pid_descriptor->Value(),
                               param_data,
                               param_data_length);

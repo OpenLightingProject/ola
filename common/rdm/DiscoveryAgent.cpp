@@ -142,7 +142,7 @@ void DiscoveryAgent::InitDiscovery(
 
   if (incremental) {
     UIDSet::Iterator iter = m_uids.Begin();
-    for (;iter != m_uids.End(); ++iter)
+    for (; iter != m_uids.End(); ++iter)
       m_uids_to_mute.push(*iter);
   } else {
     m_uids.Clear();

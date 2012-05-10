@@ -31,7 +31,7 @@
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
-#include "ola/network/SelectServer.h"
+#include "ola/io/SelectServer.h"
 #include "ola/network/Socket.h"
 #include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/E131Node.h"
@@ -39,7 +39,7 @@
 
 
 using ola::DmxBuffer;
-using ola::network::SelectServer;
+using ola::io::SelectServer;
 using ola::plugin::e131::CID;
 using ola::plugin::e131::E131Node;
 using std::cout;

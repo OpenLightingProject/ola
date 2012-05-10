@@ -43,6 +43,14 @@ bool DMPPDU::PackHeader(uint8_t *data, unsigned int &length) const {
 
 
 /*
+ * Pack the header into a buffer.
+ */
+void DMPPDU::PackHeader(OutputStream *stream) const {
+  *stream << m_header.Header();
+}
+
+
+/*
  * Create a new Single Address GetProperty PDU.
  * @param is_virtual set to true if this is a virtual address
  * @param is_relative set to true if this is a relative address

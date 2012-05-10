@@ -25,14 +25,14 @@
 #include <vector>
 #include "ola/BaseTypes.h"
 #include "ola/ExportMap.h"
-#include "ola/network/SelectServer.h"
+#include "ola/io/SelectServer.h"
 #include "ola/network/Socket.h"
 #include "olad/OlaServer.h"
 
 namespace ola {
 
-using ola::network::AcceptingSocket;
-using ola::network::SelectServer;
+using ola::io::SelectServer;
+using ola::network::TcpAcceptingSocket;
 
 class OlaDaemon {
   public:
@@ -62,7 +62,7 @@ class OlaDaemon {
     class SelectServer *m_ss;
     class OlaServer *m_server;
     class PreferencesFactory *m_preferences_factory;
-    class AcceptingSocket *m_accepting_socket;
+    class TcpAcceptingSocket *m_accepting_socket;
     class OlaClientServiceFactory *m_service_factory;
     ola_server_options m_options;
     class ExportMap *m_export_map;

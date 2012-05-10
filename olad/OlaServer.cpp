@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <map>
+#include <utility>
 #include <vector>
 
 #include "ola/network/Socket.h"
@@ -76,13 +77,14 @@ const unsigned int OlaServer::K_HOUSEKEEPING_TIMEOUT_MS = 10000;
 OlaServer::OlaServer(OlaClientServiceFactory *factory,
                      const vector<PluginLoader*> &plugin_loaders,
                      PreferencesFactory *preferences_factory,
-                     ola::network::SelectServer *select_server,
+                     ola::io::SelectServer *select_server,
                      ola_server_options *ola_options,
-                     ola::network::AcceptingSocket *socket,
+                     ola::network::TcpAcceptingSocket *socket,
                      ExportMap *export_map)
     : m_service_factory(factory),
       m_plugin_loaders(plugin_loaders),
       m_ss(select_server),
+      m_tcp_socket_factory(ola::NewCallback(this, &OlaServer::NewConnection)),
       m_accepting_socket(socket),
       m_device_manager(NULL),
       m_plugin_manager(NULL),
@@ -188,13 +190,7 @@ bool OlaServer::Init() {
     return false;
 
   if (m_accepting_socket) {
-    if (!m_accepting_socket->Listen()) {
-      OLA_FATAL << "Could not listen on the RPC port, you probably have " <<
-        "another instance of olad running";
-      return false;
-    }
-    m_accepting_socket->SetOnAccept(
-      ola::NewCallback(this, &OlaServer::NewConnection));
+    m_accepting_socket->SetFactory(&m_tcp_socket_factory);
     m_ss->AddReadDescriptor(m_accepting_socket);
   }
 
@@ -206,7 +202,7 @@ bool OlaServer::Init() {
   ola::network::Interface iface;
   ola::network::InterfacePicker *picker =
     ola::network::InterfacePicker::NewPicker();
-  if (!picker->ChooseInterface(&iface, "")) {
+  if (!picker->ChooseInterface(&iface, m_options.interface)) {
     OLA_WARN << "No network interface found";
   } else {
     // default to using the ip as a id
@@ -287,42 +283,24 @@ void OlaServer::ReloadPlugins() {
  * Add a new ConnectedDescriptor to this Server.
  * @param socket the new ConnectedDescriptor
  */
-void OlaServer::NewConnection(ola::network::ConnectedDescriptor *socket) {
+void OlaServer::NewConnection(ola::network::TcpSocket *socket) {
   if (!socket)
     return;
-
-  StreamRpcChannel *channel = new StreamRpcChannel(NULL, socket, m_export_map);
-  socket->SetOnClose(NewSingleCallback(this, &OlaServer::SocketClosed, socket));
-  OlaClientService_Stub *stub = new OlaClientService_Stub(channel);
-  Client *client = new Client(stub);
-  OlaClientService *service = m_service_factory->New(client, m_service_impl);
-  m_broker->AddClient(client);
-  channel->SetService(service);
-
-  map<int, OlaClientService*>::const_iterator iter;
-  iter = m_sd_to_service.find(socket->ReadDescriptor());
-
-  if (iter != m_sd_to_service.end())
-    OLA_INFO << "New socket but the client already exists!";
-
-  pair<int, OlaClientService*> pair(socket->ReadDescriptor(), service);
-  m_sd_to_service.insert(pair);
-
-  // This hands off ownership to the select server
-  m_ss->AddReadDescriptor(socket, true);
-  (*m_export_map->GetIntegerVar(K_CLIENT_VAR))++;
+  InternalNewConnection(socket);
 }
 
 
 /*
  * Called when a socket is closed
  */
-void OlaServer::SocketClosed(ola::network::ConnectedDescriptor *socket) {
+void OlaServer::SocketClosed(ola::io::ConnectedDescriptor *socket) {
   map<int, OlaClientService*>::iterator iter;
   iter = m_sd_to_service.find(socket->ReadDescriptor());
 
-  if (iter == m_sd_to_service.end())
-    OLA_INFO << "A socket was closed but we didn't find the client";
+  if (iter == m_sd_to_service.end()) {
+    OLA_WARN << "A socket was closed but we didn't find the client";
+    return;
+  }
 
   (*m_export_map->GetIntegerVar(K_CLIENT_VAR))--;
   CleanupConnection(iter->second);
@@ -364,8 +342,7 @@ bool OlaServer::StartHttpServer(const ola::network::Interface &iface) {
 
   // create a pipe socket for the http server to communicate with the main
   // server on.
-  ola::network::PipeDescriptor *pipe_descriptor =
-    new ola::network::PipeDescriptor();
+  ola::io::PipeDescriptor *pipe_descriptor = new ola::io::PipeDescriptor();
   if (!pipe_descriptor->Init()) {
     delete pipe_descriptor;
     return false;
@@ -383,7 +360,7 @@ bool OlaServer::StartHttpServer(const ola::network::Interface &iface) {
   if (m_httpd->Init()) {
     m_httpd->Start();
     // register the pipe descriptor as a client
-    NewConnection(pipe_descriptor);
+    InternalNewConnection(pipe_descriptor);
     return true;
   } else {
     pipe_descriptor->Close();
@@ -409,6 +386,36 @@ void OlaServer::StopPlugins() {
     }
     m_device_manager->UnregisterAllDevices();
   }
+}
+
+
+/*
+ * Add a new ConnectedDescriptor to this Server.
+ * @param socket the new ConnectedDescriptor
+ */
+void OlaServer::InternalNewConnection(
+    ola::io::ConnectedDescriptor *socket) {
+  StreamRpcChannel *channel = new StreamRpcChannel(NULL, socket, m_export_map);
+  socket->SetOnClose(
+      NewSingleCallback(this, &OlaServer::SocketClosed, socket));
+  OlaClientService_Stub *stub = new OlaClientService_Stub(channel);
+  Client *client = new Client(stub);
+  OlaClientService *service = m_service_factory->New(client, m_service_impl);
+  m_broker->AddClient(client);
+  channel->SetService(service);
+
+  map<int, OlaClientService*>::const_iterator iter;
+  iter = m_sd_to_service.find(socket->ReadDescriptor());
+
+  if (iter != m_sd_to_service.end())
+    OLA_INFO << "New socket but the client already exists!";
+
+  pair<int, OlaClientService*> pair(socket->ReadDescriptor(), service);
+  m_sd_to_service.insert(pair);
+
+  // This hands off ownership to the select server
+  m_ss->AddReadDescriptor(socket, true);
+  (*m_export_map->GetIntegerVar(K_CLIENT_VAR))++;
 }
 
 

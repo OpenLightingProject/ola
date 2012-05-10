@@ -35,7 +35,7 @@ namespace usbpro {
  */
 GenericUsbProWidget::GenericUsbProWidget(
   ola::thread::SchedulerInterface *scheduler,
-  ola::network::ConnectedDescriptor *descriptor)
+  ola::io::ConnectedDescriptor *descriptor)
     : BaseUsbProWidget(descriptor),
       m_scheduler(scheduler),
       m_active(true),
@@ -198,36 +198,6 @@ void GenericUsbProWidget::HandleMessage(uint8_t label,
 
 
 /*
- * Called when we get new parameters from the widget.
- */
-void GenericUsbProWidget::HandleParameters(const uint8_t *data,
-                                           unsigned int length) {
-  if (m_outstanding_param_callbacks.empty())
-    return;
-
-  // parameters
-  typedef struct {
-    uint8_t firmware;
-    uint8_t firmware_high;
-    uint8_t break_time;
-    uint8_t mab_time;
-    uint8_t rate;
-  } widget_parameters_reply;
-
-  if (length < sizeof(usb_pro_parameters))
-    return;
-
-  usb_pro_parameters params;
-  memcpy(&params, data, sizeof(usb_pro_parameters));
-
-  usb_pro_params_callback *callback = m_outstanding_param_callbacks.front();
-  m_outstanding_param_callbacks.pop_front();
-
-  callback->Run(true, params);
-}
-
-
-/*
  * Handle the dmx frame
  */
 void GenericUsbProWidget::HandleDMX(const uint8_t *data,
@@ -256,6 +226,36 @@ void GenericUsbProWidget::HandleDMX(const uint8_t *data,
       m_dmx_callback->Run();
   }
   return;
+}
+
+
+/*
+ * Called when we get new parameters from the widget.
+ */
+void GenericUsbProWidget::HandleParameters(const uint8_t *data,
+                                           unsigned int length) {
+  if (m_outstanding_param_callbacks.empty())
+    return;
+
+  // parameters
+  typedef struct {
+    uint8_t firmware;
+    uint8_t firmware_high;
+    uint8_t break_time;
+    uint8_t mab_time;
+    uint8_t rate;
+  } widget_parameters_reply;
+
+  if (length < sizeof(usb_pro_parameters))
+    return;
+
+  usb_pro_parameters params;
+  memcpy(&params, data, sizeof(usb_pro_parameters));
+
+  usb_pro_params_callback *callback = m_outstanding_param_callbacks.front();
+  m_outstanding_param_callbacks.pop_front();
+
+  callback->Run(true, params);
 }
 
 

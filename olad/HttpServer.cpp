@@ -24,9 +24,11 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 #include "olad/HttpServer.h"
 #include "ola/Logging.h"
+#include "ola/io/Descriptor.h"
 
 namespace ola {
 
@@ -34,7 +36,7 @@ using std::ifstream;
 using std::pair;
 using std::set;
 using std::string;
-using ola::network::UnmanagedFileDescriptor;
+using ola::io::UnmanagedFileDescriptor;
 
 const char HttpServer::CONTENT_TYPE_PLAIN[] = "text/plain";
 const char HttpServer::CONTENT_TYPE_HTML[] = "text/html";
@@ -515,7 +517,7 @@ void HttpServer::UpdateSockets() {
     m_sockets.erase(iter++);
   }
 
-  for (;i <= max_fd; i++) {
+  for (; i <= max_fd; i++) {
     // add the remaining sockets to the SS
     if (FD_ISSET(i, &r_set) || FD_ISSET(i, &w_set)) {
       OLA_DEBUG << "Adding " << i << " as a new socket";

@@ -24,7 +24,7 @@
 
 namespace ola {
 
-using ola::network::ConnectedDescriptor;
+using ola::io::ConnectedDescriptor;
 
 OlaClient::OlaClient(ConnectedDescriptor *descriptor)
     : m_observer(NULL) {

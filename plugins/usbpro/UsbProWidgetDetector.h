@@ -71,10 +71,10 @@ class UsbProWidgetInformation {
 class UsbProWidgetDetector: public WidgetDetectorInterface {
   public:
     typedef ola::Callback2<void,
-                           ola::network::ConnectedDescriptor*,
+                           ola::io::ConnectedDescriptor*,
                            const UsbProWidgetInformation*> SuccessHandler;
     typedef ola::Callback1<void,
-                           ola::network::ConnectedDescriptor*> FailureHandler;
+                           ola::io::ConnectedDescriptor*> FailureHandler;
 
     UsbProWidgetDetector(
         ola::thread::SchedulingExecutorInterface *scheduler,
@@ -83,7 +83,7 @@ class UsbProWidgetDetector: public WidgetDetectorInterface {
         unsigned int message_interval = 200);
     ~UsbProWidgetDetector();
 
-    bool Discover(ola::network::ConnectedDescriptor *descriptor);
+    bool Discover(ola::io::ConnectedDescriptor *descriptor);
 
   private:
     // Hold the discovery state for a widget

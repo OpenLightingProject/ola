@@ -51,7 +51,7 @@ const uint8_t ArduinoWidgetImpl::RESPONSE_INVALID_COMMAND = 5;
  * @param serial the 4 byte serial which forms part of the UID
  */
 ArduinoWidgetImpl::ArduinoWidgetImpl(
-    ola::network::ConnectedDescriptor *descriptor,
+    ola::io::ConnectedDescriptor *descriptor,
     uint16_t esta_id,
     uint32_t serial)
     : BaseUsbProWidget(descriptor),
@@ -248,7 +248,7 @@ void ArduinoWidgetImpl::GetUidSet(ola::rdm::RDMDiscoveryCallback *callback) {
 /**
  * ArduinoWidget Constructor
  */
-ArduinoWidget::ArduinoWidget(ola::network::ConnectedDescriptor *descriptor,
+ArduinoWidget::ArduinoWidget(ola::io::ConnectedDescriptor *descriptor,
                              uint16_t esta_id,
                              uint32_t serial,
                              unsigned int queue_size) {

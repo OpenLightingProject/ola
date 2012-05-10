@@ -66,6 +66,16 @@ void RootInflator::ResetHeaderField() {
   CID cid;
   m_last_hdr.SetCid(cid);
 }
+
+
+/**
+ * This runs the on_data callback if we have one
+ */
+bool RootInflator::PostHeader(uint32_t, HeaderSet &headers) {
+  if (m_on_data)
+    m_on_data->Run(headers.GetTransportHeader());
+  return true;
+}
 }  // e131
 }  // plugin
 }  // ola

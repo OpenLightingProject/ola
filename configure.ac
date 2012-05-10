@@ -6,7 +6,8 @@ AC_INIT(configure.ac)
 AC_CONFIG_AUX_DIR(config)
 AC_SUBST(ac_aux_dir)
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(ola, 0.8.16)
+AC_CONFIG_MACRO_DIR([config])
+AM_INIT_AUTOMAKE(ola, 0.8.18)
 
 # Checks for programs.
 AC_LANG(C++)
@@ -388,6 +389,32 @@ if test "${build_python_libs}" = "yes"; then
  AX_PYTHON_MODULE("google.protobuf", "fatal")
 fi
 
+# Java API, this requires Maven
+AC_ARG_ENABLE(java-libs,
+              AC_HELP_STRING([--enable-java-libs],
+                             [Build the Java interface]),
+              [build_java_libs="yes"]
+             )
+if test "${build_java_libs}" == "yes"; then
+  MAVEN_SUPPORT([3.0.0])
+fi
+
+AM_CONDITIONAL(BUILD_JAVA_LIBS, test "${build_java_libs}" = "yes")
+
+# Enable running as root
+AC_ARG_ENABLE(
+  root_check,
+  AC_HELP_STRING([--disable-root-check],
+                 [Disable the check that prevents olad from running as root]),
+)
+
+if test "${enable_root_check}" == "no"; then
+ AC_DEFINE(OLAD_SKIP_ROOT_CHECK,
+           1,
+           [Defined if olad is allowed to run as root])
+fi
+
+# common.h
 AC_OUTPUT_COMMANDS([
   if test -n "$CONFIG_FILES" && test -n "$CONFIG_HEADERS"; then
     # If both these vars are non-empty, then config.status wasn't run by
@@ -444,6 +471,7 @@ _EOF_
 AC_OUTPUT( Makefile\
     common/Makefile\
     common/export_map/Makefile\
+    common/io/Makefile\
     common/logging/Makefile\
     common/messaging/Makefile\
     common/network/Makefile\
@@ -451,6 +479,7 @@ AC_OUTPUT( Makefile\
     common/rdm/Makefile\
     common/rdm/testdata/Makefile \
     common/rpc/Makefile\
+    common/testing/Makefile\
     common/thread/Makefile\
     common/timecode/Makefile\
     common/utils/Makefile\
@@ -461,13 +490,16 @@ AC_OUTPUT( Makefile\
     debian/Makefile\
     include/Makefile\
     include/ola/Makefile\
+    include/ola/io/Makefile\
     include/ola/messaging/Makefile\
     include/ola/network/Makefile\
     include/ola/rdm/Makefile\
     include/ola/thread/Makefile\
+    include/ola/testing/Makefile\
     include/ola/timecode/Makefile\
     include/ola/web/Makefile\
     include/olad/Makefile\
+    java/Makefile \
     ola/Makefile \
     python/Makefile \
     python/rpc/Makefile \
@@ -502,6 +534,7 @@ AC_OUTPUT( Makefile\
     tools/e133/Makefile \
     tools/rdm/Makefile \
     tools/rdmpro/Makefile \
+    tools/tlp/Makefile \
     tools/usbpro/Makefile \
     libola.pc \
     libolaserver.pc \

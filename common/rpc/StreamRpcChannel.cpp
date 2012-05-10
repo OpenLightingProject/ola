@@ -45,7 +45,7 @@ const char StreamRpcChannel::STREAMING_NO_RESPONSE[] = "STREAMING_NO_RESPONSE";
 
 StreamRpcChannel::StreamRpcChannel(
     Service *service,
-    ola::network::ConnectedDescriptor *descriptor,
+    ola::io::ConnectedDescriptor *descriptor,
     ExportMap *export_map)
     : m_service(service),
       m_on_close(NULL),

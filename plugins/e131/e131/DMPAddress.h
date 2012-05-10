@@ -23,6 +23,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include "ola/io/OutputStream.h"
 #include "ola/network/NetworkUtils.h"
 
 namespace ola {
@@ -102,6 +103,9 @@ class BaseDMPAddress {
     // Pack this address into memory
     virtual bool Pack(uint8_t *data, unsigned int &length) const = 0;
 
+    // Write this address to an OutputStream
+    virtual void Write(ola::io::OutputStream *stream) const = 0;
+
     // True if this is a range address.
     virtual bool IsRange() const = 0;
 
@@ -135,6 +139,11 @@ class DMPAddress: public BaseDMPAddress {
       length = Size();
       return true;
     }
+
+    void Write(ola::io::OutputStream *stream) const {
+      *stream << HostToNetwork(m_start);
+    }
+
     bool IsRange() const { return false; }
 
   protected:
@@ -186,6 +195,15 @@ class RangeDMPAddress: public BaseDMPAddress {
       length = Size();
       return true;
     }
+
+    void Write(ola::io::OutputStream *stream) const {
+      type field[3];
+      field[0] = HostToNetwork(m_start);
+      field[1] = HostToNetwork(m_increment);
+      field[2] = HostToNetwork(m_number);
+      stream->Write(reinterpret_cast<uint8_t*>(&field), Size());
+    }
+
     bool IsRange() const { return true; }
 
   protected:
@@ -252,6 +270,14 @@ class DMPAddressData {
       memcpy(data + length, m_data, m_length);
       length += m_length;
       return true;
+    }
+
+    void Write(ola::io::OutputStream *stream) const {
+      if (!m_data)
+        return;
+
+      m_address->Write(stream);
+      stream->Write(m_data, m_length);
     }
 
   private:

@@ -30,7 +30,7 @@
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
 #include "ola/Callback.h"
-#include "ola/network/Socket.h"
+#include "ola/io/Descriptor.h"
 #include "plugins/usbpro/ArduinoWidget.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
 #include "plugins/usbpro/DmxTriWidget.h"
@@ -56,7 +56,7 @@ namespace usbpro {
  */
 WidgetDetectorThread::WidgetDetectorThread(
   NewWidgetHandler *handler,
-  ola::network::SelectServerInterface *ss,
+  ola::io::SelectServerInterface *ss,
   unsigned int usb_pro_timeout,
   unsigned int robe_timeout)
     : ola::thread::Thread(),
@@ -131,7 +131,7 @@ void *WidgetDetectorThread::Run() {
 
   vector<WidgetDetectorInterface*>::const_iterator iter =
   m_widget_detectors.begin();
-  for (;iter != m_widget_detectors.end(); ++iter)
+  for (; iter != m_widget_detectors.end(); ++iter)
     // this will trigger a call to InternalFreeWidget for any remaining widgets
     delete *iter;
 
@@ -195,7 +195,7 @@ bool WidgetDetectorThread::RunScan() {
     if (m_ignored_devices.find(*it) != m_ignored_devices.end())
       continue;
     OLA_INFO << "Found potential USB Serial device at " << *it;
-    ola::network::ConnectedDescriptor *descriptor =
+    ConnectedDescriptor *descriptor =
       BaseUsbProWidget::OpenDevice(*it);
     if (!descriptor)
       continue;
@@ -283,7 +283,9 @@ void WidgetDetectorThread::UsbProWidgetReady(
         DispatchWidget(
             new EnttecUsbProWidget(
               m_other_ss,
-              descriptor),
+              descriptor,
+              information->esta_id,
+              information->serial),
             information);
         return;
       }
@@ -327,7 +329,9 @@ void WidgetDetectorThread::UsbProWidgetReady(
   DispatchWidget(
       new EnttecUsbProWidget(
         m_other_ss,
-        descriptor),
+        descriptor,
+        information->esta_id,
+        information->serial),
       information);
 }
 
@@ -356,7 +360,7 @@ void WidgetDetectorThread::RobeWidgetReady(
  * Called when this descriptor fails discovery
  */
 void WidgetDetectorThread::DescriptorFailed(
-    ola::network::ConnectedDescriptor *descriptor) {
+    ConnectedDescriptor *descriptor) {
   m_ss.RemoveReadDescriptor(descriptor);
   if (descriptor->ValidReadDescriptor()) {
     PerformNextDiscoveryStep(descriptor);
@@ -371,7 +375,7 @@ void WidgetDetectorThread::DescriptorFailed(
  * @pre the descriptor exists in m_active_descriptors
  */
 void WidgetDetectorThread::PerformNextDiscoveryStep(
-    ola::network::ConnectedDescriptor *descriptor) {
+    ConnectedDescriptor *descriptor) {
 
   DescriptorInfo &descriptor_info = m_active_descriptors[descriptor];
   descriptor_info.second++;
@@ -397,7 +401,7 @@ void WidgetDetectorThread::PerformNextDiscoveryStep(
  * Free the widget and the associated descriptor.
  */
 void WidgetDetectorThread::InternalFreeWidget(SerialWidgetInterface *widget) {
-  ola::network::ConnectedDescriptor *descriptor = widget->GetDescriptor();
+  ConnectedDescriptor *descriptor = widget->GetDescriptor();
   // remove descriptor from our ss if it's there
   m_ss.RemoveReadDescriptor(descriptor);
   delete widget;

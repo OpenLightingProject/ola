@@ -30,7 +30,7 @@
 #include "plugins/usbpro/RobeWidgetDetector.h"
 
 
-using ola::network::ConnectedDescriptor;
+using ola::io::ConnectedDescriptor;
 using ola::plugin::usbpro::RobeWidget;
 using ola::plugin::usbpro::RobeWidgetDetector;
 using ola::plugin::usbpro::RobeWidgetInformation;

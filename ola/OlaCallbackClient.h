@@ -42,7 +42,7 @@ using std::string;
 
 class OlaCallbackClient: public ola::rdm::RDMAPIImplInterface {
   public:
-    explicit OlaCallbackClient(ola::network::ConnectedDescriptor *descriptor);
+    explicit OlaCallbackClient(ola::io::ConnectedDescriptor *descriptor);
     ~OlaCallbackClient();
 
     bool Setup();

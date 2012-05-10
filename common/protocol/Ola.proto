@@ -22,6 +22,7 @@ package ola.proto;
 
 option cc_generic_services = true;
 option py_generic_services = true;
+option java_generic_services = true;
 
 enum RegisterAction {
   REGISTER = 1;

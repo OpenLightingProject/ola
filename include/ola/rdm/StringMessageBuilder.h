@@ -56,6 +56,7 @@ class StringMessageBuilder: public ola::messaging::FieldDescriptorVisitor {
     const string GetError() const { return m_error_string; }
 
     void Visit(const ola::messaging::BoolFieldDescriptor*);
+    void Visit(const ola::messaging::IPV4FieldDescriptor*);
     void Visit(const ola::messaging::StringFieldDescriptor*);
     void Visit(const ola::messaging::UInt8FieldDescriptor*);
     void Visit(const ola::messaging::UInt16FieldDescriptor*);

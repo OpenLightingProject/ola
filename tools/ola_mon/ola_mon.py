@@ -58,8 +58,9 @@ class OlaFetcher(object):
       data = data.strip()
 
       if data.startswith('map:'):
-        label, key_values = data.split(' ', 1)
-        _, label_name = label.split(':', 1)
+        #label, key_values = data.split(' ', 1)
+        #_, label_name = label.split(':', 1)
+        pass
       else:
         variables[var] = data
     return variables

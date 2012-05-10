@@ -101,6 +101,45 @@ bool E131PDU::PackData(uint8_t *data, unsigned int &length) const {
   length = 0;
   return true;
 }
+
+
+/*
+ * Pack the header into a buffer.
+ */
+void E131PDU::PackHeader(OutputStream *stream) const {
+  if (m_header.UsingRev2()) {
+    E131Rev2Header::e131_rev2_pdu_header header;
+    strncpy(header.source, m_header.Source().data(),
+            E131Rev2Header::REV2_SOURCE_NAME_LEN);
+    header.priority = m_header.Priority();
+    header.sequence = m_header.Sequence();
+    header.universe = HostToNetwork(m_header.Universe());
+    stream->Write(reinterpret_cast<uint8_t*>(&header),
+                  sizeof(E131Rev2Header::e131_rev2_pdu_header));
+  } else {
+    E131Header::e131_pdu_header header;
+    strncpy(header.source, m_header.Source().data(),
+            E131Header::SOURCE_NAME_LEN);
+    header.priority = m_header.Priority();
+    header.reserved = 0;
+    header.sequence = m_header.Sequence();
+    header.options = static_cast<uint8_t>(
+        (m_header.PreviewData() ? E131Header::PREVIEW_DATA_MASK : 0) |
+        (m_header.StreamTerminated() ? E131Header::STREAM_TERMINATED_MASK : 0));
+    header.universe = HostToNetwork(m_header.Universe());
+    stream->Write(reinterpret_cast<uint8_t*>(&header),
+                  sizeof(E131Header::e131_pdu_header));
+  }
+}
+
+
+/*
+ * Pack the data into a buffer
+ */
+void E131PDU::PackData(OutputStream *stream) const {
+  if (m_dmp_pdu)
+    m_dmp_pdu->Write(stream);
+}
 }  // ola
 }  // e131
 }  // plugin

@@ -30,7 +30,7 @@
 #include <ola/Logging.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
-#include <ola/network/SelectServer.h>
+#include <ola/io/SelectServer.h>
 
 #include <iostream>
 #include <map>
@@ -54,7 +54,7 @@ Context *global_context;
 SlotActionMap global_slots;
 
 // The SelectServer to kill when we catch SIGINT
-ola::network::SelectServer *ss = NULL;
+ola::io::SelectServer *ss = NULL;
 
 // The options struct
 typedef struct {

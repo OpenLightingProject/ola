@@ -37,9 +37,8 @@ class DMPE131Inflator: public DMPInflator {
   friend class DMPE131InflatorTest;
 
   public:
-    DMPE131Inflator(class E131Layer *e131_layer, bool ignore_preview):
+    explicit DMPE131Inflator(bool ignore_preview):
       DMPInflator(),
-      m_e131_layer(e131_layer),
       m_ignore_preview(ignore_preview) {
     }
     ~DMPE131Inflator();
@@ -47,6 +46,8 @@ class DMPE131Inflator: public DMPInflator {
     bool SetHandler(unsigned int universe, ola::DmxBuffer *buffer,
                     uint8_t *priority, ola::Callback0<void> *handler);
     bool RemoveHandler(unsigned int universe);
+
+    void RegisteredUniverses(std::vector<unsigned int> *universes);
 
   protected:
     virtual bool HandlePDUData(uint32_t vector,
@@ -71,7 +72,6 @@ class DMPE131Inflator: public DMPInflator {
     } universe_handler;
 
     std::map<unsigned int, universe_handler> m_handlers;
-    class E131Layer *m_e131_layer;
     bool m_ignore_preview;
     ola::Clock m_clock;
 

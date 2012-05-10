@@ -110,7 +110,7 @@ bool SandNetPlugin::SetDefaultPreferences() {
 
   bool save = false;
   save |= m_preferences->SetDefaultValue(SandNetDevice::IP_KEY,
-                                         StringValidator(), "");
+                                         StringValidator(true), "");
   save |= m_preferences->SetDefaultValue(SandNetDevice::NAME_KEY,
                                          StringValidator(), SANDNET_NODE_NAME);
 

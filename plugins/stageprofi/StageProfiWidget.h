@@ -22,16 +22,16 @@
 #define PLUGINS_STAGEPROFI_STAGEPROFIWIDGET_H_
 
 #include <string>
+#include "ola/io/SelectServer.h"
 #include "ola/network/Socket.h"
-#include "ola/network/SelectServer.h"
 #include "ola/DmxBuffer.h"
 
 namespace ola {
 namespace plugin {
 namespace stageprofi {
 
-using ola::network::ConnectedDescriptor;
-using ola::network::SelectServer;
+using ola::io::ConnectedDescriptor;
+using ola::io::SelectServer;
 
 class StageProfiWidget {
   public:

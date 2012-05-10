@@ -23,7 +23,7 @@
 
 #include <string>
 #include <vector>
-#include "ola/network/Socket.h"
+#include "ola/io/Descriptor.h"
 #include "ola/plugin_id.h"
 #include "olad/Plugin.h"
 #include "plugins/usbpro/UsbSerialDevice.h"
@@ -33,7 +33,7 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
-using ola::network::ConnectedDescriptor;
+using ola::io::ConnectedDescriptor;
 
 class UsbSerialPlugin: public ola::Plugin, public NewWidgetHandler {
   public:
@@ -73,12 +73,10 @@ class UsbSerialPlugin: public ola::Plugin, public NewWidgetHandler {
     WidgetDetectorThread m_detector_thread;
 
     static const char DEFAULT_DEVICE_DIR[];
-    static const char DEFAULT_DMX_TRI_FPS_LIMIT[];
     static const char DEFAULT_PRO_FPS_LIMIT[];
     static const char DEFAULT_ULTRA_FPS_LIMIT[];
     static const char DEVICE_DIR_KEY[];
     static const char DEVICE_PREFIX_KEY[];
-    static const char DMX_TRI_FPS_LIMIT_KEY[];
     static const char IGNORED_DEVICES_KEY[];
     static const char LINUX_DEVICE_PREFIX[];
     static const char MAC_DEVICE_PREFIX[];
@@ -89,8 +87,6 @@ class UsbSerialPlugin: public ola::Plugin, public NewWidgetHandler {
     static const char USBPRO_DEVICE_NAME[];
     static const char USB_PRO_FPS_LIMIT_KEY[];
     static const char ULTRA_FPS_LIMIT_KEY[];
-    static const uint16_t ENTTEC_ESTA_ID;
-    static const unsigned int MAX_DMX_TRI_FPS_LIMIT = 1000;
     static const unsigned int MAX_PRO_FPS_LIMIT = 1000;
     static const unsigned int MAX_ULTRA_FPS_LIMIT = 1000;
 };
