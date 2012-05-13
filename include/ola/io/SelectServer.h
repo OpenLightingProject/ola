@@ -229,7 +229,7 @@ class SelectServer: public SelectServerInterface {
     SelectServer operator=(const SelectServer&);
     bool CheckForEvents(const TimeInterval &poll_interval);
     void CheckDescriptors(fd_set *r_set, fd_set *w_set);
-    void AddDescriptorsToSet(fd_set *r_set, fd_set *w_set, int *max_sd);
+    bool AddDescriptorsToSet(fd_set *r_set, fd_set *w_set, int *max_sd);
     TimeStamp CheckTimeouts(const TimeStamp &now);
     void UnregisterAll();
     void DrainAndExecute();
