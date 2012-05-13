@@ -181,7 +181,7 @@ void IncommingStreamTransport::HandlePDUFlags() {
   OLA_DEBUG << "Reading PDU flags, data size is " << DataLength();
   m_pdu_length_size = (*m_buffer_start  & BaseInflator::LFLAG_MASK) ?
     THREE_BYTES : TWO_BYTES;
-  m_outstanding_data += static_cast<int>(m_pdu_length_size) - 1;
+  m_outstanding_data += static_cast<unsigned int>(m_pdu_length_size) - 1;
   OLA_DEBUG << "PDU length size is " << static_cast<int>(m_pdu_length_size) <<
     " bytes";
   m_state = WAITING_FOR_PDU_LENGTH;
