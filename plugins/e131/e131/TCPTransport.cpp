@@ -54,7 +54,9 @@ const unsigned int IncommingStreamTransport::INITIAL_SIZE = 500;
 bool OutgoingStreamTransport::Send(const PDUBlock<PDU> &pdu_block) {
   unsigned int pdu_block_size = pdu_block.Size();
   unsigned int total_message_size = (
-      ACN_HEADER_SIZE + sizeof(pdu_block_size) + pdu_block.Size());
+      ACN_HEADER_SIZE +
+      static_cast<unsigned int>(sizeof(pdu_block_size)) +
+      pdu_block.Size());
   if (m_stream->Size() + total_message_size > m_max_buffer_size)
     return false;
 
