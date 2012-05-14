@@ -30,11 +30,13 @@ namespace dummy {
 
 class DummyRDMDevice: public ola::rdm::RDMControllerInterface {
   public:
-    explicit DummyRDMDevice(uint16_t sub_device_number):
+    explicit DummyRDMDevice(const ola::rdm::UID &uid,
+                            uint16_t sub_device_number):
       m_start_address(1),
       m_personality(0),
       m_identify_mode(0),
       m_lamp_strikes(0),
+      m_uid(uid),
       sub_device_num(sub_device_number) {}
 
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
@@ -46,12 +48,15 @@ class DummyRDMDevice: public ola::rdm::RDMControllerInterface {
       return PERSONALITIES[m_personality].footprint;
     }
 
+    const ola::rdm::UID &UID() const { return m_uid; }
+
   private:
     uint16_t m_start_address;
     uint8_t m_personality;
     uint8_t m_identify_mode;
     uint32_t m_lamp_strikes;
     uint16_t sub_device_number;
+    ola::rdm::UID m_uid;
 
     void HandleUnknownPacket(const ola::rdm::RDMRequest *request,
                              ola::rdm::RDMCallback *callback);
