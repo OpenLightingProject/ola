@@ -414,6 +414,8 @@ void SimpleE133Monitor::OnTCPConnect(BufferedTCPSocket *socket) {
   socket->SetOnClose(
     NewSingleCallback(this, &SimpleE133Monitor::SocketClosed, ip_address));
   m_ss.AddReadDescriptor(socket);
+
+  // setup a timeout that closes this connect if we don't receive anything
 }
 
 

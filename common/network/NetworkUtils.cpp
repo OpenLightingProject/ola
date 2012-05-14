@@ -61,7 +61,7 @@ bool StringToAddress(const string &address, struct in_addr &addr) {
   in_addr_t ip_addr4;
 #endif
   ip_addr4 = inet_addr(address.c_str());
-  ok = (INADDR_NONE != ip_addr4);
+  ok = (INADDR_NONE != ip_addr4 || address == "255.255.255.255");
   addr.s_addr = ip_addr4;
 #endif
 
