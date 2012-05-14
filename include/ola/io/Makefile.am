@@ -1,4 +1,5 @@
-SOURCES = Descriptor.h \
+SOURCES = BufferedWriteDescriptor.h \
+          Descriptor.h \
           IOQueue.h \
           OutputStream.h \
           SelectServer.h \

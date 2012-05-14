@@ -598,10 +598,9 @@ void SimpleE133Controller::HandleNack(const RDMResponse *response) {
   } else {
     memcpy(&param, response->ParamData(), sizeof(param));
     param = ola::network::NetworkToHost(param);
+    OLA_INFO << "Request NACKed: " <<
+      ola::rdm::NackReasonToString(param);
   }
-
-  OLA_INFO << "Request NACKed: " <<
-    ola::rdm::NackReasonToString(param);
 }
 
 

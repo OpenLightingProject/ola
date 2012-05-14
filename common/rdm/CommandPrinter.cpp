@@ -322,7 +322,7 @@ void CommandPrinter::DisplayParamData(
  */
 bool CommandPrinter::GetNackReason(const RDMResponse *response,
                                    uint16_t *reason) {
-  if (response->ParamDataSize() != 2) {
+  if (response->ParamDataSize() == 2) {
     memcpy(reinterpret_cast<uint8_t*>(reason),
            response->ParamData(),
            sizeof(*reason));

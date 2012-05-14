@@ -36,7 +36,6 @@
 #include <ola/Clock.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
-#include <ola/Stringutils.h>
 #include <ola/io/SelectServer.h>
 #include <ola/network/AdvancedTCPConnector.h>
 #include <ola/network/IPV4Address.h>
