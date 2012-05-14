@@ -31,14 +31,26 @@ namespace dummy {
 class DummyRDMDevice: public ola::rdm::RDMControllerInterface {
   public:
     explicit DummyRDMDevice(uint16_t sub_device_number):
+      m_start_address(1),
+      m_personality(0),
+      m_identify_mode(0),
+      m_lamp_strikes(0),
       sub_device_num(sub_device_number) {}
 
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
 
     uint16_t DeviceNumber() const { return sub_device_number; }
+    uint16_t StartAddress() const { return m_start_address; }
+    uint16_t Footprint() const {
+      return PERSONALITIES[m_personality].footprint;
+    }
 
   private:
+    uint16_t m_start_address;
+    uint8_t m_personality;
+    uint8_t m_identify_mode;
+    uint32_t m_lamp_strikes;
     uint16_t sub_device_number;
 
     void HandleUnknownPacket(const ola::rdm::RDMRequest *request,
@@ -70,6 +82,13 @@ class DummyRDMDevice: public ola::rdm::RDMControllerInterface {
                                           ola::rdm::RDMCallback *callback);
     void RunRDMCallback(ola::rdm::RDMCallback *callback,
                         ola::rdm::RDMResponse *response);
+    typedef struct {
+      uint16_t footprint;
+      const char *description;
+    } personality_info;
+
+    static const personality_info PERSONALITIES[];
+    static const unsigned int PERSONALITY_COUNT;
 };
 }  // dummy
 }  // plugin
