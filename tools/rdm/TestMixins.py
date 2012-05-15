@@ -23,6 +23,7 @@ test definitions.
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
+from collections import deque
 from ola import PidStore
 from ola.OlaClient import RDMNack
 from ExpectedResults import *
@@ -404,22 +405,38 @@ class SetNonUnicastIdentifyMixin(object):
   """
   REQUIRES = ['identify_state']
 
+  def States(self):
+    return [
+      self.TurnOn,
+      self.VerifyOn,
+      self.TurnOff,
+      self.VerifyOff,
+    ]
+
+  def NextState(self):
+    self._current_state += 1
+    try:
+      return self.States()[self._current_state]
+    except IndexError:
+      return None
+
   def Test(self):
-    self.TurnOn()
+    self._current_state = -1
+    self.NextState()()
 
   def TurnOn(self):
     self.AddExpectedResults(
-        self.AckSetResult(action=self.VerifyOn))
+        self.AckSetResult(action=self.NextState()))
     self.SendSet(PidStore.ROOT_DEVICE, self.pid, [True])
 
   def VerifyOn(self):
     self.AddExpectedResults(
         self.AckGetResult(field_values={'identify_state': True},
-                          action=self.TurnOff))
+                          action=self.NextState()))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def TurnOff(self):
-    self.AddExpectedResults(BroadcastResult(action=self.VerifyOff))
+    self.AddExpectedResults(BroadcastResult(action=self.NextState()))
     self.SendDirectedSet(self.Uid(), PidStore.ROOT_DEVICE, self.pid, [False])
 
   def VerifyOff(self):

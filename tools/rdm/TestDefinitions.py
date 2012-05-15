@@ -2681,6 +2681,31 @@ class SetBroadcastIdentifyDevice(TestMixins.SetNonUnicastIdentifyMixin,
     return UID.AllDevices()
 
 
+class SetOtherVendorcastIdentifyDevice(TestMixins.SetNonUnicastIdentifyMixin,
+                                       ResponderTestFixture):
+  """Send a vendorcast identify off to another manufacturer's ID."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'IDENTIFY_DEVICE'
+
+  def States(self):
+    return [
+      self.TurnOn,
+      self.VerifyOn,
+      self.TurnOff,
+      self.VerifyOn,
+    ]
+
+  def Uid(self):
+    # use a different vendor's vendorcast address
+    vendorcast_id = self._uid.manufacturer_id
+    if vendorcast_id == 0:
+      vendorcast_id += 1
+    else:
+      vendorcast_id -= 1
+
+    return UID(vendorcast_id, 0xffffffff)
+
+
 class SetIdentifyDeviceWithNoData(ResponderTestFixture):
   """Set the identify state with no data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
