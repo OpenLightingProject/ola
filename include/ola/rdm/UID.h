@@ -81,6 +81,16 @@ class UID {
 
     bool IsBroadcast() const { return m_uid.device_id == ALL_DEVICES; }
 
+    /**
+     * Returns true if the uid in the argument should react to a command
+     */
+    bool DirectedToUID(const UID &uid) const {
+      return *this == uid ||
+            (IsBroadcast() &&
+             (ManufacturerId() == ALL_MANUFACTURERS ||
+              ManufacturerId() == uid.ManufacturerId()));
+    }
+
     std::string ToString() const {
       std::stringstream str;
       str << std::setfill('0') << std::setw(4) << std::hex << m_uid.esta_id
