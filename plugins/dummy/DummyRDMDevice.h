@@ -23,6 +23,7 @@
 #include <string>
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/RDMEnums.h"
+#include "ola/rdm/UID.h"
 
 namespace ola {
 namespace plugin {
@@ -30,19 +31,19 @@ namespace dummy {
 
 class DummyRDMDevice: public ola::rdm::RDMControllerInterface {
   public:
-    explicit DummyRDMDevice(const ola::rdm::UID &uid,
+    DummyRDMDevice(const ola::rdm::UID &uid,
                             uint16_t sub_device_number):
+      m_uid(uid),
       m_start_address(1),
       m_personality(0),
       m_identify_mode(0),
       m_lamp_strikes(0),
-      m_uid(uid),
-      sub_device_num(sub_device_number) {}
+      m_sub_device_number(sub_device_number) {}
 
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
 
-    uint16_t DeviceNumber() const { return sub_device_number; }
+    uint16_t DeviceNumber() const { return m_sub_device_number; }
     uint16_t StartAddress() const { return m_start_address; }
     uint16_t Footprint() const {
       return PERSONALITIES[m_personality].footprint;
@@ -51,12 +52,12 @@ class DummyRDMDevice: public ola::rdm::RDMControllerInterface {
     const ola::rdm::UID &UID() const { return m_uid; }
 
   private:
+    const ola::rdm::UID m_uid;
     uint16_t m_start_address;
     uint8_t m_personality;
     uint8_t m_identify_mode;
     uint32_t m_lamp_strikes;
-    uint16_t sub_device_number;
-    ola::rdm::UID m_uid;
+    uint16_t m_sub_device_number;
 
     void HandleUnknownPacket(const ola::rdm::RDMRequest *request,
                              ola::rdm::RDMCallback *callback);
