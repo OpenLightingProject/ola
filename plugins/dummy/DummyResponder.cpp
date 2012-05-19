@@ -33,12 +33,6 @@ namespace ola {
 namespace plugin {
 namespace dummy {
 
-using ola::network::HostToNetwork;
-using ola::network::NetworkToHost;
-using ola::rdm::GetResponseFromData;
-using ola::rdm::NackWithReason;
-using ola::rdm::RDMRequest;
-using ola::rdm::RDMResponse;
 using std::string;
 using std::vector;
 
@@ -61,8 +55,6 @@ void DummyResponder::SendRDMRequest(const ola::rdm::RDMRequest *request,
                                     ola::rdm::RDMCallback *callback) {
   m_root_device.SendRDMRequest(request, callback);
 }
-
-
 }  // dummy
 }  // plugin
 }  // ola

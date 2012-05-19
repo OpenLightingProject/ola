@@ -26,7 +26,7 @@
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/UID.h"
-#include "DummyRDMDevice.h"
+#include "plugins/dummy/DummyRDMDevice.h"
 
 namespace ola {
 namespace plugin {
@@ -34,18 +34,14 @@ namespace dummy {
 
 class DummyResponder: public ola::rdm::RDMControllerInterface {
   public:
-    DummyResponder(const ola::rdm::UID &uid):
-      m_start_address(1),
+    explicit DummyResponder(const ola::rdm::UID &uid):
       m_personality(0),
-      m_identify_mode(0),
-      m_lamp_strikes(0),
       m_uid(uid),
-      m_root_device(ROOT_RDM_DEVICE) {}
+      m_root_device(m_uid, ola::rdm::ROOT_RDM_DEVICE) {}
 
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
 
-    uint16_t StartAddress() const { return m_start_address; }
     uint16_t Footprint() const {
       return PERSONALITIES[m_personality].footprint;
     }
@@ -53,10 +49,7 @@ class DummyResponder: public ola::rdm::RDMControllerInterface {
     const ola::rdm::UID &UID() const { return m_uid; }
 
   private:
-    uint16_t m_start_address;
     uint8_t m_personality;
-    uint8_t m_identify_mode;
-    uint32_t m_lamp_strikes;
     ola::rdm::UID m_uid;
     DummyRDMDevice m_root_device;
 
