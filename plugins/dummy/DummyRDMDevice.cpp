@@ -17,7 +17,6 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#include <string.h>
 #include <iostream>
 #include <string>
 #include <vector>

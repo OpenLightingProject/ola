@@ -32,7 +32,7 @@ namespace dummy {
 class DummyRDMDevice: public ola::rdm::RDMControllerInterface {
   public:
     DummyRDMDevice(const ola::rdm::UID &uid,
-                            uint16_t sub_device_number):
+                   uint16_t sub_device_number):
       m_uid(uid),
       m_start_address(1),
       m_personality(0),

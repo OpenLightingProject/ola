@@ -18,34 +18,12 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#include <string.h>
 #include <iostream>
-#include <string>
-#include <vector>
-#include "ola/BaseTypes.h"
-#include "ola/Clock.h"
-#include "ola/Logging.h"
-#include "ola/rdm/RDMEnums.h"
-#include "ola/network/NetworkUtils.h"
 #include "plugins/dummy/DummyResponder.h"
 
 namespace ola {
 namespace plugin {
 namespace dummy {
-
-using std::string;
-using std::vector;
-
-
-const DummyResponder::personality_info DummyResponder::PERSONALITIES[] = {
-  {5, "Personality 1"},
-  {10, "Personality 2"},
-  {20, "Personality 3"},
-};
-
-const unsigned int DummyResponder::PERSONALITY_COUNT = (
-  sizeof(DummyResponder::PERSONALITIES) /
-  sizeof(DummyResponder::personality_info));
 
 
 /*

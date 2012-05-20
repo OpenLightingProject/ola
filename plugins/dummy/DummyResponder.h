@@ -22,7 +22,6 @@
 #ifndef PLUGINS_DUMMY_DUMMYRESPONDER_H_
 #define PLUGINS_DUMMY_DUMMYRESPONDER_H_
 
-#include <string>
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/UID.h"
@@ -35,31 +34,21 @@ namespace dummy {
 class DummyResponder: public ola::rdm::RDMControllerInterface {
   public:
     explicit DummyResponder(const ola::rdm::UID &uid):
-      m_personality(0),
       m_uid(uid),
       m_root_device(m_uid, ola::rdm::ROOT_RDM_DEVICE) {}
 
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
 
-    uint16_t Footprint() const {
-      return PERSONALITIES[m_personality].footprint;
+    uint16_t RootDeviceFootprint() const {
+      return m_root_device.Footprint();
     }
 
     const ola::rdm::UID &UID() const { return m_uid; }
 
   private:
-    uint8_t m_personality;
     ola::rdm::UID m_uid;
     DummyRDMDevice m_root_device;
-
-    typedef struct {
-      uint16_t footprint;
-      const char *description;
-    } personality_info;
-
-    static const personality_info PERSONALITIES[];
-    static const unsigned int PERSONALITY_COUNT;
 };
 }  // dummy
 }  // plugin
