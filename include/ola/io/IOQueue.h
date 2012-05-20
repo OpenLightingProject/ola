@@ -103,7 +103,7 @@ class IOQueue: public OutputStream {
 
       if (m_last_block == m_blocks.begin()) {
         // first == last
-        return m_last - m_first;
+        return static_cast<unsigned int>(m_last - m_first);
       } else {
         return m_block_size - FreeSpaceInFirstBlock();
       }
@@ -116,7 +116,7 @@ class IOQueue: public OutputStream {
       if (m_blocks.empty())
         return 0;
 
-      return m_first - *(m_blocks.begin());
+      return static_cast<unsigned int>(m_first - *(m_blocks.begin()));
     }
 
     inline unsigned int SizeOfLastLBlock() const {
@@ -125,9 +125,9 @@ class IOQueue: public OutputStream {
 
       if (m_last_block == m_blocks.begin()) {
         // first == last
-        return m_last - m_first;
+        return static_cast<unsigned int>(m_last - m_first);
       } else {
-        return m_last - *m_last_block;
+        return static_cast<unsigned int>(m_last - *m_last_block);
       }
     }
 
@@ -137,7 +137,7 @@ class IOQueue: public OutputStream {
     inline unsigned int FreeSpaceInLastBlock() const {
       if (m_blocks.empty())
         return 0;
-      return *m_last_block + m_block_size - m_last;
+      return static_cast<unsigned int>(*m_last_block + m_block_size - m_last);
     }
 
     void AppendBlock();

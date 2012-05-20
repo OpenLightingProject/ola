@@ -136,7 +136,9 @@ class BufferedOutputDescriptor: public Parent, public DescriptorStream {
       const struct iovec *iov = m_output_buffer.AsIOVec(&iocnt);
       ssize_t bytes_written = this->SendV(iov, iocnt);
       m_output_buffer.FreeIOVec(iov);
-      m_output_buffer.Pop(bytes_written);
+
+      if (bytes_written > 0)
+        m_output_buffer.Pop(static_cast<unsigned int>(bytes_written));
 
       if (m_output_buffer.Empty())
         Disassociate();

@@ -36,7 +36,6 @@
 #include <ola/Clock.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
-#include <ola/Stringutils.h>
 #include <ola/io/SelectServer.h>
 #include <ola/network/AdvancedTCPConnector.h>
 #include <ola/network/IPV4Address.h>
@@ -414,6 +413,8 @@ void SimpleE133Monitor::OnTCPConnect(BufferedTCPSocket *socket) {
   socket->SetOnClose(
     NewSingleCallback(this, &SimpleE133Monitor::SocketClosed, ip_address));
   m_ss.AddReadDescriptor(socket);
+
+  // setup a timeout that closes this connect if we don't receive anything
 }
 
 

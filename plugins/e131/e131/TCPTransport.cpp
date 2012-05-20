@@ -54,7 +54,9 @@ const unsigned int IncommingStreamTransport::INITIAL_SIZE = 500;
 bool OutgoingStreamTransport::Send(const PDUBlock<PDU> &pdu_block) {
   unsigned int pdu_block_size = pdu_block.Size();
   unsigned int total_message_size = (
-      ACN_HEADER_SIZE + sizeof(pdu_block_size) + pdu_block.Size());
+      ACN_HEADER_SIZE +
+      static_cast<unsigned int>(sizeof(pdu_block_size)) +
+      pdu_block.Size());
   if (m_stream->Size() + total_message_size > m_max_buffer_size)
     return false;
 
@@ -181,7 +183,7 @@ void IncommingStreamTransport::HandlePDUFlags() {
   OLA_DEBUG << "Reading PDU flags, data size is " << DataLength();
   m_pdu_length_size = (*m_buffer_start  & BaseInflator::LFLAG_MASK) ?
     THREE_BYTES : TWO_BYTES;
-  m_outstanding_data += static_cast<int>(m_pdu_length_size) - 1;
+  m_outstanding_data += static_cast<unsigned int>(m_pdu_length_size) - 1;
   OLA_DEBUG << "PDU length size is " << static_cast<int>(m_pdu_length_size) <<
     " bytes";
   m_state = WAITING_FOR_PDU_LENGTH;

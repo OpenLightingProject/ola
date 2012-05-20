@@ -37,6 +37,7 @@ class UIDTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testUIDSet);
   CPPUNIT_TEST(testUIDSetUnion);
   CPPUNIT_TEST(testUIDParse);
+  CPPUNIT_TEST(testDirectedToUID);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -45,6 +46,7 @@ class UIDTest: public CppUnit::TestFixture {
     void testUIDSet();
     void testUIDSetUnion();
     void testUIDParse();
+    void testDirectedToUID();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(UIDTest);
@@ -231,4 +233,32 @@ void UIDTest::testUIDParse() {
   CPPUNIT_ASSERT(!UID::FromString(":123456"));
   CPPUNIT_ASSERT(!UID::FromString(":123456"));
   CPPUNIT_ASSERT(!UID::FromString("abcd:123456"));
+}
+
+
+/**
+ * Test DirectedToUID()
+ */
+void UIDTest::testDirectedToUID() {
+  const uint16_t MANUFACTURER_ID = 0x7a70;
+  UID device_uid(MANUFACTURER_ID, 10);
+
+  // test a direct match
+  CPPUNIT_ASSERT(device_uid.DirectedToUID(device_uid));
+
+  // test a different device
+  UID other_device(MANUFACTURER_ID, 9);
+  CPPUNIT_ASSERT(!other_device.DirectedToUID(device_uid));
+
+  // test broadcast
+  UID broadcast_uid = UID::AllDevices();
+  CPPUNIT_ASSERT(broadcast_uid.DirectedToUID(device_uid));
+
+  // test vendorcast
+  UID vendorcast_uid = UID::AllManufactureDevices(MANUFACTURER_ID);
+  CPPUNIT_ASSERT(vendorcast_uid.DirectedToUID(device_uid));
+
+  // test another vendor
+  UID other_vendorcast_uid = UID::AllManufactureDevices(MANUFACTURER_ID - 1);
+  CPPUNIT_ASSERT(!other_vendorcast_uid.DirectedToUID(device_uid));
 }
