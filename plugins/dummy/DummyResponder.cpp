@@ -25,6 +25,12 @@ namespace ola {
 namespace plugin {
 namespace dummy {
 
+DummyResponder::DummyResponder(const ola::rdm::UID &uid, int number_of_devices) {
+  m_uid = uid;
+  for (int i = 0; i < number_of_devices; i++) {
+    m_root_devices[i] = new DummyRDMDevice(m_uid, ola::rdm::ROOT_RDM_DEVICE + i);
+  }
+}
 
 /*
  * Handle an RDM Request
@@ -32,6 +38,12 @@ namespace dummy {
 void DummyResponder::SendRDMRequest(const ola::rdm::RDMRequest *request,
                                     ola::rdm::RDMCallback *callback) {
   m_root_device.SendRDMRequest(request, callback);
+}
+
+DummyResponder::~DummyResponder() {
+  for (unsigned i = 0; i < m_root_devices.size(); i++) {
+    delete m_root_devices[i];
+  }
 }
 }  // dummy
 }  // plugin

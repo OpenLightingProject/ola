@@ -22,6 +22,7 @@
 #ifndef PLUGINS_DUMMY_DUMMYRESPONDER_H_
 #define PLUGINS_DUMMY_DUMMYRESPONDER_H_
 
+#include <vector>
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/UID.h"
@@ -33,22 +34,21 @@ namespace dummy {
 
 class DummyResponder: public ola::rdm::RDMControllerInterface {
   public:
-    explicit DummyResponder(const ola::rdm::UID &uid):
-      m_uid(uid),
-      m_root_device(m_uid, ola::rdm::ROOT_RDM_DEVICE) {}
+    DummyResponder(const ola::rdm::UID &uid, int number_of_devices);
+    virtual ~DummyResponder();
 
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
 
     uint16_t RootDeviceFootprint() const {
-      return m_root_device.Footprint();
+      return m_root_devices[0]->Footprint();
     }
 
     const ola::rdm::UID &UID() const { return m_uid; }
 
   private:
     ola::rdm::UID m_uid;
-    DummyRDMDevice m_root_device;
+    std::vector<DummyRDMDevice*> m_root_devices;
 };
 }  // dummy
 }  // plugin
