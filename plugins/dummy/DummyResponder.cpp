@@ -31,8 +31,8 @@ DummyResponder::DummyResponder(const ola::rdm::UID &uid,
                                unsigned int number_of_devices)
 : m_uid(uid) {
   for (unsigned int i = 0;
-       i < std::max((unsigned int) 1,
-       std::min(number_of_devices, (unsigned int) 255)); i++) {
+       i < std::max(1u,
+       std::min(number_of_devices, 255u)); i++) {
     m_subdevices[i] = new DummyRDMDevice(m_uid, ola::rdm::ROOT_RDM_DEVICE + i);
   }
 }
