@@ -19,16 +19,21 @@
  */
 
 #include <iostream>
+#include <vector>
+#include <algorithm>
 #include "plugins/dummy/DummyResponder.h"
 
 namespace ola {
 namespace plugin {
 namespace dummy {
 
-DummyResponder::DummyResponder(const ola::rdm::UID &uid, int number_of_devices) {
-  m_uid = uid;
-  for (int i = 0; i < number_of_devices; i++) {
-    m_root_devices[i] = new DummyRDMDevice(m_uid, ola::rdm::ROOT_RDM_DEVICE + i);
+DummyResponder::DummyResponder(const ola::rdm::UID &uid,
+                               unsigned int number_of_devices)
+: m_uid(uid) {
+  for (unsigned int i = 0;
+       i < std::max((unsigned int) 1,
+       std::min(number_of_devices, (unsigned int) 255)); i++) {
+    m_subdevices[i] = new DummyRDMDevice(m_uid, ola::rdm::ROOT_RDM_DEVICE + i);
   }
 }
 
@@ -37,12 +42,13 @@ DummyResponder::DummyResponder(const ola::rdm::UID &uid, int number_of_devices) 
  */
 void DummyResponder::SendRDMRequest(const ola::rdm::RDMRequest *request,
                                     ola::rdm::RDMCallback *callback) {
-  m_root_device.SendRDMRequest(request, callback);
+  m_subdevices[0]->SendRDMRequest(request, callback);
 }
 
 DummyResponder::~DummyResponder() {
-  for (unsigned i = 0; i < m_root_devices.size(); i++) {
-    delete m_root_devices[i];
+  for (std::vector<DummyRDMDevice*>::iterator i = m_subdevices.begin();
+       i != m_subdevices.end(); i++) {
+    delete *i;
   }
 }
 }  // dummy

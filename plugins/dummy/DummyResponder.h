@@ -34,21 +34,21 @@ namespace dummy {
 
 class DummyResponder: public ola::rdm::RDMControllerInterface {
   public:
-    DummyResponder(const ola::rdm::UID &uid, int number_of_devices);
+    DummyResponder(const ola::rdm::UID &uid, unsigned int number_of_devices);
     virtual ~DummyResponder();
 
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
 
     uint16_t RootDeviceFootprint() const {
-      return m_root_devices[0]->Footprint();
+      return m_subdevices[0]->Footprint();
     }
 
     const ola::rdm::UID &UID() const { return m_uid; }
 
   private:
     ola::rdm::UID m_uid;
-    std::vector<DummyRDMDevice*> m_root_devices;
+    std::vector<DummyRDMDevice*> m_subdevices;
 };
 }  // dummy
 }  // plugin
