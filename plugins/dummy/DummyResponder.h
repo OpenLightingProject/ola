@@ -34,7 +34,8 @@ namespace dummy {
 
 class DummyResponder: public ola::rdm::RDMControllerInterface {
   public:
-    DummyResponder(const ola::rdm::UID &uid, unsigned int number_of_devices);
+    DummyResponder(const ola::rdm::UID &uid,
+                   unsigned int number_of_subdevices = 0);
     virtual ~DummyResponder();
 
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
