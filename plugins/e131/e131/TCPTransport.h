@@ -137,21 +137,23 @@ class IncommingStreamTransport {
      * Returns the free space at the end of the buffer.
      */
     inline unsigned int FreeSpace() const {
-      return m_buffer_start ? m_buffer_end - m_data_end : 0;
+      return m_buffer_start ?
+        static_cast<unsigned int>(m_buffer_end - m_data_end) : 0u;
     }
 
     /**
      * Return the amount of data in the buffer
      */
     inline unsigned int DataLength() const {
-      return m_buffer_start ? m_data_end - m_buffer_start : 0;
+      return m_buffer_start ?
+        static_cast<unsigned int>(m_data_end - m_buffer_start) : 0u;
     }
 
     /**
      * Return the size of the buffer
      */
     inline unsigned int BufferSize() const {
-      return m_buffer_end - m_buffer_start;
+      return static_cast<unsigned int>(m_buffer_end - m_buffer_start);
     }
 
     static const unsigned int INITIAL_SIZE;

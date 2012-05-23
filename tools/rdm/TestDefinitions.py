@@ -2094,9 +2094,9 @@ class SetDeviceHoursWithNoData(OptionalParameterTestFixture):
 
   def Test(self):
     if self.Property('set_device_hours_supported'):
-      expected_result= RDMNack.NR_FORMAT_ERROR
+      expected_result = RDMNack.NR_FORMAT_ERROR
     else:
-      expected_result= RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
+      expected_result = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
     self.AddIfSetSupported(self.NackSetResult(expected_result));
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
 
@@ -2124,17 +2124,31 @@ class SetLampHours(TestMixins.SetUInt32Mixin,
   CATEGORY = TestCategory.POWER_LAMP_SETTINGS
   PID = 'LAMP_HOURS'
   EXPECTED_FIELD = 'hours'
+  PROVIDES = ['set_lamp_hours_supported']
   REQUIRES = ['lamp_hours']
 
   def OldValue(self):
     return self.Property('lamp_hours')
 
+  def VerifyResult(self, response, fields):
+    if response.command_class == PidStore.RDM_SET:
+      self.SetProperty('set_lamp_hours_supported',
+                       response.WasAcked())
 
-class SetLampHoursWithNoData(TestMixins.SetWithNoDataMixin,
-                             OptionalParameterTestFixture):
+
+class SetLampHoursWithNoData(OptionalParameterTestFixture):
   """Set the device hours with no param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LAMP_HOURS'
+  REQUIRES = ['set_lamp_hours_supported']
+
+  def Test(self):
+    if self.Property('set_lamp_hours_supported'):
+      expected_result = RDMNack.NR_FORMAT_ERROR
+    else:
+      expected_result = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
+    self.AddIfSetSupported(self.NackSetResult(expected_result));
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
 
 
 # Lamp Strikes
@@ -2159,17 +2173,31 @@ class SetLampStrikes(TestMixins.SetUInt32Mixin, OptionalParameterTestFixture):
   CATEGORY = TestCategory.POWER_LAMP_SETTINGS
   PID = 'LAMP_STRIKES'
   EXPECTED_FIELD = 'strikes'
+  PROVIDES = ['set_lamp_strikes_supported']
   REQUIRES = ['lamp_strikes']
 
   def OldValue(self):
     return self.Property('lamp_strikes')
 
+  def VerifyResult(self, response, fields):
+    if response.command_class == PidStore.RDM_SET:
+      self.SetProperty('set_lamp_strikes_supported',
+                       response.WasAcked())
 
-class SetLampStrikesWithNoData(TestMixins.SetWithNoDataMixin,
-                               OptionalParameterTestFixture):
+
+class SetLampStrikesWithNoData(OptionalParameterTestFixture):
   """Set the lamp strikes with no param data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LAMP_STRIKES'
+  REQUIRES = ['set_lamp_strikes_supported']
+
+  def Test(self):
+    if self.Property('set_lamp_strikes_supported'):
+      expected_result = RDMNack.NR_FORMAT_ERROR
+    else:
+      expected_result = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
+    self.AddIfSetSupported(self.NackSetResult(expected_result));
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
 
 
 # Lamp State
@@ -2679,6 +2707,31 @@ class SetBroadcastIdentifyDevice(TestMixins.SetNonUnicastIdentifyMixin,
 
   def Uid(self):
     return UID.AllDevices()
+
+
+class SetOtherVendorcastIdentifyDevice(TestMixins.SetNonUnicastIdentifyMixin,
+                                       ResponderTestFixture):
+  """Send a vendorcast identify off to another manufacturer's ID."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'IDENTIFY_DEVICE'
+
+  def States(self):
+    return [
+      self.TurnOn,
+      self.VerifyOn,
+      self.TurnOff,
+      self.VerifyOn,
+    ]
+
+  def Uid(self):
+    # use a different vendor's vendorcast address
+    vendorcast_id = self._uid.manufacturer_id
+    if vendorcast_id == 0:
+      vendorcast_id += 1
+    else:
+      vendorcast_id -= 1
+
+    return UID(vendorcast_id, 0xffffffff)
 
 
 class SetIdentifyDeviceWithNoData(ResponderTestFixture):

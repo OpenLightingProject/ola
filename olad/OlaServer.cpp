@@ -84,7 +84,7 @@ OlaServer::OlaServer(OlaClientServiceFactory *factory,
     : m_service_factory(factory),
       m_plugin_loaders(plugin_loaders),
       m_ss(select_server),
-      m_tcp_socket_factory(ola::NewCallback(this, &OlaServer::NewConnection)),
+      m_tcp_socket_factory(ola::NewCallback(this, &OlaServer::NewTCPConnection)),
       m_accepting_socket(socket),
       m_device_manager(NULL),
       m_plugin_manager(NULL),
@@ -283,7 +283,18 @@ void OlaServer::ReloadPlugins() {
  * Add a new ConnectedDescriptor to this Server.
  * @param socket the new ConnectedDescriptor
  */
-void OlaServer::NewConnection(ola::network::TcpSocket *socket) {
+void OlaServer::NewConnection(ola::io::ConnectedDescriptor *descriptor) {
+  if (!descriptor)
+    return;
+  InternalNewConnection(descriptor);
+}
+
+
+/*
+ * Add a new ConnectedDescriptor to this Server.
+ * @param socket the new ConnectedDescriptor
+ */
+void OlaServer::NewTCPConnection(ola::network::TcpSocket *socket) {
   if (!socket)
     return;
   InternalNewConnection(socket);

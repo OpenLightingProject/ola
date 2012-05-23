@@ -87,8 +87,8 @@ void IncomingUDPTransport::Receive() {
   if (!m_socket->RecvFrom(m_recv_buffer, &size, src_address, src_port))
     return;
 
-  ssize_t header_size = PreamblePacker::ACN_HEADER_SIZE;
-  if (size < header_size) {
+  unsigned int header_size = PreamblePacker::ACN_HEADER_SIZE;
+  if (size < static_cast<ssize_t>(header_size)) {
     OLA_WARN << "short ACN frame, discarding";
     return;
   }

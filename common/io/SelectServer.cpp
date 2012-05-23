@@ -446,8 +446,9 @@ bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
 
   // adding descriptors should be the last thing we do, they may have changed
   // due to timeouts above.
-  AddDescriptorsToSet(&r_fds, &w_fds, &maxsd);
+  bool closed_descriptors = AddDescriptorsToSet(&r_fds, &w_fds, &maxsd);
 
+  // take care of stats accounting
   if (m_wake_up_time.IsSet()) {
     TimeInterval loop_time = now - m_wake_up_time;
     OLA_DEBUG << "ss process time was " << loop_time.ToString();
@@ -462,10 +463,11 @@ bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
     sleep_interval = std::min(interval, sleep_interval);
   }
 
-  // if we've already been told to terminate set the timeout to something
+  // if we've already been told to terminate OR there are closed descriptors,
+  // set the timeout to something
   // very small (1ms). This ensures we at least make a pass through the
   // descriptors.
-  if (m_terminate)
+  if (m_terminate || closed_descriptors)
     sleep_interval = std::min(sleep_interval, TimeInterval(0, 1000));
 
   sleep_interval.AsTimeval(&tv);
@@ -474,6 +476,14 @@ bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
       // timeout
       m_clock->CurrentTime(&m_wake_up_time);
       CheckTimeouts(m_wake_up_time);
+
+      if (closed_descriptors) {
+        // there were closed descriptors before the select() we need to deal
+        // with them.
+        FD_ZERO(&r_fds);
+        FD_ZERO(&w_fds);
+        CheckDescriptors(&r_fds, &w_fds);
+      }
       return true;
     case -1:
       if (errno == EINTR)
@@ -486,16 +496,20 @@ bool SelectServer::CheckForEvents(const TimeInterval &poll_interval) {
       m_clock->CurrentTime(&m_wake_up_time);
       CheckTimeouts(m_wake_up_time);
   }
+
   return true;
 }
 
 
 /*
  * Add all the descriptors to the FD_SET
+ * @returns true if there are closed descriptors.
  */
-void SelectServer::AddDescriptorsToSet(fd_set *r_set,
+bool SelectServer::AddDescriptorsToSet(fd_set *r_set,
                                        fd_set *w_set,
                                        int *max_sd) {
+  bool closed_descriptors = false;
+
   ReadDescriptorSet::iterator iter = m_read_descriptors.begin();
   while (iter != m_read_descriptors.end()) {
     ReadDescriptorSet::iterator this_iter = iter;
@@ -524,17 +538,7 @@ void SelectServer::AddDescriptorsToSet(fd_set *r_set,
       *max_sd = max(*max_sd, this_iter->descriptor->ReadDescriptor());
       FD_SET(this_iter->descriptor->ReadDescriptor(), r_set);
     } else {
-      // The descriptor was closed without removing it from the select server
-      ConnectedDescriptor::OnCloseCallback *on_close =
-        this_iter->descriptor->TransferOnClose();
-      if (on_close)
-        on_close->Run();
-      if (this_iter->delete_on_close)
-        delete this_iter->descriptor;
-      if (m_export_map)
-        (*m_export_map->GetIntegerVar(K_CONNECTED_DESCRIPTORS_VAR))--;
-      m_connected_read_descriptors.erase(this_iter);
-      OLA_WARN << "Removed a disconnected descriptor from the select server";
+      closed_descriptors = true;
     }
   }
 
@@ -559,6 +563,7 @@ void SelectServer::AddDescriptorsToSet(fd_set *r_set,
   // finally add the loopback descriptor
   FD_SET(m_incoming_descriptor.ReadDescriptor(), r_set);
   *max_sd = max(*max_sd, m_incoming_descriptor.ReadDescriptor());
+  return closed_descriptors;
 }
 
 
@@ -586,13 +591,19 @@ void SelectServer::CheckDescriptors(fd_set *r_set, fd_set *w_set) {
   while (con_iter != m_connected_read_descriptors.end()) {
     ConnectedDescriptorSet::iterator this_iter = con_iter;
     con_iter++;
-    if (FD_ISSET(this_iter->descriptor->ReadDescriptor(), r_set)) {
-      if (this_iter->descriptor->IsClosed()) {
-        closed_queue.push(*this_iter);
-        m_connected_read_descriptors.erase(this_iter);
-      } else {
+    bool closed = false;
+    if (!this_iter->descriptor->ValidReadDescriptor()) {
+      closed = true;
+    } else if (FD_ISSET(this_iter->descriptor->ReadDescriptor(), r_set)) {
+      if (this_iter->descriptor->IsClosed())
+        closed = true;
+      else
         read_ready_queue.push(this_iter->descriptor);
-      }
+    }
+
+    if (closed) {
+      closed_queue.push(*this_iter);
+      m_connected_read_descriptors.erase(this_iter);
     }
   }
 

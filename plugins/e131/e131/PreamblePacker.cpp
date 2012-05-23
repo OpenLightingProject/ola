@@ -71,7 +71,7 @@ const uint8_t *PreamblePacker::Pack(const PDUBlock<PDU> &pdu_block,
     OLA_WARN << "Failed to pack E1.31 PDU";
     return NULL;
   }
-  *length = sizeof(ACN_HEADER) + size;
+  *length = static_cast<unsigned int>(sizeof(ACN_HEADER) + size);
   return m_send_buffer;
 }
 

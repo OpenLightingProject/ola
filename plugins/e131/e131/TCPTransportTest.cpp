@@ -85,6 +85,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TCPTransportTest);
 void TCPTransportTest::setUp() {
   ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
   m_stream_ok = true;
+  m_pdus_received = 0;
 
   CPPUNIT_ASSERT(IPV4Address::FromString("127.0.0.1", &m_localhost));
 
@@ -138,6 +139,7 @@ void TCPTransportTest::Receive() {
  * Send a single PDU.
  */
 void TCPTransportTest::testSinglePDU() {
+  CPPUNIT_ASSERT_EQUAL(0u, m_pdus_received);
   SendPDU(__LINE__);
   m_ss->RunOnce(1, 0);
   m_loopback.CloseClient();
