@@ -112,7 +112,7 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
       "', Serial: '" << sserial << "'";
     std::transform(v.begin(), v.end(), v.begin(), ::toupper);
     if (std::string::npos != v.find("FTDI")) {
-	widgets->push_back(FtdiWidgetInfo(sname, sserial, i));
+      widgets->push_back(FtdiWidgetInfo(sname, sserial, i));
     }
   }
 
@@ -121,10 +121,10 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
 }
 
 bool FtdiWidget::Open() {
-  if(Serial().empty()) {
-    OLA_WARN << Name() << " has no serial number, " 
+  if (Serial().empty()) {
+    OLA_WARN << Name() << " has no serial number, "
       "might cause issues with multiple devices";
-    if(ftdi_usb_open(&m_handle, FtdiWidget::VID, FtdiWidget::PID) < 0) {
+    if (ftdi_usb_open(&m_handle, FtdiWidget::VID, FtdiWidget::PID) < 0) {
       OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
       return false;
     } else {
@@ -132,7 +132,7 @@ bool FtdiWidget::Open() {
     }
   } else {
     if (ftdi_usb_open_desc(&m_handle, FtdiWidget::VID, FtdiWidget::PID,
-			   Name().c_str(), Serial().c_str()) < 0) {
+                           Name().c_str(), Serial().c_str()) < 0) {
       OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
       return false;
     } else {
@@ -253,8 +253,7 @@ bool FtdiWidget::Read(unsigned char *buff, int size) {
  * Mainly used to test if device is working correctly
  * before AddDevice()
  */
-bool FtdiWidget::SetupOutput()
-{
+bool FtdiWidget::SetupOutput() {
   // Setup the widget
   if (Open() == false) {
     OLA_WARN << "Error Opening widget";
@@ -270,7 +269,7 @@ bool FtdiWidget::SetupOutput()
     OLA_WARN << "Error Setting baudrate";
     return false;
   }
-  
+
   if (SetLineProperties() == false) {
     OLA_WARN << "Error setting line properties";
     return false;

@@ -78,7 +78,7 @@ void *FtdiDmxThread::Run() {
     (static_cast<double>(1000) / m_frequency) + static_cast<double>(0.5)));
 
   // Setup the widget
-  if(!m_widget->IsOpen())
+  if (!m_widget->IsOpen())
     m_widget->SetupOutput();
 
   while (1) {

@@ -52,9 +52,9 @@ extern "C" ola::AbstractPlugin* create(ola::PluginAdaptor *plugin_adaptor) {
  */
 void FtdiDmxPlugin::AddDevice(FtdiDmxDevice *device) {
   // Check if device is working before adding
-  if(device->GetDevice()->SetupOutput() == false) {
-    OLA_WARN << "Unable to setup device for output, device ignored " 
-	     << device->Description();
+  if (device->GetDevice()->SetupOutput() == false) {
+    OLA_WARN << "Unable to setup device for output, device ignored "
+             << device->Description();
     delete device;
     return;
   }

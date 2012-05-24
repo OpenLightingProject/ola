@@ -263,6 +263,51 @@ bool FtdiWidget::Read(unsigned char *buffer, int size) {
     return true;
   }
 }
+
+/**
+ * Setup our device for DMX send
+ * Mainly used to test if device is working correctly
+ * before AddDevice()
+ */
+bool FtdiWidget::SetupOutput() {
+  // Setup the widget
+  if (Open() == false) {
+    OLA_WARN << "Error Opening widget";
+    return false;
+  }
+
+  if (Reset() == false) {
+    OLA_WARN << "Error Resetting widget";
+    return false;
+  }
+
+  if (SetBaudRate() == false) {
+    OLA_WARN << "Error Setting baudrate";
+    return false;
+  }
+
+  if (SetLineProperties() == false) {
+    OLA_WARN << "Error setting line properties";
+    return false;
+  }
+
+  if (SetFlowControl() == false) {
+    OLA_WARN << "Error setting flow control";
+    return false;
+  }
+
+  if (PurgeBuffers() == false) {
+    OLA_WARN << "Error purging buffers";
+    return false;
+  }
+
+  if (ClearRts() == false) {
+    OLA_WARN << "Error clearing rts";
+    return false;
+  }
+
+  return true;
+}
 }
 }
 }
