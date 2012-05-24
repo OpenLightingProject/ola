@@ -112,7 +112,7 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
       "', Serial: '" << sserial << "'";
     std::transform(v.begin(), v.end(), v.begin(), ::toupper);
     if (std::string::npos != v.find("FTDI")) {
-      widgets->push_back(FtdiWidgetInfo(sname, sserial, i));
+	widgets->push_back(FtdiWidgetInfo(sname, sserial, i));
     }
   }
 
@@ -246,6 +246,52 @@ bool FtdiWidget::Read(unsigned char *buff, int size) {
   } else {
     return true;
   }
+}
+
+/**
+ * Setup our device for DMX send
+ * Mainly used to test if device is working correctly
+ * before AddDevice()
+ */
+bool FtdiWidget::SetupOutput()
+{
+  // Setup the widget
+  if (Open() == false) {
+    OLA_WARN << "Error Opening widget";
+    return false;
+  }
+
+  if (Reset() == false) {
+    OLA_WARN << "Error Resetting widget";
+    return false;
+  }
+
+  if (SetBaudRate() == false) {
+    OLA_WARN << "Error Setting baudrate";
+    return false;
+  }
+  
+  if (SetLineProperties() == false) {
+    OLA_WARN << "Error setting line properties";
+    return false;
+  }
+
+  if (SetFlowControl() == false) {
+    OLA_WARN << "Error setting flow control";
+    return false;
+  }
+
+  if (PurgeBuffers() == false) {
+    OLA_WARN << "Error purging buffers";
+    return false;
+  }
+
+  if (ClearRts() == false) {
+    OLA_WARN << "Error clearing rts";
+    return false;
+  }
+
+  return true;
 }
 }  // ftdidmx
 }  // plugin

@@ -51,9 +51,17 @@ extern "C" ola::AbstractPlugin* create(ola::PluginAdaptor *plugin_adaptor) {
  * Ownership of the FtdiDmxDevice is transfered to us here.
  */
 void FtdiDmxPlugin::AddDevice(FtdiDmxDevice *device) {
+  // Check if device is working before adding
+  if(device->GetDevice()->SetupOutput() == false) {
+    OLA_WARN << "Unable to setup device for output, device ignored " 
+	     << device->Description();
+    delete device;
+    return;
+  }
+
   if (device->Start()) {
-    m_devices.push_back(device);
-    m_plugin_adaptor->RegisterDevice(device);
+      m_devices.push_back(device);
+      m_plugin_adaptor->RegisterDevice(device);
   } else {
     OLA_WARN << "Failed to start FTDI device " << device->Description();
     delete device;

@@ -45,6 +45,7 @@ class FtdiDmxDevice : public Device {
 
   string DeviceId() const { return m_device->Serial(); }
   string Description() const { return m_widget_info.Description(); }
+  FtdiWidget* GetDevice() {return m_device.get(); }
 
  protected:
   bool StartHook();

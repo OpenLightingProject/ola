@@ -168,6 +168,9 @@ class FtdiWidget {
     /** Read data from a previously-opened line */
     bool Read(unsigned char* buff, int size);
 
+    /** Setup device for DMX Output **/
+    bool SetupOutput();
+
   private:
     string m_serial;
     string m_name;

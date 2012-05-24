@@ -78,20 +78,8 @@ void *FtdiDmxThread::Run() {
     (static_cast<double>(1000) / m_frequency) + static_cast<double>(0.5)));
 
   // Setup the widget
-  if (m_widget->Open() == false)
-    OLA_WARN << "Error Opening widget";
-  if (m_widget->Reset() == false)
-    OLA_WARN << "Error Resetting widget";
-  if (m_widget->SetBaudRate() == false)
-    OLA_WARN << "Error Setting baudrate";
-  if (m_widget->SetLineProperties() == false)
-    OLA_WARN << "Error setting line properties";
-  if (m_widget->SetFlowControl() == false)
-    OLA_WARN << "Error setting flow control";
-  if (m_widget->PurgeBuffers() == false)
-    OLA_WARN << "Error purging buffers";
-  if (m_widget->ClearRts() == false)
-    OLA_WARN << "Error clearing rts";
+  if(!m_widget->IsOpen())
+    m_widget->SetupOutput();
 
   while (1) {
     {
