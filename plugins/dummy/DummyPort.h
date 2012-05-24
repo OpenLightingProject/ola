@@ -51,6 +51,7 @@ class DummyPort: public BasicOutputPort {
                         ola::rdm::RDMCallback *callback);
     static const unsigned int kNumberOfResponders = 10;
     static const unsigned int kStartAddress = 0xffffff00;
+    static const unsigned int kNumberOfDevices = 10;
 
   private:
     typedef struct {

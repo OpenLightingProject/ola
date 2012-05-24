@@ -22,10 +22,11 @@
 #ifndef PLUGINS_DUMMY_DUMMYRESPONDER_H_
 #define PLUGINS_DUMMY_DUMMYRESPONDER_H_
 
-#include <string>
+#include <vector>
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/UID.h"
+#include "plugins/dummy/DummyRDMDevice.h"
 
 namespace ola {
 namespace plugin {
@@ -33,67 +34,22 @@ namespace dummy {
 
 class DummyResponder: public ola::rdm::RDMControllerInterface {
   public:
-    explicit DummyResponder(const ola::rdm::UID &uid):
-      m_start_address(1),
-      m_personality(0),
-      m_identify_mode(0),
-      m_lamp_strikes(0),
-      m_uid(uid) {}
+    DummyResponder(const ola::rdm::UID &uid,
+                   unsigned int number_of_subdevices = 0);
+    virtual ~DummyResponder();
 
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
 
-    uint16_t StartAddress() const { return m_start_address; }
-    uint16_t Footprint() const {
-      return PERSONALITIES[m_personality].footprint;
+    uint16_t RootDeviceFootprint() const {
+      return m_subdevices[0]->Footprint();
     }
 
     const ola::rdm::UID &UID() const { return m_uid; }
 
   private:
-    uint16_t m_start_address;
-    uint8_t m_personality;
-    uint8_t m_identify_mode;
-    uint32_t m_lamp_strikes;
     ola::rdm::UID m_uid;
-
-    void HandleUnknownPacket(const ola::rdm::RDMRequest *request,
-                             ola::rdm::RDMCallback *callback);
-    void HandleSupportedParams(const ola::rdm::RDMRequest *request,
-                               ola::rdm::RDMCallback *callback);
-    void HandleDeviceInfo(const ola::rdm::RDMRequest *request,
-                          ola::rdm::RDMCallback *callback);
-    void HandleFactoryDefaults(const ola::rdm::RDMRequest *request,
-                               ola::rdm::RDMCallback *callback);
-    void HandleProductDetailList(const ola::rdm::RDMRequest *request,
-                                 ola::rdm::RDMCallback *callback);
-    void HandleStringResponse(const ola::rdm::RDMRequest *request,
-                              ola::rdm::RDMCallback *callback,
-                              const std::string &value);
-    void HandlePersonality(const ola::rdm::RDMRequest *request,
-                           ola::rdm::RDMCallback *callback);
-    void HandlePersonalityDescription(const ola::rdm::RDMRequest *request,
-                                      ola::rdm::RDMCallback *callback);
-    void HandleDmxStartAddress(const ola::rdm::RDMRequest *request,
-                               ola::rdm::RDMCallback *callback);
-    void HandleLampStrikes(const ola::rdm::RDMRequest *request,
-                           ola::rdm::RDMCallback *callback);
-    void HandleIdentifyDevice(const ola::rdm::RDMRequest *request,
-                              ola::rdm::RDMCallback *callback);
-    void HandleRealTimeClock(const ola::rdm::RDMRequest *request,
-                             ola::rdm::RDMCallback *callback);
-    bool CheckForBroadcastSubdeviceOrData(const ola::rdm::RDMRequest *request,
-                                          ola::rdm::RDMCallback *callback);
-    void RunRDMCallback(ola::rdm::RDMCallback *callback,
-                        ola::rdm::RDMResponse *response);
-
-    typedef struct {
-      uint16_t footprint;
-      const char *description;
-    } personality_info;
-
-    static const personality_info PERSONALITIES[];
-    static const unsigned int PERSONALITY_COUNT;
+    std::vector<DummyRDMDevice*> m_subdevices;
 };
 }  // dummy
 }  // plugin
