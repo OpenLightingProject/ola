@@ -48,12 +48,16 @@ class DummyPlugin: public Plugin {
   private:
     bool StartHook();
     bool StopHook();
-    bool SetDefaultPreferences() { return true; }
+    bool SetDefaultPreferences();
 
     DummyDevice *m_device;  // the dummy device
     static const char PLUGIN_NAME[];
     static const char PLUGIN_PREFIX[];
     static const char DEVICE_NAME[];
+    static const char DEVICE_COUNT_KEY[];
+    static const char SUBDEVICE_COUNT_KEY[];
+    static const char DEFAULT_DEVICE_COUNT[];
+    static const char DEFAULT_SUBDEVICE_COUNT[];
 };
 }  // dummy
 }  // plugin

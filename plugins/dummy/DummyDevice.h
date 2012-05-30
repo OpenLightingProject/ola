@@ -35,12 +35,21 @@ using std::string;
 
 class DummyDevice: public Device {
   public:
-    DummyDevice(AbstractPlugin *owner, const string &name):
-      Device(owner, name) {}
+    DummyDevice(
+        AbstractPlugin *owner,
+        const string &name,
+        uint16_t number_of_devices,
+        uint16_t number_of_subdevices):
+      Device(owner, name),
+      m_number_of_devices(number_of_devices),
+      m_number_of_subdevices(number_of_subdevices) {
+    }
     string DeviceId() const { return "1"; }
 
   protected:
     bool StartHook();
+    uint16_t m_number_of_devices;
+    uint16_t m_number_of_subdevices;
 };
 }  // dummy
 }  // plugin

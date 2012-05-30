@@ -41,7 +41,10 @@ namespace dummy {
 
 class DummyPort: public BasicOutputPort {
   public:
-    DummyPort(DummyDevice *parent, unsigned int id);
+    DummyPort(DummyDevice *parent,
+              unsigned int id,
+              uint16_t device_count,
+              uint16_t subdevice_count);
     virtual ~DummyPort();
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     string Description() const { return "Dummy Port"; }
@@ -49,9 +52,7 @@ class DummyPort: public BasicOutputPort {
     void RunIncrementalDiscovery(RDMDiscoveryCallback *callback);
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
-    static const unsigned int kNumberOfResponders = 10;
     static const unsigned int kStartAddress = 0xffffff00;
-    static const unsigned int kNumberOfDevices = 10;
 
   private:
     typedef struct {

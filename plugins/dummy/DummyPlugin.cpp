@@ -22,7 +22,9 @@
 #include <stdio.h>
 #include <string>
 
+#include "ola/StringUtils.h"
 #include "olad/PluginAdaptor.h"
+#include "olad/Preferences.h"
 #include "plugins/dummy/DummyDevice.h"
 #include "plugins/dummy/DummyPlugin.h"
 
@@ -43,6 +45,10 @@ using std::string;
 const char DummyPlugin::PLUGIN_NAME[] = "Dummy";
 const char DummyPlugin::PLUGIN_PREFIX[] = "dummy";
 const char DummyPlugin::DEVICE_NAME[] = "Dummy Device";
+const char DummyPlugin::DEVICE_COUNT_KEY[] = "number_of_devices";
+const char DummyPlugin::SUBDEVICE_COUNT_KEY[] = "number_of_subdevices";
+const char DummyPlugin::DEFAULT_DEVICE_COUNT[] = "5";
+const char DummyPlugin::DEFAULT_SUBDEVICE_COUNT[] = "0";
 
 /*
  * Start the plugin
@@ -50,7 +56,16 @@ const char DummyPlugin::DEVICE_NAME[] = "Dummy Device";
  * Lets keep it simple, one device for this plugin
  */
 bool DummyPlugin::StartHook() {
-  m_device = new DummyDevice(this, DEVICE_NAME);
+  unsigned int device_count, subdevice_count;
+  if (!StringToInt(m_preferences->GetValue(DEVICE_COUNT_KEY) ,
+                   &device_count))
+    StringToInt(DEFAULT_DEVICE_COUNT, &device_count);
+
+  if (!StringToInt(m_preferences->GetValue(SUBDEVICE_COUNT_KEY) ,
+                   &subdevice_count))
+    StringToInt(DEFAULT_SUBDEVICE_COUNT, &subdevice_count);
+
+  m_device = new DummyDevice(this, DEVICE_NAME, device_count, subdevice_count);
   m_device->Start();
   m_plugin_adaptor->RegisterDevice(m_device);
   return true;
@@ -80,7 +95,39 @@ string DummyPlugin::Description() const {
 "The plugin creates a single device with one port. When used as an output\n"
 "port it prints the first two bytes of dmx data to stdout.\n\n"
 "It also creates a fake RDM device which can be querried and the DMX start\n"
-"address can be changed.\n";
+"address can be changed.\n"
+"--- Config file : ola-dummy.conf ---\n"
+"\n"
+"number_of_devices = 1\n"
+"The number of fake RDM devices to create.\n"
+"\n"
+"number_of_subdevices = 1\n"
+"The number of sub-devices each RDM device should have.\n"
+"\n";
+}
+
+
+/**
+ * Set the default preferences for the dummy plugin.
+ */
+bool DummyPlugin::SetDefaultPreferences() {
+  if (!m_preferences)
+    return false;
+
+  bool save = false;
+
+  save |= m_preferences->SetDefaultValue(DEVICE_COUNT_KEY,
+                                         IntValidator(0, 254),
+                                         DEFAULT_DEVICE_COUNT);
+
+  save |= m_preferences->SetDefaultValue(SUBDEVICE_COUNT_KEY,
+                                         IntValidator(0, 255),
+                                         DEFAULT_SUBDEVICE_COUNT);
+
+  if (save)
+    m_preferences->Save();
+
+  return true;
 }
 }  // dummy
 }  // plugin
