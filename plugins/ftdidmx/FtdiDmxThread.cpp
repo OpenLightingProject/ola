@@ -61,7 +61,7 @@ bool FtdiDmxThread::Stop() {
 bool FtdiDmxThread::WriteDMX(const DmxBuffer &buffer) {
   {
     ola::thread::MutexLocker locker(&m_buffer_mutex);
-    m_buffer = buffer;
+    m_buffer.Set(buffer);
     return true;
   }
 }
