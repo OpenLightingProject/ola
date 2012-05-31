@@ -136,7 +136,8 @@ bool OpenDmxThread::Stop() {
  */
 bool OpenDmxThread::WriteDmx(const DmxBuffer &buffer) {
   MutexLocker locker(&m_mutex);
-  m_buffer = buffer;
+  // avoid the reference counting
+  m_buffer.Set(buffer);
   return true;
 }
 }  // opendmx
