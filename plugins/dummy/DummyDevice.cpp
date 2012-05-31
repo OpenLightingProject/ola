@@ -35,7 +35,11 @@ namespace dummy {
  * Start this device
  */
 bool DummyDevice::StartHook() {
-  DummyPort *port = new DummyPort(this, 0);
+  DummyPort *port = new DummyPort(
+      this,
+      0,
+      m_number_of_devices,
+      m_number_of_subdevices);
 
   if (!AddPort(port)) {
     delete port;

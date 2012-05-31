@@ -31,11 +31,23 @@ namespace plugin {
 namespace dummy {
 
 
-DummyPort::DummyPort(DummyDevice *parent, unsigned int id)
+/**
+ * Create a new DummyPort
+ * @param parent the parent device for this port
+ * @param id the ID of this port
+ * @param device_count the number of fake RDM devices to create
+ * @param subdevice_count the number of subdevices each fake device should
+ *   have.
+ */
+DummyPort::DummyPort(
+  DummyDevice *parent,
+  unsigned int id,
+  uint16_t device_count,
+  uint16_t subdevice_count)
   : BasicOutputPort(parent, id, true) {
-    for (unsigned int i = 0; i < DummyPort::kNumberOfResponders; i++) {
+    for (unsigned int i = 0; i < device_count; i++) {
       UID uid(OPEN_LIGHTING_ESTA_CODE, DummyPort::kStartAddress + i);
-      m_responders[uid] = new DummyResponder(uid, kNumberOfDevices);
+      m_responders[uid] = new DummyResponder(uid, subdevice_count);
     }
 }
 

@@ -128,14 +128,6 @@ class ExponentialBackoffPolicy: public BackOffPolicy {
  */
 class AdvancedTCPConnector {
   public:
-    /**
-     * This is run when a connection is successfull
-     * @param ip_address
-     * @param port
-     * @param socket
-     */
-    typedef ola::Callback3<void, IPV4Address, uint16_t, TcpSocket*> OnConnect;
-
     AdvancedTCPConnector(ola::io::SelectServerInterface *ss,
                          TCPSocketFactoryInterface *socket_factory,
                          const ola::TimeInterval &connection_timeout);
