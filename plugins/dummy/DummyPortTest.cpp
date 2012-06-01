@@ -49,7 +49,7 @@ using ola::rdm::UIDSet;
 class MockDummyPort: public DummyPort {
   public:
     MockDummyPort():
-      DummyPort(NULL, 0) {
+      DummyPort(NULL, 0, 10, 0) {
     }
 };
 
@@ -558,7 +558,7 @@ void DummyPortTest::testIdentifyDevice() {
 
 void DummyPortTest::VerifyUIDs(const UIDSet &uids) {
   UIDSet expected_uids;
-  for (unsigned int i = 0; i < DummyPort::kNumberOfResponders; i++) {
+  for (unsigned int i = 0; i < 10; i++) {
     UID uid(OPEN_LIGHTING_ESTA_CODE, DummyPort::kStartAddress + i);
     expected_uids.AddUID(uid);
   }
