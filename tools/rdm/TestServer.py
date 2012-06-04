@@ -16,24 +16,52 @@
 # TestServer.py
 # Copyright (C) 2010 Simon Newton
 
-import wsgiref
+from wsgiref.simple_server import make_server
+import json
 
-settings = {'PORT': 9999}
+settings = {
+  'PORT': 9999,
+  'headers': [('Content-type', 'application/json')],
+}
 
-class TestServer(wsgiref):
+status = {
+  '200': '200 OK',
+  '404': '404 Not Found',
+}
+
+class TestServer():
   
-  def __init__(self):
-    options = self.parse_options()
+  def __init__(self, options):
     settings.update(options)
+    self.httpd = make_server('', settings['PORT'], self.__request_handler)
 
   def start_serving(self):
-    None
+    self.httpd.serve_forever()
 
-  def handle_requests(self, req):
-    None
+  def __request_handler(self, environ, start_response):
+    start_response(status['200'], settings['headers'])
+    params = environ['QUERY_STRING'].split('&')
+    get_params = {}
+    
+    for param in params:
+      param = param.split('=')
+      if len(param) > 1:
+        get_params[str(param[0])] = str(param[1])
+
+    return json.dumps(get_params)
 
   def run_tests(self):
     None
 
   def handle_responses(self):
     None
+
+  def parse_options(self):
+    None
+
+def main():
+  test_server = TestServer({})
+  test_server.start_serving()
+  
+if __name__ == '__main__':
+  main()
