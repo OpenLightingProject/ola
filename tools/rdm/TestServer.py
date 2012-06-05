@@ -29,39 +29,72 @@ status = {
   '404': '404 Not Found',
 }
 
-class TestServer():
+paths = {
+  '/RunTests': 'run_tests'
+}
+
+"""
+  An instance of this class is created to serve every request.
+"""
+class TestServerApplication:
+  def __init__(self, environ, start_response):
+    self.environ = environ
+    self.start = start_response
+    self.get_params = {}
+    self.__request_handler()
+  
+  def __request_handler(self):
+    self.request = self.environ['PATH_INFO']
+
+    if self.request not in paths.keys():
+      self.status = status['404']
+    else:
+      self.status = status['200']
+      params = self.environ['QUERY_STRING'].split('&')
+
+      for param in params:
+        param = param.split('=')
+        if len(param) > 1:
+          self.get_params[str(param[0])] = str(param[1])
+
+    return self.__response_handler()
+
+  def __response_handler(self):
+    if self.status == status['404']:
+      self.response = json.dumps({'status': False, 'message': 'Invalid request!'})
+    elif self.status == status['200']:
+      self.response = json.dumps(self.get_params)
+
+  def __iter__(self):
+    self.start(self.status, settings['headers'])
+    yield(self.response)
+
+
+ 
+class TestServer:
   
   def __init__(self, options):
-    settings.update(options)
-    self.httpd = make_server('', settings['PORT'], self.__request_handler)
-
-  def start_serving(self):
-    self.httpd.serve_forever()
-
-  def __request_handler(self, environ, start_response):
-    start_response(status['200'], settings['headers'])
-    params = environ['QUERY_STRING'].split('&')
-    get_params = {}
-    
-    for param in params:
-      param = param.split('=')
-      if len(param) > 1:
-        get_params[str(param[0])] = str(param[1])
-
-    return json.dumps(get_params)
+    """
+      Prepare test environment and initialize tests
+    """
+    None
 
   def run_tests(self):
     None
 
-  def handle_responses(self):
-    None
 
-  def parse_options(self):
-    None
+
+def parse_options():
+  """
+    Parse Command Line options
+  """
+  return {}
 
 def main():
-  test_server = TestServer({})
-  test_server.start_serving()
-  
+  options = parse_options()
+  settings.update(options)
+  httpd = make_server('', settings['PORT'], TestServerApplication)
+  httpd.serve_forever()
+
 if __name__ == '__main__':
   main()
