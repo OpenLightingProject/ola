@@ -1,4 +1,4 @@
-X/X/2012 ola-0.8.19
+7/6/2012 ola-0.8.19
  * Simple Java API
  * Significant changes to the underlying I/O code
  * Add support for IPv4 RDM types
@@ -7,6 +7,7 @@ X/X/2012 ola-0.8.19
  * Switched to using the standard command set for TRI devices - #171
  * Add support for multiple devices to the DummyPort - #178
  * Fixed a bug in the Dummy Responder - #184
+ * Added --version to olad
 
 01/03/2012 ola-0.8.18
  * Added RDM support for the Enttec USB Pro - #146
