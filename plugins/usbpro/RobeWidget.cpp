@@ -134,6 +134,7 @@ void RobeWidgetImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
       this_transaction_number,
       port_id);
   delete request;
+  OLA_DEBUG << "Sending RDM command to Robe Widget";
   if (!SendMessage(BaseRobeWidget::RDM_REQUEST, data, data_size +
                   RDM_PADDING_BYTES)) {
     m_rdm_request_callback = NULL;
@@ -296,6 +297,7 @@ void RobeWidgetImpl::HandleMessage(uint8_t label,
  */
 void RobeWidgetImpl::HandleRDMResponse(const uint8_t *data,
                                        unsigned int length) {
+  OLA_DEBUG << "Got RDM Response from Robe Widget";
   std::vector<std::string> packets;
   if (m_unmute_callback) {
     UnMuteDeviceCallback *callback = m_unmute_callback;
