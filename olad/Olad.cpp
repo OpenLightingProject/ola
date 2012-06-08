@@ -399,6 +399,7 @@ static void Setup(int argc, char*argv[], ola_options *opts) {
 
   // setup the logging
   ola::InitLogging(opts->level, opts->output);
+  OLA_INFO << "OLA Daemon version " << VERSION;
 
   if (opts->daemon)
     Daemonise();
