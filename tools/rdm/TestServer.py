@@ -14,10 +14,10 @@
 #  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 # TestServer.py
-# Copyright (C) 2010 Simon Newton
+# Copyright (C) 2012 Ravindra Nath Kakarla
 
 from wsgiref.simple_server import make_server
-import json
+import json, urlparse
 
 settings = {
   'PORT': 9999,
@@ -27,6 +27,7 @@ settings = {
 status = {
   '200': '200 OK',
   '404': '404 Not Found',
+  '500': '500 Internal Server Error',
 }
 
 paths = {
@@ -50,12 +51,7 @@ class TestServerApplication:
       self.status = status['404']
     else:
       self.status = status['200']
-      params = self.environ['QUERY_STRING'].split('&')
-
-      for param in params:
-        param = param.split('=')
-        if len(param) > 1:
-          self.get_params[str(param[0])] = str(param[1])
+      self.get_params = urlparse.parse_qs(self.environ['QUERY_STRING'])
 
     return self.__response_handler()
 
@@ -64,25 +60,12 @@ class TestServerApplication:
       self.response = json.dumps({'status': False, 'message': 'Invalid request!'})
     elif self.status == status['200']:
       self.response = json.dumps(self.get_params)
+    elif self.status == status['500']:
+      self.response = json.dumps({'status': False, 'message': 'Error 500: Internal failure'}) 
 
   def __iter__(self):
     self.start(self.status, settings['headers'])
     yield(self.response)
-
-
- 
-class TestServer:
-  
-  def __init__(self, options):
-    """
-      Prepare test environment and initialize tests
-    """
-    None
-
-  def run_tests(self):
-    None
-
-
 
 def parse_options():
   """
