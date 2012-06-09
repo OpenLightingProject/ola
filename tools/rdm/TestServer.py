@@ -17,7 +17,19 @@
 # Copyright (C) 2012 Ravindra Nath Kakarla
 
 from wsgiref.simple_server import make_server
-import json, urlparse
+import json
+import urlparse
+import TestRunner
+import sys
+import textwrap
+from ola import PidStore
+from ola.ClientWrapper import ClientWrapper
+from ola.UID import UID
+from optparse import OptionParser, OptionGroup, OptionValueError
+
+
+__author__ = 'ravindhranath@gmail.com (Ravindra Nath Kakarla)'
+
 
 settings = {
   'PORT': 9999,
@@ -31,16 +43,18 @@ status = {
 }
 
 paths = {
-  '/RunTests': 'run_tests'
+  '/RunTests': 'run_tests',
+  '/GetDevices': 'get_devices',
 }
 
 """
   An instance of this class is created to serve every request.
 """
-class TestServerApplication:
+class TestServerApplication(object):
   def __init__(self, environ, start_response):
     self.environ = environ
     self.start = start_response
+    self.wrapper = ClientWrapper()
     self.get_params = {}
     self.__request_handler()
   
@@ -59,10 +73,25 @@ class TestServerApplication:
     if self.status == status['404']:
       self.response = json.dumps({'status': False, 'message': 'Invalid request!'})
     elif self.status == status['200']:
-      self.response = json.dumps(self.get_params)
+      self.__getattribute__(paths[self.request])(self.get_params)
     elif self.status == status['500']:
       self.response = json.dumps({'status': False, 'message': 'Error 500: Internal failure'}) 
 
+  def run_tests(self, params):
+    pass
+
+  def get_devices(self, params):
+    def format_uids(state, uids):
+      if state.Succeeded():
+        self.response = json.dumps({'uids': [str(uid) for uid in uids]})
+      
+      self.wrapper.Stop()
+      
+    universe = int(params['u'][0])
+    self.wrapper.Client().FetchUIDList(universe, format_uids)
+    self.wrapper.Run()
+    self.wrapper.Reset()
+    
   def __iter__(self):
     self.start(self.status, settings['headers'])
     yield(self.response)
@@ -71,11 +100,27 @@ def parse_options():
   """
     Parse Command Line options
   """
-  return {}
+  usage = 'Usage: %prog [options]'
+  description = textwrap.dedent("""\
+    Starts the TestServer (A simple Web Server) which run a series of tests on a RDM responder and returns the results to Web UI.
+    This requires the OLA server to be running, and the RDM device to have been
+    detected. You can confirm this by running ola_rdm_discover -u
+    UNIVERSE. This will send SET commands to the broadcast UIDs which means
+    the start address, device label etc. will be changed for all devices
+    connected to the responder. Think twice about running this on your
+    production lighting rig.
+  """)
+  parser = OptionParser(usage, description=description)
+  parser.add_option('-p', '--pid_file', metavar='FILE',
+                    help='The file to load the PID definitions from.')
+
+  options, args = parser.parse_args()
+
+  return options
 
 def main():
   options = parse_options()
-  settings.update(options)
+  settings.update(options.__dict__)
   httpd = make_server('', settings['PORT'], TestServerApplication)
   httpd.serve_forever()
 
