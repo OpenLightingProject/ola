@@ -134,7 +134,9 @@ void RobeWidgetImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
       this_transaction_number,
       port_id);
   delete request;
-  OLA_DEBUG << "Sending RDM command to Robe Widget";
+  OLA_DEBUG << "Sending RDM command. CC: 0x" << std::hex <<
+    request->CommandClass() << ", PID 0x" << std::hex << request->ParamId() <<
+    ", TN: " << this_transaction_number;
   if (!SendMessage(BaseRobeWidget::RDM_REQUEST, data, data_size +
                   RDM_PADDING_BYTES)) {
     m_rdm_request_callback = NULL;
