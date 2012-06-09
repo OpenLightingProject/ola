@@ -232,6 +232,11 @@ case "${host_os}" in
         [ossp-uuid],
         [use_ossp_uuid="yes"],
         [AC_MSG_ERROR([Missing the uuid library])])
+      # see if we need to include ossp/uuid.h, otherwise fall back to uuid.h
+      AC_CHECK_HEADERS(
+        [ossp/uuid.h],
+        [],
+        [true])
       uuid_CFLAGS="${ossp_uuid_CFLAGS}"
       uuid_LIBS="${ossp_uuid_LIBS}"
     fi
