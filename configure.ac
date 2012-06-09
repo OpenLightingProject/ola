@@ -178,56 +178,67 @@ LIBS="-lpthread $LIBS"
 PROTOBUF_SUPPORT([2.3.0])
 
 # LIBRARY: uuid
-# uuid handling is quite complex as we can use either the OSSP uuid or the one
+# We've had to revert to os matching here because ossp uuid conflicts with the
+# built in uuid on OS X.
+# On other platforms, we can use either the OSSP uuid or the one
 # with e2fsprogs. On top of that the header file is different on different
-# platforms.
+# platforms :(.
 
-# first look for uuid using pkg-config
-pkg_config_found_uuid="no"
-PKG_CHECK_MODULES(
-  base_uuid,
-  [uuid],
-  [pkg_config_found_uuid="yes"],
-  [true])
-
+# default values for everything
+uuid_CFLAGS=
+uuid_LIBS=
 use_ossp_uuid="no"
-if test ${pkg_config_found_uuid} = "yes"; then
-  # uuid was found, now we need to determine which uuid library it is.
-  # First modify the CPPFLAGS to use the correct include location.
-  OLD_CPPFLAGS=$CPPFLAGS
-  CPPFLAGS+=" $base_uuid_CFLAGS"
-  AC_CHECK_HEADERS(
-    [ossp/uuid.h],
-    [use_ossp_uuid="yes"],
-    [AC_CHECK_HEADERS(
-      [uuid/uuid.h]
-      [],
-      [AC_CHECK_LIB([uuid],
-                    [uuid_generate],
-                    [],
-                    [use_ossp_uuid="yes"])])],
-    []
-  )
-  # reset CPPFLAGS
-  CPPFLAGS=$OLD_CPPFLAGS
-else
-  # the uuid pkg wasn't found, let's try ossp-uuid instead
-  PKG_CHECK_MODULES(
-    ossp_uuid,
-    [ossp-uuid],
-    [use_ossp_uuid="yes"],
-    # if this fails, then our last chance is to check for uuid/uuid.h (present
-    # on OS X by default).
-    [AC_CHECK_HEADERS(
+
+case "${host_os}" in
+  *darwin*)
+    # Running on mac, just use the built in UUID
+    AC_CHECK_HEADERS(
       [uuid/uuid.h],
       [],
-      [AC_MSG_ERROR([Missing the uuid library])]
-    )]
-  )
-fi
+      [AC_MSG_ERROR([Missing the uuid library])])
+    ;;
+  *)
+    # non-mac, first look for uuid using pkg-config
+    pkg_config_found_uuid="no"
+    PKG_CHECK_MODULES(
+      base_uuid,
+      [uuid],
+      [pkg_config_found_uuid="yes"],
+      [true])
+
+    if test ${pkg_config_found_uuid} = "yes"; then
+      # uuid was found, now we need to determine which uuid library it is.
+      # First modify the CPPFLAGS to use the correct include location.
+      old_cppflags=$CPPFLAGS
+      CPPFLAGS+=" $base_uuid_CFLAGS"
+      # see if we need to include uuid/uuid.h or just uuid.h
+      AC_CHECK_HEADERS(
+        [uuid/uuid.h],
+        [],
+        [true])
+      # check if this is actually ossp uuid (this is true in win32)
+      AC_CHECK_LIB([uuid],
+                   [uuid_generate],
+                   [],
+                   [use_ossp_uuid="yes"])
+      # restore CPPFLAGS
+      CPPFLAGS=$old_cppflags
+      uuid_CFLAGS="${base_uuid_CFLAGS}"
+      uuid_LIBS="${base_uuid_LIBS}"
+    else
+      # the uuid pkg wasn't found, let's try ossp-uuid instead
+      PKG_CHECK_MODULES(
+        ossp_uuid,
+        [ossp-uuid],
+        [use_ossp_uuid="yes"],
+        [AC_MSG_ERROR([Missing the uuid library])])
+      uuid_CFLAGS="${ossp_uuid_CFLAGS}"
+      uuid_LIBS="${ossp_uuid_LIBS}"
+    fi
+    ;;
+esac
+
 # now create the variables we actually use.
-uuid_CFLAGS="${base_uuid_CFLAGS} ${ossp_uuid_CFLAGS}"
-uuid_LIBS="${base_uuid_LIBS} ${ossp_uuid_LIBS}"
 AC_SUBST(uuid_CFLAGS)
 AC_SUBST(uuid_LIBS)
 
