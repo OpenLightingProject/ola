@@ -102,6 +102,9 @@ class TestServerApplication(object):
       if state.Succeeded():
         self.__set_response_status(True)
         self.response.update({'uids': [str(uid) for uid in uids]})
+      else:
+        self.__set_response_status(False)
+        self.__set_response_message('Invalid Universe id!')
       
       self.wrapper.Stop()
       
