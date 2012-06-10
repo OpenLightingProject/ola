@@ -56,8 +56,17 @@ class TestServerApplication(object):
     self.start = start_response
     self.wrapper = ClientWrapper()
     self.get_params = {}
+    self.response = {}
     self.__request_handler()
   
+  def __set_response_status(self, bool_value):
+    if type(bool_value) == bool:
+      self.response.update({'status': bool_value})
+
+  def __set_response_message(self, message):
+    if type(message) == str:
+      self.response.update({'message': message})
+
   def __request_handler(self):
     self.request = self.environ['PATH_INFO']
 
@@ -71,11 +80,13 @@ class TestServerApplication(object):
 
   def __response_handler(self):
     if self.status == status['404']:
-      self.response = json.dumps({'status': False, 'message': 'Invalid request!'})
+      self.__set_response_status(False)
+      self.__set_response_message('Invalid request!')
     elif self.status == status['200']:
       self.__getattribute__(paths[self.request])(self.get_params)
     elif self.status == status['500']:
-      self.response = json.dumps({'status': False, 'message': 'Error 500: Internal failure'}) 
+      self.__set_response_status(False)
+      self.__set_response_message('Error 500: Internal failure')
 
   def run_tests(self, params):
     pass
@@ -83,7 +94,8 @@ class TestServerApplication(object):
   def get_devices(self, params):
     def format_uids(state, uids):
       if state.Succeeded():
-        self.response = json.dumps({'uids': [str(uid) for uid in uids]})
+        self.__set_response_status(True)
+        self.response.update({'uids': [str(uid) for uid in uids]})
       
       self.wrapper.Stop()
       
@@ -94,7 +106,7 @@ class TestServerApplication(object):
     
   def __iter__(self):
     self.start(self.status, settings['headers'])
-    yield(self.response)
+    yield(json.dumps(self.response))
 
 def parse_options():
   """
