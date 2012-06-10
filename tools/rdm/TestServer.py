@@ -82,8 +82,14 @@ class TestServerApplication(object):
     if self.status == status['404']:
       self.__set_response_status(False)
       self.__set_response_message('Invalid request!')
+
     elif self.status == status['200']:
-      self.__getattribute__(paths[self.request])(self.get_params)
+      try:
+        self.__getattribute__(paths[self.request])(self.get_params)
+      except AttributeError:
+        self.status = status['500']
+        self.__response_handler()
+
     elif self.status == status['500']:
       self.__set_response_status(False)
       self.__set_response_message('Error 500: Internal failure')
