@@ -52,8 +52,8 @@ E131Tester_SOURCES = BaseInflatorTest.cpp \
                      HeaderSetTest.cpp \
                      PDUTest.cpp \
                      RootInflatorTest.cpp \
-                     RootPDUTest.cpp
-                     RootSenderTest.cpp \
+                     RootPDUTest.cpp \
+                     RootSenderTest.cpp
 E131Tester_CPPFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 # For some completely messed up reason on mac CPPUNIT_LIBS has to come after
 # the ossp uuid library.
