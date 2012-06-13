@@ -45,6 +45,7 @@ status = {
 paths = {
   '/RunTests': 'run_tests',
   '/GetDevices': 'get_devices',
+  '/GetUnivInfo': 'get_univ_info',
 }
 
 """
@@ -93,6 +94,21 @@ class TestServerApplication(object):
     elif self.status == status['500']:
       self.__set_response_status(False)
       self.__set_response_message('Error 500: Internal failure')
+
+  def get_univ_info(self, params):
+    def format_univ_info(state, universes):
+      if state.Succeeded():
+        self.__set_response_status(True)
+        self.response.update({'universes': [univ.__dict__ for univ in universes]})
+      else:
+        self.__set_response_status(False)
+        self.__set_response_message('Something\'s wrong with olad, Is it running?')
+
+      self.wrapper.Stop()
+
+    self.wrapper.Client().FetchUniverses(format_univ_info)
+    self.wrapper.Run()
+    self.wrapper.Reset()
 
   def run_tests(self, params):
     pass
