@@ -396,6 +396,7 @@ AC_ARG_ENABLE(java-libs,
               [build_java_libs="yes"]
              )
 if test "${build_java_libs}" == "yes"; then
+  AC_PROG_JAVA_CC()
   MAVEN_SUPPORT([3.0.0])
 fi
 
