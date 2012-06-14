@@ -16,13 +16,17 @@
 # TestServer.py
 # Copyright (C) 2012 Ravindra Nath Kakarla
 
-from wsgiref.simple_server import make_server
 import json
-import urlparse
-import TestRunner
 import sys
 import textwrap
+import urlparse
+import inspect
+import ResponderTest
+import TestDefinitions
+import TestRunner
+from wsgiref.simple_server import make_server
 from ola import PidStore
+from DMXSender import DMXSender
 from ola.ClientWrapper import ClientWrapper
 from ola.UID import UID
 from optparse import OptionParser, OptionGroup, OptionValueError
@@ -115,7 +119,35 @@ class TestServerApplication(object):
     self.wrapper.Reset()
 
   def run_tests(self, params):
-    pass
+    test_filter = None
+    universe = int(params['u'][0])
+    uid = UID.FromString(params['uid'][0])
+    broadcast_write_delay = int(params['w'][0])
+    dmx_frame_rate = int(params['f'][0])
+    slot_count = int(params['c'][0])
+
+    runner = TestRunner.TestRunner(universe,
+                                   uid,
+                                   broadcast_write_delay,
+                                   settings['pid_store'],
+                                   self.wrapper)
+
+    for symbol in dir(TestDefinitions):
+      obj = getattr(TestDefinitions, symbol)
+      if not inspect.isclass(obj):
+        continue
+      if (obj == ResponderTest.ResponderTestFixture or
+          obj == ResponderTest.OptionalParameterTestFixture):
+        continue
+      if issubclass(obj, ResponderTest.ResponderTestFixture):
+        runner.RegisterTest(obj)
+
+      dmx_sender = DMXSender(self.wrapper,
+                          universe,
+                          dmx_frame_rate,
+                          slot_count)
+
+    tests, device = runner.RunTests(test_filter, False)
 
   def get_devices(self, params):
     def format_uids(state, uids):
@@ -162,6 +194,7 @@ def parse_options():
 def main():
   options = parse_options()
   settings.update(options.__dict__)
+  settings['pid_store'] = PidStore.GetStore(options.pid_file)
   httpd = make_server('', settings['PORT'], TestServerApplication)
   httpd.serve_forever()
 
