@@ -55,11 +55,15 @@ class TestServerApplication(object):
   def __init__(self, environ, start_response):
     self.environ = environ
     self.start = start_response
-    self.wrapper = ClientWrapper()
     self.get_params = {}
     self.response = {}
-    self.__request_handler()
-  
+    try:
+      self.wrapper = ClientWrapper()
+      self.__request_handler()
+    except:
+      self.status = status['500']
+      self.__response_handler()
+
   def __set_response_status(self, bool_value):
     if type(bool_value) == bool:
       self.response.update({'status': bool_value})
