@@ -137,6 +137,7 @@ class TestServerApplication(object):
                 'w': 0,
                 'f': 0,
                 'c': 10,
+                't': None,
     }
     defaults.update(params)
 
@@ -155,6 +156,9 @@ class TestServerApplication(object):
     broadcast_write_delay = int(defaults['w'])
     dmx_frame_rate = int(defaults['f'])
     slot_count = int(defaults['c'])
+
+    if defaults['t'] is not None:
+      test_filter = set(defaults['t'].split(','))
 
     runner = TestRunner.TestRunner(universe,
                                    uid,
