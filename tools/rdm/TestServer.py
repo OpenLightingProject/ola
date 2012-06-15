@@ -66,7 +66,8 @@ class TestServerApplication(object):
       self.__request_handler()
     except:
       self.status = status['500']
-      self.__response_handler()
+      self.__set_response_status(False)
+      self.__set_response_message('Error creating connection with olad. Is it running?')
 
   def __set_response_status(self, bool_value):
     if type(bool_value) == bool:
@@ -84,6 +85,8 @@ class TestServerApplication(object):
     else:
       self.status = status['200']
       self.get_params = urlparse.parse_qs(self.environ['QUERY_STRING'])
+      for param in self.get_params:
+        self.get_params[param] = self.get_params[param][0]
 
     return self.__response_handler()
 
@@ -120,11 +123,24 @@ class TestServerApplication(object):
 
   def run_tests(self, params):
     test_filter = None
-    universe = int(params['u'][0])
-    uid = UID.FromString(params['uid'][0])
-    broadcast_write_delay = int(params['w'][0])
-    dmx_frame_rate = int(params['f'][0])
-    slot_count = int(params['c'][0])
+
+    if not params.has_key('uid'):
+      self.__set_response_status(False)
+      self.__set_response_message('Missing parameter: uid')
+      return
+
+    defaults = {
+                'u': 0,
+                'w': 0,
+                'f': 0,
+                'c': 10,
+    }
+    defaults.update(params)
+    universe = int(defaults['u'])
+    uid = UID.FromString(defaults['uid'])
+    broadcast_write_delay = int(defaults['w'])
+    dmx_frame_rate = int(defaults['f'])
+    slot_count = int(defaults['c'])
 
     runner = TestRunner.TestRunner(universe,
                                    uid,
@@ -160,7 +176,7 @@ class TestServerApplication(object):
       
       self.wrapper.Stop()
       
-    universe = int(params['u'][0])
+    universe = int(params['u'])
     self.wrapper.Client().FetchUIDList(universe, format_uids)
     self.wrapper.Run()
     self.wrapper.Reset()
