@@ -148,13 +148,6 @@ void RobeWidgetImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
   }
 
   delete[] data;
-  // sent ok
-  if (m_pending_request->DestinationUID().IsBroadcast()) {
-    m_rdm_request_callback = NULL;
-    delete m_pending_request;
-    m_pending_request = NULL;
-    on_complete->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
-  }
 }
 
 
@@ -322,13 +315,18 @@ void RobeWidgetImpl::HandleRDMResponse(const uint8_t *data,
   }
   ola::rdm::RDMCallback *callback = m_rdm_request_callback;
   m_rdm_request_callback = NULL;
-  const ola::rdm::RDMRequest *request = m_pending_request;
+  auto_ptr<const ola::rdm::RDMRequest> request(m_pending_request);
   m_pending_request = NULL;
+
+  // this was a broadcast request
+  if (request->DestinationUID().IsBroadcast()) {
+    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
+    return;
+  }
 
   if (length == RDM_PADDING_BYTES) {
     // this indicates that no request was recieved
     callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
-    delete request;
     return;
   }
 
@@ -341,9 +339,8 @@ void RobeWidgetImpl::HandleRDMResponse(const uint8_t *data,
   ola::rdm::RDMResponse *response = ola::rdm::RDMResponse::InflateFromData(
       packet,
       &response_code,
-      request);
+      request.get());
   callback->Run(response_code, response, packets);
-  delete request;
 }
 
 

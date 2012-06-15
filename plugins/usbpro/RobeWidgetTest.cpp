@@ -374,23 +374,23 @@ void RobeWidgetTest::testSendRDMRequest() {
       &expected_request_frame_size);
 
   // add the expected response, send and verify
-  m_endpoint->AddExpectedRobeMessage(
+  m_endpoint->AddExpectedRobeDataAndReturn(
       BaseRobeWidget::RDM_REQUEST,
       expected_bcast_request_frame,
       expected_request_frame_size,
-      ola::NewSingleCallback(this, &RobeWidgetTest::Terminate));
+      BaseRobeWidget::RDM_RESPONSE,
+      NULL,
+      0);
 
   vector<string> packets;
-  // This is a bit confusing, the ValidateStatus is invoked immediately, but
-  // we still need to call m_ss.Run() to ensure the correct packet was sent.
   m_widget->SendRDMRequest(
       rdm_request,
       ola::NewSingleCallback(this,
                              &RobeWidgetTest::ValidateStatus,
                              ola::rdm::RDM_WAS_BROADCAST,
                              packets));
-  CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_WAS_BROADCAST, m_received_code);
   m_ss.Run();
+  CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_WAS_BROADCAST, m_received_code);
   m_endpoint->Verify();
 
   // cleanup time
