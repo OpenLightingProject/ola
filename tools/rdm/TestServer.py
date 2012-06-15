@@ -24,6 +24,7 @@ import inspect
 import ResponderTest
 import TestDefinitions
 import TestRunner
+import traceback
 from wsgiref.simple_server import make_server
 from ola import PidStore
 from DMXSender import DMXSender
@@ -101,6 +102,7 @@ class TestServerApplication(object):
       except AttributeError:
         self.status = status['500']
         self.__response_handler()
+        print traceback.print_exc()
 
     elif self.status == status['500']:
       self.__set_response_status(False)
