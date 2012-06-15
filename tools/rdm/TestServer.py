@@ -69,6 +69,7 @@ class TestServerApplication(object):
       self.status = status['500']
       self.__set_response_status(False)
       self.__set_response_message('Error creating connection with olad. Is it running?')
+      print traceback.print_exc()
 
   def __set_response_status(self, bool_value):
     if type(bool_value) == bool:
@@ -108,37 +109,48 @@ class TestServerApplication(object):
       self.__set_response_status(False)
       self.__set_response_message('Error 500: Internal failure')
 
-  def get_univ_info(self, params):
+  def __get_universes(self):
+    global univs
     def format_univ_info(state, universes):
+      global univs
       if state.Succeeded():
-        self.__set_response_status(True)
-        self.response.update({'universes': [univ.__dict__ for univ in universes]})
-      else:
-        self.__set_response_status(False)
-        self.__set_response_message('Something\'s wrong with olad, Is it running?')
+        univs = [univ.__dict__ for univ in universes]
 
       self.wrapper.Stop()
 
     self.wrapper.Client().FetchUniverses(format_univ_info)
     self.wrapper.Run()
     self.wrapper.Reset()
+    return univs
+
+  def get_univ_info(self, params):
+    universes = self.__get_universes()
+    self.__set_response_status(True)
+    self.response.update({'universes': universes})
 
   def run_tests(self, params):
     test_filter = None
 
-    if not params.has_key('uid'):
-      self.__set_response_status(False)
-      self.__set_response_message('Missing parameter: uid')
-      return
-
     defaults = {
                 'u': 0,
+                'uid': None,
                 'w': 0,
                 'f': 0,
                 'c': 10,
     }
     defaults.update(params)
+
     universe = int(defaults['u'])
+    if not universe in [univ['_id'] for univ in self.__get_universes()]:
+      self.__set_response_status(False)
+      self.__set_response_message('Universe %d doesn\'t exist' % (universe))
+      return
+
+    if defaults['uid'] is None:
+      self.__set_response_status(False)
+      self.__set_response_message('Missing parameter: uid')
+      return
+
     uid = UID.FromString(defaults['uid'])
     broadcast_write_delay = int(defaults['w'])
     dmx_frame_rate = int(defaults['f'])
@@ -175,7 +187,7 @@ class TestServerApplication(object):
       else:
         self.__set_response_status(False)
         self.__set_response_message('Invalid Universe id!')
-      
+
       self.wrapper.Stop()
       
     universe = int(params['u'])
