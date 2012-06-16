@@ -29,6 +29,7 @@ from wsgiref.simple_server import make_server
 from ola import PidStore
 from DMXSender import DMXSender
 from ola.ClientWrapper import ClientWrapper
+from TestState import TestState
 from ola.UID import UID
 from optparse import OptionParser, OptionGroup, OptionValueError
 
@@ -182,6 +183,16 @@ class TestServerApplication(object):
                           slot_count)
 
     tests, device = runner.RunTests(test_filter, False)
+    self.__format_test_results(tests)
+
+  def __format_test_results(self, tests):
+    tests_by_category = {}
+    for test in tests:
+      tests_by_category.setdefault(test.category.__str__(), []) \
+                                 .append([test.__str__(), test.state.__str__()])
+
+    self.__set_response_status(True)
+    self.response.update({'test_results': tests_by_category})
 
   def get_devices(self, params):
     def format_uids(state, uids):
