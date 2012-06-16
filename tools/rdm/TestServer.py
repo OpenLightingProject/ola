@@ -142,15 +142,15 @@ class TestServerApplication(object):
     }
     defaults.update(params)
 
+    if defaults['uid'] is None:
+      self.__set_response_status(False)
+      self.__set_response_message('Missing parameter: uid')
+      return
+
     universe = int(defaults['u'])
     if not universe in [univ['_id'] for univ in self.__get_universes()]:
       self.__set_response_status(False)
       self.__set_response_message('Universe %d doesn\'t exist' % (universe))
-      return
-
-    if defaults['uid'] is None:
-      self.__set_response_status(False)
-      self.__set_response_message('Missing parameter: uid')
       return
 
     uid = UID.FromString(defaults['uid'])
