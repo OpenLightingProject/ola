@@ -174,8 +174,27 @@ AC_CHECK_HEADER([pthread.h],
                 [AC_MSG_ERROR([Missing pthread, please install it])])
 LIBS="-lpthread $LIBS"
 
+# Java API, this requires Maven
+AC_ARG_ENABLE(java-libs,
+              AC_HELP_STRING([--enable-java-libs],
+                             [Build the Java interface]),
+              [build_java_libs="yes"]
+             )
+if test "${build_java_libs}" == "yes"; then
+  AC_PROG_JAVA_CC()
+  MAVEN_SUPPORT([2.2.1])
+fi
+
+AM_CONDITIONAL(BUILD_JAVA_LIBS, test "${build_java_libs}" = "yes")
+
+
 # LIBRARY: protobuf
-PROTOBUF_SUPPORT([2.3.0])
+# We require 2.4.0 for the java libs
+if test "${build_java_libs}" == "yes"; then
+  PROTOBUF_SUPPORT([2.4.0])
+else
+  PROTOBUF_SUPPORT([2.3.0])
+fi
 
 # LIBRARY: uuid
 # We've had to revert to os matching here because ossp uuid conflicts with the
@@ -388,19 +407,6 @@ if test "${build_python_libs}" = "yes"; then
  AM_PATH_PYTHON(2.4)
  AX_PYTHON_MODULE("google.protobuf", "fatal")
 fi
-
-# Java API, this requires Maven
-AC_ARG_ENABLE(java-libs,
-              AC_HELP_STRING([--enable-java-libs],
-                             [Build the Java interface]),
-              [build_java_libs="yes"]
-             )
-if test "${build_java_libs}" == "yes"; then
-  AC_PROG_JAVA_CC()
-  MAVEN_SUPPORT([3.0.0])
-fi
-
-AM_CONDITIONAL(BUILD_JAVA_LIBS, test "${build_java_libs}" = "yes")
 
 # Enable running as root
 AC_ARG_ENABLE(

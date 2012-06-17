@@ -18,10 +18,10 @@ ola.jar: src/main/java/ola/proto/Ola.java src/main/java/ola/rpc/Rpc.java
 ola_jar_SOURCES = 
 
 src/main/java/ola/proto/Ola.java: ../common/protocol/Ola.proto
-	protoc --java_out=src/main/java --proto_path=../common/protocol ../common/protocol/Ola.proto
+	$(PROTOC)  --java_out=src/main/java --proto_path=../common/protocol ../common/protocol/Ola.proto
 
 src/main/java/ola/rpc/Rpc.java: ../common/rpc/Rpc.proto
-	protoc --java_out=src/main/java --proto_path=../common/rpc ../common/rpc/Rpc.proto
+	$(PROTOC)  --java_out=src/main/java --proto_path=../common/rpc ../common/rpc/Rpc.proto
 
 clean-local:
 	rm -f src/main/java/ola/proto/Ola.java
