@@ -1,3 +1,10 @@
+18/6/2012 ola-0.8.20
+ * Fix uuid library detection - #187
+ * Fix the Java build on Linux
+ * Add some Robe RDM debugging
+ * Print the version when olad starts
+ * Fix the E1.31 tests
+
 7/6/2012 ola-0.8.19
  * Simple Java API
  * Significant changes to the underlying I/O code
