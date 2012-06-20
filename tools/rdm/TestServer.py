@@ -39,7 +39,15 @@ __author__ = 'ravindhranath@gmail.com (Ravindra Nath Kakarla)'
 
 settings = {
   'PORT': 9999,
-  'headers': [('Content-type', 'application/json')],
+}
+
+headers = {
+  'json': [('Content-type', 'application/json')],
+  'html': [('Content-type', 'text/html')],
+  'js': [('Content-type', 'text/javascript')],
+  'css': [('Content-type', 'text/css')],
+  'png': [('Content-type', 'text/png')],
+  'gif': [('Content-type', 'text/gif')],
 }
 
 status = {
@@ -53,6 +61,7 @@ paths = {
   '/GetDevices': 'get_devices',
   '/GetUnivInfo': 'get_univ_info',
 }
+
 
 """
   An instance of this class is created to serve every request.
@@ -82,8 +91,10 @@ class TestServerApplication(object):
 
   def __request_handler(self):
     self.request = self.environ['PATH_INFO']
-
-    if self.request not in paths.keys():
+     
+    if self.request.startswith('/static/'):
+      self.status = status['200']
+    elif self.request not in paths.keys():
       self.status = status['404']
     else:
       self.status = status['200']
@@ -99,16 +110,28 @@ class TestServerApplication(object):
       self.__set_response_message('Invalid request!')
 
     elif self.status == status['200']:
-      try:
-        self.__getattribute__(paths[self.request])(self.get_params)
-      except AttributeError:
-        self.status = status['500']
-        self.__response_handler()
-        print traceback.print_exc()
+      if self.request.startswith('/static/'):
+        """
+          Remove the first '/' (Makes it easy to partition)
+          static/foo/bar partitions to ('static', '/', 'foo/bar')
+        """
+        resource = self.request[1:]
+        resource = resource.partition('/')[2]
+        self.__static_content_handler(resource)
+      else:
+        try:
+          self.__getattribute__(paths[self.request])(self.get_params)
+        except AttributeError:
+          self.status = status['500']
+          self.__response_handler()
+          print traceback.print_exc()
 
     elif self.status == status['500']:
       self.__set_response_status(False)
       self.__set_response_message('Error 500: Internal failure')
+
+  def __static_content_handler(self, resource):
+    pass
 
   def __get_universes(self):
     global univs
@@ -211,7 +234,7 @@ class TestServerApplication(object):
     self.wrapper.Reset()
     
   def __iter__(self):
-    self.start(self.status, settings['headers'])
+    self.start(self.status, headers['json'])
     yield(json.dumps(self.response))
 
 def parse_options():
