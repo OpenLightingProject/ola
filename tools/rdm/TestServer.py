@@ -18,6 +18,8 @@
 
 import json
 import sys
+import os
+import mimetypes
 import textwrap
 import urlparse
 import inspect
@@ -41,17 +43,9 @@ settings = {
   'PORT': 9999,
 }
 
-headers = {
-  'json': [('Content-type', 'application/json')],
-  'html': [('Content-type', 'text/html')],
-  'js': [('Content-type', 'text/javascript')],
-  'css': [('Content-type', 'text/css')],
-  'png': [('Content-type', 'text/png')],
-  'gif': [('Content-type', 'text/gif')],
-}
-
 status = {
   '200': '200 OK',
+  '403': '403 Forbidden',
   '404': '404 Not Found',
   '500': '500 Internal Server Error',
 }
@@ -72,6 +66,9 @@ class TestServerApplication(object):
     self.start = start_response
     self.get_params = {}
     self.response = {}
+    self.output = None
+    self.headers = []
+    self.is_static_request = False
     try:
       self.wrapper = ClientWrapper()
       self.__request_handler()
@@ -93,6 +90,7 @@ class TestServerApplication(object):
     self.request = self.environ['PATH_INFO']
      
     if self.request.startswith('/static/'):
+      self.is_static_request = True
       self.status = status['200']
     elif self.request not in paths.keys():
       self.status = status['404']
@@ -110,7 +108,7 @@ class TestServerApplication(object):
       self.__set_response_message('Invalid request!')
 
     elif self.status == status['200']:
-      if self.request.startswith('/static/'):
+      if self.is_static_request:
         """
           Remove the first '/' (Makes it easy to partition)
           static/foo/bar partitions to ('static', '/', 'foo/bar')
@@ -131,7 +129,28 @@ class TestServerApplication(object):
       self.__set_response_message('Error 500: Internal failure')
 
   def __static_content_handler(self, resource):
-    pass
+    filename = os.path.abspath(os.path.join(settings['www_dir'], resource))
+
+    if not filename.startswith(settings['www_dir']):
+      self.status = status['403']
+      self.output = 'OLA TestServer: 403: Access denied!'
+    elif not os.path.exists(filename) or not os.path.isfile(filename):
+      self.status = status['404']
+      self.output = 'OLA TestServer: 404: File does not exist!'
+    elif not os.access(filename, os.R_OK):
+      self.status = status['403']
+      self.output = 'OLA TestServer: 403: You do not have permission to access this file.'
+    else:
+      mimetype, encoding = mimetypes.guess_type(filename)
+      if mimetype:
+        self.headers.append(('Content-type', mimetype))
+      if encoding:
+        self.headers.append(('Content-encoding', encoding))
+
+      stats = os.stat(filename)
+      self.headers.append(('Content-length', str(stats.st_size)))
+
+      self.output = open(filename, 'rb').read()
 
   def __get_universes(self):
     global univs
@@ -234,8 +253,13 @@ class TestServerApplication(object):
     self.wrapper.Reset()
     
   def __iter__(self):
-    self.start(self.status, headers['json'])
-    yield(json.dumps(self.response))
+    if self.is_static_request:
+      self.start(self.status, self.headers)
+      yield(self.output)
+    else:
+      self.headers.append(('Content-type', 'application/json'))
+      self.start(self.status, self.headers)
+      yield(json.dumps(self.response))
 
 def parse_options():
   """
@@ -254,6 +278,8 @@ def parse_options():
   parser = OptionParser(usage, description=description)
   parser.add_option('-p', '--pid_file', metavar='FILE',
                     help='The file to load the PID definitions from.')
+  parser.add_option('-d', '--www_dir', default=os.path.abspath(''),
+                    help='The root directory to serve static files.')
 
   options, args = parser.parse_args()
 
