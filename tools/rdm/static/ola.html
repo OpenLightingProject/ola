@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src='jquery.min.js'></script>
+    <script src='rdm_tests.js'></script>
+    <title>RDM Tests</title>
+    <style type='text/css'>
+      body {
+        margin: 0px;
+        padding: 0px;
+        font-family: sans-serif;
+        font-size: 13px;
+      }
+
+      table {
+        font-family: sans-serif;
+        font-size: 13px;
+        padding: 0px;
+        margin: 0px;
+        border: 0px;
+        border-spacing: 0px;
+      }
+
+      legend { font-weight: bold; }
+      input { border: #e4e9fe 1px solid; }
+      fieldset {
+        border: #67a7e3 1px solid;
+        margin-bottom: 5px;
+      }
+
+      pre {
+        margin: 0px;
+      }
+
+      #header {
+        margin: 0px;
+        padding: 0px;
+        left: 0px;
+        text-align: left;
+        font-size: 11px;
+      }
+
+      #right_nav {
+        position: absolute;
+        right: 0px;
+        margin-right: 4px;
+        text-align: right;
+      }
+
+      #footer {
+        padding-top: 5px;
+        text-align: center;
+        clear: both;
+        font-size: 11px;
+      }
+
+      .ola-scroller {
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        -moz-box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        -ms-box-sizing: border-box;
+      }
+
+      .ola-container {
+        padding: 5px;
+      }
+
+      /* Tables are used in various frames */
+      .ola-table {
+        width: 100%;
+        border-bottom: 1px solid #e4e9fe;
+      }
+
+      .ola-table thead {
+        text-align: left;
+      }
+
+      .ola-table td {
+        border-top: 1px solid #e4e9fe;
+      }
+
+    </style>
+  </head>
+  <body>
+    <div id='header'>
+      <div id='title'>
+       <img src='logo.png' width='111' height='48' alt='Logo'>
+      </div>
+    </div>
+    <div id='tests_control_frame'>
+      <fieldset>
+       <legend>Universe</legend>
+        <table>
+          <tr>
+            <td>
+              <select id='universe_options'></select>
+            </td>
+          </tr>
+        </table>
+      </fieldset>
+      <fieldset>
+       <legend>Select Device</legend>
+        <table class='ola-table'>
+          <tr>
+           <td>
+            <div id='devices_list'>
+             <select>  
+              <option>7a70:ffffff00</option>
+              <option>7a70:ffffff01</option>
+              <option>7a70:ffffff02</option>
+             </select>
+            </div>
+           </td>
+          </tr>
+        </table>
+      </fieldset>
+      <fieldset>
+        <legend>Write Delay (ms)</legend>
+        <table class='ola-table'>
+          <tr>
+           <td><input id='write_delay' maxlength='16' size='4'></td>
+          </tr>
+        </table>
+      </fieldset>
+      <fieldset>
+       <legend>Send DMX in background?</legend>
+       <table class='ola-table'>
+        <tr>
+         <td><div id='dmx_background'></div></td>
+        </tr>
+       </table>
+      </fieldset>
+      <fieldset>
+       <legend>DMX Options</legend>
+        <table class='ola-table'>
+         <tr>
+          <td>DMX Frame rate
+           <input id='dmx_frame_rate' maxlength='16' size='4'></td>
+         </tr>
+         <tr>
+          <td>Slot Count
+           <input id='slot_count' maxlength='16' size='4'></td>
+         </tr>
+        </table>
+      </fieldset>
+      <fieldset>
+       <legend>Select Tests</legend>
+        <table class='ola-table'>
+         <tr>
+          <td>
+           <select>
+            <option>PARAMETER_DESCRIPTION</option>
+            <option>PROXIED_DEVICE_COUNT</option>
+            <option>COMMS_STATUS</option>
+           </select>
+          </td>
+         </tr>
+        </table>
+      </fieldset>
+    </div>
+
+    <div id='footer'>
+      OLA &copy; 2005-2012  Ravindra Nath Kakarla<br>
+    </div>
+  </body>
+</html>

@@ -278,7 +278,7 @@ def parse_options():
   parser = OptionParser(usage, description=description)
   parser.add_option('-p', '--pid_file', metavar='FILE',
                     help='The file to load the PID definitions from.')
-  parser.add_option('-d', '--www_dir', default=os.path.abspath(''),
+  parser.add_option('-d', '--www_dir', default=os.path.abspath('static/'),
                     help='The root directory to serve static files.')
 
   options, args = parser.parse_args()
