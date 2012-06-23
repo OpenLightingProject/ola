@@ -54,6 +54,7 @@ paths = {
   '/RunTests': 'run_tests',
   '/GetDevices': 'get_devices',
   '/GetUnivInfo': 'get_univ_info',
+  '/GetTestDefs': 'get_test_definitions',
 }
 
 
@@ -170,6 +171,30 @@ class TestServerApplication(object):
     universes = self.__get_universes()
     self.__set_response_status(True)
     self.response.update({'universes': universes})
+
+  def get_test_definitions(self, params):
+    self.__set_response_status(True)
+    tests_by_category = self.__get_test_defs_by_catg()
+    self.response.update({'test_defs': tests_by_category})
+
+  def __get_test_defs_by_catg(self):
+
+    tests = []
+    for symbol in dir(TestDefinitions):
+      obj = getattr(TestDefinitions, symbol)
+      if not inspect.isclass(obj):
+        continue
+      if (obj == ResponderTest.ResponderTestFixture or
+          obj == ResponderTest.OptionalParameterTestFixture):
+        continue
+      if issubclass(obj, ResponderTest.ResponderTestFixture):
+        tests.append(obj)
+
+    tests_by_category = {}
+    for test in tests:
+      tests_by_category.setdefault(test.CATEGORY.__str__(), []) \
+                                  .append(test.__name__)
+    return tests_by_category
 
   def run_tests(self, params):
     test_filter = None
