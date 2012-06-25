@@ -55,6 +55,13 @@ AC_PROG_LIBTOOL
 # windows platform support
 AM_CONDITIONAL(USING_WIN32, test "$host_os" = 'mingw32')
 
+# Disable -Werror
+AC_ARG_ENABLE(
+  fatal-warnings,
+  AC_HELP_STRING([--disable-fatal-warnings], [Make compiler warnings non-fatal]),)
+
+AM_CONDITIONAL(FATAL_WARNINGS, test "${enable_fatal_warnings}" != "no")
+
 # check for hash_map
 AC_CXX_STL_HASH
 
@@ -410,7 +417,7 @@ fi
 
 # Enable running as root
 AC_ARG_ENABLE(
-  root_check,
+  root-check,
   AC_HELP_STRING([--disable-root-check],
                  [Disable the check that prevents olad from running as root]),
 )
