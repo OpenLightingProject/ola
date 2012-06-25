@@ -71,8 +71,22 @@ RDMTests.prototype.update_device_list = function() {
   });
 };
 
+RDMTests.prototype.fetch_test_defs = function() {
+  this.query_server('../GetTestDefs', {'c': 0}, function(data) {
+    var tests_selector = $('#rdm-tests-selection-tests_list');
+    var test_defs = data.test_defs;
+    $.each(data.test_defs, function(item) {
+      tests_selector.append($('<option />').val(test_defs[item])
+                                           .text(test_defs[item]));
+    });
+    $('.multiselect').multiselect();
+    $('.multiselect').multiselect({sortable: false, searchable: true});
+  });
+};
+
 $(document).ready(function() {
   rdmtests = new RDMTests();
   rdmtests.bind_events_to_doms();
   rdmtests.update_universe_list();
+  rdmtests.fetch_test_defs();
 });

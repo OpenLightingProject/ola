@@ -174,10 +174,14 @@ class TestServerApplication(object):
 
   def get_test_definitions(self, params):
     self.__set_response_status(True)
-    tests_by_category = self.__get_test_defs_by_catg()
-    self.response.update({'test_defs': tests_by_category})
+    if params['c'] == 1:
+      tests_defs = self.__get_test_defs(True)
+    else:
+      tests_defs = self.__get_test_defs(False)
 
-  def __get_test_defs_by_catg(self):
+    self.response.update({'test_defs': tests_defs})
+
+  def __get_test_defs(self, by_catg = False):
 
     tests = []
     for symbol in dir(TestDefinitions):
@@ -189,6 +193,9 @@ class TestServerApplication(object):
         continue
       if issubclass(obj, ResponderTest.ResponderTestFixture):
         tests.append(obj)
+
+    if not by_catg:
+      return [test.__name__ for test in tests]
 
     tests_by_category = {}
     for test in tests:
