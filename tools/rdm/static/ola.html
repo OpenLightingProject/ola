@@ -143,17 +143,31 @@
       </fieldset>
       <fieldset>
        <legend>Select Tests</legend>
-        <table class='ola-table'>
-         <tr>
-          <td>
-           <select>
-            <option>PARAMETER_DESCRIPTION</option>
-            <option>PROXIED_DEVICE_COUNT</option>
-            <option>COMMS_STATUS</option>
-           </select>
-          </td>
-         </tr>
-        </table>
+				<form id='rdm-tests-selection'>
+          <table class='ola-table'>
+           <tr>
+            <td>
+							<input type='radio' name='rdm-tests-selection' id='rdm-tests-selection-all' value='all' />All Tests
+            </td>
+           </tr>
+           <tr>
+            <td>
+              <input type='radio' name='rdm-tests-selection' id='rdm-tests-selection-subset' />Individual Tests
+            </td>
+           </tr>
+           <tr>
+            <td>
+              <input type='radio' name='rdm-tests-selection' id='rdm-tests-selection-previously_failed' />Previously Failed Tests
+            </td>
+           </tr>
+           <tr>
+            <td>
+              <input type='button' name='rdm-tests-selection-run_tests' id='rdm-tests-selection-run_tests' value='Run Tests' />
+            </td>
+           </tr>
+          </table>
+          </table>
+				</form>
       </fieldset>
     </div>
 
