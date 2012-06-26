@@ -89,8 +89,24 @@ RDMTests.prototype.fetch_test_defs = function() {
 };
 
 RDMTests.prototype.validate_form = function() {
+  this.isNumberField = function(dom) {
+    var value = $(dom).val();
+    if (isNaN(parseFloat(value)) || !isFinite(value)) {
+      alert(dom.attr('id').replace('_', ' ').toUpperCase() + ' must be a number!');
+      return false;
+    } else {
+      return true;
+    }
+  };
+
   if ($('#devices_list option').size() < 1) {
     alert('There are no devices available in selected universe!');
+    return false;
+  }
+
+  if (!(this.isNumberField($(write_delay)) &&
+        this.isNumberField($(dmx_frame_rate)) &&
+        this.isNumberField($(slot_count)))) {
     return false;
   }
 };
