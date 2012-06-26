@@ -155,7 +155,7 @@
           <table class='ola-table'>
            <tr>
             <td>
-							<input type='radio' name='rdm-tests-selection' id='rdm-tests-selection-all' value='all' class='rdm-tests-selection' />All Tests
+							<input type='radio' name='rdm-tests-selection' id='rdm-tests-selection-all' value='all' class='rdm-tests-selection' checked='checked' />All Tests
             </td>
            </tr>
            <tr>
@@ -163,7 +163,7 @@
               <input type='radio' name='rdm-tests-selection' id='rdm-tests-selection-subset' class='rdm-tests-selection'/>Individual Tests
             </td>
             <td>
-              <select id='rdm-tests-selection-tests_list' class='multiselect' multiple='multiple' name='test_defs[]'>
+              <select id='rdm-tests-selection-tests_list' class='multiselect' multiple='multiple' name='subset_test_defs'>
               </select>
             </td>
            </tr>
@@ -172,7 +172,7 @@
               <input type='radio' name='rdm-tests-selection' id='rdm-tests-selection-previously_failed' class='rdm-tests-selection'/>Previously Failed Tests
             </td>
             <td>
-              <select id='rdm-tests-selection-failed_tests' class='multiselect' multiple='multiple' name='failed_test_defs[]' disabled>
+              <select id='rdm-tests-selection-failed_tests' class='multiselect' multiple='multiple' name='failed_test_defs' disabled>
               </select>
             </td>
            </tr>

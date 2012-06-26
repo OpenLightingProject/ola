@@ -91,6 +91,9 @@ RDMTests.prototype.fetch_test_defs = function() {
 RDMTests.prototype.validate_form = function() {
   this.isNumberField = function(dom) {
     var value = $(dom).val();
+    if (value === '') {
+      return true;
+    }
     if (isNaN(parseFloat(value)) || !isFinite(value)) {
       alert(dom.attr('id').replace('_', ' ').toUpperCase() + ' must be a number!');
       return false;
@@ -107,6 +110,11 @@ RDMTests.prototype.validate_form = function() {
   if (!(this.isNumberField($(write_delay)) &&
         this.isNumberField($(dmx_frame_rate)) &&
         this.isNumberField($(slot_count)))) {
+    return false;
+  }
+
+  if ($('#rdm-tests-selection-subset').attr('checked') && $('select[name="subset_test_defs"]').val() == null) {
+    alert('No tests were selected!');
     return false;
   }
 };
