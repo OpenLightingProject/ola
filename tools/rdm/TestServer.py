@@ -233,7 +233,10 @@ class TestServerApplication(object):
     slot_count = int(defaults['c'])
 
     if defaults['t'] is not None:
-      test_filter = set(defaults['t'].split(','))
+      if defaults['t'] == 'all':
+        test_filter = None
+      else:
+        test_filter = set(defaults['t'].split(','))
 
     runner = TestRunner.TestRunner(universe,
                                    uid,

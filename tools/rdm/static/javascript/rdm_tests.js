@@ -20,8 +20,9 @@
 RDMTests = function() {
 };
 
+rdmtests = new RDMTests();
+
 RDMTests.prototype.bind_events_to_doms = function() {
-  rdmtests = new RDMTests();
   $('#universe_options').change(function() {
     rdmtests.update_device_list();
   });
@@ -54,7 +55,6 @@ RDMTests.prototype.update_universe_list = function() {
         universe_options.append($('<option />').val(universes[item]._id)
                                 .text(universes[item]._name));
       });
-      rdmtests = new RDMTests();
       rdmtests.update_device_list();
     }
   });
@@ -88,6 +88,18 @@ RDMTests.prototype.fetch_test_defs = function() {
   });
 };
 
+RDMTests.prototype.run_tests = function(test_filter) {
+  this.query_server('../RunTests', {
+                                     'u': $('#universe_options').val(),
+                                     'uid': $('#devices_list').val(),
+                                     'w': $(write_delay).val(),
+                                     'f': $(dmx_frame_rate).val(),
+                                     'c': $(slot_count).val(),
+                                     't': test_filter.join(','),
+                                    }, function(data) {
+  });
+};
+
 RDMTests.prototype.validate_form = function() {
   this.isNumberField = function(dom) {
     var value = $(dom).val();
@@ -113,14 +125,28 @@ RDMTests.prototype.validate_form = function() {
     return false;
   }
 
-  if ($('#rdm-tests-selection-subset').attr('checked') && $('select[name="subset_test_defs"]').val() == null) {
-    alert('No tests were selected!');
-    return false;
+  var test_filter = ['all'];
+
+  if ($('#rdm-tests-selection-subset').attr('checked')) {
+    if ($('select[name="subset_test_defs"]').val() == null) {
+      alert('No tests were selected!');
+      return false;
+    } else {
+      test_filter = $('select[name="subset_test_defs"]').val();
+    }
+  } else if ($('#rdm-tests-selection-previously_failed').attr('checked')) {
+    if ($('select[name="failed_test_defs"]').val() == null) {
+      alert('Select failed tests to run again!');
+      return false;
+    } else {
+      test_filter = $('select[name="failed_test_defs"]').val();
+    }
   }
+
+  rdmtests.run_tests(test_filter);
 };
 
 $(document).ready(function() {
-  rdmtests = new RDMTests();
   rdmtests.bind_events_to_doms();
   rdmtests.update_universe_list();
   rdmtests.fetch_test_defs();
