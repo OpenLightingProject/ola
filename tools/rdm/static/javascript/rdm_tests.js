@@ -21,9 +21,13 @@ RDMTests = function() {
 };
 
 RDMTests.prototype.bind_events_to_doms = function() {
+  rdmtests = new RDMTests();
   $('#universe_options').change(function() {
-    rdmtests = new RDMTests();
     rdmtests.update_device_list();
+  });
+
+  $('#rdm-tests-selection-run_tests').click(function() {
+    rdmtests.validate_form();
   });
 };
 
@@ -82,6 +86,13 @@ RDMTests.prototype.fetch_test_defs = function() {
     $('.multiselect').multiselect();
     $('.multiselect').multiselect({sortable: false, searchable: true});
   });
+};
+
+RDMTests.prototype.validate_form = function() {
+  if ($('#devices_list option').size() < 1) {
+    alert('There are no devices available in selected universe!');
+    return false;
+  }
 };
 
 $(document).ready(function() {
