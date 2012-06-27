@@ -263,13 +263,36 @@ class TestServerApplication(object):
     self.__format_test_results(tests)
 
   def __format_test_results(self, tests):
-    tests_by_category = {}
+    results = {}
+    passed = 0
+    failed = 0
+    broken = 0
+    not_run = 0
     for test in tests:
-      tests_by_category.setdefault(test.category.__str__(), []) \
-                                 .append([test.__str__(), test.state.__str__()])
+      if test.state == TestState.PASSED:
+        passed += 1
+      elif test.state == TestState.FAILED:
+        failed += 1
+      elif test.state == TestState.BROKEN:
+        broken += 1
+      elif test.state == TestState.NOT_RUN:
+        not_run += 1
+
+      results.update({
+        test.__str__(): {
+          'state': test.state.__str__(),
+          'category': test.category.__str__()
+        }
+      })
+    stats = {
+      'passed': passed,
+      'failed': failed,
+      'broken': broken,
+      'not_run': not_run,
+    }
 
     self.__set_response_status(True)
-    self.response.update({'test_results': tests_by_category})
+    self.response.update({'test_results': results, 'stats': stats})
 
   def get_devices(self, params):
     def format_uids(state, uids):
