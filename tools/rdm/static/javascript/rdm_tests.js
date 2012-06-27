@@ -83,15 +83,15 @@ RDMTests.prototype.fetch_test_defs = function() {
       tests_selector.append($('<option />').val(test_defs[item])
                                            .text(test_defs[item]));
     });
-    $('.multiselect').multiselect();
-    $('.multiselect').multiselect({sortable: false, searchable: true});
+    $('.rdm-tests-selection-multiselect').multiselect();
+    $('.rdm-tests-selection-multiselect').multiselect({sortable: false, searchable: true});
   });
 };
 
 RDMTests.prototype.run_tests = function(test_filter) {
   this.query_server('../RunTests', {
-                                     'u': $('#universe_options').val(),
-                                     'uid': $('#devices_list').val(),
+                                     'u': $(universe_options).val(),
+                                     'uid': $(devices_list).val(),
                                      'w': $(write_delay).val(),
                                      'f': $(dmx_frame_rate).val(),
                                      'c': $(slot_count).val(),
