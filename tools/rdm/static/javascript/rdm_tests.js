@@ -83,12 +83,14 @@ RDMTests.prototype.fetch_test_defs = function() {
       tests_selector.append($('<option />').val(test_defs[item])
                                            .text(test_defs[item]));
     });
-    $('.rdm-tests-selection-multiselect').multiselect();
-    $('.rdm-tests-selection-multiselect').multiselect({sortable: false, searchable: true});
+    $('#rdm-tests-selection-tests_list').multiselect();
+    $('#rdm-tests-selection-tests_list').multiselect({sortable: false, searchable: true});
   });
 };
 
 RDMTests.prototype.run_tests = function(test_filter) {
+  var ajax_loader = $('#rdm-tests-ajax_loader');
+  ajax_loader.show();
   this.query_server('../RunTests', {
                                      'u': $(universe_options).val(),
                                      'uid': $(devices_list).val(),
@@ -97,6 +99,22 @@ RDMTests.prototype.run_tests = function(test_filter) {
                                      'c': $(slot_count).val(),
                                      't': test_filter.join(','),
                                     }, function(data) {
+                                    var failed_tests = $('#rdm-tests-selection-failed_tests');
+                                    var failed_defs = new Array();
+                                    for (i in data['test_results']) {
+                                      switch (data['test_results'][i].state) {
+                                        case 'Failed':
+                                        case 'Broken':
+                                        case 'Not Run':
+                                          failed_defs.push(i);
+                                          break;
+                                      }
+                                    }
+                                    for (item in failed_defs) {
+                                      failed_tests.append($('<option />').val(failed_defs[item]).text(failed_defs[item]));
+                                    }
+                                    failed_tests.multiselect();
+                                    ajax_loader.hide();
   });
 };
 
