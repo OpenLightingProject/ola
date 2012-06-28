@@ -174,10 +174,14 @@ class TestServerApplication(object):
 
   def get_test_definitions(self, params):
     self.__set_response_status(True)
-    tests_by_category = self.__get_test_defs_by_catg()
-    self.response.update({'test_defs': tests_by_category})
+    if params['c'] == 1:
+      tests_defs = self.__get_test_defs(True)
+    else:
+      tests_defs = self.__get_test_defs(False)
 
-  def __get_test_defs_by_catg(self):
+    self.response.update({'test_defs': tests_defs})
+
+  def __get_test_defs(self, by_catg = False):
 
     tests = []
     for symbol in dir(TestDefinitions):
@@ -189,6 +193,9 @@ class TestServerApplication(object):
         continue
       if issubclass(obj, ResponderTest.ResponderTestFixture):
         tests.append(obj)
+
+    if not by_catg:
+      return [test.__name__ for test in tests]
 
     tests_by_category = {}
     for test in tests:
@@ -226,7 +233,10 @@ class TestServerApplication(object):
     slot_count = int(defaults['c'])
 
     if defaults['t'] is not None:
-      test_filter = set(defaults['t'].split(','))
+      if defaults['t'] == 'all':
+        test_filter = None
+      else:
+        test_filter = set(defaults['t'].split(','))
 
     runner = TestRunner.TestRunner(universe,
                                    uid,
@@ -253,13 +263,36 @@ class TestServerApplication(object):
     self.__format_test_results(tests)
 
   def __format_test_results(self, tests):
-    tests_by_category = {}
+    results = {}
+    passed = 0
+    failed = 0
+    broken = 0
+    not_run = 0
     for test in tests:
-      tests_by_category.setdefault(test.category.__str__(), []) \
-                                 .append([test.__str__(), test.state.__str__()])
+      if test.state == TestState.PASSED:
+        passed += 1
+      elif test.state == TestState.FAILED:
+        failed += 1
+      elif test.state == TestState.BROKEN:
+        broken += 1
+      elif test.state == TestState.NOT_RUN:
+        not_run += 1
+
+      results.update({
+        test.__str__(): {
+          'state': test.state.__str__(),
+          'category': test.category.__str__()
+        }
+      })
+    stats = {
+      'passed': passed,
+      'failed': failed,
+      'broken': broken,
+      'not_run': not_run,
+    }
 
     self.__set_response_status(True)
-    self.response.update({'test_results': tests_by_category})
+    self.response.update({'test_results': results, 'stats': stats})
 
   def get_devices(self, params):
     def format_uids(state, uids):
