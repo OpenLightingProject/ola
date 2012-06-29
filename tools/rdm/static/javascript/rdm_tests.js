@@ -30,6 +30,10 @@ RDMTests.prototype.bind_events_to_doms = function() {
   $('#rdm-tests-selection-run_tests').click(function() {
     rdmtests.validate_form();
   });
+
+  $('#rdm-tests-send_dmx_in_bg').click(function() {
+    $('#rdm-tests-dmx_options').toggle('fast');
+  });
 };
 
 RDMTests.prototype.query_server = function(request, params, callback) {
