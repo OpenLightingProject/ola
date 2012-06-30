@@ -232,6 +232,11 @@ class TestServerApplication(object):
     dmx_frame_rate = int(defaults['f'])
     slot_count = int(defaults['c'])
 
+    if slot_count not in range(1, 513):
+      self.__set_response_status(False)
+      self.__set_response_message('Invalid number of slots (expected [1-512])')
+      return
+
     if defaults['t'] is not None:
       if defaults['t'] == 'all':
         test_filter = None

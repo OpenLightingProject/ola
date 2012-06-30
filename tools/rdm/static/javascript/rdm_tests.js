@@ -31,7 +31,7 @@ RDMTests.prototype.bind_events_to_doms = function() {
     rdmtests.validate_form();
   });
 
-  $('#rdm-tests-send_dmx_in_bg').click(function() {
+  $('#rdm-tests-send_dmx_in_bg').change(function() {
     $('#rdm-tests-dmx_options').toggle('fast');
   });
 };
@@ -144,6 +144,12 @@ RDMTests.prototype.validate_form = function() {
   if (!(this.isNumberField($(write_delay)) &&
         this.isNumberField($(dmx_frame_rate)) &&
         this.isNumberField($(slot_count)))) {
+    return false;
+  }
+
+  var slot_count_val = parseFloat($(slot_count).val());
+  if (slot_count_val < 1 || slot_count_val > 512) {
+    alert('Invalid number of slots (expected: [1-512])');
     return false;
   }
 
