@@ -22,6 +22,24 @@ RDMTests = function() {
 
 rdmtests = new RDMTests();
 
+RDMTests.ajax_loader = "<img src='images/loader.gif' />";
+
+RDMTests.prototype.set_notification = function(options) {
+  if (options.title != undefined || options.title != null) {
+    $('#rdm-tests-notification-title').html(options.title);
+  }
+  if (options.message != undefined || options.message != null) {
+    $('#rdm-tests-notification-message').html(options.message);
+  }
+  $('#rdm-tests-notification').show();
+};
+
+RDMTests.prototype.clear_notification = function() {
+  $('#rdm-tests-notification-title').empty();
+  $('#rdm-tests-notification-message').empty();
+  $('#rdm-tests-notification').hide();
+};
+
 RDMTests.prototype.bind_events_to_doms = function() {
   $('#universe_options').change(function() {
     rdmtests.update_device_list();
@@ -93,8 +111,11 @@ RDMTests.prototype.fetch_test_defs = function() {
 };
 
 RDMTests.prototype.run_tests = function(test_filter) {
-  var ajax_loader = $('#rdm-tests-ajax_loader');
-  ajax_loader.show();
+  this.set_notification({
+                          'title': 'Running tests',
+                          'message': RDMTests.ajax_loader
+  });
+
   this.query_server('../RunTests', {
                                      'u': $(universe_options).val(),
                                      'uid': $(devices_list).val(),
@@ -118,7 +139,7 @@ RDMTests.prototype.run_tests = function(test_filter) {
                                       failed_tests.append($('<option />').val(failed_defs[item]).text(failed_defs[item]));
                                     }
                                     failed_tests.multiselect();
-                                    ajax_loader.hide();
+                                    rdmtests.clear_notification();
   });
 };
 
