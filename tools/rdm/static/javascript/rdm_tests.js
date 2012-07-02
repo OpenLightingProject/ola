@@ -61,7 +61,15 @@ RDMTests.prototype.query_server = function(request, params, callback) {
     data: params, 
     dataType: 'json',
     success: function(data) {
-      callback(data);
+      if (data['status'] == true) {
+        callback(data);
+      } else {
+        rdmtests.clear_notification();
+        rdmtests.set_notification({
+          'title': 'Error',
+          'message': data['message']
+        });
+      }
     },
     cache: false
   });
