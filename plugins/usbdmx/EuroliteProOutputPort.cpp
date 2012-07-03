@@ -78,7 +78,7 @@ bool EuroliteProOutputPort::Start() {
   string data;
   if (!GetDescriptorString(usb_handle, device_descriptor.iManufacturer,
                            &data)) {
-    OLA_INFO << "Failed to get manufactuer name";
+    OLA_INFO << "Failed to get manufacturer name";
     libusb_close(usb_handle);
     return false;
   }
