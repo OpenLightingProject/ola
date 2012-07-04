@@ -125,11 +125,11 @@ RDMTests.prototype.run_tests = function(test_filter) {
   });
 
   this.query_server('../RunTests', {
-                                     'u': $(universe_options).val(),
-                                     'uid': $(devices_list).val(),
-                                     'w': $(write_delay).val(),
-                                     'f': $(dmx_frame_rate).val(),
-                                     'c': $(slot_count).val(),
+                                     'u': $('#universe_options').val(),
+                                     'uid': $('#devices_list').val(),
+                                     'w': $('#write_delay').val(),
+                                     'f': $('#dmx_frame_rate').val(),
+                                     'c': $('#slot_count').val(),
                                      't': test_filter.join(','),
                                     }, function(data) {
                                     var failed_tests = $('#rdm-tests-selection-failed_tests');
@@ -158,7 +158,7 @@ RDMTests.prototype.validate_form = function() {
       return true;
     }
     if (isNaN(parseFloat(value)) || !isFinite(value)) {
-      alert(dom.attr('id').replace('_', ' ').toUpperCase() + ' must be a number!');
+      alert($(dom).attr('id').replace('_', ' ').toUpperCase() + ' must be a number!');
       return false;
     } else {
       return true;
@@ -170,13 +170,13 @@ RDMTests.prototype.validate_form = function() {
     return false;
   }
 
-  if (!(this.isNumberField($(write_delay)) &&
-        this.isNumberField($(dmx_frame_rate)) &&
-        this.isNumberField($(slot_count)))) {
+  if (!(this.isNumberField($('#write_delay')) &&
+        this.isNumberField($('#dmx_frame_rate')) &&
+        this.isNumberField($('#slot_count')))) {
     return false;
   }
 
-  var slot_count_val = parseFloat($(slot_count).val());
+  var slot_count_val = parseFloat($('#slot_count').val());
   if (slot_count_val < 1 || slot_count_val > 512) {
     alert('Invalid number of slots (expected: [1-512])');
     return false;
