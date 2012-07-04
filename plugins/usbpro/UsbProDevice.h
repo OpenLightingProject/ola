@@ -128,7 +128,7 @@ class UsbProOutputPort: public BasicOutputPort {
                      const TimeStamp *wake_time,
                      unsigned int max_burst,
                      unsigned int rate)
-        : BasicOutputPort(parent, id, true),
+        : BasicOutputPort(parent, id, true, true),
           m_path(path),
           m_widget(widget),
           m_bucket(max_burst, rate, max_burst, *wake_time),

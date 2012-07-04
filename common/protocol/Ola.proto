@@ -163,6 +163,7 @@ message PortInfo {
   optional bool active = 4;
   optional int32 priority_mode = 6;
   optional int32 priority = 7;
+  optional bool supports_rdm = 8 [default = false];
 }
 
 message DeviceInfo {

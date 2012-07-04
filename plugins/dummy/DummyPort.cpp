@@ -44,7 +44,7 @@ DummyPort::DummyPort(
   unsigned int id,
   uint16_t device_count,
   uint16_t subdevice_count)
-  : BasicOutputPort(parent, id, true) {
+  : BasicOutputPort(parent, id, true, true) {
     for (unsigned int i = 0; i < device_count; i++) {
       UID uid(OPEN_LIGHTING_ESTA_CODE, DummyPort::kStartAddress + i);
       m_responders[uid] = new DummyResponder(uid, subdevice_count);

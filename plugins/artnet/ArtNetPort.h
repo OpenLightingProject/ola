@@ -53,7 +53,7 @@ class ArtNetInputPort: public BasicInputPort {
                     unsigned int port_id,
                     class PluginAdaptor *plugin_adaptor,
                     ArtNetNode *node)
-        : BasicInputPort(parent, port_id, plugin_adaptor),
+        : BasicInputPort(parent, port_id, plugin_adaptor, true),
           m_helper(node, false) {}
 
     const DmxBuffer &ReadDMX() const { return m_buffer; }
@@ -79,7 +79,7 @@ class ArtNetOutputPort: public BasicOutputPort {
     ArtNetOutputPort(ArtNetDevice *device,
                      unsigned int port_id,
                      ArtNetNode *node)
-        : BasicOutputPort(device, port_id, true),
+        : BasicOutputPort(device, port_id, true, true),
           m_helper(node, true) {}
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);

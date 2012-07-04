@@ -70,6 +70,9 @@ class Port {
 
     virtual void SetPriorityMode(port_priority_mode mode) = 0;
     virtual port_priority_mode GetPriorityMode() const = 0;
+
+    // If this port supports RDM or not
+    virtual bool SupportsRDM() const = 0;
 };
 
 
@@ -129,7 +132,8 @@ class BasicInputPort: public InputPort {
   public:
     BasicInputPort(AbstractDevice *parent,
                    unsigned int port_id,
-                   const PluginAdaptor *plugin_adaptor);
+                   const PluginAdaptor *plugin_adaptor,
+                   bool supports_rdm = false);
 
     unsigned int PortId() const { return m_port_id; }
     AbstractDevice *GetDevice() const { return m_device; }
@@ -167,6 +171,8 @@ class BasicInputPort: public InputPort {
 
     virtual void PostSetUniverse(Universe *, Universe *) {}
 
+    virtual bool SupportsRDM() const { return m_supports_rdm; }
+
   protected:
     // indicates whether this port supports priorities, default to no
     virtual bool SupportsPriorities() const { return false; }
@@ -180,6 +186,7 @@ class BasicInputPort: public InputPort {
     AbstractDevice *m_device;
     DmxSource m_dmx_source;
     const PluginAdaptor *m_plugin_adaptor;
+    bool m_supports_rdm;
 
     BasicInputPort(const BasicInputPort&);
     BasicInputPort& operator=(const BasicInputPort&);
@@ -193,7 +200,8 @@ class BasicOutputPort: public OutputPort {
   public:
     BasicOutputPort(AbstractDevice *parent,
                     unsigned int port_id,
-                    bool start_rdm_discovery_on_patch = false);
+                    bool start_rdm_discovery_on_patch = false,
+                    bool supports_rdm = false);
 
     unsigned int PortId() const { return m_port_id; }
     AbstractDevice *GetDevice() const { return m_device; }
@@ -234,6 +242,8 @@ class BasicOutputPort: public OutputPort {
     virtual bool PreSetUniverse(Universe *, Universe *) { return true; }
     virtual void PostSetUniverse(Universe *, Universe *) { }
 
+    virtual bool SupportsRDM() const { return m_supports_rdm; }
+
   protected:
     // indicates whether this port supports priorities, default to no
     virtual bool SupportsPriorities() const { return false; }
@@ -247,10 +257,10 @@ class BasicOutputPort: public OutputPort {
     mutable string m_port_string;
     Universe *m_universe;  // the universe this port belongs to
     AbstractDevice *m_device;
+    bool m_supports_rdm;
 
     BasicOutputPort(const BasicOutputPort&);
     BasicOutputPort& operator=(const BasicOutputPort&);
-
 };
 
 

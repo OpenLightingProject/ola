@@ -879,6 +879,8 @@ void OlaServerServiceImpl::PopulatePort(const PortClass &port,
     port_info->set_priority(port.GetPriority());
   if (port.PriorityCapability() == CAPABILITY_FULL)
     port_info->set_priority_mode(port.GetPriorityMode());
+
+  port_info->set_supports_rdm(port.SupportsRDM());
 }
 
 

@@ -116,12 +116,14 @@ class Port(object):
     universe: the universe that this port belongs to
     active: True if this port is active
     description: the description of the port
+    supports_rdm: if the port supports RDM
   """
-  def __init__(self, port_id, universe, active, description):
+  def __init__(self, port_id, universe, active, description, supports_rdm):
     self._id = port_id
     self._universe = universe
     self._active = active
     self._description = description
+    self._supports_rdm = supports_rdm
 
   @property
   def id(self):
@@ -132,12 +134,16 @@ class Port(object):
     return self._universe
 
   @property
-  def action(self):
+  def active(self):
     return self._active
 
   @property
   def description(self):
     return self._description
+
+  @property
+  def supports_rdm(self):
+    return self._supports_rdm
 
   def __cmp__(self, other):
     return cmp(self._id, other._id)
@@ -556,12 +562,14 @@ class OlaClient(Ola_pb2.OlaClientService):
     elif universe in self._universe_callbacks:
       del self._universe_callbacks[universe]
 
-  def PatchPort(self, device_alias, port, action, universe, callback=None):
+  def PatchPort(self, device_alias, port, is_output, action, universe,
+                callback=None):
     """Patch a port to a universe.
 
     Args:
       device_alias: the alias of the device to configure
       port: the id of the port
+      is_output: select the input or output port
       action: OlaClient.PATCH or OlcClient.UNPATCH
       universe: the universe to set the name of
       callback: The function to call once complete, takes one argument, a
@@ -572,6 +580,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     request.device_alias = device_alias
     request.port_id = port
     request.action = action
+    request.is_output = is_output
     request.universe = universe
     done = lambda x, y: self._AckMessageComplete(callback, x, y)
     self._stub.PatchPort(controller, request, done)
@@ -765,13 +774,15 @@ class OlaClient(Ola_pb2.OlaClientService):
         input_ports.append(Port(port.port_id,
                                 port.universe,
                                 port.active,
-                                port.description))
+                                port.description,
+                                port.supports_rdm))
 
       for port in device.output_port:
         output_ports.append(Port(port.port_id,
                                  port.universe,
                                  port.active,
-                                 port.description))
+                                 port.description,
+                                port.supports_rdm))
 
       devices.append(Device(device.device_id,
                             device.device_alias,
