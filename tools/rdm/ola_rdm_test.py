@@ -215,8 +215,9 @@ def main():
     logging.info('Restricting tests to %s' % options.tests)
     test_filter = set(options.tests.split(','))
 
-  logging.info('Starting tests, universe %d, UID %s' %
-      (options.universe, options.uid))
+  logging.info(
+      'Starting tests, universe %d, UID %s, broadcast write delay %dms' %
+      (options.universe, options.uid, options.broadcast_write_delay))
 
   runner = TestRunner.TestRunner(options.universe,
                                  options.uid,
