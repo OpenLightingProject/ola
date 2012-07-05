@@ -333,7 +333,8 @@ void UsbProWidgetDetector::HandleSerialResponse(
   m_widgets.erase(iter);
 
   if (sniffer_packets > 1) {
-    OLA_WARN << "Enttec sniffer found, discarding";
+    OLA_WARN << "Enttec sniffer found (" << sniffer_packets <<
+      " packets), discarding";
     // we can't delete the widget since we're it's called us.
     widget->GetDescriptor()->SetOnData(NULL);
     m_scheduler->Execute(
@@ -374,8 +375,7 @@ void UsbProWidgetDetector::HandleSnifferPacket(
 
   if (iter == m_widgets.end())
     return;
-
-  OLA_INFO << "Received Enttec Sniffer Packet";
+  OLA_DEBUG << "Received Enttec Sniffer Packet";
   iter->second.sniffer_packets++;
 }
 
