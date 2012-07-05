@@ -21,9 +21,11 @@
 #include <getopt.h>
 #include <string.h>
 #include <sysexits.h>
+#include <time.h>
 
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>
+#include <ola/Clock.h>
 #include <ola/Logging.h>
 #include <ola/io/SelectServer.h>
 #include <ola/network/NetworkUtils.h>
@@ -65,6 +67,7 @@ using ola::rdm::UID;
 
 typedef struct {
   bool help;
+  bool timestamp;
   ola::log_level log_level;
   vector<string> args;  // extra args
   string read_file;  // file to read data from
@@ -110,6 +113,9 @@ class RDMSniffer {
       string pid_file;
 
       string write_file;  // write to this file if set
+
+      // print timestamps as well, these aren't saved
+      bool timestamp;
     };
 
     static void InitOptions(RDMSnifferOptions *options) {
@@ -121,6 +127,7 @@ class RDMSniffer {
       options->display_non_rdm_asc_frames = true;
       options->pid_file = PID_DATA_FILE;
       options->write_file = "";
+      options->timestamp = false;
     }
 
     explicit RDMSniffer(const RDMSnifferOptions &options);
@@ -128,8 +135,6 @@ class RDMSniffer {
     void HandleMessage(uint8_t label,
                        const uint8_t *data,
                        unsigned int length);
-
-    void ParseFile(const string &filename);
 
   private:
     typedef enum {
@@ -155,6 +160,7 @@ class RDMSniffer {
     void DisplayRDMResponse(unsigned int start, unsigned int end);
     void DisplayDiscoveryCommand(unsigned int start, unsigned int end);
     void DisplayRawData(unsigned int start, unsigned int end);
+    void MaybePrintTimestamp();
 
     static const uint8_t SNIFFER_PACKET = 0x81;
     static const uint8_t SNIFFER_PACKET_SIZE = 200;
@@ -175,37 +181,6 @@ RDMSniffer::RDMSniffer(const RDMSnifferOptions &options)
 }
 
 
-/**
- * Interpret data from a save file
- */
-void RDMSniffer::ParseFile(const string &filename) {
-  uint16_t length;
-  uint32_t size;
-  uint8_t label;
-  std::ifstream read_file;
-
-  read_file.open(filename.c_str(), std::ios::in | std::ios::binary);
-  if (!read_file.is_open()) {
-    OLA_WARN << "Could not open file: " << filename;
-    return;
-  }
-
-  read_file.seekg(0, std::ios::end);
-  size = read_file.tellg();
-  read_file.seekg(0, std::ios::beg);
-
-  while (read_file.tellg() < size) {
-    read_file.read(reinterpret_cast<char*>(&label), sizeof(label));
-    read_file.read(reinterpret_cast<char*>(&length), sizeof(length));
-    length = ola::network::NetworkToHost(length);
-    uint8_t *buffer = new uint8_t[length];
-    read_file.read(reinterpret_cast<char*>(buffer), length);
-    HandleMessage(label, buffer, length);
-    delete[] buffer;
-  }
-  read_file.close();
-}
-
 /*
  * Handle the widget replies
  */
@@ -223,7 +198,7 @@ void RDMSniffer::HandleMessage(uint8_t label,
     write_file.write(reinterpret_cast<char*>(&write_length),
                      sizeof(write_length));
     write_file.write(reinterpret_cast<const char*>(data), length);
-      write_file.close();
+    write_file.close();
   }
 
   if (label != SNIFFER_PACKET) {
@@ -336,6 +311,7 @@ void RDMSniffer::ProcessFrame() {
  */
 void RDMSniffer::DisplayDmxFrame() {
   unsigned int dmx_slot_count = m_frame.Size() - 1;
+  MaybePrintTimestamp();
   cout << "DMX " << std::dec;
   if (m_options.dmx_slot_limit < dmx_slot_count)
     cout << m_options.dmx_slot_limit << "/";
@@ -353,6 +329,7 @@ void RDMSniffer::DisplayDmxFrame() {
  */
 void RDMSniffer::DisplayAlternateFrame() {
   unsigned int slot_count = m_frame.Size() - 1;
+  MaybePrintTimestamp();
   cout << "SC 0x" << std::hex << std::setw(2) << static_cast<int>(m_frame[0])
     << " " << std::dec << slot_count << ":" << std::hex;
   unsigned int slots_to_display = std::min(
@@ -369,12 +346,17 @@ void RDMSniffer::DisplayRDMFrame() {
   unsigned int slot_count = m_frame.Size() - 1;
 
   if (slot_count < 21) {
+    MaybePrintTimestamp();
     DisplayRawData(1, slot_count);
     return;
   }
 
   if (!m_options.summarize_rdm_frames)
     cout << "---------------------------------------" << endl;
+
+  MaybePrintTimestamp();
+  if (!m_options.summarize_rdm_frames && m_options.timestamp)
+    cout << endl;
 
   switch (m_frame[20]) {
     case RDMCommand::GET_COMMAND:
@@ -465,6 +447,26 @@ void RDMSniffer::DisplayRawData(unsigned int start, unsigned int end) {
 }
 
 
+/**
+ * Print the timestamp if timestamps are enabled
+ */
+void RDMSniffer::MaybePrintTimestamp() {
+  if (!m_options.timestamp)
+    return;
+
+  ola::TimeStamp now;
+  ola::Clock clock;
+  clock.CurrentTime(&now);
+  time_t seconds_since_epoch = now.Seconds();
+  struct tm local_time;
+  localtime_r(&seconds_since_epoch, &local_time);
+
+  char output[24];
+  strftime(output, sizeof(output), "%d-%m-%Y %H:%M:%S", &local_time);
+  cout << output << "." << std::dec << static_cast<int>(now.MicroSeconds()) <<
+    " ";
+}
+
 /*
  * Parse our command line options
  */
@@ -487,7 +489,7 @@ void ParseOptions(int argc,
   int option_index = 0;
 
   while (1) {
-    int c = getopt_long(argc, argv, "adhl:s:ruw:p:", long_options,
+    int c = getopt_long(argc, argv, "adhl:s:truw:p:", long_options,
                         &option_index);
 
     if (c == -1)
@@ -531,6 +533,9 @@ void ParseOptions(int argc,
       case 's':
         sniffer_options->dmx_slot_limit = atoi(optarg);
         break;
+      case 't':
+        sniffer_options->timestamp = true;
+        break;
       case 'r':
         sniffer_options->summarize_rdm_frames = false;
         break;
@@ -571,9 +576,10 @@ void DisplayHelpAndExit(char *argv[]) {
   "  --dmx-slot-limit N  Only display N slots\n"
   "  -h, --help          Display this help message and exit.\n"
   "  -l, --log-level <level>  Set the logging level 0 .. 4.\n"
-  "  -r, --full-rdm      Display the full RDM frame\n"
-  "  -w, --write-raw-dump <file>  Write data to binary file.\n"
   "  -p, --parse-raw-dump <file>  Parse data from binary file.\n"
+  "  -r, --full-rdm      Display the full RDM frame\n"
+  "  -t, --timestamp     Include timestamps.\n"
+  "  -w, --write-raw-dump <file>  Write data to binary file.\n"
   << endl;
   exit(0);
 }
@@ -581,6 +587,43 @@ void DisplayHelpAndExit(char *argv[]) {
 
 void Stop(ola::io::SelectServer *ss) {
   ss->Terminate();
+}
+
+
+/**
+ * Interpret data from a save file
+ */
+void ParseFile(RDMSniffer::RDMSnifferOptions *sniffer_options,
+               const string &filename) {
+  uint16_t length;
+  uint32_t size;
+  uint8_t label;
+  std::ifstream read_file;
+
+  // turn off timestamps
+  sniffer_options->timestamp = false;
+  RDMSniffer sniffer(*sniffer_options);
+
+  read_file.open(filename.c_str(), std::ios::in | std::ios::binary);
+  if (!read_file.is_open()) {
+    OLA_WARN << "Could not open file: " << filename;
+    return;
+  }
+
+  read_file.seekg(0, std::ios::end);
+  size = read_file.tellg();
+  read_file.seekg(0, std::ios::beg);
+
+  while (read_file.tellg() < size) {
+    read_file.read(reinterpret_cast<char*>(&label), sizeof(label));
+    read_file.read(reinterpret_cast<char*>(&length), sizeof(length));
+    length = ola::network::NetworkToHost(length);
+    uint8_t *buffer = new uint8_t[length];
+    read_file.read(reinterpret_cast<char*>(buffer), length);
+    sniffer.HandleMessage(label, buffer, length);
+    delete[] buffer;
+  }
+  read_file.close();
 }
 
 
@@ -593,6 +636,7 @@ int main(int argc, char *argv[]) {
   options opts;
   opts.log_level = ola::OLA_LOG_INFO;
   opts.help = false;
+  opts.timestamp = false;
   ParseOptions(argc, argv, &opts, &sniffer_options);
 
   if (opts.help)
@@ -612,11 +656,9 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  RDMSniffer sniffer(sniffer_options);
-
   if (!opts.read_file.empty()) {
     // we're reading from a file
-    sniffer.ParseFile(opts.read_file);
+    ParseFile(&sniffer_options, opts.read_file);
     return EX_OK;
   }
 
@@ -634,6 +676,7 @@ int main(int argc, char *argv[]) {
   descriptor->SetOnClose(ola::NewSingleCallback(&Stop, &ss));
   ss.AddReadDescriptor(descriptor);
 
+  RDMSniffer sniffer(sniffer_options);
   DispatchingUsbProWidget widget(
       descriptor,
       ola::NewCallback(&sniffer, &RDMSniffer::HandleMessage));
