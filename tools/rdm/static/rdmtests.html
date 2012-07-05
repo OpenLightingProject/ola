@@ -106,6 +106,18 @@
         text-align: center;
       }
 
+      #rdm-tests-results {
+        display: none;
+        position: absolute;
+        left: 8%;
+        top: 10%;
+        z-index: 1000;
+        width: 300px;
+        height: 50px;
+        background-color: #fff;
+        border: 3px solid #000;
+      }
+
       #rdm-tests-notification-title {
         padding: 5px;
       }
@@ -203,7 +215,8 @@
            </tr>
            <tr>
             <td>
-              <div id='rdm-tests-results'></div>
+              <div id='rdm-tests-results'>
+              </div>
             </td>
            </tr>
           </table>
