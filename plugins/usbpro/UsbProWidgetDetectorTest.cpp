@@ -40,6 +40,7 @@ class UsbProWidgetDetectorTest: public CommonWidgetTest {
   CPPUNIT_TEST(testExtendedDiscovery);
   CPPUNIT_TEST(testDiscovery);
   CPPUNIT_TEST(testTimeout);
+  CPPUNIT_TEST(testSniffer);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -48,6 +49,7 @@ class UsbProWidgetDetectorTest: public CommonWidgetTest {
     void testExtendedDiscovery();
     void testDiscovery();
     void testTimeout();
+    void testSniffer();
 
   private:
     auto_ptr<UsbProWidgetDetector> m_detector;
@@ -63,6 +65,7 @@ class UsbProWidgetDetectorTest: public CommonWidgetTest {
     static const uint8_t DEVICE_LABEL = 78;
     static const uint8_t MANUFACTURER_LABEL = 77;
     static const uint8_t SERIAL_LABEL = 10;
+    static const uint8_t SNIFFER_LABEL = 0x81;
 };
 
 
@@ -198,3 +201,29 @@ void UsbProWidgetDetectorTest::testTimeout() {
   CPPUNIT_ASSERT(!m_found_widget);
   CPPUNIT_ASSERT(m_failed_widget);
 }
+
+/*
+ * Check that we recognize Enttec sniffers.
+ */
+void UsbProWidgetDetectorTest::testSniffer() {
+  uint8_t serial_data[] = {0x78, 0x56, 0x34, 0x12};
+  m_endpoint->AddExpectedUsbProMessage(MANUFACTURER_LABEL, NULL, 0);
+  m_endpoint->AddExpectedUsbProMessage(DEVICE_LABEL, NULL, 0);
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      SERIAL_LABEL,
+      NULL,
+      0,
+      SERIAL_LABEL,
+      serial_data,
+      sizeof(serial_data));
+
+  m_endpoint->SendUnsolicitedUsbProData(SNIFFER_LABEL, NULL, 0);
+  m_endpoint->SendUnsolicitedUsbProData(SNIFFER_LABEL, NULL, 0);
+
+  m_detector->Discover(&m_descriptor);
+  m_ss.Run();
+
+  CPPUNIT_ASSERT(!m_found_widget);
+  CPPUNIT_ASSERT(m_failed_widget);
+}
+
