@@ -18,6 +18,7 @@
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
+import datetime
 import logging
 from ola.RDMAPI import RDMAPI
 from ola.OlaClient import OlaClient, RDMNack
@@ -174,18 +175,22 @@ class QueuedMessageFetcher(object):
 
 class TestRunner(object):
   """The Test Runner executes the tests."""
-  def __init__(self, universe, uid, broadcast_write_delay, pid_store, wrapper):
+  def __init__(self, universe, uid, broadcast_write_delay, timestamp, pid_store,
+               wrapper):
     """Create a new TestRunner.
 
     Args:
       universe: The universe number to use
       uid: The UID object to test
+      broadcast_write_delay: the delay to use after sending broadcast sets
+      timestamp: true to print timestamps with each test
       pid_store: A PidStore object
       wrapper: A ClientWrapper object
     """
     self._universe = universe
     self._uid = uid
     self._broadcast_write_delay = broadcast_write_delay
+    self._timestamp = timestamp
     self._pid_store = pid_store
     self._api = RDMAPI(wrapper.Client(), pid_store, strict_checks=False)
     self._wrapper = wrapper
@@ -245,10 +250,24 @@ class TestRunner(object):
     tests = self._TopologicalSort(deps_map)
 
     logging.debug('Test order is %s' % tests)
+    is_debug = logging.getLogger('').isEnabledFor(logging.DEBUG)
+
     for test in tests:
       # make sure the queue is flushed before starting any tests
       self._message_fetcher.FetchAllMessages()
-      logging.debug('%s: %s' % (test, test.__doc__))
+
+      # capture the start time
+      start = datetime.datetime.now()
+      start_time_as_string = '%s ' % start.strftime('%d-%m-%Y %H:%M:%S.%f')
+      start_header = ''
+      end_header = ''
+      if self._timestamp:
+        if is_debug:
+          start_header = start_time_as_string
+        else:
+          end_header = start_time_as_string
+
+      logging.debug('%s%s: %s' % (start_header, test, test.__doc__))
 
       try:
         for property in test.Requires():
@@ -258,7 +277,9 @@ class TestRunner(object):
         continue
 
       test.Run()
-      logging.info('%s: %s' % (test, test.state.ColorString()))
+
+
+      logging.info('%s%s: %s' % (end_header, test, test.state.ColorString()))
     return tests, device
 
   def _InstantiateTests(self, device, tests_to_run):
