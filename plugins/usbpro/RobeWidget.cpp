@@ -19,6 +19,7 @@
  */
 
 #include <string.h>
+#include <memory>
 #include <string>
 #include <vector>
 #include "ola/BaseTypes.h"
@@ -32,8 +33,11 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
+using ola::rdm::RDMRequest;
+using ola::rdm::RDMResponse;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
+using std::auto_ptr;
 
 // The DMX frames have an extra 4 bytes at the end
 const int RobeWidgetImpl::DMX_FRAME_DATA_SIZE = DMX_UNIVERSE_SIZE + 4;
@@ -94,7 +98,7 @@ bool RobeWidgetImpl::SendDMX(const DmxBuffer &buffer) {
 /**
  * Send a RDM Message
  */
-void RobeWidgetImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
+void RobeWidgetImpl::SendRDMRequest(const RDMRequest *request,
                                     ola::rdm::RDMCallback *on_complete) {
   std::vector<string> packets;
   if (m_rdm_request_callback) {
@@ -199,19 +203,10 @@ void RobeWidgetImpl::SetDmxCallback(Callback0<void> *callback) {
  */
 void RobeWidgetImpl::MuteDevice(const UID &target,
                                 MuteDeviceCallback *mute_complete) {
-  ola::rdm::MuteRequest mute_request(
-      m_uid,
-      target,
-      m_transaction_number++);
-  unsigned int length = mute_request.Size();
-  uint8_t data[length + RDM_PADDING_BYTES];
-  memset(data, 0, length + RDM_PADDING_BYTES);
-  mute_request.Pack(data, &length);
+  auto_ptr<RDMRequest> mute_request(
+      ola::rdm::NewMuteRequest(m_uid, target, m_transaction_number++));
   OLA_DEBUG << "Muting " << target;
-  bool r = SendMessage(RDM_REQUEST,
-                       data,
-                       length + RDM_PADDING_BYTES);
-  if (r)
+  if (PackAndSendRDMRequest(RDM_REQUEST, mute_request.get()))
     m_mute_callback = mute_complete;
   else
     mute_complete->Run(false);
@@ -224,20 +219,17 @@ void RobeWidgetImpl::MuteDevice(const UID &target,
  * completes.
  */
 void RobeWidgetImpl::UnMuteAll(UnMuteDeviceCallback *unmute_complete) {
-  ola::rdm::UnMuteRequest unmute_request(
-      m_uid,
-      ola::rdm::UID::AllDevices(),
-      m_transaction_number++);
-
-  unsigned int length = unmute_request.Size();
-  uint8_t data[length + RDM_PADDING_BYTES];
-  memset(data, 0, length + RDM_PADDING_BYTES);
-  unmute_request.Pack(data, &length);
+  auto_ptr<RDMRequest> unmute_request(
+      ola::rdm::NewUnMuteRequest(m_uid,
+                                 ola::rdm::UID::AllDevices(),
+                                 m_transaction_number++));
   OLA_DEBUG << "UnMuting all devices";
-  SendMessage(RDM_REQUEST,
-              data,
-              length + RDM_PADDING_BYTES);
-  m_unmute_callback = unmute_complete;
+  if (PackAndSendRDMRequest(RDM_REQUEST, unmute_request.get())) {
+    m_unmute_callback = unmute_complete;
+  } else {
+    OLA_WARN << "Failed to send Unmute all request";
+    unmute_complete->Run();
+  }
 }
 
 
@@ -247,20 +239,16 @@ void RobeWidgetImpl::UnMuteAll(UnMuteDeviceCallback *unmute_complete) {
 void RobeWidgetImpl::Branch(const UID &lower,
                             const UID &upper,
                             BranchCallback *callback) {
-  ola::rdm::DiscoveryUniqueBranchRequest branch_request(
-      m_uid,
-      lower,
-      upper,
-      m_transaction_number++);
-
-  unsigned int length = branch_request.Size();
-  uint8_t data[length + RDM_PADDING_BYTES];
-  memset(data + length, 0, RDM_PADDING_BYTES);
-  branch_request.Pack(data, &length);
-  SendMessage(RDM_DISCOVERY,
-              data,
-              length + RDM_PADDING_BYTES);
-  m_branch_callback = callback;
+  auto_ptr<RDMRequest> branch_request(
+      ola::rdm::NewDiscoveryUniqueBranchRequest(
+          m_uid,
+          lower,
+          upper,
+          m_transaction_number++));
+  if (PackAndSendRDMRequest(RDM_DISCOVERY, branch_request.get()))
+    m_branch_callback = callback;
+  else
+    callback->Run(NULL, 0);
 }
 
 
@@ -315,7 +303,7 @@ void RobeWidgetImpl::HandleRDMResponse(const uint8_t *data,
   }
   ola::rdm::RDMCallback *callback = m_rdm_request_callback;
   m_rdm_request_callback = NULL;
-  auto_ptr<const ola::rdm::RDMRequest> request(m_pending_request);
+  auto_ptr<const RDMRequest> request(m_pending_request);
   m_pending_request = NULL;
 
   // this was a broadcast request
@@ -336,7 +324,7 @@ void RobeWidgetImpl::HandleRDMResponse(const uint8_t *data,
 
   // try to inflate
   ola::rdm::rdm_response_code response_code;
-  ola::rdm::RDMResponse *response = ola::rdm::RDMResponse::InflateFromData(
+  RDMResponse *response = RDMResponse::InflateFromData(
       packet,
       &response_code,
       request.get());
@@ -387,6 +375,19 @@ void RobeWidgetImpl::HandleDmxFrame(const uint8_t *data, unsigned int length) {
   m_buffer.Set(data, length);
   if (m_dmx_callback.get())
     m_dmx_callback->Run();
+}
+
+
+/**
+ * Send a RDM request to the widget
+ */
+bool RobeWidgetImpl::PackAndSendRDMRequest(uint8_t label,
+                                           const RDMRequest *request) {
+  unsigned int length = request->Size();
+  uint8_t data[length + RDM_PADDING_BYTES];
+  memset(data, 0, length + RDM_PADDING_BYTES);
+  request->Pack(data, &length);
+  return SendMessage(label, data, length + RDM_PADDING_BYTES);
 }
 
 

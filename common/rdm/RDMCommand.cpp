@@ -128,7 +128,9 @@ bool RDMCommand::Pack(string *data) const {
  * The packed data structure does not include the RDM start code (0xCC) because
  * sometimes devices / protocols keep this separate.
  */
-bool RDMCommand::Pack(uint8_t *buffer, unsigned int *size, const UID &source,
+bool RDMCommand::Pack(uint8_t *buffer,
+                      unsigned int *size,
+                      const UID &source,
                       uint8_t transaction_number,
                       uint8_t port_id) const {
   if (*size < Size())
@@ -203,6 +205,9 @@ void RDMCommand::Write(ola::io::OutputStream *stream) const {
 }
 
 
+/**
+ * Pack this command with a specific transaction_number & port_id
+ */
 bool RDMCommand::Pack(string *buffer,
                       const UID &source,
                       uint8_t transaction_number,
@@ -221,6 +226,9 @@ bool RDMCommand::Pack(string *buffer,
 }
 
 
+/**
+ * Set the parameter data
+ */
 void RDMCommand::SetParamData(const uint8_t *data, unsigned int length) {
   if (length > MAX_PARAM_DATA_LENGTH) {
     OLA_WARN << "Attempt to create RDM message with a length > " <<
@@ -779,7 +787,7 @@ RDMResponse *GetResponseWithPid(const RDMRequest *request,
 /**
  * Inflate a discovery request.
  */
-DiscoveryRequest* DiscoveryRequest::InflateFromData(
+RDMDiscoveryRequest* RDMDiscoveryRequest::InflateFromData(
     const uint8_t *data,
     unsigned int length) {
   rdm_command_message command_message;
@@ -796,7 +804,7 @@ DiscoveryRequest* DiscoveryRequest::InflateFromData(
     command_message.command_class);
 
   if (command_class == DISCOVER_COMMAND) {
-    return new DiscoveryRequest(
+    return new RDMDiscoveryRequest(
         UID(command_message.source_uid),
         UID(command_message.destination_uid),
         command_message.transaction_number,  // transaction #
@@ -816,41 +824,79 @@ DiscoveryRequest* DiscoveryRequest::InflateFromData(
 /*
  * Inflate a discovery request from some data.
  */
-DiscoveryRequest* DiscoveryRequest::InflateFromData(const string &data) {
+RDMDiscoveryRequest* RDMDiscoveryRequest::InflateFromData(const string &data) {
   return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
                          data.size());
 }
 
 
-/**
- * Constructor for the DiscoveryUniqueBranchRequest
+/*
+ * Create a new DUB request object.
  */
-DiscoveryUniqueBranchRequest::DiscoveryUniqueBranchRequest(
+RDMDiscoveryRequest *NewDiscoveryUniqueBranchRequest(
     const UID &source,
     const UID &lower,
     const UID &upper,
     uint8_t transaction_number,
-    uint8_t port_id)
-    : DiscoveryRequest(source,
-                       UID::AllDevices(),
-                       transaction_number,
-                       port_id,
-                       0,  // message count
-                       ROOT_RDM_DEVICE,
-                       PID_DISC_UNIQUE_BRANCH,
-                       NULL,
-                       0) {
-    unsigned int length = sizeof(m_param_data);
-    lower.Pack(m_param_data, length);
-    upper.Pack(m_param_data + UID::UID_SIZE, length - UID::UID_SIZE);
-    SetData(m_param_data, sizeof(m_param_data));
-}
+    uint8_t port_id) {
+  uint8_t param_data[UID::UID_SIZE * 2];
+  unsigned int length = sizeof(param_data);
+  lower.Pack(param_data, length);
+  upper.Pack(param_data + UID::UID_SIZE, length - UID::UID_SIZE);
+  return new RDMDiscoveryRequest(source,
+                                 UID::AllDevices(),
+                                 transaction_number,
+                                 port_id,
+                                 0,  // message count
+                                 ROOT_RDM_DEVICE,
+                                 PID_DISC_UNIQUE_BRANCH,
+                                 param_data,
+                                 length);
+};
+
+
+/*
+ * Create a new Mute Request Object.
+ */
+RDMDiscoveryRequest *NewMuteRequest(const UID &source,
+                                    const UID &destination,
+                                    uint8_t transaction_number,
+                                    uint8_t port_id) {
+  return new RDMDiscoveryRequest(source,
+                                 destination,
+                                 transaction_number,
+                                 port_id,
+                                 0,  // message count
+                                 ROOT_RDM_DEVICE,
+                                 PID_DISC_MUTE,
+                                 NULL,
+                                 0);
+};
+
+
+/**
+ * Create a new UnMute request object.
+ */
+RDMDiscoveryRequest *NewUnMuteRequest(const UID &source,
+                                      const UID &destination,
+                                      uint8_t transaction_number,
+                                      uint8_t port_id) {
+    return new RDMDiscoveryRequest(source,
+                                   destination,
+                                   transaction_number,
+                                   port_id,
+                                   0,  // message count
+                                   ROOT_RDM_DEVICE,
+                                   PID_DISC_UN_MUTE,
+                                   NULL,
+                                   0);
+};
 
 
 /**
  * Inflate a discovery response.
  */
-DiscoveryResponse* DiscoveryResponse::InflateFromData(
+RDMDiscoveryResponse* RDMDiscoveryResponse::InflateFromData(
     const uint8_t *data,
     unsigned int length) {
   rdm_command_message command_message;
@@ -867,7 +913,7 @@ DiscoveryResponse* DiscoveryResponse::InflateFromData(
     command_message.command_class);
 
   if (command_class == DISCOVER_COMMAND_RESPONSE) {
-    return new DiscoveryResponse(
+    return new RDMDiscoveryResponse(
         UID(command_message.source_uid),
         UID(command_message.destination_uid),
         command_message.transaction_number,  // transaction #
@@ -887,7 +933,8 @@ DiscoveryResponse* DiscoveryResponse::InflateFromData(
 /*
  * Inflate a discovery response from some data.
  */
-DiscoveryResponse* DiscoveryResponse::InflateFromData(const string &data) {
+RDMDiscoveryResponse* RDMDiscoveryResponse::InflateFromData(
+    const string &data) {
   return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
                          data.size());
 }

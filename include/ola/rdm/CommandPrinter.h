@@ -44,11 +44,11 @@ class CommandPrinter {
                          bool summarize = false,
                          bool unpack_param_data = true);
 
-    void DisplayDiscoveryRequest(const class DiscoveryRequest *request,
+    void DisplayDiscoveryRequest(const class RDMDiscoveryRequest *request,
                                  bool summarize = false,
                                  bool unpack_param_data = true);
 
-    void DisplayDiscoveryResponse(const class DiscoveryResponse *response,
+    void DisplayDiscoveryResponse(const class RDMDiscoveryResponse *response,
                                   bool summarize = false,
                                   bool unpack_param_data = true);
 
@@ -59,15 +59,11 @@ class CommandPrinter {
     void AppendUIDsAndType(const class RDMCommand *command,
                            const char *message_type);
     void AppendPortId(const class RDMRequest *request);
-    void AppendPortId(const class DiscoveryRequest *request);
     void AppendVerboseUIDs(const class RDMCommand *command);
     void AppendPidString(const class RDMCommand *command,
                          const class PidDescriptor *pid_descriptor);
     void AppendResponseType(const class RDMResponse *response);
-    void AppendDiscoveryResponseType(const class DiscoveryResponse *response);
     void AppendVerboseResponseType(const class RDMResponse *response);
-    void AppendVerboseDiscoveryResponseType(
-        const class DiscoveryResponse *response);
     void AppendHeaderFields(const class RDMCommand *command,
                             const char *command_class);
 

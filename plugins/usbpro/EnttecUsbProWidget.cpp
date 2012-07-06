@@ -20,6 +20,7 @@
 
 #include <string.h>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
 #include "ola/BaseTypes.h"
@@ -37,8 +38,11 @@ namespace usbpro {
 
 using ola::rdm::RDMCommand;
 using ola::rdm::RDMRequest;
+using ola::rdm::RDMRequest;
+using ola::rdm::RDMResponse;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
+using std::auto_ptr;
 
 
 const uint16_t EnttecUsbProWidget::ENTTEC_ESTA_ID = 0x454E;
@@ -164,21 +168,13 @@ void EnttecUsbProWidgetImpl::RunIncrementalDiscovery(
  */
 void EnttecUsbProWidgetImpl::MuteDevice(const ola::rdm::UID &target,
                                         MuteDeviceCallback *mute_complete) {
-  ola::rdm::MuteRequest mute_request(
-      m_uid,
-      target,
-      m_transaction_number++);
-  unsigned int rdm_length = mute_request.Size();
-  uint8_t *data = new uint8_t[rdm_length + 1];  // inc start code
-  data[0] = RDMCommand::START_CODE;
-  mute_request.Pack(&data[1], &rdm_length);
+  auto_ptr<RDMRequest> mute_request(
+      ola::rdm::NewMuteRequest(m_uid, target, m_transaction_number++));
   OLA_INFO << "Muting " << target;
-  bool r = SendMessage(RDM_PACKET, data, rdm_length + 1);
-  if (r)
+  if (PackAndSendRDMRequest(RDM_PACKET, mute_request.get()))
     m_mute_callback = mute_complete;
   else
     mute_complete->Run(false);
-  delete[] data;
 }
 
 
@@ -188,19 +184,17 @@ void EnttecUsbProWidgetImpl::MuteDevice(const ola::rdm::UID &target,
  * completes.
  */
 void EnttecUsbProWidgetImpl::UnMuteAll(UnMuteDeviceCallback *unmute_complete) {
-  ola::rdm::UnMuteRequest unmute_request(
-      m_uid,
-      ola::rdm::UID::AllDevices(),
-      m_transaction_number++);
-
-  unsigned int rdm_length = unmute_request.Size();
-  uint8_t *data = new uint8_t[rdm_length + 1];  // inc start code
-  data[0] = RDMCommand::START_CODE;
-  unmute_request.Pack(&data[1], &rdm_length);
+  auto_ptr<RDMRequest> unmute_request(
+      ola::rdm::NewUnMuteRequest(m_uid,
+                                 ola::rdm::UID::AllDevices(),
+                                 m_transaction_number++));
   OLA_INFO << "Un-muting all devices";
-  SendMessage(RDM_PACKET, data, rdm_length + 1);
-  m_unmute_callback = unmute_complete;
-  delete[] data;
+  if (PackAndSendRDMRequest(RDM_PACKET, unmute_request.get())) {
+    m_unmute_callback = unmute_complete;
+  } else {
+    OLA_WARN << "Failed to send Unmute all request";
+    unmute_complete->Run();
+  }
 }
 
 
@@ -210,22 +204,17 @@ void EnttecUsbProWidgetImpl::UnMuteAll(UnMuteDeviceCallback *unmute_complete) {
 void EnttecUsbProWidgetImpl::Branch(const ola::rdm::UID &lower,
                                     const ola::rdm::UID &upper,
                                     BranchCallback *callback) {
-  ola::rdm::DiscoveryUniqueBranchRequest branch_request(
-      m_uid,
-      lower,
-      upper,
-      m_transaction_number++);
-
-  unsigned int rdm_length = branch_request.Size();
-  uint8_t *data = new uint8_t[rdm_length + 1];  // inc start code
-  data[0] = RDMCommand::START_CODE;
-  branch_request.Pack(&data[1], &rdm_length);
+  auto_ptr<RDMRequest> branch_request(
+      ola::rdm::NewDiscoveryUniqueBranchRequest(
+          m_uid,
+          lower,
+          upper,
+          m_transaction_number++));
   OLA_INFO << "Sending DUB packet: " << lower << " - " << upper;
-  SendMessage(RDM_DISCOVERY_PACKET,
-              data,
-              rdm_length + 1);
-  m_branch_callback = callback;
-  delete[] data;
+  if (PackAndSendRDMRequest(RDM_DISCOVERY_PACKET, branch_request.get()))
+    m_branch_callback = callback;
+  else
+    callback->Run(NULL, 0);
 }
 
 
@@ -393,6 +382,19 @@ void EnttecUsbProWidgetImpl::DiscoveryComplete(
   OLA_DEBUG << "Enttec Pro discovery complete: " << uids;
   if (callback)
     callback->Run(uids);
+}
+
+
+/**
+ * Send a RDM request to the widget
+ */
+bool EnttecUsbProWidgetImpl::PackAndSendRDMRequest(uint8_t label,
+                                                   const RDMRequest *request) {
+  unsigned int rdm_length = request->Size();
+  uint8_t *data = new uint8_t[rdm_length + 1];  // inc start code
+  data[0] = RDMCommand::START_CODE;
+  request->Pack(&data[1], &rdm_length);
+  return SendMessage(label, data, rdm_length + 1);
 }
 
 

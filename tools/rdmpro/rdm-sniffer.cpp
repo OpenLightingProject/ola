@@ -60,7 +60,6 @@ using ola::rdm::CommandPrinter;
 using ola::rdm::PidDescriptor;
 using ola::rdm::PidStoreHelper;
 using ola::rdm::RDMCommand;
-using ola::rdm::RDMDiscoveryCommand;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
@@ -428,16 +427,16 @@ void RDMSniffer::DisplayDiscoveryCommand(unsigned int start,
   bool ok = ola::rdm::GuessMessageType(NULL, &command_class,
                                        &m_frame[start], end - start + 1);
 
-  auto_ptr<ola::rdm::DiscoveryRequest> request;
-  auto_ptr<ola::rdm::DiscoveryResponse> response;
+  auto_ptr<ola::rdm::RDMDiscoveryRequest> request;
+  auto_ptr<ola::rdm::RDMDiscoveryResponse> response;
   if (ok && command_class == RDMCommand::DISCOVER_COMMAND) {
     request.reset(
-        ola::rdm::DiscoveryRequest::InflateFromData(&m_frame[start],
-                                                    end - start + 1));
+        ola::rdm::RDMDiscoveryRequest::InflateFromData(&m_frame[start],
+                                                       end - start + 1));
   } else if (ok && command_class == RDMCommand::DISCOVER_COMMAND_RESPONSE) {
     response.reset(
-        ola::rdm::DiscoveryResponse::InflateFromData(&m_frame[start],
-                                                     end - start + 1));
+        ola::rdm::RDMDiscoveryResponse::InflateFromData(&m_frame[start],
+                                                        end - start + 1));
   }
 
   if (request.get()) {
