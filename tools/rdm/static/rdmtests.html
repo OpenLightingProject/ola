@@ -130,7 +130,7 @@
       #rdm-tests-results-stats {
         position: relative;
         top: 2%;
-        left: 2%;
+        left: 72%;
       }
 
       #rdm-tests-results-stats-table {
@@ -141,6 +141,44 @@
         padding: 5px;
         text-align: center;
         font-weight: bold;
+      }
+
+      #rdm-tests-results-warnings {
+        position: relative;
+        top: -6%;
+        left: 1%;
+        width: 500px;
+        height: 100px;
+        overflow: auto;
+        float: left;
+        border: 1.0px solid #67a7e3;
+      }
+
+      #rdm-tests-results-warnings p {
+        text-align: left;
+        color: #D40000;
+        font-size: 12px;
+        font-weight: bold;
+        padding-left: 5px;
+      }
+
+      #rdm-tests-results-advisories {
+        position: relative;
+        top: 20%;
+        left: -42.5%;
+        width: 500px;
+        height: 100px;
+        overflow: auto;
+        float: left;
+        border: 1.0px solid #67a7e3;
+      }
+
+      #rdm-tests-results-advisories p {
+        text-align: left;
+        color: #1F1D1D;
+        font-size: 12px;
+        font-weight: bold;
+        padding-left: 5px;
       }
 
     </style>
@@ -233,14 +271,6 @@
            <tr>
             <td>
               <div id='rdm-tests-results'>
-                <div id='rdm-tests-results-warnings'>
-                </div>
-                <div id='rdm-tests-results-advisories'>
-                </div>
-                <div id='rdm-tests-results-summary'>
-                </div>
-                <div id='rdm-tests-results-summary-bycatg'>
-                </div>
                 <div id='rdm-tests-results-stats'>
                   <table id='rdm-tests-results-stats-table'>
                     <tr>
@@ -253,6 +283,16 @@
                     <tr id='rdm-tests-results-stats-figures'>
                     </tr>
                   </table>
+                </div>
+                <div id='rdm-tests-results-warnings'>
+                  <p style='text-align: center; font-size: 14px; padding-left: 0px;'>Warnings</p>
+                </div>
+                <div id='rdm-tests-results-advisories'>
+                  <p style='text-align: center; font-size: 14px; padding-left: 0px;'>Advisories</p>
+                </div>
+                <div id='rdm-tests-results-summary'>
+                </div>
+                <div id='rdm-tests-results-summary-bycatg'>
                 </div>
               </div>
             </td>

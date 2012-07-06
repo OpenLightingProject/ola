@@ -286,9 +286,12 @@ class TestServerApplication(object):
       results.update({
         test.__str__(): {
           'state': test.state.__str__(),
-          'category': test.category.__str__()
+          'category': test.category.__str__(),
+          'warnings': test.warnings,
+          'advisories': test.advisories,
         }
       })
+
     stats = {
       'total': len(tests),
       'passed': passed,

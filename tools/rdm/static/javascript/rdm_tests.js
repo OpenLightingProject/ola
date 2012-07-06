@@ -166,10 +166,28 @@ RDMTests.prototype.reset_results = function() {
 
 RDMTests.prototype.display_results = function(results) {
   rdmtests.reset_results();
+
   for (key in results['stats']) {
     $('#rdm-tests-results-stats-figures')
     .append($('<td />').html(results['stats'][key]));
   }
+
+  for (key in results['test_results']) {
+    var warning = results['test_results'][key]['warnings'];
+    var advisory = results['test_results'][key]['advisories'];
+
+    if (warning[0] != undefined) {
+      $('#rdm-tests-results-warnings')
+      .append($('<p />')
+      .html(key + ": " + warning));
+    }
+    if (advisory[0] != undefined) {
+      $('#rdm-tests-results-advisories')
+      .append($('<p />')
+      .html(key + ": " + advisory));
+    }
+  }
+
   $('#rdm-tests-results').show('slow');
 };
 
