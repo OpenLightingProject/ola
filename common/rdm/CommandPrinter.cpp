@@ -142,7 +142,7 @@ void CommandPrinter::DisplayResponse(const RDMResponse *response,
  *   unpack and display parameter data.
  */
 void CommandPrinter::DisplayDiscoveryRequest(
-    const DiscoveryRequest *request,
+    const RDMDiscoveryRequest *request,
     bool summarize,
     bool unpack_param_data) {
   string param_name;
@@ -204,7 +204,7 @@ void CommandPrinter::DisplayDiscoveryRequest(
  *   unpack and display parameter data.
  */
 void CommandPrinter::DisplayDiscoveryResponse(
-    const DiscoveryResponse *response,
+    const RDMDiscoveryResponse *response,
     bool summarize,
     bool unpack_param_data) {
   string param_name;
@@ -238,7 +238,7 @@ void CommandPrinter::DisplayDiscoveryResponse(
     *m_output << endl;
   } else {
     AppendVerboseUIDs(response);
-    AppendVerboseDiscoveryResponseType(response);
+    AppendVerboseResponseType(response);
     AppendHeaderFields(response, "DISCOVERY_COMMAND_RESPONSE");
 
     *m_output << "  Param ID       : 0x" << std::setfill('0') << std::setw(4)
@@ -271,11 +271,6 @@ void CommandPrinter::AppendUIDsAndType(const class RDMCommand *command,
 
 
 void CommandPrinter::AppendPortId(const class RDMRequest *request) {
-  *m_output << "  Port ID        : " << std::dec <<
-    static_cast<unsigned int>(request->PortId()) << endl;
-}
-
-void CommandPrinter::AppendPortId(const class DiscoveryRequest *request) {
   *m_output << "  Port ID        : " << std::dec <<
     static_cast<unsigned int>(request->PortId()) << endl;
 }
@@ -314,42 +309,10 @@ void CommandPrinter::AppendResponseType(const RDMResponse *response) {
 }
 
 
-void CommandPrinter::AppendDiscoveryResponseType(
-    const DiscoveryResponse *response) {
-  switch (response->ResponseType()) {
-    case ola::rdm::RDM_ACK:
-      *m_output << "ACK";
-      break;
-    case ola::rdm::RDM_ACK_TIMER:
-      *m_output << "ACK TIMER";
-      break;
-    case ola::rdm::RDM_NACK_REASON:
-      uint16_t reason;
-      if (GetNackReason(response, &reason)) {
-        *m_output << "NACK (" << ola::rdm::NackReasonToString(reason) << ")";
-      } else {
-        *m_output << "Malformed NACK ";
-      }
-      break;
-    case ola::rdm::ACK_OVERFLOW:
-      *m_output << "ACK OVERFLOW";
-      break;
-    default:
-      *m_output << "Unknown (" << response->ResponseType() << ")";
-  }
-}
-
 void CommandPrinter::AppendVerboseResponseType(
     const RDMResponse *response) {
   *m_output << "  Response Type  : ";
   AppendResponseType(response);
-  *m_output  << endl;
-}
-
-void CommandPrinter::AppendVerboseDiscoveryResponseType(
-    const DiscoveryResponse *response) {
-  *m_output << "  Response Type  : ";
-  AppendDiscoveryResponseType(response);
   *m_output  << endl;
 }
 

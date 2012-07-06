@@ -22,6 +22,7 @@
 #include <string.h>
 #include <string>
 #include <iomanip>
+#include <memory>
 
 #include "ola/Logging.h"
 #include "ola/io/IOQueue.h"
@@ -33,10 +34,10 @@
 
 using ola::io::IOQueue;
 using ola::network::HostToNetwork;
-using ola::rdm::DiscoveryUniqueBranchRequest;
 using ola::rdm::GuessMessageType;
-using ola::rdm::MuteRequest;
 using ola::rdm::RDMCommand;
+using ola::rdm::RDMDiscoveryRequest;
+using ola::rdm::RDMDiscoveryResponse;
 using ola::rdm::RDMGetRequest;
 using ola::rdm::RDMGetResponse;
 using ola::rdm::RDMRequest;
@@ -44,8 +45,8 @@ using ola::rdm::RDMResponse;
 using ola::rdm::RDMSetRequest;
 using ola::rdm::RDMSetResponse;
 using ola::rdm::UID;
-using ola::rdm::UnMuteRequest;
 using ola::testing::ASSERT_DATA_EQUALS;
+using std::auto_ptr;
 using std::string;
 
 class RDMCommandTest: public CppUnit::TestFixture {
@@ -1019,21 +1020,18 @@ void RDMCommandTest::testDiscoveryCommand() {
   UID lower(0x0102, 0x0304);
   UID upper(0x0506, 0x0708);
 
-  DiscoveryUniqueBranchRequest request(
-      source,
-      lower,
-      upper,
-      1);
+  auto_ptr<RDMDiscoveryRequest> request(
+      NewDiscoveryUniqueBranchRequest(source, lower, upper, 1));
 
-  CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_REQUEST, request.CommandType());
-  CPPUNIT_ASSERT_EQUAL(RDMCommand::DISCOVER_COMMAND, request.CommandClass());
+  CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_REQUEST, request->CommandType());
+  CPPUNIT_ASSERT_EQUAL(RDMCommand::DISCOVER_COMMAND, request->CommandClass());
 
   // test pack
-  CPPUNIT_ASSERT_EQUAL(37u, request.Size());
-  unsigned int length = request.Size();
+  CPPUNIT_ASSERT_EQUAL(37u, request->Size());
+  unsigned int length = request->Size();
 
   uint8_t *data = new uint8_t[length];
-  CPPUNIT_ASSERT(request.Pack(data, &length));
+  CPPUNIT_ASSERT(request->Pack(data, &length));
 
   bool matches = VerifyMatches(
       EXPECTED_DISCOVERY_REQUEST,
@@ -1051,16 +1049,17 @@ void RDMCommandTest::testDiscoveryCommand() {
 void RDMCommandTest::testMuteCommand() {
   UID source(1, 2);
   UID destination(3, 4);
-  MuteRequest request(source, destination, 1);
+  auto_ptr<RDMDiscoveryRequest> request(
+      NewMuteRequest(source, destination, 1));
 
-  CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_REQUEST, request.CommandType());
-  CPPUNIT_ASSERT_EQUAL(RDMCommand::DISCOVER_COMMAND, request.CommandClass());
+  CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_REQUEST, request->CommandType());
+  CPPUNIT_ASSERT_EQUAL(RDMCommand::DISCOVER_COMMAND, request->CommandClass());
 
   // test pack
-  CPPUNIT_ASSERT_EQUAL(25u, request.Size());
-  unsigned int length = request.Size();
+  CPPUNIT_ASSERT_EQUAL(25u, request->Size());
+  unsigned int length = request->Size();
   uint8_t *data = new uint8_t[length];
-  CPPUNIT_ASSERT(request.Pack(data, &length));
+  CPPUNIT_ASSERT(request->Pack(data, &length));
 
   bool matches = VerifyMatches(
       EXPECTED_MUTE_REQUEST,
@@ -1078,16 +1077,17 @@ void RDMCommandTest::testMuteCommand() {
 void RDMCommandTest::testUnMuteRequest() {
   UID source(1, 2);
   UID destination(3, 4);
-  UnMuteRequest request(source, destination, 1);
+  auto_ptr<RDMDiscoveryRequest> request(
+      NewUnMuteRequest(source, destination, 1));
 
-  CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_REQUEST, request.CommandType());
-  CPPUNIT_ASSERT_EQUAL(RDMCommand::DISCOVER_COMMAND, request.CommandClass());
+  CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_REQUEST, request->CommandType());
+  CPPUNIT_ASSERT_EQUAL(RDMCommand::DISCOVER_COMMAND, request->CommandClass());
 
   // test pack
-  CPPUNIT_ASSERT_EQUAL(25u, request.Size());
-  unsigned int length = request.Size();
+  CPPUNIT_ASSERT_EQUAL(25u, request->Size());
+  unsigned int length = request->Size();
   uint8_t *data = new uint8_t[length];
-  CPPUNIT_ASSERT(request.Pack(data, &length));
+  CPPUNIT_ASSERT(request->Pack(data, &length));
 
   bool matches = VerifyMatches(
       EXPECTED_UNMUTE_REQUEST,

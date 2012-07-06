@@ -293,7 +293,8 @@ void MockEndpoint::DescriptorReady() {
   if (!data_matches) {
     for (unsigned int i = 0; i < data_received; ++i)
       OLA_WARN << i << ": 0x" << std::hex << static_cast<int>(data[i]) << " 0x"
-        << static_cast<int>(call.expected_data_frame.data[i]);
+        << static_cast<int>(call.expected_data_frame.data[i]) <<
+        (data[i] != call.expected_data_frame.data[i] ? " <---" : "");
   }
   CPPUNIT_ASSERT(data_matches);
 
