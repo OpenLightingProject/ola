@@ -368,6 +368,7 @@ void RDMSniffer::DisplayRDMFrame() {
       DisplayRDMResponse(1, slot_count);
       return;
     case RDMCommand::DISCOVER_COMMAND:
+    case RDMCommand::DISCOVER_COMMAND_RESPONSE:
       DisplayDiscoveryCommand(1, slot_count);
       break;
     /*
@@ -423,12 +424,30 @@ void RDMSniffer::DisplayRDMResponse(unsigned int start, unsigned int end) {
  */
 void RDMSniffer::DisplayDiscoveryCommand(unsigned int start,
                                          unsigned int end) {
-  auto_ptr<RDMDiscoveryCommand> command(
-      RDMDiscoveryCommand::InflateFromData(&m_frame[start], end - start + 1));
+  RDMCommand::RDMCommandClass command_class;
+  bool ok = ola::rdm::GuessMessageType(NULL, &command_class,
+                                       &m_frame[start], end - start + 1);
 
-  if (command.get()) {
-    m_command_printer.DisplayDiscovery(
-        command.get(),
+  auto_ptr<ola::rdm::DiscoveryRequest> request;
+  auto_ptr<ola::rdm::DiscoveryResponse> response;
+  if (ok && command_class == RDMCommand::DISCOVER_COMMAND) {
+    request.reset(
+        ola::rdm::DiscoveryRequest::InflateFromData(&m_frame[start],
+                                                    end - start + 1));
+  } else if (ok && command_class == RDMCommand::DISCOVER_COMMAND_RESPONSE) {
+    response.reset(
+        ola::rdm::DiscoveryResponse::InflateFromData(&m_frame[start],
+                                                     end - start + 1));
+  }
+
+  if (request.get()) {
+    m_command_printer.DisplayDiscoveryRequest(
+        request.get(),
+        m_options.summarize_rdm_frames,
+        m_options.unpack_param_data);
+  } else if (response.get()) {
+    m_command_printer.DisplayDiscoveryResponse(
+        response.get(),
         m_options.summarize_rdm_frames,
         m_options.unpack_param_data);
   } else {
@@ -441,7 +460,7 @@ void RDMSniffer::DisplayDiscoveryCommand(unsigned int start,
  * Dump out the raw data if we couldn't parse it correctly.
  */
 void RDMSniffer::DisplayRawData(unsigned int start, unsigned int end) {
-  for (unsigned int i = start; i < end; i++)
+  for (unsigned int i = start; i <= end; i++)
     cout << std::hex << std::setw(2) << static_cast<int>(m_frame[i]) << " ";
   cout << endl;
 }

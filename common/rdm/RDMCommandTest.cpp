@@ -975,29 +975,39 @@ void RDMCommandTest::testPackWithParams() {
  */
 void RDMCommandTest::testGuessMessageType() {
   ola::rdm::rdm_message_type message_type;
-  CPPUNIT_ASSERT(!GuessMessageType(&message_type, NULL, 0));
-  CPPUNIT_ASSERT(!GuessMessageType(&message_type, NULL, 20));
-  CPPUNIT_ASSERT(!GuessMessageType(&message_type, EXPECTED_GET_BUFFER, 0));
-  CPPUNIT_ASSERT(!GuessMessageType(&message_type, EXPECTED_GET_BUFFER, 18));
-  CPPUNIT_ASSERT(!GuessMessageType(&message_type, EXPECTED_GET_BUFFER, 19));
+  RDMCommand::RDMCommandClass command_class;
+  CPPUNIT_ASSERT(!GuessMessageType(&message_type, &command_class, NULL, 0));
+  CPPUNIT_ASSERT(!GuessMessageType(&message_type, &command_class, NULL, 20));
+  CPPUNIT_ASSERT(!GuessMessageType(
+        &message_type, &command_class, EXPECTED_GET_BUFFER, 0));
+  CPPUNIT_ASSERT(!GuessMessageType(
+        &message_type, &command_class, EXPECTED_GET_BUFFER, 18));
+  CPPUNIT_ASSERT(!GuessMessageType(
+        &message_type, &command_class, EXPECTED_GET_BUFFER, 19));
 
   CPPUNIT_ASSERT(GuessMessageType(
         &message_type,
+        &command_class,
         EXPECTED_GET_BUFFER,
         sizeof(EXPECTED_GET_BUFFER)));
   CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_REQUEST, message_type);
+  CPPUNIT_ASSERT_EQUAL(RDMCommand::GET_COMMAND, command_class);
 
   CPPUNIT_ASSERT(GuessMessageType(
         &message_type,
+        &command_class,
         EXPECTED_SET_BUFFER,
         sizeof(EXPECTED_SET_BUFFER)));
   CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_REQUEST, message_type);
+  CPPUNIT_ASSERT_EQUAL(RDMCommand::SET_COMMAND, command_class);
 
   CPPUNIT_ASSERT(GuessMessageType(
         &message_type,
+        &command_class,
         EXPECTED_GET_RESPONSE_BUFFER,
         sizeof(EXPECTED_GET_RESPONSE_BUFFER)));
   CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_RESPONSE, message_type);
+  CPPUNIT_ASSERT_EQUAL(RDMCommand::GET_COMMAND_RESPONSE, command_class);
 }
 
 

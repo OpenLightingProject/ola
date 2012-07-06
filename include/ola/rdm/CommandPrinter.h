@@ -44,9 +44,13 @@ class CommandPrinter {
                          bool summarize = false,
                          bool unpack_param_data = true);
 
-    void DisplayDiscovery(const class RDMDiscoveryCommand *command,
-                          bool summarize = false,
-                          bool unpack_param_data = true);
+    void DisplayDiscoveryRequest(const class DiscoveryRequest *request,
+                                 bool summarize = false,
+                                 bool unpack_param_data = true);
+
+    void DisplayDiscoveryResponse(const class DiscoveryResponse *response,
+                                  bool summarize = false,
+                                  bool unpack_param_data = true);
 
   private:
     std::ostream *m_output;

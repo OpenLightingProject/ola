@@ -208,17 +208,18 @@ void CommandPrinter::DisplayResponse(const RDMResponse *response,
 
 
 /**
- * Write out a RDM discovery command
- * @param response the response to format
+ * Write out a RDM discovery request
+ * @param response the request to format
  * @param summarize enable the one line summary
  * @param unpack_param_data if the summary isn't enabled, this controls if we
  *   unpack and display parameter data.
  */
-void CommandPrinter::DisplayDiscovery(const RDMDiscoveryCommand *command,
-                                      bool summarize,
-                                      bool unpack_param_data) {
+void CommandPrinter::DisplayDiscoveryRequest(
+    const DiscoveryRequest *request,
+    bool summarize,
+    bool unpack_param_data) {
   string param_name;
-  switch (command->ParamId()) {
+  switch (request->ParamId()) {
     case ola::rdm::PID_DISC_UNIQUE_BRANCH:
       param_name = "DISC_UNIQUE_BRANCH";
       break;
@@ -232,48 +233,120 @@ void CommandPrinter::DisplayDiscovery(const RDMDiscoveryCommand *command,
 
   if (summarize) {
     *m_output <<
-      command->SourceUID() << " -> " << command->DestinationUID() <<
+      request->SourceUID() << " -> " << request->DestinationUID() <<
       " DISCOVERY_COMMAND" <<
-      ", tn: " << static_cast<int>(command->TransactionNumber()) <<
+      ", tn: " << static_cast<int>(request->TransactionNumber()) <<
       ", PID 0x" << std::hex << std::setfill('0') << std::setw(4) <<
-        command->ParamId();
+        request->ParamId();
       if (!param_name.empty())
         *m_output << " (" << param_name << ")";
-      if (command->ParamId() == ola::rdm::PID_DISC_UNIQUE_BRANCH &&
-          command->ParamDataSize() == 2 * UID::UID_SIZE) {
-        const uint8_t *param_data = command->ParamData();
+      if (request->ParamId() == ola::rdm::PID_DISC_UNIQUE_BRANCH &&
+          request->ParamDataSize() == 2 * UID::UID_SIZE) {
+        const uint8_t *param_data = request->ParamData();
         UID lower(param_data);
         UID upper(param_data + UID::UID_SIZE);
         *m_output << ", (" << lower << ", " << upper << ")";
       } else {
-        *m_output << ", pdl: " << std::dec << command->ParamDataSize();
+        *m_output << ", pdl: " << std::dec << request->ParamDataSize();
       }
       *m_output << endl;
   } else {
-    *m_output << "  Dest UID       : " << command->DestinationUID() << endl;
-    *m_output << "  Source UID     : " << command->SourceUID() << endl;
+    *m_output << "  Dest UID       : " << request->DestinationUID() << endl;
+    *m_output << "  Source UID     : " << request->SourceUID() << endl;
     *m_output << "  Transaction #  : " << std::dec <<
-      static_cast<unsigned int>(command->TransactionNumber()) << endl;
+      static_cast<unsigned int>(request->TransactionNumber()) << endl;
     *m_output << "  Port ID        : " << std::dec <<
-      static_cast<unsigned int>(command->PortId()) << endl;
+      static_cast<unsigned int>(request->PortId()) << endl;
     *m_output << "  Message count  : " << std::dec <<
-      static_cast<unsigned int>(command->MessageCount()) << endl;
-    *m_output << "  Sub device     : " << std::dec << command->SubDevice()
+      static_cast<unsigned int>(request->MessageCount()) << endl;
+    *m_output << "  Sub device     : " << std::dec << request->SubDevice()
       << endl;
     *m_output << "  Command class  : DISCOVERY_COMMAND" << endl;
     *m_output << "  Param ID       : 0x" << std::setfill('0') << std::setw(4)
-      << std::hex << command->ParamId();
+      << std::hex << request->ParamId();
     if (!param_name.empty())
       *m_output << " (" << param_name << ")";
     *m_output << endl;
-    *m_output << "  Param data len : " << std::dec << command->ParamDataSize()
+    *m_output << "  Param data len : " << std::dec << request->ParamDataSize()
       << endl;
     DisplayParamData(NULL,
                      unpack_param_data,
                      true,
                      false,
-                     command->ParamData(),
-                     command->ParamDataSize());
+                     request->ParamData(),
+                     request->ParamDataSize());
+  }
+}
+
+
+/**
+ * Write out a RDM discovery response.
+ * @param response the response to format.
+ * @param summarize enable the one line summary
+ * @param unpack_param_data if the summary isn't enabled, this controls if we
+ *   unpack and display parameter data.
+ */
+void CommandPrinter::DisplayDiscoveryResponse(
+    const DiscoveryResponse *response,
+    bool summarize,
+    bool unpack_param_data) {
+  string param_name;
+  switch (response->ParamId()) {
+    case ola::rdm::PID_DISC_UNIQUE_BRANCH:
+      param_name = "DISC_UNIQUE_BRANCH";
+      break;
+    case ola::rdm::PID_DISC_MUTE:
+      param_name = "DISC_MUTE";
+      break;
+    case ola::rdm::PID_DISC_UN_MUTE:
+      param_name = "DISC_UN_MUTE";
+      break;
+  }
+
+  if (summarize) {
+    *m_output <<
+      response->SourceUID() << " -> " << response->DestinationUID() <<
+      " DISCOVERY_COMMAND_RESPONSE" <<
+      ", tn: " << static_cast<int>(response->TransactionNumber()) <<
+      ", PID 0x" << std::hex << std::setfill('0') << std::setw(4) <<
+        response->ParamId();
+      if (!param_name.empty())
+        *m_output << " (" << param_name << ")";
+      if (response->ParamId() == ola::rdm::PID_DISC_UNIQUE_BRANCH &&
+          response->ParamDataSize() == 2 * UID::UID_SIZE) {
+        const uint8_t *param_data = response->ParamData();
+        UID lower(param_data);
+        UID upper(param_data + UID::UID_SIZE);
+        *m_output << ", (" << lower << ", " << upper << ")";
+      } else {
+        *m_output << ", pdl: " << std::dec << response->ParamDataSize();
+      }
+      *m_output << endl;
+  } else {
+    *m_output << "  Dest UID       : " << response->DestinationUID() << endl;
+    *m_output << "  Source UID     : " << response->SourceUID() << endl;
+    *m_output << "  Transaction #  : " << std::dec <<
+      static_cast<unsigned int>(response->TransactionNumber()) << endl;
+    *m_output << "  Port ID        : " << std::dec <<
+      static_cast<unsigned int>(response->PortId()) << endl;
+    *m_output << "  Message count  : " << std::dec <<
+      static_cast<unsigned int>(response->MessageCount()) << endl;
+    *m_output << "  Sub device     : " << std::dec << response->SubDevice()
+      << endl;
+    *m_output << "  Command class  : DISCOVERY_COMMAND_RESPONSE" << endl;
+    *m_output << "  Param ID       : 0x" << std::setfill('0') << std::setw(4)
+      << std::hex << response->ParamId();
+    if (!param_name.empty())
+      *m_output << " (" << param_name << ")";
+    *m_output << endl;
+    *m_output << "  Param data len : " << std::dec << response->ParamDataSize()
+      << endl;
+    DisplayParamData(NULL,
+                     unpack_param_data,
+                     true,
+                     false,
+                     response->ParamData(),
+                     response->ParamDataSize());
   }
 }
 
