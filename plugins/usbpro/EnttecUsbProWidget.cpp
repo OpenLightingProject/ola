@@ -86,6 +86,14 @@ void EnttecUsbProWidgetImpl::SendRDMRequest(
     const ola::rdm::RDMRequest *request,
     ola::rdm::RDMCallback *on_complete) {
   std::vector<string> packets;
+  if (request->CommandClass() == RDMCommand::DISCOVER_COMMAND) {
+    on_complete->Run(ola::rdm::RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED,
+                     NULL,
+                     packets);
+    delete request;
+    return;
+  }
+
   if (m_rdm_request_callback) {
     OLA_WARN << "Previous request hasn't completed yet, dropping request";
     on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
