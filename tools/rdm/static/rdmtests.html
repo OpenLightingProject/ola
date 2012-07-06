@@ -90,6 +90,10 @@
 		    height: 200px;
 	    }
 
+      #rdm-tests-dmx_options {
+        display: none;
+      }
+
       #rdm-tests-notification {
         display: none;
         position: absolute;
@@ -101,17 +105,42 @@
         height: 50px;
         margin: 100px auto;
         background-color: #fff;
-        border: 1px solid #000;
+        border: 1px solid #67A7E3;
         padding: 15px;
         text-align: center;
+        font-weight: bold;
       }
 
       #rdm-tests-notification-title {
         padding: 5px;
       }
 
-      #rdm-tests-dmx_options {
+      #rdm-tests-results {
         display: none;
+        position: absolute;
+        left: 8.5%;
+        top: 6%;
+        z-index: 1000;
+        width: 1150px;
+        height: 600px;
+        background-color: #FFF;
+        border: 3px solid #67A7E3;
+      }
+
+      #rdm-tests-results-stats {
+        position: relative;
+        top: 2%;
+        left: 2%;
+      }
+
+      #rdm-tests-results-stats-table {
+        border: 1.0px dashed #67a7e3;
+      }
+
+      #rdm-tests-results-stats-table td {
+        padding: 5px;
+        text-align: center;
+        font-weight: bold;
       }
 
     </style>
@@ -203,7 +232,29 @@
            </tr>
            <tr>
             <td>
-              <div id='rdm-tests-results'></div>
+              <div id='rdm-tests-results'>
+                <div id='rdm-tests-results-warnings'>
+                </div>
+                <div id='rdm-tests-results-advisories'>
+                </div>
+                <div id='rdm-tests-results-summary'>
+                </div>
+                <div id='rdm-tests-results-summary-bycatg'>
+                </div>
+                <div id='rdm-tests-results-stats'>
+                  <table id='rdm-tests-results-stats-table'>
+                    <tr>
+                      <td style='color: #707070'>Broken</th>
+                      <td style='color: #FA021F'>Failed</th>
+                      <td style='color: #2E2B2B'>Not Run</th>
+                      <td style='color: #0CAB1E'>Passed</th>
+                      <td style='color: #000000'>Total</th>
+                    </tr>
+                    <tr id='rdm-tests-results-stats-figures'>
+                    </tr>
+                  </table>
+                </div>
+              </div>
             </td>
            </tr>
           </table>

@@ -52,6 +52,14 @@ RDMTests.prototype.bind_events_to_doms = function() {
   $('#rdm-tests-send_dmx_in_bg').change(function() {
     $('#rdm-tests-dmx_options').toggle('fast');
   });
+
+  $(document).keydown(function(e) {
+    var key = e.keyCode || e.which;
+    var results_div = $('#rdm-tests-results');
+    if (results_div.css('display') == 'block' && key == 27) {
+      results_div.hide('slow');
+    }
+  });
 };
 
 RDMTests.prototype.query_server = function(request, params, callback) {
@@ -125,11 +133,11 @@ RDMTests.prototype.run_tests = function(test_filter) {
   });
 
   this.query_server('../RunTests', {
-                                     'u': $(universe_options).val(),
-                                     'uid': $(devices_list).val(),
-                                     'w': $(write_delay).val(),
-                                     'f': $(dmx_frame_rate).val(),
-                                     'c': $(slot_count).val(),
+                                     'u': $('#universe_options').val(),
+                                     'uid': $('#devices_list').val(),
+                                     'w': $('#write_delay').val(),
+                                     'f': $('#dmx_frame_rate').val(),
+                                     'c': $('#slot_count').val(),
                                      't': test_filter.join(','),
                                     }, function(data) {
                                     var failed_tests = $('#rdm-tests-selection-failed_tests');
@@ -148,7 +156,16 @@ RDMTests.prototype.run_tests = function(test_filter) {
                                     }
                                     failed_tests.multiselect();
                                     rdmtests.clear_notification();
+                                    rdmtests.display_results(data);
   });
+};
+
+RDMTests.prototype.display_results = function(results) {
+  for (key in results['stats']) {
+    $('#rdm-tests-results-stats-figures')
+    .append($('<td />').html(results['stats'][key]));
+  }
+  $('#rdm-tests-results').show('slow');
 };
 
 RDMTests.prototype.validate_form = function() {
@@ -158,7 +175,7 @@ RDMTests.prototype.validate_form = function() {
       return true;
     }
     if (isNaN(parseFloat(value)) || !isFinite(value)) {
-      alert(dom.attr('id').replace('_', ' ').toUpperCase() + ' must be a number!');
+      alert($(dom).attr('id').replace('_', ' ').toUpperCase() + ' must be a number!');
       return false;
     } else {
       return true;
@@ -170,13 +187,13 @@ RDMTests.prototype.validate_form = function() {
     return false;
   }
 
-  if (!(this.isNumberField($(write_delay)) &&
-        this.isNumberField($(dmx_frame_rate)) &&
-        this.isNumberField($(slot_count)))) {
+  if (!(this.isNumberField($('#write_delay')) &&
+        this.isNumberField($('#dmx_frame_rate')) &&
+        this.isNumberField($('#slot_count')))) {
     return false;
   }
 
-  var slot_count_val = parseFloat($(slot_count).val());
+  var slot_count_val = parseFloat($('#slot_count').val());
   if (slot_count_val < 1 || slot_count_val > 512) {
     alert('Invalid number of slots (expected: [1-512])');
     return false;
