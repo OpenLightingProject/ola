@@ -549,6 +549,7 @@ class DiscoveryResponse: public RDMDiscoveryCommand {
     }
 
     rdm_message_type CommandType() const { return RDM_RESPONSE; }
+    uint8_t ResponseType() const { return m_port_id; }
 
     static DiscoveryResponse* InflateFromData(const uint8_t *data,
                                               unsigned int length);

@@ -56,6 +56,21 @@ class CommandPrinter {
     std::ostream *m_output;
     PidStoreHelper *m_pid_helper;
 
+    void AppendUIDsAndType(const class RDMCommand *command,
+                           const char *message_type);
+    void AppendPortId(const class RDMRequest *request);
+    void AppendPortId(const class DiscoveryRequest *request);
+    void AppendVerboseUIDs(const class RDMCommand *command);
+    void AppendPidString(const class RDMCommand *command,
+                         const class PidDescriptor *pid_descriptor);
+    void AppendResponseType(const class RDMResponse *response);
+    void AppendDiscoveryResponseType(const class DiscoveryResponse *response);
+    void AppendVerboseResponseType(const class RDMResponse *response);
+    void AppendVerboseDiscoveryResponseType(
+        const class DiscoveryResponse *response);
+    void AppendHeaderFields(const class RDMCommand *command,
+                            const char *command_class);
+
     void DisplayParamData(
         const class PidDescriptor *pid_descriptor,
         bool unpack_param_data,
@@ -63,7 +78,7 @@ class CommandPrinter {
         bool is_get,
         const uint8_t *param_data,
         unsigned int param_length);
-    bool GetNackReason(const class RDMResponse *response, uint16_t *reason);
+    bool GetNackReason(const class RDMCommand *command, uint16_t *reason);
 };
 }  // rdm
 }  // ola
