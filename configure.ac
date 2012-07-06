@@ -402,13 +402,19 @@ AC_ARG_ENABLE(
 
 AM_CONDITIONAL(BUILD_EXAMPLES, test "${enable_examples}" != "no")
 
-# python wrappers
+# python wrappers & RDM Responder tests.
 AC_ARG_ENABLE(python-libs,
               AC_HELP_STRING([--enable-python-libs],
                              [Build the python interface]),
               [build_python_libs="yes"]
              )
+AC_ARG_ENABLE(rdm-tests,
+              AC_HELP_STRING([--enable-rdm-tests],
+                             [Install the RDM responder tests]),
+              [build_python_libs="yes"; install_rdm_tests="yes"]
+             )
 AM_CONDITIONAL(BUILD_PYTHON_LIBS, test "${build_python_libs}" = "yes")
+AM_CONDITIONAL(INSTALL_RDM_TESTS, test "${install_rdm_tests}" = "yes")
 
 if test "${build_python_libs}" = "yes"; then
  AM_PATH_PYTHON(2.4)

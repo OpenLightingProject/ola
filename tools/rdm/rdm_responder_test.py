@@ -20,17 +20,15 @@
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
-import ResponderTest
-import TestDefinitions
-import TestRunner
+from ola.testing.rdm import ResponderTest, TestDefinitions, TestRunner
+from ola.testing.rdm.DMXSender import DMXSender
+from ola.testing.rdm.TestState import TestState
 import inspect
 import logging
 import re
 import sys
 import textwrap
 import time
-from DMXSender import DMXSender
-from TestState import TestState
 from ola import PidStore
 from ola.ClientWrapper import ClientWrapper
 from ola.UID import UID
