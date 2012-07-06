@@ -160,7 +160,12 @@ RDMTests.prototype.run_tests = function(test_filter) {
   });
 };
 
+RDMTests.prototype.reset_results = function() {
+  $('#rdm-tests-results-stats-figures').html('');
+};
+
 RDMTests.prototype.display_results = function(results) {
+  rdmtests.reset_results();
   for (key in results['stats']) {
     $('#rdm-tests-results-stats-figures')
     .append($('<td />').html(results['stats'][key]));
