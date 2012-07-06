@@ -52,6 +52,14 @@ RDMTests.prototype.bind_events_to_doms = function() {
   $('#rdm-tests-send_dmx_in_bg').change(function() {
     $('#rdm-tests-dmx_options').toggle('fast');
   });
+
+  $(document).keydown(function(e) {
+    var key = e.keyCode || e.which;
+    var results_div = $('#rdm-tests-results');
+    if (results_div.css('display') == 'block' && key == 27) {
+      results_div.hide('slow');
+    }
+  });
 };
 
 RDMTests.prototype.query_server = function(request, params, callback) {
