@@ -148,7 +148,16 @@ RDMTests.prototype.run_tests = function(test_filter) {
                                     }
                                     failed_tests.multiselect();
                                     rdmtests.clear_notification();
+                                    rdmtests.display_results(data);
   });
+};
+
+RDMTests.prototype.display_results = function(results) {
+  for (key in results['stats']) {
+    $('#rdm-tests-results-stats-figures')
+    .append($('<td />').html(results['stats'][key]));
+  }
+  $('#rdm-tests-results').show('slow');
 };
 
 RDMTests.prototype.validate_form = function() {

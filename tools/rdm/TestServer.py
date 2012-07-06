@@ -290,6 +290,7 @@ class TestServerApplication(object):
         }
       })
     stats = {
+      'total': len(tests),
       'passed': passed,
       'failed': failed,
       'broken': broken,
@@ -322,7 +323,7 @@ class TestServerApplication(object):
     else:
       self.headers.append(('Content-type', 'application/json'))
       self.start(self.status, self.headers)
-      yield(json.dumps(self.response))
+      yield(json.dumps(self.response, sort_keys = True))
 
 def parse_options():
   """
