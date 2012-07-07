@@ -29,10 +29,11 @@ using std::vector;
 
 
 using ola::messaging::BoolFieldDescriptor;
-using ola::messaging::IPV4FieldDescriptor;
 using ola::messaging::FieldDescriptor;
 using ola::messaging::FieldDescriptorGroup;
+using ola::messaging::IPV4FieldDescriptor;
 using ola::messaging::StringFieldDescriptor;
+using ola::messaging::UIDFieldDescriptor;
 using ola::messaging::UInt16FieldDescriptor;
 using ola::messaging::UInt32FieldDescriptor;
 using ola::messaging::UInt8FieldDescriptor;
@@ -67,11 +68,18 @@ void DescriptorTest::testFieldDescriptors() {
   CPPUNIT_ASSERT_EQUAL(1u, bool_descriptor.MaxSize());
 
   // IPv4 address
-  BoolFieldDescriptor ipv4_descriptor("ipv4");
+  IPV4FieldDescriptor ipv4_descriptor("ipv4");
   CPPUNIT_ASSERT_EQUAL(string("ipv4"), ipv4_descriptor.Name());
   CPPUNIT_ASSERT_EQUAL(true, ipv4_descriptor.FixedSize());
   CPPUNIT_ASSERT_EQUAL(true, ipv4_descriptor.LimitedSize());
-  CPPUNIT_ASSERT_EQUAL(1u, ipv4_descriptor.MaxSize());
+  CPPUNIT_ASSERT_EQUAL(4u, ipv4_descriptor.MaxSize());
+
+  // UID
+  UIDFieldDescriptor uid_descriptor("uid");
+  CPPUNIT_ASSERT_EQUAL(string("uid"), uid_descriptor.Name());
+  CPPUNIT_ASSERT_EQUAL(true, uid_descriptor.FixedSize());
+  CPPUNIT_ASSERT_EQUAL(true, uid_descriptor.LimitedSize());
+  CPPUNIT_ASSERT_EQUAL(6u, uid_descriptor.MaxSize());
 
   // string
   StringFieldDescriptor string_descriptor("string", 10, 32);

@@ -28,9 +28,10 @@ namespace messaging {
 
 
 class BoolFieldDescriptor;
+class FieldDescriptorGroup;
 class IPV4FieldDescriptor;
 class StringFieldDescriptor;
-class FieldDescriptorGroup;
+class UIDFieldDescriptor;
 
 template <typename type>
 class IntegerFieldDescriptor;
@@ -47,6 +48,7 @@ class FieldDescriptorVisitor {
 
     virtual void Visit(const BoolFieldDescriptor*) = 0;
     virtual void Visit(const IPV4FieldDescriptor*) = 0;
+    virtual void Visit(const UIDFieldDescriptor*) = 0;
     virtual void Visit(const StringFieldDescriptor*) = 0;
     virtual void Visit(const IntegerFieldDescriptor<uint8_t>*) = 0;
     virtual void Visit(const IntegerFieldDescriptor<uint16_t>*) = 0;

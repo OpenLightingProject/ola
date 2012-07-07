@@ -42,6 +42,11 @@ void SchemaPrinter::Visit(const IPV4FieldDescriptor *descriptor) {
 }
 
 
+void SchemaPrinter::Visit(const UIDFieldDescriptor *descriptor) {
+  m_str << string(m_indent, ' ') << descriptor->Name() << ": UID" << endl;
+}
+
+
 void SchemaPrinter::Visit(const StringFieldDescriptor *descriptor) {
   m_str << string(m_indent, ' ') << descriptor->Name() << ": string [" <<
     descriptor->MinSize() << ", " << descriptor->MaxSize() << "]" << endl;

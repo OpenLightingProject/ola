@@ -24,6 +24,7 @@
 #include <ola/messaging/Descriptor.h>
 #include <ola/messaging/MessageVisitor.h>
 #include <ola/network/IPV4Address.h>
+#include <ola/rdm/UID.h>
 #include <string>
 #include <vector>
 
@@ -122,6 +123,32 @@ class IPV4MessageField: public MessageFieldInterface {
   private:
     const IPV4FieldDescriptor *m_descriptor;
     ola::network::IPV4Address m_value;
+};
+
+
+/**
+ * A MessageField that represents a UID.
+ */
+class UIDMessageField: public MessageFieldInterface {
+  public:
+    UIDMessageField(const UIDFieldDescriptor *descriptor,
+                    const ola::rdm::UID &uid)
+        : m_descriptor(descriptor),
+          m_uid(uid) {
+    }
+
+    const UIDFieldDescriptor *GetDescriptor() const {
+      return m_descriptor;
+    }
+    const ola::rdm::UID& Value() const { return m_uid; }
+
+    void Accept(MessageVisitor &visitor) const {
+      visitor.Visit(this);
+    }
+
+  private:
+    const UIDFieldDescriptor *m_descriptor;
+    ola::rdm::UID m_uid;
 };
 
 
