@@ -26,8 +26,12 @@ pid {
       name: "control_field"
     }
     field {
-      type: UID
+      type: GROUP
       name: "binding_uid"
+      field {
+        type: UID
+        name: "binding_uid"
+      }
     }
   }
   discovery_sub_device_range: ROOT_DEVICE
@@ -43,8 +47,12 @@ pid {
       name: "control_field"
     }
     field {
-      type: UID
+      type: GROUP
       name: "binding_uid"
+      field {
+        type: UID
+        name: "binding_uid"
+      }
     }
   }
   discovery_sub_device_range: ROOT_DEVICE
@@ -8608,4 +8616,4 @@ manufacturer {
     set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
   }
 }
-version: 1341639602
+version: 1341689500
