@@ -176,6 +176,31 @@ class NackResult(SuccessfulResult):
             response.nack_reason == self._nack_reason)
 
 
+class NackDiscoveryResult(NackResult):
+  """This checks that the device nacked a Discovery request."""
+  def __init__(self,
+               pid_id,
+               nack_reason,
+               action = None,
+               warning = None,
+               advisory = None):
+    """Create an expected result object which is a NACK for a Discovery
+      request.
+
+    Args:
+      pid_id: The pid id we expect to have been nack'ed
+      nack_reason: The RDMNack object we expect.
+      action: The action to run if this result matches
+      warning: A warning message to log is this result matches
+      advisory: An advisory message to log is this result matches
+    """
+    super(NackDiscoveryResult, self).__init__(RDM_DISCOVERY,
+                                              pid_id,
+                                              nack_reason,
+                                              action,
+                                              warning,
+                                              advisory)
+
 class NackGetResult(NackResult):
   """This checks that the device nacked a GET request."""
   def __init__(self,

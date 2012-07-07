@@ -261,6 +261,12 @@ class ResponderTestFixture(TestFixture):
     else:
       self._expected_results = [results]
 
+  def NackDiscoveryResult(self, nack_reason, **kwargs):
+    """A helper method which returns a NackDiscoveryResult for the current
+       PID.
+    """
+    return NackDiscoveryResult(self.pid.value, nack_reason, **kwargs)
+
   def NackGetResult(self, nack_reason, **kwargs):
     """A helper method which returns a NackGetResult for the current PID."""
     return NackGetResult(self.pid.value, nack_reason, **kwargs)
