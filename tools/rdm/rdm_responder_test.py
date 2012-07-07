@@ -57,6 +57,8 @@ def ParseOptions():
                     help='Send DMX frames at this rate in the background.')
   parser.add_option('-l', '--log', metavar='FILE',
                     help='Also log to the file named FILE.uid.timestamp.')
+  parser.add_option('--list_tests', action='store_true',
+                    help='Display a list of all tests')
   parser.add_option('-p', '--pid_file', metavar='FILE',
                     help='The file to load the PID definitions from.')
   parser.add_option('-s', '--skip_check', action='store_true',
@@ -76,6 +78,9 @@ def ParseOptions():
                     help='The universe number to use, default is universe 0.')
 
   options, args = parser.parse_args()
+
+  if options.list_tests:
+    return options
 
   if not args:
     parser.print_help()
@@ -165,8 +170,29 @@ def DisplaySummary(tests):
       count_by_state.get(TestState.BROKEN, 0)))
 
 
+def GetTestClassses():
+  classes = []
+  for symbol in dir(TestDefinitions):
+    cls = getattr(TestDefinitions, symbol)
+    if not inspect.isclass(cls):
+      continue
+    if (cls == ResponderTest.ResponderTestFixture or
+        cls == ResponderTest.OptionalParameterTestFixture):
+      continue
+    if issubclass(cls, ResponderTest.ResponderTestFixture):
+      classes.append(cls)
+  return classes
+
+
 def main():
   options = ParseOptions()
+
+  test_classes = GetTestClassses()
+  if options.list_tests:
+    for test_name in sorted(c.__name__ for c in test_classes):
+      print test_name
+    sys.exit(0)
+
   SetupLogging(options)
   pid_store = PidStore.GetStore(options.pid_file)
   wrapper = ClientWrapper()
@@ -226,15 +252,8 @@ def main():
                                  pid_store,
                                  wrapper)
 
-  for symbol in dir(TestDefinitions):
-    obj = getattr(TestDefinitions, symbol)
-    if not inspect.isclass(obj):
-      continue
-    if (obj == ResponderTest.ResponderTestFixture or
-        obj == ResponderTest.OptionalParameterTestFixture):
-      continue
-    if issubclass(obj, ResponderTest.ResponderTestFixture):
-      runner.RegisterTest(obj)
+  for test_class in test_classes:
+    runner.RegisterTest(test_class)
 
   dmx_sender = DMXSender(wrapper,
                          options.universe,
