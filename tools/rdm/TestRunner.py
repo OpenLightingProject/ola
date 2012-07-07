@@ -278,7 +278,6 @@ class TestRunner(object):
 
       test.Run()
 
-
       logging.info('%s%s: %s' % (end_header, test, test.state.ColorString()))
     return tests, device
 

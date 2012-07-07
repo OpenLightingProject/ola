@@ -32,11 +32,12 @@
 
 
 from ola.OlaClient import OlaClient
-from ola.PidStore import RDM_GET, RDM_SET, GetStore
+from ola.PidStore import RDM_DISCOVERY, RDM_GET, RDM_SET, GetStore
 
 COMMAND_CLASS_DICT = {
     RDM_GET: 'Get',
     RDM_SET: 'Set',
+    RDM_DISCOVERY: 'Discovery',
 }
 
 def _CommandClassToString(command_class):
@@ -289,6 +290,33 @@ class AckResult(SuccessfulResult):
         return False
     return True
 
+
+class AckDiscoveryResult(AckResult):
+  """This checks that the device ack'ed a DISCOVERY request."""
+  def __init__(self,
+               pid_id,
+               field_names = [],
+               field_values = {},
+               action = None,
+               warning = None,
+               advisory = None):
+    """Create an expected result object which is an ACK for a DISCOVERY request.
+
+    Args:
+      pid_id: The pid id we expect
+      field_names: Check that these fields are present in the response
+      field_dict: Check that fields & values are present in the response
+      action: The action to run if this result matches
+      warning: A warning message to log is this result matches
+      advisory: An advisory message to log is this result matches
+    """
+    super(AckDiscoveryResult, self).__init__(RDM_DISCOVERY,
+                                             pid_id,
+                                             field_names,
+                                             field_values,
+                                             action,
+                                             warning,
+                                             advisory)
 
 class AckGetResult(AckResult):
   """This checks that the device ack'ed a GET request."""

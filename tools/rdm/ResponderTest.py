@@ -269,6 +269,12 @@ class ResponderTestFixture(TestFixture):
     """A helper method which returns a NackSetResult for the current PID."""
     return NackSetResult(self.pid.value, nack_reason, **kwargs)
 
+  def AckDiscoveryResult(self, **kwargs):
+    """A helper method which returns an AckDiscoveryResult for the current
+      PID.
+    """
+    return AckDiscoveryResult(self.pid.value, **kwargs)
+
   def AckGetResult(self, **kwargs):
     """A helper method which returns an AckGetResult for the current PID."""
     return AckGetResult(self.pid.value, **kwargs)
