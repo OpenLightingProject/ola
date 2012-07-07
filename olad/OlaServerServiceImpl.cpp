@@ -780,15 +780,20 @@ void OlaServerServiceImpl::HandleRDMResponse(
         response->set_message_count(rdm_response->MessageCount());
         response->set_param_id(rdm_response->ParamId());
         response->set_sub_device(rdm_response->SubDevice());
-        if (rdm_response->CommandClass() ==
-            ola::rdm::RDMCommand::GET_COMMAND_RESPONSE) {
-          response->set_command_class(ola::proto::RDM_GET_RESPONSE);
-        } else if (rdm_response->CommandClass() ==
-                   ola::rdm::RDMCommand::SET_COMMAND_RESPONSE) {
-          response->set_command_class(ola::proto::RDM_SET_RESPONSE);
-        } else {
-          OLA_WARN << "Unknown command class 0x" << std::hex <<
-            rdm_response->CommandClass();
+
+        switch (rdm_response->CommandClass()) {
+          case ola::rdm::RDMCommand::DISCOVER_COMMAND_RESPONSE:
+            response->set_command_class(ola::proto::RDM_DISCOVERY_RESPONSE);
+            break;
+          case ola::rdm::RDMCommand::GET_COMMAND_RESPONSE:
+            response->set_command_class(ola::proto::RDM_GET_RESPONSE);
+            break;
+          case ola::rdm::RDMCommand::SET_COMMAND_RESPONSE:
+            response->set_command_class(ola::proto::RDM_SET_RESPONSE);
+            break;
+          default:
+            OLA_WARN << "Unknown command class 0x" << std::hex <<
+              rdm_response->CommandClass();
         }
 
         if (rdm_response->ParamData() && rdm_response->ParamDataSize()) {

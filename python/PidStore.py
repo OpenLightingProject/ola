@@ -57,10 +57,13 @@ class UnpackException(Error):
 class Pid(object):
   """A class that describes everything about a PID."""
   def __init__(self, name, value,
+               discovery_request = None,
+               discovery_response = None,
                get_request = None,
                get_response = None,
                set_request = None,
                set_response = None,
+               discovery_validators = [],
                get_validators = [],
                set_validators = []):
     """Create a new PID.
@@ -68,10 +71,13 @@ class Pid(object):
     Args:
       name: the human readable name
       value: the 2 byte PID value
+      discovery_request: A Group object, or None if DISCOVERY isn't supported
+      discovery_response: A Group object, or None if DISCOVERY isn't supported
       get_request: A Group object, or None if GET isn't supported
       get_response:
       set_request: A Group object, or None if SET isn't supported
       set_response:
+      discovery_validators:
       get_validators:
       set_validators:
     """
@@ -80,14 +86,17 @@ class Pid(object):
     self._requests = {
       RDM_GET: get_request,
       RDM_SET: set_request,
+      RDM_DISCOVERY: discovery_request,
     }
     self._responses = {
       RDM_GET: get_response,
       RDM_SET: set_response,
+      RDM_DISCOVERY: discovery_response,
     }
     self._validators = {
       RDM_GET: get_validators,
       RDM_SET: set_validators,
+      RDM_DISCOVERY: discovery_validators,
     }
 
   @property
@@ -128,7 +137,7 @@ class Pid(object):
 
     Args:
       args: A list of arguments of the right types.
-      command_class: RDM_GET or RDM_SET
+      command_class: RDM_GET or RDM_SET or RDM_DISCOVERY
 
     Returns:
       Binary data which can be used as the Param Data.
@@ -142,7 +151,7 @@ class Pid(object):
 
     Args:
       data: The raw data
-      command_class: RDM_GET or RDM_SET
+      command_class: RDM_GET or RDM_SET or RDM_DISCOVERY
     """
     group = self._responses.get(command_class)
     if group is None:
@@ -154,7 +163,7 @@ class Pid(object):
     """Get a help string that describes the format of the request.
 
     Args:
-      command_class: RDM_GET or RDM_SET
+      command_class: RDM_GET or RDM_SET or RDM_DISCOVERY
 
     Returns:
       A help string.
@@ -942,11 +951,17 @@ class PidStore(object):
             (field_name, pid_pb.name, e))
       return group
 
+    discovery_request = BuildList('discovery_request')
+    discovery_response = BuildList('discovery_response')
     get_request = BuildList('get_request')
     get_response = BuildList('get_response')
     set_request = BuildList('set_request')
     set_response = BuildList('set_response')
 
+    discovery_validators = []
+    if pid_pb.HasField('discovery_sub_device_range'):
+      discovery_validators.append(self._SubDeviceRangeToValidator(
+        pid_pb.discovery_sub_device_range))
     get_validators = []
     if pid_pb.HasField('get_sub_device_range'):
       get_validators.append(self._SubDeviceRangeToValidator(
@@ -958,10 +973,13 @@ class PidStore(object):
 
     return Pid(pid_pb.name,
                pid_pb.value,
+               discovery_request,
+               discovery_response,
                get_request,
                get_response,
                set_request,
                set_response,
+               discovery_validators,
                get_validators,
                set_validators)
 

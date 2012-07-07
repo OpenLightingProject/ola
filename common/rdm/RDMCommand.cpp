@@ -366,6 +366,17 @@ RDMRequest* RDMRequest::InflateFromData(const uint8_t *data,
     command_message.command_class);
 
   switch (command_class) {
+    case DISCOVER_COMMAND:
+      return new RDMDiscoveryRequest(
+          UID(command_message.source_uid),
+          UID(command_message.destination_uid),
+          command_message.transaction_number,  // transaction #
+          command_message.port_id,  // port id
+          command_message.message_count,  // message count
+          sub_device,
+          param_id,
+          data + sizeof(rdm_command_message),
+          command_message.param_data_length);  // data length
     case GET_COMMAND:
       return new RDMGetRequest(
           UID(command_message.source_uid),
@@ -498,6 +509,14 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
       *response_code = RDM_COMMAND_CLASS_MISMATCH;
       return NULL;
     }
+
+    if (request->CommandClass() == DISCOVER_COMMAND &&
+        command_class != DISCOVER_COMMAND_RESPONSE) {
+      OLA_WARN << "Expected DISCOVER_COMMAND_RESPONSE, got 0x" << std::hex <<
+        command_class;
+      *response_code = RDM_COMMAND_CLASS_MISMATCH;
+      return NULL;
+    }
   }
 
   // check response type
@@ -513,6 +532,18 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
     command_message.transaction_number);
 
   switch (command_class) {
+    case DISCOVER_COMMAND_RESPONSE:
+      *response_code = RDM_COMPLETED_OK;
+      return new RDMDiscoveryResponse(
+          source_uid,
+          destination_uid,
+          return_transaction_number,  // transaction #
+          command_message.port_id,  // port id
+          command_message.message_count,  // message count
+          sub_device,
+          param_id,
+          data + sizeof(rdm_command_message),
+          command_message.param_data_length);  // data length
     case GET_COMMAND_RESPONSE:
       *response_code = RDM_COMPLETED_OK;
       return new RDMGetResponse(

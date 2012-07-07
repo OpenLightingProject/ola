@@ -30,6 +30,7 @@ class RDMAPI(object):
 
   # This maps ola.proto enums to PidStore enums
   COMMAND_CLASS_DICT = {
+      OlaClient.RDM_DISCOVERY_RESPONSE: PidStore.RDM_DISCOVERY,
       OlaClient.RDM_GET_RESPONSE: PidStore.RDM_GET,
       OlaClient.RDM_SET_RESPONSE: PidStore.RDM_SET,
   }
