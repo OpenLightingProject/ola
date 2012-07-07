@@ -45,6 +45,7 @@ using ola::messaging::StringFieldDescriptor;
 using ola::messaging::UInt16FieldDescriptor;
 using ola::messaging::UInt32FieldDescriptor;
 using ola::messaging::UInt8FieldDescriptor;
+using ola::messaging::UIDFieldDescriptor;
 using ola::rdm::MessageDeserializer;
 using std::auto_ptr;
 using std::string;
@@ -56,6 +57,7 @@ class MessageDeserializerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSimpleBigEndian);
   CPPUNIT_TEST(testSimpleLittleEndian);
   CPPUNIT_TEST(testString);
+  CPPUNIT_TEST(testUID);
   CPPUNIT_TEST(testWithGroups);
   CPPUNIT_TEST(testWithNestedFixedGroups);
   CPPUNIT_TEST(testWithNestedVariableGroups);
@@ -66,6 +68,7 @@ class MessageDeserializerTest: public CppUnit::TestFixture {
     void testSimpleBigEndian();
     void testSimpleLittleEndian();
     void testString();
+    void testUID();
     void testWithGroups();
     void testWithNestedFixedGroups();
     void testWithNestedVariableGroups();
@@ -264,6 +267,31 @@ void MessageDeserializerTest::testString() {
   const string expected2 = (
       "string: 0123456789\nstring: this is a\n");
   CPPUNIT_ASSERT_EQUAL(expected2, m_printer.AsString(message2.get()));
+}
+
+
+/**
+ * Test UID inflation.
+ */
+void MessageDeserializerTest::testUID() {
+  // build the descriptor
+  vector<const FieldDescriptor*> fields;
+  fields.push_back(new UIDFieldDescriptor("Address"));
+  Descriptor descriptor("Test Descriptor", fields);
+
+  // now setup the data
+  const uint8_t big_endian_data[] = {0x70, 0x7a, 0, 0, 0, 1};
+
+  // now the correct amount & verify
+  auto_ptr<const Message> message(m_deserializer.InflateMessage(
+      &descriptor,
+      big_endian_data,
+      sizeof(big_endian_data)));
+  CPPUNIT_ASSERT(message.get());
+  CPPUNIT_ASSERT_EQUAL(1u, message->FieldCount());
+
+  const string expected = "Address: 707a:00000001\n";
+  CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(message.get()));
 }
 
 

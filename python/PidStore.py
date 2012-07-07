@@ -26,6 +26,7 @@ import sys
 from google.protobuf import text_format
 from ola import PidStoreLocation
 from ola import Pids_pb2
+from ola import UID
 
 
 # Various sub device enums
@@ -405,6 +406,37 @@ class IPV4(IntAtom):
   """A four-byte IPV4 address."""
   def __init__(self, name, **kwargs):
     super(IPV4, self).__init__(name, 'I', 0xffffffff, **kwargs)
+
+
+class UIDAtom(FixedSizeAtom):
+  """A four-byte IPV4 address."""
+  def __init__(self, manufacturer_id, device_id, **kwargs):
+    super(UIDAtom, self).__init__(name, 'HI')
+    self._manufacturer_id = manufacturer_id
+    self._device_id = device_id
+
+  def _FormatString(self):
+    return '!%h' % self._char
+
+  def Unpack(self, data):
+    format_string = self._FormatString()
+    try:
+      values = struct.unpack(format_string, data)
+    except struct.error:
+      raise UnpackException(e)
+    return UID(values[0], values[1])
+
+  def Pack(self, args):
+    uid = UID.FromString(args[0])
+    if uid is None:
+      raise ArgsValidationError("Invalid UID: %s" % e)
+
+    format_string = self._FormatString()
+    try:
+      data = struct.pack(format_string, uid.manufacturer_id, uid.device_id)
+    except struct.error, e:
+      raise ArgsValidationError("Can't pack data: %s" % e)
+    return data, 1
 
 
 class String(Atom):
@@ -979,6 +1011,8 @@ class PidStore(object):
       return UInt32(field.name, **args);
     elif field.type == Pids_pb2.IPV4:
       return IPV4(field.name, **args);
+    elif field.type == Pids_pb2.UID:
+      return UIDAtom(field.name, **args);
     elif field.type == Pids_pb2.GROUP:
       if not field.field:
         raise InvalidPidFormat('Missing child fields for %s' % field.name)

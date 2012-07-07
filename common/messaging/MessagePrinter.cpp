@@ -57,6 +57,13 @@ void GenericMessagePrinter::Visit(const IPV4MessageField *message) {
 }
 
 
+void GenericMessagePrinter::Visit(const UIDMessageField *message) {
+  Stream() << string(m_indent, ' ') <<
+    TransformLabel(message->GetDescriptor()->Name()) << ": "
+    << message->Value().ToString() << endl;
+}
+
+
 void GenericMessagePrinter::Visit(const StringMessageField *message) {
   Stream() << string(m_indent, ' ') <<
     TransformLabel(message->GetDescriptor()->Name()) << ": "

@@ -22,6 +22,7 @@
 #include <ola/messaging/Message.h>
 #include <ola/network/NetworkUtils.h>
 #include <ola/rdm/MessageDeserializer.h>
+#include <ola/rdm/UID.h>
 #include <string.h>
 #include <string>
 #include <vector>
@@ -112,7 +113,7 @@ void MessageDeserializer::Visit(
 
 void MessageDeserializer::Visit(
     const ola::messaging::IPV4FieldDescriptor *descriptor) {
-  if (!CheckForData(4))
+  if (!CheckForData(descriptor->MaxSize()))
     return;
 
   uint32_t data;
@@ -122,6 +123,18 @@ void MessageDeserializer::Visit(
     new ola::messaging::IPV4MessageField(
       descriptor,
       ola::network::IPV4Address(data)));
+}
+
+
+void MessageDeserializer::Visit(
+    const ola::messaging::UIDFieldDescriptor *descriptor) {
+  if (!CheckForData(descriptor->MaxSize()))
+    return;
+
+  ola::rdm::UID uid(m_data + m_offset);
+  m_offset += descriptor->MaxSize();
+  m_message_stack.top().push_back(
+    new ola::messaging::UIDMessageField(descriptor, uid));
 }
 
 
