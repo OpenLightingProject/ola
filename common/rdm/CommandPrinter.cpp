@@ -111,6 +111,7 @@ void CommandPrinter::DisplayResponse(const RDMResponse *response,
     AppendUIDsAndType(response, (is_get ? "GET_RESPONSE" : "SET_RESPONSE"));
     *m_output << ", response type: ";
     AppendResponseType(response);
+    *m_output << ", ";
     AppendPidString(response, descriptor);
   } else {
     AppendVerboseUIDs(response);
