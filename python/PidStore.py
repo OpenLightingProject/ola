@@ -35,7 +35,7 @@ MAX_VALID_SUB_DEVICE = 0x0200;
 ALL_SUB_DEVICES = 0xffff
 
 # The two types of commands classes
-RDM_GET, RDM_SET = range(2)
+RDM_GET, RDM_SET, RDM_DISCOVERY = range(3)
 
 
 class Error(Exception):
@@ -217,7 +217,7 @@ class FixedSizeAtom(Atom):
     return data, 1
 
   def _FormatString(self):
-    return '!%c' % self._char
+    return '!%s' % self._char
 
 
 class Bool(FixedSizeAtom):
@@ -410,13 +410,8 @@ class IPV4(IntAtom):
 
 class UIDAtom(FixedSizeAtom):
   """A four-byte IPV4 address."""
-  def __init__(self, manufacturer_id, device_id, **kwargs):
+  def __init__(self, name, **kwargs):
     super(UIDAtom, self).__init__(name, 'HI')
-    self._manufacturer_id = manufacturer_id
-    self._device_id = device_id
-
-  def _FormatString(self):
-    return '!%h' % self._char
 
   def Unpack(self, data):
     format_string = self._FormatString()

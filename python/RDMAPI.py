@@ -46,6 +46,23 @@ class RDMAPI(object):
     self._pid_store = pid_store
     self._strict_checks = strict_checks
 
+  def RawDiscovery(self, universe, uid, sub_device, pid, callback, data):
+    """Send an RDM Discovery message with the raw data supplied.
+
+    Args:
+      universe: The universe to send the request on.
+      uid: The UID to address the request to.
+      sub_device: The Sub Device to send the request to.
+      pid: A PID object that describes the format of the request.
+      callback: The callback to run when the request completes.
+      data: The param data
+
+    Return:
+      True if sent ok, False otherwise.
+    """
+    return self._SendRawRequest(universe, uid, sub_device, pid, callback, data,
+                                PidStore.RDM_DISCOVERY)
+
   def Get(self, universe, uid, sub_device, pid, callback, args = []):
     """Send a RDM Get message, packing the arguments into a message.
 
@@ -172,6 +189,8 @@ class RDMAPI(object):
 
     if request_type == PidStore.RDM_SET:
       method = self._client.RDMSet
+    elif request_type == PidStore.RDM_DISCOVERY:
+      method = self._client.SendRawRDMDiscovery
     else:
       method = self._client.RDMGet
 

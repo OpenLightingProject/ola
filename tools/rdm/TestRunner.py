@@ -150,7 +150,7 @@ class QueuedMessageFetcher(object):
     # Stop if we get a NR_UNKNOWN_PID to GET QUEUED_MESSAGE
     if (response.response_type == OlaClient.RDM_NACK_REASON and
         response.nack_reason == RDMNack.NR_UNKNOWN_PID and
-        response.command_class == PidStore.RDM_GET and
+        response.command_class == OlaClient.RDM_GET_RESPONSE and
         response.pid == self._queued_message_pid.value):
       if (self._outstanding_ack_timers == 0):
         self._wrapper.Stop()
@@ -158,7 +158,7 @@ class QueuedMessageFetcher(object):
 
     # Stop if we get a message with no status messages in it.
     if (response.response_type == OlaClient.RDM_ACK and
-        response.command_class == PidStore.RDM_GET and
+        response.command_class == OlaClient.RDM_GET_RESPONSE and
         response.pid == self._status_message_pid.value and
         unpacked_data.get('messages', []) == []):
       if (self._outstanding_ack_timers == 0):

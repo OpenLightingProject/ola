@@ -669,6 +669,51 @@ void OlaServerServiceImpl::RDMCommand(
 
 
 /*
+ * Handle an RDM Discovery Command. This should only be used for the RDM
+ * responder tests.
+ */
+void OlaServerServiceImpl::RDMDiscoveryCommand(
+    RpcController* controller,
+    const ::ola::proto::RDMDiscoveryRequest* request,
+    ola::proto::RDMResponse* response,
+    google::protobuf::Closure* done,
+    const UID *uid,
+    class Client *client) {
+  Universe *universe = m_universe_store->GetUniverse(request->universe());
+  if (!universe) {
+    MissingUniverseError(controller);
+    done->Run();
+    return;
+  }
+
+  UID source_uid = uid ? *uid : m_uid;
+  UID destination(request->uid().esta_id(),
+                  request->uid().device_id());
+
+  ola::rdm::RDMRequest *rdm_request = new ola::rdm::RDMDiscoveryRequest(
+      source_uid,
+      destination,
+      0,  // transaction #
+      1,  // port id
+      0,  // message count
+      request->sub_device(),
+      request->param_id(),
+      reinterpret_cast<const uint8_t*>(request->data().data()),
+      request->data().size());
+
+  ola::rdm::RDMCallback *callback =
+    NewSingleCallback(
+        this,
+        &OlaServerServiceImpl::HandleRDMResponse,
+        response,
+        done,
+        request->include_raw_response());
+
+  m_broker->SendRDMRequest(client, universe, rdm_request, callback);
+}
+
+
+/*
  * Set this client's source UID
  */
 void OlaServerServiceImpl::SetSourceUID(

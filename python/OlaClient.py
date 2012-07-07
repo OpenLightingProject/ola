@@ -323,6 +323,8 @@ class RDMResponse(object):
         'The command class didn\'t match the request'),
       Ola_pb2.RDM_INVALID_RESPONSE_TYPE: (
         'The response type was not ACK, ACK_OVERFLOW, ACK_TIMER or NACK'),
+      Ola_pb2.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED: (
+        'The requested Command Class is not supported by this device'),
   }
 
   def __init__(self, controller, response):
@@ -703,6 +705,36 @@ class OlaClient(Ola_pb2.OlaClientService):
     """
     return self._RDMMessage(universe, uid, sub_device, param_id, callback,
                             data, set = True);
+
+  def SendRawRDMDiscovery(self,
+                          universe,
+                          uid,
+                          sub_device,
+                          param_id,
+                          callback,
+                          data = ''):
+    """Send an RDM Discovery command. Unless you're writing RDM tests you
+      shouldn't need to use this.
+
+    Args:
+      universe: The universe to get the UID list for.
+      uid: A UID object
+      sub_device: The sub device index
+      param_id: the param ID
+      callback: The function to call once complete, takes a RDMResponse object
+      data: the data to send
+    """
+    controller = SimpleRpcController()
+    request = Ola_pb2.RDMDiscoveryRequest()
+    request.universe = universe
+    request.uid.esta_id = uid.manufacturer_id
+    request.uid.device_id = uid.device_id
+    request.sub_device = sub_device
+    request.param_id = param_id
+    request.data = data
+    done = lambda x, y: self._RDMCommandComplete(callback, x, y)
+    self._stub.RDMDiscoveryCommand(controller, request, done)
+    return True
 
   def _RDMMessage(self, universe, uid, sub_device, param_id, callback, data,
                   set = False):

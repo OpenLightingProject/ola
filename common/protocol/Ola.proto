@@ -121,6 +121,7 @@ enum RDMResponseType {
 enum RDMCommandClass {
   RDM_GET_RESPONSE = 0;
   RDM_SET_RESPONSE = 1;
+  RDM_DISCOVERY_RESPONSE = 2;
 }
 
 
@@ -282,6 +283,15 @@ message RDMRequest {
   optional bool include_raw_response = 7 [default = false];
 }
 
+message RDMDiscoveryRequest {
+  required int32 universe = 1;
+  required UID uid = 2;
+  required int32 sub_device = 3;
+  required int32 param_id = 4;
+  required bytes data = 5; // 0 - 231 bytes
+  optional bool include_raw_response = 6 [default = false];
+}
+
 message RDMResponse {
   required RDMResponseCode response_code = 1;
   // ACK, NACK or TIMER
@@ -335,6 +345,7 @@ service OlaServerService {
   rpc SetSourceUID (UID) returns (Ack);
 
   rpc RDMCommand (RDMRequest) returns (RDMResponse);
+  rpc RDMDiscoveryCommand (RDMDiscoveryRequest) returns (RDMResponse);
   rpc StreamDmxData (DmxData) returns (STREAMING_NO_RESPONSE);
 
   // timecode

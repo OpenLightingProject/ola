@@ -135,6 +135,12 @@ class OlaServerServiceImpl {
                     google::protobuf::Closure* done,
                     const UID *uid,
                     class Client *client);
+    void RDMDiscoveryCommand(RpcController* controller,
+                             const ::ola::proto::RDMDiscoveryRequest* request,
+                             ola::proto::RDMResponse* response,
+                             google::protobuf::Closure* done,
+                             const UID *uid,
+                             class Client *client);
     void SetSourceUID(RpcController* controller,
                       const ::ola::proto::UID* request,
                       ola::proto::Ack* response,
@@ -317,6 +323,14 @@ class OlaClientService: public ola::proto::OlaServerService {
                     ola::proto::RDMResponse* response,
                     google::protobuf::Closure* done) {
       m_impl->RDMCommand(controller, request, response, done, m_uid, m_client);
+    }
+
+    void RDMDiscoveryCommand(RpcController* controller,
+                             const ::ola::proto::RDMDiscoveryRequest* request,
+                             ola::proto::RDMResponse* response,
+                             google::protobuf::Closure* done) {
+      m_impl->RDMDiscoveryCommand(controller, request, response, done, m_uid,
+                                  m_client);
     }
 
     void SetSourceUID(RpcController* controller,

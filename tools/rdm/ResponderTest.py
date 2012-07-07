@@ -277,6 +277,24 @@ class ResponderTestFixture(TestFixture):
     """A helper method which returns an AckSetResult for the current PID."""
     return AckSetResult(self.pid.value, **kwargs)
 
+  def SendRawDiscovery(self, sub_device, pid, data = ""):
+    """Send a raw Discovery request.
+
+    Args:
+      sub_device: The sub device
+      pid: The pid value
+      data: The param data
+    """
+    logging.debug(' DISCOVERY: pid: %s, sub device: %d, data: %r' %
+        (pid, sub_device, data))
+    self._outstanding_request = (sub_device, PidStore.RDM_DISCOVERY, pid.value)
+    return self._api.RawDiscovery(self._universe,
+                                  self._uid,
+                                  sub_device,
+                                  pid,
+                                  self._HandleResponse,
+                                  data)
+
   def SendGet(self, sub_device, pid, args = []):
     """Send a GET request using the RDM API.
 
