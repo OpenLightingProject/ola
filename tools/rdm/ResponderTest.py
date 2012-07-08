@@ -130,6 +130,7 @@ class TestFixture(object):
 
   @property
   def debug(self):
+    """Return a list of debug lines."""
     return self._debug
 
   def LogDebug(self, string):
