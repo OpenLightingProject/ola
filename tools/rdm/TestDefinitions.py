@@ -1705,6 +1705,8 @@ class GetSensorDefinition(OptionalParameterTestFixture):
   }
 
   def Test(self):
+    # default to false
+    self.SetProperty('sensor_recording_supported', False)
     self._sensors = {}  # stores the discovered sensors
     self._current_index = -1  # the current sensor we're trying to query
     self._sensor_holes = []  # indices of sensors that are missing
