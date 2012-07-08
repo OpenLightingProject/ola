@@ -187,7 +187,7 @@ class TestFixture(object):
   def SetNotRun(self, message=None):
     self._state = TestState.NOT_RUN
     if message:
-      logging.debug(message)
+      logging.debug(' ' + message)
 
   def SetBroken(self, message):
     logging.debug(' Broken: %s' % message)
@@ -475,7 +475,9 @@ class ResponderTestFixture(TestFixture):
       self.Stop()
       return False
 
-    if response.response_code == OlaClient.RDM_WAS_BROADCAST:
+    if (response.response_code == OlaClient.RDM_WAS_BROADCAST or
+        response.response_code ==
+          OlaClient.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED):
       return True
 
     if response.response_code != OlaClient.RDM_COMPLETED_OK:
