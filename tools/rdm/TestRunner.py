@@ -23,6 +23,7 @@ import logging
 from ola.RDMAPI import RDMAPI
 from ola.OlaClient import OlaClient, RDMNack
 from ola import PidStore
+from ola.testing.rdm.TestState import TestState
 
 
 class Error(Exception):
@@ -273,10 +274,10 @@ class TestRunner(object):
         for property in test.Requires():
           getattr(device, property)
       except AttributeError:
-        logging.debug(' Property: %s not found, skipping test.' % property)
-        continue
+        test.SetBroken('Property: %s not found, skipping test.' % property)
 
-      test.Run()
+      if test.state != TestState.BROKEN:
+        test.Run()
 
       logging.info('%s%s: %s' % (end_header, test, test.state.ColorString()))
     return tests, device

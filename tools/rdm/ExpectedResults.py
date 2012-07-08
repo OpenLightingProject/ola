@@ -102,6 +102,16 @@ class InvalidResponse(BaseExpectedResult):
     return OlaClient.RDM_INVALID_RESPONSE == response.response_code
 
 
+class UnsupportedResult(BaseExpectedResult):
+  """This checks that the request was unsupported."""
+  def __str__(self):
+    return 'RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED'
+
+  def Matches(self, response, unpacked_data):
+    return (OlaClient.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED ==
+            response.response_code)
+
+
 class SuccessfulResult(BaseExpectedResult):
   """This checks that we received a valid response from the device.
 

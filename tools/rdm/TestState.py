@@ -39,6 +39,8 @@ class TestState(object):
       strs.append('\x1b[32m')
     elif self == TestState.FAILED:
       strs.append('\x1b[31m')
+    elif self == TestState.BROKEN:
+      strs.append('\x1b[33m')
 
     strs.append(str(self._state))
     strs.append('\x1b[0m')

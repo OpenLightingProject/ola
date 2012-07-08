@@ -324,7 +324,7 @@ class RDMResponse(object):
       Ola_pb2.RDM_INVALID_RESPONSE_TYPE: (
         'The response type was not ACK, ACK_OVERFLOW, ACK_TIMER or NACK'),
       Ola_pb2.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED: (
-        'The requested Command Class is not supported by this device'),
+        'The requested Command Class is not supported by this controller'),
   }
 
   def __init__(self, controller, response):
