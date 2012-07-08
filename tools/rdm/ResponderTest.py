@@ -65,6 +65,7 @@ class TestFixture(object):
       self.pid = None
     self._warnings = []
     self._advisories = []
+    self._debug = []
 
   def __hash__(self):
     return hash(self.__class__.__name__)
@@ -107,7 +108,7 @@ class TestFixture(object):
     Args:
       message: The text of the warning message.
     """
-    logging.debug('Warning: %s' % message)
+    self.LogDebug('Warning: %s' % message)
     self._warnings.append(message)
 
   # Advisories are logged independently of errors. They should be used to
@@ -124,8 +125,17 @@ class TestFixture(object):
     Args:
       message: The text of the advisory message.
     """
-    logging.debug('Advisory: %s' % message)
+    self.LogDebug('Advisory: %s' % message)
     self._advisories.append(message)
+
+  @property
+  def debug(self):
+    return self._debug
+
+  def LogDebug(self, string):
+    """Append debugging information."""
+    logging.debug(string)
+    self._debug.append(string)
 
   def Property(self, property):
     """Lookup a device property.
@@ -187,14 +197,14 @@ class TestFixture(object):
   def SetNotRun(self, message=None):
     self._state = TestState.NOT_RUN
     if message:
-      logging.debug(' ' + message)
+      self.LogDebug(' ' + message)
 
   def SetBroken(self, message):
-    logging.debug(' Broken: %s' % message)
+    self.LogDebug(' Broken: %s' % message)
     self._state = TestState.BROKEN
 
   def SetFailed(self, message):
-    logging.debug(' Failed: %s' % message)
+    self.LogDebug(' Failed: %s' % message)
     self._state = TestState.FAILED
 
   def SetPassed(self):
@@ -225,7 +235,7 @@ class ResponderTestFixture(TestFixture):
 
   def SleepAfterBroadcastSet(self):
     if self._broadcast_write_delay_s:
-      logging.debug('Sleeping after broadcast...')
+      self.LogDebug('Sleeping after broadcast...')
     time.sleep(self._broadcast_write_delay_s)
 
   def Run(self):
@@ -297,8 +307,8 @@ class ResponderTestFixture(TestFixture):
       pid: The pid value
       data: The param data
     """
-    logging.debug(' DISCOVERY: pid: %s, sub device: %d, data: %r' %
-        (pid, sub_device, data))
+    self.LogDebug(' DISCOVERY: pid: %s, sub device: %d, data: %r' %
+                  (pid, sub_device, data))
     self._outstanding_request = (sub_device, PidStore.RDM_DISCOVERY, pid.value)
     return self._api.RawDiscovery(self._universe,
                                   self._uid,
@@ -326,8 +336,8 @@ class ResponderTestFixture(TestFixture):
       pid: A PID object
       args: A list of arguments
     """
-    logging.debug(' GET: uid: %s, pid: %s, sub device: %d, args: %s' %
-        (uid, pid, sub_device, args))
+    self.LogDebug(' GET: uid: %s, pid: %s, sub device: %d, args: %s' %
+                  (uid, pid, sub_device, args))
     self._outstanding_request = (sub_device, PidStore.RDM_GET, pid.value)
     ret_code = self._api.Get(self._universe,
                              uid,
@@ -345,8 +355,8 @@ class ResponderTestFixture(TestFixture):
       pid: The pid value
       data: The param data
     """
-    logging.debug(' GET: pid: %s, sub device: %d, data: %r' %
-        (pid, sub_device, data))
+    self.LogDebug(' GET: pid: %s, sub device: %d, data: %r' %
+                  (pid, sub_device, data))
     self._outstanding_request = (sub_device, PidStore.RDM_GET, pid.value)
     return self._api.RawGet(self._universe,
                             self._uid,
@@ -374,8 +384,8 @@ class ResponderTestFixture(TestFixture):
       pid: A PID object
       args: A list of arguments
     """
-    logging.debug(' SET: uid: %s, pid: %s, sub device: %d, args: %s' %
-        (uid, pid, sub_device, args))
+    self.LogDebug(' SET: uid: %s, pid: %s, sub device: %d, args: %s' %
+                  (uid, pid, sub_device, args))
     self._outstanding_request = (sub_device, PidStore.RDM_SET, pid.value)
     ret_code =  self._api.Set(self._universe,
                               uid,
@@ -395,8 +405,8 @@ class ResponderTestFixture(TestFixture):
       pid: The pid value
       data: The param data
     """
-    logging.debug(' SET: pid: %s, sub device: %d, data: %r' %
-        (pid, sub_device, data))
+    self.LogDebug(' SET: pid: %s, sub device: %d, data: %r' %
+                  (pid, sub_device, data))
     self._outstanding_request = (sub_device, PidStore.RDM_SET, pid.value)
     return self._api.RawSet(self._universe,
                             self._uid,
@@ -481,25 +491,25 @@ class ResponderTestFixture(TestFixture):
       return True
 
     if response.response_code != OlaClient.RDM_COMPLETED_OK:
-      logging.debug('Request failed: %s' % response.ResponseCodeAsString())
+      self.LogDebug('Request failed: %s' % response.ResponseCodeAsString())
       return True
 
     # handle the case of an ack timer
     if response.response_type == OlaClient.RDM_ACK_TIMER:
-      logging.debug(' Received ACK TIMER set to %d ms' % response.ack_timer)
+      self.LogDebug(' Received ACK TIMER set to %d ms' % response.ack_timer)
       self._wrapper.AddEvent(response.ack_timer, self._GetQueuedMessage)
       return False
 
     # now log the result
     if response.WasAcked():
       if unpack_exception:
-        logging.debug(' Response: %s, PID = 0x%04hx, Error: %s' %
+        self.LogDebug(' Response: %s, PID = 0x%04hx, Error: %s' %
                       (response, response.pid, unpack_exception))
       else:
-        logging.debug(' Response: %s, PID = 0x%04hx, data = %s' %
+        self.LogDebug(' Response: %s, PID = 0x%04hx, data = %s' %
                       (response, response.pid, unpacked_data))
     else:
-      logging.debug(' Response: %s, PID = 0x%04hx' % (response, response.pid))
+      self.LogDebug(' Response: %s, PID = 0x%04hx' % (response, response.pid))
 
     return True
 
@@ -539,7 +549,7 @@ class ResponderTestFixture(TestFixture):
     # nothing matched
     self.SetFailed('expected one of:')
     for result in self._expected_results:
-      logging.debug('  %s' % result)
+      self.LogDebug('  %s' % result)
     self.Stop()
 
 
@@ -547,7 +557,7 @@ class ResponderTestFixture(TestFixture):
     """Fetch queued messages."""
     queued_message_pid = self.LookupPid('QUEUED_MESSAGE')
     data = ['error']
-    logging.debug(' GET: pid = %s, data = %s' % (queued_message_pid, data))
+    self.LogDebug(' GET: pid = %s, data = %s' % (queued_message_pid, data))
 
     self._api.Get(self._universe,
                   self._uid,
