@@ -76,7 +76,7 @@ UsbProDevice::UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
       m_pro_widget,
       0,
       plugin_adaptor,
-      "");
+      m_serial);
 
   m_pro_widget->SetDMXCallback(
       NewCallback(
@@ -88,7 +88,7 @@ UsbProDevice::UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
       this,
       m_pro_widget,
       0,
-      "",
+      m_serial,
       plugin_adaptor->WakeUpTime(),
       5,  // allow up to 5 burst frames
       fps_limit);  // 200 frames per second seems to be the limit

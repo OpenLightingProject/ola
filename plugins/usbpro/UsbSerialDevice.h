@@ -36,8 +36,8 @@ namespace usbpro {
 class UsbSerialDevice: public ola::Device {
   public:
     UsbSerialDevice(ola::AbstractPlugin *owner,
-              const string &name,
-              SerialWidgetInterface *widget):
+                    const string &name,
+                    SerialWidgetInterface *widget):
       Device(owner, name),
       m_widget(widget) {}
 
