@@ -19,7 +19,9 @@
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import datetime
+import inspect
 import logging
+from ola.testing.rdm import ResponderTest
 from ola.RDMAPI import RDMAPI
 from ola.OlaClient import OlaClient, RDMNack
 from ola import PidStore
@@ -172,6 +174,28 @@ class QueuedMessageFetcher(object):
 
     # more remain, keep fetching them
     self._FetchQueuedMessage()
+
+
+def GetTestClassses(module):
+  """Return a list of test classes from a module.
+
+  Args:
+    module: The module to search for test classes.
+
+  Returns:
+    A list of test classes.
+  """
+  classes = []
+  for symbol in dir(module):
+    cls = getattr(module, symbol)
+    if not inspect.isclass(cls):
+      continue
+    if (cls == ResponderTest.ResponderTestFixture or
+        cls == ResponderTest.OptionalParameterTestFixture):
+      continue
+    if issubclass(cls, ResponderTest.ResponderTestFixture):
+      classes.append(cls)
+  return classes
 
 
 class TestRunner(object):

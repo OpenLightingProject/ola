@@ -20,10 +20,9 @@
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
-from ola.testing.rdm import ResponderTest, TestDefinitions, TestRunner
+from ola.testing.rdm import TestDefinitions, TestRunner
 from ola.testing.rdm.DMXSender import DMXSender
 from ola.testing.rdm.TestState import TestState
-import inspect
 import logging
 import re
 import sys
@@ -47,21 +46,21 @@ def ParseOptions():
     production lighting rig.
   """)
   parser = OptionParser(usage, description=description)
-  parser.add_option('-c', '--slot_count', default=10,
+  parser.add_option('-c', '--slot-count', default=10,
                     help='Number of slots to send when sending DMX.')
   parser.add_option('-d', '--debug', action='store_true',
                     help='Print debug information to assist in diagnosing '
                          'failures.')
-  parser.add_option('-f', '--dmx_frame_rate', default=0,
+  parser.add_option('-f', '--dmx-frame-rate', default=0,
                     type='int',
                     help='Send DMX frames at this rate in the background.')
   parser.add_option('-l', '--log', metavar='FILE',
                     help='Also log to the file named FILE.uid.timestamp.')
-  parser.add_option('--list_tests', action='store_true',
+  parser.add_option('--list-tests', action='store_true',
                     help='Display a list of all tests')
-  parser.add_option('-p', '--pid_file', metavar='FILE',
+  parser.add_option('-p', '--pid-file', metavar='FILE',
                     help='The file to load the PID definitions from.')
-  parser.add_option('-s', '--skip_check', action='store_true',
+  parser.add_option('-s', '--skip-check', action='store_true',
                     help='Skip the check for multiple devices.')
   parser.add_option('-t', '--tests', metavar='TEST1,TEST2',
                     help='A comma separated list of tests to run.')
@@ -69,7 +68,7 @@ def ParseOptions():
                     help='Add timestamps to each test.')
   parser.add_option('--no-factory-defaults', action='store_true',
                     help="Don't run the SET factory defaults tests")
-  parser.add_option('-w', '--broadcast_write_delay', default=0,
+  parser.add_option('-w', '--broadcast-write-delay', default=0,
                     type='int',
                     help='The time in ms to wait after sending broadcast set'
                          'commands.')
@@ -170,24 +169,10 @@ def DisplaySummary(tests):
       count_by_state.get(TestState.BROKEN, 0)))
 
 
-def GetTestClassses():
-  classes = []
-  for symbol in dir(TestDefinitions):
-    cls = getattr(TestDefinitions, symbol)
-    if not inspect.isclass(cls):
-      continue
-    if (cls == ResponderTest.ResponderTestFixture or
-        cls == ResponderTest.OptionalParameterTestFixture):
-      continue
-    if issubclass(cls, ResponderTest.ResponderTestFixture):
-      classes.append(cls)
-  return classes
-
-
 def main():
   options = ParseOptions()
 
-  test_classes = GetTestClassses()
+  test_classes = TestRunner.GetTestClassses(TestDefinitions)
   if options.list_tests:
     for test_name in sorted(c.__name__ for c in test_classes):
       print test_name
