@@ -30,6 +30,19 @@ namespace usbpro {
 const unsigned int BaseRobeWidget::HEADER_SIZE =
   sizeof(BaseRobeWidget::message_header);
 
+const uint8_t BaseRobeWidget::CHANNEL_A_OUT;
+const uint8_t BaseRobeWidget::INFO_REQUEST;
+const uint8_t BaseRobeWidget::INFO_RESPONSE;
+const uint8_t BaseRobeWidget::RDM_DISCOVERY;
+const uint8_t BaseRobeWidget::RDM_DISCOVERY_RESPONSE;
+const uint8_t BaseRobeWidget::RDM_REQUEST;
+const uint8_t BaseRobeWidget::RDM_RESPONSE;
+const uint8_t BaseRobeWidget::UID_REQUEST;
+const uint8_t BaseRobeWidget::UID_RESPONSE;
+const uint8_t BaseRobeWidget::DMX_IN_REQUEST;
+const uint8_t BaseRobeWidget::DMX_IN_RESPONSE;
+const uint8_t BaseRobeWidget::SOM;
+
 BaseRobeWidget::BaseRobeWidget(ola::io::ConnectedDescriptor *descriptor)
     : m_descriptor(descriptor),
       m_state(PRE_SOM),
