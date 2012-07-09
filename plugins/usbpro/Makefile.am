@@ -41,23 +41,28 @@ libolausbpro_la_LIBADD = ./libolausbprowidget.la \
 
 
 # Test programs
-TESTS = SerialUsbTester
+TESTS = RobeWidgetTester SerialUsbTester
 check_PROGRAMS = $(TESTS)
 SerialUsbTester_SOURCES = ArduinoWidgetTest.cpp \
-                          BaseRobeWidgetTest.cpp \
                           BaseUsbProWidgetTest.cpp \
                           CommonWidgetTest.cpp \
                           DmxTriWidgetTest.cpp \
                           DmxterWidgetTest.cpp \
                           EnttecUsbProWidgetTest.cpp \
                           MockEndpoint.cpp \
-                          RobeWidgetTest.cpp \
-                          RobeWidgetDetectorTest.cpp \
                           SerialUsbTester.cpp \
                           UsbProWidgetDetectorTest.cpp \
                           UltraDMXProWidgetTest.cpp \
                           WidgetDetectorThreadTest.cpp
 
 SerialUsbTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-SerialUsbTester_LDADD = $(CPPUNIT_LIBS) \
-                        ./libolausbprowidget.la
+SerialUsbTester_LDADD = $(CPPUNIT_LIBS) ./libolausbprowidget.la
+
+RobeWidgetTester_SOURCES = BaseRobeWidgetTest.cpp \
+                           CommonWidgetTest.cpp \
+                           MockEndpoint.cpp \
+                           RobeWidgetDetectorTest.cpp \
+                           RobeWidgetTest.cpp \
+                           RobeWidgetTester.cpp
+RobeWidgetTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+RobeWidgetTester_LDADD = $(CPPUNIT_LIBS) ./libolausbprowidget.la
