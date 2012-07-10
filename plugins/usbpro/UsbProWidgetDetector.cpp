@@ -149,6 +149,9 @@ void UsbProWidgetDetector::HandleMessage(DispatchingUsbProWidget *widget,
     case BaseUsbProWidget::SERIAL_LABEL:
       HandleSerialResponse(widget, length, data);
       break;
+    case ENTTEC_SNIFFER_LABEL:
+      HandleSnifferPacket(widget);
+      break;
     default:
       OLA_WARN << "Unknown response label: 0x" << std::hex <<
         static_cast<int>(label) << ", length " << length;
@@ -326,7 +329,20 @@ void UsbProWidgetDetector::HandleSerialResponse(
       sizeof(information.serial);
   }
 
+  unsigned int sniffer_packets = iter->second.sniffer_packets;
   m_widgets.erase(iter);
+
+  if (sniffer_packets > 1) {
+    OLA_WARN << "Enttec sniffer found (" << sniffer_packets <<
+      " packets), discarding";
+    // we can't delete the widget since we're it's called us.
+    widget->GetDescriptor()->SetOnData(NULL);
+    m_scheduler->Execute(
+        NewSingleCallback(this,
+                          &UsbProWidgetDetector::HandleSniffer,
+                          widget));
+    return;
+  }
 
   OLA_INFO << "Detected USB Device: ESTA Id: 0x" << std::hex <<
     information.esta_id  << " (" << information.manufacturer << "), device: "
@@ -346,6 +362,25 @@ void UsbProWidgetDetector::HandleSerialResponse(
 
 
 /**
+ * Handle a possible sniffer packet.
+ * Enttec sniffers are very boisterous and continuously send frames. This
+ * causes all sorts of problems and for now we don't want to use these devices.
+ * We track the number of sniffer frames received and if it's more than one we
+ * declare this device a sniffer.
+ */
+void UsbProWidgetDetector::HandleSnifferPacket(
+    DispatchingUsbProWidget *widget) {
+
+  WidgetStateMap::iterator iter = m_widgets.find(widget);
+
+  if (iter == m_widgets.end())
+    return;
+  OLA_DEBUG << "Received Enttec Sniffer Packet";
+  iter->second.sniffer_packets++;
+}
+
+
+/**
  * Called once we have confirmed a new widget
  */
 void UsbProWidgetDetector::DispatchWidget(
@@ -360,6 +395,18 @@ void UsbProWidgetDetector::DispatchWidget(
     delete info;
     OLA_FATAL << "No listener provided, leaking descriptors";
   }
+}
+
+
+/**
+ * Delete a widget which we've decided belongs to a sniffer.
+ */
+void UsbProWidgetDetector::HandleSniffer(DispatchingUsbProWidget *widget) {
+  ola::io::ConnectedDescriptor *descriptor = widget->GetDescriptor();
+  delete widget;
+  descriptor->SetOnClose(NULL);
+  if (m_failure_callback.get())
+    m_failure_callback->Run(descriptor);
 }
 }  // usbpro
 }  // plugin

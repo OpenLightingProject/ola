@@ -32,11 +32,12 @@
 
 
 from ola.OlaClient import OlaClient
-from ola.PidStore import RDM_GET, RDM_SET, GetStore
+from ola.PidStore import RDM_DISCOVERY, RDM_GET, RDM_SET, GetStore
 
 COMMAND_CLASS_DICT = {
     RDM_GET: 'Get',
     RDM_SET: 'Set',
+    RDM_DISCOVERY: 'Discovery',
 }
 
 def _CommandClassToString(command_class):
@@ -99,6 +100,16 @@ class InvalidResponse(BaseExpectedResult):
 
   def Matches(self, response, unpacked_data):
     return OlaClient.RDM_INVALID_RESPONSE == response.response_code
+
+
+class UnsupportedResult(BaseExpectedResult):
+  """This checks that the request was unsupported."""
+  def __str__(self):
+    return 'RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED'
+
+  def Matches(self, response, unpacked_data):
+    return (OlaClient.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED ==
+            response.response_code)
 
 
 class SuccessfulResult(BaseExpectedResult):
@@ -174,6 +185,31 @@ class NackResult(SuccessfulResult):
             response.pid == self._pid_id and
             response.nack_reason == self._nack_reason)
 
+
+class NackDiscoveryResult(NackResult):
+  """This checks that the device nacked a Discovery request."""
+  def __init__(self,
+               pid_id,
+               nack_reason,
+               action = None,
+               warning = None,
+               advisory = None):
+    """Create an expected result object which is a NACK for a Discovery
+      request.
+
+    Args:
+      pid_id: The pid id we expect to have been nack'ed
+      nack_reason: The RDMNack object we expect.
+      action: The action to run if this result matches
+      warning: A warning message to log is this result matches
+      advisory: An advisory message to log is this result matches
+    """
+    super(NackDiscoveryResult, self).__init__(RDM_DISCOVERY,
+                                              pid_id,
+                                              nack_reason,
+                                              action,
+                                              warning,
+                                              advisory)
 
 class NackGetResult(NackResult):
   """This checks that the device nacked a GET request."""
@@ -289,6 +325,33 @@ class AckResult(SuccessfulResult):
         return False
     return True
 
+
+class AckDiscoveryResult(AckResult):
+  """This checks that the device ack'ed a DISCOVERY request."""
+  def __init__(self,
+               pid_id,
+               field_names = [],
+               field_values = {},
+               action = None,
+               warning = None,
+               advisory = None):
+    """Create an expected result object which is an ACK for a DISCOVERY request.
+
+    Args:
+      pid_id: The pid id we expect
+      field_names: Check that these fields are present in the response
+      field_dict: Check that fields & values are present in the response
+      action: The action to run if this result matches
+      warning: A warning message to log is this result matches
+      advisory: An advisory message to log is this result matches
+    """
+    super(AckDiscoveryResult, self).__init__(RDM_DISCOVERY,
+                                             pid_id,
+                                             field_names,
+                                             field_values,
+                                             action,
+                                             warning,
+                                             advisory)
 
 class AckGetResult(AckResult):
   """This checks that the device ack'ed a GET request."""

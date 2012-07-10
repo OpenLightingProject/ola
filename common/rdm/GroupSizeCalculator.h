@@ -51,6 +51,7 @@ class StaticGroupTokenCalculator
 
     void Visit(const ola::messaging::BoolFieldDescriptor*);
     void Visit(const ola::messaging::IPV4FieldDescriptor*);
+    void Visit(const ola::messaging::UIDFieldDescriptor*);
     void Visit(const ola::messaging::StringFieldDescriptor*);
     void Visit(const ola::messaging::UInt8FieldDescriptor*);
     void Visit(const ola::messaging::UInt16FieldDescriptor*);
@@ -94,6 +95,7 @@ class GroupSizeCalculator: public ola::messaging::FieldDescriptorVisitor {
 
     void Visit(const ola::messaging::BoolFieldDescriptor*);
     void Visit(const ola::messaging::IPV4FieldDescriptor*);
+    void Visit(const ola::messaging::UIDFieldDescriptor*);
     void Visit(const ola::messaging::StringFieldDescriptor*);
     void Visit(const ola::messaging::UInt8FieldDescriptor*);
     void Visit(const ola::messaging::UInt16FieldDescriptor*);

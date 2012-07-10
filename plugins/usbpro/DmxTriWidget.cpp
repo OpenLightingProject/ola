@@ -131,6 +131,7 @@ bool DmxTriWidgetImpl::SendDMX(const DmxBuffer &buffer) {
 void DmxTriWidgetImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
                                       ola::rdm::RDMCallback *on_complete) {
   std::vector<string> packets;
+
   if (m_rdm_request_callback) {
     OLA_FATAL << "Previous request hasn't completed yet, dropping request";
     on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);

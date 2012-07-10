@@ -355,9 +355,10 @@ bool Universe::SourceClientDataChanged(Client *client) {
  */
 void Universe::SendRDMRequest(const ola::rdm::RDMRequest *request,
                               ola::rdm::RDMCallback *callback) {
-  OLA_INFO << "Got a RDM request for " << request->DestinationUID() <<
-    " with command " << std::hex << request->CommandClass() << " and param 0x"
-    << std::hex << request->ParamId();
+  OLA_INFO << "Universe " << UniverseId() << ", RDM request to " <<
+    request->DestinationUID() << ", CC " << std::hex << request->CommandClass()
+    << ", PID 0x" << std::hex << request->ParamId() << ", PDL: " << std::dec <<
+    request->ParamDataSize();
 
   if (m_export_map)
     (*m_export_map->GetUIntMapVar(K_UNIVERSE_RDM_REQUESTS))[

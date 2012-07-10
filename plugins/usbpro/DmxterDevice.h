@@ -54,7 +54,7 @@ class DmxterDevice: public UsbSerialDevice {
 class DmxterOutputPort: public BasicOutputPort {
   public:
     DmxterOutputPort(DmxterDevice *parent, DmxterWidget *widget)
-        : BasicOutputPort(parent, 0, true),
+        : BasicOutputPort(parent, 0, true, true),
           m_widget(widget) {}
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {

@@ -1,4 +1,63 @@
 pid {
+  name: "DISC_UNIQUE_BRANCH"
+  value: 1
+  discovery_request {
+    field {
+      type: UID
+      name: "lower_uid"
+    }
+    field {
+      type: UID
+      name: "upper_uid"
+    }
+  }
+  discovery_response {
+  }
+  discovery_sub_device_range: ROOT_DEVICE
+}
+pid {
+  name: "DISC_MUTE"
+  value: 2
+  discovery_request {
+  }
+  discovery_response {
+    field {
+      type: UINT16
+      name: "control_field"
+    }
+    field {
+      type: GROUP
+      name: "binding_uid"
+      field {
+        type: UID
+        name: "binding_uid"
+      }
+    }
+  }
+  discovery_sub_device_range: ROOT_DEVICE
+}
+pid {
+  name: "DISC_UNMUTE"
+  value: 3
+  discovery_request {
+  }
+  discovery_response {
+    field {
+      type: UINT16
+      name: "control_field"
+    }
+    field {
+      type: GROUP
+      name: "binding_uid"
+      field {
+        type: UID
+        name: "binding_uid"
+      }
+    }
+  }
+  discovery_sub_device_range: ROOT_DEVICE
+}
+pid {
   name: "PROXIED_DEVICES"
   value: 16
   get_request {
@@ -8,12 +67,8 @@ pid {
       type: GROUP
       name: "uids"
       field {
-        type: UINT16
-        name: "manufacturer_id"
-      }
-      field {
-        type: UINT32
-        name: "device_id"
+        type: UID
+        name: "uid"
       }
     }
   }
@@ -2936,12 +2991,8 @@ pid {
       type: GROUP
       name: "endpoints"
       field {
-        type: UINT16
-        name: "manufacturer_id"
-      }
-      field {
-        type: UINT32
-        name: "device_id"
+        type: UID
+        name: "uid"
       }
       field {
         type: UINT16
@@ -3882,12 +3933,8 @@ manufacturer {
     value: 32788
     set_request {
       field {
-        type: UINT16
-        name: "manufacturer_id"
-      }
-      field {
-        type: UINT32
-        name: "device_id"
+        type: UID
+        name: "uid"
       }
     }
     set_response {
@@ -4071,24 +4118,16 @@ manufacturer {
         type: GROUP
         name: "uids"
         field {
-          type: UINT16
-          name: "manufacturer_id"
-        }
-        field {
-          type: UINT32
-          name: "device_id"
+          type: UID
+          name: "uid"
         }
         field {
           type: UINT16
           name: "control_bits"
         }
         field {
-          type: UINT16
-          name: "binding_uid_manufacturer_id"
-        }
-        field {
-          type: UINT32
-          name: "binding_uid_device_id"
+          type: UID
+          name: "binding_uid"
         }
       }
     }
@@ -4663,7 +4702,6 @@ manufacturer {
       field {
         type: STRING
         name: "generator_state"
-        min_size: 0
         max_size: 20
       }
     }
@@ -8578,4 +8616,4 @@ manufacturer {
     set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
   }
 }
-version: 1333675719
+version: 1341689500

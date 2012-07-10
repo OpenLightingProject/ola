@@ -46,7 +46,7 @@
 #define INCLUDE_OLA_IO_DESCRIPTOR_H_
 
 #include <stdint.h>
-
+#include <unistd.h>
 #include <string>
 #include <ola/Callback.h>  // NOLINT
 

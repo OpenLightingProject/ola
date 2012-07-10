@@ -26,7 +26,7 @@ if test -z "$MAVEN" ; then
   AC_MSG_ERROR([cannot find 'mvn' program, you need to install Maven]);
 elif test -n "$1" ; then
   AC_MSG_CHECKING([mvn version])
-  [maven_version=`$MAVEN --version 2>&1 | head -n 1 | sed 's/.*\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/g'`]
+  [maven_version=`$MAVEN --version 2> /dev/null | head -n 1 | sed 's/.*\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/g'`]
   [required=$1]
   [required_major=`echo $required | sed 's/[^0-9].*//'`]
   [required_minor=`echo $required | sed 's/[0-9][0-9]*\.\([0-9][0-9]*\)\.[0-9][0-9]*/\1/'`]

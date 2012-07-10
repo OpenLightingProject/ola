@@ -38,6 +38,118 @@ from TestMixins import MAX_DMX_ADDRESS
 MAX_PERSONALITY_NUMBER = 255
 
 
+# Mute Tests
+#------------------------------------------------------------------------------
+class MuteDevice(ResponderTestFixture):
+  """Mute device and verify response."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  PID = 'DISC_MUTE'
+  PROVIDES = ['mute_supported', 'mute_control_fields']
+
+  def Test(self):
+    self.AddExpectedResults([
+      self.AckDiscoveryResult(),
+      UnsupportedResult()
+    ])
+    self.SendRawDiscovery(ROOT_DEVICE, self.pid)
+
+  def VerifyResult(self, response, fields):
+    supported = (response.response_code !=
+                 OlaClient.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED)
+    self.SetProperty('mute_supported', supported)
+
+    if supported:
+      self.SetProperty('mute_control_fields', fields['control_field'])
+    else:
+      self.SetProperty('mute_control_fields', None)
+
+
+class MuteDeviceWithData(ResponderTestFixture):
+  """Mute device info with param data."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  PID = 'DISC_MUTE'
+  REQUIRES = ['mute_supported']
+
+  def Test(self):
+    if not self.Property('mute_supported'):
+      self.SetNotRun('Controller does not support mute commands')
+      self.Stop()
+      return
+
+    self.AddExpectedResults(self.NackDiscoveryResult(RDMNack.NR_FORMAT_ERROR))
+    self.SendRawDiscovery(ROOT_DEVICE, self.pid, 'x')
+
+
+class UnMuteDevice(ResponderTestFixture):
+  """UnMute device and verify response."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  PID = 'DISC_UNMUTE'
+  PROVIDES = ['unmute_supported']
+  REQUIRES = ['mute_control_fields']
+
+  def Test(self):
+    self.AddExpectedResults([
+      self.AckDiscoveryResult(),
+      UnsupportedResult()
+    ])
+    self.SendRawDiscovery(ROOT_DEVICE, self.pid)
+
+  def VerifyResult(self, response, fields):
+    supported = (response.response_code !=
+                 OlaClient.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED)
+    self.SetProperty('unmute_supported', supported)
+    if supported:
+      if fields['control_field'] != self.Property('mute_control_fields'):
+        self.AddWarning(
+            "Mute / Unmute control fields don't match. 0x%hx != 0x%hx" %
+            (self.Property('mute_control_fields'), fields['control_field']))
+
+
+class UnMuteDeviceWithData(ResponderTestFixture):
+  """UnMute device info with param data."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  PID = 'DISC_UNMUTE'
+  REQUIRES = ['unmute_supported']
+
+  def Test(self):
+    if not self.Property('unmute_supported'):
+      self.SetNotRun('Controller does not support unmute commands')
+      self.Stop()
+      return
+
+    self.AddExpectedResults(self.NackDiscoveryResult(RDMNack.NR_FORMAT_ERROR))
+    self.SendRawDiscovery(ROOT_DEVICE, self.pid, 'x')
+
+
+class RequestsWhileUnmuted(ResponderTestFixture):
+  """Unmute the device, send a GET DEVICE_INFO request, mute device again."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  PID = 'DISC_UNMUTE'
+  # this requires sub_device_count so that we know DEVICE_INFO is supported
+  REQUIRES = ['mute_supported', 'unmute_supported', 'sub_device_count']
+
+  def Test(self):
+    if not (self.Property('unmute_supported') and
+            self.Property('mute_supported')):
+      self.SetNotRun('Controller does not support mute / unmute commands')
+      self.Stop()
+      return
+
+    self.AddExpectedResults(self.AckDiscoveryResult(action=self.GetDeviceInfo))
+    self.SendRawDiscovery(ROOT_DEVICE, self.pid)
+
+  def GetDeviceInfo(self):
+    device_info_pid = self.LookupPid('DEVICE_INFO')
+    self.AddExpectedResults(AckGetResult(device_info_pid.value))
+    self.SendGet(ROOT_DEVICE, device_info_pid)
+
+  def ResetState(self):
+    # mute the device again
+    mute_pid = self.LookupPid('DISC_MUTE')
+    self.SendRawDiscovery(PidStore.ROOT_DEVICE, mute_pid)
+    self._wrapper.Run()
+
+
 # Device Info tests
 #------------------------------------------------------------------------------
 class DeviceInfoTest(object):
@@ -1593,6 +1705,8 @@ class GetSensorDefinition(OptionalParameterTestFixture):
   }
 
   def Test(self):
+    # default to false
+    self.SetProperty('sensor_recording_supported', False)
     self._sensors = {}  # stores the discovered sensors
     self._current_index = -1  # the current sensor we're trying to query
     self._sensor_holes = []  # indices of sensors that are missing

@@ -57,8 +57,16 @@ const unsigned int DummyRDMDevice::PERSONALITY_COUNT = (
  */
 void DummyRDMDevice::SendRDMRequest(const ola::rdm::RDMRequest *request,
                                     ola::rdm::RDMCallback *callback) {
+  vector<string> packets;
+  if (request->CommandClass() == ola::rdm::RDMCommand::DISCOVER_COMMAND) {
+    callback->Run(ola::rdm::RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED,
+                  NULL,
+                  packets);
+    delete request;
+    return;
+  }
+
   if (!request->DestinationUID().DirectedToUID(m_uid)) {
-    vector<string> packets;
     if (!request->DestinationUID().IsBroadcast())
       OLA_WARN << "Dummy responder received request for the wrong UID, " <<
         "expected " << m_uid << ", got " << request->DestinationUID();

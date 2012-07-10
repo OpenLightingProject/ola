@@ -91,7 +91,8 @@ class UsbProWidgetDetector: public WidgetDetectorInterface {
       public:
         DiscoveryState():
           discovery_state(MANUFACTURER_SENT),
-          timeout_id(ola::thread::INVALID_TIMEOUT) {
+          timeout_id(ola::thread::INVALID_TIMEOUT),
+          sniffer_packets(0) {
         }
         ~DiscoveryState() {}
 
@@ -104,6 +105,7 @@ class UsbProWidgetDetector: public WidgetDetectorInterface {
         UsbProWidgetInformation information;
         widget_state discovery_state;
         ola::thread::timeout_id timeout_id;
+        unsigned int sniffer_packets;
     };
 
     ola::thread::SchedulingExecutorInterface *m_scheduler;
@@ -132,8 +134,12 @@ class UsbProWidgetDetector: public WidgetDetectorInterface {
     void HandleSerialResponse(DispatchingUsbProWidget *widget,
                               unsigned int length,
                               const uint8_t *data);
+    void HandleSnifferPacket(DispatchingUsbProWidget *widget);
     void DispatchWidget(DispatchingUsbProWidget *widget,
                         const UsbProWidgetInformation *info);
+    void HandleSniffer(DispatchingUsbProWidget *widget);
+
+    static const uint8_t ENTTEC_SNIFFER_LABEL = 0x81;
 };
 }  // usbpro
 }  // plugin

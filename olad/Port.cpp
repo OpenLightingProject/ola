@@ -35,14 +35,16 @@ namespace ola {
  */
 BasicInputPort::BasicInputPort(AbstractDevice *parent,
                                unsigned int port_id,
-                               const PluginAdaptor *plugin_adaptor):
+                               const PluginAdaptor *plugin_adaptor,
+                               bool supports_rdm):
     m_port_id(port_id),
     m_priority(DmxSource::PRIORITY_DEFAULT),
     m_priority_mode(PRIORITY_MODE_INHERIT),
     m_port_string(""),
     m_universe(NULL),
     m_device(parent),
-    m_plugin_adaptor(plugin_adaptor) {
+    m_plugin_adaptor(plugin_adaptor),
+    m_supports_rdm(supports_rdm) {
 }
 
 
@@ -137,14 +139,16 @@ void BasicInputPort::TriggerRDMDiscovery(
  */
 BasicOutputPort::BasicOutputPort(AbstractDevice *parent,
                                  unsigned int port_id,
-                                 bool start_rdm_discovery_on_patch):
+                                 bool start_rdm_discovery_on_patch,
+                                 bool supports_rdm):
     m_port_id(port_id),
     m_discover_on_patch(start_rdm_discovery_on_patch),
     m_priority(DmxSource::PRIORITY_DEFAULT),
     m_priority_mode(PRIORITY_MODE_INHERIT),
     m_port_string(""),
     m_universe(NULL),
-    m_device(parent) {
+    m_device(parent),
+    m_supports_rdm(supports_rdm) {
 }
 
 

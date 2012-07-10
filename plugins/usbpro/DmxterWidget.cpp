@@ -107,6 +107,7 @@ void DmxterWidgetImpl::Stop() {
 void DmxterWidgetImpl::SendRDMRequest(const RDMRequest *request,
                                       ola::rdm::RDMCallback *on_complete) {
   std::vector<std::string> packets;
+
   if (m_rdm_request_callback) {
     OLA_FATAL << "Previous request hasn't completed yet, dropping request";
     on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);

@@ -25,9 +25,11 @@
 #include "ola/messaging/Descriptor.h"
 #include "ola/messaging/Message.h"
 #include "ola/messaging/MessagePrinter.h"
+#include "ola/rdm/UID.h"
 
 using std::string;
 using std::vector;
+using ola::rdm::UID;
 
 
 using ola::messaging::BoolFieldDescriptor;
@@ -36,16 +38,18 @@ using ola::messaging::FieldDescriptor;
 using ola::messaging::FieldDescriptorGroup;
 using ola::messaging::GroupMessageField;
 using ola::messaging::IPV4FieldDescriptor;
+using ola::messaging::GenericMessagePrinter;
 using ola::messaging::IPV4MessageField;
-using ola::messaging::Int8FieldDescriptor;
 using ola::messaging::Int16FieldDescriptor;
-using ola::messaging::Int8MessageField;
 using ola::messaging::Int16MessageField;
+using ola::messaging::Int8FieldDescriptor;
+using ola::messaging::Int8MessageField;
 using ola::messaging::Message;
 using ola::messaging::MessageFieldInterface;
-using ola::messaging::GenericMessagePrinter;
 using ola::messaging::StringFieldDescriptor;
 using ola::messaging::StringMessageField;
+using ola::messaging::UIDFieldDescriptor;
+using ola::messaging::UIDMessageField;
 using ola::messaging::UInt32FieldDescriptor;
 using ola::messaging::UInt32MessageField;
 using ola::messaging::UInt8FieldDescriptor;
@@ -80,6 +84,7 @@ void GenericMessagePrinterTest::testSimplePrinter() {
   // setup some fields
   BoolFieldDescriptor bool_descriptor("On/Off");
   IPV4FieldDescriptor ipv4_descriptor("ip");
+  UIDFieldDescriptor uid_descriptor("uid");
   StringFieldDescriptor string_descriptor("Name", 0, 32);
   UInt32FieldDescriptor uint32_descriptor("Id");
   UInt8FieldDescriptor uint8_descriptor("Count", false, -3);
@@ -90,6 +95,7 @@ void GenericMessagePrinterTest::testSimplePrinter() {
   vector<const ola::messaging::MessageFieldInterface*> fields;
   fields.push_back(new BoolMessageField(&bool_descriptor, false));
   fields.push_back(new IPV4MessageField(&ipv4_descriptor, 0x0100000a));
+  fields.push_back(new UIDMessageField(&uid_descriptor, UID(0x7a70, 1)));
   fields.push_back(new StringMessageField(&string_descriptor, "foobar"));
   fields.push_back(new UInt32MessageField(&uint32_descriptor, 42));
   fields.push_back(new UInt8MessageField(&uint8_descriptor, 4));
@@ -98,7 +104,7 @@ void GenericMessagePrinterTest::testSimplePrinter() {
 
   Message message(fields);
   string expected = (
-      "On/Off: false\nip: 10.0.0.1\nName: foobar\nId: 42\n"
+      "On/Off: false\nip: 10.0.0.1\nuid: 7a70:00000001\nName: foobar\nId: 42\n"
       "Count: 4 x 10 ^ -3\nDelta: 10 x 10 ^ 1\nRate: 10 x 10 ^ -1\n");
   CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(&message));
 }

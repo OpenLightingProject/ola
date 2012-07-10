@@ -31,14 +31,11 @@
 #include "plugins/usbpro/CommonWidgetTest.h"
 
 using ola::plugin::usbpro::EnttecUsbProWidget;
-using ola::rdm::DiscoveryUniqueBranchRequest;
+using ola::rdm::RDMDiscoveryRequest;
 using ola::rdm::GetResponseFromData;
-using ola::rdm::MuteRequest;
-using ola::rdm::RDMDiscoveryCommand;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
-using ola::rdm::UnMuteRequest;
 
 using std::auto_ptr;
 using std::string;
@@ -77,8 +74,6 @@ class EnttecUsbProWidgetTest: public CommonWidgetTest {
                                  const uint8_t *data = NULL,
                                  unsigned int length = 0);
     uint8_t *PackRDMRequest(const RDMRequest *request, unsigned int *size);
-    uint8_t *PackDiscoveryReqest(const RDMDiscoveryCommand *request,
-                                 unsigned int *size);
     uint8_t *PackRDMResponse(const RDMResponse *response, unsigned int *size);
     void ValidateResponse(ola::rdm::rdm_response_code code,
                           const ola::rdm::RDMResponse *response,
@@ -174,25 +169,6 @@ uint8_t *EnttecUsbProWidgetTest::PackRDMRequest(const RDMRequest *request,
                                                 unsigned int *size) {
   unsigned int request_size = request->Size();
   uint8_t *rdm_data = new uint8_t[request_size + 1];
-  rdm_data[0] = ola::rdm::RDMCommand::START_CODE;
-  memset(&rdm_data[1], 0, request_size);
-  CPPUNIT_ASSERT(request->Pack(
-        &rdm_data[1],
-        &request_size));
-  *size = request_size + 1;
-  return rdm_data;
-}
-
-
-/**
- * Pack a RDM Discovery Command
- */
-uint8_t *EnttecUsbProWidgetTest::PackDiscoveryReqest(
-    const RDMDiscoveryCommand *request,
-    unsigned int *size) {
-  unsigned int request_size = request->Size();
-  uint8_t *rdm_data = new uint8_t[request_size + 1];
-  memset(rdm_data, 0, request_size);
   rdm_data[0] = ola::rdm::RDMCommand::START_CODE;
   memset(&rdm_data[1], 0, request_size);
   CPPUNIT_ASSERT(request->Pack(
@@ -565,12 +541,13 @@ void EnttecUsbProWidgetTest::testSendRDMRequest() {
  */
 void EnttecUsbProWidgetTest::testMuteDevice() {
   // first test when a device doesn't respond
-  const MuteRequest mute_request(SOURCE,
-                                 DESTINATION,
-                                 m_transaction_number++);
+  auto_ptr<RDMRequest> mute_request(
+      ola::rdm::NewMuteRequest(SOURCE,
+                               DESTINATION,
+                               m_transaction_number++));
   unsigned int expected_request_frame_size;
-  uint8_t *expected_request_frame = PackDiscoveryReqest(
-      &mute_request,
+  uint8_t *expected_request_frame = PackRDMRequest(
+      mute_request.get(),
       &expected_request_frame_size);
 
   // add the expected response, send and verify
@@ -592,11 +569,12 @@ void EnttecUsbProWidgetTest::testMuteDevice() {
   delete[] expected_request_frame;
 
   // now try an actual mute response
-  const MuteRequest mute_request2(SOURCE,
-                                  DESTINATION,
-                                  m_transaction_number++);
-  expected_request_frame = PackDiscoveryReqest(
-      &mute_request2,
+  auto_ptr<RDMRequest> mute_request2(
+      ola::rdm::NewMuteRequest(SOURCE,
+                               DESTINATION,
+                               m_transaction_number++));
+  expected_request_frame = PackRDMRequest(
+      mute_request2.get(),
       &expected_request_frame_size);
 
   // We can really return anything
@@ -630,12 +608,13 @@ void EnttecUsbProWidgetTest::testMuteDevice() {
  * Test the unmute all request works
  */
 void EnttecUsbProWidgetTest::testUnMuteAll() {
-  const UnMuteRequest unmute_request(SOURCE,
-                                     UID::AllDevices(),
-                                     m_transaction_number++);
+  auto_ptr<RDMRequest> unmute_request(
+      ola::rdm::NewUnMuteRequest(SOURCE,
+                                 UID::AllDevices(),
+                                 m_transaction_number++));
   unsigned int expected_request_frame_size;
-  uint8_t *expected_request_frame = PackDiscoveryReqest(
-      &unmute_request,
+  uint8_t *expected_request_frame = PackRDMRequest(
+      unmute_request.get(),
       &expected_request_frame_size);
 
   // add the expected response, send and verify
@@ -661,14 +640,15 @@ void EnttecUsbProWidgetTest::testUnMuteAll() {
  */
 void EnttecUsbProWidgetTest::testBranch() {
   // first test when no devices respond
-  const DiscoveryUniqueBranchRequest discovery_request(
-      SOURCE,
-      UID(0, 0),
-      UID::AllDevices(),
-      m_transaction_number++);
+  auto_ptr<RDMRequest> discovery_request(
+      ola::rdm::NewDiscoveryUniqueBranchRequest(
+          SOURCE,
+          UID(0, 0),
+          UID::AllDevices(),
+          m_transaction_number++));
   unsigned int expected_request_frame_size;
-  uint8_t *expected_request_frame = PackDiscoveryReqest(
-      &discovery_request,
+  uint8_t *expected_request_frame = PackRDMRequest(
+      discovery_request.get(),
       &expected_request_frame_size);
 
   // add the expected response, send and verify
@@ -693,13 +673,14 @@ void EnttecUsbProWidgetTest::testBranch() {
 
   // now try an actual response, the data doesn't actually have to be valid
   // because it's just passed straight to the callback.
-  const DiscoveryUniqueBranchRequest discovery_request2(
-      SOURCE,
-      UID(0, 0),
-      UID::AllDevices(),
-      m_transaction_number++);
-  expected_request_frame = PackDiscoveryReqest(
-      &discovery_request2,
+  auto_ptr<RDMRequest> discovery_request2(
+      ola::rdm::NewDiscoveryUniqueBranchRequest(
+          SOURCE,
+          UID(0, 0),
+          UID::AllDevices(),
+          m_transaction_number++));
+  expected_request_frame = PackRDMRequest(
+      discovery_request2.get(),
       &expected_request_frame_size);
 
   // the response, can be anything really, only the first byte counts

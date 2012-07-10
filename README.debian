@@ -1,6 +1,17 @@
 
-You should be able to run
+If you extracted a tarball you should be able to run
 
 $ debuild
 
 in the top level directory to create a set of .debs
+
+If you're building from the git repo do the following:
+
+$ autoreconf
+$ ./configure
+$ make dist
+$ cp ola-0.X.Y.tar.gz /tmp
+$ cd /tmp
+$ tar -zxf ola-0.X.Y.tar.gz
+$ cd ola-0.X.Y
+$ debuild

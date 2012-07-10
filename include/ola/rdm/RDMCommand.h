@@ -14,8 +14,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * RDMCommand.h
- * Representation of an RDM RDMCommand
- * Copyright (C) 2005-2010 Simon Newton
+ * All the classes that represent RDM commands.
+ * Copyright (C) 2005-2012 Simon Newton
  */
 
 #ifndef INCLUDE_OLA_RDM_RDMCOMMAND_H_
@@ -36,12 +36,15 @@ namespace rdm {
 typedef enum {
   RDM_REQUEST,
   RDM_RESPONSE,
+  RDM_INVALID,  // should never occur
 } rdm_message_type;
 
 
 /*
- * The RDMCommand class, which RDMRequest and RDMResponse inherit from.
+ * The base class that all RDM commands inherit from.
  * RDMCommands are immutable.
+ * TODO: make these reference counted so that fan out during broadcasts isn't
+ *   as expensive.
  */
 class RDMCommand {
   public:
@@ -57,15 +60,35 @@ class RDMCommand {
 
     virtual ~RDMCommand();
     bool operator==(const RDMCommand &other) const;
-    virtual rdm_message_type CommandType() const = 0;
 
+    /*
+     * This doesn't correspond to a field in the RDM message, but it's a useful
+     * shortcut to determine the direction of the message.
+     * @return RDM_REQUEST or RDM_RESPONSE.
+     */
+    rdm_message_type CommandType() const {
+      switch (CommandClass()) {
+        case DISCOVER_COMMAND:
+        case GET_COMMAND:
+        case SET_COMMAND:
+          return RDM_REQUEST;
+        case DISCOVER_COMMAND_RESPONSE:
+        case GET_COMMAND_RESPONSE:
+        case SET_COMMAND_RESPONSE:
+          return RDM_RESPONSE;
+        case INVALID_COMMAND:
+          return RDM_INVALID;
+      }
+    }
+
+    // String methods.
     std::string ToString() const;
 
     friend ostream& operator<< (ostream &out, const RDMCommand &command) {
       return out << command.ToString();
     }
 
-    // subclasses provide this
+    // The CommandClass for the RDM message. Provided by the subclasses.
     virtual RDMCommandClass CommandClass() const = 0;
 
     // Accessors
@@ -157,7 +180,7 @@ class RDMCommand {
 
 
 /*
- * The subset of RDM Commands that represent requests
+ * RDM Commands that represent requests (GET, SET or DISCOVER).
  */
 class RDMRequest: public RDMCommand {
   public:
@@ -167,6 +190,7 @@ class RDMRequest: public RDMCommand {
                uint8_t port_id,
                uint8_t message_count,
                uint16_t sub_device,
+               RDMCommandClass command_class,
                uint16_t param_id,
                const uint8_t *data,
                unsigned int length):
@@ -178,40 +202,95 @@ class RDMRequest: public RDMCommand {
                  sub_device,
                  param_id,
                  data,
-                 length) {
+                 length),
+      m_command_class(command_class) {
     }
 
-    rdm_message_type CommandType() const { return RDM_REQUEST; }
+    RDMCommandClass CommandClass() const { return m_command_class; }
     uint8_t PortId() const { return m_port_id; }
 
-    virtual RDMRequest *Duplicate() const = 0;
+    virtual RDMRequest *Duplicate() const {
+      return DuplicateWithControllerParams(
+        SourceUID(),
+        TransactionNumber(),
+        PortId());
+    }
+
     virtual RDMRequest *DuplicateWithControllerParams(
         const UID &source,
         uint8_t transaction_number,
-        uint8_t port_id) const = 0;
+        uint8_t port_id) const {
+      return new RDMRequest(
+        source,
+        DestinationUID(),
+        transaction_number,
+        port_id,
+        MessageCount(),
+        SubDevice(),
+        m_command_class,
+        ParamId(),
+        ParamData(),
+        ParamDataSize());
+    }
 
     virtual bool PackWithControllerParams(
         uint8_t *buffer,
         unsigned int *size,
         const UID &source,
         uint8_t transaction_number,
-        uint8_t port_id) const = 0;
+        uint8_t port_id) const {
+      return Pack(buffer, size, source, transaction_number, port_id);
+    }
 
     virtual bool PackWithControllerParams(
         string *buffer,
         const UID &source,
         uint8_t transaction_number,
-        uint8_t port_id) const = 0;
+        uint8_t port_id) const {
+      return Pack(buffer, source, transaction_number, port_id);
+    }
 
     // Convert a block of data to an RDMCommand object
     static RDMRequest* InflateFromData(const uint8_t *data,
                                        unsigned int length);
     static RDMRequest* InflateFromData(const string &data);
+
+  private:
+    RDMCommandClass m_command_class;
+};
+
+
+/**
+ * The parent class for GET/SET requests.
+ */
+class RDMGetSetRequest: public RDMRequest {
+  public:
+    RDMGetSetRequest(const UID &source,
+                     const UID &destination,
+                     uint8_t transaction_number,
+                     uint8_t port_id,
+                     uint8_t message_count,
+                     uint16_t sub_device,
+                     RDMCommandClass command_class,
+                     uint16_t param_id,
+                     const uint8_t *data,
+                     unsigned int length):
+      RDMRequest(source,
+                 destination,
+                 transaction_number,
+                 port_id,
+                 message_count,
+                 sub_device,
+                 command_class,
+                 param_id,
+                 data,
+                 length) {
+    }
 };
 
 
 template <RDMCommand::RDMCommandClass command_class>
-class BaseRDMRequest: public RDMRequest {
+class BaseRDMRequest: public RDMGetSetRequest {
   public:
     BaseRDMRequest(const UID &source,
                    const UID &destination,
@@ -222,15 +301,16 @@ class BaseRDMRequest: public RDMRequest {
                    uint16_t param_id,
                    const uint8_t *data,
                    unsigned int length):
-      RDMRequest(source,
-                 destination,
-                 transaction_number,
-                 port_id,
-                 message_count,
-                 sub_device,
-                 param_id,
-                 data,
-                 length) {
+      RDMGetSetRequest(source,
+                       destination,
+                       transaction_number,
+                       port_id,
+                       message_count,
+                       sub_device,
+                       command_class,
+                       param_id,
+                       data,
+                       length) {
     }
     RDMCommandClass CommandClass() const { return command_class; }
     BaseRDMRequest<command_class> *Duplicate()
@@ -256,23 +336,6 @@ class BaseRDMRequest: public RDMRequest {
         ParamData(),
         ParamDataSize());
     }
-
-    bool PackWithControllerParams(
-        uint8_t *buffer,
-        unsigned int *size,
-        const UID &source,
-        uint8_t transaction_number,
-        uint8_t port_id) const {
-      return Pack(buffer, size, source, transaction_number, port_id);
-    }
-
-    bool PackWithControllerParams(
-        string *buffer,
-        const UID &source,
-        uint8_t transaction_number,
-        uint8_t port_id) const {
-      return Pack(buffer, source, transaction_number, port_id);
-    }
 };
 
 typedef BaseRDMRequest<RDMCommand::GET_COMMAND> RDMGetRequest;
@@ -280,7 +343,7 @@ typedef BaseRDMRequest<RDMCommand::SET_COMMAND> RDMSetRequest;
 
 
 /*
- * The subset of RDM Commands that represent requests
+ * The subset of RDM Commands that represent responses (GET, SET or DISCOVER).
  */
 class RDMResponse: public RDMCommand {
   public:
@@ -304,14 +367,13 @@ class RDMResponse: public RDMCommand {
                  length) {
     }
 
-    rdm_message_type CommandType() const { return RDM_RESPONSE; }
     uint8_t ResponseType() const { return m_port_id; }
 
     // The maximum size of an ACK_OVERFLOW session that we'll buffer
     // 4k should be big enough for everyone ;)
     static const unsigned int MAX_OVERFLOW_SIZE = 4 << 10;
 
-    // Convert a block of data to an RDMCommand object
+    // Convert a block of data to an RDMResponse object
     static RDMResponse* InflateFromData(const uint8_t *data,
                                         unsigned int length,
                                         rdm_response_code *response_code,
@@ -335,18 +397,20 @@ class RDMResponse: public RDMCommand {
 };
 
 
-template <RDMCommand::RDMCommandClass command_class>
-class BaseRDMResponse: public RDMResponse {
+/**
+ * The base class for GET/SET responses
+ */
+class RDMGetSetResponse: public RDMResponse {
   public:
-    BaseRDMResponse(const UID &source,
-                    const UID &destination,
-                    uint8_t transaction_number,
-                    uint8_t response_type,
-                    uint8_t message_count,
-                    uint16_t sub_device,
-                    uint16_t param_id,
-                    const uint8_t *data,
-                    unsigned int length):
+    RDMGetSetResponse(const UID &source,
+                      const UID &destination,
+                      uint8_t transaction_number,
+                      uint8_t response_type,
+                      uint8_t message_count,
+                      uint16_t sub_device,
+                      uint16_t param_id,
+                      const uint8_t *data,
+                      unsigned int length):
       RDMResponse(source,
                   destination,
                   transaction_number,
@@ -357,6 +421,31 @@ class BaseRDMResponse: public RDMResponse {
                   data,
                   length) {
     }
+};
+
+
+template <RDMCommand::RDMCommandClass command_class>
+class BaseRDMResponse: public RDMGetSetResponse {
+  public:
+    BaseRDMResponse(const UID &source,
+                    const UID &destination,
+                    uint8_t transaction_number,
+                    uint8_t response_type,
+                    uint8_t message_count,
+                    uint16_t sub_device,
+                    uint16_t param_id,
+                    const uint8_t *data,
+                    unsigned int length):
+      RDMGetSetResponse(source,
+                        destination,
+                        transaction_number,
+                        response_type,
+                        message_count,
+                        sub_device,
+                        param_id,
+                        data,
+                        length) {
+    }
     RDMCommandClass CommandClass() const { return command_class; }
 };
 
@@ -366,6 +455,7 @@ typedef BaseRDMResponse<RDMCommand::SET_COMMAND_RESPONSE> RDMSetResponse;
 // Helper functions for dealing with RDMCommands
 // These are mostly used with the RDM-TRI & dummy plugin
 bool GuessMessageType(rdm_message_type *type,
+                      RDMCommand::RDMCommandClass *command_class,
                       const uint8_t *data,
                       unsigned int length);
 RDMResponse *NackWithReason(const RDMRequest *request,
@@ -384,28 +474,11 @@ RDMResponse *GetResponseWithPid(const RDMRequest *request,
                                 uint8_t outstanding_messages = 0);
 
 /**
- * The base class for discovery commands.
+ * An RDM request of type DISCOVER_COMMAND
  */
-class RDMDiscoveryCommand: public RDMCommand {
+class RDMDiscoveryRequest: public RDMRequest {
   public:
-    unsigned int Size() const {
-      return RDMCommand::Size();
-    }
-
-    bool Pack(uint8_t *buffer, unsigned int *size) const {
-      return RDMCommand::Pack(buffer, size);
-    }
-
-    RDMCommandClass CommandClass() const { return DISCOVER_COMMAND; }
-    rdm_message_type CommandType() const { return RDM_REQUEST; }
-    uint8_t PortId() const { return m_port_id; }
-
-    static RDMDiscoveryCommand* InflateFromData(const uint8_t *data,
-                                                unsigned int length);
-    static RDMDiscoveryCommand* InflateFromData(const string &data);
-
-  protected:
-    RDMDiscoveryCommand(const UID &source,
+    RDMDiscoveryRequest(const UID &source,
                         const UID &destination,
                         uint8_t transaction_number,
                         uint8_t port_id,
@@ -414,80 +487,86 @@ class RDMDiscoveryCommand: public RDMCommand {
                         uint16_t param_id,
                         const uint8_t *data,
                         unsigned int length)
-        : RDMCommand(source,
+        : RDMRequest(source,
                      destination,
                      transaction_number,
                      port_id,
                      message_count,
                      sub_device,
+                     DISCOVER_COMMAND,
                      param_id,
                      data,
                      length) {
     }
 
-    void SetData(const uint8_t *data, unsigned int length) {
-      RDMCommand::SetParamData(data, length);
-    }
+    uint8_t PortId() const { return m_port_id; }
+
+    static RDMDiscoveryRequest* InflateFromData(const uint8_t *data,
+                                                unsigned int length);
+    static RDMDiscoveryRequest* InflateFromData(const string &data);
 };
 
 
+// Because the number of discovery requests is small (3 type) we provide a
+// helper method for each here.
 /*
- * The discovery unique branch request
+ * Create a new DUB request object.
  */
-class DiscoveryUniqueBranchRequest: public RDMDiscoveryCommand {
-  public:
-    DiscoveryUniqueBranchRequest(const UID &source,
-                                 const UID &lower,
-                                 const UID &upper,
-                                 uint8_t transaction_number,
-                                 uint8_t port_id = 1);
-  private:
-    // this holds the upper and lower uid data
-    uint8_t m_param_data[UID::UID_SIZE * 2];
-};
+RDMDiscoveryRequest *NewDiscoveryUniqueBranchRequest(
+    const UID &source,
+    const UID &lower,
+    const UID &upper,
+    uint8_t transaction_number,
+    uint8_t port_id = 1);
 
 
 /*
- * The Mute request.
+ * Create a new Mute Request Object.
  */
-class MuteRequest: public RDMDiscoveryCommand {
+RDMDiscoveryRequest *NewMuteRequest(const UID &source,
+                                    const UID &destination,
+                                    uint8_t transaction_number,
+                                    uint8_t port_id = 1);
+
+/**
+ * Create a new UnMute request object.
+ */
+RDMDiscoveryRequest *NewUnMuteRequest(const UID &source,
+                                      const UID &destination,
+                                      uint8_t transaction_number,
+                                      uint8_t port_id = 1);
+
+
+/**
+ * An RDM response of type DISCOVER_COMMAND
+ */
+class RDMDiscoveryResponse: public RDMResponse {
   public:
-    MuteRequest(const UID &source,
-                const UID &destination,
-                uint8_t transaction_number,
-                uint8_t port_id = 1)
-        : RDMDiscoveryCommand(source,
-                              destination,
-                              transaction_number,
-                              port_id,
-                              0,  // message count
-                              ROOT_RDM_DEVICE,
-                              PID_DISC_MUTE,
-                              NULL,
-                              0) {
+    RDMDiscoveryResponse(const UID &source,
+                         const UID &destination,
+                         uint8_t transaction_number,
+                         uint8_t port_id,
+                         uint8_t message_count,
+                         uint16_t sub_device,
+                         uint16_t param_id,
+                         const uint8_t *data,
+                         unsigned int length)
+        : RDMResponse(source,
+                      destination,
+                      transaction_number,
+                      port_id,
+                      message_count,
+                      sub_device,
+                      param_id,
+                      data,
+                      length) {
     }
-};
 
+    RDMCommandClass CommandClass() const { return DISCOVER_COMMAND_RESPONSE; }
 
-/*
- * The UnMute request.
- */
-class UnMuteRequest: public RDMDiscoveryCommand {
-  public:
-    UnMuteRequest(const UID &source,
-                  const UID &destination,
-                  uint8_t transaction_number,
-                  uint8_t port_id = 1)
-        : RDMDiscoveryCommand(source,
-                              destination,
-                              transaction_number,
-                              port_id,
-                              0,  // message count
-                              ROOT_RDM_DEVICE,
-                              PID_DISC_UN_MUTE,
-                              NULL,
-                              0) {
-    }
+    static RDMDiscoveryResponse* InflateFromData(const uint8_t *data,
+                                                 unsigned int length);
+    static RDMDiscoveryResponse* InflateFromData(const string &data);
 };
 }  // rdm
 }  // ola

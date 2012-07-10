@@ -107,6 +107,8 @@ class RobeWidgetImpl: public BaseRobeWidget,
                            bool status,
                            const ola::rdm::UIDSet &uids);
     void HandleDmxFrame(const uint8_t *data, unsigned int length);
+    bool PackAndSendRDMRequest(uint8_t label,
+                               const ola::rdm::RDMRequest *request);
     static const unsigned int RDM_PADDING_BYTES = 4;
 };
 

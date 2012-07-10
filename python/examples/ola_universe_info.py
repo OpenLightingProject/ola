@@ -13,7 +13,7 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
-# old_universe_info.py
+# ola_universe_info.py
 # Copyright (C) 2005-2009 Simon Newton
 
 """Lists the active universes."""

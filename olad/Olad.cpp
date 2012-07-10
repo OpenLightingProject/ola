@@ -57,6 +57,7 @@ typedef struct {
   ola::log_output output;
   bool daemon;
   bool help;
+  bool version;
   int httpd;
   int http_quit;
   int http_port;
@@ -167,7 +168,7 @@ static void DisplayHelp() {
   cout <<
   "Usage: olad [options]\n"
   "\n"
-  "Start the ola daemon.\n"
+  "Start the OLA Daemon.\n"
   "\n"
   "  -c, --config-dir         Path to the config directory\n"
   "  -d, --http-data-dir      Path to the static content.\n"
@@ -180,6 +181,7 @@ static void DisplayHelp() {
   "  -r, --rpc-port           Port to listen for RPCs on (default " <<
     ola::OlaDaemon::DEFAULT_RPC_PORT << ")\n" <<
   "  -s, --syslog             Log to syslog rather than stderr.\n"
+  "  -v, --version            Print the version number\n"
   "  --no-http                Don't run the http server\n"
   "  --no-http-quit           Disable the /quit handler\n"
   << endl;
@@ -206,6 +208,7 @@ static bool ParseOptions(int argc, char *argv[], ola_options *opts) {
       {"no-http-quit", no_argument, &opts->http_quit, 0},
       {"rpc-port", required_argument, 0, 'r'},
       {"syslog", no_argument, 0, 's'},
+      {"version", no_argument, 0, 'v'},
       {0, 0, 0, 0}
     };
 
@@ -214,7 +217,11 @@ static bool ParseOptions(int argc, char *argv[], ola_options *opts) {
   int option_index = 0;
 
   while (1) {
-    c = getopt_long(argc, argv, "c:d:fhi:l:p:sr:", long_options, &option_index);
+    c = getopt_long(argc,
+                    argv,
+                    "c:d:fhi:l:p:r:sv",
+                    long_options,
+                    &option_index);
     if (c == -1)
       break;
 
@@ -270,6 +277,9 @@ static bool ParseOptions(int argc, char *argv[], ola_options *opts) {
         break;
       case 'r':
         opts->rpc_port = atoi(optarg);
+        break;
+      case 'v':
+        opts->version = true;
         break;
       case '?':
         break;
@@ -363,6 +373,7 @@ static void Setup(int argc, char*argv[], ola_options *opts) {
   opts->output = ola::OLA_LOG_STDERR;
   opts->daemon = false;
   opts->help = false;
+  opts->version = false;
   opts->httpd = 1;
   opts->http_quit = 1;
   opts->http_port = ola::OlaServer::DEFAULT_HTTP_PORT;
@@ -381,8 +392,14 @@ static void Setup(int argc, char*argv[], ola_options *opts) {
     exit(EX_OK);
   }
 
+  if (opts->version) {
+    cout << "OLA Daemon version " << VERSION << endl;
+    exit(EX_OK);
+  }
+
   // setup the logging
   ola::InitLogging(opts->level, opts->output);
+  OLA_INFO << "OLA Daemon version " << VERSION;
 
   if (opts->daemon)
     Daemonise();

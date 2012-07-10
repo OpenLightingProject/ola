@@ -6,8 +6,10 @@ WARNING_CXXFLAGS = -I$(top_builddir)/include \
 COMMON_CXXFLAGS = $(WARNING_CXXFLAGS)
 
 # the genererated protobuf files don't compile with -Werror on win32
-if USING_WIN32_FALSE
+if ! USING_WIN32
+if FATAL_WARNINGS
   COMMON_CXXFLAGS += -Werror
+endif
 endif
 
 # AM_CXXFLAGS is used when target_CXXFLAGS isn't defined
