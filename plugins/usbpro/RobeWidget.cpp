@@ -28,6 +28,7 @@
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
 #include "plugins/usbpro/RobeWidget.h"
+#include "plugins/usbpro/BaseRobeWidget.h"
 
 namespace ola {
 namespace plugin {
@@ -38,6 +39,7 @@ using ola::rdm::RDMResponse;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
 using std::auto_ptr;
+using std::string;
 
 // The DMX frames have an extra 4 bytes at the end
 const int RobeWidgetImpl::DMX_FRAME_DATA_SIZE = DMX_UNIVERSE_SIZE + 4;
@@ -63,7 +65,7 @@ RobeWidgetImpl::RobeWidgetImpl(ola::io::ConnectedDescriptor *descriptor,
  * Stop the widget.
  */
 void RobeWidgetImpl::Stop() {
-  std::vector<std::string> packets;
+  std::vector<string> packets;
   if (m_rdm_request_callback) {
     ola::rdm::RDMCallback *callback = m_rdm_request_callback;
     m_rdm_request_callback = NULL;
@@ -140,13 +142,17 @@ void RobeWidgetImpl::SendRDMRequest(const RDMRequest *request,
   OLA_DEBUG << "Sending RDM command. CC: 0x" << std::hex <<
     request->CommandClass() << ", PID 0x" << std::hex <<
     request->ParamId() << ", TN: " << this_transaction_number;
+
+  const uint8_t label = (
+      (request->CommandClass() == ola::rdm::RDMCommand::DISCOVER_COMMAND &&
+       request->ParamId() == ola::rdm::PID_DISC_UNIQUE_BRANCH) ?
+      RDM_DISCOVERY : RDM_REQUEST);
   delete request;
-  if (!SendMessage(BaseRobeWidget::RDM_REQUEST, data, data_size +
-                  RDM_PADDING_BYTES)) {
+
+  if (!SendMessage(label, data, data_size + RDM_PADDING_BYTES)) {
     m_rdm_request_callback = NULL;
     m_pending_request = NULL;
     delete[] data;
-    delete request;
     on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
     return;
   }
@@ -281,7 +287,7 @@ void RobeWidgetImpl::HandleMessage(uint8_t label,
 void RobeWidgetImpl::HandleRDMResponse(const uint8_t *data,
                                        unsigned int length) {
   OLA_DEBUG << "Got RDM Response from Robe Widget";
-  std::vector<std::string> packets;
+  std::vector<string> packets;
   if (m_unmute_callback) {
     UnMuteDeviceCallback *callback = m_unmute_callback;
     m_unmute_callback = NULL;
@@ -345,8 +351,24 @@ void RobeWidgetImpl::HandleDiscoveryResponse(const uint8_t *data,
       callback->Run(NULL, 0);
     else
       callback->Run(data, length - RDM_PADDING_BYTES);
+  } else if (m_rdm_request_callback) {
+    std::vector<string> packets;
+    ola::rdm::RDMCallback *callback = m_rdm_request_callback;
+    m_rdm_request_callback = NULL;
+    auto_ptr<const RDMRequest> request(m_pending_request);
+    m_pending_request = NULL;
+
+    if (length <= RDM_PADDING_BYTES) {
+      // this indicates that no request was recieved
+      callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
+    } else {
+      packets.push_back(
+          string(reinterpret_cast<const char*>(data),
+                 length - RDM_PADDING_BYTES));
+      callback->Run(ola::rdm::RDM_DUB_RESPONSE, NULL, packets);
+    }
   } else {
-    OLA_WARN << "Got response to DUB but no callback defined!";
+    OLA_WARN << "Got response to DUB but no callbacks defined!";
   }
 }
 
