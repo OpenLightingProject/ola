@@ -200,8 +200,8 @@ def GetTestClassses(module):
 
 class TestRunner(object):
   """The Test Runner executes the tests."""
-  def __init__(self, universe, uid, broadcast_write_delay, timestamp = False, pid_store,
-               wrapper):
+  def __init__(self, universe, uid, broadcast_write_delay, pid_store,
+               wrapper, timestamp = False):
     """Create a new TestRunner.
 
     Args:
