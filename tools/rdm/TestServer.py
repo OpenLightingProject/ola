@@ -257,6 +257,7 @@ class TestServerApplication(object):
           'warnings': test.warnings,
           'advisories': test.advisories,
           'debug': test._debug,
+          'doc': test.__doc__
         }
       )
 
