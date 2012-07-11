@@ -174,7 +174,7 @@ class TestServerApplication(object):
 
   def get_test_definitions(self, params):
     self.__set_response_status(True)
-    tests_defs = [test.__name__ for test in TestRunner.GetTestClassses(TestDefinitions)]
+    tests_defs = [test.__name__ for test in TestRunner.GetTestClasses(TestDefinitions)]
     self.response.update({'test_defs': tests_defs})
 
   def run_tests(self, params):
@@ -223,15 +223,8 @@ class TestServerApplication(object):
                                    settings['pid_store'],
                                    self.wrapper)
 
-    for symbol in dir(TestDefinitions):
-      obj = getattr(TestDefinitions, symbol)
-      if not inspect.isclass(obj):
-        continue
-      if (obj == ResponderTest.ResponderTestFixture or
-          obj == ResponderTest.OptionalParameterTestFixture):
-        continue
-      if issubclass(obj, ResponderTest.ResponderTestFixture):
-        runner.RegisterTest(obj)
+    for test in TestRunner.GetTestClasses(TestDefinitions):
+      runner.RegisterTest(test)
 
       dmx_sender = DMXSender(self.wrapper,
                           universe,
