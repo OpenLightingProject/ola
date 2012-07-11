@@ -176,7 +176,7 @@ class QueuedMessageFetcher(object):
     self._FetchQueuedMessage()
 
 
-def GetTestClassses(module):
+def GetTestClasses(module):
   """Return a list of test classes from a module.
 
   Args:

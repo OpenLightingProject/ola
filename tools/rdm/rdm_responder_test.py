@@ -172,7 +172,7 @@ def DisplaySummary(tests):
 def main():
   options = ParseOptions()
 
-  test_classes = TestRunner.GetTestClassses(TestDefinitions)
+  test_classes = TestRunner.GetTestClasses(TestDefinitions)
   if options.list_tests:
     for test_name in sorted(c.__name__ for c in test_classes):
       print test_name
