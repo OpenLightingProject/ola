@@ -286,7 +286,7 @@ void RobeWidgetImpl::HandleMessage(uint8_t label,
  */
 void RobeWidgetImpl::HandleRDMResponse(const uint8_t *data,
                                        unsigned int length) {
-  OLA_DEBUG << "Got RDM Response from Robe Widget";
+  OLA_DEBUG << "Got RDM Response from Robe Widget, length " << length;
   std::vector<string> packets;
   if (m_unmute_callback) {
     UnMuteDeviceCallback *callback = m_unmute_callback;
