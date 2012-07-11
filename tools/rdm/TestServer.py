@@ -23,15 +23,15 @@ import mimetypes
 import textwrap
 import urlparse
 import inspect
-import ResponderTest
-import TestDefinitions
-import TestRunner
 import traceback
+from ola.testing.rdm import ResponderTest
+from ola.testing.rdm import TestDefinitions
+from ola.testing.rdm import TestRunner
+from ola.testing.rdm.TestState import TestState
 from wsgiref.simple_server import make_server
 from ola import PidStore
 from DMXSender import DMXSender
 from ola.ClientWrapper import ClientWrapper
-from TestState import TestState
 from ola.UID import UID
 from optparse import OptionParser, OptionGroup, OptionValueError
 
