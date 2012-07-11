@@ -46,6 +46,9 @@ using std::auto_ptr;
 
 
 const uint16_t EnttecUsbProWidget::ENTTEC_ESTA_ID = 0x454E;
+const uint8_t EnttecUsbProWidgetImpl::RDM_PACKET;
+const uint8_t EnttecUsbProWidgetImpl::RDM_TIMEOUT_PACKET;
+const uint8_t EnttecUsbProWidgetImpl::RDM_DISCOVERY_PACKET;
 
 /*
  * New Enttec Usb Pro Device.
@@ -121,8 +124,11 @@ void EnttecUsbProWidgetImpl::SendRDMRequest(
       m_uid,
       this_transaction_number,
       port_id);
+
+  const uint8_t label = (
+      IsDUBRequest(request) ? RDM_DISCOVERY_PACKET : RDM_PACKET);
   delete request;
-  if (!SendMessage(RDM_PACKET, data, rdm_size + 1)) {
+  if (!SendMessage(label, data, rdm_size + 1)) {
     m_rdm_request_callback = NULL;
     m_pending_request = NULL;
     delete[] data;
@@ -280,10 +286,15 @@ void EnttecUsbProWidgetImpl::HandleRDMTimeout(unsigned int length) {
       m_discovery_response_size = 0;
     }
   } else if (m_rdm_request_callback && m_pending_request) {
-    ola::rdm::rdm_response_code code = (
-      m_pending_request->DestinationUID().IsBroadcast() ?
-      ola::rdm::RDM_WAS_BROADCAST :
-      ola::rdm::RDM_TIMEOUT);
+    ola::rdm::rdm_response_code code;
+    if (IsDUBRequest(m_pending_request))
+        code = ola::rdm::RDM_TIMEOUT;
+    else
+      code = (
+          m_pending_request->DestinationUID().IsBroadcast() ?
+          ola::rdm::RDM_WAS_BROADCAST :
+          ola::rdm::RDM_TIMEOUT);
+
     ola::rdm::RDMCallback *callback = m_rdm_request_callback;
     m_rdm_request_callback = NULL;
     delete m_pending_request;
@@ -306,9 +317,13 @@ void EnttecUsbProWidgetImpl::HandleRDMTimeout(unsigned int length) {
 void EnttecUsbProWidgetImpl::HandleIncommingDataMessage(
     const uint8_t *data,
     unsigned int length) {
+  bool waiting_for_dub_response = (
+      m_branch_callback != NULL || (
+      (m_rdm_request_callback && IsDUBRequest(m_pending_request))));
+
   // if we're not waiting for a DUB response, and this isn't an RDM frame, then
   // let the super class handle it.
-  if (m_branch_callback == NULL && length >= 2 &&
+  if (!waiting_for_dub_response && length >= 2 &&
       data[1] != ola::rdm::RDMCommand::START_CODE) {
     HandleDMX(data, length);
     return;
@@ -352,16 +367,22 @@ void EnttecUsbProWidgetImpl::HandleIncommingDataMessage(
     m_pending_request = NULL;
 
     std::vector<std::string> packets;
-    string packet;
-    packet.assign(reinterpret_cast<const char*>(data + 1), length - 1);
-    packets.push_back(packet);
-
-    // try to inflate
     ola::rdm::rdm_response_code response_code;
-    ola::rdm::RDMResponse *response = ola::rdm::RDMResponse::InflateFromData(
-        packet,
-        &response_code,
-        request);
+    ola::rdm::RDMResponse *response = NULL;
+
+    if (waiting_for_dub_response) {
+      response_code = ola::rdm::RDM_DUB_RESPONSE;
+      packets.push_back(
+          string(reinterpret_cast<const char*>(data), length));
+    } else {
+      // try to inflate
+      string packet(reinterpret_cast<const char*>(data + 1), length - 1);
+      packets.push_back(packet);
+      response = ola::rdm::RDMResponse::InflateFromData(
+          packet,
+          &response_code,
+          request);
+    }
     callback->Run(response_code, response, packets);
     delete request;
   }
@@ -397,6 +418,15 @@ bool EnttecUsbProWidgetImpl::PackAndSendRDMRequest(uint8_t label,
   return SendMessage(label, data, rdm_length + 1);
 }
 
+
+/**
+ * Return true if this is a Discovery Unique Branch request
+ */
+bool EnttecUsbProWidgetImpl::IsDUBRequest(
+    const ola::rdm::RDMRequest *request) {
+  return (request->CommandClass() == ola::rdm::RDMCommand::DISCOVER_COMMAND &&
+          request->ParamId() == ola::rdm::PID_DISC_UNIQUE_BRANCH);
+}
 
 /**
  * EnttecUsbProWidget Constructor

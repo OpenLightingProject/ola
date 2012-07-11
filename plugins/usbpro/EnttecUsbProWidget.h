@@ -95,6 +95,7 @@ class EnttecUsbProWidgetImpl
                            const ola::rdm::UIDSet &uids);
     bool PackAndSendRDMRequest(uint8_t label,
                                const ola::rdm::RDMRequest *request);
+    bool IsDUBRequest(const ola::rdm::RDMRequest *request);
 
     static const uint8_t RDM_PACKET = 7;
     static const uint8_t RDM_TIMEOUT_PACKET = 12;
