@@ -174,34 +174,8 @@ class TestServerApplication(object):
 
   def get_test_definitions(self, params):
     self.__set_response_status(True)
-    if params['c'] == 1:
-      tests_defs = self.__get_test_defs(True)
-    else:
-      tests_defs = self.__get_test_defs(False)
-
+    tests_defs = [test.__name__ for test in TestRunner.GetTestClassses(TestDefinitions)]
     self.response.update({'test_defs': tests_defs})
-
-  def __get_test_defs(self, by_catg = False):
-
-    tests = []
-    for symbol in dir(TestDefinitions):
-      obj = getattr(TestDefinitions, symbol)
-      if not inspect.isclass(obj):
-        continue
-      if (obj == ResponderTest.ResponderTestFixture or
-          obj == ResponderTest.OptionalParameterTestFixture):
-        continue
-      if issubclass(obj, ResponderTest.ResponderTestFixture):
-        tests.append(obj)
-
-    if not by_catg:
-      return [test.__name__ for test in tests]
-
-    tests_by_category = {}
-    for test in tests:
-      tests_by_category.setdefault(test.CATEGORY.__str__(), []) \
-                                  .append(test.__name__)
-    return tests_by_category
 
   def run_tests(self, params):
     test_filter = None
