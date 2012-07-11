@@ -176,6 +176,7 @@ RDMTests.prototype.display_results = function(results) {
     var warning = results['test_results'][index]['warnings'];
     var advisory = results['test_results'][index]['advisories'];
     var definition = results['test_results'][index]['definition'];
+    var state = results['test_results'][index]['state'];
 
     if (warning[0] != undefined) {
       $('#rdm-tests-results-warnings')
@@ -187,6 +188,23 @@ RDMTests.prototype.display_results = function(results) {
       .append($('<p />')
       .html(definition + ": " + advisory));
     }
+    var test_option = $('<option />').val(definition).text(definition);
+
+    switch (state) {
+      case 'Passed':
+        test_option.css({'color': '#0CAB1E'});
+        break;
+      case 'Failed':
+        test_option.css({'color': '#FA021F'});
+        break;
+      case 'Broken':
+        test_option.css({'color': '#707070'});
+        break;
+      case 'Not Run':
+        test_option.css({'color': '#2E2B2B'});
+        break;
+    }
+    $('#rdm-tests-results-list').append(test_option);
   }
 
   $('#rdm-tests-results').show('slow');
