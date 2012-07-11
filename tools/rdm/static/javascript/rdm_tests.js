@@ -172,19 +172,20 @@ RDMTests.prototype.display_results = function(results) {
     .append($('<td />').html(results['stats'][key]));
   }
 
-  for (key in results['test_results']) {
-    var warning = results['test_results'][key]['warnings'];
-    var advisory = results['test_results'][key]['advisories'];
+  for (index in results['test_results']) {
+    var warning = results['test_results'][index]['warnings'];
+    var advisory = results['test_results'][index]['advisories'];
+    var definition = results['test_results'][index]['definition'];
 
     if (warning[0] != undefined) {
       $('#rdm-tests-results-warnings')
       .append($('<p />')
-      .html(key + ": " + warning));
+      .html(definition + ": " + warning));
     }
     if (advisory[0] != undefined) {
       $('#rdm-tests-results-advisories')
       .append($('<p />')
-      .html(key + ": " + advisory));
+      .html(definition + ": " + advisory));
     }
   }
 

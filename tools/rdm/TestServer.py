@@ -235,7 +235,7 @@ class TestServerApplication(object):
     self.__format_test_results(tests)
 
   def __format_test_results(self, tests):
-    results = {}
+    results = []
     passed = 0
     failed = 0
     broken = 0
@@ -250,14 +250,15 @@ class TestServerApplication(object):
       elif test.state == TestState.NOT_RUN:
         not_run += 1
 
-      results.update({
-        test.__str__(): {
+      results.append({
+          'definition': test.__str__(),
           'state': test.state.__str__(),
           'category': test.category.__str__(),
           'warnings': test.warnings,
           'advisories': test.advisories,
+          'debug': test._debug,
         }
-      })
+      )
 
     stats = {
       'total': len(tests),
