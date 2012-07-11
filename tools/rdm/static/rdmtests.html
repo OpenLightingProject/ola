@@ -6,6 +6,7 @@
     <script src='javascript/jquery.min.js'></script>
     <script src='javascript/jQuery-UI/js/jquery-ui-1.8.21.custom.min.js'></script>
     <script src='javascript/jQuery-multiselect/js/ui.multiselect.js'></script>
+    <script src='javascript/jsdump/jsDump.js'></script>
     <script src='javascript/rdm_tests.js'></script>
     <title>RDM Tests</title>
     <style type='text/css'>
@@ -89,6 +90,22 @@
 		    width: 680px;
 		    height: 200px;
 	    }
+
+      .test-state-passed {
+        color: #0CAB1E;
+      }
+
+      .test-state-failed {
+        color: #FA021F;
+      }
+
+      .test-state-broken {
+        color: #707070;
+      }
+
+      .test-state-not_run {
+        color: #2E2B2B;
+      }
 
       #rdm-tests-dmx_options {
         display: none;
@@ -183,10 +200,86 @@
 
       #rdm-tests-results-summary {
         position: relative;
-        top: 4%;
-        left: 72%;
+        top: 30%;
+        left: 1.0%;
         width: 250px;
         height: 100px;
+      }
+
+      #rdm-tests-results-list {
+        border: 1.0px solid #67a7e3;
+        background-color: #fff;
+        width: 500px;
+      }
+
+      #rdm-tests-results-list option {
+        margin: 2px;
+        font-family: Trebuchet MS, Helvetica, Arial, sans-serif;
+        font-size: 14px;
+        font-weight: bold;
+        background-color: #f8f8f8;
+      }
+
+      #rdm-tests-results-info {
+        position: absolute;
+        left: 61.7%;
+        top: 25%;
+        overflow: auto;
+        float: left;
+        width: 390px;
+        height: 330px;
+        border: 1.0px solid #67a7e3;
+      }
+
+      #rdm-tests-results-info-state {
+        text-align: left;
+        font-size: 12px;
+        padding-left: 15px;
+        font-weight: bold;
+        overflow: hidden;
+      }
+
+      #rdm-tests-results-info-title {
+        text-align: center;
+        font-size: 14px;
+        padding-left: 0px;
+        padding-bottom: 15px;
+        font-weight: bold;
+        overflow: hidden;
+      }
+
+      #rdm-tests-results-info-catg {
+        text-align: left;
+        font-size: 12px;
+        font-weight: bold;
+        padding-left: 15px;
+        overflow: hidden;
+      }
+
+      #rdm-tests-results-info-doc {
+        text-align: left;
+        font-size: 14px;
+        padding-left: 15px;
+        padding-top: 25px;
+        width: 300px;
+        height: 60px;
+        color: #000;
+        overflow: auto;
+      }
+
+      #rdm-tests-results-info-debug {
+        text-align: left;
+        font-size: 12px;
+        padding-left: 15px;
+        width: 350px;
+        color: #000;
+        overflow: auto;
+      }
+
+      #rdm-tests-results-button-dismiss {
+        position: absolute;
+        top: 90%;
+        left: 50%;
       }
 
     </style>
@@ -282,11 +375,11 @@
                 <div id='rdm-tests-results-stats'>
                   <table id='rdm-tests-results-stats-table'>
                     <tr>
-                      <td style='color: #707070'>Broken</th>
-                      <td style='color: #FA021F'>Failed</th>
-                      <td style='color: #2E2B2B'>Not Run</th>
-                      <td style='color: #0CAB1E'>Passed</th>
-                      <td style='color: #000000'>Total</th>
+                      <td class='test-state-broken'>Broken</td>
+                      <td class='test-state-failed'>Failed</td>
+                      <td class='test-state-not_run'>Not Run</td>
+                      <td class='test-state-passed'>Passed</td>
+                      <td style='color: #000'>Total</td>
                     </tr>
                     <tr id='rdm-tests-results-stats-figures'>
                     </tr>
@@ -299,8 +392,18 @@
                   <p style='text-align: center; font-size: 14px; padding-left: 0px;'>Advisories</p>
                 </div>
                 <div id='rdm-tests-results-summary'>
-                  <select id='rdm-tests-results-list' size='8'>
+                  <select id='rdm-tests-results-list' size='10'>
                   </select>
+                </div>
+                <div id='rdm-tests-results-info'>
+                  <p id='rdm-tests-results-info-title'></p>
+                  <p id='rdm-tests-results-info-catg'></p>
+                  <p id='rdm-tests-results-info-state'></p>
+                  <p id='rdm-tests-results-info-doc'></p>
+                  <p id='rdm-tests-results-info-debug'></p>
+                </div>
+                <div>
+                  <input type='button' id='rdm-tests-results-button-dismiss' value='Dismiss' />
                 </div>
               </div>
             </td>

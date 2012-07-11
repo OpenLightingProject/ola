@@ -24,6 +24,8 @@ rdmtests = new RDMTests();
 
 RDMTests.ajax_loader = "<img src='images/loader.gif' />";
 
+RDMTests.TEST_RESULTS = new Array();
+
 RDMTests.prototype.set_notification = function(options) {
   if (options.title != undefined || options.title != null) {
     $('#rdm-tests-notification-title').html(options.title);
@@ -59,6 +61,10 @@ RDMTests.prototype.bind_events_to_doms = function() {
     if (results_div.css('display') == 'block' && key == 27) {
       results_div.hide('slow');
     }
+  });
+
+  $('#rdm-tests-results-button-dismiss').click(function() {
+    $('#rdm-tests-results').hide('slow');
   });
 };
 
@@ -164,6 +170,23 @@ RDMTests.prototype.reset_results = function() {
   $('#rdm-tests-results-stats-figures').html('');
 };
 
+RDMTests.prototype.add_state_class = function(state, dom) {
+  switch (state) {
+    case 'Passed':
+      $(dom).addClass('test-state-passed')
+      break;
+    case 'Failed':
+      $(dom).addClass('test-state-failed')
+      break;
+    case 'Broken':
+      $(dom).addClass('test-state-broken')
+      break;
+    case 'Not Run':
+      $(dom).addClass('test-state-not_run')
+      break;
+    }
+};
+
 RDMTests.prototype.display_results = function(results) {
   rdmtests.reset_results();
 
@@ -178,6 +201,9 @@ RDMTests.prototype.display_results = function(results) {
     var definition = results['test_results'][index]['definition'];
     var state = results['test_results'][index]['state'];
 
+    //Populating a global variable with test results for faster lookups
+    RDMTests.TEST_RESULTS[definition] = results['test_results'][index];
+
     if (warning[0] != undefined) {
       $('#rdm-tests-results-warnings')
       .append($('<p />')
@@ -190,22 +216,24 @@ RDMTests.prototype.display_results = function(results) {
     }
     var test_option = $('<option />').val(definition).text(definition);
 
-    switch (state) {
-      case 'Passed':
-        test_option.css({'color': '#0CAB1E'});
-        break;
-      case 'Failed':
-        test_option.css({'color': '#FA021F'});
-        break;
-      case 'Broken':
-        test_option.css({'color': '#707070'});
-        break;
-      case 'Not Run':
-        test_option.css({'color': '#2E2B2B'});
-        break;
-    }
+    rdmtests.add_state_class(state, test_option);
+
     $('#rdm-tests-results-list').append(test_option);
   }
+
+  $('#rdm-tests-results-list').change(function() {
+    var definition = $('#rdm-tests-results-list option:selected').text();
+    var state = RDMTests.TEST_RESULTS[definition]['state'];
+    $('#rdm-tests-results-info-title').html(definition);
+    rdmtests.add_state_class(state, $('#rdm-tests-results-info-state').html(state))
+
+    $('#rdm-tests-results-info-catg').html('Category : ' + RDMTests.TEST_RESULTS[definition]['category']);
+
+    $('#rdm-tests-results-info-doc').html(RDMTests.TEST_RESULTS[definition]['doc']);
+
+    var debug = jsDump.parse(RDMTests.TEST_RESULTS[definition]['debug']);
+    $('#rdm-tests-results-info-debug').html(debug);
+  });
 
   $('#rdm-tests-results').show('slow');
 };
