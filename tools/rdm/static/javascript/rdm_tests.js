@@ -60,11 +60,13 @@ RDMTests.prototype.bind_events_to_doms = function() {
     var results_div = $('#rdm-tests-results');
     if (results_div.css('display') == 'block' && key == 27) {
       results_div.hide('slow');
+      $('#tests_control_frame').show();
     }
   });
 
   $('#rdm-tests-results-button-dismiss').click(function() {
     $('#rdm-tests-results').hide('slow');
+    $('#tests_control_frame').show();
   });
 };
 
@@ -149,11 +151,11 @@ RDMTests.prototype.run_tests = function(test_filter) {
                                     var failed_tests = $('#rdm-tests-selection-failed_tests');
                                     var failed_defs = new Array();
                                     for (i in data['test_results']) {
-                                      switch (data['test_results'][i].state) {
+                                      switch (data['test_results'][i]['state']) {
                                         case 'Failed':
                                         case 'Broken':
                                         case 'Not Run':
-                                          failed_defs.push(i);
+                                          failed_defs.push(data['test_results'][i]['definition']);
                                           break;
                                       }
                                     }
@@ -168,6 +170,9 @@ RDMTests.prototype.run_tests = function(test_filter) {
 
 RDMTests.prototype.reset_results = function() {
   $('#rdm-tests-results-stats-figures').html('');
+  $('#rdm-tests-results-warnings').html('');
+  $('#rdm-tests-results-advisories').html('');
+  $('#rdm-tests-results-list').html('');
 };
 
 RDMTests.prototype.add_state_class = function(state, dom) {
@@ -188,6 +193,7 @@ RDMTests.prototype.add_state_class = function(state, dom) {
 };
 
 RDMTests.prototype.display_results = function(results) {
+  $('#tests_control_frame').hide();
   rdmtests.reset_results();
 
   for (key in results['stats']) {
@@ -231,8 +237,8 @@ RDMTests.prototype.display_results = function(results) {
 
     $('#rdm-tests-results-info-doc').html(RDMTests.TEST_RESULTS[definition]['doc']);
 
-    var debug = jsDump.parse(RDMTests.TEST_RESULTS[definition]['debug']);
-    $('#rdm-tests-results-info-debug').html(debug);
+    var debug = JSON.stringify(RDMTests.TEST_RESULTS[definition]['debug'], undefined, 2);
+    $('#rdm-tests-results-info-debug').html($('<pre />').html(debug));
   });
 
   $('#rdm-tests-results').show('slow');

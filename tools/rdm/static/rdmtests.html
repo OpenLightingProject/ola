@@ -6,7 +6,6 @@
     <script src='javascript/jquery.min.js'></script>
     <script src='javascript/jQuery-UI/js/jquery-ui-1.8.21.custom.min.js'></script>
     <script src='javascript/jQuery-multiselect/js/ui.multiselect.js'></script>
-    <script src='javascript/jsdump/jsDump.js'></script>
     <script src='javascript/rdm_tests.js'></script>
     <title>RDM Tests</title>
     <style type='text/css'>
@@ -135,11 +134,11 @@
       #rdm-tests-results {
         display: none;
         position: absolute;
-        left: 8.5%;
-        top: 6%;
+        left: 9.5%;
+        top: 8%;
         z-index: 1000;
-        width: 1150px;
-        height: 600px;
+        width: 1100px;
+        height: 550px;
         background-color: #FFF;
         border: 3px solid #67A7E3;
       }
@@ -148,6 +147,7 @@
         position: relative;
         top: 2%;
         left: 72%;
+        width: 300px;
       }
 
       #rdm-tests-results-stats-table {
@@ -182,7 +182,7 @@
       #rdm-tests-results-advisories {
         position: relative;
         top: 20%;
-        left: -42.5%;
+        left: -44.6%;
         width: 500px;
         height: 100px;
         overflow: auto;
@@ -369,49 +369,44 @@
               <input type='button' name='rdm-tests-selection-run_tests' id='rdm-tests-selection-run_tests' value='Run Tests' />
             </td>
            </tr>
-           <tr>
-            <td>
-              <div id='rdm-tests-results'>
-                <div id='rdm-tests-results-stats'>
-                  <table id='rdm-tests-results-stats-table'>
-                    <tr>
-                      <td class='test-state-broken'>Broken</td>
-                      <td class='test-state-failed'>Failed</td>
-                      <td class='test-state-not_run'>Not Run</td>
-                      <td class='test-state-passed'>Passed</td>
-                      <td style='color: #000'>Total</td>
-                    </tr>
-                    <tr id='rdm-tests-results-stats-figures'>
-                    </tr>
-                  </table>
-                </div>
-                <div id='rdm-tests-results-warnings'>
-                  <p style='text-align: center; font-size: 14px; padding-left: 0px;'>Warnings</p>
-                </div>
-                <div id='rdm-tests-results-advisories'>
-                  <p style='text-align: center; font-size: 14px; padding-left: 0px;'>Advisories</p>
-                </div>
-                <div id='rdm-tests-results-summary'>
-                  <select id='rdm-tests-results-list' size='10'>
-                  </select>
-                </div>
-                <div id='rdm-tests-results-info'>
-                  <p id='rdm-tests-results-info-title'></p>
-                  <p id='rdm-tests-results-info-catg'></p>
-                  <p id='rdm-tests-results-info-state'></p>
-                  <p id='rdm-tests-results-info-doc'></p>
-                  <p id='rdm-tests-results-info-debug'></p>
-                </div>
-                <div>
-                  <input type='button' id='rdm-tests-results-button-dismiss' value='Dismiss' />
-                </div>
-              </div>
-            </td>
-           </tr>
-          </table>
-          </table>
-				</form>
-      </fieldset>
+        </table>
+			</form>
+     </fieldset>
+    </div>
+    <div id='rdm-tests-results'>
+      <div id='rdm-tests-results-stats'>
+        <table id='rdm-tests-results-stats-table'>
+          <tr>
+            <td class='test-state-broken'>Broken</td>
+            <td class='test-state-failed'>Failed</td>
+            <td class='test-state-not_run'>Not Run</td>
+            <td class='test-state-passed'>Passed</td>
+            <td style='color: #000'>Total</td>
+          </tr>
+          <tr id='rdm-tests-results-stats-figures'>
+          </tr>
+        </table>
+      </div>
+      <div id='rdm-tests-results-warnings'>
+        <p style='text-align: center; font-size: 14px; padding-left: 0px;'>Warnings</p>
+      </div>
+      <div id='rdm-tests-results-advisories'>
+        <p style='text-align: center; font-size: 14px; padding-left: 0px;'>Advisories</p>
+      </div>
+      <div id='rdm-tests-results-summary'>
+        <select id='rdm-tests-results-list' size='10'>
+        </select>
+      </div>
+      <div id='rdm-tests-results-info'>
+        <p id='rdm-tests-results-info-title'></p>
+        <p id='rdm-tests-results-info-catg'></p>
+        <p id='rdm-tests-results-info-state'></p>
+        <p id='rdm-tests-results-info-doc'></p>
+        <p id='rdm-tests-results-info-debug'></p>
+      </div>
+      <div>
+        <input type='button' id='rdm-tests-results-button-dismiss' value='Dismiss' />
+      </div>
     </div>
     <div id='rdm-tests-notification'>
       <div id='rdm-tests-notification-title'></div>
