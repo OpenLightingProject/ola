@@ -60,11 +60,13 @@ RDMTests.prototype.bind_events_to_doms = function() {
     var results_div = $('#rdm-tests-results');
     if (results_div.css('display') == 'block' && key == 27) {
       results_div.hide('slow');
+      $('#tests_control_frame').show();
     }
   });
 
   $('#rdm-tests-results-button-dismiss').click(function() {
     $('#rdm-tests-results').hide('slow');
+    $('#tests_control_frame').show();
   });
 };
 
@@ -188,6 +190,7 @@ RDMTests.prototype.add_state_class = function(state, dom) {
 };
 
 RDMTests.prototype.display_results = function(results) {
+  $('#tests_control_frame').hide();
   rdmtests.reset_results();
 
   for (key in results['stats']) {
