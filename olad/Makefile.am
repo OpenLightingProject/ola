@@ -47,14 +47,29 @@ olad_LDADD = libolaserver.la \
              $(top_builddir)/common/libolacommon.la
 
 # Test Programs
-TESTS = OlaTester
+TESTS = DeviceTester OlaTester PortTester UniverseTester
 check_PROGRAMS = $(TESTS)
-OlaTester_SOURCES = OlaServerTester.cpp \
-                    UniverseTest.cpp DeviceTest.cpp DeviceManagerTest.cpp \
-                    DmxSourceTest.cpp PluginManagerTest.cpp \
-                    PreferencesTest.cpp PortManagerTest.cpp PortTest.cpp \
-                    OlaServerServiceImplTest.cpp ClientTest.cpp
+common_test_sources = GenericTester.cpp
+common_test_ldadd = $(CPPUNIT_LIBS) $(libprotobuf_LIBS) \
+                    $(top_builddir)/olad/libolaserver.la \
+                    $(top_builddir)/common/libolacommon.la
+
+DeviceTester_SOURCES = DeviceTest.cpp DeviceManagerTest.cpp \
+                       $(common_test_sources)
+DeviceTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+DeviceTester_LDADD = $(common_test_ldadd)
+
+PortTester_SOURCES = PortTest.cpp PortManagerTest.cpp $(common_test_sources)
+PortTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+PortTester_LDADD = $(common_test_ldadd)
+
+OlaTester_SOURCES = DmxSourceTest.cpp PluginManagerTest.cpp \
+                    PreferencesTest.cpp \
+                    OlaServerServiceImplTest.cpp ClientTest.cpp \
+                    $(common_test_sources)
 OlaTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-OlaTester_LDADD = $(CPPUNIT_LIBS) $(libprotobuf_LIBS) \
-                  $(top_builddir)/olad/libolaserver.la \
-                  $(top_builddir)/common/libolacommon.la
+OlaTester_LDADD = $(common_test_ldadd)
+
+UniverseTester_SOURCES = UniverseTest.cpp $(common_test_sources)
+UniverseTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+UniverseTester_LDADD = $(common_test_ldadd)
