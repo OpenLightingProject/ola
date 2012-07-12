@@ -234,8 +234,8 @@ RDMTests.prototype.display_results = function(results) {
 
     $('#rdm-tests-results-info-doc').html(RDMTests.TEST_RESULTS[definition]['doc']);
 
-    var debug = jsDump.parse(RDMTests.TEST_RESULTS[definition]['debug']);
-    $('#rdm-tests-results-info-debug').html(debug);
+    var debug = JSON.stringify(RDMTests.TEST_RESULTS[definition]['debug'], undefined, 2);
+    $('#rdm-tests-results-info-debug').html($('<pre />').html(debug));
   });
 
   $('#rdm-tests-results').show('slow');
