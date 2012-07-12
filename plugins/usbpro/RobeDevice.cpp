@@ -56,7 +56,7 @@ RobeDevice::RobeDevice(ola::PluginAdaptor *plugin_adaptor,
  */
 RobeOutputPort::RobeOutputPort(RobeDevice *parent,
                                RobeWidget *widget)
-    : BasicOutputPort(parent, 0, true),
+    : BasicOutputPort(parent, 0, true, true),
       m_widget(widget) {
 }
 

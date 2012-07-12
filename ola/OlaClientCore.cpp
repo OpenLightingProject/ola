@@ -910,7 +910,8 @@ void OlaClientCore::HandleDeviceInfo(device_info_arg *args) {
               port_info.priority_capability()),
             static_cast<port_priority_mode>(
               port_info.priority_mode()),
-            port_info.priority());
+            port_info.priority(),
+            port_info.supports_rdm());
         input_ports.push_back(port);
       }
 
@@ -927,7 +928,8 @@ void OlaClientCore::HandleDeviceInfo(device_info_arg *args) {
               port_info.priority_capability()),
             static_cast<port_priority_mode>(
               port_info.priority_mode()),
-            port_info.priority());
+            port_info.priority(),
+            port_info.supports_rdm());
         output_ports.push_back(port);
       }
 

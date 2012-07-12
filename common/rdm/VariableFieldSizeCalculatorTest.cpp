@@ -38,6 +38,7 @@ using ola::messaging::StringFieldDescriptor;
 using ola::messaging::UInt16FieldDescriptor;
 using ola::messaging::UInt32FieldDescriptor;
 using ola::messaging::UInt8FieldDescriptor;
+using ola::messaging::UIDFieldDescriptor;
 using ola::rdm::VariableFieldSizeCalculator;
 using std::vector;
 
@@ -80,6 +81,7 @@ void VariableFieldSizeCalculatorTest::testFixedFields() {
   vector<const FieldDescriptor*> fields;
   fields.push_back(new BoolFieldDescriptor("bool1"));
   fields.push_back(new IPV4FieldDescriptor("ip1"));
+  fields.push_back(new UIDFieldDescriptor("ip1"));
   fields.push_back(new UInt8FieldDescriptor("uint8"));
   fields.push_back(new UInt16FieldDescriptor("uint16"));
   fields.push_back(new UInt32FieldDescriptor("uint32"));
@@ -112,14 +114,14 @@ void VariableFieldSizeCalculatorTest::testFixedFields() {
   CPPUNIT_ASSERT_EQUAL(
       VariableFieldSizeCalculator::FIXED_SIZE,
       m_calculator.CalculateFieldSize(
-        19,
+        25,
         &descriptor,
         &variable_field_size));
 
   CPPUNIT_ASSERT_EQUAL(
       VariableFieldSizeCalculator::TOO_LARGE,
       m_calculator.CalculateFieldSize(
-        20,
+        26,
         &descriptor,
         &variable_field_size));
 }

@@ -294,6 +294,9 @@ void Observer::ListPorts(const vector<PortClass> &ports, bool input) {
 
     if (port_iter->IsActive())
       cout << ", patched to universe " << port_iter->Universe();
+
+    if (port_iter->SupportsRDM())
+      cout << ", RDM supported";
     cout << endl;
   }
 }

@@ -43,6 +43,7 @@ using ola::messaging::StringFieldDescriptor;
 using ola::messaging::UInt16FieldDescriptor;
 using ola::messaging::UInt32FieldDescriptor;
 using ola::messaging::UInt8FieldDescriptor;
+using ola::messaging::UIDFieldDescriptor;
 using ola::rdm::StringMessageBuilder;
 using ola::rdm::MessageSerializer;
 using std::auto_ptr;
@@ -54,6 +55,7 @@ class MessageSerializerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(MessageSerializerTest);
   CPPUNIT_TEST(testSimple);
   CPPUNIT_TEST(testString);
+  CPPUNIT_TEST(testUID);
   CPPUNIT_TEST(testLittleEndian);
   CPPUNIT_TEST(testWithGroups);
   CPPUNIT_TEST(testWithNestedGroups);
@@ -62,6 +64,7 @@ class MessageSerializerTest: public CppUnit::TestFixture {
   public:
     void testSimple();
     void testString();
+    void testUID();
     void testLittleEndian();
     void testWithGroups();
     void testWithNestedGroups();
@@ -202,6 +205,34 @@ void MessageSerializerTest::testString() {
               sizeof(expected) - 1,  // ignore the trailing \0
               data,
               packed_length);
+}
+
+
+/**
+ * Check that UIDs work.
+ */
+void MessageSerializerTest::testUID() {
+  vector<const FieldDescriptor*> fields;
+  fields.push_back(new UIDFieldDescriptor("Address"));
+  Descriptor descriptor("Test Descriptor", fields);
+
+  // now setup the inputs
+  vector<string> inputs;
+  inputs.push_back("7a70:00000001");
+
+  auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
+
+  // verify
+  CPPUNIT_ASSERT(message.get());
+  MessageSerializer serializer;
+  unsigned int packed_length;
+  const uint8_t *data = serializer.SerializeMessage(message.get(),
+                                                    &packed_length);
+  CPPUNIT_ASSERT(data);
+  CPPUNIT_ASSERT_EQUAL(6u, packed_length);
+
+  uint8_t expected[] = {0x7a, 0x70, 0, 0, 0, 1};
+  ConfirmData(__LINE__, expected, sizeof(expected), data, packed_length);
 }
 
 

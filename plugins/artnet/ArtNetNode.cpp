@@ -528,6 +528,14 @@ void ArtNetNodeImpl::SendRDMRequest(uint8_t port_id,
                                     const RDMRequest *request,
                                     RDMCallback *on_complete) {
   vector<std::string> packets;
+  if (request->CommandClass() == RDMCommand::DISCOVER_COMMAND) {
+    on_complete->Run(ola::rdm::RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED,
+                     NULL,
+                     packets);
+    delete request;
+    return;
+  }
+
   if (!CheckInputPortState(port_id, "ArtRDM")) {
     on_complete->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
     delete request;

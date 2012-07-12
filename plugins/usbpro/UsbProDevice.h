@@ -99,19 +99,19 @@ class UsbProInputPort: public BasicInputPort {
                     EnttecUsbProWidget *widget,
                     unsigned int id,
                     ola::PluginAdaptor *plugin_adaptor,
-                    const string &path)
+                    const string &serial)
         : BasicInputPort(parent, id, plugin_adaptor),
-          m_path(path),
+          m_serial(serial),
           m_widget(widget) {}
 
     const DmxBuffer &ReadDMX() const {
       return m_widget->FetchDMX();
     }
 
-    string Description() const { return m_path; }
+    string Description() const { return "Serial #: " + m_serial; }
 
   private:
-    string m_path;
+    const string m_serial;
     EnttecUsbProWidget *m_widget;
 };
 
@@ -124,12 +124,12 @@ class UsbProOutputPort: public BasicOutputPort {
     UsbProOutputPort(UsbProDevice *parent,
                      EnttecUsbProWidget *widget,
                      unsigned int id,
-                     const string &path,
+                     const string &serial,
                      const TimeStamp *wake_time,
                      unsigned int max_burst,
                      unsigned int rate)
-        : BasicOutputPort(parent, id, true),
-          m_path(path),
+        : BasicOutputPort(parent, id, true, true),
+          m_serial(serial),
           m_widget(widget),
           m_bucket(max_burst, rate, max_burst, *wake_time),
           m_wake_time(wake_time) {}
@@ -162,10 +162,10 @@ class UsbProOutputPort: public BasicOutputPort {
       m_widget->RunIncrementalDiscovery(callback);
     }
 
-    string Description() const { return m_path; }
+    string Description() const { return "Serial #: " + m_serial; }
 
   private:
-    string m_path;
+    const string m_serial;
     EnttecUsbProWidget *m_widget;
     TokenBucket m_bucket;
     const TimeStamp *m_wake_time;

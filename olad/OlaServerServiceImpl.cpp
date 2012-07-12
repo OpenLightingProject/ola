@@ -669,6 +669,51 @@ void OlaServerServiceImpl::RDMCommand(
 
 
 /*
+ * Handle an RDM Discovery Command. This should only be used for the RDM
+ * responder tests.
+ */
+void OlaServerServiceImpl::RDMDiscoveryCommand(
+    RpcController* controller,
+    const ::ola::proto::RDMDiscoveryRequest* request,
+    ola::proto::RDMResponse* response,
+    google::protobuf::Closure* done,
+    const UID *uid,
+    class Client *client) {
+  Universe *universe = m_universe_store->GetUniverse(request->universe());
+  if (!universe) {
+    MissingUniverseError(controller);
+    done->Run();
+    return;
+  }
+
+  UID source_uid = uid ? *uid : m_uid;
+  UID destination(request->uid().esta_id(),
+                  request->uid().device_id());
+
+  ola::rdm::RDMRequest *rdm_request = new ola::rdm::RDMDiscoveryRequest(
+      source_uid,
+      destination,
+      0,  // transaction #
+      1,  // port id
+      0,  // message count
+      request->sub_device(),
+      request->param_id(),
+      reinterpret_cast<const uint8_t*>(request->data().data()),
+      request->data().size());
+
+  ola::rdm::RDMCallback *callback =
+    NewSingleCallback(
+        this,
+        &OlaServerServiceImpl::HandleRDMResponse,
+        response,
+        done,
+        request->include_raw_response());
+
+  m_broker->SendRDMRequest(client, universe, rdm_request, callback);
+}
+
+
+/*
  * Set this client's source UID
  */
 void OlaServerServiceImpl::SetSourceUID(
@@ -735,15 +780,20 @@ void OlaServerServiceImpl::HandleRDMResponse(
         response->set_message_count(rdm_response->MessageCount());
         response->set_param_id(rdm_response->ParamId());
         response->set_sub_device(rdm_response->SubDevice());
-        if (rdm_response->CommandClass() ==
-            ola::rdm::RDMCommand::GET_COMMAND_RESPONSE) {
-          response->set_command_class(ola::proto::RDM_GET_RESPONSE);
-        } else if (rdm_response->CommandClass() ==
-                   ola::rdm::RDMCommand::SET_COMMAND_RESPONSE) {
-          response->set_command_class(ola::proto::RDM_SET_RESPONSE);
-        } else {
-          OLA_WARN << "Unknown command class 0x" << std::hex <<
-            rdm_response->CommandClass();
+
+        switch (rdm_response->CommandClass()) {
+          case ola::rdm::RDMCommand::DISCOVER_COMMAND_RESPONSE:
+            response->set_command_class(ola::proto::RDM_DISCOVERY_RESPONSE);
+            break;
+          case ola::rdm::RDMCommand::GET_COMMAND_RESPONSE:
+            response->set_command_class(ola::proto::RDM_GET_RESPONSE);
+            break;
+          case ola::rdm::RDMCommand::SET_COMMAND_RESPONSE:
+            response->set_command_class(ola::proto::RDM_SET_RESPONSE);
+            break;
+          default:
+            OLA_WARN << "Unknown command class 0x" << std::hex <<
+              rdm_response->CommandClass();
         }
 
         if (rdm_response->ParamData() && rdm_response->ParamDataSize()) {
@@ -879,6 +929,8 @@ void OlaServerServiceImpl::PopulatePort(const PortClass &port,
     port_info->set_priority(port.GetPriority());
   if (port.PriorityCapability() == CAPABILITY_FULL)
     port_info->set_priority_mode(port.GetPriorityMode());
+
+  port_info->set_supports_rdm(port.SupportsRDM());
 }
 
 

@@ -40,6 +40,7 @@ enum FieldType {
   INT16 = 8;
   INT32 = 9;
   IPV4 = 10;
+  UID = 11;
 }
 
 // A value which has a label applied
@@ -84,6 +85,9 @@ message Pid {
   optional FrameFormat set_response = 6;
   optional SubDeviceRange get_sub_device_range = 7;
   optional SubDeviceRange set_sub_device_range = 8;
+  optional FrameFormat discovery_request = 9;
+  optional FrameFormat discovery_response = 10;
+  optional SubDeviceRange discovery_sub_device_range = 11;
 }
 
 

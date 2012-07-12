@@ -95,6 +95,10 @@ enum RDMResponseCode {
   RDM_COMMAND_CLASS_MISMATCH = 16;
   //The response type was not ACK, ACK_OVERFLOW, ACK_TIMER or NACK
   RDM_INVALID_RESPONSE_TYPE = 17;
+  // The command class is not supported by this device, this typically happens
+  // when you send DISCOVERY_COMMAND messages to a device which doesn't allow
+  // them.
+  RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED = 18;
 }
 
 
@@ -117,6 +121,7 @@ enum RDMResponseType {
 enum RDMCommandClass {
   RDM_GET_RESPONSE = 0;
   RDM_SET_RESPONSE = 1;
+  RDM_DISCOVERY_RESPONSE = 2;
 }
 
 
@@ -163,6 +168,7 @@ message PortInfo {
   optional bool active = 4;
   optional int32 priority_mode = 6;
   optional int32 priority = 7;
+  optional bool supports_rdm = 8 [default = false];
 }
 
 message DeviceInfo {
@@ -277,6 +283,15 @@ message RDMRequest {
   optional bool include_raw_response = 7 [default = false];
 }
 
+message RDMDiscoveryRequest {
+  required int32 universe = 1;
+  required UID uid = 2;
+  required int32 sub_device = 3;
+  required int32 param_id = 4;
+  required bytes data = 5; // 0 - 231 bytes
+  optional bool include_raw_response = 6 [default = false];
+}
+
 message RDMResponse {
   required RDMResponseCode response_code = 1;
   // ACK, NACK or TIMER
@@ -330,6 +345,7 @@ service OlaServerService {
   rpc SetSourceUID (UID) returns (Ack);
 
   rpc RDMCommand (RDMRequest) returns (RDMResponse);
+  rpc RDMDiscoveryCommand (RDMDiscoveryRequest) returns (RDMResponse);
   rpc StreamDmxData (DmxData) returns (STREAMING_NO_RESPONSE);
 
   // timecode

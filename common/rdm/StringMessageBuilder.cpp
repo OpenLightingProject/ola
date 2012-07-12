@@ -25,6 +25,8 @@
 #include <ola/messaging/Message.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/rdm/StringMessageBuilder.h>
+#include <ola/rdm/UID.h>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -34,6 +36,8 @@ namespace ola {
 namespace rdm {
 
 using ola::messaging::MessageFieldInterface;
+using ola::rdm::UID;
+using std::auto_ptr;
 
 
 StringMessageBuilder::StringMessageBuilder()
@@ -164,6 +168,27 @@ void StringMessageBuilder::Visit(
 
   m_groups.top().push_back(
       new ola::messaging::IPV4MessageField(descriptor, ip_address));
+}
+
+
+/**
+ * UIDs.
+ */
+void StringMessageBuilder::Visit(
+    const ola::messaging::UIDFieldDescriptor *descriptor) {
+  if (StopParsing())
+    return;
+
+  string token = m_inputs[m_offset++];
+  auto_ptr<UID> uid(UID::FromString(token));
+
+  if (!uid.get()) {
+    SetError(descriptor->Name());
+    return;
+  }
+
+  m_groups.top().push_back(
+      new ola::messaging::UIDMessageField(descriptor, *uid));
 }
 
 

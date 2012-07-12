@@ -251,6 +251,14 @@ class TimeStamp {
       return timerisset(&m_tv);
     }
 
+    time_t Seconds() const {
+      return m_tv.tv_sec;
+    }
+
+    suseconds_t MicroSeconds() const {
+      return m_tv.tv_usec;
+    }
+
     std::string ToString() const {
       std::stringstream str;
       str << m_tv.tv_sec << "." << std::setfill('0') << std::setw(6) <<

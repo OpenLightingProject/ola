@@ -47,6 +47,7 @@ using ola::messaging::StringMessageField;
 using ola::messaging::UInt16MessageField;
 using ola::messaging::UInt32MessageField;
 using ola::messaging::UInt8MessageField;
+using ola::messaging::UIDMessageField;
 using std::endl;
 using std::set;
 using std::string;
@@ -75,29 +76,9 @@ class RDMMessagePrinter: public GenericMessagePrinter {
  */
 class ProxiedDevicesPrinter: public MessagePrinter {
   public:
-    void Visit(const UInt16MessageField *field) {
-      m_manufacturer_id = field->Value();
+    void Visit(const UIDMessageField *field) {
+      Stream() << field->Value() << endl;
     }
-
-    void Visit(const UInt32MessageField *field) {
-      m_device_id = field->Value();
-    }
-
-    void PostVisit(const GroupMessageField*) {
-      m_uids.insert(UID(m_manufacturer_id, m_device_id));
-    }
-
-  protected:
-    void PostStringHook() {
-      set<UID>::const_iterator iter = m_uids.begin();
-      for (; iter != m_uids.end(); ++iter) {
-        Stream() << *iter << endl;
-      }
-    }
-  private:
-    uint16_t m_manufacturer_id;
-    uint32_t m_device_id;
-    set<UID> m_uids;
 };
 
 

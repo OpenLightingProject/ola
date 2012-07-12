@@ -3,6 +3,7 @@ include $(top_srcdir)/common.mk
 EXTRA_DIST = E133Endpoint.h E133Device.h \
              E133HealthCheckedConnection.h \
              E133StreamSender.h \
+             EndpointManager.h \
              RootEndpoint.h \
              SlpConstants.h SlpThread.h SlpUrlParser.h \
              TCPConnectionStats.h

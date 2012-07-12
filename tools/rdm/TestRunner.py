@@ -18,10 +18,14 @@
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
+import datetime
+import inspect
 import logging
+from ola.testing.rdm import ResponderTest
 from ola.RDMAPI import RDMAPI
 from ola.OlaClient import OlaClient, RDMNack
 from ola import PidStore
+from ola.testing.rdm.TestState import TestState
 
 
 class Error(Exception):
@@ -149,7 +153,7 @@ class QueuedMessageFetcher(object):
     # Stop if we get a NR_UNKNOWN_PID to GET QUEUED_MESSAGE
     if (response.response_type == OlaClient.RDM_NACK_REASON and
         response.nack_reason == RDMNack.NR_UNKNOWN_PID and
-        response.command_class == PidStore.RDM_GET and
+        response.command_class == OlaClient.RDM_GET_RESPONSE and
         response.pid == self._queued_message_pid.value):
       if (self._outstanding_ack_timers == 0):
         self._wrapper.Stop()
@@ -157,7 +161,7 @@ class QueuedMessageFetcher(object):
 
     # Stop if we get a message with no status messages in it.
     if (response.response_type == OlaClient.RDM_ACK and
-        response.command_class == PidStore.RDM_GET and
+        response.command_class == OlaClient.RDM_GET_RESPONSE and
         response.pid == self._status_message_pid.value and
         unpacked_data.get('messages', []) == []):
       if (self._outstanding_ack_timers == 0):
@@ -172,20 +176,46 @@ class QueuedMessageFetcher(object):
     self._FetchQueuedMessage()
 
 
+def GetTestClasses(module):
+  """Return a list of test classes from a module.
+
+  Args:
+    module: The module to search for test classes.
+
+  Returns:
+    A list of test classes.
+  """
+  classes = []
+  for symbol in dir(module):
+    cls = getattr(module, symbol)
+    if not inspect.isclass(cls):
+      continue
+    if (cls == ResponderTest.ResponderTestFixture or
+        cls == ResponderTest.OptionalParameterTestFixture):
+      continue
+    if issubclass(cls, ResponderTest.ResponderTestFixture):
+      classes.append(cls)
+  return classes
+
+
 class TestRunner(object):
   """The Test Runner executes the tests."""
-  def __init__(self, universe, uid, broadcast_write_delay, pid_store, wrapper):
+  def __init__(self, universe, uid, broadcast_write_delay, pid_store,
+               wrapper, timestamp = False):
     """Create a new TestRunner.
 
     Args:
       universe: The universe number to use
       uid: The UID object to test
+      broadcast_write_delay: the delay to use after sending broadcast sets
+      timestamp: true to print timestamps with each test
       pid_store: A PidStore object
       wrapper: A ClientWrapper object
     """
     self._universe = universe
     self._uid = uid
     self._broadcast_write_delay = broadcast_write_delay
+    self._timestamp = timestamp
     self._pid_store = pid_store
     self._api = RDMAPI(wrapper.Client(), pid_store, strict_checks=False)
     self._wrapper = wrapper
@@ -245,20 +275,35 @@ class TestRunner(object):
     tests = self._TopologicalSort(deps_map)
 
     logging.debug('Test order is %s' % tests)
+    is_debug = logging.getLogger('').isEnabledFor(logging.DEBUG)
+
     for test in tests:
       # make sure the queue is flushed before starting any tests
       self._message_fetcher.FetchAllMessages()
-      logging.debug('%s: %s' % (test, test.__doc__))
+
+      # capture the start time
+      start = datetime.datetime.now()
+      start_time_as_string = '%s ' % start.strftime('%d-%m-%Y %H:%M:%S.%f')
+      start_header = ''
+      end_header = ''
+      if self._timestamp:
+        if is_debug:
+          start_header = start_time_as_string
+        else:
+          end_header = start_time_as_string
+
+      logging.debug('%s%s: %s' % (start_header, test, test.__doc__))
 
       try:
         for property in test.Requires():
           getattr(device, property)
       except AttributeError:
-        logging.debug(' Property: %s not found, skipping test.' % property)
-        continue
+        test.SetBroken('Property: %s not found, skipping test.' % property)
 
-      test.Run()
-      logging.info('%s: %s' % (test, test.state.ColorString()))
+      if test.state != TestState.BROKEN:
+        test.Run()
+
+      logging.info('%s%s: %s' % (end_header, test, test.state.ColorString()))
     return tests, device
 
   def _InstantiateTests(self, device, tests_to_run):

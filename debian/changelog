@@ -1,3 +1,10 @@
+ola (0.8.18-1) unstable; urgency=low
+
+  * New upstream release
+  * Add missing /usr/share/ola/pids/pids.proto
+
+ -- RenZO <renzo@imaginux.com>  Fri, 02 Mar 2012 00:27:44 +0100
+
 ola (0.8.17-1) unstable; urgency=low
 
   * New upstream release

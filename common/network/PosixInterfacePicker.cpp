@@ -41,6 +41,7 @@
 #endif
 #include <string.h>
 #include <sys/ioctl.h>
+#include <unistd.h>
 #include <algorithm>
 #include <string>
 #include <vector>

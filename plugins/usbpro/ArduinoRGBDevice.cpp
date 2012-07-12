@@ -65,7 +65,7 @@ ArduinoRGBOutputPort::ArduinoRGBOutputPort(ArduinoRGBDevice *parent,
                                            const TimeStamp *wake_time,
                                            unsigned int initial_count,
                                            unsigned int rate)
-    : BasicOutputPort(parent, 0, true),
+    : BasicOutputPort(parent, 0, true, true),
       m_widget(widget),
       m_bucket(initial_count, rate, rate, *wake_time),
       m_wake_time(wake_time) {

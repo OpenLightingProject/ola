@@ -1,6 +1,6 @@
 # ola python client
 
-EXTRA_DIST = UIDTest.py
+EXTRA_DIST = DUBDecoderTest.py UIDTest.py
 
 if BUILD_PYTHON_LIBS
 
@@ -21,8 +21,8 @@ output_files = ArtnetConfigMessages_pb2.py Ola_pb2.py \
 
 BUILT_SOURCES = $(output_files)
 nodist_pkgpython_PYTHON = $(output_files)
-pkgpython_PYTHON = ClientWrapper.py OlaClient.py RDMAPI.py RDMConstants.py \
-                   PidStore.py UID.py __init__.py
+pkgpython_PYTHON = ClientWrapper.py DUBDecoder.py OlaClient.py RDMAPI.py \
+                   RDMConstants.py PidStore.py UID.py __init__.py
 
 ArtnetConfigMessages_pb2.py: $(artnet_proto)
 	$(PROTOC) --python_out ./ -I $(artnet_path) $(artnet_proto)
@@ -45,6 +45,6 @@ clean-local:
 	rm -f ArtnetConfigMessages_pb2.* Ola_pb2.* Pids_pb2.* UsbProConfigMessages_pb2.* PidStoreLocation.py
 
 TESTS_ENVIRONMENT = $(PYTHON)
-TESTS = UIDTest.py
+TESTS = DUBDecoderTest.py UIDTest.py
 
 endif

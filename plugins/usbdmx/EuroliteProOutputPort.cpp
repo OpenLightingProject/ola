@@ -35,6 +35,10 @@ using std::string;
 
 const char EuroliteProOutputPort::EXPECTED_MANUFACTURER[] = "Eurolite";
 const char EuroliteProOutputPort::EXPECTED_PRODUCT[] = "Eurolite DMX512 Pro";
+const uint8_t EuroliteProOutputPort::DMX_LABEL;
+const unsigned char EuroliteProOutputPort::ENDPOINT;
+const unsigned int EuroliteProOutputPort::UDMX_SET_CHANNEL_RANGE;
+const unsigned int EuroliteProOutputPort::URB_TIMEOUT_MS;
 
 /*
  * Create a new EuroliteProOutputPort object
@@ -78,7 +82,7 @@ bool EuroliteProOutputPort::Start() {
   string data;
   if (!GetDescriptorString(usb_handle, device_descriptor.iManufacturer,
                            &data)) {
-    OLA_INFO << "Failed to get manufactuer name";
+    OLA_INFO << "Failed to get manufacturer name";
     libusb_close(usb_handle);
     return false;
   }
@@ -102,6 +106,13 @@ bool EuroliteProOutputPort::Start() {
     return false;
   }
 
+  bool ok = LocateInterface();
+
+  if (!ok) {
+    libusb_close(usb_handle);
+    return false;
+  }
+
   // The Eurolite doesn't have a serial number, so instead we use the device &
   // bus number.
   // TODO: check if this supports the SERIAL NUMBER label and use that instead.
@@ -117,13 +128,13 @@ bool EuroliteProOutputPort::Start() {
   str << bus_number << "-" << device_address;
   m_serial = str.str();
 
-  int error = libusb_claim_interface(usb_handle, 0);
+  int error = libusb_claim_interface(usb_handle, m_interface_number);
 
   if (error) {
     if (error == LIBUSB_ERROR_BUSY) {
       OLA_WARN << "Eurolite device in use by another program";
     } else {
-      OLA_WARN << "Failed to claim Eurolite usb device, error: " << error;
+      OLA_WARN << "Failed to claim Eurolite usb interface, error: " << error;
     }
     libusb_close(usb_handle);
     return false;
@@ -133,7 +144,7 @@ bool EuroliteProOutputPort::Start() {
   bool ret = ola::thread::Thread::Start();
   if (!ret) {
     OLA_WARN << "pthread create failed";
-    libusb_release_interface(m_usb_handle, 0);
+    libusb_release_interface(m_usb_handle, m_interface_number);
     libusb_close(usb_handle);
     return false;
   }
@@ -172,7 +183,7 @@ void *EuroliteProOutputPort::Run() {
       usleep(40000);
     }
   }
-  libusb_release_interface(m_usb_handle, 0);
+  libusb_release_interface(m_usb_handle, m_interface_number);
   libusb_close(m_usb_handle);
   return NULL;
 }
@@ -247,6 +258,44 @@ bool EuroliteProOutputPort::GetDescriptorString(
     return false;
   data->assign(reinterpret_cast<char*>(buffer));
   return true;
+}
+
+
+/**
+ * Find the interface with the endpoint we're after. Usually this is interface
+ * 1 but we check them all just in case.
+ */
+bool EuroliteProOutputPort::LocateInterface() {
+  struct libusb_config_descriptor *device_config;
+  if (libusb_get_config_descriptor(m_usb_device, 0, &device_config) != 0) {
+    OLA_WARN << "Failed to get device config descriptor";
+    return false;
+  }
+
+  OLA_DEBUG << static_cast<int>(device_config->bNumInterfaces) <<
+    " interfaces found";
+  for (unsigned int i = 0; i < device_config->bNumInterfaces; i++) {
+    const struct libusb_interface *interface = &device_config->interface[i];
+    for (int j = 0; j < interface->num_altsetting; j++) {
+      const struct libusb_interface_descriptor *iface_descriptor =
+        &interface->altsetting[j];
+      for (uint8_t k = 0; k < iface_descriptor->bNumEndpoints; k++) {
+        const struct libusb_endpoint_descriptor *endpoint =
+          &iface_descriptor->endpoint[k];
+        OLA_DEBUG << "Interface " << i << ", altsetting " << j << ", endpoint "
+          << static_cast<int>(k) << ", endpoint address 0x" << std::hex <<
+          static_cast<int>(endpoint->bEndpointAddress);
+        if (endpoint->bEndpointAddress == ENDPOINT) {
+          OLA_INFO << "Using interface " << i;
+          m_interface_number = i;
+          libusb_free_config_descriptor(device_config);
+          return true;
+        }
+      }
+    }
+  }
+  libusb_free_config_descriptor(device_config);
+  return false;
 }
 }  // usbdmx
 }  // plugin

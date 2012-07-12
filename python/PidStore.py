@@ -26,6 +26,7 @@ import sys
 from google.protobuf import text_format
 from ola import PidStoreLocation
 from ola import Pids_pb2
+from ola import UID
 
 
 # Various sub device enums
@@ -34,7 +35,7 @@ MAX_VALID_SUB_DEVICE = 0x0200;
 ALL_SUB_DEVICES = 0xffff
 
 # The two types of commands classes
-RDM_GET, RDM_SET = range(2)
+RDM_GET, RDM_SET, RDM_DISCOVERY = range(3)
 
 
 class Error(Exception):
@@ -56,10 +57,13 @@ class UnpackException(Error):
 class Pid(object):
   """A class that describes everything about a PID."""
   def __init__(self, name, value,
+               discovery_request = None,
+               discovery_response = None,
                get_request = None,
                get_response = None,
                set_request = None,
                set_response = None,
+               discovery_validators = [],
                get_validators = [],
                set_validators = []):
     """Create a new PID.
@@ -67,10 +71,13 @@ class Pid(object):
     Args:
       name: the human readable name
       value: the 2 byte PID value
+      discovery_request: A Group object, or None if DISCOVERY isn't supported
+      discovery_response: A Group object, or None if DISCOVERY isn't supported
       get_request: A Group object, or None if GET isn't supported
       get_response:
       set_request: A Group object, or None if SET isn't supported
       set_response:
+      discovery_validators:
       get_validators:
       set_validators:
     """
@@ -79,14 +86,17 @@ class Pid(object):
     self._requests = {
       RDM_GET: get_request,
       RDM_SET: set_request,
+      RDM_DISCOVERY: discovery_request,
     }
     self._responses = {
       RDM_GET: get_response,
       RDM_SET: set_response,
+      RDM_DISCOVERY: discovery_response,
     }
     self._validators = {
       RDM_GET: get_validators,
       RDM_SET: set_validators,
+      RDM_DISCOVERY: discovery_validators,
     }
 
   @property
@@ -127,7 +137,7 @@ class Pid(object):
 
     Args:
       args: A list of arguments of the right types.
-      command_class: RDM_GET or RDM_SET
+      command_class: RDM_GET or RDM_SET or RDM_DISCOVERY
 
     Returns:
       Binary data which can be used as the Param Data.
@@ -141,7 +151,7 @@ class Pid(object):
 
     Args:
       data: The raw data
-      command_class: RDM_GET or RDM_SET
+      command_class: RDM_GET or RDM_SET or RDM_DISCOVERY
     """
     group = self._responses.get(command_class)
     if group is None:
@@ -153,7 +163,7 @@ class Pid(object):
     """Get a help string that describes the format of the request.
 
     Args:
-      command_class: RDM_GET or RDM_SET
+      command_class: RDM_GET or RDM_SET or RDM_DISCOVERY
 
     Returns:
       A help string.
@@ -216,7 +226,7 @@ class FixedSizeAtom(Atom):
     return data, 1
 
   def _FormatString(self):
-    return '!%c' % self._char
+    return '!%s' % self._char
 
 
 class Bool(FixedSizeAtom):
@@ -405,6 +415,32 @@ class IPV4(IntAtom):
   """A four-byte IPV4 address."""
   def __init__(self, name, **kwargs):
     super(IPV4, self).__init__(name, 'I', 0xffffffff, **kwargs)
+
+
+class UIDAtom(FixedSizeAtom):
+  """A four-byte IPV4 address."""
+  def __init__(self, name, **kwargs):
+    super(UIDAtom, self).__init__(name, 'HI')
+
+  def Unpack(self, data):
+    format_string = self._FormatString()
+    try:
+      values = struct.unpack(format_string, data)
+    except struct.error:
+      raise UnpackException(e)
+    return UID(values[0], values[1])
+
+  def Pack(self, args):
+    uid = UID.FromString(args[0])
+    if uid is None:
+      raise ArgsValidationError("Invalid UID: %s" % e)
+
+    format_string = self._FormatString()
+    try:
+      data = struct.pack(format_string, uid.manufacturer_id, uid.device_id)
+    except struct.error, e:
+      raise ArgsValidationError("Can't pack data: %s" % e)
+    return data, 1
 
 
 class String(Atom):
@@ -915,11 +951,17 @@ class PidStore(object):
             (field_name, pid_pb.name, e))
       return group
 
+    discovery_request = BuildList('discovery_request')
+    discovery_response = BuildList('discovery_response')
     get_request = BuildList('get_request')
     get_response = BuildList('get_response')
     set_request = BuildList('set_request')
     set_response = BuildList('set_response')
 
+    discovery_validators = []
+    if pid_pb.HasField('discovery_sub_device_range'):
+      discovery_validators.append(self._SubDeviceRangeToValidator(
+        pid_pb.discovery_sub_device_range))
     get_validators = []
     if pid_pb.HasField('get_sub_device_range'):
       get_validators.append(self._SubDeviceRangeToValidator(
@@ -931,10 +973,13 @@ class PidStore(object):
 
     return Pid(pid_pb.name,
                pid_pb.value,
+               discovery_request,
+               discovery_response,
                get_request,
                get_response,
                set_request,
                set_response,
+               discovery_validators,
                get_validators,
                set_validators)
 
@@ -979,6 +1024,8 @@ class PidStore(object):
       return UInt32(field.name, **args);
     elif field.type == Pids_pb2.IPV4:
       return IPV4(field.name, **args);
+    elif field.type == Pids_pb2.UID:
+      return UIDAtom(field.name, **args);
     elif field.type == Pids_pb2.GROUP:
       if not field.field:
         raise InvalidPidFormat('Missing child fields for %s' % field.name)

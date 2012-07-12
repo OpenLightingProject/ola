@@ -69,14 +69,16 @@ class OlaPort {
             const string &description,
             port_priority_capability capability,
             port_priority_mode mode,
-            uint8_t priority):
+            uint8_t priority,
+            bool supports_rdm):
       m_id(port_id),
       m_universe(universe),
       m_active(active),
       m_description(description),
       m_priority_capability(capability),
       m_priority_mode(mode),
-      m_priority(priority) {}
+      m_priority(priority),
+      m_supports_rdm(supports_rdm) {}
     virtual ~OlaPort() {}
 
     unsigned int Id() const { return m_id; }
@@ -93,6 +95,8 @@ class OlaPort {
     }
     uint8_t Priority() const { return m_priority; }
 
+    bool SupportsRDM() const { return m_supports_rdm; }
+
   private:
     unsigned int m_id;  // id of this port
     unsigned int m_universe;  // universe
@@ -101,6 +105,7 @@ class OlaPort {
     port_priority_capability m_priority_capability;
     port_priority_mode m_priority_mode;
     uint8_t m_priority;
+    bool m_supports_rdm;
 };
 
 
@@ -112,9 +117,10 @@ class OlaInputPort: public OlaPort {
                  const string &description,
                  port_priority_capability capability,
                  port_priority_mode mode,
-                 uint8_t priority):
+                 uint8_t priority,
+                 bool supports_rdm):
         OlaPort(port_id, universe, active, description,
-                capability, mode, priority) {
+                capability, mode, priority, supports_rdm) {
     }
 };
 
@@ -127,9 +133,10 @@ class OlaOutputPort: public OlaPort {
                   const string &description,
                   port_priority_capability capability,
                   port_priority_mode mode,
-                  uint8_t priority):
+                  uint8_t priority,
+                  bool supports_rdm):
         OlaPort(port_id, universe, active, description,
-                capability, mode, priority) {
+                capability, mode, priority, supports_rdm) {
     }
 };
 

@@ -23,15 +23,15 @@ import mimetypes
 import textwrap
 import urlparse
 import inspect
-import ResponderTest
-import TestDefinitions
-import TestRunner
 import traceback
+from ola.testing.rdm import ResponderTest
+from ola.testing.rdm import TestDefinitions
+from ola.testing.rdm import TestRunner
+from ola.testing.rdm.TestState import TestState
 from wsgiref.simple_server import make_server
 from ola import PidStore
 from DMXSender import DMXSender
 from ola.ClientWrapper import ClientWrapper
-from TestState import TestState
 from ola.UID import UID
 from optparse import OptionParser, OptionGroup, OptionValueError
 
@@ -174,34 +174,8 @@ class TestServerApplication(object):
 
   def get_test_definitions(self, params):
     self.__set_response_status(True)
-    if params['c'] == 1:
-      tests_defs = self.__get_test_defs(True)
-    else:
-      tests_defs = self.__get_test_defs(False)
-
+    tests_defs = [test.__name__ for test in TestRunner.GetTestClasses(TestDefinitions)]
     self.response.update({'test_defs': tests_defs})
-
-  def __get_test_defs(self, by_catg = False):
-
-    tests = []
-    for symbol in dir(TestDefinitions):
-      obj = getattr(TestDefinitions, symbol)
-      if not inspect.isclass(obj):
-        continue
-      if (obj == ResponderTest.ResponderTestFixture or
-          obj == ResponderTest.OptionalParameterTestFixture):
-        continue
-      if issubclass(obj, ResponderTest.ResponderTestFixture):
-        tests.append(obj)
-
-    if not by_catg:
-      return [test.__name__ for test in tests]
-
-    tests_by_category = {}
-    for test in tests:
-      tests_by_category.setdefault(test.CATEGORY.__str__(), []) \
-                                  .append(test.__name__)
-    return tests_by_category
 
   def run_tests(self, params):
     test_filter = None
@@ -249,15 +223,8 @@ class TestServerApplication(object):
                                    settings['pid_store'],
                                    self.wrapper)
 
-    for symbol in dir(TestDefinitions):
-      obj = getattr(TestDefinitions, symbol)
-      if not inspect.isclass(obj):
-        continue
-      if (obj == ResponderTest.ResponderTestFixture or
-          obj == ResponderTest.OptionalParameterTestFixture):
-        continue
-      if issubclass(obj, ResponderTest.ResponderTestFixture):
-        runner.RegisterTest(obj)
+    for test in TestRunner.GetTestClasses(TestDefinitions):
+      runner.RegisterTest(test)
 
       dmx_sender = DMXSender(self.wrapper,
                           universe,
@@ -268,7 +235,7 @@ class TestServerApplication(object):
     self.__format_test_results(tests)
 
   def __format_test_results(self, tests):
-    results = {}
+    results = []
     passed = 0
     failed = 0
     broken = 0
@@ -283,14 +250,16 @@ class TestServerApplication(object):
       elif test.state == TestState.NOT_RUN:
         not_run += 1
 
-      results.update({
-        test.__str__(): {
+      results.append({
+          'definition': test.__str__(),
           'state': test.state.__str__(),
           'category': test.category.__str__(),
           'warnings': test.warnings,
           'advisories': test.advisories,
+          'debug': test._debug,
+          'doc': test.__doc__
         }
-      })
+      )
 
     stats = {
       'total': len(tests),
