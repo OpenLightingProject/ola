@@ -200,17 +200,17 @@ def GetTestClasses(module):
 
 class TestRunner(object):
   """The Test Runner executes the tests."""
-  def __init__(self, universe, uid, broadcast_write_delay, timestamp, pid_store,
-               wrapper):
+  def __init__(self, universe, uid, broadcast_write_delay, pid_store,
+               wrapper, timestamp = False):
     """Create a new TestRunner.
 
     Args:
       universe: The universe number to use
       uid: The UID object to test
       broadcast_write_delay: the delay to use after sending broadcast sets
-      timestamp: true to print timestamps with each test
       pid_store: A PidStore object
       wrapper: A ClientWrapper object
+      timestamp: true to print timestamps with each test
     """
     self._universe = universe
     self._uid = uid
