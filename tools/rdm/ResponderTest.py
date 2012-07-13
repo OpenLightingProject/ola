@@ -234,6 +234,10 @@ class ResponderTestFixture(TestFixture):
     # use QUEUED_MESSAGEs
     self._outstanding_request = None
 
+  @property
+  def uid(self):
+    return self._uid
+
   def SleepAfterBroadcastSet(self):
     if self._broadcast_write_delay_s:
       self.LogDebug('Sleeping after broadcast...')
@@ -299,6 +303,36 @@ class ResponderTestFixture(TestFixture):
   def AckSetResult(self, **kwargs):
     """A helper method which returns an AckSetResult for the current PID."""
     return AckSetResult(self.pid.value, **kwargs)
+
+  def SendDiscovery(self, sub_device, pid, args = []):
+    """Send a raw Discovery request.
+
+    Args:
+      sub_device: The sub device
+      pid: The pid value
+      data: The param data
+    """
+    return self.SendDirectedDiscovery(self._uid, sub_device, pid, args)
+
+  def SendDirectedDiscovery(self, uid, sub_device, pid, args = []):
+    """Send a raw Discovery request.
+
+    Args:
+      uid: The uid to send the GET to
+      sub_device: The sub device
+      pid: The pid value
+      data: The param data
+    """
+    self.LogDebug(' DISCOVERY: uid: %s, pid: %s, sub device: %d, args: %s' %
+                  (uid, pid, sub_device, args))
+    self._outstanding_request = (sub_device, PidStore.RDM_DISCOVERY, pid.value)
+    return self._api.Discovery(self._universe,
+                               uid,
+                               sub_device,
+                               pid,
+                               self._HandleResponse,
+                               args)
+
 
   def SendRawDiscovery(self, sub_device, pid, data = ""):
     """Send a raw Discovery request.
@@ -486,13 +520,15 @@ class ResponderTestFixture(TestFixture):
       self.Stop()
       return False
 
-    if (response.response_code == OlaClient.RDM_WAS_BROADCAST or
-        response.response_code ==
-          OlaClient.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED):
+    acceptable_codes = [
+        OlaClient.RDM_WAS_BROADCAST,
+        OlaClient.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED,
+        OlaClient.RDM_DUB_RESPONSE]
+    if response.response_code in acceptable_codes:
       return True
 
     if response.response_code != OlaClient.RDM_COMPLETED_OK:
-      self.LogDebug('Request failed: %s' % response.ResponseCodeAsString())
+      self.LogDebug(' Request failed: %s' % response.ResponseCodeAsString())
       return True
 
     # handle the case of an ack timer
