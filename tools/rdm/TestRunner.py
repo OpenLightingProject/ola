@@ -298,10 +298,10 @@ class TestRunner(object):
         for property in test.Requires():
           getattr(device, property)
       except AttributeError:
-        test.SetBroken('Property: %s not found, skipping test.' % property)
+        test.LogDebug('Property: %s not found, skipping test.' % property)
+        continue
 
-      if test.state != TestState.BROKEN:
-        test.Run()
+      test.Run()
 
       logging.info('%s%s: %s' % (end_header, test, test.state.ColorString()))
     return tests, device
