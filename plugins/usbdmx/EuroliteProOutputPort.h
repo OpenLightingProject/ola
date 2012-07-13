@@ -56,6 +56,7 @@ class EuroliteProOutputPort: public BasicOutputPort, ola::thread::Thread {
     static const uint8_t DMX_LABEL = 6;
 
     bool m_term;
+    int m_interface_number;
     string m_serial;
 
     libusb_device *m_usb_device;
@@ -69,6 +70,7 @@ class EuroliteProOutputPort: public BasicOutputPort, ola::thread::Thread {
     bool GetDescriptorString(libusb_device_handle *usb_handle,
                              uint8_t desc_index,
                              string *data);
+    bool LocateInterface();
 
     // 513 + header + code + size(2) + footer
     enum { FRAME_SIZE = 518 };
