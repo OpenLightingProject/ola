@@ -76,7 +76,7 @@ class RDMCommand {
         case GET_COMMAND_RESPONSE:
         case SET_COMMAND_RESPONSE:
           return RDM_RESPONSE;
-        case INVALID_COMMAND:
+        default:
           return RDM_INVALID;
       }
     }

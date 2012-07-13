@@ -128,8 +128,9 @@ class Universe: public ola::rdm::RDMControllerInterface {
     typedef struct {
       unsigned int expected_count;
       unsigned int current_count;
-      bool failed;
+      ola::rdm::rdm_response_code response_code;
       ola::rdm::RDMCallback *callback;
+      vector<string> packets;
     } broadcast_request_tracker;
 
     string m_universe_name;
@@ -153,6 +154,10 @@ class Universe: public ola::rdm::RDMControllerInterface {
                             ola::rdm::rdm_response_code code,
                             const ola::rdm::RDMResponse *response,
                             const std::vector<std::string> &packets);
+    void HandleBroadcastDiscovery(broadcast_request_tracker *tracker,
+                                  ola::rdm::rdm_response_code code,
+                                  const ola::rdm::RDMResponse *response,
+                                  const std::vector<std::string> &packets);
     bool UpdateDependants();
     void UpdateName();
     void UpdateMode();
