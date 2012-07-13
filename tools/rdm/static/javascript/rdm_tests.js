@@ -58,9 +58,15 @@ RDMTests.prototype.bind_events_to_doms = function() {
   $(document).keydown(function(e) {
     var key = e.keyCode || e.which;
     var results_div = $('#rdm-tests-results');
+    var test_frame = $('#tests_control_frame');
+
     if (results_div.css('display') == 'block' && key == 27) {
       results_div.hide('slow');
       $('#tests_control_frame').show();
+    }
+
+    if (key == 13 && test_frame.css('display') == 'block') {
+      rdmtests.validate_form();
     }
   });
 
