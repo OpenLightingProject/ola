@@ -58,9 +58,15 @@ RDMTests.prototype.bind_events_to_doms = function() {
   $(document).keydown(function(e) {
     var key = e.keyCode || e.which;
     var results_div = $('#rdm-tests-results');
+    var test_frame = $('#tests_control_frame');
+
     if (results_div.css('display') == 'block' && key == 27) {
       results_div.hide('slow');
       $('#tests_control_frame').show();
+    }
+
+    if (key == 13 && test_frame.css('display') == 'block') {
+      rdmtests.validate_form();
     }
   });
 
@@ -153,8 +159,6 @@ RDMTests.prototype.run_tests = function(test_filter) {
                                     for (i in data['test_results']) {
                                       switch (data['test_results'][i]['state']) {
                                         case 'Failed':
-                                        case 'Broken':
-                                        case 'Not Run':
                                           failed_defs.push(data['test_results'][i]['definition']);
                                           break;
                                       }
@@ -237,8 +241,8 @@ RDMTests.prototype.display_results = function(results) {
 
     $('#rdm-tests-results-info-doc').html(RDMTests.TEST_RESULTS[definition]['doc']);
 
-    var debug = JSON.stringify(RDMTests.TEST_RESULTS[definition]['debug'], undefined, 2);
-    $('#rdm-tests-results-info-debug').html($('<pre />').html(debug));
+    var debug = RDMTests.TEST_RESULTS[definition]['debug'];
+    $('#rdm-tests-results-info-debug').html(debug.join('<br />'));
   });
 
   $('#rdm-tests-results').show('slow');
@@ -293,7 +297,12 @@ RDMTests.prototype.validate_form = function() {
     }
   }
 
-  rdmtests.run_tests(test_filter);
+  var confirmation = confirm('Running tests will reconfigure your devices, are you sure you want to run the tests?');
+  if (confirmation) {
+    rdmtests.run_tests(test_filter);
+  } else {
+    return false;
+  }
 };
 
 $(document).ready(function() {
