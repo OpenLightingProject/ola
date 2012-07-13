@@ -153,8 +153,6 @@ RDMTests.prototype.run_tests = function(test_filter) {
                                     for (i in data['test_results']) {
                                       switch (data['test_results'][i]['state']) {
                                         case 'Failed':
-                                        case 'Broken':
-                                        case 'Not Run':
                                           failed_defs.push(data['test_results'][i]['definition']);
                                           break;
                                       }
