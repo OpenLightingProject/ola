@@ -344,13 +344,13 @@
               <input type='radio' name='rdm-tests-selection' id='rdm-tests-selection-subset' class='rdm-tests-selection' checked='checked' />Select Tests
             </td>
             <td>
-              <input type='radio' name='rdm-tests-selection' id='rdm-tests-selection-previously_failed' class='rdm-tests-selection'/>Failed Tests
+              <select id='rdm-tests-selection-tests_list' class='rdm-tests-selection-multiselect' multiple='multiple' name='subset_test_defs'>
+              </select>
             </td>
            </tr>
            <tr>
             <td>
-              <select id='rdm-tests-selection-tests_list' class='rdm-tests-selection-multiselect' multiple='multiple' name='subset_test_defs'>
-              </select>
+              <input type='radio' name='rdm-tests-selection' id='rdm-tests-selection-previously_failed' class='rdm-tests-selection'/>Failed Tests
             </td>
             <td>
               <select id='rdm-tests-selection-failed_tests' class='rdm-tests-selection-multiselect' multiple='multiple' name='failed_test_defs'>
