@@ -297,7 +297,12 @@ RDMTests.prototype.validate_form = function() {
     }
   }
 
-  rdmtests.run_tests(test_filter);
+  var confirmation = confirm('Running tests will reconfigure your devices, are you sure you want to run the tests?');
+  if (confirmation) {
+    rdmtests.run_tests(test_filter);
+  } else {
+    return false;
+  }
 };
 
 $(document).ready(function() {
