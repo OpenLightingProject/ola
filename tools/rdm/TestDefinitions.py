@@ -29,7 +29,6 @@ from ResponderTest import OptionalParameterTestFixture
 from TestCategory import TestCategory
 from ola import PidStore
 from ola import RDMConstants
-from ola.DUBDecoder import DecodeResponse
 from ola.OlaClient import RDMNack
 from ola.PidStore import ROOT_DEVICE
 from ola.UID import UID
@@ -153,70 +152,111 @@ class RequestsWhileUnmuted(ResponderTestFixture):
 
 # DUB Tests
 #------------------------------------------------------------------------------
-class FullDiscovery(ResponderTestFixture):
-  """Check that the device responds to a DUB message for all devices."""
+class FullTreeDiscovery(TestMixins.DiscoveryMixin,
+                        ResponderTestFixture):
+  """Confirm the device responds within the entire DUB range."""
   CATEGORY = TestCategory.NETWORK_MANAGEMENT
-  PID = 'DISC_UNIQUE_BRANCH'
-  REQUIRES = ['mute_supported', 'unmute_supported']
   PROVIDES = ['dub_supported']
 
-  def UnMuteDevice(self, next_method):
-    unmute_pid = self.LookupPid('DISC_UNMUTE')
-    self.AddExpectedResults([
-        AckDiscoveryResult(unmute_pid.value, action=next_method),
-    ])
-    self.SendDiscovery(ROOT_DEVICE, unmute_pid)
+  def LowerBound(self):
+    return UID(0, 0);
 
-  def Test(self):
-    self._muting = True
-    if not (self.Property('unmute_supported') and
-            self.Property('mute_supported')):
-      self.SetNotRun('Controller does not support mute / unmute commands')
-      self.Stop()
-      return
+  def UpperBound(self):
+    return UID.AllDevices()
 
-    self.UnMuteDevice(self.SendDUB)
+  def DUBResponseCode(self, response_code):
+    self.SetProperty(
+        'dub_supported',
+        response_code != OlaClient.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED)
 
-  def SendDUB(self):
-    self._muting = False
-    self.AddExpectedResults([
-      DUBResult(),
-      UnsupportedResult()
-    ])
-    manufacturer_lower = UID(self.uid.manufacturer_id, 0)
-    manufacturer_upper = UID.AllManufacturerDevices(self.uid.manufacturer_id)
-    lower = UID(0, 0)
-    upper = UID.AllDevices()
-    broadcast_uid = UID.AllDevices()
-    self.SendDirectedDiscovery(broadcast_uid, ROOT_DEVICE, self.pid,
-                               [str(lower), str(upper)])
 
-  def VerifyResult(self, response, fields):
-    if self._muting:
-      return
+class ManufacturerTreeDiscovery(TestMixins.DiscoveryMixin,
+                                ResponderTestFixture):
+  """Confirm the device responds within it's manufacturer DUB range."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
 
-    if (response.response_code ==
-        OlaClient.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED):
-      self.SetProperty('dub_supported', False)
-      return
+  def LowerBound(self):
+    return UID(self.uid.manufacturer_id, 0)
 
-    self.SetProperty('dub_supported', True)
+  def UpperBound(self):
+    return UID.AllManufacturerDevices(self.uid.manufacturer_id)
 
-    if len(response.raw_response) != 1:
-      self.SetFailed('Multiple DUB responses returned')
-      return
 
-    uid = DecodeResponse(bytearray(response.raw_response[0]))
-    if uid is None or uid != self._uid:
-      self.SetFailed('Missing UID in DUB response')
+class SingleUIDDiscovery(TestMixins.DiscoveryMixin,
+                         ResponderTestFixture):
+  """Confirm the device responds to just it's own range."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
 
-    self.LogDebug(' Located UID: %s' % uid)
+  def LowerBound(self):
+    return self.uid
 
-  def ResetState(self):
-    # mute the device again
-    mute_pid = self.LookupPid('DISC_MUTE')
-    self.SendDiscovery(PidStore.ROOT_DEVICE, mute_pid)
-    self._wrapper.Run()
+  def UpperBound(self):
+    return self.uid
+
+
+class DUBOffByOneLow(TestMixins.DiscoveryMixin,
+                     ResponderTestFixture):
+  """DUB from <UID> to ffff:ffffffff."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
+
+  def LowerBound(self):
+    return self.uid
+
+  def UpperBound(self):
+    return UID.AllDevices()
+
+
+class DUBOffByOneHigh(TestMixins.DiscoveryMixin,
+                      ResponderTestFixture):
+  """DUB from 0000:00000000 to <UID>."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
+
+  def LowerBound(self):
+    return UID(0, 0)
+
+  def UpperBound(self):
+    return self.uid
+
+
+class DUBDifferentManufacturer(TestMixins.DiscoveryMixin,
+                               ResponderTestFixture):
+  """DUB with a different manufacturer's range."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
+
+  def LowerBound(self):
+    return UID(self.uid.manufacturer_id - 1, 0)
+
+  def UpperBound(self):
+    return UID(self.uid.manufacturer_id - 1, 0xffffffff)
+
+  def ExpectResponse(self):
+    return False
+
+
+class DUBSignedComparisons(TestMixins.DiscoveryMixin,
+                           ResponderTestFixture):
+  """DUB to check UIDs aren't using signed values."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
+
+  def LowerBound(self):
+    # Section 5.1 of E1.20 limits the manufacturer ID range to 0 - 0x7fff so
+    # this should be safe for all cases.
+    return UID(0x8000, 0)
+
+  def UpperBound(self):
+    return UID.AllDevices()
+
+  def ExpectResponse(self):
+    return False
+
+# off by one, lower / upper
 
 
 # Device Info tests

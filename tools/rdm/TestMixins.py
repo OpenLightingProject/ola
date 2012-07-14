@@ -25,7 +25,9 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 from collections import deque
 from ola import PidStore
+from ola.DUBDecoder import DecodeResponse
 from ola.OlaClient import RDMNack
+from ola.UID import UID
 from ExpectedResults import *
 from ResponderTest import ResponderTestFixture
 
@@ -483,3 +485,87 @@ class SetUndefinedSensorValues(object):
                            action=self._DoAction),
                            ])
     self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self._missing_sensors.pop(0)])
+
+
+# Discovery Mixins
+#------------------------------------------------------------------------------
+class DiscoveryMixin(ResponderTestFixture):
+  """UnMute the device, send a DUB, confirm the UID, then mute again.
+
+    This mixin requires:
+      LowerBound() the lower UID to use in the DUB
+      UpperBound() the upprt UID to use in the DUB
+
+    And Optionally:
+      DUBResponseCode(response_code): called when the discovery request
+        completes.
+
+      ExpectResponse: returns true if we expect the device to answer the DUB
+        request, false otherwise.
+  """
+  PID = 'DISC_UNIQUE_BRANCH'
+  REQUIRES = ['mute_supported', 'unmute_supported']
+
+  def DUBResponseCode(self, response_code):
+    pass
+
+  def ExpectResponse(self):
+    return True
+
+  def UnMuteDevice(self, next_method):
+    unmute_pid = self.LookupPid('DISC_UNMUTE')
+    self.AddExpectedResults([
+        AckDiscoveryResult(unmute_pid.value, action=next_method),
+    ])
+    self.SendDiscovery(PidStore.ROOT_DEVICE, unmute_pid)
+
+  def Test(self):
+    self._muting = True
+    if not (self.Property('unmute_supported') and
+            self.Property('mute_supported')):
+      self.SetNotRun('Controller does not support mute / unmute commands')
+      self.Stop()
+      return
+
+    self.UnMuteDevice(self.SendDUB)
+
+  def SendDUB(self):
+    self._muting = False
+    results = [UnsupportedResult()]
+    if self.ExpectResponse():
+      results.append(DUBResult())
+    else:
+      results.append(TimeoutResult())
+    self.AddExpectedResults(results)
+    self.SendDirectedDiscovery(UID.AllDevices(),
+                               PidStore.ROOT_DEVICE,
+                               self.pid,
+                               [self.LowerBound(), self.UpperBound()])
+
+  def VerifyResult(self, response, fields):
+    if self._muting:
+      return
+
+    self.DUBResponseCode(response.response_code)
+    if (response.response_code ==
+        OlaClient.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED):
+      return
+
+    if not self.ExpectResponse():
+      return
+
+    if len(response.raw_response) != 1:
+      self.SetFailed('Multiple DUB responses returned')
+      return
+
+    uid = DecodeResponse(bytearray(response.raw_response[0]))
+    if uid is None or uid != self._uid:
+      self.SetFailed('Missing UID in DUB response')
+
+    self.LogDebug(' Located UID: %s' % uid)
+
+  def ResetState(self):
+    # mute the device again
+    mute_pid = self.LookupPid('DISC_MUTE')
+    self.SendDiscovery(PidStore.ROOT_DEVICE, mute_pid)
+    self._wrapper.Run()

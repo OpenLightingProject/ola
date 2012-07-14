@@ -40,6 +40,9 @@ class UID(object):
   def __str__(self):
     return '%04x:%08x' % (self._manufacturer_id, self._device_id)
 
+  def __repr__(self):
+    return self.__str__()
+
   def __cmp__(self, other):
     if other is None:
       return 1

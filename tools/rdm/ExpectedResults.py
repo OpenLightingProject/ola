@@ -93,6 +93,15 @@ class BroadcastResult(BaseExpectedResult):
     return OlaClient.RDM_WAS_BROADCAST == response.response_code
 
 
+class TimeoutResult(BaseExpectedResult):
+  """This checks that the request timed out."""
+  def __str__(self):
+    return 'RDM_TIMEOUT'
+
+  def Matches(self, response, unpacked_data):
+    return OlaClient.RDM_TIMEOUT == response.response_code
+
+
 class InvalidResponse(BaseExpectedResult):
   """This checks that we got an invalid response back."""
   def __str__(self):
