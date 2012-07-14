@@ -68,7 +68,7 @@ RDMTests.prototype.bind_events_to_doms = function() {
     var test_frame = $('#tests_control_frame');
 
     if (results_div.css('display') == 'block' && key == 27) {
-      results_div.hide('slow');
+      results_div.hide();
       $('#tests_control_frame').show();
     }
 
@@ -78,7 +78,7 @@ RDMTests.prototype.bind_events_to_doms = function() {
   });
 
   $('#rdm-tests-results-button-dismiss').click(function() {
-    $('#rdm-tests-results').hide('slow');
+    $('#rdm-tests-results').hide();
     $('#tests_control_frame').show();
   });
 };
@@ -252,7 +252,7 @@ RDMTests.prototype.display_results = function(results) {
     $('#rdm-tests-results-info-debug').html(debug.join('<br />'));
   });
 
-  $('#rdm-tests-results').show('slow');
+  $('#rdm-tests-results').show();
 };
 
 RDMTests.prototype.validate_form = function() {
