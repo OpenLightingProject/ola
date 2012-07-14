@@ -208,9 +208,9 @@ class TestRunner(object):
       universe: The universe number to use
       uid: The UID object to test
       broadcast_write_delay: the delay to use after sending broadcast sets
-      timestamp: true to print timestamps with each test
       pid_store: A PidStore object
       wrapper: A ClientWrapper object
+      timestamp: true to print timestamps with each test
     """
     self._universe = universe
     self._uid = uid
@@ -298,10 +298,10 @@ class TestRunner(object):
         for property in test.Requires():
           getattr(device, property)
       except AttributeError:
-        test.SetBroken('Property: %s not found, skipping test.' % property)
+        test.LogDebug('Property: %s not found, skipping test.' % property)
+        continue
 
-      if test.state != TestState.BROKEN:
-        test.Run()
+      test.Run()
 
       logging.info('%s%s: %s' % (end_header, test, test.state.ColorString()))
     return tests, device

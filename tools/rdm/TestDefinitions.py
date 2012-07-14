@@ -29,6 +29,7 @@ from ResponderTest import OptionalParameterTestFixture
 from TestCategory import TestCategory
 from ola import PidStore
 from ola import RDMConstants
+from ola.DUBDecoder import DecodeResponse
 from ola.OlaClient import RDMNack
 from ola.PidStore import ROOT_DEVICE
 from ola.UID import UID
@@ -51,7 +52,7 @@ class MuteDevice(ResponderTestFixture):
       self.AckDiscoveryResult(),
       UnsupportedResult()
     ])
-    self.SendRawDiscovery(ROOT_DEVICE, self.pid)
+    self.SendDiscovery(ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, fields):
     supported = (response.response_code !=
@@ -92,7 +93,7 @@ class UnMuteDevice(ResponderTestFixture):
       self.AckDiscoveryResult(),
       UnsupportedResult()
     ])
-    self.SendRawDiscovery(ROOT_DEVICE, self.pid)
+    self.SendDiscovery(ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, fields):
     supported = (response.response_code !=
@@ -136,7 +137,7 @@ class RequestsWhileUnmuted(ResponderTestFixture):
       return
 
     self.AddExpectedResults(self.AckDiscoveryResult(action=self.GetDeviceInfo))
-    self.SendRawDiscovery(ROOT_DEVICE, self.pid)
+    self.SendDiscovery(ROOT_DEVICE, self.pid)
 
   def GetDeviceInfo(self):
     device_info_pid = self.LookupPid('DEVICE_INFO')
@@ -146,7 +147,75 @@ class RequestsWhileUnmuted(ResponderTestFixture):
   def ResetState(self):
     # mute the device again
     mute_pid = self.LookupPid('DISC_MUTE')
-    self.SendRawDiscovery(PidStore.ROOT_DEVICE, mute_pid)
+    self.SendDiscovery(PidStore.ROOT_DEVICE, mute_pid)
+    self._wrapper.Run()
+
+
+# DUB Tests
+#------------------------------------------------------------------------------
+class FullDiscovery(ResponderTestFixture):
+  """Check that the device responds to a DUB message for all devices."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  PID = 'DISC_UNIQUE_BRANCH'
+  REQUIRES = ['mute_supported', 'unmute_supported']
+  PROVIDES = ['dub_supported']
+
+  def UnMuteDevice(self, next_method):
+    unmute_pid = self.LookupPid('DISC_UNMUTE')
+    self.AddExpectedResults([
+        AckDiscoveryResult(unmute_pid.value, action=next_method),
+    ])
+    self.SendDiscovery(ROOT_DEVICE, unmute_pid)
+
+  def Test(self):
+    self._muting = True
+    if not (self.Property('unmute_supported') and
+            self.Property('mute_supported')):
+      self.SetNotRun('Controller does not support mute / unmute commands')
+      self.Stop()
+      return
+
+    self.UnMuteDevice(self.SendDUB)
+
+  def SendDUB(self):
+    self._muting = False
+    self.AddExpectedResults([
+      DUBResult(),
+      UnsupportedResult()
+    ])
+    manufacturer_lower = UID(self.uid.manufacturer_id, 0)
+    manufacturer_upper = UID.AllManufacturerDevices(self.uid.manufacturer_id)
+    lower = UID(0, 0)
+    upper = UID.AllDevices()
+    broadcast_uid = UID.AllDevices()
+    self.SendDirectedDiscovery(broadcast_uid, ROOT_DEVICE, self.pid,
+                               [str(lower), str(upper)])
+
+  def VerifyResult(self, response, fields):
+    if self._muting:
+      return
+
+    if (response.response_code ==
+        OlaClient.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED):
+      self.SetProperty('dub_supported', False)
+      return
+
+    self.SetProperty('dub_supported', True)
+
+    if len(response.raw_response) != 1:
+      self.SetFailed('Multiple DUB responses returned')
+      return
+
+    uid = DecodeResponse(bytearray(response.raw_response[0]))
+    if uid is None or uid != self._uid:
+      self.SetFailed('Missing UID in DUB response')
+
+    self.LogDebug(' Located UID: %s' % uid)
+
+  def ResetState(self):
+    # mute the device again
+    mute_pid = self.LookupPid('DISC_MUTE')
+    self.SendDiscovery(PidStore.ROOT_DEVICE, mute_pid)
     self._wrapper.Run()
 
 
@@ -1706,7 +1775,6 @@ class GetSensorDefinition(OptionalParameterTestFixture):
 
   def Test(self):
     # default to false
-    self.SetProperty('sensor_recording_supported', False)
     self._sensors = {}  # stores the discovered sensors
     self._current_index = -1  # the current sensor we're trying to query
     self._sensor_holes = []  # indices of sensors that are missing

@@ -99,6 +99,9 @@ enum RDMResponseCode {
   // when you send DISCOVERY_COMMAND messages to a device which doesn't allow
   // them.
   RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED = 18;
+  // Responses to DUB commands, these responses won't have a defined RDM
+  // message, but rather just a string of bytes from the wire.
+  RDM_DUB_RESPONSE = 19;
 }
 
 

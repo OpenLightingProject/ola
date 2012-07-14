@@ -233,9 +233,9 @@ def main():
   runner = TestRunner.TestRunner(options.universe,
                                  options.uid,
                                  options.broadcast_write_delay,
-                                 options.timestamp,
                                  pid_store,
-                                 wrapper)
+                                 wrapper,
+                                 options.timestamp)
 
   for test_class in test_classes:
     runner.RegisterTest(test_class)

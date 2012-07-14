@@ -184,7 +184,7 @@ class TestServerApplication(object):
                 'u': 0,
                 'uid': None,
                 'w': 0,
-                'f': 20,
+                'f': 0,
                 'c': 128,
                 't': None,
     }

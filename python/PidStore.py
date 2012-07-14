@@ -26,7 +26,7 @@ import sys
 from google.protobuf import text_format
 from ola import PidStoreLocation
 from ola import Pids_pb2
-from ola import UID
+from ola.UID import UID
 
 
 # Various sub device enums
@@ -431,7 +431,12 @@ class UIDAtom(FixedSizeAtom):
     return UID(values[0], values[1])
 
   def Pack(self, args):
-    uid = UID.FromString(args[0])
+    uid = None
+    if isinstance(args[0], UID):
+      uid = args[0]
+    else:
+      uid = UID.FromString(args[0])
+
     if uid is None:
       raise ArgsValidationError("Invalid UID: %s" % e)
 

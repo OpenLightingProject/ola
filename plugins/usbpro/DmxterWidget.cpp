@@ -125,8 +125,13 @@ void DmxterWidgetImpl::SendRDMRequest(const RDMRequest *request,
                                              m_transaction_number++,
                                              1);
   if (r) {
-    uint8_t label = request->DestinationUID().IsBroadcast() ?
-      RDM_BCAST_REQUEST_LABEL : RDM_REQUEST_LABEL;
+    uint8_t label;
+    if (IsDUBRequest(request)) {
+      label = DISCOVERY_BRANCH_LABEL;
+    } else {
+      label = request->DestinationUID().IsBroadcast() ?
+        RDM_BCAST_REQUEST_LABEL : RDM_REQUEST_LABEL;
+    }
 
     m_rdm_request_callback = on_complete;
     m_pending_request = request;
@@ -185,6 +190,9 @@ void DmxterWidgetImpl::HandleMessage(uint8_t label,
     case TOD_LABEL:
       HandleTodResponse(data, length);
       break;
+    case DISCOVERY_BRANCH_LABEL:
+      HandleRDMResponse(data, length, true);
+      break;
     case RDM_REQUEST_LABEL:
       HandleRDMResponse(data, length);
       break;
@@ -231,12 +239,15 @@ void DmxterWidgetImpl::HandleTodResponse(const uint8_t *data,
  * Handle a RDM response.
  */
 void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
-                                         unsigned int length) {
+                                         unsigned int length,
+                                         bool is_dub) {
   std::vector<std::string> packets;
   if (m_rdm_request_callback == NULL) {
     OLA_FATAL << "Got a response but no callback to run!";
     return;
   }
+
+  bool waiting_for_dub_response = IsDUBRequest(m_pending_request);
 
   ola::rdm::RDMCallback *callback = m_rdm_request_callback;
   m_rdm_request_callback = NULL;
@@ -296,8 +307,15 @@ void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
     case RC_BAD_RESPONSE_TYPE:
       code = ola::rdm::RDM_INVALID_RESPONSE_TYPE;
       break;
-    case RC_IDLE_LEVEL:
     case RC_GOOD_LEVEL:
+      if (waiting_for_dub_response) {
+        code = ola::rdm::RDM_DUB_RESPONSE;
+      } else {
+        OLA_INFO << "Got response code " << static_cast<int>(response_code);
+        code = ola::rdm::RDM_INVALID_RESPONSE;
+      }
+      break;
+    case RC_IDLE_LEVEL:
     case RC_BAD_LEVEL:
     case RC_BROADCAST:
     case RC_VENDORCAST:
@@ -347,9 +365,12 @@ void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
   }
 
   string packet;
-  if (length > 3)
-    packet.assign(reinterpret_cast<const char*>(data + 3), length - 3);
-  packets.push_back(packet);
+  unsigned packet_offset = is_dub ? 2 : 3;
+  if (length > packet_offset) {
+    packet.assign(reinterpret_cast<const char*>(data + packet_offset),
+                  length - packet_offset);
+    packets.push_back(packet);
+  }
 
   if (code == ola::rdm::RDM_COMPLETED_OK) {
     ola::rdm::RDMResponse *response = ola::rdm::RDMResponse::InflateFromData(
@@ -400,6 +421,15 @@ void DmxterWidgetImpl::HandleShutdown(const uint8_t *data,
     // invoke the on_close callback, removing the device.
     GetDescriptor()->Close();
   }
+}
+
+
+/**
+ * Return true if this is a Discovery Unique Branch request
+ */
+bool DmxterWidgetImpl::IsDUBRequest(const ola::rdm::RDMRequest *request) {
+  return (request->CommandClass() == ola::rdm::RDMCommand::DISCOVER_COMMAND &&
+          request->ParamId() == ola::rdm::PID_DISC_UNIQUE_BRANCH);
 }
 
 
