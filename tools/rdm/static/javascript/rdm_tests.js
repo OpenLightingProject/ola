@@ -296,13 +296,7 @@ RDMTests.prototype.validate_form = function() {
       test_filter = $('select[name="failed_test_defs"]').val();
     }
   }
-
-  var confirmation = confirm('Running tests will reconfigure your devices, are you sure you want to run the tests?');
-  if (confirmation) {
-    rdmtests.run_tests(test_filter);
-  } else {
-    return false;
-  }
+  rdmtests.run_tests(test_filter);
 };
 
 $(document).ready(function() {
