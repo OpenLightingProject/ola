@@ -21,21 +21,27 @@
 #ifndef OLAD_TESTCOMMON_H_
 #define OLAD_TESTCOMMON_H_
 #include <cppunit/extensions/HelperMacros.h>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "ola/Clock.h"
 #include "ola/DmxBuffer.h"
+#include "ola/rdm/RDMCommand.h"
+#include "ola/rdm/UIDSet.h"
 #include "olad/Device.h"
 #include "olad/Plugin.h"
 #include "olad/Port.h"
 #include "olad/PortManager.h"
 
 using ola::AbstractDevice;
-using ola::DmxBuffer;
 using ola::BasicInputPort;
 using ola::BasicOutputPort;
+using ola::DmxBuffer;
 using ola::TimeStamp;
+using ola::rdm::UIDSet;
 using std::string;
+using std::vector;
 
 
 /*
@@ -94,8 +100,13 @@ class TestMockPriorityInputPort: public TestMockInputPort {
  */
 class TestMockOutputPort: public BasicOutputPort {
   public:
-    TestMockOutputPort(AbstractDevice *parent, unsigned int port_id):
-      BasicOutputPort(parent, port_id) {}
+    TestMockOutputPort(AbstractDevice *parent,
+                       unsigned int port_id,
+                       bool start_rdm_discovery_on_patch = false,
+                       bool supports_rdm = false):
+      BasicOutputPort(parent, port_id, start_rdm_discovery_on_patch,
+                      supports_rdm) {
+    }
     ~TestMockOutputPort() {}
 
     string Description() const { return ""; }
@@ -108,6 +119,63 @@ class TestMockOutputPort: public BasicOutputPort {
 
   private:
     DmxBuffer m_buffer;
+};
+
+
+/*
+ * Mock out an RDM OutputPort
+ */
+class TestMockRDMOutputPort: public TestMockOutputPort {
+  public:
+    typedef ola::BaseCallback2<void,
+                               const ola::rdm::RDMRequest*,
+                               ola::rdm::RDMCallback*> RDMRequestHandler;
+
+    TestMockRDMOutputPort(AbstractDevice *parent,
+                          unsigned int port_id,
+                          UIDSet *uids,
+                          bool start_rdm_discovery_on_patch = false,
+                          RDMRequestHandler *rdm_handler = NULL)
+        : TestMockOutputPort(parent,
+                             port_id,
+                             start_rdm_discovery_on_patch,
+                             true),
+          m_uids(uids),
+          m_rdm_handler(rdm_handler) {
+    }
+    ~TestMockRDMOutputPort() {}
+
+    void SetRDMHandler(RDMRequestHandler *handler) {
+      m_rdm_handler.reset(handler);
+    }
+
+    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+                        ola::rdm::RDMCallback *callback) {
+      // if a RDMRequestHandler was provided use that.
+      if (m_rdm_handler.get()) {
+        m_rdm_handler->Run(request, callback);
+        return;
+      }
+
+      // otherwise just return a RDM_FAILED_TO_SEND
+      vector<string> packets;
+      delete request;
+      callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
+    }
+
+    void RunFullDiscovery(
+        ola::rdm::RDMDiscoveryCallback *on_complete) {
+      on_complete->Run(*m_uids);
+    }
+
+    void RunIncrementalDiscovery(
+        ola::rdm::RDMDiscoveryCallback *on_complete) {
+      on_complete->Run(*m_uids);
+    }
+
+  private:
+    UIDSet *m_uids;
+    std::auto_ptr<RDMRequestHandler> m_rdm_handler;
 };
 
 

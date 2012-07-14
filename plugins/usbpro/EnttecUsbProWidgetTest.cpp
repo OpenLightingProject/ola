@@ -49,6 +49,8 @@ class EnttecUsbProWidgetTest: public CommonWidgetTest {
   CPPUNIT_TEST(testReceiveDMX);
   CPPUNIT_TEST(testChangeMode);
   CPPUNIT_TEST(testSendRDMRequest);
+  CPPUNIT_TEST(testSendRDMMute);
+  CPPUNIT_TEST(testSendRDMDUB);
   CPPUNIT_TEST(testMuteDevice);
   CPPUNIT_TEST(testUnMuteAll);
   CPPUNIT_TEST(testBranch);
@@ -61,6 +63,8 @@ class EnttecUsbProWidgetTest: public CommonWidgetTest {
     void testReceiveDMX();
     void testChangeMode();
     void testSendRDMRequest();
+    void testSendRDMMute();
+    void testSendRDMDUB();
     void testMuteDevice();
     void testUnMuteAll();
     void testBranch();
@@ -533,6 +537,145 @@ void EnttecUsbProWidgetTest::testSendRDMRequest() {
 
   // cleanup time
   delete[] expected_bcast_request_frame;
+}
+
+
+/**
+ * Check that RDM Mute requests work
+ */
+void EnttecUsbProWidgetTest::testSendRDMMute() {
+  // request
+  const RDMRequest *rdm_request = new ola::rdm::RDMDiscoveryRequest(
+      SOURCE,
+      DESTINATION,
+      m_transaction_number++,  // transaction #
+      1,  // port id
+      0,  // message count
+      0,  // sub device
+      ola::rdm::PID_DISC_MUTE,  // param id
+      NULL,
+      0);
+  unsigned int expected_request_frame_size;
+  uint8_t *expected_request_frame = PackRDMRequest(
+      rdm_request,
+      &expected_request_frame_size);
+
+  // response
+  // to keep things simple here we return the TEST_RDM_DATA.
+  auto_ptr<const RDMResponse> response(
+    GetResponseFromData(rdm_request, TEST_RDM_DATA, sizeof(TEST_RDM_DATA)));
+  unsigned int response_size;
+  uint8_t *response_frame = PackRDMResponse(response.get(), &response_size);
+
+  // add the expected response, send and verify
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      RDM_PACKET,
+      expected_request_frame,
+      expected_request_frame_size,
+      RECEIVE_DMX_LABEL,
+      response_frame,
+      response_size);
+
+  m_widget->SendRDMRequest(
+      rdm_request,
+      ola::NewSingleCallback(this, &EnttecUsbProWidgetTest::ValidateResponse));
+  m_ss.Run();
+  m_endpoint->Verify();
+
+  delete[] expected_request_frame;
+  delete[] response_frame;
+}
+
+
+/**
+ * Check that we send RDM discovery messages correctly.
+ */
+void EnttecUsbProWidgetTest::testSendRDMDUB() {
+  static const uint8_t REQUEST_DATA[] = {
+    0x7a, 0x70, 0, 0, 0, 0,
+    0x7a, 0x70, 0xff, 0xff, 0xff, 0xff
+  };
+
+  // request
+  const RDMRequest *rdm_request = new ola::rdm::RDMDiscoveryRequest(
+      SOURCE,
+      DESTINATION,
+      m_transaction_number++,  // transaction #
+      1,  // port id
+      0,  // message count
+      0,  // sub device
+      ola::rdm::PID_DISC_UNIQUE_BRANCH,  // param id
+      REQUEST_DATA,
+      sizeof(REQUEST_DATA));
+  unsigned int expected_request_frame_size;
+  uint8_t *expected_request_frame = PackRDMRequest(
+      rdm_request,
+      &expected_request_frame_size);
+
+  // a 4 byte response means a timeout
+  static const uint8_t EMPTY_RESPONSE[] = {0, 0, 0, 0};
+
+  // add the expected response, send and verify
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      RDM_DISCOVERY_PACKET,
+      expected_request_frame,
+      expected_request_frame_size,
+      RDM_TIMEOUT_PACKET,
+      EMPTY_RESPONSE,
+      sizeof(EMPTY_RESPONSE));
+
+  vector<string> packets;
+  m_widget->SendRDMRequest(
+      rdm_request,
+      ola::NewSingleCallback(this,
+                             &EnttecUsbProWidgetTest::ValidateStatus,
+                             ola::rdm::RDM_TIMEOUT,
+                             packets));
+  m_ss.Run();
+  m_endpoint->Verify();
+
+  delete[] expected_request_frame;
+
+  // now try a dub response that returns something
+  rdm_request = new ola::rdm::RDMDiscoveryRequest(
+      SOURCE,
+      DESTINATION,
+      m_transaction_number++,  // transaction #
+      1,  // port id
+      0,  // message count
+      0,  // sub device
+      ola::rdm::PID_DISC_UNIQUE_BRANCH,  // param id
+      REQUEST_DATA,
+      sizeof(REQUEST_DATA));
+  expected_request_frame = PackRDMRequest(
+      rdm_request,
+      &expected_request_frame_size);
+
+  // something that looks like a DUB response
+  static const uint8_t FAKE_RESPONSE[] = {0x00, 0xfe, 0xfe, 0xaa, 0xaa};
+
+  // add the expected response, send and verify
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      RDM_DISCOVERY_PACKET,
+      expected_request_frame,
+      expected_request_frame_size,
+      RECEIVE_DMX_LABEL,
+      FAKE_RESPONSE,
+      sizeof(FAKE_RESPONSE));
+
+  packets.push_back(
+      string(reinterpret_cast<const char*>(&FAKE_RESPONSE[1]),
+             sizeof(FAKE_RESPONSE) - 1));
+  m_widget->SendRDMRequest(
+      rdm_request,
+      ola::NewSingleCallback(this,
+                             &EnttecUsbProWidgetTest::ValidateStatus,
+                             ola::rdm::RDM_DUB_RESPONSE,
+                             packets));
+  m_ss.Run();
+  m_endpoint->Verify();
+
+  delete[] expected_request_frame;
 }
 
 

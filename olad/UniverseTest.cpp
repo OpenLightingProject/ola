@@ -19,10 +19,16 @@
  */
 
 #include <cppunit/extensions/HelperMacros.h>
+#include <iostream>
 #include <string>
+#include <vector>
 
+#include "ola/Callback.h"
 #include "ola/Clock.h"
 #include "ola/DmxBuffer.h"
+#include "ola/rdm/RDMCommand.h"
+#include "ola/rdm/RDMResponseCodes.h"
+#include "ola/rdm/UID.h"
 #include "olad/Client.h"
 #include "olad/DmxSource.h"
 #include "olad/PluginAdaptor.h"
@@ -37,9 +43,19 @@
 using ola::AbstractDevice;
 using ola::Clock;
 using ola::DmxBuffer;
+using ola::NewCallback;
+using ola::NewSingleCallback;
 using ola::TimeStamp;
 using ola::Universe;
+using ola::rdm::NewDiscoveryUniqueBranchRequest;
+using ola::rdm::RDMCallback;
+using ola::rdm::RDMRequest;
+using ola::rdm::RDMResponse;
+using ola::rdm::UID;
+using ola::rdm::UIDSet;
+using ola::rdm::rdm_response_code;
 using std::string;
+using std::vector;
 
 static unsigned int TEST_UNIVERSE = 1;
 static const char TEST_DATA[] = "this is some test data";
@@ -48,32 +64,53 @@ static const char TEST_DATA[] = "this is some test data";
 class UniverseTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(UniverseTest);
   CPPUNIT_TEST(testLifecycle);
-  CPPUNIT_TEST(testSetGet);
+  CPPUNIT_TEST(testSetGetDmx);
   CPPUNIT_TEST(testSendDmx);
   CPPUNIT_TEST(testReceiveDmx);
   CPPUNIT_TEST(testSourceClients);
   CPPUNIT_TEST(testSinkClients);
   CPPUNIT_TEST(testLtpMerging);
   CPPUNIT_TEST(testHtpMerging);
+  CPPUNIT_TEST(testRDMDiscovery);
+  CPPUNIT_TEST(testRDMSend);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void setUp();
     void tearDown();
     void testLifecycle();
-    void testSetGet();
+    void testSetGetDmx();
     void testSendDmx();
     void testReceiveDmx();
     void testSourceClients();
     void testSinkClients();
     void testLtpMerging();
     void testHtpMerging();
+    void testRDMDiscovery();
+    void testRDMSend();
 
   private:
     ola::MemoryPreferences *m_preferences;
     ola::UniverseStore *m_store;
     DmxBuffer m_buffer;
     ola::Clock m_clock;
+
+    void ConfirmUIDs(UIDSet *expected, const UIDSet &uids);
+
+    void ConfirmRDM(int line,
+                    rdm_response_code expected_response_code,
+                    const RDMResponse *expected_response,
+                    rdm_response_code response_code,
+                    const RDMResponse *response,
+                    const vector<string>&);
+
+    void ReturnRDMCode(rdm_response_code response_code,
+                       const RDMRequest *request,
+                       RDMCallback *callback) {
+      vector<string> packets;
+      delete request;
+      callback->Run(response_code, NULL, packets);
+    }
 };
 
 
@@ -94,6 +131,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(UniverseTest);
 
 
 void UniverseTest::setUp() {
+  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
   m_preferences = new ola::MemoryPreferences("foo");
   m_store = new ola::UniverseStore(m_preferences, NULL);
   m_buffer.Set(TEST_DATA);
@@ -150,7 +188,7 @@ void UniverseTest::testLifecycle() {
 /*
  * Check that SetDMX/GetDMX works
  */
-void UniverseTest::testSetGet() {
+void UniverseTest::testSetGetDmx() {
   Universe *universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
   CPPUNIT_ASSERT(universe);
 
@@ -481,4 +519,313 @@ void UniverseTest::testHtpMerging() {
   universe->RemovePort(&port);
   universe->RemovePort(&port2);
   CPPUNIT_ASSERT(!universe->IsActive());
+}
+
+
+/**
+ * Test RDM discovery for a universe/
+ */
+void UniverseTest::testRDMDiscovery() {
+  Universe *universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
+  CPPUNIT_ASSERT(universe);
+
+  // check the uid set is initially empty
+  UIDSet universe_uids;
+  universe->GetUIDs(&universe_uids);
+  CPPUNIT_ASSERT_EQUAL(0u, universe_uids.Size());
+
+  UID uid1(0x7a70, 1);
+  UID uid2(0x7a70, 2);
+  UID uid3(0x7a70, 3);
+  UIDSet port1_uids, port2_uids;
+  port1_uids.AddUID(uid1);
+  port2_uids.AddUID(uid2);
+  TestMockRDMOutputPort port1(NULL, 1, &port1_uids);
+  // this port is configured to update the uids on patch
+  TestMockRDMOutputPort port2(NULL, 2, &port2_uids, true);
+  universe->AddPort(&port1);
+  port1.SetUniverse(universe);
+  universe->AddPort(&port2);
+  port2.SetUniverse(universe);
+
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->InputPortCount());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 2, universe->OutputPortCount());
+  universe->GetUIDs(&universe_uids);
+  CPPUNIT_ASSERT_EQUAL(1u, universe_uids.Size());
+  CPPUNIT_ASSERT(universe_uids.Contains(uid2));
+  CPPUNIT_ASSERT(universe->IsActive());
+
+  // now trigger discovery
+  UIDSet expected_uids;
+  expected_uids.AddUID(uid1);
+  expected_uids.AddUID(uid2);
+
+  universe->RunRDMDiscovery(
+    NewSingleCallback(this, &UniverseTest::ConfirmUIDs, &expected_uids),
+    true);
+
+  // now add a uid to one port, and remove a uid from another
+  port1_uids.AddUID(uid3);
+  port2_uids.RemoveUID(uid2);
+
+  expected_uids.AddUID(uid3);
+  expected_uids.RemoveUID(uid2);
+
+  universe->RunRDMDiscovery(
+    NewSingleCallback(this, &UniverseTest::ConfirmUIDs, &expected_uids),
+    true);
+
+  // remove the first port from the universe and confirm there are no more UIDs
+  universe->RemovePort(&port1);
+  expected_uids.Clear();
+
+  universe->RunRDMDiscovery(
+    NewSingleCallback(this, &UniverseTest::ConfirmUIDs, &expected_uids),
+    true);
+
+  universe_uids.Clear();
+  universe->GetUIDs(&universe_uids);
+  CPPUNIT_ASSERT_EQUAL(0u, universe_uids.Size());
+
+  universe->RemovePort(&port2);
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->InputPortCount());
+  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->OutputPortCount());
+  CPPUNIT_ASSERT(!universe->IsActive());
+}
+
+
+/**
+ * test Sending an RDM request
+ */
+void UniverseTest::testRDMSend() {
+  Universe *universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
+  CPPUNIT_ASSERT(universe);
+
+  // setup the ports with a UID on each
+  UID uid1(0x7a70, 1);
+  UID uid2(0x7a70, 2);
+  UID uid3(0x7a70, 3);
+  UIDSet port1_uids, port2_uids;
+  port1_uids.AddUID(uid1);
+  port2_uids.AddUID(uid2);
+  TestMockRDMOutputPort port1(NULL, 1, &port1_uids, true);
+  TestMockRDMOutputPort port2(NULL, 2, &port2_uids, true);
+  universe->AddPort(&port1);
+  port1.SetUniverse(universe);
+  universe->AddPort(&port2);
+  port2.SetUniverse(universe);
+
+  UID source_uid(0x7a70, 100);
+  // first try a command to a uid we don't know about
+  const RDMRequest *request = new ola::rdm::RDMGetRequest(
+      source_uid,
+      uid3,
+      0,  // transaction #
+      1,  // port id
+      0,  // message count
+      10,  // sub device
+      296,  // param id
+      NULL,
+      0);
+
+  universe->SendRDMRequest(
+      request,
+      NewSingleCallback(this,
+                        &UniverseTest::ConfirmRDM,
+                        __LINE__,
+                        ola::rdm::RDM_UNKNOWN_UID,
+                        reinterpret_cast<const RDMResponse*>(NULL)));
+
+  // ok, now try something that returns a response from the port
+  request = new ola::rdm::RDMGetRequest(
+      source_uid,
+      uid1,
+      0,  // transaction #
+      1,  // port id
+      0,  // message count
+      10,  // sub device
+      296,  // param id
+      NULL,
+      0);
+
+  port1.SetRDMHandler(
+    NewCallback(this, &UniverseTest::ReturnRDMCode, ola::rdm::RDM_TIMEOUT));
+
+  universe->SendRDMRequest(
+      request,
+      NewSingleCallback(this,
+                        &UniverseTest::ConfirmRDM,
+                        __LINE__,
+                        ola::rdm::RDM_TIMEOUT,
+                        reinterpret_cast<const RDMResponse*>(NULL)));
+
+  // now try a broadcast fan out
+  UID vendorcast_uid = UID::AllManufactureDevices(0x7a70);
+  request = new ola::rdm::RDMGetRequest(
+      source_uid,
+      vendorcast_uid,
+      0,  // transaction #
+      1,  // port id
+      0,  // message count
+      10,  // sub device
+      296,  // param id
+      NULL,
+      0);
+
+  port1.SetRDMHandler(
+    NewCallback(this,
+                &UniverseTest::ReturnRDMCode,
+                ola::rdm::RDM_WAS_BROADCAST));
+  port2.SetRDMHandler(
+    NewCallback(this,
+                &UniverseTest::ReturnRDMCode,
+                ola::rdm::RDM_WAS_BROADCAST));
+
+  universe->SendRDMRequest(
+      request,
+      NewSingleCallback(this,
+                        &UniverseTest::ConfirmRDM,
+                        __LINE__,
+                        ola::rdm::RDM_WAS_BROADCAST,
+                        reinterpret_cast<const RDMResponse*>(NULL)));
+
+  // now confirm that if one of the ports fails to send, we see this response
+  request = new ola::rdm::RDMGetRequest(
+      source_uid,
+      vendorcast_uid,
+      0,  // transaction #
+      1,  // port id
+      0,  // message count
+      10,  // sub device
+      296,  // param id
+      NULL,
+      0);
+
+  port2.SetRDMHandler(
+    NewCallback(this,
+                &UniverseTest::ReturnRDMCode,
+                ola::rdm::RDM_FAILED_TO_SEND));
+
+  universe->SendRDMRequest(
+      request,
+      NewSingleCallback(this,
+                        &UniverseTest::ConfirmRDM,
+                        __LINE__,
+                        ola::rdm::RDM_FAILED_TO_SEND,
+                        reinterpret_cast<const RDMResponse*>(NULL)));
+
+  // DUB responses are slightly different
+  request = NewDiscoveryUniqueBranchRequest(source_uid, uid1, uid2, 0);
+
+  port1.SetRDMHandler(
+    NewCallback(this,
+                &UniverseTest::ReturnRDMCode,
+                ola::rdm::RDM_DUB_RESPONSE));
+  port2.SetRDMHandler(
+    NewCallback(this,
+                &UniverseTest::ReturnRDMCode,
+                ola::rdm::RDM_DUB_RESPONSE));
+
+  universe->SendRDMRequest(
+      request,
+      NewSingleCallback(this,
+                        &UniverseTest::ConfirmRDM,
+                        __LINE__,
+                        ola::rdm::RDM_DUB_RESPONSE,
+                        reinterpret_cast<const RDMResponse*>(NULL)));
+
+  // now check that we still get a RDM_DUB_RESPONSE even if one port returns an
+  // RDM_TIMEOUT
+  request = NewDiscoveryUniqueBranchRequest(source_uid, uid1, uid2, 0);
+
+  port2.SetRDMHandler(
+    NewCallback(this,
+                &UniverseTest::ReturnRDMCode,
+                ola::rdm::RDM_TIMEOUT));
+
+  universe->SendRDMRequest(
+      request,
+      NewSingleCallback(this,
+                        &UniverseTest::ConfirmRDM,
+                        __LINE__,
+                        ola::rdm::RDM_DUB_RESPONSE,
+                        reinterpret_cast<const RDMResponse*>(NULL)));
+
+  // and the same again but the second port returns
+  // RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED
+  request = NewDiscoveryUniqueBranchRequest(source_uid, uid1, uid2, 0);
+
+  port2.SetRDMHandler(
+    NewCallback(this,
+                &UniverseTest::ReturnRDMCode,
+                ola::rdm::RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED));
+
+  universe->SendRDMRequest(
+      request,
+      NewSingleCallback(this,
+                        &UniverseTest::ConfirmRDM,
+                        __LINE__,
+                        ola::rdm::RDM_DUB_RESPONSE,
+                        reinterpret_cast<const RDMResponse*>(NULL)));
+
+  // now the first port returns a RDM_TIMEOUT
+  request = NewDiscoveryUniqueBranchRequest(source_uid, uid1, uid2, 0);
+
+  port1.SetRDMHandler(
+    NewCallback(this,
+                &UniverseTest::ReturnRDMCode,
+                ola::rdm::RDM_TIMEOUT));
+
+  universe->SendRDMRequest(
+      request,
+      NewSingleCallback(this,
+                        &UniverseTest::ConfirmRDM,
+                        __LINE__,
+                        ola::rdm::RDM_TIMEOUT,
+                        reinterpret_cast<const RDMResponse*>(NULL)));
+
+  // finally if neither ports support the DUB, we should return that
+  request = NewDiscoveryUniqueBranchRequest(source_uid, uid1, uid2, 0);
+
+  port1.SetRDMHandler(
+    NewCallback(this,
+                &UniverseTest::ReturnRDMCode,
+                ola::rdm::RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED));
+
+  universe->SendRDMRequest(
+      request,
+      NewSingleCallback(this,
+                        &UniverseTest::ConfirmRDM,
+                        __LINE__,
+                        ola::rdm::RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED,
+                        reinterpret_cast<const RDMResponse*>(NULL)));
+
+  universe->RemovePort(&port1);
+  universe->RemovePort(&port2);
+}
+
+
+/**
+ * Check we got the uids we expect
+ */
+void UniverseTest::ConfirmUIDs(UIDSet *expected, const UIDSet &uids) {
+  CPPUNIT_ASSERT_EQUAL(*expected, uids);
+}
+
+
+/**
+ * Confirm an RDM response
+ */
+void UniverseTest::ConfirmRDM(int line,
+                              rdm_response_code expected_response_code,
+                              const RDMResponse *expected_response,
+                              rdm_response_code response_code,
+                              const RDMResponse *response,
+                              const vector<string>&) {
+  std::stringstream str;
+  str << "Line " << line;
+  CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(),
+                               expected_response_code,
+                               response_code);
+  CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(), expected_response, response);
 }

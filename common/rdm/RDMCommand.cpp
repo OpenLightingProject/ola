@@ -781,7 +781,7 @@ RDMResponse *GetResponseFromData(const RDMRequest *request,
 
 
 /**
- * Generate a queued message response
+ * Construct a RDM response from a RDMRequest object.
  */
 RDMResponse *GetResponseWithPid(const RDMRequest *request,
                                 uint16_t pid,
@@ -789,28 +789,42 @@ RDMResponse *GetResponseWithPid(const RDMRequest *request,
                                 unsigned int length,
                                 uint8_t type,
                                 uint8_t outstanding_messages) {
-  if (request->CommandClass() == ola::rdm::RDMCommand::GET_COMMAND) {
-    return new RDMGetResponse(
-      request->DestinationUID(),
-      request->SourceUID(),
-      request->TransactionNumber(),
-      type,
-      outstanding_messages,
-      request->SubDevice(),
-      pid,
-      data,
-      length);
-  } else {
-    return new RDMSetResponse(
-      request->DestinationUID(),
-      request->SourceUID(),
-      request->TransactionNumber(),
-      type,
-      outstanding_messages,
-      request->SubDevice(),
-      pid,
-      data,
-      length);
+  switch (request->CommandClass()) {
+    case RDMCommand::GET_COMMAND:
+      return new RDMGetResponse(
+        request->DestinationUID(),
+        request->SourceUID(),
+        request->TransactionNumber(),
+        type,
+        outstanding_messages,
+        request->SubDevice(),
+        pid,
+        data,
+        length);
+    case RDMCommand::SET_COMMAND:
+      return new RDMSetResponse(
+        request->DestinationUID(),
+        request->SourceUID(),
+        request->TransactionNumber(),
+        type,
+        outstanding_messages,
+        request->SubDevice(),
+        pid,
+        data,
+        length);
+    case RDMCommand::DISCOVER_COMMAND:
+      return new RDMDiscoveryResponse(
+        request->DestinationUID(),
+        request->SourceUID(),
+        request->TransactionNumber(),
+        type,
+        outstanding_messages,
+        request->SubDevice(),
+        pid,
+        data,
+        length);
+     default:
+      return NULL;
   }
 }
 

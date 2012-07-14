@@ -32,6 +32,8 @@
 
 using ola::plugin::usbpro::DmxterWidget;
 using ola::rdm::RDMRequest;
+using ola::rdm::RDMResponse;
+using ola::rdm::GetResponseFromData;
 using ola::rdm::UID;
 using std::string;
 using std::vector;
@@ -41,6 +43,8 @@ class DmxterWidgetTest: public CommonWidgetTest {
   CPPUNIT_TEST_SUITE(DmxterWidgetTest);
   CPPUNIT_TEST(testTod);
   CPPUNIT_TEST(testSendRDMRequest);
+  CPPUNIT_TEST(testSendRDMMute);
+  CPPUNIT_TEST(testSendRDMDUB);
   CPPUNIT_TEST(testErrorCodes);
   CPPUNIT_TEST(testErrorConditions);
   CPPUNIT_TEST(testShutdown);
@@ -51,6 +55,8 @@ class DmxterWidgetTest: public CommonWidgetTest {
 
     void testTod();
     void testSendRDMRequest();
+    void testSendRDMMute();
+    void testSendRDMDUB();
     void testErrorCodes();
     void testErrorConditions();
     void testShutdown();
@@ -73,7 +79,12 @@ class DmxterWidgetTest: public CommonWidgetTest {
                                  const UID &destination,
                                  const uint8_t *data,
                                  unsigned int length);
+
+    static const uint8_t TEST_RDM_DATA[];
 };
+
+
+const uint8_t DmxterWidgetTest::TEST_RDM_DATA[] = {0x5a, 0x5a, 0x5a, 0x5a};
 
 CPPUNIT_TEST_SUITE_REGISTRATION(DmxterWidgetTest);
 
@@ -294,6 +305,164 @@ void DmxterWidgetTest::testSendRDMRequest() {
 
 
 /**
+ * Check that RDM Mute requests work
+ */
+void DmxterWidgetTest::testSendRDMMute() {
+  uint8_t RDM_REQUEST_LABEL = 0x80;
+  const UID source(0x5253, 0x12345678);
+  const UID destination(3, 4);
+
+  // request
+  const RDMRequest *rdm_request = new ola::rdm::RDMDiscoveryRequest(
+      source,
+      destination,
+      0,  // transaction #
+      1,  // port id
+      0,  // message count
+      0,  // sub device
+      ola::rdm::PID_DISC_MUTE,  // param id
+      NULL,
+      0);
+
+  unsigned int request_size = rdm_request->Size();
+  uint8_t *expected_request_frame = new uint8_t[request_size + 1];
+  expected_request_frame[0] = 0xcc;
+  CPPUNIT_ASSERT(rdm_request->Pack(expected_request_frame + 1, &request_size));
+
+  // response
+  // to keep things simple here we return the TEST_RDM_DATA.
+  auto_ptr<const RDMResponse> response(
+    GetResponseFromData(rdm_request, TEST_RDM_DATA, sizeof(TEST_RDM_DATA)));
+
+  unsigned int response_size = response->Size();
+  uint8_t *response_frame = new uint8_t[response_size + 3];
+  response_frame[0] = 0;  // version
+  response_frame[1] = 14;  // status ok
+  response_frame[2] = ola::rdm::RDMCommand::START_CODE;
+  memset(&response_frame[3], 0, response_size);
+  CPPUNIT_ASSERT(response->Pack(&response_frame[3], &response_size));
+  response_size += 3;
+
+  // add the expected response, send and verify
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      RDM_REQUEST_LABEL,
+      expected_request_frame,
+      request_size + 1,
+      RDM_REQUEST_LABEL,
+      response_frame,
+      response_size);
+
+  m_widget->SendRDMRequest(
+      rdm_request,
+      ola::NewSingleCallback(this, &DmxterWidgetTest::ValidateResponse));
+  m_ss.Run();
+  m_endpoint->Verify();
+
+  delete[] expected_request_frame;
+  delete[] response_frame;
+}
+
+
+/**
+ * Check that we send RDM discovery messages correctly.
+ */
+void DmxterWidgetTest::testSendRDMDUB() {
+  uint8_t RDM_DUB_LABEL = 0x83;
+  const UID source(0x5253, 0x12345678);
+  const UID destination = UID::AllDevices();
+
+  static const uint8_t REQUEST_DATA[] = {
+    0x7a, 0x70, 0, 0, 0, 0,
+    0x7a, 0x70, 0xff, 0xff, 0xff, 0xff
+  };
+
+  // request
+  const RDMRequest *rdm_request = new ola::rdm::RDMDiscoveryRequest(
+      source,
+      destination,
+      0,  // transaction #
+      1,  // port id
+      0,  // message count
+      0,  // sub device
+      ola::rdm::PID_DISC_UNIQUE_BRANCH,  // param id
+      REQUEST_DATA,
+      sizeof(REQUEST_DATA));
+
+  unsigned int request_size = rdm_request->Size();
+  uint8_t *expected_request_frame = new uint8_t[request_size + 1];
+  expected_request_frame[0] = 0xcc;
+  CPPUNIT_ASSERT(rdm_request->Pack(expected_request_frame + 1, &request_size));
+
+  // a 4 byte response means a timeout
+  static const uint8_t TIMEOUT_RESPONSE[] = {0, 17};
+
+  // add the expected response, send and verify
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      RDM_DUB_LABEL,
+      expected_request_frame,
+      request_size + 1,
+      RDM_DUB_LABEL,
+      TIMEOUT_RESPONSE,
+      sizeof(TIMEOUT_RESPONSE));
+
+  vector<string> packets;
+  m_widget->SendRDMRequest(
+      rdm_request,
+      ola::NewSingleCallback(this,
+                             &DmxterWidgetTest::ValidateStatus,
+                             ola::rdm::RDM_TIMEOUT,
+                             packets));
+  m_ss.Run();
+  m_endpoint->Verify();
+
+  delete[] expected_request_frame;
+
+  // now try a dub response that returns something
+  rdm_request = new ola::rdm::RDMDiscoveryRequest(
+      source,
+      destination,
+      1,  // transaction #
+      1,  // port id
+      0,  // message count
+      0,  // sub device
+      ola::rdm::PID_DISC_UNIQUE_BRANCH,  // param id
+      REQUEST_DATA,
+      sizeof(REQUEST_DATA));
+
+  request_size = rdm_request->Size();
+  expected_request_frame = new uint8_t[request_size + 1];
+  expected_request_frame[0] = 0xcc;
+  CPPUNIT_ASSERT(rdm_request->Pack(expected_request_frame + 1, &request_size));
+
+  // something that looks like a DUB response
+  static const uint8_t FAKE_RESPONSE[] = {0x00, 19, 0xfe, 0xfe, 0xaa, 0xaa};
+
+  // add the expected response, send and verify
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      RDM_DUB_LABEL,
+      expected_request_frame,
+      request_size + 1,
+      RDM_DUB_LABEL,
+      FAKE_RESPONSE,
+      sizeof(FAKE_RESPONSE));
+
+  packets.push_back(
+      string(reinterpret_cast<const char*>(&FAKE_RESPONSE[2]),
+             sizeof(FAKE_RESPONSE) - 2));
+  m_widget->SendRDMRequest(
+      rdm_request,
+      ola::NewSingleCallback(this,
+                             &DmxterWidgetTest::ValidateStatus,
+                             ola::rdm::RDM_DUB_RESPONSE,
+                             packets));
+  m_ss.Run();
+  m_endpoint->Verify();
+
+  delete[] expected_request_frame;
+}
+
+
+/**
  * Check that we handle invalid responses ok
  */
 void DmxterWidgetTest::testErrorCodes() {
@@ -303,7 +472,6 @@ void DmxterWidgetTest::testErrorCodes() {
   UID new_source(0x5253, 0x12345678);
 
   vector<string> packets;
-  packets.push_back("");  // empty string means we didn't get anything back
 
   const RDMRequest *request = NewRequest(source, destination, NULL, 0);
 

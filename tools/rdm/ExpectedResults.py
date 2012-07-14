@@ -112,6 +112,15 @@ class UnsupportedResult(BaseExpectedResult):
             response.response_code)
 
 
+class DUBResult(BaseExpectedResult):
+  """Checks that the result was a DUB response."""
+  def __str__(self):
+    return 'RDM_DUB_RESPONSE'
+
+  def Matches(self, response, unpacked_data):
+    return OlaClient.RDM_DUB_RESPONSE == response.response_code
+
+
 class SuccessfulResult(BaseExpectedResult):
   """This checks that we received a valid response from the device.
 

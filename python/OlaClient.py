@@ -325,6 +325,8 @@ class RDMResponse(object):
         'The response type was not ACK, ACK_OVERFLOW, ACK_TIMER or NACK'),
       Ola_pb2.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED: (
         'The requested Command Class is not supported by this controller'),
+      Ola_pb2.RDM_DUB_RESPONSE: (
+        'Discovery Unique Branch response')
   }
 
   def __init__(self, controller, response):
@@ -374,6 +376,11 @@ class RDMResponse(object):
   @property
   def nack_reason(self):
     return self._nack_reason
+
+  @property
+  def raw_response(self):
+    """The list of byte strings in the response packets."""
+    return self._raw_responses
 
   def WasAcked(self):
     """Returns true if this RDM request returned a ACK response."""
@@ -732,6 +739,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     request.sub_device = sub_device
     request.param_id = param_id
     request.data = data
+    request.include_raw_response = True
     done = lambda x, y: self._RDMCommandComplete(callback, x, y)
     self._stub.RDMDiscoveryCommand(controller, request, done)
     return True

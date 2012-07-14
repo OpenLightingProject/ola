@@ -13,9 +13,9 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * OlaServerTester.cpp
- * Runs all the Ola tests
- * Copyright (C) 2005-2008 Simon Newton
+ * RobeWidgetTester.cpp
+ * Runs all the tests for Robe USB devices.
+ * Copyright (C) 2012 Simon Newton
  */
 
 #include <cppunit/CompilerOutputter.h>

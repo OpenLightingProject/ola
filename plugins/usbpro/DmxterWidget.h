@@ -65,9 +65,12 @@ class DmxterWidgetImpl: public BaseUsbProWidget,
                        const uint8_t *data,
                        unsigned int length);
     void HandleTodResponse(const uint8_t *data, unsigned int length);
-    void HandleRDMResponse(const uint8_t *data, unsigned int length);
+    void HandleRDMResponse(const uint8_t *data,
+                           unsigned int length,
+                           bool is_dub = false);
     void HandleBroadcastRDMResponse(const uint8_t *data, unsigned int length);
     void HandleShutdown(const uint8_t *data, unsigned int length);
+    bool IsDUBRequest(const ola::rdm::RDMRequest *request);
 
     static const uint8_t RDM_REQUEST_LABEL;
     static const uint8_t RDM_BCAST_REQUEST_LABEL;
