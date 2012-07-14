@@ -58,7 +58,7 @@ RDMTests.prototype.bind_events_to_doms = function() {
   $('#rdm-tests-send_dmx_in_bg').change(function() {
     if (!$(this).attr('checked')) {
       $('#slot_count').val('128');
-      $('#dmx_frame_rate').val('0');
+      $('#dmx_frame_rate').val('20');
     }
   });
 
