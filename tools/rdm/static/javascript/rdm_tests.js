@@ -55,6 +55,13 @@ RDMTests.prototype.bind_events_to_doms = function() {
     $('#rdm-tests-dmx_options').toggle('fast');
   });
 
+  $('#rdm-tests-send_dmx_in_bg').change(function() {
+    if (!$(this).attr('checked')) {
+      $('#slot_count').val('128');
+      $('#dmx_frame_rate').val('0');
+    }
+  });
+
   $(document).keydown(function(e) {
     var key = e.keyCode || e.which;
     var results_div = $('#rdm-tests-results');
