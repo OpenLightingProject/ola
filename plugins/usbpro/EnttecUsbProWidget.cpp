@@ -428,6 +428,7 @@ bool EnttecUsbProWidgetImpl::IsDUBRequest(
           request->ParamId() == ola::rdm::PID_DISC_UNIQUE_BRANCH);
 }
 
+
 /**
  * EnttecUsbProWidget Constructor
  */
