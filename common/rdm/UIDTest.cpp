@@ -115,23 +115,70 @@ void UIDTest::testUID() {
 void UIDTest::testUIDInequalities() {
   uint16_t MOCK_ESTA_ID = 0x7a70;
 
+  // check comparisons on the device id
   UID uid1(MOCK_ESTA_ID, 0);
   UID uid2(MOCK_ESTA_ID, 1);
   UID uid3(MOCK_ESTA_ID, 2);
-  UID uid4(MOCK_ESTA_ID, 0xffffffff);
-  UID uid5(MOCK_ESTA_ID - 1, 0xffffffff);
 
   CPPUNIT_ASSERT(uid1 < uid2);
   CPPUNIT_ASSERT(uid1 < uid3);
   CPPUNIT_ASSERT(uid2 < uid3);
+  CPPUNIT_ASSERT(uid3 > uid1);
+  CPPUNIT_ASSERT(uid2 > uid1);
+  CPPUNIT_ASSERT(uid3 > uid2);
+
+  // check we're using unsigned ints for the device id
+  UID uid4(MOCK_ESTA_ID, 0x80000000);
+  UID uid5(MOCK_ESTA_ID, 0xffffffff);
+
   CPPUNIT_ASSERT(uid1 < uid4);
   CPPUNIT_ASSERT(uid2 < uid4);
   CPPUNIT_ASSERT(uid3 < uid4);
+  CPPUNIT_ASSERT(uid1 < uid5);
+  CPPUNIT_ASSERT(uid2 < uid5);
+  CPPUNIT_ASSERT(uid3 < uid5);
+  CPPUNIT_ASSERT(uid4 < uid5);
+  CPPUNIT_ASSERT(uid4 > uid1);
+  CPPUNIT_ASSERT(uid4 > uid2);
+  CPPUNIT_ASSERT(uid4 > uid3);
+  CPPUNIT_ASSERT(uid5 > uid1);
+  CPPUNIT_ASSERT(uid5 > uid2);
+  CPPUNIT_ASSERT(uid5 > uid3);
+  CPPUNIT_ASSERT(uid5 > uid4);
 
-  CPPUNIT_ASSERT(uid5 < uid1);
-  CPPUNIT_ASSERT(uid5 < uid2);
-  CPPUNIT_ASSERT(uid5 < uid3);
-  CPPUNIT_ASSERT(uid5 < uid4);
+  // test the manufacturer ID
+  UID uid6(MOCK_ESTA_ID - 1, 0xffffffff);
+  CPPUNIT_ASSERT(uid6 < uid1);
+  CPPUNIT_ASSERT(uid6 < uid4);
+  CPPUNIT_ASSERT(uid6 < uid5);
+  CPPUNIT_ASSERT(uid1 > uid6);
+  CPPUNIT_ASSERT(uid4 > uid6);
+  CPPUNIT_ASSERT(uid5 > uid6);
+
+  UID uid7(MOCK_ESTA_ID + 1, 0);
+  CPPUNIT_ASSERT(uid1 < uid7);
+  CPPUNIT_ASSERT(uid4 < uid7);
+  CPPUNIT_ASSERT(uid5 < uid7);
+  CPPUNIT_ASSERT(uid6 < uid7);
+  CPPUNIT_ASSERT(uid7 > uid1);
+  CPPUNIT_ASSERT(uid7 > uid4);
+  CPPUNIT_ASSERT(uid7 > uid5);
+  CPPUNIT_ASSERT(uid7 > uid6);
+
+  // now some tests that would expose problems if we used signed ints
+  UID uid8(0x8000, 0);
+
+  CPPUNIT_ASSERT(uid1 < uid8);
+  CPPUNIT_ASSERT(uid2 < uid8);
+  CPPUNIT_ASSERT(uid3 < uid8);
+  CPPUNIT_ASSERT(uid4 < uid8);
+  CPPUNIT_ASSERT(uid5 < uid8);
+  CPPUNIT_ASSERT(uid6 < uid8);
+  CPPUNIT_ASSERT(uid8 > uid1);
+  CPPUNIT_ASSERT(uid8 > uid4);
+  CPPUNIT_ASSERT(uid8 > uid5);
+  CPPUNIT_ASSERT(uid8 > uid6);
+  CPPUNIT_ASSERT(uid8 > uid7);
 }
 
 
