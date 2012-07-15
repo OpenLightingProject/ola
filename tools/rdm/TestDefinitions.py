@@ -24,7 +24,7 @@ import datetime
 import operator
 import struct
 from ExpectedResults import *
-from ResponderTest import ResponderTestFixture
+from ResponderTest import ResponderTestFixture, TestFixture
 from ResponderTest import OptionalParameterTestFixture
 from TestCategory import TestCategory
 from ola import PidStore
@@ -60,22 +60,22 @@ class MuteDevice(ResponderTestFixture):
 
     if supported:
       self.SetProperty('mute_control_fields', fields['control_field'])
-    else:
-      self.SetProperty('mute_control_fields', None)
+      binding_uids = fields.get('binding_uid', [])
+      if binding_uids:
+        if binding_uids[0].manufacturer_id != self.uid.manufacturer_id:
+          self.AddWarning(
+            'Binding UID manufacturer ID 0x%04hx does not equal device '
+            'manufacturer ID of 0x%04hx' % (
+              binding_uids[0].manufacturer_id,
+              self.uid.manufacturer_id))
 
 
 class MuteDeviceWithData(ResponderTestFixture):
   """Mute device info with param data."""
   CATEGORY = TestCategory.NETWORK_MANAGEMENT
   PID = 'DISC_MUTE'
-  REQUIRES = ['mute_supported']
 
   def Test(self):
-    if not self.Property('mute_supported'):
-      self.SetNotRun('Controller does not support mute commands')
-      self.Stop()
-      return
-
     # Section 6.3.4 of E1.20
     self.AddExpectedResults(TimeoutResult())
     self.SendRawDiscovery(ROOT_DEVICE, self.pid, 'x')
@@ -110,14 +110,8 @@ class UnMuteDeviceWithData(ResponderTestFixture):
   """UnMute device info with param data."""
   CATEGORY = TestCategory.NETWORK_MANAGEMENT
   PID = 'DISC_UNMUTE'
-  REQUIRES = ['unmute_supported']
 
   def Test(self):
-    if not self.Property('unmute_supported'):
-      self.SetNotRun('Controller does not support unmute commands')
-      self.Stop()
-      return
-
     # Section 6.3.4 of E1.20
     self.AddExpectedResults(TimeoutResult())
     self.SendRawDiscovery(ROOT_DEVICE, self.pid, 'x')
@@ -3695,3 +3689,47 @@ class GetPresetMergeModeWithData(TestMixins.GetWithDataMixin,
   """GET preset merge mode with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PRESET_MERGE_MODE'
+
+
+# Cross check the control fields with various other properties
+#------------------------------------------------------------------------------
+class SubDeviceControlField(TestFixture):
+  """Check that the sub device control field is correct."""
+  CATEGORY = TestCategory.CORE
+  REQUIRES = ['mute_control_fields', 'sub_device_count']
+
+  def Test(self):
+    sub_device_field = self.Property('mute_control_fields') & 0x02
+    if self.Property('sub_device_count') > 0:
+      if sub_device_field == 0:
+        self.SetFailed('Sub devices reported but control field not set')
+        return
+    else:
+      if sub_device_field:
+        self.SetFailed('No Sub devices reported but control field is set')
+        return
+    self.SetPassed()
+
+
+class ProxiedDevicesControlField(TestFixture):
+  """Check that the proxied devices control field is correct."""
+  CATEGORY = TestCategory.CORE
+  REQUIRES = ['mute_control_fields', 'supported_parameters']
+
+  def Test(self):
+    proxied_devices_pid = self.LookupPid('PROXIED_DEVICES')
+    supports_proxied_devices_pid = (
+        proxied_devices_pid.value in self.Property('supported_parameters'))
+    managed_proxy_field = self.Property('mute_control_fields') & 0x01
+
+    if supports_proxied_devices_pid and managed_proxy_field == 0:
+      self.AddWarning(
+          "Support for PROXIED_DEVICES declared but the managed "
+          "proxy control field isn't set")
+      return
+    elif not supports_proxied_devices_pid and managed_proxy_field == 1:
+      self.SetFailed(
+          "Managed proxy control bit is set, but proxied devices isn't "
+          "supported")
+      return
+    self.SetPassed()
