@@ -522,8 +522,9 @@ AC_OUTPUT( Makefile\
     java/Makefile \
     ola/Makefile \
     python/Makefile \
-    python/rpc/Makefile \
     python/examples/Makefile \
+    python/ola/Makefile \
+    python/ola/rpc/Makefile \
     olad/Makefile \
     olad/OlaVersion.h \
     olad/testdata/Makefile \

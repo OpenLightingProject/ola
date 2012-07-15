@@ -21,7 +21,7 @@
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import unittest
-from UID import UID, UIDOutOfRangeException
+from ola.UID import UID, UIDOutOfRangeException
 
 class UIDTest(unittest.TestCase):
 

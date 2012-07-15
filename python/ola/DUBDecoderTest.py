@@ -21,7 +21,7 @@
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import unittest
-from DUBDecoder import DecodeResponse
+from ola.DUBDecoder import DecodeResponse
 
 class UIDTest(unittest.TestCase):
   TEST_DATA = [
