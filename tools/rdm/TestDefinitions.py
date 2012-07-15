@@ -238,6 +238,9 @@ class DUBSingleLowerUID(TestMixins.DiscoveryMixin,
   def UpperBound(self):
     return UID.PreviousUID(self.uid)
 
+  def ExpectResponse(self):
+    return False
+
 
 class DUBSingleUpperUID(TestMixins.DiscoveryMixin,
                         ResponderTestFixture):
@@ -251,6 +254,9 @@ class DUBSingleUpperUID(TestMixins.DiscoveryMixin,
 
   def UpperBound(self):
     return UID.NextUID(self.uid)
+
+  def ExpectResponse(self):
+    return False
 
 
 class DUBAffirmativeLowerBound(TestMixins.DiscoveryMixin,
@@ -343,6 +349,57 @@ class DUBSignedComparisons(TestMixins.DiscoveryMixin,
 
   def ExpectResponse(self):
     return False
+
+
+class DUBNegativeVendorcast(TestMixins.DiscoveryMixin,
+                            ResponderTestFixture):
+  """DUB to another manufacturer's vendorcast address."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
+
+  def LowerBound(self):
+    return UID(0, 0);
+
+  def UpperBound(self):
+    return UID.AllDevices()
+
+  def ExpectResponse(self):
+    return False
+
+  def Target(self):
+    return UID(self.uid.manufacturer_id - 1, 0xffffffff)
+
+
+class DUBPositiveVendorcast(TestMixins.DiscoveryMixin,
+                            ResponderTestFixture):
+  """DUB to this manufacturer's vendorcast address."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
+
+  def LowerBound(self):
+    return UID(0, 0);
+
+  def UpperBound(self):
+    return UID.AllDevices()
+
+  def Target(self):
+    return UID(self.uid.manufacturer_id, 0xffffffff)
+
+
+class DUBPositiveUnicast(TestMixins.DiscoveryMixin,
+                         ResponderTestFixture):
+  """DUB to the device's address."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
+
+  def LowerBound(self):
+    return UID(0, 0);
+
+  def UpperBound(self):
+    return UID.AllDevices()
+
+  def Target(self):
+    return self.uid
 
 
 # Device Info tests

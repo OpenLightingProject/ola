@@ -502,6 +502,10 @@ class DiscoveryMixin(ResponderTestFixture):
 
       ExpectResponse: returns true if we expect the device to answer the DUB
         request, false otherwise.
+
+      Target:
+        returns the UID to address the UID command to, defaults to
+        ffff:ffffffff
   """
   PID = 'DISC_UNIQUE_BRANCH'
   REQUIRES = ['mute_supported', 'unmute_supported']
@@ -511,6 +515,9 @@ class DiscoveryMixin(ResponderTestFixture):
 
   def ExpectResponse(self):
     return True
+
+  def Target(self):
+    return UID.AllDevices()
 
   def UnMuteDevice(self, next_method):
     unmute_pid = self.LookupPid('DISC_UNMUTE')
@@ -537,7 +544,7 @@ class DiscoveryMixin(ResponderTestFixture):
     else:
       results.append(TimeoutResult())
     self.AddExpectedResults(results)
-    self.SendDirectedDiscovery(UID.AllDevices(),
+    self.SendDirectedDiscovery(self.Target(),
                                PidStore.ROOT_DEVICE,
                                self.pid,
                                [self.LowerBound(), self.UpperBound()])
