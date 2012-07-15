@@ -76,7 +76,8 @@ class MuteDeviceWithData(ResponderTestFixture):
       self.Stop()
       return
 
-    self.AddExpectedResults(self.NackDiscoveryResult(RDMNack.NR_FORMAT_ERROR))
+    # Section 6.3.4 of E1.20
+    self.AddExpectedResults(TimeoutResult())
     self.SendRawDiscovery(ROOT_DEVICE, self.pid, 'x')
 
 
@@ -117,7 +118,8 @@ class UnMuteDeviceWithData(ResponderTestFixture):
       self.Stop()
       return
 
-    self.AddExpectedResults(self.NackDiscoveryResult(RDMNack.NR_FORMAT_ERROR))
+    # Section 6.3.4 of E1.20
+    self.AddExpectedResults(TimeoutResult())
     self.SendRawDiscovery(ROOT_DEVICE, self.pid, 'x')
 
 
@@ -152,8 +154,8 @@ class RequestsWhileUnmuted(ResponderTestFixture):
 
 # DUB Tests
 #------------------------------------------------------------------------------
-class FullTreeDiscovery(TestMixins.DiscoveryMixin,
-                        ResponderTestFixture):
+class DUBFullTree(TestMixins.DiscoveryMixin,
+                  ResponderTestFixture):
   """Confirm the device responds within the entire DUB range."""
   CATEGORY = TestCategory.NETWORK_MANAGEMENT
   PROVIDES = ['dub_supported']
@@ -170,8 +172,8 @@ class FullTreeDiscovery(TestMixins.DiscoveryMixin,
         response_code != OlaClient.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED)
 
 
-class ManufacturerTreeDiscovery(TestMixins.DiscoveryMixin,
-                                ResponderTestFixture):
+class DUBManufacturerTree(TestMixins.DiscoveryMixin,
+                          ResponderTestFixture):
   """Confirm the device responds within it's manufacturer DUB range."""
   CATEGORY = TestCategory.NETWORK_MANAGEMENT
   REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
@@ -183,8 +185,8 @@ class ManufacturerTreeDiscovery(TestMixins.DiscoveryMixin,
     return UID.AllManufacturerDevices(self.uid.manufacturer_id)
 
 
-class SingleUIDDiscovery(TestMixins.DiscoveryMixin,
-                         ResponderTestFixture):
+class DUBSingleUID(TestMixins.DiscoveryMixin,
+                   ResponderTestFixture):
   """Confirm the device responds to just it's own range."""
   CATEGORY = TestCategory.NETWORK_MANAGEMENT
   CATEGORY = TestCategory.NETWORK_MANAGEMENT
@@ -197,8 +199,36 @@ class SingleUIDDiscovery(TestMixins.DiscoveryMixin,
     return self.uid
 
 
-class DUBOffByOneLow(TestMixins.DiscoveryMixin,
-                     ResponderTestFixture):
+class DUBSingleLowerUID(TestMixins.DiscoveryMixin,
+                        ResponderTestFixture):
+  """DUB from <UID> - 1 to <UID> - 1."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
+
+  def LowerBound(self):
+    return UID.PreviousUID(self.uid)
+
+  def UpperBound(self):
+    return UID.PreviousUID(self.uid)
+
+
+class DUBSingleUpperUID(TestMixins.DiscoveryMixin,
+                        ResponderTestFixture):
+  """DUB from <UID> + 1 to <UID> + 1."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
+
+  def LowerBound(self):
+    return UID.NextUID(self.uid)
+
+  def UpperBound(self):
+    return UID.NextUID(self.uid)
+
+
+class DUBAffirmativeLowerBound(TestMixins.DiscoveryMixin,
+                               ResponderTestFixture):
   """DUB from <UID> to ffff:ffffffff."""
   CATEGORY = TestCategory.NETWORK_MANAGEMENT
   REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
@@ -210,8 +240,24 @@ class DUBOffByOneLow(TestMixins.DiscoveryMixin,
     return UID.AllDevices()
 
 
-class DUBOffByOneHigh(TestMixins.DiscoveryMixin,
-                      ResponderTestFixture):
+class DUBNegativeLowerBound(TestMixins.DiscoveryMixin,
+                            ResponderTestFixture):
+  """DUB from <UID> + 1 to ffff:ffffffff."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
+
+  def LowerBound(self):
+    return UID.NextUID(self.uid)
+
+  def UpperBound(self):
+    return UID.AllDevices()
+
+  def ExpectResponse(self):
+    return False
+
+
+class DUBAffirmativeUpperBound(TestMixins.DiscoveryMixin,
+                               ResponderTestFixture):
   """DUB from 0000:00000000 to <UID>."""
   CATEGORY = TestCategory.NETWORK_MANAGEMENT
   REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
@@ -221,6 +267,22 @@ class DUBOffByOneHigh(TestMixins.DiscoveryMixin,
 
   def UpperBound(self):
     return self.uid
+
+
+class DUBNegativeUpperBound(TestMixins.DiscoveryMixin,
+                            ResponderTestFixture):
+  """DUB from 0000:00000000 to <UID> - 1."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
+
+  def LowerBound(self):
+    return UID(0, 0)
+
+  def UpperBound(self):
+    return UID.PreviousUID(self.uid)
+
+  def ExpectResponse(self):
+    return False
 
 
 class DUBDifferentManufacturer(TestMixins.DiscoveryMixin,
@@ -255,8 +317,6 @@ class DUBSignedComparisons(TestMixins.DiscoveryMixin,
 
   def ExpectResponse(self):
     return False
-
-# off by one, lower / upper
 
 
 # Device Info tests
