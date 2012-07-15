@@ -43,16 +43,17 @@ class UIDTest(unittest.TestCase):
   ]
 
   def testInvalid(self):
-    self.assertIsNone(DecodeResponse(bytearray()))
-    self.assertIsNone(DecodeResponse([0]))
-    self.assertIsNone(DecodeResponse([0, 0, 0]))
-    self.assertIsNone(DecodeResponse(self.TEST_DATA[0:-1]))
-    self.assertIsNone(DecodeResponse(self.TEST_DATA[4:]))
-    self.assertIsNone(DecodeResponse(self.TEST_BAD_DATA))
+    # we stick to methods in 2.6 for now
+    self.assertEqual(None, DecodeResponse(bytearray()))
+    self.assertEqual(None, DecodeResponse([0]))
+    self.assertEqual(None, DecodeResponse([0, 0, 0]))
+    self.assertEqual(None, DecodeResponse(self.TEST_DATA[0:-1]))
+    self.assertEqual(None, DecodeResponse(self.TEST_DATA[4:]))
+    self.assertEqual(None, DecodeResponse(self.TEST_BAD_DATA))
 
   def testValidResponse(self):
     uid = DecodeResponse(self.TEST_DATA)
-    self.assertIsNotNone(uid)
+    self.assertNotEqual(None, uid)
     self.assertEquals(0x00a1, uid.manufacturer_id)
     self.assertEquals(0x00020020, uid.device_id)
 

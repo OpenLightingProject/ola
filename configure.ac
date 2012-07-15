@@ -417,7 +417,7 @@ AM_CONDITIONAL(BUILD_PYTHON_LIBS, test "${build_python_libs}" = "yes")
 AM_CONDITIONAL(INSTALL_RDM_TESTS, test "${install_rdm_tests}" = "yes")
 
 if test "${build_python_libs}" = "yes"; then
- AM_PATH_PYTHON(2.4)
+ AM_PATH_PYTHON(2.6)
  AX_PYTHON_MODULE("google.protobuf", "fatal")
 fi
 
