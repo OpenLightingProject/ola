@@ -152,6 +152,32 @@ class RequestsWhileUnmuted(ResponderTestFixture):
     self._wrapper.Run()
 
 
+# Invalid DISCOVERY_PIDs
+#------------------------------------------------------------------------------
+class InvalidDiscoveryPID(ResponderTestFixture):
+  """Send an invalid Discovery CC PID, see E1.20 6.3.4"""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+
+  # We need to mock out a PID here
+  class MockPid(object):
+    def __init__(self):
+      self.value = 0x000f
+
+    def ValidateAddressing(request_params, request_type):
+      return True
+
+    def __str__(self):
+      return '0x%04hx' % self.value
+
+  def Test(self):
+    mock_pid = self.MockPid()
+    self.AddExpectedResults([
+      TimeoutResult(),
+      UnsupportedResult()
+    ])
+    self.SendRawDiscovery(ROOT_DEVICE, mock_pid)
+
+
 # DUB Tests
 #------------------------------------------------------------------------------
 class DUBFullTree(TestMixins.DiscoveryMixin,
