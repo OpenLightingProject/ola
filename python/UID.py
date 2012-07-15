@@ -20,6 +20,14 @@
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
+class Error(Exception):
+  """Base Error Class."""
+
+
+class UIDOutOfRangeException(Error):
+  """Returned when a UID would be out of range."""
+
+
 class UID(object):
   """Represents a UID."""
   def __init__(self, manufacturer_id, device_id):
@@ -77,3 +85,23 @@ class UID(object):
     if manufacturer_id > 0xffff or device_id > 0xffffffff:
       return None
     return UID(manufacturer_id, device_id)
+
+  @staticmethod
+  def NextUID(uid):
+    if uid == UID.AllDevices():
+      raise UIDOutOfRangeException(uid)
+
+    if uid.IsBroadcast():
+      return UID(uid.manufacturer_id + 1, 0)
+    else:
+      return UID(uid.manufacturer_id, uid.device_id + 1)
+
+  @staticmethod
+  def PreviousUID(uid):
+    if uid == UID(0, 0):
+      raise UIDOutOfRangeException(uid)
+
+    if uid.device_id == 0:
+      return UID(uid.manufacturer_id - 1, 0xffffffff)
+    else:
+      return UID(uid.manufacturer_id, uid.device_id - 1)

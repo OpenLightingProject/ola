@@ -21,7 +21,7 @@
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import unittest
-from UID import UID
+from UID import UID, UIDOutOfRangeException
 
 class UIDTest(unittest.TestCase):
 
@@ -65,6 +65,24 @@ class UIDTest(unittest.TestCase):
     uids = [u1, u2, u3, u4]
     uids.sort()
     self.assertEquals([u3, u2, u1, u4], uids)
+
+  def testNextAndPrevious(self):
+    u1 = UID(0x4845, 0xfffffffe)
+    u2 = UID.NextUID(u1)
+    self.assertEquals('4845:ffffffff', str(u2))
+    u3 = UID.NextUID(u2)
+    self.assertEquals('4846:00000000', str(u3))
+
+    u4 = UID.PreviousUID(u3)
+    self.assertEquals(u2, u4)
+    u5 = UID.PreviousUID(u4)
+    self.assertEquals(u1, u5)
+
+    first_uid = UID(0, 0)
+    self.assertRaises(UIDOutOfRangeException, UID.PreviousUID, first_uid)
+
+    all_uids = UID.AllDevices()
+    self.assertRaises(UIDOutOfRangeException, UID.NextUID, all_uids)
 
 if __name__ == '__main__':
   unittest.main()
