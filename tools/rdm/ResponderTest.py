@@ -520,15 +520,8 @@ class ResponderTestFixture(TestFixture):
       self.Stop()
       return False
 
-    acceptable_codes = [
-        OlaClient.RDM_WAS_BROADCAST,
-        OlaClient.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED,
-        OlaClient.RDM_DUB_RESPONSE]
-    if response.response_code in acceptable_codes:
-      return True
-
     if response.response_code != OlaClient.RDM_COMPLETED_OK:
-      self.LogDebug(' Request failed: %s' % response.ResponseCodeAsString())
+      self.LogDebug(' Request status: %s' % response.ResponseCodeAsString())
       return True
 
     # handle the case of an ack timer
