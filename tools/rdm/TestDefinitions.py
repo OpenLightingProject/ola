@@ -77,7 +77,10 @@ class MuteDeviceWithData(ResponderTestFixture):
 
   def Test(self):
     # Section 6.3.4 of E1.20
-    self.AddExpectedResults(TimeoutResult())
+    self.AddExpectedResults([
+      TimeoutResult(),
+      UnsupportedResult()
+    ])
     self.SendRawDiscovery(ROOT_DEVICE, self.pid, 'x')
 
 
@@ -113,7 +116,10 @@ class UnMuteDeviceWithData(ResponderTestFixture):
 
   def Test(self):
     # Section 6.3.4 of E1.20
-    self.AddExpectedResults(TimeoutResult())
+    self.AddExpectedResults([
+      TimeoutResult(),
+      UnsupportedResult()
+    ])
     self.SendRawDiscovery(ROOT_DEVICE, self.pid, 'x')
 
 
