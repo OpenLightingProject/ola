@@ -12,8 +12,8 @@ module_files = DMXSender.py \
                __init__.py
 
 EXTRA_DIST = $(module_files) \
-             model_collector.py \
-             ola_rdm_test.py
+             rdm_model_collector.py \
+             rdm_responder_test.py
 
 if INSTALL_RDM_TESTS
 

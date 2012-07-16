@@ -315,7 +315,6 @@ void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
         code = ola::rdm::RDM_INVALID_RESPONSE;
       }
       break;
-    case RC_IDLE_LEVEL:
     case RC_BAD_LEVEL:
     case RC_BROADCAST:
     case RC_VENDORCAST:
@@ -339,6 +338,7 @@ void DmxterWidgetImpl::HandleRDMResponse(const uint8_t *data,
     case RC_NACK_PROXY_QUEUE_BUFFER_FULL:
       code = ola::rdm::RDM_COMPLETED_OK;
       break;
+    case RC_IDLE_LEVEL:
     case RC_TIMED_OUT:
       OLA_INFO << "Request timed out";
       code = ola::rdm::RDM_TIMEOUT;

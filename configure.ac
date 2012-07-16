@@ -417,7 +417,7 @@ AM_CONDITIONAL(BUILD_PYTHON_LIBS, test "${build_python_libs}" = "yes")
 AM_CONDITIONAL(INSTALL_RDM_TESTS, test "${install_rdm_tests}" = "yes")
 
 if test "${build_python_libs}" = "yes"; then
- AM_PATH_PYTHON(2.4)
+ AM_PATH_PYTHON(2.6)
  AX_PYTHON_MODULE("google.protobuf", "fatal")
 fi
 
@@ -522,8 +522,9 @@ AC_OUTPUT( Makefile\
     java/Makefile \
     ola/Makefile \
     python/Makefile \
-    python/rpc/Makefile \
     python/examples/Makefile \
+    python/ola/Makefile \
+    python/ola/rpc/Makefile \
     olad/Makefile \
     olad/OlaVersion.h \
     olad/testdata/Makefile \
@@ -553,7 +554,6 @@ AC_OUTPUT( Makefile\
     tools/e133/Makefile \
     tools/rdm/Makefile \
     tools/rdmpro/Makefile \
-    tools/tlp/Makefile \
     tools/usbpro/Makefile \
     libola.pc \
     libolaserver.pc \

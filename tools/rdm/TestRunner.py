@@ -190,10 +190,15 @@ def GetTestClasses(module):
     cls = getattr(module, symbol)
     if not inspect.isclass(cls):
       continue
-    if (cls == ResponderTest.ResponderTestFixture or
-        cls == ResponderTest.OptionalParameterTestFixture):
+    base_classes = [
+        ResponderTest.OptionalParameterTestFixture,
+        ResponderTest.ResponderTestFixture,
+        ResponderTest.TestFixture
+    ]
+
+    if cls in base_classes:
       continue
-    if issubclass(cls, ResponderTest.ResponderTestFixture):
+    if issubclass(cls, ResponderTest.TestFixture):
       classes.append(cls)
   return classes
 
