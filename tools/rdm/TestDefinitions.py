@@ -71,7 +71,7 @@ class MuteDevice(ResponderTestFixture):
 
 
 class MuteDeviceWithData(ResponderTestFixture):
-  """Mute device info with param data."""
+  """Mute device with param data."""
   CATEGORY = TestCategory.NETWORK_MANAGEMENT
   PID = 'DISC_MUTE'
 
