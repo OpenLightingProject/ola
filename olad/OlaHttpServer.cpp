@@ -721,14 +721,14 @@ void OlaHttpServer::HandlePortsForUniverse(
       for (input_iter = input_ports.begin(); input_iter != input_ports.end();
            ++input_iter) {
         if (input_iter->IsActive() && input_iter->Universe() == universe_id)
-          PortToJson(*iter, *input_iter, &input_str, false);
+          PortToJson(*iter, *input_iter, &input_str, false, true);
       }
 
       const vector<OlaOutputPort> &output_ports = iter->OutputPorts();
       for (output_iter = output_ports.begin();
            output_iter != output_ports.end(); ++output_iter) {
         if (output_iter->IsActive() && output_iter->Universe() == universe_id)
-          PortToJson(*iter, *output_iter, &output_str, true);
+          PortToJson(*iter, *output_iter, &output_str, true, true);
       }
     }
     input_str << "  ]," << endl;
@@ -771,13 +771,13 @@ void OlaHttpServer::HandleCandidatePorts(
     const vector<OlaInputPort> &input_ports = iter->InputPorts();
     for (input_iter = input_ports.begin(); input_iter != input_ports.end();
          ++input_iter) {
-      PortToJson(*iter, *input_iter, &str, false);
+      PortToJson(*iter, *input_iter, &str, false, true);
     }
 
     const vector<OlaOutputPort> &output_ports = iter->OutputPorts();
     for (output_iter = output_ports.begin();
          output_iter != output_ports.end(); ++output_iter) {
-      PortToJson(*iter, *output_iter, &str, true);
+      PortToJson(*iter, *output_iter, &str, true, true);
     }
   }
   str << "]" << endl;
@@ -967,7 +967,7 @@ void OlaHttpServer::PortToJson(const OlaDevice &device,
     }
     *str << "      }" << endl;
   }
-  *str << "    }" << (include_delim ? "<" : "") << endl;
+  *str << "    }" << (include_delim ? "," : "") << endl;
 }
 
 
