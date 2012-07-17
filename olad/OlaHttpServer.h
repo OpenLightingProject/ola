@@ -142,7 +142,8 @@ class OlaHttpServer {
     void PortToJson(const class OlaDevice &device,
                     const class OlaPort &port,
                     stringstream *str,
-                    bool is_output);
+                    bool is_output,
+                    bool include_delim);
 
     void AddPatchActions(ActionQueue *action_queue,
                          const string port_id_string,

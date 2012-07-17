@@ -582,11 +582,13 @@ void OlaHttpServer::HandlePluginList(HttpResponse *response,
   str << "  \"plugins\": [" << endl;
 
   vector<OlaPlugin>::const_iterator iter;
+  string delim = "";
   for (iter = plugins.begin(); iter != plugins.end(); ++iter) {
-    str << "    {\"name\": \"" << EscapeString(iter->Name()) <<
-      "\", \"id\": " << iter->Id() << "}," << endl;
+    str << delim << "    {\"name\": \"" << EscapeString(iter->Name()) <<
+      "\", \"id\": " << iter->Id() << "}";
+    delim = ",\n";
   }
-
+  str << endl;
   str << "  ]," << endl;
   response->Append(str.str());
 }
@@ -606,7 +608,10 @@ void OlaHttpServer::HandleUniverseList(HttpResponse *response,
     str << "  \"universes\": [" << endl;
 
     vector<OlaUniverse>::const_iterator iter;
+    string delim = "";
+
     for (iter = universes.begin(); iter != universes.end(); ++iter) {
+      str << delim;
       str << "    {" << endl;
       str << "      \"id\": " << iter->Id() << "," << endl;
       str << "      \"input_ports\": " << iter->InputPortCount() << "," <<
@@ -617,11 +622,11 @@ void OlaHttpServer::HandleUniverseList(HttpResponse *response,
         endl;
       str << "      \"rdm_devices\": " << iter->RDMDeviceCount() << "," <<
         endl;
-      str << "    }," << endl;
+      str << "    }";
+      delim = ",\n";
     }
-    str << "  ]," << endl;
+    str << endl << "  ]," << endl;
   }
-
   str << "}";
 
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
@@ -938,7 +943,8 @@ inline void OlaHttpServer::RegisterFile(const string &file,
 void OlaHttpServer::PortToJson(const OlaDevice &device,
                                const OlaPort &port,
                                stringstream *str,
-                               bool is_output) {
+                               bool is_output,
+                               bool include_delim) {
   *str << "    {" << endl;
   *str << "      \"device\": \"" << EscapeString(device.Name())
     << "\"," << endl;
@@ -961,7 +967,7 @@ void OlaHttpServer::PortToJson(const OlaDevice &device,
     }
     *str << "      }" << endl;
   }
-  *str << "    }," << endl;
+  *str << "    }" << (include_delim ? "<" : "") << endl;
 }
 
 
