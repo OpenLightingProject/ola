@@ -55,13 +55,6 @@ RDMTests.prototype.bind_events_to_doms = function() {
     $('#rdm-tests-dmx_options').toggle('fast');
   });
 
-  $('#rdm-tests-send_dmx_in_bg').change(function() {
-    if (!$(this).attr('checked')) {
-      $('#slot_count').val('128');
-      $('#dmx_frame_rate').val('20');
-    }
-  });
-
   $(document).keydown(function(e) {
     var key = e.keyCode || e.which;
     var results_div = $('#rdm-tests-results');
@@ -157,8 +150,9 @@ RDMTests.prototype.run_tests = function(test_filter) {
                                      'u': $('#universe_options').val(),
                                      'uid': $('#devices_list').val(),
                                      'w': $('#write_delay').val(),
-                                     'f': $('#dmx_frame_rate').val(),
+                                     'f': ($('#rdm-tests-send_dmx_in_bg').attr('checked')?$('#dmx_frame_rate').val():0),
                                      'c': $('#slot_count').val(),
+                                     'c': ($('#rdm-tests-send_dmx_in_bg').attr('checked')?$('#slot_count').val():128),
                                      't': test_filter.join(','),
                                     }, function(data) {
                                     var failed_tests = $('#rdm-tests-selection-failed_tests');

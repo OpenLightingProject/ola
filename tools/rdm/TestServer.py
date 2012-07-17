@@ -184,7 +184,7 @@ class TestServerApplication(object):
                 'u': 0,
                 'uid': None,
                 'w': 0,
-                'f': 20,
+                'f': 0,
                 'c': 128,
                 't': None,
     }
@@ -226,7 +226,7 @@ class TestServerApplication(object):
     for test in TestRunner.GetTestClasses(TestDefinitions):
       runner.RegisterTest(test)
 
-      dmx_sender = DMXSender(self.wrapper,
+    dmx_sender = DMXSender(self.wrapper,
                           universe,
                           dmx_frame_rate,
                           slot_count)
