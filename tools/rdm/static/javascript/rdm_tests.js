@@ -175,8 +175,8 @@ RDMTests.prototype.run_tests = function(test_filter) {
 
 RDMTests.prototype.reset_results = function() {
   $('#rdm-tests-results-stats-figures').html('');
-  $('#rdm-tests-results-warnings').html('');
-  $('#rdm-tests-results-advisories').html('');
+  $('#rdm-tests-results-warnings-content').html('');
+  $('#rdm-tests-results-advisories-content').html('');
   $('#rdm-tests-results-list').html('');
 };
 
@@ -216,12 +216,12 @@ RDMTests.prototype.display_results = function(results) {
     RDMTests.TEST_RESULTS[definition] = results['test_results'][index];
 
     if (warning[0] != undefined) {
-      $('#rdm-tests-results-warnings')
+      $('#rdm-tests-results-warnings-content')
       .append($('<p />')
       .html(definition + ": " + warning));
     }
     if (advisory[0] != undefined) {
-      $('#rdm-tests-results-advisories')
+      $('#rdm-tests-results-advisories-content')
       .append($('<p />')
       .html(definition + ": " + advisory));
     }
