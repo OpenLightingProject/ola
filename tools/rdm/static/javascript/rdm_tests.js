@@ -70,9 +70,23 @@ RDMTests.prototype.bind_events_to_doms = function() {
     }
   });
 
-  $('#rdm-tests-results-button-dismiss').click(function() {
+  $('#rdm-tests-results-button-dismiss').find('input').click(function() {
     $('#rdm-tests-results').hide();
     $('#tests_control_frame').show();
+  });
+
+  $.each(['#rdm-tests-results-warnings', '#rdm-tests-results-advisories'], function(i, div) {
+    $(div).find('legend').toggle(function() {
+      $(div).find('div').hide();
+      $.each($(div).nextAll('div'), function(i, dom) {
+        $(dom).css({'top': (parseFloat($(dom).css('top')) - 16).toString() + '%'});
+      });
+    }, function() {
+      $(div).find('div').show();
+      $.each($(div).nextAll('div'), function(i, dom) {
+        $(dom).css({'top': (parseFloat($(dom).css('top')) + 16).toString() + '%'});
+      });
+    });
   });
 };
 
