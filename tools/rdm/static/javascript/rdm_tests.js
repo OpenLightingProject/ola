@@ -77,14 +77,14 @@ RDMTests.prototype.bind_events_to_doms = function() {
 
   $.each(['#rdm-tests-results-warnings', '#rdm-tests-results-advisories'], function(i, div) {
     $(div).find('legend').toggle(function() {
-      $(div).find('div').hide();
-      $.each($(div).nextAll('div'), function(i, dom) {
-        $(dom).css({'top': (parseFloat($(dom).css('top')) - 16).toString() + '%'});
-      });
-    }, function() {
       $(div).find('div').show();
       $.each($(div).nextAll('div'), function(i, dom) {
-        $(dom).css({'top': (parseFloat($(dom).css('top')) + 16).toString() + '%'});
+        $(dom).css({'top': (parseFloat($(dom).css('top')) + 15).toString() + '%'});
+      });
+    }, function() {
+      $(div).find('div').hide();
+      $.each($(div).nextAll('div'), function(i, dom) {
+        $(dom).css({'top': (parseFloat($(dom).css('top')) - 15).toString() + '%'});
       });
     });
   });
@@ -220,6 +220,9 @@ RDMTests.prototype.display_results = function(results) {
     .append($('<td />').html(results['stats'][key]));
   }
 
+  var number_of_warnings = 0;
+  var number_of_advisories = 0;
+
   for (index in results['test_results']) {
     var warning = results['test_results'][index]['warnings'];
     var advisory = results['test_results'][index]['advisories'];
@@ -233,11 +236,13 @@ RDMTests.prototype.display_results = function(results) {
       $('#rdm-tests-results-warnings-content')
       .append($('<p />')
       .html(definition + ": " + warning));
+      number_of_warnings += 1;
     }
     if (advisory[0] != undefined) {
       $('#rdm-tests-results-advisories-content')
       .append($('<p />')
       .html(definition + ": " + advisory));
+      number_of_advisories += 1;
     }
     var test_option = $('<option />').val(definition).text(definition);
 
@@ -245,6 +250,10 @@ RDMTests.prototype.display_results = function(results) {
 
     $('#rdm-tests-results-list').append(test_option);
   }
+  
+  //Update the Warnings and Advisories counter
+  $('#rdm-tests-results-warnings').find('legend a').html('Warnings (' + number_of_warnings.toString() + ')');
+  $('#rdm-tests-results-advisories').find('legend a').html('Advisories (' + number_of_advisories.toString() + ')');
 
   $('#rdm-tests-results-list').change(function() {
     var definition = $('#rdm-tests-results-list option:selected').text();

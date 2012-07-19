@@ -135,15 +135,14 @@
         display: none;
         position: absolute;
         width: 80%;
-        height: 90%;
-        margin-left: 2%;
+        height: 100%;
         z-index: 1000;
         background-color: #FFF;
       }
 
       #rdm-tests-results-stats {
         position: absolute;
-        top: 1%;
+        top: 0%;
         left: 45%;
         width: 300px;
       }
@@ -160,13 +159,18 @@
 
       #rdm-tests-results-warnings {
         position: absolute;
-        top: 12%;
+        top: 10%;
         left: 35%;
         float: left;
         overflow: auto;
       }
 
+      #rdm-tests-results-warnings fieldset {
+        width: 475px;
+      }
+
       #rdm-tests-results-warnings-content {
+        display: none;
         text-align: left;
         color: #D40000;
         font-size: 12px;
@@ -177,15 +181,20 @@
         height: 100px;
       }
 
+      #rdm-tests-results-advisories fieldset {
+        width: 475px;
+      }
+
       #rdm-tests-results-advisories {
         position: absolute;
-        top: 34%;
+        top: 15%;
         left: 35%;
         overflow: auto;
         float: left;
       }
 
       #rdm-tests-results-advisories-content {
+        display: none;
         text-align: left;
         color: #1F1D1D;
         font-size: 12px;
@@ -197,9 +206,9 @@
       }
 
       #rdm-tests-results-summary {
-        position: relative;
-        top: 57%;
-        left: 35.2%;
+        position: absolute;
+        top: 20.0%;
+        left: 35.1%;
         width: 500px;
         height: 100px;
       }
@@ -224,12 +233,12 @@
 
       #rdm-tests-results-info {
         position: absolute;
-        left: 35.2%;
-        top: 88%;
+        left: 35.1%;
+        top: 46.5%;
         overflow: auto;
         float: left;
         width: 500px;
-        height: 330px;
+        height: 270px;
         border: 1.0px solid #67a7e3;
       }
 
@@ -262,9 +271,9 @@
         text-align: left;
         font-size: 14px;
         padding-left: 15px;
-        padding-top: 25px;
+        padding-top: 15px;
         width: 300px;
-        height: 60px;
+        height: 35px;
         color: #000;
         overflow: auto;
       }
@@ -281,7 +290,7 @@
 
       #rdm-tests-results-button-dismiss {
         position: absolute;
-        top: 150%;
+        top: 89%;
         left: 55%;
       }
 
