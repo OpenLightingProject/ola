@@ -275,27 +275,36 @@ RDMTests.prototype.display_results = function(results) {
 
     $('#rdm-tests-results-list').append(test_option);
   }
-  
+
   //Update the Warnings and Advisories counter
   $('#rdm-tests-results-warning-count').html(number_of_warnings.toString());
   $('#rdm-tests-results-advisory-count').html(number_of_advisories.toString());
 
   $('#rdm-tests-results-list').change(function() {
-    var definition = $('#rdm-tests-results-list option:selected').text();
-    var state = RDMTests.TEST_RESULTS[definition]['state'];
-    $('#rdm-tests-results-info-title').html(definition);
-    rdmtests.add_state_class(state, $('#rdm-tests-results-info-state').html(state))
-
-    $('#rdm-tests-results-info-catg').html(RDMTests.TEST_RESULTS[definition]['category']);
-
-    $('#rdm-tests-results-info-doc').html(RDMTests.TEST_RESULTS[definition]['doc']);
-
-    var debug = RDMTests.TEST_RESULTS[definition]['debug'];
-    $('#rdm-tests-results-info-debug').html(debug.join('<br />'));
+    rdmtests.result_list_changed();
   });
 
+  // select the first item
+  $('#rdm-tests-results-list').val(results['test_results'][0]['definition']);
+  rdmtests.result_list_changed();
   $('#rdm-tests-results').show();
 };
+
+
+RDMTests.prototype.result_list_changed = function() {
+  var definition = $('#rdm-tests-results-list option:selected').text();
+  var state = RDMTests.TEST_RESULTS[definition]['state'];
+  $('#rdm-tests-results-info-title').html(definition);
+  rdmtests.add_state_class(state, $('#rdm-tests-results-info-state').html(state))
+
+  $('#rdm-tests-results-info-catg').html(RDMTests.TEST_RESULTS[definition]['category']);
+
+  $('#rdm-tests-results-info-doc').html(RDMTests.TEST_RESULTS[definition]['doc']);
+
+  var debug = RDMTests.TEST_RESULTS[definition]['debug'];
+  $('#rdm-tests-results-info-debug').html(debug.join('<br />'));
+};
+
 
 RDMTests.prototype.validate_form = function() {
   this.isNumberField = function(dom) {
