@@ -96,7 +96,7 @@ binary-arch: build install
 	dh_compress
 	dh_fixperms
 #	dh_perl
-#	dh_python
+	dh_python2
 	dh_makeshlibs -V
 	dh_installdeb
 	dh_shlibdeps
