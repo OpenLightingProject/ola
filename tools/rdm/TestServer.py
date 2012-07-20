@@ -24,6 +24,7 @@ import textwrap
 import urlparse
 import inspect
 import traceback
+from time import time
 from ola.testing.rdm import ResponderTest
 from ola.testing.rdm import TestDefinitions
 from ola.testing.rdm import TestRunner
@@ -233,6 +234,7 @@ class TestServerApplication(object):
 
     tests, device = runner.RunTests(test_filter, False)
     self.__format_test_results(tests)
+    self.response.update({'UID': str(uid), 'timestamp': time()})
 
   def __format_test_results(self, tests):
     results = []
