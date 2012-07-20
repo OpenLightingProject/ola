@@ -70,9 +70,13 @@ RDMTests.prototype.bind_events_to_doms = function() {
     }
   });
 
-  $('#rdm-tests-results-button-dismiss').find('input').click(function() {
+  $('#rdm-tests-results-button-dismiss').click(function() {
     $('#rdm-tests-results').hide();
     $('#tests_control_frame').show();
+  });
+
+  $('#rdm-tests-results-button-run_again').click(function() {
+    rdmtests.validate_form();
   });
 
   $.each(['#rdm-tests-results-warnings', '#rdm-tests-results-advisories'], function(i, div) {
@@ -208,10 +212,13 @@ RDMTests.prototype.run_tests = function(test_filter) {
 };
 
 RDMTests.prototype.reset_results = function() {
-  $('#rdm-tests-results-stats-figures').html('');
-  $('#rdm-tests-results-warnings-content').html('');
-  $('#rdm-tests-results-advisories-content').html('');
-  $('#rdm-tests-results-list').html('');
+  $.each(['#rdm-tests-results-uid',
+  '#rdm-tests-results-stats-figures',
+  '#rdm-tests-results-warnings-content',
+  '#rdm-tests-results-advisories-content',
+  '#rdm-tests-results-list'], function(i, dom) {
+    $(dom).html('');
+  });
 };
 
 RDMTests.prototype.add_state_class = function(state, dom) {
@@ -235,6 +242,8 @@ RDMTests.prototype.add_state_class = function(state, dom) {
 RDMTests.prototype.display_results = function(results) {
   $('#tests_control_frame').hide();
   rdmtests.reset_results();
+
+  $('#rdm-tests-results-uid').html(results['UID']);
 
   for (key in results['stats']) {
     $('#rdm-tests-results-stats-figures')
