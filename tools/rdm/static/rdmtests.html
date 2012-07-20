@@ -25,11 +25,21 @@
         border-spacing: 0px;
       }
 
-      legend { font-weight: bold; }
       input { border: #e4e9fe 1px solid; }
+
       fieldset {
         border: #67a7e3 1px solid;
+        margin: 0px;
         margin-bottom: 5px;
+      }
+
+      legend {
+        font-weight: bold;
+      }
+
+      ul {
+        padding-left: 20px;
+        margin: 0px;
       }
 
       #header {
@@ -102,18 +112,18 @@
         top: 40%;
         left: 50%;
         width: 300px;
-        height: 50px;
-        margin:-25px 0 0 -150px;
+        height: 70px;
+        margin:-35px 0 0 -150px;
         z-index: 1000;
         background-color: #fff;
         border: 2px solid #67A7E3;
-        padding: 15px;
+        padding: 5px;
         text-align: center;
         font-weight: bold;
       }
 
       #rdm-tests-notification-title {
-        padding: 5px;
+        padding-bottom: 15px;
       }
 
       #rdm-tests-results {
@@ -151,17 +161,22 @@
         width: 80%;
       }
 
-      .results_expander_content {
-        display: none;
-        padding-left: 5px;
-        overflow: auto;
-        width: 100%;
-        height: 100px;
+      .ola-expander legend {
+        cursor: pointer;
       }
 
-      .results_expander_content fieldset {
-        margin-left: 0px;
-        margin-right: 0px;
+      .ola-expander div {
+        display: none;
+      }
+
+      .ola-expander-collapsed img {
+        background-image: url('/static/images/expander.png');
+        background-position: -40px 0px;
+      }
+
+      .ola-expander-expanded img {
+        background-image: url('/static/images/expander.png');
+        background-position: 0px 0px;
       }
 
       #rdm-tests-results-summary-filter {
@@ -326,17 +341,25 @@
         </table>
       </div>
       <div id='rdm-tests-results-warnings' class='results_container'>
-        <fieldset>
-          <legend><a href='#'>Warnings</a></legend>
-          <ul id='rdm-tests-results-warnings-content' class='results_expander_content'>
-          </ul>
+        <fieldset class="ola-expander">
+          <legend class="ola-expander-collapsed">
+            <img src="/static/images/blank.gif" width="12" height="12">
+            Warnings (<span id="rdm-tests-results-warning-count"></span>)
+          </legend>
+          <div>
+           <ul id='rdm-tests-results-warnings-content'></ul>
+          </div>
         </fieldset>
       </div>
       <div id='rdm-tests-results-advisories' class='results_container'>
-        <fieldset>
-          <legend><a href='#'>Advisories</a></legend>
-          <ul id='rdm-tests-results-advisories-content' class='results_expander_content'>
-          </ul>
+        <fieldset class="ola-expander">
+          <legend class="ola-expander-collapsed">
+            <img src="/static/images/blank.gif" width="12" height="12">
+            Advisories (<span id="rdm-tests-results-advisory-count"></span>)
+          </legend>
+          <div>
+            <ul id='rdm-tests-results-advisories-content'></ul>
+          </div>
         </fieldset>
       </div>
       <div class='results_container_border'>

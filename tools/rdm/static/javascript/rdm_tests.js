@@ -80,16 +80,10 @@ RDMTests.prototype.bind_events_to_doms = function() {
   });
 
   $.each(['#rdm-tests-results-warnings', '#rdm-tests-results-advisories'], function(i, div) {
-    $(div).find('legend').toggle(function() {
-      $(div).find('ul').show();
-      $.each($(div).nextAll('div'), function(i, dom) {
-        $(dom).css({'top': (parseFloat($(dom).css('top')) + 16).toString() + '%'});
-      });
-    }, function() {
-      $(div).find('ul').hide();
-      $.each($(div).nextAll('div'), function(i, dom) {
-        $(dom).css({'top': (parseFloat($(dom).css('top')) - 16).toString() + '%'});
-      });
+    $(div).find('legend').click(
+    function() {
+      $(div).find('legend').toggleClass('ola-expander-collapsed ola-expander-expanded');
+      $(div).find('div').toggle();
     });
   });
 
@@ -180,7 +174,7 @@ RDMTests.prototype.fetch_test_defs = function() {
 
 RDMTests.prototype.run_tests = function(test_filter) {
   this.set_notification({
-                          'title': 'Running tests',
+                          'title': 'Running ' + test_filter.length + ' tests',
                           'message': RDMTests.ajax_loader
   });
 
@@ -283,8 +277,8 @@ RDMTests.prototype.display_results = function(results) {
   }
   
   //Update the Warnings and Advisories counter
-  $('#rdm-tests-results-warnings').find('legend a').html('Warnings (' + number_of_warnings.toString() + ')');
-  $('#rdm-tests-results-advisories').find('legend a').html('Advisories (' + number_of_advisories.toString() + ')');
+  $('#rdm-tests-results-warning-count').html(number_of_warnings.toString());
+  $('#rdm-tests-results-advisory-count').html(number_of_advisories.toString());
 
   $('#rdm-tests-results-list').change(function() {
     var definition = $('#rdm-tests-results-list option:selected').text();
