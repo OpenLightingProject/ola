@@ -16,6 +16,7 @@
 # TestServer.py
 # Copyright (C) 2012 Ravindra Nath Kakarla
 
+import cgi
 import json
 import sys
 import os
@@ -256,10 +257,10 @@ class TestServerApplication(object):
           'definition': test.__str__(),
           'state': test.state.__str__(),
           'category': test.category.__str__(),
-          'warnings': test.warnings,
-          'advisories': test.advisories,
-          'debug': test._debug,
-          'doc': test.__doc__
+          'warnings': [cgi.escape(w) for w in test.warnings],
+          'advisories': [cgi.escape(a) for a in test.advisories],
+          'debug': [cgi.escape(d) for d in test._debug],
+          'doc': cgi.escape(test.__doc__),
         }
       )
 
