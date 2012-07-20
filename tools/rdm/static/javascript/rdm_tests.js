@@ -260,9 +260,9 @@ RDMTests.prototype.display_results = function(results) {
     var definition = $('#rdm-tests-results-list option:selected').text();
     var state = RDMTests.TEST_RESULTS[definition]['state'];
     $('#rdm-tests-results-info-title').html(definition);
-    rdmtests.add_state_class(state, $('#rdm-tests-results-info-state').html('State: ' + state))
+    rdmtests.add_state_class(state, $('#rdm-tests-results-info-state').html(state))
 
-    $('#rdm-tests-results-info-catg').html('Category : ' + RDMTests.TEST_RESULTS[definition]['category']);
+    $('#rdm-tests-results-info-catg').html(RDMTests.TEST_RESULTS[definition]['category']);
 
     $('#rdm-tests-results-info-doc').html(RDMTests.TEST_RESULTS[definition]['doc']);
 

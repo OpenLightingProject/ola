@@ -44,13 +44,6 @@
         font-size: 11px;
       }
 
-      #right_nav {
-        position: absolute;
-        right: 0px;
-        margin-right: 4px;
-        text-align: right;
-      }
-
       #footer {
         padding-top: 5px;
         text-align: center;
@@ -85,10 +78,10 @@
         border-top: 1px solid #e4e9fe;
       }
 
-	    .rdm-tests-selection-multiselect {
-		    width: 680px;
-		    height: 200px;
-	    }
+      .rdm-tests-selection-multiselect {
+          width: 680px;
+          height: 200px;
+      }
 
       .test-state-passed {
         color: #0CAB1E;
@@ -133,22 +126,19 @@
 
       #rdm-tests-results {
         display: none;
-        position: absolute;
-        width: 80%;
-        height: 100%;
+        width: 100%;
         z-index: 1000;
         background-color: #FFF;
       }
 
       #rdm-tests-results-stats {
-        position: absolute;
-        top: 0%;
-        left: 45%;
         width: 300px;
+        margin: 0px auto;
       }
 
       #rdm-tests-results-stats-table {
         border: 1.0px dashed #67a7e3;
+        margin: 0px auto;
       }
 
       #rdm-tests-results-stats-table td {
@@ -157,70 +147,39 @@
         font-weight: bold;
       }
 
-      #rdm-tests-results-warnings {
-        position: absolute;
-        top: 10%;
-        left: 35%;
-        float: left;
-        overflow: auto;
+      .results_container {
+        margin: 0px auto;
+        width: 80%;
       }
 
-      #rdm-tests-results-warnings fieldset {
-        width: 475px;
+      .results_container_border {
+        border: 1.0px solid #67a7e3;
+        margin: 0px auto;
+        width: 80%;
       }
 
-      #rdm-tests-results-warnings-content {
+      .results_expander_content {
         display: none;
-        text-align: left;
-        color: #D40000;
-        font-size: 12px;
-        font-weight: bold;
         padding-left: 5px;
         overflow: auto;
-        width: 475px;
+        width: 100%;
         height: 100px;
       }
 
-      #rdm-tests-results-advisories fieldset {
-        width: 475px;
-      }
-
-      #rdm-tests-results-advisories {
-        position: absolute;
-        top: 15%;
-        left: 35%;
-        overflow: auto;
-        float: left;
-      }
-
-      #rdm-tests-results-advisories-content {
-        display: none;
-        text-align: left;
-        color: #1F1D1D;
-        font-size: 12px;
-        font-weight: bold;
-        padding-left: 5px;
-        overflow: auto;
-        width: 475px;
-        height: 100px;
-      }
-
-      #rdm-tests-results-summary {
-        position: absolute;
-        top: 20.0%;
-        left: 35.1%;
-        width: 500px;
-        height: 100px;
+      .results_expander_content fieldset {
+        margin-left: 0px;
+        margin-right: 0px;
       }
 
       #rdm-tests-results-list {
-        border: 1.0px solid #67a7e3;
+        margin-left: 20px;
+        margin-bottom: 20px;
+        border: 0px;
+        border-bottom: 1.0px solid #67a7e3;
         background-color: #fff;
-        width: 500px;
-      }
-
-      #rdm-tests-results-list select {
-        width: 500px;
+        width: 100%;
+        margin: 0px auto;
+        height: 200px;
       }
 
       #rdm-tests-results-list option {
@@ -232,68 +191,42 @@
       }
 
       #rdm-tests-results-info {
-        position: absolute;
-        left: 35.1%;
-        top: 46.5%;
-        overflow: auto;
-        float: left;
-        width: 500px;
-        height: 270px;
-        border: 1.0px solid #67a7e3;
-      }
-
-      #rdm-tests-results-info-state {
-        text-align: left;
-        font-size: 12px;
-        padding-left: 15px;
-        font-weight: bold;
-        overflow: hidden;
+        padding-top: 10px;
+        height: 250px;
       }
 
       #rdm-tests-results-info-title {
         text-align: center;
         font-size: 14px;
-        padding-left: 0px;
-        padding-bottom: 15px;
         font-weight: bold;
-        overflow: hidden;
-      }
-
-      #rdm-tests-results-info-catg {
-        text-align: left;
-        font-size: 12px;
-        font-weight: bold;
-        padding-left: 15px;
-        overflow: hidden;
       }
 
       #rdm-tests-results-info-doc {
-        position: relative;
-        left: 20%;
         text-align: center;
         font-style: italic;
         font-size: 14px;
-        padding-top: 8px;
-        width: 300px;
-        height: 35px;
-        color: #000;
-        overflow: auto;
+        padding-bottom: 10px;
+      }
+
+      #rdm-tests-results-info-state {
+        font-weight: bold;
+      }
+
+      #rdm-tests-results-info-catg {
+        font-weight: bold;
       }
 
       #rdm-tests-results-info-debug {
-        text-align: left;
-        font-size: 12px;
-        padding-left: 15px;
-        height: 75px;
-        width: 470px;
-        color: #000;
+        white-space: pre;
+        font-family: monospace;
+        height: 150px;
+        width: 100%;
         overflow: auto;
       }
 
       #rdm-tests-results-button-dismiss {
-        position: absolute;
-        top: 87.8%;
-        left: 55%;
+        padding-top: 10px;
+        text-align: center;
       }
 
     </style>
@@ -397,32 +330,34 @@
           </tr>
         </table>
       </div>
-      <div id='rdm-tests-results-warnings'>
+      <div id='rdm-tests-results-warnings' class='results_container'>
         <fieldset>
           <legend><a href='#'>Warnings</a></legend>
-          <div id='rdm-tests-results-warnings-content'>
+          <div id='rdm-tests-results-warnings-content' class='results_expander_content'>
           </div>
         </fieldset>
       </div>
-      <div id='rdm-tests-results-advisories'>
+      <div id='rdm-tests-results-advisories' class='results_container'>
         <fieldset>
           <legend><a href='#'>Advisories</a></legend>
-          <div id='rdm-tests-results-advisories-content'>
+          <div id='rdm-tests-results-advisories-content' class='results_expander_content'>
           </div>
         </fieldset>
       </div>
-      <div id='rdm-tests-results-summary'>
-        <select id='rdm-tests-results-list' size='10'>
-        </select>
+      <div class='results_container_border'>
+        <select id='rdm-tests-results-list' size='10'></select>
+        <div id='rdm-tests-results-info'>
+          <div id='rdm-tests-results-info-title'></div>
+          <div id='rdm-tests-results-info-doc'></div>
+          <div style="padding-left: 10px">
+            Category: <span id='rdm-tests-results-info-catg'></span><br/>
+            Result: <span id='rdm-tests-results-info-state'></span><br/>
+            Debug Output:
+          </div>
+          <div id='rdm-tests-results-info-debug'></div>
+        </div>
       </div>
-      <div id='rdm-tests-results-info'>
-        <p id='rdm-tests-results-info-title'></p>
-        <p id='rdm-tests-results-info-doc'></p>
-        <p id='rdm-tests-results-info-catg'></p>
-        <p id='rdm-tests-results-info-state'></p>
-        <p id='rdm-tests-results-info-debug'></p>
-      </div>
-      <div id='rdm-tests-results-button-dismiss'>
+      <div id='rdm-tests-results-button-dismiss' class='results_container'>
         <input type='button' value='Dismiss' />
       </div>
     </div>
