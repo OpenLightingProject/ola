@@ -12,7 +12,9 @@ liboladummy_la_SOURCES = DummyPlugin.cpp DummyDevice.cpp DummyPort.cpp
 liboladummy_la_LIBADD = ./liboladummyresponder.la
 
 # Test programs
+if BUILD_TESTS
 TESTS = DummyPluginTester
+endif
 check_PROGRAMS = $(TESTS)
 DummyPluginTester_SOURCES = DummyPluginTester.cpp DummyPortTest.cpp
 DummyPluginTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)

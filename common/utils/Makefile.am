@@ -7,7 +7,9 @@ libolautils_la_SOURCES = ActionQueue.cpp \
                          StringUtils.cpp \
                          TokenBucket.cpp
 
+if BUILD_TESTS
 TESTS = UtilsTester
+endif
 check_PROGRAMS = $(TESTS)
 UtilsTester_SOURCES = ActionQueueTest.cpp ClockTest.cpp CallbackTest.cpp \
                       DmxBufferTest.cpp MultiCallbackTest.cpp \

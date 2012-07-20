@@ -375,10 +375,19 @@ OLAD_DEFINES="-DHTTP_DATA_DIR=\\\"$www_datadir\\\" -DPLUGIN_DIR=\\\"$plugindir\\
 AC_SUBST(OLAD_DEFINES)
 
 # check for cppunit
+AC_ARG_ENABLE(
+  unittests,
+  AC_HELP_STRING([--disable-unittests],
+                 [Disable all unittests]),)
+
+if test "${enable_unittests}" != "no"; then
 AM_PATH_CPPUNIT(
   1.9.6,
   [],
   [AC_MSG_ERROR([Missing cppunit, please install >= 1.9.6])])
+fi
+
+AM_CONDITIONAL(BUILD_TESTS, test "${enable_unittests}" != "no")
 
 # gcov
 AC_ARG_ENABLE(gcov,

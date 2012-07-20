@@ -18,7 +18,9 @@ endif
 
 EXTRA_DIST = PosixInterfacePicker.h WindowsInterfacePicker.h
 
+if BUILD_TESTS
 TESTS = HealthCheckedConnectionTester NetworkTester TCPConnectorTester
+endif
 check_PROGRAMS = $(TESTS)
 
 # required for all tests

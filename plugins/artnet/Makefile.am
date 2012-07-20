@@ -16,7 +16,9 @@ libolaartnet_la_LIBADD = ./libolaartnetnode.la \
                          messages/libolaartnetconf.la
 
 # Test programs
+if BUILD_TESTS
 TESTS = ArtNetTester
+endif
 check_PROGRAMS = $(TESTS)
 ArtNetTester_SOURCES = ArtNetNodeTest.cpp \
                        ArtNetTester.cpp \

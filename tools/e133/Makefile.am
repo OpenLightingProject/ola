@@ -53,7 +53,9 @@ slp_register_LDADD = $(openslp_LIBS) \
                      $(top_builddir)/common/libolacommon.la
 
 # Test Programs
+if BUILD_TESTS
 TESTS = SlpTester
+endif
 check_PROGRAMS = $(TESTS)
 SlpTester_SOURCES = SlpTester.cpp SlpUrlParser.cpp SlpUrlParserTest.cpp
 SlpTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)

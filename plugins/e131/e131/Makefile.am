@@ -38,7 +38,9 @@ e131_transmit_test_SOURCES = e131_transmit_test.cpp E131TestFramework.cpp
 e131_transmit_test_LDADD = ./libolae131core.la
 
 # Test programs
+if BUILD_TESTS
 TESTS = E131Tester E133Tester TransportTester
+endif
 check_PROGRAMS = $(TESTS)
 
 E131Tester_SOURCES = BaseInflatorTest.cpp \

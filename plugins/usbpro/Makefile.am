@@ -41,9 +41,11 @@ libolausbpro_la_LIBADD = ./libolausbprowidget.la \
 
 
 # Test programs
+if BUILD_TESTS
 TESTS = ArduinoWidgetTester DmxTriWidgetTester DmxterWidgetTester \
         EnttecUsbProWidgetTester RobeWidgetTester SerialUsbTester \
         UltraDMXProWidgetTester
+endif
 check_PROGRAMS = $(TESTS)
 
 common_test_sources = CommonWidgetTest.cpp \

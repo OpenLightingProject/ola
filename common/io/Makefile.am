@@ -5,8 +5,10 @@ libolaio_la_SOURCES = Descriptor.cpp \
                       IOQueue.cpp \
                       SelectServer.cpp
 
+if BUILD_TESTS
 TESTS = BufferedDescriptorTester DescriptorTester IOQueueTester \
         SelectServerTester
+endif
 check_PROGRAMS = $(TESTS)
 
 COMMON_TEST_LDADD = $(CPPUNIT_LIBS) \

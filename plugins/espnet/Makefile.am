@@ -10,7 +10,9 @@ libolaespnet_la_SOURCES = EspNetPlugin.cpp EspNetDevice.cpp EspNetPort.cpp \
 libolaespnet_la_LIBADD = ../../common/libolacommon.la
 
 # Test Programs
+if BUILD_TESTS
 TESTS = EspNetTester
+endif
 check_PROGRAMS = $(TESTS)
 EspNetTester_SOURCES = EspNetTester.cpp \
                        RunLengthDecoderTest.cpp \

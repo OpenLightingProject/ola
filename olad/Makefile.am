@@ -47,7 +47,9 @@ olad_LDADD = libolaserver.la \
              $(top_builddir)/common/libolacommon.la
 
 # Test Programs
+if BUILD_TESTS
 TESTS = DeviceTester OlaTester PortTester UniverseTester
+endif
 check_PROGRAMS = $(TESTS)
 common_test_sources = GenericTester.cpp
 common_test_ldadd = $(CPPUNIT_LIBS) $(libprotobuf_LIBS) \

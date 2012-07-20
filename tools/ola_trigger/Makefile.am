@@ -36,7 +36,9 @@ clean-local:
 
 
 # Test Programs
+if BUILD_TESTS
 TESTS = ActionTester
+endif
 check_PROGRAMS = $(TESTS)
 ActionTester_SOURCES = ActionTester.cpp ActionTest.cpp ContextTest.cpp \
                        DMXTriggerTest.cpp IntervalTest.cpp \
