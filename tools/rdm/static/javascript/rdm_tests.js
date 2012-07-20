@@ -88,6 +88,26 @@ RDMTests.prototype.bind_events_to_doms = function() {
       });
     });
   });
+
+  $('#rdm-tests-results-summary-filter-by_state').change(function() {
+    var state = $(this).val();
+    $('#rdm-tests-results-list').html('');
+    if (state == 'All') {
+      for (var definition in RDMTests.TEST_RESULTS) {
+        var test_option = $('<option />').val(definition).text(definition);
+        rdmtests.add_state_class(RDMTests.TEST_RESULTS[definition]['state'], test_option);
+        $('#rdm-tests-results-list').append(test_option);
+      }
+    } else {
+      for (var definition in RDMTests.TEST_RESULTS) {
+        if (RDMTests.TEST_RESULTS[definition]['state'] == state) {
+          var test_option = $('<option />').val(definition).text(definition);
+          rdmtests.add_state_class(state, test_option);
+          $('#rdm-tests-results-list').append(test_option);
+        }
+      }
+    }
+  });
 };
 
 RDMTests.prototype.query_server = function(request, params, callback) {
