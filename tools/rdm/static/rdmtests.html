@@ -228,7 +228,7 @@
         overflow: auto;
       }
 
-      #rdm-tests-results-button-dismiss {
+      .rdm-tests-results-button {
         padding-top: 10px;
         text-align: center;
       }
@@ -312,7 +312,7 @@
     </div>
     <div id='rdm-tests-results'>
       <div id='rdm-tests-results-stats'>
-        Test results for: <span id="rdm-tests-results-uid"></span>
+        Test results for: <span style='font-weight: bold' id="rdm-tests-results-uid"></span>
         <table id='rdm-tests-results-stats-table'>
           <tr>
             <td class='test-state-broken'>Broken</td>
@@ -362,8 +362,9 @@
           <div id='rdm-tests-results-info-debug'></div>
         </div>
       </div>
-      <div id='rdm-tests-results-button-dismiss' class='results_container'>
-        <input type='button' value='Dismiss' />
+      <div class='results_container rdm-tests-results-button'>
+        <input id='rdm-tests-results-button-dismiss' type='button' value='Dismiss' />
+        <input id='rdm-tests-results-button-run_again' type='button' value='Run Again' />
       </div>
     </div>
     <div id='rdm-tests-notification'>
