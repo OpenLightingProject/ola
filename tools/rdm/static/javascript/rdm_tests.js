@@ -77,12 +77,12 @@ RDMTests.prototype.bind_events_to_doms = function() {
 
   $.each(['#rdm-tests-results-warnings', '#rdm-tests-results-advisories'], function(i, div) {
     $(div).find('legend').toggle(function() {
-      $(div).find('div').show();
+      $(div).find('ul').show();
       $.each($(div).nextAll('div'), function(i, dom) {
         $(dom).css({'top': (parseFloat($(dom).css('top')) + 16).toString() + '%'});
       });
     }, function() {
-      $(div).find('div').hide();
+      $(div).find('ul').hide();
       $.each($(div).nextAll('div'), function(i, dom) {
         $(dom).css({'top': (parseFloat($(dom).css('top')) - 16).toString() + '%'});
       });
@@ -225,25 +225,25 @@ RDMTests.prototype.display_results = function(results) {
   var number_of_advisories = 0;
 
   for (index in results['test_results']) {
-    var warning = results['test_results'][index]['warnings'];
-    var advisory = results['test_results'][index]['advisories'];
+    var warnings = results['test_results'][index]['warnings'];
+    var advisories = results['test_results'][index]['advisories'];
     var definition = results['test_results'][index]['definition'];
     var state = results['test_results'][index]['state'];
 
     //Populating a global variable with test results for faster lookups
     RDMTests.TEST_RESULTS[definition] = results['test_results'][index];
 
-    if (warning[0] != undefined) {
+    number_of_warnings += warnings.length;
+    for (var i = 0; i < warnings.length; i++) {
       $('#rdm-tests-results-warnings-content')
-      .append($('<p />')
-      .html(definition + ": " + warning));
-      number_of_warnings += 1;
+      .append($('<li />')
+      .html(definition + ": " + warnings[i]));
     }
-    if (advisory[0] != undefined) {
+    number_of_advisories += advisories.length;
+    for (var i = 0; i < advisories.length; i++) {
       $('#rdm-tests-results-advisories-content')
-      .append($('<p />')
-      .html(definition + ": " + advisory));
-      number_of_advisories += 1;
+      .append($('<li />')
+      .html(definition + ": " + advisories[i]));
     }
     var test_option = $('<option />').val(definition).text(definition);
 
