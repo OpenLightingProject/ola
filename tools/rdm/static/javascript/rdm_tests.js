@@ -79,12 +79,12 @@ RDMTests.prototype.bind_events_to_doms = function() {
     $(div).find('legend').toggle(function() {
       $(div).find('div').show();
       $.each($(div).nextAll('div'), function(i, dom) {
-        $(dom).css({'top': (parseFloat($(dom).css('top')) + 15).toString() + '%'});
+        $(dom).css({'top': (parseFloat($(dom).css('top')) + 16).toString() + '%'});
       });
     }, function() {
       $(div).find('div').hide();
       $.each($(div).nextAll('div'), function(i, dom) {
-        $(dom).css({'top': (parseFloat($(dom).css('top')) - 15).toString() + '%'});
+        $(dom).css({'top': (parseFloat($(dom).css('top')) - 16).toString() + '%'});
       });
     });
   });
@@ -195,6 +195,7 @@ RDMTests.prototype.reset_results = function() {
 };
 
 RDMTests.prototype.add_state_class = function(state, dom) {
+  $(dom).removeClass($(dom).attr('class'));
   switch (state) {
     case 'Passed':
       $(dom).addClass('test-state-passed')
@@ -259,7 +260,7 @@ RDMTests.prototype.display_results = function(results) {
     var definition = $('#rdm-tests-results-list option:selected').text();
     var state = RDMTests.TEST_RESULTS[definition]['state'];
     $('#rdm-tests-results-info-title').html(definition);
-    rdmtests.add_state_class(state, $('#rdm-tests-results-info-state').html(state))
+    rdmtests.add_state_class(state, $('#rdm-tests-results-info-state').html('State: ' + state))
 
     $('#rdm-tests-results-info-catg').html('Category : ' + RDMTests.TEST_RESULTS[definition]['category']);
 
