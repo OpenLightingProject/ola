@@ -1282,6 +1282,7 @@ class SetLanguage(OptionalParameterTestFixture):
 
 
 class SetNonAsciiLanguage(OptionalParameterTestFixture):
+  """Try to set the language to non-ascii characters."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'LANGUAGE'
 
