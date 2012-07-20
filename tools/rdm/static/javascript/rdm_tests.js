@@ -219,6 +219,7 @@ RDMTests.prototype.reset_results = function() {
   '#rdm-tests-results-list'], function(i, dom) {
     $(dom).html('');
   });
+  $('#rdm-tests-results-summary-filter-by_state').val('All')
 };
 
 RDMTests.prototype.add_state_class = function(state, dom) {
