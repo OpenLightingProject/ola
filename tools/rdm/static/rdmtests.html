@@ -164,6 +164,17 @@
         margin-right: 0px;
       }
 
+      #rdm-tests-results-summary-filter {
+       margin-left: 0px;
+       border: 0px;
+       border-bottom: 1.0px solid #67a7e3;
+      }
+
+      #rdm-tests-results-summary-filter-by_state {
+        background-color: #fff;
+        border: 1.0px solid #67a7e3;
+      }
+
       #rdm-tests-results-list {
         margin-left: 20px;
         margin-bottom: 20px;
@@ -328,6 +339,16 @@
         </fieldset>
       </div>
       <div class='results_container_border'>
+        <span style='text-weight: bold;'>Filter By: </span>
+         <span id='rdm-tests-results-summary-filter'>
+          <select id='rdm-tests-results-summary-filter-by_state'>
+            <option>All</option>
+            <option class='test-state-passed'>Passed</option>
+            <option class='test-state-failed'>Failed</option>
+            <option class='test-state-broken'>Broken</option>
+            <option class='test-state-not_run'>Not Run</option>
+          </select>
+        </span>
         <select id='rdm-tests-results-list' size='10'></select>
         <div id='rdm-tests-results-info'>
           <div id='rdm-tests-results-info-title'></div>
