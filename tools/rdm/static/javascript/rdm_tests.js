@@ -22,7 +22,7 @@ RDMTests = function() {
 
 rdmtests = new RDMTests();
 
-RDMTests.ajax_loader = "<img src='images/loader.gif' />";
+RDMTests.ajax_loader = "<img src='/static/images/loader.gif' />";
 
 RDMTests.TEST_RESULTS = new Array();
 
@@ -130,7 +130,7 @@ RDMTests.prototype.query_server = function(request, params, callback) {
 };
 
 RDMTests.prototype.update_universe_list = function() {
-  this.query_server('../GetUnivInfo', {}, function(data) {
+  this.query_server('/GetUnivInfo', {}, function(data) {
     if (data['status'] == true) {
       var universes = data.universes;
       var universe_options = $('#universe_options');
@@ -147,7 +147,7 @@ RDMTests.prototype.update_universe_list = function() {
 RDMTests.prototype.update_device_list = function() {
   var universe_options = $('#universe_options');
   var devices_list = $('#devices_list');
-  this.query_server('../GetDevices', { 'u': universe_options.val() }, function(data) {
+  this.query_server('/GetDevices', { 'u': universe_options.val() }, function(data) {
     if (data['status'] == true) {
       devices_list.empty();
       var uids = data.uids;
@@ -160,7 +160,7 @@ RDMTests.prototype.update_device_list = function() {
 };
 
 RDMTests.prototype.fetch_test_defs = function() {
-  this.query_server('../GetTestDefs', {'c': 0}, function(data) {
+  this.query_server('/GetTestDefs', {'c': 0}, function(data) {
     var tests_selector = $('#rdm-tests-selection-tests_list');
     var test_defs = data.test_defs;
     $.each(data.test_defs, function(item) {
@@ -178,7 +178,7 @@ RDMTests.prototype.run_tests = function(test_filter) {
                           'message': RDMTests.ajax_loader
   });
 
-  this.query_server('../RunTests', {
+  this.query_server('/RunTests', {
                                      'u': $('#universe_options').val(),
                                      'uid': $('#devices_list').val(),
                                      'w': $('#write_delay').val(),

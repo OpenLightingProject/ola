@@ -91,9 +91,13 @@ class TestServerApplication(object):
 
   def __request_handler(self):
     self.request = self.environ['PATH_INFO']
-     
+
     if self.request.startswith('/static/'):
       self.is_static_request = True
+      self.status = status['200']
+    elif self.request == '/':
+      self.is_static_request = True
+      self.request = '/static/rdmtests.html'
       self.status = status['200']
     elif self.request not in paths.keys():
       self.status = status['404']
