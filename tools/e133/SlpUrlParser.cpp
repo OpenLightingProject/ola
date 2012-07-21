@@ -36,16 +36,16 @@ using std::string;
  * @returns true if this was a valid url, false otherise
  *
  * The url is expected to be in the form
- * service:e133.esta://192.168.1.204:5568/7a7000000001
+ * service:rdmnet-device://192.168.1.204:5568/7a7000000001
  */
 bool ParseSlpUrl(const string &url,
                  ola::rdm::UID *uid,
                  ola::network::IPV4Address *ip) {
   size_t url_size = url.length();
-  size_t service_size = sizeof(E133_SLP_SERVICE_NAME);
+  size_t service_size = sizeof(E133_DEVICE_SLP_SERVICE_NAME);
 
   if (url_size < service_size + 1 ||
-      url.compare(0, service_size - 1, E133_SLP_SERVICE_NAME))
+      url.compare(0, service_size - 1, E133_DEVICE_SLP_SERVICE_NAME))
     return false;
 
   if (url[service_size - 1] != ':')
