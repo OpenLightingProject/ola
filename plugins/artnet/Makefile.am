@@ -12,7 +12,7 @@ libolaartnetnode_la_LIBADD = ../../common/libolacommon.la
 # The OLA artnet plugin
 lib_LTLIBRARIES = libolaartnet.la
 libolaartnet_la_SOURCES = ArtNetPlugin.cpp ArtNetDevice.cpp ArtNetPort.cpp
-libolaartnet_la_LIBADD = ./libolaartnetnode.la \
+libolaartnet_la_LIBADD = libolaartnetnode.la \
                          messages/libolaartnetconf.la
 
 # Test programs
@@ -25,4 +25,4 @@ ArtNetTester_SOURCES = ArtNetNodeTest.cpp \
                        MockUdpSocket.cpp
 ArtNetTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 ArtNetTester_LDADD = $(CPPUNIT_LIBS) \
-                     ./libolaartnetnode.la
+                     libolaartnetnode.la
