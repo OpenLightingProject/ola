@@ -57,6 +57,7 @@ paths = {
   '/GetDevices': 'get_devices',
   '/GetUnivInfo': 'get_univ_info',
   '/GetTestDefs': 'get_test_definitions',
+  '/RunDiscovery': 'run_discovery',
 }
 
 
@@ -159,6 +160,20 @@ class TestServerApplication(object):
 
       self.output = open(filename, 'rb').read()
 
+  def run_discovery(self, params):
+    global UIDs
+    def discovery_results(state, uids):
+      if state.Succeeded():
+        UIDs = uids
+      self.wrapper.Stop()
+
+    self.wrapper.Client().RunRDMDiscovery(params['u'], True, discovery_results)
+    self.wrapper.Run()
+    self.wrapper.Reset()
+    if UIDs:
+      self.__set_response_status(True)
+      self.response.update({'uids': UIDs})
+
   def __get_universes(self):
     global univs
     def format_univ_info(state, universes):
@@ -239,7 +254,7 @@ class TestServerApplication(object):
 
     tests, device = runner.RunTests(test_filter, False)
     self.__format_test_results(tests)
-    self.response.update({'UID': str(uid), 'timestamp': time()})
+    self.response.update({'UID': str(uid)})
 
   def __format_test_results(self, tests):
     results = []
@@ -302,6 +317,7 @@ class TestServerApplication(object):
     else:
       self.headers.append(('Content-type', 'application/json'))
       self.start(self.status, self.headers)
+      self.response.update({'timestamp': time()})
       yield(json.dumps(self.response, sort_keys = True))
 
 def parse_options():
