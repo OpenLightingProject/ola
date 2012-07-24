@@ -126,6 +126,10 @@
         padding-bottom: 15px;
       }
 
+      #rdm-tests-notification-button {
+        display: none;
+      }
+
       #rdm-tests-results {
         display: none;
         width: 100%;
@@ -267,6 +271,7 @@
       <fieldset>
        <legend>Select Device</legend>
          <select id='devices_list'></select>
+         <span id='rdm-discovery'><a href='#'><img id='rdm-discovery-button' alt='Run Discovery' src='/static/images/discovery.png' /></a></span>
       </fieldset>
       <fieldset>
         <legend>Delay after sending broadcast SETs</legend>
@@ -388,6 +393,7 @@
     <div id='rdm-tests-notification'>
       <div id='rdm-tests-notification-title'></div>
       <div id='rdm-tests-notification-message'></div>
+      <div id='rdm-tests-notification-button'><input type='button' value='OK' /></div>
     </div>
 
     <div id='footer'>

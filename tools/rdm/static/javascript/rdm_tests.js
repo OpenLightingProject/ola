@@ -33,18 +33,32 @@ RDMTests.prototype.set_notification = function(options) {
   if (options.message != undefined || options.message != null) {
     $('#rdm-tests-notification-message').html(options.message);
   }
+  if (options.is_dismissable != undefined || options.is_dismissable != null) {
+      if (options.is_dismissable == true) {
+        $('#rdm-tests-notification-button').show();
+     }
+  }
   $('#rdm-tests-notification').show();
 };
 
 RDMTests.prototype.clear_notification = function() {
   $('#rdm-tests-notification-title').empty();
   $('#rdm-tests-notification-message').empty();
+  $('#rdm-tests-notification-button').hide();
   $('#rdm-tests-notification').hide();
 };
 
 RDMTests.prototype.bind_events_to_doms = function() {
   $('#universe_options').change(function() {
     rdmtests.update_device_list();
+  });
+
+  $('#rdm-discovery-button').click(function() {
+    rdmtests.run_discovery();
+  });
+
+  $('#rdm-tests-notification-button').click(function() {
+    rdmtests.clear_notification();
   });
 
   $('#rdm-tests-selection-run_tests').click(function() {
@@ -80,8 +94,7 @@ RDMTests.prototype.bind_events_to_doms = function() {
   });
 
   $.each(['#rdm-tests-results-warnings', '#rdm-tests-results-advisories'], function(i, div) {
-    $(div).find('legend').click(
-    function() {
+    $(div).find('legend').click(function() {
       $(div).find('legend').toggleClass('ola-expander-collapsed ola-expander-expanded');
       $(div).find('div').toggle();
     });
@@ -120,9 +133,11 @@ RDMTests.prototype.query_server = function(request, params, callback) {
       } else {
         rdmtests.clear_notification();
         rdmtests.set_notification({
-          'title': 'Error',
-          'message': data['message']
+          'title': '[ERROR]',
+          'message': data['message'],
+          'is_dismissable': true
         });
+        callback(data);
       }
     },
     cache: false
@@ -140,6 +155,25 @@ RDMTests.prototype.update_universe_list = function() {
                                 .text(universes[item]._name));
       });
       rdmtests.update_device_list();
+    }
+  });
+};
+
+RDMTests.prototype.run_discovery = function() {
+  rdmtests.set_notification({
+    'title': 'Running Full Discovery',
+    'message': RDMTests.ajax_loader
+  });
+  rdmtests.query_server('/RunDiscovery', {'u': $('#universe_options').val()}, function(data) {
+    var devices_list = $('#devices_list');
+    devices_list.empty();
+    if (data['status'] == true) {
+      var uids = data.uids;
+      $.each(uids, function(item) {
+        devices_list.append($('<option />').val(uids[item])
+                              .text(uids[item]));
+      });
+      rdmtests.clear_notification();
     }
   });
 };
