@@ -163,16 +163,22 @@ class TestServerApplication(object):
   def run_discovery(self, params):
     global UIDs
     def discovery_results(state, uids):
+      global UIDs
       if state.Succeeded():
-        UIDs = uids
+        UIDs = [uid.__str__() for uid in uids]
+      else:
+        UIDs = False
       self.wrapper.Stop()
 
-    self.wrapper.Client().RunRDMDiscovery(params['u'], True, discovery_results)
+    self.wrapper.Client().RunRDMDiscovery(int(params['u']), True, discovery_results)
     self.wrapper.Run()
     self.wrapper.Reset()
     if UIDs:
       self.__set_response_status(True)
       self.response.update({'uids': UIDs})
+    else:
+      self.__set_response_status(False)
+      self.__set_response_message('Invalid Universe ID')
 
   def __get_universes(self):
     global univs
