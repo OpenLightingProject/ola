@@ -36,7 +36,7 @@ lib_LTLIBRARIES = libolausbpro.la
 libolausbpro_la_SOURCES = ArduinoRGBDevice.cpp DmxTriDevice.cpp \
                           DmxterDevice.cpp UsbProDevice.cpp \
                           UsbSerialPlugin.cpp
-libolausbpro_la_LIBADD = ./libolausbprowidget.la \
+libolausbpro_la_LIBADD = libolausbprowidget.la \
                          messages/libolausbproconf.la
 
 
