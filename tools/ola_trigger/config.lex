@@ -8,6 +8,7 @@ void count();
 %}
 
 %option nounput
+%option yylineno
 
 alpha        [a-zA-Z_]
 alphanumeric [a-zA-Z0-9_]
