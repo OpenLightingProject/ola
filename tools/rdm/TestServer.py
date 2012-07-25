@@ -355,6 +355,7 @@ def main():
   settings.update(options.__dict__)
   settings['pid_store'] = PidStore.GetStore(options.pid_file)
   httpd = make_server('', settings['PORT'], TestServerApplication)
+  print "Running RDM Tests Server on %s:%s" % (httpd.server_address[0], httpd.server_port)
   httpd.serve_forever()
 
 if __name__ == '__main__':
