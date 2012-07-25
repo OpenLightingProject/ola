@@ -236,7 +236,7 @@ case "${host_os}" in
       # uuid was found, now we need to determine which uuid library it is.
       # First modify the CPPFLAGS to use the correct include location.
       old_cppflags=$CPPFLAGS
-      CPPFLAGS+=" $base_uuid_CFLAGS"
+      CPPFLAGS="${CPPFLAGS} ${base_uuid_CFLAGS}"
       # see if we need to include uuid/uuid.h or just uuid.h
       AC_CHECK_HEADERS(
         [uuid/uuid.h],
