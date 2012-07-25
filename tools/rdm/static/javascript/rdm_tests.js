@@ -186,8 +186,7 @@ RDMTests.prototype.update_device_list = function() {
       devices_list.empty();
       var uids = data.uids;
       $.each(uids, function(item) {
-        devices_list.append($('<option />').val(uids[item])
-                                .text(uids[item]));
+        devices_list.append($('<option />').val(uids[item]).text(uids[item]));
       });
     }
   });
@@ -208,8 +207,8 @@ RDMTests.prototype.fetch_test_defs = function() {
 
 RDMTests.prototype.run_tests = function(test_filter) {
   this.set_notification({
-                          'title': 'Running ' + test_filter.length + ' tests',
-                          'message': RDMTests.ajax_loader
+    'title': 'Running ' + test_filter.length + ' tests',
+    'message': RDMTests.ajax_loader
   });
 
   this.query_server('/RunTests', {
