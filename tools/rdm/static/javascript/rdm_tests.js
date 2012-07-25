@@ -213,29 +213,33 @@ RDMTests.prototype.run_tests = function(test_filter) {
   });
 
   this.query_server('/RunTests', {
-                                     'u': $('#universe_options').val(),
-                                     'uid': $('#devices_list').val(),
-                                     'w': $('#write_delay').val(),
-                                     'f': ($('#rdm-tests-send_dmx_in_bg').attr('checked')?$('#dmx_frame_rate').val():0),
-                                     'c': $('#slot_count').val(),
-                                     'c': ($('#rdm-tests-send_dmx_in_bg').attr('checked')?$('#slot_count').val():128),
-                                     't': test_filter.join(','),
-                                    }, function(data) {
-                                    var failed_tests = $('#rdm-tests-selection-failed_tests');
-                                    var failed_defs = new Array();
-                                    for (i in data['test_results']) {
-                                      switch (data['test_results'][i]['state']) {
-                                        case 'Failed':
-                                          failed_defs.push(data['test_results'][i]['definition']);
-                                          break;
-                                      }
-                                    }
-                                    for (item in failed_defs) {
-                                      failed_tests.append($('<option />').val(failed_defs[item]).text(failed_defs[item]));
-                                    }
-                                    failed_tests.multiselect();
-                                    rdmtests.clear_notification();
-                                    rdmtests.display_results(data);
+    'u': $('#universe_options').val(),
+    'uid': $('#devices_list').val(),
+    'w': $('#write_delay').val(),
+    'f': ($('#rdm-tests-send_dmx_in_bg').attr('checked')?$('#dmx_frame_rate').val():0),
+    'c': $('#slot_count').val(),
+    'c': ($('#rdm-tests-send_dmx_in_bg').attr('checked')?$('#slot_count').val():128),
+    't': test_filter.join(','),
+  }, function(data) {
+    if (data['status'] == true) {
+      var failed_tests = $('#rdm-tests-selection-failed_tests');
+      var failed_defs = new Array();
+      for (i in data['test_results']) {
+        switch (data['test_results'][i]['state']) {
+          case 'Failed':
+            failed_defs.push(data['test_results'][i]['definition']);
+            break;
+        }
+      }
+      for (item in failed_defs) {
+        failed_tests.append($('<option />').val(failed_defs[item]).text(failed_defs[item]));
+      }
+      failed_tests.multiselect();
+      rdmtests.clear_notification();
+      rdmtests.display_results(data);
+    } else {
+      rdmtests.update_universe_list();
+    }
   });
 };
 
