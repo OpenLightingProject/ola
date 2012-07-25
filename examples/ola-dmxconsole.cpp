@@ -38,7 +38,9 @@
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
+#ifdef HAVE_FTIME
 #include <sys/timeb.h>
+#endif
 #include <termios.h>
 #include <time.h>
 
