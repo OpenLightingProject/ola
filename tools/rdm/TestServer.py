@@ -178,7 +178,7 @@ class TestServerApplication(object):
       self.response.update({'uids': UIDs})
     else:
       self.__set_response_status(False)
-      self.__set_response_message('Invalid Universe ID')
+      self.__set_response_message('Invalid Universe ID or no devices patched!')
 
   def __get_universes(self):
     global univs

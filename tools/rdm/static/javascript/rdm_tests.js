@@ -355,7 +355,7 @@ RDMTests.prototype.validate_form = function() {
   };
 
   if ($('#devices_list option').size() < 1) {
-    alert('There are no devices available in selected universe!');
+    alert('There are no devices patched to the selected universe!');
     return false;
   }
 
