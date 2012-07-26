@@ -28,8 +28,9 @@
 #include <vector>
 
 #include "ola/BaseTypes.h"
-#include "ola/Logging.h"
 #include "ola/Callback.h"
+#include "ola/Logging.h"
+#include "ola/StringUtils.h"
 #include "ola/io/Descriptor.h"
 #include "plugins/usbpro/ArduinoWidget.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
@@ -194,6 +195,10 @@ bool WidgetDetectorThread::RunScan() {
       continue;
     if (m_ignored_devices.find(*it) != m_ignored_devices.end())
       continue;
+    // Free BSD has .init and .lock files which we want to skip
+    if (StringEndsWith(*it, ".init") or StringEndsWith(*it, ".lock"))
+      continue;
+
     OLA_INFO << "Found potential USB Serial device at " << *it;
     ConnectedDescriptor *descriptor =
       BaseUsbProWidget::OpenDevice(*it);

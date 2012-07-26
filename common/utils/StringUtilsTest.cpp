@@ -33,6 +33,7 @@ using ola::HexStringToInt;
 using ola::IntToString;
 using ola::PrefixedHexStringToInt;
 using ola::ShortenString;
+using ola::StringEndsWith;
 using ola::StringSplit;
 using ola::StringToInt;
 using ola::StringTrim;
@@ -46,6 +47,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSplit);
   CPPUNIT_TEST(testTrim);
   CPPUNIT_TEST(testShorten);
+  CPPUNIT_TEST(testEndsWith);
   CPPUNIT_TEST(testIntToString);
   CPPUNIT_TEST(testEscape);
   CPPUNIT_TEST(testStringToUInt);
@@ -67,6 +69,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
     void testSplit();
     void testTrim();
     void testShorten();
+    void testEndsWith();
     void testIntToString();
     void testEscape();
     void testStringToUInt();
@@ -184,6 +187,19 @@ void StringUtilsTest::testShorten() {
   input = "foo\0bar\0baz";
   StringTrim(&input);
   CPPUNIT_ASSERT_EQUAL(string("foo"), input);
+}
+
+
+/*
+ * Test the StringEndsWith function.
+ */
+void StringUtilsTest::testEndsWith() {
+  string input = "foo bar baz";
+  CPPUNIT_ASSERT(StringEndsWith(input, "baz"));
+  CPPUNIT_ASSERT(StringEndsWith(input, " baz"));
+  CPPUNIT_ASSERT(StringEndsWith(input, "bar baz"));
+  CPPUNIT_ASSERT(StringEndsWith(input, ""));
+  CPPUNIT_ASSERT(!StringEndsWith(input, "foo"));
 }
 
 
