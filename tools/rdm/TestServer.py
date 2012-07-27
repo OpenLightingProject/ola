@@ -25,6 +25,7 @@ import textwrap
 import urlparse
 import inspect
 import traceback
+from TestCategory import TestCategory
 from time import time
 from ola.testing.rdm import ResponderTest
 from ola.testing.rdm import TestDefinitions
@@ -58,6 +59,7 @@ paths = {
   '/GetUnivInfo': 'get_univ_info',
   '/GetTestDefs': 'get_test_definitions',
   '/RunDiscovery': 'run_discovery',
+  '/GetTestCategories': 'get_test_categories',
 }
 
 
@@ -159,6 +161,10 @@ class TestServerApplication(object):
       self.headers.append(('Content-length', str(stats.st_size)))
 
       self.output = open(filename, 'rb').read()
+
+  def get_test_categories(self, params):
+    self.__set_response_status(True)
+    self.response.update({'Categories': [catg.__str__() for catg in TestCategory.Categories()]})
 
   def run_discovery(self, params):
     global UIDs
