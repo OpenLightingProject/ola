@@ -155,6 +155,11 @@
         font-weight: bold;
       }
 
+      .rdm-tests-select {
+        background-color: #fff;
+        border: 1.0px solid #67a7e3;
+      }
+
       .results_container {
         margin: 0px auto;
         width: 80%;
@@ -182,11 +187,6 @@
       .ola-expander-expanded img {
         background-image: url('/static/images/expander.png');
         background-position: 0px 0px;
-      }
-
-      #rdm-tests-results-summary-filter-by_state {
-        background-color: #fff;
-        border: 1.0px solid #67a7e3;
       }
 
       #rdm-tests-results-list {
@@ -364,8 +364,12 @@
         </fieldset>
       </div>
       <div class='results_container_border'>
+        <div style="padding: 5px">Filter By Category:
+          <select id='rdm-tests-results-summary-filter-by_catg' class='rdm-tests-select'>
+          </select>
+        </div>
         <div style="padding: 5px">Filter By Result:
-          <select id='rdm-tests-results-summary-filter-by_state'>
+          <select id='rdm-tests-results-summary-filter-by_state' class='rdm-tests-select'>
             <option>All</option>
             <option class='test-state-passed'>Passed</option>
             <option class='test-state-failed'>Failed</option>

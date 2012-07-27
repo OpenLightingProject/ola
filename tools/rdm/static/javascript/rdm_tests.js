@@ -100,25 +100,58 @@ RDMTests.prototype.bind_events_to_doms = function() {
     });
   });
 
-  $('#rdm-tests-results-summary-filter-by_state').change(function() {
-    var state = $(this).val();
-    $('#rdm-tests-results-list').html('');
-    if (state == 'All') {
+  $.each([
+    $('#rdm-tests-results-summary-filter-by_catg'),
+    $('#rdm-tests-results-summary-filter-by_state')
+  ], function(i, div) {
+    $(div).change(function() {
+      rdmtests.filter_results($('#rdm-tests-results-list'), {
+        'category': $('#rdm-tests-results-summary-filter-by_catg').val(),
+        'state': $('#rdm-tests-results-summary-filter-by_state').val(),
+      });
+    });
+  });
+};
+
+RDMTests.prototype.make_results_list_item = function(definition) {
+  var test_option = $('<option />').val(definition).text(definition);
+  rdmtests.add_state_class(RDMTests.TEST_RESULTS[definition]['state'], test_option);
+  return test_option;
+};
+
+RDMTests.prototype.filter_results = function(results_dom, filter_options) {
+  $(results_dom).html('');
+  var filter_category = filter_options['category'];
+  var filter_state = filter_options['state'];
+
+  if (filter_category == 'All') {
+    if (filter_state == 'All') {
       for (var definition in RDMTests.TEST_RESULTS) {
-        var test_option = $('<option />').val(definition).text(definition);
-        rdmtests.add_state_class(RDMTests.TEST_RESULTS[definition]['state'], test_option);
-        $('#rdm-tests-results-list').append(test_option);
+        $(results_dom).append(rdmtests.make_results_list_item(definition));
       }
     } else {
       for (var definition in RDMTests.TEST_RESULTS) {
-        if (RDMTests.TEST_RESULTS[definition]['state'] == state) {
-          var test_option = $('<option />').val(definition).text(definition);
-          rdmtests.add_state_class(state, test_option);
-          $('#rdm-tests-results-list').append(test_option);
+        if (RDMTests.TEST_RESULTS[definition]['state'] == filter_state) {
+          $(results_dom).append(rdmtests.make_results_list_item(definition));
         }
       }
     }
-  });
+  } else {
+    if (filter_state == 'All') {
+      for (var definition in RDMTests.TEST_RESULTS) {
+        if (RDMTests.TEST_RESULTS[definition]['category'] == filter_category) {
+          $(results_dom).append(rdmtests.make_results_list_item(definition));
+        }
+      }
+    } else {
+      for (var definition in RDMTests.TEST_RESULTS) {
+        if (RDMTests.TEST_RESULTS[definition]['category'] == filter_category
+            && RDMTests.TEST_RESULTS[definition]['state'] == filter_state) {
+          $(results_dom).append(rdmtests.make_results_list_item(definition));
+        }
+      }
+    }
+  }
 };
 
 RDMTests.prototype.query_server = function(request, params, callback) {
@@ -245,6 +278,7 @@ RDMTests.prototype.run_tests = function(test_filter) {
 RDMTests.prototype.reset_results = function() {
   $.each(['#rdm-tests-results-uid',
   '#rdm-tests-results-stats-figures',
+  '#rdm-tests-results-summary-filter-by_catg',
   '#rdm-tests-results-warnings-content',
   '#rdm-tests-results-advisories-content',
   '#rdm-tests-results-list'], function(i, dom) {
@@ -312,6 +346,21 @@ RDMTests.prototype.display_results = function(results) {
 
     $('#rdm-tests-results-list').append(test_option);
   }
+
+  //Populate the filter with test categories
+  $('#rdm-tests-results-summary-filter-by_catg')
+  .append($('<option />')
+  .val('All')
+  .html('All'));
+
+  rdmtests.query_server('/GetTestCategories', {}, function(data) {
+    for (var i = 0; i < data['Categories'].length; i++) {
+      $('#rdm-tests-results-summary-filter-by_catg')
+      .append($('<option />')
+      .val(data['Categories'][i])
+      .html(data['Categories'][i]));
+    }
+  });
 
   //Update the Warnings and Advisories counter
   $('#rdm-tests-results-warning-count').html(number_of_warnings.toString());
