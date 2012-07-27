@@ -1,3 +1,10 @@
+ola (0.8.21-2) unstable; urgency=low
+
+  * Move RDM Tests in python package
+  * Support both python 2.6 and 2.7
+
+ -- RenZO <renzo@imaginux.com>  Sat, 28 Jul 2012 00:26:44 +0200
+
 ola (0.8.21-1) unstable; urgency=low
 
   * New upstream release
