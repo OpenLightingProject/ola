@@ -21,7 +21,8 @@
 #ifndef TOOLS_E133_SLPCONSTANTS_H_
 #define TOOLS_E133_SLPCONSTANTS_H_
 
-static const char E133_SLP_SERVICE_NAME[] = "service:e133.esta";
+static const char E133_DEVICE_SLP_SERVICE_NAME[] = "service:rdmnet-device";
+static const char E133_CONTROLLER_SLP_SERVICE_NAME[] = "service:rdmnet-ctrl";
 
 // This should match the port number in plugins/e131/e131/ACNPort.h
 static const char ACN_PORT_STRING[] = "5568";

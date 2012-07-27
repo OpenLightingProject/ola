@@ -24,12 +24,11 @@ import datetime
 import operator
 import struct
 from ExpectedResults import *
-from ResponderTest import ResponderTestFixture
+from ResponderTest import ResponderTestFixture, TestFixture
 from ResponderTest import OptionalParameterTestFixture
 from TestCategory import TestCategory
 from ola import PidStore
 from ola import RDMConstants
-from ola.DUBDecoder import DecodeResponse
 from ola.OlaClient import RDMNack
 from ola.PidStore import ROOT_DEVICE
 from ola.UID import UID
@@ -61,23 +60,27 @@ class MuteDevice(ResponderTestFixture):
 
     if supported:
       self.SetProperty('mute_control_fields', fields['control_field'])
-    else:
-      self.SetProperty('mute_control_fields', None)
+      binding_uids = fields.get('binding_uid', [])
+      if binding_uids:
+        if binding_uids[0].manufacturer_id != self.uid.manufacturer_id:
+          self.AddWarning(
+            'Binding UID manufacturer ID 0x%04hx does not equal device '
+            'manufacturer ID of 0x%04hx' % (
+              binding_uids[0].manufacturer_id,
+              self.uid.manufacturer_id))
 
 
 class MuteDeviceWithData(ResponderTestFixture):
-  """Mute device info with param data."""
+  """Mute device with param data."""
   CATEGORY = TestCategory.NETWORK_MANAGEMENT
   PID = 'DISC_MUTE'
-  REQUIRES = ['mute_supported']
 
   def Test(self):
-    if not self.Property('mute_supported'):
-      self.SetNotRun('Controller does not support mute commands')
-      self.Stop()
-      return
-
-    self.AddExpectedResults(self.NackDiscoveryResult(RDMNack.NR_FORMAT_ERROR))
+    # Section 6.3.4 of E1.20
+    self.AddExpectedResults([
+      TimeoutResult(),
+      UnsupportedResult()
+    ])
     self.SendRawDiscovery(ROOT_DEVICE, self.pid, 'x')
 
 
@@ -110,15 +113,13 @@ class UnMuteDeviceWithData(ResponderTestFixture):
   """UnMute device info with param data."""
   CATEGORY = TestCategory.NETWORK_MANAGEMENT
   PID = 'DISC_UNMUTE'
-  REQUIRES = ['unmute_supported']
 
   def Test(self):
-    if not self.Property('unmute_supported'):
-      self.SetNotRun('Controller does not support unmute commands')
-      self.Stop()
-      return
-
-    self.AddExpectedResults(self.NackDiscoveryResult(RDMNack.NR_FORMAT_ERROR))
+    # Section 6.3.4 of E1.20
+    self.AddExpectedResults([
+      TimeoutResult(),
+      UnsupportedResult()
+    ])
     self.SendRawDiscovery(ROOT_DEVICE, self.pid, 'x')
 
 
@@ -151,72 +152,254 @@ class RequestsWhileUnmuted(ResponderTestFixture):
     self._wrapper.Run()
 
 
-# DUB Tests
+# Invalid DISCOVERY_PIDs
 #------------------------------------------------------------------------------
-class FullDiscovery(ResponderTestFixture):
-  """Check that the device responds to a DUB message for all devices."""
-  CATEGORY = TestCategory.NETWORK_MANAGEMENT
-  PID = 'DISC_UNIQUE_BRANCH'
-  REQUIRES = ['mute_supported', 'unmute_supported']
-  PROVIDES = ['dub_supported']
+class InvalidDiscoveryPID(ResponderTestFixture):
+  """Send an invalid Discovery CC PID, see E1.20 6.3.4"""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
 
-  def UnMuteDevice(self, next_method):
-    unmute_pid = self.LookupPid('DISC_UNMUTE')
-    self.AddExpectedResults([
-        AckDiscoveryResult(unmute_pid.value, action=next_method),
-    ])
-    self.SendDiscovery(ROOT_DEVICE, unmute_pid)
+  # We need to mock out a PID here
+  class MockPid(object):
+    def __init__(self):
+      self.value = 0x000f
+
+    def ValidateAddressing(request_params, request_type):
+      return True
+
+    def __str__(self):
+      return '0x%04hx' % self.value
 
   def Test(self):
-    self._muting = True
-    if not (self.Property('unmute_supported') and
-            self.Property('mute_supported')):
-      self.SetNotRun('Controller does not support mute / unmute commands')
-      self.Stop()
-      return
-
-    self.UnMuteDevice(self.SendDUB)
-
-  def SendDUB(self):
-    self._muting = False
+    mock_pid = self.MockPid()
     self.AddExpectedResults([
-      DUBResult(),
+      TimeoutResult(),
       UnsupportedResult()
     ])
-    manufacturer_lower = UID(self.uid.manufacturer_id, 0)
-    manufacturer_upper = UID.AllManufacturerDevices(self.uid.manufacturer_id)
-    lower = UID(0, 0)
-    upper = UID.AllDevices()
-    broadcast_uid = UID.AllDevices()
-    self.SendDirectedDiscovery(broadcast_uid, ROOT_DEVICE, self.pid,
-                               [str(lower), str(upper)])
+    self.SendRawDiscovery(ROOT_DEVICE, mock_pid)
 
-  def VerifyResult(self, response, fields):
-    if self._muting:
-      return
 
-    if (response.response_code ==
-        OlaClient.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED):
-      self.SetProperty('dub_supported', False)
-      return
+# DUB Tests
+#------------------------------------------------------------------------------
+class DUBFullTree(TestMixins.DiscoveryMixin,
+                  ResponderTestFixture):
+  """Confirm the device responds within the entire DUB range."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  PROVIDES = ['dub_supported']
 
-    self.SetProperty('dub_supported', True)
+  def LowerBound(self):
+    return UID(0, 0);
 
-    if len(response.raw_response) != 1:
-      self.SetFailed('Multiple DUB responses returned')
-      return
+  def UpperBound(self):
+    return UID.AllDevices()
 
-    uid = DecodeResponse(bytearray(response.raw_response[0]))
-    if uid is None or uid != self._uid:
-      self.SetFailed('Missing UID in DUB response')
+  def DUBResponseCode(self, response_code):
+    self.SetProperty(
+        'dub_supported',
+        response_code != OlaClient.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED)
 
-    self.LogDebug(' Located UID: %s' % uid)
 
-  def ResetState(self):
-    # mute the device again
-    mute_pid = self.LookupPid('DISC_MUTE')
-    self.SendDiscovery(PidStore.ROOT_DEVICE, mute_pid)
-    self._wrapper.Run()
+class DUBManufacturerTree(TestMixins.DiscoveryMixin,
+                          ResponderTestFixture):
+  """Confirm the device responds within it's manufacturer DUB range."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
+
+  def LowerBound(self):
+    return UID(self.uid.manufacturer_id, 0)
+
+  def UpperBound(self):
+    return UID.AllManufacturerDevices(self.uid.manufacturer_id)
+
+
+class DUBSingleUID(TestMixins.DiscoveryMixin,
+                   ResponderTestFixture):
+  """Confirm the device responds to just it's own range."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
+
+  def LowerBound(self):
+    return self.uid
+
+  def UpperBound(self):
+    return self.uid
+
+
+class DUBSingleLowerUID(TestMixins.DiscoveryMixin,
+                        ResponderTestFixture):
+  """DUB from <UID> - 1 to <UID> - 1."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
+
+  def LowerBound(self):
+    return UID.PreviousUID(self.uid)
+
+  def UpperBound(self):
+    return UID.PreviousUID(self.uid)
+
+  def ExpectResponse(self):
+    return False
+
+
+class DUBSingleUpperUID(TestMixins.DiscoveryMixin,
+                        ResponderTestFixture):
+  """DUB from <UID> + 1 to <UID> + 1."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
+
+  def LowerBound(self):
+    return UID.NextUID(self.uid)
+
+  def UpperBound(self):
+    return UID.NextUID(self.uid)
+
+  def ExpectResponse(self):
+    return False
+
+
+class DUBAffirmativeLowerBound(TestMixins.DiscoveryMixin,
+                               ResponderTestFixture):
+  """DUB from <UID> to ffff:ffffffff."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
+
+  def LowerBound(self):
+    return self.uid
+
+  def UpperBound(self):
+    return UID.AllDevices()
+
+
+class DUBNegativeLowerBound(TestMixins.DiscoveryMixin,
+                            ResponderTestFixture):
+  """DUB from <UID> + 1 to ffff:ffffffff."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
+
+  def LowerBound(self):
+    return UID.NextUID(self.uid)
+
+  def UpperBound(self):
+    return UID.AllDevices()
+
+  def ExpectResponse(self):
+    return False
+
+
+class DUBAffirmativeUpperBound(TestMixins.DiscoveryMixin,
+                               ResponderTestFixture):
+  """DUB from 0000:00000000 to <UID>."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
+
+  def LowerBound(self):
+    return UID(0, 0)
+
+  def UpperBound(self):
+    return self.uid
+
+
+class DUBNegativeUpperBound(TestMixins.DiscoveryMixin,
+                            ResponderTestFixture):
+  """DUB from 0000:00000000 to <UID> - 1."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
+
+  def LowerBound(self):
+    return UID(0, 0)
+
+  def UpperBound(self):
+    return UID.PreviousUID(self.uid)
+
+  def ExpectResponse(self):
+    return False
+
+
+class DUBDifferentManufacturer(TestMixins.DiscoveryMixin,
+                               ResponderTestFixture):
+  """DUB with a different manufacturer's range."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
+
+  def LowerBound(self):
+    return UID(self.uid.manufacturer_id - 1, 0)
+
+  def UpperBound(self):
+    return UID(self.uid.manufacturer_id - 1, 0xffffffff)
+
+  def ExpectResponse(self):
+    return False
+
+
+class DUBSignedComparisons(TestMixins.DiscoveryMixin,
+                           ResponderTestFixture):
+  """DUB to check UIDs aren't using signed values."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
+
+  def LowerBound(self):
+    # Section 5.1 of E1.20 limits the manufacturer ID range to 0 - 0x7fff so
+    # this should be safe for all cases.
+    return UID(0x8000, 0)
+
+  def UpperBound(self):
+    return UID.AllDevices()
+
+  def ExpectResponse(self):
+    return False
+
+
+class DUBNegativeVendorcast(TestMixins.DiscoveryMixin,
+                            ResponderTestFixture):
+  """DUB to another manufacturer's vendorcast address."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
+
+  def LowerBound(self):
+    return UID(0, 0);
+
+  def UpperBound(self):
+    return UID.AllDevices()
+
+  def ExpectResponse(self):
+    return False
+
+  def Target(self):
+    return UID(self.uid.manufacturer_id - 1, 0xffffffff)
+
+
+class DUBPositiveVendorcast(TestMixins.DiscoveryMixin,
+                            ResponderTestFixture):
+  """DUB to this manufacturer's vendorcast address."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
+
+  def LowerBound(self):
+    return UID(0, 0);
+
+  def UpperBound(self):
+    return UID.AllDevices()
+
+  def Target(self):
+    return UID(self.uid.manufacturer_id, 0xffffffff)
+
+
+class DUBPositiveUnicast(TestMixins.DiscoveryMixin,
+                         ResponderTestFixture):
+  """DUB to the device's address."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
+
+  def LowerBound(self):
+    return UID(0, 0);
+
+  def UpperBound(self):
+    return UID.AllDevices()
+
+  def Target(self):
+    return self.uid
 
 
 # Device Info tests
@@ -1099,6 +1282,7 @@ class SetLanguage(OptionalParameterTestFixture):
 
 
 class SetNonAsciiLanguage(OptionalParameterTestFixture):
+  """Try to set the language to non-ascii characters."""
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'LANGUAGE'
 
@@ -3512,3 +3696,47 @@ class GetPresetMergeModeWithData(TestMixins.GetWithDataMixin,
   """GET preset merge mode with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PRESET_MERGE_MODE'
+
+
+# Cross check the control fields with various other properties
+#------------------------------------------------------------------------------
+class SubDeviceControlField(TestFixture):
+  """Check that the sub device control field is correct."""
+  CATEGORY = TestCategory.CORE
+  REQUIRES = ['mute_control_fields', 'sub_device_count']
+
+  def Test(self):
+    sub_device_field = self.Property('mute_control_fields') & 0x02
+    if self.Property('sub_device_count') > 0:
+      if sub_device_field == 0:
+        self.SetFailed('Sub devices reported but control field not set')
+        return
+    else:
+      if sub_device_field:
+        self.SetFailed('No Sub devices reported but control field is set')
+        return
+    self.SetPassed()
+
+
+class ProxiedDevicesControlField(TestFixture):
+  """Check that the proxied devices control field is correct."""
+  CATEGORY = TestCategory.CORE
+  REQUIRES = ['mute_control_fields', 'supported_parameters']
+
+  def Test(self):
+    proxied_devices_pid = self.LookupPid('PROXIED_DEVICES')
+    supports_proxied_devices_pid = (
+        proxied_devices_pid.value in self.Property('supported_parameters'))
+    managed_proxy_field = self.Property('mute_control_fields') & 0x01
+
+    if supports_proxied_devices_pid and managed_proxy_field == 0:
+      self.AddWarning(
+          "Support for PROXIED_DEVICES declared but the managed "
+          "proxy control field isn't set")
+      return
+    elif not supports_proxied_devices_pid and managed_proxy_field == 1:
+      self.SetFailed(
+          "Managed proxy control bit is set, but proxied devices isn't "
+          "supported")
+      return
+    self.SetPassed()

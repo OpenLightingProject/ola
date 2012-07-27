@@ -235,7 +235,7 @@ void SlpThread::DiscoveryRequest() {
 
   slp_cookie cookie;
   SLPError err = SLPFindSrvs(m_slp_handle,
-                             E133_SLP_SERVICE_NAME,
+                             E133_DEVICE_SLP_SERVICE_NAME,
                              0,  // use configured scopes
                              0,  // no attr filter
                              ServiceCallback,
@@ -341,7 +341,7 @@ bool SlpThread::PerformRegistration(const string &url,
                                     unsigned short lifetime,
                                     ola::thread::timeout_id *timeout) {
   std::stringstream str;
-  str << E133_SLP_SERVICE_NAME << "://" << url;
+  str << E133_DEVICE_SLP_SERVICE_NAME << "://" << url;
   SLPError callbackerr = SLP_OK;
   SLPError err = SLPReg(m_slp_handle,
                         str.str().c_str(),
@@ -387,7 +387,7 @@ void SlpThread::DeregisterRequest(slp_registration_callback *callback,
   }
 
   std::stringstream str;
-  str << E133_SLP_SERVICE_NAME << "://" << url;
+  str << E133_DEVICE_SLP_SERVICE_NAME << "://" << url;
   SLPError callbackerr = SLP_OK;
   SLPError err = SLPDereg(m_slp_handle,
                           str.str().c_str(),

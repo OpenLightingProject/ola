@@ -54,7 +54,7 @@ class TestFixture(object):
   PROVIDES = []
   REQUIRES = []
 
-  def __init__(self, device, uid, pid_store):
+  def __init__(self, device, universe, uid, pid_store, *args, **kwargs):
     self._device_properties = device
     self._uid = uid
     self._pid_store = pid_store
@@ -214,13 +214,15 @@ class TestFixture(object):
 
 class ResponderTestFixture(TestFixture):
   """A Test that that sends one or more messages to a responder."""
-  def __init__(self, device, universe,
+  def __init__(self,
+               device,
+               universe,
                uid,
                pid_store,
                rdm_api,
                wrapper,
                broadcast_write_delay):
-    super(ResponderTestFixture, self).__init__(device, uid, pid_store)
+    super(ResponderTestFixture, self).__init__(device, universe, uid, pid_store)
     self._api = rdm_api
     self._expected_results = []
     self._in_reset_mode = False
@@ -520,15 +522,8 @@ class ResponderTestFixture(TestFixture):
       self.Stop()
       return False
 
-    acceptable_codes = [
-        OlaClient.RDM_WAS_BROADCAST,
-        OlaClient.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED,
-        OlaClient.RDM_DUB_RESPONSE]
-    if response.response_code in acceptable_codes:
-      return True
-
     if response.response_code != OlaClient.RDM_COMPLETED_OK:
-      self.LogDebug(' Request failed: %s' % response.ResponseCodeAsString())
+      self.LogDebug(' Request status: %s' % response.ResponseCodeAsString())
       return True
 
     # handle the case of an ack timer

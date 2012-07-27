@@ -91,6 +91,19 @@ void ShortenString(string *input) {
 }
 
 
+/**
+ * Check if one string ends with another
+ */
+bool StringEndsWith(const string &s, const string &ending) {
+  if (s.length() >= ending.length()) {
+    return
+      0 == s.compare(s.length() - ending.length(), ending.length(), ending);
+  } else {
+    return false;
+  }
+}
+
+
 /*
  * Convert an int to a string.
  * @param i the int to convert

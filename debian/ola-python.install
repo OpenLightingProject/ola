@@ -1,2 +1,5 @@
+usr/bin/*.py
 usr/lib/python*/{dist,site}-packages/ola/*.py
 usr/lib/python*/{dist,site}-packages/ola/rpc/*.py
+usr/lib/python*/{dist,site}-packages/ola/testing/*.py
+usr/lib/python*/{dist,site}-packages/ola/testing/rdm/*.py

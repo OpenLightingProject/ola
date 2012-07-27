@@ -41,6 +41,8 @@ class TestCategory(object):
     'UNCLASSIFIED': 'Unclassified',
   }
 
+  CATEGORIES_ = []
+
   def __init__(self, category):
     self._category = category
 
@@ -50,7 +52,14 @@ class TestCategory(object):
   def __hash__(self):
     return hash(self._category)
 
+  @staticmethod
+  def Categories():
+    """Return a list of all TestCategories."""
+    return TestCategory.CATEGORIES_
+
+
 # Make the symbols accessible, i.e. TestCategory.STATUS_COLLECTION
 for symbol, description in TestCategory.SYMBOLS_TO_VALUES.iteritems():
   obj = TestCategory(description)
   setattr(TestCategory, symbol, obj)
+  TestCategory.CATEGORIES_.append(obj)

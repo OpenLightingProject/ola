@@ -1,4 +1,5 @@
-usr/bin/*
+usr/bin/ola*
+usr/bin/rdmpro_sniffer
 usr/lib/libola*.so.?
 usr/lib/libola*.so.?.?.*
 usr/lib/olad/libola*.so.?

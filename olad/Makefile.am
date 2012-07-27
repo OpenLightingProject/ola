@@ -42,12 +42,14 @@ EXTRA_DIST = Client.h ClientBroker.h DeviceManager.h \
 # Olad Server
 bin_PROGRAMS = olad
 olad_SOURCES = Olad.cpp
-olad_LDFLAGS = -rdynamic -ldl
+olad_LDFLAGS = -rdynamic
 olad_LDADD = libolaserver.la \
              $(top_builddir)/common/libolacommon.la
 
 # Test Programs
+if BUILD_TESTS
 TESTS = DeviceTester OlaTester PortTester UniverseTester
+endif
 check_PROGRAMS = $(TESTS)
 common_test_sources = GenericTester.cpp
 common_test_ldadd = $(CPPUNIT_LIBS) $(libprotobuf_LIBS) \

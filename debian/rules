@@ -41,7 +41,7 @@ endif
 ifneq "$(wildcard /usr/share/misc/config.guess)" ""
 	cp -f /usr/share/misc/config.guess config.guess
 endif
-	./configure $(CROSS) --enable-python-libs --prefix=/usr --mandir=\$${prefix}/share/man --infodir=\$${prefix}/share/info CFLAGS="$(CFLAGS)"
+	./configure $(CROSS) --enable-python-libs --enable-rdm-tests --prefix=/usr --mandir=\$${prefix}/share/man --infodir=\$${prefix}/share/info CFLAGS="$(CFLAGS)"
 
 
 build: build-stamp
@@ -82,7 +82,7 @@ binary-indep: build install
 binary-arch: build install
 	dh_testdir
 	dh_testroot
-	dh_install
+	dh_install --list-missing
 #	dh_installmenu
 #	dh_installdebconf	
 #	dh_installlogrotate
@@ -96,7 +96,7 @@ binary-arch: build install
 	dh_compress
 	dh_fixperms
 #	dh_perl
-#	dh_python
+	dh_python2
 	dh_makeshlibs -V
 	dh_installdeb
 	dh_shlibdeps

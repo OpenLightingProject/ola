@@ -20,7 +20,9 @@ libolardm_la_SOURCES = CommandPrinter.cpp \
 nodist_libolardm_la_SOURCES = Pids.pb.cc
 libolardm_la_LIBADD = $(libprotobuf_LIBS)
 
+if BUILD_TESTS
 TESTS = DiscoveryAgentTester PidStoreTester RDMMessageTester RDMTester
+endif
 check_PROGRAMS = $(TESTS)
 
 DiscoveryAgentTester_SOURCES = DiscoveryAgentTester.cpp DiscoveryAgentTest.cpp

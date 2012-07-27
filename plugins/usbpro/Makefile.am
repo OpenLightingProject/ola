@@ -36,14 +36,16 @@ lib_LTLIBRARIES = libolausbpro.la
 libolausbpro_la_SOURCES = ArduinoRGBDevice.cpp DmxTriDevice.cpp \
                           DmxterDevice.cpp UsbProDevice.cpp \
                           UsbSerialPlugin.cpp
-libolausbpro_la_LIBADD = ./libolausbprowidget.la \
+libolausbpro_la_LIBADD = libolausbprowidget.la \
                          messages/libolausbproconf.la
 
 
 # Test programs
+if BUILD_TESTS
 TESTS = ArduinoWidgetTester DmxTriWidgetTester DmxterWidgetTester \
         EnttecUsbProWidgetTester RobeWidgetTester SerialUsbTester \
         UltraDMXProWidgetTester
+endif
 check_PROGRAMS = $(TESTS)
 
 common_test_sources = CommonWidgetTest.cpp \

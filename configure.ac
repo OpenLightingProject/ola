@@ -7,7 +7,7 @@ AC_CONFIG_AUX_DIR(config)
 AC_SUBST(ac_aux_dir)
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_MACRO_DIR([config])
-AM_INIT_AUTOMAKE(ola, 0.8.20)
+AM_INIT_AUTOMAKE(ola, 0.8.21)
 
 # Checks for programs.
 AC_LANG(C++)
@@ -236,7 +236,7 @@ case "${host_os}" in
       # uuid was found, now we need to determine which uuid library it is.
       # First modify the CPPFLAGS to use the correct include location.
       old_cppflags=$CPPFLAGS
-      CPPFLAGS+=" $base_uuid_CFLAGS"
+      CPPFLAGS="${CPPFLAGS} ${base_uuid_CFLAGS}"
       # see if we need to include uuid/uuid.h or just uuid.h
       AC_CHECK_HEADERS(
         [uuid/uuid.h],
@@ -375,10 +375,19 @@ OLAD_DEFINES="-DHTTP_DATA_DIR=\\\"$www_datadir\\\" -DPLUGIN_DIR=\\\"$plugindir\\
 AC_SUBST(OLAD_DEFINES)
 
 # check for cppunit
+AC_ARG_ENABLE(
+  unittests,
+  AC_HELP_STRING([--disable-unittests],
+                 [Disable all unittests]),)
+
+if test "${enable_unittests}" != "no"; then
 AM_PATH_CPPUNIT(
   1.9.6,
   [],
   [AC_MSG_ERROR([Missing cppunit, please install >= 1.9.6])])
+fi
+
+AM_CONDITIONAL(BUILD_TESTS, test "${enable_unittests}" != "no")
 
 # gcov
 AC_ARG_ENABLE(gcov,
@@ -417,7 +426,7 @@ AM_CONDITIONAL(BUILD_PYTHON_LIBS, test "${build_python_libs}" = "yes")
 AM_CONDITIONAL(INSTALL_RDM_TESTS, test "${install_rdm_tests}" = "yes")
 
 if test "${build_python_libs}" = "yes"; then
- AM_PATH_PYTHON(2.4)
+ AM_PATH_PYTHON(2.6)
  AX_PYTHON_MODULE("google.protobuf", "fatal")
 fi
 
@@ -522,8 +531,9 @@ AC_OUTPUT( Makefile\
     java/Makefile \
     ola/Makefile \
     python/Makefile \
-    python/rpc/Makefile \
     python/examples/Makefile \
+    python/ola/Makefile \
+    python/ola/rpc/Makefile \
     olad/Makefile \
     olad/OlaVersion.h \
     olad/testdata/Makefile \
@@ -553,7 +563,6 @@ AC_OUTPUT( Makefile\
     tools/e133/Makefile \
     tools/rdm/Makefile \
     tools/rdmpro/Makefile \
-    tools/tlp/Makefile \
     tools/usbpro/Makefile \
     libola.pc \
     libolaserver.pc \

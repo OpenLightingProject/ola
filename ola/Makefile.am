@@ -19,7 +19,9 @@ libola_la_LDFLAGS = -version-info 1:1:0
 libola_la_LIBADD = $(top_builddir)/common/libolacommon.la
 
 # Test Programs
+if BUILD_TESTS
 TESTS = OlaClientTester
+endif
 check_PROGRAMS = $(TESTS)
 OlaClientTester_SOURCES = OlaClientTester.cpp \
                           StreamingClientTest.cpp

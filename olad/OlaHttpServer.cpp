@@ -582,11 +582,13 @@ void OlaHttpServer::HandlePluginList(HttpResponse *response,
   str << "  \"plugins\": [" << endl;
 
   vector<OlaPlugin>::const_iterator iter;
+  string delim = "";
   for (iter = plugins.begin(); iter != plugins.end(); ++iter) {
-    str << "    {\"name\": \"" << EscapeString(iter->Name()) <<
-      "\", \"id\": " << iter->Id() << "}," << endl;
+    str << delim << "    {\"name\": \"" << EscapeString(iter->Name()) <<
+      "\", \"id\": " << iter->Id() << "}";
+    delim = ",\n";
   }
-
+  str << endl;
   str << "  ]," << endl;
   response->Append(str.str());
 }
@@ -606,7 +608,10 @@ void OlaHttpServer::HandleUniverseList(HttpResponse *response,
     str << "  \"universes\": [" << endl;
 
     vector<OlaUniverse>::const_iterator iter;
+    string delim = "";
+
     for (iter = universes.begin(); iter != universes.end(); ++iter) {
+      str << delim;
       str << "    {" << endl;
       str << "      \"id\": " << iter->Id() << "," << endl;
       str << "      \"input_ports\": " << iter->InputPortCount() << "," <<
@@ -617,11 +622,11 @@ void OlaHttpServer::HandleUniverseList(HttpResponse *response,
         endl;
       str << "      \"rdm_devices\": " << iter->RDMDeviceCount() << "," <<
         endl;
-      str << "    }," << endl;
+      str << "    }";
+      delim = ",\n";
     }
-    str << "  ]," << endl;
+    str << endl << "  ]," << endl;
   }
-
   str << "}";
 
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
@@ -709,24 +714,43 @@ void OlaHttpServer::HandlePortsForUniverse(
     vector<OlaInputPort>::const_iterator input_iter;
     vector<OlaOutputPort>::const_iterator output_iter;
 
-    input_str << "  \"input_ports\": [" << endl;
-    output_str << "  \"output_ports\": [" << endl;
+    vector<string> input_port_json;
+    vector<string> output_port_json;
+
     for (; iter != devices.end(); ++iter) {
       const vector<OlaInputPort> &input_ports = iter->InputPorts();
       for (input_iter = input_ports.begin(); input_iter != input_ports.end();
            ++input_iter) {
         if (input_iter->IsActive() && input_iter->Universe() == universe_id)
-          PortToJson(*iter, *input_iter, &input_str, false);
+          input_port_json.push_back(
+              PortToJson(*iter, *input_iter, false));
       }
 
       const vector<OlaOutputPort> &output_ports = iter->OutputPorts();
       for (output_iter = output_ports.begin();
            output_iter != output_ports.end(); ++output_iter) {
         if (output_iter->IsActive() && output_iter->Universe() == universe_id)
-          PortToJson(*iter, *output_iter, &output_str, true);
+          output_port_json.push_back(
+              PortToJson(*iter, *output_iter, true));
       }
     }
+
+    input_str << "  \"input_ports\": [" << endl;
+    string delim = "";
+    vector<string>::const_iterator str_iter = input_port_json.begin();
+    for (; str_iter != input_port_json.end(); ++str_iter) {
+      input_str << delim << *str_iter;
+      delim =",\n";
+    }
+
     input_str << "  ]," << endl;
+
+    output_str << "  \"output_ports\": [" << endl;
+    str_iter = output_port_json.begin();
+    for (; str_iter != output_port_json.end(); ++str_iter) {
+      output_str << delim << *str_iter;
+      delim =",\n";
+    }
     output_str << "  ]," << endl;
     response->Append(input_str.str());
     response->Append(output_str.str());
@@ -755,27 +779,37 @@ void OlaHttpServer::HandleCandidatePorts(
     return;
   }
 
-  stringstream str;
-  str << "[" << endl;
-
   vector<OlaDevice>::const_iterator iter = devices.begin();
   vector<OlaInputPort>::const_iterator input_iter;
   vector<OlaOutputPort>::const_iterator output_iter;
+
+  vector<string> output_json;
 
   for (; iter != devices.end(); ++iter) {
     const vector<OlaInputPort> &input_ports = iter->InputPorts();
     for (input_iter = input_ports.begin(); input_iter != input_ports.end();
          ++input_iter) {
-      PortToJson(*iter, *input_iter, &str, false);
+      output_json.push_back(
+          PortToJson(*iter, *input_iter, false));
     }
 
     const vector<OlaOutputPort> &output_ports = iter->OutputPorts();
     for (output_iter = output_ports.begin();
          output_iter != output_ports.end(); ++output_iter) {
-      PortToJson(*iter, *output_iter, &str, true);
+      output_json.push_back(
+          PortToJson(*iter, *output_iter, true));
     }
   }
-  str << "]" << endl;
+
+  stringstream str;
+  str << "[" << endl;
+  string delim = "";
+  vector<string>::const_iterator str_iter = output_json.begin();
+  for (; str_iter != output_json.end(); ++str_iter) {
+    str << delim << *str_iter;
+    delim =",\n";
+  }
+  str << endl << "]" << endl;
 
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
@@ -935,33 +969,34 @@ inline void OlaHttpServer::RegisterFile(const string &file,
 /**
  * Add the json representation of this port to the stringstream
  */
-void OlaHttpServer::PortToJson(const OlaDevice &device,
-                               const OlaPort &port,
-                               stringstream *str,
-                               bool is_output) {
-  *str << "    {" << endl;
-  *str << "      \"device\": \"" << EscapeString(device.Name())
+string OlaHttpServer::PortToJson(const OlaDevice &device,
+                                 const OlaPort &port,
+                                 bool is_output) {
+  stringstream str;
+  str << "    {" << endl;
+  str << "      \"device\": \"" << EscapeString(device.Name())
     << "\"," << endl;
-  *str << "      \"description\": \"" <<
+  str << "      \"description\": \"" <<
     EscapeString(port.Description()) << "\"," << endl;
-  *str << "      \"id\": \"" << device.Alias() << "-" <<
+  str << "      \"id\": \"" << device.Alias() << "-" <<
     (is_output ? "O" : "I") << "-" << port.Id() << "\"," << endl;
-  *str << "      \"is_output\": " << (is_output ? "true" : "false") << "," <<
+  str << "      \"is_output\": " << (is_output ? "true" : "false") << "," <<
     endl;
 
   if (port.PriorityCapability() != CAPABILITY_NONE) {
-    *str << "      \"priority\": {" << endl;
-    *str << "        \"value\": " << static_cast<int>(port.Priority()) <<
+    str << "      \"priority\": {" << endl;
+    str << "        \"value\": " << static_cast<int>(port.Priority()) <<
       "," << endl;
     if (port.PriorityCapability() == CAPABILITY_FULL) {
-      *str << "        \"current_mode\": \"" <<
+      str << "        \"current_mode\": \"" <<
         (port.PriorityMode() == PRIORITY_MODE_INHERIT ?
          "inherit" : "override") << "\"," <<
         endl;
     }
-    *str << "      }" << endl;
+    str << "      }" << endl;
   }
-  *str << "    }," << endl;
+  str << "    }";
+  return str.str();
 }
 
 

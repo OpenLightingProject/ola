@@ -34,6 +34,7 @@ void StringSplit(const string &input,
                  const string &delimiters=" ");
 void StringTrim(string *input);
 void ShortenString(string *input);
+bool StringEndsWith(const string &s, const string &ending);
 string IntToString(int i);
 string IntToString(unsigned int i);
 void Escape(string *original);

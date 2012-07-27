@@ -3,7 +3,9 @@ include $(top_srcdir)/common.mk
 noinst_LTLIBRARIES = libthread.la
 libthread_la_SOURCES = ConsumerThread.cpp Mutex.cpp Thread.cpp ThreadPool.cpp
 
+if BUILD_TESTS
 TESTS = ThreadTester
+endif
 check_PROGRAMS = $(TESTS)
 ThreadTester_SOURCES = ThreadPoolTest.cpp ThreadTest.cpp ThreadTester.cpp
 ThreadTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)

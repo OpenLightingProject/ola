@@ -16,7 +16,9 @@ Rpc.pb.cc Rpc.pb.h: Rpc.proto
 TestService.pb.cc TestService.pb.h: TestService.proto
 	$(PROTOC) --cpp_out ./ TestService.proto
 
+if BUILD_TESTS
 TESTS = RpcTester
+endif
 check_PROGRAMS = $(TESTS)
 RpcTester_SOURCES = RpcTester.cpp \
                     RpcControllerTest.cpp \

@@ -42,8 +42,9 @@
 #include <termios.h>
 #include <time.h>
 #include <unistd.h>
+#ifdef HAVE_FTIME
 #include <sys/timeb.h>
-
+#endif
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>
 #include <ola/OlaCallbackClient.h>
