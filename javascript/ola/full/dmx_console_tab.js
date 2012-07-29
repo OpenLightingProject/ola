@@ -37,6 +37,7 @@ ola.DmxConsoleTab = function(element) {
   // setup the console
   this.dmx_console = new ola.DmxConsole();
   this.tick_timer = new goog.Timer(1000);
+  this.mute_events = true;
 
   goog.events.listen(
       this.tick_timer,
@@ -71,9 +72,10 @@ ola.DmxConsoleTab.prototype.setActive = function(state) {
   ola.DmxConsoleTab.superClass_.setActive.call(this, state);
 
   if (this.isActive()) {
+    this.mute_events = true;
     this.dmx_console.setupIfRequired();
     this.dmx_console.update();
-    this.tick_timer.start();
+    this.loadValues();
   } else {
     this.tick_timer.stop();
   }
@@ -81,9 +83,37 @@ ola.DmxConsoleTab.prototype.setActive = function(state) {
 
 
 /**
+ * Fetches the new DMX values.
+ */
+ola.DmxConsoleTab.prototype.loadValues = function(e) {
+  var t = this;
+  ola.common.Server.getInstance().getChannelValues(
+    this.getUniverse(),
+    function(data) {
+     t.newValues(data['dmx']);
+    });
+};
+
+
+/**
+ * Update the console with the new values
+ */
+ola.DmxConsoleTab.prototype.newValues = function(data) {
+  ola.logger.info('new data : ' + data);
+  this.dmx_console.setData(data);
+  this.mute_events = false;
+  if (this.isActive())
+    this.tick_timer.start();
+};
+
+
+/**
  * Called when the console values change
  */
 ola.DmxConsoleTab.prototype._consoleChanged = function(e) {
+  if (this.mute_events) {
+    return;
+  }
   var data = this.dmx_console.getData();
   ola.common.Server.getInstance().setChannelValues(this.getUniverse(), data);
 };

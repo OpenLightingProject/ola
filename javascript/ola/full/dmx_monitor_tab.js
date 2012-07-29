@@ -66,7 +66,7 @@ ola.DmxMonitorTab.prototype.setupIfRequired = function() {
   var value_table = goog.dom.$('monitor_values');
   for (var i = 0; i < ola.DmxMonitorTab.NUMBER_OF_CHANNELS; ++i) {
     var div = goog.dom.createElement('div');
-    div.innerHTML = 0;
+    div.innerHTML = '&nbsp';
     div.title = 'Channel ' + (i + 1);
     goog.dom.appendChild(value_table, div);
     this.value_cells.push(div);
@@ -95,9 +95,14 @@ ola.DmxMonitorTab.prototype.fetchValues = function(e) {
  * Called when new data arrives.
  */
 ola.DmxMonitorTab.prototype.updateData = function(data) {
-  var data_length = data.length;
+  var data_length = Math.min(ola.DmxMonitorTab.NUMBER_OF_CHANNELS,
+                             data.length);
   for (var i = 0; i < data_length; ++i) {
     this._setCellValue(i, data[i]);
+  }
+
+  for (var i = data_length; i < ola.DmxMonitorTab.NUMBER_OF_CHANNELS; ++i) {
+    this._clearCellValue(i);
   }
 
   if (this.isActive()) {
@@ -129,4 +134,18 @@ ola.DmxMonitorTab.prototype._setCellValue = function(offset, value) {
   } else {
     element.style.color = '#000000';
   }
+};
+
+
+/**
+ * Erase a cell value to indicate we didn't get data.
+ * @param {number} offset the channel offset.
+ */
+ola.DmxMonitorTab.prototype._clearCellValue = function(offset) {
+  var element = this.value_cells[offset];
+  if (element == undefined) {
+    return;
+  }
+  element.innerHTML = '&nbsp;';
+  element.style.background = '#ffffff';
 };
