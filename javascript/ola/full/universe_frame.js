@@ -23,6 +23,7 @@ goog.require('goog.ui.TabPane');
 goog.require('ola.BaseFrame');
 goog.require('ola.Dialog');
 goog.require('ola.DmxConsoleTab');
+goog.require('ola.DmxMonitorTab');
 goog.require('ola.RDMPatcherTab');
 goog.require('ola.RDMTab');
 goog.require('ola.UniverseSettingsTab');
@@ -51,8 +52,9 @@ ola.UniverseFrame = function(element_id, ola_ui) {
   this.tabPane.addPage(new goog.ui.TabPane.TabPage(
     goog.dom.$('tab_page_3'), 'RDM Patcher'));
   this.tabPane.addPage(new goog.ui.TabPane.TabPage(
-    goog.dom.$('tab_page_4'), 'Console'));
-
+    goog.dom.$('tab_page_4'), 'DMX Monitor'));
+  this.tabPane.addPage(new goog.ui.TabPane.TabPage(
+    goog.dom.$('tab_page_5'), 'DMX Console'));
 
   this.tabs = new Array();
 
@@ -69,7 +71,8 @@ ola.UniverseFrame = function(element_id, ola_ui) {
   this.tabPane.setSelectedIndex(0);
 
   this.tabs.push(new ola.RDMPatcherTab('tab_page_3'));
-  this.tabs.push(new ola.DmxConsoleTab('tab_page_4'));
+  this.tabs.push(new ola.DmxMonitorTab('tab_page_4'));
+  this.tabs.push(new ola.DmxConsoleTab('tab_page_5'));
 
   goog.events.listen(this.tabPane, goog.ui.TabPane.Events.CHANGE,
                      this._updateSelectedTab, false, this);
