@@ -233,7 +233,7 @@ class RDMController {
 
 
 RDMController::RDMController()
-    : m_pid_helper(PID_DATA_FILE) {
+    : m_pid_helper(PID_DATA_DIR) {
 }
 
 

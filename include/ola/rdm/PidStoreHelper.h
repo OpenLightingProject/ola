@@ -44,7 +44,7 @@ using std::vector;
 
 class PidStoreHelper {
   public:
-    explicit PidStoreHelper(const string &pid_file,
+    explicit PidStoreHelper(const string &pid_location,
                             unsigned int initial_indent = 0);
     ~PidStoreHelper();
 
@@ -83,7 +83,7 @@ class PidStoreHelper {
                        vector<string> *pid_names) const;
 
   private:
-    const string m_pid_file;
+    const string m_pid_location;
     const ola::rdm::RootPidStore *m_root_store;
     ola::rdm::StringMessageBuilder m_string_builder;
     ola::rdm::MessageSerializer m_serializer;

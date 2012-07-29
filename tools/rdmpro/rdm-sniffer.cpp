@@ -108,8 +108,8 @@ class RDMSniffer {
       // display non-RDM alternate start code frames
       bool display_non_rdm_asc_frames;
 
-      // the file with the pid data
-      string pid_file;
+      // the location with the pid data
+      string pid_location;
 
       string write_file;  // write to this file if set
 
@@ -124,7 +124,7 @@ class RDMSniffer {
       options->summarize_rdm_frames = true;
       options->unpack_param_data = true;
       options->display_non_rdm_asc_frames = true;
-      options->pid_file = PID_DATA_FILE;
+      options->pid_location = PID_DATA_DIR;
       options->write_file = "";
       options->timestamp = false;
     }
@@ -173,7 +173,7 @@ class RDMSniffer {
 RDMSniffer::RDMSniffer(const RDMSnifferOptions &options)
     : m_state(IDLE),
       m_options(options),
-      m_pid_helper(options.pid_file, 4),
+      m_pid_helper(options.pid_location, 4),
       m_command_printer(&cout, &m_pid_helper) {
   if (!m_pid_helper.Init())
     OLA_WARN << "Failed to init PidStore";

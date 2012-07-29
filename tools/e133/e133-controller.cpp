@@ -87,7 +87,7 @@ typedef struct {
   bool help;
   ola::log_level log_level;
   bool rdm_set;
-  string pid_file;
+  string pid_location;
   string ip_address;
   string target_address;
   UID *uid;
@@ -106,7 +106,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
       {"help", no_argument, 0, 'h'},
       {"ip", required_argument, 0, 'i'},
       {"log-level", required_argument, 0, 'l'},
-      {"pid-file", required_argument, 0, 'p'},
+      {"pid-location", required_argument, 0, 'p'},
       {"set", no_argument, 0, 's'},
       {"target", required_argument, 0, 't'},
       {"uid", required_argument, &uid_set, 1},
@@ -162,7 +162,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
         }
         break;
       case 'p':
-        opts->pid_file = optarg;
+        opts->pid_location = optarg;
         break;
       case 's':
         opts->rdm_set = true;
@@ -197,7 +197,7 @@ void DisplayHelpAndExit(char *argv[]) {
   "  -t, --target <ip>         IP to send the message to, this overrides SLP\n"
   "  -i, --ip                  The IP address to listen on.\n"
   "  -l, --log-level <level>   Set the logging level 0 .. 4.\n"
-  "  -p, --pid-file            The file to read PID definitiions from\n"
+  "  -p, --pid-location        The directory to read PID definitiions from\n"
   "  -s, --set                 Perform a SET (default is GET)\n"
   "  --uid <uid>               The UID of the device to control.\n"
   << endl;
@@ -612,11 +612,11 @@ int main(int argc, char *argv[]) {
   opts.log_level = ola::OLA_LOG_WARN;
   opts.endpoint = ROOT_E133_ENDPOINT;
   opts.help = false;
-  opts.pid_file = PID_DATA_FILE;
+  opts.pid_location = PID_DATA_DIR;
   opts.rdm_set = false;
   opts.uid = NULL;
   ParseOptions(argc, argv, &opts);
-  PidStoreHelper pid_helper(opts.pid_file);
+  PidStoreHelper pid_helper(opts.pid_location);
 
   if (opts.help)
     DisplayHelpAndExit(argv);

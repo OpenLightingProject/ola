@@ -79,6 +79,10 @@ class RootPidStore {
     static const RootPidStore *LoadFromFile(const std::string &file,
                                             bool validate = true);
 
+    // Load a RootPidStore from a directory
+    static const RootPidStore *LoadFromDirectory(const std::string &directory,
+                                                 bool validate = true);
+
   private:
     const PidStore *m_esta_store;
     ManufacturerMap m_manufacturer_store;

@@ -177,6 +177,17 @@ const RootPidStore *RootPidStore::LoadFromFile(const std::string &file,
 
 
 /**
+ * Load all pid definition files in a directory
+ */
+const RootPidStore *RootPidStore::LoadFromDirectory(
+    const std::string &directory,
+    bool validate) {
+  PidStoreLoader loader;
+  return loader.LoadFromDirectory(directory, validate);
+}
+
+
+/**
  * Create a new PidStore
  * @param a list of PidDescriptors for this store.
  * @pre the names and values for the pids in the vector are unique.
