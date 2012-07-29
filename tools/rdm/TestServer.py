@@ -164,7 +164,9 @@ class TestServerApplication(object):
 
   def get_test_categories(self, params):
     self.__set_response_status(True)
-    self.response.update({'Categories': [catg.__str__() for catg in TestCategory.Categories()]})
+    self.response.update({
+      'Categories': sorted(c.__str__() for c in TestCategory.Categories()),
+    })
 
   def run_discovery(self, params):
     global UIDs
