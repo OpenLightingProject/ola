@@ -53,6 +53,7 @@ class PidStoreTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testPidStore);
   CPPUNIT_TEST(testPidStoreLoad);
   CPPUNIT_TEST(testPidStoreFileLoad);
+  CPPUNIT_TEST(testPidStoreDirectoryLoad);
   CPPUNIT_TEST(testPidStoreLoadMissingFile);
   CPPUNIT_TEST(testPidStoreLoadDuplicateManufacturer);
   CPPUNIT_TEST(testPidStoreLoadDuplicateValue);
@@ -66,6 +67,7 @@ class PidStoreTest: public CppUnit::TestFixture {
     void testPidStore();
     void testPidStoreLoad();
     void testPidStoreFileLoad();
+    void testPidStoreDirectoryLoad();
     void testPidStoreLoadMissingFile();
     void testPidStoreLoadDuplicateManufacturer();
     void testPidStoreLoadDuplicateValue();
@@ -378,6 +380,54 @@ void PidStoreTest::testPidStoreFileLoad() {
   CPPUNIT_ASSERT(serial_number->SetResponse());
 
   printer.Reset();
+  serial_number->SetRequest()->Accept(printer);
+  string expected2 = "serial_number: uint32\n";
+  CPPUNIT_ASSERT_EQUAL(expected2, printer.AsString());
+}
+
+
+/**
+ * Check that loading from a directory works
+ */
+void PidStoreTest::testPidStoreDirectoryLoad() {
+  PidStoreLoader loader;
+
+  auto_ptr<const RootPidStore> root_store(loader.LoadFromDirectory(
+      "./testdata/pids"));
+  CPPUNIT_ASSERT(root_store.get());
+  // check version
+  CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(1302986774),
+                       root_store->Version());
+
+  // Check all the esta pids are there
+  const PidStore *esta_store = root_store->EstaStore();
+  CPPUNIT_ASSERT(esta_store);
+
+  vector<const PidDescriptor*> all_pids;
+  esta_store->AllPids(&all_pids);
+  CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(4), all_pids.size());
+
+  // check manufacturer pids
+  const PidStore *open_lighting_store =
+    root_store->ManufacturerStore(OPEN_LIGHTING_ESTA_CODE);
+  CPPUNIT_ASSERT(open_lighting_store);
+  CPPUNIT_ASSERT_EQUAL(1u, open_lighting_store->PidCount());
+
+  const PidDescriptor *serial_number = open_lighting_store->LookupPID(
+      "SERIAL_NUMBER");
+  CPPUNIT_ASSERT(serial_number);
+  CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(32768), serial_number->Value());
+  CPPUNIT_ASSERT_EQUAL(string("SERIAL_NUMBER"), serial_number->Name());
+
+  // check descriptors
+  CPPUNIT_ASSERT_EQUAL(static_cast<const Descriptor*>(NULL),
+                       serial_number->GetRequest());
+  CPPUNIT_ASSERT_EQUAL(static_cast<const Descriptor*>(NULL),
+                       serial_number->GetResponse());
+  CPPUNIT_ASSERT(serial_number->SetRequest());
+  CPPUNIT_ASSERT(serial_number->SetResponse());
+
+  ola::messaging::SchemaPrinter printer;
   serial_number->SetRequest()->Accept(printer);
   string expected2 = "serial_number: uint32\n";
   CPPUNIT_ASSERT_EQUAL(expected2, printer.AsString());

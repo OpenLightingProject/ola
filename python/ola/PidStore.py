@@ -21,6 +21,7 @@
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import math
+import os
 import struct
 import sys
 from google.protobuf import text_format
@@ -803,18 +804,22 @@ class PidStore(object):
     self._manufacturer_names_to_pids = {}
     self._manufacturer_id_to_name = {}
 
-  def Load(self, file, validate = True):
+  def Load(self, pid_files, validate = True):
     """Load a PidStore from a file.
 
     Args:
-      file: The path to the pid store file
+      pid_files: A list of PID files on disk to load
       validate: When True, enable strict checking.
     """
-    pid_file = open(file, 'r')
+    self._pid_store.Clear()
+    for pid_file in pid_files:
+      self.LoadFile(pid_file, validate)
+
+  def LoadFile(self, pid_file_name, validate):
+    """Load a pid file."""
+    pid_file = open(pid_file_name, 'r')
     lines = pid_file.readlines()
     pid_file.close()
-
-    self._pid_store.Clear()
 
     try:
       text_format.Merge('\n'.join(lines), self._pid_store)
@@ -1056,7 +1061,7 @@ class PidStore(object):
 _pid_store = None
 
 
-def GetStore(location = None):
+def GetStore(location = None, only_files = ()):
   """Get the instance of the PIDStore.
 
   Args:
@@ -1071,6 +1076,13 @@ def GetStore(location = None):
     _pid_store = PidStore()
     if not location:
       location = PidStoreLocation.location
-    _pid_store.Load(location)
+    pid_files = []
+    for file_name in os.listdir(location):
+      if not file_name.endswith('.proto'):
+        continue
+      if only_files and file_name not in only_files:
+        continue
+      pid_files.append(os.path.join(location, file_name))
+    _pid_store.Load(pid_files)
   return _pid_store
 

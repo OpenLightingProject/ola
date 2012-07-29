@@ -35,9 +35,9 @@ using std::vector;
 /**
  * Set up a new PidStoreHelper object
  */
-PidStoreHelper::PidStoreHelper(const string &pid_file,
+PidStoreHelper::PidStoreHelper(const string &pid_location,
                                unsigned int initial_indent)
-    : m_pid_file(pid_file),
+    : m_pid_location(pid_location),
       m_root_store(NULL),
       m_message_printer(initial_indent) {
 }
@@ -57,11 +57,11 @@ PidStoreHelper::~PidStoreHelper() {
  */
 bool PidStoreHelper::Init() {
   if (m_root_store) {
-    OLA_WARN << "Root Pid Store already loaded: " << m_pid_file;
+    OLA_WARN << "Root Pid Store already loaded from: " << m_pid_location;
     return false;
   }
 
-  m_root_store = ola::rdm::RootPidStore::LoadFromFile(m_pid_file);
+  m_root_store = ola::rdm::RootPidStore::LoadFromDirectory(m_pid_location);
   return m_root_store;
 }
 

@@ -366,12 +366,11 @@ plugindir=$libdir/olad
 ola_datadir=$datadir/olad
 www_datadir=$ola_datadir/www
 pid_datadir=$datadir/ola/pids
-pid_datafile=$pid_datadir/pids.proto
 AC_SUBST(plugindir)
 AC_SUBST(www_datadir)
 AC_SUBST(pid_datadir)
 
-OLAD_DEFINES="-DHTTP_DATA_DIR=\\\"$www_datadir\\\" -DPLUGIN_DIR=\\\"$plugindir\\\" -DPID_DATA_FILE=\\\"$pid_datafile\\\" "
+OLAD_DEFINES="-DHTTP_DATA_DIR=\\\"$www_datadir\\\" -DPLUGIN_DIR=\\\"$plugindir\\\" -DPID_DATA_DIR=\\\"$pid_datadir\\\" "
 AC_SUBST(OLAD_DEFINES)
 
 # check for cppunit
@@ -507,6 +506,7 @@ AC_OUTPUT( Makefile\
     common/protocol/Makefile\
     common/rdm/Makefile\
     common/rdm/testdata/Makefile \
+    common/rdm/testdata/pids/Makefile \
     common/rpc/Makefile\
     common/testing/Makefile\
     common/thread/Makefile\

@@ -18,17 +18,20 @@
  * Copyright (C) 2011 Simon Newton
  */
 
+#include <dirent.h>
 #include <errno.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/text_format.h>
 #include <fstream>
 #include <set>
+#include <sstream>
 #include <string>
 #include <vector>
 #include "common/rdm/DescriptorConsistencyChecker.h"
 #include "common/rdm/PidStoreLoader.h"
 #include "common/rdm/Pids.pb.h"
 #include "ola/Logging.h"
+#include "ola/StringUtils.h"
 #include "ola/rdm/PidStore.h"
 #include "ola/rdm/RDMEnums.h"
 
@@ -38,6 +41,7 @@ namespace rdm {
 using ola::messaging::FieldDescriptor;
 using std::map;
 using std::set;
+using std::stringstream;
 using std::vector;
 
 
@@ -63,8 +67,64 @@ const RootPidStore *PidStoreLoader::LoadFromFile(const string &file,
 
 
 /**
- * Load Pid information from a string
- * @param file the path to the file to load
+ * Load Pid information from a directory. This is an all-or-nothing load. Any
+ *   error with cause us to abort the load.
+ * @param directory the directory to load files from.
+ * @param validate set to true if we should perform validation of the contents.
+ * @returns A pointer to a new RootPidStore or NULL if loading failed.
+ */
+const RootPidStore *PidStoreLoader::LoadFromDirectory(
+    const std::string &directory,
+    bool validate) {
+  DIR *dir;
+  struct dirent dir_ent;
+  struct dirent *entry;
+  if ((dir  = opendir(directory.data())) == NULL) {
+    OLA_WARN << "Could not open " << directory << ":" << strerror(errno);
+    return NULL;
+  }
+
+  vector<string> files;
+  readdir_r(dir, &dir_ent, &entry);
+  while (entry != NULL) {
+    string file_name(entry->d_name);
+    readdir_r(dir, &dir_ent, &entry);
+
+    if (!StringEndsWith(file_name, ".proto"))
+      continue;
+
+    stringstream str;
+    str << directory << "/" << file_name;
+    files.push_back(str.str());
+  }
+  closedir(dir);
+
+  ola::rdm::pid::PidStore pid_store_pb;
+  vector<string>::const_iterator iter = files.begin();
+  for (; iter != files.end(); ++iter) {
+    std::ifstream proto_file(iter->data());
+    if (!proto_file.is_open()) {
+      OLA_WARN << "Failed to open " << *iter << ": " << strerror(errno);
+      return NULL;
+    }
+
+    google::protobuf::io::IstreamInputStream input_stream(&proto_file);
+    bool ok = google::protobuf::TextFormat::Merge(&input_stream,
+                                                  &pid_store_pb);
+    proto_file.close();
+
+    if (!ok) {
+      OLA_WARN << "Failed to load " << *iter;
+      return NULL;
+    }
+  }
+  return BuildStore(pid_store_pb, validate);
+}
+
+
+/**
+ * Load Pid information from a stream
+ * @param data the input stream.
  * @param validate set to true if we should perform validation of the contents.
  * @returns A pointer to a new RootPidStore or NULL if loading failed.
  */
@@ -136,7 +196,7 @@ const RootPidStore *PidStoreLoader::BuildStore(
 
 
 /**
- * Get a list of pids from a protobuf object
+ * Get a list of pids from a protobuf object.
  */
 template <typename pb_object>
 bool PidStoreLoader::GetPidList(vector<const PidDescriptor*> *pids,

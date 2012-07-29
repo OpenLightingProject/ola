@@ -92,7 +92,7 @@ typedef struct {
   bool help;
   ola::log_level log_level;
   string target_addresses;
-  string pid_file;
+  string pid_location;
 } options;
 
 
@@ -103,7 +103,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
   static struct option long_options[] = {
       {"help", no_argument, 0, 'h'},
       {"log-level", required_argument, 0, 'l'},
-      {"pid-file", required_argument, 0, 'p'},
+      {"pid-location", required_argument, 0, 'p'},
       {"targets", required_argument, 0, 't'},
       {0, 0, 0, 0}
     };
@@ -144,7 +144,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
         }
         break;
       case 'p':
-        opts->pid_file = optarg;
+        opts->pid_location = optarg;
         break;
       case 't':
         opts->target_addresses = optarg;
@@ -168,7 +168,7 @@ void DisplayHelpAndExit(char *argv[]) {
   "\n"
   "  -h, --help                Display this help message and exit.\n"
   "  -t, --targets <ip>,<ip>   List of IPs to connect to, overrides SLP\n"
-  "  -p, --pid-file            The file to read PID definitions from\n"
+  "  -p, --pid-location        The directory to read PID definitiions from\n"
   "  -l, --log-level <level>   Set the logging level 0 .. 4.\n"
   << endl;
   exit(0);
@@ -597,11 +597,11 @@ void SimpleE133Monitor::EndpointRequest(
  */
 int main(int argc, char *argv[]) {
   options opts;
-  opts.pid_file = PID_DATA_FILE;
+  opts.pid_location = PID_DATA_DIR;
   opts.log_level = ola::OLA_LOG_WARN;
   opts.help = false;
   ParseOptions(argc, argv, &opts);
-  PidStoreHelper pid_helper(opts.pid_file, 4);
+  PidStoreHelper pid_helper(opts.pid_location, 4);
 
   if (opts.help)
     DisplayHelpAndExit(argv);

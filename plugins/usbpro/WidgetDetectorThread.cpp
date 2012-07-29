@@ -234,8 +234,8 @@ void WidgetDetectorThread::FindCandiateDevices(vector<string> *device_paths) {
     struct dirent dir_ent;
     struct dirent *dir_ent_p;
     if ((dp  = opendir(m_directory.data())) == NULL) {
-        OLA_WARN << "Could not open " << m_directory << ":" << strerror(errno);
-        return;
+      OLA_WARN << "Could not open " << m_directory << ":" << strerror(errno);
+      return;
     }
 
     readdir_r(dp, &dir_ent, &dir_ent_p);

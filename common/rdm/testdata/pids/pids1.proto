@@ -1,0 +1,56 @@
+pid {
+  name: "PROXIED_DEVICES"
+  value: 16
+  get_request {
+  }
+  get_response {
+    field {
+      type: GROUP
+      name: "uids"
+      field {
+        type: UINT16
+        name: "manufacturer_id"
+      }
+      field {
+        type: UINT32
+        name: "device_id"
+      }
+    }
+  }
+  get_sub_device_range: ROOT_DEVICE
+}
+pid {
+  name: "PROXIED_DEVICE_COUNT"
+  value: 17
+  get_request {
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "device_count"
+    }
+    field {
+      type: BOOL
+      name: "list_changed"
+    }
+  }
+  get_sub_device_range: ROOT_DEVICE
+}
+manufacturer {
+  manufacturer_id: 31344
+  manufacturer_name: "Open Lighting"
+  pid {
+    name: "SERIAL_NUMBER"
+    value: 32768
+    set_request {
+      field {
+        type: UINT32
+        name: "serial_number"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+}
+version: 1302986774

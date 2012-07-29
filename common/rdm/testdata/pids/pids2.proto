@@ -1,0 +1,105 @@
+pid {
+  name: "COMMS_STATUS"
+  value: 21
+  get_request {
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "short_message"
+    }
+    field {
+      type: UINT16
+      name: "length_mismatch"
+    }
+    field {
+      type: UINT16
+      name: "checksum_fail"
+    }
+  }
+  get_sub_device_range: ROOT_DEVICE
+  set_request {
+  }
+  set_response {
+  }
+  set_sub_device_range: ROOT_DEVICE
+}
+pid {
+  name: "QUEUED_MESSAGE"
+  value: 32
+  get_request {
+    field {
+      type: UINT8
+      name: "status_type"
+      label {
+        value: 1
+        label: "Last Message"
+      }
+      label {
+        value: 2
+        label: "Advisory"
+      }
+      label {
+        value: 3
+        label: "Warning"
+      }
+      label {
+        value: 4
+        label: "Error"
+      }
+    }
+  }
+  get_response {
+  }
+  get_sub_device_range: ROOT_DEVICE
+}
+manufacturer {
+  manufacturer_id: 161
+  manufacturer_name: "Creative Lighting And Sound Systems Pty Ltd."
+  pid {
+    name: "DEVICE_MODE"
+    value: 32768
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "mode"
+        label {
+          value: 0
+          label: "DMX512"
+        }
+        label {
+          value: 1
+          label: "DALI"
+        }
+        label {
+          value: 2
+          label: "DSI"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "mode"
+        label {
+          value: 0
+          label: "DMX512"
+        }
+        label {
+          value: 1
+          label: "DALI"
+        }
+        label {
+          value: 2
+          label: "DSI"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+}

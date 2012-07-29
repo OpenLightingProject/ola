@@ -58,8 +58,8 @@ def ParseOptions():
                     help='Also log to the file named FILE.uid.timestamp.')
   parser.add_option('--list-tests', action='store_true',
                     help='Display a list of all tests')
-  parser.add_option('-p', '--pid-file', metavar='FILE',
-                    help='The file to load the PID definitions from.')
+  parser.add_option('-p', '--pid-store', metavar='FILE',
+                    help='The location of the PID definitions.')
   parser.add_option('-s', '--skip-check', action='store_true',
                     help='Skip the check for multiple devices.')
   parser.add_option('-t', '--tests', metavar='TEST1,TEST2',
@@ -179,7 +179,7 @@ def main():
     sys.exit(0)
 
   SetupLogging(options)
-  pid_store = PidStore.GetStore(options.pid_file)
+  pid_store = PidStore.GetStore(options.pid_store, ('pids.proto',))
   wrapper = ClientWrapper()
 
   global uid_ok
