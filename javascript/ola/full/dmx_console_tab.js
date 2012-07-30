@@ -99,7 +99,6 @@ ola.DmxConsoleTab.prototype.loadValues = function(e) {
  * Update the console with the new values
  */
 ola.DmxConsoleTab.prototype.newValues = function(data) {
-  ola.logger.info('new data : ' + data);
   this.dmx_console.setData(data);
   this.mute_events = false;
   if (this.isActive())
@@ -114,6 +113,14 @@ ola.DmxConsoleTab.prototype._consoleChanged = function(e) {
   if (this.mute_events) {
     return;
   }
+  this.mute_events = true;
+
   var data = this.dmx_console.getData();
-  ola.common.Server.getInstance().setChannelValues(this.getUniverse(), data);
+  var t = this;
+  ola.common.Server.getInstance().setChannelValues(
+      this.getUniverse(),
+      data,
+      function(e) {
+        t.mute_events = false;
+      });
 };
