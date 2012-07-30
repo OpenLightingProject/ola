@@ -26,11 +26,12 @@
 #include "ola/ActionQueue.h"
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
-#include "olad/DmxSource.h"
-#include "olad/HttpServerActions.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/web/Json.h"
+#include "olad/DmxSource.h"
+#include "olad/HttpServerActions.h"
 #include "olad/OlaHttpServer.h"
 #include "olad/OlaServer.h"
 #include "olad/OlaVersion.h"
@@ -44,6 +45,9 @@ using std::endl;
 using std::string;
 using std::stringstream;
 using std::vector;
+using ola::web::JsonArray;
+using ola::web::JsonObject;
+using ola::web::JsonWriter;
 
 const char OlaHttpServer::K_DATA_DIR_VAR[] = "http_data_dir";
 const char OlaHttpServer::K_UPTIME_VAR[] = "uptime-in-ms";
@@ -162,35 +166,30 @@ bool OlaHttpServer::Init() {
  * @param response the HttpResponse
  * @returns MHD_NO or MHD_YES
  */
-int OlaHttpServer::JsonServerStats(const HttpRequest *request,
+int OlaHttpServer::JsonServerStats(const HttpRequest*,
                                    HttpResponse *response) {
   struct tm start_time;
   char start_time_str[50];
   localtime_r(&m_start_time_t, &start_time);
   strftime(start_time_str, sizeof(start_time_str), "%c", &start_time);
 
-  stringstream str;
-  str << "{" << endl;
-  str << "  \"hostname\": \"" << EscapeString(ola::network::FullHostname()) <<
-    "\"," << endl;
-  str << "  \"ip\": \"" << m_interface.ip_address << "\"," << endl;
-  str << "  \"broadcast\": \"" << m_interface.bcast_address << "\"," << endl;
-  str << "  \"subnet\": \"" << m_interface.subnet_mask << "\"," << endl;
-  str << "  \"hw_address\": \"" <<
-    ola::network::HardwareAddressToString(m_interface.hw_address) << "\","
-    << endl;
-  str << "  \"version\": \"" << OLA_VERSION << "\"," << endl;
-  str << "  \"up_since\": \"" << start_time_str << "\"," << endl;
-  str << "  \"quit_enabled\": " << m_enable_quit << "," << endl;
-  str << "}";
+  JsonObject json;
+  json.Add("hostname", ola::network::FullHostname());
+  json.Add("ip", m_interface.ip_address.ToString());
+  json.Add("broadcast", m_interface.bcast_address.ToString());
+  json.Add("subnet", m_interface.subnet_mask.ToString());
+  json.Add("hw_address",
+      ola::network::HardwareAddressToString(m_interface.hw_address));
+  json.Add("version", OLA_VERSION);
+  json.Add("up_since", start_time_str);
+  json.Add("quit_enabled", m_enable_quit);
 
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(str.str());
+  response->Append(JsonWriter::AsString(json));
   int r = response->Send();
   delete response;
   return r;
-  (void) request;
 }
 
 
@@ -200,7 +199,7 @@ int OlaHttpServer::JsonServerStats(const HttpRequest *request,
  * @param response the HttpResponse
  * @returns MHD_NO or MHD_YES
  */
-int OlaHttpServer::JsonUniversePluginList(const HttpRequest *request,
+int OlaHttpServer::JsonUniversePluginList(const HttpRequest*,
                                           HttpResponse *response) {
   bool ok = m_client.FetchPluginList(
       NewSingleCallback(this,
@@ -210,7 +209,6 @@ int OlaHttpServer::JsonUniversePluginList(const HttpRequest *request,
   if (!ok)
     return m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
   return MHD_YES;
-  (void) request;
 }
 
 
@@ -653,11 +651,12 @@ void OlaHttpServer::HandlePluginInfo(HttpResponse *response,
   string escaped_description = description;
   Escape(&escaped_description);
 
+  JsonObject json;
+  json.Add("description", description);
+
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append("{\"description\": \"");
-  response->Append(escaped_description);
-  response->Append("\"}");
+  response->Append(JsonWriter::AsString(json));
   response->Send();
   delete response;
 }
@@ -911,15 +910,14 @@ void OlaHttpServer::SendModifyUniverseResponse(HttpResponse *response,
 void OlaHttpServer::HandleGetDmx(HttpResponse *response,
                                  const DmxBuffer &buffer,
                                  const string &error) {
-  stringstream str;
-  str << "{" << endl;
-  str << "  \"dmx\": [" << buffer.ToString() << "]," << endl;
-  str << "  \"error\": \"" << error << "\"" << endl;
-  str << "}";
+
+  JsonObject json;
+  json.Add("dmx", buffer.ToString());
+  json.Add("error", error);
 
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(str.str());
+  response->Append(JsonWriter::AsString(json));
   response->Send();
   delete response;
 }
