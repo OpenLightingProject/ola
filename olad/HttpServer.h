@@ -26,6 +26,7 @@
 #include <ola/io/Descriptor.h>
 #include <ola/io/SelectServer.h>
 #include <ola/thread/Thread.h>
+#include <ola/web/Json.h>
 // 0.4.6 of microhttp doesn't include stdarg so we do it here.
 #include <stdarg.h>
 #include <stdint.h>
@@ -100,6 +101,7 @@ class HttpResponse {
     void SetHeader(const string &key, const string &value);
     void SetStatus(unsigned int status) { m_status_code = status; }
     void SetNoCache();
+    int SendJson(const ola::web::JsonValue &json);
     int Send();
     struct MHD_Connection *Connection() const { return m_connection; }
   private:

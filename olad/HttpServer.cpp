@@ -26,9 +26,10 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include "olad/HttpServer.h"
 #include "ola/Logging.h"
 #include "ola/io/Descriptor.h"
+#include "ola/web/Json.h"
+#include "olad/HttpServer.h"
 
 namespace ola {
 
@@ -37,6 +38,8 @@ using std::pair;
 using std::set;
 using std::string;
 using ola::io::UnmanagedFileDescriptor;
+using ola::web::JsonValue;
+using ola::web::JsonWriter;
 
 const char HttpServer::CONTENT_TYPE_PLAIN[] = "text/plain";
 const char HttpServer::CONTENT_TYPE_HTML[] = "text/html";
@@ -319,6 +322,27 @@ void HttpResponse::SetHeader(const string &key, const string &value) {
 }
 
 
+
+/*
+ * Send a JsonObject as the response.
+ * @returns true on success, false on error
+ */
+int HttpResponse::SendJson(const JsonValue &json) {
+  const string output = JsonWriter::AsString(json);
+  struct MHD_Response *response = MHD_create_response_from_data(
+      output.length(),
+      static_cast<void*>(const_cast<char*>(output.data())),
+      MHD_NO,
+      MHD_YES);
+  map<string, string>::const_iterator iter;
+  for (iter = m_headers.begin(); iter != m_headers.end(); ++iter)
+    MHD_add_response_header(response,
+                            iter->first.c_str(),
+                            iter->second.c_str());
+  int ret = MHD_queue_response(m_connection, m_status_code, response);
+  MHD_destroy_response(response);
+  return ret;
+}
 /*
  * Send the HTTP response
  * @returns true on success, false on error

@@ -47,7 +47,6 @@ using std::stringstream;
 using std::vector;
 using ola::web::JsonArray;
 using ola::web::JsonObject;
-using ola::web::JsonWriter;
 
 const char OlaHttpServer::K_DATA_DIR_VAR[] = "http_data_dir";
 const char OlaHttpServer::K_UPTIME_VAR[] = "uptime-in-ms";
@@ -186,8 +185,7 @@ int OlaHttpServer::JsonServerStats(const HttpRequest*,
 
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(JsonWriter::AsString(json));
-  int r = response->Send();
+  int r = response->SendJson(json);
   delete response;
   return r;
 }
@@ -615,8 +613,7 @@ void OlaHttpServer::HandleUniverseList(HttpResponse *response,
 
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(JsonWriter::AsString(*json));
-  response->Send();
+  response->SendJson(*json);
   delete response;
   delete json;
 }
@@ -643,8 +640,7 @@ void OlaHttpServer::HandlePluginInfo(HttpResponse *response,
 
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(JsonWriter::AsString(json));
-  response->Send();
+  response->SendJson(json);
   delete response;
 }
 
@@ -726,8 +722,7 @@ void OlaHttpServer::HandlePortsForUniverse(
 
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(JsonWriter::AsString(*json));
-  response->Send();
+  response->SendJson(*json);
   delete json;
   delete response;
 }
@@ -771,8 +766,7 @@ void OlaHttpServer::HandleCandidatePorts(
 
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(JsonWriter::AsString(json));
-  response->Send();
+  response->SendJson(json);
   delete response;
 }
 
@@ -818,8 +812,7 @@ void OlaHttpServer::SendCreateUniverseResponse(
 
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(JsonWriter::AsString(json));
-  response->Send();
+  response->SendJson(json);
   delete action_queue;
   delete response;
 }
@@ -872,8 +865,7 @@ void OlaHttpServer::HandleGetDmx(HttpResponse *response,
 
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(JsonWriter::AsString(json));
-  response->Send();
+  response->SendJson(json);
   delete response;
 }
 
