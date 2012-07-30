@@ -73,6 +73,12 @@ void JsonObject::Add(const string &key) {
 }
 
 
+void JsonObject::AddRaw(const string &key, const string &value) {
+  FreeIfExists(key);
+  m_members[key] = new JsonRawValue(value);
+}
+
+
 JsonObject* JsonObject::AddObject(const string &key) {
   FreeIfExists(key);
   JsonObject *obj = new JsonObject();

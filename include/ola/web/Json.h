@@ -142,6 +142,23 @@ class JsonNullValue: public JsonValue {
 
 
 /**
+ * A raw value, useful if you want to cheat.
+ */
+class JsonRawValue: public JsonValue {
+  public:
+    explicit JsonRawValue(const string &value)
+      : m_value(value) {
+    }
+
+    void ToString(ostream *output, unsigned int) const {
+      *output << m_value;
+    }
+
+  private:
+    const string m_value;
+};
+
+/**
  * A Json object.
  * Since key names tend to reuse the same strings, it would be nice to intern
  * the strings here. That's a future optimization for someone.
@@ -161,6 +178,8 @@ class JsonObject: public JsonValue {
 
     JsonObject* AddObject(const string &key);
     class JsonArray* AddArray(const string &key);
+
+    void AddRaw(const string &key, const string &value);
 
     void ToString(ostream *output, unsigned int indent) const;
 
@@ -223,6 +242,10 @@ class JsonArray: public JsonValue {
       m_values.push_back(array);
       m_complex_type = true;
       return array;
+    }
+
+    void AppendRaw(const string &value) {
+      m_values.push_back(new JsonRawValue(value));
     }
 
     void ToString(ostream *output, unsigned int indent) const;

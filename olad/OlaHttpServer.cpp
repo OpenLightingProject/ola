@@ -859,8 +859,11 @@ void OlaHttpServer::SendModifyUniverseResponse(HttpResponse *response,
 void OlaHttpServer::HandleGetDmx(HttpResponse *response,
                                  const DmxBuffer &buffer,
                                  const string &error) {
+  // rather than adding 512 JsonValue we cheat and use raw here
+  stringstream str;
+  str << "[" << buffer.ToString() << "]";
   JsonObject json;
-  json.Add("dmx", buffer.ToString());
+  json.AddRaw("dmx", str.str());
   json.Add("error", error);
 
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
