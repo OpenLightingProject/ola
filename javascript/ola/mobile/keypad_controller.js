@@ -254,6 +254,8 @@ ola.mobile.KeypadController.prototype._execute = function(e, command) {
   }
 
   // Send the values to OLA
-  ola.common.Server.getInstance().setChannelValues(this.universe_id,
-                                                   dmx_values);
+  ola.common.Server.getInstance().setChannelValues(
+      this.universe_id,
+      dmx_values,
+      function() {});
 };

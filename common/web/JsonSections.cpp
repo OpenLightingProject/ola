@@ -26,6 +26,7 @@
 
 #include "ola/web/JsonSections.h"
 #include "ola/Logging.h"
+#include "ola/web/Json.h"
 #include "ola/StringUtils.h"
 
 
@@ -40,46 +41,25 @@ using std::vector;
 using ola::EscapeString;
 
 
-
-string GenericItem::AsString() const {
-  stringstream output;
-  output << "    {" << endl;
+void GenericItem::PopulateItem(JsonObject *item) const {
   if (!m_button_text.empty())
-    output << "    \"button\": \"" << EscapeString(m_button_text) << "\","
-      << endl;
-  output << "    \"description\": \"" << EscapeString(m_description) << "\","
-    << endl;
+    item->Add("button", m_button_text);
   if (!m_id.empty())
-    output << "    \"id\": \"" << EscapeString(m_id) << "\"," << endl;
-  output << "    \"type\": \"" << Type() << "\"," << endl;
-  output << "    \"value\": " << Value() << "," << endl;
-  output << ExtraProperties();
-  output << "    }";
-  return output.str();
+    item->Add("id", m_id);
+
+  item->Add("description", m_description);
+  item->Add("type", Type());
+
+  SetValue(item);
+  SetExtraProperties(item);
 }
 
 
-string StringItem::Value() const {
-  return "\"" + EscapeString(m_value) + "\"";
-}
-
-
-string UIntItem::ExtraProperties() const {
-  stringstream output;
+void UIntItem::SetExtraProperties(JsonObject *item) const {
   if (m_min_set)
-    output << "    \"min\": " << m_min << "," << endl;
+    item->Add("min", m_min);
   if (m_max_set)
-    output << "    \"max\": " << m_max << "," << endl;
-  return output.str();
-}
-
-
-string BoolItem::Value() const {
-  return m_value ? "1" : "0";
-}
-
-string HiddenItem::Value() const {
-  return "\"" + EscapeString(m_value) + "\"";
+    item->Add("max", m_max);
 }
 
 
@@ -93,31 +73,15 @@ void SelectItem::AddItem(const string &label, unsigned int value) {
   AddItem(label, IntToString(value));
 }
 
-string SelectItem::Value() const {
-  stringstream str;
-  str << "[" << endl;
+
+void SelectItem::SetValue(JsonObject *item) const {
+  JsonArray *options = item->AddArray("value");
   vector<pair<string, string> >::const_iterator iter = m_values.begin();
-  while (iter != m_values.end()) {
-    str << "      {" << endl;
-    str << "        \"label\": \"" << EscapeString(iter->first) << "\"," <<
-      endl;
-    str << "        \"value\": \"" << EscapeString(iter->second) << "\"," <<
-      endl;
-    str << "      }";
-    iter++;
-    if (iter != m_values.end())
-      str << ",";
-    str << endl;
+  for (;iter != m_values.end(); ++iter) {
+    JsonObject *option = options->AppendObject();
+    option->Add("label", iter->first);
+    option->Add("value", iter->second);
   }
-  str << "    ]";
-  return str.str();
-}
-
-
-string SelectItem::ExtraProperties() const {
-  stringstream output;
-  output << "    \"selected_offset\": " << m_selected_offset << "," << endl;
-  return output.str();
 }
 
 
@@ -154,26 +118,20 @@ void JsonSection::AddItem(const GenericItem *item) {
  * Return the section as a string.
  */
 string JsonSection::AsString() const {
-  stringstream output;
-  output << "{" << endl;
-  output << "  \"refresh\": " << m_allow_refresh << "," << endl;
-  output << "  \"error\": \"" << EscapeString(m_error) << "\"," << endl;
-  if (!m_save_button_text.empty())
-    output << "  \"save_button\": \"" << EscapeString(m_save_button_text) <<
-      "\"," << endl;
-  output << "  \"items\": [" << endl;
+  JsonObject json;
 
+  json.Add("refresh", m_allow_refresh);
+  json.Add("error", m_error);
+  if (!m_save_button_text.empty())
+    json.Add("save_button", m_save_button_text);
+
+  JsonArray *items = json.AddArray("items");
   vector<const GenericItem*>::const_iterator iter = m_items.begin();
-  while (iter != m_items.end()) {
-    output << (*iter)->AsString();
-    iter++;
-    if (iter != m_items.end())
-      output << ",";
-    output << endl;
+  for (; iter != m_items.end(); ++iter) {
+    JsonObject *item = items->AppendObject();
+    (*iter)->PopulateItem(item);
   }
-  output << "  ]," << endl;
-  output << "}" << endl;
-  return output.str();
+  return JsonWriter::AsString(json);
 }
 }  // web
 }  // ola

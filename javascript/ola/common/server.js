@@ -586,11 +586,20 @@ ola.common.Server.prototype.getChannelValues = function(universe_id,
  * Update the dmx values for a universe
  * @param {number} universe_id the id of the universe to modify.
  * @param {Array.<number>} data the channel values.
+ * @param {function(e)} callback the callback to invoke when complete.
  */
-ola.common.Server.prototype.setChannelValues = function(universe_id, data) {
+ola.common.Server.prototype.setChannelValues = function(universe_id,
+                                                        data,
+                                                        callback) {
   var post_data = 'u=' + universe_id + '&d=' + data.join(',');
   var url = ola.common.Server.SET_DMX_URL;
-  this._initiateRequest(url, undefined, 'POST', post_data);
+  this._initiateRequest(
+      url,
+      function(e) {
+        callback(e.target);
+      },
+      'POST',
+      post_data);
 };
 
 

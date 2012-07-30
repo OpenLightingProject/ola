@@ -73,6 +73,28 @@ ola.DmxConsole.prototype.getData = function() {
 
 
 /**
+ * Set the data for this console
+ * @return {Array.<number>} a list of channel data for the console.
+ */
+ola.DmxConsole.prototype.setData = function(data) {
+  var data_length = Math.min(ola.DmxMonitorTab.NUMBER_OF_CHANNELS,
+                             data.length);
+  for (var i = 0; i < data_length; ++i) {
+    this.data[i] = data[i];
+  }
+  for (var i = data_length; i < ola.DmxMonitorTab.NUMBER_OF_CHANNELS; ++i) {
+    this.data[i] = 0;
+  }
+
+  this._updateSliderOffsets();
+  var data_length = this.data.length;
+  for (var i = 0; i < data_length; ++i) {
+    this._setCellValue(i, this.data[i]);
+  }
+};
+
+
+/**
  * Reset the console. This resets the underlying data but doesn't update the
  * screen.
  */
@@ -207,15 +229,6 @@ ola.DmxConsole.prototype.update = function() {
     this.next_page_button.setEnabled(false);
   } else {
     this.next_page_button.setEnabled(true);
-  }
-
-  // update the slider offsets
-  this._updateSliderOffsets();
-
-  // update all channel valuess
-  var data_length = this.data.length;
-  for (var i = 0; i < data_length; ++i) {
-    this._setCellValue(i, this.data[i]);
   }
 };
 

@@ -76,6 +76,7 @@ class OlaHttpServer {
                           const string &error);
 
     void HandleUniverseList(HttpResponse *response,
+                            ola::web::JsonObject *json,
                             const vector<class OlaUniverse> &universes,
                             const string &error);
 
@@ -88,6 +89,7 @@ class OlaHttpServer {
                             const string &error);
 
     void HandlePortsForUniverse(HttpResponse *response,
+                                ola::web::JsonObject *json,
                                 unsigned int universe_id,
                                 const vector<class OlaDevice> &devices,
                                 const string &error);
@@ -139,9 +141,10 @@ class OlaHttpServer {
                          HttpResponse*));
     void RegisterFile(const string &file, const string &content_type);
 
-    string PortToJson(const class OlaDevice &device,
-                      const class OlaPort &port,
-                      bool is_output);
+    void PortToJson(ola::web::JsonObject *object,
+                    const class OlaDevice &device,
+                    const class OlaPort &port,
+                    bool is_output);
 
     void AddPatchActions(ActionQueue *action_queue,
                          const string port_id_string,

@@ -26,11 +26,12 @@
 #include "ola/ActionQueue.h"
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
-#include "olad/DmxSource.h"
-#include "olad/HttpServerActions.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/web/Json.h"
+#include "olad/DmxSource.h"
+#include "olad/HttpServerActions.h"
 #include "olad/OlaHttpServer.h"
 #include "olad/OlaServer.h"
 #include "olad/OlaVersion.h"
@@ -44,6 +45,8 @@ using std::endl;
 using std::string;
 using std::stringstream;
 using std::vector;
+using ola::web::JsonArray;
+using ola::web::JsonObject;
 
 const char OlaHttpServer::K_DATA_DIR_VAR[] = "http_data_dir";
 const char OlaHttpServer::K_UPTIME_VAR[] = "uptime-in-ms";
@@ -56,8 +59,8 @@ const char OlaHttpServer::K_PRIORITY_MODE_SUFFIX[] = "_priority_mode";
 /**
  * Create a new OLA HTTP server
  * @param export_map the ExportMap to display when /debug is called
- * @param client_socket A ConnectedDescriptor which is used to communicate with the
- *   server.
+ * @param client_socket A ConnectedDescriptor which is used to communicate with
+ *   the server.
  * @param
  */
 OlaHttpServer::OlaHttpServer(ExportMap *export_map,
@@ -162,35 +165,29 @@ bool OlaHttpServer::Init() {
  * @param response the HttpResponse
  * @returns MHD_NO or MHD_YES
  */
-int OlaHttpServer::JsonServerStats(const HttpRequest *request,
+int OlaHttpServer::JsonServerStats(const HttpRequest*,
                                    HttpResponse *response) {
   struct tm start_time;
   char start_time_str[50];
   localtime_r(&m_start_time_t, &start_time);
   strftime(start_time_str, sizeof(start_time_str), "%c", &start_time);
 
-  stringstream str;
-  str << "{" << endl;
-  str << "  \"hostname\": \"" << EscapeString(ola::network::FullHostname()) <<
-    "\"," << endl;
-  str << "  \"ip\": \"" << m_interface.ip_address << "\"," << endl;
-  str << "  \"broadcast\": \"" << m_interface.bcast_address << "\"," << endl;
-  str << "  \"subnet\": \"" << m_interface.subnet_mask << "\"," << endl;
-  str << "  \"hw_address\": \"" <<
-    ola::network::HardwareAddressToString(m_interface.hw_address) << "\","
-    << endl;
-  str << "  \"version\": \"" << OLA_VERSION << "\"," << endl;
-  str << "  \"up_since\": \"" << start_time_str << "\"," << endl;
-  str << "  \"quit_enabled\": " << m_enable_quit << "," << endl;
-  str << "}";
+  JsonObject json;
+  json.Add("hostname", ola::network::FullHostname());
+  json.Add("ip", m_interface.ip_address.ToString());
+  json.Add("broadcast", m_interface.bcast_address.ToString());
+  json.Add("subnet", m_interface.subnet_mask.ToString());
+  json.Add("hw_address",
+      ola::network::HardwareAddressToString(m_interface.hw_address));
+  json.Add("version", OLA_VERSION);
+  json.Add("up_since", start_time_str);
+  json.Add("quit_enabled", m_enable_quit);
 
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(str.str());
-  int r = response->Send();
+  int r = response->SendJson(json);
   delete response;
   return r;
-  (void) request;
 }
 
 
@@ -200,7 +197,7 @@ int OlaHttpServer::JsonServerStats(const HttpRequest *request,
  * @param response the HttpResponse
  * @returns MHD_NO or MHD_YES
  */
-int OlaHttpServer::JsonUniversePluginList(const HttpRequest *request,
+int OlaHttpServer::JsonUniversePluginList(const HttpRequest*,
                                           HttpResponse *response) {
   bool ok = m_client.FetchPluginList(
       NewSingleCallback(this,
@@ -210,7 +207,6 @@ int OlaHttpServer::JsonUniversePluginList(const HttpRequest *request,
   if (!ok)
     return m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
   return MHD_YES;
-  (void) request;
 }
 
 
@@ -565,32 +561,29 @@ void OlaHttpServer::HandlePluginList(HttpResponse *response,
     return;
   }
 
+  JsonObject *json = new JsonObject();
+
   // fire off the universe request now. the main server is running in a
   // separate thread.
   bool ok = m_client.FetchUniverseList(
       NewSingleCallback(this,
                         &OlaHttpServer::HandleUniverseList,
-                        response));
+                        response,
+                        json));
 
   if (!ok) {
     m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
+    delete json;
     return;
   }
 
-  stringstream str;
-  str << "{" << endl;
-  str << "  \"plugins\": [" << endl;
-
+  JsonArray *plugins_json = json->AddArray("plugins");
   vector<OlaPlugin>::const_iterator iter;
-  string delim = "";
   for (iter = plugins.begin(); iter != plugins.end(); ++iter) {
-    str << delim << "    {\"name\": \"" << EscapeString(iter->Name()) <<
-      "\", \"id\": " << iter->Id() << "}";
-    delim = ",\n";
+    JsonObject *plugin = plugins_json->AppendObject();
+    plugin->Add("name", iter->Name());
+    plugin->Add("id", iter->Id());
   }
-  str << endl;
-  str << "  ]," << endl;
-  response->Append(str.str());
 }
 
 
@@ -601,39 +594,28 @@ void OlaHttpServer::HandlePluginList(HttpResponse *response,
  * @param error an error string.
  */
 void OlaHttpServer::HandleUniverseList(HttpResponse *response,
+                                       JsonObject *json,
                                        const vector<OlaUniverse> &universes,
                                        const string &error) {
-  stringstream str;
   if (error.empty()) {
-    str << "  \"universes\": [" << endl;
+    JsonArray *universe_json = json->AddArray("universes");
 
     vector<OlaUniverse>::const_iterator iter;
-    string delim = "";
-
     for (iter = universes.begin(); iter != universes.end(); ++iter) {
-      str << delim;
-      str << "    {" << endl;
-      str << "      \"id\": " << iter->Id() << "," << endl;
-      str << "      \"input_ports\": " << iter->InputPortCount() << "," <<
-        endl;
-      str << "      \"name\": \"" << EscapeString(iter->Name()) << "\"," <<
-        endl;
-      str << "      \"output_ports\": " << iter->OutputPortCount() << "," <<
-        endl;
-      str << "      \"rdm_devices\": " << iter->RDMDeviceCount() << "," <<
-        endl;
-      str << "    }";
-      delim = ",\n";
+      JsonObject *universe = universe_json->AppendObject();
+      universe->Add("id", iter->Id());
+      universe->Add("input_ports", iter->InputPortCount());
+      universe->Add("name", iter->Name());
+      universe->Add("output_ports", iter->OutputPortCount());
+      universe->Add("rdm_devices", iter->RDMDeviceCount());
     }
-    str << endl << "  ]," << endl;
   }
-  str << "}";
 
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(str.str());
-  response->Send();
+  response->SendJson(*json);
   delete response;
+  delete json;
 }
 
 
@@ -653,12 +635,12 @@ void OlaHttpServer::HandlePluginInfo(HttpResponse *response,
   string escaped_description = description;
   Escape(&escaped_description);
 
+  JsonObject json;
+  json.Add("description", description);
+
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append("{\"description\": \"");
-  response->Append(escaped_description);
-  response->Append("\"}");
-  response->Send();
+  response->SendJson(json);
   delete response;
 }
 
@@ -677,6 +659,8 @@ void OlaHttpServer::HandleUniverseInfo(HttpResponse *response,
     return;
   }
 
+  JsonObject *json = new JsonObject();
+
   // fire off the device/port request now. the main server is running in a
   // separate thread.
   bool ok = m_client.FetchDeviceInfo(
@@ -684,82 +668,62 @@ void OlaHttpServer::HandleUniverseInfo(HttpResponse *response,
       NewSingleCallback(this,
                         &OlaHttpServer::HandlePortsForUniverse,
                         response,
+                        json,
                         universe.Id()));
 
   if (!ok) {
     m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
+    delete json;
     return;
   }
 
-  stringstream str;
-  str << "{" << endl;
-  str << "  \"id\": " << universe.Id() << "," << endl;
-  str << "  \"name\": \"" << EscapeString(universe.Name()) << "\"," << endl;
-  str << "  \"merge_mode\": \"" <<
-    (universe.MergeMode() == OlaUniverse::MERGE_HTP ? "HTP" : "LTP") << "\","
-    << endl;
-
-  response->Append(str.str());
+  json->Add("id", universe.Id());
+  json->Add("name", universe.Name());
+  json->Add("merge_mode",
+           (universe.MergeMode() == OlaUniverse::MERGE_HTP ? "HTP" : "LTP"));
 }
 
 
 void OlaHttpServer::HandlePortsForUniverse(
     HttpResponse *response,
+    JsonObject *json,
     unsigned int universe_id,
     const vector<OlaDevice> &devices,
     const string &error) {
   if (error.empty()) {
-    stringstream input_str, output_str;
     vector<OlaDevice>::const_iterator iter = devices.begin();
     vector<OlaInputPort>::const_iterator input_iter;
     vector<OlaOutputPort>::const_iterator output_iter;
 
-    vector<string> input_port_json;
-    vector<string> output_port_json;
+    JsonArray *output_ports_json = json->AddArray("output_ports");
+    JsonArray *input_ports_json = json->AddArray("input_ports");
 
     for (; iter != devices.end(); ++iter) {
       const vector<OlaInputPort> &input_ports = iter->InputPorts();
       for (input_iter = input_ports.begin(); input_iter != input_ports.end();
            ++input_iter) {
-        if (input_iter->IsActive() && input_iter->Universe() == universe_id)
-          input_port_json.push_back(
-              PortToJson(*iter, *input_iter, false));
+        if (input_iter->IsActive() && input_iter->Universe() == universe_id) {
+          JsonObject *obj = input_ports_json->AppendObject();
+          PortToJson(obj, *iter, *input_iter, false);
+        }
       }
 
       const vector<OlaOutputPort> &output_ports = iter->OutputPorts();
       for (output_iter = output_ports.begin();
            output_iter != output_ports.end(); ++output_iter) {
-        if (output_iter->IsActive() && output_iter->Universe() == universe_id)
-          output_port_json.push_back(
-              PortToJson(*iter, *output_iter, true));
+        if (output_iter->IsActive() &&
+            output_iter->Universe() == universe_id) {
+          JsonObject *obj = output_ports_json->AppendObject();
+          PortToJson(obj, *iter, *output_iter, true);
+        }
       }
     }
-
-    input_str << "  \"input_ports\": [" << endl;
-    string delim = "";
-    vector<string>::const_iterator str_iter = input_port_json.begin();
-    for (; str_iter != input_port_json.end(); ++str_iter) {
-      input_str << delim << *str_iter;
-      delim =",\n";
-    }
-
-    input_str << "  ]," << endl;
-
-    output_str << "  \"output_ports\": [" << endl;
-    str_iter = output_port_json.begin();
-    for (; str_iter != output_port_json.end(); ++str_iter) {
-      output_str << delim << *str_iter;
-      delim =",\n";
-    }
-    output_str << "  ]," << endl;
-    response->Append(input_str.str());
-    response->Append(output_str.str());
   }
 
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append("}");
-  response->Send();
+  response->SendJson(*json);
+  delete json;
   delete response;
 }
 
@@ -783,38 +747,26 @@ void OlaHttpServer::HandleCandidatePorts(
   vector<OlaInputPort>::const_iterator input_iter;
   vector<OlaOutputPort>::const_iterator output_iter;
 
-  vector<string> output_json;
-
+  JsonArray json;
   for (; iter != devices.end(); ++iter) {
     const vector<OlaInputPort> &input_ports = iter->InputPorts();
     for (input_iter = input_ports.begin(); input_iter != input_ports.end();
          ++input_iter) {
-      output_json.push_back(
-          PortToJson(*iter, *input_iter, false));
+      JsonObject *obj = json.AppendObject();
+      PortToJson(obj, *iter, *input_iter, false);
     }
 
     const vector<OlaOutputPort> &output_ports = iter->OutputPorts();
     for (output_iter = output_ports.begin();
          output_iter != output_ports.end(); ++output_iter) {
-      output_json.push_back(
-          PortToJson(*iter, *output_iter, true));
+      JsonObject *obj = json.AppendObject();
+      PortToJson(obj, *iter, *output_iter, true);
     }
   }
 
-  stringstream str;
-  str << "[" << endl;
-  string delim = "";
-  vector<string>::const_iterator str_iter = output_json.begin();
-  for (; str_iter != output_json.end(); ++str_iter) {
-    str << delim << *str_iter;
-    delim =",\n";
-  }
-  str << endl << "]" << endl;
-
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(str.str());
-  response->Send();
+  response->SendJson(json);
   delete response;
 }
 
@@ -853,18 +805,14 @@ void OlaHttpServer::SendCreateUniverseResponse(
     failed &= action_queue->GetAction(i)->Failed();
   }
 
-  stringstream str;
-  str << "{" << endl;
-  str << "  \"ok\": " << !failed << "," << endl;
-  str << "  \"universe\": " << universe_id << "," << endl;
-  str << "  \"message\": \"" << (failed ? "Failed to patch any ports" : "") <<
-    "\"," << endl;
-  str << "}";
+  JsonObject json;
+  json.Add("ok", !failed);
+  json.Add("universe", universe_id);
+  json.Add("message", (failed ? "Failed to patch any ports" : ""));
 
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(str.str());
-  response->Send();
+  response->SendJson(json);
   delete action_queue;
   delete response;
 }
@@ -911,16 +859,16 @@ void OlaHttpServer::SendModifyUniverseResponse(HttpResponse *response,
 void OlaHttpServer::HandleGetDmx(HttpResponse *response,
                                  const DmxBuffer &buffer,
                                  const string &error) {
+  // rather than adding 512 JsonValue we cheat and use raw here
   stringstream str;
-  str << "{" << endl;
-  str << "  \"dmx\": [" << buffer.ToString() << "]," << endl;
-  str << "  \"error\": \"" << error << "\"" << endl;
-  str << "}";
+  str << "[" << buffer.ToString() << "]";
+  JsonObject json;
+  json.AddRaw("dmx", str.str());
+  json.Add("error", error);
 
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(str.str());
-  response->Send();
+  response->SendJson(json);
   delete response;
 }
 
@@ -969,34 +917,25 @@ inline void OlaHttpServer::RegisterFile(const string &file,
 /**
  * Add the json representation of this port to the stringstream
  */
-string OlaHttpServer::PortToJson(const OlaDevice &device,
-                                 const OlaPort &port,
-                                 bool is_output) {
+void OlaHttpServer::PortToJson(JsonObject *json,
+                               const OlaDevice &device,
+                               const OlaPort &port,
+                               bool is_output) {
   stringstream str;
-  str << "    {" << endl;
-  str << "      \"device\": \"" << EscapeString(device.Name())
-    << "\"," << endl;
-  str << "      \"description\": \"" <<
-    EscapeString(port.Description()) << "\"," << endl;
-  str << "      \"id\": \"" << device.Alias() << "-" <<
-    (is_output ? "O" : "I") << "-" << port.Id() << "\"," << endl;
-  str << "      \"is_output\": " << (is_output ? "true" : "false") << "," <<
-    endl;
+  str << device.Alias() << "-" << (is_output ? "O" : "I") << "-" << port.Id();
+
+  json->Add("device", device.Name());
+  json->Add("description", port.Description());
+  json->Add("id", str.str());
+  json->Add("is_output", is_output);
 
   if (port.PriorityCapability() != CAPABILITY_NONE) {
-    str << "      \"priority\": {" << endl;
-    str << "        \"value\": " << static_cast<int>(port.Priority()) <<
-      "," << endl;
-    if (port.PriorityCapability() == CAPABILITY_FULL) {
-      str << "        \"current_mode\": \"" <<
-        (port.PriorityMode() == PRIORITY_MODE_INHERIT ?
-         "inherit" : "override") << "\"," <<
-        endl;
-    }
-    str << "      }" << endl;
+    JsonObject *priority_json = json->AddObject("priority");
+    priority_json->Add("value", static_cast<int>(port.Priority()));
+    priority_json->Add(
+      "current_mode",
+      (port.PriorityMode() == PRIORITY_MODE_INHERIT ?  "inherit" : "override"));
   }
-  str << "    }";
-  return str.str();
 }
 
 

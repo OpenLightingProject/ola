@@ -37,6 +37,7 @@
 #include "ola/rdm/RDMHelper.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
+#include "ola/web/Json.h"
 #include "ola/web/JsonSections.h"
 #include "olad/OlaServer.h"
 #include "olad/RDMHttpModule.h"
@@ -47,6 +48,8 @@ namespace ola {
 using ola::rdm::UID;
 using ola::web::BoolItem;
 using ola::web::HiddenItem;
+using ola::web::JsonArray;
+using ola::web::JsonObject;
 using ola::web::JsonSection;
 using ola::web::SelectItem;
 using ola::web::StringItem;
@@ -586,12 +589,11 @@ void RDMHttpModule::HandleUIDList(HttpResponse *response,
        uid_iter != uid_state->resolved_uids.end(); ++uid_iter)
     uid_iter->second.active = false;
 
-  stringstream str;
-  str << "{" << endl;
-  str << "  \"universe\": " << universe_id << "," << endl;
-  str << "  \"uids\": [" << endl;
+  JsonObject json;
+  json.Add("universe", universe_id);
+  JsonArray *json_uids = json.AddArray("uids");
 
-  while (iter != uids.End()) {
+  for (;iter != uids.End(); ++iter) {
     uid_iter = uid_state->resolved_uids.find(*iter);
 
     string manufacturer = "";
@@ -611,28 +613,17 @@ void RDMHttpModule::HandleUIDList(HttpResponse *response,
       device = uid_iter->second.device;
       uid_iter->second.active = true;
     }
-    str << "    {" << endl;
-    str << "       \"manufacturer_id\": " << iter->ManufacturerId() << ","
-      << endl;
-    str << "       \"device_id\": " << iter->DeviceId() << "," << endl;
-    str << "       \"device\": \"" << EscapeString(device) << "\"," << endl;
-    str << "       \"manufacturer\": \"" << EscapeString(manufacturer) <<
-      "\"," << endl;
-    str << "    }";
 
-    iter++;
-    if (iter != uids.End())
-      str << ",";
-    str << endl;
+    JsonObject *json_uid = json_uids->AppendObject();
+    json_uid->Add("manufacturer_id", iter->ManufacturerId());
+    json_uid->Add("device_id", iter->DeviceId());
+    json_uid->Add("device", device);
+    json_uid->Add("manufacturer", manufacturer);
   }
-
-  str << "  ]" << endl;
-  str << "}";
 
   response->SetNoCache();
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(str.str());
-  response->Send();
+  response->SendJson(json);
   delete response;
 
   // remove any old uids
@@ -792,21 +783,16 @@ void RDMHttpModule::UIDInfoHandler(HttpResponse *response,
   if (CheckForRDMError(response, status))
     return;
 
-  stringstream str;
-  str << "{" << endl;
-  str << "  \"error\": \"\"," << endl;
-  str << "  \"address\": " << device.dmx_start_address << "," << endl;
-  str << "  \"footprint\": " << device.dmx_footprint << "," << endl;
-  str << "  \"personality\": " << static_cast<int>(device.current_personality)
-    << "," << endl;
-  str << "  \"personality_count\": " <<
-    static_cast<int>(device.personaility_count) << "," << endl;
-  str << "}";
+  JsonObject json;
+  json.Add("error", "");
+  json.Add("address", device.dmx_start_address);
+  json.Add("footprint", device.dmx_footprint);
+  json.Add("personality", static_cast<int>(device.current_personality));
+  json.Add("personality_count", static_cast<int>(device.personaility_count));
 
   response->SetNoCache();
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(str.str());
-  response->Send();
+  response->SendJson(json);
   delete response;
 }
 
@@ -820,16 +806,13 @@ void RDMHttpModule::UIDIdentifyHandler(HttpResponse *response,
   if (CheckForRDMError(response, status))
     return;
 
-  stringstream str;
-  str << "{" << endl;
-  str << "  \"error\": \"\"," << endl;
-  str << "  \"identify_mode\": " << value << "," << endl;
-  str << "}";
+  JsonObject json;
+  json.Add("error", "");
+  json.Add("identify_mode", value);
 
   response->SetNoCache();
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(str.str());
-  response->Send();
+  response->SendJson(json);
   delete response;
 }
 
@@ -839,37 +822,25 @@ void RDMHttpModule::UIDIdentifyHandler(HttpResponse *response,
  */
 void RDMHttpModule::SendPersonalityResponse(HttpResponse *response,
                                             personality_info *info) {
-  stringstream str;
-  str << "{" << endl;
-  str << "  \"error\": \"\"," << endl;
-  str << "  \"personalities\": [" << endl;
+  JsonObject json;
+  json.Add("error", "");
+  JsonArray *personalities = json.AddArray("personalities");
 
   unsigned int i = 1;
   while (i <= info->total && i <= info->personalities.size()) {
-    str << "    {" << endl;
     if (info->personalities[i - 1].first != INVALID_PERSONALITY) {
-      str << "    \"name\": \"" << info->personalities[i - 1].second << "\","
-          << endl;
-      str << "    \"index\": " << i << ","
-          << endl;
-      str << "    \"footprint\": " << info->personalities[i - 1].first << ","
-          << endl;
+      JsonObject *personality = personalities->AppendObject();
+      personality->Add("name", info->personalities[i - 1].second);
+      personality->Add("index", i);
+      personality->Add("footprint", info->personalities[i - 1].first);
     }
-
-    if (i == info->total)
-      str << "    }" << endl;
-    else
-      str << "    }," << endl;
     i++;
   }
-  str << "  ]," << endl;
-  str << "  \"selected\": " << info->active << "," << endl;
-  str << "}";
+  json.Add("selected", info->active);
 
   response->SetNoCache();
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(str.str());
-  response->Send();
+  response->SendJson(json);
   delete info->uid;
   delete info;
 }
@@ -882,29 +853,17 @@ void RDMHttpModule::SupportedParamsHandler(
     HttpResponse *response,
     const ola::rdm::ResponseStatus &status,
     const vector<uint16_t> &pids) {
-  stringstream str;
+  JsonObject json;
   if (CheckForRDMSuccess(status)) {
+    JsonArray *pids_json = json.AddArray("pids");
     vector<uint16_t>::const_iterator iter = pids.begin();
-
-    str << "{" << endl;
-    str << "  \"pids\": [" << endl;
-
-    while (iter != pids.end()) {
-      str << "    0x" << std::hex << *iter;
-      iter++;
-      if (iter != pids.end())
-        str << ",";
-      str << "\n";
-    }
-
-    str << "  ]" << endl;
-    str << "}";
+    for (; iter != pids.end(); ++iter)
+      pids_json->Append(*iter);
   }
 
   response->SetNoCache();
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(str.str());
-  response->Send();
+  response->SendJson(json);
   delete response;
 }
 
@@ -1065,26 +1024,18 @@ void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
 
   sort(sections.begin(), sections.end(), lt_section_info());
 
+  JsonArray json;
   vector<section_info>::const_iterator section_iter = sections.begin();
-  stringstream str;
-  str << "[" << endl;
-  while (section_iter != sections.end()) {
-    str << "  {" << endl;
-    str << "    \"id\": \"" << section_iter->id << "\"," << endl;
-    str << "    \"name\": \"" << section_iter->name << "\"," << endl;
-    str << "    \"hint\": \"" << section_iter->hint << "\"," << endl;
-    str << "  }";
-    section_iter++;
-    if (section_iter != sections.end())
-      str << ",";
-    str << endl;
+  for (;section_iter != sections.end(); ++section_iter) {
+    JsonObject *json_obj = json.AppendObject();
+    json_obj->Add("id", section_iter->id);
+    json_obj->Add("name", section_iter->name);
+    json_obj->Add("hint",  section_iter->hint);
   }
-  str << "]" << endl;
 
   response->SetNoCache();
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append(str.str());
-  response->Send();
+  response->SendJson(json);
   delete response;
 }
 
@@ -3084,8 +3035,10 @@ int RDMHttpModule::RespondWithError(HttpResponse *response,
                                     const string &error) {
   response->SetNoCache();
   response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-  response->Append("{\"error\": \"" + error + "\"}");
-  int r = response->Send();
+
+  JsonObject json;
+  json.Add("error", error);
+  int r = response->SendJson(json);
   delete response;
   return r;
 }
