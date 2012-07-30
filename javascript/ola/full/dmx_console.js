@@ -79,7 +79,9 @@ ola.DmxConsole.prototype.getData = function() {
 ola.DmxConsole.prototype.setData = function(data) {
   var data_length = Math.min(ola.DmxMonitorTab.NUMBER_OF_CHANNELS,
                              data.length);
-  this.data = data;
+  for (var i = 0; i < data_length; ++i) {
+    this.data[i] = data[i];
+  }
   for (var i = data_length; i < ola.DmxMonitorTab.NUMBER_OF_CHANNELS; ++i) {
     this.data[i] = 0;
   }
