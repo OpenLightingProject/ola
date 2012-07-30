@@ -92,15 +92,20 @@ JsonArray* JsonObject::AddArray(const string &key) {
 /**
  * Write a JsonObject to a stream.
  */
-void JsonObject::ToString(ostream *output) const {
-  *output << "{";
+void JsonObject::ToString(ostream *output, unsigned int indent) const {
+  Indent(output, indent);
+  *output << "{\n";
   MemberMap::const_iterator iter = m_members.begin();
   string separator = "";
   for (; iter != m_members.end(); ++iter) {
-    *output << separator << '"' << EscapeString(iter->first) << "\": ";
-    iter->second->ToString(output);
+    *output << separator;
+    Indent(output, indent + INDENT);
+    *output << '"' << EscapeString(iter->first) << "\": ";
+    iter->second->ToString(output, indent);
     separator = ",\n";
   }
+  *output << "\n";
+  Indent(output, indent);
   *output << "}";
 }
 
@@ -129,16 +134,32 @@ JsonArray::~JsonArray() {
 /**
  * Write a JsonArray to a stream.
  */
-void JsonArray::ToString(ostream *output) const {
+void JsonArray::ToString(ostream *output, unsigned int indent) const {
+  Indent(output, indent);
   *output << "[";
   ValuesVector::const_iterator iter = m_values.begin();
   string separator = "";
   for (; iter != m_values.end(); ++iter) {
     *output << separator;
-    (*iter)->ToString(output);
+    (*iter)->ToString(output, 0);
     separator = ", ";
   }
   *output << "]";
+}
+
+
+/**
+ * Write the json to a stream.
+ */
+void JsonWriter::Write(ostream *output, const JsonValue &obj) {
+  obj.ToString(output, 0);
+}
+
+
+string JsonWriter::AsString(const JsonValue &obj) {
+  stringstream str;
+  obj.ToString(&str, 0);
+  return str.str();
 }
 }  // web
 }  // ola

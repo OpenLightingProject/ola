@@ -45,7 +45,14 @@ using std::vector;
 class JsonValue {
   public:
     virtual ~JsonValue() {}
-    virtual void ToString(ostream *output) const = 0;
+    virtual void ToString(ostream *output, unsigned int indent) const = 0;
+
+  protected:
+    void Indent(ostream *output, unsigned int indent) const {
+      *output << string(indent, ' ');
+    }
+
+    static const unsigned int INDENT = 2;
 };
 
 
@@ -58,7 +65,7 @@ class JsonStringValue: public JsonValue {
         : m_value(value) {
     }
 
-    void ToString(ostream *output) const {
+    void ToString(ostream *output, unsigned int) const {
       *output << '"' << EscapeString(m_value) << '"';
     }
 
@@ -76,7 +83,7 @@ class JsonUIntValue: public JsonValue {
         : m_value(value) {
     }
 
-    void ToString(ostream *output) const {
+    void ToString(ostream *output, unsigned int) const {
       *output << m_value;
     }
 
@@ -94,7 +101,7 @@ class JsonIntValue: public JsonValue {
         : m_value(value) {
     }
 
-    void ToString(ostream *output) const {
+    void ToString(ostream *output, unsigned int) const {
       *output << m_value;
     }
 
@@ -112,7 +119,7 @@ class JsonBoolValue: public JsonValue {
         : m_value(value) {
     }
 
-    void ToString(ostream *output) const {
+    void ToString(ostream *output, unsigned int) const {
       *output << (m_value ? "true" : "false");
     }
 
@@ -128,7 +135,7 @@ class JsonNullValue: public JsonValue {
   public:
     explicit JsonNullValue() {}
 
-    void ToString(ostream *output) const {
+    void ToString(ostream *output, unsigned int) const {
       *output << "null";
     }
 };
@@ -155,7 +162,7 @@ class JsonObject: public JsonValue {
     JsonObject* AddObject(const string &key);
     class JsonArray* AddArray(const string &key);
 
-    void ToString(ostream *output) const;
+    void ToString(ostream *output, unsigned int indent) const;
 
   private:
     typedef map<string, JsonValue*> MemberMap;
@@ -214,7 +221,7 @@ class JsonArray: public JsonValue {
       return array;
     }
 
-    void ToString(ostream *output) const;
+    void ToString(ostream *output, unsigned int indent) const;
 
   private:
     typedef vector<JsonValue*> ValuesVector;
@@ -225,13 +232,11 @@ class JsonArray: public JsonValue {
 };
 
 
-/*
 class JsonWriter {
   public:
-    static string Write(const JsonObject &obj);
-
+    static void Write(ostream *output, const JsonValue &obj);
+    static string AsString(const JsonValue &obj);
 };
-*/
 }  // web
 }  // ola
 #endif  // INCLUDE_OLA_WEB_JSON_H_
