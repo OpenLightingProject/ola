@@ -21,11 +21,11 @@
 #ifndef INCLUDE_OLA_WEB_JSONSECTIONS_H_
 #define INCLUDE_OLA_WEB_JSONSECTIONS_H_
 
+#include <ola/StringUtils.h>
+#include <ola/web/Json.h>
 #include <string>
 #include <utility>
 #include <vector>
-
-#include "ola/StringUtils.h"
 
 namespace ola {
 namespace web {
@@ -55,11 +55,14 @@ class GenericItem {
       m_button_text = text;
     }
 
-    string AsString() const;
+    void PopulateItem(JsonObject *item) const;
+
   protected:
-    virtual string ExtraProperties() const { return ""; }
     virtual string Type() const = 0;
-    virtual string Value() const = 0;
+    virtual void SetValue(JsonObject *item) const = 0;
+    virtual void SetExtraProperties(JsonObject *item) const {
+      (void) item;
+    }
 
   private:
     string m_description;
@@ -82,7 +85,9 @@ class StringItem: public GenericItem {
 
   protected:
     string Type() const { return "string"; }
-    string Value() const;
+    void SetValue(JsonObject *item) const {
+      item->Add("value", m_value);
+    }
 
   private:
     string m_value;
@@ -113,9 +118,11 @@ class UIntItem: public GenericItem {
     }
 
   protected:
-    string ExtraProperties() const;
+    void SetExtraProperties(JsonObject *item) const;
     string Type() const { return "uint"; }
-    string Value() const { return ola::IntToString(m_value); }
+    void SetValue(JsonObject *item) const {
+      item->Add("value", m_value);
+    }
 
   private:
     unsigned int m_value;
@@ -136,7 +143,9 @@ class BoolItem: public GenericItem {
 
   protected:
     string Type() const { return "bool"; }
-    string Value() const;
+    void SetValue(JsonObject *item) const {
+      item->Add("value", m_value);
+    }
 
   private:
     bool m_value;
@@ -152,7 +161,9 @@ class HiddenItem: public GenericItem {
 
   protected:
     string Type() const { return "hidden"; }
-    string Value() const;
+    void SetValue(JsonObject *item) const {
+      item->Add("value", m_value);
+    }
 
   private:
     string m_value;
@@ -176,9 +187,11 @@ class SelectItem: public GenericItem {
     void AddItem(const string &label, unsigned int value);
 
   protected:
-    string ExtraProperties() const;
+    void SetExtraProperties(JsonObject *item) const {
+      item->Add("selected_offset", m_selected_offset);
+    }
     string Type() const { return "select"; }
-    string Value() const;
+    void SetValue(JsonObject *item) const;
 
   private:
     std::vector<std::pair<string, string> > m_values;

@@ -20,13 +20,17 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
+#include "ola/web/Json.h"
 #include "ola/web/JsonSections.h"
 
 using std::string;
 using std::vector;
 using ola::web::BoolItem;
+using ola::web::GenericItem;
 using ola::web::HiddenItem;
+using ola::web::JsonObject;
 using ola::web::JsonSection;
+using ola::web::JsonWriter;
 using ola::web::SelectItem;
 using ola::web::StringItem;
 using ola::web::UIntItem;
@@ -48,10 +52,21 @@ class JsonSectionsTest: public CppUnit::TestFixture {
     void testBoolItem();
     void testHiddenItem();
     void testSection();
+
+  private:
+    string ConvertToString(const GenericItem &item);
 };
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION(JsonSectionsTest);
+
+
+string JsonSectionsTest::ConvertToString(const GenericItem &item) {
+  JsonObject object;
+  item.PopulateItem(&object);
+  return JsonWriter::AsString(object);
+}
+
 
 /*
  * Test the string item
@@ -59,35 +74,35 @@ CPPUNIT_TEST_SUITE_REGISTRATION(JsonSectionsTest);
 void JsonSectionsTest::testStringItem() {
   StringItem item("Foo", "bar");
   string expected =
-    "    {\n"
-    "    \"description\": \"Foo\",\n"
-    "    \"type\": \"string\",\n"
-    "    \"value\": \"bar\",\n"
-    "    }";
-  CPPUNIT_ASSERT_EQUAL(expected, item.AsString());
+    "{\n"
+    "  \"description\": \"Foo\",\n"
+    "  \"type\": \"string\",\n"
+    "  \"value\": \"bar\"\n"
+    "}";
+  CPPUNIT_ASSERT_EQUAL(expected, ConvertToString(item));
 
   StringItem item2("Foo", "bar", "baz");
   item2.SetButtonText("Action");
   string expected2 =
-    "    {\n"
-    "    \"button\": \"Action\",\n"
-    "    \"description\": \"Foo\",\n"
-    "    \"id\": \"baz\",\n"
-    "    \"type\": \"string\",\n"
-    "    \"value\": \"bar\",\n"
-    "    }";
-  CPPUNIT_ASSERT_EQUAL(expected2, item2.AsString());
+    "{\n"
+    "  \"button\": \"Action\",\n"
+    "  \"description\": \"Foo\",\n"
+    "  \"id\": \"baz\",\n"
+    "  \"type\": \"string\",\n"
+    "  \"value\": \"bar\"\n"
+    "}";
+  CPPUNIT_ASSERT_EQUAL(expected2, ConvertToString(item2));
 
   StringItem item3("Foo\" bar", "baz\\");
   item3.SetButtonText("Action\n");
   string expected3 =
-    "    {\n"
-    "    \"button\": \"Action\\n\",\n"
-    "    \"description\": \"Foo\\\" bar\",\n"
-    "    \"type\": \"string\",\n"
-    "    \"value\": \"baz\\\\\",\n"
-    "    }";
-  CPPUNIT_ASSERT_EQUAL(expected3, item3.AsString());
+    "{\n"
+    "  \"button\": \"Action\\n\",\n"
+    "  \"description\": \"Foo\\\" bar\",\n"
+    "  \"type\": \"string\",\n"
+    "  \"value\": \"baz\\\\\"\n"
+    "}";
+  CPPUNIT_ASSERT_EQUAL(expected3, ConvertToString(item3));
 }
 
 
@@ -97,50 +112,50 @@ void JsonSectionsTest::testStringItem() {
 void JsonSectionsTest::testUIntItem() {
   UIntItem item("Foo", 10);
   string expected =
-    "    {\n"
-    "    \"description\": \"Foo\",\n"
-    "    \"type\": \"uint\",\n"
-    "    \"value\": 10,\n"
-    "    }";
-  CPPUNIT_ASSERT_EQUAL(expected, item.AsString());
+    "{\n"
+    "  \"description\": \"Foo\",\n"
+    "  \"type\": \"uint\",\n"
+    "  \"value\": 10\n"
+    "}";
+  CPPUNIT_ASSERT_EQUAL(expected, ConvertToString(item));
 
   UIntItem item2("Foo", 20, "baz");
   item2.SetButtonText("Action");
   item2.SetMin(10);
   string expected2 =
-    "    {\n"
-    "    \"button\": \"Action\",\n"
-    "    \"description\": \"Foo\",\n"
-    "    \"id\": \"baz\",\n"
-    "    \"type\": \"uint\",\n"
-    "    \"value\": 20,\n"
-    "    \"min\": 10,\n"
-    "    }";
-  CPPUNIT_ASSERT_EQUAL(expected2, item2.AsString());
+    "{\n"
+    "  \"button\": \"Action\",\n"
+    "  \"description\": \"Foo\",\n"
+    "  \"id\": \"baz\",\n"
+    "  \"min\": 10,\n"
+    "  \"type\": \"uint\",\n"
+    "  \"value\": 20\n"
+    "}";
+  CPPUNIT_ASSERT_EQUAL(expected2, ConvertToString(item2));
 
   UIntItem item3("Foo", 20);
   item3.SetMax(30);
   string expected3 =
-    "    {\n"
-    "    \"description\": \"Foo\",\n"
-    "    \"type\": \"uint\",\n"
-    "    \"value\": 20,\n"
-    "    \"max\": 30,\n"
-    "    }";
-  CPPUNIT_ASSERT_EQUAL(expected3, item3.AsString());
+    "{\n"
+    "  \"description\": \"Foo\",\n"
+    "  \"max\": 30,\n"
+    "  \"type\": \"uint\",\n"
+    "  \"value\": 20\n"
+    "}";
+  CPPUNIT_ASSERT_EQUAL(expected3, ConvertToString(item3));
 
   UIntItem item4("Foo", 20);
   item4.SetMin(10);
   item4.SetMax(30);
   string expected4 =
-    "    {\n"
-    "    \"description\": \"Foo\",\n"
-    "    \"type\": \"uint\",\n"
-    "    \"value\": 20,\n"
-    "    \"min\": 10,\n"
-    "    \"max\": 30,\n"
-    "    }";
-  CPPUNIT_ASSERT_EQUAL(expected4, item4.AsString());
+    "{\n"
+    "  \"description\": \"Foo\",\n"
+    "  \"max\": 30,\n"
+    "  \"min\": 10,\n"
+    "  \"type\": \"uint\",\n"
+    "  \"value\": 20\n"
+    "}";
+  CPPUNIT_ASSERT_EQUAL(expected4, ConvertToString(item4));
 }
 
 
@@ -153,23 +168,23 @@ void JsonSectionsTest::testSelectItem() {
   item.AddItem("German", 2);
   item.SetSelectedOffset(1);
   string expected =
+    "{\n"
+    "  \"description\": \"Language\",\n"
+    "  \"id\": \"lang\",\n"
+    "  \"selected_offset\": 1,\n"
+    "  \"type\": \"select\",\n"
+    "  \"value\": [\n"
     "    {\n"
-    "    \"description\": \"Language\",\n"
-    "    \"id\": \"lang\",\n"
-    "    \"type\": \"select\",\n"
-    "    \"value\": [\n"
-    "      {\n"
-    "        \"label\": \"English\",\n"
-    "        \"value\": \"EN\",\n"
-    "      },\n"
-    "      {\n"
-    "        \"label\": \"German\",\n"
-    "        \"value\": \"2\",\n"
-    "      }\n"
-    "    ],\n"
-    "    \"selected_offset\": 1,\n"
-    "    }";
-  CPPUNIT_ASSERT_EQUAL(expected, item.AsString());
+    "      \"label\": \"English\",\n"
+    "      \"value\": \"EN\"\n"
+    "    },\n"
+    "    {\n"
+    "      \"label\": \"German\",\n"
+    "      \"value\": \"2\"\n"
+    "    }\n"
+    "  ]\n"
+    "}";
+  CPPUNIT_ASSERT_EQUAL(expected, ConvertToString(item));
 }
 
 
@@ -179,23 +194,23 @@ void JsonSectionsTest::testSelectItem() {
 void JsonSectionsTest::testBoolItem() {
   BoolItem item("Foo", true, "baz");
   string expected =
-    "    {\n"
-    "    \"description\": \"Foo\",\n"
-    "    \"id\": \"baz\",\n"
-    "    \"type\": \"bool\",\n"
-    "    \"value\": 1,\n"
-    "    }";
-  CPPUNIT_ASSERT_EQUAL(expected, item.AsString());
+    "{\n"
+    "  \"description\": \"Foo\",\n"
+    "  \"id\": \"baz\",\n"
+    "  \"type\": \"bool\",\n"
+    "  \"value\": true\n"
+    "}";
+  CPPUNIT_ASSERT_EQUAL(expected, ConvertToString(item));
 
   BoolItem item2("Foo", false, "baz");
   string expected2 =
-    "    {\n"
-    "    \"description\": \"Foo\",\n"
-    "    \"id\": \"baz\",\n"
-    "    \"type\": \"bool\",\n"
-    "    \"value\": 0,\n"
-    "    }";
-  CPPUNIT_ASSERT_EQUAL(expected2, item2.AsString());
+    "{\n"
+    "  \"description\": \"Foo\",\n"
+    "  \"id\": \"baz\",\n"
+    "  \"type\": \"bool\",\n"
+    "  \"value\": false\n"
+    "}";
+  CPPUNIT_ASSERT_EQUAL(expected2, ConvertToString(item2));
 }
 
 /*
@@ -205,14 +220,14 @@ void JsonSectionsTest::testHiddenItem() {
   HiddenItem item("bar", "baz");
   item.SetButtonText("Action");
   string expected =
-    "    {\n"
-    "    \"button\": \"Action\",\n"
-    "    \"description\": \"\",\n"
-    "    \"id\": \"baz\",\n"
-    "    \"type\": \"hidden\",\n"
-    "    \"value\": \"bar\",\n"
-    "    }";
-  CPPUNIT_ASSERT_EQUAL(expected, item.AsString());
+    "{\n"
+    "  \"button\": \"Action\",\n"
+    "  \"description\": \"\",\n"
+    "  \"id\": \"baz\",\n"
+    "  \"type\": \"hidden\",\n"
+    "  \"value\": \"bar\"\n"
+    "}";
+  CPPUNIT_ASSERT_EQUAL(expected, ConvertToString(item));
 }
 
 
@@ -228,17 +243,17 @@ void JsonSectionsTest::testSection() {
 
   string expected =
     "{\n"
-    "  \"refresh\": 0,\n"
     "  \"error\": \"\",\n"
-    "  \"save_button\": \"Action\\\\\",\n"
     "  \"items\": [\n"
     "    {\n"
-    "    \"description\": \"\",\n"
-    "    \"id\": \"baz\",\n"
-    "    \"type\": \"hidden\",\n"
-    "    \"value\": \"bar\\r\",\n"
+    "      \"description\": \"\",\n"
+    "      \"id\": \"baz\",\n"
+    "      \"type\": \"hidden\",\n"
+    "      \"value\": \"bar\\r\"\n"
     "    }\n"
     "  ],\n"
-    "}\n";
+    "  \"refresh\": false,\n"
+    "  \"save_button\": \"Action\\\\\"\n"
+    "}";
   CPPUNIT_ASSERT_EQUAL(expected, section.AsString());
 }

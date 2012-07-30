@@ -182,7 +182,9 @@ class JsonObject: public JsonValue {
  */
 class JsonArray: public JsonValue {
   public:
-    JsonArray() {}
+    JsonArray()
+        : m_complex_type(false) {
+    }
     ~JsonArray();
 
     void Append(const string &value) {
@@ -212,12 +214,14 @@ class JsonArray: public JsonValue {
     JsonObject* AppendObject() {
       JsonObject *obj = new JsonObject();
       m_values.push_back(obj);
+      m_complex_type = true;
       return obj;
     }
 
     JsonArray* AppendArray() {
       JsonArray *array = new JsonArray();
       m_values.push_back(array);
+      m_complex_type = true;
       return array;
     }
 
@@ -226,6 +230,8 @@ class JsonArray: public JsonValue {
   private:
     typedef vector<JsonValue*> ValuesVector;
     ValuesVector m_values;
+    // true if this array contains a nested object or array
+    bool m_complex_type;
 
     JsonArray(const JsonArray&);
     JsonArray& operator=(const JsonArray&);

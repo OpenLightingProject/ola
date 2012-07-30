@@ -101,7 +101,7 @@ void JsonObject::ToString(ostream *output, unsigned int indent) const {
     *output << separator;
     Indent(output, indent + INDENT);
     *output << '"' << EscapeString(iter->first) << "\": ";
-    iter->second->ToString(output, indent);
+    iter->second->ToString(output, indent + INDENT);
     separator = ",\n";
   }
   *output << "\n";
@@ -135,16 +135,22 @@ JsonArray::~JsonArray() {
  * Write a JsonArray to a stream.
  */
 void JsonArray::ToString(ostream *output, unsigned int indent) const {
-  Indent(output, indent);
   *output << "[";
   ValuesVector::const_iterator iter = m_values.begin();
-  string separator = "";
+  string separator = m_complex_type ? "\n" : "";
+  unsigned int child_indent = m_complex_type ? indent + INDENT : 0;
   for (; iter != m_values.end(); ++iter) {
     *output << separator;
-    (*iter)->ToString(output, 0);
-    separator = ", ";
+    (*iter)->ToString(output, child_indent);
+    separator = (m_complex_type ? ",\n" : ", ");
   }
-  *output << "]";
+  if (m_complex_type) {
+    *output << "\n";
+    Indent(output, indent);
+    *output << "]";
+  } else {
+    *output << "]";
+  }
 }
 
 
