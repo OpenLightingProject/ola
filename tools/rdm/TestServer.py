@@ -367,7 +367,7 @@ def parse_options():
     production lighting rig.
   """)
   parser = OptionParser(usage, description=description)
-  parser.add_option('-p', '--pid_file', metavar='FILE',
+  parser.add_option('-p', '--pid_store', metavar='FILE',
                     help='The file to load the PID definitions from.')
   parser.add_option('-d', '--www_dir', default=os.path.abspath('static/'),
                     help='The root directory to serve static files.')
@@ -379,7 +379,7 @@ def parse_options():
 def main():
   options = parse_options()
   settings.update(options.__dict__)
-  settings['pid_store'] = PidStore.GetStore(options.pid_file)
+  settings['pid_store'] = PidStore.GetStore(options.pid_store, ('pids.proto'))
   httpd = make_server('', settings['PORT'], TestServerApplication)
   print "Running RDM Tests Server on %s:%s" % ('127.0.0.1', httpd.server_port)
   httpd.serve_forever()
