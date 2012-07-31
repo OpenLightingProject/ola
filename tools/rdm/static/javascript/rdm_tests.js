@@ -320,7 +320,11 @@ RDMTests.prototype.display_results = function(results) {
   for (key in results['stats_by_catg']) {
     var passed = results['stats_by_catg'][key]['passed'];
     var total = results['stats_by_catg'][key]['total'];
-    var percent = passed / total * 100;
+    if (total != 0) {
+      var percent = '&nbsp;&nbsp;(' + Math.ceil(passed / total * 100).toString() + '%) </span>';
+    } else {
+      var percent = '&nbsp;&nbsp;- </span>';
+    }
 
     $('#rdm-tests-results-summary-by_catg-content')
     .append($('<li />')
@@ -331,9 +335,7 @@ RDMTests.prototype.display_results = function(results) {
       + passed.toString()
       + '&nbsp;/&nbsp;'
       + total.toString()
-      + '&nbsp;&nbsp;('
-      + Math.ceil(percent).toString()
-      + '%) </span>'));
+      + percent));
   }
 
   var number_of_warnings = 0;

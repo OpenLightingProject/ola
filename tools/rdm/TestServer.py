@@ -282,6 +282,8 @@ class TestServerApplication(object):
       category = test.category.__str__()
 
       stats_by_catg.setdefault(category, {})
+      stats_by_catg[category].setdefault('passed', 0)
+      stats_by_catg[category].setdefault('total', 0)
 
       if test.state == TestState.PASSED:
         passed += 1
