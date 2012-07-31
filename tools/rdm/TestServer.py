@@ -272,24 +272,42 @@ class TestServerApplication(object):
 
   def __format_test_results(self, tests):
     results = []
+    stats_by_catg = {}
     passed = 0
     failed = 0
     broken = 0
     not_run = 0
     for test in tests:
+      state = test.state.__str__()
+      category = test.category.__str__()
+
+      stats_by_catg.setdefault(category, {})
+
       if test.state == TestState.PASSED:
         passed += 1
+        stats_by_catg[category]['passed'] = (1 +
+          stats_by_catg[category].get('passed', 0))
+
+        stats_by_catg[category]['total'] = (1 +
+          stats_by_catg[category].get('total', 0))
+
       elif test.state == TestState.FAILED:
         failed += 1
+        stats_by_catg[category]['total'] = (1 +
+          stats_by_catg[category].get('total', 0))
+
       elif test.state == TestState.BROKEN:
         broken += 1
+        stats_by_catg[category]['total'] = (1 +
+          stats_by_catg[category].get('total', 0))
+
       elif test.state == TestState.NOT_RUN:
         not_run += 1
 
       results.append({
           'definition': test.__str__(),
-          'state': test.state.__str__(),
-          'category': test.category.__str__(),
+          'state': state,
+          'category': category,
           'warnings': [cgi.escape(w) for w in test.warnings],
           'advisories': [cgi.escape(a) for a in test.advisories],
           'debug': [cgi.escape(d) for d in test._debug],
@@ -306,7 +324,7 @@ class TestServerApplication(object):
     }
 
     self.__set_response_status(True)
-    self.response.update({'test_results': results, 'stats': stats})
+    self.response.update({'test_results': results, 'stats': stats, 'stats_by_catg': stats_by_catg})
 
   def get_devices(self, params):
     def format_uids(state, uids):

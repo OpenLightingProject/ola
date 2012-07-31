@@ -93,7 +93,7 @@ RDMTests.prototype.bind_events_to_doms = function() {
     rdmtests.validate_form();
   });
 
-  $.each(['#rdm-tests-results-warnings', '#rdm-tests-results-advisories'], function(i, div) {
+  $.each(['#rdm-tests-results-summary-by_catg', '#rdm-tests-results-warnings', '#rdm-tests-results-advisories'], function(i, div) {
     $(div).find('legend').click(function() {
       $(div).find('legend').toggleClass('ola-expander-collapsed ola-expander-expanded');
       $(div).find('div').toggle();
@@ -314,6 +314,26 @@ RDMTests.prototype.display_results = function(results) {
   for (key in results['stats']) {
     $('#rdm-tests-results-stats-figures')
     .append($('<td />').html(results['stats'][key]));
+  }
+
+  //Summary of results by category
+  for (key in results['stats_by_catg']) {
+    var passed = results['stats_by_catg'][key]['passed'];
+    var total = results['stats_by_catg'][key]['total'];
+    var percent = passed / total * 100;
+
+    $('#rdm-tests-results-summary-by_catg-content')
+    .append($('<li />')
+    .html('<span>'
+      + key
+      + '</span>'
+      + '<span class="stats_by_catg">'
+      + passed.toString()
+      + '&nbsp;/&nbsp;'
+      + total.toString()
+      + '&nbsp;&nbsp;('
+      + Math.ceil(percent).toString()
+      + '%) </span>'));
   }
 
   var number_of_warnings = 0;

@@ -81,6 +81,13 @@
         border-top: 1px solid #e4e9fe;
       }
 
+      .stats_by_catg {
+        float: right;
+        text-align: left;
+        font-weight: bold;
+        font-size: 13px;
+      }
+
       .rdm-tests-selection-multiselect {
           width: 680px;
           height: 200px;
@@ -340,6 +347,18 @@
           <tr id='rdm-tests-results-stats-figures'>
           </tr>
         </table>
+      </div>
+      <div id='rdm-tests-results-summary-by_catg' class='results_container'>
+        <fieldset class="ola-expander">
+          <legend class="ola-expander-collapsed">
+            <img src="/static/images/blank.gif" width="12" height="12">
+          Summary
+          </legend>
+          <div>
+           <ul id='rdm-tests-results-summary-by_catg-content'>
+           </ul>
+          </div>
+        </fieldset>
       </div>
       <div id='rdm-tests-results-warnings' class='results_container'>
         <fieldset class="ola-expander">
