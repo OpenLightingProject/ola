@@ -1,15 +1,7 @@
 goog.require('goog.dom');
 goog.require('goog.events');
-goog.require('goog.ui.Checkbox');
-goog.require('goog.ui.Component');
-goog.require('goog.ui.Container');
-goog.require('goog.ui.Control');
-goog.require('goog.ui.Select');
 goog.require('goog.ui.TabPane');
 
-goog.require('ola.common.GenericControl');
-goog.require('ola.common.Server');
-goog.require('ola.common.Server.EventType');
 goog.require('ola.common.ServerStats');
 goog.require('ola.mobile.ControllerTab');
 goog.require('ola.mobile.MonitorTab');
