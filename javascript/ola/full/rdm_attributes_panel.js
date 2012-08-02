@@ -304,7 +304,8 @@ ola.RDMAttributesPanel.prototype._populateSection = function(e, index) {
   div.innerHTML = '';
 
   if (section_response['error']) {
-    this._showErrorDialog('Error', section_response['error']);
+    var error_title = 'Error: ' + this.section_data[index]['name'];
+    this._showErrorDialog(error_title, section_response['error']);
     this.section_data[index]['loaded'] = false;
     var zippy = this.zippies[index];
     if (zippy.isExpanded()) {
@@ -425,7 +426,8 @@ ola.RDMAttributesPanel.prototype._saveSectionComplete = function(e, index) {
   var response = e.target.getResponseJson();
 
   if (response['error']) {
-    this._showErrorDialog('Set Failed', response['error']);
+    var error_title = 'Set ' + this.section_data[index]['name'] + ' Failed';
+    this._showErrorDialog(error_title, response['error']);
   } else {
     // reload data
     this._loadSection(index);
