@@ -17,19 +17,12 @@
  * Copyright (C) 2012 Simon Newton
  */
 
-goog.require('goog.Timer');
 goog.require('goog.events');
 goog.require('goog.ui.Toolbar');
-
 goog.require('ola.common.BaseUniverseTab');
-goog.require('ola.common.Server');
+goog.require('ola.common.DmxMonitor');
 
 goog.provide('ola.DmxMonitorTab');
-
-ola.DmxMonitorTab.NUMBER_OF_CHANNELS = 512;
-ola.DmxMonitorTab.MAX_CHANNEL_VALUE = 255;
-// The time between data fetches
-ola.DmxMonitorTab.PAUSE_TIME_IN_MS = 1000;
 
 /**
  * The DMX monitor tab.
@@ -37,7 +30,8 @@ ola.DmxMonitorTab.PAUSE_TIME_IN_MS = 1000;
  */
 ola.DmxMonitorTab = function(element) {
   ola.common.BaseUniverseTab.call(this, element);
-  this.value_cells = new Array();
+  this.dmx_monitor = new ola.common.DmxMonitor(
+      goog.dom.$('monitor_values'));
   this.setup = false;
 };
 goog.inherits(ola.DmxMonitorTab, ola.common.BaseUniverseTab);
@@ -49,122 +43,20 @@ goog.inherits(ola.DmxMonitorTab, ola.common.BaseUniverseTab);
 ola.DmxMonitorTab.prototype.setActive = function(state) {
   ola.DmxMonitorTab.superClass_.setActive.call(this, state);
 
-  if (this.isActive()) {
-    this.setupIfRequired();
-    this.fetchValues();
+  if (this.isActive() && !this.setup) {
+    // setup the toolbar
+    var toolbar = new goog.ui.Toolbar();
+    toolbar.decorate(goog.dom.$('monitor_toolbar'));
+    var view_button = toolbar.getChild('monitor_view_button')
+    view_button.setTooltip('Change the DMX Monitor layout');
+    goog.events.listen(view_button,
+                       goog.ui.Component.EventType.ACTION,
+                       this._viewChanged,
+                       false,
+                       this);
+    this.setup = true;
   }
-};
-
-
-/**
- * Setup the boxes if required.
- */
-ola.DmxMonitorTab.prototype.setupIfRequired = function() {
-  if (this.setup) {
-    return;
-  }
-
-  // setup the toolbar
-  var toolbar = new goog.ui.Toolbar();
-  toolbar.decorate(goog.dom.$('monitor_toolbar'));
-  var view_button = toolbar.getChild('monitor_view_button')
-  view_button.setTooltip('Change the DMX Monitor layout');
-  goog.events.listen(view_button,
-                     goog.ui.Component.EventType.ACTION,
-                     this._viewChanged,
-                     false,
-                     this);
-
-  var value_table = goog.dom.$('monitor_values');
-  for (var i = 0; i < ola.DmxMonitorTab.NUMBER_OF_CHANNELS; ++i) {
-    var cell = goog.dom.createElement('div');
-    cell.title = 'Channel ' + (i + 1);
-    var channel = goog.dom.createElement("div");
-    channel.innerHTML = i + 1;
-    var span = goog.dom.createElement("span");
-    span.innerHTML = '&nbsp';
-    goog.dom.appendChild(cell, channel);
-    goog.dom.appendChild(cell, span);
-    goog.dom.appendChild(value_table, cell);
-    this.value_cells.push(span);
-  }
-  this.setup = true;
-}
-
-
-/**
- * Fetches the new DMX values.
- */
-ola.DmxMonitorTab.prototype.fetchValues = function(e) {
-  if (!this.isActive())
-    return;
-
-  var t = this;
-  ola.common.Server.getInstance().getChannelValues(
-    this.getUniverse(),
-    function(data) {
-     t.updateData(data['dmx']);
-    });
-};
-
-
-/**
- * Called when new data arrives.
- */
-ola.DmxMonitorTab.prototype.updateData = function(data) {
-  var data_length = Math.min(ola.DmxMonitorTab.NUMBER_OF_CHANNELS,
-                             data.length);
-  for (var i = 0; i < data_length; ++i) {
-    this._setCellValue(i, data[i]);
-  }
-
-  for (var i = data_length; i < ola.DmxMonitorTab.NUMBER_OF_CHANNELS; ++i) {
-    this._clearCellValue(i);
-  }
-
-  if (this.isActive()) {
-    var t = this;
-    goog.Timer.callOnce(
-      function(data) { t.fetchValues(); },
-      ola.DmxMonitorTab.PAUSE_TIME_IN_MS
-    );
-  }
-};
-
-
-/**
- * Set the value of a channel cell
- * @param {number} offset the channel offset.
- * @param {number} value the value to set the channel to.
- */
-ola.DmxMonitorTab.prototype._setCellValue = function(offset, value) {
-  var element = this.value_cells[offset];
-  if (element == undefined) {
-    return;
-  }
-  element.innerHTML = value;
-  var remaining = ola.DmxMonitorTab.MAX_CHANNEL_VALUE - value;
-  element.style.background = 'rgb(' + remaining + ',' + remaining + ',' +
-    remaining + ')';
-  if (value > 90) {
-    element.style.color = '#ffffff';
-  } else {
-    element.style.color = '#000000';
-  }
-};
-
-
-/**
- * Erase a cell value to indicate we didn't get data.
- * @param {number} offset the channel offset.
- */
-ola.DmxMonitorTab.prototype._clearCellValue = function(offset) {
-  var element = this.value_cells[offset];
-  if (element == undefined) {
-    return;
-  }
-  element.innerHTML = '&nbsp;';
-  element.style.background = '#ffffff';
+  this.dmx_monitor.setState(state, this.getUniverse());
 };
 
 
@@ -177,6 +69,5 @@ ola.DmxMonitorTab.prototype._viewChanged = function(e) {
     goog.dom.$('monitor_values').className = "monitor_full";
   } else {
     goog.dom.$('monitor_values').className = "monitor_compact";
-
   }
 };

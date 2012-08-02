@@ -52,6 +52,18 @@ ola.mobile.ControllerTab = function() {
 };
 
 
+/* The title of this tab */
+ola.mobile.ControllerTab.prototype.title = function() {
+  return 'DMX Keypad';
+}
+
+
+/**
+ * Called when the user navigates away from this tab
+ */
+ola.mobile.ControllerTab.prototype.blur = function() {}
+
+
 /**
  * Reset certain variables to their default state
  */
@@ -59,6 +71,7 @@ ola.mobile.ControllerTab.prototype._resetState = function() {
   this.universe_list = undefined;
   this.active_universe = undefined;
 };
+
 
 /**
  * Hide all frames

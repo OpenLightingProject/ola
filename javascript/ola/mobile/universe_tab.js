@@ -66,6 +66,18 @@ ola.mobile.UniverseTab = function() {
 };
 
 
+/* The title of this tab */
+ola.mobile.UniverseTab.prototype.title = function() {
+  return 'RDM';
+}
+
+
+/**
+ * Called when the tab loses focuse
+ */
+ola.mobile.UniverseTab.prototype.blur = function() {}
+
+
 /**
  * Hide all frames
  */

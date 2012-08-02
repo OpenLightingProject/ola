@@ -354,6 +354,25 @@
       #controller_frame td {
         padding: 1px;
       }
+
+      #monitor_frame > div {
+        display: inline-block;
+        border-bottom: 1px solid #67a7e3;
+        border-right: 1px solid #67a7e3;
+        width: 20px;
+        height: 20px;
+      }
+
+      #monitor_frame div div {
+         display: none;
+      }
+
+      #monitor_frame div span {
+         font-size: 11px;
+         text-align: center;
+         display: block;
+         line-height: 20px;
+      }
     </style>
   </head>
   <body onload='ola.mobile.Setup()'>
@@ -365,7 +384,7 @@
 
     <div id='tab_pane'></div>
 
-    <div id='tab_page_1'>
+    <div id='tab_page_0'>
       <table>
        <tr>
         <td>Hostname</td>
@@ -390,34 +409,30 @@
         <td>Started</td><td><div id='server_uptime'></div></td>
        </tr>
      </table>
-     <!--
-      <div style='text-align: center'>
-       <div id='reload_button' class='goog-custom-button goog-inline-block'
-         title='Reload all plugins'>
-         Reload Plugins
-       </div>
-       <div id='stop_button' class='goog-custom-button goog-inline-block'
-         title='Stop OLA'>Stop OLA</div>
-      </div>
-      -->
     </div>
 
-    <div id='tab_page_2'>
+    <div id='tab_page_1'>
       <div id="universe_frame"><div id="universe_list"></div></div>
       <div id="uid_frame"><div id="uid_list"></div></div>
       <div id="rdm_frame"></div>
       <div style="text-align:center" id="rdm_section_frame"></div>
     </div>
 
+    <div id='tab_page_2'>
+     <div id="monitor_universe_frame"></div>
+     <div id="monitor_frame"></div>
+    </div>
+
     <div id='tab_page_3'>
+     <div id="controller_universe_frame"></div>
+     <div id="controller_frame"></div>
+    </div>
+
+    <div id='tab_page_4'>
       <div id="plugin_frame"><div id="plugin_list"></div></div>
       <div id="plugin_info_frame"></div>
     </div>
 
-    <div id='tab_page_4'>
-     <div id="controller_universe_frame"></div>
-     <div id="controller_frame"></div>
-    </div>
 
     <div id='footer'>
       OLA &copy; 2005-2011 Simon Newton<br/>

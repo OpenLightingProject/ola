@@ -12,6 +12,7 @@ goog.require('ola.common.Server');
 goog.require('ola.common.Server.EventType');
 goog.require('ola.common.ServerStats');
 goog.require('ola.mobile.ControllerTab');
+goog.require('ola.mobile.MonitorTab');
 goog.require('ola.mobile.PluginTab');
 goog.require('ola.mobile.UniverseTab');
 
@@ -22,25 +23,22 @@ goog.provide('ola.mobile');
  * @constructor
  */
 ola.MobileUI = function() {
-  this.ola_server = ola.common.Server.getInstance();
+  this.tabs = new Array();
+  this.tabs.push(new ola.common.ServerStats());
+  this.tabs.push(new ola.mobile.UniverseTab());
+  this.tabs.push(new ola.mobile.MonitorTab());
+  this.tabs.push(new ola.mobile.ControllerTab());
+  this.tabs.push(new ola.mobile.PluginTab());
 
   // setup the tab pane
   this.tabPane = new goog.ui.TabPane(goog.dom.$('tab_pane'));
-  this.tabPane.addPage(new goog.ui.TabPane.TabPage(
-    goog.dom.$('tab_page_1'), 'Home'));
-  this.tabPane.addPage(new goog.ui.TabPane.TabPage(
-    goog.dom.$('tab_page_2'), 'RDM'));
-  this.tabPane.addPage(new goog.ui.TabPane.TabPage(
-    goog.dom.$('tab_page_3'), 'Plugins'));
-  this.tabPane.addPage(new goog.ui.TabPane.TabPage(
-    goog.dom.$('tab_page_4'), 'DMX Keypad'));
+  for (var i = 0; i < this.tabs.length; ++i) {
+    this.tabPane.addPage(new goog.ui.TabPane.TabPage(
+      goog.dom.$('tab_page_' + i),
+      this.tabs[i].title()));
+  }
   goog.events.listen(this.tabPane, goog.ui.TabPane.Events.CHANGE,
                      this.updateSelectedTab, false, this);
-
-  this.server_stats = new ola.common.ServerStats();
-  this.universe_tab = new ola.mobile.UniverseTab();
-  this.plugin_tab = new ola.mobile.PluginTab();
-  this.controller_tab = new ola.mobile.ControllerTab();
 };
 
 
@@ -50,15 +48,12 @@ ola.MobileUI = function() {
 ola.MobileUI.prototype.updateSelectedTab = function() {
   var selected_tab = this.tabPane.getSelectedIndex();
 
-  if (selected_tab == 0) {
-    this.ola_server.UpdateServerInfo();
-  } else if (selected_tab == 1) {
-    this.universe_tab.update();
-  } else if (selected_tab == 2) {
-    this.plugin_tab.update();
-  } else {
-    this.controller_tab.update();
+  for (var i = 0; i < this.tabs.length; ++i) {
+    if (i != selected_tab) {
+      this.tabs[i].blur();
+    }
   }
+  this.tabs[selected_tab].update();
 };
 
 

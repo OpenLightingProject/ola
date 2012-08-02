@@ -55,6 +55,18 @@ ola.mobile.PluginTab = function() {
 };
 
 
+/* The title of this tab */
+ola.mobile.PluginTab.prototype.title = function() {
+  return 'Plugins';
+}
+
+
+/**
+ * Called when the tab loses focuse
+ */
+ola.mobile.PluginTab.prototype.blur = function() {}
+
+
 /**
  * Hide all frames
  */

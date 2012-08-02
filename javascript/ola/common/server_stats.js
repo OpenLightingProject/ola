@@ -42,6 +42,26 @@ ola.common.ServerStats = function(element_id) {
 };
 
 
+/* The title of this tab */
+ola.common.ServerStats.prototype.title = function() {
+  return 'Home';
+}
+
+
+/**
+ * Called when the tab loses focuse
+ */
+ola.common.ServerStats.prototype.blur = function() {}
+
+
+/**
+ * Update the tab
+ */
+ola.common.ServerStats.prototype.update = function() {
+  ola.common.Server.getInstance().UpdateServerInfo();
+}
+
+
 /**
  * Update the home frame with new server data
  * @param {Object} e the event object.
