@@ -70,6 +70,15 @@
         width: 100%;
         height: 100%;
         overflow: auto;
+        box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        -ms-box-sizing: border-box;
+      }
+
+      .ola-full-container {
+        height: 100%;
+        box-sizing: border-box;
         -moz-box-sizing: border-box;
         -webkit-box-sizing: border-box;
         -ms-box-sizing: border-box;
@@ -497,14 +506,48 @@
         margin: 1px;
       }
 
-      #monitor_values div {
+      /* The full monitor view */
+      .monitor_full > div {
         display: inline-block;
+        border-bottom: 1px solid #67a7e3;
+        border-right: 1px solid #67a7e3;
+        width: 34px;
+        height: 34px;
+        position: relative;
+      }
+
+      .monitor_full div div {
+        text-align: left;
+        padding-left: 2px;
         font-size: 11px;
+      }
+
+      .monitor_full div span {
+         position: absolute;
+         width: 100%;
+         bottom: 0;
+         font-size: 14px;
+         text-align: center;
+      }
+
+      /* The compact monitor view */
+      .monitor_compact > div {
+        display: inline-block;
         border-bottom: 1px solid #67a7e3;
         border-right: 1px solid #67a7e3;
         width: 20px;
-        text-align: center;
-        margin: 1px;
+        height: 20px;
+      }
+
+      .monitor_compact div div {
+         display: none;
+      }
+
+      .monitor_compact div span {
+         font-size: 11px;
+         text-align: center;
+         display: block;
+         line-height: 20px;
       }
 
       .ola-icon {
@@ -874,8 +917,21 @@
             <div id="patcher_div" class='ola-scroller patcher'></div>
             <div id="patcher_status"></div>
           </div>
-          <div id='tab_page_4' class='ola-scroller'>
-            <div id='monitor_values'></div>
+          <div id='tab_page_4'>
+            <div id='monitor_toolbar' class='goog-toolbar'>
+              <div id='monitor_view_button' class='goog-toolbar-menu-button'>
+                View
+                <div id='decoratedMenu' class='goog-menu'>
+                  <div class='goog-menuitem'>Full</div>
+                  <div class='goog-menuitem'>Compact</div>
+                </div>
+              </div>
+            </div>
+            <div class="ola-full-container" style="padding-bottom: 30px">
+             <div class="ola-scroller">
+              <div id='monitor_values' class="monitor_full"></div>
+             </div>
+            </div>
           </div>
           <div id='tab_page_5' class='ola-scroller'>
             <div id='console_toolbar' class='goog-toolbar'></div>

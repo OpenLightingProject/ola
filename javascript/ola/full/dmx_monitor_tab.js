@@ -19,6 +19,7 @@
 
 goog.require('goog.Timer');
 goog.require('goog.events');
+goog.require('goog.ui.Toolbar');
 
 goog.require('ola.common.BaseUniverseTab');
 goog.require('ola.common.Server');
@@ -63,13 +64,29 @@ ola.DmxMonitorTab.prototype.setupIfRequired = function() {
     return;
   }
 
+  // setup the toolbar
+  var toolbar = new goog.ui.Toolbar();
+  toolbar.decorate(goog.dom.$('monitor_toolbar'));
+  var view_button = toolbar.getChild('monitor_view_button')
+  view_button.setTooltip('Change the DMX Monitor layout');
+  goog.events.listen(view_button,
+                     goog.ui.Component.EventType.ACTION,
+                     this._viewChanged,
+                     false,
+                     this);
+
   var value_table = goog.dom.$('monitor_values');
   for (var i = 0; i < ola.DmxMonitorTab.NUMBER_OF_CHANNELS; ++i) {
-    var div = goog.dom.createElement('div');
-    div.innerHTML = '&nbsp';
-    div.title = 'Channel ' + (i + 1);
-    goog.dom.appendChild(value_table, div);
-    this.value_cells.push(div);
+    var cell = goog.dom.createElement('div');
+    cell.title = 'Channel ' + (i + 1);
+    var channel = goog.dom.createElement("div");
+    channel.innerHTML = i + 1;
+    var span = goog.dom.createElement("span");
+    span.innerHTML = '&nbsp';
+    goog.dom.appendChild(cell, channel);
+    goog.dom.appendChild(cell, span);
+    goog.dom.appendChild(value_table, cell);
+    this.value_cells.push(span);
   }
   this.setup = true;
 }
@@ -148,4 +165,18 @@ ola.DmxMonitorTab.prototype._clearCellValue = function(offset) {
   }
   element.innerHTML = '&nbsp;';
   element.style.background = '#ffffff';
+};
+
+
+/**
+ * Called when the view changes
+ */
+ola.DmxMonitorTab.prototype._viewChanged = function(e) {
+  var value = e.target.getCaption();
+  if (value == "Full") {
+    goog.dom.$('monitor_values').className = "monitor_full";
+  } else {
+    goog.dom.$('monitor_values').className = "monitor_compact";
+
+  }
 };
