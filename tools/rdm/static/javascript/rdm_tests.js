@@ -17,15 +17,44 @@
  * Copyright (C) 2012 Ravindra Nath Kakarla
  */
 
+
+/**
+ * RDMTests class
+ */
 RDMTests = function() {
 };
 
+
 rdmtests = new RDMTests();
 
+
+/**
+ * AJAX loader image
+ * @this {RDMTests}
+ */
 RDMTests.ajax_loader = "<img src='/static/images/loader.gif' />";
 
+
+/**
+ * Maintains a list of all the tests along with their states, categories,
+ * definitions etc.
+ * @this {RDMTests}
+ */
 RDMTests.TEST_RESULTS = new Array();
 
+
+/**
+ * Prepares the notification div and displays it on the page.
+ * @this {RDMTests}
+ * @param {Objec} options An object containing title and message to be
+ * displayed.
+ *
+ *  {
+ *    'title': 'Title to display on notification',
+ *    'message': 'Notification Message',
+ *    'is_dismissable': true
+ *  }
+ */
 RDMTests.prototype.set_notification = function(options) {
   if (options.title != undefined || options.title != null) {
     $('#rdm-tests-notification-title').html(options.title);
@@ -41,6 +70,11 @@ RDMTests.prototype.set_notification = function(options) {
   $('#rdm-tests-notification').show();
 };
 
+
+/**
+ * Clears the notification text and hides it from page.
+ * @this {RDMTests}
+ */
 RDMTests.prototype.clear_notification = function() {
   $('#rdm-tests-notification-title').empty();
   $('#rdm-tests-notification-message').empty();
@@ -48,6 +82,12 @@ RDMTests.prototype.clear_notification = function() {
   $('#rdm-tests-notification').hide();
 };
 
+
+/**
+ * Binds click, keypress and other events to DOMs and
+ * triggers the their respective handlers.
+ * @this {RDMTests}
+ */
 RDMTests.prototype.bind_events_to_doms = function() {
   $('#universe_options').change(function() {
     rdmtests.update_device_list();
@@ -118,6 +158,14 @@ RDMTests.prototype.bind_events_to_doms = function() {
   });
 };
 
+
+/**
+ * Prepares a list item with appropriate color, definition and value.
+ * This will be appended to the results list.
+ * @this {RDMTests}
+ * @param {String} definition Key (or test definition) in TEST_RESULTS object.
+ * @return {Object} A jQuery object representation for a prepared list item.
+ */
 RDMTests.prototype.make_results_list_item = function(definition) {
   var test_option = $('<option />').val(definition).text(definition);
   rdmtests.add_state_class(
@@ -126,6 +174,14 @@ RDMTests.prototype.make_results_list_item = function(definition) {
   return test_option;
 };
 
+
+/**
+ * Filters definitions in results list by category and state of test result.
+ * @this {RDMTests}
+ * @param {Object} results_dom A jQuery object representation of HTML <ul>
+ * which holds test result definitions.
+ * @param {Object} filter_options An Object containing selected filter options.
+ */
 RDMTests.prototype.filter_results = function(results_dom, filter_options) {
   $(results_dom).html('');
   var filter_category = filter_options['category'];
@@ -161,6 +217,16 @@ RDMTests.prototype.filter_results = function(results_dom, filter_options) {
   }
 };
 
+
+/**
+ * Sends an AJAX request to the RDM Tests Server and
+ * triggers callback with the response.
+ * Automatically displays ERROR notifications when a request fails.
+ * @this {RDMTests}
+ * @param {String} request Request string.
+ * @param {Object} params An Object containing parameters to send to the server.
+ * @param {Object} callback Handler to trigger.
+ */
 RDMTests.prototype.query_server = function(request, params, callback) {
   $.ajax({
     url: request,
@@ -184,6 +250,11 @@ RDMTests.prototype.query_server = function(request, params, callback) {
   });
 };
 
+
+/**
+ * Updates the universe selector with available universes fetched
+ * from RDM Tests Server.
+ */
 RDMTests.prototype.update_universe_list = function() {
   this.query_server('/GetUnivInfo', {}, function(data) {
     if (data['status'] == true) {
@@ -199,6 +270,11 @@ RDMTests.prototype.update_universe_list = function() {
   });
 };
 
+
+/**
+ * Triggers Full Discovery of devices via AJAX request
+ * and updates the universe list.
+ */
 RDMTests.prototype.run_discovery = function() {
   rdmtests.set_notification({
     'title': 'Running Full Discovery',
@@ -219,6 +295,10 @@ RDMTests.prototype.run_discovery = function() {
   });
 };
 
+
+/**
+ * Updates the patched devices list for selected universe.
+ */
 RDMTests.prototype.update_device_list = function() {
   var universe_options = $('#universe_options');
   var devices_list = $('#devices_list');
@@ -234,6 +314,11 @@ RDMTests.prototype.update_device_list = function() {
   });
 };
 
+
+/**
+ * Fetches all Test Definitions available from the RDM Tests Server.
+ * Initializes the multiselect widget with definitions.
+ */
 RDMTests.prototype.fetch_test_defs = function() {
   this.query_server('/GetTestDefs', {'c': 0}, function(data) {
     var tests_selector = $('#rdm-tests-selection-tests_list');
@@ -250,6 +335,11 @@ RDMTests.prototype.fetch_test_defs = function() {
   });
 };
 
+
+/**
+ * Triggers an AJAX call to run the tests with given Test Filter.
+ * @param {Array} test_filter An array of tests to run.
+ */
 RDMTests.prototype.run_tests = function(test_filter) {
   this.set_notification({
     'title': 'Running ' + test_filter.length + ' tests',
@@ -291,6 +381,11 @@ RDMTests.prototype.run_tests = function(test_filter) {
   });
 };
 
+
+/**
+ * Resets the test results screen by clearing all the DOMs contents
+ * and hiding them.
+ */
 RDMTests.prototype.reset_results = function() {
   $.each(['#rdm-tests-results-uid',
     '#rdm-tests-results-stats-figures',
@@ -303,6 +398,15 @@ RDMTests.prototype.reset_results = function() {
   $('#rdm-tests-results-summary-filter-by_state').val('All');
 };
 
+
+/**
+ * Adds CSS class to the DOM based on the given state.
+ * This CSS class usually adds appropriate color to the text in the DOM.
+ * @param {String} state A valid test result state
+ * -- 'Passed', 'Failed', 'Broken', 'Not Run'.
+ * @param {Object} dom A jQuery object representation of the DOM
+ * to which the class needs to be added.
+ */
 RDMTests.prototype.add_state_class = function(state, dom) {
   $(dom).removeClass($(dom).attr('class'));
   switch (state) {
@@ -321,6 +425,12 @@ RDMTests.prototype.add_state_class = function(state, dom) {
   }
 };
 
+
+/**
+ * Initializes all the result screen DOMs and displays the results.
+ * @param {Object} results The response Object from the RDM Tests Server.
+ * which contains results.
+ */
 RDMTests.prototype.display_results = function(results) {
   $('#tests_control_frame').hide();
   rdmtests.reset_results();
@@ -417,6 +527,10 @@ RDMTests.prototype.display_results = function(results) {
 };
 
 
+/**
+ * This is triggered when a definition in results summary is selected.
+ * The corresponding 'doc', 'debug' and category is updated in the info div.
+ */
 RDMTests.prototype.result_list_changed = function() {
   var definition = $('#rdm-tests-results-list option:selected').text();
   var state = RDMTests.TEST_RESULTS[definition]['state'];
@@ -435,6 +549,11 @@ RDMTests.prototype.result_list_changed = function() {
 };
 
 
+/**
+ * Validates the user input on Test Control Frame upon submission.
+ * Checks for proper threshold values and other parameters.
+ * @return {Boolean} True on successful validation.
+ */
 RDMTests.prototype.validate_form = function() {
   this.isNumberField = function(dom) {
     var value = $(dom).val();
@@ -488,6 +607,7 @@ RDMTests.prototype.validate_form = function() {
   }
   rdmtests.run_tests(test_filter);
 };
+
 
 $(document).ready(function() {
   rdmtests.bind_events_to_doms();
