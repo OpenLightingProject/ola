@@ -42,7 +42,9 @@ EXTRA_DIST = Client.h ClientBroker.h DeviceManager.h \
 # Olad Server
 bin_PROGRAMS = olad
 olad_SOURCES = Olad.cpp
+if SUPPORTS_RDYNAMIC
 olad_LDFLAGS = -rdynamic
+endif
 olad_LDADD = libolaserver.la \
              $(top_builddir)/common/libolacommon.la
 

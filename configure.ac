@@ -65,6 +65,21 @@ AM_CONDITIONAL(FATAL_WARNINGS, test "${enable_fatal_warnings}" != "no")
 # check for hash_map
 AC_CXX_STL_HASH
 
+# check if the compiler supports -rdyanmic
+AC_MSG_CHECKING(for -rdynamic support)
+old_cppflags=$CPPFLAGS
+CPPFLAGS="${CPPFLAGS} -rdynamic -Wall -Werror"
+AC_CACHE_VAL(ac_cv_rdynamic,
+  AC_TRY_COMPILE(
+    [],
+    [],
+    ac_cv_rdynamic=yes,
+    ac_cv_rdynamic=no))
+CPPFLAGS=$old_cppflags
+AC_MSG_RESULT($ac_cv_rdynamic)
+
+AM_CONDITIONAL(SUPPORTS_RDYNAMIC, test "${ac_cv_rdynamic}" == "yes")
+
 # check for lex
 AC_PROG_LEX
 if test "${LEX}" = ":"; then
@@ -102,7 +117,7 @@ AC_CACHE_VAL(ac_cv_ipv6,
         ac_cv_ipv6=no))
 AC_MSG_RESULT($ac_cv_ipv6)
 if test $ac_cv_ipv6 = yes ; then
-        AC_DEFINE(IPV6, 1, Define to 1 if the system supports IPv6)
+  AC_DEFINE(IPV6, 1, Define to 1 if the system supports IPv6)
 fi
 
 # Check if sockaddr{} has sa_len member.
