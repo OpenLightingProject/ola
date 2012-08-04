@@ -195,7 +195,7 @@ bool WidgetDetectorThread::RunScan() {
       continue;
     if (m_ignored_devices.find(*it) != m_ignored_devices.end())
       continue;
-    // Free BSD has .init and .lock files which we want to skip
+    // FreeBSD has .init and .lock files which we want to skip
     if (StringEndsWith(*it, ".init") or StringEndsWith(*it, ".lock"))
       continue;
 
