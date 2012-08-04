@@ -500,7 +500,7 @@ class DiscoveryMixin(ResponderTestFixture):
       DUBResponseCode(response_code): called when the discovery request
         completes.
 
-      ExpectResponse: returns true if we expect the device to answer the DUB
+      ExpectResponse(): returns true if we expect the device to answer the DUB
         request, false otherwise.
 
       Target:

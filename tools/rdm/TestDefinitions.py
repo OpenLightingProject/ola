@@ -402,6 +402,70 @@ class DUBPositiveUnicast(TestMixins.DiscoveryMixin,
     return self.uid
 
 
+class DUBInvertedFullTree(TestMixins.DiscoveryMixin,
+                          ResponderTestFixture):
+  """DUB from ffff:ffffffff to 0000:00000000."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
+
+  def LowerBound(self):
+    return UID.AllDevices()
+
+  def UpperBound(self):
+    return UID(0, 0);
+
+  def ExpectResponse(self):
+    return False
+
+
+class DUBInvertedRange(TestMixins.DiscoveryMixin,
+                       ResponderTestFixture):
+  """DUB from <UID> + 1 to <UID> - 1."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
+
+  def LowerBound(self):
+    return UID.NextUID(self.uid)
+
+  def UpperBound(self):
+    return UID.PreviousUID(self.uid)
+
+  def ExpectResponse(self):
+    return False
+
+
+class DUBInvertedLowerUID(TestMixins.DiscoveryMixin,
+                          ResponderTestFixture):
+  """DUB from <UID> to <UID> - 1."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
+
+  def LowerBound(self):
+    return self.uid
+
+  def UpperBound(self):
+    return UID.PreviousUID(self.uid)
+
+  def ExpectResponse(self):
+    return False
+
+
+class DUBInvertedUpperUID(TestMixins.DiscoveryMixin,
+                          ResponderTestFixture):
+  """DUB from <UID> + 1 to <UID>."""
+  CATEGORY = TestCategory.NETWORK_MANAGEMENT
+  REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
+
+  def LowerBound(self):
+    return UID.NextUID(self.uid)
+
+  def UpperBound(self):
+    return self.uid
+
+  def ExpectResponse(self):
+    return False
+
+
 # Device Info tests
 #------------------------------------------------------------------------------
 class DeviceInfoTest(object):
