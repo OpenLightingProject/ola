@@ -20,6 +20,7 @@
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
+import binascii
 import math
 import os
 import struct
@@ -156,7 +157,8 @@ class Pid(object):
     """
     group = self._responses.get(command_class)
     if group is None:
-      raise UnpackException('Response contained data: %s' % data)
+      raise UnpackException('Response contained data (hex): %s' %
+                            binary.b2a_hex(data))
     output = group.Unpack(data)[0]
     return output
 
