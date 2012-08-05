@@ -60,6 +60,7 @@ paths = {
   '/GetTestDefs': 'get_test_definitions',
   '/RunDiscovery': 'run_discovery',
   '/GetTestCategories': 'get_test_categories',
+  '/DownloadResults':, 'get_latest_results'
 }
 
 
@@ -344,6 +345,9 @@ class TestServerApplication(object):
     self.wrapper.Run()
     self.wrapper.Reset()
     
+  def __normalize_filename(self, filename):
+    return filename
+
   def __iter__(self):
     if self.is_static_request:
       self.start(self.status, self.headers)
@@ -352,7 +356,15 @@ class TestServerApplication(object):
       self.headers.append(('Content-type', 'application/json'))
       self.start(self.status, self.headers)
       self.response.update({'timestamp': time()})
-      yield(json.dumps(self.response, sort_keys = True))
+      json_response = json.dumps(self.response, indent = 4, sort_keys = True)
+      if self.request == '/RunTests':
+        log_file = open(self.__normalize_filename(settings['log_directory'] +
+                    '/' + self.response['UID'] + '.' + str(self.response['timestamp'])), 'w')
+        log_file.write(json_response)
+        print 'Written log file %s' % (log_file.name)
+        log_file.close()
+
+      yield(json_response)
 
 def parse_options():
   """
@@ -373,6 +385,8 @@ def parse_options():
                     help='The file to load the PID definitions from.')
   parser.add_option('-d', '--www_dir', default=os.path.abspath('static/'),
                     help='The root directory to serve static files.')
+  parser.add_option('-l', '--log_directory', default=os.path.abspath('static/logs/'),
+                    help='The directory to store log files.')
 
   options, args = parser.parse_args()
 
