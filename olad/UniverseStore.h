@@ -61,6 +61,8 @@ class UniverseStore {
     UniverseStore& operator=(const UniverseStore&);
     bool RestoreUniverseSettings(Universe *universe) const;
     bool SaveUniverseSettings(Universe *universe) const;
+
+    static const unsigned int MINIMUM_RDM_DISCOVERY_INTERVAL;
 };
 }  // ola
 #endif  // OLAD_UNIVERSESTORE_H_

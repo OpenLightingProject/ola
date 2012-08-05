@@ -84,7 +84,8 @@ OlaServer::OlaServer(OlaClientServiceFactory *factory,
     : m_service_factory(factory),
       m_plugin_loaders(plugin_loaders),
       m_ss(select_server),
-      m_tcp_socket_factory(ola::NewCallback(this, &OlaServer::NewTCPConnection)),
+      m_tcp_socket_factory(
+          ola::NewCallback(this, &OlaServer::NewTCPConnection)),
       m_accepting_socket(socket),
       m_device_manager(NULL),
       m_plugin_manager(NULL),
@@ -325,6 +326,20 @@ void OlaServer::SocketClosed(ola::io::ConnectedDescriptor *socket) {
 bool OlaServer::RunHousekeeping() {
   OLA_DEBUG << "Garbage collecting";
   m_universe_store->GarbageCollectUniverses();
+
+  // Give the universes an opportunity to run discovery
+  vector<Universe*> universes;
+  m_universe_store->GetList(&universes);
+
+  vector<Universe*>::iterator iter = universes.begin();
+  const TimeStamp *now = m_ss->WakeUpTime();
+  for (; iter != universes.end(); ++iter) {
+    if ((*iter)->RDMDiscoveryInterval().Seconds() &&
+        *now - (*iter)->LastRDMDiscovery() > (*iter)->RDMDiscoveryInterval()) {
+      // run incremental discovery
+      (*iter)->RunRDMDiscovery(NULL, false);
+    }
+  }
   return true;
 }
 

@@ -25,6 +25,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include <ola/Clock.h>  // NOLINT
 #include <ola/DmxBuffer.h>  // NOLINT
 #include <ola/ExportMap.h>  // NOLINT
 #include <ola/rdm/RDMCommand.h>  // NOLINT
@@ -63,9 +64,32 @@ class Universe: public ola::rdm::RDMControllerInterface {
     bool IsActive() const;
     uint8_t ActivePriority() const { return m_active_priority; }
 
+    /**
+     * Return the time between RDM discovery operations.
+     * @return the amount of time in seconds between RDM discovery runs. A
+     * value of 0 means that periodic discovery is disabled for this universe.
+     */
+    const TimeInterval& RDMDiscoveryInterval() const {
+      return m_rdm_discovery_interval;
+    }
+
+    /**
+     * Get the time of the last discovery run
+     */
+    const TimeStamp& LastRDMDiscovery() const {
+      return m_last_discovery_time;
+    }
+
     // Used to adjust the properties
     void SetName(const string &name);
     void SetMergeMode(merge_mode merge_mode);
+
+    /**
+     * Set the time between periodic RDM discovery operations.
+     */
+    void SetRDMDiscoveryInterval(const TimeInterval &discovery_interval) {
+      m_rdm_discovery_interval = discovery_interval;
+    }
 
     // Each universe has a DMXBuffer
     bool SetDMX(const DmxBuffer &buffer);
@@ -147,6 +171,8 @@ class Universe: public ola::rdm::RDMControllerInterface {
     ExportMap *m_export_map;
     map<UID, OutputPort*> m_output_uids;
     Clock *m_clock;
+    TimeInterval m_rdm_discovery_interval;
+    TimeStamp m_last_discovery_time;
 
     Universe(const Universe&);
     Universe& operator=(const Universe&);

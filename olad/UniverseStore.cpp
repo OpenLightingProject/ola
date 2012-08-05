@@ -30,12 +30,15 @@
 
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
+#include "ola/Stringutils.h"
 #include "olad/Preferences.h"
 #include "olad/Universe.h"
 #include "olad/UniverseStore.h"
 namespace ola {
 
 using std::pair;
+
+const unsigned int UniverseStore::MINIMUM_RDM_DISCOVERY_INTERVAL = 30;
 
 UniverseStore::UniverseStore(Preferences *preferences,
                              ExportMap *export_map)
@@ -193,6 +196,29 @@ bool UniverseStore::RestoreUniverseSettings(Universe *universe) const {
     else
       universe->SetMergeMode(Universe::MERGE_LTP);
   }
+
+  // load RDM discovery interval
+  key = "uni_" + oss.str() + "_rdm_discovery_interval";
+  value = m_preferences->GetValue(key);
+
+  if (!value.empty()) {
+    unsigned int interval;
+    if (StringToInt(value, &interval, true)) {
+      if (interval != 0 && interval < MINIMUM_RDM_DISCOVERY_INTERVAL) {
+        OLA_WARN << "RDM Discovery interval for universe " <<
+          universe->UniverseId() << " less than the minimum of " <<
+          MINIMUM_RDM_DISCOVERY_INTERVAL;
+        interval = MINIMUM_RDM_DISCOVERY_INTERVAL;
+      }
+      OLA_DEBUG << "RDM Discovery interval for " << oss.str() << " is " <<
+        interval;
+      TimeInterval discovery_interval(interval, 0);
+      universe->SetRDMDiscoveryInterval(discovery_interval);
+    } else {
+      OLA_WARN << "Invalid RDM discovery interval for universe " <<
+        universe->UniverseId() << ", value was " << value;
+    }
+  }
   return 0;
 }
 
@@ -218,6 +244,9 @@ bool UniverseStore::SaveUniverseSettings(Universe *universe) const {
   key = "uni_" + oss.str() + "_merge";
   mode = (universe->MergeMode() == Universe::MERGE_HTP ? "HTP" : "LTP");
   m_preferences->SetValue(key, mode);
+
+  // We don't save the RDM Discovery interval since it can only be set in the
+  // config files for now.
 
   return 0;
 }

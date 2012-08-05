@@ -76,7 +76,9 @@ Universe::Universe(unsigned int universe_id, UniverseStore *store,
       m_merge_mode(Universe::MERGE_LTP),
       m_universe_store(store),
       m_export_map(export_map),
-      m_clock(clock) {
+      m_clock(clock),
+      m_rdm_discovery_interval(),
+      m_last_discovery_time() {
   stringstream universe_id_str, universe_name_str;
   universe_id_str << universe_id;
   m_universe_id_str = universe_id_str.str();
@@ -100,6 +102,10 @@ Universe::Universe(unsigned int universe_id, UniverseStore *store,
     for (unsigned int i = 0; i < sizeof(vars) / sizeof(vars[0]); ++i)
       (*m_export_map->GetUIntMapVar(vars[i]))[m_universe_id_str] = 0;
   }
+
+  // we set the last discovery time to now, since most ports will trigger
+  // discovery when they are patched.
+  clock->CurrentTime(&m_last_discovery_time);
 }
 
 
@@ -424,6 +430,8 @@ void Universe::RunRDMDiscovery(RDMDiscoveryCallback *on_complete, bool full) {
     OLA_INFO << "Incremental RDM discovery triggered for universe " <<
       m_universe_id;
 
+  m_clock->CurrentTime(&m_last_discovery_time);
+
   // we need to make a copy of the ports first, because the callback may run at
   // any time so we need to guard against the port list changing.
   vector<OutputPort*> output_ports(m_output_ports.size());
@@ -745,7 +753,8 @@ void Universe::PortDiscoveryComplete(BaseCallback0<void> *on_complete,
 void Universe::DiscoveryComplete(RDMDiscoveryCallback *on_complete) {
   ola::rdm::UIDSet uids;
   GetUIDs(&uids);
-  on_complete->Run(uids);
+  if (on_complete)
+    on_complete->Run(uids);
 }
 
 
