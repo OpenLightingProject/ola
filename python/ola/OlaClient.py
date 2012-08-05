@@ -20,6 +20,7 @@
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import array
+import socket
 import struct
 from ola.rpc.StreamRpcChannel import StreamRpcChannel
 from ola.rpc.SimpleRpcController import SimpleRpcController
@@ -420,20 +421,43 @@ class RDMResponse(object):
 
 class OlaClient(Ola_pb2.OlaClientService):
   """The client used to communicate with olad."""
-  def __init__(self, socket):
+  def __init__(self, our_socket = None, close_callback = None):
     """Create a new client.
 
     Args:
-      socket: the socket to use for communications.
+      socket: the socket to use for communications, if not provided one is
+        created.
+      close_callback: A callable to run if the socket is closed
     """
-    self._socket = socket
-    self._channel = StreamRpcChannel(socket, self)
+    self._socket = our_socket
+
+    if self._socket is None:
+      self._socket = socket.socket()
+      self._socket.connect(('localhost', 9010))
+    self._close_callback = close_callback
+    self._channel = StreamRpcChannel(self._socket, self, self._SocketClosed)
     self._stub = Ola_pb2.OlaServerService_Stub(self._channel)
     self._universe_callbacks = {}
+
+  def GetSocket(self):
+    """Returns the socket used to communicate with the server."""
+    return self._socket
 
   def SocketReady(self):
     """Called when the socket has new data."""
     self._channel.SocketReady()
+
+  def _SocketClosed(self):
+    """Called by the RPCChannel if the socket is closed."""
+    try:
+      self._socket.shutdown(socket.SHUT_RDWR)
+    except socket.error:
+      pass
+    self._socket.close()
+    self._socket = None
+
+    if self._close_callback:
+      self._close_callback()
 
   def FetchPlugins(self, callback):
     """Fetch the list of plugins.
@@ -441,11 +465,18 @@ class OlaClient(Ola_pb2.OlaClientService):
     Args:
       callback: the function to call once complete, takes two arguments, a
         RequestStatus object and a list of Plugin objects
+
+    Returns:
+      True if the request was sent, False otherwise.
     """
+    if self._socket is None:
+      return False
+
     controller = SimpleRpcController()
     request = Ola_pb2.PluginListRequest()
     done = lambda x, y: self._GetPluginsComplete(callback, x, y)
     self._stub.GetPlugins(controller, request, done)
+    return True
 
   def PluginDescription(self, callback, plugin_id):
     """Fetch the list of plugins.
@@ -454,12 +485,19 @@ class OlaClient(Ola_pb2.OlaClientService):
       callback: the function to call once complete, takes two arguments, a
         RequestStatus object and a list of Plugin objects
       plugin_id: the id of the plugin
+
+    Returns:
+      True if the request was sent, False otherwise.
     """
+    if self._socket is None:
+      return False
+
     controller = SimpleRpcController()
     request = Ola_pb2.PluginDescriptionRequest()
     request.plugin_id = plugin_id
     done = lambda x, y: self._PluginDescriptionComplete(callback, x, y)
     self._stub.GetPluginDescription(controller, request, done)
+    return True
 
   def FetchDevices(self, callback, plugin_filter=Plugin.OLA_PLUGIN_ALL):
     """Fetch a list of devices from the server.
@@ -468,12 +506,19 @@ class OlaClient(Ola_pb2.OlaClientService):
       callback: The function to call once complete, takes two arguments, a
         RequestStatus object and a list of Device objects.
       filter: a plugin id to filter by
+
+    Returns:
+      True if the request was sent, False otherwise.
     """
+    if self._socket is None:
+      return False
+
     controller = SimpleRpcController()
     request = Ola_pb2.DeviceInfoRequest()
     request.plugin_id = plugin_filter
     done = lambda x, y: self._DeviceInfoComplete(callback, x, y)
     self._stub.GetDeviceInfo(controller, request, done)
+    return True
 
   def FetchUniverses(self, callback):
     """Fetch a list of universes from the server
@@ -481,11 +526,18 @@ class OlaClient(Ola_pb2.OlaClientService):
     Args:
       callback: The function to call once complete, takes two arguments, a
         RequestStatus object and a list of Universe objects.
+
+    Returns:
+      True if the request was sent, False otherwise.
     """
+    if self._socket is None:
+      return False
+
     controller = SimpleRpcController()
     request = Ola_pb2.OptionalUniverseRequest()
     done = lambda x, y: self._UniverseInfoComplete(callback, x, y)
     self._stub.GetUniverseInfo(controller, request, done)
+    return True
 
   def FetchDmx(self, universe, callback):
     """Fetch a list of universes from the server
@@ -494,12 +546,19 @@ class OlaClient(Ola_pb2.OlaClientService):
       universe: the universe to fetch the data for
       callback: The function to call once complete, takes three arguments, a
         RequestStatus object, a universe number and a list of dmx data.
+
+    Returns:
+      True if the request was sent, False otherwise.
     """
+    if self._socket is None:
+      return False
+
     controller = SimpleRpcController()
     request = Ola_pb2.UniverseRequest()
     request.universe = universe
     done = lambda x, y: self._GetDmxComplete(callback, x, y)
     self._stub.GetDmx(controller, request, done)
+    return True
 
   def SendDmx(self, universe, data, callback=None):
     """Send DMX data to the server
@@ -509,13 +568,20 @@ class OlaClient(Ola_pb2.OlaClientService):
       data: An array object with the DMX data
       callback: The function to call once complete, takes one argument, a
         RequestStatus object.
+
+    Returns:
+      True if the request was sent, False otherwise.
     """
+    if self._socket is None:
+      return False
+
     controller = SimpleRpcController()
     request = Ola_pb2.DmxData()
     request.universe = universe
     request.data = data.tostring()
     done = lambda x, y: self._AckMessageComplete(callback, x, y)
     self._stub.UpdateDmxData(controller, request, done)
+    return True
 
   def SetUniverseName(self, universe, name, callback=None):
     """Set the name of a universe.
@@ -525,13 +591,20 @@ class OlaClient(Ola_pb2.OlaClientService):
       name: the new name for the universe
       callback: The function to call once complete, takes one argument, a
         RequestStatus object.
+
+    Returns:
+      True if the request was sent, False otherwise.
     """
+    if self._socket is None:
+      return False
+
     controller = SimpleRpcController()
     request = Ola_pb2.UniverseNameRequest()
     request.universe = universe
     request.name = name
     done = lambda x, y: self._AckMessageComplete(callback, x, y)
     self._stub.SetUniverseName(controller, request, done)
+    return True
 
   def SetUniverseMergeMode(self, universe, merge_mode, callback=None):
     """Set the merge_mode of a universe.
@@ -541,13 +614,20 @@ class OlaClient(Ola_pb2.OlaClientService):
       merge_mode: either Universe.HTP or Universe.LTP
       callback: The function to call once complete, takes one argument, a
         RequestStatus object.
+
+    Returns:
+      True if the request was sent, False otherwise.
     """
+    if self._socket is None:
+      return False
+
     controller = SimpleRpcController()
     request = Ola_pb2.MergeModeRequest()
     request.universe = universe
     request.merge_mode = merge_mode
     done = lambda x, y: self._AckMessageComplete(callback, x, y)
     self._stub.SetMergeMode(controller, request, done)
+    return True
 
   def RegisterUniverse(self, universe, action, data_callback, callback=None):
     """Register to receive dmx updates for a universe.
@@ -559,7 +639,13 @@ class OlaClient(Ola_pb2.OlaClientService):
         a single argument of type array.
       callback: The function to call once complete, takes one argument, a
         RequestStatus object.
+
+    Returns:
+      True if the request was sent, False otherwise.
     """
+    if self._socket is None:
+      return False
+
     controller = SimpleRpcController()
     request = Ola_pb2.RegisterDmxRequest()
     request.universe = universe
@@ -570,6 +656,7 @@ class OlaClient(Ola_pb2.OlaClientService):
       self._universe_callbacks[universe] = data_callback
     elif universe in self._universe_callbacks:
       del self._universe_callbacks[universe]
+    return True
 
   def PatchPort(self, device_alias, port, is_output, action, universe,
                 callback=None):
@@ -583,7 +670,13 @@ class OlaClient(Ola_pb2.OlaClientService):
       universe: the universe to set the name of
       callback: The function to call once complete, takes one argument, a
         RequestStatus object.
+
+    Returns:
+      True if the request was sent, False otherwise.
     """
+    if self._socket is None:
+      return False
+
     controller = SimpleRpcController()
     request = Ola_pb2.PatchPortRequest()
     request.device_alias = device_alias
@@ -593,6 +686,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     request.universe = universe
     done = lambda x, y: self._AckMessageComplete(callback, x, y)
     self._stub.PatchPort(controller, request, done)
+    return True
 
   def ConfigureDevice(self, device_alias, request_data, callback):
     """Send a device config request.
@@ -602,14 +696,20 @@ class OlaClient(Ola_pb2.OlaClientService):
       request_data: the request to send to the device
       callback: The function to call once complete, takes two arguments, a
         RequestStatus object and a response.
+
+    Returns:
+      True if the request was sent, False otherwise.
     """
+    if self._socket is None:
+      return False
+
     controller = SimpleRpcController()
     request = Ola_pb2.DeviceConfigRequest()
     request.device_alias = device_alias
     request.data = request_data
     done = lambda x, y: self._ConfigureDeviceComplete(callback, x, y)
     self._stub.ConfigureDevice(controller, request, done)
-
+    return True
 
   def SendTimeCode(self,
                    time_code_type,
@@ -618,7 +718,7 @@ class OlaClient(Ola_pb2.OlaClientService):
                    seconds,
                    frames,
                    callback=None):
-    """Send Time Code Data,
+    """Send Time Code Data.
 
     Args:
       time_code_type: One of OlaClient.TIMECODE_FILM, OlaClient.TIMECODE_EBU,
@@ -629,7 +729,13 @@ class OlaClient(Ola_pb2.OlaClientService):
       frames: the frame count
       callback: The function to call once complete, takes one argument, a
         RequestStatus object.
+
+    Returns:
+      True if the request was sent, False otherwise.
     """
+    if self._socket is None:
+      return False
+
     controller = SimpleRpcController()
     request = Ola_pb2.TimeCode()
     request.type = time_code_type
@@ -639,6 +745,7 @@ class OlaClient(Ola_pb2.OlaClientService):
     request.frames = frames
     done = lambda x, y: self._AckMessageComplete(callback, x, y)
     self._stub.SendTimeCode(controller, request, done)
+    return True
 
   def UpdateDmxData(self, controller, request, callback):
     """Called when we receive new DMX data.
@@ -647,13 +754,20 @@ class OlaClient(Ola_pb2.OlaClientService):
       controller: An RpcController object
       reqeust: A DmxData message
       callback: The callback to run once complete
+
+    Returns:
+      True if the request was sent, False otherwise.
     """
+    if self._socket is None:
+      return False
+
     if request.universe in self._universe_callbacks:
       data = array.array('B')
       data.fromstring(request.data)
       self._universe_callbacks[request.universe](data)
     response = Ola_pb2.Ack()
     callback(response)
+    return True
 
   def FetchUIDList(self, universe, callback):
     """Used to get a list of UIDs for a particular universe.
@@ -662,12 +776,19 @@ class OlaClient(Ola_pb2.OlaClientService):
       universe: The universe to get the UID list for.
       callback: The function to call once complete, takes two arguments, a
         RequestStatus object and a iterable of UIDs.
+
+    Returns:
+      True if the request was sent, False otherwise.
     """
+    if self._socket is None:
+      return False
+
     controller = SimpleRpcController()
     request = Ola_pb2.UniverseRequest()
     request.universe = universe
     done = lambda x, y: self._FetchUIDsComplete(callback, x, y)
     self._stub.GetUIDs(controller, request, done)
+    return True
 
   def RunRDMDiscovery(self, universe, full, callback):
     """Triggers RDM discovery for a universe.
@@ -677,13 +798,20 @@ class OlaClient(Ola_pb2.OlaClientService):
       full: true to use full discovery, false for incremental (if supported)
       callback: The function to call once complete, takes one argument, a
         RequestStatus object.
+
+    Returns:
+      True if the request was sent, False otherwise.
     """
+    if self._socket is None:
+      return False
+
     controller = SimpleRpcController()
     request = Ola_pb2.DiscoveryRequest()
     request.universe = universe
     request.full = full
     done = lambda x, y: self._FetchUIDsComplete(callback, x, y)
     self._stub.ForceDiscovery(controller, request, done)
+    return True
 
   def RDMGet(self, universe, uid, sub_device, param_id, callback, data = ''):
     """Send an RDM get command.
@@ -695,7 +823,13 @@ class OlaClient(Ola_pb2.OlaClientService):
       param_id: the param ID
       callback: The function to call once complete, takes a RDMResponse object
       data: the data to send
+
+    Returns:
+      True if the request was sent, False otherwise.
     """
+    if self._socket is None:
+      return False
+
     return self._RDMMessage(universe, uid, sub_device, param_id, callback,
                             data);
 
@@ -709,7 +843,13 @@ class OlaClient(Ola_pb2.OlaClientService):
       param_id: the param ID
       callback: The function to call once complete, takes a RDMResponse object
       data: the data to send
+
+    Returns:
+      True if the request was sent, False otherwise.
     """
+    if self._socket is None:
+      return False
+
     return self._RDMMessage(universe, uid, sub_device, param_id, callback,
                             data, set = True);
 
@@ -730,7 +870,13 @@ class OlaClient(Ola_pb2.OlaClientService):
       param_id: the param ID
       callback: The function to call once complete, takes a RDMResponse object
       data: the data to send
+
+    Returns:
+      True if the request was sent, False otherwise.
     """
+    if self._socket is None:
+      return False
+
     controller = SimpleRpcController()
     request = Ola_pb2.RDMDiscoveryRequest()
     request.universe = universe
