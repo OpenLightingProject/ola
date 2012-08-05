@@ -37,7 +37,7 @@ RDMTests.ajax_loader = "<img src='/static/images/loader.gif' />";
 
 /**
  * Maintains a list of all the tests along with their states, categories,
- * definitions etc.
+ * definitions with keys sorted in the order they are run.
  * @this {RDMTests}
  */
 RDMTests.TEST_RESULTS = new Array();
