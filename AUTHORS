@@ -7,3 +7,11 @@ Primary author:
 
 Contributors:
   Bastien Andrès (dmx4linux plugin)
+  Bastien Andrès, contributed to the dmx4linux plugin
+  Harry F, for the Eurolite USB Pro code
+  Heikki Junnila, bug fixes for the debian packaging files
+  Laurent (Renzo), Debian packages, FreeBSD & RDM testing.
+  Masaki Muranaka, various patches
+  Nicolas, for the win32 port of libartnet
+  Ravindra Nath Kakarla, RDM Test Server (Part of Google Summer of Code 2012)
+  Tobi Schäfer, for the MacPort files
