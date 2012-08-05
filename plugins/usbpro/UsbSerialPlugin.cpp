@@ -55,6 +55,7 @@ const char UsbSerialPlugin::DEVICE_DIR_KEY[] = "device_dir";
 const char UsbSerialPlugin::DEVICE_PREFIX_KEY[] = "device_prefix";
 const char UsbSerialPlugin::IGNORED_DEVICES_KEY[] = "ignore_device";
 const char UsbSerialPlugin::LINUX_DEVICE_PREFIX[] = "ttyUSB";
+const char UsbSerialPlugin::BSD_DEVICE_PREFIX[] = "ttyU";
 const char UsbSerialPlugin::MAC_DEVICE_PREFIX[] = "cu.usbserial-";
 const char UsbSerialPlugin::PLUGIN_NAME[] = "Serial USB";
 const char UsbSerialPlugin::PLUGIN_PREFIX[] = "usbserial";
@@ -302,6 +303,7 @@ bool UsbSerialPlugin::SetDefaultPreferences() {
   if (device_prefixes.empty()) {
     m_preferences->SetMultipleValue(DEVICE_PREFIX_KEY, LINUX_DEVICE_PREFIX);
     m_preferences->SetMultipleValue(DEVICE_PREFIX_KEY, MAC_DEVICE_PREFIX);
+    m_preferences->SetMultipleValue(DEVICE_PREFIX_KEY, BSD_DEVICE_PREFIX);
     save = true;
   }
 
