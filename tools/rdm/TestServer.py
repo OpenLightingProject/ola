@@ -25,6 +25,7 @@ import textwrap
 import urlparse
 import inspect
 import traceback
+import pickle
 from TestCategory import TestCategory
 from time import time
 from ola.testing.rdm import ResponderTest
@@ -60,7 +61,7 @@ paths = {
   '/GetTestDefs': 'get_test_definitions',
   '/RunDiscovery': 'run_discovery',
   '/GetTestCategories': 'get_test_categories',
-  '/DownloadResults':, 'get_latest_results'
+  '/DownloadResults': 'get_latest_results'
 }
 
 
@@ -270,6 +271,20 @@ class TestServerApplication(object):
     tests, device = runner.RunTests(test_filter, False)
     self.__format_test_results(tests)
     self.response.update({'UID': str(uid)})
+    self.log_results()
+
+  def log_results(self):
+    filename = self.__normalize_filename(settings['log_directory'] +
+                '/' +
+                self.response['UID'] +
+                '.' +
+                str(time()) +
+                '.log')
+
+    log_file = open(filename, 'w')
+    pickle.dump(self.response, log_file)
+    print 'Written log file %s' % (log_file.name)
+    log_file.close()
 
   def __format_test_results(self, tests):
     results = []
@@ -356,14 +371,7 @@ class TestServerApplication(object):
       self.headers.append(('Content-type', 'application/json'))
       self.start(self.status, self.headers)
       self.response.update({'timestamp': time()})
-      json_response = json.dumps(self.response, indent = 4, sort_keys = True)
-      if self.request == '/RunTests':
-        log_file = open(self.__normalize_filename(settings['log_directory'] +
-                    '/' + self.response['UID'] + '.' + str(self.response['timestamp'])), 'w')
-        log_file.write(json_response)
-        print 'Written log file %s' % (log_file.name)
-        log_file.close()
-
+      json_response = json.dumps(self.response, sort_keys = True)
       yield(json_response)
 
 def parse_options():
