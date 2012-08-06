@@ -30,7 +30,7 @@
 
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
-#include "ola/Stringutils.h"
+#include "ola/StringUtils.h"
 #include "olad/Preferences.h"
 #include "olad/Universe.h"
 #include "olad/UniverseStore.h"
