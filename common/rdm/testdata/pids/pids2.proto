@@ -103,3 +103,4 @@ manufacturer {
     set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
   }
 }
+version: 1302986774
