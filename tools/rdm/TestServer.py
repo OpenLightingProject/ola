@@ -61,7 +61,7 @@ paths = {
   '/GetTestDefs': 'get_test_definitions',
   '/RunDiscovery': 'run_discovery',
   '/GetTestCategories': 'get_test_categories',
-  '/DownloadResults': 'get_latest_results'
+  '/DownloadResults': 'download_results'
 }
 
 
@@ -272,6 +272,30 @@ class TestServerApplication(object):
     self.__format_test_results(tests)
     self.response.update({'UID': str(uid)})
     self.log_results()
+
+  def download_results(self, params):
+    try:
+      uid = params['uid']
+      timestamp = str(params['timestamp'])
+      log_name = "%s.%s.log" % (uid, timestamp)
+      filename = os.path.abspath(os.path.join(settings['log_directory'], log_name))
+      if not os.path.exists(filename) or not os.path.isfile(filename):
+        self.__set_response_status(False)
+        self.__set_response_message('Missing log file! Please re-run tests')
+      else:
+        self.is_static_request = True
+        mimetype, encoding = mimetypes.guess_type(filename)
+        if mimetype:
+          self.headers.append(('Content-type', mimetype))
+        if encoding:
+          self.headers.append(('Content-encoding', encoding))
+
+        stats = os.stat(filename)
+        self.headers.append(('Content-length', str(stats.st_size)))
+
+        self.output = open(filename, 'rb').read()
+    except:
+      print traceback.print_exc()
 
   def log_results(self):
     filename = self.__normalize_filename(settings['log_directory'] +
