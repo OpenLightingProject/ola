@@ -151,11 +151,11 @@ class EnttecUsbProWidget: public SerialWidgetInterface,
     }
 
     void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
-      m_impl->RunFullDiscovery(callback);
+      m_controller->RunFullDiscovery(callback);
     }
 
     void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
-      m_impl->RunIncrementalDiscovery(callback);
+      m_controller->RunIncrementalDiscovery(callback);
     }
 
     ola::io::ConnectedDescriptor *GetDescriptor() const {
@@ -171,7 +171,7 @@ class EnttecUsbProWidget: public SerialWidgetInterface,
     // we need to control the order of construction & destruction here so these
     // are pointers.
     EnttecUsbProWidgetImpl *m_impl;
-    ola::rdm::QueueingRDMController *m_controller;
+    ola::rdm::DiscoverableQueueingRDMController *m_controller;
 };
 }  // usbpro
 }  // plugin
