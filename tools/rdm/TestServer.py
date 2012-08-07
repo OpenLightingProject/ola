@@ -443,6 +443,14 @@ def main():
   options = parse_options()
   settings.update(options.__dict__)
   settings['pid_store'] = PidStore.GetStore(options.pid_store, ('pids.proto'))
+  #Check olad status
+  try:
+    print 'Checking olad status'
+    test_client = ClientWrapper()
+  except:
+    print 'Error creating connection with olad. Is it running?'
+    sys.exit(127)
+
   httpd = make_server('', settings['PORT'], TestServerApplication)
   print "Running RDM Tests Server on %s:%s" % ('127.0.0.1', httpd.server_port)
   httpd.serve_forever()
