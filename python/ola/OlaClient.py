@@ -30,6 +30,15 @@ from ola.UID import UID
 """The port that the OLA server listens on."""
 OLA_PORT = 9010
 
+
+class Error(Exception):
+  """The base error class."""
+
+
+class OLADNotRunningException(Error):
+  """Thrown if we try to connect and olad isn't running."""
+
+
 class Plugin(object):
   """Represents a plugin.
 
@@ -433,7 +442,11 @@ class OlaClient(Ola_pb2.OlaClientService):
 
     if self._socket is None:
       self._socket = socket.socket()
-      self._socket.connect(('localhost', 9010))
+      try:
+        self._socket.connect(('localhost', 9010))
+      except socket.error:
+        raise OLADNotRunningException()
+
     self._close_callback = close_callback
     self._channel = StreamRpcChannel(self._socket, self, self._SocketClosed)
     self._stub = Ola_pb2.OlaServerService_Stub(self._channel)
