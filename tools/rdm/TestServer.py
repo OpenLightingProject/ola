@@ -18,6 +18,7 @@
 
 import cgi
 import json
+import re
 import sys
 import os
 import mimetypes
@@ -26,6 +27,7 @@ import urlparse
 import inspect
 import traceback
 import pickle
+import math
 from TestCategory import TestCategory
 from time import time
 from ola.testing.rdm import ResponderTest
@@ -33,6 +35,7 @@ from ola.testing.rdm import TestDefinitions
 from ola.testing.rdm import TestRunner
 from ola.testing.rdm.TestState import TestState
 from wsgiref.simple_server import make_server
+from wsgiref.headers import Headers
 from ola import PidStore
 from DMXSender import DMXSender
 from ola.ClientWrapper import ClientWrapper
@@ -61,7 +64,7 @@ paths = {
   '/GetTestDefs': 'get_test_definitions',
   '/RunDiscovery': 'run_discovery',
   '/GetTestCategories': 'get_test_categories',
-  '/DownloadResults': 'download_results'
+  '/DownloadResults': 'download_results',
 }
 
 
@@ -273,37 +276,49 @@ class TestServerApplication(object):
     self.response.update({'UID': str(uid)})
     self.log_results()
 
+  def __is_valid_log_file(self, filename):
+    regex = re.compile('[0-9a-f]+:[0-9a-f]+\.[0-9]{10}\.[0-9]{1,2}\.log')
+    if regex.match(filename):
+      return True
+    else:
+      return False
+
   def download_results(self, params):
+    uid = params['uid']
+    timestamp = str(math.ceil(float(params['timestamp'])))
+    log_name = "%s.%s.log" % (uid, timestamp)
     try:
-      uid = params['uid']
-      timestamp = str(params['timestamp'])
-      log_name = "%s.%s.log" % (uid, timestamp)
-      filename = os.path.abspath(os.path.join(settings['log_directory'], log_name))
-      if not os.path.exists(filename) or not os.path.isfile(filename):
+      if not self.__is_valid_log_file(log_name):
         self.__set_response_status(False)
-        self.__set_response_message('Missing log file! Please re-run tests')
+        self.__set_response_message('Invalid log file requested!')
       else:
-        self.is_static_request = True
-        mimetype, encoding = mimetypes.guess_type(filename)
-        if mimetype:
-          self.headers.append(('Content-type', mimetype))
-        if encoding:
-          self.headers.append(('Content-encoding', encoding))
+        filename = os.path.abspath(os.path.join(settings['log_directory'], log_name))
+        if not os.path.exists(filename) or not os.path.isfile(filename):
+          self.__set_response_status(False)
+          self.__set_response_message('Missing log file! Please re-run tests')
+        else:
+          self.is_static_request = True
+          mimetype, encoding = mimetypes.guess_type(filename)
+          if mimetype:
+            self.headers.append(('Content-type', mimetype))
+          if encoding:
+            self.headers.append(('Content-encoding', encoding))
 
-        stats = os.stat(filename)
-        self.headers.append(('Content-length', str(stats.st_size)))
+          #Force downloading of file instead of showing it on the browser
+          headers = Headers(self.headers)
+          headers.add_header('Content-disposition', 'attachment', filename=log_name)
 
-        self.output = open(filename, 'rb').read()
+          stats = os.stat(filename)
+          self.headers.append(('Content-length', str(stats.st_size)))
+
+          self.output = open(filename, 'rb').read()
     except:
       print traceback.print_exc()
 
   def log_results(self):
-    filename = self.__normalize_filename(settings['log_directory'] +
-                '/' +
-                self.response['UID'] +
-                '.' +
-                str(time()) +
-                '.log')
+    filename = '%s.%s.log' % (self.response['UID'], str(math.ceil(time())))
+    filename = os.path.join(dir, settings['log_directory'], filename)
+    filename = self.__normalize_filename(filename)
 
     log_file = open(filename, 'w')
     pickle.dump(self.response, log_file)
