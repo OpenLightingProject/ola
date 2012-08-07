@@ -137,9 +137,9 @@ RDMTests.prototype.bind_events_to_doms = function() {
     var uid = $('#devices_list').val();
     var timestamp = RDMTests.timestamp;
     $('#rdm-tests-download').attr('src', '/DownloadResults?uid=' +
-                                           uid +
-                                           '&timestamp=' +
-                                           timestamp);
+        uid +
+        '&timestamp=' +
+        timestamp);
   });
 
   $.each([
@@ -243,7 +243,7 @@ RDMTests.prototype.query_server = function(request, params, callback) {
     data: params,
     dataType: 'json',
     success: function(data) {
-      RDMTests.timestamp = data['timestamp']
+      RDMTests.timestamp = data['timestamp'];
       if (data['status'] == true) {
         callback(data);
       } else {
