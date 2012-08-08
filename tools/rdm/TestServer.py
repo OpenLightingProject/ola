@@ -277,7 +277,7 @@ class TestServerApplication(object):
     self.log_results()
 
   def __is_valid_log_file(self, filename):
-    regex = re.compile('[0-9a-f]+:[0-9a-f]+\.[0-9]{10}\.[0-9]{1,2}\.log')
+    regex = re.compile('[0-9a-f]{4}:[0-9a-f]{8}\.[0-9]{10}\.[0-9]{1,2}\.log$')
     if regex.match(filename):
       return True
     else:
