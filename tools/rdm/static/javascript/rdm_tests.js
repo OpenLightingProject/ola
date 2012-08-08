@@ -136,10 +136,9 @@ RDMTests.prototype.bind_events_to_doms = function() {
   $('#rdm-tests-results-button-download').click(function() {
     var uid = $('#devices_list').val();
     var timestamp = RDMTests.timestamp;
-    $('#rdm-tests-download').attr('src', '/DownloadResults?uid=' +
-        uid +
-        '&timestamp=' +
-        timestamp);
+    $('#rdm-tests-download').attr('src',
+        '/DownloadResults?uid=' + uid +
+        '&timestamp=' + timestamp);
   });
 
   $.each([
