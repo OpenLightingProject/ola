@@ -50,7 +50,7 @@ class StreamRpcChannel(service.RpcChannel):
   SIZE_MASK = 0x0fffffff
   RECEIVE_BUFFER_SIZE = 8192
 
-  def __init__(self, socket, service_impl):
+  def __init__(self, socket, service_impl, close_callback = None):
     """Create a new StreamRpcChannel.
 
     Args:
@@ -65,6 +65,7 @@ class StreamRpcChannel(service.RpcChannel):
     self._buffer = [] # the received data
     self._expected_size = None # the size of the message we're receiving
     self._skip_message = False # skip the current message
+    self._close_callback = close_callback
 
   def SocketReady(self):
     """Read data from the socket and handle when we get a full message.
@@ -74,7 +75,9 @@ class StreamRpcChannel(service.RpcChannel):
     """
     data = self._socket.recv(self.RECEIVE_BUFFER_SIZE)
     if data == '':
-      logging.info('Socket closed')
+      logging.info('OLAD Server Socket closed')
+      if self._close_callback is not None:
+        self._close_callback()
       return False
 
     self._buffer.append(data)

@@ -22,7 +22,6 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import datetime
 import heapq
-import socket
 import select
 from ola.OlaClient import OlaClient, Universe
 
@@ -53,10 +52,7 @@ class Event(object):
 class ClientWrapper(object):
   def __init__(self):
     self._quit = False
-    self._sock = socket.socket()
-    self._sock.connect(('localhost', 9010))
-    self._client = OlaClient(self._sock)
-
+    self._client = OlaClient()
     self._events = []
     heapq.heapify(self._events)
 
@@ -75,8 +71,7 @@ class ClientWrapper(object):
 
   def Run(self):
     self._quit = False
-    while not self._quit:
-
+    while self._client.GetSocket() is not None and not self._quit:
       # default to 1s sleep
       sleep_time = 1
       now = datetime.datetime.now()
@@ -84,10 +79,10 @@ class ClientWrapper(object):
       if len(self._events):
         sleep_time = min(1.0, self._events[0].TimeLeft(now))
 
-      i, o, e = select.select([self._sock], [], [], sleep_time)
+      i, o, e = select.select([self._client.GetSocket()], [], [], sleep_time)
       now = datetime.datetime.now()
       self.CheckTimeouts(now)
-      if self._sock in i:
+      if self._client.GetSocket() in i:
         self._client.SocketReady()
 
   def AddEvent(self, time_in_ms, callback):
