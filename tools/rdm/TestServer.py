@@ -35,12 +35,12 @@ from wsgiref.headers import Headers
 from ola.UID import UID
 from ola.ClientWrapper import ClientWrapper
 from ola import PidStore
-from DMXSender import DMXSender
+from ola.testing.rdm.DMXSender import DMXSender
 from ola.testing.rdm import ResponderTest
 from ola.testing.rdm import TestDefinitions
 from ola.testing.rdm import TestRunner
 from ola.testing.rdm.TestState import TestState
-from TestCategory import TestCategory
+from ola.testing.rdm.TestCategory import TestCategory
 
 
 __author__ = 'ravindhranath@gmail.com (Ravindra Nath Kakarla)'
