@@ -104,7 +104,8 @@ class ExponentialBackoffPolicy: public BackOffPolicy {
     }
 
     TimeInterval BackOffTime(unsigned int failed_attempts) const {
-      TimeInterval interval = m_initial * (::pow(2, failed_attempts - 1));
+      TimeInterval interval = (
+          m_initial * static_cast<int>(::pow(2, failed_attempts - 1)));
       if (interval > m_max)
         interval = m_max;
       return interval;

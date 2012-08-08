@@ -17,31 +17,31 @@
 # Copyright (C) 2012 Ravindra Nath Kakarla
 
 import cgi
+import inspect
 import json
+import math
+import mimetypes
+import os
+import pickle
 import re
 import sys
-import os
-import mimetypes
 import textwrap
-import urlparse
-import inspect
 import traceback
-import pickle
-import math
-from TestCategory import TestCategory
+import urlparse
 from time import time
+from optparse import OptionParser, OptionGroup, OptionValueError
+from wsgiref.simple_server import make_server
+from wsgiref.headers import Headers
+from ola.UID import UID
+from ola.ClientWrapper import ClientWrapper
+from ola.OlaClient import OLADNotRunningException
+from ola import PidStore
+from DMXSender import DMXSender
 from ola.testing.rdm import ResponderTest
 from ola.testing.rdm import TestDefinitions
 from ola.testing.rdm import TestRunner
 from ola.testing.rdm.TestState import TestState
-from wsgiref.simple_server import make_server
-from wsgiref.headers import Headers
-from ola import PidStore
-from DMXSender import DMXSender
-from ola.ClientWrapper import ClientWrapper
-from ola.OlaClient import OLADNotRunningException
-from ola.UID import UID
-from optparse import OptionParser, OptionGroup, OptionValueError
+from TestCategory import TestCategory
 
 
 __author__ = 'ravindhranath@gmail.com (Ravindra Nath Kakarla)'
@@ -275,18 +275,18 @@ class TestServerApplication(object):
     tests, device = runner.RunTests(test_filter, False)
     self.__format_test_results(tests)
     self.response.update({'UID': str(uid)})
-    self.log_results()
+    self.log_results(str(uid), int(time()))
 
   def __is_valid_log_file(self, filename):
-    regex = re.compile('[0-9a-f]+:[0-9a-f]+\.[0-9]{10}\.[0-9]{1,2}\.log')
-    if regex.match(filename):
+    regex = re.compile('[0-9a-f]{4}:[0-9a-f]{8}\.[0-9]{10}\.log$')
+    if regex.match(filename) is not None:
       return True
     else:
       return False
 
   def download_results(self, params):
     uid = params['uid']
-    timestamp = str(math.ceil(float(params['timestamp'])))
+    timestamp = params['timestamp']
     log_name = "%s.%s.log" % (uid, timestamp)
     try:
       if not self.__is_valid_log_file(log_name):
@@ -294,7 +294,7 @@ class TestServerApplication(object):
         self.__set_response_message('Invalid log file requested!')
       else:
         filename = os.path.abspath(os.path.join(settings['log_directory'], log_name))
-        if not os.path.exists(filename) or not os.path.isfile(filename):
+        if not os.path.isfile(filename):
           self.__set_response_status(False)
           self.__set_response_message('Missing log file! Please re-run tests')
         else:
@@ -309,17 +309,16 @@ class TestServerApplication(object):
           headers = Headers(self.headers)
           headers.add_header('Content-disposition', 'attachment', filename=log_name)
 
-          stats = os.stat(filename)
-          self.headers.append(('Content-length', str(stats.st_size)))
+          self.output = pickle.load(open(filename, 'rb')).__str__()
 
-          self.output = open(filename, 'rb').read()
+          stats = len(self.output)
+          self.headers.append(('Content-length', str(stats)))
     except:
       print traceback.print_exc()
 
-  def log_results(self):
-    filename = '%s.%s.log' % (self.response['UID'], str(math.ceil(time())))
+  def log_results(self, uid, timestamp):
+    filename = '%s.%d.log' % (uid, timestamp)
     filename = os.path.join(dir, settings['log_directory'], filename)
-    filename = self.__normalize_filename(filename)
 
     log_file = open(filename, 'w')
     pickle.dump(self.response, log_file)
@@ -400,9 +399,6 @@ class TestServerApplication(object):
     self.wrapper.Run()
     self.wrapper.Reset()
     
-  def __normalize_filename(self, filename):
-    return filename
-
   def __iter__(self):
     if self.is_static_request:
       self.start(self.status, self.headers)
@@ -410,7 +406,7 @@ class TestServerApplication(object):
     else:
       self.headers.append(('Content-type', 'application/json'))
       self.start(self.status, self.headers)
-      self.response.update({'timestamp': time()})
+      self.response.update({'timestamp': int(time())})
       json_response = json.dumps(self.response, sort_keys = True)
       yield(json_response)
 

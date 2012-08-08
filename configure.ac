@@ -78,7 +78,7 @@ AC_CACHE_VAL(ac_cv_rdynamic,
 CPPFLAGS=$old_cppflags
 AC_MSG_RESULT($ac_cv_rdynamic)
 
-AM_CONDITIONAL(SUPPORTS_RDYNAMIC, test "${ac_cv_rdynamic}" == "yes")
+AM_CONDITIONAL(SUPPORTS_RDYNAMIC, test "${ac_cv_rdynamic}" = "yes")
 
 # check for lex
 AC_PROG_LEX
@@ -202,7 +202,7 @@ AC_ARG_ENABLE(java-libs,
                              [Build the Java interface]),
               [build_java_libs="yes"]
              )
-if test "${build_java_libs}" == "yes"; then
+if test "${build_java_libs}" = "yes"; then
   AC_PROG_JAVA_CC()
   MAVEN_SUPPORT([2.2.1])
 fi
@@ -212,7 +212,7 @@ AM_CONDITIONAL(BUILD_JAVA_LIBS, test "${build_java_libs}" = "yes")
 
 # LIBRARY: protobuf
 # We require 2.4.0 for the java libs
-if test "${build_java_libs}" == "yes"; then
+if test "${build_java_libs}" = "yes"; then
   PROTOBUF_SUPPORT([2.4.0])
 else
   PROTOBUF_SUPPORT([2.3.0])
@@ -451,7 +451,7 @@ AC_ARG_ENABLE(
                  [Disable the check that prevents olad from running as root]),
 )
 
-if test "${enable_root_check}" == "no"; then
+if test "${enable_root_check}" = "no"; then
  AC_DEFINE(OLAD_SKIP_ROOT_CHECK,
            1,
            [Defined if olad is allowed to run as root])
