@@ -17,30 +17,30 @@
 # Copyright (C) 2012 Ravindra Nath Kakarla
 
 import cgi
+import inspect
 import json
+import math
+import mimetypes
+import os
+import pickle
 import re
 import sys
-import os
-import mimetypes
 import textwrap
-import urlparse
-import inspect
 import traceback
-import pickle
-import math
-from TestCategory import TestCategory
+import urlparse
 from time import time
+from optparse import OptionParser, OptionGroup, OptionValueError
+from wsgiref.simple_server import make_server
+from wsgiref.headers import Headers
+from ola.UID import UID
+from ola.ClientWrapper import ClientWrapper
+from ola import PidStore
+from DMXSender import DMXSender
 from ola.testing.rdm import ResponderTest
 from ola.testing.rdm import TestDefinitions
 from ola.testing.rdm import TestRunner
 from ola.testing.rdm.TestState import TestState
-from wsgiref.simple_server import make_server
-from wsgiref.headers import Headers
-from ola import PidStore
-from DMXSender import DMXSender
-from ola.ClientWrapper import ClientWrapper
-from ola.UID import UID
-from optparse import OptionParser, OptionGroup, OptionValueError
+from TestCategory import TestCategory
 
 
 __author__ = 'ravindhranath@gmail.com (Ravindra Nath Kakarla)'
