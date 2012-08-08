@@ -308,10 +308,10 @@ class TestServerApplication(object):
           headers = Headers(self.headers)
           headers.add_header('Content-disposition', 'attachment', filename=log_name)
 
-          stats = os.stat(filename)
-          self.headers.append(('Content-length', str(stats.st_size)))
+          self.output = pickle.load(open(filename, 'rb')).__str__()
 
-          self.output = open(filename, 'rb').read()
+          stats = len(self.output)
+          self.headers.append(('Content-length', str(stats)))
     except:
       print traceback.print_exc()
 
