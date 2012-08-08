@@ -293,7 +293,7 @@ class TestServerApplication(object):
         self.__set_response_message('Invalid log file requested!')
       else:
         filename = os.path.abspath(os.path.join(settings['log_directory'], log_name))
-        if not os.path.exists(filename) or not os.path.isfile(filename):
+        if not os.path.isfile(filename):
           self.__set_response_status(False)
           self.__set_response_message('Missing log file! Please re-run tests')
         else:
@@ -318,7 +318,6 @@ class TestServerApplication(object):
   def log_results(self, uid, timestamp):
     filename = '%s.%d.log' % (uid, timestamp)
     filename = os.path.join(dir, settings['log_directory'], filename)
-    filename = self.__normalize_filename(filename)
 
     log_file = open(filename, 'w')
     pickle.dump(self.response, log_file)
@@ -399,9 +398,6 @@ class TestServerApplication(object):
     self.wrapper.Run()
     self.wrapper.Reset()
     
-  def __normalize_filename(self, filename):
-    return filename
-
   def __iter__(self):
     if self.is_static_request:
       self.start(self.status, self.headers)
