@@ -274,18 +274,18 @@ class TestServerApplication(object):
     tests, device = runner.RunTests(test_filter, False)
     self.__format_test_results(tests)
     self.response.update({'UID': str(uid)})
-    self.log_results()
+    self.log_results(str(uid), int(time()))
 
   def __is_valid_log_file(self, filename):
-    regex = re.compile('[0-9a-f]{4}:[0-9a-f]{8}\.[0-9]{10}\.[0-9]{1,2}\.log$')
-    if regex.match(filename):
+    regex = re.compile('[0-9a-f]{4}:[0-9a-f]{8}\.[0-9]{10}\.log$')
+    if regex.match(filename) is not None:
       return True
     else:
       return False
 
   def download_results(self, params):
     uid = params['uid']
-    timestamp = str(math.ceil(float(params['timestamp'])))
+    timestamp = params['timestamp']
     log_name = "%s.%s.log" % (uid, timestamp)
     try:
       if not self.__is_valid_log_file(log_name):
@@ -315,8 +315,8 @@ class TestServerApplication(object):
     except:
       print traceback.print_exc()
 
-  def log_results(self):
-    filename = '%s.%s.log' % (self.response['UID'], str(math.ceil(time())))
+  def log_results(self, uid, timestamp):
+    filename = '%s.%d.log' % (uid, timestamp)
     filename = os.path.join(dir, settings['log_directory'], filename)
     filename = self.__normalize_filename(filename)
 
@@ -409,7 +409,7 @@ class TestServerApplication(object):
     else:
       self.headers.append(('Content-type', 'application/json'))
       self.start(self.status, self.headers)
-      self.response.update({'timestamp': time()})
+      self.response.update({'timestamp': int(time())})
       json_response = json.dumps(self.response, sort_keys = True)
       yield(json_response)
 
