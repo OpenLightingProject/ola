@@ -87,7 +87,8 @@ class TestServerApplication(object):
     except OLADNotRunningException:
       self.status = status['500']
       self.__set_response_status(False)
-      self.__set_response_message('Error creating connection with olad. Is it running?')
+      self.__set_response_message(
+          'Error creating connection with olad. Is it running?')
       print traceback.print_exc()
 
   def __set_response_status(self, bool_value):
@@ -396,7 +397,11 @@ class TestServerApplication(object):
     }
 
     self.__set_response_status(True)
-    self.response.update({'test_results': results, 'stats': stats, 'stats_by_catg': stats_by_catg})
+    self.response.update({
+      'test_results': results,
+      'stats': stats,
+      'stats_by_catg': stats_by_catg,
+    })
 
   def get_devices(self, params):
     def format_uids(state, uids):
@@ -408,12 +413,12 @@ class TestServerApplication(object):
         self.__set_response_message('Invalid Universe id!')
 
       self.wrapper.Stop()
-      
+
     universe = int(params['u'])
     self.wrapper.Client().FetchUIDList(universe, format_uids)
     self.wrapper.Run()
     self.wrapper.Reset()
-    
+
   def __iter__(self):
     if self.is_static_request:
       self.start(self.status, self.headers)
@@ -431,7 +436,8 @@ def parse_options():
   """
   usage = 'Usage: %prog [options]'
   description = textwrap.dedent("""\
-    Starts the TestServer (A simple Web Server) which run a series of tests on a RDM responder and returns the results to Web UI.
+    Starts the TestServer (A simple Web Server) which run a series of tests on
+    a RDM responder and displays the results in a Web UI.
     This requires the OLA server to be running, and the RDM device to have been
     detected. You can confirm this by running ola_rdm_discover -u
     UNIVERSE. This will send SET commands to the broadcast UIDs which means
@@ -444,7 +450,8 @@ def parse_options():
                     help='The file to load the PID definitions from.')
   parser.add_option('-d', '--www_dir', default=os.path.abspath('static/'),
                     help='The root directory to serve static files.')
-  parser.add_option('-l', '--log_directory', default=os.path.abspath('static/logs/'),
+  parser.add_option('-l', '--log_directory',
+                    default=os.path.abspath('static/logs/'),
                     help='The directory to store log files.')
 
   options, args = parser.parse_args()
