@@ -23,6 +23,7 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 #include <string.h>
+#include <algorithm>
 #include <vector>
 
 #include "ola/Logging.h"
@@ -52,7 +53,7 @@ class MockResponderInterface {
     virtual bool FormResponse(const UID &upper,
                               const UID &lower,
                               uint8_t *data,
-                              unsigned int length) const = 0;
+                              unsigned int *length) const = 0;
 
     enum {DISCOVERY_RESPONSE_SIZE = 24 };
 };
@@ -82,14 +83,14 @@ class MockResponder: public MockResponderInterface {
     bool FormResponse(const UID &lower,
                       const UID &upper,
                       uint8_t *data,
-                      unsigned int length) const {
+                      unsigned int *length) const {
       if (!ShouldRespond(lower, upper))
         return false;
 
       uint16_t manufacturer_id = m_uid.ManufacturerId();
       uint32_t device_id = m_uid.DeviceId();
 
-      CPPUNIT_ASSERT(length == DISCOVERY_RESPONSE_SIZE);
+      CPPUNIT_ASSERT(*length >= DISCOVERY_RESPONSE_SIZE);
       for (unsigned int i = 0; i < 7; i++)
         data[i] |= 0xfe;
       data[7] |= 0xaa;
@@ -115,6 +116,7 @@ class MockResponder: public MockResponderInterface {
       data[21] |= (checksum >> 8) | 0x55;
       data[22] |= checksum | 0xaa;
       data[23] |= checksum | 0x55;
+      *length = DISCOVERY_RESPONSE_SIZE;
       return true;
     }
 
@@ -183,6 +185,52 @@ class ObnoxiousResponder: public MockResponder {
         return false;
       return true;
     }
+};
+
+
+/**
+ * A responder which replies to DUB with extra data
+ */
+class RamblingResponder: public MockResponder {
+  public:
+    explicit RamblingResponder(const UID &uid)
+        : MockResponder(uid) {
+    }
+
+    bool FormResponse(const UID &lower,
+                      const UID &upper,
+                      uint8_t *data,
+                      unsigned int *length) const {
+      unsigned int data_size = *length;
+      bool ok = MockResponder::FormResponse(lower, upper, data, length);
+      if (ok && data_size > DISCOVERY_RESPONSE_SIZE) {
+        // add some random data and increase the packet size
+        data[DISCOVERY_RESPONSE_SIZE] = 0x52;
+        (*length)++;
+      }
+      return ok;
+  }
+};
+
+
+/**
+ * A responder which replies to DUB with too little data
+ */
+class BriefResponder: public MockResponder {
+  public:
+    explicit BriefResponder(const UID &uid)
+        : MockResponder(uid) {
+    }
+
+    bool FormResponse(const UID &lower,
+                      const UID &upper,
+                      uint8_t *data,
+                      unsigned int *length) const {
+      bool ok = MockResponder::FormResponse(lower, upper, data, length);
+      if (ok && *length > 1)
+        (*length)--;
+      return ok;
+  }
 };
 
 
@@ -269,7 +317,7 @@ class ProxyResponder: public MockResponder {
     bool FormResponse(const UID &lower,
                       const UID &upper,
                       uint8_t *data,
-                      unsigned int length) const {
+                      unsigned int *length) const {
       bool r = MockResponder::FormResponse(lower, upper, data, length);
       if (m_muted) {
         ResponderList::const_iterator iter = m_responders.begin();
@@ -325,17 +373,23 @@ class MockDiscoveryTarget: public ola::rdm::DiscoveryTargetInterface {
 
     // Send a branch request
     void Branch(const UID &lower, const UID &upper, BranchCallback *callback) {
-      unsigned int data_size = MockResponder::DISCOVERY_RESPONSE_SIZE;
+      // alloc twice the amount we need
+      unsigned int data_size = 2 * MockResponder::DISCOVERY_RESPONSE_SIZE;
       uint8_t data[data_size];
       memset(data, 0, data_size);
       bool valid = false;
+      unsigned int actual_size = 0;
       ResponderList::const_iterator iter = m_responders.begin();
       for (; iter != m_responders.end(); ++iter) {
-        valid |= (*iter)->FormResponse(lower, upper, data, data_size);
+        unsigned int data_used = data_size;
+        if ((*iter)->FormResponse(lower, upper, data, &data_used)) {
+          actual_size = std::max(data_used, actual_size);
+          valid = true;
+        }
       }
 
       if (valid)
-        callback->Run(data, data_size);
+        callback->Run(data, actual_size);
       else
         callback->Run(NULL, 0);
     }

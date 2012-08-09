@@ -42,7 +42,9 @@ class DiscoveryAgentTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSingleResponder);
   CPPUNIT_TEST(testMultipleResponders);
   CPPUNIT_TEST(testObnoxiousResponder);
+  CPPUNIT_TEST(testRamblingResponder);
   CPPUNIT_TEST(testBipolarResponder);
+  CPPUNIT_TEST(testBriefResponder);
   CPPUNIT_TEST(testNonMutingResponder);
   CPPUNIT_TEST(testFlakeyResponder);
   CPPUNIT_TEST(testProxy);
@@ -57,6 +59,8 @@ class DiscoveryAgentTest: public CppUnit::TestFixture {
     void testSingleResponder();
     void testMultipleResponders();
     void testObnoxiousResponder();
+    void testRamblingResponder();
+    void testBriefResponder();
     void testBipolarResponder();
     void testNonMutingResponder();
     void testFlakeyResponder();
@@ -246,6 +250,52 @@ void DiscoveryAgentTest::testObnoxiousResponder() {
   // now try incremental, adding one uid and removing another
   OLA_INFO << "starting incremental discovery with modified responder list";
   agent.StartIncrementalDiscovery(
+      ola::NewSingleCallback(this,
+                             &DiscoveryAgentTest::DiscoveryFailed,
+                             static_cast<const UIDSet*>(&uids)));
+  CPPUNIT_ASSERT(m_callback_run);
+}
+
+
+/**
+ * Test a responder that replies with responses larger than the DUB size
+ */
+void DiscoveryAgentTest::testRamblingResponder() {
+  UIDSet uids;
+  ResponderList responders;
+  uids.AddUID(UID(0x7a70, 0x00002002));
+  PopulateResponderListFromUIDs(uids, &responders);
+  // add the RamblingResponder
+  UID rambling_uid = UID(0x7a77, 0x00002002);
+  responders.push_back(new RamblingResponder(rambling_uid));
+  MockDiscoveryTarget target(responders);
+
+  DiscoveryAgent agent(&target);
+  OLA_INFO << "starting discovery with rambling responder";
+  agent.StartFullDiscovery(
+      ola::NewSingleCallback(this,
+                             &DiscoveryAgentTest::DiscoveryFailed,
+                             static_cast<const UIDSet*>(&uids)));
+  CPPUNIT_ASSERT(m_callback_run);
+}
+
+
+/**
+ * Test a responder that replies with too little data.
+ */
+void DiscoveryAgentTest::testBriefResponder() {
+  UIDSet uids;
+  ResponderList responders;
+  uids.AddUID(UID(0x7a70, 0x00002002));
+  PopulateResponderListFromUIDs(uids, &responders);
+  // add the BriefResponder
+  UID brief_uid = UID(0x7a77, 0x00002002);
+  responders.push_back(new BriefResponder(brief_uid));
+  MockDiscoveryTarget target(responders);
+
+  DiscoveryAgent agent(&target);
+  OLA_INFO << "starting discovery with brief responder";
+  agent.StartFullDiscovery(
       ola::NewSingleCallback(this,
                              &DiscoveryAgentTest::DiscoveryFailed,
                              static_cast<const UIDSet*>(&uids)));

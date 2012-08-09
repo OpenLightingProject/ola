@@ -380,6 +380,7 @@ void DiscoveryAgent::HandleCollision() {
   if (lower_uid == upper_uid) {
     range->failures++;
     OLA_WARN << "end of tree reached!!!";
+    SendDiscovery();
     return;
   }
 
