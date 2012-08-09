@@ -317,13 +317,28 @@ class TestServerApplication(object):
       print traceback.print_exc()
 
   def log_results(self, uid, timestamp):
+    """Log the results to a file.
+
+    Args:
+      uid: the UID
+      timestamp: the timestamp for the logs
+
+    Returns:
+      True if we wrote the logfile, false otherwise.
+    """
     filename = '%s.%d.log' % (uid, timestamp)
     filename = os.path.join(dir, settings['log_directory'], filename)
 
-    log_file = open(filename, 'w')
+    try:
+      log_file = open(filename, 'w')
+    except IOError as e:
+      print 'Failed to open %s: %s' % (filename, e)
+      return False
+
     pickle.dump(self.response, log_file)
     print 'Written log file %s' % (log_file.name)
     log_file.close()
+    return True
 
   def __format_test_results(self, tests):
     results = []
