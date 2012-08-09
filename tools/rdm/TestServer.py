@@ -34,6 +34,7 @@ from wsgiref.simple_server import make_server
 from wsgiref.headers import Headers
 from ola.UID import UID
 from ola.ClientWrapper import ClientWrapper
+from ola.OlaClient import OLADNotRunningException
 from ola import PidStore
 from ola.testing.rdm.DMXSender import DMXSender
 from ola.testing.rdm import ResponderTest
@@ -83,7 +84,7 @@ class TestServerApplication(object):
     try:
       self.wrapper = ClientWrapper()
       self.__request_handler()
-    except:
+    except OLADNotRunningException:
       self.status = status['500']
       self.__set_response_status(False)
       self.__set_response_message('Error creating connection with olad. Is it running?')
@@ -443,7 +444,7 @@ def main():
   try:
     print 'Checking olad status'
     test_client = ClientWrapper()
-  except:
+  except OLADNotRunningException:
     print 'Error creating connection with olad. Is it running?'
     sys.exit(127)
 
