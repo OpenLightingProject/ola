@@ -276,7 +276,10 @@ class TestServerApplication(object):
     tests, device = runner.RunTests(test_filter, False)
     self.__format_test_results(tests)
     self.response.update({'UID': str(uid)})
-    self.log_results(str(uid), int(time()))
+    if not self.log_results(str(uid), int(time())):
+      self.response.update({'logs_disabled': True})
+    else:
+      self.response.update({'logs_disabled': False})
 
   def __is_valid_log_file(self, filename):
     regex = re.compile('[0-9a-f]{4}:[0-9a-f]{8}\.[0-9]{10}\.log$')

@@ -533,6 +533,13 @@ RDMTests.prototype.display_results = function(results) {
   $('#rdm-tests-results-list').val(results['test_results'][0]['definition']);
   rdmtests.result_list_changed();
   $('#rdm-tests-results').show();
+
+  //Hide/Show Download Logs button
+  if (results['logs_disabled'] == true) {
+    $('#rdm-tests-results-button-download').hide();
+  } else {
+    $('#rdm-tests-results-button-download').show();
+  }
 };
 
 
