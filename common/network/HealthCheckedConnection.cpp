@@ -101,7 +101,8 @@ bool HealthCheckedConnection::SendNextHeartbeat() {
 
 
 void HealthCheckedConnection::UpdateReceiveTimer() {
-  TimeInterval timeout_interval(2.5 * m_heartbeat_interval.AsInt());
+  TimeInterval timeout_interval(static_cast<int>(
+        2.5 * m_heartbeat_interval.AsInt()));
   m_receive_timeout_id = m_scheduler->RegisterSingleTimeout(
     timeout_interval,
     NewSingleCallback(this, &HealthCheckedConnection::HeartbeatTimeout));
