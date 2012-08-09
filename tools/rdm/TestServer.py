@@ -17,26 +17,31 @@
 # Copyright (C) 2012 Ravindra Nath Kakarla
 
 import cgi
-import json
-import sys
-import os
-import mimetypes
-import textwrap
-import urlparse
 import inspect
+import json
+import math
+import mimetypes
+import os
+import pickle
+import re
+import sys
+import textwrap
 import traceback
-from TestCategory import TestCategory
+import urlparse
 from time import time
+from optparse import OptionParser, OptionGroup, OptionValueError
+from wsgiref.simple_server import make_server
+from wsgiref.headers import Headers
+from ola.UID import UID
+from ola.ClientWrapper import ClientWrapper
+from ola.OlaClient import OLADNotRunningException
+from ola import PidStore
+from ola.testing.rdm.DMXSender import DMXSender
 from ola.testing.rdm import ResponderTest
 from ola.testing.rdm import TestDefinitions
 from ola.testing.rdm import TestRunner
 from ola.testing.rdm.TestState import TestState
-from wsgiref.simple_server import make_server
-from ola import PidStore
-from DMXSender import DMXSender
-from ola.ClientWrapper import ClientWrapper
-from ola.UID import UID
-from optparse import OptionParser, OptionGroup, OptionValueError
+from ola.testing.rdm.TestCategory import TestCategory
 
 
 __author__ = 'ravindhranath@gmail.com (Ravindra Nath Kakarla)'
@@ -60,6 +65,7 @@ paths = {
   '/GetTestDefs': 'get_test_definitions',
   '/RunDiscovery': 'run_discovery',
   '/GetTestCategories': 'get_test_categories',
+  '/DownloadResults': 'download_results',
 }
 
 
@@ -67,7 +73,7 @@ paths = {
   An instance of this class is created to serve every request.
 """
 class TestServerApplication(object):
-  def __init__(self, environ, start_response):
+  def __init__(self, client_wrapper, environ, start_response):
     self.environ = environ
     self.start = start_response
     self.get_params = {}
@@ -75,10 +81,10 @@ class TestServerApplication(object):
     self.output = None
     self.headers = []
     self.is_static_request = False
+    self.wrapper = client_wrapper
     try:
-      self.wrapper = ClientWrapper()
       self.__request_handler()
-    except:
+    except OLADNotRunningException:
       self.status = status['500']
       self.__set_response_status(False)
       self.__set_response_message('Error creating connection with olad. Is it running?')
@@ -269,6 +275,55 @@ class TestServerApplication(object):
     tests, device = runner.RunTests(test_filter, False)
     self.__format_test_results(tests)
     self.response.update({'UID': str(uid)})
+    self.log_results(str(uid), int(time()))
+
+  def __is_valid_log_file(self, filename):
+    regex = re.compile('[0-9a-f]{4}:[0-9a-f]{8}\.[0-9]{10}\.log$')
+    if regex.match(filename) is not None:
+      return True
+    else:
+      return False
+
+  def download_results(self, params):
+    uid = params['uid']
+    timestamp = params['timestamp']
+    log_name = "%s.%s.log" % (uid, timestamp)
+    try:
+      if not self.__is_valid_log_file(log_name):
+        self.__set_response_status(False)
+        self.__set_response_message('Invalid log file requested!')
+      else:
+        filename = os.path.abspath(os.path.join(settings['log_directory'], log_name))
+        if not os.path.isfile(filename):
+          self.__set_response_status(False)
+          self.__set_response_message('Missing log file! Please re-run tests')
+        else:
+          self.is_static_request = True
+          mimetype, encoding = mimetypes.guess_type(filename)
+          if mimetype:
+            self.headers.append(('Content-type', mimetype))
+          if encoding:
+            self.headers.append(('Content-encoding', encoding))
+
+          #Force downloading of file instead of showing it on the browser
+          headers = Headers(self.headers)
+          headers.add_header('Content-disposition', 'attachment', filename=log_name)
+
+          self.output = pickle.load(open(filename, 'rb')).__str__()
+
+          stats = len(self.output)
+          self.headers.append(('Content-length', str(stats)))
+    except:
+      print traceback.print_exc()
+
+  def log_results(self, uid, timestamp):
+    filename = '%s.%d.log' % (uid, timestamp)
+    filename = os.path.join(dir, settings['log_directory'], filename)
+
+    log_file = open(filename, 'w')
+    pickle.dump(self.response, log_file)
+    print 'Written log file %s' % (log_file.name)
+    log_file.close()
 
   def __format_test_results(self, tests):
     results = []
@@ -351,8 +406,9 @@ class TestServerApplication(object):
     else:
       self.headers.append(('Content-type', 'application/json'))
       self.start(self.status, self.headers)
-      self.response.update({'timestamp': time()})
-      yield(json.dumps(self.response, sort_keys = True))
+      self.response.update({'timestamp': int(time())})
+      json_response = json.dumps(self.response, sort_keys = True)
+      yield(json_response)
 
 def parse_options():
   """
@@ -373,16 +429,40 @@ def parse_options():
                     help='The file to load the PID definitions from.')
   parser.add_option('-d', '--www_dir', default=os.path.abspath('static/'),
                     help='The root directory to serve static files.')
+  parser.add_option('-l', '--log_directory', default=os.path.abspath('static/logs/'),
+                    help='The directory to store log files.')
 
   options, args = parser.parse_args()
 
   return options
 
+
+class RequestHandler:
+  """Creates a new TestServerApplication to handle each request."""
+  def __init__(self, ola_wrapper):
+    self._wrapper = ola_wrapper
+
+  def HandleRequest(self, environ, start_response):
+    """Create a new TestServerApplication, passing in the OLA Wrapper."""
+    return TestServerApplication(self._wrapper, environ, start_response)
+
+
 def main():
   options = parse_options()
   settings.update(options.__dict__)
   settings['pid_store'] = PidStore.GetStore(options.pid_store, ('pids.proto'))
-  httpd = make_server('', settings['PORT'], TestServerApplication)
+
+  #Check olad status
+  ola_wrapper = None
+  print 'Checking olad status'
+  try:
+    ola_wrapper = ClientWrapper()
+  except OLADNotRunningException:
+    print 'Error creating connection with olad. Is it running?'
+    sys.exit(127)
+
+  request_handler = RequestHandler(ola_wrapper)
+  httpd = make_server('', settings['PORT'], request_handler.HandleRequest)
   print "Running RDM Tests Server on %s:%s" % ('127.0.0.1', httpd.server_port)
   httpd.serve_forever()
 

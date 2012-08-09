@@ -37,7 +37,7 @@ RDMTests.ajax_loader = "<img src='/static/images/loader.gif' />";
 
 /**
  * Maintains a list of all the tests along with their states, categories,
- * definitions etc.
+ * definitions with keys sorted in the order they are run.
  * @this {RDMTests}
  */
 RDMTests.TEST_RESULTS = new Array();
@@ -131,6 +131,14 @@ RDMTests.prototype.bind_events_to_doms = function() {
 
   $('#rdm-tests-results-button-run_again').click(function() {
     rdmtests.validate_form();
+  });
+
+  $('#rdm-tests-results-button-download').click(function() {
+    var uid = $('#devices_list').val();
+    var timestamp = RDMTests.timestamp;
+    $('#rdm-tests-download').attr('src',
+        '/DownloadResults?uid=' + uid +
+        '&timestamp=' + timestamp);
   });
 
   $.each([
@@ -234,6 +242,7 @@ RDMTests.prototype.query_server = function(request, params, callback) {
     data: params,
     dataType: 'json',
     success: function(data) {
+      RDMTests.timestamp = data['timestamp'];
       if (data['status'] == true) {
         callback(data);
       } else {
