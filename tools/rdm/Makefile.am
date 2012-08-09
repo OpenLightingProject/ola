@@ -62,8 +62,14 @@ test_server_files = \
     static/javascript/rdm_tests.js \
     static/rdmtests.html
 
+launcher_files = \
+  launch_tests.py \
+  setup_patch.py \
+  skel_config/ola-usbserial.conf
+
 EXTRA_DIST = $(module_files) \
              $(test_server_files) \
+             $(launcher_files) \
              rdm_model_collector.py \
              rdm_responder_test.py
 
