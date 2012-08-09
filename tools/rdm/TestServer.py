@@ -73,7 +73,7 @@ paths = {
   An instance of this class is created to serve every request.
 """
 class TestServerApplication(object):
-  def __init__(self, environ, start_response):
+  def __init__(self, client_wrapper, environ, start_response):
     self.environ = environ
     self.start = start_response
     self.get_params = {}
@@ -81,8 +81,8 @@ class TestServerApplication(object):
     self.output = None
     self.headers = []
     self.is_static_request = False
+    self.wrapper = client_wrapper
     try:
-      self.wrapper = ClientWrapper()
       self.__request_handler()
     except OLADNotRunningException:
       self.status = status['500']
@@ -436,19 +436,33 @@ def parse_options():
 
   return options
 
+
+class RequestHandler:
+  """Creates a new TestServerApplication to handle each request."""
+  def __init__(self, ola_wrapper):
+    self._wrapper = ola_wrapper
+
+  def HandleRequest(self, environ, start_response):
+    """Create a new TestServerApplication, passing in the OLA Wrapper."""
+    return TestServerApplication(self._wrapper, environ, start_response)
+
+
 def main():
   options = parse_options()
   settings.update(options.__dict__)
   settings['pid_store'] = PidStore.GetStore(options.pid_store, ('pids.proto'))
+
   #Check olad status
+  ola_wrapper = None
+  print 'Checking olad status'
   try:
-    print 'Checking olad status'
-    test_client = ClientWrapper()
+    ola_wrapper = ClientWrapper()
   except OLADNotRunningException:
     print 'Error creating connection with olad. Is it running?'
     sys.exit(127)
 
-  httpd = make_server('', settings['PORT'], TestServerApplication)
+  request_handler = RequestHandler(ola_wrapper)
+  httpd = make_server('', settings['PORT'], request_handler.HandleRequest)
   print "Running RDM Tests Server on %s:%s" % ('127.0.0.1', httpd.server_port)
   httpd.serve_forever()
 
