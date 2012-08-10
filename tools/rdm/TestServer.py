@@ -48,7 +48,7 @@ __author__ = 'ravindhranath@gmail.com (Ravindra Nath Kakarla)'
 
 
 settings = {
-  'PORT': 9999,
+  'PORT': 9099,
 }
 
 status = {
