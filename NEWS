@@ -1,4 +1,4 @@
-X/Y/2012 ola-0.8.22
+10/8/2012 ola-0.8.22
  * Added the first version of the RDM Test Server
  * Added a configure time option to disable unittests
  * Various fixes for the debian package files
@@ -7,6 +7,7 @@ X/Y/2012 ola-0.8.22
  * Moved all JSON generation code to a module
  * Defend against exhausting the connection pool in the web UI - #186
  * Fix errors with clang v3.1
+ * Fixed a RDM discovery bug.
 
 18/7/2012 ola-0.8.21
  * Fix the broken Eurolite plugin on Mac
