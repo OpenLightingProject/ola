@@ -41,12 +41,13 @@
 #include "plugins/usbdmx/UsbDmxPlugin.h"
 #endif
 
-
+#ifdef HAVE_LIBFTDI
+#include "plugins/ftdidmx/FtdiDmxPlugin.h"
+#endif
 
 #ifdef HAVE_DMX4LINUX
 #include "plugins/dmx4linux/Dmx4LinuxPlugin.h"
 #endif
-
 
 namespace ola {
 
@@ -83,6 +84,9 @@ vector<AbstractPlugin*> DynamicPluginLoader::LoadPlugins() {
 #endif
   plugins.push_back(
       new ola::plugin::pathport::PathportPlugin(m_plugin_adaptor));
+#ifdef HAVE_LIBFTDI
+  plugins.push_back(new ola::plugin::ftdidmx::FtdiDmxPlugin(m_plugin_adaptor));
+#endif
   return plugins;
 }
 }  // ola

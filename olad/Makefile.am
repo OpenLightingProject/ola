@@ -42,11 +42,16 @@ EXTRA_DIST = Client.h ClientBroker.h DeviceManager.h \
 # Olad Server
 bin_PROGRAMS = olad
 olad_SOURCES = Olad.cpp
+<<<<<<< HEAD
 if SUPPORTS_RDYNAMIC
 olad_LDFLAGS = -rdynamic
 endif
 olad_LDADD = libolaserver.la \
              $(top_builddir)/common/libolacommon.la
+
+if HAVE_LIBFTDI
+olad_LDADD += -lftdi -lusb
+endif
 
 # Test Programs
 if BUILD_TESTS

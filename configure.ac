@@ -325,6 +325,22 @@ if test "${have_libusb}" = "yes"; then
  AC_DEFINE(HAVE_LIBUSB, 1, [define if libusb is installed])
 fi
 
+# LIBRARY: libftdi
+# look for libftdi (this requires libusb-0.1.4+ don't know if I should also check for it, since the libusb check above is not for 0.1.4 but for libusb-1
+have_libftdi="no"
+PKG_CHECK_MODULES(libftdi, [libftdi >= 0.18], [have_libftdi="yes"], [true])
+
+AM_CONDITIONAL(HAVE_LIBFTDI, test "${have_libftdi}" = "yes")
+
+if test "${have_libftdi}" = "yes"; then
+  PLUGINS="${PLUGINS} ftdidmx"
+  AC_DEFINE(HAVE_LIBFTDI, 1, [define if libftdi is installed])
+fi
+
+# LIBRARY: libftd2xx (for now this is intentionally disabled, TODO)
+have_libftd2xx="no"
+AM_CONDITIONAL(HAVE_LIBFTD2XX, test "${have_libftd2xx}" = "yes")
+
 # LIBRARY: openslp
 # This is used for E1.33 support
 # openslp doesn't come use pkg-config, so the users may need to pass CPPFLAGS
@@ -570,6 +586,7 @@ AC_OUTPUT( Makefile\
     plugins/shownet/Makefile \
     plugins/stageprofi/Makefile \
     plugins/usbdmx/Makefile \
+    plugins/ftdidmx/Makefile \
     plugins/usbpro/Makefile \
     plugins/usbpro/messages/Makefile \
     plugins/usbpro/messages/libolausbproconf.pc \
