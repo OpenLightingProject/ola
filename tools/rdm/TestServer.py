@@ -340,7 +340,7 @@ class TestServerApplication(object):
       print 'Failed to open %s: %s' % (filename, e)
       return False
 
-    pickle.dump(json.dumps(self.response, sort_keys = True, indent = 4), log_file)
+    pickle.dump(self.response, log_file)
     print 'Written log file %s' % (log_file.name)
     log_file.close()
     return True
