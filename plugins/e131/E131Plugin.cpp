@@ -32,13 +32,6 @@
 #include "plugins/e131/E131Plugin.h"
 #include "plugins/e131/e131/CID.h"
 
-/*
- * Entry point to this plugin
- */
-extern "C" ola::AbstractPlugin* create(ola::PluginAdaptor *adaptor) {
-  return new ola::plugin::e131::E131Plugin(adaptor);
-}
-
 namespace ola {
 namespace plugin {
 namespace e131 {

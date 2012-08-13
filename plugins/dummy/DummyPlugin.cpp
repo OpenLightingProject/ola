@@ -28,14 +28,6 @@
 #include "plugins/dummy/DummyDevice.h"
 #include "plugins/dummy/DummyPlugin.h"
 
-/*
- * Entry point to this plugin
- */
-extern "C" ola::AbstractPlugin* create(
-    ola::PluginAdaptor *plugin_adaptor) {
-  return new ola::plugin::dummy::DummyPlugin(plugin_adaptor);
-}
-
 namespace ola {
 namespace plugin {
 namespace dummy {

@@ -29,15 +29,6 @@
 #include "plugins/stageprofi/StageProfiDevice.h"
 #include "plugins/stageprofi/StageProfiPlugin.h"
 
-/*
- * Entry point to this plugin
- */
-extern "C" ola::AbstractPlugin* create(
-    ola::PluginAdaptor *plugin_adaptor) {
-  return new ola::plugin::stageprofi::StageProfiPlugin(plugin_adaptor);
-}
-
-
 namespace ola {
 namespace plugin {
 namespace stageprofi {

@@ -24,14 +24,6 @@
 #include "plugins/espnet/EspNetPlugin.h"
 #include "plugins/espnet/EspNetDevice.h"
 
-/*
- * Entry point to this plugin
- */
-extern "C" ola::AbstractPlugin* create(
-    ola::PluginAdaptor *plugin_adaptor) {
-  return new ola::plugin::espnet::EspNetPlugin(plugin_adaptor);
-}
-
 namespace ola {
 namespace plugin {
 namespace espnet {
