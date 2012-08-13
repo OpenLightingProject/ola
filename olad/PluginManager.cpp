@@ -66,8 +66,8 @@ void PluginManager::LoadAll() {
   for (plugin_iter = m_plugins.begin(); plugin_iter != m_plugins.end();
        ++plugin_iter) {
     if (!(*plugin_iter)->ShouldStart()) {
-      OLA_INFO << "Skipping " << (*plugin_iter)->Name() <<
-        " because it was disabled";
+      OLA_INFO << "Skipping the '" << (*plugin_iter)->Name() <<
+        "' plugin because it was disabled";
       continue;
     }
 
