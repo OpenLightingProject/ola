@@ -35,11 +35,7 @@ bool Plugin::ShouldStart() {
   if (!LoadPreferences())
     return false;
 
-  const string value = m_preferences->GetValue(ENABLED_KEY);
-  if (value.empty())
-    return DefaultMode();
-
-  return !(value == "false");
+  return !(m_preferences->GetValue(ENABLED_KEY) == "false");
 }
 
 /*
@@ -101,6 +97,13 @@ bool Plugin::LoadPreferences() {
     return false;
 
   m_preferences->Load();
+
+  bool save = m_preferences->SetDefaultValue(
+      ENABLED_KEY,
+      BoolValidator(),
+      DefaultMode() ? "true" : "false");
+  if (save)
+    m_preferences->Save();
 
   if (!SetDefaultPreferences()) {
     OLA_INFO << Name() << ", SetDefaultPreferences failed";
