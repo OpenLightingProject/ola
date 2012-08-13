@@ -24,15 +24,6 @@
 #include "plugins/sandnet/SandNetPlugin.h"
 
 
-/*
- * Entry point to this plugin
- */
-extern "C" ola::AbstractPlugin* create(
-    ola::PluginAdaptor *plugin_adaptor) {
-  return new ola::plugin::sandnet::SandNetPlugin(plugin_adaptor);
-}
-
-
 namespace ola {
 namespace plugin {
 namespace sandnet {

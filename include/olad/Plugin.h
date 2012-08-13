@@ -77,6 +77,8 @@ class Plugin: public AbstractPlugin {
     virtual bool ShouldStart();
     virtual bool Start();
     virtual bool Stop();
+    // return true if this plugin is enabled by default
+    virtual bool DefaultMode() const { return true; }
     virtual ola_plugin_id Id() const = 0;
 
     // return the prefix used to identify this plugin

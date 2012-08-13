@@ -44,14 +44,6 @@
 #include "plugins/dmx4linux/Dmx4LinuxSocket.h"
 
 
-/*
- * Entry point to this plugin
- */
-extern "C" ola::AbstractPlugin* create(
-    ola::PluginAdaptor *plugin_adaptor) {
-  return new ola::plugin::dmx4linux::Dmx4LinuxPlugin(plugin_adaptor);
-}
-
 namespace ola {
 namespace plugin {
 namespace dmx4linux {
