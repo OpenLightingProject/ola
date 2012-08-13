@@ -35,7 +35,11 @@ bool Plugin::ShouldStart() {
   if (!LoadPreferences())
     return false;
 
-  return !(m_preferences->GetValue(ENABLED_KEY) == "false");
+  const string value = m_preferences->GetValue(ENABLED_KEY);
+  if (value.empty())
+    return DefaultMode();
+
+  return !(value == "false");
 }
 
 /*

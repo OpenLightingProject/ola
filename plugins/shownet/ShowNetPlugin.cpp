@@ -25,14 +25,6 @@
 #include "plugins/shownet/ShowNetPlugin.h"
 
 
-/*
- * Entry point to this plugin
- */
-extern "C" ola::AbstractPlugin* create(ola::PluginAdaptor *adaptor) {
-  return new ola::plugin::shownet::ShowNetPlugin(adaptor);
-}
-
-
 namespace ola {
 namespace plugin {
 namespace shownet {

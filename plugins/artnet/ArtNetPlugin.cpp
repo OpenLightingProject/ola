@@ -29,13 +29,6 @@
 #include "plugins/artnet/ArtNetDevice.h"
 
 
-/*
- * Entry point to this plugin
- */
-extern "C" ola::AbstractPlugin* create(ola::PluginAdaptor *adaptor) {
-  return new ola::plugin::artnet::ArtNetPlugin(adaptor);
-}
-
 namespace ola {
 namespace plugin {
 namespace artnet {

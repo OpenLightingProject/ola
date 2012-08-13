@@ -114,8 +114,8 @@ void StreamRpcChannel::DescriptorReady() {
 
   unsigned int data_read;
   if (m_descriptor->Receive(m_buffer + m_current_size,
-                        m_expected_size - m_current_size,
-                        data_read) < 0) {
+                            m_expected_size - m_current_size,
+                            data_read) < 0) {
     OLA_WARN << "something went wrong in descriptor recv\n";
     return;
   }
@@ -293,7 +293,7 @@ int StreamRpcChannel::AllocateMsgBuffer(unsigned int size) {
     return m_buffer_size;
 
   new_buffer = static_cast<uint8_t*>(realloc(m_buffer, requested_size));
-  if (new_buffer < 0)
+  if (!new_buffer)
     return m_buffer_size;
 
   m_buffer = new_buffer;

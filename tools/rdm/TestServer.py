@@ -23,6 +23,7 @@ import math
 import mimetypes
 import os
 import pickle
+import pprint
 import re
 import sys
 import textwrap
@@ -48,7 +49,7 @@ __author__ = 'ravindhranath@gmail.com (Ravindra Nath Kakarla)'
 
 
 settings = {
-  'PORT': 9999,
+  'PORT': 9099,
 }
 
 status = {
@@ -313,8 +314,8 @@ class TestServerApplication(object):
           headers = Headers(self.headers)
           headers.add_header('Content-disposition', 'attachment', filename=log_name)
 
-          self.output = pickle.load(open(filename, 'rb')).__str__()
-
+          data = pickle.load(open(filename, 'rb'))
+          self.output = '%s' % pprint.pformat(data)
           stats = len(self.output)
           self.headers.append(('Content-length', str(stats)))
     except:
