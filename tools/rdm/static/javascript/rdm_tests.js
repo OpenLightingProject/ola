@@ -367,6 +367,7 @@ RDMTests.prototype.run_tests = function(test_filter) {
   }, function(data) {
     if (data['status'] == true) {
       var failed_tests = $('#rdm-tests-selection-failed_tests');
+      failed_tests.html('');
       var failed_defs = new Array();
       for (i in data['test_results']) {
         switch (data['test_results'][i]['state']) {
@@ -374,6 +375,9 @@ RDMTests.prototype.run_tests = function(test_filter) {
             failed_defs.push(data['test_results'][i]['definition']);
             break;
         }
+      }
+      if ($(failed_tests).next().length > 0) {
+        failed_tests.multiselect('destroy');
       }
       for (item in failed_defs) {
         failed_tests.append($('<option />')
