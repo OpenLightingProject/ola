@@ -336,7 +336,6 @@ RDMTests.prototype.fetch_test_defs = function() {
       tests_selector.append($('<option />').val(test_defs[item])
                                            .text(test_defs[item]));
     });
-    $('#rdm-tests-selection-tests_list').multiselect();
     $('#rdm-tests-selection-tests_list').multiselect({
       sortable: false,
       searchable: true
@@ -381,6 +380,7 @@ RDMTests.prototype.run_tests = function(test_filter) {
                     .val(failed_defs[item])
                     .text(failed_defs[item]));
       }
+
       failed_tests.multiselect();
       rdmtests.clear_notification();
       rdmtests.display_results(data);
@@ -405,6 +405,9 @@ RDMTests.prototype.reset_results = function() {
     $(dom).html('');
   });
   $('#rdm-tests-results-summary-filter-by_state').val('All');
+  for (definition in RDMTests.TEST_RESULTS) {
+    delete RDMTests.TEST_RESULTS[definition];
+  }
 };
 
 
