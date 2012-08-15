@@ -402,6 +402,7 @@ RDMTests.prototype.run_tests = function(test_filter) {
 RDMTests.prototype.reset_results = function() {
   $.each(['#rdm-tests-results-uid',
     '#rdm-tests-results-stats-figures',
+    '#rdm-tests-results-summary-by_catg-content',
     '#rdm-tests-results-summary-filter-by_catg',
     '#rdm-tests-results-warnings-content',
     '#rdm-tests-results-advisories-content',
