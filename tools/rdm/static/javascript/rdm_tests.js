@@ -336,7 +336,6 @@ RDMTests.prototype.fetch_test_defs = function() {
       tests_selector.append($('<option />').val(test_defs[item])
                                            .text(test_defs[item]));
     });
-    $('#rdm-tests-selection-tests_list').multiselect();
     $('#rdm-tests-selection-tests_list').multiselect({
       sortable: false,
       searchable: true
@@ -368,6 +367,7 @@ RDMTests.prototype.run_tests = function(test_filter) {
   }, function(data) {
     if (data['status'] == true) {
       var failed_tests = $('#rdm-tests-selection-failed_tests');
+      failed_tests.html('');
       var failed_defs = new Array();
       for (i in data['test_results']) {
         switch (data['test_results'][i]['state']) {
@@ -376,11 +376,15 @@ RDMTests.prototype.run_tests = function(test_filter) {
             break;
         }
       }
+      if ($(failed_tests).next().length > 0) {
+        failed_tests.multiselect('destroy');
+      }
       for (item in failed_defs) {
         failed_tests.append($('<option />')
                     .val(failed_defs[item])
                     .text(failed_defs[item]));
       }
+
       failed_tests.multiselect();
       rdmtests.clear_notification();
       rdmtests.display_results(data);
@@ -405,6 +409,9 @@ RDMTests.prototype.reset_results = function() {
     $(dom).html('');
   });
   $('#rdm-tests-results-summary-filter-by_state').val('All');
+  for (definition in RDMTests.TEST_RESULTS) {
+    delete RDMTests.TEST_RESULTS[definition];
+  }
 };
 
 
