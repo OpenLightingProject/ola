@@ -63,63 +63,6 @@ FtdiWidget::~FtdiWidget() {
 }
 
 
-/**
- * Build a list of all attached ftdi devices
- */
-void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
-  int i = -1;
-
-  widgets->clear();
-  struct ftdi_device_list* list = NULL;
-  struct ftdi_context ftdi;
-  ftdi_init(&ftdi);
-  ftdi_usb_find_all(&ftdi, &list, FtdiWidget::VID, FtdiWidget::PID);
-
-  while (list != NULL) {
-    struct usb_device* dev = list->dev;
-    list = list->next;
-    i++;
-
-    if (!dev) {
-      OLA_WARN << "Device returned from ftdi_usb_find_all was NULL";
-      continue;
-    }
-
-    char serial[256];
-    char name[256];
-    char vendor[256];
-
-    int r = ftdi_usb_get_strings(&ftdi, dev,
-                                 vendor, sizeof(vendor),
-                                 name, sizeof(name),
-                                 serial, sizeof(serial));
-
-    if (r) {
-      OLA_WARN << "Unable to fetch string information from USB device: " <<
-        ftdi_get_error_string(&ftdi);
-      continue;
-    }
-
-
-    string v = string(vendor);
-    string sname = string(name);
-    string sserial = string(serial);
-    if (sserial == "?") {
-      // this means there wasn't a serial number
-      sserial.clear();
-    }
-    OLA_INFO << "Found FTDI device. Vendor: '" << v << "', Name: '" << sname <<
-      "', Serial: '" << sserial << "'";
-    std::transform(v.begin(), v.end(), v.begin(), ::toupper);
-    if (std::string::npos != v.find("FTDI")) {
-      widgets->push_back(FtdiWidgetInfo(sname, sserial, i));
-    }
-  }
-
-  ftdi_list_free(&list);
-  ftdi_deinit(&ftdi);
-}
-
 bool FtdiWidget::Open() {
   if (Serial().empty()) {
     OLA_WARN << Name() << " has no serial number, "
@@ -291,6 +234,70 @@ bool FtdiWidget::SetupOutput() {
   }
 
   return true;
+}
+
+
+/**
+ * Build a list of all attached ftdi devices
+ */
+void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
+  int i = -1;
+  widgets->clear();
+  struct ftdi_context *ftdi = ftdi_new();
+  if (!ftdi) {
+    OLA_WARN << "Failed to allocated FTDI context";
+    return;
+  }
+
+  struct ftdi_device_list* list = NULL;
+  int devices_found = ftdi_usb_find_all(ftdi, &list, FtdiWidget::VID,
+                                        FtdiWidget::PID);
+  if (devices_found < 0)
+    OLA_WARN << "Failed to get FTDI devices: " <<  ftdi_get_error_string(ftdi);
+
+  while (list != NULL) {
+    struct usb_device *dev = list->dev;
+    list = list->next;
+    i++;
+
+    if (!dev) {
+      OLA_WARN << "Device returned from ftdi_usb_find_all was NULL";
+      continue;
+    }
+
+    char serial[256];
+    char name[256];
+    char vendor[256];
+
+    int r = ftdi_usb_get_strings(ftdi, dev,
+                                 vendor, sizeof(vendor),
+                                 name, sizeof(name),
+                                 serial, sizeof(serial));
+
+    // libftdi doesn't enumerate error codes, -9 is 'get serial number failed'
+    if (r < 0 && r != -9) {
+      OLA_WARN << "Unable to fetch string information from USB device: " <<
+        ftdi_get_error_string(ftdi);
+      continue;
+    }
+
+    string v = string(vendor);
+    string sname = string(name);
+    string sserial = string(serial);
+    if (sserial == "?" || r == -9) {
+      // this means there wasn't a serial number
+      sserial.clear();
+    }
+    OLA_INFO << "Found FTDI device. Vendor: '" << v << "', Name: '" << sname <<
+      "', Serial: '" << sserial << "'";
+    std::transform(v.begin(), v.end(), v.begin(), ::toupper);
+    if (std::string::npos != v.find("FTDI")) {
+      widgets->push_back(FtdiWidgetInfo(sname, sserial, i));
+    }
+  }
+
+  ftdi_list_free(&list);
+  ftdi_free(ftdi);
 }
 }  // ftdidmx
 }  // plugin

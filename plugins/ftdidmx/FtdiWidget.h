@@ -31,12 +31,12 @@
 #define PLUGINS_FTDIDMX_FTDIWIDGET_H_
 
 #ifdef FTD2XX
-#   ifdef WIN32
-#       include <windows.h>
-#   endif
-#   include <ftd2xx.h>
+#  ifdef WIN32
+#    include <windows.h>
+#  endif
+#  include <ftd2xx.h>
 #else
-#   include <ftdi.h>
+#  include <ftdi.h>
 #endif
 
 #include <string>
@@ -107,7 +107,7 @@ class FtdiWidget {
      * @param name The widget's USB name (description)
      * @param id The ID of the device (used only when FTD2XX is the backend)
      */
-    FtdiWidget(const string& serial, const string& name, uint32_t id = 0);
+    FtdiWidget(const string &serial, const string &name, uint32_t id = 0);
 
     /** Destructor */
     virtual ~FtdiWidget();
@@ -125,13 +125,6 @@ class FtdiWidget {
       return m_name + " with serial number : " + m_serial +" ";
     }
 
-    /**
-     * Build a list of available ftdi widgets.
-     * @param widgets a pointer to a vector of FtdiWidgetInfo objects.
-     */
-    static void Widgets(std::vector<FtdiWidgetInfo> *widgets);
-
-  public:
     /** Open the widget */
     bool Open();
 
@@ -170,6 +163,12 @@ class FtdiWidget {
 
     /** Setup device for DMX Output **/
     bool SetupOutput();
+
+    /**
+     * Build a list of available ftdi widgets.
+     * @param widgets a pointer to a vector of FtdiWidgetInfo objects.
+     */
+    static void Widgets(std::vector<FtdiWidgetInfo> *widgets);
 
   private:
     string m_serial;

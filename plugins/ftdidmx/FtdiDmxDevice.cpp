@@ -36,20 +36,20 @@ FtdiDmxDevice::FtdiDmxDevice(AbstractPlugin *owner,
     : Device(owner, widget_info.Description()),
       m_widget_info(widget_info),
       m_frequency(frequency) {
-  m_device.reset(
+  m_widget.reset(
       new FtdiWidget(widget_info.Serial(),
                      widget_info.Name(),
                      widget_info.Id()));
 }
 
 FtdiDmxDevice::~FtdiDmxDevice() {
-  if (m_device->IsOpen())
-    m_device->Close();
+  if (m_widget->IsOpen())
+    m_widget->Close();
 }
 
 bool FtdiDmxDevice::StartHook() {
   AddPort(new FtdiDmxOutputPort(this,
-                                m_device.get(),
+                                m_widget.get(),
                                 m_widget_info.Id(),
                                 m_frequency));
   return true;

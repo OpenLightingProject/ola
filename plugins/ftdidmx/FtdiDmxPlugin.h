@@ -21,6 +21,7 @@
 #ifndef PLUGINS_FTDIDMX_FTDIDMXPLUGIN_H_
 #define PLUGINS_FTDIDMX_FTDIDMXPLUGIN_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -43,18 +44,21 @@ class FtdiDmxPlugin : public Plugin {
   ola_plugin_id Id() const { return OLA_PLUGIN_FTDIDMX; }
   string Name() const { return PLUGIN_NAME; }
   string PluginPrefix() const { return PLUGIN_PREFIX; }
+  // This plugin is disabled unless explicitly enabled by a user.
+  bool DefaultMode() const { return false; }
+
+  void ConflictsWith(std::set<ola_plugin_id> *conflict_set) {
+    conflict_set->insert(ola::OLA_PLUGIN_USBPRO);
+    conflict_set->insert(ola::OLA_PLUGIN_OPENDMX);
+  }
 
   string Description() const;
 
-  void DeviceRemoved(FtdiDmxDevice *device);
-  void AddDevice(FtdiDmxDevice *device);
-  void DeleteDevice(FtdiDmxDevice *device);
-
  private:
   typedef vector<FtdiDmxDevice*> FtdiDeviceVector;
-
   FtdiDeviceVector m_devices;
 
+  void AddDevice(FtdiDmxDevice *device);
   bool StartHook();
   bool StopHook();
   bool SetDefaultPreferences();

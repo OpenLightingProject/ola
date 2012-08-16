@@ -35,16 +35,8 @@ namespace ftdidmx {
 
 const char FtdiDmxPlugin::DEFAULT_FREQUENCY[] = "30";
 const char FtdiDmxPlugin::K_FREQUENCY[] = "frequency";
-const char FtdiDmxPlugin::PLUGIN_NAME[] = "FTDI USB Chipset Serial DMX";
+const char FtdiDmxPlugin::PLUGIN_NAME[] = "FTDI USB DMX";
 const char FtdiDmxPlugin::PLUGIN_PREFIX[] = "ftdidmx";
-
-/*
- * Entry point to this plugin
- */
-extern "C" ola::AbstractPlugin* create(ola::PluginAdaptor *plugin_adaptor) {
-  return new FtdiDmxPlugin(plugin_adaptor);
-}
-
 
 /**
  * Attempt to start a device and, if successfull, register it
@@ -106,7 +98,7 @@ string FtdiDmxPlugin::Description() const {
   return
     "FTDI USB Chipset DMX Plugin\n"
     "---------------------------\n"
-    "This plugin is compatible with Enttec OpenDmx and all other\n"
+    "This plugin is compatible with Enttec OpenDmx and other\n"
     "FTDI chipset based USB to DMX converters where the host\n"
     "needs to create the DMX stream itself and not the interface\n"
     "(the interface has no microprocessor to do so)\n\n"
