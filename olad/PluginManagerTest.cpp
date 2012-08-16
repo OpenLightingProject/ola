@@ -19,6 +19,7 @@
  */
 
 #include <cppunit/extensions/HelperMacros.h>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -32,6 +33,7 @@
 using ola::AbstractPlugin;
 using ola::PluginLoader;
 using ola::PluginManager;
+using std::set;
 using std::string;
 using std::vector;
 
@@ -39,12 +41,30 @@ using std::vector;
 class PluginManagerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(PluginManagerTest);
   CPPUNIT_TEST(testPluginManager);
+  CPPUNIT_TEST(testConflictingPlugins);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void testPluginManager();
+    void testConflictingPlugins();
+
+    void setUp() {
+      ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
+    }
 
   private:
+    void VerifyPluginCounts(PluginManager *manager, size_t loaded_plugins,
+                            size_t enabled_plugins, unsigned int line) {
+      std::stringstream str;
+      str << "Line " << line;
+      vector<AbstractPlugin*> plugins;
+      manager->Plugins(&plugins);
+      CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(), loaded_plugins, plugins.size());
+
+      plugins.clear();
+      manager->EnabledPlugins(&plugins);
+      CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(), enabled_plugins, plugins.size());
+    }
 };
 
 
@@ -55,32 +75,18 @@ CPPUNIT_TEST_SUITE_REGISTRATION(PluginManagerTest);
  */
 class MockLoader: public ola::PluginLoader {
   public:
-    MockLoader():
-      PluginLoader() {
+    explicit MockLoader(const vector<AbstractPlugin*> &plugins):
+      PluginLoader(),
+      m_plugins(plugins) {
     }
 
     vector<AbstractPlugin*> LoadPlugins() {
-      m_plugins.push_back(new TestMockPlugin(m_plugin_adaptor,
-                                             ola::OLA_PLUGIN_ARTNET));
-      m_plugins.push_back(new TestMockPlugin(m_plugin_adaptor,
-                                             ola::OLA_PLUGIN_ESPNET,
-                                             false));
-      vector<AbstractPlugin*> plugins;
-      vector<TestMockPlugin*>::iterator iter;
-      for (iter = m_plugins.begin(); iter != m_plugins.end(); ++iter)
-        plugins.push_back(*iter);
-      return plugins;
+      return m_plugins;
     }
     void UnloadPlugins() {}
 
-    void VerifyStartStates() {
-      CPPUNIT_ASSERT_EQUAL((size_t) 2, m_plugins.size());
-      CPPUNIT_ASSERT(m_plugins[0]->WasStarted());
-      CPPUNIT_ASSERT(!m_plugins[1]->WasStarted());
-    }
-
   private:
-    vector<TestMockPlugin*> m_plugins;
+    vector<AbstractPlugin*> m_plugins;
 };
 
 
@@ -88,24 +94,66 @@ class MockLoader: public ola::PluginLoader {
  * Check that we can load & unload plugins correctly.
  */
 void PluginManagerTest::testPluginManager() {
-  vector<PluginLoader*> loaders;
-  MockLoader loader;
-  loaders.push_back(&loader);
-
   ola::MemoryPreferencesFactory factory;
   ola::PluginAdaptor adaptor(NULL, NULL, &factory, NULL);
+
+  TestMockPlugin plugin1(&adaptor, ola::OLA_PLUGIN_ARTNET);
+  TestMockPlugin plugin2(&adaptor, ola::OLA_PLUGIN_ESPNET, false);
+  vector<AbstractPlugin*> our_plugins;
+  our_plugins.push_back(&plugin1);
+  our_plugins.push_back(&plugin2);
+
+  MockLoader loader(our_plugins);
+  vector<PluginLoader*> loaders;
+  loaders.push_back(&loader);
+
   PluginManager manager(loaders, &adaptor);
-
   manager.LoadAll();
-  vector<AbstractPlugin*> plugins;
-  manager.Plugins(&plugins);
-  CPPUNIT_ASSERT_EQUAL((size_t) 2, plugins.size());
-  CPPUNIT_ASSERT_EQUAL(string("foo"), plugins[0]->Name());
-  CPPUNIT_ASSERT_EQUAL(string("foo"), plugins[1]->Name());
 
-  loader.VerifyStartStates();
+  VerifyPluginCounts(&manager, 2, 1, __LINE__);
+
+  CPPUNIT_ASSERT(plugin1.WasStarted());
+  CPPUNIT_ASSERT(!plugin2.WasStarted());
 
   manager.UnloadAll();
-  manager.Plugins(&plugins);
-  CPPUNIT_ASSERT_EQUAL((size_t) 0, plugins.size());
+  VerifyPluginCounts(&manager, 0, 0, __LINE__);
+}
+
+
+/*
+ * Check that we detect conflicting plugins
+ */
+void PluginManagerTest::testConflictingPlugins() {
+  ola::MemoryPreferencesFactory factory;
+  ola::PluginAdaptor adaptor(NULL, NULL, &factory, NULL);
+
+  set<ola::ola_plugin_id> conflict_set1;
+  conflict_set1.insert(ola::OLA_PLUGIN_ARTNET);
+  TestMockPlugin plugin1(&adaptor, ola::OLA_PLUGIN_DUMMY, conflict_set1);
+  TestMockPlugin plugin2(&adaptor, ola::OLA_PLUGIN_ARTNET);
+  set<ola::ola_plugin_id> conflict_set2;
+  conflict_set2.insert(ola::OLA_PLUGIN_ARTNET);
+  TestMockPlugin plugin3(&adaptor, ola::OLA_PLUGIN_SHOWNET, conflict_set2);
+
+  vector<AbstractPlugin*> our_plugins;
+  our_plugins.push_back(&plugin1);
+  our_plugins.push_back(&plugin2);
+  our_plugins.push_back(&plugin3);
+
+  MockLoader loader(our_plugins);
+  vector<PluginLoader*> loaders;
+  loaders.push_back(&loader);
+
+  PluginManager manager(loaders, &adaptor);
+  OLA_INFO << "start";
+  manager.LoadAll();
+
+  VerifyPluginCounts(&manager, 3, 1, __LINE__);
+
+  CPPUNIT_ASSERT(!plugin1.WasStarted());
+  CPPUNIT_ASSERT(plugin2.WasStarted());
+  CPPUNIT_ASSERT(!plugin3.WasStarted());
+
+  manager.UnloadAll();
+  VerifyPluginCounts(&manager, 0, 0, __LINE__);
 }

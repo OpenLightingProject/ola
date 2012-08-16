@@ -21,6 +21,7 @@
 #ifndef OLAD_PLUGINMANAGER_H_
 #define OLAD_PLUGINMANAGER_H_
 
+#include <map>
 #include <vector>
 
 namespace ola {
@@ -39,16 +40,25 @@ class PluginManager {
 
     void LoadAll();
     void UnloadAll();
+    // Return a list of all loaded plugins
     void Plugins(vector<AbstractPlugin*> *plugins) const;
+
+    // Return a list of all enabled plugins
+    void EnabledPlugins(vector<AbstractPlugin*> *plugins) const;
+
+    // Lookup a loaded plugin by ID
     AbstractPlugin* GetPlugin(ola_plugin_id plugin_id) const;
 
   private:
     PluginManager(const PluginManager&);
     PluginManager operator=(const PluginManager&);
 
+    typedef std::map<ola_plugin_id, AbstractPlugin*> PluginMap;
+
     vector<PluginLoader*> m_plugin_loaders;
+    PluginMap m_loaded_plugins;  // plugins that are loaded
+    vector<AbstractPlugin*> m_enabled_plugins;  // enabled plugins
     PluginAdaptor *m_plugin_adaptor;
-    vector<AbstractPlugin*> m_plugins;
 };
 }  // ola
 #endif  // OLAD_PLUGINMANAGER_H_
