@@ -29,7 +29,7 @@ namespace ola {
 class DynamicPluginLoader: public PluginLoader {
   public:
     DynamicPluginLoader() {}
-    ~DynamicPluginLoader() { UnloadPlugins(); }
+    ~DynamicPluginLoader();
 
     std::vector<class AbstractPlugin*> LoadPlugins();
     void UnloadPlugins() {}
@@ -37,6 +37,10 @@ class DynamicPluginLoader: public PluginLoader {
   private:
     DynamicPluginLoader(const DynamicPluginLoader&);
     DynamicPluginLoader operator=(const DynamicPluginLoader&);
+
+    void PopulatePlugins();
+
+    std::vector<class AbstractPlugin*> m_plugins;
 };
 }  // ola
 #endif  // OLAD_DYNAMICPLUGINLOADER_H_

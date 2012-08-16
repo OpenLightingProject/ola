@@ -18,6 +18,7 @@
  * Copyright (C) 2005-2007 Simon Newton
  */
 
+#include <set>
 #include <vector>
 #include "ola/Logging.h"
 #include "olad/Plugin.h"
@@ -28,6 +29,7 @@
 namespace ola {
 
 using std::vector;
+using std::set;
 
 PluginManager::PluginManager(const vector<PluginLoader*> &plugin_loaders,
                              class PluginAdaptor *plugin_adaptor)
@@ -45,37 +47,67 @@ PluginManager::~PluginManager() {
  * Load all the plugins and start them.
  */
 void PluginManager::LoadAll() {
-  vector<PluginLoader*>::iterator iter;
-  vector<AbstractPlugin*>::iterator plugin_iter;
+  vector<AbstractPlugin*> enabled_plugins;
+  set<ola_plugin_id> enabled_plugin_ids;
 
+  // The first pass populates the m_plugin map, and builds a list of enabled
+  // plugins.
+  vector<PluginLoader*>::iterator iter;
   for (iter = m_plugin_loaders.begin(); iter != m_plugin_loaders.end();
        ++iter) {
     (*iter)->SetPluginAdaptor(m_plugin_adaptor);
     vector<AbstractPlugin*> plugins = (*iter)->LoadPlugins();
 
-    for (plugin_iter = plugins.begin(); plugin_iter != plugins.end();
-         ++plugin_iter) {
-      if (GetPlugin((*plugin_iter)->Id()))
-        OLA_WARN << "Skipping plugin " << (*plugin_iter)->Name() <<
+    vector<AbstractPlugin*>::iterator plugin_iter = plugins.begin();
+    for (; plugin_iter != plugins.end(); ++plugin_iter) {
+      AbstractPlugin *plugin = *plugin_iter;
+
+      if (GetPlugin(plugin->Id())) {
+        OLA_WARN << "Skipping plugin " << plugin->Name() <<
           " because it's already been loaded";
-      else
-        m_plugins.push_back(*plugin_iter);
+        continue;
+      }
+      m_loaded_plugins[plugin->Id()] = plugin;
+
+      if (!(plugin->ShouldStart())) {
+        OLA_INFO << "Skipping " << plugin->Name() <<
+          " because it was disabled";
+        continue;
+      }
+      enabled_plugins.push_back(plugin);
+      enabled_plugin_ids.insert(plugin->Id());
     }
   }
 
-  for (plugin_iter = m_plugins.begin(); plugin_iter != m_plugins.end();
-       ++plugin_iter) {
-    if (!(*plugin_iter)->ShouldStart()) {
-      OLA_INFO << "Skipping " << (*plugin_iter)->Name() <<
-        " because it was disabled";
-      continue;
+  // The second pass checks for conflicts and starts each plugin
+  vector<AbstractPlugin*>::iterator plugin_iter = enabled_plugins.begin();
+  for (; plugin_iter != enabled_plugins.end(); ++plugin_iter) {
+    AbstractPlugin *plugin = *plugin_iter;
+
+    // check for conflicts
+    bool conflict = false;
+    set<ola_plugin_id> conflict_list;
+    plugin->ConflictsWith(&conflict_list);
+    set<ola_plugin_id>::const_iterator set_iter = conflict_list.begin();
+    for (; set_iter != conflict_list.end(); ++set_iter) {
+      if (enabled_plugin_ids.find(*set_iter) != enabled_plugin_ids.end()) {
+        OLA_WARN << "Skipping " << plugin->Name() <<
+          " because it conflicts with " << GetPlugin(*set_iter)->Name() <<
+          " which is also enabled";
+        conflict = true;
+        break;
+      }
     }
 
-    OLA_INFO << "Trying to start " << (*plugin_iter)->Name();
-    if (!(*plugin_iter)->Start())
-      OLA_WARN << "Failed to start " << (*plugin_iter)->Name();
+    if (conflict)
+      continue;
+
+    OLA_INFO << "Trying to start " << plugin->Name();
+    if (!plugin->Start())
+      OLA_WARN << "Failed to start " << plugin->Name();
     else
-      OLA_INFO << "Started " << (*plugin_iter)->Name();
+      OLA_INFO << "Started " << plugin->Name();
+    m_enabled_plugins.push_back(plugin);
   }
 }
 
@@ -84,18 +116,15 @@ void PluginManager::LoadAll() {
  * Unload all the plugins.
  */
 void PluginManager::UnloadAll() {
-  vector<PluginLoader*>::iterator iter;
-  vector<AbstractPlugin*>::iterator plugin_iter;
-
-  for (plugin_iter = m_plugins.begin(); plugin_iter != m_plugins.end();
-       ++plugin_iter) {
-    (*plugin_iter)->Stop();
-    delete *plugin_iter;
+  PluginMap::iterator plugin_iter = m_loaded_plugins.begin();
+  for (; plugin_iter != m_loaded_plugins.end(); ++plugin_iter) {
+    plugin_iter->second->Stop();
   }
-  m_plugins.clear();
+  m_loaded_plugins.clear();
+  m_enabled_plugins.clear();
 
-  for (iter = m_plugin_loaders.begin(); iter != m_plugin_loaders.end();
-       ++iter) {
+  vector<PluginLoader*>::iterator iter = m_plugin_loaders.begin();
+  for (; iter != m_plugin_loaders.end(); ++iter) {
     (*iter)->SetPluginAdaptor(NULL);
     (*iter)->UnloadPlugins();
   }
@@ -106,21 +135,28 @@ void PluginManager::UnloadAll() {
  * Return the list of plugins loaded
  */
 void PluginManager::Plugins(vector<AbstractPlugin*> *plugins) const {
-  *plugins = m_plugins;
+  plugins->clear();
+  PluginMap::const_iterator iter = m_loaded_plugins.begin();
+  for (; iter != m_loaded_plugins.end(); ++iter)
+    plugins->push_back(iter->second);
 }
 
 
 /*
- * Get a particular plugin
+ * Return the list of enabled plugins loaded
+ */
+void PluginManager::EnabledPlugins(vector<AbstractPlugin*> *plugins) const {
+  *plugins = m_enabled_plugins;
+}
+
+
+/*
+ * Lookup a plugin by ID.
  * @param plugin_id the id of the plugin to find
  * @return the plugin matching the id or NULL if not found.
  */
 AbstractPlugin* PluginManager::GetPlugin(ola_plugin_id plugin_id) const {
-  vector<AbstractPlugin*>::const_iterator iter;
-
-  for (iter = m_plugins.begin(); iter != m_plugins.end(); ++iter)
-    if ((*iter)->Id() == plugin_id)
-      return *iter;
-  return NULL;
+  PluginMap::const_iterator iter = m_loaded_plugins.find(plugin_id);
+  return (iter == m_loaded_plugins.end() ? NULL : iter->second);
 }
 }  // ola

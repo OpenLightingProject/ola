@@ -52,37 +52,50 @@ namespace ola {
 
 using std::vector;
 
+
+DynamicPluginLoader::~DynamicPluginLoader() {
+  vector<AbstractPlugin*>::iterator iter = m_plugins.begin();
+  for (; iter != m_plugins.end(); ++iter) {
+    delete *iter;
+  }
+}
+
+
 /*
- * Load the plugins that we were linked against
+ * Return the plugins that we were linked against
  * @returns a vector of plugins
  */
 vector<AbstractPlugin*> DynamicPluginLoader::LoadPlugins() {
-  vector<AbstractPlugin*> plugins;
+  if (m_plugins.empty())
+    PopulatePlugins();
+  return m_plugins;
+}
 
+
+void DynamicPluginLoader::PopulatePlugins() {
 #ifdef HAVE_DMX4LINUX
-  plugins.push_back(
+  m_plugins.push_back(
       new ola::plugin::dmx4linux::Dmx4LinuxPlugin(m_plugin_adaptor));
 #endif
 
-  plugins.push_back(new ola::plugin::artnet::ArtNetPlugin(m_plugin_adaptor));
-  plugins.push_back(new ola::plugin::dummy::DummyPlugin(m_plugin_adaptor));
-  plugins.push_back(new ola::plugin::e131::E131Plugin(m_plugin_adaptor));
-  plugins.push_back(new ola::plugin::espnet::EspNetPlugin(m_plugin_adaptor));
-  plugins.push_back(
+  m_plugins.push_back(new ola::plugin::artnet::ArtNetPlugin(m_plugin_adaptor));
+  m_plugins.push_back(new ola::plugin::dummy::DummyPlugin(m_plugin_adaptor));
+  m_plugins.push_back(new ola::plugin::e131::E131Plugin(m_plugin_adaptor));
+  m_plugins.push_back(new ola::plugin::espnet::EspNetPlugin(m_plugin_adaptor));
+  m_plugins.push_back(
       new ola::plugin::opendmx::OpenDmxPlugin(m_plugin_adaptor));
-  plugins.push_back(
+  m_plugins.push_back(
       new ola::plugin::sandnet::SandNetPlugin(m_plugin_adaptor));
-  plugins.push_back(
+  m_plugins.push_back(
       new ola::plugin::shownet::ShowNetPlugin(m_plugin_adaptor));
-  plugins.push_back(
+  m_plugins.push_back(
       new ola::plugin::stageprofi::StageProfiPlugin(m_plugin_adaptor));
-  plugins.push_back(
+  m_plugins.push_back(
       new ola::plugin::usbpro::UsbSerialPlugin(m_plugin_adaptor));
 #ifdef HAVE_LIBUSB
-  plugins.push_back(new ola::plugin::usbdmx::UsbDmxPlugin(m_plugin_adaptor));
+  m_plugins.push_back(new ola::plugin::usbdmx::UsbDmxPlugin(m_plugin_adaptor));
 #endif
-  plugins.push_back(
+  m_plugins.push_back(
       new ola::plugin::pathport::PathportPlugin(m_plugin_adaptor));
-  return plugins;
 }
 }  // ola

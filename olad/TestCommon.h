@@ -22,6 +22,7 @@
 #define OLAD_TESTCOMMON_H_
 #include <cppunit/extensions/HelperMacros.h>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -40,6 +41,7 @@ using ola::BasicOutputPort;
 using ola::DmxBuffer;
 using ola::TimeStamp;
 using ola::rdm::UIDSet;
+using std::set;
 using std::string;
 using std::vector;
 
@@ -215,24 +217,43 @@ class MockDeviceLoopAndMulti: public ola::Device {
     bool AllowLooping() const { return true; }
     bool AllowMultiPortPatching() const { return true; }
 };
+
+
 /*
  * A mock plugin.
  */
 class TestMockPlugin: public ola::Plugin {
   public:
-    explicit TestMockPlugin(ola::PluginAdaptor *plugin_adaptor,
-                            ola::ola_plugin_id plugin_id,
-                            bool should_start = true):
-      Plugin(plugin_adaptor),
-      m_start_run(false),
-      m_should_start(should_start),
-      m_id(plugin_id) {}
+    TestMockPlugin(ola::PluginAdaptor *plugin_adaptor,
+                   ola::ola_plugin_id plugin_id,
+                   bool should_start = true)
+        : Plugin(plugin_adaptor),
+          m_start_run(false),
+          m_should_start(should_start),
+          m_id(plugin_id) {}
+
+    TestMockPlugin(ola::PluginAdaptor *plugin_adaptor,
+                   ola::ola_plugin_id plugin_id,
+                   const set<ola::ola_plugin_id> &conflict_set)
+        : Plugin(plugin_adaptor),
+          m_start_run(false),
+          m_should_start(true),
+          m_id(plugin_id),
+          m_conflict_set(conflict_set) {}
+
+    void ConflictsWith(set<ola::ola_plugin_id> *conflict_set) {
+      *conflict_set = m_conflict_set;
+    }
     bool ShouldStart() { return m_should_start; }
     bool StartHook() {
       m_start_run = true;
       return true;
     }
-    string Name() const { return "foo"; }
+    string Name() const {
+      std::stringstream str;
+      str << m_id;
+      return str.str();
+    }
     string Description() const { return "bar"; }
     ola::ola_plugin_id Id() const { return m_id; }
     string PluginPrefix() const { return "test"; }
@@ -243,6 +264,7 @@ class TestMockPlugin: public ola::Plugin {
     bool m_start_run;
     bool m_should_start;
     ola::ola_plugin_id m_id;
+    set<ola::ola_plugin_id> m_conflict_set;
 };
 
 

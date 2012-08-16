@@ -21,6 +21,7 @@
 #ifndef INCLUDE_OLAD_PLUGIN_H_
 #define INCLUDE_OLAD_PLUGIN_H_
 
+#include <set>
 #include <string>
 #include <functional>
 #include <ola/plugin_id.h>  // NOLINT
@@ -50,6 +51,8 @@ class AbstractPlugin {
     virtual string Name() const = 0;
     // return the description of this plugin
     virtual string Description() const = 0;
+
+    virtual void ConflictsWith(std::set<ola_plugin_id> *conflict_set) = 0;
 
     // used to sort plugins
     virtual bool operator<(const AbstractPlugin &other) const = 0;
@@ -83,6 +86,9 @@ class Plugin: public AbstractPlugin {
 
     // return the prefix used to identify this plugin
     virtual string PluginPrefix() const = 0;
+
+    // by default we don't conflict with any other plugins
+    virtual void ConflictsWith(std::set<ola_plugin_id>*) {}
 
     bool operator<(const AbstractPlugin &other) const {
       return Id() < other.Id();
