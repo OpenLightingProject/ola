@@ -314,12 +314,49 @@ class TestServerApplication(object):
           headers = Headers(self.headers)
           headers.add_header('Content-disposition', 'attachment', filename=log_name)
 
-          data = pickle.load(open(filename, 'rb'))
-          self.output = data
+          response = pickle.load(open(filename, 'rb'))
+          self.output = self.format_log_data(response)
           stats = len(self.output)
           self.headers.append(('Content-length', str(stats)))
     except:
       print traceback.print_exc()
+
+  def format_log_data(self, response):
+    results_log = ''
+    for result in response['test_results']:
+      results_log += '%s: %s\n' % (result['definition'], result['state'])
+
+    results_log += "\n------------------- Warnings --------------------\n\n"
+
+    for result in response['test_results']:
+      results_log += '%s: %s\n' % (result['definition'], result['warnings'])
+
+    results_log += "\n------------------- Advisories --------------------\n\n"
+
+    for result in response['test_results']:
+      results_log += '%s: %s\n' % (result['definition'], result['advisories'])
+
+    results_log += "\n------------------- By Category --------------------\n\n"
+
+    stats_by_catg = response['stats_by_catg']
+    for result in stats_by_catg:
+      passed = int(stats_by_catg[result]['passed'])
+      total = int(stats_by_catg[result]['total'])
+      try:
+        percent = str(passed / total * 100)
+      except ZeroDivisionError:
+        percent = '-'
+      results_log += '\t%s: %d / %d %s%%\n' % (result, passed, total, percent)
+
+    results_log += "-------------------------------------------------\n\n"
+
+    stats = response['stats']
+
+    for result in sorted(stats.keys()):
+      results_log += '%d %s  ' % (stats[result], result)
+
+    return results_log
+
 
   def log_results(self, uid, timestamp):
     """Log the results to a file.
@@ -333,7 +370,6 @@ class TestServerApplication(object):
     """
     filename = '%s.%d.log' % (uid, timestamp)
     filename = os.path.join(dir, settings['log_directory'], filename)
-    results_log = ''
 
     try:
       log_file = open(filename, 'w')
@@ -341,39 +377,7 @@ class TestServerApplication(object):
       print 'Failed to open %s: %s' % (filename, e)
       return False
 
-    for result in self.response['test_results']:
-      results_log += '%s: %s\n' % (result['definition'], result['state'])
-
-    results_log += "\n------------------- Warnings --------------------\n\n"
-
-    for result in self.response['test_results']:
-      results_log += '%s: %s\n' % (result['definition'], result['warnings'])
-
-    results_log += "\n------------------- Advisories --------------------\n\n"
-
-    for result in self.response['test_results']:
-      results_log += '%s: %s\n' % (result['definition'], result['advisories'])
-
-    results_log += "\n------------------- By Category --------------------\n\n"
-
-    stats_by_catg = self.response['stats_by_catg']
-    for result in stats_by_catg:
-      passed = int(stats_by_catg[result]['passed'])
-      total = int(stats_by_catg[result]['total'])
-      try:
-        percent = str(passed / total * 100)
-      except ZeroDivisionError:
-        percent = '-'
-      results_log += '\t%s: %d / %d %s%%\n' % (result, passed, total, percent)
-
-    results_log += "-------------------------------------------------\n\n"
-
-    stats = self.response['stats']
-
-    for result in sorted(stats.keys()):
-      results_log += '%d %s  ' % (stats[result], result)
-
-    pickle.dump(results_log, log_file)
+    pickle.dump(self.response, log_file)
     print 'Written log file %s' % (log_file.name)
     log_file.close()
     return True
