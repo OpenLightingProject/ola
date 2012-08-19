@@ -322,21 +322,23 @@ class TestServerApplication(object):
       print traceback.print_exc()
 
   def format_log_data(self, response):
-    results_log = ''
+    results_log = []
     for result in response['test_results']:
-      results_log += '%s: %s\n' % (result['definition'], result['state'])
+      results_log.append('%s: %s' % (result['definition'], result['state']))
 
-    results_log += "\n------------------- Warnings --------------------\n\n"
-
-    for result in response['test_results']:
-      results_log += '%s: %s\n' % (result['definition'], result['warnings'])
-
-    results_log += "\n------------------- Advisories --------------------\n\n"
+    results_log.append("\n------------------- Warnings --------------------\n")
 
     for result in response['test_results']:
-      results_log += '%s: %s\n' % (result['definition'], result['advisories'])
+      for warning in result['warnings']:
+        results_log.append('%s' % (warning))
 
-    results_log += "\n------------------- By Category --------------------\n\n"
+    results_log.append("\n------------------- Advisories --------------------\n")
+
+    for result in response['test_results']:
+      for adv in result['advisories']:
+        results_log.append('%s' % (adv))
+
+    results_log.append("\n------------------- By Category --------------------\n")
 
     stats_by_catg = response['stats_by_catg']
     for result in stats_by_catg:
@@ -346,16 +348,19 @@ class TestServerApplication(object):
         percent = str(passed / total * 100)
       except ZeroDivisionError:
         percent = '-'
-      results_log += '\t%s: %d / %d %s%%\n' % (result, passed, total, percent)
+      results_log.append(' %26s:   %3d / %3d    %s%%' % (result, passed, total, percent))
 
-    results_log += "-------------------------------------------------\n\n"
+    results_log.append("-------------------------------------------------\n")
 
     stats = response['stats']
 
-    for result in sorted(stats.keys()):
-      results_log += '%d %s  ' % (stats[result], result)
+    final_stats = ''
 
-    return results_log
+    for result in sorted(stats.keys()):
+      final_stats += '%d %s  ' % (stats[result], result)
+
+    results_log.append(final_stats)
+    return '\n'.join(results_log)
 
 
   def log_results(self, uid, timestamp):
