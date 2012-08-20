@@ -329,19 +329,19 @@ class TestServerApplication(object):
       results_log.append(str(result['debug']))
       results_log.append('\n')
 
-    results_log.append("\n------------------- Warnings --------------------\n")
+    results_log.append("\n------------------- Warnings -------------------\n")
 
     for result in response['test_results']:
       for warning in result['warnings']:
         results_log.append('%s' % (warning))
 
-    results_log.append("\n------------------- Advisories --------------------\n")
+    results_log.append("\n------------------- Advisories -------------------\n")
 
     for result in response['test_results']:
       for adv in result['advisories']:
         results_log.append('%s' % (adv))
 
-    results_log.append("\n------------------- By Category --------------------\n")
+    results_log.append("\n------------------- By Category -------------------\n")
 
     stats_by_catg = response['stats_by_catg']
     for result in stats_by_catg:
