@@ -325,6 +325,9 @@ class TestServerApplication(object):
     results_log = []
     for result in response['test_results']:
       results_log.append('%s: %s' % (result['definition'], result['state']))
+      results_log.append(result['doc'])
+      results_log.append(str(result['debug']))
+      results_log.append('\n')
 
     results_log.append("\n------------------- Warnings --------------------\n")
 
