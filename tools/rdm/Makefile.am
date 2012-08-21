@@ -18,10 +18,6 @@ test_server_files = \
     static/images/expander.png \
     static/images/loader.gif \
     static/images/logo.png \
-    static/javascript/jQuery-UI \
-    static/javascript/jQuery-UI/css \
-    static/javascript/jQuery-UI/css/overcast \
-    static/javascript/jQuery-UI/css/overcast/images \
     static/javascript/jQuery-UI/css/overcast/images/ui-bg_flat_0_aaaaaa_40x100.png \
     static/javascript/jQuery-UI/css/overcast/images/ui-bg_flat_0_eeeeee_40x100.png \
     static/javascript/jQuery-UI/css/overcast/images/ui-bg_flat_55_c0402a_40x100.png \
@@ -40,24 +36,9 @@ test_server_files = \
     static/javascript/jQuery-UI/js/jquery-1.7.2.min.js \
     static/javascript/jQuery-UI/js/jquery-ui-1.8.21.custom.min.js \
     static/javascript/jQuery-multiselect/MIT-LICENSE.txt \
-    static/javascript/jQuery-multiselect/README.textile \
     static/javascript/jQuery-multiselect/css/common.css \
     static/javascript/jQuery-multiselect/css/ui.multiselect.css \
-    static/javascript/jQuery-multiselect/index.html \
-    static/javascript/jQuery-multiselect/js/locale/ui-multiselect-de.js \
-    static/javascript/jQuery-multiselect/js/locale/ui-multiselect-en.js \
-    static/javascript/jQuery-multiselect/js/locale/ui-multiselect-es.js \
-    static/javascript/jQuery-multiselect/js/locale/ui-multiselect-fr.js \
-    static/javascript/jQuery-multiselect/js/locale/ui-multiselect-it.js \
-    static/javascript/jQuery-multiselect/js/plugins/localisation/jquery.localisation-min.js \
-    static/javascript/jQuery-multiselect/js/plugins/localisation/jquery.localisation-pack.js \
-    static/javascript/jQuery-multiselect/js/plugins/localisation/jquery.localisation.js \
-    static/javascript/jQuery-multiselect/js/plugins/scrollTo/README.txt \
-    static/javascript/jQuery-multiselect/js/plugins/scrollTo/changes.txt \
-    static/javascript/jQuery-multiselect/js/plugins/scrollTo/jquery.scrollTo-min.js \
-    static/javascript/jQuery-multiselect/js/plugins/scrollTo/jquery.scrollTo.js \
     static/javascript/jQuery-multiselect/js/ui.multiselect.js \
-    static/javascript/jQuery-multiselect/version.txt \
     static/javascript/jquery.min.js \
     static/javascript/rdm_tests.js \
     static/rdmtests.html
