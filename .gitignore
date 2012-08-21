@@ -22,10 +22,11 @@ libtool
 stamp-h1
 .deps
 .libs
-include/ola/rdm/RDMResponseCodes.h
 include/ola/plugin_id.h
+include/ola/rdm/RDMResponseCodes.h
 include/ola/timecode/TimeCodeEnums.h
+java/src/main/java/ola/rpc/Rpc.java
+python/ola/PidStoreLocation.py
 tools/ola_trigger/config.tab.cpp
 tools/ola_trigger/config.tab.h
 tools/ola_trigger/lex.yy.cpp
-java/src/main/java/ola/rpc/Rpc.java
