@@ -1,3 +1,6 @@
+X/Y/2012 ola-0.8.23
+ * Added the ftdidmx plugin thanks to Rui Barreiros - #164
+
 10/8/2012 ola-0.8.22
  * Added the first version of the RDM Test Server
  * Added a configure time option to disable unittests
