@@ -171,9 +171,9 @@ bool FtdiWidget::Write(const ola::DmxBuffer& data) {
   int unsigned length = DMX_UNIVERSE_SIZE;
   buffer[0] = 0x00;
 
-  data.Get(buffer+1, &length);
+  data.Get(buffer + 1, &length);
 
-  if (ftdi_write_data(&m_handle, buffer, sizeof(buffer)) < 0) {
+  if (ftdi_write_data(&m_handle, buffer, length + 1) < 0) {
     OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
     return false;
   } else {
