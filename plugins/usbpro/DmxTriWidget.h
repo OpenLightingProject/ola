@@ -65,7 +65,7 @@ class DmxTriWidgetImpl: public BaseUsbProWidget,
     ola::thread::SchedulerInterface *m_scheduler;
     ola::thread::timeout_id m_rdm_timeout_id;
     std::map<const ola::rdm::UID, uint8_t> m_uid_index_map;
-    unsigned int m_uid_count;
+    uint8_t m_uid_count;
     uint16_t m_last_esta_id;
     bool m_use_raw_rdm;
     ola::rdm::RDMDiscoveryCallback *m_discovery_callback;

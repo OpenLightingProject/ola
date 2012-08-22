@@ -164,7 +164,10 @@ void DmxTriWidgetImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
   if (request->DestinationUID().IsBroadcast() &&
       request->DestinationUID().ManufacturerId() != m_last_esta_id) {
     uint16_t esta_id = request->DestinationUID().ManufacturerId();
-    uint8_t data[] = {SET_FILTER_COMMAND_ID, esta_id >> 8, esta_id & 0xff};
+    uint8_t data[] = {SET_FILTER_COMMAND_ID,
+                      static_cast<uint8_t>(esta_id >> 8),
+                      static_cast<uint8_t>(esta_id & 0xff)
+                     };
     m_pending_request = request;
     m_rdm_request_callback = on_complete;
     bool r = SendMessage(EXTENDED_COMMAND_LABEL,

@@ -163,7 +163,7 @@ void MessageSerializerTest::testSimple() {
   CPPUNIT_ASSERT_EQUAL(18u, packed_length);
 
   uint8_t expected[] = {
-    1, 1, -3, 1, 44, 254, 112,
+    1, 1, 253, 1, 44, 254, 112,
     0, 1, 1, 208, 255, 254, 254, 48,
     'f', 'o', 'o'};
   ConfirmData(__LINE__,
@@ -271,7 +271,7 @@ void MessageSerializerTest::testLittleEndian() {
   CPPUNIT_ASSERT_EQUAL(14u, packed_length);
 
   uint8_t expected[] = {
-    1, -3, 44, 1, 112, 254,
+    1, 253, 44, 1, 112, 254,
     208, 1, 1, 0, 48, 254, 254, 255};
   ConfirmData(__LINE__,
               expected,

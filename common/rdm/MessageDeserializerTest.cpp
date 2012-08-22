@@ -127,7 +127,7 @@ void MessageDeserializerTest::testSimpleBigEndian() {
 
   // now setup the data
   const uint8_t big_endian_data[] = {
-    0, 10, -10, 1, 0x2c, 0xfe, 10,
+    0, 10, 246, 1, 0x2c, 0xfe, 10,
     1, 2, 3, 4, 0xfe, 6, 7, 8};
 
   // try to inflate with no data
@@ -180,7 +180,7 @@ void MessageDeserializerTest::testSimpleLittleEndian() {
 
   // now setup the data
   const uint8_t little_endian_data[] = {
-    1, 10, -10, 0x2c, 1, 10, 0xfe,
+    1, 10, 246, 0x2c, 1, 10, 0xfe,
     4, 3, 2, 1, 8, 7, 6, 0xfe};
 
   // try to inflate with no data
