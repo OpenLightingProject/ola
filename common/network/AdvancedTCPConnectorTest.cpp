@@ -41,8 +41,8 @@ using ola::network::AdvancedTCPConnector;
 using ola::network::IPV4Address;
 using ola::network::LinearBackoffPolicy;
 using ola::network::StringToAddress;
-using ola::network::TcpAcceptingSocket;
-using ola::network::TcpSocket;
+using ola::network::TCPAcceptingSocket;
+using ola::network::TCPSocket;
 using std::auto_ptr;
 using std::string;
 
@@ -88,7 +88,7 @@ class AdvancedTCPConnectorTest: public CppUnit::TestFixture {
     auto_ptr<ola::network::TCPSocketFactory> m_tcp_socket_factory;
     IPV4Address m_localhost;
     ola::thread::timeout_id m_timeout_id;
-    TcpSocket *m_connected_socket;
+    TCPSocket *m_connected_socket;
 
     void ConfirmState(unsigned int line,
                       AdvancedTCPConnector &connector,
@@ -96,9 +96,9 @@ class AdvancedTCPConnectorTest: public CppUnit::TestFixture {
                       uint16_t port,
                       AdvancedTCPConnector::ConnectionState state,
                       unsigned int failed_attempts);
-    void SetupListeningSocket(TcpAcceptingSocket *socket);
-    void AcceptedConnection(TcpSocket *socket);
-    void OnConnect(TcpSocket *socket);
+    void SetupListeningSocket(TCPAcceptingSocket *socket);
+    void AcceptedConnection(TCPSocket *socket);
+    void OnConnect(TCPSocket *socket);
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(AdvancedTCPConnectorTest);
@@ -171,7 +171,7 @@ void AdvancedTCPConnectorTest::testExponentialBackoffPolicy() {
 void AdvancedTCPConnectorTest::testConnect() {
   ola::network::TCPSocketFactory socket_factory(
       ola::NewCallback(this, &AdvancedTCPConnectorTest::AcceptedConnection));
-  TcpAcceptingSocket listening_socket(&socket_factory);
+  TCPAcceptingSocket listening_socket(&socket_factory);
   SetupListeningSocket(&listening_socket);
 
   AdvancedTCPConnector connector(
@@ -215,7 +215,7 @@ void AdvancedTCPConnectorTest::testConnect() {
 void AdvancedTCPConnectorTest::testPause() {
   ola::network::TCPSocketFactory socket_factory(
       ola::NewCallback(this, &AdvancedTCPConnectorTest::AcceptedConnection));
-  TcpAcceptingSocket listening_socket(&socket_factory);
+  TCPAcceptingSocket listening_socket(&socket_factory);
   SetupListeningSocket(&listening_socket);
 
   AdvancedTCPConnector connector(
@@ -368,7 +368,7 @@ void AdvancedTCPConnectorTest::ConfirmState(
  * Setup a TCP socket that accepts connections
  */
 void AdvancedTCPConnectorTest::SetupListeningSocket(
-    TcpAcceptingSocket *listening_socket) {
+    TCPAcceptingSocket *listening_socket) {
   CPPUNIT_ASSERT_MESSAGE(
       "Check for another instance of olad running",
       listening_socket->Listen(m_localhost, SERVER_PORT));
@@ -382,7 +382,7 @@ void AdvancedTCPConnectorTest::SetupListeningSocket(
 /*
  * Accept a new TCP connection.
  */
-void AdvancedTCPConnectorTest::AcceptedConnection(TcpSocket *new_socket) {
+void AdvancedTCPConnectorTest::AcceptedConnection(TCPSocket *new_socket) {
   CPPUNIT_ASSERT(new_socket);
   IPV4Address address;
   uint16_t port;
@@ -398,7 +398,7 @@ void AdvancedTCPConnectorTest::AcceptedConnection(TcpSocket *new_socket) {
 /*
  * Called when a connection completes or times out.
  */
-void AdvancedTCPConnectorTest::OnConnect(TcpSocket *socket) {
+void AdvancedTCPConnectorTest::OnConnect(TCPSocket *socket) {
   CPPUNIT_ASSERT(socket);
 
   IPV4Address address;

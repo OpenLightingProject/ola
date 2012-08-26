@@ -13,8 +13,8 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * MockUdpSocket.cpp
- * This implements the UdpSocketInterface in a way that we can use it for
+ * MockUDPSocket.cpp
+ * This implements the UDPSocketInterface in a way that we can use it for
  * testing.
  * Copyright (C) 2010 Simon Newton
  */
@@ -30,19 +30,19 @@
 #include "ola/Logging.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
-#include "plugins/artnet/MockUdpSocket.h"
+#include "plugins/artnet/MockUDPSocket.h"
 
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
 
 
-bool MockUdpSocket::Init() {
+bool MockUDPSocket::Init() {
   m_init_called = true;
   return true;
 }
 
 
-bool MockUdpSocket::Bind(const IPV4Address&,
+bool MockUDPSocket::Bind(const IPV4Address&,
                          unsigned short port) {
   m_bound_to_port = true;
   m_port = port;
@@ -50,24 +50,24 @@ bool MockUdpSocket::Bind(const IPV4Address&,
 }
 
 
-bool MockUdpSocket::Bind(unsigned short port) {
+bool MockUDPSocket::Bind(unsigned short port) {
   m_bound_to_port = true;
   m_port = port;
   return true;
 }
 
 
-bool MockUdpSocket::Close() {
+bool MockUDPSocket::Close() {
   m_bound_to_port = false;
   return true;
 }
 
 
-int MockUdpSocket::ReadDescriptor() const { return 0; }
-int MockUdpSocket::WriteDescriptor() const { return 0; }
+int MockUDPSocket::ReadDescriptor() const { return 0; }
+int MockUDPSocket::WriteDescriptor() const { return 0; }
 
 
-ssize_t MockUdpSocket::SendTo(const uint8_t *buffer,
+ssize_t MockUDPSocket::SendTo(const uint8_t *buffer,
                               unsigned int size,
                               const ola::network::IPV4Address &ip_address,
                               unsigned short port) const {
@@ -101,14 +101,14 @@ ssize_t MockUdpSocket::SendTo(const uint8_t *buffer,
 }
 
 
-bool MockUdpSocket::RecvFrom(uint8_t *buffer, ssize_t *data_read) const {
+bool MockUDPSocket::RecvFrom(uint8_t *buffer, ssize_t *data_read) const {
   IPV4Address address;
   uint16_t port;
   return RecvFrom(buffer, data_read, address, port);
 }
 
 
-bool MockUdpSocket::RecvFrom(uint8_t *buffer,
+bool MockUDPSocket::RecvFrom(uint8_t *buffer,
                              ssize_t *data_read,
                              ola::network::IPV4Address &source) const {
   uint16_t port;
@@ -116,7 +116,7 @@ bool MockUdpSocket::RecvFrom(uint8_t *buffer,
 }
 
 
-bool MockUdpSocket::RecvFrom(uint8_t *buffer,
+bool MockUDPSocket::RecvFrom(uint8_t *buffer,
                              ssize_t *data_read,
                              ola::network::IPV4Address &source,
                              uint16_t &port) const {
@@ -135,19 +135,19 @@ bool MockUdpSocket::RecvFrom(uint8_t *buffer,
 }
 
 
-bool MockUdpSocket::EnableBroadcast() {
+bool MockUDPSocket::EnableBroadcast() {
   m_broadcast_set = true;
   return true;
 }
 
 
-bool MockUdpSocket::SetMulticastInterface(const IPV4Address &interface) {
+bool MockUDPSocket::SetMulticastInterface(const IPV4Address &interface) {
   CPPUNIT_ASSERT_EQUAL(m_interface, interface);
   return true;
 }
 
 
-bool MockUdpSocket::JoinMulticast(const IPV4Address &interface,
+bool MockUDPSocket::JoinMulticast(const IPV4Address &interface,
                                   const IPV4Address &group,
                                   bool loop) {
   CPPUNIT_ASSERT_EQUAL(m_interface, interface);
@@ -157,7 +157,7 @@ bool MockUdpSocket::JoinMulticast(const IPV4Address &interface,
 }
 
 
-bool MockUdpSocket::LeaveMulticast(const IPV4Address &interface,
+bool MockUDPSocket::LeaveMulticast(const IPV4Address &interface,
                                    const IPV4Address &group) {
   CPPUNIT_ASSERT_EQUAL(m_interface, interface);
   (void) group;
@@ -165,13 +165,13 @@ bool MockUdpSocket::LeaveMulticast(const IPV4Address &interface,
 }
 
 
-bool MockUdpSocket::SetTos(uint8_t tos) {
+bool MockUDPSocket::SetTos(uint8_t tos) {
   m_tos = tos;
   return true;
 }
 
 
-void MockUdpSocket::AddExpectedData(const uint8_t *data,
+void MockUDPSocket::AddExpectedData(const uint8_t *data,
                                     unsigned int size,
                                     const IPV4Address &ip,
                                     uint16_t port) {
@@ -180,7 +180,7 @@ void MockUdpSocket::AddExpectedData(const uint8_t *data,
 }
 
 
-void MockUdpSocket::ReceiveData(const uint8_t *data,
+void MockUDPSocket::ReceiveData(const uint8_t *data,
                                 unsigned int size,
                                 const IPV4Address &ip,
                                 uint16_t port) {
@@ -190,12 +190,12 @@ void MockUdpSocket::ReceiveData(const uint8_t *data,
 }
 
 
-void MockUdpSocket::Verify() {
+void MockUDPSocket::Verify() {
   CPPUNIT_ASSERT(m_expected_calls.empty());
 }
 
 
-bool MockUdpSocket::CheckNetworkParamsMatch(bool init_called,
+bool MockUDPSocket::CheckNetworkParamsMatch(bool init_called,
                                             bool bound_to_port,
                                             uint16_t port,
                                             bool broadcast_set) {
@@ -206,6 +206,6 @@ bool MockUdpSocket::CheckNetworkParamsMatch(bool init_called,
 }
 
 
-void MockUdpSocket::SetInterface(const IPV4Address &interface) {
+void MockUDPSocket::SetInterface(const IPV4Address &interface) {
   m_interface = interface;
 }

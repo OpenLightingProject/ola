@@ -65,7 +65,7 @@ bool OutgoingUDPTransportImpl::Send(const PDUBlock<PDU> &pdu_block,
 
 
 
-IncomingUDPTransport::IncomingUDPTransport(ola::network::UdpSocket *socket,
+IncomingUDPTransport::IncomingUDPTransport(ola::network::UDPSocket *socket,
                                            BaseInflator *inflator)
     : m_socket(socket),
       m_inflator(inflator),

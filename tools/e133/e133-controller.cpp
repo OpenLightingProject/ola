@@ -70,7 +70,7 @@
 
 using ola::network::IPV4Address;
 using ola::NewCallback;
-using ola::network::UdpSocket;
+using ola::network::UDPSocket;
 using ola::plugin::e131::E133_PORT;
 using ola::rdm::PidStoreHelper;
 using ola::rdm::RDMRequest;
@@ -250,7 +250,7 @@ class SimpleE133Controller {
     ola::plugin::e131::RDMInflator m_rdm_inflator;
 
     // sockets & transports
-    UdpSocket m_udp_socket;
+    UDPSocket m_udp_socket;
     ola::plugin::e131::IncomingUDPTransport m_incoming_udp_transport;
     ola::plugin::e131::OutgoingUDPTransportImpl m_outgoing_udp_transport;
 

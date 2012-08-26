@@ -32,7 +32,7 @@ using ola::ExportMap;
 using ola::IntegerVariable;
 using ola::io::LoopbackDescriptor;
 using ola::io::SelectServer;
-using ola::network::UdpSocket;
+using ola::network::UDPSocket;
 
 class SelectServerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(SelectServerTest);
@@ -132,7 +132,7 @@ void SelectServerTest::testAddRemoveReadDescriptor() {
   CPPUNIT_ASSERT_EQUAL(0, socket_count->Get());
 
   // Add a udp socket
-  UdpSocket udp_socket;
+  UDPSocket udp_socket;
   CPPUNIT_ASSERT(udp_socket.Init());
   CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&udp_socket));
   CPPUNIT_ASSERT(!m_ss->AddReadDescriptor(&udp_socket));

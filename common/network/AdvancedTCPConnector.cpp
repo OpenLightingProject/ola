@@ -65,7 +65,7 @@ AdvancedTCPConnector::~AdvancedTCPConnector() {
  * Add a remote host. This will trigger the connection process to start.
  * If the ip:port already exists this won't do anything.
  * When the connection is successfull the on_connect callback will be run, and
- * ownership of the TcpSocket object is transferred.
+ * ownership of the TCPSocket object is transferred.
  * @param ip_address the IP of the node to connect to
  * @param port the port to connect to
  * @param backoff_policy the BackOffPolicy to use for this connection.

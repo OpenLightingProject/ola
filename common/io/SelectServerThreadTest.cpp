@@ -28,7 +28,7 @@
 #include "ola/network/Socket.h"
 
 using ola::io::SelectServer;
-using ola::network::UdpSocket;
+using ola::network::UDPSocket;
 using ola::thread::ThreadId;
 
 

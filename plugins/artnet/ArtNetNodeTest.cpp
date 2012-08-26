@@ -39,7 +39,7 @@
 #include "ola/timecode/TimeCode.h"
 #include "ola/timecode/TimeCodeEnums.h"
 #include "plugins/artnet/ArtNetNode.h"
-#include "plugins/artnet/MockUdpSocket.h"
+#include "plugins/artnet/MockUDPSocket.h"
 
 
 using ola::DmxBuffer;
@@ -94,7 +94,7 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
           m_rdm_response(NULL),
           m_port_id(1),
           broadcast_ip(IPV4Address::Broadcast()),
-          m_socket(new MockUdpSocket()) {
+          m_socket(new MockUDPSocket()) {
     }
     void setUp();
 
@@ -132,7 +132,7 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
     Interface interface;
     IPV4Address peer_ip, peer_ip2, peer_ip3;
     IPV4Address broadcast_ip;
-    MockUdpSocket *m_socket;
+    MockUDPSocket *m_socket;
 
     /**
      * Called when new DMX arrives

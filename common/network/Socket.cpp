@@ -48,14 +48,14 @@ namespace ola {
 namespace network {
 
 
-// TcpSocket
+// TCPSocket
 // ------------------------------------------------
 
 
 /**
  * Get the remote IPAddress and port for this socket
  */
-bool TcpSocket::GetPeer(IPV4Address *address, uint16_t *port) {
+bool TCPSocket::GetPeer(IPV4Address *address, uint16_t *port) {
   struct sockaddr_in remote_address;
   socklen_t length = sizeof(remote_address);
   int r = getpeername(m_sd,
@@ -74,9 +74,9 @@ bool TcpSocket::GetPeer(IPV4Address *address, uint16_t *port) {
 
 
 /*
- * Close this TcpSocket
+ * Close this TCPSocket
  */
-bool TcpSocket::Close() {
+bool TCPSocket::Close() {
   if (m_sd != ola::io::INVALID_DESCRIPTOR) {
     close(m_sd);
     m_sd = ola::io::INVALID_DESCRIPTOR;
@@ -91,7 +91,7 @@ bool TcpSocket::Close() {
  * @param port the port to connect to
  * @param blocking whether to block on connect or not
  */
-TcpSocket* TcpSocket::Connect(const IPV4Address &ip_address,
+TCPSocket* TCPSocket::Connect(const IPV4Address &ip_address,
                               unsigned short port) {
   struct sockaddr_in server_address;
   socklen_t length = sizeof(server_address);
@@ -115,7 +115,7 @@ TcpSocket* TcpSocket::Connect(const IPV4Address &ip_address,
       << strerror(errno);
     return NULL;
   }
-  TcpSocket *socket = new TcpSocket(sd);
+  TCPSocket *socket = new TCPSocket(sd);
   socket->SetReadNonBlocking();
   return socket;
 }
@@ -126,24 +126,24 @@ TcpSocket* TcpSocket::Connect(const IPV4Address &ip_address,
  * @param port the port to connect to
  * @param blocking whether to block on connect or not
  */
-TcpSocket* TcpSocket::Connect(const std::string &ip_address,
+TCPSocket* TCPSocket::Connect(const std::string &ip_address,
                               unsigned short port) {
   IPV4Address address;
   if (!IPV4Address::FromString(ip_address, &address))
     return NULL;
 
-  return TcpSocket::Connect(address, port);
+  return TCPSocket::Connect(address, port);
 }
 
 
-// UdpSocket
+// UDPSocket
 // ------------------------------------------------
 
 /*
  * Start listening
  * @return true if it succeeded, false otherwise
  */
-bool UdpSocket::Init() {
+bool UDPSocket::Init() {
   if (m_fd != ola::io::INVALID_DESCRIPTOR)
     return false;
 
@@ -162,7 +162,7 @@ bool UdpSocket::Init() {
 /*
  * Bind this socket to an external address/port
  */
-bool UdpSocket::Bind(const IPV4Address &ip,
+bool UDPSocket::Bind(const IPV4Address &ip,
                      unsigned short port) {
   if (m_fd == ola::io::INVALID_DESCRIPTOR)
     return false;
@@ -217,7 +217,7 @@ bool UdpSocket::Bind(const IPV4Address &ip,
 /*
  * Bind this socket to an address/port using the any address
  */
-bool UdpSocket::Bind(unsigned short port) {
+bool UDPSocket::Bind(unsigned short port) {
   return Bind(IPV4Address::WildCard(), port);
 }
 
@@ -225,7 +225,7 @@ bool UdpSocket::Bind(unsigned short port) {
 /*
  * Close this socket
  */
-bool UdpSocket::Close() {
+bool UDPSocket::Close() {
   if (m_fd == ola::io::INVALID_DESCRIPTOR)
     return false;
 
@@ -253,7 +253,7 @@ bool UdpSocket::Close() {
  * @param port the port to send to in HOST byte order.
  * @return the number of bytes sent
  */
-ssize_t UdpSocket::SendTo(const uint8_t *buffer,
+ssize_t UDPSocket::SendTo(const uint8_t *buffer,
                           unsigned int size,
                           const IPV4Address &ip,
                           unsigned short port) const {
@@ -282,7 +282,7 @@ ssize_t UdpSocket::SendTo(const uint8_t *buffer,
  * read
  * @return true or false
  */
-bool UdpSocket::RecvFrom(uint8_t *buffer, ssize_t *data_read) const {
+bool UDPSocket::RecvFrom(uint8_t *buffer, ssize_t *data_read) const {
   socklen_t length = 0;
   return _RecvFrom(buffer, data_read, NULL, &length);
 }
@@ -296,7 +296,7 @@ bool UdpSocket::RecvFrom(uint8_t *buffer, ssize_t *data_read) const {
  * @param source the src ip of the packet
  * @return true or false
  */
-bool UdpSocket::RecvFrom(uint8_t *buffer,
+bool UDPSocket::RecvFrom(uint8_t *buffer,
                          ssize_t *data_read,
                          IPV4Address &source) const {
   struct sockaddr_in src_sockaddr;
@@ -317,7 +317,7 @@ bool UdpSocket::RecvFrom(uint8_t *buffer,
  * @param port the src port of the packet in host byte order
  * @return true or false
  */
-bool UdpSocket::RecvFrom(uint8_t *buffer,
+bool UDPSocket::RecvFrom(uint8_t *buffer,
                          ssize_t *data_read,
                          IPV4Address &source,
                          uint16_t &port) const {
@@ -336,7 +336,7 @@ bool UdpSocket::RecvFrom(uint8_t *buffer,
  * Enable broadcasting for this socket.
  * @return true if it worked, false otherwise
  */
-bool UdpSocket::EnableBroadcast() {
+bool UDPSocket::EnableBroadcast() {
   if (m_fd == ola::io::INVALID_DESCRIPTOR)
     return false;
 
@@ -357,7 +357,7 @@ bool UdpSocket::EnableBroadcast() {
 /**
  * Set the outgoing interface to be used for multicast transmission
  */
-bool UdpSocket::SetMulticastInterface(const IPV4Address &iface) {
+bool UDPSocket::SetMulticastInterface(const IPV4Address &iface) {
   struct in_addr addr = iface.Address();
   int ok = setsockopt(m_fd,
                       IPPROTO_IP,
@@ -378,7 +378,7 @@ bool UdpSocket::SetMulticastInterface(const IPV4Address &iface) {
  * @param group the address of the group to join
  * @return true if it worked, false otherwise
  */
-bool UdpSocket::JoinMulticast(const IPV4Address &iface,
+bool UDPSocket::JoinMulticast(const IPV4Address &iface,
                               const IPV4Address &group,
                               bool multicast_loop) {
   char loop = multicast_loop;
@@ -414,7 +414,7 @@ bool UdpSocket::JoinMulticast(const IPV4Address &iface,
  * @param group the address of the group to join
  * @return true if it worked, false otherwise
  */
-bool UdpSocket::LeaveMulticast(const IPV4Address &iface,
+bool UDPSocket::LeaveMulticast(const IPV4Address &iface,
                                const IPV4Address &group) {
   struct ip_mreq mreq;
   mreq.imr_interface = iface.Address();
@@ -434,7 +434,7 @@ bool UdpSocket::LeaveMulticast(const IPV4Address &iface,
 }
 
 
-bool UdpSocket::_RecvFrom(uint8_t *buffer,
+bool UDPSocket::_RecvFrom(uint8_t *buffer,
                           ssize_t *data_read,
                           struct sockaddr_in *source,
                           socklen_t *src_size) const {
@@ -457,7 +457,7 @@ bool UdpSocket::_RecvFrom(uint8_t *buffer,
  * Set the tos field for a socket
  * @param tos the tos field
  */
-bool UdpSocket::SetTos(uint8_t tos) {
+bool UDPSocket::SetTos(uint8_t tos) {
   unsigned int value = tos & 0xFC;  // zero the ECN fields
   int ok = setsockopt(m_fd,
                       IPPROTO_IP,
@@ -472,13 +472,13 @@ bool UdpSocket::SetTos(uint8_t tos) {
 }
 
 
-// TcpAcceptingSocket
+// TCPAcceptingSocket
 // ------------------------------------------------
 
 /*
- * Create a new TcpListeningSocket
+ * Create a new TCPListeningSocket
  */
-TcpAcceptingSocket::TcpAcceptingSocket(TCPSocketFactoryInterface *factory)
+TCPAcceptingSocket::TCPAcceptingSocket(TCPSocketFactoryInterface *factory)
     : ReadFileDescriptor(),
       m_sd(ola::io::INVALID_DESCRIPTOR),
       m_factory(factory) {
@@ -488,7 +488,7 @@ TcpAcceptingSocket::TcpAcceptingSocket(TCPSocketFactoryInterface *factory)
 /**
  * Clean up
  */
-TcpAcceptingSocket::~TcpAcceptingSocket() {
+TCPAcceptingSocket::~TCPAcceptingSocket() {
   Close();
 }
 
@@ -500,7 +500,7 @@ TcpAcceptingSocket::~TcpAcceptingSocket() {
  * @param backlog the backlog
  * @return true if it succeeded, false otherwise
  */
-bool TcpAcceptingSocket::Listen(const std::string &address,
+bool TCPAcceptingSocket::Listen(const std::string &address,
                                 unsigned short port,
                                 int backlog) {
   IPV4Address ip_address;
@@ -518,7 +518,7 @@ bool TcpAcceptingSocket::Listen(const std::string &address,
  * @param backlog the backlog
  * @return true if it succeeded, false otherwise
  */
-bool TcpAcceptingSocket::Listen(const IPV4Address &address,
+bool TCPAcceptingSocket::Listen(const IPV4Address &address,
                                 unsigned short port,
                                 int backlog) {
   struct sockaddr_in server_address;
@@ -571,7 +571,7 @@ bool TcpAcceptingSocket::Listen(const IPV4Address &address,
  * Stop listening & close this socket
  * @return true if close succeeded, false otherwise
  */
-bool TcpAcceptingSocket::Close() {
+bool TCPAcceptingSocket::Close() {
   bool ret = true;
   if (m_sd != ola::io::INVALID_DESCRIPTOR)
     if (close(m_sd)) {
@@ -587,7 +587,7 @@ bool TcpAcceptingSocket::Close() {
  * Accept new connections
  * @return a new connected socket
  */
-void TcpAcceptingSocket::PerformRead() {
+void TCPAcceptingSocket::PerformRead() {
   struct sockaddr_in cli_address;
   socklen_t length = sizeof(cli_address);
 

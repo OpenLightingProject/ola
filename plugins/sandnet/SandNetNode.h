@@ -37,7 +37,7 @@ namespace plugin {
 namespace sandnet {
 
 using ola::network::IPV4Address;
-using ola::network::UdpSocket;
+using ola::network::UDPSocket;
 
 class SandNetNode {
   public:
@@ -61,8 +61,8 @@ class SandNetNode {
     }
     bool Start();
     bool Stop();
-    std::vector<UdpSocket*> GetSockets();
-    void SocketReady(UdpSocket *socket);
+    std::vector<UDPSocket*> GetSockets();
+    void SocketReady(UDPSocket *socket);
 
     bool SetHandler(uint8_t group,
                     uint8_t universe,
@@ -109,8 +109,8 @@ class SandNetNode {
     sandnet_port m_ports[SANDNET_MAX_PORTS];
     universe_handlers m_handlers;
     ola::network::Interface m_interface;
-    UdpSocket m_control_socket;
-    UdpSocket m_data_socket;
+    UDPSocket m_control_socket;
+    UDPSocket m_data_socket;
     RunLengthEncoder m_encoder;
     IPV4Address m_control_addr;
     IPV4Address m_data_addr;

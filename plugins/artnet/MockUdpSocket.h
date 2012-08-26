@@ -31,17 +31,17 @@
 using ola::network::IPV4Address;
 
 /*
- * A MockUdpSocket
+ * A MockUDPSocket
  */
-class MockUdpSocket: public ola::network::UdpSocketInterface {
+class MockUDPSocket: public ola::network::UDPSocketInterface {
   public:
-    MockUdpSocket(): ola::network::UdpSocketInterface(),
+    MockUDPSocket(): ola::network::UDPSocketInterface(),
                      m_init_called(false),
                      m_bound_to_port(false),
                      m_broadcast_set(false),
                      m_port(0),
                      m_discard_mode(false) {}
-    ~MockUdpSocket() { Close(); }
+    ~MockUDPSocket() { Close(); }
 
     // These are the socket methods
     bool Init();
@@ -123,7 +123,7 @@ class MockUdpSocket: public ola::network::UdpSocketInterface {
  */
 class SocketVerifier {
   public:
-    explicit SocketVerifier(MockUdpSocket *socket)
+    explicit SocketVerifier(MockUDPSocket *socket)
         : m_socket(socket) {
     }
     ~SocketVerifier() {
@@ -131,6 +131,6 @@ class SocketVerifier {
     }
 
   private:
-    MockUdpSocket *m_socket;
+    MockUDPSocket *m_socket;
 };
 #endif  // PLUGINS_ARTNET_MOCKUDPSOCKET_H_

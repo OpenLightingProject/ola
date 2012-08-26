@@ -80,7 +80,7 @@ void UDPTransportTest::testUDPTransport() {
   MockInflator inflator(cid, stop_closure.get());
 
   // setup the socket
-  ola::network::UdpSocket socket;
+  ola::network::UDPSocket socket;
   CPPUNIT_ASSERT(socket.Init());
   CPPUNIT_ASSERT(socket.Bind(ACN_PORT));
   CPPUNIT_ASSERT(socket.EnableBroadcast());

@@ -17,11 +17,11 @@
  * The Socket interfaces
  * Copyright (C) 2005-2009 Simon Newton
  *
- *  - UdpSocket, allows sending and receiving UDP datagrams
- *  - TcpSocket, this represents a TCP connection to a remote endpoint
+ *  - UDPSocket, allows sending and receiving UDP datagrams
+ *  - TCPSocket, this represents a TCP connection to a remote endpoint
  *
  * AcceptingSocket is the interface that defines sockets which can spawn new
- * ConnectedDescriptors. TcpAcceptingSocket is the only subclass and provides
+ * ConnectedDescriptors. TCPAcceptingSocket is the only subclass and provides
  * the accept() functionality.
  */
 
@@ -49,16 +49,16 @@ namespace network {
 
 
 /*
- * A TcpSocket
+ * A TCPSocket
  */
-class TcpSocket: public ola::io::ConnectedDescriptor {
+class TCPSocket: public ola::io::ConnectedDescriptor {
   public:
-    explicit TcpSocket(int sd)
+    explicit TCPSocket(int sd)
         : m_sd(sd) {
       SetNoSigPipe(sd);
     }
 
-    ~TcpSocket() { Close(); }
+    ~TCPSocket() { Close(); }
 
     int ReadDescriptor() const { return m_sd; }
     int WriteDescriptor() const { return m_sd; }
@@ -66,9 +66,9 @@ class TcpSocket: public ola::io::ConnectedDescriptor {
 
     bool GetPeer(IPV4Address *address, uint16_t *port);
 
-    static TcpSocket* Connect(const IPV4Address &ip_address,
+    static TCPSocket* Connect(const IPV4Address &ip_address,
                               unsigned short port);
-    static TcpSocket* Connect(const std::string &ip_address,
+    static TCPSocket* Connect(const std::string &ip_address,
                               unsigned short port);
 
   protected:
@@ -77,19 +77,19 @@ class TcpSocket: public ola::io::ConnectedDescriptor {
   private:
     int m_sd;
 
-    TcpSocket(const TcpSocket &other);
-    TcpSocket& operator=(const TcpSocket &other);
+    TCPSocket(const TCPSocket &other);
+    TCPSocket& operator=(const TCPSocket &other);
 };
 
 
 /*
- * The UdpSocketInterface.
+ * The UDPSocketInterface.
  * This is done as an Interface so we can mock it out for testing.
  */
-class UdpSocketInterface: public ola::io::BidirectionalFileDescriptor {
+class UDPSocketInterface: public ola::io::BidirectionalFileDescriptor {
   public:
-    UdpSocketInterface(): ola::io::BidirectionalFileDescriptor() {}
-    ~UdpSocketInterface() {}
+    UDPSocketInterface(): ola::io::BidirectionalFileDescriptor() {}
+    ~UDPSocketInterface() {}
     virtual bool Init() = 0;
     virtual bool Bind(const IPV4Address &ip,
                       unsigned short port) = 0;
@@ -120,20 +120,20 @@ class UdpSocketInterface: public ola::io::BidirectionalFileDescriptor {
     virtual bool SetTos(uint8_t tos) = 0;
 
   private:
-    UdpSocketInterface(const UdpSocketInterface &other);
-    UdpSocketInterface& operator=(const UdpSocketInterface &other);
+    UDPSocketInterface(const UDPSocketInterface &other);
+    UDPSocketInterface& operator=(const UDPSocketInterface &other);
 };
 
 
 /*
- * A UdpSocket (non connected)
+ * A UDPSocket (non connected)
  */
-class UdpSocket: public UdpSocketInterface {
+class UDPSocket: public UDPSocketInterface {
   public:
-    UdpSocket(): UdpSocketInterface(),
+    UDPSocket(): UDPSocketInterface(),
                  m_fd(ola::io::INVALID_DESCRIPTOR),
                  m_bound_to_port(false) {}
-    ~UdpSocket() { Close(); }
+    ~UDPSocket() { Close(); }
     bool Init();
     bool Bind(const IPV4Address &ip,
               unsigned short port);
@@ -166,8 +166,8 @@ class UdpSocket: public UdpSocketInterface {
   private:
     int m_fd;
     bool m_bound_to_port;
-    UdpSocket(const UdpSocket &other);
-    UdpSocket& operator=(const UdpSocket &other);
+    UDPSocket(const UDPSocket &other);
+    UDPSocket& operator=(const UDPSocket &other);
     bool _RecvFrom(uint8_t *buffer,
                    ssize_t *data_read,
                    struct sockaddr_in *source,
@@ -178,10 +178,10 @@ class UdpSocket: public UdpSocketInterface {
 /*
  * A TCP accepting socket
  */
-class TcpAcceptingSocket: public ola::io::ReadFileDescriptor {
+class TCPAcceptingSocket: public ola::io::ReadFileDescriptor {
   public:
-    explicit TcpAcceptingSocket(class TCPSocketFactoryInterface *factory);
-    ~TcpAcceptingSocket();
+    explicit TCPAcceptingSocket(class TCPSocketFactoryInterface *factory);
+    ~TCPAcceptingSocket();
     bool Listen(const std::string &address,
                 unsigned short port,
                 int backlog = 10);
@@ -200,8 +200,8 @@ class TcpAcceptingSocket: public ola::io::ReadFileDescriptor {
     int m_sd;
     class TCPSocketFactoryInterface *m_factory;
 
-    TcpAcceptingSocket(const TcpAcceptingSocket &other);
-    TcpAcceptingSocket& operator=(const TcpAcceptingSocket &other);
+    TCPAcceptingSocket(const TCPAcceptingSocket &other);
+    TCPAcceptingSocket& operator=(const TCPAcceptingSocket &other);
 };
 }  // network
 }  // ola

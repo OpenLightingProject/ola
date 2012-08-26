@@ -33,7 +33,7 @@
 namespace ola {
 
 using ola::io::SelectServer;
-using ola::network::TcpSocket;
+using ola::network::TCPSocket;
 
 /*
  * The base class, not used directly.
@@ -51,7 +51,7 @@ class BaseClientWrapper {
     void SocketClosed();
 
   protected:
-    TcpSocket *m_socket;
+    TCPSocket *m_socket;
 
   private:
     virtual void CreateClient() = 0;

@@ -58,7 +58,7 @@ bool StreamingClient::Setup() {
   if (m_auto_start)
     m_socket = ola::client::ConnectToServer(OLA_DEFAULT_PORT);
   else
-    m_socket = TcpSocket::Connect("127.0.0.1", OLA_DEFAULT_PORT);
+    m_socket = TCPSocket::Connect("127.0.0.1", OLA_DEFAULT_PORT);
 
   if (!m_socket)
     return false;

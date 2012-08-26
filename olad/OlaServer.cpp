@@ -79,7 +79,7 @@ OlaServer::OlaServer(OlaClientServiceFactory *factory,
                      PreferencesFactory *preferences_factory,
                      ola::io::SelectServer *select_server,
                      ola_server_options *ola_options,
-                     ola::network::TcpAcceptingSocket *socket,
+                     ola::network::TCPAcceptingSocket *socket,
                      ExportMap *export_map)
     : m_service_factory(factory),
       m_plugin_loaders(plugin_loaders),
@@ -295,7 +295,7 @@ void OlaServer::NewConnection(ola::io::ConnectedDescriptor *descriptor) {
  * Add a new ConnectedDescriptor to this Server.
  * @param socket the new ConnectedDescriptor
  */
-void OlaServer::NewTCPConnection(ola::network::TcpSocket *socket) {
+void OlaServer::NewTCPConnection(ola::network::TCPSocket *socket) {
   if (!socket)
     return;
   InternalNewConnection(socket);

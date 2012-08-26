@@ -341,7 +341,7 @@ void IncommingStreamTransport::EnterWaitingForPDU() {
  * Create a new IncomingTCPTransport
  */
 IncomingTCPTransport::IncomingTCPTransport(BaseInflator *inflator,
-                                           ola::network::TcpSocket *socket):
+                                           ola::network::TCPSocket *socket):
   m_transport(NULL) {
   uint16_t port;
   IPV4Address ip_address;

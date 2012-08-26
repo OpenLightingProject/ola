@@ -53,7 +53,7 @@ class ShowNetNode {
       return m_interface;
     }
 
-    ola::network::UdpSocket* GetSocket() { return m_socket; }
+    ola::network::UDPSocket* GetSocket() { return m_socket; }
     void SocketReady();
 
     static const uint16_t SHOWNET_MAX_UNIVERSES = 8;
@@ -73,7 +73,7 @@ class ShowNetNode {
     std::map<unsigned int, universe_handler> m_handlers;
     ola::network::Interface m_interface;
     ola::RunLengthEncoder m_encoder;
-    ola::network::UdpSocket *m_socket;
+    ola::network::UDPSocket *m_socket;
 
     ShowNetNode(const ShowNetNode&);
     ShowNetNode& operator=(const ShowNetNode&);

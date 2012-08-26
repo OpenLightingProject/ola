@@ -19,8 +19,8 @@
  * Copyright (C) 2007 Simon Newton
  */
 
-#ifndef PLUGINS_E131_E131_E131LAYER_H_
-#define PLUGINS_E131_E131_E131LAYER_H_
+#ifndef PLUGINS_E131_E131_E131SENDER_H_
+#define PLUGINS_E131_E131_E131SENDER_H_
 
 #include "ola/network/Socket.h"
 #include "plugins/e131/e131/DMPPDU.h"
@@ -37,7 +37,7 @@ class DMPInflator;
 
 class E131Sender {
   public:
-    E131Sender(ola::network::UdpSocket *socket,
+    E131Sender(ola::network::UDPSocket *socket,
               class RootSender *root_sender);
     ~E131Sender() {}
 
@@ -46,7 +46,7 @@ class E131Sender {
                     class ola::network::IPV4Address *addr);
 
   private:
-    ola::network::UdpSocket *m_socket;
+    ola::network::UDPSocket *m_socket;
     PreamblePacker m_packer;
     OutgoingUDPTransportImpl m_transport_impl;
     class RootSender *m_root_sender;
@@ -57,4 +57,4 @@ class E131Sender {
 }  // e131
 }  // plugin
 }  // ola
-#endif  // PLUGINS_E131_E131_E131LAYER_H_
+#endif  // PLUGINS_E131_E131_E131SENDER_H_

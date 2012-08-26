@@ -97,7 +97,7 @@ class ArtNetNodeImpl {
     ArtNetNodeImpl(const ola::network::Interface &interface,
                    ola::io::SelectServerInterface *ss,
                    const ArtNetNodeOptions &options,
-                   ola::network::UdpSocketInterface *socket = NULL);
+                   ola::network::UDPSocketInterface *socket = NULL);
     virtual ~ArtNetNodeImpl();
 
     bool Start();
@@ -229,7 +229,7 @@ class ArtNetNodeImpl {
     InputPort m_input_ports[ARTNET_MAX_PORTS];
     OutputPort m_output_ports[ARTNET_MAX_PORTS];
     ola::network::Interface m_interface;
-    ola::network::UdpSocketInterface *m_socket;
+    ola::network::UDPSocketInterface *m_socket;
 
     ArtNetNodeImpl(const ArtNetNodeImpl&);
     ArtNetNodeImpl& operator=(const ArtNetNodeImpl&);
@@ -373,7 +373,7 @@ class ArtNetNode {
     ArtNetNode(const ola::network::Interface &interface,
                ola::io::SelectServerInterface *ss,
                const ArtNetNodeOptions &options,
-               ola::network::UdpSocketInterface *socket = NULL);
+               ola::network::UDPSocketInterface *socket = NULL);
     virtual ~ArtNetNode();
 
     bool Start() { return m_impl.Start(); }

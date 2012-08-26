@@ -78,7 +78,7 @@ class E131Node {
 
     const ola::network::Interface &GetInterface() const { return m_interface; }
 
-    ola::network::UdpSocket* GetSocket() { return &m_socket; }
+    ola::network::UDPSocket* GetSocket() { return &m_socket; }
 
   private:
     typedef struct {
@@ -88,7 +88,7 @@ class E131Node {
 
     string m_preferred_ip;
     ola::network::Interface m_interface;
-    ola::network::UdpSocket m_socket;
+    ola::network::UDPSocket m_socket;
     CID m_cid;
     bool m_use_rev2;
     uint8_t m_dscp;

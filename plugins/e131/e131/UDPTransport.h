@@ -67,7 +67,7 @@ class OutgoingUDPTransport: public OutgoingTransport {
  */
 class OutgoingUDPTransportImpl {
   public:
-    OutgoingUDPTransportImpl(ola::network::UdpSocket *socket,
+    OutgoingUDPTransportImpl(ola::network::UDPSocket *socket,
                              PreamblePacker *packer = NULL)
         : m_socket(socket),
           m_packer(packer),
@@ -87,7 +87,7 @@ class OutgoingUDPTransportImpl {
               uint16_t port);
 
   private:
-    ola::network::UdpSocket *m_socket;
+    ola::network::UDPSocket *m_socket;
     PreamblePacker *m_packer;
     bool m_free_packer;
 };
@@ -100,7 +100,7 @@ class OutgoingUDPTransportImpl {
  */
 class IncomingUDPTransport {
   public:
-    IncomingUDPTransport(ola::network::UdpSocket *socket,
+    IncomingUDPTransport(ola::network::UDPSocket *socket,
                          class BaseInflator *inflator);
     ~IncomingUDPTransport() {
       if (m_recv_buffer)
@@ -110,7 +110,7 @@ class IncomingUDPTransport {
     void Receive();
 
   private:
-    ola::network::UdpSocket *m_socket;
+    ola::network::UDPSocket *m_socket;
     class BaseInflator *m_inflator;
     uint8_t *m_recv_buffer;
 };

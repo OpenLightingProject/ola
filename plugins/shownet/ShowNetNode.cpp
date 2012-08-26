@@ -35,7 +35,7 @@ namespace shownet {
 
 using std::string;
 using std::map;
-using ola::network::UdpSocket;
+using ola::network::UDPSocket;
 using ola::network::HostToNetwork;
 using ola::Callback0;
 
@@ -327,7 +327,7 @@ unsigned int ShowNetNode::PopulatePacket(shownet_data_packet *packet,
  * Setup the networking compoents.
  */
 bool ShowNetNode::InitNetwork() {
-  m_socket = new UdpSocket();
+  m_socket = new UDPSocket();
 
   if (!m_socket->Init()) {
     OLA_WARN << "Socket init failed";

@@ -167,7 +167,7 @@ class IncommingStreamTransport {
 class IncomingTCPTransport {
   public:
     IncomingTCPTransport(class BaseInflator *inflator,
-                         ola::network::TcpSocket *socket);
+                         ola::network::TCPSocket *socket);
     ~IncomingTCPTransport() {}
 
     bool Receive() { return m_transport->Receive(); }

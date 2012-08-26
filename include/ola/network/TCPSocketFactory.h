@@ -41,7 +41,7 @@ class TCPSocketFactoryInterface {
 
 
 /**
- * A factory that creates TcpSockets.
+ * A factory that creates TCPSockets.
  */
 template<class SocketType>
 class GenericTCPSocketFactory: public TCPSocketFactoryInterface {
@@ -67,7 +67,7 @@ class GenericTCPSocketFactory: public TCPSocketFactoryInterface {
     NewSocketCallback *m_new_socket;
 };
 
-typedef GenericTCPSocketFactory<TcpSocket> TCPSocketFactory;
+typedef GenericTCPSocketFactory<TCPSocket> TCPSocketFactory;
 typedef GenericTCPSocketFactory<BufferedTCPSocket> BufferedTCPSocketFactory;
 }  // network
 }  // ola

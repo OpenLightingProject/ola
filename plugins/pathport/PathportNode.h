@@ -35,7 +35,7 @@ namespace plugin {
 namespace pathport {
 
 using ola::network::IPV4Address;
-using ola::network::UdpSocket;
+using ola::network::UDPSocket;
 
 class PathportNode {
   public:
@@ -48,8 +48,8 @@ class PathportNode {
     const ola::network::Interface &GetInterface() const {
       return m_interface;
     }
-    UdpSocket *GetSocket() { return &m_socket; }
-    void SocketReady(UdpSocket *socket);
+    UDPSocket *GetSocket() { return &m_socket; }
+    void SocketReady(UDPSocket *socket);
 
     bool SetHandler(uint8_t universe,
                     DmxBuffer *buffer,
@@ -122,7 +122,7 @@ class PathportNode {
 
     universe_handlers m_handlers;
     ola::network::Interface m_interface;
-    UdpSocket m_socket;
+    UDPSocket m_socket;
     IPV4Address m_config_addr;
     IPV4Address m_status_addr;
     IPV4Address m_data_addr;

@@ -66,7 +66,7 @@ class EspNetNode {
     void SetUniverse(uint8_t universe) { m_universe = universe; }
 
     // IO methods
-    ola::network::UdpSocket* GetSocket() { return &m_socket; }
+    ola::network::UDPSocket* GetSocket() { return &m_socket; }
     void SocketReady();
 
     // DMX Receiving methods
@@ -119,7 +119,7 @@ class EspNetNode {
     std::string m_preferred_ip;
     std::map<uint8_t, universe_handler> m_handlers;
     ola::network::Interface m_interface;
-    ola::network::UdpSocket m_socket;
+    ola::network::UDPSocket m_socket;
     RunLengthDecoder m_decoder;
 
     static const char NODE_NAME[];

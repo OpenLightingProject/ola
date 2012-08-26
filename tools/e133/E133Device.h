@@ -89,9 +89,9 @@ class E133Device {
     const string m_preferred_ip;
     ola::io::SelectServerInterface *m_ss;
     ola::network::IPV4Address m_ip_address;
-    ola::network::UdpSocket m_udp_socket;
+    ola::network::UDPSocket m_udp_socket;
     ola::network::BufferedTCPSocketFactory m_tcp_socket_factory;
-    ola::network::TcpAcceptingSocket m_tcp_socket;
+    ola::network::TCPAcceptingSocket m_tcp_socket;
 
     // inflators
     ola::plugin::e131::RootInflator m_root_inflator;

@@ -107,7 +107,7 @@ void RootSenderTest::testRootSenderWithCIDs(const CID &root_cid,
   RootSender root_sender(root_cid);
 
   // setup the socket
-  ola::network::UdpSocket socket;
+  ola::network::UDPSocket socket;
   CPPUNIT_ASSERT(socket.Init());
   CPPUNIT_ASSERT(socket.Bind(ACN_PORT));
   CPPUNIT_ASSERT(socket.EnableBroadcast());

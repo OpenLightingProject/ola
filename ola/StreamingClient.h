@@ -40,7 +40,7 @@ namespace proto {
 }
 
 using ola::io::SelectServer;
-using ola::network::TcpSocket;
+using ola::network::TCPSocket;
 
 /*
  * StreamingClient opens a connection and then sends data over the socket.
@@ -61,7 +61,7 @@ class StreamingClient {
     StreamingClient operator=(const StreamingClient&);
 
     bool m_auto_start;
-    TcpSocket *m_socket;
+    TCPSocket *m_socket;
     SelectServer *m_ss;
     class ola::rpc::StreamRpcChannel *m_channel;
     class ola::proto::OlaServerService_Stub *m_stub;

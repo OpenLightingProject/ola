@@ -40,7 +40,7 @@ using ola::network::HostToNetwork;
  * Create a new E131Sender
  * @param root_sender the root layer to use
  */
-E131Sender::E131Sender(ola::network::UdpSocket *socket,
+E131Sender::E131Sender(ola::network::UDPSocket *socket,
                        RootSender *root_sender)
     : m_socket(socket),
       m_transport_impl(socket, &m_packer),

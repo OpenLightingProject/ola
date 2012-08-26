@@ -38,7 +38,7 @@ using std::map;
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
 using ola::network::NetworkToHost;
-using ola::network::UdpSocket;
+using ola::network::UDPSocket;
 using ola::Callback0;
 
 const char EspNetNode::NODE_NAME[] = "OLA Node";

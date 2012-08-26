@@ -62,8 +62,8 @@ PathportDevice::PathportDevice(PathportPlugin *owner,
  * Start this device
  */
 bool PathportDevice::StartHook() {
-  vector<ola::network::UdpSocket*> sockets;
-  vector<ola::network::UdpSocket*>::iterator iter;
+  vector<ola::network::UDPSocket*> sockets;
+  vector<ola::network::UDPSocket*>::iterator iter;
 
   uint32_t product_id;
   if (!StringToInt(m_preferences->GetValue(K_NODE_ID_KEY), &product_id)) {

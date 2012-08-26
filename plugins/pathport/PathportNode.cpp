@@ -40,7 +40,7 @@ using std::vector;
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
 using ola::network::NetworkToHost;
-using ola::network::UdpSocket;
+using ola::network::UDPSocket;
 using ola::Callback0;
 
 /*
@@ -120,7 +120,7 @@ bool PathportNode::Stop() {
 /*
  * Called when there is data on this socket
  */
-void PathportNode::SocketReady(UdpSocket *socket) {
+void PathportNode::SocketReady(UDPSocket *socket) {
   pathport_packet_s packet;
   ssize_t packet_size = sizeof(packet);
   IPV4Address source;

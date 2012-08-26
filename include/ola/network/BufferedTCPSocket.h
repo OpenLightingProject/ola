@@ -33,16 +33,16 @@ namespace network {
  * This is a copy and paste from the BufferedWriteDescriptor class, but I
  * couldn't find another way to do it :(.
  */
-class BufferedTCPSocket: public TcpSocket, public ola::io::DescriptorStream {
+class BufferedTCPSocket: public TCPSocket, public ola::io::DescriptorStream {
   public:
     BufferedTCPSocket(int fd, ola::io::SelectServerInterface *ss = NULL)
-      : TcpSocket(fd),
+      : TCPSocket(fd),
         DescriptorStream(ss) {
     }
 
     bool Close() {
       Disassociate();
-      return TcpSocket::Close();
+      return TCPSocket::Close();
     }
 
     // We override Send() and buffer the data.

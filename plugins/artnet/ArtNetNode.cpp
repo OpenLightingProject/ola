@@ -43,7 +43,7 @@ using ola::network::HostToLittleEndian;
 using ola::network::HostToNetwork;
 using ola::network::LittleEndianToHost;
 using ola::network::NetworkToHost;
-using ola::network::UdpSocket;
+using ola::network::UDPSocket;
 using ola::rdm::RDMDiscoveryCallback;
 using std::pair;
 using std::string;
@@ -62,7 +62,7 @@ const char ArtNetNodeImpl::ARTNET_ID[] = "Art-Net";
 ArtNetNodeImpl::ArtNetNodeImpl(const ola::network::Interface &interface,
                                ola::io::SelectServerInterface *ss,
                                const ArtNetNodeOptions &options,
-                               ola::network::UdpSocketInterface *socket)
+                               ola::network::UDPSocketInterface *socket)
     : m_running(false),
       m_net_address(0),
       m_send_reply_on_change(true),
@@ -1615,7 +1615,7 @@ bool ArtNetNodeImpl::CheckPortId(uint8_t port_id) {
  */
 bool ArtNetNodeImpl::InitNetwork() {
   if (!m_socket)
-    m_socket = new UdpSocket();
+    m_socket = new UDPSocket();
 
   if (!m_socket->Init()) {
     OLA_WARN << "Socket init failed";
@@ -1810,7 +1810,7 @@ void ArtNetNodeImpl::RunRDMCallbackWithUIDs(const uid_map &uids,
 ArtNetNode::ArtNetNode(const ola::network::Interface &interface,
                        ola::io::SelectServerInterface *ss,
                        const ArtNetNodeOptions &options,
-                       ola::network::UdpSocketInterface *socket):
+                       ola::network::UDPSocketInterface *socket):
     m_impl(interface, ss, options, socket) {
   for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
     m_wrappers[i] = new ArtNetNodeImplRDMWrapper(&m_impl, i);

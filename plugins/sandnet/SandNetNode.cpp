@@ -38,7 +38,7 @@ using std::map;
 using std::vector;
 using ola::network::HostToNetwork;
 using ola::network::NetworkToHost;
-using ola::network::UdpSocket;
+using ola::network::UDPSocket;
 using ola::Callback0;
 
 const uint16_t SandNetNode::CONTROL_PORT = 37895;
@@ -129,8 +129,8 @@ bool SandNetNode::Stop() {
 /*
  * Return a list of sockets in use
  */
-vector<UdpSocket*> SandNetNode::GetSockets() {
-  vector<UdpSocket*> sockets;
+vector<UDPSocket*> SandNetNode::GetSockets() {
+  vector<UDPSocket*> sockets;
   sockets.push_back(&m_data_socket);
   sockets.push_back(&m_control_socket);
   return sockets;
@@ -140,7 +140,7 @@ vector<UdpSocket*> SandNetNode::GetSockets() {
 /*
  * Called when there is data on this socket
  */
-void SandNetNode::SocketReady(UdpSocket *socket) {
+void SandNetNode::SocketReady(UDPSocket *socket) {
   sandnet_packet packet;
   ssize_t packet_size = sizeof(packet);
   IPV4Address source;
@@ -445,7 +445,7 @@ bool SandNetNode::SendUncompressedDMX(uint8_t port_id,
 bool SandNetNode::SendPacket(const sandnet_packet &packet,
                              unsigned int size,
                              bool is_control) {
-  UdpSocket *socket;
+  UDPSocket *socket;
   if (is_control)
     socket = &m_control_socket;
   else

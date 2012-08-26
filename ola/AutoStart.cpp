@@ -33,9 +33,9 @@ namespace client {
 /*
  * Open a connection to the server.
  */
-TcpSocket *ConnectToServer(unsigned short port) {
+TCPSocket *ConnectToServer(unsigned short port) {
   static const char address[] = "127.0.0.1";
-  TcpSocket *socket = TcpSocket::Connect(address, port);
+  TCPSocket *socket = TCPSocket::Connect(address, port);
   if (socket)
     return socket;
 
@@ -66,7 +66,7 @@ TcpSocket *ConnectToServer(unsigned short port) {
 
   // wait a bit here for the server to come up
   sleep(1);
-  return TcpSocket::Connect(address, port);
+  return TCPSocket::Connect(address, port);
 }
 }  // client
 }  // ola

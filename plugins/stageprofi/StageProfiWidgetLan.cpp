@@ -29,14 +29,14 @@ namespace ola {
 namespace plugin {
 namespace stageprofi {
 
-using ola::network::TcpSocket;
+using ola::network::TCPSocket;
 
 /*
  * Connect to the widget
  * @returns true on success, false on failure
  */
 bool StageProfiWidgetLan::Connect(const std::string &ip) {
-  m_socket = TcpSocket::Connect(ip, STAGEPROFI_PORT);
+  m_socket = TCPSocket::Connect(ip, STAGEPROFI_PORT);
 
   if (m_socket)
     m_socket->SetOnData(

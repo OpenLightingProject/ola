@@ -57,8 +57,8 @@ SandNetDevice::SandNetDevice(SandNetPlugin *owner,
  * Start this device
  */
 bool SandNetDevice::StartHook() {
-  vector<ola::network::UdpSocket*> sockets;
-  vector<ola::network::UdpSocket*>::iterator iter;
+  vector<ola::network::UDPSocket*> sockets;
+  vector<ola::network::UDPSocket*>::iterator iter;
 
   m_node = new SandNetNode(m_preferences->GetValue(IP_KEY));
   m_node->SetName(m_preferences->GetValue(NAME_KEY));
@@ -118,8 +118,8 @@ bool SandNetDevice::StartHook() {
  * Stop this device
  */
 void SandNetDevice::PrePortStop() {
-  vector<ola::network::UdpSocket*> sockets = m_node->GetSockets();
-  vector<ola::network::UdpSocket*>::iterator iter;
+  vector<ola::network::UDPSocket*> sockets = m_node->GetSockets();
+  vector<ola::network::UDPSocket*>::iterator iter;
   for (iter = sockets.begin(); iter != sockets.end(); ++iter)
     m_plugin_adaptor->RemoveReadDescriptor(*iter);
 

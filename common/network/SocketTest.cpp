@@ -37,9 +37,9 @@ using ola::io::ConnectedDescriptor;
 using ola::io::SelectServer;
 using ola::network::IPV4Address;
 using ola::network::StringToAddress;
-using ola::network::TcpAcceptingSocket;
-using ola::network::TcpSocket;
-using ola::network::UdpSocket;
+using ola::network::TCPAcceptingSocket;
+using ola::network::TCPSocket;
+using ola::network::UDPSocket;
 
 static const unsigned char test_cstring[] = "Foo";
 // used to set a timeout which aborts the tests
@@ -48,17 +48,17 @@ static const int ABORT_TIMEOUT_IN_MS = 1000;
 class SocketTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(SocketTest);
 
-  CPPUNIT_TEST(testTcpSocketClientClose);
-  CPPUNIT_TEST(testTcpSocketServerClose);
-  CPPUNIT_TEST(testUdpSocket);
+  CPPUNIT_TEST(testTCPSocketClientClose);
+  CPPUNIT_TEST(testTCPSocketServerClose);
+  CPPUNIT_TEST(testUDPSocket);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void setUp();
     void tearDown();
-    void testTcpSocketClientClose();
-    void testTcpSocketServerClose();
-    void testUdpSocket();
+    void testTCPSocketClientClose();
+    void testTCPSocketServerClose();
+    void testUDPSocket();
 
     // timing out indicates something went wrong
     void Timeout() {
@@ -72,10 +72,10 @@ class SocketTest: public CppUnit::TestFixture {
     void Receive(ConnectedDescriptor *socket);
     void ReceiveAndSend(ConnectedDescriptor *socket);
     void ReceiveSendAndClose(ConnectedDescriptor *socket);
-    void NewConnectionSend(TcpSocket *socket);
-    void NewConnectionSendAndClose(TcpSocket *socket);
-    void UdpReceiveAndTerminate(UdpSocket *socket);
-    void UdpReceiveAndSend(UdpSocket *socket);
+    void NewConnectionSend(TCPSocket *socket);
+    void NewConnectionSendAndClose(TCPSocket *socket);
+    void UDPReceiveAndTerminate(UDPSocket *socket);
+    void UDPReceiveAndSend(UDPSocket *socket);
 
     // Socket close actions
     void TerminateOnClose() {
@@ -120,12 +120,12 @@ void SocketTest::tearDown() {
  * The client connects and the server sends some data. The client checks the
  * data matches and then closes the connection.
  */
-void SocketTest::testTcpSocketClientClose() {
+void SocketTest::testTCPSocketClientClose() {
   string ip_address = "127.0.0.1";
   uint16_t server_port = 9010;
   ola::network::TCPSocketFactory socket_factory(
       ola::NewCallback(this, &SocketTest::NewConnectionSend));
-  TcpAcceptingSocket socket(&socket_factory);
+  TCPAcceptingSocket socket(&socket_factory);
   CPPUNIT_ASSERT_MESSAGE(
       "Check for another instance of olad running",
       socket.Listen(ip_address, server_port));
@@ -133,7 +133,7 @@ void SocketTest::testTcpSocketClientClose() {
 
   CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&socket));
 
-  TcpSocket *client_socket = TcpSocket::Connect(ip_address, server_port);
+  TCPSocket *client_socket = TCPSocket::Connect(ip_address, server_port);
   CPPUNIT_ASSERT(client_socket);
   client_socket->SetOnData(ola::NewCallback(
         this, &SocketTest::ReceiveAndClose,
@@ -151,12 +151,12 @@ void SocketTest::testTcpSocketClientClose() {
  * The client connects and the server then sends some data and closes the
  * connection.
  */
-void SocketTest::testTcpSocketServerClose() {
+void SocketTest::testTCPSocketServerClose() {
   string ip_address = "127.0.0.1";
   uint16_t server_port = 9010;
   ola::network::TCPSocketFactory socket_factory(
       ola::NewCallback(this, &SocketTest::NewConnectionSendAndClose));
-  TcpAcceptingSocket socket(&socket_factory);
+  TCPAcceptingSocket socket(&socket_factory);
   CPPUNIT_ASSERT_MESSAGE(
       "Check for another instance of olad running",
       socket.Listen(ip_address, server_port));
@@ -165,7 +165,7 @@ void SocketTest::testTcpSocketServerClose() {
   CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&socket));
 
   // The client socket checks the response and terminates on close
-  TcpSocket *client_socket = TcpSocket::Connect(ip_address, server_port);
+  TCPSocket *client_socket = TCPSocket::Connect(ip_address, server_port);
   CPPUNIT_ASSERT(client_socket);
 
   client_socket->SetOnData(ola::NewCallback(
@@ -187,28 +187,28 @@ void SocketTest::testTcpSocketServerClose() {
  * The client connects and the server sends some data. The client checks the
  * data matches and then closes the connection.
  */
-void SocketTest::testUdpSocket() {
+void SocketTest::testUDPSocket() {
   IPV4Address ip_address;
   CPPUNIT_ASSERT(IPV4Address::FromString("127.0.0.1", &ip_address));
   uint16_t server_port = 9010;
-  UdpSocket socket;
+  UDPSocket socket;
   CPPUNIT_ASSERT(socket.Init());
   CPPUNIT_ASSERT(!socket.Init());
   CPPUNIT_ASSERT(socket.Bind(server_port));
   CPPUNIT_ASSERT(!socket.Bind(server_port));
 
   socket.SetOnData(
-      ola::NewCallback(this, &SocketTest::UdpReceiveAndSend, &socket));
+      ola::NewCallback(this, &SocketTest::UDPReceiveAndSend, &socket));
   CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&socket));
 
-  UdpSocket client_socket;
+  UDPSocket client_socket;
   CPPUNIT_ASSERT(client_socket.Init());
   CPPUNIT_ASSERT(!client_socket.Init());
 
   client_socket.SetOnData(
       ola::NewCallback(
-        this, &SocketTest::UdpReceiveAndTerminate,
-        static_cast<UdpSocket*>(&client_socket)));
+        this, &SocketTest::UDPReceiveAndTerminate,
+        static_cast<UDPSocket*>(&client_socket)));
   CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&client_socket));
 
   ssize_t bytes_sent = client_socket.SendTo(
@@ -285,7 +285,7 @@ void SocketTest::ReceiveSendAndClose(ConnectedDescriptor *socket) {
 /*
  * Accept a new connection and send some test data
  */
-void SocketTest::NewConnectionSend(TcpSocket *new_socket) {
+void SocketTest::NewConnectionSend(TCPSocket *new_socket) {
   CPPUNIT_ASSERT(new_socket);
   IPV4Address address;
   uint16_t port;
@@ -304,7 +304,7 @@ void SocketTest::NewConnectionSend(TcpSocket *new_socket) {
 /*
  * Accept a new connect, send some data and close
  */
-void SocketTest::NewConnectionSendAndClose(TcpSocket *new_socket) {
+void SocketTest::NewConnectionSendAndClose(TCPSocket *new_socket) {
   CPPUNIT_ASSERT(new_socket);
   IPV4Address address;
   uint16_t port;
@@ -322,7 +322,7 @@ void SocketTest::NewConnectionSendAndClose(TcpSocket *new_socket) {
 /*
  * Receive some data and check it.
  */
-void SocketTest::UdpReceiveAndTerminate(UdpSocket *socket) {
+void SocketTest::UDPReceiveAndTerminate(UDPSocket *socket) {
   IPV4Address expected_address, src_address;
   CPPUNIT_ASSERT(IPV4Address::FromString("127.0.0.1", &expected_address));
 
@@ -339,7 +339,7 @@ void SocketTest::UdpReceiveAndTerminate(UdpSocket *socket) {
 /*
  * Receive some data and echo it back.
  */
-void SocketTest::UdpReceiveAndSend(UdpSocket *socket) {
+void SocketTest::UDPReceiveAndSend(UDPSocket *socket) {
   IPV4Address expected_address;
   CPPUNIT_ASSERT(IPV4Address::FromString("127.0.0.1", &expected_address));
 

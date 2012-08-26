@@ -39,8 +39,8 @@ using ola::network::IPV4Address;
 using ola::io::SelectServer;
 using ola::network::StringToAddress;
 using ola::network::TCPConnector;
-using ola::network::TcpAcceptingSocket;
-using ola::network::TcpSocket;
+using ola::network::TCPAcceptingSocket;
+using ola::network::TCPSocket;
 using std::auto_ptr;
 using std::string;
 
@@ -83,7 +83,7 @@ class TCPConnectorTest: public CppUnit::TestFixture {
     IPV4Address m_localhost;
     ola::SingleUseCallback0<void> *m_timeout_closure;
 
-    void AcceptedConnection(TcpSocket *socket);
+    void AcceptedConnection(TCPSocket *socket);
     void OnConnect(int fd, int error);
     void OnConnectFailure(int fd, int error);
 };
@@ -123,7 +123,7 @@ void TCPConnectorTest::testNonBlockingConnect() {
 
   ola::network::TCPSocketFactory socket_factory(
       ola::NewCallback(this, &TCPConnectorTest::AcceptedConnection));
-  TcpAcceptingSocket listening_socket(&socket_factory);
+  TCPAcceptingSocket listening_socket(&socket_factory);
   CPPUNIT_ASSERT_MESSAGE(
       "Check for another instance of olad running",
       listening_socket.Listen(m_localhost, server_port));
@@ -236,7 +236,7 @@ void TCPConnectorTest::testEarlyDestruction() {
 /*
  * Accept a new TCP connection.
  */
-void TCPConnectorTest::AcceptedConnection(TcpSocket *new_socket) {
+void TCPConnectorTest::AcceptedConnection(TCPSocket *new_socket) {
   CPPUNIT_ASSERT(new_socket);
   IPV4Address address;
   uint16_t port;
