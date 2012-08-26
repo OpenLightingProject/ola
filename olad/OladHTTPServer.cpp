@@ -31,7 +31,7 @@
 #include "ola/network/NetworkUtils.h"
 #include "ola/web/Json.h"
 #include "olad/DmxSource.h"
-#include "olad/HTTPServerActions.h"
+#include "olad/HttpServerActions.h"
 #include "olad/OladHTTPServer.h"
 #include "olad/OlaServer.h"
 #include "olad/OlaVersion.h"
@@ -110,6 +110,8 @@ OladHTTPServer::OladHTTPServer(ExportMap *export_map,
   m_server.RegisterFile("/toolbar_sprites.png", HTTPServer::CONTENT_TYPE_PNG);
   m_server.RegisterFile("/vertical.gif", HTTPServer::CONTENT_TYPE_GIF);
   m_server.RegisterFile("/", "landing.html", HTTPServer::CONTENT_TYPE_HTML);
+
+  m_start_time_t = time(NULL);
 }
 
 
