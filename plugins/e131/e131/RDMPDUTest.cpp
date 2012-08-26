@@ -70,7 +70,7 @@ class RDMPDUTest: public CppUnit::TestFixture {
 
 CPPUNIT_TEST_SUITE_REGISTRATION(RDMPDUTest);
 
-const unsigned int RDMPDUTest::TEST_VECTOR = 7;
+const unsigned int RDMPDUTest::TEST_VECTOR = 0xcc;
 
 /*
  * Test an empty PDU works.
@@ -141,21 +141,21 @@ void RDMPDUTest::testSimpleRDMPDU() {
   RDMPDU pdu(command);
 
   CPPUNIT_ASSERT_EQUAL(0u, pdu.HeaderSize());
-  CPPUNIT_ASSERT_EQUAL(26u, pdu.DataSize());
-  CPPUNIT_ASSERT_EQUAL(29u, pdu.Size());
+  CPPUNIT_ASSERT_EQUAL(25u, pdu.DataSize());
+  CPPUNIT_ASSERT_EQUAL(28u, pdu.Size());
 
   unsigned int length = pdu.Size();
   uint8_t *buffer = new uint8_t[length];
   CPPUNIT_ASSERT(pdu.Pack(buffer, length));
 
   uint8_t expected_data[] = {
-    0x70, 0x1d, TEST_VECTOR,
-    0xcc, 1, 24,  // start code, sub code & length
+    0x70, 0x1c, TEST_VECTOR,
+    1, 24,  // start code, sub code & length
     0, 3, 0, 0, 0, 4,   // dst uid
     0, 1, 0, 0, 0, 2,   // src uid
     0, 1, 0, 0, 10,  // transaction, port id, msg count & sub device
     0x20, 1, 40, 0,  // command, param id, param data length
-    1, 0x43 // checksum
+    1, 0x43  // checksum
   };
   ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
                      buffer, length);
@@ -184,25 +184,25 @@ void RDMPDUTest::testSimpleRDMPDUToOutputStream() {
   RDMPDU pdu(command);
 
   CPPUNIT_ASSERT_EQUAL(0u, pdu.HeaderSize());
-  CPPUNIT_ASSERT_EQUAL(26u, pdu.DataSize());
-  CPPUNIT_ASSERT_EQUAL(29u, pdu.Size());
+  CPPUNIT_ASSERT_EQUAL(25u, pdu.DataSize());
+  CPPUNIT_ASSERT_EQUAL(28u, pdu.Size());
 
   IOQueue output;
   pdu.Write(&output);
-  CPPUNIT_ASSERT_EQUAL(29u, output.Size());
+  CPPUNIT_ASSERT_EQUAL(28u, output.Size());
 
   uint8_t *pdu_data = new uint8_t[output.Size()];
   unsigned int pdu_size = output.Peek(pdu_data, output.Size());
   CPPUNIT_ASSERT_EQUAL(output.Size(), pdu_size);
 
   uint8_t EXPECTED[] = {
-    0x70, 0x1d, TEST_VECTOR,
-    0xcc, 1, 24,  // start code, sub code & length
+    0x70, 0x1c, TEST_VECTOR,
+    1, 24,  // start code, sub code & length
     0, 3, 0, 0, 0, 4,   // dst uid
     0, 1, 0, 0, 0, 2,   // src uid
     0, 1, 0, 0, 10,  // transaction, port id, msg count & sub device
     0x20, 1, 40, 0,  // command, param id, param data length
-    1, 0x43 // checksum
+    1, 0x43  // checksum
   };
   ASSERT_DATA_EQUALS(__LINE__,
                      EXPECTED, sizeof(EXPECTED),
@@ -234,22 +234,22 @@ void RDMPDUTest::testRDMPDUWithData() {
   RDMPDU pdu(command);
 
   CPPUNIT_ASSERT_EQUAL(0u, pdu.HeaderSize());
-  CPPUNIT_ASSERT_EQUAL(30u, pdu.DataSize());
-  CPPUNIT_ASSERT_EQUAL(33u, pdu.Size());
+  CPPUNIT_ASSERT_EQUAL(29u, pdu.DataSize());
+  CPPUNIT_ASSERT_EQUAL(32u, pdu.Size());
 
   unsigned int length = pdu.Size();
   uint8_t *buffer = new uint8_t[length];
   CPPUNIT_ASSERT(pdu.Pack(buffer, length));
 
   uint8_t expected_data[] = {
-    0x70, 0x21, TEST_VECTOR,
-    0xcc, 1, 0x1c,  // sub code & length
+    0x70, 0x20, TEST_VECTOR,
+    1, 0x1c,  // sub code & length
     0, 3, 0, 0, 0, 4,   // dst uid
     0, 1, 0, 0, 0, 2,   // src uid
     0, 1, 0, 0, 10,  // transaction, port id, msg count & sub device
     0x20, 1, 40, 4,  // command, param id, param data length
     0xa5, 0xa5, 0xa5, 0xa5,  // data
-    3, 0xdf // checksum
+    3, 0xdf  // checksum
   };
   ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
                      buffer, length);
@@ -279,12 +279,12 @@ void RDMPDUTest::testRDMPDUWithDataToOutputStream() {
   RDMPDU pdu(command);
 
   CPPUNIT_ASSERT_EQUAL(0u, pdu.HeaderSize());
-  CPPUNIT_ASSERT_EQUAL(30u, pdu.DataSize());
-  CPPUNIT_ASSERT_EQUAL(33u, pdu.Size());
+  CPPUNIT_ASSERT_EQUAL(29u, pdu.DataSize());
+  CPPUNIT_ASSERT_EQUAL(32u, pdu.Size());
 
   IOQueue output;
   pdu.Write(&output);
-  CPPUNIT_ASSERT_EQUAL(33u, output.Size());
+  CPPUNIT_ASSERT_EQUAL(32u, output.Size());
 
   uint8_t *pdu_data = new uint8_t[output.Size()];
   unsigned int pdu_size = output.Peek(pdu_data, output.Size());
@@ -292,14 +292,14 @@ void RDMPDUTest::testRDMPDUWithDataToOutputStream() {
 
 
   uint8_t EXPECTED[] = {
-    0x70, 0x21, TEST_VECTOR,
-    0xcc, 1, 0x1c,  // sub code & length
+    0x70, 0x20, TEST_VECTOR,
+    1, 0x1c,  // sub code & length
     0, 3, 0, 0, 0, 4,   // dst uid
     0, 1, 0, 0, 0, 2,   // src uid
     0, 1, 0, 0, 10,  // transaction, port id, msg count & sub device
     0x20, 1, 40, 4,  // command, param id, param data length
     0xa5, 0xa5, 0xa5, 0xa5,  // data
-    3, 0xdf // checksum
+    3, 0xdf  // checksum
   };
   ASSERT_DATA_EQUALS(__LINE__,
                      EXPECTED, sizeof(EXPECTED),

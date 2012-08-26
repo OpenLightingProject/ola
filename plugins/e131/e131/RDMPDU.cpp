@@ -36,7 +36,7 @@ using ola::network::HostToNetwork;
  */
 unsigned int RDMPDU::DataSize() const {
   if (m_command)
-    return 1 + m_command->Size();  // include the start code
+    return m_command->Size();  // include the start code
   return 0;
 }
 
@@ -59,10 +59,7 @@ bool RDMPDU::PackData(uint8_t *data, unsigned int &length) const {
     return true;
   }
 
-  data[0] = ola::rdm::RDMCommand::START_CODE;
-  length--;
-  bool r = m_command->Pack(data + 1, &length);
-  length++;
+  bool r = m_command->Pack(data, &length);
   return r;
 }
 
@@ -73,8 +70,6 @@ bool RDMPDU::PackData(uint8_t *data, unsigned int &length) const {
 void RDMPDU::PackData(OutputStream *stream) const {
   if (!m_command)
     return;
-
-  (*stream) << ola::rdm::RDMCommand::START_CODE;
   m_command->Write(stream);
 }
 }  // ola

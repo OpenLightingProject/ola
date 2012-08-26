@@ -49,8 +49,8 @@ class RDMInflator: public BaseInflator {
     bool SetRDMHandler(uint16_t endpoint, RDMMessageHandler *handler);
     bool RemoveRDMHandler(uint16_t endpoint);
 
-    static const unsigned int RDM_VECTOR = 6;
-    static const unsigned int RDM_DATA_VECTOR = 7;
+    static const unsigned int RDM_VECTOR = 1;
+    static const unsigned int RDM_DATA_VECTOR = 0xcc;
 
   protected:
     bool DecodeHeader(HeaderSet &headers,
