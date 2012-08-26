@@ -51,6 +51,14 @@ EXTRA_DIST = $(launcher_files)
 
 if INSTALL_RDM_TESTS
 
+BUILT_SOURCES = DataLocation.py
+datalocationdir = $(pkgpythondir)/testing/rdm
+nodist_datalocation_PYTHON = DataLocation.py
+
+# This is a hack, but I can't find any other way to do it
+DataLocation.py:
+	echo "location = '${datadir}/ola/rdm-server'" > DataLocation.py
+
 # RDM Test modules
 rdmtestsdir = $(pkgpythondir)/testing/rdm
 rdmtests_PYTHON = $(module_files)
@@ -71,5 +79,9 @@ dist_testserver_static_DATA = $(testserver_static_files)
 
 testserver_imagesdir = $(datadir)/ola/rdm-server/images
 dist_testserver_images_DATA = $(testserver_image_files)
+
+clean-local:
+	rm -f DataLocation.py
+
 
 endif

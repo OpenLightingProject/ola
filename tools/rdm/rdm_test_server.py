@@ -37,11 +37,12 @@ from ola.ClientWrapper import ClientWrapper
 from ola.OlaClient import OLADNotRunningException
 from ola import PidStore
 from ola.testing.rdm.DMXSender import DMXSender
+from ola.testing.rdm import DataLocation
 from ola.testing.rdm import ResponderTest
 from ola.testing.rdm import TestDefinitions
 from ola.testing.rdm import TestRunner
-from ola.testing.rdm.TestState import TestState
 from ola.testing.rdm.TestCategory import TestCategory
+from ola.testing.rdm.TestState import TestState
 
 
 __author__ = 'ravindhranath@gmail.com (Ravindra Nath Kakarla)'
@@ -496,7 +497,7 @@ def parse_options():
   parser = OptionParser(usage, description=description)
   parser.add_option('-p', '--pid_store', metavar='FILE',
                     help='The file to load the PID definitions from.')
-  parser.add_option('-d', '--www_dir', default=os.path.abspath('static/'),
+  parser.add_option('-d', '--www_dir', default=DataLocation.location,
                     help='The root directory to serve static files.')
   parser.add_option('-l', '--log_directory',
                     default=os.path.abspath('/tmp/ola-rdm-logs'),
