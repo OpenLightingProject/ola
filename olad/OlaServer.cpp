@@ -54,7 +54,7 @@
 #include "olad/UniverseStore.h"
 
 #ifdef HAVE_LIBMICROHTTPD
-#include "olad/OlaHttpServer.h"
+#include "olad/OladHTTPServer.h"
 #endif
 
 namespace ola {
@@ -375,13 +375,20 @@ bool OlaServer::StartHttpServer(const ola::network::Interface &iface) {
   }
 
   // ownership of the pipe_descriptor is transferred here.
-  m_httpd = new OlaHttpServer(m_export_map,
-                              pipe_descriptor->OppositeEnd(),
-                              this,
-                              m_options.http_port,
-                              m_options.http_enable_quit,
-                              m_options.http_data_dir,
-                              iface);
+  OladHTTPServer::OladHTTPServerOptions options;
+  if (m_options.http_port)
+    options.port = m_options.http_port;
+  if (!m_options.http_data_dir.empty())
+    options.data_dir = m_options.http_data_dir;
+  else
+    options.data_dir = HTTP_DATA_DIR;
+  options.enable_quit = m_options.http_enable_quit;
+
+  m_httpd = new OladHTTPServer(m_export_map,
+                               options,
+                               pipe_descriptor->OppositeEnd(),
+                               this,
+                               iface);
 
   if (m_httpd->Init()) {
     m_httpd->Start();

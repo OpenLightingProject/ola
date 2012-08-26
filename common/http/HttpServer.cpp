@@ -13,12 +13,17 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * HttpServer.cpp
- * Ola HTTP class
- * Copyright (C) 2005-2008 Simon Newton
+ * HTTPServer.cpp
+ * The base HTTP Server class.
+ * Copyright (C) 2005-2012 Simon Newton
  */
 
 #include <stdio.h>
+#include <ola/Logging.h>
+#include <ola/io/Descriptor.h>
+#include <ola/web/Json.h>
+#include <ola/http/HTTPServer.h>
+
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -26,12 +31,9 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include "ola/Logging.h"
-#include "ola/io/Descriptor.h"
-#include "ola/web/Json.h"
-#include "olad/HttpServer.h"
 
 namespace ola {
+namespace http {
 
 using std::ifstream;
 using std::pair;
@@ -41,23 +43,23 @@ using ola::io::UnmanagedFileDescriptor;
 using ola::web::JsonValue;
 using ola::web::JsonWriter;
 
-const char HttpServer::CONTENT_TYPE_PLAIN[] = "text/plain";
-const char HttpServer::CONTENT_TYPE_HTML[] = "text/html";
-const char HttpServer::CONTENT_TYPE_GIF[] = "image/gif";
-const char HttpServer::CONTENT_TYPE_PNG[] = "image/png";
-const char HttpServer::CONTENT_TYPE_CSS[] = "text/css";
-const char HttpServer::CONTENT_TYPE_JS[] = "text/javascript";
+const char HTTPServer::CONTENT_TYPE_PLAIN[] = "text/plain";
+const char HTTPServer::CONTENT_TYPE_HTML[] = "text/html";
+const char HTTPServer::CONTENT_TYPE_GIF[] = "image/gif";
+const char HTTPServer::CONTENT_TYPE_PNG[] = "image/png";
+const char HTTPServer::CONTENT_TYPE_CSS[] = "text/css";
+const char HTTPServer::CONTENT_TYPE_JS[] = "text/javascript";
 
 
 /**
  * Called by MHD_get_connection_values to add headers to a request obect.
- * @param cls a pointer to an HttpRequest object.
+ * @param cls a pointer to an HTTPRequest object.
  * @param key the header name
  * @param value the header value
  */
 static int AddHeaders(void *cls, enum MHD_ValueKind kind, const char *key,
                       const char *value) {
-  HttpRequest *request = static_cast<HttpRequest*>(cls);
+  HTTPRequest *request = static_cast<HTTPRequest*>(cls);
   string key_string = key;
   string value_string = value;
   request->AddHeader(key, value);
@@ -68,7 +70,7 @@ static int AddHeaders(void *cls, enum MHD_ValueKind kind, const char *key,
 
 /**
  * Called by MHD_create_post_processor to iterate over the post form data
- * @param request_cls a pointer to a HttpRequest object
+ * @param request_cls a pointer to a HTTPRequest object
  * @param key the header name
  * @param value the header value
  */
@@ -77,7 +79,7 @@ int IteratePost(void *request_cls, enum MHD_ValueKind kind, const char *key,
                 const char *transfer_encoding, const char *data, uint64_t off,
                 size_t size) {
   // libmicrohttpd has a bug where the zie isn't set correctly.
-  HttpRequest *request = static_cast<HttpRequest*>(request_cls);
+  HTTPRequest *request = static_cast<HTTPRequest*>(request_cls);
   string value(data);
   request->AddPostParameter(key, value);
   return MHD_YES;
@@ -91,8 +93,8 @@ int IteratePost(void *request_cls, enum MHD_ValueKind kind, const char *key,
 
 
 /**
- * Called whenever a new request is made. This sets up HttpRequest &
- * HttpResponse objects and then calls DispatchRequest.
+ * Called whenever a new request is made. This sets up HTTPRequest &
+ * HTTPResponse objects and then calls DispatchRequest.
  */
 static int HandleRequest(void *http_server_ptr,
                          struct MHD_Connection *connection,
@@ -102,12 +104,12 @@ static int HandleRequest(void *http_server_ptr,
                          const char *upload_data,
                          size_t *upload_data_size,
                          void **ptr) {
-  HttpServer *http_server = static_cast<HttpServer*>(http_server_ptr);
-  HttpRequest *request;
+  HTTPServer *http_server = static_cast<HTTPServer*>(http_server_ptr);
+  HTTPRequest *request;
 
   // on the first call ptr is null
   if (*ptr == NULL) {
-    request = new HttpRequest(url, method, version, connection);
+    request = new HTTPRequest(url, method, version, connection);
     if (!request)
       return MHD_NO;
 
@@ -119,14 +121,14 @@ static int HandleRequest(void *http_server_ptr,
     return MHD_YES;
   }
 
-  request = static_cast<HttpRequest*>(*ptr);
+  request = static_cast<HTTPRequest*>(*ptr);
 
   if (request->InFlight())
     // don't dispatch more than once
     return MHD_YES;
 
   if (request->Method() == MHD_HTTP_METHOD_GET) {
-    HttpResponse *response = new HttpResponse(connection);
+    HTTPResponse *response = new HTTPResponse(connection);
     request->SetInFlight();
     return http_server->DispatchRequest(request, response);
 
@@ -137,7 +139,7 @@ static int HandleRequest(void *http_server_ptr,
       return MHD_YES;
     }
     request->SetInFlight();
-    HttpResponse *response = new HttpResponse(connection);
+    HTTPResponse *response = new HTTPResponse(connection);
     return http_server->DispatchRequest(request, response);
   }
   return MHD_NO;
@@ -145,31 +147,26 @@ static int HandleRequest(void *http_server_ptr,
 
 
 /**
- * Called when a request completes. This deletes the associated HttpRequest
+ * Called when a request completes. This deletes the associated HTTPRequest
  * object.
  */
-void RequestCompleted(void *cls,
-                      struct MHD_Connection *connection,
+void RequestCompleted(void*,
+                      struct MHD_Connection*,
                       void **request_cls,
-                      enum MHD_RequestTerminationCode toe) {
-  HttpRequest *request = static_cast<HttpRequest*>(*request_cls);
-
-  if (!request)
+                      enum MHD_RequestTerminationCode) {
+  if (!request_cls)
     return;
 
-  delete request;
+  delete static_cast<HTTPRequest*>(*request_cls);
   *request_cls = NULL;
-  (void) cls;
-  (void) connection;
-  (void) toe;
 }
 
 
 /*
- * HttpRequest object
+ * HTTPRequest object
  * Setup the header callback and the post processor if needed.
  */
-HttpRequest::HttpRequest(const string &url,
+HTTPRequest::HTTPRequest(const string &url,
                          const string &method,
                          const string &version,
                          struct MHD_Connection *connection):
@@ -186,7 +183,7 @@ HttpRequest::HttpRequest(const string &url,
  * Initialize this request
  * @return true if succesful, false otherwise.
  */
-bool HttpRequest::Init() {
+bool HTTPRequest::Init() {
   MHD_get_connection_values(m_connection, MHD_HEADER_KIND, AddHeaders, this);
 
   if (m_method == MHD_HTTP_METHOD_POST) {
@@ -203,7 +200,7 @@ bool HttpRequest::Init() {
 /*
  * Cleanup this request object
  */
-HttpRequest::~HttpRequest() {
+HTTPRequest::~HTTPRequest() {
   if (m_processor)
     MHD_destroy_post_processor(m_processor);
 }
@@ -214,7 +211,7 @@ HttpRequest::~HttpRequest() {
  * @param key the header name
  * @param value the value of the header
  */
-void HttpRequest::AddHeader(const string &key, const string &value) {
+void HTTPRequest::AddHeader(const string &key, const string &value) {
   std::pair<string, string> pair(key, value);
   m_headers.insert(pair);
 }
@@ -226,7 +223,7 @@ void HttpRequest::AddHeader(const string &key, const string &value) {
  * @param key the parameter name
  * @param value the value
  */
-void HttpRequest::AddPostParameter(const string &key, const string &value) {
+void HTTPRequest::AddPostParameter(const string &key, const string &value) {
   map<string, string>::iterator iter = m_post_params.find(key);
 
   if (iter == m_post_params.end()) {
@@ -241,7 +238,7 @@ void HttpRequest::AddPostParameter(const string &key, const string &value) {
 /*
  * Process post data
  */
-void HttpRequest::ProcessPostData(const char *data, size_t *data_size) {
+void HTTPRequest::ProcessPostData(const char *data, size_t *data_size) {
   MHD_post_process(m_processor, data, *data_size);
 }
 
@@ -251,7 +248,7 @@ void HttpRequest::ProcessPostData(const char *data, size_t *data_size) {
  * @param key the name of the header
  * @returns the value of the header or empty string if it doesn't exist.
  */
-const string HttpRequest::GetHeader(const string &key) const {
+const string HTTPRequest::GetHeader(const string &key) const {
   map<string, string>::const_iterator iter = m_headers.find(key);
 
   if (iter == m_headers.end())
@@ -266,7 +263,7 @@ const string HttpRequest::GetHeader(const string &key) const {
  * @param key the name of the parameter
  * @return the value of the parameter
  */
-const string HttpRequest::GetParameter(const string &key) const {
+const string HTTPRequest::GetParameter(const string &key) const {
   const char *value = MHD_lookup_connection_value(m_connection,
                                                   MHD_GET_ARGUMENT_KIND,
                                                   key.data());
@@ -282,7 +279,7 @@ const string HttpRequest::GetParameter(const string &key) const {
  * @param key the name of the parameter
  * @return the value of the parameter or the empty string if it doesn't exist
  */
-const string HttpRequest::GetPostParameter(const string &key) const {
+const string HTTPRequest::GetPostParameter(const string &key) const {
   map<string, string>::const_iterator iter = m_post_params.find(key);
 
   if (iter == m_post_params.end())
@@ -297,7 +294,7 @@ const string HttpRequest::GetPostParameter(const string &key) const {
  * @param type, the content type
  * @return true if the header was set correctly, false otherwise
  */
-void HttpResponse::SetContentType(const string &type) {
+void HTTPResponse::SetContentType(const string &type) {
   SetHeader(MHD_HTTP_HEADER_CONTENT_TYPE, type);
 }
 
@@ -305,7 +302,7 @@ void HttpResponse::SetContentType(const string &type) {
 /**
  * Set the appropriate headers so this response isn't cached
  */
-void HttpResponse::SetNoCache() {
+void HTTPResponse::SetNoCache() {
   SetHeader("Cache-Control", "no-cache, must-revalidate");
 }
 
@@ -316,7 +313,7 @@ void HttpResponse::SetNoCache() {
  * @param value the header value
  * @return true if the header was set correctly, false otherwise
  */
-void HttpResponse::SetHeader(const string &key, const string &value) {
+void HTTPResponse::SetHeader(const string &key, const string &value) {
   std::pair<string, string> pair(key, value);
   m_headers.insert(pair);
 }
@@ -327,7 +324,7 @@ void HttpResponse::SetHeader(const string &key, const string &value) {
  * Send a JsonObject as the response.
  * @returns true on success, false on error
  */
-int HttpResponse::SendJson(const JsonValue &json) {
+int HTTPResponse::SendJson(const JsonValue &json) {
   const string output = JsonWriter::AsString(json);
   struct MHD_Response *response = MHD_create_response_from_data(
       output.length(),
@@ -347,7 +344,7 @@ int HttpResponse::SendJson(const JsonValue &json) {
  * Send the HTTP response
  * @returns true on success, false on error
  */
-int HttpResponse::Send() {
+int HTTPResponse::Send() {
   map<string, string>::const_iterator iter;
   struct MHD_Response *response = MHD_create_response_from_data(
       m_data.length(),
@@ -369,27 +366,25 @@ int HttpResponse::Send() {
  * @param port the port to listen on
  * @param data_dir the directory to serve static content from
  */
-HttpServer::HttpServer(unsigned int port, const string &data_dir)
+HTTPServer::HTTPServer(const HTTPServerOptions &options)
     : Thread(),
       m_httpd(NULL),
       m_default_handler(NULL),
-      m_port(port),
-      m_data_dir(data_dir) {
-  if (m_data_dir.empty())
-    m_data_dir = HTTP_DATA_DIR;
+      m_port(options.port),
+      m_data_dir(options.data_dir) {
 }
 
 
 /*
  * Destroy this object
  */
-HttpServer::~HttpServer() {
+HTTPServer::~HTTPServer() {
   Stop();
 
   if (m_httpd)
     MHD_stop_daemon(m_httpd);
 
-  map<string, BaseHttpCallback*>::const_iterator iter;
+  map<string, BaseHTTPCallback*>::const_iterator iter;
   for (iter = m_handlers.begin(); iter != m_handlers.end(); ++iter)
     delete iter->second;
 
@@ -406,7 +401,7 @@ HttpServer::~HttpServer() {
  * Setup the HTTP server
  * @return true on success, false on failure
  */
-bool HttpServer::Init() {
+bool HTTPServer::Init() {
   if (m_httpd) {
     OLA_INFO << "Non null pointers found, Init() was probably called twice";
     return false;
@@ -424,7 +419,7 @@ bool HttpServer::Init() {
                              MHD_OPTION_END);
 
   if (m_httpd)
-    m_select_server.RunInLoop(NewCallback(this, &HttpServer::UpdateSockets));
+    m_select_server.RunInLoop(NewCallback(this, &HTTPServer::UpdateSockets));
 
   return m_httpd ? true : false;
 }
@@ -433,9 +428,9 @@ bool HttpServer::Init() {
 /**
  * The entry point into the new thread
  */
-void *HttpServer::Run() {
+void *HTTPServer::Run() {
   if (!m_httpd) {
-    OLA_WARN << "HttpServer::Run called but the server wasn't setup.";
+    OLA_WARN << "HTTPServer::Run called but the server wasn't setup.";
     return NULL;
   }
 
@@ -446,8 +441,7 @@ void *HttpServer::Run() {
   m_select_server.Run();
 
   // clean up any remaining sockets
-  set<UnmanagedFileDescriptor*, unmanaged_socket_lt>::iterator iter =
-    m_sockets.begin();
+  SocketSet::iterator iter = m_sockets.begin();
   for (; iter != m_sockets.end(); ++iter) {
     m_select_server.RemoveReadDescriptor(*iter);
     m_select_server.RemoveWriteDescriptor(*iter);
@@ -460,7 +454,7 @@ void *HttpServer::Run() {
 /*
  * Stop the HTTP server
  */
-void HttpServer::Stop() {
+void HTTPServer::Stop() {
   if (IsRunning()) {
     OLA_INFO << "Notifying HTTP server thread to stop";
     m_select_server.Terminate();
@@ -475,7 +469,7 @@ void HttpServer::Stop() {
  * This is run every loop iteration to update the list of sockets in the
   * SelectServer from MHD.
  */
-void HttpServer::UpdateSockets() {
+void HTTPServer::UpdateSockets() {
   // We always call MHD_run so we send any queued responses. This isn't
   // inefficient because the only thing that can wake up the select server is
   // activity on a http socket or the client socket. The latter almost always
@@ -494,7 +488,7 @@ void HttpServer::UpdateSockets() {
     return;
   }
 
-  set<UnmanagedFileDescriptor*, unmanaged_socket_lt>::iterator iter =
+  SocketSet::iterator iter =
     m_sockets.begin();
 
   // This isn't the best plan, talk to the MHD devs about exposing the list of
@@ -552,19 +546,12 @@ void HttpServer::UpdateSockets() {
 }
 
 
-/**
- * Called when there is HTTP IO activity to deal with. This is a noop as
- * MHD_run is called in UpdateSockets above.
- */
-void HttpServer::HandleHTTPIO() {}
-
-
 /*
  * Call the appropriate handler.
  */
-int HttpServer::DispatchRequest(const HttpRequest *request,
-                                HttpResponse *response) {
-  map<string, BaseHttpCallback*>::iterator iter =
+int HTTPServer::DispatchRequest(const HTTPRequest *request,
+                                HTTPResponse *response) {
+  map<string, BaseHTTPCallback*>::iterator iter =
     m_handlers.find(request->Url());
 
   if (iter != m_handlers.end())
@@ -587,25 +574,42 @@ int HttpServer::DispatchRequest(const HttpRequest *request,
  * Register a handler
  * @param path the url to respond on
  * @param handler the Closure to call for this request. These will be freed
- * once the HttpServer is destroyed.
+ * once the HTTPServer is destroyed.
  */
-bool HttpServer::RegisterHandler(const string &path,
-                                 BaseHttpCallback *handler) {
-  map<string, BaseHttpCallback*>::const_iterator iter = m_handlers.find(path);
+bool HTTPServer::RegisterHandler(const string &path,
+                                 BaseHTTPCallback *handler) {
+  map<string, BaseHTTPCallback*>::const_iterator iter = m_handlers.find(path);
   if (iter != m_handlers.end())
     return false;
-  pair<string, BaseHttpCallback*> pair(path, handler);
+  pair<string, BaseHTTPCallback*> pair(path, handler);
   m_handlers.insert(pair);
   return true;
 }
 
 
 /*
- * Register a static file
- * @param path the path to serve on
- * @param file the path to the file to serve
+ * Register a static file. The root of the URL corresponds to the data dir.
+ * @param path the URL path for the file e.g. '/foo.png'
+ * @param content_type the content type.
  */
-bool HttpServer::RegisterFile(const string &path,
+bool HTTPServer::RegisterFile(const string &path,
+                              const string &content_type) {
+  if (path.empty() || path[0] != '/') {
+    OLA_WARN << "Invalid static file: " << path;
+    return false;
+  }
+  return RegisterFile(path, path.substr(1), content_type);
+}
+
+
+/*
+ * Register a static file
+ * @param path the path to serve on e.g. /foo.png
+ * @param file the path to the file to serve relative to the data dir e.g.
+ * images/foo.png
+ * @param content_type the content type.
+ */
+bool HTTPServer::RegisterFile(const string &path,
                               const string &file,
                               const string &content_type) {
   map<string, static_file_info>::const_iterator file_iter = (
@@ -627,9 +631,9 @@ bool HttpServer::RegisterFile(const string &path,
 /*
  * Set the default handler.
  * @param handler the default handler to call. This will be freed when the
- * HttpServer is destroyed.
+ * HTTPServer is destroyed.
  */
-void HttpServer::RegisterDefaultHandler(BaseHttpCallback *handler) {
+void HTTPServer::RegisterDefaultHandler(BaseHTTPCallback *handler) {
   m_default_handler = handler;
 }
 
@@ -637,17 +641,15 @@ void HttpServer::RegisterDefaultHandler(BaseHttpCallback *handler) {
 /*
  * Return a list of all handlers registered
  */
-vector<string> HttpServer::Handlers() const {
-  vector<string> handlers;
-  map<string, BaseHttpCallback*>::const_iterator iter;
+void HTTPServer::Handlers(vector<string> *handlers) const {
+  map<string, BaseHTTPCallback*>::const_iterator iter;
   for (iter = m_handlers.begin(); iter != m_handlers.end(); ++iter)
-    handlers.push_back(iter->first);
+    handlers->push_back(iter->first);
 
   map<string, static_file_info>::const_iterator file_iter;
   for (file_iter = m_static_content.begin();
        file_iter != m_static_content.end(); ++file_iter)
-    handlers.push_back(file_iter->first);
-  return handlers;
+    handlers->push_back(file_iter->first);
 }
 
 
@@ -656,7 +658,7 @@ vector<string> HttpServer::Handlers() const {
  * @param response the reponse to use.
  * @param details the error description
  */
-int HttpServer::ServeError(HttpResponse *response, const string &details) {
+int HTTPServer::ServeError(HTTPResponse *response, const string &details) {
   response->SetStatus(MHD_HTTP_INTERNAL_SERVER_ERROR);
   response->SetContentType(CONTENT_TYPE_HTML);
   response->Append("<b>500 Server Error</b>");
@@ -675,7 +677,7 @@ int HttpServer::ServeError(HttpResponse *response, const string &details) {
  * Serve a 404
  * @param response the response to use
  */
-int HttpServer::ServeNotFound(HttpResponse *response) {
+int HTTPServer::ServeNotFound(HTTPResponse *response) {
   response->SetStatus(MHD_HTTP_NOT_FOUND);
   response->SetContentType(CONTENT_TYPE_HTML);
   response->SetStatus(404);
@@ -685,14 +687,26 @@ int HttpServer::ServeNotFound(HttpResponse *response) {
   return r;
 }
 
+/**
+ * Return the contents of a file
+ */
+int HTTPServer::ServeStaticContent(const string &path,
+                                   const string &content_type,
+                                   HTTPResponse *response) {
+  static_file_info file_info;
+  file_info.file_path = path;
+  file_info.content_type = content_type;
+  return ServeStaticContent(&file_info, response);
+}
+
 
 /*
  * Serve static content.
  * @param file_info details on the file to server
  * @param response the response to use
  */
-int HttpServer::ServeStaticContent(static_file_info *file_info,
-                                   HttpResponse *response) {
+int HTTPServer::ServeStaticContent(static_file_info *file_info,
+                                   HTTPResponse *response) {
   char *data;
   unsigned int length;
   string file_path = m_data_dir;
@@ -734,12 +748,12 @@ int HttpServer::ServeStaticContent(static_file_info *file_info,
 }
 
 
-UnmanagedFileDescriptor *HttpServer::NewSocket(fd_set *r_set,
-                                       fd_set *w_set,
-                                       int fd) {
+UnmanagedFileDescriptor *HTTPServer::NewSocket(fd_set *r_set,
+                                               fd_set *w_set,
+                                               int fd) {
   UnmanagedFileDescriptor *socket = new UnmanagedFileDescriptor(fd);
-  socket->SetOnData(NewCallback(this, &HttpServer::HandleHTTPIO));
-  socket->SetOnWritable(NewCallback(this, &HttpServer::HandleHTTPIO));
+  socket->SetOnData(NewCallback(this, &HTTPServer::HandleHTTPIO));
+  socket->SetOnWritable(NewCallback(this, &HTTPServer::HandleHTTPIO));
 
   if (FD_ISSET(fd, r_set))
     m_select_server.AddReadDescriptor(socket);
@@ -748,4 +762,5 @@ UnmanagedFileDescriptor *HttpServer::NewSocket(fd_set *r_set,
     m_select_server.AddWriteDescriptor(socket);
   return socket;
 }
+}  // http
 }  // ola

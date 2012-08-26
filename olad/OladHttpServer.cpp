@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * OlaHttpServer.cpp
+ * OladHTTPServer.cpp
  * Ola HTTP class
  * Copyright (C) 2005-2008 Simon Newton
  */
@@ -31,8 +31,8 @@
 #include "ola/network/NetworkUtils.h"
 #include "ola/web/Json.h"
 #include "olad/DmxSource.h"
-#include "olad/HttpServerActions.h"
-#include "olad/OlaHttpServer.h"
+#include "olad/HTTPServerActions.h"
+#include "olad/OladHTTPServer.h"
 #include "olad/OlaServer.h"
 #include "olad/OlaVersion.h"
 
@@ -48,12 +48,10 @@ using std::vector;
 using ola::web::JsonArray;
 using ola::web::JsonObject;
 
-const char OlaHttpServer::K_DATA_DIR_VAR[] = "http_data_dir";
-const char OlaHttpServer::K_UPTIME_VAR[] = "uptime-in-ms";
-const char OlaHttpServer::K_BACKEND_DISCONNECTED_ERROR[] =
+const char OladHTTPServer::K_BACKEND_DISCONNECTED_ERROR[] =
   "Failed to send request, client isn't connected";
-const char OlaHttpServer::K_PRIORITY_VALUE_SUFFIX[] = "_priority_value";
-const char OlaHttpServer::K_PRIORITY_MODE_SUFFIX[] = "_priority_mode";
+const char OladHTTPServer::K_PRIORITY_VALUE_SUFFIX[] = "_priority_value";
+const char OladHTTPServer::K_PRIORITY_MODE_SUFFIX[] = "_priority_mode";
 
 
 /**
@@ -63,73 +61,62 @@ const char OlaHttpServer::K_PRIORITY_MODE_SUFFIX[] = "_priority_mode";
  *   the server.
  * @param
  */
-OlaHttpServer::OlaHttpServer(ExportMap *export_map,
-                             ConnectedDescriptor *client_socket,
-                             OlaServer *ola_server,
-                             unsigned int port,
-                             bool enable_quit,
-                             const string &data_dir,
-                             const ola::network::Interface &interface)
-    : m_server(port, data_dir),
-      m_export_map(export_map),
+OladHTTPServer::OladHTTPServer(ExportMap *export_map,
+                               const OladHTTPServerOptions &options,
+                               ConnectedDescriptor *client_socket,
+                               OlaServer *ola_server,
+                               const ola::network::Interface &interface)
+    : OlaHTTPServer(options, export_map),
       m_client_socket(client_socket),
       m_client(client_socket),
       m_ola_server(ola_server),
-      m_enable_quit(enable_quit),
+      m_enable_quit(options.enable_quit),
       m_interface(interface),
       m_rdm_module(&m_server, &m_client) {
   // The main handlers
-  RegisterHandler("/", &OlaHttpServer::DisplayIndex);
-  RegisterHandler("/debug", &OlaHttpServer::DisplayDebug);
-  RegisterHandler("/help", &OlaHttpServer::DisplayHandlers);
-  RegisterHandler("/quit", &OlaHttpServer::DisplayQuit);
-  RegisterHandler("/reload", &OlaHttpServer::ReloadPlugins);
-  RegisterHandler("/new_universe", &OlaHttpServer::CreateNewUniverse);
-  RegisterHandler("/modify_universe", &OlaHttpServer::ModifyUniverse);
-  RegisterHandler("/set_dmx", &OlaHttpServer::HandleSetDmx);
-  RegisterHandler("/get_dmx", &OlaHttpServer::GetDmx);
+  RegisterHandler("/quit", &OladHTTPServer::DisplayQuit);
+  RegisterHandler("/reload", &OladHTTPServer::ReloadPlugins);
+  RegisterHandler("/new_universe", &OladHTTPServer::CreateNewUniverse);
+  RegisterHandler("/modify_universe", &OladHTTPServer::ModifyUniverse);
+  RegisterHandler("/set_dmx", &OladHTTPServer::HandleSetDmx);
+  RegisterHandler("/get_dmx", &OladHTTPServer::GetDmx);
 
   // json endpoints for the new UI
-  RegisterHandler("/json/server_stats", &OlaHttpServer::JsonServerStats);
+  RegisterHandler("/json/server_stats", &OladHTTPServer::JsonServerStats);
   RegisterHandler("/json/universe_plugin_list",
-                  &OlaHttpServer::JsonUniversePluginList);
-  RegisterHandler("/json/plugin_info", &OlaHttpServer::JsonPluginInfo);
-  RegisterHandler("/json/get_ports", &OlaHttpServer::JsonAvailablePorts);
-  RegisterHandler("/json/universe_info", &OlaHttpServer::JsonUniverseInfo);
+                  &OladHTTPServer::JsonUniversePluginList);
+  RegisterHandler("/json/plugin_info", &OladHTTPServer::JsonPluginInfo);
+  RegisterHandler("/json/get_ports", &OladHTTPServer::JsonAvailablePorts);
+  RegisterHandler("/json/universe_info", &OladHTTPServer::JsonUniverseInfo);
 
   // these are the static files for the new UI
-  RegisterFile("blank.gif", HttpServer::CONTENT_TYPE_GIF);
-  RegisterFile("button-bg.png", HttpServer::CONTENT_TYPE_PNG);
-  RegisterFile("custombutton.css", HttpServer::CONTENT_TYPE_CSS);
-  RegisterFile("editortoolbar.png", HttpServer::CONTENT_TYPE_PNG);
-  RegisterFile("expander.png", HttpServer::CONTENT_TYPE_PNG);
-  RegisterFile("handle.vertical.png", HttpServer::CONTENT_TYPE_PNG);
-  RegisterFile("loader.gif", HttpServer::CONTENT_TYPE_GIF);
-  RegisterFile("loader-mini.gif", HttpServer::CONTENT_TYPE_GIF);
-  RegisterFile("logo.png", HttpServer::CONTENT_TYPE_PNG);
-  RegisterFile("logo-mini.png", HttpServer::CONTENT_TYPE_PNG);
-  RegisterFile("mobile.html", HttpServer::CONTENT_TYPE_HTML);
-  RegisterFile("mobile.js", HttpServer::CONTENT_TYPE_JS);
-  RegisterFile("ola.html", HttpServer::CONTENT_TYPE_HTML);
-  RegisterFile("ola.js", HttpServer::CONTENT_TYPE_JS);
-  RegisterFile("tick.gif", HttpServer::CONTENT_TYPE_GIF);
-  RegisterFile("toolbar-bg.png", HttpServer::CONTENT_TYPE_PNG);
-  RegisterFile("toolbar.css", HttpServer::CONTENT_TYPE_CSS);
-  RegisterFile("toolbar_sprites.png", HttpServer::CONTENT_TYPE_PNG);
-  RegisterFile("vertical.gif", HttpServer::CONTENT_TYPE_GIF);
-
-  StringVariable *data_dir_var = export_map->GetStringVar(K_DATA_DIR_VAR);
-  data_dir_var->Set(m_server.DataDir());
-  m_clock.CurrentTime(&m_start_time);
-  m_start_time_t = time(NULL);
-  export_map->GetStringVar(K_UPTIME_VAR);
+  m_server.RegisterFile("/blank.gif", HTTPServer::CONTENT_TYPE_GIF);
+  m_server.RegisterFile("/button-bg.png", HTTPServer::CONTENT_TYPE_PNG);
+  m_server.RegisterFile("/custombutton.css", HTTPServer::CONTENT_TYPE_CSS);
+  m_server.RegisterFile("/editortoolbar.png", HTTPServer::CONTENT_TYPE_PNG);
+  m_server.RegisterFile("/expander.png", HTTPServer::CONTENT_TYPE_PNG);
+  m_server.RegisterFile("/handle.vertical.png", HTTPServer::CONTENT_TYPE_PNG);
+  m_server.RegisterFile("/loader.gif", HTTPServer::CONTENT_TYPE_GIF);
+  m_server.RegisterFile("/loader-mini.gif", HTTPServer::CONTENT_TYPE_GIF);
+  m_server.RegisterFile("/logo.png", HTTPServer::CONTENT_TYPE_PNG);
+  m_server.RegisterFile("/logo-mini.png", HTTPServer::CONTENT_TYPE_PNG);
+  m_server.RegisterFile("/mobile.html", HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile("/mobile.js", HTTPServer::CONTENT_TYPE_JS);
+  m_server.RegisterFile("/ola.html", HTTPServer::CONTENT_TYPE_HTML);
+  m_server.RegisterFile("/ola.js", HTTPServer::CONTENT_TYPE_JS);
+  m_server.RegisterFile("/tick.gif", HTTPServer::CONTENT_TYPE_GIF);
+  m_server.RegisterFile("/toolbar-bg.png", HTTPServer::CONTENT_TYPE_PNG);
+  m_server.RegisterFile("/toolbar.css", HTTPServer::CONTENT_TYPE_CSS);
+  m_server.RegisterFile("/toolbar_sprites.png", HTTPServer::CONTENT_TYPE_PNG);
+  m_server.RegisterFile("/vertical.gif", HTTPServer::CONTENT_TYPE_GIF);
+  m_server.RegisterFile("/", "landing.html", HTTPServer::CONTENT_TYPE_HTML);
 }
 
 
 /*
  * Teardown
  */
-OlaHttpServer::~OlaHttpServer() {
+OladHTTPServer::~OladHTTPServer() {
   if (m_client_socket)
     m_server.SelectServer()->RemoveReadDescriptor(m_client_socket);
   m_client.Stop();
@@ -142,7 +129,7 @@ OlaHttpServer::~OlaHttpServer() {
  * Setup the OLA HTTP server
  * @return true if this worked, false otherwise.
  */
-bool OlaHttpServer::Init() {
+bool OladHTTPServer::Init() {
   bool ret = m_server.Init();
   if (ret) {
     if (!m_client.Setup()) {
@@ -161,12 +148,12 @@ bool OlaHttpServer::Init() {
 
 /*
  * Print the server stats json
- * @param request the HttpRequest
- * @param response the HttpResponse
+ * @param request the HTTPRequest
+ * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
-int OlaHttpServer::JsonServerStats(const HttpRequest*,
-                                   HttpResponse *response) {
+int OladHTTPServer::JsonServerStats(const HTTPRequest*,
+                                   HTTPResponse *response) {
   struct tm start_time;
   char start_time_str[50];
   localtime_r(&m_start_time_t, &start_time);
@@ -184,7 +171,7 @@ int OlaHttpServer::JsonServerStats(const HttpRequest*,
   json.Add("quit_enabled", m_enable_quit);
 
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   int r = response->SendJson(json);
   delete response;
   return r;
@@ -193,15 +180,15 @@ int OlaHttpServer::JsonServerStats(const HttpRequest*,
 
 /*
  * Print the list of universes / plugins as a json string
- * @param request the HttpRequest
- * @param response the HttpResponse
+ * @param request the HTTPRequest
+ * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
-int OlaHttpServer::JsonUniversePluginList(const HttpRequest*,
-                                          HttpResponse *response) {
+int OladHTTPServer::JsonUniversePluginList(const HTTPRequest*,
+                                          HTTPResponse *response) {
   bool ok = m_client.FetchPluginList(
       NewSingleCallback(this,
-                        &OlaHttpServer::HandlePluginList,
+                        &OladHTTPServer::HandlePluginList,
                         response));
 
   if (!ok)
@@ -212,19 +199,19 @@ int OlaHttpServer::JsonUniversePluginList(const HttpRequest*,
 
 /**
  * Print the plugin info as a json string
- * @param request the HttpRequest
- * @param response the HttpResponse
+ * @param request the HTTPRequest
+ * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
-int OlaHttpServer::JsonPluginInfo(const HttpRequest *request,
-                                  HttpResponse *response) {
+int OladHTTPServer::JsonPluginInfo(const HTTPRequest *request,
+                                  HTTPResponse *response) {
   string val = request->GetParameter("id");
   int plugin_id = atoi(val.data());
 
   bool ok = m_client.FetchPluginDescription(
       (ola_plugin_id) plugin_id,
       NewSingleCallback(this,
-                        &OlaHttpServer::HandlePluginInfo,
+                        &OladHTTPServer::HandlePluginInfo,
                         response));
 
   if (!ok)
@@ -235,12 +222,12 @@ int OlaHttpServer::JsonPluginInfo(const HttpRequest *request,
 
 /**
  * Return information about a universe
- * @param request the HttpRequest
- * @param response the HttpResponse
+ * @param request the HTTPRequest
+ * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
-int OlaHttpServer::JsonUniverseInfo(const HttpRequest *request,
-                                    HttpResponse *response) {
+int OladHTTPServer::JsonUniverseInfo(const HTTPRequest *request,
+                                    HTTPResponse *response) {
   string uni_id = request->GetParameter("id");
   unsigned int universe_id;
   if (!StringToInt(uni_id, &universe_id))
@@ -249,7 +236,7 @@ int OlaHttpServer::JsonUniverseInfo(const HttpRequest *request,
   bool ok = m_client.FetchUniverseInfo(
       universe_id,
       NewSingleCallback(this,
-                        &OlaHttpServer::HandleUniverseInfo,
+                        &OladHTTPServer::HandleUniverseInfo,
                         response));
 
   if (!ok)
@@ -261,12 +248,12 @@ int OlaHttpServer::JsonUniverseInfo(const HttpRequest *request,
 
 /**
  * Return a list of unbound ports
- * @param request the HttpRequest
- * @param response the HttpResponse
+ * @param request the HTTPRequest
+ * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
-int OlaHttpServer::JsonAvailablePorts(const HttpRequest *request,
-                                      HttpResponse *response) {
+int OladHTTPServer::JsonAvailablePorts(const HTTPRequest *request,
+                                      HTTPResponse *response) {
   string uni_id = request->GetParameter("id");
   bool ok = false;
 
@@ -274,7 +261,7 @@ int OlaHttpServer::JsonAvailablePorts(const HttpRequest *request,
     // get all available ports
     ok = m_client.FetchCandidatePorts(
         NewSingleCallback(this,
-                          &OlaHttpServer::HandleCandidatePorts,
+                          &OladHTTPServer::HandleCandidatePorts,
                           response));
   } else {
     unsigned int universe_id;
@@ -284,7 +271,7 @@ int OlaHttpServer::JsonAvailablePorts(const HttpRequest *request,
     ok = m_client.FetchCandidatePorts(
         universe_id,
         NewSingleCallback(this,
-                          &OlaHttpServer::HandleCandidatePorts,
+                          &OladHTTPServer::HandleCandidatePorts,
                           response));
   }
 
@@ -296,12 +283,12 @@ int OlaHttpServer::JsonAvailablePorts(const HttpRequest *request,
 
 /*
  * Create a new universe by binding one or more ports.
- * @param request the HttpRequest
- * @param response the HttpResponse
+ * @param request the HTTPRequest
+ * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
-int OlaHttpServer::CreateNewUniverse(const HttpRequest *request,
-                                     HttpResponse *response) {
+int OladHTTPServer::CreateNewUniverse(const HTTPRequest *request,
+                                     HTTPResponse *response) {
   string uni_id = request->GetPostParameter("id");
   string name = request->GetPostParameter("name");
 
@@ -314,7 +301,7 @@ int OlaHttpServer::CreateNewUniverse(const HttpRequest *request,
 
   ActionQueue *action_queue = new ActionQueue(
       NewSingleCallback(this,
-                        &OlaHttpServer::CreateUniverseComplete,
+                        &OladHTTPServer::CreateUniverseComplete,
                         response,
                         universe_id,
                         !name.empty()));
@@ -335,12 +322,12 @@ int OlaHttpServer::CreateNewUniverse(const HttpRequest *request,
 
 /*
  * Modify an existing universe.
- * @param request the HttpRequest
- * @param response the HttpResponse
+ * @param request the HTTPRequest
+ * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
-int OlaHttpServer::ModifyUniverse(const HttpRequest *request,
-                                  HttpResponse *response) {
+int OladHTTPServer::ModifyUniverse(const HTTPRequest *request,
+                                  HTTPResponse *response) {
   string uni_id = request->GetPostParameter("id");
   string name = request->GetPostParameter("name");
   string merge_mode = request->GetPostParameter("merge_mode");
@@ -357,7 +344,7 @@ int OlaHttpServer::ModifyUniverse(const HttpRequest *request,
 
   ActionQueue *action_queue = new ActionQueue(
       NewSingleCallback(this,
-                        &OlaHttpServer::ModifyUniverseComplete,
+                        &OladHTTPServer::ModifyUniverseComplete,
                         response));
 
   action_queue->AddAction(
@@ -384,36 +371,20 @@ int OlaHttpServer::ModifyUniverse(const HttpRequest *request,
 
 
 /*
- * Display the index page
- * @param request the HttpRequest
- * @param response the HttpResponse
- * @returns MHD_NO or MHD_YES
- */
-int OlaHttpServer::DisplayIndex(const HttpRequest *request,
-                                HttpResponse *response) {
-  HttpServer::static_file_info file_info;
-  file_info.file_path = "landing.html";
-  file_info.content_type = HttpServer::CONTENT_TYPE_HTML;
-  return m_server.ServeStaticContent(&file_info, response);
-  (void) request;
-}
-
-
-/*
  * Handle the get dmx command
- * @param request the HttpRequest
- * @param response the HttpResponse
+ * @param request the HTTPRequest
+ * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
-int OlaHttpServer::GetDmx(const HttpRequest *request,
-                          HttpResponse *response) {
+int OladHTTPServer::GetDmx(const HTTPRequest *request,
+                          HTTPResponse *response) {
   string uni_id = request->GetParameter("u");
   unsigned int universe_id;
   if (!StringToInt(uni_id, &universe_id))
     return m_server.ServeNotFound(response);
   int ok = m_client.FetchDmx(universe_id,
                              NewSingleCallback(this,
-                                               &OlaHttpServer::HandleGetDmx,
+                                               &OladHTTPServer::HandleGetDmx,
                                                response));
 
   if (!ok)
@@ -422,14 +393,15 @@ int OlaHttpServer::GetDmx(const HttpRequest *request,
   return MHD_YES;
 }
 
+
 /*
  * Handle the set dmx command
- * @param request the HttpRequest
- * @param response the HttpResponse
+ * @param request the HTTPRequest
+ * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
-int OlaHttpServer::HandleSetDmx(const HttpRequest *request,
-                                HttpResponse *response) {
+int OladHTTPServer::HandleSetDmx(const HTTPRequest *request,
+                                HTTPResponse *response) {
   string dmx_data_str = request->GetPostParameter("d");
   string uni_id = request->GetPostParameter("u");
   unsigned int universe_id;
@@ -444,7 +416,7 @@ int OlaHttpServer::HandleSetDmx(const HttpRequest *request,
   bool ok = m_client.SendDmx(
       universe_id,
       buffer,
-      NewSingleCallback(this, &OlaHttpServer::HandleBoolResponse, response));
+      NewSingleCallback(this, &OladHTTPServer::HandleBoolResponse, response));
 
   if (!ok)
     return m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
@@ -453,51 +425,20 @@ int OlaHttpServer::HandleSetDmx(const HttpRequest *request,
 
 
 /*
- * Display the debug page
- * @param request the HttpRequest
- * @param response the HttpResponse
- * @returns MHD_NO or MHD_YES
- */
-int OlaHttpServer::DisplayDebug(const HttpRequest *request,
-                                HttpResponse *response) {
-  TimeStamp now;
-  m_clock.CurrentTime(&now);
-  TimeInterval diff = now - m_start_time;
-  stringstream str;
-  str << (diff.AsInt() / 1000);
-  m_export_map->GetStringVar(K_UPTIME_VAR)->Set(str.str());
-
-  vector<BaseVariable*> variables = m_export_map->AllVariables();
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
-
-  vector<BaseVariable*>::iterator iter;
-  for (iter = variables.begin(); iter != variables.end(); ++iter) {
-    stringstream out;
-    out << (*iter)->Name() << ": " << (*iter)->Value() << "\n";
-    response->Append(out.str());
-  }
-  int r = response->Send();
-  delete response;
-  return r;
-  (void) request;
-}
-
-
-/*
  * Cause the server to shutdown
- * @param request the HttpRequest
- * @param response the HttpResponse
+ * @param request the HTTPRequest
+ * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
-int OlaHttpServer::DisplayQuit(const HttpRequest *request,
-                               HttpResponse *response) {
+int OladHTTPServer::DisplayQuit(const HTTPRequest *request,
+                               HTTPResponse *response) {
   if (m_enable_quit) {
-    response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+    response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
     response->Append("ok");
     m_ola_server->StopServer();
   } else {
     response->SetStatus(403);
-    response->SetContentType(HttpServer::CONTENT_TYPE_HTML);
+    response->SetContentType(HTTPServer::CONTENT_TYPE_HTML);
     response->Append("<b>403 Unauthorized</b>");
   }
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
@@ -510,15 +451,15 @@ int OlaHttpServer::DisplayQuit(const HttpRequest *request,
 
 /*
  * Reload all plugins
- * @param request the HttpRequest
- * @param response the HttpResponse
+ * @param request the HTTPRequest
+ * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
-int OlaHttpServer::ReloadPlugins(const HttpRequest *request,
-                                 HttpResponse *response) {
+int OladHTTPServer::ReloadPlugins(const HTTPRequest *request,
+                                 HTTPResponse *response) {
   m_ola_server->ReloadPlugins();
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->Append("ok");
   int r = response->Send();
   delete response;
@@ -528,32 +469,12 @@ int OlaHttpServer::ReloadPlugins(const HttpRequest *request,
 
 
 /*
- * Display a list of registered handlers
- */
-int OlaHttpServer::DisplayHandlers(const HttpRequest *request,
-                                   HttpResponse *response) {
-  vector<string> handlers = m_server.Handlers();
-  vector<string>::const_iterator iter;
-  response->SetContentType(HttpServer::CONTENT_TYPE_HTML);
-  response->Append("<html><body><b>Registered Handlers</b><ul>");
-  for (iter = handlers.begin(); iter != handlers.end(); ++iter) {
-    response->Append("<li><a href='" + *iter + "'>" + *iter + "</a></li>");
-  }
-  response->Append("</ul></body></html>");
-  int r = response->Send();
-  delete response;
-  return r;
-  (void) request;
-}
-
-
-/*
  * Handle the plugin list callback
- * @param response the HttpResponse that is associated with the request.
+ * @param response the HTTPResponse that is associated with the request.
  * @param plugins a list of plugins
  * @param error an error string.
  */
-void OlaHttpServer::HandlePluginList(HttpResponse *response,
+void OladHTTPServer::HandlePluginList(HTTPResponse *response,
                                      const vector<OlaPlugin> &plugins,
                                      const string &error) {
   if (!error.empty()) {
@@ -567,7 +488,7 @@ void OlaHttpServer::HandlePluginList(HttpResponse *response,
   // separate thread.
   bool ok = m_client.FetchUniverseList(
       NewSingleCallback(this,
-                        &OlaHttpServer::HandleUniverseList,
+                        &OladHTTPServer::HandleUniverseList,
                         response,
                         json));
 
@@ -589,11 +510,11 @@ void OlaHttpServer::HandlePluginList(HttpResponse *response,
 
 /*
  * Handle the universe list callback
- * @param response the HttpResponse that is associated with the request.
+ * @param response the HTTPResponse that is associated with the request.
  * @param plugins a list of plugins
  * @param error an error string.
  */
-void OlaHttpServer::HandleUniverseList(HttpResponse *response,
+void OladHTTPServer::HandleUniverseList(HTTPResponse *response,
                                        JsonObject *json,
                                        const vector<OlaUniverse> &universes,
                                        const string &error) {
@@ -612,7 +533,7 @@ void OlaHttpServer::HandleUniverseList(HttpResponse *response,
   }
 
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->SendJson(*json);
   delete response;
   delete json;
@@ -621,11 +542,11 @@ void OlaHttpServer::HandleUniverseList(HttpResponse *response,
 
 /*
  * Handle the plugin description response.
- * @param response the HttpResponse that is associated with the request.
+ * @param response the HTTPResponse that is associated with the request.
  * @param description the plugin description.
  * @param error an error string.
  */
-void OlaHttpServer::HandlePluginInfo(HttpResponse *response,
+void OladHTTPServer::HandlePluginInfo(HTTPResponse *response,
                                      const string &description,
                                      const string &error) {
   if (!error.empty()) {
@@ -639,7 +560,7 @@ void OlaHttpServer::HandlePluginInfo(HttpResponse *response,
   json.Add("description", description);
 
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->SendJson(json);
   delete response;
 }
@@ -647,11 +568,11 @@ void OlaHttpServer::HandlePluginInfo(HttpResponse *response,
 
 /*
  * Handle the universe info
- * @param response the HttpResponse that is associated with the request.
+ * @param response the HTTPResponse that is associated with the request.
  * @param universe the OlaUniverse object
  * @param error an error string.
  */
-void OlaHttpServer::HandleUniverseInfo(HttpResponse *response,
+void OladHTTPServer::HandleUniverseInfo(HTTPResponse *response,
                                        OlaUniverse &universe,
                                        const string &error) {
   if (!error.empty()) {
@@ -666,7 +587,7 @@ void OlaHttpServer::HandleUniverseInfo(HttpResponse *response,
   bool ok = m_client.FetchDeviceInfo(
       ola::OLA_PLUGIN_ALL,
       NewSingleCallback(this,
-                        &OlaHttpServer::HandlePortsForUniverse,
+                        &OladHTTPServer::HandlePortsForUniverse,
                         response,
                         json,
                         universe.Id()));
@@ -684,8 +605,8 @@ void OlaHttpServer::HandleUniverseInfo(HttpResponse *response,
 }
 
 
-void OlaHttpServer::HandlePortsForUniverse(
-    HttpResponse *response,
+void OladHTTPServer::HandlePortsForUniverse(
+    HTTPResponse *response,
     JsonObject *json,
     unsigned int universe_id,
     const vector<OlaDevice> &devices,
@@ -721,7 +642,7 @@ void OlaHttpServer::HandlePortsForUniverse(
   }
 
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->SendJson(*json);
   delete json;
   delete response;
@@ -730,12 +651,12 @@ void OlaHttpServer::HandlePortsForUniverse(
 
 /*
  * Handle the list of candidate ports
- * @param response the HttpResponse that is associated with the request.
+ * @param response the HTTPResponse that is associated with the request.
  * @param devices the possbile devices & ports
  * @param error an error string.
  */
-void OlaHttpServer::HandleCandidatePorts(
-    HttpResponse *response,
+void OladHTTPServer::HandleCandidatePorts(
+    HTTPResponse *response,
     const vector<class OlaDevice> &devices,
     const string &error) {
   if (!error.empty()) {
@@ -765,7 +686,7 @@ void OlaHttpServer::HandleCandidatePorts(
   }
 
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->SendJson(json);
   delete response;
 }
@@ -774,7 +695,7 @@ void OlaHttpServer::HandleCandidatePorts(
 /*
  * Schedule a callback to send the new universe response to the client
  */
-void OlaHttpServer::CreateUniverseComplete(HttpResponse *response,
+void OladHTTPServer::CreateUniverseComplete(HTTPResponse *response,
                                            unsigned int universe_id,
                                            bool included_name,
                                            class ActionQueue *action_queue) {
@@ -782,7 +703,7 @@ void OlaHttpServer::CreateUniverseComplete(HttpResponse *response,
   // the Action
   m_server.SelectServer()->RegisterSingleTimeout(
     0,
-    NewSingleCallback(this, &OlaHttpServer::SendCreateUniverseResponse,
+    NewSingleCallback(this, &OladHTTPServer::SendCreateUniverseResponse,
                       response, universe_id, included_name, action_queue));
 }
 
@@ -791,8 +712,8 @@ void OlaHttpServer::CreateUniverseComplete(HttpResponse *response,
 /*
  * Send the response to a new universe request
  */
-void OlaHttpServer::SendCreateUniverseResponse(
-    HttpResponse *response,
+void OladHTTPServer::SendCreateUniverseResponse(
+    HTTPResponse *response,
     unsigned int universe_id,
     bool included_name,
     class ActionQueue *action_queue) {
@@ -811,7 +732,7 @@ void OlaHttpServer::SendCreateUniverseResponse(
   json.Add("message", (failed ? "Failed to patch any ports" : ""));
 
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->SendJson(json);
   delete action_queue;
   delete response;
@@ -821,13 +742,13 @@ void OlaHttpServer::SendCreateUniverseResponse(
 /*
  * Schedule a callback to send the modify universe response to the client
  */
-void OlaHttpServer::ModifyUniverseComplete(HttpResponse *response,
+void OladHTTPServer::ModifyUniverseComplete(HTTPResponse *response,
                                            ActionQueue *action_queue) {
   // this is a trick to unwind the stack and return control to a method outside
   // the Action
   m_server.SelectServer()->RegisterSingleTimeout(
     0,
-    NewSingleCallback(this, &OlaHttpServer::SendModifyUniverseResponse,
+    NewSingleCallback(this, &OladHTTPServer::SendModifyUniverseResponse,
                      response, action_queue));
 }
 
@@ -835,13 +756,13 @@ void OlaHttpServer::ModifyUniverseComplete(HttpResponse *response,
 /*
  * Send the response to a modify universe request.
  */
-void OlaHttpServer::SendModifyUniverseResponse(HttpResponse *response,
+void OladHTTPServer::SendModifyUniverseResponse(HTTPResponse *response,
                                                ActionQueue *action_queue) {
   if (!action_queue->WasSuccessful()) {
     delete action_queue;
     m_server.ServeError(response, "Update failed");
   } else {
-    response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+    response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
     response->Append("ok");
     response->Send();
     delete action_queue;
@@ -852,11 +773,11 @@ void OlaHttpServer::SendModifyUniverseResponse(HttpResponse *response,
 
 /*
  * Callback for m_client.FetchDmx called by GetDmx
- * @param response the HttpResponse
+ * @param response the HTTPResponse
  * @param buffer the DmxBuffer
  * @param error Error message
  */
-void OlaHttpServer::HandleGetDmx(HttpResponse *response,
+void OladHTTPServer::HandleGetDmx(HTTPResponse *response,
                                  const DmxBuffer &buffer,
                                  const string &error) {
   // rather than adding 512 JsonValue we cheat and use raw here
@@ -867,7 +788,7 @@ void OlaHttpServer::HandleGetDmx(HttpResponse *response,
   json.Add("error", error);
 
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->SendJson(json);
   delete response;
 }
@@ -875,49 +796,26 @@ void OlaHttpServer::HandleGetDmx(HttpResponse *response,
 
 /*
  * Handle the set DMX response.
- * @param response the HttpResponse that is associated with the request.
+ * @param response the HTTPResponse that is associated with the request.
  * @param error an error string.
  */
-void OlaHttpServer::HandleBoolResponse(HttpResponse *response,
+void OladHTTPServer::HandleBoolResponse(HTTPResponse *response,
                                        const string &error) {
   if (!error.empty()) {
     m_server.ServeError(response, error);
     return;
   }
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->Append("ok");
   response->Send();
   delete response;
 }
 
 
-/*
- * Register a handler
- */
-inline void OlaHttpServer::RegisterHandler(
-    const string &path,
-    int (OlaHttpServer::*method)(const HttpRequest*, HttpResponse*)) {
-  m_server.RegisterHandler(
-      path,
-      NewCallback<OlaHttpServer, int, const HttpRequest*, HttpResponse*>(
-        this,
-        method));
-}
-
-
-/*
- * Register a static file
- */
-inline void OlaHttpServer::RegisterFile(const string &file,
-                                 const string &content_type) {
-  m_server.RegisterFile("/" + file, file, content_type);
-}
-
-
 /**
  * Add the json representation of this port to the stringstream
  */
-void OlaHttpServer::PortToJson(JsonObject *json,
+void OladHTTPServer::PortToJson(JsonObject *json,
                                const OlaDevice &device,
                                const OlaPort &port,
                                bool is_output) {
@@ -946,7 +844,7 @@ void OlaHttpServer::PortToJson(JsonObject *json,
  * @param universe the universe id to add these ports if
  * @param port_action either PATCH or UNPATCH.
  */
-void OlaHttpServer::AddPatchActions(ActionQueue *action_queue,
+void OladHTTPServer::AddPatchActions(ActionQueue *action_queue,
                                     const string port_id_string,
                                     unsigned int universe,
                                     PatchAction port_action) {
@@ -969,10 +867,10 @@ void OlaHttpServer::AddPatchActions(ActionQueue *action_queue,
 /*
  * Add the Priority Actions to the ActionQueue.
  * @param action_queue the ActionQueue to add the actions to.
- * @param request the HttpRequest to read the url params from.
+ * @param request the HTTPRequest to read the url params from.
  */
-void OlaHttpServer::AddPriorityActions(ActionQueue *action_queue,
-                                       const HttpRequest *request) {
+void OladHTTPServer::AddPriorityActions(ActionQueue *action_queue,
+                                       const HTTPRequest *request) {
   string port_ids = request->GetPostParameter("modify_ports");
   vector<port_identifier> ports;
   vector<port_identifier>::const_iterator iter;
@@ -1012,7 +910,7 @@ void OlaHttpServer::AddPriorityActions(ActionQueue *action_queue,
  * @param port_ids the port ids in a , separated string
  * @param ports a vector of port_identifiers that will be filled.
  */
-void OlaHttpServer::DecodePortIds(const string &port_ids,
+void OladHTTPServer::DecodePortIds(const string &port_ids,
                                   vector<port_identifier> *ports) {
   vector<string> port_strings;
   StringSplit(port_ids, port_strings, ",");
@@ -1042,5 +940,19 @@ void OlaHttpServer::DecodePortIds(const string &port_ids,
     port_identifier port_id = {device_alias, port, direction, *iter};
     ports->push_back(port_id);
   }
+}
+
+
+/*
+ * Register a handler
+ */
+inline void OladHTTPServer::RegisterHandler(
+    const string &path,
+    int (OladHTTPServer::*method)(const HTTPRequest*, HTTPResponse*)) {
+  m_server.RegisterHandler(
+      path,
+      NewCallback<OladHTTPServer, int, const HTTPRequest*, HTTPResponse*>(
+        this,
+        method));
 }
 }  // ola

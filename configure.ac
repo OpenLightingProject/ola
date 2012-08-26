@@ -530,6 +530,7 @@ _EOF_
 AC_OUTPUT( Makefile\
     common/Makefile\
     common/export_map/Makefile\
+    common/http/Makefile\
     common/io/Makefile\
     common/logging/Makefile\
     common/messaging/Makefile\
@@ -550,6 +551,7 @@ AC_OUTPUT( Makefile\
     debian/Makefile\
     include/Makefile\
     include/ola/Makefile\
+    include/ola/http/Makefile\
     include/ola/io/Makefile\
     include/ola/messaging/Makefile\
     include/ola/network/Makefile\

@@ -161,6 +161,14 @@ class UnmanagedFileDescriptor: public BidirectionalFileDescriptor {
 };
 
 
+// Comparison operation.
+struct UnmanagedFileDescriptor_lt {
+  bool operator()(const ola::io::UnmanagedFileDescriptor *d1,
+                  const ola::io::UnmanagedFileDescriptor *d2) const {
+    return d1->ReadDescriptor() < d2->ReadDescriptor();
+  }
+};
+
 
 /*
  * A ConnectedDescriptor is a BidirectionalFileDescriptor that also generates

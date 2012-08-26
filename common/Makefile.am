@@ -12,5 +12,5 @@ libolacommon_la_LIBADD = export_map/libolaexportmap.la \
                          timecode/libtimecode.la \
                          utils/libolautils.la
 
-SUBDIRS = export_map io logging protocol rdm rpc network utils web messaging \
-          thread testing timecode
+SUBDIRS = export_map http io logging protocol rdm rpc network utils web \
+          messaging thread testing timecode

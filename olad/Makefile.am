@@ -25,18 +25,19 @@ libolaserver_la_LIBADD = $(PLUGIN_LIBS) \
                          $(top_builddir)/ola/libola.la
 
 if HAVE_LIBMICROHTTPD
-libolaserver_la_SOURCES += HttpServer.cpp HttpServerActions.cpp \
-                           OlaHttpServer.cpp HttpModule.cpp \
-                           RDMHttpModule.cpp
+libolaserver_la_SOURCES += HttpServerActions.cpp \
+                           OladHTTPServer.cpp \
+                           RDMHTTPModule.cpp
+libolaserver_la_LIBADD += $(top_builddir)/common/http/libolahttp.la
 endif
 
 
 EXTRA_DIST = Client.h ClientBroker.h DeviceManager.h \
-             DynamicPluginLoader.h HttpModule.h \
-             HttpServer.h HttpServerActions.h \
-             OlaHttpServer.h OlaVersion.h \
+             DynamicPluginLoader.h \
+             HttpServerActions.h \
+             OladHTTPServer.h OlaVersion.h \
              OlaServerServiceImpl.h PluginLoader.h PluginManager.h \
-             PortManager.h RDMHttpModule.h TestCommon.h \
+             PortManager.h RDMHTTPModule.h TestCommon.h \
              UniverseStore.h
 
 # Olad Server

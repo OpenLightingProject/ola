@@ -13,14 +13,26 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * HttpServer.h
- * Interface for the OLA HTTP class
+ * HTTPServer.h
+ * The Base HTTP Server class.
  * Copyright (C) 2005-2008 Simon Newton
+ *
+ * This is a simple HTTP Server built around libmicrohttpd. It runs in a
+ * separate thread.
+ *
+ * Example:
+ *   HTTPServer::HTTPServerOptions options;
+ *   options.port = ...;
+ *   HTTPServer server(options);
+ *   server.Init();
+ *   server.Run();
+ *   // get on with life and later...
+ *   server.Stop();
  */
 
 
-#ifndef OLAD_HTTPSERVER_H_
-#define OLAD_HTTPSERVER_H_
+#ifndef INCLUDE_OLA_HTTP_HTTPSERVER_H_
+#define INCLUDE_OLA_HTTP_HTTPSERVER_H_
 
 #include <ola/Callback.h>
 #include <ola/io/Descriptor.h>
@@ -40,6 +52,7 @@
 #include <vector>
 
 namespace ola {
+namespace http {
 
 using std::map;
 using std::multimap;
@@ -49,13 +62,13 @@ using std::vector;
 /*
  * Represents the HTTP request
  */
-class HttpRequest {
+class HTTPRequest {
   public:
-    HttpRequest(const string &url,
+    HTTPRequest(const string &url,
                 const string &method,
                 const string &version,
                 struct MHD_Connection *connection);
-    ~HttpRequest();
+    ~HTTPRequest();
     bool Init();
 
     // accessors
@@ -90,9 +103,9 @@ class HttpRequest {
 /*
  * Represents the HTTP Response
  */
-class HttpResponse {
+class HTTPResponse {
   public:
-    explicit HttpResponse(struct MHD_Connection *connection):
+    explicit HTTPResponse(struct MHD_Connection *connection):
       m_connection(connection),
       m_status_code(MHD_HTTP_OK) {}
 
@@ -115,37 +128,62 @@ class HttpResponse {
 /*
  * The base HTTP Server
  */
-class HttpServer: public ola::thread::Thread {
+class HTTPServer: public ola::thread::Thread {
   public:
-    typedef ola::Callback2<int, const HttpRequest*, HttpResponse*>
-      BaseHttpCallback;
+    typedef ola::Callback2<int, const HTTPRequest*, HTTPResponse*>
+      BaseHTTPCallback;
 
-    HttpServer(unsigned int port, const string &data_dir);
-    virtual ~HttpServer();
+    struct HTTPServerOptions {
+      public:
+        // The port to listen on
+        uint16_t port;
+        // The root for content served with ServeStaticContent();
+        string data_dir;
+
+        HTTPServerOptions()
+          : port(0),
+            data_dir("") {
+        }
+    };
+
+    explicit HTTPServer(const HTTPServerOptions &options);
+    virtual ~HTTPServer();
     bool Init();
     void *Run();
     void Stop();
     void UpdateSockets();
-    void HandleHTTPIO();
 
-    int DispatchRequest(const HttpRequest *request, HttpResponse *response);
-    bool RegisterHandler(const string &path, BaseHttpCallback *handler);
+    /**
+     * Called when there is HTTP IO activity to deal with. This is a noop as
+     * MHD_run is called in UpdateSockets above.
+     */
+    void HandleHTTPIO() {}
+
+    int DispatchRequest(const HTTPRequest *request, HTTPResponse *response);
+
+    // Register a callback handler.
+    bool RegisterHandler(const string &path, BaseHTTPCallback *handler);
+
+    // Register a file handler.
+    bool RegisterFile(const string &path,
+                      const string &content_type);
     bool RegisterFile(const string &path,
                       const string &file,
-                      const string &content_type="");
-    void RegisterDefaultHandler(BaseHttpCallback *handler);
-    vector<string> Handlers() const;
+                      const string &content_type);
+    // Set the default handler.
+    void RegisterDefaultHandler(BaseHTTPCallback *handler);
+
+    void Handlers(vector<string> *handlers) const;
     const string DataDir() const { return m_data_dir; }
-    int ServeError(HttpResponse *response, const string &details="");
-    int ServeNotFound(HttpResponse *response);
 
-    typedef struct {
-      string file_path;
-      string content_type;
-    } static_file_info;
+    // Return an error
+    int ServeError(HTTPResponse *response, const string &details="");
+    int ServeNotFound(HTTPResponse *response);
 
-    int ServeStaticContent(static_file_info *file_info,
-                           HttpResponse *response);
+    // Return the contents of a file.
+    int ServeStaticContent(const string &path,
+                           const string &content_type,
+                           HTTPResponse *response);
 
     static const char CONTENT_TYPE_PLAIN[];
     static const char CONTENT_TYPE_HTML[];
@@ -155,36 +193,38 @@ class HttpServer: public ola::thread::Thread {
     static const char CONTENT_TYPE_JS[];
 
     // Expose the SelectServer
-    ola::io::SelectServer *SelectServer() {
-      return &m_select_server;
-    }
+    ola::io::SelectServer *SelectServer() { return &m_select_server; }
 
   private :
-    HttpServer(const HttpServer&);
-    HttpServer& operator=(const HttpServer&);
+    typedef struct {
+      string file_path;
+      string content_type;
+    } static_file_info;
 
-    struct unmanaged_socket_lt {
-      bool operator()(const ola::io::UnmanagedFileDescriptor *s1,
-                      const ola::io::UnmanagedFileDescriptor *s2) const {
-        return s1->ReadDescriptor() < s2->ReadDescriptor();
-      }
-    };
+    typedef std::set<ola::io::UnmanagedFileDescriptor*,
+                     ola::io::UnmanagedFileDescriptor_lt> SocketSet;
+
+    struct MHD_Daemon *m_httpd;
+    ola::io::SelectServer m_select_server;
+    SocketSet m_sockets;
+
+    map<string, BaseHTTPCallback*> m_handlers;
+    map<string, static_file_info> m_static_content;
+    BaseHTTPCallback *m_default_handler;
+    unsigned int m_port;
+    string m_data_dir;
+
+
+    HTTPServer(const HTTPServer&);
+    HTTPServer& operator=(const HTTPServer&);
+
+    int ServeStaticContent(static_file_info *file_info,
+                           HTTPResponse *response);
 
     ola::io::UnmanagedFileDescriptor *NewSocket(fd_set *r_set,
                                                 fd_set *w_set,
                                                 int fd);
-
-    struct MHD_Daemon *m_httpd;
-    ola::io::SelectServer m_select_server;
-
-    std::set<ola::io::UnmanagedFileDescriptor*, unmanaged_socket_lt>
-        m_sockets;
-
-    map<string, BaseHttpCallback*> m_handlers;
-    map<string, static_file_info> m_static_content;
-    BaseHttpCallback *m_default_handler;
-    unsigned int m_port;
-    string m_data_dir;
 };
+}  // http
 }  // ola
-#endif  // OLAD_HTTPSERVER_H_
+#endif  // INCLUDE_OLA_HTTP_HTTPSERVER_H_

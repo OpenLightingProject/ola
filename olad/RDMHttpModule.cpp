@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * RDMHttpModule.cpp
+ * RDMHTTPModule.cpp
  * This module acts as the http -> olad gateway for RDM commands.
  * Copyright (C) 2010 Simon Newton
  */
@@ -40,7 +40,7 @@
 #include "ola/web/Json.h"
 #include "ola/web/JsonSections.h"
 #include "olad/OlaServer.h"
-#include "olad/RDMHttpModule.h"
+#include "olad/RDMHTTPModule.h"
 
 
 namespace ola {
@@ -62,102 +62,101 @@ using std::stringstream;
 using std::vector;
 
 
-const char RDMHttpModule::BACKEND_DISCONNECTED_ERROR[] =
+const char RDMHTTPModule::BACKEND_DISCONNECTED_ERROR[] =
     "Failed to send request, client isn't connected";
 
 // global url params
-const char RDMHttpModule::HINT_KEY[] = "hint";
-const char RDMHttpModule::ID_KEY[] = "id";
-const char RDMHttpModule::SECTION_KEY[] = "section";
-const char RDMHttpModule::UID_KEY[] = "uid";
+const char RDMHTTPModule::HINT_KEY[] = "hint";
+const char RDMHTTPModule::ID_KEY[] = "id";
+const char RDMHTTPModule::SECTION_KEY[] = "section";
+const char RDMHTTPModule::UID_KEY[] = "uid";
 
 // url params for particular sections
-const char RDMHttpModule::ADDRESS_FIELD[] = "address";
-const char RDMHttpModule::DISPLAY_INVERT_FIELD[] = "invert";
-const char RDMHttpModule::GENERIC_BOOL_FIELD[] = "bool";
-const char RDMHttpModule::GENERIC_STRING_FIELD[] = "string";
-const char RDMHttpModule::GENERIC_UINT_FIELD[] = "int";
-const char RDMHttpModule::IDENTIFY_FIELD[] = "identify";
-const char RDMHttpModule::LABEL_FIELD[] = "label";
-const char RDMHttpModule::LANGUAGE_FIELD[] = "language";
-const char RDMHttpModule::RECORD_SENSOR_FIELD[] = "record";
+const char RDMHTTPModule::ADDRESS_FIELD[] = "address";
+const char RDMHTTPModule::DISPLAY_INVERT_FIELD[] = "invert";
+const char RDMHTTPModule::GENERIC_BOOL_FIELD[] = "bool";
+const char RDMHTTPModule::GENERIC_STRING_FIELD[] = "string";
+const char RDMHTTPModule::GENERIC_UINT_FIELD[] = "int";
+const char RDMHTTPModule::IDENTIFY_FIELD[] = "identify";
+const char RDMHTTPModule::LABEL_FIELD[] = "label";
+const char RDMHTTPModule::LANGUAGE_FIELD[] = "language";
+const char RDMHTTPModule::RECORD_SENSOR_FIELD[] = "record";
 
 // section identifiers
-const char RDMHttpModule::BOOT_SOFTWARE_SECTION[] = "boot_software";
-const char RDMHttpModule::COMMS_STATUS_SECTION[] = "comms_status";
-const char RDMHttpModule::CLOCK_SECTION[] = "clock";
-const char RDMHttpModule::DEVICE_HOURS_SECTION[] = "device_hours";
-const char RDMHttpModule::DEVICE_INFO_SECTION[] = "device_info";
-const char RDMHttpModule::DEVICE_LABEL_SECTION[] = "device_label";
-const char RDMHttpModule::DISPLAY_INVERT_SECTION[] = "display_invert";
-const char RDMHttpModule::DISPLAY_LEVEL_SECTION[] = "display_level";
-const char RDMHttpModule::DMX_ADDRESS_SECTION[] = "dmx_address";
-const char RDMHttpModule::FACTORY_DEFAULTS_SECTION[] = "factory_defaults";
-const char RDMHttpModule::IDENTIFY_SECTION[] = "identify";
-const char RDMHttpModule::LAMP_HOURS_SECTION[] = "lamp_hours";
-const char RDMHttpModule::LAMP_MODE_SECTION[] = "lamp_mode";
-const char RDMHttpModule::LAMP_STATE_SECTION[] = "lamp_state";
-const char RDMHttpModule::LAMP_STRIKES_SECITON[] = "lamp_strikes";
-const char RDMHttpModule::LANGUAGE_SECTION[] = "language";
-const char RDMHttpModule::MANUFACTURER_LABEL_SECTION[] = "manufacturer_label";
-const char RDMHttpModule::PAN_INVERT_SECTION[] = "pan_invert";
-const char RDMHttpModule::PAN_TILT_SWAP_SECTION[] = "pan_tilt_swap";
-const char RDMHttpModule::PERSONALITY_SECTION[] = "personality";
-const char RDMHttpModule::POWER_CYCLES_SECTION[] = "power_cycles";
-const char RDMHttpModule::POWER_STATE_SECTION[] = "power_state";
-const char RDMHttpModule::PROXIED_DEVICES_SECTION[] = "proxied_devices";
-const char RDMHttpModule::PRODUCT_DETAIL_SECTION[] = "product_detail";
-const char RDMHttpModule::SENSOR_SECTION[] = "sensor";
-const char RDMHttpModule::TILT_INVERT_SECTION[] = "tilt_invert";
+const char RDMHTTPModule::BOOT_SOFTWARE_SECTION[] = "boot_software";
+const char RDMHTTPModule::COMMS_STATUS_SECTION[] = "comms_status";
+const char RDMHTTPModule::CLOCK_SECTION[] = "clock";
+const char RDMHTTPModule::DEVICE_HOURS_SECTION[] = "device_hours";
+const char RDMHTTPModule::DEVICE_INFO_SECTION[] = "device_info";
+const char RDMHTTPModule::DEVICE_LABEL_SECTION[] = "device_label";
+const char RDMHTTPModule::DISPLAY_INVERT_SECTION[] = "display_invert";
+const char RDMHTTPModule::DISPLAY_LEVEL_SECTION[] = "display_level";
+const char RDMHTTPModule::DMX_ADDRESS_SECTION[] = "dmx_address";
+const char RDMHTTPModule::FACTORY_DEFAULTS_SECTION[] = "factory_defaults";
+const char RDMHTTPModule::IDENTIFY_SECTION[] = "identify";
+const char RDMHTTPModule::LAMP_HOURS_SECTION[] = "lamp_hours";
+const char RDMHTTPModule::LAMP_MODE_SECTION[] = "lamp_mode";
+const char RDMHTTPModule::LAMP_STATE_SECTION[] = "lamp_state";
+const char RDMHTTPModule::LAMP_STRIKES_SECITON[] = "lamp_strikes";
+const char RDMHTTPModule::LANGUAGE_SECTION[] = "language";
+const char RDMHTTPModule::MANUFACTURER_LABEL_SECTION[] = "manufacturer_label";
+const char RDMHTTPModule::PAN_INVERT_SECTION[] = "pan_invert";
+const char RDMHTTPModule::PAN_TILT_SWAP_SECTION[] = "pan_tilt_swap";
+const char RDMHTTPModule::PERSONALITY_SECTION[] = "personality";
+const char RDMHTTPModule::POWER_CYCLES_SECTION[] = "power_cycles";
+const char RDMHTTPModule::POWER_STATE_SECTION[] = "power_state";
+const char RDMHTTPModule::PROXIED_DEVICES_SECTION[] = "proxied_devices";
+const char RDMHTTPModule::PRODUCT_DETAIL_SECTION[] = "product_detail";
+const char RDMHTTPModule::SENSOR_SECTION[] = "sensor";
+const char RDMHTTPModule::TILT_INVERT_SECTION[] = "tilt_invert";
 
 /**
  * Create a new OLA HTTP server
  * @param export_map the ExportMap to display when /debug is called
- * @param client_socket A ConnectedDescriptor which is used to communicate with the
- *   server.
+ * @param client_socket A ConnectedDescriptor which is used to communicate with
+ *   the server.
  * @param
  */
-RDMHttpModule::RDMHttpModule(HttpServer *http_server,
+RDMHTTPModule::RDMHTTPModule(HTTPServer *http_server,
                              OlaCallbackClient *client)
-    : HttpModule(http_server, client),
-      m_server(http_server),
+    : m_server(http_server),
       m_client(client),
       m_rdm_api(m_client) {
 
   m_server->RegisterHandler(
       "/rdm/run_discovery",
-      NewCallback(this, &RDMHttpModule::RunRDMDiscovery));
+      NewCallback(this, &RDMHTTPModule::RunRDMDiscovery));
   m_server->RegisterHandler(
       "/json/rdm/uids",
-      NewCallback(this, &RDMHttpModule::JsonUIDs));
+      NewCallback(this, &RDMHTTPModule::JsonUIDs));
   m_server->RegisterHandler(
       "/json/rdm/uid_info",
-      NewCallback(this, &RDMHttpModule::JsonUIDInfo));
+      NewCallback(this, &RDMHTTPModule::JsonUIDInfo));
   m_server->RegisterHandler(
       "/json/rdm/uid_identify",
-      NewCallback(this, &RDMHttpModule::JsonUIDIdentifyMode));
+      NewCallback(this, &RDMHTTPModule::JsonUIDIdentifyMode));
   m_server->RegisterHandler(
       "/json/rdm/uid_personalities",
-      NewCallback(this, &RDMHttpModule::JsonUIDPersonalities));
+      NewCallback(this, &RDMHTTPModule::JsonUIDPersonalities));
   m_server->RegisterHandler(
       "/json/rdm/supported_pids",
-      NewCallback(this, &RDMHttpModule::JsonSupportedPIDs));
+      NewCallback(this, &RDMHTTPModule::JsonSupportedPIDs));
   m_server->RegisterHandler(
       "/json/rdm/supported_sections",
-      NewCallback(this, &RDMHttpModule::JsonSupportedSections));
+      NewCallback(this, &RDMHTTPModule::JsonSupportedSections));
   m_server->RegisterHandler(
       "/json/rdm/section_info",
-      NewCallback(this, &RDMHttpModule::JsonSectionInfo));
+      NewCallback(this, &RDMHTTPModule::JsonSectionInfo));
   m_server->RegisterHandler(
       "/json/rdm/set_section_info",
-      NewCallback(this, &RDMHttpModule::JsonSaveSectionInfo));
+      NewCallback(this, &RDMHTTPModule::JsonSaveSectionInfo));
 }
 
 
 /*
  * Teardown
  */
-RDMHttpModule::~RDMHttpModule() {
+RDMHTTPModule::~RDMHTTPModule() {
   map<unsigned int, uid_resolution_state*>::iterator uid_iter;
   for (uid_iter = m_universe_uids.begin(); uid_iter != m_universe_uids.end();
        uid_iter++) {
@@ -169,12 +168,12 @@ RDMHttpModule::~RDMHttpModule() {
 
 /**
  * Run RDM discovery for a universe
- * @param request the HttpRequest
- * @param response the HttpResponse
+ * @param request the HTTPRequest
+ * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
-int RDMHttpModule::RunRDMDiscovery(const HttpRequest *request,
-                                   HttpResponse *response) {
+int RDMHTTPModule::RunRDMDiscovery(const HTTPRequest *request,
+                                   HTTPResponse *response) {
   unsigned int universe_id;
   if (!CheckForInvalidId(request, &universe_id))
     return m_server->ServeNotFound(response);
@@ -186,7 +185,7 @@ int RDMHttpModule::RunRDMDiscovery(const HttpRequest *request,
       universe_id,
       !incremental,
       NewSingleCallback(this,
-                        &RDMHttpModule::HandleUIDList,
+                        &RDMHTTPModule::HandleUIDList,
                         response,
                         universe_id));
 
@@ -198,12 +197,12 @@ int RDMHttpModule::RunRDMDiscovery(const HttpRequest *request,
 
 /**
  * Return the list of uids for this universe as json
- * @param request the HttpRequest
- * @param response the HttpResponse
+ * @param request the HTTPRequest
+ * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
-int RDMHttpModule::JsonUIDs(const HttpRequest *request,
-                            HttpResponse *response) {
+int RDMHTTPModule::JsonUIDs(const HTTPRequest *request,
+                            HTTPResponse *response) {
   unsigned int universe_id;
   if (!CheckForInvalidId(request, &universe_id))
     return m_server->ServeNotFound(response);
@@ -211,7 +210,7 @@ int RDMHttpModule::JsonUIDs(const HttpRequest *request,
   bool ok = m_client->FetchUIDList(
       universe_id,
       NewSingleCallback(this,
-                        &RDMHttpModule::HandleUIDList,
+                        &RDMHTTPModule::HandleUIDList,
                         response,
                         universe_id));
 
@@ -223,12 +222,12 @@ int RDMHttpModule::JsonUIDs(const HttpRequest *request,
 
 /**
  * Return the device info for this uid.
- * @param request the HttpRequest
- * @param response the HttpResponse
+ * @param request the HTTPRequest
+ * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
-int RDMHttpModule::JsonUIDInfo(const HttpRequest *request,
-                               HttpResponse *response) {
+int RDMHTTPModule::JsonUIDInfo(const HTTPRequest *request,
+                               HTTPResponse *response) {
   unsigned int universe_id;
   if (!CheckForInvalidId(request, &universe_id))
     return m_server->ServeNotFound(response);
@@ -243,7 +242,7 @@ int RDMHttpModule::JsonUIDInfo(const HttpRequest *request,
       *uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::UIDInfoHandler,
+                        &RDMHTTPModule::UIDInfoHandler,
                         response),
       &error);
   delete uid;
@@ -256,12 +255,12 @@ int RDMHttpModule::JsonUIDInfo(const HttpRequest *request,
 
 /**
  * Returns the identify state for the device.
- * @param request the HttpRequest
- * @param response the HttpResponse
+ * @param request the HTTPRequest
+ * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
-int RDMHttpModule::JsonUIDIdentifyMode(const HttpRequest *request,
-                                       HttpResponse *response) {
+int RDMHTTPModule::JsonUIDIdentifyMode(const HTTPRequest *request,
+                                       HTTPResponse *response) {
   unsigned int universe_id;
   if (!CheckForInvalidId(request, &universe_id))
     return m_server->ServeNotFound(response);
@@ -276,7 +275,7 @@ int RDMHttpModule::JsonUIDIdentifyMode(const HttpRequest *request,
       *uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::UIDIdentifyHandler,
+                        &RDMHTTPModule::UIDIdentifyHandler,
                         response),
       &error);
   delete uid;
@@ -289,12 +288,12 @@ int RDMHttpModule::JsonUIDIdentifyMode(const HttpRequest *request,
 
 /**
  * Returns the personalities on the device
- * @param request the HttpRequest
- * @param response the HttpResponse
+ * @param request the HTTPRequest
+ * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
-int RDMHttpModule::JsonUIDPersonalities(const HttpRequest *request,
-                                        HttpResponse *response) {
+int RDMHTTPModule::JsonUIDPersonalities(const HTTPRequest *request,
+                                        HTTPResponse *response) {
   unsigned int universe_id;
   if (!CheckForInvalidId(request, &universe_id))
     return m_server->ServeNotFound(response);
@@ -316,12 +315,12 @@ int RDMHttpModule::JsonUIDPersonalities(const HttpRequest *request,
 /**
  * Return a list of pids supported by this device. This isn't used by the UI
  * but it's useful for debugging.
- * @param request the HttpRequest
- * @param response the HttpResponse
+ * @param request the HTTPRequest
+ * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
-int RDMHttpModule::JsonSupportedPIDs(const HttpRequest *request,
-                                     HttpResponse *response) {
+int RDMHTTPModule::JsonSupportedPIDs(const HTTPRequest *request,
+                                     HTTPResponse *response) {
   unsigned int universe_id;
   if (!CheckForInvalidId(request, &universe_id))
     return m_server->ServeNotFound(response);
@@ -336,7 +335,7 @@ int RDMHttpModule::JsonSupportedPIDs(const HttpRequest *request,
       *uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::SupportedParamsHandler,
+                        &RDMHTTPModule::SupportedParamsHandler,
                         response),
       &error);
   delete uid;
@@ -351,12 +350,12 @@ int RDMHttpModule::JsonSupportedPIDs(const HttpRequest *request,
  * Return a list of sections to display in the RDM control panel.
  * We use the response from SUPPORTED_PARAMS and DEVICE_INFO to decide which
  * pids exist.
- * @param request the HttpRequest
- * @param response the HttpResponse
+ * @param request the HTTPRequest
+ * @param response the HTTPResponse
  * @returns MHD_NO or MHD_YES
  */
-int RDMHttpModule::JsonSupportedSections(const HttpRequest *request,
-                                         HttpResponse *response) {
+int RDMHTTPModule::JsonSupportedSections(const HTTPRequest *request,
+                                         HTTPResponse *response) {
   unsigned int universe_id;
   if (!CheckForInvalidId(request, &universe_id))
     return m_server->ServeNotFound(response);
@@ -371,7 +370,7 @@ int RDMHttpModule::JsonSupportedSections(const HttpRequest *request,
       *uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::SupportedSectionsHandler,
+                        &RDMHTTPModule::SupportedSectionsHandler,
                         response,
                         universe_id,
                         *uid),
@@ -387,8 +386,8 @@ int RDMHttpModule::JsonSupportedSections(const HttpRequest *request,
 /**
  * Get the information required to render a section in the RDM controller panel
  */
-int RDMHttpModule::JsonSectionInfo(const HttpRequest *request,
-                                   HttpResponse *response) {
+int RDMHTTPModule::JsonSectionInfo(const HTTPRequest *request,
+                                   HTTPResponse *response) {
   unsigned int universe_id;
   if (!CheckForInvalidId(request, &universe_id))
     return m_server->ServeNotFound(response);
@@ -467,8 +466,8 @@ int RDMHttpModule::JsonSectionInfo(const HttpRequest *request,
 /**
  * Save the information for a section or item.
  */
-int RDMHttpModule::JsonSaveSectionInfo(const HttpRequest *request,
-                                       HttpResponse *response) {
+int RDMHTTPModule::JsonSaveSectionInfo(const HTTPRequest *request,
+                                       HTTPResponse *response) {
   unsigned int universe_id;
   if (!CheckForInvalidId(request, &universe_id))
     return m_server->ServeNotFound(response);
@@ -539,7 +538,7 @@ int RDMHttpModule::JsonSaveSectionInfo(const HttpRequest *request,
  * universes is received. It's used to prune the uid map so we don't bother
  * trying to resolve uids for universes that no longer exist.
  */
-void RDMHttpModule::PruneUniverseList(const vector<OlaUniverse> &universes) {
+void RDMHTTPModule::PruneUniverseList(const vector<OlaUniverse> &universes) {
   map<unsigned int, uid_resolution_state*>::iterator uid_iter;
   for (uid_iter = m_universe_uids.begin(); uid_iter != m_universe_uids.end();
        uid_iter++) {
@@ -568,11 +567,11 @@ void RDMHttpModule::PruneUniverseList(const vector<OlaUniverse> &universes) {
 
 /*
  * Handle the UID list response.
- * @param response the HttpResponse that is associated with the request.
+ * @param response the HTTPResponse that is associated with the request.
  * @param uids the UIDs for this response.
  * @param error an error string.
  */
-void RDMHttpModule::HandleUIDList(HttpResponse *response,
+void RDMHTTPModule::HandleUIDList(HTTPResponse *response,
                                   unsigned int universe_id,
                                   const ola::rdm::UIDSet &uids,
                                   const string &error) {
@@ -622,7 +621,7 @@ void RDMHttpModule::HandleUIDList(HttpResponse *response,
   }
 
   response->SetNoCache();
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->SendJson(json);
   delete response;
 
@@ -646,7 +645,7 @@ void RDMHttpModule::HandleUIDList(HttpResponse *response,
  * Send the RDM command needed to resolve the next uid in the queue
  * @param universe_id the universe id to resolve the next UID for.
  */
-void RDMHttpModule::ResolveNextUID(unsigned int universe_id) {
+void RDMHTTPModule::ResolveNextUID(unsigned int universe_id) {
   bool sent_request = false;
   string error;
   uid_resolution_state *uid_state = GetUniverseUids(universe_id);
@@ -670,7 +669,7 @@ void RDMHttpModule::ResolveNextUID(unsigned int universe_id) {
           uid_action_pair.first,
           ola::rdm::ROOT_RDM_DEVICE,
           NewSingleCallback(this,
-                            &RDMHttpModule::UpdateUIDManufacturerLabel,
+                            &RDMHTTPModule::UpdateUIDManufacturerLabel,
                             universe_id,
                             uid_action_pair.first),
           &error);
@@ -682,7 +681,7 @@ void RDMHttpModule::ResolveNextUID(unsigned int universe_id) {
           uid_action_pair.first,
           ola::rdm::ROOT_RDM_DEVICE,
           NewSingleCallback(this,
-                            &RDMHttpModule::UpdateUIDDeviceLabel,
+                            &RDMHTTPModule::UpdateUIDDeviceLabel,
                             universe_id,
                             uid_action_pair.first),
           &error);
@@ -697,7 +696,7 @@ void RDMHttpModule::ResolveNextUID(unsigned int universe_id) {
 /*
  * Handle the manufacturer label response.
  */
-void RDMHttpModule::UpdateUIDManufacturerLabel(
+void RDMHTTPModule::UpdateUIDManufacturerLabel(
     unsigned int universe,
     UID uid,
     const ola::rdm::ResponseStatus &status,
@@ -720,7 +719,7 @@ void RDMHttpModule::UpdateUIDManufacturerLabel(
 /*
  * Handle the device label response.
  */
-void RDMHttpModule::UpdateUIDDeviceLabel(
+void RDMHTTPModule::UpdateUIDDeviceLabel(
     unsigned int universe,
     UID uid,
     const ola::rdm::ResponseStatus &status,
@@ -744,7 +743,7 @@ void RDMHttpModule::UpdateUIDDeviceLabel(
  * Get the UID resolution state for a particular universe
  * @param universe the id of the universe to get the state for
  */
-RDMHttpModule::uid_resolution_state *RDMHttpModule::GetUniverseUids(
+RDMHTTPModule::uid_resolution_state *RDMHTTPModule::GetUniverseUids(
     unsigned int universe) {
   map<unsigned int, uid_resolution_state*>::iterator iter =
     m_universe_uids.find(universe);
@@ -757,7 +756,7 @@ RDMHttpModule::uid_resolution_state *RDMHttpModule::GetUniverseUids(
  * doesn't exist.
  * @param universe the id of the universe to get the state for
  */
-RDMHttpModule::uid_resolution_state *RDMHttpModule::GetUniverseUidsOrCreate(
+RDMHTTPModule::uid_resolution_state *RDMHTTPModule::GetUniverseUidsOrCreate(
     unsigned int universe) {
   map<unsigned int, uid_resolution_state*>::iterator iter =
     m_universe_uids.find(universe);
@@ -777,7 +776,7 @@ RDMHttpModule::uid_resolution_state *RDMHttpModule::GetUniverseUidsOrCreate(
 /**
  * Handle the Device Info response and build the json
  */
-void RDMHttpModule::UIDInfoHandler(HttpResponse *response,
+void RDMHTTPModule::UIDInfoHandler(HTTPResponse *response,
                                    const ola::rdm::ResponseStatus &status,
                                    const ola::rdm::DeviceDescriptor &device) {
   if (CheckForRDMError(response, status))
@@ -791,7 +790,7 @@ void RDMHttpModule::UIDInfoHandler(HttpResponse *response,
   json.Add("personality_count", static_cast<int>(device.personaility_count));
 
   response->SetNoCache();
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->SendJson(json);
   delete response;
 }
@@ -800,7 +799,7 @@ void RDMHttpModule::UIDInfoHandler(HttpResponse *response,
 /**
  * Handle the identify mode response and build the json.
  */
-void RDMHttpModule::UIDIdentifyHandler(HttpResponse *response,
+void RDMHTTPModule::UIDIdentifyHandler(HTTPResponse *response,
                                        const ola::rdm::ResponseStatus &status,
                                        bool value) {
   if (CheckForRDMError(response, status))
@@ -811,7 +810,7 @@ void RDMHttpModule::UIDIdentifyHandler(HttpResponse *response,
   json.Add("identify_mode", value);
 
   response->SetNoCache();
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->SendJson(json);
   delete response;
 }
@@ -820,7 +819,7 @@ void RDMHttpModule::UIDIdentifyHandler(HttpResponse *response,
 /**
  * Send the response to a dmx personality section
  */
-void RDMHttpModule::SendPersonalityResponse(HttpResponse *response,
+void RDMHTTPModule::SendPersonalityResponse(HTTPResponse *response,
                                             personality_info *info) {
   JsonObject json;
   json.Add("error", "");
@@ -839,7 +838,7 @@ void RDMHttpModule::SendPersonalityResponse(HttpResponse *response,
   json.Add("selected", info->active);
 
   response->SetNoCache();
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->SendJson(json);
   delete info->uid;
   delete info;
@@ -849,8 +848,8 @@ void RDMHttpModule::SendPersonalityResponse(HttpResponse *response,
 /*
  * Handle the response from a supported params request
  */
-void RDMHttpModule::SupportedParamsHandler(
-    HttpResponse *response,
+void RDMHTTPModule::SupportedParamsHandler(
+    HTTPResponse *response,
     const ola::rdm::ResponseStatus &status,
     const vector<uint16_t> &pids) {
   JsonObject json;
@@ -862,7 +861,7 @@ void RDMHttpModule::SupportedParamsHandler(
   }
 
   response->SetNoCache();
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->SendJson(json);
   delete response;
 }
@@ -872,8 +871,8 @@ void RDMHttpModule::SupportedParamsHandler(
  * Takes the supported pids for a device and come up with the list of sections
  * to display in the RDM panel
  */
-void RDMHttpModule::SupportedSectionsHandler(
-    HttpResponse *response,
+void RDMHTTPModule::SupportedSectionsHandler(
+    HTTPResponse *response,
     unsigned int universe_id,
     UID uid,
     const ola::rdm::ResponseStatus &status,
@@ -891,7 +890,7 @@ void RDMHttpModule::SupportedSectionsHandler(
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::SupportedSectionsDeviceInfoHandler,
+                        &RDMHTTPModule::SupportedSectionsDeviceInfoHandler,
                         response,
                         pid_list),
       &error);
@@ -903,8 +902,8 @@ void RDMHttpModule::SupportedSectionsHandler(
 /**
  * Handle the second part of the supported sections request.
  */
-void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
-    HttpResponse *response,
+void RDMHTTPModule::SupportedSectionsDeviceInfoHandler(
+    HTTPResponse *response,
     const vector<uint16_t> pid_list,
     const ola::rdm::ResponseStatus &status,
     const ola::rdm::DeviceDescriptor &device) {
@@ -1034,7 +1033,7 @@ void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
   }
 
   response->SetNoCache();
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->SendJson(json);
   delete response;
 }
@@ -1043,7 +1042,7 @@ void RDMHttpModule::SupportedSectionsDeviceInfoHandler(
 /*
  * Handle the request for the communication status.
  */
-string RDMHttpModule::GetCommStatus(HttpResponse *response,
+string RDMHTTPModule::GetCommStatus(HTTPResponse *response,
                                     unsigned int universe_id,
                                     const UID &uid) {
   string error;
@@ -1051,7 +1050,7 @@ string RDMHttpModule::GetCommStatus(HttpResponse *response,
     universe_id,
     uid,
     NewSingleCallback(this,
-                      &RDMHttpModule::CommStatusHandler,
+                      &RDMHTTPModule::CommStatusHandler,
                       response),
     &error);
   return error;
@@ -1061,7 +1060,7 @@ string RDMHttpModule::GetCommStatus(HttpResponse *response,
 /**
  * Handle the response to a communication status call
  */
-void RDMHttpModule::CommStatusHandler(HttpResponse *response,
+void RDMHTTPModule::CommStatusHandler(HTTPResponse *response,
                                       const ola::rdm::ResponseStatus &status,
                                       uint16_t short_messages,
                                       uint16_t length_mismatch,
@@ -1082,7 +1081,7 @@ void RDMHttpModule::CommStatusHandler(HttpResponse *response,
 /**
  * Clear the communication status counters
  */
-string RDMHttpModule::ClearCommsCounters(HttpResponse *response,
+string RDMHTTPModule::ClearCommsCounters(HTTPResponse *response,
                                          unsigned int universe_id,
                                          const UID &uid) {
   string error;
@@ -1090,7 +1089,7 @@ string RDMHttpModule::ClearCommsCounters(HttpResponse *response,
       universe_id,
       uid,
       NewSingleCallback(this,
-                        &RDMHttpModule::SetHandler,
+                        &RDMHTTPModule::SetHandler,
                         response),
       &error);
   return error;
@@ -1100,7 +1099,7 @@ string RDMHttpModule::ClearCommsCounters(HttpResponse *response,
 /*
  * Handle the request for the proxied devices
  */
-string RDMHttpModule::GetProxiedDevices(HttpResponse *response,
+string RDMHTTPModule::GetProxiedDevices(HTTPResponse *response,
                                         unsigned int universe_id,
                                         const UID &uid) {
   string error;
@@ -1108,7 +1107,7 @@ string RDMHttpModule::GetProxiedDevices(HttpResponse *response,
     universe_id,
     uid,
     NewSingleCallback(this,
-                      &RDMHttpModule::ProxiedDevicesHandler,
+                      &RDMHTTPModule::ProxiedDevicesHandler,
                       response,
                       universe_id),
     &error);
@@ -1119,8 +1118,8 @@ string RDMHttpModule::GetProxiedDevices(HttpResponse *response,
 /**
  * Handle the response to a proxied devices call.
  */
-void RDMHttpModule::ProxiedDevicesHandler(
-    HttpResponse *response,
+void RDMHTTPModule::ProxiedDevicesHandler(
+    HTTPResponse *response,
     unsigned int universe_id,
     const ola::rdm::ResponseStatus &status,
     const vector<UID> &uids) {
@@ -1165,8 +1164,8 @@ void RDMHttpModule::ProxiedDevicesHandler(
 /*
  * Handle the request for the device info section.
  */
-string RDMHttpModule::GetDeviceInfo(const HttpRequest *request,
-                                    HttpResponse *response,
+string RDMHTTPModule::GetDeviceInfo(const HTTPRequest *request,
+                                    HTTPResponse *response,
                                     unsigned int universe_id,
                                     const UID &uid) {
   string hint = request->GetParameter(HINT_KEY);
@@ -1178,7 +1177,7 @@ string RDMHttpModule::GetDeviceInfo(const HttpRequest *request,
     uid,
     ola::rdm::ROOT_RDM_DEVICE,
     NewSingleCallback(this,
-                      &RDMHttpModule::GetSoftwareVersionHandler,
+                      &RDMHTTPModule::GetSoftwareVersionHandler,
                       response,
                       dev_info),
     &error);
@@ -1189,8 +1188,8 @@ string RDMHttpModule::GetDeviceInfo(const HttpRequest *request,
 /**
  * Handle the response to a software version call.
  */
-void RDMHttpModule::GetSoftwareVersionHandler(
-    HttpResponse *response,
+void RDMHTTPModule::GetSoftwareVersionHandler(
+    HTTPResponse *response,
     device_info dev_info,
     const ola::rdm::ResponseStatus &status,
     const string &software_version) {
@@ -1205,7 +1204,7 @@ void RDMHttpModule::GetSoftwareVersionHandler(
         dev_info.uid,
         ola::rdm::ROOT_RDM_DEVICE,
         NewSingleCallback(this,
-                          &RDMHttpModule::GetDeviceModelHandler,
+                          &RDMHTTPModule::GetDeviceModelHandler,
                           response,
                           dev_info),
         &error);
@@ -1215,7 +1214,7 @@ void RDMHttpModule::GetSoftwareVersionHandler(
         dev_info.uid,
         ola::rdm::ROOT_RDM_DEVICE,
         NewSingleCallback(this,
-                          &RDMHttpModule::GetDeviceInfoHandler,
+                          &RDMHTTPModule::GetDeviceInfoHandler,
                           response,
                           dev_info),
         &error);
@@ -1229,8 +1228,8 @@ void RDMHttpModule::GetSoftwareVersionHandler(
 /**
  * Handle the response to a device model call.
  */
-void RDMHttpModule::GetDeviceModelHandler(
-    HttpResponse *response,
+void RDMHTTPModule::GetDeviceModelHandler(
+    HTTPResponse *response,
     device_info dev_info,
     const ola::rdm::ResponseStatus &status,
     const string &device_model) {
@@ -1244,7 +1243,7 @@ void RDMHttpModule::GetDeviceModelHandler(
       dev_info.uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::GetDeviceInfoHandler,
+                        &RDMHTTPModule::GetDeviceInfoHandler,
                         response,
                         dev_info),
       &error);
@@ -1257,8 +1256,8 @@ void RDMHttpModule::GetDeviceModelHandler(
 /**
  * Handle the response to a device info call and build the response
  */
-void RDMHttpModule::GetDeviceInfoHandler(
-    HttpResponse *response,
+void RDMHTTPModule::GetDeviceInfoHandler(
+    HTTPResponse *response,
     device_info dev_info,
     const ola::rdm::ResponseStatus &status,
     const ola::rdm::DeviceDescriptor &device) {
@@ -1306,8 +1305,8 @@ void RDMHttpModule::GetDeviceInfoHandler(
 /*
  * Handle the request for the product details ids.
  */
-string RDMHttpModule::GetProductIds(const HttpRequest *request,
-                                    HttpResponse *response,
+string RDMHTTPModule::GetProductIds(const HTTPRequest *request,
+                                    HTTPResponse *response,
                                     unsigned int universe_id,
                                     const UID &uid) {
   string error;
@@ -1316,7 +1315,7 @@ string RDMHttpModule::GetProductIds(const HttpRequest *request,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::GetProductIdsHandler,
+                        &RDMHTTPModule::GetProductIdsHandler,
                         response),
       &error);
   return error;
@@ -1327,8 +1326,8 @@ string RDMHttpModule::GetProductIds(const HttpRequest *request,
 /**
  * Handle the response to a product detail ids call and build the response.
  */
-void RDMHttpModule::GetProductIdsHandler(
-    HttpResponse *response,
+void RDMHTTPModule::GetProductIdsHandler(
+    HTTPResponse *response,
     const ola::rdm::ResponseStatus &status,
     const vector<uint16_t> &ids) {
   if (CheckForRDMError(response, status))
@@ -1357,8 +1356,8 @@ void RDMHttpModule::GetProductIdsHandler(
 /**
  * Handle the request for the Manufacturer label.
  */
-string RDMHttpModule::GetManufacturerLabel(const HttpRequest *request,
-                                           HttpResponse *response,
+string RDMHTTPModule::GetManufacturerLabel(const HTTPRequest *request,
+                                           HTTPResponse *response,
                                            unsigned int universe_id,
                                            const UID &uid) {
   string error;
@@ -1367,7 +1366,7 @@ string RDMHttpModule::GetManufacturerLabel(const HttpRequest *request,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::GetManufacturerLabelHandler,
+                        &RDMHTTPModule::GetManufacturerLabelHandler,
                         response,
                         universe_id,
                         uid),
@@ -1380,8 +1379,8 @@ string RDMHttpModule::GetManufacturerLabel(const HttpRequest *request,
 /**
  * Handle the response to a manufacturer label call and build the response
  */
-void RDMHttpModule::GetManufacturerLabelHandler(
-    HttpResponse *response,
+void RDMHTTPModule::GetManufacturerLabelHandler(
+    HTTPResponse *response,
     unsigned int universe_id,
     const UID uid,
     const ola::rdm::ResponseStatus &status,
@@ -1406,8 +1405,8 @@ void RDMHttpModule::GetManufacturerLabelHandler(
 /**
  * Handle the request for the Device label.
  */
-string RDMHttpModule::GetDeviceLabel(const HttpRequest *request,
-                                     HttpResponse *response,
+string RDMHTTPModule::GetDeviceLabel(const HTTPRequest *request,
+                                     HTTPResponse *response,
                                      unsigned int universe_id,
                                      const UID &uid) {
   string error;
@@ -1416,7 +1415,7 @@ string RDMHttpModule::GetDeviceLabel(const HttpRequest *request,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::GetDeviceLabelHandler,
+                        &RDMHTTPModule::GetDeviceLabelHandler,
                         response,
                         universe_id,
                         uid),
@@ -1429,8 +1428,8 @@ string RDMHttpModule::GetDeviceLabel(const HttpRequest *request,
 /**
  * Handle the response to a device label call and build the response
  */
-void RDMHttpModule::GetDeviceLabelHandler(
-    HttpResponse *response,
+void RDMHTTPModule::GetDeviceLabelHandler(
+    HTTPResponse *response,
     unsigned int universe_id,
     const UID uid,
     const ola::rdm::ResponseStatus &status,
@@ -1456,8 +1455,8 @@ void RDMHttpModule::GetDeviceLabelHandler(
 /*
  * Set the device label
  */
-string RDMHttpModule::SetDeviceLabel(const HttpRequest *request,
-                                     HttpResponse *response,
+string RDMHTTPModule::SetDeviceLabel(const HTTPRequest *request,
+                                     HTTPResponse *response,
                                      unsigned int universe_id,
                                      const UID &uid) {
   string label = request->GetParameter(LABEL_FIELD);
@@ -1468,7 +1467,7 @@ string RDMHttpModule::SetDeviceLabel(const HttpRequest *request,
       ola::rdm::ROOT_RDM_DEVICE,
       label,
       NewSingleCallback(this,
-                        &RDMHttpModule::SetHandler,
+                        &RDMHTTPModule::SetHandler,
                         response),
       &error);
   return error;
@@ -1478,7 +1477,7 @@ string RDMHttpModule::SetDeviceLabel(const HttpRequest *request,
 /**
  * Handle the request for the factory defaults section
  */
-string RDMHttpModule::GetFactoryDefaults(HttpResponse *response,
+string RDMHTTPModule::GetFactoryDefaults(HTTPResponse *response,
                                          unsigned int universe_id,
                                          const UID &uid) {
   string error;
@@ -1487,7 +1486,7 @@ string RDMHttpModule::GetFactoryDefaults(HttpResponse *response,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::FactoryDefaultsHandler,
+                        &RDMHTTPModule::FactoryDefaultsHandler,
                         response),
       &error);
   return error;
@@ -1497,8 +1496,8 @@ string RDMHttpModule::GetFactoryDefaults(HttpResponse *response,
 /**
  * Handle the response to a factory defaults call and build the response
  */
-void RDMHttpModule::FactoryDefaultsHandler(
-    HttpResponse *response,
+void RDMHTTPModule::FactoryDefaultsHandler(
+    HTTPResponse *response,
     const ola::rdm::ResponseStatus &status,
     bool defaults) {
   if (CheckForRDMError(response, status))
@@ -1516,7 +1515,7 @@ void RDMHttpModule::FactoryDefaultsHandler(
 /*
  * Reset to the factory defaults
  */
-string RDMHttpModule::SetFactoryDefault(HttpResponse *response,
+string RDMHTTPModule::SetFactoryDefault(HTTPResponse *response,
                                         unsigned int universe_id,
                                         const UID &uid) {
   string error;
@@ -1525,7 +1524,7 @@ string RDMHttpModule::SetFactoryDefault(HttpResponse *response,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::SetHandler,
+                        &RDMHTTPModule::SetHandler,
                         response),
       &error);
   return error;
@@ -1535,7 +1534,7 @@ string RDMHttpModule::SetFactoryDefault(HttpResponse *response,
 /**
  * Handle the request for the language section.
  */
-string RDMHttpModule::GetLanguage(HttpResponse *response,
+string RDMHTTPModule::GetLanguage(HTTPResponse *response,
                                   unsigned int universe_id,
                                   const UID &uid) {
   string error;
@@ -1544,7 +1543,7 @@ string RDMHttpModule::GetLanguage(HttpResponse *response,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::GetSupportedLanguagesHandler,
+                        &RDMHTTPModule::GetSupportedLanguagesHandler,
                         response,
                         universe_id,
                         uid),
@@ -1556,8 +1555,8 @@ string RDMHttpModule::GetLanguage(HttpResponse *response,
 /**
  * Handle the response to language capability call.
  */
-void RDMHttpModule::GetSupportedLanguagesHandler(
-    HttpResponse *response,
+void RDMHTTPModule::GetSupportedLanguagesHandler(
+    HTTPResponse *response,
     unsigned int universe_id,
     const UID uid,
     const ola::rdm::ResponseStatus &status,
@@ -1568,7 +1567,7 @@ void RDMHttpModule::GetSupportedLanguagesHandler(
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::GetLanguageHandler,
+                        &RDMHTTPModule::GetLanguageHandler,
                         response,
                         languages),
       &error);
@@ -1582,7 +1581,7 @@ void RDMHttpModule::GetSupportedLanguagesHandler(
 /**
  * Handle the response to language call and build the response
  */
-void RDMHttpModule::GetLanguageHandler(HttpResponse *response,
+void RDMHTTPModule::GetLanguageHandler(HTTPResponse *response,
                                        vector<string> languages,
                                        const ola::rdm::ResponseStatus &status,
                                        const string &language) {
@@ -1610,8 +1609,8 @@ void RDMHttpModule::GetLanguageHandler(HttpResponse *response,
 /*
  * Set the language
  */
-string RDMHttpModule::SetLanguage(const HttpRequest *request,
-                                  HttpResponse *response,
+string RDMHTTPModule::SetLanguage(const HTTPRequest *request,
+                                  HTTPResponse *response,
                                   unsigned int universe_id,
                                   const UID &uid) {
   string label = request->GetParameter(LANGUAGE_FIELD);
@@ -1622,7 +1621,7 @@ string RDMHttpModule::SetLanguage(const HttpRequest *request,
       ola::rdm::ROOT_RDM_DEVICE,
       label,
       NewSingleCallback(this,
-                        &RDMHttpModule::SetHandler,
+                        &RDMHTTPModule::SetHandler,
                         response),
       &error);
   return error;
@@ -1632,7 +1631,7 @@ string RDMHttpModule::SetLanguage(const HttpRequest *request,
 /**
  * Handle the request for the boot software section.
  */
-string RDMHttpModule::GetBootSoftware(HttpResponse *response,
+string RDMHTTPModule::GetBootSoftware(HTTPResponse *response,
                                       unsigned int universe_id,
                                       const UID &uid) {
   string error;
@@ -1641,7 +1640,7 @@ string RDMHttpModule::GetBootSoftware(HttpResponse *response,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::GetBootSoftwareLabelHandler,
+                        &RDMHTTPModule::GetBootSoftwareLabelHandler,
                         response,
                         universe_id,
                         uid),
@@ -1653,8 +1652,8 @@ string RDMHttpModule::GetBootSoftware(HttpResponse *response,
 /**
  * Handle the response to a boot software label.
  */
-void RDMHttpModule::GetBootSoftwareLabelHandler(
-    HttpResponse *response,
+void RDMHTTPModule::GetBootSoftwareLabelHandler(
+    HTTPResponse *response,
     unsigned int universe_id,
     const UID uid,
     const ola::rdm::ResponseStatus &status,
@@ -1665,7 +1664,7 @@ void RDMHttpModule::GetBootSoftwareLabelHandler(
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::GetBootSoftwareVersionHandler,
+                        &RDMHTTPModule::GetBootSoftwareVersionHandler,
                         response,
                         label),
       &error);
@@ -1678,8 +1677,8 @@ void RDMHttpModule::GetBootSoftwareLabelHandler(
 /**
  * Handle the response to a boot software version.
  */
-void RDMHttpModule::GetBootSoftwareVersionHandler(
-    HttpResponse *response,
+void RDMHTTPModule::GetBootSoftwareVersionHandler(
+    HTTPResponse *response,
     string label,
     const ola::rdm::ResponseStatus &status,
     uint32_t version) {
@@ -1702,8 +1701,8 @@ void RDMHttpModule::GetBootSoftwareVersionHandler(
 /**
  * Handle the request for the personality section.
  */
-string RDMHttpModule::GetPersonalities(const HttpRequest *request,
-                                       HttpResponse *response,
+string RDMHTTPModule::GetPersonalities(const HTTPRequest *request,
+                                       HTTPResponse *response,
                                        unsigned int universe_id,
                                        const UID &uid,
                                        bool return_as_section,
@@ -1725,7 +1724,7 @@ string RDMHttpModule::GetPersonalities(const HttpRequest *request,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::GetPersonalityHandler,
+                        &RDMHTTPModule::GetPersonalityHandler,
                         response,
                         info),
       &error);
@@ -1737,8 +1736,8 @@ string RDMHttpModule::GetPersonalities(const HttpRequest *request,
 /**
  * Handle the response to a dmx personality call.
  */
-void RDMHttpModule::GetPersonalityHandler(
-    HttpResponse *response,
+void RDMHTTPModule::GetPersonalityHandler(
+    HTTPResponse *response,
     personality_info *info,
     const ola::rdm::ResponseStatus &status,
     uint8_t current,
@@ -1762,7 +1761,7 @@ void RDMHttpModule::GetPersonalityHandler(
 /**
  * Get the description of the next dmx personality
  */
-void RDMHttpModule::GetNextPersonalityDescription(HttpResponse *response,
+void RDMHTTPModule::GetNextPersonalityDescription(HTTPResponse *response,
                                                   personality_info *info) {
   string error;
   while (info->next <= info->total) {
@@ -1772,7 +1771,7 @@ void RDMHttpModule::GetNextPersonalityDescription(HttpResponse *response,
         ola::rdm::ROOT_RDM_DEVICE,
         info->next,
         NewSingleCallback(this,
-                          &RDMHttpModule::GetPersonalityLabelHandler,
+                          &RDMHTTPModule::GetPersonalityLabelHandler,
                           response,
                           info),
         &error);
@@ -1792,8 +1791,8 @@ void RDMHttpModule::GetNextPersonalityDescription(HttpResponse *response,
  * Handle the response to a Personality label call. This fetches the next
  * personality in the sequence, or sends the response if we have all the info.
  */
-void RDMHttpModule::GetPersonalityLabelHandler(
-        HttpResponse *response,
+void RDMHTTPModule::GetPersonalityLabelHandler(
+        HTTPResponse *response,
         personality_info *info,
         const ola::rdm::ResponseStatus &status,
         uint8_t personality,
@@ -1825,7 +1824,7 @@ void RDMHttpModule::GetPersonalityLabelHandler(
 /**
  * Send the response to a dmx personality section
  */
-void RDMHttpModule::SendSectionPersonalityResponse(HttpResponse *response,
+void RDMHTTPModule::SendSectionPersonalityResponse(HTTPResponse *response,
                                                    personality_info *info) {
   JsonSection section;
   SelectItem *item = new SelectItem("Personality", GENERIC_UINT_FIELD);
@@ -1855,8 +1854,8 @@ void RDMHttpModule::SendSectionPersonalityResponse(HttpResponse *response,
 /**
  * Set the personality
  */
-string RDMHttpModule::SetPersonality(const HttpRequest *request,
-                                     HttpResponse *response,
+string RDMHTTPModule::SetPersonality(const HTTPRequest *request,
+                                     HTTPResponse *response,
                                      unsigned int universe_id,
                                      const UID &uid) {
   string personality_str = request->GetParameter(GENERIC_UINT_FIELD);
@@ -1873,7 +1872,7 @@ string RDMHttpModule::SetPersonality(const HttpRequest *request,
       ola::rdm::ROOT_RDM_DEVICE,
       personality,
       NewSingleCallback(this,
-                        &RDMHttpModule::SetHandler,
+                        &RDMHTTPModule::SetHandler,
                         response),
       &error);
   return error;
@@ -1883,8 +1882,8 @@ string RDMHttpModule::SetPersonality(const HttpRequest *request,
 /**
  * Handle the request for the start address section.
  */
-string RDMHttpModule::GetStartAddress(const HttpRequest *request,
-                                      HttpResponse *response,
+string RDMHTTPModule::GetStartAddress(const HTTPRequest *request,
+                                      HTTPResponse *response,
                                       unsigned int universe_id,
                                       const UID &uid) {
   string error;
@@ -1893,7 +1892,7 @@ string RDMHttpModule::GetStartAddress(const HttpRequest *request,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::GetStartAddressHandler,
+                        &RDMHTTPModule::GetStartAddressHandler,
                         response),
       &error);
   return error;
@@ -1904,8 +1903,8 @@ string RDMHttpModule::GetStartAddress(const HttpRequest *request,
 /**
  * Handle the response to a dmx start address call and build the response
  */
-void RDMHttpModule::GetStartAddressHandler(
-    HttpResponse *response,
+void RDMHTTPModule::GetStartAddressHandler(
+    HTTPResponse *response,
     const ola::rdm::ResponseStatus &status,
     uint16_t address) {
   if (CheckForRDMError(response, status))
@@ -1923,8 +1922,8 @@ void RDMHttpModule::GetStartAddressHandler(
 /*
  * Set the DMX start address
  */
-string RDMHttpModule::SetStartAddress(const HttpRequest *request,
-                                      HttpResponse *response,
+string RDMHTTPModule::SetStartAddress(const HTTPRequest *request,
+                                      HTTPResponse *response,
                                       unsigned int universe_id,
                                       const UID &uid) {
   string dmx_address = request->GetParameter(ADDRESS_FIELD);
@@ -1941,7 +1940,7 @@ string RDMHttpModule::SetStartAddress(const HttpRequest *request,
       ola::rdm::ROOT_RDM_DEVICE,
       address,
       NewSingleCallback(this,
-                        &RDMHttpModule::SetHandler,
+                        &RDMHTTPModule::SetHandler,
                         response),
       &error);
   return error;
@@ -1951,8 +1950,8 @@ string RDMHttpModule::SetStartAddress(const HttpRequest *request,
 /**
  * Handle the request for the sensor section.
  */
-string RDMHttpModule::GetSensor(const HttpRequest *request,
-                                HttpResponse *response,
+string RDMHTTPModule::GetSensor(const HTTPRequest *request,
+                                HTTPResponse *response,
                                 unsigned int universe_id,
                                 const UID &uid) {
   string hint = request->GetParameter(HINT_KEY);
@@ -1968,7 +1967,7 @@ string RDMHttpModule::GetSensor(const HttpRequest *request,
       ola::rdm::ROOT_RDM_DEVICE,
       sensor_id,
       NewSingleCallback(this,
-                        &RDMHttpModule::SensorDefinitionHandler,
+                        &RDMHTTPModule::SensorDefinitionHandler,
                         response,
                         universe_id,
                         uid,
@@ -1981,8 +1980,8 @@ string RDMHttpModule::GetSensor(const HttpRequest *request,
 /**
  * Handle the response to a sensor definition request.
  */
-void RDMHttpModule::SensorDefinitionHandler(
-    HttpResponse *response,
+void RDMHTTPModule::SensorDefinitionHandler(
+    HTTPResponse *response,
     unsigned int universe_id,
     const UID uid,
     uint8_t sensor_id,
@@ -2001,7 +2000,7 @@ void RDMHttpModule::SensorDefinitionHandler(
       ola::rdm::ROOT_RDM_DEVICE,
       sensor_id,
       NewSingleCallback(this,
-                        &RDMHttpModule::SensorValueHandler,
+                        &RDMHTTPModule::SensorValueHandler,
                         response,
                         definition_arg),
       &error);
@@ -2013,8 +2012,8 @@ void RDMHttpModule::SensorDefinitionHandler(
 /**
  * Handle the response to a sensor value request & build the response.
  */
-void RDMHttpModule::SensorValueHandler(
-    HttpResponse *response,
+void RDMHTTPModule::SensorValueHandler(
+    HTTPResponse *response,
     ola::rdm::SensorDescriptor *definition,
     const ola::rdm::ResponseStatus &status,
     const ola::rdm::SensorValueDescriptor &value) {
@@ -2083,8 +2082,8 @@ void RDMHttpModule::SensorValueHandler(
 /*
  * Record a sensor value
  */
-string RDMHttpModule::RecordSensor(const HttpRequest *request,
-                                   HttpResponse *response,
+string RDMHTTPModule::RecordSensor(const HTTPRequest *request,
+                                   HTTPResponse *response,
                                    unsigned int universe_id,
                                    const UID &uid) {
   string hint = request->GetParameter(HINT_KEY);
@@ -2100,7 +2099,7 @@ string RDMHttpModule::RecordSensor(const HttpRequest *request,
       ola::rdm::ROOT_RDM_DEVICE,
       sensor_id,
       NewSingleCallback(this,
-                        &RDMHttpModule::SetHandler,
+                        &RDMHTTPModule::SetHandler,
                         response),
       &error);
   return error;
@@ -2110,8 +2109,8 @@ string RDMHttpModule::RecordSensor(const HttpRequest *request,
 /**
  * Handle the request for the device hours section.
  */
-string RDMHttpModule::GetDeviceHours(const HttpRequest *request,
-                                     HttpResponse *response,
+string RDMHTTPModule::GetDeviceHours(const HTTPRequest *request,
+                                     HTTPResponse *response,
                                      unsigned int universe_id,
                                      const UID &uid) {
   string error;
@@ -2120,7 +2119,7 @@ string RDMHttpModule::GetDeviceHours(const HttpRequest *request,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::GenericUIntHandler,
+                        &RDMHTTPModule::GenericUIntHandler,
                         response,
                         string("Device Hours")),
       &error);
@@ -2132,8 +2131,8 @@ string RDMHttpModule::GetDeviceHours(const HttpRequest *request,
 /**
  * Set the device hours
  */
-string RDMHttpModule::SetDeviceHours(const HttpRequest *request,
-                                     HttpResponse *response,
+string RDMHTTPModule::SetDeviceHours(const HTTPRequest *request,
+                                     HTTPResponse *response,
                                      unsigned int universe_id,
                                      const UID &uid) {
   string device_hours = request->GetParameter(GENERIC_UINT_FIELD);
@@ -2149,7 +2148,7 @@ string RDMHttpModule::SetDeviceHours(const HttpRequest *request,
       ola::rdm::ROOT_RDM_DEVICE,
       dev_hours,
       NewSingleCallback(this,
-                        &RDMHttpModule::SetHandler,
+                        &RDMHTTPModule::SetHandler,
                         response),
       &error);
   return error;
@@ -2159,8 +2158,8 @@ string RDMHttpModule::SetDeviceHours(const HttpRequest *request,
 /**
  * Handle the request for the lamp hours section.
  */
-string RDMHttpModule::GetLampHours(const HttpRequest *request,
-                                     HttpResponse *response,
+string RDMHTTPModule::GetLampHours(const HTTPRequest *request,
+                                     HTTPResponse *response,
                                      unsigned int universe_id,
                                      const UID &uid) {
   string error;
@@ -2169,7 +2168,7 @@ string RDMHttpModule::GetLampHours(const HttpRequest *request,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::GenericUIntHandler,
+                        &RDMHTTPModule::GenericUIntHandler,
                         response,
                         string("Lamp Hours")),
       &error);
@@ -2181,8 +2180,8 @@ string RDMHttpModule::GetLampHours(const HttpRequest *request,
 /**
  * Set the lamp hours
  */
-string RDMHttpModule::SetLampHours(const HttpRequest *request,
-                                    HttpResponse *response,
+string RDMHTTPModule::SetLampHours(const HTTPRequest *request,
+                                    HTTPResponse *response,
                                     unsigned int universe_id,
                                     const UID &uid) {
   string lamp_hours_str = request->GetParameter(GENERIC_UINT_FIELD);
@@ -2198,7 +2197,7 @@ string RDMHttpModule::SetLampHours(const HttpRequest *request,
       ola::rdm::ROOT_RDM_DEVICE,
       lamp_hours,
       NewSingleCallback(this,
-                        &RDMHttpModule::SetHandler,
+                        &RDMHTTPModule::SetHandler,
                         response),
       &error);
   return error;
@@ -2208,8 +2207,8 @@ string RDMHttpModule::SetLampHours(const HttpRequest *request,
 /**
  * Handle the request for the lamp strikes section
  */
-string RDMHttpModule::GetLampStrikes(const HttpRequest *request,
-                                     HttpResponse *response,
+string RDMHTTPModule::GetLampStrikes(const HTTPRequest *request,
+                                     HTTPResponse *response,
                                      unsigned int universe_id,
                                      const UID &uid) {
   string error;
@@ -2218,7 +2217,7 @@ string RDMHttpModule::GetLampStrikes(const HttpRequest *request,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::GenericUIntHandler,
+                        &RDMHTTPModule::GenericUIntHandler,
                         response,
                         string("Lamp Strikes")),
       &error);
@@ -2230,8 +2229,8 @@ string RDMHttpModule::GetLampStrikes(const HttpRequest *request,
 /**
  * Set the lamp strikes
  */
-string RDMHttpModule::SetLampStrikes(const HttpRequest *request,
-                                     HttpResponse *response,
+string RDMHTTPModule::SetLampStrikes(const HTTPRequest *request,
+                                     HTTPResponse *response,
                                      unsigned int universe_id,
                                      const UID &uid) {
   string lamp_strikes_str = request->GetParameter(GENERIC_UINT_FIELD);
@@ -2247,7 +2246,7 @@ string RDMHttpModule::SetLampStrikes(const HttpRequest *request,
       ola::rdm::ROOT_RDM_DEVICE,
       lamp_strikes,
       NewSingleCallback(this,
-                        &RDMHttpModule::SetHandler,
+                        &RDMHTTPModule::SetHandler,
                         response),
       &error);
   return error;
@@ -2257,8 +2256,8 @@ string RDMHttpModule::SetLampStrikes(const HttpRequest *request,
 /**
  * Handle the request for the lamp state section
  */
-string RDMHttpModule::GetLampState(const HttpRequest *request,
-                                   HttpResponse *response,
+string RDMHTTPModule::GetLampState(const HTTPRequest *request,
+                                   HTTPResponse *response,
                                    unsigned int universe_id,
                                    const UID &uid) {
   string error;
@@ -2267,7 +2266,7 @@ string RDMHttpModule::GetLampState(const HttpRequest *request,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::LampStateHandler,
+                        &RDMHTTPModule::LampStateHandler,
                         response),
       &error);
   return error;
@@ -2278,7 +2277,7 @@ string RDMHttpModule::GetLampState(const HttpRequest *request,
 /**
  * Handle the response to lamp state call and build the response
  */
-void RDMHttpModule::LampStateHandler(HttpResponse *response,
+void RDMHTTPModule::LampStateHandler(HTTPResponse *response,
                                      const ola::rdm::ResponseStatus &status,
                                      uint8_t state) {
   if (CheckForRDMError(response, status))
@@ -2313,8 +2312,8 @@ void RDMHttpModule::LampStateHandler(HttpResponse *response,
 /**
  * Set the lamp state
  */
-string RDMHttpModule::SetLampState(const HttpRequest *request,
-                                   HttpResponse *response,
+string RDMHTTPModule::SetLampState(const HTTPRequest *request,
+                                   HTTPResponse *response,
                                    unsigned int universe_id,
                                    const UID &uid) {
   string lamp_state_str = request->GetParameter(GENERIC_UINT_FIELD);
@@ -2330,7 +2329,7 @@ string RDMHttpModule::SetLampState(const HttpRequest *request,
       ola::rdm::ROOT_RDM_DEVICE,
       lamp_state,
       NewSingleCallback(this,
-                        &RDMHttpModule::SetHandler,
+                        &RDMHTTPModule::SetHandler,
                         response),
       &error);
   return error;
@@ -2340,8 +2339,8 @@ string RDMHttpModule::SetLampState(const HttpRequest *request,
 /**
  * Handle the request for the lamp mode section
  */
-string RDMHttpModule::GetLampMode(const HttpRequest *request,
-                                  HttpResponse *response,
+string RDMHTTPModule::GetLampMode(const HTTPRequest *request,
+                                  HTTPResponse *response,
                                   unsigned int universe_id,
                                   const UID &uid) {
   string error;
@@ -2350,7 +2349,7 @@ string RDMHttpModule::GetLampMode(const HttpRequest *request,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::LampModeHandler,
+                        &RDMHTTPModule::LampModeHandler,
                         response),
       &error);
   return error;
@@ -2361,7 +2360,7 @@ string RDMHttpModule::GetLampMode(const HttpRequest *request,
 /**
  * Handle the response to lamp mode call and build the response
  */
-void RDMHttpModule::LampModeHandler(HttpResponse *response,
+void RDMHTTPModule::LampModeHandler(HTTPResponse *response,
                                     const ola::rdm::ResponseStatus &status,
                                     uint8_t mode) {
   if (CheckForRDMError(response, status))
@@ -2396,8 +2395,8 @@ void RDMHttpModule::LampModeHandler(HttpResponse *response,
 /**
  * Set the lamp mode
  */
-string RDMHttpModule::SetLampMode(const HttpRequest *request,
-                                  HttpResponse *response,
+string RDMHTTPModule::SetLampMode(const HTTPRequest *request,
+                                  HTTPResponse *response,
                                   unsigned int universe_id,
                                   const UID &uid) {
   string lamp_mode_str = request->GetParameter(GENERIC_UINT_FIELD);
@@ -2413,7 +2412,7 @@ string RDMHttpModule::SetLampMode(const HttpRequest *request,
       ola::rdm::ROOT_RDM_DEVICE,
       lamp_mode,
       NewSingleCallback(this,
-                        &RDMHttpModule::SetHandler,
+                        &RDMHTTPModule::SetHandler,
                         response),
       &error);
   return error;
@@ -2423,8 +2422,8 @@ string RDMHttpModule::SetLampMode(const HttpRequest *request,
 /**
  * Handle the request for the device power cycles section
  */
-string RDMHttpModule::GetPowerCycles(const HttpRequest *request,
-                                     HttpResponse *response,
+string RDMHTTPModule::GetPowerCycles(const HTTPRequest *request,
+                                     HTTPResponse *response,
                                      unsigned int universe_id,
                                      const UID &uid) {
   string error;
@@ -2433,7 +2432,7 @@ string RDMHttpModule::GetPowerCycles(const HttpRequest *request,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::GenericUIntHandler,
+                        &RDMHTTPModule::GenericUIntHandler,
                         response,
                         string("Device Power Cycles")),
       &error);
@@ -2445,8 +2444,8 @@ string RDMHttpModule::GetPowerCycles(const HttpRequest *request,
 /**
  * Set the device power cycles
  */
-string RDMHttpModule::SetPowerCycles(const HttpRequest *request,
-                                     HttpResponse *response,
+string RDMHTTPModule::SetPowerCycles(const HTTPRequest *request,
+                                     HTTPResponse *response,
                                      unsigned int universe_id,
                                      const UID &uid) {
   string power_cycles_str = request->GetParameter(GENERIC_UINT_FIELD);
@@ -2462,7 +2461,7 @@ string RDMHttpModule::SetPowerCycles(const HttpRequest *request,
       ola::rdm::ROOT_RDM_DEVICE,
       power_cycles,
       NewSingleCallback(this,
-                        &RDMHttpModule::SetHandler,
+                        &RDMHTTPModule::SetHandler,
                         response),
       &error);
   return error;
@@ -2473,7 +2472,7 @@ string RDMHttpModule::SetPowerCycles(const HttpRequest *request,
 /**
  * Handle the request for the display invert section.
  */
-string RDMHttpModule::GetDisplayInvert(HttpResponse *response,
+string RDMHTTPModule::GetDisplayInvert(HTTPResponse *response,
                                        unsigned int universe_id,
                                        const UID &uid) {
   string error;
@@ -2482,7 +2481,7 @@ string RDMHttpModule::GetDisplayInvert(HttpResponse *response,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::DisplayInvertHandler,
+                        &RDMHTTPModule::DisplayInvertHandler,
                         response),
       &error);
   return error;
@@ -2492,8 +2491,8 @@ string RDMHttpModule::GetDisplayInvert(HttpResponse *response,
 /**
  * Handle the response to display invert call and build the response
  */
-void RDMHttpModule::DisplayInvertHandler(
-    HttpResponse *response,
+void RDMHTTPModule::DisplayInvertHandler(
+    HTTPResponse *response,
     const ola::rdm::ResponseStatus &status,
     uint8_t value) {
   if (CheckForRDMError(response, status))
@@ -2517,8 +2516,8 @@ void RDMHttpModule::DisplayInvertHandler(
 /**
  * Set the display invert.
  */
-string RDMHttpModule::SetDisplayInvert(const HttpRequest *request,
-                                       HttpResponse *response,
+string RDMHTTPModule::SetDisplayInvert(const HTTPRequest *request,
+                                       HTTPResponse *response,
                                        unsigned int universe_id,
                                        const UID &uid) {
   string invert_field = request->GetParameter(DISPLAY_INVERT_FIELD);
@@ -2534,7 +2533,7 @@ string RDMHttpModule::SetDisplayInvert(const HttpRequest *request,
       ola::rdm::ROOT_RDM_DEVICE,
       display_mode,
       NewSingleCallback(this,
-                        &RDMHttpModule::SetHandler,
+                        &RDMHTTPModule::SetHandler,
                         response),
       &error);
   return error;
@@ -2544,7 +2543,7 @@ string RDMHttpModule::SetDisplayInvert(const HttpRequest *request,
 /**
  * Handle the request for the display level section.
  */
-string RDMHttpModule::GetDisplayLevel(HttpResponse *response,
+string RDMHTTPModule::GetDisplayLevel(HTTPResponse *response,
                                       unsigned int universe_id,
                                       const UID &uid) {
   string error;
@@ -2553,7 +2552,7 @@ string RDMHttpModule::GetDisplayLevel(HttpResponse *response,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::DisplayLevelHandler,
+                        &RDMHTTPModule::DisplayLevelHandler,
                         response),
       &error);
   return error;
@@ -2563,7 +2562,7 @@ string RDMHttpModule::GetDisplayLevel(HttpResponse *response,
 /**
  * Handle the response to display level call and build the response
  */
-void RDMHttpModule::DisplayLevelHandler(HttpResponse *response,
+void RDMHTTPModule::DisplayLevelHandler(HTTPResponse *response,
                                         const ola::rdm::ResponseStatus &status,
                                         uint8_t value) {
   if (CheckForRDMError(response, status))
@@ -2582,8 +2581,8 @@ void RDMHttpModule::DisplayLevelHandler(HttpResponse *response,
 /**
  * Set the display level.
  */
-string RDMHttpModule::SetDisplayLevel(const HttpRequest *request,
-                                      HttpResponse *response,
+string RDMHTTPModule::SetDisplayLevel(const HTTPRequest *request,
+                                      HTTPResponse *response,
                                       unsigned int universe_id,
                                       const UID &uid) {
   string display_level_str = request->GetParameter(GENERIC_UINT_FIELD);
@@ -2599,7 +2598,7 @@ string RDMHttpModule::SetDisplayLevel(const HttpRequest *request,
       ola::rdm::ROOT_RDM_DEVICE,
       display_level,
       NewSingleCallback(this,
-                        &RDMHttpModule::SetHandler,
+                        &RDMHTTPModule::SetHandler,
                         response),
       &error);
   return error;
@@ -2609,7 +2608,7 @@ string RDMHttpModule::SetDisplayLevel(const HttpRequest *request,
 /**
  * Handle the request for the pan invert section.
  */
-string RDMHttpModule::GetPanInvert(HttpResponse *response,
+string RDMHTTPModule::GetPanInvert(HTTPResponse *response,
                                    unsigned int universe_id,
                                    const UID &uid) {
   string error;
@@ -2618,7 +2617,7 @@ string RDMHttpModule::GetPanInvert(HttpResponse *response,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::GenericUInt8BoolHandler,
+                        &RDMHTTPModule::GenericUInt8BoolHandler,
                         response,
                         string("Pan Invert")),
       &error);
@@ -2629,8 +2628,8 @@ string RDMHttpModule::GetPanInvert(HttpResponse *response,
 /**
  * Set the pan invert.
  */
-string RDMHttpModule::SetPanInvert(const HttpRequest *request,
-                                   HttpResponse *response,
+string RDMHTTPModule::SetPanInvert(const HTTPRequest *request,
+                                   HTTPResponse *response,
                                    unsigned int universe_id,
                                    const UID &uid) {
   string mode = request->GetParameter(GENERIC_BOOL_FIELD);
@@ -2641,7 +2640,7 @@ string RDMHttpModule::SetPanInvert(const HttpRequest *request,
       ola::rdm::ROOT_RDM_DEVICE,
       mode == "1",
       NewSingleCallback(this,
-                        &RDMHttpModule::SetHandler,
+                        &RDMHTTPModule::SetHandler,
                         response),
       &error);
   return error;
@@ -2651,7 +2650,7 @@ string RDMHttpModule::SetPanInvert(const HttpRequest *request,
 /**
  * Handle the request for the tilt invert section.
  */
-string RDMHttpModule::GetTiltInvert(HttpResponse *response,
+string RDMHTTPModule::GetTiltInvert(HTTPResponse *response,
                                     unsigned int universe_id,
                                     const UID &uid) {
   string error;
@@ -2660,7 +2659,7 @@ string RDMHttpModule::GetTiltInvert(HttpResponse *response,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::GenericUInt8BoolHandler,
+                        &RDMHTTPModule::GenericUInt8BoolHandler,
                         response,
                         string("Tilt Invert")),
       &error);
@@ -2671,8 +2670,8 @@ string RDMHttpModule::GetTiltInvert(HttpResponse *response,
 /**
  * Set the tilt invert.
  */
-string RDMHttpModule::SetTiltInvert(const HttpRequest *request,
-                                    HttpResponse *response,
+string RDMHTTPModule::SetTiltInvert(const HTTPRequest *request,
+                                    HTTPResponse *response,
                                     unsigned int universe_id,
                                     const UID &uid) {
   string mode = request->GetParameter(GENERIC_BOOL_FIELD);
@@ -2683,7 +2682,7 @@ string RDMHttpModule::SetTiltInvert(const HttpRequest *request,
       ola::rdm::ROOT_RDM_DEVICE,
       mode == "1",
       NewSingleCallback(this,
-                        &RDMHttpModule::SetHandler,
+                        &RDMHTTPModule::SetHandler,
                         response),
       &error);
   return error;
@@ -2693,7 +2692,7 @@ string RDMHttpModule::SetTiltInvert(const HttpRequest *request,
 /**
  * Handle the request for the pan/tilt swap section.
  */
-string RDMHttpModule::GetPanTiltSwap(HttpResponse *response,
+string RDMHTTPModule::GetPanTiltSwap(HTTPResponse *response,
                                  unsigned int universe_id,
                                  const UID &uid) {
   string error;
@@ -2702,7 +2701,7 @@ string RDMHttpModule::GetPanTiltSwap(HttpResponse *response,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::GenericUInt8BoolHandler,
+                        &RDMHTTPModule::GenericUInt8BoolHandler,
                         response,
                         string("Pan Tilt Swap")),
       &error);
@@ -2713,8 +2712,8 @@ string RDMHttpModule::GetPanTiltSwap(HttpResponse *response,
 /**
  * Set the pan/tilt swap.
  */
-string RDMHttpModule::SetPanTiltSwap(const HttpRequest *request,
-                                     HttpResponse *response,
+string RDMHTTPModule::SetPanTiltSwap(const HTTPRequest *request,
+                                     HTTPResponse *response,
                                      unsigned int universe_id,
                                      const UID &uid) {
   string mode = request->GetParameter(GENERIC_BOOL_FIELD);
@@ -2725,7 +2724,7 @@ string RDMHttpModule::SetPanTiltSwap(const HttpRequest *request,
       ola::rdm::ROOT_RDM_DEVICE,
       mode == "1",
       NewSingleCallback(this,
-                        &RDMHttpModule::SetHandler,
+                        &RDMHTTPModule::SetHandler,
                         response),
       &error);
   return error;
@@ -2735,7 +2734,7 @@ string RDMHttpModule::SetPanTiltSwap(const HttpRequest *request,
 /**
  * Handle the request for the clock section.
  */
-string RDMHttpModule::GetClock(HttpResponse *response,
+string RDMHTTPModule::GetClock(HTTPResponse *response,
                                unsigned int universe_id,
                                const UID &uid) {
   string error;
@@ -2744,7 +2743,7 @@ string RDMHttpModule::GetClock(HttpResponse *response,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::ClockHandler,
+                        &RDMHTTPModule::ClockHandler,
                         response),
       &error);
   return error;
@@ -2754,7 +2753,7 @@ string RDMHttpModule::GetClock(HttpResponse *response,
 /**
  * Handle the response to clock call and build the response
  */
-void RDMHttpModule::ClockHandler(HttpResponse *response,
+void RDMHTTPModule::ClockHandler(HTTPResponse *response,
                                  const ola::rdm::ResponseStatus &status,
                                  const ola::rdm::ClockValue &clock) {
   if (CheckForRDMError(response, status))
@@ -2778,7 +2777,7 @@ void RDMHttpModule::ClockHandler(HttpResponse *response,
 /**
  * Sync the clock
  */
-string RDMHttpModule::SyncClock(HttpResponse *response,
+string RDMHTTPModule::SyncClock(HTTPResponse *response,
                                 unsigned int universe_id,
                                 const UID &uid) {
   time_t now = time(NULL);
@@ -2799,7 +2798,7 @@ string RDMHttpModule::SyncClock(HttpResponse *response,
       ola::rdm::ROOT_RDM_DEVICE,
       clock_value,
       NewSingleCallback(this,
-                        &RDMHttpModule::SetHandler,
+                        &RDMHTTPModule::SetHandler,
                         response),
       &error);
   return error;
@@ -2809,7 +2808,7 @@ string RDMHttpModule::SyncClock(HttpResponse *response,
 /**
  * Handle the request for the identify mode section.
  */
-string RDMHttpModule::GetIdentifyMode(HttpResponse *response,
+string RDMHTTPModule::GetIdentifyMode(HTTPResponse *response,
                                       unsigned int universe_id,
                                       const UID &uid) {
   string error;
@@ -2818,7 +2817,7 @@ string RDMHttpModule::GetIdentifyMode(HttpResponse *response,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::GenericBoolHandler,
+                        &RDMHTTPModule::GenericBoolHandler,
                         response,
                         string("Identify Mode")),
       &error);
@@ -2829,8 +2828,8 @@ string RDMHttpModule::GetIdentifyMode(HttpResponse *response,
 /*
  * Set the idenify mode
  */
-string RDMHttpModule::SetIdentifyMode(const HttpRequest *request,
-                                      HttpResponse *response,
+string RDMHTTPModule::SetIdentifyMode(const HTTPRequest *request,
+                                      HTTPResponse *response,
                                       unsigned int universe_id,
                                       const UID &uid) {
   string mode = request->GetParameter(GENERIC_BOOL_FIELD);
@@ -2841,7 +2840,7 @@ string RDMHttpModule::SetIdentifyMode(const HttpRequest *request,
       ola::rdm::ROOT_RDM_DEVICE,
       mode == "1",
       NewSingleCallback(this,
-                        &RDMHttpModule::SetHandler,
+                        &RDMHTTPModule::SetHandler,
                         response),
       &error);
   return error;
@@ -2851,7 +2850,7 @@ string RDMHttpModule::SetIdentifyMode(const HttpRequest *request,
 /**
  * Handle the request for the power state section.
  */
-string RDMHttpModule::GetPowerState(HttpResponse *response,
+string RDMHTTPModule::GetPowerState(HTTPResponse *response,
                                     unsigned int universe_id,
                                     const UID &uid) {
   string error;
@@ -2860,7 +2859,7 @@ string RDMHttpModule::GetPowerState(HttpResponse *response,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       NewSingleCallback(this,
-                        &RDMHttpModule::PowerStateHandler,
+                        &RDMHTTPModule::PowerStateHandler,
                         response),
       &error);
   return error;
@@ -2870,7 +2869,7 @@ string RDMHttpModule::GetPowerState(HttpResponse *response,
 /**
  * Handle the response to power state call and build the response
  */
-void RDMHttpModule::PowerStateHandler(HttpResponse *response,
+void RDMHTTPModule::PowerStateHandler(HTTPResponse *response,
                                       const ola::rdm::ResponseStatus &status,
                                       uint8_t value) {
   if (CheckForRDMError(response, status))
@@ -2905,8 +2904,8 @@ void RDMHttpModule::PowerStateHandler(HttpResponse *response,
 /*
  * Set the power state.
  */
-string RDMHttpModule::SetPowerState(const HttpRequest *request,
-                                    HttpResponse *response,
+string RDMHTTPModule::SetPowerState(const HTTPRequest *request,
+                                    HTTPResponse *response,
                                     unsigned int universe_id,
                                     const UID &uid) {
   string power_state_str = request->GetParameter(GENERIC_UINT_FIELD);
@@ -2924,7 +2923,7 @@ string RDMHttpModule::SetPowerState(const HttpRequest *request,
       ola::rdm::ROOT_RDM_DEVICE,
       power_state_enum,
       NewSingleCallback(this,
-                        &RDMHttpModule::SetHandler,
+                        &RDMHTTPModule::SetHandler,
                         response),
       &error);
   return error;
@@ -2934,7 +2933,7 @@ string RDMHttpModule::SetPowerState(const HttpRequest *request,
 /**
  * Check if the id url param exists and is valid.
  */
-bool RDMHttpModule::CheckForInvalidId(const HttpRequest *request,
+bool RDMHTTPModule::CheckForInvalidId(const HTTPRequest *request,
                                       unsigned int *universe_id) {
   string uni_id = request->GetParameter(ID_KEY);
   if (!StringToInt(uni_id, universe_id)) {
@@ -2948,7 +2947,7 @@ bool RDMHttpModule::CheckForInvalidId(const HttpRequest *request,
 /**
  * Check that the uid url param exists and is valid.
  */
-bool RDMHttpModule::CheckForInvalidUid(const HttpRequest *request,
+bool RDMHTTPModule::CheckForInvalidUid(const HTTPRequest *request,
                                        UID **uid) {
   string uid_string = request->GetParameter(UID_KEY);
   *uid = UID::FromString(uid_string);
@@ -2963,8 +2962,8 @@ bool RDMHttpModule::CheckForInvalidUid(const HttpRequest *request,
 /*
  * Check the response to a Set RDM call and build the response.
  */
-void RDMHttpModule::SetHandler(
-    HttpResponse *response,
+void RDMHTTPModule::SetHandler(
+    HTTPResponse *response,
     const ola::rdm::ResponseStatus &status) {
   string error;
   CheckForRDMSuccessWithError(status, &error);
@@ -2975,7 +2974,7 @@ void RDMHttpModule::SetHandler(
 /*
  * Build a response to a RDM call that returns a uint32_t
  */
-void RDMHttpModule::GenericUIntHandler(HttpResponse *response,
+void RDMHTTPModule::GenericUIntHandler(HTTPResponse *response,
                                        string description,
                                        const ola::rdm::ResponseStatus &status,
                                        uint32_t value) {
@@ -2991,8 +2990,8 @@ void RDMHttpModule::GenericUIntHandler(HttpResponse *response,
 /*
  * Build a response to a RDM call that returns a bool
  */
-void RDMHttpModule::GenericUInt8BoolHandler(
-    HttpResponse *response,
+void RDMHTTPModule::GenericUInt8BoolHandler(
+    HTTPResponse *response,
     string description,
     const ola::rdm::ResponseStatus &status,
     uint8_t value) {
@@ -3003,7 +3002,7 @@ void RDMHttpModule::GenericUInt8BoolHandler(
 /*
  * Build a response to a RDM call that returns a bool
  */
-void RDMHttpModule::GenericBoolHandler(HttpResponse *response,
+void RDMHTTPModule::GenericBoolHandler(HTTPResponse *response,
                                        string description,
                                        const ola::rdm::ResponseStatus &status,
                                        bool value) {
@@ -3019,7 +3018,7 @@ void RDMHttpModule::GenericBoolHandler(HttpResponse *response,
  * Check for an RDM error, and if it occurs, return a json response.
  * @return true if an error occured.
  */
-bool RDMHttpModule::CheckForRDMError(HttpResponse *response,
+bool RDMHTTPModule::CheckForRDMError(HTTPResponse *response,
                                      const ola::rdm::ResponseStatus &status) {
   string error;
   if (!CheckForRDMSuccessWithError(status, &error)) {
@@ -3031,10 +3030,10 @@ bool RDMHttpModule::CheckForRDMError(HttpResponse *response,
 
 
 
-int RDMHttpModule::RespondWithError(HttpResponse *response,
+int RDMHTTPModule::RespondWithError(HTTPResponse *response,
                                     const string &error) {
   response->SetNoCache();
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
 
   JsonObject json;
   json.Add("error", error);
@@ -3047,10 +3046,10 @@ int RDMHttpModule::RespondWithError(HttpResponse *response,
 /**
  * Build & send a response from a JsonSection
  */
-void RDMHttpModule::RespondWithSection(HttpResponse *response,
+void RDMHTTPModule::RespondWithSection(HTTPResponse *response,
                                        const ola::web::JsonSection &section) {
   response->SetNoCache();
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->Append(section.AsString());
   response->Send();
   delete response;
@@ -3061,7 +3060,7 @@ void RDMHttpModule::RespondWithSection(HttpResponse *response,
  * Check the success of an RDM command
  * @returns true if this command was ok, false otherwise.
  */
-bool RDMHttpModule::CheckForRDMSuccess(
+bool RDMHTTPModule::CheckForRDMSuccess(
     const ola::rdm::ResponseStatus &status) {
   string error;
   if (!CheckForRDMSuccessWithError(status, &error)) {
@@ -3077,7 +3076,7 @@ bool RDMHttpModule::CheckForRDMSuccess(
  * method, some day this should be relaxed to handle the corner cases.
  * @returns true if this command returns an ACK. false for any other condition.
  */
-bool RDMHttpModule::CheckForRDMSuccessWithError(
+bool RDMHTTPModule::CheckForRDMSuccessWithError(
     const ola::rdm::ResponseStatus &status,
     string *error) {
   stringstream str;
@@ -3115,17 +3114,17 @@ bool RDMHttpModule::CheckForRDMSuccessWithError(
 
 /*
  * Handle the RDM discovery response
- * @param response the HttpResponse that is associated with the request.
+ * @param response the HTTPResponse that is associated with the request.
  * @param error an error string.
  */
-void RDMHttpModule::HandleBoolResponse(HttpResponse *response,
+void RDMHTTPModule::HandleBoolResponse(HTTPResponse *response,
                                        const string &error) {
   if (!error.empty()) {
     m_server->ServeError(response, error);
     return;
   }
   response->SetNoCache();
-  response->SetContentType(HttpServer::CONTENT_TYPE_PLAIN);
+  response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->Append("ok");
   response->Send();
   delete response;
@@ -3135,7 +3134,7 @@ void RDMHttpModule::HandleBoolResponse(HttpResponse *response,
 /**
  * Add a section to the supported section list
  */
-void RDMHttpModule::AddSection(vector<section_info> *sections,
+void RDMHTTPModule::AddSection(vector<section_info> *sections,
                                const string &section_id,
                                const string &section_name,
                                const string &hint) {

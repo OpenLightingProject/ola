@@ -40,9 +40,9 @@
 namespace ola {
 
 #ifdef HAVE_LIBMICROHTTPD
-typedef class OlaHttpServer OlaHttpServer_t;
+typedef class OladHTTPServer OladHTTPServer_t;
 #else
-typedef int OlaHttpServer_t;
+typedef int OladHTTPServer_t;
 #endif
 
 typedef struct {
@@ -113,7 +113,7 @@ class OlaServer {
     bool m_free_export_map;
     ola::thread::timeout_id m_housekeeping_timeout;
     std::map<int, class OlaClientService*> m_sd_to_service;
-    OlaHttpServer_t *m_httpd;
+    OladHTTPServer_t *m_httpd;
     ola_server_options m_options;
     ola::rdm::UID m_default_uid;
 
