@@ -500,7 +500,7 @@ def parse_options():
   parser.add_option('-d', '--www_dir', default=os.path.abspath('static/'),
                     help='The root directory to serve static files.')
   parser.add_option('-l', '--log_directory',
-                    default=os.path.abspath('static/logs/'),
+                    default=os.path.abspath('/tmp/ola-rdm-logs'),
                     help='The directory to store log files.')
 
   options, args = parser.parse_args()
@@ -522,6 +522,20 @@ def main():
   options = parse_options()
   settings.update(options.__dict__)
   settings['pid_store'] = PidStore.GetStore(options.pid_store, ('pids.proto'))
+
+  # Setup the log dir, or display an error
+  if not os.path.exists(options.log_directory):
+    try:
+      os.makedirs(options.log_directory)
+    except OSError:
+      print ('Failed to create %s for RDM logs. Logging will be disabled.' %
+             options.log_directory)
+  elif not os.path.isdir(options.log_directory):
+    print ('Log directory invalid: %s. Logging will be disabled.' %
+           options.log_directory)
+  elif not os.access(options.log_directory, os.W_OK):
+    print ('Unable to write to log directory: %s. Logging will be disabled.' %
+           options.log_directory)
 
   #Check olad status
   ola_wrapper = None
