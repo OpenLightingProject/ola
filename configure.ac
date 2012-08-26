@@ -599,6 +599,7 @@ AC_OUTPUT( Makefile \
     tools/e133/Makefile \
     tools/rdm/Makefile \
     tools/rdmpro/Makefile \
+    tools/slp/Makefile \
     tools/usbpro/Makefile \
     libola.pc \
     libolaserver.pc \

@@ -1,0 +1,63 @@
+/*
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ * SLP.proto
+ * Defines the protocol buffers used to talk to the SLP Server.
+ * Copyright (C) 2012 Simon Newton
+ */
+
+package ola.slp;
+
+option cc_generic_services = true;
+option py_generic_services = true;
+option java_generic_services = true;
+
+// Generic Ack Message
+message Ack {}
+
+message ServiceRequest {
+  required string service = 1;
+}
+
+message ServiceReply {
+  repeated string services = 1;
+}
+
+message ServiceRegistration {
+  required string service = 1;
+  optional uint32 lifetime = 2 [default = 300];
+}
+
+message ServiceAck {
+  // we don't use enums here because we may want to pass back errors we don't
+  // understand.
+  required uint32 error_code = 1;
+};
+
+// Services
+
+// RPCs handled by the SLP Server
+service OLASLPService {
+  // find a service
+  rpc FindService(ServiceRequest) returns (ServiceReply);
+
+  // register a service
+  rpc RegisterService(ServiceRegistration) returns (ServiceAck);
+}
+
+// RPCs handled by the OLA Client
+service OlaSLPClientService {
+  rpc NewService(ServiceRegistration) returns (Ack);
+}
