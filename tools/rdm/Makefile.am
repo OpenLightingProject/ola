@@ -47,8 +47,7 @@ launcher_files = \
   setup_patch.py \
   skel_config/ola-usbserial.conf
 
-EXTRA_DIST = $(launcher_files) \
-             TestServer.py
+EXTRA_DIST = $(launcher_files)
 
 if INSTALL_RDM_TESTS
 
@@ -62,7 +61,9 @@ rdminit_PYTHON = __init__.py
 
 # RDM Test Scripts
 rdmtestsexecdir = $(bindir)
-rdmtestsexec_SCRIPTS = rdm_model_collector.py rdm_responder_test.py
+rdmtestsexec_SCRIPTS = rdm_model_collector.py \
+                       rdm_responder_test.py \
+                       rdm_test_server.py
 
 # Data files for the RDM Test Server
 testserver_staticdir = $(datadir)/ola/rdm-server
