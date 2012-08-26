@@ -23,7 +23,6 @@ import math
 import mimetypes
 import os
 import pickle
-import pprint
 import re
 import sys
 import textwrap
