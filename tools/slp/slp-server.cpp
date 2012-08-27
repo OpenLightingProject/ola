@@ -1,0 +1,252 @@
+/*
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Library General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ * slp-server.cpp
+ * Copyright (C) 2012 Simon Newton
+ */
+
+#include <stdio.h>
+#include <getopt.h>
+#include <signal.h>
+#include <sysexits.h>
+
+#include <ola/Logging.h>
+#include <ola/network/Socket.h>
+#include <ola/network/InterfacePicker.h>
+
+#include <memory>
+#include <string>
+
+#include "tools/slp/SLPServer.h"
+
+using ola::network::TCPAcceptingSocket;
+using ola::network::UDPSocket;
+using ola::slp::SLPServer;
+using std::auto_ptr;
+using std::cout;
+using std::endl;
+using std::string;
+
+struct SLPOptions {
+  public:
+    bool help;
+    ola::log_level log_level;
+    string preferred_ip_address;
+    uint16_t slp_port;
+
+    SLPOptions()
+        : help(false),
+          log_level(ola::OLA_LOG_WARN),
+          slp_port(SLPServer::DEFAULT_SLP_PORT) {
+    }
+};
+
+
+/*
+ * Parse our command line options
+ */
+void ParseOptions(int argc, char *argv[],
+                  SLPOptions *options,
+                  SLPServer::SLPServerOptions *slp_options) {
+  int enable_da = slp_options->enable_da;
+  int enable_http = slp_options->enable_http;
+
+  static struct option long_options[] = {
+      {"help", no_argument, 0, 'h'},
+      {"ip", required_argument, 0, 'i'},
+      {"log-level", required_argument, 0, 'l'},
+      {"slp-port", required_argument, 0, 'p'},
+      {"no-da", no_argument, &enable_da, 0},
+      {"no-http", no_argument, &enable_http, 0},
+      {0, 0, 0, 0}
+  };
+
+  int option_index = 0;
+
+  while (1) {
+    int c = getopt_long(argc, argv, "hi:l:p:", long_options, &option_index);
+
+    if (c == -1)
+      break;
+
+    switch (c) {
+      case 'h':
+        options->help = true;
+        break;
+      case 'i':
+        options->preferred_ip_address = optarg;
+        break;
+      case 'l':
+        switch (atoi(optarg)) {
+          case 0:
+            // nothing is written at this level
+            // so this turns logging off
+            options->log_level = ola::OLA_LOG_NONE;
+            break;
+          case 1:
+            options->log_level = ola::OLA_LOG_FATAL;
+            break;
+          case 2:
+            options->log_level = ola::OLA_LOG_WARN;
+            break;
+          case 3:
+            options->log_level = ola::OLA_LOG_INFO;
+            break;
+          case 4:
+            options->log_level = ola::OLA_LOG_DEBUG;
+            break;
+          default :
+            break;
+        }
+        break;
+      case 'p':
+        options->slp_port = atoi(optarg);
+        break;
+      case '?':
+        break;
+      default:
+       break;
+    }
+  }
+  slp_options->enable_da = enable_da;
+  slp_options->enable_http = enable_http;
+}
+
+
+/*
+ * Display the help message
+ */
+void DisplayHelpAndExit(char *argv[]) {
+  cout << "Usage: " << argv[0] << " [options]\n"
+  "\n"
+  "Run the SLP server.\n"
+  "\n"
+  "  -h, --help               Display this help message and exit.\n"
+  "  -i, --ip                 The IP address to listen on.\n"
+  "  -l, --log-level <level>  Set the logging level 0 .. 4.\n"
+  "  -p, --slp-port           The SLP port to listen on.\n"
+  "  --no-http                Don't run the http server\n"
+  "  --no-da                  Disable DA functionality\n"
+  << endl;
+  exit(0);
+}
+
+
+/**
+ * Create the UDP Socket and bind to the port. We do this outside the server so
+ * we can't bind to ports < 1024.
+ */
+UDPSocket *SetupUDPSocket(uint16_t port) {
+  UDPSocket *socket = new UDPSocket();
+
+  // setup the UDP socket
+  if (!socket->Init()) {
+    OLA_WARN << "Failed to Init UDP Socket";
+    return NULL;
+  }
+
+  if (!socket->Bind(port)) {
+    OLA_WARN << "UDP Port failed to find";
+    return NULL;
+  }
+  return socket;
+}
+
+
+/**
+ * Create the TCP Socket and bind to the port. We do this outside the server so
+ * we can't bind to ports < 1024.
+ */
+TCPAcceptingSocket *SetupTCPSocket(const IPV4Address ip, uint16_t port) {
+  TCPAcceptingSocket *socket = new TCPAcceptingSocket(NULL);
+
+  // setup the TCP socket
+  if (!socket->Listen(ip, port)) {
+    OLA_WARN << "Failed to Init TCP Socket";
+    return NULL;
+  }
+  return socket;
+}
+
+
+SLPServer *server = NULL;
+
+static void InteruptSignal(int signo) {
+  if (server)
+    server->Stop();
+  (void) signo;
+}
+
+
+/*
+ * Startup the server.
+ */
+int main(int argc, char *argv[]) {
+  SLPOptions options;
+  SLPServer::SLPServerOptions slp_options;
+  ParseOptions(argc, argv, &options, &slp_options);
+
+  if (options.help)
+    DisplayHelpAndExit(argv);
+
+  ola::InitLogging(options.log_level, ola::OLA_LOG_STDERR);
+
+  {
+    // find an interface to use
+    ola::network::Interface interface;
+    auto_ptr<const ola::network::InterfacePicker> picker(
+      ola::network::InterfacePicker::NewPicker());
+    if (!picker->ChooseInterface(&interface, options.preferred_ip_address)) {
+      OLA_INFO << "Failed to find an interface";
+      exit(EX_UNAVAILABLE);
+    }
+    slp_options.ip_address = interface.ip_address;
+  }
+
+  auto_ptr<UDPSocket> udp_socket(SetupUDPSocket(options.slp_port));
+
+  if (!udp_socket.get())
+    exit(EX_UNAVAILABLE);
+
+  auto_ptr<TCPAcceptingSocket> tcp_socket(
+      SetupTCPSocket(slp_options.ip_address, options.slp_port));
+
+  if (!tcp_socket.get())
+    exit(EX_UNAVAILABLE);
+
+  // TODO(simon): drop privs here if we need to
+
+  SLPServer *server = new SLPServer(udp_socket.get(), tcp_socket.get(),
+                                    slp_options);
+  if (!server->Init())
+    exit(EX_UNAVAILABLE);
+
+  // signal handler
+  struct sigaction act, oact;
+  act.sa_handler = InteruptSignal;
+  sigemptyset(&act.sa_mask);
+  act.sa_flags = 0;
+
+  if (sigaction(SIGINT, &act, &oact) < 0) {
+    OLA_WARN << "Failed to install signal SIGINT";
+    return false;
+  }
+
+  cout << "---------------  Controls  ----------------\n";
+  cout << " q - Quit\n";
+  cout << "-------------------------------------------\n";
+  server->Run();
+  delete server;
+}
