@@ -44,6 +44,7 @@ class OlaHTTPServer {
                   ExportMap *export_map);
     virtual ~OlaHTTPServer() {}
 
+    virtual bool Init();
     bool Start() { return m_server.Start(); }
     void Stop() { return m_server.Stop(); }
 
@@ -60,7 +61,7 @@ class OlaHTTPServer {
         m_server.RegisterFile("/" + file, file, content_type);
     }
 
-  private :
+  private:
     static const char K_DATA_DIR_VAR[];
     static const char K_UPTIME_VAR[];
 

@@ -55,6 +55,15 @@ OlaHTTPServer::OlaHTTPServer(const HTTPServer::HTTPServerOptions &options,
 
 
 /**
+ * Setup the OLA HTTP server
+ * @return true if this worked, false otherwise.
+ */
+bool OlaHTTPServer::Init() {
+  return m_server.Init();
+}
+
+
+/**
  * Display the contents of the ExportMap
  */
 int OlaHTTPServer::DisplayDebug(const HTTPRequest*,

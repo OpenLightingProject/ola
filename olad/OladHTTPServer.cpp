@@ -132,19 +132,19 @@ OladHTTPServer::~OladHTTPServer() {
  * @return true if this worked, false otherwise.
  */
 bool OladHTTPServer::Init() {
-  bool ret = m_server.Init();
-  if (ret) {
-    if (!m_client.Setup()) {
-      return false;
-    }
-    /*
-    Setup disconnect notifications.
-    m_socket->SetOnClose(
-      ola::NewSingleCallback(this, &SimpleClient::SocketClosed));
-    */
-    m_server.SelectServer()->AddReadDescriptor(m_client_socket);
+  if (!OlaHTTPServer::Init())
+    return false;
+
+  if (!m_client.Setup()) {
+    return false;
   }
-  return ret;
+  /*
+  Setup disconnect notifications.
+  m_socket->SetOnClose(
+    ola::NewSingleCallback(this, &SimpleClient::SocketClosed));
+  */
+  m_server.SelectServer()->AddReadDescriptor(m_client_socket);
+  return true;
 }
 
 
