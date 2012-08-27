@@ -527,40 +527,42 @@ _EOF_
 
 
 # output
-AC_OUTPUT( Makefile\
-    common/Makefile\
-    common/export_map/Makefile\
-    common/http/Makefile\
-    common/io/Makefile\
-    common/logging/Makefile\
-    common/messaging/Makefile\
-    common/network/Makefile\
-    common/protocol/Makefile\
-    common/rdm/Makefile\
+AC_OUTPUT( Makefile \
+    common/Makefile \
+    common/base/Makefile \
+    common/export_map/Makefile \
+    common/http/Makefile \
+    common/io/Makefile \
+    common/logging/Makefile \
+    common/messaging/Makefile \
+    common/network/Makefile \
+    common/protocol/Makefile \
+    common/rdm/Makefile \
     common/rdm/testdata/Makefile \
     common/rdm/testdata/pids/Makefile \
-    common/rpc/Makefile\
-    common/testing/Makefile\
-    common/thread/Makefile\
-    common/timecode/Makefile\
-    common/utils/Makefile\
-    common/web/Makefile\
-    data/Makefile\
-    data/rdm/Makefile\
+    common/rpc/Makefile \
+    common/testing/Makefile \
+    common/thread/Makefile \
+    common/timecode/Makefile \
+    common/utils/Makefile \
+    common/web/Makefile \
+    data/Makefile \
+    data/rdm/Makefile \
     examples/Makefile \
-    debian/Makefile\
-    include/Makefile\
-    include/ola/Makefile\
-    include/ola/http/Makefile\
-    include/ola/io/Makefile\
-    include/ola/messaging/Makefile\
-    include/ola/network/Makefile\
-    include/ola/rdm/Makefile\
-    include/ola/thread/Makefile\
-    include/ola/testing/Makefile\
-    include/ola/timecode/Makefile\
-    include/ola/web/Makefile\
-    include/olad/Makefile\
+    debian/Makefile \
+    include/Makefile \
+    include/ola/Makefile \
+    include/ola/base/Makefile \
+    include/ola/http/Makefile \
+    include/ola/io/Makefile \
+    include/ola/messaging/Makefile \
+    include/ola/network/Makefile \
+    include/ola/rdm/Makefile \
+    include/ola/testing/Makefile \
+    include/ola/thread/Makefile \
+    include/ola/timecode/Makefile \
+    include/ola/web/Makefile \
+    include/olad/Makefile \
     java/Makefile \
     ola/Makefile \
     python/Makefile \
