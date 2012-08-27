@@ -19,7 +19,6 @@ lib_LTLIBRARIES = libolaserver.la
 libolaserver_la_SOURCES = $(OLASERVER_SOURCES) OlaServer.cpp OlaDaemon.cpp
 libolaserver_la_CXXFLAGS = $(COMMON_CXXFLAGS) @OLAD_DEFINES@
 libolaserver_la_LIBADD = $(PLUGIN_LIBS) \
-                         $(libmicrohttpd_LIBS) \
                          $(top_builddir)/common/libolacommon.la \
                          $(top_builddir)/common/web/libolaweb.la \
                          $(top_builddir)/ola/libola.la
