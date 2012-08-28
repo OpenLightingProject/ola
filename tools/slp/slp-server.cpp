@@ -22,9 +22,11 @@
 #include <signal.h>
 #include <sysexits.h>
 
+#include <ola/ExportMap.h>
 #include <ola/Logging.h>
-#include <ola/network/Socket.h>
+#include <ola/base/Init.h>
 #include <ola/network/InterfacePicker.h>
+#include <ola/network/Socket.h>
 
 #include <memory>
 #include <string>
@@ -183,10 +185,15 @@ TCPAcceptingSocket *SetupTCPSocket(const IPV4Address ip, uint16_t port) {
 
 SLPServer *server = NULL;
 
-static void InteruptSignal(int signo) {
+static void InteruptSignal(int unused) {
   if (server)
     server->Stop();
-  (void) signo;
+  (void) unused;
+}
+
+void InitExportMap(ola::ExportMap *export_map, const SLPOptions &options) {
+  ola::IntegerVariable *slp_port = export_map->GetIntegerVar("slp-port");
+  slp_port->Set(options.slp_port);
 }
 
 
@@ -196,6 +203,8 @@ static void InteruptSignal(int signo) {
 int main(int argc, char *argv[]) {
   SLPOptions options;
   SLPServer::SLPServerOptions slp_options;
+  ola::ExportMap export_map;
+
   ParseOptions(argc, argv, &options, &slp_options);
 
   if (options.help)
@@ -216,37 +225,28 @@ int main(int argc, char *argv[]) {
   }
 
   auto_ptr<UDPSocket> udp_socket(SetupUDPSocket(options.slp_port));
-
   if (!udp_socket.get())
     exit(EX_UNAVAILABLE);
 
   auto_ptr<TCPAcceptingSocket> tcp_socket(
       SetupTCPSocket(slp_options.ip_address, options.slp_port));
-
   if (!tcp_socket.get())
     exit(EX_UNAVAILABLE);
 
   // TODO(simon): drop privs here if we need to
 
+  ola::ServerInit(argc, argv, &export_map);
+  InitExportMap(&export_map, options);
+
   SLPServer *server = new SLPServer(udp_socket.get(), tcp_socket.get(),
-                                    slp_options);
+                                    slp_options, &export_map);
   if (!server->Init())
     exit(EX_UNAVAILABLE);
-
-  // signal handler
-  struct sigaction act, oact;
-  act.sa_handler = InteruptSignal;
-  sigemptyset(&act.sa_mask);
-  act.sa_flags = 0;
-
-  if (sigaction(SIGINT, &act, &oact) < 0) {
-    OLA_WARN << "Failed to install signal SIGINT";
-    return false;
-  }
 
   cout << "---------------  Controls  ----------------\n";
   cout << " q - Quit\n";
   cout << "-------------------------------------------\n";
+  ola::InstallSignal(SIGINT, InteruptSignal);
   server->Run();
   delete server;
 }
