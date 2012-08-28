@@ -25,12 +25,13 @@
 #endif
 
 #include <getopt.h>
+#include <iostream>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string>
 #include <sysexits.h>
 #include <unistd.h>
-#include <iostream>
-#include <string>
 
 #include "ola/Logging.h"
 #include "ola/base/Init.h"
