@@ -41,6 +41,10 @@ using std::cout;
 using std::endl;
 using std::string;
 
+
+SLPServer *server = NULL;
+
+
 struct SLPOptions {
   public:
     bool help;
@@ -138,7 +142,7 @@ void DisplayHelpAndExit(char *argv[]) {
   "  -h, --help               Display this help message and exit.\n"
   "  -i, --ip                 The IP address to listen on.\n"
   "  -l, --log-level <level>  Set the logging level 0 .. 4.\n"
-  "  -p, --slp-port           The SLP port to listen on.\n"
+  "  -p, --slp-port           The SLP port to listen on (default 427).\n"
   "  --no-http                Don't run the http server\n"
   "  --no-da                  Disable DA functionality\n"
   << endl;
@@ -183,14 +187,19 @@ TCPAcceptingSocket *SetupTCPSocket(const IPV4Address ip, uint16_t port) {
 }
 
 
-SLPServer *server = NULL;
-
+/**
+ * Interupt handler
+ */
 static void InteruptSignal(int unused) {
   if (server)
     server->Stop();
   (void) unused;
 }
 
+
+/**
+ * Add our variables to the export map
+ */
 void InitExportMap(ola::ExportMap *export_map, const SLPOptions &options) {
   ola::IntegerVariable *slp_port = export_map->GetIntegerVar("slp-port");
   slp_port->Set(options.slp_port);
