@@ -22,27 +22,32 @@
 #include <signal.h>
 #include <sysexits.h>
 
-#include <ola/ExportMap.h>
+#include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/base/Init.h>
 #include <ola/io/SelectServer.h>
 
-#include <string>
 #include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "tools/slp/SLPClient.h"
 
 using ola::network::TCPAcceptingSocket;
 using ola::slp::SLPClient;
+using std::auto_ptr;
 using std::cout;
 using std::endl;
 using std::string;
+using std::vector;
 
 
 struct Options {
   public:
     bool help;
     ola::log_level log_level;
+    vector<string> extra_args;
 
     Options()
         : help(false),
@@ -103,6 +108,10 @@ void ParseOptions(int argc, char *argv[],
        break;
     }
   }
+
+  int index = optind;
+  for (; index < argc; index++)
+    options->extra_args.push_back(argv[index]);
 }
 
 
@@ -110,14 +119,81 @@ void ParseOptions(int argc, char *argv[],
  * Display the help message
  */
 void DisplayHelpAndExit(char *argv[]) {
-  cout << "Usage: " << argv[0] << " [options]\n"
+  cout << "Usage: " << argv[0] << " [options] command-and-arguments\n"
   "\n"
   "The OLA SLP client.\n"
   "\n"
   "  -h, --help               Display this help message and exit.\n"
   "  -l, --log-level <level>  Set the logging level 0 .. 4.\n"
+  " Examples:\n"
+  "   " << argv[0] << " register service:myserv.x://myhost.com\n"
+  "   " << argv[0] << " findsrvs service:myserv.x\n"
   << endl;
   exit(0);
+}
+
+// The base slp client command class.
+class Command {
+  public:
+    virtual ~Command() {}
+    virtual bool Execute(SLPClient *client) = 0;
+};
+
+
+class FindCommand: public Command {
+  public:
+    FindCommand(const string service) : m_service(service) {}
+
+    bool Execute(SLPClient *client) {
+      return client->FindService(m_service, NULL);
+    }
+
+  private:
+    string m_service;
+};
+
+
+class RegisterCommand: public Command {
+  public:
+    RegisterCommand(const string service) : m_service(service) {}
+
+    bool Execute(SLPClient *client) {
+      return client->RegisterService(m_service, 300, NULL);
+    }
+
+  private:
+    string m_service;
+};
+
+
+class DeRegisterCommand: public Command {
+  public:
+    DeRegisterCommand(const string service) : m_service(service) {}
+
+    bool Execute(SLPClient *client) {
+      return client->DeRegisterService(m_service, NULL);
+    }
+
+  private:
+    string m_service;
+};
+
+
+/**
+ * Return a command object or none if the args were invalid.
+ */
+Command *CreateCommand(const vector<string> &args) {
+  if (args.empty())
+    return NULL;
+
+  if (args[0] == "findsrvs") {
+    return args.size() == 2 ? new FindCommand(args[1]) : NULL;
+  } else if (args[0] == "deregister") {
+    return args.size() == 2 ? new DeRegisterCommand(args[1]) : NULL;
+  } else if (args[0] == "register") {
+    return args.size() == 2 ? new RegisterCommand(args[1]) : NULL;
+  }
+  return NULL;
 }
 
 
@@ -131,6 +207,10 @@ int main(int argc, char *argv[]) {
   if (options.help)
     DisplayHelpAndExit(argv);
 
+  auto_ptr<Command> command(CreateCommand(options.extra_args));
+  if (!command.get())
+    DisplayHelpAndExit(argv);
+
   ola::InitLogging(options.log_level, ola::OLA_LOG_STDERR);
   ola::AppInit(argc, argv);
 
@@ -138,8 +218,7 @@ int main(int argc, char *argv[]) {
   if (!client_wrapper.Setup())
     exit(1);
 
-  //ola::slp::SLPClient *client = client_wrapper.GetClient();
-  ola::io::SelectServer *ss = client_wrapper.GetSelectServer();
-
-  ss->Run();
+  if (!command->Execute(client_wrapper.GetClient()))
+    exit(1);
+  client_wrapper.GetSelectServer()->Run();
 }

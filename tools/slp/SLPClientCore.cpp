@@ -112,6 +112,32 @@ bool SLPClientCore::RegisterPersistentService(
 
 
 /**
+ * DeRegister a service
+ */
+bool SLPClientCore::DeRegisterService(
+    const string &service,
+    SingleUseCallback2<void, const string&, uint16_t> *callback) {
+  if (!m_connected) {
+    delete callback;
+    return false;
+  }
+
+  SimpleRpcController *controller = new SimpleRpcController();
+  ServiceDeRegistration request;
+  ServiceAck *reply = new ServiceAck();
+
+  request.set_service(service);
+
+  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+      this,
+      &SLPClientCore::HandleRegistration,
+      NewArgs<register_arg>(controller, reply, callback));
+  m_stub->DeRegisterService(controller, &request, reply, cb);
+  return true;
+}
+
+
+/**
  * Locate a service in SLP.
  */
 bool SLPClientCore::FindService(
@@ -141,7 +167,7 @@ bool SLPClientCore::FindService(
 // The following are RPC callbacks
 
 /*
- * Called once RegisterService completes.
+ * Called once RegisterService or DeRegisterService completes.
  */
 void SLPClientCore::HandleRegistration(register_arg *args) {
   string error_string = "";

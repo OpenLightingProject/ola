@@ -56,6 +56,10 @@ message ServiceRegistration {
   optional bool persistent = 3 [default = false];
 }
 
+message ServiceDeRegistration {
+  required string service = 1;
+}
+
 message ServiceAck {
   // we don't use enums here because we may want to pass back errors we don't
   // understand.
@@ -71,6 +75,8 @@ service OLASLPService {
 
   // register a service
   rpc RegisterService(ServiceRegistration) returns (ServiceAck);
+
+  rpc DeRegisterService(ServiceDeRegistration) returns (ServiceAck);
 }
 
 // RPCs handled by the OLA Client

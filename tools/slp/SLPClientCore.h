@@ -67,6 +67,13 @@ class SLPClientCore {
         SingleUseCallback2<void, const string&, uint16_t> *callback);
 
     /**
+     * DeRegister a service
+     */
+    bool DeRegisterService(
+        const string &service,
+        SingleUseCallback2<void, const string&, uint16_t> *callback);
+
+    /**
      * Find a service
      */
     bool FindService(
