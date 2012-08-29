@@ -26,25 +26,35 @@
 namespace ola {
 namespace slp {
 
+class SLPNode;
+
 /**
  * The implementation of the SLP Service.
  */
 class SLPServiceImpl : public OLASLPService {
   public:
-    SLPServiceImpl() {}
+    SLPServiceImpl(SLPNode *node)
+        : m_node(node) {
+    }
     ~SLPServiceImpl() {}
 
     void FindService(::google::protobuf::RpcController* controller,
-                     const ::ola::slp::ServiceRequest* request,
-                     ::ola::slp::ServiceReply* response,
+                     const ServiceRequest* request,
+                     ServiceReply* response,
                      ::google::protobuf::Closure* done);
 
     void RegisterService(::google::protobuf::RpcController* controller,
-                         const ::ola::slp::ServiceRegistration* request,
-                         ::ola::slp::ServiceAck* response,
+                         const ServiceRegistration* request,
+                         ServiceAck* response,
                          ::google::protobuf::Closure* done);
 
+    void DeRegisterService(::google::protobuf::RpcController* controller,
+                           const ServiceDeRegistration* request,
+                           ServiceAck* response,
+                           ::google::protobuf::Closure* done);
+
   private:
+    SLPNode *m_node;
 };
 }  // slp
 }  // ola

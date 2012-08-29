@@ -79,12 +79,13 @@ SLPServer::SLPServer(ola::network::UDPSocket *udp_socket,
                      const SLPServerOptions &options,
                      ola::ExportMap *export_map)
     : m_iface_address(options.ip_address),
-      m_rpc_port(options.rpc_port),
       m_ss(export_map),
-      m_tcp_socket_factory(NewCallback(this, &SLPServer::NewTCPConnection)),
-      m_tcp_accept_socket(&m_tcp_socket_factory),
+      m_rpc_port(options.rpc_port),
+      m_rpc_socket_factory(NewCallback(this, &SLPServer::NewTCPConnection)),
+      m_rpc_accept_socket(&m_rpc_socket_factory),
+      m_service_impl(new SLPServiceImpl(NULL)),
       m_udp_socket(udp_socket),
-      m_tcp_socket(tcp_socket),
+      m_slp_accept_socket(tcp_socket),
       m_export_map(export_map),
       m_stdin_descriptor(STDIN_FILENO) {
   m_multicast_address = IPV4Address(
@@ -114,7 +115,7 @@ SLPServer::~SLPServer() {
   m_nodes.clear();
 
   m_udp_socket->Close();
-  m_tcp_accept_socket.Close();
+  m_rpc_accept_socket.Close();
   tcsetattr(STDIN_FILENO, TCSANOW, &m_old_tc);
 }
 
@@ -134,20 +135,20 @@ bool SLPServer::Init() {
   tcsetattr(STDIN_FILENO, TCSANOW, &new_tc);
 
   // setup the accepting TCP socket
-  if (!m_tcp_accept_socket.Listen(m_iface_address, m_rpc_port)) {
+  if (!m_rpc_accept_socket.Listen(m_iface_address, m_rpc_port)) {
     return false;
   }
 
-  m_ss.AddReadDescriptor(&m_tcp_accept_socket);
+  m_ss.AddReadDescriptor(&m_rpc_accept_socket);
 
   if (!m_udp_socket->SetMulticastInterface(m_iface_address)) {
-    m_tcp_accept_socket.Close();
+    m_rpc_accept_socket.Close();
     return false;
   }
 
   // join the multicast group
   if (!m_udp_socket->JoinMulticast(m_iface_address, m_multicast_address)) {
-    m_tcp_accept_socket.Close();
+    m_rpc_accept_socket.Close();
     return false;
   }
 
@@ -189,7 +190,7 @@ void SLPServer::Stop() {
 
 
 /**
- * Called when a TCP socket is connected.
+ * Called when RPC client connects.
  */
 void SLPServer::NewTCPConnection(TCPSocket *socket) {
   IPV4Address peer_address;
@@ -197,47 +198,29 @@ void SLPServer::NewTCPConnection(TCPSocket *socket) {
   socket->GetPeer(&peer_address, &port);
   OLA_INFO << "New connection from " << peer_address << ":" << port;
 
-  /*
-  socket->SetOnData(
-      NewCallback(this, &SLPServer::ReceiveTCPData, socket));
+  StreamRpcChannel *channel = new StreamRpcChannel(m_service_impl.get(), socket,
+                                                   m_export_map);
   socket->SetOnClose(
-    NewSingleCallback(this, &SLPServer::SocketClosed, socket));
-  m_ss.AddReadDescriptor(socket);
-  m_tcp_sockets.push_back(socket);
-  */
-  (void) socket;
+      NewSingleCallback(this, &SLPServer::RPCSocketClosed, socket));
+
+  (void) channel;
 
   /*
-  StreamRpcChannel *channel = new StreamRpcChannel(NULL, socket, NULL);
-  socket->SetOnClose(
-      NewSingleCallback(this, &SLPServer::TCPSocketClosed, socket));
-  OlaClientService_Stub *stub = new OlaClientService_Stub(channel);
-  Client *client = new Client(stub);
-  OlaClientService *service = m_service_factory->New(client, m_service_impl);
-  m_broker->AddClient(client);
-  channel->SetService(service);
-
-  map<int, OlaClientService*>::const_iterator iter;
-  iter = m_sd_to_service.find(socket->ReadDescriptor());
-
-  if (iter != m_sd_to_service.end())
-    OLA_INFO << "New socket but the client already exists!";
-
   pair<int, OlaClientService*> pair(socket->ReadDescriptor(), service);
   m_sd_to_service.insert(pair);
+  */
 
   // This hands off ownership to the select server
-  m_ss->AddReadDescriptor(socket, true);
-  (*m_export_map->GetIntegerVar(K_CLIENT_VAR))++;
-  */
+  m_ss.AddReadDescriptor(socket, true);
+  //(*m_export_map->GetIntegerVar(K_CLIENT_VAR))++;
 }
 
 
 /**
- * Called when a TCP socket is closed
+ * Called when RPC socket is closed.
  */
-void SLPServer::TCPSocketClosed(TCPSocket *socket) {
-  OLA_INFO << "Socket closed";
+void SLPServer::RPCSocketClosed(TCPSocket *socket) {
+  OLA_INFO << "RPC Socket closed";
   (void) socket;
 }
 
@@ -285,18 +268,18 @@ void SLPServer::SocketClosed(TCPSocket *socket) {
   OLA_INFO << "closing TCP socket";
   m_ss.RemoveReadDescriptor(socket);
 
-  TCPSocketList::iterator iter = m_tcp_sockets.begin();
-  for (; iter != m_tcp_sockets.end(); ++iter) {
+  TCPSocketList::iterator iter = m_slp_accept_sockets.begin();
+  for (; iter != m_slp_accept_sockets.end(); ++iter) {
     if (*iter == socket)
       break;
   }
 
-  if (iter == m_tcp_sockets.end()) {
+  if (iter == m_slp_accept_sockets.end()) {
     OLA_FATAL << "Unable to locate socket for " << socket;
     return;
   }
 
-  m_tcp_sockets.erase(iter);
+  m_slp_accept_sockets.erase(iter);
 }
 
 
@@ -320,13 +303,13 @@ void SLPServer::SendPartUpdateToClients(const IPV4Address &address,
 
  * Send a string to all clients
 void SLPServer::SendStringToClients(const string &output) {
-  TCPSocketList::iterator iter = m_tcp_sockets.begin();
-  for (; iter != m_tcp_sockets.end(); ++iter) {
+  TCPSocketList::iterator iter = m_slp_accept_sockets.begin();
+  for (; iter != m_slp_accept_sockets.end(); ++iter) {
     (*iter)->Send(reinterpret_cast<const uint8_t*>(output.data()),
                   output.size());
   }
   OLA_INFO << "Sent \"" << output.substr(0, output.size() - 1) << "\" to " <<
-    m_tcp_sockets.size() << " clients";
+    m_slp_accept_sockets.size() << " clients";
 }
 
 
