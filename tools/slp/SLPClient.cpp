@@ -36,6 +36,9 @@ SLPClient::SLPClient(ConnectedDescriptor *descriptor)
 }
 
 
+SLPClient::~SLPClient() {}
+
+
 /*
  * Setup this client
  * @returns true on success, false on failure
@@ -75,6 +78,18 @@ bool SLPClient::RegisterPersistentService(
       uint16_t lifetime,
       SingleUseCallback2<void, const string&, uint16_t> *callback) {
   return m_core->RegisterPersistentService(service, lifetime, callback);
+}
+
+
+/**
+ * DeRegister a service
+ * @param service the name of the service.
+ * @returns true if the request succeeded, false otherwise.
+ */
+bool SLPClient::DeRegisterService(
+    const string &service,
+    SingleUseCallback2<void, const string&, uint16_t> *callback) {
+  return m_core->DeRegisterService(service, callback);
 }
 
 

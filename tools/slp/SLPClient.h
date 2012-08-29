@@ -56,7 +56,7 @@ struct SLPService {
 class SLPClient {
   public:
     explicit SLPClient(ola::io::ConnectedDescriptor *descriptor);
-    ~SLPClient() {}
+    ~SLPClient();
 
     bool Setup();
     bool Stop();
@@ -75,6 +75,13 @@ class SLPClient {
     bool RegisterPersistentService(
         const string &service,
         uint16_t lifetime,
+        SingleUseCallback2<void, const string&, uint16_t> *callback);
+
+    /**
+     * DeRegister a service
+     */
+    bool DeRegisterService(
+        const string &service,
         SingleUseCallback2<void, const string&, uint16_t> *callback);
 
     /**
