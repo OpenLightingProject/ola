@@ -38,6 +38,7 @@
 
 using ola::network::IPV4Address;
 using ola::network::TCPSocket;
+using std::auto_ptr;
 using std::string;
 using std::vector;
 
@@ -48,6 +49,8 @@ namespace http {
 }
 
 namespace slp {
+
+class SLPServiceImpl;
 
 /**
  * An SLP Server.
@@ -91,19 +94,22 @@ class SLPServer {
     typedef vector<NodeEntry*> NodeList;
 
     const IPV4Address m_iface_address;
-    const uint16_t m_rpc_port;
     ola::io::SelectServer m_ss;
-    ola::network::TCPSocketFactory m_tcp_socket_factory;
-    ola::network::TCPAcceptingSocket m_tcp_accept_socket;
+
+    // RPC members
+    const uint16_t m_rpc_port;
+    ola::network::TCPSocketFactory m_rpc_socket_factory;
+    ola::network::TCPAcceptingSocket m_rpc_accept_socket;
     ola::network::IPV4Address m_multicast_address;
+    auto_ptr<SLPServiceImpl> m_service_impl;
 
     // the UDP and TCP sockets for SLP traffic
     ola::network::UDPSocket *m_udp_socket;
-    ola::network::TCPAcceptingSocket *m_tcp_socket;
+    ola::network::TCPAcceptingSocket *m_slp_accept_socket;
 
     // The ExportMap & HTTPServer
     ola::ExportMap *m_export_map;
-    std::auto_ptr<ola::http::OlaHTTPServer> m_http_server;
+    auto_ptr<ola::http::OlaHTTPServer> m_http_server;
 
     // Used to handle events from the command line for now, remove this later
     ola::io::UnmanagedFileDescriptor m_stdin_descriptor;
@@ -112,9 +118,11 @@ class SLPServer {
     // the nodes
     NodeList m_nodes;
 
-    // tcp methods
+    // RPC methods
     void NewTCPConnection(TCPSocket *socket);
-    void TCPSocketClosed(TCPSocket *socket);
+    void RPCSocketClosed(TCPSocket *socket);
+
+    // SLP Network methods
     void UDPData();
 
     /*

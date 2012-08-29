@@ -26,16 +26,24 @@ namespace slp {
 
 
 /**
- * Service lookup request.
+ * Find Service request.
  */
 void SLPServiceImpl::FindService(::google::protobuf::RpcController* controller,
-                                 const ::ola::slp::ServiceRequest* request,
-                                 ::ola::slp::ServiceReply* response,
+                                 const ServiceRequest* request,
+                                 ServiceReply* response,
                                  ::google::protobuf::Closure* done) {
   OLA_INFO << "Recv FindService request";
   (void) controller;
   (void) request;
   (void) response;
+  /*
+   m_node->FindService(
+      request->service(),
+      NewSingleCallback(this,
+                        &SLPServiceImpl::FindServiceHandler,
+                        response,
+                        done));
+  */
   done->Run();
 }
 
@@ -45,10 +53,23 @@ void SLPServiceImpl::FindService(::google::protobuf::RpcController* controller,
  */
 void SLPServiceImpl::RegisterService(
     ::google::protobuf::RpcController* controller,
-    const ::ola::slp::ServiceRegistration* request,
-    ::ola::slp::ServiceAck* response,
+    const ServiceRegistration* request,
+    ServiceAck* response,
     ::google::protobuf::Closure* done) {
   OLA_INFO << "Recv RegisterService request";
+  (void) controller;
+  (void) request;
+  response->set_error_code(0);
+  done->Run();
+}
+
+
+void SLPServiceImpl::DeRegisterService(
+    ::google::protobuf::RpcController* controller,
+    const ServiceDeRegistration* request,
+    ServiceAck* response,
+    ::google::protobuf::Closure* done) {
+  OLA_INFO << "Recv DeRegisterService request";
   (void) controller;
   (void) request;
   response->set_error_code(0);
