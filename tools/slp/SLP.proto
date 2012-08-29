@@ -31,13 +31,29 @@ message ServiceRequest {
   required string service = 1;
 }
 
+message Service {
+  required string service_name = 1;
+  required uint32 lifetime = 2;
+
+  // add auth blocks here
+}
+
 message ServiceReply {
-  repeated string services = 1;
+  repeated Service service = 1;
 }
 
 message ServiceRegistration {
   required string service = 1;
+
+  /**
+   * The lifetime of the registration in seconds
+   */
   optional uint32 lifetime = 2 [default = 300];
+
+  /**
+   * If false, any registrations are removed when the clients disconnects.
+   */
+  optional bool persistent = 3 [default = false];
 }
 
 message ServiceAck {
