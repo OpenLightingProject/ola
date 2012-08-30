@@ -87,12 +87,6 @@ class SLPServer {
     static const uint16_t DEFAULT_SLP_PORT;
 
   private:
-    class NodeEntry {
-      string service;
-    };
-
-    typedef vector<NodeEntry*> NodeList;
-
     const IPV4Address m_iface_address;
     ola::io::SelectServer m_ss;
 
@@ -114,9 +108,6 @@ class SLPServer {
     // Used to handle events from the command line for now, remove this later
     ola::io::UnmanagedFileDescriptor m_stdin_descriptor;
     termios m_old_tc;
-
-    // the nodes
-    NodeList m_nodes;
 
     // RPC methods
     void NewTCPConnection(TCPSocket *socket);

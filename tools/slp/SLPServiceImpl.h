@@ -33,7 +33,7 @@ class SLPNode;
  */
 class SLPServiceImpl : public OLASLPService {
   public:
-    SLPServiceImpl(SLPNode *node)
+    explicit SLPServiceImpl(SLPNode *node)
         : m_node(node) {
     }
     ~SLPServiceImpl() {}
@@ -55,6 +55,9 @@ class SLPServiceImpl : public OLASLPService {
 
   private:
     SLPNode *m_node;
+
+    void FindServiceHandler(ServiceReply* response,
+                            ::google::protobuf::Closure* done);
 };
 }  // slp
 }  // ola

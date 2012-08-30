@@ -9,8 +9,9 @@ EXTRA_DIST = Base.h \
 
 noinst_PROGRAMS = slp_server slp_client
 
-slp_server_SOURCES = SLPServiceImpl.cpp \
+slp_server_SOURCES = SLPNode.cpp \
                      SLPServer.cpp \
+                     SLPServiceImpl.cpp \
                      slp-server.cpp
 slp_server_LDADD = $(top_builddir)/common/libolacommon.la \
                    $(top_builddir)/common/http/libolahttp.la \

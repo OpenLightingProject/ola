@@ -28,7 +28,6 @@
 #include <ola/Logging.h>
 #include <ola/io/SelectServer.h>
 #include <ola/network/IPV4Address.h>
-#include <ola/network/InterfacePicker.h>
 #include <ola/network/NetworkUtils.h>
 #include <ola/network/Socket.h>
 #include <ola/network/TCPSocketFactory.h>
@@ -107,13 +106,6 @@ SLPServer::SLPServer(ola::network::UDPSocket *udp_socket,
 
 
 SLPServer::~SLPServer() {
-  // clean node list
-  NodeList::iterator node_iter = m_nodes.begin();
-  for (; node_iter != m_nodes.end(); ++node_iter) {
-    delete *node_iter;
-  }
-  m_nodes.clear();
-
   m_udp_socket->Close();
   m_rpc_accept_socket.Close();
   tcsetattr(STDIN_FILENO, TCSANOW, &m_old_tc);
@@ -212,7 +204,7 @@ void SLPServer::NewTCPConnection(TCPSocket *socket) {
 
   // This hands off ownership to the select server
   m_ss.AddReadDescriptor(socket, true);
-  //(*m_export_map->GetIntegerVar(K_CLIENT_VAR))++;
+  // (*m_export_map->GetIntegerVar(K_CLIENT_VAR))++;
 }
 
 
@@ -237,9 +229,6 @@ void SLPServer::UDPData() {
   if (!m_udp_socket->RecvFrom(reinterpret_cast<uint8_t*>(&packet),
                               &packet_size, source, port))
     return;
-
-
-
 }
 
 

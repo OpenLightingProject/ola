@@ -19,6 +19,7 @@
 
 #include <ola/Logging.h>
 #include "tools/slp/SLPServiceImpl.h"
+#include "tools/slp/SLPNode.h"
 
 
 namespace ola {
@@ -32,19 +33,14 @@ void SLPServiceImpl::FindService(::google::protobuf::RpcController* controller,
                                  const ServiceRequest* request,
                                  ServiceReply* response,
                                  ::google::protobuf::Closure* done) {
-  OLA_INFO << "Recv FindService request";
   (void) controller;
-  (void) request;
-  (void) response;
-  /*
-   m_node->FindService(
+  OLA_INFO << "Recv FindService request";
+  m_node->FindService(
       request->service(),
       NewSingleCallback(this,
                         &SLPServiceImpl::FindServiceHandler,
                         response,
                         done));
-  */
-  done->Run();
 }
 
 
@@ -73,6 +69,17 @@ void SLPServiceImpl::DeRegisterService(
   (void) controller;
   (void) request;
   response->set_error_code(0);
+  done->Run();
+}
+
+
+/**
+ * Called when FindService completes.
+ */
+void SLPServiceImpl::FindServiceHandler(ServiceReply* response,
+                                        ::google::protobuf::Closure* done) {
+  OLA_INFO << "Find service complete";
+  (void) response;
   done->Run();
 }
 }  // slp
