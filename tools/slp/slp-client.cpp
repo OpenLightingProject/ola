@@ -34,8 +34,12 @@
 
 #include "tools/slp/SLPClient.h"
 
+using ola::NewCallback;
+using ola::NewSingleCallback;
+using ola::io::SelectServer;
 using ola::network::TCPAcceptingSocket;
 using ola::slp::SLPClient;
+using ola::slp::SLPService;
 using std::auto_ptr;
 using std::cout;
 using std::endl;
@@ -135,47 +139,100 @@ void DisplayHelpAndExit(char *argv[]) {
 // The base slp client command class.
 class Command {
   public:
-    virtual ~Command() {}
+    Command() : m_terminate(NULL) {}
+
+    virtual ~Command() {
+      if (m_terminate)
+        delete m_terminate;
+    }
+
+    void SetTermination(ola::Callback0<void> *terminate) {
+      m_terminate = terminate;
+    }
+
+    void Terminate() { m_terminate->Run(); }
     virtual bool Execute(SLPClient *client) = 0;
+
+  protected:
+    bool IsError(const string &error) {
+      if (error.empty())
+        return false;
+      OLA_WARN << error;
+      return true;
+    }
+
+  private:
+    ola::Callback0<void> *m_terminate;
 };
 
 
 class FindCommand: public Command {
   public:
-    FindCommand(const string service) : m_service(service) {}
+    explicit FindCommand(const string service) : m_service(service) {}
 
     bool Execute(SLPClient *client) {
-      return client->FindService(m_service, NULL);
+      return client->FindService(
+          m_service,
+          NewSingleCallback(this, &FindCommand::RequestComplete));
     }
 
   private:
     string m_service;
+
+    void RequestComplete(const string &error,
+                         const vector<SLPService> &services) {
+      Terminate();
+      if (IsError(error))
+        return;
+      vector<SLPService>::const_iterator iter = services.begin();
+      cout << "Services:" << endl;
+      for (; iter != services.end(); ++iter)
+        cout << iter->name << ", " << iter->lifetime << endl;
+    }
 };
 
 
 class RegisterCommand: public Command {
   public:
-    RegisterCommand(const string service) : m_service(service) {}
+    explicit RegisterCommand(const string service) : m_service(service) {}
 
     bool Execute(SLPClient *client) {
-      return client->RegisterService(m_service, 300, NULL);
+      return client->RegisterPersistentService(
+          m_service, 300,
+          NewSingleCallback(this, &RegisterCommand::RequestComplete));
     }
 
   private:
     string m_service;
+
+    void RequestComplete(const string &error, uint16_t code) {
+      Terminate();
+      if (IsError(error))
+        return;
+      cout << "SLP code is " << code;
+    }
 };
 
 
 class DeRegisterCommand: public Command {
   public:
-    DeRegisterCommand(const string service) : m_service(service) {}
+    explicit DeRegisterCommand(const string service) : m_service(service) {}
 
     bool Execute(SLPClient *client) {
-      return client->DeRegisterService(m_service, NULL);
+      return client->DeRegisterService(
+          m_service,
+          NewSingleCallback(this, &DeRegisterCommand::RequestComplete));
     }
 
   private:
     string m_service;
+
+    void RequestComplete(const string &error, uint16_t code) {
+      Terminate();
+      if (IsError(error))
+        return;
+      cout << "SLP code is " << code;
+    }
 };
 
 
@@ -218,7 +275,10 @@ int main(int argc, char *argv[]) {
   if (!client_wrapper.Setup())
     exit(1);
 
+  SelectServer *ss = client_wrapper.GetSelectServer();
+  command->SetTermination(NewCallback(ss, &SelectServer::Terminate));
+
   if (!command->Execute(client_wrapper.GetClient()))
     exit(1);
-  client_wrapper.GetSelectServer()->Run();
+  ss->Run();
 }
