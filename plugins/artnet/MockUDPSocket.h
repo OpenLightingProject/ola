@@ -55,6 +55,9 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
                    unsigned int size,
                    const ola::network::IPV4Address &ip,
                    unsigned short port) const;
+    ssize_t SendTo(ola::io::IOQueue *ioqueue,
+                   const ola::network::IPV4Address &ip,
+                   unsigned short port) const;
     bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const;
     bool RecvFrom(uint8_t *buffer,
                   ssize_t *data_read,

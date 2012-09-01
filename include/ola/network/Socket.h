@@ -40,6 +40,7 @@
 
 #include <ola/Callback.h>
 #include <ola/io/Descriptor.h>
+#include <ola/io/IOQueue.h>
 #include <ola/network/IPV4Address.h>
 #include <string>
 
@@ -97,10 +98,15 @@ class UDPSocketInterface: public ola::io::BidirectionalFileDescriptor {
     virtual bool Close() = 0;
     virtual int ReadDescriptor() const = 0;
     virtual int WriteDescriptor() const = 0;
+
     virtual ssize_t SendTo(const uint8_t *buffer,
                            unsigned int size,
                            const IPV4Address &ip,
                            unsigned short port) const = 0;
+    virtual ssize_t SendTo(ola::io::IOQueue *ioqueue,
+                           const IPV4Address &ip,
+                           unsigned short port) const = 0;
+
     virtual bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const = 0;
     virtual bool RecvFrom(uint8_t *buffer,
                           ssize_t *data_read,
@@ -145,6 +151,10 @@ class UDPSocket: public UDPSocketInterface {
                    unsigned int size,
                    const IPV4Address &ip,
                    unsigned short port) const;
+    ssize_t SendTo(ola::io::IOQueue *ioqueue,
+                   const IPV4Address &ip,
+                   unsigned short port) const;
+
     bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const;
     bool RecvFrom(uint8_t *buffer,
                   ssize_t *data_read,
@@ -153,6 +163,7 @@ class UDPSocket: public UDPSocketInterface {
                   ssize_t *data_read,
                   IPV4Address &source,
                   uint16_t &port) const;
+
     bool EnableBroadcast();
     bool SetMulticastInterface(const IPV4Address &iface);
     bool JoinMulticast(const IPV4Address &iface,

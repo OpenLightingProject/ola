@@ -101,6 +101,13 @@ ssize_t MockUDPSocket::SendTo(const uint8_t *buffer,
 }
 
 
+ssize_t MockUDPSocket::SendTo(ola::io::IOQueue *,
+                              const ola::network::IPV4Address&,
+                              unsigned short) const {
+  // not used so we don't implement it
+  return 0;
+}
+
 bool MockUDPSocket::RecvFrom(uint8_t *buffer, ssize_t *data_read) const {
   IPV4Address address;
   uint16_t port;

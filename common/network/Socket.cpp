@@ -257,6 +257,9 @@ ssize_t UDPSocket::SendTo(const uint8_t *buffer,
                           unsigned int size,
                           const IPV4Address &ip,
                           unsigned short port) const {
+  if (!ValidWriteDescriptor())
+    return 0;
+
   struct sockaddr_in destination;
   memset(&destination, 0, sizeof(destination));
   destination.sin_family = AF_INET;
@@ -271,6 +274,49 @@ ssize_t UDPSocket::SendTo(const uint8_t *buffer,
     sizeof(struct sockaddr));
   if (bytes_sent < 0 || static_cast<unsigned int>(bytes_sent) != size)
     OLA_INFO << "Failed to send, " << strerror(errno);
+  return bytes_sent;
+}
+
+
+
+/*
+ * Send data from an IOQueue. This will try to send as much data as possible.
+ * If the data exceeds the MTU the UDP packet will probably get fragmented at
+ * the IP layer (depends on OS really). Try to avoid this.
+ * @param ioqueue the IOQueue to send.
+ * @param ip_address the IP to send to
+ * @param port the port to send to in HOST byte order.
+ * @return the number of bytes sent
+ */
+ssize_t UDPSocket::SendTo(ola::io::IOQueue *ioqueue,
+                          const IPV4Address &ip,
+                          unsigned short port) const {
+  if (!ValidWriteDescriptor())
+    return 0;
+
+  struct sockaddr_in destination;
+  memset(&destination, 0, sizeof(destination));
+  destination.sin_family = AF_INET;
+  destination.sin_port = HostToNetwork(port);
+  destination.sin_addr = ip.Address();
+
+  struct msghdr message;
+  message.msg_name = &destination;
+  message.msg_namelen = sizeof(destination);
+  const struct iovec *iov = ioqueue->AsIOVec(&message.msg_iovlen);
+  message.msg_iov = const_cast<struct iovec*>(iov);
+  message.msg_control = NULL;
+  message.msg_controllen = NULL;
+  message.msg_flags = 0;
+  ssize_t bytes_sent = sendmsg(WriteDescriptor(), &message, 0);
+
+  if (bytes_sent < 0) {
+    OLA_INFO << "Failed to send on " << WriteDescriptor() << ": " <<
+      strerror(errno);
+  } else {
+    ioqueue->FreeIOVec(iov);
+    ioqueue->Pop(bytes_sent);
+  }
   return bytes_sent;
 }
 
