@@ -3,7 +3,8 @@ include $(top_srcdir)/common.mk
 noinst_LTLIBRARIES = libolaio.la
 libolaio_la_SOURCES = Descriptor.cpp \
                       IOQueue.cpp \
-                      SelectServer.cpp
+                      SelectServer.cpp \
+                      StdinHandler.cpp
 
 if BUILD_TESTS
 TESTS = BufferedDescriptorTester DescriptorTester IOQueueTester \
