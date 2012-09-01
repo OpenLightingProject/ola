@@ -24,6 +24,8 @@
 
 #include <ola/ExportMap.h>
 #include <ola/Logging.h>
+#include <ola/StringUtils.h>
+#include <ola/base/Credentials.h>
 #include <ola/base/Init.h>
 #include <ola/network/InterfacePicker.h>
 #include <ola/network/Socket.h>
@@ -51,6 +53,8 @@ struct SLPOptions {
     ola::log_level log_level;
     string preferred_ip_address;
     uint16_t slp_port;
+    string setuid;
+    string setgid;
 
     SLPOptions()
         : help(false),
@@ -69,6 +73,11 @@ void ParseOptions(int argc, char *argv[],
   int enable_da = slp_options->enable_da;
   int enable_http = slp_options->enable_http;
 
+  enum {
+    SETUID_OPTION = 256,
+    SETGID_OPTION = 257,
+  };
+
   static struct option long_options[] = {
       {"help", no_argument, 0, 'h'},
       {"ip", required_argument, 0, 'i'},
@@ -76,6 +85,8 @@ void ParseOptions(int argc, char *argv[],
       {"slp-port", required_argument, 0, 'p'},
       {"no-da", no_argument, &enable_da, 0},
       {"no-http", no_argument, &enable_http, 0},
+      {"setuid", required_argument, 0, SETUID_OPTION},
+      {"setgid", required_argument, 0, SETGID_OPTION},
       {0, 0, 0, 0}
   };
 
@@ -120,6 +131,12 @@ void ParseOptions(int argc, char *argv[],
       case 'p':
         options->slp_port = atoi(optarg);
         break;
+      case SETUID_OPTION:
+        options->setuid = optarg;
+        break;
+      case SETGID_OPTION:
+        options->setgid = optarg;
+        break;
       case '?':
         break;
       default:
@@ -145,6 +162,8 @@ void DisplayHelpAndExit(char *argv[]) {
   "  -p, --slp-port           The SLP port to listen on (default 427).\n"
   "  --no-http                Don't run the http server\n"
   "  --no-da                  Disable DA functionality\n"
+  "  --setuid <uid,user>      User to switch to after startup\n"
+  "  --setgid <gid,group>     Group to switch to after startup\n"
   << endl;
   exit(0);
 }
@@ -206,6 +225,50 @@ void InitExportMap(ola::ExportMap *export_map, const SLPOptions &options) {
 }
 
 
+/**
+ * Drop Privileges if required.
+ */
+bool DropPrivileges(const string &setuid, const string &setgid) {
+  if (!setuid.empty()) {
+    ola::PasswdEntry passwd_entry;
+    bool ok = false;
+    uid_t uid;
+    if (ola::StringToInt(setuid, &uid, true)) {
+      ok = ola::GetPasswdUID(uid, &passwd_entry);
+    } else {
+      ok = ola::GetPasswdName(setuid, &passwd_entry);
+    }
+    if (!ok) {
+      OLA_WARN << "Unknown UID or username: " << setuid;
+      return false;
+    }
+    if (!ola::SetUID(passwd_entry.pw_uid)) {
+      OLA_WARN << "Failed to setuid to: " << setuid;
+      return false;
+    }
+  }
+
+  if (!setgid.empty()) {
+    ola::GroupEntry group_entry;
+    bool ok = false;
+    gid_t gid;
+    if (ola::StringToInt(setgid, &gid, true)) {
+      ok = ola::GetGroupGID(gid, &group_entry);
+    } else {
+      ok = ola::GetGroupName(setgid, &group_entry);
+    }
+    if (!ok) {
+      OLA_WARN << "Unknown GID or group: " << setgid;
+      return false;
+    }
+    if (!ola::SetGID(group_entry.gr_gid)) {
+      OLA_WARN << "Failed to setgid to: " << setgid;
+      return false;
+    }
+  }
+  return true;
+}
+
 /*
  * Startup the server.
  */
@@ -242,7 +305,8 @@ int main(int argc, char *argv[]) {
   if (!tcp_socket.get())
     exit(EX_UNAVAILABLE);
 
-  // TODO(simon): drop privs here if we need to
+  if (!DropPrivileges(options.setuid, options.setgid))
+    exit(EX_UNAVAILABLE);
 
   ola::ServerInit(argc, argv, &export_map);
   InitExportMap(&export_map, options);
