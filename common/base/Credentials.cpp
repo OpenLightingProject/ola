@@ -19,6 +19,7 @@
  */
 
 #include <errno.h>
+#include <grp.h>
 #include <pwd.h>
 #include <string.h>
 #include <unistd.h>
@@ -115,6 +116,9 @@ bool GenericGetPasswd(F f, arg a, PasswdEntry *passwd) {
     }
   }
 
+  if (!pwd_ptr)
+    return false;
+
   passwd->pw_name = pwd_ptr->pw_name;
   passwd->pw_uid = pwd_ptr->pw_uid;
   passwd->pw_gid = pwd_ptr->pw_gid;
@@ -139,5 +143,57 @@ bool GetPasswdName(const string &name, PasswdEntry *passwd) {
  */
 bool GetPasswdUID(uid_t uid, PasswdEntry *passwd) {
   return GenericGetPasswd(getpwuid_r, uid, passwd);
+}
+
+
+template <typename F, typename arg>
+bool GenericGetGroup(F f, arg a, GroupEntry *group_entry) {
+  if (!group_entry)
+    return false;
+
+  struct group grp, *grp_ptr;
+  unsigned int size = 1024;
+  bool ok = false;
+  char *buffer;
+
+  while (!ok) {
+    buffer = new char[size];
+    int ret = f(a, &grp, buffer, size, &grp_ptr);
+    switch (ret) {
+      case 0:
+        ok = true;
+        break;
+      case ERANGE:
+        delete[] buffer;
+        size += 1024;
+        break;
+      default:
+        delete[] buffer;
+        return false;
+    }
+  }
+
+  if (!grp_ptr)
+    return false;
+
+  group_entry->gr_name = grp_ptr->gr_name;
+  group_entry->gr_gid = grp_ptr->gr_gid;
+  delete[] buffer;
+  return true;
+}
+
+/**
+ * Wrapper for getpwnam
+ */
+bool GetGroupName(const string &name, GroupEntry *group_entry) {
+  return GenericGetGroup(getgrnam_r, name.c_str(), group_entry);
+}
+
+
+/**
+ * Wrapper for getgrgid
+ */
+bool GetGroupGID(gid_t uid, GroupEntry *group_entry) {
+  return GenericGetGroup(getgrgid_r, uid, group_entry);
 }
 }  // ola

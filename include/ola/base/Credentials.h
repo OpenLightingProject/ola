@@ -51,5 +51,15 @@ typedef struct {
 
 bool GetPasswdName(const string &name, PasswdEntry *passwd);
 bool GetPasswdUID(uid_t uid, PasswdEntry *passwd);
+
+typedef struct {
+  string gr_name;
+  string gr_passwd;  // no passwd for now
+  gid_t gr_gid;
+  // vector<string> gr_mem;  // no members for now
+} GroupEntry;
+
+bool GetGroupName(const string &name, GroupEntry *passwd);
+bool GetGroupGID(gid_t gid, GroupEntry *passwd);
 }  // ola
 #endif  // INCLUDE_OLA_BASE_CREDENTIALS_H_
