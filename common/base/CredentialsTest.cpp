@@ -26,9 +26,12 @@
 using ola::GetEGID;
 using ola::GetEUID;
 using ola::GetGID;
+using ola::GetGroupGID;
+using ola::GetGroupName;
 using ola::GetPasswdName;
 using ola::GetPasswdUID;
 using ola::GetUID;
+using ola::GroupEntry;
 using ola::PasswdEntry;
 using ola::SetGID;
 using ola::SetUID;
@@ -41,6 +44,7 @@ class CredentialsTest: public CppUnit::TestFixture {
     CPPUNIT_TEST(testSetUID);
     CPPUNIT_TEST(testSetGID);
     CPPUNIT_TEST(testGetPasswd);
+    CPPUNIT_TEST(testGetGroup);
     CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -52,6 +56,7 @@ class CredentialsTest: public CppUnit::TestFixture {
     void testSetUID();
     void testSetGID();
     void testGetPasswd();
+    void testGetGroup();
 };
 
 
@@ -127,4 +132,28 @@ void CredentialsTest::testGetPasswd() {
   PasswdEntry passwd_entry2;
   CPPUNIT_ASSERT(GetPasswdName(passwd_entry.pw_name, &passwd_entry2));
   CPPUNIT_ASSERT_EQUAL(uid, passwd_entry2.pw_uid);
+}
+
+
+/**
+ * Check the GetGroup functions work.
+ */
+void CredentialsTest::testGetGroup() {
+  gid_t gid = GetGID();
+
+  GroupEntry group_entry;
+  // not all systems will be configured with a group entry so this isn't a
+  // failure.
+  bool ok = GetGroupGID(gid, &group_entry);
+  if (ok) {
+    // at the very least we shoud have a name
+    CPPUNIT_ASSERT(!group_entry.gr_name.empty());
+    CPPUNIT_ASSERT_EQUAL(gid, group_entry.gr_gid);
+
+    // now fetch by name and check it's the same
+    // this could fail. if the accounts were really messed up
+    GroupEntry group_entry2;
+    CPPUNIT_ASSERT(GetGroupName(group_entry.gr_name, &group_entry2));
+    CPPUNIT_ASSERT_EQUAL(gid, group_entry2.gr_gid);
+  }
 }
