@@ -20,6 +20,7 @@
  */
 
 #include <termios.h>
+#include <stdio.h>
 
 #include <ola/Callback.h>
 #include <ola/io/StdinHandler.h>
