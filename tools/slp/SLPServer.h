@@ -20,10 +20,9 @@
 #ifndef TOOLS_SLP_SLPSERVER_H_
 #define TOOLS_SLP_SLPSERVER_H_
 
-#include <termios.h>
-
 #include <ola/ExportMap.h>
 #include <ola/io/SelectServer.h>
+#include <ola/io/StdinHandler.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/NetworkUtils.h>
 #include <ola/network/Socket.h>
@@ -51,6 +50,23 @@ namespace http {
 namespace slp {
 
 class SLPServiceImpl;
+
+/**
+ * Capture events from stdin and pass them to the SLPServer to act on
+ */
+class StdinHandler: public ola::io::StdinHandler {
+  public:
+    StdinHandler(ola::io::SelectServer *ss, class SLPServer *slp_server)
+        : ola::io::StdinHandler(ss),
+          m_slp_server(slp_server) {
+    }
+
+    void HandleCharacter(char c);
+
+  private:
+    class SLPServer *m_slp_server;
+};
+
 
 /**
  * An SLP Server.
@@ -84,11 +100,15 @@ class SLPServer {
     void Run();
     void Stop();
 
+    // handle events from stdin
+    void Input(char c);
+
     static const uint16_t DEFAULT_SLP_PORT;
 
   private:
     const IPV4Address m_iface_address;
     ola::io::SelectServer m_ss;
+    StdinHandler m_stdin_handler;
 
     // RPC members
     const uint16_t m_rpc_port;
@@ -104,10 +124,6 @@ class SLPServer {
     // The ExportMap & HTTPServer
     ola::ExportMap *m_export_map;
     auto_ptr<ola::http::OlaHTTPServer> m_http_server;
-
-    // Used to handle events from the command line for now, remove this later
-    ola::io::UnmanagedFileDescriptor m_stdin_descriptor;
-    termios m_old_tc;
 
     // RPC methods
     void NewTCPConnection(TCPSocket *socket);
@@ -125,8 +141,6 @@ class SLPServer {
     void SendState(TCPSocket *socket);
     */
 
-    // stdin
-    void Input();
 
     // housekeeping methods
     /*

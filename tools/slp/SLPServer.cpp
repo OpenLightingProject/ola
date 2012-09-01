@@ -21,8 +21,6 @@
 #  include <config.h>
 #endif
 
-#include <termios.h>
-
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>
 #include <ola/Logging.h>
@@ -68,6 +66,12 @@ const uint16_t SLPServer::DEFAULT_SLP_PORT = 427;
 const uint16_t SLPServer::DEFAULT_SLP_HTTP_PORT = 9012;
 const char SLPServer::K_SLP_PORT_VAR[] = "slp-port";
 
+
+void StdinHandler::HandleCharacter(char c) {
+  m_slp_server->Input(c);
+}
+
+
 /**
  * Setup a new SLP server.
  * @param socket the UDP Socket to use for SLP messages.
@@ -79,14 +83,14 @@ SLPServer::SLPServer(ola::network::UDPSocket *udp_socket,
                      ola::ExportMap *export_map)
     : m_iface_address(options.ip_address),
       m_ss(export_map),
+      m_stdin_handler(&m_ss, this),
       m_rpc_port(options.rpc_port),
       m_rpc_socket_factory(NewCallback(this, &SLPServer::NewTCPConnection)),
       m_rpc_accept_socket(&m_rpc_socket_factory),
       m_service_impl(new SLPServiceImpl(NULL)),
       m_udp_socket(udp_socket),
       m_slp_accept_socket(tcp_socket),
-      m_export_map(export_map),
-      m_stdin_descriptor(STDIN_FILENO) {
+      m_export_map(export_map) {
   m_multicast_address = IPV4Address(
       HostToNetwork(239U << 24 |
                     255U << 16 |
@@ -108,7 +112,6 @@ SLPServer::SLPServer(ola::network::UDPSocket *udp_socket,
 SLPServer::~SLPServer() {
   m_udp_socket->Close();
   m_rpc_accept_socket.Close();
-  tcsetattr(STDIN_FILENO, TCSANOW, &m_old_tc);
 }
 
 
@@ -117,14 +120,6 @@ SLPServer::~SLPServer() {
  */
 bool SLPServer::Init() {
   OLA_INFO << "Interface address is " << m_iface_address;
-
-  // setup notifications for stdin & turn off buffering
-  m_stdin_descriptor.SetOnData(ola::NewCallback(this, &SLPServer::Input));
-  m_ss.AddReadDescriptor(&m_stdin_descriptor);
-  tcgetattr(STDIN_FILENO, &m_old_tc);
-  termios new_tc = m_old_tc;
-  new_tc.c_lflag &= static_cast<tcflag_t>(~ICANON & ~ECHO);
-  tcsetattr(STDIN_FILENO, TCSANOW, &new_tc);
 
   // setup the accepting TCP socket
   if (!m_rpc_accept_socket.Listen(m_iface_address, m_rpc_port)) {
@@ -178,6 +173,20 @@ void SLPServer::Stop() {
     m_http_server->Stop();
 #endif
   m_ss.Terminate();
+}
+
+
+/*
+ * Called when there is data on stdin.
+ */
+void SLPServer::Input(char c) {
+  switch (c) {
+    case 'q':
+      m_ss.Terminate();
+      break;
+    default:
+      break;
+  }
 }
 
 
@@ -315,19 +324,6 @@ void SLPServer::SendState(TCPSocket *socket) {
 }
 
 */
-
-/*
- * Called when there is data on stdin.
- */
-void SLPServer::Input() {
-  switch (getchar()) {
-    case 'q':
-      m_ss.Terminate();
-      break;
-    default:
-      break;
-  }
-}
 
 /*
  * Send the periodic advertisment.
