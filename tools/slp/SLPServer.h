@@ -141,7 +141,6 @@ class SLPServer {
     void SendState(TCPSocket *socket);
     */
 
-
     // housekeeping methods
     /*
     bool SendPeriodicAdvert();

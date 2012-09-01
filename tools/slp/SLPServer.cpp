@@ -66,7 +66,6 @@ const uint16_t SLPServer::DEFAULT_SLP_PORT = 427;
 const uint16_t SLPServer::DEFAULT_SLP_HTTP_PORT = 9012;
 const char SLPServer::K_SLP_PORT_VAR[] = "slp-port";
 
-
 void StdinHandler::HandleCharacter(char c) {
   m_slp_server->Input(c);
 }

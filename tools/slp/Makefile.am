@@ -33,7 +33,6 @@ slp_parser_CXXFLAGS = $(WARNING_CXXFLAGS)
 slp_parser_LDADD =  $(top_builddir)/common/libolacommon.la \
                     $(LEXLIB)
 
-
 noinst_LTLIBRARIES = libolaslpproto.la
 nodist_libolaslpproto_la_SOURCES = SLP.pb.cc
 libolaslpproto_la_LIBADD = $(libprotobuf_LIBS)
