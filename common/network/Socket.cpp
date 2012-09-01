@@ -300,11 +300,14 @@ ssize_t UDPSocket::SendTo(ola::io::IOQueue *ioqueue,
   destination.sin_port = HostToNetwork(port);
   destination.sin_addr = ip.Address();
 
+  int io_len;
+  const struct iovec *iov = ioqueue->AsIOVec(&io_len);
+
   struct msghdr message;
   message.msg_name = &destination;
   message.msg_namelen = sizeof(destination);
-  const struct iovec *iov = ioqueue->AsIOVec(&message.msg_iovlen);
   message.msg_iov = const_cast<struct iovec*>(iov);
+  message.msg_iovlen = io_len;
   message.msg_control = NULL;
   message.msg_controllen = NULL;
   message.msg_flags = 0;
