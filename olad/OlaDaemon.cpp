@@ -19,7 +19,6 @@
  */
 
 #include <errno.h>
-#include <pwd.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -28,9 +27,9 @@
 #include <string>
 #include <vector>
 
-#include "config.h"
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
+#include "ola/base/Credentials.h"
 
 #include "olad/DynamicPluginLoader.h"
 #include "olad/OlaDaemon.h"
@@ -185,31 +184,11 @@ void OlaDaemon::ReloadPlugins() {
  * Return the home directory for the current user
  */
 string OlaDaemon::DefaultConfigDir() {
-  struct passwd pwd, *pwd_ptr;
-  unsigned int size = 1024;
-  bool ok = false;
-  char *buffer;
+  PasswdEntry passwd_entry;
+  if (!GetPasswdUID(GetUID(), &passwd_entry))
+    return "";
 
-  while (!ok) {
-    buffer = new char[size];
-    int ret = getpwuid_r(getuid(), &pwd, buffer, size, &pwd_ptr);
-    switch (ret) {
-      case 0:
-        ok = true;
-        break;
-      case ERANGE:
-        delete[] buffer;
-        size += 1024;
-        break;
-      default:
-        delete[] buffer;
-        return "";
-    }
-  }
-
-  string home_dir = pwd_ptr->pw_dir;
-  delete[] buffer;
-  return home_dir + "/" + OLA_CONFIG_DIR;
+  return passwd_entry.pw_dir + "/" + OLA_CONFIG_DIR;
 }
 
 
