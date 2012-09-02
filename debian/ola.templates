@@ -1,10 +1,10 @@
 Template: ola/daemon
 Type: boolean
 Default: false
-Description: Should the ola daemon be started at boot?
- The ola daemon is needed to use ola.
+Description: Should the OLA daemon be started at boot?
+ The OLA daemon is needed to use OLA.
  .
- You have the option of starting the ola daemon automatically on
+ You have the option of starting the OLA daemon automatically on
  system boot.
  .
  This setting can be modified later by running 'dpkg-reconfigure ola'.
