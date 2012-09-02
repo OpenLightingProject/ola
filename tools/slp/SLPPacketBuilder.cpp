@@ -18,17 +18,21 @@
  */
 
 #include <ola/Logging.h>
+#include <ola/StringUtils.h>
 #include <ola/network/NetworkUtils.h>
-#include "tools/slp/SLPPacketBuilder.h"
-#include "tools/slp/SLPPacketConstants.h"
 
 #include <string>
 #include <vector>
+
+#include "tools/slp/SLPPacketBuilder.h"
+#include "tools/slp/SLPPacketConstants.h"
+#include "tools/slp/URLEntry.h"
 
 namespace ola {
 namespace slp {
 
 using ola::io::IOQueue;
+using ola::StringJoin;
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
 using std::string;
@@ -36,9 +40,154 @@ using std::vector;
 
 
 /**
+ * Build a Service Request.
+ * @param output the IOQueue to put the packet in
+ * @param xid the transaction ID
+ * @param pr_list the previous responder ist
+ * @param service_type the service to locate
+ * @param scope_list the list of scopes to search.
+ */
+void SLPPacketBuilder::BuildServiceRequest(IOQueue *output,
+                                           xid_t xid,
+                                           const vector<IPV4Address> &pr_list,
+                                           const string &service_type,
+                                           const vector<string> &scope_list) {
+  /*
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |       Service Location header (function = SrvRqst = 1)        |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |      length of <PRList>       |        <PRList> String        \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |   length of <service-type>    |    <service-type> String      \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |    length of <scope-list>     |     <scope-list> String       \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |  length of predicate string   |  Service Request <predicate>  \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |  length of <SLP SPI> string   |       <SLP SPI> String        \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  */
+  const string joined_pr_list = ola::StringJoin(",", pr_list);
+  const string joined_scopes = ola::StringJoin(",", scope_list);
+
+  unsigned int length = 10 + joined_pr_list.size() + joined_scopes.size();
+  BuildSLPHeader(output,
+                 SERVICE_REQUEST,
+                 length,
+                 0,
+                 xid);
+  WriteString(output, joined_pr_list);
+  WriteString(output, service_type);
+  WriteString(output, joined_scopes);
+  *output << static_cast<uint8_t>(0);   // length of predicate string
+  *output << static_cast<uint8_t>(0);   // length of SPI
+}
+
+
+/**
+ * Build a Service Reply.
+ * @param output the IOQueue to put the packet in
+ * @param xid the transaction ID
+ * @param error_code the SLP error code
+ * @param url_entries a list of URLEntries to return.
+ */
+void SLPPacketBuilder::BuildServiceReply(IOQueue *output,
+                                         xid_t xid,
+                                         uint16_t error_code,
+                                         const URLEntries &url_entries) {
+  /*
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |        Service Location header (function = SrvRply = 2)       |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |        Error Code             |        URL Entry count        |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |       <URL Entry 1>          ...       <URL Entry N>          \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  */
+  unsigned int length = 4;
+  URLEntries::const_iterator iter = url_entries.begin();
+  for (; iter != url_entries.end(); ++iter)
+    length += iter->Size();
+
+  BuildSLPHeader(output, SERVICE_REPLY, length, 0, xid);
+  *output << HostToNetwork(error_code);
+  *output << HostToNetwork(static_cast<uint16_t>(url_entries.size()));
+
+  for (iter = url_entries.begin(); iter != url_entries.end(); ++iter)
+    iter->Write(output);
+}
+
+
+/**
+ * Build a Service Registration message.
+ * @param output the IOQueue to put the packet in
+ * @param xid the transaction ID
+ * @param url_entry the URLEntry to include
+ * @param service_type the SLP service-type
+ * @param scope_list a list of scopes.
+ */
+void SLPPacketBuilder::BuildServiceRegistration(IOQueue *output,
+                                                xid_t xid,
+                                                const URLEntry &url_entry,
+                                                const string &service_type,
+                                                vector<string> &scope_list) {
+  /*
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |         Service Location header (function = SrvReg = 3)       |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                          <URL-Entry>                          \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     | length of service type string |        <service-type>         \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |     length of <scope-list>    |         <scope-list>          \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |  length of attr-list string   |          <attr-list>          \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |# of AttrAuths |(if present) Attribute Authentication Blocks...\
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  */
+  const string joined_scopes = ola::StringJoin(",", scope_list);
+  unsigned int length = (url_entry.Size() + 2 + service_type.size() + 2 +
+                         joined_scopes.size() + 3);
+
+  BuildSLPHeader(output, SERVICE_REGISTRATION, length, 0, xid);
+  url_entry.Write(output);
+  WriteString(output, service_type);
+  WriteString(output, joined_scopes);
+  *output << static_cast<uint16_t>(0);  // length of attr-list
+  *output << static_cast<uint8_t>(0);   // # of AttrAuths
+}
+
+
+/**
+ * Build a Service Registration message.
+ * @param output the IOQueue to put the packet in
+ * @param xid the transaction ID
+ * @param error_code.
+ */
+void SLPPacketBuilder::BuildServiceAck(IOQueue *output,
+                                       xid_t xid,
+                                       uint16_t error_code) {
+  /*
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |          Service Location header (function = SrvAck = 5)      |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |          Error Code           |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  */
+  BuildSLPHeader(output, SERVICE_ACKNOWLEDGE, 2, 0, xid);
+  *output << HostToNetwork(error_code);
+}
+
+/**
  * Build an DAAdvert Packet
  * @param output the IOQueue to put the packet in
+ * @param xid the transaction ID
+ * @param multicast true if this packet will be multicast
  * @param error_code, should be 0 if this packet will be multicast
+ * @param boot_timestamp the boot time of the DA
+ * @param url the URL to use.
+ * @param scope_list a list of scopes.
  */
 void SLPPacketBuilder::BuildDAAdvert(IOQueue *output,
                                      xid_t xid,
@@ -66,7 +215,7 @@ void SLPPacketBuilder::BuildDAAdvert(IOQueue *output,
      | # Auth Blocks |         Authentication block (if any)         \
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   */
-  unsigned int length = 8 + url.size() + 7;
+  unsigned int length = 8 + url.size() + + scope_list.size() + 7;
   BuildSLPHeader(output,
                  DA_ADVERTISEMENT,
                  length,
@@ -75,17 +224,12 @@ void SLPPacketBuilder::BuildDAAdvert(IOQueue *output,
 
   *output << HostToNetwork(static_cast<uint16_t>(multicast ? 0 : error_code));
   *output << HostToNetwork(boot_timestamp);
-  *output << HostToNetwork(static_cast<uint16_t>(url.size()));
-  output->Write(reinterpret_cast<const uint8_t*>(url.data()),
-                url.size());
-  *output << HostToNetwork(static_cast<uint16_t>(scope_list.size()));
-  output->Write(reinterpret_cast<const uint8_t*>(scope_list.data()),
-                scope_list.size());
+  WriteString(output, url);
+  WriteString(output, scope_list);
   *output << static_cast<uint16_t>(0);  // length of attr-list
   *output << static_cast<uint16_t>(0);  // length of spi list
   *output << static_cast<uint8_t>(0);   // # of auth blocks
 }
-
 
 
 /**
@@ -122,6 +266,16 @@ void SLPPacketBuilder::BuildSLPHeader(IOQueue *output,
   *output << static_cast<uint16_t>(0) << HostToNetwork(xid);
   *output << HostToNetwork(static_cast<uint16_t>(sizeof(EN_LANGUAGE_TAG)));
   output->Write(EN_LANGUAGE_TAG, sizeof(EN_LANGUAGE_TAG));
+}
+
+
+/**
+ * Write a string to an IOQueue. The length of the string is written in
+ * network-byte order as the first two bytes.
+ */
+void SLPPacketBuilder::WriteString(IOQueue *ioqueue, const string &data) {
+  *ioqueue << HostToNetwork(static_cast<uint16_t>(data.size()));
+  ioqueue->Write(reinterpret_cast<const uint8_t*>(data.data()), data.size());
 }
 }  // slp
 }  // ola

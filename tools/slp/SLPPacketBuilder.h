@@ -21,13 +21,16 @@
 #define TOOLS_SLP_SLPPACKETBUILDER_H_
 
 #include <ola/io/IOQueue.h>
+#include <ola/network/IPV4Address.h>
 
 #include <string>
 #include <vector>
 
 #include "tools/slp/SLPPacketConstants.h"
+#include "tools/slp/URLEntry.h"
 
 using ola::io::IOQueue;
+using ola::network::IPV4Address;
 using std::string;
 using std::vector;
 
@@ -42,6 +45,27 @@ class SLPPacketBuilder {
     SLPPacketBuilder() {}
     ~SLPPacketBuilder() {}
 
+    static void BuildServiceRequest(IOQueue *output,
+                                    xid_t xid,
+                                    const vector<IPV4Address> &pr_list,
+                                    const string &service_type,
+                                    const vector<string> &scope_list);
+
+    static void BuildServiceReply(IOQueue *output,
+                                  xid_t xid,
+                                  uint16_t error_code,
+                                  const URLEntries &url_entries);
+
+    static void BuildServiceRegistration(IOQueue *output,
+                                         xid_t xid,
+                                         const URLEntry &url_entry,
+                                         const string &service_type,
+                                         vector<string> &scope_list);
+
+    static void BuildServiceAck(IOQueue *output,
+                                xid_t xid,
+                                uint16_t error_code);
+
     static void BuildDAAdvert(IOQueue *output,
                               xid_t xid,
                               bool multicast,
@@ -49,6 +73,8 @@ class SLPPacketBuilder {
                               uint32_t boot_timestamp,
                               const string &url,
                               const string &scope_list);
+
+    static void WriteString(IOQueue *ioqueue, const string &data);
 
   private:
     static void BuildSLPHeader(IOQueue *output,

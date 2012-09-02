@@ -8,7 +8,8 @@ EXTRA_DIST = Base.h \
              SLPPacketConstants.h \
              SLPServer.h \
              SLPServiceImpl.h \
-             slp-parser-actions.h
+             slp-parser-actions.h \
+             URLEntry.h
 
 noinst_PROGRAMS = slp_server slp_client slp_parser
 
@@ -16,7 +17,8 @@ slp_server_SOURCES = SLPNode.cpp \
                      SLPPacketBuilder.cpp \
                      SLPServer.cpp \
                      SLPServiceImpl.cpp \
-                     slp-server.cpp
+                     slp-server.cpp \
+                     URLEntry.cpp
 slp_server_LDADD = $(top_builddir)/common/libolacommon.la \
                    $(top_builddir)/common/http/libolahttp.la \
                    ./libolaslpproto.la

@@ -441,7 +441,7 @@ bool SLPServer::SendDABeat() {
                                   str.str(),
                                   "default");
   OLA_INFO << "Sending Multicast DAAdvert";
-  // m_udp_socket->SendTo(&output, m_multicast_address, DEFAULT_SLP_PORT);
+  m_udp_socket->SendTo(&output, m_multicast_address, DEFAULT_SLP_PORT);
   return true;
 }
 }  // slp
