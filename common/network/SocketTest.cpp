@@ -26,20 +26,22 @@
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/io/Descriptor.h"
+#include "ola/io/IOQueue.h"
 #include "ola/io/SelectServer.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/Socket.h"
 #include "ola/network/TCPSocketFactory.h"
 
-using std::string;
 using ola::io::ConnectedDescriptor;
+using ola::io::IOQueue;
 using ola::io::SelectServer;
 using ola::network::IPV4Address;
 using ola::network::StringToAddress;
 using ola::network::TCPAcceptingSocket;
 using ola::network::TCPSocket;
 using ola::network::UDPSocket;
+using std::string;
 
 static const unsigned char test_cstring[] = "Foo";
 // used to set a timeout which aborts the tests
@@ -51,6 +53,7 @@ class SocketTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testTCPSocketClientClose);
   CPPUNIT_TEST(testTCPSocketServerClose);
   CPPUNIT_TEST(testUDPSocket);
+  CPPUNIT_TEST(testIOQueueUDPSend);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -59,6 +62,7 @@ class SocketTest: public CppUnit::TestFixture {
     void testTCPSocketClientClose();
     void testTCPSocketServerClose();
     void testUDPSocket();
+    void testIOQueueUDPSend();
 
     // timing out indicates something went wrong
     void Timeout() {
@@ -222,6 +226,44 @@ void SocketTest::testUDPSocket() {
   m_ss->RemoveReadDescriptor(&client_socket);
 }
 
+
+/*
+ * Test UDP sockets with an IOQueue work correctly.
+ * The client connects and the server sends some data. The client checks the
+ * data matches and then closes the connection.
+ */
+void SocketTest::testIOQueueUDPSend() {
+  IPV4Address ip_address;
+  CPPUNIT_ASSERT(IPV4Address::FromString("127.0.0.1", &ip_address));
+  uint16_t server_port = 9010;
+  UDPSocket socket;
+  CPPUNIT_ASSERT(socket.Init());
+  CPPUNIT_ASSERT(!socket.Init());
+  CPPUNIT_ASSERT(socket.Bind(server_port));
+  CPPUNIT_ASSERT(!socket.Bind(server_port));
+
+  socket.SetOnData(
+      ola::NewCallback(this, &SocketTest::UDPReceiveAndSend, &socket));
+  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&socket));
+
+  UDPSocket client_socket;
+  CPPUNIT_ASSERT(client_socket.Init());
+  CPPUNIT_ASSERT(!client_socket.Init());
+
+  client_socket.SetOnData(
+      ola::NewCallback(
+        this, &SocketTest::UDPReceiveAndTerminate,
+        static_cast<UDPSocket*>(&client_socket)));
+  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&client_socket));
+
+  IOQueue output;
+  output.Write(static_cast<const uint8_t*>(test_cstring), sizeof(test_cstring));
+  ssize_t bytes_sent = client_socket.SendTo(&output, ip_address, server_port);
+  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
+  m_ss->Run();
+  m_ss->RemoveReadDescriptor(&socket);
+  m_ss->RemoveReadDescriptor(&client_socket);
+}
 
 
 /*

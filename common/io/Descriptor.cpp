@@ -204,12 +204,17 @@ ssize_t bytes_sent;
 
 
 /**
- * Send an iovec.
+ * Send an IOQueue.
+ * This attempts to send as much of the IOQueue data as possible. The IOQueue
+ * may be non-empty when this completes if the descriptor buffer is full.
  * @returns the number of bytes sent.
  */
-ssize_t ConnectedDescriptor::SendV(const struct iovec *iov, int iocnt) {
+ssize_t ConnectedDescriptor::Send(IOQueue *ioqueue) {
   if (!ValidWriteDescriptor())
     return 0;
+
+  int iocnt;
+  const struct iovec *iov = ioqueue->AsIOVec(&iocnt);
 
   ssize_t bytes_sent;
 #if HAVE_DECL_MSG_NOSIGNAL
@@ -227,9 +232,13 @@ ssize_t ConnectedDescriptor::SendV(const struct iovec *iov, int iocnt) {
     bytes_sent = writev(WriteDescriptor(), iov, iocnt);
   }
 
-  if (bytes_sent < 0)
+  if (bytes_sent < 0) {
     OLA_INFO << "Failed to send on " << WriteDescriptor() << ": " <<
       strerror(errno);
+  } else {
+    ioqueue->FreeIOVec(iov);
+    ioqueue->Pop(bytes_sent);
+  }
   return bytes_sent;
 }
 

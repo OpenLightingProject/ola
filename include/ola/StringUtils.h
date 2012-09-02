@@ -22,15 +22,17 @@
 #define INCLUDE_OLA_STRINGUTILS_H_
 
 #include <stdint.h>
+#include <sstream>
 #include <string>
 #include <vector>
 
 namespace ola {
 
 using std::string;
+using std::vector;
 
 void StringSplit(const string &input,
-                 std::vector<string> &tokens,
+                 vector<string> &tokens,
                  const string &delimiters=" ");
 void StringTrim(string *input);
 void ShortenString(string *input);
@@ -73,6 +75,21 @@ bool PrefixedHexStringToInt(const string &input, int_type *output) {
   string modified_input = input.substr(2);
   return HexStringToInt(modified_input, output);
 }
-}  // ola
 
+/**
+ * Join a vector of type T.
+ * T can be any type for which the << operator is defined
+ */
+template<typename T>
+string StringJoin(const string &delim, const vector<T> &input) {
+  std::ostringstream str;
+  typename vector<T>::const_iterator iter = input.begin();
+  while (iter != input.end()) {
+    str << *iter++;
+    if (iter != input.end())
+      str << delim;
+  }
+  return str.str();
+}
+}  // ola
 #endif  // INCLUDE_OLA_STRINGUTILS_H_

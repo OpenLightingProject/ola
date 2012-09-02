@@ -49,18 +49,12 @@
 #include <unistd.h>
 #include <string>
 #include <ola/Callback.h>  // NOLINT
-
-extern "C" {
-  struct iovec;
-}
-
+#include <ola/io/IOQueue.h>
 
 namespace ola {
 namespace io {
 
-
 static const int INVALID_DESCRIPTOR = -1;
-
 
 /*
  * A FileDescriptor which can be read from.
@@ -183,7 +177,8 @@ class ConnectedDescriptor: public BidirectionalFileDescriptor {
     }
 
     virtual ssize_t Send(const uint8_t *buffer, unsigned int size);
-    virtual ssize_t SendV(const struct iovec *iov, int iocnt);
+    virtual ssize_t Send(IOQueue *data);
+
     virtual int Receive(uint8_t *buffer,
                         unsigned int size,
                         unsigned int &data_read);
