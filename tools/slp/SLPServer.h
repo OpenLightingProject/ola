@@ -20,7 +20,9 @@
 #ifndef TOOLS_SLP_SLPSERVER_H_
 #define TOOLS_SLP_SLPSERVER_H_
 
+#include <ola/Clock.h>
 #include <ola/ExportMap.h>
+#include <ola/io/IOQueue.h>
 #include <ola/io/SelectServer.h>
 #include <ola/io/StdinHandler.h>
 #include <ola/network/IPV4Address.h>
@@ -30,16 +32,19 @@
 
 #include <iostream>
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
 #include "tools/slp/Base.h"
 
+using ola::io::IOQueue;
 using ola::network::IPV4Address;
 using ola::network::TCPSocket;
 using std::auto_ptr;
 using std::string;
 using std::vector;
+using std::set;
 
 namespace ola {
 
@@ -81,12 +86,16 @@ class SLPServer {
       bool enable_http;  // enable the HTTP server
       uint16_t http_port;  // port to run the HTTP server on
       uint16_t rpc_port;  // port to run the RPC server on
+      uint32_t config_da_beat;  // seconds between DA beats
+      set<string> scopes;  // supported scopes
 
       SLPServerOptions()
           : enable_da(true),
             enable_http(true),
             http_port(DEFAULT_SLP_HTTP_PORT),
-            rpc_port(OLA_SLP_DEFAULT_PORT) {
+            rpc_port(OLA_SLP_DEFAULT_PORT),
+            config_da_beat(3 * 60 * 60) {
+        scopes.insert("default");
       }
     };
 
@@ -106,7 +115,11 @@ class SLPServer {
     static const uint16_t DEFAULT_SLP_PORT;
 
   private:
+    bool m_enable_da;
+    uint32_t m_config_da_beat;
+
     const IPV4Address m_iface_address;
+    ola::TimeStamp m_boot_time;
     ola::io::SelectServer m_ss;
     StdinHandler m_stdin_handler;
 
@@ -132,6 +145,7 @@ class SLPServer {
     // SLP Network methods
     void UDPData();
 
+    bool SendDABeat();
     /*
     void ReceiveTCPData(TCPSocket *socket);
     void SocketClosed(TCPSocket *socket);

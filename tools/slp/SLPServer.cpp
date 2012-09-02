@@ -35,10 +35,12 @@
 #include <ola/http/OlaHTTPServer.h>
 #endif
 
+#include "common/rpc/StreamRpcChannel.h"
+#include "tools/slp/SLPPacketBuilder.h"
 #include "tools/slp/SLPServer.h"
 #include "tools/slp/SLPServiceImpl.h"
-#include "common/rpc/StreamRpcChannel.h"
 
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -80,7 +82,9 @@ SLPServer::SLPServer(ola::network::UDPSocket *udp_socket,
                      ola::network::TCPAcceptingSocket *tcp_socket,
                      const SLPServerOptions &options,
                      ola::ExportMap *export_map)
-    : m_iface_address(options.ip_address),
+    : m_enable_da(options.enable_da),
+      m_config_da_beat(options.config_da_beat),
+      m_iface_address(options.ip_address),
       m_ss(export_map),
       m_stdin_handler(&m_ss, this),
       m_rpc_port(options.rpc_port),
@@ -141,18 +145,21 @@ bool SLPServer::Init() {
   m_udp_socket->SetOnData(NewCallback(this, &SLPServer::UDPData));
   m_ss.AddReadDescriptor(m_udp_socket);
 
-
 #ifdef HAVE_LIBMICROHTTPD
   if (m_http_server.get())
     m_http_server->Init();
 #endif
 
-  // setup the advertisment timeout, 30s
-  /*
-  m_ss.RegisterRepeatingTimeout(
-      TLP_ADVERTISMENT_PERIOD * 1000,
-      NewCallback(this, &SLPServer::SendPeriodicAdvert));
-  */
+  if (m_enable_da) {
+    ola::Clock clock;
+    clock.CurrentTime(&m_boot_time);
+
+    // setup the DA beat timer
+    m_ss.RegisterRepeatingTimeout(
+        m_config_da_beat * 1000,
+        NewCallback(this, &SLPServer::SendDABeat));
+    SendDABeat();
+  }
   return true;
 }
 
@@ -422,5 +429,20 @@ void SLPServer::UDPMessage(const IPV4Address &ip,
   }
 }
  */
+
+bool SLPServer::SendDABeat() {
+  IOQueue output;
+
+  std::ostringstream str;
+  str << "service:directory-agent://" << m_iface_address;
+  SLPPacketBuilder::BuildDAAdvert(&output,
+                                  0, true, 0,
+                                  m_boot_time.Seconds(),
+                                  str.str(),
+                                  "default");
+  OLA_INFO << "Sending Multicast DAAdvert";
+  // m_udp_socket->SendTo(&output, m_multicast_address, DEFAULT_SLP_PORT);
+  return true;
+}
 }  // slp
 }  // ola

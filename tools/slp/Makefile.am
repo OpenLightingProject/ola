@@ -4,13 +4,16 @@ EXTRA_DIST = Base.h \
              SLP.proto \
              SLPClient.h \
              SLPClientCore.h \
+             SLPPacketBuilder.h \
+             SLPPacketConstants.h \
              SLPServer.h \
-             slp-parser-actions.h \
-             SLPServiceImpl.h
+             SLPServiceImpl.h \
+             slp-parser-actions.h
 
 noinst_PROGRAMS = slp_server slp_client slp_parser
 
 slp_server_SOURCES = SLPNode.cpp \
+                     SLPPacketBuilder.cpp \
                      SLPServer.cpp \
                      SLPServiceImpl.cpp \
                      slp-server.cpp
