@@ -21,9 +21,10 @@
 #ifndef INCLUDE_OLA_NETWORK_BUFFEREDTCPSOCKET_H_
 #define INCLUDE_OLA_NETWORK_BUFFEREDTCPSOCKET_H_
 
-#include <ola/network/Socket.h>
-#include <ola/io/SelectServerInterface.h>
 #include <ola/io/BufferedWriteDescriptor.h>
+#include <ola/io/IOQueue.h>
+#include <ola/io/SelectServerInterface.h>
+#include <ola/network/Socket.h>
 
 namespace ola {
 namespace network {
@@ -32,6 +33,9 @@ namespace network {
  * A BufferedTCPSocket.
  * This is a copy and paste from the BufferedWriteDescriptor class, but I
  * couldn't find another way to do it :(.
+ *
+ * This is because the constructor needs to take an int so that it works with
+ * the TCPSocketFactory.
  */
 class BufferedTCPSocket: public TCPSocket, public ola::io::DescriptorStream {
   public:
@@ -54,12 +58,7 @@ class BufferedTCPSocket: public TCPSocket, public ola::io::DescriptorStream {
     }
 
     void PerformWrite() {
-      int iocnt;
-      const struct iovec *iov = m_output_buffer.AsIOVec(&iocnt);
-      ssize_t bytes_written = this->SendV(iov, iocnt);
-      m_output_buffer.FreeIOVec(iov);
-      m_output_buffer.Pop(bytes_written);
-
+      TCPSocket::Send(&m_output_buffer);
       if (m_output_buffer.Empty())
         Disassociate();
     }
@@ -75,6 +74,13 @@ class BufferedTCPSocket: public TCPSocket, public ola::io::DescriptorStream {
         m_ss->RemoveWriteDescriptor(this);
         m_associated = false;
       }
+    }
+
+  private:
+    // this is prviate, since using a IOQueue with a BufferedTCPSocket would be
+    // incur a copy so we avoid it.
+    ssize_t Send(ola::io::IOQueue *) {
+      return -1;
     }
 };
 }  // network

@@ -32,6 +32,9 @@ namespace ola {
 namespace io {
 
 
+/**
+ * The base class.
+ */
 class DescriptorStream: public OutputStream {
   public:
     explicit DescriptorStream(SelectServerInterface *ss = NULL)
@@ -109,7 +112,7 @@ class DescriptorStream: public OutputStream {
  * demand writes.
  *
  * @tparam Parent the parent class to inherit from. The parent must provide a
- * SendV() method to perform the actual write.
+ * Send(IOQueue*) method to perform the actual write.
  */
 template <typename Parent>
 class BufferedOutputDescriptor: public Parent, public DescriptorStream {
@@ -131,21 +134,16 @@ class BufferedOutputDescriptor: public Parent, public DescriptorStream {
       return size;
     }
 
+
+    // This does the actual write of the data to the socket when it becomes
+    // writeable.
     void PerformWrite() {
-      int iocnt;
-      const struct iovec *iov = m_output_buffer.AsIOVec(&iocnt);
-      ssize_t bytes_written = this->SendV(iov, iocnt);
-      m_output_buffer.FreeIOVec(iov);
-
-      if (bytes_written > 0)
-        m_output_buffer.Pop(static_cast<unsigned int>(bytes_written));
-
+      Parent::Send(&m_output_buffer);
       if (m_output_buffer.Empty())
         Disassociate();
     }
 
   protected:
-
     void Associate() {
       m_ss->AddWriteDescriptor(this);
       m_associated = true;
@@ -156,6 +154,14 @@ class BufferedOutputDescriptor: public Parent, public DescriptorStream {
         m_ss->RemoveWriteDescriptor(this);
         m_associated = false;
       }
+    }
+
+  private:
+    // this is prviate, since using a IOQueue with a BufferedTCPSocket would be
+    // incur a copy so we avoid it.
+    ssize_t Send(IOQueue *ioqueue) {
+      (void) ioqueue;
+      return -1;
     }
 };
 
