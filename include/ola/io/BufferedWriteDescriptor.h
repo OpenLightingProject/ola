@@ -100,8 +100,19 @@ class DescriptorStream: public OutputStream {
     IOQueue m_output_buffer;
     SelectServerInterface *m_ss;
 
-    virtual void Associate() = 0;
-    virtual void Disassociate() = 0;
+    virtual ConnectedDescriptor* GetDescriptor() = 0;
+
+    void Associate() {
+      m_ss->AddWriteDescriptor(GetDescriptor());
+      m_associated = true;
+    }
+
+    void Disassociate() {
+      if (m_associated && m_ss) {
+        m_ss->RemoveWriteDescriptor(GetDescriptor());
+        m_associated = false;
+      }
+    }
 };
 
 
@@ -134,7 +145,6 @@ class BufferedOutputDescriptor: public Parent, public DescriptorStream {
       return size;
     }
 
-
     // This does the actual write of the data to the socket when it becomes
     // writeable.
     void PerformWrite() {
@@ -144,17 +154,7 @@ class BufferedOutputDescriptor: public Parent, public DescriptorStream {
     }
 
   protected:
-    void Associate() {
-      m_ss->AddWriteDescriptor(this);
-      m_associated = true;
-    }
-
-    void Disassociate() {
-      if (m_associated && m_ss) {
-        m_ss->RemoveWriteDescriptor(this);
-        m_associated = false;
-      }
-    }
+    ConnectedDescriptor *GetDescriptor() { return this; }
 
   private:
     // this is prviate, since using a IOQueue with a BufferedTCPSocket would be

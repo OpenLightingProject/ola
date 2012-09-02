@@ -64,17 +64,7 @@ class BufferedTCPSocket: public TCPSocket, public ola::io::DescriptorStream {
     }
 
   protected:
-    void Associate() {
-      m_ss->AddWriteDescriptor(this);
-      m_associated = true;
-    }
-
-    void Disassociate() {
-      if (m_associated && m_ss) {
-        m_ss->RemoveWriteDescriptor(this);
-        m_associated = false;
-      }
-    }
+    ConnectedDescriptor *GetDescriptor() { return this; }
 
   private:
     // this is prviate, since using a IOQueue with a BufferedTCPSocket would be
