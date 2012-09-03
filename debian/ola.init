@@ -13,12 +13,13 @@ PATH=/usr/local/bin:/bin:/usr/bin
 NAME=olad
 DAEMON=/usr/bin/$NAME
 DESC="OLA daemon"
+USER=olad
 
 # Reads config file (will override defaults above)
 [ -r /etc/default/ola ] && . /etc/default/ola
 
 if [ "$RUN_DAEMON" = "true" ] || [ "$RUN_DAEMON" = "yes" ] ; then
-  DAEMON_ARG="-f"
+  DAEMON_ARGS="--daemon --syslog"
 fi
 
 [ -x "$DAEMON" ] || exit 0
@@ -28,15 +29,17 @@ fi
 case "$1" in
   start)
     # master switch
-    if [ -n "$DAEMON_ARG" ] ; then
-      log_daemon_msg "Starting $DESC" "$NAME:"
+    if [ -n "$DAEMON_ARGS" ] ; then
+      log_daemon_msg "Starting $DESC" "$NAME"
+      /sbin/start-stop-daemon --start --chuid $USER --exec $DAEMON -- $DAEMON_ARGS
+      log_end_msg $?
     fi
     ;;
   stop)
     # master switch
     if [ "$RUN_DAEMON" = "true" ] || [ "$RUN_DAEMON" = "yes" ] ; then
       log_daemon_msg "Stopping $DESC" "$NAME"
-      start-stop-daemon --stop --oknodo --exec $DAEMON --retry 30
+      /sbin/start-stop-daemon --stop --chuid $USER --exec $DAEMON --retry 30
       log_end_msg $?
     fi
     ;;
