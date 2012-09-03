@@ -51,7 +51,7 @@ class IPV4SocketAddress: public SocketAddress {
     }
     ~IPV4SocketAddress() {}
 
-    const IPV4Address& Host() { return m_host; }
+    const IPV4Address& Host() const { return m_host; }
     void Host(const IPV4Address &host) { m_host = host; }
     uint16_t Port() const { return m_port; }
     void Port(uint16_t port) { m_port = port; }
