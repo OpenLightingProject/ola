@@ -70,6 +70,7 @@
 
 using ola::network::IPV4Address;
 using ola::NewCallback;
+using ola::network::IPV4SocketAddress;
 using ola::network::UDPSocket;
 using ola::plugin::e131::E133_PORT;
 using ola::rdm::PidStoreHelper;
@@ -321,7 +322,7 @@ bool SimpleE133Controller::Init() {
   if (!m_udp_socket.Init())
     return false;
 
-  if (!m_udp_socket.Bind(m_options.controller_ip, 0)) {
+  if (!m_udp_socket.Bind(IPV4SocketAddress(m_options.controller_ip, 0))) {
     OLA_INFO << "Failed to bind to UDP port";
     return false;
   }

@@ -37,6 +37,8 @@ using std::string;
 using std::map;
 using std::vector;
 using ola::network::HostToNetwork;
+using ola::network::IPV4Address;
+using ola::network::IPV4SocketAddress;
 using ola::network::NetworkToHost;
 using ola::network::UDPSocket;
 using ola::Callback0;
@@ -311,15 +313,15 @@ bool SandNetNode::InitNetwork() {
     return false;
   }
 
-  if (!m_control_socket.Bind(CONTROL_PORT)) {
-    OLA_WARN << "Failed to bind to:" << CONTROL_PORT;
+  if (!m_control_socket.Bind(IPV4SocketAddress(IPV4Address::WildCard(),
+                                               CONTROL_PORT))) {
     m_data_socket.Close();
     m_control_socket.Close();
     return false;
   }
 
-  if (!m_data_socket.Bind(DATA_PORT)) {
-    OLA_WARN << "Failed to bind to:" << DATA_PORT;
+  if (!m_data_socket.Bind(IPV4SocketAddress(IPV4Address::WildCard(),
+                                            DATA_PORT))) {
     m_data_socket.Close();
     m_control_socket.Close();
     return false;

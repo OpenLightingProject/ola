@@ -39,6 +39,7 @@ using std::map;
 using std::vector;
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
+using ola::network::IPV4SocketAddress;
 using ola::network::NetworkToHost;
 using ola::network::UDPSocket;
 using ola::Callback0;
@@ -311,8 +312,8 @@ bool PathportNode::InitNetwork() {
     return false;
   }
 
-  if (!m_socket.Bind(PATHPORT_PORT)) {
-    OLA_WARN << "Failed to bind to:" << PATHPORT_PORT;
+  if (!m_socket.Bind(IPV4SocketAddress(IPV4Address::WildCard(),
+                                       PATHPORT_PORT))) {
     m_socket.Close();
     return false;
   }

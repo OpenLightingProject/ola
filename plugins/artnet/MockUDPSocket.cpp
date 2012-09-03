@@ -42,17 +42,9 @@ bool MockUDPSocket::Init() {
 }
 
 
-bool MockUDPSocket::Bind(const IPV4Address&,
-                         unsigned short port) {
+bool MockUDPSocket::Bind(const ola::network::IPV4SocketAddress &endpoint) {
   m_bound_to_port = true;
-  m_port = port;
-  return true;
-}
-
-
-bool MockUDPSocket::Bind(unsigned short port) {
-  m_bound_to_port = true;
-  m_port = port;
+  m_port = endpoint.Port();
   return true;
 }
 

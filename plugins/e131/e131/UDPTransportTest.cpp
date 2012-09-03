@@ -35,6 +35,7 @@ namespace plugin {
 namespace e131 {
 
 using ola::network::HostToNetwork;
+using ola::network::IPV4SocketAddress;
 
 class UDPTransportTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(UDPTransportTest);
@@ -82,7 +83,8 @@ void UDPTransportTest::testUDPTransport() {
   // setup the socket
   ola::network::UDPSocket socket;
   CPPUNIT_ASSERT(socket.Init());
-  CPPUNIT_ASSERT(socket.Bind(ACN_PORT));
+  CPPUNIT_ASSERT(
+      socket.Bind(IPV4SocketAddress(IPV4Address::WildCard(), ACN_PORT)));
   CPPUNIT_ASSERT(socket.EnableBroadcast());
 
   IncomingUDPTransport incoming_udp_transport(&socket, &inflator);

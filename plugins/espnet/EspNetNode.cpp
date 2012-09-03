@@ -37,6 +37,7 @@ using std::string;
 using std::map;
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
+using ola::network::IPV4SocketAddress;
 using ola::network::NetworkToHost;
 using ola::network::UDPSocket;
 using ola::Callback0;
@@ -237,10 +238,8 @@ bool EspNetNode::InitNetwork() {
     return false;
   }
 
-  if (!m_socket.Bind(ESPNET_PORT)) {
-    OLA_WARN << "Failed to bind to:" << ESPNET_PORT;
+  if (!m_socket.Bind(IPV4SocketAddress(IPV4Address::WildCard(), ESPNET_PORT)))
     return false;
-  }
 
   if (!m_socket.EnableBroadcast()) {
     OLA_WARN << "Failed to enable broadcasting";
