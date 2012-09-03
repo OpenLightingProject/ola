@@ -37,6 +37,8 @@ using std::string;
 using std::map;
 using ola::network::UDPSocket;
 using ola::network::HostToNetwork;
+using ola::network::IPV4Address;
+using ola::network::IPV4SocketAddress;
 using ola::Callback0;
 
 
@@ -335,8 +337,8 @@ bool ShowNetNode::InitNetwork() {
     return false;
   }
 
-  if (!m_socket->Bind(SHOWNET_PORT)) {
-    OLA_WARN << "Failed to bind to:" << SHOWNET_PORT;
+  if (!m_socket->Bind(IPV4SocketAddress(IPV4Address::WildCard(),
+                                        SHOWNET_PORT))) {
     delete m_socket;
     return false;
   }

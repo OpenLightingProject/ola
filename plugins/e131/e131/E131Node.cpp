@@ -35,6 +35,8 @@ namespace e131 {
 
 using ola::Callback0;
 using ola::DmxBuffer;
+using ola::network::IPV4Address;
+using ola::network::IPV4SocketAddress;
 using std::map;
 using std::string;
 
@@ -114,7 +116,7 @@ bool E131Node::Start() {
     return false;
   }
 
-  if (!m_socket.Bind(m_udp_port))
+  if (!m_socket.Bind(IPV4SocketAddress(IPV4Address::WildCard(), m_udp_port)))
     return false;
 
   if (!m_socket.EnableBroadcast())

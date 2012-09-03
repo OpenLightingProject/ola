@@ -190,14 +190,12 @@ void SocketTest::testTCPSocketServerClose() {
  * data matches and then closes the connection.
  */
 void SocketTest::testUDPSocket() {
-  IPV4Address ip_address;
-  CPPUNIT_ASSERT(IPV4Address::FromString("127.0.0.1", &ip_address));
-  uint16_t server_port = 9010;
+  IPV4SocketAddress socket_address(IPV4Address::Loopback(), 9010);
   UDPSocket socket;
   CPPUNIT_ASSERT(socket.Init());
   CPPUNIT_ASSERT(!socket.Init());
-  CPPUNIT_ASSERT(socket.Bind(server_port));
-  CPPUNIT_ASSERT(!socket.Bind(server_port));
+  CPPUNIT_ASSERT(socket.Bind(socket_address));
+  CPPUNIT_ASSERT(!socket.Bind(socket_address));
 
   socket.SetOnData(
       ola::NewCallback(this, &SocketTest::UDPReceiveAndSend, &socket));
@@ -216,8 +214,7 @@ void SocketTest::testUDPSocket() {
   ssize_t bytes_sent = client_socket.SendTo(
       static_cast<const uint8_t*>(test_cstring),
       sizeof(test_cstring),
-      ip_address,
-      server_port);
+      socket_address);
   CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
   m_ss->Run();
   m_ss->RemoveReadDescriptor(&socket);
@@ -231,14 +228,12 @@ void SocketTest::testUDPSocket() {
  * data matches and then closes the connection.
  */
 void SocketTest::testIOQueueUDPSend() {
-  IPV4Address ip_address;
-  CPPUNIT_ASSERT(IPV4Address::FromString("127.0.0.1", &ip_address));
-  uint16_t server_port = 9010;
+  IPV4SocketAddress socket_address(IPV4Address::Loopback(), 9010);
   UDPSocket socket;
   CPPUNIT_ASSERT(socket.Init());
   CPPUNIT_ASSERT(!socket.Init());
-  CPPUNIT_ASSERT(socket.Bind(server_port));
-  CPPUNIT_ASSERT(!socket.Bind(server_port));
+  CPPUNIT_ASSERT(socket.Bind(socket_address));
+  CPPUNIT_ASSERT(!socket.Bind(socket_address));
 
   socket.SetOnData(
       ola::NewCallback(this, &SocketTest::UDPReceiveAndSend, &socket));
@@ -256,7 +251,7 @@ void SocketTest::testIOQueueUDPSend() {
 
   IOQueue output;
   output.Write(static_cast<const uint8_t*>(test_cstring), sizeof(test_cstring));
-  ssize_t bytes_sent = client_socket.SendTo(&output, ip_address, server_port);
+  ssize_t bytes_sent = client_socket.SendTo(&output, socket_address);
   CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
   m_ss->Run();
   m_ss->RemoveReadDescriptor(&socket);

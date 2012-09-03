@@ -149,7 +149,8 @@ bool E133Device::Init() {
     return false;
   }
 
-  if (!m_udp_socket.Bind(ola::plugin::e131::E133_PORT)) {
+  if (!m_udp_socket.Bind(IPV4SocketAddress(IPV4Address::WildCard(),
+                                           ola::plugin::e131::E133_PORT))) {
     m_tcp_socket.Close();
     return false;
   }

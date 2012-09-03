@@ -28,8 +28,10 @@
 
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
-#include "ola/rdm/RDMEnums.h"
+#include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/network/SocketAddress.h"
+#include "ola/rdm/RDMEnums.h"
 #include "plugins/artnet/ArtNetNode.h"
 
 
@@ -41,6 +43,8 @@ using ola::Callback1;
 using ola::Callback0;
 using ola::network::HostToLittleEndian;
 using ola::network::HostToNetwork;
+using ola::network::IPV4Address;
+using ola::network::IPV4SocketAddress;
 using ola::network::LittleEndianToHost;
 using ola::network::NetworkToHost;
 using ola::network::UDPSocket;
@@ -1623,8 +1627,9 @@ bool ArtNetNodeImpl::InitNetwork() {
     return false;
   }
 
-  if (!m_socket->Bind(ARTNET_PORT)) {
-    OLA_WARN << "Failed to bind to:" << ARTNET_PORT;
+
+  if (!m_socket->Bind(IPV4SocketAddress(IPV4Address::WildCard(),
+                      ARTNET_PORT))) {
     delete m_socket;
     return false;
   }

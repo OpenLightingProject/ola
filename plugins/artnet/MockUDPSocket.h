@@ -27,8 +27,10 @@
 
 #include "ola/network/IPV4Address.h"
 #include "ola/network/Socket.h"
+#include "ola/network/SocketAddress.h"
 
 using ola::network::IPV4Address;
+using ola::network::IPV4SocketAddress;
 
 /*
  * A MockUDPSocket
@@ -45,9 +47,7 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
 
     // These are the socket methods
     bool Init();
-    bool Bind(const IPV4Address &ip,
-              unsigned short port);
-    bool Bind(unsigned short port = 0);
+    bool Bind(const ola::network::IPV4SocketAddress &endpoint);
     bool Close();
     int ReadDescriptor() const;
     int WriteDescriptor() const;
@@ -55,9 +55,19 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
                    unsigned int size,
                    const ola::network::IPV4Address &ip,
                    unsigned short port) const;
+    ssize_t SendTo(const uint8_t *buffer,
+                   unsigned int size,
+                   const IPV4SocketAddress &dest) const {
+      return SendTo(buffer, size, dest.Host(), dest.Port());
+    }
     ssize_t SendTo(ola::io::IOQueue *ioqueue,
                    const ola::network::IPV4Address &ip,
                    unsigned short port) const;
+    ssize_t SendTo(ola::io::IOQueue *ioqueue,
+                   const IPV4SocketAddress &dest) const {
+      return SendTo(ioqueue, dest.Host(), dest.Port());
+    }
+
     bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const;
     bool RecvFrom(uint8_t *buffer,
                   ssize_t *data_read,

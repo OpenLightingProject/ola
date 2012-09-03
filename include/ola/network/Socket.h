@@ -90,9 +90,13 @@ class UDPSocketInterface: public ola::io::BidirectionalFileDescriptor {
     UDPSocketInterface(): ola::io::BidirectionalFileDescriptor() {}
     ~UDPSocketInterface() {}
     virtual bool Init() = 0;
-    virtual bool Bind(const IPV4Address &ip,
-                      unsigned short port) = 0;
-    virtual bool Bind(unsigned short port = 0) = 0;
+    virtual bool Bind(const IPV4SocketAddress &endpoint) = 0;
+
+    // Deprecated. Do not use in new code.
+    bool Bind(const IPV4Address &ip, unsigned short port) {
+      return Bind(IPV4SocketAddress(ip, port));
+    }
+
     virtual bool Close() = 0;
     virtual int ReadDescriptor() const = 0;
     virtual int WriteDescriptor() const = 0;
@@ -103,16 +107,12 @@ class UDPSocketInterface: public ola::io::BidirectionalFileDescriptor {
                            unsigned short port) const = 0;
     virtual ssize_t SendTo(const uint8_t *buffer,
                            unsigned int size,
-                           const IPV4SocketAddress &dest) const {
-      return SendTo(buffer, size, dest.Host(), dest.Port());
-    }
+                           const IPV4SocketAddress &dest) const = 0;
     virtual ssize_t SendTo(ola::io::IOQueue *ioqueue,
                            const IPV4Address &ip,
                            unsigned short port) const = 0;
     virtual ssize_t SendTo(ola::io::IOQueue *ioqueue,
-                           const IPV4SocketAddress &dest) const {
-      return SendTo(ioqueue, dest.Host(), dest.Port());
-    }
+                           const IPV4SocketAddress &dest) const = 0;
 
     virtual bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const = 0;
     virtual bool RecvFrom(uint8_t *buffer,
@@ -148,9 +148,8 @@ class UDPSocket: public UDPSocketInterface {
                  m_bound_to_port(false) {}
     ~UDPSocket() { Close(); }
     bool Init();
-    bool Bind(const IPV4Address &ip,
-              unsigned short port);
-    bool Bind(unsigned short port = 0);
+    bool Bind(const IPV4SocketAddress &endpoint);
+
     bool Close();
     int ReadDescriptor() const { return m_fd; }
     int WriteDescriptor() const { return m_fd; }
@@ -158,9 +157,18 @@ class UDPSocket: public UDPSocketInterface {
                    unsigned int size,
                    const IPV4Address &ip,
                    unsigned short port) const;
+    ssize_t SendTo(const uint8_t *buffer,
+                   unsigned int size,
+                   const IPV4SocketAddress &dest) const {
+      return SendTo(buffer, size, dest.Host(), dest.Port());
+    }
     ssize_t SendTo(ola::io::IOQueue *ioqueue,
                    const IPV4Address &ip,
                    unsigned short port) const;
+    ssize_t SendTo(ola::io::IOQueue *ioqueue,
+                   const IPV4SocketAddress &dest) const {
+      return SendTo(ioqueue, dest.Host(), dest.Port());
+    }
 
     bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const;
     bool RecvFrom(uint8_t *buffer,
