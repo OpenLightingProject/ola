@@ -49,8 +49,8 @@ class URLEntry {
     void Write(IOQueue *ioqueue) const;
 
   private:
-    const uint16_t m_lifetime;
-    const string m_url;
+    uint16_t m_lifetime;
+    string m_url;
 };
 
 // typedef for convenience

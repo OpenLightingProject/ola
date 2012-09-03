@@ -432,6 +432,8 @@ void SLPServer::UDPMessage(const IPV4Address &ip,
 
 bool SLPServer::SendDABeat() {
   IOQueue output;
+  vector<string> scopes;
+  scopes.push_back("default");
 
   std::ostringstream str;
   str << "service:directory-agent://" << m_iface_address;
@@ -439,7 +441,7 @@ bool SLPServer::SendDABeat() {
                                   0, true, 0,
                                   m_boot_time.Seconds(),
                                   str.str(),
-                                  "default");
+                                  scopes);
   OLA_INFO << "Sending Multicast DAAdvert";
   m_udp_socket->SendTo(&output, m_multicast_address, DEFAULT_SLP_PORT);
   return true;

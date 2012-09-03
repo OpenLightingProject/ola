@@ -57,3 +57,18 @@ lex.yy.cpp: config.lex
 
 config.tab.cpp config.tab.h: config.ypp
 	$(BISON) --defines=config.tab.h --output-file=config.tab.cpp config.ypp
+
+
+if BUILD_TESTS
+TESTS = PacketBuilderTester
+endif
+check_PROGRAMS = $(TESTS)
+PacketBuilderTester_SOURCES = GenericTester.cpp \
+                              PacketBuilderTest.cpp \
+                              SLPPacketBuilder.cpp \
+                              URLEntry.cpp \
+                              URLEntryTest.cpp
+PacketBuilderTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+PacketBuilderTester_LDADD = $(CPPUNIT_LIBS) \
+                            $(top_builddir)/common/libolacommon.la \
+                            $(top_builddir)/common/testing/libolatesting.la

@@ -58,6 +58,7 @@ class SLPPacketBuilder {
 
     static void BuildServiceRegistration(IOQueue *output,
                                          xid_t xid,
+                                         bool fresh,
                                          const URLEntry &url_entry,
                                          const string &service_type,
                                          vector<string> &scope_list);
@@ -72,7 +73,7 @@ class SLPPacketBuilder {
                               uint16_t error_code,
                               uint32_t boot_timestamp,
                               const string &url,
-                              const string &scope_list);
+                              const vector<string> &scope_list);
 
     static void WriteString(IOQueue *ioqueue, const string &data);
 
