@@ -22,6 +22,8 @@
 #include <ola/AutoStart.h>
 #include <ola/BaseTypes.h>
 #include <ola/Logging.h>
+#include <ola/network/IPV4Address.h>
+#include <ola/network/SocketAddress.h>
 #include <ola/OlaClientWrapper.h>
 
 namespace ola {
@@ -50,7 +52,9 @@ bool BaseClientWrapper::Setup() {
     if (m_auto_start)
       m_socket = ola::client::ConnectToServer(OLA_DEFAULT_PORT);
     else
-    m_socket = TCPSocket::Connect("127.0.0.1", OLA_DEFAULT_PORT);
+    m_socket = TCPSocket::Connect(
+        ola::network::IPV4SocketAddress(ola::network::IPV4Address::Loopback(),
+                                       OLA_DEFAULT_PORT));
 
     if (!m_socket) {
       delete m_socket;

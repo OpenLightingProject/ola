@@ -30,7 +30,8 @@ namespace network {
 /**
  * Copy this IPV4SocketAddress into a sockaddr.
  */
-bool IPV4SocketAddress::ToSockAddr(struct sockaddr *addr, unsigned int size) {
+bool IPV4SocketAddress::ToSockAddr(struct sockaddr *addr,
+                                   unsigned int size) const {
   if (size < sizeof(struct sockaddr_in)) {
     OLA_FATAL << "Length passed to ToSockAddr is too small.";
     return false;

@@ -21,12 +21,15 @@
 #ifndef INCLUDE_OLA_NETWORK_SOCKETADDRESS_H_
 #define INCLUDE_OLA_NETWORK_SOCKETADDRESS_H_
 
-#include <stdint.h>
 #include <ola/network/IPV4Address.h>
+#include <stdint.h>
+#include <sstream>
+#include <string>
 
 namespace ola {
 namespace network {
 
+using std::string;
 
 /**
  * The base SocketAddress. One day if we support V6 there will be another
@@ -36,7 +39,16 @@ class SocketAddress {
   public:
     virtual ~SocketAddress() {}
 
-    virtual bool ToSockAddr(struct sockaddr *addr, unsigned int size) = 0;
+    virtual uint16_t Family() const = 0;
+
+    virtual bool ToSockAddr(struct sockaddr *addr,
+                            unsigned int size) const = 0;
+
+    virtual string ToString() const = 0;
+
+    friend ostream& operator<< (ostream &out, const SocketAddress &address) {
+      return out << address.ToString();
+    }
 };
 
 
@@ -51,12 +63,19 @@ class IPV4SocketAddress: public SocketAddress {
     }
     ~IPV4SocketAddress() {}
 
+    uint16_t Family() const { return AF_INET; }
     const IPV4Address& Host() const { return m_host; }
     void Host(const IPV4Address &host) { m_host = host; }
     uint16_t Port() const { return m_port; }
     void Port(uint16_t port) { m_port = port; }
 
-    bool ToSockAddr(struct sockaddr *addr, unsigned int size);
+    string ToString() const {
+      std::ostringstream str;
+      str << Host() << ":" << Port();
+      return str.str();
+    }
+
+    bool ToSockAddr(struct sockaddr *addr, unsigned int size) const;
 
   private:
     IPV4Address m_host;

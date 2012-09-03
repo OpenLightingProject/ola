@@ -31,6 +31,7 @@
 #include "ola/network/AdvancedTCPConnector.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/network/SocketAddress.h"
 #include "ola/network/Socket.h"
 #include "ola/network/TCPSocketFactory.h"
 
@@ -39,6 +40,7 @@ using ola::io::SelectServer;
 using ola::network::ExponentialBackoffPolicy;
 using ola::network::AdvancedTCPConnector;
 using ola::network::IPV4Address;
+using ola::network::IPV4SocketAddress;
 using ola::network::LinearBackoffPolicy;
 using ola::network::StringToAddress;
 using ola::network::TCPAcceptingSocket;
@@ -63,6 +65,12 @@ class AdvancedTCPConnectorTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
   public:
+    AdvancedTCPConnectorTest()
+        : CppUnit::TestFixture(),
+          m_localhost(IPV4Address::Loopback()),
+          m_server_address(m_localhost, SERVER_PORT) {
+    }
+
     void setUp();
     void tearDown();
     void testLinearBackoffPolicy();
@@ -87,6 +95,7 @@ class AdvancedTCPConnectorTest: public CppUnit::TestFixture {
     SelectServer *m_ss;
     auto_ptr<ola::network::TCPSocketFactory> m_tcp_socket_factory;
     IPV4Address m_localhost;
+    IPV4SocketAddress m_server_address;
     ola::thread::timeout_id m_timeout_id;
     TCPSocket *m_connected_socket;
 
@@ -113,8 +122,8 @@ void AdvancedTCPConnectorTest::setUp() {
   m_connected_socket = NULL;
   ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
 
-  string localhost_str = "127.0.0.1";
-  CPPUNIT_ASSERT(IPV4Address::FromString(localhost_str, &m_localhost));
+  m_localhost = IPV4Address::Loopback();
+  m_server_address = IPV4SocketAddress(m_localhost, SERVER_PORT);
 
   m_ss = new SelectServer(NULL, &m_clock);
   m_timeout_id = m_ss->RegisterSingleTimeout(
@@ -369,12 +378,11 @@ void AdvancedTCPConnectorTest::ConfirmState(
  */
 void AdvancedTCPConnectorTest::SetupListeningSocket(
     TCPAcceptingSocket *listening_socket) {
-  CPPUNIT_ASSERT_MESSAGE(
-      "Check for another instance of olad running",
-      listening_socket->Listen(m_localhost, SERVER_PORT));
+  CPPUNIT_ASSERT_MESSAGE("Check for another instance of olad running",
+                         listening_socket->Listen(m_server_address));
   // calling listen a second time should fail
-  CPPUNIT_ASSERT(!listening_socket->Listen(m_localhost, SERVER_PORT));
-  OLA_INFO << "listening on " <<SERVER_PORT;
+  CPPUNIT_ASSERT(!listening_socket->Listen(m_server_address));
+  OLA_INFO << "listening on " << m_server_address;
   CPPUNIT_ASSERT(m_ss->AddReadDescriptor(listening_socket));
 }
 

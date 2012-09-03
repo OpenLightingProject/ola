@@ -24,6 +24,7 @@
 #include <ola/io/SelectServerInterface.h>
 #include <ola/network/HealthCheckedConnection.h>
 #include <ola/network/IPV4Address.h>
+#include <ola/network/SocketAddress.h>
 #include <ola/rdm/RDMControllerInterface.h>
 #include <ola/rdm/RDMHelper.h>
 
@@ -47,6 +48,7 @@
 using ola::NewCallback;
 using ola::network::HealthCheckedConnection;
 using ola::network::IPV4Address;
+using ola::network::IPV4SocketAddress;
 using ola::plugin::e131::RDMPDU;
 using std::auto_ptr;
 using std::string;
@@ -134,8 +136,8 @@ bool E133Device::Init() {
   OLA_INFO << "Attempting to start E1.33 device at " << m_ip_address;
 
   // setup the TCP socket
-  bool listen_ok = m_tcp_socket.Listen(m_ip_address,
-                                       ola::plugin::e131::E133_PORT);
+  bool listen_ok = m_tcp_socket.Listen(
+      IPV4SocketAddress(m_ip_address, ola::plugin::e131::E133_PORT));
   if (!listen_ok) {
     m_tcp_socket.Close();
     return false;
