@@ -125,7 +125,7 @@ void SocketTest::tearDown() {
  * data matches and then closes the connection.
  */
 void SocketTest::testTCPSocketClientClose() {
-  string ip_address = "127.0.0.1";
+  IPV4Address ip_address = IPV4Address::Loopback();
   uint16_t server_port = 9010;
   ola::network::TCPSocketFactory socket_factory(
       ola::NewCallback(this, &SocketTest::NewConnectionSend));
@@ -156,7 +156,7 @@ void SocketTest::testTCPSocketClientClose() {
  * connection.
  */
 void SocketTest::testTCPSocketServerClose() {
-  string ip_address = "127.0.0.1";
+  IPV4Address ip_address = IPV4Address::Loopback();
   uint16_t server_port = 9010;
   ola::network::TCPSocketFactory socket_factory(
       ola::NewCallback(this, &SocketTest::NewConnectionSendAndClose));

@@ -41,6 +41,7 @@ namespace ola {
 
 using ola::io::SelectServer;
 using ola::network::TCPAcceptingSocket;
+using ola::network::IPV4Address;
 
 const char OlaDaemon::K_RPC_PORT_VAR[] = "rpc-port";
 const char OlaDaemon::OLA_CONFIG_DIR[] = ".ola";
@@ -109,7 +110,7 @@ bool OlaDaemon::Init() {
   m_plugin_loaders.push_back(new DynamicPluginLoader());
 
   m_accepting_socket = new TCPAcceptingSocket(NULL);  // factory is added later
-  if (!m_accepting_socket->Listen("127.0.0.1", m_rpc_port)) {
+  if (!m_accepting_socket->Listen(IPV4Address::Loopback(), m_rpc_port)) {
     OLA_FATAL << "Could not listen on the RPC port, you probably have " <<
       "another instance of olad running";
     return false;

@@ -116,6 +116,8 @@ class IPV4Address {
       return IPV4Address(INADDR_NONE);
     }
 
+    static IPV4Address Loopback();
+
   private:
     struct in_addr m_address;
 };

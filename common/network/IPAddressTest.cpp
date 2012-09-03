@@ -37,12 +37,14 @@ class IPAddressTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testIPV4Address);
   CPPUNIT_TEST(testWildcard);
   CPPUNIT_TEST(testBroadcast);
+  CPPUNIT_TEST(testLoopback);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void testIPV4Address();
     void testWildcard();
     void testBroadcast();
+    void testLoopback();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(IPAddressTest);
@@ -138,4 +140,13 @@ void IPAddressTest::testBroadcast() {
   IPV4Address broadcast_address = IPV4Address::Broadcast();
   CPPUNIT_ASSERT_EQUAL(string("255.255.255.255"),
                        broadcast_address.ToString());
+}
+
+
+/*
+ * Test the loopback address works.
+ */
+void IPAddressTest::testLoopback() {
+  IPV4Address loopback_address = IPV4Address::Loopback();
+  CPPUNIT_ASSERT_EQUAL(string("127.0.0.1"), loopback_address.ToString());
 }

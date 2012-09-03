@@ -549,24 +549,6 @@ TCPAcceptingSocket::~TCPAcceptingSocket() {
  * @param backlog the backlog
  * @return true if it succeeded, false otherwise
  */
-bool TCPAcceptingSocket::Listen(const std::string &address,
-                                unsigned short port,
-                                int backlog) {
-  IPV4Address ip_address;
-  if (!IPV4Address::FromString(address, &ip_address))
-    return false;
-
-  return Listen(ip_address, port, backlog);
-}
-
-
-/*
- * Start listening
- * @param address the address to listen on
- * @param port the port to listen on
- * @param backlog the backlog
- * @return true if it succeeded, false otherwise
- */
 bool TCPAcceptingSocket::Listen(const IPV4Address &address,
                                 unsigned short port,
                                 int backlog) {

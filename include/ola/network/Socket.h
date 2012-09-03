@@ -193,9 +193,6 @@ class TCPAcceptingSocket: public ola::io::ReadFileDescriptor {
   public:
     explicit TCPAcceptingSocket(class TCPSocketFactoryInterface *factory);
     ~TCPAcceptingSocket();
-    bool Listen(const std::string &address,
-                unsigned short port,
-                int backlog = 10);
     bool Listen(const IPV4Address &address,
                 unsigned short port,
                 int backlog = 10);

@@ -44,5 +44,10 @@ bool IPV4Address::FromString(const std::string &address, IPV4Address *target) {
   *target = IPV4Address(addr);
   return true;
 }
+
+
+IPV4Address IPV4Address::Loopback() {
+  return IPV4Address(HostToNetwork(0x7f000001));
+}
 }  // network
 }  // ola
