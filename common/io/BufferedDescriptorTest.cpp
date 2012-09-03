@@ -76,7 +76,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION(BufferedDescriptorTest);
  */
 void BufferedDescriptorTest::setUp() {
   ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-  m_timeout_closure = ola::NewSingleCallback(this, &BufferedDescriptorTest::Timeout);
+  m_timeout_closure = ola::NewSingleCallback(
+      this, &BufferedDescriptorTest::Timeout);
   CPPUNIT_ASSERT(m_ss.RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS,
                                             m_timeout_closure));
 }
@@ -87,7 +88,6 @@ void BufferedDescriptorTest::setUp() {
  */
 void BufferedDescriptorTest::testBufferedLoopbackDescriptor() {
   BufferedLoopbackDescriptor descriptor(&m_ss);
-  descriptor.SendV(NULL, 0);
   CPPUNIT_ASSERT(descriptor.Init());
   CPPUNIT_ASSERT(!descriptor.Init());
   descriptor.SetOnData(

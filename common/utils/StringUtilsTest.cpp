@@ -34,6 +34,7 @@ using ola::IntToString;
 using ola::PrefixedHexStringToInt;
 using ola::ShortenString;
 using ola::StringEndsWith;
+using ola::StringJoin;
 using ola::StringSplit;
 using ola::StringToInt;
 using ola::StringTrim;
@@ -63,6 +64,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testCapitalizeLabel);
   CPPUNIT_TEST(testCustomCapitalizeLabel);
   CPPUNIT_TEST(testFormatData);
+  CPPUNIT_TEST(testStringJoin);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -85,6 +87,7 @@ class StringUtilsTest: public CppUnit::TestFixture {
     void testCapitalizeLabel();
     void testCustomCapitalizeLabel();
     void testFormatData();
+    void testStringJoin();
 };
 
 
@@ -500,7 +503,7 @@ void StringUtilsTest::testStringToInt() {
 
   CPPUNIT_ASSERT(!StringToInt("2147483649", &value));
   CPPUNIT_ASSERT(StringToInt("-2147483648", &value));
-  CPPUNIT_ASSERT_EQUAL((int) (-2147483647 - 1), value);
+  CPPUNIT_ASSERT_EQUAL(static_cast<int>(-2147483647 - 1), value);
   CPPUNIT_ASSERT(StringToInt("-2147483647", &value));
   CPPUNIT_ASSERT_EQUAL(-2147483647, value);
   CPPUNIT_ASSERT(StringToInt("-1", &value));
@@ -657,4 +660,18 @@ void StringUtilsTest::testFormatData() {
       string("48 65 6c 6c  Hell\n"
              "6f 20 57 6f  o Wo\n"),
       str.str());
+}
+
+void StringUtilsTest::testStringJoin() {
+  vector<int> ints;
+  ints.push_back(1);
+  ints.push_back(2);
+  ints.push_back(3);
+  CPPUNIT_ASSERT_EQUAL(string("1,2,3"), StringJoin(",", ints));
+
+  vector<string> strings;
+  strings.push_back("one");
+  strings.push_back("two");
+  strings.push_back("three");
+  CPPUNIT_ASSERT_EQUAL(string("one,two,three"), StringJoin(",", strings));
 }

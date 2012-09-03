@@ -273,7 +273,12 @@ void IOQueue::PopBlock() {
   uint8_t *free_block = m_blocks.front();
   m_free_blocks.push(free_block);
   m_blocks.pop_front();
-  m_first = *(m_blocks.begin());
+  if (m_blocks.empty()) {
+    m_first = NULL;
+    m_last = NULL;
+  } else {
+    m_first = *(m_blocks.begin());
+  }
 }
 }  // io
 }  // ola

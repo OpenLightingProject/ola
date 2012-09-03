@@ -127,6 +127,7 @@ void IOQueueTest::testWritePrimatives() {
   uint8_t data1[] = {0, 0, 0, 4, 0x80, 0, 0, 0, 0xa, 0x9, 0x60};
   unsigned int output_size = m_buffer->Peek(output_data, m_buffer->Size());
   ASSERT_DATA_EQUALS(__LINE__, data1, sizeof(data1), output_data, output_size);
+  delete[] output_data;
 }
 
 
@@ -149,7 +150,6 @@ void IOQueueTest::testBlockOverflow() {
   m_buffer->Write(data3, sizeof(data3));
   CPPUNIT_ASSERT_EQUAL(15u, m_buffer->Size());
 
-  OLA_INFO << "pop";
   m_buffer->Pop(9);
   CPPUNIT_ASSERT_EQUAL(6u, m_buffer->Size());
 
@@ -194,13 +194,11 @@ void IOQueueTest::testPop() {
   CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
 
   // Now try a buffer with smaller blocks
-  OLA_INFO << "new";
   m_buffer.reset(new IOQueue(4));
   m_buffer->Write(data1, sizeof(data1));
   CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
 
   // pop the same amount as the first block size
-  OLA_INFO << "pop";
   m_buffer->Pop(4);
   CPPUNIT_ASSERT_EQUAL(5u, m_buffer->Size());
   CPPUNIT_ASSERT(!m_buffer->Empty());
@@ -209,6 +207,26 @@ void IOQueueTest::testPop() {
   m_buffer->Pop(6);
   CPPUNIT_ASSERT_EQUAL(0u, m_buffer->Size());
   CPPUNIT_ASSERT(m_buffer->Empty());
+
+  // test the block boundry
+  uint8_t *output_data = new uint8_t[4];
+  m_buffer.reset(new IOQueue(4));
+  m_buffer->Write(data1, 4);
+  CPPUNIT_ASSERT_EQUAL(4u, m_buffer->Size());
+  unsigned int output_size = m_buffer->Peek(output_data, 4);
+  ASSERT_DATA_EQUALS(__LINE__, data1, 4, output_data, output_size);
+  m_buffer->Pop(4);
+  CPPUNIT_ASSERT(m_buffer->Empty());
+
+  // now add some more data
+  m_buffer->Write(data1 + 4, 4);
+  CPPUNIT_ASSERT_EQUAL(4u, m_buffer->Size());
+  output_size = m_buffer->Peek(output_data, 4);
+  ASSERT_DATA_EQUALS(__LINE__, data1 + 4, 4, output_data, output_size);
+  m_buffer->Pop(4);
+  CPPUNIT_ASSERT(m_buffer->Empty());
+
+  delete[] output_data;
 }
 
 
@@ -302,7 +320,6 @@ void IOQueueTest::testIOVec() {
   m_buffer->Write(data1, sizeof(data1));
   CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
 
-  OLA_INFO << "as iovec";
   vector = m_buffer->AsIOVec(&iocnt);
   CPPUNIT_ASSERT_EQUAL(3, iocnt);
   CPPUNIT_ASSERT_EQUAL(9u, SumLengthOfIOVec(vector, iocnt));

@@ -3,7 +3,8 @@ SOURCES = BufferedWriteDescriptor.h \
           IOQueue.h \
           OutputStream.h \
           SelectServer.h \
-          SelectServerInterface.h
+          SelectServerInterface.h \
+          StdinHandler.h
 
 EXTRA_DIST = $(SOURCES)
 pkginclude_HEADERS = $(SOURCES)

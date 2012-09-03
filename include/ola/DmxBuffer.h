@@ -41,6 +41,7 @@ class DmxBuffer {
     DmxBuffer& operator=(const DmxBuffer &other);
 
     bool operator==(const DmxBuffer &other) const;
+    bool operator!=(const DmxBuffer &other) const;
     unsigned int Size() const { return m_length; }
 
     bool HTPMerge(const DmxBuffer &other);

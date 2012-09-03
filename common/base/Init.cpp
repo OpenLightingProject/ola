@@ -67,7 +67,7 @@ static void _SIGSEGV_Handler(int) {
 
 /**
  * This does the following:
- *  Intalls the SEGV handler.
+ *  Installs the SEGV handler.
  *  Populates the export map.
  *
  * @param argc the number of arguments on the cmd line

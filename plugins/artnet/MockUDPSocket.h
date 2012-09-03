@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * MockUdpsocket.h
+ * MockUDPsocket.h
  * Header file for the Mock UDP Socket class
  * Copyright (C) 2010 Simon Newton
  */
@@ -53,6 +53,9 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
     int WriteDescriptor() const;
     ssize_t SendTo(const uint8_t *buffer,
                    unsigned int size,
+                   const ola::network::IPV4Address &ip,
+                   unsigned short port) const;
+    ssize_t SendTo(ola::io::IOQueue *ioqueue,
                    const ola::network::IPV4Address &ip,
                    unsigned short port) const;
     bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const;

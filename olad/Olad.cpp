@@ -33,8 +33,11 @@
 #include <sysexits.h>
 #include <unistd.h>
 
+#include <memory>
+
 #include "ola/Logging.h"
 #include "ola/base/Init.h"
+#include "ola/base/Credentials.h"
 #include "olad/OlaDaemon.h"
 
 using ola::OlaDaemon;
@@ -44,7 +47,7 @@ using std::cerr;
 using std::endl;
 
 // the daemon
-OlaDaemon *olad;
+OlaDaemon *global_olad = NULL;
 
 // options struct
 typedef struct {
@@ -67,7 +70,8 @@ typedef struct {
  * Terminate cleanly on interrupt
  */
 static void sig_interupt(int signo) {
-  olad->Terminate();
+  if (global_olad)
+    global_olad->Terminate();
   (void) signo;
 }
 
@@ -75,7 +79,8 @@ static void sig_interupt(int signo) {
  * Reload plugins
  */
 static void sig_hup(int signo) {
-  olad->ReloadPlugins();
+  if (global_olad)
+    global_olad->ReloadPlugins();
   (void) signo;
 }
 
@@ -152,7 +157,7 @@ static bool ParseOptions(int argc, char *argv[], ola_options *opts) {
       {"http-port", required_argument, 0, 'p'},
       {"interface", required_argument, 0, 'i'},
       {"log-level", required_argument, 0, 'l'},
-      {"no-daemon", no_argument, 0, 'f'},
+      {"daemon", no_argument, 0, 'f'},
       {"no-http", no_argument, &opts->httpd, 0},
       {"no-http-quit", no_argument, &opts->http_quit, 0},
       {"rpc-port", required_argument, 0, 'r'},
@@ -294,9 +299,9 @@ int main(int argc, char *argv[]) {
   Setup(argc, argv, &opts);
 
   #ifndef OLAD_SKIP_ROOT_CHECK
-  if (!geteuid()) {
+  if (!ola::GetEUID()) {
     OLA_FATAL << "Attempting to run as root, aborting.";
-    return -1;
+    return EX_UNAVAILABLE;
   }
   #endif
 
@@ -312,13 +317,13 @@ int main(int argc, char *argv[]) {
   ola_options.http_data_dir = opts.http_data_dir;
   ola_options.interface = opts.interface;
 
-  olad = new OlaDaemon(ola_options, &export_map, opts.rpc_port,
-                       opts.config_dir);
-  bool ret = olad->Init();
-
-  if (ret) {
+  std::auto_ptr<OlaDaemon> olad(
+      new OlaDaemon(ola_options, &export_map, opts.rpc_port, opts.config_dir));
+  if (olad.get() && olad->Init()) {
+    global_olad = olad.get();
     olad->Run();
+    return EX_OK;
   }
-  delete olad;
-  return ret ? EXIT_SUCCESS : EXIT_FAILURE;
+  global_olad = NULL;
+  return EX_UNAVAILABLE;
 }

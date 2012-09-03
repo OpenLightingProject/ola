@@ -120,6 +120,11 @@ bool DmxBuffer::operator==(const DmxBuffer &other) const {
 }
 
 
+bool DmxBuffer::operator!=(const DmxBuffer &other) const {
+  return !(*this == other);
+}
+
+
 /*
  * HTP Merge from another DmxBuffer.
  * @param other the DmxBuffer to HTP merge into this one
