@@ -61,6 +61,25 @@ struct VariableLessThan: public std::binary_function<BaseVariable*,
 
 
 /*
+ * Represents a bool variable
+ */
+class BoolVariable: public BaseVariable {
+  public:
+    explicit BoolVariable(const string &name)
+        : BaseVariable(name),
+          m_value(false) {}
+    ~BoolVariable() {}
+
+    void Set(bool value) { m_value = value; }
+    bool Get() const { return m_value; }
+    const string Value() const { return m_value ? "1" : "0"; }
+
+  private:
+    bool m_value;
+};
+
+
+/*
  * Represents a string variable
  */
 class StringVariable: public BaseVariable {
@@ -187,6 +206,7 @@ class ExportMap {
     ~ExportMap();
     vector<BaseVariable*> AllVariables() const;
 
+    BoolVariable *GetBoolVar(const string &name);
     IntegerVariable *GetIntegerVar(const string &name);
     CounterVariable *GetCounterVar(const string &name);
     StringVariable *GetStringVar(const string &name);
@@ -214,9 +234,10 @@ class ExportMap {
     template<typename Type>
     void DeleteVariables(Type *var_map) const;
 
-    map<string, StringVariable*> m_string_variables;
-    map<string, IntegerVariable*> m_int_variables;
+    map<string, BoolVariable*> m_bool_variables;
     map<string, CounterVariable*> m_counter_variables;
+    map<string, IntegerVariable*> m_int_variables;
+    map<string, StringVariable*> m_string_variables;
 
     map<string, StringMap*> m_str_map_variables;
     map<string, IntMap*> m_int_map_variables;

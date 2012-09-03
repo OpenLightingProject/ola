@@ -124,4 +124,3 @@ class IPV4Address {
 }  // network
 }  // ola
 #endif  // INCLUDE_OLA_NETWORK_IPV4ADDRESS_H_
-

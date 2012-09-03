@@ -6,6 +6,7 @@ SOURCES = AdvancedTCPConnector.h\
           InterfacePicker.h \
           NetworkUtils.h \
           Socket.h \
+          SocketAddress.h \
           TCPConnector.h \
           TCPSocketFactory.h
 

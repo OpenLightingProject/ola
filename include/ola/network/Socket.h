@@ -42,6 +42,7 @@
 #include <ola/io/Descriptor.h>
 #include <ola/io/IOQueue.h>
 #include <ola/network/IPV4Address.h>
+#include <ola/network/SocketAddress.h>
 #include <string>
 
 
@@ -103,9 +104,18 @@ class UDPSocketInterface: public ola::io::BidirectionalFileDescriptor {
                            unsigned int size,
                            const IPV4Address &ip,
                            unsigned short port) const = 0;
+    virtual ssize_t SendTo(const uint8_t *buffer,
+                           unsigned int size,
+                           const IPV4SocketAddress &dest) const {
+      return SendTo(buffer, size, dest.Host(), dest.Port());
+    }
     virtual ssize_t SendTo(ola::io::IOQueue *ioqueue,
                            const IPV4Address &ip,
                            unsigned short port) const = 0;
+    virtual ssize_t SendTo(ola::io::IOQueue *ioqueue,
+                           const IPV4SocketAddress &dest) const {
+      return SendTo(ioqueue, dest.Host(), dest.Port());
+    }
 
     virtual bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const = 0;
     virtual bool RecvFrom(uint8_t *buffer,

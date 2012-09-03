@@ -67,12 +67,24 @@ const string MapVariable<string>::Value() const {
 
 
 ExportMap::~ExportMap() {
-  DeleteVariables(&m_int_variables);
+  DeleteVariables(&m_bool_variables);
   DeleteVariables(&m_counter_variables);
-  DeleteVariables(&m_string_variables);
-  DeleteVariables(&m_str_map_variables);
-  DeleteVariables(&m_uint_map_variables);
   DeleteVariables(&m_int_map_variables);
+  DeleteVariables(&m_int_variables);
+  DeleteVariables(&m_str_map_variables);
+  DeleteVariables(&m_string_variables);
+  DeleteVariables(&m_uint_map_variables);
+}
+
+
+
+/*
+ * Lookup or create an integer variable.
+ * @param name the name of this variable.
+ * @return an IntergerVariable
+ */
+BoolVariable *ExportMap::GetBoolVar(const string &name) {
+  return GetVar(&m_bool_variables, name);
 }
 
 
@@ -145,11 +157,12 @@ UIntMap *ExportMap::GetUIntMapVar(const string &name, const string &label) {
  */
 vector<BaseVariable*> ExportMap::AllVariables() const {
   vector<BaseVariable*> variables;
-  AddVariablesToVector(&variables, m_int_variables);
+  AddVariablesToVector(&variables, m_bool_variables);
   AddVariablesToVector(&variables, m_counter_variables);
-  AddVariablesToVector(&variables, m_string_variables);
-  AddVariablesToVector(&variables, m_str_map_variables);
   AddVariablesToVector(&variables, m_int_map_variables);
+  AddVariablesToVector(&variables, m_int_variables);
+  AddVariablesToVector(&variables, m_str_map_variables);
+  AddVariablesToVector(&variables, m_string_variables);
   AddVariablesToVector(&variables, m_uint_map_variables);
 
   sort(variables.begin(), variables.end(), VariableLessThan());

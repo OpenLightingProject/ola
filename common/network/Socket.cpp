@@ -309,7 +309,7 @@ ssize_t UDPSocket::SendTo(ola::io::IOQueue *ioqueue,
   message.msg_iov = const_cast<struct iovec*>(iov);
   message.msg_iovlen = io_len;
   message.msg_control = NULL;
-  message.msg_controllen = NULL;
+  message.msg_controllen = 0;
   message.msg_flags = 0;
   ssize_t bytes_sent = sendmsg(WriteDescriptor(), &message, 0);
 

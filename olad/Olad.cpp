@@ -157,7 +157,7 @@ static bool ParseOptions(int argc, char *argv[], ola_options *opts) {
       {"http-port", required_argument, 0, 'p'},
       {"interface", required_argument, 0, 'i'},
       {"log-level", required_argument, 0, 'l'},
-      {"no-daemon", no_argument, 0, 'f'},
+      {"daemon", no_argument, 0, 'f'},
       {"no-http", no_argument, &opts->httpd, 0},
       {"no-http-quit", no_argument, &opts->http_quit, 0},
       {"rpc-port", required_argument, 0, 'r'},
