@@ -35,19 +35,17 @@
 #include <ola/http/OlaHTTPServer.h>
 #endif
 
+#include <sstream>
+#include <string>
+#include <vector>
+
 #include "common/rpc/StreamRpcChannel.h"
 #include "tools/slp/SLPPacketBuilder.h"
 #include "tools/slp/SLPServer.h"
 #include "tools/slp/SLPServiceImpl.h"
 
-#include <sstream>
-#include <string>
-#include <vector>
-
-
 namespace ola {
 namespace slp {
-
 
 using ola::NewCallback;
 using ola::NewSingleCallback;
@@ -64,9 +62,11 @@ using std::stringstream;
 using std::vector;
 
 
-const uint16_t SLPServer::DEFAULT_SLP_PORT = 427;
-const uint16_t SLPServer::DEFAULT_SLP_HTTP_PORT = 9012;
+const char SLPServer::K_CONFIG_DA_BEAT[] = "slp-config-da-beat";
+const char SLPServer::K_DA_ENABLED[] = "slp-da-enabled";
 const char SLPServer::K_SLP_PORT_VAR[] = "slp-port";
+const uint16_t SLPServer::DEFAULT_SLP_HTTP_PORT = 9012;
+const uint16_t SLPServer::DEFAULT_SLP_PORT = 427;
 
 void StdinHandler::HandleCharacter(char c) {
   m_slp_server->Input(c);
@@ -109,6 +109,8 @@ SLPServer::SLPServer(ola::network::UDPSocket *udp_socket,
         new ola::http::OlaHTTPServer(http_options, m_export_map));
   }
 #endif
+
+  export_map->GetIntegerVar(K_CONFIG_DA_BEAT)->Set(options.config_da_beat);
 }
 
 

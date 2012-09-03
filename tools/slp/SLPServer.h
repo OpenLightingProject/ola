@@ -161,8 +161,10 @@ class SLPServer {
     bool LookForStaleEntries();
     */
 
-    static const uint16_t DEFAULT_SLP_HTTP_PORT;
+    static const char K_CONFIG_DA_BEAT[];
+    static const char K_DA_ENABLED[];
     static const char K_SLP_PORT_VAR[];
+    static const uint16_t DEFAULT_SLP_HTTP_PORT;
 };
 }  // slp
 }  // ola
