@@ -22,20 +22,25 @@
 #define TOOLS_SLP_SLPCLIENT_H_
 
 #include <ola/Callback.h>
-#include <ola/network/Socket.h>
 #include <ola/OlaClientWrapper.h>
-
-#include "tools/slp/Base.h"
+#include <ola/network/IPV4Address.h>
+#include <ola/network/Socket.h>
+#include <ola/network/SocketAddress.h>
 
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "tools/slp/Base.h"
+
 
 namespace ola {
 namespace slp {
 
 using std::auto_ptr;
 using std::string;
+using ola::network::IPV4SocketAddress;
+using ola::network::IPV4Address;
 
 
 /**
@@ -117,7 +122,8 @@ class SLPClientWrapper: public BaseClientWrapper {
     bool StartupClient() { return m_client->Setup(); }
 
     void InitSocket() {
-      m_socket.reset(TCPSocket::Connect("127.0.0.1", OLA_SLP_DEFAULT_PORT));
+      m_socket.reset(TCPSocket::Connect(
+            IPV4SocketAddress(IPV4Address::Loopback(), OLA_SLP_DEFAULT_PORT)));
     }
 };
 }  // slp

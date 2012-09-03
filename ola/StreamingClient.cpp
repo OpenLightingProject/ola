@@ -23,6 +23,8 @@
 #include <ola/Callback.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
+#include <ola/network/IPV4Address.h>
+#include <ola/network/SocketAddress.h>
 #include <ola/StreamingClient.h>
 #include "common/protocol/Ola.pb.h"
 #include "common/rpc/StreamRpcChannel.h"
@@ -58,7 +60,9 @@ bool StreamingClient::Setup() {
   if (m_auto_start)
     m_socket = ola::client::ConnectToServer(OLA_DEFAULT_PORT);
   else
-    m_socket = TCPSocket::Connect("127.0.0.1", OLA_DEFAULT_PORT);
+    m_socket = TCPSocket::Connect(
+      ola::network::IPV4SocketAddress(ola::network::IPV4Address::Loopback(),
+                                      OLA_DEFAULT_PORT));
 
   if (!m_socket)
     return false;

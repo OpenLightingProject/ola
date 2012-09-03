@@ -21,6 +21,8 @@
 
 #include <ola/BaseTypes.h>
 #include <ola/Logging.h>
+#include <ola/network/IPV4Address.h>
+#include <ola/network/SocketAddress.h>
 #include <ola/OlaClientWrapper.h>
 
 namespace ola {

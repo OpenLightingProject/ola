@@ -116,10 +116,11 @@ class IPV4Address {
       return IPV4Address(INADDR_NONE);
     }
 
+    static IPV4Address Loopback();
+
   private:
     struct in_addr m_address;
 };
 }  // network
 }  // ola
 #endif  // INCLUDE_OLA_NETWORK_IPV4ADDRESS_H_
-

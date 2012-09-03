@@ -29,12 +29,14 @@
 #include <ola/base/Init.h>
 #include <ola/network/InterfacePicker.h>
 #include <ola/network/Socket.h>
+#include <ola/network/SocketAddress.h>
 
 #include <memory>
 #include <string>
 
 #include "tools/slp/SLPServer.h"
 
+using ola::network::IPV4SocketAddress;
 using ola::network::TCPAcceptingSocket;
 using ola::network::UDPSocket;
 using ola::slp::SLPServer;
@@ -198,7 +200,7 @@ TCPAcceptingSocket *SetupTCPSocket(const IPV4Address ip, uint16_t port) {
   TCPAcceptingSocket *socket = new TCPAcceptingSocket(NULL);
 
   // setup the TCP socket
-  if (!socket->Listen(ip, port)) {
+  if (!socket->Listen(IPV4SocketAddress(ip, port))) {
     OLA_WARN << "Failed to Init TCP Socket";
     return NULL;
   }

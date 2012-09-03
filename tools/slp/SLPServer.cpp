@@ -28,6 +28,7 @@
 #include <ola/network/IPV4Address.h>
 #include <ola/network/NetworkUtils.h>
 #include <ola/network/Socket.h>
+#include <ola/network/SocketAddress.h>
 #include <ola/network/TCPSocketFactory.h>
 
 #ifdef HAVE_LIBMICROHTTPD
@@ -52,6 +53,7 @@ using ola::NewCallback;
 using ola::NewSingleCallback;
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
+using ola::network::IPV4SocketAddress;
 using ola::network::NetworkToHost;
 using ola::network::TCPAcceptingSocket;
 using ola::network::TCPSocket;
@@ -129,7 +131,8 @@ bool SLPServer::Init() {
   OLA_INFO << "Interface address is " << m_iface_address;
 
   // setup the accepting TCP socket
-  if (!m_rpc_accept_socket.Listen(m_iface_address, m_rpc_port)) {
+  if (!m_rpc_accept_socket.Listen(
+        IPV4SocketAddress(m_iface_address, m_rpc_port))) {
     return false;
   }
 

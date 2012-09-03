@@ -37,6 +37,7 @@ using ola::io::ConnectedDescriptor;
 using ola::io::IOQueue;
 using ola::io::SelectServer;
 using ola::network::IPV4Address;
+using ola::network::IPV4SocketAddress;
 using ola::network::StringToAddress;
 using ola::network::TCPAcceptingSocket;
 using ola::network::TCPSocket;
@@ -125,19 +126,17 @@ void SocketTest::tearDown() {
  * data matches and then closes the connection.
  */
 void SocketTest::testTCPSocketClientClose() {
-  string ip_address = "127.0.0.1";
-  uint16_t server_port = 9010;
+  IPV4SocketAddress socket_address(IPV4Address::Loopback(), 9010);
   ola::network::TCPSocketFactory socket_factory(
       ola::NewCallback(this, &SocketTest::NewConnectionSend));
   TCPAcceptingSocket socket(&socket_factory);
-  CPPUNIT_ASSERT_MESSAGE(
-      "Check for another instance of olad running",
-      socket.Listen(ip_address, server_port));
-  CPPUNIT_ASSERT(!socket.Listen(ip_address, server_port));
+  CPPUNIT_ASSERT_MESSAGE("Check for another instance of olad running",
+                         socket.Listen(socket_address));
+  CPPUNIT_ASSERT(!socket.Listen(socket_address));
 
   CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&socket));
 
-  TCPSocket *client_socket = TCPSocket::Connect(ip_address, server_port);
+  TCPSocket *client_socket = TCPSocket::Connect(socket_address);
   CPPUNIT_ASSERT(client_socket);
   client_socket->SetOnData(ola::NewCallback(
         this, &SocketTest::ReceiveAndClose,
@@ -156,20 +155,19 @@ void SocketTest::testTCPSocketClientClose() {
  * connection.
  */
 void SocketTest::testTCPSocketServerClose() {
-  string ip_address = "127.0.0.1";
-  uint16_t server_port = 9010;
+  IPV4SocketAddress socket_address(IPV4Address::Loopback(), 9010);
+  IPV4Address ip_address = IPV4Address::Loopback();
   ola::network::TCPSocketFactory socket_factory(
       ola::NewCallback(this, &SocketTest::NewConnectionSendAndClose));
   TCPAcceptingSocket socket(&socket_factory);
-  CPPUNIT_ASSERT_MESSAGE(
-      "Check for another instance of olad running",
-      socket.Listen(ip_address, server_port));
-  CPPUNIT_ASSERT(!socket.Listen(ip_address, server_port));
+  CPPUNIT_ASSERT_MESSAGE("Check for another instance of olad running",
+                         socket.Listen(socket_address));
+  CPPUNIT_ASSERT(!socket.Listen(socket_address));
 
   CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&socket));
 
   // The client socket checks the response and terminates on close
-  TCPSocket *client_socket = TCPSocket::Connect(ip_address, server_port);
+  TCPSocket *client_socket = TCPSocket::Connect(socket_address);
   CPPUNIT_ASSERT(client_socket);
 
   client_socket->SetOnData(ola::NewCallback(

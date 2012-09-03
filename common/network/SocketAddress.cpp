@@ -13,41 +13,36 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * IPV4Address.cpp
- * A IPV4 address
- * Copyright (C) 2011 Simon Newton
+ * SocketAddress.cpp
+ * Represents a sockaddr structure.
+ * Copyright (C) 2012 Simon Newton
  */
 
-#include <ola/network/IPV4Address.h>
+#include <ola/Logging.h>
 #include <ola/network/NetworkUtils.h>
-#include <string>
+#include <ola/network/SocketAddress.h>
+#include <string.h>
 
 namespace ola {
 namespace network {
 
-std::string IPV4Address::ToString() const {
-  return AddressToString(m_address);
-}
 
-IPV4Address* IPV4Address::FromString(const std::string &address) {
-  struct in_addr addr;
-  if (!StringToAddress(address, addr))
-    return NULL;
-
-  return new IPV4Address(addr);
-}
-
-bool IPV4Address::FromString(const std::string &address, IPV4Address *target) {
-  struct in_addr addr;
-  if (!StringToAddress(address, addr))
+/**
+ * Copy this IPV4SocketAddress into a sockaddr.
+ */
+bool IPV4SocketAddress::ToSockAddr(struct sockaddr *addr,
+                                   unsigned int size) const {
+  if (size < sizeof(struct sockaddr_in)) {
+    OLA_FATAL << "Length passed to ToSockAddr is too small.";
     return false;
-  *target = IPV4Address(addr);
+  }
+  struct sockaddr_in *v4_addr = reinterpret_cast<struct sockaddr_in*>(addr);
+
+  memset(v4_addr, 0, size);
+  v4_addr->sin_family = AF_INET;
+  v4_addr->sin_port = HostToNetwork(m_port);
+  v4_addr->sin_addr = m_host.Address();
   return true;
-}
-
-
-IPV4Address IPV4Address::Loopback() {
-  return IPV4Address(HostToNetwork(0x7f000001));
 }
 }  // network
 }  // ola

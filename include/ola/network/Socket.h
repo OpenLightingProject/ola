@@ -42,6 +42,7 @@
 #include <ola/io/Descriptor.h>
 #include <ola/io/IOQueue.h>
 #include <ola/network/IPV4Address.h>
+#include <ola/network/SocketAddress.h>
 #include <string>
 
 
@@ -67,10 +68,7 @@ class TCPSocket: public ola::io::ConnectedDescriptor {
 
     bool GetPeer(IPV4Address *address, uint16_t *port);
 
-    static TCPSocket* Connect(const IPV4Address &ip_address,
-                              unsigned short port);
-    static TCPSocket* Connect(const std::string &ip_address,
-                              unsigned short port);
+    static TCPSocket* Connect(const SocketAddress &endpoint);
 
   protected:
     bool IsSocket() const { return true; }
@@ -103,9 +101,18 @@ class UDPSocketInterface: public ola::io::BidirectionalFileDescriptor {
                            unsigned int size,
                            const IPV4Address &ip,
                            unsigned short port) const = 0;
+    virtual ssize_t SendTo(const uint8_t *buffer,
+                           unsigned int size,
+                           const IPV4SocketAddress &dest) const {
+      return SendTo(buffer, size, dest.Host(), dest.Port());
+    }
     virtual ssize_t SendTo(ola::io::IOQueue *ioqueue,
                            const IPV4Address &ip,
                            unsigned short port) const = 0;
+    virtual ssize_t SendTo(ola::io::IOQueue *ioqueue,
+                           const IPV4SocketAddress &dest) const {
+      return SendTo(ioqueue, dest.Host(), dest.Port());
+    }
 
     virtual bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const = 0;
     virtual bool RecvFrom(uint8_t *buffer,
@@ -193,12 +200,7 @@ class TCPAcceptingSocket: public ola::io::ReadFileDescriptor {
   public:
     explicit TCPAcceptingSocket(class TCPSocketFactoryInterface *factory);
     ~TCPAcceptingSocket();
-    bool Listen(const std::string &address,
-                unsigned short port,
-                int backlog = 10);
-    bool Listen(const IPV4Address &address,
-                unsigned short port,
-                int backlog = 10);
+    bool Listen(const SocketAddress &endpoint, int backlog = 10);
     int ReadDescriptor() const { return m_sd; }
     bool Close();
     void PerformRead();

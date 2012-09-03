@@ -91,48 +91,27 @@ bool TCPSocket::Close() {
  * @param port the port to connect to
  * @param blocking whether to block on connect or not
  */
-TCPSocket* TCPSocket::Connect(const IPV4Address &ip_address,
-                              unsigned short port) {
-  struct sockaddr_in server_address;
-  socklen_t length = sizeof(server_address);
+TCPSocket* TCPSocket::Connect(const SocketAddress &endpoint) {
+  struct sockaddr server_address;
 
-  int sd = socket(AF_INET, SOCK_STREAM, 0);
+  if (!endpoint.ToSockAddr(&server_address, sizeof(server_address)))
+    return false;
+
+  int sd = socket(endpoint.Family(), SOCK_STREAM, 0);
   if (sd < 0) {
     OLA_WARN << "socket() failed, " << strerror(errno);
     return NULL;
   }
 
-  // setup
-  memset(&server_address, 0x00, sizeof(server_address));
-  server_address.sin_family = AF_INET;
-  server_address.sin_port = HostToNetwork(port);
-  server_address.sin_addr.s_addr = ip_address.AsInt();
-
-  int r = connect(sd, (struct sockaddr*) &server_address, length);
+  int r = connect(sd, &server_address, sizeof(server_address));
 
   if (r) {
-    OLA_WARN << "connect to " << ip_address << ":" << port << " failed, "
-      << strerror(errno);
+    OLA_WARN << "connect to " << endpoint << " failed, " << strerror(errno);
     return NULL;
   }
   TCPSocket *socket = new TCPSocket(sd);
   socket->SetReadNonBlocking();
   return socket;
-}
-
-/*
- * Connect
- * @param ip_address the IP to connect to
- * @param port the port to connect to
- * @param blocking whether to block on connect or not
- */
-TCPSocket* TCPSocket::Connect(const std::string &ip_address,
-                              unsigned short port) {
-  IPV4Address address;
-  if (!IPV4Address::FromString(ip_address, &address))
-    return NULL;
-
-  return TCPSocket::Connect(address, port);
 }
 
 
@@ -544,44 +523,21 @@ TCPAcceptingSocket::~TCPAcceptingSocket() {
 
 /*
  * Start listening
- * @param address the address to listen on
- * @param port the port to listen on
+ * @param endpoint the SocketAddress to listen on
  * @param backlog the backlog
  * @return true if it succeeded, false otherwise
  */
-bool TCPAcceptingSocket::Listen(const std::string &address,
-                                unsigned short port,
-                                int backlog) {
-  IPV4Address ip_address;
-  if (!IPV4Address::FromString(address, &ip_address))
-    return false;
-
-  return Listen(ip_address, port, backlog);
-}
-
-
-/*
- * Start listening
- * @param address the address to listen on
- * @param port the port to listen on
- * @param backlog the backlog
- * @return true if it succeeded, false otherwise
- */
-bool TCPAcceptingSocket::Listen(const IPV4Address &address,
-                                unsigned short port,
-                                int backlog) {
-  struct sockaddr_in server_address;
+bool TCPAcceptingSocket::Listen(const SocketAddress &endpoint, int backlog) {
+  struct sockaddr server_address;
   int reuse_flag = 1;
 
   if (m_sd != ola::io::INVALID_DESCRIPTOR)
     return false;
 
-  // setup
-  memset(&server_address, 0x00, sizeof(server_address));
-  server_address.sin_family = AF_INET;
-  server_address.sin_port = HostToNetwork(port);
+  if (!endpoint.ToSockAddr(&server_address, sizeof(server_address)))
+    return false;
 
-  int sd = socket(AF_INET, SOCK_STREAM, 0);
+  int sd = socket(endpoint.Family(), SOCK_STREAM, 0);
   if (sd < 0) {
     OLA_WARN << "socket() failed: " << strerror(errno);
     return false;
@@ -598,17 +554,14 @@ bool TCPAcceptingSocket::Listen(const IPV4Address &address,
     return false;
   }
 
-  if (bind(sd, (struct sockaddr *) &server_address,
-           sizeof(server_address)) == -1) {
-    OLA_WARN << "bind to " << address << ":" << port << " failed, "
-      << strerror(errno);
+  if (bind(sd, &server_address, sizeof(server_address)) == -1) {
+    OLA_WARN << "bind to " << endpoint << " failed, " << strerror(errno);
     close(sd);
     return false;
   }
 
   if (listen(sd, backlog)) {
-    OLA_WARN << "listen on " << address << ":" << port << " failed, "
-      << strerror(errno);
+    OLA_WARN << "listen on " << endpoint << " failed, " << strerror(errno);
     return false;
   }
   m_sd = sd;

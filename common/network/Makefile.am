@@ -8,6 +8,7 @@ libolanetwork_la_SOURCES = AdvancedTCPConnector.cpp \
                            InterfacePicker.cpp \
                            NetworkUtils.cpp \
                            Socket.cpp \
+                           SocketAddress.cpp \
                            TCPConnector.cpp
 
 if USING_WIN32
@@ -35,8 +36,9 @@ HealthCheckedConnectionTester_LDADD = $(COMMON_TEST_LDADD)
 NetworkTester_SOURCES = IPAddressTest.cpp \
                         InterfacePickerTest.cpp \
                         InterfaceTest.cpp \
-                        NetworkUtilsTest.cpp \
                         NetworkTester.cpp \
+                        NetworkUtilsTest.cpp \
+                        SocketAddressTest.cpp \
                         SocketTest.cpp
 NetworkTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 NetworkTester_LDADD = $(COMMON_TEST_LDADD)

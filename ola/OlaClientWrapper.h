@@ -25,12 +25,13 @@
 #ifndef OLA_OLACLIENTWRAPPER_H_
 #define OLA_OLACLIENTWRAPPER_H_
 
-#include <memory>
 #include <ola/AutoStart.h>
 #include <ola/OlaClient.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/io/SelectServer.h>
 #include <ola/network/Socket.h>
+#include <ola/network/SocketAddress.h>
+#include <memory>
 
 namespace ola {
 
@@ -94,7 +95,10 @@ class GenericClientWrapper: public BaseClientWrapper {
       if (m_auto_start)
         m_socket.reset(ola::client::ConnectToServer(OLA_DEFAULT_PORT));
       else
-        m_socket.reset(TCPSocket::Connect("127.0.0.1", OLA_DEFAULT_PORT));
+        m_socket.reset(TCPSocket::Connect(
+            ola::network::IPV4SocketAddress(
+              ola::network::IPV4Address::Loopback(),
+             OLA_DEFAULT_PORT)));
     }
 };
 

@@ -23,12 +23,14 @@
 #include <string>
 #include "ola/Callback.h"
 #include "ola/network/Socket.h"
+#include "ola/network/SocketAddress.h"
 #include "plugins/stageprofi/StageProfiWidgetLan.h"
 
 namespace ola {
 namespace plugin {
 namespace stageprofi {
 
+using ola::network::IPV4Address;
 using ola::network::TCPSocket;
 
 /*
@@ -36,7 +38,12 @@ using ola::network::TCPSocket;
  * @returns true on success, false on failure
  */
 bool StageProfiWidgetLan::Connect(const std::string &ip) {
-  m_socket = TCPSocket::Connect(ip, STAGEPROFI_PORT);
+  IPV4Address ip_address;
+  if (!IPV4Address::FromString(ip, &ip_address))
+    return false;
+
+  m_socket = TCPSocket::Connect(
+      ola::network::IPV4SocketAddress(ip_address, STAGEPROFI_PORT));
 
   if (m_socket)
     m_socket->SetOnData(
