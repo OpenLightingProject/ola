@@ -247,7 +247,7 @@ void SLPPacketBuilder::BuildDAAdvert(IOQueue *output,
 void SLPPacketBuilder::BuildSLPHeader(IOQueue *output,
                                       slp_function_id_t function_id,
                                       unsigned int length,
-                                      uint8_t flags,
+                                      uint16_t flags,
                                       xid_t xid) {
   if (!output->Empty())
     OLA_WARN << "Building SLP header in non-empty IOQueue!";
@@ -266,8 +266,8 @@ void SLPPacketBuilder::BuildSLPHeader(IOQueue *output,
   */
   *output << SLP_VERSION << static_cast<uint8_t>(function_id) <<
     static_cast<uint16_t>(length >> 8);
-  *output << HostToNetwork(static_cast<uint8_t>(length)) << flags <<
-    static_cast<uint16_t>(0);
+  *output << HostToNetwork(static_cast<uint8_t>(length)) <<
+    HostToNetwork(flags) << static_cast<uint8_t>(0);
   *output << static_cast<uint16_t>(0) << HostToNetwork(xid);
   *output << HostToNetwork(static_cast<uint16_t>(sizeof(EN_LANGUAGE_TAG)));
   output->Write(EN_LANGUAGE_TAG, sizeof(EN_LANGUAGE_TAG));

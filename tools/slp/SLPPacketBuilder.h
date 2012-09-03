@@ -81,7 +81,7 @@ class SLPPacketBuilder {
     static void BuildSLPHeader(IOQueue *output,
                                slp_function_id_t function_id,
                                unsigned int length,
-                               uint8_t flags,
+                               uint16_t flags,
                                xid_t xid);
 };
 }  // slp

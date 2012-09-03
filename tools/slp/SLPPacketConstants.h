@@ -44,9 +44,40 @@ typedef enum {
   MAX_SLP_FUNCTION_ID = 12,
 } slp_function_id_t;
 
-static const uint16_t SLP_FRESH = 0x40;
-static const uint16_t SLP_OVERFLOW = 0x80;
-static const uint16_t SLP_REQUEST_MCAST = 0x20;
+typedef enum {
+  LANGUAGE_NOT_SUPPORTED = 1,
+  PARSE_ERROR = 2,
+  INVALID_REGISTRATION = 3,
+  SCOPE_NOT_SUPPORTED = 4,
+  AUTHENTICATION_UNKNOWN = 5,
+  AUTHENTICATION_ABSENT = 6,
+  AUTHENTICATION_FAILED = 7,
+  VER_NOT_SUPPORTED = 9,
+  INTERNAL_ERROR = 10,
+  DA_BUSY_NOW = 11,
+  OPTION_NOT_UNDERSTOOD = 12,
+  INVALID_UPDATE = 13,
+  MSG_NOT_SUPPORTED = 14,
+  REFRESH_REJECTED = 15,
+} slp_error_code_t;
+
+struct slp_header_s {
+  uint8_t version;
+  uint8_t function_id;
+  uint16_t length;
+  uint8_t length_lo;
+  uint16_t flags;
+  uint8_t next_ext_offset_hi;
+  uint16_t next_ext_offset;
+  xid_t xid;
+  uint16_t lang_tag_size;
+} __attribute__((packed));
+
+typedef struct slp_header_s slp_header_t;
+
+static const uint16_t SLP_FRESH = 0x4000;
+static const uint16_t SLP_OVERFLOW = 0x8000;
+static const uint16_t SLP_REQUEST_MCAST = 0x2000;
 static const uint8_t EN_LANGUAGE_TAG[] = {'e', 'n'};
 }  // slp
 }  // ola

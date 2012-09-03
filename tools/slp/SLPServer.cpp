@@ -41,6 +41,7 @@
 
 #include "common/rpc/StreamRpcChannel.h"
 #include "tools/slp/SLPPacketBuilder.h"
+#include "tools/slp/SLPPacketParser.h"
 #include "tools/slp/SLPServer.h"
 #include "tools/slp/SLPServiceImpl.h"
 
@@ -111,6 +112,7 @@ SLPServer::SLPServer(ola::network::UDPSocket *udp_socket,
 #endif
 
   export_map->GetIntegerVar(K_CONFIG_DA_BEAT)->Set(options.config_da_beat);
+  export_map->GetBoolVar(K_DA_ENABLED)->Set(options.enable_da);
 }
 
 
@@ -246,8 +248,33 @@ void SLPServer::UDPData() {
   if (!m_udp_socket->RecvFrom(reinterpret_cast<uint8_t*>(&packet),
                               &packet_size, source, port))
     return;
+
+  OLA_INFO << "got " << packet_size << "UDP bytes";
+
+  uint8_t function_id = SLPPacketParser::DetermineFunctionID(packet,
+                                                             packet_size);
+
+  switch (function_id) {
+    case 0:
+      return;
+    case SERVICE_REQUEST:
+      HandleServiceRequest(packet, packet_size);
+    default:
+      OLA_WARN << "Unknown SLP function-id: " << function_id;
+      break;
+  }
 }
 
+
+/**
+ * Handle a Service Request packet.
+ */
+void SLPServer::HandleServiceRequest(const uint8_t *data,
+                                     unsigned int data_size) {
+  OLA_INFO << "Got Service request";
+  (void) data;
+  (void) data_size;
+}
 
 /**
  * Receive data on a TCP connection

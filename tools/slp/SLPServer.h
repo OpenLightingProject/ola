@@ -144,22 +144,10 @@ class SLPServer {
 
     // SLP Network methods
     void UDPData();
+    void HandleServiceRequest(const uint8_t *data, unsigned int data_size);
 
+    // DA methods
     bool SendDABeat();
-    /*
-    void ReceiveTCPData(TCPSocket *socket);
-    void SocketClosed(TCPSocket *socket);
-    void SendJoinUpdateToClients(const IPV4Address &address, const UID &uid);
-    void SendPartUpdateToClients(const IPV4Address &address, const UID &uid);
-    void SendStringToClients(const string &output);
-    void SendState(TCPSocket *socket);
-    */
-
-    // housekeeping methods
-    /*
-    bool SendPeriodicAdvert();
-    bool LookForStaleEntries();
-    */
 
     static const char K_CONFIG_DA_BEAT[];
     static const char K_DA_ENABLED[];
