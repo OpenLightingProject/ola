@@ -8,16 +8,16 @@ update_config_file()
 {
 	db_field=$1
 	config_field=$2
-  
+
 	RET=false
-  	db_get $db_field
+	db_get $db_field
 	if [ -n "$RET" ] ; then
 		if grep -q "^$config_field" $conffile ; then 
 			# keep any admin changes, while replacing the variable content
 			sed "s/^[ ]*$config_field=\".*\"/$config_field=\"$RET\"/" < $conffile > $conffile.new && 
-	   		mv $conffile.new $conffile
-  		else
-	    		echo "$config_field=\"$RET\"" >> $conffile
+			mv $conffile.new $conffile
+		else
+			echo "$config_field=\"$RET\"" >> $conffile
 		fi
 	fi
 }
@@ -28,12 +28,12 @@ update_config_file()
 db_version 2.0
 
 case "$1" in
-    configure)
+	configure)
 	if [ -f $conffile ] ; then
-          sed -i -e 's/^[ ]*DAEMON/RUN_DAEMON/g' \
-	         $conffile
+		sed -i -e 's/^[ ]*DAEMON/RUN_DAEMON/g' \
+		 $conffile
 	else
-          cat << EOF > $conffile
+		cat << EOF > $conffile
 # Defaults for ola initscript (/etc/init.d/ola)
 # This is a POSIX shell fragment
 
@@ -43,19 +43,19 @@ case "$1" in
 RUN_DAEMON="true"
 EOF
 	fi
-    
+
 	update_config_file ola/daemon RUN_DAEMON
 
 	db_stop
-    ;;
+	;;
 
-    abort-upgrade|abort-remove|abort-deconfigure)
-    ;;
+	abort-upgrade|abort-remove|abort-deconfigure)
+	;;
 
-    *)
-        echo "postinst called with unknown argument \`$1'" >&2
-        exit 1
-    ;;
+	*)
+		echo "postinst called with unknown argument \`$1'" >&2
+		exit 1
+	;;
 esac
 
 # dh_installdeb will replace this with shell code automatically
