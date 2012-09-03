@@ -25,6 +25,7 @@
 #include <ola/io/Descriptor.h>
 #include <ola/io/SelectServerInterface.h>
 #include <ola/network/IPV4Address.h>
+#include <ola/network/SocketAddress.h>
 #include <ola/network/Socket.h>
 #include <set>
 
@@ -43,8 +44,7 @@ class TCPConnector {
     typedef ola::SingleUseCallback2<void, int, int> TCPConnectCallback;
     typedef const void* TCPConnectionID;
 
-    TCPConnectionID Connect(const IPV4Address &ip,
-                            uint16_t port,
+    TCPConnectionID Connect(const IPV4SocketAddress &endpoint,
                             const ola::TimeInterval &timeout,
                             TCPConnectCallback *callback);
 

@@ -144,8 +144,7 @@ void TCPConnectorTest::testNonBlockingConnect() {
   TCPConnector connector(m_ss);
   TimeInterval connect_timeout(0, CONNECT_TIMEOUT_IN_MS * 1000);
   TCPConnector::TCPConnectionID id = connector.Connect(
-      m_localhost,
-      SERVER_PORT,
+      m_server_address,
       connect_timeout,
       ola::NewSingleCallback(this, &TCPConnectorTest::OnConnect));
   CPPUNIT_ASSERT(id);
@@ -164,8 +163,7 @@ void TCPConnectorTest::testNonBlockingConnectFailure() {
   TCPConnector connector(m_ss);
   TimeInterval connect_timeout(0, CONNECT_TIMEOUT_IN_MS * 1000);
   TCPConnector::TCPConnectionID id = connector.Connect(
-      m_localhost,
-      9010,
+      m_server_address,
       connect_timeout,
       ola::NewSingleCallback(this, &TCPConnectorTest::OnConnectFailure));
   CPPUNIT_ASSERT(id);
@@ -186,8 +184,7 @@ void TCPConnectorTest::testNonBlockingConnectError() {
   TCPConnector connector(m_ss);
   TimeInterval connect_timeout(0, CONNECT_TIMEOUT_IN_MS * 1000);
   TCPConnector::TCPConnectionID id = connector.Connect(
-      bcast_address,
-      0,
+      IPV4SocketAddress(bcast_address, 0),
       connect_timeout,
       ola::NewSingleCallback(this, &TCPConnectorTest::OnConnectFailure));
   CPPUNIT_ASSERT(!id);
@@ -203,8 +200,7 @@ void TCPConnectorTest::testNonBlockingCancel() {
   TCPConnector connector(m_ss);
   TimeInterval connect_timeout(0, CONNECT_TIMEOUT_IN_MS * 1000);
   TCPConnector::TCPConnectionID id = connector.Connect(
-      m_localhost,
-      9010,
+      m_server_address,
       connect_timeout,
       ola::NewSingleCallback(this, &TCPConnectorTest::OnConnectFailure));
   CPPUNIT_ASSERT(id);
@@ -228,8 +224,7 @@ void TCPConnectorTest::testEarlyDestruction() {
   {
     TCPConnector connector(m_ss);
     connector.Connect(
-        m_localhost,
-        SERVER_PORT,
+        m_server_address,
         connect_timeout,
         ola::NewSingleCallback(this, &TCPConnectorTest::OnConnectFailure));
     CPPUNIT_ASSERT_EQUAL(1u, connector.ConnectionsPending());

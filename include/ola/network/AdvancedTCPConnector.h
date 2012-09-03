@@ -134,11 +134,10 @@ class AdvancedTCPConnector {
                          const ola::TimeInterval &connection_timeout);
     virtual ~AdvancedTCPConnector();
 
-    void AddEndpoint(const IPV4Address &ip_address,
-                     uint16_t port,
+    void AddEndpoint(const IPV4SocketAddress &endpoint,
                      BackOffPolicy *backoff_policy,
                      bool paused = false);
-    void RemoveEndpoint(const IPV4Address &ip_address, uint16_t port);
+    void RemoveEndpoint(const IPV4SocketAddress &endpoint);
 
     unsigned int EndpointCount() const { return m_connections.size(); }
 
@@ -148,15 +147,12 @@ class AdvancedTCPConnector {
       CONNECTED,  // socket is connected
     };
 
-    bool GetEndpointState(const IPV4Address &ip_address,
-                          uint16_t port,
+    bool GetEndpointState(const IPV4SocketAddress &endpoint,
                           ConnectionState *connected,
                           unsigned int *failed_attempts) const;
 
-    void Disconnect(const IPV4Address &ip_address,
-                    uint16_t port,
-                    bool pause = false);
-    void Resume(const IPV4Address &ip_address, uint16_t port);
+    void Disconnect(const IPV4SocketAddress &endpoint, bool pause = false);
+    void Resume(const IPV4SocketAddress &endpoint);
 
   protected:
     typedef struct {

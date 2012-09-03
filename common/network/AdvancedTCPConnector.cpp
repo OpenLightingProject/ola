@@ -66,16 +66,14 @@ AdvancedTCPConnector::~AdvancedTCPConnector() {
  * If the ip:port already exists this won't do anything.
  * When the connection is successfull the on_connect callback will be run, and
  * ownership of the TCPSocket object is transferred.
- * @param ip_address the IP of the node to connect to
- * @param port the port to connect to
+ * @param endpoint the IPV4SocketAddress to connect to.
  * @param backoff_policy the BackOffPolicy to use for this connection.
  * @param paused true if we don't want to immediately connect to this peer.
  */
-void AdvancedTCPConnector::AddEndpoint(const IPV4Address &ip_address,
-                                       uint16_t port,
+void AdvancedTCPConnector::AddEndpoint(const IPV4SocketAddress &endpoint,
                                        BackOffPolicy *backoff_policy,
                                        bool paused) {
-  IPPortPair key(ip_address, port);
+  IPPortPair key(endpoint.Host(), endpoint.Port());
   ConnectionMap::iterator iter = m_connections.find(key);
   if (iter != m_connections.end())
     return;
@@ -98,12 +96,10 @@ void AdvancedTCPConnector::AddEndpoint(const IPV4Address &ip_address,
 /**
  * Remove a ip:port from the connection manager. This won't close the
  * connection.
- * @param ip_address the IP of the host to remove
- * @param port the port to remove
+ * @param endpoint the IPV4SocketAddress to remove.
  */
-void AdvancedTCPConnector::RemoveEndpoint(const IPV4Address &ip_address,
-                                          uint16_t port) {
-  IPPortPair key(ip_address, port);
+void AdvancedTCPConnector::RemoveEndpoint(const IPV4SocketAddress &endpoint) {
+  IPPortPair key(endpoint.Host(), endpoint.Port());
   ConnectionMap::iterator iter = m_connections.find(key);
   if (iter == m_connections.end())
     return;
@@ -116,16 +112,14 @@ void AdvancedTCPConnector::RemoveEndpoint(const IPV4Address &ip_address,
 
 /**
  * Get the state & number of failed_attempts for an endpoint
- * @param ip_address the IP of the host to remove
- * @param port the port to remove
+ * @param endpoint the IPV4SocketAddress to get the state of.
  * @returns true if this endpoint was found, false otherwise.
  */
 bool AdvancedTCPConnector::GetEndpointState(
-    const IPV4Address &ip_address,
-    uint16_t port,
+    const IPV4SocketAddress &endpoint,
     ConnectionState *connected,
     unsigned int *failed_attempts) const {
-  IPPortPair key(ip_address, port);
+  IPPortPair key(endpoint.Host(), endpoint.Port());
   ConnectionMap::const_iterator iter = m_connections.find(key);
   if (iter == m_connections.end())
     return false;
@@ -138,14 +132,12 @@ bool AdvancedTCPConnector::GetEndpointState(
 
 /**
  * Mark a host as disconnected.
- * @param ip_address the IP of the host that is now disconnected.
- * @param port the port that is now distributed
+ * @param endpoint the IPV4SocketAddress to mark as disconnected.
  * @param pause if true, don't immediately try to reconnect.
  */
-void AdvancedTCPConnector::Disconnect(const IPV4Address &ip_address,
-                                      uint16_t port,
+void AdvancedTCPConnector::Disconnect(const IPV4SocketAddress &endpoint,
                                       bool pause) {
-  IPPortPair key(ip_address, port);
+  IPPortPair key(endpoint.Host(), endpoint.Port());
   ConnectionMap::iterator iter = m_connections.find(key);
   if (iter == m_connections.end())
     return;
@@ -173,9 +165,8 @@ void AdvancedTCPConnector::Disconnect(const IPV4Address &ip_address,
 /**
  * Resume trying to connect to a ip:port pair.
  */
-void AdvancedTCPConnector::Resume(const IPV4Address &ip_address,
-                                  uint16_t port) {
-  IPPortPair key(ip_address, port);
+void AdvancedTCPConnector::Resume(const IPV4SocketAddress &endpoint) {
+  IPPortPair key(endpoint.Host(), endpoint.Port());
   ConnectionMap::iterator iter = m_connections.find(key);
   if (iter == m_connections.end())
     return;
@@ -264,8 +255,7 @@ void AdvancedTCPConnector::ConnectionResult(IPPortPair key,
 void AdvancedTCPConnector::AttemptConnection(const IPPortPair &key,
                                              ConnectionInfo *state) {
   state->connection_id = m_connector.Connect(
-      key.first,
-      key.second,
+      IPV4SocketAddress(key.first, key.second),
       m_connection_timeout,
       ola::NewSingleCallback(this,
                              &AdvancedTCPConnector::ConnectionResult,

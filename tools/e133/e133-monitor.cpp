@@ -73,6 +73,7 @@
 using ola::NewCallback;
 using ola::NewSingleCallback;
 using ola::network::IPV4Address;
+using ola::network::IPV4SocketAddress;
 using ola::network::BufferedTCPSocket;
 using ola::rdm::PidStoreHelper;
 using ola::rdm::RDMCommand;
@@ -345,8 +346,7 @@ void SimpleE133Monitor::AddIP(const IPV4Address &ip_address) {
 
   // start the non-blocking connect
   m_connector.AddEndpoint(
-      ip_address,
-      ola::plugin::e131::E133_PORT,
+      IPV4SocketAddress(ip_address, ola::plugin::e131::E133_PORT),
       &m_backoff_policy);
 }
 
@@ -461,10 +461,12 @@ void SimpleE133Monitor::SocketClosed(IPV4Address ip_address) {
   if (node_state->am_master) {
     // TODO(simon): signal other controllers here
     node_state->am_master = false;
-    m_connector.Disconnect(ip_address, ola::plugin::e131::E133_PORT);
+    m_connector.Disconnect(
+        IPV4SocketAddress(ip_address, ola::plugin::e131::E133_PORT));
   } else {
     // we lost the race, so don't try to reconnect
-    m_connector.Disconnect(ip_address, ola::plugin::e131::E133_PORT, true);
+    m_connector.Disconnect(
+        IPV4SocketAddress(ip_address, ola::plugin::e131::E133_PORT), true);
   }
 
   delete node_state->health_checked_connection;
