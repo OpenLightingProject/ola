@@ -25,6 +25,7 @@
 #include "ola/ExportMap.h"
 
 using ola::BaseVariable;
+using ola::BoolVariable;
 using ola::CounterVariable;
 using ola::ExportMap;
 using ola::IntMap;
@@ -40,6 +41,7 @@ class ExportMapTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testIntegerVariable);
   CPPUNIT_TEST(testCounterVariable);
   CPPUNIT_TEST(testStringVariable);
+  CPPUNIT_TEST(testBoolVariable);
   CPPUNIT_TEST(testStringMapVariable);
   CPPUNIT_TEST(testIntMapVariable);
   CPPUNIT_TEST(testExportMap);
@@ -49,6 +51,7 @@ class ExportMapTest: public CppUnit::TestFixture {
     void testIntegerVariable();
     void testCounterVariable();
     void testStringVariable();
+    void testBoolVariable();
     void testStringMapVariable();
     void testIntMapVariable();
     void testExportMap();
@@ -117,6 +120,21 @@ void ExportMapTest::testStringVariable() {
   CPPUNIT_ASSERT_EQUAL(var.Get(), string("bar"));
 }
 
+
+/*
+ * Check that the BoolVariable works correctly.
+ */
+void ExportMapTest::testBoolVariable() {
+  string name = "foo";
+  BoolVariable var(name);
+
+  CPPUNIT_ASSERT_EQUAL(name, var.Name());
+  CPPUNIT_ASSERT_EQUAL(false, var.Get());
+  CPPUNIT_ASSERT_EQUAL(string("0"), var.Value());
+  var.Set(true);
+  CPPUNIT_ASSERT_EQUAL(string("1"), var.Value());
+  CPPUNIT_ASSERT_EQUAL(true, var.Get());
+}
 
 /*
  * Check that the StringMap works correctly.

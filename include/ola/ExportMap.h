@@ -61,6 +61,25 @@ struct VariableLessThan: public std::binary_function<BaseVariable*,
 
 
 /*
+ * Represents a bool variable
+ */
+class BoolVariable: public BaseVariable {
+  public:
+    explicit BoolVariable(const string &name)
+        : BaseVariable(name),
+          m_value(false) {}
+    ~BoolVariable() {}
+
+    void Set(bool value) { m_value = value; }
+    bool Get() const { return m_value; }
+    const string Value() const { return m_value ? "1" : "0"; }
+
+  private:
+    bool m_value;
+};
+
+
+/*
  * Represents a string variable
  */
 class StringVariable: public BaseVariable {
