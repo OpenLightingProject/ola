@@ -212,14 +212,17 @@ void ExportMapTest::testIntMapVariable() {
  */
 void ExportMapTest::testExportMap() {
   ExportMap map;
+  string bool_var_name = "bool_var";
   string int_var_name = "int_var";
   string str_var_name = "str_var";
   string map_var_name = "map_var";
   string map_var_label = "label";
+  BoolVariable *bool_var = map.GetBoolVar(bool_var_name);
   IntegerVariable *int_var = map.GetIntegerVar(int_var_name);
   StringVariable *str_var = map.GetStringVar(str_var_name);
   StringMap *map_var = map.GetStringMapVar(map_var_name, map_var_label);
 
+  CPPUNIT_ASSERT_EQUAL(bool_var->Name(), bool_var_name);
   CPPUNIT_ASSERT_EQUAL(int_var->Name(), int_var_name);
   CPPUNIT_ASSERT_EQUAL(str_var->Name(), str_var_name);
   CPPUNIT_ASSERT_EQUAL(map_var->Name(), map_var_name);
@@ -230,5 +233,5 @@ void ExportMapTest::testExportMap() {
   CPPUNIT_ASSERT_EQUAL(map_var->Label(), map_var_label);
 
   vector<BaseVariable*> variables = map.AllVariables();
-  CPPUNIT_ASSERT_EQUAL(variables.size(), (size_t) 3);
+  CPPUNIT_ASSERT_EQUAL(variables.size(), (size_t) 4);
 }
