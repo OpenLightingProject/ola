@@ -23,6 +23,7 @@
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/SocketAddress.h"
+#include "ola/testing/TestUtils.h"
 
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
@@ -44,22 +45,38 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SocketAddressTest);
  */
 void SocketAddressTest::testIPV4SocketAddress() {
   IPV4Address ip_address;
-  CPPUNIT_ASSERT(IPV4Address::FromString("182.168.1.1", &ip_address));
+  OLA_ASSERT(IPV4Address::FromString("192.168.1.1", &ip_address));
 
   IPV4SocketAddress socket_address(ip_address, 8080);
-  CPPUNIT_ASSERT_EQUAL(ip_address, socket_address.Host());
-  CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(8080), socket_address.Port());
+  OLA_ASSERT_EQ(ip_address, socket_address.Host());
+  OLA_ASSERT_EQ(static_cast<uint16_t>(8080), socket_address.Port());
 
   struct sockaddr sock_addr;
-  CPPUNIT_ASSERT(!socket_address.ToSockAddr(&sock_addr, 0));
-  CPPUNIT_ASSERT(socket_address.ToSockAddr(&sock_addr, sizeof(sock_addr)));
-  CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(AF_INET),
-                       static_cast<uint16_t>(sock_addr.sa_family));
+  OLA_ASSERT_FALSE(socket_address.ToSockAddr(&sock_addr, 0));
+  OLA_ASSERT(socket_address.ToSockAddr(&sock_addr, sizeof(sock_addr)));
+  OLA_ASSERT_EQ(static_cast<uint16_t>(AF_INET),
+                static_cast<uint16_t>(sock_addr.sa_family));
 
   struct sockaddr_in *sock_addr_in =
     reinterpret_cast<struct sockaddr_in*>(&sock_addr);
-  CPPUNIT_ASSERT_EQUAL(ola::network::HostToNetwork(static_cast<uint16_t>(8080)),
-                       sock_addr_in->sin_port);
+  OLA_ASSERT_EQ(ola::network::HostToNetwork(static_cast<uint16_t>(8080)),
+                sock_addr_in->sin_port);
   IPV4Address actual_ip(sock_addr_in->sin_addr);
-  CPPUNIT_ASSERT_EQUAL(ip_address, actual_ip);
+  OLA_ASSERT_EQ(ip_address, actual_ip);
+
+  // test comparison operators
+  IPV4SocketAddress socket_address2(ip_address, 8079);
+  IPV4SocketAddress socket_address3(ip_address, 8081);
+  IPV4Address ip_address2;
+  OLA_ASSERT(IPV4Address::FromString("182.168.1.2", &ip_address2));
+  IPV4SocketAddress socket_address4(ip_address2, 8080);
+
+  OLA_ASSERT_EQ(socket_address, socket_address);
+  OLA_ASSERT_NE(socket_address, socket_address2);
+  OLA_ASSERT_NE(socket_address, socket_address3);
+
+  OLA_ASSERT_LT(socket_address2, socket_address);
+  OLA_ASSERT_LT(socket_address, socket_address3);
+  OLA_ASSERT_LT(socket_address, socket_address4);
+  OLA_ASSERT_LT(socket_address3, socket_address4);
 }

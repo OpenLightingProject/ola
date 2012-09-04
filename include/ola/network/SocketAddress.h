@@ -40,10 +40,7 @@ class SocketAddress {
     virtual ~SocketAddress() {}
 
     virtual uint16_t Family() const = 0;
-
-    virtual bool ToSockAddr(struct sockaddr *addr,
-                            unsigned int size) const = 0;
-
+    virtual bool ToSockAddr(struct sockaddr *addr, unsigned int size) const = 0;
     virtual string ToString() const = 0;
 
     friend ostream& operator<< (ostream &out, const SocketAddress &address) {
@@ -58,10 +55,32 @@ class SocketAddress {
 class IPV4SocketAddress: public SocketAddress {
   public:
     IPV4SocketAddress(const IPV4Address &host, uint16_t port)
-        : m_host(host),
+        : SocketAddress(),
+          m_host(host),
           m_port(port) {
     }
+    IPV4SocketAddress(const IPV4SocketAddress &other)
+        : SocketAddress(),
+          m_host(other.m_host),
+          m_port(other.m_port) {
+    }
+
     ~IPV4SocketAddress() {}
+
+    bool operator==(const IPV4SocketAddress &other) const {
+      return m_host == other.m_host && m_port == other.m_port;
+    }
+
+    bool operator!=(const IPV4SocketAddress &other) const {
+      return !(*this == other);
+    }
+
+    bool operator<(const IPV4SocketAddress &other) const {
+      if (m_host == other.m_host)
+        return m_port < other.m_port;
+      else
+        return m_host < other.m_host;
+    }
 
     uint16_t Family() const { return AF_INET; }
     const IPV4Address& Host() const { return m_host; }
@@ -80,6 +99,40 @@ class IPV4SocketAddress: public SocketAddress {
   private:
     IPV4Address m_host;
     uint16_t m_port;
+};
+
+
+/**
+ * Wraps a struct sockaddr.
+ */
+class GenericSocketAddress: public SocketAddress {
+  public:
+    explicit GenericSocketAddress(const struct sockaddr &addr)
+      : m_addr(addr) {
+    }
+
+    uint16_t Family() const {
+      return m_addr.sa_family;
+    }
+
+    bool ToSockAddr(struct sockaddr *addr, unsigned int size) const {
+      *addr = m_addr;
+      return true;
+      (void) size;
+    }
+
+    string ToString() const {
+      std::ostringstream str;
+      str << "Generic sockaddr of type: " << m_addr.sa_family;
+      return str.str();
+    }
+
+    // Return a IPV4SocketAddress object, only valid if Family() is AF_INET
+    IPV4SocketAddress V4Addr() const;
+    // Add V6 here as well
+
+  private:
+    struct sockaddr m_addr;
 };
 }  // network
 }  // ola
