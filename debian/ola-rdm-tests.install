@@ -1,3 +1,5 @@
 usr/bin/*.py
 usr/lib/python*/{dist,site}-packages/ola/testing/*.py
 usr/lib/python*/{dist,site}-packages/ola/testing/rdm/*.py
+usr/share/ola/rdm-server/*
+usr/share/ola/rdm-server/images/*
