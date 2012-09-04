@@ -36,10 +36,10 @@
 #include "ola/rdm/RDMResponseCodes.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
-#include "ola/timecode/TimeCode.h"
+#include "ola/testing/MockUDPSocket.h"
 #include "ola/timecode/TimeCodeEnums.h"
+#include "ola/timecode/TimeCode.h"
 #include "plugins/artnet/ArtNetNode.h"
-#include "plugins/artnet/MockUDPSocket.h"
 
 
 using ola::DmxBuffer;
