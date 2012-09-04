@@ -39,6 +39,7 @@
 using ola::network::IPV4SocketAddress;
 using ola::network::TCPAcceptingSocket;
 using ola::network::UDPSocket;
+using ola::network::IPV4SocketAddress;
 using ola::slp::SLPServer;
 using std::auto_ptr;
 using std::cout;
@@ -184,7 +185,7 @@ UDPSocket *SetupUDPSocket(uint16_t port) {
     return NULL;
   }
 
-  if (!socket->Bind(port)) {
+  if (!socket->Bind(IPV4SocketAddress(IPV4Address::WildCard(), port))) {
     OLA_WARN << "UDP Port failed to find";
     return NULL;
   }

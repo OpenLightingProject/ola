@@ -245,14 +245,15 @@ void SLPServer::RPCSocketClosed(TCPSocket *socket) {
 void SLPServer::UDPData() {
   ssize_t packet_size = 1500;
   uint8_t packet[packet_size];
-  ola::network::IPV4Address source;
+  ola::network::IPV4Address source_ip;
   uint16_t port;
 
   if (!m_udp_socket->RecvFrom(reinterpret_cast<uint8_t*>(&packet),
-                              &packet_size, source, port))
+                              &packet_size, source_ip, port))
     return;
+  IPV4SocketAddress source(source_ip, port);
 
-  OLA_INFO << "got " << packet_size << "UDP bytes";
+  OLA_INFO << "Got " << packet_size << "UDP bytes from " << source;
 
   uint8_t function_id = SLPPacketParser::DetermineFunctionID(packet,
                                                              packet_size);
@@ -261,7 +262,7 @@ void SLPServer::UDPData() {
     case 0:
       return;
     case SERVICE_REQUEST:
-      HandleServiceRequest(packet, packet_size);
+      HandleServiceRequest(packet, packet_size, source);
     default:
       OLA_WARN << "Unknown SLP function-id: " << function_id;
       break;
@@ -273,8 +274,9 @@ void SLPServer::UDPData() {
  * Handle a Service Request packet.
  */
 void SLPServer::HandleServiceRequest(const uint8_t *data,
-                                     unsigned int data_size) {
-  OLA_INFO << "Got Service request";
+                                     unsigned int data_size,
+                                     const IPV4SocketAddress &source) {
+  OLA_INFO << "Got Service request from " << source;
   (void) data;
   (void) data_size;
 }

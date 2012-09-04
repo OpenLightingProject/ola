@@ -28,6 +28,7 @@
 #include <ola/network/IPV4Address.h>
 #include <ola/network/NetworkUtils.h>
 #include <ola/network/Socket.h>
+#include <ola/network/SocketAddress.h>
 #include <ola/network/TCPSocketFactory.h>
 
 #include <iostream>
@@ -40,6 +41,7 @@
 
 using ola::io::IOQueue;
 using ola::network::IPV4Address;
+using ola::network::IPV4SocketAddress;
 using ola::network::TCPSocket;
 using std::auto_ptr;
 using std::string;
@@ -144,7 +146,8 @@ class SLPServer {
 
     // SLP Network methods
     void UDPData();
-    void HandleServiceRequest(const uint8_t *data, unsigned int data_size);
+    void HandleServiceRequest(const uint8_t *data, unsigned int data_size,
+                              const IPV4SocketAddress &source);
 
     // DA methods
     bool SendDABeat();
