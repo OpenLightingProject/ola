@@ -97,7 +97,6 @@ class SLPServer {
             http_port(DEFAULT_SLP_HTTP_PORT),
             rpc_port(OLA_SLP_DEFAULT_PORT),
             config_da_beat(3 * 60 * 60) {
-        scopes.insert("default");
       }
     };
 
@@ -136,6 +135,14 @@ class SLPServer {
     ola::network::UDPSocket *m_udp_socket;
     ola::network::TCPAcceptingSocket *m_slp_accept_socket;
 
+    // SLP memebers
+    vector<string> m_scope_list;
+
+    // DA members
+
+    // non-DA members
+    vector<IPV4Address> m_da_pr_list;
+
     // The ExportMap & HTTPServer
     ola::ExportMap *m_export_map;
     auto_ptr<ola::http::OlaHTTPServer> m_http_server;
@@ -152,9 +159,15 @@ class SLPServer {
     // DA methods
     bool SendDABeat();
 
-    static const char K_CONFIG_DA_BEAT[];
-    static const char K_DA_ENABLED[];
-    static const char K_SLP_PORT_VAR[];
+    // non-DA methods
+    bool SendFindDAService();
+
+    static const char CONFIG_DA_BEAT_VAR[];
+    static const char DA_ENABLED_VAR[];
+    static const char DA_SERVICE[];
+    static const char DEFAULT_SCOPE[];
+    static const char SCOPE_LIST_VAR[];
+    static const char SLP_PORT_VAR[];
     static const uint16_t DEFAULT_SLP_HTTP_PORT;
 };
 }  // slp

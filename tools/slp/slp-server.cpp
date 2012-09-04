@@ -33,6 +33,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "tools/slp/SLPServer.h"
 
@@ -58,6 +59,7 @@ struct SLPOptions {
     uint16_t slp_port;
     string setuid;
     string setgid;
+    string scopes;
 
     SLPOptions()
         : help(false),
@@ -79,6 +81,7 @@ void ParseOptions(int argc, char *argv[],
   enum {
     SETUID_OPTION = 256,
     SETGID_OPTION = 257,
+    SCOPE_OPTION  = 258,
   };
 
   static struct option long_options[] = {
@@ -90,6 +93,7 @@ void ParseOptions(int argc, char *argv[],
       {"no-http", no_argument, &enable_http, 0},
       {"setuid", required_argument, 0, SETUID_OPTION},
       {"setgid", required_argument, 0, SETGID_OPTION},
+      {"scopes", required_argument, 0, SCOPE_OPTION},
       {0, 0, 0, 0}
   };
 
@@ -140,6 +144,9 @@ void ParseOptions(int argc, char *argv[],
       case SETGID_OPTION:
         options->setgid = optarg;
         break;
+      case SCOPE_OPTION:
+        options->scopes = optarg;
+        break;
       case '?':
         break;
       default:
@@ -167,10 +174,23 @@ void DisplayHelpAndExit(char *argv[]) {
   "  --no-da                  Disable DA functionality\n"
   "  --setuid <uid,user>      User to switch to after startup\n"
   "  --setgid <gid,group>     Group to switch to after startup\n"
+  "  --scopes <scope-list>    Commas separate list of scopes\n"
   << endl;
   exit(0);
 }
 
+
+bool CheckSLPOptions(const SLPOptions &options,
+                     SLPServer::SLPServerOptions *slp_options) {
+  if (!options.scopes.empty()) {
+    vector<string> scope_list;
+    ola::StringSplit(options.scopes, scope_list, ",");
+    vector<string>::const_iterator iter = scope_list.begin();
+    for (; iter != scope_list.end(); ++iter)
+      slp_options->scopes.insert(*iter);
+  }
+  return true;
+}
 
 /**
  * Create the UDP Socket and bind to the port. We do this outside the server so
@@ -286,6 +306,9 @@ int main(int argc, char *argv[]) {
     DisplayHelpAndExit(argv);
 
   ola::InitLogging(options.log_level, ola::OLA_LOG_STDERR);
+
+  if (!CheckSLPOptions(options, &slp_options))
+    DisplayHelpAndExit(argv);
 
   {
     // find an interface to use

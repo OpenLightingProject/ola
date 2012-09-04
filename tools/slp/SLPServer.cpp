@@ -39,6 +39,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <set>
 
 #include "common/rpc/StreamRpcChannel.h"
 #include "tools/slp/SLPPacketBuilder.h"
@@ -65,9 +66,12 @@ using std::stringstream;
 using std::vector;
 
 
-const char SLPServer::K_CONFIG_DA_BEAT[] = "slp-config-da-beat";
-const char SLPServer::K_DA_ENABLED[] = "slp-da-enabled";
-const char SLPServer::K_SLP_PORT_VAR[] = "slp-port";
+const char SLPServer::CONFIG_DA_BEAT_VAR[] = "slp-config-da-beat";
+const char SLPServer::DA_ENABLED_VAR[] = "slp-da-enabled";
+const char SLPServer::DA_SERVICE[] = "service:directory-agent";
+const char SLPServer::DEFAULT_SCOPE[] = "DEFAULT";
+const char SLPServer::SCOPE_LIST_VAR[] = "scope-list";
+const char SLPServer::SLP_PORT_VAR[] = "slp-port";
 const uint16_t SLPServer::DEFAULT_SLP_HTTP_PORT = 9012;
 const uint16_t SLPServer::DEFAULT_SLP_PORT = 427;
 
@@ -113,8 +117,18 @@ SLPServer::SLPServer(ola::network::UDPSocket *udp_socket,
   }
 #endif
 
-  export_map->GetIntegerVar(K_CONFIG_DA_BEAT)->Set(options.config_da_beat);
-  export_map->GetBoolVar(K_DA_ENABLED)->Set(options.enable_da);
+  if (options.scopes.empty()) {
+    m_scope_list.push_back(DEFAULT_SCOPE);
+  } else {
+    m_scope_list.reserve(options.scopes.size());
+    set<string>::const_iterator iter = options.scopes.begin();
+    for (; iter != options.scopes.end(); ++iter)
+      m_scope_list.push_back(*iter);
+  }
+  export_map->GetIntegerVar(CONFIG_DA_BEAT_VAR)->Set(options.config_da_beat);
+  export_map->GetBoolVar(DA_ENABLED_VAR)->Set(options.enable_da);
+  string joined_scopes = ola::StringJoin(",", m_scope_list);
+  export_map->GetStringVar(SCOPE_LIST_VAR)->Set(joined_scopes);
 }
 
 
@@ -166,6 +180,9 @@ bool SLPServer::Init() {
         m_config_da_beat * 1000,
         NewCallback(this, &SLPServer::SendDABeat));
     SendDABeat();
+  } else {
+    // Send DA Locate
+    SendFindDAService();
   }
   return true;
 }
@@ -425,58 +442,40 @@ bool SLPServer::LookForStaleEntries() {
   }
   return true;
 }
+*/
 
 
- * Called when we get a UDP message
-void SLPServer::UDPMessage(const IPV4Address &ip,
-                           uint32_t vector,
-                           const uint8_t *data,
-                           unsigned int length) {
-  OLA_INFO << "got udp message from " << ip << ", vector is " << vector;
-
-  if (vector == TLP_REGISTER_VECTOR) {
-    if (length != 8) {
-      OLA_WARN << "data length wasn't 8!";
-      return;
-    }
-
-    // extract the uid & lifetime
-    UID client_uid(data);
-    uint16_t lifetime;
-    memcpy(reinterpret_cast<void*>(&lifetime), data + 6, 2);
-    lifetime = NetworkToHost(lifetime);
-    OLA_INFO << "UID " << client_uid << ", lifetime " << lifetime;
-
-    CreateNodeEntry(ip, client_uid, lifetime);
-
-    // send an ack
-    ola::plugin::e131::OutgoingUDPTransport transport(
-        &m_outgoing_udp_transport,
-        ip,
-        TLP_PORT);
-
-    bool ok = m_root_sender.SendEmpty(TLP_REGISTER_ACK_VECTOR, &transport);
-    if (!ok)
-      OLA_WARN << "Failed to send ack";
-  } else {
-    OLA_INFO << "Got message with unknown vector " << vector;
-  }
-}
+/**
+ * Send a multicast DAAdvert packet
  */
-
 bool SLPServer::SendDABeat() {
   IOQueue output;
-  vector<string> scopes;
-  scopes.push_back("default");
 
   std::ostringstream str;
-  str << "service:directory-agent://" << m_iface_address;
+  str << DA_SERVICE << "://" << m_iface_address;
   SLPPacketBuilder::BuildDAAdvert(&output,
                                   0, true, 0,
                                   m_boot_time.Seconds(),
                                   str.str(),
-                                  scopes);
+                                  m_scope_list);
   OLA_INFO << "Sending Multicast DAAdvert";
+  m_udp_socket->SendTo(&output, m_multicast_address, DEFAULT_SLP_PORT);
+  return true;
+}
+
+
+/**
+ * Send a Service Request for 'directory-agent'
+ */
+bool SLPServer::SendFindDAService() {
+  IOQueue output;
+  SLPPacketBuilder::BuildServiceRequest(&output,
+                                        0,
+                                        m_da_pr_list,
+                                        DA_SERVICE,
+                                        m_scope_list);
+
+  OLA_INFO << "Sending Multicast ServiceRequest for " << DA_SERVICE;
   m_udp_socket->SendTo(&output, m_multicast_address, DEFAULT_SLP_PORT);
   return true;
 }
