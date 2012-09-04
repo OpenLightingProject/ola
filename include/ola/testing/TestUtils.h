@@ -22,6 +22,7 @@
 #define INCLUDE_OLA_TESTING_TESTUTILS_H_
 
 #include <stdint.h>
+#include <cppunit/extensions/HelperMacros.h>
 
 
 namespace ola {
@@ -33,6 +34,30 @@ void ASSERT_DATA_EQUALS(unsigned int line,
                         unsigned int expected_length,
                         const uint8_t *actual,
                         unsigned int actual_length);
+
+// Useful macros. This allows us to switch between unit testing frameworks in
+// the future.
+#define OLA_ASSERT(condition)  \
+  CPPUNIT_ASSERT(condition)
+
+#define OLA_ASSERT_TRUE(condition)  \
+  CPPUNIT_ASSERT(condition)
+
+#define OLA_ASSERT_FALSE(condition)  \
+  CPPUNIT_ASSERT(!(condition))
+
+#define OLA_ASSERT_EQ(expected, output)  \
+ CPPUNIT_ASSERT_EQUAL(expected, output)
+
+#define OLA_ASSERT_NE(expected, output)  \
+ CPPUNIT_ASSERT((expected) != (output))
+
+#define OLA_ASSERT_LT(expected, output)  \
+ CPPUNIT_ASSERT((expected) < (output))
+
+#define OLA_ASSERT_GT(expected, output)  \
+ CPPUNIT_ASSERT((expected) > (output))
+
 }  // testing
 }  // ola
 #endif  // INCLUDE_OLA_TESTING_TESTUTILS_H_

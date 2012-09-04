@@ -44,5 +44,22 @@ bool IPV4SocketAddress::ToSockAddr(struct sockaddr *addr,
   v4_addr->sin_addr = m_host.Address();
   return true;
 }
+
+
+/**
+ * Convert the sockaddr to a sockaddr_in.
+ * The caller should check that Family() is AF_INET before calling this.
+ */
+IPV4SocketAddress GenericSocketAddress::V4Addr() const {
+  if (Family() == AF_INET) {
+    const struct sockaddr_in *v4_addr =
+      reinterpret_cast<const struct sockaddr_in*>(&m_addr);
+    return IPV4SocketAddress(IPV4Address(v4_addr->sin_addr),
+                             NetworkToHost(v4_addr->sin_port));
+  } else {
+    OLA_FATAL << "Invalid conversion of socket family " << Family();
+    return IPV4SocketAddress(IPV4Address(), 0);
+  }
+}
 }  // network
 }  // ola
