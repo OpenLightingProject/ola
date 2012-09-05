@@ -26,7 +26,7 @@
 #include <ola/io/SelectServerInterface.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/SocketAddress.h>
-#include <ola/network/Socket.h>
+#include <ola/network/TCPSocket.h>
 #include <set>
 
 

@@ -22,8 +22,8 @@
 
 #include <string>
 #include "ola/Callback.h"
-#include "ola/network/Socket.h"
 #include "ola/network/SocketAddress.h"
+#include "ola/network/TCPSocket.h"
 #include "plugins/stageprofi/StageProfiWidgetLan.h"
 
 namespace ola {
