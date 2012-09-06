@@ -1,7 +1,7 @@
 Template: ola/daemon
 Type: boolean
 Default: false
-Description: Should the OLA daemon be started at boot?
+Description: Do you want to start the OLA daemon at boot time?
  The OLA daemon is needed to use OLA.
  .
  You have the option of starting the OLA daemon automatically on

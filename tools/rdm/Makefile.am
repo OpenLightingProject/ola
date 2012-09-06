@@ -69,7 +69,7 @@ rdminit_PYTHON = __init__.py
 
 # RDM Test Scripts
 rdmtestsexecdir = $(bindir)
-rdmtestsexec_SCRIPTS = rdm_model_collector.py \
+dist_rdmtestsexec_SCRIPTS = rdm_model_collector.py \
                        rdm_responder_test.py \
                        rdm_test_server.py
 
