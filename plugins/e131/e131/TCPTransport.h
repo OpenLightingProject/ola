@@ -35,7 +35,7 @@
 #include <memory>
 #include "ola/io/OutputStream.h"
 #include "ola/io/Descriptor.h"
-#include "ola/network/Socket.h"
+#include "ola/network/TCPSocket.h"
 #include "plugins/e131/e131/PDU.h"
 #include "plugins/e131/e131/Transport.h"
 

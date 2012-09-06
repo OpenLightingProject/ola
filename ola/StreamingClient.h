@@ -27,7 +27,7 @@
 
 #include <ola/DmxBuffer.h>
 #include <ola/io/SelectServer.h>
-#include <ola/network/Socket.h>
+#include <ola/network/TCPSocket.h>
 
 namespace ola {
 

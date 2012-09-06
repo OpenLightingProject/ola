@@ -24,7 +24,7 @@
 #include <ola/io/BufferedWriteDescriptor.h>
 #include <ola/io/IOQueue.h>
 #include <ola/io/SelectServerInterface.h>
-#include <ola/network/Socket.h>
+#include <ola/network/TCPSocket.h>
 
 namespace ola {
 namespace network {

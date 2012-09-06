@@ -22,7 +22,7 @@
 #define OLA_AUTOSTART_H_
 
 #include <ola/BaseTypes.h>
-#include <ola/network/Socket.h>
+#include <ola/network/TCPSocket.h>
 
 namespace ola {
 namespace client {
