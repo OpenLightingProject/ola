@@ -83,13 +83,13 @@ binary-arch: build install
 	dh_testdir
 	dh_testroot
 	dh_install --list-missing
-#	dh_installmenu
-#	dh_installdebconf	
+	dh_installmenu
+	dh_installdebconf
 #	dh_installlogrotate
 #	dh_installemacsen
 #	dh_installpam
 #	dh_installmime
-#	dh_installinit
+	dh_installinit
 #	dh_installcron
 	dh_link
 	dh_strip
