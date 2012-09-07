@@ -69,6 +69,85 @@ paths = {
   '/DownloadResults': 'download_results',
 }
 
+class Error(Exception):
+  """Base exception class."""
+
+
+class LogReaderException(Error):
+  """Indicates a problem with the log reader."""
+
+
+class LogReader:
+  """Reads previously saved test results from a file."""
+  FILE_NAME_RE = r'[0-9a-f]{4}:[0-9a-f]{8}\.[0-9]{10}\.log$'
+
+  def __init__(self):
+    pass
+
+  def ReadContents(self, uid, timestamp):
+    """
+
+    Returns:
+      A tuple in the form (contents, filename)
+    """
+    log_name = "%s.%s.log" % (uid, timestamp)
+    if not self._CheckFilename(log_name):
+      raise LogReaderException('Invalid log file requested!')
+
+    filename = os.path.abspath(
+        os.path.join(settings['log_directory'], log_name))
+    if not os.path.isfile(filename):
+      raise LogReaderException('Missing log file! Please re-run tests')
+
+    try:
+      f = open(filename, 'rb')
+    except IOError as e:
+      raise LogReaderException(e)
+
+    test_data = pickle.load(f)
+    return self._FormatData(test_data), log_name
+
+  def _CheckFilename(self, filename):
+    return re.match(self.FILE_NAME_RE, filename) is not None
+
+  def _FormatData(self, test_data):
+    results_log = []
+    warnings = []
+    advisories = []
+
+    for test in test_data.get('test_results', []):
+      results_log.append('%s: %s' % (test['definition'], test['state']))
+      results_log.append(str(test['doc']))
+      results_log.extend(str(l) for l in test.get('debug', []))
+      results_log.append('')
+      warnings.extend(str(s) for s in test.get('warnings', []))
+      advisories.extend(str(s) for s in test.get('advisories', []))
+
+    results_log.append("------------------- Warnings --------------------")
+    results_log.extend(warnings)
+    results_log.append("------------------ Advisories -------------------")
+    results_log.extend(advisories)
+    results_log.append("----------------- By Category -------------------")
+
+    for category, counts in test_data.get('stats_by_catg', {}).iteritems():
+      passed = int(counts.get('passed', 0))
+      total = int(counts.get('total', 0))
+      try:
+        percent = passed / total * 100
+      except ZeroDivisionError:
+        percent = '-'
+      results_log.append(' %26s:   %3d / %3d    %s%%' %
+                         (category, passed, total, percent))
+
+    results_log.append("-------------------------------------------------")
+
+    final_stats = ''
+    for name, count in sorted(test_data.get('stats', {}).iteritems()):
+      final_stats += '%d %s  ' % (count, name)
+    results_log.append(final_stats)
+
+    return '\n'.join(results_log)
+
 
 """
   An instance of this class is created to serve every request.
@@ -282,89 +361,24 @@ class TestServerApplication(object):
     else:
       self.response.update({'logs_disabled': False})
 
-  def __is_valid_log_file(self, filename):
-    regex = re.compile('[0-9a-f]{4}:[0-9a-f]{8}\.[0-9]{10}\.log$')
-    if regex.match(filename) is not None:
-      return True
-    else:
-      return False
-
   def download_results(self, params):
-    uid = params['uid']
-    timestamp = params['timestamp']
-    log_name = "%s.%s.log" % (uid, timestamp)
+    uid = params.get('uid', '')
+    timestamp = params.get('timestamp', '')
+
+    reader = LogReader()
     try:
-      if not self.__is_valid_log_file(log_name):
-        self.__set_response_status(False)
-        self.__set_response_message('Invalid log file requested!')
-      else:
-        filename = os.path.abspath(os.path.join(settings['log_directory'], log_name))
-        if not os.path.isfile(filename):
-          self.__set_response_status(False)
-          self.__set_response_message('Missing log file! Please re-run tests')
-        else:
-          self.is_static_request = True
-          mimetype, encoding = mimetypes.guess_type(filename)
-          if mimetype:
-            self.headers.append(('Content-type', mimetype))
-          if encoding:
-            self.headers.append(('Content-encoding', encoding))
+      self.output, filename = reader.ReadContents(uid, timestamp)
+    except Error as e:
+      self.__set_response_status(False)
+      self.__set_response_message(e.message)
+      return
 
-          #Force downloading of file instead of showing it on the browser
-          headers = Headers(self.headers)
-          headers.add_header('Content-disposition', 'attachment', filename=log_name)
-
-          response = pickle.load(open(filename, 'rb'))
-          self.output = self.format_log_data(response)
-          stats = len(self.output)
-          self.headers.append(('Content-length', str(stats)))
-    except:
-      print traceback.print_exc()
-
-  def format_log_data(self, response):
-    results_log = []
-    for result in response['test_results']:
-      results_log.append('%s: %s' % (result['definition'], result['state']))
-      results_log.append(result['doc'])
-      results_log.append(str(result['debug']))
-      results_log.append('\n')
-
-    results_log.append("\n------------------- Warnings -------------------\n")
-
-    for result in response['test_results']:
-      for warning in result['warnings']:
-        results_log.append('%s' % (warning))
-
-    results_log.append("\n------------------- Advisories -------------------\n")
-
-    for result in response['test_results']:
-      for adv in result['advisories']:
-        results_log.append('%s' % (adv))
-
-    results_log.append("\n------------------- By Category -------------------\n")
-
-    stats_by_catg = response['stats_by_catg']
-    for result in stats_by_catg:
-      passed = int(stats_by_catg[result]['passed'])
-      total = int(stats_by_catg[result]['total'])
-      try:
-        percent = str(passed / total * 100)
-      except ZeroDivisionError:
-        percent = '-'
-      results_log.append(' %26s:   %3d / %3d    %s%%' % (result, passed, total, percent))
-
-    results_log.append("-------------------------------------------------\n")
-
-    stats = response['stats']
-
-    final_stats = ''
-
-    for result in sorted(stats.keys()):
-      final_stats += '%d %s  ' % (stats[result], result)
-
-    results_log.append(final_stats)
-    return '\n'.join(results_log)
-
+    size = len(self.output)
+    self.is_static_request = True
+    self.headers.append(('Content-type', 'text/plain'))
+    self.headers.append(('Content-length', '%d' % size))
+    self.headers.append(
+        ('Content-disposition', 'attachment; filename="%s"' % filename))
 
   def log_results(self, uid, timestamp):
     """Log the results to a file.
