@@ -31,7 +31,6 @@ import urlparse
 from time import time
 from optparse import OptionParser, OptionGroup, OptionValueError
 from wsgiref.simple_server import make_server
-from wsgiref.headers import Headers
 from ola.UID import UID
 from ola.ClientWrapper import ClientWrapper
 from ola.OlaClient import OLADNotRunningException
@@ -73,16 +72,40 @@ class Error(Exception):
   """Base exception class."""
 
 
-class LogReaderException(Error):
+class TestLoggerException(Error):
   """Indicates a problem with the log reader."""
 
 
-class LogReader:
+class TestLogger:
   """Reads previously saved test results from a file."""
   FILE_NAME_RE = r'[0-9a-f]{4}:[0-9a-f]{8}\.[0-9]{10}\.log$'
 
-  def __init__(self):
-    pass
+  def __init__(self, log_dir):
+    self._log_dir = log_dir
+
+  def SaveLog(self, uid, timestamp, contents):
+    """Log the results to a file.
+
+    Args:
+      uid: the UID
+      timestamp: the timestamp for the logs
+      contents: the contents to log
+
+    Returns:
+      True if we wrote the logfile, false otherwise.
+    """
+    filename = '%s.%d.log' % (uid, timestamp)
+    filename = os.path.join(self._log_dir, filename)
+
+    try:
+      log_file = open(filename, 'w')
+    except IOError as e:
+      raise TestLoggerException(
+          'Failed to write to %s: %s' % (filename, e.message))
+
+    pickle.dump(contents, log_file)
+    print 'Wrote log file %s' % (log_file.name)
+    log_file.close()
 
   def ReadContents(self, uid, timestamp):
     """
@@ -92,17 +115,17 @@ class LogReader:
     """
     log_name = "%s.%s.log" % (uid, timestamp)
     if not self._CheckFilename(log_name):
-      raise LogReaderException('Invalid log file requested!')
+      raise TestLoggerException('Invalid log file requested!')
 
     filename = os.path.abspath(
         os.path.join(settings['log_directory'], log_name))
     if not os.path.isfile(filename):
-      raise LogReaderException('Missing log file! Please re-run tests')
+      raise TestLoggerException('Missing log file! Please re-run tests')
 
     try:
       f = open(filename, 'rb')
     except IOError as e:
-      raise LogReaderException(e)
+      raise TestLoggerException(e)
 
     test_data = pickle.load(f)
     return self._FormatData(test_data), log_name
@@ -356,16 +379,19 @@ class TestServerApplication(object):
     tests, device = runner.RunTests(test_filter, False)
     self.__format_test_results(tests)
     self.response.update({'UID': str(uid)})
-    if not self.log_results(str(uid), int(time())):
-      self.response.update({'logs_disabled': True})
-    else:
+
+    log_saver = TestLogger(settings['log_directory'])
+    try:
+      log_saver.SaveLog(uid, time(), self.response)
       self.response.update({'logs_disabled': False})
+    except TestLoggerException:
+      self.response.update({'logs_disabled': True})
 
   def download_results(self, params):
     uid = params.get('uid', '')
     timestamp = params.get('timestamp', '')
 
-    reader = LogReader()
+    reader = TestLogger(settings['log_directory'])
     try:
       self.output, filename = reader.ReadContents(uid, timestamp)
     except Error as e:
@@ -379,30 +405,6 @@ class TestServerApplication(object):
     self.headers.append(('Content-length', '%d' % size))
     self.headers.append(
         ('Content-disposition', 'attachment; filename="%s"' % filename))
-
-  def log_results(self, uid, timestamp):
-    """Log the results to a file.
-
-    Args:
-      uid: the UID
-      timestamp: the timestamp for the logs
-
-    Returns:
-      True if we wrote the logfile, false otherwise.
-    """
-    filename = '%s.%d.log' % (uid, timestamp)
-    filename = os.path.join(dir, settings['log_directory'], filename)
-
-    try:
-      log_file = open(filename, 'w')
-    except IOError as e:
-      print 'Failed to open %s: %s' % (filename, e)
-      return False
-
-    pickle.dump(self.response, log_file)
-    print 'Written log file %s' % (log_file.name)
-    log_file.close()
-    return True
 
   def __format_test_results(self, tests):
     results = []
