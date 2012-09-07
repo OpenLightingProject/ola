@@ -130,7 +130,7 @@ RDMTests.prototype.bind_events_to_doms = function() {
   });
 
   $('#rdm-tests-results-button-run_again').click(function() {
-    rdmtests.validate_form();
+    rdmtests.run_tests(rdmtests.selected_tests);
   });
 
   $('#rdm-tests-results-button-download').click(function() {
@@ -242,7 +242,6 @@ RDMTests.prototype.query_server = function(request, params, callback) {
     data: params,
     dataType: 'json',
     success: function(data) {
-      RDMTests.timestamp = data['timestamp'];
       if (data['status'] == true) {
         callback(data);
       } else {
@@ -353,6 +352,7 @@ RDMTests.prototype.run_tests = function(test_filter) {
     'title': 'Running ' + test_filter.length + ' tests',
     'message': RDMTests.ajax_loader
   });
+  this.selected_tests = test_filter;
 
   this.query_server('/RunTests', {
     'u': $('#universe_options').val(),
@@ -365,6 +365,7 @@ RDMTests.prototype.run_tests = function(test_filter) {
           $('#slot_count').val() : 128),
     't': test_filter.join(',')
   }, function(data) {
+    RDMTests.timestamp = data['timestamp'];
     if (data['status'] == true) {
       var failed_tests = $('#rdm-tests-selection-failed_tests');
       failed_tests.html('');

@@ -83,17 +83,30 @@ class TestLogger:
   def __init__(self, log_dir):
     self._log_dir = log_dir
 
-  def SaveLog(self, uid, timestamp, contents):
+  def SaveLog(self, uid, timestamp, tests):
     """Log the results to a file.
 
     Args:
       uid: the UID
       timestamp: the timestamp for the logs
-      contents: the contents to log
+      tests: The list of Test objects
 
     Returns:
       True if we wrote the logfile, false otherwise.
     """
+    test_results = []
+    for test in tests:
+      test_results.append({
+          'advisories': test.advisories,
+          'category': test.category.__str__(),
+          'debug': test._debug,
+          'definition': test.__str__(),
+          'doc': test.__doc__,
+          'state': test.state.__str__(),
+          'warnings': test.warnings,
+      })
+
+    output = {'test_results':  test_results}
     filename = '%s.%d.log' % (uid, timestamp)
     filename = os.path.join(self._log_dir, filename)
 
@@ -103,7 +116,7 @@ class TestLogger:
       raise TestLoggerException(
           'Failed to write to %s: %s' % (filename, e.message))
 
-    pickle.dump(contents, log_file)
+    pickle.dump(output, log_file)
     print 'Wrote log file %s' % (log_file.name)
     log_file.close()
 
@@ -137,9 +150,34 @@ class TestLogger:
     results_log = []
     warnings = []
     advisories = []
+    count_by_category = {}
+    broken = 0
+    failed = 0
+    not_run = 0
+    passed = 0
 
-    for test in test_data.get('test_results', []):
-      results_log.append('%s: %s' % (test['definition'], test['state']))
+    tests = test_data.get('test_results', [])
+    total = len(tests)
+
+    for test in tests:
+      category = test['category']
+      state = test['state']
+      counts = count_by_category.setdefault(category, {'passed': 0, 'total': 0})
+
+      if state == str(TestState.PASSED):
+        counts['passed'] += 1
+        counts['total'] += 1
+        passed += 1
+      elif state == str(TestState.NOT_RUN):
+        not_run += 1
+      elif state == str(TestState.FAILED):
+        counts['total'] += 1
+        failed += 1
+      elif state == str(TestState.BROKEN):
+        counts['total'] += 1
+        broken += 1
+
+      results_log.append('%s: %s' % (test['definition'], test['state'].upper()))
       results_log.append(str(test['doc']))
       results_log.extend(str(l) for l in test.get('debug', []))
       results_log.append('')
@@ -152,23 +190,19 @@ class TestLogger:
     results_log.extend(advisories)
     results_log.append("----------------- By Category -------------------")
 
-    for category, counts in test_data.get('stats_by_catg', {}).iteritems():
-      passed = int(counts.get('passed', 0))
-      total = int(counts.get('total', 0))
+    for category, counts in sorted(count_by_category.items()):
+      cat_passed = counts['passed']
+      cat_total = counts['total']
       try:
-        percent = passed / total * 100
+        percent = cat_passed / cat_total * 100
       except ZeroDivisionError:
         percent = '-'
       results_log.append(' %26s:   %3d / %3d    %s%%' %
-                         (category, passed, total, percent))
+                         (category, cat_passed, cat_total, percent))
 
     results_log.append("-------------------------------------------------")
-
-    final_stats = ''
-    for name, count in sorted(test_data.get('stats', {}).iteritems()):
-      final_stats += '%d %s  ' % (count, name)
-    results_log.append(final_stats)
-
+    results_log.append('%d / %d tests run, %d passed, %d failed, %d broken' % (
+      total - not_run, total, passed, failed, broken))
     return '\n'.join(results_log)
 
 
@@ -382,8 +416,12 @@ class TestServerApplication(object):
 
     log_saver = TestLogger(settings['log_directory'])
     try:
-      log_saver.SaveLog(uid, time(), self.response)
-      self.response.update({'logs_disabled': False})
+      timestamp = int(time())
+      log_saver.SaveLog(uid, timestamp, tests)
+      self.response.update({
+        'logs_disabled': False,
+        'timestamp': timestamp
+      })
     except TestLoggerException:
       self.response.update({'logs_disabled': True})
 
@@ -484,7 +522,6 @@ class TestServerApplication(object):
     else:
       self.headers.append(('Content-type', 'application/json'))
       self.start(self.status, self.headers)
-      self.response.update({'timestamp': int(time())})
       json_response = json.dumps(self.response, sort_keys = True)
       yield(json_response)
 
