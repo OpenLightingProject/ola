@@ -372,9 +372,9 @@ class TestServerApplication(object):
       runner.RegisterTest(test)
 
     dmx_sender = DMXSender(self.wrapper,
-                          universe,
-                          dmx_frame_rate,
-                          slot_count)
+                           universe,
+                           dmx_frame_rate,
+                           slot_count)
 
     tests, device = runner.RunTests(test_filter, False)
     self.__format_test_results(tests)
@@ -417,27 +417,20 @@ class TestServerApplication(object):
       state = test.state.__str__()
       category = test.category.__str__()
 
-      stats_by_catg.setdefault(category, {})
-      stats_by_catg[category].setdefault('passed', 0)
-      stats_by_catg[category].setdefault('total', 0)
+      stats_by_catg.setdefault(category, {'passed': 0, 'total': 0})
 
       if test.state == TestState.PASSED:
         passed += 1
-        stats_by_catg[category]['passed'] = (1 +
-          stats_by_catg[category].get('passed', 0))
-
-        stats_by_catg[category]['total'] = (1 +
-          stats_by_catg[category].get('total', 0))
+        stats_by_catg[category]['passed'] += 1
+        stats_by_catg[category]['total'] += 1
 
       elif test.state == TestState.FAILED:
         failed += 1
-        stats_by_catg[category]['total'] = (1 +
-          stats_by_catg[category].get('total', 0))
+        stats_by_catg[category]['total'] += 1
 
       elif test.state == TestState.BROKEN:
         broken += 1
-        stats_by_catg[category]['total'] = (1 +
-          stats_by_catg[category].get('total', 0))
+        stats_by_catg[category]['total'] += 1
 
       elif test.state == TestState.NOT_RUN:
         not_run += 1
