@@ -90,6 +90,7 @@ binary-arch: build install
 #	dh_installpam
 #	dh_installmime
 	dh_installinit
+	dh_installudev --noscripts --name=ftdidmx
 #	dh_installcron
 	dh_link
 	dh_strip

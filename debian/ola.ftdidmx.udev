@@ -1,0 +1,1 @@
+ACTION=="add", BUS=="usb", SYSFS{idVendor}=="0403", SYSFS{idProduct}=="6001", GROUP:="dialout", MODE:="0660"
