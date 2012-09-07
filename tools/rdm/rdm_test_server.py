@@ -31,7 +31,6 @@ import urlparse
 from time import time
 from optparse import OptionParser, OptionGroup, OptionValueError
 from wsgiref.simple_server import make_server
-from wsgiref.headers import Headers
 from ola.UID import UID
 from ola.ClientWrapper import ClientWrapper
 from ola.OlaClient import OLADNotRunningException
@@ -68,6 +67,109 @@ paths = {
   '/GetTestCategories': 'get_test_categories',
   '/DownloadResults': 'download_results',
 }
+
+class Error(Exception):
+  """Base exception class."""
+
+
+class TestLoggerException(Error):
+  """Indicates a problem with the log reader."""
+
+
+class TestLogger:
+  """Reads previously saved test results from a file."""
+  FILE_NAME_RE = r'[0-9a-f]{4}:[0-9a-f]{8}\.[0-9]{10}\.log$'
+
+  def __init__(self, log_dir):
+    self._log_dir = log_dir
+
+  def SaveLog(self, uid, timestamp, contents):
+    """Log the results to a file.
+
+    Args:
+      uid: the UID
+      timestamp: the timestamp for the logs
+      contents: the contents to log
+
+    Returns:
+      True if we wrote the logfile, false otherwise.
+    """
+    filename = '%s.%d.log' % (uid, timestamp)
+    filename = os.path.join(self._log_dir, filename)
+
+    try:
+      log_file = open(filename, 'w')
+    except IOError as e:
+      raise TestLoggerException(
+          'Failed to write to %s: %s' % (filename, e.message))
+
+    pickle.dump(contents, log_file)
+    print 'Wrote log file %s' % (log_file.name)
+    log_file.close()
+
+  def ReadContents(self, uid, timestamp):
+    """
+
+    Returns:
+      A tuple in the form (contents, filename)
+    """
+    log_name = "%s.%s.log" % (uid, timestamp)
+    if not self._CheckFilename(log_name):
+      raise TestLoggerException('Invalid log file requested!')
+
+    filename = os.path.abspath(
+        os.path.join(settings['log_directory'], log_name))
+    if not os.path.isfile(filename):
+      raise TestLoggerException('Missing log file! Please re-run tests')
+
+    try:
+      f = open(filename, 'rb')
+    except IOError as e:
+      raise TestLoggerException(e)
+
+    test_data = pickle.load(f)
+    return self._FormatData(test_data), log_name
+
+  def _CheckFilename(self, filename):
+    return re.match(self.FILE_NAME_RE, filename) is not None
+
+  def _FormatData(self, test_data):
+    results_log = []
+    warnings = []
+    advisories = []
+
+    for test in test_data.get('test_results', []):
+      results_log.append('%s: %s' % (test['definition'], test['state']))
+      results_log.append(str(test['doc']))
+      results_log.extend(str(l) for l in test.get('debug', []))
+      results_log.append('')
+      warnings.extend(str(s) for s in test.get('warnings', []))
+      advisories.extend(str(s) for s in test.get('advisories', []))
+
+    results_log.append("------------------- Warnings --------------------")
+    results_log.extend(warnings)
+    results_log.append("------------------ Advisories -------------------")
+    results_log.extend(advisories)
+    results_log.append("----------------- By Category -------------------")
+
+    for category, counts in test_data.get('stats_by_catg', {}).iteritems():
+      passed = int(counts.get('passed', 0))
+      total = int(counts.get('total', 0))
+      try:
+        percent = passed / total * 100
+      except ZeroDivisionError:
+        percent = '-'
+      results_log.append(' %26s:   %3d / %3d    %s%%' %
+                         (category, passed, total, percent))
+
+    results_log.append("-------------------------------------------------")
+
+    final_stats = ''
+    for name, count in sorted(test_data.get('stats', {}).iteritems()):
+      final_stats += '%d %s  ' % (count, name)
+    results_log.append(final_stats)
+
+    return '\n'.join(results_log)
 
 
 """
@@ -270,125 +372,39 @@ class TestServerApplication(object):
       runner.RegisterTest(test)
 
     dmx_sender = DMXSender(self.wrapper,
-                          universe,
-                          dmx_frame_rate,
-                          slot_count)
+                           universe,
+                           dmx_frame_rate,
+                           slot_count)
 
     tests, device = runner.RunTests(test_filter, False)
     self.__format_test_results(tests)
     self.response.update({'UID': str(uid)})
-    if not self.log_results(str(uid), int(time())):
-      self.response.update({'logs_disabled': True})
-    else:
-      self.response.update({'logs_disabled': False})
 
-  def __is_valid_log_file(self, filename):
-    regex = re.compile('[0-9a-f]{4}:[0-9a-f]{8}\.[0-9]{10}\.log$')
-    if regex.match(filename) is not None:
-      return True
-    else:
-      return False
+    log_saver = TestLogger(settings['log_directory'])
+    try:
+      log_saver.SaveLog(uid, time(), self.response)
+      self.response.update({'logs_disabled': False})
+    except TestLoggerException:
+      self.response.update({'logs_disabled': True})
 
   def download_results(self, params):
-    uid = params['uid']
-    timestamp = params['timestamp']
-    log_name = "%s.%s.log" % (uid, timestamp)
+    uid = params.get('uid', '')
+    timestamp = params.get('timestamp', '')
+
+    reader = TestLogger(settings['log_directory'])
     try:
-      if not self.__is_valid_log_file(log_name):
-        self.__set_response_status(False)
-        self.__set_response_message('Invalid log file requested!')
-      else:
-        filename = os.path.abspath(os.path.join(settings['log_directory'], log_name))
-        if not os.path.isfile(filename):
-          self.__set_response_status(False)
-          self.__set_response_message('Missing log file! Please re-run tests')
-        else:
-          self.is_static_request = True
-          mimetype, encoding = mimetypes.guess_type(filename)
-          if mimetype:
-            self.headers.append(('Content-type', mimetype))
-          if encoding:
-            self.headers.append(('Content-encoding', encoding))
+      self.output, filename = reader.ReadContents(uid, timestamp)
+    except Error as e:
+      self.__set_response_status(False)
+      self.__set_response_message(e.message)
+      return
 
-          #Force downloading of file instead of showing it on the browser
-          headers = Headers(self.headers)
-          headers.add_header('Content-disposition', 'attachment', filename=log_name)
-
-          response = pickle.load(open(filename, 'rb'))
-          self.output = self.format_log_data(response)
-          stats = len(self.output)
-          self.headers.append(('Content-length', str(stats)))
-    except:
-      print traceback.print_exc()
-
-  def format_log_data(self, response):
-    results_log = []
-    for result in response['test_results']:
-      results_log.append('%s: %s' % (result['definition'], result['state']))
-      results_log.append(result['doc'])
-      results_log.append(str(result['debug']))
-      results_log.append('\n')
-
-    results_log.append("\n------------------- Warnings -------------------\n")
-
-    for result in response['test_results']:
-      for warning in result['warnings']:
-        results_log.append('%s' % (warning))
-
-    results_log.append("\n------------------- Advisories -------------------\n")
-
-    for result in response['test_results']:
-      for adv in result['advisories']:
-        results_log.append('%s' % (adv))
-
-    results_log.append("\n------------------- By Category -------------------\n")
-
-    stats_by_catg = response['stats_by_catg']
-    for result in stats_by_catg:
-      passed = int(stats_by_catg[result]['passed'])
-      total = int(stats_by_catg[result]['total'])
-      try:
-        percent = str(passed / total * 100)
-      except ZeroDivisionError:
-        percent = '-'
-      results_log.append(' %26s:   %3d / %3d    %s%%' % (result, passed, total, percent))
-
-    results_log.append("-------------------------------------------------\n")
-
-    stats = response['stats']
-
-    final_stats = ''
-
-    for result in sorted(stats.keys()):
-      final_stats += '%d %s  ' % (stats[result], result)
-
-    results_log.append(final_stats)
-    return '\n'.join(results_log)
-
-
-  def log_results(self, uid, timestamp):
-    """Log the results to a file.
-
-    Args:
-      uid: the UID
-      timestamp: the timestamp for the logs
-
-    Returns:
-      True if we wrote the logfile, false otherwise.
-    """
-    filename = '%s.%d.log' % (uid, timestamp)
-    filename = os.path.join(dir, settings['log_directory'], filename)
-
-    try:
-      log_file = open(filename, 'w')
-    except IOError as e:
-      print 'Failed to open %s: %s' % (filename, e)
-      return False
-
-    pickle.dump(self.response, log_file)
-    print 'Written log file %s' % (log_file.name)
-    log_file.close()
-    return True
+    size = len(self.output)
+    self.is_static_request = True
+    self.headers.append(('Content-type', 'text/plain'))
+    self.headers.append(('Content-length', '%d' % size))
+    self.headers.append(
+        ('Content-disposition', 'attachment; filename="%s"' % filename))
 
   def __format_test_results(self, tests):
     results = []
@@ -401,27 +417,20 @@ class TestServerApplication(object):
       state = test.state.__str__()
       category = test.category.__str__()
 
-      stats_by_catg.setdefault(category, {})
-      stats_by_catg[category].setdefault('passed', 0)
-      stats_by_catg[category].setdefault('total', 0)
+      stats_by_catg.setdefault(category, {'passed': 0, 'total': 0})
 
       if test.state == TestState.PASSED:
         passed += 1
-        stats_by_catg[category]['passed'] = (1 +
-          stats_by_catg[category].get('passed', 0))
-
-        stats_by_catg[category]['total'] = (1 +
-          stats_by_catg[category].get('total', 0))
+        stats_by_catg[category]['passed'] += 1
+        stats_by_catg[category]['total'] += 1
 
       elif test.state == TestState.FAILED:
         failed += 1
-        stats_by_catg[category]['total'] = (1 +
-          stats_by_catg[category].get('total', 0))
+        stats_by_catg[category]['total'] += 1
 
       elif test.state == TestState.BROKEN:
         broken += 1
-        stats_by_catg[category]['total'] = (1 +
-          stats_by_catg[category].get('total', 0))
+        stats_by_catg[category]['total'] += 1
 
       elif test.state == TestState.NOT_RUN:
         not_run += 1
