@@ -23,6 +23,7 @@
 
 #include <ola/network/IPV4Address.h>
 #include <stdint.h>
+#include <sys/socket.h>
 #include <sstream>
 #include <string>
 
