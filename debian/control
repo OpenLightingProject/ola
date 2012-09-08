@@ -4,7 +4,7 @@ Maintainer: RenZO <renzo@imaginux.com>
 Build-Depends: debhelper (>= 7), autotools-dev
 Standards-Version: 3.8.0
 Section: libs
-Homepage: http://code.google.com/p/linux-lighting/
+Homepage: http://code.google.com/p/open-lighting/
 
 Package: ola-dev
 Section: libdevel
