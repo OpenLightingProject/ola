@@ -4,7 +4,6 @@ EXTRA_DIST = changelog \
              control \
              copyright \
              dirs \
-             docs \
              Makefile \
              Makefile.am \
              Makefile.in \
@@ -12,6 +11,7 @@ EXTRA_DIST = changelog \
              ola-dev.dirs \
              ola-dev.install \
              ola.dirs \
+             ola.docs \
              ola.init \
              ola.install \
              ola.postinst \
@@ -20,4 +20,5 @@ EXTRA_DIST = changelog \
              ola-rdm-tests.dirs \
              ola-rdm-tests.install \
              ola.templates \
+             ola.udev \
              rules
