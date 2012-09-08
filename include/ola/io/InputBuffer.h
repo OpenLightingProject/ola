@@ -13,23 +13,32 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * SelectServerTester.h
- * Runs all the SelectServer tests
- * Copyright (C) 2005-2008 Simon Newton
+ * InputBuffer.h
+ * An Abstract base class that represents streams that can be read from.
+ * Copyright (C) 2012 Simon Newton
  */
 
-#include <cppunit/CompilerOutputter.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
-#include <cppunit/ui/text/TestRunner.h>
+#ifndef INCLUDE_OLA_IO_INPUTBUFFER_H_
+#define INCLUDE_OLA_IO_INPUTBUFFER_H_
 
-int main(int argc, char* argv[]) {
-  CppUnit::Test *suite = CppUnit::TestFactoryRegistry::getRegistry().makeTest();
-  CppUnit::TextUi::TestRunner runner;
-  runner.addTest(suite);
-  runner.setOutputter(
-      new CppUnit::CompilerOutputter(&runner.result(), std::cerr));
-  bool wasSucessful = runner.run();
-  return wasSucessful ? 0 : 1;
-  (void) argc;
-  (void) argv;
-}
+#include <stdint.h>
+
+namespace ola {
+namespace io {
+
+/**
+ * InputBuffer.
+ */
+class InputBuffer {
+  public:
+    virtual ~InputBuffer() {}
+
+    /**
+     * Copy the next length bytes to *data. Less than length bytes may be
+     * returned if the end of the buffer is reached.
+     */
+    virtual void Get(uint8_t *data, unsigned int *length) = 0;
+};
+}  // io
+}  // ola
+#endif  // INCLUDE_OLA_IO_INPUTBUFFER_H_
