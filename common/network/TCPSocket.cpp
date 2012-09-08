@@ -95,7 +95,7 @@ TCPSocket* TCPSocket::Connect(const SocketAddress &endpoint) {
   struct sockaddr server_address;
 
   if (!endpoint.ToSockAddr(&server_address, sizeof(server_address)))
-    return false;
+    return NULL;
 
   int sd = socket(endpoint.Family(), SOCK_STREAM, 0);
   if (sd < 0) {
