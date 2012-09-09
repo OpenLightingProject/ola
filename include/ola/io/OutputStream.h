@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * OutputStream.h
- * A class that you can write binary data to.
+ * A class that you can write structed data to.
  * Copyright (C) 2012 Simon Newton
  */
 
@@ -22,31 +22,65 @@
 #define INCLUDE_OLA_IO_OUTPUTSTREAM_H_
 
 #include <stdint.h>
+#include <ola/io/OutputBuffer.h>
 
 namespace ola {
 namespace io {
 
 /**
- * OutputStream
+ * OutputStreamInterface. The Abstract base class for all OutputStreams.
+ * Similar to ostream.
  */
-class OutputStream {
+class OutputStreamInterface {
   public:
-    virtual ~OutputStream() {}
-
-    virtual bool Empty() const = 0;
-
-    // The size
-    virtual unsigned int Size() const = 0;
+    virtual ~OutputStreamInterface() {}
 
     // Append some data to this OutputQueue
     virtual void Write(const uint8_t *data, unsigned int length) = 0;
 
-    virtual OutputStream& operator<<(uint8_t) = 0;
-    virtual OutputStream& operator<<(uint16_t) = 0;
-    virtual OutputStream& operator<<(uint32_t) = 0;
-    virtual OutputStream& operator<<(int8_t) = 0;
-    virtual OutputStream& operator<<(int16_t) = 0;
-    virtual OutputStream& operator<<(int32_t) = 0;
+    virtual OutputStreamInterface& operator<<(uint8_t) = 0;
+    virtual OutputStreamInterface& operator<<(uint16_t) = 0;
+    virtual OutputStreamInterface& operator<<(uint32_t) = 0;
+    virtual OutputStreamInterface& operator<<(int8_t) = 0;
+    virtual OutputStreamInterface& operator<<(int16_t) = 0;
+    virtual OutputStreamInterface& operator<<(int32_t) = 0;
+};
+
+
+/**
+ * OutputStream. This writes data to an OutputBuffer
+ */
+class OutputStream: public OutputStreamInterface {
+  public:
+    // Ownership of the OutputBuffer is not transferred.
+    explicit OutputStream(OutputBufferInterface *buffer)
+        : m_buffer(buffer) {
+    }
+    virtual ~OutputStream() {}
+
+    // Append some data directly to this OutputBuffer
+    void Write(const uint8_t *data, unsigned int length) {
+      m_buffer->Write(data, length);
+    }
+
+    OutputStream& operator<<(uint8_t val) { return Write(val); }
+    OutputStream& operator<<(uint16_t val) { return Write(val); }
+    OutputStream& operator<<(uint32_t val) { return Write(val); }
+    OutputStream& operator<<(int8_t val) { return Write(val); }
+    OutputStream& operator<<(int16_t val) { return Write(val); }
+    OutputStream& operator<<(int32_t val) { return Write(val); }
+
+  private:
+    OutputBufferInterface *m_buffer;
+
+    template<typename T>
+    OutputStream& Write(const T &val) {
+      m_buffer->Write(reinterpret_cast<const uint8_t*>(&val), sizeof(val));
+      return *this;
+    }
+
+    OutputStream(const OutputStream&);
+    OutputStream& operator=(const OutputStream&);
 };
 }  // io
 }  // ola

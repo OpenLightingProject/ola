@@ -13,7 +13,6 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
  * Copyright (C) 2012 Ravindra Nath Kakarla
  */
 
@@ -22,10 +21,19 @@
  * RDMTests class
  */
 RDMTests = function() {
+  this.notification = $('#rdm-tests-notification');
+  this.notification.dialog({
+      autoOpen: false,
+      draggable: false,
+      height: 140,
+      modal: true,
+      resizable: false,
+      dialogClass: 'no-close',
+  });
 };
 
 
-rdmtests = new RDMTests();
+rdmtests = undefined;
 
 
 /**
@@ -56,18 +64,38 @@ RDMTests.TEST_RESULTS = new Array();
  *  }
  */
 RDMTests.prototype.set_notification = function(options) {
-  if (options.title != undefined || options.title != null) {
-    $('#rdm-tests-notification-title').html(options.title);
-  }
-  if (options.message != undefined || options.message != null) {
-    $('#rdm-tests-notification-message').html(options.message);
-  }
+  /*
   if (options.is_dismissable != undefined || options.is_dismissable != null) {
     if (options.is_dismissable == true) {
       $('#rdm-tests-notification-button').show();
     }
   }
-  $('#rdm-tests-notification').show();
+  */
+  var title = "";
+  if (options.title != undefined || options.title != null) {
+    title = options.title;
+  }
+  this.notification.dialog('option', 'title', title);
+
+  var message = "";
+  if (options.message != undefined || options.message != null) {
+    message = options.message;
+  }
+  this.notification.html(message);
+
+  if (options.is_dismissable != undefined || options.is_dismissable != null) {
+    this.notification.dialog('option', 'buttons', [
+      {
+        text: "Ok",
+        click: function() { $(this).dialog("close"); }
+      }
+    ]);
+  } else {
+    this.notification.dialog('option', 'buttons', []);
+  }
+
+  this.notification.dialog('open');
+
 };
 
 
@@ -76,10 +104,8 @@ RDMTests.prototype.set_notification = function(options) {
  * @this {RDMTests}
  */
 RDMTests.prototype.clear_notification = function() {
-  $('#rdm-tests-notification-title').empty();
-  $('#rdm-tests-notification-message').empty();
-  $('#rdm-tests-notification-button').hide();
-  $('#rdm-tests-notification').hide();
+  this.notification.html();
+  this.notification.dialog('close');
 };
 
 
@@ -130,7 +156,7 @@ RDMTests.prototype.bind_events_to_doms = function() {
   });
 
   $('#rdm-tests-results-button-run_again').click(function() {
-    rdmtests.validate_form();
+    rdmtests.run_tests(rdmtests.selected_tests);
   });
 
   $('#rdm-tests-results-button-download').click(function() {
@@ -242,7 +268,6 @@ RDMTests.prototype.query_server = function(request, params, callback) {
     data: params,
     dataType: 'json',
     success: function(data) {
-      RDMTests.timestamp = data['timestamp'];
       if (data['status'] == true) {
         callback(data);
       } else {
@@ -351,8 +376,9 @@ RDMTests.prototype.fetch_test_defs = function() {
 RDMTests.prototype.run_tests = function(test_filter) {
   this.set_notification({
     'title': 'Running ' + test_filter.length + ' tests',
-    'message': RDMTests.ajax_loader
+    'message': (RDMTests.ajax_loader + '<br/>This may take a few minutes.'),
   });
+  this.selected_tests = test_filter;
 
   this.query_server('/RunTests', {
     'u': $('#universe_options').val(),
@@ -365,6 +391,7 @@ RDMTests.prototype.run_tests = function(test_filter) {
           $('#slot_count').val() : 128),
     't': test_filter.join(',')
   }, function(data) {
+    RDMTests.timestamp = data['timestamp'];
     if (data['status'] == true) {
       var failed_tests = $('#rdm-tests-selection-failed_tests');
       failed_tests.html('');
@@ -634,6 +661,7 @@ RDMTests.prototype.validate_form = function() {
 
 
 $(document).ready(function() {
+  rdmtests = new RDMTests();
   rdmtests.bind_events_to_doms();
   rdmtests.update_universe_list();
   rdmtests.fetch_test_defs();

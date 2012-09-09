@@ -25,6 +25,7 @@
 
 #include "ola/Logging.h"
 #include "ola/io/IOQueue.h"
+#include "ola/io/OutputStream.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/UID.h"
@@ -37,6 +38,7 @@ namespace plugin {
 namespace e131 {
 
 using ola::io::IOQueue;
+using ola::io::OutputStream;
 using ola::network::HostToNetwork;
 using ola::rdm::RDMGetRequest;
 using ola::rdm::UID;
@@ -104,7 +106,8 @@ void RDMPDUTest::testEmptyPDUToOutputStream() {
   CPPUNIT_ASSERT_EQUAL(3u, pdu.Size());
 
   IOQueue output;
-  pdu.Write(&output);
+  OutputStream stream(&output);
+  pdu.Write(&stream);
   CPPUNIT_ASSERT_EQUAL(3u, output.Size());
 
   uint8_t *pdu_data = new uint8_t[output.Size()];
@@ -188,7 +191,8 @@ void RDMPDUTest::testSimpleRDMPDUToOutputStream() {
   CPPUNIT_ASSERT_EQUAL(28u, pdu.Size());
 
   IOQueue output;
-  pdu.Write(&output);
+  OutputStream stream(&output);
+  pdu.Write(&stream);
   CPPUNIT_ASSERT_EQUAL(28u, output.Size());
 
   uint8_t *pdu_data = new uint8_t[output.Size()];
@@ -283,7 +287,8 @@ void RDMPDUTest::testRDMPDUWithDataToOutputStream() {
   CPPUNIT_ASSERT_EQUAL(32u, pdu.Size());
 
   IOQueue output;
-  pdu.Write(&output);
+  OutputStream stream(&output);
+  pdu.Write(&stream);
   CPPUNIT_ASSERT_EQUAL(32u, output.Size());
 
   uint8_t *pdu_data = new uint8_t[output.Size()];

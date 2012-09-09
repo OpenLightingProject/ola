@@ -1,5 +1,12 @@
-X/Y/2012 ola-0.8.23
+9/9/2012 ola-0.8.23
  * Added the ftdidmx plugin thanks to Rui Barreiros - #164
+ * Debian package improvements from RenZO (init script)
+ * RDM Test server is now installed if --enable-rdm-tests is used
+ * Bug fixes in the RDM Test Server
+ * Switched to the new logo
+ * Fixed the build for gcc 4.7.1
+ * Network library cleanup
+ * Added the ola_universe_stats scripts
 
 10/8/2012 ola-0.8.22
  * Added the first version of the RDM Test Server

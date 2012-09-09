@@ -18,8 +18,8 @@
  * Copyright (C) 2010 Simon Newton
  */
 
-#ifndef PLUGINS_ARTNET_MOCKUDPSOCKET_H_
-#define PLUGINS_ARTNET_MOCKUDPSOCKET_H_
+#ifndef INCLUDE_OLA_TESTING_MOCKUDPSOCKET_H_
+#define INCLUDE_OLA_TESTING_MOCKUDPSOCKET_H_
 
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
@@ -146,4 +146,4 @@ class SocketVerifier {
   private:
     MockUDPSocket *m_socket;
 };
-#endif  // PLUGINS_ARTNET_MOCKUDPSOCKET_H_
+#endif  // INCLUDE_OLA_TESTING_MOCKUDPSOCKET_H_

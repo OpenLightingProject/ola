@@ -2,14 +2,14 @@ Source: ola
 Priority: extra
 Maintainer: RenZO <renzo@imaginux.com>
 Build-Depends: debhelper (>= 7), autotools-dev
-Standards-Version: 3.8.0
+Standards-Version: 3.9.1
 Section: libs
-Homepage: http://code.google.com/p/linux-lighting/
+Homepage: http://code.google.com/p/open-lighting/
 
 Package: ola-dev
 Section: libdevel
 Architecture: any
-Depends: ola (= ${binary:Version})
+Depends: ola (= ${binary:Version}), ${misc:Depends}
 Description: Open Lighting Architecture
  The Open Lighting Architecture (OLA) provides a plugin framework for
  distributing DMX512 control signals on Mac and Linux.
@@ -19,8 +19,18 @@ Description: Open Lighting Architecture
 Package: ola-python
 Section: libs
 Architecture: all
-Depends: ola (= ${binary:Version}), python, python-protobuf
-Description: Open Lighting Architecture (Python Classes and RDM Tests)
+Depends: ola (= ${binary:Version}), ${python:Depends}, ${misc:Depends}, python-protobuf
+Description: OLA Python Classes
+ The Open Lighting Architecture (OLA) provides a plugin framework for
+ distributing DMX512 control signals on Mac and Linux.
+ .
+ OLA is written and maintained by Simon Newton <nomis52@gmail.com>
+
+Package: ola-rdm-tests
+Section: libs
+Architecture: all
+Depends: ola (= ${binary:Version}), ola-python (= ${binary:Version}), ${python:Depends}, ${misc:Depends}
+Description: OLA RDM Responder Tests
  The Open Lighting Architecture (OLA) provides a plugin framework for
  distributing DMX512 control signals on Mac and Linux.
  .
@@ -29,7 +39,7 @@ Description: Open Lighting Architecture (Python Classes and RDM Tests)
 Package: ola
 Section: electronics
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, adduser
 Description: Open Lighting Architecture
  The Open Lighting Architecture (OLA) provides a plugin framework for
  distributing DMX512 control signals on Mac and Linux.

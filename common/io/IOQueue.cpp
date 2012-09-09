@@ -100,6 +100,15 @@ void IOQueue::Write(const uint8_t *data, unsigned int length) {
 
 
 /**
+ * Read up to n bytes into the memory location data.
+ */
+void IOQueue::Read(uint8_t *data, unsigned int *n) {
+  *n = Peek(data, *n);
+  Pop(*n);
+}
+
+
+/**
  * Copy the first n bytes into the region pointed to by data
  */
 unsigned int IOQueue::Peek(uint8_t *data, unsigned int n) const {
@@ -246,7 +255,7 @@ void IOQueue::AppendBlock() {
   uint8_t *block = NULL;
   if (m_free_blocks.empty()) {
     block = new uint8_t[m_block_size];
-    OLA_DEBUG << "new block allocated at @" << (int*) block;
+    OLA_DEBUG << "new block allocated at @" << reinterpret_cast<int*>(block);
   } else {
     block = m_free_blocks.front();
     m_free_blocks.pop();

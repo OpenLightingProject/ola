@@ -1,3 +1,13 @@
+ola (0.8.23-1) unstable; urgency=low
+
+  * New upstream release
+  * New rdm-tests package
+  * Add the init script
+  * Add udev rules
+  * Add docs
+
+ -- RenZO <renzo@imaginux.com>  Sun, 09 Sep 2012 04:03:59 +0200
+
 ola (0.8.22-1) unstable; urgency=low
 
   * New upstream release

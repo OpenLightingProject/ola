@@ -23,6 +23,7 @@
 
 #include "ola/Logging.h"
 #include "ola/io/IOQueue.h"
+#include "ola/io/OutputStream.h"
 #include "ola/testing/TestUtils.h"
 #include "plugins/e131/e131/PDU.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
@@ -96,7 +97,8 @@ void PDUTest::testBlockToOutputStream() {
   block.AddPDU(&pdu42);
 
   IOQueue output;
-  block.Write(&output);
+  OutputStream stream(&output);
+  block.Write(&stream);
   CPPUNIT_ASSERT_EQUAL(12u, output.Size());
 
   uint8_t *block_data = new uint8_t[output.Size()];

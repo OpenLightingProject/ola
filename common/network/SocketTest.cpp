@@ -156,7 +156,6 @@ void SocketTest::testTCPSocketClientClose() {
  */
 void SocketTest::testTCPSocketServerClose() {
   IPV4SocketAddress socket_address(IPV4Address::Loopback(), 9010);
-  IPV4Address ip_address = IPV4Address::Loopback();
   ola::network::TCPSocketFactory socket_factory(
       ola::NewCallback(this, &SocketTest::NewConnectionSendAndClose));
   TCPAcceptingSocket socket(&socket_factory);

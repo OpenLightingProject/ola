@@ -30,7 +30,7 @@
 #include "ola/Logging.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
-#include "plugins/artnet/MockUDPSocket.h"
+#include "ola/testing/MockUDPSocket.h"
 
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;

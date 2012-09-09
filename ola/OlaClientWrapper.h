@@ -29,8 +29,8 @@
 #include <ola/OlaClient.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/io/SelectServer.h>
-#include <ola/network/Socket.h>
 #include <ola/network/SocketAddress.h>
+#include <ola/network/TCPSocket.h>
 #include <memory>
 
 namespace ola {

@@ -74,6 +74,8 @@ void *FtdiDmxThread::Run() {
   TimeStamp ts1, ts2;
   Clock clock;
   CheckTimeGranularity();
+  DmxBuffer buffer;
+
   int frameTime = static_cast<int>(floor(
     (static_cast<double>(1000) / m_frequency) + static_cast<double>(0.5)));
 
@@ -86,6 +88,11 @@ void *FtdiDmxThread::Run() {
       ola::thread::MutexLocker locker(&m_term_mutex);
       if (m_term)
         break;
+    }
+
+    {
+      ola::thread::MutexLocker locker(&m_buffer_mutex);
+      buffer.Set(m_buffer);
     }
 
     clock.CurrentTime(&ts1);
@@ -102,7 +109,7 @@ void *FtdiDmxThread::Run() {
     if (m_granularity == GOOD)
       usleep(DMX_MAB);
 
-    if (!m_widget->Write(m_buffer))
+    if (!m_widget->Write(buffer))
       goto framesleep;
 
   framesleep:

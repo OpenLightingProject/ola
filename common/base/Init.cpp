@@ -35,6 +35,7 @@
 #include <stdlib.h>
 #include <sys/resource.h>
 #include <sysexits.h>
+#include <unistd.h>
 
 #include <ola/base/Init.h>
 #include <ola/ExportMap.h>

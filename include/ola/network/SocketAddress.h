@@ -23,6 +23,7 @@
 
 #include <ola/network/IPV4Address.h>
 #include <stdint.h>
+#include <sys/socket.h>
 #include <sstream>
 #include <string>
 
@@ -66,6 +67,14 @@ class IPV4SocketAddress: public SocketAddress {
     }
 
     ~IPV4SocketAddress() {}
+
+    IPV4SocketAddress& operator=(const IPV4SocketAddress &other) {
+      if (this != &other) {
+        m_host = other.m_host;
+        m_port = other.m_port;
+      }
+      return *this;
+    }
 
     bool operator==(const IPV4SocketAddress &other) const {
       return m_host == other.m_host && m_port == other.m_port;
@@ -113,6 +122,13 @@ class GenericSocketAddress: public SocketAddress {
 
     uint16_t Family() const {
       return m_addr.sa_family;
+    }
+
+    GenericSocketAddress& operator=(const GenericSocketAddress &other) {
+      if (this != &other) {
+        memcpy(&m_addr, &(other.m_addr), sizeof(m_addr));
+      }
+      return *this;
     }
 
     bool ToSockAddr(struct sockaddr *addr, unsigned int size) const {
