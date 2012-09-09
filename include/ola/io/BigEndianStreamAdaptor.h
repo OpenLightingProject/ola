@@ -14,8 +14,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * BigEndianStreamAdaptor.h
- * Wraps another InputStreamInterface object and converts from Big Endian to
- * host order.
+ * Wraps another {Input,Output}StreamInterface object and converts from Big
+ * Endian to host order.
  * Copyright (C) 2012 Simon Newton
  */
 
@@ -31,12 +31,12 @@ namespace io {
 
 /**
  * BigEndianInputStreamAdaptor.
- * Wraps another InputStreamInterface object and converts from Big Endian to
+ * Wraps a InputStreamInterface object and converts from Big Endian to
  * host order.
  */
 class BigEndianInputStreamAdaptor: public InputStreamInterface {
   public:
-    // Ownership of buffer is not transferred.
+    // Ownership of the stream is not transferred.
     explicit BigEndianInputStreamAdaptor(InputStreamInterface *stream)
         : m_stream(stream) {
     }
@@ -53,7 +53,11 @@ class BigEndianInputStreamAdaptor: public InputStreamInterface {
     InputStreamInterface *m_stream;
 
     template <typename T>
-    bool ExtractAndConvert(T &val);
+    bool ExtractAndConvert(T &val) {
+      bool ok = (*m_stream) >> val;
+      val = ola::network::NetworkToHost(val);
+      return ok;
+    }
 
     BigEndianInputStreamAdaptor(const BigEndianInputStreamAdaptor&);
     BigEndianInputStreamAdaptor& operator=(const BigEndianInputStreamAdaptor&);
@@ -62,12 +66,12 @@ class BigEndianInputStreamAdaptor: public InputStreamInterface {
 
 /**
  * BigEndianOutputStreamAdaptor.
- * Wraps another OutputStreamInterface object and converts from Big Endian to
+ * Wraps a OutputStreamInterface object and converts from Big Endian to
  * host order.
  */
 class BigEndianOutputStreamAdaptor: public OutputStreamInterface {
   public:
-    // Ownership of buffer is not transferred.
+    // Ownership of the stream is not transferred.
     explicit BigEndianOutputStreamAdaptor(OutputStreamInterface *stream)
         : m_stream(stream) {
     }
@@ -105,27 +109,15 @@ class BigEndianOutputStreamAdaptor: public OutputStreamInterface {
     OutputStreamInterface *m_stream;
 
     template <typename T>
-    BigEndianOutputStreamAdaptor& ConvertAndWrite(T &val);
+    BigEndianOutputStreamAdaptor& ConvertAndWrite(T &val) {
+      (*m_stream) << ola::network::HostToNetwork(val);
+      return *this;
+    }
 
     BigEndianOutputStreamAdaptor(const BigEndianOutputStreamAdaptor&);
     BigEndianOutputStreamAdaptor& operator=(
         const BigEndianOutputStreamAdaptor&);
 };
-
-template <typename T>
-bool BigEndianInputStreamAdaptor::ExtractAndConvert(T &val) {
-  bool ok = (*m_stream) >> val;
-  val = ola::network::NetworkToHost(val);
-  return ok;
-}
-
-
-template <typename T>
-BigEndianOutputStreamAdaptor& BigEndianOutputStreamAdaptor::ConvertAndWrite(
-    T &val) {
-  (*m_stream) << ola::network::HostToNetwork(val);
-  return *this;
-}
 }  // io
 }  // ola
 #endif  // INCLUDE_OLA_IO_BIGENDIANSTREAMADAPTOR_H_

@@ -47,9 +47,9 @@
 
 #include <stdint.h>
 #include <unistd.h>
-#include <string>
-#include <ola/Callback.h>  // NOLINT
+#include <ola/Callback.h>
 #include <ola/io/IOQueue.h>
+#include <string>
 
 namespace ola {
 namespace io {

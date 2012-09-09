@@ -28,7 +28,7 @@ namespace ola {
 namespace io {
 
 /**
- * InputStream. Similar to istream.
+ * InputStreamInterface. Similar to istream.
  */
 class InputStreamInterface {
   public:
@@ -70,18 +70,15 @@ class InputStream: public InputStreamInterface {
     InputBufferInterface *m_buffer;
 
     template <typename T>
-    bool Extract(T &val);
+    bool Extract(T &val) {
+      unsigned int length = sizeof(val);
+      m_buffer->Read(reinterpret_cast<uint8_t*>(&val), &length);
+      return length == sizeof(val);
+    }
 
     InputStream(const InputStream&);
     InputStream& operator=(const InputStream&);
 };
-
-template <typename T>
-bool InputStream::Extract(T &val) {
-  unsigned int length = sizeof(val);
-  m_buffer->Read(reinterpret_cast<uint8_t*>(&val), &length);
-  return length == sizeof(val);
-}
 }  // io
 }  // ola
 #endif  // INCLUDE_OLA_IO_INPUTSTREAM_H_

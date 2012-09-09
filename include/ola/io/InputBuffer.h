@@ -14,7 +14,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * InputBuffer.h
- * An Abstract base class that represents streams that can be read from.
+ * An Abstract base class that represents a block of memory tha can be read
+ * from.
  * Copyright (C) 2012 Simon Newton
  */
 
