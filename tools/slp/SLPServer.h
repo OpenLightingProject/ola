@@ -38,6 +38,7 @@
 #include <vector>
 
 #include "tools/slp/Base.h"
+#include "tools/slp/SLPPacketParser.h"
 
 using ola::io::IOQueue;
 using ola::network::IPV4Address;
@@ -137,6 +138,7 @@ class SLPServer {
 
     // SLP memebers
     vector<string> m_scope_list;
+    SLPPacketParser m_packet_parser;
 
     // DA members
 

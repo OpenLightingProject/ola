@@ -41,26 +41,21 @@ namespace slp {
  */
 class SLPPacket {
   public:
-    uint8_t Version() const { return m_version; }
-    uint8_t FunctionID() const { return m_function_id; }
-    unsigned int Length() const { return m_length; }
-
-    bool Overflow() const { return m_flags & SLP_OVERFLOW; }
-    bool Fresh() const { return m_flags & SLP_FRESH; }
-    bool Multicast() const { return m_flags & SLP_REQUEST_MCAST; }
-    unsigned int NextExtOffset() const { return m_next_ext_offset; }
-    string Language() const { return m_lang; }
-
-  private:
-    uint8_t m_version;
-    uint8_t m_function_id;
-    unsigned int m_length;
-    uint16_t m_flags;
-    unsigned int m_next_ext_offset;
-    string m_lang;
-
-    SLPPacket() {}
+    SLPPacket()
+      : xid(0),
+        flags(0),
+        language("") {
+    }
     virtual ~SLPPacket() {}
+
+    // members
+    xid_t xid;
+    uint16_t flags;
+    string language;
+
+    bool Overflow() const { return flags & SLP_OVERFLOW; }
+    bool Fresh() const { return flags & SLP_FRESH; }
+    bool Multicast() const { return flags & SLP_REQUEST_MCAST; }
 };
 
 
@@ -69,14 +64,13 @@ class SLPPacket {
  */
 class ServiceRequestPacket: public SLPPacket {
   public:
+    ServiceRequestPacket()
+        : SLPPacket() {
+    }
 
-
-
-
-  private:
-
-
-
+    vector<IPV4Address> pr_list;
+    string service_type;
+    vector<string> scope_list;
 };
 
 
@@ -89,14 +83,25 @@ class SLPPacketParser {
     ~SLPPacketParser() {}
 
     // Return the function-id for a packet, or 0 if the packet is malformed
-    static uint8_t DetermineFunctionID(const uint8_t *data,
-                                       unsigned int length);
+    uint8_t DetermineFunctionID(const uint8_t *data,
+                                unsigned int length) const;
+
+    const ServiceRequestPacket* UnpackServiceRequest(
+        const uint8_t *data,
+        unsigned int length) const;
 
     //UnpackServiceRequest(const uint8_t *data, unsigned int length);
 
     //UnpackService
 
   private:
+    // unpack header
+    bool ExtractHeader(const uint8_t *data,
+                       unsigned int length,
+                       SLPPacket *packet,
+                       unsigned int *data_offset) const;
+    bool ReadString(uint8_t *data, unsigned int length,
+                    const string &field_name, string *result) const;
 };
 }  // slp
 }  // ola

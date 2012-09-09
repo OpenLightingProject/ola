@@ -272,8 +272,8 @@ void SLPServer::UDPData() {
 
   OLA_INFO << "Got " << packet_size << "UDP bytes from " << source;
 
-  uint8_t function_id = SLPPacketParser::DetermineFunctionID(packet,
-                                                             packet_size);
+  uint8_t function_id = m_packet_parser.DetermineFunctionID(packet,
+                                                            packet_size);
 
   switch (function_id) {
     case 0:
