@@ -1,5 +1,5 @@
 SOURCES = BufferedWriteDescriptor.h \
-          BigEndianStreamAdaptor.h \
+          BigEndianStream.h \
           Descriptor.h \
           IOQueue.h \
           InputBuffer.h \
