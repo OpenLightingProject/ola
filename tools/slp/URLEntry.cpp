@@ -17,7 +17,6 @@
  * Copyright (C) 2012 Simon Newton
  */
 
-#include <ola/io/OutputStream.h>
 #include <ola/network/NetworkUtils.h>
 #include <stdint.h>
 #include <string>
@@ -32,9 +31,9 @@ namespace ola {
 namespace slp {
 
 
-void URLEntry::Write(ola::io::OutputStreamInterface *output) const {
+void URLEntry::Write(ola::io::BigEndianOutputStreamInterface *output) const {
   *output << static_cast<uint8_t>(0);  // reservered
-  *output << HostToNetwork(m_lifetime);
+  *output << m_lifetime;
   SLPPacketBuilder::WriteString(output, m_url);
   *output << static_cast<uint8_t>(0);  // # of URL auths
 }

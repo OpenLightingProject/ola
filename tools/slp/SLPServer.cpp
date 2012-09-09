@@ -54,7 +54,7 @@ namespace slp {
 
 using ola::NewCallback;
 using ola::NewSingleCallback;
-using ola::io::OutputStream;
+using ola::io::BigEndianOutputStream;
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
@@ -453,7 +453,7 @@ bool SLPServer::LookForStaleEntries() {
  */
 bool SLPServer::SendDABeat() {
   IOQueue output;
-  OutputStream output_stream(&output);
+  BigEndianOutputStream output_stream(&output);
 
   std::ostringstream str;
   str << DA_SERVICE << "://" << m_iface_address;
@@ -473,7 +473,7 @@ bool SLPServer::SendDABeat() {
  */
 bool SLPServer::SendFindDAService() {
   IOQueue output;
-  OutputStream output_stream(&output);
+  BigEndianOutputStream output_stream(&output);
   SLPPacketBuilder::BuildServiceRequest(&output_stream,
                                         0,
                                         m_da_pr_list,

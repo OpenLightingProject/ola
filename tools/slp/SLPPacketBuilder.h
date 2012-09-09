@@ -20,8 +20,7 @@
 #ifndef TOOLS_SLP_SLPPACKETBUILDER_H_
 #define TOOLS_SLP_SLPPACKETBUILDER_H_
 
-#include <ola/io/OutputStream.h>
-#include <ola/io/BigEndianStreamAdaptor.h>
+#include <ola/io/BigEndianStream.h>
 #include <ola/network/IPV4Address.h>
 
 #include <string>
@@ -31,7 +30,7 @@
 #include "tools/slp/URLEntry.h"
 
 using ola::io::BigEndianOutputStreamAdaptor;
-using ola::io::OutputStreamInterface;
+using ola::io::BigEndianOutputStreamInterface;
 using ola::network::IPV4Address;
 using std::string;
 using std::vector;
@@ -47,29 +46,29 @@ class SLPPacketBuilder {
     SLPPacketBuilder() {}
     ~SLPPacketBuilder() {}
 
-    static void BuildServiceRequest(OutputStreamInterface *output,
+    static void BuildServiceRequest(BigEndianOutputStreamInterface *output,
                                     xid_t xid,
                                     const vector<IPV4Address> &pr_list,
                                     const string &service_type,
                                     const vector<string> &scope_list);
 
-    static void BuildServiceReply(OutputStreamInterface *output,
+    static void BuildServiceReply(BigEndianOutputStreamInterface *output,
                                   xid_t xid,
                                   uint16_t error_code,
                                   const URLEntries &url_entries);
 
-    static void BuildServiceRegistration(OutputStreamInterface *output,
+    static void BuildServiceRegistration(BigEndianOutputStreamInterface *output,
                                          xid_t xid,
                                          bool fresh,
                                          const URLEntry &url_entry,
                                          const string &service_type,
                                          vector<string> &scope_list);
 
-    static void BuildServiceAck(OutputStreamInterface *output,
+    static void BuildServiceAck(BigEndianOutputStreamInterface *output,
                                 xid_t xid,
                                 uint16_t error_code);
 
-    static void BuildDAAdvert(OutputStreamInterface *output,
+    static void BuildDAAdvert(BigEndianOutputStreamInterface *output,
                               xid_t xid,
                               bool multicast,
                               uint16_t error_code,
@@ -77,11 +76,11 @@ class SLPPacketBuilder {
                               const string &url,
                               const vector<string> &scope_list);
 
-    static void WriteString(BigEndianOutputStreamAdaptor *output,
+    static void WriteString(BigEndianOutputStreamInterface *output,
                             const string &data);
 
   private:
-    static void BuildSLPHeader(BigEndianOutputStreamAdaptor *output,
+    static void BuildSLPHeader(BigEndianOutputStreamInterface *output,
                                slp_function_id_t function_id,
                                unsigned int length,
                                uint16_t flags,

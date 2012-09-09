@@ -19,7 +19,7 @@
 
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
-#include <ola/io/BigEndianStreamAdaptor.h>
+#include <ola/io/BigEndianStream.h>
 #include <ola/network/NetworkUtils.h>
 
 #include <string>
@@ -33,7 +33,6 @@ namespace ola {
 namespace slp {
 
 using ola::io::BigEndianOutputStreamAdaptor;
-using ola::io::OutputStreamInterface;
 using ola::StringJoin;
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
@@ -49,11 +48,12 @@ using std::vector;
  * @param service_type the service to locate
  * @param scope_list the list of scopes to search.
  */
-void SLPPacketBuilder::BuildServiceRequest(OutputStreamInterface *output,
-                                           xid_t xid,
-                                           const vector<IPV4Address> &pr_list,
-                                           const string &service_type,
-                                           const vector<string> &scope_list) {
+void SLPPacketBuilder::BuildServiceRequest(
+    BigEndianOutputStreamInterface *output,
+    xid_t xid,
+    const vector<IPV4Address> &pr_list,
+    const string &service_type,
+    const vector<string> &scope_list) {
   /*
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
      |       Service Location header (function = SrvRqst = 1)        |
@@ -69,33 +69,32 @@ void SLPPacketBuilder::BuildServiceRequest(OutputStreamInterface *output,
      |  length of <SLP SPI> string   |       <SLP SPI> String        \
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   */
-  BigEndianOutputStreamAdaptor stream(output);
   const string joined_pr_list = ola::StringJoin(",", pr_list);
   const string joined_scopes = ola::StringJoin(",", scope_list);
 
   unsigned int length = (10 + joined_pr_list.size() + service_type.size() +
                          joined_scopes.size());
-  BuildSLPHeader(&stream,
+  BuildSLPHeader(output,
                  SERVICE_REQUEST,
                  length,
                  0,
                  xid);
-  WriteString(&stream, joined_pr_list);
-  WriteString(&stream, service_type);
-  WriteString(&stream, joined_scopes);
-  stream << static_cast<uint16_t>(0);   // length of predicate string
-  stream << static_cast<uint16_t>(0);   // length of SPI
+  WriteString(output, joined_pr_list);
+  WriteString(output, service_type);
+  WriteString(output, joined_scopes);
+  *output << static_cast<uint16_t>(0);   // length of predicate string
+  *output << static_cast<uint16_t>(0);   // length of SPI
 }
 
 
 /**
  * Build a Service Reply.
- * @param output the OutputStreamInterface to put the packet in
+ * @param output the BigEndianOutputStreamInterface to put the packet in
  * @param xid the transaction ID
  * @param error_code the SLP error code
  * @param url_entries a list of URLEntries to return.
  */
-void SLPPacketBuilder::BuildServiceReply(OutputStreamInterface *output,
+void SLPPacketBuilder::BuildServiceReply(BigEndianOutputStreamInterface *output,
                                          xid_t xid,
                                          uint16_t error_code,
                                          const URLEntries &url_entries) {
@@ -108,15 +107,14 @@ void SLPPacketBuilder::BuildServiceReply(OutputStreamInterface *output,
      |       <URL Entry 1>          ...       <URL Entry N>          \
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   */
-  BigEndianOutputStreamAdaptor stream(output);
   unsigned int length = 4;
   URLEntries::const_iterator iter = url_entries.begin();
   for (; iter != url_entries.end(); ++iter)
     length += iter->Size();
 
-  BuildSLPHeader(&stream, SERVICE_REPLY, length, 0, xid);
-  stream << error_code;
-  stream << static_cast<uint16_t>(url_entries.size());
+  BuildSLPHeader(output, SERVICE_REPLY, length, 0, xid);
+  *output << error_code;
+  *output << static_cast<uint16_t>(url_entries.size());
 
   for (iter = url_entries.begin(); iter != url_entries.end(); ++iter)
     iter->Write(output);
@@ -125,19 +123,20 @@ void SLPPacketBuilder::BuildServiceReply(OutputStreamInterface *output,
 
 /**
  * Build a Service Registration message.
- * @param output the OutputStreamInterface to put the packet in
+ * @param output the BigEndianOutputStreamInterface to put the packet in
  * @param xid the transaction ID
  * @param fresh set to true if this is a new registration.
  * @param url_entry the URLEntry to include
  * @param service_type the SLP service-type
  * @param scope_list a list of scopes.
  */
-void SLPPacketBuilder::BuildServiceRegistration(OutputStreamInterface *output,
-                                                xid_t xid,
-                                                bool fresh,
-                                                const URLEntry &url_entry,
-                                                const string &service_type,
-                                                vector<string> &scope_list) {
+void SLPPacketBuilder::BuildServiceRegistration(
+    BigEndianOutputStreamInterface *output,
+    xid_t xid,
+    bool fresh,
+    const URLEntry &url_entry,
+    const string &service_type,
+    vector<string> &scope_list) {
   /*
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
      |         Service Location header (function = SrvReg = 3)       |
@@ -153,28 +152,27 @@ void SLPPacketBuilder::BuildServiceRegistration(OutputStreamInterface *output,
      |# of AttrAuths |(if present) Attribute Authentication Blocks...\
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   */
-  BigEndianOutputStreamAdaptor stream(output);
   const string joined_scopes = ola::StringJoin(",", scope_list);
   unsigned int length = (url_entry.Size() + 2 + service_type.size() + 2 +
                          joined_scopes.size() + 3);
 
-  BuildSLPHeader(&stream, SERVICE_REGISTRATION, length, fresh ? SLP_FRESH : 0,
+  BuildSLPHeader(output, SERVICE_REGISTRATION, length, fresh ? SLP_FRESH : 0,
                  xid);
   url_entry.Write(output);
-  WriteString(&stream, service_type);
-  WriteString(&stream, joined_scopes);
-  stream << static_cast<uint16_t>(0);  // length of attr-list
-  stream << static_cast<uint8_t>(0);   // # of AttrAuths
+  WriteString(output, service_type);
+  WriteString(output, joined_scopes);
+  *output << static_cast<uint16_t>(0);  // length of attr-list
+  *output << static_cast<uint8_t>(0);   // # of AttrAuths
 }
 
 
 /**
  * Build a Service Registration message.
- * @param output the OutputStreamInterface to put the packet in
+ * @param output the BigEndianOutputStreamInterface to put the packet in
  * @param xid the transaction ID
  * @param error_code.
  */
-void SLPPacketBuilder::BuildServiceAck(OutputStreamInterface *output,
+void SLPPacketBuilder::BuildServiceAck(BigEndianOutputStreamInterface *output,
                                        xid_t xid,
                                        uint16_t error_code) {
   /*
@@ -184,14 +182,13 @@ void SLPPacketBuilder::BuildServiceAck(OutputStreamInterface *output,
      |          Error Code           |
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   */
-  BigEndianOutputStreamAdaptor stream(output);
-  BuildSLPHeader(&stream, SERVICE_ACKNOWLEDGE, 2, 0, xid);
-  stream << error_code;
+  BuildSLPHeader(output, SERVICE_ACKNOWLEDGE, 2, 0, xid);
+  *output << error_code;
 }
 
 /**
  * Build an DAAdvert Packet
- * @param output the OutputStreamInterface to put the packet in
+ * @param output the BigEndianOutputStreamInterface to put the packet in
  * @param xid the transaction ID
  * @param multicast true if this packet will be multicast
  * @param error_code, should be 0 if this packet will be multicast
@@ -199,7 +196,7 @@ void SLPPacketBuilder::BuildServiceAck(OutputStreamInterface *output,
  * @param url the URL to use.
  * @param scope_list a list of scopes.
  */
-void SLPPacketBuilder::BuildDAAdvert(OutputStreamInterface *output,
+void SLPPacketBuilder::BuildDAAdvert(BigEndianOutputStreamInterface *output,
                                      xid_t xid,
                                      bool multicast,
                                      uint16_t error_code,
@@ -225,22 +222,21 @@ void SLPPacketBuilder::BuildDAAdvert(OutputStreamInterface *output,
      | # Auth Blocks |         Authentication block (if any)         \
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   */
-  BigEndianOutputStreamAdaptor stream(output);
   const string joined_scopes = ola::StringJoin(",", scope_list);
   unsigned int length = 8 + url.size() + + joined_scopes.size() + 7;
-  BuildSLPHeader(&stream,
+  BuildSLPHeader(output,
                  DA_ADVERTISEMENT,
                  length,
                  multicast ? SLP_REQUEST_MCAST : 0,
                  xid);
 
-  stream << static_cast<uint16_t>(multicast ? 0 : error_code);
-  stream << boot_timestamp;
-  WriteString(&stream, url);
-  WriteString(&stream, joined_scopes);
-  stream << static_cast<uint16_t>(0);  // length of attr-list
-  stream << static_cast<uint16_t>(0);  // length of spi list
-  stream << static_cast<uint8_t>(0);   // # of auth blocks
+  *output << static_cast<uint16_t>(multicast ? 0 : error_code);
+  *output << boot_timestamp;
+  WriteString(output, url);
+  WriteString(output, joined_scopes);
+  *output << static_cast<uint16_t>(0);  // length of attr-list
+  *output << static_cast<uint16_t>(0);  // length of spi list
+  *output << static_cast<uint8_t>(0);   // # of auth blocks
 }
 
 
@@ -248,7 +244,7 @@ void SLPPacketBuilder::BuildDAAdvert(OutputStreamInterface *output,
  * Write a string to an OutputStreamInterface. The length of the string is
  * written in network-byte order as the first two bytes.
  */
-void SLPPacketBuilder::WriteString(BigEndianOutputStreamAdaptor *output,
+void SLPPacketBuilder::WriteString(BigEndianOutputStreamInterface *output,
                                    const string &data) {
   *output << static_cast<uint16_t>(data.size());
   output->Write(reinterpret_cast<const uint8_t*>(data.data()), data.size());
@@ -262,7 +258,7 @@ void SLPPacketBuilder::WriteString(BigEndianOutputStreamAdaptor *output,
  * @param length the length in the contents after the header
  * @param xid the xid (transaction #) for the packet
  */
-void SLPPacketBuilder::BuildSLPHeader(BigEndianOutputStreamAdaptor *output,
+void SLPPacketBuilder::BuildSLPHeader(BigEndianOutputStreamInterface *output,
                                       slp_function_id_t function_id,
                                       unsigned int length,
                                       uint16_t flags,

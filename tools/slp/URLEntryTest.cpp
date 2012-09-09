@@ -21,10 +21,12 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include "ola/Logging.h"
+#include "ola/io/BigEndianStream.h"
 #include "ola/io/IOQueue.h"
 #include "ola/testing/TestUtils.h"
 #include "tools/slp/URLEntry.h"
 
+using ola::io::BigEndianOutputStream;
 using ola::io::IOQueue;
 using ola::slp::URLEntry;
 using ola::testing::ASSERT_DATA_EQUALS;
@@ -40,6 +42,9 @@ class URLEntryTest: public CppUnit::TestFixture {
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
     }
+
+  private:
+    IOQueue output;
 };
 
 
@@ -51,9 +56,10 @@ CPPUNIT_TEST_SUITE_REGISTRATION(URLEntryTest);
  */
 void URLEntryTest::testWrite() {
   const unsigned int expected_size = 19;
-  IOQueue output;
+  BigEndianOutputStream stream(&output);
+
   URLEntry url_entry(1234, "service://foo");
-  url_entry.Write(&output);
+  url_entry.Write(&stream);
 
   CPPUNIT_ASSERT_EQUAL(expected_size, output.Size());
 
@@ -71,7 +77,7 @@ void URLEntryTest::testWrite() {
 
   // now try a 0 length url
   URLEntry url_entry2(1234, "");
-  url_entry2.Write(&output);
+  url_entry2.Write(&stream);
   CPPUNIT_ASSERT_EQUAL(6u, output.Size());
   CPPUNIT_ASSERT_EQUAL(6u, output.Peek(data, 6u));
   output.Pop(6u);

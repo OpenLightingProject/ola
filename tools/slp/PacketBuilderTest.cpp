@@ -25,12 +25,14 @@
 
 #include "ola/Logging.h"
 #include "ola/io/IOQueue.h"
+#include "ola/io/BigEndianStream.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/testing/TestUtils.h"
 #include "tools/slp/SLPPacketBuilder.h"
 #include "tools/slp/SLPPacketConstants.h"
 #include "tools/slp/URLEntry.h"
 
+using ola::io::BigEndianOutputStream;
 using ola::io::IOQueue;
 using ola::network::IPV4Address;
 using ola::slp::SLPPacketBuilder;
@@ -41,28 +43,32 @@ using std::string;
 using std::vector;
 
 class PacketBuilderTest: public CppUnit::TestFixture {
-  CPPUNIT_TEST_SUITE(PacketBuilderTest);
-  CPPUNIT_TEST(testBuildServiceRequest);
-  CPPUNIT_TEST(testBuildServiceReply);
-  CPPUNIT_TEST(testBuildServiceRegistration);
-  CPPUNIT_TEST(testBuildDAAdvert);
-  CPPUNIT_TEST(testBuildServiceAck);
-  CPPUNIT_TEST_SUITE_END();
-
   public:
+    PacketBuilderTest() : output(&ioqueue) {}
+
+    CPPUNIT_TEST_SUITE(PacketBuilderTest);
+    CPPUNIT_TEST(testBuildServiceRequest);
+    CPPUNIT_TEST(testBuildServiceReply);
+    CPPUNIT_TEST(testBuildServiceRegistration);
+    CPPUNIT_TEST(testBuildDAAdvert);
+    CPPUNIT_TEST(testBuildServiceAck);
+    CPPUNIT_TEST_SUITE_END();
+
     void testBuildServiceRequest();
     void testBuildServiceReply();
     void testBuildServiceRegistration();
     void testBuildDAAdvert();
     void testBuildServiceAck();
 
+  public:
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
       xid = 0x1234;
     }
 
   private:
-    ola::io::IOQueue ioqueue;
+    IOQueue ioqueue;
+    BigEndianOutputStream output;
     ola::slp::xid_t xid;
 
     uint8_t* WriteToBuffer(IOQueue *data, unsigned int *size) {
@@ -98,7 +104,7 @@ void PacketBuilderTest::testBuildServiceRequest() {
   scope_list.push_back("ACN");
   scope_list.push_back("MYORG");
 
-  SLPPacketBuilder::BuildServiceRequest(&ioqueue, xid, pr_list,
+  SLPPacketBuilder::BuildServiceRequest(&output, xid, pr_list,
                                         "rdmnet-device", scope_list);
   CPPUNIT_ASSERT_EQUAL(63u, ioqueue.Size());
 
@@ -130,7 +136,7 @@ void PacketBuilderTest::testBuildServiceReply() {
   url_entries.push_back(entry1);
   url_entries.push_back(entry2);
 
-  SLPPacketBuilder::BuildServiceReply(&ioqueue, xid, 12, url_entries);
+  SLPPacketBuilder::BuildServiceReply(&output, xid, 12, url_entries);
   CPPUNIT_ASSERT_EQUAL(75u, ioqueue.Size());
 
   unsigned int data_size;
@@ -166,7 +172,7 @@ void PacketBuilderTest::testBuildServiceRegistration() {
   scope_list.push_back("ACN");
   scope_list.push_back("MYORG");
 
-  SLPPacketBuilder::BuildServiceRegistration(&ioqueue, xid, true, entry1,
+  SLPPacketBuilder::BuildServiceRegistration(&output, xid, true, entry1,
                                              "foo", scope_list);
   CPPUNIT_ASSERT_EQUAL(62u, ioqueue.Size());
 
@@ -190,7 +196,7 @@ void PacketBuilderTest::testBuildServiceRegistration() {
   delete[] output_data;
 
   // now test a re-registration
-  SLPPacketBuilder::BuildServiceRegistration(&ioqueue, xid + 1, false, entry1,
+  SLPPacketBuilder::BuildServiceRegistration(&output, xid + 1, false, entry1,
                                              "foo", scope_list);
   CPPUNIT_ASSERT_EQUAL(62u, ioqueue.Size());
 
@@ -211,7 +217,7 @@ void PacketBuilderTest::testBuildDAAdvert() {
   scope_list.push_back("ACN");
   scope_list.push_back("MYORG");
 
-  SLPPacketBuilder::BuildDAAdvert(&ioqueue, xid, true, 12, 0x12345678,
+  SLPPacketBuilder::BuildDAAdvert(&output, xid, true, 12, 0x12345678,
       "service:foo", scope_list);
   CPPUNIT_ASSERT_EQUAL(51u, ioqueue.Size());
 
@@ -233,7 +239,7 @@ void PacketBuilderTest::testBuildDAAdvert() {
   delete[] output_data;
 
   // try with a non-multicast packet
-  SLPPacketBuilder::BuildDAAdvert(&ioqueue, xid, false, 12, 0x12345678,
+  SLPPacketBuilder::BuildDAAdvert(&output, xid, false, 12, 0x12345678,
       "service:foo", scope_list);
   CPPUNIT_ASSERT_EQUAL(51u, ioqueue.Size());
   output_data = WriteToBuffer(&ioqueue, &data_size);
@@ -249,7 +255,7 @@ void PacketBuilderTest::testBuildDAAdvert() {
  * Check that BuildServiceAck() works.
  */
 void PacketBuilderTest::testBuildServiceAck() {
-  SLPPacketBuilder::BuildServiceAck(&ioqueue, xid, 0x5678);
+  SLPPacketBuilder::BuildServiceAck(&output, xid, 0x5678);
   CPPUNIT_ASSERT_EQUAL(18u, ioqueue.Size());
 
   unsigned int data_size;
