@@ -20,12 +20,12 @@
 #ifndef TOOLS_SLP_URLENTRY_H_
 #define TOOLS_SLP_URLENTRY_H_
 
-#include <ola/io/IOQueue.h>
+#include <ola/io/OutputStream.h>
 
 #include <string>
 #include <vector>
 
-using ola::io::IOQueue;
+using ola::io::OutputStreamInterface;
 using std::string;
 
 namespace ola {
@@ -46,7 +46,7 @@ class URLEntry {
     unsigned int Size() const { return 6 + m_url.size(); }
 
     // Write this URLEntry to an IOQueue
-    void Write(IOQueue *ioqueue) const;
+    void Write(ola::io::OutputStreamInterface *ioqueue) const;
 
   private:
     uint16_t m_lifetime;

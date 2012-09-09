@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 #include <ola/Logging.h>
+#include <ola/io/IOQueue.h>
 #include <ola/network/NetworkUtils.h>
 
 #include "tools/slp/SLPPacketParser.h"

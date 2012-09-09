@@ -25,6 +25,8 @@
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/io/SelectServer.h>
+#include <ola/io/IOQueue.h>
+#include <ola/io/OutputStream.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/NetworkUtils.h>
 #include <ola/network/Socket.h>
@@ -52,6 +54,7 @@ namespace slp {
 
 using ola::NewCallback;
 using ola::NewSingleCallback;
+using ola::io::OutputStream;
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
@@ -450,10 +453,11 @@ bool SLPServer::LookForStaleEntries() {
  */
 bool SLPServer::SendDABeat() {
   IOQueue output;
+  OutputStream output_stream(&output);
 
   std::ostringstream str;
   str << DA_SERVICE << "://" << m_iface_address;
-  SLPPacketBuilder::BuildDAAdvert(&output,
+  SLPPacketBuilder::BuildDAAdvert(&output_stream,
                                   0, true, 0,
                                   m_boot_time.Seconds(),
                                   str.str(),
@@ -469,7 +473,8 @@ bool SLPServer::SendDABeat() {
  */
 bool SLPServer::SendFindDAService() {
   IOQueue output;
-  SLPPacketBuilder::BuildServiceRequest(&output,
+  OutputStream output_stream(&output);
+  SLPPacketBuilder::BuildServiceRequest(&output_stream,
                                         0,
                                         m_da_pr_list,
                                         DA_SERVICE,

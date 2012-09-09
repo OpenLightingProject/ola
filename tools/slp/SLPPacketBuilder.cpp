@@ -19,6 +19,7 @@
 
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
+#include <ola/io/BigEndianStreamAdaptor.h>
 #include <ola/network/NetworkUtils.h>
 
 #include <string>
@@ -31,7 +32,8 @@
 namespace ola {
 namespace slp {
 
-using ola::io::IOQueue;
+using ola::io::BigEndianOutputStreamAdaptor;
+using ola::io::OutputStreamInterface;
 using ola::StringJoin;
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
@@ -41,13 +43,13 @@ using std::vector;
 
 /**
  * Build a Service Request.
- * @param output the IOQueue to put the packet in
+ * @param output the OutputStreamInterface to put the packet in
  * @param xid the transaction ID
  * @param pr_list the previous responder ist
  * @param service_type the service to locate
  * @param scope_list the list of scopes to search.
  */
-void SLPPacketBuilder::BuildServiceRequest(IOQueue *output,
+void SLPPacketBuilder::BuildServiceRequest(OutputStreamInterface *output,
                                            xid_t xid,
                                            const vector<IPV4Address> &pr_list,
                                            const string &service_type,
@@ -67,32 +69,33 @@ void SLPPacketBuilder::BuildServiceRequest(IOQueue *output,
      |  length of <SLP SPI> string   |       <SLP SPI> String        \
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   */
+  BigEndianOutputStreamAdaptor stream(output);
   const string joined_pr_list = ola::StringJoin(",", pr_list);
   const string joined_scopes = ola::StringJoin(",", scope_list);
 
   unsigned int length = (10 + joined_pr_list.size() + service_type.size() +
                          joined_scopes.size());
-  BuildSLPHeader(output,
+  BuildSLPHeader(&stream,
                  SERVICE_REQUEST,
                  length,
                  0,
                  xid);
-  WriteString(output, joined_pr_list);
-  WriteString(output, service_type);
-  WriteString(output, joined_scopes);
-  *output << static_cast<uint16_t>(0);   // length of predicate string
-  *output << static_cast<uint16_t>(0);   // length of SPI
+  WriteString(&stream, joined_pr_list);
+  WriteString(&stream, service_type);
+  WriteString(&stream, joined_scopes);
+  stream << static_cast<uint16_t>(0);   // length of predicate string
+  stream << static_cast<uint16_t>(0);   // length of SPI
 }
 
 
 /**
  * Build a Service Reply.
- * @param output the IOQueue to put the packet in
+ * @param output the OutputStreamInterface to put the packet in
  * @param xid the transaction ID
  * @param error_code the SLP error code
  * @param url_entries a list of URLEntries to return.
  */
-void SLPPacketBuilder::BuildServiceReply(IOQueue *output,
+void SLPPacketBuilder::BuildServiceReply(OutputStreamInterface *output,
                                          xid_t xid,
                                          uint16_t error_code,
                                          const URLEntries &url_entries) {
@@ -105,14 +108,15 @@ void SLPPacketBuilder::BuildServiceReply(IOQueue *output,
      |       <URL Entry 1>          ...       <URL Entry N>          \
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   */
+  BigEndianOutputStreamAdaptor stream(output);
   unsigned int length = 4;
   URLEntries::const_iterator iter = url_entries.begin();
   for (; iter != url_entries.end(); ++iter)
     length += iter->Size();
 
-  BuildSLPHeader(output, SERVICE_REPLY, length, 0, xid);
-  *output << HostToNetwork(error_code);
-  *output << HostToNetwork(static_cast<uint16_t>(url_entries.size()));
+  BuildSLPHeader(&stream, SERVICE_REPLY, length, 0, xid);
+  stream << error_code;
+  stream << static_cast<uint16_t>(url_entries.size());
 
   for (iter = url_entries.begin(); iter != url_entries.end(); ++iter)
     iter->Write(output);
@@ -121,14 +125,14 @@ void SLPPacketBuilder::BuildServiceReply(IOQueue *output,
 
 /**
  * Build a Service Registration message.
- * @param output the IOQueue to put the packet in
+ * @param output the OutputStreamInterface to put the packet in
  * @param xid the transaction ID
  * @param fresh set to true if this is a new registration.
  * @param url_entry the URLEntry to include
  * @param service_type the SLP service-type
  * @param scope_list a list of scopes.
  */
-void SLPPacketBuilder::BuildServiceRegistration(IOQueue *output,
+void SLPPacketBuilder::BuildServiceRegistration(OutputStreamInterface *output,
                                                 xid_t xid,
                                                 bool fresh,
                                                 const URLEntry &url_entry,
@@ -149,27 +153,28 @@ void SLPPacketBuilder::BuildServiceRegistration(IOQueue *output,
      |# of AttrAuths |(if present) Attribute Authentication Blocks...\
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   */
+  BigEndianOutputStreamAdaptor stream(output);
   const string joined_scopes = ola::StringJoin(",", scope_list);
   unsigned int length = (url_entry.Size() + 2 + service_type.size() + 2 +
                          joined_scopes.size() + 3);
 
-  BuildSLPHeader(output, SERVICE_REGISTRATION, length, fresh ? SLP_FRESH : 0,
+  BuildSLPHeader(&stream, SERVICE_REGISTRATION, length, fresh ? SLP_FRESH : 0,
                  xid);
   url_entry.Write(output);
-  WriteString(output, service_type);
-  WriteString(output, joined_scopes);
-  *output << static_cast<uint16_t>(0);  // length of attr-list
-  *output << static_cast<uint8_t>(0);   // # of AttrAuths
+  WriteString(&stream, service_type);
+  WriteString(&stream, joined_scopes);
+  stream << static_cast<uint16_t>(0);  // length of attr-list
+  stream << static_cast<uint8_t>(0);   // # of AttrAuths
 }
 
 
 /**
  * Build a Service Registration message.
- * @param output the IOQueue to put the packet in
+ * @param output the OutputStreamInterface to put the packet in
  * @param xid the transaction ID
  * @param error_code.
  */
-void SLPPacketBuilder::BuildServiceAck(IOQueue *output,
+void SLPPacketBuilder::BuildServiceAck(OutputStreamInterface *output,
                                        xid_t xid,
                                        uint16_t error_code) {
   /*
@@ -179,13 +184,14 @@ void SLPPacketBuilder::BuildServiceAck(IOQueue *output,
      |          Error Code           |
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   */
-  BuildSLPHeader(output, SERVICE_ACKNOWLEDGE, 2, 0, xid);
-  *output << HostToNetwork(error_code);
+  BigEndianOutputStreamAdaptor stream(output);
+  BuildSLPHeader(&stream, SERVICE_ACKNOWLEDGE, 2, 0, xid);
+  stream << error_code;
 }
 
 /**
  * Build an DAAdvert Packet
- * @param output the IOQueue to put the packet in
+ * @param output the OutputStreamInterface to put the packet in
  * @param xid the transaction ID
  * @param multicast true if this packet will be multicast
  * @param error_code, should be 0 if this packet will be multicast
@@ -193,7 +199,7 @@ void SLPPacketBuilder::BuildServiceAck(IOQueue *output,
  * @param url the URL to use.
  * @param scope_list a list of scopes.
  */
-void SLPPacketBuilder::BuildDAAdvert(IOQueue *output,
+void SLPPacketBuilder::BuildDAAdvert(OutputStreamInterface *output,
                                      xid_t xid,
                                      bool multicast,
                                      uint16_t error_code,
@@ -219,39 +225,48 @@ void SLPPacketBuilder::BuildDAAdvert(IOQueue *output,
      | # Auth Blocks |         Authentication block (if any)         \
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   */
+  BigEndianOutputStreamAdaptor stream(output);
   const string joined_scopes = ola::StringJoin(",", scope_list);
   unsigned int length = 8 + url.size() + + joined_scopes.size() + 7;
-  BuildSLPHeader(output,
+  BuildSLPHeader(&stream,
                  DA_ADVERTISEMENT,
                  length,
                  multicast ? SLP_REQUEST_MCAST : 0,
                  xid);
 
-  *output << HostToNetwork(static_cast<uint16_t>(multicast ? 0 : error_code));
-  *output << HostToNetwork(boot_timestamp);
-  WriteString(output, url);
-  WriteString(output, joined_scopes);
-  *output << static_cast<uint16_t>(0);  // length of attr-list
-  *output << static_cast<uint16_t>(0);  // length of spi list
-  *output << static_cast<uint8_t>(0);   // # of auth blocks
+  stream << static_cast<uint16_t>(multicast ? 0 : error_code);
+  stream << boot_timestamp;
+  WriteString(&stream, url);
+  WriteString(&stream, joined_scopes);
+  stream << static_cast<uint16_t>(0);  // length of attr-list
+  stream << static_cast<uint16_t>(0);  // length of spi list
+  stream << static_cast<uint8_t>(0);   // # of auth blocks
 }
 
 
 /**
- * Build the SLP header in an IOQueue.
- * @param output the IOQueue to build the packet in
+ * Write a string to an OutputStreamInterface. The length of the string is
+ * written in network-byte order as the first two bytes.
+ */
+void SLPPacketBuilder::WriteString(BigEndianOutputStreamAdaptor *output,
+                                   const string &data) {
+  *output << static_cast<uint16_t>(data.size());
+  output->Write(reinterpret_cast<const uint8_t*>(data.data()), data.size());
+}
+
+
+/**
+ * Build the SLP header in an OutputStreamInterface.
+ * @param output the OutputStreamInterface to build the packet in
  * @param function_id the Function-ID for this packet
  * @param length the length in the contents after the header
  * @param xid the xid (transaction #) for the packet
  */
-void SLPPacketBuilder::BuildSLPHeader(IOQueue *output,
+void SLPPacketBuilder::BuildSLPHeader(BigEndianOutputStreamAdaptor *output,
                                       slp_function_id_t function_id,
                                       unsigned int length,
                                       uint16_t flags,
                                       xid_t xid) {
-  if (!output->Empty())
-    OLA_WARN << "Building SLP header in non-empty IOQueue!";
-
   length += 16;
   /*
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -266,21 +281,10 @@ void SLPPacketBuilder::BuildSLPHeader(IOQueue *output,
   */
   *output << SLP_VERSION << static_cast<uint8_t>(function_id) <<
     static_cast<uint16_t>(length >> 8);
-  *output << HostToNetwork(static_cast<uint8_t>(length)) <<
-    HostToNetwork(flags) << static_cast<uint8_t>(0);
-  *output << static_cast<uint16_t>(0) << HostToNetwork(xid);
-  *output << HostToNetwork(static_cast<uint16_t>(sizeof(EN_LANGUAGE_TAG)));
+  *output << static_cast<uint8_t>(length) << flags << static_cast<uint8_t>(0);
+  *output << static_cast<uint16_t>(0) << xid;
+  *output << static_cast<uint16_t>(sizeof(EN_LANGUAGE_TAG));
   output->Write(EN_LANGUAGE_TAG, sizeof(EN_LANGUAGE_TAG));
-}
-
-
-/**
- * Write a string to an IOQueue. The length of the string is written in
- * network-byte order as the first two bytes.
- */
-void SLPPacketBuilder::WriteString(IOQueue *ioqueue, const string &data) {
-  *ioqueue << HostToNetwork(static_cast<uint16_t>(data.size()));
-  ioqueue->Write(reinterpret_cast<const uint8_t*>(data.data()), data.size());
 }
 }  // slp
 }  // ola
