@@ -13,14 +13,14 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * BigEndianInputStreamAdaptor.h
+ * BigEndianStreamAdaptor.h
  * Wraps another InputStreamInterface object and converts from Big Endian to
  * host order.
  * Copyright (C) 2012 Simon Newton
  */
 
-#ifndef INCLUDE_OLA_IO_BIGENDIANINPUTSTREAM_H_
-#define INCLUDE_OLA_IO_BIGENDIANINPUTSTREAM_H_
+#ifndef INCLUDE_OLA_IO_BIGENDIANSTREAMADAPTOR_H_
+#define INCLUDE_OLA_IO_BIGENDIANSTREAMADAPTOR_H_
 
 #include <ola/io/InputStream.h>
 #include <ola/network/NetworkUtils.h>
@@ -84,4 +84,4 @@ bool BigEndianInputStreamAdaptor::ExtractAndConvert(T &val) {
 }
 }  // io
 }  // ola
-#endif  // INCLUDE_OLA_IO_BIGENDIANINPUTSTREAM_H_
+#endif  // INCLUDE_OLA_IO_BIGENDIANSTREAMADAPTOR_H_

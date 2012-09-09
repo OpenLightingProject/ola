@@ -22,7 +22,7 @@
 
 #include "ola/Logging.h"
 #include "ola/io/MemoryBuffer.h"
-#include "ola/io/BigEndianInputStream.h"
+#include "ola/io/BigEndianStreamAdaptor.h"
 #include "ola/io/InputStream.h"
 #include "ola/testing/TestUtils.h"
 
