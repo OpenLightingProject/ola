@@ -50,7 +50,7 @@ class OutputStreamInterface {
 /**
  * OutputStream. This writes data to an OutputBuffer
  */
-class OutputStream {
+class OutputStream: public OutputStreamInterface {
   public:
     // Ownership of the OutputBuffer is not transferred.
     explicit OutputStream(OutputBufferInterface *buffer)
@@ -63,12 +63,12 @@ class OutputStream {
       m_buffer->Write(data, length);
     }
 
-    OutputStream& operator<<(const uint8_t &val) { return Write(val); }
-    OutputStream& operator<<(const uint16_t &val) { return Write(val); }
-    OutputStream& operator<<(const uint32_t &val) { return Write(val); }
-    OutputStream& operator<<(const int8_t &val) { return Write(val); }
-    OutputStream& operator<<(const int16_t &val) { return Write(val); }
-    OutputStream& operator<<(const int32_t &val) { return Write(val); }
+    OutputStream& operator<<(uint8_t val) { return Write(val); }
+    OutputStream& operator<<(uint16_t val) { return Write(val); }
+    OutputStream& operator<<(uint32_t val) { return Write(val); }
+    OutputStream& operator<<(int8_t val) { return Write(val); }
+    OutputStream& operator<<(int16_t val) { return Write(val); }
+    OutputStream& operator<<(int32_t val) { return Write(val); }
 
   private:
     OutputBufferInterface *m_buffer;

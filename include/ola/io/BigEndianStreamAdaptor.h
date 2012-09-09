@@ -23,6 +23,7 @@
 #define INCLUDE_OLA_IO_BIGENDIANSTREAMADAPTOR_H_
 
 #include <ola/io/InputStream.h>
+#include <ola/io/OutputStream.h>
 #include <ola/network/NetworkUtils.h>
 
 namespace ola {
@@ -39,32 +40,14 @@ class BigEndianInputStreamAdaptor: public InputStreamInterface {
     explicit BigEndianInputStreamAdaptor(InputStreamInterface *stream)
         : m_stream(stream) {
     }
-    virtual ~BigEndianInputStreamAdaptor() {}
+    ~BigEndianInputStreamAdaptor() {}
 
-    bool operator>>(int8_t &val) {
-      return ExtractAndConvert(val);
-    }
-
-    bool operator>>(uint8_t &val) {
-      return ExtractAndConvert(val);
-    }
-
-    bool operator>>(int16_t &val) {
-      return ExtractAndConvert(val);
-    }
-
-    bool operator>>(uint16_t &val) {
-      return ExtractAndConvert(val);
-    }
-
-    bool operator>>(int32_t &val) {
-      return ExtractAndConvert(val);
-    }
-
-    bool operator>>(uint32_t &val) {
-      return ExtractAndConvert(val);
-    }
-
+    bool operator>>(int8_t &val) { return ExtractAndConvert(val); }
+    bool operator>>(uint8_t &val) { return ExtractAndConvert(val); }
+    bool operator>>(int16_t &val) { return ExtractAndConvert(val); }
+    bool operator>>(uint16_t &val) { return ExtractAndConvert(val); }
+    bool operator>>(int32_t &val) { return ExtractAndConvert(val); }
+    bool operator>>(uint32_t &val) { return ExtractAndConvert(val); }
 
   private:
     InputStreamInterface *m_stream;
@@ -76,11 +59,72 @@ class BigEndianInputStreamAdaptor: public InputStreamInterface {
     BigEndianInputStreamAdaptor& operator=(const BigEndianInputStreamAdaptor&);
 };
 
+
+/**
+ * BigEndianOutputStreamAdaptor.
+ * Wraps another OutputStreamInterface object and converts from Big Endian to
+ * host order.
+ */
+class BigEndianOutputStreamAdaptor: public OutputStreamInterface {
+  public:
+    // Ownership of buffer is not transferred.
+    explicit BigEndianOutputStreamAdaptor(OutputStreamInterface *stream)
+        : m_stream(stream) {
+    }
+    ~BigEndianOutputStreamAdaptor() {}
+
+    void Write(const uint8_t *data, unsigned int length) {
+      m_stream->Write(data, length);
+    }
+
+    BigEndianOutputStreamAdaptor& operator<<(int8_t val) {
+      return ConvertAndWrite(val);
+    }
+
+    BigEndianOutputStreamAdaptor& operator<<(uint8_t val) {
+      return ConvertAndWrite(val);
+    }
+
+    BigEndianOutputStreamAdaptor& operator<<(int16_t val) {
+      return ConvertAndWrite(val);
+    }
+
+    BigEndianOutputStreamAdaptor& operator<<(uint16_t val) {
+      return ConvertAndWrite(val);
+    }
+
+    BigEndianOutputStreamAdaptor& operator<<(int32_t val) {
+      return ConvertAndWrite(val);
+    }
+
+    BigEndianOutputStreamAdaptor& operator<<(uint32_t val) {
+      return ConvertAndWrite(val);
+    }
+
+  private:
+    OutputStreamInterface *m_stream;
+
+    template <typename T>
+    BigEndianOutputStreamAdaptor& ConvertAndWrite(T &val);
+
+    BigEndianOutputStreamAdaptor(const BigEndianOutputStreamAdaptor&);
+    BigEndianOutputStreamAdaptor& operator=(
+        const BigEndianOutputStreamAdaptor&);
+};
+
 template <typename T>
 bool BigEndianInputStreamAdaptor::ExtractAndConvert(T &val) {
   bool ok = (*m_stream) >> val;
   val = ola::network::NetworkToHost(val);
   return ok;
+}
+
+
+template <typename T>
+BigEndianOutputStreamAdaptor& BigEndianOutputStreamAdaptor::ConvertAndWrite(
+    T &val) {
+  (*m_stream) << ola::network::HostToNetwork(val);
+  return *this;
 }
 }  // io
 }  // ola
