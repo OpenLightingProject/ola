@@ -1,0 +1,11 @@
+# udev rules for ftdi devices
+SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6001", GROUP="plugdev"
+
+# udev rules for the anyma dmx device
+SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="05dc", GROUP="plugdev"
+
+# udev rules for the usbdmx2 dmx device
+SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="0962", GROUP="plugdev"
+
+# udev rules for the velleman dmx device
+SUBSYSTEM=="usb|usb_device", ACTION=="add", ATTRS{idVendor}=="10cf", ATTRS{idProduct}=="8062", GROUP="plugdev"

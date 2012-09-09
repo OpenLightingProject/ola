@@ -302,7 +302,7 @@ void ParseOptions(int argc, char *argv[], TrackerOptions *options) {
  * Display the help message
  */
 void DisplayHelpAndExit(char arg[]) {
-  std::cout << "Usage: " << arg << " [options] universe1 universe2\n"
+  std::cout << "Usage: " << arg << " [options] <universe1> <universe2> ...\n"
   "\n"
   "Watch one or more universes and produce stats on DMX frame rates.\n"
   "\n"
