@@ -13,8 +13,9 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * BigEndianInputStream.h
- * Read big-endian formatted data from a InputBuffer
+ * BigEndianInputStreamAdaptor.h
+ * Wraps another InputStreamInterface object and converts from Big Endian to
+ * host order.
  * Copyright (C) 2012 Simon Newton
  */
 
@@ -28,59 +29,58 @@ namespace ola {
 namespace io {
 
 /**
- * BigEndianInputStream.
- * Extracts formatted data from a InputBuffer, and converts it
- * from big endian to host format.
+ * BigEndianInputStreamAdaptor.
+ * Wraps another InputStreamInterface object and converts from Big Endian to
+ * host order.
  */
-class BigEndianInputStream: public InputStream {
+class BigEndianInputStreamAdaptor: public InputStreamInterface {
   public:
     // Ownership of buffer is not transferred.
-    explicit BigEndianInputStream(InputBuffer *buffer)
-        : m_buffer(buffer) {
+    explicit BigEndianInputStreamAdaptor(InputStreamInterface *stream)
+        : m_stream(stream) {
     }
-    virtual ~BigEndianInputStream() {}
+    virtual ~BigEndianInputStreamAdaptor() {}
 
     bool operator>>(int8_t &val) {
-      return Extract(val);
+      return ExtractAndConvert(val);
     }
 
     bool operator>>(uint8_t &val) {
-      return Extract(val);
+      return ExtractAndConvert(val);
     }
 
     bool operator>>(int16_t &val) {
-      return Extract(val);
+      return ExtractAndConvert(val);
     }
 
     bool operator>>(uint16_t &val) {
-      return Extract(val);
+      return ExtractAndConvert(val);
     }
 
     bool operator>>(int32_t &val) {
-      return Extract(val);
+      return ExtractAndConvert(val);
     }
 
     bool operator>>(uint32_t &val) {
-      return Extract(val);
+      return ExtractAndConvert(val);
     }
 
 
   private:
-    InputBuffer *m_buffer;
+    InputStreamInterface *m_stream;
 
     template <typename T>
-    bool Extract(T &val);
+    bool ExtractAndConvert(T &val);
 
-    BigEndianInputStream(const BigEndianInputStream&);
-    BigEndianInputStream& operator=(const BigEndianInputStream&);
+    BigEndianInputStreamAdaptor(const BigEndianInputStreamAdaptor&);
+    BigEndianInputStreamAdaptor& operator=(const BigEndianInputStreamAdaptor&);
 };
 
 template <typename T>
-bool BigEndianInputStream::Extract(T &val) {
-  unsigned int length = sizeof(val);
-  m_buffer->Get(reinterpret_cast<uint8_t*>(&val), &length);
+bool BigEndianInputStreamAdaptor::ExtractAndConvert(T &val) {
+  bool ok = (*m_stream) >> val;
   val = ola::network::NetworkToHost(val);
-  return length == sizeof(val);
+  return ok;
 }
 }  // io
 }  // ola

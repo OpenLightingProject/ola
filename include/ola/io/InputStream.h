@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * InputStream.h
- * An Abstract base class that extracts formatted data.
+ * A interface & class to extract formatted data.
  * Copyright (C) 2012 Simon Newton
  */
 
@@ -30,9 +30,9 @@ namespace io {
 /**
  * InputStream. Similar to istream.
  */
-class InputStream {
+class InputStreamInterface {
   public:
-    virtual ~InputStream() {}
+    virtual ~InputStreamInterface() {}
 
     /*
      * Extract data from the Stream.
@@ -45,6 +45,43 @@ class InputStream {
     virtual bool operator>>(int32_t &val) = 0;
     virtual bool operator>>(uint32_t &val) = 0;
 };
+
+
+/**
+ * InputStream.
+ * Extract formatted data from a InputBuffer.
+ */
+class InputStream: public InputStreamInterface {
+  public:
+    // Ownership of the InputBuffer is not transferred.
+    explicit InputStream(InputBufferInterface *buffer)
+        : m_buffer(buffer) {
+    }
+    virtual ~InputStream() {}
+
+    bool operator>>(int8_t &val) { return Extract(val); }
+    bool operator>>(uint8_t &val) { return Extract(val); }
+    bool operator>>(int16_t &val) { return Extract(val); }
+    bool operator>>(uint16_t &val) { return Extract(val); }
+    bool operator>>(int32_t &val) { return Extract(val); }
+    bool operator>>(uint32_t &val) { return Extract(val); }
+
+  private:
+    InputBufferInterface *m_buffer;
+
+    template <typename T>
+    bool Extract(T &val);
+
+    InputStream(const InputStream&);
+    InputStream& operator=(const InputStream&);
+};
+
+template <typename T>
+bool InputStream::Extract(T &val) {
+  unsigned int length = sizeof(val);
+  m_buffer->Read(reinterpret_cast<uint8_t*>(&val), &length);
+  return length == sizeof(val);
+}
 }  // io
 }  // ola
 #endif  // INCLUDE_OLA_IO_INPUTSTREAM_H_

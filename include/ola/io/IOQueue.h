@@ -21,7 +21,8 @@
 #ifndef INCLUDE_OLA_IO_IOQUEUE_H_
 #define INCLUDE_OLA_IO_IOQUEUE_H_
 
-#include <ola/io/OutputStream.h>
+#include <ola/io/InputBuffer.h>
+#include <ola/io/OutputBuffer.h>
 #include <stdint.h>
 #include <sys/uio.h>
 #include <deque>
@@ -34,7 +35,7 @@ namespace io {
 /**
  * IOQueue.
  */
-class IOQueue: public OutputStream {
+class IOQueue: public InputBufferInterface, public OutputBufferInterface {
   public:
     explicit IOQueue(unsigned int block_size = DEFAULT_BLOCK_SIZE);
     ~IOQueue();
@@ -44,37 +45,11 @@ class IOQueue: public OutputStream {
       return m_blocks.empty();
     }
 
+    // From OutputBuffer
     void Write(const uint8_t *data, unsigned int length);
 
-    OutputStream& operator<<(uint8_t i) {
-      Write(&i, sizeof(i));
-      return *this;
-    }
-
-    OutputStream& operator<<(uint16_t i) {
-      Write(reinterpret_cast<uint8_t*>(&i), sizeof(i));
-      return *this;
-    }
-
-    OutputStream& operator<<(uint32_t i) {
-      Write(reinterpret_cast<uint8_t*>(&i), sizeof(i));
-      return *this;
-    }
-
-    OutputStream& operator<<(int8_t i) {
-      Write(reinterpret_cast<uint8_t*>(&i), sizeof(i));
-      return *this;
-    }
-
-    OutputStream& operator<<(int16_t i) {
-      Write(reinterpret_cast<uint8_t*>(&i), sizeof(i));
-      return *this;
-    }
-
-    OutputStream& operator<<(int32_t i) {
-      Write(reinterpret_cast<uint8_t*>(&i), sizeof(i));
-      return *this;
-    }
+    // From InputBuffer
+    void Read(uint8_t *data, unsigned int *length);
 
     unsigned int Peek(uint8_t *data, unsigned int length) const;
     void Pop(unsigned int n);

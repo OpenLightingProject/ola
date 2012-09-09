@@ -23,6 +23,7 @@
 #include <stdint.h>
 #include <ola/Callback.h>
 #include <ola/io/IOQueue.h>
+#include <ola/io/OutputBuffer.h>
 #include <ola/io/SelectServerInterface.h>
 
 #include <string>
@@ -35,7 +36,7 @@ namespace io {
 /**
  * The base class.
  */
-class DescriptorStream: public OutputStream {
+class DescriptorStream: public OutputBufferInterface {
   public:
     explicit DescriptorStream(SelectServerInterface *ss = NULL)
       : m_associated(false),
@@ -63,36 +64,6 @@ class DescriptorStream: public OutputStream {
     unsigned int Size() const { return m_output_buffer.Size(); }
     void Write(const uint8_t *data, unsigned int length) {
       Send(data, length);
-    }
-
-    OutputStream& operator<<(uint8_t i) {
-      Send(&i, sizeof(i));
-      return *this;
-    }
-
-    OutputStream& operator<<(uint16_t i) {
-      Send(reinterpret_cast<uint8_t*>(&i), sizeof(i));
-      return *this;
-    }
-
-    OutputStream& operator<<(uint32_t i) {
-      Send(reinterpret_cast<uint8_t*>(&i), sizeof(i));
-      return *this;
-    }
-
-    OutputStream& operator<<(int8_t i) {
-      Send(reinterpret_cast<uint8_t*>(&i), sizeof(i));
-      return *this;
-    }
-
-    OutputStream& operator<<(int16_t i) {
-      Send(reinterpret_cast<uint8_t*>(&i), sizeof(i));
-      return *this;
-    }
-
-    OutputStream& operator<<(int32_t i) {
-      Send(reinterpret_cast<uint8_t*>(&i), sizeof(i));
-      return *this;
     }
 
   protected:

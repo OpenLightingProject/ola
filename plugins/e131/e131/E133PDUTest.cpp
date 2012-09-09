@@ -25,6 +25,7 @@
 
 #include "ola/Logging.h"
 #include "ola/io/IOQueue.h"
+#include "ola/io/OutputStream.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/testing/TestUtils.h"
 #include "plugins/e131/e131/E133PDU.h"
@@ -35,6 +36,7 @@ namespace plugin {
 namespace e131 {
 
 using ola::io::IOQueue;
+using ola::io::OutputStream;
 using ola::network::HostToNetwork;
 using ola::testing::ASSERT_DATA_EQUALS;
 
@@ -125,7 +127,8 @@ void E133PDUTest::testSimpleE133PDUToOutputStream() {
   CPPUNIT_ASSERT_EQUAL(77u, pdu.Size());
 
   IOQueue output;
-  pdu.Write(&output);
+  OutputStream stream(&output);
+  pdu.Write(&stream);
   CPPUNIT_ASSERT_EQUAL(77u, output.Size());
 
   uint8_t *pdu_data = new uint8_t[output.Size()];

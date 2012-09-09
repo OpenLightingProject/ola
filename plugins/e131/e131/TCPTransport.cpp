@@ -57,14 +57,14 @@ bool OutgoingStreamTransport::Send(const PDUBlock<PDU> &pdu_block) {
       ACN_HEADER_SIZE +
       static_cast<unsigned int>(sizeof(pdu_block_size)) +
       pdu_block.Size());
-  if (m_stream->Size() + total_message_size > m_max_buffer_size)
+  if (m_buffer->Size() + total_message_size > m_max_buffer_size)
     return false;
 
   OLA_DEBUG << "TCP TX: block size is " << pdu_block_size;
   // Write the ACN header, the block length and the block data
-  m_stream->Write(ACN_HEADER, ACN_HEADER_SIZE);
-  *m_stream << HostToNetwork(pdu_block_size);
-  pdu_block.Write(m_stream);
+  m_stream.Write(ACN_HEADER, ACN_HEADER_SIZE);
+  m_stream << HostToNetwork(pdu_block_size);
+  pdu_block.Write(&m_stream);
   return true;
 }
 

@@ -26,6 +26,7 @@
 
 #include "ola/Logging.h"
 #include "ola/io/IOQueue.h"
+#include "ola/io/OutputStream.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMEnums.h"
@@ -33,6 +34,7 @@
 #include "ola/testing/TestUtils.h"
 
 using ola::io::IOQueue;
+using ola::io::OutputStream;
 using ola::network::HostToNetwork;
 using ola::rdm::GuessMessageType;
 using ola::rdm::RDMCommand;
@@ -279,6 +281,7 @@ void RDMCommandTest::testRDMCommand() {
  */
 void RDMCommandTest::testOutputStream() {
   IOQueue output;
+  OutputStream stream(&output);
   UID source(1, 2);
   UID destination(3, 4);
 
@@ -291,7 +294,7 @@ void RDMCommandTest::testOutputStream() {
                         296,  // param id
                         NULL,  // data
                         0);  // data length
-  command.Write(&output);
+  command.Write(&stream);
   CPPUNIT_ASSERT_EQUAL(command.Size(), output.Size());
 
   uint8_t *raw_command = new uint8_t[output.Size()];
@@ -321,7 +324,7 @@ void RDMCommandTest::testOutputStream() {
 
   CPPUNIT_ASSERT_EQUAL(29u, command2.Size());
 
-  command2.Write(&output);
+  command2.Write(&stream);
   CPPUNIT_ASSERT_EQUAL(command2.Size(), output.Size());
 
   raw_command = new uint8_t[output.Size()];

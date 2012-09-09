@@ -32,7 +32,7 @@ namespace io {
  * Wraps a block of memory and presents the InputBuffer interface. This does
  * not free the memory when the object is destroyed.
  */
-class MemoryBuffer: public InputBuffer {
+class MemoryBuffer: public InputBufferInterface {
   public:
     explicit MemoryBuffer(const uint8_t *data, unsigned int size)
         : m_data(data),
@@ -41,7 +41,7 @@ class MemoryBuffer: public InputBuffer {
     }
     ~MemoryBuffer() {}
 
-    void Get(uint8_t *data, unsigned int *length) {
+    void Read(uint8_t *data, unsigned int *length) {
       *length = std::min(m_size - m_cursor, *length);
       memcpy(data, m_data + m_cursor, *length);
       m_cursor += *length;

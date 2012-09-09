@@ -33,6 +33,7 @@
 #define PLUGINS_E131_E131_TCPTRANSPORT_H_
 
 #include <memory>
+#include "ola/io/OutputBuffer.h"
 #include "ola/io/OutputStream.h"
 #include "ola/io/Descriptor.h"
 #include "ola/network/TCPSocket.h"
@@ -61,9 +62,10 @@ class OutgoingStreamTransport: public OutgoingTransport {
      * this doesn't include kernel buffers, so you need to account for that.
      */
     OutgoingStreamTransport(
-        ola::io::OutputStream *stream,
+        ola::io::OutputBufferInterface *buffer,
         unsigned int max_buffer_size = 2 << 10)  // default to 2k
-        : m_stream(stream),
+        : m_buffer(buffer),
+          m_stream(buffer),
           m_max_buffer_size(max_buffer_size) {
     }
     ~OutgoingStreamTransport() {}
@@ -71,7 +73,8 @@ class OutgoingStreamTransport: public OutgoingTransport {
     bool Send(const PDUBlock<PDU> &pdu_block);
 
   private:
-    ola::io::OutputStream *m_stream;
+    ola::io::OutputBufferInterface *m_buffer;
+    ola::io::OutputStream m_stream;
     unsigned int m_max_buffer_size;
 
     OutgoingStreamTransport(const OutgoingStreamTransport&);

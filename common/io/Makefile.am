@@ -39,6 +39,7 @@ SelectServerTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 SelectServerTester_LDADD = $(COMMON_TEST_LDADD)
 
 StreamTester_SOURCES = GenericTester.cpp \
+                       OutputStreamTest.cpp \
                        StreamTest.cpp
 StreamTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 StreamTester_LDADD = $(COMMON_TEST_LDADD)

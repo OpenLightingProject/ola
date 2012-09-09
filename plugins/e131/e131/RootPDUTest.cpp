@@ -24,6 +24,7 @@
 
 #include "ola/Logging.h"
 #include "ola/io/IOQueue.h"
+#include "ola/io/OutputStream.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/testing/TestUtils.h"
 #include "plugins/e131/e131/CID.h"
@@ -35,6 +36,7 @@ namespace plugin {
 namespace e131 {
 
 using ola::io::IOQueue;
+using ola::io::OutputStream;
 using ola::network::NetworkToHost;
 using ola::testing::ASSERT_DATA_EQUALS;
 
@@ -141,7 +143,8 @@ void RootPDUTest::testSimpleRootPDUToOutputStream() {
   CPPUNIT_ASSERT_EQUAL(22u, pdu1.Size());
 
   IOQueue output;
-  pdu1.Write(&output);
+  OutputStream stream(&output);
+  pdu1.Write(&stream);
 
   CPPUNIT_ASSERT_EQUAL(22u, output.Size());
 
@@ -214,7 +217,8 @@ void RootPDUTest::testNestedRootPDUToOutputStream() {
   CPPUNIT_ASSERT_EQUAL(30u, pdu.Size());
 
   IOQueue output;
-  pdu.Write(&output);
+  OutputStream stream(&output);
+  pdu.Write(&stream);
   CPPUNIT_ASSERT_EQUAL(30u, output.Size());
 
   uint8_t *raw_pdu = new uint8_t[output.Size()];

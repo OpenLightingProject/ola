@@ -27,17 +27,17 @@ namespace ola {
 namespace io {
 
 /**
- * InputBuffer.
+ * InputBufferInterface.
  */
-class InputBuffer {
+class InputBufferInterface {
   public:
-    virtual ~InputBuffer() {}
+    virtual ~InputBufferInterface() {}
 
     /**
      * Copy the next length bytes to *data. Less than length bytes may be
      * returned if the end of the buffer is reached.
      */
-    virtual void Get(uint8_t *data, unsigned int *length) = 0;
+    virtual void Read(uint8_t *data, unsigned int *length) = 0;
 };
 }  // io
 }  // ola

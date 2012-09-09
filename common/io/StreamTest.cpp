@@ -23,10 +23,12 @@
 #include "ola/Logging.h"
 #include "ola/io/MemoryBuffer.h"
 #include "ola/io/BigEndianInputStream.h"
+#include "ola/io/InputStream.h"
 #include "ola/testing/TestUtils.h"
 
+using ola::io::BigEndianInputStreamAdaptor;
+using ola::io::InputStream;
 using ola::io::MemoryBuffer;
-using ola::io::BigEndianInputStream;
 
 
 class InputStreamTest: public CppUnit::TestFixture {
@@ -64,31 +66,32 @@ void InputStreamTest::testRead() {
   };
 
   MemoryBuffer buffer(data, sizeof(data));
-  BigEndianInputStream stream(&buffer);
+  InputStream stream(&buffer);
+  BigEndianInputStreamAdaptor be_stream(&stream);
 
   int8_t int8;
-  OLA_ASSERT(stream >> int8);
+  OLA_ASSERT(be_stream >> int8);
   OLA_ASSERT_EQ(static_cast<int8_t>(-128), int8);
 
   uint8_t uint8;
-  OLA_ASSERT(stream >> uint8);
+  OLA_ASSERT(be_stream >> uint8);
   OLA_ASSERT_EQ(static_cast<uint8_t>(129), uint8);
 
   int16_t int16;
-  OLA_ASSERT(stream >> int16);
+  OLA_ASSERT(be_stream >> int16);
   OLA_ASSERT_EQ(static_cast<int16_t>(-32768), int16);
 
   uint16_t uint16;
-  OLA_ASSERT(stream >> uint16);
+  OLA_ASSERT(be_stream >> uint16);
   OLA_ASSERT_EQ(static_cast<uint16_t>(33537), uint16);
 
   int32_t int32;
-  OLA_ASSERT(stream >> int32);
+  OLA_ASSERT(be_stream >> int32);
   OLA_ASSERT_EQ(static_cast<int32_t>(-2023406815), int32);
 
   uint32_t uint32;
-  OLA_ASSERT(stream >> uint32);
+  OLA_ASSERT(be_stream >> uint32);
   OLA_ASSERT_EQ(static_cast<uint32_t>(305419896), uint32);
 
-  OLA_ASSERT_FALSE(stream >> uint16);
+  OLA_ASSERT_FALSE(be_stream >> uint16);
 }
