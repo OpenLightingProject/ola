@@ -32,7 +32,7 @@ case "$1" in
     # master switch
     if [ -n "$DAEMON_ARGS" ] ; then
       log_daemon_msg "Starting $DESC" "$NAME"
-      /sbin/start-stop-daemon --start --chuid $USER --exec $DAEMON -- $DAEMON_ARGS
+      /sbin/start-stop-daemon --start --umask 0002 --chuid $USER --exec $DAEMON -- $DAEMON_ARGS
       log_end_msg $?
     fi
     ;;
