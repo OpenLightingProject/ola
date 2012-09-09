@@ -29,12 +29,15 @@
 namespace ola {
 namespace io {
 
+// An abstract class that guarantees byte order will be converted.
+class BigEndianInputStream: public InputStreamInterface {};
+
 /**
  * BigEndianInputStreamAdaptor.
  * Wraps a InputStreamInterface object and converts from Big Endian to
  * host order.
  */
-class BigEndianInputStreamAdaptor: public InputStreamInterface {
+class BigEndianInputStreamAdaptor: public BigEndianInputStream {
   public:
     // Ownership of the stream is not transferred.
     explicit BigEndianInputStreamAdaptor(InputStreamInterface *stream)
@@ -64,12 +67,15 @@ class BigEndianInputStreamAdaptor: public InputStreamInterface {
 };
 
 
+// An abstract class that guarantees byte order will be converted.
+class BigEndianOutputStream: public OutputStreamInterface {};
+
 /**
  * BigEndianOutputStreamAdaptor.
  * Wraps a OutputStreamInterface object and converts from Big Endian to
  * host order.
  */
-class BigEndianOutputStreamAdaptor: public OutputStreamInterface {
+class BigEndianOutputStreamAdaptor: public BigEndianOutputStream {
   public:
     // Ownership of the stream is not transferred.
     explicit BigEndianOutputStreamAdaptor(OutputStreamInterface *stream)
