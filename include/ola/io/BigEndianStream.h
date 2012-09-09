@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * BigEndianStreamAdaptor.h
+ * BigEndianStream.h
  * Wraps another {Input,Output}StreamInterface object and converts from Big
  * Endian to host order.
  * Copyright (C) 2012 Simon Newton
