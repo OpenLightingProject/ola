@@ -30,14 +30,14 @@ namespace ola {
 namespace io {
 
 // An abstract class that guarantees byte order will be converted.
-class BigEndianInputStream: public InputStreamInterface {};
+class BigEndianInputStreamInterface: public InputStreamInterface {};
 
 /**
  * BigEndianInputStreamAdaptor.
  * Wraps a InputStreamInterface object and converts from Big Endian to
  * host order.
  */
-class BigEndianInputStreamAdaptor: public BigEndianInputStream {
+class BigEndianInputStreamAdaptor: public BigEndianInputStreamInterface {
   public:
     // Ownership of the stream is not transferred.
     explicit BigEndianInputStreamAdaptor(InputStreamInterface *stream)
@@ -67,15 +67,43 @@ class BigEndianInputStreamAdaptor: public BigEndianInputStream {
 };
 
 
+/**
+ * A Big Endian Input stream that wraps an InputBufferInterface
+ */
+class BigEndianInputStream: public BigEndianInputStreamInterface {
+  public:
+    // Ownership of the InputBuffer is not transferred.
+    explicit BigEndianInputStream(InputBufferInterface *buffer)
+        : m_input_stream(buffer),
+          m_adaptor(&m_input_stream) {
+    }
+    ~BigEndianInputStream() {}
+
+    bool operator>>(int8_t &val) { return m_adaptor >> val; }
+    bool operator>>(uint8_t &val) { return m_adaptor >> val; }
+    bool operator>>(int16_t &val) { return m_adaptor >> val; }
+    bool operator>>(uint16_t &val) { return m_adaptor >> val; }
+    bool operator>>(int32_t &val) { return m_adaptor >> val; }
+    bool operator>>(uint32_t &val) { return m_adaptor >> val; }
+
+  private:
+    InputStream m_input_stream;
+    BigEndianInputStreamAdaptor m_adaptor;
+
+    BigEndianInputStream(const BigEndianInputStream&);
+    BigEndianInputStream& operator=(const BigEndianInputStream&);
+};
+
+
 // An abstract class that guarantees byte order will be converted.
-class BigEndianOutputStream: public OutputStreamInterface {};
+class BigEndianOutputStreamInterface: public OutputStreamInterface {};
 
 /**
  * BigEndianOutputStreamAdaptor.
  * Wraps a OutputStreamInterface object and converts from Big Endian to
  * host order.
  */
-class BigEndianOutputStreamAdaptor: public BigEndianOutputStream {
+class BigEndianOutputStreamAdaptor: public BigEndianOutputStreamInterface {
   public:
     // Ownership of the stream is not transferred.
     explicit BigEndianOutputStreamAdaptor(OutputStreamInterface *stream)
@@ -123,6 +151,44 @@ class BigEndianOutputStreamAdaptor: public BigEndianOutputStream {
     BigEndianOutputStreamAdaptor(const BigEndianOutputStreamAdaptor&);
     BigEndianOutputStreamAdaptor& operator=(
         const BigEndianOutputStreamAdaptor&);
+};
+
+
+/**
+ * A Big Endian Input stream that wraps an OutputBufferInterface
+ */
+class BigEndianOutputStream: public BigEndianOutputStreamInterface {
+  public:
+    // Ownership of the OutputBuffer is not transferred.
+    explicit BigEndianOutputStream(OutputBufferInterface *buffer)
+        : m_output_stream(buffer),
+          m_adaptor(&m_output_stream) {
+    }
+    ~BigEndianOutputStream() {}
+
+    void Write(const uint8_t *data, unsigned int length) {
+      m_adaptor.Write(data, length);
+    }
+
+    BigEndianOutputStream& operator<<(int8_t val) { return Output(val); }
+    BigEndianOutputStream& operator<<(uint8_t val) { return Output(val); }
+    BigEndianOutputStream& operator<<(int16_t val) { return Output(val); }
+    BigEndianOutputStream& operator<<(uint16_t val) { return Output(val); }
+    BigEndianOutputStream& operator<<(int32_t val) { return Output(val); }
+    BigEndianOutputStream& operator<<(uint32_t val) { return Output(val); }
+
+  private:
+    OutputStream m_output_stream;
+    BigEndianOutputStreamAdaptor m_adaptor;
+
+    template <typename T>
+    BigEndianOutputStream& Output(T val) {
+      m_adaptor << val;
+      return *this;
+    }
+
+    BigEndianOutputStream(const BigEndianOutputStream&);
+    BigEndianOutputStream& operator=(const BigEndianOutputStream&);
 };
 }  // io
 }  // ola
