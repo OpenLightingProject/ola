@@ -50,7 +50,7 @@ class InputStreamInterface {
      * Append up to size bytes of data to the string.
      * @returns the number of bytes read
      */
-    virtual unsigned int ReadString(string *output, unsigned int size) = 0;
+    virtual unsigned int ReadString(std::string *output, unsigned int size) = 0;
 };
 
 
