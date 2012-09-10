@@ -51,7 +51,8 @@ class MemoryBuffer: public InputBufferInterface {
 
     unsigned int Read(std::string *output, unsigned int length) {
       unsigned int data_size = std::min(m_size - m_cursor, length);
-      output->append(reinterpret_cast<const char*>(m_data), data_size);
+      output->append(reinterpret_cast<const char*>(m_data + m_cursor),
+                     data_size);
       m_cursor += data_size;
       return data_size;
     }
