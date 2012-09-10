@@ -23,6 +23,7 @@
 
 #include <stdint.h>
 #include <ola/io/InputBuffer.h>
+#include <string>
 
 namespace ola {
 namespace io {
@@ -44,6 +45,12 @@ class InputStreamInterface {
     virtual bool operator>>(uint16_t &val) = 0;
     virtual bool operator>>(int32_t &val) = 0;
     virtual bool operator>>(uint32_t &val) = 0;
+
+    /*
+     * Append up to size bytes of data to the string.
+     * @returns the number of bytes read
+     */
+    virtual unsigned int ReadString(string *output, unsigned int size) = 0;
 };
 
 
@@ -66,13 +73,17 @@ class InputStream: public InputStreamInterface {
     bool operator>>(int32_t &val) { return Extract(val); }
     bool operator>>(uint32_t &val) { return Extract(val); }
 
+    unsigned int ReadString(std::string *output, unsigned int size) {
+      return m_buffer->Read(output, size);
+    }
+
   private:
     InputBufferInterface *m_buffer;
 
     template <typename T>
     bool Extract(T &val) {
-      unsigned int length = sizeof(val);
-      m_buffer->Read(reinterpret_cast<uint8_t*>(&val), &length);
+      unsigned int length = m_buffer->Read(reinterpret_cast<uint8_t*>(&val),
+                                           sizeof(val));
       return length == sizeof(val);
     }
 

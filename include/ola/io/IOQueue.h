@@ -28,6 +28,7 @@
 #include <deque>
 #include <iostream>
 #include <queue>
+#include <string>
 
 namespace ola {
 namespace io {
@@ -49,7 +50,8 @@ class IOQueue: public InputBufferInterface, public OutputBufferInterface {
     void Write(const uint8_t *data, unsigned int length);
 
     // From InputBuffer
-    void Read(uint8_t *data, unsigned int *length);
+    unsigned int Read(uint8_t *data, unsigned int length);
+    unsigned int Read(std::string *output, unsigned int length);
 
     unsigned int Peek(uint8_t *data, unsigned int length) const;
     void Pop(unsigned int n);

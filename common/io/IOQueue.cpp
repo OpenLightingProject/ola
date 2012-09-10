@@ -28,6 +28,7 @@
 #include <deque>
 #include <iostream>
 #include <queue>
+#include <string>
 
 namespace ola {
 namespace io {
@@ -102,9 +103,38 @@ void IOQueue::Write(const uint8_t *data, unsigned int length) {
 /**
  * Read up to n bytes into the memory location data.
  */
-void IOQueue::Read(uint8_t *data, unsigned int *n) {
-  *n = Peek(data, *n);
-  Pop(*n);
+unsigned int IOQueue::Read(uint8_t *data, unsigned int n) {
+  unsigned int size = Peek(data, n);
+  Pop(size);
+  return size;
+}
+
+
+/**
+ * Read up to n bytes into the memory location data.
+ */
+unsigned int IOQueue::Read(std::string *output, unsigned int n) {
+  unsigned int offset = 0;
+  unsigned int size_of_first = SizeOfFirstBlock();
+  unsigned int amount_to_copy = min(n, size_of_first);
+
+  // copy as much as we need from the first block
+  output->append(reinterpret_cast<char*>(m_first), amount_to_copy);
+  if (n <= size_of_first)
+    return n;
+
+  offset += amount_to_copy;
+
+  // now copy from the remaining blocks
+  BlockVector::const_iterator iter = m_blocks.begin();
+
+  while (offset < n) {
+    iter++;
+    amount_to_copy = min(n - offset, m_block_size);
+    output->append(reinterpret_cast<char*>(*iter), amount_to_copy);
+    offset += amount_to_copy;
+  }
+  return offset;
 }
 
 
@@ -133,17 +163,10 @@ unsigned int IOQueue::Peek(uint8_t *data, unsigned int n) const {
 
   while (offset < n) {
     iter++;
-    amount_to_copy = n - offset;
-    if (amount_to_copy > m_block_size) {
-      // entire block
-      memcpy(data + offset, *iter, m_block_size);
-      offset += m_block_size;
-    } else {
-      memcpy(data + offset, *iter, amount_to_copy);
-      offset += amount_to_copy;
-    }
+    amount_to_copy = min(n - offset, m_block_size);
+    memcpy(data + offset, *iter, amount_to_copy);
+    offset += amount_to_copy;
   }
-
   return offset;
 }
 
