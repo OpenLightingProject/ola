@@ -21,6 +21,7 @@
 #define TOOLS_SLP_SLPPACKETPARSER_H_
 
 #include <ola/network/IPV4Address.h>
+#include <ola/io/BigEndianStream.h>
 
 #include <string>
 #include <vector>
@@ -28,7 +29,7 @@
 #include "tools/slp/SLPPacketConstants.h"
 #include "tools/slp/URLEntry.h"
 
-using ola::io::IOQueue;
+using ola::io::BigEndianInputStream;
 using ola::network::IPV4Address;
 using std::string;
 using std::vector;
@@ -87,20 +88,15 @@ class SLPPacketParser {
                                 unsigned int length) const;
 
     const ServiceRequestPacket* UnpackServiceRequest(
-        const uint8_t *data,
-        unsigned int length) const;
+        BigEndianInputStream *input) const;
 
-    //UnpackServiceRequest(const uint8_t *data, unsigned int length);
-
-    //UnpackService
+    // UnpackServiceRequest(const uint8_t *data, unsigned int length);
 
   private:
     // unpack header
-    bool ExtractHeader(const uint8_t *data,
-                       unsigned int length,
-                       SLPPacket *packet,
-                       unsigned int *data_offset) const;
-    bool ReadString(uint8_t *data, unsigned int length,
+    bool ExtractHeader(BigEndianInputStream *input,
+                       SLPPacket *packet) const;
+    bool ReadString(BigEndianInputStream *input,
                     const string &field_name, string *result) const;
 };
 }  // slp

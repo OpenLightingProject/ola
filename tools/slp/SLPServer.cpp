@@ -25,8 +25,9 @@
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/io/SelectServer.h>
+#include <ola/io/BigEndianStream.h>
 #include <ola/io/IOQueue.h>
-#include <ola/io/OutputStream.h>
+#include <ola/io/MemoryBuffer.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/NetworkUtils.h>
 #include <ola/network/Socket.h>
@@ -54,7 +55,9 @@ namespace slp {
 
 using ola::NewCallback;
 using ola::NewSingleCallback;
+using ola::io::BigEndianInputStream;
 using ola::io::BigEndianOutputStream;
+using ola::io::MemoryBuffer;
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
@@ -273,18 +276,22 @@ void SLPServer::UDPData() {
     return;
   IPV4SocketAddress source(source_ip, port);
 
-  OLA_INFO << "Got " << packet_size << "UDP bytes from " << source;
+  OLA_INFO << "Got " << packet_size << " UDP bytes from " << source;
 
   uint8_t function_id = m_packet_parser.DetermineFunctionID(packet,
                                                             packet_size);
+
+  MemoryBuffer buffer(&packet[0], packet_size);
+  BigEndianInputStream stream(&buffer);
 
   switch (function_id) {
     case 0:
       return;
     case SERVICE_REQUEST:
-      HandleServiceRequest(packet, packet_size, source);
+      HandleServiceRequest(&stream, source);
+      break;
     default:
-      OLA_WARN << "Unknown SLP function-id: " << function_id;
+      OLA_WARN << "Unknown SLP function-id: " << static_cast<int>(function_id);
       break;
   }
 }
@@ -293,12 +300,21 @@ void SLPServer::UDPData() {
 /**
  * Handle a Service Request packet.
  */
-void SLPServer::HandleServiceRequest(const uint8_t *data,
-                                     unsigned int data_size,
+void SLPServer::HandleServiceRequest(BigEndianInputStream *stream,
                                      const IPV4SocketAddress &source) {
   OLA_INFO << "Got Service request from " << source;
-  (void) data;
-  (void) data_size;
+  const ServiceRequestPacket *srv_request =
+    m_packet_parser.UnpackServiceRequest(stream);
+  OLA_INFO << "srvrequst " << srv_request;
+  if (!srv_request)
+    return;
+
+  // handle it here
+  OLA_INFO << "Unpacked service request";
+  OLA_INFO << "xid: " << srv_request->xid;
+  OLA_INFO << "lang: " << srv_request->language;
+  OLA_INFO << "srv-type: " << srv_request->service_type;
+  delete srv_request;
 }
 
 /**

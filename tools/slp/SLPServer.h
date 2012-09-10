@@ -22,6 +22,7 @@
 
 #include <ola/Clock.h>
 #include <ola/ExportMap.h>
+#include <ola/io/BigEndianStream.h>
 #include <ola/io/IOQueue.h>
 #include <ola/io/SelectServer.h>
 #include <ola/io/StdinHandler.h>
@@ -155,7 +156,7 @@ class SLPServer {
 
     // SLP Network methods
     void UDPData();
-    void HandleServiceRequest(const uint8_t *data, unsigned int data_size,
+    void HandleServiceRequest(BigEndianInputStream *stream,
                               const IPV4SocketAddress &source);
 
     // DA methods

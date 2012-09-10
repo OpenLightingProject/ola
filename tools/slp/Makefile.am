@@ -62,7 +62,7 @@ config.tab.cpp config.tab.h: config.ypp
 
 
 if BUILD_TESTS
-TESTS = PacketBuilderTester
+TESTS = PacketBuilderTester PacketParserTester
 endif
 check_PROGRAMS = $(TESTS)
 PacketBuilderTester_SOURCES = GenericTester.cpp \
@@ -72,5 +72,13 @@ PacketBuilderTester_SOURCES = GenericTester.cpp \
                               URLEntryTest.cpp
 PacketBuilderTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 PacketBuilderTester_LDADD = $(CPPUNIT_LIBS) \
+                            $(top_builddir)/common/libolacommon.la \
+                            $(top_builddir)/common/testing/libolatesting.la
+
+PacketParserTester_SOURCES = GenericTester.cpp \
+                             PacketParserTest.cpp \
+                             SLPPacketParser.cpp
+PacketParserTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+PacketParserTester_LDADD = $(CPPUNIT_LIBS) \
                             $(top_builddir)/common/libolacommon.la \
                             $(top_builddir)/common/testing/libolatesting.la
