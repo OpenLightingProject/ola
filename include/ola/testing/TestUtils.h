@@ -68,20 +68,19 @@ void _AssertVectorEq(unsigned int line,
   CPPUNIT_ASSERT(!(condition))
 
 #define OLA_ASSERT_EQ(expected, output)  \
- CPPUNIT_ASSERT_EQUAL(expected, output)
+  CPPUNIT_ASSERT_EQUAL(expected, output)
 
 #define OLA_ASSERT_NE(expected, output)  \
- CPPUNIT_ASSERT((expected) != (output))
+  CPPUNIT_ASSERT((expected) != (output))
 
 #define OLA_ASSERT_LT(expected, output)  \
- CPPUNIT_ASSERT((expected) < (output))
+  CPPUNIT_ASSERT((expected) < (output))
 
 #define OLA_ASSERT_GT(expected, output)  \
- CPPUNIT_ASSERT((expected) > (output))
+  CPPUNIT_ASSERT((expected) > (output))
 
 #define OLA_ASSERT_VECTOR_EQ(expected, output)  \
 ola::testing::_AssertVectorEq(__LINE__, (expected), (output))
-
 }  // testing
 }  // ola
 #endif  // INCLUDE_OLA_TESTING_TESTUTILS_H_
