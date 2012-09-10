@@ -30,6 +30,8 @@
 namespace ola {
 namespace io {
 
+using std::string;
+
 // An abstract class that guarantees byte order will be converted.
 class BigEndianInputStreamInterface: public InputStreamInterface {};
 
