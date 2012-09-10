@@ -44,6 +44,7 @@ class IOQueueTest: public CppUnit::TestFixture {
     CPPUNIT_TEST(testPeek);
     CPPUNIT_TEST(testIOVec);
     CPPUNIT_TEST(testDump);
+    CPPUNIT_TEST(testStringRead);
     CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -55,6 +56,7 @@ class IOQueueTest: public CppUnit::TestFixture {
     void testPeek();
     void testIOVec();
     void testDump();
+    void testStringRead();
 
   private:
     auto_ptr<IOQueue> m_buffer;
@@ -330,4 +332,20 @@ void IOQueueTest::testDump() {
       string("00 01 02 03 04 05 06 07  ........\n"
              "08                       .\n"),
       str.str());
+}
+
+
+/**
+ * Test reading to a string works.
+ */
+void IOQueueTest::testStringRead() {
+  m_buffer.reset(new IOQueue(4));
+  uint8_t data1[] = {'a', 'b', 'c', 'd', '1', '2', '3', '4', ' '};
+
+  m_buffer->Write(data1, sizeof(data1));
+  CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
+
+  std::string output;
+  CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Read(&output, 9u));
+  CPPUNIT_ASSERT_EQUAL(string("abcd1234 "), output);
 }

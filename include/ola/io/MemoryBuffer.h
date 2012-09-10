@@ -24,6 +24,7 @@
 #include <ola/io/InputBuffer.h>
 #include <stdint.h>
 #include <algorithm>
+#include <string>
 
 namespace ola {
 namespace io {
@@ -41,10 +42,18 @@ class MemoryBuffer: public InputBufferInterface {
     }
     ~MemoryBuffer() {}
 
-    void Read(uint8_t *data, unsigned int *length) {
-      *length = std::min(m_size - m_cursor, *length);
-      memcpy(data, m_data + m_cursor, *length);
-      m_cursor += *length;
+    unsigned int Read(uint8_t *data, unsigned int length) {
+      unsigned int data_size = std::min(m_size - m_cursor, length);
+      memcpy(data, m_data + m_cursor, data_size);
+      m_cursor += data_size;
+      return data_size;
+    }
+
+    unsigned int Read(std::string *output, unsigned int length) {
+      unsigned int data_size = std::min(m_size - m_cursor, length);
+      output->append(reinterpret_cast<const char*>(m_data), data_size);
+      m_cursor += data_size;
+      return data_size;
     }
 
   private:

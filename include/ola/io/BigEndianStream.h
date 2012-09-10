@@ -19,12 +19,13 @@
  * Copyright (C) 2012 Simon Newton
  */
 
-#ifndef INCLUDE_OLA_IO_BIGENDIANSTREAMADAPTOR_H_
-#define INCLUDE_OLA_IO_BIGENDIANSTREAMADAPTOR_H_
+#ifndef INCLUDE_OLA_IO_BIGENDIANSTREAM_H_
+#define INCLUDE_OLA_IO_BIGENDIANSTREAM_H_
 
 #include <ola/io/InputStream.h>
 #include <ola/io/OutputStream.h>
 #include <ola/network/NetworkUtils.h>
+#include <string>
 
 namespace ola {
 namespace io {
@@ -51,6 +52,10 @@ class BigEndianInputStreamAdaptor: public BigEndianInputStreamInterface {
     bool operator>>(uint16_t &val) { return ExtractAndConvert(val); }
     bool operator>>(int32_t &val) { return ExtractAndConvert(val); }
     bool operator>>(uint32_t &val) { return ExtractAndConvert(val); }
+
+    unsigned int ReadString(string *output, unsigned int size) {
+      return m_stream->ReadString(output, size);
+    }
 
   private:
     InputStreamInterface *m_stream;
@@ -85,6 +90,10 @@ class BigEndianInputStream: public BigEndianInputStreamInterface {
     bool operator>>(uint16_t &val) { return m_adaptor >> val; }
     bool operator>>(int32_t &val) { return m_adaptor >> val; }
     bool operator>>(uint32_t &val) { return m_adaptor >> val; }
+
+    unsigned int ReadString(string *output, unsigned int size) {
+      return m_adaptor.ReadString(output, size);
+    }
 
   private:
     InputStream m_input_stream;
@@ -192,4 +201,4 @@ class BigEndianOutputStream: public BigEndianOutputStreamInterface {
 };
 }  // io
 }  // ola
-#endif  // INCLUDE_OLA_IO_BIGENDIANSTREAMADAPTOR_H_
+#endif  // INCLUDE_OLA_IO_BIGENDIANSTREAM_H_

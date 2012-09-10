@@ -23,6 +23,7 @@
 #define INCLUDE_OLA_IO_INPUTBUFFER_H_
 
 #include <stdint.h>
+#include <string>
 
 namespace ola {
 namespace io {
@@ -37,8 +38,16 @@ class InputBufferInterface {
     /**
      * Copy the next length bytes to *data. Less than length bytes may be
      * returned if the end of the buffer is reached.
+     * @returns the number of bytes read
      */
-    virtual void Read(uint8_t *data, unsigned int *length) = 0;
+    virtual unsigned int Read(uint8_t *data, unsigned int length) = 0;
+
+    /*
+     * Append up to length bytes of data to the string.
+     * Updates length with the number of bytes read.
+     * @returns the number of bytes read
+     */
+    virtual unsigned int Read(std::string *output, unsigned int length) = 0;
 };
 }  // io
 }  // ola
