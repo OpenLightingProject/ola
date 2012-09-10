@@ -23,10 +23,14 @@
 
 #include <stdint.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include <sstream>
+#include <vector>
 
 
 namespace ola {
 namespace testing {
+
+using std::vector;
 
 // Assert that two data blocks are the same.
 void ASSERT_DATA_EQUALS(unsigned int line,
@@ -34,6 +38,23 @@ void ASSERT_DATA_EQUALS(unsigned int line,
                         unsigned int expected_length,
                         const uint8_t *actual,
                         unsigned int actual_length);
+
+// Private, use OLA_ASSERT_VECTOR_EQ below
+template <typename T>
+void _AssertVectorEq(unsigned int line,
+                     const vector<T> &t1,
+                     const vector<T> &t2) {
+  std::ostringstream str;
+  str << "Line " << line;
+  CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(), t1.size(), t2.size());
+
+  typename vector<T>::const_iterator iter1, iter2;
+  iter1 = t1.begin();
+  iter2 = t2.begin();
+  for (; iter1 != t1.end(); ++iter1, ++iter2) {
+    CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(), *iter1, *iter2);
+  }
+}
 
 // Useful macros. This allows us to switch between unit testing frameworks in
 // the future.
@@ -57,6 +78,9 @@ void ASSERT_DATA_EQUALS(unsigned int line,
 
 #define OLA_ASSERT_GT(expected, output)  \
  CPPUNIT_ASSERT((expected) > (output))
+
+#define OLA_ASSERT_VECTOR_EQ(expected, output)  \
+ola::testing::_AssertVectorEq(__LINE__, (expected), (output))
 
 }  // testing
 }  // ola
