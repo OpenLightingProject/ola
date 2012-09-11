@@ -72,6 +72,8 @@ class ServiceRequestPacket: public SLPPacket {
     vector<IPV4Address> pr_list;
     string service_type;
     vector<string> scope_list;
+    string predicate;
+    string spi;
 };
 
 
@@ -98,6 +100,9 @@ class SLPPacketParser {
                        SLPPacket *packet) const;
     bool ReadString(BigEndianInputStream *input,
                     const string &field_name, string *result) const;
+
+    bool ConvertIPAddressList(const string &list,
+                              vector<IPV4Address> *addresses) const;
 };
 }  // slp
 }  // ola

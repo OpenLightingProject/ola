@@ -20,6 +20,7 @@
 #include <ola/Logging.h>
 #include <ola/io/BigEndianStream.h>
 #include <ola/network/NetworkUtils.h>
+#include <ola/StringUtils.h>
 #include <algorithm>
 #include <memory>
 #include <string>
@@ -27,12 +28,13 @@
 
 #include "tools/slp/SLPPacketParser.h"
 
+using ola::StringSplit;
 using ola::io::BigEndianInputStream;
 using ola::network::IPV4Address;
 using ola::network::NetworkToHost;
+using std::auto_ptr;
 using std::string;
 using std::vector;
-using std::auto_ptr;
 
 namespace ola {
 namespace slp {
@@ -60,7 +62,23 @@ const ServiceRequestPacket* SLPPacketParser::UnpackServiceRequest(
     return NULL;
 
   // now try to extract the data
+  string pr_list, scope_list;
+  if (!ReadString(input, "PR List", &pr_list))
+    return NULL;
+  ConvertIPAddressList(pr_list, &packet->pr_list);
 
+  if (!ReadString(input, "Service Type", &packet->service_type))
+    return NULL;
+
+  if (!ReadString(input, "Scope List", &scope_list))
+    return NULL;
+  StringSplit(scope_list, packet->scope_list, ",");
+
+  if (!ReadString(input, "Predicate", &packet->predicate))
+    return NULL;
+
+  if (!ReadString(input, "SPI String", &packet->spi))
+    return NULL;
 
   return packet.release();
 }
@@ -168,6 +186,33 @@ bool SLPPacketParser::ReadString(BigEndianInputStream *input,
     return false;
   }
   return true;
+}
+
+
+/**
+ * Convert a comma separated string into a vector of IPAddresses.
+ */
+bool SLPPacketParser::ConvertIPAddressList(
+    const string &list,
+    vector<IPV4Address> *addresses) const {
+  if (list.empty())
+    return true;
+
+  vector<string> str_list;
+  StringSplit(list, str_list, ",");
+  addresses->reserve(str_list.size());
+  vector<string>::const_iterator iter = str_list.begin();
+  bool ok = true;
+  IPV4Address address;
+  for (; iter != str_list.end(); ++iter) {
+    if (IPV4Address::FromString(*iter, &address)) {
+      addresses->push_back(address);
+    } else {
+      OLA_INFO << "SLP Packet contained invalid IP Address: " << *iter;
+      ok = false;
+    }
+  }
+  return ok;
 }
 }  // slp
 }  // ola

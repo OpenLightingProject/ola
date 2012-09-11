@@ -56,20 +56,14 @@ class PacketParserTest: public CppUnit::TestFixture {
 
   public:
     void setUp() {
+      OLA_ASSERT(IPV4Address::FromString("1.1.1.2", &ip1));
+      OLA_ASSERT(IPV4Address::FromString("1.1.1.8", &ip2));
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
     }
 
   private:
     SLPPacketParser m_parser;
-    /*
-    uint8_t* WriteToBuffer(IOQueue *data, unsigned int *size) {
-      *size = data->Size();
-      uint8_t *data_buffer = new uint8_t[*size];
-      *size = data->Peek(data_buffer, *size);
-      data->Pop(*size);
-      return data_buffer;
-    }
-    */
+    IPV4Address ip1, ip2;
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(PacketParserTest);
@@ -97,26 +91,85 @@ void PacketParserTest::testDetermineFunctionID() {
  * Check that UnpackServiceRequest() works.
  */
 void PacketParserTest::testParseServiceRequest() {
-  const uint8_t input_data[] = {
-    2, 1, 0, 0, 63, 0xe0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
-    0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1', '.',
-    '8',  // pr-llist
-    0, 13, 'r', 'd', 'm', 'n', 'e', 't', '-', 'd', 'e', 'v', 'i', 'c', 'e',
-    0, 9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',  // scope list
-    0, 0,  // pred string
-    0, 0,  // SPI string
-  };
-  MemoryBuffer buffer(input_data, sizeof(input_data));
-  BigEndianInputStream stream(&buffer);
+  {
+    const uint8_t input_data[] = {
+      2, 1, 0, 0, 63, 0xe0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1',
+      '.', '8',  // pr-llist
+      0, 13, 'r', 'd', 'm', 'n', 'e', 't', '-', 'd', 'e', 'v', 'i', 'c', 'e',
+      0, 9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',  // scope list
+      0, 3, 'f', 'o', 'o',  // pred string
+      0, 0,  // SPI string
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
 
-  auto_ptr<const ola::slp::ServiceRequestPacket> packet(
-    m_parser.UnpackServiceRequest(&stream));
-  OLA_ASSERT(packet.get());
+    auto_ptr<const ola::slp::ServiceRequestPacket> packet(
+      m_parser.UnpackServiceRequest(&stream));
+    OLA_ASSERT(packet.get());
 
-  // verify the contents of the packet
-  OLA_ASSERT_EQ(static_cast<ola::slp::xid_t>(0x1234), packet->xid);
-  OLA_ASSERT_EQ(true, packet->Overflow());
-  OLA_ASSERT_EQ(true, packet->Fresh());
-  OLA_ASSERT_EQ(true, packet->Multicast());
-  OLA_ASSERT_EQ(string("en"), packet->language);
+    // verify the contents of the packet
+    OLA_ASSERT_EQ(static_cast<ola::slp::xid_t>(0x1234), packet->xid);
+    OLA_ASSERT_EQ(true, packet->Overflow());
+    OLA_ASSERT_EQ(true, packet->Fresh());
+    OLA_ASSERT_EQ(true, packet->Multicast());
+    OLA_ASSERT_EQ(string("en"), packet->language);
+
+    vector<IPV4Address> expected_pr_list;
+    expected_pr_list.push_back(ip1);
+    expected_pr_list.push_back(ip2);
+    OLA_ASSERT_VECTOR_EQ(expected_pr_list, packet->pr_list);
+    OLA_ASSERT_EQ(string("rdmnet-device"), packet->service_type);
+
+    vector<string> expected_scope_list;
+    expected_scope_list.push_back("ACN");
+    expected_scope_list.push_back("MYORG");
+    OLA_ASSERT_VECTOR_EQ(expected_scope_list, packet->scope_list);
+    OLA_ASSERT_EQ(string("foo"), packet->predicate);
+    OLA_ASSERT_EQ(string(""), packet->spi);
+  }
+
+  // now try a different packet
+  {
+    const uint8_t input_data[] = {
+      2, 1, 0, 0, 63, 0x80, 0, 0, 0, 0, 0, 0x78, 0, 4, 'e', 'n', 'n', 'g',
+      0, 0,  // no pr-list
+      0, 13, 'r', 'd', 'm', 'n', 'e', 't', '-', 'd', 'e', 'v', 'i', 'c', 'e',
+      0, 9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',  // scope list
+      0, 0,  // pred string
+      0, 0,  // SPI string
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+
+    auto_ptr<const ola::slp::ServiceRequestPacket> packet(
+      m_parser.UnpackServiceRequest(&stream));
+    OLA_ASSERT(packet.get());
+
+    // verify the contents of the packet
+    OLA_ASSERT_EQ(static_cast<ola::slp::xid_t>(0x78), packet->xid);
+    OLA_ASSERT_EQ(true, packet->Overflow());
+    OLA_ASSERT_EQ(false, packet->Fresh());
+    OLA_ASSERT_EQ(false, packet->Multicast());
+    OLA_ASSERT_EQ(string("enng"), packet->language);
+
+    vector<IPV4Address> expected_pr_list;
+    OLA_ASSERT_VECTOR_EQ(expected_pr_list, packet->pr_list);
+    OLA_ASSERT_EQ(string("rdmnet-device"), packet->service_type);
+
+    vector<string> expected_scope_list;
+    expected_scope_list.push_back("ACN");
+    expected_scope_list.push_back("MYORG");
+    OLA_ASSERT_VECTOR_EQ(expected_scope_list, packet->scope_list);
+    OLA_ASSERT_EQ(string(""), packet->predicate);
+    OLA_ASSERT_EQ(string(""), packet->spi);
+  }
+
+  // short packets
+  {
+    MemoryBuffer buffer(NULL, 0);
+    BigEndianInputStream stream(&buffer);
+
+    OLA_ASSERT_NULL(m_parser.UnpackServiceRequest(&stream));
+  }
 }
