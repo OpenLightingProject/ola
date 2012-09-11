@@ -22,6 +22,8 @@
 #define INCLUDE_OLA_TESTING_TESTUTILS_H_
 
 #include <stdint.h>
+#include <cppunit/Asserter.h>
+#include <cppunit/SourceLine.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include <sstream>
 #include <vector>
@@ -57,10 +59,12 @@ void _AssertVectorEq(unsigned int line,
 }
 
 template <typename T>
-void _AssertNull(unsigned int line, T *value) {
-  std::ostringstream str;
-  str << "Line " << line;
-  CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(), static_cast<T*>(NULL), value);
+void _AssertNull(const CPPUNIT_NS::SourceLine &source_line,
+                 const CPPUNIT_NS::Message &message,
+                 T *value) {
+  if (NULL == value)
+    return;
+  CPPUNIT_NS::Asserter::fail(message, source_line);
 }
 
 // Useful macros. This allows us to switch between unit testing frameworks in
@@ -90,7 +94,10 @@ void _AssertNull(unsigned int line, T *value) {
   ola::testing::_AssertVectorEq(__LINE__, (expected), (output))
 
 #define OLA_ASSERT_NULL(value) \
-  ola::testing::_AssertNull(__LINE__, value)
+  ola::testing::_AssertNull( \
+    CPPUNIT_SOURCELINE(), \
+    CPPUNIT_NS::Message("Expression: " #value " not NULL"), \
+    value)
 }  // testing
 }  // ola
 #endif  // INCLUDE_OLA_TESTING_TESTUTILS_H_
