@@ -43,28 +43,17 @@ void ASSERT_DATA_EQUALS(unsigned int line,
 
 // Private, use OLA_ASSERT_VECTOR_EQ below
 template <typename T>
-void _AssertVectorEq(unsigned int line,
+void _AssertVectorEq(const CPPUNIT_NS::SourceLine &source_line,
                      const vector<T> &t1,
                      const vector<T> &t2) {
-  std::ostringstream str;
-  str << "Line " << line;
-  CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(), t1.size(), t2.size());
+  CPPUNIT_NS::assertEquals(t1.size(), t2.size(), source_line,
+                           "Vector sizes not equal");
 
-  typename vector<T>::const_iterator iter1, iter2;
-  iter1 = t1.begin();
-  iter2 = t2.begin();
-  for (; iter1 != t1.end(); ++iter1, ++iter2) {
-    CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(), *iter1, *iter2);
-  }
-}
-
-template <typename T>
-void _AssertNull(const CPPUNIT_NS::SourceLine &source_line,
-                 const CPPUNIT_NS::Message &message,
-                 T *value) {
-  if (NULL == value)
-    return;
-  CPPUNIT_NS::Asserter::fail(message, source_line);
+  typename vector<T>::const_iterator iter1 = t1.begin();
+  typename vector<T>::const_iterator iter2 = t2.begin();
+  while (iter1 != t1.end())
+    CPPUNIT_NS::assertEquals(*iter1++, *iter2++, source_line,
+                             "Vector elements not equal");
 }
 
 // Useful macros. This allows us to switch between unit testing frameworks in
@@ -91,13 +80,13 @@ void _AssertNull(const CPPUNIT_NS::SourceLine &source_line,
   CPPUNIT_ASSERT((expected) > (output))
 
 #define OLA_ASSERT_VECTOR_EQ(expected, output)  \
-  ola::testing::_AssertVectorEq(__LINE__, (expected), (output))
+  ola::testing::_AssertVectorEq(CPPUNIT_SOURCELINE(), (expected), (output))
 
 #define OLA_ASSERT_NULL(value) \
-  ola::testing::_AssertNull( \
-    CPPUNIT_SOURCELINE(), \
-    CPPUNIT_NS::Message("Expression: " #value " not NULL"), \
-    value)
+  CPPUNIT_NS::Asserter::failIf( \
+    NULL != value, \
+    CPPUNIT_NS::Message("Expression: " #value " != NULL"), \
+    CPPUNIT_SOURCELINE())
 }  // testing
 }  // ola
 #endif  // INCLUDE_OLA_TESTING_TESTUTILS_H_
