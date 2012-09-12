@@ -113,6 +113,98 @@ const ServiceReplyPacket* SLPPacketParser::UnpackServiceReply(
 
 
 /**
+ * Unpack a Service Registration packet
+ */
+const ServiceRegistrationPacket *SLPPacketParser::UnpackServiceRegistration(
+    BigEndianInputStream *input) const {
+  auto_ptr<ServiceRegistrationPacket> packet(new ServiceRegistrationPacket());
+  if (!ExtractHeader(input, packet.get(), "SrvReg"))
+    return NULL;
+
+  if (!ExtractURLEntry(input, &packet->url, "SrvReg"))
+    return NULL;
+
+  if (!ExtractString(input, &packet->service_type, "Service-type"))
+    return NULL;
+
+  string scope_list;
+  if (!ExtractString(input, &scope_list, "Scope list"))
+    return NULL;
+  StringSplit(scope_list, packet->scope_list, ",");
+
+  if (!ExtractString(input, &packet->attr_list, "Attr-list"))
+    return NULL;
+
+  uint8_t url_auths;
+  if (!ExtractValue(input, &url_auths, "SrvReg: # of URL Auths"))
+    return NULL;
+
+  for (unsigned int i = 0; i < url_auths; i++) {
+    if (!ExtractAuthBlock(input, "SrvReg"))
+      return NULL;
+  }
+  return packet.release();
+}
+
+
+/**
+ * Unpack a Service Ack packet
+ */
+const ServiceAckPacket *SLPPacketParser::UnpackServiceAck(
+    BigEndianInputStream *input) const {
+  auto_ptr<ServiceAckPacket> packet(new ServiceAckPacket());
+  if (!ExtractHeader(input, packet.get(), "SrvAck"))
+    return NULL;
+
+  if (!ExtractValue(input, &packet->error_code, "SrvAck: error-code"))
+    return NULL;
+  return packet.release();
+}
+
+
+/**
+ * Unpack a DAAdvert packet
+ */
+const DAAdvertPacket *SLPPacketParser::UnpackDAAdvert(
+    BigEndianInputStream *input) const {
+  auto_ptr<DAAdvertPacket> packet(new DAAdvertPacket());
+  if (!ExtractHeader(input, packet.get(), "DAAdvert"))
+    return NULL;
+
+  if (!ExtractValue(input, &packet->error_code, "DAAdvert: error-code"))
+    return NULL;
+
+  if (!ExtractValue(input, &packet->boot_timestamp, "DAAdvert: boot-timestamp"))
+    return NULL;
+
+  if (!ExtractString(input, &packet->url, "DAAdvert: URL"))
+    return NULL;
+
+  string scope_list;
+  if (!ExtractString(input, &scope_list, "DAAdvert: Scope list"))
+    return NULL;
+  StringSplit(scope_list, packet->scope_list, ",");
+
+  if (!ExtractString(input, &packet->attr_list, "DAAdvert: Attr-list"))
+    return NULL;
+
+  string spi_string;
+  if (!ExtractString(input, &spi_string, "DAAdvert: SPI String"))
+    return false;
+
+  uint8_t url_auths;
+  if (!ExtractValue(input, &url_auths, "DAAdvert: # of URL Auths"))
+    return NULL;
+
+  for (unsigned int i = 0; i < url_auths; i++) {
+    if (!ExtractAuthBlock(input, "DAAdvert"))
+      return NULL;
+  }
+  return packet.release();
+}
+
+
+/**
  * Check the contents of the header, and populate the packet structure.
  * Returns true if this packet is valid, false otherwise.
  */
@@ -159,8 +251,8 @@ bool SLPPacketParser::ExtractHeader(BigEndianInputStream *input,
 
   unsigned int packet_length = length_hi << 8 + length_lo;
   (void) packet_length;
-  /*
   // There is no Size() methods for InputStreams so we can't check this.
+  /*
   if (packet_length != length) {
     OLA_INFO << "SLP Packet length mismatch, header said " << packet_length <<
       ", packet size was " << length;

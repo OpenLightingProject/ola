@@ -87,6 +87,47 @@ class ServiceReplyPacket: public SLPPacket {
 
 
 /**
+ * A Service Registration
+ */
+class ServiceRegistrationPacket: public SLPPacket {
+  public:
+    ServiceRegistrationPacket(): SLPPacket() {}
+
+    URLEntry url;
+    string service_type;
+    vector<string> scope_list;
+    string attr_list;
+};
+
+
+/**
+ * A Service Ack
+ */
+class ServiceAckPacket: public SLPPacket {
+  public:
+    ServiceAckPacket(): SLPPacket() {}
+
+    uint16_t error_code;
+};
+
+
+/**
+ * A DA Advert
+ */
+class DAAdvertPacket: public SLPPacket {
+  public:
+    DAAdvertPacket(): SLPPacket() {}
+
+    uint16_t error_code;
+    uint32_t boot_timestamp;
+    string url;
+    vector<string> scope_list;
+    string attr_list;
+    string spi_string;
+};
+
+
+/**
  * The SLPPacketParser unpacks data from SLP packets.
  */
 class SLPPacketParser {
@@ -97,10 +138,19 @@ class SLPPacketParser {
     uint8_t DetermineFunctionID(const uint8_t *data,
                                 unsigned int length) const;
 
-    const ServiceRequestPacket* UnpackServiceRequest(
+    const ServiceRequestPacket *UnpackServiceRequest(
         BigEndianInputStream *input) const;
 
-    const ServiceReplyPacket* UnpackServiceReply(
+    const ServiceReplyPacket *UnpackServiceReply(
+        BigEndianInputStream *input) const;
+
+    const ServiceRegistrationPacket *UnpackServiceRegistration(
+        BigEndianInputStream *input) const;
+
+    const ServiceAckPacket *UnpackServiceAck(
+        BigEndianInputStream *input) const;
+
+    const DAAdvertPacket *UnpackDAAdvert(
         BigEndianInputStream *input) const;
 
   private:

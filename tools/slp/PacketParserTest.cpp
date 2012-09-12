@@ -50,22 +50,32 @@ class PacketParserTest: public CppUnit::TestFixture {
     CPPUNIT_TEST(testDetermineFunctionID);
     CPPUNIT_TEST(testParseServiceRequest);
     CPPUNIT_TEST(testParseServiceReply);
+    CPPUNIT_TEST(testParseServiceRegistration);
+    CPPUNIT_TEST(testParseServiceAck);
+    CPPUNIT_TEST(testParseDAAdvert);
     CPPUNIT_TEST_SUITE_END();
 
     void testDetermineFunctionID();
     void testParseServiceRequest();
     void testParseServiceReply();
+    void testParseServiceRegistration();
+    void testParseServiceAck();
+    void testParseDAAdvert();
 
   public:
     void setUp() {
       OLA_ASSERT(IPV4Address::FromString("1.1.1.2", &ip1));
       OLA_ASSERT(IPV4Address::FromString("1.1.1.8", &ip2));
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
+
+      expected_scopes.push_back("ACN");
+      expected_scopes.push_back("MYORG");
     }
 
   private:
     SLPPacketParser m_parser;
     IPV4Address ip1, ip2;
+    vector<string> expected_scopes;
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(PacketParserTest);
@@ -123,10 +133,7 @@ void PacketParserTest::testParseServiceRequest() {
     OLA_ASSERT_VECTOR_EQ(expected_pr_list, packet->pr_list);
     OLA_ASSERT_EQ(string("rdmnet-device"), packet->service_type);
 
-    vector<string> expected_scope_list;
-    expected_scope_list.push_back("ACN");
-    expected_scope_list.push_back("MYORG");
-    OLA_ASSERT_VECTOR_EQ(expected_scope_list, packet->scope_list);
+    OLA_ASSERT_VECTOR_EQ(expected_scopes, packet->scope_list);
     OLA_ASSERT_EQ(string("foo"), packet->predicate);
     OLA_ASSERT_EQ(string(""), packet->spi);
   }
@@ -159,10 +166,7 @@ void PacketParserTest::testParseServiceRequest() {
     OLA_ASSERT_VECTOR_EQ(expected_pr_list, packet->pr_list);
     OLA_ASSERT_EQ(string("rdmnet-device"), packet->service_type);
 
-    vector<string> expected_scope_list;
-    expected_scope_list.push_back("ACN");
-    expected_scope_list.push_back("MYORG");
-    OLA_ASSERT_VECTOR_EQ(expected_scope_list, packet->scope_list);
+    OLA_ASSERT_VECTOR_EQ(expected_scopes, packet->scope_list);
     OLA_ASSERT_EQ(string(""), packet->predicate);
     OLA_ASSERT_EQ(string(""), packet->spi);
   }
@@ -258,5 +262,140 @@ void PacketParserTest::testParseServiceReply() {
     expected_urls.push_back(URLEntry(0x1234, "service:foo://1.1.1.9"));
     expected_urls.push_back(URLEntry(0x5678, "service:foo://1.1.1.99"));
     OLA_ASSERT_VECTOR_EQ(expected_urls, packet->url_entries);
+  }
+}
+
+
+/*
+ * Check that UnpackServiceRegistration() works.
+ */
+void PacketParserTest::testParseServiceRegistration() {
+  {
+    uint8_t input_data[] = {
+      2, 3, 0, 0, 0x41, 0x60, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      // entry 1
+      0, 0x12, 0x34, 0, 21,
+      's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o', ':', '/', '/',
+      '1', '.', '1', '.', '1', '.', '1',
+      0,  // # of auth blocks
+      0, 3, 'f', 'o', 'o',  // service-type
+      0, 9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',  // scope list
+      0, 3, 'b', 'a', 'r',  // attr list
+      0  // attr auths
+    };
+
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+
+    auto_ptr<const ola::slp::ServiceRegistrationPacket> packet(
+      m_parser.UnpackServiceRegistration(&stream));
+    OLA_ASSERT(packet.get());
+
+    // verify the contents of the packet
+    OLA_ASSERT_EQ(static_cast<ola::slp::xid_t>(0x1234), packet->xid);
+    OLA_ASSERT_EQ(false, packet->Overflow());
+    OLA_ASSERT_EQ(true, packet->Fresh());
+    OLA_ASSERT_EQ(true, packet->Multicast());
+    OLA_ASSERT_EQ(string("en"), packet->language);
+
+    OLA_ASSERT_EQ(string("service:foo://1.1.1.1"), packet->url.URL());
+    OLA_ASSERT_EQ(static_cast<uint16_t>(0x1234), packet->url.Lifetime());
+    OLA_ASSERT_EQ(string("foo"), packet->service_type);
+    OLA_ASSERT_VECTOR_EQ(expected_scopes, packet->scope_list);
+    OLA_ASSERT_EQ(string("bar"), packet->attr_list);
+  }
+}
+
+
+/*
+ * Check that UnpackServiceAck() works.
+ */
+void PacketParserTest::testParseServiceAck() {
+  {
+    uint8_t input_data[] = {
+      2, 5, 0, 0, 18, 0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0x56, 0x78
+    };
+
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+
+    auto_ptr<const ola::slp::ServiceAckPacket> packet(
+      m_parser.UnpackServiceAck(&stream));
+    OLA_ASSERT(packet.get());
+
+    // verify the contents of the packet
+    OLA_ASSERT_EQ(static_cast<ola::slp::xid_t>(0x1234), packet->xid);
+    OLA_ASSERT_EQ(false, packet->Overflow());
+    OLA_ASSERT_EQ(false, packet->Fresh());
+    OLA_ASSERT_EQ(false, packet->Multicast());
+    OLA_ASSERT_EQ(string("en"), packet->language);
+    OLA_ASSERT_EQ(static_cast<uint16_t>(0x5678), packet->error_code);
+  }
+
+  // test a packet missing the error code
+  {
+    uint8_t input_data[] = {
+      2, 5, 0, 0, 16, 0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+    };
+
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceAck(&stream));
+  }
+}
+
+
+/*
+ * Check that UnpackDAAdvert() works.
+ */
+void PacketParserTest::testParseDAAdvert() {
+  {
+    uint8_t input_data[] = {
+      2, 8, 0, 0, 0x33, 0x20, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 0,  // error code is zeroed out if multicast
+      0x12, 0x34, 0x56, 0x78,  // boot timestamp
+      0, 11, 's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o',  // service
+      0, 9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',  // scope list
+      0, 3, 'b', 'a', 'r',  // attr list
+      0, 0,  // SPI list
+      0  // auth blocks
+    };
+
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+
+    auto_ptr<const ola::slp::DAAdvertPacket> packet(
+      m_parser.UnpackDAAdvert(&stream));
+    OLA_ASSERT(packet.get());
+
+    // verify the contents of the packet
+    OLA_ASSERT_EQ(static_cast<ola::slp::xid_t>(0x1234), packet->xid);
+    OLA_ASSERT_EQ(false, packet->Overflow());
+    OLA_ASSERT_EQ(false, packet->Fresh());
+    OLA_ASSERT_EQ(true, packet->Multicast());
+    OLA_ASSERT_EQ(string("en"), packet->language);
+
+    OLA_ASSERT_EQ(static_cast<uint16_t>(0), packet->error_code);
+    OLA_ASSERT_EQ(0x12345678u, packet->boot_timestamp);
+    OLA_ASSERT_EQ(string("service:foo"), packet->url);
+    OLA_ASSERT_VECTOR_EQ(expected_scopes, packet->scope_list);
+    OLA_ASSERT_EQ(string("bar"), packet->attr_list);
+  }
+
+  // test a short packet
+  {
+    uint8_t input_data[] = {
+      2, 8, 0, 0, 0x33, 0x20, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 0,  // error code is zeroed out if multicast
+      0x12, 0x34, 0x56, 0x78,  // boot timestamp
+      0, 11, 's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o',  // service
+      0, 9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',  // scope list
+      0, 3, 'b', 'a', 'r',  // attr list
+    };
+
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackDAAdvert(&stream));
   }
 }
