@@ -24,11 +24,12 @@ RDMTests = function() {
   this.notification = $('#rdm-tests-notification');
   this.notification.dialog({
       autoOpen: false,
+      closeOnEscape: false,
+      dialogClass: 'no-close',
       draggable: false,
       height: 140,
       modal: true,
       resizable: false,
-      dialogClass: 'no-close',
   });
 };
 
