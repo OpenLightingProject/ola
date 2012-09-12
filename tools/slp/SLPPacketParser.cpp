@@ -58,27 +58,55 @@ uint8_t SLPPacketParser::DetermineFunctionID(const uint8_t *data,
 const ServiceRequestPacket* SLPPacketParser::UnpackServiceRequest(
     BigEndianInputStream *input) const {
   auto_ptr<ServiceRequestPacket> packet(new ServiceRequestPacket());
-  if (!ExtractHeader(input, packet.get()))
+  if (!ExtractHeader(input, packet.get(), "SrvRqst"))
     return NULL;
 
   // now try to extract the data
   string pr_list, scope_list;
-  if (!ReadString(input, "PR List", &pr_list))
+  if (!ExtractString(input, &pr_list, "PR List"))
     return NULL;
   ConvertIPAddressList(pr_list, &packet->pr_list);
 
-  if (!ReadString(input, "Service Type", &packet->service_type))
+  if (!ExtractString(input, &packet->service_type, "Service Type"))
     return NULL;
 
-  if (!ReadString(input, "Scope List", &scope_list))
+  if (!ExtractString(input, &scope_list, "Scope list"))
     return NULL;
   StringSplit(scope_list, packet->scope_list, ",");
 
-  if (!ReadString(input, "Predicate", &packet->predicate))
+  if (!ExtractString(input, &packet->predicate, "Predicate"))
     return NULL;
 
-  if (!ReadString(input, "SPI String", &packet->spi))
+  if (!ExtractString(input, &packet->spi, "SPI String"))
     return NULL;
+
+  return packet.release();
+}
+
+
+/**
+ * Unpack a Service Reply messages
+ */
+const ServiceReplyPacket* SLPPacketParser::UnpackServiceReply(
+    BigEndianInputStream *input) const {
+  auto_ptr<ServiceReplyPacket> packet(new ServiceReplyPacket());
+  if (!ExtractHeader(input, packet.get(), "SrvRply"))
+    return NULL;
+
+  if (!ExtractValue(input, &packet->error_code, "SrvRply: Error Code"))
+    return NULL;
+
+  uint16_t url_entry_count;
+  if (!ExtractValue(input, &url_entry_count, "SrvRply: URL Entry Count"))
+    return NULL;
+
+  URLEntry entry;
+  for (unsigned int i = 0; i < url_entry_count; i++) {
+    if (ExtractURLEntry(input, &entry, "SrvRply"))
+      packet->url_entries.push_back(entry);
+    else
+      break;
+  }
 
   return packet.release();
 }
@@ -89,7 +117,8 @@ const ServiceRequestPacket* SLPPacketParser::UnpackServiceRequest(
  * Returns true if this packet is valid, false otherwise.
  */
 bool SLPPacketParser::ExtractHeader(BigEndianInputStream *input,
-                                    SLPPacket *packet) const {
+                                    SLPPacket *packet,
+                                    const string &packet_type) const {
   /*
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
      |    Version    |  Function-ID  |            Length             |
@@ -124,7 +153,7 @@ bool SLPPacketParser::ExtractHeader(BigEndianInputStream *input,
   uint16_t length_hi;
   uint8_t length_lo;
   if (!(*input >> length_hi && *input >> length_lo)) {
-    OLA_INFO << "SLP Packet too small to contain length";
+    OLA_INFO << packet_type << " too small to contain length";
     return false;
   }
 
@@ -140,14 +169,14 @@ bool SLPPacketParser::ExtractHeader(BigEndianInputStream *input,
   */
 
   if (!(*input >> packet->flags)) {
-    OLA_INFO << "SLP Packet too small to contain flags";
+    OLA_INFO << packet_type << " too small to contain flags";
     return false;
   }
 
   uint8_t next_ext_hi;
   uint16_t next_ext_lo;
   if (!(*input >> next_ext_hi && *input >> next_ext_lo)) {
-    OLA_INFO << "SLP Packet too small to contain Next Ext. Offset";
+    OLA_INFO << packet_type << " too small to contain Next Ext. Offset";
     return false;
   }
 
@@ -156,11 +185,11 @@ bool SLPPacketParser::ExtractHeader(BigEndianInputStream *input,
     OLA_INFO << "Next Ext non-0, was " << next_ext_offset;
 
   if (!(*input >> packet->xid)) {
-    OLA_INFO << "SLP Packet too small to contain XID";
+    OLA_INFO << packet_type << " too small to contain XID";
     return false;
   }
 
-  if (!ReadString(input, "Language", &packet->language))
+  if (!ExtractString(input, &packet->language, "Language"))
     return false;
   return true;
 }
@@ -170,9 +199,9 @@ bool SLPPacketParser::ExtractHeader(BigEndianInputStream *input,
  * Attempt to read a string from a data buffer. The first two bytes are the
  * string length.
  */
-bool SLPPacketParser::ReadString(BigEndianInputStream *input,
-                                 const string &field_name,
-                                 string *result) const {
+bool SLPPacketParser::ExtractString(BigEndianInputStream *input,
+                                    string *result,
+                                    const string &field_name) const {
   uint16_t str_length;
   if (!(*input >> str_length)) {
     OLA_INFO << "Packet too small to read " << field_name << " length";
@@ -183,6 +212,95 @@ bool SLPPacketParser::ReadString(BigEndianInputStream *input,
   if (bytes_read != str_length) {
     OLA_INFO << "Insufficent data remaining for SLP string " << field_name <<
       ", expected " << str_length << ", " << bytes_read << " remaining";
+    return false;
+  }
+  return true;
+}
+
+
+/**
+ * Extract an URLEntry from the stream.
+ */
+bool SLPPacketParser::ExtractURLEntry(BigEndianInputStream *input,
+                                      URLEntry *entry,
+                                      const string &packet_type) const {
+  uint8_t reserved;
+  if (!ExtractValue(input, &reserved, packet_type + " reserved"))
+    return false;
+
+  uint16_t lifetime;
+  if (!ExtractValue(input, &lifetime, packet_type + " lifetime"))
+    return false;
+  entry->Lifetime(lifetime);
+
+  string url;
+  if (!ExtractString(input, &url, packet_type + " URL"))
+    return false;
+  entry->URL(url);
+
+  uint8_t url_auths;
+  if (!ExtractValue(input, &url_auths, packet_type + " # of URL Auths"))
+    return false;
+
+  for (unsigned int i = 0; i < url_auths; i++) {
+    if (!ExtractAuthBlock(input, packet_type))
+      return false;
+  }
+  return true;
+}
+
+
+/**
+ * Extract an Authentication block. We just discard these for now
+ */
+bool SLPPacketParser::ExtractAuthBlock(BigEndianInputStream *input,
+                                       const string &packet_type) const {
+  /*
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |  Block Structure Descriptor   |  Authentication Block Length  |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                           Timestamp                           |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |     SLP SPI String Length     |         SLP SPI String        \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |              Structured Authentication Block ...              \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  */
+  uint16_t block_descriptor;
+  if (!ExtractValue(input, &block_descriptor,
+                    packet_type + " Auth block descriptor"))
+    return false;
+
+  uint16_t block_length;
+  if (!ExtractValue(input, &block_length, packet_type + " Auth block length"))
+    return false;
+
+  uint32_t timestamp;
+  if (!ExtractValue(input, &timestamp, packet_type + " Auth timestamp"))
+    return false;
+
+  string spi_string;
+  if (!ExtractString(input, &spi_string, packet_type + "SPI String"))
+    return false;
+
+  int auth_block_size = block_length - (
+      sizeof(block_descriptor) + sizeof(block_length) + sizeof(timestamp) +
+      sizeof(block_length) + spi_string.size());
+
+  if (auth_block_size < 0) {
+    OLA_INFO << packet_type <<
+      ": Auth block size smaller than the minimum value";
+    return false;
+  }
+
+  if (auth_block_size == 0)
+    return true;
+
+  string auth_block_data;
+  unsigned int bytes_read = input->ReadString(&auth_block_data,
+                                              auth_block_size);
+  if (bytes_read != static_cast<unsigned int>(auth_block_size)) {
+    OLA_INFO << packet_type << ": insufficent data remaining for auth data";
     return false;
   }
   return true;

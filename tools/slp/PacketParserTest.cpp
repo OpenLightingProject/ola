@@ -49,10 +49,12 @@ class PacketParserTest: public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(PacketParserTest);
     CPPUNIT_TEST(testDetermineFunctionID);
     CPPUNIT_TEST(testParseServiceRequest);
+    CPPUNIT_TEST(testParseServiceReply);
     CPPUNIT_TEST_SUITE_END();
 
     void testDetermineFunctionID();
     void testParseServiceRequest();
+    void testParseServiceReply();
 
   public:
     void setUp() {
@@ -169,7 +171,92 @@ void PacketParserTest::testParseServiceRequest() {
   {
     MemoryBuffer buffer(NULL, 0);
     BigEndianInputStream stream(&buffer);
-
     OLA_ASSERT_NULL(m_parser.UnpackServiceRequest(&stream));
+  }
+}
+
+
+/*
+ * Check that UnpackServiceReply() works.
+ */
+void PacketParserTest::testParseServiceReply() {
+  {
+    uint8_t input_data[] = {
+      2, 2, 0, 0, 0x4b, 0x40, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 12,  // error code
+      0, 2,  // url entry count
+      // entry 1
+      0, 0x12, 0x34, 0, 21,
+      's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o', ':', '/', '/',
+      '1', '.', '1', '.', '1', '.', '1',
+      0,  // # of auth blocks
+      // entry 2
+      0, 0x56, 0x78, 0, 22,
+      's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o', ':', '/', '/',
+      '1', '.', '1', '.', '1', '.', '1', '0',
+      0,  // # of auth blocks
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+
+    auto_ptr<const ola::slp::ServiceReplyPacket> packet(
+      m_parser.UnpackServiceReply(&stream));
+    OLA_ASSERT(packet.get());
+
+    // verify the contents of the packet
+    OLA_ASSERT_EQ(static_cast<ola::slp::xid_t>(0x1234), packet->xid);
+    OLA_ASSERT_EQ(false, packet->Overflow());
+    OLA_ASSERT_EQ(true, packet->Fresh());
+    OLA_ASSERT_EQ(false, packet->Multicast());
+    OLA_ASSERT_EQ(string("en"), packet->language);
+
+    vector<URLEntry> expected_urls;
+    expected_urls.push_back(URLEntry(0x1234, "service:foo://1.1.1.1"));
+    expected_urls.push_back(URLEntry(0x5678, "service:foo://1.1.1.10"));
+    OLA_ASSERT_VECTOR_EQ(expected_urls, packet->url_entries);
+  }
+
+  // packet with auth blocks
+  {
+    uint8_t input_data[] = {
+      2, 2, 0, 0, 0x4b, 0x20, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 12,  // error code
+      0, 2,  // url entry count
+      // entry 1
+      0, 0x12, 0x34, 0, 21,
+      's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o', ':', '/', '/',
+      '1', '.', '1', '.', '1', '.', '9',
+      1,  // # of auth blocks
+      0x80, 0x00, 0, 19,  // type and length
+      0x12, 0x34, 0x56, 0x78,  // timestamp
+      0 , 3, 's', 'p', 'i',  // spi string
+      'a', 'b', 'c', 'd', 'e', 'f',  // auth block data
+      // entry 2
+      0, 0x56, 0x78, 0, 22,
+      's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o', ':', '/', '/',
+      '1', '.', '1', '.', '1', '.', '9', '9',
+      1,  // # of auth blocks, this one doesn't contain any data
+      0x80, 0x00, 0, 13,  // type and length
+      0x12, 0x34, 0x56, 0x78,  // timestamp
+      0 , 3, 's', 'p', 'i',  // spi string
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+
+    auto_ptr<const ola::slp::ServiceReplyPacket> packet(
+      m_parser.UnpackServiceReply(&stream));
+    OLA_ASSERT(packet.get());
+
+    // verify the contents of the packet
+    OLA_ASSERT_EQ(static_cast<ola::slp::xid_t>(0x1234), packet->xid);
+    OLA_ASSERT_EQ(false, packet->Overflow());
+    OLA_ASSERT_EQ(false, packet->Fresh());
+    OLA_ASSERT_EQ(true, packet->Multicast());
+    OLA_ASSERT_EQ(string("en"), packet->language);
+
+    vector<URLEntry> expected_urls;
+    expected_urls.push_back(URLEntry(0x1234, "service:foo://1.1.1.9"));
+    expected_urls.push_back(URLEntry(0x5678, "service:foo://1.1.1.99"));
+    OLA_ASSERT_VECTOR_EQ(expected_urls, packet->url_entries);
   }
 }

@@ -22,10 +22,12 @@
 
 #include <ola/io/BigEndianStream.h>
 
+#include <sstream>
 #include <string>
 #include <vector>
 
 using ola::io::BigEndianOutputStreamInterface;
+using std::ostream;
 using std::string;
 
 namespace ola {
@@ -36,17 +38,33 @@ namespace slp {
  */
 class URLEntry {
   public:
+    URLEntry() : m_lifetime(0) {}
+
     URLEntry(uint16_t lifetime, const string &url)
         : m_lifetime(lifetime),
           m_url(url) {
     }
     ~URLEntry() {}
 
+    // getters and setters
+    uint16_t Lifetime() const { return m_lifetime; }
+    void Lifetime(uint16_t lifetime) { m_lifetime = lifetime; }
+    string URL() const { return m_url; }
+    void URL(const string &url) { m_url = url; }
+
     // Return the total size of this URL entry
     unsigned int Size() const { return 6 + m_url.size(); }
 
     // Write this URLEntry to an IOQueue
     void Write(ola::io::BigEndianOutputStreamInterface *output) const;
+
+    bool operator==(const URLEntry &other) const {
+      return (m_lifetime == other.m_lifetime && m_url == other.m_url);
+    }
+
+    friend ostream& operator<<(ostream &out, const URLEntry &entry) {
+      return out << entry.URL() << "(" << entry.Lifetime() << ")";
+    }
 
   private:
     uint16_t m_lifetime;

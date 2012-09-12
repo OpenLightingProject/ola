@@ -20,8 +20,9 @@
 #ifndef TOOLS_SLP_SLPPACKETPARSER_H_
 #define TOOLS_SLP_SLPPACKETPARSER_H_
 
-#include <ola/network/IPV4Address.h>
+#include <ola/Logging.h>
 #include <ola/io/BigEndianStream.h>
+#include <ola/network/IPV4Address.h>
 
 #include <string>
 #include <vector>
@@ -49,14 +50,14 @@ class SLPPacket {
     }
     virtual ~SLPPacket() {}
 
+    bool Overflow() const { return flags & SLP_OVERFLOW; }
+    bool Fresh() const { return flags & SLP_FRESH; }
+    bool Multicast() const { return flags & SLP_REQUEST_MCAST; }
+
     // members
     xid_t xid;
     uint16_t flags;
     string language;
-
-    bool Overflow() const { return flags & SLP_OVERFLOW; }
-    bool Fresh() const { return flags & SLP_FRESH; }
-    bool Multicast() const { return flags & SLP_REQUEST_MCAST; }
 };
 
 
@@ -65,15 +66,23 @@ class SLPPacket {
  */
 class ServiceRequestPacket: public SLPPacket {
   public:
-    ServiceRequestPacket()
-        : SLPPacket() {
-    }
-
     vector<IPV4Address> pr_list;
     string service_type;
     vector<string> scope_list;
     string predicate;
     string spi;
+};
+
+
+/**
+ * A Service Reply
+ */
+class ServiceReplyPacket: public SLPPacket {
+  public:
+    ServiceReplyPacket(): SLPPacket(), error_code(0) {}
+
+    uint16_t error_code;
+    vector<URLEntry> url_entries;
 };
 
 
@@ -85,24 +94,43 @@ class SLPPacketParser {
     SLPPacketParser() {}
     ~SLPPacketParser() {}
 
-    // Return the function-id for a packet, or 0 if the packet is malformed
     uint8_t DetermineFunctionID(const uint8_t *data,
                                 unsigned int length) const;
 
     const ServiceRequestPacket* UnpackServiceRequest(
         BigEndianInputStream *input) const;
 
-    // UnpackServiceRequest(const uint8_t *data, unsigned int length);
+    const ServiceReplyPacket* UnpackServiceReply(
+        BigEndianInputStream *input) const;
 
   private:
-    // unpack header
     bool ExtractHeader(BigEndianInputStream *input,
-                       SLPPacket *packet) const;
-    bool ReadString(BigEndianInputStream *input,
-                    const string &field_name, string *result) const;
+                       SLPPacket *packet,
+                       const string &packet_type) const;
+
+    bool ExtractString(BigEndianInputStream *input,
+                       string *result,
+                       const string &field_name) const;
+
+    bool ExtractURLEntry(BigEndianInputStream *input,
+                         URLEntry *entry,
+                         const string &packet_type) const;
+
+    bool ExtractAuthBlock(BigEndianInputStream *input,
+                          const string &packet_type) const;
 
     bool ConvertIPAddressList(const string &list,
                               vector<IPV4Address> *addresses) const;
+
+    template <typename T>
+    bool ExtractValue(BigEndianInputStream *stream,
+                      T *value,
+                      const string &field_name) const {
+      if ((*stream >> *value))
+        return true;
+      OLA_INFO << "Packet too small to contain " << field_name;
+      return false;
+    }
 };
 }  // slp
 }  // ola
