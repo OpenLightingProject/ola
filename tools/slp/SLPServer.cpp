@@ -80,6 +80,7 @@ const char SLPServer::SCOPE_LIST_VAR[] = "scope-list";
 const char SLPServer::SLP_PORT_VAR[] = "slp-port";
 const uint16_t SLPServer::DEFAULT_SLP_HTTP_PORT = 9012;
 const uint16_t SLPServer::DEFAULT_SLP_PORT = 427;
+const uint16_t SLPServer::DEFAULT_SLP_RPC_PORT = 9011;
 
 void StdinHandler::HandleCharacter(char c) {
   m_slp_server->Input(c);
@@ -152,7 +153,7 @@ bool SLPServer::Init() {
 
   // setup the accepting TCP socket
   if (!m_rpc_accept_socket.Listen(
-        IPV4SocketAddress(m_iface_address, m_rpc_port))) {
+        IPV4SocketAddress(IPV4Address::Loopback(), m_rpc_port))) {
     return false;
   }
 
@@ -290,6 +291,27 @@ void SLPServer::UDPData() {
     case SERVICE_REQUEST:
       HandleServiceRequest(&stream, source);
       break;
+    case SERVICE_REPLY:
+      HandleServiceReply(&stream, source);
+      break;
+    case SERVICE_REGISTRATION:
+      HandleServiceRegistration(&stream, source);
+      break;
+    case SERVICE_ACKNOWLEDGE:
+      HandleServiceAck(&stream, source);
+      break;
+    case DA_ADVERTISEMENT:
+      HandleDAAdvert(&stream, source);
+      break;
+    case SERVICE_DEREGISTER:
+    case ATTRIBUTE_REQUEST:
+    case ATTRIBUTE_REPLY:
+    case SERVICE_TYPE_REQUEST:
+    case SERVICE_TYPE_REPLY:
+    case SA_ADVERTISEMENT:
+      OLA_INFO << "Unsupported SLP function-id: "
+        << static_cast<int>(function_id);
+      break;
     default:
       OLA_WARN << "Unknown SLP function-id: " << static_cast<int>(function_id);
       break;
@@ -316,6 +338,70 @@ void SLPServer::HandleServiceRequest(BigEndianInputStream *stream,
   OLA_INFO << "srv-type: " << srv_request->service_type;
   delete srv_request;
 }
+
+
+/**
+ * Handle a Service Reply packet.
+ */
+void SLPServer::HandleServiceReply(BigEndianInputStream *stream,
+                                   const IPV4SocketAddress &source) {
+  OLA_INFO << "Got Service reply from " << source;
+  const ServiceReplyPacket *srv_reply =
+    m_packet_parser.UnpackServiceReply(stream);
+  if (!srv_reply)
+    return;
+
+  OLA_INFO << "Unpacked service reply, error_code: " << srv_reply->error_code;
+  delete srv_reply;
+}
+
+
+/**
+ * Handle a Service Registration packet.
+ */
+void SLPServer::HandleServiceRegistration(BigEndianInputStream *stream,
+                                          const IPV4SocketAddress &source) {
+  OLA_INFO << "Got Service registration from " << source;
+  const ServiceRegistrationPacket *srv_reg =
+    m_packet_parser.UnpackServiceRegistration(stream);
+  if (!srv_reg)
+    return;
+
+  OLA_INFO << "Unpacked service registration";
+  delete srv_reg;
+}
+
+
+/**
+ * Handle a Service Ack packet.
+ */
+void SLPServer::HandleServiceAck(BigEndianInputStream *stream,
+                                 const IPV4SocketAddress &source) {
+  OLA_INFO << "Got Service ack from " << source;
+  const ServiceAckPacket *srv_ack =
+    m_packet_parser.UnpackServiceAck(stream);
+  if (!srv_ack)
+    return;
+
+  OLA_INFO << "Unpacked service ack";
+  delete srv_ack;
+}
+
+
+/**
+ * Handle a DAAdvert.
+ */
+void SLPServer::HandleDAAdvert(BigEndianInputStream *stream,
+                               const IPV4SocketAddress &source) {
+  OLA_INFO << "Got DAAdvert from " << source;
+  const DAAdvertPacket *da_advert = m_packet_parser.UnpackDAAdvert(stream);
+  if (!da_advert)
+    return;
+
+  OLA_INFO << "Unpacked DA Advert";
+  delete da_advert;
+}
+
 
 /**
  * Receive data on a TCP connection

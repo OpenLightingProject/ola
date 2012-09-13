@@ -97,7 +97,7 @@ class SLPServer {
           : enable_da(true),
             enable_http(true),
             http_port(DEFAULT_SLP_HTTP_PORT),
-            rpc_port(OLA_SLP_DEFAULT_PORT),
+            rpc_port(DEFAULT_SLP_RPC_PORT),
             config_da_beat(3 * 60 * 60) {
       }
     };
@@ -158,6 +158,14 @@ class SLPServer {
     void UDPData();
     void HandleServiceRequest(BigEndianInputStream *stream,
                               const IPV4SocketAddress &source);
+    void HandleServiceReply(BigEndianInputStream *stream,
+                            const IPV4SocketAddress &source);
+    void HandleServiceRegistration(BigEndianInputStream *stream,
+                                   const IPV4SocketAddress &source);
+    void HandleServiceAck(BigEndianInputStream *stream,
+                          const IPV4SocketAddress &source);
+    void HandleDAAdvert(BigEndianInputStream *stream,
+                        const IPV4SocketAddress &source);
 
     // DA methods
     bool SendDABeat();
@@ -172,6 +180,7 @@ class SLPServer {
     static const char SCOPE_LIST_VAR[];
     static const char SLP_PORT_VAR[];
     static const uint16_t DEFAULT_SLP_HTTP_PORT;
+    static const uint16_t DEFAULT_SLP_RPC_PORT;
 };
 }  // slp
 }  // ola
