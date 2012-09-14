@@ -9,6 +9,7 @@ EXTRA_DIST = Base.h \
              SLPPacketParser.h \
              SLPServer.h \
              SLPServiceImpl.h \
+             SLPStore.h \
              slp-parser-actions.h \
              URLEntry.h
 
@@ -19,6 +20,7 @@ slp_server_SOURCES = SLPNode.cpp \
                      SLPPacketParser.cpp \
                      SLPServer.cpp \
                      SLPServiceImpl.cpp \
+                     SLPStore.cpp \
                      slp-server.cpp \
                      URLEntry.cpp
 slp_server_LDADD = $(top_builddir)/common/libolacommon.la \
@@ -62,7 +64,7 @@ config.tab.cpp config.tab.h: config.ypp
 
 
 if BUILD_TESTS
-TESTS = PacketBuilderTester PacketParserTester
+TESTS = PacketBuilderTester PacketParserTester SLPStoreTester
 endif
 check_PROGRAMS = $(TESTS)
 PacketBuilderTester_SOURCES = GenericTester.cpp \
@@ -80,5 +82,13 @@ PacketParserTester_SOURCES = GenericTester.cpp \
                              SLPPacketParser.cpp
 PacketParserTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 PacketParserTester_LDADD = $(CPPUNIT_LIBS) \
+                            $(top_builddir)/common/libolacommon.la \
+                            $(top_builddir)/common/testing/libolatesting.la
+
+SLPStoreTester_SOURCES = GenericTester.cpp \
+                         SLPStoreTest.cpp \
+                         SLPStore.cpp
+SLPStoreTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+SLPStoreTester_LDADD = $(CPPUNIT_LIBS) \
                             $(top_builddir)/common/libolacommon.la \
                             $(top_builddir)/common/testing/libolatesting.la

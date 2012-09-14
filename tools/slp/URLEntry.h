@@ -24,7 +24,7 @@
 
 #include <sstream>
 #include <string>
-#include <vector>
+#include <set>
 
 using ola::io::BigEndianOutputStreamInterface;
 using std::ostream;
@@ -40,15 +40,15 @@ class URLEntry {
   public:
     URLEntry() : m_lifetime(0) {}
 
-    URLEntry(uint16_t lifetime, const string &url)
-        : m_lifetime(lifetime),
-          m_url(url) {
+    URLEntry(const string &url, uint16_t lifetime)
+        : m_url(url),
+          m_lifetime(lifetime) {
     }
     ~URLEntry() {}
 
     // getters and setters
     uint16_t Lifetime() const { return m_lifetime; }
-    void Lifetime(uint16_t lifetime) { m_lifetime = lifetime; }
+    void Lifetime(uint16_t lifetime) const { m_lifetime = lifetime; }
     string URL() const { return m_url; }
     void URL(const string &url) { m_url = url; }
 
@@ -58,8 +58,12 @@ class URLEntry {
     // Write this URLEntry to an IOQueue
     void Write(ola::io::BigEndianOutputStreamInterface *output) const;
 
+    bool operator<(const URLEntry &other) const {
+      return m_url < other.m_url;
+    }
+
     bool operator==(const URLEntry &other) const {
-      return (m_lifetime == other.m_lifetime && m_url == other.m_url);
+      return m_url == other.m_url;
     }
 
     friend ostream& operator<<(ostream &out, const URLEntry &entry) {
@@ -67,12 +71,12 @@ class URLEntry {
     }
 
   private:
-    uint16_t m_lifetime;
     string m_url;
+    mutable uint16_t m_lifetime;
 };
 
 // typedef for convenience
-typedef std::vector<URLEntry> URLEntries;
+typedef std::set<URLEntry> URLEntries;
 }  // slp
 }  // ola
 #endif  // TOOLS_SLP_URLENTRY_H_

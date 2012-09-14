@@ -70,12 +70,15 @@ class PacketParserTest: public CppUnit::TestFixture {
 
       expected_scopes.push_back("ACN");
       expected_scopes.push_back("MYORG");
+      expected_urls.push_back(URLEntry("service:foo://1.1.1.1", 0x1244));
+      expected_urls.push_back(URLEntry("service:foo://1.1.1.10", 0x5678));
     }
 
   private:
     SLPPacketParser m_parser;
     IPV4Address ip1, ip2;
     vector<string> expected_scopes;
+    vector<URLEntry> expected_urls;
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(PacketParserTest);
@@ -213,10 +216,6 @@ void PacketParserTest::testParseServiceReply() {
     OLA_ASSERT_EQ(true, packet->Fresh());
     OLA_ASSERT_EQ(false, packet->Multicast());
     OLA_ASSERT_EQ(string("en"), packet->language);
-
-    vector<URLEntry> expected_urls;
-    expected_urls.push_back(URLEntry(0x1234, "service:foo://1.1.1.1"));
-    expected_urls.push_back(URLEntry(0x5678, "service:foo://1.1.1.10"));
     OLA_ASSERT_VECTOR_EQ(expected_urls, packet->url_entries);
   }
 
@@ -229,7 +228,7 @@ void PacketParserTest::testParseServiceReply() {
       // entry 1
       0, 0x12, 0x34, 0, 21,
       's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o', ':', '/', '/',
-      '1', '.', '1', '.', '1', '.', '9',
+      '1', '.', '1', '.', '1', '.', '1',
       1,  // # of auth blocks
       0x80, 0x00, 0, 19,  // type and length
       0x12, 0x34, 0x56, 0x78,  // timestamp
@@ -238,7 +237,7 @@ void PacketParserTest::testParseServiceReply() {
       // entry 2
       0, 0x56, 0x78, 0, 22,
       's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o', ':', '/', '/',
-      '1', '.', '1', '.', '1', '.', '9', '9',
+      '1', '.', '1', '.', '1', '.', '1', '0',
       1,  // # of auth blocks, this one doesn't contain any data
       0x80, 0x00, 0, 13,  // type and length
       0x12, 0x34, 0x56, 0x78,  // timestamp
@@ -257,10 +256,6 @@ void PacketParserTest::testParseServiceReply() {
     OLA_ASSERT_EQ(false, packet->Fresh());
     OLA_ASSERT_EQ(true, packet->Multicast());
     OLA_ASSERT_EQ(string("en"), packet->language);
-
-    vector<URLEntry> expected_urls;
-    expected_urls.push_back(URLEntry(0x1234, "service:foo://1.1.1.9"));
-    expected_urls.push_back(URLEntry(0x5678, "service:foo://1.1.1.99"));
     OLA_ASSERT_VECTOR_EQ(expected_urls, packet->url_entries);
   }
 }

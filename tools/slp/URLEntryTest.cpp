@@ -58,7 +58,7 @@ void URLEntryTest::testWrite() {
   const unsigned int expected_size = 19;
   BigEndianOutputStream stream(&output);
 
-  URLEntry url_entry(1234, "service://foo");
+  URLEntry url_entry("service://foo", 1234);
   url_entry.Write(&stream);
 
   CPPUNIT_ASSERT_EQUAL(expected_size, output.Size());
@@ -76,7 +76,7 @@ void URLEntryTest::testWrite() {
                      expected_size);
 
   // now try a 0 length url
-  URLEntry url_entry2(1234, "");
+  URLEntry url_entry2("", 1234);
   url_entry2.Write(&stream);
   CPPUNIT_ASSERT_EQUAL(6u, output.Size());
   CPPUNIT_ASSERT_EQUAL(6u, output.Peek(data, 6u));

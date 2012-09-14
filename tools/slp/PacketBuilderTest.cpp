@@ -115,7 +115,7 @@ void PacketBuilderTest::testBuildServiceRequest() {
     0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1', '.',
     '8',  // pr-llist
     0, 13, 'r', 'd', 'm', 'n', 'e', 't', '-', 'd', 'e', 'v', 'i', 'c', 'e',
-    0, 9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',  //scope list
+    0, 9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',  // scope list
     0, 0,  // pred string
     0, 0,  // SPI string
   };
@@ -130,11 +130,11 @@ void PacketBuilderTest::testBuildServiceRequest() {
  * Check that BuildServiceReply() works.
  */
 void PacketBuilderTest::testBuildServiceReply() {
-  URLEntry entry1(0x1234, "service:foo://1.1.1.1");
-  URLEntry entry2(0x5678, "service:foo://1.1.1.10");
+  URLEntry entry1("service:foo://1.1.1.1", 0x1234);
+  URLEntry entry2("service:foo://1.1.1.10", 0x5678);
   URLEntries url_entries;
-  url_entries.push_back(entry1);
-  url_entries.push_back(entry2);
+  url_entries.insert(entry1);
+  url_entries.insert(entry2);
 
   SLPPacketBuilder::BuildServiceReply(&output, xid, 12, url_entries);
   CPPUNIT_ASSERT_EQUAL(75u, ioqueue.Size());
@@ -167,7 +167,7 @@ void PacketBuilderTest::testBuildServiceReply() {
  * Check that BuildServiceRegistration() works.
  */
 void PacketBuilderTest::testBuildServiceRegistration() {
-  URLEntry entry1(0x1234, "service:foo://1.1.1.1");
+  URLEntry entry1("service:foo://1.1.1.1", 0x1234);
   vector<string> scope_list;
   scope_list.push_back("ACN");
   scope_list.push_back("MYORG");
@@ -186,7 +186,7 @@ void PacketBuilderTest::testBuildServiceRegistration() {
     '1', '.', '1', '.', '1', '.', '1',
     0,  // # of auth blocks
     0, 3, 'f', 'o', 'o',  // service-type
-    0, 9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',  //scope list
+    0, 9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',  // scope list
     0, 0,  // attr list
     0  // attr auths
   };
