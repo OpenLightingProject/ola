@@ -276,7 +276,7 @@ int main(int argc, char *argv[]) {
     DisplayHelpAndExit(opts);
   }
 
-  if (check > 1) {
+  if (check != 1) {
     OLA_FATAL << "Only one of --record or --playback must be provided";
     exit(EX_USAGE);
   } else if (opts.record) {
@@ -290,9 +290,6 @@ int main(int argc, char *argv[]) {
     return status;
   } else if (opts.verify) {
     return VerifyShow(opts.file);
-  } else {
-    OLA_FATAL << "One of --record or --playback must be provided";
-    exit(EX_USAGE);
   }
   return EX_OK;
 }
