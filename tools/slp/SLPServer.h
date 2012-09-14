@@ -35,11 +35,14 @@
 #include <iostream>
 #include <memory>
 #include <set>
+#include <map>
 #include <string>
 #include <vector>
 
 #include "tools/slp/Base.h"
 #include "tools/slp/SLPPacketParser.h"
+#include "tools/slp/URLEntry.h"
+#include "tools/slp/ScopedSLPStore.h"
 
 using ola::io::IOQueue;
 using ola::network::IPV4Address;
@@ -112,6 +115,11 @@ class SLPServer {
     void Run();
     void Stop();
 
+    // bulk load a set of URLEntries
+    void BulkLoad(const string &scope,
+                  const string &service,
+                  const URLEntries &entries);
+
     // handle events from stdin
     void Input(char c);
 
@@ -140,6 +148,7 @@ class SLPServer {
     // SLP memebers
     vector<string> m_scope_list;
     SLPPacketParser m_packet_parser;
+    ScopedSLPStore m_service_store;
 
     // DA members
 
@@ -149,6 +158,9 @@ class SLPServer {
     // The ExportMap & HTTPServer
     ola::ExportMap *m_export_map;
     auto_ptr<ola::http::OlaHTTPServer> m_http_server;
+
+    // Random methods
+    void DumpStore();
 
     // RPC methods
     void NewTCPConnection(TCPSocket *socket);

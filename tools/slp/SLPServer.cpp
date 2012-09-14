@@ -49,6 +49,7 @@
 #include "tools/slp/SLPPacketParser.h"
 #include "tools/slp/SLPServer.h"
 #include "tools/slp/SLPServiceImpl.h"
+#include "tools/slp/SLPStore.h"
 
 namespace ola {
 namespace slp {
@@ -213,16 +214,45 @@ void SLPServer::Stop() {
 }
 
 
+/**
+ * Bulk load a set of URL Entries
+ */
+void SLPServer::BulkLoad(const string &scope,
+                         const string &service,
+                         const URLEntries &entries) {
+  SLPStore *store = m_service_store.LookupOrCreate(scope);
+  store->BulkInsert(*(m_ss.WakeUpTime()), service, entries);
+}
+
+
 /*
  * Called when there is data on stdin.
  */
 void SLPServer::Input(char c) {
   switch (c) {
+    case 'p':
+      DumpStore();
+      break;
     case 'q':
       m_ss.Terminate();
       break;
     default:
       break;
+  }
+}
+
+
+/**
+ * Dump out the contents of the SLP store.
+ */
+void SLPServer::DumpStore() {
+  vector<string>::iterator iter = m_scope_list.begin();
+  for (; iter != m_scope_list.end(); ++iter) {
+    SLPStore *store = m_service_store.Lookup(*iter);
+    if (!store)
+      continue;
+    OLA_INFO << "Scope: " << *iter;
+    store->Dump(*(m_ss.WakeUpTime()));
   }
 }
 

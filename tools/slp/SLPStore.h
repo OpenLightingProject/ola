@@ -37,7 +37,7 @@ using std::map;
 using std::string;
 
 /**
- * Holds the registrations for services.
+ * Holds the registrations for services in a single scope.
  */
 class SLPStore {
   public:

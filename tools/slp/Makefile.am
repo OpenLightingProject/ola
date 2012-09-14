@@ -10,6 +10,7 @@ EXTRA_DIST = Base.h \
              SLPServer.h \
              SLPServiceImpl.h \
              SLPStore.h \
+             ScopedSLPStore.h \
              slp-parser-actions.h \
              URLEntry.h
 
@@ -21,6 +22,7 @@ slp_server_SOURCES = SLPNode.cpp \
                      SLPServer.cpp \
                      SLPServiceImpl.cpp \
                      SLPStore.cpp \
+                     ScopedSLPStore.cpp \
                      slp-server.cpp \
                      URLEntry.cpp
 slp_server_LDADD = $(top_builddir)/common/libolacommon.la \

@@ -343,6 +343,7 @@ int main(int argc, char *argv[]) {
     exit(EX_UNAVAILABLE);
 
   cout << "---------------  Controls  ----------------\n";
+  cout << " p - Print Registrations\n";
   cout << " q - Quit\n";
   cout << "-------------------------------------------\n";
   ola::InstallSignal(SIGINT, InteruptSignal);
