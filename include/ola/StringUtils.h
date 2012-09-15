@@ -56,7 +56,9 @@ bool HexStringToInt(const string &value, int8_t *output);
 bool HexStringToInt(const string &value, int16_t *output);
 bool HexStringToInt(const string &value, int32_t *output);
 void ToLower(string *s);
+void ToLower(string &s);
 void ToUpper(string *s);
+void ToUpper(string &s);
 void CapitalizeLabel(string *s);
 void CustomCapitalizeLabel(string *s);
 void FormatData(std::ostream *out,

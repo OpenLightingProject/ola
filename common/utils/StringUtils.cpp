@@ -389,6 +389,7 @@ void ToLower(string *s) {
       std::ptr_fun<int, int>(std::tolower));
 }
 
+void ToLower(string &s) { ToLower(&s); }
 
 /*
  * Return an upper case version of this string
@@ -398,6 +399,7 @@ void ToUpper(string *s) {
       std::ptr_fun<int, int>(std::toupper));
 }
 
+void ToUpper(string &s) { ToUpper(&s); }
 
 /**
  * Given a label in the form ([a-zA-Z0-9][-_])?[a-zA-Z0-9], return the string
