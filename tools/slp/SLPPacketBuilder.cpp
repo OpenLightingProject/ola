@@ -22,8 +22,8 @@
 #include <ola/io/BigEndianStream.h>
 #include <ola/network/NetworkUtils.h>
 
+#include <set>
 #include <string>
-#include <vector>
 
 #include "tools/slp/SLPPacketBuilder.h"
 #include "tools/slp/SLPPacketConstants.h"
@@ -37,7 +37,7 @@ using ola::StringJoin;
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
 using std::string;
-using std::vector;
+using std::set;
 
 
 /**
@@ -51,9 +51,9 @@ using std::vector;
 void SLPPacketBuilder::BuildServiceRequest(
     BigEndianOutputStreamInterface *output,
     xid_t xid,
-    const vector<IPV4Address> &pr_list,
+    const set<IPV4Address> &pr_list,
     const string &service_type,
-    const vector<string> &scope_list) {
+    const set<string> &scope_list) {
   /*
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
      |       Service Location header (function = SrvRqst = 1)        |
@@ -136,7 +136,7 @@ void SLPPacketBuilder::BuildServiceRegistration(
     bool fresh,
     const URLEntry &url_entry,
     const string &service_type,
-    vector<string> &scope_list) {
+    set<string> &scope_list) {
   /*
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
      |         Service Location header (function = SrvReg = 3)       |
@@ -202,7 +202,7 @@ void SLPPacketBuilder::BuildDAAdvert(BigEndianOutputStreamInterface *output,
                                      uint16_t error_code,
                                      uint32_t boot_timestamp,
                                      const string &url,
-                                     const vector<string> &scope_list) {
+                                     const set<string> &scope_list) {
   /*
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
      |        Service Location header (function = DAAdvert = 8)      |

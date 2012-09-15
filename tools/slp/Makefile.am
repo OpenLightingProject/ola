@@ -1,6 +1,7 @@
 include $(top_srcdir)/common.mk
 
 EXTRA_DIST = Base.h \
+             RegistrationFileParser.h \
              SLP.proto \
              SLPClient.h \
              SLPClientCore.h \
@@ -16,7 +17,8 @@ EXTRA_DIST = Base.h \
 
 noinst_PROGRAMS = slp_server slp_client slp_parser
 
-slp_server_SOURCES = SLPNode.cpp \
+slp_server_SOURCES = RegistrationFileParser.cpp \
+                     SLPNode.cpp \
                      SLPPacketBuilder.cpp \
                      SLPPacketParser.cpp \
                      SLPServer.cpp \

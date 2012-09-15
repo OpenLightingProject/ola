@@ -23,8 +23,8 @@
 #include <ola/io/BigEndianStream.h>
 #include <ola/network/IPV4Address.h>
 
+#include <set>
 #include <string>
-#include <vector>
 
 #include "tools/slp/SLPPacketConstants.h"
 #include "tools/slp/URLEntry.h"
@@ -32,8 +32,8 @@
 using ola::io::BigEndianOutputStreamAdaptor;
 using ola::io::BigEndianOutputStreamInterface;
 using ola::network::IPV4Address;
+using std::set;
 using std::string;
-using std::vector;
 
 namespace ola {
 namespace slp {
@@ -48,9 +48,9 @@ class SLPPacketBuilder {
 
     static void BuildServiceRequest(BigEndianOutputStreamInterface *output,
                                     xid_t xid,
-                                    const vector<IPV4Address> &pr_list,
+                                    const set<IPV4Address> &pr_list,
                                     const string &service_type,
-                                    const vector<string> &scope_list);
+                                    const set<string> &scope_list);
 
     static void BuildServiceReply(BigEndianOutputStreamInterface *output,
                                   xid_t xid,
@@ -62,7 +62,7 @@ class SLPPacketBuilder {
                                          bool fresh,
                                          const URLEntry &url_entry,
                                          const string &service_type,
-                                         vector<string> &scope_list);
+                                         set<string> &scope_list);
 
     static void BuildServiceAck(BigEndianOutputStreamInterface *output,
                                 xid_t xid,
@@ -74,7 +74,7 @@ class SLPPacketBuilder {
                               uint16_t error_code,
                               uint32_t boot_timestamp,
                               const string &url,
-                              const vector<string> &scope_list);
+                              const set<string> &scope_list);
 
     static void WriteString(BigEndianOutputStreamInterface *output,
                             const string &data);

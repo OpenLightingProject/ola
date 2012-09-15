@@ -220,6 +220,12 @@ void SLPServer::Stop() {
 void SLPServer::BulkLoad(const string &scope,
                          const string &service,
                          const URLEntries &entries) {
+  vector<string>::iterator iter = m_scope_list.find(scope);
+  if (iter == m_scope_list.end()) {
+    OLA_WARN << "Ignoring registration for " << scope <<
+      " since it's not configured";
+    return;
+  }
   SLPStore *store = m_service_store.LookupOrCreate(scope);
   store->BulkInsert(*(m_ss.WakeUpTime()), service, entries);
 }

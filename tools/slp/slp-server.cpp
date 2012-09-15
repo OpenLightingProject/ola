@@ -35,12 +35,14 @@
 #include <string>
 #include <vector>
 
+#include "tools/slp/RegistrationFileParser.h"
 #include "tools/slp/SLPServer.h"
 
 using ola::network::IPV4SocketAddress;
 using ola::network::TCPAcceptingSocket;
 using ola::network::UDPSocket;
 using ola::network::IPV4SocketAddress;
+using ola::slp::RegistrationFileParser;
 using ola::slp::SLPServer;
 using std::auto_ptr;
 using std::cout;
@@ -60,6 +62,7 @@ struct SLPOptions {
     string setuid;
     string setgid;
     string scopes;
+    string registration_file;
 
     SLPOptions()
         : help(false),
@@ -82,6 +85,7 @@ void ParseOptions(int argc, char *argv[],
     SETUID_OPTION = 256,
     SETGID_OPTION = 257,
     SCOPE_OPTION  = 258,
+    REGISTRATION_OPTION  = 259,
   };
 
   static struct option long_options[] = {
@@ -94,6 +98,7 @@ void ParseOptions(int argc, char *argv[],
       {"setuid", required_argument, 0, SETUID_OPTION},
       {"setgid", required_argument, 0, SETGID_OPTION},
       {"scopes", required_argument, 0, SCOPE_OPTION},
+      {"services", required_argument, 0, REGISTRATION_OPTION},
       {0, 0, 0, 0}
   };
 
@@ -147,6 +152,9 @@ void ParseOptions(int argc, char *argv[],
       case SCOPE_OPTION:
         options->scopes = optarg;
         break;
+      case REGISTRATION_OPTION:
+        options->registration_file = optarg;
+        break;
       case '?':
         break;
       default:
@@ -175,6 +183,7 @@ void DisplayHelpAndExit(char *argv[]) {
   "  --setuid <uid,user>      User to switch to after startup\n"
   "  --setgid <gid,group>     Group to switch to after startup\n"
   "  --scopes <scope-list>    Commas separate list of scopes\n"
+  "  --services <file>        Services to pre-register\n"
   << endl;
   exit(0);
 }
@@ -292,6 +301,18 @@ bool DropPrivileges(const string &setuid, const string &setgid) {
   return true;
 }
 
+
+void PreRegisterServices(SLPServer *server, const string &file) {
+  RegistrationFileParser parser;
+  RegistrationFileParser::ServicesMap service_map;
+  bool ok = parser.ParseFile(file, &service_map);
+
+  RegistrationFileParser::ServicesMap::iterator iter = service_map.begin();
+  for (; iter != service_map.end(); ++iter) {
+    server->BulkLoad(iter->first.first, iter->first.second, iter->second);
+  }
+}
+
 /*
  * Startup the server.
  */
@@ -341,6 +362,9 @@ int main(int argc, char *argv[]) {
                                     slp_options, &export_map);
   if (!server->Init())
     exit(EX_UNAVAILABLE);
+
+  if (!options.registration_file.empty())
+    PreRegisterServices(server, options.registration_file);
 
   cout << "---------------  Controls  ----------------\n";
   cout << " p - Print Registrations\n";

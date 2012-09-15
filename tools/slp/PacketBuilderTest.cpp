@@ -20,8 +20,8 @@
 
 #include <stdint.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include <set>
 #include <string>
-#include <vector>
 
 #include "ola/Logging.h"
 #include "ola/io/IOQueue.h"
@@ -39,8 +39,8 @@ using ola::slp::SLPPacketBuilder;
 using ola::slp::URLEntries;
 using ola::slp::URLEntry;
 using ola::testing::ASSERT_DATA_EQUALS;
+using std::set;
 using std::string;
-using std::vector;
 
 class PacketBuilderTest: public CppUnit::TestFixture {
   public:
@@ -93,16 +93,16 @@ CPPUNIT_TEST_SUITE_REGISTRATION(PacketBuilderTest);
  * Check that BuildServiceRequest() works.
  */
 void PacketBuilderTest::testBuildServiceRequest() {
-  vector<IPV4Address> pr_list;
+  set<IPV4Address> pr_list;
   IPV4Address first_ip, second_ip;
   CPPUNIT_ASSERT(IPV4Address::FromString("1.1.1.2", &first_ip));
   CPPUNIT_ASSERT(IPV4Address::FromString("1.1.1.8", &second_ip));
-  pr_list.push_back(first_ip);
-  pr_list.push_back(second_ip);
+  pr_list.insert(first_ip);
+  pr_list.insert(second_ip);
 
-  vector<string> scope_list;
-  scope_list.push_back("ACN");
-  scope_list.push_back("MYORG");
+  set<string> scope_list;
+  scope_list.insert("ACN");
+  scope_list.insert("MYORG");
 
   SLPPacketBuilder::BuildServiceRequest(&output, xid, pr_list,
                                         "rdmnet-device", scope_list);
@@ -168,9 +168,9 @@ void PacketBuilderTest::testBuildServiceReply() {
  */
 void PacketBuilderTest::testBuildServiceRegistration() {
   URLEntry entry1("service:foo://1.1.1.1", 0x1234);
-  vector<string> scope_list;
-  scope_list.push_back("ACN");
-  scope_list.push_back("MYORG");
+  set<string> scope_list;
+  scope_list.insert("ACN");
+  scope_list.insert("MYORG");
 
   SLPPacketBuilder::BuildServiceRegistration(&output, xid, true, entry1,
                                              "foo", scope_list);
@@ -213,9 +213,9 @@ void PacketBuilderTest::testBuildServiceRegistration() {
  * Check that BuildDAAdvert() works.
  */
 void PacketBuilderTest::testBuildDAAdvert() {
-  vector<string> scope_list;
-  scope_list.push_back("ACN");
-  scope_list.push_back("MYORG");
+  set<string> scope_list;
+  scope_list.insert("ACN");
+  scope_list.insert("MYORG");
 
   SLPPacketBuilder::BuildDAAdvert(&output, xid, true, 12, 0x12345678,
       "service:foo", scope_list);
