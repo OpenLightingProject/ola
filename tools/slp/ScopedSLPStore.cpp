@@ -30,7 +30,7 @@ namespace ola {
 namespace slp {
 
 using std::string;
-using ola::ToLower;
+using ola::ToUpper;
 
 /**
  * Clean up.
@@ -48,8 +48,7 @@ ScopedSLPStore::~ScopedSLPStore() {
  * exist.
  */
 SLPStore* ScopedSLPStore::LookupOrCreate(const string &scope) {
-  string canonical_scope = scope;
-  ToLower(&canonical_scope);
+  string canonical_scope = CanonicalScope(scope);
   ScopedServiceMap::iterator iter = m_scopes.find(canonical_scope);
   if (iter != m_scopes.end())
     return iter->second;
@@ -61,10 +60,18 @@ SLPStore* ScopedSLPStore::LookupOrCreate(const string &scope) {
 
 
 SLPStore* ScopedSLPStore::Lookup(const string &scope) {
-  string canonical_scope = scope;
-  ToLower(&canonical_scope);
-  ScopedServiceMap::iterator iter = m_scopes.find(canonical_scope);
+  ScopedServiceMap::iterator iter = m_scopes.find(CanonicalScope(scope));
   return (iter == m_scopes.end() ? NULL : iter->second);
+}
+
+
+/**
+ * Convert a scope to its canonical name (the upper case version).
+ */
+string ScopedSLPStore::CanonicalScope(const string &scope) {
+  string canonical_scope = scope;
+  ToUpper(&canonical_scope);
+  return canonical_scope;
 }
 }  // slp
 }  // ola

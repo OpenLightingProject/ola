@@ -24,6 +24,7 @@
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>
 #include <ola/Logging.h>
+#include <ola/StringUtils.h>
 #include <ola/io/SelectServer.h>
 #include <ola/io/BigEndianStream.h>
 #include <ola/io/IOQueue.h>
@@ -39,7 +40,7 @@
 #include <ola/http/OlaHTTPServer.h>
 #endif
 
-#include <sstream>
+#include <algorithm>
 #include <string>
 #include <vector>
 #include <set>
@@ -56,6 +57,7 @@ namespace slp {
 
 using ola::NewCallback;
 using ola::NewSingleCallback;
+using ola::ToUpper;
 using ola::io::BigEndianInputStream;
 using ola::io::BigEndianOutputStream;
 using ola::io::MemoryBuffer;
@@ -69,7 +71,6 @@ using ola::network::UDPSocket;
 using ola::rpc::StreamRpcChannel;
 using std::auto_ptr;
 using std::string;
-using std::stringstream;
 using std::vector;
 
 
@@ -108,7 +109,6 @@ SLPServer::SLPServer(ola::network::UDPSocket *udp_socket,
       m_service_impl(new SLPServiceImpl(NULL)),
       m_udp_socket(udp_socket),
       m_slp_accept_socket(tcp_socket),
-      m_scope_list(options.scopes),
       m_export_map(export_map) {
   m_multicast_address = IPV4Address(
       HostToNetwork(239U << 24 |
@@ -127,7 +127,12 @@ SLPServer::SLPServer(ola::network::UDPSocket *udp_socket,
 #endif
 
   if (options.scopes.empty())
-    m_scope_list.insert(DEFAULT_SCOPE);
+    m_scope_list.insert(ScopedSLPStore::CanonicalScope(DEFAULT_SCOPE));
+
+  std::transform(options.scopes.begin(),
+                 options.scopes.end(),
+                 inserter(m_scope_list, m_scope_list.begin()),
+                 ScopedSLPStore::CanonicalScope);
 
   export_map->GetIntegerVar(CONFIG_DA_BEAT_VAR)->Set(options.config_da_beat);
   export_map->GetBoolVar(DA_ENABLED_VAR)->Set(options.enable_da);
@@ -216,13 +221,15 @@ void SLPServer::Stop() {
 void SLPServer::BulkLoad(const string &scope,
                          const string &service,
                          const URLEntries &entries) {
-  set<string>::iterator iter = m_scope_list.find(scope);
+  string canonical_scope = scope;
+  ToUpper(&canonical_scope);
+  set<string>::iterator iter = m_scope_list.find(canonical_scope);
   if (iter == m_scope_list.end()) {
     OLA_WARN << "Ignoring registration for " << scope <<
       " since it's not configured";
     return;
   }
-  SLPStore *store = m_service_store.LookupOrCreate(scope);
+  SLPStore *store = m_service_store.LookupOrCreate(canonical_scope);
   store->BulkInsert(*(m_ss.WakeUpTime()), service, entries);
 }
 
