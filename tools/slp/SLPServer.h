@@ -146,14 +146,14 @@ class SLPServer {
     ola::network::TCPAcceptingSocket *m_slp_accept_socket;
 
     // SLP memebers
-    vector<string> m_scope_list;
+    set<string> m_scope_list;
     SLPPacketParser m_packet_parser;
     ScopedSLPStore m_service_store;
 
     // DA members
 
     // non-DA members
-    vector<IPV4Address> m_da_pr_list;
+    set<IPV4Address> m_da_pr_list;
 
     // The ExportMap & HTTPServer
     ola::ExportMap *m_export_map;

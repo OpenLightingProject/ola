@@ -306,6 +306,7 @@ void PreRegisterServices(SLPServer *server, const string &file) {
   RegistrationFileParser parser;
   RegistrationFileParser::ServicesMap service_map;
   bool ok = parser.ParseFile(file, &service_map);
+  OLA_INFO << "parse file returned " << ok;
 
   RegistrationFileParser::ServicesMap::iterator iter = service_map.begin();
   for (; iter != service_map.end(); ++iter) {

@@ -108,6 +108,7 @@ SLPServer::SLPServer(ola::network::UDPSocket *udp_socket,
       m_service_impl(new SLPServiceImpl(NULL)),
       m_udp_socket(udp_socket),
       m_slp_accept_socket(tcp_socket),
+      m_scope_list(options.scopes),
       m_export_map(export_map) {
   m_multicast_address = IPV4Address(
       HostToNetwork(239U << 24 |
@@ -125,14 +126,9 @@ SLPServer::SLPServer(ola::network::UDPSocket *udp_socket,
   }
 #endif
 
-  if (options.scopes.empty()) {
-    m_scope_list.push_back(DEFAULT_SCOPE);
-  } else {
-    m_scope_list.reserve(options.scopes.size());
-    set<string>::const_iterator iter = options.scopes.begin();
-    for (; iter != options.scopes.end(); ++iter)
-      m_scope_list.push_back(*iter);
-  }
+  if (options.scopes.empty())
+    m_scope_list.insert(DEFAULT_SCOPE);
+
   export_map->GetIntegerVar(CONFIG_DA_BEAT_VAR)->Set(options.config_da_beat);
   export_map->GetBoolVar(DA_ENABLED_VAR)->Set(options.enable_da);
   string joined_scopes = ola::StringJoin(",", m_scope_list);
@@ -220,7 +216,7 @@ void SLPServer::Stop() {
 void SLPServer::BulkLoad(const string &scope,
                          const string &service,
                          const URLEntries &entries) {
-  vector<string>::iterator iter = m_scope_list.find(scope);
+  set<string>::iterator iter = m_scope_list.find(scope);
   if (iter == m_scope_list.end()) {
     OLA_WARN << "Ignoring registration for " << scope <<
       " since it's not configured";
@@ -252,7 +248,7 @@ void SLPServer::Input(char c) {
  * Dump out the contents of the SLP store.
  */
 void SLPServer::DumpStore() {
-  vector<string>::iterator iter = m_scope_list.begin();
+  set<string>::iterator iter = m_scope_list.begin();
   for (; iter != m_scope_list.end(); ++iter) {
     SLPStore *store = m_service_store.Lookup(*iter);
     if (!store)
