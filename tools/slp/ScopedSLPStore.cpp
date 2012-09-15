@@ -17,6 +17,7 @@
  * Copyright (C) 2012 Simon Newton
  */
 
+#include <ola/StringUtils.h>
 #include <map>
 #include <string>
 #include <utility>
@@ -29,6 +30,7 @@ namespace ola {
 namespace slp {
 
 using std::string;
+using ola::ToLower;
 
 /**
  * Clean up.
@@ -46,17 +48,22 @@ ScopedSLPStore::~ScopedSLPStore() {
  * exist.
  */
 SLPStore* ScopedSLPStore::LookupOrCreate(const string &scope) {
-  ScopedServiceMap::iterator iter = m_scopes.find(scope);
+  string canonical_scope = scope;
+  ToLower(&canonical_scope);
+  ScopedServiceMap::iterator iter = m_scopes.find(canonical_scope);
   if (iter != m_scopes.end())
     return iter->second;
 
   return m_scopes.insert(
-    std::pair<string, SLPStore*>(scope, new SLPStore())).first->second;
+    std::pair<string, SLPStore*>(canonical_scope,
+                                 new SLPStore())).first->second;
 }
 
 
 SLPStore* ScopedSLPStore::Lookup(const string &scope) {
-  ScopedServiceMap::iterator iter = m_scopes.find(scope);
+  string canonical_scope = scope;
+  ToLower(&canonical_scope);
+  ScopedServiceMap::iterator iter = m_scopes.find(canonical_scope);
   return (iter == m_scopes.end() ? NULL : iter->second);
 }
 }  // slp

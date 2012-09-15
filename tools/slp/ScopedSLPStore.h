@@ -32,6 +32,7 @@ using std::string;
 
 /**
  * Holds the registrations for all scopes.
+ * Scope names are case-insensitive, so we convert everything to lower case.
  */
 class ScopedSLPStore {
   public:

@@ -90,8 +90,10 @@ PacketParserTester_LDADD = $(CPPUNIT_LIBS) \
                             $(top_builddir)/common/testing/libolatesting.la
 
 SLPStoreTester_SOURCES = GenericTester.cpp \
+                         SLPStore.cpp \
                          SLPStoreTest.cpp \
-                         SLPStore.cpp
+                         ScopedSLPStore.cpp \
+                         ScopedSLPStoreTest.cpp
 SLPStoreTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 SLPStoreTester_LDADD = $(CPPUNIT_LIBS) \
                             $(top_builddir)/common/libolacommon.la \
