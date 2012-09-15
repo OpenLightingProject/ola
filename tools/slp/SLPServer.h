@@ -130,6 +130,7 @@ class SLPServer {
     uint32_t m_config_da_beat;
 
     const IPV4Address m_iface_address;
+    ola::Clock m_clock;
     ola::TimeStamp m_boot_time;
     ola::io::SelectServer m_ss;
     StdinHandler m_stdin_handler;

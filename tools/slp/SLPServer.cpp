@@ -101,7 +101,7 @@ SLPServer::SLPServer(ola::network::UDPSocket *udp_socket,
     : m_enable_da(options.enable_da),
       m_config_da_beat(options.config_da_beat),
       m_iface_address(options.ip_address),
-      m_ss(export_map),
+      m_ss(export_map, &m_clock),
       m_stdin_handler(&m_ss, this),
       m_rpc_port(options.rpc_port),
       m_rpc_socket_factory(NewCallback(this, &SLPServer::NewTCPConnection)),
@@ -221,6 +221,8 @@ void SLPServer::Stop() {
 void SLPServer::BulkLoad(const string &scope,
                          const string &service,
                          const URLEntries &entries) {
+  TimeStamp now;
+  m_clock.CurrentTime(&now);
   string canonical_scope = scope;
   ToUpper(&canonical_scope);
   set<string>::iterator iter = m_scope_list.find(canonical_scope);
@@ -230,7 +232,7 @@ void SLPServer::BulkLoad(const string &scope,
     return;
   }
   SLPStore *store = m_service_store.LookupOrCreate(canonical_scope);
-  store->BulkInsert(*(m_ss.WakeUpTime()), service, entries);
+  store->BulkInsert(now, service, entries);
 }
 
 

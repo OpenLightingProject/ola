@@ -91,7 +91,6 @@ void RegistrationFileParser::Insert(ServicesMap *services,
                                     const string &url,
                                     uint16_t lifetime) const {
   string canonical_scope = ola::slp::ScopedSLPStore::CanonicalScope(scope);
-  OLA_INFO << canonical_scope;
   ScopeServicePair p(canonical_scope, service_type);
   URLEntries *urls = &((*services)[p]);
   URLEntry entry(url, lifetime);

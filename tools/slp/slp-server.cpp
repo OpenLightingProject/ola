@@ -309,9 +309,8 @@ void PreRegisterServices(SLPServer *server, const string &file) {
   OLA_INFO << "parse file returned " << ok;
 
   RegistrationFileParser::ServicesMap::iterator iter = service_map.begin();
-  for (; iter != service_map.end(); ++iter) {
+  for (; iter != service_map.end(); ++iter)
     server->BulkLoad(iter->first.first, iter->first.second, iter->second);
-  }
 }
 
 /*
