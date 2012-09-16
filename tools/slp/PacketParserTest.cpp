@@ -174,6 +174,43 @@ void PacketParserTest::testParseServiceRequest() {
     OLA_ASSERT_EQ(string(""), packet->spi);
   }
 
+  // confirm strings are un-escaped correctly
+  {
+    const uint8_t input_data[] = {
+      2, 1, 0, 0, 69, 0x80, 0, 0, 0, 0, 0, 0x78, 0, 4, 'e', 'n', 'n', 'g',
+      0, 0,  // no pr-list
+      0, 16, 'r', 'd', 'm', 'n', 'e', 't', '-', 'd', 'e', 'v', 'i', 'c', 'e',
+      '\\', '5', 'c',
+      0, 0xc, 'A', 'C', 'N', ',', '\\', '2', 'c', 'M', 'Y', 'O', 'R', 'G',
+      // scope list
+      0, 0,  // pred string
+      0, 0,  // SPI string
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+
+    auto_ptr<const ola::slp::ServiceRequestPacket> packet(
+      m_parser.UnpackServiceRequest(&stream));
+    OLA_ASSERT(packet.get());
+
+    // verify the contents of the packet
+    OLA_ASSERT_EQ(static_cast<ola::slp::xid_t>(0x78), packet->xid);
+    OLA_ASSERT_EQ(true, packet->Overflow());
+    OLA_ASSERT_EQ(false, packet->Fresh());
+    OLA_ASSERT_EQ(false, packet->Multicast());
+    OLA_ASSERT_EQ(string("enng"), packet->language);
+
+    vector<IPV4Address> expected_pr_list;
+    OLA_ASSERT_VECTOR_EQ(expected_pr_list, packet->pr_list);
+    OLA_ASSERT_EQ(string("rdmnet-device\\"), packet->service_type);
+
+    vector<string> scopes;
+    scopes.push_back("ACN");
+    scopes.push_back(",MYORG");
+    OLA_ASSERT_VECTOR_EQ(scopes, packet->scope_list);
+    OLA_ASSERT_EQ(string(""), packet->predicate);
+    OLA_ASSERT_EQ(string(""), packet->spi);
+  }
   // short packets
   {
     MemoryBuffer buffer(NULL, 0);

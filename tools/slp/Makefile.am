@@ -88,7 +88,8 @@ PacketBuilderTester_LDADD = $(COMMON_TEST_LDADD)
 
 PacketParserTester_SOURCES = GenericTester.cpp \
                              PacketParserTest.cpp \
-                             SLPPacketParser.cpp
+                             SLPPacketParser.cpp \
+                             SLPStrings.cpp
 PacketParserTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 PacketParserTester_LDADD = $(COMMON_TEST_LDADD)
 

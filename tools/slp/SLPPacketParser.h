@@ -162,6 +162,10 @@ class SLPPacketParser {
                        string *result,
                        const string &field_name) const;
 
+    bool ExtractList(BigEndianInputStream *input,
+                     vector<string> *result,
+                     const string &field_name) const;
+
     bool ExtractURLEntry(BigEndianInputStream *input,
                          URLEntry *entry,
                          const string &packet_type) const;

@@ -27,6 +27,7 @@
 #include <vector>
 
 #include "tools/slp/SLPPacketParser.h"
+#include "tools/slp/SLPStrings.h"
 
 using ola::StringSplit;
 using ola::io::BigEndianInputStream;
@@ -62,7 +63,7 @@ const ServiceRequestPacket* SLPPacketParser::UnpackServiceRequest(
     return NULL;
 
   // now try to extract the data
-  string pr_list, scope_list;
+  string pr_list;
   if (!ExtractString(input, &pr_list, "PR List"))
     return NULL;
   ConvertIPAddressList(pr_list, &packet->pr_list);
@@ -70,9 +71,8 @@ const ServiceRequestPacket* SLPPacketParser::UnpackServiceRequest(
   if (!ExtractString(input, &packet->service_type, "Service Type"))
     return NULL;
 
-  if (!ExtractString(input, &scope_list, "Scope list"))
+  if (!ExtractList(input, &packet->scope_list, "Scope list"))
     return NULL;
-  StringSplit(scope_list, packet->scope_list, ",");
 
   if (!ExtractString(input, &packet->predicate, "Predicate"))
     return NULL;
@@ -127,10 +127,8 @@ const ServiceRegistrationPacket *SLPPacketParser::UnpackServiceRegistration(
   if (!ExtractString(input, &packet->service_type, "Service-type"))
     return NULL;
 
-  string scope_list;
-  if (!ExtractString(input, &scope_list, "Scope list"))
+  if (!ExtractList(input, &packet->scope_list, "Scope list"))
     return NULL;
-  StringSplit(scope_list, packet->scope_list, ",");
 
   if (!ExtractString(input, &packet->attr_list, "Attr-list"))
     return NULL;
@@ -180,10 +178,8 @@ const DAAdvertPacket *SLPPacketParser::UnpackDAAdvert(
   if (!ExtractString(input, &packet->url, "DAAdvert: URL"))
     return NULL;
 
-  string scope_list;
-  if (!ExtractString(input, &scope_list, "DAAdvert: Scope list"))
+  if (!ExtractList(input, &packet->scope_list, "DAAdvert: Scope list"))
     return NULL;
-  StringSplit(scope_list, packet->scope_list, ",");
 
   if (!ExtractString(input, &packet->attr_list, "DAAdvert: Attr-list"))
     return NULL;
@@ -289,7 +285,7 @@ bool SLPPacketParser::ExtractHeader(BigEndianInputStream *input,
 
 /**
  * Attempt to read a string from a data buffer. The first two bytes are the
- * string length.
+ * string length. This un-escapes the string.
  */
 bool SLPPacketParser::ExtractString(BigEndianInputStream *input,
                                     string *result,
@@ -306,6 +302,39 @@ bool SLPPacketParser::ExtractString(BigEndianInputStream *input,
       ", expected " << str_length << ", " << bytes_read << " remaining";
     return false;
   }
+
+  // Unescape
+  SLPStringUnescape(result);
+  return true;
+}
+
+
+/**
+ * Extract a list of strings, automatically un-escaping them
+ */
+bool SLPPacketParser::ExtractList(BigEndianInputStream *input,
+                                  vector<string> *result,
+                                  const string &field_name) const {
+  uint16_t str_length;
+  if (!(*input >> str_length)) {
+    OLA_INFO << "Packet too small to read " << field_name << " length";
+    return false;
+  }
+
+  string raw_string;
+  unsigned int bytes_read = input->ReadString(&raw_string, str_length);
+  if (bytes_read != str_length) {
+    OLA_INFO << "Insufficent data remaining for SLP string " << field_name <<
+      ", expected " << str_length << ", " << bytes_read << " remaining";
+    return false;
+  }
+
+  StringSplit(raw_string, *result, ",");
+
+  // Unescape all values
+  vector<string>::iterator iter = result->begin();
+  for (; iter != result->end(); ++iter)
+    SLPStringUnescape(&(*iter));
   return true;
 }
 
