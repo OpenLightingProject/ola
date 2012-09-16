@@ -11,6 +11,7 @@ EXTRA_DIST = Base.h \
              SLPServer.h \
              SLPServiceImpl.h \
              SLPStore.h \
+             SLPStrings.h \
              ScopedSLPStore.h \
              slp-parser-actions.h \
              URLEntry.h
@@ -24,6 +25,7 @@ slp_server_SOURCES = RegistrationFileParser.cpp \
                      SLPServer.cpp \
                      SLPServiceImpl.cpp \
                      SLPStore.cpp \
+                     SLPStrings.cpp \
                      ScopedSLPStore.cpp \
                      slp-server.cpp \
                      URLEntry.cpp
@@ -68,8 +70,13 @@ config.tab.cpp config.tab.h: config.ypp
 
 
 if BUILD_TESTS
-TESTS = PacketBuilderTester PacketParserTester SLPStoreTester
+TESTS = PacketBuilderTester PacketParserTester \
+        SLPStoreTester SLPStringsTester
 endif
+COMMON_TEST_LDADD = $(CPPUNIT_LIBS) \
+                    $(top_builddir)/common/libolacommon.la \
+                    $(top_builddir)/common/testing/libolatesting.la
+
 check_PROGRAMS = $(TESTS)
 PacketBuilderTester_SOURCES = GenericTester.cpp \
                               PacketBuilderTest.cpp \
@@ -77,17 +84,13 @@ PacketBuilderTester_SOURCES = GenericTester.cpp \
                               URLEntry.cpp \
                               URLEntryTest.cpp
 PacketBuilderTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-PacketBuilderTester_LDADD = $(CPPUNIT_LIBS) \
-                            $(top_builddir)/common/libolacommon.la \
-                            $(top_builddir)/common/testing/libolatesting.la
+PacketBuilderTester_LDADD = $(COMMON_TEST_LDADD)
 
 PacketParserTester_SOURCES = GenericTester.cpp \
                              PacketParserTest.cpp \
                              SLPPacketParser.cpp
 PacketParserTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-PacketParserTester_LDADD = $(CPPUNIT_LIBS) \
-                            $(top_builddir)/common/libolacommon.la \
-                            $(top_builddir)/common/testing/libolatesting.la
+PacketParserTester_LDADD = $(COMMON_TEST_LDADD)
 
 SLPStoreTester_SOURCES = GenericTester.cpp \
                          SLPStore.cpp \
@@ -95,6 +98,10 @@ SLPStoreTester_SOURCES = GenericTester.cpp \
                          ScopedSLPStore.cpp \
                          ScopedSLPStoreTest.cpp
 SLPStoreTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-SLPStoreTester_LDADD = $(CPPUNIT_LIBS) \
-                            $(top_builddir)/common/libolacommon.la \
-                            $(top_builddir)/common/testing/libolatesting.la
+SLPStoreTester_LDADD = $(COMMON_TEST_LDADD)
+
+SLPStringsTester_SOURCES = GenericTester.cpp \
+                           SLPStrings.cpp \
+                           SLPStringsTest.cpp
+SLPStringsTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+SLPStringsTester_LDADD = $(COMMON_TEST_LDADD)
