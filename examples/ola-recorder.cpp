@@ -272,13 +272,9 @@ int main(int argc, char *argv[]) {
               (opts.record ? 1 : 0) +
               (opts.verify ? 1 : 0);
 
-  if (check == 0) {
-    DisplayHelpAndExit(opts);
-  }
-
   if (check != 1) {
-    OLA_FATAL << "Only one of --record or --playback must be provided";
-    exit(EX_USAGE);
+    OLA_FATAL << "One of --record or --playback must be provided";
+    DisplayHelpAndExit(opts);
   } else if (opts.record) {
     return RecordShow(opts);
   } else if (opts.playback) {
