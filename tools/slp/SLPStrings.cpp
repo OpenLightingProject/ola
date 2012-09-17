@@ -34,26 +34,15 @@ using std::string;
  * Escape a String to use in SLP packets
  */
 void SLPStringEscape(string *str) {
-  static const char RESERVED_CHARACTERS[] = {
-    '(', ')', ',', '\\', '!', '<', '=', '>', '~', ';', '*', '+'};
-
   ostringstream converted;
   string::size_type i = 0;
-  while (i < str->size()) {
-    bool match = false;
-    char c = str->at(i);
-    for (unsigned int j = 0; j < sizeof(RESERVED_CHARACTERS); ++j) {
-      if (RESERVED_CHARACTERS[j] == c) {
-        match = true;
-        break;
-      }
-    }
-    if (!match) {
-      i++;
-      continue;
-    }
+  while (1) {
+    i = str->find_first_of("(),\\!<=>~;*+", i);
+    if (i == string::npos)
+      break;
+
     converted.str("");
-    converted << "\\" << std::hex << static_cast<int>(c);
+    converted << "\\" << std::hex << static_cast<int>(str->at(i));
     str->erase(i, 1);
     str->insert(i, converted.str().c_str());
     i += converted.str().size();
