@@ -20,6 +20,8 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
+#include "ola/testing/TestUtils.h"
+
 #include "ola/thread/Thread.h"
 
 using ola::thread::ConditionVariable;
@@ -73,14 +75,14 @@ CPPUNIT_TEST_SUITE_REGISTRATION(ThreadTest);
  */
 void ThreadTest::testThread() {
   MockThread thread;
-  CPPUNIT_ASSERT(!thread.HasRan());
-  CPPUNIT_ASSERT(thread.Start());
+  OLA_ASSERT_FALSE(thread.HasRan());
+  OLA_ASSERT_TRUE(thread.Start());
   // starting twice must fail
-  CPPUNIT_ASSERT(!thread.Start());
-  CPPUNIT_ASSERT(thread.IsRunning());
-  CPPUNIT_ASSERT(thread.Join());
-  CPPUNIT_ASSERT(!thread.IsRunning());
-  CPPUNIT_ASSERT(thread.HasRan());
+  OLA_ASSERT_FALSE(thread.Start());
+  OLA_ASSERT_TRUE(thread.IsRunning());
+  OLA_ASSERT_TRUE(thread.Join());
+  OLA_ASSERT_FALSE(thread.IsRunning());
+  OLA_ASSERT_TRUE(thread.HasRan());
 }
 
 
@@ -122,7 +124,7 @@ void ThreadTest::testConditionVariable() {
   mutex.Lock();
   if (thread.i != MockConditionThread::EXPECTED)
     condition.Wait(&mutex);
-  CPPUNIT_ASSERT_EQUAL(10, thread.i);
+  OLA_ASSERT_EQ(10, thread.i);
   mutex.Unlock();
 
   thread.Join();

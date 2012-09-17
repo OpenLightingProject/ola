@@ -22,6 +22,9 @@
 #include <ola/Logging.h>
 #include <ola/DmxBuffer.h>
 #include <vector>
+
+#include "ola/testing/TestUtils.h"
+
 #include "tools/ola_trigger/Action.h"
 #include "tools/ola_trigger/DMXTrigger.h"
 #include "tools/ola_trigger/MockAction.h"
@@ -69,7 +72,7 @@ void DMXTriggerTest::testRisingEdgeTrigger() {
   // this shouldn't trigger
   buffer.SetFromString("0,0,0");
   trigger.NewDMX(buffer);
-  CPPUNIT_ASSERT(action->NoCalls());
+  OLA_ASSERT(action->NoCalls());
 
   // trigger rising edge
   buffer.SetFromString("0,0,10");
@@ -77,24 +80,24 @@ void DMXTriggerTest::testRisingEdgeTrigger() {
   action->CheckForValue(__LINE__, 10);
 
   // now send the same again
-  CPPUNIT_ASSERT(action->NoCalls());
+  OLA_ASSERT(action->NoCalls());
   trigger.NewDMX(buffer);
-  CPPUNIT_ASSERT(action->NoCalls());
+  OLA_ASSERT(action->NoCalls());
 
   // shorten the frame
   buffer.SetFromString("0,0");
   trigger.NewDMX(buffer);
-  CPPUNIT_ASSERT(action->NoCalls());
+  OLA_ASSERT(action->NoCalls());
 
   // lengthen again
   buffer.SetFromString("0,0,10,0");
   trigger.NewDMX(buffer);
-  CPPUNIT_ASSERT(action->NoCalls());
+  OLA_ASSERT(action->NoCalls());
 
   // change everything else
   buffer.SetFromString("10,100,10,20");
   trigger.NewDMX(buffer);
-  CPPUNIT_ASSERT(action->NoCalls());
+  OLA_ASSERT(action->NoCalls());
 }
 
 
@@ -119,40 +122,40 @@ void DMXTriggerTest::testFallingEdgeTrigger() {
   buffer.SetFromString("0,0,20");
   trigger.NewDMX(buffer);
   rising_action->CheckForValue(__LINE__, 20);
-  CPPUNIT_ASSERT(falling_action->NoCalls());
+  OLA_ASSERT(falling_action->NoCalls());
 
   // trigger a falling edge
   buffer.SetFromString("0,0,19");
   trigger.NewDMX(buffer);
-  CPPUNIT_ASSERT(rising_action->NoCalls());
+  OLA_ASSERT(rising_action->NoCalls());
   falling_action->CheckForValue(__LINE__, 19);
 
   // now send the same again
   trigger.NewDMX(buffer);
-  CPPUNIT_ASSERT(rising_action->NoCalls());
-  CPPUNIT_ASSERT(falling_action->NoCalls());
+  OLA_ASSERT(rising_action->NoCalls());
+  OLA_ASSERT(falling_action->NoCalls());
 
   // shorten the frame
   buffer.SetFromString("0,0");
   trigger.NewDMX(buffer);
-  CPPUNIT_ASSERT(rising_action->NoCalls());
-  CPPUNIT_ASSERT(falling_action->NoCalls());
+  OLA_ASSERT(rising_action->NoCalls());
+  OLA_ASSERT(falling_action->NoCalls());
 
   // lengthen again
   buffer.SetFromString("0,0,19,0");
   trigger.NewDMX(buffer);
-  CPPUNIT_ASSERT(rising_action->NoCalls());
-  CPPUNIT_ASSERT(falling_action->NoCalls());
+  OLA_ASSERT(rising_action->NoCalls());
+  OLA_ASSERT(falling_action->NoCalls());
 
   // change everything else
   buffer.SetFromString("10,100,19,20");
   trigger.NewDMX(buffer);
-  CPPUNIT_ASSERT(rising_action->NoCalls());
-  CPPUNIT_ASSERT(falling_action->NoCalls());
+  OLA_ASSERT(rising_action->NoCalls());
+  OLA_ASSERT(falling_action->NoCalls());
 
   // change once more
   buffer.SetFromString("10,100,20,20");
   trigger.NewDMX(buffer);
   rising_action->CheckForValue(__LINE__, 20);
-  CPPUNIT_ASSERT(falling_action->NoCalls());
+  OLA_ASSERT(falling_action->NoCalls());
 }

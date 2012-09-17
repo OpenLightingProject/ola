@@ -24,6 +24,8 @@
 #include <string>
 #include <vector>
 
+#include "ola/testing/TestUtils.h"
+
 #include "ola/Logging.h"
 #include "ola/Callback.h"
 #include "ola/rdm/UID.h"
@@ -149,10 +151,10 @@ class MockRDMController: public ola::rdm::DiscoverableRDMControllerInterface {
 
 void MockRDMController::SendRDMRequest(const RDMRequest *request,
                                        RDMCallback *on_complete) {
-  CPPUNIT_ASSERT(m_expected_calls.size());
+  OLA_ASSERT_TRUE(m_expected_calls.size());
   expected_call call = m_expected_calls.front();
   m_expected_calls.pop();
-  CPPUNIT_ASSERT((*call.request) == (*request));
+  OLA_ASSERT_TRUE((*call.request) == (*request));
   delete request;
   vector<string> packets;
   if (!call.packet.empty())
@@ -160,22 +162,22 @@ void MockRDMController::SendRDMRequest(const RDMRequest *request,
   if (call.run_callback) {
     on_complete->Run(call.code, call.response, packets);
   } else {
-    CPPUNIT_ASSERT(!m_rdm_callback);
+    OLA_ASSERT_FALSE(m_rdm_callback);
     m_rdm_callback = on_complete;
   }
 }
 
 
 void MockRDMController::RunFullDiscovery(RDMDiscoveryCallback *callback) {
-  CPPUNIT_ASSERT(m_expected_discover_calls.size());
+  OLA_ASSERT_TRUE(m_expected_discover_calls.size());
   expected_discovery_call call = m_expected_discover_calls.front();
   m_expected_discover_calls.pop();
-  CPPUNIT_ASSERT(call.full);
+  OLA_ASSERT_TRUE(call.full);
 
   if (call.uids) {
     callback->Run(*call.uids);
   } else {
-    CPPUNIT_ASSERT(!m_discovery_callback);
+    OLA_ASSERT_FALSE(m_discovery_callback);
     m_discovery_callback = callback;
   }
 }
@@ -183,15 +185,15 @@ void MockRDMController::RunFullDiscovery(RDMDiscoveryCallback *callback) {
 
 void MockRDMController::RunIncrementalDiscovery(
     RDMDiscoveryCallback *callback) {
-  CPPUNIT_ASSERT(m_expected_discover_calls.size());
+  OLA_ASSERT_TRUE(m_expected_discover_calls.size());
   expected_discovery_call call = m_expected_discover_calls.front();
   m_expected_discover_calls.pop();
-  CPPUNIT_ASSERT(!call.full);
+  OLA_ASSERT_FALSE(call.full);
 
   if (call.uids) {
     callback->Run(*call.uids);
   } else {
-    CPPUNIT_ASSERT(!m_discovery_callback);
+    OLA_ASSERT_FALSE(m_discovery_callback);
     m_discovery_callback = callback;
   }
 }
@@ -232,7 +234,7 @@ void MockRDMController::RunRDMCallback(ola::rdm::rdm_response_code code,
   vector<string> packets;
   if (!packet.empty())
     packets.push_back(packet);
-  CPPUNIT_ASSERT(m_rdm_callback);
+  OLA_ASSERT_TRUE(m_rdm_callback);
   RDMCallback *callback = m_rdm_callback;
   m_rdm_callback = NULL;
   callback->Run(code, response, packets);
@@ -243,7 +245,7 @@ void MockRDMController::RunRDMCallback(ola::rdm::rdm_response_code code,
  * Run the current discovery callback
  */
 void MockRDMController::RunDiscoveryCallback(const UIDSet &uids) {
-  CPPUNIT_ASSERT(m_discovery_callback);
+  OLA_ASSERT_TRUE(m_discovery_callback);
   RDMDiscoveryCallback *callback = m_discovery_callback;
   m_discovery_callback = NULL;
   callback->Run(uids);
@@ -254,8 +256,8 @@ void MockRDMController::RunDiscoveryCallback(const UIDSet &uids) {
  * Verify no expected calls remain
  */
 void MockRDMController::Verify() {
-  CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), m_expected_calls.size());
-  CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0),
+  OLA_ASSERT_EQ(static_cast<size_t>(0), m_expected_calls.size());
+  OLA_ASSERT_EQ(static_cast<size_t>(0),
                        m_expected_discover_calls.size());
 }
 
@@ -277,15 +279,15 @@ void QueueingRDMControllerTest::VerifyResponse(
     ola::rdm::rdm_response_code code,
     const RDMResponse *response,
     const vector<string> &packets) {
-  CPPUNIT_ASSERT_EQUAL(expected_code, code);
+  OLA_ASSERT_EQ(expected_code, code);
   if (expected_response)
-    CPPUNIT_ASSERT((*expected_response) == (*response));
+    OLA_ASSERT_TRUE((*expected_response) == (*response));
   else
-    CPPUNIT_ASSERT_EQUAL(expected_response, response);
+    OLA_ASSERT_EQ(expected_response, response);
 
-  CPPUNIT_ASSERT_EQUAL(expected_packets.size(), packets.size());
+  OLA_ASSERT_EQ(expected_packets.size(), packets.size());
   for (unsigned int i = 0; i < packets.size(); i++)
-    CPPUNIT_ASSERT_EQUAL(expected_packets[i], packets[i]);
+    OLA_ASSERT_EQ(expected_packets[i], packets[i]);
 
   if (delete_response)
     delete response;
@@ -298,7 +300,7 @@ void QueueingRDMControllerTest::VerifyResponse(
 void QueueingRDMControllerTest::VerifyDiscoveryComplete(
     UIDSet *expected_uids,
     const UIDSet &uids) {
-  CPPUNIT_ASSERT_EQUAL(*expected_uids, uids);
+  OLA_ASSERT_EQ(*expected_uids, uids);
   m_discovery_complete_count++;
 }
 
@@ -308,7 +310,7 @@ void QueueingRDMControllerTest::ReentrantDiscovery(
     ola::rdm::DiscoverableQueueingRDMController *controller,
     UIDSet *expected_uids,
     const UIDSet &uids) {
-  CPPUNIT_ASSERT_EQUAL(*expected_uids, uids);
+  OLA_ASSERT_EQ(*expected_uids, uids);
   m_discovery_complete_count++;
   controller->RunFullDiscovery(
       NewSingleCallback(
@@ -742,7 +744,7 @@ void QueueingRDMControllerTest::testDiscovery() {
           this,
           &QueueingRDMControllerTest::VerifyDiscoveryComplete,
           &uids));
-  CPPUNIT_ASSERT(m_discovery_complete_count);
+  OLA_ASSERT_TRUE(m_discovery_complete_count);
   m_discovery_complete_count = 0;
   mock_controller.Verify();
 
@@ -754,7 +756,7 @@ void QueueingRDMControllerTest::testDiscovery() {
           this,
           &QueueingRDMControllerTest::VerifyDiscoveryComplete,
           &uids));
-  CPPUNIT_ASSERT(m_discovery_complete_count);
+  OLA_ASSERT_TRUE(m_discovery_complete_count);
   m_discovery_complete_count = 0;
   mock_controller.Verify();
 
@@ -766,11 +768,11 @@ void QueueingRDMControllerTest::testDiscovery() {
           &QueueingRDMControllerTest::VerifyDiscoveryComplete,
           &uids2));
   mock_controller.Verify();
-  CPPUNIT_ASSERT(!m_discovery_complete_count);
+  OLA_ASSERT_FALSE(m_discovery_complete_count);
 
   // now run the callback
   mock_controller.RunDiscoveryCallback(uids2);
-  CPPUNIT_ASSERT(m_discovery_complete_count);
+  OLA_ASSERT_TRUE(m_discovery_complete_count);
   m_discovery_complete_count = 0;
   mock_controller.Verify();
 
@@ -782,11 +784,11 @@ void QueueingRDMControllerTest::testDiscovery() {
           &QueueingRDMControllerTest::VerifyDiscoveryComplete,
           &uids2));
   mock_controller.Verify();
-  CPPUNIT_ASSERT(!m_discovery_complete_count);
+  OLA_ASSERT_FALSE(m_discovery_complete_count);
 
   // now run the callback
   mock_controller.RunDiscoveryCallback(uids2);
-  CPPUNIT_ASSERT(m_discovery_complete_count);
+  OLA_ASSERT_TRUE(m_discovery_complete_count);
   m_discovery_complete_count = 0;
   mock_controller.Verify();
 }
@@ -818,7 +820,7 @@ void QueueingRDMControllerTest::testMultipleDiscovery() {
           &QueueingRDMControllerTest::VerifyDiscoveryComplete,
           &uids));
   mock_controller.Verify();
-  CPPUNIT_ASSERT(!m_discovery_complete_count);
+  OLA_ASSERT_FALSE(m_discovery_complete_count);
 
   // trigger discovery again, this should queue the discovery request
   controller->RunIncrementalDiscovery(
@@ -839,14 +841,14 @@ void QueueingRDMControllerTest::testMultipleDiscovery() {
   // return from the first one, this will trigger the second discovery call
   mock_controller.AddExpectedDiscoveryCall(false, NULL);
   mock_controller.RunDiscoveryCallback(uids);
-  CPPUNIT_ASSERT(m_discovery_complete_count);
+  OLA_ASSERT_TRUE(m_discovery_complete_count);
   m_discovery_complete_count = 0;
   mock_controller.Verify();
 
   // now return from the second one, which should complete the 2nd and 3rd
   // requests
   mock_controller.RunDiscoveryCallback(uids2);
-  CPPUNIT_ASSERT_EQUAL(2, m_discovery_complete_count);
+  OLA_ASSERT_EQ(2, m_discovery_complete_count);
   m_discovery_complete_count = 0;
   mock_controller.Verify();
 }
@@ -880,13 +882,13 @@ void QueueingRDMControllerTest::testReentrantDiscovery() {
   // this will finish the first discovery attempt, and start the second
   mock_controller.AddExpectedDiscoveryCall(true, NULL);
   mock_controller.RunDiscoveryCallback(uids);
-  CPPUNIT_ASSERT(m_discovery_complete_count);
+  OLA_ASSERT_TRUE(m_discovery_complete_count);
   m_discovery_complete_count = 0;
   mock_controller.Verify();
 
   // now unblock the second
   mock_controller.RunDiscoveryCallback(uids);
-  CPPUNIT_ASSERT(m_discovery_complete_count);
+  OLA_ASSERT_TRUE(m_discovery_complete_count);
   m_discovery_complete_count = 0;
   mock_controller.Verify();
 }
@@ -947,7 +949,7 @@ void QueueingRDMControllerTest::testRequestAndDiscovery() {
           &QueueingRDMControllerTest::VerifyDiscoveryComplete,
           &uids));
   mock_controller.Verify();
-  CPPUNIT_ASSERT(!m_discovery_complete_count);
+  OLA_ASSERT_FALSE(m_discovery_complete_count);
 
   // now run the RDM callback, this should unblock the discovery process
   mock_controller.AddExpectedDiscoveryCall(true, NULL);
@@ -987,6 +989,6 @@ void QueueingRDMControllerTest::testRequestAndDiscovery() {
                                   &expected_command,
                                   "foo");
   mock_controller.RunDiscoveryCallback(uids);
-  CPPUNIT_ASSERT(m_discovery_complete_count);
+  OLA_ASSERT_TRUE(m_discovery_complete_count);
   mock_controller.Verify();
 }

@@ -23,6 +23,8 @@
 #include <string.h>
 #include <string>
 
+#include "ola/testing/TestUtils.h"
+
 #include "ola/Logging.h"
 #include "ola/io/IOQueue.h"
 #include "ola/io/OutputStream.h"
@@ -71,45 +73,45 @@ void E133PDUTest::testSimpleE133PDU() {
   E133Header header(source, 101, 2, false);
   E133PDU pdu(TEST_VECTOR, header, NULL);
 
-  CPPUNIT_ASSERT_EQUAL(71u, pdu.HeaderSize());
-  CPPUNIT_ASSERT_EQUAL(0u, pdu.DataSize());
-  CPPUNIT_ASSERT_EQUAL(77u, pdu.Size());
+  OLA_ASSERT_EQ(71u, pdu.HeaderSize());
+  OLA_ASSERT_EQ(0u, pdu.DataSize());
+  OLA_ASSERT_EQ(77u, pdu.Size());
 
   unsigned int size = pdu.Size();
   uint8_t *data = new uint8_t[size];
   unsigned int bytes_used = size;
-  CPPUNIT_ASSERT(pdu.Pack(data, bytes_used));
-  CPPUNIT_ASSERT_EQUAL(size, bytes_used);
+  OLA_ASSERT(pdu.Pack(data, bytes_used));
+  OLA_ASSERT_EQ(size, bytes_used);
 
   // spot check the data
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 0x70, data[0]);
-  CPPUNIT_ASSERT_EQUAL((uint8_t) bytes_used, data[1]);
+  OLA_ASSERT_EQ((uint8_t) 0x70, data[0]);
+  OLA_ASSERT_EQ((uint8_t) bytes_used, data[1]);
   unsigned int actual_value;
   memcpy(&actual_value, data + 2, sizeof(actual_value));
-  CPPUNIT_ASSERT_EQUAL(HostToNetwork(TEST_VECTOR), actual_value);
+  OLA_ASSERT_EQ(HostToNetwork(TEST_VECTOR), actual_value);
 
-  CPPUNIT_ASSERT(!memcmp(&data[6], source.data(), source.length()));
+  OLA_ASSERT_FALSE(memcmp(&data[6], source.data(), source.length()));
   // universe
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, data[6 + E133Header::SOURCE_NAME_LEN]);
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, data[6 + E133Header::SOURCE_NAME_LEN + 1]);
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, data[6 + E133Header::SOURCE_NAME_LEN + 2]);
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 101,
+  OLA_ASSERT_EQ((uint8_t) 0, data[6 + E133Header::SOURCE_NAME_LEN]);
+  OLA_ASSERT_EQ((uint8_t) 0, data[6 + E133Header::SOURCE_NAME_LEN + 1]);
+  OLA_ASSERT_EQ((uint8_t) 0, data[6 + E133Header::SOURCE_NAME_LEN + 2]);
+  OLA_ASSERT_EQ((uint8_t) 101,
                        data[6 + E133Header::SOURCE_NAME_LEN + 3]);
   // endpoint
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, data[6 + E133Header::SOURCE_NAME_LEN + 4]);
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 2, data[6 + E133Header::SOURCE_NAME_LEN + 5]);
+  OLA_ASSERT_EQ((uint8_t) 0, data[6 + E133Header::SOURCE_NAME_LEN + 4]);
+  OLA_ASSERT_EQ((uint8_t) 2, data[6 + E133Header::SOURCE_NAME_LEN + 5]);
   // options
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, data[6 + E133Header::SOURCE_NAME_LEN + 6]);
+  OLA_ASSERT_EQ((uint8_t) 0, data[6 + E133Header::SOURCE_NAME_LEN + 6]);
 
   // test undersized buffer
   bytes_used = size - 1;
-  CPPUNIT_ASSERT(!pdu.Pack(data, bytes_used));
-  CPPUNIT_ASSERT_EQUAL(0u, bytes_used);
+  OLA_ASSERT_FALSE(pdu.Pack(data, bytes_used));
+  OLA_ASSERT_EQ(0u, bytes_used);
 
   // test oversized buffer
   bytes_used = size + 1;
-  CPPUNIT_ASSERT(pdu.Pack(data, bytes_used));
-  CPPUNIT_ASSERT_EQUAL(size, bytes_used);
+  OLA_ASSERT(pdu.Pack(data, bytes_used));
+  OLA_ASSERT_EQ(size, bytes_used);
   delete[] data;
 }
 
@@ -122,18 +124,18 @@ void E133PDUTest::testSimpleE133PDUToOutputStream() {
   E133Header header(source, 101, 2, false);
   E133PDU pdu(TEST_VECTOR, header, NULL);
 
-  CPPUNIT_ASSERT_EQUAL(71u, pdu.HeaderSize());
-  CPPUNIT_ASSERT_EQUAL(0u, pdu.DataSize());
-  CPPUNIT_ASSERT_EQUAL(77u, pdu.Size());
+  OLA_ASSERT_EQ(71u, pdu.HeaderSize());
+  OLA_ASSERT_EQ(0u, pdu.DataSize());
+  OLA_ASSERT_EQ(77u, pdu.Size());
 
   IOQueue output;
   OutputStream stream(&output);
   pdu.Write(&stream);
-  CPPUNIT_ASSERT_EQUAL(77u, output.Size());
+  OLA_ASSERT_EQ(77u, output.Size());
 
   uint8_t *pdu_data = new uint8_t[output.Size()];
   unsigned int pdu_size = output.Peek(pdu_data, output.Size());
-  CPPUNIT_ASSERT_EQUAL(output.Size(), pdu_size);
+  OLA_ASSERT_EQ(output.Size(), pdu_size);
 
   uint8_t EXPECTED[] = {
     0x70, 77,

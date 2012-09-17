@@ -22,6 +22,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "ola/testing/TestUtils.h"
+
 #include "ola/BaseTypes.h"
 #include "ola/DmxBuffer.h"
 #include "ola/RunLengthEncoder.h"
@@ -82,10 +84,10 @@ void RunLengthEncoderTest::checkEncode(const DmxBuffer &buffer,
                                        const uint8_t *expected_data,
                                        unsigned int expected_length) {
   memset(m_dst, 0, DMX_UNIVERSE_SIZE);
-  CPPUNIT_ASSERT_EQUAL(is_complete,
+  OLA_ASSERT_EQ(is_complete,
                        m_encoder.Encode(buffer, m_dst, dst_size));
-  CPPUNIT_ASSERT_EQUAL(expected_length, dst_size);
-  CPPUNIT_ASSERT(!memcmp(expected_data, m_dst, dst_size));
+  OLA_ASSERT_EQ(expected_length, dst_size);
+  OLA_ASSERT_FALSE(memcmp(expected_data, m_dst, dst_size));
 }
 
 
@@ -144,12 +146,12 @@ void RunLengthEncoderTest::checkEncodeDecode(const uint8_t *data,
 
   unsigned int dst_size = DMX_UNIVERSE_SIZE;
   memset(m_dst, 0, dst_size);
-  CPPUNIT_ASSERT(m_encoder.Encode(src, m_dst, dst_size));
+  OLA_ASSERT_TRUE(m_encoder.Encode(src, m_dst, dst_size));
 
-  CPPUNIT_ASSERT(m_encoder.Decode(&dst, 0, m_dst, dst_size));
-  CPPUNIT_ASSERT(src == dst);
-  CPPUNIT_ASSERT_EQUAL(dst.Size(), data_size);
-  CPPUNIT_ASSERT(!memcmp(data, dst.GetRaw(), dst.Size()));
+  OLA_ASSERT_TRUE(m_encoder.Decode(&dst, 0, m_dst, dst_size));
+  OLA_ASSERT_TRUE(src == dst);
+  OLA_ASSERT_EQ(dst.Size(), data_size);
+  OLA_ASSERT_FALSE(memcmp(data, dst.GetRaw(), dst.Size()));
 }
 
 

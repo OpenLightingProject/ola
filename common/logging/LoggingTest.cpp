@@ -23,6 +23,9 @@
 #include <string>
 #include <utility>
 #include <vector>
+
+#include "ola/testing/TestUtils.h"
+
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
 
@@ -69,12 +72,12 @@ void MockLogDestination::Write(log_level level, const string &log_line) {
   vector<string> tokens;
   ola::StringSplit(log_line, tokens, ":");
   vector<string>::iterator iter;
-  CPPUNIT_ASSERT_EQUAL(tokens.size() , (size_t) 3);
-  CPPUNIT_ASSERT(m_log_lines.size() > 0);
+  OLA_ASSERT_EQ(tokens.size() , (size_t) 3);
+  OLA_ASSERT_TRUE(m_log_lines.size() > 0);
   std::pair<log_level, string> expected_result = m_log_lines.at(0);
   m_log_lines.pop_front();
-  CPPUNIT_ASSERT_EQUAL(expected_result.first, level);
-  CPPUNIT_ASSERT_EQUAL(expected_result.second, tokens.at(2));
+  OLA_ASSERT_EQ(expected_result.first, level);
+  OLA_ASSERT_EQ(expected_result.second, tokens.at(2));
 }
 
 /*
@@ -100,7 +103,7 @@ void LoggingTest::testLogging() {
   OLA_WARN << "warn";
   destination->AddExpected(ola::OLA_LOG_FATAL, " fatal\n");
   OLA_FATAL << "fatal";
-  CPPUNIT_ASSERT_EQUAL(destination->LinesRemaining(), 0);
+  OLA_ASSERT_EQ(destination->LinesRemaining(), 0);
 
   // set the log level to INFO
   IncrementLogLevel();
@@ -111,7 +114,7 @@ void LoggingTest::testLogging() {
   OLA_WARN << "warn";
   destination->AddExpected(ola::OLA_LOG_FATAL, " fatal\n");
   OLA_FATAL << "fatal";
-  CPPUNIT_ASSERT_EQUAL(destination->LinesRemaining(), 0);
+  OLA_ASSERT_EQ(destination->LinesRemaining(), 0);
 
   IncrementLogLevel();
   // this should wrap to NONE
@@ -120,5 +123,5 @@ void LoggingTest::testLogging() {
   OLA_INFO << "info";
   OLA_WARN << "warn";
   OLA_FATAL << "fatal";
-  CPPUNIT_ASSERT_EQUAL(destination->LinesRemaining(), 0);
+  OLA_ASSERT_EQ(destination->LinesRemaining(), 0);
 }

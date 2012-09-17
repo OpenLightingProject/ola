@@ -24,6 +24,8 @@
 #include <string>
 #include <vector>
 
+#include "ola/testing/TestUtils.h"
+
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/thread/Thread.h"
@@ -79,12 +81,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(ThreadPoolTest);
  */
 void ThreadPoolTest::RunThreads(unsigned int threads, unsigned int actions) {
   ThreadPool pool(threads);
-  CPPUNIT_ASSERT(pool.Init());
+  OLA_ASSERT_TRUE(pool.Init());
 
   for (unsigned int i = 0; i < actions; i++)
     pool.Execute(
         ola::NewSingleCallback(this, &ThreadPoolTest::IncrementCounter));
 
   pool.JoinAll();
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(actions), m_counter);
+  OLA_ASSERT_EQ(static_cast<unsigned int>(actions), m_counter);
 }

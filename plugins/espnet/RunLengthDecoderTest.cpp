@@ -19,6 +19,9 @@
  */
 
 #include <cppunit/extensions/HelperMacros.h>
+
+#include "ola/testing/TestUtils.h"
+
 #include <ola/DmxBuffer.h>
 #include "plugins/espnet/RunLengthDecoder.h"
 
@@ -50,7 +53,7 @@ void RunLengthDecoderTest::testDecode() {
 
   buffer.Blackout();
   buffer.Reset();
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, buffer.Size());
+  OLA_ASSERT_EQ((unsigned int) 0, buffer.Size());
   decoder.Decode(&buffer, data, sizeof(data));
-  CPPUNIT_ASSERT(buffer == expected);
+  OLA_ASSERT(buffer == expected);
 }

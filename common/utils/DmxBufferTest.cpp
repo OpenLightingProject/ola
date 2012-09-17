@@ -21,6 +21,9 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <string.h>
 #include <string>
+
+#include "ola/testing/TestUtils.h"
+
 #include "ola/BaseTypes.h"
 #include "ola/DmxBuffer.h"
 
@@ -81,19 +84,19 @@ CPPUNIT_TEST_SUITE_REGISTRATION(DmxBufferTest);
  */
 void DmxBufferTest::testBlackout() {
   DmxBuffer buffer;
-  CPPUNIT_ASSERT(buffer.Blackout());
+  OLA_ASSERT_TRUE(buffer.Blackout());
   uint8_t *result = new uint8_t[DMX_UNIVERSE_SIZE];
   uint8_t *zero = new uint8_t[DMX_UNIVERSE_SIZE];
   unsigned int result_length = DMX_UNIVERSE_SIZE;
   memset(zero, 0, DMX_UNIVERSE_SIZE);
   buffer.Get(result, &result_length);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) DMX_UNIVERSE_SIZE, result_length);
-  CPPUNIT_ASSERT(!memcmp(zero, result, result_length));
+  OLA_ASSERT_EQ((unsigned int) DMX_UNIVERSE_SIZE, result_length);
+  OLA_ASSERT_FALSE(memcmp(zero, result, result_length));
   delete[] result;
   delete[] zero;
 
   buffer.Reset();
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, buffer.Size());
+  OLA_ASSERT_EQ((unsigned int) 0, buffer.Size());
 }
 
 
@@ -108,38 +111,38 @@ void DmxBufferTest::testGetSet() {
   DmxBuffer buffer;
   string str_result;
 
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, buffer.Get(0));
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, buffer.Get(1));
+  OLA_ASSERT_EQ((uint8_t) 0, buffer.Get(0));
+  OLA_ASSERT_EQ((uint8_t) 0, buffer.Get(1));
 
-  CPPUNIT_ASSERT(!buffer.Set(NULL, sizeof(TEST_DATA)));
+  OLA_ASSERT_FALSE(buffer.Set(NULL, sizeof(TEST_DATA)));
 
-  CPPUNIT_ASSERT(buffer.Set(TEST_DATA, sizeof(TEST_DATA)));
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 1, buffer.Get(0));
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 2, buffer.Get(1));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA), buffer.Size());
+  OLA_ASSERT_TRUE(buffer.Set(TEST_DATA, sizeof(TEST_DATA)));
+  OLA_ASSERT_EQ((uint8_t) 1, buffer.Get(0));
+  OLA_ASSERT_EQ((uint8_t) 2, buffer.Get(1));
+  OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA), buffer.Size());
   buffer.Get(result, &size);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA), size);
-  CPPUNIT_ASSERT(!memcmp(TEST_DATA, result, size));
+  OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA), size);
+  OLA_ASSERT_FALSE(memcmp(TEST_DATA, result, size));
   str_result = buffer.Get();
-  CPPUNIT_ASSERT_EQUAL((size_t) sizeof(TEST_DATA), str_result.length());
-  CPPUNIT_ASSERT(!memcmp(TEST_DATA, str_result.data(), str_result.length()));
+  OLA_ASSERT_EQ((size_t) sizeof(TEST_DATA), str_result.length());
+  OLA_ASSERT_FALSE(memcmp(TEST_DATA, str_result.data(), str_result.length()));
 
   size = result_length;
-  CPPUNIT_ASSERT(buffer.Set(TEST_DATA2, sizeof(TEST_DATA2)));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA2), buffer.Size());
+  OLA_ASSERT_TRUE(buffer.Set(TEST_DATA2, sizeof(TEST_DATA2)));
+  OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA2), buffer.Size());
   buffer.Get(result, &size);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA2), size);
-  CPPUNIT_ASSERT(!memcmp(TEST_DATA2, result, size));
+  OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA2), size);
+  OLA_ASSERT_FALSE(memcmp(TEST_DATA2, result, size));
   str_result = buffer.Get();
-  CPPUNIT_ASSERT_EQUAL((size_t) sizeof(TEST_DATA2), str_result.length());
-  CPPUNIT_ASSERT(!memcmp(TEST_DATA2, str_result.data(), str_result.length()));
+  OLA_ASSERT_EQ((size_t) sizeof(TEST_DATA2), str_result.length());
+  OLA_ASSERT_FALSE(memcmp(TEST_DATA2, str_result.data(), str_result.length()));
 
   // now check that Set() with another buffer works
   DmxBuffer buffer2;
   buffer2.Set(buffer);
   str_result = buffer2.Get();
-  CPPUNIT_ASSERT_EQUAL((size_t) sizeof(TEST_DATA2), str_result.length());
-  CPPUNIT_ASSERT(!memcmp(TEST_DATA2, str_result.data(), str_result.length()));
+  OLA_ASSERT_EQ((size_t) sizeof(TEST_DATA2), str_result.length());
+  OLA_ASSERT_FALSE(memcmp(TEST_DATA2, str_result.data(), str_result.length()));
 
   delete[] result;
 }
@@ -155,26 +158,26 @@ void DmxBufferTest::testStringGetSet() {
   unsigned int size = data.length();
 
   // Check that setting works
-  CPPUNIT_ASSERT(buffer.Set(data));
-  CPPUNIT_ASSERT_EQUAL(data.length(), (size_t) buffer.Size());
-  CPPUNIT_ASSERT_EQUAL(data, buffer.Get());
+  OLA_ASSERT_TRUE(buffer.Set(data));
+  OLA_ASSERT_EQ(data.length(), (size_t) buffer.Size());
+  OLA_ASSERT_EQ(data, buffer.Get());
   buffer.Get(result, &size);
-  CPPUNIT_ASSERT_EQUAL(data.length(), (size_t) size);
-  CPPUNIT_ASSERT(!memcmp(data.data(), result, size));
+  OLA_ASSERT_EQ(data.length(), (size_t) size);
+  OLA_ASSERT_FALSE(memcmp(data.data(), result, size));
 
   // Check the string constructor
   DmxBuffer string_buffer(data);
-  CPPUNIT_ASSERT(buffer == string_buffer);
+  OLA_ASSERT_TRUE(buffer == string_buffer);
 
   // Set with an empty string
   string data2;
   size = data.length();
-  CPPUNIT_ASSERT(buffer.Set(data2));
-  CPPUNIT_ASSERT_EQUAL(data2.length(), (size_t) buffer.Size());
-  CPPUNIT_ASSERT_EQUAL(data2, buffer.Get());
+  OLA_ASSERT_TRUE(buffer.Set(data2));
+  OLA_ASSERT_EQ(data2.length(), (size_t) buffer.Size());
+  OLA_ASSERT_EQ(data2, buffer.Get());
   buffer.Get(result, &size);
-  CPPUNIT_ASSERT_EQUAL(data2.length(), (size_t) size);
-  CPPUNIT_ASSERT(!memcmp(data2.data(), result, size));
+  OLA_ASSERT_EQ(data2.length(), (size_t) size);
+  OLA_ASSERT_FALSE(memcmp(data2.data(), result, size));
   delete[] result;
 }
 
@@ -197,32 +200,32 @@ void DmxBufferTest::testAssign() {
   unsigned int size = result_length;
   assignment_buffer = buffer;
   assignment_buffer.Get(result, &size);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA),
+  OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA),
                        assignment_buffer.Size());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA), size);
-  CPPUNIT_ASSERT(!memcmp(TEST_DATA, result, size));
-  CPPUNIT_ASSERT(assignment_buffer == buffer);
+  OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA), size);
+  OLA_ASSERT_FALSE(memcmp(TEST_DATA, result, size));
+  OLA_ASSERT_TRUE(assignment_buffer == buffer);
 
   // assigning to a non-init'ed buffer
   assignment_buffer2 = buffer;
   size = result_length;
   assignment_buffer2.Get(result, &result_length);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA),
+  OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA),
                        assignment_buffer2.Size());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA), result_length);
-  CPPUNIT_ASSERT(!memcmp(TEST_DATA, result, result_length));
-  CPPUNIT_ASSERT(assignment_buffer2 == buffer);
+  OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA), result_length);
+  OLA_ASSERT_FALSE(memcmp(TEST_DATA, result, result_length));
+  OLA_ASSERT_TRUE(assignment_buffer2 == buffer);
 
   // now try assigning an unitialized buffer
   DmxBuffer uninitialized_buffer;
   DmxBuffer assignment_buffer3;
 
   assignment_buffer3 = uninitialized_buffer;
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, assignment_buffer3.Size());
+  OLA_ASSERT_EQ((unsigned int) 0, assignment_buffer3.Size());
   size = result_length;
   assignment_buffer3.Get(result, &result_length);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, result_length);
-  CPPUNIT_ASSERT(assignment_buffer3 == uninitialized_buffer);
+  OLA_ASSERT_EQ((unsigned int) 0, result_length);
+  OLA_ASSERT_TRUE(assignment_buffer3 == uninitialized_buffer);
   delete[] result;
 }
 
@@ -232,17 +235,17 @@ void DmxBufferTest::testAssign() {
  */
 void DmxBufferTest::testCopy() {
   DmxBuffer buffer(TEST_DATA2, sizeof(TEST_DATA2));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA2), buffer.Size());
+  OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA2), buffer.Size());
 
   DmxBuffer copy_buffer(buffer);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA2), copy_buffer.Size());
-  CPPUNIT_ASSERT(copy_buffer == buffer);
+  OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA2), copy_buffer.Size());
+  OLA_ASSERT_TRUE(copy_buffer == buffer);
 
   unsigned int result_length = sizeof(TEST_DATA2);
   uint8_t *result = new uint8_t[result_length];
   copy_buffer.Get(result, &result_length);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA2), result_length);
-  CPPUNIT_ASSERT(!memcmp(TEST_DATA2, result, result_length));
+  OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA2), result_length);
+  OLA_ASSERT_FALSE(memcmp(TEST_DATA2, result, result_length));
   delete[] result;
 }
 
@@ -259,23 +262,23 @@ void DmxBufferTest::testMerge() {
   DmxBuffer uninitialized_buffer, uninitialized_buffer2;
 
   // merge into an empty buffer
-  CPPUNIT_ASSERT(uninitialized_buffer.HTPMerge(buffer2));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(TEST_DATA3), buffer2.Size());
-  CPPUNIT_ASSERT(test_buffer2 == uninitialized_buffer);
+  OLA_ASSERT_TRUE(uninitialized_buffer.HTPMerge(buffer2));
+  OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA3), buffer2.Size());
+  OLA_ASSERT_TRUE(test_buffer2 == uninitialized_buffer);
 
   // merge from an empty buffer
-  CPPUNIT_ASSERT(buffer2.HTPMerge(uninitialized_buffer2));
-  CPPUNIT_ASSERT(buffer2 == test_buffer2);
+  OLA_ASSERT_TRUE(buffer2.HTPMerge(uninitialized_buffer2));
+  OLA_ASSERT_TRUE(buffer2 == test_buffer2);
 
   // merge two buffers (longer into shorter)
   buffer2 = test_buffer2;
-  CPPUNIT_ASSERT(buffer2.HTPMerge(buffer1));
-  CPPUNIT_ASSERT(buffer2 == merge_result);
+  OLA_ASSERT_TRUE(buffer2.HTPMerge(buffer1));
+  OLA_ASSERT_TRUE(buffer2 == merge_result);
 
   // merge shorter into longer
   buffer2 = test_buffer2;
-  CPPUNIT_ASSERT(buffer1.HTPMerge(buffer2));
-  CPPUNIT_ASSERT(buffer1 == merge_result);
+  OLA_ASSERT_TRUE(buffer1.HTPMerge(buffer2));
+  OLA_ASSERT_TRUE(buffer1 == merge_result);
 }
 
 
@@ -287,8 +290,8 @@ void DmxBufferTest::testMerge() {
 void DmxBufferTest::runStringToDmx(const string &input,
                                    const DmxBuffer &expected) {
   DmxBuffer buffer;
-  CPPUNIT_ASSERT(buffer.SetFromString(input));
-  CPPUNIT_ASSERT(buffer == expected);
+  OLA_ASSERT_TRUE(buffer.SetFromString(input));
+  OLA_ASSERT_TRUE(buffer == expected);
 }
 
 
@@ -340,56 +343,56 @@ void DmxBufferTest::testCopyOnWrite() {
 
   // Check HTPMerge
   dest_buffer.HTPMerge(buffer3);
-  CPPUNIT_ASSERT_EQUAL(initial_data, src_buffer.Get());
-  CPPUNIT_ASSERT(merge_result == dest_buffer);
+  OLA_ASSERT_EQ(initial_data, src_buffer.Get());
+  OLA_ASSERT_TRUE(merge_result == dest_buffer);
   dest_buffer = src_buffer;
   // Check the other way
   src_buffer.HTPMerge(buffer3);
-  CPPUNIT_ASSERT(merge_result == src_buffer);
-  CPPUNIT_ASSERT_EQUAL(initial_data, dest_buffer.Get());
+  OLA_ASSERT_TRUE(merge_result == src_buffer);
+  OLA_ASSERT_EQ(initial_data, dest_buffer.Get());
   src_buffer = dest_buffer;
 
   // Check Set works
   dest_buffer.Set(TEST_DATA3, sizeof(TEST_DATA3));
-  CPPUNIT_ASSERT_EQUAL(initial_data, src_buffer.Get());
-  CPPUNIT_ASSERT(buffer3 == dest_buffer);
+  OLA_ASSERT_EQ(initial_data, src_buffer.Get());
+  OLA_ASSERT_TRUE(buffer3 == dest_buffer);
   dest_buffer = src_buffer;
   // Check it works the other way
-  CPPUNIT_ASSERT_EQUAL(initial_data, src_buffer.Get());
-  CPPUNIT_ASSERT_EQUAL(initial_data, dest_buffer.Get());
+  OLA_ASSERT_EQ(initial_data, src_buffer.Get());
+  OLA_ASSERT_EQ(initial_data, dest_buffer.Get());
   src_buffer.Set(TEST_DATA3, sizeof(TEST_DATA3));
-  CPPUNIT_ASSERT(buffer3 == src_buffer);
-  CPPUNIT_ASSERT_EQUAL(initial_data, dest_buffer.Get());
+  OLA_ASSERT_TRUE(buffer3 == src_buffer);
+  OLA_ASSERT_EQ(initial_data, dest_buffer.Get());
   src_buffer = dest_buffer;
 
   // Check that SetFromString works
   dest_buffer = src_buffer;
   dest_buffer.SetFromString("10,11,12");
-  CPPUNIT_ASSERT_EQUAL(initial_data, src_buffer.Get());
-  CPPUNIT_ASSERT(buffer3 == dest_buffer);
+  OLA_ASSERT_EQ(initial_data, src_buffer.Get());
+  OLA_ASSERT_TRUE(buffer3 == dest_buffer);
   dest_buffer = src_buffer;
   // Check it works the other way
-  CPPUNIT_ASSERT_EQUAL(initial_data, src_buffer.Get());
-  CPPUNIT_ASSERT_EQUAL(initial_data, dest_buffer.Get());
+  OLA_ASSERT_EQ(initial_data, src_buffer.Get());
+  OLA_ASSERT_EQ(initial_data, dest_buffer.Get());
   src_buffer.SetFromString("10,11,12");
-  CPPUNIT_ASSERT(buffer3 == src_buffer);
-  CPPUNIT_ASSERT_EQUAL(initial_data, dest_buffer.Get());
+  OLA_ASSERT_TRUE(buffer3 == src_buffer);
+  OLA_ASSERT_EQ(initial_data, dest_buffer.Get());
   src_buffer = dest_buffer;
 
   // Check the SetChannel() method, this should force a copy.
   dest_buffer.SetChannel(0, 244);
   string expected_change = initial_data;
   expected_change[0] = 244;
-  CPPUNIT_ASSERT_EQUAL(initial_data, src_buffer.Get());
-  CPPUNIT_ASSERT_EQUAL(expected_change, dest_buffer.Get());
+  OLA_ASSERT_EQ(initial_data, src_buffer.Get());
+  OLA_ASSERT_EQ(expected_change, dest_buffer.Get());
   dest_buffer = src_buffer;
   // Check it works the other way
-  CPPUNIT_ASSERT_EQUAL(initial_data, src_buffer.Get());
-  CPPUNIT_ASSERT_EQUAL(initial_data, dest_buffer.Get());
+  OLA_ASSERT_EQ(initial_data, src_buffer.Get());
+  OLA_ASSERT_EQ(initial_data, dest_buffer.Get());
   src_buffer.SetChannel(0, 234);
   expected_change[0] = 234;
-  CPPUNIT_ASSERT_EQUAL(expected_change, src_buffer.Get());
-  CPPUNIT_ASSERT_EQUAL(initial_data, dest_buffer.Get());
+  OLA_ASSERT_EQ(expected_change, src_buffer.Get());
+  OLA_ASSERT_EQ(initial_data, dest_buffer.Get());
   src_buffer.Set(initial_data);
 }
 
@@ -400,48 +403,48 @@ void DmxBufferTest::testCopyOnWrite() {
 void DmxBufferTest::testSetRange() {
   unsigned int data_size = sizeof(TEST_DATA);
   DmxBuffer buffer;
-  CPPUNIT_ASSERT(!buffer.SetRange(0, NULL, data_size));
-  CPPUNIT_ASSERT(!buffer.SetRange(600, TEST_DATA, data_size));
+  OLA_ASSERT_FALSE(buffer.SetRange(0, NULL, data_size));
+  OLA_ASSERT_FALSE(buffer.SetRange(600, TEST_DATA, data_size));
 
   // Setting an uninitialized buffer calls blackout first
-  CPPUNIT_ASSERT(buffer.SetRange(0, TEST_DATA, data_size));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) DMX_UNIVERSE_SIZE, buffer.Size());
-  CPPUNIT_ASSERT(!memcmp(TEST_DATA, buffer.GetRaw(), data_size));
+  OLA_ASSERT_TRUE(buffer.SetRange(0, TEST_DATA, data_size));
+  OLA_ASSERT_EQ((unsigned int) DMX_UNIVERSE_SIZE, buffer.Size());
+  OLA_ASSERT_FALSE(memcmp(TEST_DATA, buffer.GetRaw(), data_size));
 
   // try overrunning the buffer
-  CPPUNIT_ASSERT(buffer.SetRange(DMX_UNIVERSE_SIZE - 2, TEST_DATA, data_size));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) DMX_UNIVERSE_SIZE, buffer.Size());
-  CPPUNIT_ASSERT(!memcmp(TEST_DATA, buffer.GetRaw() + DMX_UNIVERSE_SIZE - 2,
+  OLA_ASSERT_TRUE(buffer.SetRange(DMX_UNIVERSE_SIZE - 2, TEST_DATA, data_size));
+  OLA_ASSERT_EQ((unsigned int) DMX_UNIVERSE_SIZE, buffer.Size());
+  OLA_ASSERT_FALSE(memcmp(TEST_DATA, buffer.GetRaw() + DMX_UNIVERSE_SIZE - 2,
                          2));
 
   // reset the buffer so that the valid data is 0, and try again
   buffer.Reset();
-  CPPUNIT_ASSERT(buffer.SetRange(0, TEST_DATA, data_size));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) data_size, buffer.Size());
-  CPPUNIT_ASSERT(!memcmp(TEST_DATA, buffer.GetRaw(), data_size));
+  OLA_ASSERT_TRUE(buffer.SetRange(0, TEST_DATA, data_size));
+  OLA_ASSERT_EQ((unsigned int) data_size, buffer.Size());
+  OLA_ASSERT_FALSE(memcmp(TEST_DATA, buffer.GetRaw(), data_size));
 
   // setting past the end of the valid data should fail
-  CPPUNIT_ASSERT(!buffer.SetRange(50, TEST_DATA, data_size));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) data_size, buffer.Size());
-  CPPUNIT_ASSERT(!memcmp(TEST_DATA, buffer.GetRaw(), buffer.Size()));
+  OLA_ASSERT_FALSE(buffer.SetRange(50, TEST_DATA, data_size));
+  OLA_ASSERT_EQ((unsigned int) data_size, buffer.Size());
+  OLA_ASSERT_FALSE(memcmp(TEST_DATA, buffer.GetRaw(), buffer.Size()));
 
   // overwrite part of the valid data
   unsigned int offset = 2;
-  CPPUNIT_ASSERT(buffer.SetRange(offset, TEST_DATA, data_size));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) data_size + offset,
+  OLA_ASSERT_TRUE(buffer.SetRange(offset, TEST_DATA, data_size));
+  OLA_ASSERT_EQ((unsigned int) data_size + offset,
                        buffer.Size());
-  CPPUNIT_ASSERT(!memcmp(TEST_DATA, buffer.GetRaw(), offset));
-  CPPUNIT_ASSERT(!memcmp(TEST_DATA, buffer.GetRaw() + offset,
+  OLA_ASSERT_FALSE(memcmp(TEST_DATA, buffer.GetRaw(), offset));
+  OLA_ASSERT_FALSE(memcmp(TEST_DATA, buffer.GetRaw() + offset,
                          buffer.Size() - offset));
 
   // now try writing 1 channel past the valid data
   buffer.Reset();
-  CPPUNIT_ASSERT(buffer.SetRange(0, TEST_DATA, data_size));
-  CPPUNIT_ASSERT(buffer.SetRange(data_size, TEST_DATA,
+  OLA_ASSERT_TRUE(buffer.SetRange(0, TEST_DATA, data_size));
+  OLA_ASSERT_TRUE(buffer.SetRange(data_size, TEST_DATA,
                                  data_size));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) data_size * 2, buffer.Size());
-  CPPUNIT_ASSERT(!memcmp(TEST_DATA, buffer.GetRaw(), data_size));
-  CPPUNIT_ASSERT(!memcmp(TEST_DATA, buffer.GetRaw() + data_size, data_size));
+  OLA_ASSERT_EQ((unsigned int) data_size * 2, buffer.Size());
+  OLA_ASSERT_FALSE(memcmp(TEST_DATA, buffer.GetRaw(), data_size));
+  OLA_ASSERT_FALSE(memcmp(TEST_DATA, buffer.GetRaw() + data_size, data_size));
 }
 
 
@@ -451,16 +454,16 @@ void DmxBufferTest::testSetRange() {
 void DmxBufferTest::testSetRangeToValue() {
   const uint8_t RANGE_DATA[] = {50, 50, 50, 50, 50};
   DmxBuffer buffer;
-  CPPUNIT_ASSERT(!buffer.SetRangeToValue(600, 50, 2));
+  OLA_ASSERT_FALSE(buffer.SetRangeToValue(600, 50, 2));
 
   unsigned int range_size = 5;
-  CPPUNIT_ASSERT(buffer.SetRangeToValue(0, 50, range_size));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) DMX_UNIVERSE_SIZE, buffer.Size());
-  CPPUNIT_ASSERT(!memcmp(RANGE_DATA, buffer.GetRaw(), range_size));
+  OLA_ASSERT_TRUE(buffer.SetRangeToValue(0, 50, range_size));
+  OLA_ASSERT_EQ((unsigned int) DMX_UNIVERSE_SIZE, buffer.Size());
+  OLA_ASSERT_FALSE(memcmp(RANGE_DATA, buffer.GetRaw(), range_size));
 
   // setting outside the value range should fail
   buffer.Reset();
-  CPPUNIT_ASSERT(!buffer.SetRange(10, TEST_DATA, range_size));
+  OLA_ASSERT_FALSE(buffer.SetRange(10, TEST_DATA, range_size));
 }
 
 
@@ -476,13 +479,13 @@ void DmxBufferTest::testSetChannel() {
   memset(expected, 0, DMX_UNIVERSE_SIZE);
   expected[1] = 10;
   expected[10] = 50;
-  CPPUNIT_ASSERT_EQUAL((unsigned int) DMX_UNIVERSE_SIZE, buffer.Size());
-  CPPUNIT_ASSERT(!memcmp(expected, buffer.GetRaw(), buffer.Size()));
+  OLA_ASSERT_EQ((unsigned int) DMX_UNIVERSE_SIZE, buffer.Size());
+  OLA_ASSERT_FALSE(memcmp(expected, buffer.GetRaw(), buffer.Size()));
 
   // Check we can't set values greater than the buffer size
   buffer.SetChannel(999, 50);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) DMX_UNIVERSE_SIZE, buffer.Size());
-  CPPUNIT_ASSERT(!memcmp(expected, buffer.GetRaw(), buffer.Size()));
+  OLA_ASSERT_EQ((unsigned int) DMX_UNIVERSE_SIZE, buffer.Size());
+  OLA_ASSERT_FALSE(memcmp(expected, buffer.GetRaw(), buffer.Size()));
 
   // Check we can't set values outside the current valida data range
   unsigned int slice_size = 20;
@@ -490,8 +493,8 @@ void DmxBufferTest::testSetChannel() {
   buffer.SetChannel(30, 90);
   buffer.SetChannel(200, 10);
 
-  CPPUNIT_ASSERT_EQUAL(slice_size, buffer.Size());
-  CPPUNIT_ASSERT(!memcmp(expected, buffer.GetRaw(), buffer.Size()));
+  OLA_ASSERT_EQ(slice_size, buffer.Size());
+  OLA_ASSERT_FALSE(memcmp(expected, buffer.GetRaw(), buffer.Size()));
 }
 
 
@@ -500,11 +503,11 @@ void DmxBufferTest::testSetChannel() {
  */
 void DmxBufferTest::testToString() {
   DmxBuffer buffer;
-  CPPUNIT_ASSERT_EQUAL(string(""), buffer.ToString());
+  OLA_ASSERT_EQ(string(""), buffer.ToString());
 
   buffer.SetFromString("1,2,3,4");
-  CPPUNIT_ASSERT_EQUAL(string("1,2,3,4"), buffer.ToString());
+  OLA_ASSERT_EQ(string("1,2,3,4"), buffer.ToString());
 
   buffer.SetRangeToValue(0, 255, 5);
-  CPPUNIT_ASSERT_EQUAL(string("255,255,255,255,255"), buffer.ToString());
+  OLA_ASSERT_EQ(string("255,255,255,255,255"), buffer.ToString());
 }

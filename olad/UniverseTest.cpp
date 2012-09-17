@@ -23,6 +23,8 @@
 #include <string>
 #include <vector>
 
+#include "ola/testing/TestUtils.h"
+
 #include "ola/Callback.h"
 #include "ola/Clock.h"
 #include "ola/DmxBuffer.h"
@@ -118,8 +120,8 @@ class MockClient: public ola::Client {
   public:
     MockClient(): ola::Client(NULL), m_dmx_set(false) {}
     bool SendDMX(unsigned int universe_id, const DmxBuffer &buffer) {
-      CPPUNIT_ASSERT_EQUAL(TEST_UNIVERSE, universe_id);
-      CPPUNIT_ASSERT_EQUAL(string(TEST_DATA), buffer.Get());
+      OLA_ASSERT_EQ(TEST_UNIVERSE, universe_id);
+      OLA_ASSERT_EQ(string(TEST_DATA), buffer.Get());
       m_dmx_set = true;
       return true;
     }
@@ -149,39 +151,39 @@ void UniverseTest::tearDown() {
  */
 void UniverseTest::testLifecycle() {
   Universe *universe = m_store->GetUniverse(TEST_UNIVERSE);
-  CPPUNIT_ASSERT(!universe);
+  OLA_ASSERT_FALSE(universe);
 
   universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
-  CPPUNIT_ASSERT(universe);
-  CPPUNIT_ASSERT_EQUAL(TEST_UNIVERSE, universe->UniverseId());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, m_store->UniverseCount());
-  CPPUNIT_ASSERT_EQUAL(Universe::MERGE_LTP, universe->MergeMode());
-  CPPUNIT_ASSERT(!universe->IsActive());
+  OLA_ASSERT(universe);
+  OLA_ASSERT_EQ(TEST_UNIVERSE, universe->UniverseId());
+  OLA_ASSERT_EQ((unsigned int) 1, m_store->UniverseCount());
+  OLA_ASSERT_EQ(Universe::MERGE_LTP, universe->MergeMode());
+  OLA_ASSERT_FALSE(universe->IsActive());
 
   string universe_name = "New Name";
   universe->SetName(universe_name);
   universe->SetMergeMode(Universe::MERGE_HTP);
 
-  CPPUNIT_ASSERT_EQUAL(universe_name, universe->Name());
-  CPPUNIT_ASSERT_EQUAL(Universe::MERGE_HTP, universe->MergeMode());
+  OLA_ASSERT_EQ(universe_name, universe->Name());
+  OLA_ASSERT_EQ(Universe::MERGE_HTP, universe->MergeMode());
 
   // delete it
   m_store->AddUniverseGarbageCollection(universe);
   m_store->GarbageCollectUniverses();
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, m_store->UniverseCount());
+  OLA_ASSERT_EQ((unsigned int) 0, m_store->UniverseCount());
   universe = m_store->GetUniverse(TEST_UNIVERSE);
-  CPPUNIT_ASSERT(!universe);
+  OLA_ASSERT_FALSE(universe);
 
   // now re-create it
   universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
-  CPPUNIT_ASSERT(universe);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, m_store->UniverseCount());
-  CPPUNIT_ASSERT_EQUAL(TEST_UNIVERSE, universe->UniverseId());
-  CPPUNIT_ASSERT_EQUAL(universe_name, universe->Name());
-  CPPUNIT_ASSERT_EQUAL(Universe::MERGE_HTP, universe->MergeMode());
+  OLA_ASSERT(universe);
+  OLA_ASSERT_EQ((unsigned int) 1, m_store->UniverseCount());
+  OLA_ASSERT_EQ(TEST_UNIVERSE, universe->UniverseId());
+  OLA_ASSERT_EQ(universe_name, universe->Name());
+  OLA_ASSERT_EQ(Universe::MERGE_HTP, universe->MergeMode());
 
   m_store->DeleteAll();
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, m_store->UniverseCount());
+  OLA_ASSERT_EQ((unsigned int) 0, m_store->UniverseCount());
 }
 
 
@@ -190,15 +192,15 @@ void UniverseTest::testLifecycle() {
  */
 void UniverseTest::testSetGetDmx() {
   Universe *universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
-  CPPUNIT_ASSERT(universe);
+  OLA_ASSERT(universe);
 
   // a new universe should be all 0s
   DmxBuffer empty_buffer;
-  CPPUNIT_ASSERT(empty_buffer == universe->GetDMX());
+  OLA_ASSERT(empty_buffer == universe->GetDMX());
 
   // check that SetDMX works
-  CPPUNIT_ASSERT(universe->SetDMX(m_buffer));
-  CPPUNIT_ASSERT(m_buffer == universe->GetDMX());
+  OLA_ASSERT(universe->SetDMX(m_buffer));
+  OLA_ASSERT(m_buffer == universe->GetDMX());
 }
 
 
@@ -207,23 +209,23 @@ void UniverseTest::testSetGetDmx() {
  */
 void UniverseTest::testSendDmx() {
   Universe *universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
-  CPPUNIT_ASSERT(universe);
+  OLA_ASSERT(universe);
 
   TestMockOutputPort port(NULL, 1);  // output port
   universe->AddPort(&port);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->InputPortCount());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, universe->OutputPortCount());
-  CPPUNIT_ASSERT(universe->IsActive());
+  OLA_ASSERT_EQ((unsigned int) 0, universe->InputPortCount());
+  OLA_ASSERT_EQ((unsigned int) 1, universe->OutputPortCount());
+  OLA_ASSERT(universe->IsActive());
 
   // send some data to the universe and check the port gets it
-  CPPUNIT_ASSERT(universe->SetDMX(m_buffer));
-  CPPUNIT_ASSERT(m_buffer == port.ReadDMX());
+  OLA_ASSERT(universe->SetDMX(m_buffer));
+  OLA_ASSERT(m_buffer == port.ReadDMX());
 
   // remove the port from the universe
   universe->RemovePort(&port);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->InputPortCount());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->OutputPortCount());
-  CPPUNIT_ASSERT(!universe->IsActive());
+  OLA_ASSERT_EQ((unsigned int) 0, universe->InputPortCount());
+  OLA_ASSERT_EQ((unsigned int) 0, universe->OutputPortCount());
+  OLA_ASSERT_FALSE(universe->IsActive());
 }
 
 
@@ -242,27 +244,27 @@ void UniverseTest::testReceiveDmx() {
   port_manager.PatchPort(&port, TEST_UNIVERSE);
 
   Universe *universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
-  CPPUNIT_ASSERT(universe);
+  OLA_ASSERT(universe);
 
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, universe->InputPortCount());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->OutputPortCount());
-  CPPUNIT_ASSERT(universe->IsActive());
+  OLA_ASSERT_EQ((unsigned int) 1, universe->InputPortCount());
+  OLA_ASSERT_EQ((unsigned int) 0, universe->OutputPortCount());
+  OLA_ASSERT(universe->IsActive());
 
   // Setup the port with some data, and check that signalling the universe
   // works.
   m_clock.CurrentTime(&time_stamp);
   port.WriteDMX(m_buffer);
   port.DmxChanged();
-  CPPUNIT_ASSERT_EQUAL(ola::DmxSource::PRIORITY_DEFAULT,
+  OLA_ASSERT_EQ(ola::DmxSource::PRIORITY_DEFAULT,
                        universe->ActivePriority());
-  CPPUNIT_ASSERT_EQUAL(m_buffer.Size(), universe->GetDMX().Size());
-  CPPUNIT_ASSERT(m_buffer == universe->GetDMX());
+  OLA_ASSERT_EQ(m_buffer.Size(), universe->GetDMX().Size());
+  OLA_ASSERT(m_buffer == universe->GetDMX());
 
   // Remove the port from the universe
   universe->RemovePort(&port);
-  CPPUNIT_ASSERT(!universe->IsActive());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->InputPortCount());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->OutputPortCount());
+  OLA_ASSERT_FALSE(universe->IsActive());
+  OLA_ASSERT_EQ((unsigned int) 0, universe->InputPortCount());
+  OLA_ASSERT_EQ((unsigned int) 0, universe->OutputPortCount());
 }
 
 
@@ -271,39 +273,39 @@ void UniverseTest::testReceiveDmx() {
  */
 void UniverseTest::testSourceClients() {
   Universe *universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
-  CPPUNIT_ASSERT(universe);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->SourceClientCount());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->SinkClientCount());
+  OLA_ASSERT(universe);
+  OLA_ASSERT_EQ((unsigned int) 0, universe->SourceClientCount());
+  OLA_ASSERT_EQ((unsigned int) 0, universe->SinkClientCount());
 
   // test that we can add a source client
   MockClient client;
   universe->AddSourceClient(&client);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, universe->SourceClientCount());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->SinkClientCount());
-  CPPUNIT_ASSERT(universe->ContainsSourceClient(&client));
-  CPPUNIT_ASSERT(!universe->ContainsSinkClient(&client));
-  CPPUNIT_ASSERT(universe->IsActive());
+  OLA_ASSERT_EQ((unsigned int) 1, universe->SourceClientCount());
+  OLA_ASSERT_EQ((unsigned int) 0, universe->SinkClientCount());
+  OLA_ASSERT(universe->ContainsSourceClient(&client));
+  OLA_ASSERT_FALSE(universe->ContainsSinkClient(&client));
+  OLA_ASSERT(universe->IsActive());
 
   // Setting DMX now does nothing
-  CPPUNIT_ASSERT(!client.m_dmx_set);
+  OLA_ASSERT_FALSE(client.m_dmx_set);
   universe->SetDMX(m_buffer);
-  CPPUNIT_ASSERT(!client.m_dmx_set);
+  OLA_ASSERT_FALSE(client.m_dmx_set);
 
   // now remove it
   universe->RemoveSourceClient(&client);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->SourceClientCount());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->SinkClientCount());
-  CPPUNIT_ASSERT(!universe->ContainsSourceClient(&client));
-  CPPUNIT_ASSERT(!universe->ContainsSinkClient(&client));
-  CPPUNIT_ASSERT(!universe->IsActive());
+  OLA_ASSERT_EQ((unsigned int) 0, universe->SourceClientCount());
+  OLA_ASSERT_EQ((unsigned int) 0, universe->SinkClientCount());
+  OLA_ASSERT_FALSE(universe->ContainsSourceClient(&client));
+  OLA_ASSERT_FALSE(universe->ContainsSinkClient(&client));
+  OLA_ASSERT_FALSE(universe->IsActive());
 
   // try to remove it again
-  CPPUNIT_ASSERT(!universe->RemoveSourceClient(&client));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->SourceClientCount());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->SinkClientCount());
-  CPPUNIT_ASSERT(!universe->ContainsSourceClient(&client));
-  CPPUNIT_ASSERT(!universe->ContainsSinkClient(&client));
-  CPPUNIT_ASSERT(!universe->IsActive());
+  OLA_ASSERT_FALSE(universe->RemoveSourceClient(&client));
+  OLA_ASSERT_EQ((unsigned int) 0, universe->SourceClientCount());
+  OLA_ASSERT_EQ((unsigned int) 0, universe->SinkClientCount());
+  OLA_ASSERT_FALSE(universe->ContainsSourceClient(&client));
+  OLA_ASSERT_FALSE(universe->ContainsSinkClient(&client));
+  OLA_ASSERT_FALSE(universe->IsActive());
 }
 
 
@@ -312,39 +314,39 @@ void UniverseTest::testSourceClients() {
  */
 void UniverseTest::testSinkClients() {
   Universe *universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
-  CPPUNIT_ASSERT(universe);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->SourceClientCount());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->SinkClientCount());
+  OLA_ASSERT(universe);
+  OLA_ASSERT_EQ((unsigned int) 0, universe->SourceClientCount());
+  OLA_ASSERT_EQ((unsigned int) 0, universe->SinkClientCount());
 
   // test that we can add a source client
   MockClient client;
   universe->AddSinkClient(&client);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, universe->SinkClientCount());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->SourceClientCount());
-  CPPUNIT_ASSERT(universe->ContainsSinkClient(&client));
-  CPPUNIT_ASSERT(!universe->ContainsSourceClient(&client));
-  CPPUNIT_ASSERT(universe->IsActive());
+  OLA_ASSERT_EQ((unsigned int) 1, universe->SinkClientCount());
+  OLA_ASSERT_EQ((unsigned int) 0, universe->SourceClientCount());
+  OLA_ASSERT(universe->ContainsSinkClient(&client));
+  OLA_ASSERT_FALSE(universe->ContainsSourceClient(&client));
+  OLA_ASSERT(universe->IsActive());
 
   // Setting DMX now should update the client
-  CPPUNIT_ASSERT(!client.m_dmx_set);
+  OLA_ASSERT_FALSE(client.m_dmx_set);
   universe->SetDMX(m_buffer);
-  CPPUNIT_ASSERT(client.m_dmx_set);
+  OLA_ASSERT(client.m_dmx_set);
 
   // now remove it
   universe->RemoveSinkClient(&client);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->SinkClientCount());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->SourceClientCount());
-  CPPUNIT_ASSERT(!universe->ContainsSinkClient(&client));
-  CPPUNIT_ASSERT(!universe->ContainsSourceClient(&client));
-  CPPUNIT_ASSERT(!universe->IsActive());
+  OLA_ASSERT_EQ((unsigned int) 0, universe->SinkClientCount());
+  OLA_ASSERT_EQ((unsigned int) 0, universe->SourceClientCount());
+  OLA_ASSERT_FALSE(universe->ContainsSinkClient(&client));
+  OLA_ASSERT_FALSE(universe->ContainsSourceClient(&client));
+  OLA_ASSERT_FALSE(universe->IsActive());
 
   // try to remove it again
-  CPPUNIT_ASSERT(!universe->RemoveSinkClient(&client));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->SinkClientCount());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->SourceClientCount());
-  CPPUNIT_ASSERT(!universe->ContainsSinkClient(&client));
-  CPPUNIT_ASSERT(!universe->ContainsSourceClient(&client));
-  CPPUNIT_ASSERT(!universe->IsActive());
+  OLA_ASSERT_FALSE(universe->RemoveSinkClient(&client));
+  OLA_ASSERT_EQ((unsigned int) 0, universe->SinkClientCount());
+  OLA_ASSERT_EQ((unsigned int) 0, universe->SourceClientCount());
+  OLA_ASSERT_FALSE(universe->ContainsSinkClient(&client));
+  OLA_ASSERT_FALSE(universe->ContainsSourceClient(&client));
+  OLA_ASSERT_FALSE(universe->IsActive());
 }
 
 
@@ -370,41 +372,41 @@ void UniverseTest::testLtpMerging() {
   port_manager.PatchPort(&port2, TEST_UNIVERSE);
 
   Universe *universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
-  CPPUNIT_ASSERT(universe);
+  OLA_ASSERT(universe);
   universe->SetMergeMode(Universe::MERGE_LTP);
 
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 2, universe->InputPortCount());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->OutputPortCount());
-  CPPUNIT_ASSERT(universe->IsActive());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->GetDMX().Size());
+  OLA_ASSERT_EQ((unsigned int) 2, universe->InputPortCount());
+  OLA_ASSERT_EQ((unsigned int) 0, universe->OutputPortCount());
+  OLA_ASSERT(universe->IsActive());
+  OLA_ASSERT_EQ((unsigned int) 0, universe->GetDMX().Size());
 
   // Setup the ports with some data, and check that signalling the universe
   // works.
   m_clock.CurrentTime(&time_stamp);
   port.WriteDMX(buffer1);
   port.DmxChanged();
-  CPPUNIT_ASSERT_EQUAL(ola::DmxSource::PRIORITY_DEFAULT,
+  OLA_ASSERT_EQ(ola::DmxSource::PRIORITY_DEFAULT,
                        universe->ActivePriority());
-  CPPUNIT_ASSERT_EQUAL(buffer1.Size(), universe->GetDMX().Size());
-  CPPUNIT_ASSERT(buffer1 == universe->GetDMX());
+  OLA_ASSERT_EQ(buffer1.Size(), universe->GetDMX().Size());
+  OLA_ASSERT(buffer1 == universe->GetDMX());
 
   // Now the second port gets data
   m_clock.CurrentTime(&time_stamp);
   port2.WriteDMX(buffer2);
   port2.DmxChanged();
-  CPPUNIT_ASSERT_EQUAL(ola::DmxSource::PRIORITY_DEFAULT,
+  OLA_ASSERT_EQ(ola::DmxSource::PRIORITY_DEFAULT,
                        universe->ActivePriority());
-  CPPUNIT_ASSERT_EQUAL(buffer2.Size(), universe->GetDMX().Size());
-  CPPUNIT_ASSERT(buffer2 == universe->GetDMX());
+  OLA_ASSERT_EQ(buffer2.Size(), universe->GetDMX().Size());
+  OLA_ASSERT(buffer2 == universe->GetDMX());
 
   // now resend the first port
   m_clock.CurrentTime(&time_stamp);
   port.WriteDMX(buffer1);
   port.DmxChanged();
-  CPPUNIT_ASSERT_EQUAL(ola::DmxSource::PRIORITY_DEFAULT,
+  OLA_ASSERT_EQ(ola::DmxSource::PRIORITY_DEFAULT,
                        universe->ActivePriority());
-  CPPUNIT_ASSERT_EQUAL(buffer1.Size(), universe->GetDMX().Size());
-  CPPUNIT_ASSERT(buffer1 == universe->GetDMX());
+  OLA_ASSERT_EQ(buffer1.Size(), universe->GetDMX().Size());
+  OLA_ASSERT(buffer1 == universe->GetDMX());
 
   // now check a client
   DmxBuffer client_buffer;
@@ -418,16 +420,16 @@ void UniverseTest::testLtpMerging() {
 
   DmxBuffer client_htp_merge_result;
   client_htp_merge_result.SetFromString("255,255,0,255,10,7");
-  CPPUNIT_ASSERT_EQUAL(ola::DmxSource::PRIORITY_DEFAULT,
+  OLA_ASSERT_EQ(ola::DmxSource::PRIORITY_DEFAULT,
                        universe->ActivePriority());
-  CPPUNIT_ASSERT_EQUAL(client_buffer.Size(), universe->GetDMX().Size());
-  CPPUNIT_ASSERT(client_buffer == universe->GetDMX());
+  OLA_ASSERT_EQ(client_buffer.Size(), universe->GetDMX().Size());
+  OLA_ASSERT(client_buffer == universe->GetDMX());
 
   // clean up
   universe->RemoveSourceClient(&input_client);
   universe->RemovePort(&port);
   universe->RemovePort(&port2);
-  CPPUNIT_ASSERT(!universe->IsActive());
+  OLA_ASSERT_FALSE(universe->IsActive());
 }
 
 
@@ -454,49 +456,49 @@ void UniverseTest::testHtpMerging() {
   port_manager.PatchPort(&port2, TEST_UNIVERSE);
 
   Universe *universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
-  CPPUNIT_ASSERT(universe);
+  OLA_ASSERT(universe);
   universe->SetMergeMode(Universe::MERGE_HTP);
 
-  CPPUNIT_ASSERT_EQUAL(universe->OutputPortCount(), (unsigned int) 0);
-  CPPUNIT_ASSERT_EQUAL(universe->OutputPortCount(), (unsigned int) 0);
-  CPPUNIT_ASSERT(universe->IsActive());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->GetDMX().Size());
+  OLA_ASSERT_EQ(universe->OutputPortCount(), (unsigned int) 0);
+  OLA_ASSERT_EQ(universe->OutputPortCount(), (unsigned int) 0);
+  OLA_ASSERT(universe->IsActive());
+  OLA_ASSERT_EQ((unsigned int) 0, universe->GetDMX().Size());
 
   // Setup the ports with some data, and check that signalling the universe
   // works.
   m_clock.CurrentTime(&time_stamp);
   port.WriteDMX(buffer1);
   port.DmxChanged();
-  CPPUNIT_ASSERT_EQUAL(ola::DmxSource::PRIORITY_DEFAULT,
+  OLA_ASSERT_EQ(ola::DmxSource::PRIORITY_DEFAULT,
                        universe->ActivePriority());
-  CPPUNIT_ASSERT_EQUAL(buffer1.Size(), universe->GetDMX().Size());
-  CPPUNIT_ASSERT(buffer1 == universe->GetDMX());
+  OLA_ASSERT_EQ(buffer1.Size(), universe->GetDMX().Size());
+  OLA_ASSERT(buffer1 == universe->GetDMX());
 
   // Now the second port gets data
   m_clock.CurrentTime(&time_stamp);
   port2.WriteDMX(buffer2);
   port2.DmxChanged();
-  CPPUNIT_ASSERT_EQUAL(ola::DmxSource::PRIORITY_DEFAULT,
+  OLA_ASSERT_EQ(ola::DmxSource::PRIORITY_DEFAULT,
                        universe->ActivePriority());
-  CPPUNIT_ASSERT_EQUAL(htp_buffer.Size(), universe->GetDMX().Size());
-  CPPUNIT_ASSERT(htp_buffer == universe->GetDMX());
+  OLA_ASSERT_EQ(htp_buffer.Size(), universe->GetDMX().Size());
+  OLA_ASSERT(htp_buffer == universe->GetDMX());
 
   // now raise the priority of the second port
   uint8_t new_priority = 120;
   port2.SetPriority(new_priority);
   m_clock.CurrentTime(&time_stamp);
   port2.DmxChanged();
-  CPPUNIT_ASSERT_EQUAL(new_priority, universe->ActivePriority());
-  CPPUNIT_ASSERT_EQUAL(buffer2.Size(), universe->GetDMX().Size());
-  CPPUNIT_ASSERT(buffer2 == universe->GetDMX());
+  OLA_ASSERT_EQ(new_priority, universe->ActivePriority());
+  OLA_ASSERT_EQ(buffer2.Size(), universe->GetDMX().Size());
+  OLA_ASSERT(buffer2 == universe->GetDMX());
 
   // raise the priority of the first port
   port.SetPriority(new_priority);
   m_clock.CurrentTime(&time_stamp);
   port.DmxChanged();
-  CPPUNIT_ASSERT_EQUAL(new_priority, universe->ActivePriority());
-  CPPUNIT_ASSERT_EQUAL(htp_buffer.Size(), universe->GetDMX().Size());
-  CPPUNIT_ASSERT(htp_buffer == universe->GetDMX());
+  OLA_ASSERT_EQ(new_priority, universe->ActivePriority());
+  OLA_ASSERT_EQ(htp_buffer.Size(), universe->GetDMX().Size());
+  OLA_ASSERT(htp_buffer == universe->GetDMX());
 
   // now check a client
   DmxBuffer client_buffer;
@@ -509,16 +511,16 @@ void UniverseTest::testHtpMerging() {
 
   DmxBuffer client_htp_merge_result;
   client_htp_merge_result.SetFromString("255,255,0,255,10,7");
-  CPPUNIT_ASSERT_EQUAL(new_priority, universe->ActivePriority());
-  CPPUNIT_ASSERT_EQUAL(client_htp_merge_result.Size(),
+  OLA_ASSERT_EQ(new_priority, universe->ActivePriority());
+  OLA_ASSERT_EQ(client_htp_merge_result.Size(),
                        universe->GetDMX().Size());
-  CPPUNIT_ASSERT(client_htp_merge_result == universe->GetDMX());
+  OLA_ASSERT(client_htp_merge_result == universe->GetDMX());
 
   // clean up
   universe->RemoveSourceClient(&input_client);
   universe->RemovePort(&port);
   universe->RemovePort(&port2);
-  CPPUNIT_ASSERT(!universe->IsActive());
+  OLA_ASSERT_FALSE(universe->IsActive());
 }
 
 
@@ -527,12 +529,12 @@ void UniverseTest::testHtpMerging() {
  */
 void UniverseTest::testRDMDiscovery() {
   Universe *universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
-  CPPUNIT_ASSERT(universe);
+  OLA_ASSERT(universe);
 
   // check the uid set is initially empty
   UIDSet universe_uids;
   universe->GetUIDs(&universe_uids);
-  CPPUNIT_ASSERT_EQUAL(0u, universe_uids.Size());
+  OLA_ASSERT_EQ(0u, universe_uids.Size());
 
   UID uid1(0x7a70, 1);
   UID uid2(0x7a70, 2);
@@ -548,12 +550,12 @@ void UniverseTest::testRDMDiscovery() {
   universe->AddPort(&port2);
   port2.SetUniverse(universe);
 
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->InputPortCount());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 2, universe->OutputPortCount());
+  OLA_ASSERT_EQ((unsigned int) 0, universe->InputPortCount());
+  OLA_ASSERT_EQ((unsigned int) 2, universe->OutputPortCount());
   universe->GetUIDs(&universe_uids);
-  CPPUNIT_ASSERT_EQUAL(1u, universe_uids.Size());
-  CPPUNIT_ASSERT(universe_uids.Contains(uid2));
-  CPPUNIT_ASSERT(universe->IsActive());
+  OLA_ASSERT_EQ(1u, universe_uids.Size());
+  OLA_ASSERT(universe_uids.Contains(uid2));
+  OLA_ASSERT(universe->IsActive());
 
   // now trigger discovery
   UIDSet expected_uids;
@@ -585,12 +587,12 @@ void UniverseTest::testRDMDiscovery() {
 
   universe_uids.Clear();
   universe->GetUIDs(&universe_uids);
-  CPPUNIT_ASSERT_EQUAL(0u, universe_uids.Size());
+  OLA_ASSERT_EQ(0u, universe_uids.Size());
 
   universe->RemovePort(&port2);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->InputPortCount());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, universe->OutputPortCount());
-  CPPUNIT_ASSERT(!universe->IsActive());
+  OLA_ASSERT_EQ((unsigned int) 0, universe->InputPortCount());
+  OLA_ASSERT_EQ((unsigned int) 0, universe->OutputPortCount());
+  OLA_ASSERT_FALSE(universe->IsActive());
 }
 
 
@@ -599,7 +601,7 @@ void UniverseTest::testRDMDiscovery() {
  */
 void UniverseTest::testRDMSend() {
   Universe *universe = m_store->GetUniverseOrCreate(TEST_UNIVERSE);
-  CPPUNIT_ASSERT(universe);
+  OLA_ASSERT(universe);
 
   // setup the ports with a UID on each
   UID uid1(0x7a70, 1);
@@ -809,7 +811,7 @@ void UniverseTest::testRDMSend() {
  * Check we got the uids we expect
  */
 void UniverseTest::ConfirmUIDs(UIDSet *expected, const UIDSet &uids) {
-  CPPUNIT_ASSERT_EQUAL(*expected, uids);
+  OLA_ASSERT_EQ(*expected, uids);
 }
 
 

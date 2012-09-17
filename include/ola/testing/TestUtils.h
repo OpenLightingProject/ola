@@ -87,6 +87,9 @@ void _AssertVectorEq(const CPPUNIT_NS::SourceLine &source_line,
     NULL != value, \
     CPPUNIT_NS::Message("Expression: " #value " != NULL"), \
     CPPUNIT_SOURCELINE())
+
+#define OLA_FAIL(reason)  \
+  CPPUNIT_FAIL(reason)
 }  // testing
 }  // ola
 #endif  // INCLUDE_OLA_TESTING_TESTUTILS_H_

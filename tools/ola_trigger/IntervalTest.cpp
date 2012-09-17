@@ -20,6 +20,8 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
+#include "ola/testing/TestUtils.h"
+
 #include "tools/ola_trigger/Action.h"
 
 
@@ -47,8 +49,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION(IntervalTest);
  */
 void IntervalTest::testLowerUpper() {
   ValueInterval interval(0, 10);
-  CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), interval.Lower());
-  CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(10), interval.Upper());
+  OLA_ASSERT_EQ(static_cast<uint8_t>(0), interval.Lower());
+  OLA_ASSERT_EQ(static_cast<uint8_t>(10), interval.Upper());
 }
 
 
@@ -58,20 +60,20 @@ void IntervalTest::testLowerUpper() {
 void IntervalTest::testContains() {
   ValueInterval interval(0, 10);
   for (uint8_t i = 0; i <= 10; i++)
-    CPPUNIT_ASSERT(interval.Contains(i));
-  CPPUNIT_ASSERT(!interval.Contains(11));
+    OLA_ASSERT(interval.Contains(i));
+  OLA_ASSERT_FALSE(interval.Contains(11));
 
   ValueInterval interval2(10, 10);
-  CPPUNIT_ASSERT(!interval2.Contains(0));
-  CPPUNIT_ASSERT(!interval2.Contains(9));
-  CPPUNIT_ASSERT(interval2.Contains(10));
-  CPPUNIT_ASSERT(!interval2.Contains(11));
+  OLA_ASSERT_FALSE(interval2.Contains(0));
+  OLA_ASSERT_FALSE(interval2.Contains(9));
+  OLA_ASSERT(interval2.Contains(10));
+  OLA_ASSERT_FALSE(interval2.Contains(11));
 
   ValueInterval interval3(234, 255);
-  CPPUNIT_ASSERT(!interval3.Contains(0));
-  CPPUNIT_ASSERT(!interval3.Contains(233));
+  OLA_ASSERT_FALSE(interval3.Contains(0));
+  OLA_ASSERT_FALSE(interval3.Contains(233));
   for (uint8_t i = 234; i != 0; i++)
-    CPPUNIT_ASSERT(interval3.Contains(i));
+    OLA_ASSERT(interval3.Contains(i));
 }
 
 
@@ -83,18 +85,18 @@ void IntervalTest::testIntersects() {
   ValueInterval interval2(10, 10);
   ValueInterval interval3(5, 6);
   ValueInterval interval4(11, 20);
-  CPPUNIT_ASSERT(interval.Intersects(interval2));
-  CPPUNIT_ASSERT(interval2.Intersects(interval));
-  CPPUNIT_ASSERT(interval.Intersects(interval3));
-  CPPUNIT_ASSERT(interval3.Intersects(interval));
-  CPPUNIT_ASSERT(!interval2.Intersects(interval3));
-  CPPUNIT_ASSERT(!interval2.Intersects(interval4));
-  CPPUNIT_ASSERT(!interval.Intersects(interval4));
+  OLA_ASSERT(interval.Intersects(interval2));
+  OLA_ASSERT(interval2.Intersects(interval));
+  OLA_ASSERT(interval.Intersects(interval3));
+  OLA_ASSERT(interval3.Intersects(interval));
+  OLA_ASSERT_FALSE(interval2.Intersects(interval3));
+  OLA_ASSERT_FALSE(interval2.Intersects(interval4));
+  OLA_ASSERT_FALSE(interval.Intersects(interval4));
 
-  CPPUNIT_ASSERT(interval.Intersects(interval));
-  CPPUNIT_ASSERT(interval2.Intersects(interval2));
-  CPPUNIT_ASSERT(interval3.Intersects(interval3));
-  CPPUNIT_ASSERT(interval4.Intersects(interval4));
+  OLA_ASSERT(interval.Intersects(interval));
+  OLA_ASSERT(interval2.Intersects(interval2));
+  OLA_ASSERT(interval3.Intersects(interval3));
+  OLA_ASSERT(interval4.Intersects(interval4));
 }
 
 
@@ -106,11 +108,11 @@ void IntervalTest::testLessThan() {
   ValueInterval interval2(11, 12);
   ValueInterval interval3(14, 15);
 
-  CPPUNIT_ASSERT(interval1 < interval2);
-  CPPUNIT_ASSERT(interval1 < interval3);
-  CPPUNIT_ASSERT(interval2 < interval3);
+  OLA_ASSERT(interval1 < interval2);
+  OLA_ASSERT(interval1 < interval3);
+  OLA_ASSERT(interval2 < interval3);
 
-  CPPUNIT_ASSERT(!(interval2 < interval1));
-  CPPUNIT_ASSERT(!(interval3 < interval2));
-  CPPUNIT_ASSERT(!(interval3 < interval1));
+  OLA_ASSERT_FALSE((interval2 < interval1));
+  OLA_ASSERT_FALSE((interval3 < interval2));
+  OLA_ASSERT_FALSE((interval3 < interval1));
 }

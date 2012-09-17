@@ -20,6 +20,9 @@
 
 #include <stdint.h>
 #include <cppunit/extensions/HelperMacros.h>
+
+#include "ola/testing/TestUtils.h"
+
 #include "common/rpc/StreamRpcChannel.h"
 
 using ola::rpc::StreamRpcHeader;
@@ -47,11 +50,11 @@ void StreamRpcHeaderTest::testHeaderEncoding() {
   version = 0;
   StreamRpcHeader::EncodeHeader(&header, version, size);
   StreamRpcHeader::DecodeHeader(header, &o_version, &o_size);
-  CPPUNIT_ASSERT_EQUAL(version, o_version);
+  OLA_ASSERT_EQ(version, o_version);
 
   version = StreamRpcChannel::PROTOCOL_VERSION;
   size = 24;
   StreamRpcHeader::EncodeHeader(&header, version, size);
   StreamRpcHeader::DecodeHeader(header, &o_version, &o_size);
-  CPPUNIT_ASSERT_EQUAL(version, o_version);
+  OLA_ASSERT_EQ(version, o_version);
 }

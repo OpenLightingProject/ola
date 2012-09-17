@@ -1,4 +1,4 @@
-/*
+/*                                           
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
@@ -22,6 +22,8 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <string.h>
 #include <string>
+
+#include "ola/testing/TestUtils.h"
 
 #include "ola/network/NetworkUtils.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
@@ -61,44 +63,44 @@ void E131PDUTest::testSimpleRev2E131PDU() {
   E131Rev2Header header(source, 1, 2, 6000);
   E131PDU pdu(TEST_VECTOR, header, NULL);
 
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 36, pdu.HeaderSize());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, pdu.DataSize());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 42, pdu.Size());
+  OLA_ASSERT_EQ((unsigned int) 36, pdu.HeaderSize());
+  OLA_ASSERT_EQ((unsigned int) 0, pdu.DataSize());
+  OLA_ASSERT_EQ((unsigned int) 42, pdu.Size());
 
   unsigned int size = pdu.Size();
   uint8_t *data = new uint8_t[size];
   unsigned int bytes_used = size;
-  CPPUNIT_ASSERT(pdu.Pack(data, bytes_used));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) size, bytes_used);
+  OLA_ASSERT(pdu.Pack(data, bytes_used));
+  OLA_ASSERT_EQ((unsigned int) size, bytes_used);
 
   // spot check the data
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 0x70, data[0]);
-  CPPUNIT_ASSERT_EQUAL((uint8_t) bytes_used, data[1]);
+  OLA_ASSERT_EQ((uint8_t) 0x70, data[0]);
+  OLA_ASSERT_EQ((uint8_t) bytes_used, data[1]);
 
   unsigned int actual_value;
   memcpy(&actual_value, data + 2, sizeof(actual_value));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) HostToNetwork(TEST_VECTOR),
+  OLA_ASSERT_EQ((unsigned int) HostToNetwork(TEST_VECTOR),
                        actual_value);
 
-  CPPUNIT_ASSERT(!memcmp(&data[6], source.data(), source.length()));
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 1,
+  OLA_ASSERT_FALSE(memcmp(&data[6], source.data(), source.length()));
+  OLA_ASSERT_EQ((uint8_t) 1,
                        data[6 + E131Rev2Header::REV2_SOURCE_NAME_LEN]);
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 2,
+  OLA_ASSERT_EQ((uint8_t) 2,
                        data[7 + E131Rev2Header::REV2_SOURCE_NAME_LEN]);
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       HostToNetwork((uint16_t) 6000),
       *(reinterpret_cast<uint16_t*>(
           data + 8 + E131Rev2Header::REV2_SOURCE_NAME_LEN)));
 
   // test undersized buffer
   bytes_used = size - 1;
-  CPPUNIT_ASSERT(!pdu.Pack(data, bytes_used));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, bytes_used);
+  OLA_ASSERT_FALSE(pdu.Pack(data, bytes_used));
+  OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
 
   // test oversized buffer
   bytes_used = size + 1;
-  CPPUNIT_ASSERT(pdu.Pack(data, bytes_used));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) size, bytes_used);
+  OLA_ASSERT(pdu.Pack(data, bytes_used));
+  OLA_ASSERT_EQ((unsigned int) size, bytes_used);
 
   delete[] data;
 }
@@ -112,41 +114,41 @@ void E131PDUTest::testSimpleE131PDU() {
   E131Header header(source, 1, 2, 6000, true, true);
   E131PDU pdu(TEST_VECTOR, header, NULL);
 
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 71, pdu.HeaderSize());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, pdu.DataSize());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 77, pdu.Size());
+  OLA_ASSERT_EQ((unsigned int) 71, pdu.HeaderSize());
+  OLA_ASSERT_EQ((unsigned int) 0, pdu.DataSize());
+  OLA_ASSERT_EQ((unsigned int) 77, pdu.Size());
 
   unsigned int size = pdu.Size();
   uint8_t *data = new uint8_t[size];
   unsigned int bytes_used = size;
-  CPPUNIT_ASSERT(pdu.Pack(data, bytes_used));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) size, bytes_used);
+  OLA_ASSERT(pdu.Pack(data, bytes_used));
+  OLA_ASSERT_EQ((unsigned int) size, bytes_used);
 
   // spot check the data
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 0x70, data[0]);
-  CPPUNIT_ASSERT_EQUAL((uint8_t) bytes_used, data[1]);
+  OLA_ASSERT_EQ((uint8_t) 0x70, data[0]);
+  OLA_ASSERT_EQ((uint8_t) bytes_used, data[1]);
   unsigned int actual_value;
   memcpy(&actual_value, data + 2, sizeof(actual_value));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) HostToNetwork(TEST_VECTOR),
+  OLA_ASSERT_EQ((unsigned int) HostToNetwork(TEST_VECTOR),
                        actual_value);
 
-  CPPUNIT_ASSERT(!memcmp(&data[6], source.data(), source.length()));
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 1, data[6 + E131Header::SOURCE_NAME_LEN]);
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 2, data[9 + E131Header::SOURCE_NAME_LEN]);
+  OLA_ASSERT_FALSE(memcmp(&data[6], source.data(), source.length()));
+  OLA_ASSERT_EQ((uint8_t) 1, data[6 + E131Header::SOURCE_NAME_LEN]);
+  OLA_ASSERT_EQ((uint8_t) 2, data[9 + E131Header::SOURCE_NAME_LEN]);
   uint16_t actual_universe;
   memcpy(&actual_universe, data + 11 + E131Header::SOURCE_NAME_LEN,
          sizeof(actual_universe));
-  CPPUNIT_ASSERT_EQUAL(HostToNetwork((uint16_t) 6000), actual_universe);
+  OLA_ASSERT_EQ(HostToNetwork((uint16_t) 6000), actual_universe);
 
   // test undersized buffer
   bytes_used = size - 1;
-  CPPUNIT_ASSERT(!pdu.Pack(data, bytes_used));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, bytes_used);
+  OLA_ASSERT_FALSE(pdu.Pack(data, bytes_used));
+  OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
 
   // test oversized buffer
   bytes_used = size + 1;
-  CPPUNIT_ASSERT(pdu.Pack(data, bytes_used));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) size, bytes_used);
+  OLA_ASSERT(pdu.Pack(data, bytes_used));
+  OLA_ASSERT_EQ((unsigned int) size, bytes_used);
   delete[] data;
 }
 

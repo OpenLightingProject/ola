@@ -20,6 +20,8 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
+#include "ola/testing/TestUtils.h"
+
 #include "ola/base/Credentials.h"
 #include "ola/Logging.h"
 
@@ -94,9 +96,9 @@ void CredentialsTest::testSetUID() {
   uid_t euid = GetEUID();
 
   if (euid) {
-    CPPUNIT_ASSERT(SetUID(euid));
-    CPPUNIT_ASSERT(!SetUID(0));
-    CPPUNIT_ASSERT(!SetUID(euid + 1));
+    OLA_ASSERT_TRUE(SetUID(euid));
+    OLA_ASSERT_FALSE(SetUID(0));
+    OLA_ASSERT_FALSE(SetUID(euid + 1));
   }
 }
 
@@ -108,9 +110,9 @@ void CredentialsTest::testSetGID() {
   gid_t egid = GetEGID();
 
   if (egid) {
-    CPPUNIT_ASSERT(SetGID(egid));
-    CPPUNIT_ASSERT(!SetGID(0));
-    CPPUNIT_ASSERT(!SetGID(egid + 1));
+    OLA_ASSERT_TRUE(SetGID(egid));
+    OLA_ASSERT_FALSE(SetGID(0));
+    OLA_ASSERT_FALSE(SetGID(egid + 1));
   }
 }
 
@@ -122,16 +124,16 @@ void CredentialsTest::testGetPasswd() {
   uid_t uid = GetUID();
 
   PasswdEntry passwd_entry;
-  CPPUNIT_ASSERT(GetPasswdUID(uid, &passwd_entry));
+  OLA_ASSERT_TRUE(GetPasswdUID(uid, &passwd_entry));
   // at the very least we shoud have a name
-  CPPUNIT_ASSERT(!passwd_entry.pw_name.empty());
-  CPPUNIT_ASSERT_EQUAL(uid, passwd_entry.pw_uid);
+  OLA_ASSERT_FALSE(passwd_entry.pw_name.empty());
+  OLA_ASSERT_EQ(uid, passwd_entry.pw_uid);
 
   // now fetch by name and check it's the same
   // this could fail. if the accounts were really messed up
   PasswdEntry passwd_entry2;
-  CPPUNIT_ASSERT(GetPasswdName(passwd_entry.pw_name, &passwd_entry2));
-  CPPUNIT_ASSERT_EQUAL(uid, passwd_entry2.pw_uid);
+  OLA_ASSERT_TRUE(GetPasswdName(passwd_entry.pw_name, &passwd_entry2));
+  OLA_ASSERT_EQ(uid, passwd_entry2.pw_uid);
 }
 
 
@@ -147,13 +149,13 @@ void CredentialsTest::testGetGroup() {
   bool ok = GetGroupGID(gid, &group_entry);
   if (ok) {
     // at the very least we shoud have a name
-    CPPUNIT_ASSERT(!group_entry.gr_name.empty());
-    CPPUNIT_ASSERT_EQUAL(gid, group_entry.gr_gid);
+    OLA_ASSERT_FALSE(group_entry.gr_name.empty());
+    OLA_ASSERT_EQ(gid, group_entry.gr_gid);
 
     // now fetch by name and check it's the same
     // this could fail. if the accounts were really messed up
     GroupEntry group_entry2;
-    CPPUNIT_ASSERT(GetGroupName(group_entry.gr_name, &group_entry2));
-    CPPUNIT_ASSERT_EQUAL(gid, group_entry2.gr_gid);
+    OLA_ASSERT_TRUE(GetGroupName(group_entry.gr_name, &group_entry2));
+    OLA_ASSERT_EQ(gid, group_entry2.gr_gid);
   }
 }

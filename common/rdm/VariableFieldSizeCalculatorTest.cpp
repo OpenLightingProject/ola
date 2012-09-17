@@ -21,6 +21,8 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <vector>
 
+#include "ola/testing/TestUtils.h"
+
 #include "ola/Logging.h"
 #include "ola/messaging/Descriptor.h"
 #include "common/rdm/VariableFieldSizeCalculator.h"
@@ -92,33 +94,33 @@ void VariableFieldSizeCalculatorTest::testFixedFields() {
 
   unsigned int variable_field_size;
 
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       VariableFieldSizeCalculator::TOO_SMALL,
       m_calculator.CalculateFieldSize(
         0,
         &descriptor,
         &variable_field_size));
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       VariableFieldSizeCalculator::TOO_SMALL,
       m_calculator.CalculateFieldSize(
         1,
         &descriptor,
         &variable_field_size));
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       VariableFieldSizeCalculator::TOO_SMALL,
       m_calculator.CalculateFieldSize(
         14,
         &descriptor,
         &variable_field_size));
 
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       VariableFieldSizeCalculator::FIXED_SIZE,
       m_calculator.CalculateFieldSize(
         25,
         &descriptor,
         &variable_field_size));
 
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       VariableFieldSizeCalculator::TOO_LARGE,
       m_calculator.CalculateFieldSize(
         26,
@@ -140,47 +142,47 @@ void VariableFieldSizeCalculatorTest::testStringFields() {
   // set this to something large so we can verify it's set correctly
   unsigned int variable_field_size = 2000;
 
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       VariableFieldSizeCalculator::TOO_SMALL,
       m_calculator.CalculateFieldSize(
         0,
         &descriptor,
         &variable_field_size));
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       VariableFieldSizeCalculator::TOO_SMALL,
       m_calculator.CalculateFieldSize(
         2,
         &descriptor,
         &variable_field_size));
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       VariableFieldSizeCalculator::VARIABLE_STRING,
       m_calculator.CalculateFieldSize(
         3,
         &descriptor,
         &variable_field_size));
-  CPPUNIT_ASSERT_EQUAL(0u, variable_field_size);
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(0u, variable_field_size);
+  OLA_ASSERT_EQ(
       VariableFieldSizeCalculator::VARIABLE_STRING,
       m_calculator.CalculateFieldSize(
         4,
         &descriptor,
         &variable_field_size));
-  CPPUNIT_ASSERT_EQUAL(1u, variable_field_size);
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(1u, variable_field_size);
+  OLA_ASSERT_EQ(
       VariableFieldSizeCalculator::VARIABLE_STRING,
       m_calculator.CalculateFieldSize(
         34,
         &descriptor,
         &variable_field_size));
-  CPPUNIT_ASSERT_EQUAL(31u, variable_field_size);
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(31u, variable_field_size);
+  OLA_ASSERT_EQ(
       VariableFieldSizeCalculator::VARIABLE_STRING,
       m_calculator.CalculateFieldSize(
         35,
         &descriptor,
         &variable_field_size));
-  CPPUNIT_ASSERT_EQUAL(32u, variable_field_size);
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(32u, variable_field_size);
+  OLA_ASSERT_EQ(
       VariableFieldSizeCalculator::TOO_LARGE,
       m_calculator.CalculateFieldSize(
         36,
@@ -205,21 +207,21 @@ void VariableFieldSizeCalculatorTest::testWithFixedGroups() {
   Descriptor descriptor("Test Descriptor", fields);
   unsigned int variable_field_size;
 
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       VariableFieldSizeCalculator::TOO_SMALL,
       m_calculator.CalculateFieldSize(
         11,
         &descriptor,
         &variable_field_size));
 
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       VariableFieldSizeCalculator::FIXED_SIZE,
       m_calculator.CalculateFieldSize(
         12,
         &descriptor,
         &variable_field_size));
 
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       VariableFieldSizeCalculator::TOO_LARGE,
       m_calculator.CalculateFieldSize(
         13,
@@ -243,47 +245,47 @@ void VariableFieldSizeCalculatorTest::testSingleVariableSizedGroup() {
   Descriptor descriptor("Test Descriptor", fields);
 
   unsigned int variable_field_size;
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       VariableFieldSizeCalculator::TOO_SMALL,
       m_calculator.CalculateFieldSize(
         2,
         &descriptor,
         &variable_field_size));
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       VariableFieldSizeCalculator::VARIABLE_GROUP,
       m_calculator.CalculateFieldSize(
         3,
         &descriptor,
         &variable_field_size));
-  CPPUNIT_ASSERT_EQUAL(0u, variable_field_size);
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(0u, variable_field_size);
+  OLA_ASSERT_EQ(
       VariableFieldSizeCalculator::MISMATCHED_SIZE,
       m_calculator.CalculateFieldSize(
         4,
         &descriptor,
         &variable_field_size));
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       VariableFieldSizeCalculator::VARIABLE_GROUP,
       m_calculator.CalculateFieldSize(
         5,
         &descriptor,
         &variable_field_size));
-  CPPUNIT_ASSERT_EQUAL(1u, variable_field_size);
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(1u, variable_field_size);
+  OLA_ASSERT_EQ(
       VariableFieldSizeCalculator::MISMATCHED_SIZE,
       m_calculator.CalculateFieldSize(
         6,
         &descriptor,
         &variable_field_size));
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       VariableFieldSizeCalculator::VARIABLE_GROUP,
       m_calculator.CalculateFieldSize(
         7,
         &descriptor,
         &variable_field_size));
-  CPPUNIT_ASSERT_EQUAL(2u, variable_field_size);
+  OLA_ASSERT_EQ(2u, variable_field_size);
 
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       VariableFieldSizeCalculator::TOO_LARGE,
       m_calculator.CalculateFieldSize(
         8,
@@ -304,7 +306,7 @@ void VariableFieldSizeCalculatorTest::testMultipleVariableSizedFields() {
   Descriptor string_descriptor("Test Descriptor", fields);
   unsigned int variable_field_size;
 
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       VariableFieldSizeCalculator::MULTIPLE_VARIABLE_FIELDS,
       m_calculator.CalculateFieldSize(
         0,
@@ -320,7 +322,7 @@ void VariableFieldSizeCalculatorTest::testMultipleVariableSizedFields() {
   fields2.push_back(new FieldDescriptorGroup("", group_fields, 0, 2));
   Descriptor string_group_descriptor("Test Descriptor", fields2);
 
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       VariableFieldSizeCalculator::MULTIPLE_VARIABLE_FIELDS,
       m_calculator.CalculateFieldSize(
         0,
@@ -338,7 +340,7 @@ void VariableFieldSizeCalculatorTest::testMultipleVariableSizedFields() {
   fields3.push_back(new FieldDescriptorGroup("", group_fields2, 0, 2));
   Descriptor multi_group_descriptor("Test Descriptor", fields3);
 
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       VariableFieldSizeCalculator::MULTIPLE_VARIABLE_FIELDS,
       m_calculator.CalculateFieldSize(
         0,
@@ -366,7 +368,7 @@ void VariableFieldSizeCalculatorTest::testNestedVariableSizedGroups() {
   unsigned int variable_field_size;
 
   // now check the main calculator.
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       VariableFieldSizeCalculator::NESTED_VARIABLE_GROUPS,
       m_calculator.CalculateFieldSize(
         10,

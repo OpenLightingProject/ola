@@ -23,6 +23,9 @@
 #include <string.h>
 #include <string>
 #include <vector>
+
+#include "ola/testing/TestUtils.h"
+
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
@@ -82,7 +85,7 @@ class DummyPortTest: public CppUnit::TestFixture {
                            const vector<string> &packets);
     void SetExpectedResponse(ola::rdm::rdm_response_code code,
                              const RDMResponse *response);
-    void Verify() { CPPUNIT_ASSERT(!m_expected_response); }
+    void Verify() { OLA_ASSERT_FALSE(m_expected_response); }
 
     void testRDMDiscovery();
     void testUnknownPid();
@@ -114,20 +117,20 @@ CPPUNIT_TEST_SUITE_REGISTRATION(DummyPortTest);
 void DummyPortTest::HandleRDMResponse(ola::rdm::rdm_response_code code,
                                       const ola::rdm::RDMResponse *response,
                                       const vector<string> &packets) {
-  CPPUNIT_ASSERT_EQUAL(m_expected_code, code);
+  OLA_ASSERT_EQ(m_expected_code, code);
   if (m_expected_response)
-    CPPUNIT_ASSERT(*m_expected_response == *response);
+    OLA_ASSERT(*m_expected_response == *response);
   else
-    CPPUNIT_ASSERT_EQUAL(m_expected_response, response);
+    OLA_ASSERT_EQ(m_expected_response, response);
 
   if (code == ola::rdm::RDM_COMPLETED_OK) {
-    CPPUNIT_ASSERT(response);
-    CPPUNIT_ASSERT_EQUAL((size_t) 1, packets.size());
+    OLA_ASSERT(response);
+    OLA_ASSERT_EQ((size_t) 1, packets.size());
     ola::rdm::rdm_response_code code;
     ola::rdm::RDMResponse *raw_response =
       ola::rdm::RDMResponse::InflateFromData(packets[0], &code);
-    CPPUNIT_ASSERT(raw_response);
-    CPPUNIT_ASSERT(*m_expected_response == *raw_response);
+    OLA_ASSERT(raw_response);
+    OLA_ASSERT(*m_expected_response == *raw_response);
     delete raw_response;
   }
   delete response;
@@ -147,7 +150,7 @@ void DummyPortTest::SetExpectedResponse(ola::rdm::rdm_response_code code,
  */
 void DummyPortTest::testRDMDiscovery() {
   m_port.RunFullDiscovery(NewSingleCallback(this, &DummyPortTest::VerifyUIDs));
-  CPPUNIT_ASSERT(m_got_uids);
+  OLA_ASSERT(m_got_uids);
 }
 
 
@@ -562,7 +565,7 @@ void DummyPortTest::VerifyUIDs(const UIDSet &uids) {
     UID uid(OPEN_LIGHTING_ESTA_CODE, DummyPort::kStartAddress + i);
     expected_uids.AddUID(uid);
   }
-  CPPUNIT_ASSERT_EQUAL(expected_uids, uids);
+  OLA_ASSERT_EQ(expected_uids, uids);
   m_got_uids = true;
 }
 

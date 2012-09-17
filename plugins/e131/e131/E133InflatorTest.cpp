@@ -23,6 +23,8 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
 
+#include "ola/testing/TestUtils.h"
+
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/e131/e131/HeaderSet.h"
@@ -65,36 +67,36 @@ void E133InflatorTest::testDecodeHeader() {
   header.sequence = HostToNetwork(72650u);
   header.endpoint = HostToNetwork(static_cast<uint16_t>(42));
 
-  CPPUNIT_ASSERT(inflator.DecodeHeader(header_set,
+  OLA_ASSERT(inflator.DecodeHeader(header_set,
                                        reinterpret_cast<uint8_t*>(&header),
                                        sizeof(header),
                                        bytes_used));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(header), bytes_used);
+  OLA_ASSERT_EQ((unsigned int) sizeof(header), bytes_used);
   E133Header decoded_header = header_set.GetE133Header();
-  CPPUNIT_ASSERT(source_name == decoded_header.Source());
-  CPPUNIT_ASSERT_EQUAL((uint32_t) 72650, decoded_header.Sequence());
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 42, decoded_header.Endpoint());
-  CPPUNIT_ASSERT(!decoded_header.RxAcknowledge());
+  OLA_ASSERT(source_name == decoded_header.Source());
+  OLA_ASSERT_EQ((uint32_t) 72650, decoded_header.Sequence());
+  OLA_ASSERT_EQ((uint16_t) 42, decoded_header.Endpoint());
+  OLA_ASSERT_FALSE(decoded_header.RxAcknowledge());
 
   // try an undersized header
-  CPPUNIT_ASSERT(!inflator.DecodeHeader(header_set,
+  OLA_ASSERT_FALSE(inflator.DecodeHeader(header_set,
                                         reinterpret_cast<uint8_t*>(&header),
                                         sizeof(header) - 1,
                                         bytes_used));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, bytes_used);
+  OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
 
   // test inherting the header from the prev call
-  CPPUNIT_ASSERT(inflator.DecodeHeader(header_set2, NULL, 0, bytes_used));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, bytes_used);
+  OLA_ASSERT(inflator.DecodeHeader(header_set2, NULL, 0, bytes_used));
+  OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
   decoded_header = header_set2.GetE133Header();
-  CPPUNIT_ASSERT(source_name == decoded_header.Source());
-  CPPUNIT_ASSERT_EQUAL((uint32_t) 72650, decoded_header.Sequence());
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 42, decoded_header.Endpoint());
-  CPPUNIT_ASSERT(!decoded_header.RxAcknowledge());
+  OLA_ASSERT(source_name == decoded_header.Source());
+  OLA_ASSERT_EQ((uint32_t) 72650, decoded_header.Sequence());
+  OLA_ASSERT_EQ((uint16_t) 42, decoded_header.Endpoint());
+  OLA_ASSERT_FALSE(decoded_header.RxAcknowledge());
 
   inflator.ResetHeaderField();
-  CPPUNIT_ASSERT(!inflator.DecodeHeader(header_set2, NULL, 0, bytes_used));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, bytes_used);
+  OLA_ASSERT_FALSE(inflator.DecodeHeader(header_set2, NULL, 0, bytes_used));
+  OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
 }
 
 
@@ -106,18 +108,18 @@ void E133InflatorTest::testInflatePDU() {
   E133Header header(source, 2370, 2, true);
   // TODO(simon): pass a DMP msg here as well
   E133PDU pdu(3, header, NULL);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 77, pdu.Size());
+  OLA_ASSERT_EQ((unsigned int) 77, pdu.Size());
 
   unsigned int size = pdu.Size();
   uint8_t *data = new uint8_t[size];
   unsigned int bytes_used = size;
-  CPPUNIT_ASSERT(pdu.Pack(data, bytes_used));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) size, bytes_used);
+  OLA_ASSERT(pdu.Pack(data, bytes_used));
+  OLA_ASSERT_EQ((unsigned int) size, bytes_used);
 
   E133Inflator inflator;
   HeaderSet header_set;
-  CPPUNIT_ASSERT(inflator.InflatePDUBlock(header_set, data, size));
-  CPPUNIT_ASSERT(header == header_set.GetE133Header());
+  OLA_ASSERT(inflator.InflatePDUBlock(header_set, data, size));
+  OLA_ASSERT(header == header_set.GetE133Header());
   delete[] data;
 }
 }  // e131

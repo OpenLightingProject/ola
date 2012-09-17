@@ -20,6 +20,8 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
+#include "ola/testing/TestUtils.h"
+
 #include "ola/Callback.h"
 #include "ola/Clock.h"
 #include "ola/Logging.h"
@@ -88,7 +90,7 @@ class MockHealthCheckedConnection: public HealthCheckedConnection {
       unsigned int data_read;
       m_descriptor->Receive(&data, sizeof(data), data_read);
       if (m_options.validate_heartbeat)
-        CPPUNIT_ASSERT_EQUAL(m_expected_heartbeat++, data);
+        OLA_ASSERT_EQ(m_expected_heartbeat++, data);
       HeartbeatReceived();
 
       if (data >= m_options.end_after)
@@ -178,7 +180,7 @@ void HealthCheckedConnectionTest::testSimpleChannel() {
   connection.Setup();
 
   m_ss.Run();
-  CPPUNIT_ASSERT(connection.ChannelOk());
+  OLA_ASSERT_TRUE(connection.ChannelOk());
 }
 
 
@@ -200,7 +202,7 @@ void HealthCheckedConnectionTest::testChannelWithPacketLoss() {
   connection.Setup();
 
   m_ss.Run();
-  CPPUNIT_ASSERT(connection.ChannelOk());
+  OLA_ASSERT_TRUE(connection.ChannelOk());
 }
 
 
@@ -223,7 +225,7 @@ void HealthCheckedConnectionTest::testChannelWithHeavyPacketLoss() {
   connection.Setup();
 
   m_ss.Run();
-  CPPUNIT_ASSERT(!connection.ChannelOk());
+  OLA_ASSERT_FALSE(connection.ChannelOk());
 }
 
 
@@ -254,5 +256,5 @@ void HealthCheckedConnectionTest::testPauseAndResume() {
                         &connection));
 
   m_ss.Run();
-  CPPUNIT_ASSERT(connection.ChannelOk());
+  OLA_ASSERT_TRUE(connection.ChannelOk());
 }

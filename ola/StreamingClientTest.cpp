@@ -21,6 +21,8 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
 
+#include "ola/testing/TestUtils.h"
+
 #include "ola/StreamingClient.h"
 #include "ola/DmxBuffer.h"
 #include "ola/thread/Thread.h"
@@ -181,26 +183,26 @@ void StreamingClientTest::testSendDMX() {
   buffer.Blackout();
 
   // Setup the client, this connects to the server
-  CPPUNIT_ASSERT(ola_client.Setup());
+  OLA_ASSERT_TRUE(ola_client.Setup());
   // Try it again to make sure it doesn't break
-  CPPUNIT_ASSERT(!ola_client.Setup());
+  OLA_ASSERT_FALSE(ola_client.Setup());
 
-  CPPUNIT_ASSERT(ola_client.SendDmx(TEST_UNIVERSE, buffer));
+  OLA_ASSERT_TRUE(ola_client.SendDmx(TEST_UNIVERSE, buffer));
   ola_client.Stop();
 
   // Now reconnect
-  CPPUNIT_ASSERT(ola_client.Setup());
-  CPPUNIT_ASSERT(ola_client.SendDmx(TEST_UNIVERSE, buffer));
+  OLA_ASSERT_TRUE(ola_client.Setup());
+  OLA_ASSERT_TRUE(ola_client.SendDmx(TEST_UNIVERSE, buffer));
   ola_client.Stop();
 
   // Now Terminate the server mid flight
-  CPPUNIT_ASSERT(ola_client.Setup());
-  CPPUNIT_ASSERT(ola_client.SendDmx(TEST_UNIVERSE, buffer));
+  OLA_ASSERT_TRUE(ola_client.Setup());
+  OLA_ASSERT_TRUE(ola_client.SendDmx(TEST_UNIVERSE, buffer));
   m_server_thread->Terminate();
   m_server_thread->Join();
 
-  CPPUNIT_ASSERT(!ola_client.SendDmx(TEST_UNIVERSE, buffer));
+  OLA_ASSERT_FALSE(ola_client.SendDmx(TEST_UNIVERSE, buffer));
   ola_client.Stop();
 
-  CPPUNIT_ASSERT(!ola_client.Setup());
+  OLA_ASSERT_FALSE(ola_client.Setup());
 }

@@ -21,6 +21,8 @@
 #include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <cppunit/extensions/HelperMacros.h>
 
+#include "ola/testing/TestUtils.h"
+
 #include "ola/Logging.h"
 #include "ola/io/IOQueue.h"
 #include "ola/io/OutputStream.h"
@@ -67,20 +69,20 @@ void PDUTest::testPDUBlock() {
   block.AddPDU(&pdu42);
 
   unsigned int block_size = block.Size();
-  CPPUNIT_ASSERT_EQUAL(12u, block_size);
+  OLA_ASSERT_EQ(12u, block_size);
   uint8_t *data = new uint8_t[block_size];
   unsigned int bytes_used = block_size;
-  CPPUNIT_ASSERT(block.Pack(data, bytes_used));
-  CPPUNIT_ASSERT_EQUAL(block_size, bytes_used);
+  OLA_ASSERT(block.Pack(data, bytes_used));
+  OLA_ASSERT_EQ(block_size, bytes_used);
 
   unsigned int *test = (unsigned int*) data;
-  CPPUNIT_ASSERT_EQUAL(1u, *test++);
-  CPPUNIT_ASSERT_EQUAL(2u, *test++);
-  CPPUNIT_ASSERT_EQUAL(42u, *test);
+  OLA_ASSERT_EQ(1u, *test++);
+  OLA_ASSERT_EQ(2u, *test++);
+  OLA_ASSERT_EQ(42u, *test);
   delete[] data;
 
   block.Clear();
-  CPPUNIT_ASSERT_EQUAL(0u, block.Size());
+  OLA_ASSERT_EQ(0u, block.Size());
 }
 
 
@@ -99,11 +101,11 @@ void PDUTest::testBlockToOutputStream() {
   IOQueue output;
   OutputStream stream(&output);
   block.Write(&stream);
-  CPPUNIT_ASSERT_EQUAL(12u, output.Size());
+  OLA_ASSERT_EQ(12u, output.Size());
 
   uint8_t *block_data = new uint8_t[output.Size()];
   unsigned int block_size = output.Peek(block_data, output.Size());
-  CPPUNIT_ASSERT_EQUAL(output.Size(), block_size);
+  OLA_ASSERT_EQ(output.Size(), block_size);
 
   uint8_t EXPECTED[] = {
     0, 0, 0, 1,

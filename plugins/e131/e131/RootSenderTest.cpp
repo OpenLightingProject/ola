@@ -22,6 +22,8 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <memory>
 
+#include "ola/testing/TestUtils.h"
+
 #include "ola/io/SelectServer.h"
 #include "ola/network/InterfacePicker.h"
 #include "ola/network/NetworkUtils.h"
@@ -51,7 +53,7 @@ class RootSenderTest: public CppUnit::TestFixture {
     void setUp();
     void tearDown();
     void Stop();
-    void FatalStop() { CPPUNIT_ASSERT(false); }
+    void FatalStop() { OLA_ASSERT(false); }
 
   private:
     void testRootSenderWithCIDs(const CID &root_cid, const CID &send_cid);
@@ -102,26 +104,26 @@ void RootSenderTest::testRootSenderWithCIDs(const CID &root_cid,
   // inflators
   MockInflator inflator(send_cid, stop_closure.get());
   RootInflator root_inflator;
-  CPPUNIT_ASSERT(root_inflator.AddInflator(&inflator));
+  OLA_ASSERT(root_inflator.AddInflator(&inflator));
 
   // sender
   RootSender root_sender(root_cid);
 
   // setup the socket
   ola::network::UDPSocket socket;
-  CPPUNIT_ASSERT(socket.Init());
-  CPPUNIT_ASSERT(
+  OLA_ASSERT(socket.Init());
+  OLA_ASSERT(
       socket.Bind(IPV4SocketAddress(IPV4Address::WildCard(), ACN_PORT)));
-  CPPUNIT_ASSERT(socket.EnableBroadcast());
+  OLA_ASSERT(socket.EnableBroadcast());
 
   IncomingUDPTransport incoming_udp_transport(&socket, &root_inflator);
   socket.SetOnData(NewCallback(&incoming_udp_transport,
                                &IncomingUDPTransport::Receive));
-  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&socket));
+  OLA_ASSERT(m_ss->AddReadDescriptor(&socket));
 
   // outgoing transport
   IPV4Address addr;
-  CPPUNIT_ASSERT(IPV4Address::FromString("255.255.255.255", &addr));
+  OLA_ASSERT(IPV4Address::FromString("255.255.255.255", &addr));
 
   OutgoingUDPTransportImpl udp_transport_impl(&socket);
   OutgoingUDPTransport outgoing_udp_transport(&udp_transport_impl, addr);
@@ -130,11 +132,11 @@ void RootSenderTest::testRootSenderWithCIDs(const CID &root_cid,
   MockPDU mock_pdu(4, 8);
 
   if (root_cid == send_cid)
-    CPPUNIT_ASSERT(root_sender.SendPDU(MockPDU::TEST_VECTOR,
+    OLA_ASSERT(root_sender.SendPDU(MockPDU::TEST_VECTOR,
                                        mock_pdu,
                                        &outgoing_udp_transport));
   else
-    CPPUNIT_ASSERT(root_sender.SendPDU(MockPDU::TEST_VECTOR,
+    OLA_ASSERT(root_sender.SendPDU(MockPDU::TEST_VECTOR,
                                        mock_pdu,
                                        send_cid,
                                        &outgoing_udp_transport));

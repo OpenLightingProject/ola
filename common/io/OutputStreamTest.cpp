@@ -23,6 +23,8 @@
 #include <iostream>
 #include <string>
 
+#include "ola/testing/TestUtils.h"
+
 #include "ola/Logging.h"
 #include "ola/io/BigEndianStream.h"
 #include "ola/io/IOQueue.h"
@@ -66,17 +68,17 @@ CPPUNIT_TEST_SUITE_REGISTRATION(OutputStreamTest);
  */
 void OutputStreamTest::testBasicWrite() {
   BigEndianOutputStream stream(&m_buffer);
-  CPPUNIT_ASSERT_EQUAL(0u, m_buffer.Size());
+  OLA_ASSERT_EQ(0u, m_buffer.Size());
   uint8_t data1[] = {0, 1, 2, 3, 4};
 
   stream.Write(data1, sizeof(data1));
-  CPPUNIT_ASSERT_EQUAL(5u, m_buffer.Size());
+  OLA_ASSERT_EQ(5u, m_buffer.Size());
 
   m_buffer.Pop(1);
-  CPPUNIT_ASSERT_EQUAL(4u, m_buffer.Size());
+  OLA_ASSERT_EQ(4u, m_buffer.Size());
 
   m_buffer.Pop(4);
-  CPPUNIT_ASSERT_EQUAL(0u, m_buffer.Size());
+  OLA_ASSERT_EQ(0u, m_buffer.Size());
 }
 
 
@@ -85,16 +87,16 @@ void OutputStreamTest::testBasicWrite() {
  */
 void OutputStreamTest::testWritePrimatives() {
   BigEndianOutputStream stream(&m_buffer);
-  CPPUNIT_ASSERT_EQUAL(0u, m_buffer.Size());
+  OLA_ASSERT_EQ(0u, m_buffer.Size());
 
   stream << 4;
-  CPPUNIT_ASSERT_EQUAL(4u, m_buffer.Size());
+  OLA_ASSERT_EQ(4u, m_buffer.Size());
 
   stream << (1u << 31);
-  CPPUNIT_ASSERT_EQUAL(8u, m_buffer.Size());
+  OLA_ASSERT_EQ(8u, m_buffer.Size());
 
   stream << static_cast<uint8_t>(10) << static_cast<uint16_t>(2400);
-  CPPUNIT_ASSERT_EQUAL(11u, m_buffer.Size());
+  OLA_ASSERT_EQ(11u, m_buffer.Size());
 
   // confirm this matches what we expect
   const unsigned int DATA_SIZE = 20;

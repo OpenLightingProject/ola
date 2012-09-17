@@ -22,6 +22,8 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <memory>
 
+#include "ola/testing/TestUtils.h"
+
 #include "ola/Logging.h"
 #include "ola/io/SelectServer.h"
 #include "ola/network/InterfacePicker.h"
@@ -48,7 +50,7 @@ class UDPTransportTest: public CppUnit::TestFixture {
     void setUp();
     void tearDown();
     void Stop();
-    void FatalStop() { CPPUNIT_ASSERT(false); }
+    void FatalStop() { OLA_ASSERT(false); }
 
   private:
     ola::io::SelectServer *m_ss;
@@ -82,19 +84,19 @@ void UDPTransportTest::testUDPTransport() {
 
   // setup the socket
   ola::network::UDPSocket socket;
-  CPPUNIT_ASSERT(socket.Init());
-  CPPUNIT_ASSERT(
+  OLA_ASSERT(socket.Init());
+  OLA_ASSERT(
       socket.Bind(IPV4SocketAddress(IPV4Address::WildCard(), ACN_PORT)));
-  CPPUNIT_ASSERT(socket.EnableBroadcast());
+  OLA_ASSERT(socket.EnableBroadcast());
 
   IncomingUDPTransport incoming_udp_transport(&socket, &inflator);
   socket.SetOnData(NewCallback(&incoming_udp_transport,
                                &IncomingUDPTransport::Receive));
-  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&socket));
+  OLA_ASSERT(m_ss->AddReadDescriptor(&socket));
 
   // outgoing transport
   IPV4Address addr;
-  CPPUNIT_ASSERT(IPV4Address::FromString("255.255.255.255", &addr));
+  OLA_ASSERT(IPV4Address::FromString("255.255.255.255", &addr));
 
   OutgoingUDPTransportImpl udp_transport_impl(&socket);
   OutgoingUDPTransport outgoing_udp_transport(&udp_transport_impl, addr);
@@ -103,7 +105,7 @@ void UDPTransportTest::testUDPTransport() {
   PDUBlock<PDU> pdu_block;
   MockPDU mock_pdu(4, 8);
   pdu_block.AddPDU(&mock_pdu);
-  CPPUNIT_ASSERT(outgoing_udp_transport.Send(pdu_block));
+  OLA_ASSERT(outgoing_udp_transport.Send(pdu_block));
 
   SingleUseCallback0<void> *closure =
     NewSingleCallback(this, &UDPTransportTest::FatalStop);

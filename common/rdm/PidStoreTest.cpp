@@ -25,6 +25,8 @@
 #include <string>
 #include <vector>
 
+#include "ola/testing/TestUtils.h"
+
 #include "common/rdm/PidStoreLoader.h"
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
@@ -112,28 +114,28 @@ void PidStoreTest::testPidDescriptor() {
                     PidDescriptor::ANY_SUB_DEVICE);
 
   // basic checks
-  CPPUNIT_ASSERT_EQUAL(string("foo"), pid.Name());
-  CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(10), pid.Value());
-  CPPUNIT_ASSERT_EQUAL(get_request_descriptor, pid.GetRequest());
-  CPPUNIT_ASSERT_EQUAL(get_response_descriptor, pid.GetResponse());
-  CPPUNIT_ASSERT_EQUAL(set_request_descriptor, pid.SetRequest());
-  CPPUNIT_ASSERT_EQUAL(set_response_descriptor, pid.SetResponse());
+  OLA_ASSERT_EQ(string("foo"), pid.Name());
+  OLA_ASSERT_EQ(static_cast<uint16_t>(10), pid.Value());
+  OLA_ASSERT_EQ(get_request_descriptor, pid.GetRequest());
+  OLA_ASSERT_EQ(get_response_descriptor, pid.GetResponse());
+  OLA_ASSERT_EQ(set_request_descriptor, pid.SetRequest());
+  OLA_ASSERT_EQ(set_response_descriptor, pid.SetResponse());
 
   // check sub device constraints
-  CPPUNIT_ASSERT(pid.IsGetValid(0));
-  CPPUNIT_ASSERT(pid.IsGetValid(1));
-  CPPUNIT_ASSERT(pid.IsGetValid(2));
-  CPPUNIT_ASSERT(pid.IsGetValid(511));
-  CPPUNIT_ASSERT(pid.IsGetValid(512));
-  CPPUNIT_ASSERT(!pid.IsGetValid(513));
-  CPPUNIT_ASSERT(!pid.IsGetValid(0xffff));
-  CPPUNIT_ASSERT(pid.IsSetValid(0));
-  CPPUNIT_ASSERT(pid.IsSetValid(1));
-  CPPUNIT_ASSERT(pid.IsSetValid(2));
-  CPPUNIT_ASSERT(pid.IsSetValid(511));
-  CPPUNIT_ASSERT(pid.IsSetValid(512));
-  CPPUNIT_ASSERT(!pid.IsSetValid(513));
-  CPPUNIT_ASSERT(pid.IsSetValid(0xffff));
+  OLA_ASSERT_TRUE(pid.IsGetValid(0));
+  OLA_ASSERT_TRUE(pid.IsGetValid(1));
+  OLA_ASSERT_TRUE(pid.IsGetValid(2));
+  OLA_ASSERT_TRUE(pid.IsGetValid(511));
+  OLA_ASSERT_TRUE(pid.IsGetValid(512));
+  OLA_ASSERT_FALSE(pid.IsGetValid(513));
+  OLA_ASSERT_FALSE(pid.IsGetValid(0xffff));
+  OLA_ASSERT_TRUE(pid.IsSetValid(0));
+  OLA_ASSERT_TRUE(pid.IsSetValid(1));
+  OLA_ASSERT_TRUE(pid.IsSetValid(2));
+  OLA_ASSERT_TRUE(pid.IsSetValid(511));
+  OLA_ASSERT_TRUE(pid.IsSetValid(512));
+  OLA_ASSERT_FALSE(pid.IsSetValid(513));
+  OLA_ASSERT_TRUE(pid.IsSetValid(0xffff));
 }
 
 
@@ -157,23 +159,23 @@ void PidStoreTest::testPidStore() {
   PidStore store(pids);
 
   // check value lookups
-  CPPUNIT_ASSERT_EQUAL(foo_pid, store.LookupPID(0));
-  CPPUNIT_ASSERT_EQUAL(bar_pid, store.LookupPID(1));
-  CPPUNIT_ASSERT_EQUAL(static_cast<const PidDescriptor*>(NULL),
+  OLA_ASSERT_EQ(foo_pid, store.LookupPID(0));
+  OLA_ASSERT_EQ(bar_pid, store.LookupPID(1));
+  OLA_ASSERT_EQ(static_cast<const PidDescriptor*>(NULL),
                        store.LookupPID(2));
 
   // check name lookups
-  CPPUNIT_ASSERT_EQUAL(foo_pid, store.LookupPID("foo"));
-  CPPUNIT_ASSERT_EQUAL(bar_pid, store.LookupPID("bar"));
-  CPPUNIT_ASSERT_EQUAL(static_cast<const PidDescriptor*>(NULL),
+  OLA_ASSERT_EQ(foo_pid, store.LookupPID("foo"));
+  OLA_ASSERT_EQ(bar_pid, store.LookupPID("bar"));
+  OLA_ASSERT_EQ(static_cast<const PidDescriptor*>(NULL),
                        store.LookupPID("baz"));
 
   // check all pids;
   vector<const PidDescriptor*> all_pids;
   store.AllPids(&all_pids);
-  CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), all_pids.size());
-  CPPUNIT_ASSERT_EQUAL(foo_pid, all_pids[0]);
-  CPPUNIT_ASSERT_EQUAL(bar_pid, all_pids[1]);
+  OLA_ASSERT_EQ(static_cast<size_t>(2), all_pids.size());
+  OLA_ASSERT_EQ(foo_pid, all_pids[0]);
+  OLA_ASSERT_EQ(bar_pid, all_pids[1]);
 }
 
 
@@ -186,7 +188,7 @@ void PidStoreTest::testPidStoreLoad() {
 
   // check that this fails to load
   const RootPidStore *empty_root_store = loader.LoadFromStream(&str);
-  CPPUNIT_ASSERT_EQUAL(static_cast<const RootPidStore*>(NULL),
+  OLA_ASSERT_EQ(static_cast<const RootPidStore*>(NULL),
                        empty_root_store);
 
   // now try a simple pid store config
@@ -219,98 +221,98 @@ void PidStoreTest::testPidStoreLoad() {
          "version: 1" << endl;
 
   auto_ptr<const RootPidStore> root_store(loader.LoadFromStream(&str));
-  CPPUNIT_ASSERT(root_store.get());
+  OLA_ASSERT_TRUE(root_store.get());
 
   // check version
-  CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(1), root_store->Version());
+  OLA_ASSERT_EQ(static_cast<uint64_t>(1), root_store->Version());
 
   // check manufacturer pids
   const PidStore *open_lighting_store =
     root_store->ManufacturerStore(OPEN_LIGHTING_ESTA_CODE);
-  CPPUNIT_ASSERT(open_lighting_store);
-  CPPUNIT_ASSERT_EQUAL(0u, open_lighting_store->PidCount());
+  OLA_ASSERT_TRUE(open_lighting_store);
+  OLA_ASSERT_EQ(0u, open_lighting_store->PidCount());
 
   // lookup by value
-  CPPUNIT_ASSERT(root_store->GetDescriptor(16));
-  CPPUNIT_ASSERT(!root_store->GetDescriptor(17));
-  CPPUNIT_ASSERT(root_store->GetDescriptor(16, OPEN_LIGHTING_ESTA_CODE));
-  CPPUNIT_ASSERT(!root_store->GetDescriptor(17, OPEN_LIGHTING_ESTA_CODE));
+  OLA_ASSERT_TRUE(root_store->GetDescriptor(16));
+  OLA_ASSERT_FALSE(root_store->GetDescriptor(17));
+  OLA_ASSERT_TRUE(root_store->GetDescriptor(16, OPEN_LIGHTING_ESTA_CODE));
+  OLA_ASSERT_FALSE(root_store->GetDescriptor(17, OPEN_LIGHTING_ESTA_CODE));
 
   // lookup by name
-  CPPUNIT_ASSERT(root_store->GetDescriptor("PROXIED_DEVICES"));
-  CPPUNIT_ASSERT(!root_store->GetDescriptor("DEVICE_INFO"));
-  CPPUNIT_ASSERT(root_store->GetDescriptor("PROXIED_DEVICES",
+  OLA_ASSERT_TRUE(root_store->GetDescriptor("PROXIED_DEVICES"));
+  OLA_ASSERT_FALSE(root_store->GetDescriptor("DEVICE_INFO"));
+  OLA_ASSERT_TRUE(root_store->GetDescriptor("PROXIED_DEVICES",
                                            OPEN_LIGHTING_ESTA_CODE));
-  CPPUNIT_ASSERT(!root_store->GetDescriptor("DEVICE_INFO",
+  OLA_ASSERT_FALSE(root_store->GetDescriptor("DEVICE_INFO",
                                             OPEN_LIGHTING_ESTA_CODE));
 
   // check lookups
   const PidStore *esta_store = root_store->EstaStore();
-  CPPUNIT_ASSERT(esta_store);
+  OLA_ASSERT_TRUE(esta_store);
 
   const PidDescriptor *pid_descriptor = esta_store->LookupPID(16);
-  CPPUNIT_ASSERT(pid_descriptor);
+  OLA_ASSERT_TRUE(pid_descriptor);
   const PidDescriptor *pid_descriptor2 = esta_store->LookupPID(
       "PROXIED_DEVICES");
-  CPPUNIT_ASSERT(pid_descriptor2);
-  CPPUNIT_ASSERT_EQUAL(pid_descriptor, pid_descriptor2);
+  OLA_ASSERT_TRUE(pid_descriptor2);
+  OLA_ASSERT_EQ(pid_descriptor, pid_descriptor2);
 
   // check name and value
-  CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(16), pid_descriptor->Value());
-  CPPUNIT_ASSERT_EQUAL(string("PROXIED_DEVICES"), pid_descriptor->Name());
+  OLA_ASSERT_EQ(static_cast<uint16_t>(16), pid_descriptor->Value());
+  OLA_ASSERT_EQ(string("PROXIED_DEVICES"), pid_descriptor->Name());
 
   // check descriptors
-  CPPUNIT_ASSERT(pid_descriptor->GetRequest());
-  CPPUNIT_ASSERT(pid_descriptor->GetResponse());
-  CPPUNIT_ASSERT_EQUAL(static_cast<const Descriptor*>(NULL),
+  OLA_ASSERT_TRUE(pid_descriptor->GetRequest());
+  OLA_ASSERT_TRUE(pid_descriptor->GetResponse());
+  OLA_ASSERT_EQ(static_cast<const Descriptor*>(NULL),
                        pid_descriptor->SetRequest());
-  CPPUNIT_ASSERT_EQUAL(static_cast<const Descriptor*>(NULL),
+  OLA_ASSERT_EQ(static_cast<const Descriptor*>(NULL),
                        pid_descriptor->SetResponse());
 
   // check GET descriptors
   const Descriptor *get_request = pid_descriptor->GetRequest();
-  CPPUNIT_ASSERT_EQUAL(0u, get_request->FieldCount());
+  OLA_ASSERT_EQ(0u, get_request->FieldCount());
 
   const Descriptor *get_response = pid_descriptor->GetResponse();
-  CPPUNIT_ASSERT_EQUAL(1u, get_response->FieldCount());
+  OLA_ASSERT_EQ(1u, get_response->FieldCount());
   const FieldDescriptor *proxied_group = get_response->GetField(0);
-  CPPUNIT_ASSERT(proxied_group);
+  OLA_ASSERT_TRUE(proxied_group);
 
   // this is ugly but it's a test
   const FieldDescriptorGroup *group_descriptor =
     dynamic_cast<const FieldDescriptorGroup*>(proxied_group);  // NOLINT
-  CPPUNIT_ASSERT(group_descriptor);
+  OLA_ASSERT_TRUE(group_descriptor);
 
   // check all the group properties
-  CPPUNIT_ASSERT(!group_descriptor->FixedSize());
-  CPPUNIT_ASSERT(!group_descriptor->LimitedSize());
-  CPPUNIT_ASSERT_EQUAL(0u, group_descriptor->MaxSize());
-  CPPUNIT_ASSERT_EQUAL(2u, group_descriptor->FieldCount());
-  CPPUNIT_ASSERT(group_descriptor->FixedBlockSize());
-  CPPUNIT_ASSERT_EQUAL(6u, group_descriptor->BlockSize());
-  CPPUNIT_ASSERT_EQUAL(6u, group_descriptor->MaxBlockSize());
-  CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0),
+  OLA_ASSERT_FALSE(group_descriptor->FixedSize());
+  OLA_ASSERT_FALSE(group_descriptor->LimitedSize());
+  OLA_ASSERT_EQ(0u, group_descriptor->MaxSize());
+  OLA_ASSERT_EQ(2u, group_descriptor->FieldCount());
+  OLA_ASSERT_TRUE(group_descriptor->FixedBlockSize());
+  OLA_ASSERT_EQ(6u, group_descriptor->BlockSize());
+  OLA_ASSERT_EQ(6u, group_descriptor->MaxBlockSize());
+  OLA_ASSERT_EQ(static_cast<uint16_t>(0),
                        group_descriptor->MinBlocks());
-  CPPUNIT_ASSERT_EQUAL(FieldDescriptorGroup::UNLIMITED_BLOCKS,
+  OLA_ASSERT_EQ(FieldDescriptorGroup::UNLIMITED_BLOCKS,
                        group_descriptor->MaxBlocks());
-  CPPUNIT_ASSERT(!group_descriptor->FixedBlockCount());
+  OLA_ASSERT_FALSE(group_descriptor->FixedBlockCount());
 
   // Check this prints correctly
   ola::messaging::SchemaPrinter printer;
   get_response->Accept(printer);
   string expected = (
       "uids {\n  manufacturer_id: uint16\n  device_id: uint32\n}\n");
-  CPPUNIT_ASSERT_EQUAL(expected, printer.AsString());
+  OLA_ASSERT_EQ(expected, printer.AsString());
 
   // check sub device ranges
-  CPPUNIT_ASSERT(pid_descriptor->IsGetValid(0));
-  CPPUNIT_ASSERT(!pid_descriptor->IsGetValid(1));
-  CPPUNIT_ASSERT(!pid_descriptor->IsGetValid(512));
-  CPPUNIT_ASSERT(!pid_descriptor->IsGetValid(ola::rdm::ALL_RDM_SUBDEVICES));
-  CPPUNIT_ASSERT(!pid_descriptor->IsSetValid(0));
-  CPPUNIT_ASSERT(!pid_descriptor->IsSetValid(1));
-  CPPUNIT_ASSERT(!pid_descriptor->IsSetValid(512));
-  CPPUNIT_ASSERT(!pid_descriptor->IsSetValid(ola::rdm::ALL_RDM_SUBDEVICES));
+  OLA_ASSERT_TRUE(pid_descriptor->IsGetValid(0));
+  OLA_ASSERT_FALSE(pid_descriptor->IsGetValid(1));
+  OLA_ASSERT_FALSE(pid_descriptor->IsGetValid(512));
+  OLA_ASSERT_FALSE(pid_descriptor->IsGetValid(ola::rdm::ALL_RDM_SUBDEVICES));
+  OLA_ASSERT_FALSE(pid_descriptor->IsSetValid(0));
+  OLA_ASSERT_FALSE(pid_descriptor->IsSetValid(1));
+  OLA_ASSERT_FALSE(pid_descriptor->IsSetValid(512));
+  OLA_ASSERT_FALSE(pid_descriptor->IsSetValid(ola::rdm::ALL_RDM_SUBDEVICES));
 }
 
 
@@ -322,31 +324,31 @@ void PidStoreTest::testPidStoreFileLoad() {
 
   auto_ptr<const RootPidStore> root_store(loader.LoadFromFile(
       "./testdata/test_pids.proto"));
-  CPPUNIT_ASSERT(root_store.get());
+  OLA_ASSERT_TRUE(root_store.get());
   // check version
-  CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(1302986774),
+  OLA_ASSERT_EQ(static_cast<uint64_t>(1302986774),
                        root_store->Version());
 
   // Check all the esta pids are there
   const PidStore *esta_store = root_store->EstaStore();
-  CPPUNIT_ASSERT(esta_store);
+  OLA_ASSERT_TRUE(esta_store);
 
   vector<const PidDescriptor*> all_pids;
   esta_store->AllPids(&all_pids);
-  CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(70), all_pids.size());
+  OLA_ASSERT_EQ(static_cast<size_t>(70), all_pids.size());
 
   // check for device info
   const PidDescriptor *device_info = esta_store->LookupPID("DEVICE_INFO");
-  CPPUNIT_ASSERT(device_info);
-  CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(96), device_info->Value());
-  CPPUNIT_ASSERT_EQUAL(string("DEVICE_INFO"), device_info->Name());
+  OLA_ASSERT_TRUE(device_info);
+  OLA_ASSERT_EQ(static_cast<uint16_t>(96), device_info->Value());
+  OLA_ASSERT_EQ(string("DEVICE_INFO"), device_info->Name());
 
   // check descriptors
-  CPPUNIT_ASSERT(device_info->GetRequest());
-  CPPUNIT_ASSERT(device_info->GetResponse());
-  CPPUNIT_ASSERT_EQUAL(static_cast<const Descriptor*>(NULL),
+  OLA_ASSERT_TRUE(device_info->GetRequest());
+  OLA_ASSERT_TRUE(device_info->GetResponse());
+  OLA_ASSERT_EQ(static_cast<const Descriptor*>(NULL),
                        device_info->SetRequest());
-  CPPUNIT_ASSERT_EQUAL(static_cast<const Descriptor*>(NULL),
+  OLA_ASSERT_EQ(static_cast<const Descriptor*>(NULL),
                        device_info->SetResponse());
 
   ola::messaging::SchemaPrinter printer;
@@ -357,32 +359,32 @@ void PidStoreTest::testPidStoreFileLoad() {
       "dmx_footprint: uint16\ncurrent_personality: uint8\n"
       "personality_count: uint8\ndmx_start_address: uint16\n"
       "sub_device_count: uint16\nsensor_count: uint8\n");
-  CPPUNIT_ASSERT_EQUAL(expected, printer.AsString());
+  OLA_ASSERT_EQ(expected, printer.AsString());
 
   // check manufacturer pids
   const PidStore *open_lighting_store =
     root_store->ManufacturerStore(OPEN_LIGHTING_ESTA_CODE);
-  CPPUNIT_ASSERT(open_lighting_store);
-  CPPUNIT_ASSERT_EQUAL(1u, open_lighting_store->PidCount());
+  OLA_ASSERT_TRUE(open_lighting_store);
+  OLA_ASSERT_EQ(1u, open_lighting_store->PidCount());
 
   const PidDescriptor *serial_number = open_lighting_store->LookupPID(
       "SERIAL_NUMBER");
-  CPPUNIT_ASSERT(serial_number);
-  CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(32768), serial_number->Value());
-  CPPUNIT_ASSERT_EQUAL(string("SERIAL_NUMBER"), serial_number->Name());
+  OLA_ASSERT_TRUE(serial_number);
+  OLA_ASSERT_EQ(static_cast<uint16_t>(32768), serial_number->Value());
+  OLA_ASSERT_EQ(string("SERIAL_NUMBER"), serial_number->Name());
 
   // check descriptors
-  CPPUNIT_ASSERT_EQUAL(static_cast<const Descriptor*>(NULL),
+  OLA_ASSERT_EQ(static_cast<const Descriptor*>(NULL),
                        serial_number->GetRequest());
-  CPPUNIT_ASSERT_EQUAL(static_cast<const Descriptor*>(NULL),
+  OLA_ASSERT_EQ(static_cast<const Descriptor*>(NULL),
                        serial_number->GetResponse());
-  CPPUNIT_ASSERT(serial_number->SetRequest());
-  CPPUNIT_ASSERT(serial_number->SetResponse());
+  OLA_ASSERT_TRUE(serial_number->SetRequest());
+  OLA_ASSERT_TRUE(serial_number->SetResponse());
 
   printer.Reset();
   serial_number->SetRequest()->Accept(printer);
   string expected2 = "serial_number: uint32\n";
-  CPPUNIT_ASSERT_EQUAL(expected2, printer.AsString());
+  OLA_ASSERT_EQ(expected2, printer.AsString());
 }
 
 
@@ -394,43 +396,43 @@ void PidStoreTest::testPidStoreDirectoryLoad() {
 
   auto_ptr<const RootPidStore> root_store(loader.LoadFromDirectory(
       "./testdata/pids"));
-  CPPUNIT_ASSERT(root_store.get());
+  OLA_ASSERT_TRUE(root_store.get());
   // check version
-  CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(1302986774),
+  OLA_ASSERT_EQ(static_cast<uint64_t>(1302986774),
                        root_store->Version());
 
   // Check all the esta pids are there
   const PidStore *esta_store = root_store->EstaStore();
-  CPPUNIT_ASSERT(esta_store);
+  OLA_ASSERT_TRUE(esta_store);
 
   vector<const PidDescriptor*> all_pids;
   esta_store->AllPids(&all_pids);
-  CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(4), all_pids.size());
+  OLA_ASSERT_EQ(static_cast<size_t>(4), all_pids.size());
 
   // check manufacturer pids
   const PidStore *open_lighting_store =
     root_store->ManufacturerStore(OPEN_LIGHTING_ESTA_CODE);
-  CPPUNIT_ASSERT(open_lighting_store);
-  CPPUNIT_ASSERT_EQUAL(1u, open_lighting_store->PidCount());
+  OLA_ASSERT_TRUE(open_lighting_store);
+  OLA_ASSERT_EQ(1u, open_lighting_store->PidCount());
 
   const PidDescriptor *serial_number = open_lighting_store->LookupPID(
       "SERIAL_NUMBER");
-  CPPUNIT_ASSERT(serial_number);
-  CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(32768), serial_number->Value());
-  CPPUNIT_ASSERT_EQUAL(string("SERIAL_NUMBER"), serial_number->Name());
+  OLA_ASSERT_TRUE(serial_number);
+  OLA_ASSERT_EQ(static_cast<uint16_t>(32768), serial_number->Value());
+  OLA_ASSERT_EQ(string("SERIAL_NUMBER"), serial_number->Name());
 
   // check descriptors
-  CPPUNIT_ASSERT_EQUAL(static_cast<const Descriptor*>(NULL),
+  OLA_ASSERT_EQ(static_cast<const Descriptor*>(NULL),
                        serial_number->GetRequest());
-  CPPUNIT_ASSERT_EQUAL(static_cast<const Descriptor*>(NULL),
+  OLA_ASSERT_EQ(static_cast<const Descriptor*>(NULL),
                        serial_number->GetResponse());
-  CPPUNIT_ASSERT(serial_number->SetRequest());
-  CPPUNIT_ASSERT(serial_number->SetResponse());
+  OLA_ASSERT_TRUE(serial_number->SetRequest());
+  OLA_ASSERT_TRUE(serial_number->SetResponse());
 
   ola::messaging::SchemaPrinter printer;
   serial_number->SetRequest()->Accept(printer);
   string expected2 = "serial_number: uint32\n";
-  CPPUNIT_ASSERT_EQUAL(expected2, printer.AsString());
+  OLA_ASSERT_EQ(expected2, printer.AsString());
 }
 
 
@@ -441,7 +443,7 @@ void PidStoreTest::testPidStoreLoadMissingFile() {
   PidStoreLoader loader;
   const RootPidStore *root_store = loader.LoadFromFile(
       "./testdata/missing_file_pids.proto");
-  CPPUNIT_ASSERT(!root_store);
+  OLA_ASSERT_FALSE(root_store);
 }
 
 
@@ -452,7 +454,7 @@ void PidStoreTest::testPidStoreLoadDuplicateManufacturer() {
   PidStoreLoader loader;
   const RootPidStore *root_store = loader.LoadFromFile(
       "./testdata/duplicate_manufacturer.proto");
-  CPPUNIT_ASSERT(!root_store);
+  OLA_ASSERT_FALSE(root_store);
 }
 
 
@@ -463,7 +465,7 @@ void PidStoreTest::testPidStoreLoadDuplicateValue() {
   PidStoreLoader loader;
   const RootPidStore *root_store = loader.LoadFromFile(
       "./testdata/duplicate_pid_value.proto");
-  CPPUNIT_ASSERT(!root_store);
+  OLA_ASSERT_FALSE(root_store);
 }
 
 
@@ -474,7 +476,7 @@ void PidStoreTest::testPidStoreLoadDuplicateName() {
   PidStoreLoader loader;
   const RootPidStore *root_store = loader.LoadFromFile(
       "./testdata/duplicate_pid_name.proto");
-  CPPUNIT_ASSERT(!root_store);
+  OLA_ASSERT_FALSE(root_store);
 }
 
 
@@ -485,7 +487,7 @@ void PidStoreTest::testPidStoreLoadInvalidEstaPid() {
   PidStoreLoader loader;
   const RootPidStore *root_store = loader.LoadFromFile(
       "./testdata/invalid_esta_pid.proto");
-  CPPUNIT_ASSERT(!root_store);
+  OLA_ASSERT_FALSE(root_store);
 }
 
 
@@ -496,5 +498,5 @@ void PidStoreTest::testInconsistentData() {
   PidStoreLoader loader;
   const RootPidStore *root_store = loader.LoadFromFile(
       "./testdata/inconsistent_pid.proto");
-  CPPUNIT_ASSERT(!root_store);
+  OLA_ASSERT_FALSE(root_store);
 }
