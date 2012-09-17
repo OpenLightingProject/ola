@@ -36,7 +36,7 @@ using std::string;
 void SLPStringEscape(string *str) {
   ostringstream converted;
   string::size_type i = 0;
-  while (1) {
+  while (true) {
     i = str->find_first_of("(),\\!<=>~;*+", i);
     if (i == string::npos)
       break;
@@ -56,25 +56,23 @@ void SLPStringEscape(string *str) {
 void SLPStringUnescape(string *str) {
   static const int ESCAPED_SIZE = 2;
   string::size_type i = 0;
-  while (i < str->size()) {
-    if (str->at(i) == '\\') {
-      if (i + ESCAPED_SIZE >= str->size()) {
-        OLA_WARN << "Insufficient characters remaining to un-escape in: " <<
-          *str;
-        str->erase(i);
-        break;
-      }
-      uint8_t value;
-      if (!HexStringToInt(str->substr(i+1, ESCAPED_SIZE), &value)) {
-        OLA_WARN << "Invalid hex string while trying to escape in:" << *str;
-        i++;
-        continue;
-      }
-      if (value > 0x7f) {
-        OLA_WARN << "Escaped value greater than 0x7f in:" << *str;
-        i++;
-        continue;
-      }
+  while (true) {
+    i = str->find_first_of('\\', i);
+    if (i == string::npos)
+      break;
+
+    if (i + ESCAPED_SIZE >= str->size()) {
+      OLA_WARN << "Insufficient characters remaining to un-escape in: " <<
+        *str;
+      str->erase(i);
+      break;
+    }
+    uint8_t value;
+    if (!HexStringToInt(str->substr(i+1, ESCAPED_SIZE), &value)) {
+      OLA_WARN << "Invalid hex string while trying to escape in:" << *str;
+    } else if (value > 0x7f) {
+      OLA_WARN << "Escaped value greater than 0x7f in:" << *str;
+    } else {
       str->erase(i, ESCAPED_SIZE + 1);
       str->insert(i, 1, static_cast<char>(value));
     }
