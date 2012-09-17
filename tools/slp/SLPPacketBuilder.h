@@ -85,6 +85,8 @@ class SLPPacketBuilder {
                                unsigned int length,
                                uint16_t flags,
                                xid_t xid);
+
+    static void EscapeAndJoin(const set<string> &list, string *output);
 };
 }  // slp
 }  // ola

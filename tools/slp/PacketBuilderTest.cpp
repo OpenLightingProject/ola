@@ -102,20 +102,20 @@ void PacketBuilderTest::testBuildServiceRequest() {
 
   set<string> scope_list;
   scope_list.insert("ACN");
-  scope_list.insert("MYORG");
+  scope_list.insert("MYORG,");
 
   SLPPacketBuilder::BuildServiceRequest(&output, xid, pr_list,
                                         "rdmnet-device", scope_list);
-  CPPUNIT_ASSERT_EQUAL(63u, ioqueue.Size());
+  CPPUNIT_ASSERT_EQUAL(66u, ioqueue.Size());
 
   unsigned int data_size;
   uint8_t *output_data = WriteToBuffer(&ioqueue, &data_size);
   uint8_t expected_data[] = {
-    2, 1, 0, 0, 63, 0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+    2, 1, 0, 0, 66, 0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
     0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1', '.',
     '8',  // pr-llist
     0, 13, 'r', 'd', 'm', 'n', 'e', 't', '-', 'd', 'e', 'v', 'i', 'c', 'e',
-    0, 9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',  // scope list
+    0, 0xc, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G', '\\', '2', 'c',
     0, 0,  // pred string
     0, 0,  // SPI string
   };
@@ -170,24 +170,24 @@ void PacketBuilderTest::testBuildServiceRegistration() {
   URLEntry entry1("service:foo://1.1.1.1", 0x1234);
   set<string> scope_list;
   scope_list.insert("ACN");
-  scope_list.insert("MYORG");
+  scope_list.insert("MYORG,");
 
   SLPPacketBuilder::BuildServiceRegistration(&output, xid, true, entry1,
                                              "foo", scope_list);
-  CPPUNIT_ASSERT_EQUAL(62u, ioqueue.Size());
+  CPPUNIT_ASSERT_EQUAL(65u, ioqueue.Size());
 
   unsigned int data_size;
   uint8_t *output_data = WriteToBuffer(&ioqueue, &data_size);
   uint8_t expected_data[] = {
-    2, 3, 0, 0, 0x3e, 0x40, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+    2, 3, 0, 0, 0x41, 0x40, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
     // entry 1
     0, 0x12, 0x34, 0, 21,
     's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o', ':', '/', '/',
     '1', '.', '1', '.', '1', '.', '1',
     0,  // # of auth blocks
     0, 3, 'f', 'o', 'o',  // service-type
-    0, 9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',  // scope list
-    0, 0,  // attr list
+    0, 0xc, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G', '\\', '2', 'c',
+    0, 0,
     0  // attr auths
   };
 
@@ -198,7 +198,7 @@ void PacketBuilderTest::testBuildServiceRegistration() {
   // now test a re-registration
   SLPPacketBuilder::BuildServiceRegistration(&output, xid + 1, false, entry1,
                                              "foo", scope_list);
-  CPPUNIT_ASSERT_EQUAL(62u, ioqueue.Size());
+  CPPUNIT_ASSERT_EQUAL(65u, ioqueue.Size());
 
   output_data = WriteToBuffer(&ioqueue, &data_size);
   expected_data[5] = 0;
@@ -215,20 +215,20 @@ void PacketBuilderTest::testBuildServiceRegistration() {
 void PacketBuilderTest::testBuildDAAdvert() {
   set<string> scope_list;
   scope_list.insert("ACN");
-  scope_list.insert("MYORG");
+  scope_list.insert("MYORG,");
 
   SLPPacketBuilder::BuildDAAdvert(&output, xid, true, 12, 0x12345678,
       "service:foo", scope_list);
-  CPPUNIT_ASSERT_EQUAL(51u, ioqueue.Size());
+  CPPUNIT_ASSERT_EQUAL(54u, ioqueue.Size());
 
   unsigned int data_size;
   uint8_t *output_data = WriteToBuffer(&ioqueue, &data_size);
   uint8_t expected_data[] = {
-    2, 8, 0, 0, 0x33, 0x20, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+    2, 8, 0, 0, 0x36, 0x20, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
     0, 0,  // error code is zeroed out if multicast
     0x12, 0x34, 0x56, 0x78,  // boot timestamp
     0, 11, 's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o',  // service
-    0, 9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',  // scope list
+    0, 0xc, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G', '\\', '2', 'c',
     0, 0,  // attr list
     0, 0,  // SPI list
     0  // auth blocks
@@ -241,7 +241,7 @@ void PacketBuilderTest::testBuildDAAdvert() {
   // try with a non-multicast packet
   SLPPacketBuilder::BuildDAAdvert(&output, xid, false, 12, 0x12345678,
       "service:foo", scope_list);
-  CPPUNIT_ASSERT_EQUAL(51u, ioqueue.Size());
+  CPPUNIT_ASSERT_EQUAL(54u, ioqueue.Size());
   output_data = WriteToBuffer(&ioqueue, &data_size);
   expected_data[5] = 0;
   expected_data[17] = 0xc;

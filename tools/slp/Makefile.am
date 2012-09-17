@@ -81,6 +81,7 @@ check_PROGRAMS = $(TESTS)
 PacketBuilderTester_SOURCES = GenericTester.cpp \
                               PacketBuilderTest.cpp \
                               SLPPacketBuilder.cpp \
+                              SLPStrings.cpp \
                               URLEntry.cpp \
                               URLEntryTest.cpp
 PacketBuilderTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)

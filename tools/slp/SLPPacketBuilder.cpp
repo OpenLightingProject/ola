@@ -27,6 +27,7 @@
 
 #include "tools/slp/SLPPacketBuilder.h"
 #include "tools/slp/SLPPacketConstants.h"
+#include "tools/slp/SLPStrings.h"
 #include "tools/slp/URLEntry.h"
 
 namespace ola {
@@ -70,7 +71,8 @@ void SLPPacketBuilder::BuildServiceRequest(
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   */
   const string joined_pr_list = ola::StringJoin(",", pr_list);
-  const string joined_scopes = ola::StringJoin(",", scope_list);
+  string joined_scopes;
+  EscapeAndJoin(scope_list, &joined_scopes);
 
   unsigned int length = (10 + joined_pr_list.size() + service_type.size() +
                          joined_scopes.size());
@@ -152,9 +154,10 @@ void SLPPacketBuilder::BuildServiceRegistration(
      |# of AttrAuths |(if present) Attribute Authentication Blocks...\
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   */
-  const string joined_scopes = ola::StringJoin(",", scope_list);
-  unsigned int length = (url_entry.Size() + 2 + service_type.size() + 2 +
-                         joined_scopes.size() + 3);
+  string joined_scopes;
+  EscapeAndJoin(scope_list, &joined_scopes);
+  unsigned int length = (url_entry.Size() + 2 + service_type.size() +
+                         2 + joined_scopes.size() + 3);
 
   BuildSLPHeader(output, SERVICE_REGISTRATION, length, fresh ? SLP_FRESH : 0,
                  xid);
@@ -185,6 +188,7 @@ void SLPPacketBuilder::BuildServiceAck(BigEndianOutputStreamInterface *output,
   BuildSLPHeader(output, SERVICE_ACKNOWLEDGE, 2, 0, xid);
   *output << error_code;
 }
+
 
 /**
  * Build an DAAdvert Packet
@@ -222,7 +226,8 @@ void SLPPacketBuilder::BuildDAAdvert(BigEndianOutputStreamInterface *output,
      | # Auth Blocks |         Authentication block (if any)         \
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   */
-  const string joined_scopes = ola::StringJoin(",", scope_list);
+  string joined_scopes;
+  EscapeAndJoin(scope_list, &joined_scopes);
   unsigned int length = 8 + url.size() + + joined_scopes.size() + 7;
   BuildSLPHeader(output,
                  DA_ADVERTISEMENT,
@@ -281,6 +286,23 @@ void SLPPacketBuilder::BuildSLPHeader(BigEndianOutputStreamInterface *output,
   *output << static_cast<uint16_t>(0) << xid;
   *output << static_cast<uint16_t>(sizeof(EN_LANGUAGE_TAG));
   output->Write(EN_LANGUAGE_TAG, sizeof(EN_LANGUAGE_TAG));
+}
+
+
+/**
+ * Join a set of strings after escaping each string.
+ */
+void SLPPacketBuilder::EscapeAndJoin(const set<string> &list, string *output) {
+  std::ostringstream str;
+  set<string>::const_iterator iter = list.begin();
+  while (iter != list.end()) {
+    string val = *iter;
+    SLPStringEscape(&val);
+    output->append(val);
+    iter++;
+    if (iter != list.end())
+      output->append(",");
+  }
 }
 }  // slp
 }  // ola
