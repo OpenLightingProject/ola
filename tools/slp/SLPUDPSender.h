@@ -80,6 +80,11 @@ class SLPUDPSender {
                       const string &url,
                       const set<string> &scope_list);
 
+    void SendSAAdvert(const IPV4SocketAddress &dest,
+                      xid_t xid,
+                      const string &url,
+                      const set<string> &scope_list);
+
   private:
     ola::network::UDPSocket *m_udp_socket;
     ola::io::IOQueue m_output;

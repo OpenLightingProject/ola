@@ -121,6 +121,19 @@ void SLPUDPSender::SendDAAdvert(const IPV4SocketAddress &dest,
 }
 
 
+void SLPUDPSender::SendSAAdvert(const IPV4SocketAddress &dest,
+                                xid_t xid,
+                                const string &url,
+                                const set<string> &scope_list) {
+  EmptyBuffer();
+  SLPPacketBuilder::BuildSAAdvert(
+      &m_output_stream, xid, dest.Host() == m_multicast_address, url,
+      scope_list);
+  OLA_INFO << "Sending SAAdvert with url " << url;
+  Send(dest);
+}
+
+
 /**
  * Make sure the IOQueue is empty before we start building a new packet.
  */

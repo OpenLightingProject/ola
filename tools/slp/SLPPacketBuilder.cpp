@@ -247,6 +247,48 @@ void SLPPacketBuilder::BuildDAAdvert(BigEndianOutputStreamInterface *output,
 
 
 /**
+ * Build an SAAdvert Packet
+ * @param output the BigEndianOutputStreamInterface to put the packet in
+ * @param xid the transaction ID
+ * @param multicast true if this packet will be multicast
+ * @param url the URL to use.
+ * @param scope_list a list of scopes.
+ */
+void SLPPacketBuilder::BuildSAAdvert(BigEndianOutputStreamInterface *output,
+                                     xid_t xid,
+                                     bool multicast,
+                                     const string &url,
+                                     const set<string> &scope_list) {
+  /*
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |        Service Location header (function = SAAdvert = 11)     |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |         Length of URL         |              URL              \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |     Length of <scope-list>    |         <scope-list>          \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |     Length of <attr-list>     |          <attr-list>          \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     | # auth blocks |        authentication block (if any)          \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  */
+  string joined_scopes;
+  EscapeAndJoin(scope_list, &joined_scopes);
+  unsigned int length = 7 + url.size() + + joined_scopes.size();
+  BuildSLPHeader(output,
+                 SA_ADVERTISEMENT,
+                 length,
+                 multicast ? SLP_REQUEST_MCAST : 0,
+                 xid);
+
+  WriteString(output, url);
+  WriteString(output, joined_scopes);
+  *output << static_cast<uint16_t>(0);  // length of attr-list
+  *output << static_cast<uint8_t>(0);   // # of auth blocks
+}
+
+
+/**
  * Write a string to an OutputStreamInterface. The length of the string is
  * written in network-byte order as the first two bytes.
  */

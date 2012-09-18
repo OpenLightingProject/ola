@@ -77,6 +77,12 @@ class SLPPacketBuilder {
                               const string &url,
                               const set<string> &scope_list);
 
+    static void BuildSAAdvert(BigEndianOutputStreamInterface *output,
+                              xid_t xid,
+                              bool multicast,
+                              const string &url,
+                              const set<string> &scope_list);
+
     static void WriteString(BigEndianOutputStreamInterface *output,
                             const string &data);
 

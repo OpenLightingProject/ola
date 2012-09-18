@@ -204,6 +204,8 @@ class SLPServer {
     static const char DEFAULT_SCOPE[];
     static const char SCOPE_LIST_VAR[];
     static const char SLP_PORT_VAR[];
+    static const char SERVICE_AGENT_SERVICE[];
+    static const char DIRECTORY_AGENT_SERVICE[];
     static const uint16_t DEFAULT_SLP_HTTP_PORT;
     static const uint16_t DEFAULT_SLP_RPC_PORT;
 };

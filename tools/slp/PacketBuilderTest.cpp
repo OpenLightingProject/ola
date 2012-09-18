@@ -51,6 +51,7 @@ class PacketBuilderTest: public CppUnit::TestFixture {
     CPPUNIT_TEST(testBuildServiceReply);
     CPPUNIT_TEST(testBuildServiceRegistration);
     CPPUNIT_TEST(testBuildDAAdvert);
+    CPPUNIT_TEST(testBuildSAAdvert);
     CPPUNIT_TEST(testBuildServiceAck);
     CPPUNIT_TEST_SUITE_END();
 
@@ -58,6 +59,7 @@ class PacketBuilderTest: public CppUnit::TestFixture {
     void testBuildServiceReply();
     void testBuildServiceRegistration();
     void testBuildDAAdvert();
+    void testBuildSAAdvert();
     void testBuildServiceAck();
 
   public:
@@ -244,7 +246,46 @@ void PacketBuilderTest::testBuildDAAdvert() {
   CPPUNIT_ASSERT_EQUAL(54u, ioqueue.Size());
   output_data = WriteToBuffer(&ioqueue, &data_size);
   expected_data[5] = 0;
+  // update error code
   expected_data[17] = 0xc;
+  ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
+                     output_data, data_size);
+  delete[] output_data;
+}
+
+
+/*
+ * Check that BuildSAAdvert() works.
+ */
+void PacketBuilderTest::testBuildSAAdvert() {
+  set<string> scope_list;
+  scope_list.insert("ACN");
+  scope_list.insert("MYORG,");
+
+  SLPPacketBuilder::BuildSAAdvert(&output, xid, true, "service:foo",
+                                  scope_list);
+  CPPUNIT_ASSERT_EQUAL(46u, ioqueue.Size());
+
+  unsigned int data_size;
+  uint8_t *output_data = WriteToBuffer(&ioqueue, &data_size);
+  uint8_t expected_data[] = {
+    2, 11, 0, 0, 0x2e, 0x20, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+    0, 11, 's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o',  // url
+    0, 0xc, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G', '\\', '2', 'c',
+    0, 0,  // attr list
+    0  // auth blocks
+  };
+
+  ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
+                     output_data, data_size);
+  delete[] output_data;
+
+  // try with a non-multicast packet
+  SLPPacketBuilder::BuildSAAdvert(&output, xid, false, "service:foo",
+                                  scope_list);
+  CPPUNIT_ASSERT_EQUAL(46u, ioqueue.Size());
+  output_data = WriteToBuffer(&ioqueue, &data_size);
+  expected_data[5] = 0;
   ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
                      output_data, data_size);
   delete[] output_data;

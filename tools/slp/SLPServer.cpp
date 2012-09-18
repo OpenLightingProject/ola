@@ -43,6 +43,7 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <sstream>
 
 #include "common/rpc/StreamRpcChannel.h"
 #include "tools/slp/SLPPacketBuilder.h"
@@ -69,6 +70,7 @@ using ola::network::TCPSocket;
 using ola::network::UDPSocket;
 using ola::rpc::StreamRpcChannel;
 using std::auto_ptr;
+using std::ostringstream;
 using std::string;
 using std::vector;
 
@@ -77,8 +79,10 @@ const char SLPServer::CONFIG_DA_BEAT_VAR[] = "slp-config-da-beat";
 const char SLPServer::DA_ENABLED_VAR[] = "slp-da-enabled";
 const char SLPServer::DA_SERVICE[] = "service:directory-agent";
 const char SLPServer::DEFAULT_SCOPE[] = "DEFAULT";
+const char SLPServer::DIRECTORY_AGENT_SERVICE[] = "service:directory-agent";
 const char SLPServer::SCOPE_LIST_VAR[] = "scope-list";
 const char SLPServer::SLP_PORT_VAR[] = "slp-port";
+const char SLPServer::SERVICE_AGENT_SERVICE[] = "service:service-agent";
 const uint16_t SLPServer::DEFAULT_SLP_HTTP_PORT = 9012;
 const uint16_t SLPServer::DEFAULT_SLP_PORT = 427;
 const uint16_t SLPServer::DEFAULT_SLP_RPC_PORT = 9011;
@@ -413,13 +417,16 @@ void SLPServer::HandleServiceRequest(BigEndianInputStream *stream,
     OLA_INFO << "Recieved SrvRqst with empty service-type from: " << source;
     SendErrorIfUnicast(request.get(), source, PARSE_ERROR);
     return;
-  } else if (request->service_type == "service:directory-agent") {
+  } else if (request->service_type == DIRECTORY_AGENT_SERVICE) {
     // if (m_enable_da)
       // SendDAAdvert
     return;
-  } else if (request->service_type == "service:service-agent") {
-    // if (!m_enable_da)
-    //  SendSAAdvert
+  } else if (request->service_type == SERVICE_AGENT_SERVICE) {
+    if (!m_enable_da) {
+      ostringstream str;
+      str << SERVICE_AGENT_SERVICE << "://" << m_iface_address;
+      m_udp_sender.SendSAAdvert(source, request->xid, str.str(), m_scope_list);
+    }
     return;
   }
 
