@@ -22,6 +22,7 @@
 
 #include <ola/io/BigEndianStream.h>
 #include <ola/io/IOQueue.h>
+#include <ola/network/IPV4Address.h>
 #include <ola/network/Socket.h>
 #include <ola/network/SocketAddress.h>
 
@@ -42,10 +43,7 @@ namespace slp {
 class SLPUDPSender {
   public:
     // Ownership is not transferred.
-    explicit SLPUDPSender(ola::network::UDPSocket *socket)
-        : m_udp_socket(socket),
-          m_output_stream(&m_output) {
-    }
+    explicit SLPUDPSender(ola::network::UDPSocket *socket);
     ~SLPUDPSender() {}
 
     void SendServiceRequest(const IPV4SocketAddress &dest,
@@ -77,7 +75,6 @@ class SLPUDPSender {
 
     void SendDAAdvert(const IPV4SocketAddress &dest,
                       xid_t xid,
-                      bool multicast,
                       uint16_t error_code,
                       uint32_t boot_timestamp,
                       const string &url,
@@ -87,6 +84,7 @@ class SLPUDPSender {
     ola::network::UDPSocket *m_udp_socket;
     ola::io::IOQueue m_output;
     ola::io::BigEndianOutputStream m_output_stream;
+    ola::network::IPV4Address m_multicast_address;
 
     void EmptyBuffer();
     void Send(const IPV4SocketAddress &dest);

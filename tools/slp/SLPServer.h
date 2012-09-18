@@ -41,8 +41,9 @@
 
 #include "tools/slp/Base.h"
 #include "tools/slp/SLPPacketParser.h"
-#include "tools/slp/URLEntry.h"
+#include "tools/slp/SLPUDPSender.h"
 #include "tools/slp/ScopedSLPStore.h"
+#include "tools/slp/URLEntry.h"
 
 using ola::io::IOQueue;
 using ola::network::IPV4Address;
@@ -128,6 +129,7 @@ class SLPServer {
   private:
     bool m_enable_da;
     uint32_t m_config_da_beat;
+    string m_en_lang;
 
     const IPV4Address m_iface_address;
     ola::Clock m_clock;
@@ -139,7 +141,7 @@ class SLPServer {
     const uint16_t m_rpc_port;
     ola::network::TCPSocketFactory m_rpc_socket_factory;
     ola::network::TCPAcceptingSocket m_rpc_accept_socket;
-    ola::network::IPV4Address m_multicast_address;
+    auto_ptr<ola::network::IPV4SocketAddress> m_multicast_endpoint;
     auto_ptr<SLPServiceImpl> m_service_impl;
 
     // the UDP and TCP sockets for SLP traffic
@@ -150,6 +152,7 @@ class SLPServer {
     set<string> m_scope_list;
     SLPPacketParser m_packet_parser;
     ScopedSLPStore m_service_store;
+    SLPUDPSender m_udp_sender;
 
     // DA members
 
@@ -179,6 +182,15 @@ class SLPServer {
                           const IPV4SocketAddress &source);
     void HandleDAAdvert(BigEndianInputStream *stream,
                         const IPV4SocketAddress &source);
+
+    /*
+    bool PerformSanityChecks(const SLPPacket *packet,
+                             const IPV4SocketAddress &source);
+    */
+
+    void SendErrorIfUnicast(const ServiceRequestPacket *request,
+                            const IPV4SocketAddress &source,
+                            slp_error_code_t error_code);
 
     // DA methods
     bool SendDABeat();

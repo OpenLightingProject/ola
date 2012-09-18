@@ -27,7 +27,6 @@
 #include <ola/StringUtils.h>
 #include <ola/io/SelectServer.h>
 #include <ola/io/BigEndianStream.h>
-#include <ola/io/IOQueue.h>
 #include <ola/io/MemoryBuffer.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/NetworkUtils.h>
@@ -100,6 +99,8 @@ SLPServer::SLPServer(ola::network::UDPSocket *udp_socket,
                      ola::ExportMap *export_map)
     : m_enable_da(options.enable_da),
       m_config_da_beat(options.config_da_beat),
+      m_en_lang(reinterpret_cast<const char*>(EN_LANGUAGE_TAG),
+                sizeof(EN_LANGUAGE_TAG)),
       m_iface_address(options.ip_address),
       m_ss(export_map, &m_clock),
       m_stdin_handler(&m_ss, this),
@@ -109,12 +110,13 @@ SLPServer::SLPServer(ola::network::UDPSocket *udp_socket,
       m_service_impl(new SLPServiceImpl(NULL)),
       m_udp_socket(udp_socket),
       m_slp_accept_socket(tcp_socket),
+      m_udp_sender(m_udp_socket),
       m_export_map(export_map) {
-  m_multicast_address = IPV4Address(
-      HostToNetwork(239U << 24 |
-                    255U << 16 |
-                    255u << 8 |
-                    253));
+  m_multicast_endpoint.reset(
+      new IPV4SocketAddress(
+        IPV4Address(HostToNetwork(SLP_MULTICAST_ADDRESS)), DEFAULT_SLP_PORT));
+
+  ToLower(&m_en_lang);
 
 #ifdef HAVE_LIBMICROHTTPD
   if (options.enable_http) {
@@ -167,7 +169,8 @@ bool SLPServer::Init() {
   }
 
   // join the multicast group
-  if (!m_udp_socket->JoinMulticast(m_iface_address, m_multicast_address)) {
+  if (!m_udp_socket->JoinMulticast(m_iface_address,
+                                   m_multicast_endpoint->Host())) {
     m_rpc_accept_socket.Close();
     return false;
   }
@@ -366,18 +369,67 @@ void SLPServer::UDPData() {
 void SLPServer::HandleServiceRequest(BigEndianInputStream *stream,
                                      const IPV4SocketAddress &source) {
   OLA_INFO << "Got Service request from " << source;
-  const ServiceRequestPacket *srv_request =
-    m_packet_parser.UnpackServiceRequest(stream);
-  OLA_INFO << "srvrequst " << srv_request;
-  if (!srv_request)
+  auto_ptr<const ServiceRequestPacket> request(
+      m_packet_parser.UnpackServiceRequest(stream));
+  if (!request.get())
     return;
+
+  // if we're in the PR list don't do anything
+  vector<IPV4Address>::const_iterator pr_iter = request->pr_list.begin();
+  for (; pr_iter != request->pr_list.end(); ++pr_iter) {
+    if (*pr_iter == m_iface_address) {
+      OLA_INFO << m_iface_address <<
+        " found in PR list, not responding to request";
+      return;
+    }
+  }
+
+  // check if any of the scopes match us
+  if (!request->scope_list.empty()) {
+    // if no match, return SCOPE_NOT_SUPPORTED if unicast
+
+  } else {
+    // no scope list,
+  }
+
+  if (!request->predicate.empty()) {
+    OLA_WARN << "Recieved request with predicate, ignoring";
+    return;
+  }
+
+  if (!request->spi.empty()) {
+    OLA_WARN << "Recieved request with SPI";
+    SendErrorIfUnicast(request.get(), source, AUTHENTICATION_UNKNOWN);
+    return;
+  }
+
+  if (request->language != m_en_lang) {
+    OLA_WARN << "Unsupported language " << request->language;
+    SendErrorIfUnicast(request.get(), source, LANGUAGE_NOT_SUPPORTED);
+    return;
+  }
+
+  if (request->service_type.empty()) {
+    OLA_INFO << "Recieved SrvRqst with empty service-type from: " << source;
+    SendErrorIfUnicast(request.get(), source, PARSE_ERROR);
+    return;
+  } else if (request->service_type == "service:directory-agent") {
+    // if (m_enable_da)
+      // SendDAAdvert
+    return;
+  } else if (request->service_type == "service:service-agent") {
+    // if (!m_enable_da)
+    //  SendSAAdvert
+    return;
+  }
+
+  OLA_INFO << "Received SrvRqst for " << request->service_type;
 
   // handle it here
   OLA_INFO << "Unpacked service request";
-  OLA_INFO << "xid: " << srv_request->xid;
-  OLA_INFO << "lang: " << srv_request->language;
-  OLA_INFO << "srv-type: " << srv_request->service_type;
-  delete srv_request;
+  OLA_INFO << "xid: " << request->xid;
+  OLA_INFO << "lang: " << request->language;
+  OLA_INFO << "srv-type: " << request->service_type;
 }
 
 
@@ -443,6 +495,19 @@ void SLPServer::HandleDAAdvert(BigEndianInputStream *stream,
   delete da_advert;
 }
 
+
+/**
+ * Perform some sanity checks on the SLP Packet
+ * @returns true if this packet is ok, false otherwise.
+bool SLPServer::PerformSanityChecks(const SLPPacket *packet,
+                                    const IPV4SocketAddress &source) {
+
+
+
+  return true;
+}
+
+ */
 
 /**
  * Receive data on a TCP connection
@@ -591,22 +656,24 @@ bool SLPServer::LookForStaleEntries() {
 */
 
 
+void SLPServer::SendErrorIfUnicast(const ServiceRequestPacket *request,
+                                   const IPV4SocketAddress &source,
+                                   slp_error_code_t error_code) {
+  if (request->Multicast())
+    return;
+  m_udp_sender.SendServiceReply(source, request->xid, error_code);
+}
+
+
 /**
  * Send a multicast DAAdvert packet
  */
 bool SLPServer::SendDABeat() {
-  IOQueue output;
-  BigEndianOutputStream output_stream(&output);
-
+  OLA_INFO << "Sending Multicast DAAdvert";
   std::ostringstream str;
   str << DA_SERVICE << "://" << m_iface_address;
-  SLPPacketBuilder::BuildDAAdvert(&output_stream,
-                                  0, true, 0,
-                                  m_boot_time.Seconds(),
-                                  str.str(),
-                                  m_scope_list);
-  OLA_INFO << "Sending Multicast DAAdvert";
-  m_udp_socket->SendTo(&output, m_multicast_address, DEFAULT_SLP_PORT);
+  m_udp_sender.SendDAAdvert(*m_multicast_endpoint, 0, 0, m_boot_time.Seconds(),
+                            str.str(), m_scope_list);
   return true;
 }
 
@@ -615,16 +682,9 @@ bool SLPServer::SendDABeat() {
  * Send a Service Request for 'directory-agent'
  */
 bool SLPServer::SendFindDAService() {
-  IOQueue output;
-  BigEndianOutputStream output_stream(&output);
-  SLPPacketBuilder::BuildServiceRequest(&output_stream,
-                                        0,
-                                        m_da_pr_list,
-                                        DA_SERVICE,
-                                        m_scope_list);
-
   OLA_INFO << "Sending Multicast ServiceRequest for " << DA_SERVICE;
-  m_udp_socket->SendTo(&output, m_multicast_address, DEFAULT_SLP_PORT);
+  m_udp_sender.SendServiceRequest(*m_multicast_endpoint, 0, m_da_pr_list,
+                                  DA_SERVICE, m_scope_list);
   return true;
 }
 }  // slp

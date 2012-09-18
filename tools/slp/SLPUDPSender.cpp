@@ -22,13 +22,16 @@
 #include <ola/io/IOQueue.h>
 #include <ola/network/Socket.h>
 #include <ola/network/SocketAddress.h>
+#include <ola/network/NetworkUtils.h>
 
 #include <set>
 #include <string>
 
 #include "tools/slp/SLPPacketBuilder.h"
 #include "tools/slp/SLPUDPSender.h"
+#include "tools/slp/SLPPacketConstants.h"
 
+using ola::network::HostToNetwork;
 using ola::network::IPV4SocketAddress;
 using std::set;
 using std::string;
@@ -37,14 +40,22 @@ namespace ola {
 namespace slp {
 
 
+SLPUDPSender::SLPUDPSender(ola::network::UDPSocket *socket)
+    : m_udp_socket(socket),
+      m_output_stream(&m_output),
+      m_multicast_address(HostToNetwork(SLP_MULTICAST_ADDRESS)) {
+}
+
+
 void SLPUDPSender::SendServiceRequest(const IPV4SocketAddress &dest,
                                       xid_t xid,
                                       const set<IPV4Address> &pr_list,
                                       const string &service_type,
                                       const set<string> &scope_list) {
   EmptyBuffer();
-  SLPPacketBuilder::BuildServiceRequest(&m_output_stream, xid, pr_list,
-                                        service_type, scope_list);
+  SLPPacketBuilder::BuildServiceRequest(
+      &m_output_stream, xid, dest.Host() == m_multicast_address, pr_list,
+      service_type, scope_list);
   OLA_INFO << "Sending SrvRqst for " << service_type;
   Send(dest);
 }
@@ -97,14 +108,14 @@ void SLPUDPSender::SendServiceAck(const IPV4SocketAddress &dest,
 
 void SLPUDPSender::SendDAAdvert(const IPV4SocketAddress &dest,
                                 xid_t xid,
-                                bool multicast,
                                 uint16_t error_code,
                                 uint32_t boot_timestamp,
                                 const string &url,
                                 const set<string> &scope_list) {
   EmptyBuffer();
-  SLPPacketBuilder::BuildDAAdvert(&m_output_stream, xid, multicast, error_code,
-                                  boot_timestamp, url, scope_list);
+  SLPPacketBuilder::BuildDAAdvert(
+      &m_output_stream, xid, dest.Host() == m_multicast_address, error_code,
+      boot_timestamp, url, scope_list);
   OLA_INFO << "Sending DAAdvert with url " << url;
   Send(dest);
 }

@@ -27,6 +27,10 @@ namespace slp {
 
 static const uint8_t SLP_VERSION = 2;
 
+// In host order, you need to convert before use.
+static const uint32_t SLP_MULTICAST_ADDRESS = (
+    239U << 24 | 255U << 16 | 255u << 8 | 253);
+
 typedef uint16_t xid_t;
 
 typedef enum {

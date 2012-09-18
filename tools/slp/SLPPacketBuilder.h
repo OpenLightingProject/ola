@@ -48,6 +48,7 @@ class SLPPacketBuilder {
 
     static void BuildServiceRequest(BigEndianOutputStreamInterface *output,
                                     xid_t xid,
+                                    bool multicast,
                                     const set<IPV4Address> &pr_list,
                                     const string &service_type,
                                     const set<string> &scope_list);

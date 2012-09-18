@@ -52,6 +52,7 @@ using std::set;
 void SLPPacketBuilder::BuildServiceRequest(
     BigEndianOutputStreamInterface *output,
     xid_t xid,
+    bool multicast,
     const set<IPV4Address> &pr_list,
     const string &service_type,
     const set<string> &scope_list) {
@@ -79,7 +80,7 @@ void SLPPacketBuilder::BuildServiceRequest(
   BuildSLPHeader(output,
                  SERVICE_REQUEST,
                  length,
-                 0,
+                 multicast ? SLP_REQUEST_MCAST : 0,
                  xid);
   WriteString(output, joined_pr_list);
   WriteString(output, service_type);

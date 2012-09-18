@@ -104,14 +104,14 @@ void PacketBuilderTest::testBuildServiceRequest() {
   scope_list.insert("ACN");
   scope_list.insert("MYORG,");
 
-  SLPPacketBuilder::BuildServiceRequest(&output, xid, pr_list,
+  SLPPacketBuilder::BuildServiceRequest(&output, xid, true, pr_list,
                                         "rdmnet-device", scope_list);
   CPPUNIT_ASSERT_EQUAL(66u, ioqueue.Size());
 
   unsigned int data_size;
   uint8_t *output_data = WriteToBuffer(&ioqueue, &data_size);
   uint8_t expected_data[] = {
-    2, 1, 0, 0, 66, 0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+    2, 1, 0, 0, 66, 0x20, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
     0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1', '.',
     '8',  // pr-llist
     0, 13, 'r', 'd', 'm', 'n', 'e', 't', '-', 'd', 'e', 'v', 'i', 'c', 'e',
