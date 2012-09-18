@@ -22,8 +22,9 @@
 #include <string>
 #include <utility>
 
-#include "tools/slp/ScopedSLPStore.h"
 #include "tools/slp/SLPStore.h"
+#include "tools/slp/SLPStrings.h"
+#include "tools/slp/ScopedSLPStore.h"
 
 
 namespace ola {
@@ -48,7 +49,7 @@ ScopedSLPStore::~ScopedSLPStore() {
  * exist.
  */
 SLPStore* ScopedSLPStore::LookupOrCreate(const string &scope) {
-  string canonical_scope = CanonicalScope(scope);
+  string canonical_scope = SLPGetCanonicalString(scope);
   ScopedServiceMap::iterator iter = m_scopes.find(canonical_scope);
   if (iter != m_scopes.end())
     return iter->second;
@@ -60,18 +61,8 @@ SLPStore* ScopedSLPStore::LookupOrCreate(const string &scope) {
 
 
 SLPStore* ScopedSLPStore::Lookup(const string &scope) {
-  ScopedServiceMap::iterator iter = m_scopes.find(CanonicalScope(scope));
+  ScopedServiceMap::iterator iter = m_scopes.find(SLPGetCanonicalString(scope));
   return (iter == m_scopes.end() ? NULL : iter->second);
-}
-
-
-/**
- * Convert a scope to its canonical name (the upper case version).
- */
-string ScopedSLPStore::CanonicalScope(const string &scope) {
-  string canonical_scope = scope;
-  ToUpper(&canonical_scope);
-  return canonical_scope;
 }
 }  // slp
 }  // ola

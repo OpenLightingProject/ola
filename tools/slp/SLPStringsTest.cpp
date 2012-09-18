@@ -19,17 +19,24 @@
  */
 
 #include <cppunit/extensions/HelperMacros.h>
+#include <set>
 #include <string>
+#include <vector>
 
 #include "ola/Logging.h"
 #include "ola/testing/TestUtils.h"
 #include "tools/slp/SLPStrings.h"
 
 using ola::slp::SLPCanonicalizeString;
+using ola::slp::SLPGetCanonicalString;
+using ola::slp::SLPReduceList;
+using ola::slp::SLPSetIntersect;
 using ola::slp::SLPStringCanonicalizeAndCompare;
 using ola::slp::SLPStringEscape;
 using ola::slp::SLPStringUnescape;
+using std::set;
 using std::string;
+using std::vector;
 
 
 class SLPStringsTest: public CppUnit::TestFixture {
@@ -38,6 +45,8 @@ class SLPStringsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testUnescape);
   CPPUNIT_TEST(testCanonicalize);
   CPPUNIT_TEST(testComparison);
+  CPPUNIT_TEST(testIntersection);
+  CPPUNIT_TEST(testReduceList);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -45,6 +54,8 @@ class SLPStringsTest: public CppUnit::TestFixture {
     void testUnescape();
     void testCanonicalize();
     void testComparison();
+    void testIntersection();
+    void testReduceList();
 
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
@@ -101,7 +112,13 @@ void SLPStringsTest::testCanonicalize() {
   string two = "SOME   STRING";
   SLPCanonicalizeString(&two);
   OLA_ASSERT_EQ(string("some string"), two);
+
+  // now try the const version
+  const string three = "  Some String";
+  string output = SLPGetCanonicalString(three);
+  OLA_ASSERT_EQ(string("some string"), output);
 }
+
 
 /*
  * Check that comparisons fold whitesare and are case insensitive.
@@ -115,4 +132,39 @@ void SLPStringsTest::testComparison() {
   OLA_ASSERT_TRUE(SLPStringCanonicalizeAndCompare("", "\t\r"));
   OLA_ASSERT_TRUE(SLPStringCanonicalizeAndCompare("Foo Bar", "Foo\tBar"));
   OLA_ASSERT_TRUE(SLPStringCanonicalizeAndCompare("  foo", "Foo  \r"));
+}
+
+
+/*
+ * Check that SLPSetIntersect works.
+ */
+void SLPStringsTest::testIntersection() {
+  set<string> one, two;
+  OLA_ASSERT_FALSE(SLPSetIntersect(one, two));
+
+  one.insert("default");
+  OLA_ASSERT_FALSE(SLPSetIntersect(one, two));
+
+  two.insert("default");
+  OLA_ASSERT_TRUE(SLPSetIntersect(one, two));
+}
+
+
+/*
+ * Check that SLPReduceList works.
+ */
+void SLPStringsTest::testReduceList() {
+  set<string> output;
+  vector<string> input;
+  input.push_back("default");
+  input.push_back("DEFAULT");
+  input.push_back("  DEFAULT  ");
+  input.push_back("  Some String  ");
+  input.push_back("SOME   STRING");
+
+  SLPReduceList(input, &output);
+  set<string> expected;
+  expected.insert("default");
+  expected.insert("some string");
+  OLA_ASSERT_SET_EQ(expected, output);
 }

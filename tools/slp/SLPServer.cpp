@@ -51,6 +51,7 @@
 #include "tools/slp/SLPServer.h"
 #include "tools/slp/SLPServiceImpl.h"
 #include "tools/slp/SLPStore.h"
+#include "tools/slp/SLPStrings.h"
 
 namespace ola {
 namespace slp {
@@ -133,12 +134,12 @@ SLPServer::SLPServer(ola::network::UDPSocket *udp_socket,
 #endif
 
   if (options.scopes.empty())
-    m_scope_list.insert(ScopedSLPStore::CanonicalScope(DEFAULT_SCOPE));
+    m_scope_list.insert(SLPGetCanonicalString(DEFAULT_SCOPE));
 
   std::transform(options.scopes.begin(),
                  options.scopes.end(),
                  inserter(m_scope_list, m_scope_list.begin()),
-                 ScopedSLPStore::CanonicalScope);
+                 SLPGetCanonicalString);
 
   export_map->GetIntegerVar(CONFIG_DA_BEAT_VAR)->Set(options.config_da_beat);
   export_map->GetBoolVar(DA_ENABLED_VAR)->Set(options.enable_da);

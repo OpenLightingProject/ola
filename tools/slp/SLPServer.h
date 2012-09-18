@@ -149,7 +149,7 @@ class SLPServer {
     ola::network::TCPAcceptingSocket *m_slp_accept_socket;
 
     // SLP memebers
-    set<string> m_scope_list;
+    set<string> m_scope_list;  // the scopes we're using, in canonical form
     SLPPacketParser m_packet_parser;
     ScopedSLPStore m_service_store;
     SLPUDPSender m_udp_sender;

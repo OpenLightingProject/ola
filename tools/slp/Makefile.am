@@ -99,6 +99,7 @@ PacketParserTester_LDADD = $(COMMON_TEST_LDADD)
 SLPStoreTester_SOURCES = GenericTester.cpp \
                          SLPStore.cpp \
                          SLPStoreTest.cpp \
+                         SLPStrings.cpp \
                          ScopedSLPStore.cpp \
                          ScopedSLPStoreTest.cpp
 SLPStoreTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)

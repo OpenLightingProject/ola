@@ -35,8 +35,10 @@ using std::vector;
 void SLPStringEscape(string *str);
 void SLPStringUnescape(string *str);
 void SLPCanonicalizeString(string *str);
+string SLPGetCanonicalString(const string &str);
 bool SLPStringCanonicalizeAndCompare(const string &s1, const string s2);
-bool SLPVectorSetIntersect(const vector<string> &list, const set<string> &s);
+bool SLPSetIntersect(const set<string> &one, const set<string> &two);
+void SLPReduceList(const vector<string> &input, set<string> *output);
 }  // slp
 }  // ola
 #endif  // TOOLS_SLP_SLPSTRINGS_H_

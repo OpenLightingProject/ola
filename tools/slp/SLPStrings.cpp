@@ -20,6 +20,7 @@
 
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
+#include <algorithm>
 #include <set>
 #include <string>
 #include <sstream>
@@ -122,6 +123,16 @@ void SLPCanonicalizeString(string *str) {
 
 
 /**
+ * Same as above but returns a new string
+ */
+string SLPGetCanonicalString(const string &str) {
+  string canonical_str = str;
+  SLPCanonicalizeString(&canonical_str);
+  return canonical_str;
+}
+
+
+/**
  * Compare two strings by converting to lower case and folding whitespace.
  */
 bool SLPStringCanonicalizeAndCompare(const string &s1, const string s2) {
@@ -134,19 +145,25 @@ bool SLPStringCanonicalizeAndCompare(const string &s1, const string s2) {
 
 
 /**
- * Return true if any of the elements in the list exist in the set.
- * This is simple stupid for now. We can optimize later.
+ * Return true if any of the elements in set one exist in set two. This assumes
+ * the strings are in canonical form.
  */
-bool SLPVectorSetIntersect(const vector<string> &list, const set<string> &s) {
-  vector<string>::const_iterator iter = list.begin();
-  for (; iter != list.end(); ++iter) {
-    set<string>::const_iterator iter2 = s.begin();
-    for (; iter2 != s.end(); ++iter2) {
-      if (SLPStringCanonicalizeAndCompare(*iter, *iter2))
-        return true;
-    }
-  }
-  return false;
+bool SLPSetIntersect(const set<string> &one, const set<string> &two) {
+  vector<string> output;
+  std::set_intersection(one.begin(), one.end(), two.begin(), two.end(),
+                        inserter(output, output.begin()));
+  return !output.empty();
+}
+
+
+/**
+ * Give a vector<string> input, canonicalize each element and insert into a
+ * set<string>. This removes duplicates.
+ */
+void SLPReduceList(const vector<string> &input, set<string> *output) {
+  vector<string>::const_iterator iter = input.begin();
+  for (; iter != input.end(); ++iter)
+    output->insert(SLPGetCanonicalString(*iter));
 }
 }  // slp
 }  // ola

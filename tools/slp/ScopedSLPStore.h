@@ -43,8 +43,6 @@ class ScopedSLPStore {
 
     class SLPStore* Lookup(const string &scope);
 
-    static string CanonicalScope(const string &scope);
-
   private:
     typedef map<string, class SLPStore*> ScopedServiceMap;
     ScopedServiceMap m_scopes;
