@@ -25,7 +25,8 @@
 #include "ola/testing/TestUtils.h"
 #include "tools/slp/SLPStrings.h"
 
-using ola::slp::SLPStringCompare;
+using ola::slp::SLPCanonicalizeString;
+using ola::slp::SLPStringCanonicalizeAndCompare;
 using ola::slp::SLPStringEscape;
 using ola::slp::SLPStringUnescape;
 using std::string;
@@ -35,12 +36,14 @@ class SLPStringsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(SLPStringsTest);
   CPPUNIT_TEST(testEscape);
   CPPUNIT_TEST(testUnescape);
+  CPPUNIT_TEST(testCanonicalize);
   CPPUNIT_TEST(testComparison);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void testEscape();
     void testUnescape();
+    void testCanonicalize();
     void testComparison();
 
     void setUp() {
@@ -88,15 +91,28 @@ void SLPStringsTest::testUnescape() {
 
 
 /*
+ * Check that we can convert strings to their canonical form
+ */
+void SLPStringsTest::testCanonicalize() {
+  string one = "  Some String  ";
+  SLPCanonicalizeString(&one);
+  OLA_ASSERT_EQ(string("some string"), one);
+
+  string two = "SOME   STRING";
+  SLPCanonicalizeString(&two);
+  OLA_ASSERT_EQ(string("some string"), two);
+}
+
+/*
  * Check that comparisons fold whitesare and are case insensitive.
  */
 void SLPStringsTest::testComparison() {
   const string one = "  Some String  ";
   const string two = "SOME   STRING";
 
-  OLA_ASSERT_TRUE(SLPStringCompare(one, two));
-  OLA_ASSERT_TRUE(SLPStringCompare("", "  "));
-  OLA_ASSERT_TRUE(SLPStringCompare("", "\t\r"));
-  OLA_ASSERT_TRUE(SLPStringCompare("Foo Bar", "Foo\tBar"));
-  OLA_ASSERT_TRUE(SLPStringCompare("  foo", "Foo  \r"));
+  OLA_ASSERT_TRUE(SLPStringCanonicalizeAndCompare(one, two));
+  OLA_ASSERT_TRUE(SLPStringCanonicalizeAndCompare("", "  "));
+  OLA_ASSERT_TRUE(SLPStringCanonicalizeAndCompare("", "\t\r"));
+  OLA_ASSERT_TRUE(SLPStringCanonicalizeAndCompare("Foo Bar", "Foo\tBar"));
+  OLA_ASSERT_TRUE(SLPStringCanonicalizeAndCompare("  foo", "Foo  \r"));
 }

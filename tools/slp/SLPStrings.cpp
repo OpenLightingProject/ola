@@ -20,8 +20,10 @@
 
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
+#include <set>
 #include <string>
 #include <sstream>
+#include <vector>
 #include "tools/slp/SLPStrings.h"
 
 namespace ola {
@@ -111,16 +113,40 @@ void FoldWhitespace(string *str) {
 
 
 /**
+ * Convert str to its canonical form.
+ */
+void SLPCanonicalizeString(string *str) {
+  ToLower(str);
+  FoldWhitespace(str);
+}
+
+
+/**
  * Compare two strings by converting to lower case and folding whitespace.
  */
-bool SLPStringCompare(const string &s1, const string s2) {
+bool SLPStringCanonicalizeAndCompare(const string &s1, const string s2) {
   string str1 = s1;
   string str2 = s2;
-  ToLower(&str1);
-  ToLower(&str2);
-  FoldWhitespace(&str1);
-  FoldWhitespace(&str2);
+  SLPCanonicalizeString(&str1);
+  SLPCanonicalizeString(&str2);
   return str1 == str2;
+}
+
+
+/**
+ * Return true if any of the elements in the list exist in the set.
+ * This is simple stupid for now. We can optimize later.
+ */
+bool SLPVectorSetIntersect(const vector<string> &list, const set<string> &s) {
+  vector<string>::const_iterator iter = list.begin();
+  for (; iter != list.end(); ++iter) {
+    set<string>::const_iterator iter2 = s.begin();
+    for (; iter2 != s.end(); ++iter2) {
+      if (SLPStringCanonicalizeAndCompare(*iter, *iter2))
+        return true;
+    }
+  }
+  return false;
 }
 }  // slp
 }  // ola

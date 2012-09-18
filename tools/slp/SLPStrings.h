@@ -21,18 +21,22 @@
 #ifndef TOOLS_SLP_SLPSTRINGS_H_
 #define TOOLS_SLP_SLPSTRINGS_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
 namespace ola {
 namespace slp {
 
+using std::set;
 using std::string;
 using std::vector;
 
 void SLPStringEscape(string *str);
 void SLPStringUnescape(string *str);
-bool SLPStringCompare(const string &s1, const string s2);
+void SLPCanonicalizeString(string *str);
+bool SLPStringCanonicalizeAndCompare(const string &s1, const string s2);
+bool SLPVectorSetIntersect(const vector<string> &list, const set<string> &s);
 }  // slp
 }  // ola
 #endif  // TOOLS_SLP_SLPSTRINGS_H_
