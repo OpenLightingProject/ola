@@ -25,6 +25,7 @@
 #include <cppunit/Asserter.h>
 #include <cppunit/SourceLine.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include <set>
 #include <sstream>
 #include <vector>
 
@@ -33,6 +34,7 @@ namespace ola {
 namespace testing {
 
 using std::vector;
+using std::set;
 
 // Assert that two data blocks are the same.
 void ASSERT_DATA_EQUALS(unsigned int line,
@@ -54,6 +56,21 @@ void _AssertVectorEq(const CPPUNIT_NS::SourceLine &source_line,
   while (iter1 != t1.end())
     CPPUNIT_NS::assertEquals(*iter1++, *iter2++, source_line,
                              "Vector elements not equal");
+}
+
+// Private, use OLA_ASSERT_SET_EQ below
+template <typename T>
+void _AssertSetEq(const CPPUNIT_NS::SourceLine &source_line,
+                  const set<T> &t1,
+                  const set<T> &t2) {
+  CPPUNIT_NS::assertEquals(t1.size(), t2.size(), source_line,
+                           "Set sizes not equal");
+
+  typename set<T>::const_iterator iter1 = t1.begin();
+  typename set<T>::const_iterator iter2 = t2.begin();
+  while (iter1 != t1.end())
+    CPPUNIT_NS::assertEquals(*iter1++, *iter2++, source_line,
+                             "Set elements not equal");
 }
 
 // Useful macros. This allows us to switch between unit testing frameworks in
@@ -81,6 +98,9 @@ void _AssertVectorEq(const CPPUNIT_NS::SourceLine &source_line,
 
 #define OLA_ASSERT_VECTOR_EQ(expected, output)  \
   ola::testing::_AssertVectorEq(CPPUNIT_SOURCELINE(), (expected), (output))
+
+#define OLA_ASSERT_SET_EQ(expected, output)  \
+  ola::testing::_AssertSetEq(CPPUNIT_SOURCELINE(), (expected), (output))
 
 #define OLA_ASSERT_NULL(value) \
   CPPUNIT_NS::Asserter::failIf( \
