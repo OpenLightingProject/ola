@@ -798,8 +798,8 @@ bool ArtNetNodeImpl::SendPollReply(const IPV4Address &destination) {
   strncpy(packet.data.reply.node_report,
           str.str().data(),
           ARTNET_REPORT_LENGTH);
-  packet.data.reply.number_ports[1] = ARTNET_MAX_PORTS;
-  for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
+  packet.data.reply.number_ports[1] = ARTNET_REPLY_MAX_PORTS;
+  for (unsigned int i = 0; i < ARTNET_REPLY_MAX_PORTS; i++) {
     packet.data.reply.port_types[i] = 0xc0;  // input and output DMX
     packet.data.reply.good_input[i] = m_input_ports[i].enabled ? 0x0 : 0x8;
     packet.data.reply.sw_in[i] = m_input_ports[i].universe_address;
@@ -960,7 +960,7 @@ void ArtNetNodeImpl::HandleReplyPacket(const IPV4Address &source_address,
   }
 
   // Update the subscribed nodes list
-  unsigned int port_limit = std::min((uint8_t) ARTNET_MAX_PORTS,
+  unsigned int port_limit = std::min((uint8_t) ARTNET_REPLY_MAX_PORTS,
                                      packet.number_ports[1]);
   for (unsigned int i = 0; i < port_limit; i++) {
     if (packet.port_types[i] & 0x80) {
@@ -1059,7 +1059,7 @@ void ArtNetNodeImpl::HandleTodRequest(const IPV4Address &source_address,
   memset(handler_called, 0, sizeof(handler_called));
 
   for (unsigned int i = 0; i < addresses; i++) {
-    for (unsigned int port_id = 0; port_id < ARTNET_MAX_PORTS; port_id++) {
+    for (unsigned int port_id = 0; port_id < ARTNET_REPLY_MAX_PORTS; port_id++) {
       if (m_output_ports[port_id].enabled &&
           m_output_ports[port_id].universe_address == packet.addresses[i] &&
           m_output_ports[port_id].on_discover &&
