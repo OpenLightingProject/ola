@@ -35,6 +35,7 @@ using ola::slp::SLPSetIntersect;
 using ola::slp::SLPStringCanonicalizeAndCompare;
 using ola::slp::SLPStringEscape;
 using ola::slp::SLPStringUnescape;
+using ola::slp::SLPStripService;
 using std::set;
 using std::string;
 using std::vector;
@@ -49,6 +50,7 @@ class SLPStringsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testIntersection);
   CPPUNIT_TEST(testReduceList);
   CPPUNIT_TEST(testScopesMatch);
+  CPPUNIT_TEST(testStripService);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -59,6 +61,7 @@ class SLPStringsTest: public CppUnit::TestFixture {
     void testIntersection();
     void testReduceList();
     void testScopesMatch();
+    void testStripService();
 
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
@@ -185,4 +188,23 @@ void SLPStringsTest::testScopesMatch() {
   OLA_ASSERT_FALSE(SLPScopesMatch(input, output));
   output.insert("default");
   OLA_ASSERT_TRUE(SLPScopesMatch(input, output));
+}
+
+
+/**
+ * Test the SLPStripService function works.
+ */
+void SLPStringsTest::testStripService() {
+  string input = "service:foo";
+  SLPStripService(&input);
+  OLA_ASSERT_EQ(string("foo"), input);
+
+  input = "servicefoo";
+  SLPStripService(&input);
+  OLA_ASSERT_EQ(string("servicefoo"), input);
+
+  // now try without the service
+  input = "foo";
+  SLPStripService(&input);
+  OLA_ASSERT_EQ(string("foo"), input);
 }

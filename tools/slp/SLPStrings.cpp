@@ -25,6 +25,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include "tools/slp/SLPPacketConstants.h"
 #include "tools/slp/SLPStrings.h"
 
 namespace ola {
@@ -176,6 +177,16 @@ bool SLPScopesMatch(const vector<string> &scopes_v,
   set<string> canonicalized_scopes;
   SLPReduceList(scopes_v, &canonicalized_scopes);
   return SLPSetIntersect(canonicalized_scopes, scopes_s);
+}
+
+
+/**
+ * Remove the service:// from the start of a string
+ */
+void SLPStripService(string *str) {
+  size_t pos = str->find(SLP_SERVICE_PREFIX);
+  if (pos == 0)
+    *str = str->substr(strlen(SLP_SERVICE_PREFIX));
 }
 }  // slp
 }  // ola

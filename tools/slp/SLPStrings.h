@@ -41,6 +41,7 @@ bool SLPSetIntersect(const set<string> &one, const set<string> &two);
 void SLPReduceList(const vector<string> &input, set<string> *output);
 bool SLPScopesMatch(const vector<string> &scopes_v,
                     const set<string> &scopes_s);
+void SLPStripService(string *str);
 }  // slp
 }  // ola
 #endif  // TOOLS_SLP_SLPSTRINGS_H_

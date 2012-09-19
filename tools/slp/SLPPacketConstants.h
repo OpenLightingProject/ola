@@ -31,6 +31,8 @@ static const uint8_t SLP_VERSION = 2;
 static const uint32_t SLP_MULTICAST_ADDRESS = (
     239U << 24 | 255U << 16 | 255u << 8 | 253);
 
+static const char SLP_SERVICE_PREFIX[] = "service:";
+
 typedef uint16_t xid_t;
 
 typedef enum {
