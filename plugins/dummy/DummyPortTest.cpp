@@ -252,8 +252,8 @@ void DummyPortTest::testDeviceInfo() {
   device_descriptor.software_version = HostToNetwork(static_cast<uint32_t>(1));
   device_descriptor.dmx_footprint =
     HostToNetwork(static_cast<uint16_t>(5));
-  device_descriptor.current_personality = 1;
-  device_descriptor.personaility_count = 3;
+  device_descriptor.current_personality = 2;
+  device_descriptor.personaility_count = 4;
   device_descriptor.dmx_start_address =
     HostToNetwork(static_cast<uint16_t>(1));
   device_descriptor.sub_device_count = 0;
