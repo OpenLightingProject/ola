@@ -30,6 +30,7 @@
 using ola::slp::SLPCanonicalizeString;
 using ola::slp::SLPGetCanonicalString;
 using ola::slp::SLPReduceList;
+using ola::slp::SLPScopesMatch;
 using ola::slp::SLPSetIntersect;
 using ola::slp::SLPStringCanonicalizeAndCompare;
 using ola::slp::SLPStringEscape;
@@ -47,6 +48,7 @@ class SLPStringsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testComparison);
   CPPUNIT_TEST(testIntersection);
   CPPUNIT_TEST(testReduceList);
+  CPPUNIT_TEST(testScopesMatch);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -56,6 +58,7 @@ class SLPStringsTest: public CppUnit::TestFixture {
     void testComparison();
     void testIntersection();
     void testReduceList();
+    void testScopesMatch();
 
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
@@ -167,4 +170,19 @@ void SLPStringsTest::testReduceList() {
   expected.insert("default");
   expected.insert("some string");
   OLA_ASSERT_SET_EQ(expected, output);
+}
+
+
+/**
+ * Test the SLPScopesMatch function
+ */
+void SLPStringsTest::testScopesMatch() {
+  vector<string> input;
+  set<string> output;
+
+  OLA_ASSERT_FALSE(SLPScopesMatch(input, output));
+  input.push_back("DEFAULT");
+  OLA_ASSERT_FALSE(SLPScopesMatch(input, output));
+  output.insert("default");
+  OLA_ASSERT_TRUE(SLPScopesMatch(input, output));
 }

@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * SLPString.h
- * Utility functions for dealing with strings in SLP
+ * Utility functions for dealing with strings & scopes in SLP.
  * Copyright (C) 2012 Simon Newton
  */
 
@@ -39,6 +39,8 @@ string SLPGetCanonicalString(const string &str);
 bool SLPStringCanonicalizeAndCompare(const string &s1, const string s2);
 bool SLPSetIntersect(const set<string> &one, const set<string> &two);
 void SLPReduceList(const vector<string> &input, set<string> *output);
+bool SLPScopesMatch(const vector<string> &scopes_v,
+                    const set<string> &scopes_s);
 }  // slp
 }  // ola
 #endif  // TOOLS_SLP_SLPSTRINGS_H_

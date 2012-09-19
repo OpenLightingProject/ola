@@ -192,6 +192,9 @@ class SLPServer {
                             const IPV4SocketAddress &source,
                             slp_error_code_t error_code);
 
+    void MaybeSendSAAdvert(const ServiceRequestPacket *request,
+                           const IPV4SocketAddress &source);
+
     // DA methods
     bool SendDABeat();
 

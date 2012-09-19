@@ -423,11 +423,7 @@ void SLPServer::HandleServiceRequest(BigEndianInputStream *stream,
       // SendDAAdvert
     return;
   } else if (request->service_type == SERVICE_AGENT_SERVICE) {
-    if (!m_enable_da) {
-      ostringstream str;
-      str << SERVICE_AGENT_SERVICE << "://" << m_iface_address;
-      m_udp_sender.SendSAAdvert(source, request->xid, str.str(), m_scope_list);
-    }
+    MaybeSendSAAdvert(request.get(), source);
     return;
   }
 
@@ -670,6 +666,21 @@ void SLPServer::SendErrorIfUnicast(const ServiceRequestPacket *request,
   if (request->Multicast())
     return;
   m_udp_sender.SendServiceReply(source, request->xid, error_code);
+}
+
+
+/**
+ * Send a SAAdvert if required.
+ */
+void SLPServer::MaybeSendSAAdvert(const ServiceRequestPacket *request,
+                                  const IPV4SocketAddress &source) {
+  if (m_enable_da || !SLPScopesMatch(request->scope_list, m_scope_list))
+    // no SAAdverts in DA mode
+    return;
+
+  ostringstream str;
+  str << SERVICE_AGENT_SERVICE << "://" << m_iface_address;
+  m_udp_sender.SendSAAdvert(source, request->xid, str.str(), m_scope_list);
 }
 
 

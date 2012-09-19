@@ -165,5 +165,17 @@ void SLPReduceList(const vector<string> &input, set<string> *output) {
   for (; iter != input.end(); ++iter)
     output->insert(SLPGetCanonicalString(*iter));
 }
+
+
+/**
+ * Return true if any of the non-canonicalized scopes in the vector match any
+ * of those in the canonicalized set.
+ */
+bool SLPScopesMatch(const vector<string> &scopes_v,
+                    const set<string> &scopes_s) {
+  set<string> canonicalized_scopes;
+  SLPReduceList(scopes_v, &canonicalized_scopes);
+  return SLPSetIntersect(canonicalized_scopes, scopes_s);
+}
 }  // slp
 }  // ola
