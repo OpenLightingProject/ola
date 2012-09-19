@@ -47,6 +47,7 @@ namespace ola {
 
 using ola::rdm::UID;
 using ola::web::BoolItem;
+using ola::web::GenericItem;
 using ola::web::HiddenItem;
 using ola::web::JsonArray;
 using ola::web::JsonObject;
@@ -1288,7 +1289,12 @@ void RDMHTTPModule::GetDeviceInfoHandler(
     stream << dev_info.software_version << " (" << device.software_version
       << ")";
   section.AddItem(new StringItem("Software Version", stream.str()));
-  section.AddItem(new UIntItem("DMX Address", device.dmx_start_address));
+
+  if (device.dmx_start_address == 0xffff)
+    section.AddItem(new StringItem("DMX Address", "N/A"));
+  else
+    section.AddItem(new UIntItem("DMX Address", device.dmx_start_address));
+
   section.AddItem(new UIntItem("DMX Footprint", device.dmx_footprint));
 
   stream.str("");
@@ -1911,9 +1917,16 @@ void RDMHTTPModule::GetStartAddressHandler(
     return;
 
   JsonSection section;
-  UIntItem *item = new UIntItem("DMX Start Address", address, ADDRESS_FIELD);
-  item->SetMin(0);
-  item->SetMax(DMX_UNIVERSE_SIZE - 1);
+  GenericItem *item = NULL;
+  if (address == 0xffff) {
+    item = new StringItem("DMX Start Address", "N/A");
+  } else {
+    UIntItem *uint_item = new UIntItem("DMX Start Address", address,
+                                       ADDRESS_FIELD);
+    uint_item->SetMin(0);
+    uint_item->SetMax(DMX_UNIVERSE_SIZE - 1);
+    item = uint_item;
+  }
   section.AddItem(item);
   RespondWithSection(response, section);
 }
