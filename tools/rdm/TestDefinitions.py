@@ -1579,57 +1579,77 @@ class SetPersonality(OptionalParameterTestFixture):
   """Set the personality."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_PERSONALITY'
-  # This ensures we don't modify the current personality before GetPersonality
-  # and GetPersonalityDescription run
-  DEPS = [GetPersonality, GetPersonalityDescription]
-  REQUIRES = ['current_personality', 'personality_count', 'personalities']
+  REQUIRES = ['current_personality', 'personalities']
 
   def Test(self):
-    count = self.Property('personality_count')
-    if count is None or count == 0:
-      self.AddExpectedResults(self.NackSetResult(RDMNack.NR_UNKNOWN_PID))
-      self.new_personality = {'personality': 1}  # can use anything here really
-    else:
-      personalities = self.Property('personalities')
-      current = self.Property('current_personality')
+    self._personalities = list(self.Property('personalities'))
+    if len(self._personalities) > 0:
+      self._CheckPersonality()
+      return
 
-      if len(personalities) == 0:
-        self.SetFailed(
-          'personality_count was non 0 but failed to fetch all personalities')
-        self.Stop()
-        return
+    # check we get a NR_UNKNOWN_PID
+    self.AddExpectedResults(self.NackSetResult(RDMNack.NR_UNKNOWN_PID))
+    self.new_personality = {'personality': 1}  # can use anything here really
+    self.SendSet(ROOT_DEVICE, self.pid, [1])
 
-      self.new_personality = personalities[0]
-      for personality in personalities:
-        if personality['personality'] != current:
-          self.new_personality = personality
-          break
+  def _CheckPersonality(self):
+    if not self._personalities:
+      # end of the list, we're done
+      self.Stop()
+      return
 
-      self.AddIfSetSupported(self.AckSetResult(action=self.VerifySet))
-
+    self.AddIfSetSupported(self.AckSetResult(action=self.VerifySet))
     self.SendSet(ROOT_DEVICE,
                  self.pid,
-                 [self.new_personality['personality']])
+                 [self._personalities[0]['personality']])
 
   def VerifySet(self):
     self.AddIfGetSupported(
       self.AckGetResult(
         field_values={
-          'current_personality': self.new_personality['personality'],
+          'current_personality': self._personalities[0]['personality'],
         },
         action=self.VerifyDeviceInfo))
     self.SendGet(ROOT_DEVICE, self.pid)
 
   def VerifyDeviceInfo(self):
     device_info_pid = self.LookupPid('DEVICE_INFO')
+
+    next_action = self.NextPersonality
+    if self._personalities[0]['slots_required'] == 0:
+      # if this personality has a footprint of 0, verify the start address is
+      # 0xffff
+      next_action = self.VerifyFootprint0StartAddress
+
     self.AddIfGetSupported(
       AckGetResult(
         device_info_pid.value,
         field_values={
-          'current_personality': self.new_personality['personality'],
-          'dmx_footprint': self.new_personality['slots_required'],
-        }))
+          'current_personality': self._personalities[0]['personality'],
+          'dmx_footprint': self._personalities[0]['slots_required'],
+        },
+        action=next_action))
     self.SendGet(ROOT_DEVICE, device_info_pid)
+
+  def VerifyFootprint0StartAddress(self):
+    address_pid = self.LookupPid('DMX_START_ADDRESS')
+    self.AddIfGetSupported(
+      AckGetResult(
+        address_pid.value,
+        field_values={'dmx_address': 0xffff},
+        action=self.NextPersonality))
+    self.SendGet(ROOT_DEVICE, address_pid)
+
+  def NextPersonality(self):
+    self._personalities = self._personalities[1:]
+    self._CheckPersonality()
+
+  def ResetState(self):
+    # reset back to the old value
+    self.SendSet(PidStore.ROOT_DEVICE,
+                 self.pid,
+                 [self.Property('current_personality')])
+    self._wrapper.Run()
 
 
 class SetZeroPersonality(OptionalParameterTestFixture):
