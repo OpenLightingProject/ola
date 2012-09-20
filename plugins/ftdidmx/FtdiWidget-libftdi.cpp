@@ -74,6 +74,7 @@ bool FtdiWidget::Open() {
       return true;
     }
   } else {
+    OLA_DEBUG << "Opening FTDI device " << Name() << ", serial: " << Serial();
     if (ftdi_usb_open_desc(&m_handle, FtdiWidget::VID, FtdiWidget::PID,
                            Name().c_str(), Serial().c_str()) < 0) {
       OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
