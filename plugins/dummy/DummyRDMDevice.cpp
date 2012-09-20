@@ -42,10 +42,10 @@ using std::vector;
 
 
 const DummyRDMDevice::personality_info DummyRDMDevice::PERSONALITIES[] = {
-  {0, "Personality 0"},
-  {5, "Personality 1"},
-  {10, "Personality 2"},
-  {20, "Personality 3"},
+  {0, "Personality 1"},
+  {5, "Personality 2"},
+  {10, "Personality 3"},
+  {20, "Personality 4"},
 };
 
 const unsigned int DummyRDMDevice::PERSONALITY_COUNT = (
