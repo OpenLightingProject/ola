@@ -27,7 +27,7 @@ RDMTests = function() {
       closeOnEscape: false,
       dialogClass: 'no-close',
       draggable: false,
-      height: 140,
+      height: 160,
       modal: true,
       resizable: false,
   });
@@ -61,17 +61,11 @@ RDMTests.TEST_RESULTS = new Array();
  *  {
  *    'title': 'Title to display on notification',
  *    'message': 'Notification Message',
- *    'is_dismissable': true
+ *    'is_dismissable': true,
+ *    'buttons: [{'label': , 'on_click': {}],
  *  }
  */
 RDMTests.prototype.set_notification = function(options) {
-  /*
-  if (options.is_dismissable != undefined || options.is_dismissable != null) {
-    if (options.is_dismissable == true) {
-      $('#rdm-tests-notification-button').show();
-    }
-  }
-  */
   var title = "";
   if (options.title != undefined || options.title != null) {
     title = options.title;
@@ -84,19 +78,24 @@ RDMTests.prototype.set_notification = function(options) {
   }
   this.notification.html(message);
 
+  var button_list = options.buttons || [];
+  var buttons = []
   if (options.is_dismissable != undefined || options.is_dismissable != null) {
-    this.notification.dialog('option', 'buttons', [
-      {
-        text: "Ok",
-        click: function() { $(this).dialog("close"); }
-      }
-    ]);
+    buttons.push({
+      text: "Ok",
+      click: function() { $(this).dialog("close"); }
+    });
   } else {
-    this.notification.dialog('option', 'buttons', []);
+    for (var i = 0; i < button_list.length; ++i) {
+      var button = button_list[i];
+      buttons.push({
+        text: button['label'],
+        click: function() { button['on_click'](); },
+      });
+    }
   }
-
+  this.notification.dialog('option', 'buttons', buttons);
   this.notification.dialog('open');
-
 };
 
 
@@ -300,7 +299,21 @@ RDMTests.prototype.update_universe_list = function() {
         universe_options.append($('<option />').val(universes[item]._id)
                                 .text(universes[item]._name));
       });
-      rdmtests.update_device_list();
+      if (universes.length == 0) {
+        rdmtests.set_notification({
+          'title': 'No universes found',
+          'message':'Go to the OLAD console and patch a device to a universe',
+          'buttons': [{'label': 'Retry',
+                        'on_click': function() {
+                          rdmtests.clear_notification();
+                          rdmtests.update_universe_list()
+                        },
+                      }
+                     ],
+        });
+      } else {
+        rdmtests.update_device_list();
+      }
     }
   });
 };
@@ -311,12 +324,21 @@ RDMTests.prototype.update_universe_list = function() {
  * and updates the universe list.
  */
 RDMTests.prototype.run_discovery = function() {
+  var universe = $('#universe_options').val();
+  if (universe == null || universe == undefined) {
+    rdmtests.set_notification({
+      'title': 'No universe selected',
+      'message': 'Please select a universe to run discovery on.',
+      'is_dismissable': true,
+    });
+    return;
+  }
+
   rdmtests.set_notification({
     'title': 'Running Full Discovery',
     'message': RDMTests.ajax_loader
   });
-  rdmtests.query_server('/RunDiscovery', {
-    'u': $('#universe_options').val()}, function(data) {
+  rdmtests.query_server('/RunDiscovery', {'u': universe}, function(data) {
     var devices_list = $('#devices_list');
     devices_list.empty();
     if (data['status'] == true) {

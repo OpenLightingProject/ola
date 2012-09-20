@@ -510,7 +510,13 @@ class TestServerApplication(object):
 
       self.wrapper.Stop()
 
-    universe = int(params['u'])
+    try:
+      universe = int(params['u'])
+    except ValueError:
+      self.__set_response_status(False)
+      self.__set_response_message('Invalid Universe id!')
+      return;
+
     self.wrapper.Client().FetchUIDList(universe, format_uids)
     self.wrapper.Run()
     self.wrapper.Reset()
