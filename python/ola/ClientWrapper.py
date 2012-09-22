@@ -24,14 +24,7 @@ import datetime
 import heapq
 import select
 import socket
-from ola.OlaClient import OlaClient, Universe
-
-
-class Error(Exception):
-  """Base Error class."""
-
-class ConnectionCloseException(Error):
-  """Raised if the connection to the OLAD server is closed."""
+from ola.OlaClient import OLADNotRunningException, OlaClient, Universe
 
 
 class Event(object):
@@ -94,7 +87,7 @@ class ClientWrapper(object):
         try:
           self._client.SocketReady()
         except socket.error:
-          raise ConnectionCloseException("OLAD Server has exited");
+          raise OLADNotRunningException();
 
   def AddEvent(self, time_in_ms, callback):
     """Schedule an event to run in the future.
