@@ -25,6 +25,7 @@ testserver_image_files = \
     static/images/blank.gif \
     static/images/discovery.png \
     static/images/expander.png \
+    static/images/favicon.ico \
     static/images/loader.gif \
     static/images/logo.png \
     static/images/ui-bg_flat_0_aaaaaa_40x100.png \

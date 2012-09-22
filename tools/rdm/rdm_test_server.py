@@ -699,6 +699,8 @@ def BuildApplication(wrapper, settings):
   app = Application()
   app.RegisterHandler('/',
       RedirectHandler('/static/rdmtests.html').HandleRequest)
+  app.RegisterHandler('/favicon.ico',
+      RedirectHandler('/static/images/favicon.ico').HandleRequest)
   app.RegisterHandler('/GetTestCategories',
       TestCategoriesHandler().HandleRequest)
   app.RegisterHandler('/GetTestDefs',
