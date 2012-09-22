@@ -302,7 +302,7 @@ RDMTests.prototype.update_universe_list = function() {
       if (universes.length == 0) {
         rdmtests.set_notification({
           'title': 'No universes found',
-          'message':'Go to the OLAD console and patch a device to a universe',
+          'message':'Go to the <a href="http://'+location.hostname+':9090" target="_blank">OLA Web UI</a> and patch a device to a universe',
           'buttons': [{'label': 'Retry',
                         'on_click': function() {
                           rdmtests.clear_notification();
