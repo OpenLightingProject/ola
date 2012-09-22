@@ -274,7 +274,7 @@ RDMTests.prototype.query_server = function(request, params, callback) {
         rdmtests.clear_notification();
         rdmtests.set_notification({
           'title': '[ERROR]',
-          'message': data['message'],
+          'message': data['error'],
           'is_dismissable': true
         });
         callback(data);

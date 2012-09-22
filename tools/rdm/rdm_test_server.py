@@ -17,9 +17,7 @@
 # Copyright (C) 2012 Ravindra Nath Kakarla
 
 import cgi
-import inspect
 import json
-import math
 import mimetypes
 import os
 import pickle
@@ -59,24 +57,20 @@ status = {
 }
 
 paths = {
-  '/RunTests': 'run_tests',
-  '/GetDevices': 'get_devices',
-  '/GetUnivInfo': 'get_univ_info',
-  '/GetTestDefs': 'get_test_definitions',
-  '/RunDiscovery': 'run_discovery',
-  '/GetTestCategories': 'get_test_categories',
-  '/DownloadResults': 'download_results',
 }
 
 class Error(Exception):
   """Base exception class."""
 
 
+class ServerException(Error):
+  """Indicates a problem handling the request."""
+
 class TestLoggerException(Error):
   """Indicates a problem with the log reader."""
 
 
-class TestLogger:
+class TestLogger(object):
   """Reads previously saved test results from a file."""
   FILE_NAME_RE = r'[0-9a-f]{4}:[0-9a-f]{8}\.[0-9]{10}\.log$'
 
@@ -206,245 +200,412 @@ class TestLogger:
     return '\n'.join(results_log)
 
 
-"""
-  An instance of this class is created to serve every request.
-"""
-class TestServerApplication(object):
-  def __init__(self, client_wrapper, environ, start_response):
-    self.environ = environ
-    self.start = start_response
-    self.get_params = {}
-    self.response = {}
-    self.output = None
-    self.headers = []
-    self.is_static_request = False
-    self.wrapper = client_wrapper
-    try:
-      self.__request_handler()
-    except OLADNotRunningException:
-      self.status = status['500']
-      self.__set_response_status(False)
-      self.__set_response_message(
-          'Error creating connection with olad. Is it running?')
-      print traceback.print_exc()
+class HTTPRequest(object):
+  """Represents a HTTP Request."""
+  def __init__(self, environ):
+    self._environ = environ
+    self._params = None
 
-  def __set_response_status(self, bool_value):
-    if type(bool_value) == bool:
-      self.response.update({'status': bool_value})
+  def Path(self):
+    """Return the path for the request."""
+    return self._environ['PATH_INFO']
 
-  def __set_response_message(self, message):
-    if type(message) == str:
-      self.response.update({'message': message})
+  def GetParam(self, param):
+    """This only returns the first value for each param.
 
-  def __request_handler(self):
-    self.request = self.environ['PATH_INFO']
+    Args:
+      param: the name of the url parameter.
 
-    if self.request.startswith('/static/'):
-      self.is_static_request = True
-      self.status = status['200']
-    elif self.request == '/':
-      self.is_static_request = True
-      self.request = '/static/rdmtests.html'
-      self.status = status['200']
-    elif self.request not in paths.keys():
-      self.status = status['404']
-    else:
-      self.status = status['200']
-      self.get_params = urlparse.parse_qs(self.environ['QUERY_STRING'])
-      for param in self.get_params:
-        self.get_params[param] = self.get_params[param][0]
+    Returns:
+      The value of the url param, or None if it wasn't present.
+    """
+    if self._params is None:
+      self._params = {}
+      get_params = urlparse.parse_qs(self._environ['QUERY_STRING'])
+      for p in get_params:
+        self._params[p] = get_params[p][0]
+    return self._params.get(param, None)
 
-    return self.__response_handler()
 
-  def __response_handler(self):
-    if self.status == status['404']:
-      self.__set_response_status(False)
-      self.__set_response_message('Invalid request!')
+class HTTPResponse(object):
+  """Represents a HTTP Response."""
+  OK = '200 OK'
+  ERROR = '500 Error'
+  DENIED = '403 Denied'
+  NOT_FOUND = '404 Not Found'
+  PERMANENT_REDIRECT = '301 Moved Permanently'
 
-    elif self.status == status['200']:
-      if self.is_static_request:
-        """
-          Remove the first '/' (Makes it easy to partition)
-          static/foo/bar partitions to ('static', '/', 'foo/bar')
-        """
-        resource = self.request[1:]
-        resource = resource.partition('/')[2]
-        self.__static_content_handler(resource)
-      else:
-        try:
-          self.__getattribute__(paths[self.request])(self.get_params)
-        except AttributeError:
-          self.status = status['500']
-          self.__response_handler()
-          print traceback.print_exc()
+  def __init__(self):
+    self._status = None
+    self._headers = {};
+    self._content_type = None
+    self._data = []
 
-    elif self.status == status['500']:
-      self.__set_response_status(False)
-      self.__set_response_message('Error 500: Internal failure')
+  def SetStatus(self, status):
+    self._status = status
 
-  def __static_content_handler(self, resource):
-    filename = os.path.abspath(os.path.join(settings['www_dir'], resource))
+  def GetStatus(self):
+    return self._status
 
-    if not filename.startswith(settings['www_dir']):
-      self.status = status['403']
-      self.output = 'OLA TestServer: 403: Access denied!'
-    elif not os.path.exists(filename) or not os.path.isfile(filename):
-      self.status = status['404']
-      self.output = 'OLA TestServer: 404: File does not exist!'
+  def SetHeader(self, header, value):
+    self._headers[header] = value
+
+  def GetHeaders(self):
+    headers = []
+    for header, value in self._headers.iteritems():
+      headers.append((header, value))
+    return headers
+
+  def AppendData(self, data):
+    self._data.append(data)
+
+  def Data(self):
+    return self._data
+
+class RequestHandler(object):
+  """The base request handler class."""
+  def HandleRequest(self, request, response):
+    pass
+
+
+class RedirectHandler(RequestHandler):
+  """Serve a 301 redirect."""
+  def __init__(self, new_location):
+    self._new_location = new_location
+
+  def HandleRequest(self, request, response):
+    response.SetStatus(HTTPResponse.PERMANENT_REDIRECT)
+    response.SetHeader('Location', self._new_location)
+
+
+class StaticFileHandler(RequestHandler):
+  """A class which handles requests for static files."""
+  PREFIX = '/static/'
+
+  def __init__(self, static_dir):
+    self._static_dir = static_dir
+
+  def HandleRequest(self, request, response):
+    path = request.Path()
+    if not path.startswith(self.PREFIX):
+      response.SetStatus(HTTPResponse.NOT_FOUND)
+      return
+
+    # strip off /static
+    path = path[len(self.PREFIX):]
+    # This is important as it ensures we can't access arbitary files
+    filename = os.path.abspath(os.path.join(self._static_dir, path))
+    if (not filename.startswith(self._static_dir) or
+         not os.path.exists(filename) or
+         not os.path.isfile(filename)):
+      response.SetStatus(HTTPResponse.NOT_FOUND)
+      return
     elif not os.access(filename, os.R_OK):
-      self.status = status['403']
-      self.output = 'OLA TestServer: 403: You do not have permission to access this file.'
+      response.SetStatus(HTTPResponse.DENIED)
+      return
     else:
       mimetype, encoding = mimetypes.guess_type(filename)
       if mimetype:
-        self.headers.append(('Content-type', mimetype))
+        response.SetHeader('Content-type', mimetype)
       if encoding:
-        self.headers.append(('Content-encoding', encoding))
+        response.SetHeader('Content-encoding', encoding)
 
       stats = os.stat(filename)
-      self.headers.append(('Content-length', str(stats.st_size)))
+      response.SetStatus(HTTPResponse.OK)
+      response.SetHeader('Content-length', str(stats.st_size))
+      response.AppendData(open(filename, 'rb').read())
 
-      self.output = open(filename, 'rb').read()
 
-  def get_test_categories(self, params):
-    self.__set_response_status(True)
-    self.response.update({
+class JsonRequestHandler(RequestHandler):
+  """A class which handles Json requests."""
+  def HandleRequest(self, request, response):
+    response.SetHeader('Cache-Control', 'no-cache')
+    response.SetHeader('Content-type', 'application/json')
+
+    try:
+      json_data = self.GetJson(request, response)
+      response.AppendData(json.dumps(json_data, sort_keys = True))
+    except ServerException as e:
+      # for json requests, rather than returning 500s we return the error as
+      # json
+      response.SetStatus(HTTPResponse.OK)
+      json_data = {
+          'status': False,
+          'error': str(e),
+      }
+      response.AppendData(json.dumps(json_data, sort_keys = True))
+
+  def RaiseExceptionIfMissing(self, request, param):
+    """Helper method to raise an exception if the param is missing."""
+    value = request.GetParam(param)
+    if value is None:
+      raise ServerException('Missing parameter: %s' % param)
+    return value
+
+  def GetJson(self, request, response):
+    """Subclasses implement this."""
+    pass
+
+
+class OLAServerRequestHandler(JsonRequestHandler):
+  """Catches OLADNotRunningException and handles them gracefully."""
+  def __init__(self, wrapper):
+    self._wrapper = wrapper;
+
+  def Wrapper(self):
+    return self._wrapper
+
+  def HandleRequest(self, request, response):
+    try:
+      super(OLAServerRequestHandler, self).HandleRequest(request, response)
+    except OLADNotRunningException as e:
+      response.SetStatus(HTTPResponse.OK)
+      json_data = {
+          'status': False,
+          'error': 'The OLA Server is no longer running',
+      }
+      response.AppendData(json.dumps(json_data, sort_keys = True))
+
+
+class TestCategoriesHandler(JsonRequestHandler):
+  """Return a JSON list of test Categories."""
+  def GetJson(self, request, response):
+    response.SetStatus(HTTPResponse.OK)
+    return {
       'Categories': sorted(c.__str__() for c in TestCategory.Categories()),
-    })
-
-  def run_discovery(self, params):
-    global UIDs
-    def discovery_results(state, uids):
-      global UIDs
-      if state.Succeeded():
-        UIDs = [uid.__str__() for uid in uids]
-      else:
-        UIDs = False
-      self.wrapper.Stop()
-
-    self.wrapper.Client().RunRDMDiscovery(int(params['u']), True, discovery_results)
-    self.wrapper.Run()
-    self.wrapper.Reset()
-    if UIDs:
-      self.__set_response_status(True)
-      self.response.update({'uids': UIDs})
-    else:
-      self.__set_response_status(False)
-      self.__set_response_message('Invalid Universe ID or no devices patched!')
-
-  def __get_universes(self):
-    global univs
-    def format_univ_info(state, universes):
-      global univs
-      if state.Succeeded():
-        univs = [univ.__dict__ for univ in universes]
-
-      self.wrapper.Stop()
-
-    self.wrapper.Client().FetchUniverses(format_univ_info)
-    self.wrapper.Run()
-    self.wrapper.Reset()
-    return univs
-
-  def get_univ_info(self, params):
-    universes = self.__get_universes()
-    self.__set_response_status(True)
-    self.response.update({'universes': universes})
-
-  def get_test_definitions(self, params):
-    self.__set_response_status(True)
-    tests_defs = [test.__name__ for test in TestRunner.GetTestClasses(TestDefinitions)]
-    self.response.update({'test_defs': tests_defs})
-
-  def run_tests(self, params):
-    test_filter = None
-
-    defaults = {
-                'u': 0,
-                'uid': None,
-                'w': 0,
-                'f': 0,
-                'c': 128,
-                't': None,
+      'status': True,
     }
-    defaults.update(params)
 
-    if defaults['uid'] is None:
-      self.__set_response_status(False)
-      self.__set_response_message('Missing parameter: uid')
-      return
 
-    universe = int(defaults['u'])
-    if not universe in [univ['_id'] for univ in self.__get_universes()]:
-      self.__set_response_status(False)
-      self.__set_response_message('Universe %d doesn\'t exist' % (universe))
-      return
+class TestDefinitionsHandler(JsonRequestHandler):
+  """Return a JSON list of test definitions."""
+  def GetJson(self, request, response):
+    response.SetStatus(HTTPResponse.OK)
+    tests = [t.__name__ for t in TestRunner.GetTestClasses(TestDefinitions)]
+    return {
+      'test_defs': tests,
+      'status': True,
+    }
 
-    uid = UID.FromString(defaults['uid'])
-    broadcast_write_delay = int(defaults['w'])
-    dmx_frame_rate = int(defaults['f'])
-    slot_count = int(defaults['c'])
 
-    if slot_count not in range(1, 513):
-      self.__set_response_status(False)
-      self.__set_response_message('Invalid number of slots (expected [1-512])')
-      return
+def MakeSyncCall(wrapper, method, *method_args):
+  """Turns an async call into a sync (blocking one).
 
-    if defaults['t'] is not None:
-      if defaults['t'] == 'all':
+  Args:
+    wrapper: the ClientWrapper object
+    method: the method to call
+    *method_args: Any arguments to pass to the method
+
+  Returns:
+    The arguments that would have been passed to the callback function.
+  """
+  global args_result
+  def Callback(*args, **kwargs):
+    global args_result
+    args_result = args
+    wrapper.Stop()
+
+  method(*method_args, callback=Callback)
+  wrapper.Run()
+  wrapper.Reset()
+  return args_result
+
+
+class GetUniversesHandler(OLAServerRequestHandler):
+  """Return a JSON list of universes."""
+  def GetJson(self, request, response):
+    wrapper = self.Wrapper()
+    status, universes = MakeSyncCall(wrapper, wrapper.Client().FetchUniverses)
+    if not status.Succeeded():
+      raise ServerException('Failed to fetch universes from server')
+
+    response.SetStatus(HTTPResponse.OK)
+    return {
+      'universes': [u.__dict__ for u in universes],
+      'status': True,
+    }
+
+
+class GetDevicesHandler(OLAServerRequestHandler):
+  """Return a JSON list of RDM devices."""
+
+  def GetJson(self, request, response):
+    universe_param = request.GetParam('u')
+    if universe_param is None:
+      raise ServerException('Missing universe parameter: u')
+
+    try:
+      universe = int(universe_param)
+    except ValueError:
+      raise ServerException('Invalid universe parameter: u')
+
+    wrapper = self.Wrapper()
+    status, uids = MakeSyncCall(wrapper,
+                                wrapper.Client().FetchUIDList,
+                                universe)
+    if not status.Succeeded():
+      raise ServerException('Invalid universe ID!')
+
+    response.SetStatus(HTTPResponse.OK)
+    return {
+      'uids':  [str(u) for u in uids],
+      'status': True,
+    }
+
+
+class RunDiscoveryHandler(OLAServerRequestHandler):
+  """Runs the RDM Discovery process."""
+
+  def GetJson(self, request, response):
+    universe_param = request.GetParam('u')
+    if universe_param is None:
+      raise ServerException('Missing universe parameter: u')
+
+    try:
+      universe = int(universe_param)
+    except ValueError:
+      raise ServerException('Invalid universe parameter: u')
+
+    wrapper = self.Wrapper()
+    status, uids = MakeSyncCall(wrapper,
+                                wrapper.Client().RunRDMDiscovery,
+                                universe, True)
+
+    if not status.Succeeded():
+      raise ServerException('Invalid universe ID!')
+
+    response.SetStatus(HTTPResponse.OK)
+    return {
+      'uids':  [str(u) for u in uids],
+      'status': True,
+    }
+
+
+class DownloadResultsHandler(RequestHandler):
+  """A class which handles requests to download test results."""
+
+  def HandleRequest(self, request, response):
+    uid = request.GetParam('uid')
+    if uid is None:
+      raise ServerException('Missing uid parameter: uid')
+
+    timestamp = request.GetParam('timestamp')
+    if timestamp is None:
+      raise ServerException('Missing timestamp parameter: timestamp')
+
+    reader = TestLogger(settings['log_directory'])
+    try:
+      output, filename = reader.ReadContents(uid, timestamp)
+    except TestLoggerException as e:
+      raise ServerException(e)
+
+    response.SetStatus(HTTPResponse.OK)
+    response.SetHeader('Content-disposition',
+                       'attachment; filename="%s"' % filename)
+    response.SetHeader('Content-type', 'test/plain')
+    response.SetHeader('Content-length', '%d' % len(output))
+    response.AppendData(output)
+
+
+class RunTestsHandler(OLAServerRequestHandler):
+  """Run the RDM tests."""
+  def __init__(self, wrapper, pid_location, logs_directory):
+    super(RunTestsHandler, self).__init__(wrapper)
+    self._pid_location = pid_location
+    self._logs_directory = logs_directory
+
+  def GetJson(self, request, response):
+    universe_param = self.RaiseExceptionIfMissing(request, 'u')
+
+    try:
+      universe = int(universe_param)
+    except ValueError:
+      raise ServerException('Invalid universe parameter: u')
+
+    wrapper = self.Wrapper()
+    status, universes = MakeSyncCall(wrapper, wrapper.Client().FetchUniverses)
+    if not status.Succeeded():
+      raise ServerException('Failed to fetch universes from server')
+
+    if universe not in [u.id for u in universes]:
+      raise ServerException("Universe %d doesn't exist" % universe)
+
+    uid_param = self.RaiseExceptionIfMissing(request, 'uid')
+    uid = UID.FromString(uid_param)
+    if uid is None:
+      raise ServerException('Invalid uid: %s' % uid_param)
+
+    # the tests to run, None means all
+    test_filter = request.GetParam('t')
+    if test_filter is not None:
+      if test_filter == 'all':
         test_filter = None
       else:
-        test_filter = set(defaults['t'].split(','))
+        test_filter = set(test_filter.split(','))
+
+    broadcast_write_delay = request.GetParam('w')
+    if broadcast_write_delay is None:
+      broadcast_write_delay = 0
+    try:
+      broadcast_write_delay = int(broadcast_write_delay)
+    except ValueError:
+      raise ServerException('Invalid broadcast write delay')
+
+    slot_count = request.GetParam('c')
+    if slot_count is None:
+      slot_count = 0
+    try:
+      slot_count = int(slot_count)
+    except ValueError:
+      raise ServerException('Invalid slot count')
+    if slot_count not in range(1, 513):
+      raise ServerException('Slot count not in range 0..512')
+
+    dmx_frame_rate = request.GetParam('f')
+    if dmx_frame_rate is None:
+      dmx_frame_rate = 0
+    try:
+      dmx_frame_rate = int(dmx_frame_rate)
+    except ValueError:
+      raise ServerException('Invalid DMX frame rate')
 
     runner = TestRunner.TestRunner(universe,
                                    uid,
                                    broadcast_write_delay,
-                                   settings['pid_store'],
-                                   self.wrapper)
+                                   self._pid_location,
+                                   wrapper)
 
     for test in TestRunner.GetTestClasses(TestDefinitions):
       runner.RegisterTest(test)
 
-    dmx_sender = DMXSender(self.wrapper,
-                           universe,
-                           dmx_frame_rate,
-                           slot_count)
+    dmx_sender = None
+    if dmx_frame_rate > 0 and slot_count > 0:
+      dmx_sender = DMXSender(wrapper, universe, dmx_frame_rate, slot_count)
 
     tests, device = runner.RunTests(test_filter, False)
-    self.__format_test_results(tests)
-    self.response.update({'UID': str(uid)})
 
-    log_saver = TestLogger(settings['log_directory'])
+    if dmx_sender is not None:
+      dmx_sender.Stop()
+
+    timestamp = int(time())
+    json_data = {
+      'UID': str(uid),
+      'logs_disabled': False,
+      'timestamp': timestamp,
+      'status': True,
+    }
+
+    self.FormatTestResults(tests, json_data)
+
+    log_saver = TestLogger(self._logs_directory)
     try:
-      timestamp = int(time())
       log_saver.SaveLog(uid, timestamp, tests)
-      self.response.update({
-        'logs_disabled': False,
-        'timestamp': timestamp
-      })
     except TestLoggerException:
-      self.response.update({'logs_disabled': True})
+      json_data['logs_disabled'] = True
+    response.SetStatus(HTTPResponse.OK)
+    return json_data
 
-  def download_results(self, params):
-    uid = params.get('uid', '')
-    timestamp = params.get('timestamp', '')
-
-    reader = TestLogger(settings['log_directory'])
-    try:
-      self.output, filename = reader.ReadContents(uid, timestamp)
-    except Error as e:
-      self.__set_response_status(False)
-      self.__set_response_message(e.message)
-      return
-
-    size = len(self.output)
-    self.is_static_request = True
-    self.headers.append(('Content-type', 'text/plain'))
-    self.headers.append(('Content-length', '%d' % size))
-    self.headers.append(
-        ('Content-disposition', 'attachment; filename="%s"' % filename))
-
-  def __format_test_results(self, tests):
+  def FormatTestResults(self, tests, json_data):
     results = []
     stats_by_catg = {}
     passed = 0
@@ -492,44 +653,71 @@ class TestServerApplication(object):
       'not_run': not_run,
     }
 
-    self.__set_response_status(True)
-    self.response.update({
+    json_data.update({
       'test_results': results,
       'stats': stats,
       'stats_by_catg': stats_by_catg,
     })
 
-  def get_devices(self, params):
-    def format_uids(state, uids):
-      if state.Succeeded():
-        self.__set_response_status(True)
-        self.response.update({'uids': [str(uid) for uid in uids]})
-      else:
-        self.__set_response_status(False)
-        self.__set_response_message('Invalid Universe id!')
 
-      self.wrapper.Stop()
+class Application(object):
+  """Creates a new Application."""
+  def __init__(self):
+    # dict of path to handler
+    self._handlers = {}
+    self._regex_handlers = []
 
-    try:
-      universe = int(params['u'])
-    except ValueError:
-      self.__set_response_status(False)
-      self.__set_response_message('Invalid Universe id!')
-      return;
+  def RegisterHandler(self, path, handler):
+    self._handlers[path] = handler
 
-    self.wrapper.Client().FetchUIDList(universe, format_uids)
-    self.wrapper.Run()
-    self.wrapper.Reset()
+  def RegisterRegex(self, path_regex, handler):
+    self._regex_handlers.append((path_regex, handler))
 
-  def __iter__(self):
-    if self.is_static_request:
-      self.start(self.status, self.headers)
-      yield(self.output)
+  def HandleRequest(self, environ, start_response):
+    """Create a new TestServerApplication, passing in the OLA Wrapper."""
+    request = HTTPRequest(environ)
+    response = HTTPResponse()
+    self.DispatchRequest(request, response)
+    start_response(response.GetStatus(), response.GetHeaders())
+    return response.Data()
+
+  def DispatchRequest(self, request, response):
+    path = request.Path()
+    if path in self._handlers:
+      self._handlers[path](request, response)
+      return
     else:
-      self.headers.append(('Content-type', 'application/json'))
-      self.start(self.status, self.headers)
-      json_response = json.dumps(self.response, sort_keys = True)
-      yield(json_response)
+      for pattern, handler in self._regex_handlers:
+        if re.match(pattern, path):
+          handler(request, response)
+          return
+    response.SetStatus(HTTPResponse.NOT_FOUND)
+
+
+def BuildApplication(wrapper, settings):
+  """Construct the application and add the handlers."""
+  app = Application()
+  app.RegisterHandler('/',
+      RedirectHandler('/static/rdmtests.html').HandleRequest)
+  app.RegisterHandler('/GetTestCategories',
+      TestCategoriesHandler().HandleRequest)
+  app.RegisterHandler('/GetTestDefs',
+      TestDefinitionsHandler().HandleRequest)
+  app.RegisterHandler('/GetUnivInfo',
+      GetUniversesHandler(wrapper).HandleRequest)
+  app.RegisterHandler('/GetDevices',
+      GetDevicesHandler(wrapper).HandleRequest)
+  app.RegisterHandler('/RunDiscovery',
+      RunDiscoveryHandler(wrapper).HandleRequest)
+  app.RegisterHandler('/DownloadResults',
+      DownloadResultsHandler().HandleRequest)
+  app.RegisterHandler('/RunTests',
+      RunTestsHandler(wrapper, settings['pid_store'],
+                      settings['log_directory']).HandleRequest)
+  app.RegisterRegex('/static/.*',
+      StaticFileHandler(settings['www_dir']).HandleRequest)
+  return app
+
 
 def parse_options():
   """
@@ -560,16 +748,6 @@ def parse_options():
   return options
 
 
-class RequestHandler:
-  """Creates a new TestServerApplication to handle each request."""
-  def __init__(self, ola_wrapper):
-    self._wrapper = ola_wrapper
-
-  def HandleRequest(self, environ, start_response):
-    """Create a new TestServerApplication, passing in the OLA Wrapper."""
-    return TestServerApplication(self._wrapper, environ, start_response)
-
-
 def main():
   options = parse_options()
   settings.update(options.__dict__)
@@ -598,8 +776,8 @@ def main():
     print 'Error creating connection with olad. Is it running?'
     sys.exit(127)
 
-  request_handler = RequestHandler(ola_wrapper)
-  httpd = make_server('', settings['PORT'], request_handler.HandleRequest)
+  app = BuildApplication(ola_wrapper, settings)
+  httpd = make_server('', settings['PORT'], app.HandleRequest)
   print "Running RDM Tests Server on %s:%s" % ('127.0.0.1', httpd.server_port)
   httpd.serve_forever()
 

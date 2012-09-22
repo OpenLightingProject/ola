@@ -37,9 +37,8 @@ UsbProConfigMessages_pb2.py: $(usbpro_proto)
 	$(PROTOC) --python_out ./ -I $(usbpro_path) $(usbpro_proto)
 
 # This is a hack, but I can't find any other way to do it
-piddir = $(pid_datadir)
 PidStoreLocation.py:
-	echo "location = '${piddir}'" > PidStoreLocation.py
+	echo "location = '${pid_datadir}'" > PidStoreLocation.py
 
 clean-local:
 	rm -f ArtnetConfigMessages_pb2.* Ola_pb2.* Pids_pb2.* UsbProConfigMessages_pb2.* PidStoreLocation.py
