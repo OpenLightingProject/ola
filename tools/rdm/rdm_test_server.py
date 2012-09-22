@@ -362,7 +362,7 @@ class OLAServerRequestHandler(JsonRequestHandler):
       response.SetStatus(HTTPResponse.OK)
       json_data = {
           'status': False,
-          'error': 'The OLA Server is no longer running',
+          'error': 'The OLA Server instance is no longer running',
       }
       response.AppendData(json.dumps(json_data, sort_keys = True))
 
