@@ -367,7 +367,7 @@ class TestLogger(object):
       cat_passed = counts['passed']
       cat_total = counts['total']
       try:
-        percent = cat_passed / cat_total * 100
+        percent = int(round(100.0 * cat_passed / cat_total))
       except ZeroDivisionError:
         percent = '-'
       results_log.append(' %26s:   %3d / %3d    %s%%' %
@@ -541,7 +541,7 @@ class OLAServerRequestHandler(JsonRequestHandler):
       response.SetStatus(HTTPResponse.OK)
       json_data = {
           'status': False,
-          'error': 'The OLA Server is no longer running',
+          'error': 'The OLA Server instance is no longer running',
       }
       response.AppendData(json.dumps(json_data, sort_keys = True))
 
