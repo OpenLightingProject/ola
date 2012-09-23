@@ -188,7 +188,7 @@ class TestLogger(object):
       cat_passed = counts['passed']
       cat_total = counts['total']
       try:
-        percent = int(round( (float(cat_passed) / float(cat_total)) * 100 ))
+        percent = int(round(100.0 * cat_passed / cat_total))
       except ZeroDivisionError:
         percent = '-'
       results_log.append(' %26s:   %3d / %3d    %s%%' %
