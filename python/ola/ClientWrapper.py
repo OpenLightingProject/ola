@@ -13,7 +13,7 @@
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
-# client_wrapper.py
+# ClientWrapper.py
 # Copyright (C) 2005-2009 Simon Newton
 
 """A simple client wrapper for the OlaClient."""
@@ -82,8 +82,9 @@ class SelectServer(object):
     self._events = []
     heapq.heapify(self._events)
     # sockets to track
-    self._read_sockets = {}
-    self._write_sockets = {}
+    self._read_descriptors = {}
+    self._write_descriptors = {}
+    self._error_descriptors = {}
     # functions to run in the SelectServer
     self._functions = []
     self._function_list_lock = threading.Lock()
@@ -125,7 +126,7 @@ class SelectServer(object):
       fd: the descriptor to add
       callback: the callback to run when this descriptor is ready.
     """
-    self._read_sockets[fd] = callback
+    self._read_descriptors[fd] = callback
 
   def RemoveReadDescriptor(self, fd):
     """Remove a socket from the read FD Set.
@@ -133,8 +134,8 @@ class SelectServer(object):
     Args:
       fd: the descriptor to remove
     """
-    if  fd in self._read_sockets:
-      del self._read_sockets[fd]
+    if  fd in self._read_descriptors:
+      del self._read_descriptors[fd]
 
   def AddWriteDescriptor(self, fd, callback):
     """Add a socket to the write FD Set.
@@ -143,7 +144,7 @@ class SelectServer(object):
       fd: the descriptor to add
       callback: the callback to run when this descriptor is ready.
     """
-    self._write_sockets[fd] = callback
+    self._write_descriptors[fd] = callback
 
   def RemoveWriteDescriptor(self, fd):
     """Remove a socket from the write FD Set.
@@ -151,8 +152,17 @@ class SelectServer(object):
     Args:
       fd: the descriptor to remove
     """
-    if  fd in self._write_sockets:
-      del self._write_sockets[fd]
+    if  fd in self._write_descriptors:
+      del self._write_descriptors[fd]
+
+  def AddErrorDescriptor(self, fd, callback):
+    """Add a descriptor to the error FD Set.
+
+    Args:
+      fd: the descriptor to add
+      callback: the callback to run when this descriptor is ready.
+    """
+    self._error_descriptors[fd] = callback
 
   def Run(self):
     """Run the SelectServer. This doesn't return until Terminate() is called.
@@ -175,13 +185,15 @@ class SelectServer(object):
       if len(self._events):
         sleep_time = min(1.0, self._events[0].TimeLeft(now))
 
-      i, o, e = select.select(self._read_sockets.keys(),
-                              self._write_sockets.keys(),
-                              [], sleep_time)
+      i, o, e = select.select(self._read_descriptors.keys(),
+                              self._write_descriptors.keys(),
+                              self._error_descriptors.keys(),
+                              sleep_time)
       now = datetime.datetime.now()
       self._CheckTimeouts(now)
-      self._CheckDescriptors(i, self._read_sockets)
-      self._CheckDescriptors(o, self._write_sockets)
+      self._CheckDescriptors(i, self._read_descriptors)
+      self._CheckDescriptors(o, self._write_descriptors)
+      self._CheckDescriptors(e, self._error_descriptors)
 
   def AddEvent(self, time_in_ms, callback):
     """Schedule an event to run in the future.
