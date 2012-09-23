@@ -18,20 +18,25 @@
 
 import cgi
 import json
+import logging
 import mimetypes
 import os
 import pickle
 import re
+import signal
+import sys
 import sys
 import textwrap
-import traceback
+import threading
 import urlparse
-from time import time
+
+from threading import Condition, Event, Lock, Thread
+from time import time, sleep
 from optparse import OptionParser, OptionGroup, OptionValueError
 from wsgiref.simple_server import make_server
 from ola.UID import UID
-from ola.ClientWrapper import ClientWrapper
-from ola.OlaClient import OLADNotRunningException
+from ola.ClientWrapper import ClientWrapper, SelectServer
+from ola.OlaClient import OlaClient, OLADNotRunningException
 from ola import PidStore
 from ola.testing.rdm.DMXSender import DMXSender
 from ola.testing.rdm import DataLocation
@@ -49,25 +54,199 @@ settings = {
   'PORT': 9099,
 }
 
-status = {
-  '200': '200 OK',
-  '403': '403 Forbidden',
-  '404': '404 Not Found',
-  '500': '500 Internal Server Error',
-}
-
-paths = {
-}
 
 class Error(Exception):
   """Base exception class."""
-
 
 class ServerException(Error):
   """Indicates a problem handling the request."""
 
 class TestLoggerException(Error):
   """Indicates a problem with the log reader."""
+
+
+class OLAThread(Thread):
+  """The thread which runs the OLA Client."""
+  def __init__(self, ola_client):
+    super(OLAThread, self).__init__()
+    self._client = ola_client
+    self._ss = None  # created in run()
+
+  def run(self):
+    self._ss = SelectServer()
+    self._ss.AddSocket(self._client.GetSocket(), self._client.SocketReady)
+    self._ss.Run()
+    logging.info('OLA thread finished')
+
+  def Stop(self):
+    if self._ss is None:
+      logging.critical('OLAThread.Stop() called before thread was running')
+      return
+
+    logging.info('Stopping OLA thread')
+    self._ss.Terminate()
+
+  def Execute(self, cb):
+    self._ss.Execute(cb)
+
+  def FetchUniverses(self):
+    return self.MakeSyncClientCall(self._client.FetchUniverses)
+
+  def FetchUIDList(self, *args):
+    return self.MakeSyncClientCall(self._client.FetchUIDList, *args)
+
+  def RunRDMDiscovery(self, *args):
+    return self.MakeSyncClientCall(self._client.RunRDMDiscovery, *args)
+
+  def MakeSyncClientCall(self, method, *method_args):
+    """Turns an async call into a sync (blocking one).
+
+    Args:
+      wrapper: the ClientWrapper object
+      method: the method to call
+      *method_args: Any arguments to pass to the method
+
+    Returns:
+      The arguments that would have been passed to the callback function.
+    """
+    global args_result
+    event = Event()
+    def Callback(*args, **kwargs):
+      global args_result
+      args_result = args
+      event.set()
+
+    def RunMethod():
+      method(*method_args, callback=Callback)
+    self._ss.Execute(RunMethod)
+    event.wait()
+    return args_result
+
+
+class RDMTestThread(Thread):
+  """The RDMResponder tests are closely coupled to the Wrapper (yuck!). So we
+     need to run this all in a separate thread.
+  """
+  RUNNING, COMPLETED = range(2)
+
+  def __init__(self, pid_location, logs_directory):
+    super(RDMTestThread, self).__init__()
+    self._pid_location = pid_location
+    self._logs_directory = logs_directory
+    self._terminate = False
+    self._request = None
+    # guards _terminate and _request
+    self._cv = Condition()
+    self._wrapper = None
+    self._test_state_lock = Lock()  # guards _test_state
+    self._test_state = {}
+
+  def Stop(self):
+    self._cv.acquire()
+    self._terminate = True
+    self._cv.notify()
+    self._cv.release()
+
+  def ScheduleTests(self, universe, uid, test_filter, broadcast_write_delay,
+                    dmx_frame_rate, slot_count):
+    """Schedule the tests to be run. Callable from any thread.
+
+    Returns:
+      An error message, or None if the tests were scheduled.
+    """
+    # TODO(simon): check if we are connected here
+    self._cv.acquire()
+    if self._request is not None:
+      self._cv.release()
+      return 'Existing request pending'
+
+    self._request = (
+        universe, uid, test_filter, broadcast_write_delay, dmx_frame_rate,
+        slot_count)
+    self._cv.notify()
+    self._cv.release()
+    return None
+
+  def run(self):
+    self._wrapper = ClientWrapper()
+    while True:
+      self._cv.acquire()
+      if self._terminate:
+        logging.info('quitting test thread')
+        self._cv.release()
+        return;
+
+      if self._request is not None:
+        request = self._request
+        self._request = None
+        self._cv.release()
+        self._RunTests(request)
+        continue
+      # nothing to do, go into the wait
+      self._cv.wait()
+      self._cv.release()
+
+  def _UpdateStats(self, tests_completed, total_tests):
+    self._test_state_lock.acquire()
+    self._test_state['tests_completed'] = tests_completed
+    self._test_state['total_tests'] = total_tests
+    self._test_state_lock.release()
+
+  def _RunTests(self, request):
+    (universe, uid, test_filter, broadcast_write_delay, dmx_frame_rate,
+     slot_count) = request
+
+    self._test_state_lock.acquire()
+    self._test_state = {
+      'tests_completed': 0,
+      'total_tests': None,
+      'state': self.RUNNING,
+    }
+    self._test_state_lock.release()
+
+    runner = TestRunner.TestRunner(universe, uid, broadcast_write_delay,
+                                   self._pid_location, self._wrapper)
+
+    for test in TestRunner.GetTestClasses(TestDefinitions):
+      runner.RegisterTest(test)
+
+    dmx_sender = None
+    if dmx_frame_rate > 0 and slot_count > 0:
+      logging.info('Starting DMXServer with slot cout %d and fps of %d' %
+                   (slot_count, dmx_frame_rate))
+      dmx_sender = DMXSender(wrapper, universe, dmx_frame_rate, slot_count)
+
+    tests, unused_device = runner.RunTests(test_filter, False, self._UpdateStats)
+
+    if dmx_sender is not None:
+      dmx_sender.Stop()
+
+    timestamp = int(time())
+    log_saver = TestLogger(self._logs_directory)
+    logs_saved = True
+    try:
+      log_saver.SaveLog(uid, timestamp, tests)
+    except TestLoggerException:
+      logs_saved = False
+
+    self._test_state_lock.acquire()
+    self._test_state['state'] = self.COMPLETED
+    self._test_state['tests'] = tests
+    self._test_state['logs_saved'] = logs_saved
+    self._test_state['timestamp'] = timestamp
+    self._test_state['uid'] = uid
+    self._test_state_lock.release()
+
+  def Stat(self):
+    """Check the state of the tests.
+
+    Returns:
+      The status of the tests.
+    """
+    self._test_state_lock.acquire()
+    state = dict(self._test_state)
+    self._test_state_lock.release()
+    return state
 
 
 class TestLogger(object):
@@ -111,7 +290,7 @@ class TestLogger(object):
           'Failed to write to %s: %s' % (filename, e.message))
 
     pickle.dump(output, log_file)
-    print 'Wrote log file %s' % (log_file.name)
+    logging.info('Wrote log file %s' % (log_file.name))
     log_file.close()
 
   def ReadContents(self, uid, timestamp):
@@ -349,11 +528,11 @@ class JsonRequestHandler(RequestHandler):
 
 class OLAServerRequestHandler(JsonRequestHandler):
   """Catches OLADNotRunningException and handles them gracefully."""
-  def __init__(self, wrapper):
-    self._wrapper = wrapper;
+  def __init__(self, ola_thread):
+    self._thread = ola_thread;
 
-  def Wrapper(self):
-    return self._wrapper
+  def GetThread(self):
+    return self._thread
 
   def HandleRequest(self, request, response):
     try:
@@ -388,34 +567,10 @@ class TestDefinitionsHandler(JsonRequestHandler):
     }
 
 
-def MakeSyncCall(wrapper, method, *method_args):
-  """Turns an async call into a sync (blocking one).
-
-  Args:
-    wrapper: the ClientWrapper object
-    method: the method to call
-    *method_args: Any arguments to pass to the method
-
-  Returns:
-    The arguments that would have been passed to the callback function.
-  """
-  global args_result
-  def Callback(*args, **kwargs):
-    global args_result
-    args_result = args
-    wrapper.Stop()
-
-  method(*method_args, callback=Callback)
-  wrapper.Run()
-  wrapper.Reset()
-  return args_result
-
-
 class GetUniversesHandler(OLAServerRequestHandler):
   """Return a JSON list of universes."""
   def GetJson(self, request, response):
-    wrapper = self.Wrapper()
-    status, universes = MakeSyncCall(wrapper, wrapper.Client().FetchUniverses)
+    status, universes = self.GetThread().FetchUniverses()
     if not status.Succeeded():
       raise ServerException('Failed to fetch universes from server')
 
@@ -439,10 +594,7 @@ class GetDevicesHandler(OLAServerRequestHandler):
     except ValueError:
       raise ServerException('Invalid universe parameter: u')
 
-    wrapper = self.Wrapper()
-    status, uids = MakeSyncCall(wrapper,
-                                wrapper.Client().FetchUIDList,
-                                universe)
+    status, uids = self.GetThread().FetchUIDList(universe)
     if not status.Succeeded():
       raise ServerException('Invalid universe ID!')
 
@@ -466,11 +618,7 @@ class RunDiscoveryHandler(OLAServerRequestHandler):
     except ValueError:
       raise ServerException('Invalid universe parameter: u')
 
-    wrapper = self.Wrapper()
-    status, uids = MakeSyncCall(wrapper,
-                                wrapper.Client().RunRDMDiscovery,
-                                universe, True)
-
+    status, uids = self.GetThread().RunRDMDiscovery(universe, True)
     if not status.Succeeded():
       raise ServerException('Invalid universe ID!')
 
@@ -499,22 +647,54 @@ class DownloadResultsHandler(RequestHandler):
     except TestLoggerException as e:
       raise ServerException(e)
 
+    if filename.endswith('.log'):
+      filename = filename[:len(filename)-4] + '.txt'
     response.SetStatus(HTTPResponse.OK)
     response.SetHeader('Content-disposition',
                        'attachment; filename="%s"' % filename)
-    response.SetHeader('Content-type', 'test/plain')
+    response.SetHeader('Content-type', 'text/plain')
     response.SetHeader('Content-length', '%d' % len(output))
     response.AppendData(output)
 
 
 class RunTestsHandler(OLAServerRequestHandler):
   """Run the RDM tests."""
-  def __init__(self, wrapper, pid_location, logs_directory):
-    super(RunTestsHandler, self).__init__(wrapper)
-    self._pid_location = pid_location
-    self._logs_directory = logs_directory
+  def __init__(self, ola_thread, test_thread):
+    super(RunTestsHandler, self).__init__(ola_thread)
+    self._test_thread = test_thread
 
   def GetJson(self, request, response):
+    """Check if this is a RunTests or StatTests request."""
+    path =  request.Path()
+    if path == '/RunTests':
+      return self.RunTests(request, response)
+    elif path == '/StatTests':
+      return self.StatTests(request, response)
+    else:
+      logging.error('Got invalid request for %s' % path)
+      raise ServerException('Invalid request')
+
+  def StatTests(self, request, response):
+    """Return the status of the running tests."""
+    response.SetStatus(HTTPResponse.OK)
+    status = self._test_thread.Stat()
+    if status is None:
+      return {}
+
+    json_data = {'status': True}
+    if status['state'] == RDMTestThread.COMPLETED:
+      json_data['UID'] = str(status['uid'])
+      json_data['completed'] = True
+      json_data['logs_disabled'] = not status['logs_saved']
+      json_data['timestamp'] = status['timestamp'],
+      self.FormatTestResults(status['tests'], json_data)
+    else:
+      json_data['completed'] = False
+      json_data['tests_completed'] = status['tests_completed']
+      json_data['total_tests'] = status['total_tests']
+    return json_data
+
+  def RunTests(self, request, response):
     universe_param = self.RaiseExceptionIfMissing(request, 'u')
 
     try:
@@ -522,8 +702,7 @@ class RunTestsHandler(OLAServerRequestHandler):
     except ValueError:
       raise ServerException('Invalid universe parameter: u')
 
-    wrapper = self.Wrapper()
-    status, universes = MakeSyncCall(wrapper, wrapper.Client().FetchUniverses)
+    status, universes = self.GetThread().FetchUniverses()
     if not status.Succeeded():
       raise ServerException('Failed to fetch universes from server')
 
@@ -569,41 +748,14 @@ class RunTestsHandler(OLAServerRequestHandler):
     except ValueError:
       raise ServerException('Invalid DMX frame rate')
 
-    runner = TestRunner.TestRunner(universe,
-                                   uid,
-                                   broadcast_write_delay,
-                                   self._pid_location,
-                                   wrapper)
+    ret = self._test_thread.ScheduleTests(universe, uid, test_filter,
+                                          broadcast_write_delay,
+                                          dmx_frame_rate, slot_count)
+    if ret is not None:
+      raise ServerException(ret)
 
-    for test in TestRunner.GetTestClasses(TestDefinitions):
-      runner.RegisterTest(test)
-
-    dmx_sender = None
-    if dmx_frame_rate > 0 and slot_count > 0:
-      dmx_sender = DMXSender(wrapper, universe, dmx_frame_rate, slot_count)
-
-    tests, device = runner.RunTests(test_filter, False)
-
-    if dmx_sender is not None:
-      dmx_sender.Stop()
-
-    timestamp = int(time())
-    json_data = {
-      'UID': str(uid),
-      'logs_disabled': False,
-      'timestamp': timestamp,
-      'status': True,
-    }
-
-    self.FormatTestResults(tests, json_data)
-
-    log_saver = TestLogger(self._logs_directory)
-    try:
-      log_saver.SaveLog(uid, timestamp, tests)
-    except TestLoggerException:
-      json_data['logs_disabled'] = True
     response.SetStatus(HTTPResponse.OK)
-    return json_data
+    return {'status': True}
 
   def FormatTestResults(self, tests, json_data):
     results = []
@@ -694,7 +846,7 @@ class Application(object):
     response.SetStatus(HTTPResponse.NOT_FOUND)
 
 
-def BuildApplication(wrapper, settings):
+def BuildApplication(ola_thread, test_thread):
   """Construct the application and add the handlers."""
   app = Application()
   app.RegisterHandler('/',
@@ -706,16 +858,17 @@ def BuildApplication(wrapper, settings):
   app.RegisterHandler('/GetTestDefs',
       TestDefinitionsHandler().HandleRequest)
   app.RegisterHandler('/GetUnivInfo',
-      GetUniversesHandler(wrapper).HandleRequest)
+      GetUniversesHandler(ola_thread).HandleRequest)
   app.RegisterHandler('/GetDevices',
-      GetDevicesHandler(wrapper).HandleRequest)
+      GetDevicesHandler(ola_thread).HandleRequest)
   app.RegisterHandler('/RunDiscovery',
-      RunDiscoveryHandler(wrapper).HandleRequest)
+      RunDiscoveryHandler(ola_thread).HandleRequest)
   app.RegisterHandler('/DownloadResults',
       DownloadResultsHandler().HandleRequest)
-  app.RegisterHandler('/RunTests',
-      RunTestsHandler(wrapper, settings['pid_store'],
-                      settings['log_directory']).HandleRequest)
+
+  run_tests_handler = RunTestsHandler(ola_thread, test_thread)
+  app.RegisterHandler('/RunTests', run_tests_handler.HandleRequest)
+  app.RegisterHandler('/StatTests', run_tests_handler.HandleRequest)
   app.RegisterRegex('/static/.*',
       StaticFileHandler(settings['www_dir']).HandleRequest)
   return app
@@ -755,33 +908,51 @@ def main():
   settings.update(options.__dict__)
   settings['pid_store'] = PidStore.GetStore(options.pid_store, ('pids.proto'))
 
+  logging.basicConfig(level=logging.INFO, format='%(message)s')
+
   # Setup the log dir, or display an error
   if not os.path.exists(options.log_directory):
     try:
       os.makedirs(options.log_directory)
     except OSError:
-      print ('Failed to create %s for RDM logs. Logging will be disabled.' %
-             options.log_directory)
+      logging.error(
+          'Failed to create %s for RDM logs. Logging will be disabled.' %
+           options.log_directory)
   elif not os.path.isdir(options.log_directory):
-    print ('Log directory invalid: %s. Logging will be disabled.' %
-           options.log_directory)
+    logging.error('Log directory invalid: %s. Logging will be disabled.' %
+                  options.log_directory)
   elif not os.access(options.log_directory, os.W_OK):
-    print ('Unable to write to log directory: %s. Logging will be disabled.' %
-           options.log_directory)
+    logging.error(
+        'Unable to write to log directory: %s. Logging will be disabled.' %
+        options.log_directory)
 
   #Check olad status
-  ola_wrapper = None
-  print 'Checking olad status'
+  logging.info('Checking olad status')
   try:
-    ola_wrapper = ClientWrapper()
+    ola_client = OlaClient()
   except OLADNotRunningException:
-    print 'Error creating connection with olad. Is it running?'
+    logging.error('Error creating connection with olad. Is it running?')
     sys.exit(127)
 
-  app = BuildApplication(ola_wrapper, settings)
+  ola_thread = OLAThread(ola_client)
+  ola_thread.start()
+  test_thread = RDMTestThread(settings['pid_store'], settings['log_directory'])
+  test_thread.start()
+  app = BuildApplication(ola_thread, test_thread)
+
   httpd = make_server('', settings['PORT'], app.HandleRequest)
-  print "Running RDM Tests Server on %s:%s" % ('127.0.0.1', httpd.server_port)
-  httpd.serve_forever()
+  logging.info('Running RDM Tests Server on %s:%s' %
+               ('127.0.0.1', httpd.server_port))
+
+  try:
+    httpd.serve_forever()
+  except KeyboardInterrupt:
+    pass
+  ola_thread.Stop()
+  test_thread.Stop()
+  ola_thread.join()
+  test_thread.join()
+
 
 if __name__ == '__main__':
   main()

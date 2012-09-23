@@ -43,6 +43,12 @@ rdmtests = undefined;
  */
 RDMTests.ajax_loader = "<img src='/static/images/loader.gif' />";
 
+/**
+ * How long to wait between polls of the test status. In milliseconds
+ * @this {RDMTests}
+ */
+RDMTests.poll_delay = 1000;
+
 
 /**
  * Maintains a list of all the tests along with their states, categories,
@@ -273,11 +279,10 @@ RDMTests.prototype.query_server = function(request, params, callback) {
       } else {
         rdmtests.clear_notification();
         rdmtests.set_notification({
-          'title': '[ERROR]',
+          'title': 'Server Error',
           'message': data['error'],
           'is_dismissable': true
         });
-        callback(data);
       }
     },
     cache: false
@@ -403,45 +408,70 @@ RDMTests.prototype.run_tests = function(test_filter) {
   });
   this.selected_tests = test_filter;
 
-  this.query_server('/RunTests', {
-    'u': $('#universe_options').val(),
-    'uid': $('#devices_list').val(),
-    'w': $('#write_delay').val(),
-    'f': ($('#rdm-tests-send_dmx_in_bg').attr('checked') ?
-          $('#dmx_frame_rate').val() : 0),
-    'c': $('#slot_count').val(),
-    'c': ($('#rdm-tests-send_dmx_in_bg').attr('checked') ?
-          $('#slot_count').val() : 128),
-    't': test_filter.join(',')
-  }, function(data) {
-    RDMTests.timestamp = data['timestamp'];
-    if (data['status'] == true) {
-      var failed_tests = $('#rdm-tests-selection-failed_tests');
-      failed_tests.html('');
-      var failed_defs = new Array();
-      for (i in data['test_results']) {
-        switch (data['test_results'][i]['state']) {
-          case 'Failed':
-            failed_defs.push(data['test_results'][i]['definition']);
-            break;
+  this.query_server(
+      '/RunTests',
+      {
+          'u': $('#universe_options').val(),
+          'uid': $('#devices_list').val(),
+          'w': $('#write_delay').val(),
+          'f': ($('#rdm-tests-send_dmx_in_bg').attr('checked') ?
+                $('#dmx_frame_rate').val() : 0),
+          'c': $('#slot_count').val(),
+          'c': ($('#rdm-tests-send_dmx_in_bg').attr('checked') ?
+                $('#slot_count').val() : 128),
+          't': test_filter.join(',')
+      },
+      function(data) {
+        rdmtests.notification.html('<div id="progressbar"></div>');
+        $('#progressbar').progressbar({});
+        window.setTimeout(function() { rdmtests.stat_tests()},
+                          RDMTests.poll_delay);
+      }
+  );
+};
+
+
+/**
+ * Check if the tests are complete yet.
+ */
+RDMTests.prototype.stat_tests = function() {
+  this.query_server(
+      '/StatTests',
+      {},
+      function(data) {
+        if (data['completed']) {
+          RDMTests.timestamp = data['timestamp'];
+          var failed_tests = $('#rdm-tests-selection-failed_tests');
+          failed_tests.html('');
+          var failed_defs = new Array();
+          for (i in data['test_results']) {
+            switch (data['test_results'][i]['state']) {
+              case 'Failed':
+                failed_defs.push(data['test_results'][i]['definition']);
+                break;
+            }
+          }
+          if ($(failed_tests).next().length > 0) {
+            failed_tests.multiselect('destroy');
+          }
+          for (item in failed_defs) {
+            failed_tests.append($('<option />')
+                        .val(failed_defs[item])
+                        .text(failed_defs[item]));
+          }
+
+          failed_tests.multiselect();
+          rdmtests.clear_notification();
+          rdmtests.display_results(data);
+        } else {
+          // update progress here
+          var percent = data['tests_completed'] /  data['total_tests'] * 100;
+          $('#progressbar').progressbar("option", "value", percent);
+          window.setTimeout(function() { rdmtests.stat_tests()},
+                            RDMTests.poll_delay);
         }
       }
-      if ($(failed_tests).next().length > 0) {
-        failed_tests.multiselect('destroy');
-      }
-      for (item in failed_defs) {
-        failed_tests.append($('<option />')
-                    .val(failed_defs[item])
-                    .text(failed_defs[item]));
-      }
-
-      failed_tests.multiselect();
-      rdmtests.clear_notification();
-      rdmtests.display_results(data);
-    } else {
-      rdmtests.update_universe_list();
-    }
-  });
+  );
 };
 
 
