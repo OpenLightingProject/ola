@@ -74,7 +74,8 @@ class OLAThread(Thread):
 
   def run(self):
     self._ss = SelectServer()
-    self._ss.AddSocket(self._client.GetSocket(), self._client.SocketReady)
+    self._ss.AddReadDescriptor(self._client.GetSocket(),
+                               self._client.SocketReady)
     self._ss.Run()
     logging.info('OLA thread finished')
 
