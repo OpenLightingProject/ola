@@ -20,6 +20,7 @@
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import array
+import logging
 import socket
 import struct
 from ola.rpc.StreamRpcChannel import StreamRpcChannel
