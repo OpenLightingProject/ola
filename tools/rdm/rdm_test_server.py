@@ -294,7 +294,8 @@ class TestLogger(object):
     logging.info('Wrote log file %s' % (log_file.name))
     log_file.close()
 
-  def ReadContents(self, uid, timestamp):
+  def ReadContents(self, uid, timestamp, category, test_state,
+                   include_debug=True):
     """
 
     Returns:
@@ -315,12 +316,15 @@ class TestLogger(object):
       raise TestLoggerException(e)
 
     test_data = pickle.load(f)
-    return self._FormatData(test_data), log_name
+    formatted_output =  self._FormatData(test_data, category, test_state,
+                                         include_debug)
+    return formatted_output, log_name
 
   def _CheckFilename(self, filename):
     return re.match(self.FILE_NAME_RE, filename) is not None
 
-  def _FormatData(self, test_data):
+  def _FormatData(self, test_data, requested_category, requested_test_state,
+                  include_debug):
     results_log = []
     warnings = []
     advisories = []
@@ -330,12 +334,22 @@ class TestLogger(object):
     not_run = 0
     passed = 0
 
+    if requested_category.lower() == 'all':
+      requested_category = None
+    if requested_test_state.lower() == 'all':
+      requested_test_state = None
+
     tests = test_data.get('test_results', [])
     total = len(tests)
 
     for test in tests:
       category = test['category']
       state = test['state']
+      if requested_category is not None and requested_category != category:
+        continue
+      if requested_test_state is not None and requested_test_state != state:
+        continue
+
       counts = count_by_category.setdefault(category, {'passed': 0, 'total': 0})
 
       if state == str(TestState.PASSED):
@@ -353,7 +367,8 @@ class TestLogger(object):
 
       results_log.append('%s: %s' % (test['definition'], test['state'].upper()))
       results_log.append(str(test['doc']))
-      results_log.extend(str(l) for l in test.get('debug', []))
+      if include_debug:
+        results_log.extend(str(l) for l in test.get('debug', []))
       results_log.append('')
       warnings.extend(str(s) for s in test.get('warnings', []))
       advisories.extend(str(s) for s in test.get('advisories', []))
@@ -390,11 +405,12 @@ class HTTPRequest(object):
     """Return the path for the request."""
     return self._environ['PATH_INFO']
 
-  def GetParam(self, param):
+  def GetParam(self, param, default=None):
     """This only returns the first value for each param.
 
     Args:
       param: the name of the url parameter.
+      default: the value to return if the parameter wasn't supplied.
 
     Returns:
       The value of the url param, or None if it wasn't present.
@@ -404,7 +420,7 @@ class HTTPRequest(object):
       get_params = urlparse.parse_qs(self._environ['QUERY_STRING'])
       for p in get_params:
         self._params[p] = get_params[p][0]
-    return self._params.get(param, None)
+    return self._params.get(param, default)
 
 
 class HTTPResponse(object):
@@ -642,9 +658,14 @@ class DownloadResultsHandler(RequestHandler):
     if timestamp is None:
       raise ServerException('Missing timestamp parameter: timestamp')
 
+    include_debug = request.GetParam('debug')
+    category = request.GetParam('category')
+    test_state = request.GetParam('state')
+
     reader = TestLogger(settings['log_directory'])
     try:
-      output, filename = reader.ReadContents(uid, timestamp)
+      output, filename = reader.ReadContents(uid, timestamp, category,
+                                             test_state, include_debug)
     except TestLoggerException as e:
       raise ServerException(e)
 

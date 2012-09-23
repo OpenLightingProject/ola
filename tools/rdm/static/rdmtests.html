@@ -375,10 +375,10 @@
           Result:
           <select id='rdm-tests-results-summary-filter-by_state' class='rdm-tests-select'>
             <option>All</option>
-            <option class='test-state-passed'>Passed</option>
-            <option class='test-state-failed'>Failed</option>
-            <option class='test-state-broken'>Broken</option>
-            <option class='test-state-not_run'>Not Run</option>
+            <option>Passed</option>
+            <option>Failed</option>
+            <option>Broken</option>
+            <option>Not Run</option>
           </select>
         </div>
         <select id='rdm-tests-results-list' size='10'></select>
@@ -396,9 +396,21 @@
       <div class='results_container rdm-tests-results-button'>
         <input id='rdm-tests-results-button-dismiss' type='button' value='Dismiss' />
         <input id='rdm-tests-results-button-run_again' type='button' value='Run Again' />
-        <input id='rdm-tests-results-button-download' type='button' value='Download results' />
+        <input id='rdm-tests-results-button-download' type='button' value='Download Log' />
+        <input id='rdm-tests-results-button-save-options' type='button' value='Download Options' />
       </div>
     <div id='rdm-tests-notification'></div>
+    <div id='rdm-tests-save-options'>
+      Category: <select id='rdm-tests-save-catg' class='rdm-tests-select'></select><br/>
+      Result: <select id='rdm-tests-save-state' class='rdm-tests-select'>
+        <option>All</option>
+        <option>Passed</option>
+        <option>Failed</option>
+        <option>Broken</option>
+        <option>Not Run</option>
+      </select><br/>
+      <input type='checkbox' id='rdm-tests-include-debug' checked='checked'>Include Debug Output
+    </div>
 
     <div id='footer'>
       OLA &copy; 2012 Ravindra Nath Kakarla<br>

@@ -31,6 +31,45 @@ RDMTests = function() {
       modal: true,
       resizable: false,
   });
+  this.save_options = $('#rdm-tests-save-options');
+  var save_buttons = [
+    {
+      text: "Cancel",
+      click: function() { $(this).dialog("close"); }
+    },
+    {
+      text: "Download",
+      click: function() { rdmtests.save_results() }
+    },
+  ];
+  this.save_options.dialog({
+      autoOpen: false,
+      draggable: false,
+      height: 200,
+      modal: true,
+      resizable: false,
+      title: 'Download Options',
+      buttons: save_buttons,
+  });
+
+  //Populate the filter with test categories
+  $('#rdm-tests-results-summary-filter-by_catg')
+  .append($('<option />').val('All').html('All'));
+
+  // and the other list in the download options dialog
+  $('#rdm-tests-save-catg')
+  .append($('<option />').val('All').html('All'));
+
+  this.query_server('/GetTestCategories', {}, function(data) {
+    for (var i = 0; i < data['Categories'].length; i++) {
+      $('#rdm-tests-results-summary-filter-by_catg')
+      .append($('<option />').val(data['Categories'][i])
+      .html(data['Categories'][i]));
+      $('#rdm-tests-save-catg')
+      .append($('<option />').val(data['Categories'][i])
+      .html(data['Categories'][i]));
+    }
+  });
 };
 
 
@@ -169,8 +208,16 @@ RDMTests.prototype.bind_events_to_doms = function() {
     var uid = $('#devices_list').val();
     var timestamp = RDMTests.timestamp;
     $('#rdm-tests-download').attr('src',
-        '/DownloadResults?uid=' + uid +
+        '/DownloadResults?debug=1&uid=' + uid +
         '&timestamp=' + timestamp);
+  });
+
+  $('#rdm-tests-results-button-save-options').click(function() {
+    rdmtests.show_save_options();
+  });
+
+  $('#rdm-tests-results-button-save').click(function() {
+    rdmtests.save_results();
   });
 
   $.each([
@@ -196,6 +243,33 @@ RDMTests.prototype.bind_events_to_doms = function() {
       });
     });
   });
+};
+
+
+/**
+ * Displays the save-options dialog.
+ * @this {RDMTests}
+ */
+RDMTests.prototype.show_save_options = function() {
+  this.save_options.dialog('open');
+};
+
+
+/**
+ * Download the saved results.
+ * @this {RDMTests}
+ */
+RDMTests.prototype.save_results = function() {
+  this.save_options.dialog('close');
+  var uid = $('#devices_list').val();
+  var timestamp = RDMTests.timestamp;
+  var url = ('/DownloadResults?uid=' + uid + '&timestamp=' + timestamp +
+             '&state=' + $('#rdm-tests-save-state').val() + '&category=' +
+             $('#rdm-tests-save-catg').val());
+  if ($('#rdm-tests-include-debug').attr('checked')) {
+    url += '&debug=1';
+  }
+  $('#rdm-tests-download').attr('src', url);
 };
 
 
@@ -483,7 +557,6 @@ RDMTests.prototype.reset_results = function() {
   $.each(['#rdm-tests-results-uid',
     '#rdm-tests-results-stats-figures',
     '#rdm-tests-results-summary-by_catg-content',
-    '#rdm-tests-results-summary-filter-by_catg',
     '#rdm-tests-results-warnings-content',
     '#rdm-tests-results-advisories-content',
     '#rdm-tests-results-list'], function(i, dom) {
@@ -593,21 +666,6 @@ RDMTests.prototype.display_results = function(results) {
 
     $('#rdm-tests-results-list').append(test_option);
   }
-
-  //Populate the filter with test categories
-  $('#rdm-tests-results-summary-filter-by_catg')
-  .append($('<option />')
-  .val('All')
-  .html('All'));
-
-  rdmtests.query_server('/GetTestCategories', {}, function(data) {
-    for (var i = 0; i < data['Categories'].length; i++) {
-      $('#rdm-tests-results-summary-filter-by_catg')
-      .append($('<option />')
-      .val(data['Categories'][i])
-      .html(data['Categories'][i]));
-    }
-  });
 
   //Update the Warnings and Advisories counter
   $('#rdm-tests-results-warning-count').html(number_of_warnings.toString());
