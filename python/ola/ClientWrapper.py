@@ -34,7 +34,13 @@ import traceback
 from ola.OlaClient import OLADNotRunningException, OlaClient, Universe
 
 
-class Event(object):
+class _Event(object):
+  """An _Event represents a timer scheduled to expire in the future.
+
+  Args:
+    time_ms: the number of ms before this event fires
+    callback: the callable to run
+  """
   def __init__(self, time_ms, callback):
     self._run_at = (datetime.datetime.now() +
                     datetime.timedelta(milliseconds = time_ms))
@@ -44,50 +50,62 @@ class Event(object):
     return cmp(self._run_at, other._run_at)
 
   def TimeLeft(self, now):
-    """Returns the number of seconds until this event."""
+    """Get the time remaining before this event triggers.
+
+    Returns:
+      The number of seconds (as a float) before this event fires.
+    """
     time_delta = self._run_at - now
     seconds =  time_delta.seconds + time_delta.days * 24 * 3600
     seconds += time_delta.microseconds / 10.0**6
     return seconds
 
   def HasExpired(self, now):
+    """Return true if this event has expired."""
     return self._run_at < now
 
   def Run(self):
+    """Run the callback."""
     self._callback()
 
 
 class SelectServer(object):
   """Similar to include/ola/io/SelectServer.h
 
+  Manages I/O and Events.
   This class isn't thread safe, apart from Execute and Stop.
   """
   def __init__(self):
     self._quit = False
-    self._client = OlaClient()
+    self._ss_thread_id = self._GetThreadID()
+    # heap of _Event objects, ordered by time-to-expiry
     self._events = []
     heapq.heapify(self._events)
-    # sockets
-    self._sockets = {}
-
+    # sockets to track
+    self._read_sockets = {}
+    self._write_sockets = {}
     # functions to run in the SelectServer
-    self._ss_thread_id = self._GetThreadID()
     self._functions = []
     self._function_list_lock = threading.Lock()
+    # the pipe used to wake up select() from other threads
     self._local_socket = os.pipe()
-    self.AddSocket(self._local_socket[0], self._DrainAndExecute)
+    self.AddReadDescriptor(self._local_socket[0], self._DrainAndExecute)
 
-  def Execute(self, function):
+  def Execute(self, f):
     """Execute a function from within the SelectServer.
        Can be called from any thread.
+
+    Args:
+      f: The callable to run
     """
     self._function_list_lock.acquire()
-    self._functions.append(function)
-    # can write anything here
+    self._functions.append(f)
+    # can write anything here, this wakes up the select() call
     os.write(self._local_socket[1], 'a')
     self._function_list_lock.release()
 
   def Terminate(self):
+    """Terminate this SelectServer. Can be called from any thread."""
     if self._ss_thread_id == self._GetThreadID():
       self._Stop()
     else:
@@ -100,23 +118,56 @@ class SelectServer(object):
     if len(self._events) == 0:
       self._quit = True
 
-  def AddSocket(self, sd, callback):
-    """Add a socket to the socket set.
+  def AddReadDescriptor(self, fd, callback):
+    """Add a descriptor to the read FD Set.
 
     Args:
-      sd: the socket to add
-      callback: the callback to run when this socket is ready.
+      fd: the descriptor to add
+      callback: the callback to run when this descriptor is ready.
     """
-    self._sockets[sd] = callback
+    self._read_sockets[fd] = callback
+
+  def RemoveReadDescriptor(self, fd):
+    """Remove a socket from the read FD Set.
+
+    Args:
+      fd: the descriptor to remove
+    """
+    if  fd in self._read_sockets:
+      del self._read_sockets[fd]
+
+  def AddWriteDescriptor(self, fd, callback):
+    """Add a socket to the write FD Set.
+
+    Args:
+      fd: the descriptor to add
+      callback: the callback to run when this descriptor is ready.
+    """
+    self._write_sockets[fd] = callback
+
+  def RemoveWriteDescriptor(self, fd):
+    """Remove a socket from the write FD Set.
+
+    Args:
+      fd: the descriptor to remove
+    """
+    if  fd in self._write_sockets:
+      del self._write_sockets[fd]
 
   def Run(self):
+    """Run the SelectServer. This doesn't return until Terminate() is called.
+
+
+    Returns:
+      False if the calling thread isn't the one that created the select server.
+    """
     if self._ss_thread_id != self._GetThreadID():
       logging.critical(
          'SelectServer called in a thread other than the owner. '
          'Owner %d, caller %d' % (self._ss_thread_id, self._GetThreadID()))
       traceback.print_stack()
     self._quit = False
-    while self._client.GetSocket() is not None and not self._quit:
+    while not self._quit:
       # default to 1s sleep
       sleep_time = 1
       now = datetime.datetime.now()
@@ -124,12 +175,13 @@ class SelectServer(object):
       if len(self._events):
         sleep_time = min(1.0, self._events[0].TimeLeft(now))
 
-      i, o, e = select.select(self._sockets.keys(), [], [], sleep_time)
+      i, o, e = select.select(self._read_sockets.keys(),
+                              self._write_sockets.keys(),
+                              [], sleep_time)
       now = datetime.datetime.now()
       self._CheckTimeouts(now)
-      for s, c in self._sockets.iteritems():
-        if s in i:
-          c()
+      self._CheckDescriptors(i, self._read_sockets)
+      self._CheckDescriptors(o, self._write_sockets)
 
   def AddEvent(self, time_in_ms, callback):
     """Schedule an event to run in the future.
@@ -138,7 +190,7 @@ class SelectServer(object):
       time_in_ms: An interval in milliseconds when this should run.
       callback: The function to run.
     """
-    event = Event(time_in_ms, callback)
+    event = _Event(time_in_ms, callback)
     heapq.heappush(self._events, event)
 
   def _CheckTimeouts(self, now):
@@ -150,6 +202,14 @@ class SelectServer(object):
       else:
         break
       heapq.heappop(self._events)
+
+  def _CheckDescriptors(self, ready_set, all_descriptors):
+    runnables = []
+    for fd, runnable in all_descriptors.iteritems():
+      if fd in ready_set:
+        runnables.append(runnable)
+    for runnable in runnables:
+      runnable()
 
   def _GetThreadID(self):
     return threading.currentThread().ident
@@ -178,7 +238,8 @@ class ClientWrapper(object):
   def __init__(self):
     self._ss = SelectServer()
     self._client = OlaClient()
-    self._ss.AddSocket(self._client.GetSocket(), self._client.SocketReady)
+    self._ss.AddReadDescriptor(self._client.GetSocket(),
+                               self._client.SocketReady)
 
   def Stop(self):
     self._ss.Terminate()
