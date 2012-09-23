@@ -14,7 +14,7 @@
 #  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 # rdm_test_server.py
-# Copyright (C) 2012 Ravindra Nath Kakarla
+# Copyright (C) 2012 Ravindra Nath Kakarla & Simon Newton
 
 import cgi
 import json
