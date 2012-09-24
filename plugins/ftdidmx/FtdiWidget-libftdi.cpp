@@ -292,7 +292,8 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
     OLA_INFO << "Found FTDI device. Vendor: '" << v << "', Name: '" << sname <<
       "', Serial: '" << sserial << "'";
     std::transform(v.begin(), v.end(), v.begin(), ::toupper);
-    if (std::string::npos != v.find("FTDI")) {
+    if (std::string::npos != v.find("FTDI") ||
+        std::string::npos != v.find("www.soh.cz")) {
       widgets->push_back(FtdiWidgetInfo(sname, sserial, i));
     }
   }
