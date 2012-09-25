@@ -39,6 +39,10 @@ enum MergeMode {
   LTP = 2;
 }
 
+/**
+ * Please discuss on open-lighting@googlegroups.com before claiming a Plugin
+ * ID.
+ */
 enum PluginIds {
   OLA_PLUGIN_ALL = 0;
   OLA_PLUGIN_DUMMY = 1;
