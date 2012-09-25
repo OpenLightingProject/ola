@@ -49,7 +49,8 @@ class MuteDevice(ResponderTestFixture):
   def Test(self):
     self.AddExpectedResults([
       self.AckDiscoveryResult(),
-      UnsupportedResult()
+      UnsupportedResult(
+        warning='RDM Controller does not support DISCOVERY commands')
     ])
     self.SendDiscovery(ROOT_DEVICE, self.pid)
 
