@@ -662,7 +662,6 @@ class GetSupportedParameters(ResponderTestFixture):
       ('OUTPUT_RESPONSE_TIME', 'OUTPUT_RESPONSE_TIME_DESCRIPTION'),
       ('MODULATION_FREQUENCY', 'MODULATION_FREQUENCY_DESCRIPTION'),
       ('LOCK_STATE', ' LOCK_STATE_DESCRIPTION'),
-
   ]
 
   def Test(self):
@@ -745,6 +744,10 @@ class GetSupportedParameters(ResponderTestFixture):
       unsupported_pids = []
       for pid_name in pid_names[1:]:
         pid = self.LookupPid(pid_name)
+        if pid is None:
+          self.SetBroken('Missing PID %s' % pid_name)
+          return
+
         if pid.value not in supported_parameters:
           unsupported_pids.append(pid_name)
       if unsupported_pids:
