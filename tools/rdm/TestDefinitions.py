@@ -188,7 +188,7 @@ class DUBFullTree(TestMixins.DiscoveryMixin,
   PROVIDES = ['dub_supported']
 
   def LowerBound(self):
-    return UID(0, 0);
+    return UID(0, 0)
 
   def UpperBound(self):
     return UID.AllDevices()
@@ -359,7 +359,7 @@ class DUBNegativeVendorcast(TestMixins.DiscoveryMixin,
   REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
 
   def LowerBound(self):
-    return UID(0, 0);
+    return UID(0, 0)
 
   def UpperBound(self):
     return UID.AllDevices()
@@ -378,7 +378,7 @@ class DUBPositiveVendorcast(TestMixins.DiscoveryMixin,
   REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
 
   def LowerBound(self):
-    return UID(0, 0);
+    return UID(0, 0)
 
   def UpperBound(self):
     return UID.AllDevices()
@@ -394,7 +394,7 @@ class DUBPositiveUnicast(TestMixins.DiscoveryMixin,
   REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
 
   def LowerBound(self):
-    return UID(0, 0);
+    return UID(0, 0)
 
   def UpperBound(self):
     return UID.AllDevices()
@@ -413,7 +413,7 @@ class DUBInvertedFullTree(TestMixins.DiscoveryMixin,
     return UID.AllDevices()
 
   def UpperBound(self):
-    return UID(0, 0);
+    return UID(0, 0)
 
   def ExpectResponse(self):
     return False
@@ -563,7 +563,7 @@ class GetMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
 
   def VerifyResult(self, response, fields):
     self.SetProperty('supports_max_sized_pdl',
-                     response.response_code != OlaClient.RDM_INVALID_RESPONSE);
+                     response.response_code != OlaClient.RDM_INVALID_RESPONSE)
 
 
 class DetermineMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
@@ -2551,7 +2551,7 @@ class SetDeviceHoursWithNoData(OptionalParameterTestFixture):
       expected_result = RDMNack.NR_FORMAT_ERROR
     else:
       expected_result = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
-    self.AddIfSetSupported(self.NackSetResult(expected_result));
+    self.AddIfSetSupported(self.NackSetResult(expected_result))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
 
 
@@ -2601,7 +2601,7 @@ class SetLampHoursWithNoData(OptionalParameterTestFixture):
       expected_result = RDMNack.NR_FORMAT_ERROR
     else:
       expected_result = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
-    self.AddIfSetSupported(self.NackSetResult(expected_result));
+    self.AddIfSetSupported(self.NackSetResult(expected_result))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
 
 
@@ -2650,7 +2650,7 @@ class SetLampStrikesWithNoData(OptionalParameterTestFixture):
       expected_result = RDMNack.NR_FORMAT_ERROR
     else:
       expected_result = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
-    self.AddIfSetSupported(self.NackSetResult(expected_result));
+    self.AddIfSetSupported(self.NackSetResult(expected_result))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
 
 
@@ -2810,7 +2810,7 @@ class SetDevicePowerCyclesWithNoData(OptionalParameterTestFixture):
       expected_result= RDMNack.NR_FORMAT_ERROR
     else:
       expected_result= RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
-    self.AddIfSetSupported(self.NackSetResult(expected_result));
+    self.AddIfSetSupported(self.NackSetResult(expected_result))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
 
 
@@ -3731,12 +3731,12 @@ class GetDimmerInfo(OptionalParameterTestFixture):
                        % (fields['maximum_level_lower'],
                           fields['maximum_level_upper']))
 
-    self.SetPropertyFromDict(fields, 'minimum_level_lower');
-    self.SetPropertyFromDict(fields, 'minimum_level_upper');
-    self.SetPropertyFromDict(fields, 'maximum_level_lower');
-    self.SetPropertyFromDict(fields, 'maximum_level_upper');
-    self.SetPropertyFromDict(fields, 'number_of_curves');
-    self.SetPropertyFromDict(fields, 'level_resolution');
+    self.SetPropertyFromDict(fields, 'minimum_level_lower')
+    self.SetPropertyFromDict(fields, 'minimum_level_upper')
+    self.SetPropertyFromDict(fields, 'maximum_level_lower')
+    self.SetPropertyFromDict(fields, 'maximum_level_upper')
+    self.SetPropertyFromDict(fields, 'number_curves_supported')
+    self.SetPropertyFromDict(fields, 'level_resolution')
 
     self.SetProperty('split_levels_supported',
                      fields['split_levels_supported'] & self.SPLIT_LEVEL_MASK)
@@ -3777,7 +3777,7 @@ class GetPresetMergeMode(TestMixins.GetMixin,
       self.SetProperty('preset_merge_mode', None)
       return
 
-    self.SetPropertyFromDict('preset_merge_mode', fields)
+    self.SetPropertyFromDict(fields, 'preset_merge_mode')
 
 class GetPresetMergeModeWithData(TestMixins.GetWithDataMixin,
                                  OptionalParameterTestFixture):
