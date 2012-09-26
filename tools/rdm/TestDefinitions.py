@@ -56,7 +56,7 @@ class MuteDevice(ResponderTestFixture):
 
   def VerifyResult(self, response, fields):
     supported = (response.response_code !=
-                 OlaClient.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED)
+                 OlaClient.RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED)
     self.SetProperty('mute_supported', supported)
 
     if supported:
@@ -101,7 +101,7 @@ class UnMuteDevice(ResponderTestFixture):
 
   def VerifyResult(self, response, fields):
     supported = (response.response_code !=
-                 OlaClient.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED)
+                 OlaClient.RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED)
     self.SetProperty('unmute_supported', supported)
     if supported:
       if fields['control_field'] != self.Property('mute_control_fields'):
@@ -196,7 +196,7 @@ class DUBFullTree(TestMixins.DiscoveryMixin,
   def DUBResponseCode(self, response_code):
     self.SetProperty(
         'dub_supported',
-        response_code != OlaClient.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED)
+        response_code != OlaClient.RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED)
 
 
 class DUBManufacturerTree(TestMixins.DiscoveryMixin,

@@ -752,13 +752,13 @@ void UniverseTest::testRDMSend() {
                         reinterpret_cast<const RDMResponse*>(NULL)));
 
   // and the same again but the second port returns
-  // RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED
+  // RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED
   request = NewDiscoveryUniqueBranchRequest(source_uid, uid1, uid2, 0);
 
   port2.SetRDMHandler(
     NewCallback(this,
                 &UniverseTest::ReturnRDMCode,
-                ola::rdm::RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED));
+                ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED));
 
   universe->SendRDMRequest(
       request,
@@ -790,14 +790,14 @@ void UniverseTest::testRDMSend() {
   port1.SetRDMHandler(
     NewCallback(this,
                 &UniverseTest::ReturnRDMCode,
-                ola::rdm::RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED));
+                ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED));
 
   universe->SendRDMRequest(
       request,
       NewSingleCallback(this,
                         &UniverseTest::ConfirmRDM,
                         __LINE__,
-                        ola::rdm::RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED,
+                        ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED,
                         reinterpret_cast<const RDMResponse*>(NULL)));
 
   universe->RemovePort(&port1);

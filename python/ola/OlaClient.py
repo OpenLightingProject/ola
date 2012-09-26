@@ -333,8 +333,8 @@ class RDMResponse(object):
         'The command class didn\'t match the request'),
       Ola_pb2.RDM_INVALID_RESPONSE_TYPE: (
         'The response type was not ACK, ACK_OVERFLOW, ACK_TIMER or NACK'),
-      Ola_pb2.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED: (
-        'The requested Command Class is not supported by this controller'),
+      Ola_pb2.RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED: (
+        'The DISCOVERY Command Class is not supported by this controller'),
       Ola_pb2.RDM_DUB_RESPONSE: (
         'Discovery Unique Branch response')
   }

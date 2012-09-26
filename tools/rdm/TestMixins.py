@@ -555,7 +555,7 @@ class DiscoveryMixin(ResponderTestFixture):
 
     self.DUBResponseCode(response.response_code)
     if (response.response_code ==
-        OlaClient.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED):
+        OlaClient.RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED):
       return
 
     if not self.ExpectResponse():
