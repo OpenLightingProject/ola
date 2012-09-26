@@ -3707,8 +3707,9 @@ class GetDimmerInfo(OptionalParameterTestFixture):
   CATEGORY = TestCategory.DIMMER_SETTINGS
   PID = 'DIMMER_INFO'
   PROVIDES = ['minimum_level_lower', 'minimum_level_upper',
-              'maximum_level_lower', 'maximum_level_upper', 'number_of_curves',
-              'level_resolution', 'split_levels_supported']
+              'maximum_level_lower', 'maximum_level_upper',
+              'number_curves_supported', 'levels_resolution',
+              'split_levels_supported']
   SPLIT_LEVEL_MASK = 0x01
 
   def Test(self):
@@ -3736,7 +3737,7 @@ class GetDimmerInfo(OptionalParameterTestFixture):
     self.SetPropertyFromDict(fields, 'maximum_level_lower')
     self.SetPropertyFromDict(fields, 'maximum_level_upper')
     self.SetPropertyFromDict(fields, 'number_curves_supported')
-    self.SetPropertyFromDict(fields, 'level_resolution')
+    self.SetPropertyFromDict(fields, 'levels_resolution')
 
     self.SetProperty('split_levels_supported',
                      fields['split_levels_supported'] & self.SPLIT_LEVEL_MASK)
