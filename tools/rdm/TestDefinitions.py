@@ -3731,12 +3731,12 @@ class GetDimmerInfo(OptionalParameterTestFixture):
                        % (fields['maximum_level_lower'],
                           fields['maximum_level_upper']))
 
-    self.SetPropertyFromDict('minimum_level_lower', fields);
-    self.SetPropertyFromDict('minimum_level_upper', fields);
-    self.SetPropertyFromDict('maximum_level_lower', fields);
-    self.SetPropertyFromDict('maximum_level_upper', fields);
-    self.SetPropertyFromDict('number_of_curves', fields);
-    self.SetPropertyFromDict('level_resolution', fields);
+    self.SetPropertyFromDict(fields, 'minimum_level_lower');
+    self.SetPropertyFromDict(fields, 'minimum_level_upper');
+    self.SetPropertyFromDict(fields, 'maximum_level_lower');
+    self.SetPropertyFromDict(fields, 'maximum_level_upper');
+    self.SetPropertyFromDict(fields, 'number_of_curves');
+    self.SetPropertyFromDict(fields, 'level_resolution');
 
     self.SetProperty('split_levels_supported',
                      fields['split_levels_supported'] & self.SPLIT_LEVEL_MASK)
