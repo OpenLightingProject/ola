@@ -3577,6 +3577,7 @@ class SetDMXBlockAddress(TestMixins.SetMixin, OptionalParameterTestFixture):
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_BLOCK_ADDRESS'
   REQUIRES = ['sub_device_footprint', 'base_dmx_address']
+  EXPECTED_FIELD = 'base_dmx_address'
 
   def NewValue(self):
     base_address =  self.Property('base_dmx_address')
