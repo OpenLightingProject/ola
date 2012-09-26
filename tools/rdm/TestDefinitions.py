@@ -3558,9 +3558,9 @@ class GetDMXBlockAddress(OptionalParameterTestFixture):
       if footprint > MAX_DMX_ADDRESS and footprint != self.NON_CONTIGUOUS:
         self.AddWarning('Sub device footprint > 512, was %d' % footprint)
 
-      if base_dmx_address == 0 or base_dmx_address > MAX_DMX_ADDRESS:
+      if base_address == 0 or base_address > MAX_DMX_ADDRESS:
         self.AddWarning('Base DMX address is outside range 1- 512, was %d' %
-                        base_dmx_address)
+                        base_address)
     self.SetProperty('sub_device_footprint', footprint)
     self.SetProperty('base_dmx_address', base_address)
 
