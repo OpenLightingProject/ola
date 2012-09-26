@@ -293,8 +293,10 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
       "', Serial: '" << sserial << "'";
     std::transform(v.begin(), v.end(), v.begin(), ::toupper);
     if (std::string::npos != v.find("FTDI") ||
-        std::string::npos != v.find("www.soh.cz")) {
+        std::string::npos != v.find("WWW.SOH.CZ")) {
       widgets->push_back(FtdiWidgetInfo(sname, sserial, i));
+    } else {
+      OLA_INFO << "Unknown FTDI device with vendor string: '" << v << "'";
     }
   }
 
