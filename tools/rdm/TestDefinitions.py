@@ -1332,7 +1332,7 @@ class SetLanguage(OptionalParameterTestFixture):
         self.AddIfSetSupported(ack)
         self.new_language = available_langugages[0]
         if self.new_language == self.Property('language'):
-          self.new_language = available_langugages[2]
+          self.new_language = available_langugages[1]
       else:
         self.new_language = available_langugages[0]
         self.AddIfSetSupported([ack, nack])
