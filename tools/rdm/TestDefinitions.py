@@ -3558,7 +3558,8 @@ class GetDMXBlockAddress(OptionalParameterTestFixture):
       if footprint > MAX_DMX_ADDRESS and footprint != self.NON_CONTIGUOUS:
         self.AddWarning('Sub device footprint > 512, was %d' % footprint)
 
-      if base_address == 0 or base_address > MAX_DMX_ADDRESS:
+      if (base_address == 0 or
+          base_address > MAX_DMX_ADDRESS and base_address != 0xffff):
         self.AddWarning('Base DMX address is outside range 1- 512, was %d' %
                         base_address)
     self.SetProperty('sub_device_footprint', footprint)
@@ -3687,7 +3688,7 @@ class SetBurnIn(TestMixins.SetUInt8Mixin, OptionalParameterTestFixture):
   """Attempt to SET the burn in hours setting."""
   CATEGORY = TestCategory.POWER_LAMP_SETTINGS
   PID = 'BURN_IN'
-  EXPECTED_FIELD = 'hours'
+  EXPECTED_FIELD = 'hours_remaining'
   REQUIRES = ['burn_in_hours']
 
   def OldValue(self):
