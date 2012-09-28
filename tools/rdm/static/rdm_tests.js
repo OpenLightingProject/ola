@@ -350,6 +350,15 @@ RDMTests.prototype.query_server = function(request, params, callback) {
     type: 'GET',
     data: params,
     dataType: 'json',
+    error: function(jqXHR, textStatus, errorThrown) {
+      rdmtests.clear_notification();
+      rdmtests.set_notification({
+        'title': 'Server Down',
+        'message': (
+          'The RDM Test Server is not responding. Restart it and try again'),
+        'is_dismissable': true
+      });
+    },
     success: function(data) {
       if (data['status'] == true) {
         callback(data);
@@ -590,7 +599,11 @@ RDMTests.prototype.display_results = function(results) {
 
   var category_lists = [$('#rdm-tests-results-summary-filter-by_catg'),
                         $('#rdm-tests-save-catg')];
-  $.each(category_lists, function(i, dom) { dom.html(''); });
+  $.each(category_lists,
+         function(i, dom) {
+           dom.html('');
+           dom.append($('<option />').val('All').html('All'));
+         });
 
   // Summary of results by category
   for (key in results['stats_by_catg']) {
