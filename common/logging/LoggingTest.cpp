@@ -73,7 +73,7 @@ void MockLogDestination::Write(log_level level, const string &log_line) {
   ola::StringSplit(log_line, tokens, ":");
   vector<string>::iterator iter;
   OLA_ASSERT_EQ(tokens.size() , (size_t) 3);
-  OLA_ASSERT_TRUE(m_log_lines.size() > 0);
+  OLA_ASSERT_GT(m_log_lines.size(), 0);
   std::pair<log_level, string> expected_result = m_log_lines.at(0);
   m_log_lines.pop_front();
   OLA_ASSERT_EQ(expected_result.first, level);
