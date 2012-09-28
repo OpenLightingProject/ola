@@ -599,7 +599,11 @@ RDMTests.prototype.display_results = function(results) {
 
   var category_lists = [$('#rdm-tests-results-summary-filter-by_catg'),
                         $('#rdm-tests-save-catg')];
-  $.each(category_lists, function(i, dom) { dom.html(''); });
+  $.each(category_lists,
+         function(i, dom) {
+           dom.html('');
+           dom.append($('<option />').val('All').html('All'));
+         });
 
   // Summary of results by category
   for (key in results['stats_by_catg']) {
