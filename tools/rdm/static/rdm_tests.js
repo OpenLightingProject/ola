@@ -350,6 +350,15 @@ RDMTests.prototype.query_server = function(request, params, callback) {
     type: 'GET',
     data: params,
     dataType: 'json',
+    error: function(jqXHR, textStatus, errorThrown) {
+      rdmtests.clear_notification();
+      rdmtests.set_notification({
+        'title': 'Server Down',
+        'message': (
+          'The RDM Test Server is not responding. Restart it and try again'),
+        'is_dismissable': true
+      });
+    },
     success: function(data) {
       if (data['status'] == true) {
         callback(data);
