@@ -65,22 +65,22 @@ void DescriptorTest::testFieldDescriptors() {
   // bool
   BoolFieldDescriptor bool_descriptor("bool");
   OLA_ASSERT_EQ(string("bool"), bool_descriptor.Name());
-  OLA_ASSERT_EQ(true, bool_descriptor.FixedSize());
-  OLA_ASSERT_EQ(true, bool_descriptor.LimitedSize());
+  OLA_ASSERT_TRUE(bool_descriptor.FixedSize());
+  OLA_ASSERT_TRUE(bool_descriptor.LimitedSize());
   OLA_ASSERT_EQ(1u, bool_descriptor.MaxSize());
 
   // IPv4 address
   IPV4FieldDescriptor ipv4_descriptor("ipv4");
   OLA_ASSERT_EQ(string("ipv4"), ipv4_descriptor.Name());
-  OLA_ASSERT_EQ(true, ipv4_descriptor.FixedSize());
-  OLA_ASSERT_EQ(true, ipv4_descriptor.LimitedSize());
+  OLA_ASSERT_TRUE(ipv4_descriptor.FixedSize());
+  OLA_ASSERT_TRUE(ipv4_descriptor.LimitedSize());
   OLA_ASSERT_EQ(4u, ipv4_descriptor.MaxSize());
 
   // UID
   UIDFieldDescriptor uid_descriptor("uid");
   OLA_ASSERT_EQ(string("uid"), uid_descriptor.Name());
-  OLA_ASSERT_EQ(true, uid_descriptor.FixedSize());
-  OLA_ASSERT_EQ(true, uid_descriptor.LimitedSize());
+  OLA_ASSERT_TRUE(uid_descriptor.FixedSize());
+  OLA_ASSERT_TRUE(uid_descriptor.LimitedSize());
   OLA_ASSERT_EQ(6u, uid_descriptor.MaxSize());
 
   // string
@@ -88,65 +88,65 @@ void DescriptorTest::testFieldDescriptors() {
   OLA_ASSERT_EQ(string("string"), string_descriptor.Name());
   OLA_ASSERT_EQ(10u, string_descriptor.MinSize());
   OLA_ASSERT_EQ(32u, string_descriptor.MaxSize());
-  OLA_ASSERT_EQ(false, string_descriptor.FixedSize());
-  OLA_ASSERT_EQ(true, string_descriptor.LimitedSize());
+  OLA_ASSERT_FALSE(string_descriptor.FixedSize());
+  OLA_ASSERT_TRUE(string_descriptor.LimitedSize());
 
   // uint8_t
   UInt8FieldDescriptor uint8_descriptor("uint8", false, 10);
   OLA_ASSERT_EQ(string("uint8"), uint8_descriptor.Name());
   OLA_ASSERT_EQ(1u, uint8_descriptor.MaxSize());
-  OLA_ASSERT_EQ(false, uint8_descriptor.IsLittleEndian());
+  OLA_ASSERT_FALSE(uint8_descriptor.IsLittleEndian());
   OLA_ASSERT_EQ(static_cast<int8_t>(10),
                        uint8_descriptor.Multiplier());
-  OLA_ASSERT_EQ(true, uint8_descriptor.FixedSize());
-  OLA_ASSERT_EQ(true, uint8_descriptor.LimitedSize());
+  OLA_ASSERT_TRUE(uint8_descriptor.FixedSize());
+  OLA_ASSERT_TRUE(uint8_descriptor.LimitedSize());
 
   UInt8FieldDescriptor uint8_descriptor2("uint8", true, -1);
   OLA_ASSERT_EQ(string("uint8"), uint8_descriptor2.Name());
   OLA_ASSERT_EQ(1u, uint8_descriptor2.MaxSize());
-  OLA_ASSERT_EQ(true, uint8_descriptor2.IsLittleEndian());
+  OLA_ASSERT_TRUE(uint8_descriptor2.IsLittleEndian());
   OLA_ASSERT_EQ(static_cast<int8_t>(-1),
                        uint8_descriptor2.Multiplier());
-  OLA_ASSERT_EQ(true, uint8_descriptor2.FixedSize());
-  OLA_ASSERT_EQ(true, uint8_descriptor2.LimitedSize());
+  OLA_ASSERT_TRUE(uint8_descriptor2.FixedSize());
+  OLA_ASSERT_TRUE(uint8_descriptor2.LimitedSize());
 
   // uint16_t
   UInt16FieldDescriptor uint16_descriptor("uint16", false, 10);
   OLA_ASSERT_EQ(string("uint16"), uint16_descriptor.Name());
   OLA_ASSERT_EQ(2u, uint16_descriptor.MaxSize());
-  OLA_ASSERT_EQ(false, uint16_descriptor.IsLittleEndian());
+  OLA_ASSERT_FALSE(uint16_descriptor.IsLittleEndian());
   OLA_ASSERT_EQ(static_cast<int8_t>(10),
                        uint16_descriptor.Multiplier());
-  OLA_ASSERT_EQ(true, uint16_descriptor.FixedSize());
-  OLA_ASSERT_EQ(true, uint16_descriptor.LimitedSize());
+  OLA_ASSERT_TRUE(uint16_descriptor.FixedSize());
+  OLA_ASSERT_TRUE(uint16_descriptor.LimitedSize());
 
   UInt16FieldDescriptor uint16_descriptor2("uint16", true, -1);
   OLA_ASSERT_EQ(string("uint16"), uint16_descriptor2.Name());
   OLA_ASSERT_EQ(2u, uint16_descriptor2.MaxSize());
-  OLA_ASSERT_EQ(true, uint16_descriptor2.IsLittleEndian());
+  OLA_ASSERT_TRUE(uint16_descriptor2.IsLittleEndian());
   OLA_ASSERT_EQ(static_cast<int8_t>(-1),
                        uint16_descriptor2.Multiplier());
-  OLA_ASSERT_EQ(true, uint16_descriptor2.FixedSize());
-  OLA_ASSERT_EQ(true, uint16_descriptor2.LimitedSize());
+  OLA_ASSERT_TRUE(uint16_descriptor2.FixedSize());
+  OLA_ASSERT_TRUE(uint16_descriptor2.LimitedSize());
 
   // uint32_t
   UInt32FieldDescriptor uint32_descriptor("uint32", false, 10);
   OLA_ASSERT_EQ(string("uint32"), uint32_descriptor.Name());
   OLA_ASSERT_EQ(4u, uint32_descriptor.MaxSize());
-  OLA_ASSERT_EQ(false, uint32_descriptor.IsLittleEndian());
+  OLA_ASSERT_FALSE(uint32_descriptor.IsLittleEndian());
   OLA_ASSERT_EQ(static_cast<int8_t>(10),
                        uint32_descriptor.Multiplier());
-  OLA_ASSERT_EQ(true, uint32_descriptor.FixedSize());
-  OLA_ASSERT_EQ(true, uint32_descriptor.LimitedSize());
+  OLA_ASSERT_TRUE(uint32_descriptor.FixedSize());
+  OLA_ASSERT_TRUE(uint32_descriptor.LimitedSize());
 
   UInt32FieldDescriptor uint32_descriptor2("uint32", true, -1);
   OLA_ASSERT_EQ(string("uint32"), uint32_descriptor2.Name());
   OLA_ASSERT_EQ(4u, uint32_descriptor2.MaxSize());
-  OLA_ASSERT_EQ(true, uint32_descriptor2.IsLittleEndian());
+  OLA_ASSERT_TRUE(uint32_descriptor2.IsLittleEndian());
   OLA_ASSERT_EQ(static_cast<int8_t>(-1),
                        uint32_descriptor2.Multiplier());
-  OLA_ASSERT_EQ(true, uint32_descriptor2.FixedSize());
-  OLA_ASSERT_EQ(true, uint32_descriptor2.LimitedSize());
+  OLA_ASSERT_TRUE(uint32_descriptor2.FixedSize());
+  OLA_ASSERT_TRUE(uint32_descriptor2.LimitedSize());
 }
 
 
@@ -165,18 +165,18 @@ void DescriptorTest::testFieldDescriptorGroup() {
   fields.push_back(uint8_descriptor);
 
   FieldDescriptorGroup group_descriptor("group", fields, 0, 3);
-  OLA_ASSERT_EQ(false, group_descriptor.FixedSize());
-  OLA_ASSERT_EQ(true, group_descriptor.LimitedSize());
+  OLA_ASSERT_FALSE(group_descriptor.FixedSize());
+  OLA_ASSERT_TRUE(group_descriptor.LimitedSize());
   OLA_ASSERT_EQ(6u, group_descriptor.MaxSize());
   OLA_ASSERT_EQ(2u, group_descriptor.FieldCount());
-  OLA_ASSERT_EQ(true, group_descriptor.FixedBlockSize());
+  OLA_ASSERT_TRUE(group_descriptor.FixedBlockSize());
   OLA_ASSERT_EQ(2u, group_descriptor.BlockSize());
   OLA_ASSERT_EQ(2u, group_descriptor.MaxBlockSize());
   OLA_ASSERT_EQ(static_cast<uint16_t>(0),
                        group_descriptor.MinBlocks());
   OLA_ASSERT_EQ(static_cast<int16_t>(3),
                        group_descriptor.MaxBlocks());
-  OLA_ASSERT_EQ(false, group_descriptor.FixedBlockCount());
+  OLA_ASSERT_FALSE(group_descriptor.FixedBlockCount());
 
   OLA_ASSERT_EQ(static_cast<const FieldDescriptor*>(bool_descriptor),
                        group_descriptor.GetField(0));
@@ -196,18 +196,18 @@ void DescriptorTest::testFieldDescriptorGroup() {
   fields2.push_back(uint16_descriptor2);
 
   FieldDescriptorGroup group_descriptor2("group", fields2, 2, 2);
-  OLA_ASSERT_EQ(true, group_descriptor2.FixedSize());
-  OLA_ASSERT_EQ(true, group_descriptor2.LimitedSize());
+  OLA_ASSERT_TRUE(group_descriptor2.FixedSize());
+  OLA_ASSERT_TRUE(group_descriptor2.LimitedSize());
   OLA_ASSERT_EQ(8u, group_descriptor2.MaxSize());
   OLA_ASSERT_EQ(3u, group_descriptor2.FieldCount());
-  OLA_ASSERT_EQ(true, group_descriptor2.FixedBlockSize());
+  OLA_ASSERT_TRUE(group_descriptor2.FixedBlockSize());
   OLA_ASSERT_EQ(4u, group_descriptor2.BlockSize());
   OLA_ASSERT_EQ(4u, group_descriptor2.MaxBlockSize());
   OLA_ASSERT_EQ(static_cast<uint16_t>(2),
                        group_descriptor2.MinBlocks());
   OLA_ASSERT_EQ(static_cast<int16_t>(2),
                        group_descriptor2.MaxBlocks());
-  OLA_ASSERT_EQ(true, group_descriptor2.FixedBlockCount());
+  OLA_ASSERT_TRUE(group_descriptor2.FixedBlockCount());
 
   OLA_ASSERT_EQ(static_cast<const FieldDescriptor*>(bool_descriptor2),
                        group_descriptor2.GetField(0));
@@ -225,18 +225,18 @@ void DescriptorTest::testFieldDescriptorGroup() {
   fields3.push_back(string_descriptor2);
 
   FieldDescriptorGroup group_descriptor3("group", fields3, 0, 2);
-  OLA_ASSERT_EQ(false, group_descriptor3.FixedSize());
-  OLA_ASSERT_EQ(true, group_descriptor3.LimitedSize());
+  OLA_ASSERT_FALSE(group_descriptor3.FixedSize());
+  OLA_ASSERT_TRUE(group_descriptor3.LimitedSize());
   OLA_ASSERT_EQ(66u, group_descriptor3.MaxSize());
   OLA_ASSERT_EQ(2u, group_descriptor3.FieldCount());
-  OLA_ASSERT_EQ(false, group_descriptor3.FixedBlockSize());
+  OLA_ASSERT_FALSE(group_descriptor3.FixedBlockSize());
   OLA_ASSERT_EQ(0u, group_descriptor3.BlockSize());
   OLA_ASSERT_EQ(33u, group_descriptor3.MaxBlockSize());
   OLA_ASSERT_EQ(static_cast<uint16_t>(0),
                        group_descriptor3.MinBlocks());
   OLA_ASSERT_EQ(static_cast<int16_t>(2),
                        group_descriptor3.MaxBlocks());
-  OLA_ASSERT_EQ(false, group_descriptor3.FixedBlockCount());
+  OLA_ASSERT_FALSE(group_descriptor3.FixedBlockCount());
   OLA_ASSERT_EQ(static_cast<const FieldDescriptor*>(bool_descriptor3),
                        group_descriptor3.GetField(0));
   OLA_ASSERT_EQ(static_cast<const FieldDescriptor*>(string_descriptor2),
@@ -251,18 +251,18 @@ void DescriptorTest::testFieldDescriptorGroup() {
   fields4.push_back(string_descriptor3);
 
   FieldDescriptorGroup group_descriptor4("group", fields4, 2, 2);
-  OLA_ASSERT_EQ(false, group_descriptor4.FixedSize());
-  OLA_ASSERT_EQ(true, group_descriptor4.LimitedSize());
+  OLA_ASSERT_FALSE(group_descriptor4.FixedSize());
+  OLA_ASSERT_TRUE(group_descriptor4.LimitedSize());
   OLA_ASSERT_EQ(66u, group_descriptor4.MaxSize());
   OLA_ASSERT_EQ(2u, group_descriptor4.FieldCount());
-  OLA_ASSERT_EQ(false, group_descriptor4.FixedBlockSize());
+  OLA_ASSERT_FALSE(group_descriptor4.FixedBlockSize());
   OLA_ASSERT_EQ(0u, group_descriptor4.BlockSize());
   OLA_ASSERT_EQ(33u, group_descriptor4.MaxBlockSize());
   OLA_ASSERT_EQ(static_cast<uint16_t>(2),
                        group_descriptor4.MinBlocks());
   OLA_ASSERT_EQ(static_cast<int16_t>(2),
                        group_descriptor4.MaxBlocks());
-  OLA_ASSERT_EQ(true, group_descriptor4.FixedBlockCount());
+  OLA_ASSERT_TRUE(group_descriptor4.FixedBlockCount());
   OLA_ASSERT_EQ(static_cast<const FieldDescriptor*>(bool_descriptor4),
                        group_descriptor4.GetField(0));
   OLA_ASSERT_EQ(static_cast<const FieldDescriptor*>(string_descriptor3),
@@ -278,11 +278,11 @@ void DescriptorTest::testFieldDescriptorGroup() {
     fields5,
     0,
     FieldDescriptorGroup::UNLIMITED_BLOCKS);
-  OLA_ASSERT_EQ(false, group_descriptor5.FixedSize());
-  OLA_ASSERT_EQ(false, group_descriptor5.LimitedSize());
+  OLA_ASSERT_FALSE(group_descriptor5.FixedSize());
+  OLA_ASSERT_FALSE(group_descriptor5.LimitedSize());
   OLA_ASSERT_EQ(0u, group_descriptor5.MaxSize());
   OLA_ASSERT_EQ(1u, group_descriptor5.FieldCount());
-  OLA_ASSERT_EQ(true, group_descriptor5.FixedBlockSize());
+  OLA_ASSERT_TRUE(group_descriptor5.FixedBlockSize());
   OLA_ASSERT_EQ(1u, group_descriptor5.BlockSize());
   OLA_ASSERT_EQ(1u, group_descriptor5.MaxBlockSize());
   OLA_ASSERT_EQ(static_cast<uint16_t>(0),
@@ -290,7 +290,7 @@ void DescriptorTest::testFieldDescriptorGroup() {
   OLA_ASSERT_EQ(
       static_cast<int16_t>(FieldDescriptorGroup::UNLIMITED_BLOCKS),
       group_descriptor5.MaxBlocks());
-  OLA_ASSERT_EQ(false, group_descriptor5.FixedBlockCount());
+  OLA_ASSERT_FALSE(group_descriptor5.FixedBlockCount());
   OLA_ASSERT_EQ(static_cast<const FieldDescriptor*>(bool_descriptor5),
                        group_descriptor5.GetField(0));
 }
