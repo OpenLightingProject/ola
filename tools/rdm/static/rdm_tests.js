@@ -83,17 +83,6 @@ RDMTests = function() {
   // and the other list in the download options dialog
   $('#rdm-tests-save-catg')
   .append($('<option />').val('All').html('All'));
-
-  this.query_server('/GetTestCategories', {}, function(data) {
-    for (var i = 0; i < data['Categories'].length; i++) {
-      $('#rdm-tests-results-summary-filter-by_catg')
-      .append($('<option />').val(data['Categories'][i])
-      .html(data['Categories'][i]));
-      $('#rdm-tests-save-catg')
-      .append($('<option />').val(data['Categories'][i])
-      .html(data['Categories'][i]));
-    }
-  });
 };
 
 
@@ -599,7 +588,11 @@ RDMTests.prototype.display_results = function(results) {
     .append($('<td />').html(results['stats'][key]));
   }
 
-  //Summary of results by category
+  var category_lists = [$('#rdm-tests-results-summary-filter-by_catg'),
+                        $('#rdm-tests-save-catg')];
+  $.each(category_lists, function(i, dom) { dom.html(''); });
+
+  // Summary of results by category
   for (key in results['stats_by_catg']) {
     var passed = results['stats_by_catg'][key]['passed'];
     var total = results['stats_by_catg'][key]['total'];
@@ -612,15 +605,21 @@ RDMTests.prototype.display_results = function(results) {
     }
 
     $('#rdm-tests-results-summary-by_catg-content')
-    .append($('<li />')
-    .html('<span>' +
-        key +
-        '</span>' +
-        '<span class="stats_by_catg">' +
-        passed.toString() +
-        '&nbsp;/&nbsp;' +
-        total.toString() +
-        percent));
+      .append($('<li />')
+      .html('<span>' +
+          key +
+          '</span>' +
+          '<span class="stats_by_catg">' +
+          passed.toString() +
+          '&nbsp;/&nbsp;' +
+          total.toString() +
+          percent));
+
+    // update the lists as well
+    $.each(category_lists,
+           function(i, dom) {
+             dom.append($('<option />').val(key).html(key));
+           });
   }
 
   var number_of_warnings = 0;

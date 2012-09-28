@@ -632,16 +632,6 @@ class OLAServerRequestHandler(JsonRequestHandler):
       response.AppendData(json.dumps(json_data, sort_keys = True))
 
 
-class TestCategoriesHandler(JsonRequestHandler):
-  """Return a JSON list of test Categories."""
-  def GetJson(self, request, response):
-    response.SetStatus(HTTPResponse.OK)
-    return {
-      'Categories': sorted(c.__str__() for c in TestCategory.Categories()),
-      'status': True,
-    }
-
-
 class TestDefinitionsHandler(JsonRequestHandler):
   """Return a JSON list of test definitions."""
   def GetJson(self, request, response):
@@ -1005,8 +995,6 @@ def BuildApplication(ola_thread, test_thread):
       RedirectHandler('/static/rdmtests.html').HandleRequest)
   app.RegisterHandler('/favicon.ico',
       RedirectHandler('/static/images/favicon.ico').HandleRequest)
-  app.RegisterHandler('/GetTestCategories',
-      TestCategoriesHandler().HandleRequest)
   app.RegisterHandler('/GetTestDefs',
       TestDefinitionsHandler().HandleRequest)
   app.RegisterHandler('/GetUnivInfo',
