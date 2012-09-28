@@ -48,7 +48,8 @@ Endian Issues
 -------------
 
 Be aware that OLA runs on big endian systems. When dealing with wire formats
-always use the functions in include/ola/network/NetworkUtils.h to convert.
+always use the functions in include/ola/network/NetworkUtils.h to convert or
+use the BigEndianOutputStream to manage this automatically for you.
 
 Non x86 platforms
 -----------------
@@ -90,7 +91,7 @@ Race Conditions
 ---------------
 
 If possible, code should be tested with slower machines (embedded platforms,
-virtual machines etc.). This has discovered up race conditions in the past.
+virtual machines etc.). This has discovered race conditions in the past.
 
 Valgrind
 --------

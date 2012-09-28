@@ -60,7 +60,7 @@ void DummyRDMDevice::SendRDMRequest(const ola::rdm::RDMRequest *request,
                                     ola::rdm::RDMCallback *callback) {
   vector<string> packets;
   if (request->CommandClass() == ola::rdm::RDMCommand::DISCOVER_COMMAND) {
-    callback->Run(ola::rdm::RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED,
+    callback->Run(ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED,
                   NULL,
                   packets);
     delete request;

@@ -134,7 +134,7 @@ void DmxTriWidgetImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
 
   if (request->CommandClass() == ola::rdm::RDMCommand::DISCOVER_COMMAND &&
       request->ParamId() == ola::rdm::PID_DISC_UNIQUE_BRANCH) {
-    on_complete->Run(ola::rdm::RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED, NULL,
+    on_complete->Run(ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED, NULL,
                      packets);
     delete request;
     return;
