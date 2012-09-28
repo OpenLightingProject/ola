@@ -48,7 +48,6 @@
         padding-bottom: 10px;
         left: 0px;
         text-align: left;
-        font-size: 11px;
       }
 
       #header img {
@@ -60,25 +59,20 @@
         font-size: 18px;
       }
 
+      #top-right {
+        font-size: 13px;
+        position: absolute;
+        right: 0px;
+        margin-top: 5px;
+        margin-right: 10px;
+        text-align: right;
+      }
+
       #footer {
         padding-top: 5px;
         text-align: center;
         clear: both;
         font-size: 11px;
-      }
-
-      /* Tables are used in various frames */
-      .ola-table {
-        width: 100%;
-        border-bottom: 1px solid #e4e9fe;
-      }
-
-      .ola-table thead {
-        text-align: left;
-      }
-
-      .ola-table td {
-        border-top: 1px solid #e4e9fe;
       }
 
       .stats_by_catg {
@@ -230,13 +224,41 @@
         overflow: auto;
       }
 
-      .rdm-tests-results-button {
+      .button-container {
         padding-top: 10px;
         text-align: center;
       }
 
+      #rdm-discovery-button {
+        vertical-align: middle;
+        padding: 5px;
+      }
+
+      #publisher-output {
+        border: 1px solid #999999;
+        height:400px;
+        overflow: auto;
+      }
+
       .ui-progressbar-value {
         background: #67A7E3;
+      }
+
+      .ui-tabs {
+        background: #ffffff;
+        border: 0px;
+        padding: 0px;
+      }
+      .ui-tabs-nav {
+        border: 0px;
+        border-bottom: 1px solid #67a7e3;
+        background: #ffffff;
+      }
+      .ui-tabs-panel {
+        font-family: sans-serif;
+        font-size: 13px;
+        padding: 10px;
+        border-bottom: 1px solid #67a7e3;
       }
 
       .no-close .ui-dialog-titlebar-close {display: none }
@@ -246,160 +268,201 @@
     <div id='header'>
       <div id='title'>
         <img src='/static/images/logo.png' width='111' height='48' alt='Logo'>
-        <span id="main-title">RDM Responder Tests</span>
+        <span id="main-title">RDM Responder Tests &amp; Publisher</span>
+        <span id='top-right'>
+          <a href='http://www.opendmx.net/index.php/Using_the_RDM_Test_UI'>Help</a>
+        </span>
       </div>
     </div>
-    <div id='tests_control_frame'>
-      <fieldset>
-       <legend>Universe</legend>
-        <table>
-          <tr>
-            <td>
-              <select id='universe_options'></select>
-            </td>
-          </tr>
-        </table>
-      </fieldset>
-      <fieldset>
-       <legend>Select Device</legend>
+    <div id="tabs">
+     <ul>
+      <li><a href="#tabs-1">RDM Responder Tests</a></li>
+      <li><a href="#tabs-2">RDM Responder Publisher</a></li>
+     </ul>
+     <div id="tabs-1">
+      <div id='tests_control_frame'>
+       <fieldset>
+        <legend>Select the RDM device to test</legend>
+         Universe: <select id='universe_options'></select>, RDM Responder:
          <select id='devices_list'></select>
-         <span id='rdm-discovery'><a href='#'><img id='rdm-discovery-button' alt='Run Discovery' src='/static/images/discovery.png' title='Run Full Discovery' /></a></span>
-      </fieldset>
-      <fieldset>
-        <legend>Delay after sending broadcast SETs</legend>
-           <input id='write_delay' maxlength='16' size='4' value='0'>
-             milliseconds
-      </fieldset>
-      <fieldset>
-       <legend>DMX Options</legend>
-        <div>
-          <input type='checkbox' id='rdm-tests-send_dmx_in_bg'>Send DMX in background?
-        </div>
-        <table id='rdm-tests-dmx_options' class='ola-table'>
-         <tr>
-          <td>DMX Frame rate (frames / second)
-           <input id='dmx_frame_rate' maxlength='16' size='4' value='20'></td>
-         </tr>
-         <tr>
-          <td>Number of Slots to Send
-           <input id='slot_count' maxlength='3' size='4' value='128'></td>
-         </tr>
-        </table>
-      </fieldset>
-      <fieldset>
-       <legend>Select Tests</legend>
-				<form id='rdm-tests-selection'>
-          <table class='ola-table'>
-           <tr>
-            <td>
-              <input type='radio' name='rdm-tests-selection' id='rdm-tests-selection-subset' class='rdm-tests-selection' checked='checked' />Select Tests
-            </td>
-            <td>
-              <select id='rdm-tests-selection-tests_list' class='rdm-tests-selection-multiselect' multiple='multiple' name='subset_test_defs'>
-              </select>
-            </td>
-           </tr>
-           <tr>
-            <td>
-              <input type='radio' name='rdm-tests-selection' id='rdm-tests-selection-previously_failed' class='rdm-tests-selection'/>Failed Tests
-            </td>
-            <td>
-              <select id='rdm-tests-selection-failed_tests' class='rdm-tests-selection-multiselect' multiple='multiple' name='failed_test_defs'>
-              </select>
-            </td>
-           </tr>
-           <tr>
-            <td colspan='2'>
-              <p style='font-size: 12px'>Running tests will modify the settings for devices connected to this universe. Think twice about doing this on a production system.</p>
-              <input type='button' name='rdm-tests-selection-run_tests' id='rdm-tests-selection-run_tests' value='Run Tests' />
-            </td>
-           </tr>
-        </table>
-			</form>
-     </fieldset>
-    </div>
-    <div id='rdm-tests-results'>
-      <div id='rdm-tests-results-stats'>
+          <a href='#'><img id='rdm-discovery-button' alt='Run Discovery' src='/static/images/discovery.png' title='Run Full Discovery' /></a>
+       </fieldset>
+       <fieldset>
+         <legend>Delay after sending broadcast SETs</legend>
+          <input id='write_delay' maxlength='16' size='4' value='0'> milliseconds
+       </fieldset>
+       <fieldset>
+        <legend>DMX Options</legend>
+         <div>
+           <input type='checkbox' id='rdm-tests-send_dmx_in_bg'>
+             <label for='rdm-tests-send_dmx_in_bg'>Send DMX in background?</label>
+         </div>
+         <table id='rdm-tests-dmx_options'>
+          <tr>
+           <td>DMX Frame rate (frames / second)
+            <input id='dmx_frame_rate' maxlength='16' size='4' value='20'></td>
+          </tr>
+          <tr>
+           <td>Number of Slots to Send
+            <input id='slot_count' maxlength='3' size='4' value='128'></td>
+          </tr>
+         </table>
+       </fieldset>
+       <fieldset>
+        <legend>Select Tests to Perform</legend>
+        <form id='rdm-tests-selection'>
+         <table>
+          <tr>
+           <td>
+             <input type='radio' name='rdm-tests-selection' id='rdm-tests-selection-subset' class='rdm-tests-selection' checked='checked' />Select Tests
+           </td>
+           <td>
+             <select id='rdm-tests-selection-tests_list' class='rdm-tests-selection-multiselect' multiple='multiple' name='subset_test_defs'>
+             </select>
+           </td>
+          </tr>
+          <tr>
+           <td>
+             <input type='radio' name='rdm-tests-selection' id='rdm-tests-selection-previously_failed' class='rdm-tests-selection'/>Failed Tests
+           </td>
+           <td>
+             <select id='rdm-tests-selection-failed_tests' class='rdm-tests-selection-multiselect' multiple='multiple' name='failed_test_defs'>
+             </select>
+           </td>
+          </tr>
+         </table>
+        </form>
+       </fieldset>
+       <div class='button-container'>
+         Running tests will modify the settings for responders connected to this universe. Think twice about doing this on a production system.
+         <br/>
+         <input type='button' name='rdm-tests-selection-run_tests' id='rdm-tests-selection-run_tests' value='Run Tests' />
+       </div>
+      </div>
+      <div id='rdm-tests-results'>
+       <div id='rdm-tests-results-stats'>
         Test results for: <span style='font-weight: bold' id="rdm-tests-results-uid"></span>
         <table id='rdm-tests-results-stats-table'>
-          <tr>
-            <td class='test-state-broken'>Broken</td>
-            <td class='test-state-failed'>Failed</td>
-            <td class='test-state-not_run'>Not Run</td>
-            <td class='test-state-passed'>Passed</td>
-            <td style='color: #000'>Total</td>
-          </tr>
-          <tr id='rdm-tests-results-stats-figures'>
-          </tr>
+         <tr>
+          <td class='test-state-broken'>Broken</td>
+          <td class='test-state-failed'>Failed</td>
+          <td class='test-state-not_run'>Not Run</td>
+          <td class='test-state-passed'>Passed</td>
+          <td style='color: #000'>Total</td>
+         </tr>
+         <tr id='rdm-tests-results-stats-figures'></tr>
         </table>
-      </div>
-      <div id='rdm-tests-results-summary-by_catg' class='results_container'>
+       </div>
+       <div id='rdm-tests-results-summary-by_catg' class='results_container'>
         <fieldset class="ola-expander">
           <legend class="ola-expander-collapsed">
-            <img src="/static/images/blank.gif" width="12" height="12">
-          Results By Category
+           <img src="/static/images/blank.gif" width="12" height="12">
+           Results By Category
           </legend>
           <div>
-           <ul id='rdm-tests-results-summary-by_catg-content'>
-           </ul>
+           <ul id='rdm-tests-results-summary-by_catg-content'></ul>
           </div>
         </fieldset>
-      </div>
-      <div id='rdm-tests-results-warnings' class='results_container'>
+       </div>
+       <div id='rdm-tests-results-warnings' class='results_container'>
         <fieldset class="ola-expander">
-          <legend class="ola-expander-collapsed">
-            <img src="/static/images/blank.gif" width="12" height="12">
-            Warnings (<span id="rdm-tests-results-warning-count"></span>)
-          </legend>
-          <div>
-           <ul id='rdm-tests-results-warnings-content'></ul>
-          </div>
+         <legend class="ola-expander-collapsed">
+           <img src="/static/images/blank.gif" width="12" height="12">
+           Warnings (<span id="rdm-tests-results-warning-count"></span>)
+         </legend>
+         <div>
+          <ul id='rdm-tests-results-warnings-content'></ul>
+         </div>
         </fieldset>
-      </div>
-      <div id='rdm-tests-results-advisories' class='results_container'>
+       </div>
+       <div id='rdm-tests-results-advisories' class='results_container'>
         <fieldset class="ola-expander">
-          <legend class="ola-expander-collapsed">
-            <img src="/static/images/blank.gif" width="12" height="12">
-            Advisories (<span id="rdm-tests-results-advisory-count"></span>)
-          </legend>
-          <div>
-            <ul id='rdm-tests-results-advisories-content'></ul>
-          </div>
+         <legend class="ola-expander-collapsed">
+          <img src="/static/images/blank.gif" width="12" height="12">
+          Advisories (<span id="rdm-tests-results-advisory-count"></span>)
+         </legend>
+         <div>
+          <ul id='rdm-tests-results-advisories-content'></ul>
+         </div>
         </fieldset>
-      </div>
-      <div class='results_container_border'>
-        <div style="padding: 5px">
-          Test Category
-          <select id='rdm-tests-results-summary-filter-by_catg' class='rdm-tests-select'>
-          </select>,
-          Result:
-          <select id='rdm-tests-results-summary-filter-by_state' class='rdm-tests-select'>
-            <option>All</option>
-            <option>Passed</option>
-            <option>Failed</option>
-            <option>Broken</option>
-            <option>Not Run</option>
-          </select>
-        </div>
-        <select id='rdm-tests-results-list' size='10'></select>
-        <div id='rdm-tests-results-info'>
-          <div id='rdm-tests-results-info-title'></div>
-          <div id='rdm-tests-results-info-doc'></div>
-          <div style="padding-left: 10px">
-            Category: <span id='rdm-tests-results-info-catg'></span><br/>
-            Result: <span id='rdm-tests-results-info-state'></span><br/>
-            Debug Output:
-          </div>
-          <div id='rdm-tests-results-info-debug'></div>
-        </div>
-      </div>
-      <div class='results_container rdm-tests-results-button'>
+       </div>
+       <div class='results_container_border'>
+         <div style="padding: 5px">
+           Test Category
+           <select id='rdm-tests-results-summary-filter-by_catg' class='rdm-tests-select'>
+           </select>,
+           Result:
+           <select id='rdm-tests-results-summary-filter-by_state' class='rdm-tests-select'>
+             <option>All</option>
+             <option>Passed</option>
+             <option>Failed</option>
+             <option>Broken</option>
+             <option>Not Run</option>
+           </select>
+         </div>
+         <select id='rdm-tests-results-list' size='10'></select>
+         <div id='rdm-tests-results-info'>
+           <div id='rdm-tests-results-info-title'></div>
+           <div id='rdm-tests-results-info-doc'></div>
+           <div style="padding-left: 10px">
+             Category: <span id='rdm-tests-results-info-catg'></span><br/>
+             Result: <span id='rdm-tests-results-info-state'></span><br/>
+             Debug Output:
+           </div>
+           <div id='rdm-tests-results-info-debug'></div>
+         </div>
+       </div>
+       <div class='results_container button-container'>
         <input id='rdm-tests-results-button-dismiss' type='button' value='Dismiss' />
         <input id='rdm-tests-results-button-run_again' type='button' value='Run Again' />
         <input id='rdm-tests-results-button-download' type='button' value='Download Log' />
         <input id='rdm-tests-results-button-save-options' type='button' value='Download Options' />
+       </div>
       </div>
+     </div>
+     <div id="tabs-2">
+       <p>
+        The RDM publisher can be used to publish a responder on the
+        <a href="http://rdm.openlighting.org/">rdm.openlighting.org</a>
+        site. After collecting the responder information, you will
+        have an opportunity to review the data before publishing.
+       </p>
+
+       <fieldset>
+        <legend>Collector Options</legend>
+         Universe: <select id='publisher-universe-list'></select>
+         <p>
+          <input type='checkbox' id='publisher-skip-queued-messages'>
+          <label for='publisher-skip-queued-messages'>Skip
+          Queued Messages. Select this if the responder doesn't support queued
+          messages correctly.</label>
+          </p>
+          <input type='button' id='publisher-collect-button'
+            value='Collect Responder Information' />
+       </fieldset>
+
+       <fieldset>
+        <legend>Output</legend>
+        <pre id='publisher-output'></pre>
+
+        <div class='button-container'>
+         <input type='button' id='publisher-clear-button' value='Clear Output' />
+        </div>
+       </fieldset>
+     </div>
+    </div>
+    <div id='footer'>
+      OLA &copy; 2012 Ravindra Nath Kakarla, Simon Newton &amp; the
+      <a href="http://www.openlighting.org">Open Lighting Project</a><br>
+    </div>
     <div id='rdm-tests-notification'></div>
+    <div id='rdm-error-notification'>
+      An error has occured: '<span id='error-message'></span>'
+      <pre id='traceback'></pre>
+      <p>Please report this bug so it can be fixed. Clicking 'Report Bug' will
+      open a new window and prompt you to sign in with your Google account.
+      Only the information you see here will be sent.</p>
+    </div>
     <div id='rdm-tests-save-options'>
       Category: <select id='rdm-tests-save-catg' class='rdm-tests-select'></select><br/>
       Result: <select id='rdm-tests-save-state' class='rdm-tests-select'>
@@ -410,10 +473,6 @@
         <option>Not Run</option>
       </select><br/>
       <input type='checkbox' id='rdm-tests-include-debug' checked='checked'>Include Debug Output
-    </div>
-
-    <div id='footer'>
-      OLA &copy; 2012 Ravindra Nath Kakarla<br>
     </div>
     <iframe id='rdm-tests-download' style='display: none'></iframe>
   </body>

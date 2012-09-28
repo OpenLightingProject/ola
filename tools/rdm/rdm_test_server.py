@@ -22,10 +22,12 @@ import logging
 import mimetypes
 import os
 import pickle
+import pprint
 import re
 import signal
 import sys
 import sys
+import traceback
 import textwrap
 import threading
 import urlparse
@@ -43,6 +45,7 @@ from ola.testing.rdm import DataLocation
 from ola.testing.rdm import ResponderTest
 from ola.testing.rdm import TestDefinitions
 from ola.testing.rdm import TestRunner
+from ola.testing.rdm.ModelCollector import ModelCollector
 from ola.testing.rdm.TestCategory import TestCategory
 from ola.testing.rdm.TestState import TestState
 
@@ -126,13 +129,15 @@ class OLAThread(Thread):
 
 class RDMTestThread(Thread):
   """The RDMResponder tests are closely coupled to the Wrapper (yuck!). So we
-     need to run this all in a separate thread.
+     need to run this all in a separate thread. This is all a bit of a hack and
+     you'll get into trouble if multiple things are running at once...
   """
-  RUNNING, COMPLETED = range(2)
+  RUNNING, COMPLETED, ERROR = range(3)
+  TESTS, COLLECTOR = range(2)
 
-  def __init__(self, pid_location, logs_directory):
+  def __init__(self, pid_store, logs_directory):
     super(RDMTestThread, self).__init__()
-    self._pid_location = pid_location
+    self._pid_store = pid_store
     self._logs_directory = logs_directory
     self._terminate = False
     self._request = None
@@ -150,26 +155,60 @@ class RDMTestThread(Thread):
 
   def ScheduleTests(self, universe, uid, test_filter, broadcast_write_delay,
                     dmx_frame_rate, slot_count):
-    """Schedule the tests to be run. Callable from any thread.
+    """Schedule the tests to be run. Callable from any thread. Callbable by any
+       thread.
 
     Returns:
       An error message, or None if the tests were scheduled.
     """
-    # TODO(simon): check if we are connected here
+    if not self._CheckIfConnected():
+      return 'Lost connection to OLAD'
+
     self._cv.acquire()
     if self._request is not None:
       self._cv.release()
       return 'Existing request pending'
 
-    self._request = (
-        universe, uid, test_filter, broadcast_write_delay, dmx_frame_rate,
-        slot_count)
+    self._request = lambda : self._RunTests(universe, uid, test_filter,
+                                            broadcast_write_delay,
+                                            dmx_frame_rate, slot_count)
     self._cv.notify()
     self._cv.release()
     return None
 
+  def ScheduleCollector(self, universe, skip_queued_messages):
+    """Schedule the collector to run on a universe. Callable by any thread.
+
+    Returns:
+      An error message, or None if the collection was scheduled.
+    """
+    if not self._CheckIfConnected():
+      return 'Lost connection to OLAD'
+
+    self._cv.acquire()
+    if self._request is not None:
+      self._cv.release()
+      return 'Existing request pending'
+
+    self._request = lambda : self._RunCollector(universe, skip_queued_messages)
+    self._cv.notify()
+    self._cv.release()
+    return None
+
+  def Stat(self):
+    """Check the state of the tests. Callable by any thread.
+
+    Returns:
+      The status of the tests.
+    """
+    self._test_state_lock.acquire()
+    state = dict(self._test_state)
+    self._test_state_lock.release()
+    return state
+
   def run(self):
     self._wrapper = ClientWrapper()
+    self._collector = ModelCollector(self._wrapper, self._pid_store)
     while True:
       self._cv.acquire()
       if self._terminate:
@@ -181,7 +220,7 @@ class RDMTestThread(Thread):
         request = self._request
         self._request = None
         self._cv.release()
-        self._RunTests(request)
+        request()
         continue
       # nothing to do, go into the wait
       self._cv.wait()
@@ -193,12 +232,11 @@ class RDMTestThread(Thread):
     self._test_state['total_tests'] = total_tests
     self._test_state_lock.release()
 
-  def _RunTests(self, request):
-    (universe, uid, test_filter, broadcast_write_delay, dmx_frame_rate,
-     slot_count) = request
-
+  def _RunTests(self, universe, uid, test_filter, broadcast_write_delay,
+                dmx_frame_rate, slot_count):
     self._test_state_lock.acquire()
     self._test_state = {
+      'action': self.TESTS,
       'tests_completed': 0,
       'total_tests': None,
       'state': self.RUNNING,
@@ -206,7 +244,7 @@ class RDMTestThread(Thread):
     self._test_state_lock.release()
 
     runner = TestRunner.TestRunner(universe, uid, broadcast_write_delay,
-                                   self._pid_location, self._wrapper)
+                                   self._pid_store, self._wrapper)
 
     for test in TestRunner.GetTestClasses(TestDefinitions):
       runner.RegisterTest(test)
@@ -217,10 +255,18 @@ class RDMTestThread(Thread):
                    (slot_count, dmx_frame_rate))
       dmx_sender = DMXSender(wrapper, universe, dmx_frame_rate, slot_count)
 
-    tests, unused_device = runner.RunTests(test_filter, False, self._UpdateStats)
-
-    if dmx_sender is not None:
-      dmx_sender.Stop()
+    try:
+      tests, unused_device = runner.RunTests(test_filter, False, self._UpdateStats)
+    except Exception as e:
+      self._test_state_lock.acquire()
+      self._test_state['state'] = self.ERROR
+      self._test_state['exception'] = str(e)
+      self._test_state['traceback'] = traceback.format_exc()
+      self._test_state_lock.release()
+      return
+    finally:
+      if dmx_sender is not None:
+        dmx_sender.Stop()
 
     timestamp = int(time())
     log_saver = TestLogger(self._logs_directory)
@@ -238,16 +284,39 @@ class RDMTestThread(Thread):
     self._test_state['uid'] = uid
     self._test_state_lock.release()
 
-  def Stat(self):
-    """Check the state of the tests.
+  def _RunCollector(self, universe, skip_queued_messages):
+    """Run the device model collector for a universe."""
+    logging.info('Collecting for %d' % universe)
+    self._test_state_lock.acquire()
+    self._test_state = {
+      'action': self.COLLECTOR,
+      'state': self.RUNNING,
+    }
+    self._test_state_lock.release()
+
+    try:
+      output = self._collector.Run(universe, skip_queued_messages)
+    except Exception as e:
+      self._test_state_lock.acquire()
+      self._test_state['state'] = self.ERROR
+      self._test_state['exception'] = str(e)
+      self._test_state['traceback'] = traceback.format_exc()
+      self._test_state_lock.release()
+      return
+
+    self._test_state_lock.acquire()
+    self._test_state['state'] = self.COMPLETED
+    self._test_state['output'] = output
+    self._test_state_lock.release()
+
+  def _CheckIfConnected(self):
+    """Check if the client is connected to olad.
 
     Returns:
-      The status of the tests.
+      True if connected, False otherwise.
     """
-    self._test_state_lock.acquire()
-    state = dict(self._test_state)
-    self._test_state_lock.release()
-    return state
+    # TODO(simon): add this check, remember it needs locking.
+    return True
 
 
 class TestLogger(object):
@@ -306,7 +375,7 @@ class TestLogger(object):
       raise TestLoggerException('Invalid log file requested!')
 
     filename = os.path.abspath(
-        os.path.join(settings['log_directory'], log_name))
+        os.path.join(self._log_dir, log_name))
     if not os.path.isfile(filename):
       raise TestLoggerException('Missing log file! Please re-run tests')
 
@@ -334,9 +403,9 @@ class TestLogger(object):
     not_run = 0
     passed = 0
 
-    if requested_category.lower() == 'all':
+    if requested_category is None or requested_category.lower() == 'all':
       requested_category = None
-    if requested_test_state.lower() == 'all':
+    if requested_test_state is None or requested_test_state.lower() == 'all':
       requested_test_state = None
 
     tests = test_data.get('test_results', [])
@@ -690,8 +759,12 @@ class RunTestsHandler(OLAServerRequestHandler):
     path =  request.Path()
     if path == '/RunTests':
       return self.RunTests(request, response)
+    if path == '/RunCollector':
+      return self.RunCollector(request, response)
     elif path == '/StatTests':
       return self.StatTests(request, response)
+    elif path == '/StatCollector':
+      return self.StatCollector(request, response)
     else:
       logging.error('Got invalid request for %s' % path)
       raise ServerException('Invalid request')
@@ -709,27 +782,56 @@ class RunTestsHandler(OLAServerRequestHandler):
       json_data['completed'] = True
       json_data['logs_disabled'] = not status['logs_saved']
       json_data['timestamp'] = status['timestamp'],
-      self.FormatTestResults(status['tests'], json_data)
+      self._FormatTestResults(status['tests'], json_data)
+    elif status['state'] == RDMTestThread.ERROR:
+      json_data['completed'] = True
+      json_data['exception'] = status['exception']
+      json_data['traceback'] = status.get('traceback', '')
     else:
       json_data['completed'] = False
       json_data['tests_completed'] = status['tests_completed']
       json_data['total_tests'] = status['total_tests']
     return json_data
 
+  def StatCollector(self, request, response):
+    """Return the status of the running collector process."""
+    response.SetStatus(HTTPResponse.OK)
+    status = self._test_thread.Stat()
+    if status is None:
+      return {}
+
+    json_data = {'status': True}
+    if status['state'] == RDMTestThread.COMPLETED:
+      json_data['completed'] = True
+      json_data['output'] = pprint.pformat(status['output'])
+    elif status['state'] == RDMTestThread.ERROR:
+      json_data['completed'] = True
+      json_data['exception'] = status['exception']
+      json_data['traceback'] = status.get('traceback', '')
+    else:
+      json_data['completed'] = False
+    return json_data
+
+  def RunCollector(self, request, response):
+    """Handle a /RunCollector request."""
+    universe = self._CheckValidUniverse(request)
+
+    skip_queued = request.GetParam('skip_queued')
+    if skip_queued is None or skip_queued.lower() == 'false':
+      skip_queued = False
+    else:
+      skip_queued = True
+
+    ret = self._test_thread.ScheduleCollector(universe, skip_queued)
+    if ret is not None:
+      raise ServerException(ret)
+
+    response.SetStatus(HTTPResponse.OK)
+    return {'status': True}
+
   def RunTests(self, request, response):
-    universe_param = self.RaiseExceptionIfMissing(request, 'u')
-
-    try:
-      universe = int(universe_param)
-    except ValueError:
-      raise ServerException('Invalid universe parameter: u')
-
-    status, universes = self.GetThread().FetchUniverses()
-    if not status.Succeeded():
-      raise ServerException('Failed to fetch universes from server')
-
-    if universe not in [u.id for u in universes]:
-      raise ServerException("Universe %d doesn't exist" % universe)
+    """Handle a /RunTests request."""
+    universe = self._CheckValidUniverse(request)
 
     uid_param = self.RaiseExceptionIfMissing(request, 'uid')
     uid = UID.FromString(uid_param)
@@ -779,7 +881,35 @@ class RunTestsHandler(OLAServerRequestHandler):
     response.SetStatus(HTTPResponse.OK)
     return {'status': True}
 
-  def FormatTestResults(self, tests, json_data):
+  def _CheckValidUniverse(self, request):
+    """Check that the universe paramter is present and refers to a valid
+       universe.
+
+    Args:
+      request: the HTTPRequest object.
+
+    Returns:
+      The santitized universe id.
+
+    Raises:
+      ServerException if the universe isn't valid or doesn't exist.
+    """
+    universe_param = self.RaiseExceptionIfMissing(request, 'u')
+
+    try:
+      universe = int(universe_param)
+    except ValueError:
+      raise ServerException('Invalid universe parameter: u')
+
+    status, universes = self.GetThread().FetchUniverses()
+    if not status.Succeeded():
+      raise ServerException('Failed to fetch universes from server')
+
+    if universe not in [u.id for u in universes]:
+      raise ServerException("Universe %d doesn't exist" % universe)
+    return universe
+
+  def _FormatTestResults(self, tests, json_data):
     results = []
     stats_by_catg = {}
     passed = 0
@@ -889,7 +1019,9 @@ def BuildApplication(ola_thread, test_thread):
       DownloadResultsHandler().HandleRequest)
 
   run_tests_handler = RunTestsHandler(ola_thread, test_thread)
+  app.RegisterHandler('/RunCollector', run_tests_handler.HandleRequest)
   app.RegisterHandler('/RunTests', run_tests_handler.HandleRequest)
+  app.RegisterHandler('/StatCollector', run_tests_handler.HandleRequest)
   app.RegisterHandler('/StatTests', run_tests_handler.HandleRequest)
   app.RegisterRegex('/static/.*',
       StaticFileHandler(settings['www_dir']).HandleRequest)
@@ -928,7 +1060,7 @@ def parse_options():
 def main():
   options = parse_options()
   settings.update(options.__dict__)
-  settings['pid_store'] = PidStore.GetStore(options.pid_store, ('pids.proto'))
+  pid_store = PidStore.GetStore(options.pid_store, ('pids.proto'))
 
   logging.basicConfig(level=logging.INFO, format='%(message)s')
 
@@ -958,7 +1090,7 @@ def main():
 
   ola_thread = OLAThread(ola_client)
   ola_thread.start()
-  test_thread = RDMTestThread(settings['pid_store'], settings['log_directory'])
+  test_thread = RDMTestThread(pid_store, settings['log_directory'])
   test_thread.start()
   app = BuildApplication(ola_thread, test_thread)
 

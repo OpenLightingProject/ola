@@ -2,6 +2,7 @@ include $(top_srcdir)/common.mk
 
 module_files = DMXSender.py \
                ExpectedResults.py \
+               ModelCollector.py \
                ResponderTest.py \
                TestCategory.py \
                TestDefinitions.py \
