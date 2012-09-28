@@ -228,15 +228,6 @@ RDMTests.prototype.bind_events_to_doms = function() {
     rdmtests.run_tests(rdmtests.selected_tests);
   });
 
-  var download_results_button =
-    $('#rdm-tests-results-button-download').button();
-  download_results_button.click(function() {
-    var uid = $('#devices_list').val();
-    $('#rdm-tests-download').attr('src',
-        '/DownloadResults?debug=1&uid=' + uid +
-        '&timestamp=' + rdmtests.timestamp);
-  });
-
   var download_options_button =
     $('#rdm-tests-results-button-save-options').button();
   download_options_button.click(function() {
@@ -678,9 +669,9 @@ RDMTests.prototype.display_results = function(results) {
 
   //Hide/Show Download Logs button
   if (results['logs_disabled'] == true) {
-    $('#rdm-tests-results-button-download').hide();
+    $('#rdm-tests-results-button-save-options').hide();
   } else {
-    $('#rdm-tests-results-button-download').show();
+    $('#rdm-tests-results-button-save-options').show();
   }
 };
 

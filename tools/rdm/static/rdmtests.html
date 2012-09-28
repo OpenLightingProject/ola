@@ -75,6 +75,26 @@
         font-size: 11px;
       }
 
+      a {
+        text-decoration: none;
+        color: #0545ff;
+      }
+
+      a:visited {
+        text-decoration: none;
+        color: #0545ff;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      .external {
+        background: url(/static/images/external.png) center right no-repeat;
+        padding-right: 13px;
+      }
+
+
       .stats_by_catg {
         float: right;
         text-align: left;
@@ -270,7 +290,7 @@
         <img src='/static/images/logo.png' width='111' height='48' alt='Logo'>
         <span id="main-title">RDM Responder Tests &amp; Publisher</span>
         <span id='top-right'>
-          <a href='http://www.opendmx.net/index.php/Using_the_RDM_Test_UI'>Help</a>
+          <a href='http://www.opendmx.net/index.php/Using_the_RDM_Test_UI' class="external" target="_blank">Help</a>
         </span>
       </div>
     </div>
@@ -415,15 +435,14 @@
        <div class='results_container button-container'>
         <input id='rdm-tests-results-button-dismiss' type='button' value='Dismiss' />
         <input id='rdm-tests-results-button-run_again' type='button' value='Run Again' />
-        <input id='rdm-tests-results-button-download' type='button' value='Download Log' />
-        <input id='rdm-tests-results-button-save-options' type='button' value='Download Options' />
+        <input id='rdm-tests-results-button-save-options' type='button' value='Download Results' />
        </div>
       </div>
      </div>
      <div id="tabs-2">
        <p>
         The RDM publisher can be used to publish a responder on the
-        <a href="http://rdm.openlighting.org/">rdm.openlighting.org</a>
+        <a href="http://rdm.openlighting.org/" class="external" target='_blank'>rdm.openlighting.org</a>
         site. After collecting the responder information, you will
         have an opportunity to review the data before publishing.
        </p>
@@ -453,7 +472,7 @@
     </div>
     <div id='footer'>
       OLA &copy; 2012 Ravindra Nath Kakarla, Simon Newton &amp; the
-      <a href="http://www.openlighting.org">Open Lighting Project</a><br>
+      <a href="http://www.openlighting.org" class="external" target='_blank'>Open Lighting Project</a><br>
     </div>
     <div id='rdm-tests-notification'></div>
     <div id='rdm-error-notification'>
