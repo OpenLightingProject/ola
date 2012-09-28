@@ -51,7 +51,7 @@ class SelectServerTest: public CppUnit::TestFixture {
     void testLoopCallbacks();
 
     void FatalTimeout() {
-      OLA_ASSERT_TRUE(false);
+      OLA_ASSERT_FAIL("Fatal Timeout");
     }
 
     void TerminateTimeout() {
@@ -166,7 +166,7 @@ void SelectServerTest::testTimeout() {
       20,
       ola::NewSingleCallback(this, &SelectServerTest::TerminateTimeout));
   m_ss->Run();
-  OLA_ASSERT_EQ((unsigned int) 1, m_timeout_counter);
+  OLA_ASSERT_EQ(1u, m_timeout_counter);
 
   // now check a timeout that adds another timeout
   m_timeout_counter = 0;
@@ -178,7 +178,7 @@ void SelectServerTest::testTimeout() {
       20,
       ola::NewSingleCallback(this, &SelectServerTest::TerminateTimeout));
   m_ss->Run();
-  OLA_ASSERT_EQ((unsigned int) 2, m_timeout_counter);
+  OLA_ASSERT_EQ(2i, m_timeout_counter);
 
   // check repeating timeouts
   // Some systems (VMs in particular) can't do 10ms resolution so we go for
