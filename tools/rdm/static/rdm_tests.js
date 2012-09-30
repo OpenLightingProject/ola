@@ -788,6 +788,10 @@ RDMTests.prototype.validate_form = function() {
  * Collect information for the RDM devices present on a universe.
  */
 RDMTests.prototype.collect_data = function() {
+  rdmtests.set_notification({
+    'title': 'Collecting Responder Data',
+    'message': RDMTests.ajax_loader
+  });
   this.query_server(
       '/RunCollector',
       { 'u': $('#publisher-universe-list').val(),
