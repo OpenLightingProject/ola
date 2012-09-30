@@ -232,15 +232,12 @@ RDMTests.prototype.bind_events_to_doms = function() {
     icons: {secondary: 'ui-icon-disk'}
   }).click(function() { rdmtests.save_options.dialog('open'); });
 
-  $.each([
-    '#rdm-tests-results-summary-by_catg',
-    '#rdm-tests-results-warnings',
-    '#rdm-tests-results-advisories'
-  ], function(i, div) {
-    $(div).find('legend').click(function() {
-      $(div).find('legend')
+  $.each($('.ola-expander'), function(i, fieldset) {
+    var legend = $(fieldset).find('legend');
+    legend.click(function() {
+      $(legend).find('span').first()
       .toggleClass('ola-expander-collapsed ola-expander-expanded');
-      $(div).find('div').toggle();
+      $(fieldset).find('div').toggle();
     });
   });
 

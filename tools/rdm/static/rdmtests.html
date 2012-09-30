@@ -179,18 +179,16 @@
         display: none;
       }
 
-      .expander-icon {
+      .ola-expander-collapsed {
         display: inline-block;
-      }
-
-      .ola-expander-collapsed span {
         background-position: -48px -208px;
         width: 16px;
         height: 16px;
         background-image: url(images/ui-icons_70b2e1_256x240.png);
       }
 
-      .ola-expander-expanded span {
+      .ola-expander-expanded {
+        display: inline-block;
         width: 16px;
         height: 16px;
         background-image: url(images/ui-icons_70b2e1_256x240.png);
@@ -382,8 +380,8 @@
        </div>
        <div id='rdm-tests-results-summary-by_catg' class='results_container'>
         <fieldset class='ola-expander'>
-          <legend class='ola-expander-collapsed'>
-           <span class='expander-icon'></span>Results By Category
+          <legend>
+           <span class='ola-expander-collapsed'></span>Results By Category
           </legend>
           <div>
            <ul id='rdm-tests-results-summary-by_catg-content'></ul>
@@ -392,8 +390,8 @@
        </div>
        <div id='rdm-tests-results-warnings' class='results_container'>
         <fieldset class='ola-expander'>
-         <legend class='ola-expander-collapsed'>
-           <span class='expander-icon'></span>Warnings (<span id='rdm-tests-results-warning-count'></span>)
+         <legend>
+           <span class='ola-expander-collapsed'></span>Warnings (<span id='rdm-tests-results-warning-count'></span>)
          </legend>
          <div>
           <ul id='rdm-tests-results-warnings-content'></ul>
@@ -402,8 +400,8 @@
        </div>
        <div id='rdm-tests-results-advisories' class='results_container'>
         <fieldset class='ola-expander'>
-         <legend class='ola-expander-collapsed'>
-          <span class='expander-icon'></span>Advisories (<span id='rdm-tests-results-advisory-count'></span>)
+         <legend>
+          <span class='ola-expander-collapsed'></span>Advisories (<span id='rdm-tests-results-advisory-count'></span>)
          </legend>
          <div>
           <ul id='rdm-tests-results-advisories-content'></ul>

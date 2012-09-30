@@ -1541,7 +1541,7 @@ class GetPersonality(OptionalParameterTestFixture):
         warning_str, personality_count, fields['personality_count']))
 
 
-class GetPersonalities(OptionalParameterTestFixture):
+class GetPersonalityDescriptions(OptionalParameterTestFixture):
   """Get information about all the personalities."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_PERSONALITY_DESCRIPTION'
