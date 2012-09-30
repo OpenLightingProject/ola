@@ -49,13 +49,14 @@ class MuteDevice(ResponderTestFixture):
   def Test(self):
     self.AddExpectedResults([
       self.AckDiscoveryResult(),
-      UnsupportedResult()
+      UnsupportedResult(
+        warning='RDM Controller does not support DISCOVERY commands')
     ])
     self.SendDiscovery(ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, fields):
     supported = (response.response_code !=
-                 OlaClient.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED)
+                 OlaClient.RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED)
     self.SetProperty('mute_supported', supported)
 
     if supported:
@@ -100,7 +101,7 @@ class UnMuteDevice(ResponderTestFixture):
 
   def VerifyResult(self, response, fields):
     supported = (response.response_code !=
-                 OlaClient.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED)
+                 OlaClient.RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED)
     self.SetProperty('unmute_supported', supported)
     if supported:
       if fields['control_field'] != self.Property('mute_control_fields'):
@@ -187,7 +188,7 @@ class DUBFullTree(TestMixins.DiscoveryMixin,
   PROVIDES = ['dub_supported']
 
   def LowerBound(self):
-    return UID(0, 0);
+    return UID(0, 0)
 
   def UpperBound(self):
     return UID.AllDevices()
@@ -195,7 +196,7 @@ class DUBFullTree(TestMixins.DiscoveryMixin,
   def DUBResponseCode(self, response_code):
     self.SetProperty(
         'dub_supported',
-        response_code != OlaClient.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED)
+        response_code != OlaClient.RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED)
 
 
 class DUBManufacturerTree(TestMixins.DiscoveryMixin,
@@ -358,7 +359,7 @@ class DUBNegativeVendorcast(TestMixins.DiscoveryMixin,
   REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
 
   def LowerBound(self):
-    return UID(0, 0);
+    return UID(0, 0)
 
   def UpperBound(self):
     return UID.AllDevices()
@@ -377,7 +378,7 @@ class DUBPositiveVendorcast(TestMixins.DiscoveryMixin,
   REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
 
   def LowerBound(self):
-    return UID(0, 0);
+    return UID(0, 0)
 
   def UpperBound(self):
     return UID.AllDevices()
@@ -393,7 +394,7 @@ class DUBPositiveUnicast(TestMixins.DiscoveryMixin,
   REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
 
   def LowerBound(self):
-    return UID(0, 0);
+    return UID(0, 0)
 
   def UpperBound(self):
     return UID.AllDevices()
@@ -412,7 +413,7 @@ class DUBInvertedFullTree(TestMixins.DiscoveryMixin,
     return UID.AllDevices()
 
   def UpperBound(self):
-    return UID(0, 0);
+    return UID(0, 0)
 
   def ExpectResponse(self):
     return False
@@ -562,7 +563,7 @@ class GetMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
 
   def VerifyResult(self, response, fields):
     self.SetProperty('supports_max_sized_pdl',
-                     response.response_code != OlaClient.RDM_INVALID_RESPONSE);
+                     response.response_code != OlaClient.RDM_INVALID_RESPONSE)
 
 
 class DetermineMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
@@ -660,8 +661,7 @@ class GetSupportedParameters(ResponderTestFixture):
       ('CURVE', 'CURVE_DESCRIPTION'),
       ('OUTPUT_RESPONSE_TIME', 'OUTPUT_RESPONSE_TIME_DESCRIPTION'),
       ('MODULATION_FREQUENCY', 'MODULATION_FREQUENCY_DESCRIPTION'),
-      ('LOCK_STATE', ' LOCK_STATE_DESCRIPTION'),
-
+      ('LOCK_STATE', 'LOCK_STATE_DESCRIPTION'),
   ]
 
   def Test(self):
@@ -744,6 +744,10 @@ class GetSupportedParameters(ResponderTestFixture):
       unsupported_pids = []
       for pid_name in pid_names[1:]:
         pid = self.LookupPid(pid_name)
+        if pid is None:
+          self.SetBroken('Missing PID %s' % pid_name)
+          return
+
         if pid.value not in supported_parameters:
           unsupported_pids.append(pid_name)
       if unsupported_pids:
@@ -1328,7 +1332,7 @@ class SetLanguage(OptionalParameterTestFixture):
         self.AddIfSetSupported(ack)
         self.new_language = available_langugages[0]
         if self.new_language == self.Property('language'):
-          self.new_language = available_langugages[2]
+          self.new_language = available_langugages[1]
       else:
         self.new_language = available_langugages[0]
         self.AddIfSetSupported([ack, nack])
@@ -2550,7 +2554,7 @@ class SetDeviceHoursWithNoData(OptionalParameterTestFixture):
       expected_result = RDMNack.NR_FORMAT_ERROR
     else:
       expected_result = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
-    self.AddIfSetSupported(self.NackSetResult(expected_result));
+    self.AddIfSetSupported(self.NackSetResult(expected_result))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
 
 
@@ -2600,7 +2604,7 @@ class SetLampHoursWithNoData(OptionalParameterTestFixture):
       expected_result = RDMNack.NR_FORMAT_ERROR
     else:
       expected_result = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
-    self.AddIfSetSupported(self.NackSetResult(expected_result));
+    self.AddIfSetSupported(self.NackSetResult(expected_result))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
 
 
@@ -2649,7 +2653,7 @@ class SetLampStrikesWithNoData(OptionalParameterTestFixture):
       expected_result = RDMNack.NR_FORMAT_ERROR
     else:
       expected_result = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
-    self.AddIfSetSupported(self.NackSetResult(expected_result));
+    self.AddIfSetSupported(self.NackSetResult(expected_result))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
 
 
@@ -2809,7 +2813,7 @@ class SetDevicePowerCyclesWithNoData(OptionalParameterTestFixture):
       expected_result= RDMNack.NR_FORMAT_ERROR
     else:
       expected_result= RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
-    self.AddIfSetSupported(self.NackSetResult(expected_result));
+    self.AddIfSetSupported(self.NackSetResult(expected_result))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
 
 
@@ -3557,9 +3561,10 @@ class GetDMXBlockAddress(OptionalParameterTestFixture):
       if footprint > MAX_DMX_ADDRESS and footprint != self.NON_CONTIGUOUS:
         self.AddWarning('Sub device footprint > 512, was %d' % footprint)
 
-      if base_dmx_address == 0 or base_dmx_address > MAX_DMX_ADDRESS:
+      if (base_address == 0 or
+          base_address > MAX_DMX_ADDRESS and base_address != 0xffff):
         self.AddWarning('Base DMX address is outside range 1- 512, was %d' %
-                        base_dmx_address)
+                        base_address)
     self.SetProperty('sub_device_footprint', footprint)
     self.SetProperty('base_dmx_address', base_address)
 
@@ -3576,6 +3581,7 @@ class SetDMXBlockAddress(TestMixins.SetMixin, OptionalParameterTestFixture):
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_BLOCK_ADDRESS'
   REQUIRES = ['sub_device_footprint', 'base_dmx_address']
+  EXPECTED_FIELD = 'base_dmx_address'
 
   def NewValue(self):
     base_address =  self.Property('base_dmx_address')
@@ -3685,7 +3691,7 @@ class SetBurnIn(TestMixins.SetUInt8Mixin, OptionalParameterTestFixture):
   """Attempt to SET the burn in hours setting."""
   CATEGORY = TestCategory.POWER_LAMP_SETTINGS
   PID = 'BURN_IN'
-  EXPECTED_FIELD = 'hours'
+  EXPECTED_FIELD = 'hours_remaining'
   REQUIRES = ['burn_in_hours']
 
   def OldValue(self):
@@ -3706,8 +3712,9 @@ class GetDimmerInfo(OptionalParameterTestFixture):
   CATEGORY = TestCategory.DIMMER_SETTINGS
   PID = 'DIMMER_INFO'
   PROVIDES = ['minimum_level_lower', 'minimum_level_upper',
-              'maximum_level_lower', 'maximum_level_upper', 'number_of_curves',
-              'level_resolution', 'split_levels_supported']
+              'maximum_level_lower', 'maximum_level_upper',
+              'number_curves_supported', 'levels_resolution',
+              'split_levels_supported']
   SPLIT_LEVEL_MASK = 0x01
 
   def Test(self):
@@ -3730,12 +3737,12 @@ class GetDimmerInfo(OptionalParameterTestFixture):
                        % (fields['maximum_level_lower'],
                           fields['maximum_level_upper']))
 
-    self.SetPropertyFromDict('minimum_level_lower', fields);
-    self.SetPropertyFromDict('minimum_level_upper', fields);
-    self.SetPropertyFromDict('maximum_level_lower', fields);
-    self.SetPropertyFromDict('maximum_level_upper', fields);
-    self.SetPropertyFromDict('number_of_curves', fields);
-    self.SetPropertyFromDict('level_resolution', fields);
+    self.SetPropertyFromDict(fields, 'minimum_level_lower')
+    self.SetPropertyFromDict(fields, 'minimum_level_upper')
+    self.SetPropertyFromDict(fields, 'maximum_level_lower')
+    self.SetPropertyFromDict(fields, 'maximum_level_upper')
+    self.SetPropertyFromDict(fields, 'number_curves_supported')
+    self.SetPropertyFromDict(fields, 'levels_resolution')
 
     self.SetProperty('split_levels_supported',
                      fields['split_levels_supported'] & self.SPLIT_LEVEL_MASK)
@@ -3776,7 +3783,7 @@ class GetPresetMergeMode(TestMixins.GetMixin,
       self.SetProperty('preset_merge_mode', None)
       return
 
-    self.SetPropertyFromDict('preset_merge_mode', fields)
+    self.SetPropertyFromDict(fields, 'preset_merge_mode')
 
 class GetPresetMergeModeWithData(TestMixins.GetWithDataMixin,
                                  OptionalParameterTestFixture):
