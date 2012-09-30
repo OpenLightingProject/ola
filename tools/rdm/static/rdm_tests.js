@@ -13,15 +13,17 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * Copyright (C) 2012 Ravindra Nath Kakarla
+ * Copyright (C) 2012 Ravindra Nath Kakarla & Simon Newton
  */
 
 /**
  * RDMTests class
  */
 RDMTests = function() {
+  this.collected_data = undefined;
+
   // init tabs
-  $("#tabs").tabs({});
+  $('#tabs').tabs({});
 
   // setup dialog windows, one for general notifications and one for the
   // download options.
@@ -38,11 +40,11 @@ RDMTests = function() {
   this.save_options = $('#rdm-tests-save-options');
   var save_buttons = [
     {
-      text: "Cancel",
-      click: function() { $(this).dialog("close"); }
+      text: 'Cancel',
+      click: function() { $(this).dialog('close'); }
     },
     {
-      text: "Download",
+      text: 'Download',
       click: function() { rdmtests.save_results() }
     },
   ];
@@ -58,11 +60,11 @@ RDMTests = function() {
   this.error_notification = $('#rdm-error-notification');
   var error_buttons = [
     {
-      text: "Dismiss",
-      click: function() { $(this).dialog("close"); }
+      text: 'Dismiss',
+      click: function() { $(this).dialog('close'); }
     },
     {
-      text: "Report Bug",
+      text: 'Report Bug',
       click: function() { rdmtests.report_bug() }
     },
   ];
@@ -90,7 +92,7 @@ RDMTests = function() {
  * AJAX loader image
  * @this {RDMTests}
  */
-RDMTests.ajax_loader = "<img src='/static/images/loader.gif' />";
+RDMTests.ajax_loader = '<img src="/static/images/loader.gif" />';
 
 /**
  * How long to wait between polls of the test status. In milliseconds
@@ -124,13 +126,13 @@ rdmtests = undefined;
  *  }
  */
 RDMTests.prototype.set_notification = function(options) {
-  var title = "";
+  var title = '';
   if (options.title != undefined || options.title != null) {
     title = options.title;
   }
   this.notification.dialog('option', 'title', title);
 
-  var message = "";
+  var message = '';
   if (options.message != undefined || options.message != null) {
     message = options.message;
   }
@@ -140,8 +142,8 @@ RDMTests.prototype.set_notification = function(options) {
   var buttons = []
   if (options.is_dismissable != undefined || options.is_dismissable != null) {
     buttons.push({
-      text: "Ok",
-      click: function() { $(this).dialog("close"); }
+      text: 'Ok',
+      click: function() { $(this).dialog('close'); }
     });
   } else {
     for (var i = 0; i < button_list.length; ++i) {
@@ -173,24 +175,7 @@ RDMTests.prototype.clear_notification = function() {
  * @this {RDMTests}
  */
 RDMTests.prototype.bind_events_to_doms = function() {
-  $('#universe_options').change(function() {
-    rdmtests.update_device_list();
-  });
-
-  var discovery_button = $('#rdm-discovery-button').button();
-  discovery_button.click(function() {
-      rdmtests.run_discovery();
-  });
-
-  var run_tests_button = $('#rdm-tests-selection-run_tests').button();
-  run_tests_button.click(function() {
-      rdmtests.validate_form();
-  });
-
-  $('#rdm-tests-send_dmx_in_bg').change(function() {
-    $('#rdm-tests-dmx_options').toggle('fast');
-  });
-
+  // key event handler
   $(document).keydown(function(e) {
     var key = e.keyCode || e.which;
     var results_div = $('#rdm-tests-results');
@@ -206,32 +191,36 @@ RDMTests.prototype.bind_events_to_doms = function() {
     }
   });
 
-  var dismiss_tests_button = $('#rdm-tests-results-button-dismiss').button();
-  dismiss_tests_button.click(function() {
+  // Elements on the responder test page
+  $('#universe_options').change(function() { rdmtests.update_device_list(); });
+
+  $('#rdm-discovery-button').button().click(
+      function() { rdmtests.run_discovery(); }
+  );
+
+  $('#rdm-tests-selection-run_tests').button({
+    icons: {secondary: 'ui-icon-transferthick-e-w'}
+  }).click(function() { rdmtests.validate_form(); });
+
+  $('#rdm-tests-send_dmx_in_bg').change(function() {
+    $('#rdm-tests-dmx_options').toggle('fast');
+  });
+
+  // Elements on the responder test results page
+  $('#rdm-tests-results-button-dismiss').button({
+    icons: {secondary: 'ui-icon-arrowreturnthick-1-w'}
+  }).click(function() {
     $('#rdm-tests-results').hide();
     $('#tests_control_frame').show();
   });
 
-  var run_again_button = $('#rdm-tests-results-button-run_again').button();
-  run_again_button.click(function() {
-    rdmtests.run_tests(rdmtests.selected_tests);
-  });
+  $('#rdm-tests-results-button-run_again').button({
+    icons: {secondary: 'ui-icon-transferthick-e-w'}
+  }).click(function() { rdmtests.run_tests(rdmtests.selected_tests); });
 
-  var download_options_button =
-    $('#rdm-tests-results-button-save-options').button();
-  download_options_button.click(function() {
-    rdmtests.save_options.dialog('open');
-  });
-
-  var publisher_collect_button = $('#publisher-collect-button').button();
-  publisher_collect_button.click(function() {
-    rdmtests.collect_data();
-  });
-
-  var publisher_collect_button = $('#publisher-clear-button').button();
-  publisher_collect_button.click(function() {
-    $('#publisher-output').html('');
-  });
+  $('#rdm-tests-results-button-save-options').button({
+    icons: {secondary: 'ui-icon-disk'}
+  }).click(function() { rdmtests.save_options.dialog('open'); });
 
   $.each([
     '#rdm-tests-results-summary-by_catg',
@@ -256,6 +245,23 @@ RDMTests.prototype.bind_events_to_doms = function() {
       });
     });
   });
+
+  // Elements on the publisher page
+  $('#publisher-collect-button').button({
+    icons: {secondary: 'ui-icon-search'}
+  }).click(function() { rdmtests.collect_data(); });
+
+  $('#publisher-clear-button').button({
+    icons: {secondary: 'ui-icon-cancel'}
+  }).click(function() {
+    $('#publisher-output').html('');
+    $('#publisher-upload-button').button('disable');
+  });
+
+  $('#publisher-upload-button').button({
+    disabled: true,
+    icons: {secondary: 'ui-icon-extlink'}
+  }).click(function() { rdmtests.upload_responder_info(); });
 };
 
 
@@ -399,7 +405,9 @@ RDMTests.prototype.new_universe_list = function(data) {
   if (universes.length == 0) {
     rdmtests.set_notification({
       'title': 'No universes found',
-      'message':'Go to the <a href="http://'+location.hostname+':9090" target="_blank">OLA Web UI</a> and patch a device to a universe',
+      'message': ('Go to the <a href="http://' + location.hostname +
+                  ':9090" target="_blank">OLA Web UI</a> ' +
+                  'and patch a device to a universe'),
       'buttons': [{'label': 'Retry',
                     'on_click': function() {
                       rdmtests.clear_notification();
@@ -755,7 +763,7 @@ RDMTests.prototype.validate_form = function() {
     if ($('select[name="subset_test_defs"]').val() == null) {
       rdmtests.set_notification({
         'title': 'No tests specified',
-        'message': "Add some tests by clicking the + sign, or click 'Add all'",
+        'message': 'Add some tests by clicking the + sign, or click "Add all"',
         'is_dismissable': true,
       });
       return false;
@@ -822,11 +830,22 @@ RDMTests.prototype._stat_collector_response = function(data) {
     }
     var output = $('#publisher-output');
     output.html(data['output']);
+    this.collected_data = output;
+    $('#publisher-upload-button').button('enable');
   } else {
     window.setTimeout(function() { rdmtests.stat_collector()},
                       RDMTests.poll_delay);
   }
 };
+
+
+/**
+ * Upload the collected responder data.
+ */
+RDMTests.prototype.upload_responder_info = function() {
+  alert('This is not implemented yet');
+  var data = this.collected_data;
+}
 
 
 /**
@@ -884,7 +903,7 @@ RDMTests.prototype._stat_tests_response = function(data) {
   } else {
     // update progress here
     var percent = data['tests_completed'] /  data['total_tests'] * 100;
-    $('#progressbar').progressbar("option", "value", percent);
+    $('#progressbar').progressbar('option', 'value', percent);
     window.setTimeout(function() { rdmtests.stat_tests()},
                       RDMTests.poll_delay);
   }
@@ -904,6 +923,9 @@ RDMTests.prototype._update_universe_select = function(select, universes) {
 };
 
 
+/**
+ * Called once the page has loaded and we're ready to go.
+ */
 $(document).ready(function() {
   rdmtests = new RDMTests();
   rdmtests.bind_events_to_doms();

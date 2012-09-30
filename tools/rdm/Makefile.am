@@ -23,9 +23,7 @@ testserver_static_files = \
     static/ui.multiselect.js
 
 testserver_image_files = \
-    static/images/blank.gif \
     static/images/discovery.png \
-    static/images/expander.png \
     static/images/external.png \
     static/images/favicon.ico \
     static/images/loader.gif \
