@@ -253,7 +253,7 @@ class RDMTestThread(Thread):
     if dmx_frame_rate > 0 and slot_count > 0:
       logging.info('Starting DMXServer with slot cout %d and fps of %d' %
                    (slot_count, dmx_frame_rate))
-      dmx_sender = DMXSender(wrapper, universe, dmx_frame_rate, slot_count)
+      dmx_sender = DMXSender(self._wrapper, universe, dmx_frame_rate, slot_count)
 
     try:
       tests, unused_device = runner.RunTests(test_filter, False, self._UpdateStats)
