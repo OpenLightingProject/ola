@@ -94,7 +94,6 @@
         padding-right: 13px;
       }
 
-
       .stats_by_catg {
         float: right;
         text-align: left;
@@ -180,14 +179,22 @@
         display: none;
       }
 
-      .ola-expander-collapsed img {
-        background-image: url('/static/images/expander.png');
-        background-position: -40px 0px;
+      .expander-icon {
+        display: inline-block;
       }
 
-      .ola-expander-expanded img {
-        background-image: url('/static/images/expander.png');
-        background-position: 0px 0px;
+      .ola-expander-collapsed span {
+        background-position: -48px -208px;
+        width: 16px;
+        height: 16px;
+        background-image: url(images/ui-icons_70b2e1_256x240.png);
+      }
+
+      .ola-expander-expanded span {
+        width: 16px;
+        height: 16px;
+        background-image: url(images/ui-icons_70b2e1_256x240.png);
+        background-position: -64px -208px;
       }
 
       #rdm-tests-results-list {
@@ -315,7 +322,7 @@
         <legend>DMX Options</legend>
          <div>
            <input type='checkbox' id='rdm-tests-send_dmx_in_bg'>
-             <label for='rdm-tests-send_dmx_in_bg'>Send DMX in background?</label>
+             <label for='rdm-tests-send_dmx_in_bg'>Send DMX in background</label>
          </div>
          <table id='rdm-tests-dmx_options'>
           <tr>
@@ -356,7 +363,7 @@
        <div class='button-container'>
          Running tests will modify the settings for responders connected to this universe. Think twice about doing this on a production system.
          <br/>
-         <input type='button' name='rdm-tests-selection-run_tests' id='rdm-tests-selection-run_tests' value='Run Tests' />
+         <button id='rdm-tests-selection-run_tests'>Run Tests</button>
        </div>
       </div>
       <div id='rdm-tests-results'>
@@ -376,8 +383,7 @@
        <div id='rdm-tests-results-summary-by_catg' class='results_container'>
         <fieldset class="ola-expander">
           <legend class="ola-expander-collapsed">
-           <img src="/static/images/blank.gif" width="12" height="12">
-           Results By Category
+           <span class='expander-icon'></span>Results By Category
           </legend>
           <div>
            <ul id='rdm-tests-results-summary-by_catg-content'></ul>
@@ -387,8 +393,7 @@
        <div id='rdm-tests-results-warnings' class='results_container'>
         <fieldset class="ola-expander">
          <legend class="ola-expander-collapsed">
-           <img src="/static/images/blank.gif" width="12" height="12">
-           Warnings (<span id="rdm-tests-results-warning-count"></span>)
+           <span class='expander-icon'></span>Warnings (<span id="rdm-tests-results-warning-count"></span>)
          </legend>
          <div>
           <ul id='rdm-tests-results-warnings-content'></ul>
@@ -398,8 +403,7 @@
        <div id='rdm-tests-results-advisories' class='results_container'>
         <fieldset class="ola-expander">
          <legend class="ola-expander-collapsed">
-          <img src="/static/images/blank.gif" width="12" height="12">
-          Advisories (<span id="rdm-tests-results-advisory-count"></span>)
+          <span class='expander-icon'></span>Advisories (<span id="rdm-tests-results-advisory-count"></span>)
          </legend>
          <div>
           <ul id='rdm-tests-results-advisories-content'></ul>
@@ -433,9 +437,9 @@
          </div>
        </div>
        <div class='results_container button-container'>
-        <input id='rdm-tests-results-button-dismiss' type='button' value='Dismiss' />
-        <input id='rdm-tests-results-button-run_again' type='button' value='Run Again' />
-        <input id='rdm-tests-results-button-save-options' type='button' value='Download Results' />
+        <button id='rdm-tests-results-button-dismiss'>Dismiss</button>
+        <button id='rdm-tests-results-button-run_again'>Run Again</button>
+        <button id='rdm-tests-results-button-save-options'>Download Results</button>
        </div>
       </div>
      </div>
@@ -456,8 +460,7 @@
           Queued Messages. Select this if the responder doesn't support queued
           messages correctly.</label>
           </p>
-          <input type='button' id='publisher-collect-button'
-            value='Collect Responder Information' />
+          <button id='publisher-collect-button'>Collect Responder Information</button>
        </fieldset>
 
        <fieldset>
@@ -465,7 +468,8 @@
         <pre id='publisher-output'></pre>
 
         <div class='button-container'>
-         <input type='button' id='publisher-clear-button' value='Clear Output' />
+         <button id='publisher-clear-button'>Clear Output</button>
+         <button id='publisher-upload-button'>Publish</button>
         </div>
        </fieldset>
      </div>
