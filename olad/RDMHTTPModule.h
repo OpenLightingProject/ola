@@ -72,6 +72,8 @@ class RDMHTTPModule {
 
     void PruneUniverseList(const vector<OlaUniverse> &universes);
 
+    string SubDevice(const HTTPRequest *request);
+
   private:
     typedef struct {
       string manufacturer;
@@ -583,6 +585,7 @@ class RDMHTTPModule {
     static const char UID_KEY[];
 
     static const char ADDRESS_FIELD[];
+    static const char SUB_DEVICE_FIELD[];
     static const char DISPLAY_INVERT_FIELD[];
     static const char GENERIC_BOOL_FIELD[];
     static const char GENERIC_STRING_FIELD[];
