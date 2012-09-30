@@ -82,6 +82,7 @@ const char RDMHTTPModule::IDENTIFY_FIELD[] = "identify";
 const char RDMHTTPModule::LABEL_FIELD[] = "label";
 const char RDMHTTPModule::LANGUAGE_FIELD[] = "language";
 const char RDMHTTPModule::RECORD_SENSOR_FIELD[] = "record";
+const char RDMHTTPModule::SUB_DEVICE_FIELD[] = "sub_device";
 
 // section identifiers
 const char RDMHTTPModule::BOOT_SOFTWARE_SECTION[] = "boot_software";
@@ -2969,6 +2970,22 @@ bool RDMHTTPModule::CheckForInvalidUid(const HTTPRequest *request,
     return false;
   }
   return true;
+}
+
+
+/**
+ * Get the sub device from the HTTP request, or return ROOT_DEVICE if it isn't valid.
+ */
+uint16_t RDMHTTPModule::SubDeviceOrRoot(const HTTPRequest *request) {
+  string sub_device_str = request->GetParameter(SUB_DEVICE_FIELD);
+  uint16_t sub_device;
+
+  if (StringToInt(sub_device_str, &sub_device)) {
+    return sub_device;
+  }
+
+  OLA_INFO << "Invalid sub device " << sub_device_str;
+  return ola::rdm::ROOT_RDM_DEVICE;
 }
 
 
