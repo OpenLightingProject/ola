@@ -158,6 +158,18 @@ RDMTests.prototype.set_notification = function(options) {
 
 
 /**
+ * A simplified version of the method above to display a dismissable dialog
+ * box.
+ */
+RDMTests.prototype.display_dialog_message = function(title, message) {
+  rdmtests.set_notification({
+    'title': title,
+    'message': message,
+    'is_dismissable': true
+  });
+}
+
+/**
  * Clears the notification text and hides it from page.
  * @this {RDMTests}
  */
@@ -355,24 +367,15 @@ RDMTests.prototype.query_server = function(request, params, callback) {
     data: params,
     dataType: 'json',
     error: function(jqXHR, textStatus, errorThrown) {
-      rdmtests.clear_notification();
-      rdmtests.set_notification({
-        'title': 'Server Down',
-        'message': (
-          'The RDM Test Server is not responding. Restart it and try again'),
-        'is_dismissable': true
-      });
+      rdmtests.display_dialog_message(
+        'Server Down',
+        'The RDM Test Server is not responding. Restart it and try again');
     },
     success: function(data) {
       if (data['status'] == true) {
         callback(data);
       } else {
-        rdmtests.clear_notification();
-        rdmtests.set_notification({
-          'title': 'Server Error',
-          'message': data['error'],
-          'is_dismissable': true
-        });
+        rdmtests.display_dialog_message('Server Error', data['error']);
       }
     },
     cache: false
@@ -427,11 +430,9 @@ RDMTests.prototype.new_universe_list = function(data) {
 RDMTests.prototype.run_discovery = function() {
   var universe = $('#universe_options').val();
   if (universe == null || universe == undefined) {
-    rdmtests.set_notification({
-      'title': 'No universe selected',
-      'message': 'Please select a universe to run discovery on.',
-      'is_dismissable': true,
-    });
+    rdmtests.display_dialog_message(
+        'No universe selected',
+        'Please select a universe to run discovery on.');
     return;
   }
 
@@ -728,10 +729,9 @@ RDMTests.prototype.validate_form = function() {
       return true;
     }
     if (isNaN(parseFloat(value)) || !isFinite(value)) {
-      alert(
-            $(dom).attr('id').replace('_', ' ').toUpperCase() +
-            ' must be a number!'
-      );
+      var message = ($(dom).attr('id').replace('_', ' ').toUpperCase() +
+                     ' must be a number');
+      rdmtests.display_dialog_message('Error', message);
       return false;
     } else {
       return true;
@@ -739,7 +739,9 @@ RDMTests.prototype.validate_form = function() {
   };
 
   if ($('#devices_list option').size() < 1) {
-    alert('There are no devices patched to the selected universe!');
+    rdmtests.display_dialog_message(
+        'Error',
+        'There are no devices patched to the selected universe!');
     return false;
   }
 
@@ -751,7 +753,9 @@ RDMTests.prototype.validate_form = function() {
 
   var slot_count_val = parseFloat($('#slot_count').val());
   if (slot_count_val < 1 || slot_count_val > 512) {
-    alert('Invalid number of slots (expected: [1-512])');
+    rdmtests.display_dialog_message(
+        'Error',
+        'Invalid number of slots (expected: [1-512])');
     return false;
   }
 
@@ -759,18 +763,17 @@ RDMTests.prototype.validate_form = function() {
 
   if ($('#rdm-tests-selection-subset').attr('checked')) {
     if ($('select[name="subset_test_defs"]').val() == null) {
-      rdmtests.set_notification({
-        'title': 'No tests specified',
-        'message': 'Add some tests by clicking the + sign, or click "Add all"',
-        'is_dismissable': true,
-      });
+      rdmtests.display_dialog_message('Error',
+                                      'There are no tests selected to run');
       return false;
     } else {
       test_filter = $('select[name="subset_test_defs"]').val();
     }
   } else if ($('#rdm-tests-selection-previously_failed').attr('checked')) {
     if ($('select[name="failed_test_defs"]').val() == null) {
-      alert('Select failed tests to run again!');
+      rdmtests.display_dialog_message(
+        'Error',
+        'There are no failed tests selected to run');
       return false;
     } else {
       test_filter = $('select[name="failed_test_defs"]').val();
