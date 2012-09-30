@@ -1496,17 +1496,12 @@ class GetPersonalityDescription(OptionalParameterTestFixture):
   def Test(self):
     personality_count = self.Property('personality_count')
     current_personality = self.Property('current_personality')
-    if current_personality == 0:
-      self.SetNotRun(' Invalid current personality of 0')
-      self.Stop()
-      return
-    footprint = self.Property('dmx_footprint')
 
-    if personality_count > 0:
+    if personality_count > 0 and current_personality != 0:
       # cross check against what we got from device info
       self.AddIfGetSupported(self.AckGetResult(field_values={
           'personality': current_personality,
-          'slots_required': footprint,
+          'slots_required': self.Property('dmx_footprint'),
         }))
       self.SendGet(ROOT_DEVICE, self.pid, [current_personality])
     else:
