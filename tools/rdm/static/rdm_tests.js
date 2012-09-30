@@ -16,10 +16,17 @@
  * Copyright (C) 2012 Ravindra Nath Kakarla & Simon Newton
  */
 
+// Global variable that holds the RDMTests object
+rdmtests = undefined;
+
+
 /**
  * RDMTests class
  */
 RDMTests = function() {
+  // An array to hold the test results
+  this.test_results = new Array();
+
   // init tabs
   $('#tabs').tabs({});
 
@@ -97,17 +104,6 @@ RDMTests.ajax_loader = '<img src="/static/images/loader.gif" />';
  * @this {RDMTests}
  */
 RDMTests.poll_delay = 500;
-
-
-/**
- * Maintains a list of all the tests along with their states, categories,
- * definitions with keys sorted in the order they are run.
- * @this {RDMTests}
- */
-RDMTests.TEST_RESULTS = new Array();
-
-
-rdmtests = undefined;
 
 
 /**
@@ -302,7 +298,7 @@ RDMTests.prototype.save_results = function() {
 RDMTests.prototype.make_results_list_item = function(definition) {
   var test_option = $('<option />').val(definition).text(definition);
   rdmtests.add_state_class(
-                           RDMTests.TEST_RESULTS[definition]['state'],
+                           this.test_results[definition]['state'],
                            test_option);
   return test_option;
 };
@@ -322,27 +318,27 @@ RDMTests.prototype.filter_results = function(results_dom, filter_options) {
 
   if (filter_category == 'All') {
     if (filter_state == 'All') {
-      for (var definition in RDMTests.TEST_RESULTS) {
+      for (var definition in this.test_results) {
         $(results_dom).append(rdmtests.make_results_list_item(definition));
       }
     } else {
-      for (definition in RDMTests.TEST_RESULTS) {
-        if (RDMTests.TEST_RESULTS[definition]['state'] == filter_state) {
+      for (definition in this.test_results) {
+        if (this.test_results[definition]['state'] == filter_state) {
           $(results_dom).append(rdmtests.make_results_list_item(definition));
         }
       }
     }
   } else {
     if (filter_state == 'All') {
-      for (definition in RDMTests.TEST_RESULTS) {
-        if (RDMTests.TEST_RESULTS[definition]['category'] == filter_category) {
+      for (definition in this.test_results) {
+        if (this.test_results[definition]['category'] == filter_category) {
           $(results_dom).append(rdmtests.make_results_list_item(definition));
         }
       }
     } else {
-      for (definition in RDMTests.TEST_RESULTS) {
-        if (RDMTests.TEST_RESULTS[definition]['category'] == filter_category &&
-            RDMTests.TEST_RESULTS[definition]['state'] == filter_state) {
+      for (definition in this.test_results) {
+        if (this.test_results[definition]['category'] == filter_category &&
+            this.test_results[definition]['state'] == filter_state) {
           $(results_dom).append(rdmtests.make_results_list_item(definition));
         }
       }
@@ -555,8 +551,8 @@ RDMTests.prototype.reset_results = function() {
     $(dom).html('');
   });
   $('#rdm-tests-results-summary-filter-by_state').val('All');
-  for (definition in RDMTests.TEST_RESULTS) {
-    delete RDMTests.TEST_RESULTS[definition];
+  for (definition in this.test_results) {
+    delete this.test_results[definition];
   }
 };
 
@@ -652,7 +648,7 @@ RDMTests.prototype.display_results = function(results) {
     var state = results['test_results'][index]['state'];
 
     //Populating a global variable with test results for faster lookups
-    RDMTests.TEST_RESULTS[definition] = results['test_results'][index];
+    this.test_results[definition] = results['test_results'][index];
 
     number_of_warnings += warnings.length;
     for (var i = 0; i < warnings.length; i++) {
@@ -701,18 +697,18 @@ RDMTests.prototype.display_results = function(results) {
  */
 RDMTests.prototype.result_list_changed = function() {
   var definition = $('#rdm-tests-results-list option:selected').text();
-  var state = RDMTests.TEST_RESULTS[definition]['state'];
+  var state = this.test_results[definition]['state'];
   $('#rdm-tests-results-info-title').html(definition);
   rdmtests.add_state_class(state, $('#rdm-tests-results-info-state')
   .html(state));
 
   $('#rdm-tests-results-info-catg')
-  .html(RDMTests.TEST_RESULTS[definition]['category']);
+  .html(this.test_results[definition]['category']);
 
   $('#rdm-tests-results-info-doc')
-  .html(RDMTests.TEST_RESULTS[definition]['doc']);
+  .html(this.test_results[definition]['doc']);
 
-  var debug = RDMTests.TEST_RESULTS[definition]['debug'];
+  var debug = this.test_results[definition]['debug'];
   $('#rdm-tests-results-info-debug').html(debug.join('<br />'));
 };
 
