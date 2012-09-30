@@ -1492,6 +1492,9 @@ class GetPersonalityDescription(OptionalParameterTestFixture):
   def Test(self):
     personality_count = self.Property('personality_count')
     current_personality = self.Property('current_personality')
+    if current_personality == 0:
+      self.SetNotRun(' Invalid current personality of 0')
+      return
     footprint = self.Property('dmx_footprint')
 
     if personality_count > 0:
