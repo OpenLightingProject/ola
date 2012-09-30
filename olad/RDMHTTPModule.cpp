@@ -74,7 +74,6 @@ const char RDMHTTPModule::UID_KEY[] = "uid";
 
 // url params for particular sections
 const char RDMHTTPModule::ADDRESS_FIELD[] = "address";
-const char RDMHTTPModule::SUB_DEVICE_FIELD[] = "sub_device";
 const char RDMHTTPModule::DISPLAY_INVERT_FIELD[] = "invert";
 const char RDMHTTPModule::GENERIC_BOOL_FIELD[] = "bool";
 const char RDMHTTPModule::GENERIC_STRING_FIELD[] = "string";
@@ -83,6 +82,7 @@ const char RDMHTTPModule::IDENTIFY_FIELD[] = "identify";
 const char RDMHTTPModule::LABEL_FIELD[] = "label";
 const char RDMHTTPModule::LANGUAGE_FIELD[] = "language";
 const char RDMHTTPModule::RECORD_SENSOR_FIELD[] = "record";
+const char RDMHTTPModule::SUB_DEVICE_FIELD[] = "sub_device";
 
 // section identifiers
 const char RDMHTTPModule::BOOT_SOFTWARE_SECTION[] = "boot_software";

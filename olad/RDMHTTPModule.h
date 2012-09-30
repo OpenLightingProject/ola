@@ -585,7 +585,6 @@ class RDMHTTPModule {
     static const char UID_KEY[];
 
     static const char ADDRESS_FIELD[];
-    static const char SUB_DEVICE_FIELD[];
     static const char DISPLAY_INVERT_FIELD[];
     static const char GENERIC_BOOL_FIELD[];
     static const char GENERIC_STRING_FIELD[];
@@ -594,6 +593,7 @@ class RDMHTTPModule {
     static const char LABEL_FIELD[];
     static const char LANGUAGE_FIELD[];
     static const char RECORD_SENSOR_FIELD[];
+    static const char SUB_DEVICE_FIELD[];
 
     static const char BOOT_SOFTWARE_SECTION[];
     static const char COMMS_STATUS_SECTION[];
