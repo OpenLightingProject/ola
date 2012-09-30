@@ -16,11 +16,17 @@
  * Copyright (C) 2012 Ravindra Nath Kakarla & Simon Newton
  */
 
+// Global variable that holds the RDMTests object
+rdmtests = undefined;
+
+
 /**
  * RDMTests class
  */
 RDMTests = function() {
-  this.collected_data = undefined;
+  // An array to hold the test results
+  this.test_results = new Array();
+  this.tests_running = false;
 
   // init tabs
   $('#tabs').tabs({});
@@ -102,17 +108,6 @@ RDMTests.poll_delay = 500;
 
 
 /**
- * Maintains a list of all the tests along with their states, categories,
- * definitions with keys sorted in the order they are run.
- * @this {RDMTests}
- */
-RDMTests.TEST_RESULTS = new Array();
-
-
-rdmtests = undefined;
-
-
-/**
  * Prepares the notification div and displays it on the page.
  * @this {RDMTests}
  * @param {Objec} options An object containing title and message to be
@@ -160,6 +155,18 @@ RDMTests.prototype.set_notification = function(options) {
 
 
 /**
+ * A simplified version of the method above to display a dismissable dialog
+ * box.
+ */
+RDMTests.prototype.display_dialog_message = function(title, message) {
+  rdmtests.set_notification({
+    'title': title,
+    'message': message,
+    'is_dismissable': true
+  });
+}
+
+/**
  * Clears the notification text and hides it from page.
  * @this {RDMTests}
  */
@@ -181,12 +188,15 @@ RDMTests.prototype.bind_events_to_doms = function() {
     var results_div = $('#rdm-tests-results');
     var test_frame = $('#tests_control_frame');
 
+    // escape
     if (results_div.css('display') == 'block' && key == 27) {
       results_div.hide();
       $('#tests_control_frame').show();
     }
 
-    if (key == 13 && test_frame.css('display') == 'block') {
+    // enter
+    if (key == 13 && test_frame.css('display') == 'block' &&
+        !rdmtests.tests_running) {
       rdmtests.validate_form();
     }
   });
@@ -292,7 +302,7 @@ RDMTests.prototype.save_results = function() {
 RDMTests.prototype.make_results_list_item = function(definition) {
   var test_option = $('<option />').val(definition).text(definition);
   rdmtests.add_state_class(
-                           RDMTests.TEST_RESULTS[definition]['state'],
+                           this.test_results[definition]['state'],
                            test_option);
   return test_option;
 };
@@ -312,27 +322,27 @@ RDMTests.prototype.filter_results = function(results_dom, filter_options) {
 
   if (filter_category == 'All') {
     if (filter_state == 'All') {
-      for (var definition in RDMTests.TEST_RESULTS) {
+      for (var definition in this.test_results) {
         $(results_dom).append(rdmtests.make_results_list_item(definition));
       }
     } else {
-      for (definition in RDMTests.TEST_RESULTS) {
-        if (RDMTests.TEST_RESULTS[definition]['state'] == filter_state) {
+      for (definition in this.test_results) {
+        if (this.test_results[definition]['state'] == filter_state) {
           $(results_dom).append(rdmtests.make_results_list_item(definition));
         }
       }
     }
   } else {
     if (filter_state == 'All') {
-      for (definition in RDMTests.TEST_RESULTS) {
-        if (RDMTests.TEST_RESULTS[definition]['category'] == filter_category) {
+      for (definition in this.test_results) {
+        if (this.test_results[definition]['category'] == filter_category) {
           $(results_dom).append(rdmtests.make_results_list_item(definition));
         }
       }
     } else {
-      for (definition in RDMTests.TEST_RESULTS) {
-        if (RDMTests.TEST_RESULTS[definition]['category'] == filter_category &&
-            RDMTests.TEST_RESULTS[definition]['state'] == filter_state) {
+      for (definition in this.test_results) {
+        if (this.test_results[definition]['category'] == filter_category &&
+            this.test_results[definition]['state'] == filter_state) {
           $(results_dom).append(rdmtests.make_results_list_item(definition));
         }
       }
@@ -357,24 +367,15 @@ RDMTests.prototype.query_server = function(request, params, callback) {
     data: params,
     dataType: 'json',
     error: function(jqXHR, textStatus, errorThrown) {
-      rdmtests.clear_notification();
-      rdmtests.set_notification({
-        'title': 'Server Down',
-        'message': (
-          'The RDM Test Server is not responding. Restart it and try again'),
-        'is_dismissable': true
-      });
+      rdmtests.display_dialog_message(
+        'Server Down',
+        'The RDM Test Server is not responding. Restart it and try again');
     },
     success: function(data) {
       if (data['status'] == true) {
         callback(data);
       } else {
-        rdmtests.clear_notification();
-        rdmtests.set_notification({
-          'title': 'Server Error',
-          'message': data['error'],
-          'is_dismissable': true
-        });
+        rdmtests.display_dialog_message('Server Error', data['error']);
       }
     },
     cache: false
@@ -429,11 +430,9 @@ RDMTests.prototype.new_universe_list = function(data) {
 RDMTests.prototype.run_discovery = function() {
   var universe = $('#universe_options').val();
   if (universe == null || universe == undefined) {
-    rdmtests.set_notification({
-      'title': 'No universe selected',
-      'message': 'Please select a universe to run discovery on.',
-      'is_dismissable': true,
-    });
+    rdmtests.display_dialog_message(
+        'No universe selected',
+        'Please select a universe to run discovery on.');
     return;
   }
 
@@ -500,6 +499,7 @@ RDMTests.prototype.fetch_test_defs = function() {
  * @param {Array} test_filter An array of tests to run.
  */
 RDMTests.prototype.run_tests = function(test_filter) {
+  this.tests_running = true;
   this.set_notification({
     'title': 'Running ' + test_filter.length + ' tests',
     'message': '<div id="progressbar"></div>',
@@ -556,8 +556,8 @@ RDMTests.prototype.reset_results = function() {
     $(dom).html('');
   });
   $('#rdm-tests-results-summary-filter-by_state').val('All');
-  for (definition in RDMTests.TEST_RESULTS) {
-    delete RDMTests.TEST_RESULTS[definition];
+  for (definition in this.test_results) {
+    delete this.test_results[definition];
   }
 };
 
@@ -653,7 +653,7 @@ RDMTests.prototype.display_results = function(results) {
     var state = results['test_results'][index]['state'];
 
     //Populating a global variable with test results for faster lookups
-    RDMTests.TEST_RESULTS[definition] = results['test_results'][index];
+    this.test_results[definition] = results['test_results'][index];
 
     number_of_warnings += warnings.length;
     for (var i = 0; i < warnings.length; i++) {
@@ -702,18 +702,18 @@ RDMTests.prototype.display_results = function(results) {
  */
 RDMTests.prototype.result_list_changed = function() {
   var definition = $('#rdm-tests-results-list option:selected').text();
-  var state = RDMTests.TEST_RESULTS[definition]['state'];
+  var state = this.test_results[definition]['state'];
   $('#rdm-tests-results-info-title').html(definition);
   rdmtests.add_state_class(state, $('#rdm-tests-results-info-state')
   .html(state));
 
   $('#rdm-tests-results-info-catg')
-  .html(RDMTests.TEST_RESULTS[definition]['category']);
+  .html(this.test_results[definition]['category']);
 
   $('#rdm-tests-results-info-doc')
-  .html(RDMTests.TEST_RESULTS[definition]['doc']);
+  .html(this.test_results[definition]['doc']);
 
-  var debug = RDMTests.TEST_RESULTS[definition]['debug'];
+  var debug = this.test_results[definition]['debug'];
   $('#rdm-tests-results-info-debug').html(debug.join('<br />'));
 };
 
@@ -730,10 +730,9 @@ RDMTests.prototype.validate_form = function() {
       return true;
     }
     if (isNaN(parseFloat(value)) || !isFinite(value)) {
-      alert(
-            $(dom).attr('id').replace('_', ' ').toUpperCase() +
-            ' must be a number!'
-      );
+      var message = ($(dom).attr('id').replace('_', ' ').toUpperCase() +
+                     ' must be a number');
+      rdmtests.display_dialog_message('Error', message);
       return false;
     } else {
       return true;
@@ -741,7 +740,9 @@ RDMTests.prototype.validate_form = function() {
   };
 
   if ($('#devices_list option').size() < 1) {
-    alert('There are no devices patched to the selected universe!');
+    rdmtests.display_dialog_message(
+        'Error',
+        'There are no devices patched to the selected universe!');
     return false;
   }
 
@@ -753,7 +754,9 @@ RDMTests.prototype.validate_form = function() {
 
   var slot_count_val = parseFloat($('#slot_count').val());
   if (slot_count_val < 1 || slot_count_val > 512) {
-    alert('Invalid number of slots (expected: [1-512])');
+    rdmtests.display_dialog_message(
+        'Error',
+        'Invalid number of slots (expected: [1-512])');
     return false;
   }
 
@@ -761,18 +764,17 @@ RDMTests.prototype.validate_form = function() {
 
   if ($('#rdm-tests-selection-subset').attr('checked')) {
     if ($('select[name="subset_test_defs"]').val() == null) {
-      rdmtests.set_notification({
-        'title': 'No tests specified',
-        'message': 'Add some tests by clicking the + sign, or click "Add all"',
-        'is_dismissable': true,
-      });
+      rdmtests.display_dialog_message('Error',
+                                      'There are no tests selected to run');
       return false;
     } else {
       test_filter = $('select[name="subset_test_defs"]').val();
     }
   } else if ($('#rdm-tests-selection-previously_failed').attr('checked')) {
     if ($('select[name="failed_test_defs"]').val() == null) {
-      alert('Select failed tests to run again!');
+      rdmtests.display_dialog_message(
+        'Error',
+        'There are no failed tests selected to run');
       return false;
     } else {
       test_filter = $('select[name="failed_test_defs"]').val();
@@ -828,9 +830,8 @@ RDMTests.prototype._stat_collector_response = function(data) {
       this.traceback = data['traceback'];
       return;
     }
-    var output = $('#publisher-output');
-    output.html(data['output']);
-    this.collected_data = output;
+    $('#publisher-output').html(data['output']);
+    $('#publisher_upload_data').val(data['output']);
     $('#publisher-upload-button').button('enable');
   } else {
     window.setTimeout(function() { rdmtests.stat_collector()},
@@ -843,8 +844,7 @@ RDMTests.prototype._stat_collector_response = function(data) {
  * Upload the collected responder data.
  */
 RDMTests.prototype.upload_responder_info = function() {
-  alert('This is not implemented yet');
-  var data = this.collected_data;
+  $('#publisher-upload-form').submit();
 }
 
 
@@ -866,6 +866,7 @@ RDMTests.prototype.report_bug = function() {
  */
 RDMTests.prototype._stat_tests_response = function(data) {
   if (data['completed']) {
+    this.tests_running = false;
     var exception = data['exception'];
     if (exception != undefined) {
       rdmtests.clear_notification();
