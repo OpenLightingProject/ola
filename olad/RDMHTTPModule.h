@@ -540,7 +540,7 @@ class RDMHTTPModule {
 
     bool CheckForInvalidUid(const HTTPRequest *request, UID **uid);
 
-    uint16_t SubDevice(const HTTPRequest *request);
+    uint16_t SubDeviceOrRoot(const HTTPRequest *request);
 
     void SetHandler(HTTPResponse *response,
                     const ola::rdm::ResponseStatus &status);
