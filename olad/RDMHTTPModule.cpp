@@ -225,13 +225,16 @@ int RDMHTTPModule::JsonUIDs(const HTTPRequest *request,
 /**
  * Get sub device
  */
-string RDMHTTPModule::SubDevice(const HTTPRequest *request) {
+uint16_t RDMHTTPModule::SubDevice(const HTTPRequest *request) {
   string sub_device_str = request->GetParameter(SUB_DEVICE_FIELD);
   uint16_t sub_device;
 
   if (!StringToInt(sub_device_str, &sub_device)) {
-    return "Invalid sub device";
+    OLA_INFO << "Invalid sub device " << sub_device_str;
+    return ola::rdm::ROOT_RDM_DEVICE;
   }
+
+  return sub_device;
 }
 
 

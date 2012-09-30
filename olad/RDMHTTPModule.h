@@ -72,8 +72,6 @@ class RDMHTTPModule {
 
     void PruneUniverseList(const vector<OlaUniverse> &universes);
 
-    string SubDevice(const HTTPRequest *request);
-
   private:
     typedef struct {
       string manufacturer;
@@ -541,6 +539,8 @@ class RDMHTTPModule {
                            unsigned int *universe_id);
 
     bool CheckForInvalidUid(const HTTPRequest *request, UID **uid);
+
+    uint16_t SubDevice(const HTTPRequest *request);
 
     void SetHandler(HTTPResponse *response,
                     const ola::rdm::ResponseStatus &status);
