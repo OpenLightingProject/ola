@@ -20,8 +20,6 @@
  * RDMTests class
  */
 RDMTests = function() {
-  this.collected_data = undefined;
-
   // init tabs
   $('#tabs').tabs({});
 
@@ -828,9 +826,8 @@ RDMTests.prototype._stat_collector_response = function(data) {
       this.traceback = data['traceback'];
       return;
     }
-    var output = $('#publisher-output');
-    output.html(data['output']);
-    this.collected_data = output;
+    $('#publisher-output').html(data['output']);
+    $('#publisher_upload_data').val(data['output']);
     $('#publisher-upload-button').button('enable');
   } else {
     window.setTimeout(function() { rdmtests.stat_collector()},
@@ -843,8 +840,7 @@ RDMTests.prototype._stat_collector_response = function(data) {
  * Upload the collected responder data.
  */
 RDMTests.prototype.upload_responder_info = function() {
-  alert('This is not implemented yet');
-  var data = this.collected_data;
+  $('#publisher-upload-form').submit();
 }
 
 

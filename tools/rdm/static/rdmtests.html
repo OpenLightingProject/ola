@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <link type="text/css" rel="stylesheet" href="/static/jquery-ui-1.8.21.custom.css" />
-    <link rel="stylesheet" href="/static/ui.multiselect.css" type="text/css">
+    <link type='text/css' rel='stylesheet' href='/static/jquery-ui-1.8.21.custom.css' />
+    <link rel='stylesheet' href='/static/ui.multiselect.css' type='text/css'>
     <script src='/static/jquery-1.7.2.min.js'></script>
     <script src='/static/jquery-ui-1.8.21.custom.min.js'></script>
     <script src='/static/ui.multiselect.js'></script>
@@ -295,18 +295,18 @@
     <div id='header'>
       <div id='title'>
         <img src='/static/images/logo.png' width='111' height='48' alt='Logo'>
-        <span id="main-title">RDM Responder Tests &amp; Publisher</span>
+        <span id='main-title'>RDM Responder Tests &amp; Publisher</span>
         <span id='top-right'>
-          <a href='http://www.opendmx.net/index.php/Using_the_RDM_Test_UI' class="external" target="_blank">Help</a>
+          <a href='http://www.opendmx.net/index.php/Using_the_RDM_Test_UI' class='external' target='_blank'>Help</a>
         </span>
       </div>
     </div>
-    <div id="tabs">
+    <div id='tabs'>
      <ul>
-      <li><a href="#tabs-1">RDM Responder Tests</a></li>
-      <li><a href="#tabs-2">RDM Responder Publisher</a></li>
+      <li><a href='#tabs-1'>RDM Responder Tests</a></li>
+      <li><a href='#tabs-2'>RDM Responder Publisher</a></li>
      </ul>
-     <div id="tabs-1">
+     <div id='tabs-1'>
       <div id='tests_control_frame'>
        <fieldset>
         <legend>Select the RDM device to test</legend>
@@ -368,7 +368,7 @@
       </div>
       <div id='rdm-tests-results'>
        <div id='rdm-tests-results-stats'>
-        Test results for: <span style='font-weight: bold' id="rdm-tests-results-uid"></span>
+        Test results for: <span style='font-weight: bold' id='rdm-tests-results-uid'></span>
         <table id='rdm-tests-results-stats-table'>
          <tr>
           <td class='test-state-broken'>Broken</td>
@@ -381,8 +381,8 @@
         </table>
        </div>
        <div id='rdm-tests-results-summary-by_catg' class='results_container'>
-        <fieldset class="ola-expander">
-          <legend class="ola-expander-collapsed">
+        <fieldset class='ola-expander'>
+          <legend class='ola-expander-collapsed'>
            <span class='expander-icon'></span>Results By Category
           </legend>
           <div>
@@ -391,9 +391,9 @@
         </fieldset>
        </div>
        <div id='rdm-tests-results-warnings' class='results_container'>
-        <fieldset class="ola-expander">
-         <legend class="ola-expander-collapsed">
-           <span class='expander-icon'></span>Warnings (<span id="rdm-tests-results-warning-count"></span>)
+        <fieldset class='ola-expander'>
+         <legend class='ola-expander-collapsed'>
+           <span class='expander-icon'></span>Warnings (<span id='rdm-tests-results-warning-count'></span>)
          </legend>
          <div>
           <ul id='rdm-tests-results-warnings-content'></ul>
@@ -401,9 +401,9 @@
         </fieldset>
        </div>
        <div id='rdm-tests-results-advisories' class='results_container'>
-        <fieldset class="ola-expander">
-         <legend class="ola-expander-collapsed">
-          <span class='expander-icon'></span>Advisories (<span id="rdm-tests-results-advisory-count"></span>)
+        <fieldset class='ola-expander'>
+         <legend class='ola-expander-collapsed'>
+          <span class='expander-icon'></span>Advisories (<span id='rdm-tests-results-advisory-count'></span>)
          </legend>
          <div>
           <ul id='rdm-tests-results-advisories-content'></ul>
@@ -411,7 +411,7 @@
         </fieldset>
        </div>
        <div class='results_container_border'>
-         <div style="padding: 5px">
+         <div style='padding: 5px'>
            Test Category
            <select id='rdm-tests-results-summary-filter-by_catg' class='rdm-tests-select'>
            </select>,
@@ -428,7 +428,7 @@
          <div id='rdm-tests-results-info'>
            <div id='rdm-tests-results-info-title'></div>
            <div id='rdm-tests-results-info-doc'></div>
-           <div style="padding-left: 10px">
+           <div style='padding-left: 10px'>
              Category: <span id='rdm-tests-results-info-catg'></span><br/>
              Result: <span id='rdm-tests-results-info-state'></span><br/>
              Debug Output:
@@ -443,10 +443,10 @@
        </div>
       </div>
      </div>
-     <div id="tabs-2">
+     <div id='tabs-2'>
        <p>
         The RDM publisher can be used to publish a responder on the
-        <a href="http://rdm.openlighting.org/" class="external" target='_blank'>rdm.openlighting.org</a>
+        <a href='http://rdm.openlighting.org/' class='external' target='_blank'>rdm.openlighting.org</a>
         site. After collecting the responder information, you will
         have an opportunity to review the data before publishing.
        </p>
@@ -476,7 +476,7 @@
     </div>
     <div id='footer'>
       OLA &copy; 2012 Ravindra Nath Kakarla, Simon Newton &amp; the
-      <a href="http://www.openlighting.org" class="external" target='_blank'>Open Lighting Project</a><br>
+      <a href='http://www.openlighting.org' class='external' target='_blank'>Open Lighting Project</a><br>
     </div>
     <div id='rdm-tests-notification'></div>
     <div id='rdm-error-notification'>
@@ -498,5 +498,8 @@
       <input type='checkbox' id='rdm-tests-include-debug' checked='checked'>Include Debug Output
     </div>
     <iframe id='rdm-tests-download' style='display: none'></iframe>
+    <form id='publisher-upload-form' method='post' target='_blank' action='http://rdm.openlighting.org/incoming/model_data' display='none'>
+      <input type='hidden' name='model_data' id='publisher_upload_data'>
+    </form>
   </body>
 </html>
