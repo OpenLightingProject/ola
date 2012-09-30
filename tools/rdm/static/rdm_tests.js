@@ -26,6 +26,7 @@ rdmtests = undefined;
 RDMTests = function() {
   // An array to hold the test results
   this.test_results = new Array();
+  this.tests_running = false;
 
   // init tabs
   $('#tabs').tabs({});
@@ -187,12 +188,15 @@ RDMTests.prototype.bind_events_to_doms = function() {
     var results_div = $('#rdm-tests-results');
     var test_frame = $('#tests_control_frame');
 
+    // escape
     if (results_div.css('display') == 'block' && key == 27) {
       results_div.hide();
       $('#tests_control_frame').show();
     }
 
-    if (key == 13 && test_frame.css('display') == 'block') {
+    // enter
+    if (key == 13 && test_frame.css('display') == 'block' &&
+        !rdmtests.tests_running) {
       rdmtests.validate_form();
     }
   });
@@ -495,6 +499,7 @@ RDMTests.prototype.fetch_test_defs = function() {
  * @param {Array} test_filter An array of tests to run.
  */
 RDMTests.prototype.run_tests = function(test_filter) {
+  this.tests_running = true;
   this.set_notification({
     'title': 'Running ' + test_filter.length + ' tests',
     'message': '<div id="progressbar"></div>',
@@ -861,6 +866,7 @@ RDMTests.prototype.report_bug = function() {
  */
 RDMTests.prototype._stat_tests_response = function(data) {
   if (data['completed']) {
+    this.tests_running = false;
     var exception = data['exception'];
     if (exception != undefined) {
       rdmtests.clear_notification();
