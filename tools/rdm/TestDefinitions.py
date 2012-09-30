@@ -1496,8 +1496,11 @@ class GetPersonalityDescription(OptionalParameterTestFixture):
   def Test(self):
     personality_count = self.Property('personality_count')
     current_personality = self.Property('current_personality')
+    if current_personality == 0 and personality_count > 0:
+      # It's probably off by one, so fix it
+      current_personality = 1
 
-    if personality_count > 0 and current_personality != 0:
+    if personality_count > 0:
       # cross check against what we got from device info
       self.AddIfGetSupported(self.AckGetResult(field_values={
           'personality': current_personality,
