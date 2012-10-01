@@ -1589,6 +1589,12 @@ class SetPersonality(OptionalParameterTestFixture):
 
   def Test(self):
     self._personalities = list(self.Property('personalities'))
+    self._consumes_slots = False
+    for personality in self._personalities:
+      if personality['slots_required'] > 0:
+        self._consumes_slots = True
+        break
+
     if len(self._personalities) > 0:
       self._CheckPersonality()
       return
@@ -1627,7 +1633,7 @@ class SetPersonality(OptionalParameterTestFixture):
       # 0xffff
       next_action = self.VerifyFootprint0StartAddress
 
-    self.AddIfGetSupported(
+    self.AddExpectedResults(
       AckGetResult(
         device_info_pid.value,
         field_values={
@@ -1639,11 +1645,19 @@ class SetPersonality(OptionalParameterTestFixture):
 
   def VerifyFootprint0StartAddress(self):
     address_pid = self.LookupPid('DMX_START_ADDRESS')
-    self.AddIfGetSupported(
+    expected_results = [
       AckGetResult(
         address_pid.value,
         field_values={'dmx_address': 0xffff},
-        action=self.NextPersonality))
+        action=self.NextPersonality),
+    ]
+    if not self._consumes_slots:
+      expected_results.append(
+        NackGetResult(address_pid.value,
+                      RDMNack.NR_UNKNOWN_PID,
+                      action=self.NextPersonality)
+      )
+    self.AddExpectedResults(expected_results)
     self.SendGet(ROOT_DEVICE, address_pid)
 
   def NextPersonality(self):
