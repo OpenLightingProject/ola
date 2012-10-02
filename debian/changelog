@@ -1,3 +1,11 @@
+ola (0.8.24-1) unstable; urgency=low
+
+  * New upstream release
+  * Use a pidfile in the init script
+  * Add a init script for the RDM Test Server
+
+ -- RenZO <renzo@imaginux.com>  Tue, 02 Oct 2012 16:04:18 +0200
+
 ola (0.8.23-1) unstable; urgency=low
 
   * New upstream release
