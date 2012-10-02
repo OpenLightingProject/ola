@@ -1,3 +1,11 @@
+XX/10/2012 ola-0.8.24
+ * Add support for soh.cz devices
+ * Added the RDM model collector to the RDM Test Server
+ * Clean up the Python Wrapper a bit
+ * RDM Test fixes for devices with a personality with a slot count of 0
+ * RDM Test fixes for some of the new E1.37-1 PIDs
+ * Switched the Debian init.d script to use a pidfile
+
 9/9/2012 ola-0.8.23
  * Added the ftdidmx plugin thanks to Rui Barreiros - #164
  * Debian package improvements from RenZO (init script)

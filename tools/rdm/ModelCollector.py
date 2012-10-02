@@ -28,6 +28,14 @@ from ola.OlaClient import OlaClient, RDMNack
 from ola.RDMAPI import RDMAPI
 from ola.UID import UID
 
+class Error(Exception):
+  """Base exception class."""
+
+
+class DiscoveryException(Error):
+  """Raised when discovery fails."""
+
+
 class ModelCollector(object):
   """A controller that fetches data for responders."""
 
@@ -56,7 +64,7 @@ class ModelCollector(object):
     self.skip_queued_messages = skip_queued_messages
     self._ResetData()
 
-    self.client.FetchUIDList(self.universe, self._HandleUIDList)
+    self.client.RunRDMDiscovery(self.universe, True, self._HandleUIDList)
     self.wrapper.Run()
 
     # strip personality count from info as it's redundant
@@ -96,8 +104,7 @@ class ModelCollector(object):
   def _HandleUIDList(self, state, uids):
     """Called when the UID list arrives."""
     if not state.Succeeded():
-      self.wrapper.Stop()
-      return
+      raise DiscoveryException(state.message )
 
     found_uids = set()
     for uid in uids:
