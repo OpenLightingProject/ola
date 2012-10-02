@@ -41,7 +41,7 @@ case "$1" in
     # master switch
     if [ "$RUN_DAEMON" = "true" ] || [ "$RUN_DAEMON" = "yes" ] ; then
       log_daemon_msg "Stopping $DESC" "$NAME"
-      /sbin/start-stop-daemon --stop --pidfile $PIDFILE --chuid $USER --exec $DAEMON --retry 30
+      /sbin/start-stop-daemon --stop --pidfile $PIDFILE --chuid $USER --exec $DAEMON --retry 10
       /bin/rm -f $PIDFILE
       log_end_msg $?
     fi
