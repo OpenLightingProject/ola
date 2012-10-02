@@ -893,10 +893,10 @@ RDMTests.prototype._stat_tests_response = function(data) {
     if ($(failed_tests).next().length > 0) {
       failed_tests.multiselect('destroy');
     }
-    for (item in failed_defs) {
+    for (var i = 0; i < failed_defs.length; ++i) {
       failed_tests.append($('<option />')
-                  .val(failed_defs[item])
-                  .text(failed_defs[item]));
+                  .val(failed_defs[i])
+                  .text(failed_defs[i]));
     }
 
     failed_tests.multiselect();
