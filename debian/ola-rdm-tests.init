@@ -20,6 +20,10 @@ USER=olad
 # Reads config file (will override defaults above)
 [ -r /etc/default/ola-rdm-tests ] && . /etc/default/ola-rdm-tests
 
+if [ "$RUN_DAEMON" = "true" ] || [ "$RUN_DAEMON" = "yes" ] ; then
+  DAEMON_ARGS="--world_writeable"
+fi
+
 [ -x "$DAEMON" ] || exit 0
 
 . /lib/lsb/init-functions
@@ -27,9 +31,9 @@ USER=olad
 case "$1" in
   start)
     # master switch
-    if [ "$RUN_DAEMON" = "true" ] || [ "$RUN_DAEMON" = "yes" ] ; then
+    if [ -n "$DAEMON_ARGS" ] ; then
       log_daemon_msg "Starting $DESC" "$NAME"
-      /sbin/start-stop-daemon --start --background --make-pidfile --pidfile $PIDFILE --chuid $USER --startas $DAEMON
+      /sbin/start-stop-daemon --start --background --make-pidfile --pidfile $PIDFILE --chuid $USER --startas $DAEMON -- $DAEMON_ARGS
       log_end_msg $?
     fi
     ;;
