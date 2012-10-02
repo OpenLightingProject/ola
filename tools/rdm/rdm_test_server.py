@@ -414,11 +414,6 @@ class TestLogger(object):
     for test in tests:
       category = test['category']
       state = test['state']
-      if requested_category is not None and requested_category != category:
-        continue
-      if requested_test_state is not None and requested_test_state != state:
-        continue
-
       counts = count_by_category.setdefault(category, {'passed': 0, 'total': 0})
 
       if state == str(TestState.PASSED):
@@ -433,6 +428,11 @@ class TestLogger(object):
       elif state == str(TestState.BROKEN):
         counts['total'] += 1
         broken += 1
+
+      if requested_category is not None and requested_category != category:
+        continue
+      if requested_test_state is not None and requested_test_state != state:
+        continue
 
       results_log.append('%s: %s' % (test['definition'], test['state'].upper()))
       results_log.append(str(test['doc']))
