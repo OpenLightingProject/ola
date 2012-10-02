@@ -2,7 +2,7 @@
 
 ### BEGIN INIT INFO
 # Provides:          rdm_test_server.py
-# Required-Start:    $remote_fs $syslog $network
+# Required-Start:    $remote_fs $syslog $network olad
 # Required-Stop:     $remote_fs $syslog $network
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
