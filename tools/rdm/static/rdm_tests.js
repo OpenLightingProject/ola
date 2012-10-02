@@ -285,6 +285,9 @@ RDMTests.prototype.save_results = function() {
   if ($('#rdm-tests-include-debug').attr('checked')) {
     url += '&debug=1';
   }
+  if ($('#rdm-tests-include-description').attr('checked')) {
+    url += '&description=1';
+  }
   $('#rdm-tests-download').attr('src', url);
 };
 

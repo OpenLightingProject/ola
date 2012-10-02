@@ -364,7 +364,7 @@ class TestLogger(object):
     log_file.close()
 
   def ReadContents(self, uid, timestamp, category, test_state,
-                   include_debug=True):
+                   include_debug=True, include_description=True):
     """
 
     Returns:
@@ -386,14 +386,14 @@ class TestLogger(object):
 
     test_data = pickle.load(f)
     formatted_output =  self._FormatData(test_data, category, test_state,
-                                         include_debug)
+                                         include_debug, include_description)
     return formatted_output, log_name
 
   def _CheckFilename(self, filename):
     return re.match(self.FILE_NAME_RE, filename) is not None
 
   def _FormatData(self, test_data, requested_category, requested_test_state,
-                  include_debug):
+                  include_debug, include_description):
     results_log = []
     warnings = []
     advisories = []
@@ -435,7 +435,8 @@ class TestLogger(object):
         continue
 
       results_log.append('%s: %s' % (test['definition'], test['state'].upper()))
-      results_log.append(str(test['doc']))
+      if include_description:
+        results_log.append(str(test['doc']))
       if include_debug:
         results_log.extend(str(l) for l in test.get('debug', []))
       results_log.append('')
@@ -718,13 +719,15 @@ class DownloadResultsHandler(RequestHandler):
       raise ServerException('Missing timestamp parameter: timestamp')
 
     include_debug = request.GetParam('debug')
+    include_description = request.GetParam('description')
     category = request.GetParam('category')
     test_state = request.GetParam('state')
 
     reader = TestLogger(settings['log_directory'])
     try:
       output, filename = reader.ReadContents(uid, timestamp, category,
-                                             test_state, include_debug)
+                                             test_state, include_debug,
+                                             include_description)
     except TestLoggerException as e:
       raise ServerException(e)
 
