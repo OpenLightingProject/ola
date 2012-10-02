@@ -25,6 +25,7 @@ import pickle
 import pprint
 import re
 import signal
+import stat
 import sys
 import sys
 import traceback
@@ -1042,23 +1043,25 @@ def parse_options():
   parser.add_option('-l', '--log_directory',
                     default=os.path.abspath('/tmp/ola-rdm-logs'),
                     help='The directory to store log files.')
+  parser.add_option('--world_writeable',
+                    action="store_true",
+                    help='Make the log directory world writeable.')
 
   options, args = parser.parse_args()
 
   return options
 
 
-def main():
-  options = parse_options()
-  settings.update(options.__dict__)
-  pid_store = PidStore.GetStore(options.pid_store, ('pids.proto'))
-
-  logging.basicConfig(level=logging.INFO, format='%(message)s')
-
+def SetupLogDirectory(options):
+  """Setup the log dir."""
   # Setup the log dir, or display an error
-  if not os.path.exists(options.log_directory):
+  log_directory = options.log_directory
+  if not os.path.exists(log_directory):
     try:
-      os.makedirs(options.log_directory)
+      os.makedirs(log_directory)
+      if options.world_writeable:
+        stat_result = os.stat(log_directory)
+        os.chmod(log_directory,  stat_result.st_mode | stat.S_IWOTH)
     except OSError:
       logging.error(
           'Failed to create %s for RDM logs. Logging will be disabled.' %
@@ -1070,6 +1073,17 @@ def main():
     logging.error(
         'Unable to write to log directory: %s. Logging will be disabled.' %
         options.log_directory)
+
+
+
+def main():
+  options = parse_options()
+  settings.update(options.__dict__)
+  pid_store = PidStore.GetStore(options.pid_store, ('pids.proto'))
+
+  logging.basicConfig(level=logging.INFO, format='%(message)s')
+
+  SetupLogDirectory(options)
 
   #Check olad status
   logging.info('Checking olad status')

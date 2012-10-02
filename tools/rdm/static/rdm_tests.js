@@ -788,6 +788,7 @@ RDMTests.prototype.validate_form = function() {
  * Collect information for the RDM devices present on a universe.
  */
 RDMTests.prototype.collect_data = function() {
+  $('#publisher-output').html('');
   rdmtests.set_notification({
     'title': 'Collecting Responder Data',
     'message': RDMTests.ajax_loader
