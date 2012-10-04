@@ -1666,6 +1666,10 @@ class SetPersonality(OptionalParameterTestFixture):
 
   def ResetState(self):
     # reset back to the old value
+    personality = self.Property('current_personality')
+    if personality == 0 or personality > 255:
+      return
+
     self.SendSet(PidStore.ROOT_DEVICE,
                  self.pid,
                  [self.Property('current_personality')])
