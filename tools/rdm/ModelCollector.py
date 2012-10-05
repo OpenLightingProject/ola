@@ -135,7 +135,8 @@ class ModelCollector(object):
     fields = ['device_model',
               'product_category',
               'personality_count',
-              'sensor_count']
+              'sensor_count',
+              'sub_device_count']
     for field in fields:
       this_device[field] = data[field]
 

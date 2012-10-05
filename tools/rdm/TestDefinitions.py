@@ -63,7 +63,8 @@ class MuteDevice(ResponderTestFixture):
       self.SetProperty('mute_control_fields', fields['control_field'])
       binding_uids = fields.get('binding_uid', [])
       if binding_uids:
-        if binding_uids[0].manufacturer_id != self.uid.manufacturer_id:
+        if (binding_uids[0]['binding_uid'].manufacturer_id !=
+            self.uid.manufacturer_id):
           self.AddWarning(
             'Binding UID manufacturer ID 0x%04hx does not equal device '
             'manufacturer ID of 0x%04hx' % (
@@ -1666,6 +1667,10 @@ class SetPersonality(OptionalParameterTestFixture):
 
   def ResetState(self):
     # reset back to the old value
+    personality = self.Property('current_personality')
+    if personality == 0 or personality > 255:
+      return
+
     self.SendSet(PidStore.ROOT_DEVICE,
                  self.pid,
                  [self.Property('current_personality')])
