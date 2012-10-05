@@ -163,6 +163,7 @@ class QueuedMessageFetcher(object):
     if (response.response_type == OlaClient.RDM_ACK and
         response.command_class == OlaClient.RDM_GET_RESPONSE and
         response.pid == self._status_message_pid.value and
+        unpacked_data is not None and
         unpacked_data.get('messages', []) == []):
       if (self._outstanding_ack_timers == 0):
         self._wrapper.Stop()
