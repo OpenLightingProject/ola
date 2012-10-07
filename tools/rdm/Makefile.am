@@ -6,6 +6,7 @@ module_files = DMXSender.py \
                ResponderTest.py \
                TestCategory.py \
                TestDefinitions.py \
+               TestLogger.py \
                TestMixins.py \
                TestRunner.py \
                TestState.py \

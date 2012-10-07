@@ -21,12 +21,10 @@ import json
 import logging
 import mimetypes
 import os
-import pickle
 import pprint
 import re
 import signal
 import stat
-import sys
 import sys
 import traceback
 import textwrap
@@ -45,6 +43,7 @@ from ola.testing.rdm.DMXSender import DMXSender
 from ola.testing.rdm import DataLocation
 from ola.testing.rdm import ResponderTest
 from ola.testing.rdm import TestDefinitions
+from ola.testing.rdm import TestLogger
 from ola.testing.rdm import TestRunner
 from ola.testing.rdm.ModelCollector import ModelCollector
 from ola.testing.rdm.TestCategory import TestCategory
@@ -64,9 +63,6 @@ class Error(Exception):
 
 class ServerException(Error):
   """Indicates a problem handling the request."""
-
-class TestLoggerException(Error):
-  """Indicates a problem with the log reader."""
 
 
 class OLAThread(Thread):
@@ -270,10 +266,15 @@ class RDMTestThread(Thread):
         dmx_sender.Stop()
 
     timestamp = int(time())
-    log_saver = TestLogger(self._logs_directory)
+    test_parameters = {
+      'broadcast_write_delay': broadcast_write_delay,
+      'dmx_frame_rate': dmx_frame_rate,
+      'dmx_slot_count': slot_count,
+    }
+    log_saver = TestLogger.TestLogger(self._logs_directory)
     logs_saved = True
     try:
-      log_saver.SaveLog(uid, timestamp, tests)
+      log_saver.SaveLog(uid, timestamp, tests, test_parameters)
     except TestLoggerException:
       logs_saved = False
 
@@ -318,152 +319,6 @@ class RDMTestThread(Thread):
     """
     # TODO(simon): add this check, remember it needs locking.
     return True
-
-
-class TestLogger(object):
-  """Reads previously saved test results from a file."""
-  FILE_NAME_RE = r'[0-9a-f]{4}:[0-9a-f]{8}\.[0-9]{10}\.log$'
-
-  def __init__(self, log_dir):
-    self._log_dir = log_dir
-
-  def SaveLog(self, uid, timestamp, tests):
-    """Log the results to a file.
-
-    Args:
-      uid: the UID
-      timestamp: the timestamp for the logs
-      tests: The list of Test objects
-
-    Returns:
-      True if we wrote the logfile, false otherwise.
-    """
-    test_results = []
-    for test in tests:
-      test_results.append({
-          'advisories': test.advisories,
-          'category': test.category.__str__(),
-          'debug': test._debug,
-          'definition': test.__str__(),
-          'doc': test.__doc__,
-          'state': test.state.__str__(),
-          'warnings': test.warnings,
-      })
-
-    output = {'test_results':  test_results}
-    filename = '%s.%d.log' % (uid, timestamp)
-    filename = os.path.join(self._log_dir, filename)
-
-    try:
-      log_file = open(filename, 'w')
-    except IOError as e:
-      raise TestLoggerException(
-          'Failed to write to %s: %s' % (filename, e.message))
-
-    pickle.dump(output, log_file)
-    logging.info('Wrote log file %s' % (log_file.name))
-    log_file.close()
-
-  def ReadContents(self, uid, timestamp, category, test_state,
-                   include_debug=True, include_description=True):
-    """
-
-    Returns:
-      A tuple in the form (contents, filename)
-    """
-    log_name = "%s.%s.log" % (uid, timestamp)
-    if not self._CheckFilename(log_name):
-      raise TestLoggerException('Invalid log file requested!')
-
-    filename = os.path.abspath(
-        os.path.join(self._log_dir, log_name))
-    if not os.path.isfile(filename):
-      raise TestLoggerException('Missing log file! Please re-run tests')
-
-    try:
-      f = open(filename, 'rb')
-    except IOError as e:
-      raise TestLoggerException(e)
-
-    test_data = pickle.load(f)
-    formatted_output =  self._FormatData(test_data, category, test_state,
-                                         include_debug, include_description)
-    return formatted_output, log_name
-
-  def _CheckFilename(self, filename):
-    return re.match(self.FILE_NAME_RE, filename) is not None
-
-  def _FormatData(self, test_data, requested_category, requested_test_state,
-                  include_debug, include_description):
-    results_log = []
-    warnings = []
-    advisories = []
-    count_by_category = {}
-    broken = 0
-    failed = 0
-    not_run = 0
-    passed = 0
-
-    if requested_category is None or requested_category.lower() == 'all':
-      requested_category = None
-    if requested_test_state is None or requested_test_state.lower() == 'all':
-      requested_test_state = None
-
-    tests = test_data.get('test_results', [])
-    total = len(tests)
-
-    for test in tests:
-      category = test['category']
-      state = test['state']
-      counts = count_by_category.setdefault(category, {'passed': 0, 'total': 0})
-
-      if state == str(TestState.PASSED):
-        counts['passed'] += 1
-        counts['total'] += 1
-        passed += 1
-      elif state == str(TestState.NOT_RUN):
-        not_run += 1
-      elif state == str(TestState.FAILED):
-        counts['total'] += 1
-        failed += 1
-      elif state == str(TestState.BROKEN):
-        counts['total'] += 1
-        broken += 1
-
-      if requested_category is not None and requested_category != category:
-        continue
-      if requested_test_state is not None and requested_test_state != state:
-        continue
-
-      results_log.append('%s: %s' % (test['definition'], test['state'].upper()))
-      if include_description:
-        results_log.append(str(test['doc']))
-      if include_debug:
-        results_log.extend(str(l) for l in test.get('debug', []))
-      results_log.append('')
-      warnings.extend(str(s) for s in test.get('warnings', []))
-      advisories.extend(str(s) for s in test.get('advisories', []))
-
-    results_log.append("------------------- Warnings --------------------")
-    results_log.extend(warnings)
-    results_log.append("------------------ Advisories -------------------")
-    results_log.extend(advisories)
-    results_log.append("----------------- By Category -------------------")
-
-    for category, counts in sorted(count_by_category.items()):
-      cat_passed = counts['passed']
-      cat_total = counts['total']
-      try:
-        percent = int(round(100.0 * cat_passed / cat_total))
-      except ZeroDivisionError:
-        percent = '-'
-      results_log.append(' %26s:   %3d / %3d    %s%%' %
-                         (category, cat_passed, cat_total, percent))
-
-    results_log.append("-------------------------------------------------")
-    results_log.append('%d / %d tests run, %d passed, %d failed, %d broken' % (
-      total - not_run, total, passed, failed, broken))
-    return '\n'.join(results_log)
 
 
 class HTTPRequest(object):
@@ -726,14 +581,13 @@ class DownloadResultsHandler(RequestHandler):
 
     reader = TestLogger(settings['log_directory'])
     try:
-      output, filename = reader.ReadContents(uid, timestamp, category,
-                                             test_state, include_debug,
-                                             include_description)
+      output = reader.ReadAndFormat(uid, timestamp, category,
+                                    test_state, include_debug,
+                                    include_description)
     except TestLoggerException as e:
       raise ServerException(e)
 
-    if filename.endswith('.log'):
-      filename = filename[:len(filename)-4] + '.txt'
+    filename = '%s.%s.txt' % (uid, timestamp)
     response.SetStatus(HTTPResponse.OK)
     response.SetHeader('Content-disposition',
                        'attachment; filename="%s"' % filename)
@@ -1073,7 +927,6 @@ def SetupLogDirectory(options):
     logging.error(
         'Unable to write to log directory: %s. Logging will be disabled.' %
         options.log_directory)
-
 
 
 def main():
