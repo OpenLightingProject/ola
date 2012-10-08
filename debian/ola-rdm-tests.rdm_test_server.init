@@ -1,7 +1,7 @@
 #!/bin/sh
 
 ### BEGIN INIT INFO
-# Provides:          rdm_test_server.py
+# Provides:          rdm_test_server
 # Required-Start:    $remote_fs $syslog $network olad
 # Required-Stop:     $remote_fs $syslog $network
 # Default-Start:     2 3 4 5
@@ -12,8 +12,9 @@
 
 PATH=/usr/local/bin:/bin:/usr/bin
 NAME=rdm_test_server.py
+CMD=rdm_test_server
 DAEMON=/usr/bin/$NAME
-PIDFILE=/var/run/$NAME.pid
+PIDFILE=/var/run/$CMD.pid
 DESC="OLA RDM Test Server"
 USER=olad
 
@@ -53,7 +54,7 @@ case "$1" in
     status_of_proc -p $PIDFILE $DAEMON $NAME && exit 0 || exit $?
     ;;
   *)
-    echo "Usage: /etc/init.d/$NAME {start|stop|restart|status}" >&2
+    echo "Usage: /etc/init.d/$CMD {start|stop|restart|status}" >&2
     exit 1
     ;;
 esac
