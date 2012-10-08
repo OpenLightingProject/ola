@@ -7,7 +7,7 @@ AC_CONFIG_AUX_DIR(config)
 AC_SUBST(ac_aux_dir)
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_MACRO_DIR([config])
-AM_INIT_AUTOMAKE(ola, 0.8.24)
+AM_INIT_AUTOMAKE(ola, 0.8.25)
 
 # Checks for programs.
 AC_LANG(C++)
