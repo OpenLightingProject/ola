@@ -579,7 +579,7 @@ class DownloadResultsHandler(RequestHandler):
     category = request.GetParam('category')
     test_state = request.GetParam('state')
 
-    reader = TestLogger(settings['log_directory'])
+    reader = TestLogger.TestLogger(settings['log_directory'])
     try:
       output = reader.ReadAndFormat(uid, timestamp, category,
                                     test_state, include_debug,
