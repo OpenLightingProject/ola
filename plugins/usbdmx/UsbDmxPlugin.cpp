@@ -93,6 +93,7 @@ bool UsbDmxPlugin::StartHook() {
                    &debug_level))
     debug_level = LIBUSB_DEFAULT_DEBUG_LEVEL;
 
+  OLA_DEBUG << "libusb debug level set to " << debug_level;
   libusb_set_debug(NULL, debug_level);
 
   if (LoadFirmware()) {
@@ -184,11 +185,11 @@ void UsbDmxPlugin::FindDevices() {
       device = new VellemanDevice(this, usb_device);
     } else if (device_descriptor.idVendor == 0x0962 &&
         device_descriptor.idProduct == 0x2001) {
-      OLA_INFO << "found a sunlite device";
+      OLA_INFO << "found a Sunlite device";
       device = new SunliteDevice(this, usb_device);
     } else if (device_descriptor.idVendor == 0x16C0 &&
         device_descriptor.idProduct == 0x05DC) {
-      OLA_INFO << "found a anyma device";
+      OLA_INFO << "found an Anyma device";
       device = new AnymaDevice(this, usb_device);
     } else if (device_descriptor.idVendor == 0x04d8 &&
         device_descriptor.idProduct == 0xfa63) {

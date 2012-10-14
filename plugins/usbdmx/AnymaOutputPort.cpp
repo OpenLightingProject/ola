@@ -224,6 +224,7 @@ bool AnymaOutputPort::GetDescriptorString(libusb_device_handle *usb_handle,
       buffer_size);
 
   if (r <= 0) {
+    OLA_INFO << "libusb_get_string_descriptor_ascii returned " << r;
     return false;
   }
   data->assign(reinterpret_cast<char*>(buffer));
