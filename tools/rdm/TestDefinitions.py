@@ -2237,8 +2237,16 @@ class GetSensorValues(OptionalParameterTestFixture):
       self.Stop()
       return
 
-    self.AddExpectedResults(self.AckGetResult(action=self._GetNextSensor))
-    self.SendGet(ROOT_DEVICE, self.pid, [self._sensors[0]['sensor_number']])
+    sensor_index = self._sensors[0]['sensor_number']
+    self.AddExpectedResults([
+      self.AckGetResult(action=self._GetNextSensor),
+      self.NackGetResult(
+        RDMNack.NR_HARDWARE_FAULT,
+        advisory="Sensor %d NACK'ed GET SENSOR_VALUE with NR_HARDWARE_FAULT" %
+                 sensor_index,
+        action=self._GetNextSensor)
+    ])
+    self.SendGet(ROOT_DEVICE, self.pid, [sensor_index])
 
   def _GetNextSensor(self):
     self._sensors.pop(0)
@@ -2370,12 +2378,18 @@ class ResetSensorValue(OptionalParameterTestFixture):
       self.Stop()
       return
 
+    sensor_index = self._sensors[0]['sensor_number']
     self.AddExpectedResults([
         self.AckSetResult(action=self._ResetNextSensor),
         self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
                            action=self._ResetNextSensor),
+        self.NackSetResult(
+          RDMNack.NR_HARDWARE_FAULT,
+          advisory="Sensor %d NACK'ed Set SENSOR_VALUE with NR_HARDWARE_FAULT" %
+                   sensor_index,
+          action=self._ResetNextSensor)
     ])
-    self.SendSet(ROOT_DEVICE, self.pid, [self._sensors[0]['sensor_number']])
+    self.SendSet(ROOT_DEVICE, self.pid, [sensor_index])
 
   def _ResetNextSensor(self):
     self._sensors.pop(0)
