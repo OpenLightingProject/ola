@@ -114,7 +114,8 @@ class TestLogger(object):
     return pickle.load(f)
 
   def ReadAndFormat(self, uid, timestamp, category, test_state,
-                    include_debug=True, include_description=True):
+                    include_debug=True, include_description=True,
+                    include_summary=True):
     """Read the data from the log and produce a text report.
 
     Args:
@@ -126,7 +127,8 @@ class TestLogger(object):
     """
     test_data = self.ReadLog(uid, timestamp)
     formatted_output =  self._FormatData(test_data, category, test_state,
-                                         include_debug, include_description)
+                                         include_debug, include_description,
+                                         include_summary)
     return formatted_output
 
   def _CheckFilename(self, filename):
@@ -134,7 +136,7 @@ class TestLogger(object):
     return re.match(self.FILE_NAME_RE, filename) is not None
 
   def _FormatData(self, test_data, requested_category, requested_test_state,
-                  include_debug, include_description):
+                  include_debug, include_description, include_summary):
     """Format the data nicely."""
     results_log = []
     warnings = []
@@ -189,19 +191,21 @@ class TestLogger(object):
     results_log.extend(warnings)
     results_log.append("------------------ Advisories -------------------")
     results_log.extend(advisories)
-    results_log.append("----------------- By Category -------------------")
 
-    for category, counts in sorted(count_by_category.items()):
-      cat_passed = counts['passed']
-      cat_total = counts['total']
-      try:
-        percent = int(round(100.0 * cat_passed / cat_total))
-      except ZeroDivisionError:
-        percent = '-'
-      results_log.append(' %26s:   %3d / %3d    %s%%' %
-                         (category, cat_passed, cat_total, percent))
+    if include_summary:
+      results_log.append("----------------- By Category -------------------")
 
-    results_log.append("-------------------------------------------------")
-    results_log.append('%d / %d tests run, %d passed, %d failed, %d broken' % (
-      total - not_run, total, passed, failed, broken))
+      for category, counts in sorted(count_by_category.items()):
+        cat_passed = counts['passed']
+        cat_total = counts['total']
+        try:
+          percent = int(round(100.0 * cat_passed / cat_total))
+        except ZeroDivisionError:
+          percent = '-'
+        results_log.append(' %26s:   %3d / %3d    %s%%' %
+                           (category, cat_passed, cat_total, percent))
+
+      results_log.append("-------------------------------------------------")
+      results_log.append('%d / %d tests run, %d passed, %d failed, %d broken' % (
+        total - not_run, total, passed, failed, broken))
     return '\n'.join(results_log)
