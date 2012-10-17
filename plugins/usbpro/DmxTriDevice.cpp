@@ -46,9 +46,12 @@ DmxTriDevice::DmxTriDevice(ola::AbstractPlugin *owner,
   str << std::hex << esta_id << "-" << device_id << "-" << serial;
   m_device_id = str.str();
 
+  str.str();
+  str << "Serial #: " << serial;
   ola::OutputPort *output_port = new DmxTriOutputPort(
       this,
-      widget);
+      widget,
+      str.str());
   AddPort(output_port);
 }
 
@@ -67,10 +70,12 @@ void DmxTriDevice::PrePortStop() {
  * New DmxTriOutputPort
  */
 DmxTriOutputPort::DmxTriOutputPort(DmxTriDevice *parent,
-                                   DmxTriWidget *widget)
+                                   DmxTriWidget *widget,
+                                   const string &serial)
     : BasicOutputPort(parent, 0, true, true),
       m_device(parent),
-      m_tri_widget(widget) {
+      m_tri_widget(widget),
+      m_serial(serial) {
 }
 
 
