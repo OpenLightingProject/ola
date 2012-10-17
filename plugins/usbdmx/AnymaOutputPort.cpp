@@ -113,7 +113,8 @@ bool AnymaOutputPort::Start() {
 
   if (!GetDescriptorString(usb_handle, device_descriptor.iSerialNumber,
                            &data)) {
-    OLA_INFO << "Failed to get serial number";
+    OLA_WARN << "Failed to read serial number, the device probably doesn't "
+             << "have one";
     libusb_close(usb_handle);
     return false;
   }
