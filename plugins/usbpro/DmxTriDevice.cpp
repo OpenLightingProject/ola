@@ -46,7 +46,7 @@ DmxTriDevice::DmxTriDevice(ola::AbstractPlugin *owner,
   str << std::hex << esta_id << "-" << device_id << "-" << serial;
   m_device_id = str.str();
 
-  str.str();
+  str.str("");
   str << "Serial #: " << serial;
   ola::OutputPort *output_port = new DmxTriOutputPort(
       this,
