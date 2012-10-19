@@ -35,7 +35,7 @@ from ola.UID import UID
 
 def Usage():
   print textwrap.dedent("""\
-  Usage: model_collector.py --universe <universe>
+  Usage: rdm_model_collector.py --universe <universe>
 
   Collect information about responders attached to a universe and output in a
   format that can be imported into the RDM manufacturer index
