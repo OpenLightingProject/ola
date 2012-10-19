@@ -32,11 +32,10 @@ from ola.ClientWrapper import ClientWrapper
 from ola.OlaClient import OlaClient, RDMNack
 from ola.RDMAPI import RDMAPI
 from ola.UID import UID
-from ola.testing.rdm.ModelCollector import ModelCollector
+
 
 class Error(Exception):
   """Base exception class."""
-
 
 class DiscoveryException(Error):
   """Raised when discovery fails."""
