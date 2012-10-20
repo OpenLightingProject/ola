@@ -521,10 +521,11 @@ def main():
   else:
     controller = ConfigReader(client_wrapper, pid_store)
     data = controller.Run(universe, skip_queued_messages)
-    pprint.pprint(data)
 
     if output_file:
       WriteToFile(output_file, data)
+    else:
+      pprint.pprint(data)
 
 if __name__ == '__main__':
   main()
