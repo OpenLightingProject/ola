@@ -105,7 +105,7 @@ void InterfacePickerTest::testChooseInterface() {
   OLA_ASSERT_TRUE(IPV4Address::FromString("10.0.0.1", &iface1.ip_address));
   interfaces.push_back(iface1);
   OLA_ASSERT_TRUE(picker.ChooseInterface(&iface, "192.168.1.1"));
-  OLA_ASSERT_TRUE(iface1 == iface);
+  OLA_ASSERT_EQ(iface1, iface);
 
   // check that preferred works
   Interface iface2;
