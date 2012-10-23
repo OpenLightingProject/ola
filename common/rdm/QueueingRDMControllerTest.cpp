@@ -154,7 +154,7 @@ void MockRDMController::SendRDMRequest(const RDMRequest *request,
   OLA_ASSERT_TRUE(m_expected_calls.size());
   expected_call call = m_expected_calls.front();
   m_expected_calls.pop();
-  OLA_ASSERT_TRUE((*call.request) == (*request));
+  OLA_ASSERT_EQ((*call.request), (*request));
   delete request;
   vector<string> packets;
   if (!call.packet.empty())
@@ -258,7 +258,7 @@ void MockRDMController::RunDiscoveryCallback(const UIDSet &uids) {
 void MockRDMController::Verify() {
   OLA_ASSERT_EQ(static_cast<size_t>(0), m_expected_calls.size());
   OLA_ASSERT_EQ(static_cast<size_t>(0),
-                       m_expected_discover_calls.size());
+                m_expected_discover_calls.size());
 }
 
 
@@ -281,7 +281,7 @@ void QueueingRDMControllerTest::VerifyResponse(
     const vector<string> &packets) {
   OLA_ASSERT_EQ(expected_code, code);
   if (expected_response)
-    OLA_ASSERT_TRUE((*expected_response) == (*response));
+    OLA_ASSERT_EQ((*expected_response),(*response));
   else
     OLA_ASSERT_EQ(expected_response, response);
 
