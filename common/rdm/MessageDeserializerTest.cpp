@@ -99,12 +99,12 @@ void MessageDeserializerTest::testEmpty() {
       &descriptor,
       NULL,
       0));
-  OLA_ASSERT_TRUE(empty_message.get());
+  OLA_ASSERT_NOT_NULL(empty_message.get());
   OLA_ASSERT_EQ(0u, empty_message->FieldCount());
 
   // now and try to pass in too much data
   const uint8_t data[] = {0, 1, 2};
-  OLA_ASSERT_FALSE(m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       data,
       sizeof(data)));
@@ -133,19 +133,19 @@ void MessageDeserializerTest::testSimpleBigEndian() {
     1, 2, 3, 4, 0xfe, 6, 7, 8};
 
   // try to inflate with no data
-  OLA_ASSERT_FALSE(m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       NULL,
       0));
 
   // now inflate with too little data
-  OLA_ASSERT_FALSE(m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       big_endian_data,
       1));
 
   // now inflate with too much data
-  OLA_ASSERT_FALSE(m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       big_endian_data,
       sizeof(big_endian_data) + 1));
@@ -155,7 +155,7 @@ void MessageDeserializerTest::testSimpleBigEndian() {
       &descriptor,
       big_endian_data,
       sizeof(big_endian_data)));
-  OLA_ASSERT_TRUE(message.get());
+  OLA_ASSERT_NOT_NULL(message.get());
   OLA_ASSERT_EQ(7u, message->FieldCount());
 
   const string expected = (
@@ -186,19 +186,19 @@ void MessageDeserializerTest::testSimpleLittleEndian() {
     4, 3, 2, 1, 8, 7, 6, 0xfe};
 
   // try to inflate with no data
-  OLA_ASSERT_FALSE(m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       NULL,
       0));
 
   // now inflate with too little data
-  OLA_ASSERT_FALSE(m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       little_endian_data,
       1));
 
   // now inflate with too much data
-  OLA_ASSERT_FALSE(m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       little_endian_data,
       sizeof(little_endian_data) + 1));
@@ -208,7 +208,7 @@ void MessageDeserializerTest::testSimpleLittleEndian() {
       &descriptor,
       little_endian_data,
       sizeof(little_endian_data)));
-  OLA_ASSERT_TRUE(message.get());
+  OLA_ASSERT_NOT_NULL(message.get());
   OLA_ASSERT_EQ(7u, message->FieldCount());
 
   const string expected = (
@@ -231,17 +231,17 @@ void MessageDeserializerTest::testString() {
   const uint8_t data[] = "0123456789this is a longer string";
 
   // try to inflate with too little
-  OLA_ASSERT_FALSE(m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       data,
       0));
-  OLA_ASSERT_FALSE(m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       data,
       9));
 
   // try to inflat with too much data
-  OLA_ASSERT_FALSE(m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       data,
       43));
@@ -251,7 +251,7 @@ void MessageDeserializerTest::testString() {
       &descriptor,
       data,
       sizeof(data)));
-  OLA_ASSERT_TRUE(message.get());
+  OLA_ASSERT_NOT_NULL(message.get());
   OLA_ASSERT_EQ(2u, message->FieldCount());
 
   const string expected = (
@@ -263,7 +263,7 @@ void MessageDeserializerTest::testString() {
       &descriptor,
       data,
       19));
-  OLA_ASSERT_TRUE(message2.get());
+  OLA_ASSERT_NOT_NULL(message2.get());
   OLA_ASSERT_EQ(2u, message2->FieldCount());
 
   const string expected2 = (
@@ -289,7 +289,7 @@ void MessageDeserializerTest::testUID() {
       &descriptor,
       big_endian_data,
       sizeof(big_endian_data)));
-  OLA_ASSERT_TRUE(message.get());
+  OLA_ASSERT_NOT_NULL(message.get());
   OLA_ASSERT_EQ(1u, message->FieldCount());
 
   const string expected = "Address: 707a:00000001\n";
@@ -318,11 +318,11 @@ void MessageDeserializerTest::testWithGroups() {
       &descriptor,
       data,
       0));
-  OLA_ASSERT_TRUE(message.get());
+  OLA_ASSERT_NOT_NULL(message.get());
   OLA_ASSERT_EQ(0u, message->FieldCount());
 
   // message with not enough data
-  OLA_ASSERT_FALSE(m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       data,
       1));
@@ -332,7 +332,7 @@ void MessageDeserializerTest::testWithGroups() {
       &descriptor,
       data,
       2));
-  OLA_ASSERT_TRUE(message2.get());
+  OLA_ASSERT_NOT_NULL(message2.get());
   OLA_ASSERT_EQ(1u,
                        message2->FieldCount());
 
@@ -340,7 +340,7 @@ void MessageDeserializerTest::testWithGroups() {
   OLA_ASSERT_EQ(expected, m_printer.AsString(message2.get()));
 
   // another message with not enough data
-  OLA_ASSERT_FALSE(m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       data,
       3));
@@ -350,7 +350,7 @@ void MessageDeserializerTest::testWithGroups() {
       &descriptor,
       data,
       4));
-  OLA_ASSERT_TRUE(message3.get());
+  OLA_ASSERT_NOT_NULL(message3.get());
   OLA_ASSERT_EQ(2u, message3->FieldCount());
 
   const string expected2 = (
@@ -363,7 +363,7 @@ void MessageDeserializerTest::testWithGroups() {
       &descriptor,
       data,
       6));
-  OLA_ASSERT_TRUE(message4.get());
+  OLA_ASSERT_NOT_NULL(message4.get());
   OLA_ASSERT_EQ(3u,
                        message4->FieldCount());
 
@@ -374,7 +374,7 @@ void MessageDeserializerTest::testWithGroups() {
   OLA_ASSERT_EQ(expected3, m_printer.AsString(message4.get()));
 
   // message with too much data
-  OLA_ASSERT_FALSE(m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       data,
       sizeof(data)));
@@ -400,15 +400,15 @@ void MessageDeserializerTest::testWithNestedFixedGroups() {
       &descriptor,
       data,
       0));
-  OLA_ASSERT_TRUE(message.get());
+  OLA_ASSERT_NOT_NULL(message.get());
   OLA_ASSERT_EQ(0u, message->FieldCount());
 
   // message with not enough data
-  OLA_ASSERT_FALSE(m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       data,
       1));
-  OLA_ASSERT_FALSE(m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       data,
       2));
@@ -418,7 +418,7 @@ void MessageDeserializerTest::testWithNestedFixedGroups() {
       &descriptor,
       data,
       3));
-  OLA_ASSERT_TRUE(message2.get());
+  OLA_ASSERT_NOT_NULL(message2.get());
   OLA_ASSERT_EQ(1u, message2->FieldCount());
 
   const string expected = (
@@ -431,7 +431,7 @@ void MessageDeserializerTest::testWithNestedFixedGroups() {
       &descriptor,
       data,
       sizeof(data)));
-  OLA_ASSERT_TRUE(message3.get());
+  OLA_ASSERT_NOT_NULL(message3.get());
   OLA_ASSERT_EQ(4u, message3->FieldCount());
 
   const string expected2 = (
@@ -446,7 +446,7 @@ void MessageDeserializerTest::testWithNestedFixedGroups() {
   OLA_ASSERT_EQ(expected2, m_printer.AsString(message3.get()));
 
   // too much data
-  OLA_ASSERT_FALSE(m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       data,
       sizeof(data) + 1));
@@ -466,26 +466,26 @@ void MessageDeserializerTest::testWithNestedVariableGroups() {
   Descriptor descriptor("Test Descriptor", fields);
 
   // an empty message would be valid.
-  OLA_ASSERT_FALSE(m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       NULL,
       0));
 
   const uint8_t data[] = {0, 1, 0, 1};
   // none of these are valid
-  OLA_ASSERT_FALSE(m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       data,
       1));
-  OLA_ASSERT_FALSE(m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       data,
       2));
-  OLA_ASSERT_FALSE(m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       data,
       3));
-  OLA_ASSERT_FALSE(m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       data,
       4));
