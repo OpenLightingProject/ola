@@ -158,7 +158,7 @@ class MockRDMAPIImpl: public ola::rdm::RDMAPIImplInterface {
 
       if (result->data) {
         OLA_ASSERT_EQ(result->data_length, data_length);
-        OLA_ASSERT_TRUE(0 == memcmp(result->data, data, data_length));
+        OLA_ASSERT_TRUE(0, memcmp(result->data, data, data_length));
       }
 
       ResponseStatus status;
@@ -336,20 +336,20 @@ class RDMAPITest: public CppUnit::TestFixture {
       OLA_ASSERT_EQ(static_cast<uint16_t>(0x1234), description.pid);
       OLA_ASSERT_EQ(static_cast<uint8_t>(10), description.pdl_size);
       OLA_ASSERT_EQ(static_cast<uint8_t>(ola::rdm::DS_UNSIGNED_DWORD),
-                           description.data_type);
+                    description.data_type);
       OLA_ASSERT_EQ(static_cast<uint8_t>(ola::rdm::CC_GET),
-                           description.command_class);
+                    description.command_class);
       OLA_ASSERT_EQ(static_cast<uint8_t>(ola::rdm::UNITS_METERS),
-                           description.unit);
+                    description.unit);
       OLA_ASSERT_EQ(static_cast<uint8_t>(ola::rdm::PREFIX_KILO),
-                           description.prefix);
+                    description.prefix);
       OLA_ASSERT_EQ(static_cast<uint32_t>(0), description.min_value);
       OLA_ASSERT_EQ(static_cast<uint32_t>(200000),
-                           description.max_value);
+                    description.max_value);
       OLA_ASSERT_EQ(static_cast<uint32_t>(1000),
-                           description.default_value);
+                    description.default_value);
       OLA_ASSERT_EQ(string(TEST_DESCRIPTION).size(),
-                           description.description.size());
+                    description.description.size());
       OLA_ASSERT_EQ(string(TEST_DESCRIPTION), description.description);
     }
 
