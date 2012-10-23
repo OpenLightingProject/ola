@@ -156,12 +156,12 @@ void MessageSerializerTest::testSimple() {
   auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
 
   // verify
-  OLA_ASSERT_TRUE(message.get());
+  OLA_ASSERT_NOT_NULL(message.get());
   MessageSerializer serializer;
   unsigned int packed_length;
   const uint8_t *data = serializer.SerializeMessage(message.get(),
                                                     &packed_length);
-  OLA_ASSERT_TRUE(data);
+  OLA_ASSERT_NOT_NULL(data);
   OLA_ASSERT_EQ(18u, packed_length);
 
   uint8_t expected[] = {
@@ -193,12 +193,12 @@ void MessageSerializerTest::testString() {
   auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
 
   // verify
-  OLA_ASSERT_TRUE(message.get());
+  OLA_ASSERT_NOT_NULL(message.get());
   MessageSerializer serializer;
   unsigned int packed_length;
   const uint8_t *data = serializer.SerializeMessage(message.get(),
                                                     &packed_length);
-  OLA_ASSERT_TRUE(data);
+  OLA_ASSERT_NOT_NULL(data);
   OLA_ASSERT_EQ(31u, packed_length);
 
   uint8_t expected[] = "foo bar\0\0\0long long foo bar baz";
@@ -225,12 +225,12 @@ void MessageSerializerTest::testUID() {
   auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
 
   // verify
-  OLA_ASSERT_TRUE(message.get());
+  OLA_ASSERT_NOT_NULL(message.get());
   MessageSerializer serializer;
   unsigned int packed_length;
   const uint8_t *data = serializer.SerializeMessage(message.get(),
                                                     &packed_length);
-  OLA_ASSERT_TRUE(data);
+  OLA_ASSERT_NOT_NULL(data);
   OLA_ASSERT_EQ(6u, packed_length);
 
   uint8_t expected[] = {0x7a, 0x70, 0, 0, 0, 1};
@@ -264,12 +264,12 @@ void MessageSerializerTest::testLittleEndian() {
   auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
 
   // verify
-  OLA_ASSERT_TRUE(message.get());
+  OLA_ASSERT_NOT_NULL(message.get());
   MessageSerializer serializer;
   unsigned int packed_length;
   const uint8_t *data = serializer.SerializeMessage(message.get(),
                                                     &packed_length);
-  OLA_ASSERT_TRUE(data);
+  OLA_ASSERT_NOT_NULL(data);
   OLA_ASSERT_EQ(14u, packed_length);
 
   uint8_t expected[] = {
@@ -304,13 +304,13 @@ void MessageSerializerTest::testWithGroups() {
   auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
 
   // verify
-  OLA_ASSERT_TRUE(message.get());
+  OLA_ASSERT_NOT_NULL(message.get());
   MessageSerializer serializer;
 
   unsigned int packed_length;
   const uint8_t *data = serializer.SerializeMessage(message.get(),
                                                     &packed_length);
-  OLA_ASSERT_TRUE(data);
+  OLA_ASSERT_NOT_NULL(data);
   OLA_ASSERT_EQ(2u, packed_length);
   uint8_t expected[] = {1, 10};
   ConfirmData(__LINE__,
@@ -330,7 +330,7 @@ void MessageSerializerTest::testWithGroups() {
 
   auto_ptr<const Message> message2(BuildMessage(descriptor, inputs2));
   data = serializer.SerializeMessage(message2.get(), &packed_length);
-  OLA_ASSERT_TRUE(data);
+  OLA_ASSERT_NOT_NULL(data);
   OLA_ASSERT_EQ(6u, packed_length);
   uint8_t expected2[] = {1, 10, 1, 42, 0, 240};
   ConfirmData(__LINE__,
@@ -366,13 +366,13 @@ void MessageSerializerTest::testWithNestedGroups() {
   inputs.push_back("false");
 
   auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
-  OLA_ASSERT_TRUE(message.get());
+  OLA_ASSERT_NOT_NULL(message.get());
   MessageSerializer serializer;
 
   unsigned int packed_length;
   const uint8_t *data = serializer.SerializeMessage(message.get(),
                                                     &packed_length);
-  OLA_ASSERT_TRUE(data);
+  OLA_ASSERT_NOT_NULL(data);
   OLA_ASSERT_EQ(8u, packed_length);
   uint8_t expected[] = {0, 1, 1, 1, 0, 2, 1, 0};
   ConfirmData(__LINE__,
