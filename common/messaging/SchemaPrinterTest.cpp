@@ -211,9 +211,9 @@ string SchemaPrinterTest::GenerateIntervalString(int_type min, int_type max) {
 
 void SchemaPrinterTest::testIntervalTypes() {
   OLA_ASSERT_EQ(string("Count: uint8: (2, 8)\n"),
-                       GenerateIntervalString<UInt8FieldDescriptor>(2, 8));
+                GenerateIntervalString<UInt8FieldDescriptor>(2, 8));
   OLA_ASSERT_EQ(string("Count: uint16: (2, 8256)\n"),
-                       GenerateIntervalString<UInt16FieldDescriptor>(2, 8256));
+                GenerateIntervalString<UInt16FieldDescriptor>(2, 8256));
   OLA_ASSERT_EQ(
       string("Count: uint32: (2, 82560)\n"),
       GenerateIntervalString<UInt32FieldDescriptor>(2, 82560));
