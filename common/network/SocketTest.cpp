@@ -69,7 +69,7 @@ class SocketTest: public CppUnit::TestFixture {
 
     // timing out indicates something went wrong
     void Timeout() {
-      OLA_ASSERT_TRUE(false);
+      OLA_FAIL("timeout");
       m_timeout_closure = NULL;
     }
 
@@ -110,7 +110,7 @@ void SocketTest::setUp() {
   m_ss = new SelectServer();
   m_timeout_closure = ola::NewSingleCallback(this, &SocketTest::Timeout);
   OLA_ASSERT_TRUE(m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS,
-                                             m_timeout_closure));
+                                              m_timeout_closure));
 }
 
 
@@ -139,7 +139,7 @@ void SocketTest::testTCPSocketClientClose() {
   OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&socket));
 
   TCPSocket *client_socket = TCPSocket::Connect(socket_address);
-  OLA_ASSERT_TRUE(client_socket);
+  OLA_ASSERT_NOT_NULL(client_socket);
   client_socket->SetOnData(ola::NewCallback(
         this, &SocketTest::ReceiveAndClose,
         static_cast<ConnectedDescriptor*>(client_socket)));
@@ -169,7 +169,7 @@ void SocketTest::testTCPSocketServerClose() {
 
   // The client socket checks the response and terminates on close
   TCPSocket *client_socket = TCPSocket::Connect(socket_address);
-  OLA_ASSERT_TRUE(client_socket);
+  OLA_ASSERT_NOT_NULL(client_socket);
 
   client_socket->SetOnData(ola::NewCallback(
         this, &SocketTest::Receive,
@@ -290,7 +290,7 @@ void SocketTest::Receive(ConnectedDescriptor *socket) {
   OLA_ASSERT_FALSE(socket->Receive(buffer, sizeof(buffer), data_read));
   OLA_ASSERT_EQ(static_cast<unsigned int>(sizeof(test_cstring)),
                        data_read);
-  OLA_ASSERT_FALSE(memcmp(test_cstring, buffer, data_read));
+  OLA_ASSERT_NE(0, memcmp(test_cstring, buffer, data_read));
 }
 
 
@@ -325,7 +325,7 @@ void SocketTest::NewConnectionSend(TCPSocket *new_socket) {
   OLA_ASSERT_TRUE(new_socket);
   IPV4Address address;
   uint16_t port;
-  OLA_ASSERT_TRUE(new_socket->GetPeer(&address, &port));
+  OLA_ASSERT_NOT_NULL(new_socket->GetPeer(&address, &port));
   OLA_INFO << "Connection from " << address << ":" << port;
   ssize_t bytes_sent = new_socket->Send(
       static_cast<const uint8_t*>(test_cstring),
@@ -341,7 +341,7 @@ void SocketTest::NewConnectionSend(TCPSocket *new_socket) {
  * Accept a new connect, send some data and close
  */
 void SocketTest::NewConnectionSendAndClose(TCPSocket *new_socket) {
-  OLA_ASSERT_TRUE(new_socket);
+  OLA_ASSERT_NOT_NULL(new_socket);
   IPV4Address address;
   uint16_t port;
   OLA_ASSERT_TRUE(new_socket->GetPeer(&address, &port));
@@ -401,13 +401,13 @@ void SocketTest::UDPReceiveAndSend(UDPSocket *socket) {
  */
 void SocketTest::SocketClientClose(ConnectedDescriptor *socket,
                                    ConnectedDescriptor *socket2) {
-  OLA_ASSERT_TRUE(socket);
+  OLA_ASSERT_NOT_NULL(socket);
   socket->SetOnData(
       ola::NewCallback(this, &SocketTest::ReceiveAndClose,
                        static_cast<ConnectedDescriptor*>(socket)));
   OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(socket));
 
-  OLA_ASSERT_TRUE(socket2);
+  OLA_ASSERT_NOT_NULL(socket2);
   socket2->SetOnData(
       ola::NewCallback(this, &SocketTest::ReceiveAndSend,
                        static_cast<ConnectedDescriptor*>(socket2)));
@@ -431,7 +431,7 @@ void SocketTest::SocketClientClose(ConnectedDescriptor *socket,
  */
 void SocketTest::SocketServerClose(ConnectedDescriptor *socket,
                                    ConnectedDescriptor *socket2) {
-  OLA_ASSERT_TRUE(socket);
+  OLA_ASSERT_NOT_NULL(socket);
   socket->SetOnData(ola::NewCallback(
         this, &SocketTest::Receive,
         static_cast<ConnectedDescriptor*>(socket)));
