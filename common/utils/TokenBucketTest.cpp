@@ -63,23 +63,23 @@ void TokenBucketTest::testTokenBucket() {
   TimeInterval one_second(1000000);
   clock.CurrentTime(&now);
   TokenBucket bucket(0, 10, 10, now);  // one every 100ms
-  OLA_ASSERT_EQ((unsigned int) 0, bucket.Count(now));
+  OLA_ASSERT_EQ(0u, bucket.Count(now));
 
   now += one_hundred_ms;
-  OLA_ASSERT_EQ((unsigned int) 1, bucket.Count(now));
+  OLA_ASSERT_EQ(1u, bucket.Count(now));
   now += ten_ms;
-  OLA_ASSERT_EQ((unsigned int) 1, bucket.Count(now));
+  OLA_ASSERT_EQ(1u, bucket.Count(now));
   now += ten_ms;
-  OLA_ASSERT_EQ((unsigned int) 1, bucket.Count(now));
+  OLA_ASSERT_EQ(1u, bucket.Count(now));
   now += one_hundred_ms;
-  OLA_ASSERT_EQ((unsigned int) 2, bucket.Count(now));
+  OLA_ASSERT_EQ(2u, bucket.Count(now));
   OLA_ASSERT_TRUE(bucket.GetToken(now));
   OLA_ASSERT_TRUE(bucket.GetToken(now));
   OLA_ASSERT_FALSE(bucket.GetToken(now));
-  OLA_ASSERT_EQ((unsigned int) 0, bucket.Count(now));
+  OLA_ASSERT_EQ(0u, bucket.Count(now));
 
   now += one_second;
-  OLA_ASSERT_EQ((unsigned int) 10, bucket.Count(now));
+  OLA_ASSERT_EQ(10u, bucket.Count(now));
 }
 
 
@@ -92,36 +92,36 @@ void TokenBucketTest::testTokenBucketTwo() {
   TimeInterval five_minutes(5 * 60 * 1000000);
   clock.CurrentTime(&now);
   TokenBucket bucket(0, 40, 40, now);  // one every 25ms
-  OLA_ASSERT_EQ((unsigned int) 0, bucket.Count(now));
+  OLA_ASSERT_EQ(0u, bucket.Count(now));
 
   now += one_hundred_ms;
-  OLA_ASSERT_EQ((unsigned int) 4, bucket.Count(now));
+  OLA_ASSERT_EQ(4u, bucket.Count(now));
   now += ten_ms;
-  OLA_ASSERT_EQ((unsigned int) 4, bucket.Count(now));
+  OLA_ASSERT_EQ(4u, bucket.Count(now));
   now += ten_ms;
-  OLA_ASSERT_EQ((unsigned int) 4, bucket.Count(now));
+  OLA_ASSERT_EQ(4u, bucket.Count(now));
   now += ten_ms;
-  OLA_ASSERT_EQ((unsigned int) 5, bucket.Count(now));
+  OLA_ASSERT_EQ(5u, bucket.Count(now));
   now += ten_ms;
-  OLA_ASSERT_EQ((unsigned int) 5, bucket.Count(now));
+  OLA_ASSERT_EQ(5u, bucket.Count(now));
   now += one_hundred_ms;
-  OLA_ASSERT_EQ((unsigned int) 9, bucket.Count(now));
+  OLA_ASSERT_EQ(9u, bucket.Count(now));
   now += ten_ms;
-  OLA_ASSERT_EQ((unsigned int) 10, bucket.Count(now));
+  OLA_ASSERT_EQ(10u, bucket.Count(now));
   now += one_second;
-  OLA_ASSERT_EQ((unsigned int) 40, bucket.Count(now));
+  OLA_ASSERT_EQ(40u, bucket.Count(now));
 
   // now try a very long duration
   now += five_minutes;
-  OLA_ASSERT_EQ((unsigned int) 40, bucket.Count(now));
+  OLA_ASSERT_EQ(40u, bucket.Count(now));
 
   // take 10 tokens from the bucket
   for (unsigned int i = 0; i < 10; i++) {
     OLA_ASSERT_TRUE(bucket.GetToken(now));
   }
-  OLA_ASSERT_EQ((unsigned int) 30, bucket.Count(now));
+  OLA_ASSERT_EQ(30u, bucket.Count(now));
 
   // add a bit of time
   now += ten_ms;
-  OLA_ASSERT_EQ((unsigned int) 30, bucket.Count(now));
+  OLA_ASSERT_EQ(30u, bucket.Count(now));
 }
