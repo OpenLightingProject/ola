@@ -183,9 +183,9 @@ void StringBuilderTest::testBuilderWithLabels() {
   auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
 
   // verify
-  OLA_ASSERT_TRUE(message.get());
+  OLA_ASSERT_NOT_NULL(message.get());
   OLA_ASSERT_EQ(static_cast<unsigned int>(fields.size()),
-                       message->FieldCount());
+                message->FieldCount());
 
   string expected = "uint8: dozen\n";
   OLA_ASSERT_EQ(expected, m_printer.AsString(message.get()));
@@ -232,7 +232,7 @@ void StringBuilderTest::testBuilderWithGroups() {
   auto_ptr<const Message> message2(BuildMessage(descriptor, inputs2));
 
   // verify
-  OLA_ASSERT_TRUE(message2.get());
+  OLA_ASSERT_NOT_NULL(message2.get());
   OLA_ASSERT_EQ(3u, message2->FieldCount());
 
   string expected2 = (
@@ -252,7 +252,7 @@ void StringBuilderTest::testBuilderWithGroups() {
   inputs2.push_back("false");
   inputs2.push_back("53");
 
-  OLA_ASSERT_FALSE(BuildMessage(descriptor, inputs2));
+  OLA_ASSERT_NULL(BuildMessage(descriptor, inputs2));
 }
 
 
@@ -280,7 +280,7 @@ void StringBuilderTest::testBuilderWithNestedGroups() {
   auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
 
   // verify
-  OLA_ASSERT_TRUE(message.get());
+  OLA_ASSERT_NOT_NULL(message.get());
   OLA_ASSERT_EQ(1u, message->FieldCount());
 
   string expected = (
@@ -309,7 +309,7 @@ void StringBuilderTest::testBuilderWithVariableNestedGroups() {
   Descriptor descriptor("Test Descriptor", fields);
 
   vector<string> inputs;
-  OLA_ASSERT_FALSE(BuildMessage(descriptor, inputs));
+  OLA_ASSERT_NULL(BuildMessage(descriptor, inputs));
 }
 
 
