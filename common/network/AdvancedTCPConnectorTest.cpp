@@ -83,7 +83,7 @@ class AdvancedTCPConnectorTest: public CppUnit::TestFixture {
 
     // timing out indicates something went wrong
     void Timeout() {
-      OLA_ASSERT_TRUE(false);
+      OLA_FAIL("timeout");
     }
 
     // Socket close actions
@@ -383,10 +383,10 @@ void AdvancedTCPConnectorTest::SetupListeningSocket(
  * Accept a new TCP connection.
  */
 void AdvancedTCPConnectorTest::AcceptedConnection(TCPSocket *new_socket) {
-  OLA_ASSERT_TRUE(new_socket);
+  OLA_ASSERT_NOT_NULL(new_socket);
   IPV4Address address;
   uint16_t port;
-  OLA_ASSERT_TRUE(new_socket->GetPeer(&address, &port));
+  OLA_ASSERT_NOT_NULL(new_socket->GetPeer(&address, &port));
   OLA_INFO << "Connection from " << address << ":" << port;
 
   // terminate the ss when this connection is closed
@@ -399,11 +399,11 @@ void AdvancedTCPConnectorTest::AcceptedConnection(TCPSocket *new_socket) {
  * Called when a connection completes or times out.
  */
 void AdvancedTCPConnectorTest::OnConnect(TCPSocket *socket) {
-  OLA_ASSERT_TRUE(socket);
+  OLA_ASSERT_NOT_NULL(socket);
 
   IPV4Address address;
   uint16_t port;
-  OLA_ASSERT_TRUE(socket->GetPeer(&address, &port));
+  OLA_ASSERT_NOT_NULL(socket->GetPeer(&address, &port));
   OLA_ASSERT_EQ(m_localhost, address);
 
   m_connected_socket = socket;
