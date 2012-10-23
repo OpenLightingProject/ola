@@ -65,9 +65,9 @@ class RDMMessageInterationTest: public CppUnit::TestFixture {
 
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
-      OLA_ASSERT_TRUE(m_store);
+      OLA_ASSERT_NOT_NULL(m_store);
       m_esta_store = m_store->EstaStore();
-      OLA_ASSERT_TRUE(m_esta_store);
+      OLA_ASSERT_NOT_NULL(m_esta_store);
     }
 
   private:
@@ -99,7 +99,7 @@ RDMMessageInterationTest::~RDMMessageInterationTest() {
 void RDMMessageInterationTest::testProxiedDevices() {
   const PidDescriptor *device_info_pid =
     m_esta_store->LookupPID(ola::rdm::PID_PROXIED_DEVICES);
-  OLA_ASSERT_TRUE(device_info_pid);
+  OLA_ASSERT_NOT_NULL(device_info_pid);
   const Descriptor *descriptor = device_info_pid->GetResponse();
   OLA_ASSERT_TRUE(descriptor);
 
