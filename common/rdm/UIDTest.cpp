@@ -61,13 +61,13 @@ void UIDTest::testUID() {
   UID uid(1, 2);
   UID uid2 = uid;
   OLA_ASSERT_EQ(uid, uid2);
-  OLA_ASSERT_FALSE((uid != uid2));
+  OLA_ASSERT_NE(uid, uid2);   // not sure
   OLA_ASSERT_EQ((uint16_t) 1, uid.ManufacturerId());
   OLA_ASSERT_EQ((uint32_t) 2, uid.DeviceId());
 
   UID uid3(2, 10);
-  OLA_ASSERT_TRUE(uid != uid3);
-  OLA_ASSERT_TRUE(uid < uid3);
+  OLA_ASSERT_NE(uid,uid3);
+  OLA_ASSERT_LT(uid, uid3);
   OLA_ASSERT_EQ((uint16_t) 2, uid3.ManufacturerId());
   OLA_ASSERT_EQ((uint32_t) 10, uid3.DeviceId());
 
@@ -97,13 +97,13 @@ void UIDTest::testUID() {
   OLA_ASSERT_TRUE(uid.Pack(buffer, buffer_size));
 
   uint8_t expected[] = {0, 1, 0, 0, 0, 2};
-  OLA_ASSERT_TRUE(0 == memcmp(expected, buffer, buffer_size));
+  OLA_ASSERT_EQ(0, memcmp(expected, buffer, buffer_size));
   UID unpacked_uid1(buffer);
   OLA_ASSERT_EQ(uid, unpacked_uid1);
 
   OLA_ASSERT_TRUE(uid3.Pack(buffer, buffer_size));
   uint8_t expected2[] = {0, 2, 0, 0, 0, 0x0a};
-  OLA_ASSERT_TRUE(0 == memcmp(expected2, buffer, buffer_size));
+  OLA_ASSERT_EQ(0, memcmp(expected2, buffer, buffer_size));
   UID unpacked_uid2(buffer);
   OLA_ASSERT_EQ(uid3, unpacked_uid2);
 
@@ -133,54 +133,55 @@ void UIDTest::testUIDInequalities() {
   UID uid4(MOCK_ESTA_ID, 0x80000000);
   UID uid5(MOCK_ESTA_ID, 0xffffffff);
 
-  OLA_ASSERT_TRUE(uid1 < uid4);
-  OLA_ASSERT_TRUE(uid2 < uid4);
-  OLA_ASSERT_TRUE(uid3 < uid4);
-  OLA_ASSERT_TRUE(uid1 < uid5);
-  OLA_ASSERT_TRUE(uid2 < uid5);
-  OLA_ASSERT_TRUE(uid3 < uid5);
-  OLA_ASSERT_TRUE(uid4 < uid5);
-  OLA_ASSERT_TRUE(uid4 > uid1);
-  OLA_ASSERT_TRUE(uid4 > uid2);
-  OLA_ASSERT_TRUE(uid4 > uid3);
-  OLA_ASSERT_TRUE(uid5 > uid1);
-  OLA_ASSERT_TRUE(uid5 > uid2);
-  OLA_ASSERT_TRUE(uid5 > uid3);
-  OLA_ASSERT_TRUE(uid5 > uid4);
+  OLA_ASSERT_LT(uid1, uid4);
+  OLA_ASSERT_LT(uid2, uid4);
+  OLA_ASSERT_LT(uid3, uid4);
+  OLA_ASSERT_LT(uid1, uid5);
+  OLA_ASSERT_LT(uid2, uid5);
+  OLA_ASSERT_LT(uid3, uid5);
+  OLA_ASSERT_LT(uid4, uid5);
+  OLA_ASSERT_GT(uid4, uid1);
+  OLA_ASSERT_GT(uid4, uid2);
+  OLA_ASSERT_GT(uid4, uid3);
+  OLA_ASSERT_GT(uid5, uid1);
+  OLA_ASSERT_GT(uid5, uid2);
+  OLA_ASSERT_GT(uid5, uid3);
+  OLA_ASSERT_GT(uid5, uid4);
 
   // test the manufacturer ID
   UID uid6(MOCK_ESTA_ID - 1, 0xffffffff);
-  OLA_ASSERT_TRUE(uid6 < uid1);
-  OLA_ASSERT_TRUE(uid6 < uid4);
-  OLA_ASSERT_TRUE(uid6 < uid5);
-  OLA_ASSERT_TRUE(uid1 > uid6);
-  OLA_ASSERT_TRUE(uid4 > uid6);
-  OLA_ASSERT_TRUE(uid5 > uid6);
+  OLA_ASSERT_GT(uid6, uid1);
+  OLA_ASSERT_GT(uid6, uid4);
+  OLA_ASSERT_GT(uid6, uid5);
+  OLA_ASSERT_GT(uid1, uid6);
+  OLA_ASSERT_GT(uid4, uid6);
+  OLA_ASSERT_GT(uid5, uid6);
 
   UID uid7(MOCK_ESTA_ID + 1, 0);
-  OLA_ASSERT_TRUE(uid1 < uid7);
-  OLA_ASSERT_TRUE(uid4 < uid7);
-  OLA_ASSERT_TRUE(uid5 < uid7);
-  OLA_ASSERT_TRUE(uid6 < uid7);
-  OLA_ASSERT_TRUE(uid7 > uid1);
-  OLA_ASSERT_TRUE(uid7 > uid4);
-  OLA_ASSERT_TRUE(uid7 > uid5);
-  OLA_ASSERT_TRUE(uid7 > uid6);
+  OLA_ASSERT_LT(uid1, uid7);
+  OLA_ASSERT_LT(uid4, uid7);
+  OLA_ASSERT_LT(uid5, uid7);
+  OLA_ASSERT_LT(uid6, uid7);
+  OLA_ASSERT_GT(uid7, uid1);
+  OLA_ASSERT_GT(uid7, uid4);
+  OLA_ASSERT_GT(uid7, uid5);
+  OLA_ASSERT_GT(uid7, uid6);
 
   // now some tests that would expose problems if we used signed ints
   UID uid8(0x8000, 0);
 
-  OLA_ASSERT_TRUE(uid1 < uid8);
-  OLA_ASSERT_TRUE(uid2 < uid8);
-  OLA_ASSERT_TRUE(uid3 < uid8);
-  OLA_ASSERT_TRUE(uid4 < uid8);
-  OLA_ASSERT_TRUE(uid5 < uid8);
-  OLA_ASSERT_TRUE(uid6 < uid8);
-  OLA_ASSERT_TRUE(uid8 > uid1);
-  OLA_ASSERT_TRUE(uid8 > uid4);
-  OLA_ASSERT_TRUE(uid8 > uid5);
-  OLA_ASSERT_TRUE(uid8 > uid6);
-  OLA_ASSERT_TRUE(uid8 > uid7);
+  OLA_ASSERT_LT(uid1, uid8);
+  OLA_ASSERT_LT(uid2, uid8);
+  OLA_ASSERT_LT(uid3, uid8);
+  OLA_ASSERT_LT(uid4, uid8);
+  OLA_ASSERT_LT(uid5, uid8);
+  OLA_ASSERT_LT(uid6, uid8);
+  
+  OLA_ASSERT_GT(uid8, uid1);
+  OLA_ASSERT_GT(uid8, uid4);
+  OLA_ASSERT_GT(uid8, uid5);
+  OLA_ASSERT_GT(uid8, uid6);
+  OLA_ASSERT_GT(uid8, uid7);
 }
 
 
@@ -189,20 +190,20 @@ void UIDTest::testUIDInequalities() {
  */
 void UIDTest::testUIDSet() {
   UIDSet set1;
-  OLA_ASSERT_EQ((unsigned int) 0, set1.Size());
+  OLA_ASSERT_EQ(0u, set1.Size());
 
   UID uid(1, 2);
   UID uid2(2, 10);
   set1.AddUID(uid);
-  OLA_ASSERT_EQ((unsigned int) 1, set1.Size());
+  OLA_ASSERT_EQ(1u, set1.Size());
   OLA_ASSERT_EQ(string("0001:00000002"), set1.ToString());
   OLA_ASSERT_TRUE(set1.Contains(uid));
   OLA_ASSERT_FALSE(set1.Contains(uid2));
   set1.AddUID(uid);
-  OLA_ASSERT_EQ((unsigned int) 1, set1.Size());
+  OLA_ASSERT_EQ(1u, set1.Size());
 
   set1.AddUID(uid2);
-  OLA_ASSERT_EQ((unsigned int) 2, set1.Size());
+  OLA_ASSERT_EQ(2u, set1.Size());
   OLA_ASSERT_EQ(string("0001:00000002,0002:0000000a"), set1.ToString());
   OLA_ASSERT_TRUE(set1.Contains(uid));
   OLA_ASSERT_TRUE(set1.Contains(uid2));
@@ -210,21 +211,21 @@ void UIDTest::testUIDSet() {
   UIDSet set2(set1);
   OLA_ASSERT_EQ(set1, set2);
   UIDSet set3;
-  OLA_ASSERT_EQ((unsigned int) 0, set3.Size());
+  OLA_ASSERT_EQ(0u, set3.Size());
   set3 = set2;
   OLA_ASSERT_EQ(set1, set2);
 
   set3.RemoveUID(uid2);
-  OLA_ASSERT_EQ((unsigned int) 1, set3.Size());
+  OLA_ASSERT_EQ(1u, set3.Size());
   OLA_ASSERT_EQ(string("0001:00000002"), set3.ToString());
 
   UIDSet difference = set1.SetDifference(set3);
-  OLA_ASSERT_EQ((unsigned int) 1, difference.Size());
+  OLA_ASSERT_EQ(1u, difference.Size());
   OLA_ASSERT_TRUE(set1.Contains(uid));
   OLA_ASSERT_TRUE(set1.Contains(uid2));
 
   difference = set3.SetDifference(set1);
-  OLA_ASSERT_EQ((unsigned int) 0, difference.Size());
+  OLA_ASSERT_EQ(0u, difference.Size());
 }
 
 
@@ -243,7 +244,7 @@ void UIDTest::testUIDSetUnion() {
   set2.AddUID(uid3);
   set2.AddUID(uid4);
   set1.Union(set2);
-  OLA_ASSERT_EQ((unsigned int) 4, set1.Size());
+  OLA_ASSERT_EQ(4u, set1.Size());
   OLA_ASSERT_TRUE(set1.Contains(uid));
   OLA_ASSERT_TRUE(set1.Contains(uid2));
   OLA_ASSERT_TRUE(set1.Contains(uid3));
@@ -256,21 +257,21 @@ void UIDTest::testUIDSetUnion() {
  */
 void UIDTest::testUIDParse() {
   UID *uid = UID::FromString("ffff:00000000");
-  OLA_ASSERT_TRUE(uid);
+  OLA_ASSERT_NOT_NULL(uid);
   OLA_ASSERT_EQ(uid->ManufacturerId(), static_cast<uint16_t>(0xffff));
   OLA_ASSERT_EQ(uid->DeviceId(), static_cast<uint32_t>(0x00));
   OLA_ASSERT_EQ(uid->ToString(), string("ffff:00000000"));
   delete uid;
 
   uid = UID::FromString("1234:567890ab");
-  OLA_ASSERT_TRUE(uid);
+  OLA_ASSERT_NOT_NULL(uid);
   OLA_ASSERT_EQ(uid->ManufacturerId(), static_cast<uint16_t>(0x1234));
   OLA_ASSERT_EQ(uid->DeviceId(), static_cast<uint32_t>(0x567890ab));
   OLA_ASSERT_EQ(uid->ToString(), string("1234:567890ab"));
   delete uid;
 
   uid = UID::FromString("abcd:ef123456");
-  OLA_ASSERT_TRUE(uid);
+  OLA_ASSERT_NOT_NULL(uid);
   OLA_ASSERT_EQ(uid->ManufacturerId(), static_cast<uint16_t>(0xabcd));
   OLA_ASSERT_EQ(uid->DeviceId(), static_cast<uint32_t>(0xef123456));
   OLA_ASSERT_EQ(uid->ToString(), string("abcd:ef123456"));
