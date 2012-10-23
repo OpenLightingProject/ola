@@ -81,7 +81,7 @@ class TCPConnectorTest: public CppUnit::TestFixture {
     // timing out indicates something went wrong
     void Timeout() {
       m_timeout_closure = NULL;
-      OLA_ASSERT_TRUE(false);
+      OLA_FAIL("timeout");
     }
 
     // Socket close actions
@@ -115,7 +115,7 @@ void TCPConnectorTest::setUp() {
   m_ss = new SelectServer();
   m_timeout_closure = ola::NewSingleCallback(this, &TCPConnectorTest::Timeout);
   OLA_ASSERT_TRUE(m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS,
-                                             m_timeout_closure));
+                                              m_timeout_closure));
 }
 
 
@@ -240,7 +240,7 @@ void TCPConnectorTest::testEarlyDestruction() {
  * Accept a new TCP connection.
  */
 void TCPConnectorTest::AcceptedConnection(TCPSocket *new_socket) {
-  OLA_ASSERT_TRUE(new_socket);
+  OLA_ASSERT_NOT_NULL(new_socket);
   IPV4Address address;
   uint16_t port;
   OLA_ASSERT_TRUE(new_socket->GetPeer(&address, &port));
@@ -274,7 +274,7 @@ void TCPConnectorTest::OnConnect(int fd, int error) {
  */
 void TCPConnectorTest::OnConnectFailure(int fd, int error) {
   // The error could be one of many things, right now we just check it's non-0
-  OLA_ASSERT_TRUE(error != 0);
-  OLA_ASSERT_TRUE(fd == -1);
+  OLA_ASSERT_NE(0, error);
+  OLA_ASSERT_EQ(-1, fd);
   m_ss->Terminate();
 }
