@@ -376,35 +376,35 @@ void RDMCommandTest::testRequestInflation() {
                                  296,  // param id
                                  NULL,  // data
                                  0);  // data length
-  OLA_ASSERT_TRUE(expected_command == *command);
+  OLA_ASSERT_EQ(expected_command, *command);
   delete command;
 
   string get_request_str(reinterpret_cast<char*>(EXPECTED_GET_BUFFER),
                          sizeof(EXPECTED_GET_BUFFER));
   command = RDMRequest::InflateFromData(get_request_str);
-  OLA_ASSERT_NE(NULL, command);
-  OLA_ASSERT_TRUE(expected_command == *command);
+  OLA_ASSERT_NULL(command);
+  OLA_ASSERT_EQ(expected_command, *command);
   delete command;
 
   // now try a set request
   command = RDMRequest::InflateFromData(
       EXPECTED_SET_BUFFER,
       sizeof(EXPECTED_SET_BUFFER));
-  OLA_ASSERT_NE(NULL, command);
+  OLA_ASSERT_NULL(command);
   uint8_t expected_data[] = {0xa5, 0xa5, 0xa5, 0xa5};
   OLA_ASSERT_EQ(4u, command->ParamDataSize());
-  OLA_ASSERT_TRUE(0 == memcmp(expected_data, command->ParamData(),
-                             command->ParamDataSize()));
+  OLA_ASSERT_EQ(0, memcmp(expected_data, command->ParamData(),
+                          command->ParamDataSize()));
   delete command;
 
   // set request as a string
   string set_request_string(reinterpret_cast<char*>(EXPECTED_SET_BUFFER),
                             sizeof(EXPECTED_SET_BUFFER));
   command = RDMRequest::InflateFromData(set_request_string);
-  OLA_ASSERT_NE(NULL, command);
+  OLA_ASSERT_NULL(command);
   OLA_ASSERT_EQ(4u, command->ParamDataSize());
-  OLA_ASSERT_TRUE(0 == memcmp(expected_data, command->ParamData(),
-                             command->ParamDataSize()));
+  OLA_ASSERT_EQ(0, memcmp(expected_data, command->ParamData(),
+                          command->ParamDataSize()));
   delete command;
 
   // change the param length and make sure the checksum fails
@@ -415,18 +415,18 @@ void RDMCommandTest::testRequestInflation() {
   command = RDMRequest::InflateFromData(
       bad_packet,
       sizeof(EXPECTED_GET_BUFFER));
-  OLA_ASSERT_TRUE(NULL == command);
-
+  OLA_ASSERT_NULL(command);
+  
   get_request_str[22] = 255;
   command = RDMRequest::InflateFromData(get_request_str);
-  OLA_ASSERT_TRUE(NULL == command);
+  OLA_ASSERT_NULL(command);
 
   // now make sure we can't pass a bad param length larger than the buffer
   UpdateChecksum(bad_packet, sizeof(EXPECTED_GET_BUFFER));
   command = RDMRequest::InflateFromData(
       bad_packet,
       sizeof(EXPECTED_GET_BUFFER));
-  OLA_ASSERT_TRUE(NULL == command);
+  OLA_ASSERT_NULL(command);
   delete[] bad_packet;
 
   // change the param length of another packet and make sure the checksum fails
@@ -437,7 +437,7 @@ void RDMCommandTest::testRequestInflation() {
   command = RDMRequest::InflateFromData(
       bad_packet,
       sizeof(EXPECTED_SET_BUFFER));
-  OLA_ASSERT_TRUE(NULL == command);
+  OLA_ASSERT_NULL(command);
   delete[] bad_packet;
 
   // now try to inflate a response
@@ -513,13 +513,13 @@ void RDMCommandTest::testResponseInflation() {
       EXPECTED_GET_RESPONSE_BUFFER,
       sizeof(EXPECTED_GET_RESPONSE_BUFFER),
       &code);
-  OLA_ASSERT_NE(NULL, command);
+  OLA_ASSERT_NOT_NULL(command);
   OLA_ASSERT_EQ(ola::rdm::RDM_COMPLETED_OK, code);
   uint8_t expected_data[] = {0x5a, 0x5a, 0x5a, 0x5a};
   OLA_ASSERT_EQ(4u, command->ParamDataSize());
   OLA_ASSERT_EQ(ola::rdm::RDM_RESPONSE, command->CommandType());
-  OLA_ASSERT_TRUE(0 == memcmp(expected_data, command->ParamData(),
-                             command->ParamDataSize()));
+  OLA_ASSERT_EQ(0, memcmp(expected_data, command->ParamData(),
+                          command->ParamDataSize()));
 
   uint32_t data_value = 0x5a5a5a5a;
   RDMGetResponse expected_command(source,
@@ -531,7 +531,7 @@ void RDMCommandTest::testResponseInflation() {
                                   296,  // param id
                                   reinterpret_cast<uint8_t*>(&data_value),
                                   sizeof(data_value));  // data length
-  OLA_ASSERT_TRUE(expected_command == *command);
+  OLA_ASSERT_EQ(expected_command, *command);
   delete command;
 
   // now try from a string
@@ -539,11 +539,11 @@ void RDMCommandTest::testResponseInflation() {
                          sizeof(EXPECTED_GET_RESPONSE_BUFFER));
   command = RDMResponse::InflateFromData(response_string, &code);
   OLA_ASSERT_EQ(ola::rdm::RDM_COMPLETED_OK, code);
-  OLA_ASSERT_NE(NULL, command);
+  OLA_ASSERT_NOT_NULL(command);
   OLA_ASSERT_EQ(4u, command->ParamDataSize());
-  OLA_ASSERT_TRUE(0 == memcmp(expected_data, command->ParamData(),
-                             command->ParamDataSize()));
-  OLA_ASSERT_TRUE(expected_command == *command);
+  OLA_ASSERT_EQ(0, memcmp(expected_data, command->ParamData(),
+                          command->ParamDataSize()));
+  OLA_ASSERT_EQ(expected_command, *command);
 
   // change the param length and make sure the checksum fails
   uint8_t *bad_packet = new uint8_t[sizeof(EXPECTED_GET_RESPONSE_BUFFER)];
@@ -557,12 +557,12 @@ void RDMCommandTest::testResponseInflation() {
       sizeof(EXPECTED_GET_RESPONSE_BUFFER),
       &code);
   OLA_ASSERT_EQ(ola::rdm::RDM_CHECKSUM_INCORRECT, code);
-  OLA_ASSERT_TRUE(NULL == command);
+  OLA_ASSERT_NULL(command);
 
   response_string[22] = 255;
   command = RDMResponse::InflateFromData(response_string, &code);
   OLA_ASSERT_EQ(ola::rdm::RDM_CHECKSUM_INCORRECT, code);
-  OLA_ASSERT_TRUE(NULL == command);
+  OLA_ASSERT_NULL(command);
 
   // now make sure we can't pass a bad param length larger than the buffer
   UpdateChecksum(bad_packet, sizeof(EXPECTED_GET_RESPONSE_BUFFER));
@@ -571,7 +571,7 @@ void RDMCommandTest::testResponseInflation() {
       sizeof(EXPECTED_GET_RESPONSE_BUFFER),
       &code);
   OLA_ASSERT_EQ(ola::rdm::RDM_PARAM_LENGTH_MISMATCH, code);
-  OLA_ASSERT_TRUE(NULL == command);
+  OLA_ASSERT_NULL(command);
   delete[] bad_packet;
 
   // change the param length of another packet and make sure the checksum fails
@@ -584,7 +584,7 @@ void RDMCommandTest::testResponseInflation() {
       sizeof(EXPECTED_SET_BUFFER),
       &code);
   OLA_ASSERT_EQ(ola::rdm::RDM_PARAM_LENGTH_MISMATCH, code);
-  OLA_ASSERT_TRUE(NULL == command);
+  OLA_ASSERT_NULL(command);
   delete[] bad_packet;
 
   // now try to inflate a request
@@ -636,7 +636,7 @@ void RDMCommandTest::testNackWithReason() {
   RDMResponse *response = NackWithReason(&get_command,
                                          ola::rdm::NR_UNKNOWN_PID);
   uint16_t reason = ola::rdm::NR_UNKNOWN_PID;
-  OLA_ASSERT_TRUE(response);
+  OLA_ASSERT_NOT_NULL(response);
   OLA_ASSERT_EQ(destination, response->SourceUID());
   OLA_ASSERT_EQ(source, response->DestinationUID());
   OLA_ASSERT_EQ((uint8_t) 0, response->TransactionNumber());
@@ -656,7 +656,7 @@ void RDMCommandTest::testNackWithReason() {
   response = NackWithReason(&get_command,
                             ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
   reason = ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE;
-  OLA_ASSERT_TRUE(response);
+  OLA_ASSERT_NOT_NULL(response);
   OLA_ASSERT_EQ(destination, response->SourceUID());
   OLA_ASSERT_EQ(source, response->DestinationUID());
   OLA_ASSERT_EQ((uint8_t) 0, response->TransactionNumber());
@@ -686,7 +686,7 @@ void RDMCommandTest::testNackWithReason() {
   response = NackWithReason(&set_command,
                             ola::rdm::NR_WRITE_PROTECT);
   reason = ola::rdm::NR_WRITE_PROTECT;
-  OLA_ASSERT_TRUE(response);
+  OLA_ASSERT_NOT_NULL(response);
   OLA_ASSERT_EQ(destination, response->SourceUID());
   OLA_ASSERT_EQ(source, response->DestinationUID());
   OLA_ASSERT_EQ((uint8_t) 0, response->TransactionNumber());
@@ -720,7 +720,7 @@ void RDMCommandTest::testGetResponseFromData() {
                             0);  // data length
 
   RDMResponse *response = GetResponseFromData(&get_command, NULL, 0);
-  OLA_ASSERT_TRUE(response);
+  OLA_ASSERT_NOT_NULL(response);
   OLA_ASSERT_EQ(destination, response->SourceUID());
   OLA_ASSERT_EQ(source, response->DestinationUID());
   OLA_ASSERT_EQ((uint8_t) 0, response->TransactionNumber());
@@ -746,7 +746,7 @@ void RDMCommandTest::testGetResponseFromData() {
                             0);  // data length
 
   response = GetResponseFromData(&set_command, NULL, 0);
-  OLA_ASSERT_TRUE(response);
+  OLA_ASSERT_NOT_NULL(response);
   OLA_ASSERT_EQ(destination, response->SourceUID());
   OLA_ASSERT_EQ(source, response->DestinationUID());
   OLA_ASSERT_EQ((uint8_t) 0, response->TransactionNumber());
@@ -766,7 +766,7 @@ void RDMCommandTest::testGetResponseFromData() {
       &get_command,
       reinterpret_cast<const uint8_t*>(&data_value),
       sizeof(data_value));
-  OLA_ASSERT_TRUE(response);
+  OLA_ASSERT_NOT_NULL(response);
   OLA_ASSERT_EQ(destination, response->SourceUID());
   OLA_ASSERT_EQ(source, response->DestinationUID());
   OLA_ASSERT_EQ((uint8_t) 0, response->TransactionNumber());
@@ -817,7 +817,7 @@ void RDMCommandTest::testCombineResponses() {
   const RDMResponse *combined_response = RDMResponse::CombineResponses(
       &response1,
       &response2);
-  OLA_ASSERT_TRUE(combined_response);
+  OLA_ASSERT_NOT_NULL(combined_response);
   OLA_ASSERT_EQ(RDMCommand::GET_COMMAND_RESPONSE,
                        combined_response->CommandClass());
   OLA_ASSERT_EQ(source, combined_response->SourceUID());
@@ -829,9 +829,9 @@ void RDMCommandTest::testCombineResponses() {
   OLA_ASSERT_EQ(8u, combined_response->ParamDataSize());
   const uint8_t *combined_data = combined_response->ParamData();
   const uint32_t expected_data[] = {0x5a5a5a5a, 0xa5a5a5a5};
-  OLA_ASSERT_TRUE(0 == memcmp(expected_data,
-                             combined_data,
-                             sizeof(expected_data)));
+  OLA_ASSERT_EQ(0, memcmp(expected_data,
+                          combined_data,
+                          sizeof(expected_data)));
   delete combined_response;
 
 
@@ -849,7 +849,7 @@ void RDMCommandTest::testCombineResponses() {
   combined_response = RDMResponse::CombineResponses(
       &response1,
       &response3);
-  OLA_ASSERT_TRUE(combined_response);
+  OLA_ASSERT_NOT_NULL(combined_response);
   OLA_ASSERT_EQ(RDMCommand::GET_COMMAND_RESPONSE,
                        combined_response->CommandClass());
   OLA_ASSERT_EQ(source, combined_response->SourceUID());
@@ -861,7 +861,7 @@ void RDMCommandTest::testCombineResponses() {
   OLA_ASSERT_EQ(4u, combined_response->ParamDataSize());
   combined_data = combined_response->ParamData();
   OLA_ASSERT_EQ(data_value,
-                       *(reinterpret_cast<const uint32_t*>(combined_data)));
+                *(reinterpret_cast<const uint32_t*>(combined_data)));
   delete combined_response;
 
   // combining a GetResponse with a SetResponse is invalid
@@ -898,7 +898,7 @@ void RDMCommandTest::testCombineResponses() {
   combined_response = RDMResponse::CombineResponses(
       &response5,
       &response4);
-  OLA_ASSERT_TRUE(combined_response);
+  OLA_ASSERT_NOT_NULL(combined_response);
   OLA_ASSERT_EQ(RDMCommand::SET_COMMAND_RESPONSE,
                        combined_response->CommandClass());
   OLA_ASSERT_EQ(source, combined_response->SourceUID());
@@ -910,7 +910,7 @@ void RDMCommandTest::testCombineResponses() {
   OLA_ASSERT_EQ(4u, combined_response->ParamDataSize());
   combined_data = combined_response->ParamData();
   OLA_ASSERT_EQ(data_value,
-                       *(reinterpret_cast<const uint32_t*>(combined_data)));
+                *(reinterpret_cast<const uint32_t*>(combined_data)));
   delete combined_response;
 }
 
@@ -939,7 +939,7 @@ void RDMCommandTest::testPackWithParams() {
       data, &length, new_source, 99, 10));
 
   RDMRequest *command = RDMRequest::InflateFromData(data, length);
-  OLA_ASSERT_TRUE(command);
+  OLA_ASSERT_NOT_NULL(command);
 
   OLA_ASSERT_EQ(new_source, command->SourceUID());
   OLA_ASSERT_EQ(destination, command->DestinationUID());
