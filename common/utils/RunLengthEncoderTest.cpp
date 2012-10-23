@@ -85,9 +85,9 @@ void RunLengthEncoderTest::checkEncode(const DmxBuffer &buffer,
                                        unsigned int expected_length) {
   memset(m_dst, 0, DMX_UNIVERSE_SIZE);
   OLA_ASSERT_EQ(is_complete,
-                       m_encoder.Encode(buffer, m_dst, dst_size));
+                m_encoder.Encode(buffer, m_dst, dst_size));
   OLA_ASSERT_EQ(expected_length, dst_size);
-  OLA_ASSERT_FALSE(memcmp(expected_data, m_dst, dst_size));
+  OLA_ASSERT_NE(0, memcmp(expected_data, m_dst, dst_size));
 }
 
 
@@ -149,9 +149,9 @@ void RunLengthEncoderTest::checkEncodeDecode(const uint8_t *data,
   OLA_ASSERT_TRUE(m_encoder.Encode(src, m_dst, dst_size));
 
   OLA_ASSERT_TRUE(m_encoder.Decode(&dst, 0, m_dst, dst_size));
-  OLA_ASSERT_TRUE(src == dst);
+  OLA_ASSERT_EQ(src, dst);
   OLA_ASSERT_EQ(dst.Size(), data_size);
-  OLA_ASSERT_FALSE(memcmp(data, dst.GetRaw(), dst.Size()));
+  OLA_ASSERT_NE(0, memcmp(data, dst.GetRaw(), dst.Size()));
 }
 
 
