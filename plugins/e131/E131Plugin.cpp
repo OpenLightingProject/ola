@@ -37,16 +37,19 @@ namespace plugin {
 namespace e131 {
 
 const char E131Plugin::CID_KEY[] = "cid";
+const char E131Plugin::DEFAULT_DSCP_VALUE[] = "0";
 const char E131Plugin::DSCP_KEY[] = "dscp";
 const char E131Plugin::IGNORE_PREVIEW_DATA_KEY[] = "ignore_preview";
+const char E131Plugin::INPUT_PORT_COUNT_KEY[] = "input_ports";
 const char E131Plugin::IP_KEY[] = "ip";
+const char E131Plugin::OUTPUT_PORT_COUNT_KEY[] = "output_ports";
 const char E131Plugin::PLUGIN_NAME[] = "E1.31 (sACN)";
 const char E131Plugin::PLUGIN_PREFIX[] = "e131";
 const char E131Plugin::PREPEND_HOSTNAME_KEY[] = "prepend_hostname";
 const char E131Plugin::REVISION_0_2[] = "0.2";
 const char E131Plugin::REVISION_0_46[] = "0.46";
 const char E131Plugin::REVISION_KEY[] = "revision";
-const char E131Plugin::DEFAULT_DSCP_VALUE[] = "0";
+const char E131Plugin::DEFAULT_PORT_COUNT[] = "5";
 
 
 /*
@@ -55,28 +58,33 @@ const char E131Plugin::DEFAULT_DSCP_VALUE[] = "0";
 bool E131Plugin::StartHook() {
   CID cid = CID::FromString(m_preferences->GetValue(CID_KEY));
   string ip_addr = m_preferences->GetValue(IP_KEY);
-  string revision = m_preferences->GetValue(REVISION_KEY);
-  bool use_rev2 = revision == REVISION_0_2 ? true : false;
-  bool prepend_hostname = m_preferences->GetValueAsBool(PREPEND_HOSTNAME_KEY);
-  bool ignore_preview = m_preferences->GetValueAsBool(IGNORE_PREVIEW_DATA_KEY);
+
+  E131Device::E131DeviceOptions options;
+  options.use_rev2 = (m_preferences->GetValue(REVISION_KEY) == REVISION_0_2);
+  options.prepend_hostname = m_preferences->GetValueAsBool(
+      PREPEND_HOSTNAME_KEY);
+  options.ignore_preview = m_preferences->GetValueAsBool(
+      IGNORE_PREVIEW_DATA_KEY);
+
   unsigned int dscp;
   if (!StringToInt(m_preferences->GetValue(DSCP_KEY), &dscp)) {
     OLA_WARN << "Can't convert dscp value " <<
       m_preferences->GetValue(DSCP_KEY) << " to int";
-    dscp = 0;
+    options.dscp = 0;
   } else {
     // shift 2 bits left
-    dscp = dscp << 2;
+    options.dscp = dscp << 2;
   }
 
-  m_device = new E131Device(this,
-                            cid,
-                            ip_addr,
-                            m_plugin_adaptor,
-                            use_rev2,
-                            prepend_hostname,
-                            ignore_preview,
-                            dscp);
+  if (!StringToInt(m_preferences->GetValue(INPUT_PORT_COUNT_KEY),
+                   &options.input_ports))
+    OLA_WARN << "Invalid value for input_ports";
+
+  if (!StringToInt(m_preferences->GetValue(OUTPUT_PORT_COUNT_KEY),
+                   &options.output_ports))
+    OLA_WARN << "Invalid value for input_ports";
+
+  m_device = new E131Device(this, cid, ip_addr, m_plugin_adaptor, options);
 
   if (!m_device->Start()) {
     delete m_device;
@@ -111,7 +119,8 @@ string E131Plugin::Description() const {
 "E1.31 (Streaming DMX over ACN) Plugin\n"
 "----------------------------\n"
 "\n"
-"This plugin creates a single device with eight input and eight output ports.\n"
+"This plugin creates a single device with a configurable number of input \n"
+"and output ports.\n"
 "\n"
 "Each port can be assigned to a diffent E1.31 Universe.\n"
 "\n"
@@ -126,9 +135,15 @@ string E131Plugin::Description() const {
 "ignore_preview = [true|false]\n"
 "Ignore preview data.\n"
 "\n"
+"input_ports = [int]\n"
+"The number of input ports to create up to a max of 32.\n"
+"\n"
 "ip = [a.b.c.d|<interface_name>]\n"
 "The ip address or interface name to bind to. If not specified it will\n"
 "use the first non-loopback interface.\n"
+"\n"
+"output_ports = [int]\n"
+"The number of output ports to create up to a max of 32.\n"
 "\n"
 "prepend_hostname = [true|false]\n"
 "Prepend the hostname to the source name when sending packets.\n"
@@ -166,6 +181,16 @@ bool E131Plugin::SetDefaultPreferences() {
       IGNORE_PREVIEW_DATA_KEY,
       BoolValidator(),
       BoolValidator::ENABLED);
+
+  save |= m_preferences->SetDefaultValue(
+      INPUT_PORT_COUNT_KEY,
+      IntValidator(0, 32),
+      DEFAULT_PORT_COUNT);
+
+  save |= m_preferences->SetDefaultValue(
+      OUTPUT_PORT_COUNT_KEY,
+      IntValidator(0, 32),
+      DEFAULT_PORT_COUNT);
 
   save |= m_preferences->SetDefaultValue(IP_KEY, StringValidator(true), "");
 
