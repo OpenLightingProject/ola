@@ -58,7 +58,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(IPAddressTest);
 void IPAddressTest::testIPV4Address() {
   IPV4Address wildcard_address;
   OLA_ASSERT_EQ(string("0.0.0.0"), wildcard_address.ToString());
-  OLA_ASSERT_TRUE(0 == wildcard_address.Address().s_addr);
+  OLA_ASSERT_EQ(0, wildcard_address.Address().s_addr);
   OLA_ASSERT_TRUE(wildcard_address.IsWildcard());
 
   struct in_addr in_addr1;
@@ -90,11 +90,11 @@ void IPAddressTest::testIPV4Address() {
 
   // test from string
   auto_ptr<IPV4Address> string_address(IPV4Address::FromString("10.0.0.1"));
-  OLA_ASSERT_TRUE(string_address.get());
+  OLA_ASSERT_NOT_NULL(string_address.get());
   OLA_ASSERT_EQ(string("10.0.0.1"), string_address->ToString());
 
   auto_ptr<IPV4Address> string_address2(IPV4Address::FromString("foo"));
-  OLA_ASSERT_FALSE(string_address2.get());
+  OLA_ASSERT_NULL(string_address2.get());
 
   // and the second form
   IPV4Address string_address3;
@@ -127,7 +127,7 @@ void IPAddressTest::testIPV4Address() {
 void IPAddressTest::testWildcard() {
   IPV4Address wildcard_address;
   OLA_ASSERT_EQ(string("0.0.0.0"), wildcard_address.ToString());
-  OLA_ASSERT_TRUE(0 == wildcard_address.Address().s_addr);
+  OLA_ASSERT_EQ(0, wildcard_address.Address().s_addr);
   OLA_ASSERT_TRUE(wildcard_address.IsWildcard());
 
   IPV4Address wildcard_address2 = IPV4Address::WildCard();
