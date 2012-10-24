@@ -386,7 +386,7 @@ void AdvancedTCPConnectorTest::AcceptedConnection(TCPSocket *new_socket) {
   OLA_ASSERT_NOT_NULL(new_socket);
   IPV4Address address;
   uint16_t port;
-  OLA_ASSERT_NOT_NULL(new_socket->GetPeer(&address, &port));
+  OLA_ASSERT_TRUE(new_socket->GetPeer(&address, &port));
   OLA_INFO << "Connection from " << address << ":" << port;
 
   // terminate the ss when this connection is closed
@@ -403,7 +403,7 @@ void AdvancedTCPConnectorTest::OnConnect(TCPSocket *socket) {
 
   IPV4Address address;
   uint16_t port;
-  OLA_ASSERT_NOT_NULL(socket->GetPeer(&address, &port));
+  OLA_ASSERT_TRUE(socket->GetPeer(&address, &port));
   OLA_ASSERT_EQ(m_localhost, address);
 
   m_connected_socket = socket;

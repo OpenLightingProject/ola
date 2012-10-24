@@ -290,7 +290,7 @@ void SocketTest::Receive(ConnectedDescriptor *socket) {
   OLA_ASSERT_FALSE(socket->Receive(buffer, sizeof(buffer), data_read));
   OLA_ASSERT_EQ(static_cast<unsigned int>(sizeof(test_cstring)),
                        data_read);
-  OLA_ASSERT_NE(0, memcmp(test_cstring, buffer, data_read));
+  OLA_ASSERT_EQ(0, memcmp(test_cstring, buffer, data_read));
 }
 
 
@@ -325,7 +325,7 @@ void SocketTest::NewConnectionSend(TCPSocket *new_socket) {
   OLA_ASSERT_TRUE(new_socket);
   IPV4Address address;
   uint16_t port;
-  OLA_ASSERT_NOT_NULL(new_socket->GetPeer(&address, &port));
+  OLA_ASSERT_TRUE(new_socket->GetPeer(&address, &port));
   OLA_INFO << "Connection from " << address << ":" << port;
   ssize_t bytes_sent = new_socket->Send(
       static_cast<const uint8_t*>(test_cstring),

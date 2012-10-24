@@ -22,10 +22,9 @@
 #include <string.h>
 #include <string>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/BaseTypes.h"
 #include "ola/DmxBuffer.h"
+#include "ola/testing/TestUtils.h"
 
 using std::string;
 using ola::DmxBuffer;
@@ -91,7 +90,7 @@ void DmxBufferTest::testBlackout() {
   memset(zero, 0, DMX_UNIVERSE_SIZE);
   buffer.Get(result, &result_length);
   OLA_ASSERT_EQ((unsigned int) DMX_UNIVERSE_SIZE, result_length);
-  OLA_ASSERT_NE(0, memcmp(zero, result, result_length));
+  OLA_ASSERT_EQ(0, memcmp(zero, result, result_length));
   delete[] result;
   delete[] zero;
 
@@ -122,27 +121,27 @@ void DmxBufferTest::testGetSet() {
   OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA), buffer.Size());
   buffer.Get(result, &size);
   OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA), size);
-  OLA_ASSERT_NE(0, memcmp(TEST_DATA, result, size));
+  OLA_ASSERT_EQ(0, memcmp(TEST_DATA, result, size));
   str_result = buffer.Get();
   OLA_ASSERT_EQ((size_t) sizeof(TEST_DATA), str_result.length());
-  OLA_ASSERT_NE(0, memcmp(TEST_DATA, str_result.data(), str_result.length()));
+  OLA_ASSERT_EQ(0, memcmp(TEST_DATA, str_result.data(), str_result.length()));
 
   size = result_length;
   OLA_ASSERT_TRUE(buffer.Set(TEST_DATA2, sizeof(TEST_DATA2)));
   OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA2), buffer.Size());
   buffer.Get(result, &size);
   OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA2), size);
-  OLA_ASSERT_NE(0, memcmp(TEST_DATA2, result, size));
+  OLA_ASSERT_EQ(0, memcmp(TEST_DATA2, result, size));
   str_result = buffer.Get();
   OLA_ASSERT_EQ((size_t) sizeof(TEST_DATA2), str_result.length());
-  OLA_ASSERT_NE(0, memcmp(TEST_DATA2, str_result.data(), str_result.length()));
+  OLA_ASSERT_EQ(0, memcmp(TEST_DATA2, str_result.data(), str_result.length()));
 
   // now check that Set() with another buffer works
   DmxBuffer buffer2;
   buffer2.Set(buffer);
   str_result = buffer2.Get();
   OLA_ASSERT_EQ((size_t) sizeof(TEST_DATA2), str_result.length());
-  OLA_ASSERT_NE(0, memcmp(TEST_DATA2, str_result.data(), str_result.length()));
+  OLA_ASSERT_EQ(0, memcmp(TEST_DATA2, str_result.data(), str_result.length()));
 
   delete[] result;
 }
@@ -163,11 +162,11 @@ void DmxBufferTest::testStringGetSet() {
   OLA_ASSERT_EQ(data, buffer.Get());
   buffer.Get(result, &size);
   OLA_ASSERT_EQ(data.length(), (size_t) size);
-  OLA_ASSERT_NE(0, memcmp(data.data(), result, size));
+  OLA_ASSERT_EQ(0, memcmp(data.data(), result, size));
 
   // Check the string constructor
   DmxBuffer string_buffer(data);
-  OLA_ASSERT_EQ(buffer, string_buffer);
+  OLA_ASSERT_TRUE(buffer == string_buffer);
 
   // Set with an empty string
   string data2;
@@ -177,7 +176,7 @@ void DmxBufferTest::testStringGetSet() {
   OLA_ASSERT_EQ(data2, buffer.Get());
   buffer.Get(result, &size);
   OLA_ASSERT_EQ(data2.length(), (size_t) size);
-  OLA_ASSERT_NE(0, memcmp(data2.data(), result, size));
+  OLA_ASSERT_EQ(0, memcmp(data2.data(), result, size));
   delete[] result;
 }
 
@@ -203,8 +202,8 @@ void DmxBufferTest::testAssign() {
   OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA),
                        assignment_buffer.Size());
   OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA), size);
-  OLA_ASSERT_NE(0, memcmp(TEST_DATA, result, size));
-  OLA_ASSERT_EQ(assignment_buffer, buffer);
+  OLA_ASSERT_EQ(0, memcmp(TEST_DATA, result, size));
+  OLA_ASSERT_TRUE(assignment_buffer == buffer);
 
   // assigning to a non-init'ed buffer
   assignment_buffer2 = buffer;
@@ -213,19 +212,19 @@ void DmxBufferTest::testAssign() {
   OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA),
                        assignment_buffer2.Size());
   OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA), result_length);
-  OLA_ASSERT_NE(0, memcmp(TEST_DATA, result, result_length));
-  OLA_ASSERT_EQ(assignment_buffer2, buffer);
+  OLA_ASSERT_EQ(0, memcmp(TEST_DATA, result, result_length));
+  OLA_ASSERT_TRUE(assignment_buffer2 == buffer);
 
   // now try assigning an unitialized buffer
   DmxBuffer uninitialized_buffer;
   DmxBuffer assignment_buffer3;
 
   assignment_buffer3 = uninitialized_buffer;
-  OLA_ASSERT_EQ((0u, assignment_buffer3.Size());
+  OLA_ASSERT_EQ(0u, assignment_buffer3.Size());
   size = result_length;
   assignment_buffer3.Get(result, &result_length);
   OLA_ASSERT_EQ(0u, result_length);
-  OLA_ASSERT_EQ(assignment_buffer3, uninitialized_buffer);
+  OLA_ASSERT_TRUE(assignment_buffer3 == uninitialized_buffer);
   delete[] result;
 }
 
@@ -239,13 +238,13 @@ void DmxBufferTest::testCopy() {
 
   DmxBuffer copy_buffer(buffer);
   OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA2), copy_buffer.Size());
-  OLA_ASSERT_EQ(copy_buffer, buffer);
+  OLA_ASSERT_TRUE(copy_buffer == buffer);
 
   unsigned int result_length = sizeof(TEST_DATA2);
   uint8_t *result = new uint8_t[result_length];
   copy_buffer.Get(result, &result_length);
   OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA2), result_length);
-  OLA_ASSERT_NE(0, memcmp(TEST_DATA2, result, result_length));
+  OLA_ASSERT_EQ(0, memcmp(TEST_DATA2, result, result_length));
   delete[] result;
 }
 
@@ -264,21 +263,21 @@ void DmxBufferTest::testMerge() {
   // merge into an empty buffer
   OLA_ASSERT_TRUE(uninitialized_buffer.HTPMerge(buffer2));
   OLA_ASSERT_EQ((unsigned int) sizeof(TEST_DATA3), buffer2.Size());
-  OLA_ASSERT_EQ(test_buffer2, uninitialized_buffer);
+  OLA_ASSERT_TRUE(test_buffer2 == uninitialized_buffer);
 
   // merge from an empty buffer
   OLA_ASSERT_TRUE(buffer2.HTPMerge(uninitialized_buffer2));
-  OLA_ASSERT_EQ(buffer2, test_buffer2);
+  OLA_ASSERT_TRUE(buffer2 == test_buffer2);
 
   // merge two buffers (longer into shorter)
   buffer2 = test_buffer2;
   OLA_ASSERT_TRUE(buffer2.HTPMerge(buffer1));
-  OLA_ASSERT_EQ(buffer2, merge_result);
+  OLA_ASSERT_TRUE(buffer2 == merge_result);
 
   // merge shorter into longer
   buffer2 = test_buffer2;
   OLA_ASSERT_TRUE(buffer1.HTPMerge(buffer2));
-  OLA_ASSERT_EQ(buffer1, merge_result);
+  OLA_ASSERT_TRUE(buffer1 == merge_result);
 }
 
 
@@ -291,7 +290,7 @@ void DmxBufferTest::runStringToDmx(const string &input,
                                    const DmxBuffer &expected) {
   DmxBuffer buffer;
   OLA_ASSERT_TRUE(buffer.SetFromString(input));
-  OLA_ASSERT_EQ(expected, buffer);
+  OLA_ASSERT_TRUE(expected == buffer);
 }
 
 
@@ -344,38 +343,38 @@ void DmxBufferTest::testCopyOnWrite() {
   // Check HTPMerge
   dest_buffer.HTPMerge(buffer3);
   OLA_ASSERT_EQ(initial_data, src_buffer.Get());
-  OLA_ASSERT_EQ(merge_result, dest_buffer);
+  OLA_ASSERT_TRUE(merge_result == dest_buffer);
   dest_buffer = src_buffer;
   // Check the other way
   src_buffer.HTPMerge(buffer3);
-  OLA_ASSERT_EQ(merge_result, src_buffer);
-  OLA_ASSERT_EQ(initial_data, dest_buffer.Get());
+  OLA_ASSERT_TRUE(merge_result == src_buffer);
+  OLA_ASSERT_TRUE(initial_data == dest_buffer.Get());
   src_buffer = dest_buffer;
 
   // Check Set works
   dest_buffer.Set(TEST_DATA3, sizeof(TEST_DATA3));
   OLA_ASSERT_EQ(initial_data, src_buffer.Get());
-  OLA_ASSERT_EQ(buffer3, dest_buffer);
+  OLA_ASSERT_TRUE(buffer3 == dest_buffer);
   dest_buffer = src_buffer;
   // Check it works the other way
-  OLA_ASSERT_EQ(initial_data, src_buffer.Get());
-  OLA_ASSERT_EQ(initial_data, dest_buffer.Get());
+  OLA_ASSERT_TRUE(initial_data == src_buffer.Get());
+  OLA_ASSERT_TRUE(initial_data == dest_buffer.Get());
   src_buffer.Set(TEST_DATA3, sizeof(TEST_DATA3));
-  OLA_ASSERT_EQ(buffer3, src_buffer);
-  OLA_ASSERT_EQ(initial_data, dest_buffer.Get());
+  OLA_ASSERT_TRUE(buffer3 == src_buffer);
+  OLA_ASSERT_TRUE(initial_data == dest_buffer.Get());
   src_buffer = dest_buffer;
 
   // Check that SetFromString works
   dest_buffer = src_buffer;
   dest_buffer.SetFromString("10,11,12");
   OLA_ASSERT_EQ(initial_data, src_buffer.Get());
-  OLA_ASSERT_EQ(buffer3, dest_buffer);
+  OLA_ASSERT_TRUE(buffer3 == dest_buffer);
   dest_buffer = src_buffer;
   // Check it works the other way
   OLA_ASSERT_EQ(initial_data, src_buffer.Get());
   OLA_ASSERT_EQ(initial_data, dest_buffer.Get());
   src_buffer.SetFromString("10,11,12");
-  OLA_ASSERT_EQ(buffer3, src_buffer);
+  OLA_ASSERT_TRUE(buffer3 == src_buffer);
   OLA_ASSERT_EQ(initial_data, dest_buffer.Get());
   src_buffer = dest_buffer;
 
@@ -409,32 +408,32 @@ void DmxBufferTest::testSetRange() {
   // Setting an uninitialized buffer calls blackout first
   OLA_ASSERT_TRUE(buffer.SetRange(0, TEST_DATA, data_size));
   OLA_ASSERT_EQ((unsigned int) DMX_UNIVERSE_SIZE, buffer.Size());
-  OLA_ASSERT_NE(0, memcmp(TEST_DATA, buffer.GetRaw(), data_size));
+  OLA_ASSERT_EQ(0, memcmp(TEST_DATA, buffer.GetRaw(), data_size));
 
   // try overrunning the buffer
   OLA_ASSERT_TRUE(buffer.SetRange(DMX_UNIVERSE_SIZE - 2, TEST_DATA, data_size));
   OLA_ASSERT_EQ((unsigned int) DMX_UNIVERSE_SIZE, buffer.Size());
-  OLA_ASSERT_NE(0, memcmp(TEST_DATA, buffer.GetRaw() + DMX_UNIVERSE_SIZE - 2,
+  OLA_ASSERT_EQ(0, memcmp(TEST_DATA, buffer.GetRaw() + DMX_UNIVERSE_SIZE - 2,
                          2));
 
   // reset the buffer so that the valid data is 0, and try again
   buffer.Reset();
   OLA_ASSERT_TRUE(buffer.SetRange(0, TEST_DATA, data_size));
   OLA_ASSERT_EQ((unsigned int) data_size, buffer.Size());
-  OLA_ASSERT_NE(0, memcmp(TEST_DATA, buffer.GetRaw(), data_size));
+  OLA_ASSERT_EQ(0, memcmp(TEST_DATA, buffer.GetRaw(), data_size));
 
   // setting past the end of the valid data should fail
-  OLA_ASSERT_NE(0, buffer.SetRange(50, TEST_DATA, data_size));
+  OLA_ASSERT_FALSE(buffer.SetRange(50, TEST_DATA, data_size));
   OLA_ASSERT_EQ((unsigned int) data_size, buffer.Size());
-  OLA_ASSERT_NE(0, memcmp(TEST_DATA, buffer.GetRaw(), buffer.Size()));
+  OLA_ASSERT_EQ(0, memcmp(TEST_DATA, buffer.GetRaw(), buffer.Size()));
 
   // overwrite part of the valid data
   unsigned int offset = 2;
   OLA_ASSERT_TRUE(buffer.SetRange(offset, TEST_DATA, data_size));
   OLA_ASSERT_EQ((unsigned int) data_size + offset,
                        buffer.Size());
-  OLA_ASSERT_NE(0, memcmp(TEST_DATA, buffer.GetRaw(), offset));
-  OLA_ASSERT_NE(0, memcmp(TEST_DATA, buffer.GetRaw() + offset,
+  OLA_ASSERT_EQ(0, memcmp(TEST_DATA, buffer.GetRaw(), offset));
+  OLA_ASSERT_EQ(0, memcmp(TEST_DATA, buffer.GetRaw() + offset,
                          buffer.Size() - offset));
 
   // now try writing 1 channel past the valid data
@@ -443,8 +442,8 @@ void DmxBufferTest::testSetRange() {
   OLA_ASSERT_TRUE(buffer.SetRange(data_size, TEST_DATA,
                                  data_size));
   OLA_ASSERT_EQ((unsigned int) data_size * 2, buffer.Size());
-  OLA_ASSERT_NE(0, memcmp(TEST_DATA, buffer.GetRaw(), data_size));
-  OLA_ASSERT_NE(0, memcmp(TEST_DATA, buffer.GetRaw() + data_size, data_size));
+  OLA_ASSERT_EQ(0, memcmp(TEST_DATA, buffer.GetRaw(), data_size));
+  OLA_ASSERT_EQ(0, memcmp(TEST_DATA, buffer.GetRaw() + data_size, data_size));
 }
 
 
@@ -459,7 +458,7 @@ void DmxBufferTest::testSetRangeToValue() {
   unsigned int range_size = 5;
   OLA_ASSERT_TRUE(buffer.SetRangeToValue(0, 50, range_size));
   OLA_ASSERT_EQ((unsigned int) DMX_UNIVERSE_SIZE, buffer.Size());
-  OLA_ASSERT_NE(0, memcmp(RANGE_DATA, buffer.GetRaw(), range_size));
+  OLA_ASSERT_EQ(0, memcmp(RANGE_DATA, buffer.GetRaw(), range_size));
 
   // setting outside the value range should fail
   buffer.Reset();
@@ -480,12 +479,12 @@ void DmxBufferTest::testSetChannel() {
   expected[1] = 10;
   expected[10] = 50;
   OLA_ASSERT_EQ((unsigned int) DMX_UNIVERSE_SIZE, buffer.Size());
-  OLA_ASSERT_NE(0,memcmp(expected, buffer.GetRaw(), buffer.Size()));
+  OLA_ASSERT_EQ(0,memcmp(expected, buffer.GetRaw(), buffer.Size()));
 
   // Check we can't set values greater than the buffer size
   buffer.SetChannel(999, 50);
   OLA_ASSERT_EQ((unsigned int) DMX_UNIVERSE_SIZE, buffer.Size());
-  OLA_ASSERT_NE(0, memcmp(expected, buffer.GetRaw(), buffer.Size()));
+  OLA_ASSERT_EQ(0, memcmp(expected, buffer.GetRaw(), buffer.Size()));
 
   // Check we can't set values outside the current valida data range
   unsigned int slice_size = 20;
@@ -494,7 +493,7 @@ void DmxBufferTest::testSetChannel() {
   buffer.SetChannel(200, 10);
 
   OLA_ASSERT_EQ(slice_size, buffer.Size());
-  OLA_ASSERT_NE(0, memcmp(expected, buffer.GetRaw(), buffer.Size()));
+  OLA_ASSERT_EQ(0, memcmp(expected, buffer.GetRaw(), buffer.Size()));
 }
 
 

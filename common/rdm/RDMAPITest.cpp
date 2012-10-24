@@ -24,13 +24,13 @@
 #include <string>
 #include <vector>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/StringUtils.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/RDMAPI.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/RDMAPIImplInterface.h"
+#include "ola/testing/TestUtils.h"
+
 
 
 using ola::NewSingleCallback;
@@ -158,7 +158,7 @@ class MockRDMAPIImpl: public ola::rdm::RDMAPIImplInterface {
 
       if (result->data) {
         OLA_ASSERT_EQ(result->data_length, data_length);
-        OLA_ASSERT_TRUE(0, memcmp(result->data, data, data_length));
+        OLA_ASSERT_EQ(0, memcmp(result->data, data, data_length));
       }
 
       ResponseStatus status;

@@ -21,14 +21,13 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <sstream>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/Callback.h"
 #include "ola/Clock.h"
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
 #include "ola/io/SelectServer.h"
 #include "ola/network/Socket.h"
+#include "ola/testing/TestUtils.h"
 
 using ola::ExportMap;
 using ola::IntegerVariable;
@@ -51,7 +50,7 @@ class SelectServerTest: public CppUnit::TestFixture {
     void testLoopCallbacks();
 
     void FatalTimeout() {
-      OLA_ASSERT_FAIL("Fatal Timeout");
+      OLA_FAIL("Fatal Timeout");
     }
 
     void TerminateTimeout() {
@@ -178,7 +177,7 @@ void SelectServerTest::testTimeout() {
       20,
       ola::NewSingleCallback(this, &SelectServerTest::TerminateTimeout));
   m_ss->Run();
-  OLA_ASSERT_EQ(2i, m_timeout_counter);
+  OLA_ASSERT_EQ(2u, m_timeout_counter);
 
   // check repeating timeouts
   // Some systems (VMs in particular) can't do 10ms resolution so we go for

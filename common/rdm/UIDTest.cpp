@@ -22,11 +22,11 @@
 #include <string.h>
 #include <string>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/StringUtils.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
+#include "ola/testing/TestUtils.h"
+
 
 using std::string;
 using ola::rdm::UID;
@@ -61,7 +61,7 @@ void UIDTest::testUID() {
   UID uid(1, 2);
   UID uid2 = uid;
   OLA_ASSERT_EQ(uid, uid2);
-  OLA_ASSERT_NE(uid, uid2);   // not sure
+//  OLA_ASSERT_NE((uid), (uid2));   not sure
   OLA_ASSERT_EQ((uint16_t) 1, uid.ManufacturerId());
   OLA_ASSERT_EQ((uint32_t) 2, uid.DeviceId());
 
@@ -150,9 +150,9 @@ void UIDTest::testUIDInequalities() {
 
   // test the manufacturer ID
   UID uid6(MOCK_ESTA_ID - 1, 0xffffffff);
-  OLA_ASSERT_GT(uid6, uid1);
-  OLA_ASSERT_GT(uid6, uid4);
-  OLA_ASSERT_GT(uid6, uid5);
+  OLA_ASSERT_LT(uid6, uid1);
+  OLA_ASSERT_LT(uid6, uid4);
+  OLA_ASSERT_LT(uid6, uid5);
   OLA_ASSERT_GT(uid1, uid6);
   OLA_ASSERT_GT(uid4, uid6);
   OLA_ASSERT_GT(uid5, uid6);

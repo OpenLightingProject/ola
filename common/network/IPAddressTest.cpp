@@ -58,7 +58,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(IPAddressTest);
 void IPAddressTest::testIPV4Address() {
   IPV4Address wildcard_address;
   OLA_ASSERT_EQ(string("0.0.0.0"), wildcard_address.ToString());
-  OLA_ASSERT_EQ(0, wildcard_address.Address().s_addr);
+  OLA_ASSERT_FALSE(wildcard_address.Address().s_addr);
   OLA_ASSERT_TRUE(wildcard_address.IsWildcard());
 
   struct in_addr in_addr1;
@@ -127,7 +127,7 @@ void IPAddressTest::testIPV4Address() {
 void IPAddressTest::testWildcard() {
   IPV4Address wildcard_address;
   OLA_ASSERT_EQ(string("0.0.0.0"), wildcard_address.ToString());
-  OLA_ASSERT_EQ(0, wildcard_address.Address().s_addr);
+  OLA_ASSERT_FALSE(wildcard_address.Address().s_addr);
   OLA_ASSERT_TRUE(wildcard_address.IsWildcard());
 
   IPV4Address wildcard_address2 = IPV4Address::WildCard();
