@@ -74,7 +74,7 @@ int ParseOptions(int argc, char *argv[], options *opts) {
   };
 
   opts->help = false;
-  opts->level = ola::OLA_LOG_INFO;
+  opts->level = ola::OLA_LOG_WARN;
   opts->playback = false;
   opts->loop_iterations = 1;
   opts->loop_delay = 0;
@@ -207,7 +207,9 @@ int RecordShow(const options &opts) {
   if (status)
     return status;
 
+  cout << "Recording, hit Control-C to end" << endl;
   recorder.Record();
+  cout << "Saved " << recorder.FrameCount() << " frames" << endl;
   return EX_OK;
 }
 

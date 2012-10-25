@@ -45,11 +45,14 @@ class ShowRecorder {
     int Init();
     int Record();
 
+    unsigned long FrameCount() const { return m_frame_count; }
+
   private:
     ola::OlaCallbackClientWrapper m_client;
     ShowSaver m_saver;
     std::vector<unsigned int> m_universes;
     ola::Clock m_clock;
+    unsigned long m_frame_count;
 
     void NewFrame(unsigned int universe,
                   const ola::DmxBuffer &data,
