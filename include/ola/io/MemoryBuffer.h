@@ -23,6 +23,7 @@
 
 #include <ola/io/InputBuffer.h>
 #include <stdint.h>
+#include <string.h>
 #include <algorithm>
 #include <string.h>
 

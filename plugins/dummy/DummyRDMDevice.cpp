@@ -42,9 +42,10 @@ using std::vector;
 
 
 const DummyRDMDevice::personality_info DummyRDMDevice::PERSONALITIES[] = {
-  {5, "Personality 1"},
-  {10, "Personality 2"},
-  {20, "Personality 3"},
+  {0, "Personality 1"},
+  {5, "Personality 2"},
+  {10, "Personality 3"},
+  {20, "Personality 4"},
 };
 
 const unsigned int DummyRDMDevice::PERSONALITY_COUNT = (
@@ -59,7 +60,7 @@ void DummyRDMDevice::SendRDMRequest(const ola::rdm::RDMRequest *request,
                                     ola::rdm::RDMCallback *callback) {
   vector<string> packets;
   if (request->CommandClass() == ola::rdm::RDMCommand::DISCOVER_COMMAND) {
-    callback->Run(ola::rdm::RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED,
+    callback->Run(ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED,
                   NULL,
                   packets);
     delete request;
@@ -201,11 +202,11 @@ void DummyRDMDevice::HandleDeviceInfo(const RDMRequest *request,
   device_info.product_category = HostToNetwork(
       static_cast<uint16_t>(ola::rdm::PRODUCT_CATEGORY_OTHER));
   device_info.software_version = HostToNetwork(static_cast<uint32_t>(1));
-  device_info.dmx_footprint =
-    HostToNetwork(PERSONALITIES[m_personality].footprint);
+  device_info.dmx_footprint = HostToNetwork(Footprint());
   device_info.current_personality = m_personality + 1;
   device_info.personality_count = PERSONALITY_COUNT;
-  device_info.dmx_start_address = HostToNetwork(m_start_address);
+  device_info.dmx_start_address = device_info.dmx_footprint ?
+    HostToNetwork(m_start_address) : 0xffff;
   device_info.sub_device_count = 0;
   device_info.sensor_count = 0;
   RDMResponse *response = GetResponseFromData(
@@ -443,9 +444,10 @@ void DummyRDMDevice::HandleDmxStartAddress(const RDMRequest *request,
     } else {
       uint16_t address =
         NetworkToHost(*(reinterpret_cast<uint16_t*>(request->ParamData())));
-      uint16_t end_address = (
-          DMX_UNIVERSE_SIZE - PERSONALITIES[m_personality].footprint + 1);
+      uint16_t end_address = DMX_UNIVERSE_SIZE - Footprint() + 1;
       if (address == 0 || address > end_address) {
+        response = NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
+      } else if (Footprint() == 0) {
         response = NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
       } else {
         m_start_address = address;
@@ -466,6 +468,8 @@ void DummyRDMDevice::HandleDmxStartAddress(const RDMRequest *request,
       response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
     } else {
       uint16_t address = HostToNetwork(m_start_address);
+      if (Footprint() == 0)
+        address = 0xffff;
       response = GetResponseFromData(
         request,
         reinterpret_cast<const uint8_t*>(&address),

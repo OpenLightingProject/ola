@@ -81,9 +81,9 @@ bool PrefixedHexStringToInt(const string &input, int_type *output) {
  * T can be any type for which the << operator is defined
  */
 template<typename T>
-string StringJoin(const string &delim, const vector<T> &input) {
+string StringJoin(const string &delim, const T &input) {
   std::ostringstream str;
-  typename vector<T>::const_iterator iter = input.begin();
+  typename T::const_iterator iter = input.begin();
   while (iter != input.end()) {
     str << *iter++;
     if (iter != input.end())

@@ -1,3 +1,18 @@
+ola (0.8.25-1) unstable; urgency=low
+
+  * New upstream release
+  * Update the init script names
+
+ -- RenZO <renzo@imaginux.com>  Mon, 08 Oct 2012 01:34:31 +0200
+
+ola (0.8.24-1) unstable; urgency=low
+
+  * New upstream release
+  * Use a pidfile in the init script
+  * Add a init script for the RDM Test Server
+
+ -- RenZO <renzo@imaginux.com>  Tue, 02 Oct 2012 16:04:18 +0200
+
 ola (0.8.23-1) unstable; urgency=low
 
   * New upstream release

@@ -48,16 +48,19 @@ class E131Plugin: public ola::Plugin {
 
     class E131Device *m_device;
     static const char CID_KEY[];
+    static const char DEFAULT_DSCP_VALUE[];
+    static const char DEFAULT_PORT_COUNT[];
     static const char DSCP_KEY[];
     static const char IGNORE_PREVIEW_DATA_KEY[];
+    static const char INPUT_PORT_COUNT_KEY[];
     static const char IP_KEY[];
+    static const char OUTPUT_PORT_COUNT_KEY[];
     static const char PLUGIN_NAME[];
     static const char PLUGIN_PREFIX[];
     static const char PREPEND_HOSTNAME_KEY[];
     static const char REVISION_0_2[];
     static const char REVISION_0_46[];
     static const char REVISION_KEY[];
-    static const char DEFAULT_DSCP_VALUE[];
 };
 }  // e131
 }  // plugin

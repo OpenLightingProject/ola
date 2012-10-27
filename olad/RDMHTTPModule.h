@@ -540,6 +540,8 @@ class RDMHTTPModule {
 
     bool CheckForInvalidUid(const HTTPRequest *request, UID **uid);
 
+    uint16_t SubDeviceOrRoot(const HTTPRequest *request);
+
     void SetHandler(HTTPResponse *response,
                     const ola::rdm::ResponseStatus &status);
 
@@ -591,6 +593,7 @@ class RDMHTTPModule {
     static const char LABEL_FIELD[];
     static const char LANGUAGE_FIELD[];
     static const char RECORD_SENSOR_FIELD[];
+    static const char SUB_DEVICE_FIELD[];
 
     static const char BOOT_SOFTWARE_SECTION[];
     static const char COMMS_STATUS_SECTION[];

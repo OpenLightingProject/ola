@@ -163,6 +163,7 @@ class QueuedMessageFetcher(object):
     if (response.response_type == OlaClient.RDM_ACK and
         response.command_class == OlaClient.RDM_GET_RESPONSE and
         response.pid == self._status_message_pid.value and
+        unpacked_data is not None and
         unpacked_data.get('messages', []) == []):
       if (self._outstanding_ack_timers == 0):
         self._wrapper.Stop()
@@ -251,24 +252,26 @@ class TestRunner(object):
       self._property_map[property] = test_class
     self._all_tests.add(test_class)
 
-  def RunTests(self, filter=None, no_factory_defaults=False):
+  def RunTests(self, whitelist=None, no_factory_defaults=False, update_cb=None):
     """Run all the tests.
 
     Args:
       filter: If not None, limit the tests to those in the list and their
         dependancies.
       no_factory_defaults: Avoid running the SET factory defaults test.
+      update_cb: This is called between each test to update the progress. It
+        takes two args, one is the number of test complete, the other is the
+        total number of tests.
 
     Returns:
       A tuple in the form (tests, device), where tests is a list of tests that
       exectuted, and device is an instance of DeviceProperties.
     """
     device = DeviceProperties(self._property_map.keys())
-    if filter is None:
+    if whitelist is None:
       tests_to_run = self._all_tests
     else:
-      tests_to_run = [test for test in self._all_tests
-                      if test.__name__ in filter]
+      tests_to_run = [t for t in self._all_tests if t.__name__ in whitelist]
 
     if no_factory_defaults:
       factory_default_tests = set(['ResetFactoryDefaults',
@@ -282,8 +285,11 @@ class TestRunner(object):
     logging.debug('Test order is %s' % tests)
     is_debug = logging.getLogger('').isEnabledFor(logging.DEBUG)
 
+    tests_completed = 0
     for test in tests:
       # make sure the queue is flushed before starting any tests
+      if update_cb is not None:
+        update_cb(tests_completed, len(tests))
       self._message_fetcher.FetchAllMessages()
 
       # capture the start time
@@ -304,11 +310,13 @@ class TestRunner(object):
           getattr(device, property)
       except AttributeError:
         test.LogDebug('Property: %s not found, skipping test.' % property)
+        tests_completed += 1
         continue
 
       test.Run()
 
       logging.info('%s%s: %s' % (end_header, test, test.state.ColorString()))
+      tests_completed += 1
     return tests, device
 
   def _InstantiateTests(self, device, tests_to_run):

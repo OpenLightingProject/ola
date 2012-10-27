@@ -114,10 +114,10 @@ class InvalidResponse(BaseExpectedResult):
 class UnsupportedResult(BaseExpectedResult):
   """This checks that the request was unsupported."""
   def __str__(self):
-    return 'RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED'
+    return 'RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED'
 
   def Matches(self, response, unpacked_data):
-    return (OlaClient.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED ==
+    return (OlaClient.RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED ==
             response.response_code)
 
 

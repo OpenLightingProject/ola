@@ -51,17 +51,16 @@ E131Device::E131Device(Plugin *owner,
                        const ola::plugin::e131::CID &cid,
                        std::string ip_addr,
                        PluginAdaptor *plugin_adaptor,
-                       bool use_rev2,
-                       bool prepend_hostname,
-                       bool ignore_preview,
-                       uint8_t dscp)
+                       const E131DeviceOptions &options)
     : Device(owner, DEVICE_NAME),
       m_plugin_adaptor(plugin_adaptor),
       m_node(NULL),
-      m_use_rev2(use_rev2),
-      m_prepend_hostname(prepend_hostname),
-      m_ignore_preview(ignore_preview),
-      m_dscp(dscp),
+      m_use_rev2(options.use_rev2),
+      m_prepend_hostname(options.prepend_hostname),
+      m_ignore_preview(options.ignore_preview),
+      m_dscp(options.dscp),
+      m_input_port_count(options.input_ports),
+      m_output_port_count(options.output_ports),
       m_ip_addr(ip_addr),
       m_cid(cid) {
 }
@@ -85,17 +84,15 @@ bool E131Device::StartHook() {
   str << DEVICE_NAME << " [" << m_node->GetInterface().ip_address << "]";
   SetName(str.str());
 
-  for (unsigned int i = 0; i < NUMBER_OF_E131_PORTS; i++) {
+  for (unsigned int i = 0; i < m_input_port_count; i++) {
     E131InputPort *input_port = new E131InputPort(
-        this,
-        i,
-        m_node,
-        m_plugin_adaptor);
+        this, i, m_node, m_plugin_adaptor);
     AddPort(input_port);
-    E131OutputPort *output_port = new E131OutputPort(this,
-                                                     i,
-                                                     m_node,
-                                                     m_prepend_hostname);
+  }
+
+  for (unsigned int i = 0; i < m_output_port_count; i++) {
+    E131OutputPort *output_port = new E131OutputPort(
+        this, i, m_node, m_prepend_hostname);
     AddPort(output_port);
   }
 
