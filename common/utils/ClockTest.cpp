@@ -177,6 +177,6 @@ void ClockTest::testMockClock() {
 
   TimeStamp third;
   clock.CurrentTime(&third);
-  OLA_ASSERT_LT(second,third);
+  OLA_ASSERT_LT(second, third);
   OLA_ASSERT_TRUE(ten_point_five_seconds <= (third - second));
 }

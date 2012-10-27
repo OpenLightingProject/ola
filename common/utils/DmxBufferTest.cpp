@@ -479,7 +479,7 @@ void DmxBufferTest::testSetChannel() {
   expected[1] = 10;
   expected[10] = 50;
   OLA_ASSERT_EQ((unsigned int) DMX_UNIVERSE_SIZE, buffer.Size());
-  OLA_ASSERT_EQ(0,memcmp(expected, buffer.GetRaw(), buffer.Size()));
+  OLA_ASSERT_EQ(0, memcmp(expected, buffer.GetRaw(), buffer.Size()));
 
   // Check we can't set values greater than the buffer size
   buffer.SetChannel(999, 50);

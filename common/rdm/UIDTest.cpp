@@ -61,12 +61,12 @@ void UIDTest::testUID() {
   UID uid(1, 2);
   UID uid2 = uid;
   OLA_ASSERT_EQ(uid, uid2);
-//  OLA_ASSERT_NE((uid), (uid2));   not sure
+  OLA_ASSERT_FALSE(uid != uid2);
   OLA_ASSERT_EQ((uint16_t) 1, uid.ManufacturerId());
   OLA_ASSERT_EQ((uint32_t) 2, uid.DeviceId());
 
   UID uid3(2, 10);
-  OLA_ASSERT_NE(uid,uid3);
+  OLA_ASSERT_NE(uid, uid3);
   OLA_ASSERT_LT(uid, uid3);
   OLA_ASSERT_EQ((uint16_t) 2, uid3.ManufacturerId());
   OLA_ASSERT_EQ((uint32_t) 10, uid3.DeviceId());
@@ -176,7 +176,7 @@ void UIDTest::testUIDInequalities() {
   OLA_ASSERT_LT(uid4, uid8);
   OLA_ASSERT_LT(uid5, uid8);
   OLA_ASSERT_LT(uid6, uid8);
-  
+
   OLA_ASSERT_GT(uid8, uid1);
   OLA_ASSERT_GT(uid8, uid4);
   OLA_ASSERT_GT(uid8, uid5);

@@ -415,7 +415,7 @@ void RDMCommandTest::testRequestInflation() {
       bad_packet,
       sizeof(EXPECTED_GET_BUFFER));
   OLA_ASSERT_NULL(command);
-  
+
   get_request_str[22] = 255;
   command = RDMRequest::InflateFromData(get_request_str);
   OLA_ASSERT_NULL(command);

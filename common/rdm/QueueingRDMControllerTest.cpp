@@ -281,7 +281,7 @@ void QueueingRDMControllerTest::VerifyResponse(
     const vector<string> &packets) {
   OLA_ASSERT_EQ(expected_code, code);
   if (expected_response)
-    OLA_ASSERT_EQ((*expected_response),(*response));
+    OLA_ASSERT_EQ((*expected_response), (*response));
   else
     OLA_ASSERT_EQ(expected_response, response);
 

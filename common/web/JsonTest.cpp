@@ -148,8 +148,7 @@ void JsonTest::testSimpleObject() {
       "  \"age\": 10,\n"
       "  \"male\": true,\n"
       "  \"name\": \"simon\"\n"
-      "}"
-  );
+      "}");
   OLA_ASSERT_EQ(expected, JsonWriter::AsString(object));
 }
 
@@ -173,7 +172,6 @@ void JsonTest::testComplexObject() {
       "  \"lucky numbers\": [2, 5],\n"
       "  \"male\": true,\n"
       "  \"name\": \"simon\"\n"
-      "}"
-  );
+      "}");
   OLA_ASSERT_EQ(expected, JsonWriter::AsString(object));
 }
