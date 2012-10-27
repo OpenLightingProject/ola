@@ -22,10 +22,10 @@
 #include <string>
 #include <vector>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/messaging/Descriptor.h"
 #include "ola/messaging/SchemaPrinter.h"
+#include "ola/testing/TestUtils.h"
+
 
 using std::string;
 using std::vector;

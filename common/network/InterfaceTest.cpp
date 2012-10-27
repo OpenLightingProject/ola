@@ -21,11 +21,11 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/Logging.h"
 #include "ola/network/Interface.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/testing/TestUtils.h"
+
 
 using ola::network::HardwareAddressToString;
 using ola::network::IPV4Address;

@@ -22,9 +22,9 @@
 #include <string>
 #include <sstream>
 
+#include "ola/web/Json.h"
 #include "ola/testing/TestUtils.h"
 
-#include "ola/web/Json.h"
 
 using ola::web::JsonArray;
 using ola::web::JsonBoolValue;

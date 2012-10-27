@@ -22,8 +22,6 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <memory>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/Logging.h"
 #include "ola/io/SelectServer.h"
 #include "ola/network/InterfacePicker.h"
@@ -31,6 +29,9 @@
 #include "ola/network/Socket.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
 #include "plugins/e131/e131/UDPTransport.h"
+#include "ola/testing/TestUtils.h"
+
+
 
 namespace ola {
 namespace plugin {

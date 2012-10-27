@@ -23,8 +23,6 @@
 #include <iostream>
 #include <string>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/Logging.h"
 #include "ola/io/IOQueue.h"
 #include "ola/network/NetworkUtils.h"

@@ -22,9 +22,8 @@
 #include <string>
 #include <vector>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/ExportMap.h"
+#include "ola/testing/TestUtils.h"
 
 using ola::BaseVariable;
 using ola::BoolVariable;

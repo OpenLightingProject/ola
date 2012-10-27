@@ -24,12 +24,12 @@
 #include <string>
 #include <vector>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/thread/Thread.h"
 #include "ola/thread/ThreadPool.h"
+#include "ola/testing/TestUtils.h"
+
 
 
 using ola::thread::Mutex;

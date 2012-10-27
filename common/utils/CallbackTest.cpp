@@ -22,9 +22,9 @@
 #include <unistd.h>
 #include <string>
 
+#include "ola/Callback.h"
 #include "ola/testing/TestUtils.h"
 
-#include "ola/Callback.h"
 
 using std::string;
 

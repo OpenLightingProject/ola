@@ -22,9 +22,9 @@
 #include <google/protobuf/stubs/common.h>
 #include <string>
 
+#include "common/rpc/SimpleRpcController.h"
 #include "ola/testing/TestUtils.h"
 
-#include "common/rpc/SimpleRpcController.h"
 
 using std::string;
 using ola::rpc::SimpleRpcController;

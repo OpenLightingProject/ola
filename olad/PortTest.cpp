@@ -22,12 +22,12 @@
 #include <string>
 #include <vector>
 
-#include "ola/testing/TestUtils.h"
-
 #include "olad/PortBroker.h"
 #include "olad/Preferences.h"
 #include "olad/TestCommon.h"
 #include "olad/UniverseStore.h"
+#include "ola/testing/TestUtils.h"
+
 
 using ola::Clock;
 using ola::TimeStamp;

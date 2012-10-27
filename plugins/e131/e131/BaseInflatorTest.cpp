@@ -22,10 +22,10 @@
 #include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "ola/testing/TestUtils.h"
-
 #include "plugins/e131/e131/BaseInflator.h"
 #include "plugins/e131/e131/HeaderSet.h"
+#include "ola/testing/TestUtils.h"
+
 
 namespace ola {
 namespace plugin {

@@ -23,14 +23,14 @@
 #include <string>
 #include <vector>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
 #include "ola/rdm/UID.h"
 #include "plugins/usbpro/EnttecUsbProWidget.h"
 #include "plugins/usbpro/CommonWidgetTest.h"
+#include "ola/testing/TestUtils.h"
+
 
 using ola::plugin::usbpro::EnttecUsbProWidget;
 using ola::rdm::RDMDiscoveryRequest;

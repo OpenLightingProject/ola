@@ -23,12 +23,12 @@
 #include <string>
 #include <iostream>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/HeaderSet.h"
+#include "ola/testing/TestUtils.h"
+
 
 using ola::network::IPV4Address;
 using ola::plugin::e131::CID;

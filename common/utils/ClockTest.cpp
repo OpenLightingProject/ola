@@ -22,9 +22,9 @@
 #include <unistd.h>
 #include <string>
 
+#include "ola/Clock.h"
 #include "ola/testing/TestUtils.h"
 
-#include "ola/Clock.h"
 
 
 class ClockTest: public CppUnit::TestFixture {

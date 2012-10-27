@@ -22,8 +22,6 @@
 #include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/Logging.h"
 #include "ola/io/IOQueue.h"
 #include "ola/io/OutputStream.h"
@@ -32,6 +30,8 @@
 #include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
 #include "plugins/e131/e131/RootPDU.h"
+#include "ola/testing/TestUtils.h"
+
 
 namespace ola {
 namespace plugin {

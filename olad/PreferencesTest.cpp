@@ -23,10 +23,10 @@
 #include <string>
 #include <vector>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/Logging.h"
 #include "olad/Preferences.h"
+#include "ola/testing/TestUtils.h"
+
 
 using ola::BoolValidator;
 using ola::FileBackedPreferences;

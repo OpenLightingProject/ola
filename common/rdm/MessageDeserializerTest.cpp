@@ -23,14 +23,14 @@
 #include <string>
 #include <vector>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/Logging.h"
 #include "ola/messaging/Descriptor.h"
 #include "ola/messaging/Message.h"
 #include "ola/messaging/MessagePrinter.h"
 #include "ola/rdm/MessageSerializer.h"
 #include "ola/rdm/MessageDeserializer.h"
+#include "ola/testing/TestUtils.h"
+
 
 
 using ola::messaging::BoolFieldDescriptor;

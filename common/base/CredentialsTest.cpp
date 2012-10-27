@@ -20,10 +20,9 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/base/Credentials.h"
 #include "ola/Logging.h"
+#include "ola/testing/TestUtils.h"
 
 using ola::GetEGID;
 using ola::GetEUID;

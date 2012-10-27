@@ -22,11 +22,11 @@
 #include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/network/NetworkUtils.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
 #include "plugins/e131/e131/DMPAddress.h"
+#include "ola/testing/TestUtils.h"
+
 
 namespace ola {
 namespace plugin {

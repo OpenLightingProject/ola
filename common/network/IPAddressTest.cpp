@@ -20,8 +20,6 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "ola/testing/TestUtils.h"
-
 #include <algorithm>
 #include <iostream>
 #include <memory>
@@ -29,6 +27,8 @@
 #include <vector>
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/testing/TestUtils.h"
+
 
 using ola::network::IPV4Address;
 using std::auto_ptr;

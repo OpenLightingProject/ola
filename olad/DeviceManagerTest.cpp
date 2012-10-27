@@ -22,8 +22,6 @@
 #include <string>
 #include <vector>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/Logging.h"
 #include "ola/DmxBuffer.h"
 #include "olad/DeviceManager.h"
@@ -34,6 +32,8 @@
 #include "olad/Preferences.h"
 #include "olad/TestCommon.h"
 #include "olad/UniverseStore.h"
+#include "ola/testing/TestUtils.h"
+
 
 using ola::AbstractDevice;
 using ola::AbstractPlugin;

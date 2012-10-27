@@ -23,12 +23,12 @@
 #include <string.h>
 #include <string>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/io/SelectServer.h"
 #include "ola/io/BufferedWriteDescriptor.h"
+#include "ola/testing/TestUtils.h"
+
 
 using std::string;
 using ola::io::BufferedLoopbackDescriptor;

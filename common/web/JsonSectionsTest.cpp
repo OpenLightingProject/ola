@@ -21,10 +21,10 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/web/Json.h"
 #include "ola/web/JsonSections.h"
+#include "ola/testing/TestUtils.h"
+
 
 using std::string;
 using std::vector;

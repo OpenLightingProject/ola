@@ -22,9 +22,9 @@
 #include <string>
 #include <vector>
 
+#include "ola/messaging/Descriptor.h"
 #include "ola/testing/TestUtils.h"
 
-#include "ola/messaging/Descriptor.h"
 
 using std::string;
 using std::vector;

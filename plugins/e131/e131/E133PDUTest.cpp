@@ -23,8 +23,6 @@
 #include <string.h>
 #include <string>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/Logging.h"
 #include "ola/io/IOQueue.h"
 #include "ola/io/OutputStream.h"
@@ -32,6 +30,8 @@
 #include "ola/testing/TestUtils.h"
 #include "plugins/e131/e131/E133PDU.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
+#include "ola/testing/TestUtils.h"
+
 
 namespace ola {
 namespace plugin {

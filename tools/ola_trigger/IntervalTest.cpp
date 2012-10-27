@@ -20,9 +20,9 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
+#include "tools/ola_trigger/Action.h"
 #include "ola/testing/TestUtils.h"
 
-#include "tools/ola_trigger/Action.h"
 
 
 class IntervalTest: public CppUnit::TestFixture {

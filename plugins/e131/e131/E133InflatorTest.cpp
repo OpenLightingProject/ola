@@ -23,14 +23,14 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/e131/e131/HeaderSet.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
 #include "plugins/e131/e131/E133Inflator.h"
 #include "plugins/e131/e131/E133PDU.h"
+#include "ola/testing/TestUtils.h"
+
 
 namespace ola {
 namespace plugin {

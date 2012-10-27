@@ -21,11 +21,11 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <vector>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/Logging.h"
 #include "ola/messaging/Descriptor.h"
 #include "common/rdm/DescriptorConsistencyChecker.h"
+#include "ola/testing/TestUtils.h"
+
 
 
 using ola::messaging::Descriptor;

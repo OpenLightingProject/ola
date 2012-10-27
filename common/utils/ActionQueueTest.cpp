@@ -20,10 +20,10 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/ActionQueue.h"
 #include "ola/Callback.h"
+#include "ola/testing/TestUtils.h"
+
 
 using ola::Action;
 using ola::ActionQueue;

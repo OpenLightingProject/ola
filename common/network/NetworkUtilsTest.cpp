@@ -22,10 +22,10 @@
 
 #include <string>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/network/NetworkUtils.h"
 #include "ola/Logging.h"
+#include "ola/testing/TestUtils.h"
+
 
 
 using ola::network::HardwareAddressToString;

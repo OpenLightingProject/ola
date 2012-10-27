@@ -21,13 +21,13 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
 
-#include "ola/testing/TestUtils.h"
-
 #include "olad/DmxSource.h"
 #include "olad/PortBroker.h"
 #include "olad/PortManager.h"
 #include "olad/UniverseStore.h"
 #include "olad/TestCommon.h"
+#include "ola/testing/TestUtils.h"
+
 
 using ola::DmxSource;
 using ola::PortManager;

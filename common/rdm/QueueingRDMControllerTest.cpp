@@ -24,14 +24,14 @@
 #include <string>
 #include <vector>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/Logging.h"
 #include "ola/Callback.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/QueueingRDMController.h"
+#include "ola/testing/TestUtils.h"
+
 
 using ola::NewSingleCallback;
 using ola::rdm::ACK_OVERFLOW;

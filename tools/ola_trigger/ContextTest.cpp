@@ -21,9 +21,9 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
 
+#include "tools/ola_trigger/Context.h"
 #include "ola/testing/TestUtils.h"
 
-#include "tools/ola_trigger/Context.h"
 
 
 class ContextTest: public CppUnit::TestFixture {

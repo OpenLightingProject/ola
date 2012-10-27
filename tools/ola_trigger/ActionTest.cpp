@@ -24,9 +24,9 @@
 #include <string>
 #include <vector>
 
+#include "tools/ola_trigger/Action.h"
 #include "ola/testing/TestUtils.h"
 
-#include "tools/ola_trigger/Action.h"
 
 using std::vector;
 using std::string;

@@ -22,11 +22,11 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/BaseTypes.h"
 #include "ola/DmxBuffer.h"
 #include "ola/RunLengthEncoder.h"
+#include "ola/testing/TestUtils.h"
+
 
 using ola::RunLengthEncoder;
 using ola::DmxBuffer;

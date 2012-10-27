@@ -23,14 +23,14 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <vector>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/Logging.h"
 #include "plugins/e131/e131/DMPAddress.h"
 #include "plugins/e131/e131/DMPInflator.h"
 #include "plugins/e131/e131/DMPPDU.h"
 #include "plugins/e131/e131/HeaderSet.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
+#include "ola/testing/TestUtils.h"
+
 
 namespace ola {
 namespace plugin {

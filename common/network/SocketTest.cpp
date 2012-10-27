@@ -23,8 +23,6 @@
 #include <string.h>
 #include <string>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/io/Descriptor.h"
@@ -34,6 +32,8 @@
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/Socket.h"
 #include "ola/network/TCPSocketFactory.h"
+#include "ola/testing/TestUtils.h"
+
 
 using ola::io::ConnectedDescriptor;
 using ola::io::IOQueue;

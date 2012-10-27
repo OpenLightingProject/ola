@@ -21,13 +21,13 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <vector>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/Logging.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
 #include "ola/rdm/DiscoveryAgent.h"
 #include "common/rdm/DiscoveryAgentTestHelper.h"
+#include "ola/testing/TestUtils.h"
+
 
 using ola::rdm::UID;
 using ola::rdm::UIDSet;

@@ -23,9 +23,9 @@
 #include <string>
 #include <vector>
 
+#include "ola/StringUtils.h"
 #include "ola/testing/TestUtils.h"
 
-#include "ola/StringUtils.h"
 
 using ola::CapitalizeLabel;
 using ola::CustomCapitalizeLabel;

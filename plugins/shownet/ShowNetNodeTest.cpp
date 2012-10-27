@@ -24,12 +24,12 @@
 #include <map>
 #include <string>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/BaseTypes.h"
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "plugins/shownet/ShowNetNode.h"
+#include "ola/testing/TestUtils.h"
+
 
 namespace ola {
 namespace plugin {

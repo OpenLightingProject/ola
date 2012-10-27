@@ -23,11 +23,11 @@
 #include <ola/DmxBuffer.h>
 #include <vector>
 
-#include "ola/testing/TestUtils.h"
-
 #include "tools/ola_trigger/Action.h"
 #include "tools/ola_trigger/DMXTrigger.h"
 #include "tools/ola_trigger/MockAction.h"
+#include "ola/testing/TestUtils.h"
+
 
 using std::vector;
 using ola::DmxBuffer;

@@ -26,10 +26,8 @@
 #include <iostream>
 #include <string>
 
-#include "ola/testing/TestUtils.h"
-
-
 #include "plugins/e131/e131/CID.h"
+#include "ola/testing/TestUtils.h"
 
 using std::string;
 using ola::plugin::e131::CID;

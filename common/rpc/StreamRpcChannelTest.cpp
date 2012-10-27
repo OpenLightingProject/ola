@@ -22,13 +22,13 @@
 #include <google/protobuf/stubs/common.h>
 #include <string>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/io/SelectServer.h"
 #include "ola/network/Socket.h"
 #include "common/rpc/StreamRpcChannel.h"
 #include "common/rpc/SimpleRpcController.h"
 #include "common/rpc/TestService.pb.h"
+#include "ola/testing/TestUtils.h"
+
 
 using google::protobuf::NewCallback;
 using ola::io::LoopbackDescriptor;

@@ -21,13 +21,13 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/StreamingClient.h"
 #include "ola/DmxBuffer.h"
 #include "ola/thread/Thread.h"
 #include "ola/Logging.h"
 #include "olad/OlaDaemon.h"
+#include "ola/testing/TestUtils.h"
+
 
 
 static unsigned int TEST_UNIVERSE = 1;

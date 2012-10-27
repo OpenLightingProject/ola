@@ -20,9 +20,9 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
+#include "ola/thread/Thread.h"
 #include "ola/testing/TestUtils.h"
 
-#include "ola/thread/Thread.h"
 
 using ola::thread::ConditionVariable;
 using ola::thread::Mutex;

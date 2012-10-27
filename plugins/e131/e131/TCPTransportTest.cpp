@@ -22,13 +22,13 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <memory>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/Logging.h"
 #include "ola/io/BufferedWriteDescriptor.h"
 #include "ola/io/SelectServer.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
 #include "plugins/e131/e131/TCPTransport.h"
+#include "ola/testing/TestUtils.h"
+
 
 namespace ola {
 namespace plugin {

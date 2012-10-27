@@ -113,12 +113,10 @@ void _AssertSetEq(const CPPUNIT_NS::SourceLine &source_line,
     NULL == value, \
     CPPUNIT_NS::Message("Expression: " #value " == NULL"), \
     CPPUNIT_SOURCELINE())
-<<<<<<< HEAD
 
 #define OLA_FAIL(reason)  \
   CPPUNIT_FAIL(reason)
-=======
->>>>>>> 616ab838bac5f3193016e55746f6577bb012970d
+
 }  // testing
 }  // ola
 #endif  // INCLUDE_OLA_TESTING_TESTUTILS_H_

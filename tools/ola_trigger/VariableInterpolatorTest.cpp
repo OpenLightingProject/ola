@@ -22,10 +22,10 @@
 #include <ola/Logging.h>
 #include <string>
 
-#include "ola/testing/TestUtils.h"
-
 #include "tools/ola_trigger/Context.h"
 #include "tools/ola_trigger/VariableInterpolator.h"
+#include "ola/testing/TestUtils.h"
+
 
 
 class VariableInterpolatorTest: public CppUnit::TestFixture {

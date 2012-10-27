@@ -25,8 +25,6 @@
 #include <string>
 #include <vector>
 
-#include "ola/testing/TestUtils.h"
-
 #include "common/rdm/PidStoreLoader.h"
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
@@ -34,6 +32,8 @@
 #include "ola/messaging/SchemaPrinter.h"
 #include "ola/rdm/PidStore.h"
 #include "ola/rdm/RDMEnums.h"
+#include "ola/testing/TestUtils.h"
+
 
 
 using ola::messaging::Descriptor;

@@ -21,13 +21,13 @@
 #include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "ola/testing/TestUtils.h"
-
 #include "plugins/e131/e131/DMPAddress.h"
 #include "plugins/e131/e131/DMPInflator.h"
 #include "plugins/e131/e131/DMPPDU.h"
 #include "plugins/e131/e131/HeaderSet.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
+#include "ola/testing/TestUtils.h"
+
 
 namespace ola {
 namespace plugin {

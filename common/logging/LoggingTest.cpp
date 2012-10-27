@@ -24,10 +24,10 @@
 #include <utility>
 #include <vector>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
+#include "ola/testing/TestUtils.h"
+
 
 using std::deque;
 using std::vector;

@@ -22,11 +22,11 @@
 #include <string>
 #include <vector>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/Clock.h"
 #include "ola/DmxBuffer.h"
 #include "olad/DmxSource.h"
+#include "ola/testing/TestUtils.h"
+
 
 
 class DmxSourceTest: public CppUnit::TestFixture {

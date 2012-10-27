@@ -20,8 +20,6 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "ola/testing/TestUtils.h"
-
 #include <ola/Logging.h>
 #include <ola/messaging/Message.h>
 #include <ola/messaging/MessagePrinter.h>
@@ -34,6 +32,8 @@
 #include <string>
 #include <vector>
 #include "common/rdm/PidStoreLoader.h"
+#include "ola/testing/TestUtils.h"
+
 
 
 using ola::messaging::Descriptor;

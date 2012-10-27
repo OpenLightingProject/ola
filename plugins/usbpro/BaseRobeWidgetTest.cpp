@@ -22,14 +22,14 @@
 #include <memory>
 #include <queue>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/BaseTypes.h"
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/usbpro/BaseRobeWidget.h"
 #include "plugins/usbpro/CommonWidgetTest.h"
+#include "ola/testing/TestUtils.h"
+
 
 
 using ola::DmxBuffer;

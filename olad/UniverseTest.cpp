@@ -23,8 +23,6 @@
 #include <string>
 #include <vector>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/Callback.h"
 #include "ola/Clock.h"
 #include "ola/DmxBuffer.h"
@@ -41,6 +39,8 @@
 #include "olad/TestCommon.h"
 #include "olad/Universe.h"
 #include "olad/UniverseStore.h"
+#include "ola/testing/TestUtils.h"
+
 
 using ola::AbstractDevice;
 using ola::Clock;

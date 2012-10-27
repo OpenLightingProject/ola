@@ -21,10 +21,10 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/timecode/TimeCode.h"
 #include "ola/timecode/TimeCodeEnums.h"
+#include "ola/testing/TestUtils.h"
+
 
 using ola::timecode::TimeCode;
 using std::string;

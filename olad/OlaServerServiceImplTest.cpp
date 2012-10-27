@@ -26,8 +26,6 @@
 #include <google/protobuf/stubs/common.h>
 #include <string>
 
-#include "ola/testing/TestUtils.h"
-
 #include "common/rpc/SimpleRpcController.h"
 #include "ola/BaseTypes.h"
 #include "ola/Clock.h"
@@ -41,6 +39,8 @@
 #include "olad/PluginLoader.h"
 #include "olad/Universe.h"
 #include "olad/UniverseStore.h"
+#include "ola/testing/TestUtils.h"
+
 
 using google::protobuf::Closure;
 using google::protobuf::NewCallback;

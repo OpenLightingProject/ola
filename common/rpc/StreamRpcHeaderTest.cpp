@@ -21,9 +21,9 @@
 #include <stdint.h>
 #include <cppunit/extensions/HelperMacros.h>
 
+#include "common/rpc/StreamRpcChannel.h"
 #include "ola/testing/TestUtils.h"
 
-#include "common/rpc/StreamRpcChannel.h"
 
 using ola::rpc::StreamRpcHeader;
 using ola::rpc::StreamRpcChannel;

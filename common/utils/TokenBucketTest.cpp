@@ -20,11 +20,11 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/Clock.h"
 #include "olad/TokenBucket.h"
 #include "ola/Logging.h"
+#include "ola/testing/TestUtils.h"
+
 
 
 using ola::Clock;

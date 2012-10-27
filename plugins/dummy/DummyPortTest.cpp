@@ -24,8 +24,6 @@
 #include <string>
 #include <vector>
 
-#include "ola/testing/TestUtils.h"
-
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
@@ -34,6 +32,8 @@
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
+#include "ola/testing/TestUtils.h"
+
 
 namespace ola {
 namespace plugin {

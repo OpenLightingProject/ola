@@ -23,14 +23,14 @@
 #include <string>
 #include <vector>
 
-#include "ola/testing/TestUtils.h"
-
 #include "olad/Plugin.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/PluginLoader.h"
 #include "olad/PluginManager.h"
 #include "olad/Preferences.h"
 #include "olad/TestCommon.h"
+#include "ola/testing/TestUtils.h"
+
 
 using ola::AbstractPlugin;
 using ola::PluginLoader;
