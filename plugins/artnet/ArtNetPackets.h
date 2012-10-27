@@ -27,15 +27,9 @@
 #include "ola/network/Interface.h"
 
 
-/*  
-Specifies how many ArtNet ports to create.
-Values > 4 are not conforming to the ArtNet specification;
-
-Note that the ArtNet Reply will only show the first 4 ports, regardless of this setting,
-therefore ports > 4 are unable to subscribe to a unicast universe, so always_broadcast could be used.
-*/
+#ifndef ARTNET_PORT_COUNT
 #define ARTNET_PORT_COUNT	4
-
+#endif
 
 namespace ola {
 namespace plugin {
@@ -43,10 +37,6 @@ namespace artnet {
 
 // various length enums
 enum { ARTNET_LONG_NAME_LENGTH = 64 };
-enum { ARTNET_REPLY_MAX_PORTS = 4 };
-#ifndef ARTNET_PORT_COUNT
-#define ARTNET_PORT_COUNT	4
-#endif
 enum { ARTNET_MAX_PORTS = ARTNET_PORT_COUNT };
 enum { ARTNET_MAX_RDM_ADDRESS_COUNT = 32 };
 // According to the rdm spec, this should be 256 bytes
@@ -97,11 +87,11 @@ struct artnet_reply_s {
   char  long_name[ARTNET_LONG_NAME_LENGTH];
   char  node_report[ARTNET_REPORT_LENGTH];
   uint8_t  number_ports[2];
-  uint8_t  port_types[ARTNET_REPLY_MAX_PORTS];
-  uint8_t  good_input[ARTNET_REPLY_MAX_PORTS];
-  uint8_t  good_output[ARTNET_REPLY_MAX_PORTS];
-  uint8_t  sw_in[ARTNET_REPLY_MAX_PORTS];
-  uint8_t  sw_out[ARTNET_REPLY_MAX_PORTS];
+  uint8_t  port_types[ARTNET_MAX_PORTS];
+  uint8_t  good_input[ARTNET_MAX_PORTS];
+  uint8_t  good_output[ARTNET_MAX_PORTS];
+  uint8_t  sw_in[ARTNET_MAX_PORTS];
+  uint8_t  sw_out[ARTNET_MAX_PORTS];
   uint8_t  sw_video;
   uint8_t  sw_macro;
   uint8_t  sw_remote;
