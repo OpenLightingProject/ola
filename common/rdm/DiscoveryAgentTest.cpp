@@ -26,6 +26,8 @@
 #include "ola/rdm/UIDSet.h"
 #include "ola/rdm/DiscoveryAgent.h"
 #include "common/rdm/DiscoveryAgentTestHelper.h"
+#include "ola/testing/TestUtils.h"
+
 
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
@@ -95,8 +97,8 @@ void DiscoveryAgentTest::DiscoverySuccessful(const UIDSet *expected,
                                              const UIDSet &received) {
   OLA_INFO << "in discovery callback, size is " << received.Size() <<
       ", state: " << successful;
-  CPPUNIT_ASSERT(successful);
-  CPPUNIT_ASSERT_EQUAL(*expected, received);
+  OLA_ASSERT_TRUE(successful);
+  OLA_ASSERT_EQ(*expected, received);
   m_callback_run = true;
 }
 
@@ -108,8 +110,8 @@ void DiscoveryAgentTest::DiscoveryFailed(const UIDSet *expected,
                                          const UIDSet &received) {
   OLA_INFO << "in discovery callback, size is " << received.Size() <<
       ", state: " << successful;
-  CPPUNIT_ASSERT(!successful);
-  CPPUNIT_ASSERT_EQUAL(*expected, received);
+  OLA_ASSERT_FALSE(successful);
+  OLA_ASSERT_EQ(*expected, received);
   m_callback_run = true;
 }
 
@@ -141,7 +143,7 @@ void DiscoveryAgentTest::testNoReponders() {
       ola::NewSingleCallback(this,
                              &DiscoveryAgentTest::DiscoverySuccessful,
                              static_cast<const UIDSet*>(&uids)));
-  CPPUNIT_ASSERT(m_callback_run);
+  OLA_ASSERT_TRUE(m_callback_run);
 
   // now try incremental
   OLA_INFO << "starting incremental discovery with no responders";
@@ -149,7 +151,7 @@ void DiscoveryAgentTest::testNoReponders() {
       ola::NewSingleCallback(this,
                              &DiscoveryAgentTest::DiscoverySuccessful,
                              static_cast<const UIDSet*>(&uids)));
-  CPPUNIT_ASSERT(m_callback_run);
+  OLA_ASSERT_TRUE(m_callback_run);
 }
 
 
@@ -169,7 +171,7 @@ void DiscoveryAgentTest::testSingleResponder() {
       ola::NewSingleCallback(this,
                              &DiscoveryAgentTest::DiscoverySuccessful,
                              static_cast<const UIDSet*>(&uids)));
-  CPPUNIT_ASSERT(m_callback_run);
+  OLA_ASSERT_TRUE(m_callback_run);
   m_callback_run = false;
 
   // now try incremental
@@ -178,7 +180,7 @@ void DiscoveryAgentTest::testSingleResponder() {
       ola::NewSingleCallback(this,
                              &DiscoveryAgentTest::DiscoverySuccessful,
                              static_cast<const UIDSet*>(&uids)));
-  CPPUNIT_ASSERT(m_callback_run);
+  OLA_ASSERT_TRUE(m_callback_run);
 }
 
 
@@ -201,7 +203,7 @@ void DiscoveryAgentTest::testMultipleResponders() {
       ola::NewSingleCallback(this,
                              &DiscoveryAgentTest::DiscoverySuccessful,
                              static_cast<const UIDSet*>(&uids)));
-  CPPUNIT_ASSERT(m_callback_run);
+  OLA_ASSERT_TRUE(m_callback_run);
   m_callback_run = false;
 
   // now try incremental, adding one uid and removing another
@@ -217,7 +219,7 @@ void DiscoveryAgentTest::testMultipleResponders() {
       ola::NewSingleCallback(this,
                              &DiscoveryAgentTest::DiscoverySuccessful,
                              static_cast<const UIDSet*>(&uids)));
-  CPPUNIT_ASSERT(m_callback_run);
+  OLA_ASSERT_TRUE(m_callback_run);
 }
 
 
@@ -244,7 +246,7 @@ void DiscoveryAgentTest::testObnoxiousResponder() {
       ola::NewSingleCallback(this,
                              &DiscoveryAgentTest::DiscoveryFailed,
                              static_cast<const UIDSet*>(&uids)));
-  CPPUNIT_ASSERT(m_callback_run);
+  OLA_ASSERT_TRUE(m_callback_run);
   m_callback_run = false;
 
   // now try incremental, adding one uid and removing another
@@ -253,7 +255,7 @@ void DiscoveryAgentTest::testObnoxiousResponder() {
       ola::NewSingleCallback(this,
                              &DiscoveryAgentTest::DiscoveryFailed,
                              static_cast<const UIDSet*>(&uids)));
-  CPPUNIT_ASSERT(m_callback_run);
+  OLA_ASSERT_TRUE(m_callback_run);
 }
 
 
@@ -276,7 +278,7 @@ void DiscoveryAgentTest::testRamblingResponder() {
       ola::NewSingleCallback(this,
                              &DiscoveryAgentTest::DiscoveryFailed,
                              static_cast<const UIDSet*>(&uids)));
-  CPPUNIT_ASSERT(m_callback_run);
+  OLA_ASSERT_TRUE(m_callback_run);
 }
 
 
@@ -299,7 +301,7 @@ void DiscoveryAgentTest::testBriefResponder() {
       ola::NewSingleCallback(this,
                              &DiscoveryAgentTest::DiscoveryFailed,
                              static_cast<const UIDSet*>(&uids)));
-  CPPUNIT_ASSERT(m_callback_run);
+  OLA_ASSERT_TRUE(m_callback_run);
 }
 
 
@@ -324,7 +326,7 @@ void DiscoveryAgentTest::testBipolarResponder() {
       ola::NewSingleCallback(this,
                              &DiscoveryAgentTest::DiscoveryFailed,
                              static_cast<const UIDSet*>(&uids)));
-  CPPUNIT_ASSERT(m_callback_run);
+  OLA_ASSERT_TRUE(m_callback_run);
   m_callback_run = false;
 
   // now try incremental, adding one uid and removing another
@@ -333,7 +335,7 @@ void DiscoveryAgentTest::testBipolarResponder() {
       ola::NewSingleCallback(this,
                              &DiscoveryAgentTest::DiscoveryFailed,
                              static_cast<const UIDSet*>(&uids)));
-  CPPUNIT_ASSERT(m_callback_run);
+  OLA_ASSERT_TRUE(m_callback_run);
 }
 
 
@@ -358,7 +360,7 @@ void DiscoveryAgentTest::testNonMutingResponder() {
       ola::NewSingleCallback(this,
                              &DiscoveryAgentTest::DiscoveryFailed,
                              static_cast<const UIDSet*>(&uids)));
-  CPPUNIT_ASSERT(m_callback_run);
+  OLA_ASSERT_TRUE(m_callback_run);
   m_callback_run = false;
 }
 
@@ -390,7 +392,7 @@ void DiscoveryAgentTest::testFlakeyResponder() {
       ola::NewSingleCallback(this,
                              &DiscoveryAgentTest::DiscoverySuccessful,
                              static_cast<const UIDSet*>(&uids)));
-  CPPUNIT_ASSERT(m_callback_run);
+  OLA_ASSERT_TRUE(m_callback_run);
   m_callback_run = false;
 
   // now try incremental
@@ -401,7 +403,7 @@ void DiscoveryAgentTest::testFlakeyResponder() {
       ola::NewSingleCallback(this,
                              &DiscoveryAgentTest::DiscoverySuccessful,
                              static_cast<const UIDSet*>(&uids)));
-  CPPUNIT_ASSERT(m_callback_run);
+  OLA_ASSERT_TRUE(m_callback_run);
 }
 
 
@@ -447,6 +449,6 @@ void DiscoveryAgentTest::testProxy() {
       ola::NewSingleCallback(this,
                              &DiscoveryAgentTest::DiscoverySuccessful,
                              static_cast<const UIDSet*>(&uids)));
-  CPPUNIT_ASSERT(m_callback_run);
+  OLA_ASSERT_TRUE(m_callback_run);
   m_callback_run = false;
 }

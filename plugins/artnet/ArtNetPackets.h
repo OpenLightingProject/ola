@@ -26,13 +26,18 @@
 #include "ola/network/IPV4Address.h"
 #include "ola/network/Interface.h"
 
+
+#ifndef ARTNET_PORT_COUNT
+#define ARTNET_PORT_COUNT	4
+#endif
+
 namespace ola {
 namespace plugin {
 namespace artnet {
 
 // various length enums
 enum { ARTNET_LONG_NAME_LENGTH = 64 };
-enum { ARTNET_MAX_PORTS = 4 };
+enum { ARTNET_MAX_PORTS = ARTNET_PORT_COUNT };
 enum { ARTNET_MAX_RDM_ADDRESS_COUNT = 32 };
 // According to the rdm spec, this should be 256 bytes
 // We'll set to 512 here just to be safe

@@ -45,7 +45,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SocketAddressTest);
  */
 void SocketAddressTest::testIPV4SocketAddress() {
   IPV4Address ip_address;
-  OLA_ASSERT(IPV4Address::FromString("192.168.1.1", &ip_address));
+  OLA_ASSERT_TRUE(IPV4Address::FromString("192.168.1.1", &ip_address));
 
   IPV4SocketAddress socket_address(ip_address, 8080);
   OLA_ASSERT_EQ(ip_address, socket_address.Host());
@@ -53,7 +53,7 @@ void SocketAddressTest::testIPV4SocketAddress() {
 
   struct sockaddr sock_addr;
   OLA_ASSERT_FALSE(socket_address.ToSockAddr(&sock_addr, 0));
-  OLA_ASSERT(socket_address.ToSockAddr(&sock_addr, sizeof(sock_addr)));
+  OLA_ASSERT_TRUE(socket_address.ToSockAddr(&sock_addr, sizeof(sock_addr)));
   OLA_ASSERT_EQ(static_cast<uint16_t>(AF_INET),
                 static_cast<uint16_t>(sock_addr.sa_family));
 
@@ -68,7 +68,7 @@ void SocketAddressTest::testIPV4SocketAddress() {
   IPV4SocketAddress socket_address2(ip_address, 8079);
   IPV4SocketAddress socket_address3(ip_address, 8081);
   IPV4Address ip_address2;
-  OLA_ASSERT(IPV4Address::FromString("182.168.1.2", &ip_address2));
+  OLA_ASSERT_TRUE(IPV4Address::FromString("182.168.1.2", &ip_address2));
   IPV4SocketAddress socket_address4(ip_address2, 8080);
 
   OLA_ASSERT_EQ(socket_address, socket_address);

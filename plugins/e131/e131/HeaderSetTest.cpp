@@ -27,6 +27,8 @@
 #include "ola/network/NetworkUtils.h"
 #include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/HeaderSet.h"
+#include "ola/testing/TestUtils.h"
+
 
 using ola::network::IPV4Address;
 using ola::plugin::e131::CID;
@@ -70,21 +72,21 @@ CPPUNIT_TEST_SUITE_REGISTRATION(HeaderSetTest);
 void HeaderSetTest::testTransportHeader() {
   IPV4Address address;
   uint16_t port = 42;
-  CPPUNIT_ASSERT(IPV4Address::FromString("192.168.1.1", &address));
+  OLA_ASSERT(IPV4Address::FromString("192.168.1.1", &address));
   TransportHeader header(address, port, TransportHeader::UDP);
-  CPPUNIT_ASSERT(address == header.SourceIP());
-  CPPUNIT_ASSERT_EQUAL(port, header.SourcePort());
-  CPPUNIT_ASSERT_EQUAL(TransportHeader::UDP, header.Transport());
+  OLA_ASSERT(address == header.SourceIP());
+  OLA_ASSERT_EQ(port, header.SourcePort());
+  OLA_ASSERT_EQ(TransportHeader::UDP, header.Transport());
 
   // test copy and assign
   TransportHeader header2 = header;
-  CPPUNIT_ASSERT(address == header2.SourceIP());
-  CPPUNIT_ASSERT_EQUAL(port, header2.SourcePort());
-  CPPUNIT_ASSERT(header2 == header);
+  OLA_ASSERT(address == header2.SourceIP());
+  OLA_ASSERT_EQ(port, header2.SourcePort());
+  OLA_ASSERT(header2 == header);
   TransportHeader header3(header);
-  CPPUNIT_ASSERT(address == header3.SourceIP());
-  CPPUNIT_ASSERT_EQUAL(port, header3.SourcePort());
-  CPPUNIT_ASSERT(header3 == header);
+  OLA_ASSERT(address == header3.SourceIP());
+  OLA_ASSERT_EQ(port, header3.SourcePort());
+  OLA_ASSERT(header3 == header);
 }
 
 
@@ -95,15 +97,15 @@ void HeaderSetTest::testRootHeader() {
   CID cid = CID::Generate();
   RootHeader header;
   header.SetCid(cid);
-  CPPUNIT_ASSERT(cid == header.GetCid());
+  OLA_ASSERT(cid == header.GetCid());
 
   // test copy and assign
   RootHeader header2 = header;
-  CPPUNIT_ASSERT(cid == header2.GetCid());
-  CPPUNIT_ASSERT(header2 == header);
+  OLA_ASSERT(cid == header2.GetCid());
+  OLA_ASSERT(header2 == header);
   RootHeader header3(header);
-  CPPUNIT_ASSERT(cid == header3.GetCid());
-  CPPUNIT_ASSERT(header3 == header);
+  OLA_ASSERT(cid == header3.GetCid());
+  OLA_ASSERT(header3 == header);
 }
 
 
@@ -112,52 +114,52 @@ void HeaderSetTest::testRootHeader() {
  */
 void HeaderSetTest::testE131Header() {
   E131Header header("foo", 1, 2, 2050);
-  CPPUNIT_ASSERT("foo" == header.Source());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 1, header.Priority());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 2, header.Sequence());
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 2050, header.Universe());
-  CPPUNIT_ASSERT_EQUAL(false, header.PreviewData());
-  CPPUNIT_ASSERT_EQUAL(false, header.StreamTerminated());
-  CPPUNIT_ASSERT(!header.UsingRev2());
+  OLA_ASSERT("foo" == header.Source());
+  OLA_ASSERT_EQ((uint8_t) 1, header.Priority());
+  OLA_ASSERT_EQ((uint8_t) 2, header.Sequence());
+  OLA_ASSERT_EQ((uint16_t) 2050, header.Universe());
+  OLA_ASSERT_EQ(false, header.PreviewData());
+  OLA_ASSERT_EQ(false, header.StreamTerminated());
+  OLA_ASSERT_FALSE(header.UsingRev2());
 
   // test copy and assign
   E131Header header2 = header;
-  CPPUNIT_ASSERT(header.Source() == header2.Source());
-  CPPUNIT_ASSERT_EQUAL(header.Priority(), header2.Priority());
-  CPPUNIT_ASSERT_EQUAL(header.Sequence(), header2.Sequence());
-  CPPUNIT_ASSERT_EQUAL(header.Universe(), header2.Universe());
-  CPPUNIT_ASSERT_EQUAL(false, header2.PreviewData());
-  CPPUNIT_ASSERT_EQUAL(false, header2.StreamTerminated());
-  CPPUNIT_ASSERT(!header2.UsingRev2());
+  OLA_ASSERT(header.Source() == header2.Source());
+  OLA_ASSERT_EQ(header.Priority(), header2.Priority());
+  OLA_ASSERT_EQ(header.Sequence(), header2.Sequence());
+  OLA_ASSERT_EQ(header.Universe(), header2.Universe());
+  OLA_ASSERT_EQ(false, header2.PreviewData());
+  OLA_ASSERT_EQ(false, header2.StreamTerminated());
+  OLA_ASSERT_FALSE(header2.UsingRev2());
 
   E131Header header3(header);
-  CPPUNIT_ASSERT(header.Source() == header3.Source());
-  CPPUNIT_ASSERT_EQUAL(header.Priority(), header3.Priority());
-  CPPUNIT_ASSERT_EQUAL(header.Sequence(), header3.Sequence());
-  CPPUNIT_ASSERT_EQUAL(header.Universe(), header3.Universe());
-  CPPUNIT_ASSERT(header == header3);
+  OLA_ASSERT(header.Source() == header3.Source());
+  OLA_ASSERT_EQ(header.Priority(), header3.Priority());
+  OLA_ASSERT_EQ(header.Sequence(), header3.Sequence());
+  OLA_ASSERT_EQ(header.Universe(), header3.Universe());
+  OLA_ASSERT(header == header3);
 
   // test a rev 2 header
   E131Rev2Header header_rev2("foo", 1, 2, 2050);
-  CPPUNIT_ASSERT("foo" == header_rev2.Source());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 1, header_rev2.Priority());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 2, header_rev2.Sequence());
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 2050, header_rev2.Universe());
-  CPPUNIT_ASSERT(header_rev2.UsingRev2());
-  CPPUNIT_ASSERT(!(header == header_rev2));
+  OLA_ASSERT("foo" == header_rev2.Source());
+  OLA_ASSERT_EQ((uint8_t) 1, header_rev2.Priority());
+  OLA_ASSERT_EQ((uint8_t) 2, header_rev2.Sequence());
+  OLA_ASSERT_EQ((uint16_t) 2050, header_rev2.Universe());
+  OLA_ASSERT(header_rev2.UsingRev2());
+  OLA_ASSERT_FALSE((header == header_rev2));
 
   E131Rev2Header header2_rev2 = header_rev2;
-  CPPUNIT_ASSERT(header2_rev2 == header_rev2);
+  OLA_ASSERT(header2_rev2 == header_rev2);
 
   // test a header with the special bits set
   E131Header header4("foo", 1, 2, 2050, true, true);
-  CPPUNIT_ASSERT("foo" == header4.Source());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 1, header4.Priority());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 2, header4.Sequence());
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 2050, header4.Universe());
-  CPPUNIT_ASSERT_EQUAL(true, header4.PreviewData());
-  CPPUNIT_ASSERT_EQUAL(true, header4.StreamTerminated());
-  CPPUNIT_ASSERT(!header4.UsingRev2());
+  OLA_ASSERT("foo" == header4.Source());
+  OLA_ASSERT_EQ((uint8_t) 1, header4.Priority());
+  OLA_ASSERT_EQ((uint8_t) 2, header4.Sequence());
+  OLA_ASSERT_EQ((uint16_t) 2050, header4.Universe());
+  OLA_ASSERT_EQ(true, header4.PreviewData());
+  OLA_ASSERT_EQ(true, header4.StreamTerminated());
+  OLA_ASSERT_FALSE(header4.UsingRev2());
 }
 
 
@@ -166,37 +168,37 @@ void HeaderSetTest::testE131Header() {
  */
 void HeaderSetTest::testE133Header() {
   E133Header header("foo", 9840, 2, false);
-  CPPUNIT_ASSERT("foo" == header.Source());
-  CPPUNIT_ASSERT_EQUAL((uint32_t) 9840, header.Sequence());
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 2, header.Endpoint());
-  CPPUNIT_ASSERT_EQUAL(false, header.RxAcknowledge());
+  OLA_ASSERT("foo" == header.Source());
+  OLA_ASSERT_EQ((uint32_t) 9840, header.Sequence());
+  OLA_ASSERT_EQ((uint16_t) 2, header.Endpoint());
+  OLA_ASSERT_EQ(false, header.RxAcknowledge());
 
   // test copy and assign
   E133Header header2 = header;
-  CPPUNIT_ASSERT(header.Source() == header2.Source());
-  CPPUNIT_ASSERT_EQUAL(header.Sequence(), header2.Sequence());
-  CPPUNIT_ASSERT_EQUAL(header.Endpoint(), header2.Endpoint());
-  CPPUNIT_ASSERT_EQUAL(false, header2.RxAcknowledge());
+  OLA_ASSERT(header.Source() == header2.Source());
+  OLA_ASSERT_EQ(header.Sequence(), header2.Sequence());
+  OLA_ASSERT_EQ(header.Endpoint(), header2.Endpoint());
+  OLA_ASSERT_EQ(false, header2.RxAcknowledge());
 
   E133Header header3(header);
-  CPPUNIT_ASSERT(header.Source() == header3.Source());
-  CPPUNIT_ASSERT_EQUAL(header.Sequence(), header3.Sequence());
-  CPPUNIT_ASSERT_EQUAL(header.Endpoint(), header3.Endpoint());
-  CPPUNIT_ASSERT(header == header3);
+  OLA_ASSERT(header.Source() == header3.Source());
+  OLA_ASSERT_EQ(header.Sequence(), header3.Sequence());
+  OLA_ASSERT_EQ(header.Endpoint(), header3.Endpoint());
+  OLA_ASSERT(header == header3);
 
   // test a header with the RX ack bit set
   E133Header header4("foo", 123456, 42, true);
-  CPPUNIT_ASSERT("foo" == header4.Source());
-  CPPUNIT_ASSERT_EQUAL((uint32_t) 123456, header4.Sequence());
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 42, header4.Endpoint());
-  CPPUNIT_ASSERT_EQUAL(true, header4.RxAcknowledge());
+  OLA_ASSERT("foo" == header4.Source());
+  OLA_ASSERT_EQ((uint32_t) 123456, header4.Sequence());
+  OLA_ASSERT_EQ((uint16_t) 42, header4.Endpoint());
+  OLA_ASSERT_EQ(true, header4.RxAcknowledge());
 
   // test a header with the squawk bit set
   E133Header header5("foo", 123456, 42, false);
-  CPPUNIT_ASSERT("foo" == header5.Source());
-  CPPUNIT_ASSERT_EQUAL((uint32_t) 123456, header5.Sequence());
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 42, header5.Endpoint());
-  CPPUNIT_ASSERT_EQUAL(false, header5.RxAcknowledge());
+  OLA_ASSERT("foo" == header5.Source());
+  OLA_ASSERT_EQ((uint32_t) 123456, header5.Sequence());
+  OLA_ASSERT_EQ((uint16_t) 42, header5.Endpoint());
+  OLA_ASSERT_EQ(false, header5.RxAcknowledge());
 }
 
 
@@ -205,31 +207,31 @@ void HeaderSetTest::testE133Header() {
  */
 void HeaderSetTest::testDMPHeader() {
   DMPHeader header(false, false, NON_RANGE, ONE_BYTES);
-  CPPUNIT_ASSERT_EQUAL(false, header.IsVirtual());
-  CPPUNIT_ASSERT_EQUAL(false, header.IsRelative());
-  CPPUNIT_ASSERT_EQUAL(NON_RANGE, header.Type());
-  CPPUNIT_ASSERT_EQUAL(ONE_BYTES, header.Size());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, header.Header());
+  OLA_ASSERT_EQ(false, header.IsVirtual());
+  OLA_ASSERT_EQ(false, header.IsRelative());
+  OLA_ASSERT_EQ(NON_RANGE, header.Type());
+  OLA_ASSERT_EQ(ONE_BYTES, header.Size());
+  OLA_ASSERT_EQ((uint8_t) 0, header.Header());
   DMPHeader test_header(0);
-  CPPUNIT_ASSERT(test_header == header);
+  OLA_ASSERT(test_header == header);
 
   DMPHeader header2(false, true, RANGE_EQUAL, FOUR_BYTES);
-  CPPUNIT_ASSERT_EQUAL(false, header2.IsVirtual());
-  CPPUNIT_ASSERT_EQUAL(true, header2.IsRelative());
-  CPPUNIT_ASSERT_EQUAL(RANGE_EQUAL, header2.Type());
-  CPPUNIT_ASSERT_EQUAL(FOUR_BYTES, header2.Size());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 0x62, header2.Header());
+  OLA_ASSERT_EQ(false, header2.IsVirtual());
+  OLA_ASSERT_EQ(true, header2.IsRelative());
+  OLA_ASSERT_EQ(RANGE_EQUAL, header2.Type());
+  OLA_ASSERT_EQ(FOUR_BYTES, header2.Size());
+  OLA_ASSERT_EQ((uint8_t) 0x62, header2.Header());
   DMPHeader test_header2(0x62);
-  CPPUNIT_ASSERT(test_header2 == header2);
+  OLA_ASSERT_TRUE(test_header2 == header2);
 
   // test copy and assign
   DMPHeader header3 = header;
-  CPPUNIT_ASSERT(header3 == header);
-  CPPUNIT_ASSERT(header3 != header2);
+  OLA_ASSERT_TRUE(header3 == header);
+  OLA_ASSERT_NE(header3, header2);
 
   DMPHeader header4(header);
-  CPPUNIT_ASSERT(header4 == header);
-  CPPUNIT_ASSERT(header4 != header2);
+  OLA_ASSERT_TRUE(header4 == header);
+  OLA_ASSERT_NE(header4, header2);
 }
 
 
@@ -247,33 +249,33 @@ void HeaderSetTest::testHeaderSet() {
   CID cid = CID::Generate();
   root_header.SetCid(cid);
   headers.SetRootHeader(root_header);
-  CPPUNIT_ASSERT(root_header == headers.GetRootHeader());
+  OLA_ASSERT(root_header == headers.GetRootHeader());
 
   // test the E1.31 header component
   headers.SetE131Header(e131_header);
-  CPPUNIT_ASSERT(e131_header == headers.GetE131Header());
+  OLA_ASSERT(e131_header == headers.GetE131Header());
 
   // test the E1.33 header component
   headers.SetE133Header(e133_header);
-  CPPUNIT_ASSERT(e133_header == headers.GetE133Header());
+  OLA_ASSERT(e133_header == headers.GetE133Header());
 
   // test the DMP headers component
   headers.SetDMPHeader(dmp_header);
-  CPPUNIT_ASSERT(dmp_header == headers.GetDMPHeader());
+  OLA_ASSERT(dmp_header == headers.GetDMPHeader());
 
   // test assign
   HeaderSet headers2 = headers;
-  CPPUNIT_ASSERT(root_header == headers2.GetRootHeader());
-  CPPUNIT_ASSERT(e131_header == headers2.GetE131Header());
-  CPPUNIT_ASSERT(e133_header == headers2.GetE133Header());
-  CPPUNIT_ASSERT(dmp_header == headers2.GetDMPHeader());
-  CPPUNIT_ASSERT(headers2 == headers);
+  OLA_ASSERT(root_header == headers2.GetRootHeader());
+  OLA_ASSERT(e131_header == headers2.GetE131Header());
+  OLA_ASSERT(e133_header == headers2.GetE133Header());
+  OLA_ASSERT(dmp_header == headers2.GetDMPHeader());
+  OLA_ASSERT(headers2 == headers);
 
   // test copy
   HeaderSet headers3(headers);
-  CPPUNIT_ASSERT(root_header == headers3.GetRootHeader());
-  CPPUNIT_ASSERT(e131_header == headers3.GetE131Header());
-  CPPUNIT_ASSERT(e133_header == headers3.GetE133Header());
-  CPPUNIT_ASSERT(dmp_header == headers3.GetDMPHeader());
-  CPPUNIT_ASSERT(headers3 == headers);
+  OLA_ASSERT(root_header == headers3.GetRootHeader());
+  OLA_ASSERT(e131_header == headers3.GetE131Header());
+  OLA_ASSERT(e133_header == headers3.GetE133Header());
+  OLA_ASSERT(dmp_header == headers3.GetDMPHeader());
+  OLA_ASSERT(headers3 == headers);
 }

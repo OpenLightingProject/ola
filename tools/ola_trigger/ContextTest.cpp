@@ -22,6 +22,8 @@
 #include <string>
 
 #include "tools/ola_trigger/Context.h"
+#include "ola/testing/TestUtils.h"
+
 
 
 class ContextTest: public CppUnit::TestFixture {
@@ -52,20 +54,20 @@ void ContextTest::testContext() {
   const string BAR_VALUE = "bar";
 
   string value;
-  CPPUNIT_ASSERT(!context.Lookup(VARIABLE_ONE, &value));
-  CPPUNIT_ASSERT(!context.Lookup(VARIABLE_TWO, &value));
+  OLA_ASSERT_FALSE(context.Lookup(VARIABLE_ONE, &value));
+  OLA_ASSERT_FALSE(context.Lookup(VARIABLE_TWO, &value));
 
   // insert
   context.Update(VARIABLE_ONE, FOO_VALUE);
-  CPPUNIT_ASSERT(context.Lookup(VARIABLE_ONE, &value));
-  CPPUNIT_ASSERT_EQUAL(FOO_VALUE, value);
-  CPPUNIT_ASSERT(!context.Lookup(VARIABLE_TWO, &value));
+  OLA_ASSERT(context.Lookup(VARIABLE_ONE, &value));
+  OLA_ASSERT_EQ(FOO_VALUE, value);
+  OLA_ASSERT_FALSE(context.Lookup(VARIABLE_TWO, &value));
 
   // update
   context.Update(VARIABLE_ONE, BAR_VALUE);
-  CPPUNIT_ASSERT(context.Lookup(VARIABLE_ONE, &value));
-  CPPUNIT_ASSERT_EQUAL(BAR_VALUE, value);
-  CPPUNIT_ASSERT(!context.Lookup(VARIABLE_TWO, &value));
+  OLA_ASSERT(context.Lookup(VARIABLE_ONE, &value));
+  OLA_ASSERT_EQ(BAR_VALUE, value);
+  OLA_ASSERT_FALSE(context.Lookup(VARIABLE_TWO, &value));
 }
 
 
@@ -76,17 +78,17 @@ void ContextTest::testSlotOffsetAndValue() {
   Context context;
   string value;
 
-  CPPUNIT_ASSERT(!context.Lookup(Context::SLOT_VALUE_VARIABLE, &value));
-  CPPUNIT_ASSERT(!context.Lookup(Context::SLOT_OFFSET_VARIABLE, &value));
+  OLA_ASSERT_FALSE(context.Lookup(Context::SLOT_VALUE_VARIABLE, &value));
+  OLA_ASSERT_FALSE(context.Lookup(Context::SLOT_OFFSET_VARIABLE, &value));
 
   context.SetSlotOffset(1);
   context.SetSlotValue(100);
 
-  CPPUNIT_ASSERT(context.Lookup(Context::SLOT_OFFSET_VARIABLE, &value));
-  CPPUNIT_ASSERT_EQUAL(string("1"), value);
+  OLA_ASSERT(context.Lookup(Context::SLOT_OFFSET_VARIABLE, &value));
+  OLA_ASSERT_EQ(string("1"), value);
 
-  CPPUNIT_ASSERT(context.Lookup(Context::SLOT_VALUE_VARIABLE, &value));
-  CPPUNIT_ASSERT_EQUAL(string("100"), value);
+  OLA_ASSERT(context.Lookup(Context::SLOT_VALUE_VARIABLE, &value));
+  OLA_ASSERT_EQ(string("100"), value);
 }
 
 
@@ -103,5 +105,5 @@ void ContextTest::testAsString() {
   context.Update(VARIABLE_ONE, FOO_VALUE);
   context.Update(VARIABLE_TWO, BAR_VALUE);
 
-  CPPUNIT_ASSERT_EQUAL(string("one=foo, two=bar"), context.AsString());
+  OLA_ASSERT_EQ(string("one=foo, two=bar"), context.AsString());
 }

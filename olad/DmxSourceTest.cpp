@@ -25,6 +25,8 @@
 #include "ola/Clock.h"
 #include "ola/DmxBuffer.h"
 #include "olad/DmxSource.h"
+#include "ola/testing/TestUtils.h"
+
 
 
 class DmxSourceTest: public CppUnit::TestFixture {
@@ -60,23 +62,23 @@ void DmxSourceTest::testDmxSource() {
   m_clock.CurrentTime(&timestamp);
 
   DmxSource source(buffer, timestamp, 100);
-  CPPUNIT_ASSERT(source.IsSet());
-  CPPUNIT_ASSERT(buffer == source.Data());
-  CPPUNIT_ASSERT_EQUAL(timestamp, source.Timestamp());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 100, source.Priority());
+  OLA_ASSERT(source.IsSet());
+  OLA_ASSERT(buffer == source.Data());
+  OLA_ASSERT_EQ(timestamp, source.Timestamp());
+  OLA_ASSERT_EQ((uint8_t) 100, source.Priority());
 
   DmxBuffer buffer2("987654321");
   TimeStamp timestamp2;
   m_clock.CurrentTime(&timestamp2);
-  CPPUNIT_ASSERT(timestamp != timestamp2);
+  OLA_ASSERT_NE(timestamp, timestamp2);
 
   source.UpdateData(buffer2, timestamp2, 120);
-  CPPUNIT_ASSERT(buffer2 == source.Data());
-  CPPUNIT_ASSERT_EQUAL(timestamp2, source.Timestamp());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 120, source.Priority());
+  OLA_ASSERT(buffer2 == source.Data());
+  OLA_ASSERT_EQ(timestamp2, source.Timestamp());
+  OLA_ASSERT_EQ((uint8_t) 120, source.Priority());
 
   DmxSource empty_source;
-  CPPUNIT_ASSERT(!empty_source.IsSet());
+  OLA_ASSERT_FALSE(empty_source.IsSet());
 }
 
 
@@ -89,13 +91,13 @@ void DmxSourceTest::testIsActive() {
   m_clock.CurrentTime(&timestamp);
 
   DmxSource source(buffer, timestamp, 100);
-  CPPUNIT_ASSERT(source.IsSet());
+  OLA_ASSERT(source.IsSet());
 
-  CPPUNIT_ASSERT(source.IsActive(timestamp));
+  OLA_ASSERT(source.IsActive(timestamp));
   TimeInterval interval(1000000);
   TimeStamp later = timestamp + interval;
-  CPPUNIT_ASSERT(source.IsActive(later));
+  OLA_ASSERT(source.IsActive(later));
 
   later = timestamp + TimeInterval(2500000);
-  CPPUNIT_ASSERT(!source.IsActive(later));
+  OLA_ASSERT_FALSE(source.IsActive(later));
 }

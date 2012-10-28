@@ -22,6 +22,8 @@
 
 #include "ola/ActionQueue.h"
 #include "ola/Callback.h"
+#include "ola/testing/TestUtils.h"
+
 
 using ola::Action;
 using ola::ActionQueue;
@@ -96,8 +98,8 @@ void ActionQueueTest::testEmptyQueue() {
   ActionQueue queue(
       NewSingleCallback(this, &ActionQueueTest::CommandsComplete));
   queue.NextAction();
-  CPPUNIT_ASSERT_EQUAL(&queue, m_received_queue);
-  CPPUNIT_ASSERT(queue.WasSuccessful());
+  OLA_ASSERT_EQ(&queue, m_received_queue);
+  OLA_ASSERT_TRUE(queue.WasSuccessful());
 
   // try calling next item to make sure nothing happens
   queue.NextAction();
@@ -117,10 +119,10 @@ void ActionQueueTest::testSimpleQueue() {
   queue.AddAction(action2);
 
   queue.NextAction();
-  CPPUNIT_ASSERT_EQUAL(&queue, m_received_queue);
-  CPPUNIT_ASSERT(queue.WasSuccessful());
-  CPPUNIT_ASSERT(action1->Executed());
-  CPPUNIT_ASSERT(action2->Executed());
+  OLA_ASSERT_EQ(&queue, m_received_queue);
+  OLA_ASSERT_TRUE(queue.WasSuccessful());
+  OLA_ASSERT_TRUE(action1->Executed());
+  OLA_ASSERT_TRUE(action2->Executed());
 
   // try calling next item to make sure nothing happens
   queue.NextAction();
@@ -142,11 +144,11 @@ void ActionQueueTest::testFailedQueue() {
   queue.AddAction(action3);
 
   queue.NextAction();
-  CPPUNIT_ASSERT_EQUAL(&queue, m_received_queue);
-  CPPUNIT_ASSERT(!queue.WasSuccessful());
-  CPPUNIT_ASSERT(action1->Executed());
-  CPPUNIT_ASSERT(action2->Executed());
-  CPPUNIT_ASSERT(!action3->Executed());
+  OLA_ASSERT_EQ(&queue, m_received_queue);
+  OLA_ASSERT_FALSE(queue.WasSuccessful());
+  OLA_ASSERT_TRUE(action1->Executed());
+  OLA_ASSERT_TRUE(action2->Executed());
+  OLA_ASSERT_FALSE(action3->Executed());
 
   // try calling next item to make sure nothing happens
   queue.NextAction();

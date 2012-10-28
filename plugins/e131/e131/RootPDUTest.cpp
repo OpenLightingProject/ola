@@ -30,6 +30,8 @@
 #include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
 #include "plugins/e131/e131/RootPDU.h"
+#include "ola/testing/TestUtils.h"
+
 
 namespace ola {
 namespace plugin {
@@ -73,56 +75,56 @@ CPPUNIT_TEST_SUITE_REGISTRATION(RootPDUTest);
 void RootPDUTest::testSimpleRootPDU() {
   CID cid = CID::Generate();
   RootPDU pdu1(TEST_VECTOR, cid, NULL);
-  CPPUNIT_ASSERT(cid == pdu1.Cid());
-  CPPUNIT_ASSERT_EQUAL(22u, pdu1.Size());
+  OLA_ASSERT(cid == pdu1.Cid());
+  OLA_ASSERT_EQ(22u, pdu1.Size());
 
   unsigned int size = pdu1.Size();
   uint8_t *data = new uint8_t[size];
   unsigned int bytes_used = size;
-  CPPUNIT_ASSERT(pdu1.Pack(data, bytes_used));
-  CPPUNIT_ASSERT_EQUAL(size, bytes_used);
+  OLA_ASSERT(pdu1.Pack(data, bytes_used));
+  OLA_ASSERT_EQ(size, bytes_used);
 
   // spot check the data
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 0x70, data[0]);
-  CPPUNIT_ASSERT_EQUAL((uint8_t) bytes_used, data[1]);
+  OLA_ASSERT_EQ((uint8_t) 0x70, data[0]);
+  OLA_ASSERT_EQ((uint8_t) bytes_used, data[1]);
   unsigned int actual_value;
   memcpy(&actual_value, data + 2, sizeof(actual_value));
-  CPPUNIT_ASSERT_EQUAL(HostToNetwork(TEST_VECTOR), actual_value);
+  OLA_ASSERT_EQ(HostToNetwork(TEST_VECTOR), actual_value);
   CID cid2 = CID::FromData(&data[6]);
-  CPPUNIT_ASSERT(cid2 == cid);
+  OLA_ASSERT(cid2 == cid);
 
   // test undersized buffer
   bytes_used = size - 1;
-  CPPUNIT_ASSERT(!pdu1.Pack(data, bytes_used));
-  CPPUNIT_ASSERT_EQUAL(0u, bytes_used);
+  OLA_ASSERT_FALSE(pdu1.Pack(data, bytes_used));
+  OLA_ASSERT_EQ(0u, bytes_used);
 
   // test oversized buffer
   bytes_used = size + 1;
-  CPPUNIT_ASSERT(pdu1.Pack(data, bytes_used));
-  CPPUNIT_ASSERT_EQUAL(size, bytes_used);
+  OLA_ASSERT(pdu1.Pack(data, bytes_used));
+  OLA_ASSERT_EQ(size, bytes_used);
 
   // change the vector
   pdu1.SetVector(TEST_VECTOR2);
-  CPPUNIT_ASSERT(pdu1.Pack(data, bytes_used));
-  CPPUNIT_ASSERT_EQUAL(size, bytes_used);
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 0x70, data[0]);
-  CPPUNIT_ASSERT_EQUAL((uint8_t) bytes_used, data[1]);
+  OLA_ASSERT(pdu1.Pack(data, bytes_used));
+  OLA_ASSERT_EQ(size, bytes_used);
+  OLA_ASSERT_EQ((uint8_t) 0x70, data[0]);
+  OLA_ASSERT_EQ((uint8_t) bytes_used, data[1]);
   memcpy(&actual_value, data + 2, sizeof(actual_value));
-  CPPUNIT_ASSERT_EQUAL(HostToNetwork(TEST_VECTOR2), actual_value);
+  OLA_ASSERT_EQ(HostToNetwork(TEST_VECTOR2), actual_value);
   cid2 = CID::FromData(&data[6]);
-  CPPUNIT_ASSERT(cid2 == cid);
+  OLA_ASSERT(cid2 == cid);
 
   // use the other constructor
   RootPDU pdu2(TEST_VECTOR);
   pdu2.Cid(cid);
 
-  CPPUNIT_ASSERT(cid == pdu1.Cid());
-  CPPUNIT_ASSERT_EQUAL(22u, pdu1.Size());
+  OLA_ASSERT(cid == pdu1.Cid());
+  OLA_ASSERT_EQ(22u, pdu1.Size());
   bytes_used = size;
   uint8_t *data2 = new uint8_t[size];
-  CPPUNIT_ASSERT(pdu1.Pack(data2, bytes_used));
-  CPPUNIT_ASSERT_EQUAL(size, bytes_used);
-  CPPUNIT_ASSERT(!memcmp(data, data2, bytes_used));
+  OLA_ASSERT(pdu1.Pack(data2, bytes_used));
+  OLA_ASSERT_EQ(size, bytes_used);
+  OLA_ASSERT_FALSE(memcmp(data, data2, bytes_used));
 
   delete[] data;
   delete[] data2;
@@ -135,22 +137,22 @@ void RootPDUTest::testSimpleRootPDU() {
 void RootPDUTest::testSimpleRootPDUToOutputStream() {
   CID cid = CID::Generate();
   RootPDU pdu1(TEST_VECTOR, cid, NULL);
-  CPPUNIT_ASSERT(cid == pdu1.Cid());
+  OLA_ASSERT(cid == pdu1.Cid());
 
-  CPPUNIT_ASSERT_EQUAL(16u, pdu1.HeaderSize());
-  CPPUNIT_ASSERT_EQUAL(4u, pdu1.VectorSize());
-  CPPUNIT_ASSERT_EQUAL(0u, pdu1.DataSize());
-  CPPUNIT_ASSERT_EQUAL(22u, pdu1.Size());
+  OLA_ASSERT_EQ(16u, pdu1.HeaderSize());
+  OLA_ASSERT_EQ(4u, pdu1.VectorSize());
+  OLA_ASSERT_EQ(0u, pdu1.DataSize());
+  OLA_ASSERT_EQ(22u, pdu1.Size());
 
   IOQueue output;
   OutputStream stream(&output);
   pdu1.Write(&stream);
 
-  CPPUNIT_ASSERT_EQUAL(22u, output.Size());
+  OLA_ASSERT_EQ(22u, output.Size());
 
   uint8_t *raw_pdu = new uint8_t[output.Size()];
   unsigned int raw_pdu_size = output.Peek(raw_pdu, output.Size());
-  CPPUNIT_ASSERT_EQUAL(output.Size(), raw_pdu_size);
+  OLA_ASSERT_EQ(output.Size(), raw_pdu_size);
 
   uint8_t EXPECTED[] = {
     0x70, 22,
@@ -180,21 +182,21 @@ void RootPDUTest::testNestedRootPDU() {
   CID cid = CID::Generate();
   RootPDU pdu(TEST_VECTOR, cid, &block);
 
-  CPPUNIT_ASSERT(cid == pdu.Cid());
-  CPPUNIT_ASSERT_EQUAL(30u, pdu.Size());
+  OLA_ASSERT(cid == pdu.Cid());
+  OLA_ASSERT_EQ(30u, pdu.Size());
 
   unsigned int size = pdu.Size();
   uint8_t *data = new uint8_t[size];
   unsigned int bytes_used = size;
-  CPPUNIT_ASSERT(pdu.Pack(data, bytes_used));
-  CPPUNIT_ASSERT_EQUAL(size, bytes_used);
+  OLA_ASSERT(pdu.Pack(data, bytes_used));
+  OLA_ASSERT_EQ(size, bytes_used);
 
   // spot check
   unsigned int actual_value;
   memcpy(&actual_value, data + 22, sizeof(actual_value));
-  CPPUNIT_ASSERT_EQUAL(1u, actual_value);
+  OLA_ASSERT_EQ(1u, actual_value);
   memcpy(&actual_value, data + 26, sizeof(actual_value));
-  CPPUNIT_ASSERT_EQUAL(42u, actual_value);
+  OLA_ASSERT_EQ(42u, actual_value);
 
   delete[] data;
 }
@@ -213,17 +215,17 @@ void RootPDUTest::testNestedRootPDUToOutputStream() {
   CID cid = CID::Generate();
   RootPDU pdu(TEST_VECTOR, cid, &block);
 
-  CPPUNIT_ASSERT(cid == pdu.Cid());
-  CPPUNIT_ASSERT_EQUAL(30u, pdu.Size());
+  OLA_ASSERT(cid == pdu.Cid());
+  OLA_ASSERT_EQ(30u, pdu.Size());
 
   IOQueue output;
   OutputStream stream(&output);
   pdu.Write(&stream);
-  CPPUNIT_ASSERT_EQUAL(30u, output.Size());
+  OLA_ASSERT_EQ(30u, output.Size());
 
   uint8_t *raw_pdu = new uint8_t[output.Size()];
   unsigned int raw_pdu_size = output.Peek(raw_pdu, output.Size());
-  CPPUNIT_ASSERT_EQUAL(output.Size(), raw_pdu_size);
+  OLA_ASSERT_EQ(output.Size(), raw_pdu_size);
 
   uint8_t EXPECTED[] = {
     0x70, 30,

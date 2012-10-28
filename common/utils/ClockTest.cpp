@@ -21,7 +21,10 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <unistd.h>
 #include <string>
+
 #include "ola/Clock.h"
+#include "ola/testing/TestUtils.h"
+
 
 
 class ClockTest: public CppUnit::TestFixture {
@@ -57,43 +60,43 @@ using std::string;
 void ClockTest::testTimeStamp() {
   Clock clock;
   TimeStamp timestamp, timestamp2;
-  CPPUNIT_ASSERT(!timestamp.IsSet());
-  CPPUNIT_ASSERT(!timestamp2.IsSet());
+  OLA_ASSERT_FALSE(timestamp.IsSet());
+  OLA_ASSERT_FALSE(timestamp2.IsSet());
 
   // test assignment & copy constructor
   clock.CurrentTime(&timestamp);
-  CPPUNIT_ASSERT(timestamp.IsSet());
+  OLA_ASSERT_TRUE(timestamp.IsSet());
   timestamp2 = timestamp;
-  CPPUNIT_ASSERT(timestamp2.IsSet());
+  OLA_ASSERT_TRUE(timestamp2.IsSet());
   TimeStamp timestamp3(timestamp);
-  CPPUNIT_ASSERT(timestamp3.IsSet());
-  CPPUNIT_ASSERT_EQUAL(timestamp, timestamp2);
-  CPPUNIT_ASSERT_EQUAL(timestamp, timestamp3);
+  OLA_ASSERT_TRUE(timestamp3.IsSet());
+  OLA_ASSERT_EQ(timestamp, timestamp2);
+  OLA_ASSERT_EQ(timestamp, timestamp3);
 
   // test equalities
   // Windows only seems to have ms resolution, to make the tests pass we need
   // to sleep here
   usleep(1000);
   clock.CurrentTime(&timestamp3);
-  CPPUNIT_ASSERT(timestamp3 != timestamp);
-  CPPUNIT_ASSERT(timestamp3 > timestamp);
-  CPPUNIT_ASSERT(timestamp < timestamp3);
+  OLA_ASSERT_NE(timestamp3, timestamp);
+  OLA_ASSERT_GT(timestamp3, timestamp);
+  OLA_ASSERT_LT(timestamp, timestamp3);
 
   // test intervals
   TimeInterval interval = timestamp3 - timestamp;
 
   // test subtraction / addition
   timestamp2 = timestamp + interval;
-  CPPUNIT_ASSERT_EQUAL(timestamp2, timestamp3);
+  OLA_ASSERT_EQ(timestamp2, timestamp3);
   timestamp2 -= interval;
-  CPPUNIT_ASSERT_EQUAL(timestamp, timestamp2);
+  OLA_ASSERT_EQ(timestamp, timestamp2);
 
   // test toString and AsInt
   TimeInterval one_point_five_seconds(1500000);
-  CPPUNIT_ASSERT_EQUAL(string("1.500000"), one_point_five_seconds.ToString());
-  CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(1500000),
+  OLA_ASSERT_EQ(string("1.500000"), one_point_five_seconds.ToString());
+  OLA_ASSERT_EQ(static_cast<int64_t>(1500000),
                        one_point_five_seconds.AsInt());
-  CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(1500),
+  OLA_ASSERT_EQ(static_cast<int64_t>(1500),
                        one_point_five_seconds.InMilliSeconds());
 }
 
@@ -106,15 +109,15 @@ void ClockTest::testTimeInterval() {
   TimeInterval interval(500000);  // 0.5s
   TimeInterval interval2 = interval;
   TimeInterval interval3(interval);
-  CPPUNIT_ASSERT_EQUAL(interval, interval2);
-  CPPUNIT_ASSERT_EQUAL(interval, interval3);
+  OLA_ASSERT_EQ(interval, interval2);
+  OLA_ASSERT_EQ(interval, interval3);
 
   TimeInterval interval4(1, 500000);  // 1.5s
-  CPPUNIT_ASSERT(interval != interval4);
-  CPPUNIT_ASSERT(interval < interval4);
+  OLA_ASSERT_NE(interval, interval4);
+  OLA_ASSERT_LT(interval, interval4);
   TimeInterval interval5(1, 600000);  // 1.6s
-  CPPUNIT_ASSERT(interval4 != interval5);
-  CPPUNIT_ASSERT(interval4 < interval5);
+  OLA_ASSERT_NE(interval4, interval5);
+  OLA_ASSERT_LT(interval4, interval5);
 }
 
 
@@ -124,16 +127,16 @@ void ClockTest::testTimeInterval() {
 void ClockTest::testTimeIntervalMutliplication() {
   TimeInterval half_second(500000);  // 0.5s
   TimeInterval zero_seconds = half_second * 0;
-  CPPUNIT_ASSERT_EQUAL((int64_t) 0, zero_seconds.InMilliSeconds());
+  OLA_ASSERT_EQ((int64_t) 0, zero_seconds.InMilliSeconds());
 
   TimeInterval another_half_second = half_second * 1;
-  CPPUNIT_ASSERT_EQUAL((int64_t) 500, another_half_second.InMilliSeconds());
+  OLA_ASSERT_EQ((int64_t) 500, another_half_second.InMilliSeconds());
 
   TimeInterval two_seconds = half_second * 4;
-  CPPUNIT_ASSERT_EQUAL((int64_t) 2000, two_seconds.InMilliSeconds());
+  OLA_ASSERT_EQ((int64_t) 2000, two_seconds.InMilliSeconds());
 
   TimeInterval twenty_seconds = half_second * 40;
-  CPPUNIT_ASSERT_EQUAL((int64_t) 20000, twenty_seconds.InMilliSeconds());
+  OLA_ASSERT_EQ((int64_t) 20000, twenty_seconds.InMilliSeconds());
 }
 
 
@@ -148,7 +151,7 @@ void ClockTest::testClock() {
 
   TimeStamp second;
   clock.CurrentTime(&second);
-  CPPUNIT_ASSERT(first < second);
+  OLA_ASSERT_LT(first, second);
 }
 
 
@@ -166,14 +169,14 @@ void ClockTest::testMockClock() {
 
   TimeStamp second;
   clock.CurrentTime(&second);
-  CPPUNIT_ASSERT(first < second);
-  CPPUNIT_ASSERT(one_second <= (second - first));
+  OLA_ASSERT_LT(first, second);
+  OLA_ASSERT_TRUE(one_second <= (second - first));
 
   TimeInterval ten_point_five_seconds(10, 500000);
   clock.AdvanceTime(10, 500000);
 
   TimeStamp third;
   clock.CurrentTime(&third);
-  CPPUNIT_ASSERT(second < third);
-  CPPUNIT_ASSERT(ten_point_five_seconds <= (third - second));
+  OLA_ASSERT_LT(second, third);
+  OLA_ASSERT_TRUE(ten_point_five_seconds <= (third - second));
 }

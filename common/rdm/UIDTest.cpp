@@ -25,6 +25,8 @@
 #include "ola/StringUtils.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
+#include "ola/testing/TestUtils.h"
+
 
 using std::string;
 using ola::rdm::UID;
@@ -58,52 +60,52 @@ CPPUNIT_TEST_SUITE_REGISTRATION(UIDTest);
 void UIDTest::testUID() {
   UID uid(1, 2);
   UID uid2 = uid;
-  CPPUNIT_ASSERT_EQUAL(uid, uid2);
-  CPPUNIT_ASSERT(!(uid != uid2));
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 1, uid.ManufacturerId());
-  CPPUNIT_ASSERT_EQUAL((uint32_t) 2, uid.DeviceId());
+  OLA_ASSERT_EQ(uid, uid2);
+  OLA_ASSERT_FALSE(uid != uid2);
+  OLA_ASSERT_EQ((uint16_t) 1, uid.ManufacturerId());
+  OLA_ASSERT_EQ((uint32_t) 2, uid.DeviceId());
 
   UID uid3(2, 10);
-  CPPUNIT_ASSERT(uid != uid3);
-  CPPUNIT_ASSERT(uid < uid3);
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 2, uid3.ManufacturerId());
-  CPPUNIT_ASSERT_EQUAL((uint32_t) 10, uid3.DeviceId());
+  OLA_ASSERT_NE(uid, uid3);
+  OLA_ASSERT_LT(uid, uid3);
+  OLA_ASSERT_EQ((uint16_t) 2, uid3.ManufacturerId());
+  OLA_ASSERT_EQ((uint32_t) 10, uid3.DeviceId());
 
   // ToString
-  CPPUNIT_ASSERT_EQUAL(string("0001:00000002"), uid.ToString());
-  CPPUNIT_ASSERT_EQUAL(string("0002:0000000a"), uid3.ToString());
+  OLA_ASSERT_EQ(string("0001:00000002"), uid.ToString());
+  OLA_ASSERT_EQ(string("0002:0000000a"), uid3.ToString());
 
   UID all_devices = UID::AllDevices();
   UID manufacturer_devices = UID::AllManufactureDevices(0x52);
-  CPPUNIT_ASSERT_EQUAL(string("ffff:ffffffff"), all_devices.ToString());
-  CPPUNIT_ASSERT_EQUAL(string("0052:ffffffff"),
+  OLA_ASSERT_EQ(string("ffff:ffffffff"), all_devices.ToString());
+  OLA_ASSERT_EQ(string("0052:ffffffff"),
                        manufacturer_devices.ToString());
-  CPPUNIT_ASSERT_EQUAL(all_devices.ManufacturerId(),
+  OLA_ASSERT_EQ(all_devices.ManufacturerId(),
                        static_cast<uint16_t>(0xffff));
-  CPPUNIT_ASSERT_EQUAL(all_devices.DeviceId(),
+  OLA_ASSERT_EQ(all_devices.DeviceId(),
                        static_cast<uint32_t>(0xffffffff));
-  CPPUNIT_ASSERT_EQUAL(manufacturer_devices.ManufacturerId(),
+  OLA_ASSERT_EQ(manufacturer_devices.ManufacturerId(),
                        static_cast<uint16_t>(0x0052));
-  CPPUNIT_ASSERT_EQUAL(manufacturer_devices.DeviceId(),
+  OLA_ASSERT_EQ(manufacturer_devices.DeviceId(),
                        static_cast<uint32_t>(0xffffffff));
-  CPPUNIT_ASSERT(all_devices.IsBroadcast());
-  CPPUNIT_ASSERT(manufacturer_devices.IsBroadcast());
+  OLA_ASSERT_TRUE(all_devices.IsBroadcast());
+  OLA_ASSERT_TRUE(manufacturer_devices.IsBroadcast());
 
   // now test the packing & unpacking
   unsigned int buffer_size = UID::UID_SIZE;
   uint8_t *buffer = new uint8_t[buffer_size];
-  CPPUNIT_ASSERT(uid.Pack(buffer, buffer_size));
+  OLA_ASSERT_TRUE(uid.Pack(buffer, buffer_size));
 
   uint8_t expected[] = {0, 1, 0, 0, 0, 2};
-  CPPUNIT_ASSERT(0 == memcmp(expected, buffer, buffer_size));
+  OLA_ASSERT_EQ(0, memcmp(expected, buffer, buffer_size));
   UID unpacked_uid1(buffer);
-  CPPUNIT_ASSERT_EQUAL(uid, unpacked_uid1);
+  OLA_ASSERT_EQ(uid, unpacked_uid1);
 
-  CPPUNIT_ASSERT(uid3.Pack(buffer, buffer_size));
+  OLA_ASSERT_TRUE(uid3.Pack(buffer, buffer_size));
   uint8_t expected2[] = {0, 2, 0, 0, 0, 0x0a};
-  CPPUNIT_ASSERT(0 == memcmp(expected2, buffer, buffer_size));
+  OLA_ASSERT_EQ(0, memcmp(expected2, buffer, buffer_size));
   UID unpacked_uid2(buffer);
-  CPPUNIT_ASSERT_EQUAL(uid3, unpacked_uid2);
+  OLA_ASSERT_EQ(uid3, unpacked_uid2);
 
   delete[] buffer;
 }
@@ -120,65 +122,66 @@ void UIDTest::testUIDInequalities() {
   UID uid2(MOCK_ESTA_ID, 1);
   UID uid3(MOCK_ESTA_ID, 2);
 
-  CPPUNIT_ASSERT(uid1 < uid2);
-  CPPUNIT_ASSERT(uid1 < uid3);
-  CPPUNIT_ASSERT(uid2 < uid3);
-  CPPUNIT_ASSERT(uid3 > uid1);
-  CPPUNIT_ASSERT(uid2 > uid1);
-  CPPUNIT_ASSERT(uid3 > uid2);
+  OLA_ASSERT_TRUE(uid1 < uid2);
+  OLA_ASSERT_TRUE(uid1 < uid3);
+  OLA_ASSERT_TRUE(uid2 < uid3);
+  OLA_ASSERT_TRUE(uid3 > uid1);
+  OLA_ASSERT_TRUE(uid2 > uid1);
+  OLA_ASSERT_TRUE(uid3 > uid2);
 
   // check we're using unsigned ints for the device id
   UID uid4(MOCK_ESTA_ID, 0x80000000);
   UID uid5(MOCK_ESTA_ID, 0xffffffff);
 
-  CPPUNIT_ASSERT(uid1 < uid4);
-  CPPUNIT_ASSERT(uid2 < uid4);
-  CPPUNIT_ASSERT(uid3 < uid4);
-  CPPUNIT_ASSERT(uid1 < uid5);
-  CPPUNIT_ASSERT(uid2 < uid5);
-  CPPUNIT_ASSERT(uid3 < uid5);
-  CPPUNIT_ASSERT(uid4 < uid5);
-  CPPUNIT_ASSERT(uid4 > uid1);
-  CPPUNIT_ASSERT(uid4 > uid2);
-  CPPUNIT_ASSERT(uid4 > uid3);
-  CPPUNIT_ASSERT(uid5 > uid1);
-  CPPUNIT_ASSERT(uid5 > uid2);
-  CPPUNIT_ASSERT(uid5 > uid3);
-  CPPUNIT_ASSERT(uid5 > uid4);
+  OLA_ASSERT_LT(uid1, uid4);
+  OLA_ASSERT_LT(uid2, uid4);
+  OLA_ASSERT_LT(uid3, uid4);
+  OLA_ASSERT_LT(uid1, uid5);
+  OLA_ASSERT_LT(uid2, uid5);
+  OLA_ASSERT_LT(uid3, uid5);
+  OLA_ASSERT_LT(uid4, uid5);
+  OLA_ASSERT_GT(uid4, uid1);
+  OLA_ASSERT_GT(uid4, uid2);
+  OLA_ASSERT_GT(uid4, uid3);
+  OLA_ASSERT_GT(uid5, uid1);
+  OLA_ASSERT_GT(uid5, uid2);
+  OLA_ASSERT_GT(uid5, uid3);
+  OLA_ASSERT_GT(uid5, uid4);
 
   // test the manufacturer ID
   UID uid6(MOCK_ESTA_ID - 1, 0xffffffff);
-  CPPUNIT_ASSERT(uid6 < uid1);
-  CPPUNIT_ASSERT(uid6 < uid4);
-  CPPUNIT_ASSERT(uid6 < uid5);
-  CPPUNIT_ASSERT(uid1 > uid6);
-  CPPUNIT_ASSERT(uid4 > uid6);
-  CPPUNIT_ASSERT(uid5 > uid6);
+  OLA_ASSERT_LT(uid6, uid1);
+  OLA_ASSERT_LT(uid6, uid4);
+  OLA_ASSERT_LT(uid6, uid5);
+  OLA_ASSERT_GT(uid1, uid6);
+  OLA_ASSERT_GT(uid4, uid6);
+  OLA_ASSERT_GT(uid5, uid6);
 
   UID uid7(MOCK_ESTA_ID + 1, 0);
-  CPPUNIT_ASSERT(uid1 < uid7);
-  CPPUNIT_ASSERT(uid4 < uid7);
-  CPPUNIT_ASSERT(uid5 < uid7);
-  CPPUNIT_ASSERT(uid6 < uid7);
-  CPPUNIT_ASSERT(uid7 > uid1);
-  CPPUNIT_ASSERT(uid7 > uid4);
-  CPPUNIT_ASSERT(uid7 > uid5);
-  CPPUNIT_ASSERT(uid7 > uid6);
+  OLA_ASSERT_LT(uid1, uid7);
+  OLA_ASSERT_LT(uid4, uid7);
+  OLA_ASSERT_LT(uid5, uid7);
+  OLA_ASSERT_LT(uid6, uid7);
+  OLA_ASSERT_GT(uid7, uid1);
+  OLA_ASSERT_GT(uid7, uid4);
+  OLA_ASSERT_GT(uid7, uid5);
+  OLA_ASSERT_GT(uid7, uid6);
 
   // now some tests that would expose problems if we used signed ints
   UID uid8(0x8000, 0);
 
-  CPPUNIT_ASSERT(uid1 < uid8);
-  CPPUNIT_ASSERT(uid2 < uid8);
-  CPPUNIT_ASSERT(uid3 < uid8);
-  CPPUNIT_ASSERT(uid4 < uid8);
-  CPPUNIT_ASSERT(uid5 < uid8);
-  CPPUNIT_ASSERT(uid6 < uid8);
-  CPPUNIT_ASSERT(uid8 > uid1);
-  CPPUNIT_ASSERT(uid8 > uid4);
-  CPPUNIT_ASSERT(uid8 > uid5);
-  CPPUNIT_ASSERT(uid8 > uid6);
-  CPPUNIT_ASSERT(uid8 > uid7);
+  OLA_ASSERT_LT(uid1, uid8);
+  OLA_ASSERT_LT(uid2, uid8);
+  OLA_ASSERT_LT(uid3, uid8);
+  OLA_ASSERT_LT(uid4, uid8);
+  OLA_ASSERT_LT(uid5, uid8);
+  OLA_ASSERT_LT(uid6, uid8);
+
+  OLA_ASSERT_GT(uid8, uid1);
+  OLA_ASSERT_GT(uid8, uid4);
+  OLA_ASSERT_GT(uid8, uid5);
+  OLA_ASSERT_GT(uid8, uid6);
+  OLA_ASSERT_GT(uid8, uid7);
 }
 
 
@@ -187,42 +190,42 @@ void UIDTest::testUIDInequalities() {
  */
 void UIDTest::testUIDSet() {
   UIDSet set1;
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, set1.Size());
+  OLA_ASSERT_EQ(0u, set1.Size());
 
   UID uid(1, 2);
   UID uid2(2, 10);
   set1.AddUID(uid);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, set1.Size());
-  CPPUNIT_ASSERT_EQUAL(string("0001:00000002"), set1.ToString());
-  CPPUNIT_ASSERT(set1.Contains(uid));
-  CPPUNIT_ASSERT(!set1.Contains(uid2));
+  OLA_ASSERT_EQ(1u, set1.Size());
+  OLA_ASSERT_EQ(string("0001:00000002"), set1.ToString());
+  OLA_ASSERT_TRUE(set1.Contains(uid));
+  OLA_ASSERT_FALSE(set1.Contains(uid2));
   set1.AddUID(uid);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, set1.Size());
+  OLA_ASSERT_EQ(1u, set1.Size());
 
   set1.AddUID(uid2);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 2, set1.Size());
-  CPPUNIT_ASSERT_EQUAL(string("0001:00000002,0002:0000000a"), set1.ToString());
-  CPPUNIT_ASSERT(set1.Contains(uid));
-  CPPUNIT_ASSERT(set1.Contains(uid2));
+  OLA_ASSERT_EQ(2u, set1.Size());
+  OLA_ASSERT_EQ(string("0001:00000002,0002:0000000a"), set1.ToString());
+  OLA_ASSERT_TRUE(set1.Contains(uid));
+  OLA_ASSERT_TRUE(set1.Contains(uid2));
 
   UIDSet set2(set1);
-  CPPUNIT_ASSERT_EQUAL(set1, set2);
+  OLA_ASSERT_EQ(set1, set2);
   UIDSet set3;
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, set3.Size());
+  OLA_ASSERT_EQ(0u, set3.Size());
   set3 = set2;
-  CPPUNIT_ASSERT_EQUAL(set1, set2);
+  OLA_ASSERT_EQ(set1, set2);
 
   set3.RemoveUID(uid2);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, set3.Size());
-  CPPUNIT_ASSERT_EQUAL(string("0001:00000002"), set3.ToString());
+  OLA_ASSERT_EQ(1u, set3.Size());
+  OLA_ASSERT_EQ(string("0001:00000002"), set3.ToString());
 
   UIDSet difference = set1.SetDifference(set3);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, difference.Size());
-  CPPUNIT_ASSERT(set1.Contains(uid));
-  CPPUNIT_ASSERT(set1.Contains(uid2));
+  OLA_ASSERT_EQ(1u, difference.Size());
+  OLA_ASSERT_TRUE(set1.Contains(uid));
+  OLA_ASSERT_TRUE(set1.Contains(uid2));
 
   difference = set3.SetDifference(set1);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, difference.Size());
+  OLA_ASSERT_EQ(0u, difference.Size());
 }
 
 
@@ -241,11 +244,11 @@ void UIDTest::testUIDSetUnion() {
   set2.AddUID(uid3);
   set2.AddUID(uid4);
   set1.Union(set2);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 4, set1.Size());
-  CPPUNIT_ASSERT(set1.Contains(uid));
-  CPPUNIT_ASSERT(set1.Contains(uid2));
-  CPPUNIT_ASSERT(set1.Contains(uid3));
-  CPPUNIT_ASSERT(set1.Contains(uid4));
+  OLA_ASSERT_EQ(4u, set1.Size());
+  OLA_ASSERT_TRUE(set1.Contains(uid));
+  OLA_ASSERT_TRUE(set1.Contains(uid2));
+  OLA_ASSERT_TRUE(set1.Contains(uid3));
+  OLA_ASSERT_TRUE(set1.Contains(uid4));
 }
 
 
@@ -254,32 +257,32 @@ void UIDTest::testUIDSetUnion() {
  */
 void UIDTest::testUIDParse() {
   UID *uid = UID::FromString("ffff:00000000");
-  CPPUNIT_ASSERT(uid);
-  CPPUNIT_ASSERT_EQUAL(uid->ManufacturerId(), static_cast<uint16_t>(0xffff));
-  CPPUNIT_ASSERT_EQUAL(uid->DeviceId(), static_cast<uint32_t>(0x00));
-  CPPUNIT_ASSERT_EQUAL(uid->ToString(), string("ffff:00000000"));
+  OLA_ASSERT_NOT_NULL(uid);
+  OLA_ASSERT_EQ(uid->ManufacturerId(), static_cast<uint16_t>(0xffff));
+  OLA_ASSERT_EQ(uid->DeviceId(), static_cast<uint32_t>(0x00));
+  OLA_ASSERT_EQ(uid->ToString(), string("ffff:00000000"));
   delete uid;
 
   uid = UID::FromString("1234:567890ab");
-  CPPUNIT_ASSERT(uid);
-  CPPUNIT_ASSERT_EQUAL(uid->ManufacturerId(), static_cast<uint16_t>(0x1234));
-  CPPUNIT_ASSERT_EQUAL(uid->DeviceId(), static_cast<uint32_t>(0x567890ab));
-  CPPUNIT_ASSERT_EQUAL(uid->ToString(), string("1234:567890ab"));
+  OLA_ASSERT_NOT_NULL(uid);
+  OLA_ASSERT_EQ(uid->ManufacturerId(), static_cast<uint16_t>(0x1234));
+  OLA_ASSERT_EQ(uid->DeviceId(), static_cast<uint32_t>(0x567890ab));
+  OLA_ASSERT_EQ(uid->ToString(), string("1234:567890ab"));
   delete uid;
 
   uid = UID::FromString("abcd:ef123456");
-  CPPUNIT_ASSERT(uid);
-  CPPUNIT_ASSERT_EQUAL(uid->ManufacturerId(), static_cast<uint16_t>(0xabcd));
-  CPPUNIT_ASSERT_EQUAL(uid->DeviceId(), static_cast<uint32_t>(0xef123456));
-  CPPUNIT_ASSERT_EQUAL(uid->ToString(), string("abcd:ef123456"));
+  OLA_ASSERT_NOT_NULL(uid);
+  OLA_ASSERT_EQ(uid->ManufacturerId(), static_cast<uint16_t>(0xabcd));
+  OLA_ASSERT_EQ(uid->DeviceId(), static_cast<uint32_t>(0xef123456));
+  OLA_ASSERT_EQ(uid->ToString(), string("abcd:ef123456"));
   delete uid;
 
-  CPPUNIT_ASSERT(!UID::FromString(""));
-  CPPUNIT_ASSERT(!UID::FromString(":"));
-  CPPUNIT_ASSERT(!UID::FromString("0:0"));
-  CPPUNIT_ASSERT(!UID::FromString(":123456"));
-  CPPUNIT_ASSERT(!UID::FromString(":123456"));
-  CPPUNIT_ASSERT(!UID::FromString("abcd:123456"));
+  OLA_ASSERT_FALSE(UID::FromString(""));
+  OLA_ASSERT_FALSE(UID::FromString(":"));
+  OLA_ASSERT_FALSE(UID::FromString("0:0"));
+  OLA_ASSERT_FALSE(UID::FromString(":123456"));
+  OLA_ASSERT_FALSE(UID::FromString(":123456"));
+  OLA_ASSERT_FALSE(UID::FromString("abcd:123456"));
 }
 
 
@@ -291,21 +294,21 @@ void UIDTest::testDirectedToUID() {
   UID device_uid(MANUFACTURER_ID, 10);
 
   // test a direct match
-  CPPUNIT_ASSERT(device_uid.DirectedToUID(device_uid));
+  OLA_ASSERT_TRUE(device_uid.DirectedToUID(device_uid));
 
   // test a different device
   UID other_device(MANUFACTURER_ID, 9);
-  CPPUNIT_ASSERT(!other_device.DirectedToUID(device_uid));
+  OLA_ASSERT_FALSE(other_device.DirectedToUID(device_uid));
 
   // test broadcast
   UID broadcast_uid = UID::AllDevices();
-  CPPUNIT_ASSERT(broadcast_uid.DirectedToUID(device_uid));
+  OLA_ASSERT_TRUE(broadcast_uid.DirectedToUID(device_uid));
 
   // test vendorcast
   UID vendorcast_uid = UID::AllManufactureDevices(MANUFACTURER_ID);
-  CPPUNIT_ASSERT(vendorcast_uid.DirectedToUID(device_uid));
+  OLA_ASSERT_TRUE(vendorcast_uid.DirectedToUID(device_uid));
 
   // test another vendor
   UID other_vendorcast_uid = UID::AllManufactureDevices(MANUFACTURER_ID - 1);
-  CPPUNIT_ASSERT(!other_vendorcast_uid.DirectedToUID(device_uid));
+  OLA_ASSERT_FALSE(other_vendorcast_uid.DirectedToUID(device_uid));
 }

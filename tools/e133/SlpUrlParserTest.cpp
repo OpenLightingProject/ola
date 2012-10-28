@@ -19,6 +19,7 @@
  */
 
 #include <cppunit/extensions/HelperMacros.h>
+#include "ola/testing/TestUtils.h"
 #include <ola/Logging.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/rdm/UID.h>
@@ -57,60 +58,60 @@ void SlpUrlParserTest::testParseUrl() {
   IPV4Address expected_ip;
   IPV4Address::FromString("192.168.1.204", &expected_ip);
 
-  CPPUNIT_ASSERT(!ParseSlpUrl("", &uid, &address));
-  CPPUNIT_ASSERT(!ParseSlpUrl("foo", &uid, &address));
-  CPPUNIT_ASSERT(!ParseSlpUrl("service:e133", &uid, &address));
-  CPPUNIT_ASSERT(!ParseSlpUrl("service:rdmnet-device", &uid, &address));
-  CPPUNIT_ASSERT(!ParseSlpUrl("service:e131.esta", &uid, &address));
-  CPPUNIT_ASSERT(!ParseSlpUrl("service:rdmnet-device:", &uid, &address));
-  CPPUNIT_ASSERT(!ParseSlpUrl("service:e131.esta://", &uid, &address));
-  CPPUNIT_ASSERT(!ParseSlpUrl("service:rdmnet-device://", &uid, &address));
-  CPPUNIT_ASSERT(!ParseSlpUrl("service:e131.esta://10.0.0.1", &uid, &address));
-  CPPUNIT_ASSERT(
+  OLA_ASSERT_FALSE(ParseSlpUrl("", &uid, &address));
+  OLA_ASSERT_FALSE(ParseSlpUrl("foo", &uid, &address));
+  OLA_ASSERT_FALSE(ParseSlpUrl("service:e133", &uid, &address));
+  OLA_ASSERT_FALSE(ParseSlpUrl("service:rdmnet-device", &uid, &address));
+  OLA_ASSERT_FALSE(ParseSlpUrl("service:e131.esta", &uid, &address));
+  OLA_ASSERT_FALSE(ParseSlpUrl("service:rdmnet-device:", &uid, &address));
+  OLA_ASSERT_FALSE(ParseSlpUrl("service:e131.esta://", &uid, &address));
+  OLA_ASSERT_FALSE(ParseSlpUrl("service:rdmnet-device://", &uid, &address));
+  OLA_ASSERT_FALSE(ParseSlpUrl("service:e131.esta://10.0.0.1", &uid, &address));
+  OLA_ASSERT(
       !ParseSlpUrl("service:rdmnet-device:10.0.0.1:5568", &uid, &address));
-  CPPUNIT_ASSERT(
+  OLA_ASSERT(
       !ParseSlpUrl("service:rdmnet-device://foobar:5568/7a7000000001",
                    &uid,
                    &address));
-  CPPUNIT_ASSERT(
+  OLA_ASSERT(
       !ParseSlpUrl("service:rdmnet-device://192.168.1.204:5568:7a7000000001",
                    &uid,
                    &address));
-  CPPUNIT_ASSERT(
+  OLA_ASSERT(
       !ParseSlpUrl("service:rdmnet-device://192.168.1.204:5568",
                    &uid,
                    &address));
-  CPPUNIT_ASSERT(
+  OLA_ASSERT(
       !ParseSlpUrl("service:rdmnet-device://192.168.1.204:5555/7a7000000001",
                    &uid,
                    &address));
-  CPPUNIT_ASSERT(
+  OLA_ASSERT(
       !ParseSlpUrl("service:rdmnet-device://192.168.1.204:5568/7g7000000",
                    &uid,
                    &address));
-  CPPUNIT_ASSERT(
+  OLA_ASSERT(
       !ParseSlpUrl("service:rdmnet-device://192.168.1.204:5568/7g7000000001",
                    &uid,
                    &address));
-  CPPUNIT_ASSERT(
+  OLA_ASSERT(
       !ParseSlpUrl("service:rdmnet-device://192.168.1.204:5568/7a7000000g01",
                    &uid,
                    &address));
 
   // finally the working case
-  CPPUNIT_ASSERT(
+  OLA_ASSERT(
       ParseSlpUrl("service:rdmnet-device://192.168.1.204:5568/7a7000000001",
                   &uid,
                   &address));
-  CPPUNIT_ASSERT_EQUAL(expected_uid, uid);
-  CPPUNIT_ASSERT_EQUAL(expected_ip, address);
+  OLA_ASSERT_EQ(expected_uid, uid);
+  OLA_ASSERT_EQ(expected_ip, address);
 
-  CPPUNIT_ASSERT(
+  OLA_ASSERT(
       ParseSlpUrl("service:rdmnet-device://10.0.80.43:5568/4a6100000020",
                   &uid,
                   &address));
   ola::rdm::UID expected_uid2(19041, 32);
   IPV4Address::FromString("10.0.80.43", &expected_ip);
-  CPPUNIT_ASSERT_EQUAL(expected_uid2, uid);
-  CPPUNIT_ASSERT_EQUAL(expected_ip, address);
+  OLA_ASSERT_EQ(expected_uid2, uid);
+  OLA_ASSERT_EQ(expected_ip, address);
 }

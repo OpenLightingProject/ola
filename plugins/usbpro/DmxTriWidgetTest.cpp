@@ -28,6 +28,8 @@
 #include "ola/Logging.h"
 #include "plugins/usbpro/DmxTriWidget.h"
 #include "plugins/usbpro/CommonWidgetTest.h"
+#include "ola/testing/TestUtils.h"
+
 
 
 using ola::DmxBuffer;
@@ -119,11 +121,11 @@ void DmxTriWidgetTest::ValidateTod(const ola::rdm::UIDSet &uids) {
   if (m_expect_uids_in_tod) {
     UID uid1(0x707a, 0xffffff00);
     UID uid2(0x5252, 0x12345678);
-    CPPUNIT_ASSERT_EQUAL((unsigned int) 2, uids.Size());
-    CPPUNIT_ASSERT(uids.Contains(uid1));
-    CPPUNIT_ASSERT(uids.Contains(uid2));
+    OLA_ASSERT_EQ((unsigned int) 2, uids.Size());
+    OLA_ASSERT(uids.Contains(uid1));
+    OLA_ASSERT(uids.Contains(uid2));
   } else {
-    CPPUNIT_ASSERT_EQUAL((unsigned int) 0, uids.Size());
+    OLA_ASSERT_EQ((unsigned int) 0, uids.Size());
   }
   m_tod_counter++;
   m_ss.Terminate();
@@ -140,13 +142,13 @@ void DmxTriWidgetTest::ValidateResponse(
     ola::rdm::rdm_response_code code,
     const RDMResponse *response,
     const vector<string> &packets) {
-  CPPUNIT_ASSERT_EQUAL(expected_code, code);
-  CPPUNIT_ASSERT(response);
-  CPPUNIT_ASSERT(*expected_response == *response);
+  OLA_ASSERT_EQ(expected_code, code);
+  OLA_ASSERT(response);
+  OLA_ASSERT(*expected_response == *response);
   delete response;
 
   // the TRIs can't return the actual packets
-  CPPUNIT_ASSERT_EQUAL(expected_packets.size(), packets.size());
+  OLA_ASSERT_EQ(expected_packets.size(), packets.size());
   m_ss.Terminate();
 }
 
@@ -160,11 +162,11 @@ void DmxTriWidgetTest::ValidateStatus(
     ola::rdm::rdm_response_code code,
     const RDMResponse *response,
     const vector<string> &packets) {
-  CPPUNIT_ASSERT_EQUAL(expected_code, code);
-  CPPUNIT_ASSERT(!response);
+  OLA_ASSERT_EQ(expected_code, code);
+  OLA_ASSERT_FALSE(response);
 
   // the TRIs can't return the actual packets
-  CPPUNIT_ASSERT_EQUAL(expected_packets.size(), packets.size());
+  OLA_ASSERT_EQ(expected_packets.size(), packets.size());
   m_ss.Terminate();
 }
 
@@ -283,7 +285,7 @@ void DmxTriWidgetTest::PopulateTod() {
       expected_fetch_response2,
       sizeof(expected_fetch_response2));
 
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, m_tod_counter);
+  OLA_ASSERT_EQ((unsigned int) 0, m_tod_counter);
   m_expect_uids_in_tod = true;
   m_widget->RunFullDiscovery(
       ola::NewSingleCallback(this, &DmxTriWidgetTest::ValidateTod));
@@ -297,7 +299,7 @@ void DmxTriWidgetTest::PopulateTod() {
  */
 void DmxTriWidgetTest::testTod() {
   PopulateTod();
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, m_tod_counter);
+  OLA_ASSERT_EQ((unsigned int) 1, m_tod_counter);
   m_endpoint->Verify();
 
   // check that where there are no devices, things work
@@ -336,7 +338,7 @@ void DmxTriWidgetTest::testTod() {
   m_widget->RunFullDiscovery(
       ola::NewSingleCallback(this, &DmxTriWidgetTest::ValidateTod));
   m_ss.Run();
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 2, m_tod_counter);
+  OLA_ASSERT_EQ((unsigned int) 2, m_tod_counter);
   m_endpoint->Verify();
 
   // check that an error behaves like we expect
@@ -361,7 +363,7 @@ void DmxTriWidgetTest::testTod() {
   m_widget->RunFullDiscovery(
       ola::NewSingleCallback(this, &DmxTriWidgetTest::ValidateTod));
   m_ss.Run();
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 3, m_tod_counter);
+  OLA_ASSERT_EQ((unsigned int) 3, m_tod_counter);
   m_endpoint->Verify();
 }
 

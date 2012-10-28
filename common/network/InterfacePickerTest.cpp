@@ -26,6 +26,8 @@
 
 #include "ola/network/InterfacePicker.h"
 #include "ola/Logging.h"
+#include "ola/testing/TestUtils.h"
+
 
 using ola::network::IPV4Address;
 using ola::network::Interface;
@@ -66,7 +68,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(InterfacePickerTest);
 void InterfacePickerTest::testGetInterfaces() {
   InterfacePicker *picker = InterfacePicker::NewPicker();
   vector<Interface> interfaces = picker->GetInterfaces();
-  CPPUNIT_ASSERT(interfaces.size() > 0);
+  OLA_ASSERT_TRUE(interfaces.size() > 0);
 
   vector<Interface>::iterator iter;
   cout << endl;
@@ -95,32 +97,32 @@ void InterfacePickerTest::testChooseInterface() {
 
   // no interfaces
   Interface iface;
-  CPPUNIT_ASSERT(!picker.ChooseInterface(&iface, ""));
+  OLA_ASSERT_FALSE(picker.ChooseInterface(&iface, ""));
 
   // now with one iface that doesn't match
   Interface iface1;
   iface1.name = "eth0";
-  CPPUNIT_ASSERT(IPV4Address::FromString("10.0.0.1", &iface1.ip_address));
+  OLA_ASSERT_TRUE(IPV4Address::FromString("10.0.0.1", &iface1.ip_address));
   interfaces.push_back(iface1);
-  CPPUNIT_ASSERT(picker.ChooseInterface(&iface, "192.168.1.1"));
-  CPPUNIT_ASSERT(iface1 == iface);
+  OLA_ASSERT_TRUE(picker.ChooseInterface(&iface, "192.168.1.1"));
+  OLA_ASSERT_TRUE(iface1 == iface);
 
   // check that preferred works
   Interface iface2;
   iface2.name = "eth1";
-  CPPUNIT_ASSERT(IPV4Address::FromString("192.168.1.1", &iface2.ip_address));
+  OLA_ASSERT_TRUE(IPV4Address::FromString("192.168.1.1", &iface2.ip_address));
   interfaces.push_back(iface2);
-  CPPUNIT_ASSERT(picker.ChooseInterface(&iface, "192.168.1.1"));
-  CPPUNIT_ASSERT(iface2 == iface);
+  OLA_ASSERT_TRUE(picker.ChooseInterface(&iface, "192.168.1.1"));
+  OLA_ASSERT_TRUE(iface2 == iface);
 
   // now check for iface name
-  CPPUNIT_ASSERT(picker.ChooseInterface(&iface, "eth0"));
-  CPPUNIT_ASSERT(iface1 == iface);
+  OLA_ASSERT_TRUE(picker.ChooseInterface(&iface, "eth0"));
+  OLA_ASSERT_TRUE(iface1 == iface);
 
-  CPPUNIT_ASSERT(picker.ChooseInterface(&iface, "eth1"));
-  CPPUNIT_ASSERT(iface2 == iface);
+  OLA_ASSERT_TRUE(picker.ChooseInterface(&iface, "eth1"));
+  OLA_ASSERT_TRUE(iface2 == iface);
 
   // a invalid address should return the first one
-  CPPUNIT_ASSERT(picker.ChooseInterface(&iface, "foo"));
-  CPPUNIT_ASSERT(iface1 == iface);
+  OLA_ASSERT_TRUE(picker.ChooseInterface(&iface, "foo"));
+  OLA_ASSERT_TRUE(iface1 == iface);
 }
