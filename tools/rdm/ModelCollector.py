@@ -183,6 +183,7 @@ class ModelCollector(object):
     """Called when we get a SENSOR_DEFINITION response."""
     this_version = self._GetVersion()
     this_version['sensors'].append({
+      'index': data['sensor_number'],
       'description': data['name'],
       'type': data['type'],
       'supports_recording': data['supports_recording'],
