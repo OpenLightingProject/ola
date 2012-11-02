@@ -558,6 +558,7 @@ AC_OUTPUT( Makefile \
     include/ola/messaging/Makefile \
     include/ola/network/Makefile \
     include/ola/rdm/Makefile \
+    include/ola/stl/Makefile \
     include/ola/testing/Makefile \
     include/ola/thread/Makefile \
     include/ola/timecode/Makefile \

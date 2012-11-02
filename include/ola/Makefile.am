@@ -1,4 +1,4 @@
-SUBDIRS = base network http io rdm thread web messaging testing timecode
+SUBDIRS = base network http io rdm thread web messaging stl testing timecode
 
 SOURCES = ActionQueue.h BaseTypes.h Callback.h CallbackRunner.h Clock.h \
           DmxBuffer.h ExportMap.h Logging.h MultiCallback.h \
