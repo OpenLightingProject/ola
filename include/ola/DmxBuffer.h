@@ -22,6 +22,7 @@
 #define INCLUDE_OLA_DMXBUFFER_H_
 
 #include <stdint.h>
+#include <iostream>
 #include <string>
 
 namespace ola {
@@ -72,5 +73,7 @@ class DmxBuffer {
     uint8_t *m_data;
     unsigned int m_length;
 };
+
+std::ostream& operator<<(std::ostream &out, const DmxBuffer &data);
 }  // ola
 #endif  // INCLUDE_OLA_DMXBUFFER_H_
