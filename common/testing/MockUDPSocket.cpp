@@ -49,6 +49,12 @@ bool MockUDPSocket::Bind(const ola::network::IPV4SocketAddress &endpoint) {
 }
 
 
+bool MockUDPSocket::GetSocketAddress(IPV4SocketAddress *address) const {
+  // Return a dummy address
+  *address = IPV4SocketAddress(IPV4Address::Loopback(), 0);
+  return true;
+}
+
 bool MockUDPSocket::Close() {
   m_bound_to_port = false;
   return true;

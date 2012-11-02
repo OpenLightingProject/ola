@@ -68,7 +68,7 @@ bool TCPSocket::GetPeer(IPV4Address *address, uint16_t *port) {
   }
 
   *address = IPV4Address(remote_address.sin_addr);
-  *port = remote_address.sin_port;
+  *port = NetworkToHost(remote_address.sin_port);
   return true;
 }
 

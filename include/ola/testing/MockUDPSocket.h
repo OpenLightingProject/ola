@@ -48,6 +48,7 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
     // These are the socket methods
     bool Init();
     bool Bind(const ola::network::IPV4SocketAddress &endpoint);
+    bool GetSocketAddress(IPV4SocketAddress *address) const;
     bool Close();
     int ReadDescriptor() const;
     int WriteDescriptor() const;
