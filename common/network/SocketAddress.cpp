@@ -19,13 +19,16 @@
  */
 
 #include <ola/Logging.h>
+#include <ola/StringUtils.h>
 #include <ola/network/NetworkUtils.h>
 #include <ola/network/SocketAddress.h>
 #include <string.h>
+#include <string>
 
 namespace ola {
 namespace network {
 
+using std::string;
 
 /**
  * Copy this IPV4SocketAddress into a sockaddr.
@@ -60,6 +63,26 @@ IPV4SocketAddress GenericSocketAddress::V4Addr() const {
     OLA_FATAL << "Invalid conversion of socket family " << Family();
     return IPV4SocketAddress(IPV4Address(), 0);
   }
+}
+
+
+/**
+ * Extract a IPV4SocketAddress from a string.
+ */
+bool IPV4SocketAddress::FromString(const string &input,
+                                   IPV4SocketAddress *socket_address) {
+  size_t pos = input.find_first_of(":");
+  if (pos == string::npos)
+    return false;
+
+  IPV4Address address;
+  if (!IPV4Address::FromString(input.substr(0, pos), &address))
+    return false;
+  uint16_t port;
+  if (!StringToInt(input.substr(pos + 1), &port))
+    return false;
+  *socket_address = IPV4SocketAddress(address, port);
+  return true;
 }
 }  // network
 }  // ola
