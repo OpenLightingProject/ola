@@ -36,7 +36,7 @@ class TestLoggerException(Error):
 
 class TestLogger(object):
   """Reads/saves test results to/from files."""
-  FILE_NAME_RE = r'[0-9a-f]{4}:[0-9a-f]{8}\.[0-9]{10}\.log$'
+  FILE_NAME_RE = r'[0-9a-f]{4}-[0-9a-f]{8}\.[0-9]{10}\.log$'
 
   def __init__(self, log_dir):
     """
@@ -45,6 +45,14 @@ class TestLogger(object):
       log_dir: where to store the logs
     """
     self._log_dir = log_dir
+
+  def UIDToString(self, uid):
+    """Converts a UID to a string in the form <manufacturer>-<device>.
+
+    This is different from the __str__() method in UID since the : causes
+    problems on some filesystems.
+    """
+    return '%04x-%08x' % (uid.manufacturer_id, uid.device_id)
 
   def SaveLog(self, uid, timestamp, tests, test_parameters):
     """Log the results to a file.
@@ -74,7 +82,7 @@ class TestLogger(object):
 
     output = dict(test_parameters)
     output['test_results'] = test_results
-    filename = '%s.%d.log' % (uid, timestamp)
+    filename = '%s.%d.log' % (self.UIDToString(uid), timestamp)
     filename = os.path.join(self._log_dir, filename)
 
     try:
@@ -97,7 +105,7 @@ class TestLogger(object):
     Returns:
       The formatted data. Don't rely on the format of this data being the same.
     """
-    log_name = "%s.%s.log" % (uid, timestamp)
+    log_name = "%s.%s.log" % (self.UIDToString(uid), timestamp)
     if not self._CheckFilename(log_name):
       raise TestLoggerException('Invalid log file requested!')
 

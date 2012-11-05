@@ -566,7 +566,8 @@ class DownloadResultsHandler(RequestHandler):
   """A class which handles requests to download test results."""
 
   def HandleRequest(self, request, response):
-    uid = request.GetParam('uid')
+    uid_param = request.GetParam('uid') or ''
+    uid = UID.FromString(uid_param)
     if uid is None:
       raise ServerException('Missing uid parameter: uid')
 
@@ -584,7 +585,7 @@ class DownloadResultsHandler(RequestHandler):
       output = reader.ReadAndFormat(uid, timestamp, category,
                                     test_state, include_debug,
                                     include_description)
-    except TestLoggerException as e:
+    except TestLogger.TestLoggerException as e:
       raise ServerException(e)
 
     filename = '%s.%s.txt' % (uid, timestamp)
