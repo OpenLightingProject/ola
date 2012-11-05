@@ -7,7 +7,7 @@ EXTRA_DIST = OSCAddressTemplate.h OSCDevice.h OSCNode.h OSCPlugin.h OSCPort.h \
 if HAVE_LIBLO
   noinst_LTLIBRARIES = libolaoscnode.la
   libolaoscnode_la_SOURCES = OSCAddressTemplate.cpp OSCNode.cpp
-  libolaosc_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(liblo_CFLAGS)
+  libolaoscnode_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(liblo_CFLAGS)
   libolaoscnode_la_LIBADD = $(liblo_LIBS)
 
   lib_LTLIBRARIES = libolaosc.la
