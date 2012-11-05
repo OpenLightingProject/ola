@@ -24,6 +24,7 @@
 #include <string>
 #include <ola/Clock.h>  // NOLINT
 #include <ola/Callback.h>  // NOLINT
+#include <ola/ExportMap.h>  // NOLINT
 #include <ola/io/SelectServerInterface.h>  // NOLINT
 
 namespace ola {
@@ -34,6 +35,7 @@ class PluginAdaptor: public ola::io::SelectServerInterface {
   public:
     PluginAdaptor(class DeviceManager *device_manager,
                   ola::io::SelectServerInterface *select_server,
+                  ExportMap *export_map,
                   class PreferencesFactory *preferences_factory,
                   class PortBrokerInterface *port_broker);
 
@@ -60,6 +62,10 @@ class PluginAdaptor: public ola::io::SelectServerInterface {
 
     const TimeStamp *WakeUpTime() const;
 
+    ExportMap *GetExportMap() const {
+      return m_export_map;
+    }
+
     // These are the extra bits for the plugins
     bool RegisterDevice(class AbstractDevice *device) const;
     bool UnregisterDevice(class AbstractDevice *device) const;
@@ -74,6 +80,7 @@ class PluginAdaptor: public ola::io::SelectServerInterface {
 
     DeviceManager *m_device_manager;
     ola::io::SelectServerInterface *m_ss;
+    ExportMap *m_export_map;
     class PreferencesFactory *m_preferences_factory;
     class PortBrokerInterface *m_port_broker;
 };

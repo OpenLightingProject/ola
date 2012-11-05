@@ -38,10 +38,12 @@ using ola::io::SelectServerInterface;
  */
 PluginAdaptor::PluginAdaptor(DeviceManager *device_manager,
                              SelectServerInterface *select_server,
+                             ExportMap *export_map,
                              PreferencesFactory *preferences_factory,
                              PortBrokerInterface *port_broker):
   m_device_manager(device_manager),
   m_ss(select_server),
+  m_export_map(export_map),
   m_preferences_factory(preferences_factory),
   m_port_broker(port_broker) {
 }
