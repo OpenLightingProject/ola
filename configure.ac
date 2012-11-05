@@ -363,6 +363,24 @@ if test "${have_slp}" = "yes"; then
 fi
 AC_SUBST(openslp_LIBS)
 
+# LIBRARY: liblo (OSC)
+# look for liblo if the user asked us to
+AC_ARG_ENABLE(
+  [liblo],
+  AS_HELP_STRING([--disable-osc], [Disable the OSC plugin even if liblo exists]))
+
+have_liblo="no"
+
+if test "${enable_liblo}" != "no"; then
+  PKG_CHECK_MODULES(liblo, [liblo >= 0.26], [have_liblo="yes"], [true])
+fi
+AM_CONDITIONAL(HAVE_LIBLO, test "${have_liblo}" = "yes")
+
+if test "${have_liblo}" = "yes"; then
+ PLUGINS="${PLUGINS} osc"
+ AC_DEFINE(HAVE_LIBLO, 1, [define if liblo is installed])
+fi
+
 # LIBRARY: libmicrohttpd
 # look for microhttpd if the user asked us to
 AC_ARG_ENABLE(
@@ -586,6 +604,7 @@ AC_OUTPUT( Makefile \
     plugins/e131/messages/libolae131conf.pc \
     plugins/espnet/Makefile \
     plugins/opendmx/Makefile \
+    plugins/osc/Makefile \
     plugins/pathport/Makefile \
     plugins/sandnet/Makefile \
     plugins/shownet/Makefile \

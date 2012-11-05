@@ -1,0 +1,299 @@
+Welcome to the OSC Plugin walkthrough. This is a step by step guide on how to
+write a plugin for OLA, using the OSC (Open Sound Control) plugin as an
+example. The OSC plugin uses liblo (http://liblo.sourceforge.net/) to handle
+the OSC messages.
+
+This assumes you have a working knowledge of C++ and some of the basic
+libraries like string. Most of the documentation is inline with the code so
+please keep it up to date if you change anything.
+
+Before we begin you should do the following:
+ * Read http://www.opendmx.net/index.php/OLA_developer_info which provides an
+   overview of some of the classes we'll use.
+ * Have an understanding of the map & vector classes from the STL -
+   http://www.sgi.com/tech/stl/ or http://www.cplusplus.com/reference/stl/ .
+ * Know something about the OSC specification:
+   http://opensoundcontrol.org/spec-1_0 . You don't need to know the wire format
+   for the OSC messages. but you should at least recognize OSC addresses and
+   know the different data types in a message.
+ * Look at the liblo site (http://liblo.sourceforge.net/ ) and read the
+   examples.
+ * Get familar with the string class
+   http://www.cplusplus.com/reference/string/string/, since we use that a bit.
+ * Basic knowledge of shell scripting, which is used in the ./configure script.
+ * Make sure you can complete a full OLA build & test cycle (make, make check).
+
+The initial commit of this plugin was Rev XXXX . It's worth having that diff
+open as you step through the explanations.
+
+Let's get to it!
+
+
+Chapter 1, Build Configuration
+==============================
+
+Before we start writing code, we need to configure the build system. Start off
+by creating the plugins/osc directory.
+
+1.1 Configure script
+--------------------
+
+Next we need to modify the ./configure script so that we only build the OSC
+plugin if liblo is installed. So that we don't break existing users of OLA, a
+system without liblo will just skip building the plugin, rather than causing a
+failure in the configure script.
+
+To be polite, we should also provide a ./configure flag to disable the osc
+plugin, even if liblo is installed.
+
+The ./configure is generated from configure.ac so that's where we'll do our
+changes. configure.ac is essentially shell script
+
+  AC_ARG_ENABLE(
+    [liblo],
+    AS_HELP_STRING([--disable-osc],
+                   [Disable the OSC plugin even if liblo exists]))
+
+These lines add a ./configure argument "--disable-osc". If this
+argument is provided, the variable $enable_liblo will be set to "no".
+
+  have_liblo="no"
+
+This defaults the $have_liblo variable to "no".
+
+  if test "${enable_liblo}" != "no"; then
+    PKG_CHECK_MODULES(liblo, [liblo >= 0.26], [have_liblo="yes"], [true])
+  fi
+
+If the enable_liblo variable does not equal "no" (i.e. --disable-osc) wasn't
+provided, we go ahead and run pkg-config to check that liblo is installed. The
+PKG_CHECK_MODULES() macro does the equivilent of:
+
+  $ pkg-config --modversion liblo
+
+To ensure the version of liblo is >= 0.26, and if it's installed, it sets the
+have_liblo to "yes" and the automake variables liblo_CFLAGS and liblo_LIBS from
+the output of:
+
+  $ pkg-config --cflags --libs liblo
+
+We'll use liblo_CFLAGS and liblo_LIBS in the Makefile.
+
+  AM_CONDITIONAL(HAVE_LIBLO, test "${have_liblo}" = "yes")
+
+This sets the automake variable HAVE_LIBLO according to the value of
+have_liblo. This is what controls if we build the osc plugin.
+
+  if test "${have_liblo}" = "yes"; then
+    PLUGINS="${PLUGINS} osc"
+    AC_DEFINE(HAVE_LIBLO, 1, [define if liblo is installed])
+  fi
+
+Finally if have_liblo is "yes", we append osc to the PLUGINS variable and
+set a #define HAVE_LIBLO 1. Variables specified in AC_DEFINE are written to
+the config.h file which can be included as a normal header file.  This allowa
+the plugin loader code to know whether to attempt to load the osc plugin.
+
+Finally don't forget to add plugins/osc/Makefile to the AC_OUTPUT section at
+the end. The tells autoconf to write a Makefile for the plugins/osc directory.
+
+To summarize, we know have the following:
+
+ * The automake variable HAVE_LIBLO, which is true if we should build the OSC
+   plugin.
+ * The automake variables liblo_CFLAGS & liblo_LIBS, which contains the
+   compiler and linker options required to use liblo.
+ * A #define'd value HAVE_LIBLO which lets us know within the code if the OSC
+   plugin was built.
+
+1.2 Makefiles
+-------------
+
+On to the Makefiles. Because we use autoconf / automake the Makefile is
+generated from Makefile.am. First we edit plugins/Makefile.am and add the osc
+directory to the SUBDIRS line.
+
+Now we can create a plugins/osc/Makefile.am. We'll cover this file line by
+line.
+
+  include $(top_srcdir)/common.mk
+
+This does what you'd expect, it includes the top level common.mk file, which
+defines $(COMMON_CXXFLAGS) to include things like -Wall and -Werror.
+
+  libdir = $(plugindir)
+
+This sets the destination install directory for the shared object (the OSC
+plugin in this case) to the plugin directory. By default that's
+/usr/local/lib/olad but the user may have changed it.
+
+  EXTRA_DIST = OSCAddressTemplate.h OSCDevice.h OSCNode.h OSCPlugin.h OSCPort.h \
+               OSCTarget.h
+
+This specifies the header files that need to be included in the tarball.
+
+  if HAVE_LIBLO
+
+Everything from this point onwards is only run if HAVE_LIBLO was true.
+
+    noinst_LTLIBRARIES = libolaoscnode.la
+    libolaoscnode_la_SOURCES = OSCAddressTemplate.cpp OSCNode.cpp
+    libolaosc_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(liblo_CFLAGS)
+    libolaoscnode_la_LIBADD = $(liblo_LIBS)
+
+This sets up our first build target, a shared library called libolaoscnode.la.
+This library contains the OSCNode class, along with the functions in
+OSCAddressTemplate.cpp. The libolaoscnode.la is a helper library, it's not
+installed when the user runs `make install` (the noinst_ prefix does this) but
+it simplifies the build rules since both the OSC plugin and the tests depend
+on it. Because we depend on liblo we need to add liblo_CFLAGS and liblo_LIBS
+to the appropriate lines.
+
+  lib_LTLIBRARIES = libolaosc.la
+  libolaosc_la_SOURCES = OSCDevice.cpp OSCPlugin.cpp
+  libolaosc_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(liblo_CFLAGS)
+  libolaosc_la_LIBADD = ./libolaoscnode.la
+
+Here is our llibolaosc.la plugin. This contains code from OSCDevice.cpp and
+OSCPlugin.cpp.  Note that because the code in OSCPort is simple, all the code
+lives in OSCPort.h and there is no corresponding .cpp file. If there was we'd
+need to list it here as well. This depends on the libolaoscnode.la helper
+library.
+
+  if BUILD_TESTS
+    TESTS = OSCTester
+  endif
+
+On to the tests, These three lines add the OSCTester program to the list of
+tests to execute when `make check` is run. If the user ran ./configure with
+ --disable-unittests we don't build or run any of the unittesting code.
+
+  check_PROGRAMS = $(TESTS)
+
+This sets check_PROGRAMS to what's contained in the $TESTS variable.
+
+  OSCTester_SOURCES = OSCAddressTemplateTest.cpp \
+                      OSCNodeTest.cpp \
+                      OSCTester.cpp
+  OSCTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+  OSCTester_LDADD = $(CPPUNIT_LIBS) \
+                    libolaoscnode.la \
+                    ../../common/libolacommon.la \
+                    ../../common/testing/libolatesting.la
+
+Here are the rules OSCTester. This specifies the 3 source files as well as the
+libraries the code depends on.
+
+  endif
+
+This completes the "if HAVE_LIBLO" from above.
+
+1.3 Putting it together
+-----------------------
+
+At this point you can move back to the top level directory and run the
+following:
+
+  autoreconf
+
+This creates the ./configure script, which we'll now run:
+
+  ./configure
+
+If you watch the output you should see the line "checking for liblo... yes".
+You should also see that HAVE_LIBLO is #defined to 1 in the config.h file and
+that the plugins/osc/Makefile has been created.
+
+That's it for the build configuration. Time to write some code!
+
+Chapter 2, Plugin Boilerplate
+=============================
+
+2.1 Plugin ID
+-------------
+
+We need to reserve a plugin ID in common/protocol/Ola.proto . Before you pick a
+plugin id please send a message to the open-lighting@googlegroups.com list so
+we can co-ordinate plugin IDs.
+
+Once we've assigned a plugin id, we can run `make` in the top directory. This
+will update include/ola/plugin_id.h. You'll notice plugin_id.h isn't included
+in the git repo since it's a generated file.
+
+2.2 Plugin Loader
+-----------------
+
+We need to tell the Plugin Loader to load our new OSC plugin. Remember the
+HAVE_LIBLO variable in config.h? We'll make use of that now.
+
+In olad/DynamicPluginLoader.cpp we add:
+
+  #ifdef HAVE_LIBLO
+  #include "plugins/osc/OSCPlugin.h"
+  #endif
+
+DynamicPluginLoader.cpp includes config.h at the top of the file, which is how
+HAVE_LIBLO is defined.
+
+  #ifdef HAVE_LIBLO
+    m_plugins.push_back(
+        new ola::plugin::osc::OSCPlugin(m_plugin_adaptor));
+  #endif
+
+If HAVE_LIBLO is defined, we go ahead and add the OSCPlugin to the vector of
+plugins to load.
+
+That's it for the boilerplate
+
+
+Chapter 3, OSC Code
+====================
+
+The OSC code is divided into two parts:
+
+  - OSCNode is a C++ & DMX orientated wrapper around liblo.
+  - OSCPlugin, OSCDevice & OSCPort are the glue between OLA and the OSCNode.
+
+There is a little bit of support code that is used in both parts, so we factor
+that out here.
+
+3.1 Support Code
+----------------
+
+OSCTarget.h contains a struct used to represent OSC targets. Each target has an
+IP & UDP Port, along with a string that holds the OSC address for the target.
+
+You'll notice that all the OSC code is contained within the ola::plugin::osc
+namespace. This is to avoid conflicts with the core OLA classes and code in
+other plugins.
+
+OSCAddressTemplate.h provides a single method, ExpandTemplate() which behaves a
+bit like printf. Why don't we just use printf you ask? Because the strings to
+expand are provided in the config file by the user and using printf for user
+specified strings is dangerous (see
+http://www.cis.syr.edu/~wedu/Teaching/cis643/LectureNotes_New/Format_String.pdf).
+
+At this point it's worth mentioning testing. Have a look at the
+OSCAddressTemplateTest.cpp file. We define a single test method testExpand that
+confirms ExpandTemplate() behaves as we expect.
+
+
+Chapter 4, OSCNode
+==================
+
+
+
+Chapter 5, Testing
+==================
+
+All good code comes with tests.
+
+
+
+
+
+
+
+
+
+

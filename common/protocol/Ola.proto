@@ -58,6 +58,7 @@ enum PluginIds {
   OLA_PLUGIN_E131 = 11;
   OLA_PLUGIN_USBDMX = 12;
   OLA_PLUGIN_FTDIDMX = 13;
+  OLA_PLUGIN_OSC = 14;
 }
 
 /**
