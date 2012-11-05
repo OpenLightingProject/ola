@@ -1,3 +1,11 @@
+X/X/2012 ola-0.8.26
+ * Added the OSC plugin
+ * Fixed the bug with displaying the TRI serial number
+ * Added a script to save and restore RDM settings for a rig
+ * Added a script to compare RDM configuration at different times
+ * Merged in hip's test refactoring changes
+ * Allow the number of E1.31 ports to be specified in the config file
+
 9/10/2012 ola-0.8.25
  * Bug fixes for the RDM Responder tests
  * Add some missing files to the tarball
