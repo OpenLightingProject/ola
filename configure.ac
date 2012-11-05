@@ -2,12 +2,13 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT(configure.ac)
+AC_INIT(ola, [0.8.25])
+AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_AUX_DIR(config)
 AC_SUBST(ac_aux_dir)
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_MACRO_DIR([config])
-AM_INIT_AUTOMAKE(ola, 0.8.25)
+AM_INIT_AUTOMAKE
 
 # Checks for programs.
 AC_LANG(C++)
