@@ -25,8 +25,10 @@
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
+#include <ola/base/Init.h>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -34,6 +36,7 @@
 #include "examples/ShowLoader.h"
 #include "examples/ShowRecorder.h"
 
+using std::auto_ptr;
 using std::cout;
 using std::endl;
 using std::map;
@@ -55,6 +58,31 @@ typedef struct {
   string file;
   string universes;
 } options;
+
+auto_ptr<ShowRecorder> show_recorder;
+
+/*
+ * Terminate cleanly on interrupt
+ */
+static void sig_interupt(int signo) {
+  if (show_recorder.get())
+    show_recorder->Stop();
+  (void) signo;
+}
+
+
+/*
+ * Set up the signal handlers.
+ * @return true on success, false on failure
+ */
+static bool InstallSignals() {
+  if (!ola::InstallSignal(SIGINT, sig_interupt))
+    return false;
+
+  if (!ola::InstallSignal(SIGTERM, sig_interupt))
+    return false;
+  return true;
+}
 
 
 /*
@@ -202,14 +230,15 @@ int RecordShow(const options &opts) {
     universes.push_back(universe);
   }
 
-  ShowRecorder recorder(opts.file, universes);
-  int status = recorder.Init();
+  show_recorder.reset(new ShowRecorder(opts.file, universes));
+  int status = show_recorder->Init();
   if (status)
     return status;
 
   cout << "Recording, hit Control-C to end" << endl;
-  recorder.Record();
-  cout << "Saved " << recorder.FrameCount() << " frames" << endl;
+  InstallSignals();
+  show_recorder->Record();
+  cout << "Saved " << show_recorder->FrameCount() << " frames" << endl;
   return EX_OK;
 }
 

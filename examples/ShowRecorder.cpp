@@ -85,11 +85,19 @@ int ShowRecorder::Init() {
 
 
 /**
- * Playback the show
+ * Record the show.
  */
 int ShowRecorder::Record() {
   m_client.GetSelectServer()->Run();
   return EX_OK;
+}
+
+
+/**
+ * Stop recording
+ */
+void ShowRecorder::Stop() {
+  m_client.GetSelectServer()->Terminate();
 }
 
 
