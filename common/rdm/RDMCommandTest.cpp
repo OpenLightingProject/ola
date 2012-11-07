@@ -470,20 +470,6 @@ void RDMCommandTest::PackAndVerify(const RDMCommand &command,
     CPPUNIT_ASSERT_MESSAGE(str.str(), buffer[i] == expected[i]);
   }
   delete[] buffer;
-
-  // now check string packing
-  string str_buffer;
-  OLA_ASSERT_TRUE(command.Pack(&str_buffer));
-  OLA_ASSERT_EQ((size_t) expected_length, str_buffer.size());
-
-  for (unsigned int i = 0 ; i < expected_length; i++) {
-    std::stringstream str;
-    uint8_t c = str_buffer[i];
-    str << "Offset " << i << ", expected " << std::hex <<
-      static_cast<int>(expected[i]) << ", got " << std::hex <<
-      static_cast<int>(c);
-    CPPUNIT_ASSERT_MESSAGE(str.str(), c == expected[i]);
-  }
 }
 
 
@@ -952,25 +938,6 @@ void RDMCommandTest::testPackWithParams() {
   OLA_ASSERT_EQ((unsigned int) 0, command->ParamDataSize());
   OLA_ASSERT_EQ((unsigned int) 25, command->Size());
   delete[] data;
-  delete command;
-
-  string packed_request;
-  OLA_ASSERT_TRUE(get_command.PackWithControllerParams(
-        &packed_request, new_source, 99, 10));
-
-  command = RDMRequest::InflateFromData(packed_request);
-  OLA_ASSERT_TRUE(command);
-  OLA_ASSERT_EQ(new_source, command->SourceUID());
-  OLA_ASSERT_EQ(destination, command->DestinationUID());
-  OLA_ASSERT_EQ((uint8_t) 99, command->TransactionNumber());
-  OLA_ASSERT_EQ((uint8_t) 10, command->PortId());
-  OLA_ASSERT_EQ((uint8_t) 0, command->MessageCount());
-  OLA_ASSERT_EQ((uint16_t) 10, command->SubDevice());
-  OLA_ASSERT_EQ(RDMCommand::GET_COMMAND, command->CommandClass());
-  OLA_ASSERT_EQ((uint16_t) 296, command->ParamId());
-  OLA_ASSERT_EQ(static_cast<uint8_t*>(NULL), command->ParamData());
-  OLA_ASSERT_EQ((unsigned int) 0, command->ParamDataSize());
-  OLA_ASSERT_EQ((unsigned int) 25, command->Size());
   delete command;
 }
 

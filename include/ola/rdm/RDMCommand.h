@@ -104,7 +104,6 @@ class RDMCommand {
     // Pack this RDMCommand into a buffer or as a string
     unsigned int Size() const;
     bool Pack(uint8_t *buffer, unsigned int *size) const;
-    bool Pack(string *data) const;
     void Write(ola::io::OutputStream *stream) const;
 
     static const uint8_t START_CODE = 0xcc;
@@ -145,10 +144,6 @@ class RDMCommand {
               uint8_t transaction_number,
               uint8_t port_id) const;
 
-    bool Pack(string *buffer,
-              const UID &source,
-              uint8_t transaction_number,
-              uint8_t port_id) const;
     void SetParamData(const uint8_t *data, unsigned int length);
 
     static rdm_response_code VerifyData(
@@ -240,14 +235,6 @@ class RDMRequest: public RDMCommand {
         uint8_t transaction_number,
         uint8_t port_id) const {
       return Pack(buffer, size, source, transaction_number, port_id);
-    }
-
-    virtual bool PackWithControllerParams(
-        string *buffer,
-        const UID &source,
-        uint8_t transaction_number,
-        uint8_t port_id) const {
-      return Pack(buffer, source, transaction_number, port_id);
     }
 
     // Convert a block of data to an RDMCommand object

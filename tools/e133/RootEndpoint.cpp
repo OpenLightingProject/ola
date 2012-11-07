@@ -393,14 +393,10 @@ bool RootEndpoint::SanityCheckGetOrSet(
 
 
 /**
- * Run the RDM callback with a response. This takes care of creating the fake
- * raw data.
+ * Run the RDM callback with a response.
  */
 void RootEndpoint::RunRDMCallback(RDMCallback *callback,
                                   RDMResponse *response) {
-  string raw_response;
-  response->Pack(&raw_response);
   RDMPackets packets;
-  packets.push_back(raw_response);
   callback->Run(ola::rdm::RDM_COMPLETED_OK, response, packets);
 }
