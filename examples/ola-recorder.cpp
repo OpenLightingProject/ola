@@ -20,6 +20,7 @@
 
 #include <errno.h>
 #include <getopt.h>
+#include <signal.h>
 #include <string.h>
 #include <sysexits.h>
 #include <ola/DmxBuffer.h>
