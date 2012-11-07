@@ -256,8 +256,8 @@ void RDMCommandTest::testRDMCommand() {
                              data,  // data
                              232);  // data length
 
-  OLA_ASSERT_EQ(231u, long_command.ParamDataSize());
-  OLA_ASSERT_EQ(256u, long_command.Size());
+  OLA_ASSERT_EQ(232u, long_command.ParamDataSize());
+  OLA_ASSERT_EQ(257u, long_command.Size());
 
   uint32_t data_value = 0xa5a5a5a5;
   RDMSetRequest command3(source,
@@ -639,17 +639,14 @@ void RDMCommandTest::testNackWithReason() {
   OLA_ASSERT_EQ(destination, response->SourceUID());
   OLA_ASSERT_EQ(source, response->DestinationUID());
   OLA_ASSERT_EQ((uint8_t) 0, response->TransactionNumber());
-  OLA_ASSERT_EQ((uint8_t) ola::rdm::RDM_NACK_REASON,
-                       response->ResponseType());
+  OLA_ASSERT_EQ((uint8_t) ola::rdm::RDM_NACK_REASON, response->ResponseType());
   OLA_ASSERT_EQ((uint8_t) 0, response->MessageCount());
   OLA_ASSERT_EQ((uint16_t) 10, response->SubDevice());
-  OLA_ASSERT_EQ(RDMCommand::GET_COMMAND_RESPONSE,
-                       response->CommandClass());
+  OLA_ASSERT_EQ(RDMCommand::GET_COMMAND_RESPONSE, response->CommandClass());
   OLA_ASSERT_EQ((uint16_t) 296, response->ParamId());
   OLA_ASSERT_EQ(HostToNetwork(reason),
-                       *(reinterpret_cast<uint16_t*>(response->ParamData())));
-  OLA_ASSERT_EQ((unsigned int) sizeof(reason),
-                       response->ParamDataSize());
+                *(reinterpret_cast<uint16_t*>(response->ParamData())));
+  OLA_ASSERT_EQ((unsigned int) sizeof(reason), response->ParamDataSize());
   delete response;
 
   response = NackWithReason(&get_command,
@@ -659,17 +656,14 @@ void RDMCommandTest::testNackWithReason() {
   OLA_ASSERT_EQ(destination, response->SourceUID());
   OLA_ASSERT_EQ(source, response->DestinationUID());
   OLA_ASSERT_EQ((uint8_t) 0, response->TransactionNumber());
-  OLA_ASSERT_EQ((uint8_t) ola::rdm::RDM_NACK_REASON,
-                       response->ResponseType());
+  OLA_ASSERT_EQ((uint8_t) ola::rdm::RDM_NACK_REASON, response->ResponseType());
   OLA_ASSERT_EQ((uint8_t) 0, response->MessageCount());
   OLA_ASSERT_EQ((uint16_t) 10, response->SubDevice());
-  OLA_ASSERT_EQ(RDMCommand::GET_COMMAND_RESPONSE,
-                       response->CommandClass());
+  OLA_ASSERT_EQ(RDMCommand::GET_COMMAND_RESPONSE, response->CommandClass());
   OLA_ASSERT_EQ((uint16_t) 296, response->ParamId());
   OLA_ASSERT_EQ(HostToNetwork(reason),
-                       *(reinterpret_cast<uint16_t*>(response->ParamData())));
-  OLA_ASSERT_EQ((unsigned int) sizeof(reason),
-                       response->ParamDataSize());
+                *(reinterpret_cast<uint16_t*>(response->ParamData())));
+  OLA_ASSERT_EQ((unsigned int) sizeof(reason), response->ParamDataSize());
   delete response;
 
   RDMSetRequest set_command(source,
@@ -689,17 +683,14 @@ void RDMCommandTest::testNackWithReason() {
   OLA_ASSERT_EQ(destination, response->SourceUID());
   OLA_ASSERT_EQ(source, response->DestinationUID());
   OLA_ASSERT_EQ((uint8_t) 0, response->TransactionNumber());
-  OLA_ASSERT_EQ((uint8_t) ola::rdm::RDM_NACK_REASON,
-                       response->ResponseType());
+  OLA_ASSERT_EQ((uint8_t) ola::rdm::RDM_NACK_REASON, response->ResponseType());
   OLA_ASSERT_EQ((uint8_t) 0, response->MessageCount());
   OLA_ASSERT_EQ((uint16_t) 10, response->SubDevice());
-  OLA_ASSERT_EQ(RDMCommand::SET_COMMAND_RESPONSE,
-                       response->CommandClass());
+  OLA_ASSERT_EQ(RDMCommand::SET_COMMAND_RESPONSE, response->CommandClass());
   OLA_ASSERT_EQ((uint16_t) 296, response->ParamId());
   OLA_ASSERT_EQ(HostToNetwork(reason),
-                       *(reinterpret_cast<uint16_t*>(response->ParamData())));
-  OLA_ASSERT_EQ((unsigned int) sizeof(reason),
-                       response->ParamDataSize());
+                 *(reinterpret_cast<uint16_t*>(response->ParamData())));
+  OLA_ASSERT_EQ((unsigned int) sizeof(reason), response->ParamDataSize());
   delete response;
 }
 
@@ -726,11 +717,9 @@ void RDMCommandTest::testGetResponseFromData() {
   OLA_ASSERT_EQ((uint8_t) ola::rdm::RDM_ACK, response->ResponseType());
   OLA_ASSERT_EQ((uint8_t) 0, response->MessageCount());
   OLA_ASSERT_EQ((uint16_t) 10, response->SubDevice());
-  OLA_ASSERT_EQ(RDMCommand::GET_COMMAND_RESPONSE,
-                       response->CommandClass());
+  OLA_ASSERT_EQ(RDMCommand::GET_COMMAND_RESPONSE, response->CommandClass());
   OLA_ASSERT_EQ((uint16_t) 296, response->ParamId());
-  OLA_ASSERT_EQ(static_cast<uint8_t*>(NULL),
-                       response->ParamData());
+  OLA_ASSERT_EQ(static_cast<uint8_t*>(NULL), response->ParamData());
   OLA_ASSERT_EQ(0u, response->ParamDataSize());
   delete response;
 
@@ -752,11 +741,9 @@ void RDMCommandTest::testGetResponseFromData() {
   OLA_ASSERT_EQ((uint8_t) ola::rdm::RDM_ACK, response->ResponseType());
   OLA_ASSERT_EQ((uint8_t) 0, response->MessageCount());
   OLA_ASSERT_EQ((uint16_t) 10, response->SubDevice());
-  OLA_ASSERT_EQ(RDMCommand::SET_COMMAND_RESPONSE,
-                       response->CommandClass());
+  OLA_ASSERT_EQ(RDMCommand::SET_COMMAND_RESPONSE, response->CommandClass());
   OLA_ASSERT_EQ((uint16_t) 296, response->ParamId());
-  OLA_ASSERT_EQ(static_cast<uint8_t*>(NULL),
-                       response->ParamData());
+  OLA_ASSERT_EQ(static_cast<uint8_t*>(NULL), response->ParamData());
   OLA_ASSERT_EQ(0u, response->ParamDataSize());
   delete response;
 
@@ -772,13 +759,11 @@ void RDMCommandTest::testGetResponseFromData() {
   OLA_ASSERT_EQ((uint8_t) ola::rdm::RDM_ACK, response->ResponseType());
   OLA_ASSERT_EQ((uint8_t) 0, response->MessageCount());
   OLA_ASSERT_EQ((uint16_t) 10, response->SubDevice());
-  OLA_ASSERT_EQ(RDMCommand::GET_COMMAND_RESPONSE,
-                       response->CommandClass());
+  OLA_ASSERT_EQ(RDMCommand::GET_COMMAND_RESPONSE, response->CommandClass());
   OLA_ASSERT_EQ((uint16_t) 296, response->ParamId());
   OLA_ASSERT_EQ(data_value,
-                       *(reinterpret_cast<uint32_t*>(response->ParamData())));
-  OLA_ASSERT_EQ((unsigned int) sizeof(data_value),
-                       response->ParamDataSize());
+                *(reinterpret_cast<uint32_t*>(response->ParamData())));
+  OLA_ASSERT_EQ((unsigned int) sizeof(data_value), response->ParamDataSize());
   delete response;
 }
 
@@ -818,7 +803,7 @@ void RDMCommandTest::testCombineResponses() {
       &response2);
   OLA_ASSERT_NOT_NULL(combined_response);
   OLA_ASSERT_EQ(RDMCommand::GET_COMMAND_RESPONSE,
-                       combined_response->CommandClass());
+                combined_response->CommandClass());
   OLA_ASSERT_EQ(source, combined_response->SourceUID());
   OLA_ASSERT_EQ(destination, combined_response->DestinationUID());
   OLA_ASSERT_EQ((uint8_t) 0, combined_response->TransactionNumber());
@@ -828,11 +813,8 @@ void RDMCommandTest::testCombineResponses() {
   OLA_ASSERT_EQ(8u, combined_response->ParamDataSize());
   const uint8_t *combined_data = combined_response->ParamData();
   const uint32_t expected_data[] = {0x5a5a5a5a, 0xa5a5a5a5};
-  OLA_ASSERT_EQ(0, memcmp(expected_data,
-                          combined_data,
-                          sizeof(expected_data)));
+  OLA_ASSERT_EQ(0, memcmp(expected_data, combined_data, sizeof(expected_data)));
   delete combined_response;
-
 
   // try to combine with a response with no data
   RDMGetResponse response3(source,
@@ -850,7 +832,7 @@ void RDMCommandTest::testCombineResponses() {
       &response3);
   OLA_ASSERT_NOT_NULL(combined_response);
   OLA_ASSERT_EQ(RDMCommand::GET_COMMAND_RESPONSE,
-                       combined_response->CommandClass());
+                combined_response->CommandClass());
   OLA_ASSERT_EQ(source, combined_response->SourceUID());
   OLA_ASSERT_EQ(destination, combined_response->DestinationUID());
   OLA_ASSERT_EQ((uint8_t) 0, combined_response->TransactionNumber());
@@ -893,13 +875,12 @@ void RDMCommandTest::testCombineResponses() {
                            reinterpret_cast<uint8_t*>(&data_value),
                            sizeof(data_value));  // data length
 
-
   combined_response = RDMResponse::CombineResponses(
       &response5,
       &response4);
   OLA_ASSERT_NOT_NULL(combined_response);
   OLA_ASSERT_EQ(RDMCommand::SET_COMMAND_RESPONSE,
-                       combined_response->CommandClass());
+                combined_response->CommandClass());
   OLA_ASSERT_EQ(source, combined_response->SourceUID());
   OLA_ASSERT_EQ(destination, combined_response->DestinationUID());
   OLA_ASSERT_EQ((uint8_t) 0, combined_response->TransactionNumber());
@@ -910,6 +891,56 @@ void RDMCommandTest::testCombineResponses() {
   combined_data = combined_response->ParamData();
   OLA_ASSERT_EQ(data_value,
                 *(reinterpret_cast<const uint32_t*>(combined_data)));
+  delete combined_response;
+
+  // combine two responses so that the size exceeds 231 bytes
+  const unsigned int first_block_size = 200;
+  const unsigned int second_block_size = 100;
+  uint8_t data_block1[first_block_size];
+  uint8_t data_block2[second_block_size];
+  uint8_t expected_combined_data[first_block_size + second_block_size];
+  memset(data_block1, 0xff, first_block_size);
+  memset(data_block2, 0xac, second_block_size);
+  memcpy(expected_combined_data, data_block1, first_block_size);
+  memcpy(expected_combined_data + first_block_size, data_block2,
+         second_block_size);
+
+  RDMSetResponse response6(source,
+                           destination,
+                           0,  // transaction #
+                           ola::rdm::RDM_ACK,  // response type
+                           0,  // message count
+                           10,  // sub device
+                           param_id,  // param id
+                           data_block1,
+                           sizeof(data_block1));
+  RDMSetResponse response7(source,
+                           destination,
+                           1,  // transaction #
+                           ola::rdm::RDM_ACK,  // response type
+                           0,  // message count
+                           10,  // sub device
+                           param_id,  // param id
+                           data_block2,
+                           sizeof(data_block2));
+
+  combined_response = RDMResponse::CombineResponses(
+      &response6,
+      &response7);
+  OLA_ASSERT_NOT_NULL(combined_response);
+  OLA_ASSERT_EQ(RDMCommand::SET_COMMAND_RESPONSE,
+                combined_response->CommandClass());
+  OLA_ASSERT_EQ(source, combined_response->SourceUID());
+  OLA_ASSERT_EQ(destination, combined_response->DestinationUID());
+  OLA_ASSERT_EQ((uint8_t) 0, combined_response->TransactionNumber());
+  OLA_ASSERT_EQ((uint8_t) 0, combined_response->MessageCount());
+  OLA_ASSERT_EQ((uint16_t) 10, combined_response->SubDevice());
+  OLA_ASSERT_EQ(param_id, combined_response->ParamId());
+  OLA_ASSERT_EQ(300u, combined_response->ParamDataSize());
+  ASSERT_DATA_EQUALS(__LINE__, expected_combined_data,
+                     first_block_size + second_block_size,
+                     combined_response->ParamData(),
+                     combined_response->ParamDataSize());
   delete combined_response;
 }
 
@@ -1037,12 +1068,11 @@ void RDMCommandTest::testDiscoveryCommand() {
   uint8_t *data = new uint8_t[length];
   OLA_ASSERT_TRUE(request->Pack(data, &length));
 
-  bool matches = VerifyMatches(
+  OLA_ASSERT_TRUE(VerifyMatches(
       EXPECTED_DISCOVERY_REQUEST,
       sizeof(EXPECTED_DISCOVERY_REQUEST),
       data,
-      length);
-  OLA_ASSERT_TRUE(matches);
+      length));
   delete[] data;
 }
 
@@ -1065,12 +1095,11 @@ void RDMCommandTest::testMuteCommand() {
   uint8_t *data = new uint8_t[length];
   OLA_ASSERT_TRUE(request->Pack(data, &length));
 
-  bool matches = VerifyMatches(
+  OLA_ASSERT_TRUE(VerifyMatches(
       EXPECTED_MUTE_REQUEST,
       sizeof(EXPECTED_MUTE_REQUEST),
       data,
-      length);
-  OLA_ASSERT_TRUE(matches);
+      length));
   delete[] data;
 }
 
@@ -1093,11 +1122,10 @@ void RDMCommandTest::testUnMuteRequest() {
   uint8_t *data = new uint8_t[length];
   OLA_ASSERT_TRUE(request->Pack(data, &length));
 
-  bool matches = VerifyMatches(
+  OLA_ASSERT_TRUE(VerifyMatches(
       EXPECTED_UNMUTE_REQUEST,
       sizeof(EXPECTED_UNMUTE_REQUEST),
       data,
-      length);
-  OLA_ASSERT_TRUE(matches);
+      length));
   delete[] data;
 }
