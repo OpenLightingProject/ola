@@ -116,23 +116,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(DummyPortTest);
 
 void DummyPortTest::HandleRDMResponse(ola::rdm::rdm_response_code code,
                                       const ola::rdm::RDMResponse *response,
-                                      const vector<string> &packets) {
+                                      const vector<string>&) {
   OLA_ASSERT_EQ(m_expected_code, code);
   if (m_expected_response)
     OLA_ASSERT(*m_expected_response == *response);
   else
     OLA_ASSERT_EQ(m_expected_response, response);
-
-  if (code == ola::rdm::RDM_COMPLETED_OK) {
-    OLA_ASSERT(response);
-    OLA_ASSERT_EQ((size_t) 1, packets.size());
-    ola::rdm::rdm_response_code code;
-    ola::rdm::RDMResponse *raw_response =
-      ola::rdm::RDMResponse::InflateFromData(packets[0], &code);
-    OLA_ASSERT(raw_response);
-    OLA_ASSERT(*m_expected_response == *raw_response);
-    delete raw_response;
-  }
   delete response;
   delete m_expected_response;
   m_expected_response = NULL;

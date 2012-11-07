@@ -686,15 +686,11 @@ bool DummyRDMDevice::CheckForBroadcastSubdeviceOrData(
 
 
 /**
- * Run the RDM callback with a response. This takes care of creating the fake
- * raw data.
+ * Run the RDM callback with a response.
  */
 void DummyRDMDevice::RunRDMCallback(ola::rdm::RDMCallback *callback,
                                     ola::rdm::RDMResponse *response) {
-  string raw_response;
-  response->Pack(&raw_response);
   vector<string> packets;
-  packets.push_back(raw_response);
   callback->Run(ola::rdm::RDM_COMPLETED_OK, response, packets);
 }
 }  // dummy
