@@ -27,6 +27,7 @@
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/RDMCommand.h"
+#include "ola/rdm/RDMCommandSerializer.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
@@ -42,6 +43,7 @@ using std::string;
 using ola::network::NetworkToHost;
 using ola::network::HostToNetwork;
 using ola::rdm::RDMCommand;
+using ola::rdm::RDMCommandSerializer;
 using ola::rdm::RDMDiscoveryCallback;
 using ola::rdm::RDMRequest;
 using ola::rdm::UID;
@@ -395,13 +397,13 @@ void DmxTriWidgetImpl::SendRawRDMRequest(
         1);  // port id is always 1
   delete raw_request;
 
-  unsigned int packet_size = request->Size();
+  unsigned int packet_size = RDMCommandSerializer::RequiredSize(*request);
   uint8_t *send_buffer = new uint8_t[packet_size + 2];
 
   send_buffer[0] = RAW_RDM_COMMAND_ID;
   send_buffer[1] = 0;
 
-  if (!request->Pack(send_buffer + 2, &packet_size)) {
+  if (!RDMCommandSerializer::Pack(*request, send_buffer + 2, &packet_size)) {
     OLA_WARN << "Failed to pack RDM request";
     delete[] send_buffer;
     callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);

@@ -26,6 +26,7 @@
 
 #include "ola/Callback.h"
 #include "ola/Logging.h"
+#include "ola/rdm/RDMCommandSerializer.h"
 #include "plugins/usbpro/DmxterWidget.h"
 #include "plugins/usbpro/CommonWidgetTest.h"
 #include "ola/testing/TestUtils.h"
@@ -33,6 +34,7 @@
 
 
 using ola::plugin::usbpro::DmxterWidget;
+using ola::rdm::RDMCommandSerializer;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::GetResponseFromData;
@@ -238,15 +240,11 @@ void DmxterWidgetTest::testSendRDMRequest() {
 
   const RDMRequest *request = NewRequest(source, destination, NULL, 0);
 
-  unsigned int size = request->Size();
+  unsigned int size = RDMCommandSerializer::RequiredSize(*request);
   uint8_t *expected_packet = new uint8_t[size + 1];
   expected_packet[0] = 0xcc;
-  OLA_ASSERT(request->PackWithControllerParams(
-        expected_packet + 1,
-        &size,
-        new_source,
-        0,
-        1));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*request, expected_packet + 1, &size,
+                                        new_source, 0, 1));
 
   uint8_t return_packet[] = {
     0x00, 14,  // response code 'ok'
@@ -278,12 +276,8 @@ void DmxterWidgetTest::testSendRDMRequest() {
   // now check broadcast
   request = NewRequest(source, bcast_destination, NULL, 0);
 
-  OLA_ASSERT(request->PackWithControllerParams(
-        expected_packet + 1,
-        &size,
-        new_source,
-        1,  // increment transaction #
-        1));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*request, expected_packet + 1, &size,
+                                        new_source, 1, 1));
 
   m_endpoint->AddExpectedUsbProDataAndReturn(
       RDM_BROADCAST_REQUEST_LABEL,
@@ -326,23 +320,27 @@ void DmxterWidgetTest::testSendRDMMute() {
       NULL,
       0);
 
-  unsigned int request_size = rdm_request->Size();
+  unsigned int request_size = RDMCommandSerializer::RequiredSize(*rdm_request);
   uint8_t *expected_request_frame = new uint8_t[request_size + 1];
   expected_request_frame[0] = 0xcc;
-  OLA_ASSERT(rdm_request->Pack(expected_request_frame + 1, &request_size));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*rdm_request,
+                                        expected_request_frame + 1,
+                                        &request_size));
 
   // response
   // to keep things simple here we return the TEST_RDM_DATA.
   auto_ptr<const RDMResponse> response(
     GetResponseFromData(rdm_request, TEST_RDM_DATA, sizeof(TEST_RDM_DATA)));
 
-  unsigned int response_size = response->Size();
+  unsigned int response_size = RDMCommandSerializer::RequiredSize(
+      *response.get());
   uint8_t *response_frame = new uint8_t[response_size + 3];
   response_frame[0] = 0;  // version
   response_frame[1] = 14;  // status ok
   response_frame[2] = ola::rdm::RDMCommand::START_CODE;
   memset(&response_frame[3], 0, response_size);
-  OLA_ASSERT(response->Pack(&response_frame[3], &response_size));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*response, &response_frame[3],
+                                        &response_size));
   response_size += 3;
 
   // add the expected response, send and verify
@@ -390,10 +388,12 @@ void DmxterWidgetTest::testSendRDMDUB() {
       REQUEST_DATA,
       sizeof(REQUEST_DATA));
 
-  unsigned int request_size = rdm_request->Size();
+  unsigned int request_size = RDMCommandSerializer::RequiredSize(*rdm_request);
   uint8_t *expected_request_frame = new uint8_t[request_size + 1];
   expected_request_frame[0] = 0xcc;
-  OLA_ASSERT(rdm_request->Pack(expected_request_frame + 1, &request_size));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*rdm_request,
+                                        expected_request_frame + 1,
+                                        &request_size));
 
   // a 4 byte response means a timeout
   static const uint8_t TIMEOUT_RESPONSE[] = {0, 17};
@@ -431,10 +431,12 @@ void DmxterWidgetTest::testSendRDMDUB() {
       REQUEST_DATA,
       sizeof(REQUEST_DATA));
 
-  request_size = rdm_request->Size();
+  request_size = RDMCommandSerializer::RequiredSize(*rdm_request);
   expected_request_frame = new uint8_t[request_size + 1];
   expected_request_frame[0] = 0xcc;
-  OLA_ASSERT(rdm_request->Pack(expected_request_frame + 1, &request_size));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*rdm_request,
+                                        expected_request_frame + 1,
+                                        &request_size));
 
   // something that looks like a DUB response
   static const uint8_t FAKE_RESPONSE[] = {0x00, 19, 0xfe, 0xfe, 0xaa, 0xaa};
@@ -477,15 +479,11 @@ void DmxterWidgetTest::testErrorCodes() {
 
   const RDMRequest *request = NewRequest(source, destination, NULL, 0);
 
-  unsigned int size = request->Size();
+  unsigned int size = RDMCommandSerializer::RequiredSize(*request);
   uint8_t *expected_packet = new uint8_t[size + 1];
   expected_packet[0] = 0xcc;
-  OLA_ASSERT(request->PackWithControllerParams(
-        expected_packet + 1,
-        &size,
-        new_source,
-        0,
-        1));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*request, expected_packet + 1, &size,
+                                        new_source, 0, 1));
 
   uint8_t return_packet[] = {
     0x00, 1,  // checksum failure
@@ -634,15 +632,11 @@ void DmxterWidgetTest::testErrorConditions() {
 
   const RDMRequest *request = NewRequest(source, destination, NULL, 0);
 
-  unsigned int size = request->Size();
+  unsigned int size = RDMCommandSerializer::RequiredSize(*request);
   uint8_t *expected_packet = new uint8_t[size + 1];
   expected_packet[0] = 0xcc;
-  OLA_ASSERT(request->PackWithControllerParams(
-        expected_packet + 1,
-        &size,
-        new_source,
-        0,
-        1));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*request, expected_packet + 1, &size,
+             new_source, 0, 1));
 
   // to small to be valid
   uint8_t return_packet[] = {0x00};
@@ -668,12 +662,8 @@ void DmxterWidgetTest::testErrorConditions() {
   // check mismatched version
   request = NewRequest(source, destination, NULL, 0);
 
-  OLA_ASSERT(request->PackWithControllerParams(
-        expected_packet + 1,
-        &size,
-        new_source,
-        1,  // increment transaction #
-        1));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*request, expected_packet + 1, &size,
+             new_source, 1, 1));
 
   // non-0 version
   uint8_t return_packet2[] = {0x01, 0x11, 0xcc};

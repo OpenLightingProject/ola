@@ -23,6 +23,7 @@
 #include <ola/Logging.h>
 #include <ola/network/NetworkUtils.h>
 #include <ola/rdm/RDMCommand.h>
+#include <ola/rdm/RDMCommandSerializer.h>
 #include "plugins/e131/e131/RDMPDU.h"
 
 namespace ola {
@@ -30,13 +31,14 @@ namespace plugin {
 namespace e131 {
 
 using ola::network::HostToNetwork;
+using ola::rdm::RDMCommandSerializer;
 
 /*
  * Size of the data portion
  */
 unsigned int RDMPDU::DataSize() const {
   if (m_command)
-    return m_command->Size();  // include the start code
+    return RDMCommandSerializer::RequiredSize(*m_command);
   return 0;
 }
 
@@ -59,8 +61,7 @@ bool RDMPDU::PackData(uint8_t *data, unsigned int &length) const {
     return true;
   }
 
-  bool r = m_command->Pack(data, &length);
-  return r;
+  return RDMCommandSerializer::Pack(*m_command, data, &length);
 }
 
 

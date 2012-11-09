@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <ola/io/OutputStream.h>
 #include <ola/rdm/RDMEnums.h>
+#include <ola/rdm/RDMPacket.h>
 #include <ola/rdm/RDMResponseCodes.h>
 #include <ola/rdm/UID.h>
 #include <sstream>
@@ -43,6 +44,8 @@ typedef enum {
 /*
  * The base class that all RDM commands inherit from.
  * RDMCommands are immutable.
+ * RDMCommands may hold more than 231 bytes of data. Use the
+ * RDMCommandSerializer class if you want the wire format.
  * TODO: make these reference counted so that fan out during broadcasts isn't
  *   as expensive.
  */
@@ -97,13 +100,11 @@ class RDMCommand {
     uint8_t TransactionNumber() const { return m_transaction_number; }
     uint8_t MessageCount() const { return m_message_count; }
     uint16_t SubDevice() const { return m_sub_device; }
+    uint8_t PortIdResponseType() const { return m_port_id; }
     uint16_t ParamId() const { return m_param_id; }
     uint8_t *ParamData() const { return m_data; }
     unsigned int ParamDataSize() const { return m_data_length; }
 
-    // Pack this RDMCommand into a buffer or as a string
-    unsigned int Size() const;
-    bool Pack(uint8_t *buffer, unsigned int *size) const;
     void Write(ola::io::OutputStream *stream) const;
 
     static const uint8_t START_CODE = 0xcc;
@@ -122,34 +123,12 @@ class RDMCommand {
                const uint8_t *data,
                unsigned int length);
 
-    // don't use anything other than uint8_t here otherwise we can get
-    // alignment issues.
-    typedef struct {
-      uint8_t sub_start_code;
-      uint8_t message_length;
-      uint8_t destination_uid[UID::UID_SIZE];
-      uint8_t source_uid[UID::UID_SIZE];
-      uint8_t transaction_number;
-      uint8_t port_id;
-      uint8_t message_count;
-      uint8_t sub_device[2];
-      uint8_t command_class;
-      uint8_t param_id[2];
-      uint8_t param_data_length;
-    } rdm_command_message;
-
-    bool Pack(uint8_t *buffer,
-              unsigned int *size,
-              const UID &source,
-              uint8_t transaction_number,
-              uint8_t port_id) const;
-
     void SetParamData(const uint8_t *data, unsigned int length);
 
     static rdm_response_code VerifyData(
         const uint8_t *data,
         unsigned int length,
-        rdm_command_message *command_message);
+        RDMCommandHeader *command_message);
 
     static RDMCommandClass ConvertCommandClass(uint8_t command_type);
 
@@ -162,9 +141,6 @@ class RDMCommand {
     uint16_t m_param_id;
     uint8_t *m_data;
     unsigned int m_data_length;
-
-    static const uint8_t SUB_START_CODE = 0x01;
-    static const unsigned int CHECKSUM_LENGTH = 2;
 
     RDMCommand(const RDMCommand &other);
     bool operator=(const RDMCommand &other) const;
@@ -226,15 +202,6 @@ class RDMRequest: public RDMCommand {
         ParamId(),
         ParamData(),
         ParamDataSize());
-    }
-
-    virtual bool PackWithControllerParams(
-        uint8_t *buffer,
-        unsigned int *size,
-        const UID &source,
-        uint8_t transaction_number,
-        uint8_t port_id) const {
-      return Pack(buffer, size, source, transaction_number, port_id);
     }
 
     // Convert a block of data to an RDMCommand object

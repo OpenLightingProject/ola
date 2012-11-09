@@ -26,6 +26,7 @@
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
+#include "ola/rdm/RDMCommandSerializer.h"
 #include "ola/rdm/UID.h"
 #include "plugins/usbpro/EnttecUsbProWidget.h"
 #include "plugins/usbpro/CommonWidgetTest.h"
@@ -35,6 +36,7 @@
 using ola::plugin::usbpro::EnttecUsbProWidget;
 using ola::rdm::RDMDiscoveryRequest;
 using ola::rdm::GetResponseFromData;
+using ola::rdm::RDMCommandSerializer;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
@@ -173,13 +175,11 @@ const RDMRequest *EnttecUsbProWidgetTest::NewRequest(const UID &destination,
  */
 uint8_t *EnttecUsbProWidgetTest::PackRDMRequest(const RDMRequest *request,
                                                 unsigned int *size) {
-  unsigned int request_size = request->Size();
+  unsigned int request_size = RDMCommandSerializer::RequiredSize(*request);
   uint8_t *rdm_data = new uint8_t[request_size + 1];
   rdm_data[0] = ola::rdm::RDMCommand::START_CODE;
   memset(&rdm_data[1], 0, request_size);
-  OLA_ASSERT(request->Pack(
-        &rdm_data[1],
-        &request_size));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*request, &rdm_data[1], &request_size));
   *size = request_size + 1;
   return rdm_data;
 }
@@ -190,14 +190,13 @@ uint8_t *EnttecUsbProWidgetTest::PackRDMRequest(const RDMRequest *request,
  */
 uint8_t *EnttecUsbProWidgetTest::PackRDMResponse(const RDMResponse *response,
                                                  unsigned int *size) {
-  unsigned int response_size = response->Size();
+  unsigned int response_size = RDMCommandSerializer::RequiredSize(*response);
   uint8_t *rdm_data = new uint8_t[response_size + 2];
   rdm_data[0] = 0;  // status ok
   rdm_data[1] = ola::rdm::RDMCommand::START_CODE;
   memset(&rdm_data[2], 0, response_size);
-  OLA_ASSERT(response->Pack(
-        &rdm_data[2],
-        &response_size));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*response, &rdm_data[2],
+                                        &response_size));
   *size = response_size + 2;
   return rdm_data;
 }

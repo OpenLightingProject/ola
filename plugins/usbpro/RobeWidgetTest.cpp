@@ -28,6 +28,7 @@
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
+#include "ola/rdm/RDMCommandSerializer.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/UID.h"
 #include "plugins/usbpro/BaseRobeWidget.h"
@@ -41,6 +42,7 @@ using ola::DmxBuffer;
 using ola::plugin::usbpro::BaseRobeWidget;
 using ola::plugin::usbpro::RobeWidget;
 using ola::rdm::GetResponseFromData;
+using ola::rdm::RDMCommandSerializer;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
@@ -171,12 +173,11 @@ const RDMRequest *RobeWidgetTest::NewRequest(const UID &destination,
  */
 uint8_t *RobeWidgetTest::PackRDMRequest(const RDMRequest *request,
                                         unsigned int *size) {
-  unsigned int request_size = request->Size() + PADDING_SIZE;
+  unsigned int request_size = RDMCommandSerializer::RequiredSize(*request) +
+    PADDING_SIZE;
   uint8_t *rdm_data = new uint8_t[request_size];
   memset(rdm_data, 0, request_size);
-  OLA_ASSERT(request->Pack(
-        rdm_data,
-        &request_size));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*request, rdm_data, &request_size));
   *size = request_size + PADDING_SIZE;
   return rdm_data;
 }
@@ -187,12 +188,11 @@ uint8_t *RobeWidgetTest::PackRDMRequest(const RDMRequest *request,
  */
 uint8_t *RobeWidgetTest::PackRDMResponse(const RDMResponse *response,
                                          unsigned int *size) {
-  unsigned int response_size = response->Size() + PADDING_SIZE;
+  unsigned int response_size = RDMCommandSerializer::RequiredSize(*response) +
+    PADDING_SIZE;
   uint8_t *rdm_data = new uint8_t[response_size];
   memset(rdm_data, 0, response_size);
-  OLA_ASSERT(response->Pack(
-        rdm_data,
-        &response_size));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*response, rdm_data, &response_size));
   *size = response_size + PADDING_SIZE;
   return rdm_data;
 }

@@ -26,6 +26,7 @@
 
 #include "ola/Callback.h"
 #include "ola/Logging.h"
+#include "ola/rdm/RDMCommandSerializer.h"
 #include "plugins/usbpro/ArduinoWidget.h"
 #include "plugins/usbpro/CommonWidgetTest.h"
 #include "ola/testing/TestUtils.h"
@@ -34,6 +35,7 @@
 
 using ola::plugin::usbpro::ArduinoWidget;
 using ola::rdm::GetResponseFromData;
+using ola::rdm::RDMCommandSerializer;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
@@ -216,12 +218,10 @@ const RDMRequest *ArduinoWidgetTest::NewRequest(const UID &destination,
  */
 uint8_t *ArduinoWidgetTest::PackRDMRequest(const RDMRequest *request,
                                            unsigned int *size) {
-  unsigned int request_size = request->Size();
+  unsigned int request_size = RDMCommandSerializer::RequiredSize(*request);
   uint8_t rdm_data[request_size + 1];
   rdm_data[0] = ola::rdm::RDMCommand::START_CODE;
-  OLA_ASSERT(request->Pack(
-        rdm_data + 1,
-        &request_size));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*request, rdm_data + 1, &request_size));
   uint8_t *frame = BuildUsbProMessage(RDM_REQUEST_LABEL,
                                       rdm_data,
                                       request_size + 1,
@@ -235,13 +235,12 @@ uint8_t *ArduinoWidgetTest::PackRDMRequest(const RDMRequest *request,
  */
 uint8_t *ArduinoWidgetTest::PackRDMResponse(const RDMResponse *response,
                                             unsigned int *size) {
-  unsigned int response_size = response->Size();
+  unsigned int response_size = RDMCommandSerializer::RequiredSize(*response);
   uint8_t rdm_data[response_size + 2];
   rdm_data[0] = ola::rdm::RDM_COMPLETED_OK;
   rdm_data[1] = ola::rdm::RDMCommand::START_CODE;
-  OLA_ASSERT(response->Pack(
-        rdm_data + 2,
-        &response_size));
+  OLA_ASSERT(
+      RDMCommandSerializer::Pack(*response, rdm_data + 2, &response_size));
   uint8_t *frame = BuildUsbProMessage(RDM_REQUEST_LABEL,
                                       rdm_data,
                                       response_size + 2,
@@ -368,7 +367,7 @@ void ArduinoWidgetTest::testErrorCodes() {
   // twiddle the penultimate bit so that the checksum fails
   response_frame[response_size - 2] += 1;
   packets.push_back(string(reinterpret_cast<char*>(response_frame + 6),
-        response->Size()));
+                           RDMCommandSerializer::RequiredSize(*response)));
 
   // add the expected response, send and verify
   m_endpoint->AddExpectedDataAndReturn(
@@ -397,13 +396,12 @@ void ArduinoWidgetTest::testErrorCodes() {
 
   //  we truncate the response here
   response.reset(GetResponseFromData(rdm_request));
-  response_size = response->Size();
+  response_size = RDMCommandSerializer::RequiredSize(*response);
   uint8_t rdm_data[response_size + 2];
   rdm_data[0] = ola::rdm::RDM_COMPLETED_OK;
   rdm_data[1] = ola::rdm::RDMCommand::START_CODE;
-  OLA_ASSERT(response->Pack(
-        rdm_data + 2,
-        &response_size));
+  OLA_ASSERT(
+      RDMCommandSerializer::Pack(*response, rdm_data + 2, &response_size));
   response_frame = BuildUsbProMessage(
       RDM_REQUEST_LABEL,
       rdm_data,
@@ -438,10 +436,9 @@ void ArduinoWidgetTest::testErrorCodes() {
       &expected_request_frame_size);
 
   response.reset(GetResponseFromData(rdm_request));
-  response_size = response->Size();
-  OLA_ASSERT(response->Pack(
-        rdm_data + 2,
-        &response_size));
+  response_size = RDMCommandSerializer::RequiredSize(*response);
+  OLA_ASSERT(
+      RDMCommandSerializer::Pack(*response, rdm_data + 2, &response_size));
   // twiddle the transaction number
   rdm_data[16] += 1;
   // 'correct' the checksum
@@ -481,7 +478,7 @@ void ArduinoWidgetTest::testErrorCodes() {
       &expected_request_frame_size);
 
   response.reset(GetResponseFromData(rdm_request));
-  response_size = response->Size();
+  response_size = RDMCommandSerializer::RequiredSize(*response);
   // change the sub device
   rdm_data[20] += 1;
   // 'correct' the checksum

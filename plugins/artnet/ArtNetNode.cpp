@@ -32,6 +32,7 @@
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/SocketAddress.h"
 #include "ola/rdm/RDMEnums.h"
+#include "ola/rdm/RDMCommandSerializer.h"
 #include "plugins/artnet/ArtNetNode.h"
 
 
@@ -49,6 +50,7 @@ using ola::network::LittleEndianToHost;
 using ola::network::NetworkToHost;
 using ola::network::UDPSocket;
 using ola::rdm::RDMDiscoveryCallback;
+using ola::rdm::RDMCommandSerializer;
 using std::pair;
 using std::string;
 using std::vector;
@@ -1442,7 +1444,7 @@ bool ArtNetNodeImpl::SendRDMCommand(const RDMCommand &command,
   packet.data.rdm.net = m_net_address;
   packet.data.rdm.address = universe;
   unsigned int rdm_size = ARTNET_MAX_RDM_DATA;
-  command.Pack(packet.data.rdm.data, &rdm_size);
+  RDMCommandSerializer::Pack(command, packet.data.rdm.data, &rdm_size);
   unsigned int packet_size = sizeof(packet.data.rdm) - ARTNET_MAX_RDM_DATA +
     rdm_size;
   return SendPacket(packet, packet_size, destination);

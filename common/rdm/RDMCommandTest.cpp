@@ -29,6 +29,7 @@
 #include "ola/io/OutputStream.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/RDMCommand.h"
+#include "ola/rdm/RDMCommandSerializer.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/UID.h"
 #include "ola/testing/TestUtils.h"
@@ -39,6 +40,7 @@ using ola::io::OutputStream;
 using ola::network::HostToNetwork;
 using ola::rdm::GuessMessageType;
 using ola::rdm::RDMCommand;
+using ola::rdm::RDMCommandSerializer;
 using ola::rdm::RDMDiscoveryRequest;
 using ola::rdm::RDMDiscoveryResponse;
 using ola::rdm::RDMGetRequest;
@@ -61,7 +63,7 @@ class RDMCommandTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testNackWithReason);
   CPPUNIT_TEST(testGetResponseFromData);
   CPPUNIT_TEST(testCombineResponses);
-  CPPUNIT_TEST(testPackWithParams);
+  CPPUNIT_TEST(testPack);
   CPPUNIT_TEST(testGuessMessageType);
   CPPUNIT_TEST(testDiscoveryCommand);
   CPPUNIT_TEST(testUnMuteRequest);
@@ -78,7 +80,7 @@ class RDMCommandTest: public CppUnit::TestFixture {
     void testNackWithReason();
     void testGetResponseFromData();
     void testCombineResponses();
-    void testPackWithParams();
+    void testPack();
     void testGuessMessageType();
     void testDiscoveryCommand();
     void testUnMuteRequest();
@@ -240,7 +242,6 @@ void RDMCommandTest::testRDMCommand() {
   OLA_ASSERT_EQ((uint16_t) 296, command.ParamId());
   OLA_ASSERT_EQ(static_cast<uint8_t*>(NULL), command.ParamData());
   OLA_ASSERT_EQ(0u, command.ParamDataSize());
-  OLA_ASSERT_EQ(25u, command.Size());
   OLA_ASSERT_EQ(ola::rdm::RDM_REQUEST, command.CommandType());
   PackAndVerify(command, EXPECTED_GET_BUFFER, sizeof(EXPECTED_GET_BUFFER));
 
@@ -257,7 +258,6 @@ void RDMCommandTest::testRDMCommand() {
                              232);  // data length
 
   OLA_ASSERT_EQ(232u, long_command.ParamDataSize());
-  OLA_ASSERT_EQ(257u, long_command.Size());
 
   uint32_t data_value = 0xa5a5a5a5;
   RDMSetRequest command3(source,
@@ -270,7 +270,6 @@ void RDMCommandTest::testRDMCommand() {
                          reinterpret_cast<uint8_t*>(&data_value),  // data
                          sizeof(data_value));  // data length
 
-  OLA_ASSERT_EQ(29u, command3.Size());
   OLA_ASSERT_EQ(ola::rdm::RDM_REQUEST, command.CommandType());
   PackAndVerify(command3, EXPECTED_SET_BUFFER, sizeof(EXPECTED_SET_BUFFER));
   delete[] data;
@@ -296,11 +295,10 @@ void RDMCommandTest::testOutputStream() {
                         NULL,  // data
                         0);  // data length
   command.Write(&stream);
-  OLA_ASSERT_EQ(command.Size(), output.Size());
 
   uint8_t *raw_command = new uint8_t[output.Size()];
   unsigned int raw_command_size = output.Peek(raw_command, output.Size());
-  OLA_ASSERT_EQ(raw_command_size, command.Size());
+  OLA_ASSERT_EQ(raw_command_size, RDMCommandSerializer::RequiredSize(command));
 
   ASSERT_DATA_EQUALS(__LINE__,
                      EXPECTED_GET_BUFFER,
@@ -323,14 +321,14 @@ void RDMCommandTest::testOutputStream() {
                          reinterpret_cast<uint8_t*>(&data_value),  // data
                          sizeof(data_value));  // data length
 
-  OLA_ASSERT_EQ(29u, command2.Size());
+  OLA_ASSERT_EQ(29u, RDMCommandSerializer::RequiredSize(command2));
 
   command2.Write(&stream);
-  OLA_ASSERT_EQ(command2.Size(), output.Size());
+  OLA_ASSERT_EQ(RDMCommandSerializer::RequiredSize(command2), output.Size());
 
   raw_command = new uint8_t[output.Size()];
   raw_command_size = output.Peek(raw_command, output.Size());
-  OLA_ASSERT_EQ(raw_command_size, command2.Size());
+  OLA_ASSERT_EQ(raw_command_size, RDMCommandSerializer::RequiredSize(command2));
 
   ASSERT_DATA_EQUALS(__LINE__,
                      EXPECTED_SET_BUFFER,
@@ -459,9 +457,9 @@ void RDMCommandTest::PackAndVerify(const RDMCommand &command,
                                    const uint8_t *expected,
                                    unsigned int expected_length) {
   // now check packing
-  unsigned int buffer_size = command.Size();
+  unsigned int buffer_size = RDMCommandSerializer::RequiredSize(command);
   uint8_t *buffer = new uint8_t[buffer_size];
-  OLA_ASSERT_TRUE(command.Pack(buffer, &buffer_size));
+  OLA_ASSERT_TRUE(RDMCommandSerializer::Pack(command, buffer, &buffer_size));
 
   for (unsigned int i = 0 ; i < expected_length; i++) {
     std::stringstream str;
@@ -922,7 +920,7 @@ void RDMCommandTest::testCombineResponses() {
   OLA_ASSERT_EQ((uint8_t) 0, combined_response->MessageCount());
   OLA_ASSERT_EQ((uint16_t) 10, combined_response->SubDevice());
   OLA_ASSERT_EQ(param_id, combined_response->ParamId());
-  OLA_ASSERT_EQ(300u, combined_response->ParamDataSize());
+  OLA_ASSERT_EQ(300, combined_response->ParamDataSize());
   ASSERT_DATA_EQUALS(__LINE__, expected_combined_data,
                      first_block_size + second_block_size,
                      combined_response->ParamData(),
@@ -934,7 +932,7 @@ void RDMCommandTest::testCombineResponses() {
 /**
  * Test that cloning works
  */
-void RDMCommandTest::testPackWithParams() {
+void RDMCommandTest::testPack() {
   UID source(1, 2);
   UID destination(3, 4);
   UID new_source(7, 8);
@@ -949,10 +947,10 @@ void RDMCommandTest::testPackWithParams() {
                             NULL,  // data
                             0);  // data length
 
-  uint8_t *data = new uint8_t[get_command.Size()];
-  unsigned int length = get_command.Size();
-  OLA_ASSERT_TRUE(get_command.PackWithControllerParams(
-      data, &length, new_source, 99, 10));
+  unsigned int length = RDMCommandSerializer::RequiredSize(get_command);
+  uint8_t *data = new uint8_t[length];
+  OLA_ASSERT_TRUE(RDMCommandSerializer::Pack(
+        get_command, data, &length, new_source, 99, 10));
 
   RDMRequest *command = RDMRequest::InflateFromData(data, length);
   OLA_ASSERT_NOT_NULL(command);
@@ -966,8 +964,8 @@ void RDMCommandTest::testPackWithParams() {
   OLA_ASSERT_EQ(RDMCommand::GET_COMMAND, command->CommandClass());
   OLA_ASSERT_EQ((uint16_t) 296, command->ParamId());
   OLA_ASSERT_EQ(static_cast<uint8_t*>(NULL), command->ParamData());
-  OLA_ASSERT_EQ((unsigned int) 0, command->ParamDataSize());
-  OLA_ASSERT_EQ((unsigned int) 25, command->Size());
+  OLA_ASSERT_EQ(0u, command->ParamDataSize());
+  OLA_ASSERT_EQ(25u, RDMCommandSerializer::RequiredSize(*command));
   delete[] data;
   delete command;
 }
@@ -1029,11 +1027,11 @@ void RDMCommandTest::testDiscoveryCommand() {
   OLA_ASSERT_EQ(RDMCommand::DISCOVER_COMMAND, request->CommandClass());
 
   // test pack
-  OLA_ASSERT_EQ(37u, request->Size());
-  unsigned int length = request->Size();
+  unsigned int length = RDMCommandSerializer::RequiredSize(*request);
+  OLA_ASSERT_EQ(37u, length);
 
   uint8_t *data = new uint8_t[length];
-  OLA_ASSERT_TRUE(request->Pack(data, &length));
+  OLA_ASSERT_TRUE(RDMCommandSerializer::Pack(*request, data, &length));
 
   OLA_ASSERT_TRUE(VerifyMatches(
       EXPECTED_DISCOVERY_REQUEST,
@@ -1057,10 +1055,10 @@ void RDMCommandTest::testMuteCommand() {
   OLA_ASSERT_EQ(RDMCommand::DISCOVER_COMMAND, request->CommandClass());
 
   // test pack
-  OLA_ASSERT_EQ(25u, request->Size());
-  unsigned int length = request->Size();
+  unsigned int length = RDMCommandSerializer::RequiredSize(*request);
+  OLA_ASSERT_EQ(25u, length);
   uint8_t *data = new uint8_t[length];
-  OLA_ASSERT_TRUE(request->Pack(data, &length));
+  OLA_ASSERT_TRUE(RDMCommandSerializer::Pack(*request, data, &length));
 
   OLA_ASSERT_TRUE(VerifyMatches(
       EXPECTED_MUTE_REQUEST,
@@ -1084,10 +1082,10 @@ void RDMCommandTest::testUnMuteRequest() {
   OLA_ASSERT_EQ(RDMCommand::DISCOVER_COMMAND, request->CommandClass());
 
   // test pack
-  OLA_ASSERT_EQ(25u, request->Size());
-  unsigned int length = request->Size();
+  unsigned int length = RDMCommandSerializer::RequiredSize(*request);
+  OLA_ASSERT_EQ(25u, length);
   uint8_t *data = new uint8_t[length];
-  OLA_ASSERT_TRUE(request->Pack(data, &length));
+  OLA_ASSERT_TRUE(RDMCommandSerializer::Pack(*request, data, &length));
 
   OLA_ASSERT_TRUE(VerifyMatches(
       EXPECTED_UNMUTE_REQUEST,

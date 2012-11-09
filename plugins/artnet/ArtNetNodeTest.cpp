@@ -33,6 +33,7 @@
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/Socket.h"
 #include "ola/rdm/RDMCommand.h"
+#include "ola/rdm/RDMCommandSerializer.h"
 #include "ola/rdm/RDMResponseCodes.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
@@ -51,6 +52,7 @@ using ola::plugin::artnet::ArtNetNode;
 using ola::plugin::artnet::ArtNetNodeOptions;
 using ola::rdm::RDMCallback;
 using ola::rdm::RDMCommand;
+using ola::rdm::RDMCommandSerializer;
 using ola::rdm::RDMGetRequest;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
@@ -1632,8 +1634,8 @@ void ArtNetNodeTest::testRDMResponder() {
     OLA_ASSERT_EQ((uint16_t) 296, m_rdm_request->ParamId());
     OLA_ASSERT_EQ(static_cast<uint8_t*>(NULL),
                          m_rdm_request->ParamData());
-    OLA_ASSERT_EQ((unsigned int) 0, m_rdm_request->ParamDataSize());
-    OLA_ASSERT_EQ((unsigned int) 25, m_rdm_request->Size());
+    OLA_ASSERT_EQ(0u, m_rdm_request->ParamDataSize());
+    OLA_ASSERT_EQ(25u, RDMCommandSerializer::RequiredSize(*m_rdm_request));
     OLA_ASSERT_EQ(ola::rdm::RDM_REQUEST, m_rdm_request->CommandType());
   }
 

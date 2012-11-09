@@ -25,6 +25,7 @@
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
 #include "ola/rdm/RDMCommand.h"
+#include "ola/rdm/RDMCommandSerializer.h"
 #include "plugins/usbpro/ArduinoRGBDevice.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
 
@@ -32,6 +33,7 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
+using ola::rdm::RDMCommandSerializer;
 using std::string;
 
 const uint8_t ArduinoWidgetImpl::RDM_REQUEST_LABEL = 'R';
@@ -113,16 +115,13 @@ void ArduinoWidgetImpl::SendRDMRequest(
     return;
   }
 
-  unsigned int data_size = request->Size();
+  unsigned int data_size = RDMCommandSerializer::RequiredSize(*request);
   // allow an extra byte for the start code
   uint8_t *data = new uint8_t[data_size + 1];
   data[0] = ola::rdm::RDMCommand::START_CODE;
 
-  if (request->PackWithControllerParams(data + 1,
-                                        &data_size,
-                                        request->SourceUID(),
-                                        m_transaction_id++,
-                                        1)) {
+  if (RDMCommandSerializer::Pack(*request, data + 1, &data_size,
+                                 request->SourceUID(), m_transaction_id++, 1)) {
     data_size++;
     m_rdm_request_callback = on_complete;
     m_pending_request = request;
