@@ -456,7 +456,7 @@ void DmxTriWidgetImpl::DispatchRequest(const ola::rdm::RDMRequest *request,
     uint8_t index;
     uint16_t sub_device;
     uint16_t param_id;
-    uint8_t data[ola::rdm::RDMCommand::MAX_PARAM_DATA_LENGTH];
+    uint8_t data[RDMCommandSerializer::MAX_PARAM_DATA_LENGTH];
   } __attribute__((packed));
 
   rdm_message message;
@@ -494,7 +494,7 @@ void DmxTriWidgetImpl::DispatchRequest(const ola::rdm::RDMRequest *request,
            request->ParamDataSize());
 
   unsigned int size = sizeof(message) -
-    ola::rdm::RDMCommand::MAX_PARAM_DATA_LENGTH + request->ParamDataSize();
+    RDMCommandSerializer::MAX_PARAM_DATA_LENGTH + request->ParamDataSize();
 
   OLA_INFO << "Sending request to " << request->DestinationUID() <<
     " with command " << std::hex << request->CommandClass() << " and param " <<

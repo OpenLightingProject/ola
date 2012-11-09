@@ -48,8 +48,9 @@ class RDMCommandSerializer {
               uint8_t transaction_number,
               uint8_t port_id);
 
-  private:
     enum { MAX_PARAM_DATA_LENGTH = 231 };
+
+  private:
     static const unsigned int CHECKSUM_LENGTH = 2;
 
     static bool PackWithParams(const RDMCommand &request,

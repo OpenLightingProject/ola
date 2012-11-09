@@ -140,14 +140,7 @@ void RDMCommand::Write(ola::io::OutputStream *stream) const {
  * Set the parameter data
  */
 void RDMCommand::SetParamData(const uint8_t *data, unsigned int length) {
-  if (length > MAX_PARAM_DATA_LENGTH) {
-    OLA_WARN << "Attempt to create RDM message with a length > " <<
-      MAX_PARAM_DATA_LENGTH << ", was; " << length;
-    m_data_length = MAX_PARAM_DATA_LENGTH;
-  } else {
-    m_data_length = length;
-  }
-
+  m_data_length = length;
   if (m_data_length > 0 && data != NULL) {
     if (m_data)
       delete[] m_data;

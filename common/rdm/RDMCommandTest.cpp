@@ -920,7 +920,7 @@ void RDMCommandTest::testCombineResponses() {
   OLA_ASSERT_EQ((uint8_t) 0, combined_response->MessageCount());
   OLA_ASSERT_EQ((uint16_t) 10, combined_response->SubDevice());
   OLA_ASSERT_EQ(param_id, combined_response->ParamId());
-  OLA_ASSERT_EQ(300, combined_response->ParamDataSize());
+  OLA_ASSERT_EQ(300u, combined_response->ParamDataSize());
   ASSERT_DATA_EQUALS(__LINE__, expected_combined_data,
                      first_block_size + second_block_size,
                      combined_response->ParamData(),

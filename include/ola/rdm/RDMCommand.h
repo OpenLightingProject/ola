@@ -108,7 +108,6 @@ class RDMCommand {
     void Write(ola::io::OutputStream *stream) const;
 
     static const uint8_t START_CODE = 0xcc;
-    enum { MAX_PARAM_DATA_LENGTH = 231 };
 
   protected:
     uint8_t m_port_id;
