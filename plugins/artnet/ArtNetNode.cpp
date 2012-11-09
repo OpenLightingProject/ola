@@ -1444,7 +1444,10 @@ bool ArtNetNodeImpl::SendRDMCommand(const RDMCommand &command,
   packet.data.rdm.net = m_net_address;
   packet.data.rdm.address = universe;
   unsigned int rdm_size = ARTNET_MAX_RDM_DATA;
-  RDMCommandSerializer::Pack(command, packet.data.rdm.data, &rdm_size);
+  if (!RDMCommandSerializer::Pack(command, packet.data.rdm.data, &rdm_size)) {
+    OLA_WARN << "Failed to construct RDM command";
+    return false;
+  }
   unsigned int packet_size = sizeof(packet.data.rdm) - ARTNET_MAX_RDM_DATA +
     rdm_size;
   return SendPacket(packet, packet_size, destination);
