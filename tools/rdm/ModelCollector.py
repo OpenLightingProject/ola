@@ -242,6 +242,7 @@ class ModelCollector(object):
       # proceed to the fetch now
       self._NextState()
     else:
+      self.queued_message_failures = 0
       self._FetchQueuedMessages()
 
   def _FetchNextPersonality(self):
@@ -291,10 +292,6 @@ class ModelCollector(object):
                      ['advisory'])
     logging.debug('Sent GET QUEUED_MESSAGE')
 
-  def _QueuedMessageFound(self):
-    if self.work_state == self.EMPTYING_QUEUE:
-      self._FetchQueuedMessages()
-
   def _RDMRequestComplete(self, response, unpacked_data, unpack_exception):
     if not self._CheckForAckOrNack(response):
       return
@@ -319,7 +316,7 @@ class ModelCollector(object):
           response.command_class == OlaClient.RDM_GET_RESPONSE and
           response.pid == self.outstanding_pid.value):
         # we found what we were looking for
-        print "found, but nacked"
+        logging.debug('Received matching queued message, response was NACK')
         self.outstanding_pid = None
         self._NextState()
 
@@ -333,6 +330,12 @@ class ModelCollector(object):
 
     elif unpack_exception:
       print 'Invalid Param data: %s' % unpack_exception
+      self.queued_message_failures += 1
+      if self.queued_message_failures >= 10:
+        # declare this bad and move on
+        self._NextState()
+      else:
+        self._FetchQueuedMessages()
     else:
       status_message_pid = self.pid_store.GetName('STATUS_MESSAGE')
       queued_message_pid = self.pid_store.GetName('QUEUED_MESSAGE')
