@@ -372,7 +372,7 @@ AC_ARG_ENABLE(
 
 have_liblo="no"
 
-if test "${enable_liblo}" != "no"; then
+if test "${enable_osc}" != "no"; then
   PKG_CHECK_MODULES(liblo, [liblo >= 0.26], [have_liblo="yes"], [true])
 fi
 AM_CONDITIONAL(HAVE_LIBLO, test "${have_liblo}" = "yes")
