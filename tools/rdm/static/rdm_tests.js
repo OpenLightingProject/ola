@@ -203,6 +203,7 @@ RDMTests.prototype.bind_events_to_doms = function() {
 
   // Elements on the responder test page
   $('#universe_options').change(function() { rdmtests.update_device_list(); });
+  $('#devices_list').change(function() { rdmtests.device_list_changed(); });
 
   $('#rdm-discovery-button').button().click(
       function() { rdmtests.run_discovery(); }
@@ -471,6 +472,15 @@ RDMTests.prototype.update_device_list = function() {
       });
     }
   });
+};
+
+
+/**
+ * Called when the selected device changes.
+ */
+RDMTests.prototype.device_list_changed = function() {
+  $('#rdm-tests-selection-subset').attr('checked', true);
+  this._reset_failed_tests_list();
 };
 
 
@@ -884,8 +894,7 @@ RDMTests.prototype._stat_tests_response = function(data) {
       return;
     }
     this.timestamp = data['timestamp'];
-    var failed_tests = $('#rdm-tests-selection-failed_tests');
-    failed_tests.html('');
+
     var failed_defs = new Array();
     for (i in data['test_results']) {
       switch (data['test_results'][i]['state']) {
@@ -894,9 +903,9 @@ RDMTests.prototype._stat_tests_response = function(data) {
           break;
       }
     }
-    if ($(failed_tests).next().length > 0) {
-      failed_tests.multiselect('destroy');
-    }
+
+    this._reset_failed_tests_list();
+    var failed_tests = $('#rdm-tests-selection-failed_tests');
     for (var i = 0; i < failed_defs.length; ++i) {
       failed_tests.append($('<option />')
                   .val(failed_defs[i])
@@ -926,6 +935,18 @@ RDMTests.prototype._update_universe_select = function(select, universes) {
     select.append(
       $('<option />').val(universes[i]._id).text(text));
   });
+};
+
+
+/**
+ * Reset failed tests
+ */
+RDMTests.prototype._reset_failed_tests_list = function() {
+  var failed_tests = $('#rdm-tests-selection-failed_tests');
+  if (failed_tests.next().length > 0) {
+    failed_tests.multiselect('destroy');
+  }
+  failed_tests.html('');
 };
 
 

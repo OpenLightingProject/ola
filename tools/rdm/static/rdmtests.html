@@ -313,11 +313,13 @@
           <a href='#'><img id='rdm-discovery-button' alt='Run Discovery' src='/static/images/discovery.png' title='Run Full Discovery' /></a>
        </fieldset>
        <fieldset>
-         <legend>Delay after sending broadcast SETs</legend>
+         <legend>RDM Options</legend>
+          Delay after sending broadcast SETs
+
           <input id='write_delay' maxlength='16' size='4' value='0'> milliseconds
        </fieldset>
        <fieldset>
-        <legend>DMX Options</legend>
+        <legend>DMX512 Options</legend>
          <div>
            <input type='checkbox' id='rdm-tests-send_dmx_in_bg'>
              <label for='rdm-tests-send_dmx_in_bg'>Send DMX in background</label>
@@ -339,7 +341,8 @@
          <table>
           <tr>
            <td>
-             <input type='radio' name='rdm-tests-selection' id='rdm-tests-selection-subset' class='rdm-tests-selection' checked='checked' />Select Tests
+             <input type='radio' name='rdm-tests-selection' id='rdm-tests-selection-subset' class='rdm-tests-selection' checked='checked' />
+             <label for='rdm-tests-selection-subset'>Select Tests</label>
            </td>
            <td>
              <select id='rdm-tests-selection-tests_list' class='rdm-tests-selection-multiselect' multiple='multiple' name='subset_test_defs'>
@@ -348,7 +351,8 @@
           </tr>
           <tr>
            <td>
-             <input type='radio' name='rdm-tests-selection' id='rdm-tests-selection-previously_failed' class='rdm-tests-selection'/>Failed Tests
+             <input type='radio' name='rdm-tests-selection' id='rdm-tests-selection-previously_failed' class='rdm-tests-selection'/>
+             <label for='rdm-tests-selection-previously_failed'>Failed Tests</label>
            </td>
            <td>
              <select id='rdm-tests-selection-failed_tests' class='rdm-tests-selection-multiselect' multiple='multiple' name='failed_test_defs'>
