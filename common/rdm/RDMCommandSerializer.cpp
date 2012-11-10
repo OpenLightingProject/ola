@@ -19,6 +19,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMCommandSerializer.h"
 #include "ola/rdm/RDMPacket.h"
