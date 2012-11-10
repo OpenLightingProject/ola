@@ -367,7 +367,7 @@ AC_SUBST(openslp_LIBS)
 # LIBRARY: liblo (OSC)
 # look for liblo if the user asked us to
 AC_ARG_ENABLE(
-  [liblo],
+  [osc],
   AS_HELP_STRING([--disable-osc], [Disable the OSC plugin even if liblo exists]))
 
 have_liblo="no"
