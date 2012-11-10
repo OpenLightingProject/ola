@@ -13,7 +13,7 @@ if HAVE_LIBLO
   lib_LTLIBRARIES = libolaosc.la
   libolaosc_la_SOURCES = OSCDevice.cpp OSCPlugin.cpp
   libolaosc_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(liblo_CFLAGS)
-  libolaosc_la_LIBADD = ./libolaoscnode.la
+  libolaosc_la_LIBADD = libolaoscnode.la
 
 if BUILD_TESTS
 TESTS = OSCTester
