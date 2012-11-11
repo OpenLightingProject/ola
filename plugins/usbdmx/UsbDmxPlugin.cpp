@@ -185,15 +185,15 @@ void UsbDmxPlugin::FindDevices() {
       device = new VellemanDevice(this, usb_device);
     } else if (device_descriptor.idVendor == 0x0962 &&
         device_descriptor.idProduct == 0x2001) {
-      OLA_INFO << "found a Sunlite device";
+      OLA_INFO << "Found a Sunlite device";
       device = new SunliteDevice(this, usb_device);
     } else if (device_descriptor.idVendor == 0x16C0 &&
         device_descriptor.idProduct == 0x05DC) {
-      OLA_INFO << "found an Anyma device";
-      device = new AnymaDevice(this, usb_device);
+      OLA_INFO << "Found an Anyma device";
+      device = NewAnymaDevice(usb_device, device_descriptor);
     } else if (device_descriptor.idVendor == 0x04d8 &&
         device_descriptor.idProduct == 0xfa63) {
-      OLA_INFO << "found a EUROLITE device";
+      OLA_INFO << "Found a EUROLITE device";
        device = new EuroliteProDevice(this, usb_device);
     }
 
@@ -308,6 +308,130 @@ void UsbDmxPlugin::SocketReady() {
   tv.tv_sec = 0;
   tv.tv_usec = 0;
   libusb_handle_events_timeout(NULL, &tv);
+}
+
+
+/**
+ * Create a new AnymaDevice. Some Anyma devices don't have serial numbers, so
+ * we can only support one of those.
+ */
+UsbDevice* UsbDmxPlugin::NewAnymaDevice(
+    libusb_device *usb_device,
+    const struct libusb_device_descriptor &device_descriptor) {
+  libusb_device_handle *usb_handle;
+  if (libusb_open(usb_device, &usb_handle)) {
+    OLA_WARN << "Failed to open Anyma usb device";
+    return NULL;
+  }
+
+  USBDeviceInformation info;
+  GetDeviceInfo(usb_handle, device_descriptor, &info);
+
+  if (!MatchManufacturer(AnymaDevice::EXPECTED_MANUFACTURER,
+                        info.manufacturer)) {
+    libusb_close(usb_handle);
+    return NULL;
+  }
+
+  if (!MatchProduct(AnymaDevice::EXPECTED_PRODUCT, info.product)) {
+    libusb_close(usb_handle);
+    return NULL;
+  }
+
+  if (info.serial.empty()) {
+    if (m_anyma_devices_missing_serial_numbers) {
+      OLA_WARN << "Failed to read serial number or serial number empty. "
+               << "We can only support one device without a serial number.";
+      return NULL;
+    } else {
+      OLA_WARN << "Failed to read serial number from " << info.manufacturer
+               << " : " << info.product
+               << " the device probably doesn't have one";
+      m_anyma_devices_missing_serial_numbers = true;
+    }
+  }
+
+  if (libusb_claim_interface(usb_handle, 0)) {
+    OLA_WARN << "Failed to claim Anyma usb device";
+    libusb_close(usb_handle);
+    return NULL;
+  }
+  return new AnymaDevice(this, usb_device, usb_handle, info.serial);
+}
+
+
+/**
+ * Get the Manufacturer, Product and Serial number strings for a device.
+ */
+void UsbDmxPlugin::GetDeviceInfo(
+    libusb_device_handle *usb_handle,
+    const struct libusb_device_descriptor &device_descriptor,
+    USBDeviceInformation *device_info) {
+  if (!GetDescriptorString(usb_handle, device_descriptor.iManufacturer,
+                           &device_info->manufacturer))
+    OLA_INFO << "Failed to get manufacturer name";
+
+  if (!GetDescriptorString(usb_handle, device_descriptor.iProduct,
+                           &device_info->product))
+    OLA_INFO << "Failed to get product name";
+
+  if (!GetDescriptorString(usb_handle, device_descriptor.iSerialNumber,
+                           &device_info->serial))
+    OLA_WARN << "Failed to read serial number, the device probably doesn't "
+             << "have one";
+}
+
+
+/**
+ * Check if the manufacturer string matches the expected value. Log a message
+ * if it doesn't.
+ */
+bool UsbDmxPlugin::MatchManufacturer(const string &expected,
+                                     const string &actual) {
+  if (expected != actual) {
+    OLA_WARN << "Manufacturer mismatch: " << expected << " != " << actual;
+    return false;
+  }
+  return true;
+}
+
+
+/**
+ * Check if the manufacturer string matches the expected value. Log a message
+ * if it doesn't.
+ */
+bool UsbDmxPlugin::MatchProduct(const string &expected, const string &actual) {
+  if (expected != actual) {
+    OLA_WARN << "Product mismatch: " << expected << " != " << actual;
+    return false;
+  }
+  return true;
+}
+
+/*
+ * Return a string descriptor.
+ * @param usb_handle the usb handle to the device
+ * @param desc_index the index of the descriptor
+ * @param data where to store the output string
+ * @returns true if we got the value, false otherwise
+ */
+bool UsbDmxPlugin::GetDescriptorString(libusb_device_handle *usb_handle,
+                                       uint8_t desc_index,
+                                       string *data) {
+  enum { buffer_size = 32 };  // static arrays FTW!
+  unsigned char buffer[buffer_size];
+  int r = libusb_get_string_descriptor_ascii(
+      usb_handle,
+      desc_index,
+      buffer,
+      buffer_size);
+
+  if (r <= 0) {
+    OLA_INFO << "libusb_get_string_descriptor_ascii returned " << r;
+    return false;
+  }
+  data->assign(reinterpret_cast<char*>(buffer));
+  return true;
 }
 }  // usbdmx
 }  // plugin

@@ -36,12 +36,14 @@ namespace usbdmx {
 class AnymaDevice: public UsbDevice {
   public:
     AnymaDevice(ola::AbstractPlugin *owner,
-                libusb_device *usb_device):
-        UsbDevice(owner, "Anyma USB Device", usb_device),
-        m_output_port(NULL) {
-    }
+                libusb_device *usb_device,
+                libusb_device_handle *usb_handle,
+                const string &serial);
 
     string DeviceId() const;
+
+    static const char EXPECTED_MANUFACTURER[];
+    static const char EXPECTED_PRODUCT[];
 
   protected:
     bool StartHook();

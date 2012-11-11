@@ -41,7 +41,9 @@ class AnymaOutputPort: public BasicOutputPort, ola::thread::Thread {
   public:
     AnymaOutputPort(AnymaDevice *parent,
                     unsigned int id,
-                    libusb_device *usb_device);
+                    libusb_device *usb_device,
+                    libusb_device_handle *usb_handle,
+                    const string &serial);
     ~AnymaOutputPort();
     string SerialNumber() const { return m_serial; }
 
@@ -54,8 +56,6 @@ class AnymaOutputPort: public BasicOutputPort, ola::thread::Thread {
   private:
     static const unsigned int URB_TIMEOUT_MS = 500;
     static const unsigned int UDMX_SET_CHANNEL_RANGE = 0x0002;
-    static const char EXPECTED_MANUFACTURER[];
-    static const char EXPECTED_PRODUCT[];
 
     bool m_term;
     string m_serial;
