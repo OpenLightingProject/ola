@@ -1,10 +1,12 @@
-X/X/2012 ola-0.8.26
+11/11/2012 ola-0.8.26
  * Added the OSC plugin
  * Fixed the bug with displaying the TRI serial number
  * Added a script to save and restore RDM settings for a rig
  * Added a script to compare RDM configuration at different times
- * Merged in hip's test refactoring changes
+ * Merged in hip's test refactoring changes - #215
  * Allow the number of E1.31 ports to be specified in the config file
+ * Better RDM ACK_OVERFLOW support - #216
+ * Fixes for the RDM Tests - #213, #214
 
 9/10/2012 ola-0.8.25
  * Bug fixes for the RDM Responder tests

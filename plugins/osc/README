@@ -53,7 +53,7 @@ The ./configure is generated from configure.ac so that's where we'll do our
 changes. configure.ac is essentially shell script
 
   AC_ARG_ENABLE(
-    [liblo],
+    [osc],
     AS_HELP_STRING([--disable-osc],
                    [Disable the OSC plugin even if liblo exists]))
 
@@ -64,7 +64,7 @@ argument is provided, the variable $enable_liblo will be set to "no".
 
 This defaults the $have_liblo variable to "no".
 
-  if test "${enable_liblo}" != "no"; then
+  if test "${enable_osc}" != "no"; then
     PKG_CHECK_MODULES(liblo, [liblo >= 0.26], [have_liblo="yes"], [true])
   fi
 
@@ -141,7 +141,7 @@ Everything from this point onwards is only run if HAVE_LIBLO was true.
 
     noinst_LTLIBRARIES = libolaoscnode.la
     libolaoscnode_la_SOURCES = OSCAddressTemplate.cpp OSCNode.cpp
-    libolaosc_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(liblo_CFLAGS)
+    libolaoscnode_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(liblo_CFLAGS)
     libolaoscnode_la_LIBADD = $(liblo_LIBS)
 
 This sets up our first build target, a shared library called libolaoscnode.la.
@@ -155,7 +155,7 @@ to the appropriate lines.
   lib_LTLIBRARIES = libolaosc.la
   libolaosc_la_SOURCES = OSCDevice.cpp OSCPlugin.cpp
   libolaosc_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(liblo_CFLAGS)
-  libolaosc_la_LIBADD = ./libolaoscnode.la
+  libolaosc_la_LIBADD = libolaoscnode.la
 
 Here is our llibolaosc.la plugin. This contains code from OSCDevice.cpp and
 OSCPlugin.cpp.  Note that because the code in OSCPort is simple, all the code
