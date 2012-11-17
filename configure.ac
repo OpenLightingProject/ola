@@ -50,7 +50,7 @@ AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h netinet/in.h stdint.h stdlib.h string.h \
                   sys/ioctl.h sys/socket.h sys/time.h syslog.h termios.h \
-                  endian.h execinfo.h unistd.h linux/if_packet.h])
+                  endian.h execinfo.h unistd.h linux/if_packet.h sysexits.h])
 
 AC_PROG_LIBTOOL
 
