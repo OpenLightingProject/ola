@@ -36,6 +36,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sysexits.h>
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
@@ -61,6 +62,8 @@ using ola::OlaCallbackClientWrapper;
 using ola::io::SelectServer;
 using std::string;
 
+static const int DEFAULT_UNIVERSE = 0;
+
 /* color names used */
 enum {
   CHANNEL = 1,
@@ -81,6 +84,11 @@ enum {
   DISP_MODE_MAX,
 };
 
+typedef struct {
+  unsigned int universe;
+  bool help;        // help
+} options;
+
 class DmxMonitor *dmx_monitor;
 
 static int display_mode = DISP_MODE_DMX;
@@ -91,7 +99,7 @@ static int channels_per_screen = 80/4*24/2;
 static int palette[MAXCOLOR];
 
 /*
- * The observer class which repsonds to events
+ * The observer class which responds to events
  */
 class DmxMonitor {
   public:
@@ -573,26 +581,74 @@ void cleanup() {
     delete dmx_monitor;
 }
 
+/*
+ * parse our cmd line options
+ */
+void ParseOptions(int argc, char *argv[], options *opts) {
+  static struct option long_options[] = {
+      {"help", no_argument, 0, 'h'},
+      {"universe", required_argument, 0, 'u'},
+      {0, 0, 0, 0}
+    };
+
+  opts->universe = DEFAULT_UNIVERSE;
+  opts->help = false;
+
+  int c;
+  int option_index = 0;
+
+  while (1) {
+    c = getopt_long(argc, argv, "hu:", long_options, &option_index);
+
+    if (c == -1)
+      break;
+
+    switch (c) {
+      case 0:
+        break;
+      case 'h':
+        opts->help = true;
+        break;
+      case 'u':
+        opts->universe = atoi(optarg);
+        break;
+      case '?':
+        break;
+      default:
+        break;
+    }
+  }
+}
+
+
+/*
+ * Display the help message
+ */
+void DisplayHelpAndExit(char arg[]) {
+  std::cout << "Usage: " << arg << " [--universe <universe_id>]\n"
+  "\n"
+  "Monitor the values on a DMX512 universe.\n"
+  "\n"
+  "  -h, --help                   Display this help message and exit.\n"
+  "  -u, --universe <universe_id> Id of universe to monitor (defaults to " << DEFAULT_UNIVERSE << ").\n"
+  << std::endl;
+  exit(EX_OK);
+}
+
 
 int main(int argc, char *argv[]) {
-  int optc;
-  int universe = 0;
-
   signal(SIGWINCH, terminalresize);
   atexit(cleanup);
 
-  // parse options
-  while ((optc = getopt(argc, argv, "u:")) != EOF) {
-    switch (optc) {
-      case 'u':
-      universe = atoi(optarg);
-      break;
-    default:
-      break;
-    }
-  }
+  options opts;
 
-  dmx_monitor = new DmxMonitor(universe);
+  ParseOptions(argc, argv, &opts);
+
+  if (opts.help) {
+    DisplayHelpAndExit(argv[0]);
+  }
+    
+  dmx_monitor = new DmxMonitor(opts.universe);
   if (!dmx_monitor->Init())
     return 1;
 
