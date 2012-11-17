@@ -62,7 +62,7 @@ using ola::OlaCallbackClientWrapper;
 using ola::io::SelectServer;
 using std::string;
 
-static const int DEFAULT_UNIVERSE = 0;
+static const unsigned int DEFAULT_UNIVERSE = 0;
 
 /* color names used */
 enum {
@@ -630,7 +630,8 @@ void DisplayHelpAndExit(char arg[]) {
   "Monitor the values on a DMX512 universe.\n"
   "\n"
   "  -h, --help                   Display this help message and exit.\n"
-  "  -u, --universe <universe_id> Id of universe to monitor (defaults to " << DEFAULT_UNIVERSE << ").\n"
+  "  -u, --universe <universe_id> Id of universe to monitor (defaults to "
+  << DEFAULT_UNIVERSE << ").\n"
   << std::endl;
   exit(EX_OK);
 }
@@ -647,7 +648,7 @@ int main(int argc, char *argv[]) {
   if (opts.help) {
     DisplayHelpAndExit(argv[0]);
   }
-    
+
   dmx_monitor = new DmxMonitor(opts.universe);
   if (!dmx_monitor->Init())
     return 1;
