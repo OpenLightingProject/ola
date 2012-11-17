@@ -44,11 +44,12 @@ typedef struct {
   string pw_passwd;  // no passwd for now
   uid_t pw_uid;
   gid_t pw_gid;
-  string pw_gecos;
   string pw_dir;
   string pw_shell;
 } PasswdEntry;
 
+// These functions are only thread safe & reentrant if the underlying OS
+// supports it.
 bool GetPasswdName(const string &name, PasswdEntry *passwd);
 bool GetPasswdUID(uid_t uid, PasswdEntry *passwd);
 
@@ -59,6 +60,8 @@ typedef struct {
   // vector<string> gr_mem;  // no members for now
 } GroupEntry;
 
+// These functions are only thread safe & reentrant if the underlying OS
+// supports it.
 bool GetGroupName(const string &name, GroupEntry *passwd);
 bool GetGroupGID(gid_t gid, GroupEntry *passwd);
 }  // ola
