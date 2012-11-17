@@ -35,6 +35,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sysexits.h>
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
@@ -57,6 +58,8 @@ using ola::OlaClient;
 using ola::io::SelectServer;
 using std::string;
 
+static const unsigned int DEFAULT_UNIVERSE = 0;
+
 /* color names used */
 enum {
   CHANNEL = 1,
@@ -77,10 +80,15 @@ enum {
   DISP_MODE_MAX,
 };
 
+typedef struct {
+  unsigned int universe;
+  bool help;        // help
+} options;
+
 int MAXCHANNELS = 512;
 unsigned int MAXFKEY = 12;
 
-int universe = 0;
+unsigned int universe = 0;
 
 typedef unsigned char dmx_t;
 
@@ -100,6 +108,8 @@ static int fading = 0;        /* percentage counter of fade process */
 static int palette_number = 0;
 static int palette[MAXCOLOR];
 string error_str;
+/* TODO: lint complains about the 'original' line above, wants it changed to 
+char[], but that will presumably break .empty() etc */
 static int channels_offset = 1;
 
 OlaClient *client;
@@ -202,19 +212,25 @@ void values() {
     (void) attrset(palette[HEADLINE]);
     mvprintw(0, 1, "%s", s);
   }
-  if (COLS > 31) {
+  if (COLS > 34) {
+    /* Max universe 65535 */
+    /* TODO: calculate cols offset based on how big the universe number is? */
+    printw(" uni:");
+    printw("%i", universe);
+  }
+  if (COLS > 41) {
     (void) attrset(palette[HEADLINE]);
     printw(" cue:");
     (void) attrset(palette[HEADEMPH]);
     printw("%02i", current_cue + 1);
   }
-  if (COLS > 44) {
+  if (COLS > 54) {
     (void) attrset(palette[HEADLINE]);
     printw(" fadetime:");
     (void) attrset(palette[HEADEMPH]);
     printw("%1.1f", fadetime);
   }
-  if (COLS > 55) {
+  if (COLS > 65) {
     if (fading) {
       (void) attrset(palette[HEADLINE]);
       printw(" fading:");
@@ -226,7 +242,7 @@ void values() {
     }
   }
 
-  if (COLS>80) {
+  if (COLS > 90) {
     if (!error_str.empty()) {
       (void) attrset(palette[HEADERROR]);
       printw("ERROR:%s", error_str.data());
@@ -456,7 +472,7 @@ void CHECK(void *p) {
 void calcscreengeometry() {
   int c = LINES;
   if (c < 3) {
-    error_str ="screen to small, we need at least 3 lines";
+    error_str ="screen too small, we need at least 3 lines";
     exit(1);
   }
   c--;                /* one line for headline */
@@ -651,9 +667,62 @@ void stdin_ready() {
   refresh();
 }
 
-int main(int argc, char *argv[]) {
-  int optc;
+/*
+ * parse our cmd line options
+ */
+void ParseOptions(int argc, char *argv[], options *opts) {
+  static struct option long_options[] = {
+      {"help", no_argument, 0, 'h'},
+      {"universe", required_argument, 0, 'u'},
+      {0, 0, 0, 0}
+    };
 
+  opts->universe = DEFAULT_UNIVERSE;
+  opts->help = false;
+
+  int c;
+  int option_index = 0;
+
+  while (1) {
+    c = getopt_long(argc, argv, "hu:", long_options, &option_index);
+
+    if (c == -1)
+      break;
+
+    switch (c) {
+      case 0:
+        break;
+      case 'h':
+        opts->help = true;
+        break;
+      case 'u':
+        opts->universe = atoi(optarg);
+        break;
+      case '?':
+        break;
+      default:
+        break;
+    }
+  }
+}
+
+
+/*
+ * Display the help message
+ */
+void DisplayHelpAndExit(char arg[]) {
+  std::cout << "Usage: " << arg << " [--universe <universe_id>]\n"
+  "\n"
+  "Send data to a DMX512 universe.\n"
+  "\n"
+  "  -h, --help                   Display this help message and exit.\n"
+  "  -u, --universe <universe_id> Id of universe to control (defaults to "
+  << DEFAULT_UNIVERSE << ").\n"
+  << std::endl;
+  exit(EX_OK);
+}
+
+int main(int argc, char *argv[]) {
   signal(SIGWINCH, terminalresize);
   atexit(cleanup);
 
@@ -669,16 +738,15 @@ int main(int argc, char *argv[]) {
   dmxundo = reinterpret_cast<dmx_t*>(calloc(MAXCHANNELS, sizeof(dmx_t)));
   CHECK(dmxundo);
 
-  // parse options
-  while ((optc = getopt(argc, argv, "u:")) != EOF) {
-    switch (optc) {
-      case 'u':
-         universe = atoi(optarg);
-         break;
-      default:
-         break;
-    }
+  options opts;
+
+  ParseOptions(argc, argv, &opts);
+
+  if (opts.help) {
+    DisplayHelpAndExit(argv[0]);
   }
+
+  universe = opts.universe;
 
   /* set up ola connection */
   SimpleClient ola_client;
