@@ -264,13 +264,13 @@ void StringUtilsTest::testStringToUInt() {
   OLA_ASSERT_FALSE(StringToInt("", &value));
   OLA_ASSERT_FALSE(StringToInt("-1", &value));
   OLA_ASSERT_TRUE(StringToInt("0", &value));
-  OLA_ASSERT_EQ((unsigned int) 0, value);
+  OLA_ASSERT_EQ(0u, value);
   OLA_ASSERT_TRUE(StringToInt("1", &value));
-  OLA_ASSERT_EQ((unsigned int) 1, value);
+  OLA_ASSERT_EQ(1u, value);
   OLA_ASSERT_TRUE(StringToInt("65537", &value));
-  OLA_ASSERT_EQ((unsigned int) 65537, value);
+  OLA_ASSERT_EQ(65537u, value);
   OLA_ASSERT_TRUE(StringToInt("4294967295", &value));
-  OLA_ASSERT_EQ((unsigned int) 4294967295U, value);
+  OLA_ASSERT_EQ(4294967295U, value);
   OLA_ASSERT_FALSE(StringToInt("4294967296", &value));
   OLA_ASSERT_FALSE(StringToInt("foo", &value));
 
@@ -289,23 +289,23 @@ void StringUtilsTest::testHexStringToInt() {
   OLA_ASSERT_FALSE(HexStringToInt("-1", &value));
 
   OLA_ASSERT_TRUE(HexStringToInt("0", &value));
-  OLA_ASSERT_EQ((unsigned int) 0, value);
+  OLA_ASSERT_EQ(0u, value);
   OLA_ASSERT_TRUE(HexStringToInt("1", &value));
-  OLA_ASSERT_EQ((unsigned int) 1, value);
+  OLA_ASSERT_EQ(1u, value);
   OLA_ASSERT_TRUE(HexStringToInt("a", &value));
-  OLA_ASSERT_EQ((unsigned int) 10, value);
+  OLA_ASSERT_EQ(10u, value);
   OLA_ASSERT_TRUE(HexStringToInt("f", &value));
-  OLA_ASSERT_EQ((unsigned int) 15, value);
+  OLA_ASSERT_EQ(15u, value);
   OLA_ASSERT_TRUE(HexStringToInt("a1", &value));
-  OLA_ASSERT_EQ((unsigned int) 161, value);
+  OLA_ASSERT_EQ(161u, value);
   OLA_ASSERT_TRUE(HexStringToInt("ff", &value));
-  OLA_ASSERT_EQ((unsigned int) 255, value);
+  OLA_ASSERT_EQ(255u, value);
   OLA_ASSERT_TRUE(HexStringToInt("a1", &value));
-  OLA_ASSERT_EQ((unsigned int) 161, value);
+  OLA_ASSERT_EQ(161u, value);
   OLA_ASSERT_TRUE(HexStringToInt("ff", &value));
-  OLA_ASSERT_EQ((unsigned int) 255, value);
+  OLA_ASSERT_EQ(255u, value);
   OLA_ASSERT_TRUE(HexStringToInt("ffff", &value));
-  OLA_ASSERT_EQ((unsigned int) 65535, value);
+  OLA_ASSERT_EQ(65535u, value);
 
   OLA_ASSERT_TRUE(HexStringToInt("ffffff", &value));
   OLA_ASSERT_EQ((unsigned int) 16777215, value);
