@@ -143,5 +143,5 @@ collector. To enable these a OLA Python API is provided.
 Style / Coding Standards
 ------------------------
 
-We use the Google Javascript style guide:
+We use the Google Python style guide:
   http://google-styleguide.googlecode.com/svn/trunk/pyguide.html
