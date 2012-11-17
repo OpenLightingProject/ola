@@ -196,7 +196,10 @@ AM_CONDITIONAL(HAVE_NCURSES, test "${have_ncurses}" = "yes")
 AC_CHECK_HEADER([pthread.h],
                 [],
                 [AC_MSG_ERROR([Missing pthread, please install it])])
-LIBS="-lpthread $LIBS"
+AC_CHECK_LIB([pthread], [pthread_create], [use_lpthread="yes"])
+if test "${use_lpthread}" = "yes"; then
+  LIBS="-lpthread $LIBS"
+fi
 
 # Java API, this requires Maven
 AC_ARG_ENABLE(java-libs,
