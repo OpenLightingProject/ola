@@ -588,7 +588,8 @@ class DownloadResultsHandler(RequestHandler):
     except TestLogger.TestLoggerException as e:
       raise ServerException(e)
 
-    filename = '%s.%s.txt' % (uid, timestamp)
+    filename = ('%04x-%08x.%s.txt' %
+                (uid.manufacturer_id, uid.device_id, timestamp))
     response.SetStatus(HTTPResponse.OK)
     response.SetHeader('Content-disposition',
                        'attachment; filename="%s"' % filename)
