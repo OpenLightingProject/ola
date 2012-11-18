@@ -78,7 +78,6 @@ using std::vector;
 
 const char SLPServer::CONFIG_DA_BEAT_VAR[] = "slp-config-da-beat";
 const char SLPServer::DA_ENABLED_VAR[] = "slp-da-enabled";
-const char SLPServer::DA_SERVICE[] = "service:directory-agent";
 const char SLPServer::DEFAULT_SCOPE[] = "DEFAULT";
 const char SLPServer::DIRECTORY_AGENT_SERVICE[] = "service:directory-agent";
 const char SLPServer::SCOPE_LIST_VAR[] = "scope-list";
@@ -231,8 +230,7 @@ void SLPServer::BulkLoad(const string &scope,
                          const URLEntries &entries) {
   TimeStamp now;
   m_clock.CurrentTime(&now);
-  string canonical_scope = scope;
-  ToUpper(&canonical_scope);
+  string canonical_scope = SLPGetCanonicalString(scope);
   set<string>::iterator iter = m_scope_list.find(canonical_scope);
   if (iter == m_scope_list.end()) {
     OLA_WARN << "Ignoring registration for " << scope <<
@@ -389,14 +387,6 @@ void SLPServer::HandleServiceRequest(BigEndianInputStream *stream,
     }
   }
 
-  // check if any of the scopes match us
-  if (!request->scope_list.empty()) {
-    // if no match, return SCOPE_NOT_SUPPORTED if unicast
-
-  } else {
-    // no scope list,
-  }
-
   if (!request->predicate.empty()) {
     OLA_WARN << "Recieved request with predicate, ignoring";
     return;
@@ -414,26 +404,47 @@ void SLPServer::HandleServiceRequest(BigEndianInputStream *stream,
     return;
   }
 
+  // check service, MaybeSend[DS]AAdvert do their own scope checking
   if (request->service_type.empty()) {
     OLA_INFO << "Recieved SrvRqst with empty service-type from: " << source;
     SendErrorIfUnicast(request.get(), source, PARSE_ERROR);
     return;
   } else if (request->service_type == DIRECTORY_AGENT_SERVICE) {
-    // if (m_enable_da)
-      // SendDAAdvert
+    MaybeSendDAAdvert(request.get(), source);
     return;
   } else if (request->service_type == SERVICE_AGENT_SERVICE) {
     MaybeSendSAAdvert(request.get(), source);
     return;
   }
 
-  OLA_INFO << "Received SrvRqst for " << request->service_type;
+  // check scopes
+  set<string> canonical_scopes;
+  if (request->scope_list.empty()) {
+    SendErrorIfUnicast(request.get(), source, SCOPE_NOT_SUPPORTED);
+    return;
+  }
+  SLPReduceList(request->scope_list, &canonical_scopes);
+  if (!SLPSetIntersect(canonical_scopes, m_scope_list)) {
+    SendErrorIfUnicast(request.get(), source, SCOPE_NOT_SUPPORTED);
+    return;
+  }
 
-  // handle it here
-  OLA_INFO << "Unpacked service request";
-  OLA_INFO << "xid: " << request->xid;
-  OLA_INFO << "lang: " << request->language;
-  OLA_INFO << "srv-type: " << request->service_type;
+  URLEntries urls;
+  OLA_INFO << "Received SrvRqst for " << request->service_type;
+  string service_type = SLPGetCanonicalString(request->service_type);
+  SLPStripService(&service_type);
+
+  set<string>::const_iterator iter = canonical_scopes.begin();
+  for (; iter != canonical_scopes.end(); ++iter) {
+    SLPStore *store = m_service_store.Lookup(*iter);
+    if (!store)
+      continue;
+    OLA_INFO << "doing lookup for " << service_type;
+    store->Lookup(*(m_ss.WakeUpTime()), service_type, &urls);
+  }
+
+  OLA_INFO << "sending SrvReply with " << urls.size() << " urls";
+  m_udp_sender.SendServiceReply(source, request->xid, 0, urls);
 }
 
 
@@ -500,166 +511,6 @@ void SLPServer::HandleDAAdvert(BigEndianInputStream *stream,
 }
 
 
-/**
- * Perform some sanity checks on the SLP Packet
- * @returns true if this packet is ok, false otherwise.
-bool SLPServer::PerformSanityChecks(const SLPPacket *packet,
-                                    const IPV4SocketAddress &source) {
-
-
-
-  return true;
-}
-
- */
-
-/**
- * Receive data on a TCP connection
-void SLPServer::ReceiveTCPData(TCPSocket *socket) {
-  uint8_t trash[512];
-  unsigned int data_length;
-  int ok = socket->Receive(trash, sizeof(trash), data_length);
-  if (ok == 0)  {
-    // OLA_INFO << "got " << data_length << " on a tcp connection";
-    // ola::FormatData(&cout, trash, data_length);
-    for (unsigned int i = 0; i < data_length; ++i) {
-      if (trash[i] == 'g') {
-        OLA_INFO << "Sending state";
-        SendState(socket);
-      }
-    }
-  }
-}
-
-
- * Called when a socket is closed.
-void SLPServer::SocketClosed(TCPSocket *socket) {
-  auto_ptr<TCPSocket> socket_to_delete(socket);
-  OLA_INFO << "closing TCP socket";
-  m_ss.RemoveReadDescriptor(socket);
-
-  TCPSocketList::iterator iter = m_slp_accept_sockets.begin();
-  for (; iter != m_slp_accept_sockets.end(); ++iter) {
-    if (*iter == socket)
-      break;
-  }
-
-  if (iter == m_slp_accept_sockets.end()) {
-    OLA_FATAL << "Unable to locate socket for " << socket;
-    return;
-  }
-
-  m_slp_accept_sockets.erase(iter);
-}
-
-
- * Send a join message to all connected clients
-void SLPServer::SendJoinUpdateToClients(const IPV4Address &address,
-                                        const UID &uid) {
-  stringstream str;
-  str << "Join: " << address << ", " << uid << endl;
-  SendStringToClients(str.str());
-}
-
-
- * Send a part message to all connected clients
-void SLPServer::SendPartUpdateToClients(const IPV4Address &address,
-                                        const UID &uid) {
-  stringstream str;
-  str << "Part: " << address << ", " << uid << endl;
-  SendStringToClients(str.str());
-}
-
-
- * Send a string to all clients
-void SLPServer::SendStringToClients(const string &output) {
-  TCPSocketList::iterator iter = m_slp_accept_sockets.begin();
-  for (; iter != m_slp_accept_sockets.end(); ++iter) {
-    (*iter)->Send(reinterpret_cast<const uint8_t*>(output.data()),
-                  output.size());
-  }
-  OLA_INFO << "Sent \"" << output.substr(0, output.size() - 1) << "\" to " <<
-    m_slp_accept_sockets.size() << " clients";
-}
-
-
- * Send a full state message to a single client
-void SLPServer::SendState(TCPSocket *socket) {
-  NodeList::iterator iter = m_nodes.begin();
-  for ( ; iter != m_nodes.end(); ++iter) {
-    stringstream str;
-    str << "Active: " << (*iter)->ip << ", " << (*iter)->uid << endl;
-    string output = str.str();
-    socket->Send(reinterpret_cast<const uint8_t*>(output.data()),
-                 output.size());
-  }
-}
-
-*/
-
-/*
- * Send the periodic advertisment.
-bool SLPServer::SendPeriodicAdvert() {
-  OLA_INFO << "Sending advert";
-
-  ola::plugin::e131::OutgoingUDPTransport transport(&m_outgoing_udp_transport,
-                                                    m_multicast_address,
-                                                    TLP_PORT);
-
-  bool ok = m_root_sender.SendEmpty(TLP_REGISTRY_ADVERT_VECTOR, &transport);
-  if (!ok)
-    OLA_WARN << "Failed to send Advert";
-  return true;
-}
-
-
- * Create a node entry
-void SLPServer::CreateNodeEntry(const IPV4Address &ip,
-                                const UID &uid,
-                                uint16_t lifetime) {
-  const TimeStamp *now = m_ss.WakeUpTime();
-
-  NodeList::iterator iter = m_nodes.begin();
-  for (; iter != m_nodes.end(); ++iter) {
-    if ((*iter)->ip == ip && (*iter)->uid == uid)
-      break;
-  }
-
-  TimeStamp expiry = *now + TimeInterval(lifetime, 0);
-  if (iter == m_nodes.end()) {
-    OLA_INFO << "creating " << ip << ", " << uid << ", " << lifetime;
-    NodeEntry *node = new NodeEntry(ip, uid, expiry);
-    m_nodes.push_back(node);
-    SendJoinUpdateToClients(ip, uid);
-  } else {
-    OLA_INFO << "updating " << ip << ", expires in " << lifetime << " seconds";
-    (*iter)->expiry = expiry;
-  }
-}
-
-
- * Walk the list looking for stale entries
-bool SLPServer::LookForStaleEntries() {
-  OLA_INFO << "looking for stale entries";
-  const TimeStamp now = *(m_ss.WakeUpTime());
-
-  NodeList::iterator node_iter = m_nodes.begin();
-  while (node_iter != m_nodes.end()) {
-    if ((*node_iter)->expiry < now) {
-      OLA_INFO << "Node has expired " << (*node_iter)->ip << ", " <<
-        (*node_iter)->uid;
-      SendPartUpdateToClients((*node_iter)->ip, (*node_iter)->uid);
-      delete *node_iter;
-      node_iter = m_nodes.erase(node_iter);
-    } else {
-      node_iter++;
-    }
-  }
-  return true;
-}
-*/
-
-
 void SLPServer::SendErrorIfUnicast(const ServiceRequestPacket *request,
                                    const IPV4SocketAddress &source,
                                    slp_error_code_t error_code) {
@@ -670,13 +521,19 @@ void SLPServer::SendErrorIfUnicast(const ServiceRequestPacket *request,
 
 
 /**
- * Send a SAAdvert if required.
+ * Send a SAAdvert if allowed.
  */
 void SLPServer::MaybeSendSAAdvert(const ServiceRequestPacket *request,
                                   const IPV4SocketAddress &source) {
-  if (m_enable_da || !SLPScopesMatch(request->scope_list, m_scope_list))
-    // no SAAdverts in DA mode
+  if (m_enable_da)
+    return;  // no SAAdverts in DA mode
+
+  // Section 11.2
+  if (!(request->scope_list.empty() ||
+        SLPScopesMatch(request->scope_list, m_scope_list))) {
+    SendErrorIfUnicast(request, source, SCOPE_NOT_SUPPORTED);
     return;
+  }
 
   ostringstream str;
   str << SERVICE_AGENT_SERVICE << "://" << m_iface_address;
@@ -685,14 +542,39 @@ void SLPServer::MaybeSendSAAdvert(const ServiceRequestPacket *request,
 
 
 /**
+ * Send a DAAdvert if allows.
+ */
+void SLPServer::MaybeSendDAAdvert(const ServiceRequestPacket *request,
+                                  const IPV4SocketAddress &source) {
+  if (!m_enable_da)
+    return;
+
+  // Section 11.2
+  if (!(request->scope_list.empty() ||
+        SLPScopesMatch(request->scope_list, m_scope_list))) {
+    SendErrorIfUnicast(request, source, SCOPE_NOT_SUPPORTED);
+    return;
+  }
+  SendDAAdvert(source);
+}
+
+
+/**
+ * Send a DAAdvert for this server
+ */
+void SLPServer::SendDAAdvert(const IPV4SocketAddress &dest) {
+  OLA_INFO << "Sending DAAdvert";
+  std::ostringstream str;
+  str << DIRECTORY_AGENT_SERVICE << "://" << m_iface_address;
+  m_udp_sender.SendDAAdvert(dest, 0, 0, m_boot_time.Seconds(),
+                            str.str(), m_scope_list);
+}
+
+/**
  * Send a multicast DAAdvert packet
  */
 bool SLPServer::SendDABeat() {
-  OLA_INFO << "Sending Multicast DAAdvert";
-  std::ostringstream str;
-  str << DA_SERVICE << "://" << m_iface_address;
-  m_udp_sender.SendDAAdvert(*m_multicast_endpoint, 0, 0, m_boot_time.Seconds(),
-                            str.str(), m_scope_list);
+  SendDAAdvert(*m_multicast_endpoint);
   return true;
 }
 
@@ -701,9 +583,10 @@ bool SLPServer::SendDABeat() {
  * Send a Service Request for 'directory-agent'
  */
 bool SLPServer::SendFindDAService() {
-  OLA_INFO << "Sending Multicast ServiceRequest for " << DA_SERVICE;
+  OLA_INFO << "Sending Multicast ServiceRequest for " <<
+    DIRECTORY_AGENT_SERVICE;
   m_udp_sender.SendServiceRequest(*m_multicast_endpoint, 0, m_da_pr_list,
-                                  DA_SERVICE, m_scope_list);
+                                  DIRECTORY_AGENT_SERVICE, m_scope_list);
   return true;
 }
 }  // slp

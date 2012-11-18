@@ -195,7 +195,11 @@ class SLPServer {
     void MaybeSendSAAdvert(const ServiceRequestPacket *request,
                            const IPV4SocketAddress &source);
 
+    void MaybeSendDAAdvert(const ServiceRequestPacket *request,
+                           const IPV4SocketAddress &source);
+
     // DA methods
+    void SendDAAdvert(const IPV4SocketAddress &dest);
     bool SendDABeat();
 
     // non-DA methods
@@ -203,7 +207,6 @@ class SLPServer {
 
     static const char CONFIG_DA_BEAT_VAR[];
     static const char DA_ENABLED_VAR[];
-    static const char DA_SERVICE[];
     static const char DEFAULT_SCOPE[];
     static const char SCOPE_LIST_VAR[];
     static const char SLP_PORT_VAR[];
