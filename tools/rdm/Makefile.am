@@ -2,9 +2,11 @@ include $(top_srcdir)/common.mk
 
 module_files = DMXSender.py \
                ExpectedResults.py \
+               ModelCollector.py \
                ResponderTest.py \
                TestCategory.py \
                TestDefinitions.py \
+               TestLogger.py \
                TestMixins.py \
                TestRunner.py \
                TestState.py \
@@ -22,9 +24,9 @@ testserver_static_files = \
     static/ui.multiselect.js
 
 testserver_image_files = \
-    static/images/blank.gif \
     static/images/discovery.png \
-    static/images/expander.png \
+    static/images/external.png \
+    static/images/favicon.ico \
     static/images/loader.gif \
     static/images/logo.png \
     static/images/ui-bg_flat_0_aaaaaa_40x100.png \

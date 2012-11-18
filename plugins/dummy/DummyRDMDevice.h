@@ -35,7 +35,7 @@ class DummyRDMDevice: public ola::rdm::RDMControllerInterface {
                    uint16_t sub_device_number):
       m_uid(uid),
       m_start_address(1),
-      m_personality(0),
+      m_personality(1),
       m_identify_mode(0),
       m_lamp_strikes(0),
       m_sub_device_number(sub_device_number) {}

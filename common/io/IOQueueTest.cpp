@@ -90,17 +90,17 @@ unsigned int IOQueueTest::SumLengthOfIOVec(const struct iovec *iov,
  * Check that basic appending works.
  */
 void IOQueueTest::testBasicWrite() {
-  CPPUNIT_ASSERT_EQUAL(0u, m_buffer->Size());
+  OLA_ASSERT_EQ(0u, m_buffer->Size());
   uint8_t data1[] = {0, 1, 2, 3, 4};
 
   m_buffer->Write(data1, sizeof(data1));
-  CPPUNIT_ASSERT_EQUAL(5u, m_buffer->Size());
+  OLA_ASSERT_EQ(5u, m_buffer->Size());
 
   m_buffer->Pop(1);
-  CPPUNIT_ASSERT_EQUAL(4u, m_buffer->Size());
+  OLA_ASSERT_EQ(4u, m_buffer->Size());
 
   m_buffer->Pop(4);
-  CPPUNIT_ASSERT_EQUAL(0u, m_buffer->Size());
+  OLA_ASSERT_EQ(0u, m_buffer->Size());
 }
 
 
@@ -115,22 +115,22 @@ void IOQueueTest::testBlockOverflow() {
   uint8_t data3[] = {0xa, 0xb, 0xc, 0xd, 0xe};
 
   m_buffer->Write(data1, sizeof(data1));
-  CPPUNIT_ASSERT_EQUAL(5u, m_buffer->Size());
+  OLA_ASSERT_EQ(5u, m_buffer->Size());
 
   m_buffer->Write(data2, sizeof(data2));
-  CPPUNIT_ASSERT_EQUAL(10u, m_buffer->Size());
+  OLA_ASSERT_EQ(10u, m_buffer->Size());
 
   m_buffer->Write(data3, sizeof(data3));
-  CPPUNIT_ASSERT_EQUAL(15u, m_buffer->Size());
+  OLA_ASSERT_EQ(15u, m_buffer->Size());
 
   m_buffer->Pop(9);
-  CPPUNIT_ASSERT_EQUAL(6u, m_buffer->Size());
+  OLA_ASSERT_EQ(6u, m_buffer->Size());
 
   // append some more data
   m_buffer->Write(data1, sizeof(data1));
-  CPPUNIT_ASSERT_EQUAL(11u, m_buffer->Size());
+  OLA_ASSERT_EQ(11u, m_buffer->Size());
   m_buffer->Write(data2, sizeof(data2));
-  CPPUNIT_ASSERT_EQUAL(16u, m_buffer->Size());
+  OLA_ASSERT_EQ(16u, m_buffer->Size());
 }
 
 
@@ -141,63 +141,63 @@ void IOQueueTest::testPop() {
   uint8_t data1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 
   m_buffer->Write(data1, sizeof(data1));
-  CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
-  CPPUNIT_ASSERT(!m_buffer->Empty());
+  OLA_ASSERT_EQ(9u, m_buffer->Size());
+  OLA_ASSERT_FALSE(m_buffer->Empty());
 
   m_buffer->Pop(9);
-  CPPUNIT_ASSERT_EQUAL(0u, m_buffer->Size());
-  CPPUNIT_ASSERT(m_buffer->Empty());
+  OLA_ASSERT_EQ(0u, m_buffer->Size());
+  OLA_ASSERT_TRUE(m_buffer->Empty());
 
   // try to pop off more data
   m_buffer->Pop(1);
-  CPPUNIT_ASSERT_EQUAL(0u, m_buffer->Size());
-  CPPUNIT_ASSERT(m_buffer->Empty());
+  OLA_ASSERT_EQ(0u, m_buffer->Size());
+  OLA_ASSERT_TRUE(m_buffer->Empty());
 
   // add the data back, then try to pop off more than we have
   m_buffer->Write(data1, sizeof(data1));
-  CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
-  CPPUNIT_ASSERT(!m_buffer->Empty());
+  OLA_ASSERT_EQ(9u, m_buffer->Size());
+  OLA_ASSERT_FALSE(m_buffer->Empty());
 
   m_buffer->Pop(10);
-  CPPUNIT_ASSERT_EQUAL(0u, m_buffer->Size());
-  CPPUNIT_ASSERT(m_buffer->Empty());
+  OLA_ASSERT_EQ(0u, m_buffer->Size());
+  OLA_ASSERT_TRUE(m_buffer->Empty());
 
   // one more time
   m_buffer->Write(data1, sizeof(data1));
-  CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
+  OLA_ASSERT_EQ(9u, m_buffer->Size());
 
   // Now try a buffer with smaller blocks
   m_buffer.reset(new IOQueue(4));
   m_buffer->Write(data1, sizeof(data1));
-  CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
+  OLA_ASSERT_EQ(9u, m_buffer->Size());
 
   // pop the same amount as the first block size
   m_buffer->Pop(4);
-  CPPUNIT_ASSERT_EQUAL(5u, m_buffer->Size());
-  CPPUNIT_ASSERT(!m_buffer->Empty());
+  OLA_ASSERT_EQ(5u, m_buffer->Size());
+  OLA_ASSERT_FALSE(m_buffer->Empty());
 
   // now pop more than the buffer size
   m_buffer->Pop(6);
-  CPPUNIT_ASSERT_EQUAL(0u, m_buffer->Size());
-  CPPUNIT_ASSERT(m_buffer->Empty());
+  OLA_ASSERT_EQ(0u, m_buffer->Size());
+  OLA_ASSERT_TRUE(m_buffer->Empty());
 
   // test the block boundry
   uint8_t *output_data = new uint8_t[4];
   m_buffer.reset(new IOQueue(4));
   m_buffer->Write(data1, 4);
-  CPPUNIT_ASSERT_EQUAL(4u, m_buffer->Size());
+  OLA_ASSERT_EQ(4u, m_buffer->Size());
   unsigned int output_size = m_buffer->Peek(output_data, 4);
   ASSERT_DATA_EQUALS(__LINE__, data1, 4, output_data, output_size);
   m_buffer->Pop(4);
-  CPPUNIT_ASSERT(m_buffer->Empty());
+  OLA_ASSERT_TRUE(m_buffer->Empty());
 
   // now add some more data
   m_buffer->Write(data1 + 4, 4);
-  CPPUNIT_ASSERT_EQUAL(4u, m_buffer->Size());
+  OLA_ASSERT_EQ(4u, m_buffer->Size());
   output_size = m_buffer->Peek(output_data, 4);
   ASSERT_DATA_EQUALS(__LINE__, data1 + 4, 4, output_data, output_size);
   m_buffer->Pop(4);
-  CPPUNIT_ASSERT(m_buffer->Empty());
+  OLA_ASSERT_TRUE(m_buffer->Empty());
 
   delete[] output_data;
 }
@@ -210,8 +210,8 @@ void IOQueueTest::testPeek() {
   uint8_t data1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 
   m_buffer->Write(data1, sizeof(data1));
-  CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
-  CPPUNIT_ASSERT(!m_buffer->Empty());
+  OLA_ASSERT_EQ(9u, m_buffer->Size());
+  OLA_ASSERT_FALSE(m_buffer->Empty());
 
   const unsigned int DATA_SIZE = 20;
   uint8_t *output_data = new uint8_t[DATA_SIZE];
@@ -219,54 +219,54 @@ void IOQueueTest::testPeek() {
   // peek at the first four bytes
   unsigned int output_size = m_buffer->Peek(output_data, 4);
   ASSERT_DATA_EQUALS(__LINE__, data1, 4, output_data, output_size);
-  CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
+  OLA_ASSERT_EQ(9u, m_buffer->Size());
 
   // peek at the first 9 bytes
   output_size = m_buffer->Peek(output_data, 9);
   ASSERT_DATA_EQUALS(__LINE__, data1, 9, output_data, output_size);
-  CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
+  OLA_ASSERT_EQ(9u, m_buffer->Size());
 
   // peek at more bytes that exist in the buffer
   output_size = m_buffer->Peek(output_data, DATA_SIZE);
-  CPPUNIT_ASSERT_EQUAL(9u, output_size);
+  OLA_ASSERT_EQ(9u, output_size);
   ASSERT_DATA_EQUALS(__LINE__, data1, sizeof(data1), output_data, output_size);
-  CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
+  OLA_ASSERT_EQ(9u, m_buffer->Size());
 
   // Now try a buffer with smaller blocks
   m_buffer.reset(new IOQueue(4));
   m_buffer->Write(data1, sizeof(data1));
-  CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
+  OLA_ASSERT_EQ(9u, m_buffer->Size());
 
   // peek at he same amount as the first block size
   output_size = m_buffer->Peek(output_data, 4);
   ASSERT_DATA_EQUALS(__LINE__, data1, 4, output_data, output_size);
-  CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
-  CPPUNIT_ASSERT(!m_buffer->Empty());
+  OLA_ASSERT_EQ(9u, m_buffer->Size());
+  OLA_ASSERT_FALSE(m_buffer->Empty());
 
   // peek at data from more than one block
   output_size = m_buffer->Peek(output_data, 6);
   ASSERT_DATA_EQUALS(__LINE__, data1, 6, output_data, output_size);
-  CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
-  CPPUNIT_ASSERT(!m_buffer->Empty());
+  OLA_ASSERT_EQ(9u, m_buffer->Size());
+  OLA_ASSERT_FALSE(m_buffer->Empty());
 
   // peek at data on the two block boundry
   output_size = m_buffer->Peek(output_data, 8);
   ASSERT_DATA_EQUALS(__LINE__, data1, 8, output_data, output_size);
-  CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
-  CPPUNIT_ASSERT(!m_buffer->Empty());
+  OLA_ASSERT_EQ(9u, m_buffer->Size());
+  OLA_ASSERT_FALSE(m_buffer->Empty());
 
   // peek at all the data
   output_size = m_buffer->Peek(output_data, 9);
   ASSERT_DATA_EQUALS(__LINE__, data1, 9, output_data, output_size);
-  CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
-  CPPUNIT_ASSERT(!m_buffer->Empty());
+  OLA_ASSERT_EQ(9u, m_buffer->Size());
+  OLA_ASSERT_FALSE(m_buffer->Empty());
 
   // peek at more data than what exists
   output_size = m_buffer->Peek(output_data, DATA_SIZE);
-  CPPUNIT_ASSERT_EQUAL(9u, output_size);
+  OLA_ASSERT_EQ(9u, output_size);
   ASSERT_DATA_EQUALS(__LINE__, data1, 9, output_data, output_size);
-  CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
-  CPPUNIT_ASSERT(!m_buffer->Empty());
+  OLA_ASSERT_EQ(9u, m_buffer->Size());
+  OLA_ASSERT_FALSE(m_buffer->Empty());
 
   delete[] output_data;
 }
@@ -279,28 +279,28 @@ void IOQueueTest::testIOVec() {
   uint8_t data1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 
   m_buffer->Write(data1, sizeof(data1));
-  CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
-  CPPUNIT_ASSERT(!m_buffer->Empty());
+  OLA_ASSERT_EQ(9u, m_buffer->Size());
+  OLA_ASSERT_FALSE(m_buffer->Empty());
 
   int iocnt;
   const struct iovec *vector = m_buffer->AsIOVec(&iocnt);
-  CPPUNIT_ASSERT_EQUAL(9u, SumLengthOfIOVec(vector, iocnt));
-  CPPUNIT_ASSERT_EQUAL(1, iocnt);
+  OLA_ASSERT_EQ(9u, SumLengthOfIOVec(vector, iocnt));
+  OLA_ASSERT_EQ(1, iocnt);
   m_buffer->FreeIOVec(vector);
 
   // try a smaller block size
   m_buffer.reset(new IOQueue(4));
   m_buffer->Write(data1, sizeof(data1));
-  CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
+  OLA_ASSERT_EQ(9u, m_buffer->Size());
 
   vector = m_buffer->AsIOVec(&iocnt);
-  CPPUNIT_ASSERT_EQUAL(3, iocnt);
-  CPPUNIT_ASSERT_EQUAL(9u, SumLengthOfIOVec(vector, iocnt));
+  OLA_ASSERT_EQ(3, iocnt);
+  OLA_ASSERT_EQ(9u, SumLengthOfIOVec(vector, iocnt));
 
   // test append
   IOQueue target_buffer;
   target_buffer.AppendIOVec(vector, iocnt);
-  CPPUNIT_ASSERT_EQUAL(9u, target_buffer.Size());
+  OLA_ASSERT_EQ(9u, target_buffer.Size());
 
   // test both buffers have the same data
   uint8_t *output1 = new uint8_t[10];
@@ -324,11 +324,11 @@ void IOQueueTest::testDump() {
   uint8_t data1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 
   m_buffer->Write(data1, sizeof(data1));
-  CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
+  OLA_ASSERT_EQ(9u, m_buffer->Size());
 
   std::stringstream str;
   m_buffer->Dump(&str);
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       string("00 01 02 03 04 05 06 07  ........\n"
              "08                       .\n"),
       str.str());
@@ -343,9 +343,9 @@ void IOQueueTest::testStringRead() {
   uint8_t data1[] = {'a', 'b', 'c', 'd', '1', '2', '3', '4', ' '};
 
   m_buffer->Write(data1, sizeof(data1));
-  CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Size());
+  OLA_ASSERT_EQ(9u, m_buffer->Size());
 
   std::string output;
-  CPPUNIT_ASSERT_EQUAL(9u, m_buffer->Read(&output, 9u));
-  CPPUNIT_ASSERT_EQUAL(string("abcd1234 "), output);
+  OLA_ASSERT_EQ(9u, m_buffer->Read(&output, 9u));
+  OLA_ASSERT_EQ(string("abcd1234 "), output);
 }

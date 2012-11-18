@@ -23,8 +23,10 @@
 
 #include <ola/io/InputBuffer.h>
 #include <stdint.h>
+#include <string.h>
 #include <algorithm>
-#include <string>
+#include <string.h>
+
 
 namespace ola {
 namespace io {

@@ -32,6 +32,8 @@
 #include <string>
 #include <vector>
 #include "common/rdm/PidStoreLoader.h"
+#include "ola/testing/TestUtils.h"
+
 
 
 using ola::messaging::Descriptor;
@@ -63,9 +65,9 @@ class RDMMessageInterationTest: public CppUnit::TestFixture {
 
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDERR);
-      CPPUNIT_ASSERT(m_store);
+      OLA_ASSERT_NOT_NULL(m_store);
       m_esta_store = m_store->EstaStore();
-      CPPUNIT_ASSERT(m_esta_store);
+      OLA_ASSERT_NOT_NULL(m_esta_store);
     }
 
   private:
@@ -97,9 +99,9 @@ RDMMessageInterationTest::~RDMMessageInterationTest() {
 void RDMMessageInterationTest::testProxiedDevices() {
   const PidDescriptor *device_info_pid =
     m_esta_store->LookupPID(ola::rdm::PID_PROXIED_DEVICES);
-  CPPUNIT_ASSERT(device_info_pid);
+  OLA_ASSERT_NOT_NULL(device_info_pid);
   const Descriptor *descriptor = device_info_pid->GetResponse();
-  CPPUNIT_ASSERT(descriptor);
+  OLA_ASSERT_TRUE(descriptor);
 
   vector<string> inputs;
   inputs.push_back("31344");  // manufacturer ID
@@ -110,28 +112,28 @@ void RDMMessageInterationTest::testProxiedDevices() {
   inputs.push_back("1");  // device id
 
   const Message *message = m_builder.GetMessage(inputs, descriptor);
-  CPPUNIT_ASSERT(message);
+  OLA_ASSERT_TRUE(message);
 
   unsigned int data_length;
   const uint8_t *data = m_serializer.SerializeMessage(message, &data_length);
-  CPPUNIT_ASSERT(data);
-  CPPUNIT_ASSERT_EQUAL(18u, data_length);
+  OLA_ASSERT_TRUE(data);
+  OLA_ASSERT_EQ(18u, data_length);
 
   const Message *inflated_message = m_deserializer.InflateMessage(
       descriptor,
       data,
       data_length);
-  CPPUNIT_ASSERT(inflated_message);
+  OLA_ASSERT_TRUE(inflated_message);
 
   const string input = m_printer.AsString(message);
   const string output = m_printer.AsString(inflated_message);
-  CPPUNIT_ASSERT_EQUAL(input, output);
+  OLA_ASSERT_EQ(input, output);
 
   const string expected = (
       "uids {\n  manufacturer_id: 31344\n  device_id: 1\n}\n"
       "uids {\n  manufacturer_id: 31344\n  device_id: 2\n}\n"
       "uids {\n  manufacturer_id: 21324\n  device_id: 1\n}\n");
-  CPPUNIT_ASSERT_EQUAL(expected, output);
+  OLA_ASSERT_EQ(expected, output);
 }
 
 
@@ -141,9 +143,9 @@ void RDMMessageInterationTest::testProxiedDevices() {
 void RDMMessageInterationTest::testDeviceInfoRequest() {
   const PidDescriptor *device_info_pid =
     m_esta_store->LookupPID(ola::rdm::PID_DEVICE_INFO);
-  CPPUNIT_ASSERT(device_info_pid);
+  OLA_ASSERT_TRUE(device_info_pid);
   const Descriptor *descriptor = device_info_pid->GetResponse();
-  CPPUNIT_ASSERT(descriptor);
+  OLA_ASSERT_TRUE(descriptor);
 
   vector<string> inputs;
   inputs.push_back("1");  // major
@@ -159,29 +161,29 @@ void RDMMessageInterationTest::testDeviceInfoRequest() {
   inputs.push_back("6");  // sensor count
 
   const Message *message = m_builder.GetMessage(inputs, descriptor);
-  CPPUNIT_ASSERT(message);
+  OLA_ASSERT_TRUE(message);
 
   unsigned int data_length;
   const uint8_t *data = m_serializer.SerializeMessage(message, &data_length);
-  CPPUNIT_ASSERT(data);
-  CPPUNIT_ASSERT_EQUAL(19u, data_length);
+  OLA_ASSERT_TRUE(data);
+  OLA_ASSERT_EQ(19u, data_length);
 
   const Message *inflated_message = m_deserializer.InflateMessage(
       descriptor,
       data,
       data_length);
-  CPPUNIT_ASSERT(inflated_message);
+  OLA_ASSERT_TRUE(inflated_message);
 
   const string input = m_printer.AsString(message);
   const string output = m_printer.AsString(inflated_message);
-  CPPUNIT_ASSERT_EQUAL(input, output);
+  OLA_ASSERT_EQ(input, output);
 
   const string expected = (
       "protocol_major: 1\nprotocol_minor: 0\ndevice_model: 300\n"
       "product_category: 400\nsoftware_version: 40000\n"
       "dmx_footprint: 512\ncurrent_personality: 1\npersonality_count: 5\n"
       "dmx_start_address: 1\nsub_device_count: 0\nsensor_count: 6\n");
-  CPPUNIT_ASSERT_EQUAL(expected, output);
+  OLA_ASSERT_EQ(expected, output);
 }
 
 
@@ -191,33 +193,33 @@ void RDMMessageInterationTest::testDeviceInfoRequest() {
 void RDMMessageInterationTest::testDeviceModelDescription() {
   const PidDescriptor *device_model_pid =
     m_esta_store->LookupPID(ola::rdm::PID_DEVICE_MODEL_DESCRIPTION);
-  CPPUNIT_ASSERT(device_model_pid);
+  OLA_ASSERT_TRUE(device_model_pid);
   const Descriptor *descriptor = device_model_pid->GetResponse();
-  CPPUNIT_ASSERT(descriptor);
+  OLA_ASSERT_TRUE(descriptor);
 
   vector<string> inputs;
   inputs.push_back("wigglelight 2000");  // description
 
   const Message *message = m_builder.GetMessage(inputs, descriptor);
-  CPPUNIT_ASSERT(message);
+  OLA_ASSERT_TRUE(message);
 
   unsigned int data_length;
   const uint8_t *data = m_serializer.SerializeMessage(message, &data_length);
-  CPPUNIT_ASSERT(data);
-  CPPUNIT_ASSERT_EQUAL(16u, data_length);
+  OLA_ASSERT_TRUE(data);
+  OLA_ASSERT_EQ(16u, data_length);
 
   const Message *inflated_message = m_deserializer.InflateMessage(
       descriptor,
       data,
       data_length);
-  CPPUNIT_ASSERT(inflated_message);
+  OLA_ASSERT_TRUE(inflated_message);
 
   const string input = m_printer.AsString(message);
   const string output = m_printer.AsString(inflated_message);
-  CPPUNIT_ASSERT_EQUAL(input, output);
+  OLA_ASSERT_EQ(input, output);
 
   const string expected = "description: wigglelight 2000\n";
-  CPPUNIT_ASSERT_EQUAL(expected, output);
+  OLA_ASSERT_EQ(expected, output);
 }
 
 
@@ -227,9 +229,9 @@ void RDMMessageInterationTest::testDeviceModelDescription() {
 void RDMMessageInterationTest::testParameterDescription() {
   const PidDescriptor *param_description_pid =
     m_esta_store->LookupPID(ola::rdm::PID_PARAMETER_DESCRIPTION);
-  CPPUNIT_ASSERT(param_description_pid);
+  OLA_ASSERT_TRUE(param_description_pid);
   const Descriptor *descriptor = param_description_pid->GetResponse();
-  CPPUNIT_ASSERT(descriptor);
+  OLA_ASSERT_TRUE(descriptor);
 
   vector<string> inputs;
   inputs.push_back("8000");  // pid
@@ -245,26 +247,26 @@ void RDMMessageInterationTest::testParameterDescription() {
   inputs.push_back("room temp");  // description
 
   const Message *message = m_builder.GetMessage(inputs, descriptor);
-  CPPUNIT_ASSERT(message);
+  OLA_ASSERT_TRUE(message);
 
   unsigned int data_length;
   const uint8_t *data = m_serializer.SerializeMessage(message, &data_length);
-  CPPUNIT_ASSERT(data);
-  CPPUNIT_ASSERT_EQUAL(29u, data_length);
+  OLA_ASSERT_TRUE(data);
+  OLA_ASSERT_EQ(29u, data_length);
 
   const Message *inflated_message = m_deserializer.InflateMessage(
       descriptor,
       data,
       data_length);
-  CPPUNIT_ASSERT(inflated_message);
+  OLA_ASSERT_TRUE(inflated_message);
 
   const string input = m_printer.AsString(message);
   const string output = m_printer.AsString(inflated_message);
-  CPPUNIT_ASSERT_EQUAL(input, output);
+  OLA_ASSERT_EQ(input, output);
 
   const string expected = (
       "pid: 8000\npdl_size: 2\ndata_type: 6\ncommand_class: 3\n"
       "type: 0\nunit: 1\nprefix: 0\nmin_value: 0\nmax_value: 400\n"
       "default_value: 0\ndescription: room temp\n");
-  CPPUNIT_ASSERT_EQUAL(expected, output);
+  OLA_ASSERT_EQ(expected, output);
 }

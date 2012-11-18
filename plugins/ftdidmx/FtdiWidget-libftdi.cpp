@@ -74,6 +74,7 @@ bool FtdiWidget::Open() {
       return true;
     }
   } else {
+    OLA_DEBUG << "Opening FTDI device " << Name() << ", serial: " << Serial();
     if (ftdi_usb_open_desc(&m_handle, FtdiWidget::VID, FtdiWidget::PID,
                            Name().c_str(), Serial().c_str()) < 0) {
       OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
@@ -291,8 +292,11 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
     OLA_INFO << "Found FTDI device. Vendor: '" << v << "', Name: '" << sname <<
       "', Serial: '" << sserial << "'";
     std::transform(v.begin(), v.end(), v.begin(), ::toupper);
-    if (std::string::npos != v.find("FTDI")) {
+    if (std::string::npos != v.find("FTDI") ||
+        std::string::npos != v.find("WWW.SOH.CZ")) {
       widgets->push_back(FtdiWidgetInfo(sname, sserial, i));
+    } else {
+      OLA_INFO << "Unknown FTDI device with vendor string: '" << v << "'";
     }
   }
 

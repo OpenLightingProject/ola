@@ -1,3 +1,28 @@
+11/11/2012 ola-0.8.26
+ * Added the OSC plugin
+ * Fixed the bug with displaying the TRI serial number
+ * Added a script to save and restore RDM settings for a rig
+ * Added a script to compare RDM configuration at different times
+ * Merged in hip's test refactoring changes - #215
+ * Allow the number of E1.31 ports to be specified in the config file
+ * Better RDM ACK_OVERFLOW support - #216
+ * Fixes for the RDM Tests - #213, #214
+
+9/10/2012 ola-0.8.25
+ * Bug fixes for the RDM Responder tests
+ * Add some missing files to the tarball
+ * Rename the debian init scripts
+
+3/10/2012 ola-0.8.24
+ * Add support for soh.cz devices
+ * Added the RDM model collector to the RDM Test Server
+ * Enhance the RDM Responder Tests page
+ * Clean up the Python Wrapper a bit
+ * RDM Test fixes for devices with a personality with a slot count of 0
+ * RDM Test fixes for some of the new E1.37-1 PIDs
+ * Switched the Debian init script to use a pidfile
+ * Added a Debian init script for the RDM Test Server
+
 9/9/2012 ola-0.8.23
  * Added the ftdidmx plugin thanks to Rui Barreiros - #164
  * Debian package improvements from RenZO (init script)

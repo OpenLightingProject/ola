@@ -2,12 +2,13 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT(configure.ac)
+AC_INIT(ola, [0.8.26])
+AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_AUX_DIR(config)
 AC_SUBST(ac_aux_dir)
 AM_CONFIG_HEADER(config.h)
 AC_CONFIG_MACRO_DIR([config])
-AM_INIT_AUTOMAKE(ola, 0.8.23)
+AM_INIT_AUTOMAKE
 
 # Checks for programs.
 AC_LANG(C++)
@@ -41,14 +42,15 @@ AC_FUNC_STAT
 AC_FUNC_CLOSEDIR_VOID
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS([bzero gettimeofday memmove memset mkdir strdup strrchr \
-                inet_ntoa inet_aton select socket strerror getifaddrs])
+                inet_ntoa inet_aton select socket strerror getifaddrs \
+                getpwnam_r getpwuid_r getgrnam_r getgrgid_r])
 
 # Checks for header files.
 AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h netinet/in.h stdint.h stdlib.h string.h \
                   sys/ioctl.h sys/socket.h sys/time.h syslog.h termios.h \
-                  endian.h execinfo.h unistd.h linux/if_packet.h])
+                  endian.h execinfo.h unistd.h linux/if_packet.h sysexits.h])
 
 AC_PROG_LIBTOOL
 
@@ -194,7 +196,10 @@ AM_CONDITIONAL(HAVE_NCURSES, test "${have_ncurses}" = "yes")
 AC_CHECK_HEADER([pthread.h],
                 [],
                 [AC_MSG_ERROR([Missing pthread, please install it])])
-LIBS="-lpthread $LIBS"
+AC_CHECK_LIB([pthread], [pthread_create], [use_lpthread="yes"])
+if test "${use_lpthread}" = "yes"; then
+  LIBS="-lpthread $LIBS"
+fi
 
 # Java API, this requires Maven
 AC_ARG_ENABLE(java-libs,
@@ -362,6 +367,24 @@ if test "${have_slp}" = "yes"; then
   openslp_LIBS="-lslp"
 fi
 AC_SUBST(openslp_LIBS)
+
+# LIBRARY: liblo (OSC)
+# look for liblo if the user asked us to
+AC_ARG_ENABLE(
+  [osc],
+  AS_HELP_STRING([--disable-osc], [Disable the OSC plugin even if liblo exists]))
+
+have_liblo="no"
+
+if test "${enable_osc}" != "no"; then
+  PKG_CHECK_MODULES(liblo, [liblo >= 0.26], [have_liblo="yes"], [true])
+fi
+AM_CONDITIONAL(HAVE_LIBLO, test "${have_liblo}" = "yes")
+
+if test "${have_liblo}" = "yes"; then
+ PLUGINS="${PLUGINS} osc"
+ AC_DEFINE(HAVE_LIBLO, 1, [define if liblo is installed])
+fi
 
 # LIBRARY: libmicrohttpd
 # look for microhttpd if the user asked us to
@@ -558,6 +581,7 @@ AC_OUTPUT( Makefile \
     include/ola/messaging/Makefile \
     include/ola/network/Makefile \
     include/ola/rdm/Makefile \
+    include/ola/stl/Makefile \
     include/ola/testing/Makefile \
     include/ola/thread/Makefile \
     include/ola/timecode/Makefile \
@@ -585,6 +609,7 @@ AC_OUTPUT( Makefile \
     plugins/e131/messages/libolae131conf.pc \
     plugins/espnet/Makefile \
     plugins/opendmx/Makefile \
+    plugins/osc/Makefile \
     plugins/pathport/Makefile \
     plugins/sandnet/Makefile \
     plugins/shownet/Makefile \

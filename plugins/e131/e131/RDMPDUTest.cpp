@@ -32,6 +32,8 @@
 #include "ola/testing/TestUtils.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
 #include "plugins/e131/e131/RDMPDU.h"
+#include "ola/testing/TestUtils.h"
+
 
 namespace ola {
 namespace plugin {
@@ -80,13 +82,13 @@ const unsigned int RDMPDUTest::TEST_VECTOR = 0xcc;
 void RDMPDUTest::testEmptyPDU() {
   RDMPDU pdu(NULL);
 
-  CPPUNIT_ASSERT_EQUAL(0u, pdu.HeaderSize());
-  CPPUNIT_ASSERT_EQUAL(0u, pdu.DataSize());
-  CPPUNIT_ASSERT_EQUAL(3u, pdu.Size());
+  OLA_ASSERT_EQ(0u, pdu.HeaderSize());
+  OLA_ASSERT_EQ(0u, pdu.DataSize());
+  OLA_ASSERT_EQ(3u, pdu.Size());
 
   unsigned int length = pdu.Size();
   uint8_t *buffer = new uint8_t[length];
-  CPPUNIT_ASSERT(pdu.Pack(buffer, length));
+  OLA_ASSERT(pdu.Pack(buffer, length));
 
   const uint8_t expected_data[] = {0x70, 3, TEST_VECTOR};
   ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
@@ -101,18 +103,18 @@ void RDMPDUTest::testEmptyPDU() {
 void RDMPDUTest::testEmptyPDUToOutputStream() {
   RDMPDU pdu(NULL);
 
-  CPPUNIT_ASSERT_EQUAL(0u, pdu.HeaderSize());
-  CPPUNIT_ASSERT_EQUAL(0u, pdu.DataSize());
-  CPPUNIT_ASSERT_EQUAL(3u, pdu.Size());
+  OLA_ASSERT_EQ(0u, pdu.HeaderSize());
+  OLA_ASSERT_EQ(0u, pdu.DataSize());
+  OLA_ASSERT_EQ(3u, pdu.Size());
 
   IOQueue output;
   OutputStream stream(&output);
   pdu.Write(&stream);
-  CPPUNIT_ASSERT_EQUAL(3u, output.Size());
+  OLA_ASSERT_EQ(3u, output.Size());
 
   uint8_t *pdu_data = new uint8_t[output.Size()];
   unsigned int pdu_size = output.Peek(pdu_data, output.Size());
-  CPPUNIT_ASSERT_EQUAL(output.Size(), pdu_size);
+  OLA_ASSERT_EQ(output.Size(), pdu_size);
 
   const uint8_t EXPECTED[] = {0x70, 3, TEST_VECTOR};
   ASSERT_DATA_EQUALS(__LINE__,
@@ -143,13 +145,13 @@ void RDMPDUTest::testSimpleRDMPDU() {
 
   RDMPDU pdu(command);
 
-  CPPUNIT_ASSERT_EQUAL(0u, pdu.HeaderSize());
-  CPPUNIT_ASSERT_EQUAL(25u, pdu.DataSize());
-  CPPUNIT_ASSERT_EQUAL(28u, pdu.Size());
+  OLA_ASSERT_EQ(0u, pdu.HeaderSize());
+  OLA_ASSERT_EQ(25u, pdu.DataSize());
+  OLA_ASSERT_EQ(28u, pdu.Size());
 
   unsigned int length = pdu.Size();
   uint8_t *buffer = new uint8_t[length];
-  CPPUNIT_ASSERT(pdu.Pack(buffer, length));
+  OLA_ASSERT(pdu.Pack(buffer, length));
 
   uint8_t expected_data[] = {
     0x70, 0x1c, TEST_VECTOR,
@@ -186,18 +188,18 @@ void RDMPDUTest::testSimpleRDMPDUToOutputStream() {
 
   RDMPDU pdu(command);
 
-  CPPUNIT_ASSERT_EQUAL(0u, pdu.HeaderSize());
-  CPPUNIT_ASSERT_EQUAL(25u, pdu.DataSize());
-  CPPUNIT_ASSERT_EQUAL(28u, pdu.Size());
+  OLA_ASSERT_EQ(0u, pdu.HeaderSize());
+  OLA_ASSERT_EQ(25u, pdu.DataSize());
+  OLA_ASSERT_EQ(28u, pdu.Size());
 
   IOQueue output;
   OutputStream stream(&output);
   pdu.Write(&stream);
-  CPPUNIT_ASSERT_EQUAL(28u, output.Size());
+  OLA_ASSERT_EQ(28u, output.Size());
 
   uint8_t *pdu_data = new uint8_t[output.Size()];
   unsigned int pdu_size = output.Peek(pdu_data, output.Size());
-  CPPUNIT_ASSERT_EQUAL(output.Size(), pdu_size);
+  OLA_ASSERT_EQ(output.Size(), pdu_size);
 
   uint8_t EXPECTED[] = {
     0x70, 0x1c, TEST_VECTOR,
@@ -237,13 +239,13 @@ void RDMPDUTest::testRDMPDUWithData() {
 
   RDMPDU pdu(command);
 
-  CPPUNIT_ASSERT_EQUAL(0u, pdu.HeaderSize());
-  CPPUNIT_ASSERT_EQUAL(29u, pdu.DataSize());
-  CPPUNIT_ASSERT_EQUAL(32u, pdu.Size());
+  OLA_ASSERT_EQ(0u, pdu.HeaderSize());
+  OLA_ASSERT_EQ(29u, pdu.DataSize());
+  OLA_ASSERT_EQ(32u, pdu.Size());
 
   unsigned int length = pdu.Size();
   uint8_t *buffer = new uint8_t[length];
-  CPPUNIT_ASSERT(pdu.Pack(buffer, length));
+  OLA_ASSERT(pdu.Pack(buffer, length));
 
   uint8_t expected_data[] = {
     0x70, 0x20, TEST_VECTOR,
@@ -282,18 +284,18 @@ void RDMPDUTest::testRDMPDUWithDataToOutputStream() {
 
   RDMPDU pdu(command);
 
-  CPPUNIT_ASSERT_EQUAL(0u, pdu.HeaderSize());
-  CPPUNIT_ASSERT_EQUAL(29u, pdu.DataSize());
-  CPPUNIT_ASSERT_EQUAL(32u, pdu.Size());
+  OLA_ASSERT_EQ(0u, pdu.HeaderSize());
+  OLA_ASSERT_EQ(29u, pdu.DataSize());
+  OLA_ASSERT_EQ(32u, pdu.Size());
 
   IOQueue output;
   OutputStream stream(&output);
   pdu.Write(&stream);
-  CPPUNIT_ASSERT_EQUAL(32u, output.Size());
+  OLA_ASSERT_EQ(32u, output.Size());
 
   uint8_t *pdu_data = new uint8_t[output.Size()];
   unsigned int pdu_size = output.Peek(pdu_data, output.Size());
-  CPPUNIT_ASSERT_EQUAL(output.Size(), pdu_size);
+  OLA_ASSERT_EQ(output.Size(), pdu_size);
 
 
   uint8_t EXPECTED[] = {

@@ -24,6 +24,7 @@ EXTRA_DIST = \
   README.rpm ola.spec \
   javascript/README \
   javascript/ola/base_frame.js \
+  javascript/ola/common/dmx_monitor.js \
   javascript/ola/common/plugin_list.js \
   javascript/ola/common/rdm_section_list.js \
   javascript/ola/common/section_render.js \
@@ -38,6 +39,7 @@ EXTRA_DIST = \
   javascript/ola/full/custom_dragscrollsupport.js \
   javascript/ola/full/dmx_console.js \
   javascript/ola/full/dmx_console_tab.js \
+  javascript/ola/full/dmx_monitor_tab.js \
   javascript/ola/full/plugin_frame.js \
   javascript/ola/full/rdm_attributes_panel.js \
   javascript/ola/full/rdm_patcher.js \
@@ -51,6 +53,7 @@ EXTRA_DIST = \
   javascript/ola/mobile/controller_tab.js \
   javascript/ola/mobile/keypad_controller.js \
   javascript/ola/mobile/keypad_parser.js \
+  javascript/ola/mobile/monitor_tab.js \
   javascript/ola/mobile/plugin_tab.js \
   javascript/ola/mobile/universe_tab.js \
   javascript/ola/new_universe_frame.js \

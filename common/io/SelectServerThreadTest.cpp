@@ -21,6 +21,8 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 
+#include "ola/testing/TestUtils.h"
+
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/thread/Thread.h"
@@ -48,7 +50,7 @@ class TestThread: public ola::thread::Thread {
     }
 
     void TestCallback() {
-      CPPUNIT_ASSERT_EQUAL(m_ss_thread_id, ola::thread::Thread::Self());
+      OLA_ASSERT_EQ(m_ss_thread_id, ola::thread::Thread::Self());
       m_callback_executed = true;
       m_ss->Terminate();
     }
@@ -98,9 +100,9 @@ void SelectServerThreadTest::testSameThreadCallback() {
   TestThread test_thread(&m_ss, ola::thread::Thread::Self());
   m_ss.Execute(
       ola::NewSingleCallback(&test_thread, &TestThread::TestCallback));
-  CPPUNIT_ASSERT(!test_thread.CallbackRun());
+  OLA_ASSERT_FALSE(test_thread.CallbackRun());
   m_ss.Run();
-  CPPUNIT_ASSERT(test_thread.CallbackRun());
+  OLA_ASSERT_TRUE(test_thread.CallbackRun());
 }
 
 
@@ -111,8 +113,8 @@ void SelectServerThreadTest::testSameThreadCallback() {
 void SelectServerThreadTest::testDifferentThreadCallback() {
   TestThread test_thread(&m_ss, ola::thread::Thread::Self());
   test_thread.Start();
-  CPPUNIT_ASSERT(!test_thread.CallbackRun());
+  OLA_ASSERT_FALSE(test_thread.CallbackRun());
   m_ss.Run();
   test_thread.Join();
-  CPPUNIT_ASSERT(test_thread.CallbackRun());
+  OLA_ASSERT_TRUE(test_thread.CallbackRun());
 }

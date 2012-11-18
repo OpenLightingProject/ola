@@ -25,6 +25,8 @@
 #include "plugins/e131/e131/PDUTestCommon.h"
 #include "plugins/e131/e131/RootInflator.h"
 #include "plugins/e131/e131/RootPDU.h"
+#include "ola/testing/TestUtils.h"
+
 
 namespace ola {
 namespace plugin {
@@ -54,19 +56,19 @@ void RootInflatorTest::testInflatePDU() {
 
   CID cid = CID::Generate();
   RootPDU pdu(MockPDU::TEST_VECTOR, cid, &block);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 50, pdu.Size());
+  OLA_ASSERT_EQ((unsigned int) 50, pdu.Size());
 
   unsigned int size = pdu.Size();
   uint8_t *data = new uint8_t[size];
   unsigned int bytes_used = size;
-  CPPUNIT_ASSERT(pdu.Pack(data, bytes_used));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) size, bytes_used);
+  OLA_ASSERT(pdu.Pack(data, bytes_used));
+  OLA_ASSERT_EQ((unsigned int) size, bytes_used);
 
   MockInflator mock_inflator(cid);
   RootInflator inflator;
   inflator.AddInflator(&mock_inflator);
   HeaderSet header_set;
-  CPPUNIT_ASSERT(inflator.InflatePDUBlock(header_set, data, size));
+  OLA_ASSERT(inflator.InflatePDUBlock(header_set, data, size));
   delete[] data;
 }
 }  // e131

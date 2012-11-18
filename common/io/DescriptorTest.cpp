@@ -27,6 +27,8 @@
 #include "ola/Logging.h"
 #include "ola/io/Descriptor.h"
 #include "ola/io/SelectServer.h"
+#include "ola/testing/TestUtils.h"
+
 
 using std::string;
 using ola::io::ConnectedDescriptor;
@@ -60,7 +62,7 @@ class DescriptorTest: public CppUnit::TestFixture {
 
     // timing out indicates something went wrong
     void Timeout() {
-      CPPUNIT_ASSERT(false);
+      OLA_ASSERT_TRUE(false);
       m_timeout_closure = NULL;
     }
 
@@ -96,7 +98,7 @@ void DescriptorTest::setUp() {
   ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
   m_ss = new SelectServer();
   m_timeout_closure = ola::NewSingleCallback(this, &DescriptorTest::Timeout);
-  CPPUNIT_ASSERT(m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS,
+  OLA_ASSERT_TRUE(m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS,
                                              m_timeout_closure));
 }
 
@@ -114,16 +116,16 @@ void DescriptorTest::tearDown() {
  */
 void DescriptorTest::testLoopbackDescriptor() {
   LoopbackDescriptor socket;
-  CPPUNIT_ASSERT(socket.Init());
-  CPPUNIT_ASSERT(!socket.Init());
+  OLA_ASSERT_TRUE(socket.Init());
+  OLA_ASSERT_FALSE(socket.Init());
   socket.SetOnData(ola::NewCallback(this, &DescriptorTest::ReceiveAndTerminate,
                                    static_cast<ConnectedDescriptor*>(&socket)));
-  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&socket));
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&socket));
 
   ssize_t bytes_sent = socket.Send(
       static_cast<const uint8_t*>(test_cstring),
       sizeof(test_cstring));
-  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
+  OLA_ASSERT_EQ(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
   m_ss->Run();
   m_ss->RemoveReadDescriptor(&socket);
 }
@@ -136,8 +138,8 @@ void DescriptorTest::testLoopbackDescriptor() {
  */
 void DescriptorTest::testPipeDescriptorClientClose() {
   PipeDescriptor socket;
-  CPPUNIT_ASSERT(socket.Init());
-  CPPUNIT_ASSERT(!socket.Init());
+  OLA_ASSERT_TRUE(socket.Init());
+  OLA_ASSERT_FALSE(socket.Init());
   SocketClientClose(&socket, socket.OppositeEnd());
 }
 
@@ -149,8 +151,8 @@ void DescriptorTest::testPipeDescriptorClientClose() {
  */
 void DescriptorTest::testPipeDescriptorServerClose() {
   PipeDescriptor socket;
-  CPPUNIT_ASSERT(socket.Init());
-  CPPUNIT_ASSERT(!socket.Init());
+  OLA_ASSERT_TRUE(socket.Init());
+  OLA_ASSERT_FALSE(socket.Init());
 
   SocketServerClose(&socket, socket.OppositeEnd());
 }
@@ -163,8 +165,8 @@ void DescriptorTest::testPipeDescriptorServerClose() {
  */
 void DescriptorTest::testUnixSocketClientClose() {
   UnixSocket socket;
-  CPPUNIT_ASSERT(socket.Init());
-  CPPUNIT_ASSERT(!socket.Init());
+  OLA_ASSERT_TRUE(socket.Init());
+  OLA_ASSERT_FALSE(socket.Init());
   SocketClientClose(&socket, socket.OppositeEnd());
 }
 
@@ -176,8 +178,8 @@ void DescriptorTest::testUnixSocketClientClose() {
  */
 void DescriptorTest::testUnixSocketServerClose() {
   UnixSocket socket;
-  CPPUNIT_ASSERT(socket.Init());
-  CPPUNIT_ASSERT(!socket.Init());
+  OLA_ASSERT_TRUE(socket.Init());
+  OLA_ASSERT_FALSE(socket.Init());
   SocketServerClose(&socket, socket.OppositeEnd());
 }
 
@@ -209,10 +211,10 @@ void DescriptorTest::Receive(ConnectedDescriptor *socket) {
   uint8_t buffer[sizeof(test_cstring) + 10];
   unsigned int data_read;
 
-  CPPUNIT_ASSERT(!socket->Receive(buffer, sizeof(buffer), data_read));
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(sizeof(test_cstring)),
+  OLA_ASSERT_FALSE(socket->Receive(buffer, sizeof(buffer), data_read));
+  OLA_ASSERT_EQ(static_cast<unsigned int>(sizeof(test_cstring)),
                        data_read);
-  CPPUNIT_ASSERT(!memcmp(test_cstring, buffer, data_read));
+  OLA_ASSERT_FALSE(memcmp(test_cstring, buffer, data_read));
 }
 
 
@@ -223,10 +225,10 @@ void DescriptorTest::ReceiveAndSend(ConnectedDescriptor *socket) {
   uint8_t buffer[sizeof(test_cstring) + 10];
   unsigned int data_read;
   socket->Receive(buffer, sizeof(buffer), data_read);
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(sizeof(test_cstring)),
+  OLA_ASSERT_EQ(static_cast<unsigned int>(sizeof(test_cstring)),
                        data_read);
   ssize_t bytes_sent = socket->Send(buffer, data_read);
-  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
+  OLA_ASSERT_EQ(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
 }
 
 
@@ -245,25 +247,25 @@ void DescriptorTest::ReceiveSendAndClose(ConnectedDescriptor *socket) {
  */
 void DescriptorTest::SocketClientClose(ConnectedDescriptor *socket,
                                    ConnectedDescriptor *socket2) {
-  CPPUNIT_ASSERT(socket);
+  OLA_ASSERT_TRUE(socket);
   socket->SetOnData(
       ola::NewCallback(this, &DescriptorTest::ReceiveAndClose,
                        static_cast<ConnectedDescriptor*>(socket)));
-  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(socket));
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(socket));
 
-  CPPUNIT_ASSERT(socket2);
+  OLA_ASSERT_TRUE(socket2);
   socket2->SetOnData(
       ola::NewCallback(this, &DescriptorTest::ReceiveAndSend,
                        static_cast<ConnectedDescriptor*>(socket2)));
   socket2->SetOnClose(
       ola::NewSingleCallback(this,
                              &DescriptorTest::TerminateOnClose));
-  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(socket2));
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(socket2));
 
   ssize_t bytes_sent = socket->Send(
       static_cast<const uint8_t*>(test_cstring),
       sizeof(test_cstring));
-  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
+  OLA_ASSERT_EQ(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
   m_ss->Run();
   m_ss->RemoveReadDescriptor(socket);
   m_ss->RemoveReadDescriptor(socket2);
@@ -276,24 +278,24 @@ void DescriptorTest::SocketClientClose(ConnectedDescriptor *socket,
  */
 void DescriptorTest::SocketServerClose(ConnectedDescriptor *socket,
                                    ConnectedDescriptor *socket2) {
-  CPPUNIT_ASSERT(socket);
+  OLA_ASSERT_TRUE(socket);
   socket->SetOnData(ola::NewCallback(
         this, &DescriptorTest::Receive,
         static_cast<ConnectedDescriptor*>(socket)));
   socket->SetOnClose(
       ola::NewSingleCallback(this, &DescriptorTest::TerminateOnClose));
-  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(socket));
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(socket));
 
-  CPPUNIT_ASSERT(socket2);
+  OLA_ASSERT_TRUE(socket2);
   socket2->SetOnData(ola::NewCallback(
         this, &DescriptorTest::ReceiveSendAndClose,
         static_cast<ConnectedDescriptor*>(socket2)));
-  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(socket2));
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(socket2));
 
   ssize_t bytes_sent = socket->Send(
       static_cast<const uint8_t*>(test_cstring),
       sizeof(test_cstring));
-  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
+  OLA_ASSERT_EQ(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
   m_ss->Run();
   m_ss->RemoveReadDescriptor(socket);
   m_ss->RemoveReadDescriptor(socket2);

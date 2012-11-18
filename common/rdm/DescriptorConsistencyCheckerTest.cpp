@@ -24,6 +24,8 @@
 #include "ola/Logging.h"
 #include "ola/messaging/Descriptor.h"
 #include "common/rdm/DescriptorConsistencyChecker.h"
+#include "ola/testing/TestUtils.h"
+
 
 
 using ola::messaging::Descriptor;
@@ -64,14 +66,14 @@ void DescriptorConsistencyCheckerTest::testOkDescriptors() {
   // test the empty descriptor
   vector<const class FieldDescriptor*> fields;
   const Descriptor empty_descriptor("Empty", fields);
-  CPPUNIT_ASSERT(checker.CheckConsistency(&empty_descriptor));
+  OLA_ASSERT_TRUE(checker.CheckConsistency(&empty_descriptor));
 
   // now a simple multi-field descriptor
   vector<const class FieldDescriptor*> fields2;
   fields2.push_back(new ola::messaging::UInt8FieldDescriptor("uint8"));
   fields2.push_back(new ola::messaging::BoolFieldDescriptor("bool"));
   const Descriptor simple_descriptor("Simple", fields2);
-  CPPUNIT_ASSERT(checker.CheckConsistency(&simple_descriptor));
+  OLA_ASSERT_TRUE(checker.CheckConsistency(&simple_descriptor));
 
   // now a multi-field descriptor with a variable string
   vector<const class FieldDescriptor*> fields3;
@@ -79,7 +81,7 @@ void DescriptorConsistencyCheckerTest::testOkDescriptors() {
   fields3.push_back(
       new ola::messaging::StringFieldDescriptor("string1", 0, 32));
   const Descriptor simple_string_descriptor("Simple", fields3);
-  CPPUNIT_ASSERT(checker.CheckConsistency(&simple_string_descriptor));
+  OLA_ASSERT_TRUE(checker.CheckConsistency(&simple_string_descriptor));
 }
 
 
@@ -96,7 +98,7 @@ void DescriptorConsistencyCheckerTest::testDuplicateStrings() {
   fields.push_back(new ola::messaging::StringFieldDescriptor("string1", 4, 4));
   fields.push_back(new ola::messaging::StringFieldDescriptor("string2", 4, 4));
   const Descriptor fixed_length_descriptor("Fixed", fields);
-  CPPUNIT_ASSERT(checker.CheckConsistency(&fixed_length_descriptor));
+  OLA_ASSERT_TRUE(checker.CheckConsistency(&fixed_length_descriptor));
 
   // variable length strings
   vector<const class FieldDescriptor*> fields2;
@@ -105,7 +107,7 @@ void DescriptorConsistencyCheckerTest::testDuplicateStrings() {
   fields2.push_back(
       new ola::messaging::StringFieldDescriptor("string2", 4, 32));
   const Descriptor variable_length_descriptor("Variable", fields2);
-  CPPUNIT_ASSERT(!checker.CheckConsistency(&variable_length_descriptor));
+  OLA_ASSERT_FALSE(checker.CheckConsistency(&variable_length_descriptor));
 
   // test one fixed and one variable
   vector<const class FieldDescriptor*> fields3;
@@ -114,7 +116,7 @@ void DescriptorConsistencyCheckerTest::testDuplicateStrings() {
   fields3.push_back(
       new ola::messaging::StringFieldDescriptor("string2", 4, 32));
   const Descriptor combination_descriptor("Variable", fields3);
-  CPPUNIT_ASSERT(checker.CheckConsistency(&combination_descriptor));
+  OLA_ASSERT_TRUE(checker.CheckConsistency(&combination_descriptor));
 }
 
 
@@ -131,7 +133,7 @@ void DescriptorConsistencyCheckerTest::testGroups() {
       new ola::messaging::FieldDescriptorGroup("group", group_fields, 2, 2));
 
   const Descriptor fixed_length_descriptor("SingleFixed", fields);
-  CPPUNIT_ASSERT(checker.CheckConsistency(&fixed_length_descriptor));
+  OLA_ASSERT_TRUE(checker.CheckConsistency(&fixed_length_descriptor));
 
   // test multiple, fixed size groups
   vector<const class FieldDescriptor*> fields2, group_fields2, group_fields3;
@@ -143,7 +145,7 @@ void DescriptorConsistencyCheckerTest::testGroups() {
       new ola::messaging::FieldDescriptorGroup("group2", group_fields3, 2, 2));
 
   const Descriptor multiple_fixed_descriptor("MuiltpleFixed", fields2);
-  CPPUNIT_ASSERT(checker.CheckConsistency(&multiple_fixed_descriptor));
+  OLA_ASSERT_TRUE(checker.CheckConsistency(&multiple_fixed_descriptor));
 
   // test a fixed size group, and a variable-sized group
   vector<const class FieldDescriptor*> fields3, group_fields4, group_fields5;
@@ -155,7 +157,7 @@ void DescriptorConsistencyCheckerTest::testGroups() {
       new ola::messaging::FieldDescriptorGroup("group2", group_fields5, 2, 8));
 
   const Descriptor fixed_and_variable_descriptor("Fixed", fields3);
-  CPPUNIT_ASSERT(checker.CheckConsistency(&fixed_and_variable_descriptor));
+  OLA_ASSERT_TRUE(checker.CheckConsistency(&fixed_and_variable_descriptor));
 
   // test a variable sized group
   vector<const class FieldDescriptor*> fields4, group_fields6;
@@ -164,7 +166,7 @@ void DescriptorConsistencyCheckerTest::testGroups() {
       new ola::messaging::FieldDescriptorGroup("group1", group_fields6, 2, 8));
 
   const Descriptor variable_descriptor("Variable", fields4);
-  CPPUNIT_ASSERT(checker.CheckConsistency(&variable_descriptor));
+  OLA_ASSERT_TRUE(checker.CheckConsistency(&variable_descriptor));
 
   // test a multiple variable sized groups
   vector<const class FieldDescriptor*> fields5, group_fields7, group_fields8;
@@ -176,7 +178,7 @@ void DescriptorConsistencyCheckerTest::testGroups() {
       new ola::messaging::FieldDescriptorGroup("group1", group_fields8, 2, 8));
 
   const Descriptor multiple_variable_descriptor("Variable", fields5);
-  CPPUNIT_ASSERT(!checker.CheckConsistency(&multiple_variable_descriptor));
+  OLA_ASSERT_FALSE(checker.CheckConsistency(&multiple_variable_descriptor));
 }
 
 
@@ -197,7 +199,7 @@ void DescriptorConsistencyCheckerTest::testNestedGroups() {
       new ola::messaging::FieldDescriptorGroup("", group_fields2, 2, 2));
 
   const Descriptor nested_fixed_descriptor("", fields);
-  CPPUNIT_ASSERT(checker.CheckConsistency(&nested_fixed_descriptor));
+  OLA_ASSERT_TRUE(checker.CheckConsistency(&nested_fixed_descriptor));
 
   // nested, both variable
   vector<const class FieldDescriptor*> fields2, group_fields3, group_fields4;
@@ -210,7 +212,7 @@ void DescriptorConsistencyCheckerTest::testNestedGroups() {
       new ola::messaging::FieldDescriptorGroup("", group_fields4, 2, 4));
 
   const Descriptor nested_variable_descriptor("", fields2);
-  CPPUNIT_ASSERT(!checker.CheckConsistency(&nested_variable_descriptor));
+  OLA_ASSERT_FALSE(checker.CheckConsistency(&nested_variable_descriptor));
 
   // variable, containing a fixed size group
   vector<const class FieldDescriptor*> fields3, group_fields5, group_fields6;
@@ -223,7 +225,7 @@ void DescriptorConsistencyCheckerTest::testNestedGroups() {
       new ola::messaging::FieldDescriptorGroup("", group_fields6, 2, 4));
 
   const Descriptor variable_fixed_descriptor("", fields3);
-  CPPUNIT_ASSERT(checker.CheckConsistency(&variable_fixed_descriptor));
+  OLA_ASSERT_TRUE(checker.CheckConsistency(&variable_fixed_descriptor));
 
   // fixed, containing a variable sized group
   vector<const class FieldDescriptor*> fields4, group_fields7, group_fields8;
@@ -236,5 +238,5 @@ void DescriptorConsistencyCheckerTest::testNestedGroups() {
       new ola::messaging::FieldDescriptorGroup("", group_fields8, 2, 2));
 
   const Descriptor fixed_variable_descriptor("", fields4);
-  CPPUNIT_ASSERT(!checker.CheckConsistency(&fixed_variable_descriptor));
+  OLA_ASSERT_FALSE(checker.CheckConsistency(&fixed_variable_descriptor));
 }

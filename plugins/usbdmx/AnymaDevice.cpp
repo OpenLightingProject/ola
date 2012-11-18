@@ -30,11 +30,31 @@ namespace plugin {
 namespace usbdmx {
 
 
+const char AnymaDevice::EXPECTED_MANUFACTURER[] = "www.anyma.ch";
+const char AnymaDevice::EXPECTED_PRODUCT[] = "uDMX";
+
+
+/**
+ * New AnymaDevice.
+ * @param owner the plugin that owns this device
+ * @param usb_device a USB device
+ * @param usb_handle a claimed handle to the device. Ownership is transferred.
+ * @param serial the serial number, may be empty.
+ */
+AnymaDevice::AnymaDevice(ola::AbstractPlugin *owner,
+                         libusb_device *usb_device,
+                         libusb_device_handle *usb_handle,
+                         const string &serial)
+    : UsbDevice(owner, "Anyma USB Device", usb_device),
+      m_output_port(new AnymaOutputPort(this, 0, usb_device, usb_handle,
+                                        serial)) {
+}
+
+
 /*
  * Start this device.
  */
 bool AnymaDevice::StartHook() {
-  m_output_port = new AnymaOutputPort(this, 0, m_usb_device);
   if (!m_output_port->Start()) {
     delete m_output_port;
     m_output_port = NULL;

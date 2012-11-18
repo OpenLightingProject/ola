@@ -19,6 +19,7 @@
  */
 
 #include <cppunit/extensions/HelperMacros.h>
+#include <string>
 
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
@@ -27,14 +28,17 @@
 
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
+using std::string;
 
 class SocketAddressTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(SocketAddressTest);
   CPPUNIT_TEST(testIPV4SocketAddress);
+  CPPUNIT_TEST(testIPV4SocketAddressFromString);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void testIPV4SocketAddress();
+    void testIPV4SocketAddressFromString();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(SocketAddressTest);
@@ -45,7 +49,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SocketAddressTest);
  */
 void SocketAddressTest::testIPV4SocketAddress() {
   IPV4Address ip_address;
-  OLA_ASSERT(IPV4Address::FromString("192.168.1.1", &ip_address));
+  OLA_ASSERT_TRUE(IPV4Address::FromString("192.168.1.1", &ip_address));
 
   IPV4SocketAddress socket_address(ip_address, 8080);
   OLA_ASSERT_EQ(ip_address, socket_address.Host());
@@ -53,7 +57,7 @@ void SocketAddressTest::testIPV4SocketAddress() {
 
   struct sockaddr sock_addr;
   OLA_ASSERT_FALSE(socket_address.ToSockAddr(&sock_addr, 0));
-  OLA_ASSERT(socket_address.ToSockAddr(&sock_addr, sizeof(sock_addr)));
+  OLA_ASSERT_TRUE(socket_address.ToSockAddr(&sock_addr, sizeof(sock_addr)));
   OLA_ASSERT_EQ(static_cast<uint16_t>(AF_INET),
                 static_cast<uint16_t>(sock_addr.sa_family));
 
@@ -68,7 +72,7 @@ void SocketAddressTest::testIPV4SocketAddress() {
   IPV4SocketAddress socket_address2(ip_address, 8079);
   IPV4SocketAddress socket_address3(ip_address, 8081);
   IPV4Address ip_address2;
-  OLA_ASSERT(IPV4Address::FromString("182.168.1.2", &ip_address2));
+  OLA_ASSERT_TRUE(IPV4Address::FromString("182.168.1.2", &ip_address2));
   IPV4SocketAddress socket_address4(ip_address2, 8080);
 
   OLA_ASSERT_EQ(socket_address, socket_address);
@@ -85,4 +89,20 @@ void SocketAddressTest::testIPV4SocketAddress() {
   socket_address4 = socket_address;
   OLA_ASSERT_EQ(socket_address, copy_address);
   OLA_ASSERT_EQ(socket_address, socket_address4);
+}
+
+/**
+ * Test that FromString() works
+ */
+void SocketAddressTest::testIPV4SocketAddressFromString() {
+  IPV4SocketAddress socket_address;
+  OLA_ASSERT_TRUE(
+      IPV4SocketAddress::FromString("127.0.0.1:80", &socket_address));
+  OLA_ASSERT_EQ(string("127.0.0.1"), socket_address.Host().ToString());
+  OLA_ASSERT_EQ(static_cast<uint16_t>(80), socket_address.Port());
+
+  OLA_ASSERT_FALSE(
+      IPV4SocketAddress::FromString("127.0.0.1", &socket_address));
+  OLA_ASSERT_FALSE(IPV4SocketAddress::FromString("foo", &socket_address));
+  OLA_ASSERT_FALSE(IPV4SocketAddress::FromString(":80", &socket_address));
 }

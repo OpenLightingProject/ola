@@ -485,7 +485,7 @@ int main(int argc, char *argv[]) {
       DisplayPIDsAndExit(0, controller.PidHelper());
     } else {
       OLA_FATAL << "Invalid UID";
-      exit(EX_USAGE);
+      DisplayHelpAndExit(opts);
     }
   }
 

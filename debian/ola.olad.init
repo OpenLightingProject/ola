@@ -13,6 +13,7 @@
 PATH=/usr/local/bin:/bin:/usr/bin
 NAME=olad
 DAEMON=/usr/bin/$NAME
+PIDFILE=/var/run/$NAME.pid
 DESC="OLA daemon"
 USER=olad
 
@@ -20,7 +21,7 @@ USER=olad
 [ -r /etc/default/ola ] && . /etc/default/ola
 
 if [ "$RUN_DAEMON" = "true" ] || [ "$RUN_DAEMON" = "yes" ] ; then
-  DAEMON_ARGS="--daemon --syslog --log-level 3  --config-dir  /var/lib/ola/conf"
+  DAEMON_ARGS="--syslog --log-level 3  --config-dir  /var/lib/ola/conf"
 fi
 
 [ -x "$DAEMON" ] || exit 0
@@ -32,7 +33,7 @@ case "$1" in
     # master switch
     if [ -n "$DAEMON_ARGS" ] ; then
       log_daemon_msg "Starting $DESC" "$NAME"
-      /sbin/start-stop-daemon --start --umask 0002 --chuid $USER --exec $DAEMON -- $DAEMON_ARGS
+      /sbin/start-stop-daemon --start --background --make-pidfile --pidfile $PIDFILE --umask 0002 --chuid $USER --exec $DAEMON -- $DAEMON_ARGS
       log_end_msg $?
     fi
     ;;
@@ -40,17 +41,21 @@ case "$1" in
     # master switch
     if [ "$RUN_DAEMON" = "true" ] || [ "$RUN_DAEMON" = "yes" ] ; then
       log_daemon_msg "Stopping $DESC" "$NAME"
-      /sbin/start-stop-daemon --stop --chuid $USER --exec $DAEMON --retry 30
+      /sbin/start-stop-daemon --stop --pidfile $PIDFILE --chuid $USER --exec $DAEMON --retry 10
+      /bin/rm -f $PIDFILE
       log_end_msg $?
     fi
     ;;
-    reload|restart)
-      $0 stop && $0 start
-      ;;
+  reload|restart)
+    $0 stop && $0 start
+    ;;
+  status)
+    status_of_proc -p $PIDFILE $DAEMON $NAME && exit 0 || exit $?
+    ;;
   *)
-      echo "Usage: /etc/init.d/$NAME {start|stop|restart}" >&2
-      exit 1
-      ;;
+    echo "Usage: /etc/init.d/$NAME {start|stop|restart|status}" >&2
+    exit 1
+    ;;
 esac
 
 exit 0

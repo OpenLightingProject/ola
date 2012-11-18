@@ -117,7 +117,8 @@ StateManager::~StateManager() {
 
 
 bool StateManager::Tick() {
-  if (m_ticker > (TIME_PER_STATE_MS / TICK_INTERVAL_MS)) {
+  if (m_ticker > (TIME_PER_STATE_MS / TICK_INTERVAL_MS) &&
+      ! m_interactive) {
     NextState();
     if (m_count == m_states.size())
       return false;

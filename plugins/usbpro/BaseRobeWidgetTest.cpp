@@ -28,6 +28,8 @@
 #include "ola/network/NetworkUtils.h"
 #include "plugins/usbpro/BaseRobeWidget.h"
 #include "plugins/usbpro/CommonWidgetTest.h"
+#include "ola/testing/TestUtils.h"
+
 
 
 using ola::DmxBuffer;
@@ -110,13 +112,13 @@ void BaseRobeWidgetTest::AddExpectedMessage(uint8_t label,
 void BaseRobeWidgetTest::ReceiveMessage(uint8_t label,
                                         const uint8_t *data,
                                         unsigned int size) {
-  CPPUNIT_ASSERT(m_messages.size());
+  OLA_ASSERT(m_messages.size());
   expected_message message = m_messages.front();
   m_messages.pop();
 
-  CPPUNIT_ASSERT_EQUAL(message.label, label);
-  CPPUNIT_ASSERT_EQUAL(message.size, size);
-  CPPUNIT_ASSERT(!memcmp(message.data, data, size));
+  OLA_ASSERT_EQ(message.label, label);
+  OLA_ASSERT_EQ(message.size, size);
+  OLA_ASSERT_FALSE(memcmp(message.data, data, size));
 
   if (m_messages.empty())
     m_ss.Terminate();
@@ -133,7 +135,7 @@ void BaseRobeWidgetTest::testSend() {
       expected1,
       sizeof(expected1),
       ola::NewSingleCallback(this, &BaseRobeWidgetTest::Terminate));
-  CPPUNIT_ASSERT(m_widget->SendMessage(0, NULL, 0));
+  OLA_ASSERT(m_widget->SendMessage(0, NULL, 0));
   m_ss.Run();
   m_endpoint->Verify();
 
@@ -143,7 +145,7 @@ void BaseRobeWidgetTest::testSend() {
       expected2,
       sizeof(expected2),
       ola::NewSingleCallback(this, &BaseRobeWidgetTest::Terminate));
-  CPPUNIT_ASSERT(m_widget->SendMessage(10, NULL, 0));
+  OLA_ASSERT(m_widget->SendMessage(10, NULL, 0));
   m_ss.Run();
   m_endpoint->Verify();
 
@@ -154,11 +156,11 @@ void BaseRobeWidgetTest::testSend() {
       sizeof(expected3),
       ola::NewSingleCallback(this, &BaseRobeWidgetTest::Terminate));
   uint32_t data = ola::network::HostToNetwork(0xdeadbeef);
-  CPPUNIT_ASSERT(m_widget->SendMessage(11,
+  OLA_ASSERT(m_widget->SendMessage(11,
                                        reinterpret_cast<uint8_t*>(&data),
                                        sizeof(data)));
   // try to send an incorrect frame
-  CPPUNIT_ASSERT(!m_widget->SendMessage(10, NULL, 4));
+  OLA_ASSERT_FALSE(m_widget->SendMessage(10, NULL, 4));
   m_ss.Run();
   m_endpoint->Verify();
 }
@@ -191,10 +193,10 @@ void BaseRobeWidgetTest::testReceive() {
                      reinterpret_cast<uint8_t*>(&data_chunk2));
 
   ssize_t bytes_sent = m_other_end->Send(data, sizeof(data));
-  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(data)), bytes_sent);
+  OLA_ASSERT_EQ(static_cast<ssize_t>(sizeof(data)), bytes_sent);
   m_ss.Run();
 
-  CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), m_messages.size());
+  OLA_ASSERT_EQ(static_cast<size_t>(0), m_messages.size());
 }
 
 
@@ -207,5 +209,5 @@ void BaseRobeWidgetTest::testRemove() {
   m_other_end->Close();
   m_ss.Run();
 
-  CPPUNIT_ASSERT(m_removed);
+  OLA_ASSERT(m_removed);
 }

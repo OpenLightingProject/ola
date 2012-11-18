@@ -29,6 +29,8 @@
 #include "olad/PluginManager.h"
 #include "olad/Preferences.h"
 #include "olad/TestCommon.h"
+#include "ola/testing/TestUtils.h"
+
 
 using ola::AbstractPlugin;
 using ola::PluginLoader;
@@ -95,7 +97,7 @@ class MockLoader: public ola::PluginLoader {
  */
 void PluginManagerTest::testPluginManager() {
   ola::MemoryPreferencesFactory factory;
-  ola::PluginAdaptor adaptor(NULL, NULL, &factory, NULL);
+  ola::PluginAdaptor adaptor(NULL, NULL, NULL, &factory, NULL);
 
   TestMockPlugin plugin1(&adaptor, ola::OLA_PLUGIN_ARTNET);
   TestMockPlugin plugin2(&adaptor, ola::OLA_PLUGIN_ESPNET, false);
@@ -112,8 +114,8 @@ void PluginManagerTest::testPluginManager() {
 
   VerifyPluginCounts(&manager, 2, 1, __LINE__);
 
-  CPPUNIT_ASSERT(plugin1.WasStarted());
-  CPPUNIT_ASSERT(!plugin2.WasStarted());
+  OLA_ASSERT(plugin1.WasStarted());
+  OLA_ASSERT_FALSE(plugin2.WasStarted());
 
   manager.UnloadAll();
   VerifyPluginCounts(&manager, 0, 0, __LINE__);
@@ -125,7 +127,7 @@ void PluginManagerTest::testPluginManager() {
  */
 void PluginManagerTest::testConflictingPlugins() {
   ola::MemoryPreferencesFactory factory;
-  ola::PluginAdaptor adaptor(NULL, NULL, &factory, NULL);
+  ola::PluginAdaptor adaptor(NULL, NULL, NULL, &factory, NULL);
 
   set<ola::ola_plugin_id> conflict_set1;
   conflict_set1.insert(ola::OLA_PLUGIN_ARTNET);
@@ -150,9 +152,9 @@ void PluginManagerTest::testConflictingPlugins() {
 
   VerifyPluginCounts(&manager, 3, 1, __LINE__);
 
-  CPPUNIT_ASSERT(!plugin1.WasStarted());
-  CPPUNIT_ASSERT(plugin2.WasStarted());
-  CPPUNIT_ASSERT(!plugin3.WasStarted());
+  OLA_ASSERT_FALSE(plugin1.WasStarted());
+  OLA_ASSERT(plugin2.WasStarted());
+  OLA_ASSERT_FALSE(plugin3.WasStarted());
 
   manager.UnloadAll();
   VerifyPluginCounts(&manager, 0, 0, __LINE__);

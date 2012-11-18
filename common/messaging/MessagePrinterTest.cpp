@@ -26,6 +26,8 @@
 #include "ola/messaging/Message.h"
 #include "ola/messaging/MessagePrinter.h"
 #include "ola/rdm/UID.h"
+#include "ola/testing/TestUtils.h"
+
 
 using std::string;
 using std::vector;
@@ -106,7 +108,7 @@ void GenericMessagePrinterTest::testSimplePrinter() {
   string expected = (
       "On/Off: false\nip: 10.0.0.1\nuid: 7a70:00000001\nName: foobar\nId: 42\n"
       "Count: 4 x 10 ^ -3\nDelta: 10 x 10 ^ 1\nRate: 10 x 10 ^ -1\n");
-  CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(&message));
+  OLA_ASSERT_EQ(expected, m_printer.AsString(&message));
 }
 
 
@@ -131,7 +133,7 @@ void GenericMessagePrinterTest::testLabeledPrinter() {
 
   Message message(fields);
   string expected = "State: off\nState: on\nState: auto\n";
-  CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(&message));
+  OLA_ASSERT_EQ(expected, m_printer.AsString(&message));
 }
 
 
@@ -169,5 +171,5 @@ void GenericMessagePrinterTest::testNestedPrinter() {
   string expected = (
       "Person {\n  Name: Lisa\n  Female: true\n  Age: 21\n}\n"
       "Person {\n  Name: Simon\n  Female: false\n  Age: 26\n}\n");
-  CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(&message));
+  OLA_ASSERT_EQ(expected, m_printer.AsString(&message));
 }

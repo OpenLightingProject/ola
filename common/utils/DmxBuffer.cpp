@@ -458,4 +458,8 @@ void DmxBuffer::CleanupMemory() {
     m_length = 0;
   }
 }
+
+std::ostream& operator<<(std::ostream &out, const DmxBuffer &data) {
+  return out << data.ToString();
+}
 }  //  ola

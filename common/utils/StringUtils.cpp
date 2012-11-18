@@ -345,7 +345,7 @@ bool HexStringToInt(const string &value, int8_t *output) {
   int32_t temp;
   if (!HexStringToInt(value, &temp))
     return false;
-  if (temp < 0 || temp > UINT8_MAX)
+  if (temp < 0 || temp > static_cast<int32_t>(UINT8_MAX))
     return false;
   *output = static_cast<int8_t>(temp);
   return true;
@@ -359,7 +359,7 @@ bool HexStringToInt(const string &value, int16_t *output) {
   int32_t temp;
   if (!HexStringToInt(value, &temp))
     return false;
-  if (temp < 0 || temp > UINT16_MAX)
+  if (temp < 0 || temp > static_cast<int32_t>(UINT16_MAX))
     return false;
   *output = static_cast<int16_t>(temp);
   return true;

@@ -59,12 +59,13 @@ class DmxTriDevice: public UsbSerialDevice {
 class DmxTriOutputPort: public BasicOutputPort {
   public:
     DmxTriOutputPort(DmxTriDevice *parent,
-                     DmxTriWidget *widget);
+                     DmxTriWidget *widget,
+                     const string &serial);
 
     ~DmxTriOutputPort();
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-    string Description() const { return ""; }
+    string Description() const { return m_serial; }
 
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback) {
@@ -82,6 +83,7 @@ class DmxTriOutputPort: public BasicOutputPort {
   private:
     DmxTriDevice *m_device;
     DmxTriWidget *m_tri_widget;
+    const string m_serial;
 };
 }  // usbpro
 }  // plugin

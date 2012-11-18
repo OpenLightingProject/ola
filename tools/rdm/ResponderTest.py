@@ -392,8 +392,8 @@ class ResponderTestFixture(TestFixture):
       pid: The pid value
       data: The param data
     """
-    self.LogDebug(' GET: pid: %s, sub device: %d, data: %r' %
-                  (pid, sub_device, data))
+    self.LogDebug(' GET: uid: %s, pid: %s, sub device: %d, data: %r' %
+                  (self._uid, pid, sub_device, data))
     self._outstanding_request = (sub_device, PidStore.RDM_GET, pid.value)
     return self._api.RawGet(self._universe,
                             self._uid,

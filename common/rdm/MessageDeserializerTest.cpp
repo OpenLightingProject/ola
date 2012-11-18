@@ -29,6 +29,8 @@
 #include "ola/messaging/MessagePrinter.h"
 #include "ola/rdm/MessageSerializer.h"
 #include "ola/rdm/MessageDeserializer.h"
+#include "ola/testing/TestUtils.h"
+
 
 
 using ola::messaging::BoolFieldDescriptor;
@@ -97,12 +99,12 @@ void MessageDeserializerTest::testEmpty() {
       &descriptor,
       NULL,
       0));
-  CPPUNIT_ASSERT(empty_message.get());
-  CPPUNIT_ASSERT_EQUAL(0u, empty_message->FieldCount());
+  OLA_ASSERT_NOT_NULL(empty_message.get());
+  OLA_ASSERT_EQ(0u, empty_message->FieldCount());
 
   // now and try to pass in too much data
   const uint8_t data[] = {0, 1, 2};
-  CPPUNIT_ASSERT(!m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       data,
       sizeof(data)));
@@ -131,19 +133,19 @@ void MessageDeserializerTest::testSimpleBigEndian() {
     1, 2, 3, 4, 0xfe, 6, 7, 8};
 
   // try to inflate with no data
-  CPPUNIT_ASSERT(!m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       NULL,
       0));
 
   // now inflate with too little data
-  CPPUNIT_ASSERT(!m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       big_endian_data,
       1));
 
   // now inflate with too much data
-  CPPUNIT_ASSERT(!m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       big_endian_data,
       sizeof(big_endian_data) + 1));
@@ -153,13 +155,13 @@ void MessageDeserializerTest::testSimpleBigEndian() {
       &descriptor,
       big_endian_data,
       sizeof(big_endian_data)));
-  CPPUNIT_ASSERT(message.get());
-  CPPUNIT_ASSERT_EQUAL(7u, message->FieldCount());
+  OLA_ASSERT_NOT_NULL(message.get());
+  OLA_ASSERT_EQ(7u, message->FieldCount());
 
   const string expected = (
       "bool: false\nuint8: 10\nint8: -10\nuint16: 300\nint16: -502\n"
       "uint32: 16909060\nint32: -33159416\n");
-  CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(message.get()));
+  OLA_ASSERT_EQ(expected, m_printer.AsString(message.get()));
 }
 
 
@@ -184,19 +186,19 @@ void MessageDeserializerTest::testSimpleLittleEndian() {
     4, 3, 2, 1, 8, 7, 6, 0xfe};
 
   // try to inflate with no data
-  CPPUNIT_ASSERT(!m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       NULL,
       0));
 
   // now inflate with too little data
-  CPPUNIT_ASSERT(!m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       little_endian_data,
       1));
 
   // now inflate with too much data
-  CPPUNIT_ASSERT(!m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       little_endian_data,
       sizeof(little_endian_data) + 1));
@@ -206,13 +208,13 @@ void MessageDeserializerTest::testSimpleLittleEndian() {
       &descriptor,
       little_endian_data,
       sizeof(little_endian_data)));
-  CPPUNIT_ASSERT(message.get());
-  CPPUNIT_ASSERT_EQUAL(7u, message->FieldCount());
+  OLA_ASSERT_NOT_NULL(message.get());
+  OLA_ASSERT_EQ(7u, message->FieldCount());
 
   const string expected = (
       "bool: true\nuint8: 10\nint8: -10\nuint16: 300\nint16: -502\n"
       "uint32: 16909060\nint32: -33159416\n");
-  CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(message.get()));
+  OLA_ASSERT_EQ(expected, m_printer.AsString(message.get()));
 }
 
 
@@ -229,17 +231,17 @@ void MessageDeserializerTest::testString() {
   const uint8_t data[] = "0123456789this is a longer string";
 
   // try to inflate with too little
-  CPPUNIT_ASSERT(!m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       data,
       0));
-  CPPUNIT_ASSERT(!m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       data,
       9));
 
   // try to inflat with too much data
-  CPPUNIT_ASSERT(!m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       data,
       43));
@@ -249,24 +251,24 @@ void MessageDeserializerTest::testString() {
       &descriptor,
       data,
       sizeof(data)));
-  CPPUNIT_ASSERT(message.get());
-  CPPUNIT_ASSERT_EQUAL(2u, message->FieldCount());
+  OLA_ASSERT_NOT_NULL(message.get());
+  OLA_ASSERT_EQ(2u, message->FieldCount());
 
   const string expected = (
       "string: 0123456789\nstring: this is a longer string\n");
-  CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(message.get()));
+  OLA_ASSERT_EQ(expected, m_printer.AsString(message.get()));
 
   // now try with different sizes
   auto_ptr<const Message> message2(m_deserializer.InflateMessage(
       &descriptor,
       data,
       19));
-  CPPUNIT_ASSERT(message2.get());
-  CPPUNIT_ASSERT_EQUAL(2u, message2->FieldCount());
+  OLA_ASSERT_NOT_NULL(message2.get());
+  OLA_ASSERT_EQ(2u, message2->FieldCount());
 
   const string expected2 = (
       "string: 0123456789\nstring: this is a\n");
-  CPPUNIT_ASSERT_EQUAL(expected2, m_printer.AsString(message2.get()));
+  OLA_ASSERT_EQ(expected2, m_printer.AsString(message2.get()));
 }
 
 
@@ -287,11 +289,11 @@ void MessageDeserializerTest::testUID() {
       &descriptor,
       big_endian_data,
       sizeof(big_endian_data)));
-  CPPUNIT_ASSERT(message.get());
-  CPPUNIT_ASSERT_EQUAL(1u, message->FieldCount());
+  OLA_ASSERT_NOT_NULL(message.get());
+  OLA_ASSERT_EQ(1u, message->FieldCount());
 
   const string expected = "Address: 707a:00000001\n";
-  CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(message.get()));
+  OLA_ASSERT_EQ(expected, m_printer.AsString(message.get()));
 }
 
 
@@ -316,11 +318,11 @@ void MessageDeserializerTest::testWithGroups() {
       &descriptor,
       data,
       0));
-  CPPUNIT_ASSERT(message.get());
-  CPPUNIT_ASSERT_EQUAL(0u, message->FieldCount());
+  OLA_ASSERT_NOT_NULL(message.get());
+  OLA_ASSERT_EQ(0u, message->FieldCount());
 
   // message with not enough data
-  CPPUNIT_ASSERT(!m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       data,
       1));
@@ -330,15 +332,15 @@ void MessageDeserializerTest::testWithGroups() {
       &descriptor,
       data,
       2));
-  CPPUNIT_ASSERT(message2.get());
-  CPPUNIT_ASSERT_EQUAL(1u,
+  OLA_ASSERT_NOT_NULL(message2.get());
+  OLA_ASSERT_EQ(1u,
                        message2->FieldCount());
 
   const string expected = "group {\n  bool: false\n  uint8: 10\n}\n";
-  CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(message2.get()));
+  OLA_ASSERT_EQ(expected, m_printer.AsString(message2.get()));
 
   // another message with not enough data
-  CPPUNIT_ASSERT(!m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       data,
       3));
@@ -348,31 +350,31 @@ void MessageDeserializerTest::testWithGroups() {
       &descriptor,
       data,
       4));
-  CPPUNIT_ASSERT(message3.get());
-  CPPUNIT_ASSERT_EQUAL(2u, message3->FieldCount());
+  OLA_ASSERT_NOT_NULL(message3.get());
+  OLA_ASSERT_EQ(2u, message3->FieldCount());
 
   const string expected2 = (
       "group {\n  bool: false\n  uint8: 10\n}\n"
       "group {\n  bool: true\n  uint8: 3\n}\n");
-  CPPUNIT_ASSERT_EQUAL(expected2, m_printer.AsString(message3.get()));
+  OLA_ASSERT_EQ(expected2, m_printer.AsString(message3.get()));
 
   // trhee instances of the group
   auto_ptr<const Message> message4(m_deserializer.InflateMessage(
       &descriptor,
       data,
       6));
-  CPPUNIT_ASSERT(message4.get());
-  CPPUNIT_ASSERT_EQUAL(3u,
+  OLA_ASSERT_NOT_NULL(message4.get());
+  OLA_ASSERT_EQ(3u,
                        message4->FieldCount());
 
   const string expected3 = (
       "group {\n  bool: false\n  uint8: 10\n}\n"
       "group {\n  bool: true\n  uint8: 3\n}\n"
       "group {\n  bool: false\n  uint8: 20\n}\n");
-  CPPUNIT_ASSERT_EQUAL(expected3, m_printer.AsString(message4.get()));
+  OLA_ASSERT_EQ(expected3, m_printer.AsString(message4.get()));
 
   // message with too much data
-  CPPUNIT_ASSERT(!m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       data,
       sizeof(data)));
@@ -398,15 +400,15 @@ void MessageDeserializerTest::testWithNestedFixedGroups() {
       &descriptor,
       data,
       0));
-  CPPUNIT_ASSERT(message.get());
-  CPPUNIT_ASSERT_EQUAL(0u, message->FieldCount());
+  OLA_ASSERT_NOT_NULL(message.get());
+  OLA_ASSERT_EQ(0u, message->FieldCount());
 
   // message with not enough data
-  CPPUNIT_ASSERT(!m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       data,
       1));
-  CPPUNIT_ASSERT(!m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       data,
       2));
@@ -416,21 +418,21 @@ void MessageDeserializerTest::testWithNestedFixedGroups() {
       &descriptor,
       data,
       3));
-  CPPUNIT_ASSERT(message2.get());
-  CPPUNIT_ASSERT_EQUAL(1u, message2->FieldCount());
+  OLA_ASSERT_NOT_NULL(message2.get());
+  OLA_ASSERT_EQ(1u, message2->FieldCount());
 
   const string expected = (
       " {\n  uint8: 0\n  bar {\n    bool: false\n  }\n  bar {\n"
       "    bool: false\n  }\n}\n");
-  CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(message2.get()));
+  OLA_ASSERT_EQ(expected, m_printer.AsString(message2.get()));
 
   // four instances
   auto_ptr<const Message> message3(m_deserializer.InflateMessage(
       &descriptor,
       data,
       sizeof(data)));
-  CPPUNIT_ASSERT(message3.get());
-  CPPUNIT_ASSERT_EQUAL(4u, message3->FieldCount());
+  OLA_ASSERT_NOT_NULL(message3.get());
+  OLA_ASSERT_EQ(4u, message3->FieldCount());
 
   const string expected2 = (
       " {\n  uint8: 0\n  bar {\n    bool: false\n  }\n  bar {\n"
@@ -441,10 +443,10 @@ void MessageDeserializerTest::testWithNestedFixedGroups() {
       "    bool: false\n  }\n}\n"
       " {\n  uint8: 3\n  bar {\n    bool: true\n  }\n  bar {\n"
       "    bool: true\n  }\n}\n");
-  CPPUNIT_ASSERT_EQUAL(expected2, m_printer.AsString(message3.get()));
+  OLA_ASSERT_EQ(expected2, m_printer.AsString(message3.get()));
 
   // too much data
-  CPPUNIT_ASSERT(!m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       data,
       sizeof(data) + 1));
@@ -464,26 +466,26 @@ void MessageDeserializerTest::testWithNestedVariableGroups() {
   Descriptor descriptor("Test Descriptor", fields);
 
   // an empty message would be valid.
-  CPPUNIT_ASSERT(!m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       NULL,
       0));
 
   const uint8_t data[] = {0, 1, 0, 1};
   // none of these are valid
-  CPPUNIT_ASSERT(!m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       data,
       1));
-  CPPUNIT_ASSERT(!m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       data,
       2));
-  CPPUNIT_ASSERT(!m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       data,
       3));
-  CPPUNIT_ASSERT(!m_deserializer.InflateMessage(
+  OLA_ASSERT_NULL(m_deserializer.InflateMessage(
       &descriptor,
       data,
       4));

@@ -22,6 +22,7 @@
 #include <vector>
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
+#include "ola/rdm/RDMCommandSerializer.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
 #include "plugins/usbpro/DmxterWidget.h"
@@ -30,6 +31,7 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
+using ola::rdm::RDMCommandSerializer;
 using ola::rdm::RDMRequest;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
@@ -115,15 +117,12 @@ void DmxterWidgetImpl::SendRDMRequest(const RDMRequest *request,
     return;
   }
 
-  unsigned int data_size = request->Size();  // add in the start code
-  uint8_t *data = new uint8_t[data_size + 1];
+  unsigned int data_size = RDMCommandSerializer::RequiredSize(*request);
+  uint8_t *data = new uint8_t[data_size + 1];  // + start code
   data[0] = ola::rdm::RDMCommand::START_CODE;
 
-  bool r = request->PackWithControllerParams(data + 1,
-                                             &data_size,
-                                             m_uid,
-                                             m_transaction_number++,
-                                             1);
+  bool r = RDMCommandSerializer::Pack(*request, data + 1, &data_size,
+                                      m_uid, m_transaction_number++, 1);
   if (r) {
     uint8_t label;
     if (IsDUBRequest(request)) {

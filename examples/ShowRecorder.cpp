@@ -48,7 +48,8 @@ using ola::DmxBuffer;
 ShowRecorder::ShowRecorder(const string &filename,
                            const vector<unsigned int> &universes)
     : m_saver(filename),
-      m_universes(universes) {
+      m_universes(universes),
+      m_frame_count(0) {
 }
 
 
@@ -84,11 +85,19 @@ int ShowRecorder::Init() {
 
 
 /**
- * Playback the show
+ * Record the show.
  */
 int ShowRecorder::Record() {
   m_client.GetSelectServer()->Run();
   return EX_OK;
+}
+
+
+/**
+ * Stop recording
+ */
+void ShowRecorder::Stop() {
+  m_client.GetSelectServer()->Terminate();
 }
 
 
@@ -106,6 +115,7 @@ void ShowRecorder::NewFrame(unsigned int universe,
   ola::TimeStamp now;
   m_clock.CurrentTime(&now);
   m_saver.NewFrame(now, universe, data);
+  m_frame_count++;
 }
 
 

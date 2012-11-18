@@ -225,10 +225,8 @@ bool OlaServer::Init() {
 
   // setup the objects
   m_device_manager = new DeviceManager(m_preferences_factory, m_port_manager);
-  m_plugin_adaptor = new PluginAdaptor(m_device_manager,
-                                       m_ss,
-                                       m_preferences_factory,
-                                       m_port_broker);
+  m_plugin_adaptor = new PluginAdaptor(m_device_manager, m_ss, m_export_map,
+                                       m_preferences_factory, m_port_broker);
 
   m_plugin_manager = new PluginManager(m_plugin_loaders, m_plugin_adaptor);
   m_service_impl = new OlaServerServiceImpl(

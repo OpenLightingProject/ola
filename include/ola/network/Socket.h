@@ -66,6 +66,8 @@ class UDPSocketInterface: public ola::io::BidirectionalFileDescriptor {
       return Bind(IPV4SocketAddress(ip, port));
     }
 
+    virtual bool GetSocketAddress(IPV4SocketAddress *address) const = 0;
+
     virtual bool Close() = 0;
     virtual int ReadDescriptor() const = 0;
     virtual int WriteDescriptor() const = 0;
@@ -118,6 +120,8 @@ class UDPSocket: public UDPSocketInterface {
     ~UDPSocket() { Close(); }
     bool Init();
     bool Bind(const IPV4SocketAddress &endpoint);
+
+    bool GetSocketAddress(IPV4SocketAddress *address) const;
 
     bool Close();
     int ReadDescriptor() const { return m_fd; }

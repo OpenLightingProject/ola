@@ -21,7 +21,10 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <google/protobuf/stubs/common.h>
 #include <string>
+
 #include "common/rpc/SimpleRpcController.h"
+#include "ola/testing/TestUtils.h"
+
 
 using std::string;
 using ola::rpc::SimpleRpcController;
@@ -50,10 +53,10 @@ void RpcControllerTest::testFailed() {
   SimpleRpcController controller;
   string failure = "Failed";
   controller.SetFailed(failure);
-  CPPUNIT_ASSERT(controller.Failed());
-  CPPUNIT_ASSERT_EQUAL(controller.ErrorText(), failure);
+  OLA_ASSERT_TRUE(controller.Failed());
+  OLA_ASSERT_EQ(controller.ErrorText(), failure);
   controller.Reset();
-  CPPUNIT_ASSERT(!controller.Failed());
+  OLA_ASSERT_FALSE(controller.Failed());
 }
 
 void RpcControllerTest::Callback() {
@@ -63,20 +66,20 @@ void RpcControllerTest::Callback() {
 void RpcControllerTest::testCancel() {
   SimpleRpcController controller;
   controller.StartCancel();
-  CPPUNIT_ASSERT(controller.IsCanceled());
+  OLA_ASSERT_TRUE(controller.IsCanceled());
 
   controller.Reset();
-  CPPUNIT_ASSERT(!controller.IsCanceled());
+  OLA_ASSERT_FALSE(controller.IsCanceled());
 
   Closure *callback = NewCallback(this, &RpcControllerTest::Callback);
   m_callback_run = false;
   controller.NotifyOnCancel(callback);
   controller.StartCancel();
-  CPPUNIT_ASSERT(m_callback_run);
+  OLA_ASSERT_TRUE(m_callback_run);
 
   controller.Reset();
-  CPPUNIT_ASSERT(!controller.IsCanceled());
+  OLA_ASSERT_FALSE(controller.IsCanceled());
   m_callback_run = false;
   controller.StartCancel();
-  CPPUNIT_ASSERT(!m_callback_run);
+  OLA_ASSERT_FALSE(m_callback_run);
 }

@@ -91,7 +91,8 @@ binary-arch: build install
 #	dh_installemacsen
 #	dh_installpam
 #	dh_installmime
-	dh_installinit
+	dh_installinit --name=olad
+	dh_installinit --name=rdm_test_server
 	dh_installudev --noscripts
 #	dh_installcron
 	dh_link

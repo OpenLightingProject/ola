@@ -1,10 +1,11 @@
-SOURCES = BufferedWriteDescriptor.h \
-          BigEndianStream.h \
+SOURCES = BigEndianStream.h \
+          BufferedWriteDescriptor.h \
           Descriptor.h \
           IOQueue.h \
           InputBuffer.h \
           InputStream.h \
           MemoryBuffer.h \
+          OutputBuffer.h \
           OutputStream.h \
           SelectServer.h \
           SelectServerInterface.h \

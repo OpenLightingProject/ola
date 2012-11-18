@@ -25,6 +25,8 @@
 #include "ola/network/NetworkUtils.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
 #include "plugins/e131/e131/DMPAddress.h"
+#include "ola/testing/TestUtils.h"
+
 
 namespace ola {
 namespace plugin {
@@ -70,33 +72,33 @@ void DMPAddressTest::checkAddress(
     dmp_address_size address_size,
     bool is_range) {
 
-  CPPUNIT_ASSERT_EQUAL(size, address->Size());
-  CPPUNIT_ASSERT_EQUAL(address_size, address->AddressSize());
-  CPPUNIT_ASSERT_EQUAL(is_range, address->IsRange());
-  CPPUNIT_ASSERT_EQUAL(start, address->Start());
-  CPPUNIT_ASSERT_EQUAL(increment, address->Increment());
-  CPPUNIT_ASSERT_EQUAL(number, address->Number());
+  OLA_ASSERT_EQ(size, address->Size());
+  OLA_ASSERT_EQ(address_size, address->AddressSize());
+  OLA_ASSERT_EQ(is_range, address->IsRange());
+  OLA_ASSERT_EQ(start, address->Start());
+  OLA_ASSERT_EQ(increment, address->Increment());
+  OLA_ASSERT_EQ(number, address->Number());
 
   unsigned int length = address->Size();
   uint8_t *buffer = new uint8_t[length];
-  CPPUNIT_ASSERT(address->Pack(buffer, length));
-  CPPUNIT_ASSERT_EQUAL(size, length);
+  OLA_ASSERT(address->Pack(buffer, length));
+  OLA_ASSERT_EQ(size, length);
 
   const BaseDMPAddress *addr = DecodeAddress(
       address_size,
       is_range ? RANGE_SINGLE: NON_RANGE,
       buffer, length);
-  CPPUNIT_ASSERT_EQUAL(size, length);
-  CPPUNIT_ASSERT_EQUAL(start, address->Start());
-  CPPUNIT_ASSERT_EQUAL(increment, address->Increment());
-  CPPUNIT_ASSERT_EQUAL(number, address->Number());
+  OLA_ASSERT_EQ(size, length);
+  OLA_ASSERT_EQ(start, address->Start());
+  OLA_ASSERT_EQ(increment, address->Increment());
+  OLA_ASSERT_EQ(number, address->Number());
 
   length--;
-  CPPUNIT_ASSERT(!DecodeAddress(address_size,
+  OLA_ASSERT_FALSE(DecodeAddress(address_size,
                                 is_range ? RANGE_SINGLE: NON_RANGE,
                                 buffer, length));
   length = 0;
-  CPPUNIT_ASSERT(!DecodeAddress(address_size,
+  OLA_ASSERT_FALSE(DecodeAddress(address_size,
                                 is_range ? RANGE_SINGLE: NON_RANGE,
                                 buffer, length));
   delete[] buffer;
@@ -140,60 +142,60 @@ void DMPAddressTest::testRangeAddress() {
 
   OneByteRangeDMPAddress addr1(10, 2, 4);
   checkAddress(&addr1, 10, 2, 4, 3, ONE_BYTES, true);
-  CPPUNIT_ASSERT(addr1.Pack(buffer, length));
-  CPPUNIT_ASSERT_EQUAL(addr1.Size(), length);
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 10, buffer[0]);
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 2, buffer[1]);
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 4, buffer[2]);
+  OLA_ASSERT(addr1.Pack(buffer, length));
+  OLA_ASSERT_EQ(addr1.Size(), length);
+  OLA_ASSERT_EQ((uint8_t) 10, buffer[0]);
+  OLA_ASSERT_EQ((uint8_t) 2, buffer[1]);
+  OLA_ASSERT_EQ((uint8_t) 4, buffer[2]);
 
   length = sizeof(buffer);
   TwoByteRangeDMPAddress addr2(1024, 2, 99);
   checkAddress(&addr2, 1024, 2, 99, 6, TWO_BYTES, true);
-  CPPUNIT_ASSERT(addr2.Pack(buffer, length));
-  CPPUNIT_ASSERT_EQUAL(addr2.Size(), length);
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 1024, NetworkToHost(*p++));
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 2, NetworkToHost(*p++));
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 99, NetworkToHost(*p));
+  OLA_ASSERT(addr2.Pack(buffer, length));
+  OLA_ASSERT_EQ(addr2.Size(), length);
+  OLA_ASSERT_EQ((uint16_t) 1024, NetworkToHost(*p++));
+  OLA_ASSERT_EQ((uint16_t) 2, NetworkToHost(*p++));
+  OLA_ASSERT_EQ((uint16_t) 99, NetworkToHost(*p));
 
   length = sizeof(buffer);
   FourByteRangeDMPAddress addr3(66000, 2, 100);
   checkAddress(&addr3, 66000, 2, 100, 12, FOUR_BYTES, true);
-  CPPUNIT_ASSERT(addr3.Pack(buffer, length));
-  CPPUNIT_ASSERT_EQUAL(addr3.Size(), length);
-  CPPUNIT_ASSERT_EQUAL((uint32_t) 66000, NetworkToHost(*pp++));
-  CPPUNIT_ASSERT_EQUAL((uint32_t) 2, NetworkToHost(*pp++));
-  CPPUNIT_ASSERT_EQUAL((uint32_t) 100, NetworkToHost(*pp));
+  OLA_ASSERT(addr3.Pack(buffer, length));
+  OLA_ASSERT_EQ(addr3.Size(), length);
+  OLA_ASSERT_EQ((uint32_t) 66000, NetworkToHost(*pp++));
+  OLA_ASSERT_EQ((uint32_t) 2, NetworkToHost(*pp++));
+  OLA_ASSERT_EQ((uint32_t) 100, NetworkToHost(*pp));
 
   const BaseDMPAddress *addr4 = NewRangeAddress(10, 1, 10);
   length = sizeof(buffer);
   checkAddress(addr4, 10, 1, 10, 3, ONE_BYTES, true);
-  CPPUNIT_ASSERT(addr4->Pack(buffer, length));
-  CPPUNIT_ASSERT_EQUAL(addr4->Size(), length);
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 10, buffer[0]);
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 1, buffer[1]);
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 10, buffer[2]);
+  OLA_ASSERT(addr4->Pack(buffer, length));
+  OLA_ASSERT_EQ(addr4->Size(), length);
+  OLA_ASSERT_EQ((uint8_t) 10, buffer[0]);
+  OLA_ASSERT_EQ((uint8_t) 1, buffer[1]);
+  OLA_ASSERT_EQ((uint8_t) 10, buffer[2]);
   delete addr4;
 
   p = reinterpret_cast<uint16_t*>(buffer);
   const BaseDMPAddress *addr5 = NewRangeAddress(10, 1, 1024);
   length = sizeof(buffer);
   checkAddress(addr5, 10, 1, 1024, 6, TWO_BYTES, true);
-  CPPUNIT_ASSERT(addr5->Pack(buffer, length));
-  CPPUNIT_ASSERT_EQUAL(addr5->Size(), length);
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 10, NetworkToHost(*p++));
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 1, NetworkToHost(*p++));
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 1024, NetworkToHost(*p));
+  OLA_ASSERT(addr5->Pack(buffer, length));
+  OLA_ASSERT_EQ(addr5->Size(), length);
+  OLA_ASSERT_EQ((uint16_t) 10, NetworkToHost(*p++));
+  OLA_ASSERT_EQ((uint16_t) 1, NetworkToHost(*p++));
+  OLA_ASSERT_EQ((uint16_t) 1024, NetworkToHost(*p));
   delete addr5;
 
   pp = reinterpret_cast<uint32_t*>(buffer);
   const BaseDMPAddress *addr6 = NewRangeAddress(66000, 1, 1024);
   length = sizeof(buffer);
   checkAddress(addr6, 66000, 1, 1024, 12, FOUR_BYTES, true);
-  CPPUNIT_ASSERT(addr6->Pack(buffer, length));
-  CPPUNIT_ASSERT_EQUAL(addr6->Size(), length);
-  CPPUNIT_ASSERT_EQUAL((uint32_t) 66000, NetworkToHost(*pp++));
-  CPPUNIT_ASSERT_EQUAL((uint32_t) 1, NetworkToHost(*pp++));
-  CPPUNIT_ASSERT_EQUAL((uint32_t) 1024, NetworkToHost(*pp));
+  OLA_ASSERT(addr6->Pack(buffer, length));
+  OLA_ASSERT_EQ(addr6->Size(), length);
+  OLA_ASSERT_EQ((uint32_t) 66000, NetworkToHost(*pp++));
+  OLA_ASSERT_EQ((uint32_t) 1, NetworkToHost(*pp++));
+  OLA_ASSERT_EQ((uint32_t) 1024, NetworkToHost(*pp));
   delete addr6;
 }
 
@@ -207,20 +209,20 @@ void DMPAddressTest::testAddressData() {
   OneByteDMPAddress addr1(10);
   DMPAddressData<OneByteDMPAddress> chunk(&addr1, NULL, 0);
 
-  CPPUNIT_ASSERT_EQUAL((const OneByteDMPAddress*) &addr1, chunk.Address());
-  CPPUNIT_ASSERT_EQUAL((const uint8_t*) NULL, chunk.Data());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, chunk.Size());
-  CPPUNIT_ASSERT(!chunk.Pack(buffer, length));
+  OLA_ASSERT_EQ((const OneByteDMPAddress*) &addr1, chunk.Address());
+  OLA_ASSERT_EQ((const uint8_t*) NULL, chunk.Data());
+  OLA_ASSERT_EQ((unsigned int) 1, chunk.Size());
+  OLA_ASSERT_FALSE(chunk.Pack(buffer, length));
 
   length = sizeof(buffer);
   TwoByteRangeDMPAddress addr2(10, 2, 10);
   DMPAddressData<TwoByteRangeDMPAddress> chunk2(&addr2, NULL, 0);
 
-  CPPUNIT_ASSERT_EQUAL((const TwoByteRangeDMPAddress*) &addr2,
+  OLA_ASSERT_EQ((const TwoByteRangeDMPAddress*) &addr2,
                        chunk2.Address());
-  CPPUNIT_ASSERT_EQUAL((const uint8_t*) NULL, chunk2.Data());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 6, chunk2.Size());
-  CPPUNIT_ASSERT(!chunk2.Pack(buffer, length));
+  OLA_ASSERT_EQ((const uint8_t*) NULL, chunk2.Data());
+  OLA_ASSERT_EQ((unsigned int) 6, chunk2.Size());
+  OLA_ASSERT_FALSE(chunk2.Pack(buffer, length));
 }
 }  // e131
 }  // plugin

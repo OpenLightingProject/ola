@@ -55,6 +55,12 @@ class SocketAddress {
  */
 class IPV4SocketAddress: public SocketAddress {
   public:
+    IPV4SocketAddress()
+        : SocketAddress(),
+          m_host(),
+          m_port(0) {
+    }
+
     IPV4SocketAddress(const IPV4Address &host, uint16_t port)
         : SocketAddress(),
           m_host(host),
@@ -102,6 +108,9 @@ class IPV4SocketAddress: public SocketAddress {
       str << Host() << ":" << Port();
       return str.str();
     }
+
+    static bool FromString(const string &str,
+                           IPV4SocketAddress *socket_address);
 
     bool ToSockAddr(struct sockaddr *addr, unsigned int size) const;
 

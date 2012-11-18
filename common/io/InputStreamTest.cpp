@@ -67,27 +67,27 @@ void InputStreamTest::testRead() {
   BigEndianInputStream stream(&buffer);
 
   int8_t int8;
-  OLA_ASSERT(stream >> int8);
+  OLA_ASSERT_TRUE(stream >> int8);
   OLA_ASSERT_EQ(static_cast<int8_t>(-128), int8);
 
   uint8_t uint8;
-  OLA_ASSERT(stream >> uint8);
+  OLA_ASSERT_TRUE(stream >> uint8);
   OLA_ASSERT_EQ(static_cast<uint8_t>(129), uint8);
 
   int16_t int16;
-  OLA_ASSERT(stream >> int16);
+  OLA_ASSERT_TRUE(stream >> int16);
   OLA_ASSERT_EQ(static_cast<int16_t>(-32768), int16);
 
   uint16_t uint16;
-  OLA_ASSERT(stream >> uint16);
+  OLA_ASSERT_TRUE(stream >> uint16);
   OLA_ASSERT_EQ(static_cast<uint16_t>(33537), uint16);
 
   int32_t int32;
-  OLA_ASSERT(stream >> int32);
+  OLA_ASSERT_TRUE(stream >> int32);
   OLA_ASSERT_EQ(static_cast<int32_t>(-2023406815), int32);
 
   uint32_t uint32;
-  OLA_ASSERT(stream >> uint32);
+  OLA_ASSERT_TRUE(stream >> uint32);
   OLA_ASSERT_EQ(static_cast<uint32_t>(305419896), uint32);
 
   OLA_ASSERT_FALSE(stream >> uint16);

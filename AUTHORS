@@ -13,5 +13,6 @@ Contributors:
   Masaki Muranaka, various patches
   Nicolas, for the win32 port of libartnet
   Ravindra Nath Kakarla, RDM Test Server (Google Summer of Code 2012)
+  Rowan Maclachlan (hippy) for various changes
   Rui Barreiros, ftdidmx plugin
   Tobi Schäfer, for the MacPort files

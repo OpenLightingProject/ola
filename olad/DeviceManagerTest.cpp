@@ -32,6 +32,8 @@
 #include "olad/Preferences.h"
 #include "olad/TestCommon.h"
 #include "olad/UniverseStore.h"
+#include "ola/testing/TestUtils.h"
+
 
 using ola::AbstractDevice;
 using ola::AbstractPlugin;
@@ -67,7 +69,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(DeviceManagerTest);
  */
 void DeviceManagerTest::testDeviceManager() {
   DeviceManager manager(NULL, NULL);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, manager.DeviceCount());
+  OLA_ASSERT_EQ((unsigned int) 0, manager.DeviceCount());
 
   TestMockPlugin plugin(NULL, ola::OLA_PLUGIN_ARTNET);
   MockDevice orphaned_device(NULL, "orphaned device");
@@ -75,80 +77,80 @@ void DeviceManagerTest::testDeviceManager() {
   MockDevice device2(&plugin, "test device 2");
 
   // can't register NULL
-  CPPUNIT_ASSERT(!manager.RegisterDevice(NULL));
+  OLA_ASSERT_FALSE(manager.RegisterDevice(NULL));
 
   // Can't register a device with no unique id
-  CPPUNIT_ASSERT(!manager.RegisterDevice(&orphaned_device));
+  OLA_ASSERT_FALSE(manager.RegisterDevice(&orphaned_device));
 
   // register a device
-  CPPUNIT_ASSERT(manager.RegisterDevice(&device1));
+  OLA_ASSERT(manager.RegisterDevice(&device1));
   // the second time must fail
-  CPPUNIT_ASSERT(!manager.RegisterDevice(&device1));
+  OLA_ASSERT_FALSE(manager.RegisterDevice(&device1));
 
   // register a second device
-  CPPUNIT_ASSERT(manager.RegisterDevice(&device2));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 2, manager.DeviceCount());
+  OLA_ASSERT(manager.RegisterDevice(&device2));
+  OLA_ASSERT_EQ((unsigned int) 2, manager.DeviceCount());
 
   vector<ola::device_alias_pair> devices = manager.Devices();
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, devices[0].alias);
-  CPPUNIT_ASSERT_EQUAL(static_cast<AbstractDevice*>(&device1),
+  OLA_ASSERT_EQ((unsigned int) 1, devices[0].alias);
+  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device1),
                        devices[0].device);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 2, devices[1].alias);
-  CPPUNIT_ASSERT_EQUAL(static_cast<AbstractDevice*>(&device2),
+  OLA_ASSERT_EQ((unsigned int) 2, devices[1].alias);
+  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device2),
                        devices[1].device);
 
   // test fetching a device by alias
-  CPPUNIT_ASSERT_EQUAL(static_cast<AbstractDevice*>(&device1),
+  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device1),
                        manager.GetDevice(1));
-  CPPUNIT_ASSERT_EQUAL(static_cast<AbstractDevice*>(&device2),
+  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device2),
                        manager.GetDevice(2));
-  CPPUNIT_ASSERT_EQUAL(static_cast<AbstractDevice*>(NULL),
+  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(NULL),
                        manager.GetDevice(3));
 
   // test fetching a device by id
   ola::device_alias_pair result = manager.GetDevice(device1.UniqueId());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, result.alias);
-  CPPUNIT_ASSERT_EQUAL(static_cast<AbstractDevice*>(&device1), result.device);
+  OLA_ASSERT_EQ((unsigned int) 1, result.alias);
+  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device1), result.device);
   result = manager.GetDevice(device2.UniqueId());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 2, result.alias);
-  CPPUNIT_ASSERT_EQUAL(static_cast<AbstractDevice*>(&device2), result.device);
+  OLA_ASSERT_EQ((unsigned int) 2, result.alias);
+  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device2), result.device);
   result = manager.GetDevice("foo");
-  CPPUNIT_ASSERT_EQUAL(DeviceManager::MISSING_DEVICE_ALIAS, result.alias);
-  CPPUNIT_ASSERT_EQUAL(static_cast<AbstractDevice*>(NULL), result.device);
+  OLA_ASSERT_EQ(DeviceManager::MISSING_DEVICE_ALIAS, result.alias);
+  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(NULL), result.device);
   result = manager.GetDevice("");
-  CPPUNIT_ASSERT_EQUAL(DeviceManager::MISSING_DEVICE_ALIAS, result.alias);
-  CPPUNIT_ASSERT_EQUAL(static_cast<AbstractDevice*>(NULL), result.device);
+  OLA_ASSERT_EQ(DeviceManager::MISSING_DEVICE_ALIAS, result.alias);
+  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(NULL), result.device);
 
   // test unregistering null or non-registered device
-  CPPUNIT_ASSERT(!manager.UnregisterDevice(NULL));
-  CPPUNIT_ASSERT(!manager.UnregisterDevice(&orphaned_device));
+  OLA_ASSERT_FALSE(manager.UnregisterDevice(NULL));
+  OLA_ASSERT_FALSE(manager.UnregisterDevice(&orphaned_device));
 
   // unregistering the first device doesn't change the ID of the second
-  CPPUNIT_ASSERT(manager.UnregisterDevice(&device1));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, manager.DeviceCount());
-  CPPUNIT_ASSERT_EQUAL(static_cast<AbstractDevice*>(NULL),
+  OLA_ASSERT(manager.UnregisterDevice(&device1));
+  OLA_ASSERT_EQ((unsigned int) 1, manager.DeviceCount());
+  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(NULL),
                        manager.GetDevice(1));
-  CPPUNIT_ASSERT_EQUAL(static_cast<AbstractDevice*>(&device2),
+  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device2),
                        manager.GetDevice(2));
 
   // unregister by id
-  CPPUNIT_ASSERT(!manager.UnregisterDevice(device1.UniqueId()));
-  CPPUNIT_ASSERT(manager.UnregisterDevice(device2.UniqueId()));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, manager.DeviceCount());
+  OLA_ASSERT_FALSE(manager.UnregisterDevice(device1.UniqueId()));
+  OLA_ASSERT(manager.UnregisterDevice(device2.UniqueId()));
+  OLA_ASSERT_EQ((unsigned int) 0, manager.DeviceCount());
   manager.UnregisterAllDevices();
 
   // add one back and check that ids reset
-  CPPUNIT_ASSERT(manager.RegisterDevice(&device1));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, manager.DeviceCount());
+  OLA_ASSERT(manager.RegisterDevice(&device1));
+  OLA_ASSERT_EQ((unsigned int) 1, manager.DeviceCount());
   devices = manager.Devices();
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, devices[0].alias);
-  CPPUNIT_ASSERT_EQUAL(static_cast<AbstractDevice*>(&device1),
+  OLA_ASSERT_EQ((unsigned int) 1, devices[0].alias);
+  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device1),
                        devices[0].device);
-  CPPUNIT_ASSERT_EQUAL(static_cast<AbstractDevice*>(&device1),
+  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device1),
                        manager.GetDevice(1));
   result = manager.GetDevice(device1.UniqueId());
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, result.alias);
-  CPPUNIT_ASSERT_EQUAL(static_cast<AbstractDevice*>(&device1),
+  OLA_ASSERT_EQ((unsigned int) 1, result.alias);
+  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device1),
                        result.device);
 }
 
@@ -162,10 +164,10 @@ void DeviceManagerTest::testRestorePatchings() {
   ola::PortBroker broker;
   PortManager port_manager(&uni_store, &broker);
   DeviceManager manager(&prefs_factory, &port_manager);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, manager.DeviceCount());
+  OLA_ASSERT_EQ((unsigned int) 0, manager.DeviceCount());
 
   ola::Preferences *prefs = prefs_factory.NewPreference("port");
-  CPPUNIT_ASSERT(prefs);
+  OLA_ASSERT(prefs);
   prefs->SetValue("2-test_device_1-I-1", "1");
   prefs->SetValue("2-test_device_1-O-1", "3");
 
@@ -176,26 +178,26 @@ void DeviceManagerTest::testRestorePatchings() {
   device1.AddPort(&input_port);
   device1.AddPort(&output_port);
 
-  CPPUNIT_ASSERT(manager.RegisterDevice(&device1));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, manager.DeviceCount());
-  CPPUNIT_ASSERT(input_port.GetUniverse());
-  CPPUNIT_ASSERT_EQUAL(input_port.GetUniverse()->UniverseId(),
+  OLA_ASSERT(manager.RegisterDevice(&device1));
+  OLA_ASSERT_EQ((unsigned int) 1, manager.DeviceCount());
+  OLA_ASSERT(input_port.GetUniverse());
+  OLA_ASSERT_EQ(input_port.GetUniverse()->UniverseId(),
                        (unsigned int) 1);
-  CPPUNIT_ASSERT(output_port.GetUniverse());
-  CPPUNIT_ASSERT_EQUAL(output_port.GetUniverse()->UniverseId(),
+  OLA_ASSERT(output_port.GetUniverse());
+  OLA_ASSERT_EQ(output_port.GetUniverse()->UniverseId(),
                        (unsigned int) 3);
 
   // Now check that patching a universe saves the settings
   Universe *uni = uni_store.GetUniverseOrCreate(10);
-  CPPUNIT_ASSERT(uni);
+  OLA_ASSERT(uni);
   input_port.SetUniverse(uni);
 
   // unregister all
   manager.UnregisterAllDevices();
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, manager.DeviceCount());
+  OLA_ASSERT_EQ((unsigned int) 0, manager.DeviceCount());
 
-  CPPUNIT_ASSERT_EQUAL(string("10"), prefs->GetValue("2-test_device_1-I-1"));
-  CPPUNIT_ASSERT_EQUAL(string("3"), prefs->GetValue("2-test_device_1-O-1"));
+  OLA_ASSERT_EQ(string("10"), prefs->GetValue("2-test_device_1-I-1"));
+  OLA_ASSERT_EQ(string("3"), prefs->GetValue("2-test_device_1-O-1"));
 }
 
 
@@ -209,10 +211,10 @@ void DeviceManagerTest::testRestorePriorities() {
   ola::PortBroker broker;
   PortManager port_manager(&uni_store, &broker);
   DeviceManager manager(&prefs_factory, &port_manager);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, manager.DeviceCount());
+  OLA_ASSERT_EQ((unsigned int) 0, manager.DeviceCount());
 
   ola::Preferences *prefs = prefs_factory.NewPreference("port");
-  CPPUNIT_ASSERT(prefs);
+  OLA_ASSERT(prefs);
   prefs->SetValue("2-test_device_1-I-1_priority_mode", "0");
   prefs->SetValue("2-test_device_1-I-1_priority_value", "120");
   prefs->SetValue("2-test_device_1-O-1_priority_mode", "0");
@@ -244,40 +246,40 @@ void DeviceManagerTest::testRestorePriorities() {
   device1.AddPort(&input_port3);
   device1.AddPort(&output_port3);
 
-  CPPUNIT_ASSERT(manager.RegisterDevice(&device1));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, manager.DeviceCount());
-  CPPUNIT_ASSERT_EQUAL(ola::CAPABILITY_STATIC,
+  OLA_ASSERT(manager.RegisterDevice(&device1));
+  OLA_ASSERT_EQ((unsigned int) 1, manager.DeviceCount());
+  OLA_ASSERT_EQ(ola::CAPABILITY_STATIC,
                        input_port.PriorityCapability());
-  CPPUNIT_ASSERT_EQUAL(ola::PRIORITY_MODE_INHERIT,
+  OLA_ASSERT_EQ(ola::PRIORITY_MODE_INHERIT,
                        input_port.GetPriorityMode());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 120, input_port.GetPriority());
-  CPPUNIT_ASSERT_EQUAL(ola::CAPABILITY_NONE,
+  OLA_ASSERT_EQ((uint8_t) 120, input_port.GetPriority());
+  OLA_ASSERT_EQ(ola::CAPABILITY_NONE,
                        output_port.PriorityCapability());
-  CPPUNIT_ASSERT_EQUAL(ola::PRIORITY_MODE_INHERIT,
+  OLA_ASSERT_EQ(ola::PRIORITY_MODE_INHERIT,
                        output_port.GetPriorityMode());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 100, output_port.GetPriority());
+  OLA_ASSERT_EQ((uint8_t) 100, output_port.GetPriority());
 
   // these ports support priorities
-  CPPUNIT_ASSERT_EQUAL(ola::CAPABILITY_FULL,
+  OLA_ASSERT_EQ(ola::CAPABILITY_FULL,
                        input_port2.PriorityCapability());
-  CPPUNIT_ASSERT_EQUAL(ola::PRIORITY_MODE_OVERRIDE,
+  OLA_ASSERT_EQ(ola::PRIORITY_MODE_OVERRIDE,
                        input_port2.GetPriorityMode());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 160, input_port2.GetPriority());
-  CPPUNIT_ASSERT_EQUAL(ola::CAPABILITY_FULL,
+  OLA_ASSERT_EQ((uint8_t) 160, input_port2.GetPriority());
+  OLA_ASSERT_EQ(ola::CAPABILITY_FULL,
                        output_port2.PriorityCapability());
-  CPPUNIT_ASSERT_EQUAL(ola::PRIORITY_MODE_OVERRIDE,
+  OLA_ASSERT_EQ(ola::PRIORITY_MODE_OVERRIDE,
                        output_port2.GetPriorityMode());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 180, output_port2.GetPriority());
-  CPPUNIT_ASSERT_EQUAL(ola::CAPABILITY_FULL,
+  OLA_ASSERT_EQ((uint8_t) 180, output_port2.GetPriority());
+  OLA_ASSERT_EQ(ola::CAPABILITY_FULL,
                        input_port3.PriorityCapability());
-  CPPUNIT_ASSERT_EQUAL(ola::PRIORITY_MODE_INHERIT,
+  OLA_ASSERT_EQ(ola::PRIORITY_MODE_INHERIT,
                        input_port3.GetPriorityMode());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 200, input_port3.GetPriority());
-  CPPUNIT_ASSERT_EQUAL(ola::CAPABILITY_FULL,
+  OLA_ASSERT_EQ((uint8_t) 200, input_port3.GetPriority());
+  OLA_ASSERT_EQ(ola::CAPABILITY_FULL,
                        output_port3.PriorityCapability());
-  CPPUNIT_ASSERT_EQUAL(ola::PRIORITY_MODE_INHERIT,
+  OLA_ASSERT_EQ(ola::PRIORITY_MODE_INHERIT,
                        output_port3.GetPriorityMode());
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 180, output_port3.GetPriority());
+  OLA_ASSERT_EQ((uint8_t) 180, output_port3.GetPriority());
 
   // Now make some changes
   input_port2.SetPriorityMode(ola::PRIORITY_MODE_INHERIT);
@@ -289,18 +291,18 @@ void DeviceManagerTest::testRestorePriorities() {
 
   // unregister all
   manager.UnregisterAllDevices();
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, manager.DeviceCount());
+  OLA_ASSERT_EQ((unsigned int) 0, manager.DeviceCount());
 
-  CPPUNIT_ASSERT_EQUAL(string("0"),
+  OLA_ASSERT_EQ(string("0"),
                        prefs->GetValue("2-test_device_1-I-2_priority_mode"));
-  CPPUNIT_ASSERT_EQUAL(string("0"),
+  OLA_ASSERT_EQ(string("0"),
                        prefs->GetValue("2-test_device_1-O-2_priority_mode"));
-  CPPUNIT_ASSERT_EQUAL(string("1"),
+  OLA_ASSERT_EQ(string("1"),
                        prefs->GetValue("2-test_device_1-I-3_priority_mode"));
-  CPPUNIT_ASSERT_EQUAL(string("40"),
+  OLA_ASSERT_EQ(string("40"),
                        prefs->GetValue("2-test_device_1-I-3_priority_value"));
-  CPPUNIT_ASSERT_EQUAL(string("1"),
+  OLA_ASSERT_EQ(string("1"),
                        prefs->GetValue("2-test_device_1-O-3_priority_mode"));
-  CPPUNIT_ASSERT_EQUAL(string("60"),
+  OLA_ASSERT_EQ(string("60"),
                        prefs->GetValue("2-test_device_1-O-3_priority_value"));
 }

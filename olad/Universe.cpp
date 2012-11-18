@@ -382,7 +382,7 @@ void Universe::SendRDMRequest(const ola::rdm::RDMRequest *request,
     tracker->expected_count = m_output_ports.size();
     tracker->current_count = 0;
     tracker->response_code = (is_dub ?
-        ola::rdm::RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED :
+        ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED :
         ola::rdm::RDM_WAS_BROADCAST);
     tracker->callback = callback;
     vector<OutputPort*>::iterator port_iter;
@@ -793,7 +793,7 @@ void Universe::HandleBroadcastAck(broadcast_request_tracker *tracker,
  * The response codes should be one of:
  *   RDM_DUB_RESPONSE - got a DUB response
  *   RDM_TIMEOUT - no response received
- *   RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED - the port doesn't support DUB
+ *   RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED - the port doesn't support DUB
  *
  * The above list is ordered in highest to lowest precedence, i.e. if we get
  * any port with a RDM_DUB_RESPONSE, this overrides any other message.

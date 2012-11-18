@@ -26,6 +26,8 @@
 #include "plugins/e131/e131/DMPPDU.h"
 #include "plugins/e131/e131/HeaderSet.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
+#include "ola/testing/TestUtils.h"
+
 
 namespace ola {
 namespace plugin {
@@ -56,36 +58,36 @@ void DMPInflatorTest::testDecodeHeader() {
   unsigned int bytes_used;
   uint8_t header_data = header.Header();
 
-  CPPUNIT_ASSERT(inflator.DecodeHeader(header_set,
+  OLA_ASSERT(inflator.DecodeHeader(header_set,
                                        &header_data,
                                        sizeof(header_data),
                                        bytes_used));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) sizeof(header_data), bytes_used);
+  OLA_ASSERT_EQ((unsigned int) sizeof(header_data), bytes_used);
   DMPHeader decoded_header = header_set.GetDMPHeader();
-  CPPUNIT_ASSERT(decoded_header.IsVirtual());
-  CPPUNIT_ASSERT(decoded_header.IsRelative());
-  CPPUNIT_ASSERT(NON_RANGE == decoded_header.Type());
-  CPPUNIT_ASSERT(TWO_BYTES == decoded_header.Size());
+  OLA_ASSERT(decoded_header.IsVirtual());
+  OLA_ASSERT(decoded_header.IsRelative());
+  OLA_ASSERT(NON_RANGE == decoded_header.Type());
+  OLA_ASSERT(TWO_BYTES == decoded_header.Size());
 
   // try an undersized header
-  CPPUNIT_ASSERT(!inflator.DecodeHeader(header_set,
+  OLA_ASSERT_FALSE(inflator.DecodeHeader(header_set,
                                         &header_data,
                                         0,
                                         bytes_used));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, bytes_used);
+  OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
 
   // test inherting the header from the prev call
-  CPPUNIT_ASSERT(inflator.DecodeHeader(header_set2, NULL, 0, bytes_used));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, bytes_used);
+  OLA_ASSERT(inflator.DecodeHeader(header_set2, NULL, 0, bytes_used));
+  OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
   decoded_header = header_set2.GetDMPHeader();
-  CPPUNIT_ASSERT(decoded_header.IsVirtual());
-  CPPUNIT_ASSERT(decoded_header.IsRelative());
-  CPPUNIT_ASSERT(NON_RANGE == decoded_header.Type());
-  CPPUNIT_ASSERT(TWO_BYTES == decoded_header.Size());
+  OLA_ASSERT(decoded_header.IsVirtual());
+  OLA_ASSERT(decoded_header.IsRelative());
+  OLA_ASSERT(NON_RANGE == decoded_header.Type());
+  OLA_ASSERT(TWO_BYTES == decoded_header.Size());
 
   inflator.ResetHeaderField();
-  CPPUNIT_ASSERT(!inflator.DecodeHeader(header_set2, NULL, 0, bytes_used));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, bytes_used);
+  OLA_ASSERT_FALSE(inflator.DecodeHeader(header_set2, NULL, 0, bytes_used));
+  OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
 }
 
 
@@ -95,18 +97,18 @@ void DMPInflatorTest::testDecodeHeader() {
 void DMPInflatorTest::testInflatePDU() {
   DMPHeader header(true, true, NON_RANGE, ONE_BYTES);
   const DMPPDU *pdu = NewDMPGetProperty(true, true, 1);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 5, pdu->Size());
+  OLA_ASSERT_EQ((unsigned int) 5, pdu->Size());
 
   unsigned int size = pdu->Size();
   uint8_t *data = new uint8_t[size];
   unsigned int bytes_used = size;
-  CPPUNIT_ASSERT(pdu->Pack(data, bytes_used));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) size, bytes_used);
+  OLA_ASSERT(pdu->Pack(data, bytes_used));
+  OLA_ASSERT_EQ((unsigned int) size, bytes_used);
 
   DMPInflator inflator;
   HeaderSet header_set;
-  CPPUNIT_ASSERT(inflator.InflatePDUBlock(header_set, data, size));
-  CPPUNIT_ASSERT(header == header_set.GetDMPHeader());
+  OLA_ASSERT(inflator.InflatePDUBlock(header_set, data, size));
+  OLA_ASSERT(header == header_set.GetDMPHeader());
   delete[] data;
   delete pdu;
 }

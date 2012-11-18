@@ -18,6 +18,10 @@
  * Copyright (C) 2012 Simon Newton
  */
 
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <errno.h>
 #include <grp.h>
 #include <pwd.h>
@@ -90,7 +94,7 @@ bool SetGID(gid_t new_gid) {
 
 
 template <typename F, typename arg>
-bool GenericGetPasswd(F f, arg a, PasswdEntry *passwd) {
+bool GenericGetPasswdReentrant(F f, arg a, PasswdEntry *passwd) {
   if (!passwd)
     return false;
 
@@ -122,10 +126,30 @@ bool GenericGetPasswd(F f, arg a, PasswdEntry *passwd) {
   passwd->pw_name = pwd_ptr->pw_name;
   passwd->pw_uid = pwd_ptr->pw_uid;
   passwd->pw_gid = pwd_ptr->pw_gid;
-  passwd->pw_gecos = pwd_ptr->pw_gecos;
   passwd->pw_dir = pwd_ptr->pw_dir;
   passwd->pw_shell = pwd_ptr->pw_shell;
   delete[] buffer;
+  return true;
+}
+
+/**
+ * Some platforms (Android) don't have the _r versions. So we fall back to the
+ * non-thread safe versions.
+ */
+template <typename F, typename arg>
+bool GenericGetPasswd(F f, arg a, PasswdEntry *passwd) {
+  if (!passwd)
+    return false;
+
+  struct passwd *pwd = f(a);
+  if (!pwd)
+    return false;
+
+  passwd->pw_name = pwd->pw_name;
+  passwd->pw_uid = pwd->pw_uid;
+  passwd->pw_gid = pwd->pw_gid;
+  passwd->pw_dir = pwd->pw_dir;
+  passwd->pw_shell = pwd->pw_shell;
   return true;
 }
 
@@ -134,7 +158,11 @@ bool GenericGetPasswd(F f, arg a, PasswdEntry *passwd) {
  * Wrapper for getpwnam
  */
 bool GetPasswdName(const string &name, PasswdEntry *passwd) {
-  return GenericGetPasswd(getpwnam_r, name.c_str(), passwd);
+#ifdef HAVE_GETPWNAM_R
+  return GenericGetPasswdReentrant(getpwnam_r, name.c_str(), passwd);
+#else
+  return GenericGetPasswd(getpwnam, name.c_str(), passwd);
+#endif
 }
 
 
@@ -142,12 +170,16 @@ bool GetPasswdName(const string &name, PasswdEntry *passwd) {
  * Wrapper for getpwuid
  */
 bool GetPasswdUID(uid_t uid, PasswdEntry *passwd) {
-  return GenericGetPasswd(getpwuid_r, uid, passwd);
+#ifdef HAVE_GETPWUID_R
+  return GenericGetPasswdReentrant(getpwuid_r, uid, passwd);
+#else
+  return GenericGetPasswd(getpwuid, uid, passwd);
+#endif
 }
 
 
 template <typename F, typename arg>
-bool GenericGetGroup(F f, arg a, GroupEntry *group_entry) {
+bool GenericGetGroupReentrant(F f, arg a, GroupEntry *group_entry) {
   if (!group_entry)
     return false;
 
@@ -182,11 +214,34 @@ bool GenericGetGroup(F f, arg a, GroupEntry *group_entry) {
   return true;
 }
 
+
+/**
+ * Some platforms (Android) don't have the _r versions. So we fall back to the
+ * non-thread safe versions.
+ */
+template <typename F, typename arg>
+bool GenericGetGroup(F f, arg a, GroupEntry *group_entry) {
+  if (!group_entry)
+    return false;
+
+  struct group *grp_ptr = f(a);
+  if (!grp_ptr)
+    return false;
+
+  group_entry->gr_name = grp_ptr->gr_name;
+  group_entry->gr_gid = grp_ptr->gr_gid;
+  return true;
+}
+
 /**
  * Wrapper for getpwnam
  */
 bool GetGroupName(const string &name, GroupEntry *group_entry) {
-  return GenericGetGroup(getgrnam_r, name.c_str(), group_entry);
+#ifdef HAVE_GETGRNAM_R
+  return GenericGetGroupReentrant(getgrnam_r, name.c_str(), group_entry);
+#else
+  return GenericGetGroup(getgrnam, name.c_str(), group_entry);
+#endif
 }
 
 
@@ -194,6 +249,10 @@ bool GetGroupName(const string &name, GroupEntry *group_entry) {
  * Wrapper for getgrgid
  */
 bool GetGroupGID(gid_t uid, GroupEntry *group_entry) {
-  return GenericGetGroup(getgrgid_r, uid, group_entry);
+#ifdef HAVE_GETGRGID_R
+  return GenericGetGroupReentrant(getgrgid_r, uid, group_entry);
+#else
+  return GenericGetGroup(getgrgid, uid, group_entry);
+#endif
 }
 }  // ola

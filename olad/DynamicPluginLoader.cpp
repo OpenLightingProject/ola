@@ -49,6 +49,10 @@
 #include "plugins/dmx4linux/Dmx4LinuxPlugin.h"
 #endif
 
+#ifdef HAVE_LIBLO
+#include "plugins/osc/OSCPlugin.h"
+#endif
+
 namespace ola {
 
 using std::vector;
@@ -87,6 +91,10 @@ void DynamicPluginLoader::PopulatePlugins() {
   m_plugins.push_back(new ola::plugin::espnet::EspNetPlugin(m_plugin_adaptor));
   m_plugins.push_back(
       new ola::plugin::opendmx::OpenDmxPlugin(m_plugin_adaptor));
+#ifdef HAVE_LIBLO
+  m_plugins.push_back(
+      new ola::plugin::osc::OSCPlugin(m_plugin_adaptor));
+#endif
   m_plugins.push_back(
       new ola::plugin::sandnet::SandNetPlugin(m_plugin_adaptor));
   m_plugins.push_back(
