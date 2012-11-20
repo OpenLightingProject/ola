@@ -206,6 +206,11 @@ void ExportMapTest::testIntMapVariable() {
   var1++;
   OLA_ASSERT_EQ(1, var[key3]);
   OLA_ASSERT_EQ(var.Value(), string("map:count key3:1"));
+  var.Remove(key3);
+
+  // check increments work
+  var.Increment(key1);
+  OLA_ASSERT_EQ(var.Value(), string("map:count key1:1"));
 }
 
 /*
