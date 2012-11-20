@@ -166,6 +166,7 @@ class SLPServer {
     bool SendFindDAService();
 
     static const char CONFIG_DA_BEAT_VAR[];
+    static const char DAADVERT[];
     static const char DA_ENABLED_VAR[];
     static const char DEFAULT_SCOPE[];
     static const char DIRECTORY_AGENT_SERVICE[];
@@ -174,7 +175,13 @@ class SLPServer {
     static const char SCOPE_LIST_VAR[];
     static const char SERVICE_AGENT_SERVICE[];
     static const char SLP_PORT_VAR[];
+    static const char SRVACK[];
+    static const char SRVREG[];
+    static const char SRVRPLY[];
+    static const char SRVRQST[];
+    static const char UDP_RX_TOTAL_VAR[];
     static const char UDP_RX_PACKET_BY_TYPE_VAR[];
+    static const char UDP_TX_PACKET_BY_TYPE_VAR[];
 };
 }  // slp
 }  // ola

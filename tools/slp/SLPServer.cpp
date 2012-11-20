@@ -69,6 +69,7 @@ using std::vector;
 
 
 const char SLPServer::CONFIG_DA_BEAT_VAR[] = "slp-config-da-beat";
+const char SLPServer::DAADVERT[] = "DAAdvert";
 const char SLPServer::DA_ENABLED_VAR[] = "slp-da-enabled";
 const char SLPServer::DEFAULT_SCOPE[] = "DEFAULT";
 const char SLPServer::DIRECTORY_AGENT_SERVICE[] = "service:directory-agent";
@@ -77,7 +78,16 @@ const char SLPServer::FINDSRVS_EMPTY_COUNT_VAR[] = "find-srvs-empty-response";
 const char SLPServer::SCOPE_LIST_VAR[] = "scope-list";
 const char SLPServer::SERVICE_AGENT_SERVICE[] = "service:service-agent";
 const char SLPServer::SLP_PORT_VAR[] = "slp-port";
-const char SLPServer::UDP_RX_PACKET_BY_TYPE_VAR[] = "udp-rx-packets";
+const char SLPServer::SRVACK[] = "SrvAck";
+const char SLPServer::SRVREG[] = "SrvReg";
+const char SLPServer::SRVRPLY[] = "SrvRply";
+const char SLPServer::SRVRQST[] = "SrvRqst";
+// This counter tracks the number of packets received by type.
+// This is incremented prior to packet checks.
+const char SLPServer::UDP_RX_PACKET_BY_TYPE_VAR[] = "slp-udp-rx-packets";
+// The total number of recieved SLP UDP packets
+const char SLPServer::UDP_RX_TOTAL_VAR[] = "slp-udp-rx";
+const char SLPServer::UDP_TX_PACKET_BY_TYPE_VAR[] = "slp-udp-tx-packets";
 
 /**
  * Setup a new SLP server.
@@ -116,13 +126,14 @@ SLPServer::SLPServer(ola::io::SelectServerInterface *ss,
                  inserter(m_scope_list, m_scope_list.begin()),
                  SLPGetCanonicalString);
 
+  string joined_scopes = ola::StringJoin(",", m_scope_list);
+  export_map->GetBoolVar(DA_ENABLED_VAR)->Set(options.enable_da);
   export_map->GetIntegerVar(CONFIG_DA_BEAT_VAR)->Set(options.config_da_beat);
   export_map->GetIntegerVar(FINDSRVS_COUNT_VAR);
   export_map->GetIntegerVar(FINDSRVS_EMPTY_COUNT_VAR);
-  export_map->GetBoolVar(DA_ENABLED_VAR)->Set(options.enable_da);
-  string joined_scopes = ola::StringJoin(",", m_scope_list);
+  export_map->GetIntegerVar(UDP_RX_TOTAL_VAR);
   export_map->GetStringVar(SCOPE_LIST_VAR)->Set(joined_scopes);
-  export_map->GetIntMapVar(UDP_RX_PACKET_BY_TYPE_VAR, "type");
+  export_map->GetUIntMapVar(UDP_RX_PACKET_BY_TYPE_VAR, "type");
 }
 
 
@@ -252,6 +263,7 @@ void SLPServer::DeRegisterService(const string &service,
  * Called when there is data on the UDP socket
  */
 void SLPServer::UDPData() {
+  // TODO(simon): make this a member when we're donet
   ssize_t packet_size = 1500;
   uint8_t packet[packet_size];
   ola::network::IPV4Address source_ip;
@@ -263,6 +275,7 @@ void SLPServer::UDPData() {
   IPV4SocketAddress source(source_ip, port);
 
   OLA_INFO << "Got " << packet_size << " UDP bytes from " << source;
+  (*m_export_map->GetIntegerVar(UDP_RX_TOTAL_VAR))++;
 
   uint8_t function_id = m_packet_parser.DetermineFunctionID(packet,
                                                             packet_size);
@@ -270,22 +283,30 @@ void SLPServer::UDPData() {
   MemoryBuffer buffer(&packet[0], packet_size);
   BigEndianInputStream stream(&buffer);
 
+  UIntMap *packet_by_type = m_export_map->GetUIntMapVar(
+    UDP_RX_PACKET_BY_TYPE_VAR);
+
   switch (function_id) {
     case 0:
       return;
     case SERVICE_REQUEST:
+      packet_by_type->Increment(SRVRQST);
       HandleServiceRequest(&stream, source);
       break;
     case SERVICE_REPLY:
+      packet_by_type->Increment(SRVRPLY);
       HandleServiceReply(&stream, source);
       break;
     case SERVICE_REGISTRATION:
+      packet_by_type->Increment(SRVREG);
       HandleServiceRegistration(&stream, source);
       break;
     case SERVICE_ACKNOWLEDGE:
+      packet_by_type->Increment(SRVACK);
       HandleServiceAck(&stream, source);
       break;
     case DA_ADVERTISEMENT:
+      packet_by_type->Increment(DAADVERT);
       HandleDAAdvert(&stream, source);
       break;
     case SERVICE_DEREGISTER:

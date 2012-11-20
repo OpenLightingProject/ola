@@ -111,6 +111,9 @@ SLPDaemon::~SLPDaemon() {
  * Init the server
  */
 bool SLPDaemon::Init() {
+  if (!m_slp_server.Init())
+    return false;
+
   // setup the accepting TCP socket
   if (!m_rpc_accept_socket.Listen(
         IPV4SocketAddress(IPV4Address::Loopback(), m_rpc_port))) {
