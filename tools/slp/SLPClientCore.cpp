@@ -31,7 +31,7 @@
 namespace ola {
 namespace slp {
 
-using ola::slp::OLASLPService_Stub;
+using ola::slp::proto::SLPService_Stub;
 using std::string;
 using std::vector;
 
@@ -61,7 +61,7 @@ bool SLPClientCore::Setup() {
 
   if (!m_channel)
     return false;
-  m_stub = new OLASLPService_Stub(m_channel);
+  m_stub = new SLPService_Stub(m_channel);
 
   if (!m_stub) {
     delete m_channel;
@@ -123,8 +123,8 @@ bool SLPClientCore::DeRegisterService(
   }
 
   SimpleRpcController *controller = new SimpleRpcController();
-  ServiceDeRegistration request;
-  ServiceAck *reply = new ServiceAck();
+  ola::slp::proto::ServiceDeRegistration request;
+  ola::slp::proto::ServiceAck *reply = new ola::slp::proto::ServiceAck();
 
   request.set_service(service);
 
@@ -141,6 +141,7 @@ bool SLPClientCore::DeRegisterService(
  * Locate a service in SLP.
  */
 bool SLPClientCore::FindService(
+    const vector<string> &scopes,
     const string &service,
     SingleUseCallback2<void, const string&,
                        const vector<SLPService> &> *callback) {
@@ -150,10 +151,13 @@ bool SLPClientCore::FindService(
   }
 
   SimpleRpcController *controller = new SimpleRpcController();
-  ServiceRequest request;
-  ServiceReply *reply = new ServiceReply();
+  ola::slp::proto::ServiceRequest request;
+  ola::slp::proto::ServiceReply *reply = new ola::slp::proto::ServiceReply();
 
   request.set_service(service);
+  for (vector<string>::const_iterator iter = scopes.begin();
+       iter != scopes.end(); ++iter)
+    request.add_scope(*iter);
 
   google::protobuf::Closure *cb = google::protobuf::NewCallback(
       this,
@@ -204,7 +208,7 @@ void SLPClientCore::HandleFindRequest(find_arg *args) {
     error_string = args->controller->ErrorText();
   } else {
     for (int i = 0; i < args->reply->service_size(); ++i) {
-      Service service_info = args->reply->service(i);
+      ola::slp::proto::Service service_info = args->reply->service(i);
       SLPService slp_service(service_info.service_name(),
                              service_info.lifetime());
       services.push_back(slp_service);
@@ -230,8 +234,8 @@ bool SLPClientCore::GenericRegisterService(
   }
 
   SimpleRpcController *controller = new SimpleRpcController();
-  ServiceRegistration request;
-  ServiceAck *reply = new ServiceAck();
+  ola::slp::proto::ServiceRegistration request;
+  ola::slp::proto::ServiceAck *reply = new ola::slp::proto::ServiceAck();
 
   request.set_service(service);
   request.set_lifetime(lifetime);

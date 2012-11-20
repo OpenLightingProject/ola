@@ -34,22 +34,15 @@
 #include <ola/network/SocketAddress.h>
 #include <ola/network/TCPSocketFactory.h>
 
-#ifdef HAVE_LIBMICROHTTPD
-#include <ola/http/HTTPServer.h>
-#include <ola/http/OlaHTTPServer.h>
-#endif
-
 #include <algorithm>
 #include <string>
 #include <vector>
 #include <set>
 #include <sstream>
 
-#include "common/rpc/StreamRpcChannel.h"
 #include "tools/slp/SLPPacketBuilder.h"
 #include "tools/slp/SLPPacketParser.h"
 #include "tools/slp/SLPServer.h"
-#include "tools/slp/SLPServiceImpl.h"
 #include "tools/slp/SLPStore.h"
 #include "tools/slp/SLPStrings.h"
 
@@ -69,7 +62,6 @@ using ola::network::NetworkToHost;
 using ola::network::TCPAcceptingSocket;
 using ola::network::TCPSocket;
 using ola::network::UDPSocket;
-using ola::rpc::StreamRpcChannel;
 using std::auto_ptr;
 using std::ostringstream;
 using std::string;
@@ -80,38 +72,32 @@ const char SLPServer::CONFIG_DA_BEAT_VAR[] = "slp-config-da-beat";
 const char SLPServer::DA_ENABLED_VAR[] = "slp-da-enabled";
 const char SLPServer::DEFAULT_SCOPE[] = "DEFAULT";
 const char SLPServer::DIRECTORY_AGENT_SERVICE[] = "service:directory-agent";
+const char SLPServer::FINDSRVS_COUNT_VAR[] = "find-srvs";
+const char SLPServer::FINDSRVS_EMPTY_COUNT_VAR[] = "find-srvs-empty-response";
 const char SLPServer::SCOPE_LIST_VAR[] = "scope-list";
-const char SLPServer::SLP_PORT_VAR[] = "slp-port";
 const char SLPServer::SERVICE_AGENT_SERVICE[] = "service:service-agent";
-const uint16_t SLPServer::DEFAULT_SLP_HTTP_PORT = 9012;
-const uint16_t SLPServer::DEFAULT_SLP_PORT = 427;
-const uint16_t SLPServer::DEFAULT_SLP_RPC_PORT = 9011;
-
-void StdinHandler::HandleCharacter(char c) {
-  m_slp_server->Input(c);
-}
-
+const char SLPServer::SLP_PORT_VAR[] = "slp-port";
+const char SLPServer::UDP_RX_PACKET_BY_TYPE_VAR[] = "udp-rx-packets";
 
 /**
  * Setup a new SLP server.
- * @param socket the UDP Socket to use for SLP messages.
+ * @param ss the SelectServer to use
+ * @param udp_socket the socket to use for UDP SLP traffic
+ * @param tcp_socket the TCP socket to listen for incoming TCP SLP connections.
+ * @param export_map the ExportMap to use for exporting variables, may be NULL
  * @param options the SLP Server options.
  */
-SLPServer::SLPServer(ola::network::UDPSocket *udp_socket,
+SLPServer::SLPServer(ola::io::SelectServerInterface *ss,
+                     ola::network::UDPSocket *udp_socket,
                      ola::network::TCPAcceptingSocket *tcp_socket,
-                     const SLPServerOptions &options,
-                     ola::ExportMap *export_map)
+                     ola::ExportMap *export_map,
+                     const SLPServerOptions &options)
     : m_enable_da(options.enable_da),
       m_config_da_beat(options.config_da_beat),
       m_en_lang(reinterpret_cast<const char*>(EN_LANGUAGE_TAG),
                 sizeof(EN_LANGUAGE_TAG)),
       m_iface_address(options.ip_address),
-      m_ss(export_map, &m_clock),
-      m_stdin_handler(&m_ss, this),
-      m_rpc_port(options.rpc_port),
-      m_rpc_socket_factory(NewCallback(this, &SLPServer::NewTCPConnection)),
-      m_rpc_accept_socket(&m_rpc_socket_factory),
-      m_service_impl(new SLPServiceImpl(NULL)),
+      m_ss(ss),
       m_udp_socket(udp_socket),
       m_slp_accept_socket(tcp_socket),
       m_udp_sender(m_udp_socket),
@@ -122,16 +108,6 @@ SLPServer::SLPServer(ola::network::UDPSocket *udp_socket,
 
   ToLower(&m_en_lang);
 
-#ifdef HAVE_LIBMICROHTTPD
-  if (options.enable_http) {
-    ola::http::HTTPServer::HTTPServerOptions http_options;
-    http_options.port = options.http_port;
-
-    m_http_server.reset(
-        new ola::http::OlaHTTPServer(http_options, m_export_map));
-  }
-#endif
-
   if (options.scopes.empty())
     m_scope_list.insert(SLPGetCanonicalString(DEFAULT_SCOPE));
 
@@ -141,15 +117,17 @@ SLPServer::SLPServer(ola::network::UDPSocket *udp_socket,
                  SLPGetCanonicalString);
 
   export_map->GetIntegerVar(CONFIG_DA_BEAT_VAR)->Set(options.config_da_beat);
+  export_map->GetIntegerVar(FINDSRVS_COUNT_VAR);
+  export_map->GetIntegerVar(FINDSRVS_EMPTY_COUNT_VAR);
   export_map->GetBoolVar(DA_ENABLED_VAR)->Set(options.enable_da);
   string joined_scopes = ola::StringJoin(",", m_scope_list);
   export_map->GetStringVar(SCOPE_LIST_VAR)->Set(joined_scopes);
+  export_map->GetIntMapVar(UDP_RX_PACKET_BY_TYPE_VAR, "type");
 }
 
 
 SLPServer::~SLPServer() {
   m_udp_socket->Close();
-  m_rpc_accept_socket.Close();
 }
 
 
@@ -159,40 +137,25 @@ SLPServer::~SLPServer() {
 bool SLPServer::Init() {
   OLA_INFO << "Interface address is " << m_iface_address;
 
-  // setup the accepting TCP socket
-  if (!m_rpc_accept_socket.Listen(
-        IPV4SocketAddress(IPV4Address::Loopback(), m_rpc_port))) {
-    return false;
-  }
-
-  m_ss.AddReadDescriptor(&m_rpc_accept_socket);
-
   if (!m_udp_socket->SetMulticastInterface(m_iface_address)) {
-    m_rpc_accept_socket.Close();
     return false;
   }
 
   // join the multicast group
   if (!m_udp_socket->JoinMulticast(m_iface_address,
                                    m_multicast_endpoint->Host())) {
-    m_rpc_accept_socket.Close();
     return false;
   }
 
   m_udp_socket->SetOnData(NewCallback(this, &SLPServer::UDPData));
-  m_ss.AddReadDescriptor(m_udp_socket);
-
-#ifdef HAVE_LIBMICROHTTPD
-  if (m_http_server.get())
-    m_http_server->Init();
-#endif
+  m_ss->AddReadDescriptor(m_udp_socket);
 
   if (m_enable_da) {
     ola::Clock clock;
     clock.CurrentTime(&m_boot_time);
 
     // setup the DA beat timer
-    m_ss.RegisterRepeatingTimeout(
+    m_ss->RegisterRepeatingTimeout(
         m_config_da_beat * 1000,
         NewCallback(this, &SLPServer::SendDABeat));
     SendDABeat();
@@ -201,24 +164,6 @@ bool SLPServer::Init() {
     SendFindDAService();
   }
   return true;
-}
-
-
-void SLPServer::Run() {
-#ifdef HAVE_LIBMICROHTTPD
-  if (m_http_server.get())
-    m_http_server->Start();
-#endif
-  m_ss.Run();
-}
-
-
-void SLPServer::Stop() {
-#ifdef HAVE_LIBMICROHTTPD
-  if (m_http_server.get())
-    m_http_server->Stop();
-#endif
-  m_ss.Terminate();
 }
 
 
@@ -242,23 +187,6 @@ void SLPServer::BulkLoad(const string &scope,
 }
 
 
-/*
- * Called when there is data on stdin.
- */
-void SLPServer::Input(char c) {
-  switch (c) {
-    case 'p':
-      DumpStore();
-      break;
-    case 'q':
-      m_ss.Terminate();
-      break;
-    default:
-      break;
-  }
-}
-
-
 /**
  * Dump out the contents of the SLP store.
  */
@@ -269,44 +197,54 @@ void SLPServer::DumpStore() {
     if (!store)
       continue;
     OLA_INFO << "Scope: " << *iter;
-    store->Dump(*(m_ss.WakeUpTime()));
+    store->Dump(*(m_ss->WakeUpTime()));
   }
 }
 
 
 /**
- * Called when RPC client connects.
+ * Locate a service
+ * @param scopes the set of scopes to search
+ * @param service the service name
+ * @param cb the callback to run
+ * TODO(simon): change this to execute the callback multiple times until all
+ * results arrive.
  */
-void SLPServer::NewTCPConnection(TCPSocket *socket) {
-  IPV4Address peer_address;
-  uint16_t port;
-  socket->GetPeer(&peer_address, &port);
-  OLA_INFO << "New connection from " << peer_address << ":" << port;
-
-  StreamRpcChannel *channel = new StreamRpcChannel(m_service_impl.get(), socket,
-                                                   m_export_map);
-  socket->SetOnClose(
-      NewSingleCallback(this, &SLPServer::RPCSocketClosed, socket));
-
-  (void) channel;
-
-  /*
-  pair<int, OlaClientService*> pair(socket->ReadDescriptor(), service);
-  m_sd_to_service.insert(pair);
-  */
-
-  // This hands off ownership to the select server
-  m_ss.AddReadDescriptor(socket, true);
-  // (*m_export_map->GetIntegerVar(K_CLIENT_VAR))++;
+void SLPServer::FindService(const set<string> &scopes,
+                            const string &service,
+                            SingleUseCallback1<void, const URLEntries&> *cb) {
+  (*m_export_map->GetIntegerVar(FINDSRVS_COUNT_VAR))++;
+  URLEntries urls;
+  if (m_enable_da) {
+    // we're in DA mode, just return all the matching URLEntries we know about
+    set<string> canonical_scopes;
+    SLPReduceList(scopes, &canonical_scopes);
+    if (SLPSetIntersect(canonical_scopes, m_scope_list)) {
+      OLA_INFO << "Received SrvRqst for " << service;
+      LocateServices(canonical_scopes, service, &urls);
+    }
+  } else {
+    // UA mode, start finding the services
+  }
+  if (urls.empty())
+    (*m_export_map->GetIntegerVar(FINDSRVS_EMPTY_COUNT_VAR))++;
+  cb->Run(urls);
 }
 
 
-/**
- * Called when RPC socket is closed.
- */
-void SLPServer::RPCSocketClosed(TCPSocket *socket) {
-  OLA_INFO << "RPC Socket closed";
-  (void) socket;
+void SLPServer::RegisterService(const string &service,
+                                uint16_t lifetime,
+                                SingleUseCallback0<void> *cb) {
+  (void) service;
+  (void) lifetime;
+  cb->Run();
+}
+
+
+void SLPServer::DeRegisterService(const string &service,
+                                  SingleUseCallback0<void> *cb) {
+  (void) service;
+  cb->Run();
 }
 
 
@@ -431,17 +369,7 @@ void SLPServer::HandleServiceRequest(BigEndianInputStream *stream,
 
   URLEntries urls;
   OLA_INFO << "Received SrvRqst for " << request->service_type;
-  string service_type = SLPGetCanonicalString(request->service_type);
-  SLPStripService(&service_type);
-
-  set<string>::const_iterator iter = canonical_scopes.begin();
-  for (; iter != canonical_scopes.end(); ++iter) {
-    SLPStore *store = m_service_store.Lookup(*iter);
-    if (!store)
-      continue;
-    OLA_INFO << "doing lookup for " << service_type;
-    store->Lookup(*(m_ss.WakeUpTime()), service_type, &urls);
-  }
+  LocateServices(canonical_scopes, request->service_type, &urls);
 
   OLA_INFO << "sending SrvReply with " << urls.size() << " urls";
   m_udp_sender.SendServiceReply(source, request->xid, 0, urls);
@@ -576,6 +504,23 @@ void SLPServer::SendDAAdvert(const IPV4SocketAddress &dest) {
 bool SLPServer::SendDABeat() {
   SendDAAdvert(*m_multicast_endpoint);
   return true;
+}
+
+
+void SLPServer::LocateServices(const set<string> &scopes,
+                                const string &service,
+                                URLEntries *urls) {
+  string service_type = SLPGetCanonicalString(service);
+  SLPStripService(&service_type);
+
+  for (set<string>::const_iterator iter = scopes.begin();
+       iter != scopes.end(); ++iter) {
+    SLPStore *store = m_service_store.Lookup(*iter);
+    if (!store)
+      continue;
+    OLA_INFO << "Doing lookup for " << *iter << " - " << service_type;
+    store->Lookup(*(m_ss->WakeUpTime()), service_type, urls);
+  }
 }
 
 

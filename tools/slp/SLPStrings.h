@@ -38,10 +38,20 @@ void SLPCanonicalizeString(string *str);
 string SLPGetCanonicalString(const string &str);
 bool SLPStringCanonicalizeAndCompare(const string &s1, const string s2);
 bool SLPSetIntersect(const set<string> &one, const set<string> &two);
-void SLPReduceList(const vector<string> &input, set<string> *output);
 bool SLPScopesMatch(const vector<string> &scopes_v,
                     const set<string> &scopes_s);
 void SLPStripService(string *str);
+
+/**
+ * Give a iterable container as input, canonicalize each element and insert
+ * into a set<string>. This removes duplicates.
+ */
+template<typename Container>
+void SLPReduceList(const Container &input, set<string> *output) {
+  for (typename Container::const_iterator iter = input.begin();
+       iter != input.end(); ++iter)
+    output->insert(SLPGetCanonicalString(*iter));
+}
 }  // slp
 }  // ola
 #endif  // TOOLS_SLP_SLPSTRINGS_H_

@@ -158,17 +158,6 @@ bool SLPSetIntersect(const set<string> &one, const set<string> &two) {
 
 
 /**
- * Give a vector<string> input, canonicalize each element and insert into a
- * set<string>. This removes duplicates.
- */
-void SLPReduceList(const vector<string> &input, set<string> *output) {
-  vector<string>::const_iterator iter = input.begin();
-  for (; iter != input.end(); ++iter)
-    output->insert(SLPGetCanonicalString(*iter));
-}
-
-
-/**
  * Return true if any of the non-canonicalized scopes in the vector match any
  * of those in the canonicalized set.
  */

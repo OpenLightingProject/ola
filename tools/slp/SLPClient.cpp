@@ -95,15 +95,17 @@ bool SLPClient::DeRegisterService(
 
 /*
  * Register a persistent service in SLP.
+ * @param scopes a list of scopes to search.
  * @param service the name of the service.
  * @param lifetime the lifetime of the service.
  * @returns true if the request succeeded, false otherwise.
  */
 bool SLPClient::FindService(
+        const vector<string> &scopes,
         const string &service,
         SingleUseCallback2<void, const string&,
                            const vector<SLPService>&> *callback) {
-  return m_core->FindService(service, callback);
+  return m_core->FindService(scopes, service, callback);
 }
 }  // slp
 }  // ola

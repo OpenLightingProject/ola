@@ -36,21 +36,21 @@
 #include <vector>
 
 #include "tools/slp/RegistrationFileParser.h"
-#include "tools/slp/SLPServer.h"
+#include "tools/slp/SLPDaemon.h"
 
 using ola::network::IPV4SocketAddress;
 using ola::network::TCPAcceptingSocket;
 using ola::network::UDPSocket;
 using ola::network::IPV4SocketAddress;
 using ola::slp::RegistrationFileParser;
-using ola::slp::SLPServer;
+using ola::slp::SLPDaemon;
 using std::auto_ptr;
 using std::cout;
 using std::endl;
 using std::string;
 
 
-SLPServer *server = NULL;
+SLPDaemon *server = NULL;
 
 
 struct SLPOptions {
@@ -67,7 +67,7 @@ struct SLPOptions {
     SLPOptions()
         : help(false),
           log_level(ola::OLA_LOG_WARN),
-          slp_port(SLPServer::DEFAULT_SLP_PORT) {
+          slp_port(ola::slp::DEFAULT_SLP_PORT) {
     }
 };
 
@@ -77,7 +77,7 @@ struct SLPOptions {
  */
 void ParseOptions(int argc, char *argv[],
                   SLPOptions *options,
-                  SLPServer::SLPServerOptions *slp_options) {
+                  SLPDaemon::SLPDaemonOptions *slp_options) {
   int enable_da = slp_options->enable_da;
   int enable_http = slp_options->enable_http;
 
@@ -190,7 +190,7 @@ void DisplayHelpAndExit(char *argv[]) {
 
 
 bool CheckSLPOptions(const SLPOptions &options,
-                     SLPServer::SLPServerOptions *slp_options) {
+                     SLPDaemon::SLPDaemonOptions *slp_options) {
   if (!options.scopes.empty()) {
     vector<string> scope_list;
     ola::StringSplit(options.scopes, scope_list, ",");
@@ -302,7 +302,7 @@ bool DropPrivileges(const string &setuid, const string &setgid) {
 }
 
 
-void PreRegisterServices(SLPServer *server, const string &file) {
+void PreRegisterServices(SLPDaemon *daemon, const string &file) {
   RegistrationFileParser parser;
   RegistrationFileParser::ServicesMap service_map;
   bool ok = parser.ParseFile(file, &service_map);
@@ -310,7 +310,7 @@ void PreRegisterServices(SLPServer *server, const string &file) {
 
   RegistrationFileParser::ServicesMap::iterator iter = service_map.begin();
   for (; iter != service_map.end(); ++iter)
-    server->BulkLoad(iter->first.first, iter->first.second, iter->second);
+    daemon->BulkLoad(iter->first.first, iter->first.second, iter->second);
 }
 
 /*
@@ -318,7 +318,7 @@ void PreRegisterServices(SLPServer *server, const string &file) {
  */
 int main(int argc, char *argv[]) {
   SLPOptions options;
-  SLPServer::SLPServerOptions slp_options;
+  SLPDaemon::SLPDaemonOptions slp_options;
   ola::ExportMap export_map;
 
   ParseOptions(argc, argv, &options, &slp_options);
@@ -358,19 +358,19 @@ int main(int argc, char *argv[]) {
   ola::ServerInit(argc, argv, &export_map);
   InitExportMap(&export_map, options);
 
-  SLPServer *server = new SLPServer(udp_socket.get(), tcp_socket.get(),
+  SLPDaemon *daemon = new SLPDaemon(udp_socket.get(), tcp_socket.get(),
                                     slp_options, &export_map);
-  if (!server->Init())
+  if (!daemon->Init())
     exit(EX_UNAVAILABLE);
 
   if (!options.registration_file.empty())
-    PreRegisterServices(server, options.registration_file);
+    PreRegisterServices(daemon, options.registration_file);
 
   cout << "---------------  Controls  ----------------\n";
   cout << " p - Print Registrations\n";
   cout << " q - Quit\n";
   cout << "-------------------------------------------\n";
   ola::InstallSignal(SIGINT, InteruptSignal);
-  server->Run();
-  delete server;
+  daemon->Run();
+  delete daemon;
 }

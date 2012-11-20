@@ -4,12 +4,12 @@ EXTRA_DIST = Base.h \
              RegistrationFileParser.h \
              SLP.proto \
              SLPClient.h \
+             SLPDaemon.h \
              SLPClientCore.h \
              SLPPacketBuilder.h \
              SLPPacketConstants.h \
              SLPPacketParser.h \
              SLPServer.h \
-             SLPServiceImpl.h \
              SLPStore.h \
              SLPStrings.h \
              SLPUDPSender.h \
@@ -21,10 +21,10 @@ noinst_PROGRAMS = slp_server slp_client slp_parser
 
 slp_server_SOURCES = RegistrationFileParser.cpp \
                      SLPNode.cpp \
+                     SLPDaemon.cpp \
                      SLPPacketBuilder.cpp \
                      SLPPacketParser.cpp \
                      SLPServer.cpp \
-                     SLPServiceImpl.cpp \
                      SLPStore.cpp \
                      SLPStrings.cpp \
                      SLPUDPSender.cpp \

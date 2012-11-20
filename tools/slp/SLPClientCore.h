@@ -77,6 +77,7 @@ class SLPClientCore {
      * Find a service
      */
     bool FindService(
+        const vector<string> &scopes,
         const string &service,
         SingleUseCallback2<void, const string&,
                            const vector<SLPService> &> *callback);
@@ -87,7 +88,7 @@ class SLPClientCore {
     // OlaCallbackClient.
     typedef struct {
       SimpleRpcController *controller;
-      ServiceAck *reply;
+      ola::slp::proto::ServiceAck *reply;
       SingleUseCallback2<void, const string&, uint16_t> *callback;
     } register_arg;
 
@@ -95,7 +96,7 @@ class SLPClientCore {
 
     typedef struct {
       SimpleRpcController *controller;
-      ServiceReply *reply;
+      ola::slp::proto::ServiceReply *reply;
       SingleUseCallback2<void, const string&,
                          const vector<SLPService> &> *callback;
     } find_arg;
@@ -105,7 +106,7 @@ class SLPClientCore {
   private:
     ConnectedDescriptor *m_descriptor;
     StreamRpcChannel *m_channel;
-    ola::slp::OLASLPService_Stub *m_stub;
+    ola::slp::proto::SLPService_Stub *m_stub;
     int m_connected;
 
     SLPClientCore(const SLPClientCore&);

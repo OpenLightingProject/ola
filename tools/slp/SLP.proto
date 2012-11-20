@@ -18,7 +18,7 @@
  * Copyright (C) 2012 Simon Newton
  */
 
-package ola.slp;
+package ola.slp.proto;
 
 option cc_generic_services = true;
 option py_generic_services = true;
@@ -29,6 +29,7 @@ message Ack {}
 
 message ServiceRequest {
   required string service = 1;
+  repeated string scope = 2;
 }
 
 message Service {
@@ -69,7 +70,7 @@ message ServiceAck {
 // Services
 
 // RPCs handled by the SLP Server
-service OLASLPService {
+service SLPService {
   // find a service
   rpc FindService(ServiceRequest) returns (ServiceReply);
 
@@ -80,6 +81,6 @@ service OLASLPService {
 }
 
 // RPCs handled by the OLA Client
-service OlaSLPClientService {
+service SLPClientService {
   rpc NewService(ServiceRegistration) returns (Ack);
 }

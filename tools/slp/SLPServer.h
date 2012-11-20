@@ -55,76 +55,51 @@ using std::vector;
 using std::set;
 
 namespace ola {
-
-namespace http {
-  class OlaHTTPServer;
-}
-
 namespace slp {
 
-class SLPServiceImpl;
 
 /**
- * Capture events from stdin and pass them to the SLPServer to act on
- */
-class StdinHandler: public ola::io::StdinHandler {
-  public:
-    StdinHandler(ola::io::SelectServer *ss, class SLPServer *slp_server)
-        : ola::io::StdinHandler(ss),
-          m_slp_server(slp_server) {
-    }
-
-    void HandleCharacter(char c);
-
-  private:
-    class SLPServer *m_slp_server;
-};
-
-
-/**
- * An SLP Server.
- * TODO(simon): split this into a daemon and a server component.
+ * An SLP Server. This handle's the SLP messages an provides an API to
+ * register, deregister and locate services.
  */
 class SLPServer {
   public:
     struct SLPServerOptions {
-      // IP to multicast on
       IPV4Address ip_address;  // The interface IP to multicast on
       bool enable_da;  // enable the DA mode
-      bool enable_http;  // enable the HTTP server
-      uint16_t http_port;  // port to run the HTTP server on
-      uint16_t rpc_port;  // port to run the RPC server on
       uint32_t config_da_beat;  // seconds between DA beats
       set<string> scopes;  // supported scopes
 
       SLPServerOptions()
           : enable_da(true),
-            enable_http(true),
-            http_port(DEFAULT_SLP_HTTP_PORT),
-            rpc_port(DEFAULT_SLP_RPC_PORT),
             config_da_beat(3 * 60 * 60) {
       }
     };
 
-    SLPServer(ola::network::UDPSocket *udp_socket,
+    SLPServer(ola::io::SelectServerInterface *ss,
+              ola::network::UDPSocket *udp_socket,
               ola::network::TCPAcceptingSocket *tcp_socket,
-              const SLPServerOptions &options,
-              ola::ExportMap *export_map);
+              ola::ExportMap *export_map,
+              const SLPServerOptions &options);
     ~SLPServer();
 
     bool Init();
-    void Run();
-    void Stop();
 
     // bulk load a set of URLEntries
     void BulkLoad(const string &scope,
                   const string &service,
                   const URLEntries &entries);
+    void DumpStore();
 
-    // handle events from stdin
-    void Input(char c);
-
-    static const uint16_t DEFAULT_SLP_PORT;
+    // SLP API
+    void FindService(const set<string> &scopes,
+                     const string &service,
+                     SingleUseCallback1<void, const URLEntries&> *cb);
+    void RegisterService(const string &service,
+                         uint16_t lifetime,
+                         SingleUseCallback0<void> *cb);
+    void DeRegisterService(const string &service,
+                           SingleUseCallback0<void> *cb);
 
   private:
     bool m_enable_da;
@@ -134,15 +109,10 @@ class SLPServer {
     const IPV4Address m_iface_address;
     ola::Clock m_clock;
     ola::TimeStamp m_boot_time;
-    ola::io::SelectServer m_ss;
-    StdinHandler m_stdin_handler;
+    ola::io::SelectServerInterface *m_ss;
 
     // RPC members
-    const uint16_t m_rpc_port;
-    ola::network::TCPSocketFactory m_rpc_socket_factory;
-    ola::network::TCPAcceptingSocket m_rpc_accept_socket;
     auto_ptr<ola::network::IPV4SocketAddress> m_multicast_endpoint;
-    auto_ptr<SLPServiceImpl> m_service_impl;
 
     // the UDP and TCP sockets for SLP traffic
     ola::network::UDPSocket *m_udp_socket;
@@ -159,16 +129,8 @@ class SLPServer {
     // non-DA members
     set<IPV4Address> m_da_pr_list;
 
-    // The ExportMap & HTTPServer
+    // The ExportMap
     ola::ExportMap *m_export_map;
-    auto_ptr<ola::http::OlaHTTPServer> m_http_server;
-
-    // Random methods
-    void DumpStore();
-
-    // RPC methods
-    void NewTCPConnection(TCPSocket *socket);
-    void RPCSocketClosed(TCPSocket *socket);
 
     // SLP Network methods
     void UDPData();
@@ -183,11 +145,6 @@ class SLPServer {
     void HandleDAAdvert(BigEndianInputStream *stream,
                         const IPV4SocketAddress &source);
 
-    /*
-    bool PerformSanityChecks(const SLPPacket *packet,
-                             const IPV4SocketAddress &source);
-    */
-
     void SendErrorIfUnicast(const ServiceRequestPacket *request,
                             const IPV4SocketAddress &source,
                             slp_error_code_t error_code);
@@ -201,6 +158,9 @@ class SLPServer {
     // DA methods
     void SendDAAdvert(const IPV4SocketAddress &dest);
     bool SendDABeat();
+    void LocateServices(const set<string> &scopes,
+                        const string &service,
+                        URLEntries *urls);
 
     // non-DA methods
     bool SendFindDAService();
@@ -208,12 +168,13 @@ class SLPServer {
     static const char CONFIG_DA_BEAT_VAR[];
     static const char DA_ENABLED_VAR[];
     static const char DEFAULT_SCOPE[];
-    static const char SCOPE_LIST_VAR[];
-    static const char SLP_PORT_VAR[];
-    static const char SERVICE_AGENT_SERVICE[];
     static const char DIRECTORY_AGENT_SERVICE[];
-    static const uint16_t DEFAULT_SLP_HTTP_PORT;
-    static const uint16_t DEFAULT_SLP_RPC_PORT;
+    static const char FINDSRVS_COUNT_VAR[];
+    static const char FINDSRVS_EMPTY_COUNT_VAR[];
+    static const char SCOPE_LIST_VAR[];
+    static const char SERVICE_AGENT_SERVICE[];
+    static const char SLP_PORT_VAR[];
+    static const char UDP_RX_PACKET_BY_TYPE_VAR[];
 };
 }  // slp
 }  // ola

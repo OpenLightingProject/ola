@@ -93,6 +93,7 @@ class SLPClient {
      * Find a service.
      */
     bool FindService(
+        const vector<string> &scopes,
         const string &service,
         SingleUseCallback2<void, const string&,
                            const vector<SLPService> &> *callback);

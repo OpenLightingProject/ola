@@ -35,6 +35,7 @@ void SLPServiceImpl::FindService(::google::protobuf::RpcController* controller,
                                  ::google::protobuf::Closure* done) {
   (void) controller;
   OLA_INFO << "Recv FindService request";
+  OLA_INFO << " p is " << m_node;
   m_node->FindService(
       request->service(),
       NewSingleCallback(this,

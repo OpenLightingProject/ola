@@ -24,6 +24,7 @@
 
 #include <ola/Callback.h>
 #include <ola/Logging.h>
+#include <ola/StringUtils.h>
 #include <ola/base/Init.h>
 #include <ola/io/SelectServer.h>
 
@@ -51,6 +52,7 @@ struct Options {
   public:
     bool help;
     ola::log_level log_level;
+    string scopes;
     vector<string> extra_args;
 
     Options()
@@ -68,13 +70,14 @@ void ParseOptions(int argc, char *argv[],
   static struct option long_options[] = {
       {"help", no_argument, 0, 'h'},
       {"log-level", required_argument, 0, 'l'},
+      {"scopes", required_argument, 0, 's'},
       {0, 0, 0, 0}
   };
 
   int option_index = 0;
 
   while (1) {
-    int c = getopt_long(argc, argv, "hl:", long_options, &option_index);
+    int c = getopt_long(argc, argv, "hl:s:", long_options, &option_index);
 
     if (c == -1)
       break;
@@ -106,6 +109,8 @@ void ParseOptions(int argc, char *argv[],
             break;
         }
         break;
+      case 's':
+        options->scopes = optarg;
       case '?':
         break;
       default:
@@ -113,8 +118,7 @@ void ParseOptions(int argc, char *argv[],
     }
   }
 
-  int index = optind;
-  for (; index < argc; index++)
+  for (int index = optind; index < argc; index++)
     options->extra_args.push_back(argv[index]);
 }
 
@@ -127,8 +131,9 @@ void DisplayHelpAndExit(char *argv[]) {
   "\n"
   "The OLA SLP client.\n"
   "\n"
-  "  -h, --help               Display this help message and exit.\n"
-  "  -l, --log-level <level>  Set the logging level 0 .. 4.\n"
+  "  -h, --help                 Display this help message and exit.\n"
+  "  -l, --log-level <level>    Set the logging level 0 .. 4.\n"
+  "  -s, --scopes scope1,scope2 Comma separated list of scopes.\n"
   " Examples:\n"
   "   " << argv[0] << " register service:myserv.x://myhost.com\n"
   "   " << argv[0] << " findsrvs service:myserv.x\n"
@@ -168,25 +173,32 @@ class Command {
 
 class FindCommand: public Command {
   public:
-    explicit FindCommand(const string service) : m_service(service) {}
+    explicit FindCommand(const string &scopes,
+                         const string service)
+        : m_service(service),
+          m_scopes(scopes) {
+    }
 
     bool Execute(SLPClient *client) {
+      vector<string> scopes;
+      ola::StringSplit(m_scopes, scopes, ",");
       return client->FindService(
+          scopes,
           m_service,
           NewSingleCallback(this, &FindCommand::RequestComplete));
     }
 
   private:
-    string m_service;
+    const string m_service;
+    const string m_scopes;
 
     void RequestComplete(const string &error,
                          const vector<SLPService> &services) {
       Terminate();
       if (IsError(error))
         return;
-      vector<SLPService>::const_iterator iter = services.begin();
-      cout << "Services:" << endl;
-      for (; iter != services.end(); ++iter)
+      for (vector<SLPService>::const_iterator iter = services.begin();
+           iter != services.end(); ++iter)
         cout << iter->name << ", " << iter->lifetime << endl;
     }
 };
@@ -239,12 +251,13 @@ class DeRegisterCommand: public Command {
 /**
  * Return a command object or none if the args were invalid.
  */
-Command *CreateCommand(const vector<string> &args) {
+Command *CreateCommand(const string &scopes,
+                       const vector<string> &args) {
   if (args.empty())
     return NULL;
 
   if (args[0] == "findsrvs") {
-    return args.size() == 2 ? new FindCommand(args[1]) : NULL;
+    return args.size() == 2 ? new FindCommand(scopes, args[1]) : NULL;
   } else if (args[0] == "deregister") {
     return args.size() == 2 ? new DeRegisterCommand(args[1]) : NULL;
   } else if (args[0] == "register") {
@@ -259,12 +272,13 @@ Command *CreateCommand(const vector<string> &args) {
  */
 int main(int argc, char *argv[]) {
   Options options;
+  options.scopes = ola::slp::DEFAULT_SLP_SCOPE;
   ParseOptions(argc, argv, &options);
 
   if (options.help)
     DisplayHelpAndExit(argv);
 
-  auto_ptr<Command> command(CreateCommand(options.extra_args));
+  auto_ptr<Command> command(CreateCommand(options.scopes, options.extra_args));
   if (!command.get())
     DisplayHelpAndExit(argv);
 
