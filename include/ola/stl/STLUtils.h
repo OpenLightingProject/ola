@@ -30,6 +30,14 @@ using std::map;
 using std::vector;
 
 /**
+ * Returns true if the container contains the value
+ */
+template<typename T1, typename T2>
+inline bool STLContains(const T1 &container, const T2 &value) {
+  return container.find(value) != container.end();
+}
+
+/**
  * For a vector of pointers, loop through and delete all of them.
  */
 template<typename T>
