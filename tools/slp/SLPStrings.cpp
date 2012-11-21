@@ -173,9 +173,25 @@ bool SLPScopesMatch(const vector<string> &scopes_v,
  * Remove the service:// from the start of a string
  */
 void SLPStripService(string *str) {
-  size_t pos = str->find(SLP_SERVICE_PREFIX);
-  if (pos == 0)
-    *str = str->substr(strlen(SLP_SERVICE_PREFIX));
+  static const size_t PREFIX_LENGTH = strlen(SLP_SERVICE_PREFIX);
+  if (0 == str->compare(0, PREFIX_LENGTH, SLP_SERVICE_PREFIX))
+    *str = str->substr(PREFIX_LENGTH);
+}
+
+
+/**
+ * Extract the service name from a URL.
+ * Note we should really use a full BNF parser here.
+ */
+string SLPServiceFromURL(const string &url) {
+  string service = url;
+  SLPStripService(&service);
+
+  size_t pos = service.find("://");
+  if (pos != string::npos)
+    service = service.substr(0, pos);
+  SLPCanonicalizeString(&service);
+  return service;
 }
 }  // slp
 }  // ola

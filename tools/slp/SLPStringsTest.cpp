@@ -36,6 +36,7 @@ using ola::slp::SLPStringCanonicalizeAndCompare;
 using ola::slp::SLPStringEscape;
 using ola::slp::SLPStringUnescape;
 using ola::slp::SLPStripService;
+using ola::slp::SLPServiceFromURL;
 using std::set;
 using std::string;
 using std::vector;
@@ -51,6 +52,7 @@ class SLPStringsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testReduceList);
   CPPUNIT_TEST(testScopesMatch);
   CPPUNIT_TEST(testStripService);
+  CPPUNIT_TEST(testSLPServiceFromURL);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -62,6 +64,7 @@ class SLPStringsTest: public CppUnit::TestFixture {
     void testReduceList();
     void testScopesMatch();
     void testStripService();
+    void testSLPServiceFromURL();
 
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
@@ -207,4 +210,17 @@ void SLPStringsTest::testStripService() {
   input = "foo";
   SLPStripService(&input);
   OLA_ASSERT_EQ(string("foo"), input);
+}
+
+
+/**
+ * Test that SLPServiceFromURL() works.
+ */
+void SLPStringsTest::testSLPServiceFromURL() {
+  OLA_ASSERT_EQ(string("foo"), SLPServiceFromURL("service:foo"));
+  OLA_ASSERT_EQ(string("foo"), SLPServiceFromURL("service:FoO"));
+  OLA_ASSERT_EQ(string("foo"), SLPServiceFromURL("foo"));
+  OLA_ASSERT_EQ(string("foo"), SLPServiceFromURL("FoO"));
+  OLA_ASSERT_EQ(string("foo"),
+                SLPServiceFromURL("service:foo://localhost:9090"));
 }

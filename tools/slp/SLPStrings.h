@@ -41,6 +41,7 @@ bool SLPSetIntersect(const set<string> &one, const set<string> &two);
 bool SLPScopesMatch(const vector<string> &scopes_v,
                     const set<string> &scopes_s);
 void SLPStripService(string *str);
+string SLPServiceFromURL(const string &url);
 
 /**
  * Give a iterable container as input, canonicalize each element and insert
