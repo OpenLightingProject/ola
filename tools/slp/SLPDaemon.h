@@ -143,6 +143,10 @@ class SLPDaemon {
         void FindServiceHandler(ola::slp::proto::ServiceReply* response,
                                 ::google::protobuf::Closure* done,
                                 const URLEntries &urls);
+
+        void RegisterServiceHandler(ola::slp::proto::ServiceAck* response,
+                                    ::google::protobuf::Closure* done,
+                                    unsigned int error_code);
     };
 
     ola::Clock m_clock;

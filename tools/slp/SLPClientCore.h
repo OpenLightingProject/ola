@@ -25,8 +25,8 @@
 #include <string>
 #include <vector>
 
-#include "SLP.pb.h"
-#include "SLPClient.h"
+#include "tools/slp/SLP.pb.h"
+#include "tools/slp/SLPClient.h"
 #include "common/rpc/SimpleRpcController.h"
 #include "common/rpc/StreamRpcChannel.h"
 #include "ola/Callback.h"
@@ -54,6 +54,7 @@ class SLPClientCore {
      * Register a service
      */
     bool RegisterService(
+        const vector<string> &scopes,
         const string &service,
         uint16_t lifetime,
         SingleUseCallback2<void, const string&, uint16_t> *callback);
@@ -62,6 +63,7 @@ class SLPClientCore {
      * Register a service that persists beyond the lifetime of this client.
      */
     bool RegisterPersistentService(
+        const vector<string> &scopes,
         const string &service,
         uint16_t lifetime,
         SingleUseCallback2<void, const string&, uint16_t> *callback);
@@ -70,6 +72,7 @@ class SLPClientCore {
      * DeRegister a service
      */
     bool DeRegisterService(
+        const vector<string> &scopes,
         const string &service,
         SingleUseCallback2<void, const string&, uint16_t> *callback);
 
@@ -113,6 +116,7 @@ class SLPClientCore {
     SLPClientCore operator=(const SLPClientCore&);
 
     bool GenericRegisterService(
+        const vector<string> &scopes,
         const string &service,
         uint16_t lifetime,
         SingleUseCallback2<void, const string&, uint16_t> *callback,

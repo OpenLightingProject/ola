@@ -95,11 +95,13 @@ class SLPServer {
     void FindService(const set<string> &scopes,
                      const string &service,
                      SingleUseCallback1<void, const URLEntries&> *cb);
-    void RegisterService(const string &service,
+    void RegisterService(const set<string> &scopes,
+                         const string &url,
                          uint16_t lifetime,
-                         SingleUseCallback0<void> *cb);
-    void DeRegisterService(const string &service,
-                           SingleUseCallback0<void> *cb);
+                         SingleUseCallback1<void, unsigned int> *cb);
+    void DeRegisterService(const set<string> &scopes,
+                           const string &url,
+                           SingleUseCallback1<void, unsigned int> *cb);
 
   private:
     bool m_enable_da;
@@ -158,9 +160,12 @@ class SLPServer {
     // DA methods
     void SendDAAdvert(const IPV4SocketAddress &dest);
     bool SendDABeat();
-    void LocateServices(const set<string> &scopes,
-                        const string &service,
-                        URLEntries *urls);
+    void LocalLocateServices(const set<string> &scopes,
+                             const string &service,
+                             URLEntries *urls);
+    uint16_t LocalRegisterService(const set<string> &scopes,
+                                  const string &service,
+                                  const URLEntry &url);
 
     // non-DA methods
     bool SendFindDAService();
@@ -172,6 +177,8 @@ class SLPServer {
     static const char DIRECTORY_AGENT_SERVICE[];
     static const char FINDSRVS_COUNT_VAR[];
     static const char FINDSRVS_EMPTY_COUNT_VAR[];
+    static const char REGSRVS_COUNT_VAR[];
+    static const char REGSRVS_ERROR_COUNT_VAR[];
     static const char SCOPE_LIST_VAR[];
     static const char SERVICE_AGENT_SERVICE[];
     static const char SLP_PORT_VAR[];

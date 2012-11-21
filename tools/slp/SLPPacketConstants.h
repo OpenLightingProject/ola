@@ -51,6 +51,7 @@ typedef enum {
 } slp_function_id_t;
 
 typedef enum {
+  SLP_OK = 0,
   LANGUAGE_NOT_SUPPORTED = 1,
   PARSE_ERROR = 2,
   INVALID_REGISTRATION = 3,

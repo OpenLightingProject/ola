@@ -46,19 +46,22 @@ message ServiceReply {
 message ServiceRegistration {
   required string service = 1;
 
+  repeated string scope = 2;
+
   /**
    * The lifetime of the registration in seconds
    */
-  optional uint32 lifetime = 2 [default = 300];
+  required uint32 lifetime = 3;
 
   /**
    * If false, any registrations are removed when the clients disconnects.
    */
-  optional bool persistent = 3 [default = false];
+  optional bool persistent = 4 [default = false];
 }
 
 message ServiceDeRegistration {
   required string service = 1;
+  repeated string scope = 2;
 }
 
 message ServiceAck {

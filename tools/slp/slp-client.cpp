@@ -51,6 +51,7 @@ using std::vector;
 struct Options {
   public:
     bool help;
+    uint16_t lifetime;
     ola::log_level log_level;
     string scopes;
     vector<string> extra_args;
@@ -71,13 +72,14 @@ void ParseOptions(int argc, char *argv[],
       {"help", no_argument, 0, 'h'},
       {"log-level", required_argument, 0, 'l'},
       {"scopes", required_argument, 0, 's'},
+      {"lifetime", required_argument, 0, 't'},
       {0, 0, 0, 0}
   };
 
   int option_index = 0;
 
   while (1) {
-    int c = getopt_long(argc, argv, "hl:s:", long_options, &option_index);
+    int c = getopt_long(argc, argv, "hl:s:t:", long_options, &option_index);
 
     if (c == -1)
       break;
@@ -111,6 +113,8 @@ void ParseOptions(int argc, char *argv[],
         break;
       case 's':
         options->scopes = optarg;
+      case 't':
+        options->lifetime = atoi(optarg);
       case '?':
         break;
       default:
@@ -134,9 +138,11 @@ void DisplayHelpAndExit(char *argv[]) {
   "  -h, --help                 Display this help message and exit.\n"
   "  -l, --log-level <level>    Set the logging level 0 .. 4.\n"
   "  -s, --scopes scope1,scope2 Comma separated list of scopes.\n"
+  "  -t, --lifetime <int>       The lifetime of the service (seconds).\n"
   " Examples:\n"
-  "   " << argv[0] << " register service:myserv.x://myhost.com\n"
+  "   " << argv[0] << " -t 300 register service:myserv.x://myhost.com\n"
   "   " << argv[0] << " findsrvs service:myserv.x\n"
+  "   " << argv[0] << " -s myorg findsrvs service:myserv.x\n"
   << endl;
   exit(0);
 }
@@ -144,7 +150,10 @@ void DisplayHelpAndExit(char *argv[]) {
 // The base slp client command class.
 class Command {
   public:
-    Command() : m_terminate(NULL) {}
+    explicit Command(const string &scopes)
+        : m_terminate(NULL) {
+      ola::StringSplit(scopes, m_scopes, ",");
+    }
 
     virtual ~Command() {
       if (m_terminate)
@@ -159,6 +168,8 @@ class Command {
     virtual bool Execute(SLPClient *client) = 0;
 
   protected:
+    vector<string> m_scopes;
+
     bool IsError(const string &error) {
       if (error.empty())
         return false;
@@ -175,22 +186,19 @@ class FindCommand: public Command {
   public:
     explicit FindCommand(const string &scopes,
                          const string service)
-        : m_service(service),
-          m_scopes(scopes) {
+        : Command(scopes),
+          m_service(service) {
     }
 
     bool Execute(SLPClient *client) {
-      vector<string> scopes;
-      ola::StringSplit(m_scopes, scopes, ",");
       return client->FindService(
-          scopes,
+          m_scopes,
           m_service,
           NewSingleCallback(this, &FindCommand::RequestComplete));
     }
 
   private:
     const string m_service;
-    const string m_scopes;
 
     void RequestComplete(const string &error,
                          const vector<SLPService> &services) {
@@ -206,32 +214,45 @@ class FindCommand: public Command {
 
 class RegisterCommand: public Command {
   public:
-    explicit RegisterCommand(const string service) : m_service(service) {}
+    explicit RegisterCommand(const string &scopes,
+                             const string service,
+                             uint16_t lifetime)
+      : Command(scopes),
+        m_service(service),
+        m_lifetime(lifetime) {
+    }
 
     bool Execute(SLPClient *client) {
       return client->RegisterPersistentService(
-          m_service, 300,
+          m_scopes,
+          m_service, m_lifetime,
           NewSingleCallback(this, &RegisterCommand::RequestComplete));
     }
 
   private:
     string m_service;
+    uint16_t m_lifetime;
 
     void RequestComplete(const string &error, uint16_t code) {
       Terminate();
       if (IsError(error))
         return;
-      cout << "SLP code is " << code;
+      cout << "SLP code is " << code << endl;
     }
 };
 
 
 class DeRegisterCommand: public Command {
   public:
-    explicit DeRegisterCommand(const string service) : m_service(service) {}
+    explicit DeRegisterCommand(const string &scopes,
+                               const string service)
+      : Command(scopes),
+        m_service(service) {
+    }
 
     bool Execute(SLPClient *client) {
       return client->DeRegisterService(
+          m_scopes,
           m_service,
           NewSingleCallback(this, &DeRegisterCommand::RequestComplete));
     }
@@ -243,7 +264,7 @@ class DeRegisterCommand: public Command {
       Terminate();
       if (IsError(error))
         return;
-      cout << "SLP code is " << code;
+      cout << "SLP code is " << code << endl;
     }
 };
 
@@ -251,17 +272,21 @@ class DeRegisterCommand: public Command {
 /**
  * Return a command object or none if the args were invalid.
  */
-Command *CreateCommand(const string &scopes,
-                       const vector<string> &args) {
+Command *CreateCommand(const Options &options) {
+  const vector<string> &args = options.extra_args;
   if (args.empty())
     return NULL;
 
   if (args[0] == "findsrvs") {
-    return args.size() == 2 ? new FindCommand(scopes, args[1]) : NULL;
+    return args.size() == 2 ? new FindCommand(options.scopes, args[1]) : NULL;
   } else if (args[0] == "deregister") {
-    return args.size() == 2 ? new DeRegisterCommand(args[1]) : NULL;
+    return args.size() == 2 ?
+           new DeRegisterCommand(options.scopes, args[1])
+           : NULL;
   } else if (args[0] == "register") {
-    return args.size() == 2 ? new RegisterCommand(args[1]) : NULL;
+    return args.size() == 2 ?
+           new RegisterCommand(options.scopes, args[1], options.lifetime)
+           : NULL;
   }
   return NULL;
 }
@@ -273,12 +298,13 @@ Command *CreateCommand(const string &scopes,
 int main(int argc, char *argv[]) {
   Options options;
   options.scopes = ola::slp::DEFAULT_SLP_SCOPE;
+  options.lifetime = 300;
   ParseOptions(argc, argv, &options);
 
   if (options.help)
     DisplayHelpAndExit(argv);
 
-  auto_ptr<Command> command(CreateCommand(options.scopes, options.extra_args));
+  auto_ptr<Command> command(CreateCommand(options));
   if (!command.get())
     DisplayHelpAndExit(argv);
 

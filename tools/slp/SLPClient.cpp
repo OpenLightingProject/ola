@@ -22,8 +22,8 @@
 #include <vector>
 
 #include "ola/Callback.h"
-#include "SLPClient.h"
-#include "SLPClientCore.h"
+#include "tools/slp/SLPClient.h"
+#include "tools/slp/SLPClientCore.h"
 
 namespace ola {
 namespace slp {
@@ -60,10 +60,11 @@ bool SLPClient::Stop() { return m_core->Stop(); }
  * @returns true if the request succeeded, false otherwise.
  */
 bool SLPClient::RegisterService(
+    const vector<string> &scopes,
     const string &service,
     uint16_t lifetime,
     SingleUseCallback2<void, const string&, uint16_t> *callback) {
-  return m_core->RegisterService(service, lifetime, callback);
+  return m_core->RegisterService(scopes, service, lifetime, callback);
 }
 
 
@@ -74,10 +75,11 @@ bool SLPClient::RegisterService(
  * @returns true if the request succeeded, false otherwise.
  */
 bool SLPClient::RegisterPersistentService(
+      const vector<string> &scopes,
       const string &service,
       uint16_t lifetime,
       SingleUseCallback2<void, const string&, uint16_t> *callback) {
-  return m_core->RegisterPersistentService(service, lifetime, callback);
+  return m_core->RegisterPersistentService(scopes, service, lifetime, callback);
 }
 
 
@@ -87,9 +89,10 @@ bool SLPClient::RegisterPersistentService(
  * @returns true if the request succeeded, false otherwise.
  */
 bool SLPClient::DeRegisterService(
+    const vector<string> &scopes,
     const string &service,
     SingleUseCallback2<void, const string&, uint16_t> *callback) {
-  return m_core->DeRegisterService(service, callback);
+  return m_core->DeRegisterService(scopes, service, callback);
 }
 
 

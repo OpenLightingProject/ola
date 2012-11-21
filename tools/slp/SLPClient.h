@@ -70,6 +70,7 @@ class SLPClient {
      * Register a service
      */
     bool RegisterService(
+        const vector<string> &scopes,
         const string &service,
         uint16_t lifetime,
         SingleUseCallback2<void, const string&, uint16_t> *callback);
@@ -78,6 +79,7 @@ class SLPClient {
      * Register a service that persists beyond the lifetime of this client.
      */
     bool RegisterPersistentService(
+        const vector<string> &scopes,
         const string &service,
         uint16_t lifetime,
         SingleUseCallback2<void, const string&, uint16_t> *callback);
@@ -86,6 +88,7 @@ class SLPClient {
      * DeRegister a service
      */
     bool DeRegisterService(
+        const vector<string> &scopes,
         const string &service,
         SingleUseCallback2<void, const string&, uint16_t> *callback);
 

@@ -25,8 +25,8 @@
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
-#include "SLPClientCore.h"
-#include "SLP.pb.h"
+#include "tools/slp/SLPClientCore.h"
+#include "tools/slp/SLP.pb.h"
 
 namespace ola {
 namespace slp {
@@ -92,10 +92,11 @@ bool SLPClientCore::Stop() {
  * @return true on success, false on failure.
  */
 bool SLPClientCore::RegisterService(
+    const vector<string> &scopes,
     const string &service,
     uint16_t lifetime,
     SingleUseCallback2<void, const string&, uint16_t> *callback) {
-  return GenericRegisterService(service, lifetime, callback, false);
+  return GenericRegisterService(scopes, service, lifetime, callback, false);
 }
 
 
@@ -104,10 +105,11 @@ bool SLPClientCore::RegisterService(
  * @return true on success, false on failure.
  */
 bool SLPClientCore::RegisterPersistentService(
+    const vector<string> &scopes,
     const string &service,
     uint16_t lifetime,
     SingleUseCallback2<void, const string&, uint16_t> *callback) {
-  return GenericRegisterService(service, lifetime, callback, true);
+  return GenericRegisterService(scopes, service, lifetime, callback, true);
 }
 
 
@@ -115,6 +117,7 @@ bool SLPClientCore::RegisterPersistentService(
  * DeRegister a service
  */
 bool SLPClientCore::DeRegisterService(
+    const vector<string> &scopes,
     const string &service,
     SingleUseCallback2<void, const string&, uint16_t> *callback) {
   if (!m_connected) {
@@ -127,6 +130,9 @@ bool SLPClientCore::DeRegisterService(
   ola::slp::proto::ServiceAck *reply = new ola::slp::proto::ServiceAck();
 
   request.set_service(service);
+  for (vector<string>::const_iterator iter = scopes.begin();
+       iter != scopes.end(); ++iter)
+    request.add_scope(*iter);
 
   google::protobuf::Closure *cb = google::protobuf::NewCallback(
       this,
@@ -224,6 +230,7 @@ void SLPClientCore::HandleFindRequest(find_arg *args) {
  * @return true on success, false on failure
  */
 bool SLPClientCore::GenericRegisterService(
+    const vector<string> &scopes,
     const string &service,
     uint16_t lifetime,
     SingleUseCallback2<void, const string&, uint16_t> *callback,
@@ -238,6 +245,9 @@ bool SLPClientCore::GenericRegisterService(
   ola::slp::proto::ServiceAck *reply = new ola::slp::proto::ServiceAck();
 
   request.set_service(service);
+  for (vector<string>::const_iterator iter = scopes.begin();
+       iter != scopes.end(); ++iter)
+    request.add_scope(*iter);
   request.set_lifetime(lifetime);
   request.set_persistent(persistent);
 

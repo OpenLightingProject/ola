@@ -225,11 +225,10 @@ void SLPDaemon::RPCSocketClosed(TCPSocket *socket) {
  * Find Service request.
  */
 void SLPDaemon::SLPServiceImpl::FindService(
-    ::google::protobuf::RpcController* controller,
+    ::google::protobuf::RpcController*,
     const ola::slp::proto::ServiceRequest* request,
     ola::slp::proto::ServiceReply* response,
     ::google::protobuf::Closure* done) {
-  (void) controller;
   OLA_INFO << "Recv FindService request";
 
   set<string> scopes;
@@ -250,18 +249,30 @@ void SLPDaemon::SLPServiceImpl::FindService(
  * Register service request.
  */
 void SLPDaemon::SLPServiceImpl::RegisterService(
-    ::google::protobuf::RpcController* controller,
+    ::google::protobuf::RpcController*,
     const ola::slp::proto::ServiceRegistration* request,
     ola::slp::proto::ServiceAck* response,
     ::google::protobuf::Closure* done) {
   OLA_INFO << "Recv RegisterService request";
-  (void) controller;
-  (void) request;
-  response->set_error_code(0);
-  done->Run();
+
+  set<string> scopes;
+  for (int i = 0; i < request->scope_size(); ++i)
+    scopes.insert(request->scope(i));
+
+  m_slp_server->RegisterService(
+      scopes,
+      request->service(),
+      request->lifetime(),
+      NewSingleCallback(this,
+                        &SLPServiceImpl::RegisterServiceHandler,
+                        response,
+                        done));
 }
 
 
+/**
+ * De-Register service request.
+ */
 void SLPDaemon::SLPServiceImpl::DeRegisterService(
     ::google::protobuf::RpcController* controller,
     const ola::slp::proto::ServiceDeRegistration* request,
@@ -288,6 +299,18 @@ void SLPDaemon::SLPServiceImpl::FindServiceHandler(
     service->set_service_name(iter->URL());
     service->set_lifetime(iter->Lifetime());
   }
+  done->Run();
+}
+
+
+/**
+ * Called when RegisterService completes
+ */
+void SLPDaemon::SLPServiceImpl::RegisterServiceHandler(
+    ola::slp::proto::ServiceAck* response,
+    ::google::protobuf::Closure* done,
+    unsigned int error_code) {
+  response->set_error_code(error_code);
   done->Run();
 }
 }  // slp
