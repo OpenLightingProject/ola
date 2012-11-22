@@ -43,6 +43,8 @@ bool SLPScopesMatch(const vector<string> &scopes_v,
 void SLPStripService(string *str);
 string SLPServiceFromURL(const string &url);
 
+void SLPExtractScopes(const string &scopes, set<string> *output);
+
 /**
  * Give a iterable container as input, canonicalize each element and insert
  * into a set<string>. This removes duplicates.

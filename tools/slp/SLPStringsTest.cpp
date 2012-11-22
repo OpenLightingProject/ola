@@ -28,15 +28,16 @@
 #include "tools/slp/SLPStrings.h"
 
 using ola::slp::SLPCanonicalizeString;
+using ola::slp::SLPExtractScopes;
 using ola::slp::SLPGetCanonicalString;
 using ola::slp::SLPReduceList;
 using ola::slp::SLPScopesMatch;
+using ola::slp::SLPServiceFromURL;
 using ola::slp::SLPSetIntersect;
 using ola::slp::SLPStringCanonicalizeAndCompare;
 using ola::slp::SLPStringEscape;
 using ola::slp::SLPStringUnescape;
 using ola::slp::SLPStripService;
-using ola::slp::SLPServiceFromURL;
 using std::set;
 using std::string;
 using std::vector;
@@ -53,6 +54,7 @@ class SLPStringsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testScopesMatch);
   CPPUNIT_TEST(testStripService);
   CPPUNIT_TEST(testSLPServiceFromURL);
+  CPPUNIT_TEST(testSLPExtractScopes);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -65,6 +67,7 @@ class SLPStringsTest: public CppUnit::TestFixture {
     void testScopesMatch();
     void testStripService();
     void testSLPServiceFromURL();
+    void testSLPExtractScopes();
 
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
@@ -223,4 +226,50 @@ void SLPStringsTest::testSLPServiceFromURL() {
   OLA_ASSERT_EQ(string("foo"), SLPServiceFromURL("FoO"));
   OLA_ASSERT_EQ(string("foo"),
                 SLPServiceFromURL("service:foo://localhost:9090"));
+}
+
+
+/**
+ * Check that SLPExtractScopes works
+ */
+void SLPStringsTest::testSLPExtractScopes() {
+  set<string> scopes, expected_scopes;
+  SLPExtractScopes("one", &scopes);
+  expected_scopes.insert("one");
+  OLA_ASSERT_SET_EQ(expected_scopes, scopes);
+
+  scopes.clear();
+  SLPExtractScopes("one,two,three", &scopes);
+  expected_scopes.insert("two");
+  expected_scopes.insert("three");
+  OLA_ASSERT_SET_EQ(expected_scopes, scopes);
+
+  scopes.clear();
+  expected_scopes.clear();
+
+  // test a trailing ,
+  SLPExtractScopes("one,", &scopes);
+  expected_scopes.insert("one");
+  OLA_ASSERT_SET_EQ(expected_scopes, scopes);
+
+  // and a extra , in the middle
+  scopes.clear();
+  SLPExtractScopes("one,,two", &scopes);
+  expected_scopes.insert("two");
+  OLA_ASSERT_SET_EQ(expected_scopes, scopes);
+
+  // test canonical form
+  scopes.clear();
+  expected_scopes.clear();
+  SLPExtractScopes("oNe", &scopes);
+  expected_scopes.insert("one");
+  OLA_ASSERT_SET_EQ(expected_scopes, scopes);
+
+  // test dups
+  scopes.clear();
+  expected_scopes.clear();
+  SLPExtractScopes("one,oNe,two,two,TWO", &scopes);
+  expected_scopes.insert("one");
+  expected_scopes.insert("two");
+  OLA_ASSERT_SET_EQ(expected_scopes, scopes);
 }
