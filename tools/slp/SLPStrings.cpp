@@ -150,10 +150,17 @@ bool SLPStringCanonicalizeAndCompare(const string &s1, const string s2) {
  * the strings are in canonical form.
  */
 bool SLPSetIntersect(const set<string> &one, const set<string> &two) {
-  vector<string> output;
-  std::set_intersection(one.begin(), one.end(), two.begin(), two.end(),
-                        inserter(output, output.begin()));
-  return !output.empty();
+  set<string>::iterator iter1 = one.begin();
+  set<string>::iterator iter2 = two.begin();
+  while (iter1 != one.end() && iter2 != two.end()) {
+    if (*iter1 == *iter2)
+      return true;
+    else if (*iter1 < *iter2)
+      iter1++;
+    else
+      iter2++;
+  }
+  return false;
 }
 
 
