@@ -11,6 +11,7 @@ EXTRA_DIST = Base.h \
              SLPPacketParser.h \
              SLPServer.h \
              SLPStore.h \
+             NewSLPStore.h \
              SLPStrings.h \
              SLPUDPSender.h \
              ScopedSLPStore.h \
@@ -20,12 +21,12 @@ EXTRA_DIST = Base.h \
 noinst_PROGRAMS = slp_server slp_client slp_parser
 
 slp_server_SOURCES = RegistrationFileParser.cpp \
-                     SLPNode.cpp \
                      SLPDaemon.cpp \
                      SLPPacketBuilder.cpp \
                      SLPPacketParser.cpp \
                      SLPServer.cpp \
                      SLPStore.cpp \
+                     NewSLPStore.cpp \
                      SLPStrings.cpp \
                      SLPUDPSender.cpp \
                      ScopedSLPStore.cpp \
@@ -97,7 +98,9 @@ PacketParserTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 PacketParserTester_LDADD = $(COMMON_TEST_LDADD)
 
 SLPStoreTester_SOURCES = GenericTester.cpp \
+                         NewSLPStoreTest.cpp \
                          SLPStore.cpp \
+                         NewSLPStore.cpp \
                          SLPStoreTest.cpp \
                          SLPStrings.cpp \
                          ScopedSLPStore.cpp \
