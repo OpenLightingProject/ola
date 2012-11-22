@@ -20,18 +20,16 @@
 #ifndef TOOLS_SLP_REGISTRATIONFILEPARSER_H_
 #define TOOLS_SLP_REGISTRATIONFILEPARSER_H_
 
-#include <map>
+#include <istream>
 #include <string>
-#include <utility>
+#include <vector>
 
-#include "tools/slp/URLEntry.h"
+#include "tools/slp/ServiceEntry.h"
 
 namespace ola {
 namespace slp {
 
-using std::map;
 using std::string;
-using std::pair;
 
 /**
  * Parse a registration file and extract the services.
@@ -41,18 +39,11 @@ class RegistrationFileParser {
     RegistrationFileParser() {}
     ~RegistrationFileParser() {}
 
-    // Map of <scope, service> -> urls
-    typedef pair<string, string> ScopeServicePair;
-    typedef map<ScopeServicePair, URLEntries> ServicesMap;
-
-    bool ParseFile(const string &file, ServicesMap *services) const;
+    bool ParseFile(const string &file, ServiceEntries *services) const;
+    bool ParseStream(std::istream *input, ServiceEntries *services) const;
 
   private:
-    void Insert(ServicesMap *services,
-                const string &scope,
-                const string &service_type,
-                const string &url,
-                uint16_t lifetime) const;
+    void SplitLine(const string &line, std::vector<string> *tokens) const;
 };
 }  // slp
 }  // ola

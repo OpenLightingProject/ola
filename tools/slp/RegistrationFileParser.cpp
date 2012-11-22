@@ -24,19 +24,20 @@
 
 #include <fstream>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
 #include "tools/slp/RegistrationFileParser.h"
 #include "tools/slp/SLPStrings.h"
-#include "tools/slp/ScopedSLPStore.h"
-#include "tools/slp/URLEntry.h"
+#include "tools/slp/ServiceEntry.h"
 
 namespace ola {
 namespace slp {
 
-using std::map;
 using std::ifstream;
+using std::map;
+using std::set;
 using std::string;
 using std::vector;
 
@@ -46,10 +47,10 @@ using std::vector;
  * TODO(simon): make this 2614 compliant.
  *
  * Format is:
- *   scope,service-type,url,lifetime
+ *   scope1,scope2  url  lifetime
  */
 bool RegistrationFileParser::ParseFile(const string &filename,
-                                       ServicesMap *services) const {
+                                       ServiceEntries *services) const {
   ifstream services_file(filename.c_str());
 
   if (!services_file.is_open()) {
@@ -57,51 +58,76 @@ bool RegistrationFileParser::ParseFile(const string &filename,
     return false;
   }
 
+  bool result = ParseStream(&services_file, services);
+  services_file.close();
+  return result;
+}
+
+
+/**
+ * Same as ParseFile but this takes an istream.
+ */
+bool RegistrationFileParser::ParseStream(std::istream *input,
+                                         ServiceEntries *services) const {
+  // The set of URLS we've already seen, stored in canonical form
+  set<string> seen_urls;
+
   string line;
-  while (getline(services_file, line)) {
+  while (getline(*input, line)) {
+    OLA_INFO << line;
     StringTrim(&line);
     if (line.empty() || line.at(0) == '#' || line.at(0) == ';')
       continue;
 
     vector<string> tokens;
-    StringSplit(line, tokens, ",");
+    SplitLine(line, &tokens);
 
-    if (tokens.size() != 4) {
+    if (tokens.size() < 3) {
       OLA_INFO << "Skipping line: " << line;
       continue;
     }
 
     uint16_t lifetime;
-    if (!StringToInt(tokens[3], &lifetime)) {
+    if (!StringToInt(tokens[2], &lifetime)) {
       OLA_INFO << "Invalid lifetime " << line;
       continue;
     }
 
-    Insert(services, tokens[0], tokens[1], tokens[2], lifetime);
+    const string scopes = tokens[0];
+    const string url = tokens[1];
+
+    if (seen_urls.find(url) != seen_urls.end()) {
+      OLA_WARN << url
+               << " appears more than once in service registration file";
+      continue;
+    }
+    seen_urls.insert(url);
+
+    set<string> canonical_scopes;
+    SLPExtractScopes(scopes, &canonical_scopes);
+    ServiceEntry service(canonical_scopes, url, lifetime);
+    services->insert(service);
   }
   return true;
 }
 
 
-/**
- * Insert an entry into our service map
- */
-void RegistrationFileParser::Insert(ServicesMap *services,
-                                    const string &scope,
-                                    const string &service_type,
-                                    const string &url,
-                                    uint16_t lifetime) const {
-  string canonical_scope = SLPGetCanonicalString(scope);
-  ScopeServicePair p(canonical_scope, service_type);
-  URLEntries *urls = &((*services)[p]);
-  URLEntry entry(url, lifetime);
+void RegistrationFileParser::SplitLine(const string &line,
+                                       vector<string> *tokens) const {
+  string::size_type start_offset = 0;
+  string::size_type end_offset = 0;
 
-  URLEntries::iterator iter = urls->find(entry);
-  if (iter == urls->end()) {
-    urls->insert(entry);
-  } else {
-    if (lifetime > iter->Lifetime())
-      iter->Lifetime(lifetime);
+  while (end_offset != string::npos) {
+    end_offset = line.find_first_of(" \t", start_offset);
+    string token;
+    if (end_offset == string::npos)
+      token = line.substr(start_offset, line.size() - start_offset);
+    else
+      token = line.substr(start_offset, end_offset - start_offset);
+    start_offset = end_offset + 1 > line.size() ? string::npos :
+                   end_offset + 1;
+    if (!token.empty())
+      tokens->push_back(token);
   }
 }
 }  // slp
