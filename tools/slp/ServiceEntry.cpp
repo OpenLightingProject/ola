@@ -13,40 +13,21 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * ScopedSLPStore.h
+ * ServiceEntry.cpp
  * Copyright (C) 2012 Simon Newton
  */
 
-#ifndef TOOLS_SLP_SCOPEDSLPSTORE_H_
-#define TOOLS_SLP_SCOPEDSLPSTORE_H_
-
-#include <map>
-#include <string>
-
+#include "tools/slp/ServiceEntry.h"
+#include "tools/slp/SLPPacketBuilder.h"
 
 namespace ola {
 namespace slp {
 
-using std::map;
-using std::string;
-
-/**
- * Holds the registrations for all scopes.
- * Scope names are case-insensitive, so we convert everything to lower case.
- */
-class ScopedSLPStore {
-  public:
-    ScopedSLPStore() {}
-    ~ScopedSLPStore();
-
-    class SLPStore* LookupOrCreate(const string &scope);
-
-    class SLPStore* Lookup(const string &scope);
-
-  private:
-    typedef map<string, class SLPStore*> ScopedServiceMap;
-    ScopedServiceMap m_scopes;
-};
+void URLEntry::Write(ola::io::BigEndianOutputStreamInterface *output) const {
+  *output << static_cast<uint8_t>(0);  // reservered
+  *output << m_lifetime;
+  SLPPacketBuilder::WriteString(output, m_url);
+  *output << static_cast<uint8_t>(0);  // # of URL auths
+}
 }  // slp
 }  // ola
-#endif  // TOOLS_SLP_SCOPEDSLPSTORE_H_

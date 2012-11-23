@@ -36,10 +36,11 @@
 #include <ola/network/TCPSocketFactory.h>
 
 #include <algorithm>
-#include <string>
-#include <vector>
+#include <map>
 #include <set>
 #include <sstream>
+#include <string>
+#include <vector>
 
 #include "tools/slp/SLPPacketBuilder.h"
 #include "tools/slp/SLPPacketParser.h"
@@ -183,22 +184,27 @@ bool SLPServer::Init() {
 
 
 /**
- * Bulk load a set of URL Entries
+ * Bulk load a set of Service Entries.
  */
-void SLPServer::BulkLoad(const string &scope,
-                         const string &service,
-                         const URLEntries &entries) {
+bool SLPServer::BulkLoad(const ServiceEntries &services) {
+  // The store requires all ServiceEntries to have the same service, so we split
+  // them out here.
+  typedef map<string, ServiceEntries> ServiceMap;
+  ServiceMap entries_by_service;
+  for (ServiceEntries::const_iterator iter = services.begin();
+       iter != services.end(); ++iter) {
+    const string service = SLPServiceFromURL(iter->URL());
+    entries_by_service[service].insert(*iter);
+  }
+
   TimeStamp now;
   m_clock.CurrentTime(&now);
-  string canonical_scope = SLPGetCanonicalString(scope);
-  set<string>::iterator iter = m_scope_list.find(canonical_scope);
-  if (iter == m_scope_list.end()) {
-    OLA_WARN << "Ignoring registration for " << scope <<
-      " since it's not configured";
-    return;
+  bool ok = true;
+  for (ServiceMap::const_iterator iter = entries_by_service.begin();
+       iter != entries_by_service.end(); ++iter) {
+    ok &= m_service_store.BulkInsert(now, iter->second);
   }
-  SLPStore *store = m_service_store.LookupOrCreate(canonical_scope);
-  store->BulkInsert(now, service, entries);
+  return ok;
 }
 
 
@@ -206,14 +212,7 @@ void SLPServer::BulkLoad(const string &scope,
  * Dump out the contents of the SLP store.
  */
 void SLPServer::DumpStore() {
-  set<string>::iterator iter = m_scope_list.begin();
-  for (; iter != m_scope_list.end(); ++iter) {
-    SLPStore *store = m_service_store.Lookup(*iter);
-    if (!store)
-      continue;
-    OLA_INFO << "Scope: " << *iter;
-    store->Dump(*(m_ss->WakeUpTime()));
-  }
+  m_service_store.Dump(*(m_ss->WakeUpTime()));
 }
 
 
@@ -225,25 +224,27 @@ void SLPServer::DumpStore() {
  * TODO(simon): change this to execute the callback multiple times until all
  * results arrive.
  */
-void SLPServer::FindService(const set<string> &scopes,
-                            const string &service,
-                            SingleUseCallback1<void, const URLEntries&> *cb) {
+void SLPServer::FindService(
+    const set<string> &scopes,
+    const string &service,
+    SingleUseCallback1<void, const URLEntries&> *cb) {
   (*m_export_map->GetIntegerVar(FINDSRVS_COUNT_VAR))++;
-  URLEntries urls;
+  URLEntries services;
   if (m_enable_da) {
-    // we're in DA mode, just return all the matching URLEntries we know about
+    // we're in DA mode, just return all the matching ServiceEntries we know
+    // about.
     set<string> canonical_scopes;
     SLPReduceList(scopes, &canonical_scopes);
     if (SLPSetIntersect(canonical_scopes, m_scope_list)) {
       OLA_INFO << "Received SrvRqst for " << service;
-      LocalLocateServices(canonical_scopes, service, &urls);
+      LocalLocateServices(canonical_scopes, service, &services);
     }
   } else {
     // UA mode, start finding the services
   }
-  if (urls.empty())
+  if (services.empty())
     (*m_export_map->GetIntegerVar(FINDSRVS_EMPTY_COUNT_VAR))++;
-  cb->Run(urls);
+  cb->Run(services);
 }
 
 
@@ -255,26 +256,24 @@ void SLPServer::FindService(const set<string> &scopes,
  * @param cb the callback to run
  */
 void SLPServer::RegisterService(const set<string> &scopes,
-                                const string &url_str,
+                                const string &url,
                                 uint16_t lifetime,
                                 SingleUseCallback1<void, unsigned int> *cb) {
   (*m_export_map->GetIntegerVar(REGSRVS_COUNT_VAR))++;
-  string service = SLPServiceFromURL(url_str);
-  URLEntry url(url_str, lifetime);
 
   if (m_enable_da) {
     if (scopes.empty())
-      OLA_WARN << "Scopes list for RegisterService(" << service
-               << "), is empty";
+      OLA_WARN << "Scopes list for RegisterService(" << url << "), is empty";
 
     // we're in DA mode, register this service in our stores
     set<string> canonical_scopes;
     SLPReduceList(scopes, &canonical_scopes);
+    ServiceEntry service(canonical_scopes, url, lifetime);
 
-    uint16_t error_code = LocalRegisterService(canonical_scopes, service, url);
-    cb->Run(error_code);
+    uint16_t error_code = LocalRegisterService(service);
     if (error_code)
       (*m_export_map->GetIntegerVar(REGSRVS_ERROR_COUNT_VAR))++;
+    cb->Run(error_code);
     // TODO(simon): we should register with other DAs here
     return;
   } else {
@@ -422,12 +421,12 @@ void SLPServer::HandleServiceRequest(BigEndianInputStream *stream,
     return;
   }
 
-  URLEntries urls;
+  URLEntries services;
   OLA_INFO << "Received SrvRqst for " << request->service_type;
-  LocalLocateServices(canonical_scopes, request->service_type, &urls);
+  LocalLocateServices(canonical_scopes, request->service_type, &services);
 
-  OLA_INFO << "sending SrvReply with " << urls.size() << " urls";
-  m_udp_sender.SendServiceReply(source, request->xid, 0, urls);
+  OLA_INFO << "sending SrvReply with " << services.size() << " services";
+  m_udp_sender.SendServiceReply(source, request->xid, 0, services);
 }
 
 
@@ -564,54 +563,32 @@ bool SLPServer::SendDABeat() {
 
 /**
  * Lookup a service in our local stores
- * @param scopes the scopes to search
- * @param service the service name, in any format
- * @param urls a URLEntries where we store the results
+ * @param scopes the list of canonical scopes
+ * @param service the service to locate.
+ * @param services a ServiceEntries where we store the results
  */
 void SLPServer::LocalLocateServices(const set<string> &scopes,
                                     const string &service,
-                                    URLEntries *urls) {
+                                    URLEntries *services) {
   string service_type = SLPGetCanonicalString(service);
   SLPStripService(&service_type);
-
-  for (set<string>::const_iterator iter = scopes.begin();
-       iter != scopes.end(); ++iter) {
-    SLPStore *store = m_service_store.Lookup(*iter);
-    if (!store)
-      continue;
-    OLA_INFO << "Doing lookup for " << *iter << " - " << service_type;
-    store->Lookup(*(m_ss->WakeUpTime()), service_type, urls);
-  }
+  m_service_store.Lookup(*(m_ss->WakeUpTime()), scopes, service_type, services);
 }
 
 
 /**
  * Register a service in our local stores
- * @param scopes the scopes to search, in canonical form
- * @param service the service name, in canonical form
- * @param url the URLEntry to register
+ * @param service the ServiceEntry to register
  * @returns an SLP Error code.
  */
-uint16_t SLPServer::LocalRegisterService(const set<string> &scopes,
-                                         const string &service,
-                                         const URLEntry &url) {
-  TimeStamp now;
-  m_clock.CurrentTime(&now);
+uint16_t SLPServer::LocalRegisterService(const ServiceEntry &service) {
+  SLPStore::ReturnCode result = m_service_store.Insert(
+      *(m_ss->WakeUpTime()),
+      service);
 
-  bool registered = false;
-  for (set<string>::const_iterator iter = scopes.begin();
-       iter != scopes.end(); ++iter) {
-    if (!STLContains(m_scope_list, *iter))
-      continue;
-
-    OLA_INFO << "trying to save " << service << " in scope " << *iter;
-    SLPStore *store = m_service_store.LookupOrCreate(*iter);
-    if (store) {
-      store->Insert(now, service, url);
-      registered = true;
-    }
-  }
-  return registered ? SLP_OK : SCOPE_NOT_SUPPORTED;
+  if (result == SLPStore::SCOPE_MISMATCH)
+    return SCOPE_NOT_SUPPORTED;
+  return SLP_OK;
 }
 
 

@@ -37,13 +37,15 @@
 
 #include "tools/slp/RegistrationFileParser.h"
 #include "tools/slp/SLPDaemon.h"
+#include "tools/slp/ServiceEntry.h"
 
+using ola::network::IPV4SocketAddress;
 using ola::network::IPV4SocketAddress;
 using ola::network::TCPAcceptingSocket;
 using ola::network::UDPSocket;
-using ola::network::IPV4SocketAddress;
 using ola::slp::RegistrationFileParser;
 using ola::slp::SLPDaemon;
+using ola::slp::ServiceEntries;
 using std::auto_ptr;
 using std::cout;
 using std::endl;
@@ -304,13 +306,11 @@ bool DropPrivileges(const string &setuid, const string &setgid) {
 
 void PreRegisterServices(SLPDaemon *daemon, const string &file) {
   RegistrationFileParser parser;
-  RegistrationFileParser::ServicesMap service_map;
-  bool ok = parser.ParseFile(file, &service_map);
+  ServiceEntries services;
+  bool ok = parser.ParseFile(file, &services);
   OLA_INFO << "parse file returned " << ok;
-
-  RegistrationFileParser::ServicesMap::iterator iter = service_map.begin();
-  for (; iter != service_map.end(); ++iter)
-    daemon->BulkLoad(iter->first.first, iter->first.second, iter->second);
+  ok = daemon->BulkLoad(services);
+  OLA_INFO << "load returned " << ok;
 }
 
 /*

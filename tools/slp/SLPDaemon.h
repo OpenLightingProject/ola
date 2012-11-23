@@ -101,12 +101,8 @@ class SLPDaemon {
     void Run();
     void Stop();
 
-    // bulk load a set of URLEntries
-    void BulkLoad(const string &scope,
-                  const string &service,
-                  const URLEntries &entries);
+    bool BulkLoad(const ServiceEntries &services);
 
-    // handle events from stdin
     void Input(char c);
 
   private:
@@ -142,7 +138,7 @@ class SLPDaemon {
 
         void FindServiceHandler(ola::slp::proto::ServiceReply* response,
                                 ::google::protobuf::Closure* done,
-                                const URLEntries &urls);
+                                const URLEntries &services);
 
         void RegisterServiceHandler(ola::slp::proto::ServiceAck* response,
                                     ::google::protobuf::Closure* done,

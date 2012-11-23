@@ -27,7 +27,7 @@
 #include <string>
 
 #include "tools/slp/SLPPacketConstants.h"
-#include "tools/slp/URLEntry.h"
+#include "tools/slp/ServiceEntry.h"
 
 using ola::io::BigEndianOutputStreamAdaptor;
 using ola::io::BigEndianOutputStreamInterface;

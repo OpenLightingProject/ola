@@ -21,12 +21,14 @@
 #define TOOLS_SLP_SLPSTORE_H_
 
 #include <ola/Clock.h>
+#include <ola/io/BigEndianStream.h>
 
 #include <map>
 #include <string>
 #include <set>
 
-#include "tools/slp/URLEntry.h"
+#include "tools/slp/ServiceEntry.h"
+#include "tools/slp/SLPStrings.h"
 
 
 namespace ola {
@@ -34,36 +36,76 @@ namespace slp {
 
 using ola::TimeStamp;
 using std::map;
+using std::set;
 using std::string;
 
 /**
- * Holds the registrations for services in a single scope.
+ * Holds the registrations for services and ages & cleans them as appropriate.
+ * Each service registration has an associated lifetime (age). Openslp ages the
+ * entire database every 15 seconds which doesn't provide a good client
+ * experience.
+ *
+ * We take a different approach, by opportunistically aging the database
+ * whenever insert or lookup is called. If it's been more than
+ * a second since the last aging event for a service, we age all entries.
+ *
+ *  We store a map of canonical service name to ServiceList structures. Each
+ *  ServiceList has a timestamp of when it was last aged / cleaned and a set of
+ *  ServiceEntries.
+ *
+ * To be correct, whil
+ *  amortizes the cost of aging
+ *
+ * Clean() should be called periodically to age & remove any entries for
+ * services where there have no been any Insert/Remove/Lookup requests. Not
+ * calling Clean() won't result in incorrect results, rather memory use will
+ * grow over time.
+ *
+ * For E1.33 we'll have:
+ *   - single scope
+ *   - two services
+ *   - many URLs.
  */
 class SLPStore {
   public:
     SLPStore() {}
     ~SLPStore();
 
-    void Insert(const TimeStamp &now,
-                const string &service,
-                const URLEntry &entry);
+    // Return codes from the Insert & Lookup methods.
+    typedef enum {
+      OK,
+      SCOPE_MISMATCH
+    } ReturnCode;
 
-    void BulkInsert(const TimeStamp &now,
-                    const string &service,
-                    const URLEntries &urls);
+    ReturnCode Insert(const TimeStamp &now, const ServiceEntry &entry);
 
+    ReturnCode Remove(const ServiceEntry &entry);
+
+    bool BulkInsert(const TimeStamp &now, const ServiceEntries &services);
+
+    // We provide two lookup methods, the first returns ServiceEntries, the
+    // second returns URLEntries. You should almost always use the latter.
     void Lookup(const TimeStamp &now,
+                const set<string> &scopes,
                 const string &service,
-                URLEntries *output);
+                ServiceEntries *output,
+                unsigned int limit = 0);
+    void Lookup(const TimeStamp &now,
+                 const set<string> &scopes,
+                 const string &service,
+                 URLEntries *output,
+                 unsigned int limit = 0);
 
     void Clean(const TimeStamp &now);
+
+    void Reset();
 
     void Dump(const TimeStamp &now);
 
   private:
     typedef struct {
       TimeStamp last_cleaned;
-      URLEntries urls;
+      ServiceEntries entries;
     } ServiceList;
 
     typedef map<string, ServiceList*> ServiceMap;
@@ -71,9 +113,16 @@ class SLPStore {
     // for our use, # of services will be small so a map is a better bet.
     ServiceMap m_services;
 
-    void CleanURLList(const TimeStamp &now, ServiceList *service_list);
+    void MaybeCleanURLList(const TimeStamp &now, ServiceList *service_list);
     ServiceMap::iterator Populate(const TimeStamp &now, const string &service);
-    void InsertOrUpdateEntry(URLEntries *entries, const URLEntry &entry);
+    ReturnCode InsertOrUpdateEntry(ServiceEntries *entries,
+                                   const ServiceEntry &entry);
+    template<typename Container>
+    void InternalLookup(const TimeStamp &now,
+                        const set<string> &scopes,
+                        const string &service,
+                        Container *output,
+                        unsigned int limit);
 };
 }  // slp
 }  // ola

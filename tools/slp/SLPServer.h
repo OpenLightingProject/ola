@@ -41,9 +41,9 @@
 
 #include "tools/slp/Base.h"
 #include "tools/slp/SLPPacketParser.h"
+#include "tools/slp/SLPStore.h"
 #include "tools/slp/SLPUDPSender.h"
-#include "tools/slp/ScopedSLPStore.h"
-#include "tools/slp/URLEntry.h"
+#include "tools/slp/ServiceEntry.h"
 
 using ola::io::IOQueue;
 using ola::network::IPV4Address;
@@ -85,10 +85,8 @@ class SLPServer {
 
     bool Init();
 
-    // bulk load a set of URLEntries
-    void BulkLoad(const string &scope,
-                  const string &service,
-                  const URLEntries &entries);
+    // bulk load a list of Services
+    bool BulkLoad(const ServiceEntries &services);
     void DumpStore();
 
     // SLP API
@@ -123,7 +121,7 @@ class SLPServer {
     // SLP memebers
     set<string> m_scope_list;  // the scopes we're using, in canonical form
     SLPPacketParser m_packet_parser;
-    ScopedSLPStore m_service_store;
+    SLPStore m_service_store;
     SLPUDPSender m_udp_sender;
 
     // DA members
@@ -162,10 +160,8 @@ class SLPServer {
     bool SendDABeat();
     void LocalLocateServices(const set<string> &scopes,
                              const string &service,
-                             URLEntries *urls);
-    uint16_t LocalRegisterService(const set<string> &scopes,
-                                  const string &service,
-                                  const URLEntry &url);
+                             URLEntries *services);
+    uint16_t LocalRegisterService(const ServiceEntry &service);
 
     // non-DA methods
     bool SendFindDAService();

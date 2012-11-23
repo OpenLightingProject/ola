@@ -2,6 +2,7 @@ include $(top_srcdir)/common.mk
 
 EXTRA_DIST = Base.h \
              RegistrationFileParser.h \
+             ServiceEntry.h \
              SLP.proto \
              SLPClient.h \
              SLPDaemon.h \
@@ -11,12 +12,9 @@ EXTRA_DIST = Base.h \
              SLPPacketParser.h \
              SLPServer.h \
              SLPStore.h \
-             NewSLPStore.h \
              SLPStrings.h \
              SLPUDPSender.h \
-             ScopedSLPStore.h \
-             slp-parser-actions.h \
-             URLEntry.h
+             slp-parser-actions.h
 
 noinst_PROGRAMS = slp_server slp_client slp_parser
 
@@ -26,11 +24,9 @@ slp_server_SOURCES = RegistrationFileParser.cpp \
                      SLPPacketParser.cpp \
                      SLPServer.cpp \
                      SLPStore.cpp \
-                     NewSLPStore.cpp \
                      SLPStrings.cpp \
                      SLPUDPSender.cpp \
-                     ScopedSLPStore.cpp \
-                     URLEntry.cpp \
+                     ServiceEntry.cpp \
                      slp-server.cpp
 slp_server_LDADD = $(top_builddir)/common/libolacommon.la \
                    $(top_builddir)/common/http/libolahttp.la \
@@ -74,7 +70,8 @@ config.tab.cpp config.tab.h: config.ypp
 
 if BUILD_TESTS
 TESTS = PacketBuilderTester PacketParserTester \
-        SLPStoreTester SLPStringsTester
+        RegistrationFileParserTester ServiceEntryTester SLPStoreTester \
+        SLPStringsTester
 endif
 COMMON_TEST_LDADD = $(CPPUNIT_LIBS) \
                     $(top_builddir)/common/libolacommon.la \
@@ -85,8 +82,7 @@ PacketBuilderTester_SOURCES = GenericTester.cpp \
                               PacketBuilderTest.cpp \
                               SLPPacketBuilder.cpp \
                               SLPStrings.cpp \
-                              URLEntry.cpp \
-                              URLEntryTest.cpp
+                              ServiceEntry.cpp
 PacketBuilderTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 PacketBuilderTester_LDADD = $(COMMON_TEST_LDADD)
 
@@ -98,13 +94,9 @@ PacketParserTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 PacketParserTester_LDADD = $(COMMON_TEST_LDADD)
 
 SLPStoreTester_SOURCES = GenericTester.cpp \
-                         NewSLPStoreTest.cpp \
                          SLPStore.cpp \
-                         NewSLPStore.cpp \
                          SLPStoreTest.cpp \
-                         SLPStrings.cpp \
-                         ScopedSLPStore.cpp \
-                         ScopedSLPStoreTest.cpp
+                         SLPStrings.cpp
 SLPStoreTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 SLPStoreTester_LDADD = $(COMMON_TEST_LDADD)
 
@@ -113,3 +105,18 @@ SLPStringsTester_SOURCES = GenericTester.cpp \
                            SLPStringsTest.cpp
 SLPStringsTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 SLPStringsTester_LDADD = $(COMMON_TEST_LDADD)
+
+ServiceEntryTester_SOURCES = GenericTester.cpp \
+                             SLPPacketBuilder.cpp \
+                             SLPStrings.cpp \
+                             ServiceEntry.cpp \
+                             ServiceEntryTest.cpp
+ServiceEntryTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+ServiceEntryTester_LDADD = $(COMMON_TEST_LDADD)
+
+RegistrationFileParserTester_SOURCES = GenericTester.cpp \
+                                       RegistrationFileParser.cpp \
+                                       RegistrationFileParserTest.cpp \
+                                       SLPStrings.cpp
+RegistrationFileParserTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+RegistrationFileParserTester_LDADD = $(COMMON_TEST_LDADD)

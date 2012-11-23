@@ -28,7 +28,7 @@
 #include "tools/slp/SLPPacketBuilder.h"
 #include "tools/slp/SLPPacketConstants.h"
 #include "tools/slp/SLPStrings.h"
-#include "tools/slp/URLEntry.h"
+#include "tools/slp/ServiceEntry.h"
 
 namespace ola {
 namespace slp {

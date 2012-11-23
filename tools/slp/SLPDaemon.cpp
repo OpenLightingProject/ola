@@ -38,11 +38,8 @@
 #include <ola/http/OlaHTTPServer.h>
 #endif
 
-#include <algorithm>
 #include <string>
-#include <vector>
 #include <set>
-#include <sstream>
 
 #include "common/rpc/StreamRpcChannel.h"
 #include "tools/slp/SLPDaemon.h"
@@ -59,9 +56,7 @@ using ola::network::TCPSocket;
 using ola::network::UDPSocket;
 using ola::rpc::StreamRpcChannel;
 using std::auto_ptr;
-using std::ostringstream;
 using std::string;
-using std::vector;
 
 
 const uint16_t SLPDaemon::DEFAULT_SLP_HTTP_PORT = 9012;
@@ -151,10 +146,8 @@ void SLPDaemon::Stop() {
 /**
  * Bulk load a set of URL Entries
  */
-void SLPDaemon::BulkLoad(const string &scope,
-                         const string &service,
-                         const URLEntries &entries) {
-  m_slp_server.BulkLoad(scope, service, entries);
+bool SLPDaemon::BulkLoad(const ServiceEntries &entries) {
+  return m_slp_server.BulkLoad(entries);
 }
 
 
@@ -292,9 +285,9 @@ void SLPDaemon::SLPServiceImpl::DeRegisterService(
 void SLPDaemon::SLPServiceImpl::FindServiceHandler(
     ola::slp::proto::ServiceReply* response,
     ::google::protobuf::Closure* done,
-    const URLEntries &urls) {
-  URLEntries::const_iterator iter = urls.begin();
-  for (; iter != urls.end(); ++iter) {
+    const URLEntries &services) {
+  URLEntries::const_iterator iter = services.begin();
+  for (; iter != services.end(); ++iter) {
     ola::slp::proto::Service *service = response->add_service();
     service->set_service_name(iter->URL());
     service->set_lifetime(iter->Lifetime());

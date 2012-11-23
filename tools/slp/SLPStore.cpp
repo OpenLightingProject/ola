@@ -18,9 +18,12 @@
  */
 
 #include <ola/Logging.h>
+#include <set>
 #include <string>
 #include <utility>
+#include "ola/stl/STLUtils.h"
 #include "tools/slp/SLPStore.h"
+#include "tools/slp/SLPStrings.h"
 
 
 using ola::TimeStamp;
@@ -34,65 +37,128 @@ namespace slp {
 
 
 SLPStore::~SLPStore() {
-  ServiceMap::iterator iter = m_services.begin();
-  for (; iter != m_services.end(); ++iter)
-    delete iter->second;
+  STLDeleteValues(m_services);
 }
 
 
 /**
- * Insert (or update) an entry in the store
+ * Insert (or update) an entry in the store.
+ * @param now the current time
+ * @param entry the entry to insert
+ * @returns either OK or SCOPE_MISMATCH
  */
-void SLPStore::Insert(const TimeStamp &now,
-                      const string &service,
-                      const URLEntry &entry) {
+SLPStore::ReturnCode SLPStore::Insert(const TimeStamp &now,
+                                      const ServiceEntry &entry) {
+  string service = SLPServiceFromURL(entry.URL());
   ServiceMap::iterator iter = m_services.find(service);
   if (iter == m_services.end())
     iter = Populate(now, service);
   else
-    CleanURLList(now, iter->second);
-  InsertOrUpdateEntry(&(iter->second->urls), entry);
+    MaybeCleanURLList(now, iter->second);
+  return InsertOrUpdateEntry(&(iter->second->entries), entry);
 }
 
 
 /**
- * Insert a set of URLEntries into the store
+ * Remove an entry from the Store.
+ * @param entry the ServiceEntry to remove
+ * @returns SCOPE_MISMATCH if the scopes do not match the scopes that the entry
+ *   was registered with. Otherwise return OK.
  */
-void SLPStore::BulkInsert(const TimeStamp &now,
-                          const string &service,
-                          const URLEntries &urls) {
+SLPStore::ReturnCode SLPStore::Remove(const ServiceEntry &entry) {
+  ServiceMap::iterator iter = m_services.find(SLPServiceFromURL(entry.URL()));
+  if (iter == m_services.end())
+    return OK;
+
+  ServiceEntries &entries = iter->second->entries;
+  ServiceEntries::iterator service_iter = entries.find(entry);
+  if (service_iter == entries.end())
+    return OK;
+
+  if (service_iter->MatchesScopes(entry.Scopes())) {
+    entries.erase(service_iter);
+    return OK;
+  } else {
+    return SCOPE_MISMATCH;
+  }
+}
+
+
+/**
+ * Insert a set of URLEntries into the store. This assumes that all
+ * ServiceEntries have the same canonical service.
+ * @param now the current time
+ * @param services the list of ServiceEntries to insert
+ * @returns true if all ServiceEntries were added, false if one or more was
+ *   skipped.
+ */
+bool SLPStore::BulkInsert(const TimeStamp &now,
+                             const ServiceEntries &services) {
+  if (services.empty())
+    return OK;
+  bool ok = true;
+
+  // use the service from the first entry
+  ServiceEntries::const_iterator service_iter = services.begin();
+  string service = SLPServiceFromURL(service_iter->URL());
+
   ServiceMap::iterator iter = m_services.find(service);
   if (iter == m_services.end())
     iter = Populate(now, service);
   else
-    CleanURLList(now, iter->second);
+    MaybeCleanURLList(now, iter->second);
 
-  URLEntries::const_iterator url_iter = urls.begin();
-  for (; url_iter != urls.end(); ++url_iter)
-    InsertOrUpdateEntry(&(iter->second->urls), *url_iter);
+  for (; service_iter != services.end(); ++service_iter) {
+    string this_service = SLPServiceFromURL(service_iter->URL());
+    if (this_service == service) {
+      InsertOrUpdateEntry(&(iter->second->entries), *service_iter);
+    } else {
+      OLA_WARN << "Service for " << service_iter->URL() << " does not match "
+               << service;
+      ok = false;
+    }
+  }
+  return ok;
 }
 
 
 /**
  * Look up entries by service type.
+ * @param now the current time
+ * @param scopes the scopes to search
+ * @param service the service name, does not need to be caonicalized.
+ * @param output a pointer to a list of ServiceEntries to populate
+ * @param limit if non-0, limit the number of entries returned
  */
 void SLPStore::Lookup(const TimeStamp &now,
+                      const set<string> &scopes,
                       const string &service,
-                      URLEntries *output) {
-  ServiceMap::iterator iter = m_services.find(service);
-  if (iter == m_services.end())
-    return;
+                      ServiceEntries *output,
+                      unsigned int limit) {
+  InternalLookup(now, scopes, service, output, limit);
+}
 
-  CleanURLList(now, iter->second);
 
-  URLEntries::iterator url_iter = iter->second->urls.begin();
-  for (; url_iter != iter->second->urls.end(); ++url_iter)
-    output->insert(*url_iter);
+/**
+ * Look up entries by service type.
+ * @param now the current time
+ * @param scopes the scopes to search
+ * @param service the service name, does not need to be caonicalized.
+ * @param output a pointer to a list of ServiceEntries to populate
+ * @param limit if non-0, limit the number of entries returned
+ */
+void SLPStore::Lookup(const TimeStamp &now,
+                      const set<string> &scopes,
+                      const string &service,
+                      URLEntries *output,
+                      unsigned int limit) {
+  InternalLookup(now, scopes, service, output, limit);
 }
 
 
 /**
  * Clean out expired entries from the table.
+ * @param now the current time
  */
 void SLPStore::Clean(const TimeStamp &now) {
   // We may want to clean this in slices.
@@ -100,10 +166,20 @@ void SLPStore::Clean(const TimeStamp &now) {
   while (iter != m_services.end()) {
     ServiceMap::iterator current = iter;
     ++iter;
-    CleanURLList(now, current->second);
-    if (current->second->urls.empty())
+    MaybeCleanURLList(now, current->second);
+    if (current->second->entries.empty()) {
+      delete current->second;
       m_services.erase(current);
+    }
   }
+}
+
+
+/**
+ * Delete all entries from this store
+ */
+void SLPStore::Reset() {
+  STLDeleteValues(m_services);
 }
 
 
@@ -114,32 +190,37 @@ void SLPStore::Dump(const TimeStamp &now) {
   ServiceMap::iterator iter = m_services.begin();
 
   for (; iter != m_services.end(); ++iter) {
-    CleanURLList(now, iter->second);
+    MaybeCleanURLList(now, iter->second);
 
     OLA_INFO << iter->first;
     const ServiceList *service_list = iter->second;
-    URLEntries::const_iterator url_iter = service_list->urls.begin();
-    for (; url_iter != service_list->urls.end(); ++url_iter) {
-      OLA_INFO << "  " << *url_iter;
+    ServiceEntries::const_iterator service_iter = service_list->entries.begin();
+    for (; service_iter != service_list->entries.end(); ++service_iter) {
+      OLA_INFO << "  " << *service_iter;
     }
   }
 }
 
 
 /**
- * Age the list of URLEntries and remove expired entires
+ * Age the list of URLEntries and remove expired entries if more than a second
+ * has elapsed since the last cleaning time.
  */
-void SLPStore::CleanURLList(const TimeStamp &now, ServiceList *service_list) {
+void SLPStore::MaybeCleanURLList(const TimeStamp &now,
+                                 ServiceList *service_list) {
   int64_t elapsed_seconds = (now - service_list->last_cleaned).Seconds();
-  URLEntries::iterator url_iter = service_list->urls.begin();
+  if (elapsed_seconds == 0)
+    return;
 
-  while (url_iter != service_list->urls.end()) {
-    URLEntries::iterator current = url_iter;
-    url_iter++;
+  ServiceEntries::iterator service_iter = service_list->entries.begin();
+
+  while (service_iter != service_list->entries.end()) {
+    ServiceEntries::iterator current = service_iter;
+    service_iter++;
     if (current->Lifetime() <= elapsed_seconds) {
-      service_list->urls.erase(current);
+      service_list->entries.erase(current);
     } else {
-      current->Lifetime(current->Lifetime() - elapsed_seconds);
+      current->SetLifetime(current->Lifetime() - elapsed_seconds);
     }
   }
   service_list->last_cleaned = now;
@@ -159,16 +240,48 @@ SLPStore::ServiceMap::iterator SLPStore::Populate(const TimeStamp &now,
 
 
 /**
- * Either insert this antry of update the existing one (if the lifetime is
+ * Either insert this entry or update the existing one (if the lifetime is
  * greater).
+ * @returns Either OK or SCOPE_MISMATCH.
  */
-void SLPStore::InsertOrUpdateEntry(URLEntries *entries, const URLEntry &entry) {
-  URLEntries::iterator url_iter = entries->find(entry);
-  if (url_iter == entries->end()) {
+SLPStore::ReturnCode SLPStore::InsertOrUpdateEntry(
+    ServiceEntries *entries,
+    const ServiceEntry &entry) {
+  ServiceEntries::iterator iter = entries->find(entry);
+  if (iter == entries->end()) {
     entries->insert(entry);
+    return OK;
+  } else if (!iter->MatchesScopes(entry.Scopes())) {
+    return SCOPE_MISMATCH;
   } else {
-    if (entry.Lifetime() > url_iter->Lifetime())
-      url_iter->Lifetime(entry.Lifetime());
+    if (entry.Lifetime() > iter->Lifetime())
+      iter->SetLifetime(entry.Lifetime());
+    return OK;
+  }
+}
+
+
+template<typename Container>
+void SLPStore::InternalLookup(const TimeStamp &now,
+                              const set<string> &scopes,
+                              const string &service,
+                              Container *output,
+                              unsigned int limit) {
+  ServiceMap::iterator iter = m_services.find(SLPServiceFromURL(service));
+  if (iter == m_services.end())
+    return;
+
+  // TODO(simon): fold this into one loop
+  MaybeCleanURLList(now, iter->second);
+
+  ServiceEntries::iterator service_iter = iter->second->entries.begin();
+  for (unsigned int i = 0; service_iter != iter->second->entries.end();
+       i++, ++service_iter) {
+    if (!service_iter->IntersectsScopes(scopes))
+      continue;
+    if (limit && i >= limit)
+      break;
+    output->insert(*service_iter);
   }
 }
 }  // slp

@@ -28,7 +28,7 @@
 #include <vector>
 
 #include "tools/slp/SLPPacketConstants.h"
-#include "tools/slp/URLEntry.h"
+#include "tools/slp/ServiceEntry.h"
 
 using ola::io::BigEndianInputStream;
 using ola::network::IPV4Address;

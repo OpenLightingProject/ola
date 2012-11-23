@@ -30,7 +30,7 @@
 #include "ola/testing/TestUtils.h"
 #include "tools/slp/SLPPacketBuilder.h"
 #include "tools/slp/SLPPacketConstants.h"
-#include "tools/slp/URLEntry.h"
+#include "tools/slp/ServiceEntry.h"
 
 using ola::io::BigEndianOutputStream;
 using ola::io::IOQueue;

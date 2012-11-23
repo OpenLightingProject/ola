@@ -352,12 +352,13 @@ bool SLPPacketParser::ExtractURLEntry(BigEndianInputStream *input,
   uint16_t lifetime;
   if (!ExtractValue(input, &lifetime, packet_type + " lifetime"))
     return false;
-  entry->Lifetime(lifetime);
 
   string url;
   if (!ExtractString(input, &url, packet_type + " URL"))
     return false;
-  entry->URL(url);
+
+  URLEntry temp_entry(url, lifetime);
+  *entry = temp_entry;
 
   uint8_t url_auths;
   if (!ExtractValue(input, &url_auths, packet_type + " # of URL Auths"))
