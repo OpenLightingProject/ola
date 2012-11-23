@@ -256,10 +256,7 @@ void SLPDaemon::SLPServiceImpl::RegisterService(
       scopes,
       request->service(),
       request->lifetime(),
-      NewSingleCallback(this,
-                        &SLPServiceImpl::RegisterServiceHandler,
-                        response,
-                        done));
+      NewSingleCallback(this, &SLPServiceImpl::AckHandler, response, done));
 }
 
 
@@ -267,15 +264,20 @@ void SLPDaemon::SLPServiceImpl::RegisterService(
  * De-Register service request.
  */
 void SLPDaemon::SLPServiceImpl::DeRegisterService(
-    ::google::protobuf::RpcController* controller,
+    ::google::protobuf::RpcController*,
     const ola::slp::proto::ServiceDeRegistration* request,
     ola::slp::proto::ServiceAck* response,
     ::google::protobuf::Closure* done) {
   OLA_INFO << "Recv DeRegisterService request";
-  (void) controller;
-  (void) request;
-  response->set_error_code(0);
-  done->Run();
+
+  set<string> scopes;
+  for (int i = 0; i < request->scope_size(); ++i)
+    scopes.insert(request->scope(i));
+
+  m_slp_server->DeRegisterService(
+      scopes,
+      request->service(),
+      NewSingleCallback(this, &SLPServiceImpl::AckHandler, response, done));
 }
 
 
@@ -297,9 +299,9 @@ void SLPDaemon::SLPServiceImpl::FindServiceHandler(
 
 
 /**
- * Called when RegisterService completes
+ * A RPC callback that accepts an SLP error code and replies with a ServiceAck.
  */
-void SLPDaemon::SLPServiceImpl::RegisterServiceHandler(
+void SLPDaemon::SLPServiceImpl::AckHandler(
     ola::slp::proto::ServiceAck* response,
     ::google::protobuf::Closure* done,
     unsigned int error_code) {

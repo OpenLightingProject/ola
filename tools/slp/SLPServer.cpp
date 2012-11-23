@@ -74,11 +74,14 @@ const char SLPServer::CONFIG_DA_BEAT_VAR[] = "slp-config-da-beat";
 const char SLPServer::DAADVERT[] = "DAAdvert";
 const char SLPServer::DA_ENABLED_VAR[] = "slp-da-enabled";
 const char SLPServer::DEFAULT_SCOPE[] = "DEFAULT";
+const char SLPServer::DEREGSRVS_ERROR_COUNT_VAR[] = "slp-dereg-srv-errors";
 const char SLPServer::DIRECTORY_AGENT_SERVICE[] = "service:directory-agent";
-const char SLPServer::FINDSRVS_COUNT_VAR[] = "slp-find-srvs";
 const char SLPServer::FINDSRVS_EMPTY_COUNT_VAR[] =
   "slp-find-srvs-empty-response";
-const char SLPServer::REGSRVS_COUNT_VAR[] = "slp-reg-srvs";
+const char SLPServer::METHOD_CALLS_VAR[] = "slp-server-methods";
+const char SLPServer::METHOD_DEREG_SERVICE[] = "DeRegisterService";
+const char SLPServer::METHOD_FIND_SERVICE[] = "FindService";
+const char SLPServer::METHOD_REG_SERVICE[] = "RegisterService";
 const char SLPServer::REGSRVS_ERROR_COUNT_VAR[] = "slp-reg-srv-errors";
 const char SLPServer::SCOPE_LIST_VAR[] = "scope-list";
 const char SLPServer::SERVICE_AGENT_SERVICE[] = "service:service-agent";
@@ -113,6 +116,8 @@ SLPServer::SLPServer(ola::io::SelectServerInterface *ss,
                 sizeof(EN_LANGUAGE_TAG)),
       m_iface_address(options.ip_address),
       m_ss(ss),
+      m_da_beat_timer(ola::thread::INVALID_TIMEOUT),
+      m_store_cleaner_timer(ola::thread::INVALID_TIMEOUT),
       m_udp_socket(udp_socket),
       m_slp_accept_socket(tcp_socket),
       m_udp_sender(m_udp_socket),
@@ -134,15 +139,17 @@ SLPServer::SLPServer(ola::io::SelectServerInterface *ss,
   string joined_scopes = ola::StringJoin(",", m_scope_list);
   export_map->GetBoolVar(DA_ENABLED_VAR)->Set(options.enable_da);
   export_map->GetIntegerVar(CONFIG_DA_BEAT_VAR)->Set(options.config_da_beat);
-  export_map->GetIntegerVar(FINDSRVS_COUNT_VAR);
   export_map->GetIntegerVar(FINDSRVS_EMPTY_COUNT_VAR);
   export_map->GetIntegerVar(UDP_RX_TOTAL_VAR);
   export_map->GetStringVar(SCOPE_LIST_VAR)->Set(joined_scopes);
   export_map->GetUIntMapVar(UDP_RX_PACKET_BY_TYPE_VAR, "type");
+  export_map->GetUIntMapVar(METHOD_CALLS_VAR, "method");
 }
 
 
 SLPServer::~SLPServer() {
+  m_ss->RemoveTimeout(m_da_beat_timer);
+  m_ss->RemoveTimeout(m_store_cleaner_timer);
   m_udp_socket->Close();
 }
 
@@ -166,12 +173,17 @@ bool SLPServer::Init() {
   m_udp_socket->SetOnData(NewCallback(this, &SLPServer::UDPData));
   m_ss->AddReadDescriptor(m_udp_socket);
 
+  // Setup a timeout to clean up the store
+  m_store_cleaner_timer = m_ss->RegisterRepeatingTimeout(
+      30 * 1000,
+      NewCallback(this, &SLPServer::CleanSLPStore));
+
   if (m_enable_da) {
     ola::Clock clock;
     clock.CurrentTime(&m_boot_time);
 
     // setup the DA beat timer
-    m_ss->RegisterRepeatingTimeout(
+    m_da_beat_timer = m_ss->RegisterRepeatingTimeout(
         m_config_da_beat * 1000,
         NewCallback(this, &SLPServer::SendDABeat));
     SendDABeat();
@@ -228,7 +240,7 @@ void SLPServer::FindService(
     const set<string> &scopes,
     const string &service,
     SingleUseCallback1<void, const URLEntries&> *cb) {
-  (*m_export_map->GetIntegerVar(FINDSRVS_COUNT_VAR))++;
+  m_export_map->GetUIntMapVar(METHOD_CALLS_VAR)->Increment(METHOD_FIND_SERVICE);
   URLEntries services;
   if (m_enable_da) {
     // we're in DA mode, just return all the matching ServiceEntries we know
@@ -259,13 +271,14 @@ void SLPServer::RegisterService(const set<string> &scopes,
                                 const string &url,
                                 uint16_t lifetime,
                                 SingleUseCallback1<void, unsigned int> *cb) {
-  (*m_export_map->GetIntegerVar(REGSRVS_COUNT_VAR))++;
+  m_export_map->GetUIntMapVar(METHOD_CALLS_VAR)->Increment(METHOD_REG_SERVICE);
 
   if (m_enable_da) {
+    // we're in DA mode, register this service in our stores if the scopes
+    // match
     if (scopes.empty())
       OLA_WARN << "Scopes list for RegisterService(" << url << "), is empty";
 
-    // we're in DA mode, register this service in our stores
     set<string> canonical_scopes;
     SLPReduceList(scopes, &canonical_scopes);
     ServiceEntry service(canonical_scopes, url, lifetime);
@@ -283,12 +296,39 @@ void SLPServer::RegisterService(const set<string> &scopes,
 }
 
 
+/**
+ * DeRegister a service
+ * @param scopes the set of scopes to deregister for
+ * @param service the service name
+ * @param cb the callback to run
+ */
 void SLPServer::DeRegisterService(const set<string> &scopes,
-                                  const string &service,
+                                  const string &url,
                                   SingleUseCallback1<void, unsigned int> *cb) {
-  (void) scopes;
-  (void) service;
-  cb->Run(INTERNAL_ERROR);
+  m_export_map->GetUIntMapVar(METHOD_CALLS_VAR)->Increment(
+      METHOD_DEREG_SERVICE);
+
+  if (m_enable_da) {
+    // we're in DA mode, register this service in our stores if the scopes
+    // match
+    if (scopes.empty())
+      OLA_WARN << "Scopes list for RegisterService(" << url << "), is empty";
+
+    set<string> canonical_scopes;
+    SLPReduceList(scopes, &canonical_scopes);
+    // the lifetime can be anything for a de-register request
+    ServiceEntry service(canonical_scopes, url, 0);
+
+    uint16_t error_code = LocalDeRegisterService(service);
+    if (error_code)
+      (*m_export_map->GetIntegerVar(DEREGSRVS_ERROR_COUNT_VAR))++;
+    cb->Run(error_code);
+    // TODO(simon): we should de-register with other DAs here
+    return;
+  } else {
+    // TODO(simon): de-register with DAs if we have them
+    cb->Run(INTERNAL_ERROR);
+  }
 }
 
 
@@ -593,6 +633,20 @@ uint16_t SLPServer::LocalRegisterService(const ServiceEntry &service) {
 
 
 /**
+ * DeRegister a service in our local stores
+ * @param service the ServiceEntry to deregister
+ * @returns an SLP Error code.
+ */
+uint16_t SLPServer::LocalDeRegisterService(const ServiceEntry &service) {
+  SLPStore::ReturnCode result = m_service_store.Remove(service);
+
+  if (result == SLPStore::SCOPE_MISMATCH)
+    return SCOPE_NOT_SUPPORTED;
+  return SLP_OK;
+}
+
+
+/**
  * Send a Service Request for 'directory-agent'
  */
 bool SLPServer::SendFindDAService() {
@@ -600,6 +654,15 @@ bool SLPServer::SendFindDAService() {
     DIRECTORY_AGENT_SERVICE;
   m_udp_sender.SendServiceRequest(*m_multicast_endpoint, 0, m_da_pr_list,
                                   DIRECTORY_AGENT_SERVICE, m_scope_list);
+  return true;
+}
+
+
+/**
+ * Tidy up the SLP store
+ */
+bool SLPServer::CleanSLPStore() {
+  m_service_store.Clean(*(m_ss->WakeUpTime()));
   return true;
 }
 }  // slp

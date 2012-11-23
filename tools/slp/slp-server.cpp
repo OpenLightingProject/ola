@@ -184,7 +184,7 @@ void DisplayHelpAndExit(char *argv[]) {
   "  --no-da                  Disable DA functionality\n"
   "  --setuid <uid,user>      User to switch to after startup\n"
   "  --setgid <gid,group>     Group to switch to after startup\n"
-  "  --scopes <scope-list>    Commas separate list of scopes\n"
+  "  --scopes <scope-list>    Commas separated list of scopes\n"
   "  --services <file>        Services to pre-register\n"
   << endl;
   exit(0);

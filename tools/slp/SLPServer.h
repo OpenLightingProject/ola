@@ -111,6 +111,10 @@ class SLPServer {
     ola::TimeStamp m_boot_time;
     ola::io::SelectServerInterface *m_ss;
 
+    // various timers
+    ola::thread::timeout_id m_da_beat_timer;
+    ola::thread::timeout_id m_store_cleaner_timer;
+
     // RPC members
     auto_ptr<ola::network::IPV4SocketAddress> m_multicast_endpoint;
 
@@ -162,18 +166,25 @@ class SLPServer {
                              const string &service,
                              URLEntries *services);
     uint16_t LocalRegisterService(const ServiceEntry &service);
+    uint16_t LocalDeRegisterService(const ServiceEntry &service);
 
     // non-DA methods
     bool SendFindDAService();
+
+    // housekeeping
+    bool CleanSLPStore();
 
     static const char CONFIG_DA_BEAT_VAR[];
     static const char DAADVERT[];
     static const char DA_ENABLED_VAR[];
     static const char DEFAULT_SCOPE[];
+    static const char DEREGSRVS_ERROR_COUNT_VAR[];
     static const char DIRECTORY_AGENT_SERVICE[];
-    static const char FINDSRVS_COUNT_VAR[];
     static const char FINDSRVS_EMPTY_COUNT_VAR[];
-    static const char REGSRVS_COUNT_VAR[];
+    static const char METHOD_CALLS_VAR[];
+    static const char METHOD_DEREG_SERVICE[];
+    static const char METHOD_FIND_SERVICE[];
+    static const char METHOD_REG_SERVICE[];
     static const char REGSRVS_ERROR_COUNT_VAR[];
     static const char SCOPE_LIST_VAR[];
     static const char SERVICE_AGENT_SERVICE[];
@@ -182,8 +193,8 @@ class SLPServer {
     static const char SRVREG[];
     static const char SRVRPLY[];
     static const char SRVRQST[];
-    static const char UDP_RX_TOTAL_VAR[];
     static const char UDP_RX_PACKET_BY_TYPE_VAR[];
+    static const char UDP_RX_TOTAL_VAR[];
     static const char UDP_TX_PACKET_BY_TYPE_VAR[];
 };
 }  // slp
