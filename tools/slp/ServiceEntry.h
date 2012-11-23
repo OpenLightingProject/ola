@@ -21,8 +21,9 @@
 #ifndef TOOLS_SLP_SERVICEENTRY_H_
 #define TOOLS_SLP_SERVICEENTRY_H_
 
-#include <ola/io/BigEndianStream.h>
 #include <ola/Logging.h>
+#include <ola/StringUtils.h>
+#include <ola/io/BigEndianStream.h>
 #include <ostream>
 #include <set>
 #include <string>
@@ -84,8 +85,13 @@ class URLEntry {
       return m_url != other.m_url;
     }
 
+    virtual void ToStream(ostream &out) const {
+      out << m_url << "(" << m_lifetime << ")";
+    }
+
     friend ostream& operator<<(ostream &out, const URLEntry &entry) {
-      return out << entry.URL() << "(" << entry.Lifetime() << ")";
+      entry.ToStream(out);
+      return out;
     }
 
   protected:
@@ -127,6 +133,11 @@ class ServiceEntry: public URLEntry {
     // Return true if the service's scopes match any of the provided scopes
     bool IntersectsScopes(const set<string> &scopes) const {
       return SLPSetIntersect(m_scopes, scopes);
+    }
+
+    virtual void ToStream(ostream &out) const {
+      URLEntry::ToStream(out);
+      out << ", [" << ola::StringJoin(",", m_scopes) << "]";
     }
 
   private:

@@ -21,6 +21,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <set>
 #include <string>
+#include <sstream>
 
 #include "ola/Logging.h"
 #include "ola/io/BigEndianStream.h"
@@ -33,6 +34,7 @@ using ola::io::IOQueue;
 using ola::slp::ServiceEntry;
 using ola::slp::URLEntry;
 using ola::testing::ASSERT_DATA_EQUALS;
+using std::ostringstream;
 using std::set;
 using std::string;
 
@@ -42,12 +44,14 @@ class ServiceEntryTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testURLEntry);
   CPPUNIT_TEST(testURLEntryWrite);
   CPPUNIT_TEST(testServiceEntry);
+  CPPUNIT_TEST(testToString);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void testURLEntry();
     void testURLEntryWrite();
     void testServiceEntry();
+    void testToString();
 
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
@@ -161,4 +165,24 @@ void ServiceEntryTest::testServiceEntry() {
   OLA_ASSERT_EQ((uint16_t) 300, service3.Lifetime());
   OLA_ASSERT_EQ(string("service:foo://192.168.1.1"), service3.URL());
   OLA_ASSERT_SET_EQ(scopes, service3.Scopes());
+}
+
+/**
+ * Check converting a URLEntry & ServiceEntry to a string works
+ */
+void ServiceEntryTest::testToString() {
+  ostringstream str;
+  URLEntry url1("service:foo://192.168.1.1", 300);
+  str << url1;
+
+  OLA_ASSERT_EQ(string("service:foo://192.168.1.1(300)"), str.str());
+  str.str("");
+
+  set<string> scopes, scopes2;
+  scopes.insert("one");
+  scopes.insert("two");
+  ServiceEntry service1(scopes, "service:foo://192.168.1.1", 300);
+
+  str << service1;
+  OLA_ASSERT_EQ(string("service:foo://192.168.1.1(300), [one,two]"), str.str());
 }
