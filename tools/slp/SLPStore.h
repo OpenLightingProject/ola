@@ -102,6 +102,10 @@ class SLPStore {
 
     void Dump(const TimeStamp &now);
 
+    unsigned int ServiceCount() const {
+      return m_services.size();
+    }
+
   private:
     typedef struct {
       TimeStamp last_cleaned;

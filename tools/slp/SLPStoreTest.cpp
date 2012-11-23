@@ -332,6 +332,10 @@ void SLPStoreTest::testRemove() {
   // confirm it's no longer there
   m_store.Lookup(now, test_scopes, SERVICE1, &services);
   OLA_ASSERT_TRUE(services.empty());
+
+  // the number of services should be zero, which indicates we've cleaned up
+  // the service map correctly.
+  OLA_ASSERT_EQ(0u, m_store.ServiceCount());
 }
 
 

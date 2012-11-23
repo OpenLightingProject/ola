@@ -77,6 +77,10 @@ SLPStore::ReturnCode SLPStore::Remove(const ServiceEntry &entry) {
 
   if (service_iter->MatchesScopes(entry.Scopes())) {
     entries.erase(service_iter);
+    if (entries.empty()) {
+      delete iter->second;
+      m_services.erase(iter);
+    }
     return OK;
   } else {
     return SCOPE_MISMATCH;
