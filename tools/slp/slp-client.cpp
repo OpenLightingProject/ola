@@ -34,12 +34,14 @@
 #include <vector>
 
 #include "tools/slp/SLPClient.h"
+#include "tools/slp/SLPUtil.h"
 
 using ola::NewCallback;
 using ola::NewSingleCallback;
 using ola::io::SelectServer;
 using ola::network::TCPAcceptingSocket;
 using ola::slp::SLPClient;
+using ola::slp::SLPErrorToString;
 using ola::slp::SLPService;
 using std::auto_ptr;
 using std::cout;
@@ -237,7 +239,7 @@ class RegisterCommand: public Command {
       Terminate();
       if (IsError(error))
         return;
-      cout << "SLP code is " << code << endl;
+      cout << "SLP code is " << code << " : " << SLPErrorToString(code) << endl;
     }
 };
 
@@ -264,7 +266,7 @@ class DeRegisterCommand: public Command {
       Terminate();
       if (IsError(error))
         return;
-      cout << "SLP code is " << code << endl;
+      cout << "SLP code is " << code << " : " << SLPErrorToString(code) << endl;
     }
 };
 

@@ -14,6 +14,7 @@ EXTRA_DIST = Base.h \
              SLPStore.h \
              SLPStrings.h \
              SLPUDPSender.h \
+             SLPUtil.h \
              slp-parser-actions.h
 
 noinst_PROGRAMS = slp_server slp_client slp_parser
@@ -34,7 +35,8 @@ slp_server_LDADD = $(top_builddir)/common/libolacommon.la \
 
 slp_client_SOURCES = slp-client.cpp \
                      SLPClient.cpp \
-                     SLPClientCore.cpp
+                     SLPClientCore.cpp \
+                     SLPUtil.cpp
 slp_client_LDADD = $(top_builddir)/common/libolacommon.la \
                    $(top_builddir)/ola/libola.la \
                    ./libolaslpproto.la
