@@ -177,6 +177,9 @@ bool SLPServer::Init() {
       30 * 1000,
       NewCallback(this, &SLPServer::CleanSLPStore));
 
+  // Register a callback to find out about new DAs
+  m_da_tracker.AddNewDACallback(NewCallback(this, &SLPServer::NewDACallback));
+
   if (m_enable_da) {
     ola::Clock clock;
     clock.CurrentTime(&m_boot_time);
@@ -230,7 +233,7 @@ void SLPServer::DumpStore() {
 /**
  * Get a list of known DAs
  */
-void SLPServer::GetDirectoryAgents(set<DirectoryAgent> *output) {
+void SLPServer::GetDirectoryAgents(vector<DirectoryAgent> *output) {
   m_da_tracker.GetDirectoryAgents(output);
 }
 
@@ -249,17 +252,21 @@ void SLPServer::FindService(
     SingleUseCallback1<void, const URLEntries&> *cb) {
   m_export_map->GetUIntMapVar(METHOD_CALLS_VAR)->Increment(METHOD_FIND_SERVICE);
   URLEntries services;
+
+  set<string> canonical_scopes;
+  SLPReduceList(scopes, &canonical_scopes);
+
   if (m_enable_da) {
     // we're in DA mode, just return all the matching ServiceEntries we know
     // about.
-    set<string> canonical_scopes;
-    SLPReduceList(scopes, &canonical_scopes);
     if (SLPSetIntersect(canonical_scopes, m_scope_list)) {
       OLA_INFO << "Received SrvRqst for " << service;
       LocalLocateServices(canonical_scopes, service, &services);
     }
   } else {
-    // UA mode, start finding the services
+    vector<DirectoryAgent> agents;
+    m_da_tracker.GetDirectoryAgents(&agents);
+
   }
   if (services.empty())
     (*m_export_map->GetIntegerVar(FINDSRVS_EMPTY_COUNT_VAR))++;
@@ -669,6 +676,14 @@ bool SLPServer::SendFindDAService() {
   m_udp_sender.SendServiceRequest(*m_multicast_endpoint, 0, m_da_pr_list,
                                   DIRECTORY_AGENT_SERVICE, m_scope_list);
   return true;
+}
+
+
+/**
+ * Called when we locate a new DA on the network.
+ */
+void SLPServer::NewDACallback(const DirectoryAgent &agent) {
+  OLA_INFO << "New DA !! " << agent;
 }
 
 

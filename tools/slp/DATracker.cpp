@@ -18,8 +18,10 @@
  */
 
 #include <ola/stl/STLUtils.h>
+#include <algorithm>
 #include <string>
 #include <set>
+#include <vector>
 #include "tools/slp/DATracker.h"
 #include "tools/slp/SLPStrings.h"
 #include "tools/slp/ServerCommon.h"
@@ -124,13 +126,42 @@ void DATracker::NewDAAdvert(const DAAdvertPacket &da_advert,
 
 /**
  * Get a list of all the directory agents we know about.
- * @param output the set to insert into to.
+ * @param output the vector to append into to.
  */
-void DATracker::GetDirectoryAgents(set<DirectoryAgent> *output) {
+void DATracker::GetDirectoryAgents(vector<DirectoryAgent> *output) {
   for (DAMap::const_iterator iter = m_agents.begin();
        iter != m_agents.end(); ++iter) {
-    output->insert(iter->second);
+    output->push_back(iter->second);
   }
+}
+
+
+/**
+ * For a given set of scopes, get the list of DAs to use. Scopes that don't
+ * have any associated DAs are returned in scopes_without_das.
+ */
+void DATracker::GetDAsForScopes(const set<string> &scopes,
+                                vector<DirectoryAgent> *output,
+                                vector<string> *scopes_without_das) {
+  set<string> scopes_found;
+  for (DAMap::const_iterator iter = m_agents.begin();
+       iter != m_agents.end(); ++iter) {
+    const set<string> &da_scopes = iter->second.Scopes();
+    vector<string> intersection;
+    std::set_intersection(da_scopes.begin(), da_scopes.end(), scopes.begin(),
+                          scopes.end(),
+                          inserter(intersection, intersection.begin()));
+    if (!intersection.empty()) {
+      output->push_back(iter->second);
+      std::copy(intersection.begin(), intersection.end(),
+                inserter(scopes_found, scopes_found.end()));
+    }
+  }
+
+  scopes_without_das->clear();
+  std::set_difference(
+      scopes.begin(), scopes.end(), scopes_found.begin(), scopes_found.end(),
+      inserter(*scopes_without_das, scopes_without_das->begin()));
 }
 
 

@@ -37,6 +37,7 @@
 #include <set>
 #include <map>
 #include <string>
+#include <vector>
 
 #include "tools/slp/Base.h"
 #include "tools/slp/DATracker.h"
@@ -87,7 +88,7 @@ class SLPServer {
     // bulk load a list of Services
     bool BulkLoad(const ServiceEntries &services);
     void DumpStore();
-    void GetDirectoryAgents(set<DirectoryAgent> *output);
+    void GetDirectoryAgents(vector<DirectoryAgent> *output);
 
     // SLP API
     void FindService(const set<string> &scopes,
@@ -171,6 +172,7 @@ class SLPServer {
 
     // non-DA methods
     bool SendFindDAService();
+    void NewDACallback(const DirectoryAgent &agent);
 
     // housekeeping
     bool CleanSLPStore();

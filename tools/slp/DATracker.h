@@ -21,11 +21,13 @@
 #define TOOLS_SLP_DATRACKER_H_
 
 #include <ola/Callback.h>
+#include <ola/StringUtils.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/SocketAddress.h>
 #include <map>
 #include <string>
 #include <set>
+#include <vector>
 #include "tools/slp/SLPPacketParser.h"
 
 namespace ola {
@@ -36,6 +38,7 @@ using ola::network::IPV4SocketAddress;
 using std::map;
 using std::set;
 using std::string;
+using std::vector;
 
 /**
  * Represents a DA
@@ -91,6 +94,7 @@ class DirectoryAgent {
 
     virtual void ToStream(ostream &out) const {
       out << m_url << "(" << m_boot_time << ")";
+      out << ", [" << ola::StringJoin(",", m_scopes) << "]"; 
     }
 
     friend ostream& operator<<(ostream &out, const DirectoryAgent &entry) {
@@ -126,7 +130,10 @@ class DATracker {
     void NewDAAdvert(const DAAdvertPacket &da_advert,
                      const IPV4SocketAddress &source);
 
-    void GetDirectoryAgents(set<DirectoryAgent> *output);
+    void GetDirectoryAgents(vector<DirectoryAgent> *output);
+    void GetDAsForScopes(const set<string> &scopes,
+                         vector<DirectoryAgent> *output,
+                         vector<string> *scopes_without_das);
 
 
   private:

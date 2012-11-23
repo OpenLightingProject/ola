@@ -40,6 +40,7 @@
 
 #include <string>
 #include <set>
+#include <vector>
 
 #include "common/rpc/StreamRpcChannel.h"
 #include "tools/slp/SLPDaemon.h"
@@ -183,9 +184,9 @@ void SLPDaemon::DumpStore() {
  * Print a list of DAs
  */
 void SLPDaemon::GetDirectoryAgents() {
-  set<DirectoryAgent> agents;
+  vector<DirectoryAgent> agents;
   m_slp_server.GetDirectoryAgents(&agents);
-  for (set<DirectoryAgent>::const_iterator iter = agents.begin();
+  for (vector<DirectoryAgent>::const_iterator iter = agents.begin();
        iter != agents.end(); ++iter)
     OLA_INFO << *iter;
 }
