@@ -42,11 +42,13 @@
 #include <string>
 #include <vector>
 
+#include "tools/slp/ServerCommon.h"
 #include "tools/slp/SLPPacketBuilder.h"
 #include "tools/slp/SLPPacketParser.h"
 #include "tools/slp/SLPServer.h"
 #include "tools/slp/SLPStore.h"
 #include "tools/slp/SLPStrings.h"
+#include "tools/slp/SLPUtil.h"
 
 namespace ola {
 namespace slp {
@@ -73,9 +75,7 @@ using std::vector;
 const char SLPServer::CONFIG_DA_BEAT_VAR[] = "slp-config-da-beat";
 const char SLPServer::DAADVERT[] = "DAAdvert";
 const char SLPServer::DA_ENABLED_VAR[] = "slp-da-enabled";
-const char SLPServer::DEFAULT_SCOPE[] = "DEFAULT";
 const char SLPServer::DEREGSRVS_ERROR_COUNT_VAR[] = "slp-dereg-srv-errors";
-const char SLPServer::DIRECTORY_AGENT_SERVICE[] = "service:directory-agent";
 const char SLPServer::FINDSRVS_EMPTY_COUNT_VAR[] =
   "slp-find-srvs-empty-response";
 const char SLPServer::METHOD_CALLS_VAR[] = "slp-server-methods";
@@ -84,7 +84,6 @@ const char SLPServer::METHOD_FIND_SERVICE[] = "FindService";
 const char SLPServer::METHOD_REG_SERVICE[] = "RegisterService";
 const char SLPServer::REGSRVS_ERROR_COUNT_VAR[] = "slp-reg-srv-errors";
 const char SLPServer::SCOPE_LIST_VAR[] = "scope-list";
-const char SLPServer::SERVICE_AGENT_SERVICE[] = "service:service-agent";
 const char SLPServer::SLP_PORT_VAR[] = "slp-port";
 const char SLPServer::SRVACK[] = "SrvAck";
 const char SLPServer::SRVREG[] = "SrvReg";
@@ -129,7 +128,7 @@ SLPServer::SLPServer(ola::io::SelectServerInterface *ss,
   ToLower(&m_en_lang);
 
   if (options.scopes.empty())
-    m_scope_list.insert(SLPGetCanonicalString(DEFAULT_SCOPE));
+    m_scope_list.insert(SLPGetCanonicalString(DEFAULT_SLP_SCOPE));
 
   std::transform(options.scopes.begin(),
                  options.scopes.end(),
@@ -225,6 +224,14 @@ bool SLPServer::BulkLoad(const ServiceEntries &services) {
  */
 void SLPServer::DumpStore() {
   m_service_store.Dump(*(m_ss->WakeUpTime()));
+}
+
+
+/**
+ * Get a list of known DAs
+ */
+void SLPServer::GetDirectoryAgents(set<DirectoryAgent> *output) {
+  m_da_tracker.GetDirectoryAgents(output);
 }
 
 
@@ -524,12 +531,19 @@ void SLPServer::HandleServiceAck(BigEndianInputStream *stream,
 void SLPServer::HandleDAAdvert(BigEndianInputStream *stream,
                                const IPV4SocketAddress &source) {
   OLA_INFO << "Got DAAdvert from " << source;
-  const DAAdvertPacket *da_advert = m_packet_parser.UnpackDAAdvert(stream);
-  if (!da_advert)
+  auto_ptr<const DAAdvertPacket> da_advert(
+      m_packet_parser.UnpackDAAdvert(stream));
+  if (!da_advert.get())
     return;
 
-  OLA_INFO << "Unpacked DA Advert";
-  delete da_advert;
+  if (da_advert->error_code) {
+    OLA_WARN << "DAAdvert from " << source << ", had error "
+             << da_advert->error_code << " ("
+             << SLPErrorToString(da_advert->error_code) << ")";
+    return;
+  }
+
+  m_da_tracker.NewDAAdvert(*da_advert, source);
 }
 
 

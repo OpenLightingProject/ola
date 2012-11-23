@@ -37,9 +37,9 @@
 #include <set>
 #include <map>
 #include <string>
-#include <vector>
 
 #include "tools/slp/Base.h"
+#include "tools/slp/DATracker.h"
 #include "tools/slp/SLPPacketParser.h"
 #include "tools/slp/SLPStore.h"
 #include "tools/slp/SLPUDPSender.h"
@@ -51,7 +51,6 @@ using ola::network::IPV4SocketAddress;
 using ola::network::TCPSocket;
 using std::auto_ptr;
 using std::string;
-using std::vector;
 using std::set;
 
 namespace ola {
@@ -59,7 +58,7 @@ namespace slp {
 
 
 /**
- * An SLP Server. This handle's the SLP messages an provides an API to
+ * An SLP Server. This handles the SLP messages an provides an API to
  * register, deregister and locate services.
  */
 class SLPServer {
@@ -88,6 +87,7 @@ class SLPServer {
     // bulk load a list of Services
     bool BulkLoad(const ServiceEntries &services);
     void DumpStore();
+    void GetDirectoryAgents(set<DirectoryAgent> *output);
 
     // SLP API
     void FindService(const set<string> &scopes,
@@ -127,6 +127,7 @@ class SLPServer {
     SLPPacketParser m_packet_parser;
     SLPStore m_service_store;
     SLPUDPSender m_udp_sender;
+    DATracker m_da_tracker;
 
     // DA members
 
@@ -177,9 +178,7 @@ class SLPServer {
     static const char CONFIG_DA_BEAT_VAR[];
     static const char DAADVERT[];
     static const char DA_ENABLED_VAR[];
-    static const char DEFAULT_SCOPE[];
     static const char DEREGSRVS_ERROR_COUNT_VAR[];
-    static const char DIRECTORY_AGENT_SERVICE[];
     static const char FINDSRVS_EMPTY_COUNT_VAR[];
     static const char METHOD_CALLS_VAR[];
     static const char METHOD_DEREG_SERVICE[];
@@ -187,7 +186,6 @@ class SLPServer {
     static const char METHOD_REG_SERVICE[];
     static const char REGSRVS_ERROR_COUNT_VAR[];
     static const char SCOPE_LIST_VAR[];
-    static const char SERVICE_AGENT_SERVICE[];
     static const char SLP_PORT_VAR[];
     static const char SRVACK[];
     static const char SRVREG[];

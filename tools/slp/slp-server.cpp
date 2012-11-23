@@ -37,6 +37,7 @@
 
 #include "tools/slp/RegistrationFileParser.h"
 #include "tools/slp/SLPDaemon.h"
+#include "tools/slp/ServerCommon.h"
 #include "tools/slp/ServiceEntry.h"
 
 using ola::network::IPV4SocketAddress;
@@ -367,6 +368,7 @@ int main(int argc, char *argv[]) {
     PreRegisterServices(daemon, options.registration_file);
 
   cout << "---------------  Controls  ----------------\n";
+  cout << " d - Print Known DAs\n";
   cout << " p - Print Registrations\n";
   cout << " q - Quit\n";
   cout << "-------------------------------------------\n";

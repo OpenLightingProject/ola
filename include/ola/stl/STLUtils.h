@@ -22,11 +22,13 @@
 #define INCLUDE_OLA_STL_STLUTILS_H_
 
 #include <map>
+#include <set>
 #include <vector>
 
 namespace ola {
 
 using std::map;
+using std::set;
 using std::vector;
 
 /**
@@ -43,6 +45,20 @@ inline bool STLContains(const T1 &container, const T2 &value) {
 template<typename T>
 void STLDeleteValues(vector<T*> &values) {
   typename vector<T*>::iterator iter = values.begin();
+  for (; iter != values.end(); ++iter)
+    delete *iter;
+  values.clear();
+}
+
+
+/**
+ * Same as above but for a set. We duplicate the code so that we're sure the
+ * argument is a set of pointers, rather than any type with begin() and end()
+ * defined.
+ */
+template<typename T>
+void STLDeleteValues(set<T*> &values) {
+  typename set<T*>::iterator iter = values.begin();
   for (; iter != values.end(); ++iter)
     delete *iter;
   values.clear();

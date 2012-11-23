@@ -163,6 +163,7 @@ class SLPDaemon {
 
     // Random methods
     void DumpStore();
+    void GetDirectoryAgents();
 
     // RPC methods
     void NewTCPConnection(TCPSocket *socket);

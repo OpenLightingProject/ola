@@ -25,7 +25,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
-#include "tools/slp/SLPPacketConstants.h"
+#include "tools/slp/ServerCommon.h"
 #include "tools/slp/SLPStrings.h"
 
 namespace ola {

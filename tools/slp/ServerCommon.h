@@ -17,19 +17,22 @@
  * Copyright (C) 2012 Simon Newton
  */
 
-#ifndef TOOLS_SLP_BASE_H_
-#define TOOLS_SLP_BASE_H_
+#ifndef TOOLS_SLP_SERVERCOMMON_H_
+#define TOOLS_SLP_SERVERCOMMON_H_
 
 #include <stdint.h>
 
 namespace ola {
 namespace slp {
 
-// The default SLP scope from RFC 2608
-static const char DEFAULT_SLP_SCOPE[] = "DEFAULT";
+// The default SLP port from RFC 2608
+static const int DEFAULT_SLP_PORT = 427;
 
-// The default port the SLP uses for RPC servers, not part of the RFC.
-static const int OLA_SLP_DEFAULT_PORT = 9011;
+static const char SLP_SERVICE_PREFIX[] = "service:";
+
+static const char DIRECTORY_AGENT_SERVICE[] = "service:directory-agent";
+
+static const char SERVICE_AGENT_SERVICE[] = "service:service-agent";
 }  // slp
 }  // ola
-#endif  // TOOLS_SLP_BASE_H_
+#endif  // TOOLS_SLP_SERVERCOMMON_H_

@@ -156,6 +156,9 @@ bool SLPDaemon::BulkLoad(const ServiceEntries &entries) {
  */
 void SLPDaemon::Input(char c) {
   switch (c) {
+    case 'd':
+      GetDirectoryAgents();
+      break;
     case 'p':
       DumpStore();
       break;
@@ -173,6 +176,18 @@ void SLPDaemon::Input(char c) {
  */
 void SLPDaemon::DumpStore() {
   m_slp_server.DumpStore();
+}
+
+
+/**
+ * Print a list of DAs
+ */
+void SLPDaemon::GetDirectoryAgents() {
+  set<DirectoryAgent> agents;
+  m_slp_server.GetDirectoryAgents(&agents);
+  for (set<DirectoryAgent>::const_iterator iter = agents.begin();
+       iter != agents.end(); ++iter)
+    OLA_INFO << *iter;
 }
 
 

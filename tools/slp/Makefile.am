@@ -1,9 +1,11 @@
 include $(top_srcdir)/common.mk
 
 EXTRA_DIST = Base.h \
+             DATracker.h \
              RegistrationFileParser.h \
-             ServiceEntry.h \
              SLP.proto \
+             ServerCommon.h \
+             ServiceEntry.h \
              SLPClient.h \
              SLPDaemon.h \
              SLPClientCore.h \
@@ -19,7 +21,8 @@ EXTRA_DIST = Base.h \
 
 noinst_PROGRAMS = slp_server slp_client slp_parser
 
-slp_server_SOURCES = RegistrationFileParser.cpp \
+slp_server_SOURCES = DATracker.cpp \
+                     RegistrationFileParser.cpp \
                      SLPDaemon.cpp \
                      SLPPacketBuilder.cpp \
                      SLPPacketParser.cpp \
@@ -27,6 +30,7 @@ slp_server_SOURCES = RegistrationFileParser.cpp \
                      SLPStore.cpp \
                      SLPStrings.cpp \
                      SLPUDPSender.cpp \
+                     SLPUtil.cpp \
                      ServiceEntry.cpp \
                      slp-server.cpp
 slp_server_LDADD = $(top_builddir)/common/libolacommon.la \
