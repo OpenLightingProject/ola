@@ -72,9 +72,7 @@ using std::string;
 using std::vector;
 
 
-const char SLPServer::CONFIG_DA_BEAT_VAR[] = "slp-config-da-beat";
 const char SLPServer::DAADVERT[] = "DAAdvert";
-const char SLPServer::DA_ENABLED_VAR[] = "slp-da-enabled";
 const char SLPServer::DEREGSRVS_ERROR_COUNT_VAR[] = "slp-dereg-srv-errors";
 const char SLPServer::FINDSRVS_EMPTY_COUNT_VAR[] =
   "slp-find-srvs-empty-response";
@@ -96,6 +94,7 @@ const char SLPServer::UDP_RX_PACKET_BY_TYPE_VAR[] = "slp-udp-rx-packets";
 const char SLPServer::UDP_RX_TOTAL_VAR[] = "slp-udp-rx";
 const char SLPServer::UDP_TX_PACKET_BY_TYPE_VAR[] = "slp-udp-tx-packets";
 
+
 /**
  * Setup a new SLP server.
  * @param ss the SelectServer to use
@@ -110,16 +109,22 @@ SLPServer::SLPServer(ola::io::SelectServerInterface *ss,
                      ola::ExportMap *export_map,
                      const SLPServerOptions &options)
     : m_enable_da(options.enable_da),
-      m_config_da_beat(options.config_da_beat),
+      m_config_da_beat(options.config_da_beat * ONE_THOUSAND),
+      m_config_da_find(options.config_da_find * ONE_THOUSAND),
+      m_config_mc_max(options.config_mc_max * ONE_THOUSAND),
+      m_config_retry(options.config_retry * ONE_THOUSAND),
+      m_config_retry_max(options.config_retry_max * ONE_THOUSAND),
       m_en_lang(reinterpret_cast<const char*>(EN_LANGUAGE_TAG),
                 sizeof(EN_LANGUAGE_TAG)),
       m_iface_address(options.ip_address),
       m_ss(ss),
       m_da_beat_timer(ola::thread::INVALID_TIMEOUT),
       m_store_cleaner_timer(ola::thread::INVALID_TIMEOUT),
+      m_active_da_discovery_timer(ola::thread::INVALID_TIMEOUT),
       m_udp_socket(udp_socket),
       m_slp_accept_socket(tcp_socket),
       m_udp_sender(m_udp_socket),
+      m_xid(0),  // TODO(simon): randomly choose this
       m_export_map(export_map) {
   m_multicast_endpoint.reset(
       new IPV4SocketAddress(
@@ -136,8 +141,10 @@ SLPServer::SLPServer(ola::io::SelectServerInterface *ss,
                  SLPGetCanonicalString);
 
   string joined_scopes = ola::StringJoin(",", m_scope_list);
-  export_map->GetBoolVar(DA_ENABLED_VAR)->Set(options.enable_da);
-  export_map->GetIntegerVar(CONFIG_DA_BEAT_VAR)->Set(options.config_da_beat);
+  export_map->GetBoolVar("slp-da-enabled")->Set(options.enable_da);
+  export_map->GetIntegerVar("slp-config-da-beat")->Set(options.config_da_beat);
+  export_map->GetIntegerVar("slp-config-da-find")->Set(options.config_da_find);
+  export_map->GetIntegerVar("slp-config-mc-max")->Set(options.config_mc_max);
   export_map->GetIntegerVar(FINDSRVS_EMPTY_COUNT_VAR);
   export_map->GetIntegerVar(UDP_RX_TOTAL_VAR);
   export_map->GetStringVar(SCOPE_LIST_VAR)->Set(joined_scopes);
@@ -149,6 +156,7 @@ SLPServer::SLPServer(ola::io::SelectServerInterface *ss,
 SLPServer::~SLPServer() {
   m_ss->RemoveTimeout(m_da_beat_timer);
   m_ss->RemoveTimeout(m_store_cleaner_timer);
+  m_ss->RemoveTimeout(m_active_da_discovery_timer);
   m_udp_socket->Close();
 }
 
@@ -191,7 +199,8 @@ bool SLPServer::Init() {
     SendDABeat();
   } else {
     // Send DA Locate
-    SendFindDAService();
+    // TODO(simon): add random backoff here
+    StartActiveDADiscovery();
   }
   return true;
 }
@@ -239,6 +248,14 @@ void SLPServer::GetDirectoryAgents(vector<DirectoryAgent> *output) {
 
 
 /**
+ * Manually trigger active DA discovery.
+ */
+void SLPServer::TriggerActiveDADiscovery() {
+  StartActiveDADiscovery();
+}
+
+
+/**
  * Locate a service
  * @param scopes the set of scopes to search
  * @param service the service name
@@ -266,7 +283,6 @@ void SLPServer::FindService(
   } else {
     vector<DirectoryAgent> agents;
     m_da_tracker.GetDirectoryAgents(&agents);
-
   }
   if (services.empty())
     (*m_export_map->GetIntegerVar(FINDSRVS_EMPTY_COUNT_VAR))++;
@@ -287,15 +303,15 @@ void SLPServer::RegisterService(const set<string> &scopes,
                                 SingleUseCallback1<void, unsigned int> *cb) {
   m_export_map->GetUIntMapVar(METHOD_CALLS_VAR)->Increment(METHOD_REG_SERVICE);
 
+  set<string> canonical_scopes;
+  SLPReduceList(scopes, &canonical_scopes);
+  ServiceEntry service(canonical_scopes, url, lifetime);
+
   if (m_enable_da) {
     // we're in DA mode, register this service in our stores if the scopes
     // match
     if (scopes.empty())
       OLA_WARN << "Scopes list for RegisterService(" << url << "), is empty";
-
-    set<string> canonical_scopes;
-    SLPReduceList(scopes, &canonical_scopes);
-    ServiceEntry service(canonical_scopes, url, lifetime);
 
     uint16_t error_code = LocalRegisterService(service);
     if (error_code)
@@ -304,7 +320,12 @@ void SLPServer::RegisterService(const set<string> &scopes,
     // TODO(simon): we should register with other DAs here
     return;
   } else {
+
     // TODO(simon): register with DAs if we have them
+    //RegisterServiceWithDAs(service);
+
+
+
     cb->Run(INTERNAL_ERROR);
   }
 }
@@ -550,6 +571,11 @@ void SLPServer::HandleDAAdvert(BigEndianInputStream *stream,
     return;
   }
 
+  if (m_outstanding_da_discovery.get()) {
+    // active discovery in progress
+    m_outstanding_da_discovery->AddPR(source.Host());
+  }
+
   m_da_tracker.NewDAAdvert(*da_advert, source);
 }
 
@@ -670,12 +696,67 @@ uint16_t SLPServer::LocalDeRegisterService(const ServiceEntry &service) {
 /**
  * Send a Service Request for 'directory-agent'
  */
-bool SLPServer::SendFindDAService() {
+void SLPServer::StartActiveDADiscovery() {
+  if (m_outstanding_da_discovery.get()) {
+    OLA_INFO << "Active DA Discovery already running.";
+    return;
+  }
+  m_outstanding_da_discovery.reset(new OutstandingDADiscovery(m_xid++));
+  SendDARequestAndSetupTimer(*m_outstanding_da_discovery);
+}
+
+
+/**
+ * Called when we timeout a SrvRqst for service:directory-agent.
+ */
+void SLPServer::ActiveDATick() {
+  if (!m_outstanding_da_discovery.get()) {
+    OLA_WARN << "DA Tick but no outstanding DA request";
+    ScheduleActiveDADiscovery();
+    return;
+  }
+
+  // TODO(simon): also terminate when the PR list is too big
+  if (m_outstanding_da_discovery->attempts_remaining == 0) {
+    // we've come to the end of the road jack
+    m_outstanding_da_discovery.reset();
+    ScheduleActiveDADiscovery();
+    OLA_INFO << "Active DA discovery complete";
+    return;
+  } else {
+    SendDARequestAndSetupTimer(*m_outstanding_da_discovery);
+  }
+}
+
+
+/**
+ * Send a SrvRqst for service:directory-agent and scheduler a timeout.
+ */
+void SLPServer::SendDARequestAndSetupTimer(OutstandingDADiscovery &request) {
   OLA_INFO << "Sending Multicast ServiceRequest for " <<
     DIRECTORY_AGENT_SERVICE;
-  m_udp_sender.SendServiceRequest(*m_multicast_endpoint, 0, m_da_pr_list,
-                                  DIRECTORY_AGENT_SERVICE, m_scope_list);
-  return true;
+  if (request.PRListChanged()) {
+    request.ResetPRListChanged();
+    // because the PR list changed we should use a new xid
+    request.xid = m_xid++;
+  }
+  m_udp_sender.SendServiceRequest(*m_multicast_endpoint, request.xid,
+                                  request.pr_list, DIRECTORY_AGENT_SERVICE,
+                                  m_scope_list);
+  request.attempts_remaining--;
+  m_active_da_discovery_timer = m_ss->RegisterSingleTimeout(
+      m_config_mc_max,
+      NewSingleCallback(this, &SLPServer::ActiveDATick));
+}
+
+
+/**
+ * Schedule the next active DA discovery run.
+ */
+void SLPServer::ScheduleActiveDADiscovery() {
+  m_active_da_discovery_timer = m_ss->RegisterSingleTimeout(
+      m_config_da_find,
+      NewSingleCallback(this, &SLPServer::StartActiveDADiscovery));
 }
 
 

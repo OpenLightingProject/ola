@@ -368,6 +368,7 @@ int main(int argc, char *argv[]) {
     PreRegisterServices(daemon, options.registration_file);
 
   cout << "---------------  Controls  ----------------\n";
+  cout << " a - Start active DA discovery\n";
   cout << " d - Print Known DAs\n";
   cout << " p - Print Registrations\n";
   cout << " q - Quit\n";

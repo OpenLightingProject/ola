@@ -157,6 +157,9 @@ bool SLPDaemon::BulkLoad(const ServiceEntries &entries) {
  */
 void SLPDaemon::Input(char c) {
   switch (c) {
+    case 'a':
+      m_slp_server.TriggerActiveDADiscovery();
+      break;
     case 'd':
       GetDirectoryAgents();
       break;
