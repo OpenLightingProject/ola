@@ -24,6 +24,7 @@
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
 #include <ola/io/BigEndianStream.h>
+#include <ola/network/IPV4Address.h>
 #include <ostream>
 #include <set>
 #include <string>
@@ -32,6 +33,7 @@
 namespace ola {
 namespace slp {
 
+using ola::network::IPV4Address;
 using std::ostream;
 using std::set;
 using std::string;
@@ -87,6 +89,12 @@ class URLEntry {
 
     virtual void ToStream(ostream &out) const {
       out << m_url << "(" << m_lifetime << ")";
+    }
+
+    string ToString() const {
+      std::ostringstream str;
+      ToStream(str);
+      return str.str();
     }
 
     friend ostream& operator<<(ostream &out, const URLEntry &entry) {
@@ -149,6 +157,45 @@ class ServiceEntry: public URLEntry {
 // typedef for convenience
 typedef std::set<URLEntry> URLEntries;
 typedef std::set<ServiceEntry> ServiceEntries;
+
+
+/**
+ * An extention of a ServiceEntry that also tracks which DAs it has been
+ * registered with.
+ */
+class LocalServiceEntry : public ServiceEntry {
+  public:
+    LocalServiceEntry() : ServiceEntry() {}
+
+    /**
+     * @param scopes a set of scopes, should be in canonical form
+     * @param url the service URL
+     * @param lifetime the number of seconds this service is valid for
+     */
+    LocalServiceEntry(const set<string> &scopes,
+                      const string &url,
+                      uint16_t lifetime)
+        : ServiceEntry(scopes, url, lifetime) {
+    }
+
+    void AddDA(const IPV4Address &address) {
+      m_registered_das.insert(address);
+    }
+
+    void RemoveDA(const IPV4Address &address) {
+      m_registered_das.erase(address);
+    }
+
+    const set<IPV4Address>& RegisteredDAs() const { return m_registered_das; }
+
+    virtual void ToStream(ostream &out) const {
+      ServiceEntry::ToStream(out);
+      out << ", Reg with: " << ola::StringJoin(",", m_registered_das);
+    }
+
+  private:
+    set<IPV4Address> m_registered_das;
+};
 }  // slp
 }  // ola
 #endif  // TOOLS_SLP_SERVICEENTRY_H_

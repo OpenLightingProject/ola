@@ -23,6 +23,7 @@
 #include <string>
 #include <sstream>
 
+#include "ola/network/IPV4Address.h"
 #include "ola/Logging.h"
 #include "ola/io/BigEndianStream.h"
 #include "ola/io/IOQueue.h"
@@ -31,10 +32,11 @@
 
 using ola::io::BigEndianOutputStream;
 using ola::io::IOQueue;
+using ola::network::IPV4Address;
+using ola::slp::LocalServiceEntry;
 using ola::slp::ServiceEntry;
 using ola::slp::URLEntry;
 using ola::testing::ASSERT_DATA_EQUALS;
-using std::ostringstream;
 using std::set;
 using std::string;
 
@@ -45,6 +47,7 @@ class ServiceEntryTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testURLEntryWrite);
   CPPUNIT_TEST(testServiceEntry);
   CPPUNIT_TEST(testToString);
+  CPPUNIT_TEST(testLocalServiceEntry);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -52,6 +55,7 @@ class ServiceEntryTest: public CppUnit::TestFixture {
     void testURLEntryWrite();
     void testServiceEntry();
     void testToString();
+    void testLocalServiceEntry();
 
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
@@ -171,18 +175,54 @@ void ServiceEntryTest::testServiceEntry() {
  * Check converting a URLEntry & ServiceEntry to a string works
  */
 void ServiceEntryTest::testToString() {
-  ostringstream str;
   URLEntry url1("service:foo://192.168.1.1", 300);
-  str << url1;
-
-  OLA_ASSERT_EQ(string("service:foo://192.168.1.1(300)"), str.str());
-  str.str("");
+  OLA_ASSERT_EQ(string("service:foo://192.168.1.1(300)"), url1.ToString());
 
   set<string> scopes, scopes2;
   scopes.insert("one");
   scopes.insert("two");
   ServiceEntry service1(scopes, "service:foo://192.168.1.1", 300);
+  OLA_ASSERT_EQ(string("service:foo://192.168.1.1(300), [one,two]"),
+                service1.ToString());
+}
 
-  str << service1;
-  OLA_ASSERT_EQ(string("service:foo://192.168.1.1(300), [one,two]"), str.str());
+
+/**
+ * Check LocalServiceEntry
+ */
+void ServiceEntryTest::testLocalServiceEntry() {
+  set<string> scopes;
+  set<IPV4Address> expected_das;
+  scopes.insert("one");
+  LocalServiceEntry service(scopes, "service:foo://192.168.1.1", 1234);
+
+  OLA_ASSERT_SET_EQ(expected_das, service.RegisteredDAs());
+  OLA_ASSERT_EQ(string("service:foo://192.168.1.1(1234), [one], Reg with: "),
+                service.ToString());
+
+  IPV4Address address1, address2;
+  OLA_ASSERT_TRUE(IPV4Address::FromString("10.0.0.1", &address1));
+  OLA_ASSERT_TRUE(IPV4Address::FromString("10.0.0.10", &address2));
+
+  service.AddDA(address1);
+  expected_das.insert(address1);
+  OLA_ASSERT_SET_EQ(expected_das, service.RegisteredDAs());
+  OLA_ASSERT_EQ(
+      string("service:foo://192.168.1.1(1234), [one], Reg with: 10.0.0.1"),
+      service.ToString());
+
+  service.AddDA(address2);
+  expected_das.insert(address2);
+  OLA_ASSERT_SET_EQ(expected_das, service.RegisteredDAs());
+  OLA_ASSERT_EQ(
+      string("service:foo://192.168.1.1(1234), [one], Reg with: "
+             "10.0.0.1,10.0.0.10"),
+      service.ToString());
+
+  service.RemoveDA(address1);
+  expected_das.erase(address1);
+  OLA_ASSERT_SET_EQ(expected_das, service.RegisteredDAs());
+  OLA_ASSERT_EQ(
+      string("service:foo://192.168.1.1(1234), [one], Reg with: 10.0.0.10"),
+      service.ToString());
 }
