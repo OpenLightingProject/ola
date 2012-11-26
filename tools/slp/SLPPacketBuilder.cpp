@@ -37,8 +37,8 @@ using ola::io::BigEndianOutputStreamAdaptor;
 using ola::StringJoin;
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
-using std::string;
 using std::set;
+using std::string;
 
 
 /**
@@ -47,7 +47,7 @@ using std::set;
  * @param xid the transaction ID
  * @param pr_list the previous responder ist
  * @param service_type the service to locate
- * @param scope_list the list of scopes to search.
+ * @param scopes the set of scopes to search.
  */
 void SLPPacketBuilder::BuildServiceRequest(
     BigEndianOutputStreamInterface *output,
@@ -55,7 +55,7 @@ void SLPPacketBuilder::BuildServiceRequest(
     bool multicast,
     const set<IPV4Address> &pr_list,
     const string &service_type,
-    const set<string> &scope_list) {
+    const ScopeSet &scopes) {
   /*
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
      |       Service Location header (function = SrvRqst = 1)        |
@@ -72,16 +72,11 @@ void SLPPacketBuilder::BuildServiceRequest(
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   */
   const string joined_pr_list = ola::StringJoin(",", pr_list);
-  string joined_scopes;
-  EscapeAndJoin(scope_list, &joined_scopes);
-
+  const string joined_scopes = scopes.AsEscapedString();
   unsigned int length = (10 + joined_pr_list.size() + service_type.size() +
                          joined_scopes.size());
-  BuildSLPHeader(output,
-                 SERVICE_REQUEST,
-                 length,
-                 multicast ? SLP_REQUEST_MCAST : 0,
-                 xid);
+  BuildSLPHeader(output, SERVICE_REQUEST, length,
+                 multicast ? SLP_REQUEST_MCAST : 0, xid);
   WriteString(output, joined_pr_list);
   WriteString(output, service_type);
   WriteString(output, joined_scopes);
@@ -100,7 +95,7 @@ void SLPPacketBuilder::BuildServiceRequest(
 void SLPPacketBuilder::BuildServiceReply(BigEndianOutputStreamInterface *output,
                                          xid_t xid,
                                          uint16_t error_code,
-                                         const URLEntries &url_entries) {
+                                         const URLEntries &urls) {
   /*
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
      |        Service Location header (function = SrvRply = 2)       |
@@ -111,15 +106,15 @@ void SLPPacketBuilder::BuildServiceReply(BigEndianOutputStreamInterface *output,
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   */
   unsigned int length = 4;
-  URLEntries::const_iterator iter = url_entries.begin();
-  for (; iter != url_entries.end(); ++iter)
-    length += iter->Size();
+  URLEntries::const_iterator iter;
+  for (iter = urls.begin(); iter != urls.end(); ++iter)
+    length += iter->PackedSize();
 
   BuildSLPHeader(output, SERVICE_REPLY, length, 0, xid);
   *output << error_code;
-  *output << static_cast<uint16_t>(url_entries.size());
+  *output << static_cast<uint16_t>(urls.size());
 
-  for (iter = url_entries.begin(); iter != url_entries.end(); ++iter)
+  for (iter = urls.begin(); iter != urls.end(); ++iter)
     iter->Write(output);
 }
 
@@ -129,17 +124,16 @@ void SLPPacketBuilder::BuildServiceReply(BigEndianOutputStreamInterface *output,
  * @param output the BigEndianOutputStreamInterface to put the packet in
  * @param xid the transaction ID
  * @param fresh set to true if this is a new registration.
- * @param url_entry the URLEntry to include
- * @param service_type the SLP service-type
- * @param scope_list a list of scopes.
+ * @param scopes the set of scopes to use. We don't use the ones from the
+ *   ServiceEntry, since the DA may not support all of them, see Section 8.3
+ * @param service the ServiceEntry to register
  */
 void SLPPacketBuilder::BuildServiceRegistration(
     BigEndianOutputStreamInterface *output,
     xid_t xid,
     bool fresh,
-    const URLEntry &url_entry,
-    const string &service_type,
-    set<string> &scope_list) {
+    const ScopeSet &scopes,
+    const ServiceEntry &service) {
   /*
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
      |         Service Location header (function = SrvReg = 3)       |
@@ -155,15 +149,15 @@ void SLPPacketBuilder::BuildServiceRegistration(
      |# of AttrAuths |(if present) Attribute Authentication Blocks...\
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   */
-  string joined_scopes;
-  EscapeAndJoin(scope_list, &joined_scopes);
-  unsigned int length = (url_entry.Size() + 2 + service_type.size() +
+  const string joined_scopes = scopes.AsEscapedString();
+  unsigned int length = (service.url().PackedSize() + 2 +
+                         service.service_type().size() +
                          2 + joined_scopes.size() + 3);
 
   BuildSLPHeader(output, SERVICE_REGISTRATION, length, fresh ? SLP_FRESH : 0,
                  xid);
-  url_entry.Write(output);
-  WriteString(output, service_type);
+  service.url().Write(output);
+  WriteString(output, service.service_type());
   WriteString(output, joined_scopes);
   *output << static_cast<uint16_t>(0);  // length of attr-list
   *output << static_cast<uint8_t>(0);   // # of AttrAuths
@@ -207,7 +201,7 @@ void SLPPacketBuilder::BuildDAAdvert(BigEndianOutputStreamInterface *output,
                                      uint16_t error_code,
                                      uint32_t boot_timestamp,
                                      const string &url,
-                                     const set<string> &scope_list) {
+                                     const ScopeSet &scopes) {
   /*
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
      |        Service Location header (function = DAAdvert = 8)      |
@@ -227,8 +221,7 @@ void SLPPacketBuilder::BuildDAAdvert(BigEndianOutputStreamInterface *output,
      | # Auth Blocks |         Authentication block (if any)         \
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   */
-  string joined_scopes;
-  EscapeAndJoin(scope_list, &joined_scopes);
+  const string joined_scopes = scopes.AsEscapedString();
   unsigned int length = 8 + url.size() + + joined_scopes.size() + 7;
   BuildSLPHeader(output,
                  DA_ADVERTISEMENT,
@@ -258,7 +251,7 @@ void SLPPacketBuilder::BuildSAAdvert(BigEndianOutputStreamInterface *output,
                                      xid_t xid,
                                      bool multicast,
                                      const string &url,
-                                     const set<string> &scope_list) {
+                                     const ScopeSet &scopes) {
   /*
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
      |        Service Location header (function = SAAdvert = 11)     |
@@ -272,8 +265,7 @@ void SLPPacketBuilder::BuildSAAdvert(BigEndianOutputStreamInterface *output,
      | # auth blocks |        authentication block (if any)          \
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   */
-  string joined_scopes;
-  EscapeAndJoin(scope_list, &joined_scopes);
+  const string joined_scopes = scopes.AsEscapedString();
   unsigned int length = 7 + url.size() + + joined_scopes.size();
   BuildSLPHeader(output,
                  SA_ADVERTISEMENT,
@@ -329,23 +321,6 @@ void SLPPacketBuilder::BuildSLPHeader(BigEndianOutputStreamInterface *output,
   *output << static_cast<uint16_t>(0) << xid;
   *output << static_cast<uint16_t>(sizeof(EN_LANGUAGE_TAG));
   output->Write(EN_LANGUAGE_TAG, sizeof(EN_LANGUAGE_TAG));
-}
-
-
-/**
- * Join a set of strings after escaping each string.
- */
-void SLPPacketBuilder::EscapeAndJoin(const set<string> &list, string *output) {
-  std::ostringstream str;
-  set<string>::const_iterator iter = list.begin();
-  while (iter != list.end()) {
-    string val = *iter;
-    SLPStringEscape(&val);
-    output->append(val);
-    iter++;
-    if (iter != list.end())
-      output->append(",");
-  }
 }
 }  // slp
 }  // ola

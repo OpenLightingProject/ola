@@ -28,6 +28,7 @@
 
 #include "tools/slp/SLPPacketConstants.h"
 #include "tools/slp/ServiceEntry.h"
+#include "tools/slp/ScopeSet.h"
 
 using ola::io::BigEndianOutputStreamAdaptor;
 using ola::io::BigEndianOutputStreamInterface;
@@ -51,19 +52,18 @@ class SLPPacketBuilder {
                                     bool multicast,
                                     const set<IPV4Address> &pr_list,
                                     const string &service_type,
-                                    const set<string> &scope_list);
+                                    const ScopeSet &scopes);
 
     static void BuildServiceReply(BigEndianOutputStreamInterface *output,
                                   xid_t xid,
                                   uint16_t error_code,
-                                  const URLEntries &url_entries);
+                                  const URLEntries &urls);
 
     static void BuildServiceRegistration(BigEndianOutputStreamInterface *output,
                                          xid_t xid,
                                          bool fresh,
-                                         const URLEntry &url_entry,
-                                         const string &service_type,
-                                         set<string> &scope_list);
+                                         const ScopeSet &scopes,
+                                         const ServiceEntry &service);
 
     static void BuildServiceAck(BigEndianOutputStreamInterface *output,
                                 xid_t xid,
@@ -75,13 +75,13 @@ class SLPPacketBuilder {
                               uint16_t error_code,
                               uint32_t boot_timestamp,
                               const string &url,
-                              const set<string> &scope_list);
+                              const ScopeSet &scopes);
 
     static void BuildSAAdvert(BigEndianOutputStreamInterface *output,
                               xid_t xid,
                               bool multicast,
                               const string &url,
-                              const set<string> &scope_list);
+                              const ScopeSet &scopes);
 
     static void WriteString(BigEndianOutputStreamInterface *output,
                             const string &data);
@@ -92,8 +92,6 @@ class SLPPacketBuilder {
                                unsigned int length,
                                uint16_t flags,
                                xid_t xid);
-
-    static void EscapeAndJoin(const set<string> &list, string *output);
 };
 }  // slp
 }  // ola

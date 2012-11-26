@@ -92,8 +92,7 @@ void DATracker::NewDAAdvert(const DAAdvertPacket &da_advert,
 
   if (iter == m_agents.end()) {
     OLA_INFO << "New DA " << da_advert.url;
-    set<string> canonical_scopes;
-    SLPReduceList(da_advert.scope_list, &canonical_scopes);
+    ScopeSet scopes(da_advert.scope_list);
 
     IPV4Address address;
     if (!AddressFromURL(da_advert.url, &address))
@@ -104,8 +103,8 @@ void DATracker::NewDAAdvert(const DAAdvertPacket &da_advert,
       OLA_WARN << "Parsed address for " << da_advert.url
                << " does not match source address of " << address;
 
-    InternalDirectoryAgent agent(canonical_scopes, da_advert.url,
-                                 address, da_advert.boot_timestamp);
+    InternalDirectoryAgent agent(scopes, da_advert.url, address,
+                                 da_advert.boot_timestamp);
     m_agents[da_advert.url] = agent;
     RunCallbacks(agent);
     return;
@@ -140,28 +139,20 @@ void DATracker::GetDirectoryAgents(vector<DirectoryAgent> *output) {
  * For a given set of scopes, get the list of DAs to use. Scopes that don't
  * have any associated DAs are returned in scopes_without_das.
  */
-void DATracker::GetDAsForScopes(const set<string> &scopes,
+void DATracker::GetDAsForScopes(const ScopeSet &scopes,
                                 vector<DirectoryAgent> *output,
-                                vector<string> *scopes_without_das) {
-  set<string> scopes_found;
+                                ScopeSet *scopes_without_das) {
+  ScopeSet scopes_found;
   for (DAMap::const_iterator iter = m_agents.begin();
        iter != m_agents.end(); ++iter) {
-    const set<string> &da_scopes = iter->second.Scopes();
-    vector<string> intersection;
-    std::set_intersection(da_scopes.begin(), da_scopes.end(), scopes.begin(),
-                          scopes.end(),
-                          inserter(intersection, intersection.begin()));
+    ScopeSet intersection = iter->second.scopes().Intersection(scopes);
     if (!intersection.empty()) {
       output->push_back(iter->second);
-      std::copy(intersection.begin(), intersection.end(),
-                inserter(scopes_found, scopes_found.end()));
+      scopes_found.Update(intersection);
     }
   }
 
-  scopes_without_das->clear();
-  std::set_difference(
-      scopes.begin(), scopes.end(), scopes_found.begin(), scopes_found.end(),
-      inserter(*scopes_without_das, scopes_without_das->begin()));
+  *scopes_without_das = scopes.Difference(scopes_found);
 }
 
 

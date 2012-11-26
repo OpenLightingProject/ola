@@ -103,10 +103,8 @@ bool RegistrationFileParser::ParseStream(std::istream *input,
     }
     seen_urls.insert(url);
 
-    set<string> canonical_scopes;
-    SLPExtractScopes(scopes, &canonical_scopes);
-    ServiceEntry service(canonical_scopes, url, lifetime);
-    services->insert(service);
+    ServiceEntry service(scopes, url, lifetime);
+    services->push_back(service);
   }
   return true;
 }

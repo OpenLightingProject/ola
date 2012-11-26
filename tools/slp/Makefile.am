@@ -4,11 +4,9 @@ EXTRA_DIST = Base.h \
              DATracker.h \
              RegistrationFileParser.h \
              SLP.proto \
-             ServerCommon.h \
-             ServiceEntry.h \
              SLPClient.h \
-             SLPDaemon.h \
              SLPClientCore.h \
+             SLPDaemon.h \
              SLPPacketBuilder.h \
              SLPPacketConstants.h \
              SLPPacketParser.h \
@@ -16,7 +14,11 @@ EXTRA_DIST = Base.h \
              SLPStore.h \
              SLPStrings.h \
              SLPUDPSender.h \
+             ScopeSet.h \
+             ServerCommon.h \
+             ServiceEntry.h \
              SLPUtil.h \
+             XIDAllocator.h \
              slp-parser-actions.h
 
 noinst_PROGRAMS = slp_server slp_client slp_parser
@@ -31,6 +33,7 @@ slp_server_SOURCES = DATracker.cpp \
                      SLPStrings.cpp \
                      SLPUDPSender.cpp \
                      SLPUtil.cpp \
+                     ScopeSet.cpp \
                      ServiceEntry.cpp \
                      slp-server.cpp
 slp_server_LDADD = $(top_builddir)/common/libolacommon.la \

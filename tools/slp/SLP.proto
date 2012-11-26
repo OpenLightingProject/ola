@@ -28,30 +28,24 @@ option java_generic_services = true;
 message Ack {}
 
 message ServiceRequest {
-  required string service = 1;
+  required string service_type = 1;
   repeated string scope = 2;
 }
 
-message Service {
-  required string service_name = 1;
+message URLEntry {
+  required string url = 1;
   required uint32 lifetime = 2;
-
-  // add auth blocks here
+  // add auth block here
 }
 
 message ServiceReply {
-  repeated Service service = 1;
+  repeated URLEntry url_entry = 1;
 }
 
 message ServiceRegistration {
-  required string service = 1;
-
-  repeated string scope = 2;
-
-  /**
-   * The lifetime of the registration in seconds
-   */
-  required uint32 lifetime = 3;
+  required string url = 1;  // e.g. service:foo://localhost:1234
+  required uint32 lifetime = 2;
+  repeated string scope = 3;
 
   /**
    * If false, any registrations are removed when the clients disconnects.
@@ -60,7 +54,7 @@ message ServiceRegistration {
 }
 
 message ServiceDeRegistration {
-  required string service = 1;
+  required string url = 1;
   repeated string scope = 2;
 }
 

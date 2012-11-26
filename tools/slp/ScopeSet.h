@@ -75,7 +75,7 @@ class ScopeSet {
     }
 
     // Check for intersection between two ScopeSets.
-    bool Intersects(const ScopeSet &other) {
+    bool Intersects(const ScopeSet &other) const {
       set<string>::iterator iter1 = m_scopes.begin();
       set<string>::iterator iter2 = other.m_scopes.begin();
       while (iter1 != m_scopes.end() && iter2 != other.m_scopes.end()) {
@@ -90,7 +90,7 @@ class ScopeSet {
     }
 
     // Get the intersection
-    ScopeSet Intersection(const ScopeSet &other) {
+    ScopeSet Intersection(const ScopeSet &other) const {
       set<string> intersection;
       set_intersection(m_scopes.begin(), m_scopes.end(), other.m_scopes.begin(),
                        other.m_scopes.end(),
@@ -99,13 +99,22 @@ class ScopeSet {
     }
 
     // Get the difference
-    ScopeSet Difference(const ScopeSet &other) {
+    ScopeSet Difference(const ScopeSet &other) const {
       set<string> difference;
       set_difference(m_scopes.begin(), m_scopes.end(), other.m_scopes.begin(),
                      other.m_scopes.end(),
                      inserter(difference, difference.end()));
       return ScopeSet(difference);
     }
+
+    // Add the elements from another ScopeSet to this one
+    void Update(const ScopeSet &other) {
+      m_scopes.insert(other.m_scopes.begin(), other.m_scopes.end());
+    }
+
+    // Return the set of scopes as an escaped string, ready for use in an SLP
+    // packet.
+    string AsEscapedString() const;
 
     ScopeSet& operator=(const ScopeSet &other) {
       if (this != &other) {
@@ -124,6 +133,12 @@ class ScopeSet {
 
     void ToStream(ostream &out) const {
       out << ola::StringJoin(",", m_scopes);
+    }
+
+    string ToString() const {
+      std::ostringstream str;
+      ToStream(str);
+      return str.str();
     }
 
     friend ostream& operator<<(ostream &out, const ScopeSet &entry) {

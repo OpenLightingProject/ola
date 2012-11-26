@@ -145,10 +145,15 @@ void SLPDaemon::Stop() {
 
 
 /**
- * Bulk load a set of URL Entries
+ * Bulk load a set of ServiceEntries
  */
-bool SLPDaemon::BulkLoad(const ServiceEntries &entries) {
-  return m_slp_server.BulkLoad(entries);
+bool SLPDaemon::BulkLoad(const ServiceEntries &services) {
+  bool error = false;
+  for (ServiceEntries::const_iterator iter = services.begin();
+       iter != services.end(); ++iter) {
+    error |= m_slp_server.RegisterService(*iter);
+  }
+  return !error;
 }
 
 
@@ -163,8 +168,10 @@ void SLPDaemon::Input(char c) {
     case 'd':
       GetDirectoryAgents();
       break;
+    case 'l':
+      m_slp_server.DumpLocalServices();
     case 'p':
-      DumpStore();
+      m_slp_server.DumpStore();
       break;
     case 'q':
       m_ss.Terminate();
@@ -172,14 +179,6 @@ void SLPDaemon::Input(char c) {
     default:
       break;
   }
-}
-
-
-/**
- * Dump out the contents of the SLP store.
- */
-void SLPDaemon::DumpStore() {
-  m_slp_server.DumpStore();
 }
 
 
@@ -249,7 +248,7 @@ void SLPDaemon::SLPServiceImpl::FindService(
 
   m_slp_server->FindService(
       scopes,
-      request->service(),
+      request->service_type(),
       NewSingleCallback(this,
                         &SLPServiceImpl::FindServiceHandler,
                         response,
@@ -271,11 +270,10 @@ void SLPDaemon::SLPServiceImpl::RegisterService(
   for (int i = 0; i < request->scope_size(); ++i)
     scopes.insert(request->scope(i));
 
-  m_slp_server->RegisterService(
-      scopes,
-      request->service(),
-      request->lifetime(),
-      NewSingleCallback(this, &SLPServiceImpl::AckHandler, response, done));
+  ServiceEntry service(ScopeSet(scopes), request->url(), request->lifetime());
+  uint16_t error_code = m_slp_server->RegisterService(service);
+  response->set_error_code(error_code);
+  done->Run();
 }
 
 
@@ -293,10 +291,11 @@ void SLPDaemon::SLPServiceImpl::DeRegisterService(
   for (int i = 0; i < request->scope_size(); ++i)
     scopes.insert(request->scope(i));
 
-  m_slp_server->DeRegisterService(
-      scopes,
-      request->service(),
-      NewSingleCallback(this, &SLPServiceImpl::AckHandler, response, done));
+  // the lifetime can be anything for a de-register request
+  ServiceEntry service(ScopeSet(scopes), request->url(), 0);
+  uint16_t error_code = m_slp_server->DeRegisterService(service);
+  response->set_error_code(error_code);
+  done->Run();
 }
 
 
@@ -306,25 +305,13 @@ void SLPDaemon::SLPServiceImpl::DeRegisterService(
 void SLPDaemon::SLPServiceImpl::FindServiceHandler(
     ola::slp::proto::ServiceReply* response,
     ::google::protobuf::Closure* done,
-    const URLEntries &services) {
-  URLEntries::const_iterator iter = services.begin();
-  for (; iter != services.end(); ++iter) {
-    ola::slp::proto::Service *service = response->add_service();
-    service->set_service_name(iter->URL());
-    service->set_lifetime(iter->Lifetime());
+    const URLEntries &urls) {
+  for (URLEntries::const_iterator iter = urls.begin();
+       iter != urls.end(); ++iter) {
+    ola::slp::proto::URLEntry *url_entry = response->add_url_entry();
+    url_entry->set_url(iter->url());
+    url_entry->set_lifetime(iter->lifetime());
   }
-  done->Run();
-}
-
-
-/**
- * A RPC callback that accepts an SLP error code and replies with a ServiceAck.
- */
-void SLPDaemon::SLPServiceImpl::AckHandler(
-    ola::slp::proto::ServiceAck* response,
-    ::google::protobuf::Closure* done,
-    unsigned int error_code) {
-  response->set_error_code(error_code);
   done->Run();
 }
 }  // slp

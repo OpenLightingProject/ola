@@ -13,25 +13,32 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * SLPUtil.h
- * Utility functions for SLP
+ * XIDAllocator.h
  * Copyright (C) 2012 Simon Newton
  */
 
-#ifndef TOOLS_SLP_SLPUTIL_H_
-#define TOOLS_SLP_SLPUTIL_H_
+#ifndef TOOLS_SLP_XIDALLOCATOR_H_
+#define TOOLS_SLP_XIDALLOCATOR_H_
 
-#include <string>
-#include <set>
-#include <algorithm>
 #include "tools/slp/SLPPacketConstants.h"
 
 namespace ola {
 namespace slp {
 
-using std::string;
+/**
+ * XIDAllocator, this ensures that we increment the global xid whever we go to
+ * use it.
+ */
+class XIDAllocator {
+  public:
+    XIDAllocator(): m_xid(0) {}
+    explicit XIDAllocator(xid_t xid): m_xid(xid) { }
 
-string SLPErrorToString(uint16_t error);
+    xid_t Next() { return m_xid++; }
+
+  private:
+    xid_t m_xid;
+};
 }  // slp
 }  // ola
-#endif  // TOOLS_SLP_SLPUTIL_H_
+#endif  // TOOLS_SLP_XIDALLOCATOR_H_

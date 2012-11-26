@@ -61,7 +61,6 @@ struct SLPOptions {
     bool help;
     ola::log_level log_level;
     string preferred_ip_address;
-    uint16_t slp_port;
     string setuid;
     string setgid;
     string scopes;
@@ -69,8 +68,7 @@ struct SLPOptions {
 
     SLPOptions()
         : help(false),
-          log_level(ola::OLA_LOG_WARN),
-          slp_port(ola::slp::DEFAULT_SLP_PORT) {
+          log_level(ola::OLA_LOG_WARN) {
     }
 };
 
@@ -144,7 +142,7 @@ void ParseOptions(int argc, char *argv[],
         }
         break;
       case 'p':
-        options->slp_port = atoi(optarg);
+        slp_options->slp_port = atoi(optarg);
         break;
       case SETUID_OPTION:
         options->setuid = optarg;
@@ -252,15 +250,6 @@ static void InteruptSignal(int unused) {
 
 
 /**
- * Add our variables to the export map
- */
-void InitExportMap(ola::ExportMap *export_map, const SLPOptions &options) {
-  ola::IntegerVariable *slp_port = export_map->GetIntegerVar("slp-port");
-  slp_port->Set(options.slp_port);
-}
-
-
-/**
  * Drop Privileges if required.
  */
 bool DropPrivileges(const string &setuid, const string &setgid) {
@@ -344,12 +333,12 @@ int main(int argc, char *argv[]) {
     slp_options.ip_address = interface.ip_address;
   }
 
-  auto_ptr<UDPSocket> udp_socket(SetupUDPSocket(options.slp_port));
+  auto_ptr<UDPSocket> udp_socket(SetupUDPSocket(slp_options.slp_port));
   if (!udp_socket.get())
     exit(EX_UNAVAILABLE);
 
   auto_ptr<TCPAcceptingSocket> tcp_socket(
-      SetupTCPSocket(slp_options.ip_address, options.slp_port));
+      SetupTCPSocket(slp_options.ip_address, slp_options.slp_port));
   if (!tcp_socket.get())
     exit(EX_UNAVAILABLE);
 
@@ -357,7 +346,6 @@ int main(int argc, char *argv[]) {
     exit(EX_UNAVAILABLE);
 
   ola::ServerInit(argc, argv, &export_map);
-  InitExportMap(&export_map, options);
 
   SLPDaemon *daemon = new SLPDaemon(udp_socket.get(), tcp_socket.get(),
                                     slp_options, &export_map);
@@ -370,6 +358,7 @@ int main(int argc, char *argv[]) {
   cout << "---------------  Controls  ----------------\n";
   cout << " a - Start active DA discovery\n";
   cout << " d - Print Known DAs\n";
+  cout << " l - Print Local Services\n";
   cout << " p - Print Registrations\n";
   cout << " q - Quit\n";
   cout << "-------------------------------------------\n";

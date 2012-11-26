@@ -30,8 +30,8 @@
 #include <string>
 
 using ola::network::IPV4SocketAddress;
-using std::set;
 using std::string;
+using std::set;
 
 namespace ola {
 namespace slp {
@@ -50,12 +50,12 @@ class SLPUDPSender {
                             xid_t xid,
                             const set<IPV4Address> &pr_list,
                             const string &service_type,
-                            const set<string> &scope_list);
+                            const ScopeSet &scopes);
 
     void SendServiceReply(const IPV4SocketAddress &dest,
                           xid_t xid,
                           uint16_t error_code,
-                          const URLEntries &url_entries);
+                          const URLEntries &urls);
 
     // A Helper method if you just want to send an error
     void SendServiceReply(const IPV4SocketAddress &dest,
@@ -65,9 +65,8 @@ class SLPUDPSender {
     void SendServiceRegistration(const IPV4SocketAddress &dest,
                                  xid_t xid,
                                  bool fresh,
-                                 const URLEntry &url_entry,
-                                 const string &service_type,
-                                 set<string> &scope_list);
+                                 const ScopeSet &scopes,
+                                 const ServiceEntry &service);
 
     void SendServiceAck(const IPV4SocketAddress &dest,
                         xid_t xid,
@@ -78,12 +77,12 @@ class SLPUDPSender {
                       uint16_t error_code,
                       uint32_t boot_timestamp,
                       const string &url,
-                      const set<string> &scope_list);
+                      const ScopeSet &scopes);
 
     void SendSAAdvert(const IPV4SocketAddress &dest,
                       xid_t xid,
                       const string &url,
-                      const set<string> &scope_list);
+                      const ScopeSet &scopes);
 
   private:
     ola::network::UDPSocket *m_udp_socket;

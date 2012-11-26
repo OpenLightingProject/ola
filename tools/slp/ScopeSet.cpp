@@ -19,12 +19,15 @@
 
 #include <string>
 #include <set>
+#include <sstream>
 #include <vector>
+#include "tools/slp/SLPStrings.h"
 #include "tools/slp/ScopeSet.h"
 
 namespace ola {
 namespace slp {
 
+using std::ostringstream;
 using std::set;
 using std::string;
 using std::vector;
@@ -51,6 +54,22 @@ ScopeSet::ScopeSet(const string &scopes) {
     SLPCanonicalizeString(&scope);
     m_scopes.insert(scope);
   }
+}
+
+
+string ScopeSet::AsEscapedString() const {
+  string joined_scopes;
+  std::ostringstream str;
+  set<string>::const_iterator iter = m_scopes.begin();
+  while (iter != m_scopes.end()) {
+    string val = *iter;
+    SLPStringEscape(&val);
+    joined_scopes.append(val);
+    iter++;
+    if (iter != m_scopes.end())
+      joined_scopes.append(",");
+  }
+  return joined_scopes;
 }
 }  // slp
 }  // ola

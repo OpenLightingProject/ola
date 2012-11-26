@@ -21,26 +21,34 @@
 #ifndef TOOLS_SLP_SERVICEENTRY_H_
 #define TOOLS_SLP_SERVICEENTRY_H_
 
+#include <ola/Clock.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
 #include <ola/io/BigEndianStream.h>
 #include <ola/network/IPV4Address.h>
+#include <map>
 #include <ostream>
 #include <set>
 #include <string>
+#include <vector>
 #include "tools/slp/SLPStrings.h"
+#include "tools/slp/ScopeSet.h"
 
 namespace ola {
 namespace slp {
 
+using ola::TimeStamp;
 using ola::network::IPV4Address;
 using std::ostream;
+using std::map;
 using std::set;
 using std::string;
+using std::vector;
 
 /**
- * Represents a URL with the associated lifetime. Two URLEntries are equal if
- * the URL is the same.
+ * Represents a URL with the an associated lifetime. The URL cannot be changed
+ * once the object is created. This object is cheap to copy so it can be used
+ * in STL containers. It doesn't have an ordering defined though.
  */
 class URLEntry {
   public:
@@ -51,18 +59,14 @@ class URLEntry {
           m_lifetime(lifetime) {
     }
 
-    URLEntry(const URLEntry &other)
-      : m_url(other.m_url),
-        m_lifetime(other.m_lifetime) {
-    }
+    ~URLEntry() {}
 
-    virtual ~URLEntry() {}
-
-    string URL() const { return m_url; }
-    uint16_t Lifetime() const { return m_lifetime; }
+    string url() const { return m_url; }
+    uint16_t lifetime() const { return m_lifetime; }
+    void set_lifetime(uint16_t lifetime) { m_lifetime = lifetime; }
 
     // Return the total size of this URL entry
-    unsigned int Size() const { return 6 + m_url.size(); }
+    unsigned int PackedSize() const { return 6 + m_url.size(); }
 
     // Write this ServiceEntry to an IOQueue
     void Write(ola::io::BigEndianOutputStreamInterface *output) const;
@@ -75,19 +79,7 @@ class URLEntry {
       return *this;
     }
 
-    bool operator<(const URLEntry &other) const {
-      return m_url < other.m_url;
-    }
-
-    bool operator==(const URLEntry &other) const {
-      return m_url == other.m_url;
-    }
-
-    bool operator!=(const URLEntry &other) const {
-      return m_url != other.m_url;
-    }
-
-    virtual void ToStream(ostream &out) const {
+    void ToStream(ostream &out) const {
       out << m_url << "(" << m_lifetime << ")";
     }
 
@@ -104,97 +96,165 @@ class URLEntry {
 
   protected:
     string m_url;
-    mutable uint16_t m_lifetime;
+    uint16_t m_lifetime;
     // TODO(simon): add auth blocks here
 };
 
 
+// typedef for convenience
+typedef std::vector<URLEntry> URLEntries;
+
+
 /**
- * An SLP Service Entry, which is like a URL Entry but also has associated
- * scopes.
+ * An SLP Service Entry, which is like a URL Entry but also has an associated
+ * scopes set.
  */
-class ServiceEntry: public URLEntry {
+class ServiceEntry {
   public:
-    ServiceEntry() : URLEntry() {}
+    ServiceEntry(const ServiceEntry &other)
+        : m_url(other.m_url),
+          m_service_type(other.m_service_type),
+          m_scopes(other.m_scopes) {
+    }
 
     /**
-     * @param scopes a set of scopes, should be in canonical form
+     * @param scopes a set of scopes.
+     * @param service_type the service-type
      * @param url the service URL
      * @param lifetime the number of seconds this service is valid for
      */
-    ServiceEntry(const set<string> &scopes,
+    ServiceEntry(const ScopeSet &scopes,
+                 const string &service_type,
                  const string &url,
                  uint16_t lifetime)
-        : URLEntry(url, lifetime),
+        : m_url(url, lifetime),
+          m_service_type(service_type),
           m_scopes(scopes) {
     }
+
+    /**
+     * Similar to above but this creates the scope set from a string.
+     * @param scopes a set of scopes, comma separated
+     * @param service_type the service-type
+     * @param url the service URL
+     * @param lifetime the number of seconds this service is valid for
+     */
+    ServiceEntry(const string &scopes,
+                 const string &service_type,
+                 const string &url,
+                 uint16_t lifetime)
+        : m_url(url, lifetime),
+          m_service_type(service_type),
+          m_scopes(scopes) {
+    }
+
+    /**
+     * This constructors derrives the service type from the url.
+     * @param scopes a set of scopes, comma separated
+     * @param url the service URL
+     * @param lifetime the number of seconds this service is valid for
+     */
+    ServiceEntry(const ScopeSet &scopes,
+                 const string &url,
+                 uint16_t lifetime)
+        : m_url(url, lifetime),
+          m_service_type(SLPServiceFromURL(url)),
+          m_scopes(scopes) {
+    }
+
+    /**
+     * This constructors derrives the service type from the url.
+     * @param scopes a set of scopes, comma separated
+     * @param url the service URL
+     * @param lifetime the number of seconds this service is valid for
+     */
+    ServiceEntry(const string &scopes,
+                 const string &url,
+                 uint16_t lifetime)
+        : m_url(url, lifetime),
+          m_service_type(SLPServiceFromURL(url)),
+          m_scopes(scopes) {
+    }
+
     ~ServiceEntry() {}
 
-    void SetLifetime(uint16_t lifetime) const { m_lifetime = lifetime; }
-    const set<string>& Scopes() const { return m_scopes; }
+    const URLEntry& url() const { return m_url; }
+    URLEntry& mutable_url() { return m_url; }
+    // The service-type, without the 'service:' at the beginning
+    string service_type() const { return m_service_type; }
+    const ScopeSet& scopes() const { return m_scopes; }
 
-    // Return true if the scopes for this service exactly match the given scope
-    // set
-    bool MatchesScopes(const set<string> &scopes) const {
-      return scopes == m_scopes;
-    }
-    // Return true if the service's scopes match any of the provided scopes
-    bool IntersectsScopes(const set<string> &scopes) const {
-      return SLPSetIntersect(m_scopes, scopes);
+    string ToString() const {
+      std::ostringstream str;
+      ToStream(str);
+      return str.str();
     }
 
-    virtual void ToStream(ostream &out) const {
-      URLEntry::ToStream(out);
-      out << ", [" << ola::StringJoin(",", m_scopes) << "]";
+    void ToStream(ostream &out) const {
+      out << m_url << ", [" << m_scopes << "]";
+    }
+
+    friend ostream& operator<<(ostream &out, const ServiceEntry &service) {
+      service.ToStream(out);
+      return out;
     }
 
   private:
-    // TODO(simon): maybe optimize this as a bit vector since it's static?
-    set<string> m_scopes;
-    // TODO(simon): add attributes here
+    URLEntry m_url;
+    string m_service_type;
+    ScopeSet m_scopes;
 };
 
 // typedef for convenience
-typedef std::set<URLEntry> URLEntries;
-typedef std::set<ServiceEntry> ServiceEntries;
+typedef std::vector<ServiceEntry> ServiceEntries;
 
 
 /**
- * An extention of a ServiceEntry that also tracks which DAs it has been
- * registered with.
+ * A Local Service Entry has everything a ServiceEntry has, but is also tracks
+ * which DAs it has been registered with. This is heavier than ServiceEntry so
+ * we disallow thie copy and assignment operators.
  */
-class LocalServiceEntry : public ServiceEntry {
+class LocalServiceEntry {
   public:
-    LocalServiceEntry() : ServiceEntry() {}
-
     /**
-     * @param scopes a set of scopes, should be in canonical form
-     * @param url the service URL
-     * @param lifetime the number of seconds this service is valid for
+     * Create a new LocalServiceEntry
+     * @param service the ServiceEntry that this LocalServiceEntry is
+     *   associated with.
      */
-    LocalServiceEntry(const set<string> &scopes,
-                      const string &url,
-                      uint16_t lifetime)
-        : ServiceEntry(scopes, url, lifetime) {
+    explicit LocalServiceEntry(const ServiceEntry &service)
+        : m_service(service) {
     }
 
-    void AddDA(const IPV4Address &address) {
-      m_registered_das.insert(address);
-    }
+    const ServiceEntry& service() const { return m_service; }
 
-    void RemoveDA(const IPV4Address &address) {
-      m_registered_das.erase(address);
-    }
+    // These control DA registration state
+    void UpdateDA(const IPV4Address &address, const TimeStamp &expires_in);
+    void RemoveDA(const IPV4Address &address);
 
-    const set<IPV4Address>& RegisteredDAs() const { return m_registered_das; }
+    void RegisteredDAs(vector<IPV4Address> *output) const;
+    void OldRegistrations(const TimeStamp &limit,
+                          vector<IPV4Address> *output) const;
 
-    virtual void ToStream(ostream &out) const {
-      ServiceEntry::ToStream(out);
-      out << ", Reg with: " << ola::StringJoin(",", m_registered_das);
+    void SetLifetime(uint16_t lifetime, const TimeStamp &now);
+    bool HasExpired(const TimeStamp &now) const { return now > m_expires_at; }
+
+    void ToStream(ostream &out) const;
+
+    friend ostream& operator<<(ostream &out, const LocalServiceEntry &service) {
+      service.ToStream(out);
+      return out;
     }
 
   private:
-    set<IPV4Address> m_registered_das;
+    // Maps IPV4Addresses of DAs to when our registrations expire.
+    typedef map<IPV4Address, TimeStamp> DATimeMap;
+
+    ServiceEntry m_service;
+    TimeStamp m_expires_at;
+    DATimeMap m_registered_das;
+
+    LocalServiceEntry(const LocalServiceEntry&);
+    LocalServiceEntry& operator=(const LocalServiceEntry&);
 };
 }  // slp
 }  // ola

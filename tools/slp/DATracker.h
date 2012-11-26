@@ -29,6 +29,7 @@
 #include <set>
 #include <vector>
 #include "tools/slp/SLPPacketParser.h"
+#include "tools/slp/ScopeSet.h"
 
 namespace ola {
 namespace slp {
@@ -49,7 +50,7 @@ class DirectoryAgent {
         : m_boot_time(0) {
     }
 
-    DirectoryAgent(const set<string> &scopes,
+    DirectoryAgent(const ScopeSet &scopes,
                    const string &url,
                    const IPV4Address &address,
                    uint32_t boot_timestamp)
@@ -61,7 +62,7 @@ class DirectoryAgent {
 
     virtual ~DirectoryAgent() {}
 
-    set<string> Scopes() const { return m_scopes; }
+    ScopeSet scopes() const { return m_scopes; }
     string URL() const { return m_url; }
     IPV4Address IPAddress() const { return m_address; }
     uint32_t BootTimestamp() const { return m_boot_time; }
@@ -94,7 +95,7 @@ class DirectoryAgent {
 
     virtual void ToStream(ostream &out) const {
       out << m_url << "(" << m_boot_time << ")";
-      out << ", [" << ola::StringJoin(",", m_scopes) << "]"; 
+      out << ", [" << m_scopes << "]";
     }
 
     friend ostream& operator<<(ostream &out, const DirectoryAgent &entry) {
@@ -106,7 +107,7 @@ class DirectoryAgent {
     mutable uint32_t m_boot_time;
 
   private:
-    set<string> m_scopes;
+    ScopeSet m_scopes;
     string m_url;
     IPV4Address m_address;
     uint32_t m_min_refresh_internal;
@@ -131,17 +132,16 @@ class DATracker {
                      const IPV4SocketAddress &source);
 
     void GetDirectoryAgents(vector<DirectoryAgent> *output);
-    void GetDAsForScopes(const set<string> &scopes,
+    void GetDAsForScopes(const ScopeSet &scopes,
                          vector<DirectoryAgent> *output,
-                         vector<string> *scopes_without_das);
-
+                         ScopeSet *scopes_without_das);
 
   private:
     class InternalDirectoryAgent : public DirectoryAgent {
       public:
         InternalDirectoryAgent(): DirectoryAgent() {}
 
-        InternalDirectoryAgent(const set<string> &scopes,
+        InternalDirectoryAgent(const ScopeSet &scopes,
                                const string &url,
                                const IPV4Address &address,
                                uint32_t boot_timestamp)
@@ -151,8 +151,6 @@ class DATracker {
         void SetBootTimestamp(uint32_t boot_timestamp) const {
           m_boot_time = boot_timestamp;
         }
-
-      private:
     };
 
     typedef map<string, InternalDirectoryAgent> DAMap;

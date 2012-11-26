@@ -129,7 +129,7 @@ bool SLPClientCore::DeRegisterService(
   ola::slp::proto::ServiceDeRegistration request;
   ola::slp::proto::ServiceAck *reply = new ola::slp::proto::ServiceAck();
 
-  request.set_service(service);
+  request.set_url(service);
   for (vector<string>::const_iterator iter = scopes.begin();
        iter != scopes.end(); ++iter)
     request.add_scope(*iter);
@@ -148,7 +148,7 @@ bool SLPClientCore::DeRegisterService(
  */
 bool SLPClientCore::FindService(
     const vector<string> &scopes,
-    const string &service,
+    const string &service_type,
     SingleUseCallback2<void, const string&,
                        const vector<SLPService> &> *callback) {
   if (!m_connected) {
@@ -160,7 +160,7 @@ bool SLPClientCore::FindService(
   ola::slp::proto::ServiceRequest request;
   ola::slp::proto::ServiceReply *reply = new ola::slp::proto::ServiceReply();
 
-  request.set_service(service);
+  request.set_service_type(service_type);
   for (vector<string>::const_iterator iter = scopes.begin();
        iter != scopes.end(); ++iter)
     request.add_scope(*iter);
@@ -213,10 +213,9 @@ void SLPClientCore::HandleFindRequest(find_arg *args) {
   if (args->controller->Failed()) {
     error_string = args->controller->ErrorText();
   } else {
-    for (int i = 0; i < args->reply->service_size(); ++i) {
-      ola::slp::proto::Service service_info = args->reply->service(i);
-      SLPService slp_service(service_info.service_name(),
-                             service_info.lifetime());
+    for (int i = 0; i < args->reply->url_entry_size(); ++i) {
+      const ola::slp::proto::URLEntry &url_entry = args->reply->url_entry(i);
+      SLPService slp_service(url_entry.url(), url_entry.lifetime());
       services.push_back(slp_service);
     }
   }
@@ -244,7 +243,7 @@ bool SLPClientCore::GenericRegisterService(
   ola::slp::proto::ServiceRegistration request;
   ola::slp::proto::ServiceAck *reply = new ola::slp::proto::ServiceAck();
 
-  request.set_service(service);
+  request.set_url(service);
   for (vector<string>::const_iterator iter = scopes.begin();
        iter != scopes.end(); ++iter)
     request.add_scope(*iter);

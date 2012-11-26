@@ -51,11 +51,11 @@ void SLPUDPSender::SendServiceRequest(const IPV4SocketAddress &dest,
                                       xid_t xid,
                                       const set<IPV4Address> &pr_list,
                                       const string &service_type,
-                                      const set<string> &scope_list) {
+                                      const ScopeSet &scopes) {
   EmptyBuffer();
   SLPPacketBuilder::BuildServiceRequest(
       &m_output_stream, xid, dest.Host() == m_multicast_address, pr_list,
-      service_type, scope_list);
+      service_type, scopes);
   OLA_INFO << "Sending SrvRqst for " << service_type;
   Send(dest);
 }
@@ -64,10 +64,9 @@ void SLPUDPSender::SendServiceRequest(const IPV4SocketAddress &dest,
 void SLPUDPSender::SendServiceReply(const IPV4SocketAddress &dest,
                                     xid_t xid,
                                     uint16_t error_code,
-                                    const URLEntries &url_entries) {
+                                    const URLEntries &urls) {
   EmptyBuffer();
-  SLPPacketBuilder::BuildServiceReply(&m_output_stream, xid, error_code,
-                                      url_entries);
+  SLPPacketBuilder::BuildServiceReply(&m_output_stream, xid, error_code, urls);
   OLA_INFO << "Sending SrvRply with error " << error_code;
   Send(dest);
 }
@@ -76,22 +75,24 @@ void SLPUDPSender::SendServiceReply(const IPV4SocketAddress &dest,
 void SLPUDPSender::SendServiceReply(const IPV4SocketAddress &dest,
                                     xid_t xid,
                                     uint16_t error_code) {
-  URLEntries url_entries;
-  SendServiceReply(dest, xid, error_code, url_entries);
+  URLEntries urls;
+  SendServiceReply(dest, xid, error_code, urls);
 }
 
 
+/**
+ * We pass the scopes separately here since they may be a subset of what the
+ * service was registered with, see Section 8.3
+ */
 void SLPUDPSender::SendServiceRegistration(const IPV4SocketAddress &dest,
                                            xid_t xid,
                                            bool fresh,
-                                           const URLEntry &url_entry,
-                                           const string &service_type,
-                                           set<string> &scope_list) {
+                                           const ScopeSet &scopes,
+                                           const ServiceEntry &service) {
   EmptyBuffer();
   SLPPacketBuilder::BuildServiceRegistration(&m_output_stream, xid, fresh,
-                                             url_entry, service_type,
-                                             scope_list);
-  OLA_INFO << "Sending SrvReg with for " << service_type;
+                                             scopes, service);
+  OLA_INFO << "Sending SrvReg with for " << service.service_type();
   Send(dest);
 }
 
@@ -111,11 +112,11 @@ void SLPUDPSender::SendDAAdvert(const IPV4SocketAddress &dest,
                                 uint16_t error_code,
                                 uint32_t boot_timestamp,
                                 const string &url,
-                                const set<string> &scope_list) {
+                                const ScopeSet &scopes) {
   EmptyBuffer();
   SLPPacketBuilder::BuildDAAdvert(
       &m_output_stream, xid, dest.Host() == m_multicast_address, error_code,
-      boot_timestamp, url, scope_list);
+      boot_timestamp, url, scopes);
   OLA_INFO << "Sending DAAdvert with url " << url;
   Send(dest);
 }
@@ -124,11 +125,11 @@ void SLPUDPSender::SendDAAdvert(const IPV4SocketAddress &dest,
 void SLPUDPSender::SendSAAdvert(const IPV4SocketAddress &dest,
                                 xid_t xid,
                                 const string &url,
-                                const set<string> &scope_list) {
+                                const ScopeSet &scopes) {
   EmptyBuffer();
   SLPPacketBuilder::BuildSAAdvert(
       &m_output_stream, xid, dest.Host() == m_multicast_address, url,
-      scope_list);
+      scopes);
   OLA_INFO << "Sending SAAdvert with url " << url;
   Send(dest);
 }

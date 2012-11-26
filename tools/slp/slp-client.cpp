@@ -115,8 +115,10 @@ void ParseOptions(int argc, char *argv[],
         break;
       case 's':
         options->scopes = optarg;
+        break;
       case 't':
         options->lifetime = atoi(optarg);
+        break;
       case '?':
         break;
       default:

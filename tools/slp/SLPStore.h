@@ -25,10 +25,11 @@
 
 #include <map>
 #include <string>
-#include <set>
+#include <vector>
 
 #include "tools/slp/ServiceEntry.h"
 #include "tools/slp/SLPStrings.h"
+#include "tools/slp/ScopeSet.h"
 
 
 namespace ola {
@@ -36,8 +37,8 @@ namespace slp {
 
 using ola::TimeStamp;
 using std::map;
-using std::set;
 using std::string;
+using std::vector;
 
 /**
  * Holds the registrations for services and ages & cleans them as appropriate.
@@ -78,28 +79,16 @@ class SLPStore {
     } ReturnCode;
 
     ReturnCode Insert(const TimeStamp &now, const ServiceEntry &entry);
-
     ReturnCode Remove(const ServiceEntry &entry);
 
-    bool BulkInsert(const TimeStamp &now, const ServiceEntries &services);
-
-    // We provide two lookup methods, the first returns ServiceEntries, the
-    // second returns URLEntries. You should almost always use the latter.
     void Lookup(const TimeStamp &now,
-                const set<string> &scopes,
-                const string &service,
-                ServiceEntries *output,
+                const ScopeSet &scopes,
+                const string &service_type,
+                URLEntries *output,
                 unsigned int limit = 0);
-    void Lookup(const TimeStamp &now,
-                 const set<string> &scopes,
-                 const string &service,
-                 URLEntries *output,
-                 unsigned int limit = 0);
 
     void Clean(const TimeStamp &now);
-
     void Reset();
-
     void Dump(const TimeStamp &now);
 
     unsigned int ServiceCount() const {
@@ -107,11 +96,12 @@ class SLPStore {
     }
 
   private:
+    typedef vector<ServiceEntry*> ServiceEntryVector;
     typedef struct {
       TimeStamp last_cleaned;
-      ServiceEntries entries;
+      ServiceEntryVector services;
     } ServiceList;
-
+    // map of service-type to a list of ServiceEntries
     typedef map<string, ServiceList*> ServiceMap;
 
     // for our use, # of services will be small so a map is a better bet.
@@ -119,14 +109,10 @@ class SLPStore {
 
     void MaybeCleanURLList(const TimeStamp &now, ServiceList *service_list);
     ServiceMap::iterator Populate(const TimeStamp &now, const string &service);
-    ReturnCode InsertOrUpdateEntry(ServiceEntries *entries,
-                                   const ServiceEntry &entry);
-    template<typename Container>
-    void InternalLookup(const TimeStamp &now,
-                        const set<string> &scopes,
-                        const string &service,
-                        Container *output,
-                        unsigned int limit);
+    ServiceEntryVector::iterator FindService(ServiceEntryVector *services,
+                                             const string &url);
+    ReturnCode InsertOrUpdateEntry(ServiceEntryVector *services,
+                                   const ServiceEntry &service);
 };
 }  // slp
 }  // ola

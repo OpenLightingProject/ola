@@ -138,11 +138,7 @@ class SLPDaemon {
 
         void FindServiceHandler(ola::slp::proto::ServiceReply* response,
                                 ::google::protobuf::Closure* done,
-                                const URLEntries &services);
-
-        void AckHandler(ola::slp::proto::ServiceAck* response,
-                        ::google::protobuf::Closure* done,
-                        unsigned int error_code);
+                                const URLEntries &urls);
     };
 
     ola::Clock m_clock;
@@ -162,7 +158,6 @@ class SLPDaemon {
     auto_ptr<ola::http::OlaHTTPServer> m_http_server;
 
     // Random methods
-    void DumpStore();
     void GetDirectoryAgents();
 
     // RPC methods
