@@ -97,6 +97,21 @@ void SLPUDPSender::SendServiceRegistration(const IPV4SocketAddress &dest,
 }
 
 
+/**
+ * Similar to SendServiceRegistration, we pass the scopes separately here
+ */
+void SLPUDPSender::BuildServiceDeRegistration(const IPV4SocketAddress &dest,
+                                              xid_t xid,
+                                              const ScopeSet &scopes,
+                                              const ServiceEntry &service) {
+  EmptyBuffer();
+  SLPPacketBuilder::BuildServiceDeRegistration(&m_output_stream, xid, scopes,
+                                               service);
+  OLA_INFO << "Sending SrvDeReg with for " << service.service_type();
+  Send(dest);
+}
+
+
 void SLPUDPSender::SendServiceAck(const IPV4SocketAddress &dest,
                                   xid_t xid,
                                   uint16_t error_code) {

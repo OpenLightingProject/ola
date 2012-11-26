@@ -65,6 +65,12 @@ class SLPPacketBuilder {
                                          const ScopeSet &scopes,
                                          const ServiceEntry &service);
 
+    static void BuildServiceDeRegistration(
+        BigEndianOutputStreamInterface *output,
+        xid_t xid,
+        const ScopeSet &scopes,
+        const ServiceEntry &service);
+
     static void BuildServiceAck(BigEndianOutputStreamInterface *output,
                                 xid_t xid,
                                 uint16_t error_code);

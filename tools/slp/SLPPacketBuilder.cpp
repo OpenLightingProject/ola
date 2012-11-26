@@ -165,6 +165,44 @@ void SLPPacketBuilder::BuildServiceRegistration(
 
 
 /**
+ * Build a Service De-Registration message.
+ * @param output the BigEndianOutputStreamInterface to put the packet in
+ * @param xid the transaction ID
+ * @param fresh set to true if this is a new registration.
+ * @param scopes the set of scopes to use. We don't use the ones from the
+ *   ServiceEntry, since the DA may not support all of them, see Section 8.3
+ * @param service the ServiceEntry to register
+ */
+void SLPPacketBuilder::BuildServiceDeRegistration(
+    BigEndianOutputStreamInterface *output,
+    xid_t xid,
+    const ScopeSet &scopes,
+    const ServiceEntry &service) {
+  /*
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |         Service Location header (function = SrvDeReg = 4)     |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |    Length of <scope-list>     |         <scope-list>          \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                           URL Entry                           \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |      Length of <tag-list>     |            <tag-list>         \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  */
+  const string joined_scopes = scopes.AsEscapedString();
+  unsigned int length = (2 + joined_scopes.size() +
+                         service.url().PackedSize() + 2);
+
+  BuildSLPHeader(output, SERVICE_REGISTRATION, length, 0, xid);
+  WriteString(output, joined_scopes);
+  service.url().Write(output);
+  *output << static_cast<uint16_t>(0);  // length of tag-list
+}
+
+
+/**
  * Build a Service Registration message.
  * @param output the BigEndianOutputStreamInterface to put the packet in
  * @param xid the transaction ID
