@@ -195,7 +195,7 @@ void SLPPacketBuilder::BuildServiceDeRegistration(
   unsigned int length = (2 + joined_scopes.size() +
                          service.url().PackedSize() + 2);
 
-  BuildSLPHeader(output, SERVICE_REGISTRATION, length, 0, xid);
+  BuildSLPHeader(output, SERVICE_DEREGISTER, length, 0, xid);
   WriteString(output, joined_scopes);
   service.url().Write(output);
   *output << static_cast<uint16_t>(0);  // length of tag-list
