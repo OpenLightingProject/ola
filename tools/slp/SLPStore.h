@@ -72,10 +72,11 @@ class SLPStore {
     SLPStore() {}
     ~SLPStore();
 
-    // Return codes from the Insert & Lookup methods.
+    // Return codes from various methods.
     typedef enum {
       OK,
-      SCOPE_MISMATCH
+      SCOPE_MISMATCH,
+      NOT_FOUND,
     } ReturnCode;
 
     ReturnCode Insert(const TimeStamp &now, const ServiceEntry &entry);
@@ -86,6 +87,9 @@ class SLPStore {
                 const string &service_type,
                 URLEntries *output,
                 unsigned int limit = 0);
+
+    bool ScopesConflict(const TimeStamp &now, const ServiceEntry &service);
+    ReturnCode CheckIfScopesMatch(const ServiceEntry &service);
 
     void Clean(const TimeStamp &now);
     void Reset();

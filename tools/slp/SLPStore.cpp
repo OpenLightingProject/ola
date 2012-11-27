@@ -123,6 +123,29 @@ void SLPStore::Lookup(const TimeStamp &now,
 
 
 /**
+ * Lookup a service, and check if the scopes match what we have in the store.
+ * @returns
+ *   NOT_FOUND if the service isn't already in the store
+ *   SCOPE_MISMATCH if the scopes don't match what's in the store
+ *   OK if it's safe to remove.
+ */
+SLPStore::ReturnCode SLPStore::CheckIfScopesMatch(const ServiceEntry &service) {
+  ServiceMap::iterator iter = m_services.find(service.service_type());
+  if (iter == m_services.end())
+    return NOT_FOUND;
+
+  ServiceEntryVector::iterator service_iter = iter->second->services.begin();
+  for (; service_iter != iter->second->services.end(); ++service_iter) {
+    if ((*service_iter)->url().url() != service.url().url())
+      continue;
+
+    return (*service_iter)->scopes() == service.scopes() ? OK : SCOPE_MISMATCH;
+  }
+  return NOT_FOUND;
+}
+
+
+/**
  * Clean out expired entries from the table.
  * @param now the current time
  */
@@ -182,15 +205,13 @@ void SLPStore::MaybeCleanURLList(const TimeStamp &now,
     return;
 
   ServiceEntryVector::iterator service_iter = service_list->services.begin();
-
   while (service_iter != service_list->services.end()) {
-    ServiceEntryVector::iterator current = service_iter;
-    service_iter++;
-    if ((*current)->url().lifetime() <= elapsed_seconds) {
-      service_list->services.erase(current);
+    if ((*service_iter)->url().lifetime() <= elapsed_seconds) {
+      service_iter = service_list->services.erase(service_iter);
     } else {
-      (*current)->mutable_url().set_lifetime(
-          (*current)->url().lifetime() - elapsed_seconds);
+      (*service_iter)->mutable_url().set_lifetime(
+          (*service_iter)->url().lifetime() - elapsed_seconds);
+      ++service_iter;
     }
   }
   service_list->last_cleaned = now;
