@@ -226,56 +226,6 @@ class ServiceEntry {
 
 // typedef for convenience
 typedef std::vector<ServiceEntry> ServiceEntries;
-
-
-/**
- * A Local Service Entry has everything a ServiceEntry has, but is also tracks
- * which DAs it has been registered with. This is heavier than ServiceEntry so
- * we disallow thie copy and assignment operators.
- * TODO(simon): I'm not convinced we need this.
- */
-class LocalServiceEntry {
-  public:
-    /**
-     * Create a new LocalServiceEntry
-     * @param service the ServiceEntry that this LocalServiceEntry is
-     *   associated with.
-     */
-    explicit LocalServiceEntry(const ServiceEntry &service)
-        : m_service(service) {
-    }
-
-    const ServiceEntry& service() const { return m_service; }
-
-    // These control DA registration state
-    void UpdateDA(const IPV4Address &address, const TimeStamp &expires_in);
-    void RemoveDA(const IPV4Address &address);
-
-    void RegisteredDAs(vector<IPV4Address> *output) const;
-    void OldRegistrations(const TimeStamp &limit,
-                          vector<IPV4Address> *output) const;
-
-    void SetLifetime(uint16_t lifetime, const TimeStamp &now);
-    bool HasExpired(const TimeStamp &now) const { return now > m_expires_at; }
-
-    void ToStream(ostream &out) const;
-
-    friend ostream& operator<<(ostream &out, const LocalServiceEntry &service) {
-      service.ToStream(out);
-      return out;
-    }
-
-  private:
-    // Maps IPV4Addresses of DAs to when our registrations expire.
-    typedef map<IPV4Address, TimeStamp> DATimeMap;
-
-    ServiceEntry m_service;
-    TimeStamp m_expires_at;
-    DATimeMap m_registered_das;
-
-    LocalServiceEntry(const LocalServiceEntry&);
-    LocalServiceEntry& operator=(const LocalServiceEntry&);
-};
 }  // slp
 }  // ola
 #endif  // TOOLS_SLP_SERVICEENTRY_H_
