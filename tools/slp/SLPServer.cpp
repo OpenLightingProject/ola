@@ -81,7 +81,6 @@ const char SLPServer::METHOD_DEREG_SERVICE[] = "DeRegisterService";
 const char SLPServer::METHOD_FIND_SERVICE[] = "FindService";
 const char SLPServer::METHOD_REG_SERVICE[] = "RegisterService";
 const char SLPServer::REGSRVS_ERROR_COUNT_VAR[] = "slp-reg-srv-errors";
-const char SLPServer::SCOPE_LIST_VAR[] = "scope-list";
 const char SLPServer::SLP_PORT_VAR[] = "slp-port";
 const char SLPServer::SRVACK[] = "SrvAck";
 const char SLPServer::SRVREG[] = "SrvReg";
@@ -109,6 +108,7 @@ SLPServer::SLPServer(ola::io::SelectServerInterface *ss,
                      ola::ExportMap *export_map,
                      const SLPServerOptions &options)
     : m_enable_da(options.enable_da),
+      m_slp_port(options.slp_port),
       m_config_da_beat(options.config_da_beat * ONE_THOUSAND),
       m_config_da_find(options.config_da_find * ONE_THOUSAND),
       m_config_mc_max(options.config_mc_max * ONE_THOUSAND),
@@ -123,31 +123,28 @@ SLPServer::SLPServer(ola::io::SelectServerInterface *ss,
       m_active_da_discovery_timer(ola::thread::INVALID_TIMEOUT),
       m_udp_socket(udp_socket),
       m_slp_accept_socket(tcp_socket),
+      m_configured_scopes(options.scopes),
       m_udp_sender(m_udp_socket),
-      m_xid(0),  // TODO(simon): randomly choose this
+      m_xid_allocator(0),  // TODO(simon): randomly choose this
       m_export_map(export_map) {
   m_multicast_endpoint.reset(
       new IPV4SocketAddress(
-        IPV4Address(HostToNetwork(SLP_MULTICAST_ADDRESS)), DEFAULT_SLP_PORT));
+        IPV4Address(HostToNetwork(SLP_MULTICAST_ADDRESS)), m_slp_port));
 
   ToLower(&m_en_lang);
 
-  if (options.scopes.empty())
-    m_scope_list.insert(SLPGetCanonicalString(DEFAULT_SLP_SCOPE));
+  if (m_configured_scopes.empty())
+    m_configured_scopes = ScopeSet(DEFAULT_SLP_SCOPE);
 
-  std::transform(options.scopes.begin(),
-                 options.scopes.end(),
-                 inserter(m_scope_list, m_scope_list.begin()),
-                 SLPGetCanonicalString);
-
-  string joined_scopes = ola::StringJoin(",", m_scope_list);
   export_map->GetBoolVar("slp-da-enabled")->Set(options.enable_da);
   export_map->GetIntegerVar("slp-config-da-beat")->Set(options.config_da_beat);
   export_map->GetIntegerVar("slp-config-da-find")->Set(options.config_da_find);
   export_map->GetIntegerVar("slp-config-mc-max")->Set(options.config_mc_max);
+  export_map->GetIntegerVar("slp-port")->Set(options.slp_port);
   export_map->GetIntegerVar(FINDSRVS_EMPTY_COUNT_VAR);
   export_map->GetIntegerVar(UDP_RX_TOTAL_VAR);
-  export_map->GetStringVar(SCOPE_LIST_VAR)->Set(joined_scopes);
+  export_map->GetStringVar("slp-scope-list")->Set(
+      m_configured_scopes.ToString());
   export_map->GetUIntMapVar(UDP_RX_PACKET_BY_TYPE_VAR, "type");
   export_map->GetUIntMapVar(METHOD_CALLS_VAR, "method");
 }
@@ -158,6 +155,7 @@ SLPServer::~SLPServer() {
   m_ss->RemoveTimeout(m_store_cleaner_timer);
   m_ss->RemoveTimeout(m_active_da_discovery_timer);
   m_udp_socket->Close();
+  STLDeleteValues(m_pending_acks);
 }
 
 
@@ -207,31 +205,6 @@ bool SLPServer::Init() {
 
 
 /**
- * Bulk load a set of Service Entries.
- */
-bool SLPServer::BulkLoad(const ServiceEntries &services) {
-  // The store requires all ServiceEntries to have the same service, so we split
-  // them out here.
-  typedef map<string, ServiceEntries> ServiceMap;
-  ServiceMap entries_by_service;
-  for (ServiceEntries::const_iterator iter = services.begin();
-       iter != services.end(); ++iter) {
-    const string service = SLPServiceFromURL(iter->URL());
-    entries_by_service[service].insert(*iter);
-  }
-
-  TimeStamp now;
-  m_clock.CurrentTime(&now);
-  bool ok = true;
-  for (ServiceMap::const_iterator iter = entries_by_service.begin();
-       iter != entries_by_service.end(); ++iter) {
-    ok &= m_service_store.BulkInsert(now, iter->second);
-  }
-  return ok;
-}
-
-
-/**
  * Dump out the contents of the SLP store.
  */
 void SLPServer::DumpStore() {
@@ -258,112 +231,73 @@ void SLPServer::TriggerActiveDADiscovery() {
 /**
  * Locate a service
  * @param scopes the set of scopes to search
- * @param service the service name
+ * @param service_type the type of service to locate
  * @param cb the callback to run
  * TODO(simon): change this to execute the callback multiple times until all
  * results arrive.
  */
 void SLPServer::FindService(
     const set<string> &scopes,
-    const string &service,
+    const string &service_type,
     SingleUseCallback1<void, const URLEntries&> *cb) {
   m_export_map->GetUIntMapVar(METHOD_CALLS_VAR)->Increment(METHOD_FIND_SERVICE);
-  URLEntries services;
+  ScopeSet scope_set(scopes);
+  URLEntries urls;
 
-  set<string> canonical_scopes;
-  SLPReduceList(scopes, &canonical_scopes);
-
-  if (m_enable_da) {
-    // we're in DA mode, just return all the matching ServiceEntries we know
-    // about.
-    if (SLPSetIntersect(canonical_scopes, m_scope_list)) {
-      OLA_INFO << "Received SrvRqst for " << service;
-      LocalLocateServices(canonical_scopes, service, &services);
-    }
-  } else {
-    vector<DirectoryAgent> agents;
-    m_da_tracker.GetDirectoryAgents(&agents);
+  if (!m_enable_da) {
+    InternalFindService(scopes, service_type, cb);
+    return;
   }
-  if (services.empty())
+
+  // we're in DA mode, just return all the matching ServiceEntries we know
+  // about.
+  if (scope_set.Intersects(m_configured_scopes)) {
+    OLA_INFO << "Received SrvRqst for " << service_type;
+    LocalLocateServices(scope_set, service_type, &urls);
+  }
+
+  if (urls.empty())
     (*m_export_map->GetIntegerVar(FINDSRVS_EMPTY_COUNT_VAR))++;
-  cb->Run(services);
+  cb->Run(urls);
 }
 
 
 /**
  * Register a service
- * @param scopes the set of scopes to search
- * @param service the service name
- * @param lifetime the lifetime for this service
- * @param cb the callback to run
+ * @param service the ServiceEntry to register
+ * @returns an SLP error code
  */
-void SLPServer::RegisterService(const set<string> &scopes,
-                                const string &url,
-                                uint16_t lifetime,
-                                SingleUseCallback1<void, unsigned int> *cb) {
+uint16_t SLPServer::RegisterService(const ServiceEntry &new_service) {
   m_export_map->GetUIntMapVar(METHOD_CALLS_VAR)->Increment(METHOD_REG_SERVICE);
+  ServiceEntry service(new_service);
+  service.set_local(true);
 
-  set<string> canonical_scopes;
-  SLPReduceList(scopes, &canonical_scopes);
-  ServiceEntry service(canonical_scopes, url, lifetime);
-
-  if (m_enable_da) {
-    // we're in DA mode, register this service in our stores if the scopes
-    // match
-    if (scopes.empty())
-      OLA_WARN << "Scopes list for RegisterService(" << url << "), is empty";
-
-    uint16_t error_code = LocalRegisterService(service);
-    if (error_code)
-      (*m_export_map->GetIntegerVar(REGSRVS_ERROR_COUNT_VAR))++;
-    cb->Run(error_code);
-    // TODO(simon): we should register with other DAs here
-    return;
+  uint16_t error_code;
+  if (!service.url().lifetime()) {
+    OLA_WARN << "Attempt to register " << service << " with a lifetime of 0";
+    error_code = INVALID_REGISTRATION;
   } else {
-
-    // TODO(simon): register with DAs if we have them
-    //RegisterServiceWithDAs(service);
-
-
-
-    cb->Run(INTERNAL_ERROR);
+    error_code = InternalRegisterService(service);
   }
+  if (error_code)
+    (*m_export_map->GetIntegerVar(REGSRVS_ERROR_COUNT_VAR))++;
+  return error_code;
 }
 
 
 /**
  * DeRegister a service
- * @param scopes the set of scopes to deregister for
- * @param service the service name
- * @param cb the callback to run
+ * @param service the ServiceEntry to de-register
+ * @returns an SLP error code
  */
-void SLPServer::DeRegisterService(const set<string> &scopes,
-                                  const string &url,
-                                  SingleUseCallback1<void, unsigned int> *cb) {
+uint16_t SLPServer::DeRegisterService(const ServiceEntry &service) {
   m_export_map->GetUIntMapVar(METHOD_CALLS_VAR)->Increment(
       METHOD_DEREG_SERVICE);
 
-  if (m_enable_da) {
-    // we're in DA mode, register this service in our stores if the scopes
-    // match
-    if (scopes.empty())
-      OLA_WARN << "Scopes list for RegisterService(" << url << "), is empty";
-
-    set<string> canonical_scopes;
-    SLPReduceList(scopes, &canonical_scopes);
-    // the lifetime can be anything for a de-register request
-    ServiceEntry service(canonical_scopes, url, 0);
-
-    uint16_t error_code = LocalDeRegisterService(service);
-    if (error_code)
-      (*m_export_map->GetIntegerVar(DEREGSRVS_ERROR_COUNT_VAR))++;
-    cb->Run(error_code);
-    // TODO(simon): we should de-register with other DAs here
-    return;
-  } else {
-    // TODO(simon): de-register with DAs if we have them
-    cb->Run(INTERNAL_ERROR);
-  }
+  uint16_t error_code = InternalDeRegisterService(service);
+  if (error_code)
+    (*m_export_map->GetIntegerVar(DEREGSRVS_ERROR_COUNT_VAR))++;
+  return error_code;
 }
 
 
@@ -371,7 +305,7 @@ void SLPServer::DeRegisterService(const set<string> &scopes,
  * Called when there is data on the UDP socket
  */
 void SLPServer::UDPData() {
-  // TODO(simon): make this a member when we're donet
+  // TODO(simon): make this a member when we're done
   ssize_t packet_size = 1500;
   uint8_t packet[packet_size];
   ola::network::IPV4Address source_ip;
@@ -382,7 +316,7 @@ void SLPServer::UDPData() {
     return;
   IPV4SocketAddress source(source_ip, port);
 
-  OLA_INFO << "Got " << packet_size << " UDP bytes from " << source;
+  OLA_DEBUG << "Got " << packet_size << " UDP bytes from " << source;
   (*m_export_map->GetIntegerVar(UDP_RX_TOTAL_VAR))++;
 
   uint8_t function_id = m_packet_parser.DetermineFunctionID(packet,
@@ -390,7 +324,6 @@ void SLPServer::UDPData() {
 
   MemoryBuffer buffer(&packet[0], packet_size);
   BigEndianInputStream stream(&buffer);
-
   UIntMap *packet_by_type = m_export_map->GetUIntMapVar(
     UDP_RX_PACKET_BY_TYPE_VAR);
 
@@ -485,23 +418,22 @@ void SLPServer::HandleServiceRequest(BigEndianInputStream *stream,
   }
 
   // check scopes
-  set<string> canonical_scopes;
   if (request->scope_list.empty()) {
     SendErrorIfUnicast(request.get(), source, SCOPE_NOT_SUPPORTED);
     return;
   }
-  SLPReduceList(request->scope_list, &canonical_scopes);
-  if (!SLPSetIntersect(canonical_scopes, m_scope_list)) {
+  ScopeSet scope_set(request->scope_list);
+  if (!scope_set.Intersects(m_configured_scopes)) {
     SendErrorIfUnicast(request.get(), source, SCOPE_NOT_SUPPORTED);
     return;
   }
 
-  URLEntries services;
+  URLEntries urls;
   OLA_INFO << "Received SrvRqst for " << request->service_type;
-  LocalLocateServices(canonical_scopes, request->service_type, &services);
+  LocalLocateServices(scope_set, request->service_type, &urls);
 
-  OLA_INFO << "sending SrvReply with " << services.size() << " services";
-  m_udp_sender.SendServiceReply(source, request->xid, 0, services);
+  OLA_INFO << "sending SrvReply with " << urls.size() << " urls";
+  m_udp_sender.SendServiceReply(source, request->xid, 0, urls);
 }
 
 
@@ -522,7 +454,7 @@ void SLPServer::HandleServiceReply(BigEndianInputStream *stream,
 
 
 /**
- * Handle a Service Registration packet.
+ * Handle a Service Registration packet, only DAs support this.
  */
 void SLPServer::HandleServiceRegistration(BigEndianInputStream *stream,
                                           const IPV4SocketAddress &source) {
@@ -542,14 +474,24 @@ void SLPServer::HandleServiceRegistration(BigEndianInputStream *stream,
  */
 void SLPServer::HandleServiceAck(BigEndianInputStream *stream,
                                  const IPV4SocketAddress &source) {
-  OLA_INFO << "Got Service ack from " << source;
-  const ServiceAckPacket *srv_ack =
-    m_packet_parser.UnpackServiceAck(stream);
-  if (!srv_ack)
+  auto_ptr<const ServiceAckPacket> srv_ack(
+      m_packet_parser.UnpackServiceAck(stream));
+  if (!srv_ack.get())
     return;
 
-  OLA_INFO << "Unpacked service ack";
-  delete srv_ack;
+  // See if this matches one of our pending transactions
+  PendingAckMap::iterator iter = m_pending_acks.find(srv_ack->xid);
+  if (iter == m_pending_acks.end()) {
+    OLA_INFO << "Can't locate a matching request for xid " << srv_ack->xid;
+    return;
+  }
+
+  OLA_INFO << "SrvAck[" << srv_ack->xid << "] from " << source
+           << ", error code is " << srv_ack->error_code;
+  // Running the callback may change the map, invalidating the iterator
+  AckCallback *cb = iter->second;
+  m_pending_acks.erase(iter);
+  cb->Run(srv_ack->error_code);
 }
 
 
@@ -575,7 +517,6 @@ void SLPServer::HandleDAAdvert(BigEndianInputStream *stream,
     // active discovery in progress
     m_outstanding_da_discovery->AddPR(source.Host());
   }
-
   m_da_tracker.NewDAAdvert(*da_advert, source);
 }
 
@@ -598,15 +539,16 @@ void SLPServer::MaybeSendSAAdvert(const ServiceRequestPacket *request,
     return;  // no SAAdverts in DA mode
 
   // Section 11.2
-  if (!(request->scope_list.empty() ||
-        SLPScopesMatch(request->scope_list, m_scope_list))) {
+  ScopeSet scopes(request->scope_list);
+  if (!(scopes.empty() || scopes.Intersects(m_configured_scopes))) {
     SendErrorIfUnicast(request, source, SCOPE_NOT_SUPPORTED);
     return;
   }
 
   ostringstream str;
   str << SERVICE_AGENT_SERVICE << "://" << m_iface_address;
-  m_udp_sender.SendSAAdvert(source, request->xid, str.str(), m_scope_list);
+  m_udp_sender.SendSAAdvert(source, request->xid, str.str(),
+                            m_configured_scopes);
 }
 
 
@@ -619,8 +561,8 @@ void SLPServer::MaybeSendDAAdvert(const ServiceRequestPacket *request,
     return;
 
   // Section 11.2
-  if (!(request->scope_list.empty() ||
-        SLPScopesMatch(request->scope_list, m_scope_list))) {
+  ScopeSet scopes(request->scope_list);
+  if (!(scopes.empty() || scopes.Intersects(m_configured_scopes))) {
     SendErrorIfUnicast(request, source, SCOPE_NOT_SUPPORTED);
     return;
   }
@@ -636,7 +578,7 @@ void SLPServer::SendDAAdvert(const IPV4SocketAddress &dest) {
   std::ostringstream str;
   str << DIRECTORY_AGENT_SERVICE << "://" << m_iface_address;
   m_udp_sender.SendDAAdvert(dest, 0, 0, m_boot_time.Seconds(),
-                            str.str(), m_scope_list);
+                            str.str(), m_configured_scopes);
 }
 
 /**
@@ -651,14 +593,12 @@ bool SLPServer::SendDABeat() {
 /**
  * Lookup a service in our local stores
  * @param scopes the list of canonical scopes
- * @param service the service to locate.
+ * @param service_type the service to locate.
  * @param services a ServiceEntries where we store the results
  */
-void SLPServer::LocalLocateServices(const set<string> &scopes,
-                                    const string &service,
+void SLPServer::LocalLocateServices(const ScopeSet &scopes,
+                                    const string &service_type,
                                     URLEntries *services) {
-  string service_type = SLPGetCanonicalString(service);
-  SLPStripService(&service_type);
   m_service_store.Lookup(*(m_ss->WakeUpTime()), scopes, service_type, services);
 }
 
@@ -694,6 +634,303 @@ uint16_t SLPServer::LocalDeRegisterService(const ServiceEntry &service) {
 
 
 /**
+ * Locate a service, Uses DAs if they exist, or otherwise falls back to
+ * multicasting.
+ */
+void SLPServer::InternalFindService(
+    const set<string> &scopes,
+    const string &service,
+    SingleUseCallback1<void, const URLEntries&> *cb) {
+
+  (void) scopes;
+  (void) service;
+  (void) cb;
+}
+
+
+/**
+ * Cancel any pending operations for this URL
+ */
+void SLPServer::CancelPendingOperations(const string &url) {
+  PendingOperationsByURL::iterator iter;
+  PendingOperationsByURL::iterator lower = m_pending_ops.lower_bound(url);
+  PendingOperationsByURL::iterator upper = m_pending_ops.upper_bound(url);
+
+  for (iter = lower; iter != upper; ++iter) {
+    m_ss->RemoveTimeout(iter->second->timer_id);  // cancel the timer
+    m_pending_acks.erase(iter->second->xid);
+    delete iter->second;
+  }
+  m_pending_ops.erase(lower, upper);
+}
+
+
+/**
+ * Register a service. May register with DAs if we know about any.
+ */
+uint16_t SLPServer::InternalRegisterService(const ServiceEntry &service) {
+  TimeStamp now;
+  ola::Clock clock;
+  clock.CurrentTime(&now);
+
+  SLPStore::ReturnCode result = m_service_store.CheckIfScopesMatch(now,
+                                                                   service);
+  if (result == SLPStore::SCOPE_MISMATCH)
+    return SCOPE_NOT_SUPPORTED;
+
+  CancelPendingOperations(service.url_string());
+
+  m_service_store.Insert(now, service);
+
+  vector<DirectoryAgent> directory_agents;
+  m_da_tracker.GetDAsForScopes(service.scopes(), &directory_agents);
+  for (vector<DirectoryAgent>::iterator da_iter = directory_agents.begin();
+       da_iter != directory_agents.end(); ++da_iter) {
+    OLA_INFO << "registering with " << *da_iter;
+    RegisterWithDA(*da_iter, service);
+  }
+  return SLP_OK;
+}
+
+
+/**
+ * Register a service. May register with DAs if we know about any.
+ */
+uint16_t SLPServer::InternalDeRegisterService(const ServiceEntry &service) {
+  TimeStamp now;
+  ola::Clock clock;
+  clock.CurrentTime(&now);
+
+  SLPStore::ReturnCode result = m_service_store.CheckIfScopesMatch(now,
+                                                                   service);
+  if (result == SLPStore::SCOPE_MISMATCH)
+    return SCOPE_NOT_SUPPORTED;
+  else if (result == SLPStore::NOT_FOUND)
+    return SLP_OK;
+
+  CancelPendingOperations(service.url_string());
+
+  vector<DirectoryAgent> directory_agents;
+  // This only works correctly if we assume DAs can't change scopes
+  // if a DA changes scopes it's not really clear what we're supposed to do
+  m_da_tracker.GetDAsForScopes(service.scopes(), &directory_agents);
+  for (vector<DirectoryAgent>::iterator da_iter = directory_agents.begin();
+       da_iter != directory_agents.end(); ++da_iter) {
+    DeRegisterWithDA(*da_iter, service);
+  }
+  m_service_store.Remove(service);
+  return SLP_OK;
+}
+
+
+/**
+ * SrvAck callback for SrvReg and SrvDeReg requests.
+ */
+void SLPServer::ReceivedAck(PendingOperation *op_ptr, uint16_t error_code) {
+  if (error_code == DA_BUSY_NOW)
+    // This is the same as a failure, so let the timeout expire.
+    // TODO(simon): does this count towards marking a DA as bad?
+    return;
+
+  auto_ptr<PendingOperation> op(op_ptr);
+  if (error_code)
+    OLA_WARN << "xid " << op->xid << " returned " << error_code << " : "
+             << SLPErrorToString(error_code);
+  else
+    OLA_INFO << "xid " << op->xid << " was acked";
+
+  m_ss->RemoveTimeout(op->timer_id);
+}
+
+
+/*
+ * The timeout handler for SrvReg requests.
+ */
+void SLPServer::RegistrationTimeout(PendingOperation *op) {
+  auto_ptr<PendingOperation> op_deleter(op);
+
+  PendingAckMap::iterator iter = m_pending_acks.find(op->xid);
+  if (iter == m_pending_acks.end()) {
+    OLA_WARN << "Unable to find matching xid: " << op->xid;
+    return;
+  }
+
+  OLA_INFO << "in timeout, retry was " << op->retry_time;
+  if (op->retry_time > m_config_retry_max) {
+    // this DA is bad
+    OLA_INFO << "Declaring DA " << op->da_url << " bad since retry is now "
+             << op->retry_time;
+    m_da_tracker.MarkAsBad(op->da_url);
+    CancelPendingSrvAck(iter);
+    return;
+  }
+
+  op->retry_time += op->retry_time;
+  OLA_INFO << "in timeout, retry is now " << op->retry_time;
+
+  DirectoryAgent da;
+  if (!m_da_tracker.LookupDA(op->da_url, &da)) {
+    // This DA no longer exists
+    OLA_WARN << "DA " << op->da_url << " no longer exists";
+    CancelPendingSrvAck(iter);
+    return;
+  }
+
+  ScopeSet scopes_to_use = da.scopes().Intersection(op->service.scopes());
+  if (scopes_to_use.empty()) {
+    OLA_INFO << "DA " << op->da_url << " no longer has scopes that match "
+             << op->service;
+    CancelPendingSrvAck(iter);
+    return;
+  }
+
+  // we're going to reuse the op, so don't delete it.
+  op_deleter.release();
+
+  // Do we want to age the service lifetime here?
+  // op->service.mutable_url.set_lifetime(
+
+  // if the scopes are different, do we need a new xid?
+    // TODO(simon)
+    // xid_t xid = m_xid_allocator.Next();
+
+  m_udp_sender.SendServiceRegistration(
+      IPV4SocketAddress(da.IPAddress(), m_slp_port),
+      op->xid, true, scopes_to_use, op->service);
+
+  op->timer_id = m_ss->RegisterSingleTimeout(
+      op->retry_time,
+      NewSingleCallback(this, &SLPServer::RegistrationTimeout, op));
+}
+
+
+/**
+ * The timeout handler for SrvDeReg requests
+ */
+void SLPServer::DeRegistrationTimeout(PendingOperation *op) {
+  auto_ptr<PendingOperation> op_deleter(op);
+
+  PendingAckMap::iterator iter = m_pending_acks.find(op->xid);
+  if (iter == m_pending_acks.end()) {
+    OLA_WARN << "Unable to find matching xid: " << op->xid;
+    return;
+  }
+
+  // ok, we need to re-try
+  op->retry_time += op->retry_time;
+  if (op->retry_time > m_config_retry_max) {
+    // this DA is bad
+    OLA_INFO << "Declaring DA " << op->da_url << " bad since retry is now "
+             << op->retry_time;
+    m_da_tracker.MarkAsBad(op->da_url);
+    CancelPendingSrvAck(iter);
+    return;
+  }
+
+  DirectoryAgent da;
+  if (!m_da_tracker.LookupDA(op->da_url, &da)) {
+    // This DA no longer exists
+    OLA_WARN << "DA " << op->da_url << " no longer exists";
+    CancelPendingSrvAck(iter);
+    return;
+  }
+
+  ScopeSet scopes_to_use = da.scopes().Intersection(op->service.scopes());
+
+  // we're going to reuse the op, so don't delete it.
+  op_deleter.release();
+
+  // It's not clear which scopes we should use here if the DA has changed since
+  // we registered. For now we attempt to DeReg with the exact same scopes that
+  // we registered with (Section 8.3)
+  m_udp_sender.SendServiceDeRegistration(
+      IPV4SocketAddress(da.IPAddress(), m_slp_port), op->xid,
+      scopes_to_use, op->service);
+
+  op->timer_id = m_ss->RegisterSingleTimeout(
+      op->retry_time,
+      NewSingleCallback(this, &SLPServer::DeRegistrationTimeout, op));
+}
+
+
+/*
+ * Register a service with a DA. We only register for the scopes each DA
+ * supports.
+ * @param directory_agents the DA to register with
+ * @param service the service to register
+ */
+void SLPServer::RegisterWithDA(const DirectoryAgent &agent,
+                                const ServiceEntry &service) {
+  OLA_INFO << "Registering " << service << " with " << agent;
+  PendingOperation *op = new PendingOperation(service, m_xid_allocator.Next(),
+                                              m_config_retry);
+  op->da_url = agent.URL();
+  op->service = service;
+  op->timer_id = m_ss->RegisterSingleTimeout(
+      op->retry_time,
+      NewSingleCallback(this, &SLPServer::RegistrationTimeout, op));
+
+  ScopeSet scopes_to_use = agent.scopes().Intersection(service.scopes());
+  m_udp_sender.SendServiceRegistration(
+      IPV4SocketAddress(agent.IPAddress(), m_slp_port),
+      op->xid, true, scopes_to_use, service);
+
+  AddPendingSrvAck(op->xid,
+                   NewSingleCallback(this, &SLPServer::ReceivedAck, op));
+}
+
+
+/*
+ * De-Register a service with a DA. We only register for the scopes each DA
+ * supports.
+ * @param directory_agents the DA to deregister with
+ * @param service the service to deregister
+ */
+void SLPServer::DeRegisterWithDA(const DirectoryAgent &agent,
+                                 const ServiceEntry &service) {
+  OLA_INFO << "DeRegistering " << service << " with " << agent;
+  PendingOperation *op = new PendingOperation(service, m_xid_allocator.Next(),
+                                              m_config_retry);
+  op->da_url = agent.URL();
+  op->service = service;
+  op->timer_id = m_ss->RegisterSingleTimeout(
+      op->retry_time,
+      NewSingleCallback(this, &SLPServer::DeRegistrationTimeout, op));
+
+  // send message to DA
+  // TODO(simon): how do we know what scopes to de-register with?
+  ScopeSet scopes_to_use = agent.scopes().Intersection(service.scopes());
+  m_udp_sender.SendServiceDeRegistration(
+      IPV4SocketAddress(agent.IPAddress(), m_slp_port), op->xid, scopes_to_use,
+      service);
+
+  AddPendingSrvAck(op->xid,
+                   NewSingleCallback(this, &SLPServer::ReceivedAck, op));
+}
+
+
+/**
+ * Remove a pending SrvAck from the map, and delete the callback
+ */
+void SLPServer::CancelPendingSrvAck(const PendingAckMap::iterator &iter) {
+  delete iter->second;
+  m_pending_acks.erase(iter);
+}
+
+
+/**
+ * Associate a callback with a xid.
+ */
+void SLPServer::AddPendingSrvAck(xid_t xid, AckCallback *callback) {
+  OLA_INFO << "adding callback for " << xid;
+  pair<xid_t, AckCallback*> p(xid, callback);
+  if (!m_pending_acks.insert(p).second)
+    OLA_WARN << "Collision for xid " << xid
+             << ", we're probably leaking memory!";
+}
+
+
+/**
  * Send a Service Request for 'directory-agent'
  */
 void SLPServer::StartActiveDADiscovery() {
@@ -701,8 +938,9 @@ void SLPServer::StartActiveDADiscovery() {
     OLA_INFO << "Active DA Discovery already running.";
     return;
   }
-  m_outstanding_da_discovery.reset(new OutstandingDADiscovery(m_xid++));
-  SendDARequestAndSetupTimer(*m_outstanding_da_discovery);
+  m_outstanding_da_discovery.reset(
+      new OutstandingDADiscovery(m_xid_allocator.Next()));
+  SendDARequestAndSetupTimer(m_outstanding_da_discovery.get());
 }
 
 
@@ -724,7 +962,7 @@ void SLPServer::ActiveDATick() {
     OLA_INFO << "Active DA discovery complete";
     return;
   } else {
-    SendDARequestAndSetupTimer(*m_outstanding_da_discovery);
+    SendDARequestAndSetupTimer(m_outstanding_da_discovery.get());
   }
 }
 
@@ -732,18 +970,16 @@ void SLPServer::ActiveDATick() {
 /**
  * Send a SrvRqst for service:directory-agent and scheduler a timeout.
  */
-void SLPServer::SendDARequestAndSetupTimer(OutstandingDADiscovery &request) {
-  OLA_INFO << "Sending Multicast ServiceRequest for " <<
-    DIRECTORY_AGENT_SERVICE;
-  if (request.PRListChanged()) {
-    request.ResetPRListChanged();
+void SLPServer::SendDARequestAndSetupTimer(OutstandingDADiscovery *request) {
+  if (request->PRListChanged()) {
+    request->ResetPRListChanged();
     // because the PR list changed we should use a new xid
-    request.xid = m_xid++;
+    request->xid = m_xid_allocator.Next();
   }
-  m_udp_sender.SendServiceRequest(*m_multicast_endpoint, request.xid,
-                                  request.pr_list, DIRECTORY_AGENT_SERVICE,
-                                  m_scope_list);
-  request.attempts_remaining--;
+  m_udp_sender.SendServiceRequest(*m_multicast_endpoint, request->xid,
+                                  request->pr_list, DIRECTORY_AGENT_SERVICE,
+                                  m_configured_scopes);
+  request->attempts_remaining--;
   m_active_da_discovery_timer = m_ss->RegisterSingleTimeout(
       m_config_mc_max,
       NewSingleCallback(this, &SLPServer::ActiveDATick));
@@ -764,7 +1000,17 @@ void SLPServer::ScheduleActiveDADiscovery() {
  * Called when we locate a new DA on the network.
  */
 void SLPServer::NewDACallback(const DirectoryAgent &agent) {
-  OLA_INFO << "New DA !! " << agent;
+  // TODO(simon): add a random delay here and pass the agent's URL
+  ServiceEntries services;
+  m_service_store.GetLocalServices(*(m_ss->WakeUpTime()), agent.scopes(),
+                                   &services);
+
+  // Go through out local services and see if any need to be registered with
+  // this DA.
+  for (ServiceEntries::const_iterator iter = services.begin();
+       iter != services.end(); ++iter) {
+    RegisterWithDA(agent, *iter);
+  }
 }
 
 

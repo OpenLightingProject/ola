@@ -46,12 +46,15 @@
 #include "tools/slp/SLPUDPSender.h"
 #include "tools/slp/ServerCommon.h"
 #include "tools/slp/ServiceEntry.h"
+#include "tools/slp/XIDAllocator.h"
 
 using ola::io::IOQueue;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::network::TCPSocket;
 using std::auto_ptr;
+using std::map;
+using std::multimap;
 using std::pair;
 using std::set;
 using std::string;
@@ -59,11 +62,30 @@ using std::string;
 namespace ola {
 namespace slp {
 
+class PendingOperation {
+  public:
+    PendingOperation(const ServiceEntry &service, xid_t xid,
+                     unsigned int retry_time)
+      : xid(xid),
+        timer_id(ola::thread::INVALID_TIMEOUT),
+        retry_time(retry_time),
+        service(service) {
+    }
+
+    xid_t xid;
+    ola::thread::timeout_id timer_id;
+    // seconds since the first attempt, doubles up to m_config_retry_max
+    unsigned int retry_time;
+    string da_url;
+    ServiceEntry service;
+};
+
+
 class OutstandingDADiscovery {
   public:
     typedef set<IPV4Address> IPV4AddressSet;
 
-    OutstandingDADiscovery(xid_t xid)
+    explicit OutstandingDADiscovery(xid_t xid)
       : xid(xid),
         attempts_remaining(3),
         m_pr_list_changed(false) {
@@ -96,6 +118,7 @@ class SLPServer {
     struct SLPServerOptions {
       IPV4Address ip_address;  // The interface IP to multicast on
       bool enable_da;  // enable the DA mode
+      uint16_t slp_port;
       set<string> scopes;  // supported scopes
       uint32_t config_da_find;
       uint32_t config_da_beat;  // seconds between DA beats
@@ -105,6 +128,7 @@ class SLPServer {
 
       SLPServerOptions()
           : enable_da(true),
+            slp_port(DEFAULT_SLP_PORT),
             config_da_find(CONFIG_DA_FIND),
             config_da_beat(CONFIG_DA_BEAT),
             config_mc_max(CONFIG_MC_MAX),
@@ -123,7 +147,6 @@ class SLPServer {
     bool Init();
 
     // bulk load a list of Services
-    bool BulkLoad(const ServiceEntries &services);
     void DumpStore();
     void GetDirectoryAgents(vector<DirectoryAgent> *output);
     void TriggerActiveDADiscovery();
@@ -132,16 +155,16 @@ class SLPServer {
     void FindService(const set<string> &scopes,
                      const string &service,
                      SingleUseCallback1<void, const URLEntries&> *cb);
-    void RegisterService(const set<string> &scopes,
-                         const string &url,
-                         uint16_t lifetime,
-                         SingleUseCallback1<void, unsigned int> *cb);
-    void DeRegisterService(const set<string> &scopes,
-                           const string &url,
-                           SingleUseCallback1<void, unsigned int> *cb);
+    uint16_t RegisterService(const ServiceEntry &service);
+    uint16_t DeRegisterService(const ServiceEntry &service);
 
   private:
+    typedef multimap<string, PendingOperation*> PendingOperationsByURL;
+    typedef SingleUseCallback1<void, uint16_t> AckCallback;
+    typedef map<xid_t, AckCallback*> PendingAckMap;
+
     bool m_enable_da;
+    uint16_t m_slp_port;
     uint32_t m_config_da_beat;
     uint32_t m_config_da_find;
     uint32_t m_config_mc_max;
@@ -150,7 +173,6 @@ class SLPServer {
     string m_en_lang;
 
     const IPV4Address m_iface_address;
-    ola::Clock m_clock;
     ola::TimeStamp m_boot_time;
     ola::io::SelectServerInterface *m_ss;
 
@@ -167,12 +189,16 @@ class SLPServer {
     ola::network::TCPAcceptingSocket *m_slp_accept_socket;
 
     // SLP memebers
-    set<string> m_scope_list;  // the scopes we're using, in canonical form
+    ScopeSet m_configured_scopes;
     SLPPacketParser m_packet_parser;
     SLPStore m_service_store;
     SLPUDPSender m_udp_sender;
     DATracker m_da_tracker;
-    xid_t m_xid;
+    XIDAllocator m_xid_allocator;
+
+    // Track pending transactions
+    PendingAckMap m_pending_acks;
+    PendingOperationsByURL m_pending_ops;
 
     // DA members
 
@@ -209,16 +235,35 @@ class SLPServer {
     // DA methods
     void SendDAAdvert(const IPV4SocketAddress &dest);
     bool SendDABeat();
-    void LocalLocateServices(const set<string> &scopes,
-                             const string &service,
+    void LocalLocateServices(const ScopeSet &scopes,
+                             const string &service_type,
                              URLEntries *services);
     uint16_t LocalRegisterService(const ServiceEntry &service);
     uint16_t LocalDeRegisterService(const ServiceEntry &service);
 
     // non-DA methods
+    void InternalFindService(const set<string> &scopes,
+                             const string &service,
+                             SingleUseCallback1<void, const URLEntries&> *cb);
+
+    // SA methods
+    void CancelPendingOperations(const string &url);
+    uint16_t InternalRegisterService(const ServiceEntry &service);
+    uint16_t InternalDeRegisterService(const ServiceEntry &service);
+    void ReceivedAck(PendingOperation *op_ptr, uint16_t error_code);
+    void RegistrationTimeout(PendingOperation *op);
+    void DeRegistrationTimeout(PendingOperation *op);
+    void RegisterWithDA(const DirectoryAgent &directory_agent,
+                        const ServiceEntry &service);
+    void DeRegisterWithDA(const DirectoryAgent &directory_agent,
+                          const ServiceEntry &service);
+    void CancelPendingSrvAck(const PendingAckMap::iterator &iter);
+    void AddPendingSrvAck(xid_t xid, AckCallback *callback);
+
+    // DA Tracking methods
     void StartActiveDADiscovery();
     void ActiveDATick();
-    void SendDARequestAndSetupTimer(OutstandingDADiscovery &request);
+    void SendDARequestAndSetupTimer(OutstandingDADiscovery *request);
     void ScheduleActiveDADiscovery();
     void NewDACallback(const DirectoryAgent &agent);
 
@@ -233,7 +278,6 @@ class SLPServer {
     static const char METHOD_FIND_SERVICE[];
     static const char METHOD_REG_SERVICE[];
     static const char REGSRVS_ERROR_COUNT_VAR[];
-    static const char SCOPE_LIST_VAR[];
     static const char SLP_PORT_VAR[];
     static const char SRVACK[];
     static const char SRVREG[];
