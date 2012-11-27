@@ -140,19 +140,41 @@ void DATracker::GetDirectoryAgents(vector<DirectoryAgent> *output) {
  * have any associated DAs are returned in scopes_without_das.
  */
 void DATracker::GetDAsForScopes(const ScopeSet &scopes,
-                                vector<DirectoryAgent> *output,
-                                ScopeSet *scopes_without_das) {
-  ScopeSet scopes_found;
+                                vector<DirectoryAgent> *output) {
   for (DAMap::const_iterator iter = m_agents.begin();
        iter != m_agents.end(); ++iter) {
     ScopeSet intersection = iter->second.scopes().Intersection(scopes);
-    if (!intersection.empty()) {
+    if (!intersection.empty())
       output->push_back(iter->second);
-      scopes_found.Update(intersection);
-    }
   }
+}
 
-  *scopes_without_das = scopes.Difference(scopes_found);
+
+/**
+ * Lookup a DA by URL
+ * @param da_url the DA's URL
+ * @param da a pointer to a DirectoryAgent object to populate.
+ */
+bool DATracker::LookupDA(const string &da_url, DirectoryAgent *da) {
+  DAMap::const_iterator iter = m_agents.find(da_url);
+  if (iter == m_agents.end())
+    return false;
+
+  *da = iter->second;
+  return true;
+}
+
+
+/**
+ * Mark a DA as bad
+ */
+void DATracker::MarkAsBad(const string &da_url) {
+  DAMap::iterator iter = m_agents.find(da_url);
+  if (iter == m_agents.end())
+    return;
+
+  OLA_INFO << "Marking " << da_url << " as bad";
+  m_agents.erase(iter);
 }
 
 

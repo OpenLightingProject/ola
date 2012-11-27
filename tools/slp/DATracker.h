@@ -133,8 +133,10 @@ class DATracker {
 
     void GetDirectoryAgents(vector<DirectoryAgent> *output);
     void GetDAsForScopes(const ScopeSet &scopes,
-                         vector<DirectoryAgent> *output,
-                         ScopeSet *scopes_without_das);
+                         vector<DirectoryAgent> *output);
+
+    bool LookupDA(const string &da_url, DirectoryAgent *da);
+    void MarkAsBad(const string &da_url);
 
   private:
     class InternalDirectoryAgent : public DirectoryAgent {
@@ -153,7 +155,7 @@ class DATracker {
         }
     };
 
-    typedef map<string, InternalDirectoryAgent> DAMap;
+    typedef map<string, InternalDirectoryAgent> DAMap;  // keyed by url
     typedef set<NewDACallback*> DACallbacks;
 
     DAMap m_agents;
