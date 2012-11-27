@@ -68,10 +68,10 @@ class SLPUDPSender {
                                  const ScopeSet &scopes,
                                  const ServiceEntry &service);
 
-    void BuildServiceDeRegistration(const IPV4SocketAddress &dest,
-                                    xid_t xid,
-                                    const ScopeSet &scopes,
-                                    const ServiceEntry &service);
+    void SendServiceDeRegistration(const IPV4SocketAddress &dest,
+                                   xid_t xid,
+                                   const ScopeSet &scopes,
+                                   const ServiceEntry &service);
 
     void SendServiceAck(const IPV4SocketAddress &dest,
                         xid_t xid,

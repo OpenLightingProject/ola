@@ -100,10 +100,10 @@ void SLPUDPSender::SendServiceRegistration(const IPV4SocketAddress &dest,
 /**
  * Similar to SendServiceRegistration, we pass the scopes separately here
  */
-void SLPUDPSender::BuildServiceDeRegistration(const IPV4SocketAddress &dest,
-                                              xid_t xid,
-                                              const ScopeSet &scopes,
-                                              const ServiceEntry &service) {
+void SLPUDPSender::SendServiceDeRegistration(const IPV4SocketAddress &dest,
+                                             xid_t xid,
+                                             const ScopeSet &scopes,
+                                             const ServiceEntry &service) {
   EmptyBuffer();
   SLPPacketBuilder::BuildServiceDeRegistration(&m_output_stream, xid, scopes,
                                                service);
