@@ -70,7 +70,7 @@ SLPStore::ReturnCode SLPStore::Remove(const ServiceEntry &service) {
 
   ServiceEntryVector &services = iter->second->services;
   ServiceEntryVector::iterator service_iter = FindService(&services,
-                                                          service.url().url());
+                                                          service.url_string());
   if (service_iter == services.end())
     return OK;
 
@@ -140,7 +140,7 @@ SLPStore::ReturnCode SLPStore::CheckIfScopesMatch(const TimeStamp &now,
 
   for (ServiceEntryVector::iterator service_iter = services.begin();
        service_iter != services.end(); ++service_iter) {
-    if ((*service_iter)->url().url() != service.url().url())
+    if ((*service_iter)->url_string() != service.url_string())
       continue;
     // we have a match
     if ((*service_iter)->url().lifetime() <= elapsed_seconds)
@@ -267,7 +267,7 @@ SLPStore::ServiceEntryVector::iterator SLPStore::FindService(
         const string &url) {
   ServiceEntryVector::iterator iter = services->begin();
   for (; iter != services->end(); ++iter) {
-    if (url == (*iter)->url().url())
+    if (url == (*iter)->url_string())
       return iter;
   }
   return iter;
@@ -283,7 +283,7 @@ SLPStore::ReturnCode SLPStore::InsertOrUpdateEntry(
     ServiceEntryVector *services,
     const ServiceEntry &service) {
   ServiceEntryVector::iterator iter = FindService(services,
-                                                  service.url().url());
+                                                  service.url_string());
   if (iter == services->end()) {
     services->push_back(new ServiceEntry(service));
     return OK;

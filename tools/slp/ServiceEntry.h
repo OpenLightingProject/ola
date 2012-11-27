@@ -199,6 +199,9 @@ class ServiceEntry {
     bool local() const { return m_local; }
     void set_local(bool local) { m_local = local; }
 
+    // a shortcut to get the url string, rather than using .url().url()
+    string url_string() const { return m_url.url(); }
+
     string ToString() const {
       std::ostringstream str;
       ToStream(str);
