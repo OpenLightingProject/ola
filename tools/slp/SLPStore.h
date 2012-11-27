@@ -89,7 +89,10 @@ class SLPStore {
                 unsigned int limit = 0);
 
     bool ScopesConflict(const TimeStamp &now, const ServiceEntry &service);
-    ReturnCode CheckIfScopesMatch(const ServiceEntry &service);
+    ReturnCode CheckIfScopesMatch(const TimeStamp &now,
+                                  const ServiceEntry &service);
+    void GetLocalServices(const TimeStamp &now, const ScopeSet &scopes,
+                          ServiceEntries *services);
 
     void Clean(const TimeStamp &now);
     void Reset();

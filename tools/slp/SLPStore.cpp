@@ -129,19 +129,49 @@ void SLPStore::Lookup(const TimeStamp &now,
  *   SCOPE_MISMATCH if the scopes don't match what's in the store
  *   OK if it's safe to remove.
  */
-SLPStore::ReturnCode SLPStore::CheckIfScopesMatch(const ServiceEntry &service) {
+SLPStore::ReturnCode SLPStore::CheckIfScopesMatch(const TimeStamp &now,
+                                                  const ServiceEntry &service) {
   ServiceMap::iterator iter = m_services.find(service.service_type());
   if (iter == m_services.end())
     return NOT_FOUND;
 
-  ServiceEntryVector::iterator service_iter = iter->second->services.begin();
-  for (; service_iter != iter->second->services.end(); ++service_iter) {
+  int64_t elapsed_seconds = (now - iter->second->last_cleaned).Seconds();
+  ServiceEntryVector &services = iter->second->services;
+
+  for (ServiceEntryVector::iterator service_iter = services.begin();
+       service_iter != services.end(); ++service_iter) {
     if ((*service_iter)->url().url() != service.url().url())
       continue;
+    // we have a match
+    if ((*service_iter)->url().lifetime() <= elapsed_seconds)
+      return NOT_FOUND;
 
     return (*service_iter)->scopes() == service.scopes() ? OK : SCOPE_MISMATCH;
   }
   return NOT_FOUND;
+}
+
+
+/**
+ * Get the set of all local services in the given scopes.
+ */
+void SLPStore::GetLocalServices(const TimeStamp &now,
+                                const ScopeSet &scopes,
+                                ServiceEntries *local_services) {
+  ServiceMap::iterator iter = m_services.begin();
+  while (iter != m_services.end()) {
+    int64_t elapsed_seconds = (now - iter->second->last_cleaned).Seconds();
+    ServiceEntryVector &services = iter->second->services;
+    for (ServiceEntryVector::iterator service_iter = services.begin();
+         service_iter != services.end(); ++service_iter) {
+      if (!(*service_iter)->local() ||
+          (*service_iter)->url().lifetime() <= elapsed_seconds)
+        // skip non-local and expired services
+        continue;
+      if ((*service_iter)->scopes().Intersects(scopes))
+        local_services->push_back(**service_iter);
+    }
+  }
 }
 
 
@@ -153,12 +183,10 @@ void SLPStore::Clean(const TimeStamp &now) {
   // We may want to clean this in slices.
   ServiceMap::iterator iter = m_services.begin();
   while (iter != m_services.end()) {
-    ServiceMap::iterator current = iter;
-    ++iter;
-    MaybeCleanURLList(now, current->second);
-    if (current->second->services.empty()) {
-      delete current->second;
-      m_services.erase(current);
+    MaybeCleanURLList(now, iter->second);
+    if (iter->second->services.empty()) {
+      delete iter->second;
+      m_services.erase(iter++);
     }
   }
 }
