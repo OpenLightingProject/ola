@@ -168,8 +168,6 @@ void SLPDaemon::Input(char c) {
     case 'd':
       GetDirectoryAgents();
       break;
-    case 'l':
-      m_slp_server.DumpLocalServices();
     case 'p':
       m_slp_server.DumpStore();
       break;

@@ -358,7 +358,6 @@ int main(int argc, char *argv[]) {
   cout << "---------------  Controls  ----------------\n";
   cout << " a - Start active DA discovery\n";
   cout << " d - Print Known DAs\n";
-  cout << " l - Print Local Services\n";
   cout << " p - Print Registrations\n";
   cout << " q - Quit\n";
   cout << "-------------------------------------------\n";
