@@ -112,7 +112,8 @@ typedef std::vector<URLEntry> URLEntries;
 class ServiceEntry {
   public:
     ServiceEntry(const ServiceEntry &other)
-        : m_url(other.m_url),
+        : m_local(other.m_local),
+          m_url(other.m_url),
           m_service_type(other.m_service_type),
           m_scopes(other.m_scopes) {
     }
@@ -122,12 +123,15 @@ class ServiceEntry {
      * @param service_type the service-type
      * @param url the service URL
      * @param lifetime the number of seconds this service is valid for
+     * @param local true if this service was from a local registration
      */
     ServiceEntry(const ScopeSet &scopes,
                  const string &service_type,
                  const string &url,
-                 uint16_t lifetime)
-        : m_url(url, lifetime),
+                 uint16_t lifetime,
+                 bool local = false)
+        : m_local(local),
+          m_url(url, lifetime),
           m_service_type(service_type),
           m_scopes(scopes) {
     }
@@ -138,12 +142,15 @@ class ServiceEntry {
      * @param service_type the service-type
      * @param url the service URL
      * @param lifetime the number of seconds this service is valid for
+     * @param local true if this service was from a local registration
      */
     ServiceEntry(const string &scopes,
                  const string &service_type,
                  const string &url,
-                 uint16_t lifetime)
-        : m_url(url, lifetime),
+                 uint16_t lifetime,
+                 bool local = false)
+        : m_local(local),
+          m_url(url, lifetime),
           m_service_type(service_type),
           m_scopes(scopes) {
     }
@@ -153,11 +160,14 @@ class ServiceEntry {
      * @param scopes a set of scopes, comma separated
      * @param url the service URL
      * @param lifetime the number of seconds this service is valid for
+     * @param local true if this service was from a local registration
      */
     ServiceEntry(const ScopeSet &scopes,
                  const string &url,
-                 uint16_t lifetime)
-        : m_url(url, lifetime),
+                 uint16_t lifetime,
+                 bool local = false)
+        : m_local(local),
+          m_url(url, lifetime),
           m_service_type(SLPServiceFromURL(url)),
           m_scopes(scopes) {
     }
@@ -167,11 +177,14 @@ class ServiceEntry {
      * @param scopes a set of scopes, comma separated
      * @param url the service URL
      * @param lifetime the number of seconds this service is valid for
+     * @param local true if this service was from a local registration
      */
     ServiceEntry(const string &scopes,
                  const string &url,
-                 uint16_t lifetime)
-        : m_url(url, lifetime),
+                 uint16_t lifetime,
+                 bool local = false)
+        : m_local(local),
+          m_url(url, lifetime),
           m_service_type(SLPServiceFromURL(url)),
           m_scopes(scopes) {
     }
@@ -183,6 +196,8 @@ class ServiceEntry {
     // The service-type, without the 'service:' at the beginning
     string service_type() const { return m_service_type; }
     const ScopeSet& scopes() const { return m_scopes; }
+    bool local() const { return m_local; }
+    void set_local(bool local) { m_local = local; }
 
     string ToString() const {
       std::ostringstream str;
@@ -191,7 +206,7 @@ class ServiceEntry {
     }
 
     void ToStream(ostream &out) const {
-      out << m_url << ", [" << m_scopes << "]";
+      out << m_url << ", [" << m_scopes << "]" << (m_local ? " LOCAL" : "");
     }
 
     friend ostream& operator<<(ostream &out, const ServiceEntry &service) {
@@ -200,6 +215,7 @@ class ServiceEntry {
     }
 
   private:
+    bool m_local;  // true if this service originated locally
     URLEntry m_url;
     string m_service_type;
     ScopeSet m_scopes;
@@ -213,6 +229,7 @@ typedef std::vector<ServiceEntry> ServiceEntries;
  * A Local Service Entry has everything a ServiceEntry has, but is also tracks
  * which DAs it has been registered with. This is heavier than ServiceEntry so
  * we disallow thie copy and assignment operators.
+ * TODO(simon): I'm not convinced we need this.
  */
 class LocalServiceEntry {
   public:
