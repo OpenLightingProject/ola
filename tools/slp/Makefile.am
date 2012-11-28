@@ -35,6 +35,7 @@ slp_server_SOURCES = DATracker.cpp \
                      SLPUtil.cpp \
                      ScopeSet.cpp \
                      ServiceEntry.cpp \
+                     XIDAllocator.cpp \
                      slp-server.cpp
 slp_server_LDADD = $(top_builddir)/common/libolacommon.la \
                    $(top_builddir)/common/http/libolahttp.la \

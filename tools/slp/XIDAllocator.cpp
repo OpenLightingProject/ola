@@ -17,28 +17,15 @@
  * Copyright (C) 2012 Simon Newton
  */
 
-#ifndef TOOLS_SLP_XIDALLOCATOR_H_
-#define TOOLS_SLP_XIDALLOCATOR_H_
-
-#include "tools/slp/SLPPacketConstants.h"
+#include <ola/Logging.h>
+#include "tools/slp/XIDAllocator.h"
 
 namespace ola {
 namespace slp {
 
-/**
- * XIDAllocator, this ensures that we increment the global xid whever we go to
- * use it.
- */
-class XIDAllocator {
-  public:
-    XIDAllocator(): m_xid(0) { }
-    explicit XIDAllocator(xid_t xid);
-
-    xid_t Next() { return m_xid++; }
-
-  private:
-    xid_t m_xid;
-};
+XIDAllocator::XIDAllocator(xid_t xid)
+    : m_xid(xid) {
+  OLA_INFO << "Starting xid is " << m_xid;
+}
 }  // slp
 }  // ola
-#endif  // TOOLS_SLP_XIDALLOCATOR_H_

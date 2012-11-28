@@ -28,12 +28,13 @@
 #include <ola/io/BigEndianStream.h>
 #include <ola/io/MemoryBuffer.h>
 #include <ola/io/SelectServer.h>
+#include <ola/math/Random.h>
 #include <ola/network/IPV4Address.h>
-#include <ola/stl/STLUtils.h>
 #include <ola/network/NetworkUtils.h>
 #include <ola/network/Socket.h>
 #include <ola/network/SocketAddress.h>
 #include <ola/network/TCPSocketFactory.h>
+#include <ola/stl/STLUtils.h>
 
 #include <algorithm>
 #include <map>
@@ -127,7 +128,7 @@ SLPServer::SLPServer(ola::io::SelectServerInterface *ss,
       m_slp_accept_socket(tcp_socket),
       m_udp_sender(m_udp_socket),
       m_configured_scopes(options.scopes),
-      m_xid_allocator(0),  // TODO(simon): randomly choose this
+      m_xid_allocator(ola::math::Random(0, UINT16_MAX)),
       m_export_map(export_map) {
   ToLower(&m_en_lang);
 
