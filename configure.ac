@@ -51,6 +51,7 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h netinet/in.h stdint.h stdlib.h string.h \
                   sys/ioctl.h sys/socket.h sys/time.h syslog.h termios.h \
                   endian.h execinfo.h unistd.h linux/if_packet.h sysexits.h])
+AC_CHECK_HEADERS([random])
 
 AC_PROG_LIBTOOL
 
@@ -557,6 +558,7 @@ AC_OUTPUT( Makefile \
     common/http/Makefile \
     common/io/Makefile \
     common/logging/Makefile \
+    common/math/Makefile \
     common/messaging/Makefile \
     common/network/Makefile \
     common/protocol/Makefile \
@@ -578,6 +580,7 @@ AC_OUTPUT( Makefile \
     include/ola/base/Makefile \
     include/ola/http/Makefile \
     include/ola/io/Makefile \
+    include/ola/math/Makefile \
     include/ola/messaging/Makefile \
     include/ola/network/Makefile \
     include/ola/rdm/Makefile \

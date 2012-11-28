@@ -488,8 +488,7 @@ void HTTPServer::UpdateSockets() {
     return;
   }
 
-  SocketSet::iterator iter =
-    m_sockets.begin();
+  SocketSet::iterator iter = m_sockets.begin();
 
   // This isn't the best plan, talk to the MHD devs about exposing the list of
   // FD in a more suitable way

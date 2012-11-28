@@ -42,6 +42,7 @@
 #include <ola/base/Init.h>
 #include <ola/ExportMap.h>
 #include <ola/Logging.h>
+#include <ola/math/Random.h>
 
 #include <iostream>
 
@@ -102,6 +103,7 @@ static void _SIGSEGV_Handler(int) {
  * @param export_map an optional pointer to an ExportMap
  */
 bool ServerInit(int argc, char *argv[], ExportMap *export_map) {
+  ola::math::InitRandom();
   if (!InstallSEGVHandler())
     return false;
 
@@ -119,6 +121,7 @@ bool ServerInit(int argc, char *argv[], ExportMap *export_map) {
  * @param argv the command line arguments
  */
 bool AppInit(int, char *[]) {
+  ola::math::InitRandom();
   if (!InstallSEGVHandler())
     return false;
   return true;
