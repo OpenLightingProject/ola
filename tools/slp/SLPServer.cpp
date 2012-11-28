@@ -117,20 +117,18 @@ SLPServer::SLPServer(ola::io::SelectServerInterface *ss,
       m_en_lang(reinterpret_cast<const char*>(EN_LANGUAGE_TAG),
                 sizeof(EN_LANGUAGE_TAG)),
       m_iface_address(options.ip_address),
+      m_multicast_endpoint(IPV4SocketAddress(
+            IPV4Address(HostToNetwork(SLP_MULTICAST_ADDRESS)), m_slp_port)),
       m_ss(ss),
       m_da_beat_timer(ola::thread::INVALID_TIMEOUT),
       m_store_cleaner_timer(ola::thread::INVALID_TIMEOUT),
       m_active_da_discovery_timer(ola::thread::INVALID_TIMEOUT),
       m_udp_socket(udp_socket),
       m_slp_accept_socket(tcp_socket),
-      m_configured_scopes(options.scopes),
       m_udp_sender(m_udp_socket),
+      m_configured_scopes(options.scopes),
       m_xid_allocator(0),  // TODO(simon): randomly choose this
       m_export_map(export_map) {
-  m_multicast_endpoint.reset(
-      new IPV4SocketAddress(
-        IPV4Address(HostToNetwork(SLP_MULTICAST_ADDRESS)), m_slp_port));
-
   ToLower(&m_en_lang);
 
   if (m_configured_scopes.empty())
@@ -154,6 +152,13 @@ SLPServer::~SLPServer() {
   m_ss->RemoveTimeout(m_da_beat_timer);
   m_ss->RemoveTimeout(m_store_cleaner_timer);
   m_ss->RemoveTimeout(m_active_da_discovery_timer);
+
+  for (PendingOperationsByURL::iterator iter = m_pending_ops.begin();
+       iter != m_pending_ops.end(); ++iter) {
+    m_ss->RemoveTimeout(iter->second->timer_id);
+    delete iter->second;
+  }
+
   m_udp_socket->Close();
   STLDeleteValues(m_pending_acks);
 }
@@ -171,7 +176,7 @@ bool SLPServer::Init() {
 
   // join the multicast group
   if (!m_udp_socket->JoinMulticast(m_iface_address,
-                                   m_multicast_endpoint->Host())) {
+                                   m_multicast_endpoint.Host())) {
     return false;
   }
 
@@ -585,7 +590,7 @@ void SLPServer::SendDAAdvert(const IPV4SocketAddress &dest) {
  * Send a multicast DAAdvert packet
  */
 bool SLPServer::SendDABeat() {
-  SendDAAdvert(*m_multicast_endpoint);
+  SendDAAdvert(m_multicast_endpoint);
   return true;
 }
 
@@ -600,36 +605,6 @@ void SLPServer::LocalLocateServices(const ScopeSet &scopes,
                                     const string &service_type,
                                     URLEntries *services) {
   m_service_store.Lookup(*(m_ss->WakeUpTime()), scopes, service_type, services);
-}
-
-
-/**
- * Register a service in our local stores
- * @param service the ServiceEntry to register
- * @returns an SLP Error code.
- */
-uint16_t SLPServer::LocalRegisterService(const ServiceEntry &service) {
-  SLPStore::ReturnCode result = m_service_store.Insert(
-      *(m_ss->WakeUpTime()),
-      service);
-
-  if (result == SLPStore::SCOPE_MISMATCH)
-    return SCOPE_NOT_SUPPORTED;
-  return SLP_OK;
-}
-
-
-/**
- * DeRegister a service in our local stores
- * @param service the ServiceEntry to deregister
- * @returns an SLP Error code.
- */
-uint16_t SLPServer::LocalDeRegisterService(const ServiceEntry &service) {
-  SLPStore::ReturnCode result = m_service_store.Remove(service);
-
-  if (result == SLPStore::SCOPE_MISMATCH)
-    return SCOPE_NOT_SUPPORTED;
-  return SLP_OK;
 }
 
 
@@ -976,7 +951,7 @@ void SLPServer::SendDARequestAndSetupTimer(OutstandingDADiscovery *request) {
     // because the PR list changed we should use a new xid
     request->xid = m_xid_allocator.Next();
   }
-  m_udp_sender.SendServiceRequest(*m_multicast_endpoint, request->xid,
+  m_udp_sender.SendServiceRequest(m_multicast_endpoint, request->xid,
                                   request->pr_list, DIRECTORY_AGENT_SERVICE,
                                   m_configured_scopes);
   request->attempts_remaining--;

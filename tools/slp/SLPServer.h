@@ -171,9 +171,9 @@ class SLPServer {
     uint32_t m_config_retry;
     uint32_t m_config_retry_max;
     string m_en_lang;
-
     const IPV4Address m_iface_address;
     ola::TimeStamp m_boot_time;
+    const ola::network::IPV4SocketAddress m_multicast_endpoint;
     ola::io::SelectServerInterface *m_ss;
 
     // various timers
@@ -181,35 +181,29 @@ class SLPServer {
     ola::thread::timeout_id m_store_cleaner_timer;
     ola::thread::timeout_id m_active_da_discovery_timer;
 
-    // RPC members
-    auto_ptr<ola::network::IPV4SocketAddress> m_multicast_endpoint;
-
     // the UDP and TCP sockets for SLP traffic
     ola::network::UDPSocket *m_udp_socket;
     ola::network::TCPAcceptingSocket *m_slp_accept_socket;
 
     // SLP memebers
-    ScopeSet m_configured_scopes;
     SLPPacketParser m_packet_parser;
     SLPStore m_service_store;
     SLPUDPSender m_udp_sender;
-    DATracker m_da_tracker;
+    ScopeSet m_configured_scopes;
     XIDAllocator m_xid_allocator;
 
     // Track pending transactions
-    PendingAckMap m_pending_acks;
-    PendingOperationsByURL m_pending_ops;
+    PendingAckMap m_pending_acks;  // map of xid_t -> callback
+    PendingOperationsByURL m_pending_ops;  // multimap url -> PendingOperation
 
-    // DA members
-
-    // non-DA members
-    set<IPV4Address> m_da_pr_list;
+    // Members used to keep track of DAs
+    DATracker m_da_tracker;
     auto_ptr<OutstandingDADiscovery> m_outstanding_da_discovery;
 
     // The ExportMap
     ola::ExportMap *m_export_map;
 
-    // SLP Network methods
+    // SLP Network RX methods
     void UDPData();
     void HandleServiceRequest(BigEndianInputStream *stream,
                               const IPV4SocketAddress &source);
@@ -222,6 +216,7 @@ class SLPServer {
     void HandleDAAdvert(BigEndianInputStream *stream,
                         const IPV4SocketAddress &source);
 
+    // Network TX methods
     void SendErrorIfUnicast(const ServiceRequestPacket *request,
                             const IPV4SocketAddress &source,
                             slp_error_code_t error_code);
@@ -232,16 +227,14 @@ class SLPServer {
     void MaybeSendDAAdvert(const ServiceRequestPacket *request,
                            const IPV4SocketAddress &source);
 
-    // DA methods
+    // DA specific methods
     void SendDAAdvert(const IPV4SocketAddress &dest);
     bool SendDABeat();
+
+    // TODO(simon): categorize these
     void LocalLocateServices(const ScopeSet &scopes,
                              const string &service_type,
                              URLEntries *services);
-    uint16_t LocalRegisterService(const ServiceEntry &service);
-    uint16_t LocalDeRegisterService(const ServiceEntry &service);
-
-    // non-DA methods
     void InternalFindService(const set<string> &scopes,
                              const string &service,
                              SingleUseCallback1<void, const URLEntries&> *cb);
@@ -270,6 +263,7 @@ class SLPServer {
     // housekeeping
     bool CleanSLPStore();
 
+    // constants
     static const char DAADVERT[];
     static const char DEREGSRVS_ERROR_COUNT_VAR[];
     static const char FINDSRVS_EMPTY_COUNT_VAR[];
