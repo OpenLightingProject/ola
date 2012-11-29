@@ -263,6 +263,7 @@ class SLPServer {
     void SendDARequestAndSetupTimer(OutstandingDADiscovery *request);
     void ScheduleActiveDADiscovery();
     void NewDACallback(const DirectoryAgent &agent);
+    void RegisterServicesWithNewDA(const string da_url);
 
     // housekeeping
     bool CleanSLPStore();

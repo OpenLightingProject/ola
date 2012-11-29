@@ -979,16 +979,33 @@ void SLPServer::ScheduleActiveDADiscovery() {
  * Called when we locate a new DA on the network.
  */
 void SLPServer::NewDACallback(const DirectoryAgent &agent) {
-  // TODO(simon): add a random delay here and pass the agent's URL
+  m_ss->RegisterSingleTimeout(
+      Random(1000, 3000),
+      NewSingleCallback(this, &SLPServer::RegisterServicesWithNewDA,
+                        agent.URL()));
+}
+
+
+/**
+ * Register all of the relevent services with a DA
+ */
+void SLPServer::RegisterServicesWithNewDA(const string da_url) {
+  DirectoryAgent da;
+  if (!m_da_tracker.LookupDA(da_url, &da)) {
+    OLA_INFO << "DA " << da_url << " no longer exists";
+    return;
+  }
+  OLA_INFO << "Registering local services with " << da_url;
+
   ServiceEntries services;
-  m_service_store.GetLocalServices(*(m_ss->WakeUpTime()), agent.scopes(),
+  m_service_store.GetLocalServices(*(m_ss->WakeUpTime()), da.scopes(),
                                    &services);
 
   // Go through out local services and see if any need to be registered with
   // this DA.
   for (ServiceEntries::const_iterator iter = services.begin();
        iter != services.end(); ++iter) {
-    RegisterWithDA(agent, *iter);
+    RegisterWithDA(da, *iter);
   }
 }
 
