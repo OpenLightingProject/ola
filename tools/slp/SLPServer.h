@@ -125,6 +125,7 @@ class SLPServer {
       uint32_t config_mc_max;
       uint16_t config_retry;
       uint16_t config_retry_max;
+      uint16_t config_start_wait;
 
       SLPServerOptions()
           : enable_da(true),
@@ -133,7 +134,8 @@ class SLPServer {
             config_da_beat(CONFIG_DA_BEAT),
             config_mc_max(CONFIG_MC_MAX),
             config_retry(CONFIG_RETRY),
-            config_retry_max(CONFIG_RETRY_MAX) {
+            config_retry_max(CONFIG_RETRY_MAX),
+            config_start_wait(CONFIG_START_WAIT) {
       }
     };
 
@@ -165,11 +167,13 @@ class SLPServer {
 
     bool m_enable_da;
     uint16_t m_slp_port;
-    uint32_t m_config_da_beat;
-    uint32_t m_config_da_find;
-    uint32_t m_config_mc_max;
-    uint32_t m_config_retry;
-    uint32_t m_config_retry_max;
+    uint16_t m_config_da_beat;
+    uint16_t m_config_da_find;
+    uint16_t m_config_mc_max;
+    uint16_t m_config_retry;
+    uint16_t m_config_retry_max;
+    uint16_t m_config_start_wait;
+
     string m_en_lang;
     const IPV4Address m_iface_address;
     ola::TimeStamp m_boot_time;

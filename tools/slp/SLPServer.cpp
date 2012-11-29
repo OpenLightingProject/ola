@@ -60,6 +60,7 @@ using ola::ToUpper;
 using ola::io::BigEndianInputStream;
 using ola::io::BigEndianOutputStream;
 using ola::io::MemoryBuffer;
+using ola::math::Random;
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
@@ -115,6 +116,7 @@ SLPServer::SLPServer(ola::io::SelectServerInterface *ss,
       m_config_mc_max(options.config_mc_max * ONE_THOUSAND),
       m_config_retry(options.config_retry * ONE_THOUSAND),
       m_config_retry_max(options.config_retry_max * ONE_THOUSAND),
+      m_config_start_wait(options.config_start_wait * ONE_THOUSAND),
       m_en_lang(reinterpret_cast<const char*>(EN_LANGUAGE_TAG),
                 sizeof(EN_LANGUAGE_TAG)),
       m_iface_address(options.ip_address),
@@ -128,7 +130,7 @@ SLPServer::SLPServer(ola::io::SelectServerInterface *ss,
       m_slp_accept_socket(tcp_socket),
       m_udp_sender(m_udp_socket),
       m_configured_scopes(options.scopes),
-      m_xid_allocator(ola::math::Random(0, UINT16_MAX)),
+      m_xid_allocator(Random(0, UINT16_MAX)),
       m_export_map(export_map) {
   ToLower(&m_en_lang);
 
@@ -202,9 +204,10 @@ bool SLPServer::Init() {
         NewCallback(this, &SLPServer::SendDABeat));
     SendDABeat();
   } else {
-    // Send DA Locate
-    // TODO(simon): add random backoff here
-    StartActiveDADiscovery();
+    // schedule a SrvRqst for the directory agent
+    m_active_da_discovery_timer = m_ss->RegisterSingleTimeout(
+        Random(0, m_config_start_wait),
+        NewSingleCallback(this, &SLPServer::StartActiveDADiscovery));
   }
   return true;
 }
