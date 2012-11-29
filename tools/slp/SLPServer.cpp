@@ -141,6 +141,11 @@ SLPServer::SLPServer(ola::io::SelectServerInterface *ss,
   export_map->GetIntegerVar("slp-config-da-beat")->Set(options.config_da_beat);
   export_map->GetIntegerVar("slp-config-da-find")->Set(options.config_da_find);
   export_map->GetIntegerVar("slp-config-mc-max")->Set(options.config_mc_max);
+  export_map->GetIntegerVar("slp-config-retry")->Set(options.config_retry);
+  export_map->GetIntegerVar("slp-config-retry-max")->Set(
+    options.config_retry_max);
+  export_map->GetIntegerVar("slp-config-start_wait")->Set(
+    options.config_start_wait);
   export_map->GetIntegerVar("slp-port")->Set(options.slp_port);
   export_map->GetIntegerVar(FINDSRVS_EMPTY_COUNT_VAR);
   export_map->GetIntegerVar(UDP_RX_TOTAL_VAR);
