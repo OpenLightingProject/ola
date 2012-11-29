@@ -442,6 +442,8 @@ void SLPServer::HandleServiceRequest(BigEndianInputStream *stream,
   LocalLocateServices(scope_set, request->service_type, &urls);
 
   OLA_INFO << "sending SrvReply with " << urls.size() << " urls";
+  if (urls.empty() && request->Multicast())
+    return;
   m_udp_sender.SendServiceReply(source, request->xid, 0, urls);
 }
 
