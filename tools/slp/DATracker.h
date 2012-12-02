@@ -134,6 +134,9 @@ class DATracker {
     void GetDirectoryAgents(vector<DirectoryAgent> *output);
     void GetDAsForScopes(const ScopeSet &scopes,
                          vector<DirectoryAgent> *output);
+    void GetMinimalCoveringList(const ScopeSet &scopes,
+                                vector<DirectoryAgent> *output,
+                                ScopeSet *scopes_without_das);
 
     bool LookupDA(const string &da_url, DirectoryAgent *da);
     void MarkAsBad(const string &da_url);

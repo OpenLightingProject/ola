@@ -201,6 +201,27 @@ const DAAdvertPacket *SLPPacketParser::UnpackDAAdvert(
 
 
 /**
+ * Unpack a Service De-Registration packet
+ */
+const ServiceDeRegistrationPacket *SLPPacketParser::UnpackServiceDeRegistration(
+    BigEndianInputStream *input) const {
+  auto_ptr<ServiceDeRegistrationPacket> packet(
+      new ServiceDeRegistrationPacket());
+  if (!ExtractHeader(input, packet.get(), "SrvDeReg"))
+    return NULL;
+
+  if (!ExtractList(input, &packet->scope_list, "Scope list"))
+    return NULL;
+
+  if (!ExtractURLEntry(input, &packet->url, "SrvDeReg"))
+    return NULL;
+
+  if (!ExtractString(input, &packet->tag_list, "tag-list"))
+    return NULL;
+  return packet.release();
+}
+
+/**
  * Check the contents of the header, and populate the packet structure.
  * Returns true if this packet is valid, false otherwise.
  */
@@ -328,6 +349,9 @@ bool SLPPacketParser::ExtractList(BigEndianInputStream *input,
       ", expected " << str_length << ", " << bytes_read << " remaining";
     return false;
   }
+
+  if (raw_string.empty())
+    return true;
 
   StringSplit(raw_string, *result, ",");
 

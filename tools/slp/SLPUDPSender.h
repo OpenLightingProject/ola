@@ -52,6 +52,13 @@ class SLPUDPSender {
                             const string &service_type,
                             const ScopeSet &scopes);
 
+    // similar to the above, but doesn't take a PR list, use this if you're
+    // unicasting to a DA
+    void SendServiceRequest(const IPV4SocketAddress &dest,
+                            xid_t xid,
+                            const string &service_type,
+                            const ScopeSet &scopes);
+
     void SendServiceReply(const IPV4SocketAddress &dest,
                           xid_t xid,
                           uint16_t error_code,

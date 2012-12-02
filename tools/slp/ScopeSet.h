@@ -74,6 +74,12 @@ class ScopeSet {
       return m_scopes.find(scope) != m_scopes.end();
     }
 
+    typedef set<string>::const_iterator ScopeSetIter;
+
+    // iterate
+    ScopeSetIter begin() const { return m_scopes.begin(); }
+    ScopeSetIter end() const { return m_scopes.end(); }
+
     // Check for intersection between two ScopeSets.
     bool Intersects(const ScopeSet &other) const {
       set<string>::iterator iter1 = m_scopes.begin();
@@ -87,6 +93,25 @@ class ScopeSet {
           iter2++;
       }
       return false;
+    }
+
+    // Return the number of scopes that appear in both lists.
+    unsigned int IntersectionCount(const ScopeSet &other) const {
+      set<string>::iterator iter1 = m_scopes.begin();
+      set<string>::iterator iter2 = other.m_scopes.begin();
+      unsigned int i = 0;
+      while (iter1 != m_scopes.end() && iter2 != other.m_scopes.end()) {
+        if (*iter1 == *iter2) {
+          i++;
+          iter1++;
+          iter2++;
+        } else if (*iter1 < *iter2) {
+          iter1++;
+        } else {
+          iter2++;
+        }
+      }
+      return i;
     }
 
     // Get the intersection
@@ -104,6 +129,26 @@ class ScopeSet {
       set_difference(m_scopes.begin(), m_scopes.end(), other.m_scopes.begin(),
                      other.m_scopes.end(),
                      inserter(difference, difference.end()));
+      return ScopeSet(difference);
+    }
+
+    // Remove the difference between this set and other from this set.
+    // The removed elements are returned.
+    ScopeSet DifferenceUpdate(const ScopeSet &other) {
+      set<string> difference;
+      set<string>::iterator iter1 = m_scopes.begin();
+      set<string>::iterator iter2 = other.m_scopes.begin();
+      while (iter1 != m_scopes.end() && iter2 != other.m_scopes.end()) {
+        if (*iter1 == *iter2) {
+          difference.insert(*iter1);
+          m_scopes.erase(iter1++);
+          iter2++;
+        } else if (*iter1 < *iter2) {
+          iter1++;
+        } else {
+          iter2++;
+        }
+      }
       return ScopeSet(difference);
     }
 

@@ -192,8 +192,6 @@ void SLPStripService(string *str) {
  */
 string SLPServiceFromURL(const string &url) {
   string service = url;
-  SLPStripService(&service);
-
   size_t pos = service.find("://");
   if (pos != string::npos)
     service = service.substr(0, pos);

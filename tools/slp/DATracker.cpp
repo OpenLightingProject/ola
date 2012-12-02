@@ -136,8 +136,8 @@ void DATracker::GetDirectoryAgents(vector<DirectoryAgent> *output) {
 
 
 /**
- * For a given set of scopes, get the list of DAs to use. Scopes that don't
- * have any associated DAs are returned in scopes_without_das.
+ * For a given set of scopes, get the list of DAs that support at least one of
+ * these scopes.
  */
 void DATracker::GetDAsForScopes(const ScopeSet &scopes,
                                 vector<DirectoryAgent> *output) {
@@ -146,6 +146,53 @@ void DATracker::GetDAsForScopes(const ScopeSet &scopes,
     ScopeSet intersection = iter->second.scopes().Intersection(scopes);
     if (!intersection.empty())
       output->push_back(iter->second);
+  }
+}
+
+
+/**
+ * For the given set of scopes, return the fewest DAs that cover as many scopes
+ * as possible. If some of the scopes don't have any associated DAs, we return
+ * them as scopes_without_das.
+ */
+void DATracker::GetMinimalCoveringList(const ScopeSet &scopes,
+                                       vector<DirectoryAgent> *output,
+                                       ScopeSet *scopes_without_das) {
+  // This is a NP-complete problem, see
+  // http://en.wikipedia.org/wiki/Set_cover_problem
+  // We use a greedy algorithm.
+  // We optimize the common case where one DA matches all our scopes.
+  *scopes_without_das = scopes;
+  DAMap::const_iterator iter, largest_iter;
+
+  while (!scopes_without_das->empty()) {
+    largest_iter = m_agents.begin();
+    unsigned int max_intersection_count = 0;
+
+    for (iter = m_agents.begin(); iter != m_agents.end(); ++iter) {
+      unsigned int intersection_count =
+        iter->second.scopes().IntersectionCount(scopes);
+
+      if (intersection_count == scopes_without_das->size()) {
+        // return quickly
+        output->push_back(iter->second);
+        *scopes_without_das = ScopeSet();
+        return;
+      }
+
+      if (intersection_count > max_intersection_count) {
+        max_intersection_count = intersection_count;
+        largest_iter = iter;
+      }
+    }
+
+    if (largest_iter == m_agents.begin())
+      // no more DAs cover these scopes
+      break;
+
+    // otherwise we have a DA that covers at least some of the scopes
+    output->push_back(iter->second);
+    *scopes_without_das = scopes_without_das->Difference(iter->second.scopes());
   }
 }
 

@@ -101,7 +101,6 @@ void SLPStore::Lookup(const TimeStamp &now,
                       URLEntries *output,
                       unsigned int limit) {
   string service_type = raw_service_type;
-  SLPStripService(&service_type);
   SLPCanonicalizeString(&service_type);
   ServiceMap::iterator iter = m_services.find(service_type);
   if (iter == m_services.end())

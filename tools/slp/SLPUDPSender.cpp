@@ -61,6 +61,15 @@ void SLPUDPSender::SendServiceRequest(const IPV4SocketAddress &dest,
 }
 
 
+void SLPUDPSender::SendServiceRequest(const IPV4SocketAddress &dest,
+                                      xid_t xid,
+                                      const string &service_type,
+                                      const ScopeSet &scopes) {
+  set<IPV4Address> pr_list;
+  SendServiceRequest(dest, xid, pr_list, service_type, scopes);
+}
+
+
 void SLPUDPSender::SendServiceReply(const IPV4SocketAddress &dest,
                                     xid_t xid,
                                     uint16_t error_code,
@@ -117,7 +126,8 @@ void SLPUDPSender::SendServiceAck(const IPV4SocketAddress &dest,
                                   uint16_t error_code) {
   EmptyBuffer();
   SLPPacketBuilder::BuildServiceAck(&m_output_stream, xid, error_code);
-  OLA_INFO << "Sending SrvAck with error " << error_code;
+  OLA_INFO << "Sending SrvAck to " << dest << ", xid " << xid
+           << ", error " << error_code;
   Send(dest);
 }
 

@@ -101,6 +101,19 @@ class ServiceRegistrationPacket: public SLPPacket {
 
 
 /**
+ * A Service De-Registration
+ */
+class ServiceDeRegistrationPacket: public SLPPacket {
+  public:
+    ServiceDeRegistrationPacket(): SLPPacket() {}
+
+    URLEntry url;
+    vector<string> scope_list;
+    string tag_list;
+};
+
+
+/**
  * A Service Ack
  */
 class ServiceAckPacket: public SLPPacket {
@@ -151,6 +164,9 @@ class SLPPacketParser {
         BigEndianInputStream *input) const;
 
     const DAAdvertPacket *UnpackDAAdvert(
+        BigEndianInputStream *input) const;
+
+    const ServiceDeRegistrationPacket *UnpackServiceDeRegistration(
         BigEndianInputStream *input) const;
 
   private:
