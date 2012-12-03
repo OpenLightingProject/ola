@@ -72,7 +72,7 @@ SLP.pb.cc SLP.pb.h: SLP.proto
 	$(PROTOC)  --cpp_out ./ SLP.proto
 
 clean-local:
-	rm -f *.pb.{h,cc} lex.yy.cpp config.tab.cpp config.tab.h
+	rm -f *.pb.{h,cc} lex.yy.cpp config.tab.cpp config.tab.h *.gcno *.gcda
 
 lex.yy.cpp: config.lex
 	$(LEX) --header-file=lex.yy.h -olex.yy.cpp config.lex
@@ -84,7 +84,7 @@ config.tab.cpp config.tab.h: config.ypp
 if BUILD_TESTS
 TESTS = PacketBuilderTester PacketParserTester \
         RegistrationFileParserTester ServiceEntryTester SLPStoreTester \
-        SLPStringsTester XIDAllocatorTester
+        SLPStringsTester ScopeSetTester XIDAllocatorTester
 endif
 COMMON_TEST_LDADD = $(CPPUNIT_LIBS) \
                     $(top_builddir)/common/libolacommon.la \
@@ -118,6 +118,13 @@ SLPStringsTester_SOURCES = GenericTester.cpp \
                            SLPStringsTest.cpp
 SLPStringsTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 SLPStringsTester_LDADD = $(COMMON_TEST_LDADD)
+
+ScopeSetTester_SOURCES = GenericTester.cpp \
+                         SLPStrings.cpp \
+                         ScopeSet.cpp \
+                         ScopeSetTest.cpp
+ScopeSetTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+ScopeSetTester_LDADD = $(COMMON_TEST_LDADD)
 
 ServiceEntryTester_SOURCES = GenericTester.cpp \
                              SLPPacketBuilder.cpp \
