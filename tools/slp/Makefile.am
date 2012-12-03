@@ -84,7 +84,7 @@ config.tab.cpp config.tab.h: config.ypp
 if BUILD_TESTS
 TESTS = PacketBuilderTester PacketParserTester \
         RegistrationFileParserTester ServiceEntryTester SLPStoreTester \
-        SLPStringsTester
+        SLPStringsTester XIDAllocatorTester
 endif
 COMMON_TEST_LDADD = $(CPPUNIT_LIBS) \
                     $(top_builddir)/common/libolacommon.la \
@@ -135,3 +135,9 @@ RegistrationFileParserTester_SOURCES = GenericTester.cpp \
                                        SLPStrings.cpp
 RegistrationFileParserTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 RegistrationFileParserTester_LDADD = $(COMMON_TEST_LDADD)
+
+XIDAllocatorTester_SOURCES = GenericTester.cpp \
+                             XIDAllocator.cpp \
+                             XIDAllocatorTest.cpp
+XIDAllocatorTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+XIDAllocatorTester_LDADD = $(COMMON_TEST_LDADD)
