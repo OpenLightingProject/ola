@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * ServiceEntryTest.cpp
- * Test fixture for the URLEntry & ServiceEntry classes
+ * Test fixture for the ServiceEntry classes.
  * Copyright (C) 2012 Simon Newton
  */
 
@@ -23,19 +23,13 @@
 #include <string>
 #include <sstream>
 
-#include "ola/Clock.h"
-#include "ola/network/IPV4Address.h"
 #include "ola/Logging.h"
-#include "ola/io/BigEndianStream.h"
-#include "ola/io/IOQueue.h"
 #include "ola/testing/TestUtils.h"
+#include "tools/slp/ScopeSet.h"
 #include "tools/slp/ServiceEntry.h"
+#include "tools/slp/URLEntry.h"
 
-using ola::TimeStamp;
-using ola::io::BigEndianOutputStream;
-using ola::io::IOQueue;
-using ola::network::IPV4Address;
-using ola::slp::LocalServiceEntry;
+using ola::slp::ScopeSet;
 using ola::slp::ServiceEntry;
 using ola::slp::URLEntry;
 using ola::testing::ASSERT_DATA_EQUALS;
@@ -45,190 +39,131 @@ using std::string;
 
 class ServiceEntryTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(ServiceEntryTest);
-  CPPUNIT_TEST(testURLEntry);
-  CPPUNIT_TEST(testURLEntryWrite);
-  CPPUNIT_TEST(testServiceEntry);
+  CPPUNIT_TEST(testConstructors);
+  CPPUNIT_TEST(testMutation);
   CPPUNIT_TEST(testToString);
-  CPPUNIT_TEST(testLocalServiceEntry);
   CPPUNIT_TEST_SUITE_END();
 
   public:
-    void testURLEntry();
-    void testURLEntryWrite();
-    void testServiceEntry();
+    void testConstructors();
+    void testMutation();
     void testToString();
-    void testLocalServiceEntry();
 
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
+      scope_set = ScopeSet("one,two");
+      service_type = "service:test";
+      url = "service:test://localhost";
+      lifetime = 300;
     }
 
   private:
-    IOQueue output;
+    ScopeSet scope_set;
+    string service_type;
+    string url;
+    uint16_t lifetime;
 };
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION(ServiceEntryTest);
 
 
-/*
- * Check construction, getters and comparisons.
+/**
+ * Test the various constructors
  */
-void ServiceEntryTest::testURLEntry() {
-  URLEntry url1("service:foo://192.168.1.1", 300);
-  OLA_ASSERT_EQ((uint16_t) 300, url1.Lifetime());
-  OLA_ASSERT_EQ(string("service:foo://192.168.1.1"), url1.URL());
+void ServiceEntryTest::testConstructors() {
+  URLEntry url_entry(url, lifetime);
 
-  URLEntry url2("service:foo://192.168.1.1", 300);
-  OLA_ASSERT_EQ(url1, url2);
+  ServiceEntry entry1(scope_set, service_type, url, lifetime);
+  OLA_ASSERT_EQ(scope_set, entry1.scopes());
+  OLA_ASSERT_EQ(service_type, entry1.service_type());
+  OLA_ASSERT_EQ(url, entry1.url_string());
+  OLA_ASSERT_EQ(url_entry, entry1.url());
+  OLA_ASSERT_FALSE(entry1.local());
 
-  URLEntry url3(url1);
-  OLA_ASSERT_EQ(url1, url3);
+  // try a local service
+  ServiceEntry entry2(scope_set, service_type, url, lifetime, true);
+  OLA_ASSERT_EQ(scope_set, entry2.scopes());
+  OLA_ASSERT_EQ(service_type, entry2.service_type());
+  OLA_ASSERT_EQ(url, entry2.url_string());
+  OLA_ASSERT_EQ(url_entry, entry2.url());
+  OLA_ASSERT_TRUE(entry2.local());
 
-  URLEntry url4;
-  OLA_ASSERT_NE(url1, url4);
-  url4 = url1;
-  OLA_ASSERT_EQ(url1, url4);
+  // these should not be equal
+  OLA_ASSERT_NE(entry1, entry2);
 
-  // check the size of this entry
-  OLA_ASSERT_EQ(31u, url1.Size());
-}
+  // test the copy constructor
+  ServiceEntry entry3(entry1);
+  OLA_ASSERT_EQ(scope_set, entry3.scopes());
+  OLA_ASSERT_EQ(service_type, entry3.service_type());
+  OLA_ASSERT_EQ(url, entry3.url_string());
+  OLA_ASSERT_EQ(url_entry, entry3.url());
+  OLA_ASSERT_FALSE(entry3.local());
 
+  OLA_ASSERT_EQ(entry1, entry3);
 
-/*
- * Check that Write() works.
- */
-void ServiceEntryTest::testURLEntryWrite() {
-  const unsigned int expected_size = 31;
-  BigEndianOutputStream stream(&output);
+  // The version that uses the service_type from the url
+  ServiceEntry entry4(scope_set, url, lifetime);
+  OLA_ASSERT_EQ(scope_set, entry4.scopes());
+  OLA_ASSERT_EQ(service_type, entry4.service_type());
+  OLA_ASSERT_EQ(url, entry4.url_string());
+  OLA_ASSERT_EQ(url_entry, entry4.url());
+  OLA_ASSERT_FALSE(entry4.local());
 
-  URLEntry url_entry("service:foo://192.168.1.1", 1234);
-  url_entry.Write(&stream);
+  OLA_ASSERT_EQ(entry1, entry4);
 
-  CPPUNIT_ASSERT_EQUAL(expected_size, output.Size());
+  // try a local service
+  ServiceEntry entry5(scope_set, url, lifetime, true);
+  OLA_ASSERT_EQ(scope_set, entry5.scopes());
+  OLA_ASSERT_EQ(service_type, entry5.service_type());
+  OLA_ASSERT_EQ(url, entry5.url_string());
+  OLA_ASSERT_EQ(url_entry, entry5.url());
+  OLA_ASSERT_TRUE(entry5.local());
 
-  uint8_t data[40];
-  CPPUNIT_ASSERT_EQUAL(expected_size, output.Peek(data, expected_size));
-  output.Pop(expected_size);
-
-  const uint8_t expected_data[] = {
-    0, 0x04, 0xd2, 0, 0x19,
-    's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o', ':', '/', '/',
-    '1', '9', '2', '.', '1', '6', '8', '.', '1', '.', '1',
-    0
-  };
-  ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data), data,
-                     expected_size);
-
-  // now try a 0 length url
-  URLEntry url_entry2("", 1234);
-  url_entry2.Write(&stream);
-  CPPUNIT_ASSERT_EQUAL(6u, output.Size());
-  CPPUNIT_ASSERT_EQUAL(6u, output.Peek(data, 6u));
-  output.Pop(6u);
-
-  const uint8_t expected_data2[] = {0, 0x04, 0xd2, 0, 0, 0};
-  ASSERT_DATA_EQUALS(__LINE__, expected_data2, sizeof(expected_data2),
-                     data, 6u);
-}
-
-
-/*
- * Check ServiceEntry.
- */
-void ServiceEntryTest::testServiceEntry() {
-  set<string> scopes, scopes2;
-  scopes.insert("one");
-  ServiceEntry service1(scopes, "service:foo://192.168.1.1", 1234);
-
-  OLA_ASSERT_EQ(string("service:foo://192.168.1.1"), service1.URL());
-  OLA_ASSERT_EQ((uint16_t) 1234, service1.Lifetime());
-  OLA_ASSERT_SET_EQ(scopes, service1.Scopes());
-
-  // check the setter works
-  service1.SetLifetime(300);
-  OLA_ASSERT_EQ((uint16_t) 300, service1.Lifetime());
-
-  // check MatchesScopes
-  OLA_ASSERT_TRUE(service1.MatchesScopes(scopes));
-
-  // check IntersectsScopes
-  OLA_ASSERT_TRUE(service1.IntersectsScopes(scopes));
-  scopes2.insert("two");
-  OLA_ASSERT_FALSE(service1.IntersectsScopes(scopes2));
-  scopes2.insert("one");
-  OLA_ASSERT_TRUE(service1.IntersectsScopes(scopes2));
-
-  // test copy constructor
-  ServiceEntry service2(service1);
-  OLA_ASSERT_EQ((uint16_t) 300, service2.Lifetime());
-  OLA_ASSERT_EQ(string("service:foo://192.168.1.1"), service2.URL());
-  OLA_ASSERT_SET_EQ(scopes, service2.Scopes());
+  OLA_ASSERT_EQ(entry2, entry5);
 
   // test assignment
-  ServiceEntry service3;
-  service3 = service1;
-  OLA_ASSERT_EQ((uint16_t) 300, service3.Lifetime());
-  OLA_ASSERT_EQ(string("service:foo://192.168.1.1"), service3.URL());
-  OLA_ASSERT_SET_EQ(scopes, service3.Scopes());
+  entry3 = entry2;
+  OLA_ASSERT_EQ(entry3, entry5);
 }
 
+
 /**
- * Check converting a URLEntry & ServiceEntry to a string works
+ * Test mutation works
+ */
+void ServiceEntryTest::testMutation() {
+  uint16_t new_lifetime = 10;
+
+  ServiceEntry entry1(scope_set, url, lifetime);
+  OLA_ASSERT_EQ(scope_set, entry1.scopes());
+  OLA_ASSERT_EQ(service_type, entry1.service_type());
+  OLA_ASSERT_EQ(lifetime, entry1.url().lifetime());
+  OLA_ASSERT_EQ(url, entry1.url_string());
+  OLA_ASSERT_FALSE(entry1.local());
+
+  entry1.set_local(true);
+  OLA_ASSERT_TRUE(entry1.local());
+
+  entry1.set_local(false);
+  OLA_ASSERT_FALSE(entry1.local());
+
+  entry1.mutable_url().set_lifetime(new_lifetime);
+  OLA_ASSERT_EQ(new_lifetime, entry1.url().lifetime());
+  OLA_ASSERT_EQ(url, entry1.url_string());
+}
+
+
+/**
+ * Check converting to a string works
  */
 void ServiceEntryTest::testToString() {
-  URLEntry url1("service:foo://192.168.1.1", 300);
-  OLA_ASSERT_EQ(string("service:foo://192.168.1.1(300)"), url1.ToString());
+  ServiceEntry entry1(scope_set, url, lifetime);
+  OLA_ASSERT_EQ(scope_set, entry1.scopes());
+  OLA_ASSERT_EQ(service_type, entry1.service_type());
+  OLA_ASSERT_EQ(lifetime, entry1.url().lifetime());
+  OLA_ASSERT_EQ(url, entry1.url_string());
+  OLA_ASSERT_FALSE(entry1.local());
 
-  set<string> scopes, scopes2;
-  scopes.insert("one");
-  scopes.insert("two");
-  ServiceEntry service1(scopes, "service:foo://192.168.1.1", 300);
-  OLA_ASSERT_EQ(string("service:foo://192.168.1.1(300), [one,two]"),
-                service1.ToString());
-}
-
-
-/**
- * Check LocalServiceEntry
- */
-void ServiceEntryTest::testLocalServiceEntry() {
-  set<string> scopes;
-  set<IPV4Address> das, expected_das;
-  scopes.insert("one");
-  LocalServiceEntry service(scopes, "service:foo://192.168.1.1", 1234);
-
-  service.RegisteredDAs(&das);
-  OLA_ASSERT_SET_EQ(expected_das, das);
-  OLA_ASSERT_EQ(string("service:foo://192.168.1.1(1234), [one], Reg with: "),
-                service.ToString());
-
-  IPV4Address address1, address2;
-  OLA_ASSERT_TRUE(IPV4Address::FromString("10.0.0.1", &address1));
-  OLA_ASSERT_TRUE(IPV4Address::FromString("10.0.0.10", &address2));
-
-  service.AddDA(address1);
-  expected_das.insert(address1);
-  service.RegisteredDAs(&das);
-  OLA_ASSERT_SET_EQ(expected_das, das);
-  OLA_ASSERT_EQ(
-      string("service:foo://192.168.1.1(1234), [one], Reg with: 10.0.0.1"),
-      service.ToString());
-
-  service.AddDA(address2);
-  expected_das.insert(address2);
-  service.RegisteredDAs(&das);
-  OLA_ASSERT_SET_EQ(expected_das, das);
-  OLA_ASSERT_EQ(
-      string("service:foo://192.168.1.1(1234), [one], Reg with: "
-             "10.0.0.1,10.0.0.10"),
-      service.ToString());
-
-  service.RemoveDA(address1);
-  expected_das.erase(address1);
-  service.RegisteredDAs(&das);
-  OLA_ASSERT_SET_EQ(expected_das, das);
-  OLA_ASSERT_EQ(
-      string("service:foo://192.168.1.1(1234), [one], Reg with: 10.0.0.10"),
-      service.ToString());
+  OLA_ASSERT_EQ(string("service:test://localhost(300), [one,two]"),
+                entry1.ToString());
 }

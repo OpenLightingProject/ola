@@ -21,88 +21,20 @@
 #ifndef TOOLS_SLP_SERVICEENTRY_H_
 #define TOOLS_SLP_SERVICEENTRY_H_
 
-#include <ola/Clock.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
-#include <ola/io/BigEndianStream.h>
-#include <ola/network/IPV4Address.h>
-#include <map>
 #include <ostream>
-#include <set>
 #include <string>
 #include <vector>
 #include "tools/slp/SLPStrings.h"
 #include "tools/slp/ScopeSet.h"
+#include "tools/slp/URLEntry.h"
 
 namespace ola {
 namespace slp {
 
-using ola::TimeStamp;
-using ola::network::IPV4Address;
 using std::ostream;
-using std::map;
-using std::set;
 using std::string;
-using std::vector;
-
-/**
- * Represents a URL with the an associated lifetime. The URL cannot be changed
- * once the object is created. This object is cheap to copy so it can be used
- * in STL containers. It doesn't have an ordering defined though.
- */
-class URLEntry {
-  public:
-    URLEntry() {}
-
-    URLEntry(const string &url, uint16_t lifetime)
-        : m_url(url),
-          m_lifetime(lifetime) {
-    }
-
-    ~URLEntry() {}
-
-    string url() const { return m_url; }
-    uint16_t lifetime() const { return m_lifetime; }
-    void set_lifetime(uint16_t lifetime) { m_lifetime = lifetime; }
-
-    // Return the total size of this URL entry
-    unsigned int PackedSize() const { return 6 + m_url.size(); }
-
-    // Write this ServiceEntry to an IOQueue
-    void Write(ola::io::BigEndianOutputStreamInterface *output) const;
-
-    URLEntry& operator=(const URLEntry &other) {
-      if (this != &other) {
-        m_url = other.m_url;
-        m_lifetime = other.m_lifetime;
-      }
-      return *this;
-    }
-
-    void ToStream(ostream &out) const {
-      out << m_url << "(" << m_lifetime << ")";
-    }
-
-    string ToString() const {
-      std::ostringstream str;
-      ToStream(str);
-      return str.str();
-    }
-
-    friend ostream& operator<<(ostream &out, const URLEntry &entry) {
-      entry.ToStream(out);
-      return out;
-    }
-
-  protected:
-    string m_url;
-    uint16_t m_lifetime;
-    // TODO(simon): add auth blocks here
-};
-
-
-// typedef for convenience
-typedef std::vector<URLEntry> URLEntries;
 
 
 /**
@@ -201,6 +133,25 @@ class ServiceEntry {
 
     // a shortcut to get the url string, rather than using .url().url()
     string url_string() const { return m_url.url(); }
+
+    bool operator==(const ServiceEntry &other) const {
+      return (m_service_type == other.m_service_type && m_url == other.m_url &&
+              m_local == other.m_local);
+    }
+
+    bool operator!=(const ServiceEntry &other) const {
+      return !(*this == other);
+    }
+
+    ServiceEntry& operator=(const ServiceEntry &other) {
+      if (this != &other) {
+        m_local = other.m_local;
+        m_url = other.m_url;
+        m_service_type = other.m_service_type;
+        m_scopes = other.m_scopes;
+      }
+      return *this;
+    }
 
     string ToString() const {
       std::ostringstream str;

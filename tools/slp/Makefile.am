@@ -19,6 +19,7 @@ EXTRA_DIST = Base.h \
              ScopeSet.h \
              ServerCommon.h \
              ServiceEntry.h \
+             URLEntry.h \
              XIDAllocator.h \
              slp-parser-actions.h
 
@@ -36,7 +37,7 @@ slp_server_SOURCES = DATracker.cpp \
                      SLPUDPSender.cpp \
                      SLPUtil.cpp \
                      ScopeSet.cpp \
-                     ServiceEntry.cpp \
+                     URLEntry.cpp \
                      XIDAllocator.cpp \
                      slp-server.cpp
 slp_server_LDADD = $(top_builddir)/common/libolacommon.la \
@@ -121,8 +122,10 @@ SLPStringsTester_LDADD = $(COMMON_TEST_LDADD)
 ServiceEntryTester_SOURCES = GenericTester.cpp \
                              SLPPacketBuilder.cpp \
                              SLPStrings.cpp \
-                             ServiceEntry.cpp \
-                             ServiceEntryTest.cpp
+                             ScopeSet.cpp \
+                             ServiceEntryTest.cpp \
+                             URLEntry.cpp \
+                             URLEntryTest.cpp
 ServiceEntryTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 ServiceEntryTester_LDADD = $(COMMON_TEST_LDADD)
 
