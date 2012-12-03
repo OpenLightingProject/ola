@@ -107,7 +107,7 @@ bool SLPClient::FindService(
         const vector<string> &scopes,
         const string &service,
         SingleUseCallback2<void, const string&,
-                           const vector<SLPService>&> *callback) {
+                           const vector<URLEntry>&> *callback) {
   return m_core->FindService(scopes, service, callback);
 }
 }  // slp

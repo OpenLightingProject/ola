@@ -150,7 +150,7 @@ bool SLPClientCore::FindService(
     const vector<string> &scopes,
     const string &service_type,
     SingleUseCallback2<void, const string&,
-                       const vector<SLPService> &> *callback) {
+                       const vector<URLEntry> &> *callback) {
   if (!m_connected) {
     delete callback;
     return false;
@@ -203,7 +203,7 @@ void SLPClientCore::HandleRegistration(register_arg *args) {
  */
 void SLPClientCore::HandleFindRequest(find_arg *args) {
   string error_string = "";
-  vector<SLPService> services;
+  vector<URLEntry> services;
 
   if (!args->callback) {
     FreeArgs(args);
@@ -215,8 +215,8 @@ void SLPClientCore::HandleFindRequest(find_arg *args) {
   } else {
     for (int i = 0; i < args->reply->url_entry_size(); ++i) {
       const ola::slp::proto::URLEntry &url_entry = args->reply->url_entry(i);
-      SLPService slp_service(url_entry.url(), url_entry.lifetime());
-      services.push_back(slp_service);
+      URLEntry url(url_entry.url(), url_entry.lifetime());
+      services.push_back(url);
     }
   }
   args->callback->Run(error_string, services);

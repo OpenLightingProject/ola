@@ -32,6 +32,7 @@
 #include <vector>
 
 #include "tools/slp/Base.h"
+#include "tools/slp/URLEntry.h"
 
 
 namespace ola {
@@ -41,21 +42,6 @@ using std::auto_ptr;
 using std::string;
 using ola::network::IPV4SocketAddress;
 using ola::network::IPV4Address;
-
-
-/**
- * An SLP Service
- */
-struct SLPService {
-  public:
-    string name;
-    uint16_t lifetime;
-
-    SLPService(const string &name, uint16_t lifetime)
-        : name(name),
-          lifetime(lifetime) {
-    }
-};
 
 
 class SLPClient {
@@ -99,7 +85,7 @@ class SLPClient {
         const vector<string> &scopes,
         const string &service,
         SingleUseCallback2<void, const string&,
-                           const vector<SLPService> &> *callback);
+                           const vector<URLEntry> &> *callback);
 
   private:
     SLPClient(const SLPClient&);

@@ -83,7 +83,7 @@ class SLPClientCore {
         const vector<string> &scopes,
         const string &service,
         SingleUseCallback2<void, const string&,
-                           const vector<SLPService> &> *callback);
+                           const vector<URLEntry> &> *callback);
 
 
     // unfortunately all of these need to be public because they're used in the
@@ -101,7 +101,7 @@ class SLPClientCore {
       SimpleRpcController *controller;
       ola::slp::proto::ServiceReply *reply;
       SingleUseCallback2<void, const string&,
-                         const vector<SLPService> &> *callback;
+                         const vector<URLEntry> &> *callback;
     } find_arg;
 
     void HandleFindRequest(find_arg *args);

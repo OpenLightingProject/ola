@@ -42,7 +42,7 @@ using ola::io::SelectServer;
 using ola::network::TCPAcceptingSocket;
 using ola::slp::SLPClient;
 using ola::slp::SLPErrorToString;
-using ola::slp::SLPService;
+using ola::slp::URLEntry;
 using std::auto_ptr;
 using std::cout;
 using std::endl;
@@ -205,13 +205,13 @@ class FindCommand: public Command {
     const string m_service;
 
     void RequestComplete(const string &error,
-                         const vector<SLPService> &services) {
+                         const vector<URLEntry> &services) {
       Terminate();
       if (IsError(error))
         return;
-      for (vector<SLPService>::const_iterator iter = services.begin();
+      for (vector<URLEntry>::const_iterator iter = services.begin();
            iter != services.end(); ++iter)
-        cout << iter->name << ", " << iter->lifetime << endl;
+        cout << iter->url() << ", " << iter->lifetime() << endl;
     }
 };
 
