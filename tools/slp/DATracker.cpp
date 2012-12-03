@@ -152,20 +152,18 @@ void DATracker::GetDAsForScopes(const ScopeSet &scopes,
 
 /**
  * For the given set of scopes, return the fewest DAs that cover as many scopes
- * as possible. If some of the scopes don't have any associated DAs, we return
- * them as scopes_without_das.
+ * as possible.
  */
 void DATracker::GetMinimalCoveringList(const ScopeSet &scopes,
-                                       vector<DirectoryAgent> *output,
-                                       ScopeSet *scopes_without_das) {
+                                       vector<DirectoryAgent> *output) {
   // This is a NP-complete problem, see
   // http://en.wikipedia.org/wiki/Set_cover_problem
   // We use a greedy algorithm.
   // We optimize the common case where one DA matches all our scopes.
-  *scopes_without_das = scopes;
+  ScopeSet scopes_to_cover = scopes;
   DAMap::const_iterator iter, largest_iter;
 
-  while (!scopes_without_das->empty()) {
+  while (!scopes_to_cover.empty()) {
     largest_iter = m_agents.begin();
     unsigned int max_intersection_count = 0;
 
@@ -173,10 +171,9 @@ void DATracker::GetMinimalCoveringList(const ScopeSet &scopes,
       unsigned int intersection_count =
         iter->second.scopes().IntersectionCount(scopes);
 
-      if (intersection_count == scopes_without_das->size()) {
+      if (intersection_count == scopes_to_cover.size()) {
         // return quickly
         output->push_back(iter->second);
-        *scopes_without_das = ScopeSet();
         return;
       }
 
@@ -192,7 +189,7 @@ void DATracker::GetMinimalCoveringList(const ScopeSet &scopes,
 
     // otherwise we have a DA that covers at least some of the scopes
     output->push_back(iter->second);
-    *scopes_without_das = scopes_without_das->Difference(iter->second.scopes());
+    scopes_to_cover.DifferenceUpdate(iter->second.scopes());
   }
 }
 

@@ -62,26 +62,15 @@ using std::string;
 namespace ola {
 namespace slp {
 
-class PendingOperation {
-  public:
-    PendingOperation(const ServiceEntry &service, xid_t xid,
-                     unsigned int retry_time)
-      : xid(xid),
-        timer_id(ola::thread::INVALID_TIMEOUT),
-        retry_time(retry_time),
-        service(service) {
-    }
 
-    xid_t xid;
-    ola::thread::timeout_id timer_id;
-    // seconds since the first attempt, doubles up to m_config_retry_max
-    unsigned int retry_time;
-    string da_url;
-    ServiceEntry service;
-};
+class PendingSrvRqst;
+class PendingDAFindOperation;
+class PendingRegistationOperation;
+class PendingMulticastFindOperation;
 
 
 class OutstandingDADiscovery {
+  // TODO(simon): can we make this use the PendingDAFindOperation above?
   public:
     typedef set<IPV4Address> IPV4AddressSet;
 
@@ -161,9 +150,12 @@ class SLPServer {
     uint16_t DeRegisterService(const ServiceEntry &service);
 
   private:
-    typedef multimap<string, PendingOperation*> PendingOperationsByURL;
+    typedef multimap<string, class PendingOperation*> PendingOperationsByURL;
     typedef SingleUseCallback1<void, uint16_t> AckCallback;
+    typedef BaseCallback3<void, const IPV4Address&, uint16_t,
+                          const URLEntries&> SrvReplyCallback;
     typedef map<xid_t, AckCallback*> PendingAckMap;
+    typedef map<xid_t, SrvReplyCallback*> PendingReplyMap;
 
     bool m_enable_da;
     uint16_t m_slp_port;
@@ -189,7 +181,7 @@ class SLPServer {
     ola::network::UDPSocket *m_udp_socket;
     ola::network::TCPAcceptingSocket *m_slp_accept_socket;
 
-    // SLP memebers
+    // SLP members
     SLPPacketParser m_packet_parser;
     SLPStore m_service_store;
     SLPUDPSender m_udp_sender;
@@ -197,8 +189,9 @@ class SLPServer {
     XIDAllocator m_xid_allocator;
 
     // Track pending transactions
-    PendingAckMap m_pending_acks;  // map of xid_t -> callback
+    PendingAckMap m_pending_acks;  // map of xid_t -> AckCallback
     PendingOperationsByURL m_pending_ops;  // multimap url -> PendingOperation
+    PendingReplyMap m_pending_replies;  // map of xid_t -> SrvReplyCallback
 
     // Members used to keep track of DAs
     DATracker m_da_tracker;
@@ -215,6 +208,8 @@ class SLPServer {
                             const IPV4SocketAddress &source);
     void HandleServiceRegistration(BigEndianInputStream *stream,
                                    const IPV4SocketAddress &source);
+    void HandleServiceDeRegister(BigEndianInputStream *stream,
+                                 const IPV4SocketAddress &source);
     void HandleServiceAck(BigEndianInputStream *stream,
                           const IPV4SocketAddress &source);
     void HandleDAAdvert(BigEndianInputStream *stream,
@@ -233,23 +228,37 @@ class SLPServer {
 
     // DA specific methods
     void SendDAAdvert(const IPV4SocketAddress &dest);
+    void SendAck(const IPV4SocketAddress &dest, uint16_t error_code);
     bool SendDABeat();
 
     // TODO(simon): categorize these
     void LocalLocateServices(const ScopeSet &scopes,
                              const string &service_type,
                              URLEntries *services);
-    void InternalFindService(const set<string> &scopes,
-                             const string &service,
-                             SingleUseCallback1<void, const URLEntries&> *cb);
+
+    // UA methods to handle finding services
+    void FindServiceInScopes(PendingSrvRqst *request, const ScopeSet &scopes);
+    //   methods used to communicate with DAs
+    void SendSrvRqstToDA(PendingDAFindOperation *op, const DirectoryAgent &da,
+                          bool expect_reused_xid = false);
+    void ReceivedDASrvReply(PendingDAFindOperation *op, const IPV4Address &src,
+                            uint16_t error_code, const URLEntries &urls);
+    void RequestServiceDATimeout(PendingDAFindOperation *op);
+    void CancelPendingSrvRqstAck(const PendingReplyMap::iterator &iter);
+    //  methods used for multicast SA requests
+    void RequestServiceMulticastTimeout(PendingMulticastFindOperation *op);
+    void ReceivedSASrvReply(PendingMulticastFindOperation *op,
+                            const IPV4Address &src, uint16_t error_code,
+                            const URLEntries &urls);
+    void CheckIfFindSrvComplete(PendingSrvRqst *request);
 
     // SA methods
     void CancelPendingOperations(const string &url);
     uint16_t InternalRegisterService(const ServiceEntry &service);
     uint16_t InternalDeRegisterService(const ServiceEntry &service);
-    void ReceivedAck(PendingOperation *op_ptr, uint16_t error_code);
-    void RegistrationTimeout(PendingOperation *op);
-    void DeRegistrationTimeout(PendingOperation *op);
+    void ReceivedAck(PendingRegistationOperation *op_ptr, uint16_t error_code);
+    void RegistrationTimeout(PendingRegistationOperation *op);
+    void DeRegistrationTimeout(PendingRegistationOperation *op);
     void RegisterWithDA(const DirectoryAgent &directory_agent,
                         const ServiceEntry &service);
     void DeRegisterWithDA(const DirectoryAgent &directory_agent,
@@ -269,6 +278,13 @@ class SLPServer {
     bool CleanSLPStore();
 
     // constants
+    // Super ghetto:
+    // iphdr(20) + udphdr(8) + slphdr(16) = 44
+    // The lengths of a SrvRqst are another 10, which leaves 1446 remaining
+    // A PR can be at most 15 bytes
+    // 88 PRs leaves 126 bytes for the service-type & scope strings
+    // TODO(simon): fix this for real
+    static const unsigned int MAX_PR_LIST_SIZE = 88;
     static const char DAADVERT[];
     static const char DEREGSRVS_ERROR_COUNT_VAR[];
     static const char FINDSRVS_EMPTY_COUNT_VAR[];
@@ -279,6 +295,7 @@ class SLPServer {
     static const char REGSRVS_ERROR_COUNT_VAR[];
     static const char SLP_PORT_VAR[];
     static const char SRVACK[];
+    static const char SRVDEREG[];
     static const char SRVREG[];
     static const char SRVRPLY[];
     static const char SRVRQST[];

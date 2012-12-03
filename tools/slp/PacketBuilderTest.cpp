@@ -50,6 +50,7 @@ class PacketBuilderTest: public CppUnit::TestFixture {
     CPPUNIT_TEST(testBuildServiceRequest);
     CPPUNIT_TEST(testBuildServiceReply);
     CPPUNIT_TEST(testBuildServiceRegistration);
+    CPPUNIT_TEST(testBuildServiceDeRegistration);
     CPPUNIT_TEST(testBuildDAAdvert);
     CPPUNIT_TEST(testBuildSAAdvert);
     CPPUNIT_TEST(testBuildServiceAck);
@@ -58,6 +59,7 @@ class PacketBuilderTest: public CppUnit::TestFixture {
     void testBuildServiceRequest();
     void testBuildServiceReply();
     void testBuildServiceRegistration();
+    void testBuildServiceDeRegistration();
     void testBuildDAAdvert();
     void testBuildSAAdvert();
     void testBuildServiceAck();
@@ -209,6 +211,13 @@ void PacketBuilderTest::testBuildServiceRegistration() {
                      output_data, data_size);
   delete[] output_data;
 }
+
+
+/**
+ * Check that BuildServiceDeRegistration() works.
+void PacketBuilderTest::testBuildServiceDeRegistration() {
+}
+ */
 
 
 /*

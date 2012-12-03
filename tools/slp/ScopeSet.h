@@ -74,11 +74,11 @@ class ScopeSet {
       return m_scopes.find(scope) != m_scopes.end();
     }
 
-    typedef set<string>::const_iterator ScopeSetIter;
+    typedef set<string>::const_iterator Iterator;
 
     // iterate
-    ScopeSetIter begin() const { return m_scopes.begin(); }
-    ScopeSetIter end() const { return m_scopes.end(); }
+    Iterator begin() const { return m_scopes.begin(); }
+    Iterator end() const { return m_scopes.end(); }
 
     // Check for intersection between two ScopeSets.
     bool Intersects(const ScopeSet &other) const {

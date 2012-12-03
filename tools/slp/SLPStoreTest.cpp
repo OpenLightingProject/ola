@@ -24,15 +24,17 @@
 #include <set>
 #include <string>
 
-#include "ola/Logging.h"
 #include "ola/Clock.h"
+#include "ola/Logging.h"
 #include "ola/testing/TestUtils.h"
 #include "tools/slp/SLPStore.h"
+#include "tools/slp/ScopeSet.h"
+#include "tools/slp/ServiceEntry.h"
 
 using ola::MockClock;
 using ola::TimeStamp;
 using ola::slp::SLPStore;
-using ola::slp::ServiceEntries;
+using ola::slp::URLEntries;
 using ola::slp::ServiceEntry;
 using ola::slp::URLEntries;
 using std::set;

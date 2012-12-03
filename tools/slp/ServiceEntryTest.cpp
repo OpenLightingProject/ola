@@ -23,6 +23,7 @@
 #include <string>
 #include <sstream>
 
+#include "ola/Clock.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/Logging.h"
 #include "ola/io/BigEndianStream.h"
@@ -30,6 +31,7 @@
 #include "ola/testing/TestUtils.h"
 #include "tools/slp/ServiceEntry.h"
 
+using ola::TimeStamp;
 using ola::io::BigEndianOutputStream;
 using ola::io::IOQueue;
 using ola::network::IPV4Address;
@@ -192,11 +194,12 @@ void ServiceEntryTest::testToString() {
  */
 void ServiceEntryTest::testLocalServiceEntry() {
   set<string> scopes;
-  set<IPV4Address> expected_das;
+  set<IPV4Address> das, expected_das;
   scopes.insert("one");
   LocalServiceEntry service(scopes, "service:foo://192.168.1.1", 1234);
 
-  OLA_ASSERT_SET_EQ(expected_das, service.RegisteredDAs());
+  service.RegisteredDAs(&das);
+  OLA_ASSERT_SET_EQ(expected_das, das);
   OLA_ASSERT_EQ(string("service:foo://192.168.1.1(1234), [one], Reg with: "),
                 service.ToString());
 
@@ -206,14 +209,16 @@ void ServiceEntryTest::testLocalServiceEntry() {
 
   service.AddDA(address1);
   expected_das.insert(address1);
-  OLA_ASSERT_SET_EQ(expected_das, service.RegisteredDAs());
+  service.RegisteredDAs(&das);
+  OLA_ASSERT_SET_EQ(expected_das, das);
   OLA_ASSERT_EQ(
       string("service:foo://192.168.1.1(1234), [one], Reg with: 10.0.0.1"),
       service.ToString());
 
   service.AddDA(address2);
   expected_das.insert(address2);
-  OLA_ASSERT_SET_EQ(expected_das, service.RegisteredDAs());
+  service.RegisteredDAs(&das);
+  OLA_ASSERT_SET_EQ(expected_das, das);
   OLA_ASSERT_EQ(
       string("service:foo://192.168.1.1(1234), [one], Reg with: "
              "10.0.0.1,10.0.0.10"),
@@ -221,7 +226,8 @@ void ServiceEntryTest::testLocalServiceEntry() {
 
   service.RemoveDA(address1);
   expected_das.erase(address1);
-  OLA_ASSERT_SET_EQ(expected_das, service.RegisteredDAs());
+  service.RegisteredDAs(&das);
+  OLA_ASSERT_SET_EQ(expected_das, das);
   OLA_ASSERT_EQ(
       string("service:foo://192.168.1.1(1234), [one], Reg with: 10.0.0.10"),
       service.ToString());

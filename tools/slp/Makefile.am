@@ -10,14 +10,15 @@ EXTRA_DIST = Base.h \
              SLPPacketBuilder.h \
              SLPPacketConstants.h \
              SLPPacketParser.h \
+             SLPPendingOperations.h \
              SLPServer.h \
              SLPStore.h \
              SLPStrings.h \
              SLPUDPSender.h \
+             SLPUtil.h \
              ScopeSet.h \
              ServerCommon.h \
              ServiceEntry.h \
-             SLPUtil.h \
              XIDAllocator.h \
              slp-parser-actions.h
 
@@ -28,6 +29,7 @@ slp_server_SOURCES = DATracker.cpp \
                      SLPDaemon.cpp \
                      SLPPacketBuilder.cpp \
                      SLPPacketParser.cpp \
+                     SLPPendingOperations.cpp \
                      SLPServer.cpp \
                      SLPStore.cpp \
                      SLPStrings.cpp \
