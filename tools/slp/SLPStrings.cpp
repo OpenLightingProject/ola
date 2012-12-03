@@ -13,37 +13,32 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * SLPString.h
+ * SLPStrings.h
  * Utility functions for dealing with strings in SLP
  * Copyright (C) 2012 Simon Newton
  */
 
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
-#include <algorithm>
-#include <set>
 #include <string>
 #include <sstream>
-#include <vector>
-#include "tools/slp/ServerCommon.h"
 #include "tools/slp/SLPStrings.h"
 
 namespace ola {
 namespace slp {
 
-using std::ostringstream;
 using std::string;
 
 /**
  * Escape a String to use in SLP packets
  */
 void SLPStringEscape(string *str) {
-  ostringstream converted;
+  std::ostringstream converted;
   string::size_type i = 0;
   while (true) {
     i = str->find_first_of("(),\\!<=>~;*+", i);
     if (i == string::npos)
-      break;
+      return;
 
     converted.str("");
     converted << "\\" << std::hex << static_cast<int>(str->at(i));
@@ -144,35 +139,6 @@ string SLPServiceFromURL(const string &url) {
     service = service.substr(0, pos);
   SLPCanonicalizeString(&service);
   return service;
-}
-
-
-/**
- * Give a comma-separated list of scopes, return the set of canonical scopes
- * this represents.
- */
-void SLPExtractScopes(const string &scopes, set<string> *output) {
-  string::size_type start_offset = 0;
-  string::size_type end_offset = 0;
-
-  while (end_offset != string::npos) {
-    end_offset = scopes.find_first_of(",", start_offset);
-    string scope;
-    if (end_offset == string::npos)
-      scope = scopes.substr(start_offset, scopes.size() - start_offset);
-    else
-      scope = scopes.substr(start_offset, end_offset - start_offset);
-
-    start_offset = end_offset + 1 > scopes.size() ? string::npos :
-                   end_offset + 1;
-
-    if (scope.empty())
-      continue;
-
-    SLPStringUnescape(&scope);
-    SLPCanonicalizeString(&scope);
-    output->insert(scope);
-  }
 }
 }  // slp
 }  // ola

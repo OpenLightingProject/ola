@@ -19,28 +19,18 @@
  */
 
 #include <cppunit/extensions/HelperMacros.h>
-#include <set>
 #include <string>
-#include <vector>
 
 #include "ola/Logging.h"
 #include "ola/testing/TestUtils.h"
 #include "tools/slp/SLPStrings.h"
 
 using ola::slp::SLPCanonicalizeString;
-using ola::slp::SLPExtractScopes;
 using ola::slp::SLPGetCanonicalString;
-using ola::slp::SLPReduceList;
-using ola::slp::SLPScopesMatch;
 using ola::slp::SLPServiceFromURL;
-using ola::slp::SLPSetIntersect;
-using ola::slp::SLPStringCanonicalizeAndCompare;
 using ola::slp::SLPStringEscape;
 using ola::slp::SLPStringUnescape;
-using ola::slp::SLPStripService;
-using std::set;
 using std::string;
-using std::vector;
 
 
 class SLPStringsTest: public CppUnit::TestFixture {
@@ -48,26 +38,14 @@ class SLPStringsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testEscape);
   CPPUNIT_TEST(testUnescape);
   CPPUNIT_TEST(testCanonicalize);
-  CPPUNIT_TEST(testComparison);
-  CPPUNIT_TEST(testIntersection);
-  CPPUNIT_TEST(testReduceList);
-  CPPUNIT_TEST(testScopesMatch);
-  CPPUNIT_TEST(testStripService);
   CPPUNIT_TEST(testSLPServiceFromURL);
-  CPPUNIT_TEST(testSLPExtractScopes);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void testEscape();
     void testUnescape();
     void testCanonicalize();
-    void testComparison();
-    void testIntersection();
-    void testReduceList();
-    void testScopesMatch();
-    void testStripService();
     void testSLPServiceFromURL();
-    void testSLPExtractScopes();
 
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
@@ -88,6 +66,10 @@ void SLPStringsTest::testEscape() {
   str = "ends in a ,";
   SLPStringEscape(&str);
   OLA_ASSERT_EQ(string("ends in a \\2c"), str);
+
+  str = "no escaping here";
+  SLPStringEscape(&str);
+  OLA_ASSERT_EQ(string("no escaping here"), str);
 }
 
 
@@ -110,6 +92,14 @@ void SLPStringsTest::testUnescape() {
   str = "\\2";
   SLPStringUnescape(&str);
   OLA_ASSERT_EQ(string(""), str);
+
+  str = "\\80";
+  SLPStringUnescape(&str);
+  OLA_ASSERT_EQ(string("\\80"), str);
+
+  str = "\\zz";
+  SLPStringUnescape(&str);
+  OLA_ASSERT_EQ(string("\\zz"), str);
 }
 
 
@@ -132,144 +122,14 @@ void SLPStringsTest::testCanonicalize() {
 }
 
 
-/*
- * Check that comparisons fold whitesare and are case insensitive.
- */
-void SLPStringsTest::testComparison() {
-  const string one = "  Some String  ";
-  const string two = "SOME   STRING";
-
-  OLA_ASSERT_TRUE(SLPStringCanonicalizeAndCompare(one, two));
-  OLA_ASSERT_TRUE(SLPStringCanonicalizeAndCompare("", "  "));
-  OLA_ASSERT_TRUE(SLPStringCanonicalizeAndCompare("", "\t\r"));
-  OLA_ASSERT_TRUE(SLPStringCanonicalizeAndCompare("Foo Bar", "Foo\tBar"));
-  OLA_ASSERT_TRUE(SLPStringCanonicalizeAndCompare("  foo", "Foo  \r"));
-}
-
-
-/*
- * Check that SLPSetIntersect works.
- */
-void SLPStringsTest::testIntersection() {
-  set<string> one, two;
-  OLA_ASSERT_FALSE(SLPSetIntersect(one, two));
-
-  one.insert("default");
-  OLA_ASSERT_FALSE(SLPSetIntersect(one, two));
-
-  two.insert("default");
-  OLA_ASSERT_TRUE(SLPSetIntersect(one, two));
-}
-
-
-/*
- * Check that SLPReduceList works.
- */
-void SLPStringsTest::testReduceList() {
-  set<string> output;
-  vector<string> input;
-  input.push_back("default");
-  input.push_back("DEFAULT");
-  input.push_back("  DEFAULT  ");
-  input.push_back("  Some String  ");
-  input.push_back("SOME   STRING");
-
-  SLPReduceList(input, &output);
-  set<string> expected;
-  expected.insert("default");
-  expected.insert("some string");
-  OLA_ASSERT_SET_EQ(expected, output);
-}
-
-
-/**
- * Test the SLPScopesMatch function
- */
-void SLPStringsTest::testScopesMatch() {
-  vector<string> input;
-  set<string> output;
-
-  OLA_ASSERT_FALSE(SLPScopesMatch(input, output));
-  input.push_back("DEFAULT");
-  OLA_ASSERT_FALSE(SLPScopesMatch(input, output));
-  output.insert("default");
-  OLA_ASSERT_TRUE(SLPScopesMatch(input, output));
-}
-
-
-/**
- * Test the SLPStripService function works.
- */
-void SLPStringsTest::testStripService() {
-  string input = "service:foo";
-  SLPStripService(&input);
-  OLA_ASSERT_EQ(string("foo"), input);
-
-  input = "servicefoo";
-  SLPStripService(&input);
-  OLA_ASSERT_EQ(string("servicefoo"), input);
-
-  // now try without the service
-  input = "foo";
-  SLPStripService(&input);
-  OLA_ASSERT_EQ(string("foo"), input);
-}
-
-
 /**
  * Test that SLPServiceFromURL() works.
  */
 void SLPStringsTest::testSLPServiceFromURL() {
-  OLA_ASSERT_EQ(string("foo"), SLPServiceFromURL("service:foo"));
-  OLA_ASSERT_EQ(string("foo"), SLPServiceFromURL("service:FoO"));
+  OLA_ASSERT_EQ(string("service:foo"), SLPServiceFromURL("service:foo"));
+  OLA_ASSERT_EQ(string("service:foo"), SLPServiceFromURL("service:FoO"));
   OLA_ASSERT_EQ(string("foo"), SLPServiceFromURL("foo"));
   OLA_ASSERT_EQ(string("foo"), SLPServiceFromURL("FoO"));
-  OLA_ASSERT_EQ(string("foo"),
+  OLA_ASSERT_EQ(string("service:foo"),
                 SLPServiceFromURL("service:foo://localhost:9090"));
-}
-
-
-/**
- * Check that SLPExtractScopes works
- */
-void SLPStringsTest::testSLPExtractScopes() {
-  set<string> scopes, expected_scopes;
-  SLPExtractScopes("one", &scopes);
-  expected_scopes.insert("one");
-  OLA_ASSERT_SET_EQ(expected_scopes, scopes);
-
-  scopes.clear();
-  SLPExtractScopes("one,two,three", &scopes);
-  expected_scopes.insert("two");
-  expected_scopes.insert("three");
-  OLA_ASSERT_SET_EQ(expected_scopes, scopes);
-
-  scopes.clear();
-  expected_scopes.clear();
-
-  // test a trailing ,
-  SLPExtractScopes("one,", &scopes);
-  expected_scopes.insert("one");
-  OLA_ASSERT_SET_EQ(expected_scopes, scopes);
-
-  // and a extra , in the middle
-  scopes.clear();
-  SLPExtractScopes("one,,two", &scopes);
-  expected_scopes.insert("two");
-  OLA_ASSERT_SET_EQ(expected_scopes, scopes);
-
-  // test canonical form
-  scopes.clear();
-  expected_scopes.clear();
-  SLPExtractScopes("oNe", &scopes);
-  expected_scopes.insert("one");
-  OLA_ASSERT_SET_EQ(expected_scopes, scopes);
-
-  // test dups
-  scopes.clear();
-  expected_scopes.clear();
-  SLPExtractScopes("one,oNe,two,two,TWO", &scopes);
-  expected_scopes.insert("one");
-  expected_scopes.insert("two");
-  OLA_ASSERT_SET_EQ(expected_scopes, scopes);
 }

@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * SLPString.h
+ * SLPStrings.h
  * Utility functions for dealing with strings in SLP.
  * Copyright (C) 2012 Simon Newton
  */
@@ -21,13 +21,11 @@
 #ifndef TOOLS_SLP_SLPSTRINGS_H_
 #define TOOLS_SLP_SLPSTRINGS_H_
 
-#include <set>
 #include <string>
 
 namespace ola {
 namespace slp {
 
-using std::set;
 using std::string;
 
 void SLPStringEscape(string *str);
@@ -35,8 +33,6 @@ void SLPStringUnescape(string *str);
 void SLPCanonicalizeString(string *str);
 string SLPGetCanonicalString(const string &str);
 string SLPServiceFromURL(const string &url);
-
-void SLPExtractScopes(const string &scopes, set<string> *output);
 }  // slp
 }  // ola
 #endif  // TOOLS_SLP_SLPSTRINGS_H_
