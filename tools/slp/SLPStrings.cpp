@@ -134,59 +134,6 @@ string SLPGetCanonicalString(const string &str) {
 
 
 /**
- * Compare two strings by converting to lower case and folding whitespace.
- */
-bool SLPStringCanonicalizeAndCompare(const string &s1, const string s2) {
-  string str1 = s1;
-  string str2 = s2;
-  SLPCanonicalizeString(&str1);
-  SLPCanonicalizeString(&str2);
-  return str1 == str2;
-}
-
-
-/**
- * Return true if any of the elements in set one exist in set two. This assumes
- * the strings are in canonical form.
- */
-bool SLPSetIntersect(const set<string> &one, const set<string> &two) {
-  set<string>::iterator iter1 = one.begin();
-  set<string>::iterator iter2 = two.begin();
-  while (iter1 != one.end() && iter2 != two.end()) {
-    if (*iter1 == *iter2)
-      return true;
-    else if (*iter1 < *iter2)
-      iter1++;
-    else
-      iter2++;
-  }
-  return false;
-}
-
-
-/**
- * Return true if any of the non-canonicalized scopes in the vector match any
- * of those in the canonicalized set.
- */
-bool SLPScopesMatch(const vector<string> &scopes_v,
-                    const set<string> &scopes_s) {
-  set<string> canonicalized_scopes;
-  SLPReduceList(scopes_v, &canonicalized_scopes);
-  return SLPSetIntersect(canonicalized_scopes, scopes_s);
-}
-
-
-/**
- * Remove the service:// from the start of a string
- */
-void SLPStripService(string *str) {
-  static const size_t PREFIX_LENGTH = strlen(SLP_SERVICE_PREFIX);
-  if (0 == str->compare(0, PREFIX_LENGTH, SLP_SERVICE_PREFIX))
-    *str = str->substr(PREFIX_LENGTH);
-}
-
-
-/**
  * Extract the service name from a URL.
  * Note we should really use a full BNF parser here.
  */
