@@ -13,7 +13,8 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * Base.h
+ * ServerCommon.h
+ * Constants for the SLP Server.
  * Copyright (C) 2012 Simon Newton
  */
 
@@ -35,8 +36,6 @@ static const uint16_t CONFIG_MC_MAX  = 15;
 static const uint16_t CONFIG_RETRY = 2;
 static const uint16_t CONFIG_RETRY_MAX = 15;
 static const uint16_t CONFIG_START_WAIT = 3;
-
-static const char SLP_SERVICE_PREFIX[] = "service:";
 
 static const char DIRECTORY_AGENT_SERVICE[] = "service:directory-agent";
 
