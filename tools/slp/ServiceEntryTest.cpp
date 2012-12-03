@@ -166,4 +166,8 @@ void ServiceEntryTest::testToString() {
 
   OLA_ASSERT_EQ(string("service:test://localhost(300), [one,two]"),
                 entry1.ToString());
+
+  std::ostringstream str;
+  str << entry1;
+  OLA_ASSERT_EQ(string("service:test://localhost(300), [one,two]"), str.str());
 }
