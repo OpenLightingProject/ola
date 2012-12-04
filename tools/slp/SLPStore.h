@@ -68,7 +68,7 @@ class SLPStore {
     SLPStore() {}
     ~SLPStore();
 
-    unsigned int ServiceCount() const { return m_services.size(); }
+    unsigned int ServiceTypeCount() const { return m_services.size(); }
 
     // Return codes from various methods.
     typedef enum {

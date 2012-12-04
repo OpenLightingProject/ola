@@ -180,12 +180,14 @@ void SLPStore::GetLocalServices(const TimeStamp &now,
  */
 void SLPStore::Clean(const TimeStamp &now) {
   // We may want to clean this in slices.
-  ServiceMap::iterator iter = m_services.begin();
-  for (; iter != m_services.end(); ++iter) {
+  for (ServiceMap::iterator iter = m_services.begin();
+       iter != m_services.end();) {
     MaybeCleanURLList(now, iter->second);
     if (iter->second->services.empty()) {
       delete iter->second;
       m_services.erase(iter++);
+    } else {
+      iter++;
     }
   }
 }
