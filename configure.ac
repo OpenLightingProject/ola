@@ -454,7 +454,7 @@ AC_ARG_ENABLE(gcov,
 if test "${enable_gov}" != "no"; then
   CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
   CXXFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
-  LDFLAGS="$LDFLAGS -fprofile-arcs"
+  LDFLAGS="$LDFLAGS"
 fi
 
 # Decide if we should build the example programs

@@ -71,7 +71,7 @@ const ServiceRequestPacket* SLPPacketParser::UnpackServiceRequest(
   if (!ExtractString(input, &packet->service_type, "Service Type"))
     return NULL;
 
-  if (!ExtractList(input, &packet->scope_list, "Scope list"))
+  if (!ExtractString(input, &packet->scope_list, "Scope List"))
     return NULL;
 
   if (!ExtractString(input, &packet->predicate, "Predicate"))
@@ -127,7 +127,7 @@ const ServiceRegistrationPacket *SLPPacketParser::UnpackServiceRegistration(
   if (!ExtractString(input, &packet->service_type, "Service-type"))
     return NULL;
 
-  if (!ExtractList(input, &packet->scope_list, "Scope list"))
+  if (!ExtractString(input, &packet->scope_list, "Scope List"))
     return NULL;
 
   if (!ExtractString(input, &packet->attr_list, "Attr-list"))
@@ -178,7 +178,7 @@ const DAAdvertPacket *SLPPacketParser::UnpackDAAdvert(
   if (!ExtractString(input, &packet->url, "DAAdvert: URL"))
     return NULL;
 
-  if (!ExtractList(input, &packet->scope_list, "DAAdvert: Scope list"))
+  if (!ExtractString(input, &packet->scope_list, "DAAdvert: Scope List"))
     return NULL;
 
   if (!ExtractString(input, &packet->attr_list, "DAAdvert: Attr-list"))
@@ -186,7 +186,7 @@ const DAAdvertPacket *SLPPacketParser::UnpackDAAdvert(
 
   string spi_string;
   if (!ExtractString(input, &spi_string, "DAAdvert: SPI String"))
-    return false;
+    return NULL;
 
   uint8_t url_auths;
   if (!ExtractValue(input, &url_auths, "DAAdvert: # of URL Auths"))
@@ -210,7 +210,7 @@ const ServiceDeRegistrationPacket *SLPPacketParser::UnpackServiceDeRegistration(
   if (!ExtractHeader(input, packet.get(), "SrvDeReg"))
     return NULL;
 
-  if (!ExtractList(input, &packet->scope_list, "Scope list"))
+  if (!ExtractString(input, &packet->scope_list, "Scope List"))
     return NULL;
 
   if (!ExtractURLEntry(input, &packet->url, "SrvDeReg"))

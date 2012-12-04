@@ -68,7 +68,7 @@ class ServiceRequestPacket: public SLPPacket {
   public:
     vector<IPV4Address> pr_list;
     string service_type;
-    vector<string> scope_list;
+    string scope_list;
     string predicate;
     string spi;
 };
@@ -95,7 +95,7 @@ class ServiceRegistrationPacket: public SLPPacket {
 
     URLEntry url;
     string service_type;
-    vector<string> scope_list;
+    string scope_list;
     string attr_list;
 };
 
@@ -108,7 +108,7 @@ class ServiceDeRegistrationPacket: public SLPPacket {
     ServiceDeRegistrationPacket(): SLPPacket() {}
 
     URLEntry url;
-    vector<string> scope_list;
+    string scope_list;
     string tag_list;
 };
 
@@ -134,7 +134,7 @@ class DAAdvertPacket: public SLPPacket {
     uint16_t error_code;
     uint32_t boot_timestamp;
     string url;
-    vector<string> scope_list;
+    string scope_list;
     string attr_list;
     string spi_string;
 };

@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * PacketBuilderTester.cpp
+ * PacketBuilderTest.cpp
  * Test fixture for the SLPPacketBuilder class
  * Copyright (C) 2012 Simon Newton
  */
@@ -31,11 +31,15 @@
 #include "tools/slp/SLPPacketBuilder.h"
 #include "tools/slp/SLPPacketConstants.h"
 #include "tools/slp/ServiceEntry.h"
+#include "tools/slp/ScopeSet.h"
+#include "tools/slp/URLEntry.h"
 
 using ola::io::BigEndianOutputStream;
 using ola::io::IOQueue;
 using ola::network::IPV4Address;
 using ola::slp::SLPPacketBuilder;
+using ola::slp::ScopeSet;
+using ola::slp::ServiceEntry;
 using ola::slp::URLEntries;
 using ola::slp::URLEntry;
 using ola::testing::ASSERT_DATA_EQUALS;
@@ -99,18 +103,15 @@ CPPUNIT_TEST_SUITE_REGISTRATION(PacketBuilderTest);
 void PacketBuilderTest::testBuildServiceRequest() {
   set<IPV4Address> pr_list;
   IPV4Address first_ip, second_ip;
-  CPPUNIT_ASSERT(IPV4Address::FromString("1.1.1.2", &first_ip));
-  CPPUNIT_ASSERT(IPV4Address::FromString("1.1.1.8", &second_ip));
+  OLA_ASSERT_TRUE(IPV4Address::FromString("1.1.1.2", &first_ip));
+  OLA_ASSERT_TRUE(IPV4Address::FromString("1.1.1.8", &second_ip));
   pr_list.insert(first_ip);
   pr_list.insert(second_ip);
-
-  set<string> scope_list;
-  scope_list.insert("ACN");
-  scope_list.insert("MYORG,");
+  ScopeSet scopes("ACN,MYORG\\2c");
 
   SLPPacketBuilder::BuildServiceRequest(&output, xid, true, pr_list,
-                                        "rdmnet-device", scope_list);
-  CPPUNIT_ASSERT_EQUAL(66u, ioqueue.Size());
+                                        "rdmnet-device", scopes);
+  OLA_ASSERT_EQ(66u, ioqueue.Size());
 
   unsigned int data_size;
   uint8_t *output_data = WriteToBuffer(&ioqueue, &data_size);
@@ -119,7 +120,7 @@ void PacketBuilderTest::testBuildServiceRequest() {
     0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1', '.',
     '8',  // pr-llist
     0, 13, 'r', 'd', 'm', 'n', 'e', 't', '-', 'd', 'e', 'v', 'i', 'c', 'e',
-    0, 0xc, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G', '\\', '2', 'c',
+    0, 0xc, 'a', 'c', 'n', ',', 'm', 'y', 'o', 'r', 'g', '\\', '2', 'c',
     0, 0,  // pred string
     0, 0,  // SPI string
   };
@@ -137,11 +138,11 @@ void PacketBuilderTest::testBuildServiceReply() {
   URLEntry entry1("service:foo://1.1.1.1", 0x1234);
   URLEntry entry2("service:foo://1.1.1.10", 0x5678);
   URLEntries url_entries;
-  url_entries.insert(entry1);
-  url_entries.insert(entry2);
+  url_entries.push_back(entry1);
+  url_entries.push_back(entry2);
 
   SLPPacketBuilder::BuildServiceReply(&output, xid, 12, url_entries);
-  CPPUNIT_ASSERT_EQUAL(75u, ioqueue.Size());
+  OLA_ASSERT_EQ(75u, ioqueue.Size());
 
   unsigned int data_size;
   uint8_t *output_data = WriteToBuffer(&ioqueue, &data_size);
@@ -171,28 +172,27 @@ void PacketBuilderTest::testBuildServiceReply() {
  * Check that BuildServiceRegistration() works.
  */
 void PacketBuilderTest::testBuildServiceRegistration() {
-  URLEntry entry1("service:foo://1.1.1.1", 0x1234);
-  set<string> scope_list;
-  scope_list.insert("ACN");
-  scope_list.insert("MYORG,");
+  ScopeSet service_scopes("ACN,MYORG,FOO");
+  ScopeSet scopes("ACN,MYORG\\2c");
+  ServiceEntry service_entry(service_scopes, "service:foo://1.1.1.1", 0x1234);
 
-  SLPPacketBuilder::BuildServiceRegistration(&output, xid, true, entry1,
-                                             "foo", scope_list);
-  CPPUNIT_ASSERT_EQUAL(65u, ioqueue.Size());
+  SLPPacketBuilder::BuildServiceRegistration(&output, xid, true, scopes,
+                                             service_entry);
+  OLA_ASSERT_EQ(73u, ioqueue.Size());
 
   unsigned int data_size;
   uint8_t *output_data = WriteToBuffer(&ioqueue, &data_size);
   uint8_t expected_data[] = {
-    2, 3, 0, 0, 0x41, 0x40, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+    2, 3, 0, 0, 0x49, 0x40, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
     // entry 1
     0, 0x12, 0x34, 0, 21,
     's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o', ':', '/', '/',
     '1', '.', '1', '.', '1', '.', '1',
     0,  // # of auth blocks
-    0, 3, 'f', 'o', 'o',  // service-type
-    0, 0xc, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G', '\\', '2', 'c',
+    0, 0xb, 's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o',
+    0, 0xc, 'a', 'c', 'n', ',', 'm', 'y', 'o', 'r', 'g', '\\', '2', 'c',
     0, 0,
-    0  // attr auths
+    0,  // attr auths
   };
 
   ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
@@ -200,9 +200,9 @@ void PacketBuilderTest::testBuildServiceRegistration() {
   delete[] output_data;
 
   // now test a re-registration
-  SLPPacketBuilder::BuildServiceRegistration(&output, xid + 1, false, entry1,
-                                             "foo", scope_list);
-  CPPUNIT_ASSERT_EQUAL(65u, ioqueue.Size());
+  SLPPacketBuilder::BuildServiceRegistration(&output, xid + 1, false, scopes,
+      service_entry);
+  OLA_ASSERT_EQ(73u, ioqueue.Size());
 
   output_data = WriteToBuffer(&ioqueue, &data_size);
   expected_data[5] = 0;
@@ -215,22 +215,46 @@ void PacketBuilderTest::testBuildServiceRegistration() {
 
 /**
  * Check that BuildServiceDeRegistration() works.
-void PacketBuilderTest::testBuildServiceDeRegistration() {
-}
  */
+void PacketBuilderTest::testBuildServiceDeRegistration() {
+  ScopeSet service_scopes("ACN,MYORG,FOO");
+  ScopeSet scopes("ACN,MYORG");
+  ServiceEntry service_entry(service_scopes, "service:foo://1.1.1.1", 0x1234);
+
+  SLPPacketBuilder::BuildServiceDeRegistration(&output, xid, scopes,
+                                               service_entry);
+
+  OLA_ASSERT_EQ(56u, ioqueue.Size());
+
+  unsigned int data_size;
+  uint8_t *output_data = WriteToBuffer(&ioqueue, &data_size);
+  uint8_t expected_data[] = {
+    2, 4, 0, 0, 0x38, 0x0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+    // scope list
+    0, 0x9, 'a', 'c', 'n', ',', 'm', 'y', 'o', 'r', 'g',
+    // entry 1
+    0, 0x12, 0x34, 0, 21,
+    's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o', ':', '/', '/',
+    '1', '.', '1', '.', '1', '.', '1',
+    0,  // # of URL auths
+    0, 0  // tag list length
+  };
+
+  ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
+                     output_data, data_size);
+  delete[] output_data;
+}
 
 
 /*
  * Check that BuildDAAdvert() works.
  */
 void PacketBuilderTest::testBuildDAAdvert() {
-  set<string> scope_list;
-  scope_list.insert("ACN");
-  scope_list.insert("MYORG,");
+  ScopeSet scopes("ACN,MYORG\\2c");
 
   SLPPacketBuilder::BuildDAAdvert(&output, xid, true, 12, 0x12345678,
-      "service:foo", scope_list);
-  CPPUNIT_ASSERT_EQUAL(54u, ioqueue.Size());
+      "service:foo", scopes);
+  OLA_ASSERT_EQ(54u, ioqueue.Size());
 
   unsigned int data_size;
   uint8_t *output_data = WriteToBuffer(&ioqueue, &data_size);
@@ -239,7 +263,7 @@ void PacketBuilderTest::testBuildDAAdvert() {
     0, 0,  // error code is zeroed out if multicast
     0x12, 0x34, 0x56, 0x78,  // boot timestamp
     0, 11, 's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o',  // service
-    0, 0xc, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G', '\\', '2', 'c',
+    0, 0xc, 'a', 'c', 'n', ',', 'm', 'y', 'o', 'r', 'g', '\\', '2', 'c',
     0, 0,  // attr list
     0, 0,  // SPI list
     0  // auth blocks
@@ -251,8 +275,8 @@ void PacketBuilderTest::testBuildDAAdvert() {
 
   // try with a non-multicast packet
   SLPPacketBuilder::BuildDAAdvert(&output, xid, false, 12, 0x12345678,
-      "service:foo", scope_list);
-  CPPUNIT_ASSERT_EQUAL(54u, ioqueue.Size());
+      "service:foo", scopes);
+  OLA_ASSERT_EQ(54u, ioqueue.Size());
   output_data = WriteToBuffer(&ioqueue, &data_size);
   expected_data[5] = 0;
   // update error code
@@ -267,20 +291,17 @@ void PacketBuilderTest::testBuildDAAdvert() {
  * Check that BuildSAAdvert() works.
  */
 void PacketBuilderTest::testBuildSAAdvert() {
-  set<string> scope_list;
-  scope_list.insert("ACN");
-  scope_list.insert("MYORG,");
+  ScopeSet scopes("ACN,MYORG\\2c");
 
-  SLPPacketBuilder::BuildSAAdvert(&output, xid, true, "service:foo",
-                                  scope_list);
-  CPPUNIT_ASSERT_EQUAL(46u, ioqueue.Size());
+  SLPPacketBuilder::BuildSAAdvert(&output, xid, true, "service:foo", scopes);
+  OLA_ASSERT_EQ(46u, ioqueue.Size());
 
   unsigned int data_size;
   uint8_t *output_data = WriteToBuffer(&ioqueue, &data_size);
   uint8_t expected_data[] = {
     2, 11, 0, 0, 0x2e, 0x20, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
     0, 11, 's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o',  // url
-    0, 0xc, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G', '\\', '2', 'c',
+    0, 0xc, 'a', 'c', 'n', ',', 'm', 'y', 'o', 'r', 'g', '\\', '2', 'c',
     0, 0,  // attr list
     0  // auth blocks
   };
@@ -290,9 +311,8 @@ void PacketBuilderTest::testBuildSAAdvert() {
   delete[] output_data;
 
   // try with a non-multicast packet
-  SLPPacketBuilder::BuildSAAdvert(&output, xid, false, "service:foo",
-                                  scope_list);
-  CPPUNIT_ASSERT_EQUAL(46u, ioqueue.Size());
+  SLPPacketBuilder::BuildSAAdvert(&output, xid, false, "service:foo", scopes);
+  OLA_ASSERT_EQ(46u, ioqueue.Size());
   output_data = WriteToBuffer(&ioqueue, &data_size);
   expected_data[5] = 0;
   ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
@@ -306,7 +326,7 @@ void PacketBuilderTest::testBuildSAAdvert() {
  */
 void PacketBuilderTest::testBuildServiceAck() {
   SLPPacketBuilder::BuildServiceAck(&output, xid, 0x5678);
-  CPPUNIT_ASSERT_EQUAL(18u, ioqueue.Size());
+  OLA_ASSERT_EQ(18u, ioqueue.Size());
 
   unsigned int data_size;
   uint8_t *output_data = WriteToBuffer(&ioqueue, &data_size);

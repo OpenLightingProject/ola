@@ -95,7 +95,8 @@ PacketBuilderTester_SOURCES = GenericTester.cpp \
                               PacketBuilderTest.cpp \
                               SLPPacketBuilder.cpp \
                               SLPStrings.cpp \
-                              ServiceEntry.cpp
+                              ScopeSet.cpp \
+                              URLEntry.cpp
 PacketBuilderTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 PacketBuilderTester_LDADD = $(COMMON_TEST_LDADD)
 

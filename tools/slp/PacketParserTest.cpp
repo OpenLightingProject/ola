@@ -69,9 +69,8 @@ class PacketParserTest: public CppUnit::TestFixture {
       OLA_ASSERT(IPV4Address::FromString("1.1.1.2", &ip1));
       OLA_ASSERT(IPV4Address::FromString("1.1.1.8", &ip2));
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
+      expected_scopes = "ACN,MYORG";
 
-      expected_scopes.push_back("ACN");
-      expected_scopes.push_back("MYORG");
       expected_urls.push_back(URLEntry("service:foo://1.1.1.1", 0x1244));
       expected_urls.push_back(URLEntry("service:foo://1.1.1.10", 0x5678));
     }
@@ -79,7 +78,7 @@ class PacketParserTest: public CppUnit::TestFixture {
   private:
     SLPPacketParser m_parser;
     IPV4Address ip1, ip2;
-    vector<string> expected_scopes;
+    string expected_scopes;
     vector<URLEntry> expected_urls;
 };
 
@@ -138,7 +137,7 @@ void PacketParserTest::testParseServiceRequest() {
     OLA_ASSERT_VECTOR_EQ(expected_pr_list, packet->pr_list);
     OLA_ASSERT_EQ(string("rdmnet-device"), packet->service_type);
 
-    OLA_ASSERT_VECTOR_EQ(expected_scopes, packet->scope_list);
+    OLA_ASSERT_EQ(expected_scopes, packet->scope_list);
     OLA_ASSERT_EQ(string("foo"), packet->predicate);
     OLA_ASSERT_EQ(string(""), packet->spi);
   }
@@ -171,7 +170,7 @@ void PacketParserTest::testParseServiceRequest() {
     OLA_ASSERT_VECTOR_EQ(expected_pr_list, packet->pr_list);
     OLA_ASSERT_EQ(string("rdmnet-device"), packet->service_type);
 
-    OLA_ASSERT_VECTOR_EQ(expected_scopes, packet->scope_list);
+    OLA_ASSERT_EQ(expected_scopes, packet->scope_list);
     OLA_ASSERT_EQ(string(""), packet->predicate);
     OLA_ASSERT_EQ(string(""), packet->spi);
   }
@@ -206,10 +205,7 @@ void PacketParserTest::testParseServiceRequest() {
     OLA_ASSERT_VECTOR_EQ(expected_pr_list, packet->pr_list);
     OLA_ASSERT_EQ(string("rdmnet-device\\"), packet->service_type);
 
-    vector<string> scopes;
-    scopes.push_back("ACN");
-    scopes.push_back(",MYORG");
-    OLA_ASSERT_VECTOR_EQ(scopes, packet->scope_list);
+    OLA_ASSERT_EQ(string("ACN\\2c,MYORG"), packet->scope_list);
     OLA_ASSERT_EQ(string(""), packet->predicate);
     OLA_ASSERT_EQ(string(""), packet->spi);
   }
@@ -243,8 +239,7 @@ void PacketParserTest::testParseServiceRequest() {
     OLA_ASSERT_VECTOR_EQ(expected_pr_list, packet->pr_list);
     OLA_ASSERT_EQ(string("rdmnet-device\\"), packet->service_type);
 
-    vector<string> scopes;
-    OLA_ASSERT_VECTOR_EQ(scopes, packet->scope_list);
+    OLA_ASSERT_EQ(string(""), packet->scope_list);
     OLA_ASSERT_EQ(string(""), packet->predicate);
     OLA_ASSERT_EQ(string(""), packet->spi);
   }
@@ -367,10 +362,10 @@ void PacketParserTest::testParseServiceRegistration() {
     OLA_ASSERT_EQ(true, packet->Multicast());
     OLA_ASSERT_EQ(string("en"), packet->language);
 
-    OLA_ASSERT_EQ(string("service:foo://1.1.1.1"), packet->url.URL());
-    OLA_ASSERT_EQ(static_cast<uint16_t>(0x1234), packet->url.Lifetime());
+    OLA_ASSERT_EQ(string("service:foo://1.1.1.1"), packet->url.url());
+    OLA_ASSERT_EQ(static_cast<uint16_t>(0x1234), packet->url.lifetime());
     OLA_ASSERT_EQ(string("foo"), packet->service_type);
-    OLA_ASSERT_VECTOR_EQ(expected_scopes, packet->scope_list);
+    OLA_ASSERT_EQ(expected_scopes, packet->scope_list);
     OLA_ASSERT_EQ(string("bar"), packet->attr_list);
   }
 }
@@ -448,7 +443,7 @@ void PacketParserTest::testParseDAAdvert() {
     OLA_ASSERT_EQ(static_cast<uint16_t>(0), packet->error_code);
     OLA_ASSERT_EQ(0x12345678u, packet->boot_timestamp);
     OLA_ASSERT_EQ(string("service:foo"), packet->url);
-    OLA_ASSERT_VECTOR_EQ(expected_scopes, packet->scope_list);
+    OLA_ASSERT_EQ(expected_scopes, packet->scope_list);
     OLA_ASSERT_EQ(string("bar"), packet->attr_list);
   }
 
