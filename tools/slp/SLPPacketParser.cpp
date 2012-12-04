@@ -71,7 +71,7 @@ const ServiceRequestPacket* SLPPacketParser::UnpackServiceRequest(
   if (!ExtractString(input, &packet->service_type, "Service Type"))
     return NULL;
 
-  if (!ExtractString(input, &packet->scope_list, "Scope List"))
+  if (!ExtractString(input, &packet->scope_list, "Scope List", false))
     return NULL;
 
   if (!ExtractString(input, &packet->predicate, "Predicate"))
@@ -127,7 +127,7 @@ const ServiceRegistrationPacket *SLPPacketParser::UnpackServiceRegistration(
   if (!ExtractString(input, &packet->service_type, "Service-type"))
     return NULL;
 
-  if (!ExtractString(input, &packet->scope_list, "Scope List"))
+  if (!ExtractString(input, &packet->scope_list, "Scope List", false))
     return NULL;
 
   if (!ExtractString(input, &packet->attr_list, "Attr-list"))
@@ -178,7 +178,7 @@ const DAAdvertPacket *SLPPacketParser::UnpackDAAdvert(
   if (!ExtractString(input, &packet->url, "DAAdvert: URL"))
     return NULL;
 
-  if (!ExtractString(input, &packet->scope_list, "DAAdvert: Scope List"))
+  if (!ExtractString(input, &packet->scope_list, "DAAdvert: Scope List", false))
     return NULL;
 
   if (!ExtractString(input, &packet->attr_list, "DAAdvert: Attr-list"))
@@ -210,7 +210,7 @@ const ServiceDeRegistrationPacket *SLPPacketParser::UnpackServiceDeRegistration(
   if (!ExtractHeader(input, packet.get(), "SrvDeReg"))
     return NULL;
 
-  if (!ExtractString(input, &packet->scope_list, "Scope List"))
+  if (!ExtractString(input, &packet->scope_list, "Scope List", false))
     return NULL;
 
   if (!ExtractURLEntry(input, &packet->url, "SrvDeReg"))
@@ -310,7 +310,8 @@ bool SLPPacketParser::ExtractHeader(BigEndianInputStream *input,
  */
 bool SLPPacketParser::ExtractString(BigEndianInputStream *input,
                                     string *result,
-                                    const string &field_name) const {
+                                    const string &field_name,
+                                    bool unescape) const {
   uint16_t str_length;
   if (!(*input >> str_length)) {
     OLA_INFO << "Packet too small to read " << field_name << " length";
@@ -325,40 +326,8 @@ bool SLPPacketParser::ExtractString(BigEndianInputStream *input,
   }
 
   // Unescape
-  SLPStringUnescape(result);
-  return true;
-}
-
-
-/**
- * Extract a list of strings, automatically un-escaping them
- */
-bool SLPPacketParser::ExtractList(BigEndianInputStream *input,
-                                  vector<string> *result,
-                                  const string &field_name) const {
-  uint16_t str_length;
-  if (!(*input >> str_length)) {
-    OLA_INFO << "Packet too small to read " << field_name << " length";
-    return false;
-  }
-
-  string raw_string;
-  unsigned int bytes_read = input->ReadString(&raw_string, str_length);
-  if (bytes_read != str_length) {
-    OLA_INFO << "Insufficent data remaining for SLP string " << field_name <<
-      ", expected " << str_length << ", " << bytes_read << " remaining";
-    return false;
-  }
-
-  if (raw_string.empty())
-    return true;
-
-  StringSplit(raw_string, *result, ",");
-
-  // Unescape all values
-  vector<string>::iterator iter = result->begin();
-  for (; iter != result->end(); ++iter)
-    SLPStringUnescape(&(*iter));
+  if (unescape)
+    SLPStringUnescape(result);
   return true;
 }
 

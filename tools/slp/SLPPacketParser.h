@@ -176,7 +176,8 @@ class SLPPacketParser {
 
     bool ExtractString(BigEndianInputStream *input,
                        string *result,
-                       const string &field_name) const;
+                       const string &field_name,
+                       bool unescape = true) const;
 
     bool ExtractList(BigEndianInputStream *input,
                      vector<string> *result,

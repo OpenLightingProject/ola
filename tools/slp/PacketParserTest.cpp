@@ -182,7 +182,7 @@ void PacketParserTest::testParseServiceRequest() {
       0, 0,  // no pr-list
       0, 16, 'r', 'd', 'm', 'n', 'e', 't', '-', 'd', 'e', 'v', 'i', 'c', 'e',
       '\\', '5', 'c',
-      0, 0xc, 'A', 'C', 'N', ',', '\\', '2', 'c', 'M', 'Y', 'O', 'R', 'G',
+      0, 0xc, 'A', 'C', 'N', '\\', '2', 'c', ',', 'M', 'Y', 'O', 'R', 'G',
       // scope list
       0, 0,  // pred string
       0, 0,  // SPI string
@@ -217,7 +217,7 @@ void PacketParserTest::testParseServiceRequest() {
       0, 0,  // no pr-list
       0, 16, 'r', 'd', 'm', 'n', 'e', 't', '-', 'd', 'e', 'v', 'i', 'c', 'e',
       '\\', '5', 'c',
-      0, 0x0, // scope list
+      0, 0x0,  // scope list
       0, 0,  // pred string
       0, 0,  // SPI string
     };
@@ -467,4 +467,37 @@ void PacketParserTest::testParseDAAdvert() {
 /*
  * Check that UnpackServiceDeRegistration() works.
  */
-//void PacketParserTest::testParseServiceAck() {
+void PacketParserTest::testParseServiceDeRegister() {
+  {
+    uint8_t input_data[] = {
+      2, 4, 0, 0, 0x38, 0x0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      // scope list
+      0, 0x9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',
+      // entry 1
+      0, 0x12, 0x34, 0, 21,
+      's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o', ':', '/', '/',
+      '1', '.', '1', '.', '1', '.', '1',
+      0,  // # of URL auths
+      0, 0  // tag list length
+    };
+
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+
+    auto_ptr<const ola::slp::ServiceDeRegistrationPacket> packet(
+      m_parser.UnpackServiceDeRegistration(&stream));
+    OLA_ASSERT(packet.get());
+
+    // verify the contents of the packet
+    OLA_ASSERT_EQ(static_cast<ola::slp::xid_t>(0x1234), packet->xid);
+    OLA_ASSERT_EQ(false, packet->Overflow());
+    OLA_ASSERT_EQ(false, packet->Fresh());
+    OLA_ASSERT_EQ(false, packet->Multicast());
+    OLA_ASSERT_EQ(string("en"), packet->language);
+
+    OLA_ASSERT_EQ(string("service:foo://1.1.1.1"), packet->url.url());
+    OLA_ASSERT_EQ(static_cast<uint16_t>(0x1234), packet->url.lifetime());
+    OLA_ASSERT_EQ(expected_scopes, packet->scope_list);
+    OLA_ASSERT_EQ(string(""), packet->tag_list);
+  }
+}
