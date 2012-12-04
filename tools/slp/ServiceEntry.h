@@ -136,7 +136,7 @@ class ServiceEntry {
 
     bool operator==(const ServiceEntry &other) const {
       return (m_service_type == other.m_service_type && m_url == other.m_url &&
-              m_local == other.m_local);
+              m_local == other.m_local && m_scopes == other.m_scopes);
     }
 
     bool operator!=(const ServiceEntry &other) const {

@@ -14,6 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * SLPStore.h
+ * Holds SLP Service Registations.
  * Copyright (C) 2012 Simon Newton
  */
 
@@ -21,14 +22,12 @@
 #define TOOLS_SLP_SLPSTORE_H_
 
 #include <ola/Clock.h>
-#include <ola/io/BigEndianStream.h>
 
 #include <map>
 #include <string>
 #include <vector>
 
 #include "tools/slp/ServiceEntry.h"
-#include "tools/slp/SLPStrings.h"
 #include "tools/slp/ScopeSet.h"
 
 
@@ -50,19 +49,16 @@ using std::vector;
  * whenever insert or lookup is called. If it's been more than
  * a second since the last aging event for a service, we age all entries.
  *
- *  We store a map of canonical service name to ServiceList structures. Each
- *  ServiceList has a timestamp of when it was last aged / cleaned and a set of
- *  ServiceEntries.
- *
- * To be correct, whil
- *  amortizes the cost of aging
+ * We store a map of canonical service name to ServiceList structures. Each
+ * ServiceList has a timestamp of when it was last aged / cleaned and a list of
+ * ServiceEntries.
  *
  * Clean() should be called periodically to age & remove any entries for
- * services where there have no been any Insert/Remove/Lookup requests. Not
- * calling Clean() won't result in incorrect results, rather memory use will
+ * services where there have no been any Insert / Lookup requests. Not
+ * calling Clean() won't result in incorrect results, but memory use will
  * grow over time.
  *
- * For E1.33 we'll have:
+ * For the E1.33 case we'll have:
  *   - single scope
  *   - two services
  *   - many URLs.
@@ -71,6 +67,8 @@ class SLPStore {
   public:
     SLPStore() {}
     ~SLPStore();
+
+    unsigned int ServiceCount() const { return m_services.size(); }
 
     // Return codes from various methods.
     typedef enum {
@@ -98,10 +96,6 @@ class SLPStore {
     void Reset();
     void Dump(const TimeStamp &now);
 
-    unsigned int ServiceCount() const {
-      return m_services.size();
-    }
-
   private:
     typedef vector<ServiceEntry*> ServiceEntryVector;
     typedef struct {
@@ -111,7 +105,6 @@ class SLPStore {
     // map of service-type to a list of ServiceEntries
     typedef map<string, ServiceList*> ServiceMap;
 
-    // for our use, # of services will be small so a map is a better bet.
     ServiceMap m_services;
 
     void MaybeCleanURLList(const TimeStamp &now, ServiceList *service_list);
