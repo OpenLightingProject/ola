@@ -28,9 +28,10 @@
 #include "tools/slp/RegistrationFileParser.h"
 #include "tools/slp/SLPStrings.h"
 #include "tools/slp/ServiceEntry.h"
+#include "tools/slp/ScopeSet.h"
 
 using ola::slp::RegistrationFileParser;
-using ola::slp::SLPExtractScopes;
+using ola::slp::ScopeSet;
 using ola::slp::ServiceEntries;
 using ola::slp::ServiceEntry;
 using std::endl;
@@ -41,11 +42,11 @@ using std::stringstream;
 
 class RegistrationFileParserTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(RegistrationFileParserTest);
-  CPPUNIT_TEST(testParser);
+  CPPUNIT_TEST(testFromStream);
   CPPUNIT_TEST_SUITE_END();
 
   public:
-    void testParser();
+    void testFromStream();
 
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
@@ -61,26 +62,27 @@ CPPUNIT_TEST_SUITE_REGISTRATION(RegistrationFileParserTest);
 /**
  * Parse a stream.
  */
-void RegistrationFileParserTest::testParser() {
+void RegistrationFileParserTest::testFromStream() {
   stringstream str;
-  str << "one,two  service:foo://localhost  300" << endl;
-  str << "one,two  service:foo://192.168.1.1  600" << endl;
-  str << "one,two\tservice:bar://192.168.1.2\t300" << endl;
+  str << "oNe  \tservice:foo://localhost    300" << endl;
+  str << "tWO  \tservice:foo://192.168.1.1  600" << endl;
+  str << "one,two,\tservice:bar://192.168.1.2\t300" << endl;
+  // try some invalid lines
+  str << "one,two,\tservice:bar://192.168.1.2" << endl;
+  str << "one,two,\tservice:bar://192.168.1.2  foo" << endl;
 
   ServiceEntries services, expected_services;
   m_parser.ParseStream(&str, &services);
   OLA_ASSERT_EQ((size_t) 3, services.size());
 
   // and validate
-  set<string> scopes;
-  SLPExtractScopes("one,two", &scopes);
-  expected_services.insert(
-      ServiceEntry(scopes, "service:foo://localhost", 300));
-  expected_services.insert(
-      ServiceEntry(scopes, "service:foo://192.168.1.1", 600));
-  expected_services.insert(
-      ServiceEntry(scopes, "service:bar://192.168.1.2", 300));
-  OLA_ASSERT_SET_EQ(expected_services, services);
+  expected_services.push_back(
+      ServiceEntry(ScopeSet("one"), "service:foo://localhost", 300));
+  expected_services.push_back(
+      ServiceEntry(ScopeSet("two"), "service:foo://192.168.1.1", 600));
+  expected_services.push_back(
+      ServiceEntry(ScopeSet("one,two"), "service:bar://192.168.1.2", 300));
+  OLA_ASSERT_VECTOR_EQ(expected_services, services);
 
   // verify we don't get duplicates
   str.str("");
