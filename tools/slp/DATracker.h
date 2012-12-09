@@ -21,7 +21,6 @@
 #define TOOLS_SLP_DATRACKER_H_
 
 #include <ola/Callback.h>
-#include <ola/StringUtils.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/SocketAddress.h>
 #include <map>
@@ -57,7 +56,8 @@ class DirectoryAgent {
         : m_boot_time(boot_timestamp),
           m_scopes(scopes),
           m_url(url),
-          m_address(address) {
+          m_address(address),
+          m_min_refresh_internal(0) {
     }
 
     virtual ~DirectoryAgent() {}
@@ -130,6 +130,8 @@ class DATracker {
 
     void NewDAAdvert(const DAAdvertPacket &da_advert,
                      const IPV4SocketAddress &source);
+
+    unsigned int DACount() const { return m_agents.size(); }
 
     void GetDirectoryAgents(vector<DirectoryAgent> *output);
     void GetDAsForScopes(const ScopeSet &scopes,

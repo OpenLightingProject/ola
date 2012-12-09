@@ -117,6 +117,9 @@ void DATracker::NewDAAdvert(const DAAdvertPacket &da_advert,
              << " Got " << da_advert.boot_timestamp << ", previously had "
              << iter->second.BootTimestamp();
   } else if (da_advert.boot_timestamp > iter->second.BootTimestamp()) {
+    OLA_INFO << "DA " << da_advert.url << " has rebooted, boot_timestamp was "
+             << iter->second.BootTimestamp() << ", now "
+             << da_advert.boot_timestamp;
     iter->second.SetBootTimestamp(da_advert.boot_timestamp);
     RunCallbacks(iter->second);
   }
@@ -161,15 +164,16 @@ void DATracker::GetMinimalCoveringList(const ScopeSet &scopes,
   // We use a greedy algorithm.
   // We optimize the common case where one DA matches all our scopes.
   ScopeSet scopes_to_cover = scopes;
-  DAMap::const_iterator iter, largest_iter;
+  DAMap::const_iterator largest_iter;
 
   while (!scopes_to_cover.empty()) {
-    largest_iter = m_agents.begin();
+    largest_iter = m_agents.end();
     unsigned int max_intersection_count = 0;
 
-    for (iter = m_agents.begin(); iter != m_agents.end(); ++iter) {
+    for (DAMap::const_iterator iter = m_agents.begin(); iter != m_agents.end();
+         ++iter) {
       unsigned int intersection_count =
-        iter->second.scopes().IntersectionCount(scopes);
+        iter->second.scopes().IntersectionCount(scopes_to_cover);
 
       if (intersection_count == scopes_to_cover.size()) {
         // return quickly
@@ -183,13 +187,13 @@ void DATracker::GetMinimalCoveringList(const ScopeSet &scopes,
       }
     }
 
-    if (largest_iter == m_agents.begin())
+    if (largest_iter == m_agents.end())
       // no more DAs cover these scopes
       break;
 
     // otherwise we have a DA that covers at least some of the scopes
-    output->push_back(iter->second);
-    scopes_to_cover.DifferenceUpdate(iter->second.scopes());
+    output->push_back(largest_iter->second);
+    scopes_to_cover.DifferenceUpdate(largest_iter->second.scopes());
   }
 }
 

@@ -90,7 +90,7 @@ config.tab.cpp config.tab.h: config.ypp
 
 # Tests
 if BUILD_TESTS
-TESTS = PacketBuilderTester PacketParserTester \
+TESTS = DATrackerTester PacketBuilderTester PacketParserTester \
         RegistrationFileParserTester ServiceEntryTester SLPStoreTester \
         SLPStringsTester ScopeSetTester XIDAllocatorTester
 endif
@@ -100,6 +100,10 @@ COMMON_TEST_LDADD = $(CPPUNIT_LIBS) \
                     ./libolaslp.la
 
 check_PROGRAMS = $(TESTS)
+DATrackerTester_SOURCES = GenericTester.cpp DATrackerTest.cpp
+DATrackerTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+DATrackerTester_LDADD = $(COMMON_TEST_LDADD)
+
 PacketBuilderTester_SOURCES = GenericTester.cpp PacketBuilderTest.cpp
 PacketBuilderTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 PacketBuilderTester_LDADD = $(COMMON_TEST_LDADD)
