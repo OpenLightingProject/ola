@@ -18,6 +18,7 @@
  * Copyright (C) 2011 Simon Newton
  */
 
+#include <assert.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/NetworkUtils.h>
 #include <string>
@@ -43,6 +44,13 @@ bool IPV4Address::FromString(const std::string &address, IPV4Address *target) {
     return false;
   *target = IPV4Address(addr);
   return true;
+}
+
+
+IPV4Address IPV4Address::FromStringOrDie(const std::string &address) {
+  struct in_addr addr;
+  assert(StringToAddress(address, addr));
+  return IPV4Address(addr);
 }
 
 
