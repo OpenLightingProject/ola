@@ -90,9 +90,9 @@ config.tab.cpp config.tab.h: config.ypp
 
 # Tests
 if BUILD_TESTS
-TESTS = DATrackerTester PacketBuilderTester PacketParserTester \
+TESTS = DATrackerTester PacketParserTester \
         RegistrationFileParserTester ServiceEntryTester SLPStoreTester \
-        SLPStringsTester ScopeSetTester XIDAllocatorTester
+        XIDAllocatorTester PacketBuilderTester ScopeSetTester SLPStringsTester
 endif
 COMMON_TEST_LDADD = $(CPPUNIT_LIBS) \
                     $(top_builddir)/common/libolacommon.la \
