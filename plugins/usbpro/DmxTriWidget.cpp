@@ -240,7 +240,7 @@ void DmxTriWidgetImpl::SendDMXBuffer(const DmxBuffer &buffer) {
   // CommandID, Options, Start Code + data
   uint8_t send_buffer[3 + DMX_UNIVERSE_SIZE];
   send_buffer[0] = SINGLE_TX_COMMAND_ID;
-  send_buffer[1] = 0;  // return when processed
+  send_buffer[1] = 1;  // return when processed
   send_buffer[2] = DMX512_START_CODE;
 
   unsigned int length = DMX_UNIVERSE_SIZE;
