@@ -129,7 +129,7 @@ class SLPServer {
     };
 
     SLPServer(ola::io::SelectServerInterface *ss,
-              ola::network::UDPSocket *udp_socket,
+              ola::network::UDPSocketInterface *udp_socket,
               ola::network::TCPAcceptingSocket *tcp_socket,
               ola::ExportMap *export_map,
               const SLPServerOptions &options);
@@ -178,7 +178,7 @@ class SLPServer {
     ola::thread::timeout_id m_active_da_discovery_timer;
 
     // the UDP and TCP sockets for SLP traffic
-    ola::network::UDPSocket *m_udp_socket;
+    ola::network::UDPSocketInterface *m_udp_socket;
     ola::network::TCPAcceptingSocket *m_slp_accept_socket;
 
     // SLP members

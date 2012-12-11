@@ -40,7 +40,7 @@ namespace ola {
 namespace slp {
 
 
-SLPUDPSender::SLPUDPSender(ola::network::UDPSocket *socket)
+SLPUDPSender::SLPUDPSender(ola::network::UDPSocketInterface *socket)
     : m_udp_socket(socket),
       m_output_stream(&m_output),
       m_multicast_address(HostToNetwork(SLP_MULTICAST_ADDRESS)) {

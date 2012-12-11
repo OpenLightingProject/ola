@@ -68,7 +68,7 @@ using ola::network::IPV4SocketAddress;
 using ola::network::NetworkToHost;
 using ola::network::TCPAcceptingSocket;
 using ola::network::TCPSocket;
-using ola::network::UDPSocket;
+using ola::network::UDPSocketInterface;
 using std::auto_ptr;
 using std::ostringstream;
 using std::string;
@@ -107,7 +107,7 @@ const char SLPServer::UDP_TX_PACKET_BY_TYPE_VAR[] = "slp-udp-tx-packets";
  * @param options the SLP Server options.
  */
 SLPServer::SLPServer(ola::io::SelectServerInterface *ss,
-                     ola::network::UDPSocket *udp_socket,
+                     ola::network::UDPSocketInterface *udp_socket,
                      ola::network::TCPAcceptingSocket *tcp_socket,
                      ola::ExportMap *export_map,
                      const SLPServerOptions &options)

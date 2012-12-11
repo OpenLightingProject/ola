@@ -43,7 +43,7 @@ namespace slp {
 class SLPUDPSender {
   public:
     // Ownership is not transferred.
-    explicit SLPUDPSender(ola::network::UDPSocket *socket);
+    explicit SLPUDPSender(ola::network::UDPSocketInterface *socket);
     ~SLPUDPSender() {}
 
     void SendServiceRequest(const IPV4SocketAddress &dest,
@@ -97,7 +97,7 @@ class SLPUDPSender {
                       const ScopeSet &scopes);
 
   private:
-    ola::network::UDPSocket *m_udp_socket;
+    ola::network::UDPSocketInterface *m_udp_socket;
     ola::io::IOQueue m_output;
     ola::io::BigEndianOutputStream m_output_stream;
     ola::network::IPV4Address m_multicast_address;
