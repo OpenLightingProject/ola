@@ -66,7 +66,8 @@ const ServiceRequestPacket* SLPPacketParser::UnpackServiceRequest(
   string pr_list;
   if (!ExtractString(input, &pr_list, "PR List"))
     return NULL;
-  ConvertIPAddressList(pr_list, &packet->pr_list);
+  if (!ConvertIPAddressList(pr_list, &packet->pr_list))
+    return NULL;
 
   if (!ExtractString(input, &packet->service_type, "Service Type"))
     return NULL;
@@ -289,7 +290,7 @@ bool SLPPacketParser::ExtractHeader(BigEndianInputStream *input,
     return false;
   }
 
-  unsigned int next_ext_offset = next_ext_hi << 16 + next_ext_lo;
+  unsigned int next_ext_offset = (next_ext_hi << 16) + next_ext_lo;
   if (next_ext_offset)
     OLA_INFO << "Next Ext non-0, was " << next_ext_offset;
 
@@ -338,6 +339,17 @@ bool SLPPacketParser::ExtractString(BigEndianInputStream *input,
 bool SLPPacketParser::ExtractURLEntry(BigEndianInputStream *input,
                                       URLEntry *entry,
                                       const string &packet_type) const {
+  /*
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |   Reserved    |          Lifetime             |   URL Length  |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |URL len, contd.|            URL (variable length)              \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |# of URL auths |            Auth. blocks (if any)              \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  */
   uint8_t reserved;
   if (!ExtractValue(input, &reserved, packet_type + " reserved"))
     return false;

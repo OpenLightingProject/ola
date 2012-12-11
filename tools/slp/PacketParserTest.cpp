@@ -54,6 +54,8 @@ class PacketParserTest: public CppUnit::TestFixture {
     CPPUNIT_TEST(testParseServiceAck);
     CPPUNIT_TEST(testParseDAAdvert);
     CPPUNIT_TEST(testParseServiceDeRegister);
+    CPPUNIT_TEST(testExtractHeader);
+    CPPUNIT_TEST(testExtractURLEntry);
     CPPUNIT_TEST_SUITE_END();
 
     void testDetermineFunctionID();
@@ -63,6 +65,8 @@ class PacketParserTest: public CppUnit::TestFixture {
     void testParseServiceAck();
     void testParseDAAdvert();
     void testParseServiceDeRegister();
+    void testExtractHeader();
+    void testExtractURLEntry();
 
   public:
     void setUp() {
@@ -111,7 +115,7 @@ void PacketParserTest::testParseServiceRequest() {
     const uint8_t input_data[] = {
       2, 1, 0, 0, 63, 0xe0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
       0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1',
-      '.', '8',  // pr-llist
+      '.', '8',  // pr-list
       0, 13, 'r', 'd', 'm', 'n', 'e', 't', '-', 'd', 'e', 'v', 'i', 'c', 'e',
       0, 9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',  // scope list
       0, 3, 'f', 'o', 'o',  // pred string
@@ -140,6 +144,21 @@ void PacketParserTest::testParseServiceRequest() {
     OLA_ASSERT_EQ(expected_scopes, packet->scope_list);
     OLA_ASSERT_EQ(string("foo"), packet->predicate);
     OLA_ASSERT_EQ(string(""), packet->spi);
+  }
+
+  // test invalid PR list
+  {
+    const uint8_t input_data[] = {
+      2, 1, 0, 0, 51, 0xe0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 3, 'f', 'o', 'o',
+      0, 13, 'r', 'd', 'm', 'n', 'e', 't', '-', 'd', 'e', 'v', 'i', 'c', 'e',
+      0, 9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',  // scope list
+      0, 3, 'f', 'o', 'o',  // pred string
+      0, 0,  // SPI string
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceRequest(&stream));
   }
 
   // now try a different packet
@@ -243,9 +262,79 @@ void PacketParserTest::testParseServiceRequest() {
     OLA_ASSERT_EQ(string(""), packet->predicate);
     OLA_ASSERT_EQ(string(""), packet->spi);
   }
-  // short packets
+
+  // short packet
   {
     MemoryBuffer buffer(NULL, 0);
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceRequest(&stream));
+  }
+
+  // invalid PR List
+  {
+    const uint8_t input_data[] = {
+      2, 1, 0, 0, 63, 0xe0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 255,
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceRequest(&stream));
+  }
+
+  // invalid service-type
+  {
+    const uint8_t input_data[] = {
+      2, 1, 0, 0, 63, 0xe0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1',
+      '.', '8',  // pr-list
+      0, 13,
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceRequest(&stream));
+  }
+
+  // invalid scope list
+  {
+    const uint8_t input_data[] = {
+      2, 1, 0, 0, 63, 0xe0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1',
+      '.', '8',  // pr-list
+      0, 13, 'r', 'd', 'm', 'n', 'e', 't', '-', 'd', 'e', 'v', 'i', 'c', 'e',
+      0, 9,
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceRequest(&stream));
+  }
+
+  // invalid predicate
+  {
+    const uint8_t input_data[] = {
+      2, 1, 0, 0, 63, 0xe0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1',
+      '.', '8',  // pr-list
+      0, 13, 'r', 'd', 'm', 'n', 'e', 't', '-', 'd', 'e', 'v', 'i', 'c', 'e',
+      0, 9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',  // scope list
+      0, 3,
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceRequest(&stream));
+  }
+
+  // invalid SPI string
+  {
+    const uint8_t input_data[] = {
+      2, 1, 0, 0, 63, 0xe0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1',
+      '.', '8',  // pr-list
+      0, 13, 'r', 'd', 'm', 'n', 'e', 't', '-', 'd', 'e', 'v', 'i', 'c', 'e',
+      0, 9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',  // scope list
+      0, 3, 'f', 'o', 'o',  // pred string
+      0, 10,  // SPI string
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
     OLA_ASSERT_NULL(m_parser.UnpackServiceRequest(&stream));
   }
@@ -327,6 +416,34 @@ void PacketParserTest::testParseServiceReply() {
     OLA_ASSERT_EQ(string("en"), packet->language);
     OLA_ASSERT_VECTOR_EQ(expected_urls, packet->url_entries);
   }
+
+  // short packet
+  {
+    MemoryBuffer buffer(NULL, 0);
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceReply(&stream));
+  }
+
+  // missing error code
+  {
+    uint8_t input_data[] = {
+      2, 2, 0, 0, 0x4b, 0x40, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceReply(&stream));
+  }
+
+  // missing url count
+  {
+    uint8_t input_data[] = {
+      2, 2, 0, 0, 0x4b, 0x40, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 12,  // error code
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceReply(&stream));
+  }
 }
 
 
@@ -368,6 +485,131 @@ void PacketParserTest::testParseServiceRegistration() {
     OLA_ASSERT_EQ(expected_scopes, packet->scope_list);
     OLA_ASSERT_EQ(string("bar"), packet->attr_list);
   }
+
+  // short packet
+  {
+    MemoryBuffer buffer(NULL, 0);
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceRegistration(&stream));
+  }
+
+  // invalid url entry
+  {
+    uint8_t input_data[] = {
+      2, 3, 0, 0, 0x41, 0x60, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      // entry 1
+      0, 0x12, 0x34, 0, 21,
+      's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o', ':', '/', '/',
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceRegistration(&stream));
+  }
+
+  // invalid service-type
+  {
+    uint8_t input_data[] = {
+      2, 3, 0, 0, 0x41, 0x60, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      // entry 1
+      0, 0x12, 0x34, 0, 21,
+      's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o', ':', '/', '/',
+      '1', '.', '1', '.', '1', '.', '1',
+      0,  // # of auth blocks
+      0, 10, 'f', 'o', 'o',  // service-type
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceRegistration(&stream));
+  }
+
+  // invalid scope list
+  {
+    uint8_t input_data[] = {
+      2, 3, 0, 0, 0x41, 0x60, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      // entry 1
+      0, 0x12, 0x34, 0, 21,
+      's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o', ':', '/', '/',
+      '1', '.', '1', '.', '1', '.', '1',
+      0,  // # of auth blocks
+      0, 3, 'f', 'o', 'o',  // service-type
+      0, 9,
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceRegistration(&stream));
+  }
+
+  // scope list
+  {
+    uint8_t input_data[] = {
+      2, 3, 0, 0, 0x41, 0x60, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      // entry 1
+      0, 0x12, 0x34, 0, 21,
+      's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o', ':', '/', '/',
+      '1', '.', '1', '.', '1', '.', '1',
+      0,  // # of auth blocks
+      0, 3, 'f', 'o', 'o',  // service-type
+      0, 9,
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceRegistration(&stream));
+  }
+
+  // invalid attr list
+  {
+    uint8_t input_data[] = {
+      2, 3, 0, 0, 0x41, 0x60, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      // entry 1
+      0, 0x12, 0x34, 0, 21,
+      's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o', ':', '/', '/',
+      '1', '.', '1', '.', '1', '.', '1',
+      0,  // # of auth blocks
+      0, 3, 'f', 'o', 'o',  // service-type
+      0, 9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',  // scope list
+      0, 3,
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceRegistration(&stream));
+  }
+
+  // missing url auth blocks length
+  {
+    uint8_t input_data[] = {
+      2, 3, 0, 0, 0x41, 0x60, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      // entry 1
+      0, 0x12, 0x34, 0, 21,
+      's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o', ':', '/', '/',
+      '1', '.', '1', '.', '1', '.', '1',
+      0,  // # of auth blocks
+      0, 3, 'f', 'o', 'o',  // service-type
+      0, 9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',  // scope list
+      0, 3, 'b', 'a', 'r',  // attr list
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceRegistration(&stream));
+  }
+
+  // invalid url auth blocks
+  {
+    uint8_t input_data[] = {
+      2, 3, 0, 0, 0x41, 0x60, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      // entry 1
+      0, 0x12, 0x34, 0, 21,
+      's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o', ':', '/', '/',
+      '1', '.', '1', '.', '1', '.', '1',
+      0,  // # of auth blocks
+      0, 3, 'f', 'o', 'o',  // service-type
+      0, 9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',  // scope list
+      0, 3, 'b', 'a', 'r',  // attr list
+      10,
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceRegistration(&stream));
+  }
 }
 
 
@@ -404,6 +646,13 @@ void PacketParserTest::testParseServiceAck() {
     };
 
     MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceAck(&stream));
+  }
+
+  // short packet
+  {
+    MemoryBuffer buffer(NULL, 0);
     BigEndianInputStream stream(&buffer);
     OLA_ASSERT_NULL(m_parser.UnpackServiceAck(&stream));
   }
@@ -462,7 +711,111 @@ void PacketParserTest::testParseDAAdvert() {
     BigEndianInputStream stream(&buffer);
     OLA_ASSERT_NULL(m_parser.UnpackDAAdvert(&stream));
   }
+
+  // short packet
+  {
+    MemoryBuffer buffer(NULL, 0);
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackDAAdvert(&stream));
+  }
+
+  // missing error code
+  {
+    uint8_t input_data[] = {
+      2, 8, 0, 0, 0x33, 0x20, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackDAAdvert(&stream));
+  }
+
+  // missing boot timestamp
+  {
+    uint8_t input_data[] = {
+      2, 8, 0, 0, 0x33, 0x20, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 0,  // error code is zeroed out if multicast
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackDAAdvert(&stream));
+  }
+
+  // missing DA URL
+  {
+    uint8_t input_data[] = {
+      2, 8, 0, 0, 0x33, 0x20, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 0,  // error code is zeroed out if multicast
+      0x12, 0x34, 0x56, 0x78,  // boot timestamp
+      0, 11,
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackDAAdvert(&stream));
+  }
+
+  // missing scope list
+  {
+    uint8_t input_data[] = {
+      2, 8, 0, 0, 0x33, 0x20, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 0,  // error code is zeroed out if multicast
+      0x12, 0x34, 0x56, 0x78,  // boot timestamp
+      0, 11, 's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o',  // service
+      0, 9,
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackDAAdvert(&stream));
+  }
+
+  // missing attr list
+  {
+    uint8_t input_data[] = {
+      2, 8, 0, 0, 0x33, 0x20, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 0,  // error code is zeroed out if multicast
+      0x12, 0x34, 0x56, 0x78,  // boot timestamp
+      0, 11, 's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o',  // service
+      0, 9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',  // scope list
+      0, 3,
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackDAAdvert(&stream));
+  }
+
+  // missing auth block length
+  {
+    uint8_t input_data[] = {
+      2, 8, 0, 0, 0x33, 0x20, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 0,  // error code is zeroed out if multicast
+      0x12, 0x34, 0x56, 0x78,  // boot timestamp
+      0, 11, 's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o',  // service
+      0, 9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',  // scope list
+      0, 3, 'b', 'a', 'r',  // attr list
+      0, 0,  // SPI list
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackDAAdvert(&stream));
+  }
+
+  // too many auth blocks
+  {
+    uint8_t input_data[] = {
+      2, 8, 0, 0, 0x33, 0x20, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 0,  // error code is zeroed out if multicast
+      0x12, 0x34, 0x56, 0x78,  // boot timestamp
+      0, 11, 's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o',  // service
+      0, 9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',  // scope list
+      0, 3, 'b', 'a', 'r',  // attr list
+      0, 0,  // SPI list
+      10  // auth blocks
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackDAAdvert(&stream));
+  }
 }
+
 
 /*
  * Check that UnpackServiceDeRegistration() works.
@@ -499,5 +852,220 @@ void PacketParserTest::testParseServiceDeRegister() {
     OLA_ASSERT_EQ(static_cast<uint16_t>(0x1234), packet->url.lifetime());
     OLA_ASSERT_EQ(expected_scopes, packet->scope_list);
     OLA_ASSERT_EQ(string(""), packet->tag_list);
+  }
+
+  // short packet
+  {
+    MemoryBuffer buffer(NULL, 0);
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceDeRegistration(&stream));
+  }
+
+  // missing scope list
+  {
+    const uint8_t input_data[] = {
+      2, 4, 0, 0, 0x38, 0x0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      // scope list
+      0, 0x9,
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceDeRegistration(&stream));
+  }
+
+  // missing url entry
+  {
+    const uint8_t input_data[] = {
+      2, 4, 0, 0, 0x38, 0x0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      // scope list
+      0, 0x9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceDeRegistration(&stream));
+  }
+
+  // missing tag list
+  {
+    const uint8_t input_data[] = {
+      2, 4, 0, 0, 0x38, 0x0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      // scope list
+      0, 0x9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',
+      // entry 1
+      0, 0x12, 0x34, 0, 21,
+      's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o', ':', '/', '/',
+      '1', '.', '1', '.', '1', '.', '1',
+      0,  // # of URL auths
+      0, 10  // tag list length
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceDeRegistration(&stream));
+  }
+}
+
+
+/*
+ * Check error handling for the SLP header. The Ack is the easiest packet to
+ * test this with.
+ */
+void PacketParserTest::testExtractHeader() {
+  // wrong version
+  {
+    uint8_t input_data[] = {3};
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceAck(&stream));
+  }
+
+  // no function id
+  {
+    uint8_t input_data[] = {2};
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceAck(&stream));
+  }
+
+  // no length
+  {
+    uint8_t input_data[] = {2, 5};
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceAck(&stream));
+  }
+
+  // no flags
+  {
+    uint8_t input_data[] = {2, 5, 0, 0, 18};
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceAck(&stream));
+  }
+
+  // no next-ext offset
+  {
+    uint8_t input_data[] = {2, 5, 0, 0, 18, 0, 0};
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceAck(&stream));
+  }
+
+  // non-0 next-ext offset
+  {
+    uint8_t input_data[] = {2, 5, 0, 0, 18, 0, 0, 0, 0, 1};
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceAck(&stream));
+  }
+
+  // no xid
+  {
+    uint8_t input_data[] = {2, 5, 0, 0, 18, 0, 0, 0, 0, 0};
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceAck(&stream));
+  }
+
+  // no lang
+  {
+    uint8_t input_data[] = {
+      2, 5, 0, 0, 18, 0, 0, 0, 0, 0, 0x12, 0x34, 0, 2};
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceAck(&stream));
+  }
+}
+
+
+/**
+ * test extracting the URL Entry, the easiest way is with a SrvDeReg message
+ */
+void PacketParserTest::testExtractURLEntry() {
+  // no reserved field
+  {
+    uint8_t input_data[] = {
+      2, 4, 0, 0, 0x38, 0x0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 0x3, 'A', 'C', 'N',
+      // entry 1
+    };
+
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceDeRegistration(&stream));
+  }
+
+  // no lifetime
+  {
+    uint8_t input_data[] = {
+      2, 4, 0, 0, 0x38, 0x0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 0x3, 'A', 'C', 'N',
+      // entry 1
+      0,
+    };
+
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceDeRegistration(&stream));
+  }
+
+  // no url length
+  {
+    uint8_t input_data[] = {
+      2, 4, 0, 0, 0x38, 0x0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 0x3, 'A', 'C', 'N',
+      // entry 1
+      0, 2, 0,
+    };
+
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceDeRegistration(&stream));
+  }
+
+  // invalid url
+  {
+    uint8_t input_data[] = {
+      2, 4, 0, 0, 0x38, 0x0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      // scope list
+      0, 0x3, 'A', 'C', 'N',
+      // entry 1
+      0, 0x12, 0x34, 0, 21,
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceDeRegistration(&stream));
+  }
+
+  // missing # of url auths
+  {
+    uint8_t input_data[] = {
+      2, 4, 0, 0, 0x38, 0x0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      // scope list
+      0, 0x3, 'A', 'C', 'N',
+      // entry 1
+      0, 0x12, 0x34, 0, 21,
+      's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o', ':', '/', '/',
+      '1', '.', '1', '.', '1', '.', '1',
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceDeRegistration(&stream));
+  }
+
+  // not enough url auths
+  {
+    uint8_t input_data[] = {
+      2, 4, 0, 0, 0x38, 0x0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      // scope list
+      0, 0x3, 'A', 'C', 'N',
+      // entry 1
+      0, 0x12, 0x34, 0, 21,
+      's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o', ':', '/', '/',
+      '1', '.', '1', '.', '1', '.', '1',
+      1,  // # of URL auths
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceDeRegistration(&stream));
   }
 }
