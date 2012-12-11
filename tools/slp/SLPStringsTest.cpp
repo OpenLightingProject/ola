@@ -132,4 +132,12 @@ void SLPStringsTest::testSLPServiceFromURL() {
   OLA_ASSERT_EQ(string("foo"), SLPServiceFromURL("FoO"));
   OLA_ASSERT_EQ(string("service:foo"),
                 SLPServiceFromURL("service:foo://localhost:9090"));
+  OLA_ASSERT_EQ(string("service:printer"),
+                SLPServiceFromURL("service:printer://foo"));
+  OLA_ASSERT_EQ(string("service:printer:lpr"),
+                SLPServiceFromURL("service:printer:lpr://foo"));
+  OLA_ASSERT_EQ(string("service:foo.myorg"),
+                SLPServiceFromURL("service:foo.myorg://bar"));
+  OLA_ASSERT_EQ(string("service:foo:bar.myorg"),
+                SLPServiceFromURL("service:foo:bar.myorg://baz"));
 }
