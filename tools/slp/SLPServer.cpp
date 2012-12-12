@@ -90,6 +90,8 @@ const char SLPServer::SRVDEREG[] = "SrvDeReg";
 const char SLPServer::SRVREG[] = "SrvReg";
 const char SLPServer::SRVRPLY[] = "SrvRply";
 const char SLPServer::SRVRQST[] = "SrvRqst";
+const char SLPServer::UNSUPPORTED[] = "Unsupported";
+const char SLPServer::UNKNOWN[] = "Unknown";
 // This counter tracks the number of packets received by type.
 // This is incremented prior to packet checks.
 const char SLPServer::UDP_RX_PACKET_BY_TYPE_VAR[] = "slp-udp-rx-packets";
@@ -139,22 +141,26 @@ SLPServer::SLPServer(ola::io::SelectServerInterface *ss,
   if (m_configured_scopes.empty())
     m_configured_scopes = ScopeSet(DEFAULT_SLP_SCOPE);
 
-  export_map->GetBoolVar("slp-da-enabled")->Set(options.enable_da);
-  export_map->GetIntegerVar("slp-config-da-beat")->Set(options.config_da_beat);
-  export_map->GetIntegerVar("slp-config-da-find")->Set(options.config_da_find);
-  export_map->GetIntegerVar("slp-config-mc-max")->Set(options.config_mc_max);
-  export_map->GetIntegerVar("slp-config-retry")->Set(options.config_retry);
-  export_map->GetIntegerVar("slp-config-retry-max")->Set(
-    options.config_retry_max);
-  export_map->GetIntegerVar("slp-config-start_wait")->Set(
-    options.config_start_wait);
-  export_map->GetIntegerVar("slp-port")->Set(options.slp_port);
-  export_map->GetIntegerVar(FINDSRVS_EMPTY_COUNT_VAR);
-  export_map->GetIntegerVar(UDP_RX_TOTAL_VAR);
-  export_map->GetStringVar("slp-scope-list")->Set(
-      m_configured_scopes.ToString());
-  export_map->GetUIntMapVar(UDP_RX_PACKET_BY_TYPE_VAR, "type");
-  export_map->GetUIntMapVar(METHOD_CALLS_VAR, "method");
+  if (export_map) {
+    export_map->GetBoolVar("slp-da-enabled")->Set(options.enable_da);
+    export_map->GetIntegerVar("slp-config-da-beat")->Set(
+        options.config_da_beat);
+    export_map->GetIntegerVar("slp-config-da-find")->Set(
+        options.config_da_find);
+    export_map->GetIntegerVar("slp-config-mc-max")->Set(options.config_mc_max);
+    export_map->GetIntegerVar("slp-config-retry")->Set(options.config_retry);
+    export_map->GetIntegerVar("slp-config-retry-max")->Set(
+      options.config_retry_max);
+    export_map->GetIntegerVar("slp-config-start_wait")->Set(
+      options.config_start_wait);
+    export_map->GetIntegerVar("slp-port")->Set(options.slp_port);
+    export_map->GetIntegerVar(FINDSRVS_EMPTY_COUNT_VAR);
+    export_map->GetIntegerVar(UDP_RX_TOTAL_VAR);
+    export_map->GetStringVar("slp-scope-list")->Set(
+        m_configured_scopes.ToString());
+    export_map->GetUIntMapVar(UDP_RX_PACKET_BY_TYPE_VAR, "type");
+    export_map->GetUIntMapVar(METHOD_CALLS_VAR, "method");
+  }
 }
 
 
@@ -170,10 +176,9 @@ SLPServer::~SLPServer() {
   }
 
   m_udp_socket->Close();
-  STLDeleteValues(m_pending_acks);
-
   OLA_INFO << "Size of m_pending_acks is " << m_pending_acks.size();
   OLA_INFO << "Size of m_pending_replies is " << m_pending_replies.size();
+  STLDeleteValues(m_pending_acks);
 }
 
 
@@ -259,7 +264,7 @@ void SLPServer::FindService(
     const set<string> &scopes,
     const string &service_type,
     SingleUseCallback1<void, const URLEntries&> *cb) {
-  m_export_map->GetUIntMapVar(METHOD_CALLS_VAR)->Increment(METHOD_FIND_SERVICE);
+  IncrementMethodVar(METHOD_FIND_SERVICE);
   URLEntries urls;
   ScopeSet scope_set(scopes);
   OLA_INFO << "Received FindService for " << service_type << " : " << scope_set;
@@ -273,7 +278,7 @@ void SLPServer::FindService(
 
   if (scope_set.empty()) {
     // all scopes were handled by our local DA
-    if (urls.empty())
+    if (urls.empty() && m_export_map)
       (*m_export_map->GetIntegerVar(FINDSRVS_EMPTY_COUNT_VAR))++;
     cb->Run(urls);
     return;
@@ -291,7 +296,7 @@ void SLPServer::FindService(
  * @returns an SLP error code
  */
 uint16_t SLPServer::RegisterService(const ServiceEntry &new_service) {
-  m_export_map->GetUIntMapVar(METHOD_CALLS_VAR)->Increment(METHOD_REG_SERVICE);
+  IncrementMethodVar(METHOD_REG_SERVICE);
   ServiceEntry service(new_service);
   service.set_local(true);
 
@@ -302,7 +307,7 @@ uint16_t SLPServer::RegisterService(const ServiceEntry &new_service) {
   } else {
     error_code = InternalRegisterService(service);
   }
-  if (error_code)
+  if (error_code && m_export_map)
     (*m_export_map->GetIntegerVar(REGSRVS_ERROR_COUNT_VAR))++;
   return error_code;
 }
@@ -314,11 +319,9 @@ uint16_t SLPServer::RegisterService(const ServiceEntry &new_service) {
  * @returns an SLP error code
  */
 uint16_t SLPServer::DeRegisterService(const ServiceEntry &service) {
-  m_export_map->GetUIntMapVar(METHOD_CALLS_VAR)->Increment(
-      METHOD_DEREG_SERVICE);
-
+  IncrementMethodVar(METHOD_DEREG_SERVICE);
   uint16_t error_code = InternalDeRegisterService(service);
-  if (error_code)
+  if (error_code && m_export_map)
     (*m_export_map->GetIntegerVar(DEREGSRVS_ERROR_COUNT_VAR))++;
   return error_code;
 }
@@ -340,41 +343,40 @@ void SLPServer::UDPData() {
   IPV4SocketAddress source(source_ip, port);
 
   OLA_DEBUG << "Got " << packet_size << " UDP bytes from " << source;
-  (*m_export_map->GetIntegerVar(UDP_RX_TOTAL_VAR))++;
+  if (m_export_map)
+    (*m_export_map->GetIntegerVar(UDP_RX_TOTAL_VAR))++;
 
   uint8_t function_id = m_packet_parser.DetermineFunctionID(packet,
                                                             packet_size);
 
   MemoryBuffer buffer(&packet[0], packet_size);
   BigEndianInputStream stream(&buffer);
-  UIntMap *packet_by_type = m_export_map->GetUIntMapVar(
-    UDP_RX_PACKET_BY_TYPE_VAR);
 
   switch (function_id) {
     case 0:
       return;
     case SERVICE_REQUEST:
-      packet_by_type->Increment(SRVRQST);
+      IncrementPacketVar(SRVRQST);
       HandleServiceRequest(&stream, source);
       break;
     case SERVICE_REPLY:
-      packet_by_type->Increment(SRVRPLY);
+      IncrementPacketVar(SRVRPLY);
       HandleServiceReply(&stream, source);
       break;
     case SERVICE_REGISTRATION:
-      packet_by_type->Increment(SRVREG);
+      IncrementPacketVar(SRVREG);
       HandleServiceRegistration(&stream, source);
       break;
     case SERVICE_ACKNOWLEDGE:
-      packet_by_type->Increment(SRVACK);
+      IncrementPacketVar(SRVACK);
       HandleServiceAck(&stream, source);
       break;
     case DA_ADVERTISEMENT:
-      packet_by_type->Increment(DAADVERT);
+      IncrementPacketVar(DAADVERT);
       HandleDAAdvert(&stream, source);
       break;
     case SERVICE_DEREGISTER:
-      packet_by_type->Increment(SRVDEREG);
+      IncrementPacketVar(SRVDEREG);
       HandleServiceDeRegister(&stream, source);
       break;
     case ATTRIBUTE_REQUEST:
@@ -382,10 +384,12 @@ void SLPServer::UDPData() {
     case SERVICE_TYPE_REQUEST:
     case SERVICE_TYPE_REPLY:
     case SA_ADVERTISEMENT:
+      IncrementPacketVar(UNSUPPORTED);
       OLA_INFO << "Unsupported SLP function-id: "
         << static_cast<int>(function_id);
       break;
     default:
+      IncrementPacketVar(UNKNOWN);
       OLA_WARN << "Unknown SLP function-id: " << static_cast<int>(function_id);
       break;
   }
@@ -1330,6 +1334,25 @@ void SLPServer::RegisterServicesWithNewDA(const string da_url) {
 bool SLPServer::CleanSLPStore() {
   m_service_store.Clean(*(m_ss->WakeUpTime()));
   return true;
+}
+
+
+/**
+ * Increment the method counter for the specified method.
+ */
+void SLPServer::IncrementMethodVar(const string &method) {
+  if (m_export_map)
+    m_export_map->GetUIntMapVar(METHOD_CALLS_VAR)->Increment(method);
+}
+
+
+/**
+ * Increment the packet counter for the specified packet type.
+ */
+void SLPServer::IncrementPacketVar(const string &packet) {
+  if (!m_export_map)
+    return
+  m_export_map->GetUIntMapVar(UDP_RX_PACKET_BY_TYPE_VAR)->Increment(packet);
 }
 }  // slp
 }  // ola

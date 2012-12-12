@@ -276,6 +276,8 @@ class SLPServer {
 
     // housekeeping
     bool CleanSLPStore();
+    void IncrementMethodVar(const string &method);
+    void IncrementPacketVar(const string &packet);
 
     // constants
     // Super ghetto:
@@ -299,6 +301,8 @@ class SLPServer {
     static const char SRVREG[];
     static const char SRVRPLY[];
     static const char SRVRQST[];
+    static const char UNSUPPORTED[];
+    static const char UNKNOWN[];
     static const char UDP_RX_PACKET_BY_TYPE_VAR[];
     static const char UDP_RX_TOTAL_VAR[];
     static const char UDP_TX_PACKET_BY_TYPE_VAR[];
