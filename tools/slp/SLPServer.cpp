@@ -100,6 +100,22 @@ const char SLPServer::UDP_RX_TOTAL_VAR[] = "slp-udp-rx";
 const char SLPServer::UDP_TX_PACKET_BY_TYPE_VAR[] = "slp-udp-tx-packets";
 
 
+/*
+ * Init the options to sensible defaults
+ */
+SLPServer::SLPServerOptions::SLPServerOptions()
+    : enable_da(true),
+      slp_port(DEFAULT_SLP_PORT),
+      config_da_find(CONFIG_DA_FIND),
+      config_da_beat(CONFIG_DA_BEAT),
+      config_mc_max(CONFIG_MC_MAX),
+      config_retry(CONFIG_RETRY),
+      config_retry_max(CONFIG_RETRY_MAX),
+      config_start_wait(CONFIG_START_WAIT),
+      initial_xid(Random(0, UINT16_MAX)) {
+}
+
+
 /**
  * Setup a new SLP server.
  * @param ss the SelectServer to use

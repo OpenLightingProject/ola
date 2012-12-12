@@ -115,17 +115,9 @@ class SLPServer {
       uint16_t config_retry;
       uint16_t config_retry_max;
       uint16_t config_start_wait;
+      uint16_t initial_xid;
 
-      SLPServerOptions()
-          : enable_da(true),
-            slp_port(DEFAULT_SLP_PORT),
-            config_da_find(CONFIG_DA_FIND),
-            config_da_beat(CONFIG_DA_BEAT),
-            config_mc_max(CONFIG_MC_MAX),
-            config_retry(CONFIG_RETRY),
-            config_retry_max(CONFIG_RETRY_MAX),
-            config_start_wait(CONFIG_START_WAIT) {
-      }
+      SLPServerOptions();
     };
 
     SLPServer(ola::io::SelectServerInterface *ss,
