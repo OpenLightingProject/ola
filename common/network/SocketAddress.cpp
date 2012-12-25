@@ -18,6 +18,7 @@
  * Copyright (C) 2012 Simon Newton
  */
 
+#include <assert.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
 #include <ola/network/NetworkUtils.h>
@@ -83,6 +84,14 @@ bool IPV4SocketAddress::FromString(const string &input,
     return false;
   *socket_address = IPV4SocketAddress(address, port);
   return true;
+}
+
+
+IPV4SocketAddress IPV4SocketAddress::FromStringOrDie(
+    const std::string &address) {
+  IPV4SocketAddress socket_address;
+  assert(FromString(address, &socket_address));
+  return socket_address;
 }
 }  // network
 }  // ola

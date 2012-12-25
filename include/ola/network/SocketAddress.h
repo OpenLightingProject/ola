@@ -112,6 +112,9 @@ class IPV4SocketAddress: public SocketAddress {
     static bool FromString(const string &str,
                            IPV4SocketAddress *socket_address);
 
+    // useful for testing
+    static IPV4SocketAddress FromStringOrDie(const std::string &address);
+
     bool ToSockAddr(struct sockaddr *addr, unsigned int size) const;
 
   private:
