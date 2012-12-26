@@ -33,6 +33,9 @@
 #include "ola/testing/MockUDPSocket.h"
 #include "ola/testing/TestUtils.h"
 
+namespace ola {
+namespace testing {
+
 using ola::io::IOQueue;
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
@@ -191,10 +194,10 @@ void MockUDPSocket::AddExpectedData(IOQueue *ioqueue,
 /**
  * Ownership of the data is not transferred.
  */
-void MockUDPSocket::ReceiveData(const uint8_t *data,
-                                unsigned int size,
-                                const IPV4Address &ip,
-                                uint16_t port) {
+void MockUDPSocket::InjectData(const uint8_t *data,
+                               unsigned int size,
+                               const IPV4Address &ip,
+                               uint16_t port) {
   expected_call call = {data, size, ip, port, false};
   m_received_data.push(call);
   PerformRead();
@@ -248,3 +251,5 @@ uint8_t* MockUDPSocket::IOQueueToBuffer(IOQueue *ioqueue,
   *size = ioqueue->Read(data, *size);
   return data;
 }
+}  // testing
+}  // ola

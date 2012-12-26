@@ -29,6 +29,9 @@
 #include "ola/network/Socket.h"
 #include "ola/network/SocketAddress.h"
 
+namespace ola {
+namespace testing {
+
 using ola::io::IOQueue;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
@@ -47,7 +50,7 @@ using ola::network::IPV4SocketAddress;
  *  // verify all the expected data has been consumed
  *  udp_socket.Verify()
  *
- * You can also inject packets into the socket by calling ReceiveData(), this
+ * You can also inject packets into the socket by calling InjectData(), this
  * will trigger the on_read callback that was attached to the socket.
  */
 class MockUDPSocket: public ola::network::UDPSocketInterface {
@@ -111,10 +114,10 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
     void AddExpectedData(IOQueue *queue, const IPV4SocketAddress &dest);
 
     // this can be fetched by calling PerformRead() on the socket
-    void ReceiveData(const uint8_t *data,
-                     unsigned int size,
-                     const IPV4Address &ip,
-                     uint16_t port);
+    void InjectData(const uint8_t *data,
+                    unsigned int size,
+                    const IPV4Address &ip,
+                    uint16_t port);
 
     void InjectData(IOQueue *ioqueue, const IPV4SocketAddress &source);
 
@@ -167,4 +170,6 @@ class SocketVerifier {
   private:
     MockUDPSocket *m_socket;
 };
+}  // testing
+}  // ola
 #endif  // INCLUDE_OLA_TESTING_MOCKUDPSOCKET_H_

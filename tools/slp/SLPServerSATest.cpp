@@ -51,6 +51,8 @@ using ola::slp::ServiceEntry;
 using ola::slp::URLEntries;
 using ola::slp::URLEntry;
 using ola::slp::xid_t;
+using ola::testing::MockUDPSocket;
+using ola::testing::SocketVerifier;
 using std::auto_ptr;
 using std::set;
 using std::string;
