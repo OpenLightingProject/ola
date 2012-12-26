@@ -66,8 +66,7 @@ const ServiceRequestPacket* SLPPacketParser::UnpackServiceRequest(
   string pr_list;
   if (!ExtractString(input, &pr_list, "PR List"))
     return NULL;
-  if (!ConvertIPAddressList(pr_list, &packet->pr_list))
-    return NULL;
+  ConvertIPAddressList(pr_list, &packet->pr_list);
 
   if (!ExtractString(input, &packet->service_type, "Service Type"))
     return NULL;
@@ -437,27 +436,25 @@ bool SLPPacketParser::ExtractAuthBlock(BigEndianInputStream *input,
 /**
  * Convert a comma separated string into a vector of IPAddresses.
  */
-bool SLPPacketParser::ConvertIPAddressList(
+void SLPPacketParser::ConvertIPAddressList(
     const string &list,
     vector<IPV4Address> *addresses) const {
   if (list.empty())
-    return true;
+    return;
 
   vector<string> str_list;
   StringSplit(list, str_list, ",");
   addresses->reserve(str_list.size());
   vector<string>::const_iterator iter = str_list.begin();
-  bool ok = true;
   IPV4Address address;
   for (; iter != str_list.end(); ++iter) {
     if (IPV4Address::FromString(*iter, &address)) {
       addresses->push_back(address);
     } else {
+      // this is non-fatal, see 8.1 of the RFC
       OLA_INFO << "SLP Packet contained invalid IP Address: " << *iter;
-      ok = false;
     }
   }
-  return ok;
 }
 }  // slp
 }  // ola

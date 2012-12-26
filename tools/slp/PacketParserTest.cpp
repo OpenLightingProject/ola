@@ -146,7 +146,7 @@ void PacketParserTest::testParseServiceRequest() {
     OLA_ASSERT_EQ(string(""), packet->spi);
   }
 
-  // test invalid PR list
+  // test invalid PR list, this is non-fatal
   {
     const uint8_t input_data[] = {
       2, 1, 0, 0, 51, 0xe0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
@@ -158,7 +158,24 @@ void PacketParserTest::testParseServiceRequest() {
     };
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceRequest(&stream));
+    auto_ptr<const ola::slp::ServiceRequestPacket> packet(
+      m_parser.UnpackServiceRequest(&stream));
+    OLA_ASSERT(packet.get());
+
+    // verify the contents of the packet
+    OLA_ASSERT_EQ(static_cast<ola::slp::xid_t>(0x1234), packet->xid);
+    OLA_ASSERT_EQ(true, packet->Overflow());
+    OLA_ASSERT_EQ(true, packet->Fresh());
+    OLA_ASSERT_EQ(true, packet->Multicast());
+    OLA_ASSERT_EQ(string("en"), packet->language);
+
+    vector<IPV4Address> expected_pr_list;
+    OLA_ASSERT_VECTOR_EQ(expected_pr_list, packet->pr_list);
+    OLA_ASSERT_EQ(string("rdmnet-device"), packet->service_type);
+
+    OLA_ASSERT_EQ(expected_scopes, packet->scope_list);
+    OLA_ASSERT_EQ(string("foo"), packet->predicate);
+    OLA_ASSERT_EQ(string(""), packet->spi);
   }
 
   // now try a different packet

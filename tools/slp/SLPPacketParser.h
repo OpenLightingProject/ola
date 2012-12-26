@@ -190,7 +190,7 @@ class SLPPacketParser {
     bool ExtractAuthBlock(BigEndianInputStream *input,
                           const string &packet_type) const;
 
-    bool ConvertIPAddressList(const string &list,
+    void ConvertIPAddressList(const string &list,
                               vector<IPV4Address> *addresses) const;
 
     template <typename T>
