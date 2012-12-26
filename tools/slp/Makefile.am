@@ -90,7 +90,7 @@ config.tab.cpp config.tab.h: config.ypp
 
 # Tests
 if BUILD_TESTS
-TESTS = DATrackerTester PacketParserTester \
+TESTS = SLPServerTester DATrackerTester PacketParserTester \
         RegistrationFileParserTester ServiceEntryTester SLPStoreTester \
         XIDAllocatorTester PacketBuilderTester ScopeSetTester SLPStringsTester
 endif
@@ -112,6 +112,15 @@ PacketParserTester_SOURCES = GenericTester.cpp PacketParserTest.cpp
 PacketParserTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 PacketParserTester_LDADD = $(COMMON_TEST_LDADD)
 
+RegistrationFileParserTester_SOURCES = GenericTester.cpp \
+                                       RegistrationFileParserTest.cpp
+RegistrationFileParserTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+RegistrationFileParserTester_LDADD = $(COMMON_TEST_LDADD)
+
+SLPServerTester_SOURCES = GenericTester.cpp SLPServerSATest.cpp
+SLPServerTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+SLPServerTester_LDADD = $(COMMON_TEST_LDADD)
+
 SLPStoreTester_SOURCES = GenericTester.cpp SLPStoreTest.cpp
 SLPStoreTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 SLPStoreTester_LDADD = $(COMMON_TEST_LDADD)
@@ -129,11 +138,6 @@ ServiceEntryTester_SOURCES = GenericTester.cpp \
                              URLEntryTest.cpp
 ServiceEntryTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 ServiceEntryTester_LDADD = $(COMMON_TEST_LDADD)
-
-RegistrationFileParserTester_SOURCES = GenericTester.cpp \
-                                       RegistrationFileParserTest.cpp
-RegistrationFileParserTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-RegistrationFileParserTester_LDADD = $(COMMON_TEST_LDADD)
 
 XIDAllocatorTester_SOURCES = GenericTester.cpp XIDAllocatorTest.cpp
 XIDAllocatorTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
