@@ -218,7 +218,10 @@ void MockUDPSocket::InjectData(IOQueue *ioqueue,
 }
 
 void MockUDPSocket::Verify() {
-  CPPUNIT_ASSERT(m_expected_calls.empty());
+  // if an exception is outstanding, don't both to check if we have consumed
+  // all calls. This avoids raising a second exception which calls terminate.
+  if (!std::uncaught_exception())
+    CPPUNIT_ASSERT(m_expected_calls.empty());
 }
 
 
