@@ -31,7 +31,9 @@
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/testing/MockUDPSocket.h"
+#include "ola/testing/TestUtils.h"
 
+using ola::io::IOQueue;
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
 
@@ -75,23 +77,8 @@ ssize_t MockUDPSocket::SendTo(const uint8_t *buffer,
   CPPUNIT_ASSERT(m_expected_calls.size());
   expected_call call = m_expected_calls.front();
 
-  CPPUNIT_ASSERT_EQUAL(call.size, size);
-  if (memcmp(call.data, buffer, size) != 0) {
-    unsigned int min_size = std::min(size, call.size);
-    for (unsigned int i = 0; i < min_size; i++) {
-      if (call.data[i] != buffer[i]) {
-        std::stringstream str;
-        str << "Offset " << i << ": 0x" << std::hex <<
-          static_cast<int>(call.data[i]) << " != 0x" <<
-          static_cast<int>(buffer[i]);
-        CPPUNIT_ASSERT_EQUAL_MESSAGE(
-            str.str(),
-            static_cast<int>(call.data[i]),
-            static_cast<int>(buffer[i]));
-      }
-      CPPUNIT_ASSERT_EQUAL(call.data[i], buffer[i]);
-    }
-  }
+  ola::testing::ASSERT_DATA_EQUALS(__LINE__, call.data, call.size, buffer,
+                                   size);
   CPPUNIT_ASSERT_EQUAL(call.address, ip_address);
   CPPUNIT_ASSERT_EQUAL(call.port, port);
   m_expected_calls.pop();
@@ -99,11 +86,15 @@ ssize_t MockUDPSocket::SendTo(const uint8_t *buffer,
 }
 
 
-ssize_t MockUDPSocket::SendTo(ola::io::IOQueue *,
-                              const ola::network::IPV4Address&,
-                              unsigned short) const {
-  // not used so we don't implement it
-  return 0;
+ssize_t MockUDPSocket::SendTo(IOQueue *ioqueue,
+                              const ola::network::IPV4Address &ip_address,
+                              unsigned short port) const {
+  // This incurs a copy but it's only testing code.
+  unsigned int data_size;
+  uint8_t *data = IOQueueToBuffer(ioqueue, &data_size);
+  ssize_t data_sent = SendTo(data, data_size, ip_address, port);
+  delete[] data;
+  return data_sent;
 }
 
 bool MockUDPSocket::RecvFrom(uint8_t *buffer, ssize_t *data_read) const {
@@ -135,6 +126,9 @@ bool MockUDPSocket::RecvFrom(uint8_t *buffer,
   *data_read = new_data.size;
   source = new_data.address;
   port = new_data.port;
+
+  if (new_data.free_data)
+    delete[] new_data.data;
   m_received_data.pop();
   return true;
 }
@@ -180,20 +174,48 @@ void MockUDPSocket::AddExpectedData(const uint8_t *data,
                                     unsigned int size,
                                     const IPV4Address &ip,
                                     uint16_t port) {
-  expected_call call = {data, size, ip, port};
+  expected_call call = {data, size, ip, port, false};
   m_expected_calls.push(call);
 }
 
 
+void MockUDPSocket::AddExpectedData(IOQueue *ioqueue,
+                                    const IPV4SocketAddress &dest) {
+  unsigned int size;
+  uint8_t *data = IOQueueToBuffer(ioqueue, &size);
+  expected_call call = {data, size, dest.Host(), dest.Port(), true};
+  m_expected_calls.push(call);
+}
+
+
+/**
+ * Ownership of the data is not transferred.
+ */
 void MockUDPSocket::ReceiveData(const uint8_t *data,
                                 unsigned int size,
                                 const IPV4Address &ip,
                                 uint16_t port) {
-  expected_call call = {data, size, ip, port};
+  expected_call call = {data, size, ip, port, false};
   m_received_data.push(call);
   PerformRead();
 }
 
+
+/**
+ * Inject the data in an IOQueue into the socket. This acts as if the data was
+ * received on the UDP socket.
+ * @param ioqueue the data to inject
+ * @param source the socket address where this fake data came from
+ */
+void MockUDPSocket::InjectData(IOQueue *ioqueue,
+                               const IPV4SocketAddress &source) {
+  unsigned int data_size;
+  // This incurs a copy, but this is just testing code so it doesn't matter.
+  uint8_t *data = IOQueueToBuffer(ioqueue, &data_size);
+  expected_call call = {data, data_size, source.Host(), source.Port(), true};
+  m_received_data.push(call);
+  PerformRead();
+}
 
 void MockUDPSocket::Verify() {
   CPPUNIT_ASSERT(m_expected_calls.empty());
@@ -213,4 +235,13 @@ bool MockUDPSocket::CheckNetworkParamsMatch(bool init_called,
 
 void MockUDPSocket::SetInterface(const IPV4Address &interface) {
   m_interface = interface;
+}
+
+
+uint8_t* MockUDPSocket::IOQueueToBuffer(IOQueue *ioqueue,
+                                        unsigned int *size) const {
+  *size = ioqueue->Size();
+  uint8_t *data = new uint8_t[*size];
+  *size = ioqueue->Read(data, *size);
+  return data;
 }
