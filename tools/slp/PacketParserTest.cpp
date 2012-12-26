@@ -149,8 +149,8 @@ void PacketParserTest::testParseServiceRequest() {
   // test invalid PR list, this is non-fatal
   {
     const uint8_t input_data[] = {
-      2, 1, 0, 0, 51, 0xe0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
-      0, 3, 'f', 'o', 'o',
+      2, 1, 0, 0, 59, 0xe0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 11, '1', '.', '1', '.', '1', '.', '2', ',', 'f', 'o', 'o',
       0, 13, 'r', 'd', 'm', 'n', 'e', 't', '-', 'd', 'e', 'v', 'i', 'c', 'e',
       0, 9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',  // scope list
       0, 3, 'f', 'o', 'o',  // pred string
@@ -170,6 +170,7 @@ void PacketParserTest::testParseServiceRequest() {
     OLA_ASSERT_EQ(string("en"), packet->language);
 
     vector<IPV4Address> expected_pr_list;
+    expected_pr_list.push_back(ip1);
     OLA_ASSERT_VECTOR_EQ(expected_pr_list, packet->pr_list);
     OLA_ASSERT_EQ(string("rdmnet-device"), packet->service_type);
 
