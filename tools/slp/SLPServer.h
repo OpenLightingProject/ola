@@ -48,6 +48,7 @@
 #include "tools/slp/ServiceEntry.h"
 #include "tools/slp/XIDAllocator.h"
 
+using ola::Clock;
 using ola::io::IOQueue;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
@@ -106,6 +107,7 @@ class SLPServer {
   public:
     struct SLPServerOptions {
       IPV4Address ip_address;  // The interface IP to multicast on
+      ola::Clock *clock;  // The clock object to use, if null we create one
       bool enable_da;  // enable the DA mode
       uint16_t slp_port;
       set<string> scopes;  // supported scopes
@@ -163,6 +165,7 @@ class SLPServer {
     ola::TimeStamp m_boot_time;
     const ola::network::IPV4SocketAddress m_multicast_endpoint;
     ola::io::SelectServerInterface *m_ss;
+    Clock *m_clock;
 
     // various timers
     ola::thread::timeout_id m_da_beat_timer;
@@ -270,6 +273,7 @@ class SLPServer {
     bool CleanSLPStore();
     void IncrementMethodVar(const string &method);
     void IncrementPacketVar(const string &packet);
+    void GetCurrentTime(TimeStamp *time);
 
     // constants
     // Super ghetto:

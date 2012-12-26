@@ -104,7 +104,8 @@ const char SLPServer::UDP_TX_PACKET_BY_TYPE_VAR[] = "slp-udp-tx-packets";
  * Init the options to sensible defaults
  */
 SLPServer::SLPServerOptions::SLPServerOptions()
-    : enable_da(true),
+    : clock(NULL),
+      enable_da(true),
       slp_port(DEFAULT_SLP_PORT),
       config_da_find(CONFIG_DA_FIND),
       config_da_beat(CONFIG_DA_BEAT),
@@ -143,6 +144,7 @@ SLPServer::SLPServer(ola::io::SelectServerInterface *ss,
       m_multicast_endpoint(IPV4SocketAddress(
             IPV4Address(HostToNetwork(SLP_MULTICAST_ADDRESS)), m_slp_port)),
       m_ss(ss),
+      m_clock(options.clock),
       m_da_beat_timer(ola::thread::INVALID_TIMEOUT),
       m_store_cleaner_timer(ola::thread::INVALID_TIMEOUT),
       m_active_da_discovery_timer(ola::thread::INVALID_TIMEOUT),
@@ -150,7 +152,7 @@ SLPServer::SLPServer(ola::io::SelectServerInterface *ss,
       m_slp_accept_socket(tcp_socket),
       m_udp_sender(m_udp_socket),
       m_configured_scopes(options.scopes),
-      m_xid_allocator(Random(0, UINT16_MAX)),
+      m_xid_allocator(options.initial_xid),
       m_export_map(export_map) {
   ToLower(&m_en_lang);
 
@@ -226,8 +228,7 @@ bool SLPServer::Init() {
   m_da_tracker.AddNewDACallback(NewCallback(this, &SLPServer::NewDACallback));
 
   if (m_enable_da) {
-    ola::Clock clock;
-    clock.CurrentTime(&m_boot_time);
+    GetCurrentTime(&m_boot_time);
 
     // setup the DA beat timer
     m_da_beat_timer = m_ss->RegisterRepeatingTimeout(
@@ -347,7 +348,6 @@ uint16_t SLPServer::DeRegisterService(const ServiceEntry &service) {
  * Called when there is data on the UDP socket
  */
 void SLPServer::UDPData() {
-  // TODO(simon): make this a member when we're done
   ssize_t packet_size = 1500;
   uint8_t packet[packet_size];
   ola::network::IPV4Address source_ip;
@@ -470,6 +470,7 @@ void SLPServer::HandleServiceRequest(BigEndianInputStream *stream,
     return;
   }
   ScopeSet scope_set(request->scope_list);
+
   if (!scope_set.Intersects(m_configured_scopes)) {
     SendErrorIfUnicast(request.get(), source, SCOPE_NOT_SUPPORTED);
     return;
@@ -986,8 +987,7 @@ void SLPServer::CancelPendingOperations(const string &url) {
  */
 uint16_t SLPServer::InternalRegisterService(const ServiceEntry &service) {
   TimeStamp now;
-  ola::Clock clock;
-  clock.CurrentTime(&now);
+  GetCurrentTime(&now);
 
   SLPStore::ReturnCode result = m_service_store.CheckIfScopesMatch(now,
                                                                    service);
@@ -1014,8 +1014,7 @@ uint16_t SLPServer::InternalRegisterService(const ServiceEntry &service) {
  */
 uint16_t SLPServer::InternalDeRegisterService(const ServiceEntry &service) {
   TimeStamp now;
-  ola::Clock clock;
-  clock.CurrentTime(&now);
+  GetCurrentTime(&now);
 
   SLPStore::ReturnCode result = m_service_store.CheckIfScopesMatch(now,
                                                                    service);
@@ -1366,9 +1365,22 @@ void SLPServer::IncrementMethodVar(const string &method) {
  * Increment the packet counter for the specified packet type.
  */
 void SLPServer::IncrementPacketVar(const string &packet) {
-  if (!m_export_map)
-    return
-  m_export_map->GetUIntMapVar(UDP_RX_PACKET_BY_TYPE_VAR)->Increment(packet);
+  if (m_export_map)
+    m_export_map->GetUIntMapVar(UDP_RX_PACKET_BY_TYPE_VAR)->Increment(packet);
+}
+
+
+/**
+ * Get the current time, either from the Clock object given to us or the
+ * default clock.
+ */
+void SLPServer::GetCurrentTime(TimeStamp *time) {
+  if (m_clock) {
+    m_clock->CurrentTime(time);
+  } else {
+    ola::Clock clock;
+    clock.CurrentTime(time);
+  }
 }
 }  // slp
 }  // ola
