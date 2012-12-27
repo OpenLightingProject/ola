@@ -65,13 +65,13 @@ namespace slp {
 
 
 class PendingSrvRqst;
-class PendingDAFindOperation;
-class PendingRegistationOperation;
-class PendingMulticastFindOperation;
+class UnicastSrvRqstOperation;
+class UnicastSrvRegOperation;
+class MulicastSrvRqstOperation;
 
 
 class OutstandingDADiscovery {
-  // TODO(simon): can we make this use the PendingDAFindOperation above?
+  // TODO(simon): can we make this use the UnicastSrvRqstOperation above?
   public:
     typedef set<IPV4Address> IPV4AddressSet;
 
@@ -234,15 +234,15 @@ class SLPServer {
     // UA methods to handle finding services
     void FindServiceInScopes(PendingSrvRqst *request, const ScopeSet &scopes);
     //   methods used to communicate with DAs
-    void SendSrvRqstToDA(PendingDAFindOperation *op, const DirectoryAgent &da,
-                          bool expect_reused_xid = false);
-    void ReceivedDASrvReply(PendingDAFindOperation *op, const IPV4Address &src,
+    void SendSrvRqstToDA(UnicastSrvRqstOperation *op, const DirectoryAgent &da,
+                         bool expect_reused_xid = false);
+    void ReceivedDASrvReply(UnicastSrvRqstOperation *op, const IPV4Address &src,
                             uint16_t error_code, const URLEntries &urls);
-    void RequestServiceDATimeout(PendingDAFindOperation *op);
+    void RequestServiceDATimeout(UnicastSrvRqstOperation *op);
     void CancelPendingSrvRqstAck(const PendingReplyMap::iterator &iter);
     //  methods used for multicast SA requests
-    void RequestServiceMulticastTimeout(PendingMulticastFindOperation *op);
-    void ReceivedSASrvReply(PendingMulticastFindOperation *op,
+    void RequestServiceMulticastTimeout(MulicastSrvRqstOperation *op);
+    void ReceivedSASrvReply(MulicastSrvRqstOperation *op,
                             const IPV4Address &src, uint16_t error_code,
                             const URLEntries &urls);
     void CheckIfFindSrvComplete(PendingSrvRqst *request);
@@ -251,9 +251,9 @@ class SLPServer {
     void CancelPendingOperations(const string &url);
     uint16_t InternalRegisterService(const ServiceEntry &service);
     uint16_t InternalDeRegisterService(const ServiceEntry &service);
-    void ReceivedAck(PendingRegistationOperation *op_ptr, uint16_t error_code);
-    void RegistrationTimeout(PendingRegistationOperation *op);
-    void DeRegistrationTimeout(PendingRegistationOperation *op);
+    void ReceivedAck(UnicastSrvRegOperation *op_ptr, uint16_t error_code);
+    void RegistrationTimeout(UnicastSrvRegOperation *op);
+    void DeRegistrationTimeout(UnicastSrvRegOperation *op);
     void RegisterWithDA(const DirectoryAgent &directory_agent,
                         const ServiceEntry &service);
     void DeRegisterWithDA(const DirectoryAgent &directory_agent,

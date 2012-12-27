@@ -14,7 +14,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * SLPPendingOperations.h
- * Contains classes that store state for network requests.
+ * The hierarchy of Operations classes that are used to keep track of
+ * outstanding SLP requests.
  * Copyright (C) 2012 Simon Newton
  */
 
@@ -40,6 +41,10 @@ namespace slp {
 
 typedef set<IPV4Address> IPV4AddressSet;
 
+/**
+ * The base class for outstanding operations. This holds the xid allocated to
+ * the operation and the associated timer.
+ */
 class PendingOperation {
   public:
     PendingOperation(xid_t xid, unsigned int retry_time)
@@ -58,68 +63,13 @@ class PendingOperation {
 
 
 /**
- * An operation with a DA.
+ * A multicast operation. This keeps track of the previous responders.
  */
-class PendingDAOperation: public PendingOperation {
+class PendingMulticastOperation: public PendingOperation {
   public:
-    PendingDAOperation(xid_t xid, unsigned int retry_time,
-                       const string &da_url)
+    PendingMulticastOperation(xid_t xid, unsigned int retry_time)
       : PendingOperation(xid, retry_time),
-        da_url(da_url) {
-    }
-
-    const string da_url;
-};
-
-
-/**
- * This represents a pending registation / deregistation operation.
- */
-class PendingRegistationOperation: public PendingDAOperation {
-  public:
-    PendingRegistationOperation(xid_t xid, unsigned int retry_time,
-                                const string &da_url,
-                                const ServiceEntry &service)
-      : PendingDAOperation(xid, retry_time, da_url),
-        service(service) {
-    }
-
-    ServiceEntry service;
-};
-
-
-/**
- * This represents a pending DA find operation
- */
-class PendingDAFindOperation: public PendingDAOperation {
-  public:
-    PendingDAFindOperation(xid_t xid, unsigned int retry_time,
-                           const string &da_url, const ScopeSet &scopes,
-                           class PendingSrvRqst *parent)
-      : PendingDAOperation(xid, retry_time, da_url),
-        parent(parent),
-        scopes(scopes),
-        da_busy(false) {
-    }
-
-    class PendingSrvRqst *parent;
-    ScopeSet scopes;  // the set of scopes this DA is responsible for
-    bool da_busy;
-};
-
-
-/**
- * This represents a pending multicast operation.
- */
-class PendingMulticastFindOperation: public PendingOperation {
-  public:
-    PendingMulticastFindOperation(xid_t xid, unsigned int retry_time,
-                                  const ScopeSet &scopes,
-                                  class PendingSrvRqst *parent)
-        : PendingOperation(xid, retry_time),
-          scopes(scopes),
-          parent(parent),
-          m_pr_list_changed(false) {
+        m_pr_list_changed(false) {
     }
 
     // Insert an element, and update pr_list_changed if required
@@ -138,6 +88,65 @@ class PendingMulticastFindOperation: public PendingOperation {
 
   private:
     bool m_pr_list_changed;
+};
+
+
+/**
+ * A unicast SrvReg / SrvDeReg operation.
+ */
+class UnicastSrvRegOperation: public PendingOperation {
+  public:
+    UnicastSrvRegOperation(xid_t xid, unsigned int retry_time,
+                           const string &da_url,
+                           const ServiceEntry &service)
+      : PendingOperation(xid, retry_time),
+        da_url(da_url),
+        service(service) {
+    }
+
+    const string da_url;
+    ServiceEntry service;
+};
+
+
+/**
+ * A unicast SrvRqst operation to a DA.
+ */
+class UnicastSrvRqstOperation: public PendingOperation {
+  public:
+    UnicastSrvRqstOperation(xid_t xid, unsigned int retry_time,
+                            const string &da_url, const ScopeSet &scopes,
+                            class PendingSrvRqst *parent)
+      : PendingOperation(xid, retry_time),
+        da_url(da_url),
+        parent(parent),
+        scopes(scopes),
+        da_busy(false) {
+    }
+
+    const string da_url;
+    class PendingSrvRqst *parent;
+    ScopeSet scopes;  // the set of scopes this DA is responsible for
+    bool da_busy;
+};
+
+
+/**
+ * A multicast SrvRqst operation. This is used for all multicast SrvRqsts
+ * expect those for directory-agents.
+ */
+class MulicastSrvRqstOperation: public PendingMulticastOperation {
+  public:
+    MulicastSrvRqstOperation(xid_t xid, unsigned int retry_time,
+                             const ScopeSet &scopes,
+                             class PendingSrvRqst *parent)
+        : PendingMulticastOperation(xid, retry_time),
+          scopes(scopes),
+          parent(parent) {
+    }
+
+    ScopeSet scopes;  // the set of scopes in this request
+    class PendingSrvRqst *parent;
 };
 
 
