@@ -187,6 +187,10 @@ SLPServer::~SLPServer() {
   m_ss->RemoveTimeout(m_store_cleaner_timer);
   m_ss->RemoveTimeout(m_active_da_discovery_timer);
 
+  if (m_outstanding_da_discovery.get()) {
+    m_ss->RemoveTimeout(m_outstanding_da_discovery->timer_id);
+  }
+
   for (PendingOperationsByURL::iterator iter = m_pending_ops.begin();
        iter != m_pending_ops.end(); ++iter) {
     m_ss->RemoveTimeout(iter->second->timer_id);
@@ -750,7 +754,7 @@ void SLPServer::FindServiceInScopes(PendingSrvRqst *request,
   MulicastSrvRqstOperation *op = new MulicastSrvRqstOperation(
       m_xid_allocator.Next(), m_config_retry, remaining_scopes, request);
   op->timer_id = m_ss->RegisterSingleTimeout(
-      op->retry_time,
+      op->retry_time(),
       NewSingleCallback(this, &SLPServer::RequestServiceMulticastTimeout, op));
   m_udp_sender.SendServiceRequest(m_multicast_endpoint, op->xid, op->pr_list,
                                   op->parent->service_type, op->scopes);
@@ -772,7 +776,7 @@ void SLPServer::SendSrvRqstToDA(UnicastSrvRqstOperation *op,
                                 bool expect_reused_xid) {
   op->da_busy = false;  // reset the busy flag
   op->timer_id = m_ss->RegisterSingleTimeout(
-      op->retry_time,
+      op->retry_time(),
       NewSingleCallback(this, &SLPServer::RequestServiceDATimeout, op));
   m_udp_sender.SendServiceRequest(
       IPV4SocketAddress(da.IPAddress(), m_slp_port), op->xid,
@@ -837,19 +841,16 @@ void SLPServer::RequestServiceDATimeout(UnicastSrvRqstOperation *op) {
     return;
   }
 
-  OLA_INFO << "in timeout, retry was " << op->retry_time;
-  if (op->retry_time > m_config_retry_max) {
+  op->UpdateRetryTime();
+  if (op->total_time() > m_config_retry_max) {
     // this DA is bad
-    OLA_INFO << "Declaring DA " << op->da_url << " bad since retry is now "
-             << op->retry_time;
+    OLA_INFO << "Declaring DA " << op->da_url << " bad since total time is now "
+             << op->total_time();
     m_da_tracker.MarkAsBad(op->da_url);
     CancelPendingSrvRqstAck(iter);
     FindServiceInScopes(op->parent, op->scopes);
     return;
   }
-
-  op->retry_time += op->retry_time;
-  OLA_INFO << "Retry for " << op->xid << " is now " << op->retry_time;
 
   DirectoryAgent da;
   bool failed = false;
@@ -896,9 +897,10 @@ void SLPServer::CancelPendingSrvRqstAck(const PendingReplyMap::iterator &iter) {
 void SLPServer::RequestServiceMulticastTimeout(
     MulicastSrvRqstOperation *op) {
   OLA_INFO << "xid " << op->xid << " timeout";
+  op->UpdateRetryTime();
 
   if (!op->PRListChanged() || op->PRListSize() > MAX_PR_LIST_SIZE ||
-      op->retry_time > m_config_retry_max) {
+      op->total_time() > m_config_mc_max) {
     // We're done
     PendingReplyMap::iterator iter = m_pending_replies.find(op->xid);
     if (iter == m_pending_replies.end()) {
@@ -918,10 +920,9 @@ void SLPServer::RequestServiceMulticastTimeout(
 
   // increase the retry time & send it again
   op->ResetPRListChanged();
-  op->retry_time += op->retry_time;
-  OLA_INFO << "Retry time for " << op->xid << " is now " << op->retry_time;
+  OLA_INFO << "Retry time for " << op->xid << " is now " << op->retry_time();
   op->timer_id = m_ss->RegisterSingleTimeout(
-      op->retry_time,
+      op->retry_time(),
       NewSingleCallback(this, &SLPServer::RequestServiceMulticastTimeout, op));
   m_udp_sender.SendServiceRequest(m_multicast_endpoint, op->xid, op->pr_list,
                                   op->parent->service_type, op->scopes);
@@ -1071,18 +1072,16 @@ void SLPServer::RegistrationTimeout(UnicastSrvRegOperation *op) {
     return;
   }
 
-  OLA_INFO << "in timeout, retry was " << op->retry_time;
-  if (op->retry_time > m_config_retry_max) {
+  OLA_INFO << "in timeout, retry was " << op->retry_time();
+  op->UpdateRetryTime();
+  if (op->total_time() > m_config_retry_max) {
     // this DA is bad
-    OLA_INFO << "Declaring DA " << op->da_url << " bad since retry is now "
-             << op->retry_time;
+    OLA_INFO << "Declaring DA " << op->da_url << " bad since total time is now "
+             << op->total_time();
     m_da_tracker.MarkAsBad(op->da_url);
     CancelPendingSrvAck(iter);
     return;
   }
-
-  op->retry_time += op->retry_time;
-  OLA_INFO << "in timeout, retry is now " << op->retry_time;
 
   DirectoryAgent da;
   if (!m_da_tracker.LookupDA(op->da_url, &da)) {
@@ -1115,7 +1114,7 @@ void SLPServer::RegistrationTimeout(UnicastSrvRegOperation *op) {
       op->xid, true, scopes_to_use, op->service);
 
   op->timer_id = m_ss->RegisterSingleTimeout(
-      op->retry_time,
+      op->retry_time(),
       NewSingleCallback(this, &SLPServer::RegistrationTimeout, op));
 }
 
@@ -1133,11 +1132,11 @@ void SLPServer::DeRegistrationTimeout(UnicastSrvRegOperation *op) {
   }
 
   // ok, we need to re-try
-  op->retry_time += op->retry_time;
-  if (op->retry_time > m_config_retry_max) {
+  op->UpdateRetryTime();
+  if (op->total_time() > m_config_retry_max) {
     // this DA is bad
-    OLA_INFO << "Declaring DA " << op->da_url << " bad since retry is now "
-             << op->retry_time;
+    OLA_INFO << "Declaring DA " << op->da_url << " bad since total time is now "
+             << op->total_time();
     m_da_tracker.MarkAsBad(op->da_url);
     CancelPendingSrvAck(iter);
     return;
@@ -1164,7 +1163,7 @@ void SLPServer::DeRegistrationTimeout(UnicastSrvRegOperation *op) {
       scopes_to_use, op->service);
 
   op->timer_id = m_ss->RegisterSingleTimeout(
-      op->retry_time,
+      op->retry_time(),
       NewSingleCallback(this, &SLPServer::DeRegistrationTimeout, op));
 }
 
@@ -1176,12 +1175,12 @@ void SLPServer::DeRegistrationTimeout(UnicastSrvRegOperation *op) {
  * @param service the service to register
  */
 void SLPServer::RegisterWithDA(const DirectoryAgent &agent,
-                                const ServiceEntry &service) {
+                               const ServiceEntry &service) {
   OLA_INFO << "Registering " << service << " with " << agent;
   UnicastSrvRegOperation *op = new UnicastSrvRegOperation(
       m_xid_allocator.Next(), m_config_retry, agent.URL(), service);
   op->timer_id = m_ss->RegisterSingleTimeout(
-      op->retry_time,
+      op->retry_time(),
       NewSingleCallback(this, &SLPServer::RegistrationTimeout, op));
 
   ScopeSet scopes_to_use = agent.scopes().Intersection(service.scopes());
@@ -1206,7 +1205,7 @@ void SLPServer::DeRegisterWithDA(const DirectoryAgent &agent,
   UnicastSrvRegOperation *op = new UnicastSrvRegOperation(
       m_xid_allocator.Next(), m_config_retry, agent.URL(), service);
   op->timer_id = m_ss->RegisterSingleTimeout(
-      op->retry_time,
+      op->retry_time(),
       NewSingleCallback(this, &SLPServer::DeRegistrationTimeout, op));
 
   // send message to DA
@@ -1251,7 +1250,7 @@ void SLPServer::StartActiveDADiscovery() {
     return;
   }
   m_outstanding_da_discovery.reset(
-      new OutstandingDADiscovery(m_xid_allocator.Next()));
+      new PendingMulticastOperation(m_xid_allocator.Next(), m_config_retry));
   SendDARequestAndSetupTimer(m_outstanding_da_discovery.get());
 }
 
@@ -1259,23 +1258,26 @@ void SLPServer::StartActiveDADiscovery() {
 /**
  * Called when we timeout a SrvRqst for service:directory-agent.
  */
-void SLPServer::ActiveDATick() {
+void SLPServer::DASrvRqstTimeout() {
   if (!m_outstanding_da_discovery.get()) {
     OLA_WARN << "DA Tick but no outstanding DA request";
     ScheduleActiveDADiscovery();
     return;
   }
 
-  // TODO(simon): also terminate when the PR list is too big
-  OLA_INFO << "tick";
-  if (m_outstanding_da_discovery->attempts_remaining == 0) {
+  PendingMulticastOperation *op = m_outstanding_da_discovery.get();
+  op->UpdateRetryTime();
+  // make sure we always send the SrvRqst at least twice. The RFC isn't
+  // too clear about this, (6.3), but this protects against a dropped packet.
+  if ((!op->PRListChanged() && op->retry_time() != 2 * m_config_retry) ||
+      op->PRListSize() > MAX_PR_LIST_SIZE ||
+      op->total_time() >= m_config_mc_max) {
     // we've come to the end of the road jack
     m_outstanding_da_discovery.reset();
     ScheduleActiveDADiscovery();
     OLA_INFO << "Active DA discovery complete";
-    return;
   } else {
-    SendDARequestAndSetupTimer(m_outstanding_da_discovery.get());
+    SendDARequestAndSetupTimer(op);
   }
 }
 
@@ -1283,20 +1285,18 @@ void SLPServer::ActiveDATick() {
 /**
  * Send a SrvRqst for service:directory-agent and scheduler a timeout.
  */
-void SLPServer::SendDARequestAndSetupTimer(OutstandingDADiscovery *request) {
-  if (request->PRListChanged()) {
-    request->ResetPRListChanged();
+void SLPServer::SendDARequestAndSetupTimer(PendingMulticastOperation *op) {
+  if (op->PRListChanged()) {
+    op->ResetPRListChanged();
     // because the PR list changed we should use a new xid
-    request->xid = m_xid_allocator.Next();
+    op->xid = m_xid_allocator.Next();
   }
-  m_udp_sender.SendServiceRequest(m_multicast_endpoint, request->xid,
-                                  request->pr_list, DIRECTORY_AGENT_SERVICE,
+  m_udp_sender.SendServiceRequest(m_multicast_endpoint, op->xid,
+                                  op->pr_list, DIRECTORY_AGENT_SERVICE,
                                   m_configured_scopes);
-  request->attempts_remaining--;
-  OLA_INFO << "timeout in " << m_config_retry;
-  m_active_da_discovery_timer = m_ss->RegisterSingleTimeout(
-      m_config_retry,
-      NewSingleCallback(this, &SLPServer::ActiveDATick));
+  op->timer_id = m_ss->RegisterSingleTimeout(
+      op->retry_time(),
+      NewSingleCallback(this, &SLPServer::DASrvRqstTimeout));
 }
 
 
@@ -1311,7 +1311,7 @@ void SLPServer::ScheduleActiveDADiscovery() {
 
 
 /**
- * Called when we locate a new DA on the network.
+ * Called when the DA Tracker locates a new DA on the network.
  */
 void SLPServer::NewDACallback(const DirectoryAgent &agent) {
   m_ss->RegisterSingleTimeout(

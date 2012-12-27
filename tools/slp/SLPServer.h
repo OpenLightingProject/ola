@@ -64,39 +64,11 @@ namespace ola {
 namespace slp {
 
 
-class PendingSrvRqst;
-class UnicastSrvRqstOperation;
-class UnicastSrvRegOperation;
 class MulicastSrvRqstOperation;
-
-
-class OutstandingDADiscovery {
-  // TODO(simon): can we make this use the UnicastSrvRqstOperation above?
-  public:
-    typedef set<IPV4Address> IPV4AddressSet;
-
-    explicit OutstandingDADiscovery(xid_t xid)
-      : xid(xid),
-        attempts_remaining(3),
-        m_pr_list_changed(false) {
-    }
-
-    // Insert an element, and update pr_list_changed if required
-    void AddPR(const IPV4Address &address) {
-      pair<IPV4AddressSet::iterator, bool> p = pr_list.insert(address);
-      m_pr_list_changed = p.second;
-    }
-
-    bool PRListChanged() const { return m_pr_list_changed; }
-    void ResetPRListChanged() { m_pr_list_changed = false; }
-
-    IPV4AddressSet pr_list;
-    xid_t xid;
-    uint8_t attempts_remaining;
-
-  private:
-    bool m_pr_list_changed;
-};
+class PendingMulticastOperation;
+class PendingSrvRqst;
+class UnicastSrvRegOperation;
+class UnicastSrvRqstOperation;
 
 
 /**
@@ -190,7 +162,7 @@ class SLPServer {
 
     // Members used to keep track of DAs
     DATracker m_da_tracker;
-    auto_ptr<OutstandingDADiscovery> m_outstanding_da_discovery;
+    auto_ptr<PendingMulticastOperation> m_outstanding_da_discovery;
 
     // The ExportMap
     ola::ExportMap *m_export_map;
@@ -263,8 +235,8 @@ class SLPServer {
 
     // DA Tracking methods
     void StartActiveDADiscovery();
-    void ActiveDATick();
-    void SendDARequestAndSetupTimer(OutstandingDADiscovery *request);
+    void DASrvRqstTimeout();
+    void SendDARequestAndSetupTimer(class PendingMulticastOperation *request);
     void ScheduleActiveDADiscovery();
     void NewDACallback(const DirectoryAgent &agent);
     void RegisterServicesWithNewDA(const string da_url);

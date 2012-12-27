@@ -50,15 +50,28 @@ class PendingOperation {
     PendingOperation(xid_t xid, unsigned int retry_time)
       : xid(xid),
         timer_id(ola::thread::INVALID_TIMEOUT),
-        retry_time(retry_time) {
+        m_retry_time(retry_time),
+        m_cumulative_time(0) {
     }
 
     virtual ~PendingOperation() {}
 
+    unsigned int retry_time() const { return m_retry_time; }
+    unsigned int total_time() const { return m_cumulative_time; }
+
+    void UpdateRetryTime() {
+      m_cumulative_time += m_retry_time;
+      m_retry_time += m_retry_time;
+    }
+
     xid_t xid;
     ola::thread::timeout_id timer_id;
-    // seconds since the first attempt, doubles up to m_config_retry_max
-    unsigned int retry_time;
+
+  private:
+    // The time to wait before the next timeout, doubles each time.
+    unsigned int m_retry_time;
+    // milli-seconds since the first attempt
+    unsigned int m_cumulative_time;
 };
 
 
