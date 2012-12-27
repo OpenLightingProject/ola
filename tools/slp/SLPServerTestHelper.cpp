@@ -1,0 +1,239 @@
+/*
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Library General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ * SLPServerTestHelper.cpp
+ * Tests the SA functionality of the SLPServer class
+ * Copyright (C) 2012 Simon Newton
+ */
+
+#include <stdint.h>
+#include <algorithm>
+#include <iostream>
+#include <memory>
+#include <set>
+#include <string>
+#include <vector>
+#include "ola/Clock.h"
+#include "ola/Logging.h"
+#include "ola/stl/STLUtils.h"
+#include "ola/network/IPV4Address.h"
+#include "ola/network/SocketAddress.h"
+#include "ola/testing/MockUDPSocket.h"
+#include "ola/testing/TestUtils.h"
+#include "tools/slp/DATracker.h"
+#include "tools/slp/SLPPacketBuilder.h"
+#include "tools/slp/SLPServer.h"
+#include "tools/slp/SLPServerTestHelper.h"
+#include "tools/slp/ScopeSet.h"
+#include "tools/slp/ServiceEntry.h"
+#include "tools/slp/URLEntry.h"
+
+using ola::network::IPV4Address;
+using ola::network::IPV4SocketAddress;
+using ola::slp::DirectoryAgent;
+using ola::slp::SLPPacketBuilder;
+using ola::slp::SLPServer;
+using ola::slp::ScopeSet;
+using ola::slp::ServiceEntry;
+using ola::slp::URLEntries;
+using ola::slp::xid_t;
+using ola::testing::MockUDPSocket;
+using std::ostringstream;
+using std::set;
+using std::string;
+using std::vector;
+
+
+const char SLPServerTestHelper::SERVER_IP[] = "10.0.0.1";
+const char SLPServerTestHelper::SLP_MULTICAST_IP[] = "239.255.255.253";
+
+
+/**
+ * Create a new SLPServer
+ */
+SLPServer *SLPServerTestHelper::CreateNewServer(bool enable_da,
+                                                const string &scopes) {
+  ScopeSet scope_set(scopes);
+
+  SLPServer::SLPServerOptions options;
+  options.enable_da = enable_da;
+  options.clock = &m_clock;
+  options.ip_address = IPV4Address::FromStringOrDie(SERVER_IP);
+  options.initial_xid = 0;  // don't randomize the xid for testing
+  options.scopes = set<string>();
+  // clamp the CONFIG_REG_ACTIVE times otherwise they can overlap with SrvRqsts
+  // which makes the packet ordering non-deterministic.
+  // This also ensures that we respect the values passed in.
+  options.config_reg_active_min = 0;
+  options.config_reg_active_max = 1;
+  copy(scope_set.begin(), scope_set.end(),
+       std::inserter(options.scopes, options.scopes.end()));
+  options.slp_port = SLP_TEST_PORT;
+  SLPServer *server = new SLPServer(&m_ss, m_udp_socket, NULL, NULL, options);
+  // TODO(simon): test without the Init here
+  server->Init();
+  return server;
+}
+
+/**
+ * Perform the Active DA discovery dance.
+ * This assumes the timing options are using the default values.
+ */
+void SLPServerTestHelper::HandleActiveDADiscovery(const string &scopes) {
+  ScopeSet scope_set(scopes);
+  set<IPV4Address> pr_list;
+  // The first request is somewhere between 0 and 3s (CONFIG_START_WAIT)
+  // after we start
+  ExpectDAServiceRequest(0, pr_list, scope_set);
+  AdvanceTime(3, 0);
+  m_udp_socket->Verify();
+
+  // Then another one 2s later.
+  ExpectDAServiceRequest(0, pr_list, scope_set);
+  AdvanceTime(2, 0);
+  m_udp_socket->Verify();
+}
+
+
+/**
+ * Inject a SrvRqst into the UDP socket.
+ */
+void SLPServerTestHelper::InjectServiceRequest(const IPV4SocketAddress &source,
+                                               xid_t xid,
+                                               bool multicast,
+                                               const set<IPV4Address> &pr_list,
+                                               const string &service_type,
+                                               const ScopeSet &scopes) {
+  SLPPacketBuilder::BuildServiceRequest(
+      &m_output_stream, xid, multicast, pr_list, service_type, scopes);
+  m_udp_socket->InjectData(&m_output, source);
+  OLA_ASSERT_TRUE(m_output.Empty());
+}
+
+
+/**
+ * Inject a SrvAck
+ */
+void SLPServerTestHelper::InjectSrvAck(const IPV4SocketAddress &source,
+                                       xid_t xid,
+                                       uint16_t error_code) {
+  SLPPacketBuilder::BuildServiceAck(
+      &m_output_stream, xid, error_code);
+  m_udp_socket->InjectData(&m_output, source);
+  OLA_ASSERT_TRUE(m_output.Empty());
+}
+
+
+/**
+ * Inject a DAAdvert
+ */
+void SLPServerTestHelper::InjectDAAdvert(const IPV4SocketAddress &source,
+                                         xid_t xid,
+                                         bool multicast,
+                                         uint16_t error_code,
+                                         uint32_t boot_timestamp,
+                                         const ScopeSet &scopes) {
+  ostringstream str;
+  str << "service:directory-agent://" << source.Host();
+  SLPPacketBuilder::BuildDAAdvert(
+      &m_output_stream, xid, multicast, error_code, boot_timestamp, str.str(),
+      scopes);
+  m_udp_socket->InjectData(&m_output, source);
+  OLA_ASSERT_TRUE(m_output.Empty());
+}
+
+
+/**
+ * Expect a SrvRply
+ */
+void SLPServerTestHelper::ExpectServiceReply(const IPV4SocketAddress &dest,
+                                             xid_t xid,
+                                             uint16_t error_code,
+                                             const URLEntries &urls) {
+  SLPPacketBuilder::BuildServiceReply(&m_output_stream, xid, error_code, urls);
+  m_udp_socket->AddExpectedData(&m_output, dest);
+  OLA_ASSERT_TRUE(m_output.Empty());
+}
+
+
+/**
+ * Expect a SrvRqst for service:directory-agent
+ */
+void SLPServerTestHelper::ExpectDAServiceRequest(
+    xid_t xid,
+    const set<IPV4Address> &pr_list,
+    const ScopeSet &scopes) {
+  IPV4SocketAddress destination(IPV4Address::FromStringOrDie(SLP_MULTICAST_IP),
+                                SLP_TEST_PORT);
+  SLPPacketBuilder::BuildServiceRequest(&m_output_stream, xid, true, pr_list,
+                                        "service:directory-agent", scopes);
+  m_udp_socket->AddExpectedData(&m_output, destination);
+  OLA_ASSERT_TRUE(m_output.Empty());
+}
+
+
+/**
+ * Expect a SrvReg.
+ */
+void SLPServerTestHelper::ExpectServiceRegistration(
+    const IPV4SocketAddress &dest,
+    xid_t xid,
+    bool fresh,
+    const ScopeSet &scopes,
+    const ServiceEntry &service) {
+  SLPPacketBuilder::BuildServiceRegistration(&m_output_stream, xid, fresh,
+                                             scopes, service);
+  m_udp_socket->AddExpectedData(&m_output, dest);
+  OLA_ASSERT_TRUE(m_output.Empty());
+}
+
+
+/**
+ * Expect a SAAdvert
+ */
+void SLPServerTestHelper::ExpectSAAdvert(const IPV4SocketAddress &dest,
+                                         xid_t xid,
+                                         bool multicast,
+                                         const string &url,
+                                         const ScopeSet &scopes) {
+  SLPPacketBuilder::BuildSAAdvert(&m_output_stream, xid, multicast, url,
+                                  scopes);
+  m_udp_socket->AddExpectedData(&m_output, dest);
+  OLA_ASSERT_TRUE(m_output.Empty());
+}
+
+
+/**
+ * Verify the DAs that the server knows about matches the expected set
+ */
+void SLPServerTestHelper::VerifyKnownDAs(unsigned int line,
+                                         SLPServer *server,
+                                         const set<IPV4Address> &expected_das) {
+  ostringstream str;
+  str << "Line " << line;
+
+  vector<DirectoryAgent> known_das;
+  server->GetDirectoryAgents(&known_das);
+
+  vector<DirectoryAgent>::const_iterator iter = known_das.begin();
+  for (; iter != known_das.end(); ++iter) {
+    ostringstream expected_url;
+    expected_url << "service:directory-agent://" << iter->IPAddress();
+    OLA_ASSERT_EQ_MSG(expected_url.str(), iter->URL(), str.str());
+
+    OLA_ASSERT_TRUE_MSG(ola::STLContains(expected_das, iter->IPAddress()),
+                        str.str());
+  }
+}
