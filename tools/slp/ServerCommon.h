@@ -36,6 +36,8 @@ static const uint16_t CONFIG_MC_MAX  = 15;
 static const uint16_t CONFIG_RETRY = 2;
 static const uint16_t CONFIG_RETRY_MAX = 15;
 static const uint16_t CONFIG_START_WAIT = 3;
+static const uint16_t CONFIG_REG_ACTIVE_MIN = 1;
+static const uint16_t CONFIG_REG_ACTIVE_MAX = 3;
 
 static const char DIRECTORY_AGENT_SERVICE[] = "service:directory-agent";
 

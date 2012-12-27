@@ -113,6 +113,8 @@ SLPServer::SLPServerOptions::SLPServerOptions()
       config_retry(CONFIG_RETRY),
       config_retry_max(CONFIG_RETRY_MAX),
       config_start_wait(CONFIG_START_WAIT),
+      config_reg_active_min(CONFIG_REG_ACTIVE_MIN),
+      config_reg_active_max(CONFIG_REG_ACTIVE_MAX),
       initial_xid(Random(0, UINT16_MAX)) {
 }
 
@@ -138,6 +140,8 @@ SLPServer::SLPServer(ola::io::SelectServerInterface *ss,
       m_config_retry(options.config_retry * ONE_THOUSAND),
       m_config_retry_max(options.config_retry_max * ONE_THOUSAND),
       m_config_start_wait(options.config_start_wait * ONE_THOUSAND),
+      m_config_reg_active_min(options.config_reg_active_min * ONE_THOUSAND),
+      m_config_reg_active_max(options.config_reg_active_max * ONE_THOUSAND),
       m_en_lang(reinterpret_cast<const char*>(EN_LANGUAGE_TAG),
                 sizeof(EN_LANGUAGE_TAG)),
       m_iface_address(options.ip_address),
@@ -1315,7 +1319,7 @@ void SLPServer::ScheduleActiveDADiscovery() {
  */
 void SLPServer::NewDACallback(const DirectoryAgent &agent) {
   m_ss->RegisterSingleTimeout(
-      Random(1000, 3000),
+      Random(m_config_reg_active_min, m_config_reg_active_max),
       NewSingleCallback(this, &SLPServer::RegisterServicesWithNewDA,
                         agent.URL()));
 }
