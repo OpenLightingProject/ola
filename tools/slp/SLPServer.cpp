@@ -115,7 +115,8 @@ SLPServer::SLPServerOptions::SLPServerOptions()
       config_start_wait(CONFIG_START_WAIT),
       config_reg_active_min(CONFIG_REG_ACTIVE_MIN),
       config_reg_active_max(CONFIG_REG_ACTIVE_MAX),
-      initial_xid(Random(0, UINT16_MAX)) {
+      initial_xid(Random(0, UINT16_MAX)),
+      boot_time(0) {
 }
 
 
@@ -183,6 +184,10 @@ SLPServer::SLPServer(ola::io::SelectServerInterface *ss,
     export_map->GetUIntMapVar(UDP_RX_PACKET_BY_TYPE_VAR, "type");
     export_map->GetUIntMapVar(METHOD_CALLS_VAR, "method");
   }
+
+  if (options.boot_time) {
+    m_boot_time += TimeInterval(options.boot_time, 0);
+  }
 }
 
 
@@ -236,7 +241,8 @@ bool SLPServer::Init() {
   m_da_tracker.AddNewDACallback(NewCallback(this, &SLPServer::NewDACallback));
 
   if (m_enable_da) {
-    GetCurrentTime(&m_boot_time);
+    if (m_boot_time.Seconds() == 0)
+      GetCurrentTime(&m_boot_time);
 
     // setup the DA beat timer
     m_da_beat_timer = m_ss->RegisterRepeatingTimeout(
@@ -1137,7 +1143,7 @@ void SLPServer::DeRegistrationTimeout(UnicastSrvRegOperation *op) {
 
   // ok, we need to re-try
   op->UpdateRetryTime();
-  if (op->total_time() > m_config_retry_max) {
+  if (op->total_time() >= m_config_retry_max) {
     // this DA is bad
     OLA_INFO << "Declaring DA " << op->da_url << " bad since total time is now "
              << op->total_time();

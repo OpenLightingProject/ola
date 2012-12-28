@@ -91,7 +91,8 @@ class SLPServer {
       uint16_t config_start_wait;
       uint16_t config_reg_active_min;
       uint16_t config_reg_active_max;
-      uint16_t initial_xid;
+      uint16_t initial_xid;  // used for testing
+      uint32_t boot_time;  // used for testing
 
       SLPServerOptions();
     };
