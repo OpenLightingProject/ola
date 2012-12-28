@@ -75,6 +75,10 @@ class SLPServerTestHelper {
 
     SLPServer *CreateNewServer(bool enable_da, const string &scopes);
     void HandleActiveDADiscovery(const string &scopes);
+    void RegisterWithDA(SLPServer *server,
+                        const IPV4SocketAddress &da_addr,
+                        const ServiceEntry &service,
+                        xid_t xid);
 
     void InjectServiceRequest(const IPV4SocketAddress &source,
                               xid_t xid,
@@ -104,6 +108,10 @@ class SLPServerTestHelper {
                                    bool fresh,
                                    const ScopeSet &scopes,
                                    const ServiceEntry &service);
+    void ExpectServiceDeRegistration(const IPV4SocketAddress &dest,
+                                     xid_t xid,
+                                     const ScopeSet &scopes,
+                                     const ServiceEntry &service);
     void ExpectSAAdvert(const IPV4SocketAddress &dest,
                         xid_t xid,
                         bool multicast,

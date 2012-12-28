@@ -45,6 +45,7 @@ using ola::network::IPV4SocketAddress;
 using ola::slp::DirectoryAgent;
 using ola::slp::SLPPacketBuilder;
 using ola::slp::SLPServer;
+using ola::slp::SLP_OK;
 using ola::slp::ScopeSet;
 using ola::slp::ServiceEntry;
 using ola::slp::URLEntries;
@@ -103,6 +104,24 @@ void SLPServerTestHelper::HandleActiveDADiscovery(const string &scopes) {
   // Then another one 2s later.
   ExpectDAServiceRequest(0, pr_list, scope_set);
   AdvanceTime(2, 0);
+  m_udp_socket->Verify();
+
+  // And let that one time out
+  AdvanceTime(4, 0);
+  m_udp_socket->Verify();
+}
+
+
+/**
+ * A Helper method to go through the steps of registering a service with a DA
+ */
+void SLPServerTestHelper::RegisterWithDA(SLPServer *server,
+                                         const IPV4SocketAddress &da_addr,
+                                         const ServiceEntry &service,
+                                         xid_t xid) {
+  ExpectServiceRegistration(da_addr, xid, true, service.scopes(), service);
+  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(service));
+  InjectSrvAck(da_addr, xid, SLP_OK);
   m_udp_socket->Verify();
 }
 
@@ -195,6 +214,21 @@ void SLPServerTestHelper::ExpectServiceRegistration(
     const ServiceEntry &service) {
   SLPPacketBuilder::BuildServiceRegistration(&m_output_stream, xid, fresh,
                                              scopes, service);
+  m_udp_socket->AddExpectedData(&m_output, dest);
+  OLA_ASSERT_TRUE(m_output.Empty());
+}
+
+
+/**
+ * Expect a SrvDeReg.
+ */
+void SLPServerTestHelper::ExpectServiceDeRegistration(
+    const IPV4SocketAddress &dest,
+    xid_t xid,
+    const ScopeSet &scopes,
+    const ServiceEntry &service) {
+  SLPPacketBuilder::BuildServiceDeRegistration(&m_output_stream, xid, scopes,
+                                               service);
   m_udp_socket->AddExpectedData(&m_output, dest);
   OLA_ASSERT_TRUE(m_output.Empty());
 }
