@@ -317,16 +317,22 @@ void SLPStoreTest::testCheckIfScopesMatch() {
 void SLPStoreTest::testGetLocalServices() {
   ServiceEntry service1(test_scopes, SERVICE1_URL1, 10, true);
   ServiceEntry service2(test_scopes, SERVICE1_URL2, 10, false);
-  ServiceEntry service3(test_scopes, SERVICE2_URL1, 10, true);
+  ServiceEntry service3(test_scopes, SERVICE2_URL1, 12, true);
   OLA_ASSERT_EQ(SLPStore::OK, m_store.Insert(now, service1));
   OLA_ASSERT_EQ(SLPStore::OK, m_store.Insert(now, service2));
   OLA_ASSERT_EQ(SLPStore::OK, m_store.Insert(now, service3));
+
+  // advance the clock by 2 seconds
+  m_clock.AdvanceTime(2, 0);
+  m_clock.CurrentTime(&now);
 
   ServiceEntries services;
   m_store.GetLocalServices(now, test_scopes, &services);
   OLA_ASSERT_EQ((size_t) 2, services.size());
   OLA_ASSERT_EQ(service1, services[0]);
   OLA_ASSERT_EQ(service3, services[1]);
+  OLA_ASSERT_EQ((uint16_t) 8, services[0].url().lifetime());
+  OLA_ASSERT_EQ((uint16_t) 10, services[1].url().lifetime());
 
   // age the entries out
   AdvanceTime(15);

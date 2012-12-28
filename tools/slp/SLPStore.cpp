@@ -167,8 +167,11 @@ void SLPStore::GetLocalServices(const TimeStamp &now,
           (*service_iter)->url().lifetime() <= elapsed_seconds)
         // skip non-local and expired services
         continue;
-      if ((*service_iter)->scopes().Intersects(scopes))
+      if ((*service_iter)->scopes().Intersects(scopes)) {
         local_services->push_back(**service_iter);
+        URLEntry &entry = local_services->back().mutable_url();
+        entry.set_lifetime(entry.lifetime() - elapsed_seconds);
+      }
     }
   }
 }
