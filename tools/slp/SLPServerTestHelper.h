@@ -107,6 +107,15 @@ class SLPServerTestHelper {
                         uint16_t error_code,
                         uint32_t boot_timestamp,
                         const ScopeSet &scopes);
+    void InjectServiceRegistration(const IPV4SocketAddress &source,
+                                   xid_t xid,
+                                   bool fresh,
+                                   const ScopeSet &scopes,
+                                   const ServiceEntry &service);
+    void InjectServiceDeRegistration(const IPV4SocketAddress &source,
+                                     xid_t xid,
+                                     const ScopeSet &scopes,
+                                     const ServiceEntry &service);
     void InjectError(const IPV4SocketAddress &source,
                      slp_function_id_t function_id,
                      xid_t xid,
@@ -140,7 +149,9 @@ class SLPServerTestHelper {
     void ExpectSAAdvert(const IPV4SocketAddress &dest,
                         xid_t xid,
                         const ScopeSet &scopes);
-
+    void ExpectServiceAck(const IPV4SocketAddress &dest,
+                          xid_t xid,
+                          uint16_t error_code);
     void ExpectError(const IPV4SocketAddress &dest,
                      slp_function_id_t function_id,
                      xid_t xid,
