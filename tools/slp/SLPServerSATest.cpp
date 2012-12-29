@@ -75,6 +75,7 @@ class SLPServerSATest: public CppUnit::TestFixture {
     CPPUNIT_TEST(testPassiveDADiscovery);
     CPPUNIT_TEST(testActiveDiscoveryRegistration);
     CPPUNIT_TEST(testPassiveDiscoveryRegistration);
+    CPPUNIT_TEST(testDAShutdown);
     CPPUNIT_TEST(testDADeRegistration);
     CPPUNIT_TEST_SUITE_END();
 
@@ -89,6 +90,7 @@ class SLPServerSATest: public CppUnit::TestFixture {
     void testPassiveDADiscovery();
     void testActiveDiscoveryRegistration();
     void testPassiveDiscoveryRegistration();
+    void testDAShutdown();
     void testDADeRegistration();
 
   public:
@@ -819,6 +821,63 @@ void SLPServerSATest::testPassiveDiscoveryRegistration() {
 
 
 /**
+ * Confirm that we don't send SrvRev messages to DAs that have shutdown
+ */
+void SLPServerSATest::testDAShutdown() {
+  auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
+  ScopeSet scopes("one");
+
+  // No DAs present
+  m_helper.HandleInitialActiveDADiscovery("one");
+
+  // register a service
+  ServiceEntry service("one", "service:foo://localhost", 300);
+  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(service));
+
+  // one seconds later, a DA appears
+  m_helper.AdvanceTime(1, 0);
+  DAList da_list;
+  IPV4SocketAddress da1 = IPV4SocketAddress::FromStringOrDie("10.0.1.1:5570");
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 1, scopes);
+    da_list.insert(da1.Host());
+    m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
+  }
+
+  // A bit later, we register with the DA
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    ServiceEntry updated_service("one", "service:foo://localhost", 299);
+    m_helper.ExpectServiceRegistration(da1, 1, true, scopes, updated_service);
+    m_helper.AdvanceTime(1, 0);
+  }
+
+  // And the DA responds...
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.InjectSrvAck(da1, 1, SLP_OK);
+  }
+
+  // now the DA tells us it's shutting down
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 0, scopes);
+    da_list.insert(da1.Host());
+    m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
+  }
+
+  // register another service, this shouldn't cause any messages to the DA
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    ServiceEntry service("one", "service:bar://localhost", 300);
+    OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(service));
+    m_helper.AdvanceTime(4, 0);
+  }
+}
+
+
+/**
  * Test that we de-register with a DA correctly.
  */
 void SLPServerSATest::testDADeRegistration() {
@@ -866,6 +925,8 @@ void SLPServerSATest::testDADeRegistration() {
   // what about an outstanding request when we exit
 }
 
+
+// test when a DA goes down (we shouldn't register any more services with it)
 
 // test what happens when the DA sends us a failure message
 // all sorts of failures to test here
