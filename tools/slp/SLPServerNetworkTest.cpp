@@ -49,11 +49,13 @@ class SLPServerNetworkTest: public CppUnit::TestFixture {
     CPPUNIT_TEST(testMalformedPackets);
     CPPUNIT_TEST(testUnmatchedAcks);
     CPPUNIT_TEST(testUnmatchedSrvRply);
+    CPPUNIT_TEST(testShortPackets);
     CPPUNIT_TEST_SUITE_END();
 
     void testMalformedPackets();
     void testUnmatchedAcks();
     void testUnmatchedSrvRply();
+    void testShortPackets();
 
   public:
     void setUp() {
@@ -155,4 +157,36 @@ void SLPServerNetworkTest::testUnmatchedSrvRply() {
     0,  // # of auth blocks
   };
   m_udp_socket.InjectData(srv_rply_data, sizeof(srv_rply_data), peer);
+}
+
+
+/**
+ * Send various short packets.
+ */
+void SLPServerNetworkTest::testShortPackets() {
+  auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
+  SocketVerifier verifier(&m_udp_socket);
+  IPV4SocketAddress peer = IPV4SocketAddress::FromStringOrDie(
+      "192.168.1.1:5570");
+
+  uint8_t srv_request_packet[] = {2, 1};
+  m_udp_socket.InjectData(srv_request_packet, sizeof(srv_request_packet), peer);
+
+  uint8_t srv_reply_packet[] = {2, 2};
+  m_udp_socket.InjectData(srv_reply_packet, sizeof(srv_reply_packet), peer);
+
+  uint8_t srv_reg_packet[] = {2, 3};
+  m_udp_socket.InjectData(srv_reg_packet, sizeof(srv_reg_packet), peer);
+
+  uint8_t srv_dereg_packet[] = {2, 4};
+  m_udp_socket.InjectData(srv_dereg_packet, sizeof(srv_request_packet), peer);
+
+  uint8_t srv_ack_packet[] = {2, 5};
+  m_udp_socket.InjectData(srv_ack_packet, sizeof(srv_request_packet), peer);
+
+  uint8_t daadvert_packet[] = {2, 8};
+  m_udp_socket.InjectData(daadvert_packet, sizeof(daadvert_packet), peer);
+
+  uint8_t saadvert_packet[] = {2, 11};
+  m_udp_socket.InjectData(saadvert_packet, sizeof(saadvert_packet), peer);
 }
