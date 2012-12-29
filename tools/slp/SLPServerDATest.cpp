@@ -197,5 +197,6 @@ void SLPServerDATest::testSrvRqstForDirectoryAgent() {
 
 // test timeout
 
+// check fresh behavior and the INVALID_UPDATE
 
 // re-reg ?

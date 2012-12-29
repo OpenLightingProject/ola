@@ -648,7 +648,10 @@ void SLPServer::SendErrorIfUnicast(const ServiceRequestPacket *request,
                                    slp_error_code_t error_code) {
   if (request->Multicast())
     return;
-  m_udp_sender.SendServiceReply(source, request->xid, error_code);
+  // Per section 7, we can truncate the message if the error code is non-0
+  // It turns out the truncated message is identicate to an SrvAck (who would
+  // have thought!) so we reuse that method here
+  m_udp_sender.SendError(source, SERVICE_REPLY, request->xid, error_code);
 }
 
 

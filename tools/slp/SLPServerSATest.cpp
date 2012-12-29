@@ -42,6 +42,7 @@ using ola::network::IPV4SocketAddress;
 using ola::slp::INVALID_REGISTRATION;
 using ola::slp::PARSE_ERROR;
 using ola::slp::SCOPE_NOT_SUPPORTED;
+using ola::slp::SERVICE_REPLY;
 using ola::slp::SLPServer;
 using ola::slp::SLP_OK;
 using ola::slp::ScopeSet;
@@ -182,7 +183,7 @@ void SLPServerSATest::testSrvRqst() {
   {
     SocketVerifier verifier(&m_udp_socket);
     URLEntries urls;
-    m_helper.ExpectServiceReply(peer, ++xid, SCOPE_NOT_SUPPORTED, urls);
+    m_helper.ExpectError(peer, SERVICE_REPLY, ++xid, SCOPE_NOT_SUPPORTED);
 
     ScopeSet scopes("two");
     PRList pr_list;
@@ -203,7 +204,7 @@ void SLPServerSATest::testSrvRqst() {
   {
     SocketVerifier verifier(&m_udp_socket);
     URLEntries urls;
-    m_helper.ExpectServiceReply(peer, ++xid, SCOPE_NOT_SUPPORTED, urls);
+    m_helper.ExpectError(peer, SERVICE_REPLY, ++xid, SCOPE_NOT_SUPPORTED);
 
     ScopeSet scopes("");
     PRList pr_list;
@@ -336,7 +337,7 @@ void SLPServerSATest::testSrvRqstForServiceAgent() {
   {
     SocketVerifier verifier(&m_udp_socket);
     URLEntries urls;
-    m_helper.ExpectServiceReply(peer, ++xid, SCOPE_NOT_SUPPORTED, urls);
+    m_helper.ExpectError(peer, SERVICE_REPLY, ++xid, SCOPE_NOT_SUPPORTED);
     ScopeSet scopes("three");
     PRList pr_list;
     m_helper.InjectServiceRequest(peer, xid, false, pr_list,
@@ -396,7 +397,7 @@ void SLPServerSATest::testMissingServiceType() {
   {
     SocketVerifier verifier(&m_udp_socket);
     URLEntries urls;
-    m_helper.ExpectServiceReply(peer, ++xid, PARSE_ERROR, urls);
+    m_helper.ExpectError(peer, SERVICE_REPLY, ++xid, PARSE_ERROR);
 
     ScopeSet scopes("one");
     PRList pr_list;
@@ -864,3 +865,7 @@ void SLPServerSATest::testDADeRegistration() {
 
   // what about an outstanding request when we exit
 }
+
+
+// test what happens when the DA sends us a failure message
+// all sorts of failures to test here
