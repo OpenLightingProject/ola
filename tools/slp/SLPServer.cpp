@@ -479,10 +479,10 @@ void SLPServer::HandleServiceRequest(BigEndianInputStream *stream,
     OLA_INFO << "Recieved SrvRqst with empty service-type from: " << source;
     SendErrorIfUnicast(request.get(), SERVICE_REPLY, source, PARSE_ERROR);
     return;
-  } else if (request->service_type == DIRECTORY_AGENT_SERVICE) {
+  } else if (m_enable_da && request->service_type == DIRECTORY_AGENT_SERVICE) {
     MaybeSendDAAdvert(request.get(), source);
     return;
-  } else if (request->service_type == SERVICE_AGENT_SERVICE) {
+  } else if (!m_enable_da && request->service_type == SERVICE_AGENT_SERVICE) {
     MaybeSendSAAdvert(request.get(), source);
     return;
   }
