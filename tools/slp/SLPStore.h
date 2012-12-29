@@ -27,8 +27,9 @@
 #include <string>
 #include <vector>
 
-#include "tools/slp/ServiceEntry.h"
+#include "tools/slp/SLPPacketConstants.h"
 #include "tools/slp/ScopeSet.h"
+#include "tools/slp/ServiceEntry.h"
 
 
 namespace ola {
@@ -77,7 +78,9 @@ class SLPStore {
       NOT_FOUND,
     } ReturnCode;
 
-    ReturnCode Insert(const TimeStamp &now, const ServiceEntry &entry);
+    slp_error_code_t Insert(const TimeStamp &now, const ServiceEntry &entry);
+    slp_error_code_t Insert(const TimeStamp &now, const ServiceEntry &entry,
+                      bool fresh);
     ReturnCode Remove(const ServiceEntry &entry);
 
     void Lookup(const TimeStamp &now,
@@ -111,8 +114,9 @@ class SLPStore {
     ServiceMap::iterator Populate(const TimeStamp &now, const string &service);
     ServiceEntryVector::iterator FindService(ServiceEntryVector *services,
                                              const string &url);
-    ReturnCode InsertOrUpdateEntry(ServiceEntryVector *services,
-                                   const ServiceEntry &service);
+    slp_error_code_t InsertOrUpdateEntry(ServiceEntryVector *services,
+                                         const ServiceEntry &service,
+                                         bool fresh);
 };
 }  // slp
 }  // ola

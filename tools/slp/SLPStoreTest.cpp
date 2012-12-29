@@ -26,13 +26,17 @@
 #include "ola/Clock.h"
 #include "ola/Logging.h"
 #include "ola/testing/TestUtils.h"
+#include "tools/slp/SLPPacketConstants.h"
 #include "tools/slp/SLPStore.h"
 #include "tools/slp/ScopeSet.h"
 #include "tools/slp/ServiceEntry.h"
 
 using ola::MockClock;
 using ola::TimeStamp;
+using ola::slp::INVALID_UPDATE;
+using ola::slp::SCOPE_NOT_SUPPORTED;
 using ola::slp::SLPStore;
+using ola::slp::SLP_OK;
 using ola::slp::ScopeSet;
 using ola::slp::ServiceEntries;
 using ola::slp::ServiceEntry;
@@ -44,6 +48,7 @@ class SLPStoreTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(SLPStoreTest);
   CPPUNIT_TEST(testInsertAndLookup);
   CPPUNIT_TEST(testDoubleInsert);
+  CPPUNIT_TEST(testNonFresh);
   CPPUNIT_TEST(testRemove);
   CPPUNIT_TEST(testCheckIfScopesMatch);
   CPPUNIT_TEST(testGetLocalServices);
@@ -55,6 +60,7 @@ class SLPStoreTest: public CppUnit::TestFixture {
   public:
     void testInsertAndLookup();
     void testDoubleInsert();
+    void testNonFresh();
     void testRemove();
     void testCheckIfScopesMatch();
     void testGetLocalServices();
@@ -146,7 +152,7 @@ void SLPStoreTest::testInsertAndLookup() {
 
   // insert a service and confirm it's there
   ServiceEntry service1(test_scopes, SERVICE1_URL1, 10);
-  OLA_ASSERT_EQ(SLPStore::OK, m_store.Insert(now, service1));
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service1));
   OLA_ASSERT_EQ(1u, m_store.ServiceTypeCount());
   m_store.Lookup(now, test_scopes, SERVICE1, &urls);
   expected_urls.push_back(service1.url());
@@ -165,14 +171,14 @@ void SLPStoreTest::testInsertAndLookup() {
 
   // insert a second entry for the same service
   ServiceEntry service2(test_scopes, SERVICE1_URL2, 10);
-  OLA_ASSERT_EQ(SLPStore::OK, m_store.Insert(now, service2));
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service2));
   m_store.Lookup(now, test_scopes, SERVICE1, &urls);
   expected_urls.push_back(service2.url());
   OLA_ASSERT_URLENTRIES_EQ(expected_urls, urls);
 
   // insert an entry for a different service
   ServiceEntry service3(test_scopes, SERVICE2_URL1, 10);
-  OLA_ASSERT_EQ(SLPStore::OK, m_store.Insert(now, service3));
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service3));
 
   // check that the first service still returns the correct results
   urls.clear();
@@ -204,7 +210,7 @@ void SLPStoreTest::testDoubleInsert() {
   ServiceEntry service(test_scopes, SERVICE1_URL1, 10);
   ServiceEntry service_shorter(test_scopes, SERVICE1_URL1, 5);
   ServiceEntry service_longer(test_scopes, SERVICE1_URL1, 20);
-  OLA_ASSERT_EQ(SLPStore::OK, m_store.Insert(now, service));
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service));
 
   m_store.Lookup(now, test_scopes, SERVICE1, &urls);
   expected_urls.push_back(service.url());
@@ -212,13 +218,13 @@ void SLPStoreTest::testDoubleInsert() {
 
   // now insert the shorter one
   urls.clear();
-  OLA_ASSERT_EQ(SLPStore::OK, m_store.Insert(now, service_shorter));
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service_shorter));
   m_store.Lookup(now, test_scopes, SERVICE1, &urls);
   OLA_ASSERT_URLENTRIES_EQ(expected_urls, urls);
 
   // now insert the longer one
   urls.clear();
-  OLA_ASSERT_EQ(SLPStore::OK, m_store.Insert(now, service_longer));
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service_longer));
   expected_urls.clear();
   expected_urls.push_back(service_longer.url());
   m_store.Lookup(now, test_scopes, SERVICE1, &urls);
@@ -226,8 +232,18 @@ void SLPStoreTest::testDoubleInsert() {
 
   // Inserting the same url with different scopes should fail
   ServiceEntry different_scopes_service(disjoint_scopes, SERVICE1_URL1, 10);
-  OLA_ASSERT_EQ(SLPStore::SCOPE_MISMATCH,
+  OLA_ASSERT_EQ(SCOPE_NOT_SUPPORTED,
                 m_store.Insert(now, different_scopes_service));
+}
+
+
+/*
+ * Test that if we don't set the FRESH flag for a new service, we receive an
+ * INVALID_UPDATE.
+ */
+void SLPStoreTest::testNonFresh() {
+  ServiceEntry service(test_scopes, SERVICE1_URL1, 10);
+  OLA_ASSERT_EQ(INVALID_UPDATE, m_store.Insert(now, service, false));
 }
 
 
@@ -243,7 +259,7 @@ void SLPStoreTest::testRemove() {
   OLA_ASSERT_EQ(SLPStore::OK, m_store.Remove(service1));
 
   // insert
-  OLA_ASSERT_EQ(SLPStore::OK, m_store.Insert(now, service1));
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service1));
 
   // verify it's there
   m_store.Lookup(now, test_scopes, SERVICE1, &urls);
@@ -288,7 +304,7 @@ void SLPStoreTest::testCheckIfScopesMatch() {
   // the same url, with different scopes
   ServiceEntry service2(test_scopes2, SERVICE1_URL1, 10);
   ServiceEntry service3(disjoint_scopes, SERVICE1_URL1, 10);
-  OLA_ASSERT_EQ(SLPStore::OK, m_store.Insert(now, service1));
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service1));
 
   OLA_ASSERT_EQ(SLPStore::OK, m_store.CheckIfScopesMatch(now, service1));
   OLA_ASSERT_EQ(SLPStore::SCOPE_MISMATCH,
@@ -318,9 +334,9 @@ void SLPStoreTest::testGetLocalServices() {
   ServiceEntry service1(test_scopes, SERVICE1_URL1, 10, true);
   ServiceEntry service2(test_scopes, SERVICE1_URL2, 10, false);
   ServiceEntry service3(test_scopes, SERVICE2_URL1, 12, true);
-  OLA_ASSERT_EQ(SLPStore::OK, m_store.Insert(now, service1));
-  OLA_ASSERT_EQ(SLPStore::OK, m_store.Insert(now, service2));
-  OLA_ASSERT_EQ(SLPStore::OK, m_store.Insert(now, service3));
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service1));
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service2));
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service3));
 
   // advance the clock by 2 seconds
   m_clock.AdvanceTime(2, 0);
@@ -350,7 +366,7 @@ void SLPStoreTest::testAging() {
   ServiceEntry short_service(test_scopes, SERVICE1_URL1, 5);
   ServiceEntry service2(test_scopes, SERVICE2_URL1, 10);
   ServiceEntry short_service2(test_scopes, SERVICE2_URL1, 5);
-  OLA_ASSERT_EQ(SLPStore::OK, m_store.Insert(now, service));
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service));
 
   AdvanceTime(10);
 
@@ -359,10 +375,10 @@ void SLPStoreTest::testAging() {
   OLA_ASSERT_TRUE(urls.empty());
 
   // insert it again
-  OLA_ASSERT_EQ(SLPStore::OK, m_store.Insert(now, service));
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service));
   AdvanceTime(5);
   // insert an entry for the second service
-  OLA_ASSERT_EQ(SLPStore::OK, m_store.Insert(now, service2));
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service2));
 
   m_store.Lookup(now, test_scopes, SERVICE1, &urls);
   expected_urls.push_back(short_service.url());
@@ -401,10 +417,10 @@ void SLPStoreTest::testClean() {
   ServiceEntry service2(test_scopes, SERVICE1_URL2, 10);
   ServiceEntry service3(test_scopes, SERVICE2_URL1, 10);
   ServiceEntry service4(test_scopes, SERVICE2_URL2, 20);
-  OLA_ASSERT_EQ(SLPStore::OK, m_store.Insert(now, service1));
-  OLA_ASSERT_EQ(SLPStore::OK, m_store.Insert(now, service2));
-  OLA_ASSERT_EQ(SLPStore::OK, m_store.Insert(now, service3));
-  OLA_ASSERT_EQ(SLPStore::OK, m_store.Insert(now, service4));
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service1));
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service2));
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service3));
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service4));
 
   OLA_ASSERT_EQ(2u, m_store.ServiceTypeCount());
 
@@ -426,10 +442,10 @@ void SLPStoreTest::testDump() {
   ServiceEntry service2(test_scopes, SERVICE1_URL2, 10);
   ServiceEntry service3(test_scopes, SERVICE2_URL1, 10);
   ServiceEntry service4(test_scopes, SERVICE2_URL2, 20);
-  OLA_ASSERT_EQ(SLPStore::OK, m_store.Insert(now, service1));
-  OLA_ASSERT_EQ(SLPStore::OK, m_store.Insert(now, service2));
-  OLA_ASSERT_EQ(SLPStore::OK, m_store.Insert(now, service3));
-  OLA_ASSERT_EQ(SLPStore::OK, m_store.Insert(now, service4));
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service1));
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service2));
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service3));
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service4));
   // this writes to stdout so we can't verify it. We can at least check we
   // don't crash.
   m_store.Dump(now);

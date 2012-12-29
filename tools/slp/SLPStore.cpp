@@ -44,16 +44,29 @@ SLPStore::~SLPStore() {
  * Insert (or update) an entry in the store.
  * @param now the current time
  * @param entry the entry to insert
- * @returns either OK or SCOPE_MISMATCH
+ * @returns SLP_OK or SCOPE_NOT_SUPPORTED.
  */
-SLPStore::ReturnCode SLPStore::Insert(const TimeStamp &now,
+slp_error_code_t SLPStore::Insert(const TimeStamp &now,
                                       const ServiceEntry &service) {
+  return Insert(now, service, true);
+}
+
+
+/**
+ * Insert (or update) an entry in the store.
+ * @param now the current time
+ * @param entry the entry to insert
+ * @returns SLP_OK, INVALID_UPDATE or SCOPE_NOT_SUPPORTED.
+ */
+slp_error_code_t SLPStore::Insert(const TimeStamp &now,
+                                      const ServiceEntry &service,
+                                      bool fresh) {
   ServiceMap::iterator iter = m_services.find(service.service_type());
   if (iter == m_services.end())
     iter = Populate(now, service.service_type());
   else
     MaybeCleanURLList(now, iter->second);
-  return InsertOrUpdateEntry(&(iter->second->services), service);
+  return InsertOrUpdateEntry(&(iter->second->services), service, fresh);
 }
 
 
@@ -281,22 +294,26 @@ SLPStore::ServiceEntryVector::iterator SLPStore::FindService(
 /**
  * Either insert this entry or update the existing one (if the lifetime is
  * greater).
- * @returns Either OK or SCOPE_MISMATCH.
+ * @returns SLP_OK, INVALID_UPDATE or SCOPE_NOT_SUPPORTED.
  */
-SLPStore::ReturnCode SLPStore::InsertOrUpdateEntry(
+slp_error_code_t SLPStore::InsertOrUpdateEntry(
     ServiceEntryVector *services,
-    const ServiceEntry &service) {
+    const ServiceEntry &service,
+    bool fresh) {
   ServiceEntryVector::iterator iter = FindService(services,
                                                   service.url_string());
   if (iter == services->end()) {
+    if (!fresh)
+      return INVALID_UPDATE;
+
     services->push_back(new ServiceEntry(service));
-    return OK;
+    return SLP_OK;
   } else if ((*iter)->scopes() != (service.scopes())) {
-    return SCOPE_MISMATCH;
+    return SCOPE_NOT_SUPPORTED;
   } else {
     if (service.url().lifetime() > (*iter)->url().lifetime())
       (*iter)->mutable_url().set_lifetime(service.url().lifetime());
-    return OK;
+    return SLP_OK;
   }
 }
 }  // slp
