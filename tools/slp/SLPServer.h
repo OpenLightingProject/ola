@@ -199,7 +199,7 @@ class SLPServer {
                            const IPV4SocketAddress &source);
 
     // DA specific methods
-    void SendDAAdvert(const IPV4SocketAddress &dest);
+    void SendDAAdvert(const IPV4SocketAddress &dest, xid_t xid);
     void SendAck(const IPV4SocketAddress &dest, uint16_t error_code);
     bool SendDABeat();
 

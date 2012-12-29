@@ -691,18 +691,18 @@ void SLPServer::MaybeSendDAAdvert(const ServiceRequestPacket *request,
     SendErrorIfUnicast(request, source, SCOPE_NOT_SUPPORTED);
     return;
   }
-  SendDAAdvert(source);
+  SendDAAdvert(source, request->xid);
 }
 
 
 /**
  * Send a DAAdvert for this server
  */
-void SLPServer::SendDAAdvert(const IPV4SocketAddress &dest) {
-  OLA_INFO << "Sending DAAdvert";
+void SLPServer::SendDAAdvert(const IPV4SocketAddress &dest, xid_t xid) {
+  OLA_INFO << "Sending DAAdvert to " << dest;
   std::ostringstream str;
   str << DIRECTORY_AGENT_SERVICE << "://" << m_iface_address;
-  m_udp_sender.SendDAAdvert(dest, 0, 0, m_boot_time.Seconds(),
+  m_udp_sender.SendDAAdvert(dest, xid, 0, m_boot_time.Seconds(),
                             str.str(), m_configured_scopes);
 }
 
@@ -710,7 +710,8 @@ void SLPServer::SendDAAdvert(const IPV4SocketAddress &dest) {
  * Send a multicast DAAdvert packet
  */
 bool SLPServer::SendDABeat() {
-  SendDAAdvert(m_multicast_endpoint);
+  // unsolicited DAAdverts have a xid of 0
+  SendDAAdvert(m_multicast_endpoint, 0);
   return true;
 }
 
