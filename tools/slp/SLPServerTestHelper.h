@@ -30,6 +30,7 @@
 #include "ola/network/IPV4Address.h"
 #include "ola/network/SocketAddress.h"
 #include "ola/testing/MockUDPSocket.h"
+#include "tools/slp/SLPPacketConstants.h"
 #include "tools/slp/SLPServer.h"
 #include "tools/slp/ScopeSet.h"
 #include "tools/slp/ServiceEntry.h"
@@ -42,6 +43,7 @@ using ola::slp::SLPServer;
 using ola::slp::ScopeSet;
 using ola::slp::ServiceEntry;
 using ola::slp::URLEntries;
+using ola::slp::slp_function_id_t;
 using ola::slp::xid_t;
 using ola::testing::MockUDPSocket;
 using std::set;
@@ -103,6 +105,10 @@ class SLPServerTestHelper {
                         uint16_t error_code,
                         uint32_t boot_timestamp,
                         const ScopeSet &scopes);
+    void InjectError(const IPV4SocketAddress &source,
+                     slp_function_id_t function_id,
+                     xid_t xid,
+                     uint16_t error_code);
 
     void ExpectServiceReply(const IPV4SocketAddress &dest,
                             xid_t xid,
@@ -132,6 +138,11 @@ class SLPServerTestHelper {
     void ExpectSAAdvert(const IPV4SocketAddress &dest,
                         xid_t xid,
                         const ScopeSet &scopes);
+
+    void ExpectError(const IPV4SocketAddress &dest,
+                     slp_function_id_t function_id,
+                     xid_t xid,
+                     uint16_t error_code);
 
     void VerifyKnownDAs(unsigned int line,
                         SLPServer *server,

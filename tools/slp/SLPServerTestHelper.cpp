@@ -206,6 +206,20 @@ void SLPServerTestHelper::InjectDAAdvert(const IPV4SocketAddress &source,
 
 
 /**
+ * Inject an error (truncated SrvRepl or DAAdvert).
+ */
+void SLPServerTestHelper::InjectError(const IPV4SocketAddress &source,
+                                      slp_function_id_t function_id,
+                                      xid_t xid,
+                                      uint16_t error_code) {
+  SLPPacketBuilder::BuildError(
+      &m_output_stream, function_id, xid, error_code);
+  m_udp_socket->InjectData(&m_output, source);
+  OLA_ASSERT_TRUE(m_output.Empty());
+}
+
+
+/**
  * Expect a SrvRply
  */
 void SLPServerTestHelper::ExpectServiceReply(const IPV4SocketAddress &dest,
@@ -296,6 +310,7 @@ void SLPServerTestHelper::ExpectMulticastDAAdvert(xid_t xid,
 }
 
 
+
 /**
  * Expect a SAAdvert
  */
@@ -307,6 +322,19 @@ void SLPServerTestHelper::ExpectSAAdvert(const IPV4SocketAddress &dest,
       << IPV4Address::FromStringOrDie(SERVER_IP);
   SLPPacketBuilder::BuildSAAdvert(&m_output_stream, xid, false, str.str(),
                                   scopes);
+  m_udp_socket->AddExpectedData(&m_output, dest);
+  OLA_ASSERT_TRUE(m_output.Empty());
+}
+
+
+/*
+ * Expect an error message
+ */
+void SLPServerTestHelper::ExpectError(const IPV4SocketAddress &dest,
+                                      slp_function_id_t function_id,
+                                      xid_t xid,
+                                      uint16_t error_code) {
+  SLPPacketBuilder::BuildError(&m_output_stream, function_id, xid, error_code);
   m_udp_socket->AddExpectedData(&m_output, dest);
   OLA_ASSERT_TRUE(m_output.Empty());
 }
