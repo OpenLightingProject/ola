@@ -256,7 +256,7 @@ void SLPStoreTest::testRemove() {
   ServiceEntry other_service(test_scopes, SERVICE1_URL2, 10);
 
   // try to remove a non-existant service
-  OLA_ASSERT_EQ(SLPStore::OK, m_store.Remove(service1));
+  OLA_ASSERT_EQ(SLP_OK, m_store.Remove(service1));
 
   // insert
   OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service1));
@@ -269,12 +269,11 @@ void SLPStoreTest::testRemove() {
   urls.clear();
 
   // try to remove a service that doesn't exist, but has the same service-type
-  OLA_ASSERT_EQ(SLPStore::OK, m_store.Remove(other_service));
+  OLA_ASSERT_EQ(SLP_OK, m_store.Remove(other_service));
 
   // now try to remove the first service but with a different set of scopes
   ServiceEntry different_scopes_service(disjoint_scopes, SERVICE1_URL1, 10);
-  OLA_ASSERT_EQ(SLPStore::SCOPE_MISMATCH,
-                m_store.Remove(different_scopes_service));
+  OLA_ASSERT_EQ(SCOPE_NOT_SUPPORTED, m_store.Remove(different_scopes_service));
 
   // verify it's still there
   m_store.Lookup(now, test_scopes, SERVICE1, &urls);
@@ -284,7 +283,7 @@ void SLPStoreTest::testRemove() {
   urls.clear();
 
   // now actually remove it
-  OLA_ASSERT_EQ(SLPStore::OK, m_store.Remove(service1));
+  OLA_ASSERT_EQ(SLP_OK, m_store.Remove(service1));
 
   // confirm it's no longer there
   m_store.Lookup(now, test_scopes, SERVICE1, &urls);

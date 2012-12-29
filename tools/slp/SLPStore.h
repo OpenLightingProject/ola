@@ -71,7 +71,6 @@ class SLPStore {
 
     unsigned int ServiceTypeCount() const { return m_services.size(); }
 
-    // Return codes from various methods.
     typedef enum {
       OK,
       SCOPE_MISMATCH,
@@ -80,8 +79,8 @@ class SLPStore {
 
     slp_error_code_t Insert(const TimeStamp &now, const ServiceEntry &entry);
     slp_error_code_t Insert(const TimeStamp &now, const ServiceEntry &entry,
-                      bool fresh);
-    ReturnCode Remove(const ServiceEntry &entry);
+                            bool fresh);
+    slp_error_code_t Remove(const ServiceEntry &entry);
 
     void Lookup(const TimeStamp &now,
                 const ScopeSet &scopes,

@@ -73,19 +73,18 @@ slp_error_code_t SLPStore::Insert(const TimeStamp &now,
 /**
  * Remove an entry from the Store.
  * @param entry the ServiceEntry to remove
- * @returns SCOPE_MISMATCH if the scopes do not match the scopes that the entry
- *   was registered with. Otherwise return OK.
+ * @returns SLP_OK or SCOPE_NOT_SUPPORTED.
  */
-SLPStore::ReturnCode SLPStore::Remove(const ServiceEntry &service) {
+slp_error_code_t SLPStore::Remove(const ServiceEntry &service) {
   ServiceMap::iterator iter = m_services.find(service.service_type());
   if (iter == m_services.end())
-    return OK;
+    return SLP_OK;
 
   ServiceEntryVector &services = iter->second->services;
   ServiceEntryVector::iterator service_iter = FindService(&services,
                                                           service.url_string());
   if (service_iter == services.end())
-    return OK;
+    return SLP_OK;
 
   if ((*service_iter)->scopes() == service.scopes()) {
     services.erase(service_iter);
@@ -93,9 +92,9 @@ SLPStore::ReturnCode SLPStore::Remove(const ServiceEntry &service) {
       delete iter->second;
       m_services.erase(iter);
     }
-    return OK;
+    return SLP_OK;
   } else {
-    return SCOPE_MISMATCH;
+    return SCOPE_NOT_SUPPORTED;
   }
 }
 
