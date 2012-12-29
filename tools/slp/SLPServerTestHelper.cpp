@@ -94,6 +94,19 @@ SLPServer *SLPServerTestHelper::CreateNewServer(bool enable_da,
 
 
 /**
+ * Create a new SLPServer (with DA enabled) and handle the initial DAAdvert &
+ * SrvRqsts it sends.
+ */
+SLPServer *SLPServerTestHelper::CreateDAAndHandleStartup(const string &scopes) {
+  ExpectMulticastDAAdvert(0, INITIAL_BOOT_TIME, ScopeSet(scopes));
+  SLPServer *server =CreateNewServer(true, scopes);
+  HandleInitialActiveDADiscovery(scopes);
+  m_udp_socket->Verify();
+  return server;
+}
+
+
+/**
  * Handle the Initial active DA discovery.
  * This assumes the timing options are using the default values and causes 9
  * seconds to pass

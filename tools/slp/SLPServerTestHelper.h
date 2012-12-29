@@ -84,6 +84,7 @@ class SLPServerTestHelper {
     }
 
     SLPServer *CreateNewServer(bool enable_da, const string &scopes);
+    SLPServer *CreateDAAndHandleStartup(const string &scopes);
     void HandleInitialActiveDADiscovery(const string &scopes);
     void HandleActiveDADiscovery(const string &scopes, xid_t xid);
     void RegisterWithDA(SLPServer *server,
