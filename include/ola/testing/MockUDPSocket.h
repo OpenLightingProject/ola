@@ -118,7 +118,9 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
                     unsigned int size,
                     const IPV4Address &ip,
                     uint16_t port);
-
+    void InjectData(const uint8_t *data,
+                    unsigned int size,
+                    const IPV4SocketAddress &source);
     void InjectData(IOQueue *ioqueue, const IPV4SocketAddress &source);
 
     void Verify();

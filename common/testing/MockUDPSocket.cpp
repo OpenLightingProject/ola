@@ -205,6 +205,16 @@ void MockUDPSocket::InjectData(const uint8_t *data,
 
 
 /**
+ * Ownership of the data is not transferred.
+ */
+void MockUDPSocket::InjectData(const uint8_t *data,
+                               unsigned int size,
+                               const IPV4SocketAddress &source) {
+  InjectData(data, size, source.Host(), source.Port());
+}
+
+
+/**
  * Inject the data in an IOQueue into the socket. This acts as if the data was
  * received on the UDP socket.
  * @param ioqueue the data to inject
