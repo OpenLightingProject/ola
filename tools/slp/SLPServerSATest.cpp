@@ -68,6 +68,7 @@ class SLPServerSATest: public CppUnit::TestFixture {
     CPPUNIT_TEST(testInvalidRegistrations);
     CPPUNIT_TEST(testDeRegistration);
     CPPUNIT_TEST(testSrvRqstForServiceAgent);
+    CPPUNIT_TEST(testSrvRqstForDirectoryAgent);
     CPPUNIT_TEST(testExpiredService);
     CPPUNIT_TEST(testMissingServiceType);
     CPPUNIT_TEST(testMisconfiguredSA);
@@ -83,6 +84,7 @@ class SLPServerSATest: public CppUnit::TestFixture {
     void testInvalidRegistrations();
     void testDeRegistration();
     void testSrvRqstForServiceAgent();
+    void testSrvRqstForDirectoryAgent();
     void testExpiredService();
     void testMissingServiceType();
     void testMisconfiguredSA();
@@ -354,6 +356,40 @@ void SLPServerSATest::testSrvRqstForServiceAgent() {
     PRList pr_list;
     m_helper.InjectServiceRequest(peer, xid, true, pr_list,
                                   "service:service-agent", scopes);
+  }
+}
+
+
+/**
+ * Test that SAs don't respond to SrvRqsts of the form service:directory-agent
+ */
+void SLPServerSATest::testSrvRqstForDirectoryAgent() {
+  const string da_service = "service:directory-agent";
+  auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one,two"));
+
+  IPV4SocketAddress peer = IPV4SocketAddress::FromStringOrDie(
+      "192.168.1.1:5570");
+  xid_t xid = 10;
+
+  // send a unicast SrvRqst, expect an empty SrvRply
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    URLEntries urls;
+    m_helper.ExpectServiceReply(peer, xid, SLP_OK, urls);
+
+    ScopeSet scopes("one");
+    PRList pr_list;
+    m_helper.InjectServiceRequest(peer, xid, false, pr_list, da_service,
+                                  scopes);
+  }
+
+  // send a multicast SrvRqst, expect an empty SrvRply
+  {
+    SocketVerifier verifier(&m_udp_socket);
+
+    ScopeSet scopes("one");
+    PRList pr_list;
+    m_helper.InjectServiceRequest(peer, xid, true, pr_list, da_service, scopes);
   }
 }
 
@@ -926,7 +962,7 @@ void SLPServerSATest::testDADeRegistration() {
 }
 
 
-// test when a DA goes down (we shouldn't register any more services with it)
+// test DA failure
 
 // test what happens when the DA sends us a failure message
 // all sorts of failures to test here

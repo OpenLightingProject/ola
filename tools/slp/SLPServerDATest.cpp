@@ -43,6 +43,7 @@ using ola::slp::DA_ADVERTISEMENT;
 using ola::slp::INVALID_REGISTRATION;
 using ola::slp::PARSE_ERROR;
 using ola::slp::SCOPE_NOT_SUPPORTED;
+using ola::slp::SERVICE_REPLY;
 using ola::slp::SLPServer;
 using ola::slp::SLP_OK;
 using ola::slp::ScopeSet;
@@ -66,10 +67,16 @@ class SLPServerDATest: public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(SLPServerDATest);
     CPPUNIT_TEST(testDABeat);
     CPPUNIT_TEST(testSrvRqstForDirectoryAgent);
+    CPPUNIT_TEST(testSrvRqstForServiceAgent);
+    CPPUNIT_TEST(testSrvRqstForLocalService);
+    CPPUNIT_TEST(testLocalServiceTimeout);
     CPPUNIT_TEST_SUITE_END();
 
     void testDABeat();
     void testSrvRqstForDirectoryAgent();
+    void testSrvRqstForServiceAgent();
+    void testSrvRqstForLocalService();
+    void testLocalServiceTimeout();
 
   public:
     void setUp() {
@@ -261,13 +268,242 @@ void SLPServerDATest::testSrvRqstForDirectoryAgent() {
   m_helper.ExpectMulticastDAAdvert(0, 0, scopes);
 }
 
+
+/**
+ * Test that DAs don't respond to SrvRqsts of the form service:service-agent
+ */
+void SLPServerDATest::testSrvRqstForServiceAgent() {
+  const string sa_service = "service:service-agent";
+  auto_ptr<SLPServer> server(m_helper.CreateDAAndHandleStartup(DA_SCOPES));
+  ScopeSet scopes(DA_SCOPES);
+
+  IPV4SocketAddress peer = IPV4SocketAddress::FromStringOrDie(
+      "192.168.1.1:5570");
+  xid_t xid = 10;
+
+  // send a unicast SrvRqst, expect an empty SrvRply
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    URLEntries urls;
+    m_helper.ExpectServiceReply(peer, xid, SLP_OK, urls);
+    ScopeSet scopes("one");
+    PRList pr_list;
+    m_helper.InjectServiceRequest(peer, xid, false, pr_list, sa_service,
+                                  scopes);
+  }
+
+  // send a multicast SrvRqst, expect an empty SrvRply
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    ScopeSet scopes("one");
+    PRList pr_list;
+    m_helper.InjectServiceRequest(peer, xid, true, pr_list, sa_service, scopes);
+  }
+
+  m_helper.ExpectMulticastDAAdvert(0, 0, scopes);
+}
+
+
+/**
+ * Test the we respond correctly to SrvRqsts for locally registered services
+ */
+void SLPServerDATest::testSrvRqstForLocalService() {
+  const string foo_service = "service:foo";
+  auto_ptr<SLPServer> server(m_helper.CreateDAAndHandleStartup(DA_SCOPES));
+  ScopeSet scopes(DA_SCOPES);
+
+  // register a service
+  ServiceEntry service("one", "service:foo://localhost", 300);
+  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(service));
+  m_helper.AdvanceTime(0, 0);
+
+  // now perform various SrvRqsts
+  IPV4SocketAddress peer = IPV4SocketAddress::FromStringOrDie(
+      "192.168.1.1:5570");
+  xid_t xid = 10;
+
+  // send a unicast SrvRqst, expect a SrvRply
+  {
+    SocketVerifier verifier(&m_udp_socket);
+
+    URLEntries urls;
+    urls.push_back(service.url());
+    m_helper.ExpectServiceReply(peer, xid, SLP_OK, urls);
+
+    ScopeSet scopes("one");
+    PRList pr_list;
+    m_helper.InjectServiceRequest(peer, xid, false, pr_list, foo_service,
+                                  scopes);
+  }
+
+  // send a multicast SrvRqst, expect a SrvRply
+  {
+    SocketVerifier verifier(&m_udp_socket);
+
+    URLEntries urls;
+    urls.push_back(service.url());
+    m_helper.ExpectServiceReply(peer, xid, SLP_OK, urls);
+
+    ScopeSet scopes("one");
+    PRList pr_list;
+    m_helper.InjectServiceRequest(peer, xid, true, pr_list, foo_service,
+                                  scopes);
+  }
+
+  // Try a multicast request but with the SA's IP in the PR list
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    ScopeSet scopes("one");
+    PRList pr_list;
+    pr_list.insert(
+        IPV4Address::FromStringOrDie(SLPServerTestHelper::SERVER_IP));
+    m_helper.InjectServiceRequest(peer, ++xid, true, pr_list, foo_service,
+                                  scopes);
+  }
+
+  // test a multicast request for a scope that the DA doesn't support
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    ScopeSet scopes("three");
+    PRList pr_list;
+    m_helper.InjectServiceRequest(peer, ++xid, true, pr_list, foo_service,
+                                  scopes);
+  }
+
+  // test a unicast request for a scope that the DA doesn't support
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    URLEntries urls;
+    m_helper.ExpectError(peer, SERVICE_REPLY, ++xid, SCOPE_NOT_SUPPORTED);
+
+    ScopeSet scopes("three");
+    PRList pr_list;
+    m_helper.InjectServiceRequest(peer, xid, false, pr_list, foo_service,
+                                  scopes);
+  }
+
+  // test a multicast request for a scope that the DA supports, but the service
+  // wasn't registered with
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    ScopeSet scopes("two");
+    PRList pr_list;
+    m_helper.InjectServiceRequest(peer, ++xid, true, pr_list, foo_service,
+                                  scopes);
+  }
+
+  // test a unicast request for a scope that the DA supports, but the service
+  // wasn't registered with
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    URLEntries urls;
+    m_helper.ExpectServiceReply(peer, xid, SLP_OK, urls);
+
+    ScopeSet scopes("two");
+    PRList pr_list;
+    m_helper.InjectServiceRequest(peer, xid, false, pr_list, foo_service,
+                                  scopes);
+  }
+
+  // test a unicast request with no scope list
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    URLEntries urls;
+    m_helper.ExpectError(peer, SERVICE_REPLY, ++xid, SCOPE_NOT_SUPPORTED);
+
+    ScopeSet scopes("");
+    PRList pr_list;
+    m_helper.InjectServiceRequest(peer, xid, false, pr_list, foo_service,
+                                  scopes);
+  }
+
+  // test a multicast request with no scope list
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    ScopeSet scopes("");
+    PRList pr_list;
+    m_helper.InjectServiceRequest(peer, ++xid, true, pr_list, foo_service,
+                                  scopes);
+  }
+
+  // de-register the service
+  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->DeRegisterService(service));
+  m_helper.AdvanceTime(0, 0);
+
+  // send a unicast SrvRqst, expect an empty SrvRply
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    URLEntries urls;
+    m_helper.ExpectServiceReply(peer, xid, SLP_OK, urls);
+
+    ScopeSet scopes("one");
+    PRList pr_list;
+    m_helper.InjectServiceRequest(peer, xid, false, pr_list, foo_service,
+                                  scopes);
+  }
+
+  // send a multicast SrvRqst, expect no response
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    ScopeSet scopes("one");
+    PRList pr_list;
+    m_helper.InjectServiceRequest(peer, xid, true, pr_list, foo_service,
+                                  scopes);
+  }
+
+  m_helper.ExpectMulticastDAAdvert(0, 0, scopes);
+}
+
+
+/**
+ * Check that we expire local services when they timeout
+ */
+void SLPServerDATest::testLocalServiceTimeout() {
+  const string foo_service = "service:foo";
+  auto_ptr<SLPServer> server(m_helper.CreateDAAndHandleStartup(DA_SCOPES));
+  ScopeSet scopes(DA_SCOPES);
+
+  // register a service
+  ServiceEntry service("one", "service:foo://localhost", 10);
+  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(service));
+
+  // this should time the service out
+  m_helper.AdvanceTime(11, 0);
+
+  // now perform various SrvRqsts
+  IPV4SocketAddress peer = IPV4SocketAddress::FromStringOrDie(
+      "192.168.1.1:5570");
+  xid_t xid = 10;
+
+  // send a unicast SrvRqst, expect an empty SrvRply
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    URLEntries urls;
+    m_helper.ExpectServiceReply(peer, xid, SLP_OK, urls);
+    ScopeSet scopes("one");
+    PRList pr_list;
+    m_helper.InjectServiceRequest(peer, xid, false, pr_list, foo_service,
+                                  scopes);
+  }
+
+  // send a multicast SrvRqst, expect no response
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    ScopeSet scopes("one");
+    PRList pr_list;
+    m_helper.InjectServiceRequest(peer, xid, true, pr_list, foo_service,
+                                  scopes);
+  }
+
+  m_helper.ExpectMulticastDAAdvert(0, 0, scopes);
+}
+
+
 // test Reg
 
 // test reg & lookup
 
-// test local reg & lookup
-
-// test timeout
+// test remove timeout
 
 // check fresh behavior and the INVALID_UPDATE
 
