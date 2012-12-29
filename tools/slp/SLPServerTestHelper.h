@@ -26,6 +26,7 @@
 #include <set>
 #include <string>
 #include "ola/Clock.h"
+#include "ola/ExportMap.h"
 #include "ola/io/SelectServer.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/SocketAddress.h"
@@ -160,5 +161,6 @@ class SLPServerTestHelper {
     MockUDPSocket *m_udp_socket;
     ola::io::IOQueue m_output;
     ola::io::BigEndianOutputStream m_output_stream;
+    ola::ExportMap m_export_map;
 };
 #endif  // TOOLS_SLP_SLPSERVERTESTHELPER_H_

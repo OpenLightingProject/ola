@@ -85,7 +85,8 @@ SLPServer *SLPServerTestHelper::CreateNewServer(bool enable_da,
        std::inserter(options.scopes, options.scopes.end()));
   options.slp_port = SLP_TEST_PORT;
   m_server_start_time = *(m_ss.WakeUpTime());
-  SLPServer *server = new SLPServer(&m_ss, m_udp_socket, NULL, NULL, options);
+  SLPServer *server = new SLPServer(&m_ss, m_udp_socket, NULL, &m_export_map,
+                                    options);
   // TODO(simon): test without the Init here
   server->Init();
   return server;
