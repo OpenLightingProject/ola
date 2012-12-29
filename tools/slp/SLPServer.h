@@ -189,6 +189,7 @@ class SLPServer {
 
     // Network TX methods
     void SendErrorIfUnicast(const ServiceRequestPacket *request,
+                            slp_function_id_t function_id,
                             const IPV4SocketAddress &source,
                             slp_error_code_t error_code);
 

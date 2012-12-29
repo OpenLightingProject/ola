@@ -455,13 +455,15 @@ void SLPServer::HandleServiceRequest(BigEndianInputStream *stream,
 
   if (!request->spi.empty()) {
     OLA_WARN << "Recieved request with SPI";
-    SendErrorIfUnicast(request.get(), source, AUTHENTICATION_UNKNOWN);
+    SendErrorIfUnicast(request.get(), SERVICE_REPLY, source,
+                       AUTHENTICATION_UNKNOWN);
     return;
   }
 
   if (request->language != m_en_lang) {
     OLA_WARN << "Unsupported language " << request->language;
-    SendErrorIfUnicast(request.get(), source, LANGUAGE_NOT_SUPPORTED);
+    SendErrorIfUnicast(request.get(), SERVICE_REPLY, source,
+                       LANGUAGE_NOT_SUPPORTED);
     return;
   }
 
@@ -469,7 +471,7 @@ void SLPServer::HandleServiceRequest(BigEndianInputStream *stream,
   // check service, MaybeSend[DS]AAdvert do their own scope checking
   if (request->service_type.empty()) {
     OLA_INFO << "Recieved SrvRqst with empty service-type from: " << source;
-    SendErrorIfUnicast(request.get(), source, PARSE_ERROR);
+    SendErrorIfUnicast(request.get(), SERVICE_REPLY, source, PARSE_ERROR);
     return;
   } else if (request->service_type == DIRECTORY_AGENT_SERVICE) {
     MaybeSendDAAdvert(request.get(), source);
@@ -481,13 +483,15 @@ void SLPServer::HandleServiceRequest(BigEndianInputStream *stream,
 
   // check scopes
   if (request->scope_list.empty()) {
-    SendErrorIfUnicast(request.get(), source, SCOPE_NOT_SUPPORTED);
+    SendErrorIfUnicast(request.get(), SERVICE_REPLY, source,
+                       SCOPE_NOT_SUPPORTED);
     return;
   }
   ScopeSet scope_set(request->scope_list);
 
   if (!scope_set.Intersects(m_configured_scopes)) {
-    SendErrorIfUnicast(request.get(), source, SCOPE_NOT_SUPPORTED);
+    SendErrorIfUnicast(request.get(), SERVICE_REPLY, source,
+                       SCOPE_NOT_SUPPORTED);
     return;
   }
 
@@ -643,15 +647,23 @@ void SLPServer::HandleDAAdvert(BigEndianInputStream *stream,
 }
 
 
+/**
+ * Send an error response, only if this request was unicast
+ * @param request the request that triggered the response
+ * @param function_id the function-id to use in the response
+ * @param destination the socket address to send the message to
+ * @param error_code the error code to use
+ */
 void SLPServer::SendErrorIfUnicast(const ServiceRequestPacket *request,
-                                   const IPV4SocketAddress &source,
+                                   slp_function_id_t function_id,
+                                   const IPV4SocketAddress &destination,
                                    slp_error_code_t error_code) {
   if (request->Multicast())
     return;
   // Per section 7, we can truncate the message if the error code is non-0
   // It turns out the truncated message is identicate to an SrvAck (who would
   // have thought!) so we reuse that method here
-  m_udp_sender.SendError(source, SERVICE_REPLY, request->xid, error_code);
+  m_udp_sender.SendError(destination, function_id, request->xid, error_code);
 }
 
 
@@ -666,7 +678,7 @@ void SLPServer::MaybeSendSAAdvert(const ServiceRequestPacket *request,
   // Section 11.2
   ScopeSet scopes(request->scope_list);
   if (!(scopes.empty() || scopes.Intersects(m_configured_scopes))) {
-    SendErrorIfUnicast(request, source, SCOPE_NOT_SUPPORTED);
+    SendErrorIfUnicast(request, SERVICE_REPLY, source, SCOPE_NOT_SUPPORTED);
     return;
   }
 
@@ -691,7 +703,7 @@ void SLPServer::MaybeSendDAAdvert(const ServiceRequestPacket *request,
     OLA_INFO << "Scopes in SrvRqst " << DIRECTORY_AGENT_SERVICE << ": '"
              << scopes << "', don't match our scopes of '"
              << m_configured_scopes << "'";
-    SendErrorIfUnicast(request, source, SCOPE_NOT_SUPPORTED);
+    SendErrorIfUnicast(request, DA_ADVERTISEMENT, source, SCOPE_NOT_SUPPORTED);
     return;
   }
   SendDAAdvert(source, request->xid);
