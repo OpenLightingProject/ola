@@ -73,8 +73,16 @@ class SLPServerTestHelper {
       m_ss.RunOnce(0, 0);
     }
 
+    // Print the time since the server started, this is useful for debugging
+    void PrintTimePassed() {
+      ola::TimeStamp now = *m_ss.WakeUpTime();
+      OLA_INFO << "Now " << now << ", delta from start is "
+               << (now - m_server_start_time);
+    }
+
     SLPServer *CreateNewServer(bool enable_da, const string &scopes);
-    void HandleActiveDADiscovery(const string &scopes);
+    void HandleInitialActiveDADiscovery(const string &scopes);
+    void HandleActiveDADiscovery(const string &scopes, xid_t xid);
     void RegisterWithDA(SLPServer *server,
                         const IPV4SocketAddress &da_addr,
                         const ServiceEntry &service,
@@ -112,10 +120,17 @@ class SLPServerTestHelper {
                                      xid_t xid,
                                      const ScopeSet &scopes,
                                      const ServiceEntry &service);
-    void ExpectSAAdvert(const IPV4SocketAddress &dest,
+    void ExpectDAAdvert(const IPV4SocketAddress &dest,
                         xid_t xid,
                         bool multicast,
-                        const string &url,
+                        uint16_t error_code,
+                        uint32_t boot_timestamp,
+                        const ScopeSet &scopes);
+    void ExpectMulticastDAAdvert(xid_t xid,
+                                 uint32_t boot_timestamp,
+                                 const ScopeSet &scopes);
+    void ExpectSAAdvert(const IPV4SocketAddress &dest,
+                        xid_t xid,
                         const ScopeSet &scopes);
 
     void VerifyKnownDAs(unsigned int line,
@@ -123,11 +138,13 @@ class SLPServerTestHelper {
                         const set<IPV4Address> &expected_das);
 
     static const uint16_t SLP_TEST_PORT = 5570;
+    static const uint32_t INITIAL_BOOT_TIME = 12345;
     static const char SERVER_IP[];
     static const char SLP_MULTICAST_IP[];
 
   private:
     ola::MockClock m_clock;
+    ola::TimeStamp m_server_start_time;
     ola::io::SelectServer m_ss;
     MockUDPSocket *m_udp_socket;
     ola::io::IOQueue m_output;

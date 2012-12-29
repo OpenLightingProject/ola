@@ -79,20 +79,26 @@ SLPServer *SLPServerTestHelper::CreateNewServer(bool enable_da,
   // This also ensures that we respect the values passed in.
   options.config_reg_active_min = 0;
   options.config_reg_active_max = 1;
+  // set the boot timestamp to something we know
+  options.boot_time = INITIAL_BOOT_TIME;
   copy(scope_set.begin(), scope_set.end(),
        std::inserter(options.scopes, options.scopes.end()));
   options.slp_port = SLP_TEST_PORT;
+  m_server_start_time = *(m_ss.WakeUpTime());
   SLPServer *server = new SLPServer(&m_ss, m_udp_socket, NULL, NULL, options);
   // TODO(simon): test without the Init here
   server->Init();
   return server;
 }
 
+
 /**
- * Perform the Active DA discovery dance.
- * This assumes the timing options are using the default values.
+ * Handle the Initial active DA discovery.
+ * This assumes the timing options are using the default values and causes 9
+ * seconds to pass
  */
-void SLPServerTestHelper::HandleActiveDADiscovery(const string &scopes) {
+void SLPServerTestHelper::HandleInitialActiveDADiscovery(
+    const string &scopes) {
   ScopeSet scope_set(scopes);
   set<IPV4Address> pr_list;
   // The first request is somewhere between 0 and 3s (CONFIG_START_WAIT)
@@ -103,6 +109,31 @@ void SLPServerTestHelper::HandleActiveDADiscovery(const string &scopes) {
 
   // Then another one 2s later.
   ExpectDAServiceRequest(0, pr_list, scope_set);
+  AdvanceTime(2, 0);
+  m_udp_socket->Verify();
+
+  // And let that one time out
+  AdvanceTime(4, 0);
+  m_udp_socket->Verify();
+}
+
+/**
+ * Perform the Active DA discovery dance.
+ * This assumes the timing options are using the default values.
+ * Each call takes 7 seconds on the clock.
+ */
+void SLPServerTestHelper::HandleActiveDADiscovery(const string &scopes,
+                                                  xid_t xid) {
+  ScopeSet scope_set(scopes);
+  set<IPV4Address> pr_list;
+  // The first request is somewhere between 0 and 3s (CONFIG_START_WAIT)
+  // after we start
+  ExpectDAServiceRequest(xid, pr_list, scope_set);
+  AdvanceTime(1, 0);
+  m_udp_socket->Verify();
+
+  // Then another one 2s later.
+  ExpectDAServiceRequest(xid, pr_list, scope_set);
   AdvanceTime(2, 0);
   m_udp_socket->Verify();
 
@@ -235,14 +266,46 @@ void SLPServerTestHelper::ExpectServiceDeRegistration(
 
 
 /**
+ * Expect a DAAdvert
+ */
+void SLPServerTestHelper::ExpectDAAdvert(const IPV4SocketAddress &dest,
+                                         xid_t xid,
+                                         bool multicast,
+                                         uint16_t error_code,
+                                         uint32_t boot_timestamp,
+                                         const ScopeSet &scopes) {
+  ostringstream str;
+  str << "service:directory-agent://"
+      << IPV4Address::FromStringOrDie(SERVER_IP);
+  SLPPacketBuilder::BuildDAAdvert(&m_output_stream, xid, multicast, error_code,
+                                  boot_timestamp, str.str(), scopes);
+  m_udp_socket->AddExpectedData(&m_output, dest);
+  OLA_ASSERT_TRUE(m_output.Empty());
+}
+
+
+/**
+ * Expect a multicast DAAdvert.
+ */
+void SLPServerTestHelper::ExpectMulticastDAAdvert(xid_t xid,
+                                                  uint32_t boot_timestamp,
+                                                  const ScopeSet &scopes) {
+  IPV4SocketAddress dest(IPV4Address::FromStringOrDie(SLP_MULTICAST_IP),
+                         SLP_TEST_PORT);
+  ExpectDAAdvert(dest, xid, true, SLP_OK, boot_timestamp, scopes);
+}
+
+
+/**
  * Expect a SAAdvert
  */
 void SLPServerTestHelper::ExpectSAAdvert(const IPV4SocketAddress &dest,
                                          xid_t xid,
-                                         bool multicast,
-                                         const string &url,
                                          const ScopeSet &scopes) {
-  SLPPacketBuilder::BuildSAAdvert(&m_output_stream, xid, multicast, url,
+  ostringstream str;
+  str << "service:service-agent://"
+      << IPV4Address::FromStringOrDie(SERVER_IP);
+  SLPPacketBuilder::BuildSAAdvert(&m_output_stream, xid, false, str.str(),
                                   scopes);
   m_udp_socket->AddExpectedData(&m_output, dest);
   OLA_ASSERT_TRUE(m_output.Empty());
