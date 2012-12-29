@@ -39,6 +39,7 @@
 
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
+using ola::slp::DA_ADVERTISEMENT;
 using ola::slp::INVALID_REGISTRATION;
 using ola::slp::PARSE_ERROR;
 using ola::slp::SCOPE_NOT_SUPPORTED;
@@ -88,8 +89,14 @@ class SLPServerDATest: public CppUnit::TestFixture {
 
     MockUDPSocket m_udp_socket;
     SLPServerTestHelper m_helper;
+
+    static const char DA_SCOPES[];
+    static const char DA_SERVICE[];
 };
 
+
+const char SLPServerDATest::DA_SCOPES[] = "one,two";
+const char SLPServerDATest::DA_SERVICE[] = "service:directory-agent";
 
 CPPUNIT_TEST_SUITE_REGISTRATION(SLPServerDATest);
 
@@ -99,7 +106,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SLPServerDATest);
  */
 void SLPServerDATest::testDABeat() {
   auto_ptr<SLPServer> server;
-  ScopeSet scopes("one,two");
+  ScopeSet scopes(DA_SCOPES);
   xid_t xid = 0;
 
   // expect a DAAdvert on startup
@@ -107,10 +114,10 @@ void SLPServerDATest::testDABeat() {
     SocketVerifier verifier(&m_udp_socket);
     m_helper.ExpectMulticastDAAdvert(
         xid++, SLPServerTestHelper::INITIAL_BOOT_TIME, scopes);
-    server.reset(m_helper.CreateNewServer(true, "one,two"));
+    server.reset(m_helper.CreateNewServer(true, DA_SCOPES));
   }
 
-  m_helper.HandleInitialActiveDADiscovery("one,two");
+  m_helper.HandleInitialActiveDADiscovery(DA_SCOPES);
   m_helper.AdvanceTime(899, 0);
 
   /*
@@ -122,12 +129,12 @@ void SLPServerDATest::testDABeat() {
    *   (10800 - 908) / 906 = 10
    */
   for (unsigned int i = 0; i < 10; i++) {
-    m_helper.HandleActiveDADiscovery("one,two", xid++);
+    m_helper.HandleActiveDADiscovery(DA_SCOPES, xid++);
     m_helper.AdvanceTime(899, 0);
   }
 
   // 908 + 10 * 906 = 9968 so there is one more discovery to take place
-  m_helper.HandleActiveDADiscovery("one,two", xid++);
+  m_helper.HandleActiveDADiscovery(DA_SCOPES, xid++);
 
   // We want to move to 10799 so: 10799 - 9968 - 7 = 824s
   m_helper.AdvanceTime(824, 0);
@@ -140,6 +147,8 @@ void SLPServerDATest::testDABeat() {
         0, SLPServerTestHelper::INITIAL_BOOT_TIME, scopes);
     m_helper.AdvanceTime(1, 0);
   }
+
+  m_helper.ExpectMulticastDAAdvert(0, 0, scopes);
 }
 
 /**
@@ -147,14 +156,14 @@ void SLPServerDATest::testDABeat() {
  */
 void SLPServerDATest::testSrvRqstForDirectoryAgent() {
   auto_ptr<SLPServer> server;
-  ScopeSet scopes("one,two");
+  ScopeSet scopes(DA_SCOPES);
 
   // expect a DAAdvert on startup
   {
     SocketVerifier verifier(&m_udp_socket);
     m_helper.ExpectMulticastDAAdvert(
         0, SLPServerTestHelper::INITIAL_BOOT_TIME, scopes);
-    server.reset(m_helper.CreateNewServer(true, "one,two"));
+    server.reset(m_helper.CreateNewServer(true, DA_SCOPES));
   }
 
   IPV4SocketAddress peer = IPV4SocketAddress::FromStringOrDie(
@@ -165,29 +174,92 @@ void SLPServerDATest::testSrvRqstForDirectoryAgent() {
   {
     SocketVerifier verifier(&m_udp_socket);
     m_helper.ExpectDAAdvert(peer, xid, false, SLP_OK,
-        SLPServerTestHelper::INITIAL_BOOT_TIME, ScopeSet("one,two"));
+        SLPServerTestHelper::INITIAL_BOOT_TIME, ScopeSet(DA_SCOPES));
 
     ScopeSet scopes("one");
     PRList pr_list;
-    m_helper.InjectServiceRequest(peer, xid, false, pr_list,
-                                  "service:directory-agent", scopes);
+    m_helper.InjectServiceRequest(peer, xid, false, pr_list, DA_SERVICE,
+                                  scopes);
   }
 
   // send a multicast SrvRqst, expect a DAAdvert
   {
     SocketVerifier verifier(&m_udp_socket);
     m_helper.ExpectDAAdvert(peer, xid, false, SLP_OK,
-        SLPServerTestHelper::INITIAL_BOOT_TIME, ScopeSet("one,two"));
+        SLPServerTestHelper::INITIAL_BOOT_TIME, ScopeSet(DA_SCOPES));
 
     ScopeSet scopes("one");
     PRList pr_list;
-    m_helper.InjectServiceRequest(peer, xid, true, pr_list,
-                                  "service:directory-agent", scopes);
+    m_helper.InjectServiceRequest(peer, xid, true, pr_list, DA_SERVICE, scopes);
   }
+
+  // send a unicast SrvRqst with no scopes, this should generate a response
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.ExpectDAAdvert(peer, xid, false, SLP_OK,
+        SLPServerTestHelper::INITIAL_BOOT_TIME, ScopeSet(DA_SCOPES));
+
+    ScopeSet scopes;
+    PRList pr_list;
+    m_helper.InjectServiceRequest(peer, xid, false, pr_list, DA_SERVICE,
+                                  scopes);
+  }
+
+  // send a multicast SrvRqst with no scopes, this should generate a response
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.ExpectDAAdvert(peer, xid, false, SLP_OK,
+        SLPServerTestHelper::INITIAL_BOOT_TIME, ScopeSet(DA_SCOPES));
+
+    ScopeSet scopes;
+    PRList pr_list;
+    m_helper.InjectServiceRequest(peer, xid, true, pr_list, DA_SERVICE, scopes);
+  }
+
+  // send a multicast SrvRqst with no scopes, this should generate a response
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.ExpectError(peer, DA_ADVERTISEMENT, ++xid, SCOPE_NOT_SUPPORTED);
+
+    ScopeSet scopes("three");
+    PRList pr_list;
+    m_helper.InjectServiceRequest(peer, xid, false, pr_list, DA_SERVICE,
+                                  scopes);
+  }
+
+  // send a multicast SrvRqst with scopes that don't match, no response is
+  // expected.
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    ScopeSet scopes("three");
+    PRList pr_list;
+    m_helper.InjectServiceRequest(peer, xid, true, pr_list, DA_SERVICE, scopes);
+  }
+
+  // Try a unicast request but with the DA's IP in the PR list
+  // This shouldn't happen but check it anyway.
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    ScopeSet scopes("one");
+    PRList pr_list;
+    pr_list.insert(
+        IPV4Address::FromStringOrDie(SLPServerTestHelper::SERVER_IP));
+    m_helper.InjectServiceRequest(peer, xid, false, pr_list, DA_SERVICE,
+                                  scopes);
+  }
+
+  // Try a multicast request but with the DA's IP in the PR list
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    ScopeSet scopes("one");
+    PRList pr_list;
+    pr_list.insert(
+        IPV4Address::FromStringOrDie(SLPServerTestHelper::SERVER_IP));
+    m_helper.InjectServiceRequest(peer, xid, true, pr_list, DA_SERVICE, scopes);
+  }
+
+  m_helper.ExpectMulticastDAAdvert(0, 0, scopes);
 }
-
-
-// Test for srvrqst to service:directory-agent
 
 // test Reg
 
