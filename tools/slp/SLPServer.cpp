@@ -246,15 +246,16 @@ bool SLPServer::Init() {
 
     // setup the DA beat timer
     m_da_beat_timer = m_ss->RegisterRepeatingTimeout(
-        m_config_da_beat * 1000,
+        m_config_da_beat,
         NewCallback(this, &SLPServer::SendDABeat));
     SendDABeat();
-  } else {
-    // schedule a SrvRqst for the directory agent
-    m_active_da_discovery_timer = m_ss->RegisterSingleTimeout(
-        Random(0, m_config_start_wait),
-        NewSingleCallback(this, &SLPServer::StartActiveDADiscovery));
   }
+
+  // schedule a SrvRqst for the directory agent
+  // Even DAs need to know about other DAs, since they may also be UAs or SAs
+  m_active_da_discovery_timer = m_ss->RegisterSingleTimeout(
+      Random(0, m_config_start_wait),
+      NewSingleCallback(this, &SLPServer::StartActiveDADiscovery));
   return true;
 }
 

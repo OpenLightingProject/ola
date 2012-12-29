@@ -128,14 +128,14 @@ class SLPServer {
 
     bool m_enable_da;
     uint16_t m_slp_port;
-    uint16_t m_config_da_beat;
-    uint16_t m_config_da_find;
-    uint16_t m_config_mc_max;
-    uint16_t m_config_retry;
-    uint16_t m_config_retry_max;
-    uint16_t m_config_start_wait;
-    uint16_t m_config_reg_active_min;
-    uint16_t m_config_reg_active_max;
+    uint32_t m_config_da_beat;
+    uint32_t m_config_da_find;
+    uint32_t m_config_mc_max;
+    uint32_t m_config_retry;
+    uint32_t m_config_retry_max;
+    uint32_t m_config_start_wait;
+    uint32_t m_config_reg_active_min;
+    uint32_t m_config_reg_active_max;
 
     string m_en_lang;
     const IPV4Address m_iface_address;
