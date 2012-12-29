@@ -266,7 +266,7 @@ bool SLPPacketParser::ExtractHeader(BigEndianInputStream *input,
     return false;
   }
 
-  unsigned int packet_length = length_hi << 8 + length_lo;
+  unsigned int packet_length = (length_hi << 8) + length_lo;
   (void) packet_length;
   // There is no Size() methods for InputStreams so we can't check this.
   /*
