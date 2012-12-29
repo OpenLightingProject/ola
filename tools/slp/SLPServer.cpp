@@ -192,6 +192,12 @@ SLPServer::SLPServer(ola::io::SelectServerInterface *ss,
 
 
 SLPServer::~SLPServer() {
+  if (m_enable_da) {
+    // send a DAAdvert with a boot time of 0 to let everyone know we're going
+    // down
+    SendDAAdvert(m_multicast_endpoint, 0, 0);
+  }
+
   m_ss->RemoveTimeout(m_da_beat_timer);
   m_ss->RemoveTimeout(m_store_cleaner_timer);
   m_ss->RemoveTimeout(m_active_da_discovery_timer);
@@ -706,19 +712,21 @@ void SLPServer::MaybeSendDAAdvert(const ServiceRequestPacket *request,
     SendErrorIfUnicast(request, DA_ADVERTISEMENT, source, SCOPE_NOT_SUPPORTED);
     return;
   }
-  SendDAAdvert(source, request->xid);
+  SendDAAdvert(source, m_boot_time.Seconds(), request->xid);
 }
 
 
 /**
  * Send a DAAdvert for this server
  */
-void SLPServer::SendDAAdvert(const IPV4SocketAddress &dest, xid_t xid) {
+void SLPServer::SendDAAdvert(const IPV4SocketAddress &dest,
+                             uint32_t boot_time,
+                             xid_t xid) {
   OLA_INFO << "Sending DAAdvert to " << dest;
   std::ostringstream str;
   str << DIRECTORY_AGENT_SERVICE << "://" << m_iface_address;
-  m_udp_sender.SendDAAdvert(dest, xid, 0, m_boot_time.Seconds(),
-                            str.str(), m_configured_scopes);
+  m_udp_sender.SendDAAdvert(dest, xid, 0, boot_time, str.str(),
+                            m_configured_scopes);
 }
 
 /**
@@ -726,7 +734,7 @@ void SLPServer::SendDAAdvert(const IPV4SocketAddress &dest, xid_t xid) {
  */
 bool SLPServer::SendDABeat() {
   // unsolicited DAAdverts have a xid of 0
-  SendDAAdvert(m_multicast_endpoint, 0);
+  SendDAAdvert(m_multicast_endpoint, m_boot_time.Seconds(), 0);
   return true;
 }
 
