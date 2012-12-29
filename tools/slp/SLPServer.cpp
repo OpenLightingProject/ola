@@ -558,20 +558,17 @@ void SLPServer::HandleServiceRegistration(BigEndianInputStream *stream,
     return;
   }
 
-  if (!m_configured_scopes.Intersects(scopes)) {
+  if (!m_configured_scopes.IsSuperSet(scopes)) {
     m_udp_sender.SendServiceAck(source, srv_reg->xid, SCOPE_NOT_SUPPORTED);
     return;
   }
 
-  // TODO(simon): handle INVALID_UPDATE here
-
   ServiceEntry service(scopes, srv_reg->service_type, srv_reg->url.url(),
                        srv_reg->url.lifetime());
-  SLPStore::ReturnCode ret = m_service_store.Insert(*(m_ss->WakeUpTime()),
-                                                    service);
-  m_udp_sender.SendServiceAck(
-      source, srv_reg->xid,
-      ret == SLPStore::SCOPE_MISMATCH ? SCOPE_NOT_SUPPORTED : SLP_OK);
+  slp_error_code_t error_code = m_service_store.Insert(
+      *(m_ss->WakeUpTime()), service, srv_reg->Fresh());
+
+  m_udp_sender.SendServiceAck(source, srv_reg->xid, error_code);
 }
 
 
@@ -595,10 +592,8 @@ void SLPServer::HandleServiceDeRegister(BigEndianInputStream *stream,
 
   // lifetime can be anything for a dereg
   ServiceEntry service(scopes, srv_dereg->url.url(), 0);
-  SLPStore::ReturnCode ret = m_service_store.Remove(service);
-  m_udp_sender.SendServiceAck(
-      source, srv_dereg->xid,
-      ret == SLPStore::SCOPE_MISMATCH ? SCOPE_NOT_SUPPORTED : SLP_OK);
+  slp_error_code_t ret = m_service_store.Remove(service);
+  m_udp_sender.SendServiceAck(source, srv_dereg->xid, ret);
 }
 
 
@@ -1032,6 +1027,7 @@ uint16_t SLPServer::InternalRegisterService(const ServiceEntry &service) {
 
   CancelPendingOperations(service.url_string());
 
+  // TODO(simon): use the error from here, and maybe skip the DA part
   m_service_store.Insert(now, service);
 
   vector<DirectoryAgent> directory_agents;
@@ -1069,6 +1065,8 @@ uint16_t SLPServer::InternalDeRegisterService(const ServiceEntry &service) {
        da_iter != directory_agents.end(); ++da_iter) {
     DeRegisterWithDA(*da_iter, service);
   }
+
+  // TODO(simon): use the error from here, and maybe skip the DA part
   m_service_store.Remove(service);
   return SLP_OK;
 }

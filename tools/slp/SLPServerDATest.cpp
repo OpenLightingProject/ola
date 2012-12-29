@@ -70,6 +70,10 @@ class SLPServerDATest: public CppUnit::TestFixture {
     CPPUNIT_TEST(testSrvRqstForServiceAgent);
     CPPUNIT_TEST(testSrvRqstForLocalService);
     CPPUNIT_TEST(testLocalServiceTimeout);
+    CPPUNIT_TEST(testRegistration);
+    CPPUNIT_TEST(testDeRegistration);
+    CPPUNIT_TEST(testSrvRqstForRemoteService);
+    CPPUNIT_TEST(testRemoteServiceTimeout);
     CPPUNIT_TEST_SUITE_END();
 
     void testDABeat();
@@ -77,6 +81,10 @@ class SLPServerDATest: public CppUnit::TestFixture {
     void testSrvRqstForServiceAgent();
     void testSrvRqstForLocalService();
     void testLocalServiceTimeout();
+    void testRegistration();
+    void testDeRegistration();
+    void testSrvRqstForRemoteService();
+    void testRemoteServiceTimeout();
 
   public:
     void setUp() {
@@ -499,12 +507,270 @@ void SLPServerDATest::testLocalServiceTimeout() {
 }
 
 
-// test Reg
+/**
+ * test the SrvReg handling
+ */
+void SLPServerDATest::testRegistration() {
+  const string foo_service = "service:foo";
+  auto_ptr<SLPServer> server(m_helper.CreateDAAndHandleStartup(DA_SCOPES));
+  ScopeSet scopes(DA_SCOPES);
 
-// test reg & lookup
+  IPV4SocketAddress peer = IPV4SocketAddress::FromStringOrDie(
+      "192.168.1.1:5570");
+  xid_t xid = 10;
 
-// test remove timeout
+  // register a service, expect an Ack
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.ExpectServiceAck(peer, xid, SLP_OK);
 
-// check fresh behavior and the INVALID_UPDATE
+    ServiceEntry service("one", "service:foo://localhost", 300);
+    ScopeSet scopes("one");
+    m_helper.InjectServiceRegistration(peer, xid++, true, scopes, service);
+  }
 
-// re-reg ?
+  // Try to register the same service with a different set of scopes
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.ExpectServiceAck(peer, xid, SCOPE_NOT_SUPPORTED);
+
+    ServiceEntry service("one,two", "service:foo://localhost", 300);
+    ScopeSet scopes("one,two");
+    m_helper.InjectServiceRegistration(peer, xid++, true, scopes, service);
+  }
+
+  // same thing, but this time without the fresh flag
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.ExpectServiceAck(peer, xid, SCOPE_NOT_SUPPORTED);
+
+    ServiceEntry service("one,two", "service:foo://localhost", 300);
+    ScopeSet scopes("one,two");
+    m_helper.InjectServiceRegistration(peer, xid++, false, scopes, service);
+  }
+
+  // try a service that we don't know about, with the fresh flag unset
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.ExpectServiceAck(peer, xid, ola::slp::INVALID_UPDATE);
+
+    ServiceEntry service("one", "service:bar://localhost", 300);
+    ScopeSet scopes("one");
+    m_helper.InjectServiceRegistration(peer, xid++, false, scopes, service);
+  }
+
+  // try a lifetime of 0, should return INVALID_REG
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.ExpectServiceAck(peer, xid, ola::slp::INVALID_REGISTRATION);
+
+    ServiceEntry service("one", "service:foo://localhost", 0);
+    ScopeSet scopes("one");
+    m_helper.InjectServiceRegistration(peer, xid++, true, scopes, service);
+  }
+
+  // try a request that doesn't match the DA's scopes
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.ExpectServiceAck(peer, xid, ola::slp::SCOPE_NOT_SUPPORTED);
+
+    ServiceEntry service("one,three", "service:foo://localhost", 300);
+    ScopeSet scopes("one,three");
+    m_helper.InjectServiceRegistration(peer, xid++, true, scopes, service);
+  }
+
+  // try to re-register, with and without the fresh flag
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.ExpectServiceAck(peer, xid, SLP_OK);
+    ServiceEntry service("one", "service:foo://localhost", 300);
+    ScopeSet scopes("one");
+    m_helper.InjectServiceRegistration(peer, xid++, true, scopes, service);
+  }
+
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.ExpectServiceAck(peer, xid, SLP_OK);
+    ServiceEntry service("one", "service:foo://localhost", 300);
+    ScopeSet scopes("one");
+    m_helper.InjectServiceRegistration(peer, xid++, false, scopes, service);
+  }
+
+  m_helper.ExpectMulticastDAAdvert(0, 0, scopes);
+}
+
+
+/**
+ * test the SrvDeReg handling
+ */
+void SLPServerDATest::testDeRegistration() {
+  const string foo_service = "service:foo";
+  auto_ptr<SLPServer> server(m_helper.CreateDAAndHandleStartup(DA_SCOPES));
+  ScopeSet scopes(DA_SCOPES);
+
+  IPV4SocketAddress peer = IPV4SocketAddress::FromStringOrDie(
+      "192.168.1.1:5570");
+  ServiceEntry service("one", "service:foo://localhost", 300);
+  xid_t xid = 10;
+
+  // try to de-reg a service that isn't registered
+  // The RFC isn't clear what to return here, none of the error codes really
+  // match so we return SLP_OK.
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.ExpectServiceAck(peer, xid, SLP_OK);
+
+    m_helper.InjectServiceDeRegistration(peer, xid, scopes, service);
+  }
+
+  // register a service
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.ExpectServiceAck(peer, xid, SLP_OK);
+
+    m_helper.InjectServiceRegistration(peer, xid++, true, scopes, service);
+  }
+
+  // try to de-register the service without any scopes
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.ExpectServiceAck(peer, xid, SCOPE_NOT_SUPPORTED);
+
+    ScopeSet empty_scopes;
+    m_helper.InjectServiceDeRegistration(peer, xid++, empty_scopes, service);
+  }
+
+  // try to de-register the service with a subset of the scopes
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.ExpectServiceAck(peer, xid, SCOPE_NOT_SUPPORTED);
+
+    ScopeSet scope_subset("one");
+    m_helper.InjectServiceDeRegistration(peer, xid++, scope_subset, service);
+  }
+
+  // confirm we still reply to a SrvRqst
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    URLEntries urls;
+    urls.push_back(service.url());
+    m_helper.ExpectServiceReply(peer, xid, SLP_OK, urls);
+
+    PRList pr_list;
+    m_helper.InjectServiceRequest(peer, xid, true, pr_list, "service:foo",
+                                  scopes);
+  }
+
+  // now actually de-register the service
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.ExpectServiceAck(peer, xid, SLP_OK);
+
+    m_helper.InjectServiceDeRegistration(peer, xid++, scopes, service);
+  }
+
+  // confirm we no longer reply to a SrvRqst
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    PRList pr_list;
+    m_helper.InjectServiceRequest(peer, xid, true, pr_list, "service:foo",
+                                  scopes);
+  }
+
+  m_helper.ExpectMulticastDAAdvert(0, 0, scopes);
+}
+
+
+
+/**
+ * Confirm that we respond to SrvRqst for registered services.
+ */
+void SLPServerDATest::testSrvRqstForRemoteService() {
+  const string foo_service = "service:foo";
+  auto_ptr<SLPServer> server(m_helper.CreateDAAndHandleStartup(DA_SCOPES));
+  ScopeSet scopes(DA_SCOPES);
+
+  IPV4SocketAddress peer = IPV4SocketAddress::FromStringOrDie(
+      "192.168.1.1:5570");
+  ServiceEntry service("one", "service:foo://localhost", 300);
+  xid_t xid = 10;
+
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.ExpectServiceAck(peer, xid, SLP_OK);
+    m_helper.InjectServiceRegistration(peer, xid, true, scopes, service);
+  }
+
+  // send a unicast SrvRqst, expect a SrvRply
+  {
+    SocketVerifier verifier(&m_udp_socket);
+
+    URLEntries urls;
+    urls.push_back(service.url());
+    m_helper.ExpectServiceReply(peer, xid, SLP_OK, urls);
+
+    PRList pr_list;
+    m_helper.InjectServiceRequest(peer, xid++, false, pr_list, foo_service,
+                                  scopes);
+  }
+
+  // send a multicast SrvRqst, expect a SrvRply
+  {
+    SocketVerifier verifier(&m_udp_socket);
+
+    URLEntries urls;
+    urls.push_back(service.url());
+    m_helper.ExpectServiceReply(peer, xid, SLP_OK, urls);
+
+    PRList pr_list;
+    m_helper.InjectServiceRequest(peer, xid++, true, pr_list, foo_service,
+                                  scopes);
+  }
+
+  m_helper.ExpectMulticastDAAdvert(0, 0, scopes);
+}
+
+
+/**
+ * Check that we expire remotely-registered services correctly.
+ */
+void SLPServerDATest::testRemoteServiceTimeout() {
+  const string foo_service = "service:foo";
+  auto_ptr<SLPServer> server(m_helper.CreateDAAndHandleStartup(DA_SCOPES));
+  ScopeSet scopes(DA_SCOPES);
+
+  // now perform various SrvRqsts
+  IPV4SocketAddress peer = IPV4SocketAddress::FromStringOrDie(
+      "192.168.1.1:5570");
+  xid_t xid = 10;
+  ServiceEntry service("one", "service:foo://localhost", 10);
+
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.ExpectServiceAck(peer, xid, SLP_OK);
+    m_helper.InjectServiceRegistration(peer, xid, true, scopes, service);
+  }
+
+  // this should time the service out
+  m_helper.AdvanceTime(11, 0);
+
+  // send a unicast SrvRqst, expect an empty SrvRply
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    URLEntries urls;
+    m_helper.ExpectServiceReply(peer, xid, SLP_OK, urls);
+    PRList pr_list;
+    m_helper.InjectServiceRequest(peer, xid++, false, pr_list, foo_service,
+                                  scopes);
+  }
+
+  // send a multicast SrvRqst, expect no response
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    PRList pr_list;
+    m_helper.InjectServiceRequest(peer, xid++, true, pr_list, foo_service,
+                                  scopes);
+  }
+
+  m_helper.ExpectMulticastDAAdvert(0, 0, scopes);
+}
