@@ -319,6 +319,19 @@ void SLPPacketBuilder::BuildSAAdvert(BigEndianOutputStreamInterface *output,
 
 
 /**
+ * Build an error message. Error messages consist of the SLP Header, plus the 2
+ * byte error code. They are actually truncated SrvRply or DAAdvert messages.
+ */
+void SLPPacketBuilder::BuildError(BigEndianOutputStreamInterface *output,
+                                  slp_function_id_t function_id,
+                                  xid_t xid,
+                                  uint16_t error_code) {
+  BuildSLPHeader(output, function_id, 2, false, xid);
+  *output << static_cast<uint16_t>(error_code);
+}
+
+
+/**
  * Write a string to an OutputStreamInterface. The length of the string is
  * written in network-byte order as the first two bytes.
  */

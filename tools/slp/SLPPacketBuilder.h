@@ -89,8 +89,14 @@ class SLPPacketBuilder {
                               const string &url,
                               const ScopeSet &scopes);
 
+    static void BuildError(BigEndianOutputStreamInterface *output,
+                           slp_function_id_t function_id,
+                           xid_t xid,
+                           uint16_t error_code);
+
     static void WriteString(BigEndianOutputStreamInterface *output,
                             const string &data);
+
 
   private:
     static void BuildSLPHeader(BigEndianOutputStreamInterface *output,

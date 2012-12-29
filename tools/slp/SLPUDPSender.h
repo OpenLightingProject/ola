@@ -96,6 +96,11 @@ class SLPUDPSender {
                       const string &url,
                       const ScopeSet &scopes);
 
+    void SendError(const IPV4SocketAddress &dest,
+                   slp_function_id_t function_id,
+                   xid_t xid,
+                   uint16_t error_code);
+
   private:
     ola::network::UDPSocketInterface *m_udp_socket;
     ola::io::IOQueue m_output;

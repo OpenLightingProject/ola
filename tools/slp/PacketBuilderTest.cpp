@@ -58,6 +58,7 @@ class PacketBuilderTest: public CppUnit::TestFixture {
     CPPUNIT_TEST(testBuildDAAdvert);
     CPPUNIT_TEST(testBuildSAAdvert);
     CPPUNIT_TEST(testBuildServiceAck);
+    CPPUNIT_TEST(testBuildError);
     CPPUNIT_TEST_SUITE_END();
 
     void testBuildServiceRequest();
@@ -67,6 +68,7 @@ class PacketBuilderTest: public CppUnit::TestFixture {
     void testBuildDAAdvert();
     void testBuildSAAdvert();
     void testBuildServiceAck();
+    void testBuildError();
 
   public:
     void setUp() {
@@ -335,6 +337,40 @@ void PacketBuilderTest::testBuildServiceAck() {
     0x56, 0x78
   };
   ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
+                     output_data, data_size);
+  delete[] output_data;
+}
+
+
+/*
+ * Check that BuildError() works.
+ */
+void PacketBuilderTest::testBuildError() {
+  SLPPacketBuilder::BuildError(&output, ola::slp::SERVICE_REPLY, xid,
+                               ola::slp::LANGUAGE_NOT_SUPPORTED);
+  OLA_ASSERT_EQ(18u, ioqueue.Size());
+
+  unsigned int data_size;
+  uint8_t *output_data = WriteToBuffer(&ioqueue, &data_size);
+  uint8_t expected_data[] = {
+    2, 2, 0, 0, 18, 0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+    0, 1
+  };
+  ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
+                     output_data, data_size);
+  delete[] output_data;
+
+  // try a different function-id
+  SLPPacketBuilder::BuildError(&output, ola::slp::DA_ADVERTISEMENT, xid,
+                               ola::slp::INTERNAL_ERROR);
+  OLA_ASSERT_EQ(18u, ioqueue.Size());
+
+  output_data = WriteToBuffer(&ioqueue, &data_size);
+  uint8_t expected_data2[] = {
+    2, 8, 0, 0, 18, 0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+    0, 10
+  };
+  ASSERT_DATA_EQUALS(__LINE__, expected_data2, sizeof(expected_data2),
                      output_data, data_size);
   delete[] output_data;
 }

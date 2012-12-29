@@ -160,6 +160,18 @@ void SLPUDPSender::SendSAAdvert(const IPV4SocketAddress &dest,
 }
 
 
+void SLPUDPSender::SendError(const IPV4SocketAddress &dest,
+                             slp_function_id_t function_id,
+                             xid_t xid,
+                             uint16_t error_code) {
+  EmptyBuffer();
+  SLPPacketBuilder::BuildError(&m_output_stream, function_id, xid, error_code);
+  OLA_INFO << "Sending Error message, function-id: " << function_id
+           << ", error " << error_code;
+  Send(dest);
+}
+
+
 /**
  * Make sure the IOQueue is empty before we start building a new packet.
  */
