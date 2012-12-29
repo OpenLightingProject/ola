@@ -56,6 +56,12 @@ ScopeSet::ScopeSet(const string &scopes) {
   }
 }
 
+// Is this ScopeSet a superset of the other one
+bool ScopeSet::IsSuperSet(const ScopeSet &other) const {
+  return includes(m_scopes.begin(), m_scopes.end(),
+                  other.m_scopes.begin(), other.m_scopes.end());
+}
+
 
 // Check for intersection between two ScopeSets.
 bool ScopeSet::Intersects(const ScopeSet &other) const {

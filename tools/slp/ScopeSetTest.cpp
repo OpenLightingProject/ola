@@ -39,6 +39,7 @@ class ScopeSetTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testIntersection);
   CPPUNIT_TEST(testDifference);
   CPPUNIT_TEST(testUpdate);
+  CPPUNIT_TEST(testSuperSet);
   CPPUNIT_TEST(testStringEscaping);
   CPPUNIT_TEST_SUITE_END();
 
@@ -47,6 +48,7 @@ class ScopeSetTest: public CppUnit::TestFixture {
     void testIntersection();
     void testDifference();
     void testUpdate();
+    void testSuperSet();
     void testStringEscaping();
 
     void setUp() {
@@ -209,6 +211,27 @@ void ScopeSetTest::testUpdate() {
   OLA_ASSERT_EQ(string("four,one,three,two"), scopes1.ToString());
 }
 
+
+/**
+ * test the IsSuperSet method
+ */
+void ScopeSetTest::testSuperSet() {
+  ScopeSet scopes("one,two,three");
+  ScopeSet subset1("two,three");
+  ScopeSet subset2("one,two");
+  ScopeSet subset3("one");
+  ScopeSet non_subset1("four,five,six");
+  ScopeSet non_subset2("four");
+  ScopeSet empty_set;
+
+  OLA_ASSERT_TRUE(scopes.IsSuperSet(scopes));
+  OLA_ASSERT_TRUE(scopes.IsSuperSet(subset1));
+  OLA_ASSERT_TRUE(scopes.IsSuperSet(subset2));
+  OLA_ASSERT_TRUE(scopes.IsSuperSet(subset3));
+  OLA_ASSERT_FALSE(scopes.IsSuperSet(non_subset1));
+  OLA_ASSERT_FALSE(scopes.IsSuperSet(non_subset2));
+  OLA_ASSERT_TRUE(scopes.IsSuperSet(empty_set));
+}
 
 /**
  * Test that SLP escaping works

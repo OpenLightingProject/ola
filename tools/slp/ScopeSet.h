@@ -73,6 +73,11 @@ class ScopeSet {
     Iterator begin() const { return m_scopes.begin(); }
     Iterator end() const { return m_scopes.end(); }
 
+    // Is this ScopeSet a superset of the other one
+    // This doesn't check for proper / strict supersets. That is if the two
+    // sets are equal, IsSuperSet will return true.
+    bool IsSuperSet(const ScopeSet &other) const;
+
     // Check for intersection between two ScopeSets.
     bool Intersects(const ScopeSet &other) const;
 
