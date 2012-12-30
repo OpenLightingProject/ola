@@ -927,11 +927,16 @@ void SLPServer::CancelPendingSrvRqstAck(const PendingReplyMap::iterator &iter) {
  */
 void SLPServer::RequestServiceMulticastTimeout(
     MulicastSrvRqstOperation *op) {
-  OLA_INFO << "xid " << op->xid << " timeout";
+  OLA_INFO << "xid " << op->xid << " timeout, attempt "
+           << static_cast<unsigned int>(op->AttemptNumber());
+  bool first_attempt = op->AttemptNumber() == 1;
   op->UpdateRetryTime();
 
-  if (!op->PRListChanged() || op->PRListSize() > MAX_PR_LIST_SIZE ||
-      op->total_time() > m_config_mc_max) {
+  // make sure we always send the SrvRqst at least twice. The RFC isn't
+  // too clear about this, (6.3), but this protects against a dropped packet.
+  if ((!op->PRListChanged() && !first_attempt) ||
+      op->PRListSize() > MAX_PR_LIST_SIZE ||
+      op->total_time() >= m_config_mc_max) {
     // We're done
     PendingReplyMap::iterator iter = m_pending_replies.find(op->xid);
     if (iter == m_pending_replies.end()) {
@@ -1300,10 +1305,12 @@ void SLPServer::DASrvRqstTimeout() {
   }
 
   PendingMulticastOperation *op = m_outstanding_da_discovery.get();
+  bool first_attempt = op->AttemptNumber() == 1;
+
   op->UpdateRetryTime();
   // make sure we always send the SrvRqst at least twice. The RFC isn't
   // too clear about this, (6.3), but this protects against a dropped packet.
-  if ((!op->PRListChanged() && op->retry_time() != 2 * m_config_retry) ||
+  if ((!op->PRListChanged() && !first_attempt) ||
       op->PRListSize() > MAX_PR_LIST_SIZE ||
       op->total_time() >= m_config_mc_max) {
     // we've come to the end of the road jack
