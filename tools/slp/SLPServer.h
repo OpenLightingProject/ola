@@ -106,6 +106,8 @@ class SLPServer {
 
     bool Init();
 
+    const ScopeSet ConfiguredScopes() const { return m_configured_scopes; }
+
     // bulk load a list of Services
     void DumpStore();
     void GetDirectoryAgents(vector<DirectoryAgent> *output);
