@@ -121,7 +121,8 @@ RegistrationFileParserTester_LDADD = $(COMMON_TEST_LDADD)
 SLPServerTester_SOURCES = GenericTester.cpp SLPServerTestHelper.cpp \
                           SLPServerDATest.cpp \
                           SLPServerNetworkTest.cpp \
-                          SLPServerSATest.cpp
+                          SLPServerSATest.cpp \
+                          SLPServerUATest.cpp
 SLPServerTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 SLPServerTester_LDADD = $(COMMON_TEST_LDADD)
 
