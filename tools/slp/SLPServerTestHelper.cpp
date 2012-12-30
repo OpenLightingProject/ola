@@ -277,8 +277,25 @@ void SLPServerTestHelper::InjectError(const IPV4SocketAddress &source,
 }
 
 
+
 /**
- * Expect a SrvRqst
+ * Expect a unicast SrvRqst
+ */
+void SLPServerTestHelper::ExpectServiceRequest(
+    const IPV4SocketAddress &dest,
+    xid_t xid,
+    const string &service,
+    const ScopeSet &scopes,
+    const set<IPV4Address> &pr_list) {
+  SLPPacketBuilder::BuildServiceRequest(&m_output_stream, xid, false, pr_list,
+                                        service, scopes);
+  m_udp_socket->AddExpectedData(&m_output, dest);
+  OLA_ASSERT_TRUE(m_output.Empty());
+}
+
+
+/**
+ * Expect a multicast SrvRqst
  */
 void SLPServerTestHelper::ExpectMulticastServiceRequest(
     xid_t xid,
