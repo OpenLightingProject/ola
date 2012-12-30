@@ -56,7 +56,7 @@ void SLPUDPSender::SendServiceRequest(const IPV4SocketAddress &dest,
   SLPPacketBuilder::BuildServiceRequest(
       &m_output_stream, xid, dest.Host() == m_multicast_address, pr_list,
       service_type, scopes);
-  OLA_INFO << "Sending SrvRqst for " << service_type << ", xid " << xid;
+  OLA_INFO << "TX SrvRqst(" << dest << "), " << service_type << ", xid " << xid;
   Send(dest);
 }
 
@@ -76,7 +76,8 @@ void SLPUDPSender::SendServiceReply(const IPV4SocketAddress &dest,
                                     const URLEntries &urls) {
   EmptyBuffer();
   SLPPacketBuilder::BuildServiceReply(&m_output_stream, xid, error_code, urls);
-  OLA_INFO << "Sending SrvRply with error " << error_code;
+  OLA_INFO << "TX SrvRply(" << dest << "), xid " << xid << ", error "
+           << error_code;
   Send(dest);
 }
 
@@ -101,7 +102,8 @@ void SLPUDPSender::SendServiceRegistration(const IPV4SocketAddress &dest,
   EmptyBuffer();
   SLPPacketBuilder::BuildServiceRegistration(&m_output_stream, xid, fresh,
                                              scopes, service);
-  OLA_INFO << "Sending SrvReg with for " << service.service_type();
+  OLA_INFO << "TX SrvReg(" << dest << "), xid " << xid << ", "
+           << service.service_type();
   Send(dest);
 }
 
@@ -116,7 +118,8 @@ void SLPUDPSender::SendServiceDeRegistration(const IPV4SocketAddress &dest,
   EmptyBuffer();
   SLPPacketBuilder::BuildServiceDeRegistration(&m_output_stream, xid, scopes,
                                                service);
-  OLA_INFO << "Sending SrvDeReg with for " << service.service_type();
+  OLA_INFO << "TX SrvDeReg(" << dest << "), xid " << xid << ", "
+           << service.service_type();
   Send(dest);
 }
 
@@ -126,8 +129,8 @@ void SLPUDPSender::SendServiceAck(const IPV4SocketAddress &dest,
                                   uint16_t error_code) {
   EmptyBuffer();
   SLPPacketBuilder::BuildServiceAck(&m_output_stream, xid, error_code);
-  OLA_INFO << "Sending SrvAck to " << dest << ", xid " << xid
-           << ", error " << error_code;
+  OLA_INFO << "TX SrvAck(" << dest << "), xid " << xid << ", error "
+           << error_code;
   Send(dest);
 }
 
@@ -142,7 +145,8 @@ void SLPUDPSender::SendDAAdvert(const IPV4SocketAddress &dest,
   SLPPacketBuilder::BuildDAAdvert(
       &m_output_stream, xid, dest.Host() == m_multicast_address, error_code,
       boot_timestamp, url, scopes);
-  OLA_INFO << "Sending DAAdvert with url " << url;
+  OLA_INFO << "TX DAAdvert(" << dest << "), xid " << xid << ", error "
+           << error_code << ", url " << url;
   Send(dest);
 }
 
@@ -155,7 +159,7 @@ void SLPUDPSender::SendSAAdvert(const IPV4SocketAddress &dest,
   SLPPacketBuilder::BuildSAAdvert(
       &m_output_stream, xid, dest.Host() == m_multicast_address, url,
       scopes);
-  OLA_INFO << "Sending SAAdvert with url " << url;
+  OLA_INFO << "TX SAAdvert(" << dest << "), xid " << xid << ", url " << url;
   Send(dest);
 }
 
@@ -166,7 +170,7 @@ void SLPUDPSender::SendError(const IPV4SocketAddress &dest,
                              uint16_t error_code) {
   EmptyBuffer();
   SLPPacketBuilder::BuildError(&m_output_stream, function_id, xid, error_code);
-  OLA_INFO << "Sending Error message, function-id: " << function_id
+  OLA_INFO << "TX Error(" << dest << "), function-id: " << function_id
            << ", error " << error_code;
   Send(dest);
 }
