@@ -68,12 +68,20 @@ class SLPServerUATest: public CppUnit::TestFixture {
     CPPUNIT_TEST(testFindServiceNoDA);
     CPPUNIT_TEST(testFindServiceWithDA);
     CPPUNIT_TEST(testFindServiceDATimeout);
+    CPPUNIT_TEST(testFindServiceDAChangesScopes);
+    CPPUNIT_TEST(testFindServiceCoLocatedDA);
+    CPPUNIT_TEST(testFindServiceOnlyCoLocatedDA);
+    CPPUNIT_TEST(testFindServiceOnlyCoLocatedDANoResults);
     CPPUNIT_TEST(testPassiveDADiscovery);
     CPPUNIT_TEST_SUITE_END();
 
     void testFindServiceNoDA();
     void testFindServiceWithDA();
     void testFindServiceDATimeout();
+    void testFindServiceDAChangesScopes();
+    void testFindServiceCoLocatedDA();
+    void testFindServiceOnlyCoLocatedDA();
+    void testFindServiceOnlyCoLocatedDANoResults();
     void testPassiveDADiscovery();
 
   public:
@@ -114,7 +122,7 @@ class URLListVerifier {
   public:
     typedef ola::BaseCallback1<void, const URLEntries&> FindServiceCallback;
 
-    URLListVerifier(const URLEntries &expected_urls)
+    explicit URLListVerifier(const URLEntries &expected_urls)
         : m_callback(ola::NewCallback(this, &URLListVerifier::NewServices)),
           m_expected_urls(expected_urls),
           m_received_callback(false) {
@@ -392,6 +400,180 @@ void SLPServerUATest::testFindServiceDATimeout() {
 
 
 /**
+ * Test the case where a DA doesn't respond, and then changes it's supported
+ * scopes.
+ */
+void SLPServerUATest::testFindServiceDAChangesScopes() {
+  auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
+  m_helper.HandleInitialActiveDADiscovery("one");
+
+  xid_t xid = 1;
+  ScopeSet scopes("one,two");
+  ScopeSet new_scopes("two");
+  ScopeSet search_scopes("one");
+  set<string> search_scopes_set;
+  search_scopes_set.insert("one");
+
+  // now a 2 DAs appear, both supports scopes "one" and "two"
+  IPV4SocketAddress da1 = IPV4SocketAddress::FromStringOrDie("10.0.1.1:5570");
+  IPV4SocketAddress da2 = IPV4SocketAddress::FromStringOrDie("10.0.1.2:5570");
+  m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 1, scopes);
+  m_helper.InjectDAAdvert(da2, 0, true, SLP_OK, 1, scopes);
+
+  // now try to find a service
+  {
+    SocketVerifier socket_verifier(&m_udp_socket);
+
+    URLEntries urls;
+    urls.push_back(url1);
+    urls.push_back(url2);
+    URLListVerifier url_verifier(urls);
+
+    PRList pr_list;
+    m_helper.ExpectServiceRequest(da1, xid, FOO_SERVICE, search_scopes,
+                                  pr_list);
+    server->FindService(search_scopes_set, FOO_SERVICE,
+                        url_verifier.GetCallback());
+    OLA_ASSERT_FALSE(url_verifier.CallbackRan());
+
+    // now the DA we're using changes the scopes, this should cause us to
+    // switch over the the second DA
+    m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 1, new_scopes);
+    m_helper.ExpectServiceRequest(da2, ++xid, FOO_SERVICE, search_scopes,
+                                  pr_list);
+    m_helper.AdvanceTime(2, 0);
+
+    // now it responds
+    URLEntries da_urls;
+    da_urls.push_back(url1);
+    da_urls.push_back(url2);
+    m_helper.InjectServiceReply(da2, xid, SLP_OK, da_urls);
+  }
+}
+
+
+/**
+ * Test the case where the UA is co-located with the DA, but we still need to
+ * multicast to cover some scopes.
+ */
+void SLPServerUATest::testFindServiceCoLocatedDA() {
+  IPV4SocketAddress sa1 = IPV4SocketAddress::FromStringOrDie(
+      "192.168.0.1:5570");
+  ScopeSet scopes("one");
+
+  // expect a DAAdvert on startup
+  auto_ptr<SLPServer> server(m_helper.CreateDAAndHandleStartup("one"));
+
+  xid_t xid = 1;
+  ScopeSet multicast_search_scopes("two");
+  set<string> search_scopes_set;
+  search_scopes_set.insert("one");
+  search_scopes_set.insert("two");
+
+  // register a service
+  ServiceEntry service("one", url1.url(), url1.lifetime());
+  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(service));
+
+  // now try to find a service
+  {
+    SocketVerifier socket_verifier(&m_udp_socket);
+
+    // one service is local, the other we find using multicast
+    URLEntries urls;
+    urls.push_back(url1);
+    urls.push_back(url2);
+    URLListVerifier url_verifier(urls);
+
+    PRList pr_list;
+    m_helper.ExpectMulticastServiceRequest(xid, FOO_SERVICE,
+                                           multicast_search_scopes, pr_list);
+    server->FindService(search_scopes_set, FOO_SERVICE,
+                        url_verifier.GetCallback());
+    OLA_ASSERT_FALSE(url_verifier.CallbackRan());
+
+    // the SA responds
+    URLEntries sa1_urls;
+    sa1_urls.push_back(url2);
+    m_helper.InjectServiceReply(sa1, xid, SLP_OK, sa1_urls);
+
+    pr_list.insert(sa1.Host());
+    // the PR list changed, so we need a new xid
+    m_helper.ExpectMulticastServiceRequest(++xid, FOO_SERVICE,
+                                           multicast_search_scopes, pr_list);
+    m_helper.AdvanceTime(2, 0);  // first timeout
+
+    m_helper.AdvanceTime(4, 0);  // second timeout
+  }
+  m_helper.ExpectMulticastDAAdvert(0, 0, scopes);
+}
+
+
+/**
+ * Test the case where the UA is co-located with the DA and it covers all the
+ * scopes we're searching.
+ */
+void SLPServerUATest::testFindServiceOnlyCoLocatedDA() {
+  IPV4SocketAddress sa1 = IPV4SocketAddress::FromStringOrDie(
+      "192.168.0.1:5570");
+  ScopeSet scopes("one");
+
+  // expect a DAAdvert on startup
+  auto_ptr<SLPServer> server(m_helper.CreateDAAndHandleStartup("one"));
+
+  set<string> search_scopes_set;
+  search_scopes_set.insert("one");
+
+  // register a service
+  ServiceEntry service("one", url1.url(), url1.lifetime());
+  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(service));
+
+  // now try to find a service
+  {
+    SocketVerifier socket_verifier(&m_udp_socket);
+
+    // one service is local, the other we find using multicast
+    URLEntries urls;
+    urls.push_back(url1);
+    URLListVerifier url_verifier(urls);
+
+    server->FindService(search_scopes_set, FOO_SERVICE,
+                        url_verifier.GetCallback());
+  }
+  m_helper.ExpectMulticastDAAdvert(0, 0, scopes);
+}
+
+
+/**
+ * Test the case where the UA is co-located with the DA, it covers all the
+ * scopes we're searching and no urls are returned.
+ */
+void SLPServerUATest::testFindServiceOnlyCoLocatedDANoResults() {
+  IPV4SocketAddress sa1 = IPV4SocketAddress::FromStringOrDie(
+      "192.168.0.1:5570");
+  ScopeSet scopes("one");
+
+  // expect a DAAdvert on startup
+  auto_ptr<SLPServer> server(m_helper.CreateDAAndHandleStartup("one"));
+
+  set<string> search_scopes_set;
+  search_scopes_set.insert("one");
+
+  // now try to find a service
+  {
+    SocketVerifier socket_verifier(&m_udp_socket);
+
+    // one service is local, the other we find using multicast
+    URLEntries urls;
+    URLListVerifier url_verifier(urls);
+
+    server->FindService(search_scopes_set, FOO_SERVICE,
+                        url_verifier.GetCallback());
+  }
+  m_helper.ExpectMulticastDAAdvert(0, 0, scopes);
+}
+
+
+/**
  * Test Passive DA Discovery behaviour
  */
 void SLPServerUATest::testPassiveDADiscovery() {
@@ -422,7 +604,7 @@ void SLPServerUATest::testPassiveDADiscovery() {
   m_helper.InjectError(da3, ola::slp::DA_ADVERTISEMENT, 0, SCOPE_NOT_SUPPORTED);
   m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
 
-  //Try a DAAdvert with a different url scheme. See Appendix C.
+  // Try a DAAdvert with a different url scheme. See Appendix C.
   IPV4SocketAddress da4 = IPV4SocketAddress::FromStringOrDie("10.0.1.4:5570");
   m_helper.InjectCustomDAAdvert(da4, "service:foobar://192.168.0.4", 0, true,
                                 SLP_OK, 1, scopes);
