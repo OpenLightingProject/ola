@@ -56,7 +56,7 @@ void SLPUDPSender::SendServiceRequest(const IPV4SocketAddress &dest,
   SLPPacketBuilder::BuildServiceRequest(
       &m_output_stream, xid, dest.Host() == m_multicast_address, pr_list,
       service_type, scopes);
-  OLA_INFO << "Sending SrvRqst for " << service_type;
+  OLA_INFO << "Sending SrvRqst for " << service_type << ", xid " << xid;
   Send(dest);
 }
 
