@@ -121,6 +121,10 @@ class SLPServerTestHelper {
                      xid_t xid,
                      uint16_t error_code);
 
+    void ExpectMulticastServiceRequest(xid_t xid,
+                                       const string &service,
+                                       const ScopeSet &scopes,
+                                       const set<IPV4Address> &pr_list);
     void ExpectServiceReply(const IPV4SocketAddress &dest,
                             xid_t xid,
                             uint16_t error_code,

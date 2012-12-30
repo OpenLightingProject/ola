@@ -265,6 +265,23 @@ void SLPServerTestHelper::InjectError(const IPV4SocketAddress &source,
 
 
 /**
+ * Expect a SrvRqst
+ */
+void SLPServerTestHelper::ExpectMulticastServiceRequest(
+    xid_t xid,
+    const string &service,
+    const ScopeSet &scopes,
+    const set<IPV4Address> &pr_list) {
+  IPV4SocketAddress destination(IPV4Address::FromStringOrDie(SLP_MULTICAST_IP),
+                                SLP_TEST_PORT);
+  SLPPacketBuilder::BuildServiceRequest(&m_output_stream, xid, true, pr_list,
+                                        service, scopes);
+  m_udp_socket->AddExpectedData(&m_output, destination);
+  OLA_ASSERT_TRUE(m_output.Empty());
+}
+
+
+/**
  * Expect a SrvRply
  */
 void SLPServerTestHelper::ExpectServiceReply(const IPV4SocketAddress &dest,
@@ -284,12 +301,8 @@ void SLPServerTestHelper::ExpectDAServiceRequest(
     xid_t xid,
     const set<IPV4Address> &pr_list,
     const ScopeSet &scopes) {
-  IPV4SocketAddress destination(IPV4Address::FromStringOrDie(SLP_MULTICAST_IP),
-                                SLP_TEST_PORT);
-  SLPPacketBuilder::BuildServiceRequest(&m_output_stream, xid, true, pr_list,
-                                        "service:directory-agent", scopes);
-  m_udp_socket->AddExpectedData(&m_output, destination);
-  OLA_ASSERT_TRUE(m_output.Empty());
+  ExpectMulticastServiceRequest(xid, "service:directory-agent", scopes,
+                                pr_list);
 }
 
 
