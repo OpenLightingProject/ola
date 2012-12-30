@@ -306,7 +306,7 @@ void SLPServer::FindService(
   IncrementMethodVar(METHOD_FIND_SERVICE);
   URLEntries urls;
   ScopeSet scope_set(scopes);
-  OLA_INFO << "Received FindService for " << service_type << " : " << scope_set;
+  OLA_INFO << "FindService(" << scope_set << ", " << service_type << ")";
 
   if (m_enable_da) {
     // if we're a DA handle all those scopes first
@@ -325,6 +325,7 @@ void SLPServer::FindService(
 
   PendingSrvRqst *srv_request_state = new PendingSrvRqst(service_type,
                                                          scope_set, cb);
+  srv_request_state->urls = urls;
   FindServiceInScopes(srv_request_state, scope_set);
 }
 
@@ -628,18 +629,23 @@ void SLPServer::HandleServiceAck(BigEndianInputStream *stream,
  */
 void SLPServer::HandleDAAdvert(BigEndianInputStream *stream,
                                const IPV4SocketAddress &source) {
-  OLA_INFO << "Got DAAdvert from " << source;
   auto_ptr<const DAAdvertPacket> da_advert(
       m_packet_parser.UnpackDAAdvert(stream));
-  if (!da_advert.get())
+  if (!da_advert.get()) {
+    OLA_INFO << "Dropped DAAdvert from " << source << " due to parse error";
     return;
+  }
 
   if (da_advert->error_code) {
-    OLA_WARN << "DAAdvert from " << source << ", had error "
+    OLA_WARN << "DAAdvert(" << source << "), error "
              << da_advert->error_code << " ("
              << SLPErrorToString(da_advert->error_code) << ")";
     return;
   }
+
+  OLA_INFO << "RX DAAdvert(" << source << "), xid " << da_advert->xid
+    << ", scopes " << da_advert->scope_list << ", boot "
+    << da_advert->boot_timestamp << ", " << da_advert->url;
 
   if (m_outstanding_da_discovery.get()) {
     // active discovery in progress
@@ -863,7 +869,7 @@ void SLPServer::ReceivedDASrvReply(UnicastSrvRqstOperation *op,
  * This assumes ownership of op.
  */
 void SLPServer::RequestServiceDATimeout(UnicastSrvRqstOperation *op) {
-  OLA_INFO << "SrvRqst to " << op->da_url << " timed out"
+  OLA_INFO << "SrvRqst to " << op->da_url << " timed out";
   auto_ptr<UnicastSrvRqstOperation> op_deleter(op);
 
   PendingReplyMap::iterator iter = m_pending_replies.find(op->xid);
