@@ -32,7 +32,7 @@ namespace slp {
 PendingSrvRqst::PendingSrvRqst(
   const string &service_type,
   const ScopeSet &scopes,
-  SingleUseCallback1<void, const URLEntries&> *callback)
+  BaseCallback1<void, const URLEntries&> *callback)
     : service_type(service_type),
       callback(callback) {
     for (ScopeSet::Iterator iter = scopes.begin(); iter != scopes.end(); ++iter)

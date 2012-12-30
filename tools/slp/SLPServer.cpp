@@ -206,6 +206,7 @@ SLPServer::~SLPServer() {
     m_ss->RemoveTimeout(m_outstanding_da_discovery->timer_id);
   }
 
+  // delete any pending registration operations
   for (PendingOperationsByURL::iterator iter = m_pending_ops.begin();
        iter != m_pending_ops.end(); ++iter) {
     m_ss->RemoveTimeout(iter->second->timer_id);
@@ -301,7 +302,7 @@ void SLPServer::TriggerActiveDADiscovery() {
 void SLPServer::FindService(
     const set<string> &scopes,
     const string &service_type,
-    SingleUseCallback1<void, const URLEntries&> *cb) {
+    BaseCallback1<void, const URLEntries&> *cb) {
   IncrementMethodVar(METHOD_FIND_SERVICE);
   URLEntries urls;
   ScopeSet scope_set(scopes);

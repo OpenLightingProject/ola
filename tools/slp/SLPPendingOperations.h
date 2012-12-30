@@ -175,7 +175,7 @@ class PendingSrvRqst {
 
     PendingSrvRqst(const string &service_type,
                    const ScopeSet &scopes,
-                   SingleUseCallback1<void, const URLEntries&> *callback);
+                   BaseCallback1<void, const URLEntries&> *callback);
 
     void MarkScopeAsDone(const string &scope) {
       scope_status_map[scope] = COMPLETE;
@@ -185,7 +185,7 @@ class PendingSrvRqst {
     bool Complete() const;
 
     string service_type;  // the service we're trying to find
-    SingleUseCallback1<void, const URLEntries&> *callback;
+    BaseCallback1<void, const URLEntries&> *callback;
     URLEntries urls;
 
   private:

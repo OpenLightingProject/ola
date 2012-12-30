@@ -114,7 +114,7 @@ class SLPServer {
     // SLP API
     void FindService(const set<string> &scopes,
                      const string &service,
-                     SingleUseCallback1<void, const URLEntries&> *cb);
+                     BaseCallback1<void, const URLEntries&> *cb);
     uint16_t RegisterService(const ServiceEntry &service);
     uint16_t DeRegisterService(const ServiceEntry &service);
 
