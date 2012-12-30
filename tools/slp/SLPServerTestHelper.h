@@ -111,6 +111,13 @@ class SLPServerTestHelper {
                         uint16_t error_code,
                         uint32_t boot_timestamp,
                         const ScopeSet &scopes);
+    void InjectCustomDAAdvert(const IPV4SocketAddress &source,
+                              const string &url,
+                              xid_t xid,
+                              bool multicast,
+                              uint16_t error_code,
+                              uint32_t boot_timestamp,
+                              const ScopeSet &scopes);
     void InjectServiceRegistration(const IPV4SocketAddress &source,
                                    xid_t xid,
                                    bool fresh,

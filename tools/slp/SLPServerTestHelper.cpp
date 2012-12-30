@@ -224,8 +224,23 @@ void SLPServerTestHelper::InjectDAAdvert(const IPV4SocketAddress &source,
                                          const ScopeSet &scopes) {
   ostringstream str;
   str << "service:directory-agent://" << source.Host();
+  InjectCustomDAAdvert(source, str.str(), xid, multicast, error_code,
+      boot_timestamp, scopes);
+}
+
+
+/**
+ * Inject a custom DAAdvert
+ */
+void SLPServerTestHelper::InjectCustomDAAdvert(const IPV4SocketAddress &source,
+                                               const string &url,
+                                               xid_t xid,
+                                               bool multicast,
+                                               uint16_t error_code,
+                                               uint32_t boot_timestamp,
+                                               const ScopeSet &scopes) {
   SLPPacketBuilder::BuildDAAdvert(
-      &m_output_stream, xid, multicast, error_code, boot_timestamp, str.str(),
+      &m_output_stream, xid, multicast, error_code, boot_timestamp, url,
       scopes);
   m_udp_socket->InjectData(&m_output, source);
   OLA_ASSERT_TRUE(m_output.Empty());
