@@ -87,6 +87,7 @@ slp_error_code_t SLPStore::Remove(const ServiceEntry &service) {
     return SLP_OK;
 
   if ((*service_iter)->scopes() == service.scopes()) {
+    delete *service_iter;
     services.erase(service_iter);
     if (services.empty()) {
       delete iter->second;
@@ -251,6 +252,7 @@ void SLPStore::MaybeCleanURLList(const TimeStamp &now,
   ServiceEntryVector::iterator service_iter = service_list->services.begin();
   while (service_iter != service_list->services.end()) {
     if ((*service_iter)->url().lifetime() <= elapsed_seconds) {
+      delete *service_iter;
       service_iter = service_list->services.erase(service_iter);
     } else {
       (*service_iter)->mutable_url().set_lifetime(
