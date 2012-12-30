@@ -84,6 +84,9 @@ ssize_t MockUDPSocket::SendTo(const uint8_t *buffer,
                                    size);
   CPPUNIT_ASSERT_EQUAL(call.address, ip_address);
   CPPUNIT_ASSERT_EQUAL(call.port, port);
+  if (call.free_data)
+    delete[] call.data;
+
   m_expected_calls.pop();
   return size;
 }
