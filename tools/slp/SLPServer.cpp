@@ -863,7 +863,7 @@ void SLPServer::ReceivedDASrvReply(UnicastSrvRqstOperation *op,
  * This assumes ownership of op.
  */
 void SLPServer::RequestServiceDATimeout(UnicastSrvRqstOperation *op) {
-  OLA_INFO << "SrvRqst to " << op->da_url << " timed out";
+  OLA_INFO << "SrvRqst to " << op->da_url << " timed out"
   auto_ptr<UnicastSrvRqstOperation> op_deleter(op);
 
   PendingReplyMap::iterator iter = m_pending_replies.find(op->xid);
@@ -873,7 +873,7 @@ void SLPServer::RequestServiceDATimeout(UnicastSrvRqstOperation *op) {
   }
 
   op->UpdateRetryTime();
-  if (op->total_time() > m_config_retry_max) {
+  if (op->total_time() + op->retry_time() > m_config_retry_max) {
     // this DA is bad
     OLA_INFO << "Declaring DA " << op->da_url << " bad since total time is now "
              << op->total_time();
@@ -931,21 +931,20 @@ void SLPServer::RequestServiceMulticastTimeout(
            << static_cast<unsigned int>(op->AttemptNumber());
   bool first_attempt = op->AttemptNumber() == 1;
   op->UpdateRetryTime();
+  PendingReplyMap::iterator iter = m_pending_replies.find(op->xid);
+  if (iter == m_pending_replies.end()) {
+    OLA_WARN << "Can't find callback for xid " << op->xid << ", this is a bug!";
+    return;
+  }
 
   // make sure we always send the SrvRqst at least twice. The RFC isn't
   // too clear about this, (6.3), but this protects against a dropped packet.
   if ((!op->PRListChanged() && !first_attempt) ||
       op->PRListSize() > MAX_PR_LIST_SIZE ||
       op->total_time() >= m_config_mc_max) {
-    // We're done
-    PendingReplyMap::iterator iter = m_pending_replies.find(op->xid);
-    if (iter == m_pending_replies.end()) {
-      OLA_WARN << "Can't find callback for xid " << op->xid;
-    } else {
-      // we're responsible for cleaning up the multi-use callback
-      delete iter->second;
-      m_pending_replies.erase(iter);
-    }
+    // We're done, cleaning up the multi-use callback
+    delete iter->second;
+    m_pending_replies.erase(iter);
     for (ScopeSet::Iterator iter = op->scopes.begin(); iter != op->scopes.end();
          ++iter)
       op->parent->MarkScopeAsDone(*iter);
@@ -954,8 +953,18 @@ void SLPServer::RequestServiceMulticastTimeout(
     return;
   }
 
-  // increase the retry time & send it again
-  op->ResetPRListChanged();
+  if (op->PRListChanged()) {
+    op->ResetPRListChanged();
+    // we need a new xid now, reuse the callback though
+    SrvReplyCallback *cb = iter->second;
+    m_pending_replies.erase(iter);
+    op->xid = m_xid_allocator.Next();
+    pair<xid_t, SrvReplyCallback*> p(op->xid, cb);
+    if (!m_pending_replies.insert(p).second)
+      OLA_WARN << "Collision for xid " << op->xid
+               << ", we're probably leaking memory!";
+  }
+
   OLA_INFO << "Retry time for " << op->xid << " is now " << op->retry_time();
   op->timer_id = m_ss->RegisterSingleTimeout(
       op->retry_time(),
