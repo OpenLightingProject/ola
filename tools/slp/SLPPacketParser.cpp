@@ -96,9 +96,17 @@ const ServiceReplyPacket* SLPPacketParser::UnpackServiceReply(
   if (!ExtractValue(input, &packet->error_code, "SrvRply: Error Code"))
     return NULL;
 
+  // if the error is non-0, the packet may be truncated, see section 7 of the
+  // RFC
   uint16_t url_entry_count;
-  if (!ExtractValue(input, &url_entry_count, "SrvRply: URL Entry Count"))
-    return NULL;
+  if (!(*input >> url_entry_count)) {
+    if (packet->error_code) {
+      return packet.release();
+    } else {
+      OLA_INFO << "Packet too small to contain SrvRply: URL Entry Count";
+      return NULL;
+    }
+  }
 
   URLEntry entry;
   for (unsigned int i = 0; i < url_entry_count; i++) {
@@ -172,8 +180,16 @@ const DAAdvertPacket *SLPPacketParser::UnpackDAAdvert(
   if (!ExtractValue(input, &packet->error_code, "DAAdvert: error-code"))
     return NULL;
 
-  if (!ExtractValue(input, &packet->boot_timestamp, "DAAdvert: boot-timestamp"))
-    return NULL;
+  // if the error is non-0, the packet may be truncated, see section 7 of the
+  // RFC
+  if (!(*input >> packet->boot_timestamp)) {
+    if (packet->error_code) {
+      return packet.release();
+    } else {
+      OLA_INFO << "Packet too small to contain DAAdvert: boot_timestamp";
+      return NULL;
+    }
+  }
 
   if (!ExtractString(input, &packet->url, "DAAdvert: URL"))
     return NULL;

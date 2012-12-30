@@ -452,11 +452,35 @@ void PacketParserTest::testParseServiceReply() {
     OLA_ASSERT_NULL(m_parser.UnpackServiceReply(&stream));
   }
 
-  // missing url count
+  // A truncated error packet
+  {
+    uint8_t input_data[] = {
+      2, 2, 0, 0, 0x4b, 0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 12,  // error code
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    auto_ptr<const ola::slp::ServiceReplyPacket> packet(
+      m_parser.UnpackServiceReply(&stream));
+    OLA_ASSERT(packet.get());
+
+    // verify the contents of the packet
+    vector<URLEntry> empty_urls;
+    OLA_ASSERT_EQ(static_cast<ola::slp::xid_t>(0x1234), packet->xid);
+    OLA_ASSERT_EQ(false, packet->Overflow());
+    OLA_ASSERT_EQ(false, packet->Fresh());
+    OLA_ASSERT_EQ(false, packet->Multicast());
+    OLA_ASSERT_EQ((uint16_t) 12, packet->error_code);
+    OLA_ASSERT_EQ(string("en"), packet->language);
+    OLA_ASSERT_VECTOR_EQ(empty_urls, packet->url_entries);
+  }
+
+  // A packet with a missing url entry count, this is invalid since the error
+  // code is 0
   {
     uint8_t input_data[] = {
       2, 2, 0, 0, 0x4b, 0x40, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
-      0, 12,  // error code
+      0, 0,  // error code
     };
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
@@ -751,11 +775,33 @@ void PacketParserTest::testParseDAAdvert() {
   {
     uint8_t input_data[] = {
       2, 8, 0, 0, 0x33, 0x20, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
-      0, 0,  // error code is zeroed out if multicast
+      0, 0,  // error code
     };
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
     OLA_ASSERT_NULL(m_parser.UnpackDAAdvert(&stream));
+  }
+
+  // missing boot timestamp, but the error code is non-0. This is valid.
+  {
+    uint8_t input_data[] = {
+      2, 8, 0, 0, 0x33, 0x00, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 1,  // er
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    auto_ptr<const ola::slp::DAAdvertPacket> packet(
+      m_parser.UnpackDAAdvert(&stream));
+    OLA_ASSERT(packet.get());
+
+    // verify the contents of the packet
+    OLA_ASSERT_EQ(static_cast<ola::slp::xid_t>(0x1234), packet->xid);
+    OLA_ASSERT_EQ(false, packet->Overflow());
+    OLA_ASSERT_EQ(false, packet->Fresh());
+    OLA_ASSERT_EQ(false, packet->Multicast());
+    OLA_ASSERT_EQ(string("en"), packet->language);
+
+    OLA_ASSERT_EQ(static_cast<uint16_t>(1), packet->error_code);
   }
 
   // missing DA URL
