@@ -712,6 +712,13 @@ void SLPServerSATest::testPassiveDADiscovery() {
   m_helper.InjectDAAdvert(da2, 0, true, SLP_OK, 1, scopes);
   da_list.insert(da2.Host());
   m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
+
+  // Send a truncated DAAdvert with an error code, this shouldn't happen but
+  // just check we don't crash. As far as I can see the only way we should get
+  // DAAdverts with errors is if we unicast SrvRqsts to DAs, which we don't do
+  IPV4SocketAddress da3 = IPV4SocketAddress::FromStringOrDie("10.0.1.3:5570");
+  m_helper.InjectError(da3, ola::slp::DA_ADVERTISEMENT, 0, SCOPE_NOT_SUPPORTED);
+  m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
 }
 
 
