@@ -65,6 +65,7 @@ class SLPServerDATest: public CppUnit::TestFixture {
 
   public:
     CPPUNIT_TEST_SUITE(SLPServerDATest);
+    CPPUNIT_TEST(testConfiguredScopes);
     CPPUNIT_TEST(testDABeat);
     CPPUNIT_TEST(testSrvRqstForDirectoryAgent);
     CPPUNIT_TEST(testSrvRqstForServiceAgent);
@@ -76,6 +77,7 @@ class SLPServerDATest: public CppUnit::TestFixture {
     CPPUNIT_TEST(testRemoteServiceTimeout);
     CPPUNIT_TEST_SUITE_END();
 
+    void testConfiguredScopes();
     void testDABeat();
     void testSrvRqstForDirectoryAgent();
     void testSrvRqstForServiceAgent();
@@ -114,6 +116,39 @@ const char SLPServerDATest::DA_SCOPES[] = "one,two";
 const char SLPServerDATest::DA_SERVICE[] = "service:directory-agent";
 
 CPPUNIT_TEST_SUITE_REGISTRATION(SLPServerDATest);
+
+
+/**
+ * Test the ConfiguredScopes() method.
+ */
+void SLPServerDATest::testConfiguredScopes() {
+  {
+    ScopeSet expected_scopes("DEFAULT");
+    m_helper.ExpectMulticastDAAdvert(
+        0, SLPServerTestHelper::INITIAL_BOOT_TIME, expected_scopes);
+    auto_ptr<SLPServer> server(m_helper.CreateNewServer(true, ""));
+    OLA_ASSERT_EQ(expected_scopes, server->ConfiguredScopes());
+    m_helper.ExpectMulticastDAAdvert(0, 0, expected_scopes);
+  }
+
+  {
+    ScopeSet expected_scopes("one,two");
+    m_helper.ExpectMulticastDAAdvert(
+        0, SLPServerTestHelper::INITIAL_BOOT_TIME, expected_scopes);
+    auto_ptr<SLPServer> server(m_helper.CreateNewServer(true, "one,two"));
+    OLA_ASSERT_EQ(expected_scopes, server->ConfiguredScopes());
+    m_helper.ExpectMulticastDAAdvert(0, 0, expected_scopes);
+  }
+
+  {
+    ScopeSet expected_scopes("rdmnet");
+    m_helper.ExpectMulticastDAAdvert(
+        0, SLPServerTestHelper::INITIAL_BOOT_TIME, expected_scopes);
+    auto_ptr<SLPServer> server(m_helper.CreateNewServer(true, "rdmnet"));
+    OLA_ASSERT_EQ(expected_scopes, server->ConfiguredScopes());
+    m_helper.ExpectMulticastDAAdvert(0, 0, expected_scopes);
+  }
+}
 
 
 /**
