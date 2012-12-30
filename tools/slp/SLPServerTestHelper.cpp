@@ -188,6 +188,19 @@ void SLPServerTestHelper::InjectServiceRequest(const IPV4SocketAddress &source,
 
 
 /**
+ * Inject a SrvRepl.
+ */
+void SLPServerTestHelper::InjectServiceReply(const IPV4SocketAddress &source,
+                                             xid_t xid,
+                                             uint16_t error_code,
+                                             const URLEntries &urls) {
+  SLPPacketBuilder::BuildServiceReply(&m_output_stream, xid, error_code, urls);
+  m_udp_socket->InjectData(&m_output, source);
+  OLA_ASSERT_TRUE(m_output.Empty());
+}
+
+
+/**
  * Inject a SrvAck
  */
 void SLPServerTestHelper::InjectSrvAck(const IPV4SocketAddress &source,

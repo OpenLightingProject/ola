@@ -98,6 +98,10 @@ class SLPServerTestHelper {
                               const set<IPV4Address> &pr_list,
                               const string &service_type,
                               const ScopeSet &scopes);
+    void InjectServiceReply(const IPV4SocketAddress &source,
+                            xid_t xid,
+                            uint16_t error_code,
+                            const URLEntries &urls);
     void InjectSrvAck(const IPV4SocketAddress &source,
                       xid_t xid,
                       uint16_t error_code);
