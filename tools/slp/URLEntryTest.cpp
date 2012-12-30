@@ -78,6 +78,10 @@ void URLEntryTest::testURLEntry() {
   url4 = url1;
   OLA_ASSERT_EQ(url1, url4);
 
+  // test case sensitivity
+  URLEntry url5("SERVICE:fOo://192.168.1.1", 300);
+  OLA_ASSERT_NE(url1, url5);
+
   // check the size of this entry
   OLA_ASSERT_EQ(31u, url1.PackedSize());
 
