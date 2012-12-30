@@ -157,6 +157,12 @@ void SLPStoreTest::testInsertAndLookup() {
   m_store.Lookup(now, test_scopes, SERVICE1, &urls);
   expected_urls.push_back(service1.url());
   OLA_ASSERT_URLENTRIES_EQ(expected_urls, urls);
+
+  // confirm case-insensitive service-type matching
+  urls.clear();
+  m_store.Lookup(now, test_scopes, "SERVICE:OnE", &urls);
+  OLA_ASSERT_URLENTRIES_EQ(expected_urls, urls);
+
   urls.clear();
 
   // try the same service in different scopes
