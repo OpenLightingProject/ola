@@ -64,6 +64,7 @@ class SLPServerSATest: public CppUnit::TestFixture {
 
   public:
     CPPUNIT_TEST_SUITE(SLPServerSATest);
+    CPPUNIT_TEST(testConfiguredScopes);
     CPPUNIT_TEST(testSrvRqst);
     CPPUNIT_TEST(testInvalidRegistrations);
     CPPUNIT_TEST(testDeRegistration);
@@ -80,6 +81,7 @@ class SLPServerSATest: public CppUnit::TestFixture {
     CPPUNIT_TEST(testDADeRegistration);
     CPPUNIT_TEST_SUITE_END();
 
+    void testConfiguredScopes();
     void testSrvRqst();
     void testInvalidRegistrations();
     void testDeRegistration();
@@ -118,6 +120,30 @@ class SLPServerSATest: public CppUnit::TestFixture {
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION(SLPServerSATest);
+
+
+/**
+ * Test the ConfiguredScopes() method.
+ */
+void SLPServerSATest::testConfiguredScopes() {
+  {
+    auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, ""));
+    ScopeSet expected_scopes("DEFAULT");
+    OLA_ASSERT_EQ(expected_scopes, server->ConfiguredScopes());
+  }
+
+  {
+    auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one,two"));
+    ScopeSet expected_scopes("one,two");
+    OLA_ASSERT_EQ(expected_scopes, server->ConfiguredScopes());
+  }
+
+  {
+    auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "rdmnet"));
+    ScopeSet expected_scopes("rdmnet");
+    OLA_ASSERT_EQ(expected_scopes, server->ConfiguredScopes());
+  }
+}
 
 
 /**
