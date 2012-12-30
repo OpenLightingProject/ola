@@ -227,6 +227,15 @@ void DATrackerTest::testTracking() {
   Verify();
   OLA_ASSERT_EQ(2u, m_tracker.DACount());
 
+  // check that we run the callback if the DA's scopes change
+  const ScopeSet reduced_scopes("one");
+  const DirectoryAgent reduced_da1(reduced_scopes, URL1, da1_address.Host(),
+                                   1234);
+  ExpectDA(da1);
+  SendDAAdvert(ola::slp::SLP_OK, reduced_scopes, URL1, 1235, da1_address);
+  Verify();
+  OLA_ASSERT_EQ(2u, m_tracker.DACount());
+
   // confirm we don't run the callback if we get a DAAdvert with a smaller
   // boot_timestamp.
   SendDAAdvert(ola::slp::SLP_OK, scopes, URL2, 1, da2_address);

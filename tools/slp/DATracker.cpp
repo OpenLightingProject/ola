@@ -111,7 +111,6 @@ void DATracker::NewDAAdvert(const DAAdvertPacket &da_advert,
   }
 
   // We already knew about this one.
-  OLA_INFO << "got update from DA";
   if (da_advert.boot_timestamp < iter->second.BootTimestamp()) {
     OLA_WARN << "DA at " << da_advert.url << " used an earlier boot timestamp."
              << " Got " << da_advert.boot_timestamp << ", previously had "
@@ -122,6 +121,15 @@ void DATracker::NewDAAdvert(const DAAdvertPacket &da_advert,
              << da_advert.boot_timestamp;
     iter->second.SetBootTimestamp(da_advert.boot_timestamp);
     RunCallbacks(iter->second);
+  } else {
+    // boot time is equal, see if the scopes changed.
+    ScopeSet new_scopes(da_advert.scope_list);
+    if (iter->second.scopes() != new_scopes) {
+      OLA_INFO << "DA " << da_advert.url << " changed scopes from " <<
+        iter->second.scopes() << " to " << new_scopes;
+      iter->second.set_scopes(new_scopes);
+      RunCallbacks(iter->second);
+    }
   }
 }
 

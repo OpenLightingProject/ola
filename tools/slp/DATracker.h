@@ -63,6 +63,8 @@ class DirectoryAgent {
     virtual ~DirectoryAgent() {}
 
     ScopeSet scopes() const { return m_scopes; }
+    void set_scopes(const ScopeSet &scopes) { m_scopes = scopes; }
+
     string URL() const { return m_url; }
     IPV4Address IPAddress() const { return m_address; }
     uint32_t BootTimestamp() const { return m_boot_time; }
