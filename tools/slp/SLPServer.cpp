@@ -120,6 +120,18 @@ SLPServer::SLPServerOptions::SLPServerOptions()
 }
 
 
+
+SLPServer::UnicastOperationDeleter::~UnicastOperationDeleter() {
+  if (server && op)
+    server->CancelPendingOperations(op->service.url().url());
+}
+
+void SLPServer::UnicastOperationDeleter::Cancel() {
+  op = NULL;
+  server = NULL;
+}
+
+
 /**
  * Setup a new SLP server.
  * @param ss the SelectServer to use
@@ -1026,9 +1038,15 @@ void SLPServer::CancelPendingOperations(const string &url) {
   PendingOperationsByURL::iterator upper = m_pending_ops.upper_bound(url);
 
   for (iter = lower; iter != upper; ++iter) {
-    m_ss->RemoveTimeout(iter->second->timer_id);  // cancel the timer
-    m_pending_acks.erase(iter->second->xid);
-    delete iter->second;
+    PendingOperation *op = iter->second;
+    m_ss->RemoveTimeout(op->timer_id);  // cancel the timer
+
+    PendingAckMap::iterator ack_iter = m_pending_acks.find(op->xid);
+    if (ack_iter != m_pending_acks.end()) {
+      delete ack_iter->second;
+      m_pending_acks.erase(ack_iter);
+    }
+    delete op;
   }
   m_pending_ops.erase(lower, upper);
 }
@@ -1055,7 +1073,6 @@ uint16_t SLPServer::InternalRegisterService(const ServiceEntry &service) {
   m_da_tracker.GetDAsForScopes(service.scopes(), &directory_agents);
   for (vector<DirectoryAgent>::iterator da_iter = directory_agents.begin();
        da_iter != directory_agents.end(); ++da_iter) {
-    OLA_INFO << "registering with " << *da_iter;
     RegisterWithDA(*da_iter, service);
   }
   return SLP_OK;
@@ -1096,21 +1113,21 @@ uint16_t SLPServer::InternalDeRegisterService(const ServiceEntry &service) {
 /**
  * SrvAck callback for SrvReg and SrvDeReg requests.
  */
-void SLPServer::ReceivedAck(UnicastSrvRegOperation *op_ptr,
+void SLPServer::ReceivedAck(UnicastSrvRegOperation *op,
                             uint16_t error_code) {
   if (error_code == DA_BUSY_NOW)
     // This is the same as a failure, so let the timeout expire.
     // TODO(simon): does this count towards marking a DA as bad?
     return;
 
-  auto_ptr<UnicastSrvRegOperation> op(op_ptr);
   if (error_code)
     OLA_WARN << "xid " << op->xid << " returned " << error_code << " : "
              << SLPErrorToString(error_code);
   else
     OLA_INFO << "xid " << op->xid << " was acked";
 
-  m_ss->RemoveTimeout(op->timer_id);
+  // this deletes the timeout, and the UnicastSrvRegOperation
+  CancelPendingOperations(op->service.url().url());
 }
 
 
@@ -1118,7 +1135,7 @@ void SLPServer::ReceivedAck(UnicastSrvRegOperation *op_ptr,
  * The timeout handler for SrvReg requests.
  */
 void SLPServer::RegistrationTimeout(UnicastSrvRegOperation *op) {
-  auto_ptr<UnicastSrvRegOperation> op_deleter(op);
+  UnicastOperationDeleter op_deleter(op, this);
 
   PendingAckMap::iterator iter = m_pending_acks.find(op->xid);
   if (iter == m_pending_acks.end()) {
@@ -1161,7 +1178,7 @@ void SLPServer::RegistrationTimeout(UnicastSrvRegOperation *op) {
   }
 
   // we're going to reuse the op, so don't delete it.
-  op_deleter.release();
+  op_deleter.Cancel();
 
   // if the scopes are different, do we need a new xid?
     // TODO(simon)
@@ -1181,7 +1198,7 @@ void SLPServer::RegistrationTimeout(UnicastSrvRegOperation *op) {
  * The timeout handler for SrvDeReg requests
  */
 void SLPServer::DeRegistrationTimeout(UnicastSrvRegOperation *op) {
-  auto_ptr<UnicastSrvRegOperation> op_deleter(op);
+  UnicastOperationDeleter op_deleter(op, this);
 
   PendingAckMap::iterator iter = m_pending_acks.find(op->xid);
   if (iter == m_pending_acks.end()) {
@@ -1191,7 +1208,7 @@ void SLPServer::DeRegistrationTimeout(UnicastSrvRegOperation *op) {
 
   // ok, we need to re-try
   op->UpdateRetryTime();
-  if (op->total_time() >= m_config_retry_max) {
+  if (op->total_time() + op->retry_time() >= m_config_retry_max) {
     // this DA is bad
     OLA_INFO << "Declaring DA " << op->da_url << " bad since total time is now "
              << op->total_time();
@@ -1211,7 +1228,7 @@ void SLPServer::DeRegistrationTimeout(UnicastSrvRegOperation *op) {
   ScopeSet scopes_to_use = da.scopes().Intersection(op->service.scopes());
 
   // we're going to reuse the op, so don't delete it.
-  op_deleter.release();
+  op_deleter.Cancel();
 
   // It's not clear which scopes we should use here if the DA has changed since
   // we registered. For now we attempt to DeReg with the exact same scopes that
@@ -1240,6 +1257,8 @@ void SLPServer::RegisterWithDA(const DirectoryAgent &agent,
   op->timer_id = m_ss->RegisterSingleTimeout(
       op->retry_time(),
       NewSingleCallback(this, &SLPServer::RegistrationTimeout, op));
+  m_pending_ops.insert(
+      pair<string, PendingOperation*>(service.url().url(), op));
 
   ScopeSet scopes_to_use = agent.scopes().Intersection(service.scopes());
   m_udp_sender.SendServiceRegistration(
@@ -1265,6 +1284,8 @@ void SLPServer::DeRegisterWithDA(const DirectoryAgent &agent,
   op->timer_id = m_ss->RegisterSingleTimeout(
       op->retry_time(),
       NewSingleCallback(this, &SLPServer::DeRegistrationTimeout, op));
+  m_pending_ops.insert(
+      pair<string, PendingOperation*>(service.url().url(), op));
 
   // send message to DA
   // TODO(simon): how do we know what scopes to de-register with?

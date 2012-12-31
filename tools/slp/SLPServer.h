@@ -128,6 +128,26 @@ class SLPServer {
     typedef map<xid_t, AckCallback*> PendingAckMap;
     typedef map<xid_t, SrvReplyCallback*> PendingReplyMap;
 
+    /**
+     * A class that cleans up an operation when it goes out of scope.
+     */
+    class UnicastOperationDeleter {
+      public:
+        UnicastOperationDeleter(UnicastSrvRegOperation *op, SLPServer *server)
+          : op(op),
+            server(server) {
+        }
+
+        // Cancel the clean up
+        void Cancel();
+
+        ~UnicastOperationDeleter();
+
+      private:
+        UnicastSrvRegOperation *op;
+        SLPServer *server;
+    };
+
     bool m_enable_da;
     uint16_t m_slp_port;
     uint32_t m_config_da_beat;
@@ -163,9 +183,13 @@ class SLPServer {
     XIDAllocator m_xid_allocator;
 
     // Track pending transactions
-    PendingAckMap m_pending_acks;  // map of xid_t -> AckCallback
-    PendingOperationsByURL m_pending_ops;  // multimap url -> PendingOperation
-    PendingReplyMap m_pending_replies;  // map of xid_t -> SrvReplyCallback
+    // map of xid_t to callbacks to run when we recieve an Ack with this xid.
+    PendingAckMap m_pending_acks;
+    // multimap url -> PendingOperation for Reg / DeReg operations.
+    PendingOperationsByURL m_pending_ops;
+    // map of xid_t to callbacks to run when we receive an SrvRply with this
+    // xid.
+    PendingReplyMap m_pending_replies;
 
     // Members used to keep track of DAs
     DATracker m_da_tracker;
