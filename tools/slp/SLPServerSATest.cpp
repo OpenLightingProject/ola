@@ -77,6 +77,9 @@ class SLPServerSATest: public CppUnit::TestFixture {
     CPPUNIT_TEST(testPassiveDADiscovery);
     CPPUNIT_TEST(testActiveDiscoveryRegistration);
     CPPUNIT_TEST(testPassiveDiscoveryRegistration);
+    CPPUNIT_TEST(testDARegistrationFailure);
+    CPPUNIT_TEST(testDARegistrationTimeout);
+    CPPUNIT_TEST(testExpiryDuringRegistration);
     CPPUNIT_TEST(testDAShutdown);
     CPPUNIT_TEST(testDADeRegistration);
     CPPUNIT_TEST_SUITE_END();
@@ -94,6 +97,9 @@ class SLPServerSATest: public CppUnit::TestFixture {
     void testPassiveDADiscovery();
     void testActiveDiscoveryRegistration();
     void testPassiveDiscoveryRegistration();
+    void testDARegistrationFailure();
+    void testDARegistrationTimeout();
+    void testExpiryDuringRegistration();
     void testDAShutdown();
     void testDADeRegistration();
 
@@ -890,9 +896,9 @@ void SLPServerSATest::testPassiveDiscoveryRegistration() {
 
 
 /**
- * Confirm that we don't send SrvRev messages to DAs that have shutdown
+ * Test that we handle registration failures
  */
-void SLPServerSATest::testDAShutdown() {
+void SLPServerSATest::testDARegistrationFailure() {
   auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
   ScopeSet scopes("one");
 
@@ -922,6 +928,158 @@ void SLPServerSATest::testDAShutdown() {
     m_helper.AdvanceTime(1, 0);
   }
 
+  // And the DA responds with an error
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.InjectSrvAck(da1, 1, SCOPE_NOT_SUPPORTED);
+  }
+}
+
+
+/**
+ * Test that we handle registration timeouts
+ */
+void SLPServerSATest::testDARegistrationTimeout() {
+  auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
+  ScopeSet scopes("one");
+
+  // No DAs present
+  m_helper.HandleInitialActiveDADiscovery("one");
+
+  // register a service
+  ServiceEntry service("one", "service:foo://localhost", 300);
+  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(service));
+
+  // one seconds later, a DA appears
+  m_helper.AdvanceTime(1, 0);
+  IPV4SocketAddress da1 = IPV4SocketAddress::FromStringOrDie("10.0.1.1:5570");
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 1, scopes);
+    DAList da_list;
+    da_list.insert(da1.Host());
+    m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
+  }
+
+  // A bit later, we try register with the DA
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    ServiceEntry updated_service("one", "service:foo://localhost", 299);
+    m_helper.ExpectServiceRegistration(da1, 1, true, scopes, updated_service);
+    m_helper.AdvanceTime(1, 0);
+  }
+
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    ServiceEntry updated_service("one", "service:foo://localhost", 297);
+    m_helper.ExpectServiceRegistration(da1, 1, true, scopes, updated_service);
+    m_helper.AdvanceTime(2, 0);
+  }
+
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    ServiceEntry updated_service("one", "service:foo://localhost", 293);
+    m_helper.ExpectServiceRegistration(da1, 1, true, scopes, updated_service);
+    m_helper.AdvanceTime(4, 0);
+  }
+
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.AdvanceTime(8, 0);
+
+    // confirm the DA is now bad
+    DAList da_list;
+    m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
+  }
+}
+
+
+/**
+ * Test that we handle the case where a service expiries while we're trying to
+ * register it.
+ */
+void SLPServerSATest::testExpiryDuringRegistration() {
+  auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
+  ScopeSet scopes("one");
+
+  // No DAs present
+  m_helper.HandleInitialActiveDADiscovery("one");
+
+  // register a service
+  ServiceEntry service("one", "service:foo://localhost", 7);
+  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(service));
+
+  // one seconds later, a DA appears
+  m_helper.AdvanceTime(1, 0);
+  IPV4SocketAddress da1 = IPV4SocketAddress::FromStringOrDie("10.0.1.1:5570");
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 1, scopes);
+    DAList da_list;
+    da_list.insert(da1.Host());
+    m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
+  }
+
+  // A bit later, we try register with the DA
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    ServiceEntry updated_service("one", "service:foo://localhost", 6);
+    m_helper.ExpectServiceRegistration(da1, 1, true, scopes, updated_service);
+    m_helper.AdvanceTime(1, 0);
+  }
+
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    ServiceEntry updated_service("one", "service:foo://localhost", 4);
+    m_helper.ExpectServiceRegistration(da1, 1, true, scopes, updated_service);
+    m_helper.AdvanceTime(2, 0);
+  }
+
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.AdvanceTime(4, 0);
+
+    // confirm the DA is still ok
+    DAList da_list;
+    da_list.insert(da1.Host());
+    m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
+  }
+}
+
+
+/**
+ * Confirm that we don't send SrvRev messages to DAs that have shutdown
+ */
+void SLPServerSATest::testDAShutdown() {
+  auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
+  ScopeSet scopes("one");
+
+  // No DAs present
+  m_helper.HandleInitialActiveDADiscovery("one");
+
+  // register a service
+  ServiceEntry service("one", "service:foo://localhost", 300);
+  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(service));
+
+  // one seconds later, a DA appears
+  m_helper.AdvanceTime(1, 0);
+  IPV4SocketAddress da1 = IPV4SocketAddress::FromStringOrDie("10.0.1.1:5570");
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 1, scopes);
+    DAList da_list;
+    da_list.insert(da1.Host());
+    m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
+  }
+
+  // A bit later, we register with the DA
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    ServiceEntry updated_service("one", "service:foo://localhost", 299);
+    m_helper.ExpectServiceRegistration(da1, 1, true, scopes, updated_service);
+    m_helper.AdvanceTime(1, 0);
+  }
+
   // And the DA responds...
   {
     SocketVerifier verifier(&m_udp_socket);
@@ -932,7 +1090,7 @@ void SLPServerSATest::testDAShutdown() {
   {
     SocketVerifier verifier(&m_udp_socket);
     m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 0, scopes);
-    da_list.insert(da1.Host());
+    DAList da_list;
     m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
   }
 
