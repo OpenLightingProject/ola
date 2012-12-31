@@ -72,6 +72,7 @@ class SLPServerUATest: public CppUnit::TestFixture {
     CPPUNIT_TEST(testFindServiceCoLocatedDA);
     CPPUNIT_TEST(testFindServiceOnlyCoLocatedDA);
     CPPUNIT_TEST(testFindServiceOnlyCoLocatedDANoResults);
+    CPPUNIT_TEST(testFindServiceMultipleDAs);
     CPPUNIT_TEST(testPassiveDADiscovery);
     CPPUNIT_TEST_SUITE_END();
 
@@ -82,6 +83,7 @@ class SLPServerUATest: public CppUnit::TestFixture {
     void testFindServiceCoLocatedDA();
     void testFindServiceOnlyCoLocatedDA();
     void testFindServiceOnlyCoLocatedDANoResults();
+    void testFindServiceMultipleDAs();
     void testPassiveDADiscovery();
 
   public:
@@ -570,6 +572,76 @@ void SLPServerUATest::testFindServiceOnlyCoLocatedDANoResults() {
                         url_verifier.GetCallback());
   }
   m_helper.ExpectMulticastDAAdvert(0, 0, scopes);
+}
+
+
+/**
+ * Test finding a service with multiple DAs present.
+ */
+void SLPServerUATest::testFindServiceMultipleDAs() {
+  auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
+  m_helper.HandleInitialActiveDADiscovery("one");
+
+  ScopeSet scopes("one");
+  set<string> search_scopes;
+  search_scopes.insert("one");
+  search_scopes.insert("two");
+
+  // now a DA appears
+  IPV4SocketAddress da1 = IPV4SocketAddress::FromStringOrDie("10.0.1.1:5570");
+  ScopeSet da1_scopes("one");
+  m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 1, da1_scopes);
+
+  IPV4SocketAddress da2 = IPV4SocketAddress::FromStringOrDie("10.0.1.2:5570");
+  ScopeSet da2_scopes("two");
+  m_helper.InjectDAAdvert(da2, 0, true, SLP_OK, 1, da2_scopes);
+
+  DAList da_list;
+  da_list.insert(da1.Host());
+  da_list.insert(da2.Host());
+  m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
+
+
+  URLEntries urls;
+  urls.push_back(url1);
+  urls.push_back(url2);
+  URLListVerifier url_verifier(urls);
+
+  // now try to find a service, searching both scopes
+  {
+    SocketVerifier socket_verifier(&m_udp_socket);
+
+    PRList pr_list;
+    m_helper.ExpectServiceRequest(da1, 1, FOO_SERVICE, da1_scopes, pr_list);
+    m_helper.ExpectServiceRequest(da2, 2, FOO_SERVICE, da2_scopes, pr_list);
+    server->FindService(search_scopes, FOO_SERVICE, url_verifier.GetCallback());
+    OLA_ASSERT_FALSE(url_verifier.CallbackRan());
+  }
+
+  // now the first DA responds
+  {
+    SocketVerifier socket_verifier(&m_udp_socket);
+
+    URLEntries da_urls;
+    da_urls.push_back(url1);
+    m_helper.InjectServiceReply(da1, 1, SLP_OK, da_urls);
+    OLA_ASSERT_FALSE(url_verifier.CallbackRan());
+  }
+
+  // now the second DA responds
+  {
+    SocketVerifier socket_verifier(&m_udp_socket);
+
+    URLEntries da_urls;
+    da_urls.push_back(url2);
+    m_helper.InjectServiceReply(da2, 2, SLP_OK, da_urls);
+    OLA_ASSERT_TRUE(url_verifier.CallbackRan());
+  }
+
+  {
+    SocketVerifier socket_verifier(&m_udp_socket);
+    m_helper.AdvanceTime(2, 0);  // ensure nothing else happens
+  }
 }
 
 
