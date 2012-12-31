@@ -83,14 +83,6 @@ void SLPUDPSender::SendServiceReply(const IPV4SocketAddress &dest,
 }
 
 
-void SLPUDPSender::SendServiceReply(const IPV4SocketAddress &dest,
-                                    xid_t xid,
-                                    uint16_t error_code) {
-  URLEntries urls;
-  SendServiceReply(dest, xid, error_code, urls);
-}
-
-
 /**
  * We pass the scopes separately here since they may be a subset of what the
  * service was registered with, see Section 8.3

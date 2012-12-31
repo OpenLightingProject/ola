@@ -64,11 +64,6 @@ class SLPUDPSender {
                           uint16_t error_code,
                           const URLEntries &urls);
 
-    // A Helper method if you just want to send an error
-    void SendServiceReply(const IPV4SocketAddress &dest,
-                          xid_t xid,
-                          uint16_t error_code);
-
     void SendServiceRegistration(const IPV4SocketAddress &dest,
                                  xid_t xid,
                                  bool fresh,
