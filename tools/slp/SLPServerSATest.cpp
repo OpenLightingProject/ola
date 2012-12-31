@@ -77,6 +77,7 @@ class SLPServerSATest: public CppUnit::TestFixture {
     CPPUNIT_TEST(testPassiveDADiscovery);
     CPPUNIT_TEST(testActiveDiscoveryRegistration);
     CPPUNIT_TEST(testPassiveDiscoveryRegistration);
+    CPPUNIT_TEST(testMultipleDARegistation);
     CPPUNIT_TEST(testDARegistrationFailure);
     CPPUNIT_TEST(testDARegistrationTimeout);
     CPPUNIT_TEST(testExpiryDuringRegistration);
@@ -102,6 +103,7 @@ class SLPServerSATest: public CppUnit::TestFixture {
     void testPassiveDADiscovery();
     void testActiveDiscoveryRegistration();
     void testPassiveDiscoveryRegistration();
+    void testMultipleDARegistation();
     void testDARegistrationFailure();
     void testDARegistrationTimeout();
     void testExpiryDuringRegistration();
@@ -901,6 +903,65 @@ void SLPServerSATest::testPassiveDiscoveryRegistration() {
   {
     SocketVerifier verifier(&m_udp_socket);
     m_helper.InjectSrvAck(da1, 2, SLP_OK);
+  }
+}
+
+
+/**
+ * Check we handle registering with multiple DAs simultaneously
+ */
+void SLPServerSATest::testMultipleDARegistation() {
+  auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
+  ScopeSet scopes("one");
+  IPV4SocketAddress da1 = IPV4SocketAddress::FromStringOrDie("10.0.1.1:5570");
+  IPV4SocketAddress da2 = IPV4SocketAddress::FromStringOrDie("10.0.1.2:5570");
+
+  // No DAs present
+  m_helper.HandleInitialActiveDADiscovery("one");
+
+  // 2 DAs appear
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 1, scopes);
+    m_helper.InjectDAAdvert(da2, 0, true, SLP_OK, 1, scopes);
+    DAList da_list;
+    da_list.insert(da1.Host());
+    da_list.insert(da2.Host());
+    m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
+  }
+
+  // advance the time so the new DA reg doesn't start in the middle of the
+  // tests.
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.AdvanceTime(6, 0);
+  }
+
+  xid_t xid = 1;
+
+  // now register a service
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    ServiceEntry service("one", "service:foo://localhost", 300);
+
+    m_helper.ExpectServiceRegistration(da1, xid++, true, scopes, service);
+    m_helper.ExpectServiceRegistration(da2, xid, true, scopes, service);
+    OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(service));
+  }
+
+  // the first DA responds
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.InjectSrvAck(da1, 1, SLP_OK);
+  }
+
+  // Let the second SrvReg timeout, this also tests the destructor while a
+  // Reg operation is pending.
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    ServiceEntry service("one", "service:foo://localhost", 298);
+    m_helper.ExpectServiceRegistration(da2, xid, true, scopes, service);
+    m_helper.AdvanceTime(2, 0);
   }
 }
 
