@@ -134,8 +134,42 @@ class SLPServerSATest: public CppUnit::TestFixture {
 
     MockUDPSocket m_udp_socket;
     SLPServerTestHelper m_helper;
+
+    static const IPV4SocketAddress da1;
+    static const IPV4SocketAddress da2;
+    static const IPV4SocketAddress da3;
+    static const IPV4SocketAddress ua1;
+    static const ScopeSet SCOPE1, SCOPE2, SCOPE3, SCOPE1_2, EMPTY_SCOPES;
+    static const char FOO_SERVICE[], SA_SERVICE[], DA_SERVICE[];
+    static const char FOO_LOCALHOST_URL[], BAR_LOCALHOST_URL[];
+    static const ServiceEntry SERVICE1, SERVICE2, SERVICE1_2, SERVICE1_EXPIRED;
 };
 
+
+const IPV4SocketAddress SLPServerSATest::da1 =
+    IPV4SocketAddress::FromStringOrDie("10.0.1.1:5570");
+const IPV4SocketAddress SLPServerSATest::da2 =
+    IPV4SocketAddress::FromStringOrDie("10.0.1.2:5570");
+const IPV4SocketAddress SLPServerSATest::da3 =
+    IPV4SocketAddress::FromStringOrDie("10.0.1.3:5570");
+const IPV4SocketAddress SLPServerSATest::ua1 =
+    IPV4SocketAddress::FromStringOrDie("192.168.1.1:5570");
+const ScopeSet SLPServerSATest::SCOPE1("one");
+const ScopeSet SLPServerSATest::SCOPE2("two");
+const ScopeSet SLPServerSATest::SCOPE1_2("one,two");
+const ScopeSet SLPServerSATest::EMPTY_SCOPES("");
+const ScopeSet SLPServerSATest::SCOPE3("three");
+const char SLPServerSATest::FOO_SERVICE[] = "service:foo";
+const char SLPServerSATest::SA_SERVICE[] = "service:service-agent";
+const char SLPServerSATest::DA_SERVICE[] = "service:directory-agent";
+const char SLPServerSATest::FOO_LOCALHOST_URL[] = "service:foo://localhost";
+const char SLPServerSATest::BAR_LOCALHOST_URL[] = "service:bar://localhost";
+const ServiceEntry SLPServerSATest::SERVICE1(SCOPE1, FOO_LOCALHOST_URL, 300);
+const ServiceEntry SLPServerSATest::SERVICE2(SCOPE2, FOO_LOCALHOST_URL, 300);
+const ServiceEntry SLPServerSATest::SERVICE1_2(
+    SCOPE1_2, FOO_LOCALHOST_URL, 300);
+const ServiceEntry SLPServerSATest::SERVICE1_EXPIRED(
+    SCOPE1, FOO_LOCALHOST_URL, 0);
 
 CPPUNIT_TEST_SUITE_REGISTRATION(SLPServerSATest);
 
@@ -171,12 +205,9 @@ void SLPServerSATest::testSrvRqst() {
   auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
 
   // register a service
-  ServiceEntry service("one,two", "service:foo://localhost", 300);
-  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(service));
+  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(SERVICE1_2));
   m_helper.AdvanceTime(0, 0);
 
-  IPV4SocketAddress peer = IPV4SocketAddress::FromStringOrDie(
-      "192.168.1.1:5570");
   xid_t xid = 10;
 
   // send a multicast SrvRqst, expect a SrvRply
@@ -184,13 +215,11 @@ void SLPServerSATest::testSrvRqst() {
     SocketVerifier verifier(&m_udp_socket);
 
     URLEntries urls;
-    urls.push_back(service.url());
-    m_helper.ExpectServiceReply(peer, xid, SLP_OK, urls);
+    urls.push_back(SERVICE1_2.url());
+    m_helper.ExpectServiceReply(ua1, xid, SLP_OK, urls);
 
-    ScopeSet scopes("one");
     PRList pr_list;
-    m_helper.InjectServiceRequest(peer, xid, true, pr_list, "service:foo",
-                                  scopes);
+    m_helper.InjectServiceRequest(ua1, xid, true, pr_list, FOO_SERVICE, SCOPE1);
   }
 
   // send a unicast SrvRqst, expect a SrvRply
@@ -198,88 +227,80 @@ void SLPServerSATest::testSrvRqst() {
     SocketVerifier verifier(&m_udp_socket);
 
     URLEntries urls;
-    urls.push_back(service.url());
-    m_helper.ExpectServiceReply(peer, ++xid, SLP_OK, urls);
+    urls.push_back(SERVICE1_2.url());
+    m_helper.ExpectServiceReply(ua1, ++xid, SLP_OK, urls);
 
-    ScopeSet scopes("one");
     PRList pr_list;
-    m_helper.InjectServiceRequest(peer, xid, false, pr_list, "service:foo",
-                                  scopes);
+    m_helper.InjectServiceRequest(ua1, xid, false, pr_list, FOO_SERVICE,
+                                  SCOPE1);
   }
 
   // Try a multicast request but with the SA's IP in the PR list
   {
     SocketVerifier verifier(&m_udp_socket);
-    ScopeSet scopes("one");
     PRList pr_list;
     pr_list.insert(
         IPV4Address::FromStringOrDie(SLPServerTestHelper::SERVER_IP));
-    m_helper.InjectServiceRequest(peer, ++xid, true, pr_list, "service:foo",
-                                  scopes);
+    m_helper.InjectServiceRequest(ua1, ++xid, true, pr_list, FOO_SERVICE,
+                                  SCOPE1);
   }
 
   // test a multicast request for a scope that doesn't match the SAs scopes
   {
     SocketVerifier verifier(&m_udp_socket);
-    ScopeSet scopes("two");
     PRList pr_list;
-    m_helper.InjectServiceRequest(peer, ++xid, true, pr_list, "service:foo",
-                                  scopes);
+    m_helper.InjectServiceRequest(ua1, ++xid, true, pr_list, FOO_SERVICE,
+                                  SCOPE2);
   }
 
   // test a unicast request for a scope that doesn't match the SAs scopes
   {
     SocketVerifier verifier(&m_udp_socket);
     URLEntries urls;
-    m_helper.ExpectError(peer, SERVICE_REPLY, ++xid, SCOPE_NOT_SUPPORTED);
+    m_helper.ExpectError(ua1, SERVICE_REPLY, ++xid, SCOPE_NOT_SUPPORTED);
 
-    ScopeSet scopes("two");
     PRList pr_list;
-    m_helper.InjectServiceRequest(peer, xid, false, pr_list, "service:foo",
-                                  scopes);
+    m_helper.InjectServiceRequest(ua1, xid, false, pr_list, FOO_SERVICE,
+                                  SCOPE2);
   }
 
   // test a multicast request with no scope list
   {
     SocketVerifier verifier(&m_udp_socket);
-    ScopeSet scopes("");
     PRList pr_list;
-    m_helper.InjectServiceRequest(peer, ++xid, true, pr_list, "service:foo",
-                                  scopes);
+    m_helper.InjectServiceRequest(ua1, ++xid, true, pr_list, FOO_SERVICE,
+                                  EMPTY_SCOPES);
   }
 
   // test a unicast request with no scope list
   {
     SocketVerifier verifier(&m_udp_socket);
     URLEntries urls;
-    m_helper.ExpectError(peer, SERVICE_REPLY, ++xid, SCOPE_NOT_SUPPORTED);
+    m_helper.ExpectError(ua1, SERVICE_REPLY, ++xid, SCOPE_NOT_SUPPORTED);
 
-    ScopeSet scopes("");
     PRList pr_list;
-    m_helper.InjectServiceRequest(peer, xid, false, pr_list, "service:foo",
-                                  scopes);
+    m_helper.InjectServiceRequest(ua1, xid, false, pr_list, FOO_SERVICE,
+                                  EMPTY_SCOPES);
   }
 
   // de-register, then we should receive no response to a multicast request
   {
     SocketVerifier verifier(&m_udp_socket);
-    OLA_ASSERT_EQ((uint16_t) SLP_OK, server->DeRegisterService(service));
-    ScopeSet scopes("one");
+    OLA_ASSERT_EQ((uint16_t) SLP_OK, server->DeRegisterService(SERVICE1_2));
     PRList pr_list;
-    m_helper.InjectServiceRequest(peer, ++xid, true, pr_list, "service:foo",
-                                  scopes);
+    m_helper.InjectServiceRequest(ua1, ++xid, true, pr_list, FOO_SERVICE,
+                                  SCOPE1);
   }
 
   // a unicast request should return a SrvRply with no URL entries
   {
     SocketVerifier verifier(&m_udp_socket);
     URLEntries urls;
-    m_helper.ExpectServiceReply(peer, ++xid, SLP_OK, urls);
+    m_helper.ExpectServiceReply(ua1, ++xid, SLP_OK, urls);
 
-    ScopeSet scopes("one");
     PRList pr_list;
-    m_helper.InjectServiceRequest(peer, xid, false, pr_list, "service:foo",
-                                  scopes);
+    m_helper.InjectServiceRequest(ua1, xid, false, pr_list, FOO_SERVICE,
+                                  SCOPE1);
   }
 }
 
@@ -291,17 +312,14 @@ void SLPServerSATest::testInvalidRegistrations() {
   auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
 
   // register a service with a lifetime of 0
-  ServiceEntry bad_service("one", "service:foo://localhost", 0);
+  ServiceEntry bad_service("one", FOO_LOCALHOST_URL, 0);
   OLA_ASSERT_EQ((uint16_t) INVALID_REGISTRATION,
                 server->RegisterService(bad_service));
 
-  ServiceEntry service("one", "service:foo://localhost", 300);
-  OLA_ASSERT_EQ((uint16_t) SLP_OK,
-                server->RegisterService(service));
+  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(SERVICE1));
   // try to register the same service but with a different set of scopes
-  ServiceEntry service2("one,two", "service:foo://localhost", 300);
   OLA_ASSERT_EQ((uint16_t) SCOPE_NOT_SUPPORTED,
-                server->RegisterService(service2));
+                server->RegisterService(SERVICE1_2));
 }
 
 
@@ -312,18 +330,14 @@ void SLPServerSATest::testDeRegistration() {
   auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
 
   // de-register a non-existent service
-  ServiceEntry missing_service("one", "service:foo://localhost", 300);
-  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->DeRegisterService(missing_service));
+  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->DeRegisterService(SERVICE1));
 
   // register a service
-  ServiceEntry service("one", "service:foo://localhost", 300);
-  OLA_ASSERT_EQ((uint16_t) SLP_OK,
-                server->RegisterService(service));
+  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(SERVICE1));
 
   // try to de-register the same service but with a different set of scopes
-  ServiceEntry service2("one,two", "service:foo://localhost", 300);
   OLA_ASSERT_EQ((uint16_t) SCOPE_NOT_SUPPORTED,
-                server->DeRegisterService(service2));
+                server->DeRegisterService(SERVICE1_2));
 }
 
 
@@ -333,73 +347,61 @@ void SLPServerSATest::testDeRegistration() {
 void SLPServerSATest::testSrvRqstForServiceAgent() {
   auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one,two"));
 
-  IPV4SocketAddress peer = IPV4SocketAddress::FromStringOrDie(
-      "192.168.1.1:5570");
   xid_t xid = 10;
 
   // send a unicast SrvRqst, expect a SAAdvert
   {
     SocketVerifier verifier(&m_udp_socket);
-    m_helper.ExpectSAAdvert(peer, xid, ScopeSet("one,two"));
+    m_helper.ExpectSAAdvert(ua1, xid, SCOPE1_2);
 
-    ScopeSet scopes("one");
     PRList pr_list;
-    m_helper.InjectServiceRequest(peer, xid, false, pr_list,
-                                  "service:service-agent", scopes);
+    m_helper.InjectServiceRequest(ua1, xid, false, pr_list, SA_SERVICE, SCOPE1);
   }
 
   // send a multicast SrvRqst, expect a SAAdvert
   {
     SocketVerifier verifier(&m_udp_socket);
-    m_helper.ExpectSAAdvert(peer, xid, ScopeSet("one,two"));
+    m_helper.ExpectSAAdvert(ua1, xid, SCOPE1_2);
 
-    ScopeSet scopes("one");
     PRList pr_list;
-    m_helper.InjectServiceRequest(peer, xid, true, pr_list,
-                                  "service:service-agent", scopes);
+    m_helper.InjectServiceRequest(ua1, xid, true, pr_list, SA_SERVICE, SCOPE1);
   }
 
   // send a unicast SrvRqst with no scopes, this should generate a response
   {
     SocketVerifier verifier(&m_udp_socket);
-    m_helper.ExpectSAAdvert(peer, xid, ScopeSet("one,two"));
+    m_helper.ExpectSAAdvert(ua1, xid, SCOPE1_2);
 
-    ScopeSet scopes;
     PRList pr_list;
-    m_helper.InjectServiceRequest(peer, xid, false, pr_list,
-                                  "service:service-agent", scopes);
+    m_helper.InjectServiceRequest(ua1, xid, false, pr_list, SA_SERVICE,
+                                  EMPTY_SCOPES);
   }
 
   // send a multicast SrvRqst with no scopes, this should generate a response
   {
     SocketVerifier verifier(&m_udp_socket);
-    m_helper.ExpectSAAdvert(peer, xid, ScopeSet("one,two"));
+    m_helper.ExpectSAAdvert(ua1, xid, SCOPE1_2);
 
-    ScopeSet scopes;
     PRList pr_list;
-    m_helper.InjectServiceRequest(peer, xid, true, pr_list,
-                                  "service:service-agent", scopes);
+    m_helper.InjectServiceRequest(ua1, xid, true, pr_list, SA_SERVICE,
+                                  EMPTY_SCOPES);
   }
 
   // send a unicast SrvRqst with scopes that don't match, expect an error
   {
     SocketVerifier verifier(&m_udp_socket);
     URLEntries urls;
-    m_helper.ExpectError(peer, SERVICE_REPLY, ++xid, SCOPE_NOT_SUPPORTED);
-    ScopeSet scopes("three");
+    m_helper.ExpectError(ua1, SERVICE_REPLY, ++xid, SCOPE_NOT_SUPPORTED);
     PRList pr_list;
-    m_helper.InjectServiceRequest(peer, xid, false, pr_list,
-                                  "service:service-agent", scopes);
+    m_helper.InjectServiceRequest(ua1, xid, false, pr_list, SA_SERVICE, SCOPE3);
   }
 
   // send a multicast SrvRqst with scopes that don't match, no response is
   // expected.
   {
     SocketVerifier verifier(&m_udp_socket);
-    ScopeSet scopes("three");
     PRList pr_list;
-    m_helper.InjectServiceRequest(peer, xid, true, pr_list,
-                                  "service:service-agent", scopes);
+    m_helper.InjectServiceRequest(ua1, xid, true, pr_list, SA_SERVICE, SCOPE3);
   }
 }
 
@@ -408,32 +410,24 @@ void SLPServerSATest::testSrvRqstForServiceAgent() {
  * Test that SAs don't respond to SrvRqsts of the form service:directory-agent
  */
 void SLPServerSATest::testSrvRqstForDirectoryAgent() {
-  const string da_service = "service:directory-agent";
   auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one,two"));
 
-  IPV4SocketAddress peer = IPV4SocketAddress::FromStringOrDie(
-      "192.168.1.1:5570");
-  xid_t xid = 10;
 
   // send a unicast SrvRqst, expect an empty SrvRply
   {
     SocketVerifier verifier(&m_udp_socket);
+    xid_t xid = 10;
     URLEntries urls;
-    m_helper.ExpectServiceReply(peer, xid, SLP_OK, urls);
-
-    ScopeSet scopes("one");
+    m_helper.ExpectServiceReply(ua1, xid, SLP_OK, urls);
     PRList pr_list;
-    m_helper.InjectServiceRequest(peer, xid, false, pr_list, da_service,
-                                  scopes);
+    m_helper.InjectServiceRequest(ua1, xid, false, pr_list, DA_SERVICE, SCOPE1);
   }
 
   // send a multicast SrvRqst, expect an empty SrvRply
   {
     SocketVerifier verifier(&m_udp_socket);
-
-    ScopeSet scopes("one");
     PRList pr_list;
-    m_helper.InjectServiceRequest(peer, xid, true, pr_list, da_service, scopes);
+    m_helper.InjectServiceRequest(ua1, 11, true, pr_list, DA_SERVICE, SCOPE1);
   }
 }
 
@@ -446,21 +440,18 @@ void SLPServerSATest::testExpiredService() {
   m_helper.HandleInitialActiveDADiscovery("one");
 
   // register a service
-  ServiceEntry service("one,two", "service:foo://localhost", 30);
+  ServiceEntry service("one,two", FOO_LOCALHOST_URL, 30);
   OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(service));
   m_helper.AdvanceTime(0, 0);
 
   // expire the service
   m_helper.AdvanceTime(31, 0);
 
-  // send a multicast SrvRqst, expect a SrvRply
+  // send a multicast SrvRqst, expect no response.
   {
     SocketVerifier verifier(&m_udp_socket);
-    ScopeSet scopes("one");
     PRList pr_list;
-    m_helper.InjectServiceRequest(
-        IPV4SocketAddress::FromStringOrDie("192.168.1.1:5570"),
-        10, true, pr_list, "service:foo", scopes);
+    m_helper.InjectServiceRequest(ua1, 10, true, pr_list, FOO_SERVICE, SCOPE1);
   }
 }
 
@@ -471,27 +462,23 @@ void SLPServerSATest::testExpiredService() {
 void SLPServerSATest::testMissingServiceType() {
   auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
 
-  IPV4SocketAddress peer = IPV4SocketAddress::FromStringOrDie(
-      "192.168.1.1:5570");
   xid_t xid = 10;
 
   // send a unicast SrvRqst, expect a SAAdvert
   {
     SocketVerifier verifier(&m_udp_socket);
     URLEntries urls;
-    m_helper.ExpectError(peer, SERVICE_REPLY, ++xid, PARSE_ERROR);
+    m_helper.ExpectError(ua1, SERVICE_REPLY, ++xid, PARSE_ERROR);
 
-    ScopeSet scopes("one");
     PRList pr_list;
-    m_helper.InjectServiceRequest(peer, xid, false, pr_list, "", scopes);
+    m_helper.InjectServiceRequest(ua1, xid, false, pr_list, "", SCOPE1);
   }
 
   // send a multicast SrvRqst, this is silently dropped
   {
     SocketVerifier verifier(&m_udp_socket);
-    ScopeSet scopes("one");
     PRList pr_list;
-    m_helper.InjectServiceRequest(peer, xid, true, pr_list, "", scopes);
+    m_helper.InjectServiceRequest(ua1, xid, true, pr_list, "", SCOPE1);
   }
 }
 
@@ -503,19 +490,16 @@ void SLPServerSATest::testMisconfiguredSA() {
   // this should switch to 'default'
   auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, ""));
 
-  IPV4SocketAddress peer = IPV4SocketAddress::FromStringOrDie(
-      "192.168.1.1:5570");
-  xid_t xid = 10;
 
   // send a unicast SrvRqst, expect a SAAdvert
   {
+    xid_t xid = 10;
     SocketVerifier verifier(&m_udp_socket);
-    m_helper.ExpectSAAdvert(peer, xid, ScopeSet("default"));
+    m_helper.ExpectSAAdvert(ua1, xid, ScopeSet("default"));
 
-    ScopeSet scopes("");
     PRList pr_list;
-    m_helper.InjectServiceRequest(peer, xid, false, pr_list,
-                                  "service:service-agent", scopes);
+    m_helper.InjectServiceRequest(ua1, xid, false, pr_list, SA_SERVICE,
+                                  EMPTY_SCOPES);
   }
 }
 
@@ -524,17 +508,13 @@ void SLPServerSATest::testMisconfiguredSA() {
  * Test Active DA Discovery behaviour
  */
 void SLPServerSATest::testActiveDADiscovery() {
-  ScopeSet scopes("one");
-  IPV4SocketAddress da1 = IPV4SocketAddress::FromStringOrDie("10.0.1.1:5570");
-  IPV4SocketAddress da2 = IPV4SocketAddress::FromStringOrDie("10.0.1.2:5570");
-
   // No DAs present
   {
     SocketVerifier verifier(&m_udp_socket);
     auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
     PRList pr_list;
     DAList da_list;
-    m_helper.ExpectDAServiceRequest(0, pr_list, scopes);
+    m_helper.ExpectDAServiceRequest(0, pr_list, SCOPE1);
 
     // The first request is somewhere between 0 and 3s (CONFIG_START_WAIT)
     // after we start
@@ -543,7 +523,7 @@ void SLPServerSATest::testActiveDADiscovery() {
     m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
 
     // Then another one 2s later.
-    m_helper.ExpectDAServiceRequest(0, pr_list, scopes);
+    m_helper.ExpectDAServiceRequest(0, pr_list, SCOPE1);
     m_helper.AdvanceTime(2, 0);
     m_udp_socket.Verify();
     m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
@@ -558,20 +538,20 @@ void SLPServerSATest::testActiveDADiscovery() {
     auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
     PRList pr_list;
     DAList da_list;
-    m_helper.ExpectDAServiceRequest(0, pr_list, scopes);
+    m_helper.ExpectDAServiceRequest(0, pr_list, SCOPE1);
 
     m_helper.AdvanceTime(3, 0);
     m_udp_socket.Verify();
     m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
 
-    m_helper.InjectDAAdvert(da1, 0, false, SLP_OK, 1, scopes);
+    m_helper.InjectDAAdvert(da1, 0, false, SLP_OK, 1, SCOPE1);
     da_list.insert(da1.Host());
     m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
 
     // Now we send another SrvRqst 2s later, which includes the first DA in the
     // PRList. The XID changes since the request is different.
     pr_list.insert(da1.Host());
-    m_helper.ExpectDAServiceRequest(1, pr_list, scopes);
+    m_helper.ExpectDAServiceRequest(1, pr_list, SCOPE1);
     m_helper.AdvanceTime(2, 0);
     m_udp_socket.Verify();
     m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
@@ -587,26 +567,26 @@ void SLPServerSATest::testActiveDADiscovery() {
     auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
     PRList pr_list;
     DAList da_list;
-    m_helper.ExpectDAServiceRequest(0, pr_list, scopes);
+    m_helper.ExpectDAServiceRequest(0, pr_list, SCOPE1);
 
     m_helper.AdvanceTime(3, 0);
     m_udp_socket.Verify();
     m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
 
     // Send another SrvRqst 2s later.
-    m_helper.ExpectDAServiceRequest(0, pr_list, scopes);
+    m_helper.ExpectDAServiceRequest(0, pr_list, SCOPE1);
     m_helper.AdvanceTime(2, 0);
     m_udp_socket.Verify();
     m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
 
     // Inject the DAAdvert
-    m_helper.InjectDAAdvert(da1, 0, false, SLP_OK, 1, scopes);
+    m_helper.InjectDAAdvert(da1, 0, false, SLP_OK, 1, SCOPE1);
     da_list.insert(da1.Host());
     m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
 
     // Since we got a response, we should send another SrvRqst
     pr_list.insert(da1.Host());
-    m_helper.ExpectDAServiceRequest(1, pr_list, scopes);
+    m_helper.ExpectDAServiceRequest(1, pr_list, SCOPE1);
     m_helper.AdvanceTime(4, 0);
     m_udp_socket.Verify();
 
@@ -620,17 +600,17 @@ void SLPServerSATest::testActiveDADiscovery() {
     auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
     PRList pr_list;
     DAList da_list;
-    m_helper.ExpectDAServiceRequest(0, pr_list, scopes);
+    m_helper.ExpectDAServiceRequest(0, pr_list, SCOPE1);
 
     m_helper.AdvanceTime(3, 0);
     m_udp_socket.Verify();
     m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
 
-    m_helper.InjectDAAdvert(da1, 0, false, SLP_OK, 1, scopes);
+    m_helper.InjectDAAdvert(da1, 0, false, SLP_OK, 1, SCOPE1);
     da_list.insert(da1.Host());
     m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
 
-    m_helper.InjectDAAdvert(da2, 0, false, SLP_OK, 1, scopes);
+    m_helper.InjectDAAdvert(da2, 0, false, SLP_OK, 1, SCOPE1);
     da_list.insert(da2.Host());
     m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
 
@@ -638,7 +618,7 @@ void SLPServerSATest::testActiveDADiscovery() {
     // PRList. The XID changes since the request is different.
     pr_list.insert(da1.Host());
     pr_list.insert(da2.Host());
-    m_helper.ExpectDAServiceRequest(1, pr_list, scopes);
+    m_helper.ExpectDAServiceRequest(1, pr_list, SCOPE1);
     m_helper.AdvanceTime(2, 0);
     m_udp_socket.Verify();
     m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
@@ -654,18 +634,18 @@ void SLPServerSATest::testActiveDADiscovery() {
     auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
     PRList pr_list;
     DAList da_list;
-    m_helper.ExpectDAServiceRequest(0, pr_list, scopes);
+    m_helper.ExpectDAServiceRequest(0, pr_list, SCOPE1);
 
     m_helper.AdvanceTime(3, 0);
     m_udp_socket.Verify();
     m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
 
-    m_helper.InjectDAAdvert(da1, 0, false, SCOPE_NOT_SUPPORTED, 1, scopes);
+    m_helper.InjectDAAdvert(da1, 0, false, SCOPE_NOT_SUPPORTED, 1, SCOPE1);
     m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
 
     // Now we send another SrvRqst 2s later. The bad DA should not be in the
     // list.
-    m_helper.ExpectDAServiceRequest(0, pr_list, scopes);
+    m_helper.ExpectDAServiceRequest(0, pr_list, SCOPE1);
     m_helper.AdvanceTime(2, 0);
     m_udp_socket.Verify();
     m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
@@ -680,7 +660,7 @@ void SLPServerSATest::testActiveDADiscovery() {
     auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
     PRList pr_list;
     DAList da_list;
-    m_helper.ExpectDAServiceRequest(0, pr_list, scopes);
+    m_helper.ExpectDAServiceRequest(0, pr_list, SCOPE1);
 
     m_helper.AdvanceTime(3, 0);
     m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
@@ -692,7 +672,7 @@ void SLPServerSATest::testActiveDADiscovery() {
     auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
     PRList pr_list;
     DAList da_list;
-    m_helper.ExpectDAServiceRequest(0, pr_list, scopes);
+    m_helper.ExpectDAServiceRequest(0, pr_list, SCOPE1);
 
     m_helper.AdvanceTime(3, 0);
     m_udp_socket.Verify();
@@ -700,7 +680,7 @@ void SLPServerSATest::testActiveDADiscovery() {
 
     server->TriggerActiveDADiscovery();
 
-    m_helper.ExpectDAServiceRequest(0, pr_list, scopes);
+    m_helper.ExpectDAServiceRequest(0, pr_list, SCOPE1);
     m_helper.AdvanceTime(2, 0);
     m_udp_socket.Verify();
     m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
@@ -717,13 +697,13 @@ void SLPServerSATest::testActiveDADiscovery() {
     m_helper.HandleInitialActiveDADiscovery("one");
 
     // advancing CONFIG_DA_FIND (900)s
-    m_helper.ExpectDAServiceRequest(1, pr_list, scopes);
+    m_helper.ExpectDAServiceRequest(1, pr_list, SCOPE1);
     m_helper.AdvanceTime(900, 0);
 
     m_udp_socket.Verify();
 
     // Then another one 2s later.
-    m_helper.ExpectDAServiceRequest(1, pr_list, scopes);
+    m_helper.ExpectDAServiceRequest(1, pr_list, SCOPE1);
     m_helper.AdvanceTime(2, 0);
     m_udp_socket.Verify();
 
@@ -738,29 +718,24 @@ void SLPServerSATest::testActiveDADiscovery() {
  */
 void SLPServerSATest::testPassiveDADiscovery() {
   auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
-  ScopeSet scopes("one");
 
   // No DAs present
   m_helper.HandleInitialActiveDADiscovery("one");
 
   // now inject an unsolicited DAAdvert
-  IPV4SocketAddress da1 = IPV4SocketAddress::FromStringOrDie("10.0.1.1:5570");
-  m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 1, scopes);
+  m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 1, SCOPE1);
   DAList da_list;
   da_list.insert(da1.Host());
   m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
 
   // now another DA appears..
-  IPV4SocketAddress da2 = IPV4SocketAddress::FromStringOrDie("10.0.1.2:5570");
-  scopes = ScopeSet("two");
-  m_helper.InjectDAAdvert(da2, 0, true, SLP_OK, 1, scopes);
+  m_helper.InjectDAAdvert(da2, 0, true, SLP_OK, 1, SCOPE2);
   da_list.insert(da2.Host());
   m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
 
   // Send a truncated DAAdvert with an error code, this shouldn't happen but
   // just check we don't crash. As far as I can see the only way we should get
   // DAAdverts with errors is if we unicast SrvRqsts to DAs, which we don't do
-  IPV4SocketAddress da3 = IPV4SocketAddress::FromStringOrDie("10.0.1.3:5570");
   m_helper.InjectError(da3, ola::slp::DA_ADVERTISEMENT, 0, SCOPE_NOT_SUPPORTED);
   m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
 }
@@ -772,40 +747,51 @@ void SLPServerSATest::testPassiveDADiscovery() {
  */
 void SLPServerSATest::testActiveDiscoveryRegistration() {
   auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
-  IPV4SocketAddress da1 = IPV4SocketAddress::FromStringOrDie("10.0.1.1:5570");
 
   // pre-register a service
-  ServiceEntry service("one", "service:foo://localhost", 300);
-  OLA_ASSERT_EQ((uint16_t) SLP_OK,
-                server->RegisterService(service));
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(SERVICE1));
+  }
 
   // the initial DASrvRqst is sent up to 3 seconds (CONFIG_START_WAIT) after
   // startup.
   {
     SocketVerifier verifier(&m_udp_socket);
-    ScopeSet scopes("one");
     PRList pr_list;
-    m_helper.ExpectDAServiceRequest(0, pr_list, scopes);
+    m_helper.ExpectDAServiceRequest(0, pr_list, SCOPE1);
     m_helper.AdvanceTime(3, 0);
-    m_udp_socket.Verify();
+  }
 
-    // inject the DA, this causes a SrvReg to be sent
-    m_helper.InjectDAAdvert(da1, 0, false, SLP_OK, 1, scopes);
+    // inject the DA, this causes a SrvReg to be sent soon after
+  {
+    SocketVerifier verifier(&m_udp_socket);
+
+    m_helper.InjectDAAdvert(da1, 0, false, SLP_OK, 1, SCOPE1);
     DAList da_list;
     da_list.insert(da1.Host());
     m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
+  }
 
+  {
+    SocketVerifier verifier(&m_udp_socket);
     // We'll register 0-1s after receiving the DAAdvert
-    ServiceEntry updated_service("one", "service:foo://localhost", 297);
+    ServiceEntry updated_service("one", FOO_LOCALHOST_URL, 297);
     m_helper.ExpectServiceRegistration(da1, 1, true, ScopeSet("one"),
                                        updated_service);
     m_helper.AdvanceTime(1, 0);
-    m_udp_socket.Verify();
+  }
 
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    PRList pr_list;
     pr_list.insert(da1.Host());
-    m_helper.ExpectDAServiceRequest(2, pr_list, scopes);
+    m_helper.ExpectDAServiceRequest(2, pr_list, SCOPE1);
     m_helper.AdvanceTime(1, 0);
+  }
 
+  {
+    SocketVerifier verifier(&m_udp_socket);
     // Ack the SrvReg message
     m_helper.InjectSrvAck(da1, 1, SLP_OK);
 
@@ -820,22 +806,19 @@ void SLPServerSATest::testActiveDiscoveryRegistration() {
  */
 void SLPServerSATest::testPassiveDiscoveryRegistration() {
   auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
-  ScopeSet scopes("one");
 
   // No DAs present
   m_helper.HandleInitialActiveDADiscovery("one");
 
   // register a service
-  ServiceEntry service("one", "service:foo://localhost", 300);
-  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(service));
+  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(SERVICE1));
 
   // one seconds later, a DA appears
   m_helper.AdvanceTime(1, 0);
   DAList da_list;
-  IPV4SocketAddress da1 = IPV4SocketAddress::FromStringOrDie("10.0.1.1:5570");
   {
     SocketVerifier verifier(&m_udp_socket);
-    m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 1, scopes);
+    m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 1, SCOPE1);
     da_list.insert(da1.Host());
     m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
   }
@@ -843,8 +826,9 @@ void SLPServerSATest::testPassiveDiscoveryRegistration() {
   // A bit later, we register with the DA
   {
     SocketVerifier verifier(&m_udp_socket);
-    ServiceEntry updated_service("one", "service:foo://localhost", 299);
-    m_helper.ExpectServiceRegistration(da1, 1, true, scopes, updated_service);
+    ServiceEntry updated_service("one", FOO_LOCALHOST_URL, 299);
+    m_helper.ExpectServiceRegistration(da1, 1, true, SCOPE1,
+                                       updated_service);
     m_helper.AdvanceTime(1, 0);
   }
 
@@ -855,11 +839,9 @@ void SLPServerSATest::testPassiveDiscoveryRegistration() {
   }
 
   // now another DA appears, but this one doesn't match our scopes
-  IPV4SocketAddress da2 = IPV4SocketAddress::FromStringOrDie("10.0.1.2:5570");
-  ScopeSet scopes2("two");
   {
     SocketVerifier verifier(&m_udp_socket);
-    m_helper.InjectDAAdvert(da2, 0, true, SLP_OK, 1, scopes2);
+    m_helper.InjectDAAdvert(da2, 0, true, SLP_OK, 1, SCOPE2);
     da_list.insert(da2.Host());
     m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
   }
@@ -873,7 +855,7 @@ void SLPServerSATest::testPassiveDiscoveryRegistration() {
   // now the first DA sends another DAAdvert
   {
     SocketVerifier verifier(&m_udp_socket);
-    m_helper.InjectDAAdvert(da1, 1, true, SLP_OK, 1, scopes);
+    m_helper.InjectDAAdvert(da1, 1, true, SLP_OK, 1, SCOPE1);
     m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
   }
 
@@ -886,7 +868,7 @@ void SLPServerSATest::testPassiveDiscoveryRegistration() {
   // Now the first DA reboots, this causes us to re-register
   {
     SocketVerifier verifier(&m_udp_socket);
-    m_helper.InjectDAAdvert(da1, 2, true, SLP_OK, 1000, scopes);
+    m_helper.InjectDAAdvert(da1, 2, true, SLP_OK, 1000, SCOPE1);
     m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
   }
 
@@ -894,8 +876,8 @@ void SLPServerSATest::testPassiveDiscoveryRegistration() {
   // removed from the service's lifetime.
   {
     SocketVerifier verifier(&m_udp_socket);
-    ServiceEntry updated_service("one", "service:foo://localhost", 292);
-    m_helper.ExpectServiceRegistration(da1, 2, true, scopes, updated_service);
+    ServiceEntry updated_service("one", FOO_LOCALHOST_URL, 292);
+    m_helper.ExpectServiceRegistration(da1, 2, true, SCOPE1, updated_service);
     m_helper.AdvanceTime(1, 0);
   }
 
@@ -912,9 +894,6 @@ void SLPServerSATest::testPassiveDiscoveryRegistration() {
  */
 void SLPServerSATest::testMultipleDARegistation() {
   auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
-  ScopeSet scopes("one");
-  IPV4SocketAddress da1 = IPV4SocketAddress::FromStringOrDie("10.0.1.1:5570");
-  IPV4SocketAddress da2 = IPV4SocketAddress::FromStringOrDie("10.0.1.2:5570");
 
   // No DAs present
   m_helper.HandleInitialActiveDADiscovery("one");
@@ -922,8 +901,8 @@ void SLPServerSATest::testMultipleDARegistation() {
   // 2 DAs appear
   {
     SocketVerifier verifier(&m_udp_socket);
-    m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 1, scopes);
-    m_helper.InjectDAAdvert(da2, 0, true, SLP_OK, 1, scopes);
+    m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 1, SCOPE1);
+    m_helper.InjectDAAdvert(da2, 0, true, SLP_OK, 1, SCOPE1);
     DAList da_list;
     da_list.insert(da1.Host());
     da_list.insert(da2.Host());
@@ -942,11 +921,9 @@ void SLPServerSATest::testMultipleDARegistation() {
   // now register a service
   {
     SocketVerifier verifier(&m_udp_socket);
-    ServiceEntry service("one", "service:foo://localhost", 300);
-
-    m_helper.ExpectServiceRegistration(da1, xid++, true, scopes, service);
-    m_helper.ExpectServiceRegistration(da2, xid, true, scopes, service);
-    OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(service));
+    m_helper.ExpectServiceRegistration(da1, xid++, true, SCOPE1, SERVICE1);
+    m_helper.ExpectServiceRegistration(da2, xid, true, SCOPE1, SERVICE1);
+    OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(SERVICE1));
   }
 
   // the first DA responds
@@ -959,8 +936,8 @@ void SLPServerSATest::testMultipleDARegistation() {
   // Reg operation is pending.
   {
     SocketVerifier verifier(&m_udp_socket);
-    ServiceEntry service("one", "service:foo://localhost", 298);
-    m_helper.ExpectServiceRegistration(da2, xid, true, scopes, service);
+    ServiceEntry service("one", FOO_LOCALHOST_URL, 298);
+    m_helper.ExpectServiceRegistration(da2, xid, true, SCOPE1, service);
     m_helper.AdvanceTime(2, 0);
   }
 }
@@ -971,22 +948,19 @@ void SLPServerSATest::testMultipleDARegistation() {
  */
 void SLPServerSATest::testDARegistrationFailure() {
   auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
-  ScopeSet scopes("one");
 
   // No DAs present
   m_helper.HandleInitialActiveDADiscovery("one");
 
   // register a service
-  ServiceEntry service("one", "service:foo://localhost", 300);
-  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(service));
+  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(SERVICE1));
 
   // one seconds later, a DA appears
   m_helper.AdvanceTime(1, 0);
   DAList da_list;
-  IPV4SocketAddress da1 = IPV4SocketAddress::FromStringOrDie("10.0.1.1:5570");
   {
     SocketVerifier verifier(&m_udp_socket);
-    m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 1, scopes);
+    m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 1, SCOPE1);
     da_list.insert(da1.Host());
     m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
   }
@@ -994,8 +968,8 @@ void SLPServerSATest::testDARegistrationFailure() {
   // A bit later, we register with the DA
   {
     SocketVerifier verifier(&m_udp_socket);
-    ServiceEntry updated_service("one", "service:foo://localhost", 299);
-    m_helper.ExpectServiceRegistration(da1, 1, true, scopes, updated_service);
+    ServiceEntry updated_service("one", FOO_LOCALHOST_URL, 299);
+    m_helper.ExpectServiceRegistration(da1, 1, true, SCOPE1, updated_service);
     m_helper.AdvanceTime(1, 0);
   }
 
@@ -1012,21 +986,18 @@ void SLPServerSATest::testDARegistrationFailure() {
  */
 void SLPServerSATest::testDARegistrationTimeout() {
   auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
-  ScopeSet scopes("one");
 
   // No DAs present
   m_helper.HandleInitialActiveDADiscovery("one");
 
   // register a service
-  ServiceEntry service("one", "service:foo://localhost", 300);
-  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(service));
+  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(SERVICE1));
 
   // one seconds later, a DA appears
   m_helper.AdvanceTime(1, 0);
-  IPV4SocketAddress da1 = IPV4SocketAddress::FromStringOrDie("10.0.1.1:5570");
   {
     SocketVerifier verifier(&m_udp_socket);
-    m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 1, scopes);
+    m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 1, SCOPE1);
     DAList da_list;
     da_list.insert(da1.Host());
     m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
@@ -1035,22 +1006,22 @@ void SLPServerSATest::testDARegistrationTimeout() {
   // A bit later, we try register with the DA
   {
     SocketVerifier verifier(&m_udp_socket);
-    ServiceEntry updated_service("one", "service:foo://localhost", 299);
-    m_helper.ExpectServiceRegistration(da1, 1, true, scopes, updated_service);
+    ServiceEntry updated_service("one", FOO_LOCALHOST_URL, 299);
+    m_helper.ExpectServiceRegistration(da1, 1, true, SCOPE1, updated_service);
     m_helper.AdvanceTime(1, 0);
   }
 
   {
     SocketVerifier verifier(&m_udp_socket);
-    ServiceEntry updated_service("one", "service:foo://localhost", 297);
-    m_helper.ExpectServiceRegistration(da1, 1, true, scopes, updated_service);
+    ServiceEntry updated_service("one", FOO_LOCALHOST_URL, 297);
+    m_helper.ExpectServiceRegistration(da1, 1, true, SCOPE1, updated_service);
     m_helper.AdvanceTime(2, 0);
   }
 
   {
     SocketVerifier verifier(&m_udp_socket);
-    ServiceEntry updated_service("one", "service:foo://localhost", 293);
-    m_helper.ExpectServiceRegistration(da1, 1, true, scopes, updated_service);
+    ServiceEntry updated_service("one", FOO_LOCALHOST_URL, 293);
+    m_helper.ExpectServiceRegistration(da1, 1, true, SCOPE1, updated_service);
     m_helper.AdvanceTime(4, 0);
   }
 
@@ -1071,21 +1042,19 @@ void SLPServerSATest::testDARegistrationTimeout() {
  */
 void SLPServerSATest::testExpiryDuringRegistration() {
   auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
-  ScopeSet scopes("one");
 
   // No DAs present
   m_helper.HandleInitialActiveDADiscovery("one");
 
   // register a service
-  ServiceEntry service("one", "service:foo://localhost", 7);
+  ServiceEntry service("one", FOO_LOCALHOST_URL, 7);
   OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(service));
 
   // one seconds later, a DA appears
   m_helper.AdvanceTime(1, 0);
-  IPV4SocketAddress da1 = IPV4SocketAddress::FromStringOrDie("10.0.1.1:5570");
   {
     SocketVerifier verifier(&m_udp_socket);
-    m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 1, scopes);
+    m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 1, SCOPE1);
     DAList da_list;
     da_list.insert(da1.Host());
     m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
@@ -1094,15 +1063,15 @@ void SLPServerSATest::testExpiryDuringRegistration() {
   // A bit later, we try register with the DA
   {
     SocketVerifier verifier(&m_udp_socket);
-    ServiceEntry updated_service("one", "service:foo://localhost", 6);
-    m_helper.ExpectServiceRegistration(da1, 1, true, scopes, updated_service);
+    ServiceEntry updated_service("one", FOO_LOCALHOST_URL, 6);
+    m_helper.ExpectServiceRegistration(da1, 1, true, SCOPE1, updated_service);
     m_helper.AdvanceTime(1, 0);
   }
 
   {
     SocketVerifier verifier(&m_udp_socket);
-    ServiceEntry updated_service("one", "service:foo://localhost", 4);
-    m_helper.ExpectServiceRegistration(da1, 1, true, scopes, updated_service);
+    ServiceEntry updated_service("one", FOO_LOCALHOST_URL, 4);
+    m_helper.ExpectServiceRegistration(da1, 1, true, SCOPE1, updated_service);
     m_helper.AdvanceTime(2, 0);
   }
 
@@ -1123,38 +1092,27 @@ void SLPServerSATest::testExpiryDuringRegistration() {
  */
 void SLPServerSATest::testDAShutdownDuringRegistration() {
   auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
-  ScopeSet scopes("one");
 
   // No DAs present
   m_helper.HandleInitialActiveDADiscovery("one");
 
-  // register a service
-  ServiceEntry service("one", "service:foo://localhost", 7);
-  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(service));
-
-  // one seconds later, a DA appears
-  m_helper.AdvanceTime(1, 0);
-  IPV4SocketAddress da1 = IPV4SocketAddress::FromStringOrDie("10.0.1.1:5570");
+  // A DA appears
   {
     SocketVerifier verifier(&m_udp_socket);
-    m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 1, scopes);
-    DAList da_list;
-    da_list.insert(da1.Host());
-    m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
+    m_helper.InjectDAAdvert(da1, 10, true, SLP_OK, 1, SCOPE1);
   }
 
-  // A bit later, we try register with the DA
+  // register a service
   {
     SocketVerifier verifier(&m_udp_socket);
-    ServiceEntry updated_service("one", "service:foo://localhost", 6);
-    m_helper.ExpectServiceRegistration(da1, 1, true, scopes, updated_service);
-    m_helper.AdvanceTime(1, 0);
+    m_helper.ExpectServiceRegistration(da1, 1, true, SCOPE1, SERVICE1);
+    OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(SERVICE1));
   }
 
   // the DA sends a shutdown message
   {
     SocketVerifier verifier(&m_udp_socket);
-    m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 0, scopes);
+    m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 0, SCOPE1);
     DAList da_list;
     m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
   }
@@ -1172,21 +1130,21 @@ void SLPServerSATest::testDAShutdownDuringRegistration() {
  */
 void SLPServerSATest::testDAShutdown() {
   auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
-  ScopeSet scopes("one");
 
   // No DAs present
   m_helper.HandleInitialActiveDADiscovery("one");
 
   // register a service
-  ServiceEntry service("one", "service:foo://localhost", 300);
-  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(service));
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(SERVICE1));
+  }
 
   // one seconds later, a DA appears
   m_helper.AdvanceTime(1, 0);
-  IPV4SocketAddress da1 = IPV4SocketAddress::FromStringOrDie("10.0.1.1:5570");
   {
     SocketVerifier verifier(&m_udp_socket);
-    m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 1, scopes);
+    m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 1, SCOPE1);
     DAList da_list;
     da_list.insert(da1.Host());
     m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
@@ -1195,8 +1153,8 @@ void SLPServerSATest::testDAShutdown() {
   // A bit later, we register with the DA
   {
     SocketVerifier verifier(&m_udp_socket);
-    ServiceEntry updated_service("one", "service:foo://localhost", 299);
-    m_helper.ExpectServiceRegistration(da1, 1, true, scopes, updated_service);
+    ServiceEntry updated_service("one", FOO_LOCALHOST_URL, 299);
+    m_helper.ExpectServiceRegistration(da1, 1, true, SCOPE1, updated_service);
     m_helper.AdvanceTime(1, 0);
   }
 
@@ -1209,7 +1167,7 @@ void SLPServerSATest::testDAShutdown() {
   // now the DA tells us it's shutting down
   {
     SocketVerifier verifier(&m_udp_socket);
-    m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 0, scopes);
+    m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 0, SCOPE1);
     DAList da_list;
     m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
   }
@@ -1217,8 +1175,7 @@ void SLPServerSATest::testDAShutdown() {
   // register another service, this shouldn't cause any messages to the DA
   {
     SocketVerifier verifier(&m_udp_socket);
-    ServiceEntry service("one", "service:bar://localhost", 300);
-    OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(service));
+    OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(SERVICE1));
     m_helper.AdvanceTime(4, 0);
   }
 }
@@ -1229,49 +1186,52 @@ void SLPServerSATest::testDAShutdown() {
  */
 void SLPServerSATest::testDADeRegistration() {
   auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
-  ScopeSet scopes("one");
   xid_t xid = 0;
 
   // No DAs present
   m_helper.HandleInitialActiveDADiscovery("one");
 
   // A DA appears
-  IPV4SocketAddress da1 = IPV4SocketAddress::FromStringOrDie("10.0.1.1:5570");
-  m_helper.InjectDAAdvert(da1, xid++, true, SLP_OK, 1, scopes);
-  m_udp_socket.Verify();
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.InjectDAAdvert(da1, xid++, true, SLP_OK, 1, SCOPE1);
+  }
 
   // Register a service
-  ServiceEntry service("one", "service:foo://localhost", 300);
-  m_helper.RegisterWithDA(server.get(), da1, service, xid++);
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.RegisterWithDA(server.get(), da1, SERVICE1, xid++);
+  }
 
-  ServiceEntry dereg_service("one", "service:foo://localhost", 0);
   // now de-register the service
   {
     SocketVerifier verifier(&m_udp_socket);
-    m_helper.ExpectServiceDeRegistration(da1, xid, scopes, dereg_service);
-    OLA_ASSERT_EQ((uint16_t) SLP_OK, server->DeRegisterService(dereg_service));
+    m_helper.ExpectServiceDeRegistration(da1, xid, SCOPE1, SERVICE1_EXPIRED);
+    OLA_ASSERT_EQ((uint16_t) SLP_OK,
+                  server->DeRegisterService(SERVICE1_EXPIRED));
     m_helper.InjectSrvAck(da1, xid++, SLP_OK);
   }
 
   // register the service again
-  m_helper.RegisterWithDA(server.get(), da1, service, xid++);
+  m_helper.RegisterWithDA(server.get(), da1, SERVICE1, xid++);
 
   // try to de-register, this time the DA doesn't respond.
   {
     SocketVerifier verifier(&m_udp_socket);
-    m_helper.ExpectServiceDeRegistration(da1, xid, scopes, dereg_service);
-    OLA_ASSERT_EQ((uint16_t) SLP_OK, server->DeRegisterService(dereg_service));
+    m_helper.ExpectServiceDeRegistration(da1, xid, SCOPE1, SERVICE1_EXPIRED);
+    OLA_ASSERT_EQ((uint16_t) SLP_OK,
+                  server->DeRegisterService(SERVICE1_EXPIRED));
   }
 
   {
     SocketVerifier verifier(&m_udp_socket);
-    m_helper.ExpectServiceDeRegistration(da1, xid, scopes, dereg_service);
+    m_helper.ExpectServiceDeRegistration(da1, xid, SCOPE1, SERVICE1_EXPIRED);
     m_helper.AdvanceTime(2, 0);
   }
 
   {
     SocketVerifier verifier(&m_udp_socket);
-    m_helper.ExpectServiceDeRegistration(da1, xid, scopes, dereg_service);
+    m_helper.ExpectServiceDeRegistration(da1, xid, SCOPE1, SERVICE1_EXPIRED);
     m_helper.AdvanceTime(4, 0);
   }
 
@@ -1290,27 +1250,29 @@ void SLPServerSATest::testDADeRegistration() {
  */
 void SLPServerSATest::testDADeRegistrationFailure() {
   auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
-  ScopeSet scopes("one");
   xid_t xid = 0;
 
   // No DAs present
   m_helper.HandleInitialActiveDADiscovery("one");
 
   // A DA appears
-  IPV4SocketAddress da1 = IPV4SocketAddress::FromStringOrDie("10.0.1.1:5570");
-  m_helper.InjectDAAdvert(da1, xid++, true, SLP_OK, 1, scopes);
-  m_udp_socket.Verify();
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.InjectDAAdvert(da1, xid++, true, SLP_OK, 1, SCOPE1);
+  }
 
   // Register a service
-  ServiceEntry service("one", "service:foo://localhost", 300);
-  m_helper.RegisterWithDA(server.get(), da1, service, xid++);
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.RegisterWithDA(server.get(), da1, SERVICE1, xid++);
+  }
 
   // now de-register the service
   {
     SocketVerifier verifier(&m_udp_socket);
-    ServiceEntry dereg_service("one", "service:foo://localhost", 0);
-    m_helper.ExpectServiceDeRegistration(da1, xid, scopes, dereg_service);
-    OLA_ASSERT_EQ((uint16_t) SLP_OK, server->DeRegisterService(dereg_service));
+    m_helper.ExpectServiceDeRegistration(da1, xid, SCOPE1, SERVICE1_EXPIRED);
+    OLA_ASSERT_EQ((uint16_t) SLP_OK,
+                  server->DeRegisterService(SERVICE1_EXPIRED));
     m_helper.InjectSrvAck(da1, xid++, SCOPE_NOT_SUPPORTED);
   }
 
@@ -1332,25 +1294,30 @@ void SLPServerSATest::testDADeRegistrationFailure() {
  */
 void SLPServerSATest::testDeRegistrationWhileRegistering() {
   auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
-  ScopeSet scopes("one");
   xid_t xid = 0;
 
   // No DAs present
   m_helper.HandleInitialActiveDADiscovery("one");
 
   // A DA appears
-  IPV4SocketAddress da1 = IPV4SocketAddress::FromStringOrDie("10.0.1.1:5570");
-  m_helper.InjectDAAdvert(da1, xid++, true, SLP_OK, 1, scopes);
-  m_udp_socket.Verify();
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.InjectDAAdvert(da1, xid++, true, SLP_OK, 1, SCOPE1);
+  }
 
   // Register a service
-  ServiceEntry service("one", "service:foo://localhost", 300);
-  m_helper.ExpectServiceRegistration(da1, xid++, true, scopes, service);
-  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(service));
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.ExpectServiceRegistration(da1, xid++, true, SCOPE1, SERVICE1);
+    OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(SERVICE1));
+  }
 
   // Now before the DA can ack, de-register it
-  m_helper.ExpectServiceDeRegistration(da1, xid++, scopes, service);
-  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->DeRegisterService(service));
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.ExpectServiceDeRegistration(da1, xid++, SCOPE1, SERVICE1);
+    OLA_ASSERT_EQ((uint16_t) SLP_OK, server->DeRegisterService(SERVICE1));
+  }
 }
 
 
@@ -1359,31 +1326,28 @@ void SLPServerSATest::testDeRegistrationWhileRegistering() {
  */
 void SLPServerSATest::testDAShutdownDuringDeRegistration() {
   auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
-  ScopeSet scopes("one");
   xid_t xid = 0;
 
   // No DAs present
-  IPV4SocketAddress da1 = IPV4SocketAddress::FromStringOrDie("10.0.1.1:5570");
   m_helper.HandleInitialActiveDADiscovery("one");
 
   // A DA appears
   {
     SocketVerifier verifier(&m_udp_socket);
-    m_helper.InjectDAAdvert(da1, xid++, true, SLP_OK, 1, scopes);
+    m_helper.InjectDAAdvert(da1, xid++, true, SLP_OK, 1, SCOPE1);
   }
 
   // Register a service
   {
     SocketVerifier verifier(&m_udp_socket);
-    ServiceEntry service("one", "service:foo://localhost", 300);
-    m_helper.ExpectServiceRegistration(da1, xid++, true, scopes, service);
-    OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(service));
+    m_helper.ExpectServiceRegistration(da1, xid++, true, SCOPE1, SERVICE1);
+    OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(SERVICE1));
   }
 
   // the DA sends a shutdown message
   {
     SocketVerifier verifier(&m_udp_socket);
-    m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 0, scopes);
+    m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 0, SCOPE1);
     DAList da_list;
     m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
   }
@@ -1402,36 +1366,32 @@ void SLPServerSATest::testDAShutdownDuringDeRegistration() {
  */
 void SLPServerSATest::testRegistrationWhileDeRegistering() {
   auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
-  ScopeSet scopes("one");
   xid_t xid = 0;
 
   // No DAs present
   m_helper.HandleInitialActiveDADiscovery("one");
-  IPV4SocketAddress da1 = IPV4SocketAddress::FromStringOrDie("10.0.1.1:5570");
-  ServiceEntry service("one", "service:foo://localhost", 300);
 
   // A DA appears
   {
     SocketVerifier verifier(&m_udp_socket);
-    m_helper.InjectDAAdvert(da1, xid++, true, SLP_OK, 1, scopes);
+    m_helper.InjectDAAdvert(da1, xid++, true, SLP_OK, 1, SCOPE1);
   }
 
   // Register a service
   {
-    m_helper.RegisterWithDA(server.get(), da1, service, xid++);
+    m_helper.RegisterWithDA(server.get(), da1, SERVICE1, xid++);
   }
 
   // Now de-register it
   {
     SocketVerifier verifier(&m_udp_socket);
-    m_helper.ExpectServiceDeRegistration(da1, xid++, scopes, service);
-    OLA_ASSERT_EQ((uint16_t) SLP_OK, server->DeRegisterService(service));
+    m_helper.ExpectServiceDeRegistration(da1, xid++, SCOPE1, SERVICE1);
+    OLA_ASSERT_EQ((uint16_t) SLP_OK, server->DeRegisterService(SERVICE1));
   }
 
   // Before the DA can ack. try to register it again
   {
     SocketVerifier verifier(&m_udp_socket);
-    ServiceEntry service("one", "service:foo://localhost", 300);
-    m_helper.RegisterWithDA(server.get(), da1, service, xid++);
+    m_helper.RegisterWithDA(server.get(), da1, SERVICE1, xid++);
   }
 }

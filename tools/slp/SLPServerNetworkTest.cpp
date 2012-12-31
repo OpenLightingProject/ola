@@ -43,8 +43,7 @@ using std::auto_ptr;
 class SLPServerNetworkTest: public CppUnit::TestFixture {
   public:
     SLPServerNetworkTest()
-        : peer(IPV4SocketAddress::FromStringOrDie("192.168.1.1:5570")),
-          m_helper(&m_udp_socket) {
+        : m_helper(&m_udp_socket) {
     }
 
   public:
@@ -75,13 +74,15 @@ class SLPServerNetworkTest: public CppUnit::TestFixture {
 
   private:
     MockUDPSocket m_udp_socket;
-    const IPV4SocketAddress peer;
     SLPServerTestHelper m_helper;
 
+    static const IPV4SocketAddress peer;
     static const char TEST_SCOPE[];
 };
 
 
+const IPV4SocketAddress SLPServerNetworkTest::peer =
+    IPV4SocketAddress::FromStringOrDie("192.168.1.1:5570");
 const char SLPServerNetworkTest::TEST_SCOPE[] = "one";
 
 CPPUNIT_TEST_SUITE_REGISTRATION(SLPServerNetworkTest);
