@@ -831,11 +831,16 @@ void SLPServer::SendSrvRqstToDA(UnicastSrvRqstOperation *op,
       IPV4SocketAddress(da.IPAddress(), m_slp_port), op->xid,
                         op->parent->service_type, op->scopes);
   OLA_INFO << "adding callback for " << op->xid;
-  pair<xid_t, SrvReplyCallback*> p(
-    op->xid, NewSingleCallback(this, &SLPServer::ReceivedDASrvReply, op));
-  if (!expect_reused_xid && !m_pending_replies.insert(p).second)
+
+  PendingReplyMap::iterator iter = m_pending_replies.find(op->xid);
+  if (iter == m_pending_replies.end()) {
+    pair<xid_t, SrvReplyCallback*> p(
+      op->xid, NewSingleCallback(this, &SLPServer::ReceivedDASrvReply, op));
+    m_pending_replies.insert(p);
+  } else if (!expect_reused_xid) {
     OLA_WARN << "Collision for xid " << op->xid
              << ", we're probably leaking memory!";
+  }
 }
 
 
