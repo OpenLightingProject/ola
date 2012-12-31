@@ -118,16 +118,16 @@ void SLPServerTestHelper::HandleInitialActiveDADiscovery(
   // The first request is somewhere between 0 and 3s (CONFIG_START_WAIT)
   // after we start
   ExpectDAServiceRequest(0, pr_list, scope_set);
-  AdvanceTime(3, 0);
+  AdvanceTime(3);
   m_udp_socket->Verify();
 
   // Then another one 2s later.
   ExpectDAServiceRequest(0, pr_list, scope_set);
-  AdvanceTime(2, 0);
+  AdvanceTime(2);
   m_udp_socket->Verify();
 
   // And let that one time out
-  AdvanceTime(4, 0);
+  AdvanceTime(4);
   m_udp_socket->Verify();
 }
 
@@ -143,16 +143,16 @@ void SLPServerTestHelper::HandleActiveDADiscovery(const string &scopes,
   // The first request is somewhere between 0 and 3s (CONFIG_START_WAIT)
   // after we start
   ExpectDAServiceRequest(xid, pr_list, scope_set);
-  AdvanceTime(1, 0);
+  AdvanceTime(1);
   m_udp_socket->Verify();
 
   // Then another one 2s later.
   ExpectDAServiceRequest(xid, pr_list, scope_set);
-  AdvanceTime(2, 0);
+  AdvanceTime(2);
   m_udp_socket->Verify();
 
   // And let that one time out
-  AdvanceTime(4, 0);
+  AdvanceTime(4);
   m_udp_socket->Verify();
 }
 

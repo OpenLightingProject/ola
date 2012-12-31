@@ -66,8 +66,8 @@ class SLPServerTestHelper {
 
 
     // Advance the time, which may trigger timeouts to run
-    void AdvanceTime(int32_t sec, int32_t usec) {
-      m_clock.AdvanceTime(sec, usec);
+    void AdvanceTime(int32_t sec) {
+      m_clock.AdvanceTime(sec, 0);
       // run any timeouts, and update the WakeUpTime
       m_ss.RunOnce(0, 0);
     }

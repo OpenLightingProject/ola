@@ -185,9 +185,9 @@ void SLPServerUATest::testFindServiceNoDA() {
     OLA_ASSERT_FALSE(url_verifier.CallbackRan());
 
     m_helper.ExpectMulticastServiceRequest(xid, FOO_SERVICE, scopes, pr_list);
-    m_helper.AdvanceTime(2, 0);  // first timeout
+    m_helper.AdvanceTime(2);  // first timeout
 
-    m_helper.AdvanceTime(4, 0);  // second timeout
+    m_helper.AdvanceTime(4);  // second timeout
   }
 
   xid++;
@@ -221,9 +221,9 @@ void SLPServerUATest::testFindServiceNoDA() {
     pr_list.insert(sa2.Host());
     // the PR list changed, so we need a new xid
     m_helper.ExpectMulticastServiceRequest(++xid, FOO_SERVICE, scopes, pr_list);
-    m_helper.AdvanceTime(2, 0);  // first timeout
+    m_helper.AdvanceTime(2);  // first timeout
 
-    m_helper.AdvanceTime(4, 0);  // second timeout
+    m_helper.AdvanceTime(4);  // second timeout
   }
 
   // try the same thing, but this time have one of the SAs return an error
@@ -253,9 +253,9 @@ void SLPServerUATest::testFindServiceNoDA() {
 
     pr_list.insert(sa1.Host());
     m_helper.ExpectMulticastServiceRequest(++xid, FOO_SERVICE, scopes, pr_list);
-    m_helper.AdvanceTime(2, 0);  // first timeout
+    m_helper.AdvanceTime(2);  // first timeout
 
-    m_helper.AdvanceTime(4, 0);  // second timeout
+    m_helper.AdvanceTime(4);  // second timeout
   }
 }
 
@@ -300,7 +300,7 @@ void SLPServerUATest::testFindServiceWithDA() {
     m_helper.InjectServiceReply(da1, xid, SLP_OK, da_urls);
     OLA_ASSERT_TRUE(url_verifier.CallbackRan());
 
-    m_helper.AdvanceTime(2, 0);  // ensure nothing else happens
+    m_helper.AdvanceTime(2);  // ensure nothing else happens
   }
 
   xid++;
@@ -335,10 +335,10 @@ void SLPServerUATest::testFindServiceWithDA() {
     // PRlist
     pr_list.insert(sa1.Host());
     m_helper.ExpectMulticastServiceRequest(++xid, FOO_SERVICE, scopes, pr_list);
-    m_helper.AdvanceTime(2, 0);
+    m_helper.AdvanceTime(2);
 
     // timeout the second multicast SrvRqst, which runs the callback
-    m_helper.AdvanceTime(4, 0);
+    m_helper.AdvanceTime(4);
   }
 }
 
@@ -377,20 +377,20 @@ void SLPServerUATest::testFindServiceDATimeout() {
     OLA_ASSERT_FALSE(url_verifier.CallbackRan());
 
     m_helper.ExpectServiceRequest(da1, xid, FOO_SERVICE, scopes, pr_list);
-    m_helper.AdvanceTime(2, 0);
+    m_helper.AdvanceTime(2);
     OLA_ASSERT_FALSE(url_verifier.CallbackRan());
 
     m_helper.ExpectServiceRequest(da1, xid, FOO_SERVICE, scopes, pr_list);
-    m_helper.AdvanceTime(4, 0);
+    m_helper.AdvanceTime(4);
     OLA_ASSERT_FALSE(url_verifier.CallbackRan());
 
     m_helper.ExpectServiceRequest(da2, ++xid, FOO_SERVICE, scopes, pr_list);
-    m_helper.AdvanceTime(8, 0);
+    m_helper.AdvanceTime(8);
     OLA_ASSERT_FALSE(url_verifier.CallbackRan());
 
     m_helper.ExpectServiceRequest(da2, xid, FOO_SERVICE, scopes, pr_list);
     // the DA doesn't respond to the first request
-    m_helper.AdvanceTime(2, 0);
+    m_helper.AdvanceTime(2);
 
     // now it responds
     URLEntries da_urls;
@@ -443,7 +443,7 @@ void SLPServerUATest::testFindServiceDAChangesScopes() {
     m_helper.InjectDAAdvert(da1, 0, true, SLP_OK, 1, new_scopes);
     m_helper.ExpectServiceRequest(da2, ++xid, FOO_SERVICE, search_scopes,
                                   pr_list);
-    m_helper.AdvanceTime(2, 0);
+    m_helper.AdvanceTime(2);
 
     // now it responds
     URLEntries da_urls;
@@ -502,9 +502,9 @@ void SLPServerUATest::testFindServiceCoLocatedDA() {
     // the PR list changed, so we need a new xid
     m_helper.ExpectMulticastServiceRequest(++xid, FOO_SERVICE,
                                            multicast_search_scopes, pr_list);
-    m_helper.AdvanceTime(2, 0);  // first timeout
+    m_helper.AdvanceTime(2);  // first timeout
 
-    m_helper.AdvanceTime(4, 0);  // second timeout
+    m_helper.AdvanceTime(4);  // second timeout
   }
   m_helper.ExpectMulticastDAAdvert(0, 0, scopes);
 }
@@ -640,7 +640,7 @@ void SLPServerUATest::testFindServiceMultipleDAs() {
 
   {
     SocketVerifier socket_verifier(&m_udp_socket);
-    m_helper.AdvanceTime(2, 0);  // ensure nothing else happens
+    m_helper.AdvanceTime(2);  // ensure nothing else happens
   }
 }
 

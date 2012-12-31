@@ -187,7 +187,7 @@ void SLPServerDATest::testDABeat() {
   }
 
   m_helper.HandleInitialActiveDADiscovery(DA_SCOPES);
-  m_helper.AdvanceTime(899, 0);
+  m_helper.AdvanceTime(899);
 
   /*
    * Each cycle takes 906 seconds. 899s of waiting, 1s tick, 6 seconds for the
@@ -199,14 +199,14 @@ void SLPServerDATest::testDABeat() {
    */
   for (unsigned int i = 0; i < 10; i++) {
     m_helper.HandleActiveDADiscovery(DA_SCOPES, xid++);
-    m_helper.AdvanceTime(899, 0);
+    m_helper.AdvanceTime(899);
   }
 
   // 908 + 10 * 906 = 9968 so there is one more discovery to take place
   m_helper.HandleActiveDADiscovery(DA_SCOPES, xid++);
 
   // We want to move to 10799 so: 10799 - 9968 - 7 = 824s
-  m_helper.AdvanceTime(824, 0);
+  m_helper.AdvanceTime(824);
 
   // verify we now send an unsolicited DAAdvert
   {
@@ -214,7 +214,7 @@ void SLPServerDATest::testDABeat() {
     // unsolicited DAAdverts have a xid of 0
     m_helper.ExpectMulticastDAAdvert(
         0, SLPServerTestHelper::INITIAL_BOOT_TIME, scopes);
-    m_helper.AdvanceTime(1, 0);
+    m_helper.AdvanceTime(1);
   }
 
   m_helper.ExpectMulticastDAAdvert(0, 0, scopes);
@@ -378,7 +378,7 @@ void SLPServerDATest::testSrvRqstForLocalService() {
   // register a service
   ServiceEntry service("one", "service:foo://localhost", 300);
   OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(service));
-  m_helper.AdvanceTime(0, 0);
+  m_helper.AdvanceTime(0);
 
   // now perform various SrvRqsts
   IPV4SocketAddress peer = IPV4SocketAddress::FromStringOrDie(
@@ -491,7 +491,7 @@ void SLPServerDATest::testSrvRqstForLocalService() {
 
   // de-register the service
   OLA_ASSERT_EQ((uint16_t) SLP_OK, server->DeRegisterService(service));
-  m_helper.AdvanceTime(0, 0);
+  m_helper.AdvanceTime(0);
 
   // send a unicast SrvRqst, expect an empty SrvRply
   {
@@ -531,7 +531,7 @@ void SLPServerDATest::testLocalServiceTimeout() {
   OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(service));
 
   // this should time the service out
-  m_helper.AdvanceTime(11, 0);
+  m_helper.AdvanceTime(11);
 
   // now perform various SrvRqsts
   IPV4SocketAddress peer = IPV4SocketAddress::FromStringOrDie(
@@ -807,7 +807,7 @@ void SLPServerDATest::testRemoteServiceTimeout() {
   }
 
   // this should time the service out
-  m_helper.AdvanceTime(11, 0);
+  m_helper.AdvanceTime(11);
 
   // send a unicast SrvRqst, expect an empty SrvRply
   {
