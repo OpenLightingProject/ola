@@ -1244,27 +1244,41 @@ void SLPServerSATest::testDADeRegistration() {
   ServiceEntry service("one", "service:foo://localhost", 300);
   m_helper.RegisterWithDA(server.get(), da1, service, xid++);
 
-  // now de-register the service
   ServiceEntry dereg_service("one", "service:foo://localhost", 0);
-  m_helper.ExpectServiceDeRegistration(da1, xid, scopes, dereg_service);
-  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->DeRegisterService(dereg_service));
-  m_helper.InjectSrvAck(da1, xid++, SLP_OK);
+  // now de-register the service
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.ExpectServiceDeRegistration(da1, xid, scopes, dereg_service);
+    OLA_ASSERT_EQ((uint16_t) SLP_OK, server->DeRegisterService(dereg_service));
+    m_helper.InjectSrvAck(da1, xid++, SLP_OK);
+  }
 
   // register the service again
   m_helper.RegisterWithDA(server.get(), da1, service, xid++);
 
   // try to de-register, this time the DA doesn't respond.
-  m_helper.ExpectServiceDeRegistration(da1, xid, scopes, dereg_service);
-  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->DeRegisterService(dereg_service));
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.ExpectServiceDeRegistration(da1, xid, scopes, dereg_service);
+    OLA_ASSERT_EQ((uint16_t) SLP_OK, server->DeRegisterService(dereg_service));
+  }
 
-  m_helper.ExpectServiceDeRegistration(da1, xid, scopes, dereg_service);
-  m_helper.AdvanceTime(2, 0);
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.ExpectServiceDeRegistration(da1, xid, scopes, dereg_service);
+    m_helper.AdvanceTime(2, 0);
+  }
 
-  m_helper.ExpectServiceDeRegistration(da1, xid, scopes, dereg_service);
-  m_helper.AdvanceTime(4, 0);
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.ExpectServiceDeRegistration(da1, xid, scopes, dereg_service);
+    m_helper.AdvanceTime(4, 0);
+  }
 
-  m_helper.ExpectServiceDeRegistration(da1, xid, scopes, dereg_service);
-  m_helper.AdvanceTime(8, 0);
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.AdvanceTime(8, 0);
+  }
 
   DAList da_list;
   m_helper.VerifyKnownDAs(__LINE__, server.get(), da_list);
@@ -1292,12 +1306,18 @@ void SLPServerSATest::testDADeRegistrationFailure() {
   m_helper.RegisterWithDA(server.get(), da1, service, xid++);
 
   // now de-register the service
-  ServiceEntry dereg_service("one", "service:foo://localhost", 0);
-  m_helper.ExpectServiceDeRegistration(da1, xid, scopes, dereg_service);
-  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->DeRegisterService(dereg_service));
-  m_helper.InjectSrvAck(da1, xid++, SCOPE_NOT_SUPPORTED);
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    ServiceEntry dereg_service("one", "service:foo://localhost", 0);
+    m_helper.ExpectServiceDeRegistration(da1, xid, scopes, dereg_service);
+    OLA_ASSERT_EQ((uint16_t) SLP_OK, server->DeRegisterService(dereg_service));
+    m_helper.InjectSrvAck(da1, xid++, SCOPE_NOT_SUPPORTED);
+  }
 
-  m_helper.AdvanceTime(8, 0);  // check nothing else happens
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    m_helper.AdvanceTime(8, 0);  // check nothing else happens
+  }
 
   // confirm the DA is still marked as healthy
   DAList da_list;
