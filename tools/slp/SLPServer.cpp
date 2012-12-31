@@ -123,7 +123,8 @@ SLPServer::SLPServerOptions::SLPServerOptions()
 
 SLPServer::UnicastOperationDeleter::~UnicastOperationDeleter() {
   if (server && op)
-    server->CancelPendingOperations(op->service.url().url());
+    server->CancelPendingDAOperationsForServiceAndDA(op->service.url().url(),
+                                                     op->da_url);
 }
 
 void SLPServer::UnicastOperationDeleter::Cancel() {
@@ -221,8 +222,7 @@ SLPServer::~SLPServer() {
   // delete any pending registration operations
   for (PendingOperationsByURL::iterator iter = m_pending_ops.begin();
        iter != m_pending_ops.end(); ++iter) {
-    m_ss->RemoveTimeout(iter->second->timer_id);
-    delete iter->second;
+    FreePendingDAOperation(iter->second);
   }
 
   m_udp_socket->Close();
@@ -1030,25 +1030,57 @@ void SLPServer::CheckIfFindSrvComplete(PendingSrvRqst *request) {
 //------------------------------------------------------------------------------
 
 /**
- * Cancel any pending operations for this URL
+ * Cancel any pending DA Reg / DeReg operations for this URL
+ * @param url the url to cancel operations for.
  */
-void SLPServer::CancelPendingOperations(const string &url) {
+void SLPServer::CancelPendingDAOperationsForService(const string &url) {
   PendingOperationsByURL::iterator iter;
   PendingOperationsByURL::iterator lower = m_pending_ops.lower_bound(url);
   PendingOperationsByURL::iterator upper = m_pending_ops.upper_bound(url);
 
   for (iter = lower; iter != upper; ++iter) {
-    PendingOperation *op = iter->second;
-    m_ss->RemoveTimeout(op->timer_id);  // cancel the timer
-
-    PendingAckMap::iterator ack_iter = m_pending_acks.find(op->xid);
-    if (ack_iter != m_pending_acks.end()) {
-      delete ack_iter->second;
-      m_pending_acks.erase(ack_iter);
-    }
-    delete op;
+    FreePendingDAOperation(iter->second);
   }
   m_pending_ops.erase(lower, upper);
+}
+
+
+/**
+ * Cancel any pending DA Reg / DeReg operations for this (URL , DA URL) pair.
+ * @param url the url to cancel operations for.
+ * @param da_url the DA url to cancel operations for.
+ */
+void SLPServer::CancelPendingDAOperationsForServiceAndDA(const string &url,
+                                                         const string &da_url) {
+  PendingOperationsByURL::iterator iter = m_pending_ops.lower_bound(url);
+  PendingOperationsByURL::iterator upper = m_pending_ops.upper_bound(url);
+  // take a copy of the da_url, since it may be a reference into an object
+  // we're about to delete
+  const string our_da_url = da_url;
+
+  while (iter != upper) {
+    if (iter->second->da_url == our_da_url) {
+      FreePendingDAOperation(iter->second);
+      m_pending_ops.erase(iter++);
+    } else {
+      iter++;
+    }
+  }
+}
+
+
+/**
+ * Free the resources associated with a pending Reg/DeReg operation.
+ */
+void SLPServer::FreePendingDAOperation(UnicastSrvRegOperation *op) {
+  m_ss->RemoveTimeout(op->timer_id);  // cancel the timer
+
+  PendingAckMap::iterator ack_iter = m_pending_acks.find(op->xid);
+  if (ack_iter != m_pending_acks.end()) {
+    delete ack_iter->second;
+    m_pending_acks.erase(ack_iter);
+  }
+  delete op;
 }
 
 
@@ -1064,7 +1096,7 @@ uint16_t SLPServer::InternalRegisterService(const ServiceEntry &service) {
   if (result == SLPStore::SCOPE_MISMATCH)
     return SCOPE_NOT_SUPPORTED;
 
-  CancelPendingOperations(service.url_string());
+  CancelPendingDAOperationsForService(service.url_string());
 
   // TODO(simon): use the error from here, and maybe skip the DA part
   m_service_store.Insert(now, service);
@@ -1093,7 +1125,7 @@ uint16_t SLPServer::InternalDeRegisterService(const ServiceEntry &service) {
   else if (result == SLPStore::NOT_FOUND)
     return SLP_OK;
 
-  CancelPendingOperations(service.url_string());
+  CancelPendingDAOperationsForService(service.url_string());
 
   vector<DirectoryAgent> directory_agents;
   // This only works correctly if we assume DAs can't change scopes
@@ -1127,7 +1159,8 @@ void SLPServer::ReceivedAck(UnicastSrvRegOperation *op,
     OLA_INFO << "xid " << op->xid << " was acked";
 
   // this deletes the timeout, and the UnicastSrvRegOperation
-  CancelPendingOperations(op->service.url().url());
+  CancelPendingDAOperationsForServiceAndDA(op->service.url().url(),
+                                           op->da_url);
 }
 
 
@@ -1258,7 +1291,7 @@ void SLPServer::RegisterWithDA(const DirectoryAgent &agent,
       op->retry_time(),
       NewSingleCallback(this, &SLPServer::RegistrationTimeout, op));
   m_pending_ops.insert(
-      pair<string, PendingOperation*>(service.url().url(), op));
+      pair<string, UnicastSrvRegOperation*>(service.url().url(), op));
 
   ScopeSet scopes_to_use = agent.scopes().Intersection(service.scopes());
   m_udp_sender.SendServiceRegistration(
@@ -1285,7 +1318,7 @@ void SLPServer::DeRegisterWithDA(const DirectoryAgent &agent,
       op->retry_time(),
       NewSingleCallback(this, &SLPServer::DeRegistrationTimeout, op));
   m_pending_ops.insert(
-      pair<string, PendingOperation*>(service.url().url(), op));
+      pair<string, UnicastSrvRegOperation*>(service.url().url(), op));
 
   // send message to DA
   // TODO(simon): how do we know what scopes to de-register with?

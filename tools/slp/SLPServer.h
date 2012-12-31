@@ -121,7 +121,8 @@ class SLPServer {
     uint16_t DeRegisterService(const ServiceEntry &service);
 
   private:
-    typedef multimap<string, class PendingOperation*> PendingOperationsByURL;
+    typedef multimap<string, class UnicastSrvRegOperation*>
+      PendingOperationsByURL;
     typedef SingleUseCallback1<void, uint16_t> AckCallback;
     typedef BaseCallback3<void, const IPV4Address&, uint16_t,
                           const URLEntries&> SrvReplyCallback;
@@ -254,7 +255,10 @@ class SLPServer {
     void CheckIfFindSrvComplete(PendingSrvRqst *request);
 
     // SA methods
-    void CancelPendingOperations(const string &url);
+    void CancelPendingDAOperationsForService(const string &url);
+    void CancelPendingDAOperationsForServiceAndDA(const string &url,
+                                                  const string &da_url);
+    void FreePendingDAOperation(UnicastSrvRegOperation *op);
     uint16_t InternalRegisterService(const ServiceEntry &service);
     uint16_t InternalDeRegisterService(const ServiceEntry &service);
     void ReceivedAck(UnicastSrvRegOperation *op_ptr, uint16_t error_code);
