@@ -183,7 +183,7 @@ void SLPStore::GetLocalServices(const TimeStamp &now,
       if ((*service_iter)->scopes().Intersects(scopes)) {
         local_services->push_back(**service_iter);
         URLEntry &entry = local_services->back().mutable_url();
-        entry.set_lifetime(entry.lifetime() - elapsed_seconds);
+        entry.AgeLifetime(elapsed_seconds);
       }
     }
   }
@@ -255,8 +255,7 @@ void SLPStore::MaybeCleanURLList(const TimeStamp &now,
       delete *service_iter;
       service_iter = service_list->services.erase(service_iter);
     } else {
-      (*service_iter)->mutable_url().set_lifetime(
-          (*service_iter)->url().lifetime() - elapsed_seconds);
+      (*service_iter)->mutable_url().AgeLifetime(elapsed_seconds);
       ++service_iter;
     }
   }
