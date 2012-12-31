@@ -29,10 +29,12 @@
 #include "ola/testing/TestUtils.h"
 #include "tools/slp/SLPServer.h"
 #include "tools/slp/SLPServerTestHelper.h"
+#include "tools/slp/URLEntry.h"
 
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::slp::SLPServer;
+using ola::slp::URLEntry;
 using ola::testing::MockUDPSocket;
 using ola::testing::SocketVerifier;
 using std::auto_ptr;
@@ -41,7 +43,8 @@ using std::auto_ptr;
 class SLPServerNetworkTest: public CppUnit::TestFixture {
   public:
     SLPServerNetworkTest()
-        : m_helper(&m_udp_socket) {
+        : peer(IPV4SocketAddress::FromStringOrDie("192.168.1.1:5570")),
+          m_helper(&m_udp_socket) {
     }
 
   public:
@@ -72,9 +75,14 @@ class SLPServerNetworkTest: public CppUnit::TestFixture {
 
   private:
     MockUDPSocket m_udp_socket;
+    const IPV4SocketAddress peer;
     SLPServerTestHelper m_helper;
+
+    static const char TEST_SCOPE[];
 };
 
+
+const char SLPServerNetworkTest::TEST_SCOPE[] = "one";
 
 CPPUNIT_TEST_SUITE_REGISTRATION(SLPServerNetworkTest);
 
@@ -83,10 +91,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SLPServerNetworkTest);
  * Send various malformed packets to make sure we don't crash the server.
  */
 void SLPServerNetworkTest::testMalformedPackets() {
-  auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
+  auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, TEST_SCOPE));
   SocketVerifier verifier(&m_udp_socket);
-  IPV4SocketAddress peer = IPV4SocketAddress::FromStringOrDie(
-      "192.168.1.1:5570");
 
   uint8_t very_short_packet[] = {2};
   m_udp_socket.InjectData(very_short_packet, sizeof(very_short_packet), peer);
@@ -116,47 +122,27 @@ void SLPServerNetworkTest::testMalformedPackets() {
 
 
 /**
- * Test that we can't crash the server by sending un-matched SrvAcks
+ * Test that we can't crash the server by sending un-matched SrvAcks.
  */
 void SLPServerNetworkTest::testUnmatchedAcks() {
-  auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
+  auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, TEST_SCOPE));
   SocketVerifier verifier(&m_udp_socket);
-  IPV4SocketAddress peer = IPV4SocketAddress::FromStringOrDie(
-      "192.168.1.1:5570");
-
-  uint8_t ack_data[] = {
-    2, 5, 0, 0, 18, 0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
-    0x56, 0x78
-  };
-  m_udp_socket.InjectData(ack_data, sizeof(ack_data), peer);
+  m_helper.InjectSrvAck(peer, 1234, 0x5678);
 }
 
 
 /**
- * Test that we can't crash the server by sending un-matched SrvRply
+ * Test that we can't crash the server by sending un-matched SrvRply.
  */
 void SLPServerNetworkTest::testUnmatchedSrvRply() {
-  auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
+  auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, TEST_SCOPE));
   SocketVerifier verifier(&m_udp_socket);
-  IPV4SocketAddress peer = IPV4SocketAddress::FromStringOrDie(
-      "192.168.1.1:5570");
 
-  uint8_t srv_rply_data[] = {
-    2, 2, 0, 0, 0x4b, 0x40, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
-    0, 12,  // error code
-    0, 2,  // url entry count
-    // entry 1
-    0, 0x12, 0x34, 0, 21,
-    's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o', ':', '/', '/',
-    '1', '.', '1', '.', '1', '.', '1',
-    0,  // # of auth blocks
-    // entry 2
-    0, 0x56, 0x78, 0, 22,
-    's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o', ':', '/', '/',
-    '1', '.', '1', '.', '1', '.', '1', '0',
-    0,  // # of auth blocks
-  };
-  m_udp_socket.InjectData(srv_rply_data, sizeof(srv_rply_data), peer);
+  URLEntries urls;
+  urls.push_back(URLEntry("service:foo://1.1.1.1", 300));
+  urls.push_back(URLEntry("service:foo://1.1.1.10", 600));
+  m_helper.InjectServiceReply(peer, 0x1234, ola::slp::OPTION_NOT_UNDERSTOOD,
+                              urls);
 }
 
 
@@ -164,10 +150,8 @@ void SLPServerNetworkTest::testUnmatchedSrvRply() {
  * Send various short packets.
  */
 void SLPServerNetworkTest::testShortPackets() {
-  auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, "one"));
+  auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, TEST_SCOPE));
   SocketVerifier verifier(&m_udp_socket);
-  IPV4SocketAddress peer = IPV4SocketAddress::FromStringOrDie(
-      "192.168.1.1:5570");
 
   uint8_t srv_request_packet[] = {2, 1};
   m_udp_socket.InjectData(srv_request_packet, sizeof(srv_request_packet), peer);
