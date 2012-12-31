@@ -40,12 +40,14 @@ class URLEntryTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testURLEntry);
   CPPUNIT_TEST(testURLEntryWrite);
   CPPUNIT_TEST(testToString);
+  CPPUNIT_TEST(testAging);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void testURLEntry();
     void testURLEntryWrite();
     void testToString();
+    void testAging();
 
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
@@ -134,4 +136,17 @@ void URLEntryTest::testURLEntryWrite() {
 void URLEntryTest::testToString() {
   URLEntry url1("service:foo://192.168.1.1", 300);
   OLA_ASSERT_EQ(string("service:foo://192.168.1.1(300)"), url1.ToString());
+}
+
+
+/**
+ * Check that aging works.
+ */
+void URLEntryTest::testAging() {
+  URLEntry url1("service:foo://192.168.1.1", 10);
+  OLA_ASSERT_FALSE(url1.AgeLifetime(5));
+  OLA_ASSERT_EQ((uint16_t) 5, url1.lifetime());
+
+  OLA_ASSERT_TRUE(url1.AgeLifetime(5));
+  OLA_ASSERT_EQ((uint16_t) 0, url1.lifetime());
 }

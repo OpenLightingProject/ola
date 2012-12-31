@@ -57,6 +57,19 @@ class URLEntry {
     uint16_t lifetime() const { return m_lifetime; }
     void set_lifetime(uint16_t lifetime) { m_lifetime = lifetime; }
 
+    /*
+     * Age this URL by the given number of seconds
+     * @returns true if this url has now expired, false otherwise.
+     */
+    bool AgeLifetime(uint16_t seconds) {
+      if (m_lifetime <= seconds) {
+        m_lifetime = 0;
+        return true;
+      }
+      m_lifetime-= seconds;
+      return false;
+    }
+
     // Return the total size of this URL entry as it appears on the wire
     unsigned int PackedSize() const { return 6 + m_url.size(); }
 
