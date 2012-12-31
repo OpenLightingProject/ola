@@ -466,6 +466,7 @@ void SLPServerTestHelper::VerifyKnownDAs(unsigned int line,
 
   vector<DirectoryAgent> known_das;
   server->GetDirectoryAgents(&known_das);
+  OLA_ASSERT_EQ(expected_das.size(), known_das.size());
 
   vector<DirectoryAgent>::const_iterator iter = known_das.begin();
   for (; iter != known_das.end(); ++iter) {
