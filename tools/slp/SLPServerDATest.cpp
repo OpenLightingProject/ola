@@ -66,6 +66,7 @@ class SLPServerDATest: public CppUnit::TestFixture {
   public:
     CPPUNIT_TEST_SUITE(SLPServerDATest);
     CPPUNIT_TEST(testConfiguredScopes);
+    CPPUNIT_TEST(testDumpStore);
     CPPUNIT_TEST(testDABeat);
     CPPUNIT_TEST(testSrvRqstForDirectoryAgent);
     CPPUNIT_TEST(testSrvRqstForServiceAgent);
@@ -78,6 +79,7 @@ class SLPServerDATest: public CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE_END();
 
     void testConfiguredScopes();
+    void testDumpStore();
     void testDABeat();
     void testSrvRqstForDirectoryAgent();
     void testSrvRqstForServiceAgent();
@@ -152,6 +154,23 @@ void SLPServerDATest::testConfiguredScopes() {
 
 
 /**
+ * Test the DumpStore() doesn't crash.
+ */
+void SLPServerDATest::testDumpStore() {
+  const string foo_service = "service:foo";
+  auto_ptr<SLPServer> server(m_helper.CreateDAAndHandleStartup(DA_SCOPES));
+  ScopeSet scopes(DA_SCOPES);
+
+  // register a service
+  ServiceEntry service("one", "service:foo://localhost", 300);
+  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(service));
+
+  server->DumpStore();
+  m_helper.ExpectMulticastDAAdvert(0, 0, scopes);
+}
+
+
+/**
  * Test that we send a DAAdvert on startup, and every CONFIG_DA_BEAT seconds.
  */
 void SLPServerDATest::testDABeat() {
@@ -200,6 +219,7 @@ void SLPServerDATest::testDABeat() {
 
   m_helper.ExpectMulticastDAAdvert(0, 0, scopes);
 }
+
 
 /**
  * Test that we respond to a SrvRqst for service:directory-agent
