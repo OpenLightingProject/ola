@@ -1127,8 +1127,15 @@ void SLPServer::RegistrationTimeout(UnicastSrvRegOperation *op) {
   }
 
   OLA_INFO << "in timeout, retry was " << op->retry_time();
+  if (op->service.mutable_url().AgeLifetime(op->retry_time() / 1000)) {
+    // this service has expired while we're trying to register it
+    OLA_INFO << "Service " << op->service << " expired during registration.";
+    CancelPendingSrvAck(iter);
+    return;
+  }
+
   op->UpdateRetryTime();
-  if (op->total_time() > m_config_retry_max) {
+  if (op->total_time() + op->retry_time() > m_config_retry_max) {
     // this DA is bad
     OLA_INFO << "Declaring DA " << op->da_url << " bad since total time is now "
              << op->total_time();
@@ -1155,9 +1162,6 @@ void SLPServer::RegistrationTimeout(UnicastSrvRegOperation *op) {
 
   // we're going to reuse the op, so don't delete it.
   op_deleter.release();
-
-  // Do we want to age the service lifetime here?
-  // op->service.mutable_url.set_lifetime(
 
   // if the scopes are different, do we need a new xid?
     // TODO(simon)
