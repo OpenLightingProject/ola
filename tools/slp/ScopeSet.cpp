@@ -17,6 +17,7 @@
  * Copyright (C) 2012 Simon Newton
  */
 
+#include <algorithm>
 #include <string>
 #include <set>
 #include <sstream>

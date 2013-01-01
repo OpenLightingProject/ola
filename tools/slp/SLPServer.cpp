@@ -127,7 +127,7 @@ SLPServer::SLPServerOptions::SLPServerOptions()
       config_start_wait(CONFIG_START_WAIT),
       config_reg_active_min(CONFIG_REG_ACTIVE_MIN),
       config_reg_active_max(CONFIG_REG_ACTIVE_MAX),
-      initial_xid(Random(0, UINT16_MAX)),
+      initial_xid(Random(0, MAX_XID)),
       boot_time(0) {
 }
 

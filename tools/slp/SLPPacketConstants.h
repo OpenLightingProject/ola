@@ -33,7 +33,7 @@ static const uint32_t SLP_MULTICAST_ADDRESS = (
 
 typedef uint16_t xid_t;
 
-static const uint16_t MAX_XID = UINT16_MAX;
+static const uint16_t MAX_XID = 65535;
 
 typedef enum {
   SERVICE_REQUEST = 1,
