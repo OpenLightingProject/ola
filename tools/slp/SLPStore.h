@@ -94,6 +94,12 @@ class SLPStore {
     void GetLocalServices(const TimeStamp &now, const ScopeSet &scopes,
                           ServiceEntries *services);
 
+    void GetAllServiceTypes(const ScopeSet &scopes,
+                            vector<string> *service_types);
+    void GetServiceTypesByNamingAuth(const string &naming_authority,
+                                     const ScopeSet &scopes,
+                                     vector<string> *service_types);
+
     void Clean(const TimeStamp &now);
     void Reset();
     void Dump(const TimeStamp &now);
@@ -116,6 +122,8 @@ class SLPStore {
     slp_error_code_t InsertOrUpdateEntry(ServiceEntryVector *services,
                                          const ServiceEntry &service,
                                          bool fresh);
+    bool AnyServiceMatchesScopes(const ScopeSet &scopes,
+                                 const ServiceEntryVector &services);
 };
 }  // slp
 }  // ola

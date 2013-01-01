@@ -158,18 +158,6 @@ class ServiceTypeRequestPacket: public SLPPacket {
 
 
 /**
- * SrvTypeReply
- */
-class ServiceTypeReplyPacket: public SLPPacket {
-  public:
-    ServiceTypeReplyPacket(): SLPPacket() {}
-
-    uint16_t error_code;
-    vector<string> srv_types;
-};
-
-
-/**
  * The SLPPacketParser unpacks data from SLP packets.
  */
 class SLPPacketParser {
