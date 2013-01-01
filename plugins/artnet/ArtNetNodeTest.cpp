@@ -59,6 +59,8 @@ using ola::rdm::RDMResponse;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
 using ola::timecode::TimeCode;
+using ola::testing::MockUDPSocket;
+using ola::testing::SocketVerifier;
 using std::string;
 using std::vector;
 
@@ -187,7 +189,7 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
                          unsigned int data_size,
                          const IPV4Address &address) {
       ss.RunOnce(0, 0);  // update the wake up time
-      m_socket->ReceiveData(data, data_size, address, ARTNET_PORT);
+      m_socket->InjectData(data, data_size, address, ARTNET_PORT);
     }
 
     void SetupInputPort(ArtNetNode *node) {

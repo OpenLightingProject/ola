@@ -81,11 +81,17 @@ void _AssertSetEq(const CPPUNIT_NS::SourceLine &source_line,
 #define OLA_ASSERT_TRUE(condition)  \
   CPPUNIT_ASSERT(condition)
 
+#define OLA_ASSERT_TRUE_MSG(condition, msg)  \
+  CPPUNIT_ASSERT_MESSAGE(msg, condition)
+
 #define OLA_ASSERT_FALSE(condition)  \
   CPPUNIT_ASSERT(!(condition))
 
 #define OLA_ASSERT_EQ(expected, output)  \
   CPPUNIT_ASSERT_EQUAL(expected, output)
+
+#define OLA_ASSERT_EQ_MSG(expected, output, message)  \
+  CPPUNIT_ASSERT_EQUAL_MESSAGE(message, expected, output)
 
 #define OLA_ASSERT_NE(expected, output)  \
   CPPUNIT_ASSERT((expected) != (output))

@@ -107,6 +107,8 @@ class IPV4Address {
 
     static IPV4Address* FromString(const std::string &address);
     static bool FromString(const std::string &address, IPV4Address *target);
+    // useful for testing
+    static IPV4Address FromStringOrDie(const std::string &address);
 
     static IPV4Address WildCard() {
       return IPV4Address(INADDR_ANY);

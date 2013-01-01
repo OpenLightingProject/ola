@@ -454,7 +454,7 @@ AC_ARG_ENABLE(gcov,
 if test "${enable_gov}" != "no"; then
   CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
   CXXFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
-  LDFLAGS="$LDFLAGS -fprofile-arcs"
+  LDFLAGS="$LDFLAGS"
 fi
 
 # Decide if we should build the example programs
@@ -627,6 +627,7 @@ AC_OUTPUT( Makefile \
     tools/e133/Makefile \
     tools/rdm/Makefile \
     tools/rdmpro/Makefile \
+    tools/slp/Makefile \
     tools/usbpro/Makefile \
     libola.pc \
     libolaserver.pc \

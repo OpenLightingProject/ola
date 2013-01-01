@@ -314,7 +314,8 @@ bool SelectServer::RemoveWriteDescriptor(WriteFileDescriptor *descriptor) {
 timeout_id SelectServer::RegisterRepeatingTimeout(
     unsigned int ms,
     ola::Callback0<bool> *closure) {
-  return RegisterRepeatingTimeout(TimeInterval(ms * 1000), closure);
+  int64_t useconds = static_cast<int64_t>(ms) * 1000;
+  return RegisterRepeatingTimeout(TimeInterval(useconds), closure);
 }
 
 
@@ -352,7 +353,8 @@ timeout_id SelectServer::RegisterRepeatingTimeout(
 timeout_id SelectServer::RegisterSingleTimeout(
     unsigned int ms,
     ola::SingleUseCallback0<void> *closure) {
-  return RegisterSingleTimeout(TimeInterval(ms * 1000), closure);
+  int64_t useconds = static_cast<int64_t>(ms) * 1000;
+  return RegisterSingleTimeout(TimeInterval(useconds), closure);
 }
 
 

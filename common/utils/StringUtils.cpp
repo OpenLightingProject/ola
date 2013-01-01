@@ -39,7 +39,7 @@ using std::stringstream;
 using std::vector;
 
 /*
- * Split a string on delimtiers. If two delimiters appear next to each other an
+ * Split a string on delimiters. If two delimiters appear next to each other an
  * empty string is added to the output list.
  * @param input the string to split
  * @param tokens the vector to store the result in

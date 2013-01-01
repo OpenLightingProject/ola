@@ -42,20 +42,28 @@ void ASSERT_DATA_EQUALS(unsigned int line,
                         unsigned int actual_length) {
   std::stringstream str;
   str << "Line " << line;
-  CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(), expected_length, actual_length);
+  const string message = str.str();
+  CPPUNIT_ASSERT_EQUAL_MESSAGE(message, expected_length, actual_length);
 
   bool data_matches = 0 == memcmp(expected, actual, expected_length);
   if (!data_matches) {
-    for (unsigned int i = 0; i < expected_length; ++i)
-      if (expected[i] == actual[i])
-        OLA_INFO << i << ": 0x" << std::hex << static_cast<int>(expected[i]) <<
-          " == 0x" << static_cast<int>(actual[i]);
-      else
-        OLA_INFO << i << ": 0x" << std::hex << static_cast<int>(expected[i]) <<
-          " != 0x" << static_cast<int>(actual[i]) <<
-            "  ## MISMATCH";
+    for (unsigned int i = 0; i < expected_length; ++i) {
+      str.str("");
+      str << std::dec << i << ": 0x" << std::hex
+          << static_cast<int>(expected[i]);
+      str << ((expected[i] == actual[i]) ? " == " : "  != ");
+      str << "0x" << static_cast<int>(actual[i]) << " (";
+      str << ((expected[i] >= '!' && expected[i] <= '~') ? (char) expected[i] : ' ');
+      str << ((expected[i] == actual[i]) ? " == " : "  != ");
+      str << ((actual[i] >= '!' && actual[i] <= '~') ? (char) actual[i] : ' ');
+      str << ")";
+
+      if (expected[i] != actual[i])
+        str << "  ## MISMATCH";
+      OLA_INFO << str.str();
+    }
   }
-  CPPUNIT_ASSERT_MESSAGE(str.str(), data_matches);
+  CPPUNIT_ASSERT_MESSAGE(message, data_matches);
 }
 }  // testing
 }  // ola

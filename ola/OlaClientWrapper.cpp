@@ -19,7 +19,6 @@
  */
 
 
-#include <ola/AutoStart.h>
 #include <ola/BaseTypes.h>
 #include <ola/Logging.h>
 #include <ola/network/IPV4Address.h>
@@ -28,47 +27,26 @@
 
 namespace ola {
 
-BaseClientWrapper::BaseClientWrapper(bool auto_start)
-    : m_socket(NULL),
-      m_auto_start(auto_start),
-      m_ss(NULL) {
-}
-
-
 BaseClientWrapper::~BaseClientWrapper() {
   Cleanup();
 }
-
 
 /*
  * Setup the Simple Client
  * @returns true on success, false on failure
  */
 bool BaseClientWrapper::Setup() {
-  if (!m_ss)
-    m_ss = new SelectServer();
+  if (!m_socket.get()) {
+    InitSocket();
 
-  if (!m_socket) {
-    if (m_auto_start)
-      m_socket = ola::client::ConnectToServer(OLA_DEFAULT_PORT);
-    else
-    m_socket = TCPSocket::Connect(
-        ola::network::IPV4SocketAddress(ola::network::IPV4Address::Loopback(),
-                                       OLA_DEFAULT_PORT));
-
-    if (!m_socket) {
-      delete m_socket;
-      delete m_ss;
-      m_socket = NULL;
-      m_ss = NULL;
+    if (!m_socket.get())
       return false;
-    }
     m_socket->SetOnClose(
         ola::NewSingleCallback(this, &OlaClientWrapper::SocketClosed));
   }
 
   CreateClient();
-  m_ss->AddReadDescriptor(m_socket);
+  m_ss.AddReadDescriptor(m_socket.get());
   return StartupClient();
 }
 
@@ -78,11 +56,8 @@ bool BaseClientWrapper::Setup() {
  * @return true on sucess, false on failure
  */
 bool BaseClientWrapper::Cleanup() {
-  if (m_socket)
-    delete m_socket;
-
-  if (m_ss)
-    delete m_ss;
+  if (m_socket.get())
+    m_socket->Close();
   return true;
 }
 
@@ -91,6 +66,6 @@ bool BaseClientWrapper::Cleanup() {
  */
 void BaseClientWrapper::SocketClosed() {
   OLA_INFO << "Server closed the connection";
-  m_ss->Terminate();
+  m_ss.Terminate();
 }
 }  // ola
