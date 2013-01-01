@@ -22,6 +22,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "ola/Logging.h"
 #include "ola/io/IOQueue.h"
@@ -45,6 +46,7 @@ using ola::slp::URLEntry;
 using ola::testing::ASSERT_DATA_EQUALS;
 using std::set;
 using std::string;
+using std::vector;
 
 class PacketBuilderTest: public CppUnit::TestFixture {
   public:
@@ -56,6 +58,7 @@ class PacketBuilderTest: public CppUnit::TestFixture {
     CPPUNIT_TEST(testBuildServiceRegistration);
     CPPUNIT_TEST(testBuildServiceDeRegistration);
     CPPUNIT_TEST(testBuildDAAdvert);
+    CPPUNIT_TEST(testBuildServiceTypeReply);
     CPPUNIT_TEST(testBuildSAAdvert);
     CPPUNIT_TEST(testBuildServiceAck);
     CPPUNIT_TEST(testBuildError);
@@ -66,6 +69,7 @@ class PacketBuilderTest: public CppUnit::TestFixture {
     void testBuildServiceRegistration();
     void testBuildServiceDeRegistration();
     void testBuildDAAdvert();
+    void testBuildServiceTypeReply();
     void testBuildSAAdvert();
     void testBuildServiceAck();
     void testBuildError();
@@ -283,6 +287,32 @@ void PacketBuilderTest::testBuildDAAdvert() {
   expected_data[5] = 0;
   // update error code
   expected_data[17] = 0xc;
+  ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
+                     output_data, data_size);
+  delete[] output_data;
+}
+
+/*
+ * Check that BuildServiceTypeReply() works.
+ */
+void PacketBuilderTest::testBuildServiceTypeReply() {
+  ScopeSet scopes("ACN,MYORG\\2c");
+  vector<string> service_types;
+  service_types.push_back("lpr");
+  service_types.push_back("foo,bar");  // check escaping
+
+  SLPPacketBuilder::BuildServiceTypeReply(&output, xid, 0, service_types);
+  OLA_ASSERT_EQ(33u, ioqueue.Size());
+
+  unsigned int data_size;
+  uint8_t *output_data = WriteToBuffer(&ioqueue, &data_size);
+  uint8_t expected_data[] = {
+    2, 10, 0, 0, 0x21, 0x0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+    0, 0,  // error code
+    0, 13,
+    'l', 'p', 'r', ',', 'f', 'o', 'o', '\\', '2', 'c', 'b', 'a', 'r'
+  };
+
   ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
                      output_data, data_size);
   delete[] output_data;

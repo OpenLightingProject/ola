@@ -26,6 +26,7 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 #include "tools/slp/SLPPacketBuilder.h"
 #include "tools/slp/SLPUDPSender.h"
@@ -140,6 +141,19 @@ void SLPUDPSender::SendDAAdvert(const IPV4SocketAddress &dest,
       boot_timestamp, url, scopes);
   OLA_INFO << "TX DAAdvert(" << dest << "), xid " << xid << ", error "
            << error_code << ", url " << url;
+  Send(dest);
+}
+
+
+void SLPUDPSender::SendServiceTypeReply(const IPV4SocketAddress &dest,
+                                        xid_t xid,
+                                        uint16_t error_code,
+                                        const vector<string> &service_types) {
+  EmptyBuffer();
+  SLPPacketBuilder::BuildServiceTypeReply(&m_output_stream, xid, error_code,
+                                          service_types);
+  OLA_INFO << "TX SrvTypeRpl(" << dest << "), xid " << xid << ", error "
+           << error_code << ", # of service-types " << service_types.size();
   Send(dest);
 }
 

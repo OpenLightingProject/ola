@@ -24,6 +24,7 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 #include "tools/slp/SLPPacketBuilder.h"
 #include "tools/slp/SLPPacketConstants.h"
@@ -274,6 +275,42 @@ void SLPPacketBuilder::BuildDAAdvert(BigEndianOutputStreamInterface *output,
   *output << static_cast<uint16_t>(0);  // length of attr-list
   *output << static_cast<uint16_t>(0);  // length of spi list
   *output << static_cast<uint8_t>(0);   // # of auth blocks
+}
+
+
+/**
+ * Build a SrvTypeRply packet
+ */
+void SLPPacketBuilder::BuildServiceTypeReply(
+    BigEndianOutputStreamInterface *output,
+    xid_t xid,
+    uint16_t error_code,
+    const vector<string> &service_types) {
+  /*
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |      Service Location header (function = SrvTypeRply = 10)    |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |           Error Code          |    length of <srvType-list>   |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                       <srvtype--list>                         \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ */
+  vector<string> escaped_service_types;
+  vector<string>::const_iterator iter = service_types.begin();
+  for (; iter != service_types.end(); ++iter) {
+    string service_type = *iter;
+    SLPStringEscape(&service_type);
+    escaped_service_types.push_back(service_type);
+  }
+  const string joined_service_types = ola::StringJoin(
+      ",", escaped_service_types);
+  unsigned int length = 4 + joined_service_types.size();
+  BuildSLPHeader(output, SERVICE_TYPE_REPLY, length, false, xid);
+
+  *output << static_cast<uint16_t>(error_code);
+  WriteString(output, joined_service_types);
 }
 
 

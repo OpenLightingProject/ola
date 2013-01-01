@@ -141,6 +141,35 @@ class DAAdvertPacket: public SLPPacket {
 
 
 /**
+ * SrvTypeRqst
+ */
+class ServiceTypeRequestPacket: public SLPPacket {
+  public:
+    ServiceTypeRequestPacket()
+        : SLPPacket(),
+          include_all(false) {
+    }
+
+    vector<IPV4Address> pr_list;
+    bool include_all;
+    string naming_authority;
+    string scope_list;
+};
+
+
+/**
+ * SrvTypeReply
+ */
+class ServiceTypeReplyPacket: public SLPPacket {
+  public:
+    ServiceTypeReplyPacket(): SLPPacket() {}
+
+    uint16_t error_code;
+    vector<string> srv_types;
+};
+
+
+/**
  * The SLPPacketParser unpacks data from SLP packets.
  */
 class SLPPacketParser {
@@ -164,6 +193,9 @@ class SLPPacketParser {
         BigEndianInputStream *input) const;
 
     const DAAdvertPacket *UnpackDAAdvert(
+        BigEndianInputStream *input) const;
+
+    const ServiceTypeRequestPacket *UnpackServiceTypeRequest(
         BigEndianInputStream *input) const;
 
     const ServiceDeRegistrationPacket *UnpackServiceDeRegistration(

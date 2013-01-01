@@ -25,6 +25,7 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 #include "tools/slp/SLPPacketConstants.h"
 #include "tools/slp/ServiceEntry.h"
@@ -82,6 +83,11 @@ class SLPPacketBuilder {
                               uint32_t boot_timestamp,
                               const string &url,
                               const ScopeSet &scopes);
+
+    static void BuildServiceTypeReply(BigEndianOutputStreamInterface *output,
+                                      xid_t xid,
+                                      uint16_t error_code,
+                                      const vector<string> &service_types);
 
     static void BuildSAAdvert(BigEndianOutputStreamInterface *output,
                               xid_t xid,

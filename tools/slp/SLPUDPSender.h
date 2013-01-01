@@ -28,6 +28,7 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 using ola::network::IPV4SocketAddress;
 using std::string;
@@ -85,6 +86,11 @@ class SLPUDPSender {
                       uint32_t boot_timestamp,
                       const string &url,
                       const ScopeSet &scopes);
+
+    void SendServiceTypeReply(const IPV4SocketAddress &dest,
+                              xid_t xid,
+                              uint16_t error_code,
+                              const vector<string> &service_types);
 
     void SendSAAdvert(const IPV4SocketAddress &dest,
                       xid_t xid,

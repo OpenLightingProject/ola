@@ -54,6 +54,7 @@ class PacketParserTest: public CppUnit::TestFixture {
     CPPUNIT_TEST(testParseServiceAck);
     CPPUNIT_TEST(testParseDAAdvert);
     CPPUNIT_TEST(testParseServiceDeRegister);
+    CPPUNIT_TEST(testParserServiceTypeRequest);
     CPPUNIT_TEST(testExtractHeader);
     CPPUNIT_TEST(testExtractURLEntry);
     CPPUNIT_TEST_SUITE_END();
@@ -65,6 +66,7 @@ class PacketParserTest: public CppUnit::TestFixture {
     void testParseServiceAck();
     void testParseDAAdvert();
     void testParseServiceDeRegister();
+    void testParserServiceTypeRequest();
     void testExtractHeader();
     void testExtractURLEntry();
 
@@ -965,6 +967,171 @@ void PacketParserTest::testParseServiceDeRegister() {
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
     OLA_ASSERT_NULL(m_parser.UnpackServiceDeRegistration(&stream));
+  }
+}
+
+
+/*
+ * Check that UnpackServiceTypeRequest() works.
+ */
+void PacketParserTest::testParserServiceTypeRequest() {
+  {
+    uint8_t input_data[] = {
+      2, 4, 0, 0, 0x38, 0x0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1',
+      '.', '8',  // pr-list
+      0xff, 0xff,  // length of naming auth, this means 'all services'
+      // scope list
+      0, 0x9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',
+    };
+
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+
+    auto_ptr<const ola::slp::ServiceTypeRequestPacket> packet(
+      m_parser.UnpackServiceTypeRequest(&stream));
+    OLA_ASSERT(packet.get());
+
+    // verify the contents of the packet
+    OLA_ASSERT_EQ(static_cast<ola::slp::xid_t>(0x1234), packet->xid);
+    OLA_ASSERT_EQ(false, packet->Overflow());
+    OLA_ASSERT_EQ(false, packet->Fresh());
+    OLA_ASSERT_EQ(false, packet->Multicast());
+    OLA_ASSERT_EQ(string("en"), packet->language);
+
+    vector<IPV4Address> expected_pr_list;
+    expected_pr_list.push_back(ip1);
+    expected_pr_list.push_back(ip2);
+    OLA_ASSERT_VECTOR_EQ(expected_pr_list, packet->pr_list);
+    OLA_ASSERT_TRUE(packet->include_all);
+    OLA_ASSERT_EQ(string(""), packet->naming_authority);
+    OLA_ASSERT_EQ(expected_scopes, packet->scope_list);
+  }
+
+
+  {
+    uint8_t input_data[] = {
+      2, 4, 0, 0, 0x38, 0x0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1',
+      '.', '8',  // pr-list
+      0x0, 0x0,  // empty naming auth, this means 'all IANA services'
+      // scope list
+      0, 0x9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',
+    };
+
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+
+    auto_ptr<const ola::slp::ServiceTypeRequestPacket> packet(
+      m_parser.UnpackServiceTypeRequest(&stream));
+    OLA_ASSERT(packet.get());
+
+    // verify the contents of the packet
+    OLA_ASSERT_EQ(static_cast<ola::slp::xid_t>(0x1234), packet->xid);
+    OLA_ASSERT_EQ(false, packet->Overflow());
+    OLA_ASSERT_EQ(false, packet->Fresh());
+    OLA_ASSERT_EQ(false, packet->Multicast());
+    OLA_ASSERT_EQ(string("en"), packet->language);
+
+    vector<IPV4Address> expected_pr_list;
+    expected_pr_list.push_back(ip1);
+    expected_pr_list.push_back(ip2);
+    OLA_ASSERT_VECTOR_EQ(expected_pr_list, packet->pr_list);
+    OLA_ASSERT_FALSE(packet->include_all);
+    OLA_ASSERT_EQ(string(""), packet->naming_authority);
+    OLA_ASSERT_EQ(expected_scopes, packet->scope_list);
+  }
+
+  {
+    uint8_t input_data[] = {
+      2, 4, 0, 0, 0x38, 0x0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1',
+      '.', '8',  // pr-list
+      0x0, 0x5, 'p', 'l', 'a', 's', 'a',  // naming auth
+      // scope list
+      0, 0x9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',
+    };
+
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+
+    auto_ptr<const ola::slp::ServiceTypeRequestPacket> packet(
+      m_parser.UnpackServiceTypeRequest(&stream));
+    OLA_ASSERT(packet.get());
+
+    // verify the contents of the packet
+    OLA_ASSERT_EQ(static_cast<ola::slp::xid_t>(0x1234), packet->xid);
+    OLA_ASSERT_EQ(false, packet->Overflow());
+    OLA_ASSERT_EQ(false, packet->Fresh());
+    OLA_ASSERT_EQ(false, packet->Multicast());
+    OLA_ASSERT_EQ(string("en"), packet->language);
+
+    vector<IPV4Address> expected_pr_list;
+    expected_pr_list.push_back(ip1);
+    expected_pr_list.push_back(ip2);
+    OLA_ASSERT_VECTOR_EQ(expected_pr_list, packet->pr_list);
+    OLA_ASSERT_FALSE(packet->include_all);
+    OLA_ASSERT_EQ(string("plasa"), packet->naming_authority);
+    OLA_ASSERT_EQ(expected_scopes, packet->scope_list);
+  }
+
+  // short packet
+  {
+    MemoryBuffer buffer(NULL, 0);
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceTypeRequest(&stream));
+  }
+
+  // missing pr list
+  {
+    const uint8_t input_data[] = {
+      2, 4, 0, 0, 0x38, 0x0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      // pr list
+      0, 0x9,
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceTypeRequest(&stream));
+  }
+
+  // missing naming auth
+  {
+    const uint8_t input_data[] = {
+      2, 4, 0, 0, 0x38, 0x0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1',
+      '.', '8',  // pr-list
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceTypeRequest(&stream));
+  }
+
+  // truncated naing auth
+  {
+    uint8_t input_data[] = {
+      2, 4, 0, 0, 0x38, 0x0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1',
+      '.', '8',  // pr-list
+      0x0, 0x5, 'p', 'l', 'a',
+    };
+
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceTypeRequest(&stream));
+  }
+
+  // missing scope list
+  {
+    const uint8_t input_data[] = {
+      2, 4, 0, 0, 0x38, 0x0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1',
+      '.', '8',  // pr-list
+      0x0, 0x0,  // empty naming auth, this means 'all IANA services'
+      0x0, 0xa
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(m_parser.UnpackServiceTypeRequest(&stream));
   }
 }
 

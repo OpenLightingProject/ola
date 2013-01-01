@@ -168,6 +168,50 @@ const ServiceAckPacket *SLPPacketParser::UnpackServiceAck(
 }
 
 
+
+/**
+ * Unpacket a SrvTypeRqst packet
+ */
+const ServiceTypeRequestPacket *SLPPacketParser::UnpackServiceTypeRequest(
+    BigEndianInputStream *input) const {
+  auto_ptr<ServiceTypeRequestPacket> packet(new ServiceTypeRequestPacket());
+  if (!ExtractHeader(input, packet.get(), "SrvTypeRqst"))
+    return NULL;
+
+  string pr_list;
+  if (!ExtractString(input, &pr_list, "PR List"))
+    return NULL;
+  ConvertIPAddressList(pr_list, &packet->pr_list);
+
+  // The naming auth field is special, since a length of 0xffff implies all
+  // sevices.
+  uint16_t naming_auth_length;
+  if (!(*input >> naming_auth_length)) {
+    OLA_INFO << "Packet too small to read naming auth length";
+    return NULL;
+  }
+
+  if (naming_auth_length == 0xffff) {
+    packet->include_all = true;
+  } else {
+    packet->include_all = false;
+
+    unsigned int bytes_read = input->ReadString(&packet->naming_authority,
+                                                naming_auth_length);
+    if (bytes_read != naming_auth_length) {
+      OLA_INFO << "Insufficent data remaining for naming auth, expected "
+               << naming_auth_length << ", " << bytes_read << " remaining";
+      return NULL;
+    }
+    SLPStringUnescape(&packet->naming_authority);
+  }
+
+  if (!ExtractString(input, &packet->scope_list, "Scope List", false))
+    return NULL;
+  return packet.release();
+}
+
+
 /**
  * Unpack a DAAdvert packet
  */
