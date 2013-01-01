@@ -77,13 +77,13 @@ class SLPServerNetworkTest: public CppUnit::TestFixture {
     SLPServerTestHelper m_helper;
 
     static const IPV4SocketAddress peer;
-    static const char TEST_SCOPE[];
+    static const ScopeSet TEST_SCOPE;
 };
 
 
 const IPV4SocketAddress SLPServerNetworkTest::peer =
     IPV4SocketAddress::FromStringOrDie("192.168.1.1:5570");
-const char SLPServerNetworkTest::TEST_SCOPE[] = "one";
+const ScopeSet SLPServerNetworkTest::TEST_SCOPE("one");
 
 CPPUNIT_TEST_SUITE_REGISTRATION(SLPServerNetworkTest);
 

@@ -83,10 +83,10 @@ class SLPServerTestHelper {
                << (now - m_server_start_time);
     }
 
-    SLPServer *CreateNewServer(bool enable_da, const string &scopes);
-    SLPServer *CreateDAAndHandleStartup(const string &scopes);
-    void HandleInitialActiveDADiscovery(const string &scopes);
-    void HandleActiveDADiscovery(const string &scopes, xid_t xid);
+    SLPServer *CreateNewServer(bool enable_da, const ScopeSet &scopes);
+    SLPServer *CreateDAAndHandleStartup(const ScopeSet &scopes);
+    void HandleInitialActiveDADiscovery(const ScopeSet &scopes);
+    void HandleActiveDADiscovery(const ScopeSet &scopes, xid_t xid);
     void RegisterWithDA(SLPServer *server,
                         const IPV4SocketAddress &da_addr,
                         const ServiceEntry &service,

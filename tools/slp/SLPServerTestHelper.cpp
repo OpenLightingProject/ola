@@ -65,9 +65,7 @@ const char SLPServerTestHelper::SLP_MULTICAST_IP[] = "239.255.255.253";
  * Create a new SLPServer
  */
 SLPServer *SLPServerTestHelper::CreateNewServer(bool enable_da,
-                                                const string &scopes) {
-  ScopeSet scope_set(scopes);
-
+                                                const ScopeSet &scopes) {
   SLPServer::SLPServerOptions options;
   options.enable_da = enable_da;
   options.clock = &m_clock;
@@ -81,7 +79,7 @@ SLPServer *SLPServerTestHelper::CreateNewServer(bool enable_da,
   options.config_reg_active_max = 1;
   // set the boot timestamp to something we know
   options.boot_time = INITIAL_BOOT_TIME;
-  copy(scope_set.begin(), scope_set.end(),
+  copy(scopes.begin(), scopes.end(),
        std::inserter(options.scopes, options.scopes.end()));
   options.slp_port = SLP_TEST_PORT;
   m_server_start_time = *(m_ss.WakeUpTime());
@@ -97,9 +95,10 @@ SLPServer *SLPServerTestHelper::CreateNewServer(bool enable_da,
  * Create a new SLPServer (with DA enabled) and handle the initial DAAdvert &
  * SrvRqsts it sends.
  */
-SLPServer *SLPServerTestHelper::CreateDAAndHandleStartup(const string &scopes) {
-  ExpectMulticastDAAdvert(0, INITIAL_BOOT_TIME, ScopeSet(scopes));
-  SLPServer *server =CreateNewServer(true, scopes);
+SLPServer *SLPServerTestHelper::CreateDAAndHandleStartup(
+    const ScopeSet &scopes) {
+  ExpectMulticastDAAdvert(0, INITIAL_BOOT_TIME, scopes);
+  SLPServer *server = CreateNewServer(true, scopes);
   HandleInitialActiveDADiscovery(scopes);
   m_udp_socket->Verify();
   return server;
@@ -112,17 +111,16 @@ SLPServer *SLPServerTestHelper::CreateDAAndHandleStartup(const string &scopes) {
  * seconds to pass
  */
 void SLPServerTestHelper::HandleInitialActiveDADiscovery(
-    const string &scopes) {
-  ScopeSet scope_set(scopes);
+    const ScopeSet &scopes) {
   set<IPV4Address> pr_list;
   // The first request is somewhere between 0 and 3s (CONFIG_START_WAIT)
   // after we start
-  ExpectDAServiceRequest(0, pr_list, scope_set);
+  ExpectDAServiceRequest(0, pr_list, scopes);
   AdvanceTime(3);
   m_udp_socket->Verify();
 
   // Then another one 2s later.
-  ExpectDAServiceRequest(0, pr_list, scope_set);
+  ExpectDAServiceRequest(0, pr_list, scopes);
   AdvanceTime(2);
   m_udp_socket->Verify();
 
@@ -136,18 +134,17 @@ void SLPServerTestHelper::HandleInitialActiveDADiscovery(
  * This assumes the timing options are using the default values.
  * Each call takes 7 seconds on the clock.
  */
-void SLPServerTestHelper::HandleActiveDADiscovery(const string &scopes,
+void SLPServerTestHelper::HandleActiveDADiscovery(const ScopeSet &scopes,
                                                   xid_t xid) {
-  ScopeSet scope_set(scopes);
   set<IPV4Address> pr_list;
   // The first request is somewhere between 0 and 3s (CONFIG_START_WAIT)
   // after we start
-  ExpectDAServiceRequest(xid, pr_list, scope_set);
+  ExpectDAServiceRequest(xid, pr_list, scopes);
   AdvanceTime(1);
   m_udp_socket->Verify();
 
   // Then another one 2s later.
-  ExpectDAServiceRequest(xid, pr_list, scope_set);
+  ExpectDAServiceRequest(xid, pr_list, scopes);
   AdvanceTime(2);
   m_udp_socket->Verify();
 
