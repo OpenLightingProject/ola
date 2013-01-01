@@ -181,7 +181,7 @@ bool SLPClientCore::FindService(
  */
 void SLPClientCore::HandleRegistration(register_arg *args) {
   string error_string = "";
-  uint16_t response_code;
+  uint16_t response_code = 0;
 
   if (!args->callback) {
     FreeArgs(args);

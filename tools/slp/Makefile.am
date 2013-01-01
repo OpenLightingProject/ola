@@ -55,7 +55,7 @@ SLP.pb.cc SLP.pb.h: SLP.proto
 	$(PROTOC)  --cpp_out ./ SLP.proto
 
 # Programs
-noinst_PROGRAMS = slp_server slp_client slp_parser
+noinst_PROGRAMS = slp_server slp_client
 slp_server_SOURCES = SLPDaemon.cpp \
                      slp-server.cpp
 slp_server_LDADD = $(top_builddir)/common/libolacommon.la \
@@ -70,15 +70,6 @@ slp_client_LDADD = $(top_builddir)/common/libolacommon.la \
                    $(top_builddir)/ola/libola.la \
                    ./libolaslpcore.la \
                    ./libolaslpproto.la
-
-slp_parser_SOURCES = slp-parser.cpp \
-                     config.tab.cpp \
-                     slp-parser-actions.cpp \
-                     lex.yy.cpp
-slp_parser_CXXFLAGS = $(WARNING_CXXFLAGS)
-slp_parser_LDADD =  $(top_builddir)/common/libolacommon.la \
-                    $(LEXLIB)
-
 
 clean-local:
 	rm -f *.pb.{h,cc} lex.yy.cpp config.tab.cpp config.tab.h *.gcno *.gcda
