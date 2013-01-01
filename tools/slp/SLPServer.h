@@ -23,7 +23,6 @@
 #include <ola/Clock.h>
 #include <ola/ExportMap.h>
 #include <ola/io/BigEndianStream.h>
-#include <ola/io/IOQueue.h>
 #include <ola/io/SelectServer.h>
 #include <ola/io/StdinHandler.h>
 #include <ola/network/IPV4Address.h>
@@ -32,7 +31,6 @@
 #include <ola/network/SocketAddress.h>
 #include <ola/network/TCPSocketFactory.h>
 
-#include <iostream>
 #include <memory>
 #include <set>
 #include <map>
@@ -49,14 +47,12 @@
 #include "tools/slp/XIDAllocator.h"
 
 using ola::Clock;
-using ola::io::IOQueue;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::network::TCPSocket;
 using std::auto_ptr;
 using std::map;
 using std::multimap;
-using std::pair;
 using std::set;
 using std::string;
 
@@ -83,6 +79,7 @@ class SLPServer {
       bool enable_da;  // enable the DA mode
       uint16_t slp_port;
       set<string> scopes;  // supported scopes
+      // The following come from RFC2608 and are set to their default values
       uint32_t config_da_find;
       uint32_t config_da_beat;  // seconds between DA beats
       uint32_t config_mc_max;
@@ -91,8 +88,10 @@ class SLPServer {
       uint16_t config_start_wait;
       uint16_t config_reg_active_min;
       uint16_t config_reg_active_max;
-      uint16_t initial_xid;  // used for testing
-      uint32_t boot_time;  // used for testing
+      // The following values are used to initialize the server with a known
+      // state for testing.
+      uint16_t initial_xid;
+      uint32_t boot_time;
 
       SLPServerOptions();
     };
@@ -149,8 +148,7 @@ class SLPServer {
         SLPServer *server;
     };
 
-    bool m_enable_da;
-    uint16_t m_slp_port;
+    // timing parameters
     uint32_t m_config_da_beat;
     uint32_t m_config_da_find;
     uint32_t m_config_mc_max;
@@ -160,6 +158,8 @@ class SLPServer {
     uint32_t m_config_reg_active_min;
     uint32_t m_config_reg_active_max;
 
+    bool m_enable_da;
+    uint16_t m_slp_port;
     string m_en_lang;
     const IPV4Address m_iface_address;
     ola::TimeStamp m_boot_time;
@@ -233,11 +233,6 @@ class SLPServer {
     void SendAck(const IPV4SocketAddress &dest, uint16_t error_code);
     bool SendDABeat();
 
-    // TODO(simon): categorize these
-    void LocalLocateServices(const ScopeSet &scopes,
-                             const string &service_type,
-                             URLEntries *services);
-
     // UA methods to handle finding services
     void FindServiceInScopes(PendingSrvRqst *request, const ScopeSet &scopes);
     //   methods used to communicate with DAs
@@ -286,12 +281,13 @@ class SLPServer {
     void GetCurrentTime(TimeStamp *time);
 
     // constants
-    // Super ghetto:
-    // iphdr(20) + udphdr(8) + slphdr(16) = 44
-    // The lengths of a SrvRqst are another 10, which leaves 1446 remaining
-    // A PR can be at most 15 bytes
-    // 88 PRs leaves 126 bytes for the service-type & scope strings
-    // TODO(simon): fix this for real
+    /* Super ghetto:
+     * Section 6.1 of the RFC says the max UDP data size is 1400, SLP headers
+     * are 16 bytes. The lengths of a SrvRqst are another 10, which leaves 137
+     * remaining. A PR can be at most 15 bytes.
+     * 88 PRs leaves 54 bytes for the service-type & scope strings
+     * TODO(simon): fix this for real
+     */
     static const unsigned int MAX_PR_LIST_SIZE = 88;
     static const char DAADVERT[];
     static const char DEREGSRVS_ERROR_COUNT_VAR[];

@@ -100,6 +100,18 @@ const char SLPServer::UDP_RX_TOTAL_VAR[] = "slp-udp-rx";
 const char SLPServer::UDP_TX_PACKET_BY_TYPE_VAR[] = "slp-udp-tx-packets";
 
 
+SLPServer::UnicastOperationDeleter::~UnicastOperationDeleter() {
+  if (server && op)
+    server->CancelPendingDAOperationsForServiceAndDA(op->service.url().url(),
+                                                     op->da_url);
+}
+
+void SLPServer::UnicastOperationDeleter::Cancel() {
+  op = NULL;
+  server = NULL;
+}
+
+
 /*
  * Init the options to sensible defaults
  */
@@ -120,19 +132,6 @@ SLPServer::SLPServerOptions::SLPServerOptions()
 }
 
 
-
-SLPServer::UnicastOperationDeleter::~UnicastOperationDeleter() {
-  if (server && op)
-    server->CancelPendingDAOperationsForServiceAndDA(op->service.url().url(),
-                                                     op->da_url);
-}
-
-void SLPServer::UnicastOperationDeleter::Cancel() {
-  op = NULL;
-  server = NULL;
-}
-
-
 /**
  * Setup a new SLP server.
  * @param ss the SelectServer to use
@@ -146,9 +145,7 @@ SLPServer::SLPServer(ola::io::SelectServerInterface *ss,
                      ola::network::TCPAcceptingSocket *tcp_socket,
                      ola::ExportMap *export_map,
                      const SLPServerOptions &options)
-    : m_enable_da(options.enable_da),
-      m_slp_port(options.slp_port),
-      m_config_da_beat(options.config_da_beat * ONE_THOUSAND),
+    : m_config_da_beat(options.config_da_beat * ONE_THOUSAND),
       m_config_da_find(options.config_da_find * ONE_THOUSAND),
       m_config_mc_max(options.config_mc_max * ONE_THOUSAND),
       m_config_retry(options.config_retry * ONE_THOUSAND),
@@ -156,6 +153,8 @@ SLPServer::SLPServer(ola::io::SelectServerInterface *ss,
       m_config_start_wait(options.config_start_wait * ONE_THOUSAND),
       m_config_reg_active_min(options.config_reg_active_min * ONE_THOUSAND),
       m_config_reg_active_max(options.config_reg_active_max * ONE_THOUSAND),
+      m_enable_da(options.enable_da),
+      m_slp_port(options.slp_port),
       m_en_lang(reinterpret_cast<const char*>(EN_LANGUAGE_TAG),
                 sizeof(EN_LANGUAGE_TAG)),
       m_iface_address(options.ip_address),
@@ -236,7 +235,7 @@ SLPServer::~SLPServer() {
  * Init the server
  */
 bool SLPServer::Init() {
-  OLA_INFO << "Interface address is " << m_iface_address;
+  OLA_INFO << "SLP Interface address is " << m_iface_address;
 
   if (!m_udp_socket->SetMulticastInterface(m_iface_address)) {
     return false;
@@ -324,7 +323,8 @@ void SLPServer::FindService(
     // if we're a DA handle all those scopes first
     ScopeSet da_scopes = scope_set.DifferenceUpdate(m_configured_scopes);
     if (!da_scopes.empty())
-      LocalLocateServices(da_scopes, service_type, &urls);
+      m_service_store.Lookup(*(m_ss->WakeUpTime()), da_scopes, service_type,
+                             &urls);
   }
 
   if (scope_set.empty()) {
@@ -517,7 +517,8 @@ void SLPServer::HandleServiceRequest(BigEndianInputStream *stream,
 
   URLEntries urls;
   OLA_INFO << "Received SrvRqst for " << request->service_type;
-  LocalLocateServices(scope_set, request->service_type, &urls);
+  m_service_store.Lookup(*(m_ss->WakeUpTime()), scope_set,
+                         request->service_type, &urls);
 
   OLA_INFO << "sending SrvReply with " << urls.size() << " urls";
   if (urls.empty() && request->Multicast())
@@ -750,19 +751,6 @@ bool SLPServer::SendDABeat() {
   // unsolicited DAAdverts have a xid of 0
   SendDAAdvert(m_multicast_endpoint, m_boot_time.Seconds(), 0);
   return true;
-}
-
-
-/**
- * Lookup a service in our local stores
- * @param scopes the list of canonical scopes
- * @param service_type the service to locate.
- * @param services a ServiceEntries where we store the results
- */
-void SLPServer::LocalLocateServices(const ScopeSet &scopes,
-                                    const string &service_type,
-                                    URLEntries *services) {
-  m_service_store.Lookup(*(m_ss->WakeUpTime()), scopes, service_type, services);
 }
 
 
