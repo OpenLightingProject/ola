@@ -58,6 +58,7 @@ class PacketBuilderTest: public CppUnit::TestFixture {
     CPPUNIT_TEST(testBuildServiceRegistration);
     CPPUNIT_TEST(testBuildServiceDeRegistration);
     CPPUNIT_TEST(testBuildDAAdvert);
+    CPPUNIT_TEST(testBuildServiceTypeRequest);
     CPPUNIT_TEST(testBuildServiceTypeReply);
     CPPUNIT_TEST(testBuildSAAdvert);
     CPPUNIT_TEST(testBuildServiceAck);
@@ -69,6 +70,7 @@ class PacketBuilderTest: public CppUnit::TestFixture {
     void testBuildServiceRegistration();
     void testBuildServiceDeRegistration();
     void testBuildDAAdvert();
+    void testBuildServiceTypeRequest();
     void testBuildServiceTypeReply();
     void testBuildSAAdvert();
     void testBuildServiceAck();
@@ -291,6 +293,85 @@ void PacketBuilderTest::testBuildDAAdvert() {
                      output_data, data_size);
   delete[] output_data;
 }
+
+
+/*
+ * Check that BuildServiceTypeRequest() works.
+ */
+void PacketBuilderTest::testBuildServiceTypeRequest() {
+  set<IPV4Address> pr_list;
+  IPV4Address first_ip, second_ip;
+  OLA_ASSERT_TRUE(IPV4Address::FromString("1.1.1.2", &first_ip));
+  OLA_ASSERT_TRUE(IPV4Address::FromString("1.1.1.8", &second_ip));
+  pr_list.insert(first_ip);
+  pr_list.insert(second_ip);
+
+  ScopeSet scopes("ACN,MYORG\\2c");
+
+  {
+    // request for all service-types
+    SLPPacketBuilder::BuildAllServiceTypeRequest(&output, xid, true, pr_list,
+                                                 scopes);
+    OLA_ASSERT_EQ(49u, ioqueue.Size());
+
+    unsigned int data_size;
+    uint8_t *output_data = WriteToBuffer(&ioqueue, &data_size);
+    uint8_t expected_data[] = {
+      2, 9, 0, 0, 0x31, 0x20, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1',
+      '.', '8',  // pr-list
+      0xff, 0xff,   // naming auth length
+      0, 0xc, 'a', 'c', 'n', ',', 'm', 'y', 'o', 'r', 'g', '\\', '2', 'c'
+    };
+
+    ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
+                       output_data, data_size);
+    delete[] output_data;
+  }
+
+  {
+    // request for IANA types
+    SLPPacketBuilder::BuildServiceTypeRequest(&output, xid, true, pr_list, "",
+                                              scopes);
+    OLA_ASSERT_EQ(49u, ioqueue.Size());
+
+    unsigned int data_size;
+    uint8_t *output_data = WriteToBuffer(&ioqueue, &data_size);
+    uint8_t expected_data[] = {
+      2, 9, 0, 0, 0x31, 0x20, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1',
+      '.', '8',  // pr-list
+      0x0, 0x0,   // naming auth length
+      0, 0xc, 'a', 'c', 'n', ',', 'm', 'y', 'o', 'r', 'g', '\\', '2', 'c'
+    };
+
+    ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
+                       output_data, data_size);
+    delete[] output_data;
+  }
+
+  {
+    // request for a specific naming auth
+    SLPPacketBuilder::BuildServiceTypeRequest(&output, xid, true, pr_list,
+                                              "foo", scopes);
+    OLA_ASSERT_EQ(52u, ioqueue.Size());
+
+    unsigned int data_size;
+    uint8_t *output_data = WriteToBuffer(&ioqueue, &data_size);
+    uint8_t expected_data[] = {
+      2, 9, 0, 0, 0x34, 0x20, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1',
+      '.', '8',  // pr-list
+      0x0, 0x3, 'f', 'o', 'o',  // naming auth length
+      0, 0xc, 'a', 'c', 'n', ',', 'm', 'y', 'o', 'r', 'g', '\\', '2', 'c'
+    };
+
+    ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
+                       output_data, data_size);
+    delete[] output_data;
+  }
+}
+
 
 /*
  * Check that BuildServiceTypeReply() works.

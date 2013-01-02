@@ -84,6 +84,19 @@ class SLPPacketBuilder {
                               const string &url,
                               const ScopeSet &scopes);
 
+    static void BuildAllServiceTypeRequest(
+        BigEndianOutputStreamInterface *output,
+        xid_t xid,
+        bool multicast,
+        const set<IPV4Address> &pr_list,
+        const ScopeSet &scopes);
+    static void BuildServiceTypeRequest(BigEndianOutputStreamInterface *output,
+                                        xid_t xid,
+                                        bool multicast,
+                                        const set<IPV4Address> &pr_list,
+                                        const string &naming_auth,
+                                        const ScopeSet &scopes);
+
     static void BuildServiceTypeReply(BigEndianOutputStreamInterface *output,
                                       xid_t xid,
                                       uint16_t error_code,

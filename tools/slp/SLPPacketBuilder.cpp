@@ -279,6 +279,82 @@ void SLPPacketBuilder::BuildDAAdvert(BigEndianOutputStreamInterface *output,
 
 
 /**
+ * Build a request for all service types
+ */
+void SLPPacketBuilder::BuildAllServiceTypeRequest(
+    BigEndianOutputStreamInterface *output,
+    xid_t xid,
+    bool multicast,
+    const set<IPV4Address> &pr_list,
+    const ScopeSet &scopes) {
+  /*
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |      Service Location header (function = SrvTypeRqst = 9)     |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |        length of PRList       |        <PRList> String        \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |   length of Naming Authority  |   <Naming Authority String>   \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |     length of <scope-list>    |      <scope-list> String      \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  */
+  const string joined_pr_list = ola::StringJoin(",", pr_list);
+  const string joined_scopes = scopes.AsEscapedString();
+  unsigned int length = 6 + joined_pr_list.size() + joined_scopes.size();
+  BuildSLPHeader(output,
+                 SERVICE_TYPE_REQUEST,
+                 length,
+                 multicast ? SLP_REQUEST_MCAST : 0,
+                 xid);
+
+  WriteString(output, joined_pr_list);
+  *output << static_cast<uint16_t>(0xffff);  // All services
+  WriteString(output, joined_scopes);
+}
+
+
+/**
+ * Build a service-type request for a specific naming auth
+ */
+void SLPPacketBuilder::BuildServiceTypeRequest(
+    BigEndianOutputStreamInterface *output,
+    xid_t xid,
+    bool multicast,
+    const set<IPV4Address> &pr_list,
+    const string &naming_auth,
+    const ScopeSet &scopes) {
+  /*
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |      Service Location header (function = SrvTypeRqst = 9)     |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |        length of PRList       |        <PRList> String        \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |   length of Naming Authority  |   <Naming Authority String>   \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |     length of <scope-list>    |      <scope-list> String      \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  */
+  const string joined_pr_list = ola::StringJoin(",", pr_list);
+  const string joined_scopes = scopes.AsEscapedString();
+  unsigned int length = 6 + joined_pr_list.size() + naming_auth.size() +
+                        joined_scopes.size();
+  BuildSLPHeader(output,
+                 SERVICE_TYPE_REQUEST,
+                 length,
+                 multicast ? SLP_REQUEST_MCAST : 0,
+                 xid);
+
+  WriteString(output, joined_pr_list);
+  WriteString(output, naming_auth);
+  WriteString(output, joined_scopes);
+}
+
+
+/**
  * Build a SrvTypeRply packet
  */
 void SLPPacketBuilder::BuildServiceTypeReply(
