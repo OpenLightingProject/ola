@@ -127,6 +127,15 @@ class SLPServerTestHelper {
                                      xid_t xid,
                                      const ScopeSet &scopes,
                                      const ServiceEntry &service);
+    void InjectAllServiceTypeRequest(const IPV4SocketAddress &source,
+                                     xid_t xid,
+                                     const set<IPV4Address> &pr_list,
+                                     const ScopeSet &scopes);
+    void InjectServiceTypeRequest(const IPV4SocketAddress &source,
+                                  xid_t xid,
+                                  const set<IPV4Address> &pr_list,
+                                  const string &naming_auth,
+                                  const ScopeSet &scopes);
     void InjectError(const IPV4SocketAddress &source,
                      slp_function_id_t function_id,
                      xid_t xid,

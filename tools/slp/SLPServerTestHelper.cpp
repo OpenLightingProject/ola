@@ -276,6 +276,37 @@ void SLPServerTestHelper::InjectServiceDeRegistration(
 
 
 /**
+ * Inject a SrvTypeRqst for all service types
+ */
+void SLPServerTestHelper::InjectAllServiceTypeRequest(
+    const IPV4SocketAddress &source,
+    xid_t xid,
+    const set<IPV4Address> &pr_list,
+    const ScopeSet &scopes) {
+  SLPPacketBuilder::BuildAllServiceTypeRequest(
+      &m_output_stream, xid, true, pr_list, scopes);
+  m_udp_socket->InjectData(&m_output, source);
+  OLA_ASSERT_TRUE(m_output.Empty());
+}
+
+
+/**
+ * Inject a SrvTypeRqst for a particular naming auth
+ */
+void SLPServerTestHelper::InjectServiceTypeRequest(
+    const IPV4SocketAddress &source,
+    xid_t xid,
+    const set<IPV4Address> &pr_list,
+    const string &naming_auth,
+    const ScopeSet &scopes) {
+  SLPPacketBuilder::BuildServiceTypeRequest(
+      &m_output_stream, xid, true, pr_list, naming_auth, scopes);
+  m_udp_socket->InjectData(&m_output, source);
+  OLA_ASSERT_TRUE(m_output.Empty());
+}
+
+
+/**
  * Inject an error (truncated SrvRepl or DAAdvert).
  */
 void SLPServerTestHelper::InjectError(const IPV4SocketAddress &source,
