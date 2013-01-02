@@ -90,8 +90,9 @@ const char SLPServer::SRVDEREG[] = "SrvDeReg";
 const char SLPServer::SRVREG[] = "SrvReg";
 const char SLPServer::SRVRPLY[] = "SrvRply";
 const char SLPServer::SRVRQST[] = "SrvRqst";
-const char SLPServer::UNSUPPORTED[] = "Unsupported";
+const char SLPServer::SRVTYPERQST[] = "SrvTypeRqst";
 const char SLPServer::UNKNOWN[] = "Unknown";
+const char SLPServer::UNSUPPORTED[] = "Unsupported";
 // This counter tracks the number of packets received by type.
 // This is incremented prior to packet checks.
 const char SLPServer::UDP_RX_PACKET_BY_TYPE_VAR[] = "slp-udp-rx-packets";
@@ -426,13 +427,16 @@ void SLPServer::UDPData() {
       IncrementPacketVar(DAADVERT);
       HandleDAAdvert(&stream, source);
       break;
+    case SERVICE_TYPE_REQUEST:
+      IncrementPacketVar(SRVTYPERQST);
+      HandleServiceTypeRequest(&stream, source);
+      break;
     case SERVICE_DEREGISTER:
       IncrementPacketVar(SRVDEREG);
       HandleServiceDeRegister(&stream, source);
       break;
     case ATTRIBUTE_REQUEST:
     case ATTRIBUTE_REPLY:
-    case SERVICE_TYPE_REQUEST:
     case SERVICE_TYPE_REPLY:
     case SA_ADVERTISEMENT:
       IncrementPacketVar(UNSUPPORTED);
@@ -459,13 +463,10 @@ void SLPServer::HandleServiceRequest(BigEndianInputStream *stream,
     return;
 
   // if we're in the PR list don't do anything
-  vector<IPV4Address>::const_iterator pr_iter = request->pr_list.begin();
-  for (; pr_iter != request->pr_list.end(); ++pr_iter) {
-    if (*pr_iter == m_iface_address) {
-      OLA_INFO << m_iface_address <<
-        " found in PR list, not responding to request";
-      return;
-    }
+  if (InPRList(request->pr_list)) {
+    OLA_INFO << m_iface_address <<
+      " found in PR list, not responding to request";
+    return;
   }
 
   if (!request->predicate.empty()) {
@@ -665,6 +666,54 @@ void SLPServer::HandleDAAdvert(BigEndianInputStream *stream,
     m_outstanding_da_discovery->AddPR(source.Host());
   }
   m_da_tracker.NewDAAdvert(*da_advert, source);
+}
+
+
+/**
+ * Handle a SrvTypeRqst.
+ */
+void SLPServer::HandleServiceTypeRequest(BigEndianInputStream *stream,
+                                         const IPV4SocketAddress &source) {
+  auto_ptr<const ServiceTypeRequestPacket> request(
+      m_packet_parser.UnpackServiceTypeRequest(stream));
+  if (!request.get()) {
+    OLA_INFO << "Dropped SrvTypeRqst from " << source << " due to parse error";
+    return;
+  }
+
+  // If we're listed in the PR list ignore the request
+  if (InPRList(request->pr_list)) {
+    OLA_INFO << m_iface_address <<
+      " found in PR list, not responding to request";
+    return;
+  }
+
+  ScopeSet scopes(request->scope_list);
+
+  if (!scopes.Intersects(m_configured_scopes)) {
+    if (!request->Multicast())
+      m_udp_sender.SendError(source, SERVICE_TYPE_REPLY, request->xid,
+                             SCOPE_NOT_SUPPORTED);
+    return;
+  }
+  OLA_INFO << "RX SrvTypeRqst(" << source << "), scopes " << scopes
+           << ", naming auth '" << request->naming_authority << "'";
+
+  vector<string> service_types;
+  if (request->include_all) {
+    m_service_store.GetAllServiceTypes(scopes, &service_types);
+  } else {
+    m_service_store.GetServiceTypesByNamingAuth(request->naming_authority,
+                                                scopes, &service_types);
+  }
+
+  if (service_types.empty() && request->Multicast())
+    return;
+
+  sort(service_types.begin(), service_types.end());
+
+  m_udp_sender.SendServiceTypeReply(source, request->xid, SLP_OK,
+                                    service_types);
 }
 
 
@@ -1490,6 +1539,15 @@ void SLPServer::GetCurrentTime(TimeStamp *time) {
     ola::Clock clock;
     clock.CurrentTime(time);
   }
+}
+
+
+/**
+ * Check if we're in a PR list.
+ */
+bool SLPServer::InPRList(const vector<IPV4Address> &pr_list) {
+  return std::find(pr_list.begin(), pr_list.end(), m_iface_address) !=
+    pr_list.end();
 }
 }  // slp
 }  // ola

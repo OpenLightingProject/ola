@@ -172,6 +172,9 @@ void SLPServerNetworkTest::testShortPackets() {
   uint8_t daadvert_packet[] = {2, 8};
   m_udp_socket.InjectData(daadvert_packet, sizeof(daadvert_packet), peer);
 
+  uint8_t srv_type_packet[] = {2, 9};
+  m_udp_socket.InjectData(srv_type_packet, sizeof(srv_type_packet), peer);
+
   uint8_t saadvert_packet[] = {2, 11};
   m_udp_socket.InjectData(saadvert_packet, sizeof(saadvert_packet), peer);
 }

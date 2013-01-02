@@ -213,6 +213,8 @@ class SLPServer {
                           const IPV4SocketAddress &source);
     void HandleDAAdvert(BigEndianInputStream *stream,
                         const IPV4SocketAddress &source);
+    void HandleServiceTypeRequest(BigEndianInputStream *stream,
+                                  const IPV4SocketAddress &source);
 
     // Network TX methods
     void SendErrorIfUnicast(const ServiceRequestPacket *request,
@@ -280,6 +282,9 @@ class SLPServer {
     void IncrementPacketVar(const string &packet);
     void GetCurrentTime(TimeStamp *time);
 
+    // helper methods
+    bool InPRList(const vector<IPV4Address> &pr_list);
+
     // constants
     /* Super ghetto:
      * Section 6.1 of the RFC says the max UDP data size is 1400, SLP headers
@@ -303,6 +308,7 @@ class SLPServer {
     static const char SRVREG[];
     static const char SRVRPLY[];
     static const char SRVRQST[];
+    static const char SRVTYPERQST[];
     static const char UNSUPPORTED[];
     static const char UNKNOWN[];
     static const char UDP_RX_PACKET_BY_TYPE_VAR[];
