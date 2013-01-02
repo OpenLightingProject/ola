@@ -443,6 +443,22 @@ void SLPServerTestHelper::ExpectMulticastDAAdvert(xid_t xid,
 
 
 /**
+ * Expect a Service Type Reply
+ */
+void SLPServerTestHelper::ExpectServiceTypeReply(
+    const IPV4SocketAddress &dest,
+    xid_t xid,
+    uint16_t error_code,
+    const vector<string> &service_types) {
+
+  SLPPacketBuilder::BuildServiceTypeReply(&m_output_stream, xid, error_code,
+                                          service_types);
+  m_udp_socket->AddExpectedData(&m_output, dest);
+  OLA_ASSERT_TRUE(m_output.Empty());
+}
+
+
+/**
  * Expect a SAAdvert
  */
 void SLPServerTestHelper::ExpectSAAdvert(const IPV4SocketAddress &dest,

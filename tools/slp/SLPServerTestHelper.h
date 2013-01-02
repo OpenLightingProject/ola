@@ -25,6 +25,8 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <set>
 #include <string>
+#include <vector>
+
 #include "ola/Clock.h"
 #include "ola/ExportMap.h"
 #include "ola/io/SelectServer.h"
@@ -145,6 +147,7 @@ class SLPServerTestHelper {
                               xid_t xid,
                               const string &service,
                               const ScopeSet &scopes,
+
                               const set<IPV4Address> &pr_list);
     void ExpectMulticastServiceRequest(xid_t xid,
                                        const string &service,
@@ -175,6 +178,10 @@ class SLPServerTestHelper {
     void ExpectMulticastDAAdvert(xid_t xid,
                                  uint32_t boot_timestamp,
                                  const ScopeSet &scopes);
+    void ExpectServiceTypeReply(const IPV4SocketAddress &dest,
+                                xid_t xid,
+                                uint16_t error_code,
+                                const vector<string> &service_types);
     void ExpectSAAdvert(const IPV4SocketAddress &dest,
                         xid_t xid,
                         const ScopeSet &scopes);
