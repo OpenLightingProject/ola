@@ -113,7 +113,7 @@ void DmxTriWidgetImpl::Stop() {
  * Send a DMX frame.
  */
 bool DmxTriWidgetImpl::SendDMX(const DmxBuffer &buffer) {
-  if (m_waiting_for_tx_ack) {
+  if (m_waiting_for_tx_ack or m_pending_request or m_rdm_request_callback) {
     // just update the buffer
     if (m_outgoing_dmx.Size())
       OLA_INFO << "TRI widget dropping frame";
