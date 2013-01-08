@@ -73,6 +73,7 @@ class DmxTriWidgetImpl: public BaseUsbProWidget,
     const ola::rdm::RDMRequest *m_pending_request;
     uint8_t m_transaction_number;
     DmxBuffer m_outgoing_dmx;
+    uint8_t m_dmx_drop_count;
     bool m_waiting_for_tx_ack;
 
     void SendDMXBuffer(const DmxBuffer &buffer);

@@ -67,6 +67,7 @@ DmxTriWidgetImpl::DmxTriWidgetImpl(
       m_rdm_request_callback(NULL),
       m_pending_request(NULL),
       m_transaction_number(0),
+      m_dmx_drop_count(0),
       m_waiting_for_tx_ack(false) {
 }
 
@@ -116,7 +117,13 @@ bool DmxTriWidgetImpl::SendDMX(const DmxBuffer &buffer) {
   if (m_waiting_for_tx_ack or m_pending_request or m_rdm_request_callback) {
     // just update the buffer
     if (m_outgoing_dmx.Size())
-      OLA_INFO << "TRI widget dropping frame";
+      OLA_INFO << "TRI widget dropping frame " << static_cast<int>(m_dmx_drop_count);
+      m_dmx_drop_count ++;
+      //reset after 40 frames dropped
+      if (m_dmx_drop_count > 40) {
+        m_waiting_for_tx_ack = false;
+        m_dmx_drop_count = 0;
+      }
     m_outgoing_dmx.Set(buffer);
   } else {
     // send
