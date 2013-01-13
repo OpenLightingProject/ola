@@ -201,15 +201,20 @@ void IOQueue::Pop(unsigned int n) {
  * Note: The iovec array points at internal memory structures. This array is
  * invalidated when any non-const methods are called (Append, Pop etc.)
  *
+ * Is the IOQueue is empty, we return an iovec of size 0.
+ *
  * Free the iovec array with FreeIOVec()
  */
 const struct iovec *IOQueue::AsIOVec(int *iocnt) {
-  *iocnt = m_blocks.size();
+  *iocnt = std::max(static_cast<unsigned long>(1), m_blocks.size());
   struct iovec *vector = new struct iovec[*iocnt];
 
   // the first block
   vector[0].iov_base = m_first;
   vector[0].iov_len = SizeOfFirstBlock();
+
+  if (m_blocks.empty())
+    return vector;
 
   // remaining blocks
   BlockVector::const_iterator iter = m_blocks.begin();
