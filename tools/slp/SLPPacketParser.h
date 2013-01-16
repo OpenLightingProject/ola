@@ -165,58 +165,58 @@ class SLPPacketParser {
     SLPPacketParser() {}
     ~SLPPacketParser() {}
 
-    uint8_t DetermineFunctionID(const uint8_t *data,
-                                unsigned int length) const;
+    static uint8_t DetermineFunctionID(const uint8_t *data,
+                                       unsigned int length);
 
-    const ServiceRequestPacket *UnpackServiceRequest(
-        BigEndianInputStream *input) const;
+    static const ServiceRequestPacket *UnpackServiceRequest(
+        BigEndianInputStream *input);
 
-    const ServiceReplyPacket *UnpackServiceReply(
-        BigEndianInputStream *input) const;
+    static const ServiceReplyPacket *UnpackServiceReply(
+        BigEndianInputStream *input);
 
-    const ServiceRegistrationPacket *UnpackServiceRegistration(
-        BigEndianInputStream *input) const;
+    static const ServiceRegistrationPacket *UnpackServiceRegistration(
+        BigEndianInputStream *input);
 
-    const ServiceAckPacket *UnpackServiceAck(
-        BigEndianInputStream *input) const;
+    static const ServiceAckPacket *UnpackServiceAck(
+        BigEndianInputStream *input);
 
-    const DAAdvertPacket *UnpackDAAdvert(
-        BigEndianInputStream *input) const;
+    static const DAAdvertPacket *UnpackDAAdvert(
+        BigEndianInputStream *input);
 
-    const ServiceTypeRequestPacket *UnpackServiceTypeRequest(
-        BigEndianInputStream *input) const;
+    static const ServiceTypeRequestPacket *UnpackServiceTypeRequest(
+        BigEndianInputStream *input);
 
-    const ServiceDeRegistrationPacket *UnpackServiceDeRegistration(
-        BigEndianInputStream *input) const;
+    static const ServiceDeRegistrationPacket *UnpackServiceDeRegistration(
+        BigEndianInputStream *input);
+
+    static bool ExtractHeader(BigEndianInputStream *input,
+                              SLPPacket *packet,
+                              const string &packet_type);
 
   private:
-    bool ExtractHeader(BigEndianInputStream *input,
-                       SLPPacket *packet,
-                       const string &packet_type) const;
+    static bool ExtractString(BigEndianInputStream *input,
+                              string *result,
+                              const string &field_name,
+                              bool unescape = true);
 
-    bool ExtractString(BigEndianInputStream *input,
-                       string *result,
-                       const string &field_name,
-                       bool unescape = true) const;
+    static bool ExtractList(BigEndianInputStream *input,
+                            vector<string> *result,
+                            const string &field_name);
 
-    bool ExtractList(BigEndianInputStream *input,
-                     vector<string> *result,
-                     const string &field_name) const;
+    static bool ExtractURLEntry(BigEndianInputStream *input,
+                                URLEntry *entry,
+                                const string &packet_type);
 
-    bool ExtractURLEntry(BigEndianInputStream *input,
-                         URLEntry *entry,
-                         const string &packet_type) const;
+    static bool ExtractAuthBlock(BigEndianInputStream *input,
+                                 const string &packet_type);
 
-    bool ExtractAuthBlock(BigEndianInputStream *input,
-                          const string &packet_type) const;
-
-    void ConvertIPAddressList(const string &list,
-                              vector<IPV4Address> *addresses) const;
+    static void ConvertIPAddressList(const string &list,
+                                     vector<IPV4Address> *addresses);
 
     template <typename T>
-    bool ExtractValue(BigEndianInputStream *stream,
+    static bool ExtractValue(BigEndianInputStream *stream,
                       T *value,
-                      const string &field_name) const {
+                      const string &field_name) {
       if ((*stream >> *value))
         return true;
       OLA_INFO << "Packet too small to contain " << field_name;

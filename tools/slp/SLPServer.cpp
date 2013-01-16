@@ -398,8 +398,8 @@ void SLPServer::UDPData() {
   if (m_export_map)
     (*m_export_map->GetIntegerVar(UDP_RX_TOTAL_VAR))++;
 
-  uint8_t function_id = m_packet_parser.DetermineFunctionID(packet,
-                                                            packet_size);
+  uint8_t function_id = SLPPacketParser::DetermineFunctionID(packet,
+                                                             packet_size);
 
   MemoryBuffer buffer(&packet[0], packet_size);
   BigEndianInputStream stream(&buffer);
@@ -458,7 +458,7 @@ void SLPServer::HandleServiceRequest(BigEndianInputStream *stream,
                                      const IPV4SocketAddress &source) {
   OLA_INFO << "Got Service request from " << source;
   auto_ptr<const ServiceRequestPacket> request(
-      m_packet_parser.UnpackServiceRequest(stream));
+      SLPPacketParser::UnpackServiceRequest(stream));
   if (!request.get())
     return;
 
@@ -535,7 +535,7 @@ void SLPServer::HandleServiceReply(BigEndianInputStream *stream,
                                    const IPV4SocketAddress &source) {
   OLA_INFO << "Got Service reply from " << source;
   auto_ptr<const ServiceReplyPacket> srv_reply(
-    m_packet_parser.UnpackServiceReply(stream));
+    SLPPacketParser::UnpackServiceReply(stream));
   if (!srv_reply.get())
     return;
 
@@ -557,7 +557,7 @@ void SLPServer::HandleServiceRegistration(BigEndianInputStream *stream,
                                           const IPV4SocketAddress &source) {
   OLA_INFO << "Got Service registration from " << source;
   auto_ptr<const ServiceRegistrationPacket> srv_reg(
-    m_packet_parser.UnpackServiceRegistration(stream));
+    SLPPacketParser::UnpackServiceRegistration(stream));
   if (!srv_reg.get())
     return;
 
@@ -595,7 +595,7 @@ void SLPServer::HandleServiceDeRegister(BigEndianInputStream *stream,
                                         const IPV4SocketAddress &source) {
   OLA_INFO << "Got Service de-registration from " << source;
   auto_ptr<const ServiceDeRegistrationPacket> srv_dereg(
-    m_packet_parser.UnpackServiceDeRegistration(stream));
+    SLPPacketParser::UnpackServiceDeRegistration(stream));
   if (!srv_dereg.get())
     return;
 
@@ -619,7 +619,7 @@ void SLPServer::HandleServiceDeRegister(BigEndianInputStream *stream,
 void SLPServer::HandleServiceAck(BigEndianInputStream *stream,
                                  const IPV4SocketAddress &source) {
   auto_ptr<const ServiceAckPacket> srv_ack(
-      m_packet_parser.UnpackServiceAck(stream));
+      SLPPacketParser::UnpackServiceAck(stream));
   if (!srv_ack.get())
     return;
 
@@ -644,7 +644,7 @@ void SLPServer::HandleServiceAck(BigEndianInputStream *stream,
 void SLPServer::HandleDAAdvert(BigEndianInputStream *stream,
                                const IPV4SocketAddress &source) {
   auto_ptr<const DAAdvertPacket> da_advert(
-      m_packet_parser.UnpackDAAdvert(stream));
+      SLPPacketParser::UnpackDAAdvert(stream));
   if (!da_advert.get()) {
     OLA_INFO << "Dropped DAAdvert from " << source << " due to parse error";
     return;
@@ -675,7 +675,7 @@ void SLPServer::HandleDAAdvert(BigEndianInputStream *stream,
 void SLPServer::HandleServiceTypeRequest(BigEndianInputStream *stream,
                                          const IPV4SocketAddress &source) {
   auto_ptr<const ServiceTypeRequestPacket> request(
-      m_packet_parser.UnpackServiceTypeRequest(stream));
+      SLPPacketParser::UnpackServiceTypeRequest(stream));
   if (!request.get()) {
     OLA_INFO << "Dropped SrvTypeRqst from " << source << " due to parse error";
     return;

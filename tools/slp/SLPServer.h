@@ -39,7 +39,6 @@
 
 #include "tools/slp/Base.h"
 #include "tools/slp/DATracker.h"
-#include "tools/slp/SLPPacketParser.h"
 #include "tools/slp/SLPStore.h"
 #include "tools/slp/SLPUDPSender.h"
 #include "tools/slp/ServerCommon.h"
@@ -177,7 +176,6 @@ class SLPServer {
     ola::network::TCPAcceptingSocket *m_slp_accept_socket;
 
     // SLP members
-    SLPPacketParser m_packet_parser;
     SLPStore m_service_store;
     SLPUDPSender m_udp_sender;
     ScopeSet m_configured_scopes;
