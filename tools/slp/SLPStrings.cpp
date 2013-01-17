@@ -140,5 +140,18 @@ string SLPServiceFromURL(const string &url) {
   SLPCanonicalizeString(&service);
   return service;
 }
+
+
+/**
+ * Strip the service type from the url. This returns everything after the ://
+ * Note we should really use a full BNF parser here.
+ */
+string SLPStripServiceFromURL(const string &url) {
+  string remainder;
+  size_t pos = url.find("://");
+  if (pos != string::npos)
+    remainder = url.substr(pos + 3);
+  return remainder;
+}
 }  // slp
 }  // ola

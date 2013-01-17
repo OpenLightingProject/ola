@@ -33,6 +33,7 @@ void SLPStringUnescape(string *str);
 void SLPCanonicalizeString(string *str);
 string SLPGetCanonicalString(const string &str);
 string SLPServiceFromURL(const string &url);
+string SLPStripServiceFromURL(const string &url);
 }  // slp
 }  // ola
 #endif  // TOOLS_SLP_SLPSTRINGS_H_

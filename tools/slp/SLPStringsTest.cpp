@@ -30,6 +30,7 @@ using ola::slp::SLPGetCanonicalString;
 using ola::slp::SLPServiceFromURL;
 using ola::slp::SLPStringEscape;
 using ola::slp::SLPStringUnescape;
+using ola::slp::SLPStripServiceFromURL;
 using std::string;
 
 
@@ -39,6 +40,7 @@ class SLPStringsTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testUnescape);
   CPPUNIT_TEST(testCanonicalize);
   CPPUNIT_TEST(testSLPServiceFromURL);
+  CPPUNIT_TEST(testSLPStripServiceFromURL);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -46,6 +48,7 @@ class SLPStringsTest: public CppUnit::TestFixture {
     void testUnescape();
     void testCanonicalize();
     void testSLPServiceFromURL();
+    void testSLPStripServiceFromURL();
 
     void setUp() {
       ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
@@ -140,4 +143,22 @@ void SLPStringsTest::testSLPServiceFromURL() {
                 SLPServiceFromURL("service:foo.myorg://bar"));
   OLA_ASSERT_EQ(string("service:foo.myorg:bar"),
                 SLPServiceFromURL("service:foo.myorg:bar://baz"));
+}
+
+
+/**
+ * Test that SLPStripServiceFromURL() works.
+ */
+void SLPStringsTest::testSLPStripServiceFromURL() {
+  OLA_ASSERT_EQ(string(""), SLPStripServiceFromURL(""));
+  OLA_ASSERT_EQ(string(""), SLPStripServiceFromURL("service:FoO"));
+  OLA_ASSERT_EQ(string(""), SLPStripServiceFromURL("service:foo://"));
+  OLA_ASSERT_EQ(string("localhost:9090"),
+                SLPStripServiceFromURL("service:foo://localhost:9090"));
+  OLA_ASSERT_EQ(string("foo"), SLPStripServiceFromURL("service:printer://foo"));
+  OLA_ASSERT_EQ(string("foo"),
+                SLPStripServiceFromURL("service:printer:lpr://foo"));
+  OLA_ASSERT_EQ(
+      string("10.0.0.1/7a7000000001"),
+      SLPStripServiceFromURL("service:rdmnet-device://10.0.0.1/7a7000000001"));
 }
