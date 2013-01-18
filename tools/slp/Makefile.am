@@ -11,6 +11,7 @@ EXTRA_DIST = Base.h \
              SLPPacketConstants.h \
              SLPPacketParser.h \
              SLPPendingOperations.h \
+             SLPSATestRunner.h \
              SLPServer.h \
              SLPServerTestHelper.h \
              SLPStore.h \
@@ -55,7 +56,7 @@ SLP.pb.cc SLP.pb.h: SLP.proto
 	$(PROTOC)  --cpp_out ./ SLP.proto
 
 # Programs
-noinst_PROGRAMS = slp_server slp_client
+noinst_PROGRAMS = slp_server slp_client slp_sa_test
 slp_server_SOURCES = SLPDaemon.cpp \
                      slp-server.cpp
 slp_server_LDADD = $(top_builddir)/common/libolacommon.la \
@@ -70,6 +71,12 @@ slp_client_LDADD = $(top_builddir)/common/libolacommon.la \
                    $(top_builddir)/ola/libola.la \
                    ./libolaslpcore.la \
                    ./libolaslpproto.la
+
+slp_sa_test_SOURCES = slp-sa-test.cpp \
+                      SLPSATests.cpp \
+                      SLPSATestRunner.cpp
+slp_sa_test_LDADD = $(top_builddir)/common/libolacommon.la \
+                    ./libolaslp.la
 
 clean-local:
 	rm -f *.pb.{h,cc} lex.yy.cpp config.tab.cpp config.tab.h *.gcno *.gcda
