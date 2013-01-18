@@ -116,8 +116,6 @@ class SLPPacketBuilder {
     static void WriteString(BigEndianOutputStreamInterface *output,
                             const string &data);
 
-
-  private:
     static void BuildSLPHeader(BigEndianOutputStreamInterface *output,
                                slp_function_id_t function_id,
                                unsigned int length,
