@@ -6,4 +6,3 @@ libolahttp_la_SOURCES = HTTPServer.cpp OlaHTTPServer.cpp
 libolahttp_la_LIBADD = $(libmicrohttpd_LIBS) \
                        ../web/libolaweb.la
 endif
-
