@@ -144,6 +144,8 @@ def main():
         result = list(d.compare(header.splitlines(1), licence.splitlines(1)))
         pprint.pprint(result)
 
+    elif o in ('--licence', '--license'):
+      licence_name = a
 
 if __name__ == '__main__':
   main()
