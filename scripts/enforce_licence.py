@@ -25,6 +25,19 @@ import re
 import sys
 import textwrap
 
+CPP, PYTHON = xrange(2)
+
+IGNORED_FILES = [
+  'examples/ola-dmxconsole.cpp',
+  'examples/ola-dmxmonitor.cpp',
+  'include/ola/gen_callbacks.py',
+  'ola/common.h',
+  'olad/OlaVersion.h',
+  'tools/ola_trigger/config.tab.cpp',
+  'tools/ola_trigger/config.tab.h',
+  'tools/ola_trigger/lex.yy.cpp',
+]
+
 def Usage(arg0):
   print textwrap.dedent("""\
   Usage: %s
@@ -64,6 +77,12 @@ def ParseArgs():
     sys.exit(0)
   return diff, fix
 
+def IgnoreFile(file_name):
+  for ignored_file in IGNORED_FILES:
+    if file_name.endswith(ignored_file):
+      return True
+  return False
+
 def TransformLicence(licence):
   """Wrap a licence in C++ style comments,"""
   output = []
@@ -77,12 +96,22 @@ def TransformLicence(licence):
   output.append(' *')
   return '\n'.join(output)
 
-def ReplaceHeader(file_name, new_header):
+def TransformCppToPythonLicence(licence):
+  """Change a C++ licence to Python style"""
+  lines = licence.split('\n')
+  output = []
+  for l in lines[1:]:
+    output.append('#%s' % l[2:])
+  return '\n'.join(output)
+
+def ReplaceHeader(file_name, new_header, lang):
   f = open(file_name)
   breaks = 0
   line = f.readline()
   while line != '':
-    if re.match(r'^ \*\s*\n$', line):
+    if lang == CPP and re.match(r'^ \*\s*\n$', line):
+      breaks += 1
+    if lang == PYTHON and re.match(r'^#\s*\n$', line):
       breaks += 1
     if breaks == 3:
       break
@@ -132,12 +161,25 @@ def CheckLicenceForDir(dir_name, licence, diff, fix):
       # skip the generated protobuf code
       if '.pb.' in file_name:
         continue
-      CheckLicenceForFile(file_name, licence, diff, fix)
+      CheckLicenceForFile(file_name, licence, CPP, diff, fix)
 
-def CheckLicenceForFile(file_name, licence, diff, fix):
+  for file_name in glob.glob(os.path.join(dir_name, '*.py')):
+    # skip the generated protobuf code
+    if file_name.endswith('__init__.py') or file_name.endswith('pb2.py'):
+      continue
+    python_licence = TransformCppToPythonLicence(licence)
+    CheckLicenceForFile(file_name, python_licence, PYTHON, diff, fix)
+
+def CheckLicenceForFile(file_name, licence, lang, diff, fix):
   """Check a file contains the correct licence."""
+  if IgnoreFile(file_name):
+    return
+
   f = open(file_name)
   header_size = len(licence)
+  first_line = None
+  if lang == PYTHON:
+    first_line = f.readline()
   header = f.read(header_size)
   f.close()
   if header == licence:
@@ -145,7 +187,9 @@ def CheckLicenceForFile(file_name, licence, diff, fix):
 
   if fix:
     print 'Fixing %s' % file_name
-    ReplaceHeader(file_name, licence)
+    if lang == PYTHON:
+      licence = first_line + licence
+    ReplaceHeader(file_name, licence, lang)
   else:
     print "File does not start with %s" % (file_name)
     if diff:
