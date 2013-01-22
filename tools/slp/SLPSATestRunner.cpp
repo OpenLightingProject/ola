@@ -184,8 +184,8 @@ void TestRunner::Run() {
   m_socket.SetOnData(NewCallback(this, &TestRunner::ReceiveData));
   m_ss.AddReadDescriptor(&m_socket);
 
-  OLA_INFO << "Starting to run " << m_tests.size() << " tests against "
-           << m_target;
+  cout << "Starting to run " << m_tests.size() << " tests against "
+           << m_target << endl;
   m_ss.Execute(NewSingleCallback(this, &TestRunner::RunNextTest));
   m_ss.Run();
 
@@ -241,15 +241,35 @@ void TestRunner::ReceiveData() {
   if (test->expected_result() != TestCase::RESULT_DATA) {
     OLA_WARN << test->Name() << " received an un-expected reply";
     test->SetState(TestCase::FAILED);
-    RunNextTest();
+    CompleteTest();
     return;
   }
 
   OLA_INFO << "Got " << packet_size << " bytes from target";
   test->SetState(test->VerifyReply(packet, packet_size));
-  RunNextTest();
+  CompleteTest();
 }
 
+void TestRunner::CompleteTest() {
+  TestCase *test = *m_running_test;
+  cout << test->Name() << ": ";
+  switch (test->test_state()) {
+    case TestCase::BROKEN:
+      cout << "\x1b[33mBroken";
+      break;
+    case TestCase::NOT_RUN:
+      cout << "\x1b[31mNot Run";
+      break;
+    case TestCase::FAILED:
+      cout << "\x1b[31mFailed";
+      break;
+    case TestCase::PASSED:
+      cout << "\x1b[32mPassed";
+      break;
+  }
+  cout << "\x1b[0m" << endl;
+  RunNextTest();
+}
 
 void TestRunner::RunNextTest() {
   m_running_test = m_test_to_run++;
@@ -260,7 +280,7 @@ void TestRunner::RunNextTest() {
 
   TestCase *test = *m_running_test;
   test->SetDestinationIP(m_target.Host());
-  OLA_INFO << "Running " << test->Name();
+  cout << "Running " << test->Name() << endl;
   test->BuildPacket(&m_output_stream);
 
   // figure out where to send the packet
@@ -269,7 +289,7 @@ void TestRunner::RunNextTest() {
     case TestCase::DESTINATION_UNDEFINED:
       OLA_WARN << test->Name() << " did not specify a target";
       test->SetState(TestCase::BROKEN);
-      RunNextTest();
+      CompleteTest();
       return;
     case TestCase::UNICAST:
       target = m_target;
@@ -282,7 +302,7 @@ void TestRunner::RunNextTest() {
   if (test->expected_result() == TestCase::RESULT_UNDEFINED) {
     OLA_WARN << test->Name() << " did not specify an expected result";
     test->SetState(TestCase::BROKEN);
-    RunNextTest();
+    CompleteTest();
     return;
   }
 
@@ -301,8 +321,7 @@ void TestRunner::TestTimeout() {
     OLA_WARN << test->Name() << " expected a reply but didn't get one";
     test->SetState(TestCase::FAILED);
   } else {
-    OLA_INFO << test->Name() << " passed";
     test->SetState(TestCase::PASSED);
   }
-  RunNextTest();
+  CompleteTest();
 }

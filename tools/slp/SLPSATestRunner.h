@@ -227,6 +227,7 @@ class TestRunner {
     // points to the running test
     vector<TestCase*>::iterator m_running_test;
 
+    void CompleteTest();
     void RunNextTest();
     void TestTimeout();
     void ReceiveData();
