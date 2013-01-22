@@ -98,16 +98,16 @@ void SlpUrlParserTest::testParseUrl() {
                    &uid,
                    &address));
 
-  // finally the working case
+  // finally the working cases
   OLA_ASSERT(
-      ParseSlpUrl("service:rdmnet-device://192.168.1.204:5568/7a7000000001",
+      ParseSlpUrl("service:rdmnet-device://192.168.1.204/7a7000000001",
                   &uid,
                   &address));
   OLA_ASSERT_EQ(expected_uid, uid);
   OLA_ASSERT_EQ(expected_ip, address);
 
   OLA_ASSERT(
-      ParseSlpUrl("service:rdmnet-device://10.0.80.43:5568/4a6100000020",
+      ParseSlpUrl("service:rdmnet-device://10.0.80.43/4a6100000020",
                   &uid,
                   &address));
   ola::rdm::UID expected_uid2(19041, 32);

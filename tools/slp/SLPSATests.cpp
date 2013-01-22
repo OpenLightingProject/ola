@@ -29,6 +29,7 @@
 #include <string>
 #include <vector>
 
+#include "tools/e133/SlpUrlParser.h"
 #include "tools/slp/SLPPacketBuilder.h"
 #include "tools/slp/SLPPacketConstants.h"
 #include "tools/slp/SLPPacketParser.h"
@@ -45,7 +46,6 @@ using ola::rdm::UID;
 using ola::slp::SERVICE_REPLY;
 using ola::slp::SERVICE_REQUEST;
 using ola::slp::SLPPacketBuilder;
-using ola::slp::SLPStripServiceFromURL;
 using ola::slp::SLP_OK;
 using ola::slp::SLP_REQUEST_MCAST;
 using ola::slp::ScopeSet;
@@ -136,17 +136,10 @@ TestState VerifyReply(const uint8_t *data, unsigned int length) {
     return FAILED;
   }
 
-  const string remainder = SLPStripServiceFromURL(url.url());
-  vector<string> url_parts;
-  StringSplit(remainder, url_parts, "/");
-  if (url_parts.size() != 2) {
-    OLA_INFO << "URL " << url.url() << " does not match an E1.33 URL";
-    return FAILED;
-  }
-
   IPV4Address remote_ip;
-  if (!IPV4Address::FromString(url_parts[0], &remote_ip)) {
-    OLA_INFO << "Invalid IP: " << url_parts[0];
+  UID uid(0, 0);
+  if (!ParseSlpUrl(url.url(), &uid, &remote_ip)) {
+    OLA_INFO << "Failed to extract IP & UID from " << url.url();
     return FAILED;
   }
 
@@ -155,15 +148,6 @@ TestState VerifyReply(const uint8_t *data, unsigned int length) {
              << ") does not match that of the target";
     return FAILED;
   }
-
-  /*
-  TODO(simon): The format of this UID is different.
-  auto_ptr<UID> uid(UID::FromString(url_parts[1]));
-  if (!uid.get()) {
-    OLA_INFO << "Invalid UID in url '" << url_parts[1] << "''";
-    return FAILED;
-  }
-  */
   return PASSED;
 }
 };

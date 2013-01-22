@@ -76,6 +76,7 @@ slp_sa_test_SOURCES = slp-sa-test.cpp \
                       SLPSATests.cpp \
                       SLPSATestRunner.cpp
 slp_sa_test_LDADD = $(top_builddir)/common/libolacommon.la \
+                    ../e133/libolae133.la \
                     ./libolaslp.la
 
 clean-local:
