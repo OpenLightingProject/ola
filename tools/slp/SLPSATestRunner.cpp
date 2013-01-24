@@ -57,6 +57,7 @@ using ola::slp::SLPPacketParser;
 using ola::slp::XIDAllocator;
 using ola::slp::SLPPacket;
 using ola::slp::xid_t;
+using ola::thread::INVALID_TIMEOUT;
 using std::auto_ptr;
 using std::cout;
 using std::endl;
@@ -69,9 +70,32 @@ XIDAllocator TestCase::xid_allocator(0);
 map<string, TestCaseCreator> _test_creators;
 
 
-bool TestCase::VerifySLPHeader(const uint8_t *data, unsigned int length,
-                               ola::slp::slp_function_id_t function_id,
-                               uint16_t flags, xid_t xid) {
+/**
+ * Called when network data arrives. This allows the test to check if the
+ * response is valid.
+ */
+TestCase::TestState TestCase::VerifyReceivedData(const uint8_t *data,
+                                                 unsigned int length) {
+  if (expected_result() == RESULT_DATA) {
+    OLA_INFO << "Got " << length << " bytes from target";
+    if (!CheckSLPHeader(data, length, m_function_id, 0, GetXID()))
+      return FAILED;
+    return VerifyReply(data, length);
+  } else if (expected_result() == RESULT_ERROR) {
+    return CheckSLPErrorResponse(data, length, m_function_id, 0, GetXID(),
+                                 m_error_code);
+  } else {
+    OLA_WARN << Name() << " received an un-expected reply";
+    return FAILED;
+  }
+}
+
+
+/**
+ * Check that the SLP message starts with the expected function-id.
+ */
+bool TestCase::CheckFunctionID(const uint8_t *data, unsigned int length,
+                               slp_function_id_t function_id) {
   uint8_t actual_function_id = SLPPacketParser::DetermineFunctionID(data,
       length);
   if (actual_function_id != function_id) {
@@ -79,11 +103,65 @@ bool TestCase::VerifySLPHeader(const uint8_t *data, unsigned int length,
              << ", doesn't match expected: " << static_cast<int>(function_id);
     return false;
   }
+  return true;
+}
+
+
+/**
+ * Check that this message starts with the expected SLP header.
+ */
+bool TestCase::CheckSLPHeader(const uint8_t *data, unsigned int length,
+                              slp_function_id_t function_id,
+                              uint16_t flags, xid_t xid) {
+  if (!CheckFunctionID(data, length, function_id))
+    return false;
 
   MemoryBuffer buffer(data, length);
   BigEndianInputStream stream(&buffer);
+  return VerifySLPHeader(&stream, flags, xid);
+}
+
+
+/**
+ * Check that the response data is a valid SLP error message
+ */
+TestCase::TestState TestCase::CheckSLPErrorResponse(
+    const uint8_t *data, unsigned int length,
+    slp_function_id_t function_id, uint16_t flags, xid_t xid,
+    uint16_t error_code) {
+  if (!CheckFunctionID(data, length, function_id))
+    return FAILED;
+
+  MemoryBuffer buffer(data, length);
+  BigEndianInputStream stream(&buffer);
+
+  if (!VerifySLPHeader(&stream, flags, xid))
+    return FAILED;
+
+  // read error from stream here
+  uint16_t actual_error_code;
+  if (!(stream >> actual_error_code)) {
+    OLA_INFO << "Packet too small to contain error code";
+    return FAILED;
+  }
+
+  if (error_code != actual_error_code) {
+    OLA_INFO << "Error code doesn't match expected";
+    return FAILED;
+  }
+  return PASSED;
+}
+
+
+/**
+ * Given an input stream, verify that the SLP header matches the expected
+ * values. This does not check the SLP fucntion id.
+ * @returns true if the header matches, false otherwise.
+ */
+bool TestCase::VerifySLPHeader(BigEndianInputStream *stream,
+                               uint16_t flags, xid_t xid) {
   SLPPacket slp_packet;
-  if (!SLPPacketParser::ExtractHeader(&stream, &slp_packet, Name())) {
+  if (!SLPPacketParser::ExtractHeader(stream, &slp_packet, Name())) {
     return false;
   }
 
@@ -106,6 +184,8 @@ bool TestCase::VerifySLPHeader(const uint8_t *data, unsigned int length,
   }
   return true;
 }
+
+
 
 TestCaseCreatorMap &GetTestCreatorMap() {
   static TestCaseCreatorMap test_creators;
@@ -150,6 +230,7 @@ TestRunner::TestRunner(unsigned int timeout,
       m_target(target),
       m_multicast_endpoint(
           IPV4Address::FromStringOrDie("239.255.255.253"), target.Port()),
+      m_timeout_id(INVALID_TIMEOUT),
       m_output_stream(&m_output_queue) {
   if (test_names.empty()) {
     CreateTests(&m_tests);
@@ -237,16 +318,13 @@ void TestRunner::ReceiveData() {
     return;
   }
 
-  TestCase *test = *m_running_test;
-  if (test->expected_result() != TestCase::RESULT_DATA) {
-    OLA_WARN << test->Name() << " received an un-expected reply";
-    test->SetState(TestCase::FAILED);
-    CompleteTest();
-    return;
+  if (m_timeout_id != INVALID_TIMEOUT) {
+    m_ss.RemoveTimeout(m_timeout_id);
+    m_timeout_id = INVALID_TIMEOUT;
   }
 
-  OLA_INFO << "Got " << packet_size << " bytes from target";
-  test->SetState(test->VerifyReply(packet, packet_size));
+  TestCase *test = *m_running_test;
+  test->SetState(test->VerifyReceivedData(packet, packet_size));
   CompleteTest();
 }
 
@@ -309,7 +387,7 @@ void TestRunner::RunNextTest() {
   OLA_INFO << "Sending " << m_output_queue.Size() << " bytes to " << target;
   m_socket.SendTo(&m_output_queue, target);
 
-  m_ss.RegisterSingleTimeout(
+  m_timeout_id = m_ss.RegisterSingleTimeout(
       m_timeout_in_ms,
       NewSingleCallback(this, &TestRunner::TestTimeout));
 }

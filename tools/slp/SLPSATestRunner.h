@@ -36,9 +36,11 @@
 #include <vector>
 
 #include "tools/slp/XIDAllocator.h"
+#include "tools/slp/SLPPacketConstants.h"
 
 using ola::NewCallback;
 using ola::NewSingleCallback;
+using ola::io::BigEndianInputStream;
 using ola::io::BigEndianOutputStream;
 using ola::io::IOQueue;
 using ola::io::SelectServer;
@@ -46,8 +48,10 @@ using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::network::UDPSocket;
 using ola::slp::XIDAllocator;
+using ola::slp::slp_function_id_t;
 using ola::slp::xid_t;
 using std::map;
+using std::set;
 using std::string;
 using std::vector;
 
@@ -64,6 +68,7 @@ class TestCase {
       RESULT_UNDEFINED,
       RESULT_TIMEOUT,
       RESULT_DATA,
+      RESULT_ERROR,
     } ExpectedResult;
 
     typedef enum {
@@ -92,9 +97,7 @@ class TestCase {
     // The sub class overrides this method to build the packet
     virtual void BuildPacket(BigEndianOutputStream *output) = 0;
 
-    virtual TestState VerifyReply(const uint8_t*, unsigned int) {
-      return BROKEN;
-    }
+    TestState VerifyReceivedData(const uint8_t *data, unsigned int length);
 
     void SetName(const string &name) { m_name = name; }
     string Name() const { return m_name; }
@@ -121,25 +124,32 @@ class TestCase {
     }
 
   protected:
+    // tests can use this.
+    set<IPV4Address> pr_list;
+
     void SetDestination(Destination target) { m_target = target; }
 
+    // If ExpectResponse() was called and the SLP header of the received packet
+    // matched, this will be called. This allows each test to check the
+    // contents of the SLP response.
+    virtual TestState VerifyReply(const uint8_t*, unsigned int) {
+      return BROKEN;
+    }
+
     void ExpectTimeout() {
-      if (m_expected_result != RESULT_UNDEFINED) {
-        OLA_WARN << Name() << " ExpectTimeout overriding previous value";
-      }
-      m_expected_result = RESULT_TIMEOUT;
+      SetExpectedResult(RESULT_TIMEOUT, "ExpectTimeout");
     }
 
-    void ExpectResponse() {
-      if (m_expected_result != RESULT_UNDEFINED) {
-        OLA_WARN << Name() << " ExpectTimeout overriding previous value";
-      }
-      m_expected_result = RESULT_DATA;
+    void ExpectError(slp_function_id_t function_id, uint16_t error_code) {
+      SetExpectedResult(RESULT_ERROR, "ExpectError");
+      m_function_id = function_id;
+      m_error_code = error_code;
     }
 
-    bool VerifySLPHeader(const uint8_t *data, unsigned int length,
-                         ola::slp::slp_function_id_t function_id,
-                         uint16_t flags, xid_t xid);
+    void ExpectResponse(slp_function_id_t function_id) {
+      SetExpectedResult(RESULT_DATA, "ExpectResponse");
+      m_function_id = function_id;
+    }
 
   private:
     string m_name;
@@ -149,6 +159,30 @@ class TestCase {
     TestState m_test_state;
     bool m_xid_assigned;
     xid_t m_xid;
+    slp_function_id_t m_function_id;
+    uint16_t m_error_code;
+
+    void SetExpectedResult(ExpectedResult result, const string& method) {
+      if (m_expected_result != RESULT_UNDEFINED) {
+        OLA_WARN << Name() << " " << method << " overriding previous value";
+      }
+      m_expected_result = result;
+    }
+
+    bool CheckFunctionID(const uint8_t *data, unsigned int length,
+                         slp_function_id_t function_id);
+
+    bool CheckSLPHeader(const uint8_t *data, unsigned int length,
+                        slp_function_id_t function_id,
+                        uint16_t flags, xid_t xid);
+
+    TestState CheckSLPErrorResponse(const uint8_t *data, unsigned int length,
+                                    slp_function_id_t function_id,
+                                    uint16_t flags, xid_t xid,
+                                    uint16_t error_code);
+
+    bool VerifySLPHeader(BigEndianInputStream *stream,
+                         uint16_t flags, xid_t xid);
 
     static XIDAllocator xid_allocator;
 };
@@ -219,6 +253,7 @@ class TestRunner {
     UDPSocket m_socket;
     const unsigned int m_timeout_in_ms;
     const IPV4SocketAddress m_target, m_multicast_endpoint;
+    ola::io::timeout_id m_timeout_id;
     IOQueue m_output_queue;
     BigEndianOutputStream m_output_stream;
     vector<TestCase*> m_tests;

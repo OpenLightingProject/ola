@@ -39,10 +39,12 @@
 #include "tools/slp/URLEntry.h"
 #include "tools/slp/XIDAllocator.h"
 
-using ola::StringSplit;
 using ola::io::BigEndianOutputStream;
 using ola::network::IPV4Address;
 using ola::rdm::UID;
+using ola::slp::LANGUAGE_NOT_SUPPORTED;
+using ola::slp::PARSE_ERROR;
+using ola::slp::SCOPE_NOT_SUPPORTED;
 using ola::slp::SERVICE_REPLY;
 using ola::slp::SERVICE_REQUEST;
 using ola::slp::SLPPacketBuilder;
@@ -50,13 +52,12 @@ using ola::slp::SLP_OK;
 using ola::slp::SLP_REQUEST_MCAST;
 using ola::slp::ScopeSet;
 using ola::slp::ServiceReplyPacket;
-using ola::slp::XIDAllocator;
 using ola::slp::xid_t;
 using std::auto_ptr;
 using std::vector;
 
 static const char RDMNET_DEVICE_SERVICE[] = "service:rdmnet-device";
-static const ScopeSet DEFAULT_SCOPES("default");
+static const ScopeSet RDMNET_SCOPES("rdmnet");
 
 /**
  * Build a packet containing length number of 'data' elements.
@@ -92,22 +93,18 @@ void BuildPacket(BigEndianOutputStream *output) {
 REGISTER_TEST(SingleByteTest)
 
 /**
- * A SrvRqst for the service.
+ * A SrvRqst for the service rdmnet-device in scope 'rdmnet'
  */
 class SrvRqstTest: public TestCase {
 void BuildPacket(BigEndianOutputStream *output) {
   SetDestination(MULTICAST);
-  ExpectResponse();
+  ExpectResponse(SERVICE_REPLY);
 
-  set<IPV4Address> pr_list;
   SLPPacketBuilder::BuildServiceRequest(output, GetXID(), true, pr_list,
-                                        RDMNET_DEVICE_SERVICE, DEFAULT_SCOPES);
+                                        RDMNET_DEVICE_SERVICE, RDMNET_SCOPES);
 }
 
 TestState VerifyReply(const uint8_t *data, unsigned int length) {
-  if (!VerifySLPHeader(data, length, SERVICE_REPLY, 0, GetXID()))
-    return FAILED;
-
   ola::io::MemoryBuffer buffer(data, length);
   ola::io::BigEndianInputStream stream(&buffer);
 
@@ -155,20 +152,19 @@ REGISTER_TEST(SrvRqstTest)
 
 
 /**
- * Empty unicast SrvRqst
+ * Empty unicast SrvRqst (just the header)
  */
 class EmptyUnicastSrvRqstTest: public TestCase {
 void BuildPacket(BigEndianOutputStream *output) {
   SetDestination(UNICAST);
-  ExpectTimeout();
-  // Expect Parse error?
+  ExpectError(SERVICE_REPLY, PARSE_ERROR);
   SLPPacketBuilder::BuildSLPHeader(output, SERVICE_REQUEST, 0, 0, GetXID());
 }
 };
 REGISTER_TEST(EmptyUnicastSrvRqstTest)
 
 /**
- * Empty mulitcast SrvRqst
+ * Empty mulitcast SrvRqst (just the header)
  */
 class EmptyMulticastSrvRqstTest: public TestCase {
 void BuildPacket(BigEndianOutputStream *output) {
@@ -187,8 +183,7 @@ REGISTER_TEST(EmptyMulticastSrvRqstTest)
 class OverflowUnicastSrvRqstTest: public TestCase {
 void BuildPacket(BigEndianOutputStream *output) {
   SetDestination(UNICAST);
-  // Expect Parse error?
-  ExpectTimeout();
+  ExpectError(SERVICE_REPLY, PARSE_ERROR);
   SLPPacketBuilder::BuildSLPHeader(output, SERVICE_REQUEST, 30, 0, GetXID());
 }
 };
@@ -216,18 +211,87 @@ void BuildPacket(BigEndianOutputStream *output) {
   SetDestination(MULTICAST);
   ExpectTimeout();
 
-  set<IPV4Address> pr_list;
   pr_list.insert(GetDestinationIP());
-  ScopeSet scopes("default");
   SLPPacketBuilder::BuildServiceRequest(output, GetXID(), true, pr_list,
-                                        RDMNET_DEVICE_SERVICE, DEFAULT_SCOPES);
+                                        RDMNET_DEVICE_SERVICE, RDMNET_SCOPES);
 }
 };
 REGISTER_TEST(SrvRqstPRListTest)
 
-/*
- * Other tests to add:
- *  Non 'EN' language
- *  Different scope
- *
+
+/**
+ * Try a unicast SrvRqst with a different scope.
+ */
+class DefaultScopeUnicastTest: public TestCase {
+void BuildPacket(BigEndianOutputStream *output) {
+  SetDestination(UNICAST);
+  ExpectError(SERVICE_REPLY, SCOPE_NOT_SUPPORTED);
+
+  ScopeSet default_scope("default");
+  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), false, pr_list,
+                                        RDMNET_DEVICE_SERVICE, default_scope);
+}
+};
+REGISTER_TEST(DefaultScopeUnicastTest)
+
+
+/**
+ * Try a multicast SrvRqst with a different scope.
+ */
+class DefaultScopeMulticastTest: public TestCase {
+void BuildPacket(BigEndianOutputStream *output) {
+  SetDestination(MULTICAST);
+  ExpectTimeout();
+
+  ScopeSet default_scope("default");
+  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), true, pr_list,
+                                        RDMNET_DEVICE_SERVICE, default_scope);
+}
+};
+REGISTER_TEST(DefaultScopeMulticastTest)
+
+
+/**
+ * Try a unicast SrvRqst with no service-type.
+ */
+class MissingServiceTypeUnicastRequest: public TestCase {
+void BuildPacket(BigEndianOutputStream *output) {
+  SetDestination(UNICAST);
+  ExpectError(SERVICE_REPLY, PARSE_ERROR);
+
+  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), false, pr_list, "",
+                                        RDMNET_SCOPES);
+}
+};
+REGISTER_TEST(MissingServiceTypeUnicastRequest)
+
+
+/**
+ * Try a multicast SrvRqst with no service-type.
+ */
+class MissingServiceTypeMulticastRequest: public TestCase {
+void BuildPacket(BigEndianOutputStream *output) {
+  SetDestination(MULTICAST);
+  ExpectTimeout();
+
+  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), true, pr_list, "",
+                                        RDMNET_SCOPES);
+}
+};
+REGISTER_TEST(MissingServiceTypeMulticastRequest)
+
+
+/**
+ * Try a unicast SrvRqst with a different language.
+class NonEnglishUnicastRequest: public TestCase {
+void BuildPacket(BigEndianOutputStream *output) {
+  SetDestination(UNICAST);
+  ExpectError(SERVICE_REPLY, LANGUAGE_NOT_SUPPORTED);
+
+  // TODO(simon): how to set a non en lang here?
+  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), false, pr_list, "",
+                                        RDMNET_SCOPES);
+}
+};
+REGISTER_TEST(NonEnglishUnicastRequest)
  */
