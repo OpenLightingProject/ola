@@ -56,7 +56,8 @@ void SLPPacketBuilder::BuildServiceRequest(
     bool multicast,
     const set<IPV4Address> &pr_list,
     const string &service_type,
-    const ScopeSet &scopes) {
+    const ScopeSet &scopes,
+    const char* language) {
   /*
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
      |       Service Location header (function = SrvRqst = 1)        |
@@ -77,7 +78,7 @@ void SLPPacketBuilder::BuildServiceRequest(
   unsigned int length = (10 + joined_pr_list.size() + service_type.size() +
                          joined_scopes.size());
   BuildSLPHeader(output, SERVICE_REQUEST, length,
-                 multicast ? SLP_REQUEST_MCAST : 0, xid);
+                 multicast ? SLP_REQUEST_MCAST : 0, xid, language);
   WriteString(output, joined_pr_list);
   WriteString(output, service_type);
   WriteString(output, joined_scopes);
@@ -466,7 +467,8 @@ void SLPPacketBuilder::BuildSLPHeader(BigEndianOutputStreamInterface *output,
                                       slp_function_id_t function_id,
                                       unsigned int length,
                                       uint16_t flags,
-                                      xid_t xid) {
+                                      xid_t xid,
+                                      const char *language) {
   length += 16;
   /*
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -483,8 +485,7 @@ void SLPPacketBuilder::BuildSLPHeader(BigEndianOutputStreamInterface *output,
   *output << static_cast<uint16_t>(length >> 8);
   *output << static_cast<uint8_t>(length) << flags << static_cast<uint8_t>(0);
   *output << static_cast<uint16_t>(0) << xid;
-  *output << static_cast<uint16_t>(sizeof(EN_LANGUAGE_TAG));
-  output->Write(EN_LANGUAGE_TAG, sizeof(EN_LANGUAGE_TAG));
+  WriteString(output, language);
 }
 }  // slp
 }  // ola

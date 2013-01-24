@@ -53,7 +53,8 @@ class SLPPacketBuilder {
                                     bool multicast,
                                     const set<IPV4Address> &pr_list,
                                     const string &service_type,
-                                    const ScopeSet &scopes);
+                                    const ScopeSet &scopes,
+                                    const char *lang = EN_LANGUAGE_TAG);
 
     static void BuildServiceReply(BigEndianOutputStreamInterface *output,
                                   xid_t xid,
@@ -120,7 +121,8 @@ class SLPPacketBuilder {
                                slp_function_id_t function_id,
                                unsigned int length,
                                uint16_t flags,
-                               xid_t xid);
+                               xid_t xid,
+                               const char *language = EN_LANGUAGE_TAG);
 };
 }  // slp
 }  // ola

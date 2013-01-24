@@ -283,15 +283,14 @@ REGISTER_TEST(MissingServiceTypeMulticastRequest)
 
 /**
  * Try a unicast SrvRqst with a different language.
+*/
 class NonEnglishUnicastRequest: public TestCase {
 void BuildPacket(BigEndianOutputStream *output) {
   SetDestination(UNICAST);
   ExpectError(SERVICE_REPLY, LANGUAGE_NOT_SUPPORTED);
 
-  // TODO(simon): how to set a non en lang here?
   SLPPacketBuilder::BuildServiceRequest(output, GetXID(), false, pr_list, "",
-                                        RDMNET_SCOPES);
+                                        RDMNET_SCOPES, "fr");
 }
 };
 REGISTER_TEST(NonEnglishUnicastRequest)
- */
