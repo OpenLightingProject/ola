@@ -457,6 +457,7 @@ void SLPServer::HandleServiceRequest(const uint8_t *data,
                                      unsigned int data_length,
                                      const IPV4SocketAddress &source) {
   OLA_INFO << "Got Service request from " << source;
+  URLEntries urls;
   auto_ptr<const ServiceRequestPacket> request;
   {
     MemoryBuffer buffer(data, data_length);
@@ -482,7 +483,16 @@ void SLPServer::HandleServiceRequest(const uint8_t *data,
   }
 
   if (!request->predicate.empty()) {
-    OLA_WARN << "Recieved request with predicate, ignoring";
+    if (m_enable_da) {
+      // TODO(simon): support predicate matching
+      OLA_WARN << "Recieved request with predicate, ignoring";
+    } else if (!request->Multicast()) {
+      // For our purposes we assume that service's can't have attributes.
+      // Therefore all predicate matches will fail, so we can return an empty
+      // SrvRply here.
+      OLA_INFO << "Got request with predicate, sending empty SrvRply";
+      m_udp_sender.SendServiceReply(source, request->xid, 0, urls);
+    }
     return;
   }
 
@@ -493,7 +503,8 @@ void SLPServer::HandleServiceRequest(const uint8_t *data,
     return;
   }
 
-  if (request->language != m_en_lang) {
+  // The language tag only applies to the predicate.
+  if (!request->predicate.empty() && request->language != m_en_lang) {
     OLA_WARN << "Unsupported language " << request->language;
     SendErrorIfUnicast(request.get(), SERVICE_REPLY, source,
                        LANGUAGE_NOT_SUPPORTED);
@@ -529,7 +540,6 @@ void SLPServer::HandleServiceRequest(const uint8_t *data,
     return;
   }
 
-  URLEntries urls;
   OLA_INFO << "Received SrvRqst for " << request->service_type;
   m_service_store.Lookup(*(m_ss->WakeUpTime()), scope_set,
                          request->service_type, &urls);

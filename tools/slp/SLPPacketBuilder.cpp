@@ -57,7 +57,26 @@ void SLPPacketBuilder::BuildServiceRequest(
     const set<IPV4Address> &pr_list,
     const string &service_type,
     const ScopeSet &scopes,
-    const char* language) {
+    const char *language,
+    const string &predicate) {
+  const string joined_pr_list = ola::StringJoin(",", pr_list);
+  BuildServiceRequest(output, xid, multicast, joined_pr_list, service_type,
+      scopes, language, predicate);
+}
+
+
+/**
+ * Similar to above but allows predicates and non-IPv4 addresses in the PR list
+ */
+void SLPPacketBuilder::BuildServiceRequest(
+    BigEndianOutputStreamInterface *output,
+    xid_t xid,
+    bool multicast,
+    const string &pr_list,
+    const string &service_type,
+    const ScopeSet &scopes,
+    const char *language,
+    const string &predicate) {
   /*
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
      |       Service Location header (function = SrvRqst = 1)        |
@@ -73,16 +92,15 @@ void SLPPacketBuilder::BuildServiceRequest(
      |  length of <SLP SPI> string   |       <SLP SPI> String        \
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   */
-  const string joined_pr_list = ola::StringJoin(",", pr_list);
   const string joined_scopes = scopes.AsEscapedString();
-  unsigned int length = (10 + joined_pr_list.size() + service_type.size() +
+  unsigned int length = (10 + pr_list.size() + service_type.size() +
                          joined_scopes.size());
   BuildSLPHeader(output, SERVICE_REQUEST, length,
                  multicast ? SLP_REQUEST_MCAST : 0, xid, language);
-  WriteString(output, joined_pr_list);
+  WriteString(output, pr_list);
   WriteString(output, service_type);
   WriteString(output, joined_scopes);
-  *output << static_cast<uint16_t>(0);   // length of predicate string
+  WriteString(output, predicate);
   *output << static_cast<uint16_t>(0);   // length of SPI
 }
 

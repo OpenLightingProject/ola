@@ -54,7 +54,17 @@ class SLPPacketBuilder {
                                     const set<IPV4Address> &pr_list,
                                     const string &service_type,
                                     const ScopeSet &scopes,
-                                    const char *lang = EN_LANGUAGE_TAG);
+                                    const char *lang = EN_LANGUAGE_TAG,
+                                    const string &predicate = "");
+
+    static void BuildServiceRequest(BigEndianOutputStreamInterface *output,
+                                    xid_t xid,
+                                    bool multicast,
+                                    const string &pr_list,
+                                    const string &service_type,
+                                    const ScopeSet &scopes,
+                                    const char *language,
+                                    const string &predicate);
 
     static void BuildServiceReply(BigEndianOutputStreamInterface *output,
                                   xid_t xid,
