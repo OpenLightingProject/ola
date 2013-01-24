@@ -199,7 +199,7 @@ class SLPServer {
 
     // SLP Network RX methods
     void UDPData();
-    void HandleServiceRequest(BigEndianInputStream *stream,
+    void HandleServiceRequest(const uint8_t *data, unsigned int data_length,
                               const IPV4SocketAddress &source);
     void HandleServiceReply(BigEndianInputStream *stream,
                             const IPV4SocketAddress &source);
@@ -215,7 +215,7 @@ class SLPServer {
                                   const IPV4SocketAddress &source);
 
     // Network TX methods
-    void SendErrorIfUnicast(const ServiceRequestPacket *request,
+    void SendErrorIfUnicast(const SLPPacket *packet,
                             slp_function_id_t function_id,
                             const IPV4SocketAddress &source,
                             slp_error_code_t error_code);

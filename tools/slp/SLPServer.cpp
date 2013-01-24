@@ -409,7 +409,7 @@ void SLPServer::UDPData() {
       return;
     case SERVICE_REQUEST:
       IncrementPacketVar(SRVRQST);
-      HandleServiceRequest(&stream, source);
+      HandleServiceRequest(packet, packet_size, source);
       break;
     case SERVICE_REPLY:
       IncrementPacketVar(SRVRPLY);
@@ -454,13 +454,26 @@ void SLPServer::UDPData() {
 /**
  * Handle a Service Request packet.
  */
-void SLPServer::HandleServiceRequest(BigEndianInputStream *stream,
+void SLPServer::HandleServiceRequest(const uint8_t *data,
+                                     unsigned int data_length,
                                      const IPV4SocketAddress &source) {
   OLA_INFO << "Got Service request from " << source;
-  auto_ptr<const ServiceRequestPacket> request(
-      SLPPacketParser::UnpackServiceRequest(stream));
-  if (!request.get())
+  auto_ptr<const ServiceRequestPacket> request;
+  {
+    MemoryBuffer buffer(data, data_length);
+    BigEndianInputStream input(&buffer);
+    request.reset(SLPPacketParser::UnpackServiceRequest(&input));
+  }
+  if (!request.get()) {
+    // try to at least unpack the header, so we can send a PARSE_ERROR response
+    SLPPacket slp_packet;
+    MemoryBuffer buffer(data, data_length);
+    BigEndianInputStream input(&buffer);
+    if (SLPPacketParser::ExtractHeader(&input, &slp_packet, "SrvRqst")) {
+      SendErrorIfUnicast(&slp_packet, SERVICE_REPLY, source, PARSE_ERROR);
+    }
     return;
+  }
 
   // if we're in the PR list don't do anything
   if (InPRList(request->pr_list)) {
@@ -488,7 +501,8 @@ void SLPServer::HandleServiceRequest(BigEndianInputStream *stream,
     return;
   }
 
-  OLA_INFO << "SrvRqst for '" << request->service_type << "'";
+  OLA_INFO << "SrvRqst for '" << request->service_type << "', scopes " <<
+    request->scope_list;
   // check service, MaybeSend[DS]AAdvert do their own scope checking
   if (request->service_type.empty()) {
     OLA_INFO << "Recieved SrvRqst with empty service-type from: " << source;
@@ -724,7 +738,7 @@ void SLPServer::HandleServiceTypeRequest(BigEndianInputStream *stream,
  * @param destination the socket address to send the message to
  * @param error_code the error code to use
  */
-void SLPServer::SendErrorIfUnicast(const ServiceRequestPacket *request,
+void SLPServer::SendErrorIfUnicast(const SLPPacket *request,
                                    slp_function_id_t function_id,
                                    const IPV4SocketAddress &destination,
                                    slp_error_code_t error_code) {
