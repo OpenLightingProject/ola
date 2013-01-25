@@ -42,6 +42,7 @@
 using ola::io::BigEndianOutputStream;
 using ola::network::IPV4Address;
 using ola::rdm::UID;
+using ola::slp::EN_LANGUAGE_TAG;
 using ola::slp::LANGUAGE_NOT_SUPPORTED;
 using ola::slp::PARSE_ERROR;
 using ola::slp::SCOPE_NOT_SUPPORTED;
@@ -66,6 +67,80 @@ void BuildNLengthPacket(BigEndianOutputStream *output, uint8_t data,
                         unsigned int length) {
   for (unsigned int i = 0; i < length; i++)
     (*output) << data;
+}
+
+/**
+ * Verify an SrvRply contains no URLs
+ */
+TestCase::TestState VerifyEmptySrvReply(const uint8_t *data,
+                                        unsigned int length) {
+  ola::io::MemoryBuffer buffer(data, length);
+  ola::io::BigEndianInputStream stream(&buffer);
+
+  auto_ptr<const ServiceReplyPacket> reply(
+    ola::slp::SLPPacketParser::UnpackServiceReply(&stream));
+  if (!reply.get())
+    return TestCase::FAILED;
+
+  if (reply->error_code != SLP_OK) {
+    OLA_INFO << "Error code is " << static_cast<int>(reply->error_code);
+    return TestCase::FAILED;
+  }
+
+  if (!reply->url_entries.empty()) {
+    OLA_INFO << "Expected no URL entries, received "
+             << reply->url_entries.size();
+    return TestCase::FAILED;
+  }
+  return TestCase::PASSED;
+}
+
+/**
+ * Verify a SLP SrvRply.
+ */
+TestCase::TestState VerifySrvRply(const IPV4Address &destination_ip,
+                                  const uint8_t *data, unsigned int length) {
+  ola::io::MemoryBuffer buffer(data, length);
+  ola::io::BigEndianInputStream stream(&buffer);
+
+  auto_ptr<const ServiceReplyPacket> reply(
+    ola::slp::SLPPacketParser::UnpackServiceReply(&stream));
+  if (!reply.get())
+    return TestCase::FAILED;
+
+  if (reply->error_code != SLP_OK) {
+    OLA_INFO << "Error code is " << static_cast<int>(reply->error_code);
+    return TestCase::FAILED;
+  }
+
+  if (reply->url_entries.size() != 1) {
+    OLA_INFO << "Expected 1 URL entry, received "
+             << reply->url_entries.size();
+    return TestCase::FAILED;
+  }
+
+  const ola::slp::URLEntry &url = reply->url_entries[0];
+  OLA_INFO << "Received SrvRply containing " << url;
+  const string service = ola::slp::SLPServiceFromURL(url.url());
+  if (service != RDMNET_DEVICE_SERVICE) {
+    OLA_INFO << "Mismatched SLP service, expected '" << RDMNET_DEVICE_SERVICE
+             << "', got '" << service << "'";
+    return TestCase::FAILED;
+  }
+
+  IPV4Address remote_ip;
+  UID uid(0, 0);
+  if (!ParseSlpUrl(url.url(), &uid, &remote_ip)) {
+    OLA_INFO << "Failed to extract IP & UID from " << url.url();
+    return TestCase::FAILED;
+  }
+
+  if (remote_ip != destination_ip) {
+    OLA_INFO << "IP in url (" << remote_ip
+             << ") does not match that of the target";
+    return TestCase::FAILED;
+  }
+  return TestCase::PASSED;
 }
 
 
@@ -105,47 +180,7 @@ void BuildPacket(BigEndianOutputStream *output) {
 }
 
 TestState VerifyReply(const uint8_t *data, unsigned int length) {
-  ola::io::MemoryBuffer buffer(data, length);
-  ola::io::BigEndianInputStream stream(&buffer);
-
-  auto_ptr<const ServiceReplyPacket> reply(
-    ola::slp::SLPPacketParser::UnpackServiceReply(&stream));
-  if (!reply.get())
-    return FAILED;
-
-  if (reply->error_code != SLP_OK) {
-    OLA_INFO << "Error code is " << static_cast<int>(reply->error_code);
-    return FAILED;
-  }
-
-  if (reply->url_entries.size() != 1) {
-    OLA_INFO << "Expected 1 URL entry, received "
-             << reply->url_entries.size();
-    return FAILED;
-  }
-
-  const ola::slp::URLEntry &url = reply->url_entries[0];
-  OLA_INFO << "Received SrvRply containing " << url;
-  const string service = ola::slp::SLPServiceFromURL(url.url());
-  if (service != RDMNET_DEVICE_SERVICE) {
-    OLA_INFO << "Mismatched SLP service, expected '" << RDMNET_DEVICE_SERVICE
-             << "', got '" << service << "'";
-    return FAILED;
-  }
-
-  IPV4Address remote_ip;
-  UID uid(0, 0);
-  if (!ParseSlpUrl(url.url(), &uid, &remote_ip)) {
-    OLA_INFO << "Failed to extract IP & UID from " << url.url();
-    return FAILED;
-  }
-
-  if (remote_ip != GetDestinationIP()) {
-    OLA_INFO << "IP in url (" << remote_ip
-             << ") does not match that of the target";
-    return FAILED;
-  }
-  return PASSED;
+  return VerifySrvRply(GetDestinationIP(), data, length);
 }
 };
 REGISTER_TEST(SrvRqstTest)
@@ -202,6 +237,41 @@ void BuildPacket(BigEndianOutputStream *output) {
 };
 REGISTER_TEST(OverflowMulticastSrvRqstTest)
 
+/**
+ * A Unicast SrvRqst with a pr-list length that overflows.
+ */
+class UnicastPRListOverflow: public TestCase {
+void BuildPacket(BigEndianOutputStream *output) {
+  SetDestination(UNICAST);
+  ExpectError(SERVICE_REPLY, PARSE_ERROR);
+  // The minimum length (excluding header) for a rdmnet:rdmnet-device request is
+  // 29. Let's make this longer so we bypass any simple checks on the remote end
+  SLPPacketBuilder::BuildSLPHeader(output, SERVICE_REQUEST, 30,
+                                   40, GetXID());
+  *output << static_cast<uint16_t>(50);
+  // now send data in the remaining 38 bytes
+  string data(38, 'a');
+  output->Write(reinterpret_cast<const uint8_t*>(data.data()), data.size());
+}
+};
+REGISTER_TEST(UnicastPRListOverflow)
+
+// Various overflow tests for service-type, scope-list, predicate-string and spi-string
+
+
+/**
+ * A Unicast SrvRqst with a service-type length that overflows.
+class UnicastServiceTypeOverflow: public TestCase {
+void BuildPacket(BigEndianOutputStream *output) {
+  SetDestination(UNICAST);
+  ExpectError(SERVICE_REPLY, PARSE_ERROR);
+  SLPPacketBuilder::BuildSLPHeader(output, SERVICE_REQUEST, 30,
+                                   0, GetXID());
+  *output << static_cast<uint16_t>(0); 
+}
+};
+REGISTER_TEST(UnicastServiceTypeOverflow)
+*/
 
 /**
  * Try a multicast request with the target's IP in the PR List
@@ -217,6 +287,25 @@ void BuildPacket(BigEndianOutputStream *output) {
 }
 };
 REGISTER_TEST(SrvRqstPRListTest)
+
+
+/**
+ * Try a multicast request with the target's IP in the PR List.
+ * The PR list also contains non-ipv4 addresses.
+ */
+class SrvRqstInvalidPRListTest: public TestCase {
+void BuildPacket(BigEndianOutputStream *output) {
+  SetDestination(MULTICAST);
+  ExpectTimeout();
+
+  string pr_list_str = "foo," + GetDestinationIP().ToString() + ",bar";
+  pr_list.insert(GetDestinationIP());
+  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), true, pr_list_str,
+                                        RDMNET_DEVICE_SERVICE, RDMNET_SCOPES,
+                                        EN_LANGUAGE_TAG, "");
+}
+};
+REGISTER_TEST(SrvRqstInvalidPRListTest)
 
 
 /**
@@ -282,15 +371,79 @@ REGISTER_TEST(MissingServiceTypeMulticastRequest)
 
 
 /**
- * Try a unicast SrvRqst with a different language.
-*/
+ * Try a unicast SrvRqst with a different language. Since the language tag only
+ * applies to the predicate, and the predicate is empty in this case, this
+ * should return a URL Entry.
+ */
 class NonEnglishUnicastRequest: public TestCase {
 void BuildPacket(BigEndianOutputStream *output) {
   SetDestination(UNICAST);
-  ExpectError(SERVICE_REPLY, LANGUAGE_NOT_SUPPORTED);
+  ExpectResponse(SERVICE_REPLY);
 
-  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), false, pr_list, "",
-                                        RDMNET_SCOPES, "fr");
+  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), false, pr_list,
+                                        RDMNET_DEVICE_SERVICE, RDMNET_SCOPES,
+                                        "fr");
+}
+TestState VerifyReply(const uint8_t *data, unsigned int length) {
+  return VerifySrvRply(GetDestinationIP(), data, length);
 }
 };
 REGISTER_TEST(NonEnglishUnicastRequest)
+
+
+/**
+ * Try a multicast SrvRqst with a different language. Since the language tag
+ * only applies to the predicate, and the predicate is empty in this case, this
+ * should return a URL Entry.
+ */
+class NonEnglishMulticastRequest: public TestCase {
+void BuildPacket(BigEndianOutputStream *output) {
+  SetDestination(MULTICAST);
+  ExpectResponse(SERVICE_REPLY);
+
+  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), true, pr_list,
+                                        RDMNET_DEVICE_SERVICE, RDMNET_SCOPES,
+                                        "fr");
+}
+TestState VerifyReply(const uint8_t *data, unsigned int length) {
+  return VerifySrvRply(GetDestinationIP(), data, length);
+}
+};
+REGISTER_TEST(NonEnglishMulticastRequest)
+
+
+/**
+ * Try a unicast SrvRqst with a predicate. Since E1.33 services can't have
+ * attributes, this should return an empty list.
+ */
+class UnicastPredicateRequest: public TestCase {
+void BuildPacket(BigEndianOutputStream *output) {
+  SetDestination(UNICAST);
+  ExpectResponse(SERVICE_REPLY);
+
+  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), false, pr_list,
+                                        RDMNET_DEVICE_SERVICE, RDMNET_SCOPES,
+                                        EN_LANGUAGE_TAG, "!(foo=*)");
+}
+TestState VerifyReply(const uint8_t *data, unsigned int length) {
+  return VerifyEmptySrvReply(data, length);
+}
+};
+REGISTER_TEST(UnicastPredicateRequest)
+
+
+/**
+ * Try a multicast SrvRqst with a predicate. Since E1.33 services can't have
+ * attributes, the SA should not reply.
+ */
+class MulticastPredicateRequest: public TestCase {
+void BuildPacket(BigEndianOutputStream *output) {
+  SetDestination(MULTICAST);
+  ExpectTimeout();
+
+  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), true, pr_list,
+                                        RDMNET_DEVICE_SERVICE, RDMNET_SCOPES,
+                                        EN_LANGUAGE_TAG, "!(foo=*)");
+}
+};
+REGISTER_TEST(MulticastPredicateRequest)
