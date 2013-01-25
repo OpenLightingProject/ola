@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * StringBuilderTest.cpp
  * Test fixture for the StringBuilder classes
@@ -23,6 +23,8 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
+#include "ola/testing/TestUtils.h"
 
 #include "ola/Logging.h"
 #include "ola/messaging/Descriptor.h"
@@ -148,8 +150,8 @@ void StringBuilderTest::testSimpleBuilder() {
   auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
 
   // verify
-  CPPUNIT_ASSERT(message.get());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(fields.size()),
+  OLA_ASSERT_TRUE(message.get());
+  OLA_ASSERT_EQ(static_cast<unsigned int>(fields.size()),
                        message->FieldCount());
 
   string expected = (
@@ -157,7 +159,7 @@ void StringBuilderTest::testSimpleBuilder() {
       "bool6: false\nip1: 10.0.0.1\nuint8: 255\nuint16: 300\nuint32: 66000\n"
       "int8: -128\nint16: -300\nint32: -66000\nstring: foo\n"
       "hex uint16: 1024\n");
-  CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(message.get()));
+  OLA_ASSERT_EQ(expected, m_printer.AsString(message.get()));
 }
 
 
@@ -181,12 +183,12 @@ void StringBuilderTest::testBuilderWithLabels() {
   auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
 
   // verify
-  CPPUNIT_ASSERT(message.get());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(fields.size()),
-                       message->FieldCount());
+  OLA_ASSERT_NOT_NULL(message.get());
+  OLA_ASSERT_EQ(static_cast<unsigned int>(fields.size()),
+                message->FieldCount());
 
   string expected = "uint8: dozen\n";
-  CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(message.get()));
+  OLA_ASSERT_EQ(expected, m_printer.AsString(message.get()));
 }
 
 
@@ -211,12 +213,12 @@ void StringBuilderTest::testBuilderWithGroups() {
   auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
 
   // verify
-  CPPUNIT_ASSERT(message.get());
-  CPPUNIT_ASSERT_EQUAL(1u, message->FieldCount());
+  OLA_ASSERT_TRUE(message.get());
+  OLA_ASSERT_EQ(1u, message->FieldCount());
 
   string expected = (
       "group {\n  bool: true\n  uint8: 10\n}\n");
-  CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(message.get()));
+  OLA_ASSERT_EQ(expected, m_printer.AsString(message.get()));
 
   // now do multiple groups
   vector<string> inputs2;
@@ -230,14 +232,14 @@ void StringBuilderTest::testBuilderWithGroups() {
   auto_ptr<const Message> message2(BuildMessage(descriptor, inputs2));
 
   // verify
-  CPPUNIT_ASSERT(message2.get());
-  CPPUNIT_ASSERT_EQUAL(3u, message2->FieldCount());
+  OLA_ASSERT_NOT_NULL(message2.get());
+  OLA_ASSERT_EQ(3u, message2->FieldCount());
 
   string expected2 = (
       "group {\n  bool: true\n  uint8: 10\n}\n"
       "group {\n  bool: true\n  uint8: 42\n}\n"
       "group {\n  bool: false\n  uint8: 240\n}\n");
-  CPPUNIT_ASSERT_EQUAL(expected2, m_printer.AsString(message2.get()));
+  OLA_ASSERT_EQ(expected2, m_printer.AsString(message2.get()));
 
   // now provide too many inputs
   inputs2.clear();
@@ -250,7 +252,7 @@ void StringBuilderTest::testBuilderWithGroups() {
   inputs2.push_back("false");
   inputs2.push_back("53");
 
-  CPPUNIT_ASSERT(!BuildMessage(descriptor, inputs2));
+  OLA_ASSERT_NULL(BuildMessage(descriptor, inputs2));
 }
 
 
@@ -278,13 +280,13 @@ void StringBuilderTest::testBuilderWithNestedGroups() {
   auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
 
   // verify
-  CPPUNIT_ASSERT(message.get());
-  CPPUNIT_ASSERT_EQUAL(1u, message->FieldCount());
+  OLA_ASSERT_NOT_NULL(message.get());
+  OLA_ASSERT_EQ(1u, message->FieldCount());
 
   string expected = (
       " {\n  int16: 1\n  bar {\n    bool: true\n  }\n"
       "  bar {\n    bool: true\n  }\n}\n");
-  CPPUNIT_ASSERT_EQUAL(expected, m_printer.AsString(message.get()));
+  OLA_ASSERT_EQ(expected, m_printer.AsString(message.get()));
 }
 
 
@@ -307,7 +309,7 @@ void StringBuilderTest::testBuilderWithVariableNestedGroups() {
   Descriptor descriptor("Test Descriptor", fields);
 
   vector<string> inputs;
-  CPPUNIT_ASSERT(!BuildMessage(descriptor, inputs));
+  OLA_ASSERT_NULL(BuildMessage(descriptor, inputs));
 }
 
 
@@ -322,12 +324,12 @@ void StringBuilderTest::testBoolFailure() {
   // bad string input
   vector<string> inputs;
   inputs.push_back("foo");
-  CPPUNIT_ASSERT(!BuildMessage(descriptor, inputs));
+  OLA_ASSERT_FALSE(BuildMessage(descriptor, inputs));
 
   // bad int input
   vector<string> inputs2;
   inputs2.push_back("2");
-  CPPUNIT_ASSERT(!BuildMessage(descriptor, inputs2));
+  OLA_ASSERT_FALSE(BuildMessage(descriptor, inputs2));
 }
 
 
@@ -342,13 +344,13 @@ void StringBuilderTest::testUIntFailure() {
   // bad uint8 input
   vector<string> inputs;
   inputs.push_back("a");
-  CPPUNIT_ASSERT(!BuildMessage(descriptor, inputs));
+  OLA_ASSERT_FALSE(BuildMessage(descriptor, inputs));
   vector<string> inputs2;
   inputs2.push_back("-1");
-  CPPUNIT_ASSERT(!BuildMessage(descriptor, inputs2));
+  OLA_ASSERT_FALSE(BuildMessage(descriptor, inputs2));
   vector<string> inputs3;
   inputs3.push_back("256");
-  CPPUNIT_ASSERT(!BuildMessage(descriptor, inputs3));
+  OLA_ASSERT_FALSE(BuildMessage(descriptor, inputs3));
 }
 
 
@@ -363,13 +365,13 @@ void StringBuilderTest::testIntFailure() {
   // bad uint8 input
   vector<string> inputs;
   inputs.push_back("a");
-  CPPUNIT_ASSERT(!BuildMessage(descriptor, inputs));
+  OLA_ASSERT_FALSE(BuildMessage(descriptor, inputs));
   vector<string> inputs2;
   inputs2.push_back("-129");
-  CPPUNIT_ASSERT(!BuildMessage(descriptor, inputs2));
+  OLA_ASSERT_FALSE(BuildMessage(descriptor, inputs2));
   vector<string> inputs3;
   inputs3.push_back("128");
-  CPPUNIT_ASSERT(!BuildMessage(descriptor, inputs3));
+  OLA_ASSERT_FALSE(BuildMessage(descriptor, inputs3));
 }
 
 
@@ -384,5 +386,5 @@ void StringBuilderTest::testStringFailure() {
   // bad string input
   vector<string> inputs;
   inputs.push_back("this is a very long string");
-  CPPUNIT_ASSERT(!BuildMessage(descriptor, inputs));
+  OLA_ASSERT_FALSE(BuildMessage(descriptor, inputs));
 }

@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * ActionQueueTest.cpp
  * Test fixture for the ActionQueue class
@@ -22,6 +22,8 @@
 
 #include "ola/ActionQueue.h"
 #include "ola/Callback.h"
+#include "ola/testing/TestUtils.h"
+
 
 using ola::Action;
 using ola::ActionQueue;
@@ -96,8 +98,8 @@ void ActionQueueTest::testEmptyQueue() {
   ActionQueue queue(
       NewSingleCallback(this, &ActionQueueTest::CommandsComplete));
   queue.NextAction();
-  CPPUNIT_ASSERT_EQUAL(&queue, m_received_queue);
-  CPPUNIT_ASSERT(queue.WasSuccessful());
+  OLA_ASSERT_EQ(&queue, m_received_queue);
+  OLA_ASSERT_TRUE(queue.WasSuccessful());
 
   // try calling next item to make sure nothing happens
   queue.NextAction();
@@ -117,10 +119,10 @@ void ActionQueueTest::testSimpleQueue() {
   queue.AddAction(action2);
 
   queue.NextAction();
-  CPPUNIT_ASSERT_EQUAL(&queue, m_received_queue);
-  CPPUNIT_ASSERT(queue.WasSuccessful());
-  CPPUNIT_ASSERT(action1->Executed());
-  CPPUNIT_ASSERT(action2->Executed());
+  OLA_ASSERT_EQ(&queue, m_received_queue);
+  OLA_ASSERT_TRUE(queue.WasSuccessful());
+  OLA_ASSERT_TRUE(action1->Executed());
+  OLA_ASSERT_TRUE(action2->Executed());
 
   // try calling next item to make sure nothing happens
   queue.NextAction();
@@ -142,11 +144,11 @@ void ActionQueueTest::testFailedQueue() {
   queue.AddAction(action3);
 
   queue.NextAction();
-  CPPUNIT_ASSERT_EQUAL(&queue, m_received_queue);
-  CPPUNIT_ASSERT(!queue.WasSuccessful());
-  CPPUNIT_ASSERT(action1->Executed());
-  CPPUNIT_ASSERT(action2->Executed());
-  CPPUNIT_ASSERT(!action3->Executed());
+  OLA_ASSERT_EQ(&queue, m_received_queue);
+  OLA_ASSERT_FALSE(queue.WasSuccessful());
+  OLA_ASSERT_TRUE(action1->Executed());
+  OLA_ASSERT_TRUE(action2->Executed());
+  OLA_ASSERT_FALSE(action3->Executed());
 
   // try calling next item to make sure nothing happens
   queue.NextAction();

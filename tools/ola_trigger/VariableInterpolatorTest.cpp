@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * VariableInterpolatorTest.cpp
  * Test fixture for the ActionInterval class.
@@ -24,6 +24,8 @@
 
 #include "tools/ola_trigger/Context.h"
 #include "tools/ola_trigger/VariableInterpolator.h"
+#include "ola/testing/TestUtils.h"
+
 
 
 class VariableInterpolatorTest: public CppUnit::TestFixture {
@@ -58,14 +60,14 @@ void VariableInterpolatorTest::testNoInterpolation() {
   Context context;
   string result;
 
-  CPPUNIT_ASSERT(InterpolateVariables("", &result, context));
-  CPPUNIT_ASSERT_EQUAL(string(""), result);
+  OLA_ASSERT(InterpolateVariables("", &result, context));
+  OLA_ASSERT_EQ(string(""), result);
 
-  CPPUNIT_ASSERT(InterpolateVariables("foo bar baz", &result, context));
-  CPPUNIT_ASSERT_EQUAL(string("foo bar baz"), result);
+  OLA_ASSERT(InterpolateVariables("foo bar baz", &result, context));
+  OLA_ASSERT_EQ(string("foo bar baz"), result);
 
-  CPPUNIT_ASSERT(InterpolateVariables("{foo}", &result, context));
-  CPPUNIT_ASSERT_EQUAL(string("{foo}"), result);
+  OLA_ASSERT(InterpolateVariables("{foo}", &result, context));
+  OLA_ASSERT_EQ(string("{foo}"), result);
 }
 
 
@@ -78,17 +80,17 @@ void VariableInterpolatorTest::testSimpleInterpolation() {
   context.Update("two", "bar");
   string result;
 
-  CPPUNIT_ASSERT(InterpolateVariables("${one}", &result, context));
-  CPPUNIT_ASSERT_EQUAL(string("foo"), result);
+  OLA_ASSERT(InterpolateVariables("${one}", &result, context));
+  OLA_ASSERT_EQ(string("foo"), result);
 
-  CPPUNIT_ASSERT(InterpolateVariables("foo ${two} baz", &result, context));
-  CPPUNIT_ASSERT_EQUAL(string("foo bar baz"), result);
+  OLA_ASSERT(InterpolateVariables("foo ${two} baz", &result, context));
+  OLA_ASSERT_EQ(string("foo bar baz"), result);
 
-  CPPUNIT_ASSERT(InterpolateVariables("${one} ${two}", &result, context));
-  CPPUNIT_ASSERT_EQUAL(string("foo bar"), result);
+  OLA_ASSERT(InterpolateVariables("${one} ${two}", &result, context));
+  OLA_ASSERT_EQ(string("foo bar"), result);
 
-  CPPUNIT_ASSERT(InterpolateVariables("a${one}b${two}c", &result, context));
-  CPPUNIT_ASSERT_EQUAL(string("afoobbarc"), result);
+  OLA_ASSERT(InterpolateVariables("a${one}b${two}c", &result, context));
+  OLA_ASSERT_EQ(string("afoobbarc"), result);
 }
 
 
@@ -102,8 +104,8 @@ void VariableInterpolatorTest::testNestedInterpolation() {
   context.Update("slot_1", "bar");
   string result;
 
-  CPPUNIT_ASSERT(InterpolateVariables("${slot_${one}}", &result, context));
-  CPPUNIT_ASSERT_EQUAL(string("bar"), result);
+  OLA_ASSERT(InterpolateVariables("${slot_${one}}", &result, context));
+  OLA_ASSERT_EQ(string("bar"), result);
 }
 
 
@@ -115,11 +117,11 @@ void VariableInterpolatorTest::testEscaping() {
   context.Update("one", "foo");
   string result;
 
-  CPPUNIT_ASSERT(InterpolateVariables("\\${one\\}", &result, context));
-  CPPUNIT_ASSERT_EQUAL(string("${one}"), result);
+  OLA_ASSERT(InterpolateVariables("\\${one\\}", &result, context));
+  OLA_ASSERT_EQ(string("${one}"), result);
 
-  CPPUNIT_ASSERT(InterpolateVariables("${one} \\${one\\}", &result, context));
-  CPPUNIT_ASSERT_EQUAL(string("foo ${one}"), result);
+  OLA_ASSERT(InterpolateVariables("${one} \\${one\\}", &result, context));
+  OLA_ASSERT_EQ(string("foo ${one}"), result);
 }
 
 
@@ -129,6 +131,6 @@ void VariableInterpolatorTest::testEscaping() {
 void VariableInterpolatorTest::testMissingVariables() {
   Context context;
   string result;
-  CPPUNIT_ASSERT(!InterpolateVariables("${one}", &result, context));
-  CPPUNIT_ASSERT(!InterpolateVariables("${}", &result, context));
+  OLA_ASSERT_FALSE(InterpolateVariables("${one}", &result, context));
+  OLA_ASSERT_FALSE(InterpolateVariables("${}", &result, context));
 }

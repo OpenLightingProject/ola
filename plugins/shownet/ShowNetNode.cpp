@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * ShowNetNode.cpp
  * A ShowNet node
@@ -35,8 +35,10 @@ namespace shownet {
 
 using std::string;
 using std::map;
-using ola::network::UdpSocket;
+using ola::network::UDPSocket;
 using ola::network::HostToNetwork;
+using ola::network::IPV4Address;
+using ola::network::IPV4SocketAddress;
 using ola::Callback0;
 
 
@@ -327,7 +329,7 @@ unsigned int ShowNetNode::PopulatePacket(shownet_data_packet *packet,
  * Setup the networking compoents.
  */
 bool ShowNetNode::InitNetwork() {
-  m_socket = new UdpSocket();
+  m_socket = new UDPSocket();
 
   if (!m_socket->Init()) {
     OLA_WARN << "Socket init failed";
@@ -335,8 +337,8 @@ bool ShowNetNode::InitNetwork() {
     return false;
   }
 
-  if (!m_socket->Bind(SHOWNET_PORT)) {
-    OLA_WARN << "Failed to bind to:" << SHOWNET_PORT;
+  if (!m_socket->Bind(IPV4SocketAddress(IPV4Address::WildCard(),
+                                        SHOWNET_PORT))) {
     delete m_socket;
     return false;
   }

@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * SandNetNode.h
  * Header file for the SandNetNode class
@@ -37,7 +37,7 @@ namespace plugin {
 namespace sandnet {
 
 using ola::network::IPV4Address;
-using ola::network::UdpSocket;
+using ola::network::UDPSocket;
 
 class SandNetNode {
   public:
@@ -61,8 +61,8 @@ class SandNetNode {
     }
     bool Start();
     bool Stop();
-    std::vector<UdpSocket*> GetSockets();
-    void SocketReady(UdpSocket *socket);
+    std::vector<UDPSocket*> GetSockets();
+    void SocketReady(UDPSocket *socket);
 
     bool SetHandler(uint8_t group,
                     uint8_t universe,
@@ -109,8 +109,8 @@ class SandNetNode {
     sandnet_port m_ports[SANDNET_MAX_PORTS];
     universe_handlers m_handlers;
     ola::network::Interface m_interface;
-    UdpSocket m_control_socket;
-    UdpSocket m_data_socket;
+    UDPSocket m_control_socket;
+    UDPSocket m_data_socket;
     RunLengthEncoder m_encoder;
     IPV4Address m_control_addr;
     IPV4Address m_data_addr;

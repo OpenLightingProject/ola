@@ -1,31 +1,30 @@
 /*
-  This program is free software; you can redistribute it and/or
-  modify it under the terms of the GNU General Public License
-  Version 2 as published by the Free Software Foundation.
-
-  This program is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details. The license is
-  in the file "COPYING".
-
-  You should have received a copy of the GNU General Public License
-  along with this program; if not, write to the Free Software
-  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-  This class is based on QLCFTDI class from
-
-  Q Light Controller
-  qlcftdi-libftdi.cpp
-
-  Copyright (C) Heikki Junnila
-
-  Only standard CPP conversion was changed and function name changed
-  to follow OLA coding standards.
-
-  by
-  Rui Barreiros
-*/
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ * This class is based on QLCFTDI class from
+ *
+ * Q Light Controller
+ * qlcftdi-libftdi.cpp
+ *
+ * Copyright (C) Heikki Junnila
+ *
+ * Only standard CPP conversion was changed and function name changed
+ * to follow OLA coding standards.
+ *
+ * by Rui Barreiros
+ */
 
 #include <strings.h>
 #include <ftdi.h>
@@ -74,6 +73,7 @@ bool FtdiWidget::Open() {
       return true;
     }
   } else {
+    OLA_DEBUG << "Opening FTDI device " << Name() << ", serial: " << Serial();
     if (ftdi_usb_open_desc(&m_handle, FtdiWidget::VID, FtdiWidget::PID,
                            Name().c_str(), Serial().c_str()) < 0) {
       OLA_WARN << Name() << " " << ftdi_get_error_string(&m_handle);
@@ -291,8 +291,11 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
     OLA_INFO << "Found FTDI device. Vendor: '" << v << "', Name: '" << sname <<
       "', Serial: '" << sserial << "'";
     std::transform(v.begin(), v.end(), v.begin(), ::toupper);
-    if (std::string::npos != v.find("FTDI")) {
+    if (std::string::npos != v.find("FTDI") ||
+        std::string::npos != v.find("WWW.SOH.CZ")) {
       widgets->push_back(FtdiWidgetInfo(sname, sserial, i));
+    } else {
+      OLA_INFO << "Unknown FTDI device with vendor string: '" << v << "'";
     }
   }
 

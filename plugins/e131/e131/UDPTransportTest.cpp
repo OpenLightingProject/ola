@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * UDPTransportTest.cpp
  * Test fixture for the UDPTransport class
@@ -29,12 +29,16 @@
 #include "ola/network/Socket.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
 #include "plugins/e131/e131/UDPTransport.h"
+#include "ola/testing/TestUtils.h"
+
+
 
 namespace ola {
 namespace plugin {
 namespace e131 {
 
 using ola::network::HostToNetwork;
+using ola::network::IPV4SocketAddress;
 
 class UDPTransportTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(UDPTransportTest);
@@ -47,7 +51,7 @@ class UDPTransportTest: public CppUnit::TestFixture {
     void setUp();
     void tearDown();
     void Stop();
-    void FatalStop() { CPPUNIT_ASSERT(false); }
+    void FatalStop() { OLA_ASSERT(false); }
 
   private:
     ola::io::SelectServer *m_ss;
@@ -80,19 +84,20 @@ void UDPTransportTest::testUDPTransport() {
   MockInflator inflator(cid, stop_closure.get());
 
   // setup the socket
-  ola::network::UdpSocket socket;
-  CPPUNIT_ASSERT(socket.Init());
-  CPPUNIT_ASSERT(socket.Bind(ACN_PORT));
-  CPPUNIT_ASSERT(socket.EnableBroadcast());
+  ola::network::UDPSocket socket;
+  OLA_ASSERT(socket.Init());
+  OLA_ASSERT(
+      socket.Bind(IPV4SocketAddress(IPV4Address::WildCard(), ACN_PORT)));
+  OLA_ASSERT(socket.EnableBroadcast());
 
   IncomingUDPTransport incoming_udp_transport(&socket, &inflator);
   socket.SetOnData(NewCallback(&incoming_udp_transport,
                                &IncomingUDPTransport::Receive));
-  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&socket));
+  OLA_ASSERT(m_ss->AddReadDescriptor(&socket));
 
   // outgoing transport
   IPV4Address addr;
-  CPPUNIT_ASSERT(IPV4Address::FromString("255.255.255.255", &addr));
+  OLA_ASSERT(IPV4Address::FromString("255.255.255.255", &addr));
 
   OutgoingUDPTransportImpl udp_transport_impl(&socket);
   OutgoingUDPTransport outgoing_udp_transport(&udp_transport_impl, addr);
@@ -101,7 +106,7 @@ void UDPTransportTest::testUDPTransport() {
   PDUBlock<PDU> pdu_block;
   MockPDU mock_pdu(4, 8);
   pdu_block.AddPDU(&mock_pdu);
-  CPPUNIT_ASSERT(outgoing_udp_transport.Send(pdu_block));
+  OLA_ASSERT(outgoing_udp_transport.Send(pdu_block));
 
   SingleUseCallback0<void> *closure =
     NewSingleCallback(this, &UDPTransportTest::FatalStop);

@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * ThreadTest.cpp
  * Test fixture for the Thread class
@@ -21,6 +21,8 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include "ola/thread/Thread.h"
+#include "ola/testing/TestUtils.h"
+
 
 using ola::thread::ConditionVariable;
 using ola::thread::Mutex;
@@ -73,14 +75,14 @@ CPPUNIT_TEST_SUITE_REGISTRATION(ThreadTest);
  */
 void ThreadTest::testThread() {
   MockThread thread;
-  CPPUNIT_ASSERT(!thread.HasRan());
-  CPPUNIT_ASSERT(thread.Start());
+  OLA_ASSERT_FALSE(thread.HasRan());
+  OLA_ASSERT_TRUE(thread.Start());
   // starting twice must fail
-  CPPUNIT_ASSERT(!thread.Start());
-  CPPUNIT_ASSERT(thread.IsRunning());
-  CPPUNIT_ASSERT(thread.Join());
-  CPPUNIT_ASSERT(!thread.IsRunning());
-  CPPUNIT_ASSERT(thread.HasRan());
+  OLA_ASSERT_FALSE(thread.Start());
+  OLA_ASSERT_TRUE(thread.IsRunning());
+  OLA_ASSERT_TRUE(thread.Join());
+  OLA_ASSERT_FALSE(thread.IsRunning());
+  OLA_ASSERT_TRUE(thread.HasRan());
 }
 
 
@@ -122,7 +124,7 @@ void ThreadTest::testConditionVariable() {
   mutex.Lock();
   if (thread.i != MockConditionThread::EXPECTED)
     condition.Wait(&mutex);
-  CPPUNIT_ASSERT_EQUAL(10, thread.i);
+  OLA_ASSERT_EQ(10, thread.i);
   mutex.Unlock();
 
   thread.Join();

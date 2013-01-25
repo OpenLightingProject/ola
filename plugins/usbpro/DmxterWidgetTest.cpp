@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * DmxterWidgetTest.cpp
  * Test fixture for the DmxterWidget class
@@ -26,11 +26,15 @@
 
 #include "ola/Callback.h"
 #include "ola/Logging.h"
+#include "ola/rdm/RDMCommandSerializer.h"
 #include "plugins/usbpro/DmxterWidget.h"
 #include "plugins/usbpro/CommonWidgetTest.h"
+#include "ola/testing/TestUtils.h"
+
 
 
 using ola::plugin::usbpro::DmxterWidget;
+using ola::rdm::RDMCommandSerializer;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::GetResponseFromData;
@@ -105,9 +109,9 @@ void DmxterWidgetTest::setUp() {
 void DmxterWidgetTest::ValidateTod(const ola::rdm::UIDSet &uids) {
   UID uid1(0x707a, 0xffffff00);
   UID uid2(0x5252, 0x12345678);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 2, uids.Size());
-  CPPUNIT_ASSERT(uids.Contains(uid1));
-  CPPUNIT_ASSERT(uids.Contains(uid2));
+  OLA_ASSERT_EQ((unsigned int) 2, uids.Size());
+  OLA_ASSERT(uids.Contains(uid1));
+  OLA_ASSERT(uids.Contains(uid2));
   m_tod_counter++;
   m_ss.Terminate();
 }
@@ -120,18 +124,18 @@ void DmxterWidgetTest::ValidateResponse(
     ola::rdm::rdm_response_code code,
     const ola::rdm::RDMResponse *response,
     const vector<string> &packets) {
-  CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_COMPLETED_OK, code);
-  CPPUNIT_ASSERT(response);
+  OLA_ASSERT_EQ(ola::rdm::RDM_COMPLETED_OK, code);
+  OLA_ASSERT(response);
   uint8_t expected_data[] = {0x5a, 0x5a, 0x5a, 0x5a};
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 4, response->ParamDataSize());
-  CPPUNIT_ASSERT(0 == memcmp(expected_data, response->ParamData(),
+  OLA_ASSERT_EQ((unsigned int) 4, response->ParamDataSize());
+  OLA_ASSERT(0 == memcmp(expected_data, response->ParamData(),
                              response->ParamDataSize()));
 
-  CPPUNIT_ASSERT_EQUAL((size_t) 1, packets.size());
+  OLA_ASSERT_EQ((size_t) 1, packets.size());
   ola::rdm::rdm_response_code raw_code;
   ola::rdm::RDMResponse *raw_response =
     ola::rdm::RDMResponse::InflateFromData(packets[0], &raw_code);
-  CPPUNIT_ASSERT(*raw_response == *response);
+  OLA_ASSERT(*raw_response == *response);
   delete raw_response;
   delete response;
   m_ss.Terminate();
@@ -147,12 +151,12 @@ void DmxterWidgetTest::ValidateStatus(
     ola::rdm::rdm_response_code code,
     const ola::rdm::RDMResponse *response,
     const vector<string> &packets) {
-  CPPUNIT_ASSERT_EQUAL(expected_code, code);
-  CPPUNIT_ASSERT(!response);
+  OLA_ASSERT_EQ(expected_code, code);
+  OLA_ASSERT_FALSE(response);
 
-  CPPUNIT_ASSERT_EQUAL(expected_packets.size(), packets.size());
+  OLA_ASSERT_EQ(expected_packets.size(), packets.size());
   for (unsigned int i = 0; i < packets.size(); i++) {
-    CPPUNIT_ASSERT(expected_packets[i] == packets[i]);
+    OLA_ASSERT(expected_packets[i] == packets[i]);
   }
   m_ss.Terminate();
 }
@@ -198,12 +202,12 @@ void DmxterWidgetTest::testTod() {
       return_packet,
       sizeof(return_packet));
 
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, m_tod_counter);
+  OLA_ASSERT_EQ((unsigned int) 0, m_tod_counter);
   m_widget->RunFullDiscovery(
       ola::NewSingleCallback(this, &DmxterWidgetTest::ValidateTod));
   m_ss.Run();
   m_endpoint->Verify();
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, m_tod_counter);
+  OLA_ASSERT_EQ((unsigned int) 1, m_tod_counter);
 
   m_endpoint->AddExpectedUsbProDataAndReturn(
       INCREMENTAL_DISCOVERY_LABEL,
@@ -218,7 +222,7 @@ void DmxterWidgetTest::testTod() {
 
   m_ss.Run();
   m_endpoint->Verify();
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 2, m_tod_counter);
+  OLA_ASSERT_EQ((unsigned int) 2, m_tod_counter);
 }
 
 
@@ -236,15 +240,11 @@ void DmxterWidgetTest::testSendRDMRequest() {
 
   const RDMRequest *request = NewRequest(source, destination, NULL, 0);
 
-  unsigned int size = request->Size();
+  unsigned int size = RDMCommandSerializer::RequiredSize(*request);
   uint8_t *expected_packet = new uint8_t[size + 1];
   expected_packet[0] = 0xcc;
-  CPPUNIT_ASSERT(request->PackWithControllerParams(
-        expected_packet + 1,
-        &size,
-        new_source,
-        0,
-        1));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*request, expected_packet + 1, &size,
+                                        new_source, 0, 1));
 
   uint8_t return_packet[] = {
     0x00, 14,  // response code 'ok'
@@ -276,12 +276,8 @@ void DmxterWidgetTest::testSendRDMRequest() {
   // now check broadcast
   request = NewRequest(source, bcast_destination, NULL, 0);
 
-  CPPUNIT_ASSERT(request->PackWithControllerParams(
-        expected_packet + 1,
-        &size,
-        new_source,
-        1,  // increment transaction #
-        1));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*request, expected_packet + 1, &size,
+                                        new_source, 1, 1));
 
   m_endpoint->AddExpectedUsbProDataAndReturn(
       RDM_BROADCAST_REQUEST_LABEL,
@@ -324,23 +320,27 @@ void DmxterWidgetTest::testSendRDMMute() {
       NULL,
       0);
 
-  unsigned int request_size = rdm_request->Size();
+  unsigned int request_size = RDMCommandSerializer::RequiredSize(*rdm_request);
   uint8_t *expected_request_frame = new uint8_t[request_size + 1];
   expected_request_frame[0] = 0xcc;
-  CPPUNIT_ASSERT(rdm_request->Pack(expected_request_frame + 1, &request_size));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*rdm_request,
+                                        expected_request_frame + 1,
+                                        &request_size));
 
   // response
   // to keep things simple here we return the TEST_RDM_DATA.
   auto_ptr<const RDMResponse> response(
     GetResponseFromData(rdm_request, TEST_RDM_DATA, sizeof(TEST_RDM_DATA)));
 
-  unsigned int response_size = response->Size();
+  unsigned int response_size = RDMCommandSerializer::RequiredSize(
+      *response.get());
   uint8_t *response_frame = new uint8_t[response_size + 3];
   response_frame[0] = 0;  // version
   response_frame[1] = 14;  // status ok
   response_frame[2] = ola::rdm::RDMCommand::START_CODE;
   memset(&response_frame[3], 0, response_size);
-  CPPUNIT_ASSERT(response->Pack(&response_frame[3], &response_size));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*response, &response_frame[3],
+                                        &response_size));
   response_size += 3;
 
   // add the expected response, send and verify
@@ -388,10 +388,12 @@ void DmxterWidgetTest::testSendRDMDUB() {
       REQUEST_DATA,
       sizeof(REQUEST_DATA));
 
-  unsigned int request_size = rdm_request->Size();
+  unsigned int request_size = RDMCommandSerializer::RequiredSize(*rdm_request);
   uint8_t *expected_request_frame = new uint8_t[request_size + 1];
   expected_request_frame[0] = 0xcc;
-  CPPUNIT_ASSERT(rdm_request->Pack(expected_request_frame + 1, &request_size));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*rdm_request,
+                                        expected_request_frame + 1,
+                                        &request_size));
 
   // a 4 byte response means a timeout
   static const uint8_t TIMEOUT_RESPONSE[] = {0, 17};
@@ -429,10 +431,12 @@ void DmxterWidgetTest::testSendRDMDUB() {
       REQUEST_DATA,
       sizeof(REQUEST_DATA));
 
-  request_size = rdm_request->Size();
+  request_size = RDMCommandSerializer::RequiredSize(*rdm_request);
   expected_request_frame = new uint8_t[request_size + 1];
   expected_request_frame[0] = 0xcc;
-  CPPUNIT_ASSERT(rdm_request->Pack(expected_request_frame + 1, &request_size));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*rdm_request,
+                                        expected_request_frame + 1,
+                                        &request_size));
 
   // something that looks like a DUB response
   static const uint8_t FAKE_RESPONSE[] = {0x00, 19, 0xfe, 0xfe, 0xaa, 0xaa};
@@ -475,15 +479,11 @@ void DmxterWidgetTest::testErrorCodes() {
 
   const RDMRequest *request = NewRequest(source, destination, NULL, 0);
 
-  unsigned int size = request->Size();
+  unsigned int size = RDMCommandSerializer::RequiredSize(*request);
   uint8_t *expected_packet = new uint8_t[size + 1];
   expected_packet[0] = 0xcc;
-  CPPUNIT_ASSERT(request->PackWithControllerParams(
-        expected_packet + 1,
-        &size,
-        new_source,
-        0,
-        1));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*request, expected_packet + 1, &size,
+                                        new_source, 0, 1));
 
   uint8_t return_packet[] = {
     0x00, 1,  // checksum failure
@@ -632,15 +632,11 @@ void DmxterWidgetTest::testErrorConditions() {
 
   const RDMRequest *request = NewRequest(source, destination, NULL, 0);
 
-  unsigned int size = request->Size();
+  unsigned int size = RDMCommandSerializer::RequiredSize(*request);
   uint8_t *expected_packet = new uint8_t[size + 1];
   expected_packet[0] = 0xcc;
-  CPPUNIT_ASSERT(request->PackWithControllerParams(
-        expected_packet + 1,
-        &size,
-        new_source,
-        0,
-        1));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*request, expected_packet + 1, &size,
+             new_source, 0, 1));
 
   // to small to be valid
   uint8_t return_packet[] = {0x00};
@@ -666,12 +662,8 @@ void DmxterWidgetTest::testErrorConditions() {
   // check mismatched version
   request = NewRequest(source, destination, NULL, 0);
 
-  CPPUNIT_ASSERT(request->PackWithControllerParams(
-        expected_packet + 1,
-        &size,
-        new_source,
-        1,  // increment transaction #
-        1));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*request, expected_packet + 1, &size,
+             new_source, 1, 1));
 
   // non-0 version
   uint8_t return_packet2[] = {0x01, 0x11, 0xcc};
@@ -705,8 +697,8 @@ void DmxterWidgetTest::testShutdown() {
 
   m_descriptor.SetOnClose(
       ola::NewSingleCallback(this, &DmxterWidgetTest::Terminate));
-  CPPUNIT_ASSERT(m_descriptor.ValidReadDescriptor());
-  CPPUNIT_ASSERT(m_descriptor.ValidWriteDescriptor());
+  OLA_ASSERT(m_descriptor.ValidReadDescriptor());
+  OLA_ASSERT(m_descriptor.ValidWriteDescriptor());
 
   // first try a bad message
   uint8_t data = 1;
@@ -718,13 +710,13 @@ void DmxterWidgetTest::testShutdown() {
       ola::NewSingleCallback(this, &DmxterWidgetTest::Terminate));
   m_ss.Run();
   m_endpoint->Verify();
-  CPPUNIT_ASSERT(m_descriptor.ValidReadDescriptor());
-  CPPUNIT_ASSERT(m_descriptor.ValidWriteDescriptor());
+  OLA_ASSERT(m_descriptor.ValidReadDescriptor());
+  OLA_ASSERT(m_descriptor.ValidWriteDescriptor());
 
   // now send a valid shutdown message
   m_endpoint->SendUnsolicitedUsbProData(SHUTDOWN_LABEL, NULL, 0);
   m_ss.Run();
   m_endpoint->Verify();
-  CPPUNIT_ASSERT(!m_descriptor.ValidReadDescriptor());
-  CPPUNIT_ASSERT(!m_descriptor.ValidWriteDescriptor());
+  OLA_ASSERT_FALSE(m_descriptor.ValidReadDescriptor());
+  OLA_ASSERT_FALSE(m_descriptor.ValidWriteDescriptor());
 }

@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * OlaDaemon.h
  * Interface for the OLA Daemon class
@@ -32,7 +32,7 @@
 namespace ola {
 
 using ola::io::SelectServer;
-using ola::network::TcpAcceptingSocket;
+using ola::network::TCPAcceptingSocket;
 
 class OlaDaemon {
   public:
@@ -62,7 +62,7 @@ class OlaDaemon {
     class SelectServer *m_ss;
     class OlaServer *m_server;
     class PreferencesFactory *m_preferences_factory;
-    class TcpAcceptingSocket *m_accepting_socket;
+    class TCPAcceptingSocket *m_accepting_socket;
     class OlaClientServiceFactory *m_service_factory;
     ola_server_options m_options;
     class ExportMap *m_export_map;

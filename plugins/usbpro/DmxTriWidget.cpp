@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * DmxTriWidget.h
  * The Jese DMX TRI device.
@@ -27,6 +27,7 @@
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/RDMCommand.h"
+#include "ola/rdm/RDMCommandSerializer.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
@@ -42,6 +43,7 @@ using std::string;
 using ola::network::NetworkToHost;
 using ola::network::HostToNetwork;
 using ola::rdm::RDMCommand;
+using ola::rdm::RDMCommandSerializer;
 using ola::rdm::RDMDiscoveryCallback;
 using ola::rdm::RDMRequest;
 using ola::rdm::UID;
@@ -134,7 +136,7 @@ void DmxTriWidgetImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
 
   if (request->CommandClass() == ola::rdm::RDMCommand::DISCOVER_COMMAND &&
       request->ParamId() == ola::rdm::PID_DISC_UNIQUE_BRANCH) {
-    on_complete->Run(ola::rdm::RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED, NULL,
+    on_complete->Run(ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED, NULL,
                      packets);
     delete request;
     return;
@@ -238,7 +240,7 @@ void DmxTriWidgetImpl::SendDMXBuffer(const DmxBuffer &buffer) {
   // CommandID, Options, Start Code + data
   uint8_t send_buffer[3 + DMX_UNIVERSE_SIZE];
   send_buffer[0] = SINGLE_TX_COMMAND_ID;
-  send_buffer[1] = 0;  // return when processed
+  send_buffer[1] = 1;  // return a busy RC if rate in excess
   send_buffer[2] = DMX512_START_CODE;
 
   unsigned int length = DMX_UNIVERSE_SIZE;
@@ -395,13 +397,13 @@ void DmxTriWidgetImpl::SendRawRDMRequest(
         1);  // port id is always 1
   delete raw_request;
 
-  unsigned int packet_size = request->Size();
+  unsigned int packet_size = RDMCommandSerializer::RequiredSize(*request);
   uint8_t *send_buffer = new uint8_t[packet_size + 2];
 
   send_buffer[0] = RAW_RDM_COMMAND_ID;
   send_buffer[1] = 0;
 
-  if (!request->Pack(send_buffer + 2, &packet_size)) {
+  if (!RDMCommandSerializer::Pack(*request, send_buffer + 2, &packet_size)) {
     OLA_WARN << "Failed to pack RDM request";
     delete[] send_buffer;
     callback->Run(ola::rdm::RDM_FAILED_TO_SEND, NULL, packets);
@@ -454,7 +456,7 @@ void DmxTriWidgetImpl::DispatchRequest(const ola::rdm::RDMRequest *request,
     uint8_t index;
     uint16_t sub_device;
     uint16_t param_id;
-    uint8_t data[ola::rdm::RDMCommand::MAX_PARAM_DATA_LENGTH];
+    uint8_t data[RDMCommandSerializer::MAX_PARAM_DATA_LENGTH];
   } __attribute__((packed));
 
   rdm_message message;
@@ -492,7 +494,7 @@ void DmxTriWidgetImpl::DispatchRequest(const ola::rdm::RDMRequest *request,
            request->ParamDataSize());
 
   unsigned int size = sizeof(message) -
-    ola::rdm::RDMCommand::MAX_PARAM_DATA_LENGTH + request->ParamDataSize();
+    RDMCommandSerializer::MAX_PARAM_DATA_LENGTH + request->ParamDataSize();
 
   OLA_INFO << "Sending request to " << request->DestinationUID() <<
     " with command " << std::hex << request->CommandClass() << " and param " <<

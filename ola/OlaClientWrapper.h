@@ -25,40 +25,43 @@
 #ifndef OLA_OLACLIENTWRAPPER_H_
 #define OLA_OLACLIENTWRAPPER_H_
 
+#include <ola/AutoStart.h>
 #include <ola/OlaClient.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/io/SelectServer.h>
-#include <ola/network/Socket.h>
+#include <ola/network/SocketAddress.h>
+#include <ola/network/TCPSocket.h>
+#include <memory>
 
 namespace ola {
 
 using ola::io::SelectServer;
-using ola::network::TcpSocket;
+using ola::network::TCPSocket;
+using std::auto_ptr;
 
 /*
  * The base class, not used directly.
  */
 class BaseClientWrapper {
   public:
-    explicit BaseClientWrapper(bool auto_start);
+    BaseClientWrapper() {}
     virtual ~BaseClientWrapper();
 
-    SelectServer *GetSelectServer() const { return m_ss; }
+    SelectServer *GetSelectServer() { return &m_ss; }
 
     bool Setup();
     bool Cleanup();
-
     void SocketClosed();
 
   protected:
-    TcpSocket *m_socket;
+    auto_ptr<TCPSocket> m_socket;
 
   private:
+    SelectServer m_ss;
+
     virtual void CreateClient() = 0;
     virtual bool StartupClient() = 0;
-
-    bool m_auto_start;
-    SelectServer *m_ss;
+    virtual void InitSocket() = 0;
 };
 
 
@@ -69,26 +72,33 @@ template <typename client_class>
 class GenericClientWrapper: public BaseClientWrapper {
   public:
     explicit GenericClientWrapper(bool auto_start = true):
-        BaseClientWrapper(auto_start),
-        m_client(NULL) {
+        BaseClientWrapper(),
+        m_auto_start(auto_start) {
     }
-    ~GenericClientWrapper() {
-      if (m_client)
-        delete m_client;
-    }
+    ~GenericClientWrapper() {}
 
-    client_class *GetClient() const { return m_client; }
+    client_class *GetClient() const { return m_client.get(); }
 
   private:
-    client_class *m_client;
+    auto_ptr<client_class> m_client;
+    bool m_auto_start;
 
     void CreateClient() {
-      if (!m_client) {
-        m_client = new client_class(m_socket);
+      if (!m_client.get()) {
+        m_client.reset(new client_class(m_socket.get()));
       }
     }
-    bool StartupClient() {
-      return m_client->Setup();
+
+    bool StartupClient() { return m_client->Setup(); }
+
+    void InitSocket() {
+      if (m_auto_start)
+        m_socket.reset(ola::client::ConnectToServer(OLA_DEFAULT_PORT));
+      else
+        m_socket.reset(TCPSocket::Connect(
+            ola::network::IPV4SocketAddress(
+              ola::network::IPV4Address::Loopback(),
+             OLA_DEFAULT_PORT)));
     }
 };
 

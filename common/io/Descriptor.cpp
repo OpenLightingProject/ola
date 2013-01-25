@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Descriptor.cpp
  * Implementation of the Descriptor classes
@@ -204,12 +204,17 @@ ssize_t bytes_sent;
 
 
 /**
- * Send an iovec.
+ * Send an IOQueue.
+ * This attempts to send as much of the IOQueue data as possible. The IOQueue
+ * may be non-empty when this completes if the descriptor buffer is full.
  * @returns the number of bytes sent.
  */
-ssize_t ConnectedDescriptor::SendV(const struct iovec *iov, int iocnt) {
+ssize_t ConnectedDescriptor::Send(IOQueue *ioqueue) {
   if (!ValidWriteDescriptor())
     return 0;
+
+  int iocnt;
+  const struct iovec *iov = ioqueue->AsIOVec(&iocnt);
 
   ssize_t bytes_sent;
 #if HAVE_DECL_MSG_NOSIGNAL
@@ -227,9 +232,13 @@ ssize_t ConnectedDescriptor::SendV(const struct iovec *iov, int iocnt) {
     bytes_sent = writev(WriteDescriptor(), iov, iocnt);
   }
 
-  if (bytes_sent < 0)
+  if (bytes_sent < 0) {
     OLA_INFO << "Failed to send on " << WriteDescriptor() << ": " <<
       strerror(errno);
+  } else {
+    ioqueue->FreeIOVec(iov);
+    ioqueue->Pop(bytes_sent);
+  }
   return bytes_sent;
 }
 

@@ -22,17 +22,17 @@
 #define OLA_AUTOSTART_H_
 
 #include <ola/BaseTypes.h>
-#include <ola/network/Socket.h>
+#include <ola/network/TCPSocket.h>
 
 namespace ola {
 namespace client {
 
-using ola::network::TcpSocket;
+using ola::network::TCPSocket;
 
 /*
  * Open a connection to the server.
  */
-TcpSocket *ConnectToServer(unsigned short port);
+TCPSocket *ConnectToServer(unsigned short port);
 }  // client
 }  // ola
 #endif  // OLA_AUTOSTART_H_

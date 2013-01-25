@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * PathportNode.cpp
  * A SandNet node
@@ -39,8 +39,9 @@ using std::map;
 using std::vector;
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
+using ola::network::IPV4SocketAddress;
 using ola::network::NetworkToHost;
-using ola::network::UdpSocket;
+using ola::network::UDPSocket;
 using ola::Callback0;
 
 /*
@@ -120,7 +121,7 @@ bool PathportNode::Stop() {
 /*
  * Called when there is data on this socket
  */
-void PathportNode::SocketReady(UdpSocket *socket) {
+void PathportNode::SocketReady(UDPSocket *socket) {
   pathport_packet_s packet;
   ssize_t packet_size = sizeof(packet);
   IPV4Address source;
@@ -311,8 +312,8 @@ bool PathportNode::InitNetwork() {
     return false;
   }
 
-  if (!m_socket.Bind(PATHPORT_PORT)) {
-    OLA_WARN << "Failed to bind to:" << PATHPORT_PORT;
+  if (!m_socket.Bind(IPV4SocketAddress(IPV4Address::WildCard(),
+                                       PATHPORT_PORT))) {
     m_socket.Close();
     return false;
   }

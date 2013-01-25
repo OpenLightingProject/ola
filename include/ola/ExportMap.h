@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * ExportMap.h
  * Interface the ExportMap and ExportedVariables
@@ -58,6 +58,25 @@ struct VariableLessThan: public std::binary_function<BaseVariable*,
   }
 };
 
+
+
+/*
+ * Represents a bool variable
+ */
+class BoolVariable: public BaseVariable {
+  public:
+    explicit BoolVariable(const string &name)
+        : BaseVariable(name),
+          m_value(false) {}
+    ~BoolVariable() {}
+
+    void Set(bool value) { m_value = value; }
+    bool Get() const { return m_value; }
+    const string Value() const { return m_value ? "1" : "0"; }
+
+  private:
+    bool m_value;
+};
 
 
 /*
@@ -142,17 +161,49 @@ class MapVariable: public BaseVariable {
     ~MapVariable() {}
 
     void Remove(const string &key);
+    void Set(const string &key, Type value);
     Type &operator[](const string &key);
     const string Value() const;
     const string Label() const { return m_label; }
-  private:
+
+  protected:
     map<string, Type> m_variables;
+
+  private:
     string m_label;
 };
 
 typedef MapVariable<string> StringMap;
-typedef MapVariable<int> IntMap;
-typedef MapVariable<unsigned int> UIntMap;
+
+
+/**
+ * An IntMap. This provides an increment operation.
+ */
+class IntMap: public MapVariable<int> {
+  public:
+    IntMap(const string &name, const string &label)
+        : MapVariable<int>(name, label) {
+    }
+
+    void Increment(const string &key) {
+      m_variables[key]++;
+    }
+};
+
+
+/**
+ * An IntMap. This provides an increment operation.
+ */
+class UIntMap: public MapVariable<unsigned int> {
+  public:
+    UIntMap(const string &name, const string &label)
+        : MapVariable<unsigned int>(name, label) {
+    }
+
+    void Increment(const string &key) {
+      m_variables[key]++;
+    }
+};
 
 
 /*
@@ -162,6 +213,15 @@ typedef MapVariable<unsigned int> UIntMap;
 template<typename Type>
 Type &MapVariable<Type>::operator[](const string &key) {
   return m_variables[key];
+}
+
+
+/*
+ * Set a value in the Map variable.
+ */
+template<typename Type>
+void MapVariable<Type>::Set(const string &key, Type value) {
+  m_variables[key] = value;
 }
 
 
@@ -187,6 +247,7 @@ class ExportMap {
     ~ExportMap();
     vector<BaseVariable*> AllVariables() const;
 
+    BoolVariable *GetBoolVar(const string &name);
     IntegerVariable *GetIntegerVar(const string &name);
     CounterVariable *GetCounterVar(const string &name);
     StringVariable *GetStringVar(const string &name);
@@ -214,9 +275,10 @@ class ExportMap {
     template<typename Type>
     void DeleteVariables(Type *var_map) const;
 
-    map<string, StringVariable*> m_string_variables;
-    map<string, IntegerVariable*> m_int_variables;
+    map<string, BoolVariable*> m_bool_variables;
     map<string, CounterVariable*> m_counter_variables;
+    map<string, IntegerVariable*> m_int_variables;
+    map<string, StringVariable*> m_string_variables;
 
     map<string, StringMap*> m_str_map_variables;
     map<string, IntMap*> m_int_map_variables;

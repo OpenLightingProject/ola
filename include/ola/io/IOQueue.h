@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * IOQueue.h
  * A non-contigous memory buffer that operates as a queue.
@@ -21,12 +21,14 @@
 #ifndef INCLUDE_OLA_IO_IOQUEUE_H_
 #define INCLUDE_OLA_IO_IOQUEUE_H_
 
-#include <ola/io/OutputStream.h>
+#include <ola/io/InputBuffer.h>
+#include <ola/io/OutputBuffer.h>
 #include <stdint.h>
 #include <sys/uio.h>
 #include <deque>
 #include <iostream>
 #include <queue>
+#include <string>
 
 namespace ola {
 namespace io {
@@ -34,7 +36,7 @@ namespace io {
 /**
  * IOQueue.
  */
-class IOQueue: public OutputStream {
+class IOQueue: public InputBufferInterface, public OutputBufferInterface {
   public:
     explicit IOQueue(unsigned int block_size = DEFAULT_BLOCK_SIZE);
     ~IOQueue();
@@ -44,37 +46,12 @@ class IOQueue: public OutputStream {
       return m_blocks.empty();
     }
 
+    // From OutputBuffer
     void Write(const uint8_t *data, unsigned int length);
 
-    OutputStream& operator<<(uint8_t i) {
-      Write(&i, sizeof(i));
-      return *this;
-    }
-
-    OutputStream& operator<<(uint16_t i) {
-      Write(reinterpret_cast<uint8_t*>(&i), sizeof(i));
-      return *this;
-    }
-
-    OutputStream& operator<<(uint32_t i) {
-      Write(reinterpret_cast<uint8_t*>(&i), sizeof(i));
-      return *this;
-    }
-
-    OutputStream& operator<<(int8_t i) {
-      Write(reinterpret_cast<uint8_t*>(&i), sizeof(i));
-      return *this;
-    }
-
-    OutputStream& operator<<(int16_t i) {
-      Write(reinterpret_cast<uint8_t*>(&i), sizeof(i));
-      return *this;
-    }
-
-    OutputStream& operator<<(int32_t i) {
-      Write(reinterpret_cast<uint8_t*>(&i), sizeof(i));
-      return *this;
-    }
+    // From InputBuffer
+    unsigned int Read(uint8_t *data, unsigned int length);
+    unsigned int Read(std::string *output, unsigned int length);
 
     unsigned int Peek(uint8_t *data, unsigned int length) const;
     void Pop(unsigned int n);

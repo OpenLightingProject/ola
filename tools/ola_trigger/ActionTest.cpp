@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * ActionTest.cpp
  * Test fixture for the Action classes
@@ -25,6 +25,8 @@
 #include <vector>
 
 #include "tools/ola_trigger/Action.h"
+#include "ola/testing/TestUtils.h"
+
 
 using std::vector;
 using std::string;
@@ -126,22 +128,22 @@ void ActionTest::testVariableAssignment() {
 
   Context context;
   string value;
-  CPPUNIT_ASSERT(!context.Lookup(VARIABLE_ONE, &value));
+  OLA_ASSERT_FALSE(context.Lookup(VARIABLE_ONE, &value));
 
   // trigger the action
   VariableAssignmentAction action(VARIABLE_ONE, FOO_VALUE);
   action.Execute(&context, 0);
 
   // check the context has updated
-  CPPUNIT_ASSERT(context.Lookup(VARIABLE_ONE, &value));
-  CPPUNIT_ASSERT_EQUAL(FOO_VALUE, value);
+  OLA_ASSERT(context.Lookup(VARIABLE_ONE, &value));
+  OLA_ASSERT_EQ(FOO_VALUE, value);
 
   // another action
   VariableAssignmentAction action2(VARIABLE_ONE, BAR_VALUE);
   action2.Execute(&context, 0);
 
-  CPPUNIT_ASSERT(context.Lookup(VARIABLE_ONE, &value));
-  CPPUNIT_ASSERT_EQUAL(BAR_VALUE, value);
+  OLA_ASSERT(context.Lookup(VARIABLE_ONE, &value));
+  OLA_ASSERT_EQ(BAR_VALUE, value);
 }
 
 
@@ -160,8 +162,8 @@ void ActionTest::testVariableAssignmentInterpolation() {
   VariableAssignmentAction action(VARIABLE_NAME, ASSIGNMENT_STRING);
   action.Execute(&context, 1);
 
-  CPPUNIT_ASSERT(context.Lookup(VARIABLE_NAME, &value));
-  CPPUNIT_ASSERT_EQUAL(string("1 = 100"), value);
+  OLA_ASSERT(context.Lookup(VARIABLE_NAME, &value));
+  OLA_ASSERT_EQ(string("1 = 100"), value);
 }
 
 

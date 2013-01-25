@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * DeviceTest.cpp
  * Test fixture for the Device class.
@@ -27,6 +27,8 @@
 #include "olad/Port.h"
 #include "olad/Preferences.h"
 #include "olad/TestCommon.h"
+#include "ola/testing/TestUtils.h"
+
 
 using ola::AbstractDevice;
 using ola::AbstractPlugin;
@@ -59,18 +61,18 @@ void DeviceTest::testDevice() {
   string device_name = "test";
   MockDevice orphaned_device(NULL, device_name);
 
-  CPPUNIT_ASSERT_EQUAL(device_name, orphaned_device.Name());
-  CPPUNIT_ASSERT_EQUAL(static_cast<AbstractPlugin*>(NULL),
+  OLA_ASSERT_EQ(device_name, orphaned_device.Name());
+  OLA_ASSERT_EQ(static_cast<AbstractPlugin*>(NULL),
                        orphaned_device.Owner());
-  CPPUNIT_ASSERT_EQUAL(string(""), orphaned_device.UniqueId());
+  OLA_ASSERT_EQ(string(""), orphaned_device.UniqueId());
   AddPortsToDeviceAndCheck(&orphaned_device);
 
   // Non orphaned device
   TestMockPlugin plugin(NULL, ola::OLA_PLUGIN_ARTNET);
   MockDevice device(&plugin, device_name);
-  CPPUNIT_ASSERT_EQUAL(device.Name(), device_name);
-  CPPUNIT_ASSERT_EQUAL(static_cast<AbstractPlugin*>(&plugin), device.Owner());
-  CPPUNIT_ASSERT_EQUAL(string("2-test"), device.UniqueId());
+  OLA_ASSERT_EQ(device.Name(), device_name);
+  OLA_ASSERT_EQ(static_cast<AbstractPlugin*>(&plugin), device.Owner());
+  OLA_ASSERT_EQ(string("2-test"), device.UniqueId());
   AddPortsToDeviceAndCheck(&device);
 }
 
@@ -79,10 +81,10 @@ void DeviceTest::AddPortsToDeviceAndCheck(ola::Device *device) {
   // check we don't have any ports yet.
   vector<InputPort*> input_ports;
   device->InputPorts(&input_ports);
-  CPPUNIT_ASSERT_EQUAL((size_t) 0, input_ports.size());
+  OLA_ASSERT_EQ((size_t) 0, input_ports.size());
   vector<OutputPort*> output_ports;
   device->OutputPorts(&output_ports);
-  CPPUNIT_ASSERT_EQUAL((size_t) 0, output_ports.size());
+  OLA_ASSERT_EQ((size_t) 0, output_ports.size());
 
   // add two input ports and an output port
   TestMockInputPort input_port1(device, 1, NULL);
@@ -93,17 +95,17 @@ void DeviceTest::AddPortsToDeviceAndCheck(ola::Device *device) {
   device->AddPort(&output_port1);
 
   device->InputPorts(&input_ports);
-  CPPUNIT_ASSERT_EQUAL((size_t) 2, input_ports.size());
+  OLA_ASSERT_EQ((size_t) 2, input_ports.size());
   device->OutputPorts(&output_ports);
-  CPPUNIT_ASSERT_EQUAL((size_t) 1, output_ports.size());
+  OLA_ASSERT_EQ((size_t) 1, output_ports.size());
 
   InputPort *input_port = device->GetInputPort(1);
-  CPPUNIT_ASSERT(input_port);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, input_port->PortId());
+  OLA_ASSERT(input_port);
+  OLA_ASSERT_EQ((unsigned int) 1, input_port->PortId());
   input_port = device->GetInputPort(2);
-  CPPUNIT_ASSERT(input_port);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 2, input_port->PortId());
+  OLA_ASSERT(input_port);
+  OLA_ASSERT_EQ((unsigned int) 2, input_port->PortId());
   OutputPort *output_port = device->GetOutputPort(1);
-  CPPUNIT_ASSERT(output_port);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, output_port->PortId());
+  OLA_ASSERT(output_port);
+  OLA_ASSERT_EQ((unsigned int) 1, output_port->PortId());
 }

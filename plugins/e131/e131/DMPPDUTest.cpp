@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * DMPPDUTest.cpp
  * Test fixture for the DMPPDU class
@@ -30,6 +30,8 @@
 #include "plugins/e131/e131/DMPPDU.h"
 #include "plugins/e131/e131/HeaderSet.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
+#include "ola/testing/TestUtils.h"
+
 
 namespace ola {
 namespace plugin {
@@ -91,21 +93,21 @@ bool MockDMPInflator::HandlePDUData(uint32_t vector,
                                     const uint8_t *data,
                                     unsigned int pdu_len) {
   DMPHeader header = headers.GetDMPHeader();
-  CPPUNIT_ASSERT_EQUAL(expected_vector, vector);
-  CPPUNIT_ASSERT_EQUAL(expected_virtual, header.IsVirtual());
-  CPPUNIT_ASSERT_EQUAL(expected_relative, header.IsRelative());
-  CPPUNIT_ASSERT(expected_type == header.Type());
-  CPPUNIT_ASSERT(expected_size == header.Size());
+  OLA_ASSERT_EQ(expected_vector, vector);
+  OLA_ASSERT_EQ(expected_virtual, header.IsVirtual());
+  OLA_ASSERT_EQ(expected_relative, header.IsRelative());
+  OLA_ASSERT(expected_type == header.Type());
+  OLA_ASSERT(expected_size == header.Size());
 
   if (vector == DMP_GET_PROPERTY_VECTOR ||
       vector == DMP_SET_PROPERTY_VECTOR) {
     unsigned int length = pdu_len;
     const BaseDMPAddress *addr = DecodeAddress(header.Size(), header.Type(),
                                                data, length);
-    CPPUNIT_ASSERT(addr);
-    CPPUNIT_ASSERT_EQUAL(expected_start, addr->Start());
-    CPPUNIT_ASSERT_EQUAL(expected_increment, addr->Increment());
-    CPPUNIT_ASSERT_EQUAL(expected_number, addr->Number());
+    OLA_ASSERT(addr);
+    OLA_ASSERT_EQ(expected_start, addr->Start());
+    OLA_ASSERT_EQ(expected_increment, addr->Increment());
+    OLA_ASSERT_EQ(expected_number, addr->Number());
     delete addr;
   }
   return true;
@@ -118,8 +120,8 @@ bool MockDMPInflator::HandlePDUData(uint32_t vector,
 void DMPPDUTest::PackPduAndInflate(const DMPPDU *pdu) {
   unsigned int size = pdu->Size() + 10;  // overallocate to catch overflows
   uint8_t *data = new uint8_t[size];
-  CPPUNIT_ASSERT(pdu->Pack(data, size));
-  CPPUNIT_ASSERT_EQUAL(pdu->Size(), size);
+  OLA_ASSERT(pdu->Pack(data, size));
+  OLA_ASSERT_EQ(pdu->Size(), size);
 
   HeaderSet headers;
   m_inflator.InflatePDUBlock(headers, data, size);
@@ -142,15 +144,15 @@ void DMPPDUTest::testGetProperty() {
 
   // Non-ranged GetProperty PDUs
   const DMPPDU *pdu = NewDMPGetProperty(false, true, 10);
-  CPPUNIT_ASSERT(pdu);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 5, pdu->Size());
+  OLA_ASSERT(pdu);
+  OLA_ASSERT_EQ((unsigned int) 5, pdu->Size());
   PackPduAndInflate(pdu);
   delete pdu;
 
   m_inflator.expected_start = 1024;
   pdu = NewDMPGetProperty(true, true, 1024);
-  CPPUNIT_ASSERT(pdu);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 6, pdu->Size());
+  OLA_ASSERT(pdu);
+  OLA_ASSERT_EQ((unsigned int) 6, pdu->Size());
   m_inflator.expected_size = TWO_BYTES;
   m_inflator.expected_virtual = true;
   PackPduAndInflate(pdu);
@@ -162,8 +164,8 @@ void DMPPDUTest::testGetProperty() {
   m_inflator.expected_number = 20;
   m_inflator.expected_type = RANGE_SINGLE;
   pdu = NewRangeDMPGetProperty(true, false, 10, 1, 20);
-  CPPUNIT_ASSERT(pdu);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 7, pdu->Size());
+  OLA_ASSERT(pdu);
+  OLA_ASSERT_EQ((unsigned int) 7, pdu->Size());
   m_inflator.expected_size = ONE_BYTES;
   m_inflator.expected_relative = false;
   PackPduAndInflate(pdu);
@@ -173,8 +175,8 @@ void DMPPDUTest::testGetProperty() {
   m_inflator.expected_increment = 1;
   m_inflator.expected_number = 1024;
   pdu = NewRangeDMPGetProperty(false, false, 10, 1, 1024);
-  CPPUNIT_ASSERT(pdu);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 10, pdu->Size());
+  OLA_ASSERT(pdu);
+  OLA_ASSERT_EQ((unsigned int) 10, pdu->Size());
   m_inflator.expected_size = TWO_BYTES;
   m_inflator.expected_virtual = false;
   PackPduAndInflate(pdu);
@@ -202,8 +204,8 @@ void DMPPDUTest::testSetProperty() {
   vector<DMPAddressData<OneByteDMPAddress> > chunks;
   chunks.push_back(chunk);
   const DMPPDU *pdu = NewDMPSetProperty<uint8_t>(false, false, chunks);
-  CPPUNIT_ASSERT(pdu);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 6, pdu->Size());
+  OLA_ASSERT(pdu);
+  OLA_ASSERT_EQ((unsigned int) 6, pdu->Size());
   PackPduAndInflate(pdu);
   delete pdu;
 
@@ -219,16 +221,16 @@ void DMPPDUTest::testSetProperty() {
 
   // range single first
   pdu = NewRangeDMPSetProperty<uint8_t>(false, false, ranged_chunks, false);
-  CPPUNIT_ASSERT(pdu);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 8, pdu->Size());
+  OLA_ASSERT(pdu);
+  OLA_ASSERT_EQ((unsigned int) 8, pdu->Size());
   PackPduAndInflate(pdu);
   delete pdu;
 
   // range equal
   m_inflator.expected_type = RANGE_EQUAL;
   pdu = NewRangeDMPSetProperty<uint8_t>(false, false, ranged_chunks);
-  CPPUNIT_ASSERT(pdu);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 8, pdu->Size());
+  OLA_ASSERT(pdu);
+  OLA_ASSERT_EQ((unsigned int) 8, pdu->Size());
   PackPduAndInflate(pdu);
   delete pdu;
 }

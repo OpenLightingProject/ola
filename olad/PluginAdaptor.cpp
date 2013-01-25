@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * PluginAdaptor.cpp
  * Provides a wrapper for the DeviceManager and SelectServer objects so that
@@ -38,10 +38,12 @@ using ola::io::SelectServerInterface;
  */
 PluginAdaptor::PluginAdaptor(DeviceManager *device_manager,
                              SelectServerInterface *select_server,
+                             ExportMap *export_map,
                              PreferencesFactory *preferences_factory,
                              PortBrokerInterface *port_broker):
   m_device_manager(device_manager),
   m_ss(select_server),
+  m_export_map(export_map),
   m_preferences_factory(preferences_factory),
   m_port_broker(port_broker) {
 }

@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * TestUtils.cpp
  * Functions used for unit testing.
@@ -42,20 +42,28 @@ void ASSERT_DATA_EQUALS(unsigned int line,
                         unsigned int actual_length) {
   std::stringstream str;
   str << "Line " << line;
-  CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(), expected_length, actual_length);
+  const string message = str.str();
+  CPPUNIT_ASSERT_EQUAL_MESSAGE(message, expected_length, actual_length);
 
   bool data_matches = 0 == memcmp(expected, actual, expected_length);
   if (!data_matches) {
-    for (unsigned int i = 0; i < expected_length; ++i)
-      if (expected[i] == actual[i])
-        OLA_INFO << i << ": 0x" << std::hex << static_cast<int>(expected[i]) <<
-          " == 0x" << static_cast<int>(actual[i]);
-      else
-        OLA_INFO << i << ": 0x" << std::hex << static_cast<int>(expected[i]) <<
-          " != 0x" << static_cast<int>(actual[i]) <<
-            "  ## MISMATCH";
+    for (unsigned int i = 0; i < expected_length; ++i) {
+      str.str("");
+      str << std::dec << i << ": 0x" << std::hex
+          << static_cast<int>(expected[i]);
+      str << ((expected[i] == actual[i]) ? " == " : "  != ");
+      str << "0x" << static_cast<int>(actual[i]) << " (";
+      str << ((expected[i] >= '!' && expected[i] <= '~') ? (char) expected[i] : ' ');
+      str << ((expected[i] == actual[i]) ? " == " : "  != ");
+      str << ((actual[i] >= '!' && actual[i] <= '~') ? (char) actual[i] : ' ');
+      str << ")";
+
+      if (expected[i] != actual[i])
+        str << "  ## MISMATCH";
+      OLA_INFO << str.str();
+    }
   }
-  CPPUNIT_ASSERT_MESSAGE(str.str(), data_matches);
+  CPPUNIT_ASSERT_MESSAGE(message, data_matches);
 }
 }  // testing
 }  // ola

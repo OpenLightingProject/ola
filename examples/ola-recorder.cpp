@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  *  ola-recorder.cpp
  *  A simple tool to record & playback shows.
@@ -20,13 +20,16 @@
 
 #include <errno.h>
 #include <getopt.h>
+#include <signal.h>
 #include <string.h>
 #include <sysexits.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
+#include <ola/base/Init.h>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -34,6 +37,7 @@
 #include "examples/ShowLoader.h"
 #include "examples/ShowRecorder.h"
 
+using std::auto_ptr;
 using std::cout;
 using std::endl;
 using std::map;
@@ -56,6 +60,31 @@ typedef struct {
   string universes;
 } options;
 
+auto_ptr<ShowRecorder> show_recorder;
+
+/*
+ * Terminate cleanly on interrupt
+ */
+static void sig_interupt(int signo) {
+  if (show_recorder.get())
+    show_recorder->Stop();
+  (void) signo;
+}
+
+
+/*
+ * Set up the signal handlers.
+ * @return true on success, false on failure
+ */
+static bool InstallSignals() {
+  if (!ola::InstallSignal(SIGINT, sig_interupt))
+    return false;
+
+  if (!ola::InstallSignal(SIGTERM, sig_interupt))
+    return false;
+  return true;
+}
+
 
 /*
  * Parse our cmd line options.
@@ -74,7 +103,7 @@ int ParseOptions(int argc, char *argv[], options *opts) {
   };
 
   opts->help = false;
-  opts->level = ola::OLA_LOG_INFO;
+  opts->level = ola::OLA_LOG_WARN;
   opts->playback = false;
   opts->loop_iterations = 1;
   opts->loop_delay = 0;
@@ -202,12 +231,15 @@ int RecordShow(const options &opts) {
     universes.push_back(universe);
   }
 
-  ShowRecorder recorder(opts.file, universes);
-  int status = recorder.Init();
+  show_recorder.reset(new ShowRecorder(opts.file, universes));
+  int status = show_recorder->Init();
   if (status)
     return status;
 
-  recorder.Record();
+  cout << "Recording, hit Control-C to end" << endl;
+  InstallSignals();
+  show_recorder->Record();
+  cout << "Saved " << show_recorder->FrameCount() << " frames" << endl;
   return EX_OK;
 }
 
@@ -272,9 +304,9 @@ int main(int argc, char *argv[]) {
               (opts.record ? 1 : 0) +
               (opts.verify ? 1 : 0);
 
-  if (check > 1) {
-    OLA_FATAL << "Only one of --record or --playback must be provided";
-    exit(EX_USAGE);
+  if (check != 1) {
+    OLA_FATAL << "One of --record or --playback must be provided";
+    DisplayHelpAndExit(opts);
   } else if (opts.record) {
     return RecordShow(opts);
   } else if (opts.playback) {
@@ -286,9 +318,6 @@ int main(int argc, char *argv[]) {
     return status;
   } else if (opts.verify) {
     return VerifyShow(opts.file);
-  } else {
-    OLA_FATAL << "One of --record or --playback must be provided";
-    exit(EX_USAGE);
   }
   return EX_OK;
 }

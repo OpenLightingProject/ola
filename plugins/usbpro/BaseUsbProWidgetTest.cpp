@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * BaseUsbProWidgetTest.cpp
  * Test fixture for the BaseUsbProWidget class
@@ -21,6 +21,8 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <memory>
 #include <queue>
+
+#include "ola/testing/TestUtils.h"
 
 #include "ola/BaseTypes.h"
 #include "ola/DmxBuffer.h"
@@ -115,13 +117,13 @@ void BaseUsbProWidgetTest::AddExpectedMessage(uint8_t label,
 void BaseUsbProWidgetTest::ReceiveMessage(uint8_t label,
                                           const uint8_t *data,
                                           unsigned int size) {
-  CPPUNIT_ASSERT(m_messages.size());
+  OLA_ASSERT(m_messages.size());
   expected_message message = m_messages.front();
   m_messages.pop();
 
-  CPPUNIT_ASSERT_EQUAL(message.label, label);
-  CPPUNIT_ASSERT_EQUAL(message.size, size);
-  CPPUNIT_ASSERT(!memcmp(message.data, data, size));
+  OLA_ASSERT_EQ(message.label, label);
+  OLA_ASSERT_EQ(message.size, size);
+  OLA_ASSERT_FALSE(memcmp(message.data, data, size));
 
   if (m_messages.empty())
     m_ss.Terminate();
@@ -138,7 +140,7 @@ void BaseUsbProWidgetTest::testSend() {
       expected1,
       sizeof(expected1),
       ola::NewSingleCallback(this, &BaseUsbProWidgetTest::Terminate));
-  CPPUNIT_ASSERT(m_widget->SendMessage(0, NULL, 0));
+  OLA_ASSERT(m_widget->SendMessage(0, NULL, 0));
   m_ss.Run();
   m_endpoint->Verify();
 
@@ -148,7 +150,7 @@ void BaseUsbProWidgetTest::testSend() {
       expected2,
       sizeof(expected2),
       ola::NewSingleCallback(this, &BaseUsbProWidgetTest::Terminate));
-  CPPUNIT_ASSERT(m_widget->SendMessage(10, NULL, 0));
+  OLA_ASSERT(m_widget->SendMessage(10, NULL, 0));
   m_ss.Run();
   m_endpoint->Verify();
 
@@ -159,11 +161,11 @@ void BaseUsbProWidgetTest::testSend() {
       sizeof(expected3),
       ola::NewSingleCallback(this, &BaseUsbProWidgetTest::Terminate));
   uint32_t data = ola::network::HostToNetwork(0xdeadbeef);
-  CPPUNIT_ASSERT(m_widget->SendMessage(11,
+  OLA_ASSERT(m_widget->SendMessage(11,
                                        reinterpret_cast<uint8_t*>(&data),
                                        sizeof(data)));
   // try to send an incorrect frame
-  CPPUNIT_ASSERT(!m_widget->SendMessage(10, NULL, 4));
+  OLA_ASSERT_FALSE(m_widget->SendMessage(10, NULL, 4));
   m_ss.Run();
   m_endpoint->Verify();
 }
@@ -227,10 +229,10 @@ void BaseUsbProWidgetTest::testReceive() {
                      reinterpret_cast<uint8_t*>(&data_chunk2));
 
   ssize_t bytes_sent = m_other_end->Send(data, sizeof(data));
-  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(data)), bytes_sent);
+  OLA_ASSERT_EQ(static_cast<ssize_t>(sizeof(data)), bytes_sent);
   m_ss.Run();
 
-  CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), m_messages.size());
+  OLA_ASSERT_EQ(static_cast<size_t>(0), m_messages.size());
 }
 
 
@@ -243,5 +245,5 @@ void BaseUsbProWidgetTest::testRemove() {
   m_other_end->Close();
   m_ss.Run();
 
-  CPPUNIT_ASSERT(m_removed);
+  OLA_ASSERT(m_removed);
 }

@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * e133-controller.cpp
  * Copyright (C) 2011 Simon Newton
@@ -70,7 +70,8 @@
 
 using ola::network::IPV4Address;
 using ola::NewCallback;
-using ola::network::UdpSocket;
+using ola::network::IPV4SocketAddress;
+using ola::network::UDPSocket;
 using ola::plugin::e131::E133_PORT;
 using ola::rdm::PidStoreHelper;
 using ola::rdm::RDMRequest;
@@ -250,7 +251,7 @@ class SimpleE133Controller {
     ola::plugin::e131::RDMInflator m_rdm_inflator;
 
     // sockets & transports
-    UdpSocket m_udp_socket;
+    UDPSocket m_udp_socket;
     ola::plugin::e131::IncomingUDPTransport m_incoming_udp_transport;
     ola::plugin::e131::OutgoingUDPTransportImpl m_outgoing_udp_transport;
 
@@ -321,7 +322,7 @@ bool SimpleE133Controller::Init() {
   if (!m_udp_socket.Init())
     return false;
 
-  if (!m_udp_socket.Bind(m_options.controller_ip, 0)) {
+  if (!m_udp_socket.Bind(IPV4SocketAddress(m_options.controller_ip, 0))) {
     OLA_INFO << "Failed to bind to UDP port";
     return false;
   }

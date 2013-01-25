@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  *  ShowRecorder.h
  *  A simple show playback system.
@@ -21,6 +21,7 @@
 #include <ola/Clock.h>
 #include <ola/DmxBuffer.h>
 #include <ola/OlaClientWrapper.h>
+#include <stdint.h>
 #include <string>
 #include <fstream>
 #include <vector>
@@ -44,12 +45,16 @@ class ShowRecorder {
 
     int Init();
     int Record();
+    void Stop();
+
+    uint64_t FrameCount() const { return m_frame_count; }
 
   private:
     ola::OlaCallbackClientWrapper m_client;
     ShowSaver m_saver;
     std::vector<unsigned int> m_universes;
     ola::Clock m_clock;
+    uint64_t m_frame_count;
 
     void NewFrame(unsigned int universe,
                   const ola::DmxBuffer &data,

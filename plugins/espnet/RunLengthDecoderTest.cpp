@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * RunLengthDecoderTest.cpp
  * Test fixture for the RunLengthDecoder class
@@ -19,6 +19,9 @@
  */
 
 #include <cppunit/extensions/HelperMacros.h>
+
+#include "ola/testing/TestUtils.h"
+
 #include <ola/DmxBuffer.h>
 #include "plugins/espnet/RunLengthDecoder.h"
 
@@ -50,7 +53,7 @@ void RunLengthDecoderTest::testDecode() {
 
   buffer.Blackout();
   buffer.Reset();
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, buffer.Size());
+  OLA_ASSERT_EQ((unsigned int) 0, buffer.Size());
   decoder.Decode(&buffer, data, sizeof(data));
-  CPPUNIT_ASSERT(buffer == expected);
+  OLA_ASSERT(buffer == expected);
 }

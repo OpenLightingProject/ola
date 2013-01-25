@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * WidgetDetectorThreadTest.cpp
  * Test fixture for the RobeWidgetDetector class
@@ -36,6 +36,8 @@
 #include "plugins/usbpro/RobeWidget.h"
 #include "plugins/usbpro/UltraDMXProWidget.h"
 #include "plugins/usbpro/WidgetDetectorThread.h"
+#include "ola/testing/TestUtils.h"
+
 
 using ola::io::ConnectedDescriptor;
 using ola::io::UnixSocket;
@@ -131,13 +133,13 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
     // widget handlers follow
     void NewWidget(ArduinoWidget *widget,
                    const UsbProWidgetInformation &information) {
-      CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0x7a70),
+      OLA_ASSERT_EQ(static_cast<uint16_t>(0x7a70),
                            information.esta_id);
-      CPPUNIT_ASSERT_EQUAL(string("Open Lighting"), information.manufacturer);
-      CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(1),
+      OLA_ASSERT_EQ(string("Open Lighting"), information.manufacturer);
+      OLA_ASSERT_EQ(static_cast<uint16_t>(1),
                            information.device_id);
-      CPPUNIT_ASSERT_EQUAL(string("Unittest Device"), information.device);
-      CPPUNIT_ASSERT_EQUAL(static_cast<uint32_t>(0x12345678),
+      OLA_ASSERT_EQ(string("Unittest Device"), information.device);
+      OLA_ASSERT_EQ(static_cast<uint32_t>(0x12345678),
                            information.serial);
       m_thread->FreeWidget(widget);
       m_received_widget_type = ARDUINO;
@@ -145,13 +147,13 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
     }
     void NewWidget(EnttecUsbProWidget *widget,
                    const UsbProWidgetInformation &information) {
-      CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0),
+      OLA_ASSERT_EQ(static_cast<uint16_t>(0),
                            information.esta_id);
-      CPPUNIT_ASSERT_EQUAL(string(""), information.manufacturer);
-      CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0),
+      OLA_ASSERT_EQ(string(""), information.manufacturer);
+      OLA_ASSERT_EQ(static_cast<uint16_t>(0),
                            information.device_id);
-      CPPUNIT_ASSERT_EQUAL(string(""), information.device);
-      CPPUNIT_ASSERT_EQUAL(static_cast<uint32_t>(0x12345678),
+      OLA_ASSERT_EQ(string(""), information.device);
+      OLA_ASSERT_EQ(static_cast<uint32_t>(0x12345678),
                            information.serial);
       m_thread->FreeWidget(widget);
       m_received_widget_type = ENTTEC;
@@ -159,13 +161,13 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
     }
     void NewWidget(DmxTriWidget *widget,
                    const UsbProWidgetInformation &information) {
-      CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0x6864),
+      OLA_ASSERT_EQ(static_cast<uint16_t>(0x6864),
                            information.esta_id);
-      CPPUNIT_ASSERT_EQUAL(string("JESE"), information.manufacturer);
-      CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(2),
+      OLA_ASSERT_EQ(string("JESE"), information.manufacturer);
+      OLA_ASSERT_EQ(static_cast<uint16_t>(2),
                            information.device_id);
-      CPPUNIT_ASSERT_EQUAL(string("RDM-TRI"), information.device);
-      CPPUNIT_ASSERT_EQUAL(static_cast<uint32_t>(0x12345678),
+      OLA_ASSERT_EQ(string("RDM-TRI"), information.device);
+      OLA_ASSERT_EQ(static_cast<uint32_t>(0x12345678),
                            information.serial);
       m_thread->FreeWidget(widget);
       m_received_widget_type = DMX_TRI;
@@ -173,13 +175,13 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
     }
     void NewWidget(DmxterWidget *widget,
                    const UsbProWidgetInformation &information) {
-      CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0x4744),
+      OLA_ASSERT_EQ(static_cast<uint16_t>(0x4744),
                            information.esta_id);
-      CPPUNIT_ASSERT_EQUAL(string("Goddard Design"), information.manufacturer);
-      CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0x444d),
+      OLA_ASSERT_EQ(string("Goddard Design"), information.manufacturer);
+      OLA_ASSERT_EQ(static_cast<uint16_t>(0x444d),
                            information.device_id);
-      CPPUNIT_ASSERT_EQUAL(string("DMXter4"), information.device);
-      CPPUNIT_ASSERT_EQUAL(static_cast<uint32_t>(0x12345678),
+      OLA_ASSERT_EQ(string("DMXter4"), information.device);
+      OLA_ASSERT_EQ(static_cast<uint32_t>(0x12345678),
                            information.serial);
       m_thread->FreeWidget(widget);
       m_received_widget_type = DMXTER;
@@ -188,26 +190,26 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
     void NewWidget(RobeWidget *widget,
                    const RobeWidgetInformation &information) {
       m_thread->FreeWidget(widget);
-      CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(1),
+      OLA_ASSERT_EQ(static_cast<uint8_t>(1),
                            information.hardware_version);
-      CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(11),
+      OLA_ASSERT_EQ(static_cast<uint8_t>(11),
                            information.software_version);
-      CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(3),
+      OLA_ASSERT_EQ(static_cast<uint8_t>(3),
                            information.eeprom_version);
-      CPPUNIT_ASSERT_EQUAL(UID(0x5253, 0x200000a),
+      OLA_ASSERT_EQ(UID(0x5253, 0x200000a),
                            information.uid);
       m_received_widget_type = ROBE;
       m_ss.Terminate();
     }
     void NewWidget(UltraDMXProWidget *widget,
                    const UsbProWidgetInformation &information) {
-      CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0x6a6b),
+      OLA_ASSERT_EQ(static_cast<uint16_t>(0x6a6b),
                            information.esta_id);
-      CPPUNIT_ASSERT_EQUAL(string("DMXking.com"), information.manufacturer);
-      CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0x2),
+      OLA_ASSERT_EQ(string("DMXking.com"), information.manufacturer);
+      OLA_ASSERT_EQ(static_cast<uint16_t>(0x2),
                            information.device_id);
-      CPPUNIT_ASSERT_EQUAL(string("ultraDMX Pro"), information.device);
-      CPPUNIT_ASSERT_EQUAL(static_cast<uint32_t>(0x12345678),
+      OLA_ASSERT_EQ(string("ultraDMX Pro"), information.device);
+      OLA_ASSERT_EQ(static_cast<uint32_t>(0x12345678),
                            information.serial);
       m_thread->FreeWidget(widget);
       m_received_widget_type = ULTRA_DMX;
@@ -274,7 +276,7 @@ void WidgetDetectorThreadTest::testArduinoWidget() {
   m_thread->Start();
   m_thread->WaitUntilRunning();
   m_ss.Run();
-  CPPUNIT_ASSERT_EQUAL(ARDUINO, m_received_widget_type);
+  OLA_ASSERT_EQ(ARDUINO, m_received_widget_type);
 }
 
 
@@ -310,7 +312,7 @@ void WidgetDetectorThreadTest::testDmxTriWidget() {
   m_thread->Start();
   m_thread->WaitUntilRunning();
   m_ss.Run();
-  CPPUNIT_ASSERT_EQUAL(DMX_TRI, m_received_widget_type);
+  OLA_ASSERT_EQ(DMX_TRI, m_received_widget_type);
 }
 
 
@@ -346,7 +348,7 @@ void WidgetDetectorThreadTest::testDmxterWidget() {
   m_thread->Start();
   m_thread->WaitUntilRunning();
   m_ss.Run();
-  CPPUNIT_ASSERT_EQUAL(DMXTER, m_received_widget_type);
+  OLA_ASSERT_EQ(DMXTER, m_received_widget_type);
 }
 
 
@@ -372,7 +374,7 @@ void WidgetDetectorThreadTest::testUsbProWidget() {
   m_thread->Start();
   m_thread->WaitUntilRunning();
   m_ss.Run();
-  CPPUNIT_ASSERT_EQUAL(ENTTEC, m_received_widget_type);
+  OLA_ASSERT_EQ(ENTTEC, m_received_widget_type);
 }
 
 
@@ -412,7 +414,7 @@ void WidgetDetectorThreadTest::testRobeWidget() {
   m_thread->Start();
   m_thread->WaitUntilRunning();
   m_ss.Run();
-  CPPUNIT_ASSERT_EQUAL(ROBE, m_received_widget_type);
+  OLA_ASSERT_EQ(ROBE, m_received_widget_type);
 }
 
 
@@ -448,7 +450,7 @@ void WidgetDetectorThreadTest::testUltraDmxWidget() {
   m_thread->Start();
   m_thread->WaitUntilRunning();
   m_ss.Run();
-  CPPUNIT_ASSERT_EQUAL(ULTRA_DMX, m_received_widget_type);
+  OLA_ASSERT_EQ(ULTRA_DMX, m_received_widget_type);
 }
 
 
@@ -471,7 +473,7 @@ void WidgetDetectorThreadTest::testTimeout() {
   m_thread->Start();
   m_thread->WaitUntilRunning();
   m_ss.Run();
-  CPPUNIT_ASSERT_EQUAL(NONE, m_received_widget_type);
+  OLA_ASSERT_EQ(NONE, m_received_widget_type);
 }
 
 
@@ -485,5 +487,5 @@ void WidgetDetectorThreadTest::testClose() {
   // possible race condition here
   m_other_end->Close();
   m_ss.Run();
-  CPPUNIT_ASSERT_EQUAL(NONE, m_received_widget_type);
+  OLA_ASSERT_EQ(NONE, m_received_widget_type);
 }

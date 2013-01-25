@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * StringUtils.cpp
  * Random String functions.
@@ -39,7 +39,7 @@ using std::stringstream;
 using std::vector;
 
 /*
- * Split a string on delimtiers. If two delimiters appear next to each other an
+ * Split a string on delimiters. If two delimiters appear next to each other an
  * empty string is added to the output list.
  * @param input the string to split
  * @param tokens the vector to store the result in
@@ -345,7 +345,7 @@ bool HexStringToInt(const string &value, int8_t *output) {
   int32_t temp;
   if (!HexStringToInt(value, &temp))
     return false;
-  if (temp < 0 || temp > UINT8_MAX)
+  if (temp < 0 || temp > static_cast<int32_t>(UINT8_MAX))
     return false;
   *output = static_cast<int8_t>(temp);
   return true;
@@ -359,7 +359,7 @@ bool HexStringToInt(const string &value, int16_t *output) {
   int32_t temp;
   if (!HexStringToInt(value, &temp))
     return false;
-  if (temp < 0 || temp > UINT16_MAX)
+  if (temp < 0 || temp > static_cast<int32_t>(UINT16_MAX))
     return false;
   *output = static_cast<int16_t>(temp);
   return true;

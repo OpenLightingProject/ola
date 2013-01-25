@@ -24,6 +24,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <ola/AutoStart.h>
+#include <ola/network/IPV4Address.h>
+#include <ola/network/SocketAddress.h>
 #include <ola/Logging.h>
 
 namespace ola {
@@ -33,9 +35,10 @@ namespace client {
 /*
  * Open a connection to the server.
  */
-TcpSocket *ConnectToServer(unsigned short port) {
-  static const char address[] = "127.0.0.1";
-  TcpSocket *socket = TcpSocket::Connect(address, port);
+TCPSocket *ConnectToServer(unsigned short port) {
+  ola::network::IPV4SocketAddress server_address(
+      ola::network::IPV4Address::Loopback(), port);
+  TCPSocket *socket = TCPSocket::Connect(server_address);
   if (socket)
     return socket;
 
@@ -66,7 +69,7 @@ TcpSocket *ConnectToServer(unsigned short port) {
 
   // wait a bit here for the server to come up
   sleep(1);
-  return TcpSocket::Connect(address, port);
+  return TCPSocket::Connect(server_address);
 }
 }  // client
 }  // ola

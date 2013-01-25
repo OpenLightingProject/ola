@@ -1,8 +1,10 @@
 lib_LTLIBRARIES = libolacommon.la
 libolacommon_la_SOURCES =
-libolacommon_la_LIBADD = export_map/libolaexportmap.la \
+libolacommon_la_LIBADD = base/libolabase.la \
+                         export_map/libolaexportmap.la \
                          io/libolaio.la \
                          logging/liblogging.la \
+                         math/libolamath.la \
                          messaging/libolamessaging.la \
                          network/libolanetwork.la \
                          protocol/libolaproto.la \
@@ -12,5 +14,5 @@ libolacommon_la_LIBADD = export_map/libolaexportmap.la \
                          timecode/libtimecode.la \
                          utils/libolautils.la
 
-SUBDIRS = export_map io logging protocol rdm rpc network utils web messaging \
-          thread testing timecode
+SUBDIRS = base export_map web http io logging protocol rdm rpc network utils \
+          math messaging thread testing timecode

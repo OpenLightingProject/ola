@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * StreamingClientTest.cpp
  * Test fixture for the StreamingClient class
@@ -26,6 +26,8 @@
 #include "ola/thread/Thread.h"
 #include "ola/Logging.h"
 #include "olad/OlaDaemon.h"
+#include "ola/testing/TestUtils.h"
+
 
 
 static unsigned int TEST_UNIVERSE = 1;
@@ -181,26 +183,26 @@ void StreamingClientTest::testSendDMX() {
   buffer.Blackout();
 
   // Setup the client, this connects to the server
-  CPPUNIT_ASSERT(ola_client.Setup());
+  OLA_ASSERT_TRUE(ola_client.Setup());
   // Try it again to make sure it doesn't break
-  CPPUNIT_ASSERT(!ola_client.Setup());
+  OLA_ASSERT_FALSE(ola_client.Setup());
 
-  CPPUNIT_ASSERT(ola_client.SendDmx(TEST_UNIVERSE, buffer));
+  OLA_ASSERT_TRUE(ola_client.SendDmx(TEST_UNIVERSE, buffer));
   ola_client.Stop();
 
   // Now reconnect
-  CPPUNIT_ASSERT(ola_client.Setup());
-  CPPUNIT_ASSERT(ola_client.SendDmx(TEST_UNIVERSE, buffer));
+  OLA_ASSERT_TRUE(ola_client.Setup());
+  OLA_ASSERT_TRUE(ola_client.SendDmx(TEST_UNIVERSE, buffer));
   ola_client.Stop();
 
   // Now Terminate the server mid flight
-  CPPUNIT_ASSERT(ola_client.Setup());
-  CPPUNIT_ASSERT(ola_client.SendDmx(TEST_UNIVERSE, buffer));
+  OLA_ASSERT_TRUE(ola_client.Setup());
+  OLA_ASSERT_TRUE(ola_client.SendDmx(TEST_UNIVERSE, buffer));
   m_server_thread->Terminate();
   m_server_thread->Join();
 
-  CPPUNIT_ASSERT(!ola_client.SendDmx(TEST_UNIVERSE, buffer));
+  OLA_ASSERT_FALSE(ola_client.SendDmx(TEST_UNIVERSE, buffer));
   ola_client.Stop();
 
-  CPPUNIT_ASSERT(!ola_client.Setup());
+  OLA_ASSERT_FALSE(ola_client.Setup());
 }

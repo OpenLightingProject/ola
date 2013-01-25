@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * LoggingTest.cpp
  * Test fixture for the Logging framework
@@ -23,8 +23,11 @@
 #include <string>
 #include <utility>
 #include <vector>
+
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
+#include "ola/testing/TestUtils.h"
+
 
 using std::deque;
 using std::vector;
@@ -69,12 +72,12 @@ void MockLogDestination::Write(log_level level, const string &log_line) {
   vector<string> tokens;
   ola::StringSplit(log_line, tokens, ":");
   vector<string>::iterator iter;
-  CPPUNIT_ASSERT_EQUAL(tokens.size() , (size_t) 3);
-  CPPUNIT_ASSERT(m_log_lines.size() > 0);
+  OLA_ASSERT_EQ(tokens.size() , (size_t) 3);
+  OLA_ASSERT_GT(m_log_lines.size(), 0);
   std::pair<log_level, string> expected_result = m_log_lines.at(0);
   m_log_lines.pop_front();
-  CPPUNIT_ASSERT_EQUAL(expected_result.first, level);
-  CPPUNIT_ASSERT_EQUAL(expected_result.second, tokens.at(2));
+  OLA_ASSERT_EQ(expected_result.first, level);
+  OLA_ASSERT_EQ(expected_result.second, tokens.at(2));
 }
 
 /*
@@ -100,7 +103,7 @@ void LoggingTest::testLogging() {
   OLA_WARN << "warn";
   destination->AddExpected(ola::OLA_LOG_FATAL, " fatal\n");
   OLA_FATAL << "fatal";
-  CPPUNIT_ASSERT_EQUAL(destination->LinesRemaining(), 0);
+  OLA_ASSERT_EQ(destination->LinesRemaining(), 0);
 
   // set the log level to INFO
   IncrementLogLevel();
@@ -111,7 +114,7 @@ void LoggingTest::testLogging() {
   OLA_WARN << "warn";
   destination->AddExpected(ola::OLA_LOG_FATAL, " fatal\n");
   OLA_FATAL << "fatal";
-  CPPUNIT_ASSERT_EQUAL(destination->LinesRemaining(), 0);
+  OLA_ASSERT_EQ(destination->LinesRemaining(), 0);
 
   IncrementLogLevel();
   // this should wrap to NONE
@@ -120,5 +123,5 @@ void LoggingTest::testLogging() {
   OLA_INFO << "info";
   OLA_WARN << "warn";
   OLA_FATAL << "fatal";
-  CPPUNIT_ASSERT_EQUAL(destination->LinesRemaining(), 0);
+  OLA_ASSERT_EQ(destination->LinesRemaining(), 0);
 }

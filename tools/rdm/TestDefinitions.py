@@ -1,17 +1,17 @@
 # !/usr/bin/python
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
 #
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Library General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
 #
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 # TestDefinitions.py
 # Copyright (C) 2010 Simon Newton
@@ -49,20 +49,22 @@ class MuteDevice(ResponderTestFixture):
   def Test(self):
     self.AddExpectedResults([
       self.AckDiscoveryResult(),
-      UnsupportedResult()
+      UnsupportedResult(
+        warning='RDM Controller does not support DISCOVERY commands')
     ])
     self.SendDiscovery(ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, fields):
     supported = (response.response_code !=
-                 OlaClient.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED)
+                 OlaClient.RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED)
     self.SetProperty('mute_supported', supported)
 
     if supported:
       self.SetProperty('mute_control_fields', fields['control_field'])
       binding_uids = fields.get('binding_uid', [])
       if binding_uids:
-        if binding_uids[0].manufacturer_id != self.uid.manufacturer_id:
+        if (binding_uids[0]['binding_uid'].manufacturer_id !=
+            self.uid.manufacturer_id):
           self.AddWarning(
             'Binding UID manufacturer ID 0x%04hx does not equal device '
             'manufacturer ID of 0x%04hx' % (
@@ -100,7 +102,7 @@ class UnMuteDevice(ResponderTestFixture):
 
   def VerifyResult(self, response, fields):
     supported = (response.response_code !=
-                 OlaClient.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED)
+                 OlaClient.RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED)
     self.SetProperty('unmute_supported', supported)
     if supported:
       if fields['control_field'] != self.Property('mute_control_fields'):
@@ -187,7 +189,7 @@ class DUBFullTree(TestMixins.DiscoveryMixin,
   PROVIDES = ['dub_supported']
 
   def LowerBound(self):
-    return UID(0, 0);
+    return UID(0, 0)
 
   def UpperBound(self):
     return UID.AllDevices()
@@ -195,7 +197,7 @@ class DUBFullTree(TestMixins.DiscoveryMixin,
   def DUBResponseCode(self, response_code):
     self.SetProperty(
         'dub_supported',
-        response_code != OlaClient.RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED)
+        response_code != OlaClient.RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED)
 
 
 class DUBManufacturerTree(TestMixins.DiscoveryMixin,
@@ -358,7 +360,7 @@ class DUBNegativeVendorcast(TestMixins.DiscoveryMixin,
   REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
 
   def LowerBound(self):
-    return UID(0, 0);
+    return UID(0, 0)
 
   def UpperBound(self):
     return UID.AllDevices()
@@ -377,7 +379,7 @@ class DUBPositiveVendorcast(TestMixins.DiscoveryMixin,
   REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
 
   def LowerBound(self):
-    return UID(0, 0);
+    return UID(0, 0)
 
   def UpperBound(self):
     return UID.AllDevices()
@@ -393,7 +395,7 @@ class DUBPositiveUnicast(TestMixins.DiscoveryMixin,
   REQUIRES = ['dub_supported'] + TestMixins.DiscoveryMixin.REQUIRES
 
   def LowerBound(self):
-    return UID(0, 0);
+    return UID(0, 0)
 
   def UpperBound(self):
     return UID.AllDevices()
@@ -412,7 +414,7 @@ class DUBInvertedFullTree(TestMixins.DiscoveryMixin,
     return UID.AllDevices()
 
   def UpperBound(self):
-    return UID(0, 0);
+    return UID(0, 0)
 
   def ExpectResponse(self):
     return False
@@ -562,7 +564,7 @@ class GetMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
 
   def VerifyResult(self, response, fields):
     self.SetProperty('supports_max_sized_pdl',
-                     response.response_code != OlaClient.RDM_INVALID_RESPONSE);
+                     response.response_code != OlaClient.RDM_INVALID_RESPONSE)
 
 
 class DetermineMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
@@ -660,8 +662,7 @@ class GetSupportedParameters(ResponderTestFixture):
       ('CURVE', 'CURVE_DESCRIPTION'),
       ('OUTPUT_RESPONSE_TIME', 'OUTPUT_RESPONSE_TIME_DESCRIPTION'),
       ('MODULATION_FREQUENCY', 'MODULATION_FREQUENCY_DESCRIPTION'),
-      ('LOCK_STATE', ' LOCK_STATE_DESCRIPTION'),
-
+      ('LOCK_STATE', 'LOCK_STATE_DESCRIPTION'),
   ]
 
   def Test(self):
@@ -744,6 +745,10 @@ class GetSupportedParameters(ResponderTestFixture):
       unsupported_pids = []
       for pid_name in pid_names[1:]:
         pid = self.LookupPid(pid_name)
+        if pid is None:
+          self.SetBroken('Missing PID %s' % pid_name)
+          return
+
         if pid.value not in supported_parameters:
           unsupported_pids.append(pid_name)
       if unsupported_pids:
@@ -1328,7 +1333,7 @@ class SetLanguage(OptionalParameterTestFixture):
         self.AddIfSetSupported(ack)
         self.new_language = available_langugages[0]
         if self.new_language == self.Property('language'):
-          self.new_language = available_langugages[2]
+          self.new_language = available_langugages[1]
       else:
         self.new_language = available_langugages[0]
         self.AddIfSetSupported([ack, nack])
@@ -1492,13 +1497,15 @@ class GetPersonalityDescription(OptionalParameterTestFixture):
   def Test(self):
     personality_count = self.Property('personality_count')
     current_personality = self.Property('current_personality')
-    footprint = self.Property('dmx_footprint')
+    if current_personality == 0 and personality_count > 0:
+      # It's probably off by one, so fix it
+      current_personality = 1
 
     if personality_count > 0:
       # cross check against what we got from device info
       self.AddIfGetSupported(self.AckGetResult(field_values={
           'personality': current_personality,
-          'slots_required': footprint,
+          'slots_required': self.Property('dmx_footprint'),
         }))
       self.SendGet(ROOT_DEVICE, self.pid, [current_personality])
     else:
@@ -1535,7 +1542,7 @@ class GetPersonality(OptionalParameterTestFixture):
         warning_str, personality_count, fields['personality_count']))
 
 
-class GetPersonalities(OptionalParameterTestFixture):
+class GetPersonalityDescriptions(OptionalParameterTestFixture):
   """Get information about all the personalities."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_PERSONALITY_DESCRIPTION'
@@ -1579,57 +1586,95 @@ class SetPersonality(OptionalParameterTestFixture):
   """Set the personality."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_PERSONALITY'
-  # This ensures we don't modify the current personality before GetPersonality
-  # and GetPersonalityDescription run
-  DEPS = [GetPersonality, GetPersonalityDescription]
-  REQUIRES = ['current_personality', 'personality_count', 'personalities']
+  REQUIRES = ['current_personality', 'personalities']
 
   def Test(self):
-    count = self.Property('personality_count')
-    if count is None or count == 0:
-      self.AddExpectedResults(self.NackSetResult(RDMNack.NR_UNKNOWN_PID))
-      self.new_personality = {'personality': 1}  # can use anything here really
-    else:
-      personalities = self.Property('personalities')
-      current = self.Property('current_personality')
+    self._personalities = list(self.Property('personalities'))
+    self._consumes_slots = False
+    for personality in self._personalities:
+      if personality['slots_required'] > 0:
+        self._consumes_slots = True
+        break
 
-      if len(personalities) == 0:
-        self.SetFailed(
-          'personality_count was non 0 but failed to fetch all personalities')
-        self.Stop()
-        return
+    if len(self._personalities) > 0:
+      self._CheckPersonality()
+      return
 
-      self.new_personality = personalities[0]
-      for personality in personalities:
-        if personality['personality'] != current:
-          self.new_personality = personality
-          break
+    # check we get a NR_UNKNOWN_PID
+    self.AddExpectedResults(self.NackSetResult(RDMNack.NR_UNKNOWN_PID))
+    self.new_personality = {'personality': 1}  # can use anything here really
+    self.SendSet(ROOT_DEVICE, self.pid, [1])
 
-      self.AddIfSetSupported(self.AckSetResult(action=self.VerifySet))
+  def _CheckPersonality(self):
+    if not self._personalities:
+      # end of the list, we're done
+      self.Stop()
+      return
 
+    self.AddIfSetSupported(self.AckSetResult(action=self.VerifySet))
     self.SendSet(ROOT_DEVICE,
                  self.pid,
-                 [self.new_personality['personality']])
+                 [self._personalities[0]['personality']])
 
   def VerifySet(self):
     self.AddIfGetSupported(
       self.AckGetResult(
         field_values={
-          'current_personality': self.new_personality['personality'],
+          'current_personality': self._personalities[0]['personality'],
         },
         action=self.VerifyDeviceInfo))
     self.SendGet(ROOT_DEVICE, self.pid)
 
   def VerifyDeviceInfo(self):
     device_info_pid = self.LookupPid('DEVICE_INFO')
-    self.AddIfGetSupported(
+
+    next_action = self.NextPersonality
+    if self._personalities[0]['slots_required'] == 0:
+      # if this personality has a footprint of 0, verify the start address is
+      # 0xffff
+      next_action = self.VerifyFootprint0StartAddress
+
+    self.AddExpectedResults(
       AckGetResult(
         device_info_pid.value,
         field_values={
-          'current_personality': self.new_personality['personality'],
-          'dmx_footprint': self.new_personality['slots_required'],
-        }))
+          'current_personality': self._personalities[0]['personality'],
+          'dmx_footprint': self._personalities[0]['slots_required'],
+        },
+        action=next_action))
     self.SendGet(ROOT_DEVICE, device_info_pid)
+
+  def VerifyFootprint0StartAddress(self):
+    address_pid = self.LookupPid('DMX_START_ADDRESS')
+    expected_results = [
+      AckGetResult(
+        address_pid.value,
+        field_values={'dmx_address': 0xffff},
+        action=self.NextPersonality),
+    ]
+    if not self._consumes_slots:
+      expected_results.append(
+        NackGetResult(address_pid.value,
+                      RDMNack.NR_UNKNOWN_PID,
+                      action=self.NextPersonality)
+      )
+    self.AddExpectedResults(expected_results)
+    self.SendGet(ROOT_DEVICE, address_pid)
+
+  def NextPersonality(self):
+    self._personalities = self._personalities[1:]
+    self._CheckPersonality()
+
+  def ResetState(self):
+    # reset back to the old value
+    personality = self.Property('current_personality')
+    if personality == 0 or personality > 255:
+      return
+
+    self.SendSet(PidStore.ROOT_DEVICE,
+                 self.pid,
+                 [self.Property('current_personality')])
+    self._wrapper.Run()
 
 
 class SetZeroPersonality(OptionalParameterTestFixture):
@@ -2192,8 +2237,16 @@ class GetSensorValues(OptionalParameterTestFixture):
       self.Stop()
       return
 
-    self.AddExpectedResults(self.AckGetResult(action=self._GetNextSensor))
-    self.SendGet(ROOT_DEVICE, self.pid, [self._sensors[0]['sensor_number']])
+    sensor_index = self._sensors[0]['sensor_number']
+    self.AddExpectedResults([
+      self.AckGetResult(action=self._GetNextSensor),
+      self.NackGetResult(
+        RDMNack.NR_HARDWARE_FAULT,
+        advisory="Sensor %d NACK'ed GET SENSOR_VALUE with NR_HARDWARE_FAULT" %
+                 sensor_index,
+        action=self._GetNextSensor)
+    ])
+    self.SendGet(ROOT_DEVICE, self.pid, [sensor_index])
 
   def _GetNextSensor(self):
     self._sensors.pop(0)
@@ -2325,12 +2378,18 @@ class ResetSensorValue(OptionalParameterTestFixture):
       self.Stop()
       return
 
+    sensor_index = self._sensors[0]['sensor_number']
     self.AddExpectedResults([
         self.AckSetResult(action=self._ResetNextSensor),
         self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
                            action=self._ResetNextSensor),
+        self.NackSetResult(
+          RDMNack.NR_HARDWARE_FAULT,
+          advisory="Sensor %d NACK'ed Set SENSOR_VALUE with NR_HARDWARE_FAULT" %
+                   sensor_index,
+          action=self._ResetNextSensor)
     ])
-    self.SendSet(ROOT_DEVICE, self.pid, [self._sensors[0]['sensor_number']])
+    self.SendSet(ROOT_DEVICE, self.pid, [sensor_index])
 
   def _ResetNextSensor(self):
     self._sensors.pop(0)
@@ -2527,7 +2586,7 @@ class SetDeviceHoursWithNoData(OptionalParameterTestFixture):
       expected_result = RDMNack.NR_FORMAT_ERROR
     else:
       expected_result = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
-    self.AddIfSetSupported(self.NackSetResult(expected_result));
+    self.AddIfSetSupported(self.NackSetResult(expected_result))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
 
 
@@ -2577,7 +2636,7 @@ class SetLampHoursWithNoData(OptionalParameterTestFixture):
       expected_result = RDMNack.NR_FORMAT_ERROR
     else:
       expected_result = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
-    self.AddIfSetSupported(self.NackSetResult(expected_result));
+    self.AddIfSetSupported(self.NackSetResult(expected_result))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
 
 
@@ -2626,7 +2685,7 @@ class SetLampStrikesWithNoData(OptionalParameterTestFixture):
       expected_result = RDMNack.NR_FORMAT_ERROR
     else:
       expected_result = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
-    self.AddIfSetSupported(self.NackSetResult(expected_result));
+    self.AddIfSetSupported(self.NackSetResult(expected_result))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
 
 
@@ -2786,7 +2845,7 @@ class SetDevicePowerCyclesWithNoData(OptionalParameterTestFixture):
       expected_result= RDMNack.NR_FORMAT_ERROR
     else:
       expected_result= RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
-    self.AddIfSetSupported(self.NackSetResult(expected_result));
+    self.AddIfSetSupported(self.NackSetResult(expected_result))
     self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
 
 
@@ -3534,9 +3593,10 @@ class GetDMXBlockAddress(OptionalParameterTestFixture):
       if footprint > MAX_DMX_ADDRESS and footprint != self.NON_CONTIGUOUS:
         self.AddWarning('Sub device footprint > 512, was %d' % footprint)
 
-      if base_dmx_address == 0 or base_dmx_address > MAX_DMX_ADDRESS:
+      if (base_address == 0 or
+          base_address > MAX_DMX_ADDRESS and base_address != 0xffff):
         self.AddWarning('Base DMX address is outside range 1- 512, was %d' %
-                        base_dmx_address)
+                        base_address)
     self.SetProperty('sub_device_footprint', footprint)
     self.SetProperty('base_dmx_address', base_address)
 
@@ -3553,6 +3613,7 @@ class SetDMXBlockAddress(TestMixins.SetMixin, OptionalParameterTestFixture):
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_BLOCK_ADDRESS'
   REQUIRES = ['sub_device_footprint', 'base_dmx_address']
+  EXPECTED_FIELD = 'base_dmx_address'
 
   def NewValue(self):
     base_address =  self.Property('base_dmx_address')
@@ -3662,7 +3723,7 @@ class SetBurnIn(TestMixins.SetUInt8Mixin, OptionalParameterTestFixture):
   """Attempt to SET the burn in hours setting."""
   CATEGORY = TestCategory.POWER_LAMP_SETTINGS
   PID = 'BURN_IN'
-  EXPECTED_FIELD = 'hours'
+  EXPECTED_FIELD = 'hours_remaining'
   REQUIRES = ['burn_in_hours']
 
   def OldValue(self):
@@ -3683,8 +3744,9 @@ class GetDimmerInfo(OptionalParameterTestFixture):
   CATEGORY = TestCategory.DIMMER_SETTINGS
   PID = 'DIMMER_INFO'
   PROVIDES = ['minimum_level_lower', 'minimum_level_upper',
-              'maximum_level_lower', 'maximum_level_upper', 'number_of_curves',
-              'level_resolution', 'split_levels_supported']
+              'maximum_level_lower', 'maximum_level_upper',
+              'number_curves_supported', 'levels_resolution',
+              'split_levels_supported']
   SPLIT_LEVEL_MASK = 0x01
 
   def Test(self):
@@ -3707,12 +3769,12 @@ class GetDimmerInfo(OptionalParameterTestFixture):
                        % (fields['maximum_level_lower'],
                           fields['maximum_level_upper']))
 
-    self.SetPropertyFromDict('minimum_level_lower', fields);
-    self.SetPropertyFromDict('minimum_level_upper', fields);
-    self.SetPropertyFromDict('maximum_level_lower', fields);
-    self.SetPropertyFromDict('maximum_level_upper', fields);
-    self.SetPropertyFromDict('number_of_curves', fields);
-    self.SetPropertyFromDict('level_resolution', fields);
+    self.SetPropertyFromDict(fields, 'minimum_level_lower')
+    self.SetPropertyFromDict(fields, 'minimum_level_upper')
+    self.SetPropertyFromDict(fields, 'maximum_level_lower')
+    self.SetPropertyFromDict(fields, 'maximum_level_upper')
+    self.SetPropertyFromDict(fields, 'number_curves_supported')
+    self.SetPropertyFromDict(fields, 'levels_resolution')
 
     self.SetProperty('split_levels_supported',
                      fields['split_levels_supported'] & self.SPLIT_LEVEL_MASK)
@@ -3753,7 +3815,7 @@ class GetPresetMergeMode(TestMixins.GetMixin,
       self.SetProperty('preset_merge_mode', None)
       return
 
-    self.SetPropertyFromDict('preset_merge_mode', fields)
+    self.SetPropertyFromDict(fields, 'preset_merge_mode')
 
 class GetPresetMergeModeWithData(TestMixins.GetWithDataMixin,
                                  OptionalParameterTestFixture):

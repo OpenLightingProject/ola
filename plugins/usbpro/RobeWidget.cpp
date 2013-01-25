@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * RobeWidget.cpp
  * Read and Write to a Robe USB Widget.
@@ -25,6 +25,7 @@
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
 #include "ola/rdm/RDMCommand.h"
+#include "ola/rdm/RDMCommandSerializer.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
 #include "plugins/usbpro/RobeWidget.h"
@@ -34,6 +35,7 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
+using ola::rdm::RDMCommandSerializer;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
@@ -112,18 +114,16 @@ void RobeWidgetImpl::SendRDMRequest(const RDMRequest *request,
 
   // prepare the buffer for the RDM data, we don't need to include the start
   // code. We need to include 4 bytes at the end, these bytes can be any value.
-  unsigned int data_size = request->Size() + RDM_PADDING_BYTES;
+  unsigned int data_size = RDMCommandSerializer::RequiredSize(*request) +
+    RDM_PADDING_BYTES;
   uint8_t *data = new uint8_t[data_size];
   memset(data, 0, data_size);
 
   unsigned int this_transaction_number = m_transaction_number++;
   unsigned int port_id = 1;
 
-  bool r = request->PackWithControllerParams(data,
-                                             &data_size,
-                                             m_uid,
-                                             this_transaction_number,
-                                             port_id);
+  bool r = RDMCommandSerializer::Pack(*request, data, &data_size, m_uid,
+                                      this_transaction_number, port_id);
 
   if (!r) {
     OLA_WARN << "Failed to pack message, dropping request";
@@ -405,10 +405,10 @@ void RobeWidgetImpl::HandleDmxFrame(const uint8_t *data, unsigned int length) {
  */
 bool RobeWidgetImpl::PackAndSendRDMRequest(uint8_t label,
                                            const RDMRequest *request) {
-  unsigned int length = request->Size();
+  unsigned int length = RDMCommandSerializer::RequiredSize(*request);
   uint8_t data[length + RDM_PADDING_BYTES];
   memset(data, 0, length + RDM_PADDING_BYTES);
-  request->Pack(data, &length);
+  RDMCommandSerializer::Pack(*request, data, &length);
   return SendMessage(label, data, length + RDM_PADDING_BYTES);
 }
 

@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * e133-monitor.cpp
  * Copyright (C) 2011 Simon Newton
@@ -73,6 +73,7 @@
 using ola::NewCallback;
 using ola::NewSingleCallback;
 using ola::network::IPV4Address;
+using ola::network::IPV4SocketAddress;
 using ola::network::BufferedTCPSocket;
 using ola::rdm::PidStoreHelper;
 using ola::rdm::RDMCommand;
@@ -345,8 +346,7 @@ void SimpleE133Monitor::AddIP(const IPV4Address &ip_address) {
 
   // start the non-blocking connect
   m_connector.AddEndpoint(
-      ip_address,
-      ola::plugin::e131::E133_PORT,
+      IPV4SocketAddress(ip_address, ola::plugin::e131::E133_PORT),
       &m_backoff_policy);
 }
 
@@ -461,10 +461,12 @@ void SimpleE133Monitor::SocketClosed(IPV4Address ip_address) {
   if (node_state->am_master) {
     // TODO(simon): signal other controllers here
     node_state->am_master = false;
-    m_connector.Disconnect(ip_address, ola::plugin::e131::E133_PORT);
+    m_connector.Disconnect(
+        IPV4SocketAddress(ip_address, ola::plugin::e131::E133_PORT));
   } else {
     // we lost the race, so don't try to reconnect
-    m_connector.Disconnect(ip_address, ola::plugin::e131::E133_PORT, true);
+    m_connector.Disconnect(
+        IPV4SocketAddress(ip_address, ola::plugin::e131::E133_PORT), true);
   }
 
   delete node_state->health_checked_connection;

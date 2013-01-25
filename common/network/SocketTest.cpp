@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * SocketTest.cpp
  * Test fixture for the Socket classes
@@ -26,20 +26,25 @@
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/io/Descriptor.h"
+#include "ola/io/IOQueue.h"
 #include "ola/io/SelectServer.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/Socket.h"
 #include "ola/network/TCPSocketFactory.h"
+#include "ola/testing/TestUtils.h"
 
-using std::string;
+
 using ola::io::ConnectedDescriptor;
+using ola::io::IOQueue;
 using ola::io::SelectServer;
 using ola::network::IPV4Address;
+using ola::network::IPV4SocketAddress;
 using ola::network::StringToAddress;
-using ola::network::TcpAcceptingSocket;
-using ola::network::TcpSocket;
-using ola::network::UdpSocket;
+using ola::network::TCPAcceptingSocket;
+using ola::network::TCPSocket;
+using ola::network::UDPSocket;
+using std::string;
 
 static const unsigned char test_cstring[] = "Foo";
 // used to set a timeout which aborts the tests
@@ -48,21 +53,23 @@ static const int ABORT_TIMEOUT_IN_MS = 1000;
 class SocketTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(SocketTest);
 
-  CPPUNIT_TEST(testTcpSocketClientClose);
-  CPPUNIT_TEST(testTcpSocketServerClose);
-  CPPUNIT_TEST(testUdpSocket);
+  CPPUNIT_TEST(testTCPSocketClientClose);
+  CPPUNIT_TEST(testTCPSocketServerClose);
+  CPPUNIT_TEST(testUDPSocket);
+  CPPUNIT_TEST(testIOQueueUDPSend);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void setUp();
     void tearDown();
-    void testTcpSocketClientClose();
-    void testTcpSocketServerClose();
-    void testUdpSocket();
+    void testTCPSocketClientClose();
+    void testTCPSocketServerClose();
+    void testUDPSocket();
+    void testIOQueueUDPSend();
 
     // timing out indicates something went wrong
     void Timeout() {
-      CPPUNIT_ASSERT(false);
+      OLA_FAIL("timeout");
       m_timeout_closure = NULL;
     }
 
@@ -72,10 +79,10 @@ class SocketTest: public CppUnit::TestFixture {
     void Receive(ConnectedDescriptor *socket);
     void ReceiveAndSend(ConnectedDescriptor *socket);
     void ReceiveSendAndClose(ConnectedDescriptor *socket);
-    void NewConnectionSend(TcpSocket *socket);
-    void NewConnectionSendAndClose(TcpSocket *socket);
-    void UdpReceiveAndTerminate(UdpSocket *socket);
-    void UdpReceiveAndSend(UdpSocket *socket);
+    void NewConnectionSend(TCPSocket *socket);
+    void NewConnectionSendAndClose(TCPSocket *socket);
+    void UDPReceiveAndTerminate(UDPSocket *socket);
+    void UDPReceiveAndSend(UDPSocket *socket);
 
     // Socket close actions
     void TerminateOnClose() {
@@ -102,8 +109,8 @@ void SocketTest::setUp() {
   ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
   m_ss = new SelectServer();
   m_timeout_closure = ola::NewSingleCallback(this, &SocketTest::Timeout);
-  CPPUNIT_ASSERT(m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS,
-                                             m_timeout_closure));
+  OLA_ASSERT_TRUE(m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS,
+                                              m_timeout_closure));
 }
 
 
@@ -120,25 +127,23 @@ void SocketTest::tearDown() {
  * The client connects and the server sends some data. The client checks the
  * data matches and then closes the connection.
  */
-void SocketTest::testTcpSocketClientClose() {
-  string ip_address = "127.0.0.1";
-  uint16_t server_port = 9010;
+void SocketTest::testTCPSocketClientClose() {
+  IPV4SocketAddress socket_address(IPV4Address::Loopback(), 9010);
   ola::network::TCPSocketFactory socket_factory(
       ola::NewCallback(this, &SocketTest::NewConnectionSend));
-  TcpAcceptingSocket socket(&socket_factory);
-  CPPUNIT_ASSERT_MESSAGE(
-      "Check for another instance of olad running",
-      socket.Listen(ip_address, server_port));
-  CPPUNIT_ASSERT(!socket.Listen(ip_address, server_port));
+  TCPAcceptingSocket socket(&socket_factory);
+  CPPUNIT_ASSERT_MESSAGE("Check for another instance of olad running",
+                         socket.Listen(socket_address));
+  OLA_ASSERT_FALSE(socket.Listen(socket_address));
 
-  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&socket));
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&socket));
 
-  TcpSocket *client_socket = TcpSocket::Connect(ip_address, server_port);
-  CPPUNIT_ASSERT(client_socket);
+  TCPSocket *client_socket = TCPSocket::Connect(socket_address);
+  OLA_ASSERT_NOT_NULL(client_socket);
   client_socket->SetOnData(ola::NewCallback(
         this, &SocketTest::ReceiveAndClose,
         static_cast<ConnectedDescriptor*>(client_socket)));
-  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(client_socket));
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(client_socket));
   m_ss->Run();
   m_ss->RemoveReadDescriptor(&socket);
   m_ss->RemoveReadDescriptor(client_socket);
@@ -151,29 +156,27 @@ void SocketTest::testTcpSocketClientClose() {
  * The client connects and the server then sends some data and closes the
  * connection.
  */
-void SocketTest::testTcpSocketServerClose() {
-  string ip_address = "127.0.0.1";
-  uint16_t server_port = 9010;
+void SocketTest::testTCPSocketServerClose() {
+  IPV4SocketAddress socket_address(IPV4Address::Loopback(), 9010);
   ola::network::TCPSocketFactory socket_factory(
       ola::NewCallback(this, &SocketTest::NewConnectionSendAndClose));
-  TcpAcceptingSocket socket(&socket_factory);
-  CPPUNIT_ASSERT_MESSAGE(
-      "Check for another instance of olad running",
-      socket.Listen(ip_address, server_port));
-  CPPUNIT_ASSERT(!socket.Listen(ip_address, server_port));
+  TCPAcceptingSocket socket(&socket_factory);
+  CPPUNIT_ASSERT_MESSAGE("Check for another instance of olad running",
+                         socket.Listen(socket_address));
+  OLA_ASSERT_FALSE(socket.Listen(socket_address));
 
-  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&socket));
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&socket));
 
   // The client socket checks the response and terminates on close
-  TcpSocket *client_socket = TcpSocket::Connect(ip_address, server_port);
-  CPPUNIT_ASSERT(client_socket);
+  TCPSocket *client_socket = TCPSocket::Connect(socket_address);
+  OLA_ASSERT_NOT_NULL(client_socket);
 
   client_socket->SetOnData(ola::NewCallback(
         this, &SocketTest::Receive,
         static_cast<ConnectedDescriptor*>(client_socket)));
   client_socket->SetOnClose(
       ola::NewSingleCallback(this, &SocketTest::TerminateOnClose));
-  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(client_socket));
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(client_socket));
 
   m_ss->Run();
   m_ss->RemoveReadDescriptor(&socket);
@@ -187,41 +190,74 @@ void SocketTest::testTcpSocketServerClose() {
  * The client connects and the server sends some data. The client checks the
  * data matches and then closes the connection.
  */
-void SocketTest::testUdpSocket() {
-  IPV4Address ip_address;
-  CPPUNIT_ASSERT(IPV4Address::FromString("127.0.0.1", &ip_address));
-  uint16_t server_port = 9010;
-  UdpSocket socket;
-  CPPUNIT_ASSERT(socket.Init());
-  CPPUNIT_ASSERT(!socket.Init());
-  CPPUNIT_ASSERT(socket.Bind(server_port));
-  CPPUNIT_ASSERT(!socket.Bind(server_port));
+void SocketTest::testUDPSocket() {
+  IPV4SocketAddress socket_address(IPV4Address::Loopback(), 9010);
+  UDPSocket socket;
+  OLA_ASSERT_TRUE(socket.Init());
+  OLA_ASSERT_FALSE(socket.Init());
+  OLA_ASSERT_TRUE(socket.Bind(socket_address));
+  OLA_ASSERT_FALSE(socket.Bind(socket_address));
 
   socket.SetOnData(
-      ola::NewCallback(this, &SocketTest::UdpReceiveAndSend, &socket));
-  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&socket));
+      ola::NewCallback(this, &SocketTest::UDPReceiveAndSend, &socket));
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&socket));
 
-  UdpSocket client_socket;
-  CPPUNIT_ASSERT(client_socket.Init());
-  CPPUNIT_ASSERT(!client_socket.Init());
+  UDPSocket client_socket;
+  OLA_ASSERT_TRUE(client_socket.Init());
+  OLA_ASSERT_FALSE(client_socket.Init());
 
   client_socket.SetOnData(
       ola::NewCallback(
-        this, &SocketTest::UdpReceiveAndTerminate,
-        static_cast<UdpSocket*>(&client_socket)));
-  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&client_socket));
+        this, &SocketTest::UDPReceiveAndTerminate,
+        static_cast<UDPSocket*>(&client_socket)));
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&client_socket));
 
   ssize_t bytes_sent = client_socket.SendTo(
       static_cast<const uint8_t*>(test_cstring),
       sizeof(test_cstring),
-      ip_address,
-      server_port);
-  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
+      socket_address);
+  OLA_ASSERT_EQ(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
   m_ss->Run();
   m_ss->RemoveReadDescriptor(&socket);
   m_ss->RemoveReadDescriptor(&client_socket);
 }
 
+
+/*
+ * Test UDP sockets with an IOQueue work correctly.
+ * The client connects and the server sends some data. The client checks the
+ * data matches and then closes the connection.
+ */
+void SocketTest::testIOQueueUDPSend() {
+  IPV4SocketAddress socket_address(IPV4Address::Loopback(), 9010);
+  UDPSocket socket;
+  OLA_ASSERT_TRUE(socket.Init());
+  OLA_ASSERT_FALSE(socket.Init());
+  OLA_ASSERT_TRUE(socket.Bind(socket_address));
+  OLA_ASSERT_FALSE(socket.Bind(socket_address));
+
+  socket.SetOnData(
+      ola::NewCallback(this, &SocketTest::UDPReceiveAndSend, &socket));
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&socket));
+
+  UDPSocket client_socket;
+  OLA_ASSERT_TRUE(client_socket.Init());
+  OLA_ASSERT_FALSE(client_socket.Init());
+
+  client_socket.SetOnData(
+      ola::NewCallback(
+        this, &SocketTest::UDPReceiveAndTerminate,
+        static_cast<UDPSocket*>(&client_socket)));
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&client_socket));
+
+  IOQueue output;
+  output.Write(static_cast<const uint8_t*>(test_cstring), sizeof(test_cstring));
+  ssize_t bytes_sent = client_socket.SendTo(&output, socket_address);
+  OLA_ASSERT_EQ(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
+  m_ss->Run();
+  m_ss->RemoveReadDescriptor(&socket);
+  m_ss->RemoveReadDescriptor(&client_socket);
+}
 
 
 /*
@@ -251,10 +287,10 @@ void SocketTest::Receive(ConnectedDescriptor *socket) {
   uint8_t buffer[sizeof(test_cstring) + 10];
   unsigned int data_read;
 
-  CPPUNIT_ASSERT(!socket->Receive(buffer, sizeof(buffer), data_read));
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(sizeof(test_cstring)),
+  OLA_ASSERT_FALSE(socket->Receive(buffer, sizeof(buffer), data_read));
+  OLA_ASSERT_EQ(static_cast<unsigned int>(sizeof(test_cstring)),
                        data_read);
-  CPPUNIT_ASSERT(!memcmp(test_cstring, buffer, data_read));
+  OLA_ASSERT_EQ(0, memcmp(test_cstring, buffer, data_read));
 }
 
 
@@ -265,10 +301,10 @@ void SocketTest::ReceiveAndSend(ConnectedDescriptor *socket) {
   uint8_t buffer[sizeof(test_cstring) + 10];
   unsigned int data_read;
   socket->Receive(buffer, sizeof(buffer), data_read);
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(sizeof(test_cstring)),
+  OLA_ASSERT_EQ(static_cast<unsigned int>(sizeof(test_cstring)),
                        data_read);
   ssize_t bytes_sent = socket->Send(buffer, data_read);
-  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
+  OLA_ASSERT_EQ(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
 }
 
 
@@ -285,16 +321,16 @@ void SocketTest::ReceiveSendAndClose(ConnectedDescriptor *socket) {
 /*
  * Accept a new connection and send some test data
  */
-void SocketTest::NewConnectionSend(TcpSocket *new_socket) {
-  CPPUNIT_ASSERT(new_socket);
+void SocketTest::NewConnectionSend(TCPSocket *new_socket) {
+  OLA_ASSERT_TRUE(new_socket);
   IPV4Address address;
   uint16_t port;
-  CPPUNIT_ASSERT(new_socket->GetPeer(&address, &port));
+  OLA_ASSERT_TRUE(new_socket->GetPeer(&address, &port));
   OLA_INFO << "Connection from " << address << ":" << port;
   ssize_t bytes_sent = new_socket->Send(
       static_cast<const uint8_t*>(test_cstring),
       sizeof(test_cstring));
-  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
+  OLA_ASSERT_EQ(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
   new_socket->SetOnClose(ola::NewSingleCallback(this,
                                                &SocketTest::TerminateOnClose));
   m_ss->AddReadDescriptor(new_socket, true);
@@ -304,16 +340,16 @@ void SocketTest::NewConnectionSend(TcpSocket *new_socket) {
 /*
  * Accept a new connect, send some data and close
  */
-void SocketTest::NewConnectionSendAndClose(TcpSocket *new_socket) {
-  CPPUNIT_ASSERT(new_socket);
+void SocketTest::NewConnectionSendAndClose(TCPSocket *new_socket) {
+  OLA_ASSERT_NOT_NULL(new_socket);
   IPV4Address address;
   uint16_t port;
-  CPPUNIT_ASSERT(new_socket->GetPeer(&address, &port));
+  OLA_ASSERT_TRUE(new_socket->GetPeer(&address, &port));
   OLA_INFO << "Connection from " << address << ":" << port;
   ssize_t bytes_sent = new_socket->Send(
       static_cast<const uint8_t*>(test_cstring),
       sizeof(test_cstring));
-  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
+  OLA_ASSERT_EQ(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
   new_socket->Close();
   delete new_socket;
 }
@@ -322,16 +358,16 @@ void SocketTest::NewConnectionSendAndClose(TcpSocket *new_socket) {
 /*
  * Receive some data and check it.
  */
-void SocketTest::UdpReceiveAndTerminate(UdpSocket *socket) {
+void SocketTest::UDPReceiveAndTerminate(UDPSocket *socket) {
   IPV4Address expected_address, src_address;
-  CPPUNIT_ASSERT(IPV4Address::FromString("127.0.0.1", &expected_address));
+  OLA_ASSERT_TRUE(IPV4Address::FromString("127.0.0.1", &expected_address));
 
   uint16_t src_port;
   uint8_t buffer[sizeof(test_cstring) + 10];
   ssize_t data_read = sizeof(buffer);
   socket->RecvFrom(buffer, &data_read, src_address, src_port);
-  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), data_read);
-  CPPUNIT_ASSERT(expected_address == src_address);
+  OLA_ASSERT_EQ(static_cast<ssize_t>(sizeof(test_cstring)), data_read);
+  OLA_ASSERT_TRUE(expected_address == src_address);
   m_ss->Terminate();
 }
 
@@ -339,24 +375,24 @@ void SocketTest::UdpReceiveAndTerminate(UdpSocket *socket) {
 /*
  * Receive some data and echo it back.
  */
-void SocketTest::UdpReceiveAndSend(UdpSocket *socket) {
+void SocketTest::UDPReceiveAndSend(UDPSocket *socket) {
   IPV4Address expected_address;
-  CPPUNIT_ASSERT(IPV4Address::FromString("127.0.0.1", &expected_address));
+  OLA_ASSERT_TRUE(IPV4Address::FromString("127.0.0.1", &expected_address));
 
   IPV4Address src_address;
   uint16_t src_port;
   uint8_t buffer[sizeof(test_cstring) + 10];
   ssize_t data_read = sizeof(buffer);
   socket->RecvFrom(buffer, &data_read, src_address, src_port);
-  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), data_read);
-  CPPUNIT_ASSERT(expected_address == src_address);
+  OLA_ASSERT_EQ(static_cast<ssize_t>(sizeof(test_cstring)), data_read);
+  OLA_ASSERT_TRUE(expected_address == src_address);
 
   ssize_t data_sent = socket->SendTo(
       buffer,
       data_read,
       src_address,
       src_port);
-  CPPUNIT_ASSERT_EQUAL(data_read, data_sent);
+  OLA_ASSERT_EQ(data_read, data_sent);
 }
 
 
@@ -365,24 +401,24 @@ void SocketTest::UdpReceiveAndSend(UdpSocket *socket) {
  */
 void SocketTest::SocketClientClose(ConnectedDescriptor *socket,
                                    ConnectedDescriptor *socket2) {
-  CPPUNIT_ASSERT(socket);
+  OLA_ASSERT_NOT_NULL(socket);
   socket->SetOnData(
       ola::NewCallback(this, &SocketTest::ReceiveAndClose,
                        static_cast<ConnectedDescriptor*>(socket)));
-  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(socket));
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(socket));
 
-  CPPUNIT_ASSERT(socket2);
+  OLA_ASSERT_NOT_NULL(socket2);
   socket2->SetOnData(
       ola::NewCallback(this, &SocketTest::ReceiveAndSend,
                        static_cast<ConnectedDescriptor*>(socket2)));
   socket2->SetOnClose(ola::NewSingleCallback(this,
                                              &SocketTest::TerminateOnClose));
-  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(socket2));
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(socket2));
 
   ssize_t bytes_sent = socket->Send(
       static_cast<const uint8_t*>(test_cstring),
       sizeof(test_cstring));
-  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
+  OLA_ASSERT_EQ(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
   m_ss->Run();
   m_ss->RemoveReadDescriptor(socket);
   m_ss->RemoveReadDescriptor(socket2);
@@ -395,24 +431,24 @@ void SocketTest::SocketClientClose(ConnectedDescriptor *socket,
  */
 void SocketTest::SocketServerClose(ConnectedDescriptor *socket,
                                    ConnectedDescriptor *socket2) {
-  CPPUNIT_ASSERT(socket);
+  OLA_ASSERT_NOT_NULL(socket);
   socket->SetOnData(ola::NewCallback(
         this, &SocketTest::Receive,
         static_cast<ConnectedDescriptor*>(socket)));
   socket->SetOnClose(
       ola::NewSingleCallback(this, &SocketTest::TerminateOnClose));
-  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(socket));
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(socket));
 
-  CPPUNIT_ASSERT(socket2);
+  OLA_ASSERT_TRUE(socket2);
   socket2->SetOnData(ola::NewCallback(
         this, &SocketTest::ReceiveSendAndClose,
         static_cast<ConnectedDescriptor*>(socket2)));
-  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(socket2));
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(socket2));
 
   ssize_t bytes_sent = socket->Send(
       static_cast<const uint8_t*>(test_cstring),
       sizeof(test_cstring));
-  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
+  OLA_ASSERT_EQ(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
   m_ss->Run();
   m_ss->RemoveReadDescriptor(socket);
   m_ss->RemoveReadDescriptor(socket2);

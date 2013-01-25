@@ -1,17 +1,17 @@
 /*
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * ArtNetPackets.h
  * Datagram definitions for ArtNet
@@ -26,13 +26,18 @@
 #include "ola/network/IPV4Address.h"
 #include "ola/network/Interface.h"
 
+
+#ifndef ARTNET_PORT_COUNT
+#define ARTNET_PORT_COUNT	4
+#endif
+
 namespace ola {
 namespace plugin {
 namespace artnet {
 
 // various length enums
 enum { ARTNET_LONG_NAME_LENGTH = 64 };
-enum { ARTNET_MAX_PORTS = 4 };
+enum { ARTNET_MAX_PORTS = ARTNET_PORT_COUNT };
 enum { ARTNET_MAX_RDM_ADDRESS_COUNT = 32 };
 // According to the rdm spec, this should be 256 bytes
 // We'll set to 512 here just to be safe

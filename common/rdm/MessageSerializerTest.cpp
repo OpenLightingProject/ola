@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * MessageSerializerTest.cpp
  * Test fixture for the MessageSerializer classes
@@ -29,6 +29,8 @@
 #include "ola/messaging/Message.h"
 #include "ola/rdm/StringMessageBuilder.h"
 #include "ola/rdm/MessageSerializer.h"
+#include "ola/testing/TestUtils.h"
+
 
 
 using ola::messaging::BoolFieldDescriptor;
@@ -154,13 +156,13 @@ void MessageSerializerTest::testSimple() {
   auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
 
   // verify
-  CPPUNIT_ASSERT(message.get());
+  OLA_ASSERT_NOT_NULL(message.get());
   MessageSerializer serializer;
   unsigned int packed_length;
   const uint8_t *data = serializer.SerializeMessage(message.get(),
                                                     &packed_length);
-  CPPUNIT_ASSERT(data);
-  CPPUNIT_ASSERT_EQUAL(18u, packed_length);
+  OLA_ASSERT_NOT_NULL(data);
+  OLA_ASSERT_EQ(18u, packed_length);
 
   uint8_t expected[] = {
     1, 1, 253, 1, 44, 254, 112,
@@ -191,13 +193,13 @@ void MessageSerializerTest::testString() {
   auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
 
   // verify
-  CPPUNIT_ASSERT(message.get());
+  OLA_ASSERT_NOT_NULL(message.get());
   MessageSerializer serializer;
   unsigned int packed_length;
   const uint8_t *data = serializer.SerializeMessage(message.get(),
                                                     &packed_length);
-  CPPUNIT_ASSERT(data);
-  CPPUNIT_ASSERT_EQUAL(31u, packed_length);
+  OLA_ASSERT_NOT_NULL(data);
+  OLA_ASSERT_EQ(31u, packed_length);
 
   uint8_t expected[] = "foo bar\0\0\0long long foo bar baz";
   ConfirmData(__LINE__,
@@ -223,13 +225,13 @@ void MessageSerializerTest::testUID() {
   auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
 
   // verify
-  CPPUNIT_ASSERT(message.get());
+  OLA_ASSERT_NOT_NULL(message.get());
   MessageSerializer serializer;
   unsigned int packed_length;
   const uint8_t *data = serializer.SerializeMessage(message.get(),
                                                     &packed_length);
-  CPPUNIT_ASSERT(data);
-  CPPUNIT_ASSERT_EQUAL(6u, packed_length);
+  OLA_ASSERT_NOT_NULL(data);
+  OLA_ASSERT_EQ(6u, packed_length);
 
   uint8_t expected[] = {0x7a, 0x70, 0, 0, 0, 1};
   ConfirmData(__LINE__, expected, sizeof(expected), data, packed_length);
@@ -262,13 +264,13 @@ void MessageSerializerTest::testLittleEndian() {
   auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
 
   // verify
-  CPPUNIT_ASSERT(message.get());
+  OLA_ASSERT_NOT_NULL(message.get());
   MessageSerializer serializer;
   unsigned int packed_length;
   const uint8_t *data = serializer.SerializeMessage(message.get(),
                                                     &packed_length);
-  CPPUNIT_ASSERT(data);
-  CPPUNIT_ASSERT_EQUAL(14u, packed_length);
+  OLA_ASSERT_NOT_NULL(data);
+  OLA_ASSERT_EQ(14u, packed_length);
 
   uint8_t expected[] = {
     1, 253, 44, 1, 112, 254,
@@ -302,14 +304,14 @@ void MessageSerializerTest::testWithGroups() {
   auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
 
   // verify
-  CPPUNIT_ASSERT(message.get());
+  OLA_ASSERT_NOT_NULL(message.get());
   MessageSerializer serializer;
 
   unsigned int packed_length;
   const uint8_t *data = serializer.SerializeMessage(message.get(),
                                                     &packed_length);
-  CPPUNIT_ASSERT(data);
-  CPPUNIT_ASSERT_EQUAL(2u, packed_length);
+  OLA_ASSERT_NOT_NULL(data);
+  OLA_ASSERT_EQ(2u, packed_length);
   uint8_t expected[] = {1, 10};
   ConfirmData(__LINE__,
               expected,
@@ -328,8 +330,8 @@ void MessageSerializerTest::testWithGroups() {
 
   auto_ptr<const Message> message2(BuildMessage(descriptor, inputs2));
   data = serializer.SerializeMessage(message2.get(), &packed_length);
-  CPPUNIT_ASSERT(data);
-  CPPUNIT_ASSERT_EQUAL(6u, packed_length);
+  OLA_ASSERT_NOT_NULL(data);
+  OLA_ASSERT_EQ(6u, packed_length);
   uint8_t expected2[] = {1, 10, 1, 42, 0, 240};
   ConfirmData(__LINE__,
               expected2,
@@ -364,14 +366,14 @@ void MessageSerializerTest::testWithNestedGroups() {
   inputs.push_back("false");
 
   auto_ptr<const Message> message(BuildMessage(descriptor, inputs));
-  CPPUNIT_ASSERT(message.get());
+  OLA_ASSERT_NOT_NULL(message.get());
   MessageSerializer serializer;
 
   unsigned int packed_length;
   const uint8_t *data = serializer.SerializeMessage(message.get(),
                                                     &packed_length);
-  CPPUNIT_ASSERT(data);
-  CPPUNIT_ASSERT_EQUAL(8u, packed_length);
+  OLA_ASSERT_NOT_NULL(data);
+  OLA_ASSERT_EQ(8u, packed_length);
   uint8_t expected[] = {0, 1, 1, 1, 0, 2, 1, 0};
   ConfirmData(__LINE__,
               expected,

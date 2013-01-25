@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * ArtNetNode.cpp
  * An ArtNet node
@@ -28,8 +28,11 @@
 
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
-#include "ola/rdm/RDMEnums.h"
+#include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/network/SocketAddress.h"
+#include "ola/rdm/RDMEnums.h"
+#include "ola/rdm/RDMCommandSerializer.h"
 #include "plugins/artnet/ArtNetNode.h"
 
 
@@ -41,10 +44,13 @@ using ola::Callback1;
 using ola::Callback0;
 using ola::network::HostToLittleEndian;
 using ola::network::HostToNetwork;
+using ola::network::IPV4Address;
+using ola::network::IPV4SocketAddress;
 using ola::network::LittleEndianToHost;
 using ola::network::NetworkToHost;
-using ola::network::UdpSocket;
+using ola::network::UDPSocket;
 using ola::rdm::RDMDiscoveryCallback;
+using ola::rdm::RDMCommandSerializer;
 using std::pair;
 using std::string;
 using std::vector;
@@ -62,7 +68,7 @@ const char ArtNetNodeImpl::ARTNET_ID[] = "Art-Net";
 ArtNetNodeImpl::ArtNetNodeImpl(const ola::network::Interface &interface,
                                ola::io::SelectServerInterface *ss,
                                const ArtNetNodeOptions &options,
-                               ola::network::UdpSocketInterface *socket)
+                               ola::network::UDPSocketInterface *socket)
     : m_running(false),
       m_net_address(0),
       m_send_reply_on_change(true),
@@ -529,7 +535,7 @@ void ArtNetNodeImpl::SendRDMRequest(uint8_t port_id,
                                     RDMCallback *on_complete) {
   vector<std::string> packets;
   if (request->CommandClass() == RDMCommand::DISCOVER_COMMAND) {
-    on_complete->Run(ola::rdm::RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED,
+    on_complete->Run(ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED,
                      NULL,
                      packets);
     delete request;
@@ -1438,7 +1444,10 @@ bool ArtNetNodeImpl::SendRDMCommand(const RDMCommand &command,
   packet.data.rdm.net = m_net_address;
   packet.data.rdm.address = universe;
   unsigned int rdm_size = ARTNET_MAX_RDM_DATA;
-  command.Pack(packet.data.rdm.data, &rdm_size);
+  if (!RDMCommandSerializer::Pack(command, packet.data.rdm.data, &rdm_size)) {
+    OLA_WARN << "Failed to construct RDM command";
+    return false;
+  }
   unsigned int packet_size = sizeof(packet.data.rdm) - ARTNET_MAX_RDM_DATA +
     rdm_size;
   return SendPacket(packet, packet_size, destination);
@@ -1615,7 +1624,7 @@ bool ArtNetNodeImpl::CheckPortId(uint8_t port_id) {
  */
 bool ArtNetNodeImpl::InitNetwork() {
   if (!m_socket)
-    m_socket = new UdpSocket();
+    m_socket = new UDPSocket();
 
   if (!m_socket->Init()) {
     OLA_WARN << "Socket init failed";
@@ -1623,8 +1632,9 @@ bool ArtNetNodeImpl::InitNetwork() {
     return false;
   }
 
-  if (!m_socket->Bind(ARTNET_PORT)) {
-    OLA_WARN << "Failed to bind to:" << ARTNET_PORT;
+
+  if (!m_socket->Bind(IPV4SocketAddress(IPV4Address::WildCard(),
+                      ARTNET_PORT))) {
     delete m_socket;
     return false;
   }
@@ -1810,7 +1820,7 @@ void ArtNetNodeImpl::RunRDMCallbackWithUIDs(const uid_map &uids,
 ArtNetNode::ArtNetNode(const ola::network::Interface &interface,
                        ola::io::SelectServerInterface *ss,
                        const ArtNetNodeOptions &options,
-                       ola::network::UdpSocketInterface *socket):
+                       ola::network::UDPSocketInterface *socket):
     m_impl(interface, ss, options, socket) {
   for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
     m_wrappers[i] = new ArtNetNodeImplRDMWrapper(&m_impl, i);

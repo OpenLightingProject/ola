@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * EnttecUsbProWidgetTest.cpp
  * Test fixture for the EnttecUsbProWidget class
@@ -26,13 +26,17 @@
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
+#include "ola/rdm/RDMCommandSerializer.h"
 #include "ola/rdm/UID.h"
 #include "plugins/usbpro/EnttecUsbProWidget.h"
 #include "plugins/usbpro/CommonWidgetTest.h"
+#include "ola/testing/TestUtils.h"
+
 
 using ola::plugin::usbpro::EnttecUsbProWidget;
 using ola::rdm::RDMDiscoveryRequest;
 using ola::rdm::GetResponseFromData;
+using ola::rdm::RDMCommandSerializer;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
@@ -171,13 +175,11 @@ const RDMRequest *EnttecUsbProWidgetTest::NewRequest(const UID &destination,
  */
 uint8_t *EnttecUsbProWidgetTest::PackRDMRequest(const RDMRequest *request,
                                                 unsigned int *size) {
-  unsigned int request_size = request->Size();
+  unsigned int request_size = RDMCommandSerializer::RequiredSize(*request);
   uint8_t *rdm_data = new uint8_t[request_size + 1];
   rdm_data[0] = ola::rdm::RDMCommand::START_CODE;
   memset(&rdm_data[1], 0, request_size);
-  CPPUNIT_ASSERT(request->Pack(
-        &rdm_data[1],
-        &request_size));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*request, &rdm_data[1], &request_size));
   *size = request_size + 1;
   return rdm_data;
 }
@@ -188,14 +190,13 @@ uint8_t *EnttecUsbProWidgetTest::PackRDMRequest(const RDMRequest *request,
  */
 uint8_t *EnttecUsbProWidgetTest::PackRDMResponse(const RDMResponse *response,
                                                  unsigned int *size) {
-  unsigned int response_size = response->Size();
+  unsigned int response_size = RDMCommandSerializer::RequiredSize(*response);
   uint8_t *rdm_data = new uint8_t[response_size + 2];
   rdm_data[0] = 0;  // status ok
   rdm_data[1] = ola::rdm::RDMCommand::START_CODE;
   memset(&rdm_data[2], 0, response_size);
-  CPPUNIT_ASSERT(response->Pack(
-        &rdm_data[2],
-        &response_size));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*response, &rdm_data[2],
+                                        &response_size));
   *size = response_size + 2;
   return rdm_data;
 }
@@ -208,19 +209,19 @@ void EnttecUsbProWidgetTest::ValidateResponse(
     ola::rdm::rdm_response_code code,
     const ola::rdm::RDMResponse *response,
     const vector<string> &packets) {
-  CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_COMPLETED_OK, code);
-  CPPUNIT_ASSERT(response);
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(ola::rdm::RDM_COMPLETED_OK, code);
+  OLA_ASSERT(response);
+  OLA_ASSERT_EQ(
       static_cast<unsigned int>(sizeof(TEST_RDM_DATA)),
       response->ParamDataSize());
-  CPPUNIT_ASSERT(0 == memcmp(TEST_RDM_DATA, response->ParamData(),
+  OLA_ASSERT(0 == memcmp(TEST_RDM_DATA, response->ParamData(),
                              response->ParamDataSize()));
 
-  CPPUNIT_ASSERT_EQUAL((size_t) 1, packets.size());
+  OLA_ASSERT_EQ((size_t) 1, packets.size());
   ola::rdm::rdm_response_code raw_code;
   auto_ptr<ola::rdm::RDMResponse> raw_response(
     ola::rdm::RDMResponse::InflateFromData(packets[0], &raw_code));
-  CPPUNIT_ASSERT(*(raw_response.get()) == *response);
+  OLA_ASSERT(*(raw_response.get()) == *response);
   delete response;
   m_ss.Terminate();
 }
@@ -240,14 +241,14 @@ void EnttecUsbProWidgetTest::ValidateStatus(
     ola::rdm::rdm_response_code code,
     const ola::rdm::RDMResponse *response,
     const vector<string> &packets) {
-  CPPUNIT_ASSERT_EQUAL(expected_code, code);
-  CPPUNIT_ASSERT(!response);
+  OLA_ASSERT_EQ(expected_code, code);
+  OLA_ASSERT_FALSE(response);
 
-  CPPUNIT_ASSERT_EQUAL(expected_packets.size(), packets.size());
+  OLA_ASSERT_EQ(expected_packets.size(), packets.size());
   for (unsigned int i = 0; i < packets.size(); i++) {
     if (expected_packets[i].size() != packets[i].size())
       OLA_INFO << expected_packets[i].size() << " != " << packets[i].size();
-    CPPUNIT_ASSERT_EQUAL(expected_packets[i].size(), packets[i].size());
+    OLA_ASSERT_EQ(expected_packets[i].size(), packets[i].size());
 
     if (expected_packets[i] != packets[i]) {
       for (unsigned int j = 0; j < packets[i].size(); j++) {
@@ -255,7 +256,7 @@ void EnttecUsbProWidgetTest::ValidateStatus(
           static_cast<int>(expected_packets[i][j]);
       }
     }
-    CPPUNIT_ASSERT(expected_packets[i] == packets[i]);
+    OLA_ASSERT(expected_packets[i] == packets[i]);
   }
   m_received_code = expected_code;
   m_ss.Terminate();
@@ -267,7 +268,7 @@ void EnttecUsbProWidgetTest::ValidateStatus(
  */
 void EnttecUsbProWidgetTest::ValidateMuteStatus(bool expected,
                                                 bool actual) {
-  CPPUNIT_ASSERT_EQUAL(expected, actual);
+  OLA_ASSERT_EQ(expected, actual);
   m_ss.Terminate();
 }
 
@@ -280,8 +281,8 @@ void EnttecUsbProWidgetTest::ValidateBranchStatus(const uint8_t *expected_data,
                                                   unsigned int length,
                                                   const uint8_t *actual_data,
                                                   unsigned int actual_length) {
-  CPPUNIT_ASSERT_EQUAL(length, actual_length);
-  CPPUNIT_ASSERT(!memcmp(expected_data, actual_data, length));
+  OLA_ASSERT_EQ(length, actual_length);
+  OLA_ASSERT_FALSE(memcmp(expected_data, actual_data, length));
   m_ss.Terminate();
 }
 
@@ -309,12 +310,12 @@ void EnttecUsbProWidgetTest::SendResponseAndTimeout(
 void EnttecUsbProWidgetTest::ValidateParams(
     bool status,
     const usb_pro_parameters &params) {
-  CPPUNIT_ASSERT(status);
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 0, params.firmware);
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 1, params.firmware_high);
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 10, params.break_time);
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 14, params.mab_time);
-  CPPUNIT_ASSERT_EQUAL((uint8_t) 40, params.rate);
+  OLA_ASSERT(status);
+  OLA_ASSERT_EQ((uint8_t) 0, params.firmware);
+  OLA_ASSERT_EQ((uint8_t) 1, params.firmware_high);
+  OLA_ASSERT_EQ((uint8_t) 10, params.break_time);
+  OLA_ASSERT_EQ((uint8_t) 14, params.mab_time);
+  OLA_ASSERT_EQ((uint8_t) 40, params.rate);
   m_ss.Terminate();
 }
 
@@ -325,7 +326,7 @@ void EnttecUsbProWidgetTest::ValidateParams(
 void EnttecUsbProWidgetTest::ValidateDMX(
     const ola::DmxBuffer *expected_buffer) {
   const ola::DmxBuffer &buffer = m_widget->FetchDMX();
-  CPPUNIT_ASSERT(*expected_buffer == buffer);
+  OLA_ASSERT(*expected_buffer == buffer);
   m_got_dmx = true;
   m_ss.Terminate();
 }
@@ -360,7 +361,7 @@ void EnttecUsbProWidgetTest::testParams() {
       sizeof(set_param_request_data),
       ola::NewSingleCallback(this, &EnttecUsbProWidgetTest::Terminate));
 
-  CPPUNIT_ASSERT(m_widget->SetParameters(9, 63, 20));
+  OLA_ASSERT(m_widget->SetParameters(9, 63, 20));
 
   m_ss.Run();
   m_endpoint->Verify();
@@ -388,7 +389,7 @@ void EnttecUsbProWidgetTest::testReceiveDMX() {
       sizeof(dmx_data));
   m_ss.Run();
   m_endpoint->Verify();
-  CPPUNIT_ASSERT(m_got_dmx);
+  OLA_ASSERT(m_got_dmx);
 
   // now try one with the error bit set
   dmx_data[0] = 1;
@@ -404,7 +405,7 @@ void EnttecUsbProWidgetTest::testReceiveDMX() {
       ola::NewSingleCallback(this, &EnttecUsbProWidgetTest::Terminate));
   m_ss.Run();
   m_endpoint->Verify();
-  CPPUNIT_ASSERT(!m_got_dmx);
+  OLA_ASSERT_FALSE(m_got_dmx);
 
   // now try a non-0 start code
   dmx_data[0] = 0;
@@ -420,7 +421,7 @@ void EnttecUsbProWidgetTest::testReceiveDMX() {
       ola::NewSingleCallback(this, &EnttecUsbProWidgetTest::Terminate));
   m_ss.Run();
   m_endpoint->Verify();
-  CPPUNIT_ASSERT(!m_got_dmx);
+  OLA_ASSERT_FALSE(m_got_dmx);
 
   // now do a change of state packet
   buffer.SetFromString("1,10,22,93,144");
@@ -437,7 +438,7 @@ void EnttecUsbProWidgetTest::testReceiveDMX() {
       sizeof(change_of_state_data));
   m_ss.Run();
   m_endpoint->Verify();
-  CPPUNIT_ASSERT(m_got_dmx);
+  OLA_ASSERT(m_got_dmx);
 }
 
 
@@ -532,7 +533,7 @@ void EnttecUsbProWidgetTest::testSendRDMRequest() {
                              ola::rdm::RDM_WAS_BROADCAST,
                              packets));
   m_ss.Run();
-  CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_WAS_BROADCAST, m_received_code);
+  OLA_ASSERT_EQ(ola::rdm::RDM_WAS_BROADCAST, m_received_code);
   m_endpoint->Verify();
 
   // cleanup time

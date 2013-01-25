@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * DmxBuffer.h
  * Interface for the DmxBuffer
@@ -22,6 +22,7 @@
 #define INCLUDE_OLA_DMXBUFFER_H_
 
 #include <stdint.h>
+#include <iostream>
 #include <string>
 
 namespace ola {
@@ -41,6 +42,7 @@ class DmxBuffer {
     DmxBuffer& operator=(const DmxBuffer &other);
 
     bool operator==(const DmxBuffer &other) const;
+    bool operator!=(const DmxBuffer &other) const;
     unsigned int Size() const { return m_length; }
 
     bool HTPMerge(const DmxBuffer &other);
@@ -71,5 +73,7 @@ class DmxBuffer {
     uint8_t *m_data;
     unsigned int m_length;
 };
+
+std::ostream& operator<<(std::ostream &out, const DmxBuffer &data);
 }  // ola
 #endif  // INCLUDE_OLA_DMXBUFFER_H_

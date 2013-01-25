@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * ArduinoRGBDevice.h
  * The Arduino RGB Mixer device.
@@ -25,6 +25,7 @@
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
 #include "ola/rdm/RDMCommand.h"
+#include "ola/rdm/RDMCommandSerializer.h"
 #include "plugins/usbpro/ArduinoRGBDevice.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
 
@@ -32,6 +33,7 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
+using ola::rdm::RDMCommandSerializer;
 using std::string;
 
 const uint8_t ArduinoWidgetImpl::RDM_REQUEST_LABEL = 'R';
@@ -99,7 +101,7 @@ void ArduinoWidgetImpl::SendRDMRequest(
   std::vector<std::string> packets;
 
   if (request->CommandClass() == ola::rdm::RDMCommand::DISCOVER_COMMAND) {
-    on_complete->Run(ola::rdm::RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED,
+    on_complete->Run(ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED,
                      NULL,
                      packets);
     delete request;
@@ -113,16 +115,13 @@ void ArduinoWidgetImpl::SendRDMRequest(
     return;
   }
 
-  unsigned int data_size = request->Size();
+  unsigned int data_size = RDMCommandSerializer::RequiredSize(*request);
   // allow an extra byte for the start code
   uint8_t *data = new uint8_t[data_size + 1];
   data[0] = ola::rdm::RDMCommand::START_CODE;
 
-  if (request->PackWithControllerParams(data + 1,
-                                        &data_size,
-                                        request->SourceUID(),
-                                        m_transaction_id++,
-                                        1)) {
+  if (RDMCommandSerializer::Pack(*request, data + 1, &data_size,
+                                 request->SourceUID(), m_transaction_id++, 1)) {
     data_size++;
     m_rdm_request_callback = on_complete;
     m_pending_request = request;

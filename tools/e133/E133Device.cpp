@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * E133Device.cpp
  * Copyright (C) 2011 Simon Newton
@@ -24,6 +24,7 @@
 #include <ola/io/SelectServerInterface.h>
 #include <ola/network/HealthCheckedConnection.h>
 #include <ola/network/IPV4Address.h>
+#include <ola/network/SocketAddress.h>
 #include <ola/rdm/RDMControllerInterface.h>
 #include <ola/rdm/RDMHelper.h>
 
@@ -48,6 +49,7 @@
 using ola::NewCallback;
 using ola::network::HealthCheckedConnection;
 using ola::network::IPV4Address;
+using ola::network::IPV4SocketAddress;
 using ola::plugin::e131::RDMPDU;
 using std::auto_ptr;
 using std::string;
@@ -135,8 +137,8 @@ bool E133Device::Init() {
   OLA_INFO << "Attempting to start E1.33 device at " << m_ip_address;
 
   // setup the TCP socket
-  bool listen_ok = m_tcp_socket.Listen(m_ip_address,
-                                       ola::plugin::e131::E133_PORT);
+  bool listen_ok = m_tcp_socket.Listen(
+      IPV4SocketAddress(m_ip_address, ola::plugin::e131::E133_PORT));
   if (!listen_ok) {
     m_tcp_socket.Close();
     return false;
@@ -148,7 +150,8 @@ bool E133Device::Init() {
     return false;
   }
 
-  if (!m_udp_socket.Bind(ola::plugin::e131::E133_PORT)) {
+  if (!m_udp_socket.Bind(IPV4SocketAddress(IPV4Address::WildCard(),
+                                           ola::plugin::e131::E133_PORT))) {
     m_tcp_socket.Close();
     return false;
   }

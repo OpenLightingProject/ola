@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * PDUTest.cpp
  * Test fixture for the PDU class
@@ -23,9 +23,12 @@
 
 #include "ola/Logging.h"
 #include "ola/io/IOQueue.h"
+#include "ola/io/OutputStream.h"
 #include "ola/testing/TestUtils.h"
 #include "plugins/e131/e131/PDU.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
+#include "ola/testing/TestUtils.h"
+
 
 namespace ola {
 namespace plugin {
@@ -66,20 +69,20 @@ void PDUTest::testPDUBlock() {
   block.AddPDU(&pdu42);
 
   unsigned int block_size = block.Size();
-  CPPUNIT_ASSERT_EQUAL(12u, block_size);
+  OLA_ASSERT_EQ(12u, block_size);
   uint8_t *data = new uint8_t[block_size];
   unsigned int bytes_used = block_size;
-  CPPUNIT_ASSERT(block.Pack(data, bytes_used));
-  CPPUNIT_ASSERT_EQUAL(block_size, bytes_used);
+  OLA_ASSERT(block.Pack(data, bytes_used));
+  OLA_ASSERT_EQ(block_size, bytes_used);
 
   unsigned int *test = (unsigned int*) data;
-  CPPUNIT_ASSERT_EQUAL(1u, *test++);
-  CPPUNIT_ASSERT_EQUAL(2u, *test++);
-  CPPUNIT_ASSERT_EQUAL(42u, *test);
+  OLA_ASSERT_EQ(1u, *test++);
+  OLA_ASSERT_EQ(2u, *test++);
+  OLA_ASSERT_EQ(42u, *test);
   delete[] data;
 
   block.Clear();
-  CPPUNIT_ASSERT_EQUAL(0u, block.Size());
+  OLA_ASSERT_EQ(0u, block.Size());
 }
 
 
@@ -96,12 +99,13 @@ void PDUTest::testBlockToOutputStream() {
   block.AddPDU(&pdu42);
 
   IOQueue output;
-  block.Write(&output);
-  CPPUNIT_ASSERT_EQUAL(12u, output.Size());
+  OutputStream stream(&output);
+  block.Write(&stream);
+  OLA_ASSERT_EQ(12u, output.Size());
 
   uint8_t *block_data = new uint8_t[output.Size()];
   unsigned int block_size = output.Peek(block_data, output.Size());
-  CPPUNIT_ASSERT_EQUAL(output.Size(), block_size);
+  OLA_ASSERT_EQ(output.Size(), block_size);
 
   uint8_t EXPECTED[] = {
     0, 0, 0, 1,

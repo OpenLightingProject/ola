@@ -14,9 +14,10 @@ libolardm_la_SOURCES = CommandPrinter.cpp \
                        GroupSizeCalculator.cpp \
                        MessageSerializer.cpp MessageDeserializer.cpp \
                        PidStore.cpp PidStoreHelper.cpp PidStoreLoader.cpp \
-                       RDMAPI.cpp RDMCommand.cpp RDMHelper.cpp \
-                       StringMessageBuilder.cpp QueueingRDMController.cpp \
-                       UID.cpp VariableFieldSizeCalculator.cpp
+                       RDMAPI.cpp RDMCommand.cpp RDMCommandSerializer.cpp \
+                       RDMHelper.cpp StringMessageBuilder.cpp \
+                       QueueingRDMController.cpp UID.cpp \
+                       VariableFieldSizeCalculator.cpp
 nodist_libolardm_la_SOURCES = Pids.pb.cc
 libolardm_la_LIBADD = $(libprotobuf_LIBS)
 

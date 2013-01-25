@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * SandNetNode.cpp
  * A SandNet node
@@ -37,8 +37,10 @@ using std::string;
 using std::map;
 using std::vector;
 using ola::network::HostToNetwork;
+using ola::network::IPV4Address;
+using ola::network::IPV4SocketAddress;
 using ola::network::NetworkToHost;
-using ola::network::UdpSocket;
+using ola::network::UDPSocket;
 using ola::Callback0;
 
 const uint16_t SandNetNode::CONTROL_PORT = 37895;
@@ -129,8 +131,8 @@ bool SandNetNode::Stop() {
 /*
  * Return a list of sockets in use
  */
-vector<UdpSocket*> SandNetNode::GetSockets() {
-  vector<UdpSocket*> sockets;
+vector<UDPSocket*> SandNetNode::GetSockets() {
+  vector<UDPSocket*> sockets;
   sockets.push_back(&m_data_socket);
   sockets.push_back(&m_control_socket);
   return sockets;
@@ -140,7 +142,7 @@ vector<UdpSocket*> SandNetNode::GetSockets() {
 /*
  * Called when there is data on this socket
  */
-void SandNetNode::SocketReady(UdpSocket *socket) {
+void SandNetNode::SocketReady(UDPSocket *socket) {
   sandnet_packet packet;
   ssize_t packet_size = sizeof(packet);
   IPV4Address source;
@@ -311,15 +313,15 @@ bool SandNetNode::InitNetwork() {
     return false;
   }
 
-  if (!m_control_socket.Bind(CONTROL_PORT)) {
-    OLA_WARN << "Failed to bind to:" << CONTROL_PORT;
+  if (!m_control_socket.Bind(IPV4SocketAddress(IPV4Address::WildCard(),
+                                               CONTROL_PORT))) {
     m_data_socket.Close();
     m_control_socket.Close();
     return false;
   }
 
-  if (!m_data_socket.Bind(DATA_PORT)) {
-    OLA_WARN << "Failed to bind to:" << DATA_PORT;
+  if (!m_data_socket.Bind(IPV4SocketAddress(IPV4Address::WildCard(),
+                                            DATA_PORT))) {
     m_data_socket.Close();
     m_control_socket.Close();
     return false;
@@ -445,7 +447,7 @@ bool SandNetNode::SendUncompressedDMX(uint8_t port_id,
 bool SandNetNode::SendPacket(const sandnet_packet &packet,
                              unsigned int size,
                              bool is_control) {
-  UdpSocket *socket;
+  UDPSocket *socket;
   if (is_control)
     socket = &m_control_socket;
   else

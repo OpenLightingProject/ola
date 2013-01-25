@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * SchemaPrinterTest.cpp
  * Test fixture for the SchemaPrinter class.
@@ -24,6 +24,8 @@
 
 #include "ola/messaging/Descriptor.h"
 #include "ola/messaging/SchemaPrinter.h"
+#include "ola/testing/TestUtils.h"
+
 
 using std::string;
 using std::vector;
@@ -99,7 +101,7 @@ void SchemaPrinterTest::testPrinter() {
   string expected = (
       "On/Off: bool\nName: string [0, 32]\nCount: uint8\n"
       "Address: IPv4\nDevice: UID\n");
-  CPPUNIT_ASSERT_EQUAL(expected, printer.AsString());
+  OLA_ASSERT_EQ(expected, printer.AsString());
 }
 
 
@@ -132,7 +134,7 @@ void SchemaPrinterTest::testGroupPrinter() {
 
   string expected = "Device: string [0, 32]\nId: uint32\nGroup 1 {\n"
     "  On/Off: bool\n  Name: string [0, 32]\n  Count: uint8\n}\n";
-  CPPUNIT_ASSERT_EQUAL(expected, printer.AsString());
+  OLA_ASSERT_EQ(expected, printer.AsString());
 }
 
 
@@ -153,7 +155,7 @@ void SchemaPrinterTest::testLabels() {
   SchemaPrinter interval_printer(true, false);
   test_descriptor.Accept(interval_printer);
   string expected = "Count: uint16: 12, 13\n";
-  CPPUNIT_ASSERT_EQUAL(expected, interval_printer.AsString());
+  OLA_ASSERT_EQ(expected, interval_printer.AsString());
 }
 
 
@@ -175,18 +177,18 @@ void SchemaPrinterTest::testIntervalsAndLabels() {
   SchemaPrinter interval_printer(true, false);
   test_descriptor.Accept(interval_printer);
   string expected = "Count: uint16: (2, 8), (12, 14)\n";
-  CPPUNIT_ASSERT_EQUAL(expected, interval_printer.AsString());
+  OLA_ASSERT_EQ(expected, interval_printer.AsString());
 
   SchemaPrinter label_printer(false, true);
   test_descriptor.Accept(label_printer);
   string expected2 = "Count: uint16\n  bakers_dozen: 13\n  dozen: 12\n";
-  CPPUNIT_ASSERT_EQUAL(expected2, label_printer.AsString());
+  OLA_ASSERT_EQ(expected2, label_printer.AsString());
 
   SchemaPrinter interval_label_printer(true, true);
   test_descriptor.Accept(interval_label_printer);
   string expected3 = (
       "Count: uint16: (2, 8), (12, 14)\n  bakers_dozen: 13\n  dozen: 12\n");
-  CPPUNIT_ASSERT_EQUAL(expected3, interval_label_printer.AsString());
+  OLA_ASSERT_EQ(expected3, interval_label_printer.AsString());
 }
 
 
@@ -208,20 +210,20 @@ string SchemaPrinterTest::GenerateIntervalString(int_type min, int_type max) {
 
 
 void SchemaPrinterTest::testIntervalTypes() {
-  CPPUNIT_ASSERT_EQUAL(string("Count: uint8: (2, 8)\n"),
-                       GenerateIntervalString<UInt8FieldDescriptor>(2, 8));
-  CPPUNIT_ASSERT_EQUAL(string("Count: uint16: (2, 8256)\n"),
-                       GenerateIntervalString<UInt16FieldDescriptor>(2, 8256));
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(string("Count: uint8: (2, 8)\n"),
+                GenerateIntervalString<UInt8FieldDescriptor>(2, 8));
+  OLA_ASSERT_EQ(string("Count: uint16: (2, 8256)\n"),
+                GenerateIntervalString<UInt16FieldDescriptor>(2, 8256));
+  OLA_ASSERT_EQ(
       string("Count: uint32: (2, 82560)\n"),
       GenerateIntervalString<UInt32FieldDescriptor>(2, 82560));
 
-  CPPUNIT_ASSERT_EQUAL(string("Count: int8: (-2, 8)\n"),
+  OLA_ASSERT_EQ(string("Count: int8: (-2, 8)\n"),
                        GenerateIntervalString<Int8FieldDescriptor>(-2, 8));
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       string("Count: int16: (-300, 8256)\n"),
       GenerateIntervalString<Int16FieldDescriptor>(-300, 8256));
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       string("Count: int32: (-70000, 82560)\n"),
       GenerateIntervalString<Int32FieldDescriptor>(-70000, 82560));
 }

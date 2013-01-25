@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * StringUtils..h
  * Random String functions.
@@ -22,15 +22,17 @@
 #define INCLUDE_OLA_STRINGUTILS_H_
 
 #include <stdint.h>
+#include <sstream>
 #include <string>
 #include <vector>
 
 namespace ola {
 
 using std::string;
+using std::vector;
 
 void StringSplit(const string &input,
-                 std::vector<string> &tokens,
+                 vector<string> &tokens,
                  const string &delimiters=" ");
 void StringTrim(string *input);
 void ShortenString(string *input);
@@ -73,6 +75,21 @@ bool PrefixedHexStringToInt(const string &input, int_type *output) {
   string modified_input = input.substr(2);
   return HexStringToInt(modified_input, output);
 }
-}  // ola
 
+/**
+ * Join a vector of type T.
+ * T can be any type for which the << operator is defined
+ */
+template<typename T>
+string StringJoin(const string &delim, const T &input) {
+  std::ostringstream str;
+  typename T::const_iterator iter = input.begin();
+  while (iter != input.end()) {
+    str << *iter++;
+    if (iter != input.end())
+      str << delim;
+  }
+  return str.str();
+}
+}  // ola
 #endif  // INCLUDE_OLA_STRINGUTILS_H_

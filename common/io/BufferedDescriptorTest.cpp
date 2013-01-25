@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * BufferedDescriptorTest.cpp
  * Test fixture for the BufferedDescriptor classes
@@ -27,6 +27,8 @@
 #include "ola/Logging.h"
 #include "ola/io/SelectServer.h"
 #include "ola/io/BufferedWriteDescriptor.h"
+#include "ola/testing/TestUtils.h"
+
 
 using std::string;
 using ola::io::BufferedLoopbackDescriptor;
@@ -50,7 +52,7 @@ class BufferedDescriptorTest: public CppUnit::TestFixture {
 
     // timing out indicates something went wrong
     void Timeout() {
-      CPPUNIT_ASSERT(false);
+      OLA_ASSERT_TRUE(false);
       m_timeout_closure = NULL;
     }
 
@@ -76,8 +78,9 @@ CPPUNIT_TEST_SUITE_REGISTRATION(BufferedDescriptorTest);
  */
 void BufferedDescriptorTest::setUp() {
   ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-  m_timeout_closure = ola::NewSingleCallback(this, &BufferedDescriptorTest::Timeout);
-  CPPUNIT_ASSERT(m_ss.RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS,
+  m_timeout_closure = ola::NewSingleCallback(
+      this, &BufferedDescriptorTest::Timeout);
+  OLA_ASSERT_TRUE(m_ss.RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS,
                                             m_timeout_closure));
 }
 
@@ -87,28 +90,27 @@ void BufferedDescriptorTest::setUp() {
  */
 void BufferedDescriptorTest::testBufferedLoopbackDescriptor() {
   BufferedLoopbackDescriptor descriptor(&m_ss);
-  descriptor.SendV(NULL, 0);
-  CPPUNIT_ASSERT(descriptor.Init());
-  CPPUNIT_ASSERT(!descriptor.Init());
+  OLA_ASSERT_TRUE(descriptor.Init());
+  OLA_ASSERT_FALSE(descriptor.Init());
   descriptor.SetOnData(
       ola::NewCallback(this,
                        &BufferedDescriptorTest::ReceiveAndTerminate,
                        static_cast<ConnectedDescriptor*>(&descriptor)));
-  CPPUNIT_ASSERT(m_ss.AddReadDescriptor(&descriptor));
+  OLA_ASSERT_TRUE(m_ss.AddReadDescriptor(&descriptor));
 
   ssize_t bytes_buffered = descriptor.Send(
       static_cast<const uint8_t*>(test_cstring),
       sizeof(test_cstring));
-  CPPUNIT_ASSERT(!descriptor.Empty());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(sizeof(test_cstring)),
+  OLA_ASSERT_FALSE(descriptor.Empty());
+  OLA_ASSERT_EQ(static_cast<unsigned int>(sizeof(test_cstring)),
                        descriptor.Size());
-  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(sizeof(test_cstring)),
+  OLA_ASSERT_EQ(static_cast<ssize_t>(sizeof(test_cstring)),
                        bytes_buffered);
   m_ss.Run();
 
   // confirm all data has been sent
-  CPPUNIT_ASSERT(descriptor.Empty());
-  CPPUNIT_ASSERT_EQUAL(0u, descriptor.Size());
+  OLA_ASSERT_TRUE(descriptor.Empty());
+  OLA_ASSERT_EQ(0u, descriptor.Size());
 
   // Disassociate, this is optional but it tests the code path
   descriptor.AssociateSelectServer(NULL);
@@ -123,39 +125,39 @@ void BufferedDescriptorTest::testBufferedLoopbackDescriptorDoubleWrite() {
   BufferedLoopbackDescriptor descriptor;
   // this time use the AssociateSelectServer method
   descriptor.AssociateSelectServer(&m_ss);
-  CPPUNIT_ASSERT(descriptor.Init());
-  CPPUNIT_ASSERT(!descriptor.Init());
+  OLA_ASSERT_TRUE(descriptor.Init());
+  OLA_ASSERT_FALSE(descriptor.Init());
   descriptor.SetOnData(
       ola::NewCallback(this,
                        &BufferedDescriptorTest::ReceiveAndTerminate,
                        static_cast<ConnectedDescriptor*>(&descriptor)));
-  CPPUNIT_ASSERT(m_ss.AddReadDescriptor(&descriptor));
+  OLA_ASSERT_TRUE(m_ss.AddReadDescriptor(&descriptor));
 
   unsigned int first_chunk = sizeof(test_cstring) / 2;
 
   ssize_t bytes_buffered = descriptor.Send(
       static_cast<const uint8_t*>(test_cstring),
       first_chunk);
-  CPPUNIT_ASSERT(!descriptor.Empty());
-  CPPUNIT_ASSERT_EQUAL(first_chunk, descriptor.Size());
-  CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(first_chunk), bytes_buffered);
+  OLA_ASSERT_FALSE(descriptor.Empty());
+  OLA_ASSERT_EQ(first_chunk, descriptor.Size());
+  OLA_ASSERT_EQ(static_cast<ssize_t>(first_chunk), bytes_buffered);
 
   // send the other chunk
   bytes_buffered = descriptor.Send(
       static_cast<const uint8_t*>(test_cstring + first_chunk),
       sizeof(test_cstring) - first_chunk);
-  CPPUNIT_ASSERT(!descriptor.Empty());
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(sizeof(test_cstring)),
+  OLA_ASSERT_FALSE(descriptor.Empty());
+  OLA_ASSERT_EQ(static_cast<unsigned int>(sizeof(test_cstring)),
                        descriptor.Size());
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       static_cast<ssize_t>(sizeof(test_cstring) - first_chunk),
       bytes_buffered);
 
   m_ss.Run();
 
   // confirm all data has been sent
-  CPPUNIT_ASSERT(descriptor.Empty());
-  CPPUNIT_ASSERT_EQUAL(0u, descriptor.Size());
+  OLA_ASSERT_TRUE(descriptor.Empty());
+  OLA_ASSERT_EQ(0u, descriptor.Size());
 
   // Disassociate, this is optional but it tests the code path
   descriptor.AssociateSelectServer(NULL);
@@ -179,8 +181,8 @@ void BufferedDescriptorTest::Receive(ConnectedDescriptor *socket) {
   uint8_t buffer[sizeof(test_cstring) + 10];
   unsigned int data_read;
 
-  CPPUNIT_ASSERT(!socket->Receive(buffer, sizeof(buffer), data_read));
-  CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(sizeof(test_cstring)),
+  OLA_ASSERT_FALSE(socket->Receive(buffer, sizeof(buffer), data_read));
+  OLA_ASSERT_EQ(static_cast<unsigned int>(sizeof(test_cstring)),
                        data_read);
-  CPPUNIT_ASSERT(!memcmp(test_cstring, buffer, data_read));
+  OLA_ASSERT_FALSE(memcmp(test_cstring, buffer, data_read));
 }

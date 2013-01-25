@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * TokenBucketTest.cpp
  * Test fixture for the TokenBucket class
@@ -23,6 +23,8 @@
 #include "ola/Clock.h"
 #include "olad/TokenBucket.h"
 #include "ola/Logging.h"
+#include "ola/testing/TestUtils.h"
+
 
 
 using ola::Clock;
@@ -61,23 +63,23 @@ void TokenBucketTest::testTokenBucket() {
   TimeInterval one_second(1000000);
   clock.CurrentTime(&now);
   TokenBucket bucket(0, 10, 10, now);  // one every 100ms
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, bucket.Count(now));
+  OLA_ASSERT_EQ(0u, bucket.Count(now));
 
   now += one_hundred_ms;
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, bucket.Count(now));
+  OLA_ASSERT_EQ(1u, bucket.Count(now));
   now += ten_ms;
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, bucket.Count(now));
+  OLA_ASSERT_EQ(1u, bucket.Count(now));
   now += ten_ms;
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, bucket.Count(now));
+  OLA_ASSERT_EQ(1u, bucket.Count(now));
   now += one_hundred_ms;
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 2, bucket.Count(now));
-  CPPUNIT_ASSERT(bucket.GetToken(now));
-  CPPUNIT_ASSERT(bucket.GetToken(now));
-  CPPUNIT_ASSERT(!bucket.GetToken(now));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, bucket.Count(now));
+  OLA_ASSERT_EQ(2u, bucket.Count(now));
+  OLA_ASSERT_TRUE(bucket.GetToken(now));
+  OLA_ASSERT_TRUE(bucket.GetToken(now));
+  OLA_ASSERT_FALSE(bucket.GetToken(now));
+  OLA_ASSERT_EQ(0u, bucket.Count(now));
 
   now += one_second;
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 10, bucket.Count(now));
+  OLA_ASSERT_EQ(10u, bucket.Count(now));
 }
 
 
@@ -90,36 +92,36 @@ void TokenBucketTest::testTokenBucketTwo() {
   TimeInterval five_minutes(5 * 60 * 1000000);
   clock.CurrentTime(&now);
   TokenBucket bucket(0, 40, 40, now);  // one every 25ms
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 0, bucket.Count(now));
+  OLA_ASSERT_EQ(0u, bucket.Count(now));
 
   now += one_hundred_ms;
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 4, bucket.Count(now));
+  OLA_ASSERT_EQ(4u, bucket.Count(now));
   now += ten_ms;
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 4, bucket.Count(now));
+  OLA_ASSERT_EQ(4u, bucket.Count(now));
   now += ten_ms;
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 4, bucket.Count(now));
+  OLA_ASSERT_EQ(4u, bucket.Count(now));
   now += ten_ms;
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 5, bucket.Count(now));
+  OLA_ASSERT_EQ(5u, bucket.Count(now));
   now += ten_ms;
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 5, bucket.Count(now));
+  OLA_ASSERT_EQ(5u, bucket.Count(now));
   now += one_hundred_ms;
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 9, bucket.Count(now));
+  OLA_ASSERT_EQ(9u, bucket.Count(now));
   now += ten_ms;
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 10, bucket.Count(now));
+  OLA_ASSERT_EQ(10u, bucket.Count(now));
   now += one_second;
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 40, bucket.Count(now));
+  OLA_ASSERT_EQ(40u, bucket.Count(now));
 
   // now try a very long duration
   now += five_minutes;
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 40, bucket.Count(now));
+  OLA_ASSERT_EQ(40u, bucket.Count(now));
 
   // take 10 tokens from the bucket
   for (unsigned int i = 0; i < 10; i++) {
-    CPPUNIT_ASSERT(bucket.GetToken(now));
+    OLA_ASSERT_TRUE(bucket.GetToken(now));
   }
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 30, bucket.Count(now));
+  OLA_ASSERT_EQ(30u, bucket.Count(now));
 
   // add a bit of time
   now += ten_ms;
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 30, bucket.Count(now));
+  OLA_ASSERT_EQ(30u, bucket.Count(now));
 }

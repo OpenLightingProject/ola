@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * RunLengthEncoderTest.cpp
  * Test fixture for the RunLengthEncoder class
@@ -25,6 +25,8 @@
 #include "ola/BaseTypes.h"
 #include "ola/DmxBuffer.h"
 #include "ola/RunLengthEncoder.h"
+#include "ola/testing/TestUtils.h"
+
 
 using ola::RunLengthEncoder;
 using ola::DmxBuffer;
@@ -82,10 +84,10 @@ void RunLengthEncoderTest::checkEncode(const DmxBuffer &buffer,
                                        const uint8_t *expected_data,
                                        unsigned int expected_length) {
   memset(m_dst, 0, DMX_UNIVERSE_SIZE);
-  CPPUNIT_ASSERT_EQUAL(is_complete,
-                       m_encoder.Encode(buffer, m_dst, dst_size));
-  CPPUNIT_ASSERT_EQUAL(expected_length, dst_size);
-  CPPUNIT_ASSERT(!memcmp(expected_data, m_dst, dst_size));
+  OLA_ASSERT_EQ(is_complete,
+                m_encoder.Encode(buffer, m_dst, dst_size));
+  OLA_ASSERT_EQ(expected_length, dst_size);
+  OLA_ASSERT_EQ(0, memcmp(expected_data, m_dst, dst_size));
 }
 
 
@@ -144,12 +146,12 @@ void RunLengthEncoderTest::checkEncodeDecode(const uint8_t *data,
 
   unsigned int dst_size = DMX_UNIVERSE_SIZE;
   memset(m_dst, 0, dst_size);
-  CPPUNIT_ASSERT(m_encoder.Encode(src, m_dst, dst_size));
+  OLA_ASSERT_TRUE(m_encoder.Encode(src, m_dst, dst_size));
 
-  CPPUNIT_ASSERT(m_encoder.Decode(&dst, 0, m_dst, dst_size));
-  CPPUNIT_ASSERT(src == dst);
-  CPPUNIT_ASSERT_EQUAL(dst.Size(), data_size);
-  CPPUNIT_ASSERT(!memcmp(data, dst.GetRaw(), dst.Size()));
+  OLA_ASSERT_TRUE(m_encoder.Decode(&dst, 0, m_dst, dst_size));
+  OLA_ASSERT_TRUE(src == dst);
+  OLA_ASSERT_EQ(dst.Size(), data_size);
+  OLA_ASSERT_NE(0, memcmp(data, dst.GetRaw(), dst.Size()));
 }
 
 

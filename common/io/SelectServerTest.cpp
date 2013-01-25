@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * SelectServerTest.cpp
  * Test fixture for the Socket classes
@@ -27,12 +27,13 @@
 #include "ola/Logging.h"
 #include "ola/io/SelectServer.h"
 #include "ola/network/Socket.h"
+#include "ola/testing/TestUtils.h"
 
 using ola::ExportMap;
 using ola::IntegerVariable;
 using ola::io::LoopbackDescriptor;
 using ola::io::SelectServer;
-using ola::network::UdpSocket;
+using ola::network::UDPSocket;
 
 class SelectServerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(SelectServerTest);
@@ -49,7 +50,7 @@ class SelectServerTest: public CppUnit::TestFixture {
     void testLoopCallbacks();
 
     void FatalTimeout() {
-      CPPUNIT_ASSERT(false);
+      OLA_FAIL("Fatal Timeout");
     }
 
     void TerminateTimeout() {
@@ -115,40 +116,40 @@ void SelectServerTest::testAddRemoveReadDescriptor() {
     m_map->GetIntegerVar(SelectServer::K_CONNECTED_DESCRIPTORS_VAR);
   IntegerVariable *socket_count =
     m_map->GetIntegerVar(SelectServer::K_READ_DESCRIPTOR_VAR);
-  CPPUNIT_ASSERT_EQUAL(0, connected_socket_count->Get());
-  CPPUNIT_ASSERT_EQUAL(0, socket_count->Get());
+  OLA_ASSERT_EQ(0, connected_socket_count->Get());
+  OLA_ASSERT_EQ(0, socket_count->Get());
   // adding and removin a non-connected socket should fail
-  CPPUNIT_ASSERT(!m_ss->AddReadDescriptor(&bad_socket));
-  CPPUNIT_ASSERT(!m_ss->RemoveReadDescriptor(&bad_socket));
+  OLA_ASSERT_FALSE(m_ss->AddReadDescriptor(&bad_socket));
+  OLA_ASSERT_FALSE(m_ss->RemoveReadDescriptor(&bad_socket));
 
   LoopbackDescriptor loopback_socket;
   loopback_socket.Init();
-  CPPUNIT_ASSERT_EQUAL(0, connected_socket_count->Get());
-  CPPUNIT_ASSERT_EQUAL(0, socket_count->Get());
-  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&loopback_socket));
+  OLA_ASSERT_EQ(0, connected_socket_count->Get());
+  OLA_ASSERT_EQ(0, socket_count->Get());
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&loopback_socket));
   // Adding a second time should fail
-  CPPUNIT_ASSERT(!m_ss->AddReadDescriptor(&loopback_socket));
-  CPPUNIT_ASSERT_EQUAL(1, connected_socket_count->Get());
-  CPPUNIT_ASSERT_EQUAL(0, socket_count->Get());
+  OLA_ASSERT_FALSE(m_ss->AddReadDescriptor(&loopback_socket));
+  OLA_ASSERT_EQ(1, connected_socket_count->Get());
+  OLA_ASSERT_EQ(0, socket_count->Get());
 
   // Add a udp socket
-  UdpSocket udp_socket;
-  CPPUNIT_ASSERT(udp_socket.Init());
-  CPPUNIT_ASSERT(m_ss->AddReadDescriptor(&udp_socket));
-  CPPUNIT_ASSERT(!m_ss->AddReadDescriptor(&udp_socket));
-  CPPUNIT_ASSERT_EQUAL(1, connected_socket_count->Get());
-  CPPUNIT_ASSERT_EQUAL(1, socket_count->Get());
+  UDPSocket udp_socket;
+  OLA_ASSERT_TRUE(udp_socket.Init());
+  OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&udp_socket));
+  OLA_ASSERT_FALSE(m_ss->AddReadDescriptor(&udp_socket));
+  OLA_ASSERT_EQ(1, connected_socket_count->Get());
+  OLA_ASSERT_EQ(1, socket_count->Get());
 
   // Check remove works
-  CPPUNIT_ASSERT(m_ss->RemoveReadDescriptor(&loopback_socket));
-  CPPUNIT_ASSERT_EQUAL(0, connected_socket_count->Get());
-  CPPUNIT_ASSERT_EQUAL(1, socket_count->Get());
-  CPPUNIT_ASSERT(m_ss->RemoveReadDescriptor(&udp_socket));
-  CPPUNIT_ASSERT_EQUAL(0, connected_socket_count->Get());
-  CPPUNIT_ASSERT_EQUAL(0, socket_count->Get());
+  OLA_ASSERT_TRUE(m_ss->RemoveReadDescriptor(&loopback_socket));
+  OLA_ASSERT_EQ(0, connected_socket_count->Get());
+  OLA_ASSERT_EQ(1, socket_count->Get());
+  OLA_ASSERT_TRUE(m_ss->RemoveReadDescriptor(&udp_socket));
+  OLA_ASSERT_EQ(0, connected_socket_count->Get());
+  OLA_ASSERT_EQ(0, socket_count->Get());
 
   // Remove again should fail
-  CPPUNIT_ASSERT(!m_ss->RemoveReadDescriptor(&loopback_socket));
+  OLA_ASSERT_FALSE(m_ss->RemoveReadDescriptor(&loopback_socket));
 }
 
 
@@ -164,7 +165,7 @@ void SelectServerTest::testTimeout() {
       20,
       ola::NewSingleCallback(this, &SelectServerTest::TerminateTimeout));
   m_ss->Run();
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 1, m_timeout_counter);
+  OLA_ASSERT_EQ(1u, m_timeout_counter);
 
   // now check a timeout that adds another timeout
   m_timeout_counter = 0;
@@ -176,7 +177,7 @@ void SelectServerTest::testTimeout() {
       20,
       ola::NewSingleCallback(this, &SelectServerTest::TerminateTimeout));
   m_ss->Run();
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 2, m_timeout_counter);
+  OLA_ASSERT_EQ(2u, m_timeout_counter);
 
   // check repeating timeouts
   // Some systems (VMs in particular) can't do 10ms resolution so we go for
@@ -219,5 +220,5 @@ void SelectServerTest::testLoopCallbacks() {
       ola::NewSingleCallback(this, &SelectServerTest::TerminateTimeout));
   m_ss->Run();
   // we should have at least 5 calls to IncrementLoopCounter
-  CPPUNIT_ASSERT(m_loop_counter >= 5);
+  OLA_ASSERT_TRUE(m_loop_counter >= 5);
 }

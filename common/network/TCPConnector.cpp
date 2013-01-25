@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * TCPConnector.cpp
  * Copyright (C) 2012 Simon Newton
@@ -43,22 +43,23 @@ TCPConnector::~TCPConnector() {
  * Perform a non-blocking connect.
  * on_connect may be called immediately if the address is local.
  * on_failure will be called immediately if an error occurs
- * @param ip the IP address to connect to
- * @param port the port to connect to
+ * @param endpoint the IPV4SocketAddress to connect to
  * @param timeout the time to wait before declaring the connection a failure
  * @param callback the callback to run when the connection completes or fails
  * @returns the ID for this connection, or 0 if the callback has already
  * run.
  */
 TCPConnector::TCPConnectionID TCPConnector::Connect(
-    const IPV4Address &ip_address,
-    uint16_t port,
+    const IPV4SocketAddress &endpoint,
     const ola::TimeInterval &timeout,
     TCPConnectCallback *callback) {
-  struct sockaddr_in server_address;
-  socklen_t length = sizeof(server_address);
+  struct sockaddr server_address;
+  if (!endpoint.ToSockAddr(&server_address, sizeof(server_address))) {
+    callback->Run(-1, 0);
+    return 0;
+  }
 
-  int sd = socket(AF_INET, SOCK_STREAM, 0);
+  int sd = socket(endpoint.Family(), SOCK_STREAM, 0);
   if (sd < 0) {
     int error = errno;
     OLA_WARN << "socket() failed, " << strerror(error);
@@ -66,20 +67,14 @@ TCPConnector::TCPConnectionID TCPConnector::Connect(
     return 0;
   }
 
-  // setup
-  server_address.sin_family = AF_INET;
-  server_address.sin_port = HostToNetwork(port);
-  server_address.sin_addr.s_addr = ip_address.AsInt();
-
   ola::io::ConnectedDescriptor::SetNonBlocking(sd);
 
-  int r = connect(sd, (struct sockaddr*) &server_address, length);
+  int r = connect(sd, &server_address, sizeof(server_address));
 
   if (r) {
     if (errno != EINPROGRESS) {
       int error = errno;
-      OLA_WARN << "connect to " << ip_address << ":" << port << " failed, "
-        << strerror(error);
+      OLA_WARN << "connect to " << endpoint << " failed, " << strerror(error);
       close(sd);
       callback->Run(-1, error);
       return 0;
@@ -92,7 +87,7 @@ TCPConnector::TCPConnectionID TCPConnector::Connect(
 
   PendingTCPConnection *connection = new PendingTCPConnection(
     this,
-    ip_address,
+    endpoint.Host(),
     sd,
     callback);
 

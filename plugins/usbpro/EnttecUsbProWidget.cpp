@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * EnttecUsbProWidget.h
  * The Enttec USB Pro Widget
@@ -26,6 +26,7 @@
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
 #include "ola/rdm/RDMCommand.h"
+#include "ola/rdm/RDMCommandSerializer.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
@@ -37,6 +38,7 @@ namespace plugin {
 namespace usbpro {
 
 using ola::rdm::RDMCommand;
+using ola::rdm::RDMCommandSerializer;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
@@ -97,18 +99,15 @@ void EnttecUsbProWidgetImpl::SendRDMRequest(
   }
 
   // Prepare the buffer for the RDM data including the start code.
-  unsigned int rdm_size = request->Size();
+  unsigned int rdm_size = RDMCommandSerializer::RequiredSize(*request);
   uint8_t *data = new uint8_t[rdm_size + 1];
   data[0] = RDMCommand::START_CODE;
 
   unsigned int this_transaction_number = m_transaction_number++;
   unsigned int port_id = 1;
 
-  bool r = request->PackWithControllerParams(&data[1],
-                                             &rdm_size,
-                                             m_uid,
-                                             this_transaction_number,
-                                             port_id);
+  bool r = RDMCommandSerializer::Pack(*request, &data[1], &rdm_size, m_uid,
+                                      this_transaction_number, port_id);
 
   if (!r) {
     OLA_WARN << "Failed to pack message, dropping request";
@@ -411,10 +410,10 @@ void EnttecUsbProWidgetImpl::DiscoveryComplete(
  */
 bool EnttecUsbProWidgetImpl::PackAndSendRDMRequest(uint8_t label,
                                                    const RDMRequest *request) {
-  unsigned int rdm_length = request->Size();
+  unsigned int rdm_length = RDMCommandSerializer::RequiredSize(*request);
   uint8_t data[rdm_length + 1];  // inc start code
   data[0] = RDMCommand::START_CODE;
-  request->Pack(&data[1], &rdm_length);
+  RDMCommandSerializer::Pack(*request, &data[1], &rdm_length);
   return SendMessage(label, data, rdm_length + 1);
 }
 

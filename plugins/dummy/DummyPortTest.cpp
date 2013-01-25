@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * DummyPortTest.cpp
  * Test fixture for the E131PDU class
@@ -23,6 +23,7 @@
 #include <string.h>
 #include <string>
 #include <vector>
+
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
@@ -31,6 +32,8 @@
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
+#include "ola/testing/TestUtils.h"
+
 
 namespace ola {
 namespace plugin {
@@ -82,7 +85,7 @@ class DummyPortTest: public CppUnit::TestFixture {
                            const vector<string> &packets);
     void SetExpectedResponse(ola::rdm::rdm_response_code code,
                              const RDMResponse *response);
-    void Verify() { CPPUNIT_ASSERT(!m_expected_response); }
+    void Verify() { OLA_ASSERT_FALSE(m_expected_response); }
 
     void testRDMDiscovery();
     void testUnknownPid();
@@ -113,23 +116,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(DummyPortTest);
 
 void DummyPortTest::HandleRDMResponse(ola::rdm::rdm_response_code code,
                                       const ola::rdm::RDMResponse *response,
-                                      const vector<string> &packets) {
-  CPPUNIT_ASSERT_EQUAL(m_expected_code, code);
+                                      const vector<string>&) {
+  OLA_ASSERT_EQ(m_expected_code, code);
   if (m_expected_response)
-    CPPUNIT_ASSERT(*m_expected_response == *response);
+    OLA_ASSERT(*m_expected_response == *response);
   else
-    CPPUNIT_ASSERT_EQUAL(m_expected_response, response);
-
-  if (code == ola::rdm::RDM_COMPLETED_OK) {
-    CPPUNIT_ASSERT(response);
-    CPPUNIT_ASSERT_EQUAL((size_t) 1, packets.size());
-    ola::rdm::rdm_response_code code;
-    ola::rdm::RDMResponse *raw_response =
-      ola::rdm::RDMResponse::InflateFromData(packets[0], &code);
-    CPPUNIT_ASSERT(raw_response);
-    CPPUNIT_ASSERT(*m_expected_response == *raw_response);
-    delete raw_response;
-  }
+    OLA_ASSERT_EQ(m_expected_response, response);
   delete response;
   delete m_expected_response;
   m_expected_response = NULL;
@@ -147,7 +139,7 @@ void DummyPortTest::SetExpectedResponse(ola::rdm::rdm_response_code code,
  */
 void DummyPortTest::testRDMDiscovery() {
   m_port.RunFullDiscovery(NewSingleCallback(this, &DummyPortTest::VerifyUIDs));
-  CPPUNIT_ASSERT(m_got_uids);
+  OLA_ASSERT(m_got_uids);
 }
 
 
@@ -252,8 +244,8 @@ void DummyPortTest::testDeviceInfo() {
   device_descriptor.software_version = HostToNetwork(static_cast<uint32_t>(1));
   device_descriptor.dmx_footprint =
     HostToNetwork(static_cast<uint16_t>(5));
-  device_descriptor.current_personality = 1;
-  device_descriptor.personaility_count = 3;
+  device_descriptor.current_personality = 2;
+  device_descriptor.personaility_count = 4;
   device_descriptor.dmx_start_address =
     HostToNetwork(static_cast<uint16_t>(1));
   device_descriptor.sub_device_count = 0;
@@ -562,7 +554,7 @@ void DummyPortTest::VerifyUIDs(const UIDSet &uids) {
     UID uid(OPEN_LIGHTING_ESTA_CODE, DummyPort::kStartAddress + i);
     expected_uids.AddUID(uid);
   }
-  CPPUNIT_ASSERT_EQUAL(expected_uids, uids);
+  OLA_ASSERT_EQ(expected_uids, uids);
   m_got_uids = true;
 }
 

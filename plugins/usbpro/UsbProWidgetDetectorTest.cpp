@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * UsbProWidgetDetectorTest.cpp
  * Test fixture for the UsbProWidgetDetector class
@@ -27,6 +27,8 @@
 #include "ola/network/NetworkUtils.h"
 #include "plugins/usbpro/CommonWidgetTest.h"
 #include "plugins/usbpro/UsbProWidgetDetector.h"
+#include "ola/testing/TestUtils.h"
+
 
 
 using ola::io::ConnectedDescriptor;
@@ -91,7 +93,7 @@ void UsbProWidgetDetectorTest::setUp() {
 
 void UsbProWidgetDetectorTest::NewWidget(ConnectedDescriptor *descriptor,
                                          const UsbProWidgetInformation *info) {
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       static_cast<ConnectedDescriptor*>(&m_descriptor),
       descriptor);
   m_found_widget = true;
@@ -102,7 +104,7 @@ void UsbProWidgetDetectorTest::NewWidget(ConnectedDescriptor *descriptor,
 
 
 void UsbProWidgetDetectorTest::FailedWidget(ConnectedDescriptor *descriptor) {
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       static_cast<ConnectedDescriptor*>(&m_descriptor),
       descriptor);
   m_failed_widget = true;
@@ -146,15 +148,15 @@ void UsbProWidgetDetectorTest::testExtendedDiscovery() {
   m_detector->Discover(&m_descriptor);
   m_ss.Run();
 
-  CPPUNIT_ASSERT(m_found_widget);
-  CPPUNIT_ASSERT(!m_failed_widget);
+  OLA_ASSERT(m_found_widget);
+  OLA_ASSERT_FALSE(m_failed_widget);
 
-  CPPUNIT_ASSERT_EQUAL(expected_manufacturer, m_device_info.esta_id);
-  CPPUNIT_ASSERT_EQUAL(expected_device, m_device_info.device_id);
-  CPPUNIT_ASSERT_EQUAL(string("Open Lighting"), m_device_info.manufacturer);
-  CPPUNIT_ASSERT_EQUAL(string("Unittest Device"), m_device_info.device);
-  CPPUNIT_ASSERT_EQUAL(expected_serial, m_device_info.serial);
-  CPPUNIT_ASSERT_EQUAL(expected_serial, m_device_info.serial);
+  OLA_ASSERT_EQ(expected_manufacturer, m_device_info.esta_id);
+  OLA_ASSERT_EQ(expected_device, m_device_info.device_id);
+  OLA_ASSERT_EQ(string("Open Lighting"), m_device_info.manufacturer);
+  OLA_ASSERT_EQ(string("Unittest Device"), m_device_info.device);
+  OLA_ASSERT_EQ(expected_serial, m_device_info.serial);
+  OLA_ASSERT_EQ(expected_serial, m_device_info.serial);
 }
 
 
@@ -177,14 +179,14 @@ void UsbProWidgetDetectorTest::testDiscovery() {
   m_detector->Discover(&m_descriptor);
   m_ss.Run();
 
-  CPPUNIT_ASSERT(m_found_widget);
-  CPPUNIT_ASSERT(!m_failed_widget);
+  OLA_ASSERT(m_found_widget);
+  OLA_ASSERT_FALSE(m_failed_widget);
 
-  CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0), m_device_info.esta_id);
-  CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0), m_device_info.device_id);
-  CPPUNIT_ASSERT_EQUAL(string(), m_device_info.manufacturer);
-  CPPUNIT_ASSERT_EQUAL(string(), m_device_info.device);
-  CPPUNIT_ASSERT_EQUAL(expected_serial, m_device_info.serial);
+  OLA_ASSERT_EQ(static_cast<uint16_t>(0), m_device_info.esta_id);
+  OLA_ASSERT_EQ(static_cast<uint16_t>(0), m_device_info.device_id);
+  OLA_ASSERT_EQ(string(), m_device_info.manufacturer);
+  OLA_ASSERT_EQ(string(), m_device_info.device);
+  OLA_ASSERT_EQ(expected_serial, m_device_info.serial);
 }
 
 
@@ -198,8 +200,8 @@ void UsbProWidgetDetectorTest::testTimeout() {
   m_detector->Discover(&m_descriptor);
 
   m_ss.Run();
-  CPPUNIT_ASSERT(!m_found_widget);
-  CPPUNIT_ASSERT(m_failed_widget);
+  OLA_ASSERT_FALSE(m_found_widget);
+  OLA_ASSERT(m_failed_widget);
 }
 
 /*
@@ -223,7 +225,7 @@ void UsbProWidgetDetectorTest::testSniffer() {
   m_detector->Discover(&m_descriptor);
   m_ss.Run();
 
-  CPPUNIT_ASSERT(!m_found_widget);
-  CPPUNIT_ASSERT(m_failed_widget);
+  OLA_ASSERT_FALSE(m_found_widget);
+  OLA_ASSERT(m_failed_widget);
 }
 

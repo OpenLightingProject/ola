@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  *  ola-recorder.cpp
  *  A simple tool to record & playback shows.
@@ -48,7 +48,8 @@ using ola::DmxBuffer;
 ShowRecorder::ShowRecorder(const string &filename,
                            const vector<unsigned int> &universes)
     : m_saver(filename),
-      m_universes(universes) {
+      m_universes(universes),
+      m_frame_count(0) {
 }
 
 
@@ -84,11 +85,19 @@ int ShowRecorder::Init() {
 
 
 /**
- * Playback the show
+ * Record the show.
  */
 int ShowRecorder::Record() {
   m_client.GetSelectServer()->Run();
   return EX_OK;
+}
+
+
+/**
+ * Stop recording
+ */
+void ShowRecorder::Stop() {
+  m_client.GetSelectServer()->Terminate();
 }
 
 
@@ -106,6 +115,7 @@ void ShowRecorder::NewFrame(unsigned int universe,
   ola::TimeStamp now;
   m_clock.CurrentTime(&now);
   m_saver.NewFrame(now, universe, data);
+  m_frame_count++;
 }
 
 

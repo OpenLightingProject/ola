@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * SandNetDevice.cpp
  * SandNet device
@@ -57,8 +57,8 @@ SandNetDevice::SandNetDevice(SandNetPlugin *owner,
  * Start this device
  */
 bool SandNetDevice::StartHook() {
-  vector<ola::network::UdpSocket*> sockets;
-  vector<ola::network::UdpSocket*>::iterator iter;
+  vector<ola::network::UDPSocket*> sockets;
+  vector<ola::network::UDPSocket*>::iterator iter;
 
   m_node = new SandNetNode(m_preferences->GetValue(IP_KEY));
   m_node->SetName(m_preferences->GetValue(NAME_KEY));
@@ -118,8 +118,8 @@ bool SandNetDevice::StartHook() {
  * Stop this device
  */
 void SandNetDevice::PrePortStop() {
-  vector<ola::network::UdpSocket*> sockets = m_node->GetSockets();
-  vector<ola::network::UdpSocket*>::iterator iter;
+  vector<ola::network::UDPSocket*> sockets = m_node->GetSockets();
+  vector<ola::network::UDPSocket*>::iterator iter;
   for (iter = sockets.begin(); iter != sockets.end(); ++iter)
     m_plugin_adaptor->RemoveReadDescriptor(*iter);
 

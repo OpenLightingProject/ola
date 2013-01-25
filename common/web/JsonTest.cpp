@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * JsonTest.cpp
  * Unittest for Json classses.
@@ -21,7 +21,10 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
 #include <sstream>
+
 #include "ola/web/Json.h"
+#include "ola/testing/TestUtils.h"
+
 
 using ola::web::JsonArray;
 using ola::web::JsonBoolValue;
@@ -66,12 +69,12 @@ CPPUNIT_TEST_SUITE_REGISTRATION(JsonTest);
 void JsonTest::testString() {
   JsonStringValue value("foo");
   string expected = "\"foo\"";
-  CPPUNIT_ASSERT_EQUAL(expected, JsonWriter::AsString(value));
+  OLA_ASSERT_EQ(expected, JsonWriter::AsString(value));
 
   // test escaping
   JsonStringValue value2("foo\"bar\"");
   expected = "\"foo\\\"bar\\\"\"";
-  CPPUNIT_ASSERT_EQUAL(expected, JsonWriter::AsString(value2));
+  OLA_ASSERT_EQ(expected, JsonWriter::AsString(value2));
 }
 
 
@@ -81,11 +84,11 @@ void JsonTest::testString() {
 void JsonTest::testNumberValues() {
   JsonUIntValue uint_value(10);
   string expected = "10";
-  CPPUNIT_ASSERT_EQUAL(expected, JsonWriter::AsString(uint_value));
+  OLA_ASSERT_EQ(expected, JsonWriter::AsString(uint_value));
 
   JsonIntValue int_value(-10);
   expected = "-10";
-  CPPUNIT_ASSERT_EQUAL(expected, JsonWriter::AsString(int_value));
+  OLA_ASSERT_EQ(expected, JsonWriter::AsString(int_value));
 }
 
 
@@ -95,11 +98,11 @@ void JsonTest::testNumberValues() {
 void JsonTest::testBool() {
   JsonBoolValue true_value(true);
   string expected = "true";
-  CPPUNIT_ASSERT_EQUAL(expected, JsonWriter::AsString(true_value));
+  OLA_ASSERT_EQ(expected, JsonWriter::AsString(true_value));
 
   JsonBoolValue false_value(false);
   expected = "false";
-  CPPUNIT_ASSERT_EQUAL(expected, JsonWriter::AsString(false_value));
+  OLA_ASSERT_EQ(expected, JsonWriter::AsString(false_value));
 }
 
 
@@ -109,7 +112,7 @@ void JsonTest::testBool() {
 void JsonTest::testNull() {
   JsonNullValue value;
   string expected = "null";
-  CPPUNIT_ASSERT_EQUAL(expected, JsonWriter::AsString(value));
+  OLA_ASSERT_EQ(expected, JsonWriter::AsString(value));
 }
 
 
@@ -127,7 +130,7 @@ void JsonTest::testSimpleArray() {
   array.Append(-10);
 
   string expected = "[null, true, 1, \"foo\", 10, -10]";
-  CPPUNIT_ASSERT_EQUAL(expected, JsonWriter::AsString(array));
+  OLA_ASSERT_EQ(expected, JsonWriter::AsString(array));
 }
 
 
@@ -145,9 +148,8 @@ void JsonTest::testSimpleObject() {
       "  \"age\": 10,\n"
       "  \"male\": true,\n"
       "  \"name\": \"simon\"\n"
-      "}"
-  );
-  CPPUNIT_ASSERT_EQUAL(expected, JsonWriter::AsString(object));
+      "}");
+  OLA_ASSERT_EQ(expected, JsonWriter::AsString(object));
 }
 
 
@@ -170,7 +172,6 @@ void JsonTest::testComplexObject() {
       "  \"lucky numbers\": [2, 5],\n"
       "  \"male\": true,\n"
       "  \"name\": \"simon\"\n"
-      "}"
-  );
-  CPPUNIT_ASSERT_EQUAL(expected, JsonWriter::AsString(object));
+      "}");
+  OLA_ASSERT_EQ(expected, JsonWriter::AsString(object));
 }

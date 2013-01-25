@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * OlaServer.cpp
  * OlaServer is the main OLA Server class
@@ -54,7 +54,7 @@
 #include "olad/UniverseStore.h"
 
 #ifdef HAVE_LIBMICROHTTPD
-#include "olad/OlaHttpServer.h"
+#include "olad/OladHTTPServer.h"
 #endif
 
 namespace ola {
@@ -79,7 +79,7 @@ OlaServer::OlaServer(OlaClientServiceFactory *factory,
                      PreferencesFactory *preferences_factory,
                      ola::io::SelectServer *select_server,
                      ola_server_options *ola_options,
-                     ola::network::TcpAcceptingSocket *socket,
+                     ola::network::TCPAcceptingSocket *socket,
                      ExportMap *export_map)
     : m_service_factory(factory),
       m_plugin_loaders(plugin_loaders),
@@ -225,10 +225,8 @@ bool OlaServer::Init() {
 
   // setup the objects
   m_device_manager = new DeviceManager(m_preferences_factory, m_port_manager);
-  m_plugin_adaptor = new PluginAdaptor(m_device_manager,
-                                       m_ss,
-                                       m_preferences_factory,
-                                       m_port_broker);
+  m_plugin_adaptor = new PluginAdaptor(m_device_manager, m_ss, m_export_map,
+                                       m_preferences_factory, m_port_broker);
 
   m_plugin_manager = new PluginManager(m_plugin_loaders, m_plugin_adaptor);
   m_service_impl = new OlaServerServiceImpl(
@@ -295,7 +293,7 @@ void OlaServer::NewConnection(ola::io::ConnectedDescriptor *descriptor) {
  * Add a new ConnectedDescriptor to this Server.
  * @param socket the new ConnectedDescriptor
  */
-void OlaServer::NewTCPConnection(ola::network::TcpSocket *socket) {
+void OlaServer::NewTCPConnection(ola::network::TCPSocket *socket) {
   if (!socket)
     return;
   InternalNewConnection(socket);
@@ -375,13 +373,20 @@ bool OlaServer::StartHttpServer(const ola::network::Interface &iface) {
   }
 
   // ownership of the pipe_descriptor is transferred here.
-  m_httpd = new OlaHttpServer(m_export_map,
-                              pipe_descriptor->OppositeEnd(),
-                              this,
-                              m_options.http_port,
-                              m_options.http_enable_quit,
-                              m_options.http_data_dir,
-                              iface);
+  OladHTTPServer::OladHTTPServerOptions options;
+  if (m_options.http_port)
+    options.port = m_options.http_port;
+  if (!m_options.http_data_dir.empty())
+    options.data_dir = m_options.http_data_dir;
+  else
+    options.data_dir = HTTP_DATA_DIR;
+  options.enable_quit = m_options.http_enable_quit;
+
+  m_httpd = new OladHTTPServer(m_export_map,
+                               options,
+                               pipe_descriptor->OppositeEnd(),
+                               this,
+                               iface);
 
   if (m_httpd->Init()) {
     m_httpd->Start();

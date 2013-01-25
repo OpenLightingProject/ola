@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * RobeWidgetTest.cpp
  * Test fixture for the DmxterWidget class
@@ -28,17 +28,21 @@
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
+#include "ola/rdm/RDMCommandSerializer.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/UID.h"
 #include "plugins/usbpro/BaseRobeWidget.h"
 #include "plugins/usbpro/RobeWidget.h"
 #include "plugins/usbpro/CommonWidgetTest.h"
+#include "ola/testing/TestUtils.h"
+
 
 
 using ola::DmxBuffer;
 using ola::plugin::usbpro::BaseRobeWidget;
 using ola::plugin::usbpro::RobeWidget;
 using ola::rdm::GetResponseFromData;
+using ola::rdm::RDMCommandSerializer;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
@@ -169,12 +173,11 @@ const RDMRequest *RobeWidgetTest::NewRequest(const UID &destination,
  */
 uint8_t *RobeWidgetTest::PackRDMRequest(const RDMRequest *request,
                                         unsigned int *size) {
-  unsigned int request_size = request->Size() + PADDING_SIZE;
+  unsigned int request_size = RDMCommandSerializer::RequiredSize(*request) +
+    PADDING_SIZE;
   uint8_t *rdm_data = new uint8_t[request_size];
   memset(rdm_data, 0, request_size);
-  CPPUNIT_ASSERT(request->Pack(
-        rdm_data,
-        &request_size));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*request, rdm_data, &request_size));
   *size = request_size + PADDING_SIZE;
   return rdm_data;
 }
@@ -185,12 +188,11 @@ uint8_t *RobeWidgetTest::PackRDMRequest(const RDMRequest *request,
  */
 uint8_t *RobeWidgetTest::PackRDMResponse(const RDMResponse *response,
                                          unsigned int *size) {
-  unsigned int response_size = response->Size() + PADDING_SIZE;
+  unsigned int response_size = RDMCommandSerializer::RequiredSize(*response) +
+    PADDING_SIZE;
   uint8_t *rdm_data = new uint8_t[response_size];
   memset(rdm_data, 0, response_size);
-  CPPUNIT_ASSERT(response->Pack(
-        rdm_data,
-        &response_size));
+  OLA_ASSERT(RDMCommandSerializer::Pack(*response, rdm_data, &response_size));
   *size = response_size + PADDING_SIZE;
   return rdm_data;
 }
@@ -203,19 +205,19 @@ void RobeWidgetTest::ValidateResponse(
     ola::rdm::rdm_response_code code,
     const ola::rdm::RDMResponse *response,
     const vector<string> &packets) {
-  CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_COMPLETED_OK, code);
-  CPPUNIT_ASSERT(response);
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(ola::rdm::RDM_COMPLETED_OK, code);
+  OLA_ASSERT(response);
+  OLA_ASSERT_EQ(
       static_cast<unsigned int>(sizeof(TEST_RDM_DATA)),
       response->ParamDataSize());
-  CPPUNIT_ASSERT(0 == memcmp(TEST_RDM_DATA, response->ParamData(),
+  OLA_ASSERT(0 == memcmp(TEST_RDM_DATA, response->ParamData(),
                              response->ParamDataSize()));
 
-  CPPUNIT_ASSERT_EQUAL((size_t) 1, packets.size());
+  OLA_ASSERT_EQ((size_t) 1, packets.size());
   ola::rdm::rdm_response_code raw_code;
   auto_ptr<ola::rdm::RDMResponse> raw_response(
     ola::rdm::RDMResponse::InflateFromData(packets[0], &raw_code));
-  CPPUNIT_ASSERT(*(raw_response.get()) == *response);
+  OLA_ASSERT(*(raw_response.get()) == *response);
   delete response;
   m_ss.Terminate();
 }
@@ -235,14 +237,14 @@ void RobeWidgetTest::ValidateStatus(
     ola::rdm::rdm_response_code code,
     const ola::rdm::RDMResponse *response,
     const vector<string> &packets) {
-  CPPUNIT_ASSERT_EQUAL(expected_code, code);
-  CPPUNIT_ASSERT(!response);
+  OLA_ASSERT_EQ(expected_code, code);
+  OLA_ASSERT_FALSE(response);
 
-  CPPUNIT_ASSERT_EQUAL(expected_packets.size(), packets.size());
+  OLA_ASSERT_EQ(expected_packets.size(), packets.size());
   for (unsigned int i = 0; i < packets.size(); i++) {
     if (expected_packets[i].size() != packets[i].size())
       OLA_INFO << expected_packets[i].size() << " != " << packets[i].size();
-    CPPUNIT_ASSERT_EQUAL(expected_packets[i].size(), packets[i].size());
+    OLA_ASSERT_EQ(expected_packets[i].size(), packets[i].size());
 
     if (expected_packets[i] != packets[i]) {
       for (unsigned int j = 0; j < packets[i].size(); j++) {
@@ -250,7 +252,7 @@ void RobeWidgetTest::ValidateStatus(
           static_cast<int>(expected_packets[i][j] & 0xFF);
       }
     }
-    CPPUNIT_ASSERT(expected_packets[i] == packets[i]);
+    OLA_ASSERT(expected_packets[i] == packets[i]);
   }
   m_received_code = expected_code;
   m_ss.Terminate();
@@ -262,7 +264,7 @@ void RobeWidgetTest::ValidateStatus(
  */
 void RobeWidgetTest::ValidateMuteStatus(bool expected,
                                         bool actual) {
-  CPPUNIT_ASSERT_EQUAL(expected, actual);
+  OLA_ASSERT_EQ(expected, actual);
   m_ss.Terminate();
 }
 
@@ -271,8 +273,8 @@ void RobeWidgetTest::ValidateBranchStatus(const uint8_t *expected_data,
                                           unsigned int length,
                                           const uint8_t *actual_data,
                                           unsigned int actual_length) {
-  CPPUNIT_ASSERT_EQUAL(length, actual_length);
-  CPPUNIT_ASSERT(!memcmp(expected_data, actual_data, length));
+  OLA_ASSERT_EQ(length, actual_length);
+  OLA_ASSERT_FALSE(memcmp(expected_data, actual_data, length));
   m_ss.Terminate();
 }
 
@@ -372,7 +374,7 @@ void RobeWidgetTest::testSendRDMRequest() {
                              ola::rdm::RDM_WAS_BROADCAST,
                              packets));
   m_ss.Run();
-  CPPUNIT_ASSERT_EQUAL(ola::rdm::RDM_WAS_BROADCAST, m_received_code);
+  OLA_ASSERT_EQ(ola::rdm::RDM_WAS_BROADCAST, m_received_code);
   m_endpoint->Verify();
 
   // cleanup time
@@ -716,15 +718,15 @@ void RobeWidgetTest::testReceive() {
   m_endpoint->Verify();
   m_widget->SetDmxCallback(
       ola::NewCallback(this, &RobeWidgetTest::NewDMXData));
-  CPPUNIT_ASSERT(!m_new_dmx_data);
+  OLA_ASSERT_FALSE(m_new_dmx_data);
 
   // now send some data
   m_endpoint->SendUnsolicitedRobeData(DMX_IN_RESPONSE_LABEL,
                                       buffer.GetRaw(),
                                       buffer.Size());
   m_ss.Run();
-  CPPUNIT_ASSERT(m_new_dmx_data);
+  OLA_ASSERT(m_new_dmx_data);
   const DmxBuffer &new_data = m_widget->FetchDMX();
-  CPPUNIT_ASSERT(buffer == new_data);
+  OLA_ASSERT(buffer == new_data);
 }
 

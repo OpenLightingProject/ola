@@ -1,7 +1,7 @@
 This package was debianized by Simon Newton <nomis52@gmail.com> on
 Sun, 16 May 2010 04:03:33 +0000.
 
-It was downloaded from http://code.google.com/p/linux-lighting/
+It was downloaded from http://code.google.com/p/open-lighting/
 
 Upstream Author:
 
@@ -27,4 +27,4 @@ License:
     Foundation, Inc.,  Franklin St, Fifth Floor, Boston, MA  - USA
 
 The Debian packaging is (C) 2010, Simon Newton <nomis52@gmail.com> and
-is licensed under the GPL, see `/usr/share/common-licenses/GPL'.
+is licensed under the GPL, see '/usr/share/common-licenses/GPL'.

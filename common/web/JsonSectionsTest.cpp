@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * JsonSectionsTest.cpp
  * Unittest for JsonSections classses.
@@ -20,8 +20,11 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
+
 #include "ola/web/Json.h"
 #include "ola/web/JsonSections.h"
+#include "ola/testing/TestUtils.h"
+
 
 using std::string;
 using std::vector;
@@ -79,7 +82,7 @@ void JsonSectionsTest::testStringItem() {
     "  \"type\": \"string\",\n"
     "  \"value\": \"bar\"\n"
     "}";
-  CPPUNIT_ASSERT_EQUAL(expected, ConvertToString(item));
+  OLA_ASSERT_EQ(expected, ConvertToString(item));
 
   StringItem item2("Foo", "bar", "baz");
   item2.SetButtonText("Action");
@@ -91,7 +94,7 @@ void JsonSectionsTest::testStringItem() {
     "  \"type\": \"string\",\n"
     "  \"value\": \"bar\"\n"
     "}";
-  CPPUNIT_ASSERT_EQUAL(expected2, ConvertToString(item2));
+  OLA_ASSERT_EQ(expected2, ConvertToString(item2));
 
   StringItem item3("Foo\" bar", "baz\\");
   item3.SetButtonText("Action\n");
@@ -102,7 +105,7 @@ void JsonSectionsTest::testStringItem() {
     "  \"type\": \"string\",\n"
     "  \"value\": \"baz\\\\\"\n"
     "}";
-  CPPUNIT_ASSERT_EQUAL(expected3, ConvertToString(item3));
+  OLA_ASSERT_EQ(expected3, ConvertToString(item3));
 }
 
 
@@ -117,7 +120,7 @@ void JsonSectionsTest::testUIntItem() {
     "  \"type\": \"uint\",\n"
     "  \"value\": 10\n"
     "}";
-  CPPUNIT_ASSERT_EQUAL(expected, ConvertToString(item));
+  OLA_ASSERT_EQ(expected, ConvertToString(item));
 
   UIntItem item2("Foo", 20, "baz");
   item2.SetButtonText("Action");
@@ -131,7 +134,7 @@ void JsonSectionsTest::testUIntItem() {
     "  \"type\": \"uint\",\n"
     "  \"value\": 20\n"
     "}";
-  CPPUNIT_ASSERT_EQUAL(expected2, ConvertToString(item2));
+  OLA_ASSERT_EQ(expected2, ConvertToString(item2));
 
   UIntItem item3("Foo", 20);
   item3.SetMax(30);
@@ -142,7 +145,7 @@ void JsonSectionsTest::testUIntItem() {
     "  \"type\": \"uint\",\n"
     "  \"value\": 20\n"
     "}";
-  CPPUNIT_ASSERT_EQUAL(expected3, ConvertToString(item3));
+  OLA_ASSERT_EQ(expected3, ConvertToString(item3));
 
   UIntItem item4("Foo", 20);
   item4.SetMin(10);
@@ -155,7 +158,7 @@ void JsonSectionsTest::testUIntItem() {
     "  \"type\": \"uint\",\n"
     "  \"value\": 20\n"
     "}";
-  CPPUNIT_ASSERT_EQUAL(expected4, ConvertToString(item4));
+  OLA_ASSERT_EQ(expected4, ConvertToString(item4));
 }
 
 
@@ -184,7 +187,7 @@ void JsonSectionsTest::testSelectItem() {
     "    }\n"
     "  ]\n"
     "}";
-  CPPUNIT_ASSERT_EQUAL(expected, ConvertToString(item));
+  OLA_ASSERT_EQ(expected, ConvertToString(item));
 }
 
 
@@ -200,7 +203,7 @@ void JsonSectionsTest::testBoolItem() {
     "  \"type\": \"bool\",\n"
     "  \"value\": true\n"
     "}";
-  CPPUNIT_ASSERT_EQUAL(expected, ConvertToString(item));
+  OLA_ASSERT_EQ(expected, ConvertToString(item));
 
   BoolItem item2("Foo", false, "baz");
   string expected2 =
@@ -210,7 +213,7 @@ void JsonSectionsTest::testBoolItem() {
     "  \"type\": \"bool\",\n"
     "  \"value\": false\n"
     "}";
-  CPPUNIT_ASSERT_EQUAL(expected2, ConvertToString(item2));
+  OLA_ASSERT_EQ(expected2, ConvertToString(item2));
 }
 
 /*
@@ -227,7 +230,7 @@ void JsonSectionsTest::testHiddenItem() {
     "  \"type\": \"hidden\",\n"
     "  \"value\": \"bar\"\n"
     "}";
-  CPPUNIT_ASSERT_EQUAL(expected, ConvertToString(item));
+  OLA_ASSERT_EQ(expected, ConvertToString(item));
 }
 
 
@@ -255,5 +258,5 @@ void JsonSectionsTest::testSection() {
     "  \"refresh\": false,\n"
     "  \"save_button\": \"Action\\\\\"\n"
     "}";
-  CPPUNIT_ASSERT_EQUAL(expected, section.AsString());
+  OLA_ASSERT_EQ(expected, section.AsString());
 }

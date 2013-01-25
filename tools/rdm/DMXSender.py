@@ -1,17 +1,17 @@
 #!/usr/bin/python
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
 #
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Library General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
 #
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 # DMXSenderThread.py
 # Copyright (C) 2011 Simon Newton
@@ -36,6 +36,7 @@ class DMXSender(object):
     self._data = array.array('B')
     self._frame_count = 0
     self._slot_count = max(0, min(int(slot_count), 512))
+    self._send = True
 
     if (frame_rate > 0 and slot_count > 0):
       logging.info('Sending %d fps of DMX data with %d slots' %
@@ -45,6 +46,9 @@ class DMXSender(object):
       self._frame_interval = 1000 / frame_rate
       self.SendDMXFrame()
 
+  def Stop(self):
+    self._send = False
+
   def SendDMXFrame(self):
     """Send the next DMX Frame."""
     for i in xrange(0, self._slot_count):
@@ -53,7 +57,8 @@ class DMXSender(object):
     self._wrapper.Client().SendDmx(self._universe,
                                    self._data,
                                    self.SendComplete)
-    self._wrapper.AddEvent(self._frame_interval, self.SendDMXFrame)
+    if self._send:
+      self._wrapper.AddEvent(self._frame_interval, self.SendDMXFrame)
 
   def SendComplete(self, state):
     """Called when the DMX send completes."""

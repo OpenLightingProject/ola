@@ -1,0 +1,62 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:          rdm_test_server
+# Required-Start:    $remote_fs $syslog $network olad
+# Required-Stop:     $remote_fs $syslog $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: OLA RDM Test Server
+# Description:       Open Lighting Architecture RDM Test Server
+### END INIT INFO
+
+PATH=/usr/local/bin:/bin:/usr/bin
+NAME=rdm_test_server.py
+CMD=rdm_test_server
+DAEMON=/usr/bin/$NAME
+PIDFILE=/var/run/$CMD.pid
+DESC="OLA RDM Test Server"
+USER=olad
+
+# Reads config file (will override defaults above)
+[ -r /etc/default/ola-rdm-tests ] && . /etc/default/ola-rdm-tests
+
+if [ "$RUN_DAEMON" = "true" ] || [ "$RUN_DAEMON" = "yes" ] ; then
+  DAEMON_ARGS="--world_writeable"
+fi
+
+[ -x "$DAEMON" ] || exit 0
+
+. /lib/lsb/init-functions
+
+case "$1" in
+  start)
+    # master switch
+    if [ -n "$DAEMON_ARGS" ] ; then
+      log_daemon_msg "Starting $DESC" "$NAME"
+      /sbin/start-stop-daemon --start --background --make-pidfile --pidfile $PIDFILE --chuid $USER --startas $DAEMON -- $DAEMON_ARGS
+      log_end_msg $?
+    fi
+    ;;
+  stop)
+    # master switch
+    if [ "$RUN_DAEMON" = "true" ] || [ "$RUN_DAEMON" = "yes" ] ; then
+      log_daemon_msg "Stopping $DESC" "$NAME"
+      /sbin/start-stop-daemon --stop --pidfile $PIDFILE --chuid $USER --retry 10
+      /bin/rm -f $PIDFILE
+      log_end_msg $?
+    fi
+    ;;
+  reload|restart)
+    $0 stop && $0 start
+    ;;
+  status)
+    status_of_proc -p $PIDFILE $DAEMON $NAME && exit 0 || exit $?
+    ;;
+  *)
+    echo "Usage: /etc/init.d/$CMD {start|stop|restart|status}" >&2
+    exit 1
+    ;;
+esac
+
+exit 0

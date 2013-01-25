@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * CallbackTest.cpp
  * Unittest for the autogen'ed Callback code
@@ -21,7 +21,10 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <unistd.h>
 #include <string>
+
 #include "ola/Callback.h"
+#include "ola/testing/TestUtils.h"
+
 
 using std::string;
 
@@ -46,50 +49,50 @@ class CallbackTest: public CppUnit::TestFixture {
     bool BoolMethod0() { return true; }
 
     void Method1(unsigned int i) {
-      CPPUNIT_ASSERT_EQUAL(TEST_INT_VALUE, i);
+      OLA_ASSERT_EQ(TEST_INT_VALUE, i);
     }
 
     bool BoolMethod1(unsigned int i) {
-      CPPUNIT_ASSERT_EQUAL(TEST_INT_VALUE, i);
+      OLA_ASSERT_EQ(TEST_INT_VALUE, i);
       return true;
     }
 
     void Method2(unsigned int i, int j) {
-      CPPUNIT_ASSERT_EQUAL(TEST_INT_VALUE, i);
-      CPPUNIT_ASSERT_EQUAL(TEST_INT_VALUE2, j);
+      OLA_ASSERT_EQ(TEST_INT_VALUE, i);
+      OLA_ASSERT_EQ(TEST_INT_VALUE2, j);
     }
 
     bool BoolMethod2(unsigned int i, int j) {
-      CPPUNIT_ASSERT_EQUAL(TEST_INT_VALUE, i);
-      CPPUNIT_ASSERT_EQUAL(TEST_INT_VALUE2, j);
+      OLA_ASSERT_EQ(TEST_INT_VALUE, i);
+      OLA_ASSERT_EQ(TEST_INT_VALUE2, j);
       return true;
     }
 
     void Method3(unsigned int i, int j, char c) {
-      CPPUNIT_ASSERT_EQUAL(TEST_INT_VALUE, i);
-      CPPUNIT_ASSERT_EQUAL(TEST_INT_VALUE2, j);
-      CPPUNIT_ASSERT_EQUAL(TEST_CHAR_VALUE, c);
+      OLA_ASSERT_EQ(TEST_INT_VALUE, i);
+      OLA_ASSERT_EQ(TEST_INT_VALUE2, j);
+      OLA_ASSERT_EQ(TEST_CHAR_VALUE, c);
     }
 
     bool BoolMethod3(unsigned int i, int j, char c) {
-      CPPUNIT_ASSERT_EQUAL(TEST_INT_VALUE, i);
-      CPPUNIT_ASSERT_EQUAL(TEST_INT_VALUE2, j);
-      CPPUNIT_ASSERT_EQUAL(TEST_CHAR_VALUE, c);
+      OLA_ASSERT_EQ(TEST_INT_VALUE, i);
+      OLA_ASSERT_EQ(TEST_INT_VALUE2, j);
+      OLA_ASSERT_EQ(TEST_CHAR_VALUE, c);
       return true;
     }
 
     void Method4(unsigned int i, int j, char c, const string &s) {
-      CPPUNIT_ASSERT_EQUAL(TEST_INT_VALUE, i);
-      CPPUNIT_ASSERT_EQUAL(TEST_INT_VALUE2, j);
-      CPPUNIT_ASSERT_EQUAL(TEST_CHAR_VALUE, c);
-      CPPUNIT_ASSERT_EQUAL(string(TEST_STRING_VALUE), s);
+      OLA_ASSERT_EQ(TEST_INT_VALUE, i);
+      OLA_ASSERT_EQ(TEST_INT_VALUE2, j);
+      OLA_ASSERT_EQ(TEST_CHAR_VALUE, c);
+      OLA_ASSERT_EQ(string(TEST_STRING_VALUE), s);
     }
 
     bool BoolMethod4(unsigned int i, int j, char c, const string &s) {
-      CPPUNIT_ASSERT_EQUAL(TEST_INT_VALUE, i);
-      CPPUNIT_ASSERT_EQUAL(TEST_INT_VALUE2, j);
-      CPPUNIT_ASSERT_EQUAL(TEST_CHAR_VALUE, c);
-      CPPUNIT_ASSERT_EQUAL(string(TEST_STRING_VALUE), s);
+      OLA_ASSERT_EQ(TEST_INT_VALUE, i);
+      OLA_ASSERT_EQ(TEST_INT_VALUE2, j);
+      OLA_ASSERT_EQ(TEST_CHAR_VALUE, c);
+      OLA_ASSERT_EQ(string(TEST_STRING_VALUE), s);
       return true;
     }
 
@@ -122,22 +125,22 @@ void Function0() {}
 bool BoolFunction0() { return true; }
 
 void Function1(unsigned int i) {
-  CPPUNIT_ASSERT_EQUAL(CallbackTest::TEST_INT_VALUE, i);
+  OLA_ASSERT_EQ(CallbackTest::TEST_INT_VALUE, i);
 }
 
 bool BoolFunction1(unsigned int i) {
-  CPPUNIT_ASSERT_EQUAL(CallbackTest::TEST_INT_VALUE, i);
+  OLA_ASSERT_EQ(CallbackTest::TEST_INT_VALUE, i);
   return true;
 }
 
 void Function2(unsigned int i, int j) {
-  CPPUNIT_ASSERT_EQUAL(CallbackTest::TEST_INT_VALUE, i);
-  CPPUNIT_ASSERT_EQUAL(CallbackTest::TEST_INT_VALUE2, j);
+  OLA_ASSERT_EQ(CallbackTest::TEST_INT_VALUE, i);
+  OLA_ASSERT_EQ(CallbackTest::TEST_INT_VALUE2, j);
 }
 
 bool BoolFunction2(unsigned int i, int j) {
-  CPPUNIT_ASSERT_EQUAL(CallbackTest::TEST_INT_VALUE, i);
-  CPPUNIT_ASSERT_EQUAL(CallbackTest::TEST_INT_VALUE2, j);
+  OLA_ASSERT_EQ(CallbackTest::TEST_INT_VALUE, i);
+  OLA_ASSERT_EQ(CallbackTest::TEST_INT_VALUE2, j);
   return true;
 }
 
@@ -156,10 +159,10 @@ void CallbackTest::testFunctionCallbacks() {
 
   // no arg, bool closures
   SingleUseCallback0<bool> *c3 = NewSingleCallback(&BoolFunction0);
-  CPPUNIT_ASSERT(c3->Run());
+  OLA_ASSERT_TRUE(c3->Run());
   Callback0<bool> *c4 = NewCallback(&BoolFunction0);
-  CPPUNIT_ASSERT(c4->Run());
-  CPPUNIT_ASSERT(c4->Run());
+  OLA_ASSERT_TRUE(c4->Run());
+  OLA_ASSERT_TRUE(c4->Run());
   delete c4;
 
   // one arg, void return
@@ -176,10 +179,10 @@ void CallbackTest::testFunctionCallbacks() {
   SingleUseCallback0<bool> *c7 = NewSingleCallback(
       &BoolFunction1,
       TEST_INT_VALUE);
-  CPPUNIT_ASSERT(c7->Run());
+  OLA_ASSERT_TRUE(c7->Run());
   Callback0<bool> *c8 = NewCallback(&BoolFunction1, TEST_INT_VALUE);
-  CPPUNIT_ASSERT(c8->Run());
-  CPPUNIT_ASSERT(c8->Run());
+  OLA_ASSERT_TRUE(c8->Run());
+  OLA_ASSERT_TRUE(c8->Run());
   delete c8;
 }
 
@@ -200,10 +203,10 @@ void CallbackTest::testMethodCallbacks() {
   // no arg, bool closures
   SingleUseCallback0<bool> *c3 = NewSingleCallback(this,
                                                    &CallbackTest::BoolMethod0);
-  CPPUNIT_ASSERT(c3->Run());
+  OLA_ASSERT_TRUE(c3->Run());
   Callback0<bool> *c4 = NewCallback(this, &CallbackTest::BoolMethod0);
-  CPPUNIT_ASSERT(c4->Run());
-  CPPUNIT_ASSERT(c4->Run());
+  OLA_ASSERT_TRUE(c4->Run());
+  OLA_ASSERT_TRUE(c4->Run());
   delete c4;
 
   // one arg, void return
@@ -223,12 +226,12 @@ void CallbackTest::testMethodCallbacks() {
       this,
       &CallbackTest::BoolMethod1,
       TEST_INT_VALUE);
-  CPPUNIT_ASSERT(c7->Run());
+  OLA_ASSERT_TRUE(c7->Run());
   Callback0<bool> *c8 = NewCallback(this,
                                     &CallbackTest::BoolMethod1,
                                     TEST_INT_VALUE);
-  CPPUNIT_ASSERT(c8->Run());
-  CPPUNIT_ASSERT(c8->Run());
+  OLA_ASSERT_TRUE(c8->Run());
+  OLA_ASSERT_TRUE(c8->Run());
   delete c8;
 
   // two arg, void return
@@ -252,13 +255,13 @@ void CallbackTest::testMethodCallbacks() {
       &CallbackTest::BoolMethod2,
       TEST_INT_VALUE,
       TEST_INT_VALUE2);
-  CPPUNIT_ASSERT(c11->Run());
+  OLA_ASSERT_TRUE(c11->Run());
   Callback0<bool> *c12 = NewCallback(this,
                                      &CallbackTest::BoolMethod2,
                                      TEST_INT_VALUE,
                                      TEST_INT_VALUE2);
-  CPPUNIT_ASSERT(c12->Run());
-  CPPUNIT_ASSERT(c12->Run());
+  OLA_ASSERT_TRUE(c12->Run());
+  OLA_ASSERT_TRUE(c12->Run());
   delete c12;
 
   // three arg, void return
@@ -285,14 +288,14 @@ void CallbackTest::testMethodCallbacks() {
       TEST_INT_VALUE,
       TEST_INT_VALUE2,
       TEST_CHAR_VALUE);
-  CPPUNIT_ASSERT(c15->Run());
+  OLA_ASSERT_TRUE(c15->Run());
   Callback0<bool> *c16 = NewCallback(this,
                                      &CallbackTest::BoolMethod3,
                                      TEST_INT_VALUE,
                                      TEST_INT_VALUE2,
                                      TEST_CHAR_VALUE);
-  CPPUNIT_ASSERT(c16->Run());
-  CPPUNIT_ASSERT(c16->Run());
+  OLA_ASSERT_TRUE(c16->Run());
+  OLA_ASSERT_TRUE(c16->Run());
   delete c16;
 }
 
@@ -312,10 +315,10 @@ void CallbackTest::testFunctionCallbacks1() {
 
   // test a function that returns bool
   BaseCallback1<bool, unsigned int> *c3 = NewSingleCallback(&BoolFunction1);
-  CPPUNIT_ASSERT(c3->Run(TEST_INT_VALUE));
+  OLA_ASSERT_TRUE(c3->Run(TEST_INT_VALUE));
   BaseCallback1<bool, unsigned int> *c4 = NewCallback(&BoolFunction1);
-  CPPUNIT_ASSERT(c4->Run(TEST_INT_VALUE));
-  CPPUNIT_ASSERT(c4->Run(TEST_INT_VALUE));
+  OLA_ASSERT_TRUE(c4->Run(TEST_INT_VALUE));
+  OLA_ASSERT_TRUE(c4->Run(TEST_INT_VALUE));
   delete c4;
 
   // single arg, void return closures
@@ -351,12 +354,12 @@ void CallbackTest::testMethodCallbacks1() {
   BaseCallback1<bool, unsigned int> *c3 = NewSingleCallback(
       this,
       &CallbackTest::BoolMethod1);
-  CPPUNIT_ASSERT(c3->Run(TEST_INT_VALUE));
+  OLA_ASSERT_TRUE(c3->Run(TEST_INT_VALUE));
   BaseCallback1<bool, unsigned int> *c4 = NewCallback(
       this,
       &CallbackTest::BoolMethod1);
-  CPPUNIT_ASSERT(c4->Run(TEST_INT_VALUE));
-  CPPUNIT_ASSERT(c4->Run(TEST_INT_VALUE));
+  OLA_ASSERT_TRUE(c4->Run(TEST_INT_VALUE));
+  OLA_ASSERT_TRUE(c4->Run(TEST_INT_VALUE));
   delete c4;
 
   // test 1 arg initial, 1 arg deferred callbacks that return ints
@@ -378,13 +381,13 @@ void CallbackTest::testMethodCallbacks1() {
       this,
       &CallbackTest::BoolMethod2,
       TEST_INT_VALUE);
-  CPPUNIT_ASSERT(c7->Run(TEST_INT_VALUE2));
+  OLA_ASSERT_TRUE(c7->Run(TEST_INT_VALUE2));
   BaseCallback1<bool, int> *c8 = NewCallback(
       this,
       &CallbackTest::BoolMethod2,
       TEST_INT_VALUE);
-  CPPUNIT_ASSERT(c8->Run(TEST_INT_VALUE2));
-  CPPUNIT_ASSERT(c8->Run(TEST_INT_VALUE2));
+  OLA_ASSERT_TRUE(c8->Run(TEST_INT_VALUE2));
+  OLA_ASSERT_TRUE(c8->Run(TEST_INT_VALUE2));
   delete c8;
 
   // test 2 arg initial, 1 arg deferred callbacks that return ints
@@ -409,14 +412,14 @@ void CallbackTest::testMethodCallbacks1() {
       &CallbackTest::BoolMethod3,
       TEST_INT_VALUE,
       TEST_INT_VALUE2);
-  CPPUNIT_ASSERT(c11->Run(TEST_CHAR_VALUE));
+  OLA_ASSERT_TRUE(c11->Run(TEST_CHAR_VALUE));
   BaseCallback1<bool, char> *c12 = NewCallback(
       this,
       &CallbackTest::BoolMethod3,
       TEST_INT_VALUE,
       TEST_INT_VALUE2);
-  CPPUNIT_ASSERT(c12->Run(TEST_CHAR_VALUE));
-  CPPUNIT_ASSERT(c12->Run(TEST_CHAR_VALUE));
+  OLA_ASSERT_TRUE(c12->Run(TEST_CHAR_VALUE));
+  OLA_ASSERT_TRUE(c12->Run(TEST_CHAR_VALUE));
   delete c12;
 
   // test 3 arg initial, 1 arg deferred callbacks that return ints
@@ -444,15 +447,15 @@ void CallbackTest::testMethodCallbacks1() {
       TEST_INT_VALUE,
       TEST_INT_VALUE2,
       TEST_CHAR_VALUE);
-  CPPUNIT_ASSERT(c15->Run(TEST_STRING_VALUE));
+  OLA_ASSERT_TRUE(c15->Run(TEST_STRING_VALUE));
   BaseCallback1<bool, const string&> *c16 = NewCallback(
       this,
       &CallbackTest::BoolMethod4,
       TEST_INT_VALUE,
       TEST_INT_VALUE2,
       TEST_CHAR_VALUE);
-  CPPUNIT_ASSERT(c16->Run(TEST_STRING_VALUE));
-  CPPUNIT_ASSERT(c16->Run(TEST_STRING_VALUE));
+  OLA_ASSERT_TRUE(c16->Run(TEST_STRING_VALUE));
+  OLA_ASSERT_TRUE(c16->Run(TEST_STRING_VALUE));
   delete c16;
 }
 
@@ -477,12 +480,12 @@ void CallbackTest::testMethodCallbacks2() {
   BaseCallback2<bool, unsigned int, int> *c3 = NewSingleCallback(
       this,
       &CallbackTest::BoolMethod2);
-  CPPUNIT_ASSERT(c3->Run(TEST_INT_VALUE, TEST_INT_VALUE2));
+  OLA_ASSERT_TRUE(c3->Run(TEST_INT_VALUE, TEST_INT_VALUE2));
   BaseCallback2<bool, unsigned int, int> *c4 = NewCallback(
       this,
       &CallbackTest::BoolMethod2);
-  CPPUNIT_ASSERT(c4->Run(TEST_INT_VALUE, TEST_INT_VALUE2));
-  CPPUNIT_ASSERT(c4->Run(TEST_INT_VALUE, TEST_INT_VALUE2));
+  OLA_ASSERT_TRUE(c4->Run(TEST_INT_VALUE, TEST_INT_VALUE2));
+  OLA_ASSERT_TRUE(c4->Run(TEST_INT_VALUE, TEST_INT_VALUE2));
   delete c4;
 
   // test 1 create time, 2 run time arg callbacks that return void
@@ -504,13 +507,13 @@ void CallbackTest::testMethodCallbacks2() {
       this,
       &CallbackTest::BoolMethod3,
       TEST_INT_VALUE);
-  CPPUNIT_ASSERT(c7->Run(TEST_INT_VALUE2, TEST_CHAR_VALUE));
+  OLA_ASSERT_TRUE(c7->Run(TEST_INT_VALUE2, TEST_CHAR_VALUE));
   BaseCallback2<bool, int, char> *c8 = NewCallback(
       this,
       &CallbackTest::BoolMethod3,
       TEST_INT_VALUE);
-  CPPUNIT_ASSERT(c8->Run(TEST_INT_VALUE2, TEST_CHAR_VALUE));
-  CPPUNIT_ASSERT(c8->Run(TEST_INT_VALUE2, TEST_CHAR_VALUE));
+  OLA_ASSERT_TRUE(c8->Run(TEST_INT_VALUE2, TEST_CHAR_VALUE));
+  OLA_ASSERT_TRUE(c8->Run(TEST_INT_VALUE2, TEST_CHAR_VALUE));
   delete c8;
 }
 
@@ -537,15 +540,15 @@ void CallbackTest::testMethodCallbacks4() {
     NewSingleCallback(
       this,
       &CallbackTest::BoolMethod4);
-  CPPUNIT_ASSERT(c3->Run(TEST_INT_VALUE, TEST_INT_VALUE2, TEST_CHAR_VALUE,
+  OLA_ASSERT_TRUE(c3->Run(TEST_INT_VALUE, TEST_INT_VALUE2, TEST_CHAR_VALUE,
                          TEST_STRING_VALUE));
   BaseCallback4<bool, unsigned int, int, char, const string&> *c4 =
     NewCallback(
       this,
       &CallbackTest::BoolMethod4);
-  CPPUNIT_ASSERT(c4->Run(TEST_INT_VALUE, TEST_INT_VALUE2, TEST_CHAR_VALUE,
+  OLA_ASSERT_TRUE(c4->Run(TEST_INT_VALUE, TEST_INT_VALUE2, TEST_CHAR_VALUE,
                          TEST_STRING_VALUE));
-  CPPUNIT_ASSERT(c4->Run(TEST_INT_VALUE, TEST_INT_VALUE2, TEST_CHAR_VALUE,
+  OLA_ASSERT_TRUE(c4->Run(TEST_INT_VALUE, TEST_INT_VALUE2, TEST_CHAR_VALUE,
                          TEST_STRING_VALUE));
   delete c4;
 }

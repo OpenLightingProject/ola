@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * ShowNetNodeTest.cpp
  * Test fixture for the ShowNetNode class
@@ -28,6 +28,8 @@
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "plugins/shownet/ShowNetNode.h"
+#include "ola/testing/TestUtils.h"
+
 
 namespace ola {
 namespace plugin {
@@ -103,75 +105,70 @@ void ShowNetNodeTest::testHandlePacket() {
                                      universe));
 
   // short packets
-  CPPUNIT_ASSERT_EQUAL(false, m_node->HandlePacket(packet, 0));
-  CPPUNIT_ASSERT(!m_hander_called);
-  CPPUNIT_ASSERT_EQUAL(false, m_node->HandlePacket(packet, 5));
-  CPPUNIT_ASSERT(!m_hander_called);
+  OLA_ASSERT_EQ(false, m_node->HandlePacket(packet, 0));
+  OLA_ASSERT_FALSE(m_hander_called);
+  OLA_ASSERT_EQ(false, m_node->HandlePacket(packet, 5));
+  OLA_ASSERT_FALSE(m_hander_called);
 
   // invalid header
-  CPPUNIT_ASSERT_EQUAL(false, m_node->HandlePacket(packet, sizeof(packet)));
-  CPPUNIT_ASSERT(!m_hander_called);
+  OLA_ASSERT_EQ(false, m_node->HandlePacket(packet, sizeof(packet)));
+  OLA_ASSERT_FALSE(m_hander_called);
 
   // add a header
   packet.sigHi = ShowNetNode::SHOWNET_ID_HIGH;
   packet.sigLo = ShowNetNode::SHOWNET_ID_LOW;
-  CPPUNIT_ASSERT_EQUAL(false, m_node->HandlePacket(packet, sizeof(packet)));
-  CPPUNIT_ASSERT(!m_hander_called);
+  OLA_ASSERT_EQ(false, m_node->HandlePacket(packet, sizeof(packet)));
+  OLA_ASSERT_FALSE(m_hander_called);
 
   // add invalid indexBlocks
   packet.indexBlock[0] = 4;
-  CPPUNIT_ASSERT_EQUAL(false, m_node->HandlePacket(packet, sizeof(packet)));
-  CPPUNIT_ASSERT(!m_hander_called);
+  OLA_ASSERT_EQ(false, m_node->HandlePacket(packet, sizeof(packet)));
+  OLA_ASSERT_FALSE(m_hander_called);
 
   // invalid block length
   packet.indexBlock[0] = ShowNetNode::MAGIC_INDEX_OFFSET;
-  CPPUNIT_ASSERT_EQUAL(false, m_node->HandlePacket(packet, sizeof(packet)));
-  CPPUNIT_ASSERT(!m_hander_called);
+  OLA_ASSERT_EQ(false, m_node->HandlePacket(packet, sizeof(packet)));
+  OLA_ASSERT_FALSE(m_hander_called);
 
   // add a valid netslot
   packet.netSlot[0] = 1;  // universe 0
-  CPPUNIT_ASSERT_EQUAL(false, m_node->HandlePacket(packet, sizeof(packet)));
-  CPPUNIT_ASSERT(!m_hander_called);
+  OLA_ASSERT_EQ(false, m_node->HandlePacket(packet, sizeof(packet)));
+  OLA_ASSERT_FALSE(m_hander_called);
 
   // valid block length, but not enough data
   packet.indexBlock[1] = ShowNetNode::MAGIC_INDEX_OFFSET;
-  CPPUNIT_ASSERT_EQUAL(false,
-                       m_node->HandlePacket(packet,
-                       header_size + sizeof(ENCODED_DATA)));
-  CPPUNIT_ASSERT(!m_hander_called);
+  OLA_ASSERT_EQ(false,
+                m_node->HandlePacket(packet,
+                header_size + sizeof(ENCODED_DATA)));
+  OLA_ASSERT_FALSE(m_hander_called);
 
   // now do a block length larger than the packet
   packet.indexBlock[1] = 100 + ShowNetNode::MAGIC_INDEX_OFFSET;
-  CPPUNIT_ASSERT_EQUAL(
-      false,
+  OLA_ASSERT_EQ(false,
       m_node->HandlePacket(packet, header_size + sizeof(ENCODED_DATA)));
-  CPPUNIT_ASSERT(!m_hander_called);
+  OLA_ASSERT_FALSE(m_hander_called);
 
   // test invalid slot size
   packet.indexBlock[1] = (ShowNetNode::MAGIC_INDEX_OFFSET +
       sizeof(ENCODED_DATA));
 
-  CPPUNIT_ASSERT_EQUAL(
-      false,
+  OLA_ASSERT_EQ(false,
       m_node->HandlePacket(packet, header_size + sizeof(ENCODED_DATA)));
-  CPPUNIT_ASSERT(!m_hander_called);
+  OLA_ASSERT_FALSE(m_hander_called);
 
   // check a valid packet, but different universe
   packet.netSlot[0] = 513;  // universe 1
   packet.slotSize[0] = sizeof(EXPECTED_DATA);
-  CPPUNIT_ASSERT_EQUAL(
-      false,
+  OLA_ASSERT_EQ(false,
       m_node->HandlePacket(packet, header_size + sizeof(ENCODED_DATA)));
-  CPPUNIT_ASSERT(!m_hander_called);
+  OLA_ASSERT_FALSE(m_hander_called);
 
   // now check with the correct universe
   packet.netSlot[0] = 1;  // universe 0
-  CPPUNIT_ASSERT_EQUAL(
-      true,
+  OLA_ASSERT_EQ(true,
       m_node->HandlePacket(packet, header_size + sizeof(ENCODED_DATA)));
-  CPPUNIT_ASSERT(m_hander_called);
-  CPPUNIT_ASSERT_EQUAL(
-      0,
+  OLA_ASSERT_TRUE(m_hander_called);
+  OLA_ASSERT_EQ(0,
       memcmp(expected_dmx.GetRaw(), received_data.GetRaw(),
              expected_dmx.Size()));
 }
@@ -196,14 +193,14 @@ void ShowNetNodeTest::testPopulatePacket() {
 
   m_node->SetName(NAME);
   unsigned int size = m_node->PopulatePacket(&packet, universe, buffer);
-  CPPUNIT_ASSERT_EQUAL(header_size + encoded_data_size, size);
+  OLA_ASSERT_EQ(header_size + encoded_data_size, size);
 
   expected_packet.sigHi = ShowNetNode::SHOWNET_ID_HIGH;
   expected_packet.sigLo = ShowNetNode::SHOWNET_ID_LOW;
 
-  CPPUNIT_ASSERT_EQUAL(expected_packet.sigHi, packet.sigHi);
-  CPPUNIT_ASSERT_EQUAL(expected_packet.sigLo, packet.sigLo);
-  CPPUNIT_ASSERT(!memcmp(expected_packet.ip, packet.ip, sizeof(packet.ip)));
+  OLA_ASSERT_EQ(expected_packet.sigHi, packet.sigHi);
+  OLA_ASSERT_EQ(expected_packet.sigLo, packet.sigLo);
+  OLA_ASSERT_FALSE(memcmp(expected_packet.ip, packet.ip, sizeof(packet.ip)));
 
   expected_packet.netSlot[0] = 1;
   expected_packet.slotSize[0] = DMX_DATA.length();
@@ -211,37 +208,37 @@ void ShowNetNodeTest::testPopulatePacket() {
   expected_packet.indexBlock[1] = (encoded_data_size +
      ShowNetNode::MAGIC_INDEX_OFFSET);
 
-  CPPUNIT_ASSERT(!memcmp(expected_packet.netSlot,
+  OLA_ASSERT_FALSE(memcmp(expected_packet.netSlot,
                          packet.netSlot,
                          sizeof(packet.netSlot)));
-  CPPUNIT_ASSERT(!memcmp(expected_packet.slotSize,
+  OLA_ASSERT_FALSE(memcmp(expected_packet.slotSize,
                          packet.slotSize,
                          sizeof(packet.slotSize)));
-  CPPUNIT_ASSERT(!memcmp(expected_packet.indexBlock,
+  OLA_ASSERT_FALSE(memcmp(expected_packet.indexBlock,
                          packet.indexBlock,
                          sizeof(packet.indexBlock)));
 
-  CPPUNIT_ASSERT_EQUAL(expected_packet.packetCountHi, packet.packetCountHi);
-  CPPUNIT_ASSERT_EQUAL(expected_packet.packetCountLo, packet.packetCountLo);
+  OLA_ASSERT_EQ(expected_packet.packetCountHi, packet.packetCountHi);
+  OLA_ASSERT_EQ(expected_packet.packetCountLo, packet.packetCountLo);
 
-  CPPUNIT_ASSERT(!memcmp(expected_packet.block,
+  OLA_ASSERT_FALSE(memcmp(expected_packet.block,
                          packet.block,
                          sizeof(packet.block)));
   memcpy(expected_packet.name, NAME.data(), sizeof(expected_packet.name));
-  CPPUNIT_ASSERT(!memcmp(expected_packet.name,
+  OLA_ASSERT_FALSE(memcmp(expected_packet.name,
                          packet.name,
                          sizeof(packet.name)));
 
-  CPPUNIT_ASSERT(!memcmp(expected_packet.data,
+  OLA_ASSERT_FALSE(memcmp(expected_packet.data,
                          packet.data,
                         encoded_data_size));
-  CPPUNIT_ASSERT(!memcmp(&expected_packet, &packet, size));
+  OLA_ASSERT_FALSE(memcmp(&expected_packet, &packet, size));
 
   // now send for a different universe
   universe = 1;
   size = m_node->PopulatePacket(&packet, universe, buffer);
   expected_packet.netSlot[0] = 513;
-  CPPUNIT_ASSERT(!memcmp(&expected_packet, &packet, size));
+  OLA_ASSERT_FALSE(memcmp(&expected_packet, &packet, size));
 }
 
 
@@ -278,26 +275,26 @@ void ShowNetNodeTest::SendAndReceiveForUniverse(unsigned int universe) {
   // zero first
   size = m_node->PopulatePacket(&packet, universe, zero_buffer);
   m_node->HandlePacket(packet, size);
-  CPPUNIT_ASSERT(received_data == zero_buffer);
+  OLA_ASSERT(received_data == zero_buffer);
 
   // send a test packet
   size = m_node->PopulatePacket(&packet, universe, buffer1);
   m_node->HandlePacket(packet, size);
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       0,
       memcmp(buffer1.GetRaw(), received_data.GetRaw(), buffer1.Size()));
 
   // send another test packet
   size = m_node->PopulatePacket(&packet, universe, buffer2);
   m_node->HandlePacket(packet, size);
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       0,
       memcmp(buffer2.GetRaw(), received_data.GetRaw(), buffer2.Size()));
 
   // check that we don't mix up universes
   size = m_node->PopulatePacket(&packet, universe + 1, buffer1);
   m_node->HandlePacket(packet, size);
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       0,
       memcmp(buffer2.GetRaw(), received_data.GetRaw(), buffer2.Size()));
 }

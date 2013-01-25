@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * AdvancedTCPConnector.h
  * Copyright (C) 2012 Simon Newton
@@ -134,11 +134,10 @@ class AdvancedTCPConnector {
                          const ola::TimeInterval &connection_timeout);
     virtual ~AdvancedTCPConnector();
 
-    void AddEndpoint(const IPV4Address &ip_address,
-                     uint16_t port,
+    void AddEndpoint(const IPV4SocketAddress &endpoint,
                      BackOffPolicy *backoff_policy,
                      bool paused = false);
-    void RemoveEndpoint(const IPV4Address &ip_address, uint16_t port);
+    void RemoveEndpoint(const IPV4SocketAddress &endpoint);
 
     unsigned int EndpointCount() const { return m_connections.size(); }
 
@@ -148,15 +147,12 @@ class AdvancedTCPConnector {
       CONNECTED,  // socket is connected
     };
 
-    bool GetEndpointState(const IPV4Address &ip_address,
-                          uint16_t port,
+    bool GetEndpointState(const IPV4SocketAddress &endpoint,
                           ConnectionState *connected,
                           unsigned int *failed_attempts) const;
 
-    void Disconnect(const IPV4Address &ip_address,
-                    uint16_t port,
-                    bool pause = false);
-    void Resume(const IPV4Address &ip_address, uint16_t port);
+    void Disconnect(const IPV4SocketAddress &endpoint, bool pause = false);
+    void Resume(const IPV4SocketAddress &endpoint);
 
   protected:
     typedef struct {

@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * AnymaOutputPort.cpp
  * Thread for the Anyma Output Port
@@ -34,20 +34,19 @@ namespace usbdmx {
 using std::string;
 
 
-const char AnymaOutputPort::EXPECTED_MANUFACTURER[] = "www.anyma.ch";
-const char AnymaOutputPort::EXPECTED_PRODUCT[] = "uDMX";
-
 /*
  * Create a new AnymaOutputPort object
  */
 AnymaOutputPort::AnymaOutputPort(AnymaDevice *parent,
                                  unsigned int id,
-                                 libusb_device *usb_device)
+                                 libusb_device *usb_device,
+                                 libusb_device_handle *usb_handle,
+                                 const string &serial)
     : BasicOutputPort(parent, id),
       m_term(false),
-      m_serial(""),
+      m_serial(serial),
       m_usb_device(usb_device),
-      m_usb_handle(NULL) {
+      m_usb_handle(usb_handle) {
 }
 
 
@@ -67,71 +66,11 @@ AnymaOutputPort::~AnymaOutputPort() {
  * Start this thread
  */
 bool AnymaOutputPort::Start() {
-  libusb_device_handle *usb_handle;
-  struct libusb_device_descriptor device_descriptor;
-  libusb_get_device_descriptor(m_usb_device, &device_descriptor);
-
-  if (libusb_open(m_usb_device, &usb_handle)) {
-    OLA_WARN << "Failed to open Anyma usb device";
-    return false;
-  }
-
-  // this device only has one configuration
-  /*
-  if (libusb_set_configuration(usb_handle, CONFIGURATION)) {
-    OLA_WARN << "Anyma set config failed";
-    libusb_close(usb_handle);
-    return false;
-  }
-*/
-  string data;
-  if (!GetDescriptorString(usb_handle, device_descriptor.iManufacturer,
-                           &data)) {
-    OLA_INFO << "Failed to get manufactuer name";
-    libusb_close(usb_handle);
-    return false;
-  }
-
-  if (data != EXPECTED_MANUFACTURER) {
-    OLA_INFO << "Manufacturer mismatch: " << EXPECTED_MANUFACTURER << " != " <<
-      data;
-    libusb_close(usb_handle);
-    return false;
-  }
-
-  if (!GetDescriptorString(usb_handle, device_descriptor.iProduct, &data)) {
-    OLA_INFO << "Failed to get product name";
-    libusb_close(usb_handle);
-    return false;
-  }
-
-  if (data != EXPECTED_PRODUCT) {
-    OLA_INFO << "Product mismatch: " << EXPECTED_PRODUCT << " != " << data;
-    libusb_close(usb_handle);
-    return false;
-  }
-
-  if (!GetDescriptorString(usb_handle, device_descriptor.iSerialNumber,
-                           &data)) {
-    OLA_INFO << "Failed to get serial number";
-    libusb_close(usb_handle);
-    return false;
-  }
-
-  m_serial = data;
-
-  if (libusb_claim_interface(usb_handle, 0)) {
-    OLA_WARN << "Failed to claim Anyma usb device";
-    libusb_close(usb_handle);
-    return false;
-  }
-
-  m_usb_handle = usb_handle;
   bool ret = ola::thread::Thread::Start();
   if (!ret) {
-    OLA_WARN << "pthread create failed";
+    OLA_WARN << "Failed to start sender thread";
     libusb_release_interface(m_usb_handle, 0);
-    libusb_close(usb_handle);
+    libusb_close(m_usb_handle);
     return false;
   }
   return true;
@@ -224,6 +163,7 @@ bool AnymaOutputPort::GetDescriptorString(libusb_device_handle *usb_handle,
       buffer_size);
 
   if (r <= 0) {
+    OLA_INFO << "libusb_get_string_descriptor_ascii returned " << r;
     return false;
   }
   data->assign(reinterpret_cast<char*>(buffer));

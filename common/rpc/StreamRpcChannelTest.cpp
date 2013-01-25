@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * StreamRpcChannelTest.cpp
  * Test fixture for the StreamRpcChannel class
@@ -21,11 +21,14 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <google/protobuf/stubs/common.h>
 #include <string>
+
 #include "ola/io/SelectServer.h"
 #include "ola/network/Socket.h"
 #include "common/rpc/StreamRpcChannel.h"
 #include "common/rpc/SimpleRpcController.h"
 #include "common/rpc/TestService.pb.h"
+#include "ola/testing/TestUtils.h"
+
 
 using google::protobuf::NewCallback;
 using ola::io::LoopbackDescriptor;
@@ -124,11 +127,11 @@ void TestServiceImpl::Stream(::google::protobuf::RpcController* controller,
                              const ::ola::rpc::EchoRequest* request,
                              STREAMING_NO_RESPONSE* response,
                              ::google::protobuf::Closure* done) {
-  CPPUNIT_ASSERT(!controller);
-  CPPUNIT_ASSERT(!response);
-  CPPUNIT_ASSERT(!done);
-  CPPUNIT_ASSERT(request);
-  CPPUNIT_ASSERT_EQUAL(string("foo"), request->data());
+  OLA_ASSERT_FALSE(controller);
+  OLA_ASSERT_FALSE(response);
+  OLA_ASSERT_FALSE(done);
+  OLA_ASSERT_TRUE(request);
+  OLA_ASSERT_EQ(string("foo"), request->data());
   m_ss->Terminate();
 }
 
@@ -155,14 +158,14 @@ void StreamRpcChannelTest::tearDown() {
 
 void StreamRpcChannelTest::EchoComplete() {
   m_ss.Terminate();
-  CPPUNIT_ASSERT(!m_controller.Failed());
-  CPPUNIT_ASSERT_EQUAL(m_reply.data(), m_request.data());
+  OLA_ASSERT_FALSE(m_controller.Failed());
+  OLA_ASSERT_EQ(m_reply.data(), m_request.data());
 }
 
 
 void StreamRpcChannelTest::FailedEchoComplete() {
   m_ss.Terminate();
-  CPPUNIT_ASSERT(m_controller.Failed());
+  OLA_ASSERT_TRUE(m_controller.Failed());
 }
 
 

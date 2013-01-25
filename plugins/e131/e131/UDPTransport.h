@@ -1,18 +1,17 @@
 /*
-#include <ola/Logging.h>
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * UDPTransport.h
  * Interface for the UDPTransport class
@@ -67,7 +66,7 @@ class OutgoingUDPTransport: public OutgoingTransport {
  */
 class OutgoingUDPTransportImpl {
   public:
-    OutgoingUDPTransportImpl(ola::network::UdpSocket *socket,
+    OutgoingUDPTransportImpl(ola::network::UDPSocket *socket,
                              PreamblePacker *packer = NULL)
         : m_socket(socket),
           m_packer(packer),
@@ -87,7 +86,7 @@ class OutgoingUDPTransportImpl {
               uint16_t port);
 
   private:
-    ola::network::UdpSocket *m_socket;
+    ola::network::UDPSocket *m_socket;
     PreamblePacker *m_packer;
     bool m_free_packer;
 };
@@ -100,7 +99,7 @@ class OutgoingUDPTransportImpl {
  */
 class IncomingUDPTransport {
   public:
-    IncomingUDPTransport(ola::network::UdpSocket *socket,
+    IncomingUDPTransport(ola::network::UDPSocket *socket,
                          class BaseInflator *inflator);
     ~IncomingUDPTransport() {
       if (m_recv_buffer)
@@ -110,7 +109,7 @@ class IncomingUDPTransport {
     void Receive();
 
   private:
-    ola::network::UdpSocket *m_socket;
+    ola::network::UDPSocket *m_socket;
     class BaseInflator *m_inflator;
     uint8_t *m_recv_buffer;
 };

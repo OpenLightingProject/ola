@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * GroupSizeCalculatorTest.cpp
  * Test fixture for the GroupSizeCalculator and StaticGroupTokenCalculator
@@ -25,6 +25,8 @@
 #include "ola/Logging.h"
 #include "ola/messaging/Descriptor.h"
 #include "common/rdm/GroupSizeCalculator.h"
+#include "ola/testing/TestUtils.h"
+
 
 
 using ola::messaging::BoolFieldDescriptor;
@@ -91,32 +93,32 @@ void GroupSizeCalculatorTest::testSimpleCases() {
   Descriptor descriptor("Test Descriptor", fields);
 
   unsigned int token_count, group_repeat_count;
-  CPPUNIT_ASSERT(
+  OLA_ASSERT_TRUE(
       m_static_calculator.CalculateTokensRequired(&descriptor, &token_count));
-  CPPUNIT_ASSERT_EQUAL(10u, token_count);
+  OLA_ASSERT_EQ(10u, token_count);
 
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       GroupSizeCalculator::INSUFFICIENT_TOKENS,
       m_calculator.CalculateGroupSize(
         1,
         &descriptor,
         &group_repeat_count));
 
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       GroupSizeCalculator::INSUFFICIENT_TOKENS,
       m_calculator.CalculateGroupSize(
         9,
         &descriptor,
         &group_repeat_count));
 
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       GroupSizeCalculator::NO_VARIABLE_GROUPS,
       m_calculator.CalculateGroupSize(
         10,
         &descriptor,
         &group_repeat_count));
 
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       GroupSizeCalculator::EXTRA_TOKENS,
       m_calculator.CalculateGroupSize(
         11,
@@ -145,13 +147,13 @@ void GroupSizeCalculatorTest::testWithFixedGroups() {
 
   unsigned int token_count, group_repeat_count;
   // first check the static calculator
-  CPPUNIT_ASSERT(
+  OLA_ASSERT_TRUE(
       m_static_calculator.CalculateTokensRequired(fixed_group, &token_count));
-  CPPUNIT_ASSERT_EQUAL(2u, token_count);
+  OLA_ASSERT_EQ(2u, token_count);
 
-  CPPUNIT_ASSERT(
+  OLA_ASSERT_TRUE(
       m_static_calculator.CalculateTokensRequired(fixed_group2, &token_count));
-  CPPUNIT_ASSERT_EQUAL(3u, token_count);
+  OLA_ASSERT_EQ(3u, token_count);
 
   // now check the main calculator
   vector<const FieldDescriptor*> fields;
@@ -159,35 +161,35 @@ void GroupSizeCalculatorTest::testWithFixedGroups() {
   fields.push_back(fixed_group2);
   Descriptor descriptor("Test Descriptor", fields);
 
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       GroupSizeCalculator::INSUFFICIENT_TOKENS,
       m_calculator.CalculateGroupSize(
         4,
         &descriptor,
         &group_repeat_count));
 
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       GroupSizeCalculator::INSUFFICIENT_TOKENS,
       m_calculator.CalculateGroupSize(
         12,
         &descriptor,
         &group_repeat_count));
 
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       GroupSizeCalculator::INSUFFICIENT_TOKENS,
       m_calculator.CalculateGroupSize(
         15,
         &descriptor,
         &group_repeat_count));
 
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       GroupSizeCalculator::NO_VARIABLE_GROUPS,
       m_calculator.CalculateGroupSize(
         16,
         &descriptor,
         &group_repeat_count));
 
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       GroupSizeCalculator::EXTRA_TOKENS,
       m_calculator.CalculateGroupSize(
         17,
@@ -216,45 +218,45 @@ void GroupSizeCalculatorTest::testSingleVariableSizedGroup() {
   Descriptor descriptor("Test Descriptor", fields);
 
   unsigned int group_repeat_count;
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       GroupSizeCalculator::INSUFFICIENT_TOKENS,
       m_calculator.CalculateGroupSize(
         0,
         &descriptor,
         &group_repeat_count));
 
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       GroupSizeCalculator::INSUFFICIENT_TOKENS,
       m_calculator.CalculateGroupSize(
         2,
         &descriptor,
         &group_repeat_count));
 
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       GroupSizeCalculator::SINGLE_VARIABLE_GROUP,
       m_calculator.CalculateGroupSize(
         3,
         &descriptor,
         &group_repeat_count));
-  CPPUNIT_ASSERT_EQUAL(0u, group_repeat_count);
+  OLA_ASSERT_EQ(0u, group_repeat_count);
 
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       GroupSizeCalculator::SINGLE_VARIABLE_GROUP,
       m_calculator.CalculateGroupSize(
         5,
         &descriptor,
         &group_repeat_count));
-  CPPUNIT_ASSERT_EQUAL(1u, group_repeat_count);
+  OLA_ASSERT_EQ(1u, group_repeat_count);
 
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       GroupSizeCalculator::SINGLE_VARIABLE_GROUP,
       m_calculator.CalculateGroupSize(
         7,
         &descriptor,
         &group_repeat_count));
-  CPPUNIT_ASSERT_EQUAL(2u, group_repeat_count);
+  OLA_ASSERT_EQ(2u, group_repeat_count);
 
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       GroupSizeCalculator::EXTRA_TOKENS,
       m_calculator.CalculateGroupSize(
         8,
@@ -288,18 +290,18 @@ void GroupSizeCalculatorTest::testMultipleVariableSizedGroups() {
 
   unsigned int token_count, group_repeat_count;
   // first check these the static calculator
-  CPPUNIT_ASSERT(
+  OLA_ASSERT_TRUE(
       m_static_calculator.CalculateTokensRequired(variable_group,
                                                   &token_count));
-  CPPUNIT_ASSERT_EQUAL(2u, token_count);
+  OLA_ASSERT_EQ(2u, token_count);
 
-  CPPUNIT_ASSERT(
+  OLA_ASSERT_TRUE(
       m_static_calculator.CalculateTokensRequired(variable_group2,
                                                   &token_count));
-  CPPUNIT_ASSERT_EQUAL(3u, token_count);
+  OLA_ASSERT_EQ(3u, token_count);
 
   // now check the main calculator.
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       GroupSizeCalculator::MULTIPLE_VARIABLE_GROUPS,
       m_calculator.CalculateGroupSize(
         10,
@@ -328,13 +330,13 @@ void GroupSizeCalculatorTest::testNestedVariableSizedGroups() {
 
   // first check these the static calculator
   unsigned int token_count, group_repeat_count;
-  CPPUNIT_ASSERT(
+  OLA_ASSERT_TRUE(
       !m_static_calculator.CalculateTokensRequired(
         nested_variable_group,
         &token_count));
 
   // now check the main calculator.
-  CPPUNIT_ASSERT_EQUAL(
+  OLA_ASSERT_EQ(
       GroupSizeCalculator::NESTED_VARIABLE_GROUPS,
       m_calculator.CalculateGroupSize(
         10,

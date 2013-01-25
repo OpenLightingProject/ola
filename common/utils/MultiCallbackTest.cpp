@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * MultiCallbackTest.cpp
  * Unittest for MultiCallback class
@@ -21,8 +21,11 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <unistd.h>
 #include <string>
+
 #include "ola/Callback.h"
 #include "ola/MultiCallback.h"
+#include "ola/testing/TestUtils.h"
+
 
 using std::string;
 
@@ -65,18 +68,18 @@ void MultiCallbackTest::testMultiCallback() {
       this,
       &MultiCallbackTest::CallbackMethod);
 
-  CPPUNIT_ASSERT_EQUAL(0, m_callback_count);
+  OLA_ASSERT_EQ(0, m_callback_count);
   BaseCallback0<void> *multi_callback = NewMultiCallback(3, callback);
-  CPPUNIT_ASSERT_EQUAL(0, m_callback_count);
+  OLA_ASSERT_EQ(0, m_callback_count);
 
   multi_callback->Run();
-  CPPUNIT_ASSERT_EQUAL(0, m_callback_count);
+  OLA_ASSERT_EQ(0, m_callback_count);
 
   multi_callback->Run();
-  CPPUNIT_ASSERT_EQUAL(0, m_callback_count);
+  OLA_ASSERT_EQ(0, m_callback_count);
 
   multi_callback->Run();
-  CPPUNIT_ASSERT_EQUAL(1, m_callback_count);
+  OLA_ASSERT_EQ(1, m_callback_count);
 }
 
 
@@ -88,9 +91,9 @@ void MultiCallbackTest::testZeroLimit() {
       this,
       &MultiCallbackTest::CallbackMethod);
 
-  CPPUNIT_ASSERT_EQUAL(0, m_callback_count);
+  OLA_ASSERT_EQ(0, m_callback_count);
   BaseCallback0<void> *multi_callback = NewMultiCallback(0, callback);
-  CPPUNIT_ASSERT_EQUAL(1, m_callback_count);
+  OLA_ASSERT_EQ(1, m_callback_count);
 
   (void) multi_callback;
 }
@@ -104,10 +107,10 @@ void MultiCallbackTest::testSingleLimit() {
       this,
       &MultiCallbackTest::CallbackMethod);
 
-  CPPUNIT_ASSERT_EQUAL(0, m_callback_count);
+  OLA_ASSERT_EQ(0, m_callback_count);
   BaseCallback0<void> *multi_callback = NewMultiCallback(1, callback);
-  CPPUNIT_ASSERT_EQUAL(0, m_callback_count);
+  OLA_ASSERT_EQ(0, m_callback_count);
 
   multi_callback->Run();
-  CPPUNIT_ASSERT_EQUAL(1, m_callback_count);
+  OLA_ASSERT_EQ(1, m_callback_count);
 }

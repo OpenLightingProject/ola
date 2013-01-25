@@ -1,27 +1,27 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Socket.h
  * The Socket interfaces
  * Copyright (C) 2005-2009 Simon Newton
  *
- *  - UdpSocket, allows sending and receiving UDP datagrams
- *  - TcpSocket, this represents a TCP connection to a remote endpoint
+ *  - UDPSocket, allows sending and receiving UDP datagrams
+ *  - TCPSocket, this represents a TCP connection to a remote endpoint
  *
  * AcceptingSocket is the interface that defines sockets which can spawn new
- * ConnectedDescriptors. TcpAcceptingSocket is the only subclass and provides
+ * ConnectedDescriptors. TCPAcceptingSocket is the only subclass and provides
  * the accept() functionality.
  */
 
@@ -40,7 +40,9 @@
 
 #include <ola/Callback.h>
 #include <ola/io/Descriptor.h>
+#include <ola/io/IOQueue.h>
 #include <ola/network/IPV4Address.h>
+#include <ola/network/SocketAddress.h>
 #include <string>
 
 
@@ -49,58 +51,40 @@ namespace network {
 
 
 /*
- * A TcpSocket
- */
-class TcpSocket: public ola::io::ConnectedDescriptor {
-  public:
-    explicit TcpSocket(int sd)
-        : m_sd(sd) {
-      SetNoSigPipe(sd);
-    }
-
-    ~TcpSocket() { Close(); }
-
-    int ReadDescriptor() const { return m_sd; }
-    int WriteDescriptor() const { return m_sd; }
-    bool Close();
-
-    bool GetPeer(IPV4Address *address, uint16_t *port);
-
-    static TcpSocket* Connect(const IPV4Address &ip_address,
-                              unsigned short port);
-    static TcpSocket* Connect(const std::string &ip_address,
-                              unsigned short port);
-
-  protected:
-    bool IsSocket() const { return true; }
-
-  private:
-    int m_sd;
-
-    TcpSocket(const TcpSocket &other);
-    TcpSocket& operator=(const TcpSocket &other);
-};
-
-
-/*
- * The UdpSocketInterface.
+ * The UDPSocketInterface.
  * This is done as an Interface so we can mock it out for testing.
  */
-class UdpSocketInterface: public ola::io::BidirectionalFileDescriptor {
+class UDPSocketInterface: public ola::io::BidirectionalFileDescriptor {
   public:
-    UdpSocketInterface(): ola::io::BidirectionalFileDescriptor() {}
-    ~UdpSocketInterface() {}
+    UDPSocketInterface(): ola::io::BidirectionalFileDescriptor() {}
+    ~UDPSocketInterface() {}
     virtual bool Init() = 0;
-    virtual bool Bind(const IPV4Address &ip,
-                      unsigned short port) = 0;
-    virtual bool Bind(unsigned short port = 0) = 0;
+    virtual bool Bind(const IPV4SocketAddress &endpoint) = 0;
+
+    // Deprecated. Do not use in new code.
+    bool Bind(const IPV4Address &ip, unsigned short port) {
+      return Bind(IPV4SocketAddress(ip, port));
+    }
+
+    virtual bool GetSocketAddress(IPV4SocketAddress *address) const = 0;
+
     virtual bool Close() = 0;
     virtual int ReadDescriptor() const = 0;
     virtual int WriteDescriptor() const = 0;
+
     virtual ssize_t SendTo(const uint8_t *buffer,
                            unsigned int size,
                            const IPV4Address &ip,
                            unsigned short port) const = 0;
+    virtual ssize_t SendTo(const uint8_t *buffer,
+                           unsigned int size,
+                           const IPV4SocketAddress &dest) const = 0;
+    virtual ssize_t SendTo(ola::io::IOQueue *ioqueue,
+                           const IPV4Address &ip,
+                           unsigned short port) const = 0;
+    virtual ssize_t SendTo(ola::io::IOQueue *ioqueue,
+                           const IPV4SocketAddress &dest) const = 0;
+
     virtual bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const = 0;
     virtual bool RecvFrom(uint8_t *buffer,
                           ssize_t *data_read,
@@ -120,24 +104,25 @@ class UdpSocketInterface: public ola::io::BidirectionalFileDescriptor {
     virtual bool SetTos(uint8_t tos) = 0;
 
   private:
-    UdpSocketInterface(const UdpSocketInterface &other);
-    UdpSocketInterface& operator=(const UdpSocketInterface &other);
+    UDPSocketInterface(const UDPSocketInterface &other);
+    UDPSocketInterface& operator=(const UDPSocketInterface &other);
 };
 
 
 /*
- * A UdpSocket (non connected)
+ * A UDPSocket (non connected)
  */
-class UdpSocket: public UdpSocketInterface {
+class UDPSocket: public UDPSocketInterface {
   public:
-    UdpSocket(): UdpSocketInterface(),
+    UDPSocket(): UDPSocketInterface(),
                  m_fd(ola::io::INVALID_DESCRIPTOR),
                  m_bound_to_port(false) {}
-    ~UdpSocket() { Close(); }
+    ~UDPSocket() { Close(); }
     bool Init();
-    bool Bind(const IPV4Address &ip,
-              unsigned short port);
-    bool Bind(unsigned short port = 0);
+    bool Bind(const IPV4SocketAddress &endpoint);
+
+    bool GetSocketAddress(IPV4SocketAddress *address) const;
+
     bool Close();
     int ReadDescriptor() const { return m_fd; }
     int WriteDescriptor() const { return m_fd; }
@@ -145,6 +130,19 @@ class UdpSocket: public UdpSocketInterface {
                    unsigned int size,
                    const IPV4Address &ip,
                    unsigned short port) const;
+    ssize_t SendTo(const uint8_t *buffer,
+                   unsigned int size,
+                   const IPV4SocketAddress &dest) const {
+      return SendTo(buffer, size, dest.Host(), dest.Port());
+    }
+    ssize_t SendTo(ola::io::IOQueue *ioqueue,
+                   const IPV4Address &ip,
+                   unsigned short port) const;
+    ssize_t SendTo(ola::io::IOQueue *ioqueue,
+                   const IPV4SocketAddress &dest) const {
+      return SendTo(ioqueue, dest.Host(), dest.Port());
+    }
+
     bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const;
     bool RecvFrom(uint8_t *buffer,
                   ssize_t *data_read,
@@ -153,6 +151,7 @@ class UdpSocket: public UdpSocketInterface {
                   ssize_t *data_read,
                   IPV4Address &source,
                   uint16_t &port) const;
+
     bool EnableBroadcast();
     bool SetMulticastInterface(const IPV4Address &iface);
     bool JoinMulticast(const IPV4Address &iface,
@@ -166,42 +165,12 @@ class UdpSocket: public UdpSocketInterface {
   private:
     int m_fd;
     bool m_bound_to_port;
-    UdpSocket(const UdpSocket &other);
-    UdpSocket& operator=(const UdpSocket &other);
+    UDPSocket(const UDPSocket &other);
+    UDPSocket& operator=(const UDPSocket &other);
     bool _RecvFrom(uint8_t *buffer,
                    ssize_t *data_read,
                    struct sockaddr_in *source,
                    socklen_t *src_size) const;
-};
-
-
-/*
- * A TCP accepting socket
- */
-class TcpAcceptingSocket: public ola::io::ReadFileDescriptor {
-  public:
-    explicit TcpAcceptingSocket(class TCPSocketFactoryInterface *factory);
-    ~TcpAcceptingSocket();
-    bool Listen(const std::string &address,
-                unsigned short port,
-                int backlog = 10);
-    bool Listen(const IPV4Address &address,
-                unsigned short port,
-                int backlog = 10);
-    int ReadDescriptor() const { return m_sd; }
-    bool Close();
-    void PerformRead();
-
-    void SetFactory(class TCPSocketFactoryInterface *factory) {
-      m_factory = factory;
-    }
-
-  private:
-    int m_sd;
-    class TCPSocketFactoryInterface *m_factory;
-
-    TcpAcceptingSocket(const TcpAcceptingSocket &other);
-    TcpAcceptingSocket& operator=(const TcpAcceptingSocket &other);
 };
 }  // network
 }  // ola

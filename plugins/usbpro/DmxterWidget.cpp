@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * DmxterWidgetImpl.h
  * The Goddard Design Dmxter RDM and miniDmxter
@@ -22,6 +22,7 @@
 #include <vector>
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
+#include "ola/rdm/RDMCommandSerializer.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
 #include "plugins/usbpro/DmxterWidget.h"
@@ -30,6 +31,7 @@ namespace ola {
 namespace plugin {
 namespace usbpro {
 
+using ola::rdm::RDMCommandSerializer;
 using ola::rdm::RDMRequest;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
@@ -115,15 +117,12 @@ void DmxterWidgetImpl::SendRDMRequest(const RDMRequest *request,
     return;
   }
 
-  unsigned int data_size = request->Size();  // add in the start code
-  uint8_t *data = new uint8_t[data_size + 1];
+  unsigned int data_size = RDMCommandSerializer::RequiredSize(*request);
+  uint8_t *data = new uint8_t[data_size + 1];  // + start code
   data[0] = ola::rdm::RDMCommand::START_CODE;
 
-  bool r = request->PackWithControllerParams(data + 1,
-                                             &data_size,
-                                             m_uid,
-                                             m_transaction_number++,
-                                             1);
+  bool r = RDMCommandSerializer::Pack(*request, data + 1, &data_size,
+                                      m_uid, m_transaction_number++, 1);
   if (r) {
     uint8_t label;
     if (IsDUBRequest(request)) {

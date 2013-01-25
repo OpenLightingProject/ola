@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * Universe.cpp
  * Represents a universe of DMX data.
@@ -382,7 +382,7 @@ void Universe::SendRDMRequest(const ola::rdm::RDMRequest *request,
     tracker->expected_count = m_output_ports.size();
     tracker->current_count = 0;
     tracker->response_code = (is_dub ?
-        ola::rdm::RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED :
+        ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED :
         ola::rdm::RDM_WAS_BROADCAST);
     tracker->callback = callback;
     vector<OutputPort*>::iterator port_iter;
@@ -793,7 +793,7 @@ void Universe::HandleBroadcastAck(broadcast_request_tracker *tracker,
  * The response codes should be one of:
  *   RDM_DUB_RESPONSE - got a DUB response
  *   RDM_TIMEOUT - no response received
- *   RDM_REQUEST_COMMAND_CLASS_NOT_SUPPORTED - the port doesn't support DUB
+ *   RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED - the port doesn't support DUB
  *
  * The above list is ordered in highest to lowest precedence, i.e. if we get
  * any port with a RDM_DUB_RESPONSE, this overrides any other message.

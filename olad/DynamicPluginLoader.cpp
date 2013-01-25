@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * DynamicPluginLoader.cpp
  * This class is responsible for loading and unloading the plugins
@@ -47,6 +47,10 @@
 
 #ifdef HAVE_DMX4LINUX
 #include "plugins/dmx4linux/Dmx4LinuxPlugin.h"
+#endif
+
+#ifdef HAVE_LIBLO
+#include "plugins/osc/OSCPlugin.h"
 #endif
 
 namespace ola {
@@ -87,6 +91,10 @@ void DynamicPluginLoader::PopulatePlugins() {
   m_plugins.push_back(new ola::plugin::espnet::EspNetPlugin(m_plugin_adaptor));
   m_plugins.push_back(
       new ola::plugin::opendmx::OpenDmxPlugin(m_plugin_adaptor));
+#ifdef HAVE_LIBLO
+  m_plugins.push_back(
+      new ola::plugin::osc::OSCPlugin(m_plugin_adaptor));
+#endif
   m_plugins.push_back(
       new ola::plugin::sandnet::SandNetPlugin(m_plugin_adaptor));
   m_plugins.push_back(

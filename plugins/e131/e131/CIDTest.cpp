@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * CIDTest.cpp
  * Test fixture for the CID class
@@ -27,6 +27,7 @@
 #include <string>
 
 #include "plugins/e131/e131/CID.h"
+#include "ola/testing/TestUtils.h"
 
 using std::string;
 using ola::plugin::e131::CID;
@@ -60,19 +61,19 @@ CPPUNIT_TEST_SUITE_REGISTRATION(CIDTest);
  */
 void CIDTest::testCID() {
   CID cid;
-  CPPUNIT_ASSERT(cid.IsNil());
+  OLA_ASSERT(cid.IsNil());
 
   CID cid1 = CID::Generate();
-  CPPUNIT_ASSERT(!cid1.IsNil());
+  OLA_ASSERT_FALSE(cid1.IsNil());
 
   CID cid2 = cid1;
-  CPPUNIT_ASSERT(cid2 == cid1);
-  CPPUNIT_ASSERT(!cid2.IsNil());
+  OLA_ASSERT(cid2 == cid1);
+  OLA_ASSERT_FALSE(cid2.IsNil());
 
   CID cid3;
   cid3 = cid1;
-  CPPUNIT_ASSERT(cid3 == cid1);
-  CPPUNIT_ASSERT(!cid3.IsNil());
+  OLA_ASSERT(cid3 == cid1);
+  OLA_ASSERT_FALSE(cid3.IsNil());
 }
 
 
@@ -80,7 +81,7 @@ void CIDTest::testSetPack() {
   uint8_t buffer[CID::CID_LENGTH];
   CID cid = CID::FromData(TEST_DATA);
   cid.Pack(buffer);
-  CPPUNIT_ASSERT(!memcmp(TEST_DATA, buffer, CID::CID_LENGTH));
+  OLA_ASSERT_FALSE(memcmp(TEST_DATA, buffer, CID::CID_LENGTH));
 }
 
 
@@ -91,7 +92,7 @@ void CIDTest::testGenerate() {
   CID cid1 = CID::Generate();
   CID cid2 = CID::Generate();
 
-  CPPUNIT_ASSERT(cid1 != cid2);
+  OLA_ASSERT_NE(cid1, cid2);
 }
 
 /*
@@ -101,7 +102,7 @@ void CIDTest::testToString() {
   CID cid = CID::FromData(TEST_DATA);
   string cid_str = cid.ToString();
   transform(cid_str.begin(), cid_str.end(), cid_str.begin(), toupper);
-  CPPUNIT_ASSERT_EQUAL(string("00010203-0405-0607-0809-0A0B0C0D0E0F"),
+  OLA_ASSERT_EQ(string("00010203-0405-0607-0809-0A0B0C0D0E0F"),
                        cid_str);
 }
 
@@ -113,9 +114,9 @@ void CIDTest::testFromString() {
   CID cid = CID::FromString(uuid);
   string cid_str = cid.ToString();
   transform(cid_str.begin(), cid_str.end(), cid_str.begin(), toupper);
-  CPPUNIT_ASSERT_EQUAL(uuid, cid_str);
+  OLA_ASSERT_EQ(uuid, cid_str);
 
   const string bad_uuid = "foo";
   cid = CID::FromString(bad_uuid);
-  CPPUNIT_ASSERT(cid.IsNil());
+  OLA_ASSERT(cid.IsNil());
 }

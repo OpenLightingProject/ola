@@ -19,24 +19,24 @@ lib_LTLIBRARIES = libolaserver.la
 libolaserver_la_SOURCES = $(OLASERVER_SOURCES) OlaServer.cpp OlaDaemon.cpp
 libolaserver_la_CXXFLAGS = $(COMMON_CXXFLAGS) @OLAD_DEFINES@
 libolaserver_la_LIBADD = $(PLUGIN_LIBS) \
-                         $(libmicrohttpd_LIBS) \
                          $(top_builddir)/common/libolacommon.la \
                          $(top_builddir)/common/web/libolaweb.la \
                          $(top_builddir)/ola/libola.la
 
 if HAVE_LIBMICROHTTPD
-libolaserver_la_SOURCES += HttpServer.cpp HttpServerActions.cpp \
-                           OlaHttpServer.cpp HttpModule.cpp \
-                           RDMHttpModule.cpp
+libolaserver_la_SOURCES += HttpServerActions.cpp \
+                           OladHTTPServer.cpp \
+                           RDMHTTPModule.cpp
+libolaserver_la_LIBADD += $(top_builddir)/common/http/libolahttp.la
 endif
 
 
 EXTRA_DIST = Client.h ClientBroker.h DeviceManager.h \
-             DynamicPluginLoader.h HttpModule.h \
-             HttpServer.h HttpServerActions.h \
-             OlaHttpServer.h OlaVersion.h \
+             DynamicPluginLoader.h \
+             HttpServerActions.h \
+             OladHTTPServer.h OlaVersion.h \
              OlaServerServiceImpl.h PluginLoader.h PluginManager.h \
-             PortManager.h RDMHttpModule.h TestCommon.h \
+             PortManager.h RDMHTTPModule.h TestCommon.h \
              UniverseStore.h
 
 # Olad Server

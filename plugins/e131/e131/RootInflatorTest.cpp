@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * RootInflatorTest.cpp
  * Test fixture for the RootInflator class
@@ -25,6 +25,8 @@
 #include "plugins/e131/e131/PDUTestCommon.h"
 #include "plugins/e131/e131/RootInflator.h"
 #include "plugins/e131/e131/RootPDU.h"
+#include "ola/testing/TestUtils.h"
+
 
 namespace ola {
 namespace plugin {
@@ -54,19 +56,19 @@ void RootInflatorTest::testInflatePDU() {
 
   CID cid = CID::Generate();
   RootPDU pdu(MockPDU::TEST_VECTOR, cid, &block);
-  CPPUNIT_ASSERT_EQUAL((unsigned int) 50, pdu.Size());
+  OLA_ASSERT_EQ((unsigned int) 50, pdu.Size());
 
   unsigned int size = pdu.Size();
   uint8_t *data = new uint8_t[size];
   unsigned int bytes_used = size;
-  CPPUNIT_ASSERT(pdu.Pack(data, bytes_used));
-  CPPUNIT_ASSERT_EQUAL((unsigned int) size, bytes_used);
+  OLA_ASSERT(pdu.Pack(data, bytes_used));
+  OLA_ASSERT_EQ((unsigned int) size, bytes_used);
 
   MockInflator mock_inflator(cid);
   RootInflator inflator;
   inflator.AddInflator(&mock_inflator);
   HeaderSet header_set;
-  CPPUNIT_ASSERT(inflator.InflatePDUBlock(header_set, data, size));
+  OLA_ASSERT(inflator.InflatePDUBlock(header_set, data, size));
   delete[] data;
 }
 }  // e131

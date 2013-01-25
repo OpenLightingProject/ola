@@ -6,7 +6,9 @@ SOURCES = AdvancedTCPConnector.h\
           InterfacePicker.h \
           NetworkUtils.h \
           Socket.h \
+          SocketAddress.h \
           TCPConnector.h \
+          TCPSocket.h \
           TCPSocketFactory.h
 
 EXTRA_DIST = $(SOURCES)

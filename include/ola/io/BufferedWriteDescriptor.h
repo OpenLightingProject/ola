@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * BufferedOutputDescriptor.h
  * Copyright (C) 2012 Simon Newton
@@ -23,6 +23,7 @@
 #include <stdint.h>
 #include <ola/Callback.h>
 #include <ola/io/IOQueue.h>
+#include <ola/io/OutputBuffer.h>
 #include <ola/io/SelectServerInterface.h>
 
 #include <string>
@@ -32,7 +33,10 @@ namespace ola {
 namespace io {
 
 
-class DescriptorStream: public OutputStream {
+/**
+ * The base class.
+ */
+class DescriptorStream: public OutputBufferInterface {
   public:
     explicit DescriptorStream(SelectServerInterface *ss = NULL)
       : m_associated(false),
@@ -62,43 +66,24 @@ class DescriptorStream: public OutputStream {
       Send(data, length);
     }
 
-    OutputStream& operator<<(uint8_t i) {
-      Send(&i, sizeof(i));
-      return *this;
-    }
-
-    OutputStream& operator<<(uint16_t i) {
-      Send(reinterpret_cast<uint8_t*>(&i), sizeof(i));
-      return *this;
-    }
-
-    OutputStream& operator<<(uint32_t i) {
-      Send(reinterpret_cast<uint8_t*>(&i), sizeof(i));
-      return *this;
-    }
-
-    OutputStream& operator<<(int8_t i) {
-      Send(reinterpret_cast<uint8_t*>(&i), sizeof(i));
-      return *this;
-    }
-
-    OutputStream& operator<<(int16_t i) {
-      Send(reinterpret_cast<uint8_t*>(&i), sizeof(i));
-      return *this;
-    }
-
-    OutputStream& operator<<(int32_t i) {
-      Send(reinterpret_cast<uint8_t*>(&i), sizeof(i));
-      return *this;
-    }
-
   protected:
     bool m_associated;
     IOQueue m_output_buffer;
     SelectServerInterface *m_ss;
 
-    virtual void Associate() = 0;
-    virtual void Disassociate() = 0;
+    virtual ConnectedDescriptor* GetDescriptor() = 0;
+
+    void Associate() {
+      m_ss->AddWriteDescriptor(GetDescriptor());
+      m_associated = true;
+    }
+
+    void Disassociate() {
+      if (m_associated && m_ss) {
+        m_ss->RemoveWriteDescriptor(GetDescriptor());
+        m_associated = false;
+      }
+    }
 };
 
 
@@ -109,7 +94,7 @@ class DescriptorStream: public OutputStream {
  * demand writes.
  *
  * @tparam Parent the parent class to inherit from. The parent must provide a
- * SendV() method to perform the actual write.
+ * Send(IOQueue*) method to perform the actual write.
  */
 template <typename Parent>
 class BufferedOutputDescriptor: public Parent, public DescriptorStream {
@@ -131,31 +116,23 @@ class BufferedOutputDescriptor: public Parent, public DescriptorStream {
       return size;
     }
 
+    // This does the actual write of the data to the socket when it becomes
+    // writeable.
     void PerformWrite() {
-      int iocnt;
-      const struct iovec *iov = m_output_buffer.AsIOVec(&iocnt);
-      ssize_t bytes_written = this->SendV(iov, iocnt);
-      m_output_buffer.FreeIOVec(iov);
-
-      if (bytes_written > 0)
-        m_output_buffer.Pop(static_cast<unsigned int>(bytes_written));
-
+      Parent::Send(&m_output_buffer);
       if (m_output_buffer.Empty())
         Disassociate();
     }
 
   protected:
+    ConnectedDescriptor *GetDescriptor() { return this; }
 
-    void Associate() {
-      m_ss->AddWriteDescriptor(this);
-      m_associated = true;
-    }
-
-    void Disassociate() {
-      if (m_associated && m_ss) {
-        m_ss->RemoveWriteDescriptor(this);
-        m_associated = false;
-      }
+  private:
+    // this is prviate, since using a IOQueue with a BufferedTCPSocket would be
+    // incur a copy so we avoid it.
+    ssize_t Send(IOQueue *ioqueue) {
+      (void) ioqueue;
+      return -1;
     }
 };
 

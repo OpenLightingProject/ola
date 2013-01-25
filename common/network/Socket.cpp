@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Socket.cpp
  * Implementation of the Socket classes
@@ -48,102 +48,14 @@ namespace ola {
 namespace network {
 
 
-// TcpSocket
-// ------------------------------------------------
-
-
-/**
- * Get the remote IPAddress and port for this socket
- */
-bool TcpSocket::GetPeer(IPV4Address *address, uint16_t *port) {
-  struct sockaddr_in remote_address;
-  socklen_t length = sizeof(remote_address);
-  int r = getpeername(m_sd,
-                      (struct sockaddr*) &remote_address,
-                      &length);
-  if (r) {
-    OLA_WARN << "Failed to get peer information for fd: " << m_sd << ", " <<
-      strerror(errno);
-    return false;
-  }
-
-  *address = IPV4Address(remote_address.sin_addr);
-  *port = remote_address.sin_port;
-  return true;
-}
-
-
-/*
- * Close this TcpSocket
- */
-bool TcpSocket::Close() {
-  if (m_sd != ola::io::INVALID_DESCRIPTOR) {
-    close(m_sd);
-    m_sd = ola::io::INVALID_DESCRIPTOR;
-  }
-  return true;
-}
-
-
-/*
- * Connect
- * @param ip_address the IP to connect to
- * @param port the port to connect to
- * @param blocking whether to block on connect or not
- */
-TcpSocket* TcpSocket::Connect(const IPV4Address &ip_address,
-                              unsigned short port) {
-  struct sockaddr_in server_address;
-  socklen_t length = sizeof(server_address);
-
-  int sd = socket(AF_INET, SOCK_STREAM, 0);
-  if (sd < 0) {
-    OLA_WARN << "socket() failed, " << strerror(errno);
-    return NULL;
-  }
-
-  // setup
-  memset(&server_address, 0x00, sizeof(server_address));
-  server_address.sin_family = AF_INET;
-  server_address.sin_port = HostToNetwork(port);
-  server_address.sin_addr.s_addr = ip_address.AsInt();
-
-  int r = connect(sd, (struct sockaddr*) &server_address, length);
-
-  if (r) {
-    OLA_WARN << "connect to " << ip_address << ":" << port << " failed, "
-      << strerror(errno);
-    return NULL;
-  }
-  TcpSocket *socket = new TcpSocket(sd);
-  socket->SetReadNonBlocking();
-  return socket;
-}
-
-/*
- * Connect
- * @param ip_address the IP to connect to
- * @param port the port to connect to
- * @param blocking whether to block on connect or not
- */
-TcpSocket* TcpSocket::Connect(const std::string &ip_address,
-                              unsigned short port) {
-  IPV4Address address;
-  if (!IPV4Address::FromString(ip_address, &address))
-    return NULL;
-
-  return TcpSocket::Connect(address, port);
-}
-
-
-// UdpSocket
+// UDPSocket
 // ------------------------------------------------
 
 /*
  * Start listening
  * @return true if it succeeded, false otherwise
  */
-bool UdpSocket::Init() {
+bool UDPSocket::Init() {
   if (m_fd != ola::io::INVALID_DESCRIPTOR)
     return false;
 
@@ -160,11 +72,14 @@ bool UdpSocket::Init() {
 
 
 /*
- * Bind this socket to an external address/port
+ * Bind this socket to an external address:port
  */
-bool UdpSocket::Bind(const IPV4Address &ip,
-                     unsigned short port) {
+bool UDPSocket::Bind(const IPV4SocketAddress &endpoint) {
   if (m_fd == ola::io::INVALID_DESCRIPTOR)
+    return false;
+
+  struct sockaddr server_address;
+  if (!endpoint.ToSockAddr(&server_address, sizeof(server_address)))
     return false;
 
   #if HAVE_DECL_SO_REUSEADDR
@@ -196,17 +111,9 @@ bool UdpSocket::Bind(const IPV4Address &ip,
   }
   #endif
 
-  struct sockaddr_in servAddr;
-  memset(&servAddr, 0x00, sizeof(servAddr));
-  servAddr.sin_family = AF_INET;
-  servAddr.sin_port = HostToNetwork(port);
-  servAddr.sin_addr.s_addr = ip.AsInt();
-
-  OLA_DEBUG << "Binding to " << AddressToString(servAddr.sin_addr) << ":" <<
-    port;
-
-  if (bind(m_fd, (struct sockaddr*) &servAddr, sizeof(servAddr)) == -1) {
-    OLA_INFO << "Failed to bind socket " << strerror(errno);
+  OLA_DEBUG << "Binding to " << endpoint;
+  if (bind(m_fd, &server_address, sizeof(server_address)) == -1) {
+    OLA_WARN << "Failed to bind " << endpoint << ", " << strerror(errno);
     return false;
   }
   m_bound_to_port = true;
@@ -214,18 +121,27 @@ bool UdpSocket::Bind(const IPV4Address &ip,
 }
 
 
-/*
- * Bind this socket to an address/port using the any address
+/**
+ * Returns the local address for this socket
  */
-bool UdpSocket::Bind(unsigned short port) {
-  return Bind(IPV4Address::WildCard(), port);
+bool UDPSocket::GetSocketAddress(IPV4SocketAddress *address) const {
+  struct sockaddr_in remote_address;
+  socklen_t length = sizeof(remote_address);
+  int r = getsockname(m_fd, (struct sockaddr*) &remote_address, &length);
+  if (r) {
+    OLA_WARN << "Failed to get peer information for fd: " << m_fd << ", " <<
+      strerror(errno);
+    return false;
+  }
+  *address = IPV4SocketAddress(IPV4Address(remote_address.sin_addr),
+                               NetworkToHost(remote_address.sin_port));
+  return true;
 }
-
 
 /*
  * Close this socket
  */
-bool UdpSocket::Close() {
+bool UDPSocket::Close() {
   if (m_fd == ola::io::INVALID_DESCRIPTOR)
     return false;
 
@@ -253,10 +169,13 @@ bool UdpSocket::Close() {
  * @param port the port to send to in HOST byte order.
  * @return the number of bytes sent
  */
-ssize_t UdpSocket::SendTo(const uint8_t *buffer,
+ssize_t UDPSocket::SendTo(const uint8_t *buffer,
                           unsigned int size,
                           const IPV4Address &ip,
                           unsigned short port) const {
+  if (!ValidWriteDescriptor())
+    return 0;
+
   struct sockaddr_in destination;
   memset(&destination, 0, sizeof(destination));
   destination.sin_family = AF_INET;
@@ -275,6 +194,52 @@ ssize_t UdpSocket::SendTo(const uint8_t *buffer,
 }
 
 
+
+/*
+ * Send data from an IOQueue. This will try to send as much data as possible.
+ * If the data exceeds the MTU the UDP packet will probably get fragmented at
+ * the IP layer (depends on OS really). Try to avoid this.
+ * @param ioqueue the IOQueue to send.
+ * @param ip_address the IP to send to
+ * @param port the port to send to in HOST byte order.
+ * @return the number of bytes sent
+ */
+ssize_t UDPSocket::SendTo(ola::io::IOQueue *ioqueue,
+                          const IPV4Address &ip,
+                          unsigned short port) const {
+  if (!ValidWriteDescriptor())
+    return 0;
+
+  struct sockaddr_in destination;
+  memset(&destination, 0, sizeof(destination));
+  destination.sin_family = AF_INET;
+  destination.sin_port = HostToNetwork(port);
+  destination.sin_addr = ip.Address();
+
+  int io_len;
+  const struct iovec *iov = ioqueue->AsIOVec(&io_len);
+
+  struct msghdr message;
+  message.msg_name = &destination;
+  message.msg_namelen = sizeof(destination);
+  message.msg_iov = const_cast<struct iovec*>(iov);
+  message.msg_iovlen = io_len;
+  message.msg_control = NULL;
+  message.msg_controllen = 0;
+  message.msg_flags = 0;
+  ssize_t bytes_sent = sendmsg(WriteDescriptor(), &message, 0);
+
+  if (bytes_sent < 0) {
+    OLA_INFO << "Failed to send on " << WriteDescriptor() << ": " <<
+      strerror(errno);
+  } else {
+    ioqueue->FreeIOVec(iov);
+    ioqueue->Pop(bytes_sent);
+  }
+  return bytes_sent;
+}
+
+
 /*
  * Receive data
  * @param buffer the buffer to store the data
@@ -282,7 +247,7 @@ ssize_t UdpSocket::SendTo(const uint8_t *buffer,
  * read
  * @return true or false
  */
-bool UdpSocket::RecvFrom(uint8_t *buffer, ssize_t *data_read) const {
+bool UDPSocket::RecvFrom(uint8_t *buffer, ssize_t *data_read) const {
   socklen_t length = 0;
   return _RecvFrom(buffer, data_read, NULL, &length);
 }
@@ -296,7 +261,7 @@ bool UdpSocket::RecvFrom(uint8_t *buffer, ssize_t *data_read) const {
  * @param source the src ip of the packet
  * @return true or false
  */
-bool UdpSocket::RecvFrom(uint8_t *buffer,
+bool UDPSocket::RecvFrom(uint8_t *buffer,
                          ssize_t *data_read,
                          IPV4Address &source) const {
   struct sockaddr_in src_sockaddr;
@@ -317,7 +282,7 @@ bool UdpSocket::RecvFrom(uint8_t *buffer,
  * @param port the src port of the packet in host byte order
  * @return true or false
  */
-bool UdpSocket::RecvFrom(uint8_t *buffer,
+bool UDPSocket::RecvFrom(uint8_t *buffer,
                          ssize_t *data_read,
                          IPV4Address &source,
                          uint16_t &port) const {
@@ -336,7 +301,7 @@ bool UdpSocket::RecvFrom(uint8_t *buffer,
  * Enable broadcasting for this socket.
  * @return true if it worked, false otherwise
  */
-bool UdpSocket::EnableBroadcast() {
+bool UDPSocket::EnableBroadcast() {
   if (m_fd == ola::io::INVALID_DESCRIPTOR)
     return false;
 
@@ -357,7 +322,7 @@ bool UdpSocket::EnableBroadcast() {
 /**
  * Set the outgoing interface to be used for multicast transmission
  */
-bool UdpSocket::SetMulticastInterface(const IPV4Address &iface) {
+bool UDPSocket::SetMulticastInterface(const IPV4Address &iface) {
   struct in_addr addr = iface.Address();
   int ok = setsockopt(m_fd,
                       IPPROTO_IP,
@@ -378,7 +343,7 @@ bool UdpSocket::SetMulticastInterface(const IPV4Address &iface) {
  * @param group the address of the group to join
  * @return true if it worked, false otherwise
  */
-bool UdpSocket::JoinMulticast(const IPV4Address &iface,
+bool UDPSocket::JoinMulticast(const IPV4Address &iface,
                               const IPV4Address &group,
                               bool multicast_loop) {
   char loop = multicast_loop;
@@ -414,7 +379,7 @@ bool UdpSocket::JoinMulticast(const IPV4Address &iface,
  * @param group the address of the group to join
  * @return true if it worked, false otherwise
  */
-bool UdpSocket::LeaveMulticast(const IPV4Address &iface,
+bool UDPSocket::LeaveMulticast(const IPV4Address &iface,
                                const IPV4Address &group) {
   struct ip_mreq mreq;
   mreq.imr_interface = iface.Address();
@@ -434,7 +399,7 @@ bool UdpSocket::LeaveMulticast(const IPV4Address &iface,
 }
 
 
-bool UdpSocket::_RecvFrom(uint8_t *buffer,
+bool UDPSocket::_RecvFrom(uint8_t *buffer,
                           ssize_t *data_read,
                           struct sockaddr_in *source,
                           socklen_t *src_size) const {
@@ -457,7 +422,7 @@ bool UdpSocket::_RecvFrom(uint8_t *buffer,
  * Set the tos field for a socket
  * @param tos the tos field
  */
-bool UdpSocket::SetTos(uint8_t tos) {
+bool UDPSocket::SetTos(uint8_t tos) {
   unsigned int value = tos & 0xFC;  // zero the ECN fields
   int ok = setsockopt(m_fd,
                       IPPROTO_IP,
@@ -469,143 +434,6 @@ bool UdpSocket::SetTos(uint8_t tos) {
     return false;
   }
   return true;
-}
-
-
-// TcpAcceptingSocket
-// ------------------------------------------------
-
-/*
- * Create a new TcpListeningSocket
- */
-TcpAcceptingSocket::TcpAcceptingSocket(TCPSocketFactoryInterface *factory)
-    : ReadFileDescriptor(),
-      m_sd(ola::io::INVALID_DESCRIPTOR),
-      m_factory(factory) {
-}
-
-
-/**
- * Clean up
- */
-TcpAcceptingSocket::~TcpAcceptingSocket() {
-  Close();
-}
-
-
-/*
- * Start listening
- * @param address the address to listen on
- * @param port the port to listen on
- * @param backlog the backlog
- * @return true if it succeeded, false otherwise
- */
-bool TcpAcceptingSocket::Listen(const std::string &address,
-                                unsigned short port,
-                                int backlog) {
-  IPV4Address ip_address;
-  if (!IPV4Address::FromString(address, &ip_address))
-    return false;
-
-  return Listen(ip_address, port, backlog);
-}
-
-
-/*
- * Start listening
- * @param address the address to listen on
- * @param port the port to listen on
- * @param backlog the backlog
- * @return true if it succeeded, false otherwise
- */
-bool TcpAcceptingSocket::Listen(const IPV4Address &address,
-                                unsigned short port,
-                                int backlog) {
-  struct sockaddr_in server_address;
-  int reuse_flag = 1;
-
-  if (m_sd != ola::io::INVALID_DESCRIPTOR)
-    return false;
-
-  // setup
-  memset(&server_address, 0x00, sizeof(server_address));
-  server_address.sin_family = AF_INET;
-  server_address.sin_port = HostToNetwork(port);
-
-  int sd = socket(AF_INET, SOCK_STREAM, 0);
-  if (sd < 0) {
-    OLA_WARN << "socket() failed: " << strerror(errno);
-    return false;
-  }
-
-  int ok = setsockopt(sd,
-                      SOL_SOCKET,
-                      SO_REUSEADDR,
-                      reinterpret_cast<char*>(&reuse_flag),
-                      sizeof(reuse_flag));
-  if (ok < 0) {
-    OLA_WARN << "can't set reuse for " << sd << ", " << strerror(errno);
-    close(sd);
-    return false;
-  }
-
-  if (bind(sd, (struct sockaddr *) &server_address,
-           sizeof(server_address)) == -1) {
-    OLA_WARN << "bind to " << address << ":" << port << " failed, "
-      << strerror(errno);
-    close(sd);
-    return false;
-  }
-
-  if (listen(sd, backlog)) {
-    OLA_WARN << "listen on " << address << ":" << port << " failed, "
-      << strerror(errno);
-    return false;
-  }
-  m_sd = sd;
-  return true;
-}
-
-
-/*
- * Stop listening & close this socket
- * @return true if close succeeded, false otherwise
- */
-bool TcpAcceptingSocket::Close() {
-  bool ret = true;
-  if (m_sd != ola::io::INVALID_DESCRIPTOR)
-    if (close(m_sd)) {
-      OLA_WARN << "close() failed " << strerror(errno);
-      ret = false;
-    }
-  m_sd = ola::io::INVALID_DESCRIPTOR;
-  return ret;
-}
-
-
-/*
- * Accept new connections
- * @return a new connected socket
- */
-void TcpAcceptingSocket::PerformRead() {
-  struct sockaddr_in cli_address;
-  socklen_t length = sizeof(cli_address);
-
-  if (m_sd == ola::io::INVALID_DESCRIPTOR)
-    return;
-
-  int sd = accept(m_sd, (struct sockaddr*) &cli_address, &length);
-  if (sd < 0) {
-    OLA_WARN << "accept() failed, " << strerror(errno);
-    return;
-  }
-
-  if (m_factory) {
-    m_factory->NewTCPSocket(sd);
-  } else {
-    OLA_WARN << "Accepted new TCP Connection but no factory registered";
-    close(sd);
-  }
 }
 }  // network
 }  // ola

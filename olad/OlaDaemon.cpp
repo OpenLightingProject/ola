@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * OlaDaemon.cpp
  * This is the main ola daemon
@@ -19,7 +19,6 @@
  */
 
 #include <errno.h>
-#include <pwd.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -28,9 +27,10 @@
 #include <string>
 #include <vector>
 
-#include "config.h"
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
+#include "ola/network/SocketAddress.h"
+#include "ola/base/Credentials.h"
 
 #include "olad/DynamicPluginLoader.h"
 #include "olad/OlaDaemon.h"
@@ -41,7 +41,9 @@
 namespace ola {
 
 using ola::io::SelectServer;
-using ola::network::TcpAcceptingSocket;
+using ola::network::TCPAcceptingSocket;
+using ola::network::IPV4Address;
+using ola::network::IPV4SocketAddress;
 
 const char OlaDaemon::K_RPC_PORT_VAR[] = "rpc-port";
 const char OlaDaemon::OLA_CONFIG_DIR[] = ".ola";
@@ -109,8 +111,9 @@ bool OlaDaemon::Init() {
   // Order is important here as we won't load the same plugin twice.
   m_plugin_loaders.push_back(new DynamicPluginLoader());
 
-  m_accepting_socket = new TcpAcceptingSocket(NULL);  // factory is added later
-  if (!m_accepting_socket->Listen("127.0.0.1", m_rpc_port)) {
+  m_accepting_socket = new TCPAcceptingSocket(NULL);  // factory is added later
+  if (!m_accepting_socket->Listen(
+        IPV4SocketAddress(IPV4Address::Loopback(), m_rpc_port))) {
     OLA_FATAL << "Could not listen on the RPC port, you probably have " <<
       "another instance of olad running";
     return false;
@@ -185,31 +188,11 @@ void OlaDaemon::ReloadPlugins() {
  * Return the home directory for the current user
  */
 string OlaDaemon::DefaultConfigDir() {
-  struct passwd pwd, *pwd_ptr;
-  unsigned int size = 1024;
-  bool ok = false;
-  char *buffer;
+  PasswdEntry passwd_entry;
+  if (!GetPasswdUID(GetUID(), &passwd_entry))
+    return "";
 
-  while (!ok) {
-    buffer = new char[size];
-    int ret = getpwuid_r(getuid(), &pwd, buffer, size, &pwd_ptr);
-    switch (ret) {
-      case 0:
-        ok = true;
-        break;
-      case ERANGE:
-        delete[] buffer;
-        size += 1024;
-        break;
-      default:
-        delete[] buffer;
-        return "";
-    }
-  }
-
-  string home_dir = pwd_ptr->pw_dir;
-  delete[] buffer;
-  return home_dir + "/" + OLA_CONFIG_DIR;
+  return passwd_entry.pw_dir + "/" + OLA_CONFIG_DIR;
 }
 
 

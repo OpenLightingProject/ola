@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * TCPTransport.cpp
  * The classes for transporting ACN over TCP.
@@ -57,14 +57,14 @@ bool OutgoingStreamTransport::Send(const PDUBlock<PDU> &pdu_block) {
       ACN_HEADER_SIZE +
       static_cast<unsigned int>(sizeof(pdu_block_size)) +
       pdu_block.Size());
-  if (m_stream->Size() + total_message_size > m_max_buffer_size)
+  if (m_buffer->Size() + total_message_size > m_max_buffer_size)
     return false;
 
   OLA_DEBUG << "TCP TX: block size is " << pdu_block_size;
   // Write the ACN header, the block length and the block data
-  m_stream->Write(ACN_HEADER, ACN_HEADER_SIZE);
-  *m_stream << HostToNetwork(pdu_block_size);
-  pdu_block.Write(m_stream);
+  m_stream.Write(ACN_HEADER, ACN_HEADER_SIZE);
+  m_stream << HostToNetwork(pdu_block_size);
+  pdu_block.Write(&m_stream);
   return true;
 }
 
@@ -341,7 +341,7 @@ void IncommingStreamTransport::EnterWaitingForPDU() {
  * Create a new IncomingTCPTransport
  */
 IncomingTCPTransport::IncomingTCPTransport(BaseInflator *inflator,
-                                           ola::network::TcpSocket *socket):
+                                           ola::network::TCPSocket *socket):
   m_transport(NULL) {
   uint16_t port;
   IPV4Address ip_address;

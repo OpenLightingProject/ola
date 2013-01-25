@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * E131Node.cpp
  * A E1.31 node
@@ -35,6 +35,8 @@ namespace e131 {
 
 using ola::Callback0;
 using ola::DmxBuffer;
+using ola::network::IPV4Address;
+using ola::network::IPV4SocketAddress;
 using std::map;
 using std::string;
 
@@ -114,7 +116,7 @@ bool E131Node::Start() {
     return false;
   }
 
-  if (!m_socket.Bind(m_udp_port))
+  if (!m_socket.Bind(IPV4SocketAddress(IPV4Address::WildCard(), m_udp_port)))
     return false;
 
   if (!m_socket.EnableBroadcast())

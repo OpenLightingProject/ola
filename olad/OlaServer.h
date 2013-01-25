@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * OlaServer.h
  * Interface for the ola server class
@@ -40,9 +40,9 @@
 namespace ola {
 
 #ifdef HAVE_LIBMICROHTTPD
-typedef class OlaHttpServer OlaHttpServer_t;
+typedef class OladHTTPServer OladHTTPServer_t;
 #else
-typedef int OlaHttpServer_t;
+typedef int OladHTTPServer_t;
 #endif
 
 typedef struct {
@@ -65,14 +65,14 @@ class OlaServer {
               class PreferencesFactory *preferences_factory,
               ola::io::SelectServer *ss,
               ola_server_options *ola_options,
-              ola::network::TcpAcceptingSocket *socket = NULL,
+              ola::network::TCPAcceptingSocket *socket = NULL,
               ExportMap *export_map = NULL);
     ~OlaServer();
     bool Init();
     void ReloadPlugins();
     void StopServer() { m_ss->Terminate(); }
     void NewConnection(ola::io::ConnectedDescriptor *descriptor);
-    void NewTCPConnection(ola::network::TcpSocket *socket);
+    void NewTCPConnection(ola::network::TCPSocket *socket);
     void SocketClosed(ola::io::ConnectedDescriptor *socket);
     bool RunHousekeeping();
     void CheckForReload();
@@ -94,7 +94,7 @@ class OlaServer {
     vector<class PluginLoader*> m_plugin_loaders;
     ola::io::SelectServer *m_ss;
     ola::network::TCPSocketFactory m_tcp_socket_factory;
-    ola::network::TcpAcceptingSocket *m_accepting_socket;
+    ola::network::TCPAcceptingSocket *m_accepting_socket;
 
     class DeviceManager *m_device_manager;
     class PluginManager *m_plugin_manager;
@@ -113,7 +113,7 @@ class OlaServer {
     bool m_free_export_map;
     ola::thread::timeout_id m_housekeeping_timeout;
     std::map<int, class OlaClientService*> m_sd_to_service;
-    OlaHttpServer_t *m_httpd;
+    OladHTTPServer_t *m_httpd;
     ola_server_options m_options;
     ola::rdm::UID m_default_uid;
 
