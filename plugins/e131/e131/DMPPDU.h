@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <vector>
 
+#include "plugins/e131/e131/ACNVectors.h"
 #include "plugins/e131/e131/DMPAddress.h"
 #include "plugins/e131/e131/DMPHeader.h"
 #include "plugins/e131/e131/PDU.h"
@@ -33,9 +34,6 @@ namespace plugin {
 namespace e131 {
 
 using std::vector;
-
-static const unsigned int DMP_GET_PROPERTY_VECTOR = 1;
-static const unsigned int DMP_SET_PROPERTY_VECTOR = 2;
 
 /*
  * The base DMPPDU class.

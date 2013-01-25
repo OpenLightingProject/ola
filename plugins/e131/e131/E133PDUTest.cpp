@@ -70,7 +70,7 @@ const unsigned int E133PDUTest::TEST_VECTOR = 39;
  */
 void E133PDUTest::testSimpleE133PDU() {
   const string source = "foo source";
-  E133Header header(source, 101, 2, false);
+  E133Header header(source, 101, 2);
   E133PDU pdu(TEST_VECTOR, header, NULL);
 
   OLA_ASSERT_EQ(71u, pdu.HeaderSize());
@@ -121,7 +121,7 @@ void E133PDUTest::testSimpleE133PDU() {
  */
 void E133PDUTest::testSimpleE133PDUToOutputStream() {
   const string source = "foo source";
-  E133Header header(source, 101, 2, false);
+  E133Header header(source, 101, 2);
   E133PDU pdu(TEST_VECTOR, header, NULL);
 
   OLA_ASSERT_EQ(71u, pdu.HeaderSize());

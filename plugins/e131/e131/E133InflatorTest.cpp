@@ -76,7 +76,6 @@ void E133InflatorTest::testDecodeHeader() {
   OLA_ASSERT(source_name == decoded_header.Source());
   OLA_ASSERT_EQ((uint32_t) 72650, decoded_header.Sequence());
   OLA_ASSERT_EQ((uint16_t) 42, decoded_header.Endpoint());
-  OLA_ASSERT_FALSE(decoded_header.RxAcknowledge());
 
   // try an undersized header
   OLA_ASSERT_FALSE(inflator.DecodeHeader(header_set,
@@ -92,7 +91,6 @@ void E133InflatorTest::testDecodeHeader() {
   OLA_ASSERT(source_name == decoded_header.Source());
   OLA_ASSERT_EQ((uint32_t) 72650, decoded_header.Sequence());
   OLA_ASSERT_EQ((uint16_t) 42, decoded_header.Endpoint());
-  OLA_ASSERT_FALSE(decoded_header.RxAcknowledge());
 
   inflator.ResetHeaderField();
   OLA_ASSERT_FALSE(inflator.DecodeHeader(header_set2, NULL, 0, bytes_used));
@@ -105,7 +103,7 @@ void E133InflatorTest::testDecodeHeader() {
  */
 void E133InflatorTest::testInflatePDU() {
   const string source = "foobar source";
-  E133Header header(source, 2370, 2, true);
+  E133Header header(source, 2370, 2 );
   // TODO(simon): pass a DMP msg here as well
   E133PDU pdu(3, header, NULL);
   OLA_ASSERT_EQ((unsigned int) 77, pdu.Size());

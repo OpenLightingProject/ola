@@ -48,9 +48,8 @@ class E133HealthCheckedConnection
         ola::plugin::e131::RootSender *root_sender,
         ola::SingleUseCallback0<void> *on_timeout,
         ola::thread::SchedulerInterface *scheduler,
-        unsigned int vector = ola::plugin::e131::E133Inflator::E133_VECTOR,
         const ola::TimeInterval heartbeat_interval =
-          ola::TimeInterval(E133_HEARTBEAT_INTERVAL, 0));
+          ola::TimeInterval(E133_TCP_HEARTBEAT_INTERVAL, 0));
 
     ~E133HealthCheckedConnection() {
       if (m_on_timeout && !m_in_timeout)
@@ -62,12 +61,11 @@ class E133HealthCheckedConnection
 
   private:
     bool m_in_timeout;
-    unsigned int m_vector;
     ola::plugin::e131::OutgoingStreamTransport *m_transport;
     ola::plugin::e131::RootSender *m_sender;
     ola::SingleUseCallback0<void> *m_on_timeout;
 
     // The default interval in seconds for sending heartbeat messages.
-    static const unsigned int E133_HEARTBEAT_INTERVAL = 2;
+    static const unsigned int E133_TCP_HEARTBEAT_INTERVAL = 5;
 };
 #endif  // TOOLS_E133_E133HEALTHCHECKEDCONNECTION_H_

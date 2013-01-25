@@ -65,8 +65,7 @@ bool E133PDU::PackHeader(uint8_t *data, unsigned int &length) const {
           E133Header::SOURCE_NAME_LEN);
   header.sequence = HostToNetwork(m_header.Sequence());
   header.endpoint = HostToNetwork(m_header.Endpoint());
-  header.options = static_cast<uint8_t>(
-      m_header.RxAcknowledge() ? E133Header::E133_RX_ACK_MASK : 0);
+  header.reserved = 0;
   length = sizeof(E133Header::e133_pdu_header);
   memcpy(data, &header, length);
   return true;
@@ -93,8 +92,7 @@ void E133PDU::PackHeader(OutputStream *stream) const {
           E133Header::SOURCE_NAME_LEN);
   header.sequence = HostToNetwork(m_header.Sequence());
   header.endpoint = HostToNetwork(m_header.Endpoint());
-  header.options = static_cast<uint8_t>(
-      m_header.RxAcknowledge() ? E133Header::E133_RX_ACK_MASK : 0);
+  header.reserved = 0;
   stream->Write(reinterpret_cast<uint8_t*>(&header),
                 sizeof(E133Header::e133_pdu_header));
 }

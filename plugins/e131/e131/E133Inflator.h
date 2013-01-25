@@ -21,6 +21,7 @@
 #ifndef PLUGINS_E131_E131_E133INFLATOR_H_
 #define PLUGINS_E131_E131_E133INFLATOR_H_
 
+#include "plugins/e131/e131/ACNVectors.h"
 #include "plugins/e131/e131/BaseInflator.h"
 #include "plugins/e131/e131/E133Header.h"
 
@@ -32,15 +33,13 @@ class E133Inflator: public BaseInflator {
   friend class E133InflatorTest;
 
   public:
-    static const unsigned int E133_VECTOR = 5;
-
     E133Inflator()
         : BaseInflator(),
           m_last_header_valid(false) {
     }
     ~E133Inflator() {}
 
-    uint32_t Id() const { return E133_VECTOR; }
+    uint32_t Id() const { return VECTOR_ROOT_E133; }
 
   protected:
     bool DecodeHeader(HeaderSet &headers,

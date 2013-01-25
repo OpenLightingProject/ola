@@ -19,6 +19,7 @@
 
 #include <ola/Logging.h>
 
+#include "plugins/e131/e131/ACNVectors.h"
 #include "plugins/e131/e131/RootSender.h"
 #include "tools/e133/E133HealthCheckedConnection.h"
 
@@ -28,7 +29,6 @@
  * @param sender the RootSender to use when sending heartbeats
  * @param on_timeout the callback to run when the heartbeats don't arrive
  * @param scheduler A SchedulerInterface used to control the timers
- * @param vector the vector to use in the RootPDUs
  * @param heartbeat_interval the TimeInterval between heartbeats
  */
 E133HealthCheckedConnection::E133HealthCheckedConnection(
@@ -36,11 +36,9 @@ E133HealthCheckedConnection::E133HealthCheckedConnection(
   ola::plugin::e131::RootSender *sender,
   ola::SingleUseCallback0<void> *on_timeout,
   ola::thread::SchedulerInterface *scheduler,
-  unsigned int vector,
   const ola::TimeInterval heartbeat_interval)
     : HealthCheckedConnection(scheduler, heartbeat_interval),
       m_in_timeout(false),
-      m_vector(vector),
       m_transport(transport),
       m_sender(sender),
       m_on_timeout(on_timeout) {
@@ -52,7 +50,7 @@ E133HealthCheckedConnection::E133HealthCheckedConnection(
  */
 void E133HealthCheckedConnection::SendHeartbeat() {
   OLA_INFO << "Sending heartbeat";
-  if (!m_sender->SendEmpty(m_vector, m_transport))
+  if (!m_sender->SendEmpty(ola::plugin::e131::VECTOR_ROOT_NULL, m_transport))
     OLA_WARN << "Failed to send heartbeat";
 }
 

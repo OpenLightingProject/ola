@@ -477,8 +477,7 @@ bool SimpleE133Controller::SendRequest(const UID &uid,
   ola::plugin::e131::E133Header header(
       "E1.33 Controller",
       0,  // seq #
-      endpoint,
-      false);  // rx_ack
+      endpoint);
 
   ola::plugin::e131::OutgoingUDPTransport transport(&m_outgoing_udp_transport,
                                                     iter->second,

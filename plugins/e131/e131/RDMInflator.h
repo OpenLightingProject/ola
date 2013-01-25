@@ -23,6 +23,7 @@
 #include <map>
 #include <string>
 #include "ola/Callback.h"
+#include "plugins/e131/e131/ACNVectors.h"
 #include "plugins/e131/e131/BaseInflator.h"
 #include "plugins/e131/e131/TransportHeader.h"
 #include "plugins/e131/e131/E133Header.h"
@@ -44,13 +45,12 @@ class RDMInflator: public BaseInflator {
     explicit RDMInflator();
     ~RDMInflator();
 
-    uint32_t Id() const { return RDM_VECTOR; }
+    uint32_t Id() const { return VECTOR_FRAMING_RDMNET; }
 
     bool SetRDMHandler(uint16_t endpoint, RDMMessageHandler *handler);
     bool RemoveRDMHandler(uint16_t endpoint);
 
-    static const unsigned int RDM_VECTOR = 1;
-    static const unsigned int RDM_DATA_VECTOR = 0xcc;
+    static const unsigned int VECTOR_RDMNET_DATA = 0xcc;
 
   protected:
     bool DecodeHeader(HeaderSet &headers,

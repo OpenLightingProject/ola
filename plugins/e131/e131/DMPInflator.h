@@ -21,6 +21,7 @@
 #ifndef PLUGINS_E131_E131_DMPINFLATOR_H_
 #define PLUGINS_E131_E131_DMPINFLATOR_H_
 
+#include "plugins/e131/e131/ACNVectors.h"
 #include "plugins/e131/e131/BaseInflator.h"
 #include "plugins/e131/e131/DMPHeader.h"
 
@@ -32,14 +33,12 @@ class DMPInflator: public BaseInflator {
   friend class DMPInflatorTest;
 
   public:
-    static const unsigned int DMP_VECTOR = 2;
-
     DMPInflator(): BaseInflator(PDU::ONE_BYTE),
                    m_last_header_valid(false) {
     }
     virtual ~DMPInflator() {}
 
-    uint32_t Id() const { return DMP_VECTOR; }
+    uint32_t Id() const { return VECTOR_E131_DMP; }
 
   protected:
     bool DecodeHeader(HeaderSet &headers,

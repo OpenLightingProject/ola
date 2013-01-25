@@ -38,7 +38,7 @@ class RDMPDU: public PDU {
      * Ownership of the command is transferred here
      */
     explicit RDMPDU(const ola::rdm::RDMCommand *command):
-      PDU(RDMInflator::RDM_DATA_VECTOR, ONE_BYTE),
+      PDU(RDMInflator::VECTOR_RDMNET_DATA, ONE_BYTE),
       m_command(command) {
     }
     ~RDMPDU() {

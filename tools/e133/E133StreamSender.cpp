@@ -22,11 +22,12 @@
 
 #include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include "ola/Logging.h"
+#include "plugins/e131/e131/ACNVectors.h"
 #include "plugins/e131/e131/E133Inflator.h"
 #include "plugins/e131/e131/E133PDU.h"
 #include "plugins/e131/e131/RDMInflator.h"
-#include "plugins/e131/e131/TCPTransport.h"
 #include "plugins/e131/e131/RootSender.h"
+#include "plugins/e131/e131/TCPTransport.h"
 
 #include "tools/e133/E133StreamSender.h"
 
@@ -92,12 +93,11 @@ bool E133StreamSender::SendPDU(unsigned int vector,
                                const class ola::plugin::e131::PDU *pdu) {
   ola::plugin::e131::E133Header header(m_source_name,
                                        sequence_number,
-                                       endpoint,
-                                       false);
+                                       endpoint);
   ola::plugin::e131::E133PDU e133_pdu(vector, header, pdu);
 
   return m_root_sender->SendPDU(
-      ola::plugin::e131::E133Inflator::E133_VECTOR,
+      ola::plugin::e131::VECTOR_ROOT_E133,
       e133_pdu,
       m_transport);
 }
