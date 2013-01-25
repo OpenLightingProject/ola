@@ -23,6 +23,7 @@
 #include <memory>
 #include <string>
 #include "ola/Logging.h"
+#include "ola/stl/STLUtils.h"
 #include "ola/rdm/RDMCommand.h"
 #include "plugins/e131/e131/RDMInflator.h"
 #include "plugins/e131/e131/DMPHeader.h"
@@ -48,13 +49,7 @@ RDMInflator::RDMInflator()
  * Clean up this inflator
  */
 RDMInflator::~RDMInflator() {
-  endpoint_handler_map::iterator rdm_iter;
-  for (rdm_iter = m_rdm_handlers.begin();
-       rdm_iter != m_rdm_handlers.end();
-       ++rdm_iter) {
-    delete rdm_iter->second;
-  }
-  m_rdm_handlers.clear();
+  STLDeleteValues(m_rdm_handlers);
 }
 
 
