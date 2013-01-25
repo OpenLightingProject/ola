@@ -20,6 +20,7 @@
 
 #include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include "ola/Logging.h"
+#include "plugins/e131/e131/ACNVectors.h"
 #include "plugins/e131/e131/E133Inflator.h"
 #include "plugins/e131/e131/E133PDU.h"
 #include "plugins/e131/e131/E133Sender.h"
@@ -55,8 +56,8 @@ bool E133Sender::SendRDM(const E133Header &header,
   if (!m_root_sender)
     return false;
 
-  E133PDU pdu(RDMInflator::RDM_VECTOR, header, rdm_pdu);
-  unsigned int vector = E133Inflator::E133_VECTOR;
+  E133PDU pdu(VECTOR_FRAMING_RDMNET, header, rdm_pdu);
+  unsigned int vector = VECTOR_ROOT_E133;
   return m_root_sender->SendPDU(vector, pdu, transport);
 }
 }  // e131

@@ -24,6 +24,7 @@
 #include <vector>
 
 #include "ola/Logging.h"
+#include "plugins/e131/e131/ACNVectors.h"
 #include "plugins/e131/e131/DMPAddress.h"
 #include "plugins/e131/e131/DMPInflator.h"
 #include "plugins/e131/e131/DMPPDU.h"

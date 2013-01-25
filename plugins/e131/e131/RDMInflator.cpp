@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * RDMInflator.cpp
- * The Inflator for the DMP PDUs
+ * The Inflator for the RDM PDUs
  * Copyright (C) 2011 Simon Newton
  */
 
@@ -117,7 +117,7 @@ bool RDMInflator::HandlePDUData(uint32_t vector,
                                 HeaderSet &headers,
                                 const uint8_t *data,
                                 unsigned int pdu_len) {
-  if (vector != RDM_DATA_VECTOR) {
+  if (vector != VECTOR_RDMNET_DATA) {
     OLA_INFO << "Not a RDM message, vector was " << vector;
     return true;
   }
@@ -136,14 +136,7 @@ bool RDMInflator::HandlePDUData(uint32_t vector,
     return true;
   }
 
-  uint8_t start_code = data[0];
-  if (start_code != ola::rdm::RDMCommand::START_CODE) {
-    OLA_INFO << "Skipping packet with non RDM start code: " <<
-      static_cast<unsigned int>(start_code);
-    return true;
-  }
-
-  string rdm_message(reinterpret_cast<const char*>(&data[1]),
+  string rdm_message(reinterpret_cast<const char*>(&data[0]),
                      pdu_len - 1);
 
   endpoint_iter->second->Run(headers.GetTransportHeader(),

@@ -165,38 +165,22 @@ void HeaderSetTest::testE131Header() {
  * test the E1.33 Header
  */
 void HeaderSetTest::testE133Header() {
-  E133Header header("foo", 9840, 2, false);
+  E133Header header("foo", 9840, 2);
   CPPUNIT_ASSERT("foo" == header.Source());
   CPPUNIT_ASSERT_EQUAL((uint32_t) 9840, header.Sequence());
   CPPUNIT_ASSERT_EQUAL((uint16_t) 2, header.Endpoint());
-  CPPUNIT_ASSERT_EQUAL(false, header.RxAcknowledge());
 
   // test copy and assign
   E133Header header2 = header;
   CPPUNIT_ASSERT(header.Source() == header2.Source());
   CPPUNIT_ASSERT_EQUAL(header.Sequence(), header2.Sequence());
   CPPUNIT_ASSERT_EQUAL(header.Endpoint(), header2.Endpoint());
-  CPPUNIT_ASSERT_EQUAL(false, header2.RxAcknowledge());
 
   E133Header header3(header);
   CPPUNIT_ASSERT(header.Source() == header3.Source());
   CPPUNIT_ASSERT_EQUAL(header.Sequence(), header3.Sequence());
   CPPUNIT_ASSERT_EQUAL(header.Endpoint(), header3.Endpoint());
   CPPUNIT_ASSERT(header == header3);
-
-  // test a header with the RX ack bit set
-  E133Header header4("foo", 123456, 42, true);
-  CPPUNIT_ASSERT("foo" == header4.Source());
-  CPPUNIT_ASSERT_EQUAL((uint32_t) 123456, header4.Sequence());
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 42, header4.Endpoint());
-  CPPUNIT_ASSERT_EQUAL(true, header4.RxAcknowledge());
-
-  // test a header with the squawk bit set
-  E133Header header5("foo", 123456, 42, false);
-  CPPUNIT_ASSERT("foo" == header5.Source());
-  CPPUNIT_ASSERT_EQUAL((uint32_t) 123456, header5.Sequence());
-  CPPUNIT_ASSERT_EQUAL((uint16_t) 42, header5.Endpoint());
-  CPPUNIT_ASSERT_EQUAL(false, header5.RxAcknowledge());
 }
 
 
@@ -240,7 +224,7 @@ void HeaderSetTest::testHeaderSet() {
   HeaderSet headers;
   RootHeader root_header;
   E131Header e131_header("e131", 1, 2, 6001);
-  E133Header e133_header("foo", 1, 2050, true);
+  E133Header e133_header("foo", 1, 2050);
   DMPHeader dmp_header(false, false, NON_RANGE, ONE_BYTES);
 
   // test the root header component
