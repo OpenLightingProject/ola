@@ -142,7 +142,10 @@ string ArtNetPlugin::Description() const {
 "use_limited_broadcast = [true|false]\n"
 "When broadcasting, use the limited broadcast address (255.255.255.255) \n"
 "rather than the subnet directed broadcast address. Some devices which \n"
-"don't follow the ArtNet spec require this.\n";
+"don't follow the ArtNet spec require this.\n"
+"\n"
+"use_loopback = [true|false]\n"
+"Enable use of the loopback device\n";
 }
 
 
@@ -173,6 +176,9 @@ bool ArtNetPlugin::SetDefaultPreferences() {
                                          BoolValidator(),
                                          BoolValidator::DISABLED);
   save |= m_preferences->SetDefaultValue(ArtNetDevice::K_LIMITED_BROADCAST_KEY,
+                                         BoolValidator(),
+                                         BoolValidator::DISABLED);
+  save |= m_preferences->SetDefaultValue(ArtNetDevice::K_LOOPBACK_KEY,
                                          BoolValidator(),
                                          BoolValidator::DISABLED);
 

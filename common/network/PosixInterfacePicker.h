@@ -32,7 +32,7 @@ namespace network {
  */
 class PosixInterfacePicker: public InterfacePicker {
   public:
-    std::vector<Interface> GetInterfaces() const;
+    std::vector<Interface> GetInterfaces(bool include_loopback) const;
 
   private:
     static const unsigned int INITIAL_IFACE_COUNT = 10;
@@ -42,4 +42,3 @@ class PosixInterfacePicker: public InterfacePicker {
 }  // network
 }  // ola
 #endif  // COMMON_NETWORK_POSIXINTERFACEPICKER_H_
-
