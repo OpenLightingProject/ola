@@ -177,9 +177,7 @@ bool TestCase::VerifySLPHeader(BigEndianInputStream *stream,
     return false;
   }
 
-  if (slp_packet.language != "en") {
-    OLA_INFO << "Language mismatch, expected 'en', got "
-             << slp_packet.language;
+  if (!CheckLangInResponse(slp_packet.language)) {
     return false;
   }
   return true;
@@ -312,9 +310,8 @@ void TestRunner::ReceiveData() {
                          &packet_size, source_ip, port))
     return;
 
-  IPV4SocketAddress source(source_ip, port);
-  if (source != m_target) {
-    OLA_INFO << "Ignoring message from " << source;
+  if (source_ip != m_target.Host()) {
+    OLA_INFO << "Ignoring message from " << source_ip;
     return;
   }
 

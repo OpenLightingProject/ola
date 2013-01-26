@@ -123,6 +123,15 @@ class TestCase {
       return m_xid;
     }
 
+    virtual bool CheckLangInResponse(const string &lang) const {
+      if (lang != ola::slp::EN_LANGUAGE_TAG) {
+        OLA_INFO << "Language mismatch, expected '" << ola::slp::EN_LANGUAGE_TAG
+                 << "', got " << lang;
+        return false;
+      }
+      return true;
+    }
+
   protected:
     // tests can use this.
     set<IPV4Address> pr_list;

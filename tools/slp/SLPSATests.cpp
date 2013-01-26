@@ -422,6 +422,13 @@ void BuildPacket(BigEndianOutputStream *output) {
 TestState VerifyReply(const uint8_t *data, unsigned int length) {
   return VerifySrvRply(GetDestinationIP(), data, length);
 }
+bool CheckLangInResponse(const string &lang) const {
+  if (lang != "fr") {
+    OLA_INFO << "Language mismatch, expected 'fr', got " << lang;
+    return false;
+  }
+  return true;
+}
 };
 REGISTER_TEST(NonEnglishUnicastRequest)
 
@@ -442,6 +449,13 @@ void BuildPacket(BigEndianOutputStream *output) {
 }
 TestState VerifyReply(const uint8_t *data, unsigned int length) {
   return VerifySrvRply(GetDestinationIP(), data, length);
+}
+bool CheckLangInResponse(const string &lang) const {
+  if (lang != "fr") {
+    OLA_INFO << "Language mismatch, expected 'fr', got " << lang;
+    return false;
+  }
+  return true;
 }
 };
 REGISTER_TEST(NonEnglishMulticastRequest)
