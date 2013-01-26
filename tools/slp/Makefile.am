@@ -11,6 +11,7 @@ EXTRA_DIST = Base.h \
              SLPPacketConstants.h \
              SLPPacketParser.h \
              SLPPendingOperations.h \
+             SLPSATestHelpers.h \
              SLPSATestRunner.h \
              SLPServer.h \
              SLPServerTestHelper.h \
@@ -73,8 +74,9 @@ slp_client_LDADD = $(top_builddir)/common/libolacommon.la \
                    ./libolaslpproto.la
 
 slp_sa_test_SOURCES = slp-sa-test.cpp \
-                      SLPSATests.cpp \
-                      SLPSATestRunner.cpp
+                      SLPSATestHelpers.cpp \
+                      SLPSATestRunner.cpp \
+                      SLPSATests.cpp
 slp_sa_test_LDADD = $(top_builddir)/common/libolacommon.la \
                     ../e133/libolae133.la \
                     ./libolaslp.la
