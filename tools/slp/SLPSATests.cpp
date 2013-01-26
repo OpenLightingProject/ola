@@ -70,6 +70,20 @@ void BuildNLengthPacket(BigEndianOutputStream *output, uint8_t data,
 }
 
 /**
+ * Write an SLPString to an BigEndianInputStream. This allows the size of the
+ * string to be larger than the contents, in an attempt to trigger an overflow
+ * on the remote end.
+ */
+void WriteOverflowString(BigEndianOutputStream *output,
+                         unsigned int header_size,
+                         unsigned int actual_size) {
+  *output << static_cast<uint16_t>(header_size);
+  string data(actual_size, 'a');
+  output->Write(reinterpret_cast<const uint8_t*>(data.data()), data.size());
+}
+
+
+/**
  * Verify an SrvRply contains no URLs
  */
 TestCase::TestState VerifyEmptySrvReply(const uint8_t *data,
@@ -143,7 +157,6 @@ TestCase::TestState VerifySrvRply(const IPV4Address &destination_ip,
   return TestCase::PASSED;
 }
 
-
 /**
  * Try a 0-length UDP packet.
  */
@@ -184,6 +197,44 @@ TestState VerifyReply(const uint8_t *data, unsigned int length) {
 }
 };
 REGISTER_TEST(SrvRqstTest)
+
+
+/**
+ * A SrvRqst to check scope case insensitivity.
+ */
+class CaseSensitiveScopeSrvRqstTest: public TestCase {
+void BuildPacket(BigEndianOutputStream *output) {
+  SetDestination(MULTICAST);
+  ExpectResponse(SERVICE_REPLY);
+  const ScopeSet test_scopes("RdMnEt");
+
+  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), true, pr_list,
+                                        RDMNET_DEVICE_SERVICE, test_scopes);
+}
+
+TestState VerifyReply(const uint8_t *data, unsigned int length) {
+  return VerifySrvRply(GetDestinationIP(), data, length);
+}
+};
+REGISTER_TEST(CaseSensitiveScopeSrvRqstTest)
+
+/**
+ * A SrvRqst to check service-type case insensitivity.
+ */
+class CaseSensitiveServiceTypeSrvRqstTest: public TestCase {
+void BuildPacket(BigEndianOutputStream *output) {
+  SetDestination(MULTICAST);
+  ExpectResponse(SERVICE_REPLY);
+
+  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), true, pr_list,
+                                        "SerViCe:RdmnEt-dEvicE", RDMNET_SCOPES);
+}
+
+TestState VerifyReply(const uint8_t *data, unsigned int length) {
+  return VerifySrvRply(GetDestinationIP(), data, length);
+}
+};
+REGISTER_TEST(CaseSensitiveServiceTypeSrvRqstTest)
 
 
 /**
@@ -238,7 +289,7 @@ void BuildPacket(BigEndianOutputStream *output) {
 REGISTER_TEST(OverflowMulticastSrvRqstTest)
 
 /**
- * A Unicast SrvRqst with a pr-list length that overflows.
+ * A Unicast SrvRqst with a pr-list that overflows.
  */
 class UnicastPRListOverflow: public TestCase {
 void BuildPacket(BigEndianOutputStream *output) {
@@ -246,32 +297,94 @@ void BuildPacket(BigEndianOutputStream *output) {
   ExpectError(SERVICE_REPLY, PARSE_ERROR);
   // The minimum length (excluding header) for a rdmnet:rdmnet-device request is
   // 29. Let's make this longer so we bypass any simple checks on the remote end
-  SLPPacketBuilder::BuildSLPHeader(output, SERVICE_REQUEST, 30,
-                                   40, GetXID());
-  *output << static_cast<uint16_t>(50);
-  // now send data in the remaining 38 bytes
-  string data(38, 'a');
-  output->Write(reinterpret_cast<const uint8_t*>(data.data()), data.size());
+  unsigned int pr_list_size = 40;
+  SLPPacketBuilder::BuildSLPHeader(output, SERVICE_REQUEST, pr_list_size + 2,
+                                   0, GetXID());
+  WriteOverflowString(output, pr_list_size + 100, pr_list_size);
 }
 };
 REGISTER_TEST(UnicastPRListOverflow)
 
-// Various overflow tests for service-type, scope-list, predicate-string and spi-string
-
-
 /**
- * A Unicast SrvRqst with a service-type length that overflows.
+ * A Unicast SrvRqst with a service-type that overflows.
+ */
 class UnicastServiceTypeOverflow: public TestCase {
 void BuildPacket(BigEndianOutputStream *output) {
   SetDestination(UNICAST);
   ExpectError(SERVICE_REPLY, PARSE_ERROR);
-  SLPPacketBuilder::BuildSLPHeader(output, SERVICE_REQUEST, 30,
+  unsigned int service_type_size = 40;
+  SLPPacketBuilder::BuildSLPHeader(output, SERVICE_REQUEST,
+                                   service_type_size + 4,
                                    0, GetXID());
-  *output << static_cast<uint16_t>(0); 
+  SLPPacketBuilder::WriteString(output, "");  // pr-list is empty
+  WriteOverflowString(output, service_type_size + 100, service_type_size);
 }
 };
 REGISTER_TEST(UnicastServiceTypeOverflow)
-*/
+
+/**
+ * A Unicast SrvRqst with a scope-list that overflows.
+ */
+class UnicastScopeListOverflow: public TestCase {
+void BuildPacket(BigEndianOutputStream *output) {
+  SetDestination(UNICAST);
+  ExpectError(SERVICE_REPLY, PARSE_ERROR);
+  unsigned int scope_list_size = 40;
+  unsigned int body_size = (
+      6 + scope_list_size + sizeof(RDMNET_DEVICE_SERVICE) - 1);
+  SLPPacketBuilder::BuildSLPHeader(output, SERVICE_REQUEST, body_size, 0,
+                                   GetXID());
+  SLPPacketBuilder::WriteString(output, "");  // pr-list is empty
+  SLPPacketBuilder::WriteString(output, RDMNET_DEVICE_SERVICE);
+  WriteOverflowString(output, scope_list_size + 10, scope_list_size);
+}
+};
+REGISTER_TEST(UnicastScopeListOverflow)
+
+/**
+ * A Unicast SrvRqst with a predicate that overflows.
+ */
+class UnicastPredicateOverflow: public TestCase {
+void BuildPacket(BigEndianOutputStream *output) {
+  SetDestination(UNICAST);
+  ExpectError(SERVICE_REPLY, PARSE_ERROR);
+  unsigned int predicate_size = 40;
+  unsigned int scope_size = RDMNET_SCOPES.ToString().size();
+  unsigned int body_size = (
+      8 + sizeof(RDMNET_DEVICE_SERVICE) - 1 + scope_size + predicate_size);
+  SLPPacketBuilder::BuildSLPHeader(output, SERVICE_REQUEST, body_size, 0,
+                                   GetXID());
+  SLPPacketBuilder::WriteString(output, "");  // pr-list is empty
+  SLPPacketBuilder::WriteString(output, RDMNET_DEVICE_SERVICE);
+  SLPPacketBuilder::WriteString(output, RDMNET_SCOPES.ToString());
+  WriteOverflowString(output, predicate_size + 10, predicate_size);
+}
+};
+REGISTER_TEST(UnicastPredicateOverflow)
+
+/**
+ * A Unicast SrvRqst with a SPI that overflows.
+ */
+class UnicastSPIOverflow: public TestCase {
+void BuildPacket(BigEndianOutputStream *output) {
+  SetDestination(UNICAST);
+  ExpectError(SERVICE_REPLY, PARSE_ERROR);
+
+  const unsigned int service_type_size = sizeof(RDMNET_DEVICE_SERVICE) - 1;
+  const string scope = RDMNET_SCOPES.ToString();
+  const unsigned int scope_size = scope.size();
+  const unsigned int spi_size = 40;
+  const unsigned int body_size = 10 + service_type_size + scope_size + spi_size;
+  SLPPacketBuilder::BuildSLPHeader(output, SERVICE_REQUEST, body_size, 0,
+                                   GetXID());
+  SLPPacketBuilder::WriteString(output, "");  // pr-list is empty
+  SLPPacketBuilder::WriteString(output, RDMNET_DEVICE_SERVICE);
+  SLPPacketBuilder::WriteString(output, scope);
+  SLPPacketBuilder::WriteString(output, "");  // predicate is empty
+  WriteOverflowString(output, spi_size + 10, spi_size);
+}
+};
+REGISTER_TEST(UnicastSPIOverflow)
 
 /**
  * Try a multicast request with the target's IP in the PR List
