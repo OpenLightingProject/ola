@@ -47,9 +47,10 @@ using std::vector;
  * @return true if we found an interface, false otherwise
  */
 bool InterfacePicker::ChooseInterface(Interface *iface,
-                                      const string &ip_or_name) const {
+                                      const string &ip_or_name,
+                                      bool include_loopback) const {
   bool found = false;
-  vector<Interface> interfaces = GetInterfaces();
+  vector<Interface> interfaces = GetInterfaces(include_loopback);
 
   if (interfaces.empty()) {
     OLA_INFO << "No interfaces found";

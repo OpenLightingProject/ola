@@ -21,6 +21,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <iomanip>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -32,6 +33,7 @@
 using ola::network::IPV4Address;
 using ola::network::Interface;
 using ola::network::InterfacePicker;
+using std::auto_ptr;
 using std::cout;
 using std::endl;
 using std::string;
@@ -40,12 +42,18 @@ using std::vector;
 class InterfacePickerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(InterfacePickerTest);
   CPPUNIT_TEST(testGetInterfaces);
+  CPPUNIT_TEST(testGetLoopbackInterfaces);
   CPPUNIT_TEST(testChooseInterface);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void testGetInterfaces();
+    void testGetLoopbackInterfaces();
     void testChooseInterface();
+
+    void setUp() {
+      ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
+    }
 };
 
 
@@ -54,7 +62,10 @@ class MockPicker: public InterfacePicker {
     explicit MockPicker(const vector<Interface> &interfaces)
         : InterfacePicker(),
           m_interfaces(interfaces) {}
-    std::vector<Interface> GetInterfaces() const { return m_interfaces; }
+
+    std::vector<Interface> GetInterfaces(bool) const {
+      return m_interfaces;
+    }
   private:
     const vector<Interface> &m_interfaces;
 };
@@ -66,8 +77,8 @@ CPPUNIT_TEST_SUITE_REGISTRATION(InterfacePickerTest);
  * Check that we find at least one candidate interface.
  */
 void InterfacePickerTest::testGetInterfaces() {
-  InterfacePicker *picker = InterfacePicker::NewPicker();
-  vector<Interface> interfaces = picker->GetInterfaces();
+  auto_ptr<InterfacePicker> picker(InterfacePicker::NewPicker());
+  vector<Interface> interfaces = picker->GetInterfaces(false);
   OLA_ASSERT_TRUE(interfaces.size() > 0);
 
   vector<Interface>::iterator iter;
@@ -87,7 +98,24 @@ void InterfacePickerTest::testGetInterfaces() {
     cout << endl;
     cout << "---------------" << endl;
   }
-  delete picker;
+}
+
+
+/*
+ * Check that we find a loopback interface.
+ */
+void InterfacePickerTest::testGetLoopbackInterfaces() {
+  auto_ptr<InterfacePicker> picker(InterfacePicker::NewPicker());
+  vector<Interface> interfaces = picker->GetInterfaces(true);
+  OLA_ASSERT_TRUE(interfaces.size() > 0);
+
+  vector<Interface>::iterator iter;
+  unsigned int loopback_count = 0;
+  for (iter = interfaces.begin(); iter != interfaces.end(); ++iter) {
+    if (iter->loopback)
+      loopback_count++;
+  }
+  OLA_ASSERT_GT(loopback_count, 0);
 }
 
 
