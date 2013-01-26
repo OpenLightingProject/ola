@@ -55,10 +55,11 @@ class ArtNetDevice: public Device {
                    google::protobuf::Closure *done);
 
     static const char K_ALWAYS_BROADCAST_KEY[];
-    static const char K_LIMITED_BROADCAST_KEY[];
     static const char K_DEVICE_NAME[];
     static const char K_IP_KEY[];
+    static const char K_LIMITED_BROADCAST_KEY[];
     static const char K_LONG_NAME_KEY[];
+    static const char K_LOOPBACK_KEY[];
     static const char K_NET_KEY[];
     static const char K_SHORT_NAME_KEY[];
     static const char K_SUBNET_KEY[];
