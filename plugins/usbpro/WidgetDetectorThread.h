@@ -174,6 +174,7 @@ class WidgetDetectorThread: public ola::thread::Thread {
     static const uint16_t JESE_DMX_TRI_ID = 1;
     static const uint16_t JESE_ESTA_ID = 0x6864;
     static const uint16_t JESE_RDM_TRI_ID = 2;
+    static const uint16_t JESE_RDM_TRI_MK2_ID = 3;
     static const uint16_t OPEN_LIGHTING_PACKETHEADS_ID = 2;
     static const uint16_t OPEN_LIGHTING_RGB_MIXER_ID = 1;
 };
