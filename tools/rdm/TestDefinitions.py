@@ -3815,7 +3815,7 @@ class GetPresetMergeMode(TestMixins.GetMixin,
       self.SetProperty('preset_merge_mode', None)
       return
 
-    self.SetPropertyFromDict(fields, 'preset_merge_mode')
+    self.SetProperty('preset_merge_mode', fields['merge_mode'])
 
 class GetPresetMergeModeWithData(TestMixins.GetWithDataMixin,
                                  OptionalParameterTestFixture):
