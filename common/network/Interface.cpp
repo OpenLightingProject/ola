@@ -39,7 +39,8 @@ using std::string;
 using std::vector;
 
 
-Interface::Interface() {
+Interface::Interface()
+    : loopback(false) {
   memset(hw_address, 0, MAC_LENGTH);
 }
 
@@ -48,11 +49,13 @@ Interface::Interface(const string &name,
                      const IPV4Address &ip_address,
                      const IPV4Address &broadcast_address,
                      const IPV4Address &subnet_mask,
-                     const uint8_t *arg_hw_address):
+                     const uint8_t *arg_hw_address,
+                     bool loopback):
   name(name),
   ip_address(ip_address),
   bcast_address(broadcast_address),
-  subnet_mask(subnet_mask) {
+  subnet_mask(subnet_mask),
+  loopback(loopback) {
   memcpy(hw_address, arg_hw_address, MAC_LENGTH);
 }
 
@@ -63,6 +66,7 @@ Interface::Interface(const Interface &other) {
   bcast_address = other.bcast_address;
   subnet_mask = other.subnet_mask;
   memcpy(hw_address, other.hw_address, MAC_LENGTH);
+  loopback = other.loopback;
 }
 
 
@@ -73,6 +77,7 @@ Interface& Interface::operator=(const Interface &other) {
     bcast_address = other.bcast_address;
     subnet_mask = other.subnet_mask;
     memcpy(hw_address, other.hw_address, MAC_LENGTH);
+    loopback = other.loopback;
   }
   return *this;
 }
@@ -81,7 +86,8 @@ Interface& Interface::operator=(const Interface &other) {
 bool Interface::operator==(const Interface &other) {
   return (name == other.name &&
           ip_address == other.ip_address &&
-          subnet_mask == other.subnet_mask);
+          subnet_mask == other.subnet_mask &&
+          loopback == other.loopback);
 }
 
 
@@ -142,6 +148,13 @@ bool InterfaceBuilder::SetHardwareAddress(const string &mac_address) {
 
 
 /**
+ * Set the loopback flag.
+ */
+void InterfaceBuilder::SetLoopback(bool loopback) {
+  m_loopback = loopback;
+}
+
+/**
  * Reset the builder object
  */
 void InterfaceBuilder::Reset() {
@@ -150,6 +163,7 @@ void InterfaceBuilder::Reset() {
   m_ip_address = IPV4Address(0);
   m_broadcast_address = IPV4Address(0);
   m_subnet_mask = IPV4Address(0);
+  m_loopback = false;
 }
 
 
@@ -164,7 +178,8 @@ Interface InterfaceBuilder::Construct() {
                    m_ip_address,
                    m_broadcast_address,
                    m_subnet_mask,
-                   m_hw_address);
+                   m_hw_address,
+                   m_loopback);
 }
 
 

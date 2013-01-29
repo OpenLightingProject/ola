@@ -60,7 +60,8 @@ using std::vector;
 /*
  * Return a vector of interfaces on the system.
  */
-vector<Interface> PosixInterfacePicker::GetInterfaces() const {
+vector<Interface> PosixInterfacePicker::GetInterfaces(
+    bool include_loopback) const {
   vector<Interface> interfaces;
   string last_dl_iface_name;
   uint8_t hwlen = 0;
@@ -135,14 +136,19 @@ vector<Interface> PosixInterfacePicker::GetInterfaces() const {
       continue;
     }
 
-    if (ifrcopy.ifr_flags & IFF_LOOPBACK) {
-      OLA_DEBUG << "skipping " << iface->ifr_name <<
-        " because it's a loopback";
-      continue;
-    }
-
     Interface interface;
     interface.name = iface->ifr_name;
+
+    if (ifrcopy.ifr_flags & IFF_LOOPBACK) {
+      if (include_loopback) {
+        interface.loopback = true;
+      } else {
+        OLA_DEBUG << "skipping " << iface->ifr_name <<
+          " because it's a loopback";
+        continue;
+      }
+    }
+
     if (interface.name == last_dl_iface_name && hwaddr) {
       memcpy(interface.hw_address, hwaddr,
              std::min(hwlen, (uint8_t) MAC_LENGTH));

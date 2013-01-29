@@ -41,7 +41,8 @@ class Interface {
               const IPV4Address &ip_address,
               const IPV4Address &broadcast_address,
               const IPV4Address &subnet_mask,
-              const uint8_t *hw_address);
+              const uint8_t *hw_address,
+              bool loopback);
     Interface(const Interface &other);
     Interface& operator=(const Interface &other);
     bool operator==(const Interface &other);
@@ -51,6 +52,7 @@ class Interface {
     IPV4Address bcast_address;
     IPV4Address subnet_mask;
     uint8_t hw_address[MAC_LENGTH];
+    bool loopback;
 };
 
 
@@ -81,6 +83,8 @@ class InterfaceBuilder {
 
     bool SetHardwareAddress(const string &mac_address);
 
+    void SetLoopback(bool loopback);
+
     void Reset();
     Interface Construct();
 
@@ -90,6 +94,7 @@ class InterfaceBuilder {
     IPV4Address m_broadcast_address;
     IPV4Address m_subnet_mask;
     uint8_t m_hw_address[MAC_LENGTH];
+    bool m_loopback;
 
     bool SetAddress(const string &str, IPV4Address *target);
 };
