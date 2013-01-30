@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * SLPPacketBuilder.cpp
  * Copyright (C) 2012 Simon Newton
@@ -24,6 +24,7 @@
 
 #include <set>
 #include <string>
+#include <vector>
 
 #include "tools/slp/SLPPacketBuilder.h"
 #include "tools/slp/SLPPacketConstants.h"
@@ -55,7 +56,27 @@ void SLPPacketBuilder::BuildServiceRequest(
     bool multicast,
     const set<IPV4Address> &pr_list,
     const string &service_type,
-    const ScopeSet &scopes) {
+    const ScopeSet &scopes,
+    const char *language,
+    const string &predicate) {
+  const string joined_pr_list = ola::StringJoin(",", pr_list);
+  BuildServiceRequest(output, xid, multicast, joined_pr_list, service_type,
+      scopes, language, predicate);
+}
+
+
+/**
+ * Similar to above but allows predicates and non-IPv4 addresses in the PR list
+ */
+void SLPPacketBuilder::BuildServiceRequest(
+    BigEndianOutputStreamInterface *output,
+    xid_t xid,
+    bool multicast,
+    const string &pr_list,
+    const string &service_type,
+    const ScopeSet &scopes,
+    const char *language,
+    const string &predicate) {
   /*
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
      |       Service Location header (function = SrvRqst = 1)        |
@@ -71,16 +92,15 @@ void SLPPacketBuilder::BuildServiceRequest(
      |  length of <SLP SPI> string   |       <SLP SPI> String        \
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   */
-  const string joined_pr_list = ola::StringJoin(",", pr_list);
   const string joined_scopes = scopes.AsEscapedString();
-  unsigned int length = (10 + joined_pr_list.size() + service_type.size() +
+  unsigned int length = (10 + pr_list.size() + service_type.size() +
                          joined_scopes.size());
   BuildSLPHeader(output, SERVICE_REQUEST, length,
-                 multicast ? SLP_REQUEST_MCAST : 0, xid);
-  WriteString(output, joined_pr_list);
+                 multicast ? SLP_REQUEST_MCAST : 0, xid, language);
+  WriteString(output, pr_list);
   WriteString(output, service_type);
   WriteString(output, joined_scopes);
-  *output << static_cast<uint16_t>(0);   // length of predicate string
+  WriteString(output, predicate);
   *output << static_cast<uint16_t>(0);   // length of SPI
 }
 
@@ -278,6 +298,118 @@ void SLPPacketBuilder::BuildDAAdvert(BigEndianOutputStreamInterface *output,
 
 
 /**
+ * Build a request for all service types
+ */
+void SLPPacketBuilder::BuildAllServiceTypeRequest(
+    BigEndianOutputStreamInterface *output,
+    xid_t xid,
+    bool multicast,
+    const set<IPV4Address> &pr_list,
+    const ScopeSet &scopes) {
+  /*
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |      Service Location header (function = SrvTypeRqst = 9)     |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |        length of PRList       |        <PRList> String        \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |   length of Naming Authority  |   <Naming Authority String>   \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |     length of <scope-list>    |      <scope-list> String      \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  */
+  const string joined_pr_list = ola::StringJoin(",", pr_list);
+  const string joined_scopes = scopes.AsEscapedString();
+  unsigned int length = 6 + joined_pr_list.size() + joined_scopes.size();
+  BuildSLPHeader(output,
+                 SERVICE_TYPE_REQUEST,
+                 length,
+                 multicast ? SLP_REQUEST_MCAST : 0,
+                 xid);
+
+  WriteString(output, joined_pr_list);
+  *output << static_cast<uint16_t>(0xffff);  // All services
+  WriteString(output, joined_scopes);
+}
+
+
+/**
+ * Build a service-type request for a specific naming auth
+ */
+void SLPPacketBuilder::BuildServiceTypeRequest(
+    BigEndianOutputStreamInterface *output,
+    xid_t xid,
+    bool multicast,
+    const set<IPV4Address> &pr_list,
+    const string &naming_auth,
+    const ScopeSet &scopes) {
+  /*
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |      Service Location header (function = SrvTypeRqst = 9)     |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |        length of PRList       |        <PRList> String        \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |   length of Naming Authority  |   <Naming Authority String>   \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |     length of <scope-list>    |      <scope-list> String      \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  */
+  const string joined_pr_list = ola::StringJoin(",", pr_list);
+  const string joined_scopes = scopes.AsEscapedString();
+  unsigned int length = 6 + joined_pr_list.size() + naming_auth.size() +
+                        joined_scopes.size();
+  BuildSLPHeader(output,
+                 SERVICE_TYPE_REQUEST,
+                 length,
+                 multicast ? SLP_REQUEST_MCAST : 0,
+                 xid);
+
+  WriteString(output, joined_pr_list);
+  WriteString(output, naming_auth);
+  WriteString(output, joined_scopes);
+}
+
+
+/**
+ * Build a SrvTypeRply packet
+ */
+void SLPPacketBuilder::BuildServiceTypeReply(
+    BigEndianOutputStreamInterface *output,
+    xid_t xid,
+    uint16_t error_code,
+    const vector<string> &service_types) {
+  /*
+      0                   1                   2                   3
+      0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |      Service Location header (function = SrvTypeRply = 10)    |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |           Error Code          |    length of <srvType-list>   |
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     |                       <srvtype--list>                         \
+     +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+ */
+  vector<string> escaped_service_types;
+  vector<string>::const_iterator iter = service_types.begin();
+  for (; iter != service_types.end(); ++iter) {
+    string service_type = *iter;
+    SLPStringEscape(&service_type);
+    escaped_service_types.push_back(service_type);
+  }
+  const string joined_service_types = ola::StringJoin(
+      ",", escaped_service_types);
+  unsigned int length = 4 + joined_service_types.size();
+  BuildSLPHeader(output, SERVICE_TYPE_REPLY, length, false, xid);
+
+  *output << static_cast<uint16_t>(error_code);
+  WriteString(output, joined_service_types);
+}
+
+
+/**
  * Build an SAAdvert Packet
  * @param output the BigEndianOutputStreamInterface to put the packet in
  * @param xid the transaction ID
@@ -353,7 +485,8 @@ void SLPPacketBuilder::BuildSLPHeader(BigEndianOutputStreamInterface *output,
                                       slp_function_id_t function_id,
                                       unsigned int length,
                                       uint16_t flags,
-                                      xid_t xid) {
+                                      xid_t xid,
+                                      const char *language) {
   length += 16;
   /*
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -370,8 +503,7 @@ void SLPPacketBuilder::BuildSLPHeader(BigEndianOutputStreamInterface *output,
   *output << static_cast<uint16_t>(length >> 8);
   *output << static_cast<uint8_t>(length) << flags << static_cast<uint8_t>(0);
   *output << static_cast<uint16_t>(0) << xid;
-  *output << static_cast<uint16_t>(sizeof(EN_LANGUAGE_TAG));
-  output->Write(EN_LANGUAGE_TAG, sizeof(EN_LANGUAGE_TAG));
+  WriteString(output, language);
 }
 }  // slp
 }  // ola

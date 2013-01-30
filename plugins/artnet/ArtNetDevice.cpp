@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * artnetdevice.cpp
  * Art-Net device
@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -51,12 +52,13 @@ namespace ola {
 namespace plugin {
 namespace artnet {
 
-using google::protobuf::RpcController;
 using google::protobuf::Closure;
+using google::protobuf::RpcController;
 using ola::network::AddressToString;
 using ola::network::IPV4Address;
-using ola::plugin::artnet::Request;
 using ola::plugin::artnet::Reply;
+using ola::plugin::artnet::Request;
+using std::auto_ptr;
 using std::vector;
 
 const char ArtNetDevice::K_ALWAYS_BROADCAST_KEY[] = "always_broadcast";
@@ -64,6 +66,7 @@ const char ArtNetDevice::K_LIMITED_BROADCAST_KEY[] = "use_limited_broadcast";
 const char ArtNetDevice::K_DEVICE_NAME[] = "ArtNet";
 const char ArtNetDevice::K_IP_KEY[] = "ip";
 const char ArtNetDevice::K_LONG_NAME_KEY[] = "long_name";
+const char ArtNetDevice::K_LOOPBACK_KEY[] = "use_loopback";
 const char ArtNetDevice::K_NET_KEY[] = "net";
 const char ArtNetDevice::K_SHORT_NAME_KEY[] = "short_name";
 const char ArtNetDevice::K_SUBNET_KEY[] = "subnet";
@@ -98,14 +101,15 @@ bool ArtNetDevice::StartHook() {
     net = 0;
 
   ola::network::Interface interface;
-  ola::network::InterfacePicker *picker =
-    ola::network::InterfacePicker::NewPicker();
-  if (!picker->ChooseInterface(&interface, m_preferences->GetValue(K_IP_KEY))) {
-    delete picker;
+  auto_ptr<ola::network::InterfacePicker> picker(
+    ola::network::InterfacePicker::NewPicker());
+  if (!picker->ChooseInterface(
+        &interface,
+        m_preferences->GetValue(K_IP_KEY),
+        m_preferences->GetValueAsBool(K_LOOPBACK_KEY))) {
     OLA_INFO << "Failed to find an interface";
     return false;
   }
-  delete picker;
 
   ArtNetNodeOptions node_options;
   node_options.always_broadcast = m_preferences->GetValueAsBool(

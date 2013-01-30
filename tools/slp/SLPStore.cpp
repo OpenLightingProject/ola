@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * SLPStore.cpp
  * Copyright (C) 2012 Simon Newton
@@ -191,6 +191,43 @@ void SLPStore::GetLocalServices(const TimeStamp &now,
 
 
 /**
+ * Get a list of all the service types for particular scopes.
+ * This doesn't need to be super accurate so we don't bother checking lifetimes
+ * here.
+ */
+void SLPStore::GetAllServiceTypes(const ScopeSet &scopes,
+                                  vector<string> *service_types) {
+  ServiceMap::iterator iter = m_services.begin();
+  for (; iter != m_services.end(); ++iter) {
+    if (AnyServiceMatchesScopes(scopes, iter->second->services))
+      service_types->push_back(iter->first);
+  }
+}
+
+
+/**
+ * Get a list of service types based on a naming authority filter.
+ * @param naming_authority the filter to apply. An empty string returns all
+ * iana services
+ */
+void SLPStore::GetServiceTypesByNamingAuth(const string &naming_authority,
+                                           const ScopeSet &scopes,
+                                           vector<string> *service_types) {
+  ServiceMap::iterator iter = m_services.begin();
+  for (; iter != m_services.end(); ++iter) {
+    const string &service_type = iter->first;
+    size_t pos = service_type.find_last_of('.');
+    string naming_auth;
+    if (pos != string::npos)
+      naming_auth = service_type.substr(pos + 1);
+    if (naming_auth == naming_authority &&
+        AnyServiceMatchesScopes(scopes, iter->second->services))
+      service_types->push_back(iter->first);
+  }
+}
+
+
+/**
  * Clean out expired entries from the table.
  * @param now the current time
  */
@@ -315,6 +352,21 @@ slp_error_code_t SLPStore::InsertOrUpdateEntry(
       (*iter)->mutable_url().set_lifetime(service.url().lifetime());
     return SLP_OK;
   }
+}
+
+
+/**
+ * Return true if any of the services in the service vector match any of the
+ * scopes in the scope list.
+ */
+bool SLPStore::AnyServiceMatchesScopes(const ScopeSet &scopes,
+                                       const ServiceEntryVector &services) {
+  for (ServiceEntryVector::const_iterator service_iter = services.begin();
+       service_iter != services.end(); ++service_iter) {
+    if ((*service_iter)->scopes().Intersects(scopes))
+      return true;
+  }
+  return false;
 }
 }  // slp
 }  // ola

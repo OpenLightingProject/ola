@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * HeaderSetTest.cpp
  * Test fixture for the HeaderSet class
@@ -167,38 +167,22 @@ void HeaderSetTest::testE131Header() {
  * test the E1.33 Header
  */
 void HeaderSetTest::testE133Header() {
-  E133Header header("foo", 9840, 2, false);
+  E133Header header("foo", 9840, 2);
   OLA_ASSERT("foo" == header.Source());
   OLA_ASSERT_EQ((uint32_t) 9840, header.Sequence());
   OLA_ASSERT_EQ((uint16_t) 2, header.Endpoint());
-  OLA_ASSERT_EQ(false, header.RxAcknowledge());
 
   // test copy and assign
   E133Header header2 = header;
   OLA_ASSERT(header.Source() == header2.Source());
   OLA_ASSERT_EQ(header.Sequence(), header2.Sequence());
   OLA_ASSERT_EQ(header.Endpoint(), header2.Endpoint());
-  OLA_ASSERT_EQ(false, header2.RxAcknowledge());
 
   E133Header header3(header);
   OLA_ASSERT(header.Source() == header3.Source());
   OLA_ASSERT_EQ(header.Sequence(), header3.Sequence());
   OLA_ASSERT_EQ(header.Endpoint(), header3.Endpoint());
   OLA_ASSERT(header == header3);
-
-  // test a header with the RX ack bit set
-  E133Header header4("foo", 123456, 42, true);
-  OLA_ASSERT("foo" == header4.Source());
-  OLA_ASSERT_EQ((uint32_t) 123456, header4.Sequence());
-  OLA_ASSERT_EQ((uint16_t) 42, header4.Endpoint());
-  OLA_ASSERT_EQ(true, header4.RxAcknowledge());
-
-  // test a header with the squawk bit set
-  E133Header header5("foo", 123456, 42, false);
-  OLA_ASSERT("foo" == header5.Source());
-  OLA_ASSERT_EQ((uint32_t) 123456, header5.Sequence());
-  OLA_ASSERT_EQ((uint16_t) 42, header5.Endpoint());
-  OLA_ASSERT_EQ(false, header5.RxAcknowledge());
 }
 
 
@@ -242,7 +226,7 @@ void HeaderSetTest::testHeaderSet() {
   HeaderSet headers;
   RootHeader root_header;
   E131Header e131_header("e131", 1, 2, 6001);
-  E133Header e133_header("foo", 1, 2050, true);
+  E133Header e133_header("foo", 1, 2050);
   DMPHeader dmp_header(false, false, NON_RANGE, ONE_BYTES);
 
   // test the root header component

@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * WidgetDetectorThread.cpp
  * A thread that periodically looks for usb pro devices, and runs the callback
@@ -308,7 +308,8 @@ void WidgetDetectorThread::UsbProWidgetReady(
       break;
     case JESE_ESTA_ID:
       if (information->device_id == JESE_DMX_TRI_ID ||
-          information->device_id == JESE_RDM_TRI_ID) {
+          information->device_id == JESE_RDM_TRI_ID ||
+          information->device_id == JESE_RDM_TRI_MK2_ID) {
         DispatchWidget(
             new DmxTriWidget(
               m_other_ss,

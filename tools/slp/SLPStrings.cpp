@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * SLPStrings.h
  * Utility functions for dealing with strings in SLP
@@ -139,6 +139,19 @@ string SLPServiceFromURL(const string &url) {
     service = service.substr(0, pos);
   SLPCanonicalizeString(&service);
   return service;
+}
+
+
+/**
+ * Strip the service type from the url. This returns everything after the ://
+ * Note we should really use a full BNF parser here.
+ */
+string SLPStripServiceFromURL(const string &url) {
+  string remainder;
+  size_t pos = url.find("://");
+  if (pos != string::npos)
+    remainder = url.substr(pos + 3);
+  return remainder;
 }
 }  // slp
 }  // ola

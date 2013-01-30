@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * SLPPacketParser.cpp
  * Copyright (C) 2012 Simon Newton
@@ -44,7 +44,7 @@ namespace slp {
  * Return the function-id for a packet, or 0 if the packet is malformed.
  */
 uint8_t SLPPacketParser::DetermineFunctionID(const uint8_t *data,
-                                             unsigned int length) const {
+                                             unsigned int length) {
   if (length < 2) {
     OLA_WARN << "SLP Packet too short to extract function-id";
     return 0;
@@ -57,7 +57,7 @@ uint8_t SLPPacketParser::DetermineFunctionID(const uint8_t *data,
  * Unpack a Service Request, assumes the Function-ID is SERVICE_REQUEST
  */
 const ServiceRequestPacket* SLPPacketParser::UnpackServiceRequest(
-    BigEndianInputStream *input) const {
+    BigEndianInputStream *input) {
   auto_ptr<ServiceRequestPacket> packet(new ServiceRequestPacket());
   if (!ExtractHeader(input, packet.get(), "SrvRqst"))
     return NULL;
@@ -88,7 +88,7 @@ const ServiceRequestPacket* SLPPacketParser::UnpackServiceRequest(
  * Unpack a Service Reply messages
  */
 const ServiceReplyPacket* SLPPacketParser::UnpackServiceReply(
-    BigEndianInputStream *input) const {
+    BigEndianInputStream *input) {
   auto_ptr<ServiceReplyPacket> packet(new ServiceReplyPacket());
   if (!ExtractHeader(input, packet.get(), "SrvRply"))
     return NULL;
@@ -124,7 +124,7 @@ const ServiceReplyPacket* SLPPacketParser::UnpackServiceReply(
  * Unpack a Service Registration packet
  */
 const ServiceRegistrationPacket *SLPPacketParser::UnpackServiceRegistration(
-    BigEndianInputStream *input) const {
+    BigEndianInputStream *input) {
   auto_ptr<ServiceRegistrationPacket> packet(new ServiceRegistrationPacket());
   if (!ExtractHeader(input, packet.get(), "SrvReg"))
     return NULL;
@@ -157,7 +157,7 @@ const ServiceRegistrationPacket *SLPPacketParser::UnpackServiceRegistration(
  * Unpack a Service Ack packet
  */
 const ServiceAckPacket *SLPPacketParser::UnpackServiceAck(
-    BigEndianInputStream *input) const {
+    BigEndianInputStream *input) {
   auto_ptr<ServiceAckPacket> packet(new ServiceAckPacket());
   if (!ExtractHeader(input, packet.get(), "SrvAck"))
     return NULL;
@@ -168,11 +168,55 @@ const ServiceAckPacket *SLPPacketParser::UnpackServiceAck(
 }
 
 
+
+/**
+ * Unpacket a SrvTypeRqst packet
+ */
+const ServiceTypeRequestPacket *SLPPacketParser::UnpackServiceTypeRequest(
+    BigEndianInputStream *input) {
+  auto_ptr<ServiceTypeRequestPacket> packet(new ServiceTypeRequestPacket());
+  if (!ExtractHeader(input, packet.get(), "SrvTypeRqst"))
+    return NULL;
+
+  string pr_list;
+  if (!ExtractString(input, &pr_list, "PR List"))
+    return NULL;
+  ConvertIPAddressList(pr_list, &packet->pr_list);
+
+  // The naming auth field is special, since a length of 0xffff implies all
+  // sevices.
+  uint16_t naming_auth_length;
+  if (!(*input >> naming_auth_length)) {
+    OLA_INFO << "Packet too small to read naming auth length";
+    return NULL;
+  }
+
+  if (naming_auth_length == 0xffff) {
+    packet->include_all = true;
+  } else {
+    packet->include_all = false;
+
+    unsigned int bytes_read = input->ReadString(&packet->naming_authority,
+                                                naming_auth_length);
+    if (bytes_read != naming_auth_length) {
+      OLA_INFO << "Insufficent data remaining for naming auth, expected "
+               << naming_auth_length << ", " << bytes_read << " remaining";
+      return NULL;
+    }
+    SLPStringUnescape(&packet->naming_authority);
+  }
+
+  if (!ExtractString(input, &packet->scope_list, "Scope List", false))
+    return NULL;
+  return packet.release();
+}
+
+
 /**
  * Unpack a DAAdvert packet
  */
 const DAAdvertPacket *SLPPacketParser::UnpackDAAdvert(
-    BigEndianInputStream *input) const {
+    BigEndianInputStream *input) {
   auto_ptr<DAAdvertPacket> packet(new DAAdvertPacket());
   if (!ExtractHeader(input, packet.get(), "DAAdvert"))
     return NULL;
@@ -220,7 +264,7 @@ const DAAdvertPacket *SLPPacketParser::UnpackDAAdvert(
  * Unpack a Service De-Registration packet
  */
 const ServiceDeRegistrationPacket *SLPPacketParser::UnpackServiceDeRegistration(
-    BigEndianInputStream *input) const {
+    BigEndianInputStream *input) {
   auto_ptr<ServiceDeRegistrationPacket> packet(
       new ServiceDeRegistrationPacket());
   if (!ExtractHeader(input, packet.get(), "SrvDeReg"))
@@ -243,7 +287,7 @@ const ServiceDeRegistrationPacket *SLPPacketParser::UnpackServiceDeRegistration(
  */
 bool SLPPacketParser::ExtractHeader(BigEndianInputStream *input,
                                     SLPPacket *packet,
-                                    const string &packet_type) const {
+                                    const string &packet_type) {
   /*
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
      |    Version    |  Function-ID  |            Length             |
@@ -327,7 +371,7 @@ bool SLPPacketParser::ExtractHeader(BigEndianInputStream *input,
 bool SLPPacketParser::ExtractString(BigEndianInputStream *input,
                                     string *result,
                                     const string &field_name,
-                                    bool unescape) const {
+                                    bool unescape) {
   uint16_t str_length;
   if (!(*input >> str_length)) {
     OLA_INFO << "Packet too small to read " << field_name << " length";
@@ -353,7 +397,7 @@ bool SLPPacketParser::ExtractString(BigEndianInputStream *input,
  */
 bool SLPPacketParser::ExtractURLEntry(BigEndianInputStream *input,
                                       URLEntry *entry,
-                                      const string &packet_type) const {
+                                      const string &packet_type) {
   /*
       0                   1                   2                   3
       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
@@ -396,7 +440,7 @@ bool SLPPacketParser::ExtractURLEntry(BigEndianInputStream *input,
  * Extract an Authentication block. We just discard these for now
  */
 bool SLPPacketParser::ExtractAuthBlock(BigEndianInputStream *input,
-                                       const string &packet_type) const {
+                                       const string &packet_type) {
   /*
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
      |  Block Structure Descriptor   |  Authentication Block Length  |
@@ -454,7 +498,7 @@ bool SLPPacketParser::ExtractAuthBlock(BigEndianInputStream *input,
  */
 void SLPPacketParser::ConvertIPAddressList(
     const string &list,
-    vector<IPV4Address> *addresses) const {
+    vector<IPV4Address> *addresses) {
   if (list.empty())
     return;
 

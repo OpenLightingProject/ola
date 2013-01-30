@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * SLPServerTestHelper.cpp
  * Tests the SA functionality of the SLPServer class
@@ -276,6 +276,37 @@ void SLPServerTestHelper::InjectServiceDeRegistration(
 
 
 /**
+ * Inject a SrvTypeRqst for all service types
+ */
+void SLPServerTestHelper::InjectAllServiceTypeRequest(
+    const IPV4SocketAddress &source,
+    xid_t xid,
+    const set<IPV4Address> &pr_list,
+    const ScopeSet &scopes) {
+  SLPPacketBuilder::BuildAllServiceTypeRequest(
+      &m_output_stream, xid, true, pr_list, scopes);
+  m_udp_socket->InjectData(&m_output, source);
+  OLA_ASSERT_TRUE(m_output.Empty());
+}
+
+
+/**
+ * Inject a SrvTypeRqst for a particular naming auth
+ */
+void SLPServerTestHelper::InjectServiceTypeRequest(
+    const IPV4SocketAddress &source,
+    xid_t xid,
+    const set<IPV4Address> &pr_list,
+    const string &naming_auth,
+    const ScopeSet &scopes) {
+  SLPPacketBuilder::BuildServiceTypeRequest(
+      &m_output_stream, xid, true, pr_list, naming_auth, scopes);
+  m_udp_socket->InjectData(&m_output, source);
+  OLA_ASSERT_TRUE(m_output.Empty());
+}
+
+
+/**
  * Inject an error (truncated SrvRepl or DAAdvert).
  */
 void SLPServerTestHelper::InjectError(const IPV4SocketAddress &source,
@@ -409,6 +440,22 @@ void SLPServerTestHelper::ExpectMulticastDAAdvert(xid_t xid,
   ExpectDAAdvert(dest, xid, true, SLP_OK, boot_timestamp, scopes);
 }
 
+
+
+/**
+ * Expect a Service Type Reply
+ */
+void SLPServerTestHelper::ExpectServiceTypeReply(
+    const IPV4SocketAddress &dest,
+    xid_t xid,
+    uint16_t error_code,
+    const vector<string> &service_types) {
+
+  SLPPacketBuilder::BuildServiceTypeReply(&m_output_stream, xid, error_code,
+                                          service_types);
+  m_udp_socket->AddExpectedData(&m_output, dest);
+  OLA_ASSERT_TRUE(m_output.Empty());
+}
 
 
 /**
