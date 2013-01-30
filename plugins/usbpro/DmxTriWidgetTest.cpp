@@ -227,7 +227,7 @@ void DmxTriWidgetTest::AckSingleTxAndTerminate() {
 
 void DmxTriWidgetTest::AckSingleTxAndExpectData() {
   AckSingleTX();
-  uint8_t expected_dmx_command[] = {0x21, 0x01, 0x00, 3, 2, 3, 45};
+  uint8_t expected_dmx_command[] = {0x21, 0x00, 0x00, 3, 2, 3, 45};
   m_endpoint->AddExpectedUsbProMessage(
       EXTENDED_LABEL,
       expected_dmx_command,
@@ -403,7 +403,7 @@ void DmxTriWidgetTest::testSendDMX() {
   m_widget->SendDMX(data2);
   m_widget->SendDMX(data3);
 
-  uint8_t expected_dmx_command1[] = {0x21, 0x1, 0x00, 1, 2, 3, 45};
+  uint8_t expected_dmx_command1[] = {0x21, 0x0, 0x00, 1, 2, 3, 45};
   m_endpoint->AddExpectedUsbProMessage(
       EXTENDED_LABEL,
       expected_dmx_command1,

@@ -62,36 +62,63 @@ class DmxTriWidgetImpl: public BaseUsbProWidget,
     void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
 
   private:
+    typedef enum {
+      SINGLE_TX_COMMAND_ID = 0x21,
+      DISCOVER_AUTO_COMMAND_ID = 0x33,
+      DISCOVER_STATUS_COMMAND_ID = 0x34,
+      REMOTE_UID_COMMAND_ID = 0x35,
+      RAW_RDM_COMMAND_ID = 0x37,
+      REMOTE_GET_COMMAND_ID = 0x38,
+      REMOTE_SET_COMMAND_ID = 0x39,
+      QUEUED_GET_COMMAND_ID = 0x3a,
+      SET_FILTER_COMMAND_ID = 0x3d,
+
+      RESERVED_COMMAND_ID = 0xff,
+    } TriCommandId;
+
+    typedef enum {
+      NO_DISCOVERY_ACTION,
+      DISCOVER_AUTO_REQUIRED,
+      DISCOVER_STATUS_REQUIRED,
+      FETCH_UID_REQUIRED,
+    } TriDiscoveryState;
+
     ola::thread::SchedulerInterface *m_scheduler;
-    ola::thread::timeout_id m_rdm_timeout_id;
     std::map<const ola::rdm::UID, uint8_t> m_uid_index_map;
     uint8_t m_uid_count;
     uint16_t m_last_esta_id;
     bool m_use_raw_rdm;
-    ola::rdm::RDMDiscoveryCallback *m_discovery_callback;
-    ola::rdm::RDMCallback *m_rdm_request_callback;
-    const ola::rdm::RDMRequest *m_pending_request;
-    uint8_t m_transaction_number;
-    DmxBuffer m_outgoing_dmx;
-    bool m_waiting_for_tx_ack;
 
-    void SendDMXBuffer(const DmxBuffer &buffer);
+    // State for sending DMX
+    DmxBuffer m_outgoing_dmx;
+
+    // State for handling RDM discovery
+    ola::thread::timeout_id m_disc_stat_timeout_id;
+    ola::rdm::RDMDiscoveryCallback *m_discovery_callback;
+    TriDiscoveryState m_discovery_state;
+
+    // State for sending RDM Gets/Sets
+    // This holds pointers to the RDMRequest and Callback that is queued or in
+    // flight.
+    ola::rdm::RDMCallback *m_rdm_request_callback;
+    const ola::rdm::RDMRequest *m_pending_rdm_request;
+    uint8_t m_transaction_number;
+    // The command id that we expect to see in the response.
+    uint8_t m_expected_command;
+
+    void SendDMXBuffer();
+    void SendQueuedRDMCommand();
     void RunDiscoveryCallback(ola::rdm::RDMDiscoveryCallback *callback);
     bool CheckDiscoveryStatus();
-    void RunRDMDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
     void HandleMessage(uint8_t label,
                        const uint8_t *data,
                        unsigned int length);
-    bool InDiscoveryMode() const;
-    bool SendDiscoveryStart();
-    bool SendDiscoveryStat();
+    void SendDiscoveryStart();
+    void SendDiscoveryStat();
     void FetchNextUID();
-    void SendRawRDMRequest(const ola::rdm::RDMRequest *request,
-                           ola::rdm::RDMCallback *callback);
-    void DispatchRequest(const ola::rdm::RDMRequest *request,
-                         ola::rdm::RDMCallback *callback);
-    void DispatchQueuedGet(const ola::rdm::RDMRequest* request,
-                           ola::rdm::RDMCallback *callback);
+    void SendRawRDMRequest();
+    void DispatchRequest();
+    void DispatchQueuedGet();
     void StopDiscovery();
 
     void HandleSingleTXResponse(uint8_t return_code);
@@ -120,6 +147,11 @@ class DmxTriWidgetImpl: public BaseUsbProWidget,
     void HandleSetFilterResponse(uint8_t return_code,
                                  const uint8_t *data,
                                  unsigned int length);
+    bool PendingTransaction() const;
+    void MaybeSendNextRequest();
+    void HandleRDMError(ola::rdm::rdm_response_code error_code);
+    bool SendCommandToTRI(uint8_t label, const uint8_t *data,
+                          unsigned int length);
     bool TriToOlaReturnCode(uint8_t return_code,
                             ola::rdm::rdm_response_code *code);
     bool ReturnCodeToNackReason(uint8_t return_code,
@@ -164,15 +196,7 @@ class DmxTriWidgetImpl: public BaseUsbProWidget,
 
     static const unsigned int DATA_OFFSET = 2;  // first two bytes are CI & RC
     static const uint8_t EXTENDED_COMMAND_LABEL = 88;  // 'X'
-    static const uint8_t SINGLE_TX_COMMAND_ID = 0x21;
-    static const uint8_t DISCOVER_AUTO_COMMAND_ID = 0x33;
-    static const uint8_t DISCOVER_STATUS_COMMAND_ID = 0x34;
-    static const uint8_t REMOTE_UID_COMMAND_ID = 0x35;
-    static const uint8_t RAW_RDM_COMMAND_ID = 0x37;
-    static const uint8_t REMOTE_GET_COMMAND_ID = 0x38;
-    static const uint8_t REMOTE_SET_COMMAND_ID = 0x39;
-    static const uint8_t QUEUED_GET_COMMAND_ID = 0x3a;
-    static const uint8_t SET_FILTER_COMMAND_ID = 0x3d;
+
     // The ms delay between checking on the RDM discovery process
     static const unsigned int RDM_STATUS_INTERVAL_MS = 100;
 };
