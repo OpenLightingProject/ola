@@ -15,13 +15,16 @@ COMMON_LIBS = $(top_builddir)/ola/libola.la \
               $(top_builddir)/common/libolacommon.la
 LDADD = $(COMMON_LIBS)
 
-bin_PROGRAMS = ola_dev_info ola_usbpro ola_artnet ola_e131 \
+bin_PROGRAMS = ola_dev_info ola_usbpro ola_e131 \
                ola_streaming_client ola_rdm_discover ola_rdm_get \
                ola_recorder ola_timecode ola_universe_stats
 
+if USE_ARTNET
+bin_PROGRAMS += ola_artnet
 ola_artnet_SOURCES = ola-artnet.cpp
 ola_artnet_LDADD = libolaconfig.la $(COMMON_LIBS) $(libprotobuf_LIBS) \
                    $(top_builddir)/plugins/artnet/messages/libolaartnetconf.la
+endif
 
 ola_dev_info_SOURCES = ola-client.cpp
 

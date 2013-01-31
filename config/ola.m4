@@ -58,3 +58,24 @@ elif test -n "$1" ; then
   fi
 fi
 ])
+
+
+# PLUGIN_SUPPORT(plugin, conditional)
+# Build the specified plugin, unless it was disabled at configure time.
+# -----------------------------------------------------------------------------
+AC_DEFUN([PLUGIN_SUPPORT],
+[
+  plugin_key=$1
+  enable_arg="enable_${plugin_key}"
+
+  AC_ARG_ENABLE(
+    [$1],
+    AS_HELP_STRING([--disable-$1], [Disable the $1 plugin]))
+
+  eval enable_plugin=\$$enable_arg;
+  if test "${enable_plugin}" != "no"; then
+    PLUGINS="${PLUGINS} ${plugin_key}";
+    AC_DEFINE_UNQUOTED($2, [1], [define if $1 is to be used])
+  fi
+  AM_CONDITIONAL($2, test "${enable_plugin}" != "no")
+])
