@@ -187,7 +187,9 @@ fi
 
 # We build a list of plugins that we're going to compile here so the olad
 # knows what to link against.
-PLUGINS="artnet dummy espnet e131 opendmx pathport sandnet shownet stageprofi usbpro"
+PLUGINS="dummy espnet e131 opendmx pathport sandnet shownet stageprofi usbpro"
+
+PLUGIN_SUPPORT(artnet, USE_ARTNET)
 
 # LIBRARY: ncurses
 AC_CHECK_LIB([ncurses], [initscr], [have_ncurses="yes"])

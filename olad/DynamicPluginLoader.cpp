@@ -26,7 +26,10 @@
 #include "olad/Plugin.h"
 #include "olad/DynamicPluginLoader.h"
 
+#ifdef USE_ARTNET
 #include "plugins/artnet/ArtNetPlugin.h"
+#endif
+
 #include "plugins/dummy/DummyPlugin.h"
 #include "plugins/e131/E131Plugin.h"
 #include "plugins/espnet/EspNetPlugin.h"
@@ -85,7 +88,9 @@ void DynamicPluginLoader::PopulatePlugins() {
   m_plugins.push_back(
       new ola::plugin::dmx4linux::Dmx4LinuxPlugin(m_plugin_adaptor));
 #endif
+#ifdef USE_ARTNET
   m_plugins.push_back(new ola::plugin::artnet::ArtNetPlugin(m_plugin_adaptor));
+#endif
   m_plugins.push_back(new ola::plugin::dummy::DummyPlugin(m_plugin_adaptor));
   m_plugins.push_back(new ola::plugin::e131::E131Plugin(m_plugin_adaptor));
   m_plugins.push_back(new ola::plugin::espnet::EspNetPlugin(m_plugin_adaptor));

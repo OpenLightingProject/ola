@@ -4,6 +4,7 @@ SUBDIRS = messages
 EXTRA_DIST = ArtNetDevice.h ArtNetNode.h ArtNetPackets.h ArtNetPlugin.h \
              ArtNetPort.h
 
+if USE_ARTNET
 # This is a library which doesn't contain any coupling to olad
 noinst_LTLIBRARIES = libolaartnetnode.la
 libolaartnetnode_la_SOURCES = ArtNetNode.cpp
@@ -26,3 +27,4 @@ ArtNetTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 ArtNetTester_LDADD = $(CPPUNIT_LIBS) \
                      libolaartnetnode.la \
                      ../../common/testing/libolatesting.la
+endif
