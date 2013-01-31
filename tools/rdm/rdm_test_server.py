@@ -26,14 +26,15 @@ import re
 import signal
 import stat
 import sys
-import traceback
 import textwrap
 import threading
+import traceback
 import urlparse
 
+from datetime import datetime
+from optparse import OptionParser, OptionGroup, OptionValueError
 from threading import Condition, Event, Lock, Thread
 from time import time, sleep
-from optparse import OptionParser, OptionGroup, OptionValueError
 from wsgiref.simple_server import make_server
 from ola.UID import UID
 from ola.ClientWrapper import ClientWrapper, SelectServer
@@ -237,7 +238,9 @@ class RDMTestThread(Thread):
       'tests_completed': 0,
       'total_tests': None,
       'state': self.RUNNING,
+      'duration': 0,
     }
+    start_time = datetime.now()
     self._test_state_lock.release()
 
     runner = TestRunner.TestRunner(universe, uid, broadcast_write_delay,
@@ -266,6 +269,7 @@ class RDMTestThread(Thread):
         dmx_sender.Stop()
 
     timestamp = int(time())
+    end_time = datetime.now()
     test_parameters = {
       'broadcast_write_delay': broadcast_write_delay,
       'dmx_frame_rate': dmx_frame_rate,
@@ -279,6 +283,7 @@ class RDMTestThread(Thread):
       logs_saved = False
 
     self._test_state_lock.acquire()
+    self._test_state['duration'] = (end_time - start_time).total_seconds()
     self._test_state['state'] = self.COMPLETED
     self._test_state['tests'] = tests
     self._test_state['logs_saved'] = logs_saved
@@ -629,6 +634,7 @@ class RunTestsHandler(OLAServerRequestHandler):
     json_data = {'status': True}
     if status['state'] == RDMTestThread.COMPLETED:
       json_data['UID'] = str(status['uid'])
+      json_data['duration'] = status['duration']
       json_data['completed'] = True
       json_data['logs_disabled'] = not status['logs_saved']
       json_data['timestamp'] = status['timestamp'],
