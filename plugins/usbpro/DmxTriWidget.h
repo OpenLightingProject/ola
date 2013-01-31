@@ -104,7 +104,7 @@ class DmxTriWidgetImpl: public BaseUsbProWidget,
     const ola::rdm::RDMRequest *m_pending_rdm_request;
     uint8_t m_transaction_number;
     // The command id that we expect to see in the response.
-    uint8_t m_expected_command;
+    uint8_t m_last_command, m_expected_command;
 
     void SendDMXBuffer();
     void SendQueuedRDMCommand();

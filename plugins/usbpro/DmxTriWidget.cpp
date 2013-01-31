@@ -70,6 +70,7 @@ DmxTriWidgetImpl::DmxTriWidgetImpl(
       m_rdm_request_callback(NULL),
       m_pending_rdm_request(NULL),
       m_transaction_number(0),
+      m_last_command(RESERVED_COMMAND_ID),
       m_expected_command(RESERVED_COMMAND_ID) {
 }
 
@@ -111,8 +112,9 @@ void DmxTriWidgetImpl::Stop() {
 bool DmxTriWidgetImpl::SendDMX(const DmxBuffer &buffer) {
   // Update the buffer, if there is already a frame pending, we send take the
   // latest one.
-  if (m_outgoing_dmx.Size())
+  if (m_outgoing_dmx.Size()) {
     OLA_INFO << "TRI widget dropping frame";
+  }
   m_outgoing_dmx = buffer;
   MaybeSendNextRequest();
   return true;
@@ -282,6 +284,7 @@ void DmxTriWidgetImpl::HandleMessage(uint8_t label,
                << std::hex << static_cast<int>(m_expected_command) << ", got "
                << static_cast<int>(command_id);
     }
+    m_last_command = m_expected_command;
     m_expected_command = RESERVED_COMMAND_ID;
 
     switch (command_id) {
@@ -840,19 +843,24 @@ bool DmxTriWidgetImpl::PendingTransaction() const {
 }
 
 /**
- * Check if there is anything waiting to be sent. We prioritize RDM over DMX
- * otherwise we may starve out RDM.
+ * Check if there is anything waiting to be sent.
  */
 void DmxTriWidgetImpl::MaybeSendNextRequest() {
   // sending may fail, so we loop until there is nothing to do or there is a
   // transaction pending.
+  bool first = true;
   while (true) {
     if (PendingTransaction()) {
-      OLA_DEBUG << "Transaction in progress, delaying send";
+      if (first)
+        OLA_DEBUG << "Transaction in progress, delaying send";
       return;
     }
+    first = false;
 
-    if (m_pending_rdm_request) {
+    if (m_outgoing_dmx.Size() && m_last_command != SINGLE_TX_COMMAND_ID) {
+      // avoid starving out DMX frames
+      SendDMXBuffer();
+    } else if (m_pending_rdm_request) {
       // there is an RDM command to send
       SendQueuedRDMCommand();
     } else if (m_discovery_state == DISCOVER_AUTO_REQUIRED) {
