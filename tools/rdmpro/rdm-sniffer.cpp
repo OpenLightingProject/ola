@@ -319,7 +319,7 @@ void RDMSniffer::DisplayDmxFrame() {
       dmx_slot_count,
       static_cast<unsigned int>(m_options.dmx_slot_limit));
 
-  DisplayRawData(1, 1 + slots_to_display);
+  DisplayRawData(1, slots_to_display);
 }
 
 
@@ -334,7 +334,7 @@ void RDMSniffer::DisplayAlternateFrame() {
   unsigned int slots_to_display = std::min(
       slot_count,
       static_cast<unsigned int>(m_options.dmx_slot_limit));
-  DisplayRawData(1, 1 + slots_to_display);
+  DisplayRawData(1, slots_to_display);
 }
 
 
