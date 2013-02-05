@@ -55,8 +55,8 @@ void SLPUDPSender::SendServiceRequest(const IPV4SocketAddress &dest,
                                       const ScopeSet &scopes) {
   EmptyBuffer();
   SLPPacketBuilder::BuildServiceRequest(
-      &m_output_stream, xid, dest.Host() == m_multicast_address, pr_list,
-      service_type, scopes);
+      &m_output_stream, xid, dest.Host() == m_multicast_address,
+      EN_LANGUAGE_TAG, pr_list, service_type, scopes);
   OLA_INFO << "TX SrvRqst(" << dest << "), " << service_type << ", xid " << xid
            << ", scopes " << scopes;
   Send(dest);
@@ -74,10 +74,12 @@ void SLPUDPSender::SendServiceRequest(const IPV4SocketAddress &dest,
 
 void SLPUDPSender::SendServiceReply(const IPV4SocketAddress &dest,
                                     xid_t xid,
+                                    const string &language,
                                     uint16_t error_code,
                                     const URLEntries &urls) {
   EmptyBuffer();
-  SLPPacketBuilder::BuildServiceReply(&m_output_stream, xid, error_code, urls);
+  SLPPacketBuilder::BuildServiceReply(&m_output_stream, xid, language,
+                                      error_code, urls);
   OLA_INFO << "TX SrvRply(" << dest << "), xid " << xid << ", error "
            << error_code;
   Send(dest);
@@ -120,9 +122,11 @@ void SLPUDPSender::SendServiceDeRegistration(const IPV4SocketAddress &dest,
 
 void SLPUDPSender::SendServiceAck(const IPV4SocketAddress &dest,
                                   xid_t xid,
+                                  const string &language,
                                   uint16_t error_code) {
   EmptyBuffer();
-  SLPPacketBuilder::BuildServiceAck(&m_output_stream, xid, error_code);
+  SLPPacketBuilder::BuildServiceAck(&m_output_stream, xid, language,
+                                    error_code);
   OLA_INFO << "TX SrvAck(" << dest << "), xid " << xid << ", error "
            << error_code;
   Send(dest);
@@ -174,9 +178,11 @@ void SLPUDPSender::SendSAAdvert(const IPV4SocketAddress &dest,
 void SLPUDPSender::SendError(const IPV4SocketAddress &dest,
                              slp_function_id_t function_id,
                              xid_t xid,
+                             const string &language,
                              uint16_t error_code) {
   EmptyBuffer();
-  SLPPacketBuilder::BuildError(&m_output_stream, function_id, xid, error_code);
+  SLPPacketBuilder::BuildError(&m_output_stream, function_id, xid,
+                               language, error_code);
   OLA_INFO << "TX Error(" << dest << "), function-id: " << function_id
            << ", error " << error_code;
   Send(dest);

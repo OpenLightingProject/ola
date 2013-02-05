@@ -62,6 +62,7 @@ class SLPUDPSender {
 
     void SendServiceReply(const IPV4SocketAddress &dest,
                           xid_t xid,
+                          const string &language,
                           uint16_t error_code,
                           const URLEntries &urls);
 
@@ -78,6 +79,7 @@ class SLPUDPSender {
 
     void SendServiceAck(const IPV4SocketAddress &dest,
                         xid_t xid,
+                        const string &language,
                         uint16_t error_code);
 
     void SendDAAdvert(const IPV4SocketAddress &dest,
@@ -100,6 +102,7 @@ class SLPUDPSender {
     void SendError(const IPV4SocketAddress &dest,
                    slp_function_id_t function_id,
                    xid_t xid,
+                   const string &language,
                    uint16_t error_code);
 
   private:
