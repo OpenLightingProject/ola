@@ -529,6 +529,7 @@ void SLPServer::HandleServiceRequest(const uint8_t *data,
 
   // check scopes
   if (request->scope_list.empty()) {
+    OLA_INFO << "Empty scope list";
     SendErrorIfUnicast(request.get(), SERVICE_REPLY, source,
                        SCOPE_NOT_SUPPORTED);
     return;
@@ -536,6 +537,7 @@ void SLPServer::HandleServiceRequest(const uint8_t *data,
   ScopeSet scope_set(request->scope_list);
 
   if (!scope_set.Intersects(m_configured_scopes)) {
+    OLA_INFO << "Scopes don't match";
     SendErrorIfUnicast(request.get(), SERVICE_REPLY, source,
                        SCOPE_NOT_SUPPORTED);
     return;
