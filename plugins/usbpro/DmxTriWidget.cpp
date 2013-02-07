@@ -129,8 +129,7 @@ bool DmxTriWidgetImpl::SendDMX(const DmxBuffer &buffer) {
 void DmxTriWidgetImpl::SendRDMRequest(const ola::rdm::RDMRequest *request,
                                       ola::rdm::RDMCallback *on_complete) {
   std::vector<string> packets;
-  if (request->CommandClass() == ola::rdm::RDMCommand::DISCOVER_COMMAND &&
-      request->ParamId() == ola::rdm::PID_DISC_UNIQUE_BRANCH) {
+  if (IsDUBRequest(request) && !m_use_raw_rdm) {
     on_complete->Run(ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED, NULL,
                      packets);
     delete request;
@@ -361,6 +360,16 @@ void DmxTriWidgetImpl::FetchNextUID() {
 
 
 /*
+ * Return true if this is a DUB request.
+ */
+bool DmxTriWidgetImpl::IsDUBRequest(const ola::rdm::RDMRequest *request) {
+  return (
+    request->CommandClass() == ola::rdm::RDMCommand::DISCOVER_COMMAND &&
+    request->ParamId() == ola::rdm::PID_DISC_UNIQUE_BRANCH);
+}
+
+
+/*
  * Send a DiscoStat message to begin the discovery process.
  */
 void DmxTriWidgetImpl::SendDiscoveryStat() {
@@ -391,7 +400,8 @@ void DmxTriWidgetImpl::SendRawRDMRequest() {
   unsigned int packet_size = RDMCommandSerializer::RequiredSize(*request);
   uint8_t send_buffer[packet_size + 2];
   send_buffer[0] = RAW_RDM_COMMAND_ID;
-  send_buffer[1] = 0;
+  // a 2 means we don't wait for a break in the response.
+  send_buffer[1] = IsDUBRequest(request) ? 2 : 0;
 
   if (!RDMCommandSerializer::Pack(*request, send_buffer + 2, &packet_size)) {
     OLA_WARN << "Failed to pack RDM request";
@@ -650,7 +660,7 @@ void DmxTriWidgetImpl::HandleRemoteUIDResponse(uint8_t return_code,
 void DmxTriWidgetImpl::HandleRawRDMResponse(uint8_t return_code,
                                             const uint8_t *data,
                                             unsigned int length) {
-  OLA_INFO << "got raw RDM response with code: " << std::hex <<
+  OLA_INFO << "got raw RDM response with code: 0x" << std::hex <<
     static_cast<int>(return_code) << ", length: " << std::dec << length;
 
   auto_ptr<const ola::rdm::RDMRequest> request(m_pending_rdm_request);
@@ -675,6 +685,19 @@ void DmxTriWidgetImpl::HandleRawRDMResponse(uint8_t return_code,
 
   std::vector<string> packets;
   packets.push_back(string(reinterpret_cast<const char*>(data), length));
+
+  // handle responses to DUB commands
+  if (IsDUBRequest(request.get())) {
+    if (return_code == EC_RESPONSE_NONE)
+      callback->Run(ola::rdm::RDM_TIMEOUT, NULL, packets);
+    else if (return_code == EC_NO_ERROR || return_code == EC_RESPONSE_DISCOVERY)
+      callback->Run(ola::rdm::RDM_DUB_RESPONSE, NULL, packets);
+    else
+      OLA_WARN << "Un-handled DUB response 0x" << std::hex <<
+         static_cast<int>(return_code);
+    return;
+  }
+
   const UID &dest_uid = request->DestinationUID();
 
   if (dest_uid.IsBroadcast()) {
