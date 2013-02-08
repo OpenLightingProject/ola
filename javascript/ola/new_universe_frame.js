@@ -79,10 +79,10 @@ ola.NewUniverseFrame.prototype.addUniverseButtonClicked = function(e) {
   var dialog = ola.Dialog.getInstance();
   var universe_id_input = goog.dom.$('new_universe_id');
   var universe_id = parseInt(universe_id_input.value);
-  if (isNaN(universe_id) || universe_id < 0 || universe_id > 65535) {
+  if (isNaN(universe_id) || universe_id < 0 || universe_id > 4294967295) {
     dialog.setTitle('Invalid Universe Number');
     dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
-    dialog.setContent('The universe number must be between 0 and 65535');
+    dialog.setContent('The universe number must be between 0 and 4294967295');
     dialog.setVisible(true);
     return;
   }
