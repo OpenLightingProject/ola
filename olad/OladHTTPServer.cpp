@@ -213,8 +213,8 @@ int OladHTTPServer::JsonPluginInfo(const HTTPRequest *request,
   bool ok = m_client.FetchPluginDescription(
       (ola_plugin_id) plugin_id,
       NewSingleCallback(this,
-                        &OladHTTPServer::HandlePluginInfo,
-                        response));
+                        &OladHTTPServer::HandlePartialPluginInfo,
+                        response, plugin_id));
 
   if (!ok)
     return m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
@@ -548,8 +548,35 @@ void OladHTTPServer::HandleUniverseList(HTTPResponse *response,
  * @param description the plugin description.
  * @param error an error string.
  */
+void OladHTTPServer::HandlePartialPluginInfo(HTTPResponse *response,
+                                             int plugin_id,
+                                             const string &description,
+                                             const string &error) {
+  if (!error.empty()) {
+    m_server.ServeError(response, error);
+    return;
+  }
+  bool ok = m_client.FetchPluginState(
+      (ola_plugin_id) plugin_id,
+      NewSingleCallback(this,
+                        &OladHTTPServer::HandlePluginInfo,
+                        response, description));
+
+  if (!ok)
+    m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
+}
+
+/*
+ * Handle the plugin description response.
+ * @param response the HTTPResponse that is associated with the request.
+ * @param description the plugin description.
+ * @param error an error string.
+ */
 void OladHTTPServer::HandlePluginInfo(HTTPResponse *response,
-                                     const string &description,
+                                     string description,
+                                     const string &name,
+                                     bool enabled,
+                                     const vector<OlaPlugin> &conflict_list,
                                      const string &error) {
   if (!error.empty()) {
     m_server.ServeError(response, error);
@@ -560,6 +587,15 @@ void OladHTTPServer::HandlePluginInfo(HTTPResponse *response,
 
   JsonObject json;
   json.Add("description", description);
+  json.Add("name", name);
+  json.Add("enabled", enabled);
+  JsonArray *plugins = json.AddArray("conflicts_with");
+  vector<OlaPlugin>::const_iterator iter;
+  for (iter = conflict_list.begin(); iter != conflict_list.end(); ++iter) {
+    JsonObject *plugin = plugins->AppendObject();
+    plugin->Add("name", iter->Name());
+    plugin->Add("id", iter->Id());
+  }
 
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);

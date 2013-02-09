@@ -28,13 +28,45 @@ namespace ola {
 
 const char Plugin::ENABLED_KEY[] = "enabled";
 
+
 /*
- * Returns true if we should try to start this plugin
+ * Load the preferences and set defaults
  */
-bool Plugin::ShouldStart() {
-  if (!LoadPreferences())
+bool Plugin::LoadPreferences() {
+  if (m_preferences)
+    return true;
+
+  if (PluginPrefix() == "") {
+    OLA_WARN << Name() << ", no prefix provided";
+    return false;
+  }
+
+  m_preferences = m_plugin_adaptor->NewPreference(PluginPrefix());
+
+  if (!m_preferences)
     return false;
 
+  m_preferences->Load();
+
+  bool save = m_preferences->SetDefaultValue(
+      ENABLED_KEY,
+      BoolValidator(),
+      DefaultMode() ? "true" : "false");
+  if (save)
+    m_preferences->Save();
+
+  if (!SetDefaultPreferences()) {
+    OLA_INFO << Name() << ", SetDefaultPreferences failed";
+    return false;
+  }
+  return true;
+}
+
+
+/*
+ * Returns true if this plugin is enabled.
+ */
+bool Plugin::IsEnabled() {
   return !(m_preferences->GetValue(ENABLED_KEY) == "false");
 }
 
@@ -76,40 +108,5 @@ bool Plugin::Stop() {
 
   m_enabled = false;
   return ret;
-}
-
-
-/*
- * Load the preferences and set defaults
- */
-bool Plugin::LoadPreferences() {
-  if (m_preferences)
-    return true;
-
-  if (PluginPrefix() == "") {
-    OLA_WARN << Name() << ", no prefix provided";
-    return false;
-  }
-
-  m_preferences = m_plugin_adaptor->NewPreference(PluginPrefix());
-
-  if (!m_preferences)
-    return false;
-
-  m_preferences->Load();
-
-  bool save = m_preferences->SetDefaultValue(
-      ENABLED_KEY,
-      BoolValidator(),
-      DefaultMode() ? "true" : "false");
-  if (save)
-    m_preferences->Save();
-
-  if (!SetDefaultPreferences()) {
-    OLA_INFO << Name() << ", SetDefaultPreferences failed";
-    return false;
-  }
-
-  return true;
 }
 }  // ola

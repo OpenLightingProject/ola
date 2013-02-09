@@ -49,6 +49,10 @@ class PluginManager {
     // Lookup a loaded plugin by ID
     AbstractPlugin* GetPlugin(ola_plugin_id plugin_id) const;
 
+    // Return a list of plugins that conflict with this plugin
+    void GetConflictList(ola_plugin_id plugin_id,
+                         vector<AbstractPlugin*> *plugins);
+
   private:
     PluginManager(const PluginManager&);
     PluginManager operator=(const PluginManager&);

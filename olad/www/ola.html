@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html>
   <head>
     <link rel='stylesheet' href='custombutton.css'>
@@ -31,6 +32,14 @@
 
       pre {
         margin: 0px;
+      }
+
+      h2 {
+        margin: 0px;
+      }
+
+      hr {
+        border: #67a7e3 1px solid;
       }
 
       #header {
@@ -651,6 +660,27 @@
         cursor: pointer;
         font-size: 11px;
       }
+
+      /* plugin frame styles */
+      .plugin_enabled {
+        font-color: #ffffff;
+        background-color: #00ff00;
+      }
+
+      .plugin_disabled {
+        background-color: #ff0000;
+        font-color: #ffffff;
+      }
+
+      #plugin_conflict_list .goog-control {
+        margin-right: 3px;
+        outline: none;
+        color: #0066cc;
+      }
+
+      #plugin_conflict_list .goog-control-hover {
+        text-decoration: underline;
+      }
     </style>
   </head>
   <body onload='ola.Setup()'>
@@ -948,7 +978,19 @@
           </div>
         </div>
         <div class='ola-scroller ola-container' id='plugin_frame'>
-            <div id='plugin_description'></div>
+          <h2 id="plugin_name"></h2>
+          <table>
+           <tr>
+           <td width="100px">State</td>
+           <td><span id="plugin_enabled"></span></td>
+          </tr>
+          <tr id='plugin_conflict_row'>
+           <td>Conflicts with</td>
+           <td><div id="plugin_conflict_list"></div></td>
+          </tr>
+         </table>
+         <hr/>
+         <div id='plugin_description'></div>
         </div>
       </div>
     </div>

@@ -58,6 +58,12 @@ class OlaCallbackClient: public ola::rdm::RDMAPIImplInterface {
         ola_plugin_id plugin_id,
         SingleUseCallback2<void, const string&, const string&> *callback);
 
+    bool FetchPluginState(
+        ola_plugin_id plugin_id,
+        SingleUseCallback4<void, const string&, bool, const vector<OlaPlugin>&,
+                           const string&>
+          *callback);
+
     // device methods
     bool FetchDeviceInfo(
         ola_plugin_id filter,

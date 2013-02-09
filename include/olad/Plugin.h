@@ -39,8 +39,10 @@ class AbstractPlugin {
     AbstractPlugin() {}
     virtual ~AbstractPlugin() {}
 
-    // true if we should try to start this plugin
-    virtual bool ShouldStart() = 0;
+    // load the preferences for a plugin
+    virtual bool LoadPreferences() = 0;
+    // true if this plugin is enabled
+    virtual bool IsEnabled() = 0;
     // start the plugin
     virtual bool Start() = 0;
     // stop the plugin
@@ -77,7 +79,8 @@ class Plugin: public AbstractPlugin {
     }
     virtual ~Plugin() {}
 
-    virtual bool ShouldStart();
+    bool LoadPreferences();
+    bool IsEnabled();
     virtual bool Start();
     virtual bool Stop();
     // return true if this plugin is enabled by default
@@ -105,7 +108,6 @@ class Plugin: public AbstractPlugin {
 
   private:
     bool m_enabled;  // are we running
-    bool LoadPreferences();
     Plugin(const Plugin&);
     Plugin& operator=(const Plugin&);
 };

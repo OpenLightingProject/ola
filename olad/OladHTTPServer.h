@@ -18,8 +18,8 @@
  * Copyright (C) 2005-2010 Simon Newton
  */
 
-#ifndef OLAD_OLAHTTPSERVER_H_
-#define OLAD_OLAHTTPSERVER_H_
+#ifndef OLAD_OLADHTTPSERVER_H_
+#define OLAD_OLADHTTPSERVER_H_
 
 #include <time.h>
 #include <string>
@@ -84,8 +84,15 @@ class OladHTTPServer: public ola::http::OlaHTTPServer {
                             const vector<class OlaUniverse> &universes,
                             const string &error);
 
+    void HandlePartialPluginInfo(HTTPResponse *response,
+                                 int plugin_id,
+                                 const string &description,
+                                 const string &error);
     void HandlePluginInfo(HTTPResponse *response,
-                          const string &description,
+                          string description,
+                          const string &name,
+                          bool enabled,
+                          const vector<OlaPlugin> &conflict_list,
                           const string &error);
 
     void HandleUniverseInfo(HTTPResponse *response,
@@ -167,4 +174,4 @@ class OladHTTPServer: public ola::http::OlaHTTPServer {
     static const char K_PRIORITY_MODE_SUFFIX[];
 };
 }  // ola
-#endif  // OLAD_OLAHTTPSERVER_H_
+#endif  // OLAD_OLADHTTPSERVER_H_

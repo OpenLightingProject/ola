@@ -20,6 +20,7 @@
  */
 
 #include <algorithm>
+#include <set>
 #include <string>
 #include <vector>
 #include "common/protocol/Ola.pb.h"
@@ -71,6 +72,7 @@ using ola::proto::UniverseRequest;
 using ola::CallbackRunner;
 using ola::rdm::UIDSet;
 using ola::rdm::RDMResponse;
+using std::set;
 
 
 typedef CallbackRunner<google::protobuf::Closure> ClosureRunner;
@@ -398,6 +400,35 @@ void OlaServerServiceImpl::GetPluginDescription(
   if (plugin) {
     response->set_name(plugin->Name());
     response->set_description(plugin->Description());
+  } else {
+    controller->SetFailed("Plugin not loaded");
+  }
+}
+
+
+/*
+ * Return the state for a plugin.
+ */
+void OlaServerServiceImpl::GetPluginState(
+    RpcController* controller,
+    const ola::proto::PluginStateRequest* request,
+    ola::proto::PluginStateReply* response,
+    google::protobuf::Closure* done) {
+  ClosureRunner runner(done);
+  ola_plugin_id plugin_id = (ola_plugin_id) request->plugin_id();
+  AbstractPlugin *plugin = m_plugin_manager->GetPlugin(plugin_id);
+
+  if (plugin) {
+    response->set_name(plugin->Name());
+    response->set_enabled(plugin->IsEnabled());
+    vector<AbstractPlugin*> conflict_list;
+    m_plugin_manager->GetConflictList(plugin_id, &conflict_list);
+    vector<AbstractPlugin*>::const_iterator iter = conflict_list.begin();
+    for (; iter != conflict_list.end(); ++iter) {
+      PluginInfo *plugin_info = response->add_conflicts_with();
+      plugin_info->set_plugin_id((*iter)->Id());
+      plugin_info->set_name((*iter)->Name());
+    }
   } else {
     controller->SetFailed("Plugin not loaded");
   }
