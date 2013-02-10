@@ -164,7 +164,7 @@ bool OlaClientCore::FetchPluginDescription(
  */
 bool OlaClientCore::FetchPluginState(
     ola_plugin_id plugin_id,
-    PluginStateCallback *callback) {
+    OlaCallbackClient::PluginStateCallback *callback) {
   if (!m_connected) {
     delete callback;
     return false;
@@ -915,9 +915,7 @@ void OlaClientCore::HandlePluginDescription(plugin_description_arg *args) {
  */
 void OlaClientCore::HandlePluginState(plugin_state_arg *args) {
   string error_string = "";
-  string name;
-  bool enabled = false;
-  vector<OlaPlugin> conflict_list;
+  OlaCallbackClient::PluginState plugin_state;
 
   if (!args->callback) {
     FreeArgs(args);
@@ -927,17 +925,18 @@ void OlaClientCore::HandlePluginState(plugin_state_arg *args) {
   if (args->controller->Failed()) {
     error_string = args->controller->ErrorText();
   } else {
-    name = args->reply->name();
-    enabled = args->reply->enabled();
+    plugin_state.name = args->reply->name();
+    plugin_state.enabled = args->reply->enabled();
+    plugin_state.active = args->reply->active();
   }
   for (int i = 0; i < args->reply->conflicts_with_size(); ++i) {
     ola::proto::PluginInfo plugin_info = args->reply->conflicts_with(i);
     OlaPlugin plugin(plugin_info.plugin_id(),
                      plugin_info.name());
-    conflict_list.push_back(plugin);
+    plugin_state.conflicting_plugins.push_back(plugin);
   }
 
-  args->callback->Run(name, enabled, conflict_list, error_string);
+  args->callback->Run(plugin_state, error_string);
   FreeArgs(args);
 }
 

@@ -99,9 +99,8 @@ bool OlaCallbackClient::FetchPluginDescription(
  * Fetch the state of a plugin. This returns the enabled state and the list of
  * plugins this plugin conflicts with.
  */
-bool OlaCallbackClient::FetchPluginState(
-    ola_plugin_id plugin_id,
-    OlaClientCore::PluginStateCallback *callback) {
+bool OlaCallbackClient::FetchPluginState(ola_plugin_id plugin_id,
+                                         PluginStateCallback *callback) {
   return m_core->FetchPluginState(plugin_id, callback);
 }
 

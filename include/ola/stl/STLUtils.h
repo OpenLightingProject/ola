@@ -64,15 +64,111 @@ void STLDeleteValues(set<T*> &values) {
   values.clear();
 }
 
+
+// Helper functions for associative containers.
+//------------------------------------------------------------------------------
+
 /**
  * For a map of type : pointer, loop through and delete all of the pointers.
  */
-template<typename T1, typename T2>
-void STLDeleteValues(map<T1, T2*> &values) {
-  typename map<T1, T2*>::iterator iter = values.begin();
-  for (; iter != values.end(); ++iter)
+template<typename T1>
+void STLDeleteValues(T1 &container) {
+  typename T1::iterator iter = container.begin();
+  for (; iter != container.end(); ++iter)
     delete iter->second;
-  values.clear();
+  container.clear();
+}
+
+
+/**
+ * Extract a vector of keys from an associative container.
+ */
+template<typename T1>
+void STLKeys(const T1 &container, vector<typename T1::key_type> *keys) {
+  typename T1::iterator iter = container.begin();
+  for (; iter != container.end(); ++iter)
+    keys->push_back(iter->first);
+}
+
+/**
+ * Extract a vector of values from an associative container.
+ */
+template<typename T1>
+void STLValues(const T1 &container, vector<typename T1::mapped_type> *values) {
+  typename T1::const_iterator iter = container.begin();
+  for (; iter != container.end(); ++iter)
+    values->push_back(iter->second);
+}
+
+
+/**
+ * Lookup a value by key in a associative container, or return a NULL if the
+ * key doesn't exist.
+ */
+template<typename T1>
+typename T1::mapped_type STLFindOrNull(const T1 &container,
+                                     const typename T1::key_type &key) {
+  typename T1::const_iterator iter = container.find(key);
+  if (iter == container.end()) {
+    return NULL;
+  } else {
+    return iter->second;
+  }
+}
+
+
+template<typename T1>
+typename T1::mapped_type STLFoo(const T1 &container) {
+  typename T1::const_iterator iter = container.begin();
+  if (iter == container->end()) {
+    return NULL;
+  } else {
+    return iter->second;
+  }
+}
+
+
+/**
+ * Sets key : value, replacing any existing value. Note if value_type is a
+ * pointer, you probably don't wait this since you'll leak memory if you
+ * replace a value. Use STLSafeReplace instead.
+ */
+template<typename T1>
+void STLReplace(T1 *container, const typename T1::key_type &key,
+                const typename T1::mapped_type &value) {
+  std::pair<typename T1::iterator, bool> p = container->insert(
+      typename T1::value_type(key, value));
+  if (!p.second) {
+    p.first->second = value;
+  }
+}
+
+
+/**
+ * Insert an key : value into a map where value is a pointer. This replaces the
+ * previous value if it exists and deletes it.
+ */
+template<typename T1>
+void STLSafeReplace(T1 *container, const typename T1::key_type &key,
+                    const typename T1::mapped_type &value) {
+  std::pair<typename T1::iterator, bool> p = container->insert(
+      typename T1::value_type(key, value));
+  if (!p.second) {
+    delete p.first.second;
+    p.first.second = value;
+  }
+}
+
+
+/**
+ * Insert an key : value into a map only if a value for this key doesn't
+ * already exist.
+ * Returns true if the key was inserted, false if the key already exists.
+ */
+template<typename T1>
+bool STLInsertIfNotPresent(T1 *container, const typename T1::key_type &key,
+                           const typename T1::mapped_type &value) {
+  return container->insert(typename T1::value_type(key, value)).second;
 }
 }  // ola
 #endif  // INCLUDE_OLA_STL_STLUTILS_H_

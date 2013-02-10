@@ -90,9 +90,7 @@ class OladHTTPServer: public ola::http::OlaHTTPServer {
                                  const string &error);
     void HandlePluginInfo(HTTPResponse *response,
                           string description,
-                          const string &name,
-                          bool enabled,
-                          const vector<OlaPlugin> &conflict_list,
+                          const OlaCallbackClient::PluginState &state,
                           const string &error);
 
     void HandleUniverseInfo(HTTPResponse *response,
