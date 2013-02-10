@@ -916,7 +916,7 @@ void OlaClientCore::HandlePluginDescription(plugin_description_arg *args) {
 void OlaClientCore::HandlePluginState(plugin_state_arg *args) {
   string error_string = "";
   string name;
-  bool enabled;
+  bool enabled = false;
   vector<OlaPlugin> conflict_list;
 
   if (!args->callback) {
