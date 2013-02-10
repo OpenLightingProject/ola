@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * OlaServerServiceImpl.cpp
  * Implemtation of the OlaServerService interface. This is the class that
@@ -20,6 +20,7 @@
  */
 
 #include <algorithm>
+#include <set>
 #include <string>
 #include <vector>
 #include "common/protocol/Ola.pb.h"
@@ -71,6 +72,7 @@ using ola::proto::UniverseRequest;
 using ola::CallbackRunner;
 using ola::rdm::UIDSet;
 using ola::rdm::RDMResponse;
+using std::set;
 
 
 typedef CallbackRunner<google::protobuf::Closure> ClosureRunner;
@@ -398,6 +400,35 @@ void OlaServerServiceImpl::GetPluginDescription(
   if (plugin) {
     response->set_name(plugin->Name());
     response->set_description(plugin->Description());
+  } else {
+    controller->SetFailed("Plugin not loaded");
+  }
+}
+
+
+/*
+ * Return the state for a plugin.
+ */
+void OlaServerServiceImpl::GetPluginState(
+    RpcController* controller,
+    const ola::proto::PluginStateRequest* request,
+    ola::proto::PluginStateReply* response,
+    google::protobuf::Closure* done) {
+  ClosureRunner runner(done);
+  ola_plugin_id plugin_id = (ola_plugin_id) request->plugin_id();
+  AbstractPlugin *plugin = m_plugin_manager->GetPlugin(plugin_id);
+
+  if (plugin) {
+    response->set_name(plugin->Name());
+    response->set_enabled(plugin->IsEnabled());
+    vector<AbstractPlugin*> conflict_list;
+    m_plugin_manager->GetConflictList(plugin_id, &conflict_list);
+    vector<AbstractPlugin*>::const_iterator iter = conflict_list.begin();
+    for (; iter != conflict_list.end(); ++iter) {
+      PluginInfo *plugin_info = response->add_conflicts_with();
+      plugin_info->set_plugin_id((*iter)->Id());
+      plugin_info->set_name((*iter)->Name());
+    }
   } else {
     controller->SetFailed("Plugin not loaded");
   }

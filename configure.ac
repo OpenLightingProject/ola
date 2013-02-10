@@ -6,7 +6,7 @@ AC_INIT(ola, [0.8.26])
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_AUX_DIR(config)
 AC_SUBST(ac_aux_dir)
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_MACRO_DIR([config])
 AM_INIT_AUTOMAKE
 
@@ -187,7 +187,9 @@ fi
 
 # We build a list of plugins that we're going to compile here so the olad
 # knows what to link against.
-PLUGINS="artnet dummy espnet e131 opendmx pathport sandnet shownet stageprofi usbpro"
+PLUGINS="dummy espnet e131 opendmx pathport sandnet shownet stageprofi usbpro"
+
+PLUGIN_SUPPORT(artnet, USE_ARTNET)
 
 # LIBRARY: ncurses
 AC_CHECK_LIB([ncurses], [initscr], [have_ncurses="yes"])

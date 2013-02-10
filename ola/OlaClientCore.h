@@ -50,6 +50,10 @@ using ola::rpc::StreamRpcChannel;
 
 class OlaClientCore: public ola::proto::OlaClientService {
   public:
+    typedef SingleUseCallback4<void, const string&, bool,
+                               const vector<OlaPlugin>&, const string&>
+                                 PluginStateCallback;
+
     explicit OlaClientCore(ConnectedDescriptor *descriptor);
     ~OlaClientCore();
 
@@ -65,6 +69,9 @@ class OlaClientCore: public ola::proto::OlaClientService {
     bool FetchPluginDescription(
         ola_plugin_id plugin_id,
         SingleUseCallback2<void, const string&, const string&> *callback);
+
+    bool FetchPluginState(
+        ola_plugin_id plugin_id, PluginStateCallback *callback);
 
     // device methods
     bool FetchDeviceInfo(
@@ -229,6 +236,14 @@ class OlaClientCore: public ola::proto::OlaClientService {
     } plugin_description_arg;
 
     void HandlePluginDescription(plugin_description_arg *args);
+
+    typedef struct {
+      SimpleRpcController *controller;
+      ola::proto::PluginStateReply *reply;
+      PluginStateCallback *callback;
+    } plugin_state_arg;
+
+    void HandlePluginState(plugin_state_arg *args);
 
     typedef struct {
       SimpleRpcController *controller;

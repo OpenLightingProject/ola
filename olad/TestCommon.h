@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * UniverseTest.cpp
  * Test fixture for the Universe and UniverseStore classes
@@ -226,10 +226,10 @@ class TestMockPlugin: public ola::Plugin {
   public:
     TestMockPlugin(ola::PluginAdaptor *plugin_adaptor,
                    ola::ola_plugin_id plugin_id,
-                   bool should_start = true)
+                   bool enabled = true)
         : Plugin(plugin_adaptor),
           m_start_run(false),
-          m_should_start(should_start),
+          m_enabled(enabled),
           m_id(plugin_id) {}
 
     TestMockPlugin(ola::PluginAdaptor *plugin_adaptor,
@@ -237,14 +237,15 @@ class TestMockPlugin: public ola::Plugin {
                    const set<ola::ola_plugin_id> &conflict_set)
         : Plugin(plugin_adaptor),
           m_start_run(false),
-          m_should_start(true),
+          m_enabled(true),
           m_id(plugin_id),
           m_conflict_set(conflict_set) {}
 
     void ConflictsWith(set<ola::ola_plugin_id> *conflict_set) {
       *conflict_set = m_conflict_set;
     }
-    bool ShouldStart() { return m_should_start; }
+    bool LoadPreferences() { return true; }
+    bool IsEnabled() { return m_enabled; }
     bool StartHook() {
       m_start_run = true;
       return true;
@@ -262,7 +263,7 @@ class TestMockPlugin: public ola::Plugin {
 
   private:
     bool m_start_run;
-    bool m_should_start;
+    bool m_enabled;
     ola::ola_plugin_id m_id;
     set<ola::ola_plugin_id> m_conflict_set;
 };

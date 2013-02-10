@@ -1,20 +1,20 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * RDMInflator.cpp
- * The Inflator for the DMP PDUs
+ * The Inflator for the RDM PDUs
  * Copyright (C) 2011 Simon Newton
  */
 
@@ -23,6 +23,7 @@
 #include <memory>
 #include <string>
 #include "ola/Logging.h"
+#include "ola/stl/STLUtils.h"
 #include "ola/rdm/RDMCommand.h"
 #include "plugins/e131/e131/RDMInflator.h"
 #include "plugins/e131/e131/DMPHeader.h"
@@ -48,13 +49,7 @@ RDMInflator::RDMInflator()
  * Clean up this inflator
  */
 RDMInflator::~RDMInflator() {
-  endpoint_handler_map::iterator rdm_iter;
-  for (rdm_iter = m_rdm_handlers.begin();
-       rdm_iter != m_rdm_handlers.end();
-       ++rdm_iter) {
-    delete rdm_iter->second;
-  }
-  m_rdm_handlers.clear();
+  STLDeleteValues(m_rdm_handlers);
 }
 
 
@@ -117,7 +112,7 @@ bool RDMInflator::HandlePDUData(uint32_t vector,
                                 HeaderSet &headers,
                                 const uint8_t *data,
                                 unsigned int pdu_len) {
-  if (vector != RDM_DATA_VECTOR) {
+  if (vector != VECTOR_RDMNET_DATA) {
     OLA_INFO << "Not a RDM message, vector was " << vector;
     return true;
   }
@@ -136,14 +131,7 @@ bool RDMInflator::HandlePDUData(uint32_t vector,
     return true;
   }
 
-  uint8_t start_code = data[0];
-  if (start_code != ola::rdm::RDMCommand::START_CODE) {
-    OLA_INFO << "Skipping packet with non RDM start code: " <<
-      static_cast<unsigned int>(start_code);
-    return true;
-  }
-
-  string rdm_message(reinterpret_cast<const char*>(&data[1]),
+  string rdm_message(reinterpret_cast<const char*>(&data[0]),
                      pdu_len - 1);
 
   endpoint_iter->second->Run(headers.GetTransportHeader(),

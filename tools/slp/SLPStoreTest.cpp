@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * SLPStoreTest.cpp
  * Test fixture for the SLPStore class
@@ -22,6 +22,7 @@
 #include <cppunit/SourceLine.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
+#include <vector>
 
 #include "ola/Clock.h"
 #include "ola/Logging.h"
@@ -42,6 +43,7 @@ using ola::slp::ServiceEntries;
 using ola::slp::ServiceEntry;
 using ola::slp::URLEntries;
 using std::string;
+using std::vector;
 
 
 class SLPStoreTest: public CppUnit::TestFixture {
@@ -52,6 +54,8 @@ class SLPStoreTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testRemove);
   CPPUNIT_TEST(testCheckIfScopesMatch);
   CPPUNIT_TEST(testGetLocalServices);
+  CPPUNIT_TEST(testGetAllServices);
+  CPPUNIT_TEST(testGetServiceTypesByNamingAuth);
   CPPUNIT_TEST(testAging);
   CPPUNIT_TEST(testClean);
   CPPUNIT_TEST(testDump);
@@ -64,6 +68,8 @@ class SLPStoreTest: public CppUnit::TestFixture {
     void testRemove();
     void testCheckIfScopesMatch();
     void testGetLocalServices();
+    void testGetAllServices();
+    void testGetServiceTypesByNamingAuth();
     void testAging();
     void testClean();
     void testDump();
@@ -73,7 +79,7 @@ class SLPStoreTest: public CppUnit::TestFixture {
       m_clock.CurrentTime(&now);
       test_scopes = ScopeSet("scope1,scope2");
       test_scopes2 = ScopeSet("scope1");
-      disjoint_scopes = ScopeSet("scopes3");
+      disjoint_scopes = ScopeSet("scope3");
     }
 
     static const char SCOPE1[];
@@ -360,6 +366,110 @@ void SLPStoreTest::testGetLocalServices() {
   services.clear();
   m_store.GetLocalServices(now, test_scopes, &services);
   OLA_ASSERT_EQ((size_t) 0, services.size());
+}
+
+
+/*
+ * Test the GetAllServiceTypes() method
+ */
+void SLPStoreTest::testGetAllServices() {
+  // service:one, scopes: scope1
+  ServiceEntry service1(test_scopes2, SERVICE1_URL1, 10, true);
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service1));
+  // service:one, scopes: scope1,scope2
+  ServiceEntry service2(test_scopes, SERVICE1_URL2, 10, false);
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service2));
+  // service:two, scopes: scope1,scope2
+  ServiceEntry service3(test_scopes, SERVICE2_URL1, 12, true);
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service3));
+  // service:two, scopes: scope3
+  ServiceEntry service4(disjoint_scopes, SERVICE2_URL2, 12, true);
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service4));
+
+  // service:one.foo, scopes: scope3
+  ServiceEntry service5(disjoint_scopes, "service:one.foo://192.168.1.1", 12,
+                        true);
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service5));
+
+  {
+    vector<string> service_types, expected_service_types;
+    ScopeSet scopes(SCOPE1);
+    m_store.GetAllServiceTypes(scopes, &service_types);
+
+    expected_service_types.push_back(SERVICE1);
+    expected_service_types.push_back(SERVICE2);
+    OLA_ASSERT_VECTOR_EQ(expected_service_types, service_types);
+  }
+
+  {
+    vector<string> service_types, expected_service_types;
+    ScopeSet scopes(SCOPE3);
+    m_store.GetAllServiceTypes(scopes, &service_types);
+
+    expected_service_types.push_back("service:one.foo");
+    expected_service_types.push_back(SERVICE2);
+    OLA_ASSERT_VECTOR_EQ(expected_service_types, service_types);
+  }
+
+  {
+    vector<string> service_types, expected_service_types;
+    ScopeSet scopes(SCOPE2);
+    m_store.GetAllServiceTypes(scopes, &service_types);
+
+    expected_service_types.push_back(SERVICE1);
+    expected_service_types.push_back(SERVICE2);
+    OLA_ASSERT_VECTOR_EQ(expected_service_types, service_types);
+  }
+}
+
+
+/*
+ * Test the GetServiceTypesByNamingAuth() method
+ */
+void SLPStoreTest::testGetServiceTypesByNamingAuth() {
+  // service:one, scopes: scope1
+  ServiceEntry service1(test_scopes2, SERVICE1_URL1, 10, true);
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service1));
+  // service:one, scopes: scope1,scope2
+  ServiceEntry service2(test_scopes, SERVICE1_URL2, 10, false);
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service2));
+  // service:two, scopes: scope1,scope2
+  ServiceEntry service3(test_scopes, SERVICE2_URL1, 12, true);
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service3));
+  // service:two, scopes: scope3
+  ServiceEntry service4(disjoint_scopes, SERVICE2_URL2, 12, true);
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service4));
+
+  // service:two.bar, scopes: scope1
+  ServiceEntry service5(test_scopes2, "service:one.foo://192.168.1.1", 12,
+                        true);
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service5));
+
+  // service:two., scopes: scope1
+  ServiceEntry service6(test_scopes2, "service:two.://192.168.1.1", 12,
+                        true);
+  OLA_ASSERT_EQ(SLP_OK, m_store.Insert(now, service6));
+
+  // Get IANA services
+  {
+    vector<string> service_types, expected_service_types;
+    ScopeSet scopes(SCOPE1);
+    m_store.GetServiceTypesByNamingAuth("", scopes, &service_types);
+
+    expected_service_types.push_back(SERVICE1);
+    expected_service_types.push_back(SERVICE2);
+    expected_service_types.push_back("service:two.");
+    OLA_ASSERT_VECTOR_EQ(expected_service_types, service_types);
+  }
+
+  // Get 'foo' services
+  {
+    vector<string> service_types, expected_service_types;
+    ScopeSet scopes(SCOPE1);
+    m_store.GetServiceTypesByNamingAuth("foo", scopes, &service_types);
+    expected_service_types.push_back("service:one.foo");
+    OLA_ASSERT_VECTOR_EQ(expected_service_types, service_types);
+  }
 }
 
 

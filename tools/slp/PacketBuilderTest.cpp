@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * PacketBuilderTest.cpp
  * Test fixture for the SLPPacketBuilder class
@@ -22,6 +22,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "ola/Logging.h"
 #include "ola/io/IOQueue.h"
@@ -37,6 +38,7 @@
 using ola::io::BigEndianOutputStream;
 using ola::io::IOQueue;
 using ola::network::IPV4Address;
+using ola::slp::EN_LANGUAGE_TAG;
 using ola::slp::SLPPacketBuilder;
 using ola::slp::ScopeSet;
 using ola::slp::ServiceEntry;
@@ -45,6 +47,7 @@ using ola::slp::URLEntry;
 using ola::testing::ASSERT_DATA_EQUALS;
 using std::set;
 using std::string;
+using std::vector;
 
 class PacketBuilderTest: public CppUnit::TestFixture {
   public:
@@ -56,6 +59,8 @@ class PacketBuilderTest: public CppUnit::TestFixture {
     CPPUNIT_TEST(testBuildServiceRegistration);
     CPPUNIT_TEST(testBuildServiceDeRegistration);
     CPPUNIT_TEST(testBuildDAAdvert);
+    CPPUNIT_TEST(testBuildServiceTypeRequest);
+    CPPUNIT_TEST(testBuildServiceTypeReply);
     CPPUNIT_TEST(testBuildSAAdvert);
     CPPUNIT_TEST(testBuildServiceAck);
     CPPUNIT_TEST(testBuildError);
@@ -66,6 +71,8 @@ class PacketBuilderTest: public CppUnit::TestFixture {
     void testBuildServiceRegistration();
     void testBuildServiceDeRegistration();
     void testBuildDAAdvert();
+    void testBuildServiceTypeRequest();
+    void testBuildServiceTypeReply();
     void testBuildSAAdvert();
     void testBuildServiceAck();
     void testBuildError();
@@ -111,25 +118,51 @@ void PacketBuilderTest::testBuildServiceRequest() {
   pr_list.insert(second_ip);
   ScopeSet scopes("ACN,MYORG\\2c");
 
-  SLPPacketBuilder::BuildServiceRequest(&output, xid, true, pr_list,
-                                        "rdmnet-device", scopes);
+  SLPPacketBuilder::BuildServiceRequest(&output, xid, true, EN_LANGUAGE_TAG,
+                                        pr_list, "rdmnet-device", scopes);
   OLA_ASSERT_EQ(66u, ioqueue.Size());
 
-  unsigned int data_size;
-  uint8_t *output_data = WriteToBuffer(&ioqueue, &data_size);
-  uint8_t expected_data[] = {
-    2, 1, 0, 0, 66, 0x20, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
-    0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1', '.',
-    '8',  // pr-llist
-    0, 13, 'r', 'd', 'm', 'n', 'e', 't', '-', 'd', 'e', 'v', 'i', 'c', 'e',
-    0, 0xc, 'a', 'c', 'n', ',', 'm', 'y', 'o', 'r', 'g', '\\', '2', 'c',
-    0, 0,  // pred string
-    0, 0,  // SPI string
-  };
+  {
+    unsigned int data_size;
+    uint8_t *output_data = WriteToBuffer(&ioqueue, &data_size);
+    uint8_t expected_data[] = {
+      2, 1, 0, 0, 66, 0x20, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1',
+      '.', '8',  // pr-llist
+      0, 13, 'r', 'd', 'm', 'n', 'e', 't', '-', 'd', 'e', 'v', 'i', 'c', 'e',
+      0, 0xc, 'a', 'c', 'n', ',', 'm', 'y', 'o', 'r', 'g', '\\', '2', 'c',
+      0, 0,  // pred string
+      0, 0,  // SPI string
+    };
 
-  ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
-                     output_data, data_size);
-  delete[] output_data;
+    ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
+                       output_data, data_size);
+    delete[] output_data;
+  }
+
+  // try a different language
+  SLPPacketBuilder::BuildServiceRequest(&output, xid, true, "en-AU",
+                                        pr_list, "rdmnet-device", scopes);
+  OLA_ASSERT_EQ(69u, ioqueue.Size());
+
+  {
+    unsigned int data_size;
+    uint8_t *output_data = WriteToBuffer(&ioqueue, &data_size);
+    uint8_t expected_data[] = {
+      2, 1, 0, 0, 69, 0x20, 0, 0, 0, 0, 0x12, 0x34, 0, 5, 'e', 'n', '-', 'A',
+      'U',
+      0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1',
+      '.', '8',  // pr-llist
+      0, 13, 'r', 'd', 'm', 'n', 'e', 't', '-', 'd', 'e', 'v', 'i', 'c', 'e',
+      0, 0xc, 'a', 'c', 'n', ',', 'm', 'y', 'o', 'r', 'g', '\\', '2', 'c',
+      0, 0,  // pred string
+      0, 0,  // SPI string
+    };
+
+    ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
+                       output_data, data_size);
+    delete[] output_data;
+  }
 }
 
 
@@ -143,30 +176,63 @@ void PacketBuilderTest::testBuildServiceReply() {
   url_entries.push_back(entry1);
   url_entries.push_back(entry2);
 
-  SLPPacketBuilder::BuildServiceReply(&output, xid, 12, url_entries);
+  SLPPacketBuilder::BuildServiceReply(&output, xid, EN_LANGUAGE_TAG, 12,
+                                      url_entries);
   OLA_ASSERT_EQ(75u, ioqueue.Size());
 
-  unsigned int data_size;
-  uint8_t *output_data = WriteToBuffer(&ioqueue, &data_size);
-  uint8_t expected_data[] = {
-    2, 2, 0, 0, 0x4b, 0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
-    0, 12,  // error code
-    0, 2,  // url entry count
-    // entry 1
-    0, 0x12, 0x34, 0, 21,
-    's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o', ':', '/', '/',
-    '1', '.', '1', '.', '1', '.', '1',
-    0,  // # of auth blocks
-    // entry 2
-    0, 0x56, 0x78, 0, 22,
-    's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o', ':', '/', '/',
-    '1', '.', '1', '.', '1', '.', '1', '0',
-    0,  // # of auth blocks
-  };
+  {
+    unsigned int data_size;
+    uint8_t *output_data = WriteToBuffer(&ioqueue, &data_size);
+    uint8_t expected_data[] = {
+      2, 2, 0, 0, 0x4b, 0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 12,  // error code
+      0, 2,  // url entry count
+      // entry 1
+      0, 0x12, 0x34, 0, 21,
+      's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o', ':', '/', '/',
+      '1', '.', '1', '.', '1', '.', '1',
+      0,  // # of auth blocks
+      // entry 2
+      0, 0x56, 0x78, 0, 22,
+      's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o', ':', '/', '/',
+      '1', '.', '1', '.', '1', '.', '1', '0',
+      0,  // # of auth blocks
+    };
 
-  ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
-                     output_data, data_size);
-  delete[] output_data;
+    ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
+                       output_data, data_size);
+    delete[] output_data;
+  }
+
+  // try a different language
+  SLPPacketBuilder::BuildServiceReply(&output, xid, "en-AU", 12,
+                                      url_entries);
+  OLA_ASSERT_EQ(78u, ioqueue.Size());
+
+  {
+    unsigned int data_size;
+    uint8_t *output_data = WriteToBuffer(&ioqueue, &data_size);
+    uint8_t expected_data[] = {
+      2, 2, 0, 0, 0x4e, 0, 0, 0, 0, 0, 0x12, 0x34, 0, 5, 'e', 'n',
+      '-', 'A', 'U',
+      0, 12,  // error code
+      0, 2,  // url entry count
+      // entry 1
+      0, 0x12, 0x34, 0, 21,
+      's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o', ':', '/', '/',
+      '1', '.', '1', '.', '1', '.', '1',
+      0,  // # of auth blocks
+      // entry 2
+      0, 0x56, 0x78, 0, 22,
+      's', 'e', 'r', 'v', 'i', 'c', 'e', ':', 'f', 'o', 'o', ':', '/', '/',
+      '1', '.', '1', '.', '1', '.', '1', '0',
+      0,  // # of auth blocks
+    };
+
+    ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
+                       output_data, data_size);
+    delete[] output_data;
+  }
 }
 
 
@@ -290,6 +356,111 @@ void PacketBuilderTest::testBuildDAAdvert() {
 
 
 /*
+ * Check that BuildServiceTypeRequest() works.
+ */
+void PacketBuilderTest::testBuildServiceTypeRequest() {
+  set<IPV4Address> pr_list;
+  IPV4Address first_ip, second_ip;
+  OLA_ASSERT_TRUE(IPV4Address::FromString("1.1.1.2", &first_ip));
+  OLA_ASSERT_TRUE(IPV4Address::FromString("1.1.1.8", &second_ip));
+  pr_list.insert(first_ip);
+  pr_list.insert(second_ip);
+
+  ScopeSet scopes("ACN,MYORG\\2c");
+
+  {
+    // request for all service-types
+    SLPPacketBuilder::BuildAllServiceTypeRequest(&output, xid, true, pr_list,
+                                                 scopes);
+    OLA_ASSERT_EQ(49u, ioqueue.Size());
+
+    unsigned int data_size;
+    uint8_t *output_data = WriteToBuffer(&ioqueue, &data_size);
+    uint8_t expected_data[] = {
+      2, 9, 0, 0, 0x31, 0x20, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1',
+      '.', '8',  // pr-list
+      0xff, 0xff,   // naming auth length
+      0, 0xc, 'a', 'c', 'n', ',', 'm', 'y', 'o', 'r', 'g', '\\', '2', 'c'
+    };
+
+    ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
+                       output_data, data_size);
+    delete[] output_data;
+  }
+
+  {
+    // request for IANA types
+    SLPPacketBuilder::BuildServiceTypeRequest(&output, xid, true, pr_list, "",
+                                              scopes);
+    OLA_ASSERT_EQ(49u, ioqueue.Size());
+
+    unsigned int data_size;
+    uint8_t *output_data = WriteToBuffer(&ioqueue, &data_size);
+    uint8_t expected_data[] = {
+      2, 9, 0, 0, 0x31, 0x20, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1',
+      '.', '8',  // pr-list
+      0x0, 0x0,   // naming auth length
+      0, 0xc, 'a', 'c', 'n', ',', 'm', 'y', 'o', 'r', 'g', '\\', '2', 'c'
+    };
+
+    ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
+                       output_data, data_size);
+    delete[] output_data;
+  }
+
+  {
+    // request for a specific naming auth
+    SLPPacketBuilder::BuildServiceTypeRequest(&output, xid, true, pr_list,
+                                              "foo", scopes);
+    OLA_ASSERT_EQ(52u, ioqueue.Size());
+
+    unsigned int data_size;
+    uint8_t *output_data = WriteToBuffer(&ioqueue, &data_size);
+    uint8_t expected_data[] = {
+      2, 9, 0, 0, 0x34, 0x20, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1',
+      '.', '8',  // pr-list
+      0x0, 0x3, 'f', 'o', 'o',  // naming auth length
+      0, 0xc, 'a', 'c', 'n', ',', 'm', 'y', 'o', 'r', 'g', '\\', '2', 'c'
+    };
+
+    ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
+                       output_data, data_size);
+    delete[] output_data;
+  }
+}
+
+
+/*
+ * Check that BuildServiceTypeReply() works.
+ */
+void PacketBuilderTest::testBuildServiceTypeReply() {
+  ScopeSet scopes("ACN,MYORG\\2c");
+  vector<string> service_types;
+  service_types.push_back("lpr");
+  service_types.push_back("foo,bar");  // check escaping
+
+  SLPPacketBuilder::BuildServiceTypeReply(&output, xid, 0, service_types);
+  OLA_ASSERT_EQ(33u, ioqueue.Size());
+
+  unsigned int data_size;
+  uint8_t *output_data = WriteToBuffer(&ioqueue, &data_size);
+  uint8_t expected_data[] = {
+    2, 10, 0, 0, 0x21, 0x0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+    0, 0,  // error code
+    0, 13,
+    'l', 'p', 'r', ',', 'f', 'o', 'o', '\\', '2', 'c', 'b', 'a', 'r'
+  };
+
+  ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
+                     output_data, data_size);
+  delete[] output_data;
+}
+
+
+/*
  * Check that BuildSAAdvert() works.
  */
 void PacketBuilderTest::testBuildSAAdvert() {
@@ -327,18 +498,35 @@ void PacketBuilderTest::testBuildSAAdvert() {
  * Check that BuildServiceAck() works.
  */
 void PacketBuilderTest::testBuildServiceAck() {
-  SLPPacketBuilder::BuildServiceAck(&output, xid, 0x5678);
+  SLPPacketBuilder::BuildServiceAck(&output, xid, EN_LANGUAGE_TAG, 0x5678);
   OLA_ASSERT_EQ(18u, ioqueue.Size());
 
-  unsigned int data_size;
-  uint8_t *output_data = WriteToBuffer(&ioqueue, &data_size);
-  uint8_t expected_data[] = {
-    2, 5, 0, 0, 18, 0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
-    0x56, 0x78
-  };
-  ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
-                     output_data, data_size);
-  delete[] output_data;
+  {
+    unsigned int data_size;
+    uint8_t *output_data = WriteToBuffer(&ioqueue, &data_size);
+    uint8_t expected_data[] = {
+      2, 5, 0, 0, 18, 0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0x56, 0x78
+    };
+    ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
+                       output_data, data_size);
+    delete[] output_data;
+  }
+
+  SLPPacketBuilder::BuildServiceAck(&output, xid, "en-AU", 0x5678);
+  OLA_ASSERT_EQ(21u, ioqueue.Size());
+
+  {
+    unsigned int data_size;
+    uint8_t *output_data = WriteToBuffer(&ioqueue, &data_size);
+    uint8_t expected_data[] = {
+      2, 5, 0, 0, 21, 0, 0, 0, 0, 0, 0x12, 0x34, 0, 5, 'e', 'n',
+      '-', 'A', 'U', 0x56, 0x78
+    };
+    ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
+                       output_data, data_size);
+    delete[] output_data;
+  }
 }
 
 
@@ -347,6 +535,7 @@ void PacketBuilderTest::testBuildServiceAck() {
  */
 void PacketBuilderTest::testBuildError() {
   SLPPacketBuilder::BuildError(&output, ola::slp::SERVICE_REPLY, xid,
+                               EN_LANGUAGE_TAG,
                                ola::slp::LANGUAGE_NOT_SUPPORTED);
   OLA_ASSERT_EQ(18u, ioqueue.Size());
 
@@ -360,15 +549,15 @@ void PacketBuilderTest::testBuildError() {
                      output_data, data_size);
   delete[] output_data;
 
-  // try a different function-id
+  // try a different function-id & language
   SLPPacketBuilder::BuildError(&output, ola::slp::DA_ADVERTISEMENT, xid,
-                               ola::slp::INTERNAL_ERROR);
-  OLA_ASSERT_EQ(18u, ioqueue.Size());
+                               "en-AU", ola::slp::INTERNAL_ERROR);
+  OLA_ASSERT_EQ(21u, ioqueue.Size());
 
   output_data = WriteToBuffer(&ioqueue, &data_size);
   uint8_t expected_data2[] = {
-    2, 8, 0, 0, 18, 0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
-    0, 10
+    2, 8, 0, 0, 21, 0, 0, 0, 0, 0, 0x12, 0x34, 0, 5, 'e', 'n',
+    '-', 'A', 'U', 0, 10
   };
   ASSERT_DATA_EQUALS(__LINE__, expected_data2, sizeof(expected_data2),
                      output_data, data_size);

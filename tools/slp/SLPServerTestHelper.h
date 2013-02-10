@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * SLPServerTestHelper.h
  * A Helper class for the SLPServer tests.
@@ -25,6 +25,8 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <set>
 #include <string>
+#include <vector>
+
 #include "ola/Clock.h"
 #include "ola/ExportMap.h"
 #include "ola/io/SelectServer.h"
@@ -127,6 +129,15 @@ class SLPServerTestHelper {
                                      xid_t xid,
                                      const ScopeSet &scopes,
                                      const ServiceEntry &service);
+    void InjectAllServiceTypeRequest(const IPV4SocketAddress &source,
+                                     xid_t xid,
+                                     const set<IPV4Address> &pr_list,
+                                     const ScopeSet &scopes);
+    void InjectServiceTypeRequest(const IPV4SocketAddress &source,
+                                  xid_t xid,
+                                  const set<IPV4Address> &pr_list,
+                                  const string &naming_auth,
+                                  const ScopeSet &scopes);
     void InjectError(const IPV4SocketAddress &source,
                      slp_function_id_t function_id,
                      xid_t xid,
@@ -136,6 +147,7 @@ class SLPServerTestHelper {
                               xid_t xid,
                               const string &service,
                               const ScopeSet &scopes,
+
                               const set<IPV4Address> &pr_list);
     void ExpectMulticastServiceRequest(xid_t xid,
                                        const string &service,
@@ -166,6 +178,10 @@ class SLPServerTestHelper {
     void ExpectMulticastDAAdvert(xid_t xid,
                                  uint32_t boot_timestamp,
                                  const ScopeSet &scopes);
+    void ExpectServiceTypeReply(const IPV4SocketAddress &dest,
+                                xid_t xid,
+                                uint16_t error_code,
+                                const vector<string> &service_types);
     void ExpectSAAdvert(const IPV4SocketAddress &dest,
                         xid_t xid,
                         const ScopeSet &scopes);

@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * SLPServer.h
  * Copyright (C) 2012 Simon Newton
@@ -39,7 +39,6 @@
 
 #include "tools/slp/Base.h"
 #include "tools/slp/DATracker.h"
-#include "tools/slp/SLPPacketParser.h"
 #include "tools/slp/SLPStore.h"
 #include "tools/slp/SLPUDPSender.h"
 #include "tools/slp/ServerCommon.h"
@@ -177,7 +176,6 @@ class SLPServer {
     ola::network::TCPAcceptingSocket *m_slp_accept_socket;
 
     // SLP members
-    SLPPacketParser m_packet_parser;
     SLPStore m_service_store;
     SLPUDPSender m_udp_sender;
     ScopeSet m_configured_scopes;
@@ -201,7 +199,7 @@ class SLPServer {
 
     // SLP Network RX methods
     void UDPData();
-    void HandleServiceRequest(BigEndianInputStream *stream,
+    void HandleServiceRequest(const uint8_t *data, unsigned int data_length,
                               const IPV4SocketAddress &source);
     void HandleServiceReply(BigEndianInputStream *stream,
                             const IPV4SocketAddress &source);
@@ -213,9 +211,11 @@ class SLPServer {
                           const IPV4SocketAddress &source);
     void HandleDAAdvert(BigEndianInputStream *stream,
                         const IPV4SocketAddress &source);
+    void HandleServiceTypeRequest(BigEndianInputStream *stream,
+                                  const IPV4SocketAddress &source);
 
     // Network TX methods
-    void SendErrorIfUnicast(const ServiceRequestPacket *request,
+    void SendErrorIfUnicast(const SLPPacket *packet,
                             slp_function_id_t function_id,
                             const IPV4SocketAddress &source,
                             slp_error_code_t error_code);
@@ -280,6 +280,9 @@ class SLPServer {
     void IncrementPacketVar(const string &packet);
     void GetCurrentTime(TimeStamp *time);
 
+    // helper methods
+    bool InPRList(const vector<IPV4Address> &pr_list);
+
     // constants
     /* Super ghetto:
      * Section 6.1 of the RFC says the max UDP data size is 1400, SLP headers
@@ -303,6 +306,7 @@ class SLPServer {
     static const char SRVREG[];
     static const char SRVRPLY[];
     static const char SRVRQST[];
+    static const char SRVTYPERQST[];
     static const char UNSUPPORTED[];
     static const char UNKNOWN[];
     static const char UDP_RX_PACKET_BY_TYPE_VAR[];

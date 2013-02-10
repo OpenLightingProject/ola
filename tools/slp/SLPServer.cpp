@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * SLPServer.cpp
  * Copyright (C) 2012 Simon Newton
@@ -90,8 +90,9 @@ const char SLPServer::SRVDEREG[] = "SrvDeReg";
 const char SLPServer::SRVREG[] = "SrvReg";
 const char SLPServer::SRVRPLY[] = "SrvRply";
 const char SLPServer::SRVRQST[] = "SrvRqst";
-const char SLPServer::UNSUPPORTED[] = "Unsupported";
+const char SLPServer::SRVTYPERQST[] = "SrvTypeRqst";
 const char SLPServer::UNKNOWN[] = "Unknown";
+const char SLPServer::UNSUPPORTED[] = "Unsupported";
 // This counter tracks the number of packets received by type.
 // This is incremented prior to packet checks.
 const char SLPServer::UDP_RX_PACKET_BY_TYPE_VAR[] = "slp-udp-rx-packets";
@@ -155,8 +156,7 @@ SLPServer::SLPServer(ola::io::SelectServerInterface *ss,
       m_config_reg_active_max(options.config_reg_active_max * ONE_THOUSAND),
       m_enable_da(options.enable_da),
       m_slp_port(options.slp_port),
-      m_en_lang(reinterpret_cast<const char*>(EN_LANGUAGE_TAG),
-                sizeof(EN_LANGUAGE_TAG)),
+      m_en_lang(EN_LANGUAGE_TAG),
       m_iface_address(options.ip_address),
       m_multicast_endpoint(IPV4SocketAddress(
             IPV4Address(HostToNetwork(SLP_MULTICAST_ADDRESS)), m_slp_port)),
@@ -397,8 +397,8 @@ void SLPServer::UDPData() {
   if (m_export_map)
     (*m_export_map->GetIntegerVar(UDP_RX_TOTAL_VAR))++;
 
-  uint8_t function_id = m_packet_parser.DetermineFunctionID(packet,
-                                                            packet_size);
+  uint8_t function_id = SLPPacketParser::DetermineFunctionID(packet,
+                                                             packet_size);
 
   MemoryBuffer buffer(&packet[0], packet_size);
   BigEndianInputStream stream(&buffer);
@@ -408,7 +408,7 @@ void SLPServer::UDPData() {
       return;
     case SERVICE_REQUEST:
       IncrementPacketVar(SRVRQST);
-      HandleServiceRequest(&stream, source);
+      HandleServiceRequest(packet, packet_size, source);
       break;
     case SERVICE_REPLY:
       IncrementPacketVar(SRVRPLY);
@@ -426,13 +426,16 @@ void SLPServer::UDPData() {
       IncrementPacketVar(DAADVERT);
       HandleDAAdvert(&stream, source);
       break;
+    case SERVICE_TYPE_REQUEST:
+      IncrementPacketVar(SRVTYPERQST);
+      HandleServiceTypeRequest(&stream, source);
+      break;
     case SERVICE_DEREGISTER:
       IncrementPacketVar(SRVDEREG);
       HandleServiceDeRegister(&stream, source);
       break;
     case ATTRIBUTE_REQUEST:
     case ATTRIBUTE_REPLY:
-    case SERVICE_TYPE_REQUEST:
     case SERVICE_TYPE_REPLY:
     case SA_ADVERTISEMENT:
       IncrementPacketVar(UNSUPPORTED);
@@ -450,26 +453,47 @@ void SLPServer::UDPData() {
 /**
  * Handle a Service Request packet.
  */
-void SLPServer::HandleServiceRequest(BigEndianInputStream *stream,
+void SLPServer::HandleServiceRequest(const uint8_t *data,
+                                     unsigned int data_length,
                                      const IPV4SocketAddress &source) {
   OLA_INFO << "Got Service request from " << source;
-  auto_ptr<const ServiceRequestPacket> request(
-      m_packet_parser.UnpackServiceRequest(stream));
-  if (!request.get())
+  URLEntries urls;
+  auto_ptr<const ServiceRequestPacket> request;
+  {
+    MemoryBuffer buffer(data, data_length);
+    BigEndianInputStream input(&buffer);
+    request.reset(SLPPacketParser::UnpackServiceRequest(&input));
+  }
+  if (!request.get()) {
+    // try to at least unpack the header, so we can send a PARSE_ERROR response
+    SLPPacket slp_packet;
+    MemoryBuffer buffer(data, data_length);
+    BigEndianInputStream input(&buffer);
+    if (SLPPacketParser::ExtractHeader(&input, &slp_packet, "SrvRqst")) {
+      SendErrorIfUnicast(&slp_packet, SERVICE_REPLY, source, PARSE_ERROR);
+    }
     return;
+  }
 
   // if we're in the PR list don't do anything
-  vector<IPV4Address>::const_iterator pr_iter = request->pr_list.begin();
-  for (; pr_iter != request->pr_list.end(); ++pr_iter) {
-    if (*pr_iter == m_iface_address) {
-      OLA_INFO << m_iface_address <<
-        " found in PR list, not responding to request";
-      return;
-    }
+  if (InPRList(request->pr_list)) {
+    OLA_INFO << m_iface_address <<
+      " found in PR list, not responding to request";
+    return;
   }
 
   if (!request->predicate.empty()) {
-    OLA_WARN << "Recieved request with predicate, ignoring";
+    if (m_enable_da) {
+      // TODO(simon): support predicate matching
+      OLA_WARN << "Recieved request with predicate, ignoring";
+    } else if (!request->Multicast()) {
+      // For our purposes we assume that service's can't have attributes.
+      // Therefore all predicate matches will fail, so we can return an empty
+      // SrvRply here.
+      OLA_INFO << "Got request with predicate, sending empty SrvRply";
+      m_udp_sender.SendServiceReply(source, request->xid, request->language, 0,
+                                    urls);
+    }
     return;
   }
 
@@ -480,14 +504,16 @@ void SLPServer::HandleServiceRequest(BigEndianInputStream *stream,
     return;
   }
 
-  if (request->language != m_en_lang) {
+  // The language tag only applies to the predicate.
+  if (!request->predicate.empty() && request->language != m_en_lang) {
     OLA_WARN << "Unsupported language " << request->language;
     SendErrorIfUnicast(request.get(), SERVICE_REPLY, source,
                        LANGUAGE_NOT_SUPPORTED);
     return;
   }
 
-  OLA_INFO << "SrvRqst for '" << request->service_type << "'";
+  OLA_INFO << "SrvRqst for '" << request->service_type << "', scopes " <<
+    request->scope_list;
   // check service, MaybeSend[DS]AAdvert do their own scope checking
   if (request->service_type.empty()) {
     OLA_INFO << "Recieved SrvRqst with empty service-type from: " << source;
@@ -503,6 +529,7 @@ void SLPServer::HandleServiceRequest(BigEndianInputStream *stream,
 
   // check scopes
   if (request->scope_list.empty()) {
+    OLA_INFO << "Empty scope list";
     SendErrorIfUnicast(request.get(), SERVICE_REPLY, source,
                        SCOPE_NOT_SUPPORTED);
     return;
@@ -510,12 +537,12 @@ void SLPServer::HandleServiceRequest(BigEndianInputStream *stream,
   ScopeSet scope_set(request->scope_list);
 
   if (!scope_set.Intersects(m_configured_scopes)) {
+    OLA_INFO << "Scopes don't match";
     SendErrorIfUnicast(request.get(), SERVICE_REPLY, source,
                        SCOPE_NOT_SUPPORTED);
     return;
   }
 
-  URLEntries urls;
   OLA_INFO << "Received SrvRqst for " << request->service_type;
   m_service_store.Lookup(*(m_ss->WakeUpTime()), scope_set,
                          request->service_type, &urls);
@@ -523,7 +550,8 @@ void SLPServer::HandleServiceRequest(BigEndianInputStream *stream,
   OLA_INFO << "sending SrvReply with " << urls.size() << " urls";
   if (urls.empty() && request->Multicast())
     return;
-  m_udp_sender.SendServiceReply(source, request->xid, 0, urls);
+  m_udp_sender.SendServiceReply(source, request->xid, request->language, 0,
+                                urls);
 }
 
 
@@ -534,7 +562,7 @@ void SLPServer::HandleServiceReply(BigEndianInputStream *stream,
                                    const IPV4SocketAddress &source) {
   OLA_INFO << "Got Service reply from " << source;
   auto_ptr<const ServiceReplyPacket> srv_reply(
-    m_packet_parser.UnpackServiceReply(stream));
+    SLPPacketParser::UnpackServiceReply(stream));
   if (!srv_reply.get())
     return;
 
@@ -556,7 +584,7 @@ void SLPServer::HandleServiceRegistration(BigEndianInputStream *stream,
                                           const IPV4SocketAddress &source) {
   OLA_INFO << "Got Service registration from " << source;
   auto_ptr<const ServiceRegistrationPacket> srv_reg(
-    m_packet_parser.UnpackServiceRegistration(stream));
+    SLPPacketParser::UnpackServiceRegistration(stream));
   if (!srv_reg.get())
     return;
 
@@ -569,12 +597,14 @@ void SLPServer::HandleServiceRegistration(BigEndianInputStream *stream,
     return;
 
   if (srv_reg->url.lifetime() == 0) {
-    m_udp_sender.SendServiceAck(source, srv_reg->xid, INVALID_REGISTRATION);
+    m_udp_sender.SendServiceAck(source, srv_reg->xid, srv_reg->language,
+                                INVALID_REGISTRATION);
     return;
   }
 
   if (!m_configured_scopes.IsSuperSet(scopes)) {
-    m_udp_sender.SendServiceAck(source, srv_reg->xid, SCOPE_NOT_SUPPORTED);
+    m_udp_sender.SendServiceAck(source, srv_reg->xid, srv_reg->language,
+                                SCOPE_NOT_SUPPORTED);
     return;
   }
 
@@ -583,7 +613,8 @@ void SLPServer::HandleServiceRegistration(BigEndianInputStream *stream,
   slp_error_code_t error_code = m_service_store.Insert(
       *(m_ss->WakeUpTime()), service, srv_reg->Fresh());
 
-  m_udp_sender.SendServiceAck(source, srv_reg->xid, error_code);
+  m_udp_sender.SendServiceAck(source, srv_reg->xid, srv_reg->language,
+                              error_code);
 }
 
 
@@ -594,7 +625,7 @@ void SLPServer::HandleServiceDeRegister(BigEndianInputStream *stream,
                                         const IPV4SocketAddress &source) {
   OLA_INFO << "Got Service de-registration from " << source;
   auto_ptr<const ServiceDeRegistrationPacket> srv_dereg(
-    m_packet_parser.UnpackServiceDeRegistration(stream));
+    SLPPacketParser::UnpackServiceDeRegistration(stream));
   if (!srv_dereg.get())
     return;
 
@@ -608,7 +639,7 @@ void SLPServer::HandleServiceDeRegister(BigEndianInputStream *stream,
   // lifetime can be anything for a dereg
   ServiceEntry service(scopes, srv_dereg->url.url(), 0);
   slp_error_code_t ret = m_service_store.Remove(service);
-  m_udp_sender.SendServiceAck(source, srv_dereg->xid, ret);
+  m_udp_sender.SendServiceAck(source, srv_dereg->xid, srv_dereg->language, ret);
 }
 
 
@@ -618,7 +649,7 @@ void SLPServer::HandleServiceDeRegister(BigEndianInputStream *stream,
 void SLPServer::HandleServiceAck(BigEndianInputStream *stream,
                                  const IPV4SocketAddress &source) {
   auto_ptr<const ServiceAckPacket> srv_ack(
-      m_packet_parser.UnpackServiceAck(stream));
+      SLPPacketParser::UnpackServiceAck(stream));
   if (!srv_ack.get())
     return;
 
@@ -643,7 +674,7 @@ void SLPServer::HandleServiceAck(BigEndianInputStream *stream,
 void SLPServer::HandleDAAdvert(BigEndianInputStream *stream,
                                const IPV4SocketAddress &source) {
   auto_ptr<const DAAdvertPacket> da_advert(
-      m_packet_parser.UnpackDAAdvert(stream));
+      SLPPacketParser::UnpackDAAdvert(stream));
   if (!da_advert.get()) {
     OLA_INFO << "Dropped DAAdvert from " << source << " due to parse error";
     return;
@@ -669,22 +700,68 @@ void SLPServer::HandleDAAdvert(BigEndianInputStream *stream,
 
 
 /**
+ * Handle a SrvTypeRqst.
+ */
+void SLPServer::HandleServiceTypeRequest(BigEndianInputStream *stream,
+                                         const IPV4SocketAddress &source) {
+  auto_ptr<const ServiceTypeRequestPacket> request(
+      SLPPacketParser::UnpackServiceTypeRequest(stream));
+  if (!request.get()) {
+    OLA_INFO << "Dropped SrvTypeRqst from " << source << " due to parse error";
+    return;
+  }
+
+  // If we're listed in the PR list ignore the request
+  if (InPRList(request->pr_list)) {
+    OLA_INFO << m_iface_address <<
+      " found in PR list, not responding to request";
+    return;
+  }
+
+  ScopeSet scopes(request->scope_list);
+
+  if (!scopes.Intersects(m_configured_scopes)) {
+    SendErrorIfUnicast(request.get(), SERVICE_TYPE_REPLY, source,
+                       SCOPE_NOT_SUPPORTED);
+    return;
+  }
+  OLA_INFO << "RX SrvTypeRqst(" << source << "), scopes " << scopes
+           << ", naming auth '" << request->naming_authority << "'";
+
+  vector<string> service_types;
+  if (request->include_all) {
+    m_service_store.GetAllServiceTypes(scopes, &service_types);
+  } else {
+    m_service_store.GetServiceTypesByNamingAuth(request->naming_authority,
+                                                scopes, &service_types);
+  }
+
+  if (service_types.empty() && request->Multicast())
+    return;
+
+  sort(service_types.begin(), service_types.end());
+
+  m_udp_sender.SendServiceTypeReply(source, request->xid, SLP_OK,
+                                    service_types);
+}
+
+
+/**
  * Send an error response, only if this request was unicast
  * @param request the request that triggered the response
  * @param function_id the function-id to use in the response
  * @param destination the socket address to send the message to
  * @param error_code the error code to use
  */
-void SLPServer::SendErrorIfUnicast(const ServiceRequestPacket *request,
+void SLPServer::SendErrorIfUnicast(const SLPPacket *request,
                                    slp_function_id_t function_id,
                                    const IPV4SocketAddress &destination,
                                    slp_error_code_t error_code) {
   if (request->Multicast())
     return;
   // Per section 7, we can truncate the message if the error code is non-0
-  // It turns out the truncated message is identicate to an SrvAck (who would
-  // have thought!) so we reuse that method here
-  m_udp_sender.SendError(destination, function_id, request->xid, error_code);
+  m_udp_sender.SendError(destination, function_id, request->xid,
+                         request->language, error_code);
 }
 
 
@@ -1490,6 +1567,15 @@ void SLPServer::GetCurrentTime(TimeStamp *time) {
     ola::Clock clock;
     clock.CurrentTime(time);
   }
+}
+
+
+/**
+ * Check if we're in a PR list.
+ */
+bool SLPServer::InPRList(const vector<IPV4Address> &pr_list) {
+  return std::find(pr_list.begin(), pr_list.end(), m_iface_address) !=
+    pr_list.end();
 }
 }  // slp
 }  // ola

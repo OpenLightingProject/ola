@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * DynamicPluginLoader.cpp
  * This class is responsible for loading and unloading the plugins
@@ -26,7 +26,10 @@
 #include "olad/Plugin.h"
 #include "olad/DynamicPluginLoader.h"
 
+#ifdef USE_ARTNET
 #include "plugins/artnet/ArtNetPlugin.h"
+#endif
+
 #include "plugins/dummy/DummyPlugin.h"
 #include "plugins/e131/E131Plugin.h"
 #include "plugins/espnet/EspNetPlugin.h"
@@ -85,7 +88,9 @@ void DynamicPluginLoader::PopulatePlugins() {
   m_plugins.push_back(
       new ola::plugin::dmx4linux::Dmx4LinuxPlugin(m_plugin_adaptor));
 #endif
+#ifdef USE_ARTNET
   m_plugins.push_back(new ola::plugin::artnet::ArtNetPlugin(m_plugin_adaptor));
+#endif
   m_plugins.push_back(new ola::plugin::dummy::DummyPlugin(m_plugin_adaptor));
   m_plugins.push_back(new ola::plugin::e131::E131Plugin(m_plugin_adaptor));
   m_plugins.push_back(new ola::plugin::espnet::EspNetPlugin(m_plugin_adaptor));

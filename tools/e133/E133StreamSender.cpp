@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * E133StreamSender.cpp
  * The E133StreamSender
@@ -22,11 +22,12 @@
 
 #include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include "ola/Logging.h"
+#include "plugins/e131/e131/ACNVectors.h"
 #include "plugins/e131/e131/E133Inflator.h"
 #include "plugins/e131/e131/E133PDU.h"
 #include "plugins/e131/e131/RDMInflator.h"
-#include "plugins/e131/e131/TCPTransport.h"
 #include "plugins/e131/e131/RootSender.h"
+#include "plugins/e131/e131/TCPTransport.h"
 
 #include "tools/e133/E133StreamSender.h"
 
@@ -92,12 +93,11 @@ bool E133StreamSender::SendPDU(unsigned int vector,
                                const class ola::plugin::e131::PDU *pdu) {
   ola::plugin::e131::E133Header header(m_source_name,
                                        sequence_number,
-                                       endpoint,
-                                       false);
+                                       endpoint);
   ola::plugin::e131::E133PDU e133_pdu(vector, header, pdu);
 
   return m_root_sender->SendPDU(
-      ola::plugin::e131::E133Inflator::E133_VECTOR,
+      ola::plugin::e131::VECTOR_ROOT_E133,
       e133_pdu,
       m_transport);
 }

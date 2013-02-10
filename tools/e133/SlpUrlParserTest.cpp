@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * SlpUrlParserTest.cpp
  * Test fixture for the SlpUrlParser class
@@ -98,16 +98,16 @@ void SlpUrlParserTest::testParseUrl() {
                    &uid,
                    &address));
 
-  // finally the working case
+  // finally the working cases
   OLA_ASSERT(
-      ParseSlpUrl("service:rdmnet-device://192.168.1.204:5568/7a7000000001",
+      ParseSlpUrl("service:rdmnet-device://192.168.1.204/7a7000000001",
                   &uid,
                   &address));
   OLA_ASSERT_EQ(expected_uid, uid);
   OLA_ASSERT_EQ(expected_ip, address);
 
   OLA_ASSERT(
-      ParseSlpUrl("service:rdmnet-device://10.0.80.43:5568/4a6100000020",
+      ParseSlpUrl("service:rdmnet-device://10.0.80.43/4a6100000020",
                   &uid,
                   &address));
   ola::rdm::UID expected_uid2(19041, 32);

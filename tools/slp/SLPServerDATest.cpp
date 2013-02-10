@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * SLPServerDATest.cpp
  * Tests the DA functionality of the SLPServer class
@@ -24,6 +24,8 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
+
 #include "ola/Logging.h"
 #include "ola/math/Random.h"
 #include "ola/network/IPV4Address.h"
@@ -44,6 +46,7 @@ using ola::slp::INVALID_REGISTRATION;
 using ola::slp::PARSE_ERROR;
 using ola::slp::SCOPE_NOT_SUPPORTED;
 using ola::slp::SERVICE_REPLY;
+using ola::slp::SERVICE_TYPE_REPLY;
 using ola::slp::SLPServer;
 using ola::slp::SLP_OK;
 using ola::slp::ScopeSet;
@@ -76,6 +79,7 @@ class SLPServerDATest: public CppUnit::TestFixture {
     CPPUNIT_TEST(testDeRegistration);
     CPPUNIT_TEST(testSrvRqstForRemoteService);
     CPPUNIT_TEST(testRemoteServiceTimeout);
+    CPPUNIT_TEST(testServiceTypeRequests);
     CPPUNIT_TEST_SUITE_END();
 
     void testConfiguredScopes();
@@ -89,6 +93,7 @@ class SLPServerDATest: public CppUnit::TestFixture {
     void testDeRegistration();
     void testSrvRqstForRemoteService();
     void testRemoteServiceTimeout();
+    void testServiceTypeRequests();
 
   public:
     void setUp() {
@@ -113,7 +118,7 @@ class SLPServerDATest: public CppUnit::TestFixture {
     static const ScopeSet SCOPE1, SCOPE2, SCOPE3, SCOPE1_2, DA_SCOPES;
     static const ScopeSet EMPTY_SCOPES;
     static const char FOO_SERVICE[];
-    static const char FOO_LOCALHOST_URL[];
+    static const char FOO_LOCALHOST_URL[], BAR_LOCALHOST_URL[];
     static const IPV4SocketAddress UA1;
 };
 
@@ -127,6 +132,7 @@ const ScopeSet SLPServerDATest::SCOPE3("three");
 const ScopeSet SLPServerDATest::EMPTY_SCOPES("");
 const char SLPServerDATest::FOO_SERVICE[] = "service:foo";
 const char SLPServerDATest::FOO_LOCALHOST_URL[] = "service:foo://localhost";
+const char SLPServerDATest::BAR_LOCALHOST_URL[] = "service:bar://localhost";
 const IPV4SocketAddress SLPServerDATest::UA1 =
     IPV4SocketAddress::FromStringOrDie("192.168.1.10:5570");
 
@@ -769,6 +775,103 @@ void SLPServerDATest::testRemoteServiceTimeout() {
     PRList pr_list;
     m_helper.InjectServiceRequest(UA1, xid++, true, pr_list, FOO_SERVICE,
                                   DA_SCOPES);
+  }
+
+  m_helper.ExpectMulticastDAAdvert(0, 0, DA_SCOPES);
+}
+
+
+/**
+ * Check that we respond to SrvTypeRqsts correctly.
+ */
+void SLPServerDATest::testServiceTypeRequests() {
+  auto_ptr<SLPServer> server(m_helper.CreateDAAndHandleStartup(DA_SCOPES));
+
+//  xid_t xid = 10;
+
+  // register some services
+  OLA_ASSERT_EQ(
+      (uint16_t) SLP_OK,
+      server->RegisterService(ServiceEntry("one,two", FOO_LOCALHOST_URL, 300)));
+  OLA_ASSERT_EQ(
+      (uint16_t) SLP_OK,
+      server->RegisterService(ServiceEntry("one,two", BAR_LOCALHOST_URL, 300)));
+
+  // a service with a naming authority
+  ServiceEntry service_with_naming_auth(
+      "one", "service:baz.auth://localhost", 300);
+  OLA_ASSERT_EQ((uint16_t) SLP_OK,
+                server->RegisterService(service_with_naming_auth));
+
+  xid_t xid = 10;
+  // get all services for scope "one"
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    vector<string> service_types;
+    service_types.push_back("service:bar");
+    service_types.push_back("service:baz.auth");
+    service_types.push_back("service:foo");
+    PRList pr_list;
+
+    m_helper.ExpectServiceTypeReply(UA1, xid, SLP_OK, service_types);
+    m_helper.InjectAllServiceTypeRequest(UA1, xid++, pr_list, SCOPE1);
+  }
+
+  // limit to scope "two"
+  {
+    vector<string> service_types;
+    service_types.push_back("service:bar");
+    service_types.push_back("service:foo");
+    PRList pr_list;
+
+    m_helper.ExpectServiceTypeReply(UA1, xid, SLP_OK, service_types);
+    m_helper.InjectAllServiceTypeRequest(UA1, xid++, pr_list, SCOPE2);
+  }
+
+  // test the PR list works
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    PRList pr_list;
+    pr_list.insert(
+        IPV4Address::FromStringOrDie(SLPServerTestHelper::SERVER_IP));
+
+    m_helper.InjectAllServiceTypeRequest(UA1, xid++, pr_list, SCOPE1);
+  }
+
+  // test the IANA scopes
+  {
+    vector<string> service_types;
+    service_types.push_back("service:bar");
+    service_types.push_back("service:foo");
+    PRList pr_list;
+
+    m_helper.ExpectServiceTypeReply(UA1, xid, SLP_OK, service_types);
+    m_helper.InjectServiceTypeRequest(UA1, xid++, pr_list, "", SCOPE1);
+  }
+
+  // test a specific naming authority
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    vector<string> service_types;
+    service_types.push_back("service:baz.auth");
+    PRList pr_list;
+    m_helper.ExpectServiceTypeReply(UA1, xid, SLP_OK, service_types);
+    m_helper.InjectServiceTypeRequest(UA1, xid++, pr_list, "auth", SCOPE1);
+  }
+
+  // test the SCOPE_NOT_SUPPORTED error, the request is multicast so there is
+  // no response.
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    PRList pr_list;
+    m_helper.InjectAllServiceTypeRequest(UA1, xid++, pr_list, ScopeSet("four"));
+  }
+
+  // test a naming auth that returns no results
+  {
+    SocketVerifier verifier(&m_udp_socket);
+    PRList pr_list;
+    m_helper.InjectServiceTypeRequest(UA1, xid++, pr_list, "cat", SCOPE1);
   }
 
   m_helper.ExpectMulticastDAAdvert(0, 0, DA_SCOPES);

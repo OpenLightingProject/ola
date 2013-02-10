@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * SLPServerTestHelper.cpp
  * Tests the SA functionality of the SLPServer class
@@ -43,6 +43,7 @@
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::slp::DirectoryAgent;
+using ola::slp::EN_LANGUAGE_TAG;
 using ola::slp::SLPPacketBuilder;
 using ola::slp::SLPServer;
 using ola::slp::SLP_OK;
@@ -178,7 +179,8 @@ void SLPServerTestHelper::InjectServiceRequest(const IPV4SocketAddress &source,
                                                const string &service_type,
                                                const ScopeSet &scopes) {
   SLPPacketBuilder::BuildServiceRequest(
-      &m_output_stream, xid, multicast, pr_list, service_type, scopes);
+      &m_output_stream, xid, multicast, EN_LANGUAGE_TAG, pr_list, service_type,
+      scopes);
   m_udp_socket->InjectData(&m_output, source);
   OLA_ASSERT_TRUE(m_output.Empty());
 }
@@ -191,7 +193,8 @@ void SLPServerTestHelper::InjectServiceReply(const IPV4SocketAddress &source,
                                              xid_t xid,
                                              uint16_t error_code,
                                              const URLEntries &urls) {
-  SLPPacketBuilder::BuildServiceReply(&m_output_stream, xid, error_code, urls);
+  SLPPacketBuilder::BuildServiceReply(&m_output_stream, xid, EN_LANGUAGE_TAG,
+                                      error_code, urls);
   m_udp_socket->InjectData(&m_output, source);
   OLA_ASSERT_TRUE(m_output.Empty());
 }
@@ -204,7 +207,7 @@ void SLPServerTestHelper::InjectSrvAck(const IPV4SocketAddress &source,
                                        xid_t xid,
                                        uint16_t error_code) {
   SLPPacketBuilder::BuildServiceAck(
-      &m_output_stream, xid, error_code);
+      &m_output_stream, xid, EN_LANGUAGE_TAG, error_code);
   m_udp_socket->InjectData(&m_output, source);
   OLA_ASSERT_TRUE(m_output.Empty());
 }
@@ -276,6 +279,37 @@ void SLPServerTestHelper::InjectServiceDeRegistration(
 
 
 /**
+ * Inject a SrvTypeRqst for all service types
+ */
+void SLPServerTestHelper::InjectAllServiceTypeRequest(
+    const IPV4SocketAddress &source,
+    xid_t xid,
+    const set<IPV4Address> &pr_list,
+    const ScopeSet &scopes) {
+  SLPPacketBuilder::BuildAllServiceTypeRequest(
+      &m_output_stream, xid, true, pr_list, scopes);
+  m_udp_socket->InjectData(&m_output, source);
+  OLA_ASSERT_TRUE(m_output.Empty());
+}
+
+
+/**
+ * Inject a SrvTypeRqst for a particular naming auth
+ */
+void SLPServerTestHelper::InjectServiceTypeRequest(
+    const IPV4SocketAddress &source,
+    xid_t xid,
+    const set<IPV4Address> &pr_list,
+    const string &naming_auth,
+    const ScopeSet &scopes) {
+  SLPPacketBuilder::BuildServiceTypeRequest(
+      &m_output_stream, xid, true, pr_list, naming_auth, scopes);
+  m_udp_socket->InjectData(&m_output, source);
+  OLA_ASSERT_TRUE(m_output.Empty());
+}
+
+
+/**
  * Inject an error (truncated SrvRepl or DAAdvert).
  */
 void SLPServerTestHelper::InjectError(const IPV4SocketAddress &source,
@@ -283,7 +317,7 @@ void SLPServerTestHelper::InjectError(const IPV4SocketAddress &source,
                                       xid_t xid,
                                       uint16_t error_code) {
   SLPPacketBuilder::BuildError(
-      &m_output_stream, function_id, xid, error_code);
+      &m_output_stream, function_id, xid, EN_LANGUAGE_TAG, error_code);
   m_udp_socket->InjectData(&m_output, source);
   OLA_ASSERT_TRUE(m_output.Empty());
 }
@@ -299,7 +333,8 @@ void SLPServerTestHelper::ExpectServiceRequest(
     const string &service,
     const ScopeSet &scopes,
     const set<IPV4Address> &pr_list) {
-  SLPPacketBuilder::BuildServiceRequest(&m_output_stream, xid, false, pr_list,
+  SLPPacketBuilder::BuildServiceRequest(&m_output_stream, xid, false,
+                                        EN_LANGUAGE_TAG, pr_list,
                                         service, scopes);
   m_udp_socket->AddExpectedData(&m_output, dest);
   OLA_ASSERT_TRUE(m_output.Empty());
@@ -316,7 +351,8 @@ void SLPServerTestHelper::ExpectMulticastServiceRequest(
     const set<IPV4Address> &pr_list) {
   IPV4SocketAddress destination(IPV4Address::FromStringOrDie(SLP_MULTICAST_IP),
                                 SLP_TEST_PORT);
-  SLPPacketBuilder::BuildServiceRequest(&m_output_stream, xid, true, pr_list,
+  SLPPacketBuilder::BuildServiceRequest(&m_output_stream, xid, true,
+                                        EN_LANGUAGE_TAG, pr_list,
                                         service, scopes);
   m_udp_socket->AddExpectedData(&m_output, destination);
   OLA_ASSERT_TRUE(m_output.Empty());
@@ -330,7 +366,8 @@ void SLPServerTestHelper::ExpectServiceReply(const IPV4SocketAddress &dest,
                                              xid_t xid,
                                              uint16_t error_code,
                                              const URLEntries &urls) {
-  SLPPacketBuilder::BuildServiceReply(&m_output_stream, xid, error_code, urls);
+  SLPPacketBuilder::BuildServiceReply(&m_output_stream, xid, EN_LANGUAGE_TAG,
+                                      error_code, urls);
   m_udp_socket->AddExpectedData(&m_output, dest);
   OLA_ASSERT_TRUE(m_output.Empty());
 }
@@ -412,6 +449,22 @@ void SLPServerTestHelper::ExpectMulticastDAAdvert(xid_t xid,
 
 
 /**
+ * Expect a Service Type Reply
+ */
+void SLPServerTestHelper::ExpectServiceTypeReply(
+    const IPV4SocketAddress &dest,
+    xid_t xid,
+    uint16_t error_code,
+    const vector<string> &service_types) {
+
+  SLPPacketBuilder::BuildServiceTypeReply(&m_output_stream, xid, error_code,
+                                          service_types);
+  m_udp_socket->AddExpectedData(&m_output, dest);
+  OLA_ASSERT_TRUE(m_output.Empty());
+}
+
+
+/**
  * Expect a SAAdvert
  */
 void SLPServerTestHelper::ExpectSAAdvert(const IPV4SocketAddress &dest,
@@ -433,7 +486,8 @@ void SLPServerTestHelper::ExpectSAAdvert(const IPV4SocketAddress &dest,
 void SLPServerTestHelper::ExpectServiceAck(const IPV4SocketAddress &dest,
                                            xid_t xid,
                                            uint16_t error_code) {
-  SLPPacketBuilder::BuildServiceAck(&m_output_stream, xid, error_code);
+  SLPPacketBuilder::BuildServiceAck(&m_output_stream, xid, EN_LANGUAGE_TAG,
+                                    error_code);
   m_udp_socket->AddExpectedData(&m_output, dest);
   OLA_ASSERT_TRUE(m_output.Empty());
 }
@@ -446,7 +500,8 @@ void SLPServerTestHelper::ExpectError(const IPV4SocketAddress &dest,
                                       slp_function_id_t function_id,
                                       xid_t xid,
                                       uint16_t error_code) {
-  SLPPacketBuilder::BuildError(&m_output_stream, function_id, xid, error_code);
+  SLPPacketBuilder::BuildError(&m_output_stream, function_id, xid,
+                               EN_LANGUAGE_TAG, error_code);
   m_udp_socket->AddExpectedData(&m_output, dest);
   OLA_ASSERT_TRUE(m_output.Empty());
 }

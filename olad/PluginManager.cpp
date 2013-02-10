@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * PluginManager.cpp
  * This class is responsible for loading and unloading the plugins
@@ -21,6 +21,7 @@
 #include <set>
 #include <vector>
 #include "ola/Logging.h"
+#include "ola/stl/STLUtils.h"
 #include "olad/Plugin.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/PluginLoader.h"
@@ -69,9 +70,13 @@ void PluginManager::LoadAll() {
       }
       m_loaded_plugins[plugin->Id()] = plugin;
 
-      if (!(plugin->ShouldStart())) {
-        OLA_INFO << "Skipping " << plugin->Name() <<
-          " because it was disabled";
+      if (!plugin->LoadPreferences()) {
+        OLA_WARN << "Failed to load prefernes for " << plugin->Name();
+        continue;
+      }
+
+      if (!plugin->IsEnabled()) {
+        OLA_INFO << "Skipping " << plugin->Name() << " because it was disabled";
         continue;
       }
       enabled_plugins.push_back(plugin);
@@ -158,5 +163,29 @@ void PluginManager::EnabledPlugins(vector<AbstractPlugin*> *plugins) const {
 AbstractPlugin* PluginManager::GetPlugin(ola_plugin_id plugin_id) const {
   PluginMap::const_iterator iter = m_loaded_plugins.find(plugin_id);
   return (iter == m_loaded_plugins.end() ? NULL : iter->second);
+}
+
+
+/**
+ * Return a list of plugins that conflict with this particular plugin.
+ */
+void PluginManager::GetConflictList(ola_plugin_id plugin_id,
+                                    vector<AbstractPlugin*> *plugins) {
+  PluginMap::iterator iter = m_loaded_plugins.begin();
+  for (; iter != m_loaded_plugins.end(); ++iter) {
+    set<ola_plugin_id> conflict_list;
+    iter->second->ConflictsWith(&conflict_list);
+    if (iter->second->Id() == plugin_id) {
+      set<ola_plugin_id>::const_iterator id_iter = conflict_list.begin();
+      for (; id_iter != conflict_list.end(); ++id_iter) {
+        AbstractPlugin *plugin = GetPlugin(*id_iter);
+        if (plugin)
+          plugins->push_back(plugin);
+      }
+    } else {
+      if (STLContains(conflict_list, plugin_id))
+        plugins->push_back(iter->second);
+    }
+  }
 }
 }  // ola

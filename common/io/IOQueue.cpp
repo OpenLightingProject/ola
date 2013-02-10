@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * IOQueue.cpp
  * A non-contigous memory buffer
@@ -201,15 +201,20 @@ void IOQueue::Pop(unsigned int n) {
  * Note: The iovec array points at internal memory structures. This array is
  * invalidated when any non-const methods are called (Append, Pop etc.)
  *
+ * Is the IOQueue is empty, we return an iovec of size 0.
+ *
  * Free the iovec array with FreeIOVec()
  */
 const struct iovec *IOQueue::AsIOVec(int *iocnt) {
-  *iocnt = m_blocks.size();
+  *iocnt = std::max(static_cast<BlockVector::size_type>(1), m_blocks.size());
   struct iovec *vector = new struct iovec[*iocnt];
 
   // the first block
   vector[0].iov_base = m_first;
   vector[0].iov_len = SizeOfFirstBlock();
+
+  if (m_blocks.empty())
+    return vector;
 
   // remaining blocks
   BlockVector::const_iterator iter = m_blocks.begin();

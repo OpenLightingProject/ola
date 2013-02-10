@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * SLPStore.h
  * Holds SLP Service Registations.
@@ -94,6 +94,12 @@ class SLPStore {
     void GetLocalServices(const TimeStamp &now, const ScopeSet &scopes,
                           ServiceEntries *services);
 
+    void GetAllServiceTypes(const ScopeSet &scopes,
+                            vector<string> *service_types);
+    void GetServiceTypesByNamingAuth(const string &naming_authority,
+                                     const ScopeSet &scopes,
+                                     vector<string> *service_types);
+
     void Clean(const TimeStamp &now);
     void Reset();
     void Dump(const TimeStamp &now);
@@ -116,6 +122,8 @@ class SLPStore {
     slp_error_code_t InsertOrUpdateEntry(ServiceEntryVector *services,
                                          const ServiceEntry &service,
                                          bool fresh);
+    bool AnyServiceMatchesScopes(const ScopeSet &scopes,
+                                 const ServiceEntryVector &services);
 };
 }  // slp
 }  // ola

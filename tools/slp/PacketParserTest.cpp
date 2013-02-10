@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * PacketParserTester.cpp
  * Test fixture for the SLPPacketParser class
@@ -54,6 +54,7 @@ class PacketParserTest: public CppUnit::TestFixture {
     CPPUNIT_TEST(testParseServiceAck);
     CPPUNIT_TEST(testParseDAAdvert);
     CPPUNIT_TEST(testParseServiceDeRegister);
+    CPPUNIT_TEST(testParserServiceTypeRequest);
     CPPUNIT_TEST(testExtractHeader);
     CPPUNIT_TEST(testExtractURLEntry);
     CPPUNIT_TEST_SUITE_END();
@@ -65,6 +66,7 @@ class PacketParserTest: public CppUnit::TestFixture {
     void testParseServiceAck();
     void testParseDAAdvert();
     void testParseServiceDeRegister();
+    void testParserServiceTypeRequest();
     void testExtractHeader();
     void testExtractURLEntry();
 
@@ -80,7 +82,6 @@ class PacketParserTest: public CppUnit::TestFixture {
     }
 
   private:
-    SLPPacketParser m_parser;
     IPV4Address ip1, ip2;
     string expected_scopes;
     vector<URLEntry> expected_urls;
@@ -95,15 +96,17 @@ CPPUNIT_TEST_SUITE_REGISTRATION(PacketParserTest);
 void PacketParserTest::testDetermineFunctionID() {
   uint8_t data[] = {2, 1};
   OLA_ASSERT_EQ(static_cast<uint8_t>(ola::slp::SERVICE_REQUEST),
-                m_parser.DetermineFunctionID(data, sizeof(data)));
+                SLPPacketParser::DetermineFunctionID(data, sizeof(data)));
 
   data[1] = 2;
   OLA_ASSERT_EQ(static_cast<uint8_t>(ola::slp::SERVICE_REPLY),
-                m_parser.DetermineFunctionID(data, sizeof(data)));
+                SLPPacketParser::DetermineFunctionID(data, sizeof(data)));
 
   // check error cases
-  OLA_ASSERT_EQ(static_cast<uint8_t>(0), m_parser.DetermineFunctionID(data, 0));
-  OLA_ASSERT_EQ(static_cast<uint8_t>(0), m_parser.DetermineFunctionID(data, 1));
+  OLA_ASSERT_EQ(static_cast<uint8_t>(0),
+                SLPPacketParser::DetermineFunctionID(data, 0));
+  OLA_ASSERT_EQ(static_cast<uint8_t>(0),
+                SLPPacketParser::DetermineFunctionID(data, 1));
 }
 
 
@@ -125,7 +128,7 @@ void PacketParserTest::testParseServiceRequest() {
     BigEndianInputStream stream(&buffer);
 
     auto_ptr<const ola::slp::ServiceRequestPacket> packet(
-      m_parser.UnpackServiceRequest(&stream));
+      SLPPacketParser::UnpackServiceRequest(&stream));
     OLA_ASSERT(packet.get());
 
     // verify the contents of the packet
@@ -159,7 +162,7 @@ void PacketParserTest::testParseServiceRequest() {
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
     auto_ptr<const ola::slp::ServiceRequestPacket> packet(
-      m_parser.UnpackServiceRequest(&stream));
+      SLPPacketParser::UnpackServiceRequest(&stream));
     OLA_ASSERT(packet.get());
 
     // verify the contents of the packet
@@ -193,7 +196,7 @@ void PacketParserTest::testParseServiceRequest() {
     BigEndianInputStream stream(&buffer);
 
     auto_ptr<const ola::slp::ServiceRequestPacket> packet(
-      m_parser.UnpackServiceRequest(&stream));
+      SLPPacketParser::UnpackServiceRequest(&stream));
     OLA_ASSERT(packet.get());
 
     // verify the contents of the packet
@@ -228,7 +231,7 @@ void PacketParserTest::testParseServiceRequest() {
     BigEndianInputStream stream(&buffer);
 
     auto_ptr<const ola::slp::ServiceRequestPacket> packet(
-      m_parser.UnpackServiceRequest(&stream));
+      SLPPacketParser::UnpackServiceRequest(&stream));
     OLA_ASSERT(packet.get());
 
     // verify the contents of the packet
@@ -262,7 +265,7 @@ void PacketParserTest::testParseServiceRequest() {
     BigEndianInputStream stream(&buffer);
 
     auto_ptr<const ola::slp::ServiceRequestPacket> packet(
-      m_parser.UnpackServiceRequest(&stream));
+      SLPPacketParser::UnpackServiceRequest(&stream));
     OLA_ASSERT(packet.get());
 
     // verify the contents of the packet
@@ -285,7 +288,7 @@ void PacketParserTest::testParseServiceRequest() {
   {
     MemoryBuffer buffer(NULL, 0);
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceRequest(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceRequest(&stream));
   }
 
   // invalid PR List
@@ -296,7 +299,7 @@ void PacketParserTest::testParseServiceRequest() {
     };
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceRequest(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceRequest(&stream));
   }
 
   // invalid service-type
@@ -309,7 +312,7 @@ void PacketParserTest::testParseServiceRequest() {
     };
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceRequest(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceRequest(&stream));
   }
 
   // invalid scope list
@@ -323,7 +326,7 @@ void PacketParserTest::testParseServiceRequest() {
     };
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceRequest(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceRequest(&stream));
   }
 
   // invalid predicate
@@ -338,7 +341,7 @@ void PacketParserTest::testParseServiceRequest() {
     };
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceRequest(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceRequest(&stream));
   }
 
   // invalid SPI string
@@ -354,7 +357,7 @@ void PacketParserTest::testParseServiceRequest() {
     };
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceRequest(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceRequest(&stream));
   }
 }
 
@@ -383,7 +386,7 @@ void PacketParserTest::testParseServiceReply() {
     BigEndianInputStream stream(&buffer);
 
     auto_ptr<const ola::slp::ServiceReplyPacket> packet(
-      m_parser.UnpackServiceReply(&stream));
+      SLPPacketParser::UnpackServiceReply(&stream));
     OLA_ASSERT(packet.get());
 
     // verify the contents of the packet
@@ -423,7 +426,7 @@ void PacketParserTest::testParseServiceReply() {
     BigEndianInputStream stream(&buffer);
 
     auto_ptr<const ola::slp::ServiceReplyPacket> packet(
-      m_parser.UnpackServiceReply(&stream));
+      SLPPacketParser::UnpackServiceReply(&stream));
     OLA_ASSERT(packet.get());
 
     // verify the contents of the packet
@@ -439,7 +442,7 @@ void PacketParserTest::testParseServiceReply() {
   {
     MemoryBuffer buffer(NULL, 0);
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceReply(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceReply(&stream));
   }
 
   // missing error code
@@ -449,7 +452,7 @@ void PacketParserTest::testParseServiceReply() {
     };
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceReply(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceReply(&stream));
   }
 
   // A truncated error packet
@@ -461,7 +464,7 @@ void PacketParserTest::testParseServiceReply() {
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
     auto_ptr<const ola::slp::ServiceReplyPacket> packet(
-      m_parser.UnpackServiceReply(&stream));
+      SLPPacketParser::UnpackServiceReply(&stream));
     OLA_ASSERT(packet.get());
 
     // verify the contents of the packet
@@ -484,7 +487,7 @@ void PacketParserTest::testParseServiceReply() {
     };
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceReply(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceReply(&stream));
   }
 }
 
@@ -511,7 +514,7 @@ void PacketParserTest::testParseServiceRegistration() {
     BigEndianInputStream stream(&buffer);
 
     auto_ptr<const ola::slp::ServiceRegistrationPacket> packet(
-      m_parser.UnpackServiceRegistration(&stream));
+      SLPPacketParser::UnpackServiceRegistration(&stream));
     OLA_ASSERT(packet.get());
 
     // verify the contents of the packet
@@ -532,7 +535,7 @@ void PacketParserTest::testParseServiceRegistration() {
   {
     MemoryBuffer buffer(NULL, 0);
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceRegistration(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceRegistration(&stream));
   }
 
   // invalid url entry
@@ -545,7 +548,7 @@ void PacketParserTest::testParseServiceRegistration() {
     };
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceRegistration(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceRegistration(&stream));
   }
 
   // invalid service-type
@@ -561,7 +564,7 @@ void PacketParserTest::testParseServiceRegistration() {
     };
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceRegistration(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceRegistration(&stream));
   }
 
   // invalid scope list
@@ -578,7 +581,7 @@ void PacketParserTest::testParseServiceRegistration() {
     };
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceRegistration(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceRegistration(&stream));
   }
 
   // scope list
@@ -595,7 +598,7 @@ void PacketParserTest::testParseServiceRegistration() {
     };
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceRegistration(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceRegistration(&stream));
   }
 
   // invalid attr list
@@ -613,7 +616,7 @@ void PacketParserTest::testParseServiceRegistration() {
     };
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceRegistration(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceRegistration(&stream));
   }
 
   // missing url auth blocks length
@@ -631,7 +634,7 @@ void PacketParserTest::testParseServiceRegistration() {
     };
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceRegistration(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceRegistration(&stream));
   }
 
   // invalid url auth blocks
@@ -650,7 +653,7 @@ void PacketParserTest::testParseServiceRegistration() {
     };
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceRegistration(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceRegistration(&stream));
   }
 }
 
@@ -669,7 +672,7 @@ void PacketParserTest::testParseServiceAck() {
     BigEndianInputStream stream(&buffer);
 
     auto_ptr<const ola::slp::ServiceAckPacket> packet(
-      m_parser.UnpackServiceAck(&stream));
+      SLPPacketParser::UnpackServiceAck(&stream));
     OLA_ASSERT(packet.get());
 
     // verify the contents of the packet
@@ -689,14 +692,14 @@ void PacketParserTest::testParseServiceAck() {
 
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceAck(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceAck(&stream));
   }
 
   // short packet
   {
     MemoryBuffer buffer(NULL, 0);
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceAck(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceAck(&stream));
   }
 }
 
@@ -721,7 +724,7 @@ void PacketParserTest::testParseDAAdvert() {
     BigEndianInputStream stream(&buffer);
 
     auto_ptr<const ola::slp::DAAdvertPacket> packet(
-      m_parser.UnpackDAAdvert(&stream));
+      SLPPacketParser::UnpackDAAdvert(&stream));
     OLA_ASSERT(packet.get());
 
     // verify the contents of the packet
@@ -751,14 +754,14 @@ void PacketParserTest::testParseDAAdvert() {
 
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackDAAdvert(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackDAAdvert(&stream));
   }
 
   // short packet
   {
     MemoryBuffer buffer(NULL, 0);
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackDAAdvert(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackDAAdvert(&stream));
   }
 
   // missing error code
@@ -768,7 +771,7 @@ void PacketParserTest::testParseDAAdvert() {
     };
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackDAAdvert(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackDAAdvert(&stream));
   }
 
   // missing boot timestamp
@@ -779,7 +782,7 @@ void PacketParserTest::testParseDAAdvert() {
     };
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackDAAdvert(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackDAAdvert(&stream));
   }
 
   // missing boot timestamp, but the error code is non-0. This is valid.
@@ -791,7 +794,7 @@ void PacketParserTest::testParseDAAdvert() {
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
     auto_ptr<const ola::slp::DAAdvertPacket> packet(
-      m_parser.UnpackDAAdvert(&stream));
+      SLPPacketParser::UnpackDAAdvert(&stream));
     OLA_ASSERT(packet.get());
 
     // verify the contents of the packet
@@ -814,7 +817,7 @@ void PacketParserTest::testParseDAAdvert() {
     };
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackDAAdvert(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackDAAdvert(&stream));
   }
 
   // missing scope list
@@ -828,7 +831,7 @@ void PacketParserTest::testParseDAAdvert() {
     };
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackDAAdvert(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackDAAdvert(&stream));
   }
 
   // missing attr list
@@ -843,7 +846,7 @@ void PacketParserTest::testParseDAAdvert() {
     };
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackDAAdvert(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackDAAdvert(&stream));
   }
 
   // missing auth block length
@@ -859,7 +862,7 @@ void PacketParserTest::testParseDAAdvert() {
     };
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackDAAdvert(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackDAAdvert(&stream));
   }
 
   // too many auth blocks
@@ -876,7 +879,7 @@ void PacketParserTest::testParseDAAdvert() {
     };
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackDAAdvert(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackDAAdvert(&stream));
   }
 }
 
@@ -902,7 +905,7 @@ void PacketParserTest::testParseServiceDeRegister() {
     BigEndianInputStream stream(&buffer);
 
     auto_ptr<const ola::slp::ServiceDeRegistrationPacket> packet(
-      m_parser.UnpackServiceDeRegistration(&stream));
+      SLPPacketParser::UnpackServiceDeRegistration(&stream));
     OLA_ASSERT(packet.get());
 
     // verify the contents of the packet
@@ -922,7 +925,7 @@ void PacketParserTest::testParseServiceDeRegister() {
   {
     MemoryBuffer buffer(NULL, 0);
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceDeRegistration(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceDeRegistration(&stream));
   }
 
   // missing scope list
@@ -934,7 +937,7 @@ void PacketParserTest::testParseServiceDeRegister() {
     };
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceDeRegistration(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceDeRegistration(&stream));
   }
 
   // missing url entry
@@ -946,7 +949,7 @@ void PacketParserTest::testParseServiceDeRegister() {
     };
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceDeRegistration(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceDeRegistration(&stream));
   }
 
   // missing tag list
@@ -964,7 +967,172 @@ void PacketParserTest::testParseServiceDeRegister() {
     };
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceDeRegistration(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceDeRegistration(&stream));
+  }
+}
+
+
+/*
+ * Check that UnpackServiceTypeRequest() works.
+ */
+void PacketParserTest::testParserServiceTypeRequest() {
+  {
+    uint8_t input_data[] = {
+      2, 4, 0, 0, 0x38, 0x0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1',
+      '.', '8',  // pr-list
+      0xff, 0xff,  // length of naming auth, this means 'all services'
+      // scope list
+      0, 0x9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',
+    };
+
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+
+    auto_ptr<const ola::slp::ServiceTypeRequestPacket> packet(
+      SLPPacketParser::UnpackServiceTypeRequest(&stream));
+    OLA_ASSERT(packet.get());
+
+    // verify the contents of the packet
+    OLA_ASSERT_EQ(static_cast<ola::slp::xid_t>(0x1234), packet->xid);
+    OLA_ASSERT_EQ(false, packet->Overflow());
+    OLA_ASSERT_EQ(false, packet->Fresh());
+    OLA_ASSERT_EQ(false, packet->Multicast());
+    OLA_ASSERT_EQ(string("en"), packet->language);
+
+    vector<IPV4Address> expected_pr_list;
+    expected_pr_list.push_back(ip1);
+    expected_pr_list.push_back(ip2);
+    OLA_ASSERT_VECTOR_EQ(expected_pr_list, packet->pr_list);
+    OLA_ASSERT_TRUE(packet->include_all);
+    OLA_ASSERT_EQ(string(""), packet->naming_authority);
+    OLA_ASSERT_EQ(expected_scopes, packet->scope_list);
+  }
+
+
+  {
+    uint8_t input_data[] = {
+      2, 4, 0, 0, 0x38, 0x0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1',
+      '.', '8',  // pr-list
+      0x0, 0x0,  // empty naming auth, this means 'all IANA services'
+      // scope list
+      0, 0x9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',
+    };
+
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+
+    auto_ptr<const ola::slp::ServiceTypeRequestPacket> packet(
+      SLPPacketParser::UnpackServiceTypeRequest(&stream));
+    OLA_ASSERT(packet.get());
+
+    // verify the contents of the packet
+    OLA_ASSERT_EQ(static_cast<ola::slp::xid_t>(0x1234), packet->xid);
+    OLA_ASSERT_EQ(false, packet->Overflow());
+    OLA_ASSERT_EQ(false, packet->Fresh());
+    OLA_ASSERT_EQ(false, packet->Multicast());
+    OLA_ASSERT_EQ(string("en"), packet->language);
+
+    vector<IPV4Address> expected_pr_list;
+    expected_pr_list.push_back(ip1);
+    expected_pr_list.push_back(ip2);
+    OLA_ASSERT_VECTOR_EQ(expected_pr_list, packet->pr_list);
+    OLA_ASSERT_FALSE(packet->include_all);
+    OLA_ASSERT_EQ(string(""), packet->naming_authority);
+    OLA_ASSERT_EQ(expected_scopes, packet->scope_list);
+  }
+
+  {
+    uint8_t input_data[] = {
+      2, 4, 0, 0, 0x38, 0x0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1',
+      '.', '8',  // pr-list
+      0x0, 0x5, 'p', 'l', 'a', 's', 'a',  // naming auth
+      // scope list
+      0, 0x9, 'A', 'C', 'N', ',', 'M', 'Y', 'O', 'R', 'G',
+    };
+
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+
+    auto_ptr<const ola::slp::ServiceTypeRequestPacket> packet(
+      SLPPacketParser::UnpackServiceTypeRequest(&stream));
+    OLA_ASSERT(packet.get());
+
+    // verify the contents of the packet
+    OLA_ASSERT_EQ(static_cast<ola::slp::xid_t>(0x1234), packet->xid);
+    OLA_ASSERT_EQ(false, packet->Overflow());
+    OLA_ASSERT_EQ(false, packet->Fresh());
+    OLA_ASSERT_EQ(false, packet->Multicast());
+    OLA_ASSERT_EQ(string("en"), packet->language);
+
+    vector<IPV4Address> expected_pr_list;
+    expected_pr_list.push_back(ip1);
+    expected_pr_list.push_back(ip2);
+    OLA_ASSERT_VECTOR_EQ(expected_pr_list, packet->pr_list);
+    OLA_ASSERT_FALSE(packet->include_all);
+    OLA_ASSERT_EQ(string("plasa"), packet->naming_authority);
+    OLA_ASSERT_EQ(expected_scopes, packet->scope_list);
+  }
+
+  // short packet
+  {
+    MemoryBuffer buffer(NULL, 0);
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceTypeRequest(&stream));
+  }
+
+  // missing pr list
+  {
+    const uint8_t input_data[] = {
+      2, 4, 0, 0, 0x38, 0x0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      // pr list
+      0, 0x9,
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceTypeRequest(&stream));
+  }
+
+  // missing naming auth
+  {
+    const uint8_t input_data[] = {
+      2, 4, 0, 0, 0x38, 0x0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1',
+      '.', '8',  // pr-list
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceTypeRequest(&stream));
+  }
+
+  // truncated naing auth
+  {
+    uint8_t input_data[] = {
+      2, 4, 0, 0, 0x38, 0x0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1',
+      '.', '8',  // pr-list
+      0x0, 0x5, 'p', 'l', 'a',
+    };
+
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceTypeRequest(&stream));
+  }
+
+  // missing scope list
+  {
+    const uint8_t input_data[] = {
+      2, 4, 0, 0, 0x38, 0x0, 0, 0, 0, 0, 0x12, 0x34, 0, 2, 'e', 'n',
+      0, 15, '1', '.', '1', '.', '1', '.', '2', ',', '1', '.', '1', '.', '1',
+      '.', '8',  // pr-list
+      0x0, 0x0,  // empty naming auth, this means 'all IANA services'
+      0x0, 0xa
+    };
+    MemoryBuffer buffer(input_data, sizeof(input_data));
+    BigEndianInputStream stream(&buffer);
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceTypeRequest(&stream));
   }
 }
 
@@ -979,7 +1147,7 @@ void PacketParserTest::testExtractHeader() {
     uint8_t input_data[] = {3};
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceAck(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceAck(&stream));
   }
 
   // no function id
@@ -987,7 +1155,7 @@ void PacketParserTest::testExtractHeader() {
     uint8_t input_data[] = {2};
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceAck(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceAck(&stream));
   }
 
   // no length
@@ -995,7 +1163,7 @@ void PacketParserTest::testExtractHeader() {
     uint8_t input_data[] = {2, 5};
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceAck(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceAck(&stream));
   }
 
   // no flags
@@ -1003,7 +1171,7 @@ void PacketParserTest::testExtractHeader() {
     uint8_t input_data[] = {2, 5, 0, 0, 18};
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceAck(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceAck(&stream));
   }
 
   // no next-ext offset
@@ -1011,7 +1179,7 @@ void PacketParserTest::testExtractHeader() {
     uint8_t input_data[] = {2, 5, 0, 0, 18, 0, 0};
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceAck(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceAck(&stream));
   }
 
   // non-0 next-ext offset
@@ -1019,7 +1187,7 @@ void PacketParserTest::testExtractHeader() {
     uint8_t input_data[] = {2, 5, 0, 0, 18, 0, 0, 0, 0, 1};
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceAck(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceAck(&stream));
   }
 
   // no xid
@@ -1027,7 +1195,7 @@ void PacketParserTest::testExtractHeader() {
     uint8_t input_data[] = {2, 5, 0, 0, 18, 0, 0, 0, 0, 0};
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceAck(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceAck(&stream));
   }
 
   // no lang
@@ -1036,7 +1204,7 @@ void PacketParserTest::testExtractHeader() {
       2, 5, 0, 0, 18, 0, 0, 0, 0, 0, 0x12, 0x34, 0, 2};
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceAck(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceAck(&stream));
   }
 }
 
@@ -1055,7 +1223,7 @@ void PacketParserTest::testExtractURLEntry() {
 
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceDeRegistration(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceDeRegistration(&stream));
   }
 
   // no lifetime
@@ -1069,7 +1237,7 @@ void PacketParserTest::testExtractURLEntry() {
 
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceDeRegistration(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceDeRegistration(&stream));
   }
 
   // no url length
@@ -1083,7 +1251,7 @@ void PacketParserTest::testExtractURLEntry() {
 
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceDeRegistration(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceDeRegistration(&stream));
   }
 
   // invalid url
@@ -1097,7 +1265,7 @@ void PacketParserTest::testExtractURLEntry() {
     };
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceDeRegistration(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceDeRegistration(&stream));
   }
 
   // missing # of url auths
@@ -1113,7 +1281,7 @@ void PacketParserTest::testExtractURLEntry() {
     };
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceDeRegistration(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceDeRegistration(&stream));
   }
 
   // not enough url auths
@@ -1130,6 +1298,6 @@ void PacketParserTest::testExtractURLEntry() {
     };
     MemoryBuffer buffer(input_data, sizeof(input_data));
     BigEndianInputStream stream(&buffer);
-    OLA_ASSERT_NULL(m_parser.UnpackServiceDeRegistration(&stream));
+    OLA_ASSERT_NULL(SLPPacketParser::UnpackServiceDeRegistration(&stream));
   }
 }

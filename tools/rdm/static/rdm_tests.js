@@ -558,6 +558,7 @@ RDMTests.prototype.stat_tests = function() {
  */
 RDMTests.prototype.reset_results = function() {
   $.each(['#rdm-tests-results-uid',
+    '#rdm-tests-results-duration',
     '#rdm-tests-results-stats-figures',
     '#rdm-tests-results-summary-by_catg-content',
     '#rdm-tests-results-warnings-content',
@@ -609,6 +610,13 @@ RDMTests.prototype.display_results = function(results) {
   rdmtests.reset_results();
 
   $('#rdm-tests-results-uid').html(results['UID']);
+
+  var duration = Math.ceil(results['duration']);
+  if (duration == 1) {
+    $('#rdm-tests-results-duration').html(duration + ' second');
+  } else {
+    $('#rdm-tests-results-duration').html(duration + ' seconds');
+  }
 
   for (key in results['stats']) {
     $('#rdm-tests-results-stats-figures')

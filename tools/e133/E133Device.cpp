@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * E133Device.cpp
  * Copyright (C) 2011 Simon Newton
@@ -32,6 +32,7 @@
 #include <string>
 #include <vector>
 
+#include "plugins/e131/e131/ACNVectors.h"
 #include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/E133Header.h"
 #include "plugins/e131/e131/E133PDU.h"
@@ -174,7 +175,7 @@ void E133Device::SendStatusMessage(const ola::rdm::RDMCommand *command) {
   const RDMPDU *rdm_pdu = new RDMPDU(command);
 
   bool ok = m_e133_sender.SendReliably(
-      ola::plugin::e131::RDMInflator::RDM_VECTOR,
+      ola::plugin::e131::VECTOR_FRAMING_RDMNET,
       ROOT_E133_ENDPOINT,
       rdm_pdu);
   if (!ok)
@@ -433,17 +434,16 @@ void E133Device::EndpointRequestComplete(
   ola::plugin::e131::E133Header header(
       "foo bar",
       sequence_number,
-      endpoint_id,
-      false);  // rx_ack
+      endpoint_id);
 
-  ola::plugin::e131::E133PDU pdu(ola::plugin::e131::RDMInflator::RDM_VECTOR,
+  ola::plugin::e131::E133PDU pdu(ola::plugin::e131::VECTOR_FRAMING_RDMNET,
                                  header,
                                  &rdm_pdu);
   ola::plugin::e131::OutgoingUDPTransport transport(&m_outgoing_udp_transport,
                                                     src_ip,
                                                     src_port);
   bool result = m_root_sender.SendPDU(
-      ola::plugin::e131::E133Inflator::E133_VECTOR,
+      ola::plugin::e131::VECTOR_ROOT_E133,
       pdu,
       &transport);
   if (!result)
