@@ -21,6 +21,7 @@
 #ifndef INCLUDE_OLA_STL_STLUTILS_H_
 #define INCLUDE_OLA_STL_STLUTILS_H_
 
+#include <cstddef>
 #include <map>
 #include <set>
 #include <vector>
