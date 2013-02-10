@@ -23,8 +23,9 @@
 #endif
 
 #include <vector>
-#include "olad/Plugin.h"
+#include "ola/stl/STLUtils.h"
 #include "olad/DynamicPluginLoader.h"
+#include "olad/Plugin.h"
 
 #ifdef USE_ARTNET
 #include "plugins/artnet/ArtNetPlugin.h"
@@ -62,10 +63,7 @@ using std::vector;
 
 
 DynamicPluginLoader::~DynamicPluginLoader() {
-  vector<AbstractPlugin*>::iterator iter = m_plugins.begin();
-  for (; iter != m_plugins.end(); ++iter) {
-    delete *iter;
-  }
+  STLDeleteValues(&m_plugins);
 }
 
 

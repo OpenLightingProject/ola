@@ -44,11 +44,11 @@ inline bool STLContains(const T1 &container, const T2 &value) {
  * For a vector of pointers, loop through and delete all of them.
  */
 template<typename T>
-void STLDeleteValues(vector<T*> &values) {
-  typename vector<T*>::iterator iter = values.begin();
-  for (; iter != values.end(); ++iter)
+void STLDeleteValues(vector<T*> *values) {
+  typename vector<T*>::iterator iter = values->begin();
+  for (; iter != values->end(); ++iter)
     delete *iter;
-  values.clear();
+  values->clear();
 }
 
 
@@ -58,11 +58,11 @@ void STLDeleteValues(vector<T*> &values) {
  * defined.
  */
 template<typename T>
-void STLDeleteValues(set<T*> &values) {
-  typename set<T*>::iterator iter = values.begin();
-  for (; iter != values.end(); ++iter)
+void STLDeleteValues(set<T*> *values) {
+  typename set<T*>::iterator iter = values->begin();
+  for (; iter != values->end(); ++iter)
     delete *iter;
-  values.clear();
+  values->clear();
 }
 
 
@@ -73,11 +73,11 @@ void STLDeleteValues(set<T*> &values) {
  * For a map of type : pointer, loop through and delete all of the pointers.
  */
 template<typename T1>
-void STLDeleteValues(T1 &container) {
-  typename T1::iterator iter = container.begin();
-  for (; iter != container.end(); ++iter)
+void STLDeleteValues(T1 *container) {
+  typename T1::iterator iter = container->begin();
+  for (; iter != container->end(); ++iter)
     delete iter->second;
-  container.clear();
+  container->clear();
 }
 
 
@@ -108,20 +108,9 @@ void STLValues(const T1 &container, vector<typename T1::mapped_type> *values) {
  */
 template<typename T1>
 typename T1::mapped_type STLFindOrNull(const T1 &container,
-                                     const typename T1::key_type &key) {
+                                       const typename T1::key_type &key) {
   typename T1::const_iterator iter = container.find(key);
   if (iter == container.end()) {
-    return NULL;
-  } else {
-    return iter->second;
-  }
-}
-
-
-template<typename T1>
-typename T1::mapped_type STLFoo(const T1 &container) {
-  typename T1::const_iterator iter = container.begin();
-  if (iter == container->end()) {
     return NULL;
   } else {
     return iter->second;

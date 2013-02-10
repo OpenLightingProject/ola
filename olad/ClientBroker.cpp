@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 #include "ola/Logging.h"
+#include "ola/stl/STLUtils.h"
 #include "olad/ClientBroker.h"
 
 namespace ola {
@@ -55,15 +56,12 @@ void ClientBroker::SendRDMRequest(const Client *client,
                                   Universe *universe,
                                   const ola::rdm::RDMRequest *request,
                                   ola::rdm::RDMCallback *callback) {
-  client_set::const_iterator iter = m_clients.find(client);
-  if (iter == m_clients.end())
+  if (!STLContains(m_clients, client))
     OLA_WARN <<
       "Making an RDM call but the client doesn't exist in the broker!";
 
   universe->SendRDMRequest(request,
-      NewSingleCallback(this,
-                        &ClientBroker::RequestComplete,
-                        client,
+      NewSingleCallback(this, &ClientBroker::RequestComplete, client,
                         callback));
 }
 
@@ -80,8 +78,7 @@ void ClientBroker::RequestComplete(const Client *key,
                                    ola::rdm::rdm_response_code code,
                                    const ola::rdm::RDMResponse *response,
                                    const std::vector<std::string> &packets) {
-  client_set::const_iterator iter = m_clients.find(key);
-  if (iter == m_clients.end()) {
+  if (!STLContains(m_clients, key)) {
     OLA_INFO << "Client no longer exists, cleaning up from RDM response";
     delete response;
     delete callback;

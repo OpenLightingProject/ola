@@ -46,7 +46,7 @@ const string DATracker::DA_SERVICE_PREFIX = InitDAServicePrefix();
  * Clean up
  */
 DATracker::~DATracker() {
-  STLDeleteValues(m_new_da_callbacks);
+  STLDeleteValues(&m_new_da_callbacks);
 }
 
 
