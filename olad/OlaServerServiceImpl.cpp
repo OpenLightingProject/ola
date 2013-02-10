@@ -421,6 +421,7 @@ void OlaServerServiceImpl::GetPluginState(
   if (plugin) {
     response->set_name(plugin->Name());
     response->set_enabled(plugin->IsEnabled());
+    response->set_active(m_plugin_manager->IsActive(plugin_id));
     vector<AbstractPlugin*> conflict_list;
     m_plugin_manager->GetConflictList(plugin_id, &conflict_list);
     vector<AbstractPlugin*>::const_iterator iter = conflict_list.begin();

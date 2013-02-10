@@ -170,7 +170,8 @@ message PluginStateRequest {
 message PluginStateReply {
   required string name = 1;
   required bool enabled = 2;
-  repeated PluginInfo conflicts_with = 3;
+  required bool active = 3;
+  repeated PluginInfo conflicts_with = 4;
 }
 
 // request info on a device

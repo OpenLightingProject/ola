@@ -195,18 +195,17 @@ void DisplayPluginDescription(SelectServer *ss,
  * Print a plugin state
  */
 void DisplayPluginState(SelectServer *ss,
-                        const string &plugin_name,
-                        bool enabled,
-                        const vector<OlaPlugin> &conflict_list,
+                        const OlaCallbackClient::PluginState &state,
                         const string &error) {
   if (!error.empty()) {
     cout << error << endl;
   } else {
-    cout << plugin_name << endl;
-    cout << "Enabled: " << (enabled ? "True" : "False") << endl;
-    vector<OlaPlugin>::const_iterator iter = conflict_list.begin();
+    cout << state.name << endl;
+    cout << "Enabled: " << (state.enabled ? "True" : "False") << endl;
+    cout << "Active: " << (state.active ? "True" : "False") << endl;
+    vector<OlaPlugin>::const_iterator iter = state.conflicting_plugins.begin();
     cout << "Conflicts with:" << endl;
-    for (; iter != conflict_list.end(); ++iter) {
+    for (; iter != state.conflicting_plugins.end(); ++iter) {
       cout << "  " << iter->Name() << "(" << iter->Id() << ")" << endl;
     }
   }

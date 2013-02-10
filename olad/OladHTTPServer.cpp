@@ -572,12 +572,11 @@ void OladHTTPServer::HandlePartialPluginInfo(HTTPResponse *response,
  * @param description the plugin description.
  * @param error an error string.
  */
-void OladHTTPServer::HandlePluginInfo(HTTPResponse *response,
-                                     string description,
-                                     const string &name,
-                                     bool enabled,
-                                     const vector<OlaPlugin> &conflict_list,
-                                     const string &error) {
+void OladHTTPServer::HandlePluginInfo(
+    HTTPResponse *response,
+    string description,
+    const OlaCallbackClient::PluginState &state,
+    const string &error) {
   if (!error.empty()) {
     m_server.ServeError(response, error);
     return;
@@ -587,11 +586,12 @@ void OladHTTPServer::HandlePluginInfo(HTTPResponse *response,
 
   JsonObject json;
   json.Add("description", description);
-  json.Add("name", name);
-  json.Add("enabled", enabled);
+  json.Add("name", state.name);
+  json.Add("enabled", state.enabled);
+  json.Add("active", state.active);
   JsonArray *plugins = json.AddArray("conflicts_with");
-  vector<OlaPlugin>::const_iterator iter;
-  for (iter = conflict_list.begin(); iter != conflict_list.end(); ++iter) {
+  vector<OlaPlugin>::const_iterator iter = state.conflicting_plugins.begin();
+  for (; iter != state.conflicting_plugins.end(); ++iter) {
     JsonObject *plugin = plugins->AppendObject();
     plugin->Add("name", iter->Name());
     plugin->Add("id", iter->Id());

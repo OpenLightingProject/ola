@@ -67,6 +67,15 @@ ola.PluginFrame.prototype._UpdateFromData = function(e) {
     enabled_span.className = 'plugin_disabled';
   }
 
+  var active_span = goog.dom.$('plugin_active');
+  if (e.plugin['active']) {
+    active_span.innerHTML = 'Yes';
+    active_span.className = 'plugin_enabled';
+  } else {
+    active_span.innerHTML = 'No';
+    active_span.className = 'plugin_disabled';
+  }
+
   var conflict_row = goog.dom.$('plugin_conflict_row');
   var conflict_list = e.plugin['conflicts_with'];
   if (conflict_list.length) {
@@ -76,7 +85,6 @@ ola.PluginFrame.prototype._UpdateFromData = function(e) {
     for (var i = 0; i < conflict_list.length; ++i) {
       var plugin = new ola.common.PluginItem(conflict_list[i]);
       var component = this.plugin_control_factory.newComponent(plugin);
-      component.addClassName('goog-inline-block');
       this.conflict_list_container.addChild(component, true);
     }
   } else {
