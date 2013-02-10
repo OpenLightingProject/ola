@@ -878,7 +878,8 @@ void OlaClientCore::HandlePluginList(plugin_list_arg *args) {
     for (int i = 0; i < args->reply->plugin_size(); ++i) {
       ola::proto::PluginInfo plugin_info = args->reply->plugin(i);
       OlaPlugin plugin(plugin_info.plugin_id(),
-                       plugin_info.name());
+                       plugin_info.name(),
+                       plugin_info.active());
       ola_plugins.push_back(plugin);
     }
   }
@@ -932,7 +933,8 @@ void OlaClientCore::HandlePluginState(plugin_state_arg *args) {
   for (int i = 0; i < args->reply->conflicts_with_size(); ++i) {
     ola::proto::PluginInfo plugin_info = args->reply->conflicts_with(i);
     OlaPlugin plugin(plugin_info.plugin_id(),
-                     plugin_info.name());
+                     plugin_info.name(),
+                     plugin_info.active());
     plugin_state.conflicting_plugins.push_back(plugin);
   }
 

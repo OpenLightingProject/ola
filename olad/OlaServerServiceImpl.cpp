@@ -380,8 +380,10 @@ void OlaServerServiceImpl::GetPlugins(
   vector<AbstractPlugin*>::const_iterator iter;
   m_plugin_manager->Plugins(&plugin_list);
 
-  for (iter = plugin_list.begin(); iter != plugin_list.end(); ++iter)
-    AddPlugin(*iter, response);
+  for (iter = plugin_list.begin(); iter != plugin_list.end(); ++iter) {
+    PluginInfo *plugin_info = response->add_plugin();
+    AddPlugin(*iter, plugin_info);
+  }
 }
 
 
@@ -427,8 +429,7 @@ void OlaServerServiceImpl::GetPluginState(
     vector<AbstractPlugin*>::const_iterator iter = conflict_list.begin();
     for (; iter != conflict_list.end(); ++iter) {
       PluginInfo *plugin_info = response->add_conflicts_with();
-      plugin_info->set_plugin_id((*iter)->Id());
-      plugin_info->set_name((*iter)->Name());
+      AddPlugin(*iter, plugin_info);
     }
   } else {
     controller->SetFailed("Plugin not loaded");
@@ -900,10 +901,10 @@ void OlaServerServiceImpl::MissingPortError(RpcController* controller) {
  * Add this device to the DeviceInfo response
  */
 void OlaServerServiceImpl::AddPlugin(AbstractPlugin *plugin,
-                                     PluginListReply* response) const {
-  PluginInfo *plugin_info = response->add_plugin();
+                                     PluginInfo* plugin_info) const {
   plugin_info->set_plugin_id(plugin->Id());
   plugin_info->set_name(plugin->Name());
+  plugin_info->set_active(m_plugin_manager->IsActive(plugin->Id()));
 }
 
 

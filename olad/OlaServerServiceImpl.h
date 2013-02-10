@@ -174,7 +174,7 @@ class OlaServerServiceImpl {
     void MissingPortError(RpcController* controller);
 
     void AddPlugin(class AbstractPlugin *plugin,
-                   ola::proto::PluginListReply* response) const;
+                   ola::proto::PluginInfo *plugin_info) const;
     void AddDevice(class AbstractDevice *device,
                    unsigned int alias,
                    ola::proto::DeviceInfoReply* response) const;

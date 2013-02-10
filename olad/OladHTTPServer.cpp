@@ -593,8 +593,9 @@ void OladHTTPServer::HandlePluginInfo(
   vector<OlaPlugin>::const_iterator iter = state.conflicting_plugins.begin();
   for (; iter != state.conflicting_plugins.end(); ++iter) {
     JsonObject *plugin = plugins->AppendObject();
-    plugin->Add("name", iter->Name());
+    plugin->Add("active", iter->IsActive());
     plugin->Add("id", iter->Id());
+    plugin->Add("name", iter->Name());
   }
 
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
