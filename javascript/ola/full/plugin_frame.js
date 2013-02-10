@@ -59,10 +59,10 @@ ola.PluginFrame.prototype._UpdateFromData = function(e) {
     e.plugin['preferences_source'];
   var enabled_span = goog.dom.$('plugin_enabled');
   if (e.plugin['enabled']) {
-    enabled_span.innerHTML = 'Enabled';
+    enabled_span.innerHTML = 'Yes';
     enabled_span.className = 'plugin_enabled';
   } else {
-    enabled_span.innerHTML = 'Disabled';
+    enabled_span.innerHTML = 'No';
     enabled_span.className = 'plugin_disabled';
   }
 
