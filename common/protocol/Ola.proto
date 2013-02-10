@@ -146,6 +146,7 @@ message PluginListRequest {}
 message PluginInfo {
   required int32 plugin_id = 1;
   required string name = 2;
+  required bool active = 3;
 }
 
 message PluginListReply {
