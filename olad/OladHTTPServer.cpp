@@ -109,6 +109,7 @@ OladHTTPServer::OladHTTPServer(ExportMap *export_map,
   m_server.RegisterFile("/toolbar.css", HTTPServer::CONTENT_TYPE_CSS);
   m_server.RegisterFile("/toolbar_sprites.png", HTTPServer::CONTENT_TYPE_PNG);
   m_server.RegisterFile("/vertical.gif", HTTPServer::CONTENT_TYPE_GIF);
+  m_server.RegisterFile("/warning.png", HTTPServer::CONTENT_TYPE_PNG);
   m_server.RegisterFile("/", "landing.html", HTTPServer::CONTENT_TYPE_HTML);
 
   m_start_time_t = time(NULL);
@@ -589,6 +590,7 @@ void OladHTTPServer::HandlePluginInfo(
   json.Add("name", state.name);
   json.Add("enabled", state.enabled);
   json.Add("active", state.active);
+  json.Add("preferences_source", state.preferences_source);
   JsonArray *plugins = json.AddArray("conflicts_with");
   vector<OlaPlugin>::const_iterator iter = state.conflicting_plugins.begin();
   for (; iter != state.conflicting_plugins.end(); ++iter) {

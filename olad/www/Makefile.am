@@ -30,4 +30,5 @@ dist_www_DATA = back.png \
 		toolbar.css \
 		toolbar_sprites.png \
 		vertical.gif \
-		wand.png
+		wand.png \
+		warning.png

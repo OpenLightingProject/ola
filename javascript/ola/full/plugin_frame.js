@@ -58,6 +58,8 @@ ola.PluginFrame.prototype._UpdateFromData = function(e) {
   var description = e.plugin['description']
   description = description.replace(/\n/g, '<br>');
   goog.dom.$('plugin_name').innerHTML = e.plugin['name'];
+  goog.dom.$('plugin_preference_source').innerHTML =
+    e.plugin['preferences_source'];
   var enabled_span = goog.dom.$('plugin_enabled');
   if (e.plugin['enabled']) {
     enabled_span.innerHTML = 'Enabled';

@@ -929,13 +929,14 @@ void OlaClientCore::HandlePluginState(plugin_state_arg *args) {
     plugin_state.name = args->reply->name();
     plugin_state.enabled = args->reply->enabled();
     plugin_state.active = args->reply->active();
-  }
-  for (int i = 0; i < args->reply->conflicts_with_size(); ++i) {
-    ola::proto::PluginInfo plugin_info = args->reply->conflicts_with(i);
-    OlaPlugin plugin(plugin_info.plugin_id(),
-                     plugin_info.name(),
-                     plugin_info.active());
-    plugin_state.conflicting_plugins.push_back(plugin);
+    plugin_state.preferences_source = args->reply->preferences_source();
+    for (int i = 0; i < args->reply->conflicts_with_size(); ++i) {
+      ola::proto::PluginInfo plugin_info = args->reply->conflicts_with(i);
+      OlaPlugin plugin(plugin_info.plugin_id(),
+                       plugin_info.name(),
+                       plugin_info.active());
+      plugin_state.conflicting_plugins.push_back(plugin);
+    }
   }
 
   args->callback->Run(plugin_state, error_string);

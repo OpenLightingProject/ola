@@ -672,6 +672,10 @@
         font-color: #ffffff;
       }
 
+      #plugin_state_table { padding: 4px; }
+      #plugin_state_table td { padding: 4px; }
+      #plugin_preference_source { font-family: monospace; };
+
       #plugin_conflict_list .goog-control {
         margin-right: 3px;
         outline: none;
@@ -979,7 +983,11 @@
         </div>
         <div class='ola-scroller ola-container' id='plugin_frame'>
           <h2 id="plugin_name"></h2>
-          <table>
+          <table id="plugin_state_table">
+           <tr>
+            <td width="100px">Config Location</td>
+            <td><span id="plugin_preference_source"></span></td>
+           </tr>
            <tr>
             <td width="100px">Config File</td>
             <td><span id="plugin_enabled"></span></td>

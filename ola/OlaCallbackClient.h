@@ -46,6 +46,7 @@ class OlaCallbackClient: public ola::rdm::RDMAPIImplInterface {
       string name;
       bool enabled;
       bool active;
+      string preferences_source;
       vector<OlaPlugin> conflicting_plugins;
     };
 

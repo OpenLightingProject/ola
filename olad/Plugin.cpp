@@ -62,11 +62,18 @@ bool Plugin::LoadPreferences() {
   return true;
 }
 
+/*
+ * Returns true if this plugin is enabled.
+ */
+string Plugin::PreferenceSource() const {
+  return m_preferences->Source();
+}
+
 
 /*
  * Returns true if this plugin is enabled.
  */
-bool Plugin::IsEnabled() {
+bool Plugin::IsEnabled() const {
   return !(m_preferences->GetValue(ENABLED_KEY) == "false");
 }
 

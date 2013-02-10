@@ -245,7 +245,8 @@ class TestMockPlugin: public ola::Plugin {
       *conflict_set = m_conflict_set;
     }
     bool LoadPreferences() { return true; }
-    bool IsEnabled() { return m_enabled; }
+    string PreferencesSource() const { return ""; }
+    bool IsEnabled() const { return m_enabled; }
     bool StartHook() {
       m_start_run = true;
       return true;
