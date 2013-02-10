@@ -90,14 +90,13 @@ ola.NEW_UNIVERSE_FRAME_ID = 'new_universe_frame';
 ola.OlaUI = function() {
   this.logger_window = new ola.LoggerWindow();
   this.ola_server = ola.common.Server.getInstance();
-  var t = this;
-  this.plugin_control_factory = new ola.common.PluginControlFactory(
-        function(item) { t._ShowPlugin(item.id()); });
 
   this.home_frame = new ola.HomeFrame(ola.HOME_FRAME_ID);
   this.universe_frame = new ola.UniverseFrame(ola.UNIVERSE_FRAME_ID, this);
-  this.plugin_frame = new ola.PluginFrame(ola.PLUGIN_FRAME_ID,
-                                          this.plugin_control_factory);
+  var t = this;
+  this.plugin_frame = new ola.PluginFrame(
+      ola.PLUGIN_FRAME_ID,
+      function(item) { t._ShowPlugin(item); });
   this.new_universe_frame = new ola.NewUniverseFrame(ola.NEW_UNIVERSE_FRAME_ID,
                                                      this);
 
@@ -150,8 +149,11 @@ ola.OlaUI.prototype._SetupNavigation = function() {
   // setup the plugin & universe lists
   var plugin_container = new goog.ui.Container();
   plugin_container.decorate(goog.dom.$('plugin_container'));
+  var ui = this;
   this.plugin_list = new ola.common.SortedList(
-      plugin_container, this.plugin_control_factory);
+      plugin_container,
+      new ola.common.PluginControlFactory(
+        function(item) { ui._ShowPlugin(item.id()); }));
 
   goog.events.listen(this.ola_server,
                      ola.common.Server.EventType.PLUGIN_LIST_EVENT,
@@ -160,7 +162,6 @@ ola.OlaUI.prototype._SetupNavigation = function() {
 
   var universe_container = new goog.ui.Container();
   universe_container.decorate(goog.dom.$('universe_container'));
-  var ui = this;
   this.universe_list = new ola.common.SortedList(
       universe_container,
       new ola.UniverseControlFactory(
