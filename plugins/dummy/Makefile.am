@@ -4,7 +4,7 @@ libdir = $(plugindir)
 EXTRA_DIST = DummyPlugin.h DummyDevice.h DummyPort.h DummyResponder.h DummyRDMDevice.h
 
 
-if USE_ARTNET
+if USE_DUMMY
 lib_LTLIBRARIES = liboladummyresponder.la liboladummy.la
 liboladummyresponder_la_SOURCES = DummyResponder.cpp DummyRDMDevice.cpp
 liboladummyresponder_la_LIBADD = ../../common/libolacommon.la
