@@ -31,6 +31,7 @@ libolausbprowidget_la_SOURCES = ArduinoWidget.cpp \
                                 WidgetDetectorThread.cpp
 libolausbprowidget_la_LIBADD = ../../common/libolacommon.la
 
+if USE_USBPRO
 # The OLA USB Pro Plugin
 lib_LTLIBRARIES = libolausbpro.la
 libolausbpro_la_SOURCES = ArduinoRGBDevice.cpp DmxTriDevice.cpp \
@@ -90,3 +91,4 @@ SerialUsbTester_SOURCES = BaseUsbProWidgetTest.cpp \
                           $(common_test_sources)
 SerialUsbTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 SerialUsbTester_LDADD = $(CPPUNIT_LIBS) ./libolausbprowidget.la
+endif

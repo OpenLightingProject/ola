@@ -187,9 +187,18 @@ fi
 
 # We build a list of plugins that we're going to compile here so the olad
 # knows what to link against.
-PLUGINS="dummy espnet e131 opendmx pathport sandnet shownet stageprofi usbpro"
+PLUGINS=""
 
 PLUGIN_SUPPORT(artnet, USE_ARTNET)
+PLUGIN_SUPPORT(dummy, USE_DUMMY)
+PLUGIN_SUPPORT(e131, USE_E131)
+PLUGIN_SUPPORT(espnet, USE_ESPNET)
+PLUGIN_SUPPORT(opendmx, USE_OPENDMX)
+PLUGIN_SUPPORT(pathport, USE_PATHPORT)
+PLUGIN_SUPPORT(sandnet, USE_SANDNET)
+PLUGIN_SUPPORT(shownet, USE_SHOWNET)
+PLUGIN_SUPPORT(stageprofi, USE_STAGEPROFI)
+PLUGIN_SUPPORT(usbpro, USE_USBPRO)
 
 # LIBRARY: ncurses
 AC_CHECK_LIB([ncurses], [initscr], [have_ncurses="yes"])
@@ -319,7 +328,7 @@ fi
 # look for libusb if the user asked us to
 AC_ARG_ENABLE(
   [libusb],
-  AS_HELP_STRING([--disable-libusb], [Don't use libusb even if it exists]))
+  AS_HELP_STRING([--disable-libusb], [Avoid using libusb even if it exists]))
 
 have_libusb="no"
 
@@ -335,8 +344,16 @@ fi
 
 # LIBRARY: libftdi
 # look for libftdi (this requires libusb-0.1.4+ don't know if I should also check for it, since the libusb check above is not for 0.1.4 but for libusb-1
+AC_ARG_ENABLE(
+  [libftdi],
+  AS_HELP_STRING([--disable-libftdi], [Avoid using libftdi even if it exists]))
+
+
 have_libftdi="no"
-PKG_CHECK_MODULES(libftdi, [libftdi >= 0.18], [have_libftdi="yes"], [true])
+
+if test "${enable_libftdi}" != "no"; then
+  PKG_CHECK_MODULES(libftdi, [libftdi >= 0.18], [have_libftdi="yes"], [true])
+fi
 
 AM_CONDITIONAL(HAVE_LIBFTDI, test "${have_libftdi}" = "yes")
 
