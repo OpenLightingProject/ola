@@ -116,6 +116,7 @@ class DmxTriWidgetImpl: public BaseUsbProWidget,
     void SendDiscoveryStart();
     void SendDiscoveryStat();
     void FetchNextUID();
+    bool IsDUBRequest(const ola::rdm::RDMRequest *request);
     void SendRawRDMRequest();
     void DispatchRequest();
     void DispatchQueuedGet();

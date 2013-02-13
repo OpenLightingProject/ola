@@ -49,7 +49,7 @@ RDMInflator::RDMInflator()
  * Clean up this inflator
  */
 RDMInflator::~RDMInflator() {
-  STLDeleteValues(m_rdm_handlers);
+  STLDeleteValues(&m_rdm_handlers);
 }
 
 

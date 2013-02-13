@@ -54,14 +54,14 @@ void SLPPacketBuilder::BuildServiceRequest(
     BigEndianOutputStreamInterface *output,
     xid_t xid,
     bool multicast,
+    const string &language,
     const set<IPV4Address> &pr_list,
     const string &service_type,
     const ScopeSet &scopes,
-    const char *language,
     const string &predicate) {
   const string joined_pr_list = ola::StringJoin(",", pr_list);
-  BuildServiceRequest(output, xid, multicast, joined_pr_list, service_type,
-      scopes, language, predicate);
+  BuildServiceRequest(output, xid, multicast, language, joined_pr_list,
+                      service_type, scopes, predicate);
 }
 
 
@@ -72,10 +72,10 @@ void SLPPacketBuilder::BuildServiceRequest(
     BigEndianOutputStreamInterface *output,
     xid_t xid,
     bool multicast,
+    const string &language,
     const string &pr_list,
     const string &service_type,
     const ScopeSet &scopes,
-    const char *language,
     const string &predicate) {
   /*
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -114,6 +114,7 @@ void SLPPacketBuilder::BuildServiceRequest(
  */
 void SLPPacketBuilder::BuildServiceReply(BigEndianOutputStreamInterface *output,
                                          xid_t xid,
+                                         const string &language,
                                          uint16_t error_code,
                                          const URLEntries &urls) {
   /*
@@ -130,7 +131,7 @@ void SLPPacketBuilder::BuildServiceReply(BigEndianOutputStreamInterface *output,
   for (iter = urls.begin(); iter != urls.end(); ++iter)
     length += iter->PackedSize();
 
-  BuildSLPHeader(output, SERVICE_REPLY, length, 0, xid);
+  BuildSLPHeader(output, SERVICE_REPLY, length, 0, xid, language);
   *output << error_code;
   *output << static_cast<uint16_t>(urls.size());
 
@@ -175,7 +176,7 @@ void SLPPacketBuilder::BuildServiceRegistration(
                          2 + joined_scopes.size() + 3);
 
   BuildSLPHeader(output, SERVICE_REGISTRATION, length, fresh ? SLP_FRESH : 0,
-                 xid);
+                 xid, EN_LANGUAGE_TAG);
   service.url().Write(output);
   WriteString(output, service.service_type());
   WriteString(output, joined_scopes);
@@ -215,7 +216,7 @@ void SLPPacketBuilder::BuildServiceDeRegistration(
   unsigned int length = (2 + joined_scopes.size() +
                          service.url().PackedSize() + 2);
 
-  BuildSLPHeader(output, SERVICE_DEREGISTER, length, 0, xid);
+  BuildSLPHeader(output, SERVICE_DEREGISTER, length, 0, xid, EN_LANGUAGE_TAG);
   WriteString(output, joined_scopes);
   service.url().Write(output);
   *output << static_cast<uint16_t>(0);  // length of tag-list
@@ -230,6 +231,7 @@ void SLPPacketBuilder::BuildServiceDeRegistration(
  */
 void SLPPacketBuilder::BuildServiceAck(BigEndianOutputStreamInterface *output,
                                        xid_t xid,
+                                       const string &language,
                                        uint16_t error_code) {
   /*
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -238,7 +240,7 @@ void SLPPacketBuilder::BuildServiceAck(BigEndianOutputStreamInterface *output,
      |          Error Code           |
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   */
-  BuildSLPHeader(output, SERVICE_ACKNOWLEDGE, 2, 0, xid);
+  BuildSLPHeader(output, SERVICE_ACKNOWLEDGE, 2, 0, xid, language);
   *output << error_code;
 }
 
@@ -285,7 +287,8 @@ void SLPPacketBuilder::BuildDAAdvert(BigEndianOutputStreamInterface *output,
                  DA_ADVERTISEMENT,
                  length,
                  multicast ? SLP_REQUEST_MCAST : 0,
-                 xid);
+                 xid,
+                 EN_LANGUAGE_TAG);
 
   *output << static_cast<uint16_t>(multicast ? 0 : error_code);
   *output << boot_timestamp;
@@ -326,7 +329,7 @@ void SLPPacketBuilder::BuildAllServiceTypeRequest(
                  SERVICE_TYPE_REQUEST,
                  length,
                  multicast ? SLP_REQUEST_MCAST : 0,
-                 xid);
+                 xid, EN_LANGUAGE_TAG);
 
   WriteString(output, joined_pr_list);
   *output << static_cast<uint16_t>(0xffff);  // All services
@@ -365,7 +368,7 @@ void SLPPacketBuilder::BuildServiceTypeRequest(
                  SERVICE_TYPE_REQUEST,
                  length,
                  multicast ? SLP_REQUEST_MCAST : 0,
-                 xid);
+                 xid, EN_LANGUAGE_TAG);
 
   WriteString(output, joined_pr_list);
   WriteString(output, naming_auth);
@@ -402,7 +405,8 @@ void SLPPacketBuilder::BuildServiceTypeReply(
   const string joined_service_types = ola::StringJoin(
       ",", escaped_service_types);
   unsigned int length = 4 + joined_service_types.size();
-  BuildSLPHeader(output, SERVICE_TYPE_REPLY, length, false, xid);
+  BuildSLPHeader(output, SERVICE_TYPE_REPLY, length, false, xid,
+                 EN_LANGUAGE_TAG);
 
   *output << static_cast<uint16_t>(error_code);
   WriteString(output, joined_service_types);
@@ -441,7 +445,7 @@ void SLPPacketBuilder::BuildSAAdvert(BigEndianOutputStreamInterface *output,
                  SA_ADVERTISEMENT,
                  length,
                  multicast ? SLP_REQUEST_MCAST : 0,
-                 xid);
+                 xid, EN_LANGUAGE_TAG);
 
   WriteString(output, url);
   WriteString(output, joined_scopes);
@@ -457,8 +461,9 @@ void SLPPacketBuilder::BuildSAAdvert(BigEndianOutputStreamInterface *output,
 void SLPPacketBuilder::BuildError(BigEndianOutputStreamInterface *output,
                                   slp_function_id_t function_id,
                                   xid_t xid,
+                                  const string &language,
                                   uint16_t error_code) {
-  BuildSLPHeader(output, function_id, 2, false, xid);
+  BuildSLPHeader(output, function_id, 2, false, xid, language);
   *output << static_cast<uint16_t>(error_code);
 }
 
@@ -486,8 +491,8 @@ void SLPPacketBuilder::BuildSLPHeader(BigEndianOutputStreamInterface *output,
                                       unsigned int length,
                                       uint16_t flags,
                                       xid_t xid,
-                                      const char *language) {
-  length += 16;
+                                      const string &language) {
+  length += (14 + language.size());
   /*
      +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
      |    Version    |  Function-ID  |            Length             |

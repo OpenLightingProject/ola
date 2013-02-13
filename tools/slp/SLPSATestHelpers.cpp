@@ -39,6 +39,7 @@
 using ola::io::BigEndianOutputStream;
 using ola::network::IPV4Address;
 using ola::rdm::UID;
+using ola::slp::EN_LANGUAGE_TAG;
 using ola::slp::SERVICE_REQUEST;
 using ola::slp::SLPPacketBuilder;
 using ola::slp::SLP_OK;
@@ -155,7 +156,8 @@ void BuildPRListOverflowSrvRqst(BigEndianOutputStream* output,
   // 29. Let's make this longer so we bypass any simple checks on the remote end
   unsigned int pr_list_size = 40;
   SLPPacketBuilder::BuildSLPHeader(output, SERVICE_REQUEST, pr_list_size + 2,
-                                   multicast ? SLP_REQUEST_MCAST : 0, xid);
+                                   multicast ? SLP_REQUEST_MCAST : 0, xid,
+                                   EN_LANGUAGE_TAG);
   WriteOverflowString(output, pr_list_size + 100, pr_list_size);
 }
 
@@ -165,7 +167,8 @@ void BuildServiceTypeOverflowSrvRqst(BigEndianOutputStream* output,
   unsigned int service_type_size = 40;
   SLPPacketBuilder::BuildSLPHeader(output, SERVICE_REQUEST,
                                    service_type_size + 4,
-                                   multicast ? SLP_REQUEST_MCAST : 0, xid);
+                                   multicast ? SLP_REQUEST_MCAST : 0, xid,
+                                   EN_LANGUAGE_TAG);
   SLPPacketBuilder::WriteString(output, "");  // pr-list is empty
   WriteOverflowString(output, service_type_size + 100, service_type_size);
 }
@@ -177,7 +180,8 @@ void BuildScopeListOverflowSrvRqst(BigEndianOutputStream* output,
   unsigned int body_size = (
       6 + scope_list_size + sizeof(RDMNET_DEVICE_SERVICE) - 1);
   SLPPacketBuilder::BuildSLPHeader(output, SERVICE_REQUEST, body_size,
-                                   multicast ? SLP_REQUEST_MCAST : 0, xid);
+                                   multicast ? SLP_REQUEST_MCAST : 0, xid,
+                                   EN_LANGUAGE_TAG);
   SLPPacketBuilder::WriteString(output, "");  // pr-list is empty
   SLPPacketBuilder::WriteString(output, RDMNET_DEVICE_SERVICE);
   WriteOverflowString(output, scope_list_size + 10, scope_list_size);
@@ -191,7 +195,8 @@ void BuildPredicateOverflowSrvRqst(BigEndianOutputStream* output,
   unsigned int body_size = (
       8 + sizeof(RDMNET_DEVICE_SERVICE) - 1 + scope_size + predicate_size);
   SLPPacketBuilder::BuildSLPHeader(output, SERVICE_REQUEST, body_size,
-                                   multicast ? SLP_REQUEST_MCAST : 0, xid);
+                                   multicast ? SLP_REQUEST_MCAST : 0, xid,
+                                   EN_LANGUAGE_TAG);
   SLPPacketBuilder::WriteString(output, "");  // pr-list is empty
   SLPPacketBuilder::WriteString(output, RDMNET_DEVICE_SERVICE);
   SLPPacketBuilder::WriteString(output, RDMNET_SCOPES.ToString());
@@ -206,7 +211,8 @@ void BuildSPIOverflowSrvRqst(BigEndianOutputStream* output,
   const unsigned int spi_size = 40;
   const unsigned int body_size = 10 + service_type_size + scope_size + spi_size;
   SLPPacketBuilder::BuildSLPHeader(output, SERVICE_REQUEST, body_size,
-                                   multicast ? SLP_REQUEST_MCAST : 0, xid);
+                                   multicast ? SLP_REQUEST_MCAST : 0, xid,
+                                   EN_LANGUAGE_TAG);
   SLPPacketBuilder::WriteString(output, "");  // pr-list is empty
   SLPPacketBuilder::WriteString(output, RDMNET_DEVICE_SERVICE);
   SLPPacketBuilder::WriteString(output, scope);

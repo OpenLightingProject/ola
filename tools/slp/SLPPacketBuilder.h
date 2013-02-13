@@ -51,23 +51,24 @@ class SLPPacketBuilder {
     static void BuildServiceRequest(BigEndianOutputStreamInterface *output,
                                     xid_t xid,
                                     bool multicast,
+                                    const string &language,
                                     const set<IPV4Address> &pr_list,
                                     const string &service_type,
                                     const ScopeSet &scopes,
-                                    const char *lang = EN_LANGUAGE_TAG,
                                     const string &predicate = "");
 
     static void BuildServiceRequest(BigEndianOutputStreamInterface *output,
                                     xid_t xid,
                                     bool multicast,
+                                    const string &language,
                                     const string &pr_list,
                                     const string &service_type,
                                     const ScopeSet &scopes,
-                                    const char *language,
                                     const string &predicate);
 
     static void BuildServiceReply(BigEndianOutputStreamInterface *output,
                                   xid_t xid,
+                                  const string &language,
                                   uint16_t error_code,
                                   const URLEntries &urls);
 
@@ -85,6 +86,7 @@ class SLPPacketBuilder {
 
     static void BuildServiceAck(BigEndianOutputStreamInterface *output,
                                 xid_t xid,
+                                const string &language,
                                 uint16_t error_code);
 
     static void BuildDAAdvert(BigEndianOutputStreamInterface *output,
@@ -122,6 +124,7 @@ class SLPPacketBuilder {
     static void BuildError(BigEndianOutputStreamInterface *output,
                            slp_function_id_t function_id,
                            xid_t xid,
+                           const string &language,
                            uint16_t error_code);
 
     static void WriteString(BigEndianOutputStreamInterface *output,
@@ -132,7 +135,7 @@ class SLPPacketBuilder {
                                unsigned int length,
                                uint16_t flags,
                                xid_t xid,
-                               const char *language = EN_LANGUAGE_TAG);
+                               const string &language);
 };
 }  // slp
 }  // ola

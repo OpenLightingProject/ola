@@ -206,7 +206,7 @@ void IOQueue::Pop(unsigned int n) {
  * Free the iovec array with FreeIOVec()
  */
 const struct iovec *IOQueue::AsIOVec(int *iocnt) {
-  *iocnt = std::max(static_cast<unsigned long>(1), m_blocks.size());
+  *iocnt = std::max(static_cast<BlockVector::size_type>(1), m_blocks.size());
   struct iovec *vector = new struct iovec[*iocnt];
 
   // the first block

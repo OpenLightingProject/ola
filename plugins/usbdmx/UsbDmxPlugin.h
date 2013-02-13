@@ -63,7 +63,7 @@ class UsbDmxPlugin: public ola::Plugin {
     vector<class UsbDevice*> m_devices;  // list of our devices
     struct libusb_context *m_usb_context;
     vector<ola::io::DeviceDescriptor*> m_descriptors;
-    set<pair<uint8_t, uint8_t> > m_registered_devices;
+    set<std::pair<uint8_t, uint8_t> > m_registered_devices;
 
     bool StartHook();
     bool LoadFirmware();

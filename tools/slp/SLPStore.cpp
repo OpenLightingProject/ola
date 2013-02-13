@@ -20,6 +20,7 @@
 #include <ola/Logging.h>
 #include <string>
 #include <utility>
+#include <vector>
 #include "ola/stl/STLUtils.h"
 #include "tools/slp/SLPStore.h"
 #include "tools/slp/SLPStrings.h"
@@ -252,7 +253,7 @@ void SLPStore::Clean(const TimeStamp &now) {
 void SLPStore::Reset() {
   for (ServiceMap::iterator iter = m_services.begin();
         iter != m_services.end(); ++iter) {
-    STLDeleteValues(iter->second->services);
+    STLDeleteValues(&(iter->second->services));
     delete iter->second;
   }
 }

@@ -174,7 +174,7 @@ class SetLabelMixin(object):
       if self.PROVIDES:
         self.SetProperty(self.PROVIDES[0], response.WasAcked())
       return
-    elif self._test_state == self.VERIFY:
+    elif self._test_state == self.RESET:
       return
 
     new_label = fields['label']

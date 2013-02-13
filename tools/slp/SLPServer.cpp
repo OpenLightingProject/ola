@@ -227,7 +227,7 @@ SLPServer::~SLPServer() {
   m_udp_socket->Close();
   OLA_INFO << "Size of m_pending_acks is " << m_pending_acks.size();
   OLA_INFO << "Size of m_pending_replies is " << m_pending_replies.size();
-  STLDeleteValues(m_pending_acks);
+  STLDeleteValues(&m_pending_acks);
 }
 
 
@@ -491,7 +491,8 @@ void SLPServer::HandleServiceRequest(const uint8_t *data,
       // Therefore all predicate matches will fail, so we can return an empty
       // SrvRply here.
       OLA_INFO << "Got request with predicate, sending empty SrvRply";
-      m_udp_sender.SendServiceReply(source, request->xid, 0, urls);
+      m_udp_sender.SendServiceReply(source, request->xid, request->language, 0,
+                                    urls);
     }
     return;
   }
@@ -528,6 +529,7 @@ void SLPServer::HandleServiceRequest(const uint8_t *data,
 
   // check scopes
   if (request->scope_list.empty()) {
+    OLA_INFO << "Empty scope list";
     SendErrorIfUnicast(request.get(), SERVICE_REPLY, source,
                        SCOPE_NOT_SUPPORTED);
     return;
@@ -535,6 +537,7 @@ void SLPServer::HandleServiceRequest(const uint8_t *data,
   ScopeSet scope_set(request->scope_list);
 
   if (!scope_set.Intersects(m_configured_scopes)) {
+    OLA_INFO << "Scopes don't match";
     SendErrorIfUnicast(request.get(), SERVICE_REPLY, source,
                        SCOPE_NOT_SUPPORTED);
     return;
@@ -547,7 +550,8 @@ void SLPServer::HandleServiceRequest(const uint8_t *data,
   OLA_INFO << "sending SrvReply with " << urls.size() << " urls";
   if (urls.empty() && request->Multicast())
     return;
-  m_udp_sender.SendServiceReply(source, request->xid, 0, urls);
+  m_udp_sender.SendServiceReply(source, request->xid, request->language, 0,
+                                urls);
 }
 
 
@@ -593,12 +597,14 @@ void SLPServer::HandleServiceRegistration(BigEndianInputStream *stream,
     return;
 
   if (srv_reg->url.lifetime() == 0) {
-    m_udp_sender.SendServiceAck(source, srv_reg->xid, INVALID_REGISTRATION);
+    m_udp_sender.SendServiceAck(source, srv_reg->xid, srv_reg->language,
+                                INVALID_REGISTRATION);
     return;
   }
 
   if (!m_configured_scopes.IsSuperSet(scopes)) {
-    m_udp_sender.SendServiceAck(source, srv_reg->xid, SCOPE_NOT_SUPPORTED);
+    m_udp_sender.SendServiceAck(source, srv_reg->xid, srv_reg->language,
+                                SCOPE_NOT_SUPPORTED);
     return;
   }
 
@@ -607,7 +613,8 @@ void SLPServer::HandleServiceRegistration(BigEndianInputStream *stream,
   slp_error_code_t error_code = m_service_store.Insert(
       *(m_ss->WakeUpTime()), service, srv_reg->Fresh());
 
-  m_udp_sender.SendServiceAck(source, srv_reg->xid, error_code);
+  m_udp_sender.SendServiceAck(source, srv_reg->xid, srv_reg->language,
+                              error_code);
 }
 
 
@@ -632,7 +639,7 @@ void SLPServer::HandleServiceDeRegister(BigEndianInputStream *stream,
   // lifetime can be anything for a dereg
   ServiceEntry service(scopes, srv_dereg->url.url(), 0);
   slp_error_code_t ret = m_service_store.Remove(service);
-  m_udp_sender.SendServiceAck(source, srv_dereg->xid, ret);
+  m_udp_sender.SendServiceAck(source, srv_dereg->xid, srv_dereg->language, ret);
 }
 
 
@@ -714,9 +721,8 @@ void SLPServer::HandleServiceTypeRequest(BigEndianInputStream *stream,
   ScopeSet scopes(request->scope_list);
 
   if (!scopes.Intersects(m_configured_scopes)) {
-    if (!request->Multicast())
-      m_udp_sender.SendError(source, SERVICE_TYPE_REPLY, request->xid,
-                             SCOPE_NOT_SUPPORTED);
+    SendErrorIfUnicast(request.get(), SERVICE_TYPE_REPLY, source,
+                       SCOPE_NOT_SUPPORTED);
     return;
   }
   OLA_INFO << "RX SrvTypeRqst(" << source << "), scopes " << scopes
@@ -754,9 +760,8 @@ void SLPServer::SendErrorIfUnicast(const SLPPacket *request,
   if (request->Multicast())
     return;
   // Per section 7, we can truncate the message if the error code is non-0
-  // It turns out the truncated message is identicate to an SrvAck (who would
-  // have thought!) so we reuse that method here
-  m_udp_sender.SendError(destination, function_id, request->xid, error_code);
+  m_udp_sender.SendError(destination, function_id, request->xid,
+                         request->language, error_code);
 }
 
 

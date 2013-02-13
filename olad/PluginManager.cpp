@@ -21,6 +21,7 @@
 #include <set>
 #include <vector>
 #include "ola/Logging.h"
+#include "ola/stl/STLUtils.h"
 #include "olad/Plugin.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/PluginLoader.h"
@@ -61,17 +62,19 @@ void PluginManager::LoadAll() {
     vector<AbstractPlugin*>::iterator plugin_iter = plugins.begin();
     for (; plugin_iter != plugins.end(); ++plugin_iter) {
       AbstractPlugin *plugin = *plugin_iter;
-
-      if (GetPlugin(plugin->Id())) {
-        OLA_WARN << "Skipping plugin " << plugin->Name() <<
-          " because it's already been loaded";
+      if (!STLInsertIfNotPresent(&m_loaded_plugins, plugin->Id(), plugin)) {
+        OLA_WARN << "Skipping plugin " << plugin->Name()
+                 << " because it's already been loaded";
         continue;
       }
-      m_loaded_plugins[plugin->Id()] = plugin;
 
-      if (!(plugin->ShouldStart())) {
-        OLA_INFO << "Skipping " << plugin->Name() <<
-          " because it was disabled";
+      if (!plugin->LoadPreferences()) {
+        OLA_WARN << "Failed to load prefernes for " << plugin->Name();
+        continue;
+      }
+
+      if (!plugin->IsEnabled()) {
+        OLA_INFO << "Skipping " << plugin->Name() << " because it was disabled";
         continue;
       }
       enabled_plugins.push_back(plugin);
@@ -90,7 +93,7 @@ void PluginManager::LoadAll() {
     plugin->ConflictsWith(&conflict_list);
     set<ola_plugin_id>::const_iterator set_iter = conflict_list.begin();
     for (; set_iter != conflict_list.end(); ++set_iter) {
-      if (enabled_plugin_ids.find(*set_iter) != enabled_plugin_ids.end()) {
+      if (STLContains(enabled_plugin_ids, *set_iter)) {
         OLA_WARN << "Skipping " << plugin->Name() <<
           " because it conflicts with " << GetPlugin(*set_iter)->Name() <<
           " which is also enabled";
@@ -107,7 +110,7 @@ void PluginManager::LoadAll() {
       OLA_WARN << "Failed to start " << plugin->Name();
     else
       OLA_INFO << "Started " << plugin->Name();
-    m_enabled_plugins.push_back(plugin);
+    STLReplace(&m_active_plugins, plugin->Id(), plugin);
   }
 }
 
@@ -121,7 +124,7 @@ void PluginManager::UnloadAll() {
     plugin_iter->second->Stop();
   }
   m_loaded_plugins.clear();
-  m_enabled_plugins.clear();
+  m_active_plugins.clear();
 
   vector<PluginLoader*>::iterator iter = m_plugin_loaders.begin();
   for (; iter != m_plugin_loaders.end(); ++iter) {
@@ -136,17 +139,16 @@ void PluginManager::UnloadAll() {
  */
 void PluginManager::Plugins(vector<AbstractPlugin*> *plugins) const {
   plugins->clear();
-  PluginMap::const_iterator iter = m_loaded_plugins.begin();
-  for (; iter != m_loaded_plugins.end(); ++iter)
-    plugins->push_back(iter->second);
+  STLValues(m_loaded_plugins, plugins);
 }
 
 
 /*
- * Return the list of enabled plugins loaded
+ * Return the list of active plugins.
  */
-void PluginManager::EnabledPlugins(vector<AbstractPlugin*> *plugins) const {
-  *plugins = m_enabled_plugins;
+void PluginManager::ActivePlugins(vector<AbstractPlugin*> *plugins) const {
+  plugins->clear();
+  STLValues(m_active_plugins, plugins);
 }
 
 
@@ -156,7 +158,38 @@ void PluginManager::EnabledPlugins(vector<AbstractPlugin*> *plugins) const {
  * @return the plugin matching the id or NULL if not found.
  */
 AbstractPlugin* PluginManager::GetPlugin(ola_plugin_id plugin_id) const {
-  PluginMap::const_iterator iter = m_loaded_plugins.find(plugin_id);
-  return (iter == m_loaded_plugins.end() ? NULL : iter->second);
+  return STLFindOrNull(m_loaded_plugins, plugin_id);
+}
+
+/*
+ * Returns true if the plugin was loaded.
+ * @param plugin_id the id of the plugin to find
+ */
+bool PluginManager::IsActive(ola_plugin_id plugin_id) const {
+  return STLContains(m_active_plugins, plugin_id);
+}
+
+
+/**
+ * Return a list of plugins that conflict with this particular plugin.
+ */
+void PluginManager::GetConflictList(ola_plugin_id plugin_id,
+                                    vector<AbstractPlugin*> *plugins) {
+  PluginMap::iterator iter = m_loaded_plugins.begin();
+  for (; iter != m_loaded_plugins.end(); ++iter) {
+    set<ola_plugin_id> conflict_list;
+    iter->second->ConflictsWith(&conflict_list);
+    if (iter->second->Id() == plugin_id) {
+      set<ola_plugin_id>::const_iterator id_iter = conflict_list.begin();
+      for (; id_iter != conflict_list.end(); ++id_iter) {
+        AbstractPlugin *plugin = GetPlugin(*id_iter);
+        if (plugin)
+          plugins->push_back(plugin);
+      }
+    } else {
+      if (STLContains(conflict_list, plugin_id))
+        plugins->push_back(iter->second);
+    }
+  }
 }
 }  // ola

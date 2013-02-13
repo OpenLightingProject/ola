@@ -86,8 +86,9 @@ void BuildPacket(BigEndianOutputStream *output) {
   SetDestination(MULTICAST);
   ExpectResponse(SERVICE_REPLY);
 
-  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), true, pr_list,
-                                        RDMNET_DEVICE_SERVICE, RDMNET_SCOPES);
+  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), true, EN_LANGUAGE_TAG,
+                                        pr_list, RDMNET_DEVICE_SERVICE,
+                                        RDMNET_SCOPES);
 }
 
 TestState VerifyReply(const uint8_t *data, unsigned int length) {
@@ -106,8 +107,9 @@ void BuildPacket(BigEndianOutputStream *output) {
   ExpectResponse(SERVICE_REPLY);
   const ScopeSet test_scopes("RdMnEt");
 
-  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), true, pr_list,
-                                        RDMNET_DEVICE_SERVICE, test_scopes);
+  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), true, EN_LANGUAGE_TAG,
+                                        pr_list, RDMNET_DEVICE_SERVICE,
+                                        test_scopes);
 }
 
 TestState VerifyReply(const uint8_t *data, unsigned int length) {
@@ -124,8 +126,9 @@ void BuildPacket(BigEndianOutputStream *output) {
   SetDestination(MULTICAST);
   ExpectResponse(SERVICE_REPLY);
 
-  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), true, pr_list,
-                                        "SerViCe:RdmnEt-dEvicE", RDMNET_SCOPES);
+  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), true, EN_LANGUAGE_TAG,
+                                        pr_list, "SerViCe:RdmnEt-dEvicE",
+                                        RDMNET_SCOPES);
 }
 
 TestState VerifyReply(const uint8_t *data, unsigned int length) {
@@ -142,7 +145,8 @@ class EmptyUnicastSrvRqstTest: public TestCase {
 void BuildPacket(BigEndianOutputStream *output) {
   SetDestination(UNICAST);
   ExpectError(SERVICE_REPLY, PARSE_ERROR);
-  SLPPacketBuilder::BuildSLPHeader(output, SERVICE_REQUEST, 0, 0, GetXID());
+  SLPPacketBuilder::BuildSLPHeader(output, SERVICE_REQUEST, 0, 0, GetXID(),
+                                   EN_LANGUAGE_TAG);
 }
 };
 REGISTER_TEST(EmptyUnicastSrvRqstTest)
@@ -155,7 +159,8 @@ void BuildPacket(BigEndianOutputStream *output) {
   SetDestination(MULTICAST);
   ExpectTimeout();
   SLPPacketBuilder::BuildSLPHeader(output, SERVICE_REQUEST, 0,
-                                   SLP_REQUEST_MCAST, GetXID());
+                                   SLP_REQUEST_MCAST, GetXID(),
+                                   EN_LANGUAGE_TAG);
 }
 };
 REGISTER_TEST(EmptyMulticastSrvRqstTest)
@@ -168,7 +173,8 @@ class OverflowUnicastSrvRqstTest: public TestCase {
 void BuildPacket(BigEndianOutputStream *output) {
   SetDestination(UNICAST);
   ExpectError(SERVICE_REPLY, PARSE_ERROR);
-  SLPPacketBuilder::BuildSLPHeader(output, SERVICE_REQUEST, 30, 0, GetXID());
+  SLPPacketBuilder::BuildSLPHeader(output, SERVICE_REQUEST, 30, 0, GetXID(),
+                                   EN_LANGUAGE_TAG);
 }
 };
 REGISTER_TEST(OverflowUnicastSrvRqstTest)
@@ -181,7 +187,8 @@ void BuildPacket(BigEndianOutputStream *output) {
   SetDestination(MULTICAST);
   ExpectTimeout();
   SLPPacketBuilder::BuildSLPHeader(output, SERVICE_REQUEST, 30,
-                                   SLP_REQUEST_MCAST, GetXID());
+                                   SLP_REQUEST_MCAST, GetXID(),
+                                   EN_LANGUAGE_TAG);
 }
 };
 REGISTER_TEST(OverflowMulticastSrvRqstTest)
@@ -317,7 +324,8 @@ void BuildPacket(BigEndianOutputStream *output) {
   ExpectTimeout();
 
   pr_list.insert(GetDestinationIP());
-  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), true, pr_list,
+  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), true,
+                                        EN_LANGUAGE_TAG, pr_list,
                                         RDMNET_DEVICE_SERVICE, RDMNET_SCOPES);
 }
 };
@@ -335,9 +343,10 @@ void BuildPacket(BigEndianOutputStream *output) {
 
   string pr_list_str = "foo," + GetDestinationIP().ToString() + ",bar";
   pr_list.insert(GetDestinationIP());
-  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), true, pr_list_str,
+  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), true,
+                                        EN_LANGUAGE_TAG, pr_list_str,
                                         RDMNET_DEVICE_SERVICE, RDMNET_SCOPES,
-                                        EN_LANGUAGE_TAG, "");
+                                        "");
 }
 };
 REGISTER_TEST(SrvRqstInvalidPRListTest)
@@ -352,7 +361,8 @@ void BuildPacket(BigEndianOutputStream *output) {
   ExpectError(SERVICE_REPLY, SCOPE_NOT_SUPPORTED);
 
   ScopeSet default_scope("default");
-  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), false, pr_list,
+  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), false,
+                                        EN_LANGUAGE_TAG, pr_list,
                                         RDMNET_DEVICE_SERVICE, default_scope);
 }
 };
@@ -368,7 +378,8 @@ void BuildPacket(BigEndianOutputStream *output) {
   ExpectTimeout();
 
   ScopeSet default_scope("default");
-  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), true, pr_list,
+  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), true,
+                                        EN_LANGUAGE_TAG, pr_list,
                                         RDMNET_DEVICE_SERVICE, default_scope);
 }
 };
@@ -383,7 +394,8 @@ void BuildPacket(BigEndianOutputStream *output) {
   SetDestination(UNICAST);
   ExpectError(SERVICE_REPLY, PARSE_ERROR);
 
-  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), false, pr_list, "",
+  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), false,
+                                        EN_LANGUAGE_TAG, pr_list, "",
                                         RDMNET_SCOPES);
 }
 };
@@ -398,7 +410,8 @@ void BuildPacket(BigEndianOutputStream *output) {
   SetDestination(MULTICAST);
   ExpectTimeout();
 
-  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), true, pr_list, "",
+  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), true,
+                                        EN_LANGUAGE_TAG, pr_list, "",
                                         RDMNET_SCOPES);
 }
 };
@@ -415,9 +428,8 @@ void BuildPacket(BigEndianOutputStream *output) {
   SetDestination(UNICAST);
   ExpectResponse(SERVICE_REPLY);
 
-  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), false, pr_list,
-                                        RDMNET_DEVICE_SERVICE, RDMNET_SCOPES,
-                                        "fr");
+  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), false, "fr", pr_list,
+                                        RDMNET_DEVICE_SERVICE, RDMNET_SCOPES);
 }
 TestState VerifyReply(const uint8_t *data, unsigned int length) {
   return VerifySrvRply(GetDestinationIP(), data, length);
@@ -443,9 +455,8 @@ void BuildPacket(BigEndianOutputStream *output) {
   SetDestination(MULTICAST);
   ExpectResponse(SERVICE_REPLY);
 
-  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), true, pr_list,
-                                        RDMNET_DEVICE_SERVICE, RDMNET_SCOPES,
-                                        "fr");
+  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), true, "fr", pr_list,
+                                        RDMNET_DEVICE_SERVICE, RDMNET_SCOPES);
 }
 TestState VerifyReply(const uint8_t *data, unsigned int length) {
   return VerifySrvRply(GetDestinationIP(), data, length);
@@ -460,6 +471,55 @@ bool CheckLangInResponse(const string &lang) const {
 };
 REGISTER_TEST(NonEnglishMulticastRequest)
 
+/**
+ * Try a unicast SrvRqst with a language - dialect form.
+ */
+class LanguageDialectUnicastRequest: public TestCase {
+void BuildPacket(BigEndianOutputStream *output) {
+  SetDestination(UNICAST);
+  ExpectResponse(SERVICE_REPLY);
+
+  SLPPacketBuilder::BuildServiceRequest(
+      output, GetXID(), false, "en-AU", pr_list, RDMNET_DEVICE_SERVICE,
+      RDMNET_SCOPES);
+}
+TestState VerifyReply(const uint8_t *data, unsigned int length) {
+  return VerifySrvRply(GetDestinationIP(), data, length);
+}
+bool CheckLangInResponse(const string &lang) const {
+  if (lang != "en-AU") {
+    OLA_INFO << "Language mismatch, expected 'en-AU', got " << lang;
+    return false;
+  }
+  return true;
+}
+};
+REGISTER_TEST(LanguageDialectUnicastRequest)
+
+/**
+ * Try a multicast SrvRqst with a language - dialect form.
+ */
+class LanguageDialectMulticastRequest: public TestCase {
+void BuildPacket(BigEndianOutputStream *output) {
+  SetDestination(MULTICAST);
+  ExpectResponse(SERVICE_REPLY);
+
+  SLPPacketBuilder::BuildServiceRequest(
+      output, GetXID(), true, "en-AU", pr_list, RDMNET_DEVICE_SERVICE,
+      RDMNET_SCOPES);
+}
+TestState VerifyReply(const uint8_t *data, unsigned int length) {
+  return VerifySrvRply(GetDestinationIP(), data, length);
+}
+bool CheckLangInResponse(const string &lang) const {
+  if (lang != "en-AU") {
+    OLA_INFO << "Language mismatch, expected 'en-AU', got " << lang;
+    return false;
+  }
+  return true;
+}
+};
+REGISTER_TEST(LanguageDialectMulticastRequest)
 
 /**
  * Try a unicast SrvRqst with a predicate. Since E1.33 services can't have
@@ -470,9 +530,10 @@ void BuildPacket(BigEndianOutputStream *output) {
   SetDestination(UNICAST);
   ExpectResponse(SERVICE_REPLY);
 
-  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), false, pr_list,
+  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), false,
+                                        EN_LANGUAGE_TAG, pr_list,
                                         RDMNET_DEVICE_SERVICE, RDMNET_SCOPES,
-                                        EN_LANGUAGE_TAG, "!(foo=*)");
+                                        "!(foo=*)");
 }
 TestState VerifyReply(const uint8_t *data, unsigned int length) {
   return VerifyEmptySrvReply(data, length);
@@ -490,9 +551,9 @@ void BuildPacket(BigEndianOutputStream *output) {
   SetDestination(MULTICAST);
   ExpectTimeout();
 
-  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), true, pr_list,
-                                        RDMNET_DEVICE_SERVICE, RDMNET_SCOPES,
-                                        EN_LANGUAGE_TAG, "!(foo=*)");
+  SLPPacketBuilder::BuildServiceRequest(output, GetXID(), true, EN_LANGUAGE_TAG,
+                                        pr_list, RDMNET_DEVICE_SERVICE,
+                                        RDMNET_SCOPES, "!(foo=*)");
 }
 };
 REGISTER_TEST(MulticastPredicateRequest)
