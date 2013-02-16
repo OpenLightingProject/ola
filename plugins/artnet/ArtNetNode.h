@@ -22,6 +22,7 @@
 #define PLUGINS_ARTNET_ARTNETNODE_H_
 
 #include <map>
+#include <memory>
 #include <queue>
 #include <set>
 #include <string>
@@ -76,19 +77,22 @@ typedef enum {
 static const uint8_t ARTNET_DISABLE_PORT = 0xf0;
 
 
+
 class ArtNetNodeOptions {
   public:
     ArtNetNodeOptions()
         : always_broadcast(false),
           use_limited_broadcast_address(false),
           rdm_queue_size(20),
-          broadcast_threshold(30) {
+          broadcast_threshold(30),
+          input_port_count(4) {
     }
 
     bool always_broadcast;
     bool use_limited_broadcast_address;
     unsigned int rdm_queue_size;
     unsigned int broadcast_threshold;
+    uint8_t input_port_count;
 };
 
 
@@ -103,6 +107,20 @@ class ArtNetNodeImpl {
     bool Start();
     bool Stop();
 
+    /*
+     * Configuration mode.
+     * This allows the caller to make changes without triggering an ArtPoll or
+     * ArtPollReply per change. e.g.
+     * node.EnterConfigurationMode()
+     * node.SetShortName()
+     * node.SetInputPortUniverse()
+     * node.SetOutputPortUniverse()
+     * // The poll / poll reply is sent here
+     * node.ExitConfigurationMode()
+     */
+    bool EnterConfigurationMode();
+    bool ExitConfigurationMode();
+
     // Various parameters to control the behaviour
     bool SetShortName(const string &name);
     string ShortName() const { return m_short_name; }
@@ -114,13 +132,19 @@ class ArtNetNodeImpl {
 
     bool SetSubnetAddress(uint8_t subnet_address);
     uint8_t SubnetAddress() const {
-      return m_input_ports[0].universe_address >> 4;
+      return m_output_ports[0].universe_address >> 4;
     }
 
-    bool SetPortUniverse(artnet_port_type type,
-                         uint8_t port_id,
-                         uint8_t universe_id);
-    uint8_t GetPortUniverse(artnet_port_type type, uint8_t port_id);
+    uint8_t InputPortCount() const;
+    bool SetInputPortUniverse(uint8_t port_id, uint8_t universe_id);
+    uint8_t GetInputPortUniverse(uint8_t port_id) const;
+    void DisableInputPort(uint8_t port_id);
+    bool InputPortState(uint8_t port_id) const;
+
+    bool SetOutputPortUniverse(uint8_t port_id, uint8_t universe_id);
+    uint8_t GetOutputPortUniverse(uint8_t port_id);
+    void DisableOutputPort(uint8_t port_id);
+    bool OutputPortState(uint8_t port_id) const;
 
     void SetBroadcastThreshold(unsigned int threshold) {
       m_broadcast_threshold = threshold;
@@ -140,7 +164,7 @@ class ArtNetNodeImpl {
     void SendRDMRequest(uint8_t port_id,
                         const RDMRequest *request,
                         RDMCallback *on_complete);
-    bool SetUnsolicatedUIDSetHandler(
+    bool SetUnsolicitedUIDSetHandler(
         uint8_t port_id,
         ola::Callback1<void, const ola::rdm::UIDSet&> *on_tod);
     void GetSubscribedNodes(uint8_t port_id,
@@ -161,38 +185,12 @@ class ArtNetNodeImpl {
     bool SendTimeCode(const ola::timecode::TimeCode &timecode);
 
   private:
-    struct GenericPort {
-      uint8_t universe_address;
-      uint8_t sequence_number;
-      bool enabled;
-    };
+    class InputPort;
+    typedef vector<InputPort*> InputPorts;
 
     // map a uid to a IP address and the number of times we've missed a
     // response.
     typedef map<UID, std::pair<IPV4Address, uint8_t> > uid_map;
-
-    // Input ports are ones that send data using ArtNet
-    struct InputPort: public GenericPort {
-      map<IPV4Address, TimeStamp> subscribed_nodes;
-      uid_map uids;  // used to keep track of the UIDs
-      // NULL if discovery isn't running, otherwise the callback to run when it
-      // finishes
-      ola::rdm::RDMDiscoveryCallback *discovery_callback;
-      // The set of nodes we're expecting a response from
-      set<IPV4Address> discovery_node_set;
-      // the timeout_id for the discovery timer
-      ola::thread::timeout_id discovery_timeout;
-      // The callback to run if we receive an TOD and the discovery process
-      // isn't running
-      ola::rdm::RDMDiscoveryCallback *tod_callback;
-      // the in-flight request and it's callback
-      ola::rdm::RDMCallback *rdm_request_callback;
-      const ola::rdm::RDMRequest *pending_request;
-      IPV4Address rdm_ip_destination;
-
-      // these control the sending of RDM requests.
-      ola::thread::timeout_id rdm_send_timeout;
-    };
 
     enum { MAX_MERGE_SOURCES = 2 };
 
@@ -203,7 +201,10 @@ class ArtNetNodeImpl {
     };
 
     // Output Ports receive ArtNet data
-    struct OutputPort: public GenericPort {
+    struct OutputPort {
+      uint8_t universe_address;
+      uint8_t sequence_number;
+      bool enabled;
       artnet_merge_mode merge_mode;
       bool is_merging;
       DMXSource sources[MAX_MERGE_SOURCES];
@@ -226,14 +227,22 @@ class ArtNetNodeImpl {
     bool m_always_broadcast;
     bool m_use_limited_broadcast_address;
 
-    InputPort m_input_ports[ARTNET_MAX_PORTS];
+    // The following keep track of "Configuration mode"
+    bool m_in_configuration_mode;
+    bool m_artpoll_required;
+    bool m_artpollreply_required;
+
+    InputPorts m_input_ports;
     OutputPort m_output_ports[ARTNET_MAX_PORTS];
     ola::network::Interface m_interface;
-    ola::network::UDPSocketInterface *m_socket;
+    std::auto_ptr<ola::network::UDPSocketInterface> m_socket;
 
     ArtNetNodeImpl(const ArtNetNodeImpl&);
     ArtNetNodeImpl& operator=(const ArtNetNodeImpl&);
+
     void SocketReady();
+    bool SendPollIfAllowed();
+    bool SendPollReplyIfRequired();
     bool SendPollReply(const IPV4Address &destination);
     bool SendIPReply(const IPV4Address &destination);
     void HandlePacket(const IPV4Address &source_address,
@@ -266,18 +275,17 @@ class ArtNetNodeImpl {
                               ola::rdm::rdm_response_code code,
                               const RDMResponse *response,
                               const std::vector<std::string> &packets);
-    void HandleRDMResponse(unsigned int port_id,
+    void HandleRDMResponse(InputPort *port,
                            const string &rdm_data,
                            const IPV4Address &source_address);
     void HandleIPProgram(const IPV4Address &source_address,
                          const artnet_ip_prog_t &packet,
                          unsigned int packet_size);
     void PopulatePacketHeader(artnet_packet *packet, uint16_t op_code);
-    void IncrementUIDCounts(uint8_t port_id);
     bool SendPacket(const artnet_packet &packet,
                     unsigned int size,
                     const IPV4Address &destination);
-    void TimeoutRDMRequest(uint8_t port_id);
+    void TimeoutRDMRequest(InputPort *port);
     bool SendRDMCommand(const RDMCommand &command,
                         const IPV4Address &destination,
                         uint8_t universe);
@@ -289,21 +297,23 @@ class ArtNetNodeImpl {
                          const string &packet_type,
                          unsigned int actual_size,
                          unsigned int expected_size);
-    bool CheckInputPortState(uint8_t port_id, const string &action);
-    bool CheckOutputPortState(uint8_t port_id, const string &action);
-    bool CheckPortState(uint8_t port_id, const string &action, bool is_output);
-    bool CheckPortId(uint8_t port_id);
-    void UpdatePortFromTodPacket(uint8_t port_id,
+
+    // methods for accessing Input & Output ports
+    InputPort *GetInputPort(uint8_t port_id, bool warn = true);
+    const InputPort *GetInputPort(uint8_t port_id) const;
+    InputPort *GetEnabledInputPort(uint8_t port_id, const string &action);
+
+    OutputPort *GetOutputPort(uint8_t port_id);
+    const OutputPort *GetOutputPort(uint8_t port_id) const;
+    OutputPort *GetEnabledOutputPort(uint8_t port_id, const string &action);
+
+    void UpdatePortFromTodPacket(InputPort *port,
                                  const IPV4Address &source_address,
                                  const artnet_toddata_t &packet,
                                  unsigned int packet_size);
-    bool StartDiscoveryProcess(uint8_t port_id,
-                               ola::rdm::RDMDiscoveryCallback *callback);
-    void ReleaseDiscoveryLock(uint8_t port_id);
-    void RunDiscoveryCallbackForPort(uint8_t port_id);
-    void RunRDMCallbackWithUIDs(const uid_map &uids,
-                                ola::rdm::RDMDiscoveryCallback *callback);
 
+    void ReleaseDiscoveryLock(InputPort *port);
+    bool StartDiscoveryProcess(InputPort *port, RDMDiscoveryCallback *callback);
     bool InitNetwork();
 
     static const char ARTNET_ID[];
@@ -379,6 +389,13 @@ class ArtNetNode {
     bool Start() { return m_impl.Start(); }
     bool Stop() { return m_impl.Stop(); }
 
+    bool EnterConfigurationMode() {
+      return m_impl.EnterConfigurationMode();
+    }
+    bool ExitConfigurationMode() {
+      return m_impl.ExitConfigurationMode();
+    }
+
     // Various parameters to control the behaviour
     bool SetShortName(const string &name) { return m_impl.SetShortName(name); }
     string ShortName() const { return m_impl.ShortName(); }
@@ -396,13 +413,34 @@ class ArtNetNode {
       return m_impl.SubnetAddress();
     }
 
-    bool SetPortUniverse(artnet_port_type type,
-                         uint8_t port_id,
-                         uint8_t universe_id) {
-      return m_impl.SetPortUniverse(type, port_id, universe_id);
+    uint8_t InputPortCount() const {
+      return m_impl.InputPortCount();
     }
-    uint8_t GetPortUniverse(artnet_port_type type, uint8_t port_id) {
-      return m_impl.GetPortUniverse(type, port_id);
+
+    bool SetInputPortUniverse(uint8_t port_id, uint8_t universe_id) {
+      return m_impl.SetInputPortUniverse(port_id, universe_id);
+    }
+    uint8_t GetInputPortUniverse(uint8_t port_id) const {
+      return m_impl.GetInputPortUniverse(port_id);
+    }
+    void DisableInputPort(uint8_t port_id) {
+      m_impl.DisableInputPort(port_id);
+    }
+    bool InputPortState(uint8_t port_id) const {
+      return m_impl.InputPortState(port_id);
+    }
+
+    bool SetOutputPortUniverse(uint8_t port_id, uint8_t universe_id) {
+      return m_impl.SetOutputPortUniverse(port_id, universe_id);
+    }
+    uint8_t GetOutputPortUniverse(uint8_t port_id) {
+      return m_impl.GetOutputPortUniverse(port_id);
+    }
+    void DisableOutputPort(uint8_t port_id) {
+      m_impl.DisableOutputPort(port_id);
+    }
+    bool OutputPortState(uint8_t port_id) const {
+      return m_impl.OutputPortState(port_id);
     }
 
     void SetBroadcastThreshold(unsigned int threshold) {
@@ -434,10 +472,10 @@ class ArtNetNode {
      * This handler is called if we recieve ArtTod packets and a discovery
      * process isn't running.
      */
-    bool SetUnsolicatedUIDSetHandler(
+    bool SetUnsolicitedUIDSetHandler(
         uint8_t port_id,
         ola::Callback1<void, const ola::rdm::UIDSet&> *on_tod) {
-      return m_impl.SetUnsolicatedUIDSetHandler(port_id, on_tod);
+      return m_impl.SetUnsolicitedUIDSetHandler(port_id, on_tod);
     }
     void GetSubscribedNodes(uint8_t port_id,
                             std::vector<IPV4Address> *node_addresses) {
@@ -471,11 +509,10 @@ class ArtNetNode {
 
   private:
     ArtNetNodeImpl m_impl;
-    ArtNetNodeImplRDMWrapper *m_wrappers[ARTNET_MAX_PORTS];
-    ola::rdm::DiscoverableQueueingRDMController
-        *m_controllers[ARTNET_MAX_PORTS];
+    vector<ArtNetNodeImplRDMWrapper*> m_wrappers;
+    vector<ola::rdm::DiscoverableQueueingRDMController*> m_controllers;
 
-    bool CheckPortId(uint8_t port_id);
+    bool CheckInputPortId(uint8_t port_id);
 };
 }  // artnet
 }  // plugin

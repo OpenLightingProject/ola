@@ -54,7 +54,11 @@ bool ArtNetPlugin::StartHook() {
     delete m_device;
     return false;
   }
+  // Register device will restore the port settings. To avoid a flurry of
+  // ArtPoll / ArtPollReply messages, we enter config mode here.
+  m_device->EnterConfigurationMode();
   m_plugin_adaptor->RegisterDevice(m_device);
+  m_device->ExitConfigurationMode();
   return true;
 }
 
@@ -133,6 +137,10 @@ string ArtNetPlugin::Description() const {
 "net = 0\n"
 "The ArtNet Net to use (0-127).\n"
 "\n"
+"output_ports = 4\n"
+"The number of output ports (Send ArtNet) to create. Only the first 4 will\n"
+"appear in ArtPoll messages\n"
+"\n"
 "short_name = ola - ArtNet node\n"
 "The short name of the node (first 17 chars will be used)\n"
 "\n"
@@ -172,6 +180,9 @@ bool ArtNetPlugin::SetDefaultPreferences() {
   save |= m_preferences->SetDefaultValue(ArtNetDevice::K_SUBNET_KEY,
                                          IntValidator(0, 15),
                                          ARTNET_SUBNET);
+  save |= m_preferences->SetDefaultValue(ArtNetDevice::K_OUTPUT_PORT_KEY,
+                                         IntValidator(0, 16),
+                                         "4");
   save |= m_preferences->SetDefaultValue(ArtNetDevice::K_ALWAYS_BROADCAST_KEY,
                                          BoolValidator(),
                                          BoolValidator::DISABLED);
@@ -190,6 +201,7 @@ bool ArtNetPlugin::SetDefaultPreferences() {
   if (m_preferences->GetValue(ArtNetDevice::K_SHORT_NAME_KEY).empty() ||
       m_preferences->GetValue(ArtNetDevice::K_LONG_NAME_KEY).empty() ||
       m_preferences->GetValue(ArtNetDevice::K_SUBNET_KEY).empty() ||
+      m_preferences->GetValue(ArtNetDevice::K_OUTPUT_PORT_KEY).empty() ||
       m_preferences->GetValue(ArtNetDevice::K_NET_KEY).empty())
     return false;
 

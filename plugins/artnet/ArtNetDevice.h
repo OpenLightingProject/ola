@@ -49,6 +49,9 @@ class ArtNetDevice: public Device {
     // only one ArtNet device
     string DeviceId() const { return "1"; }
 
+    void EnterConfigurationMode() { m_node->EnterConfigurationMode(); }
+    void ExitConfigurationMode() { m_node->ExitConfigurationMode(); }
+
     void Configure(RpcController *controller,
                    const string &request,
                    string *response,
@@ -61,6 +64,7 @@ class ArtNetDevice: public Device {
     static const char K_LONG_NAME_KEY[];
     static const char K_LOOPBACK_KEY[];
     static const char K_NET_KEY[];
+    static const char K_OUTPUT_PORT_KEY[];
     static const char K_SHORT_NAME_KEY[];
     static const char K_SUBNET_KEY[];
     // 10s between polls when we're sending data, DMX-workshop uses 8s;
