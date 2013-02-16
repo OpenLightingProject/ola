@@ -67,6 +67,7 @@ class UsbProWidgetDetectorTest: public CommonWidgetTest {
     static const uint8_t DEVICE_LABEL = 78;
     static const uint8_t MANUFACTURER_LABEL = 77;
     static const uint8_t SERIAL_LABEL = 10;
+    static const uint8_t HARDWARE_VERSION_LABEL = 14;
     static const uint8_t SNIFFER_LABEL = 0x81;
 };
 
@@ -176,6 +177,10 @@ void UsbProWidgetDetectorTest::testDiscovery() {
       serial_data,
       sizeof(serial_data));
 
+  // Because the widget doesn't respond to Manufacturer or Device labels, we'll
+  // send a HARDWARE_VERSION_LABEL message.
+  m_endpoint->AddExpectedUsbProMessage(HARDWARE_VERSION_LABEL, NULL, 0);
+
   m_detector->Discover(&m_descriptor);
   m_ss.Run();
 
@@ -218,6 +223,7 @@ void UsbProWidgetDetectorTest::testSniffer() {
       SERIAL_LABEL,
       serial_data,
       sizeof(serial_data));
+  m_endpoint->AddExpectedUsbProMessage(HARDWARE_VERSION_LABEL, NULL, 0);
 
   m_endpoint->SendUnsolicitedUsbProData(SNIFFER_LABEL, NULL, 0);
   m_endpoint->SendUnsolicitedUsbProData(SNIFFER_LABEL, NULL, 0);

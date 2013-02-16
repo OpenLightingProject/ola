@@ -92,6 +92,7 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
   CPPUNIT_TEST(testDmxTriWidget);
   CPPUNIT_TEST(testDmxterWidget);
   CPPUNIT_TEST(testUsbProWidget);
+  CPPUNIT_TEST(testUsbProMkIIWidget);
   CPPUNIT_TEST(testRobeWidget);
   CPPUNIT_TEST(testUltraDmxWidget);
   CPPUNIT_TEST(testTimeout);
@@ -106,16 +107,13 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
     void testDmxTriWidget();
     void testDmxterWidget();
     void testUsbProWidget();
+    void testUsbProMkIIWidget();
     void testRobeWidget();
     void testUltraDmxWidget();
     void testTimeout();
     void testClose();
 
   private:
-    ola::io::SelectServer m_ss;
-    auto_ptr<MockEndpoint> m_endpoint;
-    auto_ptr<MockWidgetDetectorThread> m_thread;
-    auto_ptr<ola::io::UnixSocket> m_other_end;
 
     typedef enum {
       NONE,
@@ -127,62 +125,57 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
       ULTRA_DMX,
     } WidgetType;
 
+    ola::io::SelectServer m_ss;
+    auto_ptr<MockEndpoint> m_endpoint;
+    auto_ptr<MockWidgetDetectorThread> m_thread;
+    auto_ptr<ola::io::UnixSocket> m_other_end;
     WidgetType m_received_widget_type;
+    bool m_expect_dual_port_enttec_widget;
 
     void Timeout() { m_ss.Terminate(); }
     // widget handlers follow
     void NewWidget(ArduinoWidget *widget,
                    const UsbProWidgetInformation &information) {
-      OLA_ASSERT_EQ(static_cast<uint16_t>(0x7a70),
-                           information.esta_id);
+      OLA_ASSERT_EQ(static_cast<uint16_t>(0x7a70), information.esta_id);
       OLA_ASSERT_EQ(string("Open Lighting"), information.manufacturer);
-      OLA_ASSERT_EQ(static_cast<uint16_t>(1),
-                           information.device_id);
+      OLA_ASSERT_EQ(static_cast<uint16_t>(1), information.device_id);
       OLA_ASSERT_EQ(string("Unittest Device"), information.device);
-      OLA_ASSERT_EQ(static_cast<uint32_t>(0x12345678),
-                           information.serial);
+      OLA_ASSERT_EQ(static_cast<uint32_t>(0x12345678), information.serial);
       m_thread->FreeWidget(widget);
       m_received_widget_type = ARDUINO;
       m_ss.Terminate();
     }
     void NewWidget(EnttecUsbProWidget *widget,
                    const UsbProWidgetInformation &information) {
-      OLA_ASSERT_EQ(static_cast<uint16_t>(0),
-                           information.esta_id);
+      OLA_ASSERT_EQ(static_cast<uint16_t>(0), information.esta_id);
       OLA_ASSERT_EQ(string(""), information.manufacturer);
-      OLA_ASSERT_EQ(static_cast<uint16_t>(0),
-                           information.device_id);
+      OLA_ASSERT_EQ(static_cast<uint16_t>(0), information.device_id);
       OLA_ASSERT_EQ(string(""), information.device);
-      OLA_ASSERT_EQ(static_cast<uint32_t>(0x12345678),
-                           information.serial);
+      OLA_ASSERT_EQ(static_cast<uint32_t>(0x12345678), information.serial);
+      if (m_expect_dual_port_enttec_widget)
+        OLA_ASSERT(information.dual_port);
       m_thread->FreeWidget(widget);
       m_received_widget_type = ENTTEC;
       m_ss.Terminate();
     }
     void NewWidget(DmxTriWidget *widget,
                    const UsbProWidgetInformation &information) {
-      OLA_ASSERT_EQ(static_cast<uint16_t>(0x6864),
-                           information.esta_id);
+      OLA_ASSERT_EQ(static_cast<uint16_t>(0x6864), information.esta_id);
       OLA_ASSERT_EQ(string("JESE"), information.manufacturer);
-      OLA_ASSERT_EQ(static_cast<uint16_t>(2),
-                           information.device_id);
+      OLA_ASSERT_EQ(static_cast<uint16_t>(2), information.device_id);
       OLA_ASSERT_EQ(string("RDM-TRI"), information.device);
-      OLA_ASSERT_EQ(static_cast<uint32_t>(0x12345678),
-                           information.serial);
+      OLA_ASSERT_EQ(static_cast<uint32_t>(0x12345678), information.serial);
       m_thread->FreeWidget(widget);
       m_received_widget_type = DMX_TRI;
       m_ss.Terminate();
     }
     void NewWidget(DmxterWidget *widget,
                    const UsbProWidgetInformation &information) {
-      OLA_ASSERT_EQ(static_cast<uint16_t>(0x4744),
-                           information.esta_id);
+      OLA_ASSERT_EQ(static_cast<uint16_t>(0x4744), information.esta_id);
       OLA_ASSERT_EQ(string("Goddard Design"), information.manufacturer);
-      OLA_ASSERT_EQ(static_cast<uint16_t>(0x444d),
-                           information.device_id);
+      OLA_ASSERT_EQ(static_cast<uint16_t>(0x444d), information.device_id);
       OLA_ASSERT_EQ(string("DMXter4"), information.device);
-      OLA_ASSERT_EQ(static_cast<uint32_t>(0x12345678),
-                           information.serial);
+      OLA_ASSERT_EQ(static_cast<uint32_t>(0x12345678), information.serial);
       m_thread->FreeWidget(widget);
       m_received_widget_type = DMXTER;
       m_ss.Terminate();
@@ -190,12 +183,9 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
     void NewWidget(RobeWidget *widget,
                    const RobeWidgetInformation &information) {
       m_thread->FreeWidget(widget);
-      OLA_ASSERT_EQ(static_cast<uint8_t>(1),
-                           information.hardware_version);
-      OLA_ASSERT_EQ(static_cast<uint8_t>(11),
-                           information.software_version);
-      OLA_ASSERT_EQ(static_cast<uint8_t>(3),
-                           information.eeprom_version);
+      OLA_ASSERT_EQ(static_cast<uint8_t>(1), information.hardware_version);
+      OLA_ASSERT_EQ(static_cast<uint8_t>(11), information.software_version);
+      OLA_ASSERT_EQ(static_cast<uint8_t>(3), information.eeprom_version);
       OLA_ASSERT_EQ(UID(0x5253, 0x200000a),
                            information.uid);
       m_received_widget_type = ROBE;
@@ -203,14 +193,11 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
     }
     void NewWidget(UltraDMXProWidget *widget,
                    const UsbProWidgetInformation &information) {
-      OLA_ASSERT_EQ(static_cast<uint16_t>(0x6a6b),
-                           information.esta_id);
+      OLA_ASSERT_EQ(static_cast<uint16_t>(0x6a6b), information.esta_id);
       OLA_ASSERT_EQ(string("DMXking.com"), information.manufacturer);
-      OLA_ASSERT_EQ(static_cast<uint16_t>(0x2),
-                           information.device_id);
+      OLA_ASSERT_EQ(static_cast<uint16_t>(0x2), information.device_id);
       OLA_ASSERT_EQ(string("ultraDMX Pro"), information.device);
-      OLA_ASSERT_EQ(static_cast<uint32_t>(0x12345678),
-                           information.serial);
+      OLA_ASSERT_EQ(static_cast<uint32_t>(0x12345678), information.serial);
       m_thread->FreeWidget(widget);
       m_received_widget_type = ULTRA_DMX;
       m_ss.Terminate();
@@ -224,6 +211,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(WidgetDetectorThreadTest);
 void WidgetDetectorThreadTest::setUp() {
   ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
   m_received_widget_type = NONE;
+  m_expect_dual_port_enttec_widget = false;
   m_thread.reset(new MockWidgetDetectorThread(this, &m_ss));
 
   m_ss.RegisterSingleTimeout(
@@ -252,26 +240,16 @@ void WidgetDetectorThreadTest::testArduinoWidget() {
   uint8_t manufacturer_data[] = "pzOpen Lighting";
   uint8_t device_data[] = "\001\000Unittest Device";
   m_endpoint->AddExpectedUsbProDataAndReturn(
-      BaseUsbProWidget::MANUFACTURER_LABEL,
-      NULL,
-      0,
+      BaseUsbProWidget::MANUFACTURER_LABEL, NULL, 0,
       BaseUsbProWidget::MANUFACTURER_LABEL,
       manufacturer_data,
       sizeof(manufacturer_data));
   m_endpoint->AddExpectedUsbProDataAndReturn(
-      BaseUsbProWidget::DEVICE_LABEL,
-      NULL,
-      0,
-      BaseUsbProWidget::DEVICE_LABEL,
-      device_data,
-      sizeof(device_data));
+      BaseUsbProWidget::DEVICE_LABEL, NULL, 0,
+      BaseUsbProWidget::DEVICE_LABEL, device_data, sizeof(device_data));
   m_endpoint->AddExpectedUsbProDataAndReturn(
-      BaseUsbProWidget::SERIAL_LABEL,
-      NULL,
-      0,
-      BaseUsbProWidget::SERIAL_LABEL,
-      serial_data,
-      sizeof(serial_data));
+      BaseUsbProWidget::SERIAL_LABEL, NULL, 0,
+      BaseUsbProWidget::SERIAL_LABEL, serial_data, sizeof(serial_data));
 
   m_thread->Start();
   m_thread->WaitUntilRunning();
@@ -288,23 +266,17 @@ void WidgetDetectorThreadTest::testDmxTriWidget() {
   uint8_t manufacturer_data[] = "\144\150JESE";
   uint8_t device_data[] = "\002\000RDM-TRI";
   m_endpoint->AddExpectedUsbProDataAndReturn(
-      BaseUsbProWidget::MANUFACTURER_LABEL,
-      NULL,
-      0,
+      BaseUsbProWidget::MANUFACTURER_LABEL, NULL, 0,
       BaseUsbProWidget::MANUFACTURER_LABEL,
       manufacturer_data,
       sizeof(manufacturer_data));
   m_endpoint->AddExpectedUsbProDataAndReturn(
-      BaseUsbProWidget::DEVICE_LABEL,
-      NULL,
-      0,
+      BaseUsbProWidget::DEVICE_LABEL, NULL, 0,
       BaseUsbProWidget::DEVICE_LABEL,
       device_data,
       sizeof(device_data));
   m_endpoint->AddExpectedUsbProDataAndReturn(
-      BaseUsbProWidget::SERIAL_LABEL,
-      NULL,
-      0,
+      BaseUsbProWidget::SERIAL_LABEL, NULL, 0,
       BaseUsbProWidget::SERIAL_LABEL,
       serial_data,
       sizeof(serial_data));
@@ -324,26 +296,16 @@ void WidgetDetectorThreadTest::testDmxterWidget() {
   uint8_t manufacturer_data[] = "\104\107Goddard Design";
   uint8_t device_data[] = "\115\104DMXter4";
   m_endpoint->AddExpectedUsbProDataAndReturn(
-      BaseUsbProWidget::MANUFACTURER_LABEL,
-      NULL,
-      0,
+      BaseUsbProWidget::MANUFACTURER_LABEL, NULL, 0,
       BaseUsbProWidget::MANUFACTURER_LABEL,
       manufacturer_data,
       sizeof(manufacturer_data));
   m_endpoint->AddExpectedUsbProDataAndReturn(
-      BaseUsbProWidget::DEVICE_LABEL,
-      NULL,
-      0,
-      BaseUsbProWidget::DEVICE_LABEL,
-      device_data,
-      sizeof(device_data));
+      BaseUsbProWidget::DEVICE_LABEL, NULL, 0,
+      BaseUsbProWidget::DEVICE_LABEL, device_data, sizeof(device_data));
   m_endpoint->AddExpectedUsbProDataAndReturn(
-      BaseUsbProWidget::SERIAL_LABEL,
-      NULL,
-      0,
-      BaseUsbProWidget::SERIAL_LABEL,
-      serial_data,
-      sizeof(serial_data));
+      BaseUsbProWidget::SERIAL_LABEL, NULL, 0,
+      BaseUsbProWidget::SERIAL_LABEL, serial_data, sizeof(serial_data));
 
   m_thread->Start();
   m_thread->WaitUntilRunning();
@@ -356,7 +318,7 @@ void WidgetDetectorThreadTest::testDmxterWidget() {
  * Check that we can locate a Usb Pro widget
  */
 void WidgetDetectorThreadTest::testUsbProWidget() {
-  uint8_t serial_data[] = {0x78, 0x56, 0x34, 0x12};
+  const uint8_t serial_data[] = {0x78, 0x56, 0x34, 0x12};
   m_endpoint->AddExpectedUsbProMessage(BaseUsbProWidget::MANUFACTURER_LABEL,
                                        NULL,
                                        0);
@@ -364,13 +326,38 @@ void WidgetDetectorThreadTest::testUsbProWidget() {
                                        NULL,
                                        0);
   m_endpoint->AddExpectedUsbProDataAndReturn(
-      BaseUsbProWidget::SERIAL_LABEL,
-      NULL,
-      0,
-      BaseUsbProWidget::SERIAL_LABEL,
-      serial_data,
-      sizeof(serial_data));
+      BaseUsbProWidget::SERIAL_LABEL, NULL, 0,
+      BaseUsbProWidget::SERIAL_LABEL, serial_data, sizeof(serial_data));
+  m_endpoint->AddExpectedUsbProMessage(BaseUsbProWidget::HARDWARE_VERSION_LABEL,
+                                       NULL,
+                                       0);
 
+  m_thread->Start();
+  m_thread->WaitUntilRunning();
+  m_ss.Run();
+  OLA_ASSERT_EQ(ENTTEC, m_received_widget_type);
+}
+
+/**
+ * Check that we can locate a Usb Pro MK II widget
+ */
+void WidgetDetectorThreadTest::testUsbProMkIIWidget() {
+  const uint8_t serial_data[] = {0x78, 0x56, 0x34, 0x12};
+  m_endpoint->AddExpectedUsbProMessage(BaseUsbProWidget::MANUFACTURER_LABEL,
+                                       NULL, 0);
+  m_endpoint->AddExpectedUsbProMessage(BaseUsbProWidget::DEVICE_LABEL,
+                                       NULL, 0);
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      BaseUsbProWidget::SERIAL_LABEL, NULL, 0,
+      BaseUsbProWidget::SERIAL_LABEL, serial_data, sizeof(serial_data));
+
+  const uint8_t hardware_version = 2;
+  m_endpoint->AddExpectedUsbProDataAndReturn(
+      BaseUsbProWidget::HARDWARE_VERSION_LABEL, NULL, 0,
+      BaseUsbProWidget::HARDWARE_VERSION_LABEL,
+      &hardware_version, sizeof(hardware_version));
+
+  m_expect_dual_port_enttec_widget = true;
   m_thread->Start();
   m_thread->WaitUntilRunning();
   m_ss.Run();
@@ -386,30 +373,18 @@ void WidgetDetectorThreadTest::testRobeWidget() {
   m_endpoint->AddExpectedUsbProMessage(BaseUsbProWidget::MANUFACTURER_LABEL,
                                        NULL,
                                        0);
-  m_endpoint->AddExpectedUsbProMessage(BaseUsbProWidget::DEVICE_LABEL,
-                                       NULL,
-                                       0);
-  m_endpoint->AddExpectedUsbProMessage(BaseUsbProWidget::SERIAL_LABEL,
-                                       NULL,
-                                       0);
+  m_endpoint->AddExpectedUsbProMessage(BaseUsbProWidget::DEVICE_LABEL, NULL, 0);
+  m_endpoint->AddExpectedUsbProMessage(BaseUsbProWidget::SERIAL_LABEL, NULL, 0);
 
   // robe messages
   uint8_t info_data[] = {1, 11, 3, 0, 0};
   uint8_t uid_data[] = {0x52, 0x53, 2, 0, 0, 10};
   m_endpoint->AddExpectedRobeDataAndReturn(
-      BaseRobeWidget::INFO_REQUEST,
-      NULL,
-      0,
-      BaseRobeWidget::INFO_RESPONSE,
-      info_data,
-      sizeof(info_data));
+      BaseRobeWidget::INFO_REQUEST, NULL, 0,
+      BaseRobeWidget::INFO_RESPONSE, info_data, sizeof(info_data));
   m_endpoint->AddExpectedRobeDataAndReturn(
-      BaseRobeWidget::UID_REQUEST,
-      NULL,
-      0,
-      BaseRobeWidget::UID_RESPONSE,
-      uid_data,
-      sizeof(uid_data));
+      BaseRobeWidget::UID_REQUEST, NULL, 0,
+      BaseRobeWidget::UID_RESPONSE, uid_data, sizeof(uid_data));
 
   m_thread->Start();
   m_thread->WaitUntilRunning();
@@ -426,26 +401,16 @@ void WidgetDetectorThreadTest::testUltraDmxWidget() {
   uint8_t manufacturer_data[] = "\153\152DMXking.com";
   uint8_t device_data[] = "\002\000ultraDMX Pro";
   m_endpoint->AddExpectedUsbProDataAndReturn(
-      BaseUsbProWidget::MANUFACTURER_LABEL,
-      NULL,
-      0,
+      BaseUsbProWidget::MANUFACTURER_LABEL, NULL, 0,
       BaseUsbProWidget::MANUFACTURER_LABEL,
       manufacturer_data,
       sizeof(manufacturer_data));
   m_endpoint->AddExpectedUsbProDataAndReturn(
-      BaseUsbProWidget::DEVICE_LABEL,
-      NULL,
-      0,
-      BaseUsbProWidget::DEVICE_LABEL,
-      device_data,
-      sizeof(device_data));
+      BaseUsbProWidget::DEVICE_LABEL, NULL, 0,
+      BaseUsbProWidget::DEVICE_LABEL, device_data, sizeof(device_data));
   m_endpoint->AddExpectedUsbProDataAndReturn(
-      BaseUsbProWidget::SERIAL_LABEL,
-      NULL,
-      0,
-      BaseUsbProWidget::SERIAL_LABEL,
-      serial_data,
-      sizeof(serial_data));
+      BaseUsbProWidget::SERIAL_LABEL, NULL, 0,
+      BaseUsbProWidget::SERIAL_LABEL, serial_data, sizeof(serial_data));
 
   m_thread->Start();
   m_thread->WaitUntilRunning();
@@ -459,17 +424,13 @@ void WidgetDetectorThreadTest::testUltraDmxWidget() {
  */
 void WidgetDetectorThreadTest::testTimeout() {
   m_endpoint->AddExpectedUsbProMessage(BaseUsbProWidget::MANUFACTURER_LABEL,
-                                       NULL,
-                                       0);
+                                       NULL, 0);
   m_endpoint->AddExpectedUsbProMessage(BaseUsbProWidget::DEVICE_LABEL,
-                                       NULL,
-                                       0);
+                                       NULL, 0);
   m_endpoint->AddExpectedUsbProMessage(BaseUsbProWidget::SERIAL_LABEL,
-                                       NULL,
-                                       0);
+                                       NULL, 0);
   m_endpoint->AddExpectedRobeMessage(BaseRobeWidget::INFO_REQUEST,
-                                     NULL,
-                                     0);
+                                     NULL, 0);
   m_thread->Start();
   m_thread->WaitUntilRunning();
   m_ss.Run();
