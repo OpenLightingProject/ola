@@ -35,6 +35,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sysexits.h>
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
@@ -43,6 +44,7 @@
 #endif
 #include <termios.h>
 #include <time.h>
+#include <math.h>
 
 #include <ola/Callback.h>
 #include <ola/DmxBuffer.h>
@@ -56,6 +58,8 @@ using ola::SimpleClient;
 using ola::OlaClient;
 using ola::io::SelectServer;
 using std::string;
+
+static const unsigned int DEFAULT_UNIVERSE = 0;
 
 /* color names used */
 enum {
@@ -77,10 +81,15 @@ enum {
   DISP_MODE_MAX,
 };
 
+typedef struct {
+  unsigned int universe;
+  bool help;        // help
+} options;
+
 int MAXCHANNELS = 512;
 unsigned int MAXFKEY = 12;
 
-int universe = 0;
+unsigned int universe = 0;
 
 typedef unsigned char dmx_t;
 
@@ -100,6 +109,8 @@ static int fading = 0;        /* percentage counter of fade process */
 static int palette_number = 0;
 static int palette[MAXCOLOR];
 string error_str;
+/* TODO: lint complains about the 'original' line above, wants it changed to 
+char[], but that will presumably break .empty() etc */
 static int channels_offset = 1;
 
 OlaClient *client;
@@ -189,9 +200,18 @@ void values() {
   int i = 0;
   int x, y;
   int z = first_channel;
+  int universe_length = 0;
+  int width_total = 0;
+
+  if (universe > 0) {
+    universe_length = floor(log10(universe)) + 1;
+  } else {
+    universe_length = 1;
+  }
 
   /* headline */
-  if (COLS > 24) {
+  width_total += 25;
+  if (COLS >= width_total) {
     time_t t = time(NULL);
     struct tm tt;
     localtime_r(&t, &tt);
@@ -202,19 +222,28 @@ void values() {
     (void) attrset(palette[HEADLINE]);
     mvprintw(0, 1, "%s", s);
   }
-  if (COLS > 31) {
+  width_total += (5 + universe_length);
+  if (COLS >= width_total) {
+    /* Max universe 4294967295 - see MAX_UNIVERSE in include/ola/BaseTypes.h */
+    printw(" uni:");
+    printw("%u", universe);
+  }
+  width_total += (5 + 2);
+  if (COLS >= width_total) {
     (void) attrset(palette[HEADLINE]);
     printw(" cue:");
     (void) attrset(palette[HEADEMPH]);
     printw("%02i", current_cue + 1);
   }
-  if (COLS > 44) {
+  width_total += (10 + 3);
+  if (COLS >= width_total) {
     (void) attrset(palette[HEADLINE]);
     printw(" fadetime:");
     (void) attrset(palette[HEADEMPH]);
     printw("%1.1f", fadetime);
   }
-  if (COLS > 55) {
+  width_total += (8 + 3);
+  if (COLS >= width_total) {
     if (fading) {
       (void) attrset(palette[HEADLINE]);
       printw(" fading:");
@@ -225,8 +254,10 @@ void values() {
       printw("           ");
     }
   }
-
-  if (COLS>80) {
+  /* Use 10 as error string length, rather than error_str.length(),
+     as a safety feature to ensure it's shown */
+  width_total += (6 + 10);
+  if (COLS >= width_total) {
     if (!error_str.empty()) {
       (void) attrset(palette[HEADERROR]);
       printw("ERROR:%s", error_str.data());
@@ -456,7 +487,7 @@ void CHECK(void *p) {
 void calcscreengeometry() {
   int c = LINES;
   if (c < 3) {
-    error_str ="screen to small, we need at least 3 lines";
+    error_str ="screen too small, we need at least 3 lines";
     exit(1);
   }
   c--;                /* one line for headline */
@@ -651,9 +682,62 @@ void stdin_ready() {
   refresh();
 }
 
-int main(int argc, char *argv[]) {
-  int optc;
+/*
+ * parse our cmd line options
+ */
+void ParseOptions(int argc, char *argv[], options *opts) {
+  static struct option long_options[] = {
+      {"help", no_argument, 0, 'h'},
+      {"universe", required_argument, 0, 'u'},
+      {0, 0, 0, 0}
+    };
 
+  opts->universe = DEFAULT_UNIVERSE;
+  opts->help = false;
+
+  int c;
+  int option_index = 0;
+
+  while (1) {
+    c = getopt_long(argc, argv, "hu:", long_options, &option_index);
+
+    if (c == -1)
+      break;
+
+    switch (c) {
+      case 0:
+        break;
+      case 'h':
+        opts->help = true;
+        break;
+      case 'u':
+        opts->universe = strtoul(optarg, NULL, 0);
+        break;
+      case '?':
+        break;
+      default:
+        break;
+    }
+  }
+}
+
+
+/*
+ * Display the help message
+ */
+void DisplayHelpAndExit(char arg[]) {
+  std::cout << "Usage: " << arg << " [--universe <universe_id>]\n"
+  "\n"
+  "Send data to a DMX512 universe.\n"
+  "\n"
+  "  -h, --help                   Display this help message and exit.\n"
+  "  -u, --universe <universe_id> Id of universe to control (defaults to "
+  << DEFAULT_UNIVERSE << ").\n"
+  << std::endl;
+  exit(EX_OK);
+}
+
+int main(int argc, char *argv[]) {
   signal(SIGWINCH, terminalresize);
   atexit(cleanup);
 
@@ -669,16 +753,15 @@ int main(int argc, char *argv[]) {
   dmxundo = reinterpret_cast<dmx_t*>(calloc(MAXCHANNELS, sizeof(dmx_t)));
   CHECK(dmxundo);
 
-  // parse options
-  while ((optc = getopt(argc, argv, "u:")) != EOF) {
-    switch (optc) {
-      case 'u':
-         universe = atoi(optarg);
-         break;
-      default:
-         break;
-    }
+  options opts;
+
+  ParseOptions(argc, argv, &opts);
+
+  if (opts.help) {
+    DisplayHelpAndExit(argv[0]);
   }
+
+  universe = opts.universe;
 
   /* set up ola connection */
   SimpleClient ola_client;
