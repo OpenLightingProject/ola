@@ -19,6 +19,7 @@
  */
 
 #include <string>
+#include "ola/Logging.h"
 #include "ola/OlaClient.h"
 #include "ola/OlaClientCore.h"
 
@@ -42,6 +43,8 @@ OlaClient::~OlaClient() {
  * @returns true on success, false on failure
  */
 bool OlaClient::Setup() {
+  OLA_WARN << "Using OlaClient which has been deprecated, please upgrade "
+           << "to the OlaCallbackClient";
   return m_core->Setup();
 }
 

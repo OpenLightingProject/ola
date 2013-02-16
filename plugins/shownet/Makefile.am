@@ -5,6 +5,7 @@ libdir = $(plugindir)
 EXTRA_DIST = ShowNetPlugin.h ShowNetDevice.h ShowNetPort.h ShowNetPackets.h \
              ShowNetNode.h
 
+if USE_SHOWNET
 lib_LTLIBRARIES = libolashownet.la
 libolashownet_la_SOURCES = ShowNetPlugin.cpp ShowNetDevice.cpp ShowNetPort.cpp\
                            ShowNetNode.cpp
@@ -21,3 +22,4 @@ ShowNetTester_SOURCES = ShowNetTester.cpp \
 ShowNetTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 ShowNetTester_LDADD = $(CPPUNIT_LIBS) \
                       ../../common/libolacommon.la
+endif

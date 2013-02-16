@@ -8,10 +8,11 @@ x/y/2013 ola-0.8.27
  * Improved support for the RDM-TRI
  * Added support for using the loopback interface with the ArtNet plugin
  * Fixed a bug in the RDM tests
- * Add an option to disable the ArtNet plugin
+ * Add configure time options to disable each plugin
  * Fix a bug in the sniffer tool
  * Display the amount of time the RDM tests take in the web UI
  * Update to support automake 1.13
+ * Show the plugin state and config file location on the web UI
 
 11/11/2012 ola-0.8.26
  * Added the OSC plugin

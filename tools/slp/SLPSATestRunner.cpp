@@ -241,7 +241,7 @@ TestRunner::TestRunner(unsigned int timeout,
 
 
 TestRunner::~TestRunner() {
-  ola::STLDeleteValues(m_tests);
+  ola::STLDeleteValues(&m_tests);
 }
 
 void TestRunner::Run() {

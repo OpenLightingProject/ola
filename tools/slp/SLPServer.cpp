@@ -227,7 +227,7 @@ SLPServer::~SLPServer() {
   m_udp_socket->Close();
   OLA_INFO << "Size of m_pending_acks is " << m_pending_acks.size();
   OLA_INFO << "Size of m_pending_replies is " << m_pending_replies.size();
-  STLDeleteValues(m_pending_acks);
+  STLDeleteValues(&m_pending_acks);
 }
 
 

@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html>
   <head>
     <link rel='stylesheet' href='custombutton.css'>
@@ -31,6 +32,14 @@
 
       pre {
         margin: 0px;
+      }
+
+      h2 {
+        margin: 0px;
+      }
+
+      hr {
+        border: #67a7e3 1px solid;
       }
 
       #header {
@@ -651,6 +660,32 @@
         cursor: pointer;
         font-size: 11px;
       }
+
+      /* plugin frame styles */
+      .plugin_enabled {
+        font-color: #ffffff;
+        background-color: #00ff00;
+      }
+
+      .plugin_disabled {
+        background-color: #ff0000;
+        font-color: #ffffff;
+      }
+
+      #plugin_state_table { padding: 4px; }
+      #plugin_state_table td { padding: 4px; }
+      #plugin_preference_source { font-family: monospace; }
+
+      #plugin_conflict_list .goog-control {
+        margin-right: 3px;
+        outline: none;
+        color: #0066cc;
+        display: inline-block;
+      }
+
+      #plugin_conflict_list .goog-control-hover {
+        text-decoration: underline;
+      }
     </style>
   </head>
   <body onload='ola.Setup()'>
@@ -948,7 +983,27 @@
           </div>
         </div>
         <div class='ola-scroller ola-container' id='plugin_frame'>
-            <div id='plugin_description'></div>
+          <h2 id="plugin_name"></h2>
+          <table id="plugin_state_table">
+           <tr>
+            <td>Config Location</td>
+            <td><span id="plugin_preference_source"></span></td>
+           </tr>
+           <tr>
+            <td>Enabled in Config File</td>
+            <td><span id="plugin_enabled"></span></td>
+           </tr>
+           <tr>
+            <td>Active</td>
+            <td><span id="plugin_active"></span></td>
+           </tr>
+           <tr id='plugin_conflict_row'>
+            <td style="vertical-align: top">Conflicts with</td>
+            <td><div id="plugin_conflict_list"></div></td>
+           </tr>
+         </table>
+         <hr/>
+         <div id='plugin_description'></div>
         </div>
       </div>
     </div>

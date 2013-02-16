@@ -158,6 +158,34 @@ bool OlaClientCore::FetchPluginDescription(
 }
 
 
+/**
+ * Fetch the state of a plugin. This returns the enabled state and the list of
+ * plugins this plugin conflicts with.
+ */
+bool OlaClientCore::FetchPluginState(
+    ola_plugin_id plugin_id,
+    OlaCallbackClient::PluginStateCallback *callback) {
+  if (!m_connected) {
+    delete callback;
+    return false;
+  }
+
+  SimpleRpcController *controller = new SimpleRpcController();
+  ola::proto::PluginStateRequest request;
+  ola::proto::PluginStateReply *reply = new
+    ola::proto::PluginStateReply();
+
+  request.set_plugin_id(plugin_id);
+
+  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+      this,
+      &ola::OlaClientCore::HandlePluginState,
+      NewArgs<plugin_state_arg>(controller, reply, callback));
+  m_stub->GetPluginState(controller, &request, reply, cb);
+  return true;
+}
+
+
 /*
  * Request a listing of what devices are attached
  * @param filter only fetch devices that belong to this particular plugin
@@ -850,7 +878,8 @@ void OlaClientCore::HandlePluginList(plugin_list_arg *args) {
     for (int i = 0; i < args->reply->plugin_size(); ++i) {
       ola::proto::PluginInfo plugin_info = args->reply->plugin(i);
       OlaPlugin plugin(plugin_info.plugin_id(),
-                       plugin_info.name());
+                       plugin_info.name(),
+                       plugin_info.active());
       ola_plugins.push_back(plugin);
     }
   }
@@ -861,7 +890,7 @@ void OlaClientCore::HandlePluginList(plugin_list_arg *args) {
 
 
 /*
- * Called once PluginInfo completes
+ * Called once PluginState completes
  */
 void OlaClientCore::HandlePluginDescription(plugin_description_arg *args) {
   string error_string = "";
@@ -874,8 +903,43 @@ void OlaClientCore::HandlePluginDescription(plugin_description_arg *args) {
 
   if (args->controller->Failed()) {
     error_string = args->controller->ErrorText();
+  } else {
+    description = args->reply->description();
   }
-  args->callback->Run(args->reply->description(), error_string);
+  args->callback->Run(description, error_string);
+  FreeArgs(args);
+}
+
+
+/*
+ * Called once PluginState completes
+ */
+void OlaClientCore::HandlePluginState(plugin_state_arg *args) {
+  string error_string = "";
+  OlaCallbackClient::PluginState plugin_state;
+
+  if (!args->callback) {
+    FreeArgs(args);
+    return;
+  }
+
+  if (args->controller->Failed()) {
+    error_string = args->controller->ErrorText();
+  } else {
+    plugin_state.name = args->reply->name();
+    plugin_state.enabled = args->reply->enabled();
+    plugin_state.active = args->reply->active();
+    plugin_state.preferences_source = args->reply->preferences_source();
+    for (int i = 0; i < args->reply->conflicts_with_size(); ++i) {
+      ola::proto::PluginInfo plugin_info = args->reply->conflicts_with(i);
+      OlaPlugin plugin(plugin_info.plugin_id(),
+                       plugin_info.name(),
+                       plugin_info.active());
+      plugin_state.conflicting_plugins.push_back(plugin);
+    }
+  }
+
+  args->callback->Run(plugin_state, error_string);
   FreeArgs(args);
 }
 
@@ -952,7 +1016,7 @@ void OlaClientCore::HandleDeviceInfo(device_info_arg *args) {
  * Handle a device config response
  */
 void OlaClientCore::HandleDeviceConfig(configure_device_args *args) {
-  string error_string;
+  string error_string, data;
   if (!args->callback) {
     FreeArgs(args);
     return;
@@ -960,8 +1024,10 @@ void OlaClientCore::HandleDeviceConfig(configure_device_args *args) {
 
   if (args->controller->Failed())
     error_string = args->controller->ErrorText();
+  else
+    data = args->reply->data();
 
-  args->callback->Run(args->reply->data(), error_string);
+  args->callback->Run(data, error_string);
   FreeArgs(args);
 }
 

@@ -20,6 +20,7 @@
  */
 
 #include <algorithm>
+#include <set>
 #include <string>
 #include <vector>
 #include "common/protocol/Ola.pb.h"
@@ -71,6 +72,7 @@ using ola::proto::UniverseRequest;
 using ola::CallbackRunner;
 using ola::rdm::UIDSet;
 using ola::rdm::RDMResponse;
+using std::set;
 
 
 typedef CallbackRunner<google::protobuf::Closure> ClosureRunner;
@@ -378,8 +380,10 @@ void OlaServerServiceImpl::GetPlugins(
   vector<AbstractPlugin*>::const_iterator iter;
   m_plugin_manager->Plugins(&plugin_list);
 
-  for (iter = plugin_list.begin(); iter != plugin_list.end(); ++iter)
-    AddPlugin(*iter, response);
+  for (iter = plugin_list.begin(); iter != plugin_list.end(); ++iter) {
+    PluginInfo *plugin_info = response->add_plugin();
+    AddPlugin(*iter, plugin_info);
+  }
 }
 
 
@@ -398,6 +402,36 @@ void OlaServerServiceImpl::GetPluginDescription(
   if (plugin) {
     response->set_name(plugin->Name());
     response->set_description(plugin->Description());
+  } else {
+    controller->SetFailed("Plugin not loaded");
+  }
+}
+
+
+/*
+ * Return the state for a plugin.
+ */
+void OlaServerServiceImpl::GetPluginState(
+    RpcController* controller,
+    const ola::proto::PluginStateRequest* request,
+    ola::proto::PluginStateReply* response,
+    google::protobuf::Closure* done) {
+  ClosureRunner runner(done);
+  ola_plugin_id plugin_id = (ola_plugin_id) request->plugin_id();
+  AbstractPlugin *plugin = m_plugin_manager->GetPlugin(plugin_id);
+
+  if (plugin) {
+    response->set_name(plugin->Name());
+    response->set_enabled(plugin->IsEnabled());
+    response->set_active(m_plugin_manager->IsActive(plugin_id));
+    response->set_preferences_source(plugin->PreferenceSource());
+    vector<AbstractPlugin*> conflict_list;
+    m_plugin_manager->GetConflictList(plugin_id, &conflict_list);
+    vector<AbstractPlugin*>::const_iterator iter = conflict_list.begin();
+    for (; iter != conflict_list.end(); ++iter) {
+      PluginInfo *plugin_info = response->add_conflicts_with();
+      AddPlugin(*iter, plugin_info);
+    }
   } else {
     controller->SetFailed("Plugin not loaded");
   }
@@ -868,10 +902,10 @@ void OlaServerServiceImpl::MissingPortError(RpcController* controller) {
  * Add this device to the DeviceInfo response
  */
 void OlaServerServiceImpl::AddPlugin(AbstractPlugin *plugin,
-                                     PluginListReply* response) const {
-  PluginInfo *plugin_info = response->add_plugin();
+                                     PluginInfo* plugin_info) const {
   plugin_info->set_plugin_id(plugin->Id());
   plugin_info->set_name(plugin->Name());
+  plugin_info->set_active(m_plugin_manager->IsActive(plugin->Id()));
 }
 
 

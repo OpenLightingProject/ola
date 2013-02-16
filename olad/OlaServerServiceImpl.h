@@ -109,6 +109,11 @@ class OlaServerServiceImpl {
         const ola::proto::PluginDescriptionRequest* request,
         ola::proto::PluginDescriptionReply* response,
         google::protobuf::Closure* done);
+    void GetPluginState(
+        RpcController* controller,
+        const ola::proto::PluginStateRequest* request,
+        ola::proto::PluginStateReply* response,
+        google::protobuf::Closure* done);
     void GetDeviceInfo(RpcController* controller,
                        const ola::proto::DeviceInfoRequest* request,
                        ola::proto::DeviceInfoReply* response,
@@ -169,7 +174,7 @@ class OlaServerServiceImpl {
     void MissingPortError(RpcController* controller);
 
     void AddPlugin(class AbstractPlugin *plugin,
-                   ola::proto::PluginListReply* response) const;
+                   ola::proto::PluginInfo *plugin_info) const;
     void AddDevice(class AbstractDevice *device,
                    unsigned int alias,
                    ola::proto::DeviceInfoReply* response) const;
@@ -281,6 +286,14 @@ class OlaClientService: public ola::proto::OlaServerService {
         ola::proto::PluginDescriptionReply* response,
         google::protobuf::Closure* done) {
       m_impl->GetPluginDescription(controller, request, response, done);
+    }
+
+    void GetPluginState(
+        RpcController* controller,
+        const ola::proto::PluginStateRequest* request,
+        ola::proto::PluginStateReply* response,
+        google::protobuf::Closure* done) {
+      m_impl->GetPluginState(controller, request, response, done);
     }
 
     void GetDeviceInfo(RpcController* controller,

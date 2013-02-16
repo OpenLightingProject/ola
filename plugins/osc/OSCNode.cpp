@@ -153,8 +153,7 @@ void OSCNode::Stop() {
   m_target_by_group.clear();
 
   // Delete all the RX callbacks.
-  STLDeleteValues(m_address_callbacks);
-  m_address_callbacks.clear();
+  STLDeleteValues(&m_address_callbacks);
 
   if (m_descriptor) {
     // if there was an UnmanagedFileDescriptor, de-register from the
