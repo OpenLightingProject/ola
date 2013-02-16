@@ -405,7 +405,7 @@ void DmxMonitor::Mask() {
 
   if (COLS > 15) {
     mvprintw(0 , 0, "Universe: ");
-    printw("%i", m_universe);
+    printw("%u", m_universe);
   }
 
   /* write channel numbers */
@@ -610,7 +610,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
         opts->help = true;
         break;
       case 'u':
-        opts->universe = atoi(optarg);
+        opts->universe = strtoul(optarg, NULL, 0);
         break;
       case '?':
         break;
