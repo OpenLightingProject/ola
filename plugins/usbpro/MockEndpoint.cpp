@@ -125,14 +125,15 @@ void MockEndpoint::AddExpectedRobeMessage(
 void MockEndpoint::AddExpectedDataAndReturn(const uint8_t *request_data,
                                             unsigned int request_size,
                                             const uint8_t *response_data,
-                                            unsigned int response_size) {
+                                            unsigned int response_size,
+                                            NotificationCallback *callback) {
   expected_data call = {
     true,
     false,
     false,
     {request_size, request_data},
     {response_size, response_data},
-    NULL
+    callback
   };
   m_expected_data.push(call);
 }
@@ -154,7 +155,8 @@ void MockEndpoint::AddExpectedUsbProDataAndReturn(
     unsigned int request_payload_size,
     uint8_t response_label,
     const uint8_t *response_payload_data,
-    unsigned int response_payload_size) {
+    unsigned int response_payload_size,
+    NotificationCallback *callback) {
   unsigned int request_size;
   uint8_t *request = BuildUsbProMessage(request_label,
                                         request_payload_data,
@@ -172,7 +174,7 @@ void MockEndpoint::AddExpectedUsbProDataAndReturn(
     true,
     {request_size, request},
     {response_size, response},
-    NULL
+    callback
   };
   m_expected_data.push(call);
 }
@@ -194,7 +196,8 @@ void MockEndpoint::AddExpectedRobeDataAndReturn(
     unsigned int request_payload_size,
     uint8_t response_label,
     const uint8_t *response_payload_data,
-    unsigned int response_payload_size) {
+    unsigned int response_payload_size,
+    NotificationCallback *callback) {
   unsigned int request_size;
   uint8_t *request = BuildRobeMessage(request_label,
                                       request_payload_data,
@@ -212,7 +215,7 @@ void MockEndpoint::AddExpectedRobeDataAndReturn(
     true,
     {request_size, request},
     {response_size, response},
-    NULL
+    callback
   };
   m_expected_data.push(call);
 }
