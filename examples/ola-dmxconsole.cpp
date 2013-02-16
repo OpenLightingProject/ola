@@ -44,6 +44,7 @@
 #endif
 #include <termios.h>
 #include <time.h>
+#include <math.h>
 
 #include <ola/Callback.h>
 #include <ola/DmxBuffer.h>
@@ -199,9 +200,18 @@ void values() {
   int i = 0;
   int x, y;
   int z = first_channel;
+  int universe_length = 0;
+  int width_total = 0;
+
+  if (universe > 0) {
+    universe_length = floor(log10(universe)) + 1;
+  } else {
+    universe_length = 1;
+  }
 
   /* headline */
-  if (COLS > 24) {
+  width_total += 25;
+  if (COLS >= width_total) {
     time_t t = time(NULL);
     struct tm tt;
     localtime_r(&t, &tt);
@@ -212,25 +222,28 @@ void values() {
     (void) attrset(palette[HEADLINE]);
     mvprintw(0, 1, "%s", s);
   }
-  if (COLS > 34) {
-    /* Max universe 65535 */
-    /* TODO: calculate cols offset based on how big the universe number is? */
+  width_total += (5 + universe_length);
+  if (COLS >= width_total) {
+    /* Max universe 4294967295 - see MAX_UNIVERSE in include/ola/BaseTypes.h */
     printw(" uni:");
-    printw("%i", universe);
+    printw("%u", universe);
   }
-  if (COLS > 41) {
+  width_total += (5 + 2);
+  if (COLS >= width_total) {
     (void) attrset(palette[HEADLINE]);
     printw(" cue:");
     (void) attrset(palette[HEADEMPH]);
     printw("%02i", current_cue + 1);
   }
-  if (COLS > 54) {
+  width_total += (10 + 3);
+  if (COLS >= width_total) {
     (void) attrset(palette[HEADLINE]);
     printw(" fadetime:");
     (void) attrset(palette[HEADEMPH]);
     printw("%1.1f", fadetime);
   }
-  if (COLS > 65) {
+  width_total += (8 + 3);
+  if (COLS >= width_total) {
     if (fading) {
       (void) attrset(palette[HEADLINE]);
       printw(" fading:");
@@ -241,8 +254,10 @@ void values() {
       printw("           ");
     }
   }
-
-  if (COLS > 90) {
+  /* Use 10 as error string length, rather than error_str.length(),
+     as a safety feature to ensure it's shown */
+  width_total += (6 + 10);
+  if (COLS >= width_total) {
     if (!error_str.empty()) {
       (void) attrset(palette[HEADERROR]);
       printw("ERROR:%s", error_str.data());
@@ -696,7 +711,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
         opts->help = true;
         break;
       case 'u':
-        opts->universe = atoi(optarg);
+        opts->universe = strtoul(optarg, NULL, 0);
         break;
       case '?':
         break;
