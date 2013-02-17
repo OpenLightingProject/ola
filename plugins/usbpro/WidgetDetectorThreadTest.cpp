@@ -202,6 +202,8 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
       m_received_widget_type = ULTRA_DMX;
       m_ss.Terminate();
     }
+
+    static const uint8_t USB_PRO_MKII_API_LABEL = 13;
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(WidgetDetectorThreadTest);
@@ -356,6 +358,11 @@ void WidgetDetectorThreadTest::testUsbProMkIIWidget() {
       BaseUsbProWidget::HARDWARE_VERSION_LABEL, NULL, 0,
       BaseUsbProWidget::HARDWARE_VERSION_LABEL,
       &hardware_version, sizeof(hardware_version));
+
+  // expect the unlock message
+  const uint8_t unlock_key[] = {0xd7, 0xb2, 0x11, 0x0d};
+  m_endpoint->AddExpectedUsbProMessage(USB_PRO_MKII_API_LABEL, unlock_key,
+                                       sizeof(unlock_key));
 
   m_expect_dual_port_enttec_widget = true;
   m_thread->Start();

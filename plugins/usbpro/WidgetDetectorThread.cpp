@@ -332,6 +332,9 @@ void WidgetDetectorThread::UsbProWidgetReady(
       break;
   }
   OLA_WARN << "Defaulting to a Usb Pro device";
+  if (information->dual_port) {
+    OLA_INFO << "Found and unlocked an Enttec USB Pro Mk II";
+  }
   DispatchWidget(
       new EnttecUsbProWidget(
         m_other_ss,

@@ -135,6 +135,7 @@ class UsbProWidgetDetector: public WidgetDetectorInterface {
     void SendNameRequest(DispatchingUsbProWidget *widget);
     void SendSerialRequest(DispatchingUsbProWidget *widget);
     void SendHardwareVersionRequest(DispatchingUsbProWidget *widget);
+    void SendAPIRequest(DispatchingUsbProWidget *widget);
     void DiscoveryTimeout(DispatchingUsbProWidget *widget);
     void HandleIdResponse(DispatchingUsbProWidget *widget,
                           unsigned int length,
@@ -153,7 +154,10 @@ class UsbProWidgetDetector: public WidgetDetectorInterface {
     void HandleSniffer(DispatchingUsbProWidget *widget);
 
     static const uint8_t ENTTEC_SNIFFER_LABEL = 0x81;
+    static const uint8_t USB_PRO_MKII_API_LABEL = 13;
     static const uint8_t DMX_PRO_MKII_VERISON = 2;
+    // The API key associated with OLA
+    static const uint32_t USB_PRO_MKII_API_KEY = 0x0d11b2d7;
 };
 }  // usbpro
 }  // plugin

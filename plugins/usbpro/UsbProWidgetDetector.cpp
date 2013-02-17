@@ -238,6 +238,19 @@ void UsbProWidgetDetector::SendHardwareVersionRequest(
 }
 
 
+/**
+ * Send OLA's API key to unlock the second port of a Usb Pro MkII Widget.
+ * Note: The labels for the messages used to control the 2nd port of the Mk II
+ * depend on this key value. If you're writing other software you can obtain a
+ * key by emailing Enttec, rather than just copying the value here.
+ */
+void UsbProWidgetDetector::SendAPIRequest(DispatchingUsbProWidget *widget) {
+  uint32_t key = ola::network::LittleEndianToHost(USB_PRO_MKII_API_KEY);
+  widget->SendMessage(USB_PRO_MKII_API_LABEL, reinterpret_cast<uint8_t*>(&key),
+                      sizeof(key));
+}
+
+
 /*
  * Called if a widget fails to respond in a given interval
  */
@@ -347,7 +360,7 @@ void UsbProWidgetDetector::HandleSerialResponse(
   if (information.esta_id == 0 && information.device_id == 0) {
     // This widget didn't respond to Manufacturer or Device messages, but did
     // respond to GetSerial, so it's probably a USB Pro. Now we need to check
-    //if it's a MK II widget.
+    // if it's a MK II widget.
     SendHardwareVersionRequest(widget);
     return;
   }
@@ -373,8 +386,10 @@ void UsbProWidgetDetector::HandleHardwareVersionResponse(
   if (iter == m_widgets.end())
     return;
   RemoveTimeout(&iter->second);
-  if (data[0] == DMX_PRO_MKII_VERISON)
+  if (data[0] == DMX_PRO_MKII_VERISON) {
     iter->second.information.dual_port = true;
+    SendAPIRequest(widget);
+  }
 
   CompleteWidgetDiscovery(widget);
 }
