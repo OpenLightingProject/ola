@@ -23,6 +23,8 @@ USER=olad
 
 if [ "$RUN_DAEMON" = "true" ] || [ "$RUN_DAEMON" = "yes" ] ; then
   DAEMON_ARGS="--world_writeable"
+elif [ "$1" = "start" ] || [ "$1" = "stop" ] ; then
+  echo "rdm_test_server daemon isn't currently configured for automatic control.\n\nTo change this, either run:\n\tdpkg-reconfigure ola-rdm-tests\nOr set \$RUN_DAEMON to true in /etc/default/ola-rdm-tests" >&2
 fi
 
 [ -x "$DAEMON" ] || exit 0
