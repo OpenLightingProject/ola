@@ -162,13 +162,8 @@ void UsbSerialPlugin::NewWidget(
   if (device_name.empty())
     device_name = USBPRO_DEVICE_NAME;
 
-  AddDevice(new UsbProDevice(
-      m_plugin_adaptor,
-      this,
-      device_name,
-      widget,
-      information.serial,
-      GetProFrameLimit()));
+  AddDevice(new UsbProDevice(m_plugin_adaptor, this, device_name, widget,
+                             information.serial, GetProFrameLimit()));
 }
 
 

@@ -5,7 +5,8 @@ SUBDIRS = messages
 EXTRA_DIST = ArduinoRGBDevice.h ArduinoWidget.h BaseUsbProWidget.h \
              BaseRobeWidget.h CommonWidgetTest.h DmxTriDevice.h \
              DmxTriWidget.h DmxterDevice.h DmxterWidget.h \
-             EnttecUsbProWidget.h GenericUsbProWidget.h MockEndpoint.h \
+             EnttecUsbProWidget.h EnttecUsbProWidgetImpl.h \
+             GenericUsbProWidget.h MockEndpoint.h \
              RobeDevice.h RobeWidget.h RobeWidgetDetector.h \
              SerialWidgetInterface.h SerialWidgetInterface.h \
              UltraDMXProDevice.h UltraDMXProWidget.h \

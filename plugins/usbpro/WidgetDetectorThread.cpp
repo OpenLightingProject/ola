@@ -285,12 +285,10 @@ void WidgetDetectorThread::UsbProWidgetReady(
         return;
       } else {
         // DMXKing devices are drop in replacements for a Usb Pro
+        EnttecUsbProWidget::EnttecUsbProWidgetOptions options(
+            information->esta_id, information->serial);
         DispatchWidget(
-            new EnttecUsbProWidget(
-              m_other_ss,
-              descriptor,
-              information->esta_id,
-              information->serial),
+            new EnttecUsbProWidget(descriptor, options),
             information);
         return;
       }
@@ -335,13 +333,11 @@ void WidgetDetectorThread::UsbProWidgetReady(
   if (information->dual_port) {
     OLA_INFO << "Found and unlocked an Enttec USB Pro Mk II";
   }
-  DispatchWidget(
-      new EnttecUsbProWidget(
-        m_other_ss,
-        descriptor,
-        information->esta_id,
-        information->serial),
-      information);
+  EnttecUsbProWidget::EnttecUsbProWidgetOptions options(
+      information->esta_id, information->serial);
+  options.dual_ports = information->dual_port;
+  DispatchWidget(new EnttecUsbProWidget(descriptor, options),
+                 information);
 }
 
 

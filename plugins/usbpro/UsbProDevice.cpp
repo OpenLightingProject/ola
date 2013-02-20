@@ -53,47 +53,36 @@ UsbProDevice::UsbProDevice(ola::PluginAdaptor *plugin_adaptor,
                            const string &name,
                            EnttecUsbProWidget *widget,
                            uint32_t serial,
-                           unsigned int fps_limit):
-    UsbSerialDevice(owner, name, widget),
-    m_pro_widget(widget),
-    m_serial(),
-    m_got_parameters(false) {
-  std::stringstream str;
-  str << std::setfill('0');
-  uint8_t *ptr = reinterpret_cast<uint8_t*>(&serial);
-  for (int i = UsbProWidgetInformation::SERIAL_LENGTH - 1; i >= 0; i--) {
-    int digit = (10 * (ptr[i] & 0xf0) >> 4) + (ptr[i] & 0x0f);
-    str <<  std::setw(2)  << digit;
+                           unsigned int fps_limit)
+    : UsbSerialDevice(owner, name, widget),
+      m_pro_widget(widget),
+      m_serial(SerialToString(serial)) {
+  for (unsigned int i = 0; i < widget->PortCount(); i++) {
+    EnttecPort *enttec_port = widget->GetPort(i);
+    if (!enttec_port) {
+      OLA_WARN << "GetPort() returned NULL";
+      continue;
+    }
+
+    UsbProInputPort *input_port = new UsbProInputPort(
+        this, enttec_port, i, plugin_adaptor, m_serial);
+    enttec_port->SetDMXCallback(
+        NewCallback(static_cast<InputPort*>(input_port),
+                    &InputPort::DmxChanged));
+    AddPort(input_port);
+
+    OutputPort *output_port = new UsbProOutputPort(
+        this, enttec_port, i, m_serial,
+        plugin_adaptor->WakeUpTime(),
+        5,  // allow up to 5 burst frames
+        fps_limit);  // 200 frames per second seems to be the limit
+    AddPort(output_port);
+
+    PortParams port_params = {false, 0, 0, 0};
+    m_port_params.push_back(port_params);
+    enttec_port->GetParameters(
+      NewSingleCallback(this, &UsbProDevice::UpdateParams, i));
   }
-  m_serial = str.str();
-
-  m_pro_widget->GetParameters(NewSingleCallback(
-    this,
-    &UsbProDevice::UpdateParams));
-
-  UsbProInputPort *input_port = new UsbProInputPort(
-      this,
-      m_pro_widget,
-      0,
-      plugin_adaptor,
-      m_serial);
-
-  m_pro_widget->SetDMXCallback(
-      NewCallback(
-        static_cast<InputPort*>(input_port),
-        &InputPort::DmxChanged));
-  AddPort(input_port);
-
-  OutputPort *output_port = new UsbProOutputPort(
-      this,
-      m_pro_widget,
-      0,
-      m_serial,
-      plugin_adaptor->WakeUpTime(),
-      5,  // allow up to 5 burst frames
-      fps_limit);  // 200 frames per second seems to be the limit
-
-  AddPort(output_port);
   Start();  // this does nothing but set IsEnabled() to true
 }
 
@@ -141,13 +130,17 @@ void UsbProDevice::Configure(RpcController *controller,
 /**
  * Update the cached param values
  */
-void UsbProDevice::UpdateParams(bool status,
+void UsbProDevice::UpdateParams(unsigned int port_id, bool status,
                                 const usb_pro_parameters &params) {
+  if (port_id >= m_port_params.size())
+    return;
+
   if (status) {
-    m_got_parameters = true;
-    m_break_time = params.break_time;
-    m_mab_time = params.mab_time;
-    m_rate = params.rate;
+    PortParams &port_params = m_port_params[port_id];
+    port_params.got_parameters = true;
+    port_params.break_time = params.break_time;
+    port_params.mab_time = params.mab_time;
+    port_params.rate = params.rate;
   }
 }
 
@@ -163,23 +156,36 @@ void UsbProDevice::HandleParametersRequest(RpcController *controller,
                                            const Request *request,
                                            string *response,
                                            google::protobuf::Closure *done) {
+  if (!request->has_parameters()) {
+      controller->SetFailed("Invalid request");
+      done->Run();
+  }
+  unsigned int port_id = request->parameters().port_id();
+
+  EnttecPort *enttec_port = m_pro_widget->GetPort(port_id);
+  if (enttec_port == NULL) {
+      controller->SetFailed("Invalid port id");
+      done->Run();
+  }
+
   if (request->has_parameters() &&
       (request->parameters().has_break_time() ||
        request->parameters().has_mab_time() ||
        request->parameters().has_rate())) {
-    if (!m_got_parameters) {
+    PortParams &port_params = m_port_params[port_id];
+    if (!port_params.got_parameters) {
       controller->SetFailed("SetParameters failed, startup not complete");
       done->Run();
       return;
     }
 
-    bool ret = m_pro_widget->SetParameters(
+    bool ret = enttec_port->SetParameters(
       request->parameters().has_break_time() ?
-        request->parameters().break_time() : m_break_time,
+        request->parameters().break_time() : port_params.break_time,
       request->parameters().has_mab_time() ?
-        request->parameters().mab_time() : m_mab_time,
+        request->parameters().mab_time() : port_params.mab_time,
       request->parameters().has_rate() ?
-        request->parameters().rate() : m_rate);
+        request->parameters().rate() : port_params.rate);
 
     if (!ret) {
       controller->SetFailed("SetParameters failed");
@@ -188,12 +194,13 @@ void UsbProDevice::HandleParametersRequest(RpcController *controller,
     }
   }
 
-  m_pro_widget->GetParameters(NewSingleCallback(
+  enttec_port->GetParameters(NewSingleCallback(
     this,
     &UsbProDevice::HandleParametersResponse,
     controller,
     response,
-    done));
+    done,
+    port_id));
 }
 
 
@@ -203,12 +210,13 @@ void UsbProDevice::HandleParametersRequest(RpcController *controller,
 void UsbProDevice::HandleParametersResponse(RpcController *controller,
                                             string *response,
                                             google::protobuf::Closure *done,
+                                            unsigned int port_id,
                                             bool status,
                                             const usb_pro_parameters &params) {
   if (!status) {
     controller->SetFailed("GetParameters failed");
   } else {
-    UpdateParams(true, params);
+    UpdateParams(port_id, true, params);
     Reply reply;
     reply.set_type(ola::plugin::usbpro::Reply::USBPRO_PARAMETER_REPLY);
     ola::plugin::usbpro::ParameterReply *parameters_reply =
@@ -242,6 +250,18 @@ void UsbProDevice::HandleSerialRequest(
   done->Run();
   (void) controller;
   (void) request;
+}
+
+
+string UsbProDevice::SerialToString(uint32_t serial) {
+  std::stringstream str;
+  str << std::setfill('0');
+  uint8_t *ptr = reinterpret_cast<uint8_t*>(&serial);
+  for (int i = UsbProWidgetInformation::SERIAL_LENGTH - 1; i >= 0; i--) {
+    int digit = (10 * (ptr[i] & 0xf0) >> 4) + (ptr[i] & 0x0f);
+    str <<  std::setw(2)  << digit;
+  }
+  return str.str();
 }
 }  // usbpro
 }  // plugin
