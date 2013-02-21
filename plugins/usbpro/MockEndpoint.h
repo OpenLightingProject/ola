@@ -71,7 +71,8 @@ class MockEndpoint {
     void AddExpectedDataAndReturn(const uint8_t *request_data,
                                   unsigned int request_size,
                                   const uint8_t *response_data,
-                                  unsigned int response_size);
+                                  unsigned int response_size,
+                                  NotificationCallback *callback = NULL);
 
     // This does the same as above, but puts the data inside a Usb Pro style
     // frame.
@@ -80,7 +81,8 @@ class MockEndpoint {
                                         unsigned int request_payload_size,
                                         uint8_t response_label,
                                         const uint8_t *response_payload_data,
-                                        unsigned int response_payload_size);
+                                        unsigned int response_payload_size,
+                                        NotificationCallback *callback = NULL);
 
     // This does the same as above, but puts the data inside a Robe style
     // frame.
@@ -89,7 +91,8 @@ class MockEndpoint {
                                       unsigned int request_payload_size,
                                       uint8_t response_label,
                                       const uint8_t *response_payload_data,
-                                      unsigned int response_payload_size);
+                                      unsigned int response_payload_size,
+                                      NotificationCallback *callback = NULL);
 
     void SendUnsolicited(const uint8_t *data,
                          unsigned int length);

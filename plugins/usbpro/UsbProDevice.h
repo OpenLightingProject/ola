@@ -22,6 +22,7 @@
 #define PLUGINS_USBPRO_USBPRODEVICE_H_
 
 #include <string>
+#include <vector>
 #include "ola/DmxBuffer.h"
 #include "olad/TokenBucket.h"
 #include "olad/PluginAdaptor.h"
@@ -62,7 +63,15 @@ class UsbProDevice: public UsbSerialDevice {
     void PrePortStop();
 
   private:
-    void UpdateParams(bool status, const usb_pro_parameters &params);
+    struct PortParams {
+      bool got_parameters;
+      uint8_t break_time;
+      uint8_t mab_time;
+      uint8_t rate;
+    };
+
+    void UpdateParams(unsigned int port_id, bool status,
+                      const usb_pro_parameters &params);
 
     void HandleParametersRequest(RpcController *controller,
                                  const Request *request,
@@ -72,6 +81,7 @@ class UsbProDevice: public UsbSerialDevice {
     void HandleParametersResponse(RpcController *controller,
                                   string *response,
                                   google::protobuf::Closure *done,
+                                  unsigned int port_id,
                                   bool status,
                                   const usb_pro_parameters &params);
 
@@ -80,13 +90,11 @@ class UsbProDevice: public UsbSerialDevice {
                              string *response,
                              google::protobuf::Closure *done);
 
+    static string SerialToString(uint32_t serial);
+
     EnttecUsbProWidget *m_pro_widget;
     string m_serial;
-
-    bool m_got_parameters;
-    uint8_t m_break_time;
-    uint8_t m_mab_time;
-    uint8_t m_rate;
+    vector<PortParams> m_port_params;
 };
 
 
@@ -95,24 +103,25 @@ class UsbProDevice: public UsbSerialDevice {
  */
 class UsbProInputPort: public BasicInputPort {
   public:
+    // The EnttecPort is owner by the caller.
     UsbProInputPort(UsbProDevice *parent,
-                    EnttecUsbProWidget *widget,
+                    EnttecPort *port,
                     unsigned int id,
                     ola::PluginAdaptor *plugin_adaptor,
                     const string &serial)
         : BasicInputPort(parent, id, plugin_adaptor),
           m_serial(serial),
-          m_widget(widget) {}
+          m_port(port) {}
 
     const DmxBuffer &ReadDMX() const {
-      return m_widget->FetchDMX();
+      return m_port->FetchDMX();
     }
 
     string Description() const { return "Serial #: " + m_serial; }
 
   private:
     const string m_serial;
-    EnttecUsbProWidget *m_widget;
+    EnttecPort *m_port;
 };
 
 
@@ -121,8 +130,9 @@ class UsbProInputPort: public BasicInputPort {
  */
 class UsbProOutputPort: public BasicOutputPort {
   public:
+    // The EnttecPort is owner by the caller.
     UsbProOutputPort(UsbProDevice *parent,
-                     EnttecUsbProWidget *widget,
+                     EnttecPort *port,
                      unsigned int id,
                      const string &serial,
                      const TimeStamp *wake_time,
@@ -130,43 +140,41 @@ class UsbProOutputPort: public BasicOutputPort {
                      unsigned int rate)
         : BasicOutputPort(parent, id, true, true),
           m_serial(serial),
-          m_widget(widget),
+          m_port(port),
           m_bucket(max_burst, rate, max_burst, *wake_time),
           m_wake_time(wake_time) {}
 
-    bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
+    bool WriteDMX(const DmxBuffer &buffer, uint8_t) {
       if (m_bucket.GetToken(*m_wake_time))
-        return m_widget->SendDMX(buffer);
+        return m_port->SendDMX(buffer);
       else
         OLA_INFO << "Port rated limited, dropping frame";
       return true;
-      (void) priority;
     }
 
-    void PostSetUniverse(Universe *old_universe, Universe *new_universe) {
+    void PostSetUniverse(Universe*, Universe *new_universe) {
       if (!new_universe)
-        m_widget->ChangeToReceiveMode(false);
-      (void) old_universe;
+        m_port->ChangeToReceiveMode(false);
     }
 
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback) {
-      m_widget->SendRDMRequest(request, callback);
+      m_port->SendRDMRequest(request, callback);
     }
 
     void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
-      m_widget->RunFullDiscovery(callback);
+      m_port->RunFullDiscovery(callback);
     }
 
     void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
-      m_widget->RunIncrementalDiscovery(callback);
+      m_port->RunIncrementalDiscovery(callback);
     }
 
     string Description() const { return "Serial #: " + m_serial; }
 
   private:
     const string m_serial;
-    EnttecUsbProWidget *m_widget;
+    EnttecPort *m_port;
     TokenBucket m_bucket;
     const TimeStamp *m_wake_time;
 };

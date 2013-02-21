@@ -57,6 +57,18 @@ namespace network {
 using std::string;
 using std::vector;
 
+class SocketCloser {
+  public:
+    SocketCloser(int sd) : m_sd(sd) {}
+    ~SocketCloser() {
+      close(m_sd);
+    }
+
+  private:
+    int m_sd;
+};
+
+
 /*
  * Return a vector of interfaces on the system.
  */
@@ -74,6 +86,8 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
     OLA_WARN << "Could not create socket " << strerror(errno);
     return interfaces;
   }
+
+  SocketCloser closer(sd);
 
   // use ioctl to get a listing of interfaces
   char *buffer;  // holds the iface data
@@ -198,7 +212,6 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
       HardwareAddressToString(interface.hw_address);
     interfaces.push_back(interface);
   }
-  close(sd);
   delete[] buffer;
   return interfaces;
 }

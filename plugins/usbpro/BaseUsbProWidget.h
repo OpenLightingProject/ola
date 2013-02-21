@@ -60,6 +60,7 @@ class BaseUsbProWidget: public SerialWidgetInterface {
     static const uint8_t SERIAL_LABEL = 10;
     static const uint8_t MANUFACTURER_LABEL = 77;
     static const uint8_t DEVICE_LABEL = 78;
+    static const uint8_t HARDWARE_VERSION_LABEL = 14;
 
   private:
     typedef enum {

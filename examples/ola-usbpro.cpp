@@ -46,12 +46,13 @@ typedef enum {
 
 typedef struct {
   config_mode mode;  // config_mode
-  string command;   // argv[0]
-  int device_id;    // device id
-  bool help;        // help
-  int brk;          // brk
-  int mab;          // mab
-  int rate;         // rate
+  string command;    // argv[0]
+  int device_id;     // device id
+  int port;          // port
+  bool help;         // help
+  int brk;           // brk
+  int mab;           // mab
+  int rate;          // rate
 } options;
 
 
@@ -67,6 +68,7 @@ class UsbProConfigurator: public OlaConfigurator {
     void SendConfigRequest();
     bool SendParametersRequest();
     bool SendSerialRequest();
+
   private:
     void DisplayParameters(const ola::plugin::usbpro::ParameterReply &reply);
     void DisplaySerial(const ola::plugin::usbpro::SerialNumberReply &reply);
@@ -130,6 +132,7 @@ bool UsbProConfigurator::SendParametersRequest() {
 
   ola::plugin::usbpro::ParameterRequest *parameter_request =
     request.mutable_parameters();
+  parameter_request->set_port_id(m_opts.port);
   if (m_opts.brk != K_INVALID_VALUE)
     parameter_request->set_break_time(m_opts.brk);
   if (m_opts.mab != K_INVALID_VALUE)
@@ -183,6 +186,7 @@ void UsbProConfigurator::DisplaySerial(
 void InitOptions(options *opts) {
   opts->mode = MODE_PARAM;
   opts->device_id = K_INVALID_VALUE;
+  opts->port = K_INVALID_VALUE;
   opts->help = false;
   opts->brk = K_INVALID_VALUE;
   opts->mab = K_INVALID_VALUE;
@@ -199,6 +203,7 @@ int ParseOptions(int argc, char *argv[], options *opts) {
       {"dev",     required_argument,  0, 'd'},
       {"help",    no_argument,        0, 'h'},
       {"mab",     required_argument,  0, 'm'},
+      {"port",    required_argument,  0, 'p'},
       {"rate",    required_argument,  0, 'r'},
       {"serial",  required_argument,  0, 's'},
       {0, 0, 0, 0}
@@ -227,6 +232,9 @@ int ParseOptions(int argc, char *argv[], options *opts) {
       case 'm':
         opts->mab = atoi(optarg);
         break;
+      case 'p':
+        opts->port = atoi(optarg);
+        break;
       case 'r':
         opts->rate = atoi(optarg);
         break;
@@ -252,6 +260,7 @@ void DisplayHelpAndExit(const options &opts) {
     "  -d, --dev <device>  The device to configure\n"
     "  -h, --help          Display this help message and exit.\n"
     "  -m, --mab <mab>     Set the make after-break-time (1 - 127)\n"
+    "  -p, --port <port>   The port to configure\n"
     "  -r, --rate <rate>   Set the transmission rate (1 - 40).\n"
     "  -s, --serial        Get the serial number.\n" <<
     endl;
@@ -283,6 +292,9 @@ int main(int argc, char *argv[]) {
   CheckOptions(&opts);
 
   if (opts.help || opts.device_id < 0 || opts.mode == NONE)
+    DisplayHelpAndExit(opts);
+
+  if (opts.mode == MODE_PARAM && opts.port == K_INVALID_VALUE)
     DisplayHelpAndExit(opts);
 
   UsbProConfigurator configurator(opts);

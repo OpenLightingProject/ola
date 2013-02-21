@@ -33,6 +33,8 @@ message ParameterReply {
  * read.
  */
 message ParameterRequest {
+  required uint32 port_id = 4;
+
   optional uint32 break_time = 1;
   optional uint32 mab_time = 2;
   optional uint32 rate = 3;
