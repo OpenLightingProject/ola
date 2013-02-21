@@ -205,7 +205,7 @@ int ParseOptions(int argc, char *argv[], options *opts) {
       {"mab",     required_argument,  0, 'm'},
       {"port",    required_argument,  0, 'p'},
       {"rate",    required_argument,  0, 'r'},
-      {"serial",  required_argument,  0, 's'},
+      {"serial",  no_argument,  0, 's'},
       {0, 0, 0, 0}
     };
 
