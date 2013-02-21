@@ -213,7 +213,7 @@ int ParseOptions(int argc, char *argv[], options *opts) {
   int option_index = 0;
 
   while (1) {
-    c = getopt_long(argc, argv, "b:d:hm:r:s", long_options, &option_index);
+    c = getopt_long(argc, argv, "b:d:hm:p:r:s", long_options, &option_index);
     if (c == -1)
       break;
 
