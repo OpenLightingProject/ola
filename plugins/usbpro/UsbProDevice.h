@@ -59,6 +59,8 @@ class UsbProDevice: public UsbSerialDevice {
                    string *response,
                    google::protobuf::Closure *done);
 
+    bool AllowMultiPortPatching() const { return true; }
+
   protected:
     void PrePortStop();
 
