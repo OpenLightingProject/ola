@@ -710,8 +710,10 @@ class EnttecUsbProWidgetImpl : public BaseUsbProWidget {
                      uint8_t label, const uint8_t *data, unsigned int length);
     void HandlePortAssignment(const uint8_t *data, unsigned int length);
     void AddPort(const OperationLabels &ops, unsigned int queue_size);
+    void EnableSecondPort();
 
     static const uint8_t PORT_ASSIGNMENT_LABEL = 141;
+    static const uint8_t SET_PORT_ASSIGNMENT_LABEL = 145;
 };
 
 
@@ -729,8 +731,10 @@ EnttecUsbProWidgetImpl::EnttecUsbProWidgetImpl(
             options.serial) {
   AddPort(OperationLabels::Port1Operations(), options.queue_size);
 
-  if (options.dual_ports)
+  if (options.dual_ports) {
     AddPort(OperationLabels::Port2Operations(), options.queue_size);
+    EnableSecondPort();
+  }
 }
 
 
@@ -843,8 +847,10 @@ void EnttecUsbProWidgetImpl::HandlePortAssignment(const uint8_t *data,
     port2_assignment = data[1];
   }
   PortAssignmentCallbacks::iterator iter = m_port_assignment_callbacks.begin();
-  for (; iter != m_port_assignment_callbacks.end(); ++iter)
+  for (; iter != m_port_assignment_callbacks.end(); ++iter) {
     (*iter)->Run(ok, port1_assignment, port2_assignment);
+  }
+  m_port_assignment_callbacks.clear();
 }
 
 
@@ -857,6 +863,13 @@ void EnttecUsbProWidgetImpl::AddPort(const OperationLabels &ops,
   m_port_impls.push_back(impl);
   EnttecPort *port = new EnttecPort(impl, queue_size);
   m_ports.push_back(port);
+}
+
+
+void EnttecUsbProWidgetImpl::EnableSecondPort() {
+  uint8_t data[] = {1, 1};
+  if (!SendCommand(SET_PORT_ASSIGNMENT_LABEL, data, sizeof(data)))
+    OLA_INFO << "Failed to enable second port";
 }
 
 // EnttecUsbProWidget
