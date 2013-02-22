@@ -768,6 +768,7 @@ void EnttecUsbProWidgetImpl::Stop() {
     m_port_assignment_callbacks.begin();
   for (; cb_iter != m_port_assignment_callbacks.end(); ++cb_iter)
     (*cb_iter)->Run(false, 0, 0);
+  m_port_assignment_callbacks.clear();
 }
 
 
@@ -839,7 +840,7 @@ void EnttecUsbProWidgetImpl::HandlePortAssignment(const uint8_t *data,
   if (length == 2) {
     ok = true;
     port1_assignment = data[0];
-    port1_assignment = data[1];
+    port2_assignment = data[1];
   }
   PortAssignmentCallbacks::iterator iter = m_port_assignment_callbacks.begin();
   for (; iter != m_port_assignment_callbacks.end(); ++iter)
