@@ -683,6 +683,8 @@ class EnttecUsbProWidgetImpl : public BaseUsbProWidget {
         const EnttecUsbProWidget::EnttecUsbProWidgetOptions &options);
     ~EnttecUsbProWidgetImpl();
 
+    void GetPortAssignments(
+        EnttecUsbProWidget::EnttecUsbProPortAssignmentCallback *callback);
     void Stop();
 
     unsigned int PortCount() const { return m_ports.size(); }
@@ -691,17 +693,24 @@ class EnttecUsbProWidgetImpl : public BaseUsbProWidget {
     bool SendCommand(uint8_t label, const uint8_t *data, unsigned int length);
 
   private:
+    typedef vector<EnttecUsbProWidget::EnttecUsbProPortAssignmentCallback*>
+      PortAssignmentCallbacks;
+
     vector<EnttecPort*> m_ports;
     vector<EnttecPortImpl*> m_port_impls;
     auto_ptr<EnttecPortImpl::SendCallback> m_send_cb;
     UID m_uid;
+    PortAssignmentCallbacks m_port_assignment_callbacks;
 
     // We override handle message to catch the messages, and dispatch them to
     // the correct port.
     void HandleMessage(uint8_t label, const uint8_t *data, unsigned int length);
     void HandleLabel(EnttecPortImpl *port, const OperationLabels &ops,
                      uint8_t label, const uint8_t *data, unsigned int length);
+    void HandlePortAssignment(const uint8_t *data, unsigned int length);
     void AddPort(const OperationLabels &ops, unsigned int queue_size);
+
+    static const uint8_t PORT_ASSIGNMENT_LABEL = 141;
 };
 
 
@@ -731,6 +740,21 @@ EnttecUsbProWidgetImpl::~EnttecUsbProWidgetImpl() {
 }
 
 
+void EnttecUsbProWidgetImpl::GetPortAssignments(
+    EnttecUsbProWidget::EnttecUsbProPortAssignmentCallback *callback) {
+  if (m_ports.size() == 1) {
+    // fake a response
+    callback->Run(true, 1, 0);
+    return;
+  }
+
+  m_port_assignment_callbacks.push_back(callback);
+  if (!SendCommand(PORT_ASSIGNMENT_LABEL, NULL, 0)) {
+    callback->Run(false, 1, 0);
+  }
+}
+
+
 /**
  * Stop this widget
  */
@@ -738,6 +762,11 @@ void EnttecUsbProWidgetImpl::Stop() {
   vector<EnttecPortImpl*>::iterator iter = m_port_impls.begin();
   for (; iter != m_port_impls.end(); ++iter)
     (*iter)->Stop();
+
+  PortAssignmentCallbacks::iterator cb_iter =
+    m_port_assignment_callbacks.begin();
+  for (; cb_iter != m_port_assignment_callbacks.end(); ++cb_iter)
+    (*cb_iter)->Run(false, 0, 0);
 }
 
 
@@ -766,7 +795,9 @@ bool EnttecUsbProWidgetImpl::SendCommand(uint8_t label, const uint8_t *data,
 void EnttecUsbProWidgetImpl::HandleMessage(uint8_t label,
                                            const uint8_t *data,
                                            unsigned int length) {
-  if (label > 128 && m_ports.size() > 1) {
+  if (label == PORT_ASSIGNMENT_LABEL) {
+    HandlePortAssignment(data, length);
+  } else if (label > 128 && m_ports.size() > 1) {
     HandleLabel(m_port_impls[1], OperationLabels::Port2Operations(), label,
                 data, length);
   } else {
@@ -794,6 +825,26 @@ void EnttecUsbProWidgetImpl::HandleLabel(EnttecPortImpl *port,
         static_cast<int>(label) << ", length " << length;
   }
 }
+
+
+/**
+ * Handle a port assignment message
+ */
+void EnttecUsbProWidgetImpl::HandlePortAssignment(const uint8_t *data,
+                                                  unsigned int length) {
+  bool ok = false;
+  uint8_t port1_assignment = 0;
+  uint8_t port2_assignment = 0;
+  if (length == 2) {
+    ok = true;
+    port1_assignment = data[0];
+    port1_assignment = data[1];
+  }
+  PortAssignmentCallbacks::iterator iter = m_port_assignment_callbacks.begin();
+  for (; iter != m_port_assignment_callbacks.end(); ++iter)
+    (*iter)->Run(ok, port1_assignment, port2_assignment);
+}
+
 
 /**
  * Add a port to this widget with the given operations.
@@ -823,6 +874,12 @@ EnttecUsbProWidget::~EnttecUsbProWidget() {
   // delete the controller after the impl because the controller owns the
   // callback
   delete m_impl;
+}
+
+
+void EnttecUsbProWidget::GetPortAssignments(
+    EnttecUsbProPortAssignmentCallback *callback) {
+  m_impl->GetPortAssignments(callback);
 }
 
 void EnttecUsbProWidget::Stop() {
