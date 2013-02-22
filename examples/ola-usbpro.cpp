@@ -239,7 +239,7 @@ int ParseOptions(int argc, char *argv[], options *opts) {
       {"mab",     required_argument,  0, 'm'},
       {"port",    required_argument,  0, 'p'},
       {"rate",    required_argument,  0, 'r'},
-      {"serial",  required_argument,  0, 's'},
+      {"serial",  no_argument,  0, 's'},
       {0, 0, 0, 0}
     };
 
@@ -247,7 +247,7 @@ int ParseOptions(int argc, char *argv[], options *opts) {
   int option_index = 0;
 
   while (1) {
-    c = getopt_long(argc, argv, "ab:d:hm:r:s", long_options, &option_index);
+    c = getopt_long(argc, argv, "ab:d:hm:p:r:s", long_options, &option_index);
     if (c == -1)
       break;
 
