@@ -284,7 +284,7 @@ void UsbProDevice::HandlePortAssignmentResponse(RpcController *controller,
     controller->SetFailed("Get Port Assignments failed");
   } else {
     Reply reply;
-    reply.set_type(ola::plugin::usbpro::Reply::USBPRO_PARAMETER_REPLY);
+    reply.set_type(ola::plugin::usbpro::Reply::USBPRO_PORT_ASSIGNMENT_REPLY);
     ola::plugin::usbpro::PortAssignmentReply *port_assignment_reply =
       reply.mutable_port_assignment();
     port_assignment_reply->set_port_assignment1(port1_assignment);
