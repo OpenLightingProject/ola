@@ -288,7 +288,7 @@ void UsbProDevice::HandlePortAssignmentResponse(RpcController *controller,
     ola::plugin::usbpro::PortAssignmentReply *port_assignment_reply =
       reply.mutable_port_assignment();
     port_assignment_reply->set_port_assignment1(port1_assignment);
-    port_assignment_reply->set_port_assignment1(port2_assignment);
+    port_assignment_reply->set_port_assignment2(port2_assignment);
     reply.SerializeToString(response);
   }
   done->Run();
