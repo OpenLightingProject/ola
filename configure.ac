@@ -197,6 +197,7 @@ PLUGIN_SUPPORT(opendmx, USE_OPENDMX)
 PLUGIN_SUPPORT(pathport, USE_PATHPORT)
 PLUGIN_SUPPORT(sandnet, USE_SANDNET)
 PLUGIN_SUPPORT(shownet, USE_SHOWNET)
+PLUGIN_SUPPORT(spi, USE_SPI)
 PLUGIN_SUPPORT(stageprofi, USE_STAGEPROFI)
 PLUGIN_SUPPORT(usbpro, USE_USBPRO)
 
@@ -635,6 +636,7 @@ AC_OUTPUT( Makefile \
     plugins/pathport/Makefile \
     plugins/sandnet/Makefile \
     plugins/shownet/Makefile \
+    plugins/spi/Makefile \
     plugins/stageprofi/Makefile \
     plugins/usbdmx/Makefile \
     plugins/ftdidmx/Makefile \
