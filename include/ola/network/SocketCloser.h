@@ -32,7 +32,14 @@ class SocketCloser {
       : m_fd(fd) {
     }
     ~SocketCloser() {
-      close(m_fd);
+      if (m_fd >= 0)
+        close(m_fd);
+    }
+
+    int Release() {
+      int fd = m_fd;
+      m_fd = -1;
+      return fd;
     }
   private:
     int m_fd;
