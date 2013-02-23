@@ -101,11 +101,12 @@ bool SPIOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t) {
   buffer.Get(m_output_data, &length);
 
   struct spi_ioc_transfer spi;
+  memset(&spi, 0, sizeof(spi));
   spi.tx_buf = reinterpret_cast<__u64>(m_output_data);
   spi.len = length;
   int bytes_written = ioctl(m_fd, SPI_IOC_MESSAGE(1), &spi);
   if (bytes_written != static_cast<int>(length)) {
-    OLA_WARN << "Failed to write all the SPI data";
+    OLA_WARN << "Failed to write all the SPI data: " << strerror(errno);;
     return false;
   }
   return true;
