@@ -50,24 +50,13 @@
 #include "ola/Logging.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/network/SocketCloser.h"
 
 namespace ola {
 namespace network {
 
 using std::string;
 using std::vector;
-
-class SocketCloser {
-  public:
-    SocketCloser(int sd) : m_sd(sd) {}
-    ~SocketCloser() {
-      close(m_sd);
-    }
-
-  private:
-    int m_sd;
-};
-
 
 /*
  * Return a vector of interfaces on the system.
