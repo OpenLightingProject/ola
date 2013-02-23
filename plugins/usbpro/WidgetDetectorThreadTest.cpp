@@ -204,6 +204,7 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
     }
 
     static const uint8_t USB_PRO_MKII_API_LABEL = 13;
+    static const uint8_t SET_PORT_ASSIGNMENTS = 145;
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(WidgetDetectorThreadTest);
@@ -359,10 +360,13 @@ void WidgetDetectorThreadTest::testUsbProMkIIWidget() {
       BaseUsbProWidget::HARDWARE_VERSION_LABEL,
       &hardware_version, sizeof(hardware_version));
 
-  // expect the unlock message
+  // expect the unlock message and then the port enable
   const uint8_t unlock_key[] = {0xd7, 0xb2, 0x11, 0x0d};
   m_endpoint->AddExpectedUsbProMessage(USB_PRO_MKII_API_LABEL, unlock_key,
                                        sizeof(unlock_key));
+  const uint8_t port_enable[] = {1, 1};
+  m_endpoint->AddExpectedUsbProMessage(SET_PORT_ASSIGNMENTS, port_enable,
+                                       sizeof(port_enable));
 
   m_expect_dual_port_enttec_widget = true;
   m_thread->Start();

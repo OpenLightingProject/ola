@@ -59,6 +59,8 @@ class UsbProDevice: public UsbSerialDevice {
                    string *response,
                    google::protobuf::Closure *done);
 
+    bool AllowMultiPortPatching() const { return true; }
+
   protected:
     void PrePortStop();
 
@@ -89,6 +91,18 @@ class UsbProDevice: public UsbSerialDevice {
                              const Request *request,
                              string *response,
                              google::protobuf::Closure *done);
+
+    void HandlePortAssignmentRequest(RpcController *controller,
+                                     const Request *request,
+                                     string *response,
+                                     google::protobuf::Closure *done);
+
+    void HandlePortAssignmentResponse(RpcController *controller,
+                                      string *response,
+                                      google::protobuf::Closure *done,
+                                      bool status,
+                                      uint8_t port1_assignment,
+                                      uint8_t port2_assignment);
 
     static string SerialToString(uint32_t serial);
 

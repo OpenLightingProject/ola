@@ -41,6 +41,7 @@ typedef enum {
   NONE,
   MODE_PARAM,
   MODE_SERIAL,
+  MODE_PORT_ASSIGNMENT,
 } config_mode;
 
 
@@ -68,10 +69,13 @@ class UsbProConfigurator: public OlaConfigurator {
     void SendConfigRequest();
     bool SendParametersRequest();
     bool SendSerialRequest();
+    bool SendPortAssignmentRequest();
 
   private:
     void DisplayParameters(const ola::plugin::usbpro::ParameterReply &reply);
     void DisplaySerial(const ola::plugin::usbpro::SerialNumberReply &reply);
+    void DisplayPortAssignment(
+        const ola::plugin::usbpro::PortAssignmentReply &reply);
     options m_opts;
 };
 
@@ -97,8 +101,13 @@ void UsbProConfigurator::HandleConfigResponse(const string &reply,
     DisplayParameters(reply_pb.parameters());
     return;
   } else if (reply_pb.type() == ola::plugin::usbpro::Reply::USBPRO_SERIAL_REPLY
-      && reply_pb.has_serial_number()) {
+             && reply_pb.has_serial_number()) {
     DisplaySerial(reply_pb.serial_number());
+    return;
+  } else if (reply_pb.type() ==
+             ola::plugin::usbpro::Reply::USBPRO_PORT_ASSIGNMENT_REPLY
+             && reply_pb.has_port_assignment()) {
+    DisplayPortAssignment(reply_pb.port_assignment());
     return;
   }
   cout << "Invalid response type or missing options field" << endl;
@@ -115,6 +124,9 @@ void UsbProConfigurator::SendConfigRequest() {
       break;
     case MODE_SERIAL:
       SendSerialRequest();
+      break;
+    case MODE_PORT_ASSIGNMENT:
+      SendPortAssignmentRequest();
       break;
     default:
       cout << "Unknown mode" << endl;
@@ -154,6 +166,17 @@ bool UsbProConfigurator::SendSerialRequest() {
 
 
 /*
+ * Send a get port assignment request
+ */
+bool UsbProConfigurator::SendPortAssignmentRequest() {
+  ola::plugin::usbpro::Request request;
+  request.set_type(
+      ola::plugin::usbpro::Request::USBPRO_PORT_ASSIGNMENT_REQUEST);
+  return SendMessage(request);
+}
+
+
+/*
  * Display the widget parameters
  */
 void UsbProConfigurator::DisplayParameters(
@@ -177,6 +200,17 @@ void UsbProConfigurator::DisplaySerial(
   string serial_number = reply.serial();
   cout << "Device: " << m_alias << endl;
   cout << "Serial: " << reply.serial() << endl;
+}
+
+
+/*
+ * Display the port assignments
+ */
+void UsbProConfigurator::DisplayPortAssignment(
+    const ola::plugin::usbpro::PortAssignmentReply &reply) {
+  cout << "Device: " << m_alias << endl;
+  cout << "Port 1: " << reply.port_assignment1() << endl;
+  cout << "Port 2: " << reply.port_assignment2() << endl;
 }
 
 
@@ -213,12 +247,15 @@ int ParseOptions(int argc, char *argv[], options *opts) {
   int option_index = 0;
 
   while (1) {
-    c = getopt_long(argc, argv, "b:d:hm:p:r:s", long_options, &option_index);
+    c = getopt_long(argc, argv, "ab:d:hm:p:r:s", long_options, &option_index);
     if (c == -1)
       break;
 
     switch (c) {
       case 0:
+        break;
+      case 'a':
+        opts->mode = MODE_PORT_ASSIGNMENT;
         break;
       case 'b':
         opts->brk = atoi(optarg);
@@ -256,6 +293,7 @@ void DisplayHelpAndExit(const options &opts) {
   cout << "Usage: " << opts.command <<
     " -d <dev_id> [--serial | -b <brk> -m <mab> -r <rate>]\n\n"
     "Configure Enttec Usb Pro Devices managed by OLA.\n\n"
+    "  -a, --assignments   Get the port assignments.\n" <<
     "  -b, --brk <brk>     Set the break time (9 - 127)\n"
     "  -d, --dev <device>  The device to configure\n"
     "  -h, --help          Display this help message and exit.\n"
