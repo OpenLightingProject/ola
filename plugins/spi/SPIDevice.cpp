@@ -28,9 +28,9 @@
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
 #include "olad/Universe.h"
-#include "plugins/SPI/SPIDevice.h"
-#include "plugins/SPI/SPIPort.h"
-#include "plugins/SPI/SPIPlugin.h"
+#include "plugins/spi/SPIDevice.h"
+#include "plugins/spi/SPIPort.h"
+#include "plugins/spi/SPIPlugin.h"
 
 namespace ola {
 namespace plugin {
