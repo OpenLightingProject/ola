@@ -18,7 +18,11 @@
  * Copyright (C) 2013 Simon Newton
  */
 
+#include <errno.h>
+#include <fcntl.h>
 #include <linux/spi/spidev.h>
+#include <string.h>
+#include <sys/ioctl.h>
 #include <sstream>
 #include <string>
 #include "ola/Logging.h"
@@ -37,7 +41,7 @@ SPIOutputPort::SPIOutputPort(SPIDevice *parent, const string &spi_device)
       m_spi_device_name(spi_device),
       m_pixel_count(25),
       m_fd(-1),
-      m_output_data(NULL);
+      m_output_data(NULL),
       m_spi_mode(0),
       m_spi_bits_per_word(8),
       m_spi_delay(0),
@@ -63,7 +67,7 @@ bool SPIOutputPort::Init() {
   int fd = open(m_device_path.c_str(), O_RDWR);
   ola::network::SocketCloser closer(fd);
   if (fd < 0) {
-    OLA_ERROR << "Failed to open " << m_device_path << " : " << strerror(errno);
+    OLA_WARN << "Failed to open " << m_device_path << " : " << strerror(errno);
     return false;
   }
 
@@ -93,14 +97,16 @@ bool SPIOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t) {
   if (!m_output_data)
     m_output_data = new uint8_t[m_pixel_count * 3];
 
-  buffer.Get(m_output_data, m_pixel_count * 3);
+  unsigned int length = m_pixel_count * 3;
+  buffer.Get(m_output_data, &length);
 
   struct spi_ioc_transfer spi;
-  spi.tx_buf = m_output_data;
-  spi.len = m_pixel_count * 3;
-  int bytes_written = ioctl(fd, SPI_IOC_MESSAGE(1), &spi);
-  if (bytes_written != m_pixel_count * 3) {
-    OLA_WARN << "Failed to write all the SPI data";
+  memset(&spi, 0, sizeof(spi));
+  spi.tx_buf = reinterpret_cast<__u64>(m_output_data);
+  spi.len = length;
+  int bytes_written = ioctl(m_fd, SPI_IOC_MESSAGE(1), &spi);
+  if (bytes_written != static_cast<int>(length)) {
+    OLA_WARN << "Failed to write all the SPI data: " << strerror(errno);;
     return false;
   }
   return true;
