@@ -32,16 +32,23 @@ namespace spi {
 
 class SPIOutputPort: public BasicOutputPort {
   public:
-    SPIOutputPort(SPIDevice *parent, const string &spi_device);
+    SPIOutputPort(SPIDevice *parent, const string &spi_device,
+                  const UID &uid);
     ~SPIOutputPort();
 
     string Description() const { return m_spi_device_name; }
     bool Init();
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
+    void RunFullDiscovery(RDMDiscoveryCallback *callback);
+    void RunIncrementalDiscovery(RDMDiscoveryCallback *callback);
+    void SendRDMRequest(const ola::rdm::RDMRequest *request,
+                        ola::rdm::RDMCallback *callback);
+
   private:
     const string m_device_path;
     string m_spi_device_name;
+    const UID m_uid;
     const unsigned int m_pixel_count;
     int m_fd;
     uint8_t *m_output_data;

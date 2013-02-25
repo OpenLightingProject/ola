@@ -36,10 +36,7 @@ namespace ola {
 namespace plugin {
 namespace spi {
 
-
-const char SPIDevice::SPI_DEVICE_PREFIX_KEY[] = "device_prefix";
-const char SPIDevice::DEFAULT_SPI_DEVICE_PREFIX[] = "spidev";
-const char SPIDevice::SPI_DEVICE_NAME[] = "SPI Device";
+const char SPIDevice::SPI_DEVICE_NAME[] = "SPI Plugin";
 
 /*
  * Create a new device
@@ -47,11 +44,12 @@ const char SPIDevice::SPI_DEVICE_NAME[] = "SPI Device";
 SPIDevice::SPIDevice(SPIPlugin *owner,
                      Preferences *prefs,
                      PluginAdaptor *plugin_adaptor,
-                     const string& spi_device)
+                     const string &spi_device,
+                     const UID &uid)
     : Device(owner, SPI_DEVICE_NAME),
       m_preferences(prefs),
       m_plugin_adaptor(plugin_adaptor) {
-  m_port = new SPIOutputPort(this, spi_device);
+  m_port = new SPIOutputPort(this, spi_device, uid);
 }
 
 

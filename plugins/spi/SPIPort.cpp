@@ -25,9 +25,13 @@
 #include <sys/ioctl.h>
 #include <sstream>
 #include <string>
-#include "ola/Logging.h"
+#include <vector>
 #include "ola/BaseTypes.h"
+#include "ola/Logging.h"
 #include "ola/network/SocketCloser.h"
+#include "ola/rdm/RDMEnums.h"
+#include "ola/rdm/UID.h"
+#include "ola/rdm/UIDSet.h"
 
 #include "plugins/spi/SPIPort.h"
 
@@ -35,10 +39,16 @@ namespace ola {
 namespace plugin {
 namespace spi {
 
-SPIOutputPort::SPIOutputPort(SPIDevice *parent, const string &spi_device)
-    : BasicOutputPort(parent, 0),
+using ola::rdm::UID;
+using ola::rdm::UIDSet;
+
+
+SPIOutputPort::SPIOutputPort(SPIDevice *parent, const string &spi_device,
+                             const UID &uid)
+    : BasicOutputPort(parent, 0, true),
       m_device_path(spi_device),
       m_spi_device_name(spi_device),
+      m_uid(uid),
       m_pixel_count(25),
       m_fd(-1),
       m_output_data(NULL),
@@ -72,14 +82,17 @@ bool SPIOutputPort::Init() {
   }
 
   if (ioctl(fd, SPI_IOC_WR_MODE, &m_spi_mode) < 0) {
+    OLA_WARN << "Failed to set SPI_IOC_WR_MODE for " << m_device_path;
     return false;
   }
 
   if (ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &m_spi_bits_per_word) < 0) {
+    OLA_WARN << "Failed to set SPI_IOC_WR_BITS_PER_WORD for " << m_device_path;
     return false;
   }
 
   if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &m_spi_speed) < 0) {
+    OLA_WARN << "Failed to set SPI_IOC_WR_MAX_SPEED_HZ for " << m_device_path;
     return false;
   }
   m_fd = closer.Release();
@@ -106,10 +119,34 @@ bool SPIOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t) {
   spi.len = length;
   int bytes_written = ioctl(m_fd, SPI_IOC_MESSAGE(1), &spi);
   if (bytes_written != static_cast<int>(length)) {
-    OLA_WARN << "Failed to write all the SPI data: " << strerror(errno);;
+    OLA_WARN << "Failed to write all the SPI data: " << strerror(errno);
     return false;
   }
   return true;
+}
+
+
+void SPIOutputPort::RunFullDiscovery(RDMDiscoveryCallback *callback) {
+  UIDSet uids;
+  uids.AddUID(m_uid);
+  callback->Run(uids);
+}
+
+
+void SPIOutputPort::RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
+  UIDSet uids;
+  uids.AddUID(m_uid);
+  callback->Run(uids);
+}
+
+
+void SPIOutputPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
+                                   ola::rdm::RDMCallback *callback) {
+  vector<string> packets;
+  delete request;
+  callback->Run(ola::rdm::RDM_UNKNOWN_UID,
+                NULL,
+                packets);
 }
 }  // spi
 }  // plugin

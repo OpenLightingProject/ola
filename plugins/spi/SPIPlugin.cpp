@@ -20,11 +20,13 @@
 
 #include <dirent.h>
 #include <errno.h>
+#include <memory>
 #include <string>
 #include <vector>
-#include "ola/StringUtils.h"
-#include "ola/Logging.h"
 #include "olad/PluginAdaptor.h"
+#include "ola/Logging.h"
+#include "ola/rdm/UID.h"
+#include "ola/StringUtils.h"
 #include "olad/Preferences.h"
 #include "plugins/spi/SPIDevice.h"
 #include "plugins/spi/SPIPlugin.h"
@@ -34,8 +36,36 @@ namespace ola {
 namespace plugin {
 namespace spi {
 
+using ola::rdm::UID;
+using std::auto_ptr;
+
 const char SPIPlugin::PLUGIN_NAME[] = "SPI";
 const char SPIPlugin::PLUGIN_PREFIX[] = "spi";
+const char SPIPlugin::SPI_DEVICE_PREFIX_KEY[] = "device_prefix";
+const char SPIPlugin::SPI_BASE_UID_KEY[] = "base_uid";
+const char SPIPlugin::DEFAULT_SPI_DEVICE_PREFIX[] = "spidev";
+const char SPIPlugin::DEFAULT_BASE_UID[] = "7a70:00000100";
+
+class UIDAllocator {
+  public:
+    explicit UIDAllocator(const UID &uid)
+      : m_esta_id(uid.ManufacturerId()),
+        m_device_id(uid.DeviceId()) {
+    }
+
+    UID *AllocateNext() {
+      if (m_device_id == UID::ALL_DEVICES)
+        return NULL;
+
+      UID *uid = new UID(m_esta_id, m_device_id);
+      m_device_id++;
+      return uid;
+    }
+
+  private:
+    uint16_t m_esta_id;
+    uint32_t m_device_id;
+};
 
 
 /*
@@ -43,14 +73,35 @@ const char SPIPlugin::PLUGIN_PREFIX[] = "spi";
  * For now we just have one device.
  */
 bool SPIPlugin::StartHook() {
+  const string uid_str = m_preferences->GetValue(SPI_BASE_UID_KEY);
+  auto_ptr<UID> base_uid(UID::FromString(uid_str));
+  if (!base_uid.get()) {
+    OLA_WARN << "Invalid UID " << uid_str << ", defaulting to "
+             << DEFAULT_BASE_UID;
+    base_uid.reset(UID::FromString(DEFAULT_BASE_UID));
+    if (!base_uid.get()) {
+      OLA_WARN << "Invalid UID " << DEFAULT_BASE_UID;
+      return false;
+    }
+  }
+
   vector<string> spi_files;
   vector<string> spi_prefixes = m_preferences->GetMultipleValue(
-      SPIDevice::SPI_DEVICE_PREFIX_KEY);
+      SPI_DEVICE_PREFIX_KEY);
   FindMatchingFiles("/dev", spi_prefixes, &spi_files);
+
+  UIDAllocator uid_allocator(*base_uid);
   vector<string>::const_iterator iter = spi_files.begin();
   for (; iter != spi_files.end(); ++iter) {
+    auto_ptr<UID> uid(uid_allocator.AllocateNext());
+    if (!uid.get()) {
+      OLA_WARN << "Insufficient UIDs remaining to allocate a UID for "
+               << *iter;
+      continue;
+    }
+
     SPIDevice *device = new SPIDevice(this, m_preferences, m_plugin_adaptor,
-                                      *iter);
+                                      *iter, *(uid.get()));
 
     if (!device)
       continue;
@@ -92,7 +143,10 @@ string SPIPlugin::Description() const {
 "\n"
 "This plugin allows you to control LED strings using SPI.\n"
 "\n"
-"--- Config file : ola-pathport.conf ---\n"
+"--- Config file : ola-spi.conf ---\n"
+"\n"
+"base_uid = <string>\n"
+"The starting UID to use for the devices, e.g. 7a70:00000100.\n"
 "\n"
 "device_prefix = <string>\n"
 "The prefix of files to match in /dev. Usually set to 'spidev'\n"
@@ -109,14 +163,17 @@ bool SPIPlugin::SetDefaultPreferences() {
   if (!m_preferences)
     return false;
 
-  save |= m_preferences->SetDefaultValue(SPIDevice::SPI_DEVICE_PREFIX_KEY,
+  save |= m_preferences->SetDefaultValue(SPI_DEVICE_PREFIX_KEY,
                                          StringValidator(),
-                                         SPIDevice::DEFAULT_SPI_DEVICE_PREFIX);
+                                         DEFAULT_SPI_DEVICE_PREFIX);
+  save |= m_preferences->SetDefaultValue(SPI_BASE_UID_KEY,
+                                         StringValidator(),
+                                         DEFAULT_BASE_UID);
 
   if (save)
     m_preferences->Save();
 
-  if (m_preferences->GetValue(SPIDevice::SPI_DEVICE_PREFIX_KEY).empty())
+  if (m_preferences->GetValue(SPI_DEVICE_PREFIX_KEY).empty())
     return false;
 
   return true;
