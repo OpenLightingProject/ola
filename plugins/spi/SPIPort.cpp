@@ -56,9 +56,9 @@ const uint16_t SPIOutputPort::SPI_DELAY = 0;
 const uint32_t SPIOutputPort::SPI_SPEED = 1000000;
 const uint8_t SPIOutputPort::SPI_BITS_PER_WORD = 8;
 const uint8_t SPIOutputPort::SPI_MODE = 0;
-const uint8_t SPIOutputPort::PERSONALITY_WS2801_INDIVIDUAL = 1;
-const uint8_t SPIOutputPort::PERSONALITY_WS2801_SIMULATANEOUS = 2;
-const uint8_t SPIOutputPort::PERSONALITY_LAST = 3;
+const uint8_t SPIOutputPort::PERSONALITY_WS2801_INDIVIDUAL = 0;
+const uint8_t SPIOutputPort::PERSONALITY_WS2801_SIMULATANEOUS = 1;
+const uint8_t SPIOutputPort::PERSONALITY_LAST = 2;
 
 SPIOutputPort::SPIOutputPort(SPIDevice *parent, const string &spi_device,
                              const UID &uid, uint8_t pixel_count)
@@ -586,7 +586,7 @@ void SPIOutputPort::HandleIdentifyDevice(const RDMRequest *request_ptr,
     if (request->ParamDataSize()) {
       response = NackWithReason(request.get(), ola::rdm::NR_FORMAT_ERROR);
     } else {
-      uint16_t identify_mode = m_identify_mode;
+      uint8_t identify_mode = m_identify_mode;
       response = GetResponseFromData(
           request.get(),
           reinterpret_cast<const uint8_t*>(&identify_mode),
