@@ -24,6 +24,7 @@
 #include <string>
 #include "olad/Device.h"
 #include "ola/io/SelectServer.h"
+#include "ola/rdm/UID.h"
 
 namespace ola {
 namespace plugin {
@@ -34,12 +35,11 @@ class SPIDevice: public ola::Device {
     SPIDevice(class SPIPlugin *owner,
               class Preferences *preferences,
               class PluginAdaptor *plugin_adaptor,
-              const string& spi_device);
+              const string &spi_device,
+              const ola::rdm::UID &uid,
+              uint8_t pixel_count);
 
     string DeviceId() const;
-
-    static const char SPI_DEVICE_PREFIX_KEY[];
-    static const char DEFAULT_SPI_DEVICE_PREFIX[];
 
   protected:
     bool StartHook();
