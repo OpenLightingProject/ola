@@ -36,7 +36,8 @@ class SPIDevice: public ola::Device {
               class Preferences *preferences,
               class PluginAdaptor *plugin_adaptor,
               const string &spi_device,
-              const ola::rdm::UID &uid);
+              const ola::rdm::UID &uid,
+              uint8_t pixel_count);
 
     string DeviceId() const;
 

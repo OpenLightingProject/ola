@@ -45,11 +45,12 @@ SPIDevice::SPIDevice(SPIPlugin *owner,
                      Preferences *prefs,
                      PluginAdaptor *plugin_adaptor,
                      const string &spi_device,
-                     const UID &uid)
+                     const UID &uid,
+                     uint8_t pixel_count)
     : Device(owner, SPI_DEVICE_NAME),
       m_preferences(prefs),
       m_plugin_adaptor(plugin_adaptor) {
-  m_port = new SPIOutputPort(this, spi_device, uid);
+  m_port = new SPIOutputPort(this, spi_device, uid, pixel_count);
 }
 
 
