@@ -52,9 +52,8 @@ class SPIOutputPort: public BasicOutputPort {
     const UID m_uid;
     const unsigned int m_pixel_count;
     int m_fd;
-    uint8_t *m_output_data;
     uint8_t m_personality;
-    uint16_t m_start_address;
+    uint16_t m_start_address;  // starts from 1
     bool m_identify_mode;
 
     uint16_t Footprint() const;
@@ -93,6 +92,7 @@ class SPIOutputPort: public BasicOutputPort {
     static const uint8_t PERSONALITY_WS2801_INDIVIDUAL;
     static const uint8_t PERSONALITY_WS2801_SIMULATANEOUS;
     static const uint8_t PERSONALITY_LAST;
+    static const uint16_t CHANNELS_PER_PIXEL;
 };
 }  // spi
 }  // plugin

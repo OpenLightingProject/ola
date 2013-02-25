@@ -59,6 +59,7 @@ const uint8_t SPIOutputPort::SPI_MODE = 0;
 const uint8_t SPIOutputPort::PERSONALITY_WS2801_INDIVIDUAL = 0;
 const uint8_t SPIOutputPort::PERSONALITY_WS2801_SIMULATANEOUS = 1;
 const uint8_t SPIOutputPort::PERSONALITY_LAST = 2;
+const uint16_t SPIOutputPort::CHANNELS_PER_PIXEL = 3;
 
 SPIOutputPort::SPIOutputPort(SPIDevice *parent, const string &spi_device,
                              const UID &uid, uint8_t pixel_count)
@@ -68,7 +69,6 @@ SPIOutputPort::SPIOutputPort(SPIDevice *parent, const string &spi_device,
       m_uid(uid),
       m_pixel_count(pixel_count),
       m_fd(-1),
-      m_output_data(NULL),
       m_personality(PERSONALITY_WS2801_INDIVIDUAL),
       m_start_address(1),
       m_identify_mode(false) {
@@ -81,8 +81,6 @@ SPIOutputPort::SPIOutputPort(SPIDevice *parent, const string &spi_device,
 SPIOutputPort::~SPIOutputPort() {
   if (m_fd >= 0)
     close(m_fd);
-  if (m_output_data)
-    delete[] m_output_data;
 }
 
 
@@ -126,17 +124,35 @@ bool SPIOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t) {
   if (m_fd < 0)
     return false;
 
-  if (!m_output_data)
-    m_output_data = new uint8_t[m_pixel_count * 3];
+  unsigned int length = m_pixel_count * CHANNELS_PER_PIXEL;
+  uint8_t *output_data = new uint8_t[length];
 
-  unsigned int length = m_pixel_count * 3;
-  buffer.Get(m_output_data, &length);
+  if (m_personality == PERSONALITY_WS2801_INDIVIDUAL) {
+    buffer.GetRange(m_start_address - 1, output_data, &length);
+  } else {
+    unsigned int pixel_data_length = CHANNELS_PER_PIXEL;
+    uint8_t pixel_data[CHANNELS_PER_PIXEL];
+    buffer.GetRange(m_start_address - 1, pixel_data,
+        &pixel_data_length);
+    if (pixel_data_length != CHANNELS_PER_PIXEL) {
+      OLA_INFO << "Insufficient DMX data, required " << CHANNELS_PER_PIXEL
+               << ", got " << pixel_data_length;
+      // insufficient data
+      delete[] output_data;
+      return true;
+    }
+    for (unsigned int i = 0; i < m_pixel_count; i++) {
+      memcpy(output_data + (i * CHANNELS_PER_PIXEL), pixel_data,
+             pixel_data_length);
+    }
+  }
 
   struct spi_ioc_transfer spi;
   memset(&spi, 0, sizeof(spi));
-  spi.tx_buf = reinterpret_cast<__u64>(m_output_data);
+  spi.tx_buf = reinterpret_cast<__u64>(output_data);
   spi.len = length;
   int bytes_written = ioctl(m_fd, SPI_IOC_MESSAGE(1), &spi);
+  delete[] output_data;
   if (bytes_written != static_cast<int>(length)) {
     OLA_WARN << "Failed to write all the SPI data: " << strerror(errno);
     return false;
@@ -232,9 +248,9 @@ uint16_t SPIOutputPort::Footprint() const {
  */
 uint16_t SPIOutputPort::PersonalityFootprint(uint8_t personality) const {
   if (personality == PERSONALITY_WS2801_INDIVIDUAL) {
-    return m_pixel_count * 3;
+    return m_pixel_count * CHANNELS_PER_PIXEL;
   } else {
-    return 3;
+    return CHANNELS_PER_PIXEL;
   }
 }
 
@@ -386,7 +402,7 @@ void SPIOutputPort::HandlePersonality(const RDMRequest *request_ptr,
       response = NackWithReason(request.get(), ola::rdm::NR_FORMAT_ERROR);
     } else {
       uint8_t personality = *request->ParamData();
-      if (personality >= PERSONALITY_LAST || personality == 0) {
+      if (personality > PERSONALITY_LAST || personality == 0) {
         response = NackWithReason(request.get(),
                                   ola::rdm::NR_DATA_OUT_OF_RANGE);
       } else if (m_start_address + PersonalityFootprint(personality - 1) - 1
