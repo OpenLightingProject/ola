@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * Device.cpp
  * Base implementation of the device class.
@@ -28,6 +28,7 @@
 #include <vector>
 
 #include "ola/Logging.h"
+#include "ola/stl/STLUtils.h"
 #include "olad/Device.h"
 #include "olad/Plugin.h"
 #include "olad/Port.h"
@@ -113,24 +114,19 @@ bool Device::AddPort(OutputPort *port) {
 }
 
 void Device::InputPorts(vector<InputPort*> *ports) const {
-  GenericFetchPortsVector(ports, m_input_ports);
+  STLValues(m_input_ports, ports);
 }
 
 
 void Device::OutputPorts(vector<OutputPort*> *ports) const {
-  GenericFetchPortsVector(ports, m_output_ports);
+  STLValues(m_output_ports, ports);
 }
 
 /*
  * Returns the InputPort with the id port_id
  */
 InputPort *Device::GetInputPort(unsigned int port_id) const {
-  map<unsigned int, InputPort*>::const_iterator iter =
-    m_input_ports.find(port_id);
-
-  if (iter == m_input_ports.end())
-    return NULL;
-  return iter->second;
+  return STLFindOrNull(m_input_ports, port_id);
 }
 
 
@@ -138,12 +134,7 @@ InputPort *Device::GetInputPort(unsigned int port_id) const {
  * Returns the OutputPort with the id port_id
  */
 OutputPort *Device::GetOutputPort(unsigned int port_id) const {
-  map<unsigned int, OutputPort *>::const_iterator iter =
-    m_output_ports.find(port_id);
-
-  if (iter == m_output_ports.end())
-    return NULL;
-  return iter->second;
+  return STLFindOrNull(m_output_ports, port_id);
 }
 
 
@@ -203,29 +194,11 @@ bool Device::GenericAddPort(PortClass *port,
   if (!port)
     return false;
 
-  typename map<unsigned int, PortClass*>::iterator iter =
-    port_map->find(port->PortId());
-  if (iter == port_map->end()) {
-    pair<unsigned int, PortClass*> p(port->PortId(), port);
-    port_map->insert(p);
-    return true;
-  } else if (iter->second != port) {
+  if (!STLInsertIfNotPresent(port_map, port->PortId(), port)) {
     OLA_WARN << "Attempt to insert a port but this port id is already " <<
       "associated with a diferent port.";
-    return true;
   }
   return true;
-}
-
-
-template<class PortClass>
-void Device::GenericFetchPortsVector(
-    vector<PortClass*> *ports,
-    const map<unsigned int, PortClass*> &port_map) const {
-  typename map<unsigned int, PortClass*>::const_iterator iter;
-  for (iter = port_map.begin(); iter != port_map.end(); ++iter) {
-    ports->push_back(iter->second);
-  }
 }
 
 

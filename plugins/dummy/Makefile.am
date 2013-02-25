@@ -3,8 +3,9 @@ libdir = $(plugindir)
 
 EXTRA_DIST = DummyPlugin.h DummyDevice.h DummyPort.h DummyResponder.h DummyRDMDevice.h
 
-lib_LTLIBRARIES = liboladummyresponder.la liboladummy.la
 
+if USE_DUMMY
+lib_LTLIBRARIES = liboladummyresponder.la liboladummy.la
 liboladummyresponder_la_SOURCES = DummyResponder.cpp DummyRDMDevice.cpp
 liboladummyresponder_la_LIBADD = ../../common/libolacommon.la
 
@@ -25,3 +26,4 @@ DummyPluginTester_LDADD = ./liboladummy.la \
                           $(CPPUNIT_LIBS) \
                           $(top_builddir)/olad/libolaserver.la \
                           ../../common/libolacommon.la
+endif

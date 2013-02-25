@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  *  ola-dev-info.cpp
  *  Displays the available devices and ports
@@ -41,17 +41,19 @@ typedef enum {
   NONE,
   MODE_PARAM,
   MODE_SERIAL,
+  MODE_PORT_ASSIGNMENT,
 } config_mode;
 
 
 typedef struct {
   config_mode mode;  // config_mode
-  string command;   // argv[0]
-  int device_id;    // device id
-  bool help;        // help
-  int brk;          // brk
-  int mab;          // mab
-  int rate;         // rate
+  string command;    // argv[0]
+  int device_id;     // device id
+  int port;          // port
+  bool help;         // help
+  int brk;           // brk
+  int mab;           // mab
+  int rate;          // rate
 } options;
 
 
@@ -67,9 +69,13 @@ class UsbProConfigurator: public OlaConfigurator {
     void SendConfigRequest();
     bool SendParametersRequest();
     bool SendSerialRequest();
+    bool SendPortAssignmentRequest();
+
   private:
     void DisplayParameters(const ola::plugin::usbpro::ParameterReply &reply);
     void DisplaySerial(const ola::plugin::usbpro::SerialNumberReply &reply);
+    void DisplayPortAssignment(
+        const ola::plugin::usbpro::PortAssignmentReply &reply);
     options m_opts;
 };
 
@@ -95,8 +101,13 @@ void UsbProConfigurator::HandleConfigResponse(const string &reply,
     DisplayParameters(reply_pb.parameters());
     return;
   } else if (reply_pb.type() == ola::plugin::usbpro::Reply::USBPRO_SERIAL_REPLY
-      && reply_pb.has_serial_number()) {
+             && reply_pb.has_serial_number()) {
     DisplaySerial(reply_pb.serial_number());
+    return;
+  } else if (reply_pb.type() ==
+             ola::plugin::usbpro::Reply::USBPRO_PORT_ASSIGNMENT_REPLY
+             && reply_pb.has_port_assignment()) {
+    DisplayPortAssignment(reply_pb.port_assignment());
     return;
   }
   cout << "Invalid response type or missing options field" << endl;
@@ -114,6 +125,9 @@ void UsbProConfigurator::SendConfigRequest() {
     case MODE_SERIAL:
       SendSerialRequest();
       break;
+    case MODE_PORT_ASSIGNMENT:
+      SendPortAssignmentRequest();
+      break;
     default:
       cout << "Unknown mode" << endl;
       Terminate();
@@ -130,6 +144,7 @@ bool UsbProConfigurator::SendParametersRequest() {
 
   ola::plugin::usbpro::ParameterRequest *parameter_request =
     request.mutable_parameters();
+  parameter_request->set_port_id(m_opts.port);
   if (m_opts.brk != K_INVALID_VALUE)
     parameter_request->set_break_time(m_opts.brk);
   if (m_opts.mab != K_INVALID_VALUE)
@@ -146,6 +161,17 @@ bool UsbProConfigurator::SendParametersRequest() {
 bool UsbProConfigurator::SendSerialRequest() {
   ola::plugin::usbpro::Request request;
   request.set_type(ola::plugin::usbpro::Request::USBPRO_SERIAL_REQUEST);
+  return SendMessage(request);
+}
+
+
+/*
+ * Send a get port assignment request
+ */
+bool UsbProConfigurator::SendPortAssignmentRequest() {
+  ola::plugin::usbpro::Request request;
+  request.set_type(
+      ola::plugin::usbpro::Request::USBPRO_PORT_ASSIGNMENT_REQUEST);
   return SendMessage(request);
 }
 
@@ -178,11 +204,23 @@ void UsbProConfigurator::DisplaySerial(
 
 
 /*
+ * Display the port assignments
+ */
+void UsbProConfigurator::DisplayPortAssignment(
+    const ola::plugin::usbpro::PortAssignmentReply &reply) {
+  cout << "Device: " << m_alias << endl;
+  cout << "Port 1: " << reply.port_assignment1() << endl;
+  cout << "Port 2: " << reply.port_assignment2() << endl;
+}
+
+
+/*
  * Init options
  */
 void InitOptions(options *opts) {
   opts->mode = MODE_PARAM;
   opts->device_id = K_INVALID_VALUE;
+  opts->port = K_INVALID_VALUE;
   opts->help = false;
   opts->brk = K_INVALID_VALUE;
   opts->mab = K_INVALID_VALUE;
@@ -199,8 +237,9 @@ int ParseOptions(int argc, char *argv[], options *opts) {
       {"dev",     required_argument,  0, 'd'},
       {"help",    no_argument,        0, 'h'},
       {"mab",     required_argument,  0, 'm'},
+      {"port",    required_argument,  0, 'p'},
       {"rate",    required_argument,  0, 'r'},
-      {"serial",  required_argument,  0, 's'},
+      {"serial",  no_argument,  0, 's'},
       {0, 0, 0, 0}
     };
 
@@ -208,12 +247,15 @@ int ParseOptions(int argc, char *argv[], options *opts) {
   int option_index = 0;
 
   while (1) {
-    c = getopt_long(argc, argv, "b:d:hm:r:s", long_options, &option_index);
+    c = getopt_long(argc, argv, "ab:d:hm:p:r:s", long_options, &option_index);
     if (c == -1)
       break;
 
     switch (c) {
       case 0:
+        break;
+      case 'a':
+        opts->mode = MODE_PORT_ASSIGNMENT;
         break;
       case 'b':
         opts->brk = atoi(optarg);
@@ -226,6 +268,9 @@ int ParseOptions(int argc, char *argv[], options *opts) {
         break;
       case 'm':
         opts->mab = atoi(optarg);
+        break;
+      case 'p':
+        opts->port = atoi(optarg);
         break;
       case 'r':
         opts->rate = atoi(optarg);
@@ -248,10 +293,12 @@ void DisplayHelpAndExit(const options &opts) {
   cout << "Usage: " << opts.command <<
     " -d <dev_id> [--serial | -b <brk> -m <mab> -r <rate>]\n\n"
     "Configure Enttec Usb Pro Devices managed by OLA.\n\n"
+    "  -a, --assignments   Get the port assignments.\n" <<
     "  -b, --brk <brk>     Set the break time (9 - 127)\n"
     "  -d, --dev <device>  The device to configure\n"
     "  -h, --help          Display this help message and exit.\n"
     "  -m, --mab <mab>     Set the make after-break-time (1 - 127)\n"
+    "  -p, --port <port>   The port to configure\n"
     "  -r, --rate <rate>   Set the transmission rate (1 - 40).\n"
     "  -s, --serial        Get the serial number.\n" <<
     endl;
@@ -283,6 +330,9 @@ int main(int argc, char *argv[]) {
   CheckOptions(&opts);
 
   if (opts.help || opts.device_id < 0 || opts.mode == NONE)
+    DisplayHelpAndExit(opts);
+
+  if (opts.mode == MODE_PARAM && opts.port == K_INVALID_VALUE)
     DisplayHelpAndExit(opts);
 
   UsbProConfigurator configurator(opts);

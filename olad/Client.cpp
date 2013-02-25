@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * Client.cpp
  * Represents a connected client.
@@ -23,6 +23,7 @@
 #include <utility>
 #include "common/protocol/Ola.pb.h"
 #include "ola/Logging.h"
+#include "ola/stl/STLUtils.h"
 #include "olad/Client.h"
 
 namespace ola {
@@ -79,14 +80,7 @@ void Client::SendDMXCallback(SimpleRpcController *controller,
  * @param buffer the new data
  */
 void Client::DMXRecieved(unsigned int universe, const DmxSource &source) {
-  map<unsigned int, DmxSource>::iterator iter = m_data_map.find(universe);
-
-  if (iter != m_data_map.end()) {
-    iter->second = source;
-  } else {
-    std::pair<unsigned int, DmxSource> pair(universe, source);
-    m_data_map.insert(pair);
-  }
+  STLReplace(&m_data_map, universe, source);
 }
 
 

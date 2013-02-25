@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * UsbProWidgetDetector.cpp
  * Handles the discovery process for widgets that implement the Usb Pro frame
@@ -25,6 +25,7 @@
  *   - MANUFACTURER_LABEL
  *   - DEVICE_LABEL
  *   - SERIAL_LABEL
+ *   - HARDWARE_VERSION (optional)
  *
  * Requests are sent at an interval specified by message_interval in the
  * constructor. Of these, the only message a widget must respond to is
@@ -46,8 +47,8 @@
 #include "ola/Logging.h"
 #include "ola/io/Descriptor.h"
 #include "ola/network/NetworkUtils.h"
-#include "plugins/usbpro/UsbProWidgetDetector.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
+#include "plugins/usbpro/UsbProWidgetDetector.h"
 
 namespace ola {
 namespace plugin {
@@ -122,9 +123,7 @@ bool UsbProWidgetDetector::Discover(
 
   // Set the onclose handler so we can mark this as failed.
   descriptor->SetOnClose(
-      NewSingleCallback(this,
-                        &UsbProWidgetDetector::WidgetRemoved,
-                        widget));
+      NewSingleCallback(this, &UsbProWidgetDetector::WidgetRemoved, widget));
 
   // register a timeout for this widget
   SetupTimeout(widget, &m_widgets[widget]);
@@ -148,6 +147,9 @@ void UsbProWidgetDetector::HandleMessage(DispatchingUsbProWidget *widget,
       break;
     case BaseUsbProWidget::SERIAL_LABEL:
       HandleSerialResponse(widget, length, data);
+      break;
+    case BaseUsbProWidget::HARDWARE_VERSION_LABEL:
+      HandleHardwareVersionResponse(widget, length, data);
       break;
     case ENTTEC_SNIFFER_LABEL:
       HandleSnifferPacket(widget);
@@ -188,8 +190,7 @@ void UsbProWidgetDetector::SetupTimeout(DispatchingUsbProWidget *widget,
                                         DiscoveryState *discovery_state) {
   discovery_state->timeout_id = m_scheduler->RegisterSingleTimeout(
       m_timeout_ms,
-      NewSingleCallback(this,
-                        &UsbProWidgetDetector::DiscoveryTimeout, widget));
+      NewSingleCallback(this, &UsbProWidgetDetector::DiscoveryTimeout, widget));
 }
 
 
@@ -224,6 +225,32 @@ void UsbProWidgetDetector::SendSerialRequest(DispatchingUsbProWidget *widget) {
 }
 
 
+/**
+ * Send a Hardware version message, this is only valid for Enttec Usb Pro MkII
+ * widgets.
+ */
+void UsbProWidgetDetector::SendHardwareVersionRequest(
+    DispatchingUsbProWidget *widget) {
+  widget->SendMessage(DispatchingUsbProWidget::HARDWARE_VERSION_LABEL, NULL, 0);
+  DiscoveryState &discovery_state = m_widgets[widget];
+  discovery_state.discovery_state = DiscoveryState::HARDWARE_VERSION_SENT;
+  SetupTimeout(widget, &discovery_state);
+}
+
+
+/**
+ * Send OLA's API key to unlock the second port of a Usb Pro MkII Widget.
+ * Note: The labels for the messages used to control the 2nd port of the Mk II
+ * depend on this key value. If you're writing other software you can obtain a
+ * key by emailing Enttec, rather than just copying the value here.
+ */
+void UsbProWidgetDetector::SendAPIRequest(DispatchingUsbProWidget *widget) {
+  uint32_t key = ola::network::LittleEndianToHost(USB_PRO_MKII_API_KEY);
+  widget->SendMessage(USB_PRO_MKII_API_LABEL, reinterpret_cast<uint8_t*>(&key),
+                      sizeof(key));
+}
+
+
 /*
  * Called if a widget fails to respond in a given interval
  */
@@ -238,6 +265,9 @@ void UsbProWidgetDetector::DiscoveryTimeout(DispatchingUsbProWidget *widget) {
         break;
       case DiscoveryState::DEVICE_SENT:
         SendSerialRequest(widget);
+        break;
+      case DiscoveryState::HARDWARE_VERSION_SENT:
+        CompleteWidgetDiscovery(widget);
         break;
       default:
         OLA_WARN << "Usb Widget didn't respond to messages, esta id " <<
@@ -313,29 +343,95 @@ void UsbProWidgetDetector::HandleSerialResponse(
     unsigned int length,
     const uint8_t *data) {
   WidgetStateMap::iterator iter = m_widgets.find(widget);
-
   if (iter == m_widgets.end())
     return;
   RemoveTimeout(&iter->second);
   UsbProWidgetInformation information = iter->second.information;
 
   if (length == sizeof(information.serial)) {
-    memcpy(reinterpret_cast<uint8_t*>(&information.serial),
-           data,
-           sizeof(information.serial));
-    information.serial = ola::network::LittleEndianToHost(information.serial);
+    UsbProWidgetInformation::DeviceSerialNumber serial;
+    memcpy(reinterpret_cast<uint8_t*>(&serial), data, sizeof(serial));
+    iter->second.information.serial = ola::network::LittleEndianToHost(serial);
   } else {
     OLA_WARN << "Serial number response size " << length << " != " <<
       sizeof(information.serial);
   }
 
+  if (information.esta_id == 0 && information.device_id == 0) {
+    // This widget didn't respond to Manufacturer or Device messages, but did
+    // respond to GetSerial, so it's probably a USB Pro. Now we need to check
+    // if it's a MK II widget.
+    SendHardwareVersionRequest(widget);
+    return;
+  }
+
+  // otherwise there are no more messages to send.
+  CompleteWidgetDiscovery(widget);
+}
+
+
+/*
+ * Handle a hardware version response.
+ */
+void UsbProWidgetDetector::HandleHardwareVersionResponse(
+    DispatchingUsbProWidget *widget,
+    unsigned int length,
+    const uint8_t *data) {
+  if (length != 1) {
+    OLA_WARN << "Wrong size of hardware version response, was " << length;
+    return;
+  }
+
+  WidgetStateMap::iterator iter = m_widgets.find(widget);
+  if (iter == m_widgets.end())
+    return;
+  RemoveTimeout(&iter->second);
+  if (data[0] == DMX_PRO_MKII_VERISON) {
+    iter->second.information.dual_port = true;
+    SendAPIRequest(widget);
+  }
+
+  CompleteWidgetDiscovery(widget);
+}
+
+
+/**
+ * Handle a possible sniffer packet.
+ * Enttec sniffers are very boisterous and continuously send frames. This
+ * causes all sorts of problems and for now we don't want to use these devices.
+ * We track the number of sniffer frames received and if it's more than one we
+ * declare this device a sniffer.
+ */
+void UsbProWidgetDetector::HandleSnifferPacket(
+    DispatchingUsbProWidget *widget) {
+  WidgetStateMap::iterator iter = m_widgets.find(widget);
+
+  if (iter == m_widgets.end())
+    return;
+  OLA_DEBUG << "Received Enttec Sniffer Packet";
+  iter->second.sniffer_packets++;
+}
+
+
+/**
+ * Called when the last timeout expires, or we receive the final message. This
+ * cleans up state and executes the m_callback in the scheduler thread.
+ */
+void UsbProWidgetDetector::CompleteWidgetDiscovery(
+    DispatchingUsbProWidget *widget) {
+  WidgetStateMap::iterator iter = m_widgets.find(widget);
+  if (iter == m_widgets.end())
+    return;
+
   unsigned int sniffer_packets = iter->second.sniffer_packets;
+  const UsbProWidgetInformation information = iter->second.information;
   m_widgets.erase(iter);
 
   if (sniffer_packets > 1) {
-    OLA_WARN << "Enttec sniffer found (" << sniffer_packets <<
-      " packets), discarding";
-    // we can't delete the widget since we're it's called us.
+    OLA_WARN << "Enttec sniffer found (" << sniffer_packets
+             << " packets), discarding";
+    // we can't delete the widget here since it called us.
+    // instead schedule a call in the other thread.
     widget->GetDescriptor()->SetOnData(NULL);
     m_scheduler->Execute(
         NewSingleCallback(this,
@@ -354,34 +450,14 @@ void UsbProWidgetDetector::HandleSerialResponse(
   // given that we've been called via the widget's stack, schedule execution of
   // the method that deletes the widget.
   m_scheduler->Execute(
-      NewSingleCallback(this,
-                        &UsbProWidgetDetector::DispatchWidget,
-                        widget,
+      NewSingleCallback(this, &UsbProWidgetDetector::DispatchWidget, widget,
                         widget_info));
 }
 
 
 /**
- * Handle a possible sniffer packet.
- * Enttec sniffers are very boisterous and continuously send frames. This
- * causes all sorts of problems and for now we don't want to use these devices.
- * We track the number of sniffer frames received and if it's more than one we
- * declare this device a sniffer.
- */
-void UsbProWidgetDetector::HandleSnifferPacket(
-    DispatchingUsbProWidget *widget) {
-
-  WidgetStateMap::iterator iter = m_widgets.find(widget);
-
-  if (iter == m_widgets.end())
-    return;
-  OLA_DEBUG << "Received Enttec Sniffer Packet";
-  iter->second.sniffer_packets++;
-}
-
-
-/**
- * Called once we have confirmed a new widget
+ * Called once we have confirmed a new widget. This runs in the scheduler
+ * thread, so it can't access any non-const member data.
  */
 void UsbProWidgetDetector::DispatchWidget(
     DispatchingUsbProWidget *widget,

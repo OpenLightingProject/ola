@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * MockUDPsocket.h
  * Header file for the Mock UDP Socket class
@@ -29,11 +29,29 @@
 #include "ola/network/Socket.h"
 #include "ola/network/SocketAddress.h"
 
+namespace ola {
+namespace testing {
+
+using ola::io::IOQueue;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 
 /*
- * A MockUDPSocket
+ * The MockUDPSocket allows one to stub out a UDP Socket for testing. The
+ * code-under-test can use this object as it would a UDP socket, and the code
+ * performing the test can verify that the data written matches what it
+ * expects. It does this by calling AddExpectedData(), e.g.
+ *
+ *  // add the data we expect, you can call this more than once
+ *  udp_socket.AddExpectedData(....);
+ *  udp_socket.AddExpectedData(....);
+ *  // this calls one of the SendTo methods
+ *  MethodToTest(udp_socket);
+ *  // verify all the expected data has been consumed
+ *  udp_socket.Verify()
+ *
+ * You can also inject packets into the socket by calling InjectData(), this
+ * will trigger the on_read callback that was attached to the socket.
  */
 class MockUDPSocket: public ola::network::UDPSocketInterface {
   public:
@@ -61,11 +79,10 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
                    const IPV4SocketAddress &dest) const {
       return SendTo(buffer, size, dest.Host(), dest.Port());
     }
-    ssize_t SendTo(ola::io::IOQueue *ioqueue,
+    ssize_t SendTo(IOQueue *ioqueue,
                    const ola::network::IPV4Address &ip,
                    unsigned short port) const;
-    ssize_t SendTo(ola::io::IOQueue *ioqueue,
-                   const IPV4SocketAddress &dest) const {
+    ssize_t SendTo(IOQueue *ioqueue, const IPV4SocketAddress &dest) const {
       return SendTo(ioqueue, dest.Host(), dest.Port());
     }
 
@@ -94,12 +111,17 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
                          unsigned int size,
                          const IPV4Address &ip,
                          uint16_t port);
+    void AddExpectedData(IOQueue *queue, const IPV4SocketAddress &dest);
 
     // this can be fetched by calling PerformRead() on the socket
-    void ReceiveData(const uint8_t *data,
-                     unsigned int size,
-                     const IPV4Address &ip,
-                     uint16_t port);
+    void InjectData(const uint8_t *data,
+                    unsigned int size,
+                    const IPV4Address &ip,
+                    uint16_t port);
+    void InjectData(const uint8_t *data,
+                    unsigned int size,
+                    const IPV4SocketAddress &source);
+    void InjectData(IOQueue *ioqueue, const IPV4SocketAddress &source);
 
     void Verify();
 
@@ -116,6 +138,7 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
       unsigned int size;
       IPV4Address address;
       uint16_t port;
+      bool free_data;
     } expected_call;
 
     typedef expected_call received_data;
@@ -129,6 +152,8 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
     mutable std::queue<received_data> m_received_data;
     IPV4Address m_interface;
     bool m_discard_mode;
+
+    uint8_t* IOQueueToBuffer(IOQueue *ioqueue, unsigned int *size) const;
 };
 
 
@@ -147,4 +172,6 @@ class SocketVerifier {
   private:
     MockUDPSocket *m_socket;
 };
+}  // testing
+}  // ola
 #endif  // INCLUDE_OLA_TESTING_MOCKUDPSOCKET_H_

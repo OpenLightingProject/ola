@@ -6,7 +6,7 @@ AC_INIT(ola, [0.8.26])
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_AUX_DIR(config)
 AC_SUBST(ac_aux_dir)
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_MACRO_DIR([config])
 AM_INIT_AUTOMAKE
 
@@ -51,6 +51,7 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h netinet/in.h stdint.h stdlib.h string.h \
                   sys/ioctl.h sys/socket.h sys/time.h syslog.h termios.h \
                   endian.h execinfo.h unistd.h linux/if_packet.h sysexits.h])
+AC_CHECK_HEADERS([random])
 
 AC_PROG_LIBTOOL
 
@@ -186,7 +187,18 @@ fi
 
 # We build a list of plugins that we're going to compile here so the olad
 # knows what to link against.
-PLUGINS="artnet dummy espnet e131 opendmx pathport sandnet shownet stageprofi usbpro"
+PLUGINS=""
+
+PLUGIN_SUPPORT(artnet, USE_ARTNET)
+PLUGIN_SUPPORT(dummy, USE_DUMMY)
+PLUGIN_SUPPORT(e131, USE_E131)
+PLUGIN_SUPPORT(espnet, USE_ESPNET)
+PLUGIN_SUPPORT(opendmx, USE_OPENDMX)
+PLUGIN_SUPPORT(pathport, USE_PATHPORT)
+PLUGIN_SUPPORT(sandnet, USE_SANDNET)
+PLUGIN_SUPPORT(shownet, USE_SHOWNET)
+PLUGIN_SUPPORT(stageprofi, USE_STAGEPROFI)
+PLUGIN_SUPPORT(usbpro, USE_USBPRO)
 
 # LIBRARY: ncurses
 AC_CHECK_LIB([ncurses], [initscr], [have_ncurses="yes"])
@@ -196,7 +208,10 @@ AM_CONDITIONAL(HAVE_NCURSES, test "${have_ncurses}" = "yes")
 AC_CHECK_HEADER([pthread.h],
                 [],
                 [AC_MSG_ERROR([Missing pthread, please install it])])
-LIBS="-lpthread $LIBS"
+AC_CHECK_LIB([pthread], [pthread_create], [use_lpthread="yes"])
+if test "${use_lpthread}" = "yes"; then
+  LIBS="-lpthread $LIBS"
+fi
 
 # Java API, this requires Maven
 AC_ARG_ENABLE(java-libs,
@@ -313,7 +328,7 @@ fi
 # look for libusb if the user asked us to
 AC_ARG_ENABLE(
   [libusb],
-  AS_HELP_STRING([--disable-libusb], [Don't use libusb even if it exists]))
+  AS_HELP_STRING([--disable-libusb], [Avoid using libusb even if it exists]))
 
 have_libusb="no"
 
@@ -329,8 +344,16 @@ fi
 
 # LIBRARY: libftdi
 # look for libftdi (this requires libusb-0.1.4+ don't know if I should also check for it, since the libusb check above is not for 0.1.4 but for libusb-1
+AC_ARG_ENABLE(
+  [libftdi],
+  AS_HELP_STRING([--disable-libftdi], [Avoid using libftdi even if it exists]))
+
+
 have_libftdi="no"
-PKG_CHECK_MODULES(libftdi, [libftdi >= 0.18], [have_libftdi="yes"], [true])
+
+if test "${enable_libftdi}" != "no"; then
+  PKG_CHECK_MODULES(libftdi, [libftdi >= 0.18], [have_libftdi="yes"], [true])
+fi
 
 AM_CONDITIONAL(HAVE_LIBFTDI, test "${have_libftdi}" = "yes")
 
@@ -450,7 +473,7 @@ AC_ARG_ENABLE(gcov,
 if test "${enable_gov}" != "no"; then
   CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
   CXXFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
-  LDFLAGS="$LDFLAGS -fprofile-arcs"
+  LDFLAGS="$LDFLAGS"
 fi
 
 # Decide if we should build the example programs
@@ -554,6 +577,7 @@ AC_OUTPUT( Makefile \
     common/http/Makefile \
     common/io/Makefile \
     common/logging/Makefile \
+    common/math/Makefile \
     common/messaging/Makefile \
     common/network/Makefile \
     common/protocol/Makefile \
@@ -575,6 +599,7 @@ AC_OUTPUT( Makefile \
     include/ola/base/Makefile \
     include/ola/http/Makefile \
     include/ola/io/Makefile \
+    include/ola/math/Makefile \
     include/ola/messaging/Makefile \
     include/ola/network/Makefile \
     include/ola/rdm/Makefile \
@@ -621,6 +646,7 @@ AC_OUTPUT( Makefile \
     tools/e133/Makefile \
     tools/rdm/Makefile \
     tools/rdmpro/Makefile \
+    tools/slp/Makefile \
     tools/usbpro/Makefile \
     libola.pc \
     libolaserver.pc \

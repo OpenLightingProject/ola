@@ -5,7 +5,8 @@ SUBDIRS = messages
 EXTRA_DIST = ArduinoRGBDevice.h ArduinoWidget.h BaseUsbProWidget.h \
              BaseRobeWidget.h CommonWidgetTest.h DmxTriDevice.h \
              DmxTriWidget.h DmxterDevice.h DmxterWidget.h \
-             EnttecUsbProWidget.h GenericUsbProWidget.h MockEndpoint.h \
+             EnttecUsbProWidget.h EnttecUsbProWidgetImpl.h \
+             GenericUsbProWidget.h MockEndpoint.h \
              RobeDevice.h RobeWidget.h RobeWidgetDetector.h \
              SerialWidgetInterface.h SerialWidgetInterface.h \
              UltraDMXProDevice.h UltraDMXProWidget.h \
@@ -31,6 +32,7 @@ libolausbprowidget_la_SOURCES = ArduinoWidget.cpp \
                                 WidgetDetectorThread.cpp
 libolausbprowidget_la_LIBADD = ../../common/libolacommon.la
 
+if USE_USBPRO
 # The OLA USB Pro Plugin
 lib_LTLIBRARIES = libolausbpro.la
 libolausbpro_la_SOURCES = ArduinoRGBDevice.cpp DmxTriDevice.cpp \
@@ -90,3 +92,4 @@ SerialUsbTester_SOURCES = BaseUsbProWidgetTest.cpp \
                           $(common_test_sources)
 SerialUsbTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 SerialUsbTester_LDADD = $(CPPUNIT_LIBS) ./libolausbprowidget.la
+endif

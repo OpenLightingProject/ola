@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * UsbProWidgetDetector.h
  * Handles the discovery process for widgets that implement the Usb Pro frame
@@ -42,26 +42,31 @@ class DispatchingUsbProWidget;
  */
 class UsbProWidgetInformation {
   public:
+    typedef uint32_t DeviceSerialNumber;
+
     UsbProWidgetInformation():
         esta_id(0),
         device_id(0),
-        serial(0) {
+        serial(0),
+        dual_port(false) {
     }
     UsbProWidgetInformation(const UsbProWidgetInformation &other):
         esta_id(other.esta_id),
         device_id(other.device_id),
         serial(other.serial),
         manufacturer(other.manufacturer),
-        device(other.device) {
+        device(other.device),
+        dual_port(other.dual_port) {
     }
     UsbProWidgetInformation& operator=(const UsbProWidgetInformation &other);
     enum {SERIAL_LENGTH = 4};
 
     uint16_t esta_id;
     uint16_t device_id;
-    uint32_t serial;
+    DeviceSerialNumber serial;
     string manufacturer;
     string device;
+    bool dual_port;
 };
 
 
@@ -92,7 +97,8 @@ class UsbProWidgetDetector: public WidgetDetectorInterface {
         DiscoveryState():
           discovery_state(MANUFACTURER_SENT),
           timeout_id(ola::thread::INVALID_TIMEOUT),
-          sniffer_packets(0) {
+          sniffer_packets(0),
+          hardware_version(0) {
         }
         ~DiscoveryState() {}
 
@@ -100,17 +106,19 @@ class UsbProWidgetDetector: public WidgetDetectorInterface {
           MANUFACTURER_SENT,
           DEVICE_SENT,
           SERIAL_SENT,
+          HARDWARE_VERSION_SENT,
         } widget_state;
 
         UsbProWidgetInformation information;
         widget_state discovery_state;
         ola::thread::timeout_id timeout_id;
         unsigned int sniffer_packets;
+        uint8_t hardware_version;
     };
 
     ola::thread::SchedulingExecutorInterface *m_scheduler;
-    auto_ptr<SuccessHandler> m_callback;
-    auto_ptr<FailureHandler> m_failure_callback;
+    const auto_ptr<SuccessHandler> m_callback;
+    const auto_ptr<FailureHandler> m_failure_callback;
 
     typedef std::map<DispatchingUsbProWidget*, DiscoveryState> WidgetStateMap;
     WidgetStateMap m_widgets;
@@ -126,6 +134,8 @@ class UsbProWidgetDetector: public WidgetDetectorInterface {
     void RemoveTimeout(DiscoveryState *discovery_state);
     void SendNameRequest(DispatchingUsbProWidget *widget);
     void SendSerialRequest(DispatchingUsbProWidget *widget);
+    void SendHardwareVersionRequest(DispatchingUsbProWidget *widget);
+    void SendAPIRequest(DispatchingUsbProWidget *widget);
     void DiscoveryTimeout(DispatchingUsbProWidget *widget);
     void HandleIdResponse(DispatchingUsbProWidget *widget,
                           unsigned int length,
@@ -134,12 +144,20 @@ class UsbProWidgetDetector: public WidgetDetectorInterface {
     void HandleSerialResponse(DispatchingUsbProWidget *widget,
                               unsigned int length,
                               const uint8_t *data);
+    void HandleHardwareVersionResponse(DispatchingUsbProWidget *widget,
+                                       unsigned int length,
+                                       const uint8_t *data);
     void HandleSnifferPacket(DispatchingUsbProWidget *widget);
+    void CompleteWidgetDiscovery(DispatchingUsbProWidget *widget);
     void DispatchWidget(DispatchingUsbProWidget *widget,
                         const UsbProWidgetInformation *info);
     void HandleSniffer(DispatchingUsbProWidget *widget);
 
     static const uint8_t ENTTEC_SNIFFER_LABEL = 0x81;
+    static const uint8_t USB_PRO_MKII_API_LABEL = 13;
+    static const uint8_t DMX_PRO_MKII_VERISON = 2;
+    // The API key associated with OLA
+    static const uint32_t USB_PRO_MKII_API_KEY = 0x0d11b2d7;
 };
 }  // usbpro
 }  // plugin

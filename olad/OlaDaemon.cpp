@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * OlaDaemon.cpp
  * This is the main ola daemon
@@ -29,8 +29,9 @@
 
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
-#include "ola/network/SocketAddress.h"
 #include "ola/base/Credentials.h"
+#include "ola/network/SocketAddress.h"
+#include "ola/stl/STLUtils.h"
 
 #include "olad/DynamicPluginLoader.h"
 #include "olad/OlaDaemon.h"
@@ -150,10 +151,7 @@ void OlaDaemon::Shutdown() {
   m_service_factory = NULL;
   m_ss = NULL;
 
-  vector<PluginLoader*>::iterator iter;
-  for (iter = m_plugin_loaders.begin(); iter != m_plugin_loaders.end(); ++iter)
-    delete *iter;
-  m_plugin_loaders.clear();
+  STLDeleteValues(&m_plugin_loaders);
 }
 
 

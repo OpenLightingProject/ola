@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * Plugin.cpp
  * Base plugin class for ola
@@ -28,13 +28,52 @@ namespace ola {
 
 const char Plugin::ENABLED_KEY[] = "enabled";
 
+
 /*
- * Returns true if we should try to start this plugin
+ * Load the preferences and set defaults
  */
-bool Plugin::ShouldStart() {
-  if (!LoadPreferences())
+bool Plugin::LoadPreferences() {
+  if (m_preferences)
+    return true;
+
+  if (PluginPrefix() == "") {
+    OLA_WARN << Name() << ", no prefix provided";
+    return false;
+  }
+
+  m_preferences = m_plugin_adaptor->NewPreference(PluginPrefix());
+
+  if (!m_preferences)
     return false;
 
+  m_preferences->Load();
+
+  bool save = m_preferences->SetDefaultValue(
+      ENABLED_KEY,
+      BoolValidator(),
+      DefaultMode() ? "true" : "false");
+  if (save)
+    m_preferences->Save();
+
+  if (!SetDefaultPreferences()) {
+    OLA_INFO << Name() << ", SetDefaultPreferences failed";
+    return false;
+  }
+  return true;
+}
+
+/*
+ * Returns true if this plugin is enabled.
+ */
+string Plugin::PreferenceSource() const {
+  return m_preferences->Source();
+}
+
+
+/*
+ * Returns true if this plugin is enabled.
+ */
+bool Plugin::IsEnabled() const {
   return !(m_preferences->GetValue(ENABLED_KEY) == "false");
 }
 
@@ -76,40 +115,5 @@ bool Plugin::Stop() {
 
   m_enabled = false;
   return ret;
-}
-
-
-/*
- * Load the preferences and set defaults
- */
-bool Plugin::LoadPreferences() {
-  if (m_preferences)
-    return true;
-
-  if (PluginPrefix() == "") {
-    OLA_WARN << Name() << ", no prefix provided";
-    return false;
-  }
-
-  m_preferences = m_plugin_adaptor->NewPreference(PluginPrefix());
-
-  if (!m_preferences)
-    return false;
-
-  m_preferences->Load();
-
-  bool save = m_preferences->SetDefaultValue(
-      ENABLED_KEY,
-      BoolValidator(),
-      DefaultMode() ? "true" : "false");
-  if (save)
-    m_preferences->Save();
-
-  if (!SetDefaultPreferences()) {
-    OLA_INFO << Name() << ", SetDefaultPreferences failed";
-    return false;
-  }
-
-  return true;
 }
 }  // ola

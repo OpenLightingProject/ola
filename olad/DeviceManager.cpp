@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * devicemanager.cpp
  * Implementation of the device manager, this object tracks what devices are in
@@ -28,6 +28,7 @@
 
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
+#include "ola/stl/STLUtils.h"
 #include "olad/DeviceManager.h"
 #include "olad/Port.h"
 #include "olad/PortManager.h"
@@ -192,11 +193,7 @@ unsigned int DeviceManager::DeviceCount() const {
  */
 vector<device_alias_pair> DeviceManager::Devices() const {
   vector<device_alias_pair> result;
-  map<string, device_alias_pair>::const_iterator iter;
-  for (iter = m_devices.begin(); iter != m_devices.end(); ++iter)
-    if (iter->second.device)
-      result.push_back(iter->second);
-
+  STLValues(m_devices, &result);
   return result;
 }
 
@@ -206,11 +203,7 @@ vector<device_alias_pair> DeviceManager::Devices() const {
  * @return a pointer to the device or NULL if the device wasn't found.
  */
 AbstractDevice *DeviceManager::GetDevice(unsigned int alias) const {
-  map<unsigned int, AbstractDevice*>::const_iterator alias_iter =
-    m_alias_map.find(alias);
-  if (alias_iter != m_alias_map.end())
-    return alias_iter->second;
-  return NULL;
+  return STLFindOrNull(m_alias_map, alias);
 }
 
 

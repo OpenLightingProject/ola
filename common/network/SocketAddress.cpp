@@ -1,23 +1,24 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * SocketAddress.cpp
  * Represents a sockaddr structure.
  * Copyright (C) 2012 Simon Newton
  */
 
+#include <assert.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
 #include <ola/network/NetworkUtils.h>
@@ -83,6 +84,14 @@ bool IPV4SocketAddress::FromString(const string &input,
     return false;
   *socket_address = IPV4SocketAddress(address, port);
   return true;
+}
+
+
+IPV4SocketAddress IPV4SocketAddress::FromStringOrDie(
+    const std::string &address) {
+  IPV4SocketAddress socket_address;
+  assert(FromString(address, &socket_address));
+  return socket_address;
 }
 }  // network
 }  // ola

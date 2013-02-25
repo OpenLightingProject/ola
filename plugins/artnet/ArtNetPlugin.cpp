@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * ArtNetPlugin.cpp
  * The ArtNet plugin for ola
@@ -142,7 +142,10 @@ string ArtNetPlugin::Description() const {
 "use_limited_broadcast = [true|false]\n"
 "When broadcasting, use the limited broadcast address (255.255.255.255) \n"
 "rather than the subnet directed broadcast address. Some devices which \n"
-"don't follow the ArtNet spec require this.\n";
+"don't follow the ArtNet spec require this.\n"
+"\n"
+"use_loopback = [true|false]\n"
+"Enable use of the loopback device\n";
 }
 
 
@@ -173,6 +176,9 @@ bool ArtNetPlugin::SetDefaultPreferences() {
                                          BoolValidator(),
                                          BoolValidator::DISABLED);
   save |= m_preferences->SetDefaultValue(ArtNetDevice::K_LIMITED_BROADCAST_KEY,
+                                         BoolValidator(),
+                                         BoolValidator::DISABLED);
+  save |= m_preferences->SetDefaultValue(ArtNetDevice::K_LOOPBACK_KEY,
                                          BoolValidator(),
                                          BoolValidator::DISABLED);
 

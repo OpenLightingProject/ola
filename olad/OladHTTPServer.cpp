@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * OladHTTPServer.cpp
  * Ola HTTP class
@@ -109,6 +109,7 @@ OladHTTPServer::OladHTTPServer(ExportMap *export_map,
   m_server.RegisterFile("/toolbar.css", HTTPServer::CONTENT_TYPE_CSS);
   m_server.RegisterFile("/toolbar_sprites.png", HTTPServer::CONTENT_TYPE_PNG);
   m_server.RegisterFile("/vertical.gif", HTTPServer::CONTENT_TYPE_GIF);
+  m_server.RegisterFile("/warning.png", HTTPServer::CONTENT_TYPE_PNG);
   m_server.RegisterFile("/", "landing.html", HTTPServer::CONTENT_TYPE_HTML);
 
   m_start_time_t = time(NULL);
@@ -213,8 +214,8 @@ int OladHTTPServer::JsonPluginInfo(const HTTPRequest *request,
   bool ok = m_client.FetchPluginDescription(
       (ola_plugin_id) plugin_id,
       NewSingleCallback(this,
-                        &OladHTTPServer::HandlePluginInfo,
-                        response));
+                        &OladHTTPServer::HandlePartialPluginInfo,
+                        response, plugin_id));
 
   if (!ok)
     return m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
@@ -548,9 +549,35 @@ void OladHTTPServer::HandleUniverseList(HTTPResponse *response,
  * @param description the plugin description.
  * @param error an error string.
  */
-void OladHTTPServer::HandlePluginInfo(HTTPResponse *response,
-                                     const string &description,
-                                     const string &error) {
+void OladHTTPServer::HandlePartialPluginInfo(HTTPResponse *response,
+                                             int plugin_id,
+                                             const string &description,
+                                             const string &error) {
+  if (!error.empty()) {
+    m_server.ServeError(response, error);
+    return;
+  }
+  bool ok = m_client.FetchPluginState(
+      (ola_plugin_id) plugin_id,
+      NewSingleCallback(this,
+                        &OladHTTPServer::HandlePluginInfo,
+                        response, description));
+
+  if (!ok)
+    m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
+}
+
+/*
+ * Handle the plugin description response.
+ * @param response the HTTPResponse that is associated with the request.
+ * @param description the plugin description.
+ * @param error an error string.
+ */
+void OladHTTPServer::HandlePluginInfo(
+    HTTPResponse *response,
+    string description,
+    const OlaCallbackClient::PluginState &state,
+    const string &error) {
   if (!error.empty()) {
     m_server.ServeError(response, error);
     return;
@@ -560,6 +587,18 @@ void OladHTTPServer::HandlePluginInfo(HTTPResponse *response,
 
   JsonObject json;
   json.Add("description", description);
+  json.Add("name", state.name);
+  json.Add("enabled", state.enabled);
+  json.Add("active", state.active);
+  json.Add("preferences_source", state.preferences_source);
+  JsonArray *plugins = json.AddArray("conflicts_with");
+  vector<OlaPlugin>::const_iterator iter = state.conflicting_plugins.begin();
+  for (; iter != state.conflicting_plugins.end(); ++iter) {
+    JsonObject *plugin = plugins->AppendObject();
+    plugin->Add("active", iter->IsActive());
+    plugin->Add("id", iter->Id());
+    plugin->Add("name", iter->Name());
+  }
 
   response->SetHeader("Cache-Control", "no-cache, must-revalidate");
   response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);

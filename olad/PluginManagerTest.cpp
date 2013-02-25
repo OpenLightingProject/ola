@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * PluginManagerTest.cpp
  * Test fixture for the PluginManager classes
@@ -56,7 +56,7 @@ class PluginManagerTest: public CppUnit::TestFixture {
 
   private:
     void VerifyPluginCounts(PluginManager *manager, size_t loaded_plugins,
-                            size_t enabled_plugins, unsigned int line) {
+                            size_t active_plugins, unsigned int line) {
       std::stringstream str;
       str << "Line " << line;
       vector<AbstractPlugin*> plugins;
@@ -64,8 +64,8 @@ class PluginManagerTest: public CppUnit::TestFixture {
       CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(), loaded_plugins, plugins.size());
 
       plugins.clear();
-      manager->EnabledPlugins(&plugins);
-      CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(), enabled_plugins, plugins.size());
+      manager->ActivePlugins(&plugins);
+      CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(), active_plugins, plugins.size());
     }
 };
 

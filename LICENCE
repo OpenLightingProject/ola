@@ -1,10 +1,18 @@
-Licencing Information for liblla and llad
+Licencing Information for OLA
+=========================================
+
+C++
 -----------------------------------------
+The files required for libola and libolacommon are licenced under the LGPL,
+this means you are free to link against the OLA client library in your own
+programs.
 
-The files required for liblla are licenced under the LGPL, this means you
-are free to link against liblla for commercial projects.
+The files required for libolaserver and olad are licenced under the GPL.
 
-The files required for llad are licenced under the GPL.
+Python
+------------------------------------------
+The Python client API is LGPL, the examples and RDM Responder Test Suite is
+GPL.
 
 Simon Newton
 15/7/2005

@@ -1,17 +1,17 @@
 #!/usr/bin/python
-#  This program is free software; you can redistribute it and/or modify
-#  it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation; either version 2 of the License, or
-#  (at your option) any later version.
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
 #
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU Library General Public License for more details.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
 #
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software
-#  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 # rdm_test_server.py
 # Copyright (C) 2012 Ravindra Nath Kakarla & Simon Newton
@@ -26,14 +26,15 @@ import re
 import signal
 import stat
 import sys
-import traceback
 import textwrap
 import threading
+import traceback
 import urlparse
 
+from datetime import datetime
+from optparse import OptionParser, OptionGroup, OptionValueError
 from threading import Condition, Event, Lock, Thread
 from time import time, sleep
-from optparse import OptionParser, OptionGroup, OptionValueError
 from wsgiref.simple_server import make_server
 from ola.UID import UID
 from ola.ClientWrapper import ClientWrapper, SelectServer
@@ -237,7 +238,9 @@ class RDMTestThread(Thread):
       'tests_completed': 0,
       'total_tests': None,
       'state': self.RUNNING,
+      'duration': 0,
     }
+    start_time = datetime.now()
     self._test_state_lock.release()
 
     runner = TestRunner.TestRunner(universe, uid, broadcast_write_delay,
@@ -266,6 +269,7 @@ class RDMTestThread(Thread):
         dmx_sender.Stop()
 
     timestamp = int(time())
+    end_time = datetime.now()
     test_parameters = {
       'broadcast_write_delay': broadcast_write_delay,
       'dmx_frame_rate': dmx_frame_rate,
@@ -279,6 +283,7 @@ class RDMTestThread(Thread):
       logs_saved = False
 
     self._test_state_lock.acquire()
+    self._test_state['duration'] = (end_time - start_time).total_seconds()
     self._test_state['state'] = self.COMPLETED
     self._test_state['tests'] = tests
     self._test_state['logs_saved'] = logs_saved
@@ -588,7 +593,8 @@ class DownloadResultsHandler(RequestHandler):
     except TestLogger.TestLoggerException as e:
       raise ServerException(e)
 
-    filename = '%s.%s.txt' % (uid, timestamp)
+    filename = ('%04x-%08x.%s.txt' %
+                (uid.manufacturer_id, uid.device_id, timestamp))
     response.SetStatus(HTTPResponse.OK)
     response.SetHeader('Content-disposition',
                        'attachment; filename="%s"' % filename)
@@ -628,6 +634,7 @@ class RunTestsHandler(OLAServerRequestHandler):
     json_data = {'status': True}
     if status['state'] == RDMTestThread.COMPLETED:
       json_data['UID'] = str(status['uid'])
+      json_data['duration'] = status['duration']
       json_data['completed'] = True
       json_data['logs_disabled'] = not status['logs_saved']
       json_data['timestamp'] = status['timestamp'],

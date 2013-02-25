@@ -1,17 +1,17 @@
 /*
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU Library General Public License for more details.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * E133InflatorTest.cpp
  * Test fixture for the E133Inflator class
@@ -76,7 +76,6 @@ void E133InflatorTest::testDecodeHeader() {
   OLA_ASSERT(source_name == decoded_header.Source());
   OLA_ASSERT_EQ((uint32_t) 72650, decoded_header.Sequence());
   OLA_ASSERT_EQ((uint16_t) 42, decoded_header.Endpoint());
-  OLA_ASSERT_FALSE(decoded_header.RxAcknowledge());
 
   // try an undersized header
   OLA_ASSERT_FALSE(inflator.DecodeHeader(header_set,
@@ -92,7 +91,6 @@ void E133InflatorTest::testDecodeHeader() {
   OLA_ASSERT(source_name == decoded_header.Source());
   OLA_ASSERT_EQ((uint32_t) 72650, decoded_header.Sequence());
   OLA_ASSERT_EQ((uint16_t) 42, decoded_header.Endpoint());
-  OLA_ASSERT_FALSE(decoded_header.RxAcknowledge());
 
   inflator.ResetHeaderField();
   OLA_ASSERT_FALSE(inflator.DecodeHeader(header_set2, NULL, 0, bytes_used));
@@ -105,7 +103,7 @@ void E133InflatorTest::testDecodeHeader() {
  */
 void E133InflatorTest::testInflatePDU() {
   const string source = "foobar source";
-  E133Header header(source, 2370, 2, true);
+  E133Header header(source, 2370, 2 );
   // TODO(simon): pass a DMP msg here as well
   E133PDU pdu(3, header, NULL);
   OLA_ASSERT_EQ((unsigned int) 77, pdu.Size());
