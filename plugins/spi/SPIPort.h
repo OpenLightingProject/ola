@@ -78,7 +78,7 @@ class PersonalityManager {
     const Personality *Lookup(uint8_t personality) const {
       if (personality == 0 || personality > m_personalities.size())
         return NULL;
-      return m_personalities[personality];
+      return m_personalities[personality - 1];
     }
 
   private:

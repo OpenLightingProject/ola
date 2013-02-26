@@ -440,10 +440,10 @@ void SPIOutputPort::HandlePersonality(const RDMRequest *request_ptr,
         uint8_t total;
       } __attribute__((packed));
 
-      struct personality_info_s personality_info;
-      personality_info.personality =
-        m_personality_manager.ActivePersonalityNumber();
-      personality_info.total = m_personality_manager.PersonalityCount();
+      struct personality_info_s personality_info = {
+        m_personality_manager.ActivePersonalityNumber(),
+        m_personality_manager.PersonalityCount()
+      };
       response = GetResponseFromData(
         request.get(),
         reinterpret_cast<const uint8_t*>(&personality_info),
@@ -493,10 +493,9 @@ void SPIOutputPort::HandlePersonalityDescription(const RDMRequest *request_ptr,
         char description[32];
       } __attribute__((packed));
 
-      struct personality_description_s personality_description;
-      personality_description.personality = personality_number;
-      personality_description.slots_required =
-        HostToNetwork(personality->footprint());
+      struct personality_description_s personality_description = {
+        personality_number, HostToNetwork(personality->footprint()), ""
+      };
       strncpy(personality_description.description,
               personality->description().c_str(),
               sizeof(personality_description.description));
