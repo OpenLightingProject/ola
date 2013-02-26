@@ -14,6 +14,7 @@ x/y/2013 ola-0.8.27
  * Update to support automake 1.13
  * Show the plugin state and config file location on the web UI
  * Added support for the Enttec USB Pro Mk II.
+ * Added an SPI plugin for driving LED pixels based on the WS2801 chip.
 
 11/11/2012 ola-0.8.26
  * Added the OSC plugin
