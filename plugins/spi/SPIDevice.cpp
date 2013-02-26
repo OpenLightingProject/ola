@@ -85,7 +85,7 @@ bool SPIDevice::StartHook() {
 
 void SPIDevice::PrePortStop() {
   stringstream str;
-  str << m_port->GetPersonality();
+  str << static_cast<int>(m_port->GetPersonality());
   m_preferences->SetValue(PersonalityKey(), str.str());
   str.str("");
   str << m_port->GetStartAddress();
