@@ -48,7 +48,11 @@ SPIDevice::SPIDevice(SPIPlugin *owner,
                      const UID &uid)
     : Device(owner, SPI_DEVICE_NAME),
       m_preferences(prefs),
-      m_plugin_adaptor(plugin_adaptor) {
+      m_plugin_adaptor(plugin_adaptor),
+      m_spi_device_name(spi_device) {
+  size_t pos = spi_device.find_last_of("/");
+  if (pos != string::npos)
+    m_spi_device_name = spi_device.substr(pos + 1);
 
   // 512 / 3 = 170.
   m_preferences->SetDefaultValue(PixelCountKey(), IntValidator(0, 170), "25");
@@ -110,19 +114,19 @@ void SPIDevice::PrePortStop() {
 
 
 string SPIDevice::PersonalityKey() const {
-  return m_port->SPIDeviceName() + "-personality";
+  return m_spi_device_name + "-personality";
 }
 
 string SPIDevice::StartAddressKey() const {
-  return m_port->SPIDeviceName() + "-dmx-address";
+  return m_spi_device_name + "-dmx-address";
 }
 
 string SPIDevice::SPISpeedKey() const {
-  return m_port->SPIDeviceName() + "-spi-speed";
+  return m_spi_device_name + "-spi-speed";
 }
 
 string SPIDevice::PixelCountKey() const {
-  return m_port->SPIDeviceName() + "-pixel-count";
+  return m_spi_device_name + "-pixel-count";
 }
 }  // spi
 }  // plugin

@@ -110,8 +110,6 @@ class SPIOutputPort: public BasicOutputPort {
                   const UID &uid, const SPIPortOptions &options);
     ~SPIOutputPort();
 
-    string SPIDeviceName() const { return m_spi_device_name; }
-
     uint8_t GetPersonality() const;
     bool SetPersonality(uint16_t personality);
     uint16_t GetStartAddress() const;

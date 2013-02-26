@@ -48,6 +48,7 @@ class SPIDevice: public ola::Device {
     class Preferences *m_preferences;
     class PluginAdaptor *m_plugin_adaptor;
     class SPIOutputPort *m_port;
+    string m_spi_device_name;
 
     string PersonalityKey() const;
     string StartAddressKey() const;

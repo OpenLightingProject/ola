@@ -151,9 +151,18 @@ string SPIPlugin::Description() const {
 "device_prefix = <string>\n"
 "The prefix of files to match in /dev. Usually set to 'spidev'\n"
 "\n"
-"<device>-pixel_count = <int>\n"
+"<device>-dmx-address = <int>\n"
+"The DMX address to use.\n"
+"\n"
+"<device>-personality = <int>\n"
+"The RDM personality to use\n"
+"\n"
+"<device>-pixel-count = <int>\n"
 "The number of pixels per spi device. The key is the name of the device in\n"
-"/dev. e.g. spidev0.1-pixel_count\n";
+"/dev. e.g. spidev0.1-pixel-count\n"
+"\n"
+"<device>-spi-speed = <int>\n"
+"The speed of the SPI bus, range is 0 - 32000000.";
 }
 
 
