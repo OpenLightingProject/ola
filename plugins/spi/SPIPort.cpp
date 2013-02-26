@@ -441,7 +441,8 @@ void SPIOutputPort::HandlePersonality(const RDMRequest *request_ptr,
       } __attribute__((packed));
 
       struct personality_info_s personality_info;
-      personality_info.personality = m_personality_manager.ActivePersonality();
+      personality_info.personality =
+        m_personality_manager.ActivePersonalityNumber();
       personality_info.total = m_personality_manager.PersonalityCount();
       response = GetResponseFromData(
         request.get(),
@@ -470,7 +471,7 @@ void SPIOutputPort::HandlePersonalityDescription(const RDMRequest *request_ptr,
   }
 
   RDMResponse *response = NULL;
-  Personality *personality = NULL;
+  const Personality *personality = NULL;
   uint8_t personality_number = 0;
   if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
     response = NackWithReason(request.get(),
@@ -498,9 +499,9 @@ void SPIOutputPort::HandlePersonalityDescription(const RDMRequest *request_ptr,
     struct personality_description_s personality_description;
     personality_description.personality = personality_number;
     personality_description.slots_required =
-      HostToNetwork(personality.footprint());
+      HostToNetwork(personality->footprint());
     strncpy(personality_description.description,
-            personality.description().c_str(),
+            personality->description().c_str(),
             sizeof(personality_description.description));
 
     response = GetResponseFromData(

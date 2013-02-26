@@ -25,6 +25,7 @@
 #include <vector>
 #include "ola/DmxBuffer.h"
 #include "olad/Port.h"
+#include "ola/stl/STLUtils.h"
 #include "plugins/spi/SPIDevice.h"
 
 namespace ola {
@@ -67,7 +68,7 @@ class PersonalityManager {
       m_active_personality = personality;
     }
 
-    uint8_t ActivePersonality() const { return m_active_personality; }
+    uint8_t ActivePersonalityNumber() const { return m_active_personality; }
 
     const Personality *ActivePersonality() const {
       return Lookup(m_active_personality);
