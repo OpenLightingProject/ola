@@ -45,6 +45,7 @@ namespace spi {
 
 using ola::network::HostToNetwork;
 using ola::network::NetworkToHost;
+using ola::rdm::NR_DATA_OUT_OF_RANGE;
 using ola::rdm::RDMCallback;
 using ola::rdm::RDMCommand;
 using ola::rdm::RDMRequest;
@@ -57,9 +58,6 @@ const uint16_t SPIOutputPort::SPI_DELAY = 0;
 const uint32_t SPIOutputPort::SPI_SPEED = 1000000;
 const uint8_t SPIOutputPort::SPI_BITS_PER_WORD = 8;
 const uint8_t SPIOutputPort::SPI_MODE = 0;
-const uint8_t SPIOutputPort::PERSONALITY_WS2801_INDIVIDUAL = 0;
-const uint8_t SPIOutputPort::PERSONALITY_WS2801_SIMULATANEOUS = 1;
-const uint8_t SPIOutputPort::PERSONALITY_LAST = 2;
 const uint16_t SPIOutputPort::CHANNELS_PER_PIXEL = 3;
 
 
@@ -72,7 +70,6 @@ SPIOutputPort::SPIOutputPort(SPIDevice *parent, const string &spi_device,
       m_uid(uid),
       m_pixel_count(pixel_count),
       m_fd(-1),
-      m_personality(PERSONALITY_WS2801_INDIVIDUAL),
       m_start_address(1),
       m_identify_mode(false) {
   size_t pos = spi_device.find_last_of("/");
@@ -83,6 +80,7 @@ SPIOutputPort::SPIOutputPort(SPIDevice *parent, const string &spi_device,
                                         "WS2801 Individual Control");
   m_personality_manager.AddPersonality(CHANNELS_PER_PIXEL,
                                        "WS2801 Combined Control");
+  m_personality_manager.SetActivePersonality(1);
 }
 
 
@@ -132,10 +130,13 @@ bool SPIOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t) {
   if (m_fd < 0)
     return false;
 
+  if (m_identify_mode)
+    return true;
+
   unsigned int length = m_pixel_count * CHANNELS_PER_PIXEL;
   uint8_t *output_data = new uint8_t[length];
 
-  if (m_personality == PERSONALITY_WS2801_INDIVIDUAL) {
+  if (m_personality_manager.ActivePersonalityNumber() == 1) {
     buffer.GetRange(m_start_address - 1, output_data, &length);
   } else {
     unsigned int pixel_data_length = CHANNELS_PER_PIXEL;
@@ -243,34 +244,6 @@ void SPIOutputPort::SendRDMRequest(const RDMRequest *request_ptr,
 }
 
 
-/**
- * The current personalities' footprint
- */
-uint16_t SPIOutputPort::Footprint() const {
-  return PersonalityFootprint(m_personality);
-}
-
-
-/**
- * The footprint for a particular personality.
- */
-uint16_t SPIOutputPort::PersonalityFootprint(uint8_t personality) const {
-  if (personality == PERSONALITY_WS2801_INDIVIDUAL) {
-    return m_pixel_count * CHANNELS_PER_PIXEL;
-  } else {
-    return CHANNELS_PER_PIXEL;
-  }
-}
-
-
-string SPIOutputPort::PersonalityDescription(uint8_t personality) const {
-  if (personality == PERSONALITY_WS2801_INDIVIDUAL) {
-    return "WS2801 Individual Control";
-  } else {
-    return "WS2801 Combined Control";
-  }
-}
-
 void SPIOutputPort::HandleUnknownPacket(const RDMRequest *request_ptr,
                                         RDMCallback *callback) {
   auto_ptr<const RDMRequest> request(request_ptr);
@@ -337,8 +310,10 @@ void SPIOutputPort::HandleDeviceInfo(const RDMRequest *request_ptr,
   device_info.product_category = HostToNetwork(
       static_cast<uint16_t>(ola::rdm::PRODUCT_CATEGORY_FIXTURE));
   device_info.software_version = HostToNetwork(static_cast<uint32_t>(1));
-  device_info.dmx_footprint = HostToNetwork(Footprint());
-  device_info.current_personality = m_personality + 1;
+  device_info.dmx_footprint = HostToNetwork(
+      m_personality_manager.ActivePersonalityFootprint());
+  device_info.current_personality =
+    m_personality_manager.ActivePersonalityNumber();
   device_info.personality_count = m_personality_manager.PersonalityCount();
   device_info.dmx_start_address = device_info.dmx_footprint ?
     HostToNetwork(m_start_address) : 0xffff;
@@ -409,16 +384,16 @@ void SPIOutputPort::HandlePersonality(const RDMRequest *request_ptr,
     if (request->ParamDataSize() != 1) {
       response = NackWithReason(request.get(), ola::rdm::NR_FORMAT_ERROR);
     } else {
-      uint8_t personality = *request->ParamData();
-      if (personality > PERSONALITY_LAST || personality == 0) {
-        response = NackWithReason(request.get(),
-                                  ola::rdm::NR_DATA_OUT_OF_RANGE);
-      } else if (m_start_address + PersonalityFootprint(personality - 1) - 1
-                 > DMX_UNIVERSE_SIZE) {
-        response = NackWithReason(request.get(),
-                                  ola::rdm::NR_DATA_OUT_OF_RANGE);
+      uint8_t personality_number = *request->ParamData();
+      const Personality* personality = m_personality_manager.Lookup(
+          personality_number);
+      if (!personality) {
+        response = NackWithReason(request.get(), NR_DATA_OUT_OF_RANGE);
+      } else if (m_start_address + personality->footprint() - 1 >
+                 DMX_UNIVERSE_SIZE) {
+        response = NackWithReason(request.get(), NR_DATA_OUT_OF_RANGE);
       } else {
-        m_personality = personality - 1;
+        m_personality_manager.SetActivePersonality(personality_number);
         response = new ola::rdm::RDMSetResponse(
           request->DestinationUID(),
           request->SourceUID(),
@@ -485,7 +460,7 @@ void SPIOutputPort::HandlePersonalityDescription(const RDMRequest *request_ptr,
     const Personality *personality = m_personality_manager.Lookup(
         personality_number);
     if (!personality) {
-      response = NackWithReason(request.get(), ola::rdm::NR_DATA_OUT_OF_RANGE);
+      response = NackWithReason(request.get(), NR_DATA_OUT_OF_RANGE);
     } else {
       struct personality_description_s {
         uint8_t personality;
@@ -516,6 +491,7 @@ void SPIOutputPort::HandlePersonalityDescription(const RDMRequest *request_ptr,
 void SPIOutputPort::HandleDmxStartAddress(const RDMRequest *request_ptr,
                                           RDMCallback *callback) {
   auto_ptr<const RDMRequest> request(request_ptr);
+  uint16_t footprint = m_personality_manager.ActivePersonalityFootprint();
 
   RDMResponse *response;
   if (request->SubDevice()) {
@@ -528,13 +504,11 @@ void SPIOutputPort::HandleDmxStartAddress(const RDMRequest *request_ptr,
     } else {
       uint16_t address =
         NetworkToHost(*(reinterpret_cast<uint16_t*>(request->ParamData())));
-      uint16_t end_address = DMX_UNIVERSE_SIZE - Footprint() + 1;
+      uint16_t end_address = DMX_UNIVERSE_SIZE - footprint + 1;
       if (address == 0 || address > end_address) {
-        response = NackWithReason(request.get(),
-                                  ola::rdm::NR_DATA_OUT_OF_RANGE);
-      } else if (Footprint() == 0) {
-        response = NackWithReason(request.get(),
-                                  ola::rdm::NR_DATA_OUT_OF_RANGE);
+        response = NackWithReason(request.get(), NR_DATA_OUT_OF_RANGE);
+      } else if (footprint == 0) {
+        response = NackWithReason(request.get(), NR_DATA_OUT_OF_RANGE);
       } else {
         m_start_address = address;
         response = new ola::rdm::RDMSetResponse(
@@ -554,7 +528,7 @@ void SPIOutputPort::HandleDmxStartAddress(const RDMRequest *request_ptr,
       response = NackWithReason(request.get(), ola::rdm::NR_FORMAT_ERROR);
     } else {
       uint16_t address = HostToNetwork(m_start_address);
-      if (Footprint() == 0)
+      if (footprint == 0)
         address = 0xffff;
       response = GetResponseFromData(
         request.get(),
@@ -588,9 +562,14 @@ void SPIOutputPort::HandleIdentifyDevice(const RDMRequest *request_ptr,
     } else {
       uint8_t mode = *request->ParamData();
       if (mode == 0 || mode == 1) {
-        m_identify_mode = mode;
         OLA_INFO << "SPI " << m_spi_device_name << " identify mode " << (
             m_identify_mode ? "on" : "off");
+        if (mode) {
+          DmxBuffer identify_buffer;
+          identify_buffer.SetRangeToValue(0, 255, DMX_UNIVERSE_SIZE);
+          WriteDMX(identify_buffer, 0);
+        }
+        m_identify_mode = mode;
         response = new ola::rdm::RDMSetResponse(
           request->DestinationUID(),
           request->SourceUID(),
@@ -602,8 +581,7 @@ void SPIOutputPort::HandleIdentifyDevice(const RDMRequest *request_ptr,
           NULL,
           0);
       } else {
-        response = NackWithReason(request.get(),
-                                  ola::rdm::NR_DATA_OUT_OF_RANGE);
+        response = NackWithReason(request.get(), NR_DATA_OUT_OF_RANGE);
       }
     }
   } else {

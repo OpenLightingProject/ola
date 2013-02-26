@@ -66,12 +66,18 @@ class PersonalityManager {
       if (personality == 0 || personality > m_personalities.size())
         return false;
       m_active_personality = personality;
+      return true;
     }
 
     uint8_t ActivePersonalityNumber() const { return m_active_personality; }
 
     const Personality *ActivePersonality() const {
       return Lookup(m_active_personality);
+    }
+
+    uint16_t ActivePersonalityFootprint() const {
+      const Personality *personality = Lookup(m_active_personality);
+      return personality ? personality->footprint() : 0;
     }
 
     // Lookup a personality. Personalities are numbers from 1.
@@ -109,13 +115,10 @@ class SPIOutputPort: public BasicOutputPort {
     const UID m_uid;
     const unsigned int m_pixel_count;
     int m_fd;
-    uint8_t m_personality;
     uint16_t m_start_address;  // starts from 1
     bool m_identify_mode;
     PersonalityManager m_personality_manager;
 
-    uint16_t Footprint() const;
-    uint16_t PersonalityFootprint(uint8_t personality) const;
     string PersonalityDescription(uint8_t personality) const;
     void HandleUnknownPacket(const ola::rdm::RDMRequest *request,
                              ola::rdm::RDMCallback *callback);
@@ -147,9 +150,6 @@ class SPIOutputPort: public BasicOutputPort {
     static const uint8_t SPI_BITS_PER_WORD;
     static const uint16_t SPI_DELAY;
     static const uint32_t SPI_SPEED;
-    static const uint8_t PERSONALITY_WS2801_INDIVIDUAL;
-    static const uint8_t PERSONALITY_WS2801_SIMULATANEOUS;
-    static const uint8_t PERSONALITY_LAST;
     static const uint16_t CHANNELS_PER_PIXEL;
 };
 }  // spi
