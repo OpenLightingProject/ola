@@ -35,6 +35,7 @@
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
+#include "ola/stl/STLUtils.h"
 
 #include "plugins/spi/SPIPort.h"
 
@@ -61,6 +62,8 @@ const uint8_t SPIOutputPort::PERSONALITY_WS2801_SIMULATANEOUS = 1;
 const uint8_t SPIOutputPort::PERSONALITY_LAST = 2;
 const uint16_t SPIOutputPort::CHANNELS_PER_PIXEL = 3;
 
+
+
 SPIOutputPort::SPIOutputPort(SPIDevice *parent, const string &spi_device,
                              const UID &uid, uint8_t pixel_count)
     : BasicOutputPort(parent, 0, true),
@@ -75,6 +78,11 @@ SPIOutputPort::SPIOutputPort(SPIDevice *parent, const string &spi_device,
   size_t pos = spi_device.find_last_of("/");
   if (pos != string::npos)
     m_spi_device_name = spi_device.substr(pos + 1);
+
+  m_personality_manager.AddPersonality(m_pixel_count * CHANNELS_PER_PIXEL,
+                                        "WS2801 Individual Control");
+  m_personality_manager.AddPersonality(CHANNELS_PER_PIXEL,
+                                       "WS2801 Combined Control");
 }
 
 
@@ -331,7 +339,7 @@ void SPIOutputPort::HandleDeviceInfo(const RDMRequest *request_ptr,
   device_info.software_version = HostToNetwork(static_cast<uint32_t>(1));
   device_info.dmx_footprint = HostToNetwork(Footprint());
   device_info.current_personality = m_personality + 1;
-  device_info.personality_count = PERSONALITY_LAST;
+  device_info.personality_count = m_personality_manager.PersonalityCount();
   device_info.dmx_start_address = device_info.dmx_footprint ?
     HostToNetwork(m_start_address) : 0xffff;
   device_info.sub_device_count = 0;
@@ -433,8 +441,8 @@ void SPIOutputPort::HandlePersonality(const RDMRequest *request_ptr,
       } __attribute__((packed));
 
       struct personality_info_s personality_info;
-      personality_info.personality = m_personality + 1;
-      personality_info.total = PERSONALITY_LAST;
+      personality_info.personality = m_personality_manager.ActivePersonality();
+      personality_info.total = m_personality_manager.PersonalityCount();
       response = GetResponseFromData(
         request.get(),
         reinterpret_cast<const uint8_t*>(&personality_info),
@@ -462,18 +470,20 @@ void SPIOutputPort::HandlePersonalityDescription(const RDMRequest *request_ptr,
   }
 
   RDMResponse *response = NULL;
-  uint8_t personality = 0;
+  Personality *personality = NULL;
+  uint8_t personality_number = 0;
   if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
     response = NackWithReason(request.get(),
                               ola::rdm::NR_UNSUPPORTED_COMMAND_CLASS);
   } else if (request->SubDevice()) {
     response = NackWithReason(request.get(),
                               ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
-  } else if (request->ParamDataSize() != 1) {
+  } else if (request->ParamDataSize() != sizeof(personality_number)) {
     response = NackWithReason(request.get(), ola::rdm::NR_FORMAT_ERROR);
   } else {
-    personality = *request->ParamData() - 1;
-    if (personality >= PERSONALITY_LAST) {
+    personality_number = *request->ParamData();
+    personality = m_personality_manager.Lookup(personality_number);
+    if (!personality) {
       response = NackWithReason(request.get(), ola::rdm::NR_DATA_OUT_OF_RANGE);
     }
   }
@@ -486,11 +496,11 @@ void SPIOutputPort::HandlePersonalityDescription(const RDMRequest *request_ptr,
     } __attribute__((packed));
 
     struct personality_description_s personality_description;
-    personality_description.personality = personality + 1;
+    personality_description.personality = personality_number;
     personality_description.slots_required =
-      HostToNetwork(PersonalityFootprint(personality));
+      HostToNetwork(personality.footprint());
     strncpy(personality_description.description,
-            PersonalityDescription(personality).c_str(),
+            personality.description().c_str(),
             sizeof(personality_description.description));
 
     response = GetResponseFromData(

@@ -22,6 +22,7 @@
 #define PLUGINS_SPI_SPIPORT_H_
 
 #include <string>
+#include <vector>
 #include "ola/DmxBuffer.h"
 #include "olad/Port.h"
 #include "plugins/spi/SPIDevice.h"
@@ -29,6 +30,61 @@
 namespace ola {
 namespace plugin {
 namespace spi {
+
+class Personality {
+  public:
+    Personality(uint16_t footprint, const string &description)
+        : m_footprint(footprint),
+          m_description(description) {
+    }
+
+    uint16_t footprint() const { return m_footprint; }
+    string description() const { return m_description; }
+
+  private:
+    uint16_t m_footprint;
+    const string m_description;
+};
+
+
+class PersonalityManager {
+  public:
+    PersonalityManager() : m_active_personality(0) {}
+
+    ~PersonalityManager() {
+      STLDeleteValues(&m_personalities);
+    }
+
+    void AddPersonality(uint8_t footprint, const string &description) {
+      m_personalities.push_back(new Personality(footprint, description));
+    }
+
+    uint8_t PersonalityCount() const { return m_personalities.size(); }
+
+    bool SetActivePersonality(uint8_t personality) {
+      if (personality == 0 || personality > m_personalities.size())
+        return false;
+      m_active_personality = personality;
+    }
+
+    uint8_t ActivePersonality() const { return m_active_personality; }
+
+    const Personality *ActivePersonality() const {
+      return Lookup(m_active_personality);
+    }
+
+    // Lookup a personality. Personalities are numbers from 1.
+    const Personality *Lookup(uint8_t personality) const {
+      if (personality == 0 || personality > m_personalities.size())
+        return NULL;
+      return m_personalities[personality];
+    }
+
+  private:
+    std::vector<Personality*> m_personalities;
+    uint8_t m_active_personality;
+};
+
 
 class SPIOutputPort: public BasicOutputPort {
   public:
@@ -55,6 +111,7 @@ class SPIOutputPort: public BasicOutputPort {
     uint8_t m_personality;
     uint16_t m_start_address;  // starts from 1
     bool m_identify_mode;
+    PersonalityManager m_personality_manager;
 
     uint16_t Footprint() const;
     uint16_t PersonalityFootprint(uint8_t personality) const;
