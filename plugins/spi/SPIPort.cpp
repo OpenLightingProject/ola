@@ -471,7 +471,6 @@ void SPIOutputPort::HandlePersonalityDescription(const RDMRequest *request_ptr,
   }
 
   RDMResponse *response = NULL;
-  const Personality *personality = NULL;
   uint8_t personality_number = 0;
   if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
     response = NackWithReason(request.get(),
@@ -483,31 +482,30 @@ void SPIOutputPort::HandlePersonalityDescription(const RDMRequest *request_ptr,
     response = NackWithReason(request.get(), ola::rdm::NR_FORMAT_ERROR);
   } else {
     personality_number = *request->ParamData();
-    personality = m_personality_manager.Lookup(personality_number);
+    const Personality *personality = m_personality_manager.Lookup(
+        personality_number);
     if (!personality) {
       response = NackWithReason(request.get(), ola::rdm::NR_DATA_OUT_OF_RANGE);
+    } else {
+      struct personality_description_s {
+        uint8_t personality;
+        uint16_t slots_required;
+        char description[32];
+      } __attribute__((packed));
+
+      struct personality_description_s personality_description;
+      personality_description.personality = personality_number;
+      personality_description.slots_required =
+        HostToNetwork(personality->footprint());
+      strncpy(personality_description.description,
+              personality->description().c_str(),
+              sizeof(personality_description.description));
+
+      response = GetResponseFromData(
+          request.get(),
+          reinterpret_cast<uint8_t*>(&personality_description),
+          sizeof(personality_description));
     }
-  }
-
-  if (!response) {
-    struct personality_description_s {
-      uint8_t personality;
-      uint16_t slots_required;
-      char description[32];
-    } __attribute__((packed));
-
-    struct personality_description_s personality_description;
-    personality_description.personality = personality_number;
-    personality_description.slots_required =
-      HostToNetwork(personality->footprint());
-    strncpy(personality_description.description,
-            personality->description().c_str(),
-            sizeof(personality_description.description));
-
-    response = GetResponseFromData(
-        request.get(),
-        reinterpret_cast<uint8_t*>(&personality_description),
-        sizeof(personality_description));
   }
   RunRDMCallback(callback, response);
 }
