@@ -26,6 +26,7 @@
 #include "olad/PluginAdaptor.h"
 #include "ola/Logging.h"
 #include "ola/rdm/UID.h"
+#include "ola/rdm/UIDAllocator.h"
 #include "ola/StringUtils.h"
 #include "olad/Preferences.h"
 #include "plugins/spi/SPIDevice.h"
@@ -45,28 +46,6 @@ const char SPIPlugin::PLUGIN_NAME[] = "SPI";
 const char SPIPlugin::PLUGIN_PREFIX[] = "spi";
 const char SPIPlugin::SPI_BASE_UID_KEY[] = "base_uid";
 const char SPIPlugin::SPI_DEVICE_PREFIX_KEY[] = "device_prefix";
-
-class UIDAllocator {
-  public:
-    explicit UIDAllocator(const UID &uid)
-      : m_esta_id(uid.ManufacturerId()),
-        m_device_id(uid.DeviceId()) {
-    }
-
-    UID *AllocateNext() {
-      if (m_device_id == UID::ALL_DEVICES)
-        return NULL;
-
-      UID *uid = new UID(m_esta_id, m_device_id);
-      m_device_id++;
-      return uid;
-    }
-
-  private:
-    uint16_t m_esta_id;
-    uint32_t m_device_id;
-};
-
 
 /*
  * Start the plugin
@@ -90,7 +69,7 @@ bool SPIPlugin::StartHook() {
       SPI_DEVICE_PREFIX_KEY);
   FindMatchingFiles("/dev", spi_prefixes, &spi_files);
 
-  UIDAllocator uid_allocator(*base_uid);
+  ola::rdm::UIDAllocator uid_allocator(*base_uid);
   vector<string>::const_iterator iter = spi_files.begin();
   for (; iter != spi_files.end(); ++iter) {
     auto_ptr<UID> uid(uid_allocator.AllocateNext());
