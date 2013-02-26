@@ -65,10 +65,36 @@ string SPIDevice::DeviceId() const {
 bool SPIDevice::StartHook() {
   if (!m_port->Init())
     return false;
+
+  uint8_t personality;
+  if (StringToInt(m_preferences->GetValue(PersonalityKey()), &personality)) {
+    OLA_INFO << "setting personality to " << (int) personality;
+  }
+
+  uint16_t start_address;
+  if (StringToInt(m_preferences->GetValue(StartAddressKey()), &start_address)) {
+    OLA_INFO << "setting dmx address to " << (int) start_address;
+  }
+
   AddPort(m_port);
   return true;
+}
+
+
+void SPIDevice::PrePortStop() {
+  m_preferences->SetValue(PersonalityKey(), "1");
+  m_preferences->SetValue(StartAddressKey(), "1");
+  m_preferences->Save();
+}
+
+
+string SPIDevice::PersonalityKey() const {
+  return Name() + "-personality";
+}
+
+string SPIDevice::StartAddressKey() const {
+  return Name() + "-dmx-address";
 }
 }  // spi
 }  // plugin
 }  // ola
-

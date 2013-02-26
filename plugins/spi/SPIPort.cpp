@@ -563,7 +563,7 @@ void SPIOutputPort::HandleIdentifyDevice(const RDMRequest *request_ptr,
       uint8_t mode = *request->ParamData();
       if (mode == 0 || mode == 1) {
         OLA_INFO << "SPI " << m_spi_device_name << " identify mode " << (
-            m_identify_mode ? "on" : "off");
+            mode ? "on" : "off");
         DmxBuffer identify_buffer;
         identify_buffer.SetRangeToValue(0, mode ? 255 : 0, DMX_UNIVERSE_SIZE);
         WriteDMX(identify_buffer, 0);

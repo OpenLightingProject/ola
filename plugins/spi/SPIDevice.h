@@ -43,11 +43,15 @@ class SPIDevice: public ola::Device {
 
   protected:
     bool StartHook();
+    void PrePortStop();
 
   private:
     class Preferences *m_preferences;
     class PluginAdaptor *m_plugin_adaptor;
     class SPIOutputPort *m_port;
+
+    string PersonalityKey() const;
+    string StartAddressKey() const;
 
     static const char SPI_DEVICE_NAME[];
 };
