@@ -61,7 +61,6 @@ const uint8_t SPIOutputPort::SPI_MODE = 0;
 const uint16_t SPIOutputPort::CHANNELS_PER_PIXEL = 3;
 
 
-
 SPIOutputPort::SPIOutputPort(SPIDevice *parent, const string &spi_device,
                              const UID &uid, uint8_t pixel_count)
     : BasicOutputPort(parent, 0, true),
@@ -89,6 +88,28 @@ SPIOutputPort::~SPIOutputPort() {
     close(m_fd);
 }
 
+
+uint8_t SPIOutputPort::GetPersonality() const {
+  return m_personality_manager.ActivePersonalityNumber();
+}
+
+bool SPIOutputPort::SetPersonality(uint16_t personality) {
+  return m_personality_manager.SetActivePersonality(personality);
+}
+
+uint16_t SPIOutputPort::GetStartAddress() const {
+  return m_start_address;
+}
+
+bool SPIOutputPort::SetStartAddress(uint16_t address) {
+  uint16_t footprint = m_personality_manager.ActivePersonalityFootprint();
+  uint16_t end_address = DMX_UNIVERSE_SIZE - footprint + 1;
+  if (address == 0 || address > end_address || footprint == 0) {
+    return false;
+  }
+  m_start_address = address;
+  return true;
+}
 
 /**
  * Open the SPI device
@@ -385,7 +406,7 @@ void SPIOutputPort::HandlePersonality(const RDMRequest *request_ptr,
       response = NackWithReason(request.get(), ola::rdm::NR_FORMAT_ERROR);
     } else {
       uint8_t personality_number = *request->ParamData();
-      const Personality* personality = m_personality_manager.Lookup(
+      const Personality *personality = m_personality_manager.Lookup(
           personality_number);
       if (!personality) {
         response = NackWithReason(request.get(), NR_DATA_OUT_OF_RANGE);
@@ -502,12 +523,11 @@ void SPIOutputPort::HandleDmxStartAddress(const RDMRequest *request_ptr,
     if (request->ParamDataSize() != sizeof(m_start_address)) {
       response = NackWithReason(request.get(), ola::rdm::NR_FORMAT_ERROR);
     } else {
-      uint16_t address =
-        NetworkToHost(*(reinterpret_cast<uint16_t*>(request->ParamData())));
-      uint16_t end_address = DMX_UNIVERSE_SIZE - footprint + 1;
-      if (address == 0 || address > end_address) {
-        response = NackWithReason(request.get(), NR_DATA_OUT_OF_RANGE);
-      } else if (footprint == 0) {
+      uint16_t address;
+      memcpy(reinterpret_cast<uint8_t*>(&address), request->ParamData(),
+             sizeof(address));
+      address = NetworkToHost(address);
+      if (!SetStartAddress(address)) {
         response = NackWithReason(request.get(), NR_DATA_OUT_OF_RANGE);
       } else {
         m_start_address = address;

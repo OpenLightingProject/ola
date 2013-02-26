@@ -99,6 +99,13 @@ class SPIOutputPort: public BasicOutputPort {
                   const UID &uid, uint8_t pixel_count);
     ~SPIOutputPort();
 
+    string SPIDeviceName() const { return m_spi_device_name; }
+
+    uint8_t GetPersonality() const;
+    bool SetPersonality(uint16_t personality);
+    uint16_t GetStartAddress() const;
+    bool SetStartAddress(uint16_t start_address);
+
     string Description() const { return m_spi_device_name; }
     bool Init();
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
