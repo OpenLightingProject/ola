@@ -19,6 +19,7 @@
 
 goog.require('goog.dom');
 goog.require('goog.events');
+goog.require('goog.string');
 goog.require('ola.BaseFrame');
 goog.require('ola.common.PluginItem');
 goog.require('ola.common.Server');
@@ -52,8 +53,6 @@ goog.inherits(ola.PluginFrame, ola.BaseFrame);
  * @param {ola.PluginChangeEvent} e the plugin event.
  */
 ola.PluginFrame.prototype._UpdateFromData = function(e) {
-  var description = e.plugin['description']
-  description = description.replace(/\n/g, '<br>');
   goog.dom.$('plugin_name').innerHTML = e.plugin['name'];
   goog.dom.$('plugin_preference_source').innerHTML =
     e.plugin['preferences_source'];
@@ -111,6 +110,8 @@ ola.PluginFrame.prototype._UpdateFromData = function(e) {
   } else {
     conflict_row.style.display = 'none';
   }
+  var description = goog.string.htmlEscape(e.plugin['description']);
+  description = description.replace(/\n/g, '<br>');
   goog.dom.$('plugin_description').innerHTML = description;
 };
 
