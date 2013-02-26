@@ -38,10 +38,14 @@ class UIDAllocator {
         m_last_device_id(UID::ALL_DEVICES) {
     }
 
+    // upper bound is inclusive.
     UIDAllocator(const UID &uid, uint32_t last_device_id)
       : m_esta_id(uid.ManufacturerId()),
         m_device_id(uid.DeviceId()),
-        m_last_device_id(last_device_id) {
+        m_last_device_id(last_device_id + 1) {
+      // never hand out the broadcast UID, even if asked to
+      if (last_device_id == UID::ALL_DEVICES)
+        m_last_device_id = UID::ALL_DEVICES;
     }
 
     // Returns the next UID in the range or NULL if not available UIDs remain.
