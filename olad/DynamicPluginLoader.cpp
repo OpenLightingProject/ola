@@ -59,6 +59,10 @@
 #include "plugins/shownet/ShowNetPlugin.h"
 #endif
 
+#ifdef USE_SPI
+#include "plugins/spi/SPIPlugin.h"
+#endif
+
 #ifdef USE_STAGEPROFI
 #include "plugins/stageprofi/StageProfiPlugin.h"
 #endif
@@ -146,6 +150,11 @@ void DynamicPluginLoader::PopulatePlugins() {
 #ifdef USE_SHOWNET
   m_plugins.push_back(
       new ola::plugin::shownet::ShowNetPlugin(m_plugin_adaptor));
+#endif
+
+#ifdef USE_SPI
+  m_plugins.push_back(
+      new ola::plugin::spi::SPIPlugin(m_plugin_adaptor));
 #endif
 
 #ifdef USE_STAGEPROFI

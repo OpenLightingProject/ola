@@ -60,7 +60,7 @@ fi
 ])
 
 
-# PLUGIN_SUPPORT(plugin, conditional)
+# PLUGIN_SUPPORT(plugin, conditional, prerequisites_found)
 # Build the specified plugin, unless it was disabled at configure time.
 # -----------------------------------------------------------------------------
 AC_DEFUN([PLUGIN_SUPPORT],
@@ -73,6 +73,10 @@ AC_DEFUN([PLUGIN_SUPPORT],
     AS_HELP_STRING([--disable-$1], [Disable the $1 plugin]))
 
   eval enable_plugin=\$$enable_arg;
+  if test "$3" == "no"; then
+    enable_plugin="no";
+  fi
+
   if test "${enable_plugin}" != "no"; then
     PLUGINS="${PLUGINS} ${plugin_key}";
     AC_DEFINE_UNQUOTED($2, [1], [define if $1 is to be used])

@@ -34,7 +34,8 @@ DiscoveryAgentTester_LDADD = $(CPPUNIT_LIBS) \
                              ../utils/libolautils.la
 
 RDMTester_SOURCES = RDMAPITest.cpp RDMCommandTest.cpp RDMTester.cpp \
-                    QueueingRDMControllerTest.cpp UIDTest.cpp
+                    QueueingRDMControllerTest.cpp UIDAllocatorTest.cpp \
+                    UIDTest.cpp
 RDMTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 RDMTester_LDADD = $(CPPUNIT_LIBS) \
                   libolardm.la \
