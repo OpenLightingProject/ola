@@ -95,8 +95,19 @@ class PersonalityManager {
 
 class SPIOutputPort: public BasicOutputPort {
   public:
+    struct SPIPortOptions {
+      uint8_t pixel_count;
+      uint32_t spi_speed;
+
+      SPIPortOptions()
+            // For the https://www.adafruit.com/products/738
+          : pixel_count(25),
+            spi_speed(1000000) {
+      }
+    };
+
     SPIOutputPort(SPIDevice *parent, const string &spi_device,
-                  const UID &uid, uint8_t pixel_count);
+                  const UID &uid, const SPIPortOptions &options);
     ~SPIOutputPort();
 
     string SPIDeviceName() const { return m_spi_device_name; }
@@ -116,11 +127,11 @@ class SPIOutputPort: public BasicOutputPort {
                         ola::rdm::RDMCallback *callback);
 
   private:
-
     const string m_device_path;
     string m_spi_device_name;
     const UID m_uid;
     const unsigned int m_pixel_count;
+    uint32_t m_spi_speed;
     int m_fd;
     uint16_t m_start_address;  // starts from 1
     bool m_identify_mode;

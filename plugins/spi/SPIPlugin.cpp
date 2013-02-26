@@ -40,14 +40,11 @@ using ola::rdm::UID;
 using std::auto_ptr;
 
 const char SPIPlugin::DEFAULT_BASE_UID[] = "7a70:00000100";
-// For the https://www.adafruit.com/products/738
-const char SPIPlugin::DEFAULT_PIXEL_COUNT[] = "25";
 const char SPIPlugin::DEFAULT_SPI_DEVICE_PREFIX[] = "spidev";
 const char SPIPlugin::PLUGIN_NAME[] = "SPI";
 const char SPIPlugin::PLUGIN_PREFIX[] = "spi";
 const char SPIPlugin::SPI_BASE_UID_KEY[] = "base_uid";
 const char SPIPlugin::SPI_DEVICE_PREFIX_KEY[] = "device_prefix";
-const char SPIPlugin::SPI_PIXEL_COUNT_KEY[] = "pixel_count";
 
 class UIDAllocator {
   public:
@@ -88,11 +85,6 @@ bool SPIPlugin::StartHook() {
     }
   }
 
-  uint8_t pixel_count;
-  if (!StringToInt(m_preferences->GetValue(SPI_PIXEL_COUNT_KEY) ,
-                   &pixel_count))
-    StringToInt(DEFAULT_PIXEL_COUNT, &pixel_count);
-
   vector<string> spi_files;
   vector<string> spi_prefixes = m_preferences->GetMultipleValue(
       SPI_DEVICE_PREFIX_KEY);
@@ -109,7 +101,7 @@ bool SPIPlugin::StartHook() {
     }
 
     SPIDevice *device = new SPIDevice(this, m_preferences, m_plugin_adaptor,
-                                      *iter, *(uid.get()), pixel_count);
+                                      *iter, *(uid.get()));
 
     if (!device)
       continue;
@@ -159,9 +151,9 @@ string SPIPlugin::Description() const {
 "device_prefix = <string>\n"
 "The prefix of files to match in /dev. Usually set to 'spidev'\n"
 "\n"
-"pixel_count = <int>\n"
-"The number of pixels per spi device.\n"
-"\n";
+"<device>-pixel_count = <int>\n"
+"The number of pixels per spi device. The key is the name of the device in\n"
+"/dev. e.g. spidev0.1-pixel_count\n";
 }
 
 
@@ -180,11 +172,6 @@ bool SPIPlugin::SetDefaultPreferences() {
   save |= m_preferences->SetDefaultValue(SPI_BASE_UID_KEY,
                                          StringValidator(),
                                          DEFAULT_BASE_UID);
-  // 512 / 3 = 170.
-  save |= m_preferences->SetDefaultValue(SPI_PIXEL_COUNT_KEY,
-                                         IntValidator(0, 170),
-                                         DEFAULT_PIXEL_COUNT);
-
   if (save)
     m_preferences->Save();
 

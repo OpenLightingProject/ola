@@ -51,13 +51,11 @@ class SPIPlugin: public ola::Plugin {
                            vector<string> *files);
 
     static const char DEFAULT_BASE_UID[];
-    static const char DEFAULT_PIXEL_COUNT[];
     static const char DEFAULT_SPI_DEVICE_PREFIX[];
     static const char PLUGIN_NAME[];
     static const char PLUGIN_PREFIX[];
     static const char SPI_BASE_UID_KEY[];
     static const char SPI_DEVICE_PREFIX_KEY[];
-    static const char SPI_PIXEL_COUNT_KEY[];
 };
 }  // spi
 }  // plugin

@@ -55,19 +55,19 @@ using ola::rdm::UIDSet;
 using std::auto_ptr;
 
 const uint16_t SPIOutputPort::SPI_DELAY = 0;
-const uint32_t SPIOutputPort::SPI_SPEED = 1000000;
 const uint8_t SPIOutputPort::SPI_BITS_PER_WORD = 8;
 const uint8_t SPIOutputPort::SPI_MODE = 0;
 const uint16_t SPIOutputPort::CHANNELS_PER_PIXEL = 3;
 
 
 SPIOutputPort::SPIOutputPort(SPIDevice *parent, const string &spi_device,
-                             const UID &uid, uint8_t pixel_count)
+                             const UID &uid, const SPIPortOptions &options)
     : BasicOutputPort(parent, 0, true),
       m_device_path(spi_device),
       m_spi_device_name(spi_device),
       m_uid(uid),
-      m_pixel_count(pixel_count),
+      m_pixel_count(options.pixel_count),
+      m_spi_speed(options.spi_speed),
       m_fd(-1),
       m_start_address(1),
       m_identify_mode(false) {
@@ -134,8 +134,7 @@ bool SPIOutputPort::Init() {
     return false;
   }
 
-  uint32_t spi_speed = SPI_SPEED;
-  if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &spi_speed) < 0) {
+  if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &m_spi_speed) < 0) {
     OLA_WARN << "Failed to set SPI_IOC_WR_MAX_SPEED_HZ for " << m_device_path;
     return false;
   }

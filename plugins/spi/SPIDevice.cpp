@@ -45,19 +45,36 @@ SPIDevice::SPIDevice(SPIPlugin *owner,
                      Preferences *prefs,
                      PluginAdaptor *plugin_adaptor,
                      const string &spi_device,
-                     const UID &uid,
-                     uint8_t pixel_count)
+                     const UID &uid)
     : Device(owner, SPI_DEVICE_NAME),
       m_preferences(prefs),
       m_plugin_adaptor(plugin_adaptor) {
-  m_port = new SPIOutputPort(this, spi_device, uid, pixel_count);
-}
 
+  // 512 / 3 = 170.
+  m_preferences->SetDefaultValue(PixelCountKey(), IntValidator(0, 170), "25");
+  m_preferences->SetDefaultValue(SPISpeedKey(), IntValidator(0, 32000000),
+                                 "100000");
+
+  SPIOutputPort::SPIPortOptions settings;
+
+  uint8_t pixel_count;
+  if (StringToInt(m_preferences->GetValue(PixelCountKey()), &pixel_count)) {
+    settings.pixel_count = pixel_count;
+  }
+
+  uint32_t spi_speed;
+  if (StringToInt(m_preferences->GetValue(SPISpeedKey()), &spi_speed)) {
+    settings.spi_speed = spi_speed;
+  }
+
+  m_port = new SPIOutputPort(this, spi_device, uid, settings);
+}
 
 
 string SPIDevice::DeviceId() const {
   return m_port->Description();
 }
+
 
 /*
  * Start this device
@@ -68,14 +85,12 @@ bool SPIDevice::StartHook() {
 
   uint8_t personality;
   if (StringToInt(m_preferences->GetValue(PersonalityKey()), &personality)) {
-    OLA_INFO << "setting personality to " << (int) personality;
     m_port->SetPersonality(personality);
   }
 
-  uint16_t start_address;
-  if (StringToInt(m_preferences->GetValue(StartAddressKey()), &start_address)) {
-    OLA_INFO << "setting dmx address to " << (int) start_address;
-    m_port->SetStartAddress(start_address);
+  uint16_t dmx_address;
+  if (StringToInt(m_preferences->GetValue(StartAddressKey()), &dmx_address)) {
+    m_port->SetStartAddress(dmx_address);
   }
 
   AddPort(m_port);
@@ -100,6 +115,14 @@ string SPIDevice::PersonalityKey() const {
 
 string SPIDevice::StartAddressKey() const {
   return m_port->SPIDeviceName() + "-dmx-address";
+}
+
+string SPIDevice::SPISpeedKey() const {
+  return m_port->SPIDeviceName() + "-spi-speed";
+}
+
+string SPIDevice::PixelCountKey() const {
+  return m_port->SPIDeviceName() + "-pixel-count";
 }
 }  // spi
 }  // plugin
