@@ -589,6 +589,7 @@ void SPIOutputPort::HandleIdentifyDevice(const RDMRequest *request_ptr,
           identify_buffer.SetRangeToValue(0, 255, DMX_UNIVERSE_SIZE);
         else
           identify_buffer.Blackout();
+        m_identify_mode = false;  // otherwise we won't write DMX
         WriteDMX(identify_buffer, 0);
         m_identify_mode = mode;
         response = new ola::rdm::RDMSetResponse(
