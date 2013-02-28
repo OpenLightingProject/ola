@@ -422,7 +422,7 @@ class ResponderTestFixture(TestFixture):
       args: A list of arguments
     """
     self.LogDebug(' SET: uid: %s, pid: %s, sub device: %d, args: %s' %
-                  (uid, pid, sub_device, args))
+                  (uid, pid, sub_device, self._EscapeData(args)))
     self._outstanding_request = (sub_device, PidStore.RDM_SET, pid.value)
     ret_code =  self._api.Set(self._universe,
                               uid,
@@ -538,12 +538,28 @@ class ResponderTestFixture(TestFixture):
         self.LogDebug(' Response: %s, PID = 0x%04hx, Error: %s' %
                       (response, response.pid, unpack_exception))
       else:
+        escaped_string = '%s' % self._EscapeData(unpacked_data)
         self.LogDebug(' Response: %s, PID = 0x%04hx, data = %s' %
-                      (response, response.pid, unpacked_data))
+                      (response, response.pid, escaped_string))
     else:
       self.LogDebug(' Response: %s, PID = 0x%04hx' % (response, response.pid))
 
     return True
+
+  def _EscapeData(self, data):
+    if type(data) == list:
+      return [self._EscapeData(i) for i in data]
+    elif type(data) == dict:
+      d = {}
+      for k, v in data.iteritems():
+        d[k] = self._EscapeData(v)
+      return d
+    elif type(data) == str:
+      return data.encode('string-escape')
+    elif type(data) == unicode:
+      return data.encode('unicode-escape')
+    else:
+      return data
 
   def _PerformMatching(self, response, unpacked_data, unpack_exception):
     """Check if this response matched any of the expected values.

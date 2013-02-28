@@ -187,7 +187,8 @@ class SetLabelMixin(object):
                        (self.pid, len(new_label)))
     else:
       self.SetFailed('Labels didn\'t match, expected "%s", got "%s"' %
-                     (self.TEST_LABEL, new_label))
+                     (self.TEST_LABEL.encode('string-escape'),
+                      new_label.encode('string-escape')))
 
   def ResetState(self):
     if not self.OldValue():
