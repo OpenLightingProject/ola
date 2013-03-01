@@ -145,7 +145,8 @@ string ArtNetPlugin::Description() const {
 "don't follow the ArtNet spec require this.\n"
 "\n"
 "use_loopback = [true|false]\n"
-"Enable use of the loopback device.\n";
+"Enable use of the loopback device.\n"
+"\n";
 }
 
 

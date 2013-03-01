@@ -141,7 +141,8 @@ string SPIPlugin::Description() const {
 "/dev. e.g. spidev0.1-pixel-count.\n"
 "\n"
 "<device>-spi-speed = <int>\n"
-"The speed of the SPI bus, range is 0 - 32000000.";
+"The speed of the SPI bus, range is 0 - 32000000.\n"
+"\n";
 }
 
 
