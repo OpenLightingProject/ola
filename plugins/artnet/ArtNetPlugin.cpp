@@ -134,7 +134,7 @@ string ArtNetPlugin::Description() const {
 "The ArtNet Net to use (0-127).\n"
 "\n"
 "short_name = ola - ArtNet node\n"
-"The short name of the node (first 17 chars will be used)\n"
+"The short name of the node (first 17 chars will be used).\n"
 "\n"
 "subnet = 0\n"
 "The ArtNet subnet to use (0-15).\n"
@@ -145,7 +145,7 @@ string ArtNetPlugin::Description() const {
 "don't follow the ArtNet spec require this.\n"
 "\n"
 "use_loopback = [true|false]\n"
-"Enable use of the loopback device\n";
+"Enable use of the loopback device.\n";
 }
 
 
