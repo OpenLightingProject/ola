@@ -23,8 +23,7 @@ EXTRA_DIST = Base.h \
              ServerCommon.h \
              ServiceEntry.h \
              URLEntry.h \
-             XIDAllocator.h \
-             slp-parser-actions.h
+             XIDAllocator.h
 
 # Libraries
 noinst_LTLIBRARIES = libolaslpcore.la libolaslp.la libolaslpproto.la
@@ -82,13 +81,7 @@ slp_sa_test_LDADD = $(top_builddir)/common/libolacommon.la \
                     ./libolaslp.la
 
 clean-local:
-	rm -f *.pb.{h,cc} lex.yy.cpp config.tab.cpp config.tab.h *.gcno *.gcda
-
-lex.yy.cpp: config.lex
-	$(LEX) --header-file=lex.yy.h -olex.yy.cpp config.lex
-
-config.tab.cpp config.tab.h: config.ypp
-	$(BISON) --defines=config.tab.h --output-file=config.tab.cpp config.ypp
+	rm -f *.pb.{h,cc} *.gcno *.gcda
 
 # Tests
 if BUILD_TESTS
