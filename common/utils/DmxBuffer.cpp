@@ -319,6 +319,20 @@ void DmxBuffer::Get(uint8_t *data, unsigned int *length) const {
 }
 
 
+/**
+ * Get a range of values starting from a particular slot
+ */
+void DmxBuffer::GetRange(unsigned int slot, uint8_t *data,
+                         unsigned int *length) const {
+  if (m_data) {
+    *length = min(*length, m_length - slot);
+    memcpy(data, m_data + slot, *length);
+  } else {
+    *length = 0;
+  }
+}
+
+
 /*
  * Returns the value of a channel. This returns 0 if the buffer wasn't
  * initialized or the channel was out-of-bounds.

@@ -120,6 +120,9 @@ void UsbProDevice::Configure(RpcController *controller,
     case ola::plugin::usbpro::Request::USBPRO_SERIAL_REQUEST:
       HandleSerialRequest(controller, &request_pb, response, done);
       break;
+    case ola::plugin::usbpro::Request::USBPRO_PORT_ASSIGNMENT_REQUEST:
+      HandlePortAssignmentRequest(controller, &request_pb, response, done);
+      break;
     default:
       controller->SetFailed("Invalid Request");
       done->Run();
@@ -237,8 +240,8 @@ void UsbProDevice::HandleParametersResponse(RpcController *controller,
  * Handle a Serial number Configure RPC. We can just return the cached number.
  */
 void UsbProDevice::HandleSerialRequest(
-    RpcController *controller,
-    const Request *request,
+    RpcController*,
+    const Request*,
     string *response,
     google::protobuf::Closure *done) {
   Reply reply;
@@ -248,8 +251,47 @@ void UsbProDevice::HandleSerialRequest(
   serial_reply->set_serial(m_serial);
   reply.SerializeToString(response);
   done->Run();
-  (void) controller;
-  (void) request;
+}
+
+
+/*
+ * Handle a port assignment request.
+ */
+void UsbProDevice::HandlePortAssignmentRequest(
+    RpcController *controller,
+    const Request*,
+    string *response,
+    google::protobuf::Closure *done) {
+  m_pro_widget->GetPortAssignments(NewSingleCallback(
+    this,
+    &UsbProDevice::HandlePortAssignmentResponse,
+    controller,
+    response,
+    done));
+}
+
+
+/**
+ * Handle a PortAssignment response.
+ */
+void UsbProDevice::HandlePortAssignmentResponse(RpcController *controller,
+                                                string *response,
+                                                google::protobuf::Closure *done,
+                                                bool status,
+                                                uint8_t port1_assignment,
+                                                uint8_t port2_assignment) {
+  if (!status) {
+    controller->SetFailed("Get Port Assignments failed");
+  } else {
+    Reply reply;
+    reply.set_type(ola::plugin::usbpro::Reply::USBPRO_PORT_ASSIGNMENT_REPLY);
+    ola::plugin::usbpro::PortAssignmentReply *port_assignment_reply =
+      reply.mutable_port_assignment();
+    port_assignment_reply->set_port_assignment1(port1_assignment);
+    port_assignment_reply->set_port_assignment2(port2_assignment);
+    reply.SerializeToString(response);
+  }
+  done->Run();
 }
 
 

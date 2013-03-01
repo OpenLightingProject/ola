@@ -19,6 +19,7 @@
 
 goog.require('goog.dom');
 goog.require('goog.events');
+goog.require('goog.string');
 goog.require('ola.BaseFrame');
 goog.require('ola.common.PluginItem');
 goog.require('ola.common.Server');
@@ -52,8 +53,6 @@ goog.inherits(ola.PluginFrame, ola.BaseFrame);
  * @param {ola.PluginChangeEvent} e the plugin event.
  */
 ola.PluginFrame.prototype._UpdateFromData = function(e) {
-  var description = e.plugin['description']
-  description = description.replace(/\n/g, '<br>');
   goog.dom.$('plugin_name').innerHTML = e.plugin['name'];
   goog.dom.$('plugin_preference_source').innerHTML =
     e.plugin['preferences_source'];
@@ -95,11 +94,7 @@ ola.PluginFrame.prototype._UpdateFromData = function(e) {
       var control = new goog.ui.Control(
           goog.dom.createDom('span', null, plugin['name']));
       control.render(conflicts);
-      var EVENTS = goog.object.getValues(goog.ui.Component.EventType);
-      goog.events.listen(control, goog.ui.Component.EventType.ACTION,
-          function(e) {
-            this._PluginControlClicked(plugin['id']);
-          }, false, this);
+      this._AttachListener(control, plugin['id']);
       this.controls.push(control);
 
       if (possible_conflicts && plugin['active']) {
@@ -111,6 +106,8 @@ ola.PluginFrame.prototype._UpdateFromData = function(e) {
   } else {
     conflict_row.style.display = 'none';
   }
+  var description = goog.string.htmlEscape(e.plugin['description']);
+  description = description.replace(/\n/g, '<br>');
   goog.dom.$('plugin_description').innerHTML = description;
 };
 
@@ -121,4 +118,14 @@ ola.PluginFrame.prototype._UpdateFromData = function(e) {
  */
 ola.PluginFrame.prototype._PluginControlClicked = function(id) {
   this._show_plugin_fn(id);
+}
+
+/**
+ * Attach a listener to a control.
+ */
+ola.PluginFrame.prototype._AttachListener = function(control, plugin_id) {
+  goog.events.listen(control, goog.ui.Component.EventType.ACTION,
+                     function(e) {
+                       this._PluginControlClicked(plugin_id);
+                     }, false, this);
 }

@@ -232,7 +232,7 @@ void DummyRDMDevice::HandleFactoryDefaults(const ola::rdm::RDMRequest *request,
       response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
     } else {
       m_start_address = 1;
-      m_personality = 0;
+      m_personality = 1;
       m_identify_mode = 0;
 
       response = new ola::rdm::RDMSetResponse(
@@ -252,7 +252,7 @@ void DummyRDMDevice::HandleFactoryDefaults(const ola::rdm::RDMRequest *request,
     } else {
       uint8_t using_defaults = (
           m_start_address == 1 &&
-          m_personality == 0 &&
+          m_personality == 1 &&
           m_identify_mode == false);
       response = GetResponseFromData(
         request,

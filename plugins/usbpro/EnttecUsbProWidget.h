@@ -87,6 +87,15 @@ class EnttecPort
  */
 class EnttecUsbProWidget: public SerialWidgetInterface {
   public:
+    /*
+     * The callback to run when we receive a port assignment response
+     * @param true if this command completed ok
+     * @param DMX port 1 assignment
+     * @param DMX port 2 assignment
+     */
+    typedef ola::SingleUseCallback3<void, bool, uint8_t, uint8_t>
+      EnttecUsbProPortAssignmentCallback;
+
     struct EnttecUsbProWidgetOptions {
       uint16_t esta_id;
       uint32_t serial;
@@ -111,6 +120,8 @@ class EnttecUsbProWidget: public SerialWidgetInterface {
     EnttecUsbProWidget(ola::io::ConnectedDescriptor *descriptor,
                        const EnttecUsbProWidgetOptions &options);
     ~EnttecUsbProWidget();
+
+    void GetPortAssignments(EnttecUsbProPortAssignmentCallback *callback);
 
     void Stop();
     unsigned int PortCount() const;

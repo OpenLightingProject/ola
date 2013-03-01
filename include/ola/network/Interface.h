@@ -101,4 +101,3 @@ class InterfaceBuilder {
 }  // network
 }  // ola
 #endif  // INCLUDE_OLA_NETWORK_INTERFACE_H_
-

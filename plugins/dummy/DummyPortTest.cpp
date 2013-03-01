@@ -551,7 +551,7 @@ void DummyPortTest::testIdentifyDevice() {
 void DummyPortTest::VerifyUIDs(const UIDSet &uids) {
   UIDSet expected_uids;
   for (unsigned int i = 0; i < 10; i++) {
-    UID uid(OPEN_LIGHTING_ESTA_CODE, DummyPort::kStartAddress + i);
+    UID uid(OPEN_LIGHTING_ESTA_CODE, 0xffffff00 + i);
     expected_uids.AddUID(uid);
   }
   OLA_ASSERT_EQ(expected_uids, uids);
