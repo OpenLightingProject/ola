@@ -108,11 +108,13 @@ string OpenDmxPlugin::Description() const {
 "----------------------------\n"
 "\n"
 "The plugin creates a single device with one output port using the Enttec\n"
-"Open DMX USB widget.\n\n"
+"Open DMX USB widget.\n"
+"\n"
 "--- Config file : ola-opendmx.conf ---\n"
 "\n"
 "device = /dev/dmx0\n"
-"The path to the open dmx usb device. Multiple entries are supported.\n";
+"The path to the open dmx usb device. Multiple entries are supported.\n"
+"\n";
 }
 
 
