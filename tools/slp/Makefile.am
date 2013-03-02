@@ -56,7 +56,12 @@ SLP.pb.cc SLP.pb.h: SLP.proto
 	$(PROTOC)  --cpp_out ./ SLP.proto
 
 # Programs
-noinst_PROGRAMS = slp_server slp_client slp_sa_test
+noinst_PROGRAMS = slp_client slp_sa_test
+
+if HAVE_LIBMICROHTTPD
+noinst_PROGRAMS += slp_server
+endif
+
 slp_server_SOURCES = SLPDaemon.cpp \
                      slp-server.cpp
 slp_server_LDADD = $(top_builddir)/common/libolacommon.la \
