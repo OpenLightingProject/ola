@@ -135,7 +135,15 @@ class SPIOutputPort: public BasicOutputPort {
     bool m_identify_mode;
     PersonalityManager m_personality_manager;
 
-    string PersonalityDescription(uint8_t personality) const;
+    // DMX methods
+    void IndividualWS2801Control(const DmxBuffer &buffer);
+    void CombinedWS2801Control(const DmxBuffer &buffer);
+    void IndividualLPD8806Control(const DmxBuffer &buffer);
+    void CombinedLPD8806Control(const DmxBuffer &buffer);
+    unsigned int LPD8806BufferSize() const;
+    void WriteSPIData(const uint8_t *data, unsigned int length);
+
+    // RDM methods
     void HandleUnknownPacket(const ola::rdm::RDMRequest *request,
                              ola::rdm::RDMCallback *callback);
     void HandleSupportedParams(const ola::rdm::RDMRequest *request,
@@ -166,7 +174,8 @@ class SPIOutputPort: public BasicOutputPort {
     static const uint8_t SPI_BITS_PER_WORD;
     static const uint16_t SPI_DELAY;
     static const uint32_t SPI_SPEED;
-    static const uint16_t CHANNELS_PER_PIXEL;
+    static const uint16_t WS2801_SLOTS_PER_PIXEL;
+    static const uint16_t LPD8806_SLOTS_PER_PIXEL;
 };
 }  // spi
 }  // plugin
