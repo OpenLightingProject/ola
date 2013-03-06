@@ -291,7 +291,17 @@ void SPIOutputPort::IndividualLPD8806Control(const DmxBuffer &buffer) {
                                 buffer.Size() - first_slot);
   for (unsigned int i = 0; i < limit; i++) {
     uint8_t d = buffer.Get(first_slot + i);
-    output_data[i] = 0x80 & (d >> 1);
+    // Convert RGB to GRB
+    switch (i % LPD8806_SLOTS_PER_PIXEL) {
+      case 0:
+        output_data[i + 1] = 0x80 | (d >> 1);
+        break;
+      case 1:
+        output_data[i - 1] = 0x80 | (d >> 1);
+        break;
+      default:
+        output_data[i] = 0x80 | (d >> 1);
+    }
   }
   WriteSPIData(output_data, length);
 }
@@ -306,13 +316,18 @@ void SPIOutputPort::CombinedLPD8806Control(const DmxBuffer &buffer) {
     return;
   }
 
+  // The leds are GRB format so convert here
+  uint8_t temp = pixel_data[1];
+  pixel_data[1] = pixel_data[0];
+  pixel_data[0] = temp;
+
   unsigned int length = LPD8806BufferSize();
   uint8_t output_data[length];
   memset(output_data, 0, length);
   for (unsigned int i = 0; i < m_pixel_count; i++) {
     for (unsigned int j = 0; j < LPD8806_SLOTS_PER_PIXEL; j++) {
       output_data[i * LPD8806_SLOTS_PER_PIXEL + j] =
-        0x80 & (pixel_data[j] >> 1);
+        0x80 | (pixel_data[j] >> 1);
     }
   }
   WriteSPIData(output_data, length);
