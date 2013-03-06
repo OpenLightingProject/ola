@@ -176,7 +176,9 @@ bool SPIOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t) {
       CombinedLPD8806Control(buffer);
       break;
     default:
+      break;
   }
+  return true;
 }
 
 
@@ -281,7 +283,8 @@ void SPIOutputPort::CombinedWS2801Control(const DmxBuffer &buffer) {
 
 void SPIOutputPort::IndividualLPD8806Control(const DmxBuffer &buffer) {
   unsigned int length = LPD8806BufferSize();
-  uint8_t output_data[length] = {0};
+  uint8_t output_data[length];
+  memset(output_data, 0, length);
 
   unsigned int first_slot = m_start_address - 1;  // 0 offset
   unsigned int limit = std::min(m_pixel_count * LPD8806_SLOTS_PER_PIXEL,
@@ -304,7 +307,8 @@ void SPIOutputPort::CombinedLPD8806Control(const DmxBuffer &buffer) {
   }
 
   unsigned int length = LPD8806BufferSize();
-  uint8_t output_data[length] = {0};
+  uint8_t output_data[length];
+  memset(output_data, 0, length);
   for (unsigned int i = 0; i < m_pixel_count; i++) {
     for (unsigned int j = 0; j < LPD8806_SLOTS_PER_PIXEL; j++) {
       output_data[i * LPD8806_SLOTS_PER_PIXEL + j] =
