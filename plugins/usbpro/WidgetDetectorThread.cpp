@@ -20,10 +20,7 @@
  */
 
 
-#include <dirent.h>
-#include <errno.h>
 #include <string.h>
-#include <iostream>
 #include <string>
 #include <vector>
 
@@ -31,6 +28,7 @@
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
+#include "ola/file/Util.h"
 #include "ola/io/Descriptor.h"
 #include "plugins/usbpro/ArduinoWidget.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
@@ -187,7 +185,7 @@ void WidgetDetectorThread::WaitUntilRunning() {
  */
 bool WidgetDetectorThread::RunScan() {
   vector<string> device_paths;
-  FindCandiateDevices(&device_paths);
+  ola::file::FindMatchingFiles(m_directory, m_prefixes, &device_paths);
 
   vector<string>::iterator it;
   for (it = device_paths.begin(); it != device_paths.end(); ++it) {
@@ -220,39 +218,6 @@ void WidgetDetectorThread::PerformDiscovery(const string &path,
   m_active_descriptors[descriptor] = DescriptorInfo(path, -1);
   m_active_paths.insert(path);
   PerformNextDiscoveryStep(descriptor);
-}
-
-
-/*
- * Look for candidate devices in m_directory
- * @param device_paths a pointer to a vector to be populated with paths in
- * m_directory that match m_prefixes.
- */
-void WidgetDetectorThread::FindCandiateDevices(vector<string> *device_paths) {
-  if (!(m_directory.empty() || m_prefixes.empty())) {
-    DIR *dp;
-    struct dirent dir_ent;
-    struct dirent *dir_ent_p;
-    if ((dp  = opendir(m_directory.data())) == NULL) {
-      OLA_WARN << "Could not open " << m_directory << ":" << strerror(errno);
-      return;
-    }
-
-    readdir_r(dp, &dir_ent, &dir_ent_p);
-    while (dir_ent_p != NULL) {
-      vector<string>::const_iterator iter;
-      for (iter = m_prefixes.begin(); iter != m_prefixes.end();
-           ++iter) {
-        if (!strncmp(dir_ent_p->d_name, iter->data(), iter->size())) {
-          stringstream str;
-          str << m_directory << "/" << dir_ent_p->d_name;
-          device_paths->push_back(str.str());
-        }
-      }
-      readdir_r(dp, &dir_ent, &dir_ent_p);
-    }
-    closedir(dp);
-  }
 }
 
 

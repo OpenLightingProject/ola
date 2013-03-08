@@ -578,6 +578,7 @@ AC_OUTPUT( Makefile \
     common/Makefile \
     common/base/Makefile \
     common/export_map/Makefile \
+    common/file/Makefile \
     common/http/Makefile \
     common/io/Makefile \
     common/logging/Makefile \
@@ -601,6 +602,7 @@ AC_OUTPUT( Makefile \
     include/Makefile \
     include/ola/Makefile \
     include/ola/base/Makefile \
+    include/ola/file/Makefile \
     include/ola/http/Makefile \
     include/ola/io/Makefile \
     include/ola/math/Makefile \

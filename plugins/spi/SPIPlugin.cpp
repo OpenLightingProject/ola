@@ -18,16 +18,15 @@
  * Copyright (C) 2013 Simon Newton
  */
 
-#include <dirent.h>
-#include <errno.h>
 #include <memory>
 #include <string>
 #include <vector>
-#include "olad/PluginAdaptor.h"
 #include "ola/Logging.h"
+#include "ola/StringUtils.h"
+#include "ola/file/Util.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDAllocator.h"
-#include "ola/StringUtils.h"
+#include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
 #include "plugins/spi/SPIDevice.h"
 #include "plugins/spi/SPIPlugin.h"
@@ -67,7 +66,7 @@ bool SPIPlugin::StartHook() {
   vector<string> spi_files;
   vector<string> spi_prefixes = m_preferences->GetMultipleValue(
       SPI_DEVICE_PREFIX_KEY);
-  FindMatchingFiles("/dev", spi_prefixes, &spi_files);
+  ola::file::FindMatchingFiles("/dev", spi_prefixes, &spi_files);
 
   ola::rdm::UIDAllocator uid_allocator(*base_uid);
   vector<string>::const_iterator iter = spi_files.begin();
@@ -168,46 +167,6 @@ bool SPIPlugin::SetDefaultPreferences() {
     return false;
 
   return true;
-}
-
-
-/*
- * Return files in a given directory that match a set of prefixes. Each file
- * must match at least one prefix to be returned, An empty prefix list will
- * return no files.
- * @param directory the path of the directory to search
- * @param prefixes the list of prefixes to match files against
- * @param files a pointer to the vector in which to return the absoluate path
- *   file names.
- * TODO(simon): move this to the common code something.
- */
-void SPIPlugin::FindMatchingFiles(const string &directory,
-                                  const vector<string> &prefixes,
-                                  vector<string> *files) {
-  if (directory.empty() || prefixes.empty())
-    return;
-
-  DIR *dp;
-  struct dirent dir_ent;
-  struct dirent *dir_ent_p;
-  if ((dp  = opendir(directory.data())) == NULL) {
-    OLA_WARN << "Could not open " << directory << ":" << strerror(errno);
-    return;
-  }
-
-  readdir_r(dp, &dir_ent, &dir_ent_p);
-  while (dir_ent_p != NULL) {
-    vector<string>::const_iterator iter;
-    for (iter = prefixes.begin(); iter != prefixes.end(); ++iter) {
-      if (!strncmp(dir_ent_p->d_name, iter->data(), iter->size())) {
-        stringstream str;
-        str << directory << "/" << dir_ent_p->d_name;
-        files->push_back(str.str());
-      }
-    }
-    readdir_r(dp, &dir_ent, &dir_ent_p);
-  }
-  closedir(dp);
 }
 }  // spi
 }  // plugin
