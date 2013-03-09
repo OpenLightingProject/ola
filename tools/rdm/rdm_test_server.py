@@ -283,7 +283,10 @@ class RDMTestThread(Thread):
       logs_saved = False
 
     self._test_state_lock.acquire()
-    self._test_state['duration'] = (end_time - start_time).total_seconds()
+    # we can't use total_seconds() since it requires Python 2.7
+    time_delta = end_time - start_time
+    self._test_state['duration'] = (
+        time_delta.seconds() + time_delta.days() * 24 * 3600)
     self._test_state['state'] = self.COMPLETED
     self._test_state['tests'] = tests
     self._test_state['logs_saved'] = logs_saved
