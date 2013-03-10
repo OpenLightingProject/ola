@@ -95,7 +95,6 @@ binary-arch: build install
 	dh_installinit --name=rdm_test_server
 	dh_installudev --noscripts
 #	dh_installcron
-	dh_installman
 	dh_link
 	dh_strip
 	dh_compress
