@@ -32,10 +32,11 @@
 #include "ola/testing/TestUtils.h"
 #include "tools/slp/SLPPacketConstants.h"
 #include "tools/slp/SLPServer.h"
+#include "tools/slp/SLPServerTestHelper.h"
 #include "tools/slp/ScopeSet.h"
 #include "tools/slp/ServiceEntry.h"
 #include "tools/slp/URLEntry.h"
-#include "tools/slp/SLPServerTestHelper.h"
+#include "tools/slp/URLListVerifier.h"
 
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
@@ -128,44 +129,6 @@ const ScopeSet SLPServerUATest::SCOPE1_2("one,two");
 
 
 CPPUNIT_TEST_SUITE_REGISTRATION(SLPServerUATest);
-
-
-/**
- * This class allows us to verify the results of a FindService callback.
- */
-class URLListVerifier {
-  public:
-    typedef ola::BaseCallback1<void, const URLEntries&> FindServiceCallback;
-
-    explicit URLListVerifier(const URLEntries &expected_urls)
-        : m_callback(ola::NewCallback(this, &URLListVerifier::NewServices)),
-          m_expected_urls(expected_urls),
-          m_received_callback(false) {
-    }
-
-    ~URLListVerifier() {
-      if (!std::uncaught_exception())
-        OLA_ASSERT_TRUE(m_received_callback);
-    }
-
-    FindServiceCallback *GetCallback() const { return m_callback.get(); }
-
-    void Reset() {
-      m_received_callback = false;
-    }
-
-    bool CallbackRan() const { return m_received_callback; }
-
-    void NewServices(const URLEntries &urls) {
-      OLA_ASSERT_VECTOR_EQ(m_expected_urls, urls);
-      m_received_callback = true;
-    }
-
-  private:
-    auto_ptr<FindServiceCallback> m_callback;
-    const URLEntries m_expected_urls;
-    bool m_received_callback;
-};
 
 
 /**
