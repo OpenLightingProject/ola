@@ -352,7 +352,7 @@ bool SimpleE133Controller::Init() {
   m_ss.AddReadDescriptor(&m_udp_socket);
 
   if (!m_slp_thread->Init()) {
-    OLA_WARN << "SlpThread Init() failed";
+    OLA_WARN << "SLPThread Init() failed";
     return false;
   }
 

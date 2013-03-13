@@ -345,7 +345,7 @@ bool SimpleE133Monitor::Init() {
     return true;
 
   if (!m_slp_thread->Init()) {
-    OLA_WARN << "SlpThread Init() failed";
+    OLA_WARN << "SLPThread Init() failed";
     return false;
   }
 

@@ -279,7 +279,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (!slp_thread->Init()) {
-    OLA_WARN << "SlpThread Init() failed";
+    OLA_WARN << "SLPThread Init() failed";
     exit(EX_UNAVAILABLE);
   }
 
