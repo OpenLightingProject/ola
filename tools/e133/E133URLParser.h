@@ -27,9 +27,7 @@
 
 using std::string;
 
-
-bool ParseSlpUrl(const string &url,
-                 ola::rdm::UID *uid,
-                 ola::network::IPV4Address *ip);
+bool ParseE133URL(const string &url, ola::rdm::UID *uid,
+                  ola::network::IPV4Address *ip);
 
 #endif  // TOOLS_E133_SLPURLPARSER_H_

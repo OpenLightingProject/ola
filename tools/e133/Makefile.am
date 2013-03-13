@@ -3,20 +3,20 @@ include $(top_srcdir)/common.mk
 EXTRA_DIST = E133Endpoint.h E133Device.h \
              E133HealthCheckedConnection.h \
              E133StreamSender.h \
+             E133URLParser.h \
              EndpointManager.h \
              OLASLPThread.h \
              OpenSLPThread.h \
              RootEndpoint.h \
              SLPThread.h \
              SlpConstants.h \
-             SlpUrlParser.h \
              TCPConnectionStats.h
 
 noinst_LTLIBRARIES = libolae133slp.la
 libolae133slp_la_SOURCES = OLASLPThread.cpp \
+                           E133URLParser.cpp \
                            OpenSLPThread.cpp \
-                           SLPThread.cpp \
-                           SlpUrlParser.cpp
+                           SLPThread.cpp
 libolae133slp_la_LIBADD = $(openslp_LIBS) \
                           $(top_builddir)/tools/slp/libolaslpclient.la \
                           $(top_builddir)/common/libolacommon.la

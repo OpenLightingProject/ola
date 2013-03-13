@@ -70,7 +70,7 @@
 #include "tools/e133/OLASLPThread.h"
 #include "tools/e133/OpenSLPThread.h"
 #include "tools/e133/SLPThread.h"
-#include "tools/e133/SlpUrlParser.h"
+#include "tools/e133/E133URLParser.h"
 #include "tools/slp/URLEntry.h"
 
 using ola::NewCallback;
@@ -385,7 +385,7 @@ void SimpleE133Monitor::DiscoveryCallback(bool ok, const URLEntries &urls) {
     IPV4Address ip;
     for (iter = urls.begin(); iter != urls.end(); ++iter) {
       OLA_INFO << "Located " << *iter;
-      if (!ParseSlpUrl(iter->url(), &uid, &ip))
+      if (!ParseE133URL(iter->url(), &uid, &ip))
         continue;
 
       if (uid.IsBroadcast()) {

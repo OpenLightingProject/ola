@@ -27,7 +27,7 @@
 #include <set>
 #include <string>
 
-#include "tools/e133/SlpUrlParser.h"
+#include "tools/e133/E133URLParser.h"
 #include "tools/slp/SLPPacketBuilder.h"
 #include "tools/slp/SLPPacketConstants.h"
 #include "tools/slp/SLPPacketParser.h"
@@ -136,7 +136,7 @@ TestCase::TestState VerifySrvRply(const IPV4Address &destination_ip,
 
   IPV4Address remote_ip;
   UID uid(0, 0);
-  if (!ParseSlpUrl(url.url(), &uid, &remote_ip)) {
+  if (!ParseE133URL(url.url(), &uid, &remote_ip)) {
     OLA_INFO << "Failed to extract IP & UID from " << url.url();
     return TestCase::FAILED;
   }

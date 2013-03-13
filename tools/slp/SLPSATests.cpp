@@ -28,7 +28,6 @@
 #include <set>
 #include <string>
 
-#include "tools/e133/SlpUrlParser.h"
 #include "tools/slp/SLPPacketBuilder.h"
 #include "tools/slp/SLPPacketConstants.h"
 #include "tools/slp/SLPPacketParser.h"
