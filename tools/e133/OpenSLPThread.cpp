@@ -20,7 +20,6 @@
 #include <slp.h>
 #include <ola/Logging.h>
 #include <string>
-#include "tools/e133/SlpConstants.h"
 #include "tools/e133/OpenSLPThread.h"
 
 using std::string;
