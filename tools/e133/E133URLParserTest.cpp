@@ -25,7 +25,7 @@
 #include <ola/rdm/UID.h>
 #include <string>
 
-#include "tools/e133/SlpUrlParser.h"
+#include "tools/e133/E133URLParser.h"
 
 using std::string;
 using ola::network::IPV4Address;
@@ -48,7 +48,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(SlpUrlParserTest);
 
 
 /*
- * Check that ParseSlpUrl works.
+ * Check that ParseE133URL works.
  */
 void SlpUrlParserTest::testParseUrl() {
   ola::rdm::UID uid(0, 0);
@@ -58,56 +58,56 @@ void SlpUrlParserTest::testParseUrl() {
   IPV4Address expected_ip;
   IPV4Address::FromString("192.168.1.204", &expected_ip);
 
-  OLA_ASSERT_FALSE(ParseSlpUrl("", &uid, &address));
-  OLA_ASSERT_FALSE(ParseSlpUrl("foo", &uid, &address));
-  OLA_ASSERT_FALSE(ParseSlpUrl("service:e133", &uid, &address));
-  OLA_ASSERT_FALSE(ParseSlpUrl("service:rdmnet-device", &uid, &address));
-  OLA_ASSERT_FALSE(ParseSlpUrl("service:e131.esta", &uid, &address));
-  OLA_ASSERT_FALSE(ParseSlpUrl("service:rdmnet-device:", &uid, &address));
-  OLA_ASSERT_FALSE(ParseSlpUrl("service:e131.esta://", &uid, &address));
-  OLA_ASSERT_FALSE(ParseSlpUrl("service:rdmnet-device://", &uid, &address));
-  OLA_ASSERT_FALSE(ParseSlpUrl("service:e131.esta://10.0.0.1", &uid, &address));
+  OLA_ASSERT_FALSE(ParseE133URL("", &uid, &address));
+  OLA_ASSERT_FALSE(ParseE133URL("foo", &uid, &address));
+  OLA_ASSERT_FALSE(ParseE133URL("service:e133", &uid, &address));
+  OLA_ASSERT_FALSE(ParseE133URL("service:rdmnet-device", &uid, &address));
+  OLA_ASSERT_FALSE(ParseE133URL("service:e131.esta", &uid, &address));
+  OLA_ASSERT_FALSE(ParseE133URL("service:rdmnet-device:", &uid, &address));
+  OLA_ASSERT_FALSE(ParseE133URL("service:e131.esta://", &uid, &address));
+  OLA_ASSERT_FALSE(ParseE133URL("service:rdmnet-device://", &uid, &address));
+  OLA_ASSERT_FALSE(ParseE133URL("service:e131.esta://10.0.0.1", &uid, &address));
   OLA_ASSERT(
-      !ParseSlpUrl("service:rdmnet-device:10.0.0.1:5568", &uid, &address));
+      !ParseE133URL("service:rdmnet-device:10.0.0.1:5568", &uid, &address));
   OLA_ASSERT(
-      !ParseSlpUrl("service:rdmnet-device://foobar:5568/7a7000000001",
+      !ParseE133URL("service:rdmnet-device://foobar:5568/7a7000000001",
                    &uid,
                    &address));
   OLA_ASSERT(
-      !ParseSlpUrl("service:rdmnet-device://192.168.1.204:5568:7a7000000001",
+      !ParseE133URL("service:rdmnet-device://192.168.1.204:5568:7a7000000001",
                    &uid,
                    &address));
   OLA_ASSERT(
-      !ParseSlpUrl("service:rdmnet-device://192.168.1.204:5568",
+      !ParseE133URL("service:rdmnet-device://192.168.1.204:5568",
                    &uid,
                    &address));
   OLA_ASSERT(
-      !ParseSlpUrl("service:rdmnet-device://192.168.1.204:5555/7a7000000001",
+      !ParseE133URL("service:rdmnet-device://192.168.1.204:5555/7a7000000001",
                    &uid,
                    &address));
   OLA_ASSERT(
-      !ParseSlpUrl("service:rdmnet-device://192.168.1.204:5568/7g7000000",
+      !ParseE133URL("service:rdmnet-device://192.168.1.204:5568/7g7000000",
                    &uid,
                    &address));
   OLA_ASSERT(
-      !ParseSlpUrl("service:rdmnet-device://192.168.1.204:5568/7g7000000001",
+      !ParseE133URL("service:rdmnet-device://192.168.1.204:5568/7g7000000001",
                    &uid,
                    &address));
   OLA_ASSERT(
-      !ParseSlpUrl("service:rdmnet-device://192.168.1.204:5568/7a7000000g01",
+      !ParseE133URL("service:rdmnet-device://192.168.1.204:5568/7a7000000g01",
                    &uid,
                    &address));
 
   // finally the working cases
   OLA_ASSERT(
-      ParseSlpUrl("service:rdmnet-device://192.168.1.204/7a7000000001",
+      ParseE133URL("service:rdmnet-device://192.168.1.204/7a7000000001",
                   &uid,
                   &address));
   OLA_ASSERT_EQ(expected_uid, uid);
   OLA_ASSERT_EQ(expected_ip, address);
 
   OLA_ASSERT(
-      ParseSlpUrl("service:rdmnet-device://10.0.80.43/4a6100000020",
+      ParseE133URL("service:rdmnet-device://10.0.80.43/4a6100000020",
                   &uid,
                   &address));
   ola::rdm::UID expected_uid2(19041, 32);

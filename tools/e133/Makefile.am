@@ -65,7 +65,7 @@ if BUILD_TESTS
 TESTS = SlpTester
 endif
 check_PROGRAMS = $(TESTS)
-SlpTester_SOURCES = SlpTester.cpp SlpUrlParserTest.cpp
+SlpTester_SOURCES = SlpTester.cpp E133URLParserTest.cpp
 SlpTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 SlpTester_LDADD = $(CPPUNIT_LIBS) \
                   ./libolae133slp.la \
