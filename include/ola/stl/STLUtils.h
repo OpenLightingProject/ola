@@ -117,6 +117,21 @@ typename T1::mapped_type STLFindOrNull(const T1 &container,
   }
 }
 
+/**
+ * Lookup a value by key in a associative container and return a pointer to the
+ * result. Returns NULL if the key doesn't exist.
+ */
+template<typename T1>
+typename T1::mapped_type* STLFindPtrOrNull(T1 *container,
+                                           const typename T1::key_type &key) {
+  typename T1::iterator iter = container->find(key);
+  if (iter == container->end()) {
+    return NULL;
+  } else {
+    return &iter->second;
+  }
+}
+
 
 /**
  * Sets key : value, replacing any existing value. Note if value_type is a

@@ -13,121 +13,160 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * SlpThread.h
+ * SLPThread.h
  * Copyright (C) 2011 Simon Newton
  *
- * A thread to encapsulate all E1.33 SLP operations.
+ * The BaseSLPThread abstracts away all the SLP code in an implementation
+ * independant manner. There are two implementations, one that uses openslp and
+ * the other that uses OLA's SLP server.
  *
- * Brief overview:
- *   Like the name implies, the SLPThread starts up a new thread to handle SLP
- *   operations (openslp docs indicate asynchronous operations aren't
- *   supported and even if they were, you can't have more than one operation
- *   pending at once so the need for serialization still exists).
+ * Like the name implies, the SLPThread starts up a new thread to handle SLP
+ * operations. You simple have to call RegisterDevice / RegisterController
+ * once, and the thread will take care of re-registering your service before
+ * the lifetime expires.
  *
- *   Each call to Discover(), Register() & DeRegister() executes the callback
- *   in the SLP thread.
+ * To de-register the service entirely call DeRegisterDevice /
+ * DeRegisterController.
  *
- *   Summary: The callbacks passed to the SLP methods are run in the
- *   thread that contains the SelectServer passed to the SlpThread constructor.
+ * The Register* and DeRegister* methods can be called from any thread.
+ * The callbacks will run the in Executor passed to the constructor.
  */
 
-#include <slp.h>
 #include <ola/Callback.h>
 #include <ola/thread/Thread.h>
 #include <ola/io/SelectServer.h>
 #include <ola/network/Socket.h>
+#include <ola/network/IPV4Address.h>
+#include <ola/rdm/UID.h>
 #include <ola/thread/ExecutorInterface.h>
 
 #include <map>
-#include <queue>
 #include <string>
 #include <vector>
 
+#include "tools/slp/URLEntry.h"
 
 #ifndef TOOLS_E133_SLPTHREAD_H_
 #define TOOLS_E133_SLPTHREAD_H_
 
 using std::string;
-
-typedef std::vector<string> url_vector;
-typedef ola::BaseCallback1<void, bool> slp_registration_callback;
-typedef ola::Callback2<void, bool, const url_vector&> slp_discovery_callback;
-
+using ola::rdm::UID;
+using ola::network::IPV4Address;
+using ola::slp::URLEntries;
 
 /**
- * A thread which handles SLP events.
+ * The base class for a thread which handles all the SLP stuff.
  */
-class SlpThread: public ola::thread::Thread {
+class BaseSLPThread: public ola::thread::Thread {
   public:
-    explicit SlpThread(ola::thread::ExecutorInterface *ss,
-                       slp_discovery_callback *discovery_callback = NULL,
-                       unsigned int refresh_time = DISCOVERY_INTERVAL_S);
-    ~SlpThread();
+    typedef ola::BaseCallback1<void, bool> RegistrationCallback;
+    typedef ola::Callback2<void, bool, const ola::slp::URLEntries&>
+        DiscoveryCallback;
 
-    bool Init();
+    // Ownership is not transferred.
+    explicit BaseSLPThread(
+        ola::thread::ExecutorInterface *executor,
+        unsigned int discovery_interval = DEFAULT_DISCOVERY_INTERVAL_SECONDS);
+    virtual ~BaseSLPThread();
+
+    // These must be called before Init(); Once Initialized the callbacks can't
+    // be changed. Ownership of the callback is transferred.
+    bool SetNewControllerCallback(DiscoveryCallback *callback);
+    bool SetNewDeviceCallback(DiscoveryCallback *callback);
+
+    void RegisterDevice(RegistrationCallback *callback,
+                        const IPV4Address &address,
+                        const UID &uid,
+                        uint16_t lifetime);
+
+    void RegisterController(RegistrationCallback *callback,
+                            const IPV4Address &address,
+                            uint16_t lifetime);
+
+    void DeRegisterDevice(RegistrationCallback *callback,
+                          const IPV4Address &address,
+                          const UID &uid);
+
+    void DeRegisterController(RegistrationCallback *callback,
+                              const IPV4Address &address);
+
+    virtual bool Init();
     bool Start();
     bool Join(void *ptr = NULL);
-    void Cleanup();
+    virtual void Cleanup() = 0;
 
-    // enqueue discovery request
-    bool Discover();
+    static const unsigned int DEFAULT_DISCOVERY_INTERVAL_SECONDS;
 
-    // queue a registration request
-    void Register(slp_registration_callback *callback,
-                  const string &url,
-                  unsigned short lifetime = SLP_LIFETIME_MAXIMUM);
+  protected:
+    typedef ola::SingleUseCallback2<void, bool, const ola::slp::URLEntries&>
+        InternalDiscoveryCallback;
 
-    // queue a de-register request
-    void DeRegister(slp_registration_callback *callback,
-                    const string &url);
-
+    ola::io::SelectServer m_ss;
+    ola::thread::ExecutorInterface *m_executor;
 
     void *Run();
+    void RunCallbackInExecutor(RegistrationCallback *callback, bool ok);
+
+    // The sub class provides these, they are allowed to block.
+    virtual void RunDiscovery(InternalDiscoveryCallback *callback,
+                              const string &service) = 0;
+    virtual void RegisterSLPService(RegistrationCallback *callback,
+                                    const string& url,
+                                    unsigned short lifetime) = 0;
+    virtual void DeRegisterSLPService(RegistrationCallback *callback,
+                                      const string& url) = 0;
+
+    // This enables us to limit the refresh-time, 0 means the implementation
+    // doesn't have a min-refresh-time.
+    virtual uint16_t MinRefreshTime() { return 0; }
+
+    static const char RDNMET_SCOPE[];
 
   private:
     typedef struct {
       unsigned short lifetime;
       ola::thread::timeout_id timeout;
-    } url_registration_state;
-    typedef std::map<string, url_registration_state>  url_state_map;
+    } URLRegistrationState;
+    typedef std::map<string, URLRegistrationState> URLStateMap;
 
-    ola::io::SelectServer m_ss;
-    ola::thread::ExecutorInterface *m_executor;
+    typedef struct {
+      DiscoveryCallback *callback;
+      ola::thread::timeout_id timeout;
+    } DiscoveryState;
+    typedef std::map<string, DiscoveryState> DiscoveryStateMap;
+
+    URLStateMap m_url_map;
+    DiscoveryStateMap m_discovery_callbacks;
     bool m_init_ok;
-    unsigned int m_refresh_time;
-    SLPHandle m_slp_handle;
-    slp_discovery_callback *m_discovery_callback;
-    ola::thread::timeout_id m_discovery_timeout;
-    url_state_map m_url_map;
+    unsigned int m_discovery_interval;
 
-    void RequestComplete();
-    void AddToOutgoingQueue(ola::BaseCallback0<void> *callback);
+    // discovery methods
+    void AddDiscoveryCallback(string service, DiscoveryCallback *callback);
+    void StartDiscoveryProcess();
+    void RemoveDiscoveryTimeout(DiscoveryState *state);
+    void RunDiscoveryForService(const string service);
+    void DiscoveryComplete(const string service, bool result,
+                           const URLEntries &urls);
+    void RunDiscoveryCallback(DiscoveryCallback *callback, bool result,
+                              const URLEntries *urls);
+    void DiscoveryTriggered(const string service);
 
-    void DiscoveryRequest();
-    void RegisterRequest(slp_registration_callback *callback,
-                         const string url,
+    // register / deregister methods
+    void RegisterService(RegistrationCallback *callback, const string url,
                          unsigned short lifetime);
-    bool PerformRegistration(const string &url,
-                             unsigned short lifetime,
-                             ola::thread::timeout_id *timeout);
-    void DeregisterRequest(slp_registration_callback *callback,
-                           const string url);
-    void DiscoveryActionComplete(bool ok, url_vector *urls);
-    void SimpleActionComplete(slp_registration_callback *callback,
+    void RegistrationComplete(RegistrationCallback *callback, string url,
                               bool ok);
+    void DeRegisterService(RegistrationCallback *callback, const string url);
+    void ReRegisterService(string url);
+    void CompleteCallback(RegistrationCallback *callback, bool ok);
 
-    void DiscoveryTriggered();
-    void RegistrationTriggered(string url);
+    static string GetDeviceURL(const IPV4Address& address, const UID &uid);
+    static string GetControllerURL(const IPV4Address& address);
+    static uint16_t ClampLifetime(const string &url, uint16_t lifetime);
 
-    // How often to repeat discovery
-    static const unsigned short DISCOVERY_INTERVAL_S = 60;
-    // the minimum lifetime we'll ever allow, may be more due to the
-    // min-refresh-interval attribute sent by DAs
-    static const unsigned short MIN_LIFETIME;
-    // This is the cycle period of SLP aging. Registrations must be renewed
-    // this many seconds before the registration is set to expire.
-    // See http://opendmx.net/index.php/Open_SLP_Notes
-    static const uint16_t SLPD_AGING_TIME_S = 15;
+    static const uint16_t MIN_SLP_LIFETIME;
+    static const uint16_t SA_REREGISTRATION_TIME;
+    static const char E133_DEVICE_SLP_SERVICE_NAME[];
+    static const char E133_CONTROLLER_SLP_SERVICE_NAME[];
 };
-
 #endif  // TOOLS_E133_SLPTHREAD_H_

@@ -32,10 +32,11 @@
 #include "ola/testing/TestUtils.h"
 #include "tools/slp/SLPPacketConstants.h"
 #include "tools/slp/SLPServer.h"
+#include "tools/slp/SLPServerTestHelper.h"
 #include "tools/slp/ScopeSet.h"
 #include "tools/slp/ServiceEntry.h"
 #include "tools/slp/URLEntry.h"
-#include "tools/slp/SLPServerTestHelper.h"
+#include "tools/slp/URLListVerifier.h"
 
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
@@ -88,6 +89,7 @@ class SLPServerSATest: public CppUnit::TestFixture {
     CPPUNIT_TEST(testDeRegistrationWhileRegistering);
     CPPUNIT_TEST(testDAShutdownDuringDeRegistration);
     CPPUNIT_TEST(testRegistrationWhileDeRegistering);
+    CPPUNIT_TEST(testFindLocalServices);
     CPPUNIT_TEST_SUITE_END();
 
     void testConfiguredScopes();
@@ -114,6 +116,7 @@ class SLPServerSATest: public CppUnit::TestFixture {
     void testDeRegistrationWhileRegistering();
     void testDAShutdownDuringDeRegistration();
     void testRegistrationWhileDeRegistering();
+    void testFindLocalServices();
 
   public:
     void setUp() {
@@ -1392,5 +1395,45 @@ void SLPServerSATest::testRegistrationWhileDeRegistering() {
   {
     SocketVerifier verifier(&m_udp_socket);
     m_helper.RegisterWithDA(server.get(), DA1, SERVICE1, xid++);
+  }
+}
+
+
+/**
+ * Confirm that we return locally-registered services when running in non-DA
+ * node.
+ */
+void SLPServerSATest::testFindLocalServices() {
+  auto_ptr<SLPServer> server(m_helper.CreateNewServer(false, SCOPE1));
+
+  // No DAs present
+  m_helper.HandleInitialActiveDADiscovery(SCOPE1);
+
+  // Register a service locally
+  OLA_ASSERT_EQ((uint16_t) SLP_OK, server->RegisterService(SERVICE1_2));
+
+  xid_t xid = 1;
+  set<string> search_scopes;
+  search_scopes.insert("one");
+
+  // send a multicast SrvRqst, nothing responds
+  {
+    SocketVerifier socket_verifier(&m_udp_socket);
+
+    URLEntries urls;
+    urls.push_back(SERVICE1_2.url());
+    URLListVerifier url_verifier(urls);
+
+    PRList pr_list;
+    m_helper.ExpectMulticastServiceRequest(xid, FOO_SERVICE, SCOPE1, pr_list);
+
+    server->FindService(search_scopes, FOO_SERVICE, url_verifier.GetCallback());
+    OLA_ASSERT_FALSE(url_verifier.CallbackRan());
+
+    m_helper.ExpectMulticastServiceRequest(xid, FOO_SERVICE, SCOPE1, pr_list);
+    m_helper.AdvanceTime(2);  // first timeout
+
+    m_helper.AdvanceTime(4);  // second timeout
+    OLA_ASSERT_TRUE(url_verifier.CallbackRan());
   }
 }

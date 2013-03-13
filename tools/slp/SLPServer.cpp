@@ -325,9 +325,14 @@ void SLPServer::FindService(
     if (!da_scopes.empty())
       m_service_store.Lookup(*(m_ss->WakeUpTime()), da_scopes, service_type,
                              &urls);
+  } else {
+    // not DA, but we still need to check our local store for matching
+    // services.
+    m_service_store.Lookup(*(m_ss->WakeUpTime()), scope_set, service_type,
+                           &urls);
   }
 
-  if (scope_set.empty()) {
+  if (m_enable_da && scope_set.empty()) {
     // all scopes were handled by our local DA
     if (urls.empty() && m_export_map)
       (*m_export_map->GetIntegerVar(FINDSRVS_EMPTY_COUNT_VAR))++;

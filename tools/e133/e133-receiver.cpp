@@ -45,8 +45,9 @@
 
 #include "tools/e133/E133Device.h"
 #include "tools/e133/EndpointManager.h"
+#include "tools/e133/OLASLPThread.h"
+#include "tools/e133/OpenSLPThread.h"
 #include "tools/e133/RootEndpoint.h"
-#include "tools/e133/SlpThread.h"
 #include "tools/e133/TCPConnectionStats.h"
 
 using ola::network::HostToNetwork;
@@ -61,6 +62,7 @@ using std::string;
 
 typedef struct {
   bool help;
+  bool use_openslp;
   ola::log_level log_level;
   unsigned int universe;
   string ip_address;
@@ -73,6 +75,10 @@ typedef struct {
  * Parse our command line options
  */
 void ParseOptions(int argc, char *argv[], options *opts) {
+  enum {
+    OPENSLP_OPTION = 256,
+  };
+
   int uid_set = 0;
   static struct option long_options[] = {
       {"help", no_argument, 0, 'h'},
@@ -81,6 +87,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
       {"timeout", required_argument, 0, 't'},
       {"uid", required_argument, &uid_set, 1},
       {"universe", required_argument, 0, 'u'},
+      {"openslp", no_argument, 0, OPENSLP_OPTION},
       {0, 0, 0, 0}
     };
 
@@ -132,6 +139,9 @@ void ParseOptions(int argc, char *argv[], options *opts) {
       case 'u':
         opts->universe = atoi(optarg);
         break;
+      case OPENSLP_OPTION:
+        opts->use_openslp = true;
+        break;
       case '?':
         break;
       default:
@@ -156,6 +166,7 @@ void DisplayHelpAndExit(char *argv[]) {
   "  -t, --timeout <seconds>   The value to use for the service lifetime\n"
   "  -u, --universe <universe> The universe to respond on (> 0).\n"
   "  --uid <uid>               The UID of the responder.\n"
+  "  --openslp                 Use openslp rather than the OLA SLP server\n"
   << endl;
   exit(0);
 }
@@ -178,7 +189,7 @@ class SimpleE133Node {
   private:
     ola::io::SelectServer m_ss;
     ola::io::UnmanagedFileDescriptor m_stdin_descriptor;
-    SlpThread m_slp_thread;
+    auto_ptr<BaseSLPThread> m_slp_thread;
     EndpointManager m_endpoint_manager;
     TCPConnectionStats m_tcp_stats;
     E133Device m_e133_device;
@@ -187,7 +198,7 @@ class SimpleE133Node {
     ola::plugin::dummy::DummyResponder m_responder;
     uint16_t m_lifetime;
     UID m_uid;
-    string m_service_name;
+    const IPV4Address m_ip_address;
     termios m_old_tc;
 
     SimpleE133Node(const SimpleE133Node&);
@@ -208,26 +219,26 @@ class SimpleE133Node {
 SimpleE133Node::SimpleE133Node(const IPV4Address &ip_address,
                                const options &opts)
     : m_stdin_descriptor(STDIN_FILENO),
-      m_slp_thread(&m_ss),
       m_e133_device(&m_ss, ip_address, &m_endpoint_manager, &m_tcp_stats),
       m_root_endpoint(*opts.uid, &m_endpoint_manager, &m_tcp_stats),
       m_first_endpoint(NULL),  // NO CONTROLLER FOR NOW!
       m_responder(*opts.uid),
       m_lifetime(opts.lifetime),
-      m_uid(*opts.uid) {
-  std::stringstream str;
-  str << ip_address << ":" << ola::plugin::e131::ACN_PORT << "/"
-    << std::setfill('0') << std::setw(4) << std::hex
-    << m_uid.ManufacturerId() << std::setw(8) << m_uid.DeviceId();
-  m_service_name = str.str();
+      m_uid(*opts.uid),
+      m_ip_address(ip_address) {
+  if (opts.use_openslp) {
+    m_slp_thread.reset(new OpenSLPThread(&m_ss));
+  } else {
+    m_slp_thread.reset(new OLASLPThread(&m_ss));
+  }
 }
 
 
 SimpleE133Node::~SimpleE133Node() {
   m_endpoint_manager.UnRegisterEndpoint(1);
   tcsetattr(STDIN_FILENO, TCSANOW, &m_old_tc);
-  m_slp_thread.Join();
-  m_slp_thread.Cleanup();
+  m_slp_thread->Join(NULL);
+  m_slp_thread->Cleanup();
 }
 
 
@@ -252,29 +263,27 @@ bool SimpleE133Node::Init() {
   m_endpoint_manager.RegisterEndpoint(1, &m_first_endpoint);
 
   // register in SLP
-  OLA_INFO << "service is " << m_service_name;
-  if (!m_slp_thread.Init()) {
-    OLA_WARN << "SlpThread Init() failed";
+  if (!m_slp_thread->Init()) {
+    OLA_WARN << "SLPThread Init() failed";
     return false;
   }
 
-  m_slp_thread.Start();
+  m_slp_thread->Start();
   return true;
 }
 
 
 void SimpleE133Node::Run() {
-  m_slp_thread.Register(
+  m_slp_thread->RegisterDevice(
     ola::NewSingleCallback(this, &SimpleE133Node::RegisterCallback),
-    m_service_name,
-    m_lifetime);
+    m_ip_address, m_uid, m_lifetime);
 
   m_ss.Run();
   OLA_INFO << "Starting shutdown process";
 
-  m_slp_thread.DeRegister(
+  m_slp_thread->DeRegisterDevice(
     ola::NewSingleCallback(this, &SimpleE133Node::DeRegisterCallback),
-    m_service_name);
+    m_ip_address, m_uid);
   m_ss.Run();
 }
 
@@ -383,6 +392,7 @@ static void InteruptSignal(int signo) {
  */
 int main(int argc, char *argv[]) {
   options opts;
+  opts.use_openslp = false;
   opts.log_level = ola::OLA_LOG_WARN;
   opts.lifetime = 300;  // 5 mins is a good compromise
   opts.universe = 1;
