@@ -22,6 +22,7 @@
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
+#include <ola/base/Init.h>
 #include <ola/io/SelectServer.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/Interface.h>
@@ -31,44 +32,58 @@
 #include <sysexits.h>
 
 #include <iostream>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "SlpThread.h"
+#include "tools/e133/OLASLPThread.h"
+#include "tools/e133/OpenSLPThread.h"
+#include "tools/e133/SLPThread.h"
 
 using ola::network::IPV4Address;
+using ola::rdm::UID;
+using std::auto_ptr;
+using std::multimap;
+using std::pair;
 using std::string;
 using std::vector;
 
 // our command line options
 typedef struct {
+  bool use_openslp;
   string services;
   ola::log_level log_level;
-  unsigned short lifetime;
+  uint16_t lifetime;
   bool help;
 } options;
 
-
 // stupid globals for now
-SlpThread *thread;
 ola::io::SelectServer ss;
-unsigned int registrations_active;
 
 /**
  * Called when a registration request completes.
  */
 void RegisterCallback(bool ok) {
-  OLA_INFO << "in register callback, state is " << ok;
+  if (ok) {
+    OLA_INFO << "Registered E1.33 device";
+  } else {
+    OLA_WARN << "Failed to register E1.33 device";
+  }
 }
 
 
 /**
  * Called when a de-registration request completes.
  */
-void DeRegisterCallback(ola::io::SelectServer *ss, bool ok) {
-  OLA_INFO << "in deregister callback, state is " << ok;
-  if (--registrations_active == 0)
+void DeRegisterCallback(ola::io::SelectServer *ss,
+                        unsigned int *registrations_active, bool ok) {
+  if (ok) {
+    OLA_INFO << "Registered E1.33 device";
+  } else {
+    OLA_WARN << "Failed to register E1.33 device";
+  }
+  if (--(*registrations_active) == 0)
     ss->Terminate();
 }
 
@@ -86,10 +101,15 @@ static void InteruptSignal(int signo) {
  * Parse our cmd line options
  */
 void ParseOptions(int argc, char *argv[], options *opts) {
+  enum {
+    OPENSLP_OPTION = 256,
+  };
+
   static struct option long_options[] = {
       {"help", no_argument, 0, 'h'},
       {"log-level", required_argument, 0, 'l'},
       {"timeout", required_argument, 0, 't'},
+      {"openslp", no_argument, 0, OPENSLP_OPTION},
       {0, 0, 0, 0}
     };
 
@@ -97,6 +117,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
   opts->services = "";
   opts->lifetime = 60;
   opts->help = false;
+  opts->use_openslp = false;
 
   int c;
   int option_index = 0;
@@ -139,6 +160,9 @@ void ParseOptions(int argc, char *argv[], options *opts) {
       case 't':
         opts->lifetime = atoi(optarg);
         break;
+      case OPENSLP_OPTION:
+        opts->use_openslp = true;
+        break;
       case '?':
         break;
       default:
@@ -164,50 +188,9 @@ void DisplayHelpAndExit(char arg[]) {
   "  -h, --help               Display this help message and exit.\n"
   "  -l, --log-level <level>  Set the logging level 0 .. 4.\n"
   "  -t, --timeout <seconds>  The value to use for the service lifetime\n"
+  "  --openslp                 Use openslp rather than the OLA SLP server\n"
   << std::endl;
   exit(EX_USAGE);
-}
-
-
-/**
- * Process a service spec in the form [ip].UID
- * If ip isn't supplied we use the default one.
- * Returns the canonical service name "ip:uid".
- * If the spec isn't valid we print a warning and exit.
- */
-string ProcessServiceSpec(const string &service_spec,
-                          const IPV4Address &default_address) {
-  vector<string> ip_uid_pair;
-  ola::StringSplit(service_spec, ip_uid_pair, "@");
-
-  IPV4Address ipaddr;
-  string uid_str;
-
-  if (ip_uid_pair.size() == 1) {
-    ipaddr = default_address;
-    uid_str = ip_uid_pair[0];
-  } else if (ip_uid_pair.size() == 2) {
-    if (!IPV4Address::FromString(ip_uid_pair[1], &ipaddr)) {
-      OLA_FATAL << "Invalid ip address: " << ip_uid_pair[1];
-      exit(EX_USAGE);
-    }
-    uid_str = ip_uid_pair[0];
-  } else {
-    OLA_FATAL << "Invalid service spec: " << service_spec;
-    exit(EX_USAGE);
-  }
-
-  std::auto_ptr<ola::rdm::UID> uid(ola::rdm::UID::FromString(uid_str));
-  if (!uid.get()) {
-    OLA_FATAL << "Invalid UID: " << uid_str;
-    exit(EX_USAGE);
-  }
-
-  std::stringstream str;
-  str << ipaddr << ":5568/" << std::setfill('0') << std::setw(4) << std::hex
-    << uid->ManufacturerId() << std::setw(8) << uid->DeviceId();
-
-  return str.str();
 }
 
 
@@ -215,8 +198,9 @@ string ProcessServiceSpec(const string &service_spec,
  * Process the list of services and build the list of properly formed service
  * names.
  */
-void ProcessServices(const string &service_spec, vector<string> *services) {
-  std::auto_ptr<ola::network::InterfacePicker> picker(
+void ProcessServices(const string &service_spec,
+                     multimap<IPV4Address, UID> *services) {
+  auto_ptr<ola::network::InterfacePicker> picker(
       ola::network::InterfacePicker::NewPicker());
   ola::network::Interface iface;
 
@@ -229,8 +213,34 @@ void ProcessServices(const string &service_spec, vector<string> *services) {
   ola::StringSplit(service_spec, service_specs, ",");
   vector<string>::const_iterator iter;
 
-  for (iter = service_specs.begin(); iter != service_specs.end(); ++iter)
-    services->push_back(ProcessServiceSpec(*iter, iface.ip_address));
+  for (iter = service_specs.begin(); iter != service_specs.end(); ++iter) {
+    vector<string> ip_uid_pair;
+    ola::StringSplit(service_spec, ip_uid_pair, "@");
+
+    IPV4Address ipaddr;
+    string uid_str;
+
+    if (ip_uid_pair.size() == 1) {
+      ipaddr = iface.ip_address;
+      uid_str = ip_uid_pair[0];
+    } else if (ip_uid_pair.size() == 2) {
+      if (!IPV4Address::FromString(ip_uid_pair[1], &ipaddr)) {
+        OLA_FATAL << "Invalid ip address: " << ip_uid_pair[1];
+        exit(EX_USAGE);
+      }
+      uid_str = ip_uid_pair[0];
+    } else {
+      OLA_FATAL << "Invalid service spec: " << service_spec;
+      exit(EX_USAGE);
+    }
+
+    auto_ptr<UID> uid(UID::FromString(uid_str));
+    if (!uid.get()) {
+      OLA_FATAL << "Invalid UID: " << uid_str;
+      exit(EX_USAGE);
+    }
+    services->insert(pair<IPV4Address, UID>(ipaddr, *uid));
+  }
 }
 
 
@@ -238,6 +248,7 @@ void ProcessServices(const string &service_spec, vector<string> *services) {
  * main
  */
 int main(int argc, char *argv[]) {
+  ola::AppInit(argc, argv);
   options opts;
   ParseOptions(argc, argv, &opts);
 
@@ -246,7 +257,7 @@ int main(int argc, char *argv[]) {
 
   ola::InitLogging(opts.log_level, ola::OLA_LOG_STDERR);
 
-  vector<string> services;
+  multimap<IPV4Address, UID> services;
   ProcessServices(opts.services, &services);
 
   // signal handler
@@ -260,30 +271,39 @@ int main(int argc, char *argv[]) {
     return false;
   }
 
-  // setup the Slpthread
-  thread = new SlpThread(&ss);
-  if (!thread->Init()) {
+  auto_ptr<BaseSLPThread> slp_thread;
+  if (opts.use_openslp) {
+    slp_thread.reset(new OpenSLPThread(&ss));
+  } else {
+    slp_thread.reset(new OLASLPThread(&ss));
+  }
+
+  if (!slp_thread->Init()) {
     OLA_WARN << "SlpThread Init() failed";
-    delete thread;
     exit(EX_UNAVAILABLE);
   }
 
-  thread->Start();
-  vector<string>::const_iterator iter;
-  for (iter = services.begin(); iter != services.end(); ++iter)
-    thread->Register(
-      ola::NewSingleCallback(&RegisterCallback), *iter, opts.lifetime);
-  registrations_active = services.size();
+  if (!slp_thread->Start()) {
+    OLA_WARN << "SLPThread Start() failed";
+    exit(EX_UNAVAILABLE);
+  }
+  multimap<IPV4Address, UID>::const_iterator iter;
+  for (iter = services.begin(); iter != services.end(); ++iter) {
+    slp_thread->RegisterDevice(
+      ola::NewSingleCallback(&RegisterCallback),
+      iter->first, iter->second, opts.lifetime);
+  }
 
   ss.Run();
 
   // start the de-registration process
+  unsigned int registrations_active = services.size();
   for (iter = services.begin(); iter != services.end(); ++iter) {
-  thread->DeRegister(ola::NewSingleCallback(&DeRegisterCallback, &ss),
-                     *iter);
+    slp_thread->DeRegisterDevice(
+        ola::NewSingleCallback(&DeRegisterCallback, &ss, &registrations_active),
+        iter->first, iter->second);
   }
   ss.Run();
 
-  thread->Join();
-  delete thread;
+  slp_thread->Join(NULL);
 }

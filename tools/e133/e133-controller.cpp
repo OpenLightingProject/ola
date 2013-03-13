@@ -65,11 +65,13 @@
 #include "plugins/e131/e131/UDPTransport.h"
 
 #include "tools/e133/E133Endpoint.h"
-#include "tools/e133/SlpThread.h"
+#include "tools/e133/OLASLPThread.h"
+#include "tools/e133/OpenSLPThread.h"
 #include "tools/e133/SlpUrlParser.h"
+#include "tools/slp/URLEntry.h"
 
-using ola::network::IPV4Address;
 using ola::NewCallback;
+using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::network::UDPSocket;
 using ola::plugin::e131::E133_PORT;
@@ -77,6 +79,7 @@ using ola::rdm::PidStoreHelper;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
+using ola::slp::URLEntries;
 using std::auto_ptr;
 using std::cout;
 using std::endl;
@@ -86,6 +89,7 @@ using std::vector;
 typedef struct {
   uint16_t endpoint;
   bool help;
+  bool use_openslp;
   ola::log_level log_level;
   bool rdm_set;
   string pid_location;
@@ -101,6 +105,10 @@ typedef struct {
  * Parse our command line options
  */
 void ParseOptions(int argc, char *argv[], options *opts) {
+  enum {
+    OPENSLP_OPTION = 256,
+  };
+
   int uid_set = 0;
   static struct option long_options[] = {
       {"endpoint", required_argument, 0, 'e'},
@@ -111,6 +119,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
       {"set", no_argument, 0, 's'},
       {"target", required_argument, 0, 't'},
       {"uid", required_argument, &uid_set, 1},
+      {"openslp", no_argument, 0, OPENSLP_OPTION},
       {0, 0, 0, 0}
     };
 
@@ -171,6 +180,9 @@ void ParseOptions(int argc, char *argv[], options *opts) {
       case 't':
         opts->target_address = optarg;
         break;
+      case OPENSLP_OPTION:
+        opts->use_openslp = true;
+        break;
       case '?':
         break;
       default:
@@ -201,6 +213,7 @@ void DisplayHelpAndExit(char *argv[]) {
   "  -p, --pid-location        The directory to read PID definitiions from\n"
   "  -s, --set                 Perform a SET (default is GET)\n"
   "  --uid <uid>               The UID of the device to control.\n"
+  "  --openslp                 Use openslp rather than the OLA SLP server\n"
   << endl;
   exit(0);
 }
@@ -212,11 +225,12 @@ void DisplayHelpAndExit(char *argv[]) {
  */
 class SimpleE133Controller {
   public:
-    struct SimpleE133ControllerOptions {
+    struct Options {
       IPV4Address controller_ip;
+      bool use_openslp;
     };
 
-    SimpleE133Controller(const SimpleE133ControllerOptions &options,
+    SimpleE133Controller(const Options &options,
                          PidStoreHelper *pid_helper);
     ~SimpleE133Controller();
 
@@ -239,7 +253,7 @@ class SimpleE133Controller {
                         unsigned int data_length);
 
   private:
-    SimpleE133ControllerOptions m_options;
+    const IPV4Address m_controller_ip;
     ola::io::SelectServer m_ss;
 
     // The Controller's CID
@@ -264,12 +278,12 @@ class SimpleE133Controller {
     uid_to_ip_map m_uid_to_ip;
 
     UID m_src_uid;
-    SlpThread m_slp_thread;
+    auto_ptr<BaseSLPThread> m_slp_thread;
     PidStoreHelper *m_pid_helper;
     ola::rdm::CommandPrinter m_command_printer;
     bool m_uid_list_updated;
 
-    void DiscoveryCallback(bool status, const vector<string> &urls);
+    void DiscoveryCallback(bool status, const URLEntries &urls);
     bool SendRequest(const UID &uid, uint16_t endpoint, RDMRequest *request);
     void HandlePacket(
         const ola::plugin::e131::TransportHeader &transport_header,
@@ -286,21 +300,26 @@ class SimpleE133Controller {
  * Setup our simple controller
  */
 SimpleE133Controller::SimpleE133Controller(
-    const SimpleE133ControllerOptions &options,
+    const Options &options,
     PidStoreHelper *pid_helper)
-    : m_options(options),
+    : m_controller_ip(options.controller_ip),
       m_cid(ola::plugin::e131::CID::Generate()),
       m_incoming_udp_transport(&m_udp_socket, &m_root_inflator),
       m_outgoing_udp_transport(&m_udp_socket),
       m_root_sender(m_cid),
       m_e133_sender(&m_root_sender),
       m_src_uid(OPEN_LIGHTING_ESTA_CODE, 0xabcdabcd),
-      m_slp_thread(
-        &m_ss,
-        ola::NewCallback(this, &SimpleE133Controller::DiscoveryCallback)),
       m_pid_helper(pid_helper),
       m_command_printer(&cout, m_pid_helper),
       m_uid_list_updated(false) {
+
+  if (options.use_openslp) {
+    m_slp_thread.reset(new OpenSLPThread(&m_ss));
+  } else {
+    m_slp_thread.reset(new OLASLPThread(&m_ss));
+  }
+  m_slp_thread->SetNewDeviceCallback(
+      ola::NewCallback(this, &SimpleE133Controller::DiscoveryCallback));
   m_root_inflator.AddInflator(&m_e133_inflator);
   m_e133_inflator.AddInflator(&m_rdm_inflator);
 }
@@ -310,8 +329,8 @@ SimpleE133Controller::SimpleE133Controller(
  * Tear down
  */
 SimpleE133Controller::~SimpleE133Controller() {
-  m_slp_thread.Join();
-  m_slp_thread.Cleanup();
+  m_slp_thread->Join(NULL);
+  m_slp_thread->Cleanup();
 }
 
 
@@ -322,7 +341,7 @@ bool SimpleE133Controller::Init() {
   if (!m_udp_socket.Init())
     return false;
 
-  if (!m_udp_socket.Bind(IPV4SocketAddress(m_options.controller_ip, 0))) {
+  if (!m_udp_socket.Bind(IPV4SocketAddress(m_controller_ip, 0))) {
     OLA_INFO << "Failed to bind to UDP port";
     return false;
   }
@@ -332,12 +351,12 @@ bool SimpleE133Controller::Init() {
                   &ola::plugin::e131::IncomingUDPTransport::Receive));
   m_ss.AddReadDescriptor(&m_udp_socket);
 
-  if (!m_slp_thread.Init()) {
+  if (!m_slp_thread->Init()) {
     OLA_WARN << "SlpThread Init() failed";
     return false;
   }
 
-  m_slp_thread.Start();
+  m_slp_thread->Start();
   return true;
 }
 
@@ -347,7 +366,6 @@ bool SimpleE133Controller::Init() {
  */
 void SimpleE133Controller::PopulateResponderList() {
   if (!m_uid_list_updated) {
-    m_slp_thread.Discover();
     // if we don't have a up to date list wait for slp to return
     m_ss.Run();
   }
@@ -390,6 +408,7 @@ void SimpleE133Controller::SendGetRequest(const UID &dst_uid,
 
   if (!SendRequest(dst_uid, endpoint, command)) {
     OLA_FATAL << "Failed to send request";
+    OLA_INFO << "term";
     m_ss.Terminate();
   } else if (dst_uid.IsBroadcast()) {
     OLA_INFO << "Request broadcast";
@@ -431,16 +450,14 @@ void SimpleE133Controller::SendSetRequest(const UID &dst_uid,
 /**
  * Called when SLP discovery completes.
  */
-void SimpleE133Controller::DiscoveryCallback(bool ok,
-                                             const vector<string> &urls) {
-  OLA_INFO << "in slp cb " << ok;
+void SimpleE133Controller::DiscoveryCallback(bool ok, const URLEntries &urls) {
   if (ok) {
-    vector<string>::const_iterator iter;
+    URLEntries::const_iterator iter;
     UID uid(0, 0);
     IPV4Address ip;
     for (iter = urls.begin(); iter != urls.end(); ++iter) {
       OLA_INFO << "Located " << *iter;
-      if (!ParseSlpUrl(*iter, &uid, &ip))
+      if (!ParseSlpUrl(iter->url(), &uid, &ip))
         continue;
 
       if (uid.IsBroadcast()) {
@@ -612,6 +629,7 @@ int main(int argc, char *argv[]) {
   opts.log_level = ola::OLA_LOG_WARN;
   opts.endpoint = ROOT_E133_ENDPOINT;
   opts.help = false;
+  opts.use_openslp = false;
   opts.pid_location = PID_DATA_DIR;
   opts.rdm_set = false;
   opts.uid = NULL;
@@ -689,8 +707,9 @@ int main(int argc, char *argv[]) {
     exit(EX_USAGE);
   }
 
-  SimpleE133Controller::SimpleE133ControllerOptions controller_options;
+  SimpleE133Controller::Options controller_options;
   controller_options.controller_ip = controller_ip;
+  controller_options.use_openslp = opts.use_openslp;
 
   SimpleE133Controller controller(controller_options, &pid_helper);
   if (!controller.Init()) {

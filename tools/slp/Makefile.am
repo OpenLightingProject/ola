@@ -23,10 +23,14 @@ EXTRA_DIST = Base.h \
              ServerCommon.h \
              ServiceEntry.h \
              URLEntry.h \
+             URLListVerifier.h \
              XIDAllocator.h
 
 # Libraries
-noinst_LTLIBRARIES = libolaslpcore.la libolaslp.la libolaslpproto.la
+noinst_LTLIBRARIES = libolaslp.la \
+                     libolaslpclient.la \
+                     libolaslpcore.la \
+                     libolaslpproto.la
 
 libolaslpcore_la_SOURCES = SLPUtil.cpp \
                            URLEntry.cpp
@@ -50,6 +54,13 @@ libolaslpproto_la_LIBADD = $(libprotobuf_LIBS)
 # required, otherwise we get build errors
 libolaslpproto_la_CXXFLAGS = $(WARNING_CXXFLAGS)
 
+libolaslpclient_la_SOURCES = SLPClient.cpp \
+                             SLPClientCore.cpp
+libolaslpclient_la_LIBADD = $(top_builddir)/common/libolacommon.la \
+                            $(top_builddir)/ola/libola.la \
+                            ./libolaslpcore.la \
+                            ./libolaslpproto.la
+
 BUILT_SOURCES = SLP.pb.cc SLP.pb.h
 
 SLP.pb.cc SLP.pb.h: SLP.proto
@@ -69,20 +80,19 @@ slp_server_LDADD = $(top_builddir)/common/libolacommon.la \
                    ./libolaslp.la \
                    ./libolaslpproto.la
 
-slp_client_SOURCES = slp-client.cpp \
-                     SLPClient.cpp \
-                     SLPClientCore.cpp
+slp_client_SOURCES = slp-client.cpp
 slp_client_LDADD = $(top_builddir)/common/libolacommon.la \
                    $(top_builddir)/ola/libola.la \
                    ./libolaslpcore.la \
-                   ./libolaslpproto.la
+                   ./libolaslpproto.la \
+                   ./libolaslpclient.la
 
 slp_sa_test_SOURCES = slp-sa-test.cpp \
                       SLPSATestHelpers.cpp \
                       SLPSATestRunner.cpp \
                       SLPSATests.cpp
 slp_sa_test_LDADD = $(top_builddir)/common/libolacommon.la \
-                    ../e133/libolae133.la \
+                    ../e133/libolae133slp.la \
                     ./libolaslp.la
 
 clean-local:
