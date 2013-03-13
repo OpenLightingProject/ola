@@ -23,7 +23,7 @@
 #include <memory>
 #include <ostream>
 
-#include "tools/e133/SlpConstants.h"
+#include "tools/e133/SLPConstants.h"
 #include "tools/e133/SLPThread.h"
 #include "tools/slp/URLEntry.h"
 

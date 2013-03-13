@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * SlpUrlParser.h
+ * E133URLParser.cpp
  * Copyright (C) 2011 Simon Newton
  */
 
@@ -21,7 +21,7 @@
 #include <ola/StringUtils.h>
 #include <string>
 #include <vector>
-#include "tools/e133/SlpConstants.h"
+#include "tools/e133/SLPConstants.h"
 #include "tools/e133/E133URLParser.h"
 
 using ola::network::IPV4Address;

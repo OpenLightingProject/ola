@@ -8,8 +8,8 @@ EXTRA_DIST = E133Endpoint.h E133Device.h \
              OLASLPThread.h \
              OpenSLPThread.h \
              RootEndpoint.h \
+             SLPConstants.h \
              SLPThread.h \
-             SlpConstants.h \
              TCPConnectionStats.h
 
 noinst_LTLIBRARIES = libolae133slp.la
