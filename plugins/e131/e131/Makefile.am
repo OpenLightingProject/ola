@@ -33,9 +33,12 @@ libolae131core_la_LIBADD = $(uuid_LIBS) \
                            ../../../common/libolacommon.la
 
 # E1.31 dev programs
-noinst_PROGRAMS = e131_transmit_test
+noinst_PROGRAMS = e131_transmit_test e131_loadtest
 e131_transmit_test_SOURCES = e131_transmit_test.cpp E131TestFramework.cpp
 e131_transmit_test_LDADD = ./libolae131core.la
+
+e131_loadtest_SOURCES = e131_loadtest.cpp
+e131_loadtest_LDADD = ./libolae131core.la
 
 # Test programs
 if BUILD_TESTS

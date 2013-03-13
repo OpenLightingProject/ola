@@ -16,6 +16,9 @@
  * SPIPort.h
  * The SPI plugin for ola
  * Copyright (C) 2013 Simon Newton
+ *
+ * The LPD8806 code was based on
+ * https://github.com/adafruit/LPD8806/blob/master/LPD8806.cpp
  */
 
 #include <errno.h>
@@ -23,6 +26,7 @@
 #include <linux/spi/spidev.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#include <algorithm>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -57,7 +61,8 @@ using std::auto_ptr;
 const uint16_t SPIOutputPort::SPI_DELAY = 0;
 const uint8_t SPIOutputPort::SPI_BITS_PER_WORD = 8;
 const uint8_t SPIOutputPort::SPI_MODE = 0;
-const uint16_t SPIOutputPort::CHANNELS_PER_PIXEL = 3;
+const uint16_t SPIOutputPort::WS2801_SLOTS_PER_PIXEL = 3;
+const uint16_t SPIOutputPort::LPD8806_SLOTS_PER_PIXEL = 3;
 
 
 SPIOutputPort::SPIOutputPort(SPIDevice *parent, const string &spi_device,
@@ -75,10 +80,14 @@ SPIOutputPort::SPIOutputPort(SPIDevice *parent, const string &spi_device,
   if (pos != string::npos)
     m_spi_device_name = spi_device.substr(pos + 1);
 
-  m_personality_manager.AddPersonality(m_pixel_count * CHANNELS_PER_PIXEL,
-                                        "WS2801 Individual Control");
-  m_personality_manager.AddPersonality(CHANNELS_PER_PIXEL,
+  m_personality_manager.AddPersonality(m_pixel_count * WS2801_SLOTS_PER_PIXEL,
+                                       "WS2801 Individual Control");
+  m_personality_manager.AddPersonality(WS2801_SLOTS_PER_PIXEL,
                                        "WS2801 Combined Control");
+  m_personality_manager.AddPersonality(m_pixel_count * LPD8806_SLOTS_PER_PIXEL,
+                                       "LPD8806 Individual Control");
+  m_personality_manager.AddPersonality(LPD8806_SLOTS_PER_PIXEL,
+                                       "LPD8806 Combined Control");
   m_personality_manager.SetActivePersonality(1);
 }
 
@@ -153,38 +162,21 @@ bool SPIOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t) {
   if (m_identify_mode)
     return true;
 
-  unsigned int length = m_pixel_count * CHANNELS_PER_PIXEL;
-  uint8_t *output_data = new uint8_t[length];
-
-  if (m_personality_manager.ActivePersonalityNumber() == 1) {
-    buffer.GetRange(m_start_address - 1, output_data, &length);
-  } else {
-    unsigned int pixel_data_length = CHANNELS_PER_PIXEL;
-    uint8_t pixel_data[CHANNELS_PER_PIXEL];
-    buffer.GetRange(m_start_address - 1, pixel_data,
-        &pixel_data_length);
-    if (pixel_data_length != CHANNELS_PER_PIXEL) {
-      OLA_INFO << "Insufficient DMX data, required " << CHANNELS_PER_PIXEL
-               << ", got " << pixel_data_length;
-      // insufficient data
-      delete[] output_data;
-      return true;
-    }
-    for (unsigned int i = 0; i < m_pixel_count; i++) {
-      memcpy(output_data + (i * CHANNELS_PER_PIXEL), pixel_data,
-             pixel_data_length);
-    }
-  }
-
-  struct spi_ioc_transfer spi;
-  memset(&spi, 0, sizeof(spi));
-  spi.tx_buf = reinterpret_cast<__u64>(output_data);
-  spi.len = length;
-  int bytes_written = ioctl(m_fd, SPI_IOC_MESSAGE(1), &spi);
-  delete[] output_data;
-  if (bytes_written != static_cast<int>(length)) {
-    OLA_WARN << "Failed to write all the SPI data: " << strerror(errno);
-    return false;
+  switch (m_personality_manager.ActivePersonalityNumber()) {
+    case 1:
+      IndividualWS2801Control(buffer);
+      break;
+    case 2:
+      CombinedWS2801Control(buffer);
+      break;
+    case 3:
+      IndividualLPD8806Control(buffer);
+      break;
+    case 4:
+      CombinedLPD8806Control(buffer);
+      break;
+    default:
+      break;
   }
   return true;
 }
@@ -263,6 +255,99 @@ void SPIOutputPort::SendRDMRequest(const RDMRequest *request_ptr,
   }
 }
 
+void SPIOutputPort::IndividualWS2801Control(const DmxBuffer &buffer) {
+  unsigned int length = m_pixel_count * WS2801_SLOTS_PER_PIXEL;
+  uint8_t output_data[length];
+  buffer.GetRange(m_start_address - 1, output_data, &length);
+  WriteSPIData(output_data, length);
+}
+
+void SPIOutputPort::CombinedWS2801Control(const DmxBuffer &buffer) {
+  unsigned int pixel_data_length = WS2801_SLOTS_PER_PIXEL;
+  uint8_t pixel_data[pixel_data_length];
+  buffer.GetRange(m_start_address - 1, pixel_data, &pixel_data_length);
+  if (pixel_data_length != WS2801_SLOTS_PER_PIXEL) {
+    OLA_INFO << "Insufficient DMX data, required " << WS2801_SLOTS_PER_PIXEL
+             << ", got " << pixel_data_length;
+    return;
+  }
+
+  unsigned int length = m_pixel_count * WS2801_SLOTS_PER_PIXEL;
+  uint8_t output_data[length];
+  for (unsigned int i = 0; i < m_pixel_count; i++) {
+    memcpy(output_data + (i * WS2801_SLOTS_PER_PIXEL), pixel_data,
+           pixel_data_length);
+  }
+  WriteSPIData(output_data, length);
+}
+
+void SPIOutputPort::IndividualLPD8806Control(const DmxBuffer &buffer) {
+  unsigned int length = LPD8806BufferSize();
+  uint8_t output_data[length];
+  memset(output_data, 0, length);
+
+  unsigned int first_slot = m_start_address - 1;  // 0 offset
+  unsigned int limit = std::min(m_pixel_count * LPD8806_SLOTS_PER_PIXEL,
+                                buffer.Size() - first_slot);
+  for (unsigned int i = 0; i < limit; i++) {
+    uint8_t d = buffer.Get(first_slot + i);
+    // Convert RGB to GRB
+    switch (i % LPD8806_SLOTS_PER_PIXEL) {
+      case 0:
+        output_data[i + 1] = 0x80 | (d >> 1);
+        break;
+      case 1:
+        output_data[i - 1] = 0x80 | (d >> 1);
+        break;
+      default:
+        output_data[i] = 0x80 | (d >> 1);
+    }
+  }
+  WriteSPIData(output_data, length);
+}
+
+void SPIOutputPort::CombinedLPD8806Control(const DmxBuffer &buffer) {
+  unsigned int pixel_data_length = LPD8806_SLOTS_PER_PIXEL;
+  uint8_t pixel_data[pixel_data_length];
+  buffer.GetRange(m_start_address - 1, pixel_data, &pixel_data_length);
+  if (pixel_data_length != LPD8806_SLOTS_PER_PIXEL) {
+    OLA_INFO << "Insufficient DMX data, required " << LPD8806_SLOTS_PER_PIXEL
+             << ", got " << pixel_data_length;
+    return;
+  }
+
+  // The leds are GRB format so convert here
+  uint8_t temp = pixel_data[1];
+  pixel_data[1] = pixel_data[0];
+  pixel_data[0] = temp;
+
+  unsigned int length = LPD8806BufferSize();
+  uint8_t output_data[length];
+  memset(output_data, 0, length);
+  for (unsigned int i = 0; i < m_pixel_count; i++) {
+    for (unsigned int j = 0; j < LPD8806_SLOTS_PER_PIXEL; j++) {
+      output_data[i * LPD8806_SLOTS_PER_PIXEL + j] =
+        0x80 | (pixel_data[j] >> 1);
+    }
+  }
+  WriteSPIData(output_data, length);
+}
+
+unsigned int SPIOutputPort::LPD8806BufferSize() const {
+  uint8_t latch_bytes = (m_pixel_count + 31) / 32;
+  return m_pixel_count * LPD8806_SLOTS_PER_PIXEL + latch_bytes;
+}
+
+void SPIOutputPort::WriteSPIData(const uint8_t *data, unsigned int length) {
+  struct spi_ioc_transfer spi;
+  memset(&spi, 0, sizeof(spi));
+  spi.tx_buf = reinterpret_cast<__u64>(data);
+  spi.len = length;
+  int bytes_written = ioctl(m_fd, SPI_IOC_MESSAGE(1), &spi);
+  if (bytes_written != static_cast<int>(length)) {
+    OLA_WARN << "Failed to write all the SPI data: " << strerror(errno);
+  }
+}
 
 void SPIOutputPort::HandleUnknownPacket(const RDMRequest *request_ptr,
                                         RDMCallback *callback) {
