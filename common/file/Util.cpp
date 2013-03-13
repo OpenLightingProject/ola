@@ -22,6 +22,7 @@
 #include <ola/file/Util.h>
 #include <dirent.h>
 #include <errno.h>
+#include <string.h>
 #include <sstream>
 #include <string>
 #include <vector>
