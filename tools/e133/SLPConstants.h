@@ -17,7 +17,6 @@
  * Copyright (C) 2011 Simon Newton
  */
 
-
 #ifndef TOOLS_E133_SLPCONSTANTS_H_
 #define TOOLS_E133_SLPCONSTANTS_H_
 
