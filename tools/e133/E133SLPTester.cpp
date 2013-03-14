@@ -13,8 +13,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * SlpTester.cpp
- * Runs all the SLP tests
+ * E133SLPTester.cpp
+ * Runs all the E1.33 SLP tests
  * Copyright (C) 2011 Simon Newton
  */
 

@@ -62,13 +62,13 @@ slp_register_LDADD = ./libolae133slp.la \
 
 # Test Programs
 if BUILD_TESTS
-TESTS = SlpTester
+TESTS = E133SLPTester
 endif
 check_PROGRAMS = $(TESTS)
-SlpTester_SOURCES = SlpTester.cpp E133URLParserTest.cpp
-SlpTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-SlpTester_LDADD = $(CPPUNIT_LIBS) \
-                  ./libolae133slp.la \
-                  $(top_builddir)/common/libolacommon.la
+E133SLPTester_SOURCES = E133SLPTester.cpp E133URLParserTest.cpp
+E133SLPTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+E133SLPTester_LDADD = $(CPPUNIT_LIBS) \
+                      ./libolae133slp.la \
+                      $(top_builddir)/common/libolacommon.la
 
 endif
