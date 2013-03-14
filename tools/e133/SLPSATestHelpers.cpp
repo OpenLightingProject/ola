@@ -28,10 +28,10 @@
 #include <string>
 
 #include "tools/e133/E133URLParser.h"
+#include "tools/e133/SLPSATestRunner.h"
 #include "tools/slp/SLPPacketBuilder.h"
 #include "tools/slp/SLPPacketConstants.h"
 #include "tools/slp/SLPPacketParser.h"
-#include "tools/slp/SLPSATestRunner.h"
 #include "tools/slp/SLPStrings.h"
 #include "tools/slp/ScopeSet.h"
 #include "tools/slp/URLEntry.h"

@@ -9,6 +9,8 @@ EXTRA_DIST = E133Endpoint.h E133Device.h \
              OpenSLPThread.h \
              RootEndpoint.h \
              SLPConstants.h \
+             SLPSATestHelpers.h \
+             SLPSATestRunner.h \
              SLPThread.h \
              TCPConnectionStats.h
 
@@ -23,7 +25,7 @@ libolae133slp_la_LIBADD = $(openslp_LIBS) \
 
 if HAVE_SLP
 noinst_PROGRAMS = e133_controller e133_monitor e133_receiver \
-                  slp_locate slp_register
+                  slp_locate slp_register slp_sa_test
 
 e133_receiver_SOURCES = e133-receiver.cpp \
                         E133Device.cpp \
@@ -59,6 +61,14 @@ slp_locate_LDADD = ./libolae133slp.la \
 slp_register_SOURCES = slp-register.cpp
 slp_register_LDADD = ./libolae133slp.la \
                      $(top_builddir)/common/libolacommon.la
+
+slp_sa_test_SOURCES = slp-sa-test.cpp \
+                      SLPSATestHelpers.cpp \
+                      SLPSATestRunner.cpp \
+                      SLPSATests.cpp
+slp_sa_test_LDADD = $(top_builddir)/common/libolacommon.la \
+                    ../slp/libolaslp.la \
+                    ./libolae133slp.la
 
 # Test Programs
 if BUILD_TESTS
