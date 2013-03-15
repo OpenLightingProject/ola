@@ -38,6 +38,7 @@
 #include <ola/http/OlaHTTPServer.h>
 #endif
 
+#include <iostream>
 #include <string>
 #include <set>
 #include <vector>
@@ -188,7 +189,7 @@ void SLPDaemon::GetDirectoryAgents() {
   m_slp_server.GetDirectoryAgents(&agents);
   for (vector<DirectoryAgent>::const_iterator iter = agents.begin();
        iter != agents.end(); ++iter)
-    OLA_INFO << *iter;
+    std::cout << *iter << std::endl;
 }
 
 
