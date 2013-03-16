@@ -39,8 +39,9 @@
 
 using ola::TimeInterval;
 using ola::io::SelectServer;
-using ola::network::ExponentialBackoffPolicy;
 using ola::network::AdvancedTCPConnector;
+using ola::network::ExponentialBackoffPolicy;
+using ola::network::GenericSocketAddress;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::network::LinearBackoffPolicy;
@@ -384,10 +385,9 @@ void AdvancedTCPConnectorTest::SetupListeningSocket(
  */
 void AdvancedTCPConnectorTest::AcceptedConnection(TCPSocket *new_socket) {
   OLA_ASSERT_NOT_NULL(new_socket);
-  IPV4Address address;
-  uint16_t port;
-  OLA_ASSERT_TRUE(new_socket->GetPeer(&address, &port));
-  OLA_INFO << "Connection from " << address << ":" << port;
+  GenericSocketAddress address = new_socket->GetPeer();
+  OLA_ASSERT_TRUE(address.Family() == AF_INET);
+  OLA_INFO << "Connection from " << address;
 
   // terminate the ss when this connection is closed
   new_socket->SetOnClose(
@@ -401,10 +401,9 @@ void AdvancedTCPConnectorTest::AcceptedConnection(TCPSocket *new_socket) {
 void AdvancedTCPConnectorTest::OnConnect(TCPSocket *socket) {
   OLA_ASSERT_NOT_NULL(socket);
 
-  IPV4Address address;
-  uint16_t port;
-  OLA_ASSERT_TRUE(socket->GetPeer(&address, &port));
-  OLA_ASSERT_EQ(m_localhost, address);
+  GenericSocketAddress address = socket->GetPeer();
+  OLA_ASSERT_TRUE(address.Family() == AF_INET);
+  OLA_ASSERT_EQ(m_localhost, address.V4Addr().Host());
 
   m_connected_socket = socket;
   m_ss->Terminate();

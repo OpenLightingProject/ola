@@ -48,6 +48,7 @@
 #include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/RDMHelper.h>
 #include <ola/rdm/UID.h>
+#include <ola/stl/STLUtils.h>
 
 #include <algorithm>
 #include <iostream>
@@ -72,22 +73,24 @@
 
 using ola::NewCallback;
 using ola::NewSingleCallback;
+using ola::network::BufferedTCPSocket;
+using ola::network::GenericSocketAddress;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
-using ola::network::BufferedTCPSocket;
 using ola::rdm::PidStoreHelper;
+using ola::STLContains;
+using ola::TimeInterval;
+using ola::TimeStamp;
+using ola::plugin::e131::OutgoingStreamTransport;
 using ola::rdm::RDMCommand;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
-using ola::TimeInterval;
-using ola::TimeStamp;
 using std::auto_ptr;
 using std::cout;
 using std::endl;
 using std::string;
 using std::vector;
-using ola::plugin::e131::OutgoingStreamTransport;
 
 typedef struct {
   bool help;
@@ -331,8 +334,7 @@ void SimpleE133Monitor::PopulateResponderList() {
 
 
 void SimpleE133Monitor::AddIP(const IPV4Address &ip_address) {
-  IPMap::iterator iter = m_ip_map.find(ip_address.AsInt());
-  if (iter != m_ip_map.end()) {
+  if (!STLContains(m_ip_map, ip_address.AsInt())) {
     // the IP already exists
     return;
   }
@@ -382,21 +384,19 @@ void SimpleE133Monitor::DiscoveryCallback(bool ok,
  * this point. That only happens if we receive data on the connection.
  */
 void SimpleE133Monitor::OnTCPConnect(BufferedTCPSocket *socket) {
-  IPV4Address ip_address;
-  uint16_t port;
-  socket->GetPeer(&ip_address, &port);
-
-  IPMap::iterator iter = m_ip_map.find(ip_address.AsInt());
-  if (iter == m_ip_map.end()) {
-    OLA_FATAL << "Unable to locate socket for " << ip_address;
-    if (socket) {
-      socket->Close();
-      delete socket;
-    }
+  GenericSocketAddress address = socket->GetPeer();
+  if (address.Family() != AF_INET) {
+    OLA_WARN << "Non IPv4 socket " << address;
+    delete socket;
     return;
   }
-
-  NodeTCPState *node_state = iter->second;
+  IPV4SocketAddress v4_address = address.V4Addr();
+  NodeTCPState *node_state = ola::STLFindOrNull(
+      m_ip_map, v4_address.Host().AsInt());
+  if (!node_state) {
+    OLA_FATAL << "Unable to locate socket for " << v4_address.Host();
+    delete socket;
+  }
 
   // setup the incoming transport, we don't need to setup the outgoing one
   // until we've got confirmation that we're the master
@@ -408,10 +408,11 @@ void SimpleE133Monitor::OnTCPConnect(BufferedTCPSocket *socket) {
   socket->SetOnData(
       NewCallback(this,
                   &SimpleE133Monitor::ReceiveTCPData,
-                  ip_address,
+                  v4_address.Host(),
                   node_state->in_transport));
   socket->SetOnClose(
-    NewSingleCallback(this, &SimpleE133Monitor::SocketClosed, ip_address));
+    NewSingleCallback(this, &SimpleE133Monitor::SocketClosed,
+                      v4_address.Host()));
   m_ss.AddReadDescriptor(socket);
 
   // setup a timeout that closes this connect if we don't receive anything
@@ -450,13 +451,11 @@ void SimpleE133Monitor::SocketUnhealthy(IPV4Address ip_address) {
 void SimpleE133Monitor::SocketClosed(IPV4Address ip_address) {
   OLA_INFO << "connection to " << ip_address << " was closed";
 
-  IPMap::iterator iter = m_ip_map.find(ip_address.AsInt());
-  if (iter == m_ip_map.end()) {
+  NodeTCPState *node_state = ola::STLFindOrNull(m_ip_map, ip_address.AsInt());
+  if (!node_state) {
     OLA_FATAL << "Unable to locate socket for " << ip_address;
     return;
   }
-
-  NodeTCPState *node_state = iter->second;
 
   if (node_state->am_master) {
     // TODO(simon): signal other controllers here

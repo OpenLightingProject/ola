@@ -203,12 +203,14 @@ bool E133Device::CloseTCPConnection() {
  */
 void E133Device::NewTCPConnection(
     ola::network::BufferedTCPSocket *descriptor) {
-  IPV4Address ip_address;
-  uint16_t port;
-  if (descriptor->GetPeer(&ip_address, &port))
-    OLA_INFO << "New TCP connection from " << ip_address << ":" << port;
-  else
+  ola::network::GenericSocketAddress addr = descriptor->GetPeer();
+  if (addr.Family() != AF_INET) {
     OLA_WARN << "New TCP connection but failed to determine peer address";
+    delete descriptor;
+    return;
+  }
+  IPV4SocketAddress v4_address = addr.V4Addr();
+  OLA_INFO << "New TCP connection from " << v4_address;
 
   if (m_health_checked_connection) {
     OLA_WARN << "Already got a TCP connection open, closing this one";
@@ -228,7 +230,7 @@ void E133Device::NewTCPConnection(
 
   if (m_tcp_stats) {
     m_tcp_stats->connection_events++;
-    m_tcp_stats->ip_address = ip_address;
+    m_tcp_stats->ip_address = v4_address.Host();
   }
 
   descriptor->SetOnClose(

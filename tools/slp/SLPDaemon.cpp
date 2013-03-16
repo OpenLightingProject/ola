@@ -196,10 +196,8 @@ void SLPDaemon::GetDirectoryAgents() {
  * Called when RPC client connects.
  */
 void SLPDaemon::NewTCPConnection(TCPSocket *socket) {
-  IPV4Address peer_address;
-  uint16_t port;
-  socket->GetPeer(&peer_address, &port);
-  OLA_INFO << "New connection from " << peer_address << ":" << port;
+  ola::network::GenericSocketAddress address = socket->GetPeer();
+  OLA_INFO << "New connection from " << address;
 
   StreamRpcChannel *channel = new StreamRpcChannel(m_service_impl.get(), socket,
                                                    m_export_map);
