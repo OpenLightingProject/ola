@@ -613,6 +613,7 @@ AC_OUTPUT( Makefile \
     include/ola/testing/Makefile \
     include/ola/thread/Makefile \
     include/ola/timecode/Makefile \
+    include/ola/util/Makefile \
     include/ola/web/Makefile \
     include/olad/Makefile \
     java/Makefile \

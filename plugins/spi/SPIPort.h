@@ -1,26 +1,4 @@
 /*
-class UIDAllocator {
-  public:
-    explicit UIDAllocator(const UID &uid)
-      : m_esta_id(uid.ManufacturerId()),
-        m_device_id(uid.DeviceId()) {
-    }
-
-    UID *AllocateNext() {
-      if (m_device_id == UID::ALL_DEVICES)
-        return NULL;
-
-      UID *uid = new UID(m_esta_id, m_device_id);
-      m_device_id++;
-      return uid;
-    }
-
-  private:
-    uint16_t m_esta_id;
-    uint32_t m_device_id;
-};
-
-
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or

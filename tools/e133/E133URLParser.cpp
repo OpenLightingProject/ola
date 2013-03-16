@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * SlpUrlParser.h
+ * E133URLParser.cpp
  * Copyright (C) 2011 Simon Newton
  */
 
@@ -21,10 +21,11 @@
 #include <ola/StringUtils.h>
 #include <string>
 #include <vector>
-#include "tools/e133/SlpConstants.h"
-#include "tools/e133/SlpUrlParser.h"
+#include "tools/e133/SLPConstants.h"
+#include "tools/e133/E133URLParser.h"
 
-
+using ola::network::IPV4Address;
+using ola::rdm::UID;
 using std::string;
 
 
@@ -38,9 +39,9 @@ using std::string;
  * The url is expected to be in the form
  * service:rdmnet-device://192.168.1.204/7a7000000001
  */
-bool ParseSlpUrl(const string &url,
-                 ola::rdm::UID *uid,
-                 ola::network::IPV4Address *ip) {
+bool ParseE133URL(const string &url,
+                  ola::rdm::UID *uid,
+                  IPV4Address *ip) {
   size_t url_size = url.length();
   string prefix(E133_DEVICE_SLP_SERVICE_NAME);
   prefix.append("://");
@@ -56,11 +57,11 @@ bool ParseSlpUrl(const string &url,
   if (url_parts.size() != 2)
     return false;
 
-  if (!ola::network::IPV4Address::FromString(url_parts[0], ip))
+  if (!IPV4Address::FromString(url_parts[0], ip))
     return false;
 
   const string &uid_str = url_parts[1];
-  if (uid_str.size() != 2 * ola::rdm::UID::UID_SIZE)
+  if (uid_str.size() != 2 * UID::UID_SIZE)
     return false;
 
   uint16_t esta_id;
@@ -70,7 +71,7 @@ bool ParseSlpUrl(const string &url,
   if (!ola::HexStringToInt(uid_str.substr(4, 8), &device_id))
     return false;
 
-  ola::rdm::UID temp_uid(esta_id, device_id);
+  UID temp_uid(esta_id, device_id);
   *uid = temp_uid;
   return true;
 }

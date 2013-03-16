@@ -68,24 +68,29 @@
 
 #include "tools/e133/E133Endpoint.h"
 #include "tools/e133/E133HealthCheckedConnection.h"
-#include "tools/e133/SlpThread.h"
-#include "tools/e133/SlpUrlParser.h"
+#include "tools/e133/OLASLPThread.h"
+#include "tools/e133/OpenSLPThread.h"
+#include "tools/e133/SLPThread.h"
+#include "tools/e133/E133URLParser.h"
+#include "tools/slp/URLEntry.h"
 
 using ola::NewCallback;
 using ola::NewSingleCallback;
+using ola::STLContains;
+using ola::TimeInterval;
+using ola::TimeStamp;
 using ola::network::BufferedTCPSocket;
 using ola::network::GenericSocketAddress;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
-using ola::rdm::PidStoreHelper;
-using ola::STLContains;
-using ola::TimeInterval;
-using ola::TimeStamp;
 using ola::plugin::e131::OutgoingStreamTransport;
+using ola::rdm::PidStoreHelper;
 using ola::rdm::RDMCommand;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
+using ola::slp::URLEntries;
+
 using std::auto_ptr;
 using std::cout;
 using std::endl;
@@ -94,6 +99,7 @@ using std::vector;
 
 typedef struct {
   bool help;
+  bool use_openslp;
   ola::log_level log_level;
   string target_addresses;
   string pid_location;
@@ -104,11 +110,16 @@ typedef struct {
  * Parse our command line options
  */
 void ParseOptions(int argc, char *argv[], options *opts) {
+  enum {
+    OPENSLP_OPTION = 256,
+  };
+
   static struct option long_options[] = {
       {"help", no_argument, 0, 'h'},
       {"log-level", required_argument, 0, 'l'},
       {"pid-location", required_argument, 0, 'p'},
       {"targets", required_argument, 0, 't'},
+      {"openslp", no_argument, 0, OPENSLP_OPTION},
       {0, 0, 0, 0}
     };
 
@@ -155,6 +166,9 @@ void ParseOptions(int argc, char *argv[], options *opts) {
         break;
       case '?':
         break;
+      case OPENSLP_OPTION:
+        opts->use_openslp = true;
+        break;
       default:
        break;
     }
@@ -174,6 +188,7 @@ void DisplayHelpAndExit(char *argv[]) {
   "  -t, --targets <ip>,<ip>   List of IPs to connect to, overrides SLP\n"
   "  -p, --pid-location        The directory to read PID definitiions from\n"
   "  -l, --log-level <level>   Set the logging level 0 .. 4.\n"
+  "  --openslp                 Use openslp rather than the OLA SLP server\n"
   << endl;
   exit(0);
 }
@@ -211,11 +226,16 @@ class NodeTCPState {
  */
 class SimpleE133Monitor {
   public:
-    explicit SimpleE133Monitor(PidStoreHelper *pid_helper);
+    enum SLPOption {
+      OPENSLP,
+      OLASLP,
+      NO_SLP,
+    };
+    explicit SimpleE133Monitor(PidStoreHelper *pid_helper,
+                               SLPOption slp_option);
     ~SimpleE133Monitor();
 
     bool Init();
-    void PopulateResponderList();
     void AddIP(const IPV4Address &ip_address);
 
     void Run() { m_ss.Run(); }
@@ -223,10 +243,10 @@ class SimpleE133Monitor {
   private:
     ola::rdm::CommandPrinter m_command_printer;
     ola::io::SelectServer m_ss;
-    SlpThread m_slp_thread;
+    auto_ptr<BaseSLPThread> m_slp_thread;
     ola::network::BufferedTCPSocketFactory m_tcp_socket_factory;
     ola::network::AdvancedTCPConnector m_connector;
-    ola::network::LinearBackoffPolicy m_backoff_policy;
+    ola::LinearBackoffPolicy m_backoff_policy;
 
     // hash_map of ips to TCP Connection State
     typedef HASH_NAMESPACE::HASH_MAP_CLASS<uint32_t, NodeTCPState*> IPMap;
@@ -249,7 +269,7 @@ class SimpleE133Monitor {
      * Maybe this won't be a problem since we'll never delete the entry for a
      * a node we have a connection to. Think about this.
      */
-    void DiscoveryCallback(bool status, const vector<string> &urls);
+    void DiscoveryCallback(bool status, const URLEntries &urls);
     void OnTCPConnect(BufferedTCPSocket *socket);
     void ReceiveTCPData(IPV4Address ip_address,
                         ola::plugin::e131::IncomingTCPTransport *transport);
@@ -278,23 +298,31 @@ const char SimpleE133Monitor::SOURCE_NAME[] = "OLA Monitor";
 
 
 /**
- * Setup a new Monitori
+ * Setup a new Monitor
  */
 SimpleE133Monitor::SimpleE133Monitor(
-    PidStoreHelper *pid_helper)
+    PidStoreHelper *pid_helper,
+    SLPOption slp_option)
     : m_command_printer(&cout, pid_helper),
-      m_slp_thread(
-        &m_ss,
-        ola::NewCallback(this, &SimpleE133Monitor::DiscoveryCallback)),
       m_tcp_socket_factory(NewCallback(this, &SimpleE133Monitor::OnTCPConnect)),
       m_connector(&m_ss, &m_tcp_socket_factory, TCP_CONNECT_TIMEOUT),
       m_backoff_policy(INITIAL_TCP_RETRY_DELAY, MAX_TCP_RETRY_DELAY),
       m_cid(ola::plugin::e131::CID::Generate()),
       m_root_sender(m_cid),
       m_root_inflator(NewCallback(this, &SimpleE133Monitor::RLPDataReceived)) {
+  if (slp_option == OPENSLP) {
+    m_slp_thread.reset(new OpenSLPThread(&m_ss));
+  } else if (slp_option == OLASLP) {
+    m_slp_thread.reset(new OLASLPThread(&m_ss));
+  }
+  if (m_slp_thread.get()) {
+    m_slp_thread->SetNewDeviceCallback(
+      NewCallback(this, &SimpleE133Monitor::DiscoveryCallback));
+  }
+  // TODO(simon): add a controller discovery callback here as well.
+
   m_root_inflator.AddInflator(&m_e133_inflator);
   m_e133_inflator.AddInflator(&m_rdm_inflator);
-
   m_rdm_inflator.SetRDMHandler(
       ROOT_E133_ENDPOINT,
       NewCallback(this, &SimpleE133Monitor::EndpointRequest));
@@ -309,27 +337,24 @@ SimpleE133Monitor::~SimpleE133Monitor() {
   }
   m_ip_map.clear();
 
-  m_slp_thread.Join();
-  m_slp_thread.Cleanup();
+  if (m_slp_thread.get()) {
+    m_slp_thread->Join(NULL);
+    m_slp_thread->Cleanup();
+  }
 }
 
 
 bool SimpleE133Monitor::Init() {
-  if (!m_slp_thread.Init()) {
-    OLA_WARN << "SlpThread Init() failed";
+  if (!m_slp_thread.get())
+    return true;
+
+  if (!m_slp_thread->Init()) {
+    OLA_WARN << "SLPThread Init() failed";
     return false;
   }
 
-  m_slp_thread.Start();
+  m_slp_thread->Start();
   return true;
-}
-
-
-/**
- * Locate the responder
- */
-void SimpleE133Monitor::PopulateResponderList() {
-  m_slp_thread.Discover();
 }
 
 
@@ -356,15 +381,14 @@ void SimpleE133Monitor::AddIP(const IPV4Address &ip_address) {
 /**
  * Called when SLP completes discovery.
  */
-void SimpleE133Monitor::DiscoveryCallback(bool ok,
-                                          const vector<string> &urls) {
+void SimpleE133Monitor::DiscoveryCallback(bool ok, const URLEntries &urls) {
   if (ok) {
-    vector<string>::const_iterator iter;
+    URLEntries::const_iterator iter;
     UID uid(0, 0);
     IPV4Address ip;
     for (iter = urls.begin(); iter != urls.end(); ++iter) {
       OLA_INFO << "Located " << *iter;
-      if (!ParseSlpUrl(*iter, &uid, &ip))
+      if (!ParseE133URL(iter->url(), &uid, &ip))
         continue;
 
       if (uid.IsBroadcast()) {
@@ -601,6 +625,7 @@ int main(int argc, char *argv[]) {
   opts.pid_location = PID_DATA_DIR;
   opts.log_level = ola::OLA_LOG_WARN;
   opts.help = false;
+  opts.use_openslp = false;
   ParseOptions(argc, argv, &opts);
   PidStoreHelper pid_helper(opts.pid_location, 4);
 
@@ -628,18 +653,20 @@ int main(int argc, char *argv[]) {
   if (!pid_helper.Init())
     exit(EX_OSFILE);
 
-  SimpleE133Monitor monitor(&pid_helper);
+  SimpleE133Monitor::SLPOption slp_option = SimpleE133Monitor::NO_SLP;
+  if (targets.empty()) {
+    slp_option = opts.use_openslp ? SimpleE133Monitor::OPENSLP :
+        SimpleE133Monitor::OLASLP;
+  }
+  SimpleE133Monitor monitor(&pid_helper, slp_option);
   if (!monitor.Init())
     exit(EX_UNAVAILABLE);
 
-  if (targets.empty()) {
-    monitor.PopulateResponderList();
-  } else {
+  if (!targets.empty()) {
     // manually add the responder IPs
     vector<IPV4Address>::const_iterator iter = targets.begin();
     for (; iter != targets.end(); ++iter)
       monitor.AddIP(*iter);
   }
-
   monitor.Run();
 }

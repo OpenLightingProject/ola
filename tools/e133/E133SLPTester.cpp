@@ -13,18 +13,23 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * SlpConstants.h
+ * E133SLPTester.cpp
+ * Runs all the E1.33 SLP tests
  * Copyright (C) 2011 Simon Newton
  */
 
+#include <cppunit/CompilerOutputter.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
+#include <cppunit/ui/text/TestRunner.h>
 
-#ifndef TOOLS_E133_SLPCONSTANTS_H_
-#define TOOLS_E133_SLPCONSTANTS_H_
-
-static const char E133_DEVICE_SLP_SERVICE_NAME[] = "service:rdmnet-device";
-static const char E133_CONTROLLER_SLP_SERVICE_NAME[] = "service:rdmnet-ctrl";
-
-// This should match the port number in plugins/e131/e131/ACNPort.h
-static const char ACN_PORT_STRING[] = "5568";
-
-#endif  // TOOLS_E133_SLPCONSTANTS_H_
+int main(int argc, char* argv[]) {
+  CppUnit::Test *suite = CppUnit::TestFactoryRegistry::getRegistry().makeTest();
+  CppUnit::TextUi::TestRunner runner;
+  runner.addTest(suite);
+  runner.setOutputter(
+      new CppUnit::CompilerOutputter(&runner.result(), std::cerr));
+  bool wasSucessful = runner.run();
+  return wasSucessful ? 0 : 1;
+  (void) argc;
+  (void) argv;
+}

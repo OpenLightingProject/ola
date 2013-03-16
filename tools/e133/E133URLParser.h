@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * SlpUrlParser.h
+ * E133URLParser.h
  * Copyright (C) 2011 Simon Newton
  */
 
@@ -27,9 +27,7 @@
 
 using std::string;
 
-
-bool ParseSlpUrl(const string &url,
-                 ola::rdm::UID *uid,
-                 ola::network::IPV4Address *ip);
+bool ParseE133URL(const string &url, ola::rdm::UID *uid,
+                  ola::network::IPV4Address *ip);
 
 #endif  // TOOLS_E133_SLPURLPARSER_H_

@@ -31,7 +31,7 @@
 #include <string>
 #include <vector>
 
-#include "tools/slp/SLPSATestRunner.h"
+#include "tools/e133/SLPSATestRunner.h"
 #include "tools/slp/ServerCommon.h"
 
 using ola::network::IPV4Address;
