@@ -95,6 +95,8 @@ class StreamRpcChannel: public RpcChannel {
                      ExportMap *export_map = NULL);
     ~StreamRpcChannel();
 
+    bool PendingRPCs() const { return !m_requests.empty(); }
+
     void DescriptorReady();
     void SetOnClose(SingleUseCallback0<void> *closure);
 

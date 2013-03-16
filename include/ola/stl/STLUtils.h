@@ -175,5 +175,45 @@ bool STLInsertIfNotPresent(T1 *container, const typename T1::key_type &key,
                            const typename T1::mapped_type &value) {
   return container->insert(typename T1::value_type(key, value)).second;
 }
+
+
+/**
+ * Lookup a value by key in a associative container. If the value exists, it's
+ * removed from the container, the value placed in value and true is returned.
+ * If the value doesn't exist this returns false.
+ */
+template<typename T1>
+bool STLLookupAndRemove(T1 *container,
+                        const typename T1::key_type &key,
+                        typename T1::mapped_type *value) {
+  typename T1::iterator iter = container->find(key);
+  if (iter == container->end()) {
+    return false;
+  } else {
+    *value = iter->second;
+    container->erase(iter);
+    return true;
+  }
+}
+
+
+/**
+ * Similar to STLLookupAndRemove but this operates on containers of pointers.
+ * If the key exists, we remove it and return the value, if the key doesn't
+ * exist we return NULL.
+ */
+template<typename T1>
+typename T1::mapped_type STLLookupAndRemovePtr(
+    T1 *container,
+    const typename T1::key_type &key) {
+  typename T1::iterator iter = container->find(key);
+  if (iter == container->end()) {
+    return NULL;
+  } else {
+    typename T1::mapped_type value = iter->second;
+    container->erase(iter);
+    return value;
+  }
+}
 }  // ola
 #endif  // INCLUDE_OLA_STL_STLUTILS_H_

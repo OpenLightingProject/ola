@@ -25,13 +25,14 @@
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
-#include <ola/io/SelectServer.h>
 #include <ola/io/BigEndianStream.h>
+#include <ola/io/SelectServer.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/NetworkUtils.h>
 #include <ola/network/Socket.h>
 #include <ola/network/SocketAddress.h>
 #include <ola/network/TCPSocketFactory.h>
+#include <ola/stl/STLUtils.h>
 
 #ifdef HAVE_LIBMICROHTTPD
 #include <ola/http/HTTPServer.h>
@@ -63,6 +64,25 @@ using std::string;
 
 const uint16_t SLPDaemon::DEFAULT_SLP_HTTP_PORT = 9012;
 const uint16_t SLPDaemon::DEFAULT_SLP_RPC_PORT = 9011;
+
+class ConnectedClient {
+  public:
+    StreamRpcChannel *channel;
+    TCPSocket *socket;
+
+    explicit ConnectedClient(TCPSocket *socket)
+      : channel(NULL),
+        socket(socket) {
+    }
+
+    ~ConnectedClient() {
+      if (channel)
+        delete channel;
+      if (socket)
+        delete socket;
+    }
+};
+
 
 void StdinHandler::HandleCharacter(char c) {
   m_slp_server->Input(c);
@@ -101,6 +121,9 @@ SLPDaemon::SLPDaemon(ola::network::UDPSocket *udp_socket,
 
 SLPDaemon::~SLPDaemon() {
   m_rpc_accept_socket.Close();
+
+  STLDeleteValues(&m_disconnected_clients);
+  STLDeleteValues(&m_connected_clients);
 }
 
 
@@ -132,7 +155,12 @@ void SLPDaemon::Run() {
   if (m_http_server.get())
     m_http_server->Start();
 #endif
+  ola::thread::timeout_id cleanup_timeout = m_ss.RegisterRepeatingTimeout(
+    2000,
+    NewCallback(this, &SLPDaemon::CleanOldClients));
   m_ss.Run();
+  m_ss.RemoveTimeout(cleanup_timeout);
+  CleanOldClients();
 }
 
 
@@ -202,30 +230,58 @@ void SLPDaemon::NewTCPConnection(TCPSocket *socket) {
   socket->GetPeer(&peer_address, &port);
   OLA_INFO << "New connection from " << peer_address << ":" << port;
 
-  StreamRpcChannel *channel = new StreamRpcChannel(m_service_impl.get(), socket,
-                                                   m_export_map);
+  // Ownership of the socket is transferred.
+  ConnectedClient *client = new ConnectedClient(socket);
+  if (!STLInsertIfNotPresent(&m_connected_clients, socket->ReadDescriptor(),
+                             client)) {
+    OLA_FATAL << "SLP Server FD collision for " << socket->ReadDescriptor();
+    delete client;
+  }
+
+  client->channel = new StreamRpcChannel(m_service_impl.get(), socket,
+                                         m_export_map),
+
   socket->SetOnClose(
       NewSingleCallback(this, &SLPDaemon::RPCSocketClosed, socket));
 
-  (void) channel;
-
-  /*
-  pair<int, OlaClientService*> pair(socket->ReadDescriptor(), service);
-  m_sd_to_service.insert(pair);
-  */
-
-  // This hands off ownership to the select server
-  m_ss.AddReadDescriptor(socket, true);
-  // (*m_export_map->GetIntegerVar(K_CLIENT_VAR))++;
+  m_ss.AddReadDescriptor(socket);
 }
 
 
 /**
- * Called when RPC socket is closed.
+ * Called when RPC socket is closed by the remote end.
  */
 void SLPDaemon::RPCSocketClosed(TCPSocket *socket) {
-  OLA_INFO << "RPC Socket closed";
-  (void) socket;
+  ConnectedClient *client = STLLookupAndRemovePtr(&m_connected_clients,
+      socket->ReadDescriptor());
+  OLA_DEBUG << "RPC Socket closed";
+  if (!client) {
+    OLA_WARN << "Socket " << socket->ReadDescriptor()
+             << " closed but the ConnectedClient couldn't be found";
+  } else {
+    m_disconnected_clients.push_back(client);
+  }
+}
+
+
+/**
+ * Check the list of disconnected clients for ones that no longer have pending
+ * RPCs.
+ */
+bool SLPDaemon::CleanOldClients() {
+  DisconnectedClients::iterator iter = m_disconnected_clients.begin();
+  DisconnectedClients new_disconnected_clients;
+
+  for (; iter != m_disconnected_clients.end(); ++iter) {
+    ConnectedClient *client = *iter;
+    if (client->channel->PendingRPCs()) {
+      new_disconnected_clients.push_back(client);
+    } else {
+      delete client;
+    }
+  }
+  m_disconnected_clients.swap(new_disconnected_clients);
+  return true;
 }
 
 //------------------------------------------------------------------------------
