@@ -115,10 +115,15 @@ class BaseSLPThread: public ola::thread::Thread {
                                     unsigned short lifetime) = 0;
     virtual void DeRegisterSLPService(RegistrationCallback *callback,
                                       const string& url) = 0;
+    // Called after the SelectServer has finished and just before the thread
+    // completes.
+    virtual void ThreadStopping() {}
 
     // This enables us to limit the refresh-time, 0 means the implementation
     // doesn't have a min-refresh-time.
     virtual uint16_t MinRefreshTime() { return 0; }
+
+    void ReRegisterAllServices();
 
     static const char RDNMET_SCOPE[];
 

@@ -292,7 +292,8 @@ void SimpleE133Node::Run() {
  * Called when a registration request completes.
  */
 void SimpleE133Node::RegisterCallback(bool ok) {
-  OLA_INFO << "in register callback, state is " << ok;
+  if (!ok)
+    OLA_WARN << "Failed to register in SLP";
 }
 
 
@@ -300,7 +301,8 @@ void SimpleE133Node::RegisterCallback(bool ok) {
  * Called when a de-registration request completes.
  */
 void SimpleE133Node::DeRegisterCallback(bool ok) {
-  OLA_INFO << "in deregister callback, state is " << ok;
+  if (!ok)
+    OLA_WARN << "Failed to de-register in SLP";
   m_ss.Terminate();
 }
 

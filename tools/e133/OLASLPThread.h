@@ -24,6 +24,7 @@
 #include <ola/network/TCPSocket.h>
 #include <ola/thread/ExecutorInterface.h>
 #include <ola/thread/Thread.h>
+#include <ola/util/Backoff.h>
 
 #include <memory>
 #include <string>
@@ -56,11 +57,14 @@ class OLASLPThread: public BaseSLPThread {
                             unsigned short lifetime);
     void DeRegisterSLPService(RegistrationCallback *callback,
                               const string& url);
+    void ThreadStopping();
 
   private:
     bool m_init_ok;
+    ola::BackoffGenerator m_backoff_generator;
     auto_ptr<ola::network::TCPSocket> m_slp_socket;
     auto_ptr<ola::slp::SLPClient> m_slp_client;
+    ola::thread::timeout_id m_reconnect_timeout;
 
     void HandleDiscovery(InternalDiscoveryCallback *callback,
                          const string &status,
@@ -70,6 +74,9 @@ class OLASLPThread: public BaseSLPThread {
     void HandleDeRegistration(RegistrationCallback *callback,
                               const string &status, uint16_t error_code);
     void SocketClosed();
+    void ShutdownClient();
+    bool ConnectAndSetupClient();
+    void AttemptSLPConnection();
 };
 
 #endif  // TOOLS_E133_OLASLPTHREAD_H_

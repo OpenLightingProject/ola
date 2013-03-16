@@ -242,7 +242,7 @@ class SimpleE133Monitor {
     auto_ptr<BaseSLPThread> m_slp_thread;
     ola::network::BufferedTCPSocketFactory m_tcp_socket_factory;
     ola::network::AdvancedTCPConnector m_connector;
-    ola::network::LinearBackoffPolicy m_backoff_policy;
+    ola::LinearBackoffPolicy m_backoff_policy;
 
     // hash_map of ips to TCP Connection State
     typedef HASH_NAMESPACE::HASH_MAP_CLASS<uint32_t, NodeTCPState*> IPMap;

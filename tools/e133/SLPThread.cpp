@@ -22,6 +22,8 @@
 #include <ola/stl/STLUtils.h>
 #include <memory>
 #include <ostream>
+#include <string>
+#include <utility>
 
 #include "tools/e133/SLPConstants.h"
 #include "tools/e133/SLPThread.h"
@@ -122,6 +124,7 @@ bool BaseSLPThread::Join(void *ptr) {
  */
 void *BaseSLPThread::Run() {
   m_ss.Run();
+  ThreadStopping();
   return NULL;
 }
 
@@ -191,6 +194,22 @@ void BaseSLPThread::RunCallbackInExecutor(RegistrationCallback *callback,
     m_executor->Execute(
         NewSingleCallback(this, &BaseSLPThread::CompleteCallback, callback,
                           ok));
+}
+
+
+/**
+ * Re-register all services.
+ */
+void BaseSLPThread::ReRegisterAllServices() {
+  URLStateMap::const_iterator iter = m_url_map.begin();
+  for (; iter != m_url_map.end(); ++iter) {
+    OLA_INFO << "Calling re-registering " << iter->first;
+    RegisterSLPService(
+        NewSingleCallback(this, &BaseSLPThread::RegistrationComplete,
+                          reinterpret_cast<RegistrationCallback*>(NULL),
+                          iter->first),
+        iter->first, iter->second.lifetime);
+  }
 }
 
 

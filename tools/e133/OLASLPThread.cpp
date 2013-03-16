@@ -27,6 +27,7 @@
 
 using std::string;
 using std::vector;
+using ola::TimeInterval;
 using ola::slp::URLEntries;
 
 /**
@@ -36,7 +37,9 @@ using ola::slp::URLEntries;
 OLASLPThread::OLASLPThread(ola::thread::ExecutorInterface *executor,
                            unsigned int discovery_interval)
     : BaseSLPThread(executor, discovery_interval),
-      m_init_ok(false) {
+      m_backoff_generator(new ola::ExponentialBackoffPolicy(
+            TimeInterval(1, 0), TimeInterval(64, 0))),
+      m_reconnect_timeout(ola::thread::INVALID_TIMEOUT) {
 }
 
 
@@ -52,22 +55,8 @@ OLASLPThread::~OLASLPThread() {
  * Setup the SLP Thread
  */
 bool OLASLPThread::Init() {
-  ola::network::IPV4SocketAddress target(
-      ola::network::IPV4Address::Loopback(),
-      ola::slp::OLA_SLP_DEFAULT_PORT);
-  m_slp_socket.reset(ola::network::TCPSocket::Connect(target));
-  if (!m_slp_socket.get()) {
-    OLA_WARN << "Failed to connect to the OLA SLP Server at " << target;
+  if (!ConnectAndSetupClient())
     return false;
-  }
-
-  m_slp_client.reset(new ola::slp::SLPClient(m_slp_socket.get()));
-  if (!m_slp_client->Setup()) {
-    return false;
-  }
-  m_slp_socket->SetOnClose(
-      ola::NewSingleCallback(this, &OLASLPThread::SocketClosed));
-  m_ss.AddReadDescriptor(m_slp_socket.get());
   return BaseSLPThread::Init();
 }
 
@@ -76,22 +65,18 @@ bool OLASLPThread::Init() {
  * Clean up
  */
 void OLASLPThread::Cleanup() {
-  if (m_slp_socket.get()) {
-    m_ss.AddReadDescriptor(m_slp_socket.get());
-  }
-
-  if (m_slp_client.get()) {
-    m_slp_client->Stop();
-    m_slp_client.reset();
-  }
-  if (m_slp_socket.get()) {
-    m_slp_socket.reset();
-  }
+  ShutdownClient();
   m_init_ok = false;
 }
 
 void OLASLPThread::RunDiscovery(InternalDiscoveryCallback *callback,
                                 const string &service) {
+  if (!m_slp_client.get()) {
+    URLEntries urls;
+    callback->Run(false, urls);
+    return;
+  }
+
   vector<string> scopes;
   scopes.push_back(RDNMET_SCOPE);
   m_slp_client->FindService(
@@ -102,6 +87,10 @@ void OLASLPThread::RunDiscovery(InternalDiscoveryCallback *callback,
 void OLASLPThread::RegisterSLPService(RegistrationCallback *callback,
                                       const string& url,
                                       unsigned short lifetime) {
+  if (!m_slp_client.get()) {
+    callback->Run(false);
+    return;
+  }
   vector<string> scopes;
   scopes.push_back(RDNMET_SCOPE);
   m_slp_client->RegisterService(
@@ -112,11 +101,22 @@ void OLASLPThread::RegisterSLPService(RegistrationCallback *callback,
 
 void OLASLPThread::DeRegisterSLPService(RegistrationCallback *callback,
                                         const string& url) {
+  if (!m_slp_client.get()) {
+    callback->Run(false);
+    return;
+  }
   vector<string> scopes;
   scopes.push_back(RDNMET_SCOPE);
   m_slp_client->DeRegisterService(
       scopes, url,
       NewSingleCallback(this, &OLASLPThread::HandleDeRegistration, callback));
+}
+
+void OLASLPThread::ThreadStopping() {
+  if (m_reconnect_timeout != ola::thread::INVALID_TIMEOUT) {
+    m_ss.RemoveTimeout(m_reconnect_timeout);
+    m_reconnect_timeout = ola::thread::INVALID_TIMEOUT;
+  }
 }
 
 void OLASLPThread::HandleDiscovery(InternalDiscoveryCallback *callback,
@@ -140,5 +140,57 @@ void OLASLPThread::HandleDeRegistration(RegistrationCallback *callback,
 }
 
 void OLASLPThread::SocketClosed() {
-  m_ss.Terminate();
+  OLA_WARN << "Lost connection to SLP server";
+  ShutdownClient();
+  m_reconnect_timeout = m_ss.RegisterSingleTimeout(
+      m_backoff_generator.Next(),
+      ola::NewSingleCallback(this, &OLASLPThread::AttemptSLPConnection));
+}
+
+void OLASLPThread::ShutdownClient() {
+  if (m_slp_socket.get()) {
+    m_ss.RemoveReadDescriptor(m_slp_socket.get());
+  }
+
+  if (m_slp_client.get()) {
+    m_slp_client->Stop();
+    m_slp_client.reset();
+  }
+  if (m_slp_socket.get()) {
+    m_slp_socket.reset();
+  }
+}
+
+bool OLASLPThread::ConnectAndSetupClient() {
+  ola::network::IPV4SocketAddress target(
+      ola::network::IPV4Address::Loopback(),
+      ola::slp::OLA_SLP_DEFAULT_PORT);
+  m_slp_socket.reset(ola::network::TCPSocket::Connect(target));
+  if (!m_slp_socket.get()) {
+    OLA_WARN << "Failed to connect to the OLA SLP Server at " << target;
+    return false;
+  }
+
+  m_slp_client.reset(new ola::slp::SLPClient(m_slp_socket.get()));
+  if (!m_slp_client->Setup()) {
+    return false;
+  }
+  m_slp_socket->SetOnClose(
+      ola::NewSingleCallback(this, &OLASLPThread::SocketClosed));
+  m_ss.AddReadDescriptor(m_slp_socket.get());
+  return true;
+}
+
+
+void OLASLPThread::AttemptSLPConnection() {
+  OLA_INFO << "Attempting reconnection to SLP";
+  // It's ok that this blocks, since the thread isn't able to make progress
+  // until the connection is back anyway.
+  if (ConnectAndSetupClient()) {
+    ReRegisterAllServices();
+  } else {
+    m_reconnect_timeout = m_ss.RegisterSingleTimeout(
+        m_backoff_generator.Next(),
+        ola::NewSingleCallback(this, &OLASLPThread::AttemptSLPConnection));
+  }
 }
