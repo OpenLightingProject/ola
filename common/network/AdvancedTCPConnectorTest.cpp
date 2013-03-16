@@ -37,14 +37,14 @@
 #include "ola/testing/TestUtils.h"
 
 
+using ola::ExponentialBackoffPolicy;
+using ola::LinearBackoffPolicy;
 using ola::TimeInterval;
 using ola::io::SelectServer;
 using ola::network::AdvancedTCPConnector;
-using ola::network::ExponentialBackoffPolicy;
 using ola::network::GenericSocketAddress;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
-using ola::LinearBackoffPolicy;
 using ola::network::StringToAddress;
 using ola::network::TCPAcceptingSocket;
 using ola::network::TCPSocket;
