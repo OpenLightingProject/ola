@@ -166,6 +166,17 @@ void STLSafeReplace(T1 *container, const typename T1::key_type &key,
 
 
 /**
+ * Insert a value into a container only if this value doesn't already exist.
+ * Returns true if the key was inserted, false if the key already exists.
+ */
+template<typename T1>
+bool STLInsertIfNotPresent(T1 *container,
+                           const typename T1::value_type &value) {
+  return container->insert(value).second;
+}
+
+
+/**
  * Insert an key : value into a map only if a value for this key doesn't
  * already exist.
  * Returns true if the key was inserted, false if the key already exists.
@@ -176,6 +187,15 @@ bool STLInsertIfNotPresent(T1 *container, const typename T1::key_type &key,
   return container->insert(typename T1::value_type(key, value)).second;
 }
 
+
+/**
+ * Remove a item from a container.
+ * @returns true if the item was removed, false otherwise.
+ */
+template<typename T1>
+bool STLRemove(T1 *container, const typename T1::key_type &key) {
+  return container->erase(key);
+}
 
 /**
  * Lookup a value by key in a associative container. If the value exists, it's
