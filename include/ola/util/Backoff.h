@@ -22,6 +22,7 @@
 
 #include <math.h>
 #include <ola/Clock.h>
+#include <memory>
 
 namespace ola {
 
@@ -113,6 +114,28 @@ class ExponentialBackoffPolicy: public BackOffPolicy {
     const TimeInterval m_max;
 };
 
+
 // TODO(simon): add an ExponentialJitterBackoffPolicy
+
+// Generates backoff times.
+class BackoffGenerator {
+  public:
+    explicit BackoffGenerator(const BackOffPolicy *policy)
+        : m_policy(policy),
+          m_failures(0) {
+    }
+
+    TimeInterval Next() {
+      return m_policy->BackOffTime(++m_failures);
+    }
+
+    void Reset() {
+      m_failures = 0;
+    }
+
+  private:
+    std::auto_ptr<const BackOffPolicy> m_policy;
+    unsigned int m_failures;
+};
 }  // ola
 #endif  // INCLUDE_OLA_UTIL_BACKOFF_H_

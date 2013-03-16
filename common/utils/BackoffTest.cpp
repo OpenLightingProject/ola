@@ -30,20 +30,23 @@
 #include "ola/testing/TestUtils.h"
 
 
-using ola::TimeInterval;
+using ola::BackoffGenerator;
 using ola::ExponentialBackoffPolicy;
 using ola::LinearBackoffPolicy;
+using ola::TimeInterval;
 
 class BackoffTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(BackoffTest);
 
   CPPUNIT_TEST(testLinearBackoffPolicy);
   CPPUNIT_TEST(testExponentialBackoffPolicy);
+  CPPUNIT_TEST(testBackoffGenerator);
   CPPUNIT_TEST_SUITE_END();
 
   public:
     void testLinearBackoffPolicy();
     void testExponentialBackoffPolicy();
+    void testBackoffGenerator();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(BackoffTest);
@@ -79,4 +82,25 @@ void BackoffTest::testExponentialBackoffPolicy() {
   OLA_ASSERT_EQ(TimeInterval(160, 0), policy.BackOffTime(5));
   OLA_ASSERT_EQ(TimeInterval(170, 0), policy.BackOffTime(6));
   OLA_ASSERT_EQ(TimeInterval(170, 0), policy.BackOffTime(7));
+}
+
+
+/**
+ * Test the BackoffGenerator
+ */
+void BackoffTest::testBackoffGenerator() {
+  BackoffGenerator generator(
+      new LinearBackoffPolicy(TimeInterval(5, 0), TimeInterval(30, 0)));
+
+  OLA_ASSERT_EQ(TimeInterval(5, 0), generator.Next());
+  OLA_ASSERT_EQ(TimeInterval(10, 0), generator.Next());
+  OLA_ASSERT_EQ(TimeInterval(15, 0), generator.Next());
+  OLA_ASSERT_EQ(TimeInterval(20, 0), generator.Next());
+  OLA_ASSERT_EQ(TimeInterval(25, 0), generator.Next());
+  OLA_ASSERT_EQ(TimeInterval(30, 0), generator.Next());
+
+  generator.Reset();
+  OLA_ASSERT_EQ(TimeInterval(5, 0), generator.Next());
+  OLA_ASSERT_EQ(TimeInterval(10, 0), generator.Next());
+  OLA_ASSERT_EQ(TimeInterval(15, 0), generator.Next());
 }
