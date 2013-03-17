@@ -22,6 +22,7 @@
 #define INCLUDE_OLA_IO_MEMORYBLOCK_H_
 
 #include <stdint.h>
+#include <string.h>
 #include <algorithm>
 
 namespace ola {
