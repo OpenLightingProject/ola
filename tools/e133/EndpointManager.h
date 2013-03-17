@@ -41,14 +41,13 @@
 class EndpointManager {
   public:
     typedef ola::Callback1<void, uint16_t> EndpointNotificationCallback;
-    typedef enum { ADD, REMOVE, BOTH} EndpointNoticationEvent;
+    typedef enum { ADD, REMOVE, BOTH } EndpointNoticationEvent;
 
     explicit EndpointManager() {}
     ~EndpointManager() {}
 
     // register and unregister endpoints
-    bool RegisterEndpoint(uint16_t endpoint_id,
-                          class E133Endpoint *endpoint);
+    bool RegisterEndpoint(uint16_t endpoint_id, class E133Endpoint *endpoint);
     void UnRegisterEndpoint(uint16_t endpoint);
 
     // lookup methods

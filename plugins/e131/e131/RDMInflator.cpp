@@ -131,8 +131,7 @@ bool RDMInflator::HandlePDUData(uint32_t vector,
     return true;
   }
 
-  string rdm_message(reinterpret_cast<const char*>(&data[0]),
-                     pdu_len - 1);
+  string rdm_message(reinterpret_cast<const char*>(&data[0]), pdu_len);
 
   endpoint_iter->second->Run(headers.GetTransportHeader(),
                              e133_header,
