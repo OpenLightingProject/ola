@@ -67,7 +67,7 @@ typedef struct {
   unsigned int universe;
   string ip_address;
   uint16_t lifetime;
-  UID *uid;
+  auto_ptr<UID> uid;
 } options;
 
 
@@ -102,7 +102,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
     switch (c) {
       case 0:
         if (uid_set)
-          opts->uid = UID::FromString(optarg);
+          opts->uid.reset(UID::FromString(optarg));
         break;
       case 'h':
         opts->help = true;
@@ -262,12 +262,11 @@ bool SimpleE133Node::Init() {
   // add a single endpoint
   m_endpoint_manager.RegisterEndpoint(1, &m_first_endpoint);
 
-  // register in SLP
+  // Start the SLP thread.
   if (!m_slp_thread->Init()) {
     OLA_WARN << "SLPThread Init() failed";
     return false;
   }
-
   m_slp_thread->Start();
   return true;
 }
@@ -399,15 +398,14 @@ int main(int argc, char *argv[]) {
   opts.lifetime = 300;  // 5 mins is a good compromise
   opts.universe = 1;
   opts.help = false;
-  opts.uid = NULL;
   ParseOptions(argc, argv, &opts);
 
   if (opts.help)
     DisplayHelpAndExit(argv);
 
   ola::InitLogging(opts.log_level, ola::OLA_LOG_STDERR);
-  if (!opts.uid) {
-    opts.uid = new ola::rdm::UID(OPEN_LIGHTING_ESTA_CODE, 0xffffff00);
+  if (!opts.uid.get()) {
+    opts.uid.reset(new ola::rdm::UID(OPEN_LIGHTING_ESTA_CODE, 0xffffff00));
   }
 
   ola::network::Interface interface;
@@ -435,7 +433,6 @@ int main(int argc, char *argv[]) {
 
   if (sigaction(SIGINT, &act, &oact) < 0) {
     OLA_WARN << "Failed to install signal SIGINT";
-    delete opts.uid;
     return false;
   }
 
@@ -447,6 +444,4 @@ int main(int argc, char *argv[]) {
   cout << "-------------------------------------------\n";
 
   node.Run();
-
-  delete opts.uid;
 }

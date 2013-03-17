@@ -45,6 +45,7 @@
 #include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/RDMHelper.h>
 #include <ola/rdm/UID.h>
+#include <ola/stl/STLUtils.h>
 
 #include <algorithm>
 #include <iostream>
@@ -219,7 +220,6 @@ void DisplayHelpAndExit(char *argv[]) {
 }
 
 
-
 /**
  * A very simple E1.33 Controller
  */
@@ -373,8 +373,8 @@ void SimpleE133Controller::PopulateResponderList() {
 
 
 void SimpleE133Controller::AddUID(const UID &uid, const IPV4Address &ip) {
-  OLA_INFO << "adding UID " << uid << " @ " << ip;
-  m_uid_to_ip[uid] = ip;
+  OLA_INFO << "Adding UID " << uid << " @ " << ip;
+  ola::STLReplace(&m_uid_to_ip, uid, ip);
 }
 
 
@@ -464,7 +464,6 @@ void SimpleE133Controller::DiscoveryCallback(bool ok, const URLEntries &urls) {
         OLA_WARN << "UID " << uid << "@" << ip << " is broadcast";
         continue;
       }
-      OLA_INFO << "Adding " << uid << "@" << ip;
       AddUID(uid, ip);
     }
   }
@@ -480,14 +479,14 @@ void SimpleE133Controller::DiscoveryCallback(bool ok, const URLEntries &urls) {
 bool SimpleE133Controller::SendRequest(const UID &uid,
                                        uint16_t endpoint,
                                        RDMRequest *request) {
-  uid_to_ip_map::const_iterator iter = m_uid_to_ip.find(uid);
-  if (iter == m_uid_to_ip.end()) {
+  IPV4Address *target_address = ola::STLFindPtrOrNull(&m_uid_to_ip, uid);
+  if (!target_address) {
     OLA_WARN << "UID " << uid << " not found";
     delete request;
     return false;
   }
 
-  OLA_INFO << "Sending to " << iter->second << ":" << E133_PORT << "/" << uid
+  OLA_INFO << "Sending to " << *target_address << ":" << E133_PORT << "/" << uid
       << "/" << endpoint;
 
   const ola::plugin::e131::RDMPDU pdu(request);
@@ -497,7 +496,7 @@ bool SimpleE133Controller::SendRequest(const UID &uid,
       endpoint);
 
   ola::plugin::e131::OutgoingUDPTransport transport(&m_outgoing_udp_transport,
-                                                    iter->second,
+                                                    *target_address,
                                                     E133_PORT);
   bool result = m_e133_sender.SendRDM(header, &pdu, &transport);
   if (!result) {
@@ -655,7 +654,7 @@ int main(int argc, char *argv[]) {
 
   // check the UID
   if (!opts.uid) {
-    OLA_FATAL << "Invalid UID";
+    OLA_FATAL << "Invalid UID, try xxxx:yyyyyyyy";
     exit(EX_USAGE);
   }
   UID dst_uid(*opts.uid);
