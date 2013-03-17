@@ -25,10 +25,12 @@
 
 #include "ola/Logging.h"
 #include "ola/io/IOQueue.h"
+#include "ola/io/MemoryBlockPool.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/testing/TestUtils.h"
 
 using ola::io::IOQueue;
+using ola::io::MemoryBlockPool;
 using ola::network::HostToNetwork;
 using ola::testing::ASSERT_DATA_EQUALS;
 using std::auto_ptr;
@@ -109,28 +111,29 @@ void IOQueueTest::testBasicWrite() {
  */
 void IOQueueTest::testBlockOverflow() {
   // block size of 4
-  m_buffer.reset(new IOQueue(4));
+  MemoryBlockPool pool(4);
+  IOQueue queue(&pool);
   uint8_t data1[] = {0, 1, 2, 3, 4};
   uint8_t data2[] = {5, 6, 7, 8, 9};
   uint8_t data3[] = {0xa, 0xb, 0xc, 0xd, 0xe};
 
-  m_buffer->Write(data1, sizeof(data1));
-  OLA_ASSERT_EQ(5u, m_buffer->Size());
+  queue.Write(data1, sizeof(data1));
+  OLA_ASSERT_EQ(5u, queue.Size());
 
-  m_buffer->Write(data2, sizeof(data2));
-  OLA_ASSERT_EQ(10u, m_buffer->Size());
+  queue.Write(data2, sizeof(data2));
+  OLA_ASSERT_EQ(10u, queue.Size());
 
-  m_buffer->Write(data3, sizeof(data3));
-  OLA_ASSERT_EQ(15u, m_buffer->Size());
+  queue.Write(data3, sizeof(data3));
+  OLA_ASSERT_EQ(15u, queue.Size());
 
-  m_buffer->Pop(9);
-  OLA_ASSERT_EQ(6u, m_buffer->Size());
+  queue.Pop(9);
+  OLA_ASSERT_EQ(6u, queue.Size());
 
   // append some more data
-  m_buffer->Write(data1, sizeof(data1));
-  OLA_ASSERT_EQ(11u, m_buffer->Size());
-  m_buffer->Write(data2, sizeof(data2));
-  OLA_ASSERT_EQ(16u, m_buffer->Size());
+  queue.Write(data1, sizeof(data1));
+  OLA_ASSERT_EQ(11u, queue.Size());
+  queue.Write(data2, sizeof(data2));
+  OLA_ASSERT_EQ(16u, queue.Size());
 }
 
 
@@ -167,37 +170,38 @@ void IOQueueTest::testPop() {
   OLA_ASSERT_EQ(9u, m_buffer->Size());
 
   // Now try a buffer with smaller blocks
-  m_buffer.reset(new IOQueue(4));
-  m_buffer->Write(data1, sizeof(data1));
-  OLA_ASSERT_EQ(9u, m_buffer->Size());
+  MemoryBlockPool pool(4);
+  IOQueue queue(&pool);
+  queue.Write(data1, sizeof(data1));
+  OLA_ASSERT_EQ(9u, queue.Size());
 
   // pop the same amount as the first block size
-  m_buffer->Pop(4);
-  OLA_ASSERT_EQ(5u, m_buffer->Size());
-  OLA_ASSERT_FALSE(m_buffer->Empty());
+  queue.Pop(4);
+  OLA_ASSERT_EQ(5u, queue.Size());
+  OLA_ASSERT_FALSE(queue.Empty());
 
   // now pop more than the buffer size
-  m_buffer->Pop(6);
-  OLA_ASSERT_EQ(0u, m_buffer->Size());
-  OLA_ASSERT_TRUE(m_buffer->Empty());
+  queue.Pop(6);
+  OLA_ASSERT_EQ(0u, queue.Size());
+  OLA_ASSERT_TRUE(queue.Empty());
 
   // test the block boundry
   uint8_t *output_data = new uint8_t[4];
-  m_buffer.reset(new IOQueue(4));
-  m_buffer->Write(data1, 4);
-  OLA_ASSERT_EQ(4u, m_buffer->Size());
-  unsigned int output_size = m_buffer->Peek(output_data, 4);
+  m_buffer.reset(new IOQueue(&pool));
+  queue.Write(data1, 4);
+  OLA_ASSERT_EQ(4u, queue.Size());
+  unsigned int output_size = queue.Peek(output_data, 4);
   ASSERT_DATA_EQUALS(__LINE__, data1, 4, output_data, output_size);
-  m_buffer->Pop(4);
-  OLA_ASSERT_TRUE(m_buffer->Empty());
+  queue.Pop(4);
+  OLA_ASSERT_TRUE(queue.Empty());
 
   // now add some more data
-  m_buffer->Write(data1 + 4, 4);
-  OLA_ASSERT_EQ(4u, m_buffer->Size());
-  output_size = m_buffer->Peek(output_data, 4);
+  queue.Write(data1 + 4, 4);
+  OLA_ASSERT_EQ(4u, queue.Size());
+  output_size = queue.Peek(output_data, 4);
   ASSERT_DATA_EQUALS(__LINE__, data1 + 4, 4, output_data, output_size);
-  m_buffer->Pop(4);
-  OLA_ASSERT_TRUE(m_buffer->Empty());
+  queue.Pop(4);
+  OLA_ASSERT_TRUE(queue.Empty());
 
   delete[] output_data;
 }
@@ -233,40 +237,41 @@ void IOQueueTest::testPeek() {
   OLA_ASSERT_EQ(9u, m_buffer->Size());
 
   // Now try a buffer with smaller blocks
-  m_buffer.reset(new IOQueue(4));
-  m_buffer->Write(data1, sizeof(data1));
-  OLA_ASSERT_EQ(9u, m_buffer->Size());
+  MemoryBlockPool pool(4);
+  IOQueue queue(&pool);
+  queue.Write(data1, sizeof(data1));
+  OLA_ASSERT_EQ(9u, queue.Size());
 
   // peek at he same amount as the first block size
-  output_size = m_buffer->Peek(output_data, 4);
+  output_size = queue.Peek(output_data, 4);
   ASSERT_DATA_EQUALS(__LINE__, data1, 4, output_data, output_size);
-  OLA_ASSERT_EQ(9u, m_buffer->Size());
-  OLA_ASSERT_FALSE(m_buffer->Empty());
+  OLA_ASSERT_EQ(9u, queue.Size());
+  OLA_ASSERT_FALSE(queue.Empty());
 
   // peek at data from more than one block
-  output_size = m_buffer->Peek(output_data, 6);
+  output_size = queue.Peek(output_data, 6);
   ASSERT_DATA_EQUALS(__LINE__, data1, 6, output_data, output_size);
-  OLA_ASSERT_EQ(9u, m_buffer->Size());
-  OLA_ASSERT_FALSE(m_buffer->Empty());
+  OLA_ASSERT_EQ(9u, queue.Size());
+  OLA_ASSERT_FALSE(queue.Empty());
 
   // peek at data on the two block boundry
-  output_size = m_buffer->Peek(output_data, 8);
+  output_size = queue.Peek(output_data, 8);
   ASSERT_DATA_EQUALS(__LINE__, data1, 8, output_data, output_size);
-  OLA_ASSERT_EQ(9u, m_buffer->Size());
-  OLA_ASSERT_FALSE(m_buffer->Empty());
+  OLA_ASSERT_EQ(9u, queue.Size());
+  OLA_ASSERT_FALSE(queue.Empty());
 
   // peek at all the data
-  output_size = m_buffer->Peek(output_data, 9);
+  output_size = queue.Peek(output_data, 9);
   ASSERT_DATA_EQUALS(__LINE__, data1, 9, output_data, output_size);
-  OLA_ASSERT_EQ(9u, m_buffer->Size());
-  OLA_ASSERT_FALSE(m_buffer->Empty());
+  OLA_ASSERT_EQ(9u, queue.Size());
+  OLA_ASSERT_FALSE(queue.Empty());
 
   // peek at more data than what exists
-  output_size = m_buffer->Peek(output_data, DATA_SIZE);
+  output_size = queue.Peek(output_data, DATA_SIZE);
   OLA_ASSERT_EQ(9u, output_size);
   ASSERT_DATA_EQUALS(__LINE__, data1, 9, output_data, output_size);
-  OLA_ASSERT_EQ(9u, m_buffer->Size());
-  OLA_ASSERT_FALSE(m_buffer->Empty());
+  OLA_ASSERT_EQ(9u, queue.Size());
+  OLA_ASSERT_FALSE(queue.Empty());
 
   delete[] output_data;
 }
@@ -289,30 +294,16 @@ void IOQueueTest::testIOVec() {
   m_buffer->FreeIOVec(vector);
 
   // try a smaller block size
-  m_buffer.reset(new IOQueue(4));
-  m_buffer->Write(data1, sizeof(data1));
-  OLA_ASSERT_EQ(9u, m_buffer->Size());
+  MemoryBlockPool pool(4);
+  IOQueue queue(&pool);
+  m_buffer.reset(new IOQueue(&pool));
+  queue.Write(data1, sizeof(data1));
+  OLA_ASSERT_EQ(9u, queue.Size());
 
-  vector = m_buffer->AsIOVec(&iocnt);
+  vector = queue.AsIOVec(&iocnt);
   OLA_ASSERT_EQ(3, iocnt);
   OLA_ASSERT_EQ(9u, SumLengthOfIOVec(vector, iocnt));
-
-  // test append
-  IOQueue target_buffer;
-  target_buffer.AppendIOVec(vector, iocnt);
-  OLA_ASSERT_EQ(9u, target_buffer.Size());
-
-  // test both buffers have the same data
-  uint8_t *output1 = new uint8_t[10];
-  uint8_t *output2 = new uint8_t[10];
-  unsigned int output1_size = m_buffer->Peek(output1, 10);
-  unsigned int output2_size = target_buffer.Peek(output2, 10);
-
-  ASSERT_DATA_EQUALS(__LINE__, output1, output1_size, output2, output2_size);
-  delete[] output1;
-  delete[] output2;
-
-  m_buffer->FreeIOVec(vector);
+  queue.FreeIOVec(vector);
 }
 
 
@@ -320,14 +311,15 @@ void IOQueueTest::testIOVec() {
  * Test dumping to a ostream works
  */
 void IOQueueTest::testDump() {
-  m_buffer.reset(new IOQueue(4));
+  MemoryBlockPool pool(4);
+  IOQueue queue(&pool);
   uint8_t data1[] = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 
-  m_buffer->Write(data1, sizeof(data1));
-  OLA_ASSERT_EQ(9u, m_buffer->Size());
+  queue.Write(data1, sizeof(data1));
+  OLA_ASSERT_EQ(9u, queue.Size());
 
   std::stringstream str;
-  m_buffer->Dump(&str);
+  queue.Dump(&str);
   OLA_ASSERT_EQ(
       string("00 01 02 03 04 05 06 07  ........\n"
              "08                       .\n"),
@@ -339,13 +331,14 @@ void IOQueueTest::testDump() {
  * Test reading to a string works.
  */
 void IOQueueTest::testStringRead() {
-  m_buffer.reset(new IOQueue(4));
+  MemoryBlockPool pool(4);
+  IOQueue queue(&pool);
   uint8_t data1[] = {'a', 'b', 'c', 'd', '1', '2', '3', '4', ' '};
 
-  m_buffer->Write(data1, sizeof(data1));
-  OLA_ASSERT_EQ(9u, m_buffer->Size());
+  queue.Write(data1, sizeof(data1));
+  OLA_ASSERT_EQ(9u, queue.Size());
 
   std::string output;
-  OLA_ASSERT_EQ(9u, m_buffer->Read(&output, 9u));
+  OLA_ASSERT_EQ(9u, queue.Read(&output, 9u));
   OLA_ASSERT_EQ(string("abcd1234 "), output);
 }

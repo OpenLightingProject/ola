@@ -14,7 +14,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * IOQueue.h
- * A non-contigous memory buffer that operates as a queue.
+ * A non-contigous memory buffer that operates as a queue (FIFO).
  * Copyright (C) 2012 Simon Newton
  */
 
@@ -38,10 +38,13 @@ namespace io {
  */
 class IOQueue: public InputBufferInterface, public OutputBufferInterface {
   public:
-    explicit IOQueue(unsigned int block_size = DEFAULT_BLOCK_SIZE);
+    IOQueue();
+    explicit IOQueue(class MemoryBlockPool *block_pool);
+
     ~IOQueue();
 
     unsigned int Size() const;
+
     bool Empty() const {
       return m_blocks.empty();
     }
@@ -49,7 +52,7 @@ class IOQueue: public InputBufferInterface, public OutputBufferInterface {
     // From OutputBuffer
     void Write(const uint8_t *data, unsigned int length);
 
-    // From InputBuffer
+    // From InputBuffer, these reads consume data from the buffer.
     unsigned int Read(uint8_t *data, unsigned int length);
     unsigned int Read(std::string *output, unsigned int length);
 
@@ -58,74 +61,25 @@ class IOQueue: public InputBufferInterface, public OutputBufferInterface {
 
     const struct iovec *AsIOVec(int *iocnt);
     void FreeIOVec(const struct iovec *iov);
-    void AppendIOVec(const struct iovec *iov, int iocnt);
 
+    // purge the underlying memory pool
     void Purge();
 
     void Dump(std::ostream *output);
 
   private:
-    typedef std::deque<uint8_t*> BlockVector;
+    typedef std::deque<class MemoryBlock*> BlockVector;
+
+    class MemoryBlockPool* m_pool;
+    bool m_delete_pool;
 
     BlockVector m_blocks;
-    std::queue<uint8_t*> m_free_blocks;
-    BlockVector::iterator m_last_block;
-    const unsigned int m_block_size;
-    // last points to one more than the last element
-    uint8_t *m_first, *m_last;
-
-    inline unsigned int SizeOfFirstBlock() const {
-      if (m_blocks.empty())
-        return 0;
-
-      if (m_last_block == m_blocks.begin()) {
-        // first == last
-        return static_cast<unsigned int>(m_last - m_first);
-      } else {
-        return m_block_size - FreeSpaceInFirstBlock();
-      }
-    }
-
-    /**
-     * The amount of free space at the start of the first block
-     */
-    inline unsigned int FreeSpaceInFirstBlock() const {
-      if (m_blocks.empty())
-        return 0;
-
-      return static_cast<unsigned int>(m_first - *(m_blocks.begin()));
-    }
-
-    inline unsigned int SizeOfLastLBlock() const {
-      if (m_blocks.empty())
-        return 0;
-
-      if (m_last_block == m_blocks.begin()) {
-        // first == last
-        return static_cast<unsigned int>(m_last - m_first);
-      } else {
-        return static_cast<unsigned int>(m_last - *m_last_block);
-      }
-    }
-
-    /**
-     * The amount of free space at the end of the last block
-     */
-    inline unsigned int FreeSpaceInLastBlock() const {
-      if (m_blocks.empty())
-        return 0;
-      return static_cast<unsigned int>(*m_last_block + m_block_size - m_last);
-    }
 
     void AppendBlock();
-    void PopBlock();
 
     // no copying / assignment for now
     IOQueue(const IOQueue&);
     IOQueue& operator=(const IOQueue&);
-
-    // default to 1k blocks
-    static const unsigned int DEFAULT_BLOCK_SIZE = 1024;
 };
 }  // io
 }  // ola

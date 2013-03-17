@@ -4,6 +4,8 @@ SOURCES = BigEndianStream.h \
           IOQueue.h \
           InputBuffer.h \
           InputStream.h \
+          MemoryBlock.h \
+          MemoryBlockPool.h \
           MemoryBuffer.h \
           OutputBuffer.h \
           OutputStream.h \
