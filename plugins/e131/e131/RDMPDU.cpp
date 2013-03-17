@@ -37,7 +37,7 @@ using ola::rdm::RDMCommandSerializer;
  * Size of the data portion
  */
 unsigned int RDMPDU::DataSize() const {
-  if (m_command)
+  if (m_command.get())
     return RDMCommandSerializer::RequiredSize(*m_command);
   return 0;
 }
@@ -56,7 +56,7 @@ bool RDMPDU::PackHeader(uint8_t *, unsigned int &length) const {
  * Pack the data portion.
  */
 bool RDMPDU::PackData(uint8_t *data, unsigned int &length) const {
-  if (!m_command) {
+  if (!m_command.get()) {
     length = 0;
     return true;
   }
@@ -69,7 +69,7 @@ bool RDMPDU::PackData(uint8_t *data, unsigned int &length) const {
  * Pack the data into a buffer
  */
 void RDMPDU::PackData(OutputStream *stream) const {
-  if (!m_command)
+  if (!m_command.get())
     return;
   m_command->Write(stream);
 }
