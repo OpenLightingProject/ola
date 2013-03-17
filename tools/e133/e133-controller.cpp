@@ -655,7 +655,7 @@ int main(int argc, char *argv[]) {
 
   // check the UID
   if (!opts.uid) {
-    OLA_FATAL << "Invalid UID";
+    OLA_FATAL << "Invalid UID, try xxxx:yyyyyyyy";
     exit(EX_USAGE);
   }
   UID dst_uid(*opts.uid);
