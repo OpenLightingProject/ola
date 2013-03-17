@@ -3,6 +3,7 @@ include $(top_srcdir)/common.mk
 noinst_LTLIBRARIES = libolaio.la
 libolaio_la_SOURCES = Descriptor.cpp \
                       IOQueue.cpp \
+                      IOStack.cpp \
                       SelectServer.cpp \
                       StdinHandler.cpp
 
@@ -17,6 +18,7 @@ COMMON_TEST_LDADD = $(CPPUNIT_LIBS) \
                     ../testing/libolatesting.la
 
 IOQueueTester_SOURCES = IOQueueTest.cpp \
+                        IOStackTest.cpp \
                         GenericTester.cpp
 IOQueueTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 IOQueueTester_LDADD = $(COMMON_TEST_LDADD)

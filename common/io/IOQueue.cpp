@@ -217,6 +217,16 @@ void IOQueue::FreeIOVec(const struct iovec *iov) {
     delete[] iov;
 }
 
+
+/**
+ * Append an MemoryBlock to this queue. This may leave a hole in the last block
+ * before this method was called, but that's unavoidable without copying (which
+ * we don't want to do).
+ */
+void IOQueue::AppendBlock(class MemoryBlock *block) {
+  m_blocks.push_back(block);
+}
+
 void IOQueue::Purge() {
   m_pool->Purge();
 }

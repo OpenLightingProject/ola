@@ -26,12 +26,10 @@
 #include "ola/Logging.h"
 #include "ola/io/IOQueue.h"
 #include "ola/io/MemoryBlockPool.h"
-#include "ola/network/NetworkUtils.h"
 #include "ola/testing/TestUtils.h"
 
 using ola::io::IOQueue;
 using ola::io::MemoryBlockPool;
-using ola::network::HostToNetwork;
 using ola::testing::ASSERT_DATA_EQUALS;
 using std::auto_ptr;
 using std::string;

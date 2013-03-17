@@ -2,6 +2,7 @@ SOURCES = BigEndianStream.h \
           BufferedWriteDescriptor.h \
           Descriptor.h \
           IOQueue.h \
+          IOStack.h \
           InputBuffer.h \
           InputStream.h \
           MemoryBlock.h \

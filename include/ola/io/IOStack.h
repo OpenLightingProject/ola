@@ -13,15 +13,14 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * IOQueue.h
- * A non-contigous memory buffer that operates as a queue (FIFO).
- * Copyright (C) 2012 Simon Newton
+ * IOStack.h
+ * A non-contigous memory buffer that operates as a stack (LIFO).
+ * Copyright (C) 2013 Simon Newton
  */
 
-#ifndef INCLUDE_OLA_IO_IOQUEUE_H_
-#define INCLUDE_OLA_IO_IOQUEUE_H_
+#ifndef INCLUDE_OLA_IO_IOSTACK_H_
+#define INCLUDE_OLA_IO_IOSTACK_H_
 
-#include <ola/io/InputBuffer.h>
 #include <ola/io/OutputBuffer.h>
 #include <stdint.h>
 #include <sys/uio.h>
@@ -34,41 +33,37 @@ namespace ola {
 namespace io {
 
 /**
- * IOQueue.
+ * IOStack.
+ * TODO(simon): implement the InputBufferInterface side of this if we need it.
  */
-class IOQueue: public InputBufferInterface, public OutputBufferInterface {
+class IOStack: public OutputBufferInterface {
   public:
-    IOQueue();
-    explicit IOQueue(class MemoryBlockPool *block_pool);
+    IOStack();
+    explicit IOStack(class MemoryBlockPool *block_pool);
 
-    ~IOQueue();
+    ~IOStack();
 
     unsigned int Size() const;
 
     bool Empty() const {
-      return m_blocks.empty();
+      // guard against the case of Empty blocks.
+      return m_blocks.empty() || Size() == 0;
     }
 
     // From OutputBuffer
     void Write(const uint8_t *data, unsigned int length);
 
-    // From InputBuffer, these reads consume data from the buffer.
-    unsigned int Read(uint8_t *data, unsigned int length);
-    unsigned int Read(std::string *output, unsigned int length);
+    const struct iovec *AsIOVec(int *iocnt) const;
 
-    unsigned int Peek(uint8_t *data, unsigned int length) const;
-    void Pop(unsigned int n);
-
-    const struct iovec *AsIOVec(int *iocnt);
-    void FreeIOVec(const struct iovec *iov);
-
-    // Append a MemoryBlock to this IOQueue. Ownership of the block is taken.
-    void AppendBlock(class MemoryBlock *block);
+    // 0-copy append to an IOQueue
+    void MoveToIOQueue(class IOQueue *queue);
 
     // purge the underlying memory pool
     void Purge();
 
     void Dump(std::ostream *output);
+
+    static void FreeIOVec(const struct iovec *iov);
 
   private:
     typedef std::deque<class MemoryBlock*> BlockVector;
@@ -78,12 +73,12 @@ class IOQueue: public InputBufferInterface, public OutputBufferInterface {
 
     BlockVector m_blocks;
 
-    void AppendBlock();
+    void PrependBlock();
 
     // no copying / assignment for now
-    IOQueue(const IOQueue&);
-    IOQueue& operator=(const IOQueue&);
+    IOStack(const IOStack&);
+    IOStack& operator=(const IOStack&);
 };
 }  // io
 }  // ola
-#endif  // INCLUDE_OLA_IO_IOQUEUE_H_
+#endif  // INCLUDE_OLA_IO_IOSTACK_H_

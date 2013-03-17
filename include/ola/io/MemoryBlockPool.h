@@ -34,7 +34,8 @@ namespace io {
 class MemoryBlockPool {
   public:
     explicit MemoryBlockPool(unsigned int block_size = DEFAULT_BLOCK_SIZE)
-        : m_block_size(block_size) {
+        : m_block_size(block_size),
+          m_blocks_allocated(0) {
     }
     ~MemoryBlockPool() {
       Purge();
@@ -47,6 +48,7 @@ class MemoryBlockPool {
         uint8_t* data = new uint8_t[m_block_size];
         OLA_DEBUG << "new block allocated at @" << reinterpret_cast<int*>(data);
         if (data) {
+          m_blocks_allocated++;
           return new MemoryBlock(data, m_block_size);
         } else {
           return NULL;
@@ -77,10 +79,13 @@ class MemoryBlockPool {
     void Purge(unsigned int remaining) {
       while (m_free_blocks.size() != remaining) {
         MemoryBlock *block = m_free_blocks.front();
+        m_blocks_allocated--;
         delete block;
         m_free_blocks.pop();
       }
     }
+
+    unsigned int BlocksAllocated() const { return m_blocks_allocated; }
 
     // default to 1k blocks
     static const unsigned int DEFAULT_BLOCK_SIZE = 1024;
@@ -88,6 +93,7 @@ class MemoryBlockPool {
   private:
     std::queue<MemoryBlock*> m_free_blocks;
     const unsigned int m_block_size;
+    unsigned int m_blocks_allocated;
 };
 }  // io
 }  // ola
