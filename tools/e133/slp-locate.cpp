@@ -17,6 +17,9 @@
  * Copyright (C) 2011 Simon Newton
  *
  */
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
 
 #include <getopt.h>
 #include <ola/Callback.h>
@@ -32,7 +35,9 @@
 #include <vector>
 
 #include "tools/e133/OLASLPThread.h"
+#ifdef HAVE_LIBSLP
 #include "tools/e133/OpenSLPThread.h"
+#endif
 #include "tools/e133/SLPThread.h"
 #include "tools/slp/URLEntry.h"
 
@@ -79,7 +84,9 @@ void ParseOptions(int argc, char *argv[], options *opts) {
       {"help", no_argument, 0, 'h'},
       {"log-level", required_argument, 0, 'l'},
       {"refresh", required_argument, 0, 'r'},
+#ifdef HAVE_LIBSLP
       {"openslp", no_argument, 0, OPENSLP_OPTION},
+#endif
       {0, 0, 0, 0}
     };
 
@@ -152,7 +159,9 @@ void DisplayHelpAndExit(char arg[]) {
   "  -h, --help               Display this help message and exit.\n"
   "  -l, --log-level <level>  Set the logging level 0 .. 4.\n"
   "  -r, --refresh <seconds>  How often to check for new/expired services.\n"
+#ifdef HAVE_LIBSLP
   "  --openslp                 Use openslp rather than the OLA SLP server\n"
+#endif
   << std::endl;
   exit(EX_USAGE);
 }
@@ -196,7 +205,12 @@ int main(int argc, char *argv[]) {
   if (opts.use_openslp) {
     slp_thread.reset(new OpenSLPThread(&ss, opts.refresh));
   } else {
+#ifdef HAVE_LIBSLP
     slp_thread.reset(new OLASLPThread(&ss, opts.refresh));
+#else
+    OLA_WARN << "openslp not installed";
+    return false;
+#endif
   }
   slp_thread->SetNewDeviceCallback(ola::NewCallback(&DiscoveryDone));
 

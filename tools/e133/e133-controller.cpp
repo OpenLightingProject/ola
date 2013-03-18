@@ -68,7 +68,9 @@
 #include "tools/e133/E133Endpoint.h"
 #include "tools/e133/E133URLParser.h"
 #include "tools/e133/OLASLPThread.h"
+#ifdef HAVE_LIBSLP
 #include "tools/e133/OpenSLPThread.h"
+#endif
 #include "tools/slp/URLEntry.h"
 
 using ola::NewCallback;
@@ -120,7 +122,9 @@ void ParseOptions(int argc, char *argv[], options *opts) {
       {"set", no_argument, 0, 's'},
       {"target", required_argument, 0, 't'},
       {"uid", required_argument, &uid_set, 1},
+#ifdef HAVE_LIBSLP
       {"openslp", no_argument, 0, OPENSLP_OPTION},
+#endif
       {0, 0, 0, 0}
     };
 
@@ -214,7 +218,9 @@ void DisplayHelpAndExit(char *argv[]) {
   "  -p, --pid-location        The directory to read PID definitiions from\n"
   "  -s, --set                 Perform a SET (default is GET)\n"
   "  --uid <uid>               The UID of the device to control.\n"
+#ifdef HAVE_LIBSLP
   "  --openslp                 Use openslp rather than the OLA SLP server\n"
+#endif
   << endl;
   exit(0);
 }
@@ -316,7 +322,11 @@ SimpleE133Controller::SimpleE133Controller(
   if (options.use_openslp) {
     m_slp_thread.reset(new OpenSLPThread(&m_ss));
   } else {
+#ifdef HAVE_LIBSLP
     m_slp_thread.reset(new OLASLPThread(&m_ss));
+#else
+    OLA_WARN << "openslp not installed";
+#endif
   }
   m_slp_thread->SetNewDeviceCallback(
       ola::NewCallback(this, &SimpleE133Controller::DiscoveryCallback));
