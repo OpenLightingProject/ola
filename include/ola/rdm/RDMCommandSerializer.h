@@ -31,22 +31,22 @@ namespace rdm {
 
 /*
  * Serializes a RDMCommand to a memory buffer. This restricts the serialized
- * command to 231 butes of paramater data. If the message is more than 231
- * bytes  then Pack will return false.
+ * command to 231 bytes of paramater data. If the message is more than 231
+ * bytes then Pack will return false.
  */
 class RDMCommandSerializer {
   public:
     static unsigned int RequiredSize(const RDMCommand &command);
 
     static bool Pack(const RDMCommand &command,
-              uint8_t *buffer,
-              unsigned int *size);
+                     uint8_t *buffer,
+                     unsigned int *size);
     static bool Pack(const RDMRequest &request,
-              uint8_t *buffer,
-              unsigned int *size,
-              const UID &source,
-              uint8_t transaction_number,
-              uint8_t port_id);
+                     uint8_t *buffer,
+                     unsigned int *size,
+                     const UID &source,
+                     uint8_t transaction_number,
+                     uint8_t port_id);
 
     enum { MAX_PARAM_DATA_LENGTH = 231 };
 
