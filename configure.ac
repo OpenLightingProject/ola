@@ -617,6 +617,7 @@ AC_OUTPUT( Makefile \
     include/ola/web/Makefile \
     include/olad/Makefile \
     java/Makefile \
+    man/Makefile \
     ola/Makefile \
     python/Makefile \
     python/examples/Makefile \

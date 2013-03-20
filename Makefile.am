@@ -3,7 +3,7 @@ AUX_DIST                = $(auxdir)/install-sh $(auxdir)/missing \
                           $(auxdir)/mkinstalldirs
 
 SUBDIRS = include data common ola plugins olad python tools examples debian \
-          java
+          java man
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libola.pc libolaserver.pc
