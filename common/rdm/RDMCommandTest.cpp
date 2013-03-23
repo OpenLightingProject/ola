@@ -26,6 +26,7 @@
 
 #include "ola/Logging.h"
 #include "ola/io/IOQueue.h"
+#include "ola/io/IOStack.h"
 #include "ola/io/OutputStream.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/RDMCommand.h"
@@ -36,6 +37,7 @@
 
 
 using ola::io::IOQueue;
+using ola::io::IOStack;
 using ola::io::OutputStream;
 using ola::network::HostToNetwork;
 using ola::rdm::GuessMessageType;
@@ -58,6 +60,7 @@ class RDMCommandTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(RDMCommandTest);
   CPPUNIT_TEST(testRDMCommand);
   CPPUNIT_TEST(testOutputStream);
+  CPPUNIT_TEST(testIOStack);
   CPPUNIT_TEST(testRequestInflation);
   CPPUNIT_TEST(testResponseInflation);
   CPPUNIT_TEST(testNackWithReason);
@@ -75,6 +78,7 @@ class RDMCommandTest: public CppUnit::TestFixture {
 
     void testRDMCommand();
     void testOutputStream();
+    void testIOStack();
     void testRequestInflation();
     void testResponseInflation();
     void testNackWithReason();
@@ -92,12 +96,6 @@ class RDMCommandTest: public CppUnit::TestFixture {
                        unsigned int expected_length);
     void UpdateChecksum(uint8_t *expected,
                         unsigned int expected_length);
-
-    bool VerifyMatches(
-        const uint8_t *data1,
-        unsigned int data1_length,
-        const uint8_t *data2,
-        unsigned int datq2_length);
 
     static uint8_t EXPECTED_GET_BUFFER[];
     static uint8_t EXPECTED_SET_BUFFER[];
@@ -188,30 +186,6 @@ void RDMCommandTest::setUp() {
                  sizeof(EXPECTED_MUTE_REQUEST));
   UpdateChecksum(EXPECTED_UNMUTE_REQUEST,
                  sizeof(EXPECTED_UNMUTE_REQUEST));
-}
-
-
-/**
- * Verify two memory locations match.
- */
-bool RDMCommandTest::VerifyMatches(
-    const uint8_t *data1,
-    unsigned int data1_length,
-    const uint8_t *data2,
-    unsigned int data2_length) {
-  bool matches = data1_length == data2_length;
-  if (!matches) {
-    OLA_INFO << "Size " << data1_length << " != " << data2_length;
-    return matches;
-  }
-
-  matches = !memcmp(data1, data2, data1_length);
-  if (!matches) {
-    for (unsigned int i = 0; i < data1_length; i++)
-      OLA_INFO << std::hex << static_cast<int>(data1[i]) << " " <<
-        static_cast<int>(data2[i]);
-  }
-  return matches;
 }
 
 
@@ -340,6 +314,66 @@ void RDMCommandTest::testOutputStream() {
   delete[] raw_command;
 }
 
+
+/*
+ * Test writing to an IOStack works.
+ */
+void RDMCommandTest::testIOStack() {
+  IOStack output;
+  UID source(1, 2);
+  UID destination(3, 4);
+  IOStack stack;
+
+  RDMGetRequest command(source,
+                        destination,
+                        0,  // transaction #
+                        1,  // port id
+                        0,  // message count
+                        10,  // sub device
+                        296,  // param id
+                        NULL,  // data
+                        0);  // data length
+  OLA_ASSERT_TRUE(RDMCommandSerializer::Write(command, &stack));
+
+  unsigned int raw_command_size = stack.Size();
+  OLA_ASSERT_EQ(raw_command_size, RDMCommandSerializer::RequiredSize(command));
+  uint8_t raw_command[raw_command_size];
+  OLA_ASSERT_EQ(raw_command_size, stack.Read(raw_command, raw_command_size));
+  OLA_ASSERT_EQ(0u, stack.Size());
+
+  ASSERT_DATA_EQUALS(__LINE__,
+                     EXPECTED_GET_BUFFER,
+                     sizeof(EXPECTED_GET_BUFFER),
+                     raw_command,
+                     raw_command_size);
+
+  // now try a command with data
+  uint32_t data_value = 0xa5a5a5a5;
+  RDMSetRequest command2(source,
+                         destination,
+                         0,  // transaction #
+                         1,  // port id
+                         0,  // message count
+                         10,  // sub device
+                         296,  // param id
+                         reinterpret_cast<uint8_t*>(&data_value),  // data
+                         sizeof(data_value));  // data length
+
+  OLA_ASSERT_EQ(29u, RDMCommandSerializer::RequiredSize(command2));
+  OLA_ASSERT_TRUE(RDMCommandSerializer::Write(command2, &stack));
+
+  raw_command_size = stack.Size();
+  OLA_ASSERT_EQ(raw_command_size, RDMCommandSerializer::RequiredSize(command2));
+  uint8_t raw_command2[raw_command_size];
+  OLA_ASSERT_EQ(raw_command_size, stack.Read(raw_command2, raw_command_size));
+  OLA_ASSERT_EQ(0u, stack.Size());
+
+  ASSERT_DATA_EQUALS(__LINE__,
+                     EXPECTED_SET_BUFFER,
+                     sizeof(EXPECTED_SET_BUFFER),
+                     raw_command2,
+                     raw_command_size);
+}
 
 
 /*
@@ -1033,11 +1067,11 @@ void RDMCommandTest::testDiscoveryCommand() {
   uint8_t *data = new uint8_t[length];
   OLA_ASSERT_TRUE(RDMCommandSerializer::Pack(*request, data, &length));
 
-  OLA_ASSERT_TRUE(VerifyMatches(
-      EXPECTED_DISCOVERY_REQUEST,
-      sizeof(EXPECTED_DISCOVERY_REQUEST),
-      data,
-      length));
+  ASSERT_DATA_EQUALS(__LINE__,
+                     EXPECTED_DISCOVERY_REQUEST,
+                     sizeof(EXPECTED_DISCOVERY_REQUEST),
+                     data,
+                     length);
   delete[] data;
 }
 
@@ -1060,11 +1094,11 @@ void RDMCommandTest::testMuteCommand() {
   uint8_t *data = new uint8_t[length];
   OLA_ASSERT_TRUE(RDMCommandSerializer::Pack(*request, data, &length));
 
-  OLA_ASSERT_TRUE(VerifyMatches(
-      EXPECTED_MUTE_REQUEST,
-      sizeof(EXPECTED_MUTE_REQUEST),
-      data,
-      length));
+  ASSERT_DATA_EQUALS(__LINE__,
+                     EXPECTED_MUTE_REQUEST,
+                     sizeof(EXPECTED_MUTE_REQUEST),
+                     data,
+                     length);
   delete[] data;
 }
 
@@ -1087,10 +1121,10 @@ void RDMCommandTest::testUnMuteRequest() {
   uint8_t *data = new uint8_t[length];
   OLA_ASSERT_TRUE(RDMCommandSerializer::Pack(*request, data, &length));
 
-  OLA_ASSERT_TRUE(VerifyMatches(
-      EXPECTED_UNMUTE_REQUEST,
-      sizeof(EXPECTED_UNMUTE_REQUEST),
-      data,
-      length));
+  ASSERT_DATA_EQUALS(__LINE__,
+                     EXPECTED_UNMUTE_REQUEST,
+                     sizeof(EXPECTED_UNMUTE_REQUEST),
+                     data,
+                     length);
   delete[] data;
 }
