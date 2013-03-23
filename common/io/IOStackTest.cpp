@@ -100,6 +100,14 @@ void IOStackTest::testBasicWrite() {
   OLA_ASSERT_EQ(
       string("03 04 02 00 01           .....\n"),
       str.str());
+
+  unsigned int data_size = stack.Size();
+  uint8_t output[data_size];
+  OLA_ASSERT_EQ(data_size, stack.Read(output, data_size));
+
+  const uint8_t expected_data[] = {3, 4, 2, 0, 1};
+  ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
+                     output, data_size);
 }
 
 
@@ -122,6 +130,15 @@ void IOStackTest::testBlockOverflow() {
 
   stack.Write(data3, sizeof(data3));
   OLA_ASSERT_EQ(15u, stack.Size());
+
+  unsigned int data_size = stack.Size();
+  uint8_t output[data_size];
+  OLA_ASSERT_EQ(data_size, stack.Read(output, data_size));
+
+  const uint8_t expected_data[] = {0xa, 0xb, 0xc, 0xd, 0xe, 5 ,6 ,7, 8, 9,
+                                   0, 1, 2, 3, 4};
+  ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
+                     output, data_size);
 }
 
 

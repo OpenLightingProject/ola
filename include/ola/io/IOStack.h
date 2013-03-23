@@ -21,6 +21,7 @@
 #ifndef INCLUDE_OLA_IO_IOSTACK_H_
 #define INCLUDE_OLA_IO_IOSTACK_H_
 
+#include <ola/io/InputBuffer.h>
 #include <ola/io/OutputBuffer.h>
 #include <stdint.h>
 #include <sys/uio.h>
@@ -34,9 +35,8 @@ namespace io {
 
 /**
  * IOStack.
- * TODO(simon): implement the InputBufferInterface side of this if we need it.
  */
-class IOStack: public OutputBufferInterface {
+class IOStack: public InputBufferInterface, public OutputBufferInterface {
   public:
     IOStack();
     explicit IOStack(class MemoryBlockPool *block_pool);
@@ -50,8 +50,12 @@ class IOStack: public OutputBufferInterface {
       return m_blocks.empty() || Size() == 0;
     }
 
-    // From OutputBuffer
+    // From OutputBufferInterface
     void Write(const uint8_t *data, unsigned int length);
+
+    // From InputBufferInterface, these reads consume data from the buffer.
+    unsigned int Read(uint8_t *data, unsigned int length);
+    unsigned int Read(std::string *output, unsigned int length);
 
     const struct iovec *AsIOVec(int *iocnt) const;
 

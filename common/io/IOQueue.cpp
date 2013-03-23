@@ -124,7 +124,7 @@ unsigned int IOQueue::Read(uint8_t *data, unsigned int n) {
 
 
 /**
- * Read up to n bytes into the memory location data.
+ * Read up to n bytes into the string output.
  */
 unsigned int IOQueue::Read(std::string *output, unsigned int n) {
   unsigned int bytes_remaining = n;

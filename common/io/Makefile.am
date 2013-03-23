@@ -9,7 +9,7 @@ libolaio_la_SOURCES = Descriptor.cpp \
 
 if BUILD_TESTS
 TESTS = BufferedDescriptorTester DescriptorTester IOQueueTester \
-        SelectServerTester StreamTester
+        IOStackTester SelectServerTester StreamTester
 endif
 check_PROGRAMS = $(TESTS)
 
@@ -18,10 +18,14 @@ COMMON_TEST_LDADD = $(CPPUNIT_LIBS) \
                     ../testing/libolatesting.la
 
 IOQueueTester_SOURCES = IOQueueTest.cpp \
-                        IOStackTest.cpp \
                         GenericTester.cpp
 IOQueueTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 IOQueueTester_LDADD = $(COMMON_TEST_LDADD)
+
+IOStackTester_SOURCES = IOStackTest.cpp \
+                        GenericTester.cpp
+IOStackTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+IOStackTester_LDADD = $(COMMON_TEST_LDADD)
 
 DescriptorTester_SOURCES = DescriptorTest.cpp \
                            GenericTester.cpp
@@ -45,4 +49,3 @@ StreamTester_SOURCES = GenericTester.cpp \
                        OutputStreamTest.cpp
 StreamTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 StreamTester_LDADD = $(COMMON_TEST_LDADD)
-

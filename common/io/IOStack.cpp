@@ -101,6 +101,52 @@ void IOStack::Write(const uint8_t *data, unsigned int length) {
 
 
 /**
+ * Read up to n bytes into the memory location data and shrink the IOQueue by
+ * the amount read.
+ */
+unsigned int IOStack::Read(uint8_t *data, unsigned int length) {
+  unsigned int bytes_read = 0;
+  BlockVector::iterator iter = m_blocks.begin();
+  while (iter != m_blocks.end() && bytes_read != length) {
+    MemoryBlock *block = *iter;
+    unsigned int bytes_copied = block->Copy(data + bytes_read,
+                                            length - bytes_read);
+    block->PopFront(bytes_copied);
+    bytes_read += bytes_copied;
+    if (block->Empty()) {
+      m_pool->Release(block);
+      iter = m_blocks.erase(iter);
+    } else {
+      iter++;
+    }
+  }
+  return bytes_read;
+}
+
+
+/**
+ * Read up to n bytes into the string output.
+ */
+unsigned int IOStack::Read(std::string *output, unsigned int length) {
+  unsigned int bytes_remaining = length;
+  BlockVector::iterator iter = m_blocks.begin();
+  while (iter != m_blocks.end() && bytes_remaining) {
+    MemoryBlock *block = *iter;
+    unsigned int bytes_to_copy = std::min(block->Size(), bytes_remaining);
+    output->append(reinterpret_cast<char*>(block->Data()), bytes_to_copy);
+    bytes_remaining -= bytes_to_copy;
+    if (block->Empty()) {
+      m_pool->Release(block);
+      iter = m_blocks.erase(iter);
+    } else {
+      iter++;
+    }
+  }
+  return length - bytes_remaining;
+}
+
+
+/**
  * Return this IOStack as an array of iovec structures.
  * Note: The iovec array points at internal memory structures. This array is
  * invalidated when any non-const methods are called (Append, Pop etc.)
