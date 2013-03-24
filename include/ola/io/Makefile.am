@@ -3,6 +3,7 @@ SOURCES = BigEndianStream.h \
           Descriptor.h \
           IOQueue.h \
           IOStack.h \
+          IOVecInterface.h \
           InputBuffer.h \
           InputStream.h \
           MemoryBlock.h \

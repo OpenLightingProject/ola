@@ -178,6 +178,25 @@ const struct iovec *IOStack::AsIOVec(int *iocnt) const {
 
 
 /**
+ * Remove bytes from the stack
+ */
+void IOStack::Pop(unsigned int bytes_to_remove) {
+  unsigned int bytes_removed = 0;
+  BlockVector::iterator iter = m_blocks.begin();
+  while (iter != m_blocks.end() && bytes_removed != bytes_to_remove) {
+    MemoryBlock *block = *iter;
+    bytes_removed += block->PopFront(bytes_to_remove - bytes_removed);
+    if (block->Empty()) {
+      m_pool->Release(block);
+      iter = m_blocks.erase(iter);
+    } else {
+      iter++;
+    }
+  }
+}
+
+
+/**
  * Append the memory blocks in this stack to the IOQueue. This transfers
  * ownership of the MemoryBlocks to the queue, so the IOQueue and IOStack
  * should have the same MemoryBlockPool (or at the very least, the same
@@ -191,14 +210,6 @@ void IOStack::MoveToIOQueue(IOQueue *queue) {
   m_blocks.clear();
 }
 
-
-/**
- * Free a iovec structure
- */
-void IOStack::FreeIOVec(const struct iovec *iov) {
-  if (iov)
-    delete[] iov;
-}
 
 void IOStack::Purge() {
   m_pool->Purge();

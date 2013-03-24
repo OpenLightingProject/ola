@@ -21,6 +21,7 @@
 #ifndef INCLUDE_OLA_IO_IOSTACK_H_
 #define INCLUDE_OLA_IO_IOSTACK_H_
 
+#include <ola/io/IOVecInterface.h>
 #include <ola/io/InputBuffer.h>
 #include <ola/io/OutputBuffer.h>
 #include <stdint.h>
@@ -36,7 +37,9 @@ namespace io {
 /**
  * IOStack.
  */
-class IOStack: public InputBufferInterface, public OutputBufferInterface {
+class IOStack: public IOVecInterface,
+               public InputBufferInterface,
+               public OutputBufferInterface {
   public:
     IOStack();
     explicit IOStack(class MemoryBlockPool *block_pool);
@@ -57,7 +60,9 @@ class IOStack: public InputBufferInterface, public OutputBufferInterface {
     unsigned int Read(uint8_t *data, unsigned int length);
     unsigned int Read(std::string *output, unsigned int length);
 
-    const struct iovec *AsIOVec(int *iocnt) const;
+    // From IOVecInterface
+    const struct iovec *AsIOVec(int *io_count) const;
+    void Pop(unsigned int n);
 
     // 0-copy append to an IOQueue
     void MoveToIOQueue(class IOQueue *queue);
@@ -66,8 +71,6 @@ class IOStack: public InputBufferInterface, public OutputBufferInterface {
     void Purge();
 
     void Dump(std::ostream *output);
-
-    static void FreeIOVec(const struct iovec *iov);
 
   private:
     typedef std::deque<class MemoryBlock*> BlockVector;

@@ -196,22 +196,23 @@ ssize_t UDPSocket::SendTo(const uint8_t *buffer,
 
 
 /*
- * Send data from an IOQueue. This will try to send as much data as possible.
+ * Send data from an IOVecInterface. This will try to send as much data as
+ * possible.
  * If the data exceeds the MTU the UDP packet will probably get fragmented at
  * the IP layer (depends on OS really). Try to avoid this.
- * @param ioqueue the IOQueue to send.
+ * @param data the IOVecInterface class to send.
  * @param ip_address the IP to send to
  * @param port the port to send to in HOST byte order.
- * @return the number of bytes sent
+ * @return the number of bytes sent.
  */
-ssize_t UDPSocket::SendTo(ola::io::IOQueue *ioqueue,
+ssize_t UDPSocket::SendTo(ola::io::IOVecInterface *data,
                           const IPV4Address &ip,
                           unsigned short port) const {
   if (!ValidWriteDescriptor())
     return 0;
 
   int io_len;
-  const struct iovec *iov = ioqueue->AsIOVec(&io_len);
+  const struct iovec *iov = data->AsIOVec(&io_len);
 
   if (iov == NULL)
     return 0;
@@ -232,13 +233,13 @@ ssize_t UDPSocket::SendTo(ola::io::IOQueue *ioqueue,
   message.msg_flags = 0;
 
   ssize_t bytes_sent = sendmsg(WriteDescriptor(), &message, 0);
-  ioqueue->FreeIOVec(iov);
+  data->FreeIOVec(iov);
 
   if (bytes_sent < 0) {
     OLA_INFO << "Failed to send on " << WriteDescriptor() << ": " <<
       strerror(errno);
   } else {
-    ioqueue->Pop(bytes_sent);
+    data->Pop(bytes_sent);
   }
   return bytes_sent;
 }

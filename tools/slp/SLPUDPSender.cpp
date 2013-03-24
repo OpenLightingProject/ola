@@ -197,7 +197,7 @@ void SLPUDPSender::EmptyBuffer() {
     return;
 
   OLA_WARN << "IOQueue not empty, previous packet wasn't sent";
-  m_output.Pop(m_output.Size());
+  m_output.Clear();
 }
 
 
@@ -206,6 +206,7 @@ void SLPUDPSender::EmptyBuffer() {
  */
 void SLPUDPSender::Send(const IPV4SocketAddress &target) {
   m_udp_socket->SendTo(&m_output, target);
+  m_output.Clear();
 }
 }  // slp
 }  // ola

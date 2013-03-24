@@ -383,6 +383,7 @@ void TestRunner::RunNextTest() {
 
   OLA_INFO << "Sending " << m_output_queue.Size() << " bytes to " << target;
   m_socket.SendTo(&m_output_queue, target);
+  m_output_queue.Clear();
 
   m_timeout_id = m_ss.RegisterSingleTimeout(
       m_timeout_in_ms,

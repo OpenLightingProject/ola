@@ -21,6 +21,7 @@
 #ifndef INCLUDE_OLA_IO_IOQUEUE_H_
 #define INCLUDE_OLA_IO_IOQUEUE_H_
 
+#include <ola/io/IOVecInterface.h>
 #include <ola/io/InputBuffer.h>
 #include <ola/io/OutputBuffer.h>
 #include <stdint.h>
@@ -36,7 +37,9 @@ namespace io {
 /**
  * IOQueue.
  */
-class IOQueue: public InputBufferInterface, public OutputBufferInterface {
+class IOQueue: public InputBufferInterface,
+               public OutputBufferInterface,
+               public IOVecInterface {
   public:
     IOQueue();
     explicit IOQueue(class MemoryBlockPool *block_pool);
@@ -57,13 +60,15 @@ class IOQueue: public InputBufferInterface, public OutputBufferInterface {
     unsigned int Read(std::string *output, unsigned int length);
 
     unsigned int Peek(uint8_t *data, unsigned int length) const;
-    void Pop(unsigned int n);
 
-    const struct iovec *AsIOVec(int *iocnt);
-    void FreeIOVec(const struct iovec *iov);
+    // From IOVecInterface
+    const struct iovec *AsIOVec(int *io_count) const;
+    void Pop(unsigned int n);
 
     // Append a MemoryBlock to this IOQueue. Ownership of the block is taken.
     void AppendBlock(class MemoryBlock *block);
+
+    void Clear();
 
     // purge the underlying memory pool
     void Purge();

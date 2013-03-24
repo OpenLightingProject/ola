@@ -55,10 +55,7 @@ IOQueue::IOQueue(MemoryBlockPool *block_pool)
  * Clean up
  */
 IOQueue::~IOQueue() {
-  // Return all the blocks to the pool.
-  BlockVector::iterator iter = m_blocks.begin();
-  for (; iter != m_blocks.end(); ++iter)
-    m_pool->Release(*iter);
+  Clear();
 
   if (m_delete_pool)
     delete m_pool;
@@ -187,7 +184,7 @@ void IOQueue::Pop(unsigned int n) {
  *
  * Use FreeIOVec() to release the iovec array.
  */
-const struct iovec *IOQueue::AsIOVec(int *iocnt) {
+const struct iovec *IOQueue::AsIOVec(int *iocnt) const {
   if (m_blocks.empty()) {
     *iocnt = 0;
     return NULL;
@@ -210,21 +207,23 @@ const struct iovec *IOQueue::AsIOVec(int *iocnt) {
 
 
 /**
- * Free a iovec structure
- */
-void IOQueue::FreeIOVec(const struct iovec *iov) {
-  if (iov)
-    delete[] iov;
-}
-
-
-/**
  * Append an MemoryBlock to this queue. This may leave a hole in the last block
  * before this method was called, but that's unavoidable without copying (which
  * we don't want to do).
  */
 void IOQueue::AppendBlock(class MemoryBlock *block) {
   m_blocks.push_back(block);
+}
+
+
+/**
+ * Remove all data from the IOQueue.
+ */
+void IOQueue::Clear() {
+  BlockVector::iterator iter = m_blocks.begin();
+  for (; iter != m_blocks.end(); ++iter)
+    m_pool->Release(*iter);
+  m_blocks.clear();
 }
 
 void IOQueue::Purge() {

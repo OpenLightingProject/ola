@@ -65,7 +65,6 @@
 #include "plugins/e131/e131/E133PDU.h"
 #include "plugins/e131/e131/RDMInflator.h"
 #include "plugins/e131/e131/RDMPDU.h"
-#include "plugins/e131/e131/RDMPDU.h"
 #include "plugins/e131/e131/RootInflator.h"
 #include "plugins/e131/e131/RootPDU.h"
 #include "plugins/e131/e131/UDPTransport.h"
@@ -515,11 +514,8 @@ bool SimpleE133Controller::SendRequest(const UID &uid,
   ola::plugin::e131::PreamblePacker::AddUDPPreamble(&packet);
 
   // Send the packet
-  ola::io::IOQueue queue(&m_block_pool);
-  packet.MoveToIOQueue(&queue);
-  m_udp_socket.SendTo(&queue, target);
-  if (!queue.Empty()) {
-    OLA_WARN << "Failed to send E1.33 request";
+  size_t bytes_sent = m_udp_socket.SendTo(&packet, target);
+  if (bytes_sent != packet.Size()) {
     return false;
   }
 
