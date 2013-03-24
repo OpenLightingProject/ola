@@ -105,6 +105,24 @@ void E133PDU::PackData(OutputStream *stream) const {
   if (m_pdu)
     m_pdu->Write(stream);
 }
+
+
+void E133PDU::PrependPDU(ola::io::IOStack *stack, uint32_t vector,
+                         const string &source_name, uint32_t sequence_number,
+                         uint16_t endpoint_id) {
+  E133Header::e133_pdu_header header;
+  strncpy(header.source, source_name.data(),
+          E133Header::SOURCE_NAME_LEN);
+  header.sequence = HostToNetwork(sequence_number);
+  header.endpoint = HostToNetwork(endpoint_id);
+  header.reserved = 0;
+  stack->Write(reinterpret_cast<uint8_t*>(&header),
+               sizeof(E133Header::e133_pdu_header));
+
+  vector = HostToNetwork(vector);
+  stack->Write(reinterpret_cast<uint8_t*>(&vector), sizeof(vector));
+  PrependFlagsAndLength(stack);
+}
 }  // ola
 }  // e131
 }  // plugin

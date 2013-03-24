@@ -24,6 +24,7 @@
 
 #include "ola/Callback.h"
 #include "ola/Logging.h"
+#include "ola/io/BigEndianStream.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/e131/e131/BaseInflator.h"
@@ -36,6 +37,7 @@ namespace e131 {
 
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
+using ola::io::IOStack;
 
 const uint8_t PreamblePacker::ACN_HEADER[] = {
   0x00, 0x10,
@@ -73,6 +75,12 @@ const uint8_t *PreamblePacker::Pack(const PDUBlock<PDU> &pdu_block,
   }
   *length = static_cast<unsigned int>(sizeof(ACN_HEADER) + size);
   return m_send_buffer;
+}
+
+
+void PreamblePacker::AddUDPPreamble(IOStack *stack) {
+  ola::io::BigEndianOutputStream output(stack);
+  stack->Write(ACN_HEADER, ACN_HEADER_SIZE);
 }
 
 

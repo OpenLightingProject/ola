@@ -73,6 +73,13 @@ void RDMPDU::PackData(OutputStream *stream) const {
     return;
   m_command->Write(stream);
 }
+
+
+void RDMPDU::PrependPDU(ola::io::IOStack *stack) {
+  uint8_t vector = HostToNetwork(ola::rdm::RDMCommand::START_CODE);
+  stack->Write(reinterpret_cast<uint8_t*>(&vector), sizeof(vector));
+  PrependFlagsAndLength(stack);
+}
 }  // ola
 }  // e131
 }  // plugin

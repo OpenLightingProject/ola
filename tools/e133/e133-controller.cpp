@@ -36,12 +36,15 @@
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/io/SelectServer.h>
+#include <ola/io/MemoryBlockPool.h>
+#include <ola/io/IOStack.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/NetworkUtils.h>
 #include <ola/network/Socket.h>
 #include <ola/rdm/CommandPrinter.h>
 #include <ola/rdm/PidStoreHelper.h>
 #include <ola/rdm/RDMCommand.h>
+#include <ola/rdm/RDMCommandSerializer.h>
 #include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/RDMHelper.h>
 #include <ola/rdm/UID.h>
@@ -56,13 +59,15 @@
 
 
 #include "plugins/e131/e131/ACNPort.h"
+#include "plugins/e131/e131/ACNVectors.h"
 #include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/E133Inflator.h"
-#include "plugins/e131/e131/E133Sender.h"
+#include "plugins/e131/e131/E133PDU.h"
 #include "plugins/e131/e131/RDMInflator.h"
 #include "plugins/e131/e131/RDMPDU.h"
+#include "plugins/e131/e131/RDMPDU.h"
 #include "plugins/e131/e131/RootInflator.h"
-#include "plugins/e131/e131/RootSender.h"
+#include "plugins/e131/e131/RootPDU.h"
 #include "plugins/e131/e131/UDPTransport.h"
 
 #include "tools/e133/E133Endpoint.h"
@@ -72,11 +77,16 @@
 #include "tools/slp/URLEntry.h"
 
 using ola::NewCallback;
+using ola::io::IOStack;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::network::UDPSocket;
+using ola::plugin::e131::E133PDU;
 using ola::plugin::e131::E133_PORT;
+using ola::plugin::e131::RDMPDU;
+using ola::plugin::e131::RootPDU;
 using ola::rdm::PidStoreHelper;
+using ola::rdm::RDMCommandSerializer;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
@@ -255,6 +265,7 @@ class SimpleE133Controller {
   private:
     const IPV4Address m_controller_ip;
     ola::io::SelectServer m_ss;
+    ola::io::MemoryBlockPool m_block_pool;
 
     // The Controller's CID
     ola::plugin::e131::CID m_cid;
@@ -268,10 +279,6 @@ class SimpleE133Controller {
     UDPSocket m_udp_socket;
     ola::plugin::e131::IncomingUDPTransport m_incoming_udp_transport;
     ola::plugin::e131::OutgoingUDPTransportImpl m_outgoing_udp_transport;
-
-    // senders
-    ola::plugin::e131::RootSender m_root_sender;
-    ola::plugin::e131::E133Sender m_e133_sender;
 
     // hash_map of UIDs to IPs
     typedef std::map<UID, IPV4Address> uid_to_ip_map;
@@ -306,8 +313,6 @@ SimpleE133Controller::SimpleE133Controller(
       m_cid(ola::plugin::e131::CID::Generate()),
       m_incoming_udp_transport(&m_udp_socket, &m_root_inflator),
       m_outgoing_udp_transport(&m_udp_socket),
-      m_root_sender(m_cid),
-      m_e133_sender(&m_root_sender),
       m_src_uid(OPEN_LIGHTING_ESTA_CODE, 0xabcdabcd),
       m_pid_helper(pid_helper),
       m_command_printer(&cout, m_pid_helper),
@@ -478,37 +483,40 @@ void SimpleE133Controller::DiscoveryCallback(bool ok, const URLEntries &urls) {
  */
 bool SimpleE133Controller::SendRequest(const UID &uid,
                                        uint16_t endpoint,
-                                       RDMRequest *request) {
+                                       RDMRequest *raw_request) {
+  auto_ptr<RDMRequest> request(raw_request);
+
   IPV4Address *target_address = ola::STLFindPtrOrNull(&m_uid_to_ip, uid);
   if (!target_address) {
     OLA_WARN << "UID " << uid << " not found";
-    delete request;
     return false;
   }
 
-  OLA_INFO << "Sending to " << *target_address << ":" << E133_PORT << "/" << uid
-      << "/" << endpoint;
+  IPV4SocketAddress target(*target_address, E133_PORT);
+  OLA_INFO << "Sending to " << target << "/" << uid << "/" << endpoint;
 
-  const ola::plugin::e131::RDMPDU pdu(request);
-  ola::plugin::e131::E133Header header(
-      "E1.33 Controller",
-      0,  // seq #
-      endpoint);
+  // Build the E1.33 packet.
+  IOStack packet(&m_block_pool);
+  RDMCommandSerializer::Write(*request, &packet);
+  RDMPDU::PrependPDU(&packet);
+  E133PDU::PrependPDU(&packet, ola::plugin::e131::VECTOR_FRAMING_RDMNET,
+                      "E1.33 Controller", 0, endpoint);
+  RootPDU::PrependPDU(&packet, ola::plugin::e131::VECTOR_ROOT_E133, m_cid);
+  ola::plugin::e131::PreamblePacker::AddUDPPreamble(&packet);
 
-  ola::plugin::e131::OutgoingUDPTransport transport(&m_outgoing_udp_transport,
-                                                    *target_address,
-                                                    E133_PORT);
-  bool result = m_e133_sender.SendRDM(header, &pdu, &transport);
-  if (!result) {
+  // Send the packet
+  ola::io::IOQueue queue(&m_block_pool);
+  packet.MoveToIOQueue(&queue);
+  m_udp_socket.SendTo(&queue, target);
+  if (!queue.Empty()) {
     OLA_WARN << "Failed to send E1.33 request";
     return false;
   }
 
-  // register a callback to catch the response
+  // Register a callback to catch the response
   m_rdm_inflator.SetRDMHandler(
       endpoint,
-      NewCallback(this,
-                  &SimpleE133Controller::HandlePacket));
+      NewCallback(this, &SimpleE133Controller::HandlePacket));
   return true;
 }
 

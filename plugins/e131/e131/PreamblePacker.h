@@ -22,6 +22,7 @@
 #ifndef PLUGINS_E131_E131_PREAMBLEPACKER_H_
 #define PLUGINS_E131_E131_PREAMBLEPACKER_H_
 
+#include "ola/io/IOStack.h"
 #include "plugins/e131/e131/PDU.h"
 
 namespace ola {
@@ -42,6 +43,8 @@ class PreamblePacker {
 
     const uint8_t *Pack(const PDUBlock<PDU> &pdu_block,
                         unsigned int *length);
+
+    static void AddUDPPreamble(ola::io::IOStack *stack);
 
     static const uint8_t ACN_HEADER[];
     static const unsigned int ACN_HEADER_SIZE;
