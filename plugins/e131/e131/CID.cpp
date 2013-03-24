@@ -111,6 +111,19 @@ std::string CID::ToString() const {
   return std::string(cid);
 }
 
+void CID::Write(ola::io::OutputBufferInterface *output) const {
+  size_t data_length = CID_LENGTH;
+  // buffer may not be 4 byte aligned
+  char uid_data[CID_LENGTH];
+  void *ptr = static_cast<void*>(uid_data);
+  if (m_uuid) {
+    uuid_export(m_uuid, UUID_FMT_BIN, &ptr, &data_length);
+  } else {
+    memset(ptr, 0, CID_LENGTH);
+  }
+  output->Write(uid_data, CID_LENGTH);
+}
+
 
 CID CID::Generate() {
   uuid_t *uuid;
@@ -165,6 +178,10 @@ bool CID::IsNil() const {
 
 void CID::Pack(uint8_t *buf) const {
   memcpy(buf, m_uuid, CID_LENGTH);
+}
+
+void CID::Write(ola::io::OutputBufferInterface *output) const {
+  output->Write(m_uuid, CID_LENGTH);
 }
 
 
