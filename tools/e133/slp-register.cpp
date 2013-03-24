@@ -17,6 +17,9 @@
  * Copyright (C) 2011 Simon Newton
  *
  */
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
 
 #include <getopt.h>
 #include <ola/Callback.h>
@@ -38,7 +41,9 @@
 #include <vector>
 
 #include "tools/e133/OLASLPThread.h"
+#ifdef HAVE_LIBSLP
 #include "tools/e133/OpenSLPThread.h"
+#endif
 #include "tools/e133/SLPThread.h"
 
 using ola::network::IPV4Address;
@@ -109,7 +114,9 @@ void ParseOptions(int argc, char *argv[], options *opts) {
       {"help", no_argument, 0, 'h'},
       {"log-level", required_argument, 0, 'l'},
       {"timeout", required_argument, 0, 't'},
+#ifdef HAVE_LIBSLP
       {"openslp", no_argument, 0, OPENSLP_OPTION},
+#endif
       {0, 0, 0, 0}
     };
 
@@ -275,7 +282,12 @@ int main(int argc, char *argv[]) {
   if (opts.use_openslp) {
     slp_thread.reset(new OpenSLPThread(&ss));
   } else {
+#ifdef HAVE_LIBSLP
     slp_thread.reset(new OLASLPThread(&ss));
+#else
+    OLA_WARN << "openslp not installed";
+    return false;
+#endif
   }
 
   if (!slp_thread->Init()) {

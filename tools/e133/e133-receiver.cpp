@@ -20,6 +20,10 @@
  * registered in slp and the RDM responder responds to E1.33 commands.
  */
 
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <getopt.h>
 #include <signal.h>
@@ -46,7 +50,9 @@
 #include "tools/e133/E133Device.h"
 #include "tools/e133/EndpointManager.h"
 #include "tools/e133/OLASLPThread.h"
+#ifdef HAVE_LIBSLP
 #include "tools/e133/OpenSLPThread.h"
+#endif
 #include "tools/e133/RootEndpoint.h"
 #include "tools/e133/TCPConnectionStats.h"
 
@@ -87,7 +93,9 @@ void ParseOptions(int argc, char *argv[], options *opts) {
       {"timeout", required_argument, 0, 't'},
       {"uid", required_argument, &uid_set, 1},
       {"universe", required_argument, 0, 'u'},
+#ifdef HAVE_LIBSLP
       {"openslp", no_argument, 0, OPENSLP_OPTION},
+#endif
       {0, 0, 0, 0}
     };
 
@@ -166,7 +174,9 @@ void DisplayHelpAndExit(char *argv[]) {
   "  -t, --timeout <seconds>   The value to use for the service lifetime\n"
   "  -u, --universe <universe> The universe to respond on (> 0).\n"
   "  --uid <uid>               The UID of the responder.\n"
+#ifdef HAVE_LIBSLP
   "  --openslp                 Use openslp rather than the OLA SLP server\n"
+#endif
   << endl;
   exit(0);
 }
@@ -229,7 +239,11 @@ SimpleE133Node::SimpleE133Node(const IPV4Address &ip_address,
   if (opts.use_openslp) {
     m_slp_thread.reset(new OpenSLPThread(&m_ss));
   } else {
+#ifdef HAVE_LIBSLP
     m_slp_thread.reset(new OLASLPThread(&m_ss));
+#else
+    OLA_WARN << "openslp not installed";
+#endif
   }
 }
 

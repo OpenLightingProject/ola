@@ -24,6 +24,10 @@ libolae133slp_la_LIBADD = $(openslp_LIBS) \
                           $(top_builddir)/common/libolacommon.la
 
 if HAVE_SLP
+libolae133slp_la_SOURCES += OpenSLPThread.cpp
+libolae133slp_la_LIBADD += $(openslp_LIBS)
+endif
+
 noinst_PROGRAMS = e133_controller e133_monitor e133_receiver \
                   slp_locate slp_register slp_sa_test
 
@@ -80,5 +84,3 @@ E133SLPTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 E133SLPTester_LDADD = $(CPPUNIT_LIBS) \
                       ./libolae133slp.la \
                       $(top_builddir)/common/libolacommon.la
-
-endif

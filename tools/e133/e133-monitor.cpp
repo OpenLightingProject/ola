@@ -69,7 +69,9 @@
 #include "tools/e133/E133Endpoint.h"
 #include "tools/e133/E133HealthCheckedConnection.h"
 #include "tools/e133/OLASLPThread.h"
+#ifdef HAVE_LIBSLP
 #include "tools/e133/OpenSLPThread.h"
+#endif
 #include "tools/e133/SLPThread.h"
 #include "tools/e133/E133URLParser.h"
 #include "tools/slp/URLEntry.h"
@@ -119,7 +121,9 @@ void ParseOptions(int argc, char *argv[], options *opts) {
       {"log-level", required_argument, 0, 'l'},
       {"pid-location", required_argument, 0, 'p'},
       {"targets", required_argument, 0, 't'},
+#ifdef HAVE_LIBSLP
       {"openslp", no_argument, 0, OPENSLP_OPTION},
+#endif
       {0, 0, 0, 0}
     };
 
@@ -188,7 +192,9 @@ void DisplayHelpAndExit(char *argv[]) {
   "  -t, --targets <ip>,<ip>   List of IPs to connect to, overrides SLP\n"
   "  -p, --pid-location        The directory to read PID definitiions from\n"
   "  -l, --log-level <level>   Set the logging level 0 .. 4.\n"
+#ifdef HAVE_LIBSLP
   "  --openslp                 Use openslp rather than the OLA SLP server\n"
+#endif
   << endl;
   exit(0);
 }
@@ -313,7 +319,11 @@ SimpleE133Monitor::SimpleE133Monitor(
   if (slp_option == OPENSLP) {
     m_slp_thread.reset(new OpenSLPThread(&m_ss));
   } else if (slp_option == OLASLP) {
+#ifdef HAVE_LIBSLP
     m_slp_thread.reset(new OLASLPThread(&m_ss));
+#else
+    OLA_WARN << "openslp not installed";
+#endif
   }
   if (m_slp_thread.get()) {
     m_slp_thread->SetNewDeviceCallback(
