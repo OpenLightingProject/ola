@@ -69,8 +69,9 @@ class RDMCommandTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testPack);
   CPPUNIT_TEST(testGuessMessageType);
   CPPUNIT_TEST(testDiscoveryCommand);
+  CPPUNIT_TEST(testMuteRequest);
   CPPUNIT_TEST(testUnMuteRequest);
-  CPPUNIT_TEST(testMuteCommand);
+  CPPUNIT_TEST(testCommandInflation);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -87,8 +88,9 @@ class RDMCommandTest: public CppUnit::TestFixture {
     void testPack();
     void testGuessMessageType();
     void testDiscoveryCommand();
+    void testMuteRequest();
     void testUnMuteRequest();
-    void testMuteCommand();
+    void testCommandInflation();
 
   private:
     void PackAndVerify(const RDMCommand &command,
@@ -382,21 +384,21 @@ void RDMCommandTest::testIOStack() {
 void RDMCommandTest::testRequestInflation() {
   UID source(1, 2);
   UID destination(3, 4);
-  RDMRequest *command = RDMRequest::InflateFromData(NULL, 10);
-  OLA_ASSERT_EQ(static_cast<RDMRequest*>(NULL), command);
+  auto_ptr<RDMRequest> command(RDMRequest::InflateFromData(NULL, 10));
+  OLA_ASSERT_NULL(command.get());
 
   string empty_string;
-  command = RDMRequest::InflateFromData(empty_string);
-  OLA_ASSERT_EQ(static_cast<RDMRequest*>(NULL), command);
+  command.reset(RDMRequest::InflateFromData(empty_string));
+  OLA_ASSERT_NULL(command.get());
 
   // now try a proper command but with no length
-  command = RDMRequest::InflateFromData(EXPECTED_GET_BUFFER, 0);
-  OLA_ASSERT_TRUE(static_cast<RDMRequest*>(NULL) == command);
+  command.reset(RDMRequest::InflateFromData(EXPECTED_GET_BUFFER, 0));
+  OLA_ASSERT_NULL(command.get());
 
-  command = RDMRequest::InflateFromData(
+  command.reset(RDMRequest::InflateFromData(
       EXPECTED_GET_BUFFER,
-      sizeof(EXPECTED_GET_BUFFER));
-  OLA_ASSERT_NE(NULL, command);
+      sizeof(EXPECTED_GET_BUFFER)));
+  OLA_ASSERT_NOT_NULL(command.get());
 
   RDMGetRequest expected_command(source,
                                  destination,
@@ -408,79 +410,74 @@ void RDMCommandTest::testRequestInflation() {
                                  NULL,  // data
                                  0);  // data length
   OLA_ASSERT_TRUE(expected_command == *command);
-  delete command;
 
   string get_request_str(reinterpret_cast<char*>(EXPECTED_GET_BUFFER),
                          sizeof(EXPECTED_GET_BUFFER));
-  command = RDMRequest::InflateFromData(get_request_str);
-  OLA_ASSERT_NOT_NULL(command);
+  command.reset(RDMRequest::InflateFromData(get_request_str));
+  OLA_ASSERT_NOT_NULL(command.get());
   OLA_ASSERT_TRUE(expected_command == *command);
-  delete command;
 
   // now try a set request
-  command = RDMRequest::InflateFromData(
+  command.reset(RDMRequest::InflateFromData(
       EXPECTED_SET_BUFFER,
-      sizeof(EXPECTED_SET_BUFFER));
-  OLA_ASSERT_NOT_NULL(command);
+      sizeof(EXPECTED_SET_BUFFER)));
+  OLA_ASSERT_NOT_NULL(command.get());
   uint8_t expected_data[] = {0xa5, 0xa5, 0xa5, 0xa5};
   OLA_ASSERT_EQ(4u, command->ParamDataSize());
   OLA_ASSERT_EQ(0, memcmp(expected_data, command->ParamData(),
                           command->ParamDataSize()));
-  delete command;
 
   // set request as a string
   string set_request_string(reinterpret_cast<char*>(EXPECTED_SET_BUFFER),
                             sizeof(EXPECTED_SET_BUFFER));
-  command = RDMRequest::InflateFromData(set_request_string);
-  OLA_ASSERT_NOT_NULL(command);
+  command.reset(RDMRequest::InflateFromData(set_request_string));
+  OLA_ASSERT_NOT_NULL(command.get());
   OLA_ASSERT_EQ(4u, command->ParamDataSize());
   OLA_ASSERT_EQ(0, memcmp(expected_data, command->ParamData(),
                           command->ParamDataSize()));
-  delete command;
 
   // change the param length and make sure the checksum fails
   uint8_t *bad_packet = new uint8_t[sizeof(EXPECTED_GET_BUFFER)];
   memcpy(bad_packet, EXPECTED_GET_BUFFER, sizeof(EXPECTED_GET_BUFFER));
   bad_packet[22] = 255;
 
-  command = RDMRequest::InflateFromData(
+  command.reset(RDMRequest::InflateFromData(
       bad_packet,
-      sizeof(EXPECTED_GET_BUFFER));
-  OLA_ASSERT_NULL(command);
+      sizeof(EXPECTED_GET_BUFFER)));
+  OLA_ASSERT_NULL(command.get());
 
   get_request_str[22] = 255;
-  command = RDMRequest::InflateFromData(get_request_str);
-  OLA_ASSERT_NULL(command);
+  command.reset(RDMRequest::InflateFromData(get_request_str));
+  OLA_ASSERT_NULL(command.get());
 
   // now make sure we can't pass a bad param length larger than the buffer
   UpdateChecksum(bad_packet, sizeof(EXPECTED_GET_BUFFER));
-  command = RDMRequest::InflateFromData(
+  command.reset(RDMRequest::InflateFromData(
       bad_packet,
-      sizeof(EXPECTED_GET_BUFFER));
-  OLA_ASSERT_NULL(command);
-  delete[] bad_packet;
+      sizeof(EXPECTED_GET_BUFFER)));
+  OLA_ASSERT_NULL(command.get());
 
   // change the param length of another packet and make sure the checksum fails
   bad_packet = new uint8_t[sizeof(EXPECTED_SET_BUFFER)];
   memcpy(bad_packet, EXPECTED_SET_BUFFER, sizeof(EXPECTED_SET_BUFFER));
   bad_packet[22] = 5;
   UpdateChecksum(bad_packet, sizeof(EXPECTED_SET_BUFFER));
-  command = RDMRequest::InflateFromData(
+  command.reset(RDMRequest::InflateFromData(
       bad_packet,
-      sizeof(EXPECTED_SET_BUFFER));
-  OLA_ASSERT_NULL(command);
+      sizeof(EXPECTED_SET_BUFFER)));
+  OLA_ASSERT_NULL(command.get());
   delete[] bad_packet;
 
   // now try to inflate a response
-  command = RDMRequest::InflateFromData(
+  command.reset(RDMRequest::InflateFromData(
       EXPECTED_GET_RESPONSE_BUFFER,
-      sizeof(EXPECTED_GET_RESPONSE_BUFFER));
-  OLA_ASSERT_EQ(static_cast<RDMRequest*>(NULL), command);
+      sizeof(EXPECTED_GET_RESPONSE_BUFFER)));
+  OLA_ASSERT_NULL(command.get());
 
   string response_string(reinterpret_cast<char*>(EXPECTED_GET_RESPONSE_BUFFER),
                          sizeof(EXPECTED_GET_RESPONSE_BUFFER));
-  command = RDMRequest::InflateFromData(response_string);
-  OLA_ASSERT_EQ(static_cast<RDMRequest*>(NULL), command);
+  command.reset(RDMRequest::InflateFromData(response_string));
+  OLA_ASSERT_NULL(command.get());
 }
 
 
@@ -1079,7 +1076,7 @@ void RDMCommandTest::testDiscoveryCommand() {
 /**
  * Check the mute command
  */
-void RDMCommandTest::testMuteCommand() {
+void RDMCommandTest::testMuteRequest() {
   UID source(1, 2);
   UID destination(3, 4);
   auto_ptr<RDMDiscoveryRequest> request(
@@ -1127,4 +1124,87 @@ void RDMCommandTest::testUnMuteRequest() {
                      data,
                      length);
   delete[] data;
+}
+
+
+/**
+ * Test that the generic InflateFromData method works.
+ */
+void RDMCommandTest::testCommandInflation() {
+  const UID source(1, 2);
+  const UID destination(3, 4);
+  const UID lower(0x0102, 0x0304);
+  const UID upper(0x0506, 0x0708);
+  auto_ptr<RDMCommand> command(RDMCommand::Inflate(NULL, 10));
+  OLA_ASSERT_NULL(command.get());
+
+  command.reset(RDMCommand::Inflate(EXPECTED_GET_BUFFER, 0));
+  OLA_ASSERT_NULL(command.get());
+
+  command.reset(RDMRequest::Inflate(EXPECTED_GET_BUFFER,
+                                    sizeof(EXPECTED_GET_BUFFER)));
+  OLA_ASSERT_NOT_NULL(command.get());
+
+  RDMGetRequest expected_request(source,
+                                 destination,
+                                 0,  // transaction #
+                                 1,  // port id
+                                 0,  // message count
+                                 10,  // sub device
+                                 296,  // param id
+                                 NULL,  // data
+                                 0);  // data length
+  OLA_ASSERT_TRUE(expected_request == *command);
+
+  command.reset(RDMCommand::Inflate(EXPECTED_SET_BUFFER,
+                                    sizeof(EXPECTED_SET_BUFFER)));
+  OLA_ASSERT_NOT_NULL(command.get());
+  uint8_t expected_data[] = {0xa5, 0xa5, 0xa5, 0xa5};
+  OLA_ASSERT_EQ(4u, command->ParamDataSize());
+  OLA_ASSERT_EQ(0, memcmp(expected_data, command->ParamData(),
+                          command->ParamDataSize()));
+
+  // now try a response.
+  command.reset(RDMCommand::Inflate(EXPECTED_GET_RESPONSE_BUFFER,
+                                    sizeof(EXPECTED_GET_RESPONSE_BUFFER)));
+  OLA_ASSERT_NOT_NULL(command.get());
+  uint8_t expected_data2[] = {0x5a, 0x5a, 0x5a, 0x5a};
+  OLA_ASSERT_EQ(4u, command->ParamDataSize());
+  OLA_ASSERT_EQ(ola::rdm::RDM_RESPONSE, command->CommandType());
+  OLA_ASSERT_EQ(0, memcmp(expected_data2, command->ParamData(),
+                          command->ParamDataSize()));
+
+  uint32_t data_value = 0x5a5a5a5a;
+  RDMGetResponse expected_response(source,
+                                   destination,
+                                   0,  // transaction #
+                                   1,  // port id
+                                   0,  // message count
+                                   10,  // sub device
+                                   296,  // param id
+                                   reinterpret_cast<uint8_t*>(&data_value),
+                                   sizeof(data_value));  // data length
+  OLA_ASSERT_TRUE(expected_response ==  *command);
+
+  // test DUB
+  command.reset(RDMCommand::Inflate(EXPECTED_DISCOVERY_REQUEST,
+                                    sizeof(EXPECTED_DISCOVERY_REQUEST)));
+  OLA_ASSERT_NOT_NULL(command.get());
+  auto_ptr<RDMDiscoveryRequest> discovery_request(
+      NewDiscoveryUniqueBranchRequest(source, lower, upper, 1));
+  OLA_ASSERT_TRUE(*discovery_request ==  *command);
+
+  // test mute
+  command.reset(RDMCommand::Inflate(EXPECTED_MUTE_REQUEST,
+                                    sizeof(EXPECTED_MUTE_REQUEST)));
+  OLA_ASSERT_NOT_NULL(command.get());
+  discovery_request.reset(NewMuteRequest(source, destination, 1));
+  OLA_ASSERT_TRUE(*discovery_request ==  *command);
+
+  // test unmute
+  command.reset(RDMCommand::Inflate(EXPECTED_UNMUTE_REQUEST,
+                                    sizeof(EXPECTED_UNMUTE_REQUEST)));
+  OLA_ASSERT_NOT_NULL(command.get());
+  discovery_request.reset(NewUnMuteRequest(source, destination, 1));
+  OLA_ASSERT_TRUE(*discovery_request ==  *command);
 }

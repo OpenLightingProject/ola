@@ -57,11 +57,8 @@ using ola::plugin::usbpro::DispatchingUsbProWidget;
 using ola::messaging::Descriptor;
 using ola::messaging::Message;
 using ola::rdm::CommandPrinter;
-using ola::rdm::PidDescriptor;
 using ola::rdm::PidStoreHelper;
 using ola::rdm::RDMCommand;
-using ola::rdm::RDMRequest;
-using ola::rdm::RDMResponse;
 using ola::rdm::UID;
 
 typedef struct {
@@ -155,9 +152,6 @@ class RDMSniffer {
     void DisplayDmxFrame();
     void DisplayAlternateFrame();
     void DisplayRDMFrame();
-    void DisplayRDMRequest(unsigned int start, unsigned int end);
-    void DisplayRDMResponse(unsigned int start, unsigned int end);
-    void DisplayDiscoveryCommand(unsigned int start, unsigned int end);
     void DisplayRawData(unsigned int start, unsigned int end);
     void MaybePrintTimestamp();
 
@@ -344,113 +338,23 @@ void RDMSniffer::DisplayAlternateFrame() {
 void RDMSniffer::DisplayRDMFrame() {
   unsigned int slot_count = m_frame.Size() - 1;
 
-  if (slot_count < 21) {
+  auto_ptr<RDMCommand> command(
+      RDMCommand::Inflate(reinterpret_cast<const uint8_t*>(&m_frame[1]),
+                          slot_count));
+  if (command.get()) {
+    if (!m_options.summarize_rdm_frames)
+      cout << "---------------------------------------" << endl;
+
+    if (!m_options.summarize_rdm_frames && m_options.timestamp)
+      cout << endl;
+
+    MaybePrintTimestamp();
+
+    command->Print(&m_command_printer, m_options.summarize_rdm_frames,
+                   m_options.unpack_param_data);
+  } else {
     MaybePrintTimestamp();
     DisplayRawData(1, slot_count);
-    return;
-  }
-
-  if (!m_options.summarize_rdm_frames)
-    cout << "---------------------------------------" << endl;
-
-  MaybePrintTimestamp();
-  if (!m_options.summarize_rdm_frames && m_options.timestamp)
-    cout << endl;
-
-  switch (m_frame[20]) {
-    case RDMCommand::GET_COMMAND:
-    case RDMCommand::SET_COMMAND:
-      DisplayRDMRequest(1, slot_count);
-      break;
-    case RDMCommand::GET_COMMAND_RESPONSE:
-    case RDMCommand::SET_COMMAND_RESPONSE:
-      DisplayRDMResponse(1, slot_count);
-      return;
-    case RDMCommand::DISCOVER_COMMAND:
-    case RDMCommand::DISCOVER_COMMAND_RESPONSE:
-      DisplayDiscoveryCommand(1, slot_count);
-      break;
-    /*
-    case RDMCommand::DISCOVER_COMMAND_RESPONSE:
-      DumpDiscover(length - 1, data + 1);
-      return;
-    */
-    default:
-      DisplayRawData(1, slot_count);
-  }
-}
-
-
-/**
- * Display an RDM Request.
- */
-void RDMSniffer::DisplayRDMRequest(unsigned int start, unsigned int end) {
-  auto_ptr<RDMRequest> request(
-      RDMRequest::InflateFromData(&m_frame[start], end - start + 1));
-
-  if (request.get()) {
-    m_command_printer.DisplayRequest(
-        request.get(),
-        m_options.summarize_rdm_frames,
-        m_options.unpack_param_data);
-  } else {
-    DisplayRawData(start, end);
-  }
-}
-
-
-/**
- * Display an RDM response.
- */
-void RDMSniffer::DisplayRDMResponse(unsigned int start, unsigned int end) {
-  ola::rdm::rdm_response_code code;
-  auto_ptr<RDMResponse> response(
-      RDMResponse::InflateFromData(&m_frame[start], end - start + 1, &code));
-
-  if (response.get()) {
-    m_command_printer.DisplayResponse(
-        response.get(),
-        m_options.summarize_rdm_frames,
-        m_options.unpack_param_data);
-  } else {
-    DisplayRawData(start, end);
-  }
-}
-
-
-/**
- * Display the discover unique branch command
- */
-void RDMSniffer::DisplayDiscoveryCommand(unsigned int start,
-                                         unsigned int end) {
-  RDMCommand::RDMCommandClass command_class;
-  bool ok = ola::rdm::GuessMessageType(NULL, &command_class,
-                                       &m_frame[start], end - start + 1);
-
-  auto_ptr<ola::rdm::RDMDiscoveryRequest> request;
-  auto_ptr<ola::rdm::RDMDiscoveryResponse> response;
-  if (ok && command_class == RDMCommand::DISCOVER_COMMAND) {
-    request.reset(
-        ola::rdm::RDMDiscoveryRequest::InflateFromData(&m_frame[start],
-                                                       end - start + 1));
-  } else if (ok && command_class == RDMCommand::DISCOVER_COMMAND_RESPONSE) {
-    response.reset(
-        ola::rdm::RDMDiscoveryResponse::InflateFromData(&m_frame[start],
-                                                        end - start + 1));
-  }
-
-  if (request.get()) {
-    m_command_printer.DisplayDiscoveryRequest(
-        request.get(),
-        m_options.summarize_rdm_frames,
-        m_options.unpack_param_data);
-  } else if (response.get()) {
-    m_command_printer.DisplayDiscoveryResponse(
-        response.get(),
-        m_options.summarize_rdm_frames,
-        m_options.unpack_param_data);
-  } else {
-    DisplayRawData(start, end);
   }
 }
 

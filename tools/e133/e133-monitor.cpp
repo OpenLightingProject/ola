@@ -593,31 +593,14 @@ void SimpleE133Monitor::EndpointRequest(
   }
 
   cout << "From " << transport_header.SourceIP() << ":" << endl;
-  // switch based on response type
-  const uint8_t response_type = rdm_data[19];
-  bool ok = false;
-
-  if (response_type == RDMCommand::GET_COMMAND ||
-      response_type == RDMCommand::SET_COMMAND) {
-    auto_ptr<RDMRequest> request(
-        RDMRequest::InflateFromData(rdm_data, slot_count));
-    if (request.get()) {
-      m_command_printer.DisplayRequest(request.get());
-      ok = true;
-    }
-  } else if (response_type == RDMCommand::GET_COMMAND_RESPONSE ||
-             response_type == RDMCommand::SET_COMMAND_RESPONSE) {
-    ola::rdm::rdm_response_code code;
-    auto_ptr<RDMResponse> response(
-        RDMResponse::InflateFromData(rdm_data, slot_count, &code));
-    if (response.get()) {
-      m_command_printer.DisplayResponse(response.get());
-      ok = true;
-    }
-  }
-
-  if (!ok)
+  auto_ptr<RDMCommand> command(
+      RDMCommand::Inflate(reinterpret_cast<const uint8_t*>(raw_request.data()),
+                          raw_request.size()));
+  if (command.get()) {
+    m_command_printer.Print(command.get());
+  } else {
     ola::FormatData(&cout, rdm_data, slot_count, 2);
+  }
 }
 
 
