@@ -213,12 +213,9 @@ class NodeTCPState {
         connection_attempts(0),
         am_master(false) {
     }
-    ~NodeTCPState() {
-      delete socket;
-    }
 
     // public for now
-    BufferedTCPSocket *socket;
+    auto_ptr<BufferedTCPSocket> socket;
     E133HealthCheckedConnection *health_checked_connection;
     ola::plugin::e131::IncomingTCPTransport *in_transport;
     ola::plugin::e131::OutgoingStreamTransport *out_transport;
@@ -233,8 +230,8 @@ class NodeTCPState {
 class SimpleE133Monitor {
   public:
     enum SLPOption {
-      OPENSLP,
-      OLASLP,
+      OPEN_SLP,
+      OLA_SLP,
       NO_SLP,
     };
     explicit SimpleE133Monitor(PidStoreHelper *pid_helper,
@@ -298,8 +295,8 @@ class SimpleE133Monitor {
 const ola::TimeInterval SimpleE133Monitor::TCP_CONNECT_TIMEOUT(5, 0);
 // retry TCP connects after 5 seconds
 const ola::TimeInterval SimpleE133Monitor::INITIAL_TCP_RETRY_DELAY(5, 0);
-// we grow the retry interval to a max of 60 seconds
-const ola::TimeInterval SimpleE133Monitor::MAX_TCP_RETRY_DELAY(60, 0);
+// we grow the retry interval to a max of 30 seconds
+const ola::TimeInterval SimpleE133Monitor::MAX_TCP_RETRY_DELAY(30, 0);
 const char SimpleE133Monitor::SOURCE_NAME[] = "OLA Monitor";
 
 
@@ -316,11 +313,11 @@ SimpleE133Monitor::SimpleE133Monitor(
       m_cid(ola::plugin::e131::CID::Generate()),
       m_root_sender(m_cid),
       m_root_inflator(NewCallback(this, &SimpleE133Monitor::RLPDataReceived)) {
-  if (slp_option == OPENSLP) {
-    m_slp_thread.reset(new OpenSLPThread(&m_ss));
-  } else if (slp_option == OLASLP) {
-#ifdef HAVE_LIBSLP
+  if (slp_option == OLA_SLP) {
     m_slp_thread.reset(new OLASLPThread(&m_ss));
+  } else if (slp_option == OPEN_SLP) {
+#ifdef HAVE_LIBSLP
+    m_slp_thread.reset(new OpenSLPThread(&m_ss));
 #else
     OLA_WARN << "openslp not installed";
 #endif
@@ -369,7 +366,7 @@ bool SimpleE133Monitor::Init() {
 
 
 void SimpleE133Monitor::AddIP(const IPV4Address &ip_address) {
-  if (!STLContains(m_ip_map, ip_address.AsInt())) {
+  if (STLContains(m_ip_map, ip_address.AsInt())) {
     // the IP already exists
     return;
   }
@@ -434,7 +431,7 @@ void SimpleE133Monitor::OnTCPConnect(BufferedTCPSocket *socket) {
 
   // setup the incoming transport, we don't need to setup the outgoing one
   // until we've got confirmation that we're the master
-  node_state->socket = socket;
+  node_state->socket.reset(socket);
   node_state->in_transport = new ola::plugin::e131::IncomingTCPTransport(
       &m_root_inflator,
       socket);
@@ -511,10 +508,7 @@ void SimpleE133Monitor::SocketClosed(IPV4Address ip_address) {
   delete node_state->in_transport;
   node_state->in_transport = NULL;
 
-  BufferedTCPSocket *socket = node_state->socket;
-  m_ss.RemoveReadDescriptor(socket);
-  delete socket;
-  node_state->socket = NULL;
+  m_ss.RemoveReadDescriptor(node_state->socket.get());
 
   // Terminate for now
   m_ss.Terminate();
@@ -553,7 +547,7 @@ void SimpleE133Monitor::RLPDataReceived(
 
   node_state->socket->AssociateSelectServer(&m_ss);
   OutgoingStreamTransport *outgoing_transport = new OutgoingStreamTransport(
-      node_state->socket);
+      node_state->socket.get());
 
   E133HealthCheckedConnection *health_checked_connection =
       new E133HealthCheckedConnection(
@@ -665,8 +659,8 @@ int main(int argc, char *argv[]) {
 
   SimpleE133Monitor::SLPOption slp_option = SimpleE133Monitor::NO_SLP;
   if (targets.empty()) {
-    slp_option = opts.use_openslp ? SimpleE133Monitor::OPENSLP :
-        SimpleE133Monitor::OLASLP;
+    slp_option = opts.use_openslp ? SimpleE133Monitor::OPEN_SLP :
+        SimpleE133Monitor::OLA_SLP;
   }
   SimpleE133Monitor monitor(&pid_helper, slp_option);
   if (!monitor.Init())
