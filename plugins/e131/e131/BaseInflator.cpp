@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <map>
 #include "ola/Logging.h"
+#include "ola/stl/STLUtils.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/e131/e131/BaseInflator.h"
 
@@ -46,26 +47,18 @@ BaseInflator::BaseInflator(PDU::vector_size v_size)
  * @param inflator a inflator
  * @return true if added, false if an inflator with this id already exists.
  */
-bool BaseInflator::AddInflator(BaseInflator *inflator) {
-  if (m_proto_map.find(inflator->Id()) == m_proto_map.end()) {
-    m_proto_map[inflator->Id()] = inflator;
-    return true;
-  }
-  return false;
+bool BaseInflator::AddInflator(InflatorInterface *inflator) {
+  return STLInsertIfNotPresent(&m_proto_map, inflator->Id(), inflator);
 }
 
 
 /*
  * Get the current inflator for a protocol
- * @param proto the proto ID
- * @return the inflator for this protocol, or NULL if there isn't one set.
+ * @param proto the vector ID
+ * @return the inflator for this vector, or NULL if there isn't one set.
  */
-BaseInflator *BaseInflator::GetInflator(uint32_t proto) const {
-  std::map<uint32_t, class BaseInflator*>::const_iterator iter;
-  iter = m_proto_map.find(proto);
-  if (iter == m_proto_map.end())
-    return NULL;
-  return iter->second;
+InflatorInterface *BaseInflator::GetInflator(uint32_t vector) const {
+  return STLFindOrNull(m_proto_map, vector);
 }
 
 
@@ -248,7 +241,7 @@ bool BaseInflator::InflatePDU(HeaderSet &headers,
 
   data_offset += header_bytes_used;
 
-  BaseInflator *inflator = GetInflator(vector);
+  InflatorInterface *inflator = STLFindOrNull(m_proto_map, vector);
   if (inflator) {
     return inflator->InflatePDUBlock(headers, data + data_offset,
                                      pdu_len - data_offset);
