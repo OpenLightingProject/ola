@@ -597,7 +597,7 @@ void SimpleE133Monitor::EndpointRequest(
       RDMCommand::Inflate(reinterpret_cast<const uint8_t*>(raw_request.data()),
                           raw_request.size()));
   if (command.get()) {
-    m_command_printer.Print(command.get());
+    command->Print(&m_command_printer, false, true);
   } else {
     ola::FormatData(&cout, rdm_data, slot_count, 2);
   }
