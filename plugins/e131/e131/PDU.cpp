@@ -167,8 +167,8 @@ void PDU::PrependFlagsAndLength(ola::io::OutputBufferInterface *output,
     uint8_t flags_and_length[3];
     flags_and_length[0] = (flags |
                            static_cast<uint8_t>((size & 0x0f0000) >> 16));
-    flags_and_length[1] =((size & 0xff00) >> 8);
-    flags_and_length[2] = (size & 0xff);
+    flags_and_length[1] = static_cast<uint8_t>((size & 0xff00) >> 8);
+    flags_and_length[2] = static_cast<uint8_t>(size & 0xff);
     output->Write(flags_and_length, sizeof(flags_and_length));
   }
 }

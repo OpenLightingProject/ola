@@ -514,8 +514,8 @@ bool SimpleE133Controller::SendRequest(const UID &uid,
   ola::plugin::e131::PreamblePacker::AddUDPPreamble(&packet);
 
   // Send the packet
-  size_t bytes_sent = m_udp_socket.SendTo(&packet, target);
-  if (bytes_sent != packet.Size()) {
+  m_udp_socket.SendTo(&packet, target);
+  if (!packet.Empty()) {
     return false;
   }
 

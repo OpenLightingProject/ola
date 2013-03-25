@@ -114,7 +114,7 @@ std::string CID::ToString() const {
 void CID::Write(ola::io::OutputBufferInterface *output) const {
   size_t data_length = CID_LENGTH;
   // buffer may not be 4 byte aligned
-  char uid_data[CID_LENGTH];
+  uint8_t uid_data[CID_LENGTH];
   void *ptr = static_cast<void*>(uid_data);
   if (m_uuid) {
     uuid_export(m_uuid, UUID_FMT_BIN, &ptr, &data_length);
