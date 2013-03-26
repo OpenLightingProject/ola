@@ -48,6 +48,16 @@ const uint8_t PreamblePacker::ACN_HEADER[] = {
 };
 const unsigned int PreamblePacker::ACN_HEADER_SIZE = sizeof(ACN_HEADER);
 
+const uint8_t PreamblePacker::TCP_ACN_HEADER[] = {
+  0x00, 0x14,  // preamble size
+  0x00, 0x00,  // post amble size
+  0x41, 0x53, 0x43, 0x2d,
+  0x45, 0x31, 0x2e, 0x31,
+  0x37, 0x00, 0x00, 0x00
+  // For TCP, the next 4 bytes are the block size
+};
+const unsigned int PreamblePacker::TCP_ACN_HEADER_SIZE = sizeof(TCP_ACN_HEADER);
+
 /*
  * Clean up
  */
@@ -78,9 +88,22 @@ const uint8_t *PreamblePacker::Pack(const PDUBlock<PDU> &pdu_block,
 }
 
 
+/**
+ * Add the UDP Preamble to an IOStack
+ */
 void PreamblePacker::AddUDPPreamble(IOStack *stack) {
   ola::io::BigEndianOutputStream output(stack);
   stack->Write(ACN_HEADER, ACN_HEADER_SIZE);
+}
+
+
+/**
+ * Add the TCP Preamble to an IOStack
+ */
+void PreamblePacker::AddTCPPreamble(IOStack *stack) {
+  ola::io::BigEndianOutputStream output(stack);
+  output << stack->Size();
+  stack->Write(TCP_ACN_HEADER, TCP_ACN_HEADER_SIZE);
 }
 
 

@@ -30,7 +30,7 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
-class E133PDU : private PDU {
+class E133StatusPDU : private PDU {
   public:
     static void PrependPDU(ola::io::IOStack *stack, E133StatusCode status_code,
                            const std::string &status);

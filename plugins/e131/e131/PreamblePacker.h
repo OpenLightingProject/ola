@@ -45,6 +45,7 @@ class PreamblePacker {
                         unsigned int *length);
 
     static void AddUDPPreamble(ola::io::IOStack *stack);
+    static void AddTCPPreamble(ola::io::IOStack *stack);
 
     static const uint8_t ACN_HEADER[];
     static const unsigned int ACN_HEADER_SIZE;
@@ -54,6 +55,9 @@ class PreamblePacker {
     uint8_t *m_send_buffer;
 
     void Init();
+
+    static const uint8_t TCP_ACN_HEADER[];
+    static const unsigned int TCP_ACN_HEADER_SIZE;
 };
 }  // e131
 }  // plugin
