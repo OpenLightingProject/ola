@@ -1,0 +1,282 @@
+# bash completion for Debian ola tools
+# Copyright Peter Newman 2013, based on apache2 and apt-file completion
+
+#General functions
+_ola_list_pids()
+{
+       COMPREPLY=( $( compgen -W '$( command $1 --list_pids 2>/dev/null \
+                ) $2' -- $cur  ) )
+}
+
+#Commands
+#ola_artnet
+have ola_artnet && _ola_artnet()
+{
+        local cur
+
+        COMPREPLY=()
+        cur=${COMP_WORDS[COMP_CWORD]}
+        COMPREPLY=($( compgen -W '--dev --net --long_name --name --subnet --universe' -- $cur ) )
+}
+complete -F _ola_artnet ola_artnet
+
+#olad
+have olad && _olad()
+{
+        local cur
+
+        COMPREPLY=()
+        cur=${COMP_WORDS[COMP_CWORD]}
+        COMPREPLY=($( compgen -W '--config-dir --http-data-dir --daemon --interface --log-level --http-port --rpc-port --syslog --version --no-http --no-http-quit' -- $cur ) )
+}
+complete -F _olad olad
+
+#ola_dev_info
+have ola_dev_info && _ola_dev_info()
+{
+        local cur
+
+        COMPREPLY=()
+        cur=${COMP_WORDS[COMP_CWORD]}
+        COMPREPLY=($( compgen -W '--plugin_id' -- $cur ) )
+}
+complete -F _ola_dev_info ola_dev_info
+
+#ola_dmxconsole
+have ola_dmxconsole && _ola_dmxconsole()
+{
+        local cur
+
+        COMPREPLY=()
+        cur=${COMP_WORDS[COMP_CWORD]}
+        COMPREPLY=($( compgen -W '--universe' -- $cur ) )
+}
+complete -F _ola_dmxconsole ola_dmxconsole
+
+#ola_dmxmonitor
+have ola_dmxmonitor && _ola_dmxmonitor()
+{
+        local cur
+
+        COMPREPLY=()
+        cur=${COMP_WORDS[COMP_CWORD]}
+        COMPREPLY=($( compgen -W '--universe' -- $cur ) )
+}
+complete -F _ola_dmxmonitor ola_dmxmonitor
+
+#ola_e131
+have ola_e131 && _ola_e131()
+{
+        local cur prev
+
+        COMPREPLY=()
+        cur=${COMP_WORDS[COMP_CWORD]}
+        prev=${COMP_WORDS[COMP_CWORD-1]}
+
+        case "$prev" in
+        --preview_mode)
+            COMPREPLY=($( compgen -W 'on off' -- $cur ) );
+            return 0
+            ;;
+        esac;
+
+
+        COMPREPLY=($( compgen -W '--dev --input --port_id --preview_mode' -- $cur ) )
+
+	return 0
+}
+complete -F _ola_e131 ola_e131
+
+#ola_patch
+have ola_patch && _ola_patch()
+{
+        local cur
+
+        COMPREPLY=()
+        cur=${COMP_WORDS[COMP_CWORD]}
+        COMPREPLY=($( compgen -W '--patch --device --port --unpatch --input --universe' -- $cur ) )
+}
+complete -F _ola_patch ola_patch
+
+#ola_plugin_info
+have ola_plugin_info && _ola_plugin_info()
+{
+        local cur
+
+        COMPREPLY=()
+        cur=${COMP_WORDS[COMP_CWORD]}
+        COMPREPLY=($( compgen -W '--plugin_id' -- $cur ) )
+}
+complete -F _ola_plugin_info ola_plugin_info
+
+#ola_plugin_state
+have ola_plugin_state && _ola_plugin_state()
+{
+        local cur
+
+        COMPREPLY=()
+        cur=${COMP_WORDS[COMP_CWORD]}
+        COMPREPLY=($( compgen -W '--plugin_id' -- $cur ) )
+}
+complete -F _ola_plugin_state ola_plugin_state
+
+#ola_rdm_discover
+have ola_rdm_discover && _ola_rdm_discover()
+{
+        local cur
+
+        COMPREPLY=()
+        cur=${COMP_WORDS[COMP_CWORD]}
+        COMPREPLY=($( compgen -W '--full --incremental --universe' -- $cur ) )
+}
+complete -F _ola_rdm_discover ola_rdm_discover
+
+#ola_rdm_get
+have ola_rdm_get && _ola_rdm_get()
+{
+       local cur
+
+       COMPREPLY=()
+       cur=${COMP_WORDS[COMP_CWORD]}
+
+       _ola_list_pids ola_rdm_get '--sub_device --list_pids --universe --uid'
+}
+complete -F _ola_rdm_get ola_rdm_get
+
+#ola_rdm_set
+have ola_rdm_set && _ola_rdm_set()
+{
+       local cur
+
+       COMPREPLY=()
+       cur=${COMP_WORDS[COMP_CWORD]}
+
+       _ola_list_pids ola_rdm_set '--sub_device --list_pids --universe --uid'
+}
+complete -F _ola_rdm_set ola_rdm_set
+
+#ola_recorder
+#Todo, only show additional playback options --delay --iterations when in playback
+have ola_recorder && _ola_recorder()
+{
+        local cur
+
+        COMPREPLY=()
+        cur=${COMP_WORDS[COMP_CWORD]}
+        COMPREPLY=($( compgen -W '--log-level --record --playback --universes --verify --delay --iterations' -- $cur ) )
+}
+complete -F _ola_recorder ola_recorder
+
+#ola_set_dmx
+have ola_set_dmx && _ola_set_dmx()
+{
+        local cur
+
+        COMPREPLY=()
+        cur=${COMP_WORDS[COMP_CWORD]}
+        COMPREPLY=($( compgen -W '--universe --dmx' -- $cur ) )
+}
+complete -F _ola_set_dmx ola_set_dmx
+
+#ola_set_priority
+have ola_set_priority && _ola_set_priority()
+{
+        local cur
+
+        COMPREPLY=()
+        cur=${COMP_WORDS[COMP_CWORD]}
+        COMPREPLY=($( compgen -W '--device --input --override --port' -- $cur ) )
+}
+complete -F _ola_set_priority ola_set_priority
+
+#ola_streaming_client
+have ola_streaming_client && _ola_streaming_client()
+{
+        local cur
+
+        COMPREPLY=()
+        cur=${COMP_WORDS[COMP_CWORD]}
+        COMPREPLY=($( compgen -W '--universe --dmx' -- $cur ) )
+}
+complete -F _ola_streaming_client ola_streaming_client
+
+#ola_timecode
+have ola_timecode && _ola_timecode()
+{
+        local cur prev
+
+        COMPREPLY=()
+        cur=${COMP_WORDS[COMP_CWORD]}
+        prev=${COMP_WORDS[COMP_CWORD-1]}
+
+        case "$prev" in
+        --format)
+            COMPREPLY=($( compgen -W 'FILM EBU DF SMPTE' -- $cur ) );
+            return 0
+            ;;
+        esac;
+
+
+        COMPREPLY=($( compgen -W '--format' -- $cur ) )
+
+	return 0
+}
+complete -F _ola_timecode ola_timecode
+
+#ola_trigger
+have ola_trigger && _ola_trigger()
+{
+        local cur
+
+        COMPREPLY=()
+        cur=${COMP_WORDS[COMP_CWORD]}
+        COMPREPLY=($( compgen -W '--log-level --offset --universe' -- $cur ) )
+}
+complete -F _ola_trigger ola_trigger
+
+#ola_uni_info
+#No options apart from help
+
+#ola_uni_merge
+have ola_uni_merge && _ola_uni_merge()
+{
+        local cur
+
+        COMPREPLY=()
+        cur=${COMP_WORDS[COMP_CWORD]}
+        COMPREPLY=($( compgen -W '--ltp --universe' -- $cur ) )
+}
+complete -F _ola_uni_merge ola_uni_merge
+
+#ola_uni_name
+have ola_uni_name && _ola_uni_name()
+{
+        local cur
+
+        COMPREPLY=()
+        cur=${COMP_WORDS[COMP_CWORD]}
+        COMPREPLY=($( compgen -W '--name --universe' -- $cur ) )
+}
+complete -F _ola_uni_name ola_uni_name
+
+#ola_universe_stats
+have ola_universe_stats && _ola_universe_stats()
+{
+        local cur
+
+        COMPREPLY=()
+        cur=${COMP_WORDS[COMP_CWORD]}
+        COMPREPLY=($( compgen -W '--log-level' -- $cur ) )
+}
+complete -F _ola_universe_stats ola_universe_stats
+
+#ola_usbpro
+have ola_usbpro && _ola_usbpro()
+{
+        local cur
+
+        COMPREPLY=()
+        cur=${COMP_WORDS[COMP_CWORD]}
+        COMPREPLY=($( compgen -W '--assignments --brk --dev --mab --port --rate --serial' -- $cur ) )
+}
+complete -F _ola_usbpro ola_usbpro
