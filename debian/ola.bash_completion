@@ -156,7 +156,7 @@ have ola_rdm_set && _ola_rdm_set()
 complete -F _ola_rdm_set ola_rdm_set
 
 #ola_recorder
-#Todo, only show additional playback options --delay --iterations when in playback
+#Todo: only show additional playback options --delay --iterations when in playback
 have ola_recorder && _ola_recorder()
 {
         local cur
@@ -280,3 +280,14 @@ have ola_usbpro && _ola_usbpro()
         COMPREPLY=($( compgen -W '--assignments --brk --dev --mab --port --rate --serial' -- $cur ) )
 }
 complete -F _ola_usbpro ola_usbpro
+
+#rdmpro_sniffer
+have rdmpro_sniffer && _rdmpro_sniffer()
+{
+        local cur
+
+        COMPREPLY=()
+        cur=${COMP_WORDS[COMP_CWORD]}
+        COMPREPLY=($( compgen -W '--display-asc --display-dmx --dmx-slot-limit --log-level --parse-raw-dump --full-rdm --timestamp --write-raw-dump' -- $cur ) )
+}
+complete -F _rdmpro_sniffer rdmpro_sniffer
