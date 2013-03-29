@@ -237,13 +237,13 @@ SimpleE133Node::SimpleE133Node(const IPV4Address &ip_address,
       m_uid(*opts.uid),
       m_ip_address(ip_address) {
   if (opts.use_openslp) {
-    m_slp_thread.reset(new OpenSLPThread(&m_ss));
-  } else {
 #ifdef HAVE_LIBSLP
-    m_slp_thread.reset(new OLASLPThread(&m_ss));
+    m_slp_thread.reset(new OpenSLPThread(&m_ss));
 #else
     OLA_WARN << "openslp not installed";
 #endif
+  } else {
+    m_slp_thread.reset(new OLASLPThread(&m_ss));
   }
 }
 

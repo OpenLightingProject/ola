@@ -324,13 +324,13 @@ SimpleE133Controller::SimpleE133Controller(
       m_uid_list_updated(false) {
 
   if (options.use_openslp) {
-    m_slp_thread.reset(new OpenSLPThread(&m_ss));
-  } else {
 #ifdef HAVE_LIBSLP
-    m_slp_thread.reset(new OLASLPThread(&m_ss));
+    m_slp_thread.reset(new OpenSLPThread(&m_ss));
 #else
     OLA_WARN << "openslp not installed";
 #endif
+  } else {
+    m_slp_thread.reset(new OLASLPThread(&m_ss));
   }
   m_slp_thread->SetNewDeviceCallback(
       ola::NewCallback(this, &SimpleE133Controller::DiscoveryCallback));
