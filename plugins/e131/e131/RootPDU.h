@@ -22,6 +22,9 @@
 #define PLUGINS_E131_E131_ROOTPDU_H_
 
 #include <stdint.h>
+
+#include <ola/io/IOStack.h>
+
 #include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/PDU.h"
 
@@ -54,6 +57,9 @@ class RootPDU: public PDU {
     const CID &Cid() const { return m_cid; }
     const CID &Cid(const CID &cid) { return m_cid = cid; }
     void SetBlock(const PDUBlock<PDU> *block);
+
+    static void PrependPDU(ola::io::IOStack *stack, uint32_t vector,
+                           const CID &cid);
 
   private:
     CID m_cid;

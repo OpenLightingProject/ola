@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT(ola, [0.8.26])
+AC_INIT(ola, [0.8.27])
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_AUX_DIR(config)
 AC_SUBST(ac_aux_dir)
@@ -578,6 +578,7 @@ AC_OUTPUT( Makefile \
     common/Makefile \
     common/base/Makefile \
     common/export_map/Makefile \
+    common/file/Makefile \
     common/http/Makefile \
     common/io/Makefile \
     common/logging/Makefile \
@@ -601,6 +602,7 @@ AC_OUTPUT( Makefile \
     include/Makefile \
     include/ola/Makefile \
     include/ola/base/Makefile \
+    include/ola/file/Makefile \
     include/ola/http/Makefile \
     include/ola/io/Makefile \
     include/ola/math/Makefile \
@@ -611,9 +613,11 @@ AC_OUTPUT( Makefile \
     include/ola/testing/Makefile \
     include/ola/thread/Makefile \
     include/ola/timecode/Makefile \
+    include/ola/util/Makefile \
     include/ola/web/Makefile \
     include/olad/Makefile \
     java/Makefile \
+    man/Makefile \
     ola/Makefile \
     python/Makefile \
     python/examples/Makefile \

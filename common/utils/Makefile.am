@@ -11,8 +11,8 @@ if BUILD_TESTS
 TESTS = UtilsTester
 endif
 check_PROGRAMS = $(TESTS)
-UtilsTester_SOURCES = ActionQueueTest.cpp ClockTest.cpp CallbackTest.cpp \
-                      DmxBufferTest.cpp MultiCallbackTest.cpp \
+UtilsTester_SOURCES = ActionQueueTest.cpp BackoffTest.cpp ClockTest.cpp \
+                      CallbackTest.cpp DmxBufferTest.cpp MultiCallbackTest.cpp \
                       RunLengthEncoderTest.cpp  StringUtilsTest.cpp \
                       TokenBucketTest.cpp UtilsTester.cpp
 UtilsTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)

@@ -37,10 +37,31 @@ namespace e131 {
 class BaseInflatorTest;
 
 
+/**
+ * The inflator interface.
+ */
+class InflatorInterface {
+  public:
+    virtual ~InflatorInterface() {}
+
+    /*
+     * Return the id for this inflator
+     */
+    virtual uint32_t Id() const = 0;
+
+    /*
+     * Parse a block of PDU data
+     */
+    virtual unsigned int InflatePDUBlock(HeaderSet &headers,
+                                         const uint8_t *data,
+                                         unsigned int len) = 0;
+};
+
+
 /*
  * An abstract PDU inflator
  */
-class BaseInflator {
+class BaseInflator : public InflatorInterface {
   friend class BaseInflatorTest;
 
   public:
@@ -48,18 +69,14 @@ class BaseInflator {
     virtual ~BaseInflator() {}
 
     /*
-     * Add another inflator as a handler
+     * Add another inflator as a handler. Ownership is not transferred.
      */
-    bool AddInflator(class BaseInflator *inflator);
-    /*
-     * Return the inflator used for a particular protocol
-     */
-    class BaseInflator *GetInflator(uint32_t proto) const;
+    bool AddInflator(InflatorInterface *inflator);
 
     /*
-     * Return the id for this inflator
+     * Return the inflator used for a particular vector.
      */
-    virtual uint32_t Id() const = 0;
+    class InflatorInterface *GetInflator(uint32_t vector) const;
 
     /*
      * Parse a block of PDU data
@@ -79,7 +96,7 @@ class BaseInflator {
     bool m_vector_set;
     PDU::vector_size m_vector_size;  // size of the vector field
     // map protos to inflators
-    std::map<uint32_t, class BaseInflator*> m_proto_map;
+    std::map<uint32_t, InflatorInterface*> m_proto_map;
 
     // Reset repeated pdu fields
     virtual void ResetPDUFields();
@@ -113,7 +130,7 @@ class BaseInflator {
     // called after the header is parsed
     virtual bool PostHeader(uint32_t vector, HeaderSet &headers);
 
-    // called in the absence of a parse to handle the pdu data
+    // called in the absence of an inflator to handle the pdu data
     virtual bool HandlePDUData(uint32_t vector,
                                HeaderSet &headers,
                                const uint8_t *data,

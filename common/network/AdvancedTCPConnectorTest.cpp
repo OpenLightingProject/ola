@@ -37,13 +37,14 @@
 #include "ola/testing/TestUtils.h"
 
 
+using ola::ExponentialBackoffPolicy;
+using ola::LinearBackoffPolicy;
 using ola::TimeInterval;
 using ola::io::SelectServer;
-using ola::network::ExponentialBackoffPolicy;
 using ola::network::AdvancedTCPConnector;
+using ola::network::GenericSocketAddress;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
-using ola::network::LinearBackoffPolicy;
 using ola::network::StringToAddress;
 using ola::network::TCPAcceptingSocket;
 using ola::network::TCPSocket;
@@ -57,8 +58,6 @@ static const int ABORT_TIMEOUT_IN_MS = 2000;
 class AdvancedTCPConnectorTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(AdvancedTCPConnectorTest);
 
-  CPPUNIT_TEST(testLinearBackoffPolicy);
-  CPPUNIT_TEST(testExponentialBackoffPolicy);
   CPPUNIT_TEST(testConnect);
   CPPUNIT_TEST(testPause);
   CPPUNIT_TEST(testBackoff);
@@ -74,8 +73,6 @@ class AdvancedTCPConnectorTest: public CppUnit::TestFixture {
 
     void setUp();
     void tearDown();
-    void testLinearBackoffPolicy();
-    void testExponentialBackoffPolicy();
     void testConnect();
     void testPause();
     void testBackoff();
@@ -135,39 +132,6 @@ void AdvancedTCPConnectorTest::setUp() {
  */
 void AdvancedTCPConnectorTest::tearDown() {
   delete m_ss;
-}
-
-
-/**
- * Test the linear backoff policy.
- */
-void AdvancedTCPConnectorTest::testLinearBackoffPolicy() {
-  // 5 per attempt, up to a max of 30
-  LinearBackoffPolicy policy(TimeInterval(5, 0), TimeInterval(30, 0));
-
-  OLA_ASSERT_EQ(TimeInterval(5, 0), policy.BackOffTime(1));
-  OLA_ASSERT_EQ(TimeInterval(10, 0), policy.BackOffTime(2));
-  OLA_ASSERT_EQ(TimeInterval(15, 0), policy.BackOffTime(3));
-
-  OLA_ASSERT_EQ(TimeInterval(30, 0), policy.BackOffTime(6));
-  OLA_ASSERT_EQ(TimeInterval(30, 0), policy.BackOffTime(7));
-}
-
-
-/**
- * Test the exponential backoff policy.
- */
-void AdvancedTCPConnectorTest::testExponentialBackoffPolicy() {
-  // start with 10s, up to 170s.
-  ExponentialBackoffPolicy policy(TimeInterval(10, 0), TimeInterval(170, 0));
-
-  OLA_ASSERT_EQ(TimeInterval(10, 0), policy.BackOffTime(1));
-  OLA_ASSERT_EQ(TimeInterval(20, 0), policy.BackOffTime(2));
-  OLA_ASSERT_EQ(TimeInterval(40, 0), policy.BackOffTime(3));
-  OLA_ASSERT_EQ(TimeInterval(80, 0), policy.BackOffTime(4));
-  OLA_ASSERT_EQ(TimeInterval(160, 0), policy.BackOffTime(5));
-  OLA_ASSERT_EQ(TimeInterval(170, 0), policy.BackOffTime(6));
-  OLA_ASSERT_EQ(TimeInterval(170, 0), policy.BackOffTime(7));
 }
 
 
@@ -384,10 +348,9 @@ void AdvancedTCPConnectorTest::SetupListeningSocket(
  */
 void AdvancedTCPConnectorTest::AcceptedConnection(TCPSocket *new_socket) {
   OLA_ASSERT_NOT_NULL(new_socket);
-  IPV4Address address;
-  uint16_t port;
-  OLA_ASSERT_TRUE(new_socket->GetPeer(&address, &port));
-  OLA_INFO << "Connection from " << address << ":" << port;
+  GenericSocketAddress address = new_socket->GetPeer();
+  OLA_ASSERT_TRUE(address.Family() == AF_INET);
+  OLA_INFO << "Connection from " << address;
 
   // terminate the ss when this connection is closed
   new_socket->SetOnClose(
@@ -401,10 +364,9 @@ void AdvancedTCPConnectorTest::AcceptedConnection(TCPSocket *new_socket) {
 void AdvancedTCPConnectorTest::OnConnect(TCPSocket *socket) {
   OLA_ASSERT_NOT_NULL(socket);
 
-  IPV4Address address;
-  uint16_t port;
-  OLA_ASSERT_TRUE(socket->GetPeer(&address, &port));
-  OLA_ASSERT_EQ(m_localhost, address);
+  GenericSocketAddress address = socket->GetPeer();
+  OLA_ASSERT_TRUE(address.Family() == AF_INET);
+  OLA_ASSERT_EQ(m_localhost, address.V4Addr().Host());
 
   m_connected_socket = socket;
   m_ss->Terminate();

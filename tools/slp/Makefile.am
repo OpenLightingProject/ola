@@ -11,8 +11,6 @@ EXTRA_DIST = Base.h \
              SLPPacketConstants.h \
              SLPPacketParser.h \
              SLPPendingOperations.h \
-             SLPSATestHelpers.h \
-             SLPSATestRunner.h \
              SLPServer.h \
              SLPServerTestHelper.h \
              SLPStore.h \
@@ -23,11 +21,14 @@ EXTRA_DIST = Base.h \
              ServerCommon.h \
              ServiceEntry.h \
              URLEntry.h \
-             XIDAllocator.h \
-             slp-parser-actions.h
+             URLListVerifier.h \
+             XIDAllocator.h
 
 # Libraries
-noinst_LTLIBRARIES = libolaslpcore.la libolaslp.la libolaslpproto.la
+noinst_LTLIBRARIES = libolaslp.la \
+                     libolaslpclient.la \
+                     libolaslpcore.la \
+                     libolaslpproto.la
 
 libolaslpcore_la_SOURCES = SLPUtil.cpp \
                            URLEntry.cpp
@@ -51,13 +52,25 @@ libolaslpproto_la_LIBADD = $(libprotobuf_LIBS)
 # required, otherwise we get build errors
 libolaslpproto_la_CXXFLAGS = $(WARNING_CXXFLAGS)
 
+libolaslpclient_la_SOURCES = SLPClient.cpp \
+                             SLPClientCore.cpp
+libolaslpclient_la_LIBADD = $(top_builddir)/common/libolacommon.la \
+                            $(top_builddir)/ola/libola.la \
+                            ./libolaslpcore.la \
+                            ./libolaslpproto.la
+
 BUILT_SOURCES = SLP.pb.cc SLP.pb.h
 
 SLP.pb.cc SLP.pb.h: SLP.proto
 	$(PROTOC)  --cpp_out ./ SLP.proto
 
 # Programs
-noinst_PROGRAMS = slp_server slp_client slp_sa_test
+noinst_PROGRAMS = slp_client
+
+if HAVE_LIBMICROHTTPD
+noinst_PROGRAMS += slp_server
+endif
+
 slp_server_SOURCES = SLPDaemon.cpp \
                      slp-server.cpp
 slp_server_LDADD = $(top_builddir)/common/libolacommon.la \
@@ -65,30 +78,15 @@ slp_server_LDADD = $(top_builddir)/common/libolacommon.la \
                    ./libolaslp.la \
                    ./libolaslpproto.la
 
-slp_client_SOURCES = slp-client.cpp \
-                     SLPClient.cpp \
-                     SLPClientCore.cpp
+slp_client_SOURCES = slp-client.cpp
 slp_client_LDADD = $(top_builddir)/common/libolacommon.la \
                    $(top_builddir)/ola/libola.la \
                    ./libolaslpcore.la \
-                   ./libolaslpproto.la
-
-slp_sa_test_SOURCES = slp-sa-test.cpp \
-                      SLPSATestHelpers.cpp \
-                      SLPSATestRunner.cpp \
-                      SLPSATests.cpp
-slp_sa_test_LDADD = $(top_builddir)/common/libolacommon.la \
-                    ../e133/libolae133.la \
-                    ./libolaslp.la
+                   ./libolaslpproto.la \
+                   ./libolaslpclient.la
 
 clean-local:
-	rm -f *.pb.{h,cc} lex.yy.cpp config.tab.cpp config.tab.h *.gcno *.gcda
-
-lex.yy.cpp: config.lex
-	$(LEX) --header-file=lex.yy.h -olex.yy.cpp config.lex
-
-config.tab.cpp config.tab.h: config.ypp
-	$(BISON) --defines=config.tab.h --output-file=config.tab.cpp config.ypp
+	rm -f *.pb.{h,cc} *.gcno *.gcda
 
 # Tests
 if BUILD_TESTS

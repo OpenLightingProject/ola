@@ -36,9 +36,9 @@
 #include <string>
 #include <vector>
 
+#include "tools/e133/SLPSATestRunner.h"
 #include "tools/slp/SLPPacketConstants.h"
 #include "tools/slp/SLPPacketParser.h"
-#include "tools/slp/SLPSATestRunner.h"
 #include "tools/slp/XIDAllocator.h"
 
 using ola::NewCallback;
@@ -383,6 +383,7 @@ void TestRunner::RunNextTest() {
 
   OLA_INFO << "Sending " << m_output_queue.Size() << " bytes to " << target;
   m_socket.SendTo(&m_output_queue, target);
+  m_output_queue.Clear();
 
   m_timeout_id = m_ss.RegisterSingleTimeout(
       m_timeout_in_ms,

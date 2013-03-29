@@ -3,12 +3,13 @@ include $(top_srcdir)/common.mk
 noinst_LTLIBRARIES = libolaio.la
 libolaio_la_SOURCES = Descriptor.cpp \
                       IOQueue.cpp \
+                      IOStack.cpp \
                       SelectServer.cpp \
                       StdinHandler.cpp
 
 if BUILD_TESTS
 TESTS = BufferedDescriptorTester DescriptorTester IOQueueTester \
-        SelectServerTester StreamTester
+        IOStackTester SelectServerTester StreamTester
 endif
 check_PROGRAMS = $(TESTS)
 
@@ -20,6 +21,11 @@ IOQueueTester_SOURCES = IOQueueTest.cpp \
                         GenericTester.cpp
 IOQueueTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 IOQueueTester_LDADD = $(COMMON_TEST_LDADD)
+
+IOStackTester_SOURCES = IOStackTest.cpp \
+                        GenericTester.cpp
+IOStackTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+IOStackTester_LDADD = $(COMMON_TEST_LDADD)
 
 DescriptorTester_SOURCES = DescriptorTest.cpp \
                            GenericTester.cpp
@@ -43,4 +49,3 @@ StreamTester_SOURCES = GenericTester.cpp \
                        OutputStreamTest.cpp
 StreamTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 StreamTester_LDADD = $(COMMON_TEST_LDADD)
-

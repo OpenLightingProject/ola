@@ -13,23 +13,21 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * SlpTester.cpp
- * Runs all the SLP tests
+ * E133URLParser.h
  * Copyright (C) 2011 Simon Newton
  */
 
-#include <cppunit/CompilerOutputter.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
-#include <cppunit/ui/text/TestRunner.h>
+#include <ola/rdm/UID.h>
+#include <ola/network/IPV4Address.h>
 
-int main(int argc, char* argv[]) {
-  CppUnit::Test *suite = CppUnit::TestFactoryRegistry::getRegistry().makeTest();
-  CppUnit::TextUi::TestRunner runner;
-  runner.addTest(suite);
-  runner.setOutputter(
-      new CppUnit::CompilerOutputter(&runner.result(), std::cerr));
-  bool wasSucessful = runner.run();
-  return wasSucessful ? 0 : 1;
-  (void) argc;
-  (void) argv;
-}
+#include <string>
+
+#ifndef TOOLS_E133_SLPURLPARSER_H_
+#define TOOLS_E133_SLPURLPARSER_H_
+
+using std::string;
+
+bool ParseE133URL(const string &url, ola::rdm::UID *uid,
+                  ola::network::IPV4Address *ip);
+
+#endif  // TOOLS_E133_SLPURLPARSER_H_

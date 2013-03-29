@@ -21,7 +21,10 @@
 #ifndef PLUGINS_E131_E131_RDMPDU_H_
 #define PLUGINS_E131_E131_RDMPDU_H_
 
+#include <ola/io/IOStack.h>
 #include <ola/rdm/RDMCommand.h>
+#include <memory>
+
 #include "plugins/e131/e131/PDU.h"
 #include "plugins/e131/e131/RDMInflator.h"
 
@@ -42,8 +45,6 @@ class RDMPDU: public PDU {
       m_command(command) {
     }
     ~RDMPDU() {
-      if (m_command)
-        delete m_command;
     }
 
     unsigned int HeaderSize() const { return 0; }
@@ -54,8 +55,10 @@ class RDMPDU: public PDU {
     void PackHeader(OutputStream*) const {}
     void PackData(OutputStream *stream) const;
 
+    static void PrependPDU(ola::io::IOStack *stack);
+
   private:
-    const ola::rdm::RDMCommand *m_command;
+    std::auto_ptr<const ola::rdm::RDMCommand> m_command;
 };
 }  // e131
 }  // plugin

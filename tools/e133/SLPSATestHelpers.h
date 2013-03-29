@@ -21,7 +21,7 @@
 #include <ola/network/IPV4Address.h>
 #include <string>
 
-#include "tools/slp/SLPSATestRunner.h"
+#include "tools/e133/SLPSATestRunner.h"
 #include "tools/slp/ScopeSet.h"
 
 using ola::io::BigEndianOutputStream;

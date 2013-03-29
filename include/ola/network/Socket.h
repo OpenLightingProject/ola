@@ -79,10 +79,10 @@ class UDPSocketInterface: public ola::io::BidirectionalFileDescriptor {
     virtual ssize_t SendTo(const uint8_t *buffer,
                            unsigned int size,
                            const IPV4SocketAddress &dest) const = 0;
-    virtual ssize_t SendTo(ola::io::IOQueue *ioqueue,
+    virtual ssize_t SendTo(ola::io::IOVecInterface *data,
                            const IPV4Address &ip,
                            unsigned short port) const = 0;
-    virtual ssize_t SendTo(ola::io::IOQueue *ioqueue,
+    virtual ssize_t SendTo(ola::io::IOVecInterface *data,
                            const IPV4SocketAddress &dest) const = 0;
 
     virtual bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const = 0;
@@ -135,12 +135,12 @@ class UDPSocket: public UDPSocketInterface {
                    const IPV4SocketAddress &dest) const {
       return SendTo(buffer, size, dest.Host(), dest.Port());
     }
-    ssize_t SendTo(ola::io::IOQueue *ioqueue,
+    ssize_t SendTo(ola::io::IOVecInterface *data,
                    const IPV4Address &ip,
                    unsigned short port) const;
-    ssize_t SendTo(ola::io::IOQueue *ioqueue,
+    ssize_t SendTo(ola::io::IOVecInterface *data,
                    const IPV4SocketAddress &dest) const {
-      return SendTo(ioqueue, dest.Host(), dest.Port());
+      return SendTo(data, dest.Host(), dest.Port());
     }
 
     bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const;

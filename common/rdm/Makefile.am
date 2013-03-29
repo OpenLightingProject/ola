@@ -43,6 +43,7 @@ RDMTester_LDADD = $(CPPUNIT_LIBS) \
                   ../logging/liblogging.la \
                   ../network/libolanetwork.la \
                   ../testing/libolatesting.la \
+                  ../messaging/libolamessaging.la \
                   ../utils/libolautils.la
 
 PidStoreTester_SOURCES = DescriptorConsistencyCheckerTest.cpp \

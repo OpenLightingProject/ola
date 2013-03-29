@@ -33,6 +33,7 @@ namespace ola {
 namespace testing {
 
 using ola::io::IOQueue;
+using ola::io::IOVecInterface;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 
@@ -79,11 +80,12 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
                    const IPV4SocketAddress &dest) const {
       return SendTo(buffer, size, dest.Host(), dest.Port());
     }
-    ssize_t SendTo(IOQueue *ioqueue,
+    ssize_t SendTo(IOVecInterface *data,
                    const ola::network::IPV4Address &ip,
                    unsigned short port) const;
-    ssize_t SendTo(IOQueue *ioqueue, const IPV4SocketAddress &dest) const {
-      return SendTo(ioqueue, dest.Host(), dest.Port());
+    ssize_t SendTo(IOVecInterface *data,
+                   const IPV4SocketAddress &dest) const {
+      return SendTo(data, dest.Host(), dest.Port());
     }
 
     bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const;

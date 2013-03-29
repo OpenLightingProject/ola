@@ -38,6 +38,7 @@
 
 using ola::TimeInterval;
 using ola::io::ConnectedDescriptor;
+using ola::network::GenericSocketAddress;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::io::SelectServer;
@@ -241,10 +242,9 @@ void TCPConnectorTest::testEarlyDestruction() {
  */
 void TCPConnectorTest::AcceptedConnection(TCPSocket *new_socket) {
   OLA_ASSERT_NOT_NULL(new_socket);
-  IPV4Address address;
-  uint16_t port;
-  OLA_ASSERT_TRUE(new_socket->GetPeer(&address, &port));
-  OLA_INFO << "Connection from " << address << ":" << port;
+  GenericSocketAddress address = new_socket->GetPeer();
+  OLA_ASSERT_TRUE(address.Family() == AF_INET);
+  OLA_INFO << "Connection from " << address;
 
   // terminate the ss when this connection is closed
   new_socket->SetOnClose(

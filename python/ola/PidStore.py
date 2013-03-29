@@ -1005,6 +1005,7 @@ class PidStore(object):
 
   def _FieldToAtom(self, field):
     """Convert a PID proto field message into an atom."""
+    field_name = str(field.name)
     args = {'labels': [],
             'ranges': [],
             }
@@ -1022,32 +1023,32 @@ class PidStore(object):
       args['ranges'].append(Range(allowed_value.min, allowed_value.max))
 
     if field.type == Pids_pb2.BOOL:
-      return Bool(field.name)
+      return Bool(field_name)
     elif field.type == Pids_pb2.INT8:
-      return Int8(field.name, **args);
+      return Int8(field_name, **args);
     elif field.type == Pids_pb2.UINT8:
-      return UInt8(field.name, **args);
+      return UInt8(field_name, **args);
     elif field.type == Pids_pb2.INT16:
-      return Int16(field.name, **args);
+      return Int16(field_name, **args);
     elif field.type == Pids_pb2.UINT16:
-      return UInt16(field.name, **args);
+      return UInt16(field_name, **args);
     elif field.type == Pids_pb2.INT32:
-      return Int32(field.name, **args);
+      return Int32(field_name, **args);
     elif field.type == Pids_pb2.UINT32:
-      return UInt32(field.name, **args);
+      return UInt32(field_name, **args);
     elif field.type == Pids_pb2.IPV4:
-      return IPV4(field.name, **args);
+      return IPV4(field_name, **args);
     elif field.type == Pids_pb2.UID:
-      return UIDAtom(field.name, **args);
+      return UIDAtom(field_name, **args);
     elif field.type == Pids_pb2.GROUP:
       if not field.field:
-        raise InvalidPidFormat('Missing child fields for %s' % field.name)
+        raise InvalidPidFormat('Missing child fields for %s' % field_name)
       atoms = []
       for child_field in field.field:
         atoms.append(self._FieldToAtom(child_field))
-      return Group(field.name, atoms, **args)
+      return Group(field_name, atoms, **args)
     elif field.type == Pids_pb2.STRING:
-      return String(field.name, **args)
+      return String(field_name, **args)
 
   def _SubDeviceRangeToValidator(self, range):
     """Convert a sub device range to a validator."""

@@ -92,7 +92,8 @@ string EspNetPlugin::Description() const {
 "use the first non-loopback interface.\n"
 "\n"
 "name = ola-EspNet\n"
-"The name of the node.\n";
+"The name of the node.\n"
+"\n";
 }
 
 /*

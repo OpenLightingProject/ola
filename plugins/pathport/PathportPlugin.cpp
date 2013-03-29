@@ -90,7 +90,7 @@ string PathportPlugin::Description() const {
 "--- Config file : ola-pathport.conf ---\n"
 "\n"
 "dscp = <int>\n"
-"Set the DSCP value for the packets. Range is 0-63\n"
+"Set the DSCP value for the packets. Range is 0-63.\n"
 "\n"
 "ip = [a.b.c.d|<interface_name>]\n"
 "The ip address or interface name to bind to. If not specified it will\n"
@@ -100,7 +100,7 @@ string PathportPlugin::Description() const {
 "The name of the node.\n"
 "\n"
 "node-id = <int>\n"
-"The pathport id of the node\n"
+"The pathport id of the node.\n"
 "\n";
 }
 

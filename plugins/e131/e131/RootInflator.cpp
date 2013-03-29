@@ -72,7 +72,7 @@ void RootInflator::ResetHeaderField() {
  * This runs the on_data callback if we have one
  */
 bool RootInflator::PostHeader(uint32_t, HeaderSet &headers) {
-  if (m_on_data)
+  if (m_on_data.get())
     m_on_data->Run(headers.GetTransportHeader());
   return true;
 }

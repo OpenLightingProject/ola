@@ -33,8 +33,10 @@
 #include <ola/network/TCPSocketFactory.h>
 
 #include <iostream>
+#include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "tools/slp/SLPServer.h"
 #include "tools/slp/SLP.pb.h"
@@ -141,6 +143,8 @@ class SLPDaemon {
                                 const URLEntries &urls);
     };
 
+    typedef vector<class ConnectedClient*> DisconnectedClients;
+
     ola::Clock m_clock;
     ola::io::SelectServer m_ss;
     SLPServer m_slp_server;
@@ -152,6 +156,9 @@ class SLPDaemon {
     ola::network::TCPAcceptingSocket m_rpc_accept_socket;
     auto_ptr<ola::network::IPV4SocketAddress> m_multicast_endpoint;
     auto_ptr<SLPServiceImpl> m_service_impl;
+    // maps fd to ConnectedClient structure
+    map<int, class ConnectedClient*> m_connected_clients;
+    DisconnectedClients m_disconnected_clients;
 
     // The ExportMap & HTTPServer
     ola::ExportMap *m_export_map;
@@ -163,6 +170,7 @@ class SLPDaemon {
     // RPC methods
     void NewTCPConnection(TCPSocket *socket);
     void RPCSocketClosed(TCPSocket *socket);
+    bool CleanOldClients();
 
     static const uint16_t DEFAULT_SLP_HTTP_PORT;
     static const uint16_t DEFAULT_SLP_RPC_PORT;

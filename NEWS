@@ -1,4 +1,4 @@
-x/y/2013 ola-0.8.27
+2/3/2013 ola-0.8.27
  * Changed the arguments to dmxmonitor - #219
  * Build fixes for various platforms
  * Added a SLP implementation (not installed right now)
@@ -7,9 +7,9 @@ x/y/2013 ola-0.8.27
  * Add the slp_sa_test program
  * Improved support for the RDM-TRI
  * Added support for using the loopback interface with the ArtNet plugin
- * Fixed a bug in the RDM tests
+ * Fixed some bugs in the RDM tests
  * Add configure time options to disable each plugin
- * Fix a bug in the sniffer tool
+ * Fixed a bug in the sniffer tool
  * Display the amount of time the RDM tests take in the web UI
  * Update to support automake 1.13
  * Show the plugin state and config file location on the web UI

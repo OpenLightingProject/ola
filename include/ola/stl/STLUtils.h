@@ -117,6 +117,21 @@ typename T1::mapped_type STLFindOrNull(const T1 &container,
   }
 }
 
+/**
+ * Lookup a value by key in a associative container and return a pointer to the
+ * result. Returns NULL if the key doesn't exist.
+ */
+template<typename T1>
+typename T1::mapped_type* STLFindPtrOrNull(T1 *container,
+                                           const typename T1::key_type &key) {
+  typename T1::iterator iter = container->find(key);
+  if (iter == container->end()) {
+    return NULL;
+  } else {
+    return &iter->second;
+  }
+}
+
 
 /**
  * Sets key : value, replacing any existing value. Note if value_type is a
@@ -151,6 +166,17 @@ void STLSafeReplace(T1 *container, const typename T1::key_type &key,
 
 
 /**
+ * Insert a value into a container only if this value doesn't already exist.
+ * Returns true if the key was inserted, false if the key already exists.
+ */
+template<typename T1>
+bool STLInsertIfNotPresent(T1 *container,
+                           const typename T1::value_type &value) {
+  return container->insert(value).second;
+}
+
+
+/**
  * Insert an key : value into a map only if a value for this key doesn't
  * already exist.
  * Returns true if the key was inserted, false if the key already exists.
@@ -159,6 +185,55 @@ template<typename T1>
 bool STLInsertIfNotPresent(T1 *container, const typename T1::key_type &key,
                            const typename T1::mapped_type &value) {
   return container->insert(typename T1::value_type(key, value)).second;
+}
+
+
+/**
+ * Remove a item from a container.
+ * @returns true if the item was removed, false otherwise.
+ */
+template<typename T1>
+bool STLRemove(T1 *container, const typename T1::key_type &key) {
+  return container->erase(key);
+}
+
+/**
+ * Lookup a value by key in a associative container. If the value exists, it's
+ * removed from the container, the value placed in value and true is returned.
+ * If the value doesn't exist this returns false.
+ */
+template<typename T1>
+bool STLLookupAndRemove(T1 *container,
+                        const typename T1::key_type &key,
+                        typename T1::mapped_type *value) {
+  typename T1::iterator iter = container->find(key);
+  if (iter == container->end()) {
+    return false;
+  } else {
+    *value = iter->second;
+    container->erase(iter);
+    return true;
+  }
+}
+
+
+/**
+ * Similar to STLLookupAndRemove but this operates on containers of pointers.
+ * If the key exists, we remove it and return the value, if the key doesn't
+ * exist we return NULL.
+ */
+template<typename T1>
+typename T1::mapped_type STLLookupAndRemovePtr(
+    T1 *container,
+    const typename T1::key_type &key) {
+  typename T1::iterator iter = container->find(key);
+  if (iter == container->end()) {
+    return NULL;
+  } else {
+    typename T1::mapped_type value = iter->second;
+    container->erase(iter);
+    return value;
+  }
 }
 }  // ola
 #endif  // INCLUDE_OLA_STL_STLUTILS_H_

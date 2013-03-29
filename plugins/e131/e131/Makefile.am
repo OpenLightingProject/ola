@@ -5,9 +5,9 @@ EXTRA_DIST = ACNPort.h ACNVectors.h BaseInflator.h CID.h \
              DMPInflator.h DMPPDU.h \
              E131Header.h E131Includes.h E131Inflator.h E131Sender.h \
              E131Node.h E131PDU.h E131TestFramework.h \
-             E133Header.h E133Inflator.h E133Sender.h E133PDU.h \
-             HeaderSet.h PreamblePacker.h PDU.h PDUTestCommon.h \
-             RDMInflator.h RDMPDU.h \
+             E133Enums.h E133Header.h E133Inflator.h E133Sender.h E133PDU.h \
+             E133StatusPDU.h HeaderSet.h PreamblePacker.h PDU.h \
+             PDUTestCommon.h RDMInflator.h RDMPDU.h \
              RootHeader.h RootInflator.h RootSender.h RootPDU.h \
              TCPTransport.h Transport.h TransportHeader.h UDPTransport.h
 
@@ -21,6 +21,7 @@ libolae131core_la_SOURCES = BaseInflator.cpp CID.cpp \
                             E131Inflator.cpp E131Sender.cpp E131Node.cpp \
                             E131PDU.cpp E133Inflator.cpp E133Sender.cpp \
                             E133PDU.cpp \
+                            E133StatusPDU.cpp \
                             PreamblePacker.cpp \
                             PDU.cpp \
                             RDMInflator.cpp \
@@ -33,9 +34,12 @@ libolae131core_la_LIBADD = $(uuid_LIBS) \
                            ../../../common/libolacommon.la
 
 # E1.31 dev programs
-noinst_PROGRAMS = e131_transmit_test
+noinst_PROGRAMS = e131_transmit_test e131_loadtest
 e131_transmit_test_SOURCES = e131_transmit_test.cpp E131TestFramework.cpp
 e131_transmit_test_LDADD = ./libolae131core.la
+
+e131_loadtest_SOURCES = e131_loadtest.cpp
+e131_loadtest_LDADD = ./libolae131core.la
 
 # Test programs
 if BUILD_TESTS

@@ -145,6 +145,33 @@ void PDU::Write(OutputStream *stream) const {
   PackHeader(stream);
   PackData(stream);
 }
+
+
+/**
+ * Prepend the flags and lenth to an OutputBufferInterface.
+ */
+void PDU::PrependFlagsAndLength(ola::io::OutputBufferInterface *output,
+                                uint8_t flags) {
+  unsigned int size = output->Size();
+
+  if (size + 2 <= TWOB_LENGTH_LIMIT) {
+    size += 2;
+    uint16_t flags_and_length = (
+        static_cast<uint16_t>(size) |
+        static_cast<uint16_t>(flags << 8u));
+    flags_and_length = HostToNetwork(flags_and_length);
+    output->Write(reinterpret_cast<uint8_t*>(&flags_and_length),
+                  sizeof(flags_and_length));
+  } else {
+    size += 3;
+    uint8_t flags_and_length[3];
+    flags_and_length[0] = (flags |
+                           static_cast<uint8_t>((size & 0x0f0000) >> 16));
+    flags_and_length[1] = static_cast<uint8_t>((size & 0xff00) >> 8);
+    flags_and_length[2] = static_cast<uint8_t>(size & 0xff);
+    output->Write(flags_and_length, sizeof(flags_and_length));
+  }
+}
 }  // e131
 }  // plugin
 }  // ola

@@ -22,6 +22,7 @@
 
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
+#include <ola/network/SocketAddress.h>
 #include <algorithm>
 #include <iostream>
 #include "plugins/e131/e131/BaseInflator.h"
@@ -341,13 +342,17 @@ void IncommingStreamTransport::EnterWaitingForPDU() {
  * Create a new IncomingTCPTransport
  */
 IncomingTCPTransport::IncomingTCPTransport(BaseInflator *inflator,
-                                           ola::network::TCPSocket *socket):
-  m_transport(NULL) {
-  uint16_t port;
-  IPV4Address ip_address;
-  socket->GetPeer(&ip_address, &port);
-  m_transport.reset(
-      new IncommingStreamTransport(inflator, socket, ip_address, port));
+                                           ola::network::TCPSocket *socket)
+    : m_transport(NULL) {
+  ola::network::GenericSocketAddress address = socket->GetPeer();
+  if (address.Family() == AF_INET) {
+    ola::network::IPV4SocketAddress v4_addr = address.V4Addr();
+    m_transport.reset(
+        new IncommingStreamTransport(inflator, socket, v4_addr.Host(),
+                                     v4_addr.Port()));
+  } else {
+    OLA_WARN << "Invalid address for fd " << socket->ReadDescriptor();
+  }
 }
 }  // e131
 }  // plugin

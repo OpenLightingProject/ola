@@ -22,11 +22,29 @@
 #define PLUGINS_E131_E131_ROOTINFLATOR_H_
 
 #include <ola/Callback.h>
+#include <ola/Logging.h>
+#include <memory>
 #include "plugins/e131/e131/BaseInflator.h"
+#include "plugins/e131/e131/ACNVectors.h"
 
 namespace ola {
 namespace plugin {
 namespace e131 {
+
+class NullInflator : public InflatorInterface {
+  public:
+    uint32_t Id() const { return VECTOR_ROOT_NULL; }
+
+    unsigned int InflatePDUBlock(HeaderSet &,
+                                 const uint8_t*,
+                                 unsigned int len) {
+      if (len) {
+        OLA_WARN << "VECTOR_ROOT_NULL contained data of size " << len;
+      }
+      return 0;
+    }
+};
+
 
 class RootInflator: public BaseInflator {
   public:
@@ -35,14 +53,12 @@ class RootInflator: public BaseInflator {
     /**
      * The OnDataCallback is a hook for the health checking mechanism
      */
-    RootInflator(OnDataCallback *on_data = NULL)
+    explicit RootInflator(OnDataCallback *on_data = NULL)
       : BaseInflator(),
         m_on_data(on_data) {
+      AddInflator(&m_null_inflator);
     }
-    ~RootInflator() {
-      if (m_on_data)
-        delete m_on_data;
-    }
+
     uint32_t Id() const { return 0; }  // no effect for the root inflator
 
   protected:
@@ -54,8 +70,9 @@ class RootInflator: public BaseInflator {
     bool PostHeader(uint32_t vector, HeaderSet &headers);
 
   private :
+    NullInflator m_null_inflator;
     RootHeader m_last_hdr;
-    OnDataCallback *m_on_data;
+    std::auto_ptr<OnDataCallback> m_on_data;
 };
 }  // e131
 }  // plugin

@@ -107,7 +107,8 @@ string FtdiDmxPlugin::Description() const {
 "--- Config file : ola-ftdidmx.conf ---\n"
 "\n"
 "frequency = 30\n"
-"The DMX stream frequency (30hz to 44hz max are the usual)\n";
+"The DMX stream frequency (30 to 44 Hz max are the usual).\n"
+"\n";
 }
 
 

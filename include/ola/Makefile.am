@@ -1,5 +1,5 @@
-SUBDIRS = base network http io rdm thread web math messaging stl testing \
-          timecode
+SUBDIRS = base network file http io rdm thread web math messaging stl testing \
+          timecode util
 
 SOURCES = ActionQueue.h BaseTypes.h Callback.h CallbackRunner.h Clock.h \
           DmxBuffer.h ExportMap.h Logging.h MultiCallback.h \

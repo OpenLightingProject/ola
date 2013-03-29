@@ -48,6 +48,7 @@
 #include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/RDMHelper.h>
 #include <ola/rdm/UID.h>
+#include <ola/stl/STLUtils.h>
 
 #include <algorithm>
 #include <iostream>
@@ -67,30 +68,40 @@
 
 #include "tools/e133/E133Endpoint.h"
 #include "tools/e133/E133HealthCheckedConnection.h"
-#include "tools/e133/SlpThread.h"
-#include "tools/e133/SlpUrlParser.h"
+#include "tools/e133/OLASLPThread.h"
+#ifdef HAVE_LIBSLP
+#include "tools/e133/OpenSLPThread.h"
+#endif
+#include "tools/e133/SLPThread.h"
+#include "tools/e133/E133URLParser.h"
+#include "tools/slp/URLEntry.h"
 
 using ola::NewCallback;
 using ola::NewSingleCallback;
+using ola::STLContains;
+using ola::TimeInterval;
+using ola::TimeStamp;
+using ola::network::BufferedTCPSocket;
+using ola::network::GenericSocketAddress;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
-using ola::network::BufferedTCPSocket;
+using ola::plugin::e131::OutgoingStreamTransport;
 using ola::rdm::PidStoreHelper;
 using ola::rdm::RDMCommand;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
-using ola::TimeInterval;
-using ola::TimeStamp;
+using ola::slp::URLEntries;
+
 using std::auto_ptr;
 using std::cout;
 using std::endl;
 using std::string;
 using std::vector;
-using ola::plugin::e131::OutgoingStreamTransport;
 
 typedef struct {
   bool help;
+  bool use_openslp;
   ola::log_level log_level;
   string target_addresses;
   string pid_location;
@@ -101,11 +112,18 @@ typedef struct {
  * Parse our command line options
  */
 void ParseOptions(int argc, char *argv[], options *opts) {
+  enum {
+    OPENSLP_OPTION = 256,
+  };
+
   static struct option long_options[] = {
       {"help", no_argument, 0, 'h'},
       {"log-level", required_argument, 0, 'l'},
       {"pid-location", required_argument, 0, 'p'},
       {"targets", required_argument, 0, 't'},
+#ifdef HAVE_LIBSLP
+      {"openslp", no_argument, 0, OPENSLP_OPTION},
+#endif
       {0, 0, 0, 0}
     };
 
@@ -152,6 +170,9 @@ void ParseOptions(int argc, char *argv[], options *opts) {
         break;
       case '?':
         break;
+      case OPENSLP_OPTION:
+        opts->use_openslp = true;
+        break;
       default:
        break;
     }
@@ -171,6 +192,9 @@ void DisplayHelpAndExit(char *argv[]) {
   "  -t, --targets <ip>,<ip>   List of IPs to connect to, overrides SLP\n"
   "  -p, --pid-location        The directory to read PID definitiions from\n"
   "  -l, --log-level <level>   Set the logging level 0 .. 4.\n"
+#ifdef HAVE_LIBSLP
+  "  --openslp                 Use openslp rather than the OLA SLP server\n"
+#endif
   << endl;
   exit(0);
 }
@@ -189,12 +213,9 @@ class NodeTCPState {
         connection_attempts(0),
         am_master(false) {
     }
-    ~NodeTCPState() {
-      delete socket;
-    }
 
     // public for now
-    BufferedTCPSocket *socket;
+    auto_ptr<BufferedTCPSocket> socket;
     E133HealthCheckedConnection *health_checked_connection;
     ola::plugin::e131::IncomingTCPTransport *in_transport;
     ola::plugin::e131::OutgoingStreamTransport *out_transport;
@@ -208,11 +229,16 @@ class NodeTCPState {
  */
 class SimpleE133Monitor {
   public:
-    explicit SimpleE133Monitor(PidStoreHelper *pid_helper);
+    enum SLPOption {
+      OPEN_SLP,
+      OLA_SLP,
+      NO_SLP,
+    };
+    explicit SimpleE133Monitor(PidStoreHelper *pid_helper,
+                               SLPOption slp_option);
     ~SimpleE133Monitor();
 
     bool Init();
-    void PopulateResponderList();
     void AddIP(const IPV4Address &ip_address);
 
     void Run() { m_ss.Run(); }
@@ -220,10 +246,10 @@ class SimpleE133Monitor {
   private:
     ola::rdm::CommandPrinter m_command_printer;
     ola::io::SelectServer m_ss;
-    SlpThread m_slp_thread;
+    auto_ptr<BaseSLPThread> m_slp_thread;
     ola::network::BufferedTCPSocketFactory m_tcp_socket_factory;
     ola::network::AdvancedTCPConnector m_connector;
-    ola::network::LinearBackoffPolicy m_backoff_policy;
+    ola::LinearBackoffPolicy m_backoff_policy;
 
     // hash_map of ips to TCP Connection State
     typedef HASH_NAMESPACE::HASH_MAP_CLASS<uint32_t, NodeTCPState*> IPMap;
@@ -246,7 +272,7 @@ class SimpleE133Monitor {
      * Maybe this won't be a problem since we'll never delete the entry for a
      * a node we have a connection to. Think about this.
      */
-    void DiscoveryCallback(bool status, const vector<string> &urls);
+    void DiscoveryCallback(bool status, const URLEntries &urls);
     void OnTCPConnect(BufferedTCPSocket *socket);
     void ReceiveTCPData(IPV4Address ip_address,
                         ola::plugin::e131::IncomingTCPTransport *transport);
@@ -269,29 +295,41 @@ class SimpleE133Monitor {
 const ola::TimeInterval SimpleE133Monitor::TCP_CONNECT_TIMEOUT(5, 0);
 // retry TCP connects after 5 seconds
 const ola::TimeInterval SimpleE133Monitor::INITIAL_TCP_RETRY_DELAY(5, 0);
-// we grow the retry interval to a max of 60 seconds
-const ola::TimeInterval SimpleE133Monitor::MAX_TCP_RETRY_DELAY(60, 0);
+// we grow the retry interval to a max of 30 seconds
+const ola::TimeInterval SimpleE133Monitor::MAX_TCP_RETRY_DELAY(30, 0);
 const char SimpleE133Monitor::SOURCE_NAME[] = "OLA Monitor";
 
 
 /**
- * Setup a new Monitori
+ * Setup a new Monitor
  */
 SimpleE133Monitor::SimpleE133Monitor(
-    PidStoreHelper *pid_helper)
+    PidStoreHelper *pid_helper,
+    SLPOption slp_option)
     : m_command_printer(&cout, pid_helper),
-      m_slp_thread(
-        &m_ss,
-        ola::NewCallback(this, &SimpleE133Monitor::DiscoveryCallback)),
       m_tcp_socket_factory(NewCallback(this, &SimpleE133Monitor::OnTCPConnect)),
       m_connector(&m_ss, &m_tcp_socket_factory, TCP_CONNECT_TIMEOUT),
       m_backoff_policy(INITIAL_TCP_RETRY_DELAY, MAX_TCP_RETRY_DELAY),
       m_cid(ola::plugin::e131::CID::Generate()),
       m_root_sender(m_cid),
       m_root_inflator(NewCallback(this, &SimpleE133Monitor::RLPDataReceived)) {
+  if (slp_option == OLA_SLP) {
+    m_slp_thread.reset(new OLASLPThread(&m_ss));
+  } else if (slp_option == OPEN_SLP) {
+#ifdef HAVE_LIBSLP
+    m_slp_thread.reset(new OpenSLPThread(&m_ss));
+#else
+    OLA_WARN << "openslp not installed";
+#endif
+  }
+  if (m_slp_thread.get()) {
+    m_slp_thread->SetNewDeviceCallback(
+      NewCallback(this, &SimpleE133Monitor::DiscoveryCallback));
+  }
+  // TODO(simon): add a controller discovery callback here as well.
+
   m_root_inflator.AddInflator(&m_e133_inflator);
   m_e133_inflator.AddInflator(&m_rdm_inflator);
-
   m_rdm_inflator.SetRDMHandler(
       ROOT_E133_ENDPOINT,
       NewCallback(this, &SimpleE133Monitor::EndpointRequest));
@@ -306,33 +344,29 @@ SimpleE133Monitor::~SimpleE133Monitor() {
   }
   m_ip_map.clear();
 
-  m_slp_thread.Join();
-  m_slp_thread.Cleanup();
+  if (m_slp_thread.get()) {
+    m_slp_thread->Join(NULL);
+    m_slp_thread->Cleanup();
+  }
 }
 
 
 bool SimpleE133Monitor::Init() {
-  if (!m_slp_thread.Init()) {
-    OLA_WARN << "SlpThread Init() failed";
+  if (!m_slp_thread.get())
+    return true;
+
+  if (!m_slp_thread->Init()) {
+    OLA_WARN << "SLPThread Init() failed";
     return false;
   }
 
-  m_slp_thread.Start();
+  m_slp_thread->Start();
   return true;
 }
 
 
-/**
- * Locate the responder
- */
-void SimpleE133Monitor::PopulateResponderList() {
-  m_slp_thread.Discover();
-}
-
-
 void SimpleE133Monitor::AddIP(const IPV4Address &ip_address) {
-  IPMap::iterator iter = m_ip_map.find(ip_address.AsInt());
-  if (iter != m_ip_map.end()) {
+  if (STLContains(m_ip_map, ip_address.AsInt())) {
     // the IP already exists
     return;
   }
@@ -354,15 +388,14 @@ void SimpleE133Monitor::AddIP(const IPV4Address &ip_address) {
 /**
  * Called when SLP completes discovery.
  */
-void SimpleE133Monitor::DiscoveryCallback(bool ok,
-                                          const vector<string> &urls) {
+void SimpleE133Monitor::DiscoveryCallback(bool ok, const URLEntries &urls) {
   if (ok) {
-    vector<string>::const_iterator iter;
+    URLEntries::const_iterator iter;
     UID uid(0, 0);
     IPV4Address ip;
     for (iter = urls.begin(); iter != urls.end(); ++iter) {
       OLA_INFO << "Located " << *iter;
-      if (!ParseSlpUrl(*iter, &uid, &ip))
+      if (!ParseE133URL(iter->url(), &uid, &ip))
         continue;
 
       if (uid.IsBroadcast()) {
@@ -382,25 +415,23 @@ void SimpleE133Monitor::DiscoveryCallback(bool ok,
  * this point. That only happens if we receive data on the connection.
  */
 void SimpleE133Monitor::OnTCPConnect(BufferedTCPSocket *socket) {
-  IPV4Address ip_address;
-  uint16_t port;
-  socket->GetPeer(&ip_address, &port);
-
-  IPMap::iterator iter = m_ip_map.find(ip_address.AsInt());
-  if (iter == m_ip_map.end()) {
-    OLA_FATAL << "Unable to locate socket for " << ip_address;
-    if (socket) {
-      socket->Close();
-      delete socket;
-    }
+  GenericSocketAddress address = socket->GetPeer();
+  if (address.Family() != AF_INET) {
+    OLA_WARN << "Non IPv4 socket " << address;
+    delete socket;
     return;
   }
-
-  NodeTCPState *node_state = iter->second;
+  IPV4SocketAddress v4_address = address.V4Addr();
+  NodeTCPState *node_state = ola::STLFindOrNull(
+      m_ip_map, v4_address.Host().AsInt());
+  if (!node_state) {
+    OLA_FATAL << "Unable to locate socket for " << v4_address.Host();
+    delete socket;
+  }
 
   // setup the incoming transport, we don't need to setup the outgoing one
   // until we've got confirmation that we're the master
-  node_state->socket = socket;
+  node_state->socket.reset(socket);
   node_state->in_transport = new ola::plugin::e131::IncomingTCPTransport(
       &m_root_inflator,
       socket);
@@ -408,10 +439,11 @@ void SimpleE133Monitor::OnTCPConnect(BufferedTCPSocket *socket) {
   socket->SetOnData(
       NewCallback(this,
                   &SimpleE133Monitor::ReceiveTCPData,
-                  ip_address,
+                  v4_address.Host(),
                   node_state->in_transport));
   socket->SetOnClose(
-    NewSingleCallback(this, &SimpleE133Monitor::SocketClosed, ip_address));
+    NewSingleCallback(this, &SimpleE133Monitor::SocketClosed,
+                      v4_address.Host()));
   m_ss.AddReadDescriptor(socket);
 
   // setup a timeout that closes this connect if we don't receive anything
@@ -450,13 +482,11 @@ void SimpleE133Monitor::SocketUnhealthy(IPV4Address ip_address) {
 void SimpleE133Monitor::SocketClosed(IPV4Address ip_address) {
   OLA_INFO << "connection to " << ip_address << " was closed";
 
-  IPMap::iterator iter = m_ip_map.find(ip_address.AsInt());
-  if (iter == m_ip_map.end()) {
+  NodeTCPState *node_state = ola::STLFindOrNull(m_ip_map, ip_address.AsInt());
+  if (!node_state) {
     OLA_FATAL << "Unable to locate socket for " << ip_address;
     return;
   }
-
-  NodeTCPState *node_state = iter->second;
 
   if (node_state->am_master) {
     // TODO(simon): signal other controllers here
@@ -478,10 +508,7 @@ void SimpleE133Monitor::SocketClosed(IPV4Address ip_address) {
   delete node_state->in_transport;
   node_state->in_transport = NULL;
 
-  BufferedTCPSocket *socket = node_state->socket;
-  m_ss.RemoveReadDescriptor(socket);
-  delete socket;
-  node_state->socket = NULL;
+  m_ss.RemoveReadDescriptor(node_state->socket.get());
 
   // Terminate for now
   m_ss.Terminate();
@@ -520,7 +547,7 @@ void SimpleE133Monitor::RLPDataReceived(
 
   node_state->socket->AssociateSelectServer(&m_ss);
   OutgoingStreamTransport *outgoing_transport = new OutgoingStreamTransport(
-      node_state->socket);
+      node_state->socket.get());
 
   E133HealthCheckedConnection *health_checked_connection =
       new E133HealthCheckedConnection(
@@ -566,31 +593,14 @@ void SimpleE133Monitor::EndpointRequest(
   }
 
   cout << "From " << transport_header.SourceIP() << ":" << endl;
-  // switch based on response type
-  const uint8_t response_type = rdm_data[19];
-  bool ok = false;
-
-  if (response_type == RDMCommand::GET_COMMAND ||
-      response_type == RDMCommand::SET_COMMAND) {
-    auto_ptr<RDMRequest> request(
-        RDMRequest::InflateFromData(rdm_data, slot_count));
-    if (request.get()) {
-      m_command_printer.DisplayRequest(request.get());
-      ok = true;
-    }
-  } else if (response_type == RDMCommand::GET_COMMAND_RESPONSE ||
-             response_type == RDMCommand::SET_COMMAND_RESPONSE) {
-    ola::rdm::rdm_response_code code;
-    auto_ptr<RDMResponse> response(
-        RDMResponse::InflateFromData(rdm_data, slot_count, &code));
-    if (response.get()) {
-      m_command_printer.DisplayResponse(response.get());
-      ok = true;
-    }
-  }
-
-  if (!ok)
+  auto_ptr<RDMCommand> command(
+      RDMCommand::Inflate(reinterpret_cast<const uint8_t*>(raw_request.data()),
+                          raw_request.size()));
+  if (command.get()) {
+    command->Print(&m_command_printer, false, true);
+  } else {
     ola::FormatData(&cout, rdm_data, slot_count, 2);
+  }
 }
 
 
@@ -602,6 +612,7 @@ int main(int argc, char *argv[]) {
   opts.pid_location = PID_DATA_DIR;
   opts.log_level = ola::OLA_LOG_WARN;
   opts.help = false;
+  opts.use_openslp = false;
   ParseOptions(argc, argv, &opts);
   PidStoreHelper pid_helper(opts.pid_location, 4);
 
@@ -629,18 +640,20 @@ int main(int argc, char *argv[]) {
   if (!pid_helper.Init())
     exit(EX_OSFILE);
 
-  SimpleE133Monitor monitor(&pid_helper);
+  SimpleE133Monitor::SLPOption slp_option = SimpleE133Monitor::NO_SLP;
+  if (targets.empty()) {
+    slp_option = opts.use_openslp ? SimpleE133Monitor::OPEN_SLP :
+        SimpleE133Monitor::OLA_SLP;
+  }
+  SimpleE133Monitor monitor(&pid_helper, slp_option);
   if (!monitor.Init())
     exit(EX_UNAVAILABLE);
 
-  if (targets.empty()) {
-    monitor.PopulateResponderList();
-  } else {
+  if (!targets.empty()) {
     // manually add the responder IPs
     vector<IPV4Address>::const_iterator iter = targets.begin();
     for (; iter != targets.end(); ++iter)
       monitor.AddIP(*iter);
   }
-
   monitor.Run();
 }

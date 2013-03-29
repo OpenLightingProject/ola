@@ -55,23 +55,17 @@ namespace network {
 /**
  * Get the remote IPAddress and port for this socket
  */
-bool TCPSocket::GetPeer(IPV4Address *address, uint16_t *port) {
-  struct sockaddr_in remote_address;
+GenericSocketAddress TCPSocket::GetPeer() {
+  struct sockaddr remote_address;
   socklen_t length = sizeof(remote_address);
-  int r = getpeername(m_sd,
-                      (struct sockaddr*) &remote_address,
-                      &length);
+  int r = getpeername(m_sd, &remote_address, &length);
   if (r) {
-    OLA_WARN << "Failed to get peer information for fd: " << m_sd << ", " <<
-      strerror(errno);
-    return false;
+    OLA_WARN << "Failed to get peer information for fd: " << m_sd << ", "
+             << strerror(errno);
+    return GenericSocketAddress();
   }
-
-  *address = IPV4Address(remote_address.sin_addr);
-  *port = NetworkToHost(remote_address.sin_port);
-  return true;
+  return GenericSocketAddress(remote_address);
 }
-
 
 /*
  * Close this TCPSocket

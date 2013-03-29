@@ -39,6 +39,7 @@ using ola::io::ConnectedDescriptor;
 using ola::io::IOQueue;
 using ola::io::SelectServer;
 using ola::network::IPV4Address;
+using ola::network::GenericSocketAddress;
 using ola::network::IPV4SocketAddress;
 using ola::network::StringToAddress;
 using ola::network::TCPAcceptingSocket;
@@ -323,10 +324,9 @@ void SocketTest::ReceiveSendAndClose(ConnectedDescriptor *socket) {
  */
 void SocketTest::NewConnectionSend(TCPSocket *new_socket) {
   OLA_ASSERT_TRUE(new_socket);
-  IPV4Address address;
-  uint16_t port;
-  OLA_ASSERT_TRUE(new_socket->GetPeer(&address, &port));
-  OLA_INFO << "Connection from " << address << ":" << port;
+  GenericSocketAddress address = new_socket->GetPeer();
+  OLA_ASSERT_TRUE(address.Family() == AF_INET);
+  OLA_INFO << "Connection from " << address;
   ssize_t bytes_sent = new_socket->Send(
       static_cast<const uint8_t*>(test_cstring),
       sizeof(test_cstring));
@@ -342,10 +342,9 @@ void SocketTest::NewConnectionSend(TCPSocket *new_socket) {
  */
 void SocketTest::NewConnectionSendAndClose(TCPSocket *new_socket) {
   OLA_ASSERT_NOT_NULL(new_socket);
-  IPV4Address address;
-  uint16_t port;
-  OLA_ASSERT_TRUE(new_socket->GetPeer(&address, &port));
-  OLA_INFO << "Connection from " << address << ":" << port;
+  GenericSocketAddress address = new_socket->GetPeer();
+  OLA_ASSERT_TRUE(address.Family() == AF_INET);
+  OLA_INFO << "Connection from " << address;
   ssize_t bytes_sent = new_socket->Send(
       static_cast<const uint8_t*>(test_cstring),
       sizeof(test_cstring));

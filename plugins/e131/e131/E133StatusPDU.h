@@ -13,23 +13,32 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * SlpUrlParser.h
- * Copyright (C) 2011 Simon Newton
+ * E133StatusPDU.cpp
+ * The E133StatusPDU
+ * Copyright (C) 2013 Simon Newton
  */
 
-#include <ola/rdm/UID.h>
-#include <ola/network/IPV4Address.h>
+#ifndef PLUGINS_E131_E131_E133STATUSPDU_H_
+#define PLUGINS_E131_E131_E133STATUSPDU_H_
 
+#include <ola/io/IOStack.h>
 #include <string>
+#include "plugins/e131/e131/E133Enums.h"
+#include "plugins/e131/e131/PDU.h"
 
-#ifndef TOOLS_E133_SLPURLPARSER_H_
-#define TOOLS_E133_SLPURLPARSER_H_
+namespace ola {
+namespace plugin {
+namespace e131 {
 
-using std::string;
+class E133StatusPDU : private PDU {
+  public:
+    static void PrependPDU(ola::io::IOStack *stack, E133StatusCode status_code,
+                           const std::string &status);
 
-
-bool ParseSlpUrl(const string &url,
-                 ola::rdm::UID *uid,
-                 ola::network::IPV4Address *ip);
-
-#endif  // TOOLS_E133_SLPURLPARSER_H_
+  private:
+    static const size_t MAX_STATUS_STRING_SIZE = 64;
+};
+}  // e131
+}  // plugin
+}  // ola
+#endif  // PLUGINS_E131_E131_E133STATUSPDU_H_

@@ -94,11 +94,7 @@ ola.PluginFrame.prototype._UpdateFromData = function(e) {
       var control = new goog.ui.Control(
           goog.dom.createDom('span', null, plugin['name']));
       control.render(conflicts);
-      var EVENTS = goog.object.getValues(goog.ui.Component.EventType);
-      goog.events.listen(control, goog.ui.Component.EventType.ACTION,
-          function(e) {
-            this._PluginControlClicked(plugin['id']);
-          }, false, this);
+      this._AttachListener(control, plugin['id']);
       this.controls.push(control);
 
       if (possible_conflicts && plugin['active']) {
@@ -122,4 +118,14 @@ ola.PluginFrame.prototype._UpdateFromData = function(e) {
  */
 ola.PluginFrame.prototype._PluginControlClicked = function(id) {
   this._show_plugin_fn(id);
+}
+
+/**
+ * Attach a listener to a control.
+ */
+ola.PluginFrame.prototype._AttachListener = function(control, plugin_id) {
+  goog.events.listen(control, goog.ui.Component.EventType.ACTION,
+                     function(e) {
+                       this._PluginControlClicked(plugin_id);
+                     }, false, this);
 }

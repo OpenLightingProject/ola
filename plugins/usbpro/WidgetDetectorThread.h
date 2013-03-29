@@ -135,8 +135,6 @@ class WidgetDetectorThread: public ola::thread::Thread {
     // the descriptors that are in the discovery process
     ActiveDescriptors m_active_descriptors;
 
-    void FindCandiateDevices(vector<string> *device_paths);
-
     // called when we find new widgets of a particular type
     void UsbProWidgetReady(ConnectedDescriptor *descriptor,
                            const UsbProWidgetInformation *info);

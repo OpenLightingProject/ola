@@ -20,12 +20,15 @@
 
 #include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include "ola/Logging.h"
-#include "plugins/e131/e131/RootPDU.h"
+#include "ola/io/IOStack.h"
 #include "plugins/e131/e131/BaseInflator.h"
+#include "plugins/e131/e131/RootPDU.h"
 
 namespace ola {
 namespace plugin {
 namespace e131 {
+
+using ola::io::IOStack;
 
 /*
  * Pack the header into a buffer.
@@ -76,6 +79,18 @@ void RootPDU::PackData(OutputStream *stream) const {
 void RootPDU::SetBlock(const PDUBlock<PDU> *block) {
   m_block = block;
   m_block_size = m_block ? block->Size() : 0;
+}
+
+
+/*
+ * Prepend a Root Layer flags, length, vector & header
+ */
+void RootPDU::PrependPDU(IOStack *stack, uint32_t vector, const CID &cid) {
+  cid.Write(stack);
+
+  vector = HostToNetwork(vector);
+  stack->Write(reinterpret_cast<uint8_t*>(&vector), sizeof(vector));
+  PrependFlagsAndLength(stack);
 }
 }  // e131
 }  // plugin

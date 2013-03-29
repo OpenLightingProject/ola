@@ -30,7 +30,6 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
-
 class RootSender {
   public:
     explicit RootSender(const CID &cid);

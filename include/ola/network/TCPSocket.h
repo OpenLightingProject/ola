@@ -63,7 +63,7 @@ class TCPSocket: public ola::io::ConnectedDescriptor {
     int WriteDescriptor() const { return m_sd; }
     bool Close();
 
-    bool GetPeer(IPV4Address *address, uint16_t *port);
+    GenericSocketAddress GetPeer();
 
     static TCPSocket* Connect(const SocketAddress &endpoint);
 

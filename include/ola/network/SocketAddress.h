@@ -132,6 +132,14 @@ class GenericSocketAddress: public SocketAddress {
       : m_addr(addr) {
     }
 
+    GenericSocketAddress() {
+      memset(reinterpret_cast<uint8_t*>(&m_addr), 0, sizeof(m_addr));
+    }
+
+    bool IsValid() const {
+      return Family() != AF_UNSPEC;
+    }
+
     uint16_t Family() const {
       return m_addr.sa_family;
     }
@@ -149,11 +157,7 @@ class GenericSocketAddress: public SocketAddress {
       (void) size;
     }
 
-    string ToString() const {
-      std::ostringstream str;
-      str << "Generic sockaddr of type: " << m_addr.sa_family;
-      return str.str();
-    }
+    string ToString() const;
 
     // Return a IPV4SocketAddress object, only valid if Family() is AF_INET
     IPV4SocketAddress V4Addr() const;

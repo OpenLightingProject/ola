@@ -23,6 +23,7 @@
 
 #include <stdint.h>
 #include <ola/io/OutputStream.h>
+#include <ola/io/OutputBuffer.h>
 #include <vector>
 
 namespace ola {
@@ -73,6 +74,10 @@ class PDU {
     virtual void Write(OutputStream *stream) const;
     virtual void PackHeader(OutputStream *stream) const = 0;
     virtual void PackData(OutputStream *stream) const = 0;
+
+    static void PrependFlagsAndLength(
+        ola::io::OutputBufferInterface *output,
+        uint8_t flags = VFLAG_MASK | HFLAG_MASK | DFLAG_MASK);
 
     // This indicates a vector is present
     static const uint8_t VFLAG_MASK = 0x40;

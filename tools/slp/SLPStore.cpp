@@ -18,6 +18,7 @@
  */
 
 #include <ola/Logging.h>
+#include <iostream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -28,9 +29,11 @@
 
 using ola::TimeStamp;
 using ola::TimeInterval;
+using std::cout;
+using std::endl;
 using std::map;
-using std::string;
 using std::pair;
+using std::string;
 
 namespace ola {
 namespace slp {
@@ -267,12 +270,12 @@ void SLPStore::Dump(const TimeStamp &now) {
        iter != m_services.end(); ++iter) {
     MaybeCleanURLList(now, iter->second);
 
-    OLA_INFO << iter->first;
+    cout << iter->first << endl;
     const ServiceList *service_list = iter->second;
     ServiceEntryVector::const_iterator service_iter =
       service_list->services.begin();
     for (; service_iter != service_list->services.end(); ++service_iter)
-      OLA_INFO << "  " << **service_iter;
+      cout << "  " << **service_iter << endl;
   }
 }
 

@@ -40,6 +40,8 @@
 #include <iostream>
 #include <string>
 
+#include "ola/io/OutputBuffer.h"
+
 namespace ola {
 namespace plugin {
 namespace e131 {
@@ -55,6 +57,7 @@ class CID {
     bool IsNil() const;
     void Pack(uint8_t *buf) const;
     std::string ToString() const;
+    void Write(ola::io::OutputBufferInterface *output) const;
 
     CID& operator=(const CID& c1);
     bool operator==(const CID& c1) const;

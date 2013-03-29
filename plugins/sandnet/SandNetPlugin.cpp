@@ -79,7 +79,7 @@ string SandNetPlugin::Description() const {
 "This plugin creates a single device with 2 output and 8 input ports.\n"
 "\n"
 "The universe bindings are offset by one from those displayed in sandnet.\n"
-"For example, SandNet universe 1 is OLA universe 0\n"
+"For example, SandNet universe 1 is OLA universe 0.\n"
 "\n"
 "--- Config file : ola-sandnet.conf ---\n"
 "\n"
@@ -88,7 +88,8 @@ string SandNetPlugin::Description() const {
 "use the first non-loopback interface.\n"
 "\n"
 "name = ola-SandNet\n"
-"The name of the node.\n";
+"The name of the node.\n"
+"\n";
 }
 
 
