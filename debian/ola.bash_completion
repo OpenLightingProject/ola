@@ -27,7 +27,18 @@ have olad && _olad()
 
         COMPREPLY=()
         cur=${COMP_WORDS[COMP_CWORD]}
+        prev=${COMP_WORDS[COMP_CWORD-1]}
+
+        case "$prev" in
+        -l | --log-level)
+            COMPREPLY=($( compgen -W '0 1 2 3 4' -- $cur ) );
+            return 0
+            ;;
+        esac;
+        
         COMPREPLY=($( compgen -W '--config-dir --http-data-dir --daemon --interface --log-level --http-port --rpc-port --syslog --version --no-http --no-http-quit' -- $cur ) )
+        
+        return 0
 }
 complete -F _olad olad
 
@@ -80,10 +91,9 @@ have ola_e131 && _ola_e131()
             ;;
         esac;
 
-
         COMPREPLY=($( compgen -W '--dev --input --port_id --preview_mode' -- $cur ) )
 
-	return 0
+        return 0
 }
 complete -F _ola_e131 ola_e131
 
@@ -163,7 +173,18 @@ have ola_recorder && _ola_recorder()
 
         COMPREPLY=()
         cur=${COMP_WORDS[COMP_CWORD]}
+        prev=${COMP_WORDS[COMP_CWORD-1]}
+
+        case "$prev" in
+        -l | --log-level)
+            COMPREPLY=($( compgen -W '0 1 2 3 4' -- $cur ) );
+            return 0
+            ;;
+        esac;
+        
         COMPREPLY=($( compgen -W '--log-level --record --playback --universes --verify --delay --iterations' -- $cur ) )
+        
+        return 0
 }
 complete -F _ola_recorder ola_recorder
 
@@ -210,16 +231,15 @@ have ola_timecode && _ola_timecode()
         prev=${COMP_WORDS[COMP_CWORD-1]}
 
         case "$prev" in
-        --format)
+        -f | --format)
             COMPREPLY=($( compgen -W 'FILM EBU DF SMPTE' -- $cur ) );
             return 0
             ;;
         esac;
 
-
         COMPREPLY=($( compgen -W '--format' -- $cur ) )
 
-	return 0
+        return 0
 }
 complete -F _ola_timecode ola_timecode
 
@@ -230,7 +250,18 @@ have ola_trigger && _ola_trigger()
 
         COMPREPLY=()
         cur=${COMP_WORDS[COMP_CWORD]}
+        prev=${COMP_WORDS[COMP_CWORD-1]}
+
+        case "$prev" in
+        -l | --log-level)
+            COMPREPLY=($( compgen -W '0 1 2 3 4' -- $cur ) );
+            return 0
+            ;;
+        esac;
+        
         COMPREPLY=($( compgen -W '--log-level --offset --universe' -- $cur ) )
+
+        return 0
 }
 complete -F _ola_trigger ola_trigger
 
@@ -266,7 +297,18 @@ have ola_universe_stats && _ola_universe_stats()
 
         COMPREPLY=()
         cur=${COMP_WORDS[COMP_CWORD]}
+        prev=${COMP_WORDS[COMP_CWORD-1]}
+
+        case "$prev" in
+        -l | --log-level)
+            COMPREPLY=($( compgen -W '0 1 2 3 4' -- $cur ) );
+            return 0
+            ;;
+        esac;
+
         COMPREPLY=($( compgen -W '--log-level' -- $cur ) )
+
+        return 0
 }
 complete -F _ola_universe_stats ola_universe_stats
 
@@ -288,6 +330,17 @@ have rdmpro_sniffer && _rdmpro_sniffer()
 
         COMPREPLY=()
         cur=${COMP_WORDS[COMP_CWORD]}
+        prev=${COMP_WORDS[COMP_CWORD-1]}
+
+        case "$prev" in
+        -l | --log-level)
+            COMPREPLY=($( compgen -W '0 1 2 3 4' -- $cur ) );
+            return 0
+            ;;
+        esac;
+        
         COMPREPLY=($( compgen -W '--display-asc --display-dmx --dmx-slot-limit --log-level --parse-raw-dump --full-rdm --timestamp --write-raw-dump' -- $cur ) )
+        
+        return 0
 }
 complete -F _rdmpro_sniffer rdmpro_sniffer
