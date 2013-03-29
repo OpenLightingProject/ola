@@ -1,7 +1,7 @@
 Source: ola
 Priority: extra
 Maintainer: RenZO <renzo@imaginux.com>
-Build-Depends: debhelper (>= 7), autotools-dev
+Build-Depends: debhelper (>= 7), autotools-dev, bash-completion
 Standards-Version: 3.9.1
 Section: libs
 Homepage: http://code.google.com/p/open-lighting/

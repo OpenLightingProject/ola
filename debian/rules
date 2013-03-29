@@ -96,6 +96,7 @@ binary-arch: build install
 	dh_installudev --noscripts
 #	dh_installcron
 	dh_installman
+	dh_bash-completion
 	dh_link
 	dh_strip
 	dh_compress
