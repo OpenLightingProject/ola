@@ -17,10 +17,8 @@ EXTRA_DIST = E133Endpoint.h E133Device.h \
 noinst_LTLIBRARIES = libolae133slp.la
 libolae133slp_la_SOURCES = OLASLPThread.cpp \
                            E133URLParser.cpp \
-                           OpenSLPThread.cpp \
                            SLPThread.cpp
-libolae133slp_la_LIBADD = $(openslp_LIBS) \
-                          $(top_builddir)/tools/slp/libolaslpclient.la \
+libolae133slp_la_LIBADD = $(top_builddir)/tools/slp/libolaslpclient.la \
                           $(top_builddir)/common/libolacommon.la
 
 if HAVE_SLP
