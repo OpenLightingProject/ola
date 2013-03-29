@@ -311,6 +311,8 @@ have ola_universe_stats && _ola_universe_stats()
         return 0
 }
 complete -F _ola_universe_stats ola_universe_stats
+#Also add the same completion to the symlink:
+complete -F _ola_universe_stats ola_uni_stats
 
 #ola_usbpro
 have ola_usbpro && _ola_usbpro()

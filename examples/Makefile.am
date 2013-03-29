@@ -76,5 +76,6 @@ install-exec-hook:
 	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/ola_uni_name
 	$(LN_S) -f $(bindir)/ola_dev_info $(DESTDIR)$(bindir)/ola_plugin_state
 	$(LN_S) -f $(bindir)/ola_rdm_get $(DESTDIR)$(bindir)/ola_rdm_set
+	$(LN_S) -f $(bindir)/ola_universe_stats $(DESTDIR)$(bindir)/ola_uni_stats
 
 endif
