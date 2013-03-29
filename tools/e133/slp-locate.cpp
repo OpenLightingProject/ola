@@ -203,14 +203,14 @@ int main(int argc, char *argv[]) {
 
   auto_ptr<BaseSLPThread> slp_thread;
   if (opts.use_openslp) {
-    slp_thread.reset(new OpenSLPThread(&ss, opts.refresh));
-  } else {
 #ifdef HAVE_LIBSLP
-    slp_thread.reset(new OLASLPThread(&ss, opts.refresh));
+    slp_thread.reset(new OpenSLPThread(&ss, opts.refresh));
 #else
     OLA_WARN << "openslp not installed";
     return false;
 #endif
+  } else {
+    slp_thread.reset(new OLASLPThread(&ss, opts.refresh));
   }
   slp_thread->SetNewDeviceCallback(ola::NewCallback(&DiscoveryDone));
 
