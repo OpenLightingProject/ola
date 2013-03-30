@@ -224,7 +224,7 @@ void DisplayHelpAndExit(char *argv[]) {
   "  -t, --target <ip>         IP to send the message to, this overrides SLP\n"
   "  -i, --ip                  The IP address to listen on.\n"
   "  -l, --log-level <level>   Set the logging level 0 .. 4.\n"
-  "  -p, --pid-location        The directory to read PID definitiions from\n"
+  "  -p, --pid-location        The directory to read PID definitions from\n"
   "  -s, --set                 Perform a SET (default is GET)\n"
   "  --uid <uid>               The UID of the device to control.\n"
 #ifdef HAVE_LIBSLP
