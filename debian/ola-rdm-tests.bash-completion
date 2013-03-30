@@ -5,44 +5,44 @@
 #rdm_responder_test.py
 have rdm_responder_test.py && _rdm_responder_test.py()
 {
-        local cur
+  local cur
 
-        COMPREPLY=()
-        cur=${COMP_WORDS[COMP_CWORD]}
-        prev=${COMP_WORDS[COMP_CWORD-1]}
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
 
-        case "$prev" in
-        -t | --tests)
-            #TODO: Get this working with the comma seperated list of tests
-            COMPREPLY=($( compgen -W '$( command rdm_responder_test.py --list-tests 2>/dev/null )' -- $cur ) );
-            return 0
-            ;;
-        esac;
-        
-        COMPREPLY=($( compgen -W '--slot-count --debug --dmx-frame-rate --log --list-tests --pid-store --skip-check --tests --timestamp --no-factory-defaults --broadcast-write-delay --universe' -- $cur ) )
-        
-        return 0
+  case "$prev" in
+  -t | --tests)
+    #TODO: Get this working with the comma seperated list of tests
+    COMPREPLY=($( compgen -W '$( command rdm_responder_test.py --list-tests 2>/dev/null )' -- $cur ) );
+    return 0
+    ;;
+  esac;
+
+  COMPREPLY=($( compgen -W '--slot-count --debug --dmx-frame-rate --log --list-tests --pid-store --skip-check --tests --timestamp --no-factory-defaults --broadcast-write-delay --universe' -- $cur ) )
+
+  return 0
 }
 complete -F _rdm_responder_test.py rdm_responder_test.py
 
 #rdm_model_collector.py
 have rdm_model_collector.py && _rdm_model_collector.py()
 {
-        local cur
+  local cur
 
-        COMPREPLY=()
-        cur=${COMP_WORDS[COMP_CWORD]}
-        COMPREPLY=($( compgen -W '--debug --pid_file --skip_queued_messages --universe' -- $cur ) )
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  COMPREPLY=($( compgen -W '--debug --pid_file --skip_queued_messages --universe' -- $cur ) )
 }
 complete -F _rdm_model_collector.py rdm_model_collector.py
 
 #rdm_test_server.py
 have rdm_test_server.py && _rdm_test_server.py()
 {
-        local cur
+  local cur
 
-        COMPREPLY=()
-        cur=${COMP_WORDS[COMP_CWORD]}
-        COMPREPLY=($( compgen -W '--pid_store --www_dir --log_directory --world_writeable' -- $cur ) )
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  COMPREPLY=($( compgen -W '--pid_store --www_dir --log_directory --world_writeable' -- $cur ) )
 }
 complete -F _rdm_test_server.py rdm_test_server.py
