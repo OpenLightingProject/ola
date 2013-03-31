@@ -36,7 +36,6 @@
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/io/SelectServer.h>
-#include <ola/io/MemoryBlockPool.h>
 #include <ola/io/IOStack.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/NetworkUtils.h>
@@ -62,16 +61,14 @@
 #include "plugins/e131/e131/ACNVectors.h"
 #include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/E133Inflator.h"
-#include "plugins/e131/e131/E133PDU.h"
 #include "plugins/e131/e131/RDMInflator.h"
 #include "plugins/e131/e131/RDMPDU.h"
 #include "plugins/e131/e131/RootInflator.h"
-#include "plugins/e131/e131/RootPDU.h"
 #include "plugins/e131/e131/UDPTransport.h"
 
-#include "tools/e133/E133Endpoint.h"
 #include "tools/e133/E133URLParser.h"
 #include "tools/e133/OLASLPThread.h"
+#include "tools/e133/PacketBuilder.h"
 #ifdef HAVE_LIBSLP
 #include "tools/e133/OpenSLPThread.h"
 #endif
@@ -82,10 +79,8 @@ using ola::io::IOStack;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::network::UDPSocket;
-using ola::plugin::e131::E133PDU;
 using ola::plugin::e131::E133_PORT;
 using ola::plugin::e131::RDMPDU;
-using ola::plugin::e131::RootPDU;
 using ola::rdm::PidStoreHelper;
 using ola::rdm::RDMCommandSerializer;
 using ola::rdm::RDMRequest;
@@ -270,10 +265,8 @@ class SimpleE133Controller {
   private:
     const IPV4Address m_controller_ip;
     ola::io::SelectServer m_ss;
-    ola::io::MemoryBlockPool m_block_pool;
 
-    // The Controller's CID
-    ola::plugin::e131::CID m_cid;
+    PacketBuilder m_packet_builder;
 
     // inflators
     ola::plugin::e131::RootInflator m_root_inflator;
@@ -315,7 +308,7 @@ SimpleE133Controller::SimpleE133Controller(
     const Options &options,
     PidStoreHelper *pid_helper)
     : m_controller_ip(options.controller_ip),
-      m_cid(ola::plugin::e131::CID::Generate()),
+      m_packet_builder(ola::plugin::e131::CID::Generate(), "E1.33 Controller"),
       m_incoming_udp_transport(&m_udp_socket, &m_root_inflator),
       m_outgoing_udp_transport(&m_udp_socket),
       m_src_uid(OPEN_LIGHTING_ESTA_CODE, 0xabcdabcd),
@@ -505,13 +498,11 @@ bool SimpleE133Controller::SendRequest(const UID &uid,
   OLA_INFO << "Sending to " << target << "/" << uid << "/" << endpoint;
 
   // Build the E1.33 packet.
-  IOStack packet(&m_block_pool);
+  IOStack packet(m_packet_builder.pool());
   RDMCommandSerializer::Write(*request, &packet);
   RDMPDU::PrependPDU(&packet);
-  E133PDU::PrependPDU(&packet, ola::plugin::e131::VECTOR_FRAMING_RDMNET,
-                      "E1.33 Controller", 0, endpoint);
-  RootPDU::PrependPDU(&packet, ola::plugin::e131::VECTOR_ROOT_E133, m_cid);
-  ola::plugin::e131::PreamblePacker::AddUDPPreamble(&packet);
+  m_packet_builder.BuildUDPRootE133(
+      &packet, ola::plugin::e131::VECTOR_FRAMING_RDMNET, 0, endpoint);
 
   // Send the packet
   m_udp_socket.SendTo(&packet, target);
@@ -640,7 +631,7 @@ void SimpleE133Controller::HandleNack(const RDMResponse *response) {
 int main(int argc, char *argv[]) {
   options opts;
   opts.log_level = ola::OLA_LOG_WARN;
-  opts.endpoint = ROOT_E133_ENDPOINT;
+  opts.endpoint = 0;
   opts.help = false;
   opts.use_openslp = false;
   opts.pid_location = PID_DATA_DIR;
