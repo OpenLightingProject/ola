@@ -22,10 +22,6 @@
  * It then waits to receive E1.33 messages on the TCP connections.
  */
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
 #include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <errno.h>
 #include <getopt.h>
@@ -33,66 +29,40 @@
 
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>
-#include <ola/Clock.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
 #include <ola/io/SelectServer.h>
-#include <ola/network/AdvancedTCPConnector.h>
 #include <ola/network/IPV4Address.h>
-#include <ola/network/NetworkUtils.h>
-#include <ola/network/Socket.h>
-#include <ola/network/TCPSocketFactory.h>
 #include <ola/rdm/CommandPrinter.h>
 #include <ola/rdm/PidStoreHelper.h>
 #include <ola/rdm/RDMCommand.h>
-#include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/RDMHelper.h>
 #include <ola/rdm/UID.h>
-#include <ola/stl/STLUtils.h>
 
-#include <algorithm>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include HASH_MAP_H
-
-#include "plugins/e131/e131/ACNPort.h"
 #include "plugins/e131/e131/CID.h"
-#include "plugins/e131/e131/RDMInflator.h"
-#include "plugins/e131/e131/E133Inflator.h"
-#include "plugins/e131/e131/RootInflator.h"
-#include "plugins/e131/e131/RootSender.h"
-#include "plugins/e131/e131/TCPTransport.h"
 
-#include "tools/e133/E133Endpoint.h"
-#include "tools/e133/E133HealthCheckedConnection.h"
+#include "tools/e133/DeviceManager.h"
+#include "tools/e133/E133URLParser.h"
 #include "tools/e133/OLASLPThread.h"
+#include "tools/e133/PacketBuilder.h"
+#include "tools/e133/SLPThread.h"
+#include "tools/slp/URLEntry.h"
+
 #ifdef HAVE_LIBSLP
 #include "tools/e133/OpenSLPThread.h"
 #endif
-#include "tools/e133/SLPThread.h"
-#include "tools/e133/E133URLParser.h"
-#include "tools/slp/URLEntry.h"
 
 using ola::NewCallback;
-using ola::NewSingleCallback;
-using ola::STLContains;
-using ola::TimeInterval;
-using ola::TimeStamp;
-using ola::network::BufferedTCPSocket;
-using ola::network::GenericSocketAddress;
 using ola::network::IPV4Address;
-using ola::network::IPV4SocketAddress;
-using ola::plugin::e131::OutgoingStreamTransport;
 using ola::rdm::PidStoreHelper;
 using ola::rdm::RDMCommand;
-using ola::rdm::RDMRequest;
-using ola::rdm::RDMResponse;
 using ola::rdm::UID;
 using ola::slp::URLEntries;
-
 using std::auto_ptr;
 using std::cout;
 using std::endl;
@@ -201,30 +171,6 @@ void DisplayHelpAndExit(char *argv[]) {
 
 
 /**
- * Tracks the TCP connection state to a remote node
- */
-class NodeTCPState {
-  public:
-    NodeTCPState()
-      : socket(NULL),
-        health_checked_connection(NULL),
-        in_transport(NULL),
-        out_transport(NULL),
-        connection_attempts(0),
-        am_master(false) {
-    }
-
-    // public for now
-    auto_ptr<BufferedTCPSocket> socket;
-    E133HealthCheckedConnection *health_checked_connection;
-    ola::plugin::e131::IncomingTCPTransport *in_transport;
-    ola::plugin::e131::OutgoingStreamTransport *out_transport;
-    unsigned int connection_attempts;
-    bool am_master;
-};
-
-
-/**
  * A very simple E1.33 Controller that acts as a passive monitor.
  */
 class SimpleE133Monitor {
@@ -247,57 +193,17 @@ class SimpleE133Monitor {
     ola::rdm::CommandPrinter m_command_printer;
     ola::io::SelectServer m_ss;
     auto_ptr<BaseSLPThread> m_slp_thread;
-    ola::network::BufferedTCPSocketFactory m_tcp_socket_factory;
-    ola::network::AdvancedTCPConnector m_connector;
-    ola::LinearBackoffPolicy m_backoff_policy;
 
-    // hash_map of ips to TCP Connection State
-    typedef HASH_NAMESPACE::HASH_MAP_CLASS<uint32_t, NodeTCPState*> IPMap;
-    IPMap m_ip_map;
+    PacketBuilder m_packet_builder;
+    DeviceManager m_device_manager;
 
-    // The Controller's CID
-    ola::plugin::e131::CID m_cid;
-
-    // senders
-    ola::plugin::e131::RootSender m_root_sender;
-
-    // inflators
-    ola::plugin::e131::RootInflator m_root_inflator;
-    ola::plugin::e131::E133Inflator m_e133_inflator;
-    ola::plugin::e131::RDMInflator m_rdm_inflator;
-
-    /*
-     * TODO: be careful about passing pointer to the NodeTCPState in callbacks
-     * when we start removing stale entries this is going to break!
-     * Maybe this won't be a problem since we'll never delete the entry for a
-     * a node we have a connection to. Think about this.
-     */
     void DiscoveryCallback(bool status, const URLEntries &urls);
-    void OnTCPConnect(BufferedTCPSocket *socket);
-    void ReceiveTCPData(IPV4Address ip_address,
-                        ola::plugin::e131::IncomingTCPTransport *transport);
-    void SocketUnhealthy(IPV4Address address);
-    void SocketClosed(IPV4Address address);
-    void RLPDataReceived(const ola::plugin::e131::TransportHeader &header);
 
-    void EndpointRequest(
+    bool EndpointRequest(
         const ola::plugin::e131::TransportHeader &transport_header,
         const ola::plugin::e131::E133Header &e133_header,
         const string &raw_request);
-
-    static const ola::TimeInterval TCP_CONNECT_TIMEOUT;
-    static const ola::TimeInterval INITIAL_TCP_RETRY_DELAY;
-    static const ola::TimeInterval MAX_TCP_RETRY_DELAY;
-    static const char SOURCE_NAME[];
 };
-
-// 5 second connect() timeout
-const ola::TimeInterval SimpleE133Monitor::TCP_CONNECT_TIMEOUT(5, 0);
-// retry TCP connects after 5 seconds
-const ola::TimeInterval SimpleE133Monitor::INITIAL_TCP_RETRY_DELAY(5, 0);
-// we grow the retry interval to a max of 30 seconds
-const ola::TimeInterval SimpleE133Monitor::MAX_TCP_RETRY_DELAY(30, 0);
-const char SimpleE133Monitor::SOURCE_NAME[] = "OLA Monitor";
 
 
 /**
@@ -307,12 +213,8 @@ SimpleE133Monitor::SimpleE133Monitor(
     PidStoreHelper *pid_helper,
     SLPOption slp_option)
     : m_command_printer(&cout, pid_helper),
-      m_tcp_socket_factory(NewCallback(this, &SimpleE133Monitor::OnTCPConnect)),
-      m_connector(&m_ss, &m_tcp_socket_factory, TCP_CONNECT_TIMEOUT),
-      m_backoff_policy(INITIAL_TCP_RETRY_DELAY, MAX_TCP_RETRY_DELAY),
-      m_cid(ola::plugin::e131::CID::Generate()),
-      m_root_sender(m_cid),
-      m_root_inflator(NewCallback(this, &SimpleE133Monitor::RLPDataReceived)) {
+      m_packet_builder(ola::plugin::e131::CID::Generate(), "OLA Monitor"),
+      m_device_manager(&m_ss, &m_packet_builder) {
   if (slp_option == OLA_SLP) {
     m_slp_thread.reset(new OLASLPThread(&m_ss));
   } else if (slp_option == OPEN_SLP) {
@@ -326,24 +228,15 @@ SimpleE133Monitor::SimpleE133Monitor(
     m_slp_thread->SetNewDeviceCallback(
       NewCallback(this, &SimpleE133Monitor::DiscoveryCallback));
   }
-  // TODO(simon): add a controller discovery callback here as well.
 
-  m_root_inflator.AddInflator(&m_e133_inflator);
-  m_e133_inflator.AddInflator(&m_rdm_inflator);
-  m_rdm_inflator.SetRDMHandler(
-      ROOT_E133_ENDPOINT,
+  m_device_manager.SetRDMMessageCallback(
       NewCallback(this, &SimpleE133Monitor::EndpointRequest));
+
+  // TODO(simon): add a controller discovery callback here as well.
 }
 
 
 SimpleE133Monitor::~SimpleE133Monitor() {
-  // close out all tcp sockets and free state
-  IPMap::iterator iter = m_ip_map.begin();
-  for ( ; iter != m_ip_map.end(); ++iter) {
-    delete iter->second;
-  }
-  m_ip_map.clear();
-
   if (m_slp_thread.get()) {
     m_slp_thread->Join(NULL);
     m_slp_thread->Cleanup();
@@ -366,24 +259,8 @@ bool SimpleE133Monitor::Init() {
 
 
 void SimpleE133Monitor::AddIP(const IPV4Address &ip_address) {
-  if (STLContains(m_ip_map, ip_address.AsInt())) {
-    // the IP already exists
-    return;
-  }
-
-  OLA_INFO << "Opening TCP connection to " << ip_address << ":" <<
-    ola::plugin::e131::E133_PORT;
-
-  NodeTCPState *node_state = new NodeTCPState();
-  node_state->connection_attempts++;
-  m_ip_map[ip_address.AsInt()] = node_state;
-
-  // start the non-blocking connect
-  m_connector.AddEndpoint(
-      IPV4SocketAddress(ip_address, ola::plugin::e131::E133_PORT),
-      &m_backoff_policy);
+  m_device_manager.AddDevice(ip_address);
 }
-
 
 /**
  * Called when SLP completes discovery.
@@ -411,186 +288,15 @@ void SimpleE133Monitor::DiscoveryCallback(bool ok, const URLEntries &urls) {
 
 
 /**
- * Called when a TCP socket is connected. Note that we're not the master at
- * this point. That only happens if we receive data on the connection.
- */
-void SimpleE133Monitor::OnTCPConnect(BufferedTCPSocket *socket) {
-  GenericSocketAddress address = socket->GetPeer();
-  if (address.Family() != AF_INET) {
-    OLA_WARN << "Non IPv4 socket " << address;
-    delete socket;
-    return;
-  }
-  IPV4SocketAddress v4_address = address.V4Addr();
-  NodeTCPState *node_state = ola::STLFindOrNull(
-      m_ip_map, v4_address.Host().AsInt());
-  if (!node_state) {
-    OLA_FATAL << "Unable to locate socket for " << v4_address.Host();
-    delete socket;
-  }
-
-  // setup the incoming transport, we don't need to setup the outgoing one
-  // until we've got confirmation that we're the master
-  node_state->socket.reset(socket);
-  node_state->in_transport = new ola::plugin::e131::IncomingTCPTransport(
-      &m_root_inflator,
-      socket);
-
-  socket->SetOnData(
-      NewCallback(this,
-                  &SimpleE133Monitor::ReceiveTCPData,
-                  v4_address.Host(),
-                  node_state->in_transport));
-  socket->SetOnClose(
-    NewSingleCallback(this, &SimpleE133Monitor::SocketClosed,
-                      v4_address.Host()));
-  m_ss.AddReadDescriptor(socket);
-
-  // setup a timeout that closes this connect if we don't receive anything
-}
-
-
-/**
- * Receive data on a TCP connection
- */
-void SimpleE133Monitor::ReceiveTCPData(
-    IPV4Address ip_address,
-    ola::plugin::e131::IncomingTCPTransport *transport) {
-  bool ok = transport->Receive();
-  if (!ok) {
-    OLA_WARN << "TCP STREAM IS BAD!!!";
-    SocketClosed(ip_address);
-  }
-}
-
-
-/**
- * Called when a connection is deemed unhealthy.
- */
-void SimpleE133Monitor::SocketUnhealthy(IPV4Address ip_address) {
-  OLA_INFO << "connection to " << ip_address << " went unhealthy";
-  SocketClosed(ip_address);
-}
-
-
-/**
- * Called when a socket is closed.
- * This can mean one of two things:
- *  if we weren't the master, then we lost the race.
- *  if we were the master the TCP connection was closed, or went unhealthy.
- */
-void SimpleE133Monitor::SocketClosed(IPV4Address ip_address) {
-  OLA_INFO << "connection to " << ip_address << " was closed";
-
-  NodeTCPState *node_state = ola::STLFindOrNull(m_ip_map, ip_address.AsInt());
-  if (!node_state) {
-    OLA_FATAL << "Unable to locate socket for " << ip_address;
-    return;
-  }
-
-  if (node_state->am_master) {
-    // TODO(simon): signal other controllers here
-    node_state->am_master = false;
-    m_connector.Disconnect(
-        IPV4SocketAddress(ip_address, ola::plugin::e131::E133_PORT));
-  } else {
-    // we lost the race, so don't try to reconnect
-    m_connector.Disconnect(
-        IPV4SocketAddress(ip_address, ola::plugin::e131::E133_PORT), true);
-  }
-
-  delete node_state->health_checked_connection;
-  node_state->health_checked_connection = NULL;
-
-  delete node_state->out_transport;
-  node_state->out_transport = NULL;
-
-  delete node_state->in_transport;
-  node_state->in_transport = NULL;
-
-  m_ss.RemoveReadDescriptor(node_state->socket.get());
-
-  // Terminate for now
-  m_ss.Terminate();
-}
-
-
-/**
- * Called when we receive E1.33 data. If this arrived over TCP we notify the
- * health checked connection.
- */
-void SimpleE133Monitor::RLPDataReceived(
-    const ola::plugin::e131::TransportHeader &header) {
-  if (header.Transport() != ola::plugin::e131::TransportHeader::TCP)
-    return;
-  IPV4Address src_ip = header.SourceIP();
-
-  IPMap::iterator iter = m_ip_map.find(src_ip.AsInt());
-  if (iter == m_ip_map.end()) {
-    OLA_FATAL << "Received data but unable to lookup socket for " <<
-      header.SourceIP();
-    return;
-  }
-
-  NodeTCPState *node_state = iter->second;
-
-  // if we're already the master, we just need to notify the HealthChecker
-  if (node_state->am_master) {
-    node_state->health_checked_connection->HeartbeatReceived();
-    return;
-  }
-
-  // this is the first packet received on this connection, which is a sign
-  // we're now the master. Setup the HealthChecker & outgoing transports.
-  node_state->am_master = true;
-  OLA_INFO << "Now the master controller for " << header.SourceIP();
-
-  node_state->socket->AssociateSelectServer(&m_ss);
-  OutgoingStreamTransport *outgoing_transport = new OutgoingStreamTransport(
-      node_state->socket.get());
-
-  E133HealthCheckedConnection *health_checked_connection =
-      new E133HealthCheckedConnection(
-          outgoing_transport,
-          &m_root_sender,
-          NewSingleCallback(this,
-                            &SimpleE133Monitor::SocketUnhealthy,
-                            src_ip),
-          &m_ss);
-
-  if (!health_checked_connection->Setup()) {
-    OLA_WARN << "Failed to setup heartbeat controller for " << src_ip;
-    SocketClosed(src_ip);
-    return;
-  }
-
-  if (node_state->health_checked_connection)
-    OLA_WARN << "pre-existing health_checked_connection for " << src_ip;
-
-  if (node_state->out_transport)
-    OLA_WARN << "pre-existing out_transport for " << src_ip;
-
-  node_state->health_checked_connection = health_checked_connection;
-  node_state->out_transport = outgoing_transport;
-}
-
-
-/**
  * We received data to endpoint 0
  */
-void SimpleE133Monitor::EndpointRequest(
+bool SimpleE133Monitor::EndpointRequest(
     const ola::plugin::e131::TransportHeader &transport_header,
     const ola::plugin::e131::E133Header&,
     const string &raw_request) {
   unsigned int slot_count = raw_request.size();
   const uint8_t *rdm_data = reinterpret_cast<const uint8_t*>(
     raw_request.data());
-
-  if (slot_count < 25) {
-    OLA_WARN << "RDM data from " << transport_header.SourceIP() <<
-    " was too small: " << slot_count;
-    return;
-  }
 
   cout << "From " << transport_header.SourceIP() << ":" << endl;
   auto_ptr<RDMCommand> command(
@@ -601,6 +307,7 @@ void SimpleE133Monitor::EndpointRequest(
   } else {
     ola::FormatData(&cout, rdm_data, slot_count, 2);
   }
+  return true;
 }
 
 

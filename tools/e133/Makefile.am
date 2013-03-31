@@ -1,6 +1,8 @@
 include $(top_srcdir)/common.mk
 
-EXTRA_DIST = E133Endpoint.h E133Device.h \
+EXTRA_DIST = DeviceManager.h \
+             E133Device.h \
+             E133Endpoint.h \
              E133HealthCheckedConnection.h \
              E133StreamSender.h \
              E133URLParser.h \
@@ -14,7 +16,8 @@ EXTRA_DIST = E133Endpoint.h E133Device.h \
              SLPSATestHelpers.h \
              SLPSATestRunner.h \
              SLPThread.h \
-             TCPConnectionStats.h
+             TCPConnectionStats.h \
+             TCPMessageSender.h
 
 noinst_LTLIBRARIES = libolae133slp.la libolae133.la
 libolae133slp_la_SOURCES = OLASLPThread.cpp \
@@ -43,7 +46,8 @@ e133_receiver_SOURCES = e133-receiver.cpp \
                         E133HealthCheckedConnection.cpp \
                         E133StreamSender.cpp \
                         EndpointManager.cpp \
-                        RootEndpoint.cpp
+                        RootEndpoint.cpp \
+                        TCPMessageSender.cpp
 e133_receiver_LDADD = ./libolae133slp.la \
                       ./libolae133.la \
                       $(top_builddir)/common/libolacommon.la \
@@ -51,6 +55,7 @@ e133_receiver_LDADD = ./libolae133slp.la \
                       $(top_builddir)/plugins/e131/e131/libolae131core.la
 
 e133_monitor_SOURCES = e133-monitor.cpp \
+                       DeviceManager.cpp \
                        E133HealthCheckedConnection.cpp \
                        E133StreamSender.cpp
 e133_monitor_CXXFLAGS = @OLAD_DEFINES@ $(COMMON_CXXFLAGS)

@@ -29,6 +29,7 @@
 #include "ola/io/SelectServerInterface.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/Socket.h"
+#include "ola/network/TCPSocket.h"
 #include "ola/network/TCPSocketFactory.h"
 #include "ola/rdm/RDMControllerInterface.h"
 #include "plugins/e131/e131/CID.h"
@@ -42,7 +43,9 @@
 
 #include "tools/e133/E133Endpoint.h"
 #include "tools/e133/E133HealthCheckedConnection.h"
-#include "tools/e133/E133StreamSender.h"
+#include "tools/e133/MessageQueue.h"
+#include "tools/e133/PacketBuilder.h"
+#include "tools/e133/TCPMessageSender.h"
 
 using std::string;
 using std::auto_ptr;
@@ -63,7 +66,7 @@ class E133Device {
 
     bool Init();
 
-    void SendStatusMessage(const ola::rdm::RDMCommand *command);
+    void SendStatusMessage(const ola::rdm::RDMResponse *response);
     bool CloseTCPConnection();
 
   private:
@@ -76,11 +79,14 @@ class E133Device {
 
     // The Node's CID
     ola::plugin::e131::CID m_cid;
+    PacketBuilder m_packet_builder;
 
     // TCP connection classes
-    ola::io::ConnectedDescriptor *m_tcp_descriptor;
-    ola::plugin::e131::OutgoingStreamTransport *m_outgoing_tcp_transport;
+    ola::network::TCPSocket *m_tcp_socket;
     E133HealthCheckedConnection *m_health_checked_connection;
+    MessageQueue *m_message_queue;
+    TCPMessageSender m_tcp_message_sender;
+    ola::plugin::e131::IncomingTCPTransport *m_incoming_tcp_transport;
 
     // the RDM device to handle requests to the Root Endpoint
     ola::rdm::RDMControllerInterface *m_root_rdm_device;
@@ -90,8 +96,8 @@ class E133Device {
     ola::io::SelectServerInterface *m_ss;
     ola::network::IPV4Address m_ip_address;
     ola::network::UDPSocket m_udp_socket;
-    ola::network::BufferedTCPSocketFactory m_tcp_socket_factory;
-    ola::network::TCPAcceptingSocket m_tcp_socket;
+    ola::network::TCPSocketFactory m_tcp_socket_factory;
+    ola::network::TCPAcceptingSocket m_listening_tcp_socket;
 
     // inflators
     ola::plugin::e131::RootInflator m_root_inflator;
@@ -101,13 +107,11 @@ class E133Device {
     // transports
     ola::plugin::e131::IncomingUDPTransport m_incoming_udp_transport;
     ola::plugin::e131::OutgoingUDPTransportImpl m_outgoing_udp_transport;
-    ola::plugin::e131::IncomingTCPTransport *m_incoming_tcp_transport;
 
     // senders
     ola::plugin::e131::RootSender m_root_sender;
-    ReliableE133StreamSender m_e133_sender;
 
-    void NewTCPConnection(ola::network::BufferedTCPSocket *descriptor);
+    void NewTCPConnection(ola::network::TCPSocket *socket);
     void ReceiveTCPData(ola::plugin::e131::IncomingTCPTransport *transpport);
     void TCPConnectionUnhealthy();
     void TCPConnectionClosed();
