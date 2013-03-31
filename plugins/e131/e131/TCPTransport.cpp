@@ -48,28 +48,6 @@ const unsigned int ACN_HEADER_SIZE = sizeof(ACN_HEADER);
 const unsigned int IncommingStreamTransport::INITIAL_SIZE = 500;
 
 
-/*
- * Send a block of PDU messages over a stream.
- * @param pdu_block the block of pdus to send
- */
-bool OutgoingStreamTransport::Send(const PDUBlock<PDU> &pdu_block) {
-  unsigned int pdu_block_size = pdu_block.Size();
-  unsigned int total_message_size = (
-      ACN_HEADER_SIZE +
-      static_cast<unsigned int>(sizeof(pdu_block_size)) +
-      pdu_block.Size());
-  if (m_buffer->Size() + total_message_size > m_max_buffer_size)
-    return false;
-
-  OLA_DEBUG << "TCP TX: block size is " << pdu_block_size;
-  // Write the ACN header, the block length and the block data
-  m_stream.Write(ACN_HEADER, ACN_HEADER_SIZE);
-  m_stream << HostToNetwork(pdu_block_size);
-  pdu_block.Write(&m_stream);
-  return true;
-}
-
-
 /**
  * Create a new IncommingStreamTransport.
  * @param inflator the inflator to call for each PDU

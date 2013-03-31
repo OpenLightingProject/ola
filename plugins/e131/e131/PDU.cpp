@@ -152,8 +152,16 @@ void PDU::Write(OutputStream *stream) const {
  */
 void PDU::PrependFlagsAndLength(ola::io::OutputBufferInterface *output,
                                 uint8_t flags) {
-  unsigned int size = output->Size();
+  PrependFlagsAndLength(output, output->Size(), flags);
+}
 
+
+/**
+ * Prepend the flags and lenth to an OutputBufferInterface.
+ */
+void PDU::PrependFlagsAndLength(ola::io::OutputBufferInterface *output,
+                                unsigned int size,
+                                uint8_t flags) {
   if (size + 2 <= TWOB_LENGTH_LIMIT) {
     size += 2;
     uint16_t flags_and_length = (

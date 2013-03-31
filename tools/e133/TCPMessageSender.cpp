@@ -13,9 +13,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * E133StreamSender.cpp
- * The E133StreamSender
- * Copyright (C) 2011 Simon Newton
+ * TCPMessageSender.cpp
+ * Copyright (C) 2013 Simon Newton
  */
 
 #include <memory>

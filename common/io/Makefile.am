@@ -8,7 +8,7 @@ libolaio_la_SOURCES = Descriptor.cpp \
                       StdinHandler.cpp
 
 if BUILD_TESTS
-TESTS = BufferedDescriptorTester DescriptorTester IOQueueTester \
+TESTS = DescriptorTester IOQueueTester \
         IOStackTester SelectServerTester StreamTester
 endif
 check_PROGRAMS = $(TESTS)
@@ -31,12 +31,6 @@ DescriptorTester_SOURCES = DescriptorTest.cpp \
                            GenericTester.cpp
 DescriptorTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 DescriptorTester_LDADD = $(COMMON_TEST_LDADD)
-
-
-BufferedDescriptorTester_SOURCES = BufferedDescriptorTest.cpp \
-                                   GenericTester.cpp
-BufferedDescriptorTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-BufferedDescriptorTester_LDADD = $(COMMON_TEST_LDADD)
 
 SelectServerTester_SOURCES = GenericTester.cpp \
                              SelectServerTest.cpp \

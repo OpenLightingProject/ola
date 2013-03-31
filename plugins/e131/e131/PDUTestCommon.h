@@ -23,6 +23,7 @@
 
 #include "ola/Callback.h"
 #include "ola/io/OutputStream.h"
+#include "ola/io/IOStack.h"
 #include "plugins/e131/e131/BaseInflator.h"
 #include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/PDU.h"
@@ -112,6 +113,20 @@ class MockPDU: public PDU {
     void PackData(ola::io::OutputStream *stream) const {
       stream->Write(reinterpret_cast<const uint8_t*>(&m_value),
                     sizeof(m_value));
+    }
+
+    static void PrependPDU(ola::io::IOStack *stack,
+                           unsigned int header,
+                           unsigned int data) {
+      stack->Write(reinterpret_cast<const uint8_t*>(&data),
+                   sizeof(data));
+      stack->Write(reinterpret_cast<const uint8_t*>(&header),
+                   sizeof(header));
+      unsigned int vector = HostToNetwork(TEST_DATA_VECTOR);
+      stack->Write(reinterpret_cast<uint8_t*>(&vector), sizeof(vector));
+      PrependFlagsAndLength(stack,
+                            sizeof(data) + sizeof(header) + sizeof(vector),
+                            VFLAG_MASK | HFLAG_MASK | DFLAG_MASK);
     }
 
     // This is used to id 'Mock' PDUs in the higher level protocol

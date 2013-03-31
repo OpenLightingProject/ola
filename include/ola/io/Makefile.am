@@ -1,5 +1,4 @@
 SOURCES = BigEndianStream.h \
-          BufferedWriteDescriptor.h \
           Descriptor.h \
           IOQueue.h \
           IOStack.h \

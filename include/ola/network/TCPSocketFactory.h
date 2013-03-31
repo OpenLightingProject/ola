@@ -22,12 +22,10 @@
 #define INCLUDE_OLA_NETWORK_TCPSOCKETFACTORY_H_
 
 #include <ola/Callback.h>
-#include <ola/network/Socket.h>
-#include <ola/network/BufferedTCPSocket.h>
+#include <ola/network/TCPSocket.h>
 
 namespace ola {
 namespace network {
-
 
 /**
  * The Factory Interface
@@ -68,7 +66,6 @@ class GenericTCPSocketFactory: public TCPSocketFactoryInterface {
 };
 
 typedef GenericTCPSocketFactory<TCPSocket> TCPSocketFactory;
-typedef GenericTCPSocketFactory<BufferedTCPSocket> BufferedTCPSocketFactory;
 }  // network
 }  // ola
 #endif  // INCLUDE_OLA_NETWORK_TCPSOCKETFACTORY_H_

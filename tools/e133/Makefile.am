@@ -4,7 +4,6 @@ EXTRA_DIST = DeviceManager.h \
              E133Device.h \
              E133Endpoint.h \
              E133HealthCheckedConnection.h \
-             E133StreamSender.h \
              E133URLParser.h \
              EndpointManager.h \
              MessageQueue.h \
@@ -44,7 +43,6 @@ e133_receiver_SOURCES = e133-receiver.cpp \
                         E133Device.cpp \
                         E133Endpoint.cpp \
                         E133HealthCheckedConnection.cpp \
-                        E133StreamSender.cpp \
                         EndpointManager.cpp \
                         RootEndpoint.cpp \
                         TCPMessageSender.cpp
@@ -56,8 +54,7 @@ e133_receiver_LDADD = ./libolae133slp.la \
 
 e133_monitor_SOURCES = e133-monitor.cpp \
                        DeviceManager.cpp \
-                       E133HealthCheckedConnection.cpp \
-                       E133StreamSender.cpp
+                       E133HealthCheckedConnection.cpp
 e133_monitor_CXXFLAGS = @OLAD_DEFINES@ $(COMMON_CXXFLAGS)
 e133_monitor_LDADD = ./libolae133slp.la \
                       ./libolae133.la \
