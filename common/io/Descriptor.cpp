@@ -220,6 +220,7 @@ ssize_t ConnectedDescriptor::Send(IOQueue *ioqueue) {
 #if HAVE_DECL_MSG_NOSIGNAL
   if (IsSocket()) {
     struct msghdr message;
+    memset(&message, 0, sizeof(message));
     message.msg_name = NULL;
     message.msg_namelen = 0;
     message.msg_iov = const_cast<struct iovec*>(iov);
@@ -232,11 +233,11 @@ ssize_t ConnectedDescriptor::Send(IOQueue *ioqueue) {
     bytes_sent = writev(WriteDescriptor(), iov, iocnt);
   }
 
+  ioqueue->FreeIOVec(iov);
   if (bytes_sent < 0) {
     OLA_INFO << "Failed to send on " << WriteDescriptor() << ": " <<
       strerror(errno);
   } else {
-    ioqueue->FreeIOVec(iov);
     ioqueue->Pop(bytes_sent);
   }
   return bytes_sent;
