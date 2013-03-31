@@ -5,6 +5,7 @@ EXTRA_DIST = E133Endpoint.h E133Device.h \
              E133StreamSender.h \
              E133URLParser.h \
              EndpointManager.h \
+             MessageQueue.h \
              OLASLPThread.h \
              OpenSLPThread.h \
              PacketBuilder.h \
@@ -29,7 +30,8 @@ libolae133slp_la_SOURCES += OpenSLPThread.cpp
 libolae133slp_la_LIBADD += $(openslp_LIBS)
 endif
 
-libolae133_la_SOURCES = PacketBuilder.cpp
+libolae133_la_SOURCES = MessageQueue.cpp \
+                        PacketBuilder.cpp
 libolae133_la_LIBADD = $(top_builddir)/plugins/e131/e131/libolae131core.la
 
 noinst_PROGRAMS = e133_controller e133_monitor e133_receiver \
