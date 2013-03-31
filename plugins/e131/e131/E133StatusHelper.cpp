@@ -95,6 +95,7 @@ string StatusMessageIdToString(E133StatusCode status_code) {
     case SC_E133_BROADCAST_COMPLETE:
      return "Request was broadcast";
   }
+  return "Unknown E1.33 Status Code";
 }
 }  // e131
 }  // plugin
