@@ -36,7 +36,7 @@ class E133StatusPDU : private PDU {
                            const std::string &status);
 
   private:
-    static const size_t MAX_STATUS_STRING_SIZE = 64;
+    static const size_t MAX_STATUS_STRING_SIZE;
 };
 }  // e131
 }  // plugin

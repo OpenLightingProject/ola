@@ -30,6 +30,8 @@ namespace e131 {
 using ola::network::HostToNetwork;
 using std::string;
 
+const size_t E133StatusPDU::MAX_STATUS_STRING_SIZE = 64;
+
 void E133StatusPDU::PrependPDU(ola::io::IOStack *stack,
                                E133StatusCode status_code_enum,
                                const string &status) {
