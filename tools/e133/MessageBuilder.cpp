@@ -26,14 +26,16 @@
 #include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/RootPDU.h"
 #include "plugins/e131/e131/E133PDU.h"
+#include "plugins/e131/e131/E133StatusPDU.h"
 #include "plugins/e131/e131/PreamblePacker.h"
 #include "plugins/e131/e131/ACNVectors.h"
 
 using ola::io::IOStack;
 using ola::plugin::e131::CID;
-using ola::plugin::e131::RootPDU;
 using ola::plugin::e131::E133PDU;
+using ola::plugin::e131::E133StatusCode;
 using ola::plugin::e131::PreamblePacker;
+using ola::plugin::e131::RootPDU;
 
 
 MessageBuilder::MessageBuilder(const CID &cid, const string &source_name)
@@ -51,6 +53,39 @@ MessageBuilder::MessageBuilder(const CID &cid, const string &source_name)
 void MessageBuilder::BuildNullTCPPacket(IOStack *packet) {
   RootPDU::PrependPDU(packet, ola::plugin::e131::VECTOR_ROOT_NULL, m_cid);
   PreamblePacker::AddTCPPreamble(packet);
+}
+
+
+/**
+ * Build a TCP E1.33 Status PDU response. This should really only be used with
+ * SC_E133_ACK.
+ */
+void MessageBuilder::BuildTCPE133StatusPDU(ola::io::IOStack *packet,
+                                           uint32_t sequence_number,
+                                           uint16_t endpoint_id,
+                                           E133StatusCode status_code,
+                                           const string &description) {
+  ola::plugin::e131::E133StatusPDU::PrependPDU(
+      packet, status_code, description);
+  BuildTCPRootE133(
+      packet, ola::plugin::e131::VECTOR_FRAMING_STATUS,
+      sequence_number, endpoint_id);
+}
+
+
+/**
+ * Build an E1.33 Status PDU response
+ */
+void MessageBuilder::BuildUDPE133StatusPDU(ola::io::IOStack *packet,
+                                           uint32_t sequence_number,
+                                           uint16_t endpoint_id,
+                                           E133StatusCode status_code,
+                                           const string &description) {
+  ola::plugin::e131::E133StatusPDU::PrependPDU(
+      packet, status_code, description);
+  BuildUDPRootE133(
+      packet, ola::plugin::e131::VECTOR_FRAMING_STATUS,
+      sequence_number, endpoint_id);
 }
 
 

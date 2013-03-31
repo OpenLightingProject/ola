@@ -126,12 +126,17 @@ class E133Device {
         const ola::plugin::e131::E133Header &e133_header,
         const string &raw_request);
 
-    void EndpointRequestComplete(ola::network::IPV4Address src_ip,
-                                 uint16_t src_port,
+    void EndpointRequestComplete(ola::network::IPV4SocketAddress target,
                                  uint32_t sequence_number,
                                  uint16_t endpoint_id,
                                  ola::rdm::rdm_response_code response_code,
                                  const ola::rdm::RDMResponse *response,
                                  const std::vector<string> &packets);
+
+    void SendStatusMessage(const ola::network::IPV4SocketAddress target,
+                           uint32_t sequence_number,
+                           uint16_t endpoint_id,
+                           ola::plugin::e131::E133StatusCode status_code,
+                           const string &description);
 };
 #endif  // TOOLS_E133_E133DEVICE_H_

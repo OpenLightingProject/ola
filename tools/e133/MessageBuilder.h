@@ -27,6 +27,7 @@
 #include <string>
 
 #include "plugins/e131/e131/CID.h"
+#include "plugins/e131/e131/E133Enums.h"
 
 using ola::plugin::e131::CID;
 using std::string;
@@ -40,6 +41,15 @@ class MessageBuilder {
     ~MessageBuilder() {}
 
     void BuildNullTCPPacket(ola::io::IOStack *packet);
+
+    void BuildTCPE133StatusPDU(ola::io::IOStack *packet,
+                               uint32_t sequence_number, uint16_t endpoint_id,
+                               ola::plugin::e131::E133StatusCode status_code,
+                               const string &description);
+    void BuildUDPE133StatusPDU(ola::io::IOStack *packet,
+                               uint32_t sequence_number, uint16_t endpoint_id,
+                               ola::plugin::e131::E133StatusCode status_code,
+                               const string &description);
 
     void BuildTCPRootE133(ola::io::IOStack *packet, uint32_t vector,
                           uint32_t sequence_number, uint16_t endpoint_id);

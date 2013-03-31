@@ -387,11 +387,8 @@ void DeviceManager::EndpointRequest(
   }
 
   ola::io::IOStack packet(m_message_builder->pool());
-  ola::plugin::e131::E133StatusPDU::PrependPDU(
-      &packet, ola::plugin::e131::SC_E133_ACK, "OK");
-  m_message_builder->BuildTCPRootE133(
-      &packet, ola::plugin::e131::VECTOR_FRAMING_STATUS,
-      e133_header.Sequence(), e133_header.Endpoint());
-
+  m_message_builder->BuildTCPE133StatusPDU(
+      &packet, e133_header.Sequence(), e133_header.Endpoint(),
+      ola::plugin::e131::SC_E133_ACK, "OK");
   device_state->message_queue->SendMessage(&packet);
 }
