@@ -69,8 +69,7 @@ class OutstandingMessage {
  */
 TCPMessageSender::TCPMessageSender(PacketBuilder *packet_builder,
                                    unsigned int max_queue_size)
-    : m_next_sequence_number(0),
-      m_max_queue_size(max_queue_size),
+    : m_max_queue_size(max_queue_size),
       m_unsent_messages(false),
       m_packet_builder(packet_builder),
       m_message_queue(NULL) {
@@ -142,7 +141,7 @@ bool TCPMessageSender::AddMessage(uint16_t endpoint,
     return false;
   }
 
-  unsigned int our_sequence_number = m_next_sequence_number++;
+  unsigned int our_sequence_number = m_sequence_number.Next();
   if (ola::STLContains(m_unacked_messages, our_sequence_number)) {
     // TODO(simon): think about what we want to do here
     OLA_WARN << "Sequence number collision!";

@@ -42,8 +42,7 @@ libolaslp_la_SOURCES = DATracker.cpp \
                        SLPStore.cpp \
                        SLPStrings.cpp \
                        SLPUDPSender.cpp \
-                       ScopeSet.cpp \
-                       XIDAllocator.cpp
+                       ScopeSet.cpp
 libolaslp_la_LIBADD = ../../common/libolacommon.la \
                       ./libolaslpcore.la
 

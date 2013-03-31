@@ -20,6 +20,7 @@
 #ifndef TOOLS_SLP_XIDALLOCATOR_H_
 #define TOOLS_SLP_XIDALLOCATOR_H_
 
+#include "ola/util/SequenceNumber.h"
 #include "tools/slp/SLPPacketConstants.h"
 
 namespace ola {
@@ -29,16 +30,7 @@ namespace slp {
  * XIDAllocator, this ensures that we increment the global xid whever we go to
  * use it.
  */
-class XIDAllocator {
-  public:
-    XIDAllocator(): m_xid(0) { }
-    explicit XIDAllocator(xid_t xid);
-
-    xid_t Next() { return m_xid++; }
-
-  private:
-    xid_t m_xid;
-};
+typedef SequenceNumber<xid_t> XIDAllocator;
 }  // slp
 }  // ola
 #endif  // TOOLS_SLP_XIDALLOCATOR_H_

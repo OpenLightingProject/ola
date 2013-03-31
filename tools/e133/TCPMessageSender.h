@@ -26,6 +26,7 @@
 
 #include <map>
 #include "ola/rdm/RDMCommand.h"
+#include "ola/util/SequenceNumber.h"
 #include "tools/e133/PacketBuilder.h"
 #include "tools/e133/MessageQueue.h"
 
@@ -47,7 +48,6 @@ class TCPMessageSender {
   private:
     typedef std::map<unsigned int, class OutstandingMessage*> PendingMessageMap;
 
-    unsigned int m_next_sequence_number;
     unsigned int m_max_queue_size;
     // Indicates if we have messages that haven't been sent on the MessageQueue
     // yet.
@@ -55,6 +55,7 @@ class TCPMessageSender {
     PacketBuilder *m_packet_builder;
     MessageQueue *m_message_queue;
     PendingMessageMap m_unacked_messages;
+    ola::SequenceNumber<unsigned int> m_sequence_number;
 
     bool SendRDMCommand(unsigned int sequence_number, uint16_t endpoint,
                         const ola::rdm::RDMResponse *rdm_response);
