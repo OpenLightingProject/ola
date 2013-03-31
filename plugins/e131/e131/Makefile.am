@@ -5,7 +5,7 @@ EXTRA_DIST = ACNPort.h ACNVectors.h BaseInflator.h CID.h \
              DMPInflator.h DMPPDU.h \
              E131Header.h E131Includes.h E131Inflator.h E131Sender.h \
              E131Node.h E131PDU.h E131TestFramework.h \
-             E133Enums.h E133Header.h E133Inflator.h E133Sender.h E133PDU.h \
+             E133Enums.h E133Header.h E133Inflator.h E133PDU.h \
              E133StatusHelper.h E133StatusInflator.h E133StatusPDU.h \
              HeaderSet.h PreamblePacker.h PDU.h PDUTestCommon.h RDMInflator.h \
              RDMPDU.h RootHeader.h RootInflator.h RootSender.h RootPDU.h \
@@ -19,7 +19,7 @@ libolae131core_la_SOURCES = BaseInflator.cpp CID.cpp \
                             DMPInflator.cpp \
                             DMPPDU.cpp \
                             E131Inflator.cpp E131Sender.cpp E131Node.cpp \
-                            E131PDU.cpp E133Inflator.cpp E133Sender.cpp \
+                            E131PDU.cpp E133Inflator.cpp \
                             E133PDU.cpp \
                             E133StatusHelper.cpp \
                             E133StatusInflator.cpp \
