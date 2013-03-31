@@ -218,6 +218,24 @@ bool STLLookupAndRemove(T1 *container,
 
 
 /**
+ * Lookup a value by key in a associative container. If the value exists, it's
+ * deleted, removed from the container and true is returned.
+ * If the value doesn't exist this returns false.
+ */
+template<typename T1>
+bool STLRemoveAndDelete(T1 *container, const typename T1::key_type &key) {
+  typename T1::iterator iter = container->find(key);
+  if (iter == container->end()) {
+    return false;
+  } else {
+    delete iter->second;
+    container->erase(iter);
+    return true;
+  }
+}
+
+
+/**
  * Similar to STLLookupAndRemove but this operates on containers of pointers.
  * If the key exists, we remove it and return the value, if the key doesn't
  * exist we return NULL.
