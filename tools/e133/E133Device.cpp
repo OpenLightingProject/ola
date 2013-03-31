@@ -39,6 +39,7 @@
 #include "plugins/e131/e131/E133PDU.h"
 #include "plugins/e131/e131/RDMPDU.h"
 #include "plugins/e131/e131/RDMInflator.h"
+#include "plugins/e131/e131/E133StatusInflator.h"
 #include "plugins/e131/e131/UDPTransport.h"
 
 #include "tools/e133/E133Device.h"
@@ -84,7 +85,11 @@ E133Device::E133Device(ola::io::SelectServerInterface *ss,
 
   m_root_inflator.AddInflator(&m_e133_inflator);
   m_e133_inflator.AddInflator(&m_rdm_inflator);
+  m_e133_inflator.AddInflator(&m_e133_status_inflator);
+  m_e133_inflator.AddInflator(&m_rdm_inflator);
 
+  m_e133_status_inflator.SetStatusHandler(
+      NewCallback(this, &E133Device::HandleStatusMessage));
   m_register_endpoint_callback.reset(NewCallback(
       this,
       &E133Device::RegisterEndpoint));
@@ -255,10 +260,7 @@ void E133Device::NewTCPConnection(ola::network::TCPSocket *socket_ptr) {
     m_tcp_stats->ip_address = v4_address.Host();
   }
 
-  m_tcp_socket->SetOnData(
-      NewCallback(this,
-                  &E133Device::ReceiveTCPData,
-                  m_incoming_tcp_transport));
+  m_tcp_socket->SetOnData(NewCallback(this, &E133Device::ReceiveTCPData));
   m_tcp_socket->SetOnClose(
       ola::NewSingleCallback(this, &E133Device::TCPConnectionClosed));
   m_ss->AddReadDescriptor(m_tcp_socket);
@@ -268,12 +270,12 @@ void E133Device::NewTCPConnection(ola::network::TCPSocket *socket_ptr) {
 /**
  * Called when there is new TCP data available
  */
-void E133Device::ReceiveTCPData(
-    ola::plugin::e131::IncomingTCPTransport *transport) {
-  bool ok = transport->Receive();
-  if (!ok) {
-    OLA_WARN << "TCP STREAM IS BAD!!!";
-    CloseTCPConnection();
+void E133Device::ReceiveTCPData() {
+  if (m_incoming_tcp_transport) {
+    if (!m_incoming_tcp_transport->Receive()) {
+      OLA_WARN << "TCP STREAM IS BAD!!!";
+      CloseTCPConnection();
+    }
   }
 }
 
@@ -312,7 +314,6 @@ void E133Device::TCPConnectionClosed() {
 
   delete m_message_queue;
   m_message_queue = NULL;
-
 
   // shutdown the rx side
   delete m_incoming_tcp_transport;
@@ -488,4 +489,23 @@ void E133Device::SendStatusMessage(
   if (!m_udp_socket.SendTo(&packet, target)) {
     OLA_WARN << "Failed to send E1.33 response to " << target;
   }
+}
+
+
+void E133Device::HandleStatusMessage(
+    const ola::plugin::e131::TransportHeader &transport_header,
+    const ola::plugin::e131::E133Header &e133_header,
+    uint16_t status_code,
+    const string &description) {
+  // TODO(simon): this is dogdy, clean it up.
+  if (transport_header.Transport() != ola::plugin::e131::TransportHeader::TCP) {
+    OLA_INFO << "Ignoring non-TCP E1.33 Status message";
+  }
+  if (status_code != ola::plugin::e131::SC_E133_ACK) {
+    OLA_INFO << "Received a non-ack status code from "
+             << transport_header.SourceIP() << ": " << status_code << " : "
+             << description;
+  }
+  OLA_INFO << "Controller has ack'ed " << e133_header.Sequence();
+  m_tcp_message_sender.Acknowledge(e133_header.Sequence());
 }

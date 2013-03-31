@@ -34,7 +34,7 @@
 #include "ola/rdm/RDMControllerInterface.h"
 #include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/E133Inflator.h"
-#include "plugins/e131/e131/E133Sender.h"
+#include "plugins/e131/e131/E133StatusInflator.h"
 #include "plugins/e131/e131/RDMInflator.h"
 #include "plugins/e131/e131/RootInflator.h"
 #include "plugins/e131/e131/RootSender.h"
@@ -103,6 +103,7 @@ class E133Device {
     ola::plugin::e131::RootInflator m_root_inflator;
     ola::plugin::e131::E133Inflator m_e133_inflator;
     ola::plugin::e131::RDMInflator m_rdm_inflator;
+    ola::plugin::e131::E133StatusInflator m_e133_status_inflator;
 
     // transports
     ola::plugin::e131::IncomingUDPTransport m_incoming_udp_transport;
@@ -111,7 +112,7 @@ class E133Device {
     ola::plugin::e131::RootSender m_root_sender;
 
     void NewTCPConnection(ola::network::TCPSocket *socket);
-    void ReceiveTCPData(ola::plugin::e131::IncomingTCPTransport *transpport);
+    void ReceiveTCPData();
     void TCPConnectionUnhealthy();
     void TCPConnectionClosed();
     void RLPDataReceived(const ola::plugin::e131::TransportHeader &header);
@@ -137,5 +138,11 @@ class E133Device {
                            uint16_t endpoint_id,
                            ola::plugin::e131::E133StatusCode status_code,
                            const string &description);
+
+    void HandleStatusMessage(
+        const ola::plugin::e131::TransportHeader &transport_header,
+        const ola::plugin::e131::E133Header &e133_header,
+        uint16_t status_code,
+        const string &description);
 };
 #endif  // TOOLS_E133_E133DEVICE_H_

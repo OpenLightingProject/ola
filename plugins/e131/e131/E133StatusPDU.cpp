@@ -30,13 +30,13 @@ namespace e131 {
 using ola::network::HostToNetwork;
 using std::string;
 
-const size_t E133StatusPDU::MAX_STATUS_STRING_SIZE = 64;
-
 void E133StatusPDU::PrependPDU(ola::io::IOStack *stack,
                                E133StatusCode status_code_enum,
                                const string &status) {
   const string truncated_status_code = status.substr(
-      0, std::min(status.size(), MAX_STATUS_STRING_SIZE));
+      0,
+      std::min(status.size(),
+               static_cast<size_t>(MAX_E133_STATUS_STRING_SIZE)));
   stack->Write(reinterpret_cast<const uint8_t*>(truncated_status_code.data()),
                static_cast<unsigned int>(truncated_status_code.size()));
   uint16_t status_code = HostToNetwork(static_cast<uint16_t>(status_code_enum));
