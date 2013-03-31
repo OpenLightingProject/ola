@@ -63,15 +63,15 @@ class OutstandingMessage {
 
 /*
  * Create a new TCPMessageSender.
- * @param packet_builder the PacketBuilder to use, ownership of the pointer is
+ * @param message_builder the MessageBuilder to use, ownership of the pointer is
  *   not taken.
  * @param max_queue_size the max messages to store.
  */
-TCPMessageSender::TCPMessageSender(PacketBuilder *packet_builder,
+TCPMessageSender::TCPMessageSender(MessageBuilder *message_builder,
                                    unsigned int max_queue_size)
     : m_max_queue_size(max_queue_size),
       m_unsent_messages(false),
-      m_packet_builder(packet_builder),
+      m_message_builder(message_builder),
       m_message_queue(NULL) {
 }
 
@@ -176,10 +176,10 @@ bool TCPMessageSender::SendRDMCommand(unsigned int sequence_number,
   if (m_message_queue->LimitReached())
     return false;
 
-  IOStack packet(m_packet_builder->pool());
+  IOStack packet(m_message_builder->pool());
   ola::rdm::RDMCommandSerializer::Write(*rdm_response, &packet);
   ola::plugin::e131::RDMPDU::PrependPDU(&packet);
-  m_packet_builder->BuildTCPRootE133(
+  m_message_builder->BuildTCPRootE133(
       &packet, ola::plugin::e131::VECTOR_FRAMING_RDMNET, sequence_number,
       endpoint);
 

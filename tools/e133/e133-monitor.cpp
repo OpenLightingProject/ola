@@ -50,7 +50,7 @@
 #include "tools/e133/DeviceManager.h"
 #include "tools/e133/E133URLParser.h"
 #include "tools/e133/OLASLPThread.h"
-#include "tools/e133/PacketBuilder.h"
+#include "tools/e133/MessageBuilder.h"
 #include "tools/e133/SLPThread.h"
 #include "tools/slp/URLEntry.h"
 
@@ -196,7 +196,7 @@ class SimpleE133Monitor {
     ola::io::StdinHandler m_stdin_handler;
     auto_ptr<BaseSLPThread> m_slp_thread;
 
-    PacketBuilder m_packet_builder;
+    MessageBuilder m_message_builder;
     DeviceManager m_device_manager;
 
     void Input(char c);
@@ -218,8 +218,8 @@ SimpleE133Monitor::SimpleE133Monitor(
     : m_command_printer(&cout, pid_helper),
       m_stdin_handler(&m_ss,
                       ola::NewCallback(this, &SimpleE133Monitor::Input)),
-      m_packet_builder(ola::plugin::e131::CID::Generate(), "OLA Monitor"),
-      m_device_manager(&m_ss, &m_packet_builder) {
+      m_message_builder(ola::plugin::e131::CID::Generate(), "OLA Monitor"),
+      m_device_manager(&m_ss, &m_message_builder) {
   if (slp_option == OLA_SLP) {
     m_slp_thread.reset(new OLASLPThread(&m_ss));
   } else if (slp_option == OPEN_SLP) {

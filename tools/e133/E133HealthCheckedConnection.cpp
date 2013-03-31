@@ -29,20 +29,20 @@ using ola::io::IOStack;
 
 /**
  * Create a new E1.33 Health Checked Connection.
- * @param packet_builder the PacketBuilder to use to create packets.
+ * @param message_builder the MessageBuilder to use to create packets.
  * @param message_queue the MessageQueue to use to send packets.
  * @param on_timeout the callback to run when the heartbeats don't arrive
  * @param scheduler A SchedulerInterface used to control the timers
  * @param heartbeat_interval the TimeInterval between heartbeats
  */
 E133HealthCheckedConnection::E133HealthCheckedConnection(
-  PacketBuilder *packet_builder,
+  MessageBuilder *message_builder,
   MessageQueue *message_queue,
   ola::SingleUseCallback0<void> *on_timeout,
   ola::thread::SchedulingExecutorInterface *scheduler,
   const ola::TimeInterval heartbeat_interval)
     : HealthCheckedConnection(scheduler, heartbeat_interval),
-      m_packet_builder(packet_builder),
+      m_message_builder(message_builder),
       m_message_queue(message_queue),
       m_on_timeout(on_timeout),
       m_executor(scheduler) {
@@ -54,8 +54,8 @@ E133HealthCheckedConnection::E133HealthCheckedConnection(
  */
 void E133HealthCheckedConnection::SendHeartbeat() {
   OLA_INFO << "Sending heartbeat";
-  IOStack packet(m_packet_builder->pool());
-  m_packet_builder->BuildNullTCPPacket(&packet);
+  IOStack packet(m_message_builder->pool());
+  m_message_builder->BuildNullTCPPacket(&packet);
   m_message_queue->SendMessage(&packet);
 }
 

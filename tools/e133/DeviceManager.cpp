@@ -103,12 +103,12 @@ const TimeInterval DeviceManager::MAX_TCP_RETRY_DELAY(30, 0);
  * @param cid the CID of this controller.
  */
 DeviceManager::DeviceManager(ola::io::SelectServerInterface *ss,
-                             PacketBuilder *packet_builder)
+                             MessageBuilder *message_builder)
     : m_ss(ss),
       m_tcp_socket_factory(NewCallback(this, &DeviceManager::OnTCPConnect)),
       m_connector(m_ss, &m_tcp_socket_factory, TCP_CONNECT_TIMEOUT),
       m_backoff_policy(INITIAL_TCP_RETRY_DELAY, MAX_TCP_RETRY_DELAY),
-      m_packet_builder(packet_builder),
+      m_message_builder(message_builder),
       m_root_inflator(NewCallback(this, &DeviceManager::RLPDataReceived)) {
   m_root_inflator.AddInflator(&m_e133_inflator);
   m_e133_inflator.AddInflator(&m_rdm_inflator);
@@ -342,11 +342,11 @@ void DeviceManager::RLPDataReceived(
 
   device_state->message_queue.reset(
       new MessageQueue(device_state->socket.get(), m_ss,
-                       m_packet_builder->pool()));
+                       m_message_builder->pool()));
 
   E133HealthCheckedConnection *health_checked_connection =
       new E133HealthCheckedConnection(
-          m_packet_builder,
+          m_message_builder,
           device_state->message_queue.get(),
           NewSingleCallback(this, &DeviceManager::SocketUnhealthy, src_ip),
           m_ss);
@@ -386,10 +386,10 @@ void DeviceManager::EndpointRequest(
     return;
   }
 
-  ola::io::IOStack packet(m_packet_builder->pool());
+  ola::io::IOStack packet(m_message_builder->pool());
   ola::plugin::e131::E133StatusPDU::PrependPDU(
       &packet, ola::plugin::e131::SC_E133_ACK, "OK");
-  m_packet_builder->BuildTCPRootE133(
+  m_message_builder->BuildTCPRootE133(
       &packet, ola::plugin::e131::VECTOR_FRAMING_STATUS,
       e133_header.Sequence(), e133_header.Endpoint());
 

@@ -13,14 +13,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * PacketBuilder.h
+ * MessageBuilder.h
  * Copyright (C) 2013 Simon Newton
  *
  * A class to simplify some of the E1.33 packet building operations.
  */
 
-#ifndef TOOLS_E133_PACKETBUILDER_H_
-#define TOOLS_E133_PACKETBUILDER_H_
+#ifndef TOOLS_E133_MESSAGEBUILDER_H_
+#define TOOLS_E133_MESSAGEBUILDER_H_
 
 #include <ola/io/IOStack.h>
 #include <ola/io/MemoryBlockPool.h>
@@ -34,10 +34,10 @@ using std::string;
 /**
  * Provides helper methods for common E1.33 packet construction operations.
  */
-class PacketBuilder {
+class MessageBuilder {
   public:
-    PacketBuilder(const CID &cid, const string &source_name);
-    ~PacketBuilder() {}
+    MessageBuilder(const CID &cid, const string &source_name);
+    ~MessageBuilder() {}
 
     void BuildNullTCPPacket(ola::io::IOStack *packet);
 
@@ -53,4 +53,4 @@ class PacketBuilder {
     const string m_source_name;
     ola::io::MemoryBlockPool m_memory_pool;
 };
-#endif  // TOOLS_E133_PACKETBUILDER_H_
+#endif  // TOOLS_E133_MESSAGEBUILDER_H_

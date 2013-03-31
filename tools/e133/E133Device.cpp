@@ -66,11 +66,11 @@ E133Device::E133Device(ola::io::SelectServerInterface *ss,
       m_root_endpoint(NULL),
       m_tcp_stats(tcp_stats),
       m_cid(ola::plugin::e131::CID::Generate()),
-      m_packet_builder(m_cid, "OLA Device"),
+      m_message_builder(m_cid, "OLA Device"),
       m_tcp_socket(NULL),
       m_health_checked_connection(NULL),
       m_message_queue(NULL),
-      m_tcp_message_sender(&m_packet_builder),
+      m_tcp_message_sender(&m_message_builder),
       m_incoming_tcp_transport(NULL),
       m_ss(ss),
       m_ip_address(ip_address),
@@ -219,12 +219,12 @@ void E133Device::NewTCPConnection(ola::network::TCPSocket *socket_ptr) {
   if (m_message_queue)
     OLA_WARN << "Already have a MessageQueue";
   m_message_queue = new MessageQueue(m_tcp_socket, m_ss,
-                                     m_packet_builder.pool());
+                                     m_message_builder.pool());
 
   if (m_health_checked_connection)
     OLA_WARN << "Already have a E133HealthCheckedConnection";
     m_health_checked_connection = new E133HealthCheckedConnection(
-      &m_packet_builder,
+      &m_message_builder,
       m_message_queue,
       ola::NewSingleCallback(this, &E133Device::TCPConnectionUnhealthy),
       m_ss);

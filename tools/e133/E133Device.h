@@ -44,7 +44,7 @@
 #include "tools/e133/E133Endpoint.h"
 #include "tools/e133/E133HealthCheckedConnection.h"
 #include "tools/e133/MessageQueue.h"
-#include "tools/e133/PacketBuilder.h"
+#include "tools/e133/MessageBuilder.h"
 #include "tools/e133/TCPMessageSender.h"
 
 using std::string;
@@ -79,7 +79,7 @@ class E133Device {
 
     // The Node's CID
     ola::plugin::e131::CID m_cid;
-    PacketBuilder m_packet_builder;
+    MessageBuilder m_message_builder;
 
     // TCP connection classes
     ola::network::TCPSocket *m_tcp_socket;

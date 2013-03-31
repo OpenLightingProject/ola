@@ -27,12 +27,12 @@
 #include <map>
 #include "ola/rdm/RDMCommand.h"
 #include "ola/util/SequenceNumber.h"
-#include "tools/e133/PacketBuilder.h"
+#include "tools/e133/MessageBuilder.h"
 #include "tools/e133/MessageQueue.h"
 
 class TCPMessageSender {
   public:
-    TCPMessageSender(PacketBuilder *packet_builder,
+    TCPMessageSender(MessageBuilder *message_builder,
                      unsigned int max_queue_size = MAX_QUEUE_SIZE);
     ~TCPMessageSender();
 
@@ -52,7 +52,7 @@ class TCPMessageSender {
     // Indicates if we have messages that haven't been sent on the MessageQueue
     // yet.
     bool m_unsent_messages;
-    PacketBuilder *m_packet_builder;
+    MessageBuilder *m_message_builder;
     MessageQueue *m_message_queue;
     PendingMessageMap m_unacked_messages;
     ola::SequenceNumber<unsigned int> m_sequence_number;

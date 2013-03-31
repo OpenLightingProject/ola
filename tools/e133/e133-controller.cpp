@@ -68,7 +68,7 @@
 
 #include "tools/e133/E133URLParser.h"
 #include "tools/e133/OLASLPThread.h"
-#include "tools/e133/PacketBuilder.h"
+#include "tools/e133/MessageBuilder.h"
 #ifdef HAVE_LIBSLP
 #include "tools/e133/OpenSLPThread.h"
 #endif
@@ -266,7 +266,7 @@ class SimpleE133Controller {
     const IPV4Address m_controller_ip;
     ola::io::SelectServer m_ss;
 
-    PacketBuilder m_packet_builder;
+    MessageBuilder m_message_builder;
 
     // inflators
     ola::plugin::e131::RootInflator m_root_inflator;
@@ -308,7 +308,7 @@ SimpleE133Controller::SimpleE133Controller(
     const Options &options,
     PidStoreHelper *pid_helper)
     : m_controller_ip(options.controller_ip),
-      m_packet_builder(ola::plugin::e131::CID::Generate(), "E1.33 Controller"),
+      m_message_builder(ola::plugin::e131::CID::Generate(), "E1.33 Controller"),
       m_incoming_udp_transport(&m_udp_socket, &m_root_inflator),
       m_outgoing_udp_transport(&m_udp_socket),
       m_src_uid(OPEN_LIGHTING_ESTA_CODE, 0xabcdabcd),
@@ -498,10 +498,10 @@ bool SimpleE133Controller::SendRequest(const UID &uid,
   OLA_INFO << "Sending to " << target << "/" << uid << "/" << endpoint;
 
   // Build the E1.33 packet.
-  IOStack packet(m_packet_builder.pool());
+  IOStack packet(m_message_builder.pool());
   RDMCommandSerializer::Write(*request, &packet);
   RDMPDU::PrependPDU(&packet);
-  m_packet_builder.BuildUDPRootE133(
+  m_message_builder.BuildUDPRootE133(
       &packet, ola::plugin::e131::VECTOR_FRAMING_RDMNET, 0, endpoint);
 
   // Send the packet

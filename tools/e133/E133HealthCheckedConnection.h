@@ -37,7 +37,7 @@
 
 #include <memory>
 
-#include "tools/e133/PacketBuilder.h"
+#include "tools/e133/MessageBuilder.h"
 #include "tools/e133/MessageQueue.h"
 
 /**
@@ -47,7 +47,7 @@ class E133HealthCheckedConnection
     : public ola::network::HealthCheckedConnection {
   public:
     E133HealthCheckedConnection(
-        PacketBuilder *packet_builder,
+        MessageBuilder *message_builder,
         MessageQueue *message_queue,
         ola::SingleUseCallback0<void> *on_timeout,
         ola::thread::SchedulingExecutorInterface *scheduler,
@@ -58,7 +58,7 @@ class E133HealthCheckedConnection
     void HeartbeatTimeout();
 
   private:
-    PacketBuilder *m_packet_builder;
+    MessageBuilder *m_message_builder;
     MessageQueue *m_message_queue;
     std::auto_ptr<ola::SingleUseCallback0<void> > m_on_timeout;
     ola::thread::SchedulingExecutorInterface *m_executor;
