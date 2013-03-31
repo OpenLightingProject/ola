@@ -232,6 +232,7 @@ void DisplayHelpAndExit(const options &opts) {
   cout << "Usage: " << opts.command <<
     " -d <dev_id> -n <name> -l <long_name> -s <subnet>\n\n"
     "Configure ArtNet Devices managed by OLA.\n\n"
+    "  -d, --dev       The ArtNet device to configure\n"
     "  -e, --net       Set the net parameter of the ArtNet device\n"
     "  -h, --help      Display this help message and exit.\n"
     "  -l, --long_name Set the long name of the ArtNet device\n"

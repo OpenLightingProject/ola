@@ -280,14 +280,14 @@ int main(int argc, char *argv[]) {
 
   auto_ptr<BaseSLPThread> slp_thread;
   if (opts.use_openslp) {
-    slp_thread.reset(new OpenSLPThread(&ss));
-  } else {
 #ifdef HAVE_LIBSLP
-    slp_thread.reset(new OLASLPThread(&ss));
+    slp_thread.reset(new OpenSLPThread(&ss));
 #else
     OLA_WARN << "openslp not installed";
     return false;
 #endif
+  } else {
+    slp_thread.reset(new OLASLPThread(&ss));
   }
 
   if (!slp_thread->Init()) {

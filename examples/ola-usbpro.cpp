@@ -292,7 +292,7 @@ int ParseOptions(int argc, char *argv[], options *opts) {
 void DisplayHelpAndExit(const options &opts) {
   cout << "Usage: " << opts.command <<
     " -d <dev_id> [--serial | -b <brk> -m <mab> -r <rate>]\n\n"
-    "Configure Enttec Usb Pro Devices managed by OLA.\n\n"
+    "Configure Enttec USB Pro Devices managed by OLA.\n\n"
     "  -a, --assignments   Get the port assignments.\n" <<
     "  -b, --brk <brk>     Set the break time (9 - 127)\n"
     "  -d, --dev <device>  The device to configure\n"

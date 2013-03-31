@@ -17,7 +17,7 @@ LDADD = $(COMMON_LIBS)
 
 bin_PROGRAMS = ola_dev_info ola_usbpro ola_e131 \
                ola_streaming_client ola_rdm_discover ola_rdm_get \
-               ola_recorder ola_timecode ola_universe_stats
+               ola_recorder ola_timecode ola_uni_stats
 
 if USE_ARTNET
 bin_PROGRAMS += ola_artnet
@@ -48,7 +48,7 @@ ola_recorder_SOURCES = ola-recorder.cpp ShowLoader.cpp ShowPlayer.cpp \
 
 ola_timecode_SOURCES = ola-timecode.cpp
 
-ola_universe_stats_SOURCES = ola-universe-stats.cpp
+ola_uni_stats_SOURCES = ola-universe-stats.cpp
 
 if HAVE_NCURSES
 bin_PROGRAMS += ola_dmxconsole ola_dmxmonitor

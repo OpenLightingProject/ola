@@ -219,7 +219,7 @@ void DisplayHelpAndExit(char *argv[]) {
   "  -t, --target <ip>         IP to send the message to, this overrides SLP\n"
   "  -i, --ip                  The IP address to listen on.\n"
   "  -l, --log-level <level>   Set the logging level 0 .. 4.\n"
-  "  -p, --pid-location        The directory to read PID definitiions from\n"
+  "  -p, --pid-location        The directory to read PID definitions from\n"
   "  -s, --set                 Perform a SET (default is GET)\n"
   "  --uid <uid>               The UID of the device to control.\n"
 #ifdef HAVE_LIBSLP
@@ -317,13 +317,13 @@ SimpleE133Controller::SimpleE133Controller(
       m_uid_list_updated(false) {
 
   if (options.use_openslp) {
-    m_slp_thread.reset(new OpenSLPThread(&m_ss));
-  } else {
 #ifdef HAVE_LIBSLP
-    m_slp_thread.reset(new OLASLPThread(&m_ss));
+    m_slp_thread.reset(new OpenSLPThread(&m_ss));
 #else
     OLA_WARN << "openslp not installed";
 #endif
+  } else {
+    m_slp_thread.reset(new OLASLPThread(&m_ss));
   }
   m_slp_thread->SetNewDeviceCallback(
       ola::NewCallback(this, &SimpleE133Controller::DiscoveryCallback));
