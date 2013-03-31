@@ -34,6 +34,7 @@
 
 #include <ola/BaseTypes.h>
 #include <ola/Logging.h>
+#include <ola/base/Init.h>
 #include <ola/io/SelectServer.h>
 #include <ola/network/InterfacePicker.h>
 #include <ola/network/NetworkUtils.h>
@@ -211,15 +212,15 @@ class SimpleE133Node {
     const IPV4Address m_ip_address;
     termios m_old_tc;
 
-    SimpleE133Node(const SimpleE133Node&);
-    SimpleE133Node operator=(const SimpleE133Node&);
-
     void RegisterCallback(bool ok);
     void DeRegisterCallback(bool ok);
 
     void Input();
     void DumpTCPStats();
     void SendUnsolicited();
+
+    SimpleE133Node(const SimpleE133Node&);
+    SimpleE133Node operator=(const SimpleE133Node&);
 };
 
 
@@ -440,15 +441,8 @@ int main(int argc, char *argv[]) {
     exit(EX_UNAVAILABLE);
 
   // signal handler
-  struct sigaction act, oact;
-  act.sa_handler = InteruptSignal;
-  sigemptyset(&act.sa_mask);
-  act.sa_flags = 0;
-
-  if (sigaction(SIGINT, &act, &oact) < 0) {
-    OLA_WARN << "Failed to install signal SIGINT";
+  if (!ola::InstallSignal(SIGINT, &InteruptSignal))
     return false;
-  }
 
   cout << "---------------  Controls  ----------------\n";
   cout << " c - Close the TCP connection\n";
