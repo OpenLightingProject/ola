@@ -106,7 +106,6 @@ class E133Device {
 
     // transports
     ola::plugin::e131::IncomingUDPTransport m_incoming_udp_transport;
-    ola::plugin::e131::OutgoingUDPTransportImpl m_outgoing_udp_transport;
 
     // senders
     ola::plugin::e131::RootSender m_root_sender;

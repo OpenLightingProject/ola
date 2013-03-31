@@ -80,7 +80,6 @@ E133Device::E133Device(ola::io::SelectServerInterface *ss,
       m_listening_tcp_socket(&m_tcp_socket_factory),
       m_root_inflator(NewCallback(this, &E133Device::RLPDataReceived)),
       m_incoming_udp_transport(&m_udp_socket, &m_root_inflator),
-      m_outgoing_udp_transport(&m_udp_socket),
       m_root_sender(m_cid) {
 
   m_root_inflator.AddInflator(&m_e133_inflator);
