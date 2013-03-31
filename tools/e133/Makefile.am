@@ -7,6 +7,7 @@ EXTRA_DIST = E133Endpoint.h E133Device.h \
              EndpointManager.h \
              OLASLPThread.h \
              OpenSLPThread.h \
+             PacketBuilder.h \
              RootEndpoint.h \
              SLPConstants.h \
              SLPSATestHelpers.h \
@@ -14,7 +15,7 @@ EXTRA_DIST = E133Endpoint.h E133Device.h \
              SLPThread.h \
              TCPConnectionStats.h
 
-noinst_LTLIBRARIES = libolae133slp.la
+noinst_LTLIBRARIES = libolae133slp.la libolae133.la
 libolae133slp_la_SOURCES = OLASLPThread.cpp \
                            E133URLParser.cpp \
                            OpenSLPThread.cpp \
@@ -28,6 +29,9 @@ libolae133slp_la_SOURCES += OpenSLPThread.cpp
 libolae133slp_la_LIBADD += $(openslp_LIBS)
 endif
 
+libolae133_la_SOURCES = PacketBuilder.cpp
+libolae133_la_LIBADD = $(top_builddir)/plugins/e131/e131/libolae131core.la
+
 noinst_PROGRAMS = e133_controller e133_monitor e133_receiver \
                   slp_locate slp_register slp_sa_test
 
@@ -39,6 +43,7 @@ e133_receiver_SOURCES = e133-receiver.cpp \
                         EndpointManager.cpp \
                         RootEndpoint.cpp
 e133_receiver_LDADD = ./libolae133slp.la \
+                      ./libolae133.la \
                       $(top_builddir)/common/libolacommon.la \
                       $(top_builddir)/plugins/dummy/liboladummyresponder.la \
                       $(top_builddir)/plugins/e131/e131/libolae131core.la
@@ -48,6 +53,7 @@ e133_monitor_SOURCES = e133-monitor.cpp \
                        E133StreamSender.cpp
 e133_monitor_CXXFLAGS = @OLAD_DEFINES@ $(COMMON_CXXFLAGS)
 e133_monitor_LDADD = ./libolae133slp.la \
+                      ./libolae133.la \
                      $(top_builddir)/common/libolacommon.la \
                      $(top_builddir)/plugins/e131/e131/libolae131core.la
 
@@ -55,6 +61,7 @@ e133_controller_SOURCES = e133-controller.cpp
 # required for PID_DATA_FILE
 e133_controller_CXXFLAGS = @OLAD_DEFINES@ $(COMMON_CXXFLAGS)
 e133_controller_LDADD = ./libolae133slp.la \
+                        ./libolae133.la \
                         $(top_builddir)/common/libolacommon.la \
                         $(top_builddir)/plugins/e131/e131/libolae131core.la
 
