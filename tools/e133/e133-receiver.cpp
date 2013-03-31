@@ -30,12 +30,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <sysexits.h>
-#include <termios.h>
 
 #include <ola/BaseTypes.h>
 #include <ola/Logging.h>
 #include <ola/base/Init.h>
 #include <ola/io/SelectServer.h>
+#include <ola/io/StdinHandler.h>
 #include <ola/network/InterfacePicker.h>
 #include <ola/network/NetworkUtils.h>
 #include <ola/rdm/RDMCommand.h>
@@ -199,7 +199,7 @@ class SimpleE133Node {
 
   private:
     ola::io::SelectServer m_ss;
-    ola::io::UnmanagedFileDescriptor m_stdin_descriptor;
+    ola::io::StdinHandler m_stdin_handler;
     auto_ptr<BaseSLPThread> m_slp_thread;
     EndpointManager m_endpoint_manager;
     TCPConnectionStats m_tcp_stats;
@@ -210,12 +210,11 @@ class SimpleE133Node {
     uint16_t m_lifetime;
     UID m_uid;
     const IPV4Address m_ip_address;
-    termios m_old_tc;
 
     void RegisterCallback(bool ok);
     void DeRegisterCallback(bool ok);
 
-    void Input();
+    void Input(char c);
     void DumpTCPStats();
     void SendUnsolicited();
 
@@ -229,7 +228,7 @@ class SimpleE133Node {
  */
 SimpleE133Node::SimpleE133Node(const IPV4Address &ip_address,
                                const options &opts)
-    : m_stdin_descriptor(STDIN_FILENO),
+    : m_stdin_handler(&m_ss, ola::NewCallback(this, &SimpleE133Node::Input)),
       m_e133_device(&m_ss, ip_address, &m_endpoint_manager, &m_tcp_stats),
       m_root_endpoint(*opts.uid, &m_endpoint_manager, &m_tcp_stats),
       m_first_endpoint(NULL),  // NO CONTROLLER FOR NOW!
@@ -251,7 +250,6 @@ SimpleE133Node::SimpleE133Node(const IPV4Address &ip_address,
 
 SimpleE133Node::~SimpleE133Node() {
   m_endpoint_manager.UnRegisterEndpoint(1);
-  tcsetattr(STDIN_FILENO, TCSANOW, &m_old_tc);
   m_slp_thread->Join(NULL);
   m_slp_thread->Cleanup();
 }
@@ -261,14 +259,6 @@ SimpleE133Node::~SimpleE133Node() {
  * Init this node
  */
 bool SimpleE133Node::Init() {
-  // setup notifications for stdin & turn off buffering
-  m_stdin_descriptor.SetOnData(ola::NewCallback(this, &SimpleE133Node::Input));
-  m_ss.AddReadDescriptor(&m_stdin_descriptor);
-  tcgetattr(STDIN_FILENO, &m_old_tc);
-  termios new_tc = m_old_tc;
-  new_tc.c_lflag &= static_cast<tcflag_t>(~ICANON & ~ECHO);
-  tcsetattr(STDIN_FILENO, TCSANOW, &new_tc);
-
   if (!m_e133_device.Init())
     return false;
 
@@ -324,8 +314,8 @@ void SimpleE133Node::DeRegisterCallback(bool ok) {
 /**
  * Called when there is data on stdin.
  */
-void SimpleE133Node::Input() {
-  switch (getchar()) {
+void SimpleE133Node::Input(char c) {
+  switch (c) {
     case 'c':
       m_e133_device.CloseTCPConnection();
       break;

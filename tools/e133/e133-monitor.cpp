@@ -32,6 +32,7 @@
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
 #include <ola/io/SelectServer.h>
+#include <ola/io/StdinHandler.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/rdm/CommandPrinter.h>
 #include <ola/rdm/PidStoreHelper.h>
@@ -192,11 +193,13 @@ class SimpleE133Monitor {
   private:
     ola::rdm::CommandPrinter m_command_printer;
     ola::io::SelectServer m_ss;
+    ola::io::StdinHandler m_stdin_handler;
     auto_ptr<BaseSLPThread> m_slp_thread;
 
     PacketBuilder m_packet_builder;
     DeviceManager m_device_manager;
 
+    void Input(char c);
     void DiscoveryCallback(bool status, const URLEntries &urls);
 
     bool EndpointRequest(
@@ -213,6 +216,8 @@ SimpleE133Monitor::SimpleE133Monitor(
     PidStoreHelper *pid_helper,
     SLPOption slp_option)
     : m_command_printer(&cout, pid_helper),
+      m_stdin_handler(&m_ss,
+                      ola::NewCallback(this, &SimpleE133Monitor::Input)),
       m_packet_builder(ola::plugin::e131::CID::Generate(), "OLA Monitor"),
       m_device_manager(&m_ss, &m_packet_builder) {
   if (slp_option == OLA_SLP) {
@@ -261,6 +266,18 @@ bool SimpleE133Monitor::Init() {
 void SimpleE133Monitor::AddIP(const IPV4Address &ip_address) {
   m_device_manager.AddDevice(ip_address);
 }
+
+
+void SimpleE133Monitor::Input(char c) {
+  switch (c) {
+    case 'q':
+      m_ss.Terminate();
+      break;
+    default:
+      break;
+  }
+}
+
 
 /**
  * Called when SLP completes discovery.
