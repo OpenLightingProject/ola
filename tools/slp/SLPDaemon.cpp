@@ -117,7 +117,7 @@ SLPDaemon::SLPDaemon(ola::network::UDPSocket *udp_socket,
 SLPDaemon::~SLPDaemon() {
   m_rpc_accept_socket.Close();
 
-  STLDeleteValues(&m_disconnected_clients);
+  STLDeleteElements(&m_disconnected_clients);
   STLDeleteValues(&m_connected_clients);
 }
 

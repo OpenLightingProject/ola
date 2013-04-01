@@ -740,8 +740,8 @@ EnttecUsbProWidgetImpl::EnttecUsbProWidgetImpl(
 
 EnttecUsbProWidgetImpl::~EnttecUsbProWidgetImpl() {
   Stop();
-  STLDeleteValues(&m_ports);
-  STLDeleteValues(&m_port_impls);
+  STLDeleteElements(&m_ports);
+  STLDeleteElements(&m_port_impls);
 }
 
 

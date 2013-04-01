@@ -512,7 +512,7 @@ bool SimpleE133Controller::SendRequest(const UID &uid,
                                        RDMRequest *raw_request) {
   auto_ptr<RDMRequest> request(raw_request);
 
-  IPV4Address *target_address = ola::STLFindPtrOrNull(&m_uid_to_ip, uid);
+  IPV4Address *target_address = ola::STLFind(&m_uid_to_ip, uid);
   if (!target_address) {
     OLA_WARN << "UID " << uid << " not found";
     return false;

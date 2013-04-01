@@ -151,7 +151,7 @@ void OlaDaemon::Shutdown() {
   m_service_factory = NULL;
   m_ss = NULL;
 
-  STLDeleteValues(&m_plugin_loaders);
+  STLDeleteElements(&m_plugin_loaders);
 }
 
 
