@@ -5,21 +5,21 @@
 #rdm_responder_test.py
 have rdm_responder_test.py && _rdm_responder_test.py()
 {
-  local cur
+  local cur prev opts
 
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
   prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--slot-count --debug --dmx-frame-rate --log --list-tests --pid-store --skip-check --tests --timestamp --no-factory-defaults --broadcast-write-delay --universe'
 
   case "$prev" in
-  -t | --tests)
-    #TODO: Get this working with the comma seperated list of tests
-    COMPREPLY=($( compgen -W '$( command rdm_responder_test.py --list-tests 2>/dev/null )' -- $cur ) );
-    return 0
-    ;;
+    -t | --tests)
+      #TODO: Get this working with the comma seperated list of tests
+      opts='$( command rdm_responder_test.py --list-tests 2>/dev/null )'
+      ;;
   esac;
 
-  COMPREPLY=($( compgen -W '--slot-count --debug --dmx-frame-rate --log --list-tests --pid-store --skip-check --tests --timestamp --no-factory-defaults --broadcast-write-delay --universe' -- $cur ) )
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
 
   return 0
 }

@@ -22,20 +22,20 @@ complete -F _ola_artnet ola_artnet
 #olad
 have olad && _olad()
 {
-  local cur
+  local cur prev opts
 
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
   prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--config-dir --http-data-dir --daemon --interface --log-level --http-port --rpc-port --syslog --version --no-http --no-http-quit'
 
   case "$prev" in
-  -l | --log-level)
-      COMPREPLY=($( compgen -W '0 1 2 3 4' -- $cur ) );
-      return 0
+    -l | --log-level)
+      opts='0 1 2 3 4'
       ;;
   esac;
 
-  COMPREPLY=($( compgen -W '--config-dir --http-data-dir --daemon --interface --log-level --http-port --rpc-port --syslog --version --no-http --no-http-quit' -- $cur ) )
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
 
   return 0
 }
@@ -77,20 +77,20 @@ complete -F _ola_dmxmonitor ola_dmxmonitor
 #ola_e131
 have ola_e131 && _ola_e131()
 {
-  local cur prev
+  local cur prev opts
 
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
   prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--dev --input --port_id --preview_mode'
 
   case "$prev" in
-  --preview_mode)
-    COMPREPLY=($( compgen -W 'on off' -- $cur ) );
-    return 0
-    ;;
+    --preview_mode)
+      opts='on off'
+      ;;
   esac;
 
-  COMPREPLY=($( compgen -W '--dev --input --port_id --preview_mode' -- $cur ) )
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
 
   return 0
 }
@@ -168,20 +168,20 @@ complete -F _ola_rdm_set ola_rdm_set
 #Todo: only show additional playback options --delay --iterations when in playback
 have ola_recorder && _ola_recorder()
 {
-  local cur
+  local cur prev opts
 
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
   prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--log-level --record --playback --universes --verify --delay --iterations'
 
   case "$prev" in
-  -l | --log-level)
-    COMPREPLY=($( compgen -W '0 1 2 3 4' -- $cur ) );
-    return 0
-    ;;
+    -l | --log-level)
+      opts='0 1 2 3 4'
+      ;;
   esac;
 
-  COMPREPLY=($( compgen -W '--log-level --record --playback --universes --verify --delay --iterations' -- $cur ) )
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
 
   return 0
 }
@@ -223,20 +223,20 @@ complete -F _ola_streaming_client ola_streaming_client
 #ola_timecode
 have ola_timecode && _ola_timecode()
 {
-  local cur prev
+  local cur prev opts
 
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
   prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--format'
 
   case "$prev" in
-  -f | --format)
-      COMPREPLY=($( compgen -W 'FILM EBU DF SMPTE' -- $cur ) );
-      return 0
+    -f | --format)
+      opts='FILM EBU DF SMPTE'
       ;;
   esac;
 
-  COMPREPLY=($( compgen -W '--format' -- $cur ) )
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
 
   return 0
 }
@@ -245,20 +245,20 @@ complete -F _ola_timecode ola_timecode
 #ola_trigger
 have ola_trigger && _ola_trigger()
 {
-  local cur
+  local cur prev opts
 
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
   prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--log-level --offset --universe'
 
   case "$prev" in
-  -l | --log-level)
-    COMPREPLY=($( compgen -W '0 1 2 3 4' -- $cur ) );
-    return 0
-    ;;
+    -l | --log-level)
+      opts='0 1 2 3 4'
+      ;;
   esac;
 
-  COMPREPLY=($( compgen -W '--log-level --offset --universe' -- $cur ) )
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
 
   return 0
 }
@@ -289,29 +289,27 @@ have ola_uni_name && _ola_uni_name()
 }
 complete -F _ola_uni_name ola_uni_name
 
-#ola_universe_stats
-have ola_universe_stats && _ola_universe_stats()
+#ola_uni_stats
+have ola_uni_stats && _ola_uni_stats()
 {
-  local cur
+  local cur prev opts
 
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
   prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--log-level'
 
   case "$prev" in
-  -l | --log-level)
-    COMPREPLY=($( compgen -W '0 1 2 3 4' -- $cur ) );
-    return 0
-    ;;
+    -l | --log-level)
+      opts='0 1 2 3 4'
+      ;;
   esac;
 
-  COMPREPLY=($( compgen -W '--log-level' -- $cur ) )
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
 
   return 0
 }
-complete -F _ola_universe_stats ola_universe_stats
-#Also add the same completion to the symlink:
-complete -F _ola_universe_stats ola_uni_stats
+complete -F _ola_uni_stats ola_uni_stats
 
 #ola_usbpro
 have ola_usbpro && _ola_usbpro()
@@ -327,20 +325,20 @@ complete -F _ola_usbpro ola_usbpro
 #rdmpro_sniffer
 have rdmpro_sniffer && _rdmpro_sniffer()
 {
-  local cur
+  local cur prev opts
 
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
   prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--display-asc --display-dmx --dmx-slot-limit --log-level --parse-raw-dump --full-rdm --timestamp --write-raw-dump'
 
   case "$prev" in
-  -l | --log-level)
-      COMPREPLY=($( compgen -W '0 1 2 3 4' -- $cur ) );
-      return 0
+    -l | --log-level)
+      opts='0 1 2 3 4'
       ;;
   esac;
 
-  COMPREPLY=($( compgen -W '--display-asc --display-dmx --dmx-slot-limit --log-level --parse-raw-dump --full-rdm --timestamp --write-raw-dump' -- $cur ) )
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
 
   return 0
 }
