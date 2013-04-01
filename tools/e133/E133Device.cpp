@@ -224,8 +224,7 @@ void E133Device::EndpointRequest(
     const ola::plugin::e131::TransportHeader &transport_header,
     const ola::plugin::e131::E133Header &e133_header,
     const std::string &raw_request) {
-  IPV4SocketAddress target(transport_header.SourceIP(),
-                           transport_header.SourcePort());
+  IPV4SocketAddress target = transport_header.Source();
   OLA_INFO << "Got request for to endpoint " << endpoint_id << " from "
            << target;
 

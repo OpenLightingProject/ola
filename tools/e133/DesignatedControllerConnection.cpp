@@ -363,7 +363,7 @@ void DesignatedControllerConnection::HandleStatusMessage(
     const string &description) {
   if (status_code != ola::plugin::e131::SC_E133_ACK) {
     OLA_INFO << "Received a non-ack status code from "
-             << transport_header.SourceIP() << ": " << status_code << " : "
+             << transport_header.Source() << ": " << status_code << " : "
              << description;
   }
   OLA_INFO << "Controller has ack'ed " << e133_header.Sequence();

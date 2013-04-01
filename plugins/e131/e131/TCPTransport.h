@@ -52,8 +52,7 @@ class IncommingStreamTransport {
   public:
     IncommingStreamTransport(class BaseInflator *inflator,
                              ola::io::ConnectedDescriptor *descriptor,
-                             const ola::network::IPV4Address &ip_address,
-                             uint16_t port);
+                             const ola::network::IPV4SocketAddress &source);
     ~IncommingStreamTransport();
 
     bool Receive();

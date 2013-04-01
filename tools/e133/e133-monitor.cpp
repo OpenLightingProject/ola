@@ -315,7 +315,7 @@ bool SimpleE133Monitor::EndpointRequest(
   const uint8_t *rdm_data = reinterpret_cast<const uint8_t*>(
     raw_request.data());
 
-  cout << "From " << transport_header.SourceIP() << ":" << endl;
+  cout << "From " << transport_header.Source() << ":" << endl;
   auto_ptr<RDMCommand> command(
       RDMCommand::Inflate(reinterpret_cast<const uint8_t*>(raw_request.data()),
                           raw_request.size()));

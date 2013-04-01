@@ -37,9 +37,10 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
-using std::auto_ptr;
 using ola::io::IOQueue;
 using ola::io::IOStack;
+using ola::network::IPV4SocketAddress;
+using std::auto_ptr;
 
 class TCPTransportTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(TCPTransportTest);
@@ -70,7 +71,7 @@ class TCPTransportTest: public CppUnit::TestFixture {
   private:
     unsigned int m_pdus_received;
     bool m_stream_ok;
-    ola::network::IPV4Address m_localhost;
+    ola::network::IPV4SocketAddress m_localhost;
     auto_ptr<ola::io::SelectServer> m_ss;
     ola::io::LoopbackDescriptor m_loopback;
     CID m_cid;
@@ -93,7 +94,7 @@ void TCPTransportTest::setUp() {
   m_stream_ok = true;
   m_pdus_received = 0;
 
-  OLA_ASSERT(IPV4Address::FromString("127.0.0.1", &m_localhost));
+  m_localhost = IPV4SocketAddress::FromStringOrDie("127.0.0.1:9999");
 
   // mock inflator
   CID cid;
@@ -102,10 +103,7 @@ void TCPTransportTest::setUp() {
 
   // transport to test
   m_transport.reset(
-      new IncommingStreamTransport(m_inflator.get(),
-                                   &m_loopback,
-                                   m_localhost,
-                                   9999));
+      new IncommingStreamTransport(m_inflator.get(), &m_loopback, m_localhost));
 
   // SelectServer
   m_ss.reset(new ola::io::SelectServer());

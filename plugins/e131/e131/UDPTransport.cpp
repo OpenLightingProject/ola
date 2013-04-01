@@ -99,9 +99,9 @@ void IncomingUDPTransport::Receive() {
   }
 
   HeaderSet header_set;
-  TransportHeader transport_header(src_address,
-                                   src_port,
-                                   TransportHeader::UDP);
+  TransportHeader transport_header(
+      ola::network::IPV4SocketAddress(src_address, src_port),
+      TransportHeader::UDP);
   header_set.SetTransportHeader(transport_header);
 
   m_inflator->InflatePDUBlock(

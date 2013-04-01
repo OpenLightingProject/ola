@@ -58,9 +58,8 @@ const unsigned int IncommingStreamTransport::INITIAL_SIZE = 500;
 IncommingStreamTransport::IncommingStreamTransport(
     BaseInflator *inflator,
     ola::io::ConnectedDescriptor *descriptor,
-    const IPV4Address &ip_address,
-    uint16_t port)
-    : m_transport_header(ip_address, port, TransportHeader::TCP),
+    const ola::network::IPV4SocketAddress &source)
+    : m_transport_header(source, TransportHeader::TCP),
       m_inflator(inflator),
       m_descriptor(descriptor),
       m_buffer_start(NULL),
@@ -326,8 +325,7 @@ IncomingTCPTransport::IncomingTCPTransport(BaseInflator *inflator,
   if (address.Family() == AF_INET) {
     ola::network::IPV4SocketAddress v4_addr = address.V4Addr();
     m_transport.reset(
-        new IncommingStreamTransport(inflator, socket, v4_addr.Host(),
-                                     v4_addr.Port()));
+        new IncommingStreamTransport(inflator, socket, v4_addr));
   } else {
     OLA_WARN << "Invalid address for fd " << socket->ReadDescriptor();
   }

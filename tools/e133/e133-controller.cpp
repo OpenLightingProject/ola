@@ -554,7 +554,7 @@ void SimpleE133Controller::HandlePacket(
   (void) e133_header;
 
   // try to locate the pending request here
-  OLA_INFO << "Got data from " << transport_header.SourceIP();
+  OLA_INFO << "Got data from " << transport_header.Source();
 
   // attempt to unpack as a response
   ola::rdm::rdm_response_code response_code;
@@ -655,7 +655,7 @@ void SimpleE133Controller::HandleStatusMessage(
     uint16_t status_code,
     const string &description) {
   // TODO(simon): match src IP, sequence # etc. here.
-  OLA_INFO << "Got status code from " << transport_header.SourceIP();
+  OLA_INFO << "Got status code from " << transport_header.Source();
 
   ola::plugin::e131::E133StatusCode e133_status_code;
   if (!ola::plugin::e131::IntToStatusCode(status_code, &e133_status_code)) {

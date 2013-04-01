@@ -316,7 +316,7 @@ void DeviceManager::RLPDataReceived(
     const ola::plugin::e131::TransportHeader &header) {
   if (header.Transport() != ola::plugin::e131::TransportHeader::TCP)
     return;
-  IPV4Address src_ip = header.SourceIP();
+  IPV4Address src_ip = header.Source().Host();
 
   DeviceState *device_state = STLFindOrNull(m_device_map, src_ip.AsInt());
   if (!device_state) {
@@ -336,9 +336,9 @@ void DeviceManager::RLPDataReceived(
   // we're now the designated controller. Setup the HealthChecker & outgoing
   // transports.
   device_state->am_designated_controller = true;
-  OLA_INFO << "Now the designated controller for " << header.SourceIP();
+  OLA_INFO << "Now the designated controller for " << header.Source();
   if (m_acquire_device_cb_.get())
-    m_acquire_device_cb_->Run(header.SourceIP());
+    m_acquire_device_cb_->Run(src_ip);
 
   device_state->message_queue.reset(
       new MessageQueue(device_state->socket.get(), m_ss,
@@ -379,10 +379,9 @@ void DeviceManager::EndpointRequest(
   }
 
   DeviceState *device_state = STLFindOrNull(
-      m_device_map, transport_header.SourceIP().AsInt());
+      m_device_map, transport_header.Source().Host().AsInt());
   if (!device_state) {
-    OLA_WARN << "Unable to find DeviceState for "
-             << transport_header.SourceIP();
+    OLA_WARN << "Unable to find DeviceState for " << transport_header.Source();
     return;
   }
 
