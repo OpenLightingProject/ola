@@ -263,8 +263,7 @@ void RootEndpoint::HandleTCPCommsStatus(const RDMRequest *request,
 
   if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
     // A SET message resets the counters
-    m_tcp_stats->unhealthy_events = 0;
-    m_tcp_stats->connection_events = 0;
+    m_tcp_stats->ResetCounters();
 
     if (request->DestinationUID().IsBroadcast()) {
       on_complete->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);

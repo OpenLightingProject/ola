@@ -61,35 +61,20 @@ using std::vector;
 
 E133Device::E133Device(ola::io::SelectServerInterface *ss,
                        const ola::network::IPV4Address &ip_address,
-                       EndpointManager *endpoint_manager,
-                       TCPConnectionStats *tcp_stats)
-    : m_endpoint_manager(endpoint_manager),
+                       EndpointManager *endpoint_manager)
+    : m_ss(ss),
+      m_ip_address(ip_address),
+      m_message_builder(ola::plugin::e131::CID::Generate(),
+                        "OLA Device"),
+      m_endpoint_manager(endpoint_manager),
       m_register_endpoint_callback(NULL),
       m_unregister_endpoint_callback(NULL),
       m_root_endpoint(NULL),
-      m_tcp_stats(tcp_stats),
-      m_cid(ola::plugin::e131::CID::Generate()),
-      m_message_builder(m_cid, "OLA Device"),
-      m_tcp_socket(NULL),
-      m_health_checked_connection(NULL),
-      m_message_queue(NULL),
-      m_tcp_message_sender(&m_message_builder),
-      m_incoming_tcp_transport(NULL),
-      m_ss(ss),
-      m_ip_address(ip_address),
-      m_tcp_socket_factory(NewCallback(this, &E133Device::NewTCPConnection)),
-      m_listening_tcp_socket(&m_tcp_socket_factory),
-      m_root_inflator(NewCallback(this, &E133Device::RLPDataReceived)),
-      m_incoming_udp_transport(&m_udp_socket, &m_root_inflator),
-      m_root_sender(m_cid) {
-
+      m_incoming_udp_transport(&m_udp_socket, &m_root_inflator) {
   m_root_inflator.AddInflator(&m_e133_inflator);
   m_e133_inflator.AddInflator(&m_rdm_inflator);
-  m_e133_inflator.AddInflator(&m_e133_status_inflator);
   m_e133_inflator.AddInflator(&m_rdm_inflator);
 
-  m_e133_status_inflator.SetStatusHandler(
-      NewCallback(this, &E133Device::HandleStatusMessage));
   m_register_endpoint_callback.reset(NewCallback(
       this,
       &E133Device::RegisterEndpoint));
@@ -141,25 +126,30 @@ void E133Device::SetRootEndpoint(E133EndpointInterface *endpoint) {
  * Init the device.
  */
 bool E133Device::Init() {
+  if (m_controller_connection.get()) {
+    OLA_WARN << "Init already performed";
+    return false;
+  }
+
   OLA_INFO << "Attempting to start E1.33 device at " << m_ip_address;
 
-  // setup the TCP socket
-  bool listen_ok = m_listening_tcp_socket.Listen(
-      IPV4SocketAddress(m_ip_address, ola::plugin::e131::E133_PORT));
-  if (!listen_ok) {
-    m_listening_tcp_socket.Close();
+  m_controller_connection.reset(new DesignatedControllerConnection(
+        m_ss, m_ip_address, &m_message_builder, &m_tcp_stats));
+
+  if (!m_controller_connection->Init()) {
+    m_controller_connection.reset();
     return false;
   }
 
   // setup the UDP socket
   if (!m_udp_socket.Init()) {
-    m_listening_tcp_socket.Close();
+    m_controller_connection.reset();
     return false;
   }
 
   if (!m_udp_socket.Bind(IPV4SocketAddress(IPV4Address::WildCard(),
                                            ola::plugin::e131::E133_PORT))) {
-    m_listening_tcp_socket.Close();
+    m_controller_connection.reset();
     return false;
   }
 
@@ -167,10 +157,16 @@ bool E133Device::Init() {
         NewCallback(&m_incoming_udp_transport,
                     &ola::plugin::e131::IncomingUDPTransport::Receive));
 
-  // add both to the Select Server
   m_ss->AddReadDescriptor(&m_udp_socket);
-  m_ss->AddReadDescriptor(&m_listening_tcp_socket);
   return true;
+}
+
+
+/**
+ * Return the TCPConnectionStats.
+ */
+TCPConnectionStats* E133Device::GetTCPStats() {
+  return &m_tcp_stats;
 }
 
 
@@ -179,162 +175,23 @@ bool E133Device::Init() {
  * @param command the RDM command to send, ownership is transferred.
  */
 void E133Device::SendStatusMessage(const ola::rdm::RDMResponse *response) {
-  if (!m_tcp_message_sender.AddMessage(ROOT_E133_ENDPOINT, response)) {
-    delete response;
+  if (m_controller_connection.get()) {
+    m_controller_connection->SendStatusMessage(response);
+  } else {
+    OLA_WARN << "Init has not been called";
   }
 }
 
 
 /**
- * Force close the master's TCP connection.
+ * Force close the designated controller's TCP connection.
  * @return, true if there was a connection to close, false otherwise.
  */
 bool E133Device::CloseTCPConnection() {
-  if (!m_tcp_socket)
+  if (m_controller_connection.get()) {
+    return m_controller_connection->CloseTCPConnection();
+  } else {
     return false;
-
-  ola::io::ConnectedDescriptor::OnCloseCallback *callback =
-    m_tcp_socket->TransferOnClose();
-  OLA_INFO << "running close callback";
-  callback->Run();
-  OLA_INFO << "callback done";
-  return true;
-}
-
-
-/**
- * Called when we get a new TCP connection.
- */
-void E133Device::NewTCPConnection(ola::network::TCPSocket *socket_ptr) {
-  auto_ptr<ola::network::TCPSocket> socket(socket_ptr);
-  ola::network::GenericSocketAddress addr = socket->GetPeer();
-  if (addr.Family() != AF_INET) {
-    OLA_WARN << "New TCP connection but failed to determine peer address";
-    return;
-  }
-  IPV4SocketAddress v4_address = addr.V4Addr();
-  OLA_INFO << "New TCP connection from " << v4_address;
-
-  if (m_tcp_socket) {
-    OLA_WARN << "Already got a TCP connection open, closing this one";
-    socket->Close();
-    return;
-  }
-
-  m_tcp_socket = socket.release();
-  if (m_message_queue)
-    OLA_WARN << "Already have a MessageQueue";
-  m_message_queue = new MessageQueue(m_tcp_socket, m_ss,
-                                     m_message_builder.pool());
-
-  if (m_health_checked_connection)
-    OLA_WARN << "Already have a E133HealthCheckedConnection";
-    m_health_checked_connection = new E133HealthCheckedConnection(
-      &m_message_builder,
-      m_message_queue,
-      ola::NewSingleCallback(this, &E133Device::TCPConnectionUnhealthy),
-      m_ss);
-
-  // this sends a heartbeat message to indicate this is the live connection
-  if (!m_health_checked_connection->Setup()) {
-    OLA_WARN << "Failed to setup HealthCheckedConnection, closing TCP socket";
-    delete m_health_checked_connection;
-    m_health_checked_connection = NULL;
-    delete m_message_queue;
-    m_message_queue = NULL;
-    m_tcp_socket->Close();
-    delete m_tcp_socket;
-    m_tcp_socket = NULL;
-    return;
-  }
-
-  m_tcp_message_sender.SetMessageQueue(m_message_queue);
-
-  if (m_incoming_tcp_transport)
-    OLA_WARN << "Already have an IncomingTCPTransport";
-    m_incoming_tcp_transport = new ola::plugin::e131::IncomingTCPTransport(
-        &m_root_inflator, m_tcp_socket);
-
-  if (m_tcp_stats) {
-    m_tcp_stats->connection_events++;
-    m_tcp_stats->ip_address = v4_address.Host();
-  }
-
-  m_tcp_socket->SetOnData(NewCallback(this, &E133Device::ReceiveTCPData));
-  m_tcp_socket->SetOnClose(
-      ola::NewSingleCallback(this, &E133Device::TCPConnectionClosed));
-  m_ss->AddReadDescriptor(m_tcp_socket);
-}
-
-
-/**
- * Called when there is new TCP data available
- */
-void E133Device::ReceiveTCPData() {
-  if (m_incoming_tcp_transport) {
-    if (!m_incoming_tcp_transport->Receive()) {
-      OLA_WARN << "TCP STREAM IS BAD!!!";
-      CloseTCPConnection();
-    }
-  }
-}
-
-
-/**
- * Called when the TCP connection goes unhealthy.
- */
-void E133Device::TCPConnectionUnhealthy() {
-  OLA_INFO << "TCP connection went unhealthy, closing";
-  if (m_tcp_stats)
-    m_tcp_stats->unhealthy_events++;
-
-  CloseTCPConnection();
-}
-
-
-/**
- * Close and cleanup the TCP connection. This can be triggered one of three
- * ways:
- *  - remote end closes the connection
- *  - the local end decides to close the connection
- *  - the heartbeats time out
- */
-void E133Device::TCPConnectionClosed() {
-  OLA_INFO << "TCP conection closed";
-
-  // zero out the master's IP
-  m_tcp_stats->ip_address = IPV4Address();
-  m_ss->RemoveReadDescriptor(m_tcp_socket);
-
-  // shutdown the tx side
-  m_tcp_message_sender.SetMessageQueue(NULL);
-
-  delete m_health_checked_connection;
-  m_health_checked_connection = NULL;
-
-  delete m_message_queue;
-  m_message_queue = NULL;
-
-  // shutdown the rx side
-  delete m_incoming_tcp_transport;
-  m_incoming_tcp_transport = NULL;
-
-  // finally delete the socket
-  m_tcp_socket->Close();
-  delete m_tcp_socket;
-  m_tcp_socket = NULL;
-}
-
-
-/**
- * Called when we receive E1.33 data. If this arrived over TCP we notify the
- * health checked connection.
- */
-void E133Device::RLPDataReceived(
-    const ola::plugin::e131::TransportHeader &header) {
-  if (header.Transport() == ola::plugin::e131::TransportHeader::TCP &&
-      m_health_checked_connection) {
-    m_health_checked_connection->HeartbeatReceived();
   }
 }
 
@@ -489,23 +346,4 @@ void E133Device::SendStatusMessage(
   if (!m_udp_socket.SendTo(&packet, target)) {
     OLA_WARN << "Failed to send E1.33 response to " << target;
   }
-}
-
-
-void E133Device::HandleStatusMessage(
-    const ola::plugin::e131::TransportHeader &transport_header,
-    const ola::plugin::e131::E133Header &e133_header,
-    uint16_t status_code,
-    const string &description) {
-  // TODO(simon): this is dogdy, clean it up.
-  if (transport_header.Transport() != ola::plugin::e131::TransportHeader::TCP) {
-    OLA_INFO << "Ignoring non-TCP E1.33 Status message";
-  }
-  if (status_code != ola::plugin::e131::SC_E133_ACK) {
-    OLA_INFO << "Received a non-ack status code from "
-             << transport_header.SourceIP() << ": " << status_code << " : "
-             << description;
-  }
-  OLA_INFO << "Controller has ack'ed " << e133_header.Sequence();
-  m_tcp_message_sender.Acknowledge(e133_header.Sequence());
 }

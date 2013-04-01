@@ -1,6 +1,7 @@
 include $(top_srcdir)/common.mk
 
 EXTRA_DIST = DeviceManager.h \
+             DesignatedControllerConnection.h \
              E133Device.h \
              E133Endpoint.h \
              E133HealthCheckedConnection.h \
@@ -38,6 +39,7 @@ noinst_PROGRAMS = e133_controller e133_monitor e133_receiver \
                   slp_locate slp_register slp_sa_test
 
 e133_receiver_SOURCES = e133-receiver.cpp \
+                        DesignatedControllerConnection.cpp \
                         E133Device.cpp \
                         E133Endpoint.cpp \
                         E133HealthCheckedConnection.cpp \

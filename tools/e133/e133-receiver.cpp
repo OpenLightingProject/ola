@@ -202,7 +202,6 @@ class SimpleE133Node {
     ola::io::StdinHandler m_stdin_handler;
     auto_ptr<BaseSLPThread> m_slp_thread;
     EndpointManager m_endpoint_manager;
-    TCPConnectionStats m_tcp_stats;
     E133Device m_e133_device;
     RootEndpoint m_root_endpoint;
     E133Endpoint m_first_endpoint;
@@ -229,8 +228,9 @@ class SimpleE133Node {
 SimpleE133Node::SimpleE133Node(const IPV4Address &ip_address,
                                const options &opts)
     : m_stdin_handler(&m_ss, ola::NewCallback(this, &SimpleE133Node::Input)),
-      m_e133_device(&m_ss, ip_address, &m_endpoint_manager, &m_tcp_stats),
-      m_root_endpoint(*opts.uid, &m_endpoint_manager, &m_tcp_stats),
+      m_e133_device(&m_ss, ip_address, &m_endpoint_manager),
+      m_root_endpoint(*opts.uid, &m_endpoint_manager,
+                      m_e133_device.GetTCPStats()),
       m_first_endpoint(NULL),  // NO CONTROLLER FOR NOW!
       m_responder(*opts.uid),
       m_lifetime(opts.lifetime),
@@ -338,10 +338,11 @@ void SimpleE133Node::Input(char c) {
  * Dump the TCP stats
  */
 void SimpleE133Node::DumpTCPStats() {
-  cout << "IP: " << m_tcp_stats.ip_address << endl;
-  cout << "Connection Unhealthy Events: " << m_tcp_stats.unhealthy_events <<
+  const TCPConnectionStats* stats = m_e133_device.GetTCPStats();
+  cout << "IP: " << stats->ip_address << endl;
+  cout << "Connection Unhealthy Events: " << stats->unhealthy_events <<
     endl;
-  cout << "Connection Events: " << m_tcp_stats.connection_events << endl;
+  cout << "Connection Events: " << stats->connection_events << endl;
 }
 
 
@@ -359,11 +360,12 @@ void SimpleE133Node::SendUnsolicited() {
 
   struct tcp_stats_message_s tcp_stats_message;
 
-  tcp_stats_message.ip_address = m_tcp_stats.ip_address.AsInt();
+  const TCPConnectionStats* stats = m_e133_device.GetTCPStats();
+  tcp_stats_message.ip_address = stats->ip_address.AsInt();
   tcp_stats_message.unhealthy_events =
-    HostToNetwork(m_tcp_stats.unhealthy_events);
+    HostToNetwork(stats->unhealthy_events);
   tcp_stats_message.connection_events =
-    HostToNetwork(m_tcp_stats.connection_events);
+    HostToNetwork(stats->connection_events);
 
   UID bcast_uid = UID::AllDevices();
   const RDMResponse *response = new ola::rdm::RDMGetResponse(
