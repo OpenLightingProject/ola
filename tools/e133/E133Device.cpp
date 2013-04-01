@@ -176,7 +176,7 @@ TCPConnectionStats* E133Device::GetTCPStats() {
  */
 void E133Device::SendStatusMessage(const ola::rdm::RDMResponse *response) {
   if (m_controller_connection.get()) {
-    m_controller_connection->SendStatusMessage(response);
+    m_controller_connection->SendStatusMessage(ROOT_E133_ENDPOINT, response);
   } else {
     OLA_WARN << "Init has not been called";
   }

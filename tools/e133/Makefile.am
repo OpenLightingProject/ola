@@ -16,8 +16,7 @@ EXTRA_DIST = DeviceManager.h \
              SLPSATestHelpers.h \
              SLPSATestRunner.h \
              SLPThread.h \
-             TCPConnectionStats.h \
-             TCPMessageSender.h
+             TCPConnectionStats.h
 
 noinst_LTLIBRARIES = libolae133slp.la libolae133.la
 libolae133slp_la_SOURCES = OLASLPThread.cpp \
@@ -44,8 +43,7 @@ e133_receiver_SOURCES = e133-receiver.cpp \
                         E133Endpoint.cpp \
                         E133HealthCheckedConnection.cpp \
                         EndpointManager.cpp \
-                        RootEndpoint.cpp \
-                        TCPMessageSender.cpp
+                        RootEndpoint.cpp
 e133_receiver_LDADD = ./libolae133slp.la \
                       ./libolae133.la \
                       $(top_builddir)/common/libolacommon.la \

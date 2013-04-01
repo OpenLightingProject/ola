@@ -19,36 +19,64 @@
 
 #include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 
-#include <ola/Callback.h>
-#include <ola/Logging.h>
-#include <ola/io/SelectServerInterface.h>
-#include <ola/network/HealthCheckedConnection.h>
-#include <ola/network/IPV4Address.h>
-#include <ola/network/SocketAddress.h>
-#include <ola/rdm/RDMCommandSerializer.h>
-
+#include <map>
 #include <memory>
 #include <string>
 
+#include "ola/Callback.h"
+#include "ola/Logging.h"
+#include "ola/io/SelectServerInterface.h"
+#include "ola/network/HealthCheckedConnection.h"
+#include "ola/stl/STLUtils.h"
+#include "ola/network/IPV4Address.h"
+#include "ola/network/SocketAddress.h"
+#include "ola/rdm/RDMCommand.h"
+#include "ola/rdm/RDMCommandSerializer.h"
 #include "plugins/e131/e131/ACNVectors.h"
 #include "plugins/e131/e131/E133Header.h"
-#include "plugins/e131/e131/E133PDU.h"
 #include "plugins/e131/e131/E133StatusInflator.h"
-
+#include "plugins/e131/e131/RDMPDU.h"
 #include "tools/e133/DesignatedControllerConnection.h"
-#include "tools/e133/E133Endpoint.h"
 #include "tools/e133/E133HealthCheckedConnection.h"
-#include "tools/e133/EndpointManager.h"
 #include "tools/e133/TCPConnectionStats.h"
 
 using ola::NewCallback;
 using ola::io::IOStack;
 using ola::network::HealthCheckedConnection;
-using ola::plugin::e131::TransportHeader;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
+using ola::plugin::e131::TransportHeader;
+using ola::rdm::RDMResponse;
 using std::auto_ptr;
 using std::string;
+
+
+// The max number of un-ack'ed messages we'll allow.
+const unsigned int DesignatedControllerConnection::MAX_QUEUE_SIZE = 10;
+
+// Track the un-ack'ed messages.
+class OutstandingMessage {
+  public:
+    OutstandingMessage(uint16_t endpoint, const RDMResponse *rdm_response)
+      : m_endpoint(endpoint),
+        m_message_sent(false),
+        m_rdm_response(rdm_response) {
+    }
+
+    bool was_sent() const { return m_message_sent; }
+    void set_was_sent(bool was_sent) { m_message_sent = was_sent; }
+
+    const RDMResponse* rdm_response() const { return m_rdm_response.get(); }
+    uint16_t endpoint() const { return m_endpoint; }
+
+  private:
+    uint16_t m_endpoint;
+    bool m_message_sent;
+    auto_ptr<const RDMResponse> m_rdm_response;
+
+    OutstandingMessage(const OutstandingMessage&);
+    OutstandingMessage& operator=(const OutstandingMessage&);
+};
 
 
 /**
@@ -59,23 +87,25 @@ using std::string;
  */
 DesignatedControllerConnection::DesignatedControllerConnection(
     ola::io::SelectServerInterface *ss,
-    const ola::network::IPV4Address &ip_address,
+    const IPV4Address &ip_address,
     MessageBuilder *message_builder,
-    TCPConnectionStats *tcp_stats)
+    TCPConnectionStats *tcp_stats,
+    unsigned int max_queue_size)
     : m_ip_address(ip_address),
+      m_max_queue_size(max_queue_size),
       m_ss(ss),
       m_message_builder(message_builder),
       m_tcp_stats(tcp_stats),
       m_tcp_socket(NULL),
       m_health_checked_connection(NULL),
       m_message_queue(NULL),
-      m_tcp_message_sender(m_message_builder),
       m_incoming_tcp_transport(NULL),
       m_tcp_socket_factory(
           NewCallback(this, &DesignatedControllerConnection::NewTCPConnection)),
       m_listening_tcp_socket(&m_tcp_socket_factory),
       m_root_inflator(
-          NewCallback(this, &DesignatedControllerConnection::RLPDataReceived)) {
+          NewCallback(this, &DesignatedControllerConnection::RLPDataReceived)),
+      m_unsent_messages(false) {
   m_root_inflator.AddInflator(&m_e133_inflator);
   m_e133_inflator.AddInflator(&m_e133_status_inflator);
 
@@ -85,6 +115,11 @@ DesignatedControllerConnection::DesignatedControllerConnection(
 
 
 DesignatedControllerConnection::~DesignatedControllerConnection() {
+  if (!m_unacked_messages.empty())
+    OLA_WARN << m_unacked_messages.size()
+             << " RDM commands remain un-ack'ed and will not be delivered";
+  ola::STLDeleteValues(&m_unacked_messages);
+
   m_ss->RemoveReadDescriptor(&m_listening_tcp_socket);
   m_listening_tcp_socket.Close();
 
@@ -115,12 +150,31 @@ bool DesignatedControllerConnection::Init() {
  * @param command the RDMResponse to send, ownership is transferred.
  */
 bool DesignatedControllerConnection::SendStatusMessage(
-    const ola::rdm::RDMResponse *response) {
-  bool ok = m_tcp_message_sender.AddMessage(ROOT_E133_ENDPOINT, response);
-  if (!ok) {
-    delete response;
+    uint16_t endpoint,
+    const RDMResponse *raw_response) {
+  auto_ptr<const RDMResponse> response(raw_response);
+
+  if (m_unacked_messages.size() == m_max_queue_size) {
+    OLA_WARN << "MessageQueue limit reached, no further messages will be held";
+    return false;
   }
-  return ok;
+
+  unsigned int our_sequence_number = m_sequence_number.Next();
+  if (ola::STLContains(m_unacked_messages, our_sequence_number)) {
+    // TODO(simon): think about what we want to do here
+    OLA_WARN << "Sequence number collision!";
+    return false;
+  }
+
+  OutstandingMessage *message = new OutstandingMessage(
+      endpoint, response.release());
+  ola::STLInsertIfNotPresent(&m_unacked_messages, our_sequence_number, message);
+
+  if (m_message_queue) {
+    message->set_was_sent(
+      SendRDMCommand(our_sequence_number, endpoint, message->rdm_response()));
+  }
+  return true;
 }
 
 
@@ -187,7 +241,17 @@ void DesignatedControllerConnection::NewTCPConnection(
     return;
   }
 
-  m_tcp_message_sender.SetMessageQueue(m_message_queue);
+  OLA_INFO << "New connection, sending any un-acked messages";
+  bool sent_all = true;
+  PendingMessageMap::iterator iter = m_unacked_messages.begin();
+  for (; iter != m_unacked_messages.end(); iter++) {
+    OutstandingMessage *message = iter->second;
+    bool was_sent = SendRDMCommand(iter->first, message->endpoint(),
+                                   message->rdm_response());
+    sent_all &= was_sent;
+    message->set_was_sent(was_sent);
+  }
+  m_unsent_messages = !sent_all;
 
   if (m_incoming_tcp_transport)
     OLA_WARN << "Already have an IncomingTCPTransport";
@@ -244,8 +308,6 @@ void DesignatedControllerConnection::TCPConnectionClosed() {
   m_ss->RemoveReadDescriptor(m_tcp_socket);
 
   // shutdown the tx side
-  m_tcp_message_sender.SetMessageQueue(NULL);
-
   delete m_health_checked_connection;
   m_health_checked_connection = NULL;
 
@@ -273,6 +335,24 @@ void DesignatedControllerConnection::RLPDataReceived(const TransportHeader&) {
 }
 
 
+bool DesignatedControllerConnection::SendRDMCommand(
+    unsigned int sequence_number,
+    uint16_t endpoint,
+    const RDMResponse *rdm_response) {
+  if (m_message_queue->LimitReached())
+    return false;
+
+  IOStack packet(m_message_builder->pool());
+  ola::rdm::RDMCommandSerializer::Write(*rdm_response, &packet);
+  ola::plugin::e131::RDMPDU::PrependPDU(&packet);
+  m_message_builder->BuildTCPRootE133(
+      &packet, ola::plugin::e131::VECTOR_FRAMING_RDMNET, sequence_number,
+      endpoint);
+
+  return m_message_queue->SendMessage(&packet);
+}
+
+
 /**
  * Handle a E1.33 Status PDU on the TCP connection.
  */
@@ -287,5 +367,20 @@ void DesignatedControllerConnection::HandleStatusMessage(
              << description;
   }
   OLA_INFO << "Controller has ack'ed " << e133_header.Sequence();
-  m_tcp_message_sender.Acknowledge(e133_header.Sequence());
+
+  ola::STLRemoveAndDelete(&m_unacked_messages, e133_header.Sequence());
+  if (m_unsent_messages && !m_message_queue->LimitReached()) {
+    bool sent_all = true;
+    PendingMessageMap::iterator iter = m_unacked_messages.begin();
+    for (; iter != m_unacked_messages.end(); iter++) {
+      OutstandingMessage *message = iter->second;
+      if (message->was_sent())
+        continue;
+      bool was_sent = SendRDMCommand(iter->first, message->endpoint(),
+                                     message->rdm_response());
+      sent_all &= was_sent;
+      message->set_was_sent(was_sent);
+    }
+    m_unsent_messages = !sent_all;
+  }
 }
