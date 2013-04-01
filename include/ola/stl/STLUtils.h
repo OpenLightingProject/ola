@@ -74,7 +74,8 @@ inline bool STLContains(const T1 &container, const T2 &value) {
  */
 template<typename T1>
 void STLKeys(const T1 &container, vector<typename T1::key_type> *keys) {
-  typename T1::iterator iter = container.begin();
+  keys->reserve(keys->size() + container.size());
+  typename T1::const_iterator iter = container.begin();
   for (; iter != container.end(); ++iter)
     keys->push_back(iter->first);
 }
@@ -84,6 +85,7 @@ void STLKeys(const T1 &container, vector<typename T1::key_type> *keys) {
  */
 template<typename T1>
 void STLValues(const T1 &container, vector<typename T1::mapped_type> *values) {
+  values->reserve(values->size() + container.size());
   typename T1::const_iterator iter = container.begin();
   for (; iter != container.end(); ++iter)
     values->push_back(iter->second);
@@ -123,7 +125,7 @@ typename T1::mapped_type STLFindOrNull(const T1 &container,
 /**
  * Sets key : value, replacing any existing value. Note if value_type is a
  * pointer, you probably don't wait this since you'll leak memory if you
- * replace a value. Use STLSafeReplace instead.
+ * replace a value.
  */
 template<typename T1>
 void STLReplace(T1 *container, const typename T1::key_type &key,

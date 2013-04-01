@@ -34,7 +34,7 @@
 
 
 /**
- * The EndpointManager holds all non-root endpoints.
+ * The EndpointManager holds all endpoints.
  * The manager provides a mechanism to send notifications when endpoints are
  * added & removed. This is done through callbacks.
  */
@@ -61,10 +61,9 @@ class EndpointManager {
 
   private:
     // hash_map of non-root endpoints
-    typedef HASH_NAMESPACE::HASH_MAP_CLASS<
-      uint16_t,
-      class E133Endpoint*> endpoint_map;
-    endpoint_map m_endpoint_map;
+    typedef HASH_NAMESPACE::HASH_MAP_CLASS<uint16_t, class E133Endpoint*>
+      EndpointMap;
+    EndpointMap m_endpoint_map;
 
     // list of callbacks to run
     typedef struct {

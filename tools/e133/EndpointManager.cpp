@@ -19,6 +19,7 @@
 
 #include <ola/Logging.h>
 #include <vector>
+#include "ola/stl/STLUtils.h"
 #include "tools/e133/EndpointManager.h"
 
 using std::vector;
@@ -35,9 +36,7 @@ bool EndpointManager::RegisterEndpoint(uint16_t endpoint_id,
     OLA_WARN << "Can't register the root endpoint";
   }
 
-  endpoint_map::iterator iter = m_endpoint_map.find(endpoint_id);
-  if (iter == m_endpoint_map.end()) {
-    m_endpoint_map[endpoint_id] = endpoint;
+  if (ola::STLInsertIfNotPresent(&m_endpoint_map, endpoint_id, endpoint)) {
     RunNotifications(endpoint_id, ADD);
     return true;
   }
@@ -47,13 +46,11 @@ bool EndpointManager::RegisterEndpoint(uint16_t endpoint_id,
 
 /**
  * Unregister a E133Endpoint
- * @param endpoint_id the index of the endpont to de-register
+ * @param endpoint_id the index of the endpont to un-register
  */
 void EndpointManager::UnRegisterEndpoint(uint16_t endpoint_id) {
-  endpoint_map::iterator iter = m_endpoint_map.find(endpoint_id);
-  if (iter != m_endpoint_map.end()) {
+  if (ola::STLRemove(&m_endpoint_map, endpoint_id)) {
     RunNotifications(endpoint_id, REMOVE);
-    m_endpoint_map.erase(iter);
   }
 }
 
@@ -62,27 +59,17 @@ void EndpointManager::UnRegisterEndpoint(uint16_t endpoint_id) {
  * Lookup an endpoint by number.
  */
 E133Endpoint* EndpointManager::GetEndpoint(uint16_t endpoint_id) const {
-  endpoint_map::const_iterator iter = m_endpoint_map.find(endpoint_id);
-  if (iter == m_endpoint_map.end()) {
-    OLA_INFO << "Request to endpoint " << endpoint_id <<
-      " but no Endpoint has been registered, this is a bug!";
-    return NULL;
-  }
-  return iter->second;
+  return ola::STLFindOrNull(m_endpoint_map, endpoint_id);
 }
 
 
 /**
- * Fetch a list of all registered endpoints.
+ * Fetch a list of all registered endpoints ids.
  * @param id_list pointer to a vector to be filled in with the endpoint ids.
  */
 void EndpointManager::EndpointIDs(vector<uint16_t> *id_list) const {
   id_list->clear();
-  id_list->reserve(m_endpoint_map.size());
-
-  endpoint_map::const_iterator iter = m_endpoint_map.begin();
-  for (; iter != m_endpoint_map. end(); ++iter)
-    id_list->push_back(iter->first);
+  ola::STLKeys(m_endpoint_map, id_list);
 }
 
 
