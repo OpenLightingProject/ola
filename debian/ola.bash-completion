@@ -343,3 +343,264 @@ have rdmpro_sniffer && _rdmpro_sniffer()
   return 0
 }
 complete -F _rdmpro_sniffer rdmpro_sniffer
+
+#e131_transmit_test
+#have e131_transmit_test && 
+_e131_transmit_test()
+{
+  local cur
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  COMPREPLY=($( compgen -W '--interactive' -- $cur ) )
+}
+complete -F _e131_transmit_test e131_transmit_test
+
+#e131_loadtest
+#have e131_loadtest && 
+_e131_loadtest()
+{
+  local cur
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  COMPREPLY=($( compgen -W '--fps --universes' -- $cur ) )
+}
+complete -F _e131_loadtest e131_loadtest
+
+#slp_client
+#have slp_client && 
+_slp_client()
+{
+  local cur prev opts
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--log-level --scopes --lifetime'
+
+  #TODO: Check if scopes are listed anywhere
+  #TODO: Get/output a list of command-and-arguments and complete them
+  case "$prev" in
+    -l | --log-level)
+      opts='0 1 2 3 4'
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
+
+  return 0
+}
+complete -F _slp_client slp_client
+
+#slp_server
+#have slp_server && 
+_slp_server()
+{
+  local cur prev opts
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--ip --log-level --slp-port --no-http --no-da --setuid --setgid --scopes --services'
+
+  #TODO: Check if setuid and setgid are Linux ones, and if so complete them
+  #TODO: Check if scopes are listed anywhere
+  case "$prev" in
+    -l | --log-level)
+      opts='0 1 2 3 4'
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
+
+  return 0
+}
+complete -F _slp_server slp_server
+
+#e133_controller
+#have e133_controller && 
+_e133_controller()
+{
+  local cur prev opts
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--endpoint --target --ip --log-level --pid-location --set --uid'
+
+  #TODO: Auto complete PIDs, probably add an option to list them too
+  case "$prev" in
+    -l | --log-level)
+      opts='0 1 2 3 4'
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
+
+  return 0
+}
+complete -F _e133_controller e133_controller
+
+#e133_monitor
+#have e133_monitor && 
+_e133_monitor()
+{
+  local cur prev opts
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--targets --log-level --pid-location'
+
+  #TODO: Auto complete PIDs, probably add an option to list them too
+  case "$prev" in
+    -l | --log-level)
+      opts='0 1 2 3 4'
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
+
+  return 0
+}
+complete -F _e133_monitor e133_monitor
+
+#e133_receiver
+#have e133_receiver && 
+_e133_receiver()
+{
+  local cur prev opts
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--ip --log-level --timeout --universe --uid'
+
+  case "$prev" in
+    -l | --log-level)
+      opts='0 1 2 3 4'
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
+
+  return 0
+}
+complete -F _e133_receiver e133_receiver
+
+#slp_locate
+#have slp_locate && 
+_slp_locate()
+{
+  local cur prev opts
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--log-level --refresh'
+
+  case "$prev" in
+    -l | --log-level)
+      opts='0 1 2 3 4'
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
+
+  return 0
+}
+complete -F _slp_locate slp_locate
+
+#slp_register
+#have slp_register && 
+_slp_register()
+{
+  local cur prev opts
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--log-level --timeout --openslp'
+  #TODO: Ensure binary reports if --openslp option is used without it being installed
+
+  case "$prev" in
+    -l | --log-level)
+      opts='0 1 2 3 4'
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
+
+  return 0
+}
+complete -F _slp_register slp_register
+
+#slp_sa_test
+#TODO: Work out why this one isn't working for some reason!
+#Only seems to fail when run as ./slp_sa_test, works fine as ../slp_sa_test!
+#have slp_sa_test && 
+_slp_sa_test()
+{
+  local cur prev opts
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--log-level --timeout --list-tests --tests'
+
+  case "$prev" in
+    -l | --log-level)
+      opts='0 1 2 3 4'
+      ;;
+    -t | --tests)
+      #TODO: Check if this needs to work with a comma seperated list of tests
+      #TODO: Get this to work with the $0 command
+      #opts="$( command slp_sa_test --list-tests 2>/dev/null )"
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
+
+  return 0
+}
+complete -F _slp_sa_test slp_sa_test
+
+#usbpro_firmware
+#have usbpro_firmware && 
+_usbpro_firmware()
+{
+  local cur prev opts
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  opts='--device --firmware --log-level'
+
+  case "$prev" in
+    -l | --log-level)
+      opts='0 1 2 3 4'
+      ;;
+    -d | --device)
+      COMPREPLY=($( compgen -G "/dev/ttyUSB*" -- $cur ) )
+      return 0
+      ;;
+  esac;
+
+  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
+
+  return 0
+}
+complete -F _usbpro_firmware usbpro_firmware
+
+#ola_throughput
+#have ola_throughput && 
+_ola_throughput()
+{
+  local cur
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  COMPREPLY=($( compgen -W '--dmx --sleep --universe' -- $cur ) )
+}
+complete -F _ola_throughput ola_throughput
