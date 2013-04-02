@@ -33,7 +33,7 @@ namespace osc {
 
 /**
  * The Input Port class, for receiving DMX via OSC. Note that the description
- * of the port may change as it's patched and unpatched from a unvierse (since
+ * of the port may change as it's patched and unpatched from a universe (since
  * the description can contain %d). Therefore we store the description as a
  * template, as well as the current value.
  */

@@ -532,7 +532,7 @@ bool Universe::UpdateDependants() {
   vector<OutputPort*>::const_iterator iter;
   set<Client*>::const_iterator client_iter;
 
-  // write to all ports assigned to this unviverse
+  // write to all ports assigned to this universe
   for (iter = m_output_ports.begin(); iter != m_output_ports.end(); ++iter) {
     (*iter)->WriteDMX(m_buffer, m_active_priority);
   }

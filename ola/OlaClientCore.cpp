@@ -1121,7 +1121,7 @@ void OlaClientCore::HandleUniverseInfo(universe_info_args *args) {
       return;
 
     } else if (args->reply->universe_size() > 1) {
-      error_string = "Too many unvierses in response";
+      error_string = "Too many universes in response";
     } else {
       error_string = "Universe not found";
     }

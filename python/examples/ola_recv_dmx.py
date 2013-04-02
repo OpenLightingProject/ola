@@ -32,7 +32,7 @@ def Usage():
   print textwrap.dedent("""
   Usage: ola_recv_dmx.py --universe <universe>
 
-  Display the DXM512 data for the unvierse.
+  Display the DXM512 data for the universe.
 
   -h, --help                Display this help message and exit.
   -u, --universe <universe> Universe number.""")
