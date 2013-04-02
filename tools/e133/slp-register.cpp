@@ -195,7 +195,9 @@ void DisplayHelpAndExit(char arg[]) {
   "  -h, --help               Display this help message and exit.\n"
   "  -l, --log-level <level>  Set the logging level 0 .. 4.\n"
   "  -t, --timeout <seconds>  The value to use for the service lifetime\n"
+#ifdef HAVE_LIBSLP
   "  --openslp                 Use openslp rather than the OLA SLP server\n"
+#endif
   << std::endl;
   exit(EX_USAGE);
 }
