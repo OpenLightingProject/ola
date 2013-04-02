@@ -1,5 +1,4 @@
 SOURCES = AdvancedTCPConnector.h\
-          BufferedTCPSocket.h \
           HealthCheckedConnection.h \
           IPV4Address.h \
           Interface.h \

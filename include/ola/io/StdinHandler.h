@@ -23,25 +23,27 @@
 #define INCLUDE_OLA_IO_STDINHANDLER_H_
 
 #include <termios.h>
-
+#include <ola/Callback.h>
 #include <ola/io/Descriptor.h>
 #include <ola/io/SelectServerInterface.h>
+#include <memory>
+
 
 namespace ola {
 namespace io {
 
 class StdinHandler {
   public :
-    explicit StdinHandler(SelectServerInterface *ss);
-    virtual ~StdinHandler();
+    typedef ola::Callback1<void, char> InputCallback;
 
-  protected:
-    virtual void HandleCharacter(char c) = 0;
+    explicit StdinHandler(SelectServerInterface *ss, InputCallback *callback);
+    ~StdinHandler();
 
   private:
     UnmanagedFileDescriptor m_stdin_descriptor;
     termios m_old_tc;
     SelectServerInterface *m_ss;
+    std::auto_ptr<InputCallback> m_callback;
 
     // stdin
     void HandleData();

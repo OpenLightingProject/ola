@@ -84,11 +84,6 @@ class ConnectedClient {
 };
 
 
-void StdinHandler::HandleCharacter(char c) {
-  m_slp_server->Input(c);
-}
-
-
 /**
  * Setup a new SLP server.
  * @param socket the UDP Socket to use for SLP messages.
@@ -100,7 +95,7 @@ SLPDaemon::SLPDaemon(ola::network::UDPSocket *udp_socket,
                      ola::ExportMap *export_map)
     : m_ss(export_map, &m_clock),
       m_slp_server(&m_ss, udp_socket, tcp_socket, export_map, options),
-      m_stdin_handler(&m_ss, this),
+      m_stdin_handler(&m_ss, NewCallback(this, &SLPDaemon::Input)),
 
       m_rpc_port(options.rpc_port),
       m_rpc_socket_factory(NewCallback(this, &SLPDaemon::NewTCPConnection)),
@@ -122,7 +117,7 @@ SLPDaemon::SLPDaemon(ola::network::UDPSocket *udp_socket,
 SLPDaemon::~SLPDaemon() {
   m_rpc_accept_socket.Close();
 
-  STLDeleteValues(&m_disconnected_clients);
+  STLDeleteElements(&m_disconnected_clients);
   STLDeleteValues(&m_connected_clients);
 }
 

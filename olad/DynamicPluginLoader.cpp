@@ -93,7 +93,7 @@ using std::vector;
 
 
 DynamicPluginLoader::~DynamicPluginLoader() {
-  STLDeleteValues(&m_plugins);
+  STLDeleteElements(&m_plugins);
 }
 
 

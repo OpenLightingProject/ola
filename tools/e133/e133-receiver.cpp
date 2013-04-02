@@ -30,11 +30,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <sysexits.h>
-#include <termios.h>
 
 #include <ola/BaseTypes.h>
 #include <ola/Logging.h>
+#include <ola/base/Init.h>
 #include <ola/io/SelectServer.h>
+#include <ola/io/StdinHandler.h>
 #include <ola/network/InterfacePicker.h>
 #include <ola/network/NetworkUtils.h>
 #include <ola/rdm/RDMCommand.h>
@@ -198,10 +199,9 @@ class SimpleE133Node {
 
   private:
     ola::io::SelectServer m_ss;
-    ola::io::UnmanagedFileDescriptor m_stdin_descriptor;
+    ola::io::StdinHandler m_stdin_handler;
     auto_ptr<BaseSLPThread> m_slp_thread;
     EndpointManager m_endpoint_manager;
-    TCPConnectionStats m_tcp_stats;
     E133Device m_e133_device;
     RootEndpoint m_root_endpoint;
     E133Endpoint m_first_endpoint;
@@ -209,17 +209,16 @@ class SimpleE133Node {
     uint16_t m_lifetime;
     UID m_uid;
     const IPV4Address m_ip_address;
-    termios m_old_tc;
-
-    SimpleE133Node(const SimpleE133Node&);
-    SimpleE133Node operator=(const SimpleE133Node&);
 
     void RegisterCallback(bool ok);
     void DeRegisterCallback(bool ok);
 
-    void Input();
+    void Input(char c);
     void DumpTCPStats();
     void SendUnsolicited();
+
+    SimpleE133Node(const SimpleE133Node&);
+    SimpleE133Node operator=(const SimpleE133Node&);
 };
 
 
@@ -228,9 +227,10 @@ class SimpleE133Node {
  */
 SimpleE133Node::SimpleE133Node(const IPV4Address &ip_address,
                                const options &opts)
-    : m_stdin_descriptor(STDIN_FILENO),
-      m_e133_device(&m_ss, ip_address, &m_endpoint_manager, &m_tcp_stats),
-      m_root_endpoint(*opts.uid, &m_endpoint_manager, &m_tcp_stats),
+    : m_stdin_handler(&m_ss, ola::NewCallback(this, &SimpleE133Node::Input)),
+      m_e133_device(&m_ss, ip_address, &m_endpoint_manager),
+      m_root_endpoint(*opts.uid, &m_endpoint_manager,
+                      m_e133_device.GetTCPStats()),
       m_first_endpoint(NULL),  // NO CONTROLLER FOR NOW!
       m_responder(*opts.uid),
       m_lifetime(opts.lifetime),
@@ -250,7 +250,6 @@ SimpleE133Node::SimpleE133Node(const IPV4Address &ip_address,
 
 SimpleE133Node::~SimpleE133Node() {
   m_endpoint_manager.UnRegisterEndpoint(1);
-  tcsetattr(STDIN_FILENO, TCSANOW, &m_old_tc);
   m_slp_thread->Join(NULL);
   m_slp_thread->Cleanup();
 }
@@ -260,14 +259,6 @@ SimpleE133Node::~SimpleE133Node() {
  * Init this node
  */
 bool SimpleE133Node::Init() {
-  // setup notifications for stdin & turn off buffering
-  m_stdin_descriptor.SetOnData(ola::NewCallback(this, &SimpleE133Node::Input));
-  m_ss.AddReadDescriptor(&m_stdin_descriptor);
-  tcgetattr(STDIN_FILENO, &m_old_tc);
-  termios new_tc = m_old_tc;
-  new_tc.c_lflag &= static_cast<tcflag_t>(~ICANON & ~ECHO);
-  tcsetattr(STDIN_FILENO, TCSANOW, &new_tc);
-
   if (!m_e133_device.Init())
     return false;
 
@@ -323,8 +314,8 @@ void SimpleE133Node::DeRegisterCallback(bool ok) {
 /**
  * Called when there is data on stdin.
  */
-void SimpleE133Node::Input() {
-  switch (getchar()) {
+void SimpleE133Node::Input(char c) {
+  switch (c) {
     case 'c':
       m_e133_device.CloseTCPConnection();
       break;
@@ -347,10 +338,11 @@ void SimpleE133Node::Input() {
  * Dump the TCP stats
  */
 void SimpleE133Node::DumpTCPStats() {
-  cout << "IP: " << m_tcp_stats.ip_address << endl;
-  cout << "Connection Unhealthy Events: " << m_tcp_stats.unhealthy_events <<
+  const TCPConnectionStats* stats = m_e133_device.GetTCPStats();
+  cout << "IP: " << stats->ip_address << endl;
+  cout << "Connection Unhealthy Events: " << stats->unhealthy_events <<
     endl;
-  cout << "Connection Events: " << m_tcp_stats.connection_events << endl;
+  cout << "Connection Events: " << stats->connection_events << endl;
 }
 
 
@@ -368,11 +360,12 @@ void SimpleE133Node::SendUnsolicited() {
 
   struct tcp_stats_message_s tcp_stats_message;
 
-  tcp_stats_message.ip_address = m_tcp_stats.ip_address.AsInt();
+  const TCPConnectionStats* stats = m_e133_device.GetTCPStats();
+  tcp_stats_message.ip_address = stats->ip_address.AsInt();
   tcp_stats_message.unhealthy_events =
-    HostToNetwork(m_tcp_stats.unhealthy_events);
+    HostToNetwork(stats->unhealthy_events);
   tcp_stats_message.connection_events =
-    HostToNetwork(m_tcp_stats.connection_events);
+    HostToNetwork(stats->connection_events);
 
   UID bcast_uid = UID::AllDevices();
   const RDMResponse *response = new ola::rdm::RDMGetResponse(
@@ -440,15 +433,8 @@ int main(int argc, char *argv[]) {
     exit(EX_UNAVAILABLE);
 
   // signal handler
-  struct sigaction act, oact;
-  act.sa_handler = InteruptSignal;
-  sigemptyset(&act.sa_mask);
-  act.sa_flags = 0;
-
-  if (sigaction(SIGINT, &act, &oact) < 0) {
-    OLA_WARN << "Failed to install signal SIGINT";
+  if (!ola::InstallSignal(SIGINT, &InteruptSignal))
     return false;
-  }
 
   cout << "---------------  Controls  ----------------\n";
   cout << " c - Close the TCP connection\n";

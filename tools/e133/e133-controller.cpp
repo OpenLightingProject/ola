@@ -36,7 +36,6 @@
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/io/SelectServer.h>
-#include <ola/io/MemoryBlockPool.h>
 #include <ola/io/IOStack.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/NetworkUtils.h>
@@ -62,16 +61,16 @@
 #include "plugins/e131/e131/ACNVectors.h"
 #include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/E133Inflator.h"
-#include "plugins/e131/e131/E133PDU.h"
+#include "plugins/e131/e131/E133StatusHelper.h"
+#include "plugins/e131/e131/E133StatusInflator.h"
 #include "plugins/e131/e131/RDMInflator.h"
 #include "plugins/e131/e131/RDMPDU.h"
 #include "plugins/e131/e131/RootInflator.h"
-#include "plugins/e131/e131/RootPDU.h"
 #include "plugins/e131/e131/UDPTransport.h"
 
-#include "tools/e133/E133Endpoint.h"
 #include "tools/e133/E133URLParser.h"
 #include "tools/e133/OLASLPThread.h"
+#include "tools/e133/MessageBuilder.h"
 #ifdef HAVE_LIBSLP
 #include "tools/e133/OpenSLPThread.h"
 #endif
@@ -82,10 +81,8 @@ using ola::io::IOStack;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::network::UDPSocket;
-using ola::plugin::e131::E133PDU;
 using ola::plugin::e131::E133_PORT;
 using ola::plugin::e131::RDMPDU;
-using ola::plugin::e131::RootPDU;
 using ola::rdm::PidStoreHelper;
 using ola::rdm::RDMCommandSerializer;
 using ola::rdm::RDMRequest;
@@ -240,9 +237,15 @@ void DisplayHelpAndExit(char *argv[]) {
  */
 class SimpleE133Controller {
   public:
+    enum SLPOption {
+      NO_SLP,
+      OPEN_SLP,
+      OLA_SLP,
+    };
+
     struct Options {
       IPV4Address controller_ip;
-      bool use_openslp;
+      SLPOption slp_option;
     };
 
     SimpleE133Controller(const Options &options,
@@ -270,20 +273,18 @@ class SimpleE133Controller {
   private:
     const IPV4Address m_controller_ip;
     ola::io::SelectServer m_ss;
-    ola::io::MemoryBlockPool m_block_pool;
 
-    // The Controller's CID
-    ola::plugin::e131::CID m_cid;
+    MessageBuilder m_message_builder;
 
     // inflators
     ola::plugin::e131::RootInflator m_root_inflator;
     ola::plugin::e131::E133Inflator m_e133_inflator;
     ola::plugin::e131::RDMInflator m_rdm_inflator;
+    ola::plugin::e131::E133StatusInflator m_e133_status_inflator;
 
     // sockets & transports
     UDPSocket m_udp_socket;
     ola::plugin::e131::IncomingUDPTransport m_incoming_udp_transport;
-    ola::plugin::e131::OutgoingUDPTransportImpl m_outgoing_udp_transport;
 
     // hash_map of UIDs to IPs
     typedef std::map<UID, IPV4Address> uid_to_ip_map;
@@ -305,6 +306,12 @@ class SimpleE133Controller {
                          const RDMResponse *response,
                          const vector<std::string> &packets);
     void HandleNack(const RDMResponse *response);
+
+    void HandleStatusMessage(
+        const ola::plugin::e131::TransportHeader &transport_header,
+        const ola::plugin::e131::E133Header &e133_header,
+        uint16_t status_code,
+        const string &description);
 };
 
 
@@ -315,27 +322,34 @@ SimpleE133Controller::SimpleE133Controller(
     const Options &options,
     PidStoreHelper *pid_helper)
     : m_controller_ip(options.controller_ip),
-      m_cid(ola::plugin::e131::CID::Generate()),
+      m_message_builder(ola::plugin::e131::CID::Generate(), "E1.33 Controller"),
       m_incoming_udp_transport(&m_udp_socket, &m_root_inflator),
-      m_outgoing_udp_transport(&m_udp_socket),
       m_src_uid(OPEN_LIGHTING_ESTA_CODE, 0xabcdabcd),
       m_pid_helper(pid_helper),
       m_command_printer(&cout, m_pid_helper),
       m_uid_list_updated(false) {
 
-  if (options.use_openslp) {
+  if (options.slp_option == OPEN_SLP) {
 #ifdef HAVE_LIBSLP
     m_slp_thread.reset(new OpenSLPThread(&m_ss));
 #else
     OLA_WARN << "openslp not installed";
 #endif
-  } else {
+  } else if (options.slp_option == OLA_SLP) {
     m_slp_thread.reset(new OLASLPThread(&m_ss));
   }
-  m_slp_thread->SetNewDeviceCallback(
-      ola::NewCallback(this, &SimpleE133Controller::DiscoveryCallback));
+
+  if (m_slp_thread.get()) {
+    m_slp_thread->SetNewDeviceCallback(
+        ola::NewCallback(this, &SimpleE133Controller::DiscoveryCallback));
+  }
+
   m_root_inflator.AddInflator(&m_e133_inflator);
   m_e133_inflator.AddInflator(&m_rdm_inflator);
+  m_e133_inflator.AddInflator(&m_e133_status_inflator);
+
+  m_e133_status_inflator.SetStatusHandler(
+      NewCallback(this, &SimpleE133Controller::HandleStatusMessage));
 }
 
 
@@ -343,8 +357,10 @@ SimpleE133Controller::SimpleE133Controller(
  * Tear down
  */
 SimpleE133Controller::~SimpleE133Controller() {
-  m_slp_thread->Join(NULL);
-  m_slp_thread->Cleanup();
+  if (m_slp_thread.get()) {
+    m_slp_thread->Join(NULL);
+    m_slp_thread->Cleanup();
+  }
 }
 
 
@@ -365,12 +381,14 @@ bool SimpleE133Controller::Init() {
                   &ola::plugin::e131::IncomingUDPTransport::Receive));
   m_ss.AddReadDescriptor(&m_udp_socket);
 
-  if (!m_slp_thread->Init()) {
-    OLA_WARN << "SLPThread Init() failed";
-    return false;
-  }
+  if (m_slp_thread.get()) {
+    if (!m_slp_thread->Init()) {
+      OLA_WARN << "SLPThread Init() failed";
+      return false;
+    }
 
-  m_slp_thread->Start();
+    m_slp_thread->Start();
+  }
   return true;
 }
 
@@ -422,7 +440,6 @@ void SimpleE133Controller::SendGetRequest(const UID &dst_uid,
 
   if (!SendRequest(dst_uid, endpoint, command)) {
     OLA_FATAL << "Failed to send request";
-    OLA_INFO << "term";
     m_ss.Terminate();
   } else if (dst_uid.IsBroadcast()) {
     OLA_INFO << "Request broadcast";
@@ -495,7 +512,7 @@ bool SimpleE133Controller::SendRequest(const UID &uid,
                                        RDMRequest *raw_request) {
   auto_ptr<RDMRequest> request(raw_request);
 
-  IPV4Address *target_address = ola::STLFindPtrOrNull(&m_uid_to_ip, uid);
+  IPV4Address *target_address = ola::STLFind(&m_uid_to_ip, uid);
   if (!target_address) {
     OLA_WARN << "UID " << uid << " not found";
     return false;
@@ -505,13 +522,11 @@ bool SimpleE133Controller::SendRequest(const UID &uid,
   OLA_INFO << "Sending to " << target << "/" << uid << "/" << endpoint;
 
   // Build the E1.33 packet.
-  IOStack packet(&m_block_pool);
+  IOStack packet(m_message_builder.pool());
   RDMCommandSerializer::Write(*request, &packet);
   RDMPDU::PrependPDU(&packet);
-  E133PDU::PrependPDU(&packet, ola::plugin::e131::VECTOR_FRAMING_RDMNET,
-                      "E1.33 Controller", 0, endpoint);
-  RootPDU::PrependPDU(&packet, ola::plugin::e131::VECTOR_ROOT_E133, m_cid);
-  ola::plugin::e131::PreamblePacker::AddUDPPreamble(&packet);
+  m_message_builder.BuildUDPRootE133(
+      &packet, ola::plugin::e131::VECTOR_FRAMING_RDMNET, 0, endpoint);
 
   // Send the packet
   m_udp_socket.SendTo(&packet, target);
@@ -538,8 +553,8 @@ void SimpleE133Controller::HandlePacket(
   // don't bother checking anything here
   (void) e133_header;
 
-  // try to locate the pending request
-  OLA_INFO << "Got data from " << transport_header.SourceIP();
+  // try to locate the pending request here
+  OLA_INFO << "Got data from " << transport_header.Source();
 
   // attempt to unpack as a response
   ola::rdm::rdm_response_code response_code;
@@ -634,13 +649,33 @@ void SimpleE133Controller::HandleNack(const RDMResponse *response) {
 }
 
 
+void SimpleE133Controller::HandleStatusMessage(
+    const ola::plugin::e131::TransportHeader &transport_header,
+    const ola::plugin::e131::E133Header&,
+    uint16_t status_code,
+    const string &description) {
+  // TODO(simon): match src IP, sequence # etc. here.
+  OLA_INFO << "Got status code from " << transport_header.Source();
+
+  ola::plugin::e131::E133StatusCode e133_status_code;
+  if (!ola::plugin::e131::IntToStatusCode(status_code, &e133_status_code)) {
+    OLA_INFO << "Unknown E1.33 Status code " << status_code;
+  } else {
+    OLA_INFO << "Device returned code " << status_code << " : "
+             << ola::plugin::e131::StatusMessageIdToString(e133_status_code)
+             << " : " << description;
+  }
+  Stop();
+}
+
+
 /*
  * Startup a node
  */
 int main(int argc, char *argv[]) {
   options opts;
   opts.log_level = ola::OLA_LOG_WARN;
-  opts.endpoint = ROOT_E133_ENDPOINT;
+  opts.endpoint = 0;
   opts.help = false;
   opts.use_openslp = false;
   opts.pid_location = PID_DATA_DIR;
@@ -722,7 +757,12 @@ int main(int argc, char *argv[]) {
 
   SimpleE133Controller::Options controller_options;
   controller_options.controller_ip = controller_ip;
-  controller_options.use_openslp = opts.use_openslp;
+  if (target_ip.AsInt()) {
+    controller_options.slp_option = SimpleE133Controller::NO_SLP;
+  } else {
+    controller_options.slp_option = opts.use_openslp ?
+      SimpleE133Controller::OPEN_SLP : SimpleE133Controller::OLA_SLP;
+  }
 
   SimpleE133Controller controller(controller_options, &pid_helper);
   if (!controller.Init()) {

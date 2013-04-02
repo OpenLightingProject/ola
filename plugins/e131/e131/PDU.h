@@ -79,6 +79,11 @@ class PDU {
         ola::io::OutputBufferInterface *output,
         uint8_t flags = VFLAG_MASK | HFLAG_MASK | DFLAG_MASK);
 
+    static void PrependFlagsAndLength(
+        ola::io::OutputBufferInterface *output,
+        unsigned int length,
+        uint8_t flags);
+
     // This indicates a vector is present
     static const uint8_t VFLAG_MASK = 0x40;
     // This indicates a header field is present

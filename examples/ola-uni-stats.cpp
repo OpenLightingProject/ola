@@ -54,7 +54,7 @@ using std::string;
 using std::vector;
 
 
-class UniverseTracker: private ola::io::StdinHandler {
+class UniverseTracker {
   public:
     UniverseTracker(OlaCallbackClientWrapper *wrapper,
                     const vector<unsigned int> &universes);
@@ -66,7 +66,7 @@ class UniverseTracker: private ola::io::StdinHandler {
     void ResetStats();
 
   protected:
-    void HandleCharacter(char c);
+    void Input(char c);
 
   private:
     struct UniverseStats {
@@ -91,6 +91,7 @@ class UniverseTracker: private ola::io::StdinHandler {
     UniverseStatsMap m_stats;
     ola::TimeStamp m_start_time;
     OlaCallbackClientWrapper *m_wrapper;
+    ola::io::StdinHandler m_stdin_handler;
     ola::Clock m_clock;
 
     void UniverseData(unsigned int universe, const DmxBuffer &dmx,
@@ -101,8 +102,9 @@ class UniverseTracker: private ola::io::StdinHandler {
 
 UniverseTracker::UniverseTracker(OlaCallbackClientWrapper *wrapper,
                                  const vector<unsigned int> &universes)
-    : StdinHandler(wrapper->GetSelectServer()),
-      m_wrapper(wrapper) {
+    : m_wrapper(wrapper),
+      m_stdin_handler(wrapper->GetSelectServer(),
+                      ola::NewCallback(this, &UniverseTracker::Input)) {
   // set callback
   m_wrapper->GetClient()->SetDmxCallback(
       ola::NewCallback(this, &UniverseTracker::UniverseData));
@@ -173,7 +175,7 @@ void UniverseTracker::ResetStats() {
   cout << "Reset counters" << endl;
 }
 
-void UniverseTracker::HandleCharacter(char c) {
+void UniverseTracker::Input(char c) {
   switch (c) {
     case 'q':
       m_wrapper->GetSelectServer()->Terminate();

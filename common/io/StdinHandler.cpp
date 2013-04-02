@@ -28,9 +28,11 @@
 namespace ola {
 namespace io {
 
-StdinHandler::StdinHandler(SelectServerInterface *ss)
+StdinHandler::StdinHandler(SelectServerInterface *ss,
+                           InputCallback *callback)
     : m_stdin_descriptor(STDIN_FILENO),
-      m_ss(ss) {
+      m_ss(ss),
+      m_callback(callback) {
   m_stdin_descriptor.SetOnData(
     ola::NewCallback(this, &StdinHandler::HandleData));
   // turn off buffering
@@ -52,7 +54,8 @@ StdinHandler::~StdinHandler() {
 
 void StdinHandler::HandleData() {
   char c = getchar();
-  HandleCharacter(c);
+  if (m_callback.get())
+    m_callback->Run(c);
 }
 }  // io
 }  // ola

@@ -39,6 +39,10 @@ enum E133StatusCode {
   SC_E133_BROADCAST_COMPLETE = 0x0009,
 };
 
+// The max size of an E1.33 Status string.
+enum {
+  MAX_E133_STATUS_STRING_SIZE = 64
+};
 }  // e131
 }  // plugin
 }  // ola

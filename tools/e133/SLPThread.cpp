@@ -42,7 +42,7 @@ const uint16_t BaseSLPThread::SA_REREGISTRATION_TIME = 30;
 const unsigned int BaseSLPThread::DEFAULT_DISCOVERY_INTERVAL_SECONDS = 60;
 
 using ola::NewSingleCallback;
-using ola::STLFindPtrOrNull;
+using ola::STLFind;
 using ola::STLReplace;
 using ola::slp::URLEntries;
 using std::auto_ptr;
@@ -276,7 +276,7 @@ void BaseSLPThread::RunDiscoveryForService(const string service) {
 void BaseSLPThread::DiscoveryComplete(const string service,
                                       bool result,
                                       const URLEntries &urls) {
-  DiscoveryState *state = STLFindPtrOrNull(&m_discovery_callbacks, service);
+  DiscoveryState *state = STLFind(&m_discovery_callbacks, service);
   if (!state)
     return;
 
@@ -314,7 +314,7 @@ void BaseSLPThread::RunDiscoveryCallback(DiscoveryCallback *callback,
  */
 void BaseSLPThread::DiscoveryTriggered(const string service) {
   OLA_INFO << "scheduled next discovery run";
-  DiscoveryState *state = STLFindPtrOrNull(&m_discovery_callbacks, service);
+  DiscoveryState *state = STLFind(&m_discovery_callbacks, service);
   if (!state)
     return;
   state->timeout = ola::thread::INVALID_TIMEOUT;
@@ -363,7 +363,7 @@ void BaseSLPThread::RegisterService(RegistrationCallback *callback,
  */
 void BaseSLPThread::RegistrationComplete(RegistrationCallback *callback,
                                          string url, bool ok) {
-  URLRegistrationState *url_state = STLFindPtrOrNull(&m_url_map, url);
+  URLRegistrationState *url_state = STLFind(&m_url_map, url);
   if (url_state) {
     uint16_t lifetime = url_state->lifetime - SA_REREGISTRATION_TIME;
     url_state->timeout = m_ss.RegisterSingleTimeout(
@@ -400,7 +400,7 @@ void BaseSLPThread::DeRegisterService(RegistrationCallback *callback,
  */
 void BaseSLPThread::ReRegisterService(string url) {
   OLA_INFO << "Registering " << url << " again";
-  URLRegistrationState *url_state = STLFindPtrOrNull(&m_url_map, url);
+  URLRegistrationState *url_state = STLFind(&m_url_map, url);
   if (url_state) {
     RegisterSLPService(
         NewSingleCallback(this, &BaseSLPThread::RegistrationComplete,

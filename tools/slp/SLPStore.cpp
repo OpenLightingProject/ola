@@ -256,7 +256,7 @@ void SLPStore::Clean(const TimeStamp &now) {
 void SLPStore::Reset() {
   for (ServiceMap::iterator iter = m_services.begin();
         iter != m_services.end(); ++iter) {
-    STLDeleteValues(&(iter->second->services));
+    STLDeleteElements(&(iter->second->services));
     delete iter->second;
   }
 }

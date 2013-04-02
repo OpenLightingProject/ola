@@ -36,7 +36,7 @@ namespace network {
 
 /**
  * Manages the TCP connections to ip:ports.
- * The AdvancedTCPConnector failed_attempts to open connections to ip:ports,
+ * The AdvancedTCPConnector attempts to open connections to ip:ports,
  * backing off exponentially if we can't connect.
  *
  * Limitiations:

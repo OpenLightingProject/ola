@@ -678,7 +678,7 @@ void SelectServer::UnregisterAll() {
     m_events.pop();
   }
 
-  STLDeleteValues(&m_loop_closures);
+  STLDeleteElements(&m_loop_closures);
 }
 
 void SelectServer::DrainAndExecute() {

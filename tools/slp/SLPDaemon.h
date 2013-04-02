@@ -57,22 +57,6 @@ namespace slp {
 
 class SLPServiceImpl;
 
-/**
- * Capture events from stdin and pass them to the SLPDaemon to act on
- */
-class StdinHandler: public ola::io::StdinHandler {
-  public:
-    StdinHandler(ola::io::SelectServer *ss, class SLPDaemon *slp_server)
-        : ola::io::StdinHandler(ss),
-          m_slp_server(slp_server) {
-    }
-
-    void HandleCharacter(char c);
-
-  private:
-    class SLPDaemon *m_slp_server;
-};
-
 
 /**
  * An SLP Daemon.
@@ -148,7 +132,7 @@ class SLPDaemon {
     ola::Clock m_clock;
     ola::io::SelectServer m_ss;
     SLPServer m_slp_server;
-    StdinHandler m_stdin_handler;
+    ola::io::StdinHandler m_stdin_handler;
 
     // RPC members
     const uint16_t m_rpc_port;

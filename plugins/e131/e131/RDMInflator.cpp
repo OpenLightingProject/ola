@@ -26,8 +26,6 @@
 #include "ola/stl/STLUtils.h"
 #include "ola/rdm/RDMCommand.h"
 #include "plugins/e131/e131/RDMInflator.h"
-#include "plugins/e131/e131/DMPHeader.h"
-#include "plugins/e131/e131/DMPPDU.h"
 
 namespace ola {
 namespace plugin {
@@ -37,8 +35,6 @@ using std::string;
 
 /**
  * Create a new RDM inflator
- * @param on_data a callback which is run when ever we receive a packet. This
- * is used for healthchecking but should be removed.
  */
 RDMInflator::RDMInflator()
     : BaseInflator(PDU::ONE_BYTE) {

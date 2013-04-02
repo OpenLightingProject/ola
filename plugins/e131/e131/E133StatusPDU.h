@@ -34,9 +34,6 @@ class E133StatusPDU : private PDU {
   public:
     static void PrependPDU(ola::io::IOStack *stack, E133StatusCode status_code,
                            const std::string &status);
-
-  private:
-    static const size_t MAX_STATUS_STRING_SIZE = 64;
 };
 }  // e131
 }  // plugin

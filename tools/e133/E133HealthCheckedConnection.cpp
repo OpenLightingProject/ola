@@ -18,30 +18,34 @@
  */
 
 #include <ola/Logging.h>
+#include <ola/io/IOStack.h>
 
 #include "plugins/e131/e131/ACNVectors.h"
 #include "plugins/e131/e131/RootSender.h"
 #include "tools/e133/E133HealthCheckedConnection.h"
+#include "tools/e133/MessageQueue.h"
+
+using ola::io::IOStack;
 
 /**
  * Create a new E1.33 Health Checked Connection.
- * @param transport the transport to send heartbeats on
- * @param sender the RootSender to use when sending heartbeats
+ * @param message_builder the MessageBuilder to use to create packets.
+ * @param message_queue the MessageQueue to use to send packets.
  * @param on_timeout the callback to run when the heartbeats don't arrive
  * @param scheduler A SchedulerInterface used to control the timers
  * @param heartbeat_interval the TimeInterval between heartbeats
  */
 E133HealthCheckedConnection::E133HealthCheckedConnection(
-  ola::plugin::e131::OutgoingStreamTransport *transport,
-  ola::plugin::e131::RootSender *sender,
+  MessageBuilder *message_builder,
+  MessageQueue *message_queue,
   ola::SingleUseCallback0<void> *on_timeout,
-  ola::thread::SchedulerInterface *scheduler,
+  ola::thread::SchedulingExecutorInterface *scheduler,
   const ola::TimeInterval heartbeat_interval)
     : HealthCheckedConnection(scheduler, heartbeat_interval),
-      m_in_timeout(false),
-      m_transport(transport),
-      m_sender(sender),
-      m_on_timeout(on_timeout) {
+      m_message_builder(message_builder),
+      m_message_queue(message_queue),
+      m_on_timeout(on_timeout),
+      m_executor(scheduler) {
 }
 
 
@@ -50,8 +54,9 @@ E133HealthCheckedConnection::E133HealthCheckedConnection(
  */
 void E133HealthCheckedConnection::SendHeartbeat() {
   OLA_INFO << "Sending heartbeat";
-  if (!m_sender->SendEmpty(ola::plugin::e131::VECTOR_ROOT_NULL, m_transport))
-    OLA_WARN << "Failed to send heartbeat";
+  IOStack packet(m_message_builder->pool());
+  m_message_builder->BuildNullTCPPacket(&packet);
+  m_message_queue->SendMessage(&packet);
 }
 
 
@@ -60,7 +65,7 @@ void E133HealthCheckedConnection::SendHeartbeat() {
  */
 void E133HealthCheckedConnection::HeartbeatTimeout() {
   OLA_INFO << "TCP connection heartbeat timeout";
-  m_in_timeout = true;
-  if (m_on_timeout)
-    m_on_timeout->Run();
+  if (m_on_timeout.get()) {
+    m_executor->Execute(m_on_timeout.release());
+  }
 }
