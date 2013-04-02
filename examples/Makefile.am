@@ -48,7 +48,7 @@ ola_recorder_SOURCES = ola-recorder.cpp ShowLoader.cpp ShowPlayer.cpp \
 
 ola_timecode_SOURCES = ola-timecode.cpp
 
-ola_uni_stats_SOURCES = ola-universe-stats.cpp
+ola_uni_stats_SOURCES = ola-uni-stats.cpp
 
 if HAVE_NCURSES
 bin_PROGRAMS += ola_dmxconsole ola_dmxmonitor
