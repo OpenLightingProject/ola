@@ -4,6 +4,8 @@ Maintainer: RenZO <renzo@imaginux.com>
 Build-Depends: debhelper (>= 7), autotools-dev, bash-completion
 Standards-Version: 3.9.1
 Section: libs
+Vcs-Git: https://code.google.com/p/open-lighting/
+Vcs-browser: https://code.google.com/p/open-lighting/source/browse/
 Homepage: http://code.google.com/p/open-lighting/
 
 Package: ola-dev
