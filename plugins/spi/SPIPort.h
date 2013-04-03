@@ -53,7 +53,7 @@ class PersonalityManager {
     PersonalityManager() : m_active_personality(0) {}
 
     ~PersonalityManager() {
-      STLDeleteValues(&m_personalities);
+      STLDeleteElements(&m_personalities);
     }
 
     void AddPersonality(uint8_t footprint, const string &description) {
