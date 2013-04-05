@@ -102,6 +102,7 @@ typedef struct {
   ola::log_level log_level;
   bool rdm_set;
   string pid_location;
+  bool list_pids;  // show the pid list
   string ip_address;
   string target_address;
   UID *uid;
@@ -125,6 +126,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
       {"ip", required_argument, 0, 'i'},
       {"log-level", required_argument, 0, 'l'},
       {"pid-location", required_argument, 0, 'p'},
+      {"list_pids", no_argument, 0, 'a'},
       {"set", no_argument, 0, 's'},
       {"target", required_argument, 0, 't'},
       {"uid", required_argument, &uid_set, 1},
@@ -138,7 +140,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
 
   while (1) {
     int c = getopt_long(argc, argv,
-                        "e:hi:l:p:st:",
+                        "e:hi:l:p:ast:",
                         long_options,
                         &option_index);
 
@@ -185,6 +187,9 @@ void ParseOptions(int argc, char *argv[], options *opts) {
       case 'p':
         opts->pid_location = optarg;
         break;
+      case 'a':
+        opts->list_pids = true;
+        break;
       case 's':
         opts->rdm_set = true;
         break;
@@ -222,6 +227,7 @@ void DisplayHelpAndExit(char *argv[]) {
   "  -i, --ip                  The IP address to listen on.\n"
   "  -l, --log-level <level>   Set the logging level 0 .. 4.\n"
   "  -p, --pid-location        The directory to read PID definitions from\n"
+  "  -a, --list_pids           display a list of pids\n"
   "  -s, --set                 Perform a SET (default is GET)\n"
   "  --uid <uid>               The UID of the device to control.\n"
 #ifdef HAVE_LIBSLP
@@ -231,6 +237,21 @@ void DisplayHelpAndExit(char *argv[]) {
   exit(0);
 }
 
+/*
+ * Dump the list of known pids
+ */
+void DisplayPIDsAndExit(uint16_t manufacturer_id,
+                        const PidStoreHelper &pid_helper) {
+  vector<string> pid_names;
+  pid_helper.SupportedPids(manufacturer_id, &pid_names);
+  sort(pid_names.begin(), pid_names.end());
+
+  vector<string>::const_iterator iter = pid_names.begin();
+  for (; iter != pid_names.end(); ++iter) {
+    cout << *iter << endl;
+  }
+  exit(EX_OK);
+}
 
 /**
  * A very simple E1.33 Controller
@@ -679,6 +700,7 @@ int main(int argc, char *argv[]) {
   opts.help = false;
   opts.use_openslp = false;
   opts.pid_location = PID_DATA_DIR;
+  opts.list_pids = false;
   opts.rdm_set = false;
   opts.uid = NULL;
   ParseOptions(argc, argv, &opts);
@@ -701,17 +723,24 @@ int main(int argc, char *argv[]) {
       !IPV4Address::FromString(opts.target_address, &target_ip))
     DisplayHelpAndExit(argv);
 
+  // Make sure we can load our PIDs
+  if (!pid_helper.Init())
+    exit(EX_OSFILE);
+
   // check the UID
   if (!opts.uid) {
-    OLA_FATAL << "Invalid UID, try xxxx:yyyyyyyy";
-    exit(EX_USAGE);
+    if (opts.list_pids) {
+      DisplayPIDsAndExit(0, pid_helper);
+    } else {
+      OLA_FATAL << "Invalid UID, try xxxx:yyyyyyyy";
+      exit(EX_USAGE);
+    }
   }
   UID dst_uid(*opts.uid);
   delete opts.uid;
 
-  // Make sure we can load our PIDs
-  if (!pid_helper.Init())
-    exit(EX_OSFILE);
+  if (opts.list_pids)
+    DisplayPIDsAndExit(dst_uid.ManufacturerId(), pid_helper);
 
   if (opts.args.size() < 1) {
     DisplayHelpAndExit(argv);
