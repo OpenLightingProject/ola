@@ -25,9 +25,9 @@ goog.require('goog.ui.Container');
 
 goog.require('ola.common.Server');
 goog.require('ola.common.Server.EventType');
-goog.require('ola.mobile.KeypadParser');
+goog.require('ola.common.KeypadParser');
 
-goog.provide('ola.mobile.KeypadController');
+goog.provide('ola.common.KeypadController');
 
 /**
  * The Keypad Controller class.
@@ -35,9 +35,9 @@ goog.provide('ola.mobile.KeypadController');
  * @param {number} universe_id Universe Id.
  * @constructor
  */
-ola.mobile.KeypadController = function(name, universe_id) {
+ola.common.KeypadController = function(name, universe_id) {
   this.universe_id = universe_id;
-  this.parser = new ola.mobile.KeypadParser();
+  this.parser = new ola.common.KeypadParser();
   this.table = goog.dom.createElement('table');
   this._caption(name);
   this._display();
@@ -50,7 +50,7 @@ ola.mobile.KeypadController = function(name, universe_id) {
  * @param {string} value the caption for the button.
  * @return {Element} the new Button element.
  */
-ola.mobile.KeypadController.prototype._button = function(value) {
+ola.common.KeypadController.prototype._button = function(value) {
    var button = new goog.ui.Button(goog.ui.FlatButtonRenderer);
    button.setContent(value);
    goog.events.listen(button,
@@ -66,7 +66,7 @@ ola.mobile.KeypadController.prototype._button = function(value) {
  * Input event. Triggered when text is entered into text box.
  * @param {string} key the key that was pressed.
  */
-ola.mobile.KeypadController.prototype._textEntry = function(key) {
+ola.common.KeypadController.prototype._textEntry = function(key) {
   var text = this.command_input.value;
   var autocomplete = null;
 
@@ -112,7 +112,7 @@ ola.mobile.KeypadController.prototype._textEntry = function(key) {
  * Button event. Triggered when a button is pushed.
  * @param {string} name the button that was pressed.
  */
-ola.mobile.KeypadController.prototype._buttonAction = function(name) {
+ola.common.KeypadController.prototype._buttonAction = function(name) {
   if (name == '<') {
     // Go Backward. Must scan for whitespace
     var end = this.command_input.value.length - 1;
@@ -156,7 +156,7 @@ ola.mobile.KeypadController.prototype._buttonAction = function(name) {
  * Caption of the Table
  * @param {string} title the title for the table.
  */
-ola.mobile.KeypadController.prototype._caption = function(title) {
+ola.common.KeypadController.prototype._caption = function(title) {
   var caption = goog.dom.createElement('caption');
   caption.innerHTML = title;
   this.table.appendChild(caption);
@@ -165,7 +165,7 @@ ola.mobile.KeypadController.prototype._caption = function(title) {
 /**
  * First tr row
  */
-ola.mobile.KeypadController.prototype._display = function() {
+ola.common.KeypadController.prototype._display = function() {
   var tr = goog.dom.createElement('tr');
   var td = goog.dom.createElement('td');
   td.colSpan = '4';
@@ -192,7 +192,7 @@ ola.mobile.KeypadController.prototype._display = function() {
 /**
  * The main keypad button matrix
  */
-ola.mobile.KeypadController.prototype._keypad = function() {
+ola.common.KeypadController.prototype._keypad = function() {
   var values = ['7', '8', '9', ' THRU ', '4', '5', '6', ' @ ', '1', '2', '3',
                 'FULL', '0', 'ENTER'];
 
@@ -228,7 +228,7 @@ ola.mobile.KeypadController.prototype._keypad = function() {
  * running _execute() where the real work happens.
  * @param {KeypadCommand} command the command to execute.
  */
-ola.mobile.KeypadController.prototype.execute = function(command) {
+ola.common.KeypadController.prototype.execute = function(command) {
   var tab = this;
   ola.common.Server.getInstance().getChannelValues(
       this.universe_id,
@@ -242,7 +242,7 @@ ola.mobile.KeypadController.prototype.execute = function(command) {
  * @param {Object} e the event object.
  * @param {KeypadCommand} command the command to execute.
  */
-ola.mobile.KeypadController.prototype._execute = function(e, command) {
+ola.common.KeypadController.prototype._execute = function(e, command) {
   var dmx_values = e['dmx'];
 
   if (command.start == command.end) {

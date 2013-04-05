@@ -32,8 +32,8 @@
  *      Values range between 0 and 255.
  */
 
-goog.provide('ola.mobile.KeypadCommand');
-goog.provide('ola.mobile.KeypadParser');
+goog.provide('ola.common.KeypadCommand');
+goog.provide('ola.common.KeypadParser');
 
 /**
  * Create a new KeypadCommand
@@ -43,7 +43,7 @@ goog.provide('ola.mobile.KeypadParser');
  * @param {number} value the slot value.
  * @constructor
  */
-ola.mobile.KeypadCommand = function(start, end, value) {
+ola.common.KeypadCommand = function(start, end, value) {
   this.start = start;
   this.end = end == undefined ? start : end;
   this.value = value;
@@ -54,7 +54,7 @@ ola.mobile.KeypadCommand = function(start, end, value) {
  * Check if this command is valid
  * @return {bool} true if the command if valid, false otherwise.
  */
-ola.mobile.KeypadCommand.prototype.isValid = function() {
+ola.common.KeypadCommand.prototype.isValid = function() {
   return (
       (this.start >= 1 && this.start <= 512) &&
       (this.value >= 0 && this.value <= 255) &&
@@ -68,7 +68,7 @@ ola.mobile.KeypadCommand.prototype.isValid = function() {
  * The KeypadParser class
  * @constructor
  */
-ola.mobile.KeypadParser = function() {
+ola.common.KeypadParser = function() {
   this.full_command_regex = new RegExp(
       /(?:([0-9]{1,3})(?:\s+THRU\s+([0-9]{0,3}))?)\s+@\s+([0-9]{0,3})$/);
   // similar to above, but allows for partially completed commands
@@ -81,13 +81,13 @@ ola.mobile.KeypadParser = function() {
  * The maximum slot number.
  * @type {number}
  */
-ola.mobile.KeypadParser.MAX_SLOT = 512;
+ola.common.KeypadParser.MAX_SLOT = 512;
 
 /**
  * The maximum slot value.
  * @type {number}
  */
-ola.mobile.KeypadParser.MAX_VALUE = 255;
+ola.common.KeypadParser.MAX_VALUE = 255;
 
 
 /**
@@ -95,7 +95,7 @@ ola.mobile.KeypadParser.MAX_VALUE = 255;
  * @param {string} str the input string.
  * @return {bool} true if the command is valid, false otherwise.
  */
-ola.mobile.KeypadParser.prototype.parsePartialCommand = function(str) {
+ola.common.KeypadParser.prototype.parsePartialCommand = function(str) {
   if (str.length == 0) {
     return false;
   }
@@ -109,7 +109,7 @@ ola.mobile.KeypadParser.prototype.parsePartialCommand = function(str) {
   if (start_token != undefined) {
     var start = this._intOrUndefined(result[1]);
     if (start == undefined || start == 0 ||
-        start > ola.mobile.KeypadParser.MAX_SLOT) {
+        start > ola.common.KeypadParser.MAX_SLOT) {
       return false;
     }
   }
@@ -118,7 +118,7 @@ ola.mobile.KeypadParser.prototype.parsePartialCommand = function(str) {
   if (end_token != undefined && end_token != '') {
     var end = this._intOrUndefined(result[2]);
     if (end == undefined || end == 0 ||
-        end > ola.mobile.KeypadParser.MAX_SLOT) {
+        end > ola.common.KeypadParser.MAX_SLOT) {
       return false;
     }
   }
@@ -126,7 +126,7 @@ ola.mobile.KeypadParser.prototype.parsePartialCommand = function(str) {
   var value_token = result[3];
   if (value_token != undefined && value_token != '') {
     var value = this._intOrUndefined(result[3]);
-    if (value == undefined || value > ola.mobile.KeypadParser.MAX_VALUE) {
+    if (value == undefined || value > ola.common.KeypadParser.MAX_VALUE) {
       return false;
     }
   }
@@ -140,7 +140,7 @@ ola.mobile.KeypadParser.prototype.parsePartialCommand = function(str) {
  * @return {KeypadCommand|undefined} Returns a KeypadCommand or undefined on
  * error. If returned, the KeypadCommand is guarenteed to be valid.
  */
-ola.mobile.KeypadParser.prototype.parseFullCommand = function(str) {
+ola.common.KeypadParser.prototype.parseFullCommand = function(str) {
   // It's empty so we can return true really
   if (str.length == 0) {
     return undefined;
@@ -165,7 +165,7 @@ ola.mobile.KeypadParser.prototype.parseFullCommand = function(str) {
       return false;
   }
 
-  var command = new ola.mobile.KeypadCommand(start, end, value);
+  var command = new ola.common.KeypadCommand(start, end, value);
   return command.isValid() ? command : undefined;
 };
 
@@ -175,7 +175,7 @@ ola.mobile.KeypadParser.prototype.parseFullCommand = function(str) {
  * @param {string} token the string to convert.
  * @return {number|undefined} The integer, or undefined.
  */
-ola.mobile.KeypadParser.prototype._intOrUndefined = function(token) {
+ola.common.KeypadParser.prototype._intOrUndefined = function(token) {
   if (token == null || token == undefined)
     return undefined;
   var i = parseInt(token);
@@ -188,7 +188,7 @@ ola.mobile.KeypadParser.prototype._intOrUndefined = function(token) {
  * @param {string} str the input string.
  * @return {string} the output string.
  */
-ola.mobile.KeypadParser.prototype._aliases = function(str) {
+ola.common.KeypadParser.prototype._aliases = function(str) {
   str = str.replace('>', 'THRU');
   str = str.replace('*', '1 THRU 512');
   str = str.replace('ALL', '1 THRU 512');

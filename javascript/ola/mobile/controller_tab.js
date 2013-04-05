@@ -29,7 +29,7 @@ goog.require('ola.common.Server');
 goog.require('ola.common.Server.EventType');
 goog.require('ola.common.SortedList');
 
-goog.require('ola.mobile.KeypadController');
+goog.require('ola.common.KeypadController');
 
 goog.provide('ola.mobile.ControllerTab');
 
@@ -135,7 +135,7 @@ ola.mobile.ControllerTab.prototype._universeSelected = function(
   this._hideAllFrames();
   this.active_universe = universe_id;
 
-  this.keypad = new ola.mobile.KeypadController(
+  this.keypad = new ola.common.KeypadController(
     universe_name,
     universe_id);
   this.controller_frame.Clear();
