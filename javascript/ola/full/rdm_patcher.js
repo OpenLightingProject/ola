@@ -204,7 +204,8 @@ ola.RDMPatcher.prototype.sizeChanged = function(new_height) {
 
 /**
  * Set the list of devices.
- * @param {Array.<ola.RDMPatcherDevice>} devices the list of RDMPatcherDevice devices to set.
+ * @param {Array.<ola.RDMPatcherDevice>} devices the list of RDMPatcherDevice
+ *   devices to set.
  */
 ola.RDMPatcher.prototype.setDevices = function(devices) {
   this.devices = devices;
@@ -410,7 +411,8 @@ ola.RDMPatcher.prototype._render = function() {
   var last_channel_used = true;
   var running_channel_count = 0;
 
-  for (var channel = 0; channel < ola.RDMPatcher.NUMBER_OF_CHANNELS; ++channel) {
+  for (var channel = 0; channel < ola.RDMPatcher.NUMBER_OF_CHANNELS;
+    ++channel) {
     var used = false;
     for (var slot = 0; slot < slots.length; ++slot) {
       if (slots[slot][channel]) {
@@ -865,7 +867,6 @@ ola.RDMPatcher.prototype._saveDevice = function(e) {
 
 /**
  * Called to set the start address of a device
- * @param {Object} e the event object.
  */
 ola.RDMPatcher.prototype._setStartAddress = function(device, start_address) {
   var server = ola.common.Server.getInstance();
@@ -888,7 +889,6 @@ ola.RDMPatcher.prototype._setStartAddress = function(device, start_address) {
 
 /**
  * Called when the start address set command completes
- * @param {Object} e the event object.
  */
 ola.RDMPatcher.prototype._setStartAddressComplete = function(device,
                                                              start_address,
@@ -1022,4 +1022,3 @@ ola.RDMPatcher.prototype._updateStartAddressComplete = function(e) {
     this._render();
   }
 };
-
