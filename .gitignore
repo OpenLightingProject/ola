@@ -28,6 +28,7 @@ stamp-h1
 config/depcomp
 config/install-sh
 config/missing
+config/py-compile
 common/base/CredentialsTester
 common/export_map/ExportMapTester
 common/io/BufferedDescriptorTester
