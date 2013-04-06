@@ -625,11 +625,11 @@ void DisplaySetPriorityHelp(const options &opts) {
   "Set a port's priority, without the --override flag this will set the port\n"
   "to inherit mode.\n"
   "\n"
-  "  -d, --device <device>    Id of device to patch.\n"
+  "  -d, --device <device>    Id of device to set priority for.\n"
   "  -h, --help               Display this help message and exit.\n"
   "  -i, --input              Set an input port\n"
   "  -o, --override <value>   Set the port priority to a static value.\n"
-  "  -p, --port <port>        Id of the port to patch.\n"
+  "  -p, --port <port>        Id of the port to set priority for.\n"
   << endl;
 }
 
