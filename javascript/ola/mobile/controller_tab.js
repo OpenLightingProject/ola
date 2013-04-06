@@ -24,13 +24,11 @@ goog.require('goog.ui.Container');
 goog.require('ola.BaseFrame');
 goog.require('ola.UniverseControl');
 goog.require('ola.UniverseItem');
+goog.require('ola.common.KeypadController');
 goog.require('ola.common.SectionRenderer');
 goog.require('ola.common.Server');
 goog.require('ola.common.Server.EventType');
 goog.require('ola.common.SortedList');
-
-goog.require('ola.common.KeypadController');
-
 goog.provide('ola.mobile.ControllerTab');
 
 
@@ -52,16 +50,18 @@ ola.mobile.ControllerTab = function() {
 };
 
 
-/* The title of this tab */
+/**
+ *  The title of this tab
+ */
 ola.mobile.ControllerTab.prototype.title = function() {
   return 'DMX Keypad';
-}
+};
 
 
 /**
  * Called when the user navigates away from this tab
  */
-ola.mobile.ControllerTab.prototype.blur = function() {}
+ola.mobile.ControllerTab.prototype.blur = function() {};
 
 
 /**

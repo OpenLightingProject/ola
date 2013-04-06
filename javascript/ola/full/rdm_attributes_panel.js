@@ -21,16 +21,16 @@ goog.require('goog.Timer');
 goog.require('goog.dom');
 goog.require('goog.events');
 goog.require('goog.ui.AnimatedZippy');
-goog.require('goog.ui.Checkbox')
+goog.require('goog.ui.Checkbox');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.Component.EventType');
 goog.require('goog.ui.Control');
 goog.require('goog.ui.Option');
 goog.require('goog.ui.Select');
 goog.require('ola.Dialog');
+goog.require('ola.common.SectionRenderer');
 goog.require('ola.common.Server');
 goog.require('ola.common.Server.EventType');
-goog.require('ola.common.SectionRenderer');
 
 goog.provide('ola.RDMAttributesPanel');
 
@@ -67,7 +67,7 @@ ola.RDMAttributesPanel = function(element_id, toolbar) {
                      false,
                      this);
 
-  var refresh_menu = toolbar.getChild('refreshButton')
+  var refresh_menu = toolbar.getChild('refreshButton');
   refresh_menu.setTooltip('Configure how often attributes are refreshed');
   goog.events.listen(refresh_menu,
                      goog.ui.Component.EventType.ACTION,
@@ -108,7 +108,7 @@ ola.RDMAttributesPanel.prototype.updateUniverse = function(universe_id) {
 
 /**
  * Show the attributes for a particular UID.
- * @param {ola.UidItem} item the uid to show
+ * @param {ola.UidItem} item the uid to show.
  */
 ola.RDMAttributesPanel.prototype.showUID = function(item) {
   this._setLoading(this.element);
@@ -164,6 +164,7 @@ ola.RDMAttributesPanel.prototype._hideAllSections = function() {
 
 /**
  * Set the refresh rate
+ * @param {Object} e the event object.
  */
 ola.RDMAttributesPanel.prototype._refreshChanged = function(e) {
   var value = e.target.getCaption();
@@ -215,6 +216,7 @@ ola.RDMAttributesPanel.prototype._setLoading = function(element) {
 
 /**
  * Called when the supported sections request completes.
+ * @param {Object} e the event object.
  * @private
  */
 ola.RDMAttributesPanel.prototype._supportedSections = function(e) {
@@ -225,13 +227,13 @@ ola.RDMAttributesPanel.prototype._supportedSections = function(e) {
   var sections = e.target.getResponseJson();
   var section_count = sections.length;
   for (var i = 0; i < section_count; ++i) {
-    var section = obj[i]
+    var section = obj[i];
     var fieldset = goog.dom.createElement('fieldset');
     var legend = goog.dom.createElement('legend');
     var image = goog.dom.createElement('img');
     image.src = '/blank.gif';
-    image.width = "12";
-    image.height = "12";
+    image.width = '12';
+    image.height = '12';
     goog.dom.appendChild(legend, image);
     var title = goog.dom.createTextNode(' ' + sections[i]['name']);
     goog.dom.appendChild(legend, title);
@@ -295,6 +297,7 @@ ola.RDMAttributesPanel.prototype._loadSection = function(index) {
 
 /**
  * Populate a zippy
+ * @param {Object} e the event object.
  * @param {int} index the index of the zippy to populate.
  * @private
  */
@@ -421,6 +424,7 @@ ola.RDMAttributesPanel.prototype._saveSection = function(index) {
 
 /**
  * Called when the save is complete
+ * @param {Object} e the event object.
  */
 ola.RDMAttributesPanel.prototype._saveSectionComplete = function(e, index) {
   var response = e.target.getResponseJson();
@@ -432,7 +436,7 @@ ola.RDMAttributesPanel.prototype._saveSectionComplete = function(e, index) {
     // reload data
     this._loadSection(index);
   }
-}
+};
 
 
 /*
@@ -444,4 +448,4 @@ ola.RDMAttributesPanel.prototype._showErrorDialog = function(title, error) {
   dialog.setContent(error);
   dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
   dialog.setVisible(true);
-}
+};

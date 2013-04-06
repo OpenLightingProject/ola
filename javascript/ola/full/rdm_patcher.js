@@ -80,8 +80,8 @@ ola.RDMPatcherDevice.prototype.setStart = function(start_address) {
 
 
 /**
- * Set the start address of this device
- * @param {number} start_address the start address, from 1 - 512.
+ * Set the footprint of this device
+ * @param {number} footprint the footprint, from 1 - 512.
  */
 ola.RDMPatcherDevice.prototype.setFootprint = function(footprint) {
   this.footprint = footprint;
@@ -90,7 +90,6 @@ ola.RDMPatcherDevice.prototype.setFootprint = function(footprint) {
 
 /**
  * Update the end address.
- * @param {number} start_address the start address, from 1 - 512.
  */
 ola.RDMPatcherDevice.prototype._updateEnd = function() {
   this.end = Math.min(this.start + this.footprint - 1,
@@ -205,7 +204,7 @@ ola.RDMPatcher.prototype.sizeChanged = function(new_height) {
 
 /**
  * Set the list of devices.
- * @param {object} device the device to add.
+ * @param {Array.<ola.RDMPatcherDevice>} devices the list of RDMPatcherDevice devices to set.
  */
 ola.RDMPatcher.prototype.setDevices = function(devices) {
   this.devices = devices;
@@ -214,7 +213,7 @@ ola.RDMPatcher.prototype.setDevices = function(devices) {
 
 /**
  * Set the universe this patcher is operating on
- * @param {object} device the device to add.
+ * @param {number} universe_id the universe to use.
  */
 ola.RDMPatcher.prototype.setUniverse = function(universe_id) {
   this.universe_id = universe_id;
@@ -526,8 +525,8 @@ ola.RDMPatcher.prototype._renderSlot = function(tr, slot_data, start_channel) {
       div.innerHTML = device.label;
       if (device.overflows()) {
         div.className = 'patcher_overflow_device';
-        div.title = 'Device overflows the ' + ola.RDMPatcher.NUMBER_OF_CHANNELS
-          + ' slot limit';
+        div.title = 'Device overflows the ' +
+          ola.RDMPatcher.NUMBER_OF_CHANNELS + ' slot limit';
       } else {
         div.className = 'patcher_device';
       }
@@ -568,7 +567,7 @@ ola.RDMPatcher.prototype._renderSlot = function(tr, slot_data, start_channel) {
       channel++;
     }
     td = goog.dom.getNextElementSibling(td);
-  };
+  }
 
   while (td != undefined) {
     var next = goog.dom.getNextElementSibling(td);
@@ -622,7 +621,7 @@ ola.RDMPatcher.prototype._startDrag = function(div, device, e) {
 
   this.scroller.setEnabled(true);
   return true;
-}
+};
 
 
 /**
@@ -645,7 +644,7 @@ ola.RDMPatcher.prototype._endDrag = function(div, device, e) {
 
   var new_start_address = (Math.floor(center_x / this.cell_width) +
         ola.RDMPatcher.CHANNELS_PER_ROW *
-        Math.floor(center_y / this.cell_height))
+        Math.floor(center_y / this.cell_height));
 
   goog.dom.removeNode(div);
   this._setStartAddress(device, new_start_address + 1);
@@ -672,6 +671,7 @@ ola.RDMPatcher.prototype._updateCellHeights = function(overlapping_devices) {
 
 /**
  * Called when the user clicks on a device to configure it.
+ * @param {Object} e the event object.
  */
 ola.RDMPatcher.prototype._configureDevice = function(device, e) {
   if (!e.target.parentNode) {
@@ -773,6 +773,7 @@ ola.RDMPatcher.prototype._configureDevice = function(device, e) {
 
 /**
  * Called when the get identify mode completes.
+ * @param {Object} e the event object.
  */
 ola.RDMPatcher.prototype._getIdentifyComplete = function(e) {
   var response = ola.common.Server.getInstance().checkForErrorLog(e);
@@ -799,12 +800,13 @@ ola.RDMPatcher.prototype._getIdentifyComplete = function(e) {
 
 /**
  * Called when the fetch personalities completes.
+ * @param {Object} e the event object.
  */
 ola.RDMPatcher.prototype._getPersonalitiesComplete = function(e) {
   var response = ola.common.Server.getInstance().checkForErrorLog(e);
   if (response != undefined) {
     // remove all items from select
-    for (var i = this.personality_select.getItemCount() -1; i >= 0; --i) {
+    for (var i = (this.personality_select.getItemCount() - 1); i >= 0; --i) {
       this.personality_select.removeItemAt(i);
     }
     this.personalities = new Array();
@@ -842,6 +844,7 @@ ola.RDMPatcher.prototype._displayConfigureDevice = function(e) {
 
 /**
  * Save the start address for a device
+ * @param {Object} e the event object.
  */
 ola.RDMPatcher.prototype._saveDevice = function(e) {
   if (e.key == goog.ui.Dialog.DefaultButtonKeys.CANCEL ||
@@ -862,6 +865,7 @@ ola.RDMPatcher.prototype._saveDevice = function(e) {
 
 /**
  * Called to set the start address of a device
+ * @param {Object} e the event object.
  */
 ola.RDMPatcher.prototype._setStartAddress = function(device, start_address) {
   var server = ola.common.Server.getInstance();
@@ -884,6 +888,7 @@ ola.RDMPatcher.prototype._setStartAddress = function(device, start_address) {
 
 /**
  * Called when the start address set command completes
+ * @param {Object} e the event object.
  */
 ola.RDMPatcher.prototype._setStartAddressComplete = function(device,
                                                              start_address,
@@ -900,6 +905,7 @@ ola.RDMPatcher.prototype._setStartAddressComplete = function(device,
 
 /**
  * Set the personality.
+ * @param {Object} e the event object.
  */
 ola.RDMPatcher.prototype._setPersonality = function(e) {
   var server = ola.common.Server.getInstance();
@@ -920,6 +926,7 @@ ola.RDMPatcher.prototype._setPersonality = function(e) {
 
 /**
  * Called when the set personality request completes.
+ * @param {Object} e the event object.
  */
 ola.RDMPatcher.prototype._personalityComplete = function(e, new_footprint) {
   this.personality_spinner.style.display = 'none';
@@ -935,6 +942,7 @@ ola.RDMPatcher.prototype._personalityComplete = function(e, new_footprint) {
 
 /**
  * Toggle the identify mode
+ * @param {Object} e the event object.
  */
 ola.RDMPatcher.prototype._toggleIdentify = function(e) {
   var server = ola.common.Server.getInstance();
@@ -952,6 +960,7 @@ ola.RDMPatcher.prototype._toggleIdentify = function(e) {
 
 /**
  * Called when the identify request completes.
+ * @param {Object} e the event object.
  */
 ola.RDMPatcher.prototype._identifyComplete = function(e) {
   this.identify_spinner.style.display = 'none';
@@ -964,6 +973,7 @@ ola.RDMPatcher.prototype._identifyComplete = function(e) {
 
 /**
  * Update the start address for the next device in the queue.
+ * @param {Object} e the event object.
  */
 ola.RDMPatcher.prototype._updateNextDevice = function(e) {
   var server = ola.common.Server.getInstance();
@@ -983,6 +993,7 @@ ola.RDMPatcher.prototype._updateNextDevice = function(e) {
 
 /**
  * Called when a device's start address is updated.
+ * @param {Object} e the event object.
  */
 ola.RDMPatcher.prototype._updateStartAddressComplete = function(e) {
   var response = ola.common.Server.getInstance().checkForErrorLog(e);

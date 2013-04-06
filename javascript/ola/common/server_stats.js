@@ -42,16 +42,18 @@ ola.common.ServerStats = function(element_id) {
 };
 
 
-/* The title of this tab */
+/**
+ * The title of this tab
+ */
 ola.common.ServerStats.prototype.title = function() {
   return 'Home';
-}
+};
 
 
 /**
  * Called when the tab loses focuse
  */
-ola.common.ServerStats.prototype.blur = function() {}
+ola.common.ServerStats.prototype.blur = function() {};
 
 
 /**
@@ -59,7 +61,7 @@ ola.common.ServerStats.prototype.blur = function() {}
  */
 ola.common.ServerStats.prototype.update = function() {
   ola.common.Server.getInstance().UpdateServerInfo();
-}
+};
 
 
 /**

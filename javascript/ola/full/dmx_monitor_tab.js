@@ -47,7 +47,7 @@ ola.DmxMonitorTab.prototype.setActive = function(state) {
     // setup the toolbar
     var toolbar = new goog.ui.Toolbar();
     toolbar.decorate(goog.dom.$('monitor_toolbar'));
-    var view_button = toolbar.getChild('monitor_view_button')
+    var view_button = toolbar.getChild('monitor_view_button');
     view_button.setTooltip('Change the DMX Monitor layout');
     goog.events.listen(view_button,
                        goog.ui.Component.EventType.ACTION,
@@ -62,12 +62,13 @@ ola.DmxMonitorTab.prototype.setActive = function(state) {
 
 /**
  * Called when the view changes
+ * @param {Object} e the event object.
  */
 ola.DmxMonitorTab.prototype._viewChanged = function(e) {
   var value = e.target.getCaption();
-  if (value == "Full") {
-    goog.dom.$('monitor_values').className = "monitor_full";
+  if (value == 'Full') {
+    goog.dom.$('monitor_values').className = 'monitor_full';
   } else {
-    goog.dom.$('monitor_values').className = "monitor_compact";
+    goog.dom.$('monitor_values').className = 'monitor_compact';
   }
 };

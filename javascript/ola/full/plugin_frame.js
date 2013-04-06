@@ -114,11 +114,11 @@ ola.PluginFrame.prototype._UpdateFromData = function(e) {
 
 /**
  * Called when a plugin name is clicked.
- * @param {ola.int} the plugin id
+ * @param {ola.int} id the plugin id.
  */
 ola.PluginFrame.prototype._PluginControlClicked = function(id) {
   this._show_plugin_fn(id);
-}
+};
 
 /**
  * Attach a listener to a control.
@@ -128,4 +128,4 @@ ola.PluginFrame.prototype._AttachListener = function(control, plugin_id) {
                      function(e) {
                        this._PluginControlClicked(plugin_id);
                      }, false, this);
-}
+};

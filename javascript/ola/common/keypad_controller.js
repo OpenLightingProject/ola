@@ -23,9 +23,9 @@ goog.require('goog.events.KeyHandler');
 goog.require('goog.ui.Button');
 goog.require('goog.ui.Container');
 
+goog.require('ola.common.KeypadParser');
 goog.require('ola.common.Server');
 goog.require('ola.common.Server.EventType');
-goog.require('ola.common.KeypadParser');
 
 goog.provide('ola.common.KeypadController');
 

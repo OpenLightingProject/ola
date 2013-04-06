@@ -46,8 +46,8 @@ ola.common.DmxMonitor.PAUSE_TIME_IN_MS = 1000;
 
 /**
  * Enable / Disable the monitor.
- * @param {boolean} enabled true to enable, false to disable
- * @param {number} universe_id the universe to use
+ * @param {boolean} enabled true to enable, false to disable.
+ * @param {number} universe_id the universe to use.
  */
 ola.common.DmxMonitor.prototype.setState = function(enabled,
                                                     universe_id) {
@@ -70,9 +70,9 @@ ola.common.DmxMonitor.prototype.setupCells = function() {
   for (var i = 0; i < ola.common.DmxMonitor.NUMBER_OF_CHANNELS; ++i) {
     var cell = goog.dom.createElement('div');
     cell.title = 'Channel ' + (i + 1);
-    var channel = goog.dom.createElement("div");
+    var channel = goog.dom.createElement('div');
     channel.innerHTML = i + 1;
-    var span = goog.dom.createElement("span");
+    var span = goog.dom.createElement('span');
     span.innerHTML = '&nbsp';
     goog.dom.appendChild(cell, channel);
     goog.dom.appendChild(cell, span);
@@ -80,7 +80,7 @@ ola.common.DmxMonitor.prototype.setupCells = function() {
     this.value_cells.push(span);
   }
   this.setup = true;
-}
+};
 
 
 /**
