@@ -243,9 +243,7 @@ void WidgetDetectorThread::UsbProWidgetReady(
       if (information->device_id == DMX_KING_ULTRA_PRO_ID) {
         // The Ultra device has two outputs
         DispatchWidget(
-            new UltraDMXProWidget(
-              m_other_ss,
-              descriptor),
+            new UltraDMXProWidget(descriptor),
             information);
         return;
       } else {
@@ -314,7 +312,7 @@ void WidgetDetectorThread::RobeWidgetReady(
     const RobeWidgetInformation *info) {
   // we're no longer interested in events from this descriptor
   m_ss.RemoveReadDescriptor(descriptor);
-  RobeWidget *widget = new RobeWidget(descriptor, m_other_ss, info->uid);
+  RobeWidget *widget = new RobeWidget(descriptor, info->uid);
 
   if (m_handler) {
     DispatchWidget(widget, info);

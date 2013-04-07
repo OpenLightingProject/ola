@@ -52,8 +52,7 @@ typedef ola::SingleUseCallback2<void, bool, const usb_pro_parameters&>
  */
 class GenericUsbProWidget: public BaseUsbProWidget {
   public:
-    GenericUsbProWidget(ola::thread::SchedulerInterface *scheduler,
-                        ola::io::ConnectedDescriptor *descriptor);
+    explicit GenericUsbProWidget(ola::io::ConnectedDescriptor *descriptor);
     ~GenericUsbProWidget();
 
     void SetDMXCallback(ola::Callback0<void> *callback);
@@ -78,7 +77,6 @@ class GenericUsbProWidget: public BaseUsbProWidget {
     static const uint8_t RECEIVED_DMX_LABEL = 5;
 
   private:
-    ola::thread::SchedulerInterface *m_scheduler;
     bool m_active;
     DmxBuffer m_input_buffer;
     ola::Callback0<void> *m_dmx_callback;

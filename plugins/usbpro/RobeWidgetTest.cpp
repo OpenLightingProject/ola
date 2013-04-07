@@ -139,8 +139,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(RobeWidgetTest);
 
 void RobeWidgetTest::setUp() {
   CommonWidgetTest::setUp();
-  m_widget.reset(
-      new ola::plugin::usbpro::RobeWidget(&m_descriptor, &m_ss, SOURCE));
+  m_widget.reset(new ola::plugin::usbpro::RobeWidget(&m_descriptor, SOURCE));
   m_transaction_number = 0;
   m_new_dmx_data = false;
 }

@@ -26,7 +26,6 @@
 #include <string>
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
-#include "ola/thread/SchedulerInterface.h"
 #include "plugins/usbpro/GenericUsbProWidget.h"
 
 namespace ola {
@@ -38,8 +37,7 @@ namespace usbpro {
  */
 class UltraDMXProWidget: public GenericUsbProWidget {
   public:
-    UltraDMXProWidget(ola::thread::SchedulerInterface *scheduler,
-                       ola::io::ConnectedDescriptor *descriptor);
+    explicit UltraDMXProWidget(ola::io::ConnectedDescriptor *descriptor);
     ~UltraDMXProWidget() {}
     void Stop() { GenericStop(); }
 

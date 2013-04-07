@@ -47,10 +47,8 @@ using std::string;
 const int RobeWidgetImpl::DMX_FRAME_DATA_SIZE = DMX_UNIVERSE_SIZE + 4;
 
 RobeWidgetImpl::RobeWidgetImpl(ola::io::ConnectedDescriptor *descriptor,
-                               ola::thread::SchedulingExecutorInterface *ss,
                                const ola::rdm::UID &uid)
     : BaseRobeWidget(descriptor),
-      m_ss(ss),
       m_rdm_request_callback(NULL),
       m_mute_callback(NULL),
       m_unmute_callback(NULL),
@@ -417,10 +415,9 @@ bool RobeWidgetImpl::PackAndSendRDMRequest(uint8_t label,
  * RobeWidget Constructor
  */
 RobeWidget::RobeWidget(ola::io::ConnectedDescriptor *descriptor,
-                       ola::thread::SchedulingExecutorInterface *ss,
                        const ola::rdm::UID &uid,
                        unsigned int queue_size) {
-  m_impl = new RobeWidgetImpl(descriptor, ss, uid);
+  m_impl = new RobeWidgetImpl(descriptor, uid);
   m_controller = new ola::rdm::DiscoverableQueueingRDMController(m_impl,
                                                                  queue_size);
 }
