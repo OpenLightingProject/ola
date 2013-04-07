@@ -220,7 +220,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
 void DisplayHelpAndExit(char *argv[]) {
   cout << "Usage: " << argv[0] << " [options] <pid_name> [param_data]\n"
   "\n"
-  "Search for a UID registered in SLP Send it a E1.33 Message.\n"
+  "Search for a UID registered in SLP and send it an E1.33 Message.\n"
   "\n"
   "  -e, --endpoint <endpoint> The endpoint to use.\n"
   "  -h, --help                Display this help message and exit.\n"
@@ -733,13 +733,14 @@ int main(int argc, char *argv[]) {
     if (opts.list_pids) {
       DisplayPIDsAndExit(0, pid_helper);
     } else {
-      OLA_FATAL << "Invalid UID, try xxxx:yyyyyyyy";
+      OLA_FATAL << "Invalid or missing UID, try xxxx:yyyyyyyy";
+      DisplayHelpAndExit(argv);
       exit(EX_USAGE);
     }
   }
 
   //We have a UID, convert it
-  dst_uid(*opts.uid);
+  UID dst_uid(*opts.uid);
   delete opts.uid;
 
   if (opts.list_pids)
