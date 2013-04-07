@@ -117,6 +117,7 @@ typedef struct {
 void ParseOptions(int argc, char *argv[], options *opts) {
   enum {
     OPENSLP_OPTION = 256,
+    LIST_PIDS_OPTION,
   };
 
   int uid_set = 0;
@@ -126,7 +127,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
       {"ip", required_argument, 0, 'i'},
       {"log-level", required_argument, 0, 'l'},
       {"pid-location", required_argument, 0, 'p'},
-      {"list_pids", no_argument, 0, 'a'},
+      {"list_pids", no_argument, 0, LIST_PIDS_OPTION},
       {"set", no_argument, 0, 's'},
       {"target", required_argument, 0, 't'},
       {"uid", required_argument, &uid_set, 1},
@@ -140,7 +141,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
 
   while (1) {
     int c = getopt_long(argc, argv,
-                        "e:hi:l:p:ast:",
+                        "e:hi:l:p:st:",
                         long_options,
                         &option_index);
 
@@ -187,7 +188,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
       case 'p':
         opts->pid_location = optarg;
         break;
-      case 'a':
+      case LIST_PIDS_OPTION:
         opts->list_pids = true;
         break;
       case 's':
@@ -227,7 +228,7 @@ void DisplayHelpAndExit(char *argv[]) {
   "  -i, --ip                  The IP address to listen on.\n"
   "  -l, --log-level <level>   Set the logging level 0 .. 4.\n"
   "  -p, --pid-location        The directory to read PID definitions from\n"
-  "  -a, --list_pids           display a list of pids\n"
+  "  --list_pids           display a list of pids\n"
   "  -s, --set                 Perform a SET (default is GET)\n"
   "  --uid <uid>               The UID of the device to control.\n"
 #ifdef HAVE_LIBSLP
@@ -736,7 +737,9 @@ int main(int argc, char *argv[]) {
       exit(EX_USAGE);
     }
   }
-  UID dst_uid(*opts.uid);
+
+  //We have a UID, convert it
+  dst_uid(*opts.uid);
   delete opts.uid;
 
   if (opts.list_pids)
@@ -754,7 +757,7 @@ int main(int argc, char *argv[]) {
 
   if (!pid_descriptor) {
     OLA_WARN << "Unknown PID: " << opts.args[0] << ".";
-    OLA_WARN << "Use --pids to list the available PIDs.";
+    OLA_WARN << "Use --list_pids to list the available PIDs.";
     exit(EX_USAGE);
   }
 
