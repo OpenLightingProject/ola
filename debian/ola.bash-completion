@@ -1,10 +1,53 @@
 # bash completion for Debian ola tools
 # Copyright Peter Newman 2013, based on apache2 and apt-file completion
 
+#General todo: use ola_uni_info to populate universe options, possibly add a list_uni_ids options
+#General todo: use ola_plugin_info to populate plugin options, possibly add a list_plugin_ids options
+#General todo: change over to use _get_comp_words_by_ref instead of ${COMP_WORDS[COMP_CWORD]}
+#General todo: tidy up and use logic to not call _ola_list_pids or offer unnecessary options when possible
+
 #General functions
+#Martin (lots of extra pids) 4d50:ffffffff
+#Open Lighting (standard selection) 0081:ffffffff
 _ola_list_pids()
 {
-  COMPREPLY=( $( compgen -W '$( command $1 --list_pids 2>/dev/null ) $2' -- $cur  ) )
+  local pidstore uid
+  if [ -n "$2" ]
+  then
+    pidstore="-p $2"
+  fi
+  if [ -n "$3" ]
+  then
+    uid="--uid $3"
+  fi
+  COMPREPLY=( $( compgen -W '$( command ${COMP_WORDS[0]} $pidstore $uid --list_pids 2>/dev/null ) $1' -- $cur  ) )
+}
+
+_ola_get_options_for_list_pids()
+{
+  local i cword words
+
+  #Fetch complete words, without splitting on :, so we get the UID as one item
+  __reassemble_comp_words_by_ref ":" words cword
+
+  #Check from 1 to count-1, ignoring first word, the command
+  #and last, count-1, as we're looking for the option, we then check it's value
+  for (( i=1; i<=(cword-1); i++ )) do
+    case "${words[$i]}" in
+      -p | --pid-location)
+        if [ -d "${words[$i+1]}" ]
+        then
+          #Found an alternative pidstore, capture to pass into _ola_list_pids
+          pidstore=${words[$i+1]}
+        fi
+        ;;
+      --uid)
+        #Found a possible UID, capture to pass into _ola_list_pids
+        #For manufacturer specific ones
+        uid=${words[$i+1]}
+        ;;
+    esac;
+  done
 }
 
 #Commands
@@ -32,6 +75,18 @@ have olad && _olad()
   case "$prev" in
     -l | --log-level)
       opts='0 1 2 3 4'
+      ;;
+    -c | --config-dir | -d | --http-data-dir)
+      #Both config and data dir want directories
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _filedir -d
+      return 0
+      ;;
+    -i | --interface)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _configured_interfaces
+      _ip_addresses
+      return 0
       ;;
   esac;
 
@@ -114,6 +169,7 @@ have ola_plugin_info && _ola_plugin_info()
 
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
+  #TODO: Complete plugin id based on the output when one isn't specified
   COMPREPLY=($( compgen -W '--plugin_id' -- $cur ) )
 }
 complete -F _ola_plugin_info ola_plugin_info
@@ -125,6 +181,7 @@ have ola_plugin_state && _ola_plugin_state()
 
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
+  #TODO: Complete plugin id based on the output of ola_plugin_info when one isn't specified
   COMPREPLY=($( compgen -W '--plugin_id' -- $cur ) )
 }
 complete -F _ola_plugin_state ola_plugin_state
@@ -141,28 +198,24 @@ have ola_rdm_discover && _ola_rdm_discover()
 complete -F _ola_rdm_discover ola_rdm_discover
 
 #ola_rdm_get
-have ola_rdm_get && _ola_rdm_get()
-{
-  local cur
-
-  COMPREPLY=()
-  cur=${COMP_WORDS[COMP_CWORD]}
-
-  _ola_list_pids ola_rdm_get '--sub_device --list_pids --universe --uid'
-}
-complete -F _ola_rdm_get ola_rdm_get
-
 #ola_rdm_set
-have ola_rdm_set && _ola_rdm_set()
+#Same command and same set of options, so use same completion
+_ola_rdm_getset()
 {
-  local cur
+  local cur pidstore uid
 
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
 
-  _ola_list_pids ola_rdm_set '--sub_device --list_pids --universe --uid'
+  _ola_get_options_for_list_pids
+
+  #TODO: Don't bother generating list of pids if we're completing an option or it's value
+  #Possible todo: populate UID list from ola_rdm_discover (without force options)
+  #Future TODO: Pass in $pidstore as arg 2 if these commands get the option to specify one
+  _ola_list_pids '--sub_device --list_pids --universe --uid' "" "$uid"
 }
-complete -F _ola_rdm_set ola_rdm_set
+have ola_rdm_get && complete -F _ola_rdm_getset ola_rdm_get
+have ola_rdm_set && complete -F _ola_rdm_getset ola_rdm_set
 
 #ola_recorder
 #Todo: only show additional playback options --delay --iterations when in playback
@@ -178,6 +231,12 @@ have ola_recorder && _ola_recorder()
   case "$prev" in
     -l | --log-level)
       opts='0 1 2 3 4'
+      ;;
+    -r | --record | -p | --playback | -v | --verify)
+      #Record, playback and verify all want files
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _filedir
+      return 0
       ;;
   esac;
 
@@ -252,13 +311,23 @@ have ola_trigger && _ola_trigger()
   prev=${COMP_WORDS[COMP_CWORD-1]}
   opts='--log-level --offset --universe'
 
-  case "$prev" in
-    -l | --log-level)
-      opts='0 1 2 3 4'
-      ;;
-  esac;
+  if [[ "$prev" == -* ]]; then
+    #An option, check if it's a special one
+    case "$prev" in
+      -l | --log-level)
+        #We're not interested in supplying further opts, so set compreply and break out with a return
+        COMPREPLY=($( compgen -W '0 1 2 3 4' -- $cur ) )
+        return 0
+        opts='0 1 2 3 4'
+        ;;
+    esac;
+  else
+    #Could be a conf file or an option, so add conf files
+    _filedir conf
+  fi
 
-  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
+  #Append to possible existing list of options
+  COMPREPLY+=($( compgen -W "$opts" -- $cur ) )
 
   return 0
 }
@@ -336,6 +405,12 @@ have rdmpro_sniffer && _rdmpro_sniffer()
     -l | --log-level)
       opts='0 1 2 3 4'
       ;;
+    -w | --write-raw-dump | -p | --parse-raw-dump)
+      #Both write and parse want files
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _filedir
+      return 0
+      ;;
   esac;
 
   COMPREPLY=($( compgen -W "$opts" -- $cur ) )
@@ -343,6 +418,11 @@ have rdmpro_sniffer && _rdmpro_sniffer()
   return 0
 }
 complete -F _rdmpro_sniffer rdmpro_sniffer
+
+###############################################################################
+# The below completions are all for commands that are still in development    #
+# So we don't check if the command exists/is installed, we just offer options #
+###############################################################################
 
 #e131_transmit_test
 #have e131_transmit_test && 
@@ -404,7 +484,7 @@ _slp_server()
   prev=${COMP_WORDS[COMP_CWORD-1]}
   opts='--ip --log-level --slp-port --no-http --no-da --setuid --setgid --scopes --services'
 
-  #TODO: Check if setuid and setgid are Linux ones, and if so complete them
+  #TODO: Check if setuid and setgid are Linux ones, and if so complete them using _uids and _gids
   #TODO: Check if scopes are listed anywhere
   case "$prev" in
     -l | --log-level)
@@ -422,21 +502,32 @@ complete -F _slp_server slp_server
 #have e133_controller && 
 _e133_controller()
 {
-  local cur prev opts
+  local cur prev opts pidstore uid
 
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
   prev=${COMP_WORDS[COMP_CWORD-1]}
-  opts='--endpoint --target --ip --log-level --pid-location --set --uid'
-
-  #TODO: Auto complete PIDs, probably add an option to list them too
+  opts='--endpoint --target --ip --log-level --pid-location --list_pids --set --uid'
+  
+  #Because of the way this completion is working out, set COMPREPLY in each case and don't do anything centrally
   case "$prev" in
     -l | --log-level)
-      opts='0 1 2 3 4'
+      COMPREPLY=($( compgen -W "0 1 2 3 4" -- $cur ) )
       ;;
+    -p | --pid-location)
+      _filedir -d
+      ;;
+    -i | --ip)
+      _ip_addresses
+      ;;
+    *)
+      #TODO: This should probably be an if statement, as we don't really care about prev
+      #TODO: Don't bother generating list of pids if we're completing an option or it's value
+      #Fetch and pass in the UID and alternative pidstore if set to widen the
+      #list of PIDs offered
+      _ola_get_options_for_list_pids
+      _ola_list_pids "$opts" "$pidstore" "$uid"
   esac;
-
-  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
 
   return 0
 }
@@ -454,9 +545,15 @@ _e133_monitor()
   opts='--targets --log-level --pid-location'
 
   #TODO: Auto complete PIDs, probably add an option to list them too
+  #TODO: Could autocomplete targets if it could map hosts to IPs or handle hostnames
   case "$prev" in
     -l | --log-level)
       opts='0 1 2 3 4'
+      ;;
+    -p | --pid-location)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _filedir -d
+      return 0
       ;;
   esac;
 
@@ -480,6 +577,11 @@ _e133_receiver()
   case "$prev" in
     -l | --log-level)
       opts='0 1 2 3 4'
+      ;;
+    -i | --ip)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ip_addresses
+      return 0
       ;;
   esac;
 
@@ -537,8 +639,6 @@ _slp_register()
 complete -F _slp_register slp_register
 
 #slp_sa_test
-#TODO: Work out why this one isn't working for some reason!
-#Only seems to fail when run as ./slp_sa_test, works fine as ../slp_sa_test!
 #have slp_sa_test && 
 _slp_sa_test()
 {
@@ -555,8 +655,7 @@ _slp_sa_test()
       ;;
     -t | --tests)
       #TODO: Check if this needs to work with a comma seperated list of tests
-      #TODO: Get this to work with the $0 command
-      #opts="$( command slp_sa_test --list-tests 2>/dev/null )"
+      opts="$( command ${COMP_WORDS[0]} --list-tests 2>/dev/null )"
       ;;
   esac;
 
@@ -577,17 +676,22 @@ _usbpro_firmware()
   prev=${COMP_WORDS[COMP_CWORD-1]}
   opts='--device --firmware --log-level'
 
+  #Because of the way this completion is working out, set COMPREPLY in each case and don't do anything centrally
   case "$prev" in
     -l | --log-level)
-      opts='0 1 2 3 4'
+      COMPREPLY=($( compgen -W "0 1 2 3 4" -- $cur ) )
       ;;
     -d | --device)
       COMPREPLY=($( compgen -G "/dev/ttyUSB*" -- $cur ) )
-      return 0
+      ;;
+    -f | --firmware)
+      _filedir bin
+      ;;
+    *)
+      #TODO: This should probably be an if statement, as we don't really care about prev
+      COMPREPLY=($( compgen -W "$opts" -- $cur ) )
       ;;
   esac;
-
-  COMPREPLY=($( compgen -W "$opts" -- $cur ) )
 
   return 0
 }
