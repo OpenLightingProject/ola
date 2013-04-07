@@ -14,7 +14,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * OlaServerServiceImpl.cpp
- * Implemtation of the OlaServerService interface. This is the class that
+ * Implementation of the OlaServerService interface. This is the class that
  * handles all the RPCs on the server side.
  * Copyright (C) 2005 - 2008 Simon Newton
  */
