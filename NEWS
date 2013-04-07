@@ -1,3 +1,11 @@
+d/m/y ola-x.y.z
+ * Man page for dmxmonitor - #219
+ * Rename ola_universe_stats to ola_uni_stats, standardising names
+ * Bash Completions for all programs in ola and ola-rdm-tests
+ * Various minor fixes of program help
+ * Addition and standardisation of PID options between ola_rdm_get/set and
+   e133_controller
+
 2/3/2013 ola-0.8.27
  * Changed the arguments to dmxmonitor - #219
  * Build fixes for various platforms
