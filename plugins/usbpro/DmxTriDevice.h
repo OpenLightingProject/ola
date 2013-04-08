@@ -81,7 +81,6 @@ class DmxTriOutputPort: public BasicOutputPort {
     }
 
   private:
-    DmxTriDevice *m_device;
     DmxTriWidget *m_tri_widget;
     const string m_serial;
 };
