@@ -188,9 +188,6 @@ void ParseOptions(int argc, char *argv[], options *opts) {
       case 'p':
         opts->pid_location = optarg;
         break;
-      case LIST_PIDS_OPTION:
-        opts->list_pids = true;
-        break;
       case 's':
         opts->rdm_set = true;
         break;
@@ -199,6 +196,9 @@ void ParseOptions(int argc, char *argv[], options *opts) {
         break;
       case OPENSLP_OPTION:
         opts->use_openslp = true;
+        break;
+      case LIST_PIDS_OPTION:
+        opts->list_pids = true;
         break;
       case '?':
         break;
@@ -228,8 +228,8 @@ void DisplayHelpAndExit(char *argv[]) {
   "  -i, --ip                  The IP address to listen on.\n"
   "  -l, --log-level <level>   Set the logging level 0 .. 4.\n"
   "  -p, --pid-location        The directory to read PID definitions from\n"
-  "  --list_pids           display a list of pids\n"
   "  -s, --set                 Perform a SET (default is GET)\n"
+  "  --list_pids           display a list of pids\n"
   "  --uid <uid>               The UID of the device to control.\n"
 #ifdef HAVE_LIBSLP
   "  --openslp                 Use openslp rather than the OLA SLP server\n"
