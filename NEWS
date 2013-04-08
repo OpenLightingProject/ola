@@ -1,4 +1,4 @@
-d/m/y ola-x.y.z
+d/m/y ola-0.8.28
  * Man page for dmxmonitor - #219
  * Rename ola_universe_stats to ola_uni_stats, standardising names
  * Bash Completions for all programs in ola and ola-rdm-tests
