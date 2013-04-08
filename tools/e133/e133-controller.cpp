@@ -95,26 +95,41 @@ using std::endl;
 using std::string;
 using std::vector;
 
-typedef struct {
-  uint16_t endpoint;
-  bool help;
-  bool use_openslp;
-  ola::log_level log_level;
-  bool rdm_set;
-  string pid_location;
-  bool list_pids;  // show the pid list
-  string ip_address;
-  string target_address;
-  UID *uid;
-  string pid;  // the pid to get
-  vector<string> args;  // extra args
-} options;
+class ControllerOptions {
+  public:
+    ola::log_level log_level;
+    uint16_t endpoint;
+    bool help;
+    bool use_openslp;
+    string pid_location;
+    bool list_pids;  // show the pid list
+    bool rdm_set;
+    string ip_address;
+    string target_address;
+    auto_ptr<UID> uid;
+    string pid;  // the pid to get
+    vector<string> args;  // extra args
+
+    ControllerOptions()
+      : log_level(ola::OLA_LOG_WARN),
+        endpoint(0),
+        help(false),
+        use_openslp(false),
+        pid_location(PID_DATA_DIR),
+        list_pids(false),
+        rdm_set(false) {
+    }
+
+ private:
+  ControllerOptions(const ControllerOptions&);
+  ControllerOptions& operator=(const ControllerOptions&);
+};
 
 
 /*
  * Parse our command line options
  */
-void ParseOptions(int argc, char *argv[], options *opts) {
+void ParseOptions(int argc, char *argv[], ControllerOptions *opts) {
   enum {
     OPENSLP_OPTION = 256,
     LIST_PIDS_OPTION,
@@ -151,7 +166,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
     switch (c) {
       case 0:
         if (uid_set)
-          opts->uid = UID::FromString(optarg);
+          opts->uid.reset(UID::FromString(optarg));
         break;
       case 'e':
         opts->endpoint = atoi(optarg);
@@ -695,15 +710,7 @@ void SimpleE133Controller::HandleStatusMessage(
  * Startup a node
  */
 int main(int argc, char *argv[]) {
-  options opts;
-  opts.log_level = ola::OLA_LOG_WARN;
-  opts.endpoint = 0;
-  opts.help = false;
-  opts.use_openslp = false;
-  opts.pid_location = PID_DATA_DIR;
-  opts.list_pids = false;
-  opts.rdm_set = false;
-  opts.uid = NULL;
+  ControllerOptions opts;
   ParseOptions(argc, argv, &opts);
   PidStoreHelper pid_helper(opts.pid_location);
 
@@ -728,23 +735,17 @@ int main(int argc, char *argv[]) {
   if (!pid_helper.Init())
     exit(EX_OSFILE);
 
-  // check the UID
-  if (!opts.uid) {
-    if (opts.list_pids) {
-      DisplayPIDsAndExit(0, pid_helper);
-    } else {
-      OLA_FATAL << "Invalid or missing UID, try xxxx:yyyyyyyy";
-      DisplayHelpAndExit(argv);
-      exit(EX_USAGE);
-    }
+  if (opts.list_pids) {
+    DisplayPIDsAndExit(opts.uid.get() ? opts.uid->ManufacturerId() : 0,
+                       pid_helper);
   }
 
-  //We have a UID, convert it
-  UID dst_uid(*opts.uid);
-  delete opts.uid;
-
-  if (opts.list_pids)
-    DisplayPIDsAndExit(dst_uid.ManufacturerId(), pid_helper);
+  // check the UID
+  if (!opts.uid.get()) {
+    OLA_FATAL << "Invalid or missing UID, try xxxx:yyyyyyyy";
+    DisplayHelpAndExit(argv);
+    exit(EX_USAGE);
+  }
 
   if (opts.args.size() < 1) {
     DisplayHelpAndExit(argv);
@@ -754,7 +755,7 @@ int main(int argc, char *argv[]) {
   // get the pid descriptor
   const ola::rdm::PidDescriptor *pid_descriptor = pid_helper.GetDescriptor(
       opts.args[0],
-      dst_uid.ManufacturerId());
+      opts.uid->ManufacturerId());
 
   if (!pid_descriptor) {
     OLA_WARN << "Unknown PID: " << opts.args[0] << ".";
@@ -805,7 +806,7 @@ int main(int argc, char *argv[]) {
 
   if (target_ip.AsInt())
     // manually add the responder address
-    controller.AddUID(dst_uid, target_ip);
+    controller.AddUID(*opts.uid, target_ip);
   else
     // this blocks while the slp thread does it's thing
     controller.PopulateResponderList();
@@ -818,13 +819,13 @@ int main(int argc, char *argv[]) {
 
   // send the message
   if (opts.rdm_set) {
-    controller.SendSetRequest(dst_uid,
+    controller.SendSetRequest(*opts.uid,
                               opts.endpoint,
                               pid_descriptor->Value(),
                               param_data,
                               param_data_length);
   } else {
-    controller.SendGetRequest(dst_uid,
+    controller.SendGetRequest(*opts.uid,
                               opts.endpoint,
                               pid_descriptor->Value(),
                               param_data,
