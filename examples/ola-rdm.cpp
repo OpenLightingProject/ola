@@ -95,7 +95,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
   int option_index = 0;
 
   while (1) {
-    int c = getopt_long(argc, argv, "d:p:lu:hf", long_options, &option_index);
+    int c = getopt_long(argc, argv, "d:hlp:u:", long_options, &option_index);
 
     if (c == -1)
       break;
@@ -111,11 +111,11 @@ void ParseOptions(int argc, char *argv[], options *opts) {
       case 'h':
         opts->help = true;
         break;
-      case 'p':
-        opts->pid_location = optarg;
-        break;
       case 'l':
         opts->list_pids = true;
+        break;
+      case 'p':
+        opts->pid_location = optarg;
         break;
       case 'u':
         opts->universe = atoi(optarg);
@@ -143,8 +143,8 @@ void DisplayGetPidHelp(const options &opts) {
   "\n"
   "  -d, --sub_device <device> target a particular sub device (default is 0)\n"
   "  -h, --help                display this help message and exit.\n"
-  "  -p, --pid-location        the directory to read PID definitions from\n"
   "  -l, --list_pids           display a list of pids\n"
+  "  -p, --pid-location        the directory to read PID definitions from\n"
   "  -u, --universe <universe> universe number.\n"
   "  --uid <uid>               the UID of the device to control.\n"
   << endl;
@@ -163,8 +163,8 @@ void DisplaySetPidHelp(const options &opts) {
   "\n"
   "  -d, --sub_device <device> target a particular sub device (default is 0)\n"
   "  -h, --help                display this help message and exit.\n"
-  "  -p, --pid-location        the directory to read PID definitions from\n"
   "  -l, --list_pids           display a list of pids\n"
+  "  -p, --pid-location        the directory to read PID definitions from\n"
   "  -u, --universe <universe> universe number.\n"
   "  --uid <uid>               the UID of the device to control.\n"
   << endl;
