@@ -5,6 +5,7 @@
 #General todo: use ola_plugin_info to populate plugin options, possibly add a list_plugin_ids options
 #General todo: change over to use _get_comp_words_by_ref instead of ${COMP_WORDS[COMP_CWORD]}
 #General todo: tidy up and use logic to not call _ola_list_pids or offer unnecessary options when possible
+#General todo: add completion for all the python examples in python/examples/
 
 #General functions
 #Martin (lots of extra pids) 4d50:ffffffff
@@ -211,8 +212,7 @@ _ola_rdm_getset()
 
   #TODO: Don't bother generating list of pids if we're completing an option or it's value
   #Possible todo: populate UID list from ola_rdm_discover (without force options)
-  #Future TODO: Pass in $pidstore as arg 2 if these commands get the option to specify one
-  _ola_list_pids '--sub_device --list_pids --universe --uid' "" "$uid"
+  _ola_list_pids '--sub_device --list_pids --universe --uid' "$pidstore" "$uid"
 }
 have ola_rdm_get && complete -F _ola_rdm_getset ola_rdm_get
 have ola_rdm_set && complete -F _ola_rdm_getset ola_rdm_set
