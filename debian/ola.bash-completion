@@ -138,7 +138,7 @@ have ola_e131 && _ola_e131()
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
   prev=${COMP_WORDS[COMP_CWORD-1]}
-  opts='--dev --input --port_id --preview_mode'
+  opts='--dev --input --port-id --preview_mode'
 
   case "$prev" in
     --preview_mode)
