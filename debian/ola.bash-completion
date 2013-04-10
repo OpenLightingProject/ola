@@ -21,7 +21,7 @@ _ola_list_pids()
   then
     uid="--uid $3"
   fi
-  COMPREPLY=( $( compgen -W '$( command ${COMP_WORDS[0]} $pidstore $uid --list_pids 2>/dev/null ) $1' -- $cur  ) )
+  COMPREPLY=( $( compgen -W '$( command ${COMP_WORDS[0]} $pidstore $uid --list-pids 2>/dev/null ) $1' -- $cur  ) )
 }
 
 _ola_get_options_for_list_pids()
@@ -223,7 +223,7 @@ _ola_rdm_getset()
 
   #TODO: Don't bother generating list of pids if we're completing an option or it's value
   #Possible todo: populate UID list from ola_rdm_discover (without force options)
-  _ola_list_pids '--sub_device --list_pids --pid-location --universe --uid' "$pidstore" "$uid"
+  _ola_list_pids '--sub_device --list-pids --pid-location --universe --uid' "$pidstore" "$uid"
 }
 have ola_rdm_get && complete -F _ola_rdm_getset ola_rdm_get
 have ola_rdm_set && complete -F _ola_rdm_getset ola_rdm_set
@@ -518,7 +518,7 @@ _e133_controller()
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
   prev=${COMP_WORDS[COMP_CWORD-1]}
-  opts='--endpoint --target --ip --log-level --pid-location --list_pids --set --uid'
+  opts='--endpoint --target --ip --log-level --pid-location --list-pids --set --uid'
   
   #Because of the way this completion is working out, set COMPREPLY in each case and don't do anything centrally
   case "$prev" in

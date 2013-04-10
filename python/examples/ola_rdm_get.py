@@ -38,12 +38,12 @@ def Usage():
   Usage: ola_rdm_get.py --universe <universe> --uid <uid> <pid>
 
   Get the value of a pid for a device.
-  Use 'ola_rdm_get --list_pids' to get a list of pids.
+  Use 'ola_rdm_get --list-pids' to get a list of pids.
 
     -d, --sub_device <device> target a particular sub device (default is 0)
     -h, --help                Display this help message and exit.
     -i, --interactive         Interactive mode
-    -l, --list_pids           display a list of pids
+    -l, --list-pids           display a list of pids
     --pid_file                The PID data store to use.
     --uid                     The UID to send to.
     -u, --universe <universe> Universe number.""")
@@ -421,7 +421,7 @@ def main():
   try:
     opts, args = getopt.getopt(sys.argv[1:], 'd:hilu:',
                                ['sub_device=', 'help', 'interactive',
-                                 'list_pids', 'pid_file=', 'uid=',
+                                 'list-pids', 'pid_file=', 'uid=',
                                  'universe='])
   except getopt.GetoptError, err:
     print str(err)
@@ -442,7 +442,7 @@ def main():
       sys.exit()
     elif o in ('-i', '--interactive'):
       interactive_mode = True
-    elif o in ('-l', '--list_pids'):
+    elif o in ('-l', '--list-pids'):
       list_pids = True
     elif o in ('--uid',):
       uid = UID.FromString(a)

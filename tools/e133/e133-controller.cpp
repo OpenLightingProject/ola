@@ -127,7 +127,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
       {"ip", required_argument, 0, 'i'},
       {"log-level", required_argument, 0, 'l'},
       {"pid-location", required_argument, 0, 'p'},
-      {"list_pids", no_argument, 0, LIST_PIDS_OPTION},
+      {"list-pids", no_argument, 0, LIST_PIDS_OPTION},
       {"set", no_argument, 0, 's'},
       {"target", required_argument, 0, 't'},
       {"uid", required_argument, &uid_set, 1},
@@ -228,7 +228,7 @@ void DisplayHelpAndExit(char *argv[]) {
   "  -i, --ip                  The IP address to listen on.\n"
   "  -l, --log-level <level>   Set the logging level 0 .. 4.\n"
   "  -p, --pid-location        The directory to read PID definitions from\n"
-  "  --list_pids           display a list of pids\n"
+  "  --list-pids           display a list of pids\n"
   "  -s, --set                 Perform a SET (default is GET)\n"
   "  --uid <uid>               The UID of the device to control.\n"
 #ifdef HAVE_LIBSLP
@@ -758,7 +758,7 @@ int main(int argc, char *argv[]) {
 
   if (!pid_descriptor) {
     OLA_WARN << "Unknown PID: " << opts.args[0] << ".";
-    OLA_WARN << "Use --list_pids to list the available PIDs.";
+    OLA_WARN << "Use --list-pids to list the available PIDs.";
     exit(EX_USAGE);
   }
 
