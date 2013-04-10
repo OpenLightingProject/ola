@@ -40,7 +40,7 @@ def Usage():
   Get the value of a pid for a device.
   Use 'ola_rdm_get --list-pids' to get a list of pids.
 
-    -d, --sub_device <device> target a particular sub device (default is 0)
+    -d, --sub-device <device> target a particular sub device (default is 0)
     -h, --help                Display this help message and exit.
     -i, --interactive         Interactive mode
     -l, --list-pids           display a list of pids
@@ -420,7 +420,7 @@ def main():
   readline.set_completer_delims(' \t')
   try:
     opts, args = getopt.getopt(sys.argv[1:], 'd:hilu:',
-                               ['sub_device=', 'help', 'interactive',
+                               ['sub-device=', 'help', 'interactive',
                                  'list-pids', 'pid_file=', 'uid=',
                                  'universe='])
   except getopt.GetoptError, err:
@@ -435,7 +435,7 @@ def main():
   pid_file = None
   interactive_mode = False
   for o, a in opts:
-    if o in ('-d', '--sub_device'):
+    if o in ('-d', '--sub-device'):
       sub_device = int(a)
     elif o in ('-h', '--help'):
       Usage()

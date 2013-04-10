@@ -223,7 +223,7 @@ _ola_rdm_getset()
 
   #TODO: Don't bother generating list of pids if we're completing an option or it's value
   #Possible todo: populate UID list from ola_rdm_discover (without force options)
-  _ola_list_pids '--sub_device --list-pids --pid-location --universe --uid' "$pidstore" "$uid"
+  _ola_list_pids '--sub-device --list-pids --pid-location --universe --uid' "$pidstore" "$uid"
 }
 have ola_rdm_get && complete -F _ola_rdm_getset ola_rdm_get
 have ola_rdm_set && complete -F _ola_rdm_getset ola_rdm_set

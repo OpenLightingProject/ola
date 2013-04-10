@@ -83,7 +83,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
 
   int uid_set = 0;
   static struct option long_options[] = {
-      {"sub_device", required_argument, 0, 'd'},
+      {"sub-device", required_argument, 0, 'd'},
       {"help", no_argument, 0, 'h'},
       {"pid-location", required_argument, 0, 'p'},
       {"list-pids", no_argument, 0, 'l'},
@@ -141,7 +141,7 @@ void DisplayGetPidHelp(const options &opts) {
   "Get the value of a pid for a device.\n"
   "Use '" << opts.cmd << " --list-pids' to get a list of pids.\n"
   "\n"
-  "  -d, --sub_device <device> target a particular sub device (default is 0)\n"
+  "  -d, --sub-device <device> target a particular sub device (default is 0)\n"
   "  -h, --help                display this help message and exit.\n"
   "  -l, --list-pids           display a list of pids\n"
   "  -p, --pid-location        the directory to read PID definitions from\n"
@@ -161,7 +161,7 @@ void DisplaySetPidHelp(const options &opts) {
   "Set the value of a pid for a device.\n"
   "Use '" << opts.cmd << " --list-pids' to get a list of pids.\n"
   "\n"
-  "  -d, --sub_device <device> target a particular sub device (default is 0)\n"
+  "  -d, --sub-device <device> target a particular sub device (default is 0)\n"
   "  -h, --help                display this help message and exit.\n"
   "  -l, --list-pids           display a list of pids\n"
   "  -p, --pid-location        the directory to read PID definitions from\n"
