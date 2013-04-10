@@ -104,7 +104,7 @@ have ola_dev_info && _ola_dev_info()
 
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
-  COMPREPLY=($( compgen -W '--plugin_id' -- $cur ) )
+  COMPREPLY=($( compgen -W '--plugin-id' -- $cur ) )
 }
 complete -F _ola_dev_info ola_dev_info
 
@@ -171,7 +171,7 @@ have ola_plugin_info && _ola_plugin_info()
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
   #TODO: Complete plugin id based on the output when one isn't specified
-  COMPREPLY=($( compgen -W '--plugin_id' -- $cur ) )
+  COMPREPLY=($( compgen -W '--plugin-id' -- $cur ) )
 }
 complete -F _ola_plugin_info ola_plugin_info
 
@@ -183,7 +183,7 @@ have ola_plugin_state && _ola_plugin_state()
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
   #TODO: Complete plugin id based on the output of ola_plugin_info when one isn't specified
-  COMPREPLY=($( compgen -W '--plugin_id' -- $cur ) )
+  COMPREPLY=($( compgen -W '--plugin-id' -- $cur ) )
 }
 complete -F _ola_plugin_state ola_plugin_state
 
