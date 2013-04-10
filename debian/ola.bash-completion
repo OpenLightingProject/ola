@@ -59,7 +59,7 @@ have ola_artnet && _ola_artnet()
 
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
-  COMPREPLY=($( compgen -W '--dev --net --long_name --name --subnet --universe' -- $cur ) )
+  COMPREPLY=($( compgen -W '--dev --net --long-name --name --subnet --universe' -- $cur ) )
 }
 complete -F _ola_artnet ola_artnet
 
