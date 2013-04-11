@@ -90,7 +90,6 @@ OSCNode::OSCNode(SelectServerInterface *ss,
                  ExportMap *export_map,
                  const OSCNodeOptions &options)
     : m_ss(ss),
-      m_export_map(export_map),
       m_listen_port(options.listen_port),
       m_descriptor(NULL),
       m_osc_server(NULL) {

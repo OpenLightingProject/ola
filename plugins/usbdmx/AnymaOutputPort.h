@@ -41,7 +41,6 @@ class AnymaOutputPort: public BasicOutputPort, ola::thread::Thread {
   public:
     AnymaOutputPort(AnymaDevice *parent,
                     unsigned int id,
-                    libusb_device *usb_device,
                     libusb_device_handle *usb_handle,
                     const string &serial);
     ~AnymaOutputPort();
@@ -59,7 +58,6 @@ class AnymaOutputPort: public BasicOutputPort, ola::thread::Thread {
 
     bool m_term;
     string m_serial;
-    libusb_device *m_usb_device;
     libusb_device_handle *m_usb_handle;
     DmxBuffer m_buffer;
     ola::thread::Mutex m_data_mutex;

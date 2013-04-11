@@ -117,7 +117,6 @@ class OSCNode {
     typedef map<string, DMXCallback*> AddressCallbackMap;
 
     SelectServerInterface *m_ss;
-    ExportMap *m_export_map;
     const uint16_t m_listen_port;
     ola::io::UnmanagedFileDescriptor *m_descriptor;
     lo_server m_osc_server;

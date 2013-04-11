@@ -86,7 +86,6 @@ class FtdiWidgetInfo {
     }
 
   private:
-    struct usb_device *m_device;
     string m_name;
     string m_serial;
     int unsigned m_id;
