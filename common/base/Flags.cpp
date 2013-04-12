@@ -123,7 +123,7 @@ void FlagRegistry::ParseFlags(int *argc, char **argv) {
   FlagMap flags;
   const struct option *long_options = GetLongOpts(&flags);
 
-  optind = 1;  // reset each time
+  optind = 0;  // reset each time
   while (1) {
     c = getopt_long(*argc, argv, short_opts.c_str(),
                     long_options, &option_index);

@@ -118,7 +118,7 @@ class Flag<bool> : public BaseFlag {
         // prefix the long option with 'no'
         unsigned int total_size = strlen(NO_PREFIX) + strlen(name) + 1;
         char* new_name = new char[total_size];
-        strncpy(new_name, NO_PREFIX, strlen(NO_PREFIX));
+        strncpy(new_name, NO_PREFIX, strlen(NO_PREFIX) + 1);
         strncat(new_name, name, total_size);
         ReplaceUnderscoreWithHyphen(new_name);
         m_name = new_name;

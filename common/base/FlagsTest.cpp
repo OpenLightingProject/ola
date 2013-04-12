@@ -173,7 +173,7 @@ void FlagsTest::testBoolFlags() {
   char opt4[] = "-b";
 
   char *argv2[] = {bin_name, opt3, opt4};
-  argc = sizeof(argv2) / sizeof(argv[0]);
+  argc = sizeof(argv2) / sizeof(argv2[0]);
   ola::ParseFlags(&argc, argv2);
 
   OLA_ASSERT_EQ(1, argc);
