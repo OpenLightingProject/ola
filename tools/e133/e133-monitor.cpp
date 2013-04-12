@@ -31,6 +31,7 @@
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
+#include <ola/base/Flags.h>
 #include <ola/io/SelectServer.h>
 #include <ola/io/StdinHandler.h>
 #include <ola/network/IPV4Address.h>
@@ -70,105 +71,14 @@ using std::endl;
 using std::string;
 using std::vector;
 
-typedef struct {
-  bool help;
-  bool use_openslp;
-  ola::log_level log_level;
-  string target_addresses;
-  string pid_location;
-} options;
-
-
-/*
- * Parse our command line options
- */
-void ParseOptions(int argc, char *argv[], options *opts) {
-  enum {
-    OPENSLP_OPTION = 256,
-  };
-
-  static struct option long_options[] = {
-      {"help", no_argument, 0, 'h'},
-      {"log-level", required_argument, 0, 'l'},
-      {"pid-location", required_argument, 0, 'p'},
-      {"targets", required_argument, 0, 't'},
 #ifdef HAVE_LIBSLP
-      {"openslp", no_argument, 0, OPENSLP_OPTION},
+DEFINE_bool(openslp, false, "Use openslp rather than the OLA SLP server");
 #endif
-      {0, 0, 0, 0}
-    };
-
-  int option_index = 0;
-
-  while (1) {
-    int c = getopt_long(argc, argv, "hl:p:t:", long_options, &option_index);
-
-    if (c == -1)
-      break;
-
-    switch (c) {
-      case 'h':
-        opts->help = true;
-        break;
-      case 'l':
-        switch (atoi(optarg)) {
-          case 0:
-            // nothing is written at this level
-            // so this turns logging off
-            opts->log_level = ola::OLA_LOG_NONE;
-            break;
-          case 1:
-            opts->log_level = ola::OLA_LOG_FATAL;
-            break;
-          case 2:
-            opts->log_level = ola::OLA_LOG_WARN;
-            break;
-          case 3:
-            opts->log_level = ola::OLA_LOG_INFO;
-            break;
-          case 4:
-            opts->log_level = ola::OLA_LOG_DEBUG;
-            break;
-          default :
-            break;
-        }
-        break;
-      case 'p':
-        opts->pid_location = optarg;
-        break;
-      case 't':
-        opts->target_addresses = optarg;
-        break;
-      case '?':
-        break;
-      case OPENSLP_OPTION:
-        opts->use_openslp = true;
-        break;
-      default:
-       break;
-    }
-  }
-}
-
-
-/*
- * Display the help message
- */
-void DisplayHelpAndExit(char *argv[]) {
-  cout << "Usage: " << argv[0] << " [options]\n"
-  "\n"
-  "Monitor E1.33 Devices.\n"
-  "\n"
-  "  -h, --help                Display this help message and exit.\n"
-  "  -t, --targets <ip>,<ip>   List of IPs to connect to, overrides SLP\n"
-  "  -p, --pid-location        The directory to read PID definitiions from\n"
-  "  -l, --log-level <level>   Set the logging level 0 .. 4.\n"
-#ifdef HAVE_LIBSLP
-  "  --openslp                 Use openslp rather than the OLA SLP server\n"
-#endif
-  << endl;
-  exit(0);
-}
+DEFINE_s_int8(log_level, l, ola::OLA_LOG_WARN, "Set the logging level 0 .. 4.");
+DEFINE_s_string(pid_location, p, PID_DATA_DIR,
+                "The directory to read PID definitiions from");
+DEFINE_s_string(target_addresses, t, "",
+                "List of IPs to connect to, overrides SLP");
 
 
 /**
@@ -332,30 +242,47 @@ bool SimpleE133Monitor::EndpointRequest(
  * Startup a node
  */
 int main(int argc, char *argv[]) {
-  options opts;
-  opts.pid_location = PID_DATA_DIR;
-  opts.log_level = ola::OLA_LOG_WARN;
-  opts.help = false;
-  opts.use_openslp = false;
-  ParseOptions(argc, argv, &opts);
-  PidStoreHelper pid_helper(opts.pid_location, 4);
+  ola::SetHelpString("[options]", "Monitor E1.33 Devices.");
+  ola::ParseFlags(&argc, argv);
 
-  if (opts.help)
-    DisplayHelpAndExit(argv);
+  PidStoreHelper pid_helper(string(FLAGS_pid_location), 4);
 
-  ola::InitLogging(opts.log_level, ola::OLA_LOG_STDERR);
+  ola::log_level log_level = ola::OLA_LOG_WARN;
+  switch (FLAGS_log_level) {
+    case 0:
+      // nothing is written at this level
+      // so this turns logging off
+      log_level = ola::OLA_LOG_NONE;
+      break;
+    case 1:
+      log_level = ola::OLA_LOG_FATAL;
+      break;
+    case 2:
+      log_level = ola::OLA_LOG_WARN;
+      break;
+    case 3:
+      log_level = ola::OLA_LOG_INFO;
+      break;
+    case 4:
+      log_level = ola::OLA_LOG_DEBUG;
+      break;
+    default :
+      break;
+  }
+
+  ola::InitLogging(log_level, ola::OLA_LOG_STDERR);
 
   vector<IPV4Address> targets;
-  if (!opts.target_addresses.empty()) {
+  if (!string(FLAGS_target_addresses).empty()) {
     vector<string> tokens;
-    ola::StringSplit(opts.target_addresses, tokens, ",");
+    ola::StringSplit(string(FLAGS_target_addresses), tokens, ",");
 
     vector<string>::const_iterator iter = tokens.begin();
     for (; iter != tokens.end(); ++iter) {
       IPV4Address ip_address;
       if (!IPV4Address::FromString(*iter, &ip_address)) {
         OLA_WARN << "Invalid address " << *iter;
-        DisplayHelpAndExit(argv);
+        ola::DisplayUsage();
       }
       targets.push_back(ip_address);
     }
@@ -366,7 +293,7 @@ int main(int argc, char *argv[]) {
 
   SimpleE133Monitor::SLPOption slp_option = SimpleE133Monitor::NO_SLP;
   if (targets.empty()) {
-    slp_option = opts.use_openslp ? SimpleE133Monitor::OPEN_SLP :
+    slp_option = FLAGS_openslp ? SimpleE133Monitor::OPEN_SLP :
         SimpleE133Monitor::OLA_SLP;
   }
   SimpleE133Monitor monitor(&pid_helper, slp_option);
