@@ -21,6 +21,7 @@
 #define INCLUDE_OLA_BASE_FLAGSPRIVATE_H_
 
 #include <getopt.h>
+#include <string.h>
 #include <ola/StringUtils.h>
 #include <map>
 #include <sstream>
