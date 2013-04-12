@@ -5,6 +5,9 @@ d/m/y ola-0.8.28
  * Various minor fixes of program help
  * Addition and standardisation of PID options between ola_rdm_get/set and
    e133_controller
+ * Standardised all the following long arguments from _ to - in programs and
+   completion: --long_name --plugin_id --port_id --preview_mode --list_pids
+   --sub_device
 
 2/3/2013 ola-0.8.27
  * Changed the arguments to dmxmonitor - #219

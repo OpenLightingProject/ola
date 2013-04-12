@@ -333,7 +333,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
       {"help", no_argument, 0, 'h'},
       {"ltp", no_argument, 0, 'l'},
       {"name", required_argument, 0, 'n'},
-      {"plugin_id", required_argument, 0, 'p'},
+      {"plugin-id", required_argument, 0, 'p'},
       {"universe", required_argument, 0, 'u'},
       {0, 0, 0, 0}
     };
@@ -490,12 +490,12 @@ int ParseSetPriorityOptions(int argc, char *argv[], options *opts) {
  * help message for device info
  */
 void DisplayDeviceInfoHelp(const options &opts) {
-  cout << "Usage: " << opts.cmd << " [--plugin_id <plugin_id>]\n"
+  cout << "Usage: " << opts.cmd << " [--plugin-id <plugin_id>]\n"
   "\n"
   "Show information on the devices loaded by olad.\n"
   "\n"
   "  -h, --help                  Display this help message and exit.\n"
-  "  -p, --plugin_id <plugin_id> Show only devices owned by this plugin.\n"
+  "  -p, --plugin-id <plugin-id> Show only devices owned by this plugin.\n"
   << endl;
 }
 
@@ -525,14 +525,14 @@ void DisplayPatchHelp(const options &opts) {
  */
 void DisplayPluginInfoHelp(const options &opts) {
   cout << "Usage: " << opts.cmd <<
-  " [--plugin_id <plugin_id>]\n"
+  " [--plugin-id <plugin-id>]\n"
   "\n"
   "Get info on the plugins loaded by olad. Called without arguments this will\n"
-  "display the plugins loaded by olad. When used with --plugin_id this will \n"
+  "display the plugins loaded by olad. When used with --plugin-id this will \n"
   "display the specified plugin's description.\n"
   "\n"
   "  -h, --help                  Display this help message and exit.\n"
-  "  -p, --plugin_id <plugin_id> Id of the plugin to fetch the description of\n"
+  "  -p, --plugin-id <plugin_id> Id of the plugin to fetch the description of\n"
   << endl;
 }
 
@@ -542,13 +542,13 @@ void DisplayPluginInfoHelp(const options &opts) {
  */
 void DisplayPluginStateHelp(const options &opts) {
   cout << "Usage: " << opts.cmd <<
-  " [--plugin_id <plugin_id>]\n"
+  " [--plugin-id <plugin-id>]\n"
   "\n"
   "Displays the enabled/disabled state for a plugin and the list of plugins \n"
   "this plugin will conflict with.\n"
   "\n"
   "  -h, --help                  Display this help message and exit.\n"
-  "  -p, --plugin_id <plugin_id> Id of the plugin to fetch the state of\n"
+  "  -p, --plugin-id <plugin-id> Id of the plugin to fetch the state of\n"
   << endl;
 }
 

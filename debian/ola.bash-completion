@@ -21,7 +21,7 @@ _ola_list_pids()
   then
     uid="--uid $3"
   fi
-  COMPREPLY=( $( compgen -W '$( command ${COMP_WORDS[0]} $pidstore $uid --list_pids 2>/dev/null ) $1' -- $cur  ) )
+  COMPREPLY=( $( compgen -W '$( command ${COMP_WORDS[0]} $pidstore $uid --list-pids 2>/dev/null ) $1' -- $cur  ) )
 }
 
 _ola_get_options_for_list_pids()
@@ -59,7 +59,7 @@ have ola_artnet && _ola_artnet()
 
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
-  COMPREPLY=($( compgen -W '--dev --net --long_name --name --subnet --universe' -- $cur ) )
+  COMPREPLY=($( compgen -W '--dev --net --long-name --name --subnet --universe' -- $cur ) )
 }
 complete -F _ola_artnet ola_artnet
 
@@ -104,7 +104,7 @@ have ola_dev_info && _ola_dev_info()
 
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
-  COMPREPLY=($( compgen -W '--plugin_id' -- $cur ) )
+  COMPREPLY=($( compgen -W '--plugin-id' -- $cur ) )
 }
 complete -F _ola_dev_info ola_dev_info
 
@@ -138,10 +138,10 @@ have ola_e131 && _ola_e131()
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
   prev=${COMP_WORDS[COMP_CWORD-1]}
-  opts='--dev --input --port_id --preview_mode'
+  opts='--dev --input --port-id --preview-mode'
 
   case "$prev" in
-    --preview_mode)
+    --preview-mode)
       opts='on off'
       ;;
   esac;
@@ -171,7 +171,7 @@ have ola_plugin_info && _ola_plugin_info()
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
   #TODO: Complete plugin id based on the output when one isn't specified
-  COMPREPLY=($( compgen -W '--plugin_id' -- $cur ) )
+  COMPREPLY=($( compgen -W '--plugin-id' -- $cur ) )
 }
 complete -F _ola_plugin_info ola_plugin_info
 
@@ -183,7 +183,7 @@ have ola_plugin_state && _ola_plugin_state()
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
   #TODO: Complete plugin id based on the output of ola_plugin_info when one isn't specified
-  COMPREPLY=($( compgen -W '--plugin_id' -- $cur ) )
+  COMPREPLY=($( compgen -W '--plugin-id' -- $cur ) )
 }
 complete -F _ola_plugin_state ola_plugin_state
 
@@ -223,7 +223,7 @@ _ola_rdm_getset()
 
   #TODO: Don't bother generating list of pids if we're completing an option or it's value
   #Possible todo: populate UID list from ola_rdm_discover (without force options)
-  _ola_list_pids '--sub_device --list_pids --pid-location --universe --uid' "$pidstore" "$uid"
+  _ola_list_pids '--sub-device --list-pids --pid-location --universe --uid' "$pidstore" "$uid"
 }
 have ola_rdm_get && complete -F _ola_rdm_getset ola_rdm_get
 have ola_rdm_set && complete -F _ola_rdm_getset ola_rdm_set
@@ -518,7 +518,7 @@ _e133_controller()
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
   prev=${COMP_WORDS[COMP_CWORD-1]}
-  opts='--endpoint --target --ip --log-level --pid-location --list_pids --set --uid'
+  opts='--endpoint --target --ip --log-level --pid-location --list-pids --set --uid'
   
   #Because of the way this completion is working out, set COMPREPLY in each case and don't do anything centrally
   case "$prev" in

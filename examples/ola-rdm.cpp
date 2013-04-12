@@ -83,10 +83,10 @@ void ParseOptions(int argc, char *argv[], options *opts) {
 
   int uid_set = 0;
   static struct option long_options[] = {
-      {"sub_device", required_argument, 0, 'd'},
+      {"sub-device", required_argument, 0, 'd'},
       {"help", no_argument, 0, 'h'},
       {"pid-location", required_argument, 0, 'p'},
-      {"list_pids", no_argument, 0, 'l'},
+      {"list-pids", no_argument, 0, 'l'},
       {"universe", required_argument, 0, 'u'},
       {"uid", required_argument, &uid_set, 1},
       {0, 0, 0, 0}
@@ -139,11 +139,11 @@ void DisplayGetPidHelp(const options &opts) {
   " --universe <universe> --uid <uid> <pid> <value>\n"
   "\n"
   "Get the value of a pid for a device.\n"
-  "Use '" << opts.cmd << " --list_pids' to get a list of pids.\n"
+  "Use '" << opts.cmd << " --list-pids' to get a list of pids.\n"
   "\n"
-  "  -d, --sub_device <device> target a particular sub device (default is 0)\n"
+  "  -d, --sub-device <device> target a particular sub device (default is 0)\n"
   "  -h, --help                display this help message and exit.\n"
-  "  -l, --list_pids           display a list of pids\n"
+  "  -l, --list-pids           display a list of pids\n"
   "  -p, --pid-location        the directory to read PID definitions from\n"
   "  -u, --universe <universe> universe number.\n"
   "  --uid <uid>               the UID of the device to control.\n"
@@ -159,11 +159,11 @@ void DisplaySetPidHelp(const options &opts) {
   " --universe <universe> --uid <uid> <pid> <value>\n"
   "\n"
   "Set the value of a pid for a device.\n"
-  "Use '" << opts.cmd << " --list_pids' to get a list of pids.\n"
+  "Use '" << opts.cmd << " --list-pids' to get a list of pids.\n"
   "\n"
-  "  -d, --sub_device <device> target a particular sub device (default is 0)\n"
+  "  -d, --sub-device <device> target a particular sub device (default is 0)\n"
   "  -h, --help                display this help message and exit.\n"
-  "  -l, --list_pids           display a list of pids\n"
+  "  -l, --list-pids           display a list of pids\n"
   "  -p, --pid-location        the directory to read PID definitions from\n"
   "  -u, --universe <universe> universe number.\n"
   "  --uid <uid>               the UID of the device to control.\n"
@@ -339,7 +339,7 @@ int RDMController::PerformRequestAndWait(unsigned int universe,
 
   if (!pid_descriptor) {
     cout << "Unknown PID: " << pid_name << endl;
-    cout << "Use --list_pids to list the available PIDs." << endl;
+    cout << "Use --list-pids to list the available PIDs." << endl;
     return EX_USAGE;
   }
 
