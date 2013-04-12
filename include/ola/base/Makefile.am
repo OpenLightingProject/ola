@@ -1,4 +1,4 @@
-SOURCES = Credentials.h Init.h
+SOURCES = Credentials.h Flags.h FlagsPrivate.h Init.h
 
 EXTRA_DIST = $(SOURCES)
 pkginclude_HEADERS = $(SOURCES)

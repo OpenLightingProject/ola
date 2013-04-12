@@ -21,6 +21,7 @@
 #ifndef INCLUDE_OLA_STL_STLUTILS_H_
 #define INCLUDE_OLA_STL_STLUTILS_H_
 
+#include <assert.h>
 #include <cstddef>
 #include <map>
 #include <set>
@@ -174,6 +175,16 @@ template<typename T1>
 bool STLInsertIfNotPresent(T1 *container, const typename T1::key_type &key,
                            const typename T1::mapped_type &value) {
   return container->insert(typename T1::value_type(key, value)).second;
+}
+
+
+/**
+ * Insert an key : value into a map or die if the key already exists.
+ */
+template<typename T1>
+void STLInsertOrDie(T1 *container, const typename T1::key_type &key,
+                    const typename T1::mapped_type &value) {
+  assert(container->insert(typename T1::value_type(key, value)).second);
 }
 
 

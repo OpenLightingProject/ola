@@ -13,8 +13,8 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * CredentialsTester.h
- * Run the tests for the Credentials functions.
+ * GenericTester.h
+ * Run the tests.
  * Copyright (C) 2012 Simon Newton
  */
 
