@@ -25,7 +25,7 @@
 
 #include "ola/Logging.h"
 #include "ola/testing/TestUtils.h"
-#include "tools/slp/RegistrationFileParser.h"
+#include "slp/RegistrationFileParser.h"
 #include "slp/SLPStrings.h"
 #include "slp/ServiceEntry.h"
 #include "slp/ScopeSet.h"

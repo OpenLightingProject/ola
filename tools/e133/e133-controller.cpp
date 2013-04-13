@@ -47,6 +47,7 @@
 #include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/RDMHelper.h>
 #include <ola/rdm/UID.h>
+#include <ola/slp/URLEntry.h>
 #include <ola/stl/STLUtils.h>
 
 #include <algorithm>
@@ -74,7 +75,6 @@
 #ifdef HAVE_LIBSLP
 #include "tools/e133/OpenSLPThread.h"
 #endif
-#include "tools/slp/URLEntry.h"
 
 using ola::NewCallback;
 using ola::io::IOStack;

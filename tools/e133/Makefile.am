@@ -22,7 +22,7 @@ noinst_LTLIBRARIES = libolae133slp.la libolae133.la
 libolae133slp_la_SOURCES = OLASLPThread.cpp \
                            E133URLParser.cpp \
                            SLPThread.cpp
-libolae133slp_la_LIBADD = $(top_builddir)/tools/slp/libolaslpclient.la \
+libolae133slp_la_LIBADD = $(top_builddir)/slp/libolaslpclient.la \
                           $(top_builddir)/common/libolacommon.la
 
 if HAVE_SLP
@@ -80,7 +80,7 @@ slp_sa_test_SOURCES = slp-sa-test.cpp \
                       SLPSATestRunner.cpp \
                       SLPSATests.cpp
 slp_sa_test_LDADD = $(top_builddir)/common/libolacommon.la \
-                    ../slp/libolaslp.la \
+                    $(top_builddir)/slp/libolaslpserver.la \
                     ./libolae133slp.la
 
 # Test Programs

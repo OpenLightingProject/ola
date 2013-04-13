@@ -17,8 +17,8 @@
  * Copyright (C) 2012 Simon Newton
  */
 
-#ifndef TOOLS_SLP_BASE_H_
-#define TOOLS_SLP_BASE_H_
+#ifndef INCLUDE_OLA_SLP_BASE_H_
+#define INCLUDE_OLA_SLP_BASE_H_
 
 #include <stdint.h>
 
@@ -32,4 +32,4 @@ static const char DEFAULT_SLP_SCOPE[] = "DEFAULT";
 static const int OLA_SLP_DEFAULT_PORT = 9011;
 }  // slp
 }  // ola
-#endif  // TOOLS_SLP_BASE_H_
+#endif  // INCLUDE_OLA_SLP_BASE_H_

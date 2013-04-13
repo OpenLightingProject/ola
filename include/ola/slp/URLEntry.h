@@ -18,8 +18,8 @@
  * Copyright (C) 2012 Simon Newton
  */
 
-#ifndef TOOLS_SLP_URLENTRY_H_
-#define TOOLS_SLP_URLENTRY_H_
+#ifndef INCLUDE_OLA_SLP_URLENTRY_H_
+#define INCLUDE_OLA_SLP_URLENTRY_H_
 
 #include <ola/io/BigEndianStream.h>
 #include <ostream>
@@ -114,9 +114,8 @@ class URLEntry {
     // TODO(simon): add auth blocks here
 };
 
-
 // typedef for convenience
 typedef std::vector<URLEntry> URLEntries;
 }  // slp
 }  // ola
-#endif  // TOOLS_SLP_URLENTRY_H_
+#endif  // INCLUDE_OLA_SLP_URLENTRY_H_

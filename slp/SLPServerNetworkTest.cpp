@@ -27,7 +27,7 @@
 #include "ola/network/SocketAddress.h"
 #include "ola/testing/MockUDPSocket.h"
 #include "ola/testing/TestUtils.h"
-#include "slp/slp/URLEntry.h"
+#include "ola/slp/URLEntry.h"
 #include "slp/SLPServer.h"
 #include "slp/SLPServerTestHelper.h"
 

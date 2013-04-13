@@ -40,6 +40,7 @@
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMHelper.h>
 #include <ola/rdm/UID.h>
+#include <ola/slp/URLEntry.h>
 
 #include <iostream>
 #include <memory>
@@ -53,7 +54,6 @@
 #include "tools/e133/OLASLPThread.h"
 #include "tools/e133/MessageBuilder.h"
 #include "tools/e133/SLPThread.h"
-#include "tools/slp/URLEntry.h"
 
 #ifdef HAVE_LIBSLP
 #include "tools/e133/OpenSLPThread.h"

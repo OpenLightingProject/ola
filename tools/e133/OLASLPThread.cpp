@@ -18,11 +18,11 @@
  */
 
 #include <ola/Logging.h>
+#include <ola/slp/SLPClient.h>
 #include <string>
 #include <vector>
 #include "tools/e133/OLASLPThread.h"
-#include "tools/slp/SLPClient.h"
-#include "tools/slp/SLPPacketConstants.h"
+#include "slp/SLPPacketConstants.h"
 
 
 using std::string;

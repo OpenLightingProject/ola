@@ -18,8 +18,8 @@
  * Copyright (C) 2012 Simon Newton
  */
 
-#ifndef TOOLS_SLP_SLPCLIENT_H_
-#define TOOLS_SLP_SLPCLIENT_H_
+#ifndef INCLUDE_OLA_SLP_SLPCLIENT_H_
+#define INCLUDE_OLA_SLP_SLPCLIENT_H_
 
 #include <ola/Callback.h>
 #include <ola/OlaClientWrapper.h>
@@ -116,4 +116,4 @@ class SLPClientWrapper: public BaseClientWrapper {
 };
 }  // slp
 }  // ola
-#endif  // TOOLS_SLP_SLPCLIENT_H_
+#endif  // INCLUDE_OLA_SLP_SLPCLIENT_H_

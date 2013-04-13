@@ -19,7 +19,7 @@
 
 #include <vector>
 #include "ola/slp/URLEntry.h"
-#include "ola/slp/SLPPacketBuilder.h"
+#include "slp/SLPPacketBuilder.h"
 
 namespace ola {
 namespace slp {
