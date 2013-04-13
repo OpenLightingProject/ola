@@ -495,11 +495,22 @@ _slp_server()
   prev=${COMP_WORDS[COMP_CWORD-1]}
   opts='--ip --log-level --slp-port --no-http --no-da --setuid --setgid --scopes --services'
 
-  #TODO: Check if setuid and setgid are Linux ones, and if so complete them using _uids and _gids
   #TODO: Check if scopes are listed anywhere
   case "$prev" in
     -l | --log-level)
       opts='0 1 2 3 4'
+      ;;
+    --setuid)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _uids
+      COMPREPLY+=( $( compgen -u -- "$cur" ) )
+      return 0
+      ;;
+    --setgid)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _gids
+      COMPREPLY+=( $( compgen -g -- "$cur" ) )
+      return 0
       ;;
   esac;
 
