@@ -32,6 +32,10 @@
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
 #include <ola/base/Flags.h>
+#include <ola/e133/OLASLPThread.h>
+#ifdef HAVE_LIBSLP
+#include <ola/e133/OpenSLPThread.h>
+#endif
 #include <ola/io/SelectServer.h>
 #include <ola/io/StdinHandler.h>
 #include <ola/network/IPV4Address.h>
@@ -51,13 +55,7 @@
 
 #include "tools/e133/DeviceManager.h"
 #include "tools/e133/E133URLParser.h"
-#include "tools/e133/OLASLPThread.h"
 #include "tools/e133/MessageBuilder.h"
-#include "tools/e133/SLPThread.h"
-
-#ifdef HAVE_LIBSLP
-#include "tools/e133/OpenSLPThread.h"
-#endif
 
 using ola::NewCallback;
 using ola::network::IPV4Address;
@@ -104,7 +102,7 @@ class SimpleE133Monitor {
     ola::rdm::CommandPrinter m_command_printer;
     ola::io::SelectServer m_ss;
     ola::io::StdinHandler m_stdin_handler;
-    auto_ptr<BaseSLPThread> m_slp_thread;
+    auto_ptr<ola::e133::BaseSLPThread> m_slp_thread;
 
     MessageBuilder m_message_builder;
     DeviceManager m_device_manager;
@@ -131,10 +129,10 @@ SimpleE133Monitor::SimpleE133Monitor(
       m_message_builder(ola::plugin::e131::CID::Generate(), "OLA Monitor"),
       m_device_manager(&m_ss, &m_message_builder) {
   if (slp_option == OLA_SLP) {
-    m_slp_thread.reset(new OLASLPThread(&m_ss));
+    m_slp_thread.reset(new ola::e133::OLASLPThread(&m_ss));
   } else if (slp_option == OPEN_SLP) {
 #ifdef HAVE_LIBSLP
-    m_slp_thread.reset(new OpenSLPThread(&m_ss));
+    m_slp_thread.reset(new ola::e133::OpenSLPThread(&m_ss));
 #else
     OLA_WARN << "openslp not installed";
 #endif

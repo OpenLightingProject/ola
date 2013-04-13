@@ -25,6 +25,10 @@
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/base/Init.h>
+#include <ola/e133/OLASLPThread.h>
+#ifdef HAVE_LIBSLP
+#include <ola/e133/OpenSLPThread.h>
+#endif
 #include <ola/io/SelectServer.h>
 #include <ola/slp/URLEntry.h>
 #include <signal.h>
@@ -34,12 +38,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-
-#include "tools/e133/OLASLPThread.h"
-#ifdef HAVE_LIBSLP
-#include "tools/e133/OpenSLPThread.h"
-#endif
-#include "tools/e133/SLPThread.h"
 
 using ola::slp::URLEntries;
 using std::auto_ptr;
@@ -201,16 +199,16 @@ int main(int argc, char *argv[]) {
     return false;
   }
 
-  auto_ptr<BaseSLPThread> slp_thread;
+  auto_ptr<ola::e133::BaseSLPThread> slp_thread;
   if (opts.use_openslp) {
 #ifdef HAVE_LIBSLP
-    slp_thread.reset(new OpenSLPThread(&ss, opts.refresh));
+    slp_thread.reset(new ola::e133::OpenSLPThread(&ss, opts.refresh));
 #else
     OLA_WARN << "openslp not installed";
     return false;
 #endif
   } else {
-    slp_thread.reset(new OLASLPThread(&ss, opts.refresh));
+    slp_thread.reset(new ola::e133::OLASLPThread(&ss, opts.refresh));
   }
   slp_thread->SetNewDeviceCallback(ola::NewCallback(&DiscoveryDone));
 

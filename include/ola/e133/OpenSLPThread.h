@@ -19,18 +19,20 @@
  * An implementation of BaseSLPThread that uses openslp.
  */
 
+#ifndef INCLUDE_OLA_E133_OPENSLPTHREAD_H_
+#define INCLUDE_OLA_E133_OPENSLPTHREAD_H_
+
 #include <slp.h>
-#include <ola/thread/Thread.h>
+#include <ola/e133/SLPThread.h>
 #include <ola/network/Socket.h>
 #include <ola/thread/ExecutorInterface.h>
+#include <ola/thread/Thread.h>
 
 #include <memory>
 #include <string>
 
-#include "tools/e133/SLPThread.h"
-
-#ifndef TOOLS_E133_OPENSLPTHREAD_H_
-#define TOOLS_E133_OPENSLPTHREAD_H_
+namespace ola {
+namespace e133 {
 
 using std::string;
 using std::auto_ptr;
@@ -59,4 +61,6 @@ class OpenSLPThread: public BaseSLPThread {
     bool m_init_ok;
     SLPHandle m_slp_handle;
 };
-#endif  // TOOLS_E133_OPENSLPTHREAD_H_
+}  // e133
+}  // ola
+#endif  // INCLUDE_OLA_E133_OPENSLPTHREAD_H_

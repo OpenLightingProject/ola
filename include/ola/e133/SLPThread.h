@@ -32,6 +32,9 @@
  * The callbacks will run the in Executor passed to the constructor.
  */
 
+#ifndef INCLUDE_OLA_E133_SLPTHREAD_H_
+#define INCLUDE_OLA_E133_SLPTHREAD_H_
+
 #include <ola/Callback.h>
 #include <ola/thread/Thread.h>
 #include <ola/io/SelectServer.h>
@@ -45,9 +48,8 @@
 #include <string>
 #include <vector>
 
-
-#ifndef TOOLS_E133_SLPTHREAD_H_
-#define TOOLS_E133_SLPTHREAD_H_
+namespace ola {
+namespace e133 {
 
 using std::string;
 using ola::rdm::UID;
@@ -174,4 +176,6 @@ class BaseSLPThread: public ola::thread::Thread {
     static const char E133_DEVICE_SLP_SERVICE_NAME[];
     static const char E133_CONTROLLER_SLP_SERVICE_NAME[];
 };
-#endif  // TOOLS_E133_SLPTHREAD_H_
+}  // e133
+}  // ola
+#endif  // INCLUDE_OLA_E133_SLPTHREAD_H_

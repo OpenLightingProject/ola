@@ -1,4 +1,4 @@
-SUBDIRS = base network file http io rdm thread web math messaging slp stl \
+SUBDIRS = base network file http io rdm thread web math messaging slp e133 stl \
           testing timecode util
 
 SOURCES = ActionQueue.h BaseTypes.h Callback.h CallbackRunner.h Clock.h \

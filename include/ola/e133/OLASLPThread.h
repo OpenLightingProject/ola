@@ -19,21 +19,23 @@
  * An implementation of BaseSLPThread that uses OLA's SLP server.
  */
 
+#ifndef INCLUDE_OLA_E133_OLASLPTHREAD_H_
+#define INCLUDE_OLA_E133_OLASLPTHREAD_H_
+
 #include <ola/Callback.h>
+#include <ola/e133/SLPThread.h>
 #include <ola/network/Socket.h>
 #include <ola/network/TCPSocket.h>
+#include <ola/slp/SLPClient.h>
 #include <ola/thread/ExecutorInterface.h>
 #include <ola/thread/Thread.h>
 #include <ola/util/Backoff.h>
-#include <ola/slp/SLPClient.h>
 
 #include <memory>
 #include <string>
 
-#include "tools/e133/SLPThread.h"
-
-#ifndef TOOLS_E133_OLASLPTHREAD_H_
-#define TOOLS_E133_OLASLPTHREAD_H_
+namespace ola {
+namespace e133 {
 
 using std::string;
 using std::auto_ptr;
@@ -78,5 +80,6 @@ class OLASLPThread: public BaseSLPThread {
     bool ConnectAndSetupClient();
     void AttemptSLPConnection();
 };
-
-#endif  // TOOLS_E133_OLASLPTHREAD_H_
+}  // e133
+}  // ola
+#endif  // INCLUDE_OLA_E133_OLASLPTHREAD_H_

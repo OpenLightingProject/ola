@@ -19,15 +19,18 @@
 
 #include <ola/Callback.h>
 #include <ola/Logging.h>
-#include <ola/stl/STLUtils.h>
+#include <ola/e133/SLPThread.h>
 #include <ola/slp/URLEntry.h>
+#include <ola/stl/STLUtils.h>
 #include <memory>
 #include <ostream>
 #include <string>
 #include <utility>
 
 #include "tools/e133/SLPConstants.h"
-#include "tools/e133/SLPThread.h"
+
+namespace ola {
+namespace e133 {
 
 // Constants from the E1.33 doc.
 const uint16_t BaseSLPThread::MIN_SLP_LIFETIME = 300;
@@ -450,3 +453,5 @@ uint16_t BaseSLPThread::ClampLifetime(const string &url, uint16_t lifetime) {
   }
   return lifetime;
 }
+}  // e133
+}  // ola
