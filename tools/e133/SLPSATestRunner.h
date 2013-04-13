@@ -17,8 +17,8 @@
  * Copyright (C) 2013 Simon Newton
  */
 
-#ifndef TOOLS_SLP_SLPSATESTRUNNER_H_
-#define TOOLS_SLP_SLPSATESTRUNNER_H_
+#ifndef TOOLS_E133_SLPSATESTRUNNER_H_
+#define TOOLS_E133_SLPSATESTRUNNER_H_
 
 #include <ola/Callback.h>
 #include <ola/io/IOQueue.h>
@@ -35,8 +35,8 @@
 #include <string>
 #include <vector>
 
-#include "tools/slp/XIDAllocator.h"
-#include "tools/slp/SLPPacketConstants.h"
+#include "slp/XIDAllocator.h"
+#include "slp/SLPPacketConstants.h"
 
 using ola::NewCallback;
 using ola::NewSingleCallback;
@@ -276,4 +276,4 @@ class TestRunner {
     void TestTimeout();
     void ReceiveData();
 };
-#endif  // TOOLS_SLP_SLPSATESTRUNNER_H_
+#endif  // TOOLS_E133_SLPSATESTRUNNER_H_

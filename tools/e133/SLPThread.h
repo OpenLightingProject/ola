@@ -39,12 +39,12 @@
 #include <ola/network/IPV4Address.h>
 #include <ola/rdm/UID.h>
 #include <ola/thread/ExecutorInterface.h>
+#include <ola/slp/URLEntry.h>
 
 #include <map>
 #include <string>
 #include <vector>
 
-#include "tools/slp/URLEntry.h"
 
 #ifndef TOOLS_E133_SLPTHREAD_H_
 #define TOOLS_E133_SLPTHREAD_H_

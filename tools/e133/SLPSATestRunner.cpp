@@ -37,9 +37,9 @@
 #include <vector>
 
 #include "tools/e133/SLPSATestRunner.h"
-#include "tools/slp/SLPPacketConstants.h"
-#include "tools/slp/SLPPacketParser.h"
-#include "tools/slp/XIDAllocator.h"
+#include "slp/SLPPacketConstants.h"
+#include "slp/SLPPacketParser.h"
+#include "slp/XIDAllocator.h"
 
 using ola::NewCallback;
 using ola::NewSingleCallback;

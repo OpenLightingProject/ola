@@ -20,8 +20,6 @@
 #ifndef INCLUDE_OLA_UTIL_SEQUENCENUMBER_H_
 #define INCLUDE_OLA_UTIL_SEQUENCENUMBER_H_
 
-#include "tools/slp/SLPPacketConstants.h"
-
 namespace ola {
 
 /**

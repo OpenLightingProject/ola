@@ -24,19 +24,19 @@
 #include <ola/network/IPV4Address.h>
 #include <ola/rdm/UID.h>
 #include <ola/stl/STLUtils.h>
+#include <ola/slp/URLEntry.h>
 #include <memory>
 #include <set>
 #include <string>
 
 #include "tools/e133/SLPSATestHelpers.h"
 #include "tools/e133/SLPSATestRunner.h"
-#include "tools/slp/SLPPacketBuilder.h"
-#include "tools/slp/SLPPacketConstants.h"
-#include "tools/slp/SLPPacketParser.h"
-#include "tools/slp/SLPStrings.h"
-#include "tools/slp/ScopeSet.h"
-#include "tools/slp/URLEntry.h"
-#include "tools/slp/XIDAllocator.h"
+#include "slp/SLPPacketBuilder.h"
+#include "slp/SLPPacketConstants.h"
+#include "slp/SLPPacketParser.h"
+#include "slp/SLPStrings.h"
+#include "slp/ScopeSet.h"
+#include "slp/XIDAllocator.h"
 
 using ola::io::BigEndianOutputStream;
 using ola::network::IPV4Address;

@@ -609,6 +609,7 @@ AC_OUTPUT( Makefile \
     include/ola/messaging/Makefile \
     include/ola/network/Makefile \
     include/ola/rdm/Makefile \
+    include/ola/slp/Makefile \
     include/ola/stl/Makefile \
     include/ola/testing/Makefile \
     include/ola/thread/Makefile \
@@ -650,12 +651,14 @@ AC_OUTPUT( Makefile \
     plugins/usbpro/Makefile \
     plugins/usbpro/messages/Makefile \
     plugins/usbpro/messages/libolausbproconf.pc \
+    slp/Makefile \
+    slp/libolaslpclient.pc \
+    slp/libolaslpserver.pc \
     tools/Makefile \
     tools/ola_trigger/Makefile \
     tools/e133/Makefile \
     tools/rdm/Makefile \
     tools/rdmpro/Makefile \
-    tools/slp/Makefile \
     tools/usbpro/Makefile \
     libola.pc \
     libolaserver.pc \

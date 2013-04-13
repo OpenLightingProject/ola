@@ -20,6 +20,7 @@
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/stl/STLUtils.h>
+#include <ola/slp/URLEntry.h>
 #include <memory>
 #include <ostream>
 #include <string>
@@ -27,7 +28,6 @@
 
 #include "tools/e133/SLPConstants.h"
 #include "tools/e133/SLPThread.h"
-#include "tools/slp/URLEntry.h"
 
 // Constants from the E1.33 doc.
 const uint16_t BaseSLPThread::MIN_SLP_LIFETIME = 300;

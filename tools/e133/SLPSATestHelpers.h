@@ -17,12 +17,15 @@
  * Copyright (C) 2013 Simon Newton
  */
 
+#ifndef TOOLS_E133_SLPSATESTHELPERS_H_
+#define TOOLS_E133_SLPSATESTHELPERS_H_
+
 #include <ola/io/BigEndianStream.h>
 #include <ola/network/IPV4Address.h>
 #include <string>
 
 #include "tools/e133/SLPSATestRunner.h"
-#include "tools/slp/ScopeSet.h"
+#include "slp/ScopeSet.h"
 
 using ola::io::BigEndianOutputStream;
 using ola::network::IPV4Address;
@@ -51,3 +54,5 @@ void BuildPredicateOverflowSrvRqst(BigEndianOutputStream* output,
                                    bool multicast, xid_t xid);
 void BuildSPIOverflowSrvRqst(BigEndianOutputStream* output,
                              bool multicast, xid_t xid);
+
+#endif  // TOOLS_E133_SLPSATESTHELPERS_H_

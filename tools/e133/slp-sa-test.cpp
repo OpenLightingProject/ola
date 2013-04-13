@@ -32,7 +32,7 @@
 #include <vector>
 
 #include "tools/e133/SLPSATestRunner.h"
-#include "tools/slp/ServerCommon.h"
+#include "slp/ServerCommon.h"
 
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;

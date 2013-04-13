@@ -26,6 +26,7 @@
 #include <ola/Logging.h>
 #include <ola/base/Init.h>
 #include <ola/io/SelectServer.h>
+#include <ola/slp/URLEntry.h>
 #include <signal.h>
 #include <sysexits.h>
 
@@ -39,7 +40,6 @@
 #include "tools/e133/OpenSLPThread.h"
 #endif
 #include "tools/e133/SLPThread.h"
-#include "tools/slp/URLEntry.h"
 
 using ola::slp::URLEntries;
 using std::auto_ptr;

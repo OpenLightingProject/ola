@@ -25,12 +25,12 @@
 #include <ola/thread/ExecutorInterface.h>
 #include <ola/thread/Thread.h>
 #include <ola/util/Backoff.h>
+#include <ola/slp/SLPClient.h>
 
 #include <memory>
 #include <string>
 
 #include "tools/e133/SLPThread.h"
-#include "tools/slp/SLPClient.h"
 
 #ifndef TOOLS_E133_OLASLPTHREAD_H_
 #define TOOLS_E133_OLASLPTHREAD_H_
