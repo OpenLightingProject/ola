@@ -8,17 +8,20 @@ EXTRA_DIST = DeviceManager.h \
              E133URLParser.h \
              EndpointManager.h \
              MessageQueue.h \
-             OLASLPThread.h \
-             OpenSLPThread.h \
              MessageBuilder.h \
              ManagementEndpoint.h \
              SLPConstants.h \
              SLPSATestHelpers.h \
              SLPSATestRunner.h \
-             SLPThread.h \
              TCPConnectionStats.h
 
-noinst_LTLIBRARIES = libolae133slp.la libolae133.la
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = libolae133slp.pc
+
+lib_LTLIBRARIES = libolae133slp.la
+noinst_LTLIBRARIES = libolae133.la
+
+# libolae133slp.la
 libolae133slp_la_SOURCES = OLASLPThread.cpp \
                            E133URLParser.cpp \
                            SLPThread.cpp
@@ -30,6 +33,7 @@ libolae133slp_la_SOURCES += OpenSLPThread.cpp
 libolae133slp_la_LIBADD += $(openslp_LIBS)
 endif
 
+# libolae133.la
 libolae133_la_SOURCES = MessageQueue.cpp \
                         MessageBuilder.cpp
 libolae133_la_LIBADD = $(top_builddir)/plugins/e131/e131/libolae131core.la

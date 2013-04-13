@@ -34,6 +34,10 @@
 #include <ola/BaseTypes.h>
 #include <ola/Logging.h>
 #include <ola/base/Init.h>
+#include <ola/e133/OLASLPThread.h>
+#ifdef HAVE_LIBSLP
+#include <ola/e133/OpenSLPThread.h>
+#endif
 #include <ola/io/SelectServer.h>
 #include <ola/io/StdinHandler.h>
 #include <ola/network/InterfacePicker.h>
@@ -50,10 +54,6 @@
 
 #include "tools/e133/E133Device.h"
 #include "tools/e133/EndpointManager.h"
-#include "tools/e133/OLASLPThread.h"
-#ifdef HAVE_LIBSLP
-#include "tools/e133/OpenSLPThread.h"
-#endif
 #include "tools/e133/ManagementEndpoint.h"
 #include "tools/e133/TCPConnectionStats.h"
 
@@ -200,7 +200,7 @@ class SimpleE133Node {
   private:
     ola::io::SelectServer m_ss;
     ola::io::StdinHandler m_stdin_handler;
-    auto_ptr<BaseSLPThread> m_slp_thread;
+    auto_ptr<ola::e133::BaseSLPThread> m_slp_thread;
     EndpointManager m_endpoint_manager;
     E133Device m_e133_device;
     ManagementEndpoint m_management_endpoint;
@@ -238,12 +238,12 @@ SimpleE133Node::SimpleE133Node(const IPV4Address &ip_address,
       m_ip_address(ip_address) {
   if (opts.use_openslp) {
 #ifdef HAVE_LIBSLP
-    m_slp_thread.reset(new OpenSLPThread(&m_ss));
+    m_slp_thread.reset(new ola::e133::OpenSLPThread(&m_ss));
 #else
     OLA_WARN << "openslp not installed";
 #endif
   } else {
-    m_slp_thread.reset(new OLASLPThread(&m_ss));
+    m_slp_thread.reset(new ola::e133::OLASLPThread(&m_ss));
   }
 }
 

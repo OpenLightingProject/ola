@@ -19,12 +19,14 @@
 
 #include <slp.h>
 #include <ola/Logging.h>
+#include <ola/e133/OpenSLPThread.h>
 #include <string>
-#include "tools/e133/OpenSLPThread.h"
+
+namespace ola {
+namespace e133 {
 
 using std::string;
 using ola::slp::URLEntries;
-
 
 void RegisterCallback(SLPHandle slp_handle, SLPError errcode, void *cookie) {
   SLPError *error = static_cast<SLPError*>(cookie);
@@ -171,3 +173,5 @@ void OpenSLPThread::DeRegisterSLPService(RegistrationCallback *callback,
   }
   callback->Run(ok);
 }
+}  // e133
+}  // ola

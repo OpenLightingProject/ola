@@ -18,12 +18,14 @@
  */
 
 #include <ola/Logging.h>
+#include <ola/e133/OLASLPThread.h>
 #include <ola/slp/SLPClient.h>
 #include <string>
 #include <vector>
-#include "tools/e133/OLASLPThread.h"
 #include "slp/SLPPacketConstants.h"
 
+namespace ola {
+namespace e133 {
 
 using std::string;
 using std::vector;
@@ -194,3 +196,5 @@ void OLASLPThread::AttemptSLPConnection() {
         ola::NewSingleCallback(this, &OLASLPThread::AttemptSLPConnection));
   }
 }
+}  // e133
+}  // ola

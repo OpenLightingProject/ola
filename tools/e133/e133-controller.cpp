@@ -35,6 +35,10 @@
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>
 #include <ola/Logging.h>
+#include <ola/e133/OLASLPThread.h>
+#ifdef HAVE_LIBSLP
+#include <ola/e133/OpenSLPThread.h>
+#endif
 #include <ola/io/SelectServer.h>
 #include <ola/io/IOStack.h>
 #include <ola/network/IPV4Address.h>
@@ -57,7 +61,6 @@
 #include <string>
 #include <vector>
 
-
 #include "plugins/e131/e131/ACNPort.h"
 #include "plugins/e131/e131/ACNVectors.h"
 #include "plugins/e131/e131/CID.h"
@@ -70,11 +73,7 @@
 #include "plugins/e131/e131/UDPTransport.h"
 
 #include "tools/e133/E133URLParser.h"
-#include "tools/e133/OLASLPThread.h"
 #include "tools/e133/MessageBuilder.h"
-#ifdef HAVE_LIBSLP
-#include "tools/e133/OpenSLPThread.h"
-#endif
 
 using ola::NewCallback;
 using ola::io::IOStack;
@@ -328,7 +327,7 @@ class SimpleE133Controller {
     uid_to_ip_map m_uid_to_ip;
 
     UID m_src_uid;
-    auto_ptr<BaseSLPThread> m_slp_thread;
+    auto_ptr<ola::e133::BaseSLPThread> m_slp_thread;
     PidStoreHelper *m_pid_helper;
     ola::rdm::CommandPrinter m_command_printer;
     bool m_uid_list_updated;
@@ -368,12 +367,12 @@ SimpleE133Controller::SimpleE133Controller(
 
   if (options.slp_option == OPEN_SLP) {
 #ifdef HAVE_LIBSLP
-    m_slp_thread.reset(new OpenSLPThread(&m_ss));
+    m_slp_thread.reset(new ola::e133::OpenSLPThread(&m_ss));
 #else
     OLA_WARN << "openslp not installed";
 #endif
   } else if (options.slp_option == OLA_SLP) {
-    m_slp_thread.reset(new OLASLPThread(&m_ss));
+    m_slp_thread.reset(new ola::e133::OLASLPThread(&m_ss));
   }
 
   if (m_slp_thread.get()) {

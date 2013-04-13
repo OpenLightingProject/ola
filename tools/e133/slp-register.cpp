@@ -26,6 +26,10 @@
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
 #include <ola/base/Init.h>
+#include <ola/e133/OLASLPThread.h>
+#ifdef HAVE_LIBSLP
+#include <ola/e133/OpenSLPThread.h>
+#endif
 #include <ola/io/SelectServer.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/Interface.h>
@@ -39,12 +43,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-
-#include "tools/e133/OLASLPThread.h"
-#ifdef HAVE_LIBSLP
-#include "tools/e133/OpenSLPThread.h"
-#endif
-#include "tools/e133/SLPThread.h"
 
 using ola::network::IPV4Address;
 using ola::rdm::UID;
@@ -280,16 +278,16 @@ int main(int argc, char *argv[]) {
     return false;
   }
 
-  auto_ptr<BaseSLPThread> slp_thread;
+  auto_ptr<ola::e133::BaseSLPThread> slp_thread;
   if (opts.use_openslp) {
 #ifdef HAVE_LIBSLP
-    slp_thread.reset(new OpenSLPThread(&ss));
+    slp_thread.reset(new ola::e133::OpenSLPThread(&ss));
 #else
     OLA_WARN << "openslp not installed";
     return false;
 #endif
   } else {
-    slp_thread.reset(new OLASLPThread(&ss));
+    slp_thread.reset(new ola::e133::OLASLPThread(&ss));
   }
 
   if (!slp_thread->Init()) {
