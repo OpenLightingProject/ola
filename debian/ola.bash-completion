@@ -53,7 +53,12 @@ _ola_get_options_for_list_pids()
 
 _ola_list_universes()
 {
-  _have ola_uni_info && COMPREPLY=( $( compgen -W '$( command ola_uni_info 2>/dev/null | sed -r -n "s/^\s+([0-9]+).+[HL]TP\s*$/\1/p" )' -- $cur  ) )
+  _have ola_uni_info && COMPREPLY=( $( compgen -W '$( command ola_uni_info 2>/dev/null | sed -r -n "s/^\s+([0-9]+)\s+.+[HL]TP\s*$/\1/p" )' -- $cur  ) )
+}
+
+_ola_list_plugins()
+{
+  _have ola_plugin_info && COMPREPLY=( $( compgen -W '$( command ola_plugin_info 2>/dev/null | sed -r -n "s/^\s+([0-9]+)\s+.+\s*$/\1/p" )' -- $cur  ) )
 }
 
 #Commands
@@ -110,9 +115,15 @@ have ola_dev_info && _ola_dev_info()
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
   prev=${COMP_WORDS[COMP_CWORD-1]}
+  
+  case "$prev" in
+    -p | --plugin-id)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_plugins
+      return 0
+      ;;
+  esac;
 
-  COMPREPLY=()
-  cur=${COMP_WORDS[COMP_CWORD]}
   COMPREPLY=($( compgen -W '--plugin-id' -- $cur ) )
 }
 complete -F _ola_dev_info ola_dev_info
@@ -207,11 +218,20 @@ complete -F _ola_patch ola_patch
 #ola_plugin_info
 have ola_plugin_info && _ola_plugin_info()
 {
-  local cur
-
+  local cur prev
+  
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
-  #TODO: Complete plugin id based on the output when one isn't specified
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  
+  case "$prev" in
+    -p | --plugin-id)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_plugins
+      return 0
+      ;;
+  esac;
+
   COMPREPLY=($( compgen -W '--plugin-id' -- $cur ) )
 }
 complete -F _ola_plugin_info ola_plugin_info
@@ -219,11 +239,20 @@ complete -F _ola_plugin_info ola_plugin_info
 #ola_plugin_state
 have ola_plugin_state && _ola_plugin_state()
 {
-  local cur
-
+  local cur prev
+  
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
-  #TODO: Complete plugin id based on the output of ola_plugin_info when one isn't specified
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  
+  case "$prev" in
+    -p | --plugin-id)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_plugins
+      return 0
+      ;;
+  esac;
+
   COMPREPLY=($( compgen -W '--plugin-id' -- $cur ) )
 }
 complete -F _ola_plugin_state ola_plugin_state
