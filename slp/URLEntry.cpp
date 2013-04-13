@@ -19,7 +19,6 @@
 
 #include <vector>
 #include "ola/slp/URLEntry.h"
-#include "slp/SLPPacketBuilder.h"
 
 namespace ola {
 namespace slp {
@@ -27,7 +26,9 @@ namespace slp {
 void URLEntry::Write(ola::io::BigEndianOutputStreamInterface *output) const {
   *output << static_cast<uint8_t>(0);  // reservered
   *output << m_lifetime;
-  SLPPacketBuilder::WriteString(output, m_url);
+  *output << static_cast<uint16_t>(m_url.size());
+  output->Write(reinterpret_cast<const uint8_t*>(m_url.data()),
+                m_url.size());
   *output << static_cast<uint8_t>(0);  // # of URL auths
 }
 }  // slp
