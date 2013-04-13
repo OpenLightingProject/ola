@@ -46,6 +46,8 @@ class EndpointManager {
     explicit EndpointManager() {}
     ~EndpointManager() {}
 
+    uint32_t list_change_number() const { return m_list_change_number; }
+
     // register and unregister endpoints
     bool RegisterEndpoint(uint16_t endpoint_id, class E133Endpoint *endpoint);
     void UnRegisterEndpoint(uint16_t endpoint);
@@ -64,6 +66,7 @@ class EndpointManager {
     typedef HASH_NAMESPACE::HASH_MAP_CLASS<uint16_t, class E133Endpoint*>
       EndpointMap;
     EndpointMap m_endpoint_map;
+    uint32_t m_list_change_number;
 
     // list of callbacks to run
     typedef struct {

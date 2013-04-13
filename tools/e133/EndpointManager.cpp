@@ -38,6 +38,7 @@ bool EndpointManager::RegisterEndpoint(uint16_t endpoint_id,
 
   if (ola::STLInsertIfNotPresent(&m_endpoint_map, endpoint_id, endpoint)) {
     RunNotifications(endpoint_id, ADD);
+    m_list_change_number++;
     return true;
   }
   return false;
@@ -51,6 +52,7 @@ bool EndpointManager::RegisterEndpoint(uint16_t endpoint_id,
 void EndpointManager::UnRegisterEndpoint(uint16_t endpoint_id) {
   if (ola::STLRemove(&m_endpoint_map, endpoint_id)) {
     RunNotifications(endpoint_id, REMOVE);
+    m_list_change_number++;
   }
 }
 

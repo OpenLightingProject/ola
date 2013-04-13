@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * RootEndpoint.h
+ * ManagementEndpoint.h
  * Copyright (C) 2012 Simon Newton
  */
 
@@ -21,38 +21,58 @@
 
 #include "tools/e133/E133Endpoint.h"
 
-#ifndef TOOLS_E133_ROOTENDPOINT_H_
-#define TOOLS_E133_ROOTENDPOINT_H_
+#ifndef TOOLS_E133_MANAGEMENTENDPOINT_H_
+#define TOOLS_E133_MANAGEMENTENDPOINT_H_
 
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMCallback;
 
 /**
- * The root endpoint responsible for handling PIDs defined in E1.33.
+ * The ManagementEndpoint handles RDMCommands directed at this E1.33 device. It
+ * can also pass through commands to another controller if there is one
+ * supplied.
  */
-class RootEndpoint: public E133EndpointInterface {
+class ManagementEndpoint: public E133Endpoint {
   public:
-    explicit RootEndpoint(const ola::rdm::UID &uid,
-                          const class EndpointManager *endpoint_manager,
-                          class TCPConnectionStats *tcp_stats);
-    ~RootEndpoint() {}
+    ManagementEndpoint(DiscoverableRDMControllerInterface *controller,
+                       const EndpointProperties &properties,
+                       const ola::rdm::UID &uid,
+                       const class EndpointManager *endpoint_manager,
+                       class TCPConnectionStats *tcp_stats);
+    ~ManagementEndpoint() {}
 
     void SendRDMRequest(const RDMRequest *request,
                         RDMCallback *on_complete);
 
+    void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
+    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
+
   private:
-    ola::rdm::UID m_uid;
+    const ola::rdm::UID m_uid;
     const class EndpointManager *m_endpoint_manager;
     class TCPConnectionStats *m_tcp_stats;
+    DiscoverableRDMControllerInterface *m_controller;
 
+    void HandleManagementRequest(const RDMRequest *request,
+                                 RDMCallback *on_complete);
     void HandleSupportedParams(const RDMRequest *request,
                                RDMCallback *on_complete);
     void HandleEndpointList(const RDMRequest *request,
                             RDMCallback *on_complete);
+    void HandleEndpointListChange(const RDMRequest *request,
+                                  RDMCallback *on_complete);
     void HandleEndpointIdentify(const RDMRequest *request,
                                 RDMCallback *on_complete);
+    void HandleEndpointToUniverse(const RDMRequest *request,
+                                  RDMCallback *on_complete);
+    void HandleEndpointMode(const RDMRequest *request,
+                            RDMCallback *on_complete);
     void HandleEndpointLabel(const RDMRequest *request,
                              RDMCallback *on_complete);
+    void HandleEndpointDeviceListChange(const RDMRequest *request,
+                                        RDMCallback *on_complete);
+    void HandleEndpointDevices(const RDMRequest *request,
+                               RDMCallback *on_complete);
     void HandleTCPCommsStatus(const RDMRequest *request,
                               RDMCallback *on_complete);
     void HandleUnknownPID(const RDMRequest *request,
@@ -66,7 +86,10 @@ class RootEndpoint: public E133EndpointInterface {
                              unsigned int get_length,
                              unsigned int min_set_length,
                              unsigned int max_set_length);
+
     void RunRDMCallback(RDMCallback *callback,
                         ola::rdm::RDMResponse *response);
+    void DiscoveryComplete(ola::rdm::RDMDiscoveryCallback *callback,
+                           const ola::rdm::UIDSet &uids);
 };
-#endif  // TOOLS_E133_ROOTENDPOINT_H_
+#endif  // TOOLS_E133_MANAGEMENTENDPOINT_H_

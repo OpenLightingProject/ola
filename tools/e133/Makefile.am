@@ -11,7 +11,7 @@ EXTRA_DIST = DeviceManager.h \
              OLASLPThread.h \
              OpenSLPThread.h \
              MessageBuilder.h \
-             RootEndpoint.h \
+             ManagementEndpoint.h \
              SLPConstants.h \
              SLPSATestHelpers.h \
              SLPSATestRunner.h \
@@ -43,7 +43,7 @@ e133_receiver_SOURCES = e133-receiver.cpp \
                         E133Endpoint.cpp \
                         E133HealthCheckedConnection.cpp \
                         EndpointManager.cpp \
-                        RootEndpoint.cpp
+                        ManagementEndpoint.cpp
 e133_receiver_LDADD = ./libolae133slp.la \
                       ./libolae133.la \
                       $(top_builddir)/common/libolacommon.la \
