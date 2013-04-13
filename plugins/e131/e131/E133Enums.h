@@ -25,6 +25,22 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
+
+// Table A-6, Discovery Stats
+enum DiscoveryState {
+  DISCOVERY_INCOMPLETE = 0,
+  DISCOVERY_INCREMENTAL = 2,
+  DISCOVERY_FULL = 3,
+  DISCOVERY_NOT_ACTIVE = 4,
+};
+
+// Table A-7, Endpoint Modes.
+enum EndpointMode {
+  ENDPOINT_MODE_DISABLED = 0,
+  ENDPOINT_MODE_INPUT = 1,
+  ENDPOINT_MODE_OUTPUT = 2,
+};
+
 // Table A-9 E1.33 Status Codes
 enum E133StatusCode {
   SC_E133_ACK = 0x0000,

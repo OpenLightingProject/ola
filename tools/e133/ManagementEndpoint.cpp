@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * RootEndpoint.cpp
+ * ManagementEndpoint.cpp
  * Copyright (C) 2012 Simon Newton
  */
 
@@ -31,14 +31,16 @@
 
 #include "tools/e133/E133Endpoint.h"
 #include "tools/e133/EndpointManager.h"
-#include "tools/e133/RootEndpoint.h"
+#include "tools/e133/ManagementEndpoint.h"
 #include "tools/e133/TCPConnectionStats.h"
 
 using ola::network::HostToNetwork;
 using ola::rdm::RDMCallback;
+using ola::rdm::RDMDiscoveryCallback;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
+using ola::rdm::UIDSet;
 using std::auto_ptr;
 using std::vector;
 
@@ -46,32 +48,95 @@ using std::vector;
 typedef std::vector<std::string> RDMPackets;
 
 /**
- * Create a new RootEndpoint
+ * Create a new ManagementEndpoint. Ownership of the arguments is not taken.
+ * The endpoint needs to out-live the controller since the controller may be
+ * passed callbacks that reference this endpoint.
  */
-RootEndpoint::RootEndpoint(const UID &uid,
-                           const class EndpointManager *endpoint_manager,
-                           TCPConnectionStats *tcp_stats)
-    : E133EndpointInterface(),
+ManagementEndpoint::ManagementEndpoint(
+    DiscoverableRDMControllerInterface *controller,
+    const EndpointProperties &properties,
+    const ola::rdm::UID &uid,
+    const class EndpointManager *endpoint_manager,
+    class TCPConnectionStats *tcp_stats)
+    : E133Endpoint(controller, properties),
       m_uid(uid),
       m_endpoint_manager(endpoint_manager),
-      m_tcp_stats(tcp_stats) {
+      m_tcp_stats(tcp_stats),
+      m_controller(controller) {
 }
 
 
 /**
- * Handle a RDM request for the Root Endpoint
- * @param request_ptr the RDMRequest object
+ * Handle a RDM request by either passing it through or handling it internally.
+ * @param request the RDMRequest object
  * @param on_complete the callback to run when we've handled this request.
  */
-void RootEndpoint::SendRDMRequest(const RDMRequest *request_ptr,
-                                  RDMCallback *on_complete) {
+void ManagementEndpoint::SendRDMRequest(const RDMRequest *request,
+                                        RDMCallback *on_complete) {
+  const UID dst_uid = request->DestinationUID();
+  if (dst_uid.IsBroadcast() && m_controller) {
+    // This request needs to go to both the E1.33 responder and the other
+    // responders.
+    // TODO(simon): We need to use a broadcast tracker here like in
+    // Universe.cpp
+    /*
+    */
+  } else if (request->DestinationUID().DirectedToUID(m_uid)) {
+    // This request just goes to the E1.33 responder,
+    HandleManagementRequest(request, on_complete);
+  } else if (m_controller) {
+    // This request just goes to the other responders.
+    m_controller->SendRDMRequest(request, on_complete);
+  } else {
+    RDMPackets packets;
+    delete request;
+    on_complete->Run(ola::rdm::RDM_UNKNOWN_UID, NULL, packets);
+  }
+}
+
+
+/**
+ * Run full discovery.
+ */
+void ManagementEndpoint::RunFullDiscovery(RDMDiscoveryCallback *callback) {
+  if (m_controller) {
+    m_controller->RunFullDiscovery(
+        NewSingleCallback(this, &ManagementEndpoint::DiscoveryComplete,
+                          callback));
+  } else {
+    UIDSet uids;
+    uids.AddUID(m_uid);
+    callback->Run(uids);
+  }
+}
+
+
+/**
+ * Run incremental discovery.
+ */
+void ManagementEndpoint::RunIncrementalDiscovery(
+    RDMDiscoveryCallback *callback) {
+  if (m_controller) {
+    m_controller->RunIncrementalDiscovery(
+        NewSingleCallback(this, &ManagementEndpoint::DiscoveryComplete,
+                          callback));
+  } else {
+    UIDSet uids;
+    uids.AddUID(m_uid);
+    callback->Run(uids);
+  }
+}
+
+
+/**
+ * Handle a request dirrected at the Management UID.
+ */
+void ManagementEndpoint::HandleManagementRequest(const RDMRequest *request_ptr,
+                                                 RDMCallback *on_complete) {
   auto_ptr<const RDMRequest> request(request_ptr);
 
   const UID dst_uid = request->DestinationUID();
-  bool for_us = (dst_uid == m_uid ||
-                 (dst_uid.IsBroadcast() &&
-                  (dst_uid.ManufacturerId() == UID::ALL_MANUFACTURERS ||
-                   dst_uid.ManufacturerId() == m_uid.ManufacturerId())));
+  bool for_us = dst_uid.DirectedToUID(m_uid);
 
   if (!for_us) {
     OLA_WARN << "Got a request to the root endpoint for the incorrect UID." <<
@@ -90,12 +155,28 @@ void RootEndpoint::SendRDMRequest(const RDMRequest *request_ptr,
     case ola::rdm::PID_ENDPOINT_LIST:
       HandleEndpointList(request.get(), on_complete);
       break;
+    case ola::rdm::PID_ENDPOINT_LIST_CHANGE:
+      HandleEndpointListChange(request.get(), on_complete);
+      break;
     case ola::rdm::PID_ENDPOINT_IDENTIFY:
       HandleEndpointIdentify(request.get(), on_complete);
+      break;
+    case ola::rdm::PID_ENDPOINT_TO_UNIVERSE:
+      HandleEndpointToUniverse(request.get(), on_complete);
+      break;
+    case ola::rdm::PID_ENDPOINT_MODE:
+      HandleEndpointMode(request.get(), on_complete);
       break;
     case ola::rdm::PID_ENDPOINT_LABEL:
       HandleEndpointLabel(request.get(), on_complete);
       break;
+    case ola::rdm::PID_ENDPOINT_DEVICE_LIST_CHANGE:
+      HandleEndpointDeviceListChange(request.get(), on_complete);
+      break;
+    case ola::rdm::PID_ENDPOINT_DEVICES:
+      HandleEndpointDevices(request.get(), on_complete);
+      break;
+    // TODO(simon): add PID_BINDING_AND_CONTROL_FIELDS.
     case ola::rdm::PID_TCP_COMMS_STATUS:
       HandleTCPCommsStatus(request.get(), on_complete);
       break;
@@ -108,16 +189,20 @@ void RootEndpoint::SendRDMRequest(const RDMRequest *request_ptr,
 /**
  * Handle PID_SUPPORTED_PARAMETERS
  */
-void RootEndpoint::HandleSupportedParams(const RDMRequest *request,
-                                         RDMCallback *on_complete) {
+void ManagementEndpoint::HandleSupportedParams(const RDMRequest *request,
+                                               RDMCallback *on_complete) {
   if (!SanityCheckGet(request, on_complete, 0))
     return;
 
   uint16_t supported_params[] = {
-    // add ENDPOINT_PROXIED_DEVICES here
     ola::rdm::PID_ENDPOINT_LIST,
+    ola::rdm::PID_ENDPOINT_LIST_CHANGE,
     ola::rdm::PID_ENDPOINT_IDENTIFY,
+    ola::rdm::PID_ENDPOINT_TO_UNIVERSE,
+    ola::rdm::PID_ENDPOINT_MODE,
     ola::rdm::PID_ENDPOINT_LABEL,
+    ola::rdm::PID_ENDPOINT_DEVICE_LIST_CHANGE,
+    ola::rdm::PID_ENDPOINT_DEVICES,
     ola::rdm::PID_TCP_COMMS_STATUS,
   };
 
@@ -128,7 +213,6 @@ void RootEndpoint::HandleSupportedParams(const RDMRequest *request,
       request,
       reinterpret_cast<uint8_t*>(supported_params),
       sizeof(supported_params));
-
   RunRDMCallback(on_complete, response);
 }
 
@@ -136,23 +220,47 @@ void RootEndpoint::HandleSupportedParams(const RDMRequest *request,
 /**
  * Handle PID_ENDPOINT_LIST.
  */
-void RootEndpoint::HandleEndpointList(const ola::rdm::RDMRequest *request,
-                                      ola::rdm::RDMCallback *on_complete) {
+void ManagementEndpoint::HandleEndpointList(const RDMRequest *request,
+                                            RDMCallback *on_complete) {
   if (!SanityCheckGet(request, on_complete, 0))
     return;
 
+  struct EndpointListParamData {
+    uint32_t list_change;
+    uint16_t endpoint_id[0];
+  };
+
   vector<uint16_t> endpoints;
   m_endpoint_manager->EndpointIDs(&endpoints);
+  unsigned int param_data_size = 4 + 2 * endpoints.size();
+  uint8_t *raw_data = new uint8_t[param_data_size];
+  EndpointListParamData *param_data = reinterpret_cast<EndpointListParamData*>(
+      raw_data);
 
-  // convert to network order
-  std::transform(endpoints.begin(), endpoints.end(), endpoints.begin(),
-                  (uint16_t(*)(uint16_t)) ola::network::HostToNetwork);
+  param_data->list_change = HostToNetwork(
+      m_endpoint_manager->list_change_number());
+  for (unsigned int i = 0; i < endpoints.size(); i++) {
+    param_data->endpoint_id[i] = HostToNetwork(endpoints[i]);
+  }
 
+  RDMResponse *response = GetResponseFromData(request, raw_data,
+                                              param_data_size);
+  delete[] raw_data;
+  RunRDMCallback(on_complete, response);
+}
+
+
+/**
+ * Handle PID_ENDPOINT_LIST_CHANGE.
+ */
+void ManagementEndpoint::HandleEndpointListChange(const RDMRequest *request,
+                                                  RDMCallback *on_complete) {
+  if (!SanityCheckGet(request, on_complete, 0))
+    return;
+
+  uint32_t change = HostToNetwork(m_endpoint_manager->list_change_number());
   RDMResponse *response = GetResponseFromData(
-      request,
-      reinterpret_cast<uint8_t*>(&endpoints[0]),
-      sizeof(uint16_t) * endpoints.size());
-
+      request, reinterpret_cast<uint8_t*>(&change), sizeof(change));
   RunRDMCallback(on_complete, response);
 }
 
@@ -160,13 +268,13 @@ void RootEndpoint::HandleEndpointList(const ola::rdm::RDMRequest *request,
 /**
  * Handle PID_ENDPOINT_IDENTIFY
  */
-void RootEndpoint::HandleEndpointIdentify(const ola::rdm::RDMRequest *request,
-                                          ola::rdm::RDMCallback *on_complete) {
-  struct endpoint_identify_message_s {
+void ManagementEndpoint::HandleEndpointIdentify(const RDMRequest *request,
+                                                RDMCallback *on_complete) {
+  struct IdentifyEndpointParamData {
     uint16_t endpoint_number;
     uint8_t identify_mode;
   } __attribute__((packed));
-  struct endpoint_identify_message_s endpoint_identify_message;
+  IdentifyEndpointParamData endpoint_identify_message;
 
   RDMPackets packets;
   uint16_t endpoint_id;
@@ -178,8 +286,7 @@ void RootEndpoint::HandleEndpointIdentify(const ola::rdm::RDMRequest *request,
     return;
 
   memcpy(reinterpret_cast<uint8_t*>(&endpoint_id),
-         request->ParamData(),
-         sizeof(endpoint_id));
+         request->ParamData(), sizeof(endpoint_id));
   endpoint_id = HostToNetwork(endpoint_id);
 
   E133Endpoint *endpoint = m_endpoint_manager->GetEndpoint(endpoint_id);
@@ -190,8 +297,8 @@ void RootEndpoint::HandleEndpointIdentify(const ola::rdm::RDMRequest *request,
       on_complete->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
       return;
     } else {
-      RDMResponse *response = NackWithReason(request,
-                                             ola::rdm::NR_DATA_OUT_OF_RANGE);
+      RDMResponse *response = NackWithReason(
+          request, ola::rdm::NR_ENDPOINT_NUMBER_INVALID);
       RunRDMCallback(on_complete, response);
       return;
     }
@@ -203,7 +310,7 @@ void RootEndpoint::HandleEndpointIdentify(const ola::rdm::RDMRequest *request,
            request->ParamData(),
            sizeof(endpoint_identify_message));
 
-    endpoint->SetIdentifyMode(endpoint_identify_message.identify_mode);
+    endpoint->set_identify_mode(endpoint_identify_message.identify_mode);
 
     if (request->DestinationUID().IsBroadcast()) {
       on_complete->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
@@ -220,7 +327,7 @@ void RootEndpoint::HandleEndpointIdentify(const ola::rdm::RDMRequest *request,
   } else {
     // GET
     endpoint_identify_message.endpoint_number = HostToNetwork(endpoint_id);
-    endpoint_identify_message.identify_mode = endpoint->IdentifyMode();
+    endpoint_identify_message.identify_mode = endpoint->identify_mode();
     RDMResponse *response = GetResponseFromData(
         request,
         reinterpret_cast<uint8_t*>(&endpoint_identify_message),
@@ -232,20 +339,56 @@ void RootEndpoint::HandleEndpointIdentify(const ola::rdm::RDMRequest *request,
 
 
 /**
- * Handle PID_ENDPOINT_LABEL
+ * Handle PID_ENDPOINT_TO_UNIVERSE
  */
-void RootEndpoint::HandleEndpointLabel(const ola::rdm::RDMRequest *request,
-                                       ola::rdm::RDMCallback *on_complete) {
+void ManagementEndpoint::HandleEndpointToUniverse(const RDMRequest *request,
+                                                  RDMCallback *on_complete) {
   // TODO(simon): add me
   HandleUnknownPID(request, on_complete);
 }
 
+/**
+ * Handle PID_ENDPOINT_MODE
+ */
+void ManagementEndpoint::HandleEndpointMode(const RDMRequest *request,
+                                            RDMCallback *on_complete) {
+  // TODO(simon): add me
+  HandleUnknownPID(request, on_complete);
+}
+
+/**
+ * Handle PID_ENDPOINT_LABEL
+ */
+void ManagementEndpoint::HandleEndpointLabel(const RDMRequest *request,
+                                             RDMCallback *on_complete) {
+  // TODO(simon): add me
+  HandleUnknownPID(request, on_complete);
+}
+
+/**
+ * Handle PID_ENDPOINT_DEVICE_LIST_CHANGE
+ */
+void ManagementEndpoint::HandleEndpointDeviceListChange(
+    const RDMRequest *request,
+    RDMCallback *on_complete) {
+  // TODO(simon): add me
+  HandleUnknownPID(request, on_complete);
+}
+
+/**
+ * Handle PID_ENDPOINT_DEVICES
+ */
+void ManagementEndpoint::HandleEndpointDevices(const RDMRequest *request,
+                                               RDMCallback *on_complete) {
+  // TODO(simon): add me
+  HandleUnknownPID(request, on_complete);
+}
 
 /**
  * Handle PID_TCP_COMMS_STATUS
  */
-void RootEndpoint::HandleTCPCommsStatus(const RDMRequest *request,
-                                        RDMCallback *on_complete) {
+void ManagementEndpoint::HandleTCPCommsStatus(const RDMRequest *request,
+                                              RDMCallback *on_complete) {
   struct tcp_stats_message_s {
     uint32_t ip_address;
     uint16_t unhealthy_events;
@@ -293,8 +436,8 @@ void RootEndpoint::HandleTCPCommsStatus(const RDMRequest *request,
 /**
  * Response with a NR_UNKNOWN_PID.
  */
-void RootEndpoint::HandleUnknownPID(const RDMRequest *request,
-                                    RDMCallback *on_complete) {
+void ManagementEndpoint::HandleUnknownPID(const RDMRequest *request,
+                                          RDMCallback *on_complete) {
   RDMPackets packets;
   if (request->DestinationUID().IsBroadcast()) {
     on_complete->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
@@ -311,9 +454,9 @@ void RootEndpoint::HandleUnknownPID(const RDMRequest *request,
  * @param get_length, NACK if the data length doesn't match
  * @returns true is this request was ok, false if we nack'ed it
  */
-bool RootEndpoint::SanityCheckGet(const RDMRequest *request,
-                                  RDMCallback *callback,
-                                  unsigned int get_length) {
+bool ManagementEndpoint::SanityCheckGet(const RDMRequest *request,
+                                        RDMCallback *callback,
+                                        unsigned int get_length) {
   if (request->DestinationUID().IsBroadcast()) {
     // don't take any action for broadcast GETs
     RDMPackets packets;
@@ -346,7 +489,7 @@ bool RootEndpoint::SanityCheckGet(const RDMRequest *request,
  * @param max_set_length, NACK if the data length doesn't match
  * @returns true is this request was ok, false if we nack'ed it
  */
-bool RootEndpoint::SanityCheckGetOrSet(
+bool ManagementEndpoint::SanityCheckGetOrSet(
     const RDMRequest *request,
     RDMCallback *callback,
     unsigned int get_length,
@@ -394,8 +537,19 @@ bool RootEndpoint::SanityCheckGetOrSet(
 /**
  * Run the RDM callback with a response.
  */
-void RootEndpoint::RunRDMCallback(RDMCallback *callback,
-                                  RDMResponse *response) {
+void ManagementEndpoint::RunRDMCallback(RDMCallback *callback,
+                                        RDMResponse *response) {
   RDMPackets packets;
   callback->Run(ola::rdm::RDM_COMPLETED_OK, response, packets);
+}
+
+
+/**
+ * Add our UID to the set and run the Discovery Callback.
+ */
+void ManagementEndpoint::DiscoveryComplete(RDMDiscoveryCallback *callback,
+                                           const UIDSet &uids) {
+  UIDSet all_uids(uids);
+  all_uids.AddUID(m_uid);
+  callback->Run(all_uids);
 }

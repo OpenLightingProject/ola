@@ -54,7 +54,7 @@
 #ifdef HAVE_LIBSLP
 #include "tools/e133/OpenSLPThread.h"
 #endif
-#include "tools/e133/RootEndpoint.h"
+#include "tools/e133/ManagementEndpoint.h"
 #include "tools/e133/TCPConnectionStats.h"
 
 using ola::network::HostToNetwork;
@@ -203,7 +203,7 @@ class SimpleE133Node {
     auto_ptr<BaseSLPThread> m_slp_thread;
     EndpointManager m_endpoint_manager;
     E133Device m_e133_device;
-    RootEndpoint m_root_endpoint;
+    ManagementEndpoint m_management_endpoint;
     E133Endpoint m_first_endpoint;
     ola::plugin::dummy::DummyResponder m_responder;
     uint16_t m_lifetime;
@@ -229,9 +229,9 @@ SimpleE133Node::SimpleE133Node(const IPV4Address &ip_address,
                                const options &opts)
     : m_stdin_handler(&m_ss, ola::NewCallback(this, &SimpleE133Node::Input)),
       m_e133_device(&m_ss, ip_address, &m_endpoint_manager),
-      m_root_endpoint(*opts.uid, &m_endpoint_manager,
-                      m_e133_device.GetTCPStats()),
-      m_first_endpoint(NULL),  // NO CONTROLLER FOR NOW!
+      m_management_endpoint(NULL, E133Endpoint::EndpointProperties(), *opts.uid,
+                            &m_endpoint_manager, m_e133_device.GetTCPStats()),
+      m_first_endpoint(NULL, E133Endpoint::EndpointProperties()),
       m_responder(*opts.uid),
       m_lifetime(opts.lifetime),
       m_uid(*opts.uid),
@@ -263,7 +263,7 @@ bool SimpleE133Node::Init() {
     return false;
 
   // register the root endpoint
-  m_e133_device.SetRootEndpoint(&m_root_endpoint);
+  m_e133_device.SetRootEndpoint(&m_management_endpoint);
   // add a single endpoint
   m_endpoint_manager.RegisterEndpoint(1, &m_first_endpoint);
 

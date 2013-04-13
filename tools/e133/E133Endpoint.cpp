@@ -31,24 +31,28 @@ using std::auto_ptr;
 using std::string;
 using ola::rdm::RDMDiscoveryCallback;
 
+const uint16_t E133EndpointInterface::UNPATCHED_UNIVERSE = 0;
+const uint16_t E133EndpointInterface::COMPOSITE_UNIVERSE = 0xffff;
+
 typedef std::vector<std::string> RDMPackets;
 
-
-E133Endpoint::E133Endpoint(DiscoverableRDMControllerInterface *controller)
+E133Endpoint::E133Endpoint(DiscoverableRDMControllerInterface *controller,
+                           const EndpointProperties &properties)
     : m_identify_mode(false),
-      m_universe(0),
+      m_is_physical(properties.is_physical),
+      m_universe(UNPATCHED_UNIVERSE),
       m_endpoint_label(""),
       m_controller(controller) {
 }
 
 
-void E133Endpoint::SetIdentifyMode(bool identify_on) {
+void E133Endpoint::set_identify_mode(bool identify_on) {
   m_identify_mode = identify_on;
   OLA_INFO << "IDENTIFY MODE " << (identify_on ? "ON" : "OFF");
 }
 
 /**
- * Run full discovery for this endpoint
+ * Run full discovery for this endpoint.
  */
 void E133Endpoint::RunFullDiscovery(RDMDiscoveryCallback *callback) {
   if (m_controller) {
@@ -62,7 +66,7 @@ void E133Endpoint::RunFullDiscovery(RDMDiscoveryCallback *callback) {
 
 
 /**
- * Run incremental discovery for this endpoint
+ * Run incremental discovery for this endpoint.
  */
 void E133Endpoint::RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
   if (m_controller) {
@@ -80,10 +84,14 @@ void E133Endpoint::RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
  */
 void E133Endpoint::SendRDMRequest(const RDMRequest *request_ptr,
                                   RDMCallback *on_complete) {
-  auto_ptr<const RDMRequest> request(request_ptr);
-
-  // for now just fail all requests
-  OLA_WARN << "Received request to endpoint " << m_endpoint_label;
-  RDMPackets packets;
-  on_complete->Run(ola::rdm::RDM_UNKNOWN_UID, NULL, packets);
+  if (m_controller) {
+    m_controller->SendRDMRequest(request_ptr, on_complete);
+    return;
+  } else {
+    auto_ptr<const RDMRequest> request(request_ptr);
+    OLA_WARN << "Endpoint " << m_endpoint_label
+             << " has no controller attached";
+    RDMPackets packets;
+    on_complete->Run(ola::rdm::RDM_UNKNOWN_UID, NULL, packets);
+  }
 }
