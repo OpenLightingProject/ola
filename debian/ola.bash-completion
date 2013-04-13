@@ -1,8 +1,8 @@
 # bash completion for Debian ola tools
 # Copyright Peter Newman 2013, based on apache2 and apt-file completion
 
-#General todo: use ola_uni_info to populate universe options, possibly add a list_uni_ids options
-#General todo: use ola_plugin_info to populate plugin options, possibly add a list_plugin_ids options
+#General todo: possibly add a list_uni_ids options to ola_uni_info to avoid using sed
+#General todo: possibly add a list_plugin_ids options to ola_plugin_info to avoid using sed
 #General todo: change over to use _get_comp_words_by_ref instead of ${COMP_WORDS[COMP_CWORD]}
 #General todo: tidy up and use logic to not call _ola_list_pids or offer unnecessary options when possible
 #General todo: add completion for all the python examples in python/examples/
@@ -49,6 +49,16 @@ _ola_get_options_for_list_pids()
         ;;
     esac;
   done
+}
+
+_ola_list_universes()
+{
+  _have ola_uni_info && COMPREPLY=( $( compgen -W '$( command ola_uni_info 2>/dev/null | sed -r -n "s/^\s+([0-9]+)\s+.+[HL]TP\s*$/\1/p" )' -- $cur  ) )
+}
+
+_ola_list_plugins()
+{
+  _have ola_plugin_info && COMPREPLY=( $( compgen -W '$( command ola_plugin_info 2>/dev/null | sed -r -n "s/^\s+([0-9]+)\s+.+\s*$/\1/p" )' -- $cur  ) )
 }
 
 #Commands
@@ -100,10 +110,20 @@ complete -F _olad olad
 #ola_dev_info
 have ola_dev_info && _ola_dev_info()
 {
-  local cur
-
+  local cur prev
+  
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  
+  case "$prev" in
+    -p | --plugin-id)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_plugins
+      return 0
+      ;;
+  esac;
+
   COMPREPLY=($( compgen -W '--plugin-id' -- $cur ) )
 }
 complete -F _ola_dev_info ola_dev_info
@@ -111,10 +131,20 @@ complete -F _ola_dev_info ola_dev_info
 #ola_dmxconsole
 have ola_dmxconsole && _ola_dmxconsole()
 {
-  local cur
-
+  local cur prev
+  
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  
+  case "$prev" in
+    -u | --universe)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_universes
+      return 0
+      ;;
+  esac;
+
   COMPREPLY=($( compgen -W '--universe' -- $cur ) )
 }
 complete -F _ola_dmxconsole ola_dmxconsole
@@ -122,10 +152,20 @@ complete -F _ola_dmxconsole ola_dmxconsole
 #ola_dmxmonitor
 have ola_dmxmonitor && _ola_dmxmonitor()
 {
-  local cur
-
+  local cur prev
+  
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  
+  case "$prev" in
+    -u | --universe)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_universes
+      return 0
+      ;;
+  esac;
+
   COMPREPLY=($( compgen -W '--universe' -- $cur ) )
 }
 complete -F _ola_dmxmonitor ola_dmxmonitor
@@ -155,7 +195,19 @@ complete -F _ola_e131 ola_e131
 #ola_patch
 have ola_patch && _ola_patch()
 {
-  local cur
+  local cur prev
+  
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  
+  case "$prev" in
+    -u | --universe)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_universes
+      return 0
+      ;;
+  esac;
 
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
@@ -166,11 +218,20 @@ complete -F _ola_patch ola_patch
 #ola_plugin_info
 have ola_plugin_info && _ola_plugin_info()
 {
-  local cur
-
+  local cur prev
+  
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
-  #TODO: Complete plugin id based on the output when one isn't specified
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  
+  case "$prev" in
+    -p | --plugin-id)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_plugins
+      return 0
+      ;;
+  esac;
+
   COMPREPLY=($( compgen -W '--plugin-id' -- $cur ) )
 }
 complete -F _ola_plugin_info ola_plugin_info
@@ -178,11 +239,20 @@ complete -F _ola_plugin_info ola_plugin_info
 #ola_plugin_state
 have ola_plugin_state && _ola_plugin_state()
 {
-  local cur
-
+  local cur prev
+  
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
-  #TODO: Complete plugin id based on the output of ola_plugin_info when one isn't specified
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  
+  case "$prev" in
+    -p | --plugin-id)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_plugins
+      return 0
+      ;;
+  esac;
+
   COMPREPLY=($( compgen -W '--plugin-id' -- $cur ) )
 }
 complete -F _ola_plugin_state ola_plugin_state
@@ -190,10 +260,20 @@ complete -F _ola_plugin_state ola_plugin_state
 #ola_rdm_discover
 have ola_rdm_discover && _ola_rdm_discover()
 {
-  local cur
-
+  local cur prev
+  
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  
+  case "$prev" in
+    -u | --universe)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_universes
+      return 0
+      ;;
+  esac;
+
   COMPREPLY=($( compgen -W '--full --incremental --universe' -- $cur ) )
 }
 complete -F _ola_rdm_discover ola_rdm_discover
@@ -214,6 +294,11 @@ _ola_rdm_getset()
       #We're not interested in supplying opts, so set compreply and break out with a return
       _filedir -d
         return 0
+      ;;
+    -u | --universe)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_universes
+      return 0
       ;;
   esac;
 
@@ -249,6 +334,11 @@ have ola_recorder && _ola_recorder()
       _filedir
       return 0
       ;;
+    -u | --universe)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_universes
+      return 0
+      ;;
   esac;
 
   COMPREPLY=($( compgen -W "$opts" -- $cur ) )
@@ -260,10 +350,20 @@ complete -F _ola_recorder ola_recorder
 #ola_set_dmx
 have ola_set_dmx && _ola_set_dmx()
 {
-  local cur
-
+  local cur prev
+  
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  
+  case "$prev" in
+    -u | --universe)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_universes
+      return 0
+      ;;
+  esac;
+  
   COMPREPLY=($( compgen -W '--universe --dmx' -- $cur ) )
 }
 complete -F _ola_set_dmx ola_set_dmx
@@ -282,10 +382,20 @@ complete -F _ola_set_priority ola_set_priority
 #ola_streaming_client
 have ola_streaming_client && _ola_streaming_client()
 {
-  local cur
-
+  local cur prev
+  
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  
+  case "$prev" in
+    -u | --universe)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_universes
+      return 0
+      ;;
+  esac;
+  
   COMPREPLY=($( compgen -W '--universe --dmx' -- $cur ) )
 }
 complete -F _ola_streaming_client ola_streaming_client
@@ -350,10 +460,20 @@ complete -F _ola_trigger ola_trigger
 #ola_uni_merge
 have ola_uni_merge && _ola_uni_merge()
 {
-  local cur
-
+  local cur prev
+  
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  
+  case "$prev" in
+    -u | --universe)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_universes
+      return 0
+      ;;
+  esac;
+  
   COMPREPLY=($( compgen -W '--ltp --universe' -- $cur ) )
 }
 complete -F _ola_uni_merge ola_uni_merge
@@ -361,10 +481,20 @@ complete -F _ola_uni_merge ola_uni_merge
 #ola_uni_name
 have ola_uni_name && _ola_uni_name()
 {
-  local cur
-
+  local cur prev
+  
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  
+  case "$prev" in
+    -u | --universe)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_universes
+      return 0
+      ;;
+  esac;
+  
   COMPREPLY=($( compgen -W '--name --universe' -- $cur ) )
 }
 complete -F _ola_uni_name ola_uni_name
@@ -495,11 +625,22 @@ _slp_server()
   prev=${COMP_WORDS[COMP_CWORD-1]}
   opts='--ip --log-level --slp-port --no-http --no-da --setuid --setgid --scopes --services'
 
-  #TODO: Check if setuid and setgid are Linux ones, and if so complete them using _uids and _gids
   #TODO: Check if scopes are listed anywhere
   case "$prev" in
     -l | --log-level)
       opts='0 1 2 3 4'
+      ;;
+    --setuid)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _uids
+      COMPREPLY+=( $( compgen -u -- "$cur" ) )
+      return 0
+      ;;
+    --setgid)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _gids
+      COMPREPLY+=( $( compgen -g -- "$cur" ) )
+      return 0
       ;;
   esac;
 
@@ -592,6 +733,11 @@ _e133_receiver()
     -i | --ip)
       #We're not interested in supplying opts, so set compreply and break out with a return
       _ip_addresses
+      return 0
+      ;;
+    -u | --universe)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_universes
       return 0
       ;;
   esac;
@@ -712,10 +858,20 @@ complete -F _usbpro_firmware usbpro_firmware
 #have ola_throughput && 
 _ola_throughput()
 {
-  local cur
-
+  local cur prev
+  
   COMPREPLY=()
   cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+  
+  case "$prev" in
+    -u | --universe)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_list_universes
+      return 0
+      ;;
+  esac;
+  
   COMPREPLY=($( compgen -W '--dmx --sleep --universe' -- $cur ) )
 }
 complete -F _ola_throughput ola_throughput
