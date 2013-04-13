@@ -2537,11 +2537,191 @@ pid {
   set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
 }
 pid {
+  name: "BACKGROUND_QUEUED_STATUS_POLICY"
+  value: 32720
+  get_request {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      range {
+        min: 1
+        max: 65534
+      }
+    }
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      range {
+        min: 1
+        max: 65534
+      }
+    }
+    field {
+      type: UINT8
+      name: "current_policy_setting"
+    }
+    field {
+      type: UINT8
+      name: "num_policy_settings"
+    }
+  }
+  get_sub_device_range: ROOT_DEVICE
+  set_request {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      label {
+        value: 65535
+        label: "All Endpoints"
+      }
+      range {
+        min: 1
+        max: 65535
+      }
+    }
+    field {
+      type: UINT8
+      name: "policy"
+    }
+  }
+  set_response {
+  }
+  set_sub_device_range: ROOT_DEVICE
+}
+pid {
+  name: "BACKGROUND_QUEUED_STATUS_POLICY_DESCRIPTION"
+  value: 32721
+  get_request {
+    field {
+      type: UINT8
+      name: "policy_setting"
+    }
+  }
+  get_response {
+    field {
+      type: UINT8
+      name: "policy_setting"
+    }
+    field {
+      type: STRING
+      name: "description"
+      max_size: 32
+    }
+  }
+  get_sub_device_range: ROOT_DEVICE
+}
+pid {
+  name: "BACKGROUND_STATUS_TYPE"
+  value: 32722
+  get_request {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      range {
+        min: 1
+        max: 65534
+      }
+    }
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      range {
+        min: 1
+        max: 65534
+      }
+    }
+    field {
+      type: UINT8
+      name: "status_type"
+    }
+  }
+  get_sub_device_range: ROOT_DEVICE
+  set_request {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      label {
+        value: 65535
+        label: "All Endpoints"
+      }
+      range {
+        min: 1
+        max: 65535
+      }
+    }
+    field {
+      type: UINT8
+      name: "status_type"
+    }
+  }
+  set_response {
+  }
+  set_sub_device_range: ROOT_DEVICE
+}
+pid {
+  name: "QUEUED_STATUS_UID_COLLECTION"
+  value: 32723
+  set_request {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      label {
+        value: 65535
+        label: "All Endpoints"
+      }
+      range {
+        min: 1
+        max: 65534
+      }
+    }
+    field {
+      type: UINT8
+      name: "status_type"
+    }
+  }
+  set_response {
+  }
+  set_sub_device_range: ROOT_DEVICE
+}
+pid {
+  name: "QUEUED_STATUS_UID_COLLECTION"
+  value: 32724
+  set_request {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      range {
+        min: 1
+        max: 65534
+      }
+    }
+    field {
+      type: UID
+      name: "target_uid"
+    }
+    field {
+      type: UINT8
+      name: "status_type"
+    }
+  }
+  set_response {
+  }
+  set_sub_device_range: ROOT_DEVICE
+}
+pid {
   name: "ENDPOINT_LIST"
   value: 32736
   get_request {
   }
   get_response {
+    field {
+      type: UINT32
+      name: "list_change_number"
+    }
     field {
       type: GROUP
       name: "endpoints"
@@ -2588,8 +2768,20 @@ pid {
       }
     }
     field {
-      type: BOOL
-      name: "identify_state"
+      type: UINT16
+      name: "port_type"
+      label {
+        value: 0
+        label: "virtual"
+      }
+      label {
+        value: 1
+        label: "physical"
+      }
+      range {
+        min: 0
+        max: 1
+      }
     }
   }
   get_sub_device_range: ROOT_DEVICE
@@ -2674,7 +2866,7 @@ pid {
   set_sub_device_range: ROOT_DEVICE
 }
 pid {
-  name: "ENDPOINT_FUNCTION"
+  name: "ENDPOINT_MODE"
   value: 32739
   get_request {
     field {
@@ -2800,7 +2992,7 @@ pid {
   set_sub_device_range: ROOT_DEVICE
 }
 pid {
-  name: "INITIATE_DISCOVERY"
+  name: "DISCOVERY_STATE"
   value: 32741
   get_request {
     field {
@@ -2827,6 +3019,10 @@ pid {
       label {
         value: 65535
         label: "Not Supported"
+      }
+      range {
+        min: 0
+        max: 65534
       }
     }
     field {
@@ -2970,16 +3166,16 @@ pid {
   value: 32744
   get_request {
     field {
-      type: UINT16
-      name: "endpoint_id"
-      range {
-        min: 1
-        max: 65534
-      }
+      type: UID
+      name: "uid"
     }
   }
   get_response {
     field {
+      type: UID
+      name: "uid"
+    }
+    field {
       type: UINT16
       name: "endpoint_id"
       range {
@@ -2988,30 +3184,18 @@ pid {
       }
     }
     field {
-      type: GROUP
-      name: "endpoints"
-      field {
-        type: UID
-        name: "uid"
-      }
-      field {
-        type: UINT16
-        name: "control_bits"
-      }
-      field {
-        type: UINT16
-        name: "binding_uid_manufacturer_id"
-      }
-      field {
-        type: UINT32
-        name: "binding_uid_device_id"
-      }
+      type: UINT16
+      name: "control_bits"
+    }
+    field {
+      type: UID
+      name: "binding_uid"
     }
   }
   get_sub_device_range: ROOT_DEVICE
 }
 pid {
-  name: "IDENTIFY_ENDPOINT"
+  name: "ENDPOINT_IDENTIFY"
   value: 32745
   get_request {
     field {
@@ -3042,9 +3226,13 @@ pid {
     field {
       type: UINT16
       name: "endpoint_id"
+      label {
+        value: 65535
+        label: "All Endpoints"
+      }
       range {
         min: 1
-        max: 65534
+        max: 65535
       }
     }
     field {
@@ -3107,8 +3295,74 @@ pid {
   set_sub_device_range: ROOT_DEVICE
 }
 pid {
-  name: "TCP_COMMS_STATUS"
+  name: "ENDPOINT_DEVICE_LIST_CHANGE"
   value: 32747
+  get_request {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      range {
+        min: 1
+        max: 65534
+      }
+    }
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      range {
+        min: 1
+        max: 65534
+      }
+    }
+    field {
+      type: UINT32
+      name: "list_change_number"
+    }
+  }
+  get_sub_device_range: ROOT_DEVICE
+}
+pid {
+  name: "ENDPOINT_DEVICES"
+  value: 32748
+  get_request {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      range {
+        min: 1
+        max: 65534
+      }
+    }
+  }
+  get_response {
+    field {
+      type: UINT16
+      name: "endpoint_id"
+      range {
+        min: 1
+        max: 65534
+      }
+    }
+    field {
+      type: UINT32
+      name: "list_change_number"
+    }
+    field {
+      type: GROUP
+      name: "uids"
+      field {
+        type: UID
+        name: "uid"
+      }
+    }
+  }
+  get_sub_device_range: ROOT_DEVICE
+}
+pid {
+  name: "TCP_COMMS_STATUS"
+  value: 32749
   get_request {
   }
   get_response {
@@ -3137,36 +3391,16 @@ pid {
   set_sub_device_range: ROOT_DEVICE
 }
 pid {
-  name: "E133_DEVICE_INFO"
-  value: 32748
+  name: "ENDPOINT_LIST_CHANGE"
+  value: 32750
   get_request {
   }
   get_response {
     field {
-      type: UINT8
-      name: "protocol_major"
-    }
-    field {
-      type: UINT8
-      name: "protocol_minor"
-    }
-    field {
-      type: UINT16
-      name: "device_model"
-    }
-    field {
-      type: UINT16
-      name: "product_category"
-    }
-    field {
-      type: UINT32
-      name: "software_version"
-    }
-    field {
-      type: UINT8
-      name: "sensor_count"
+      type: UINT_32
+      name: "list_change_number"
     }
   }
-  get_sub_device_range: ROOT_OR_SUBDEVICE
+  get_sub_device_range: ROOT_DEVICE
 }
-version: 1341689500
+version: 1365897117
