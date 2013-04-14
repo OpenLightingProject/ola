@@ -158,6 +158,8 @@ void OLASLPThread::HandleDeRegistration(RegistrationCallback *callback,
 void OLASLPThread::HandleServerInfo(ServerInfoCallback *callback,
                                     const string &status,
                                     const ola::slp::ServerInfo &server_info) {
+  SLPThreadServerInfo slp_server_info(server_info);
+  slp_server_info.backend_type = "OLA SLP";
   callback->Run(status.empty(), server_info);
 }
 

@@ -479,10 +479,10 @@ void BaseSLPThread::GetServerInfo(ServerInfoCallback *callback) {
  * Handle the ServerInfo response.
  */
 void BaseSLPThread::HandleServerInfo(ServerInfoCallback *callback, bool ok,
-                                     const ola::slp::ServerInfo &server_info) {
+                                     const SLPThreadServerInfo &server_info) {
   if (m_executor) {
-    const ola::slp::ServerInfo *server_info_ptr =
-      new ola::slp::ServerInfo(server_info);
+    const SLPThreadServerInfo *server_info_ptr = new SLPThreadServerInfo(
+        server_info);
     m_executor->Execute(
         NewSingleCallback(this, &BaseSLPThread::CompleteServerInfo,
                           callback, ok, server_info_ptr));
@@ -498,7 +498,7 @@ void BaseSLPThread::HandleServerInfo(ServerInfoCallback *callback, bool ok,
 void BaseSLPThread::CompleteServerInfo(
     ServerInfoCallback *callback,
     bool ok,
-    const ola::slp::ServerInfo *server_info_ptr) {
+    const SLPThreadServerInfo *server_info_ptr) {
   auto_ptr<const ola::slp::ServerInfo> service_info(server_info_ptr);
   callback->Run(ok, *server_info_ptr);
 }

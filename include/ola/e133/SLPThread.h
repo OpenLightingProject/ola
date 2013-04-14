@@ -57,6 +57,17 @@ using ola::rdm::UID;
 using ola::network::IPV4Address;
 using ola::slp::URLEntries;
 
+class SLPThreadServerInfo : public ola::slp::ServerInfo {
+  public:
+    string backend_type;
+
+    SLPThreadServerInfo() : ServerInfo() {}
+
+    SLPThreadServerInfo(const ola::slp::ServerInfo &server_info)
+        : ServerInfo(server_info) {
+    }
+};
+
 /**
  * The base class for a thread which handles all the SLP stuff.
  */
@@ -65,7 +76,7 @@ class BaseSLPThread: public ola::thread::Thread {
     typedef ola::BaseCallback1<void, bool> RegistrationCallback;
     typedef ola::Callback2<void, bool, const ola::slp::URLEntries&>
         DiscoveryCallback;
-    typedef ola::SingleUseCallback2<void, bool, const ola::slp::ServerInfo&>
+    typedef ola::SingleUseCallback2<void, bool, const SLPThreadServerInfo&>
         ServerInfoCallback;
 
     // Ownership is not transferred.
@@ -180,10 +191,10 @@ class BaseSLPThread: public ola::thread::Thread {
     // server info methods
     void GetServerInfo(ServerInfoCallback *callback);
     void HandleServerInfo(ServerInfoCallback *callback, bool ok,
-                          const ola::slp::ServerInfo &service_info);
+                          const SLPThreadServerInfo &service_info);
     void CompleteServerInfo(ServerInfoCallback *callback,
                             bool ok,
-                            const ola::slp::ServerInfo *server_info_ptr);
+                            const SLPThreadServerInfo *server_info_ptr);
 
     // helper methods
     static string GetDeviceURL(const IPV4Address& address, const UID &uid);
