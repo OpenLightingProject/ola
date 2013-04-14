@@ -19,17 +19,16 @@
  */
 
 #include <cppunit/extensions/HelperMacros.h>
-#include <ola/testing/TestUtils.h>
 #include <ola/Logging.h>
+#include <ola/e133/E133URLParser.h>
 #include <ola/network/IPV4Address.h>
+#include <ola/testing/TestUtils.h>
 #include <ola/rdm/UID.h>
 #include <string>
 
-#include "tools/e133/E133URLParser.h"
-
-using std::string;
+using ola::e133::ParseE133URL;
 using ola::network::IPV4Address;
-
+using std::string;
 
 class E133URLParserTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(E133URLParserTest);

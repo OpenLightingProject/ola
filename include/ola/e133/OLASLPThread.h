@@ -59,6 +59,8 @@ class OLASLPThread: public BaseSLPThread {
                             unsigned short lifetime);
     void DeRegisterSLPService(RegistrationCallback *callback,
                               const string& url);
+    void SLPServerInfo(ServerInfoCallback *callback);
+
     void ThreadStopping();
 
   private:
@@ -75,6 +77,10 @@ class OLASLPThread: public BaseSLPThread {
                             const string &status, uint16_t error_code);
     void HandleDeRegistration(RegistrationCallback *callback,
                               const string &status, uint16_t error_code);
+    void HandleServerInfo(ServerInfoCallback *callback,
+                          const string &status,
+                          const ola::slp::ServerInfo &server_info);
+
     void SocketClosed();
     void ShutdownClient();
     bool ConnectAndSetupClient();

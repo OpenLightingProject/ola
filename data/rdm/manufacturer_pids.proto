@@ -49,8 +49,222 @@ manufacturer {
   }
 }
 manufacturer {
+  manufacturer_id: 8377
+  manufacturer_name: "ARRI -- Arnold & Richter Cine Technik GmbH & Co. Betriebs KG"
+  pid {
+    name: "FAN_MODE"
+    value: 32769
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "fan_mode"
+        label {
+          value: 0
+          label: "FAN_OFF"
+        }
+        label {
+          value: 1
+          label: "FAN_LOW"
+        }
+        label {
+          value: 2
+          label: "FAN_HIGH"
+        }
+        label {
+          value: 3
+          label: "FAN_AUTO_LOW"
+        }
+        label {
+          value: 4
+          label: "FAN_AUTO_HIGH"
+        }
+        label {
+          value: 5
+          label: "FAN_VARI"
+        }
+        label {
+          value: 6
+          label: "FAN_PASS"
+        }
+        label {
+          value: 7
+          label: "FAN_HI45"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "fan_mode"
+        label {
+          value: 0
+          label: "FAN_OFF"
+        }
+        label {
+          value: 1
+          label: "FAN_LOW"
+        }
+        label {
+          value: 2
+          label: "FAN_HIGH"
+        }
+        label {
+          value: 3
+          label: "FAN_AUTO_LOW"
+        }
+        label {
+          value: 4
+          label: "FAN_AUTO_HIGH"
+        }
+        label {
+          value: 5
+          label: "FAN_VARI"
+        }
+        label {
+          value: 6
+          label: "FAN_PASS"
+        }
+        label {
+          value: 7
+          label: "FAN_HI45"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "STATUS_LEDS"
+    value: 32770
+    get_request {
+    }
+    get_response {
+      field {
+        type: BOOL
+        name: "disable_status_leds"
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: BOOL
+        name: "disable_status_leds"
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "CCT_ADJUST"
+    value: 32771
+    get_request {
+    }
+    get_response {
+      field {
+        type: INT32
+        name: "CCT_value"
+        multiplier: -2
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: INT32
+        name: "CCT_value"
+        multiplier: -2
+        range {
+          min: 280000
+          max: 1000000
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "GN_ADJUST"
+    value: 32772
+    get_request {
+    }
+    get_response {
+      field {
+        type: INT32
+        name: "GN_value"
+        multiplier: -2
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: INT32
+        name: "GN_value"
+        multiplier: -2
+        range {
+          min: -100
+          max: 100
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+  pid {
+    name: "DMX_SIGNAL_LOSS_MODE"
+    value: 32773
+    get_request {
+    }
+    get_response {
+      field {
+        type: UINT8
+        name: "mode"
+        label {
+          value: 0
+          label: "HOLD"
+        }
+        label {
+          value: 1
+          label: "HOLD_FOR_2_MINUTES"
+        }
+        label {
+          value: 2
+          label: "BLACK_OUT"
+        }
+      }
+    }
+    get_sub_device_range: ROOT_OR_SUBDEVICE
+    set_request {
+      field {
+        type: UINT8
+        name: "mode"
+        label {
+          value: 0
+          label: "HOLD"
+        }
+        label {
+          value: 1
+          label: "HOLD_FOR_2_MINUTES"
+        }
+        label {
+          value: 2
+          label: "BLACK_OUT"
+        }
+      }
+    }
+    set_response {
+    }
+    set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
+  }
+}
+manufacturer {
   manufacturer_id: 17236
-  manufacturer_name: "City Theatrical Inc."
+  manufacturer_name: "City Theatrical, Inc."
   pid {
     name: "SHOW_ID"
     value: 32768
@@ -4267,7 +4481,7 @@ manufacturer {
 }
 manufacturer {
   manufacturer_id: 21324
-  manufacturer_name: "Soundlight"
+  manufacturer_name: "SOUNDLIGHT"
   pid {
     name: "DMX_HOLD_MODE"
     value: 33009
@@ -4704,7 +4918,7 @@ manufacturer {
 }
 manufacturer {
   manufacturer_id: 25972
-  manufacturer_name: "Electronic Theatre Controls Inc. (ETC)"
+  manufacturer_name: "Electronic Theatre Controls, Inc."
   pid {
     name: "ETC_LED_CURVE"
     value: 33025
@@ -5445,4 +5659,4 @@ manufacturer {
     set_sub_device_range: ROOT_OR_ALL_SUBDEVICE
   }
 }
-version: 1341689500
+version: 1365898008

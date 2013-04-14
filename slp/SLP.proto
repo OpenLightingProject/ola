@@ -64,6 +64,14 @@ message ServiceAck {
   required uint32 error_code = 1;
 };
 
+message ServerInfoRequest {}
+
+message ServerInfoReply {
+  optional bool da_enabled = 1;
+  optional uint32 port = 2;
+  repeated string scope = 3;
+};
+
 // Services
 
 // RPCs handled by the SLP Server
@@ -75,6 +83,8 @@ service SLPService {
   rpc RegisterService(ServiceRegistration) returns (ServiceAck);
 
   rpc DeRegisterService(ServiceDeRegistration) returns (ServiceAck);
+
+  rpc GetServerInfo(ServerInfoRequest) returns (ServerInfoReply);
 }
 
 // RPCs handled by the OLA Client

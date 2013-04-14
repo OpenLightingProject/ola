@@ -41,7 +41,17 @@ using std::string;
 using ola::network::IPV4SocketAddress;
 using ola::network::IPV4Address;
 
+// Information about the server
+class ServerInfo {
+  public:
+    bool da_enabled;
+    uint16_t port;
+    vector<string> scopes;
 
+    ServerInfo() : da_enabled(false), port(0) {}
+};
+
+// Used to communicate with the local SLP server.
 class SLPClient {
   public:
     explicit SLPClient(ola::io::ConnectedDescriptor *descriptor);
@@ -84,6 +94,12 @@ class SLPClient {
         const string &service,
         SingleUseCallback2<void, const string&,
                            const vector<URLEntry> &> *callback);
+
+    /**
+     * Get info about the server
+     */
+    bool GetServerInfo(
+        SingleUseCallback2<void, const string&, const ServerInfo&> *callback);
 
   private:
     SLPClient(const SLPClient&);

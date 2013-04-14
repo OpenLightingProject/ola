@@ -19,15 +19,17 @@
 
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
+#include <ola/e133/E133URLParser.h>
 #include <string>
 #include <vector>
 #include "tools/e133/SLPConstants.h"
-#include "tools/e133/E133URLParser.h"
+
+namespace ola {
+namespace e133 {
 
 using ola::network::IPV4Address;
 using ola::rdm::UID;
 using std::string;
-
 
 /**
  * Extract the IP Address and UID from a E1.33 SLP URL.
@@ -75,3 +77,5 @@ bool ParseE133URL(const string &url,
   *uid = temp_uid;
   return true;
 }
+}  // e133
+}  // ola

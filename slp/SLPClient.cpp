@@ -104,11 +104,21 @@ bool SLPClient::DeRegisterService(
  * @returns true if the request succeeded, false otherwise.
  */
 bool SLPClient::FindService(
-        const vector<string> &scopes,
-        const string &service,
-        SingleUseCallback2<void, const string&,
-                           const vector<URLEntry>&> *callback) {
+    const vector<string> &scopes,
+    const string &service,
+    SingleUseCallback2<void, const string&,
+                       const vector<URLEntry>&> *callback) {
   return m_core->FindService(scopes, service, callback);
+}
+
+
+/**
+ * Get info about the server.
+ * @returns true if the request succeeded, false otherwise.
+ */
+bool SLPClient::GetServerInfo(
+    SingleUseCallback2<void, const string&, const ServerInfo&> *callback) {
+  return m_core->GetServerInfo(callback);
 }
 }  // slp
 }  // ola

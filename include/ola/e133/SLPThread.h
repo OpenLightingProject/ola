@@ -42,6 +42,7 @@
 #include <ola/network/IPV4Address.h>
 #include <ola/rdm/UID.h>
 #include <ola/thread/ExecutorInterface.h>
+#include <ola/slp/SLPClient.h>
 #include <ola/slp/URLEntry.h>
 
 #include <map>
@@ -56,6 +57,22 @@ using ola::rdm::UID;
 using ola::network::IPV4Address;
 using ola::slp::URLEntries;
 
+class SLPThreadServerInfo : public ola::slp::ServerInfo {
+  public:
+    string backend_type;
+
+    SLPThreadServerInfo() : ServerInfo() {}
+
+    SLPThreadServerInfo(const SLPThreadServerInfo &server_info)
+        : ServerInfo(server_info),
+          backend_type(server_info.backend_type) {
+    }
+
+    SLPThreadServerInfo(const ola::slp::ServerInfo &server_info)
+        : ServerInfo(server_info) {
+    }
+};
+
 /**
  * The base class for a thread which handles all the SLP stuff.
  */
@@ -64,6 +81,8 @@ class BaseSLPThread: public ola::thread::Thread {
     typedef ola::BaseCallback1<void, bool> RegistrationCallback;
     typedef ola::Callback2<void, bool, const ola::slp::URLEntries&>
         DiscoveryCallback;
+    typedef ola::SingleUseCallback2<void, bool, const SLPThreadServerInfo&>
+        ServerInfoCallback;
 
     // Ownership is not transferred.
     explicit BaseSLPThread(
@@ -92,6 +111,10 @@ class BaseSLPThread: public ola::thread::Thread {
     void DeRegisterController(RegistrationCallback *callback,
                               const IPV4Address &address);
 
+    void ServerInfo(ServerInfoCallback *callback);
+
+    void RunDeviceDiscoveryNow();
+
     virtual bool Init();
     bool Start();
     bool Join(void *ptr = NULL);
@@ -117,6 +140,8 @@ class BaseSLPThread: public ola::thread::Thread {
                                     unsigned short lifetime) = 0;
     virtual void DeRegisterSLPService(RegistrationCallback *callback,
                                       const string& url) = 0;
+    virtual void SLPServerInfo(ServerInfoCallback *callback) = 0;
+
     // Called after the SelectServer has finished and just before the thread
     // completes.
     virtual void ThreadStopping() {}
@@ -152,6 +177,7 @@ class BaseSLPThread: public ola::thread::Thread {
     void StartDiscoveryProcess();
     void RemoveDiscoveryTimeout(DiscoveryState *state);
     void RunDiscoveryForService(const string service);
+    void ForceDiscovery(const string service);
     void DiscoveryComplete(const string service, bool result,
                            const URLEntries &urls);
     void RunDiscoveryCallback(DiscoveryCallback *callback, bool result,
@@ -167,6 +193,15 @@ class BaseSLPThread: public ola::thread::Thread {
     void ReRegisterService(string url);
     void CompleteCallback(RegistrationCallback *callback, bool ok);
 
+    // server info methods
+    void GetServerInfo(ServerInfoCallback *callback);
+    void HandleServerInfo(ServerInfoCallback *callback, bool ok,
+                          const SLPThreadServerInfo &service_info);
+    void CompleteServerInfo(ServerInfoCallback *callback,
+                            bool ok,
+                            const SLPThreadServerInfo *server_info_ptr);
+
+    // helper methods
     static string GetDeviceURL(const IPV4Address& address, const UID &uid);
     static string GetControllerURL(const IPV4Address& address);
     static uint16_t ClampLifetime(const string &url, uint16_t lifetime);

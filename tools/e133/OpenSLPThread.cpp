@@ -173,5 +173,13 @@ void OpenSLPThread::DeRegisterSLPService(RegistrationCallback *callback,
   }
   callback->Run(ok);
 }
+
+
+void OpenSLPThread::SLPServerInfo(ServerInfoCallback *callback) {
+  SLPThreadServerInfo server_info;
+  server_info.backend_type = "openslp";
+  OLA_WARN << "ServerInfo not implemented for OpenSLP";
+  callback->Run(false, server_info);
+}
 }  // e133
 }  // ola

@@ -85,6 +85,12 @@ class SLPClientCore {
         SingleUseCallback2<void, const string&,
                            const vector<URLEntry> &> *callback);
 
+    /**
+     * Get info about the server
+     */
+    bool GetServerInfo(
+        SingleUseCallback2<void, const string&, const ServerInfo&> *callback);
+
 
     // unfortunately all of these need to be public because they're used in the
     // closures. That's why this class is wrapped in OlaClient or
@@ -105,6 +111,14 @@ class SLPClientCore {
     } find_arg;
 
     void HandleFindRequest(find_arg *args);
+
+    typedef struct {
+      SimpleRpcController *controller;
+      ola::slp::proto::ServerInfoReply *reply;
+      SingleUseCallback2<void, const string&, const ServerInfo&> *callback;
+    } server_info_arg;
+
+    void HandleServerInfo(server_info_arg *args);
 
   private:
     ConnectedDescriptor *m_descriptor;

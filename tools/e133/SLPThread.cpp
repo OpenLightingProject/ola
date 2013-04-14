@@ -52,6 +52,9 @@ using std::auto_ptr;
 using std::pair;
 
 
+/**
+ * If not executor is provided, the callbacks are run in the slp thread.
+ */
 BaseSLPThread::BaseSLPThread(ola::thread::ExecutorInterface *executor,
                              unsigned int discovery_interval)
     : Thread(),
@@ -188,15 +191,39 @@ void BaseSLPThread::DeRegisterController(RegistrationCallback *callback,
 }
 
 
+void BaseSLPThread::ServerInfo(ServerInfoCallback *callback) {
+  m_ss.Execute(NewSingleCallback(
+      this,
+      &BaseSLPThread::GetServerInfo,
+      callback));
+}
+
+
+/**
+ * Trigger E1.33 device discovery immediately.
+ */
+void BaseSLPThread::RunDeviceDiscoveryNow() {
+  m_ss.Execute(NewSingleCallback(this, &BaseSLPThread::ForceDiscovery,
+                                 string(E133_DEVICE_SLP_SERVICE_NAME)));
+}
+
+
 /**
  * Schedule the callback to run in the Executor thread.
  */
 void BaseSLPThread::RunCallbackInExecutor(RegistrationCallback *callback,
                                           bool ok) {
-  if (callback)
+  if (!callback) {
+    return;
+  }
+
+  if (m_executor) {
     m_executor->Execute(
         NewSingleCallback(this, &BaseSLPThread::CompleteCallback, callback,
                           ok));
+  } else {
+    callback->Run(ok);
+  }
 }
 
 
@@ -276,6 +303,17 @@ void BaseSLPThread::RunDiscoveryForService(const string service) {
 }
 
 
+/**
+ * Run discovery for the service immediately.
+ */
+void BaseSLPThread::ForceDiscovery(const string service) {
+  DiscoveryState *state = STLFind(&m_discovery_callbacks, service);
+  if (!state)
+    return;
+  RemoveDiscoveryTimeout(state);
+  RunDiscoveryForService(service);
+}
+
 void BaseSLPThread::DiscoveryComplete(const string service,
                                       bool result,
                                       const URLEntries &urls) {
@@ -290,12 +328,18 @@ void BaseSLPThread::DiscoveryComplete(const string service,
       ola::NewSingleCallback(this, &BaseSLPThread::DiscoveryTriggered,
                              service));
 
-  if (state->callback) {
+  if (!state->callback) {
+    return;
+  }
+
+  if (m_executor) {
     // run in exec
     const URLEntries *urls_ptr = new URLEntries(urls);
     m_executor->Execute(
         NewSingleCallback(this, &BaseSLPThread::RunDiscoveryCallback,
                           state->callback, result, urls_ptr));
+  } else {
+    state->callback->Run(result, urls);
   }
 }
 
@@ -420,6 +464,45 @@ void BaseSLPThread::CompleteCallback(RegistrationCallback *callback,
                                      bool ok) {
   callback->Run(ok);
 }
+
+
+/**
+ * Get the SLP Server info. This runs in our thread.
+ */
+void BaseSLPThread::GetServerInfo(ServerInfoCallback *callback) {
+  SLPServerInfo(
+      NewSingleCallback(this, &BaseSLPThread::HandleServerInfo, callback));
+}
+
+
+/**
+ * Handle the ServerInfo response.
+ */
+void BaseSLPThread::HandleServerInfo(ServerInfoCallback *callback, bool ok,
+                                     const SLPThreadServerInfo &server_info) {
+  if (m_executor) {
+    const SLPThreadServerInfo *server_info_ptr = new SLPThreadServerInfo(
+        server_info);
+    m_executor->Execute(
+        NewSingleCallback(this, &BaseSLPThread::CompleteServerInfo,
+                          callback, ok, server_info_ptr));
+  } else {
+    callback->Run(ok, server_info);
+  }
+};
+
+
+/**
+ * Runs on the executor thread.
+ */
+void BaseSLPThread::CompleteServerInfo(
+    ServerInfoCallback *callback,
+    bool ok,
+    const SLPThreadServerInfo *server_info_ptr) {
+  auto_ptr<const ola::slp::ServerInfo> service_info(server_info_ptr);
+  callback->Run(ok, *server_info_ptr);
+}
+
 
 /**
  * Generate an E1.33 Device URL.

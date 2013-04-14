@@ -104,6 +104,8 @@ class SLPServer {
 
     bool Init();
 
+    uint16_t SLPPort() const { return m_slp_port; }
+    bool DAEnabled() const { return m_enable_da; }
     const ScopeSet ConfiguredScopes() const { return m_configured_scopes; }
 
     // bulk load a list of Services

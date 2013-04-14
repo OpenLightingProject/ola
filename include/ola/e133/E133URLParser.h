@@ -22,12 +22,16 @@
 
 #include <string>
 
-#ifndef TOOLS_E133_SLPURLPARSER_H_
-#define TOOLS_E133_SLPURLPARSER_H_
+#ifndef INCLUDE_OLA_E133_E133URLPARSER_H_
+#define INCLUDE_OLA_E133_E133URLPARSER_H_
 
 using std::string;
 
+namespace ola {
+namespace e133 {
+
 bool ParseE133URL(const string &url, ola::rdm::UID *uid,
                   ola::network::IPV4Address *ip);
-
-#endif  // TOOLS_E133_SLPURLPARSER_H_
+}  // e133
+}  // ola
+#endif  // INCLUDE_OLA_E133_E133URLPARSER_H_

@@ -56,6 +56,7 @@ class OpenSLPThread: public BaseSLPThread {
                             unsigned short lifetime);
     void DeRegisterSLPService(RegistrationCallback *callback,
                               const string& url);
+    void SLPServerInfo(ServerInfoCallback *callback);
 
   private:
     bool m_init_ok;
