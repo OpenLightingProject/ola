@@ -119,6 +119,12 @@ class SLPDaemon {
             ola::slp::proto::ServiceAck* response,
             ::google::protobuf::Closure* done);
 
+        void GetServerInfo(
+            ::google::protobuf::RpcController* controller,
+            const ola::slp::proto::ServerInfoRequest* request,
+            ola::slp::proto::ServerInfoReply* response,
+            ::google::protobuf::Closure* done);
+
       private:
         SLPServer *m_slp_server;
 

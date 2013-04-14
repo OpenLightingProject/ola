@@ -348,6 +348,27 @@ void SLPDaemon::SLPServiceImpl::DeRegisterService(
 
 
 /**
+ * Get the server info
+ */
+void SLPDaemon::SLPServiceImpl::GetServerInfo(
+    ::google::protobuf::RpcController*,
+    const ola::slp::proto::ServerInfoRequest*,
+    ola::slp::proto::ServerInfoReply* response,
+    ::google::protobuf::Closure* done) {
+  OLA_INFO << "Recv GetServerInfo";
+
+  response->set_da_enabled(m_slp_server->DAEnabled());
+  response->set_port(m_slp_server->SLPPort());
+  const ScopeSet &scopes = m_slp_server->ConfiguredScopes();
+  ScopeSet::Iterator iter = scopes.begin();
+  for (; iter != scopes.end(); ++iter) {
+    response->add_scope(*iter);
+  }
+  done->Run();
+}
+
+
+/**
  * Called when FindService completes.
  */
 void SLPDaemon::SLPServiceImpl::FindServiceHandler(
