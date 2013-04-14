@@ -173,5 +173,12 @@ void OpenSLPThread::DeRegisterSLPService(RegistrationCallback *callback,
   }
   callback->Run(ok);
 }
+
+
+void OpenSLPThread::SLPServerInfo(ServerInfoCallback *callback) {
+  ola::slp::ServerInfo server_info;
+  OLA_WARN << "ServerInfo not implemented for OpenSLP";
+  callback->Run(false, server_info);
+}
 }  // e133
 }  // ola

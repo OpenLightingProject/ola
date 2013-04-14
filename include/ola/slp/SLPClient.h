@@ -42,7 +42,7 @@ using ola::network::IPV4SocketAddress;
 using ola::network::IPV4Address;
 
 // Information about the server
-struct ServerInfo {
+class ServerInfo {
   public:
     bool da_enabled;
     uint16_t port;

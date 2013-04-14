@@ -114,6 +114,20 @@ void OLASLPThread::DeRegisterSLPService(RegistrationCallback *callback,
       NewSingleCallback(this, &OLASLPThread::HandleDeRegistration, callback));
 }
 
+void OLASLPThread::SLPServerInfo(ServerInfoCallback *callback) {
+  ola::slp::ServerInfo server_info;
+  if (!m_slp_client.get()) {
+    callback->Run(false, server_info);
+    return;
+  }
+  bool ok = m_slp_client->GetServerInfo(
+      NewSingleCallback(this, &OLASLPThread::HandleServerInfo, callback));
+  if (!ok) {
+    callback->Run(false, server_info);
+    return;
+  }
+}
+
 void OLASLPThread::ThreadStopping() {
   if (m_reconnect_timeout != ola::thread::INVALID_TIMEOUT) {
     m_ss.RemoveTimeout(m_reconnect_timeout);
@@ -139,6 +153,12 @@ void OLASLPThread::HandleDeRegistration(RegistrationCallback *callback,
                                         uint16_t error_code) {
   bool ok = status.empty() && error_code == ola::slp::SLP_OK;
   callback->Run(ok);
+}
+
+void OLASLPThread::HandleServerInfo(ServerInfoCallback *callback,
+                                    const string &status,
+                                    const ola::slp::ServerInfo &server_info) {
+  callback->Run(status.empty(), server_info);
 }
 
 void OLASLPThread::SocketClosed() {

@@ -42,6 +42,7 @@
 #include <ola/network/IPV4Address.h>
 #include <ola/rdm/UID.h>
 #include <ola/thread/ExecutorInterface.h>
+#include <ola/slp/SLPClient.h>
 #include <ola/slp/URLEntry.h>
 
 #include <map>
@@ -64,6 +65,8 @@ class BaseSLPThread: public ola::thread::Thread {
     typedef ola::BaseCallback1<void, bool> RegistrationCallback;
     typedef ola::Callback2<void, bool, const ola::slp::URLEntries&>
         DiscoveryCallback;
+    typedef ola::SingleUseCallback2<void, bool, const ola::slp::ServerInfo&>
+        ServerInfoCallback;
 
     // Ownership is not transferred.
     explicit BaseSLPThread(
@@ -92,6 +95,8 @@ class BaseSLPThread: public ola::thread::Thread {
     void DeRegisterController(RegistrationCallback *callback,
                               const IPV4Address &address);
 
+    void ServerInfo(ServerInfoCallback *callback);
+
     void RunDeviceDiscoveryNow();
 
     virtual bool Init();
@@ -119,6 +124,8 @@ class BaseSLPThread: public ola::thread::Thread {
                                     unsigned short lifetime) = 0;
     virtual void DeRegisterSLPService(RegistrationCallback *callback,
                                       const string& url) = 0;
+    virtual void SLPServerInfo(ServerInfoCallback *callback) = 0;
+
     // Called after the SelectServer has finished and just before the thread
     // completes.
     virtual void ThreadStopping() {}
@@ -170,6 +177,15 @@ class BaseSLPThread: public ola::thread::Thread {
     void ReRegisterService(string url);
     void CompleteCallback(RegistrationCallback *callback, bool ok);
 
+    // server info methods
+    void GetServerInfo(ServerInfoCallback *callback);
+    void HandleServerInfo(ServerInfoCallback *callback, bool ok,
+                          const ola::slp::ServerInfo &service_info);
+    void CompleteServerInfo(ServerInfoCallback *callback,
+                            bool ok,
+                            const ola::slp::ServerInfo *server_info_ptr);
+
+    // helper methods
     static string GetDeviceURL(const IPV4Address& address, const UID &uid);
     static string GetControllerURL(const IPV4Address& address);
     static uint16_t ClampLifetime(const string &url, uint16_t lifetime);

@@ -191,6 +191,14 @@ void BaseSLPThread::DeRegisterController(RegistrationCallback *callback,
 }
 
 
+void BaseSLPThread::ServerInfo(ServerInfoCallback *callback) {
+  m_ss.Execute(NewSingleCallback(
+      this,
+      &BaseSLPThread::GetServerInfo,
+      callback));
+}
+
+
 /**
  * Trigger E1.33 device discovery immediately.
  */
@@ -456,6 +464,45 @@ void BaseSLPThread::CompleteCallback(RegistrationCallback *callback,
                                      bool ok) {
   callback->Run(ok);
 }
+
+
+/**
+ * Get the SLP Server info. This runs in our thread.
+ */
+void BaseSLPThread::GetServerInfo(ServerInfoCallback *callback) {
+  SLPServerInfo(
+      NewSingleCallback(this, &BaseSLPThread::HandleServerInfo, callback));
+}
+
+
+/**
+ * Handle the ServerInfo response.
+ */
+void BaseSLPThread::HandleServerInfo(ServerInfoCallback *callback, bool ok,
+                                     const ola::slp::ServerInfo &server_info) {
+  if (m_executor) {
+    const ola::slp::ServerInfo *server_info_ptr =
+      new ola::slp::ServerInfo(server_info);
+    m_executor->Execute(
+        NewSingleCallback(this, &BaseSLPThread::CompleteServerInfo,
+                          callback, ok, server_info_ptr));
+  } else {
+    callback->Run(ok, server_info);
+  }
+};
+
+
+/**
+ * Runs on the executor thread.
+ */
+void BaseSLPThread::CompleteServerInfo(
+    ServerInfoCallback *callback,
+    bool ok,
+    const ola::slp::ServerInfo *server_info_ptr) {
+  auto_ptr<const ola::slp::ServerInfo> service_info(server_info_ptr);
+  callback->Run(ok, *server_info_ptr);
+}
+
 
 /**
  * Generate an E1.33 Device URL.
