@@ -79,12 +79,14 @@ slp_server_SOURCES = SLPDaemon.cpp \
                      slp-server.cpp
 slp_server_LDADD = $(top_builddir)/common/libolacommon.la \
                    $(top_builddir)/common/http/libolahttp.la \
-                   ./libolaslpserver.la
+                   ./libolaslpserver.la \
+                   ./libolaslpproto.la
 
 slp_client_SOURCES = slp-client.cpp
 slp_client_LDADD = $(top_builddir)/common/libolacommon.la \
                    $(top_builddir)/ola/libola.la \
-                   ./libolaslpclient.la
+                   ./libolaslpclient.la \
+                   ./libolaslpcore.la
 
 clean-local:
 	rm -f *.pb.{h,cc} *.gcno *.gcda
