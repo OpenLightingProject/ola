@@ -174,6 +174,31 @@ bool SLPClientCore::FindService(
 }
 
 
+/**
+ * Get info about the server.
+ * @returns true if the request succeeded, false otherwise.
+ */
+bool SLPClientCore::GetServerInfo(
+    SingleUseCallback2<void, const string&, const ServerInfo&> *callback) {
+  if (!m_connected) {
+    delete callback;
+    return false;
+  }
+
+  SimpleRpcController *controller = new SimpleRpcController();
+  ola::slp::proto::ServerInfoRequest request;
+  ola::slp::proto::ServerInfoReply *reply =
+      new ola::slp::proto::ServerInfoReply();
+
+  google::protobuf::Closure *cb = google::protobuf::NewCallback(
+      this,
+      &SLPClientCore::HandleServerInfo,
+      NewArgs<server_info_arg>(controller, reply, callback));
+  m_stub->GetServerInfo(controller, &request, reply, cb);
+  return true;
+}
+
+
 // The following are RPC callbacks
 
 /*
@@ -220,6 +245,37 @@ void SLPClientCore::HandleFindRequest(find_arg *args) {
     }
   }
   args->callback->Run(error_string, services);
+  FreeArgs(args);
+}
+
+
+/*
+ * Called once GetServerInfo completes.
+ */
+void SLPClientCore::HandleServerInfo(server_info_arg *args) {
+  string error_string = "";
+  ServerInfo server_info;
+
+  if (!args->callback) {
+    FreeArgs(args);
+    return;
+  }
+
+  if (args->controller->Failed()) {
+    error_string = args->controller->ErrorText();
+  } else {
+    ola::slp::proto::ServerInfoReply *reply = args->reply;
+    if (reply->has_da_enabled()) {
+      server_info.da_enabled = reply->da_enabled();
+    }
+    if (reply->has_port()) {
+      server_info.port = reply->port();
+    }
+    for (int i = 0; i < reply->scope_size(); ++i) {
+      server_info.scopes.push_back(reply->scope(i));
+    }
+  }
+  args->callback->Run(error_string, server_info);
   FreeArgs(args);
 }
 
