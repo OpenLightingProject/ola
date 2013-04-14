@@ -192,6 +192,15 @@ void BaseSLPThread::DeRegisterController(RegistrationCallback *callback,
 
 
 /**
+ * Trigger E1.33 device discovery immediately.
+ */
+void BaseSLPThread::RunDeviceDiscoveryNow() {
+  m_ss.Execute(NewSingleCallback(this, &BaseSLPThread::ForceDiscovery,
+                                 string(E133_DEVICE_SLP_SERVICE_NAME)));
+}
+
+
+/**
  * Schedule the callback to run in the Executor thread.
  */
 void BaseSLPThread::RunCallbackInExecutor(RegistrationCallback *callback,
@@ -285,6 +294,17 @@ void BaseSLPThread::RunDiscoveryForService(const string service) {
       service);
 }
 
+
+/**
+ * Run discovery for the service immediately.
+ */
+void BaseSLPThread::ForceDiscovery(const string service) {
+  DiscoveryState *state = STLFind(&m_discovery_callbacks, service);
+  if (!state)
+    return;
+  RemoveDiscoveryTimeout(state);
+  RunDiscoveryForService(service);
+}
 
 void BaseSLPThread::DiscoveryComplete(const string service,
                                       bool result,

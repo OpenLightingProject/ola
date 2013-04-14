@@ -92,6 +92,8 @@ class BaseSLPThread: public ola::thread::Thread {
     void DeRegisterController(RegistrationCallback *callback,
                               const IPV4Address &address);
 
+    void RunDeviceDiscoveryNow();
+
     virtual bool Init();
     bool Start();
     bool Join(void *ptr = NULL);
@@ -152,6 +154,7 @@ class BaseSLPThread: public ola::thread::Thread {
     void StartDiscoveryProcess();
     void RemoveDiscoveryTimeout(DiscoveryState *state);
     void RunDiscoveryForService(const string service);
+    void ForceDiscovery(const string service);
     void DiscoveryComplete(const string service, bool result,
                            const URLEntries &urls);
     void RunDiscoveryCallback(DiscoveryCallback *callback, bool result,
