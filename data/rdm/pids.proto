@@ -2663,7 +2663,7 @@ pid {
   set_sub_device_range: ROOT_DEVICE
 }
 pid {
-  name: "QUEUED_STATUS_UID_COLLECTION"
+  name: "QUEUED_STATUS_ENDPOINT_COLLECTION"
   value: 32723
   set_request {
     field {
@@ -3397,10 +3397,10 @@ pid {
   }
   get_response {
     field {
-      type: UINT_32
+      type: UINT32
       name: "list_change_number"
     }
   }
   get_sub_device_range: ROOT_DEVICE
 }
-version: 1365897117
+version: 1365898008
