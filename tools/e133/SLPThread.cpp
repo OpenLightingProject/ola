@@ -52,6 +52,9 @@ using std::auto_ptr;
 using std::pair;
 
 
+/**
+ * If not executor is provided, the callbacks are run in the slp thread.
+ */
 BaseSLPThread::BaseSLPThread(ola::thread::ExecutorInterface *executor,
                              unsigned int discovery_interval)
     : Thread(),
@@ -193,10 +196,17 @@ void BaseSLPThread::DeRegisterController(RegistrationCallback *callback,
  */
 void BaseSLPThread::RunCallbackInExecutor(RegistrationCallback *callback,
                                           bool ok) {
-  if (callback)
+  if (!callback) {
+    return;
+  }
+
+  if (m_executor) {
     m_executor->Execute(
         NewSingleCallback(this, &BaseSLPThread::CompleteCallback, callback,
                           ok));
+  } else {
+    callback->Run(ok);
+  }
 }
 
 
@@ -290,12 +300,18 @@ void BaseSLPThread::DiscoveryComplete(const string service,
       ola::NewSingleCallback(this, &BaseSLPThread::DiscoveryTriggered,
                              service));
 
-  if (state->callback) {
+  if (!state->callback) {
+    return;
+  }
+
+  if (m_executor) {
     // run in exec
     const URLEntries *urls_ptr = new URLEntries(urls);
     m_executor->Execute(
         NewSingleCallback(this, &BaseSLPThread::RunDiscoveryCallback,
                           state->callback, result, urls_ptr));
+  } else {
+    state->callback->Run(result, urls);
   }
 }
 
