@@ -5,7 +5,6 @@ EXTRA_DIST = DeviceManager.h \
              E133Device.h \
              E133Endpoint.h \
              E133HealthCheckedConnection.h \
-             E133URLParser.h \
              EndpointManager.h \
              MessageQueue.h \
              MessageBuilder.h \

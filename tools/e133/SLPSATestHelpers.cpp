@@ -19,6 +19,7 @@
 
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
+#include <ola/e133/E133URLParser.h>
 #include <ola/io/BigEndianStream.h>
 #include <ola/io/MemoryBuffer.h>
 #include <ola/network/IPV4Address.h>
@@ -28,7 +29,6 @@
 #include <set>
 #include <string>
 
-#include "tools/e133/E133URLParser.h"
 #include "tools/e133/SLPSATestRunner.h"
 #include "slp/SLPPacketBuilder.h"
 #include "slp/SLPPacketConstants.h"
@@ -136,7 +136,7 @@ TestCase::TestState VerifySrvRply(const IPV4Address &destination_ip,
 
   IPV4Address remote_ip;
   UID uid(0, 0);
-  if (!ParseE133URL(url.url(), &uid, &remote_ip)) {
+  if (!ola::e133::ParseE133URL(url.url(), &uid, &remote_ip)) {
     OLA_INFO << "Failed to extract IP & UID from " << url.url();
     return TestCase::FAILED;
   }

@@ -32,6 +32,7 @@
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
 #include <ola/base/Flags.h>
+#include <ola/e133/E133URLParser.h>
 #include <ola/e133/OLASLPThread.h>
 #ifdef HAVE_LIBSLP
 #include <ola/e133/OpenSLPThread.h>
@@ -54,7 +55,6 @@
 #include "plugins/e131/e131/CID.h"
 
 #include "tools/e133/DeviceManager.h"
-#include "tools/e133/E133URLParser.h"
 #include "tools/e133/MessageBuilder.h"
 
 using ola::NewCallback;
@@ -197,7 +197,7 @@ void SimpleE133Monitor::DiscoveryCallback(bool ok, const URLEntries &urls) {
     IPV4Address ip;
     for (iter = urls.begin(); iter != urls.end(); ++iter) {
       OLA_INFO << "Located " << *iter;
-      if (!ParseE133URL(iter->url(), &uid, &ip))
+      if (!ola::e133::ParseE133URL(iter->url(), &uid, &ip))
         continue;
 
       if (uid.IsBroadcast()) {
