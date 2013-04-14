@@ -63,6 +63,11 @@ class SLPThreadServerInfo : public ola::slp::ServerInfo {
 
     SLPThreadServerInfo() : ServerInfo() {}
 
+    SLPThreadServerInfo(const SLPThreadServerInfo &server_info)
+        : ServerInfo(server_info),
+          backend_type(server_info.backend_type) {
+    }
+
     SLPThreadServerInfo(const ola::slp::ServerInfo &server_info)
         : ServerInfo(server_info) {
     }

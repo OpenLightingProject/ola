@@ -160,7 +160,7 @@ void OLASLPThread::HandleServerInfo(ServerInfoCallback *callback,
                                     const ola::slp::ServerInfo &server_info) {
   SLPThreadServerInfo slp_server_info(server_info);
   slp_server_info.backend_type = "OLA SLP";
-  callback->Run(status.empty(), server_info);
+  callback->Run(status.empty(), slp_server_info);
 }
 
 void OLASLPThread::SocketClosed() {
