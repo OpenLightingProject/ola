@@ -291,8 +291,12 @@ int main(int argc, char *argv[]) {
 
   SimpleE133Monitor::SLPOption slp_option = SimpleE133Monitor::NO_SLP;
   if (targets.empty()) {
+#ifdef HAVE_LIBSLP
     slp_option = FLAGS_openslp ? SimpleE133Monitor::OPEN_SLP :
         SimpleE133Monitor::OLA_SLP;
+#else
+    slp_option = SimpleE133Monitor::OLA_SLP;
+#endif
   }
   SimpleE133Monitor monitor(&pid_helper, slp_option);
   if (!monitor.Init())
