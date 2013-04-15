@@ -361,7 +361,7 @@ void DesignatedControllerConnection::HandleStatusMessage(
     const ola::plugin::e131::E133Header &e133_header,
     uint16_t status_code,
     const string &description) {
-  if (status_code != ola::plugin::e131::SC_E133_ACK) {
+  if (status_code != ola::e133::SC_E133_ACK) {
     OLA_INFO << "Received a non-ack status code from "
              << transport_header.Source() << ": " << status_code << " : "
              << description;

@@ -23,7 +23,7 @@
 
 #include <ola/io/IOStack.h>
 #include <string>
-#include "plugins/e131/e131/E133Enums.h"
+#include "ola/e133/E133Enums.h"
 #include "plugins/e131/e131/PDU.h"
 
 namespace ola {
@@ -32,7 +32,8 @@ namespace e131 {
 
 class E133StatusPDU : private PDU {
   public:
-    static void PrependPDU(ola::io::IOStack *stack, E133StatusCode status_code,
+    static void PrependPDU(ola::io::IOStack *stack,
+                           ola::e133::E133StatusCode status_code,
                            const std::string &status);
 };
 }  // e131

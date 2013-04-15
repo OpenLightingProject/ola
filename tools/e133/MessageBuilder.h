@@ -23,11 +23,10 @@
 #define TOOLS_E133_MESSAGEBUILDER_H_
 
 #include <ola/acn/CID.h>
+#include <ola/e133/E133Enums.h>
 #include <ola/io/IOStack.h>
 #include <ola/io/MemoryBlockPool.h>
 #include <string>
-
-#include "plugins/e131/e131/E133Enums.h"
 
 using ola::acn::CID;
 using std::string;
@@ -44,11 +43,11 @@ class MessageBuilder {
 
     void BuildTCPE133StatusPDU(ola::io::IOStack *packet,
                                uint32_t sequence_number, uint16_t endpoint_id,
-                               ola::plugin::e131::E133StatusCode status_code,
+                               ola::e133::E133StatusCode status_code,
                                const string &description);
     void BuildUDPE133StatusPDU(ola::io::IOStack *packet,
                                uint32_t sequence_number, uint16_t endpoint_id,
-                               ola::plugin::e131::E133StatusCode status_code,
+                               ola::e133::E133StatusCode status_code,
                                const string &description);
 
     void BuildTCPRootE133(ola::io::IOStack *packet, uint32_t vector,

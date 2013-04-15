@@ -23,6 +23,7 @@
 #include <memory>
 #include <string>
 #include "ola/Callback.h"
+#include "ola/e133/E133Enums.h"
 #include "plugins/e131/e131/ACNVectors.h"
 #include "plugins/e131/e131/BaseInflator.h"
 #include "plugins/e131/e131/TransportHeader.h"

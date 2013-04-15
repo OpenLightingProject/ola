@@ -33,35 +33,35 @@ using std::string;
  */
 bool IntToStatusCode(uint16_t input, E133StatusCode *status_code) {
   switch (input) {
-    case SC_E133_ACK:
-      *status_code = SC_E133_ACK;
+    case ola::e133::SC_E133_ACK:
+      *status_code = ola::e133::SC_E133_ACK;
       return true;
-    case SC_E133_RDM_TIMEOUT:
-      *status_code = SC_E133_RDM_TIMEOUT;
+    case ola::e133::SC_E133_RDM_TIMEOUT:
+      *status_code = ola::e133::SC_E133_RDM_TIMEOUT;
       return true;
-    case SC_E133_RDM_INVALID_RESPONSE:
-      *status_code = SC_E133_RDM_INVALID_RESPONSE;
+    case ola::e133::SC_E133_RDM_INVALID_RESPONSE:
+      *status_code = ola::e133::SC_E133_RDM_INVALID_RESPONSE;
       return true;
-    case SC_E133_BUFFER_FULL:
-      *status_code = SC_E133_BUFFER_FULL;
+    case ola::e133::SC_E133_BUFFER_FULL:
+      *status_code = ola::e133::SC_E133_BUFFER_FULL;
       return true;
-    case SC_E133_UNKNOWN_UID:
-      *status_code = SC_E133_UNKNOWN_UID;
+    case ola::e133::SC_E133_UNKNOWN_UID:
+      *status_code = ola::e133::SC_E133_UNKNOWN_UID;
       return true;
-    case SC_E133_NONEXISTANT_ENDPOINT:
-      *status_code = SC_E133_NONEXISTANT_ENDPOINT;
+    case ola::e133::SC_E133_NONEXISTANT_ENDPOINT:
+      *status_code = ola::e133::SC_E133_NONEXISTANT_ENDPOINT;
       return true;
-    case SC_E133_WRONG_ENDPOINT:
-      *status_code = SC_E133_WRONG_ENDPOINT;
+    case ola::e133::SC_E133_WRONG_ENDPOINT:
+      *status_code = ola::e133::SC_E133_WRONG_ENDPOINT;
       return true;
-    case SC_E133_ACK_OVERFLOW_CACHE_EXPIRED:
-      *status_code = SC_E133_ACK_OVERFLOW_CACHE_EXPIRED;
+    case ola::e133::SC_E133_ACK_OVERFLOW_CACHE_EXPIRED:
+      *status_code = ola::e133::SC_E133_ACK_OVERFLOW_CACHE_EXPIRED;
       return true;
-    case SC_E133_ACK_OVERFLOW_IN_PROGRESS:
-      *status_code = SC_E133_ACK_OVERFLOW_IN_PROGRESS;
+    case ola::e133::SC_E133_ACK_OVERFLOW_IN_PROGRESS:
+      *status_code = ola::e133::SC_E133_ACK_OVERFLOW_IN_PROGRESS;
       return true;
-    case SC_E133_BROADCAST_COMPLETE:
-      *status_code = SC_E133_BROADCAST_COMPLETE;
+    case ola::e133::SC_E133_BROADCAST_COMPLETE:
+      *status_code = ola::e133::SC_E133_BROADCAST_COMPLETE;
       return true;
     default:
       return false;
@@ -74,25 +74,25 @@ bool IntToStatusCode(uint16_t input, E133StatusCode *status_code) {
  */
 string StatusMessageIdToString(E133StatusCode status_code) {
   switch (status_code) {
-    case SC_E133_ACK:
+    case ola::e133::SC_E133_ACK:
      return "Acknowledged";
-    case SC_E133_RDM_TIMEOUT:
+    case ola::e133::SC_E133_RDM_TIMEOUT:
      return "Response Timeout";
-    case SC_E133_RDM_INVALID_RESPONSE:
+    case ola::e133::SC_E133_RDM_INVALID_RESPONSE:
      return "Invalid Response";
-    case SC_E133_BUFFER_FULL:
+    case ola::e133::SC_E133_BUFFER_FULL:
      return "Buffer Full";
-    case SC_E133_UNKNOWN_UID:
+    case ola::e133::SC_E133_UNKNOWN_UID:
      return "Unknown UID";
-    case SC_E133_NONEXISTANT_ENDPOINT:
+    case ola::e133::SC_E133_NONEXISTANT_ENDPOINT:
      return "Endpoint doesn't exist";
-    case SC_E133_WRONG_ENDPOINT:
+    case ola::e133::SC_E133_WRONG_ENDPOINT:
      return "Wrong endpoint";
-    case SC_E133_ACK_OVERFLOW_CACHE_EXPIRED:
+    case ola::e133::SC_E133_ACK_OVERFLOW_CACHE_EXPIRED:
      return "Ack overflow cache expired";
-    case SC_E133_ACK_OVERFLOW_IN_PROGRESS:
+    case ola::e133::SC_E133_ACK_OVERFLOW_IN_PROGRESS:
      return "Ack overflow in progress";
-    case SC_E133_BROADCAST_COMPLETE:
+    case ola::e133::SC_E133_BROADCAST_COMPLETE:
      return "Request was broadcast";
   }
   return "Unknown E1.33 Status Code";

@@ -18,13 +18,11 @@
  * Copyright (C) 2013 Simon Newton
  */
 
-#ifndef PLUGINS_E131_E131_E133ENUMS_H_
-#define PLUGINS_E131_E131_E133ENUMS_H_
+#ifndef INCLUDE_OLA_E133_E133ENUMS_H_
+#define INCLUDE_OLA_E133_E133ENUMS_H_
 
 namespace ola {
-namespace plugin {
-namespace e131 {
-
+namespace e133 {
 
 // Table A-6, Discovery Stats
 enum DiscoveryState {
@@ -59,7 +57,6 @@ enum E133StatusCode {
 enum {
   MAX_E133_STATUS_STRING_SIZE = 64
 };
-}  // e131
-}  // plugin
+}  // e133
 }  // ola
-#endif  // PLUGINS_E131_E131_E133ENUMS_H_
+#endif  // INCLUDE_OLA_E133_E133ENUMS_H_

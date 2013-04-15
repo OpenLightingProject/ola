@@ -31,12 +31,12 @@ using ola::network::HostToNetwork;
 using std::string;
 
 void E133StatusPDU::PrependPDU(ola::io::IOStack *stack,
-                               E133StatusCode status_code_enum,
+                               ola::e133::E133StatusCode status_code_enum,
                                const string &status) {
   const string truncated_status_code = status.substr(
       0,
       std::min(status.size(),
-               static_cast<size_t>(MAX_E133_STATUS_STRING_SIZE)));
+               static_cast<size_t>(ola::e133::MAX_E133_STATUS_STRING_SIZE)));
   stack->Write(reinterpret_cast<const uint8_t*>(truncated_status_code.data()),
                static_cast<unsigned int>(truncated_status_code.size()));
   uint16_t status_code = HostToNetwork(static_cast<uint16_t>(status_code_enum));

@@ -107,7 +107,7 @@ class E133Device {
     void SendStatusMessage(const ola::network::IPV4SocketAddress target,
                            uint32_t sequence_number,
                            uint16_t endpoint_id,
-                           ola::plugin::e131::E133StatusCode status_code,
+                           ola::e133::E133StatusCode status_code,
                            const string &description);
 };
 #endif  // TOOLS_E133_E133DEVICE_H_

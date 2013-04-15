@@ -31,9 +31,9 @@
 #include "plugins/e131/e131/ACNVectors.h"
 
 using ola::acn::CID;
+using ola::e133::E133StatusCode;
 using ola::io::IOStack;
 using ola::plugin::e131::E133PDU;
-using ola::plugin::e131::E133StatusCode;
 using ola::plugin::e131::PreamblePacker;
 using ola::plugin::e131::RootPDU;
 

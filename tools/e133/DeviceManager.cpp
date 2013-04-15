@@ -21,6 +21,7 @@
 #include <ola/Clock.h>
 #include <ola/Logging.h>
 #include <ola/acn/CID.h>
+#include <ola/e133/E133Enums.h>
 #include <ola/io/SelectServer.h>
 #include <ola/network/AdvancedTCPConnector.h>
 #include <ola/network/IPV4Address.h>
@@ -33,7 +34,6 @@
 #include <vector>
 
 #include "plugins/e131/e131/ACNPort.h"
-#include "plugins/e131/e131/E133Enums.h"
 #include "plugins/e131/e131/E133Inflator.h"
 #include "plugins/e131/e131/E133StatusPDU.h"
 #include "plugins/e131/e131/TCPTransport.h"
@@ -388,6 +388,6 @@ void DeviceManager::EndpointRequest(
   ola::io::IOStack packet(m_message_builder->pool());
   m_message_builder->BuildTCPE133StatusPDU(
       &packet, e133_header.Sequence(), e133_header.Endpoint(),
-      ola::plugin::e131::SC_E133_ACK, "OK");
+      ola::e133::SC_E133_ACK, "OK");
   device_state->message_queue->SendMessage(&packet);
 }

@@ -236,7 +236,7 @@ void E133Device::EndpointRequest(
   if (!endpoint) {
     OLA_INFO << "Request to non-existent endpoint " << endpoint_id;
     SendStatusMessage(target, e133_header.Sequence(), endpoint_id,
-                      ola::plugin::e131::SC_E133_NONEXISTANT_ENDPOINT,
+                      ola::e133::SC_E133_NONEXISTANT_ENDPOINT,
                       "No such endpoint");
     return;
   }
@@ -251,7 +251,7 @@ void E133Device::EndpointRequest(
     // There is no way to return 'invalid request' so pretend this is a timeout
     // but give a descriptive error msg.
     SendStatusMessage(target, e133_header.Sequence(), endpoint_id,
-                      ola::plugin::e131::SC_E133_RDM_TIMEOUT,
+                      ola::e133::SC_E133_RDM_TIMEOUT,
                      "Invalid RDM request");
     return;
   }
@@ -279,21 +279,21 @@ void E133Device::EndpointRequestComplete(
   auto_ptr<const ola::rdm::RDMResponse> response(response_ptr);
 
   if (response_code != ola::rdm::RDM_COMPLETED_OK) {
-    ola::plugin::e131::E133StatusCode status_code =
-      ola::plugin::e131::SC_E133_RDM_INVALID_RESPONSE;
+    ola::e133::E133StatusCode status_code =
+      ola::e133::SC_E133_RDM_INVALID_RESPONSE;
     string description = ola::rdm::ResponseCodeToString(response_code);
     switch (response_code) {
       case ola::rdm::RDM_COMPLETED_OK:
         break;
       case ola::rdm::RDM_WAS_BROADCAST:
-        status_code = ola::plugin::e131::SC_E133_BROADCAST_COMPLETE;
+        status_code = ola::e133::SC_E133_BROADCAST_COMPLETE;
         break;
       case ola::rdm::RDM_FAILED_TO_SEND:
       case ola::rdm::RDM_TIMEOUT:
-        status_code = ola::plugin::e131::SC_E133_RDM_TIMEOUT;
+        status_code = ola::e133::SC_E133_RDM_TIMEOUT;
         break;
       case ola::rdm::RDM_UNKNOWN_UID:
-        status_code = ola::plugin::e131::SC_E133_UNKNOWN_UID;
+        status_code = ola::e133::SC_E133_UNKNOWN_UID;
         break;
       case ola::rdm::RDM_INVALID_RESPONSE:
       case ola::rdm::RDM_CHECKSUM_INCORRECT:
@@ -310,7 +310,7 @@ void E133Device::EndpointRequestComplete(
       case ola::rdm::RDM_INVALID_RESPONSE_TYPE:
       case ola::rdm::RDM_PLUGIN_DISCOVERY_NOT_SUPPORTED:
       case ola::rdm::RDM_DUB_RESPONSE:
-        status_code = ola::plugin::e131::SC_E133_RDM_INVALID_RESPONSE;
+        status_code = ola::e133::SC_E133_RDM_INVALID_RESPONSE;
         break;
     }
     SendStatusMessage(target, sequence_number, endpoint_id,
@@ -335,7 +335,7 @@ void E133Device::SendStatusMessage(
     const ola::network::IPV4SocketAddress target,
     uint32_t sequence_number,
     uint16_t endpoint_id,
-    ola::plugin::e131::E133StatusCode status_code,
+    ola::e133::E133StatusCode status_code,
     const string &description) {
   IOStack packet(m_message_builder.pool());
   m_message_builder.BuildUDPE133StatusPDU(
