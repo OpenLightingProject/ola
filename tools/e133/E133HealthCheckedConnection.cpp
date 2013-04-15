@@ -36,7 +36,7 @@ using ola::io::IOStack;
  * @param heartbeat_interval the TimeInterval between heartbeats
  */
 E133HealthCheckedConnection::E133HealthCheckedConnection(
-  MessageBuilder *message_builder,
+  ola::e133::MessageBuilder *message_builder,
   MessageQueue *message_queue,
   ola::SingleUseCallback0<void> *on_timeout,
   ola::thread::SchedulingExecutorInterface *scheduler,

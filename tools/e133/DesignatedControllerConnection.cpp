@@ -88,7 +88,7 @@ class OutstandingMessage {
 DesignatedControllerConnection::DesignatedControllerConnection(
     ola::io::SelectServerInterface *ss,
     const IPV4Address &ip_address,
-    MessageBuilder *message_builder,
+    ola::e133::MessageBuilder *message_builder,
     TCPConnectionStats *tcp_stats,
     unsigned int max_queue_size)
     : m_ip_address(ip_address),

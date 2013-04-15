@@ -7,7 +7,6 @@ EXTRA_DIST = DeviceManager.h \
              E133HealthCheckedConnection.h \
              EndpointManager.h \
              MessageQueue.h \
-             MessageBuilder.h \
              ManagementEndpoint.h \
              SLPConstants.h \
              SLPSATestHelpers.h \
@@ -17,8 +16,16 @@ EXTRA_DIST = DeviceManager.h \
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libolae133slp.pc
 
+# Libraries
+#########################
 lib_LTLIBRARIES = libolae133slp.la
-noinst_LTLIBRARIES = libolae133.la
+noinst_LTLIBRARIES =
+
+if INSTALL_E133
+  lib_LTLIBRARIES += libolae133.la
+else
+  noinst_LTLIBRARIES += libolae133.la
+endif
 
 # libolae133slp.la
 libolae133slp_la_SOURCES = OLASLPThread.cpp \
@@ -37,6 +44,8 @@ libolae133_la_SOURCES = MessageQueue.cpp \
                         MessageBuilder.cpp
 libolae133_la_LIBADD = $(top_builddir)/plugins/e131/e131/libolae131core.la
 
+# Programs
+#########################
 noinst_PROGRAMS = e133_controller e133_monitor e133_receiver \
                   slp_locate slp_register slp_sa_test
 
@@ -86,7 +95,8 @@ slp_sa_test_LDADD = $(top_builddir)/common/libolacommon.la \
                     $(top_builddir)/slp/libolaslpserver.la \
                     ./libolae133slp.la
 
-# Test Programs
+# Tests
+#########################
 if BUILD_TESTS
 TESTS = E133SLPTester
 endif

@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "ola/Clock.h"
+#include "ola/e133/MessageBuilder.h"
 #include "ola/io/SelectServerInterface.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/Socket.h"
@@ -37,7 +38,6 @@
 
 #include "tools/e133/DesignatedControllerConnection.h"
 #include "tools/e133/E133Endpoint.h"
-#include "tools/e133/MessageBuilder.h"
 #include "tools/e133/TCPConnectionStats.h"
 
 using std::string;
@@ -65,7 +65,7 @@ class E133Device {
   private:
     ola::io::SelectServerInterface *m_ss;
     const ola::network::IPV4Address m_ip_address;
-    MessageBuilder m_message_builder;
+    ola::e133::MessageBuilder m_message_builder;
     TCPConnectionStats m_tcp_stats;
     auto_ptr<DesignatedControllerConnection> m_controller_connection;
 

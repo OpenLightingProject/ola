@@ -19,14 +19,17 @@
  * A class to simplify some of the E1.33 packet building operations.
  */
 
-#ifndef TOOLS_E133_MESSAGEBUILDER_H_
-#define TOOLS_E133_MESSAGEBUILDER_H_
+#ifndef INCLUDE_OLA_E133_MESSAGEBUILDER_H_
+#define INCLUDE_OLA_E133_MESSAGEBUILDER_H_
 
 #include <ola/acn/CID.h>
 #include <ola/e133/E133Enums.h>
 #include <ola/io/IOStack.h>
 #include <ola/io/MemoryBlockPool.h>
 #include <string>
+
+namespace ola {
+namespace e133 {
 
 using ola::acn::CID;
 using std::string;
@@ -62,4 +65,6 @@ class MessageBuilder {
     const string m_source_name;
     ola::io::MemoryBlockPool m_memory_pool;
 };
-#endif  // TOOLS_E133_MESSAGEBUILDER_H_
+}  // e133
+}  // ola
+#endif  // INCLUDE_OLA_E133_MESSAGEBUILDER_H_

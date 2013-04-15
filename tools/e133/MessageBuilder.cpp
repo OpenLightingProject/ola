@@ -19,19 +19,21 @@
  * A class to simplify some of the E1.33 packet building operations.
  */
 
-#include <ola/acn/CID.h>
-#include <ola/io/IOStack.h>
 #include <string>
+#include "ola/acn/CID.h"
+#include "ola/e133/MessageBuilder.h"
+#include "ola/io/IOStack.h"
 
-#include "tools/e133/MessageBuilder.h"
 #include "plugins/e131/e131/RootPDU.h"
 #include "plugins/e131/e131/E133PDU.h"
 #include "plugins/e131/e131/E133StatusPDU.h"
 #include "plugins/e131/e131/PreamblePacker.h"
 #include "plugins/e131/e131/ACNVectors.h"
 
+namespace ola {
+namespace e133 {
+
 using ola::acn::CID;
-using ola::e133::E133StatusCode;
 using ola::io::IOStack;
 using ola::plugin::e131::E133PDU;
 using ola::plugin::e131::PreamblePacker;
@@ -115,3 +117,5 @@ void MessageBuilder::BuildUDPRootE133(IOStack *packet,
   RootPDU::PrependPDU(packet, ola::plugin::e131::VECTOR_ROOT_E133, m_cid);
   PreamblePacker::AddUDPPreamble(packet);
 }
+}  // e133
+}  // ola

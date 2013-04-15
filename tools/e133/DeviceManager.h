@@ -28,6 +28,7 @@
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>
 #include <ola/Clock.h>
+#include <ola/e133/MessageBuilder.h>
 #include <ola/io/SelectServerInterface.h>
 #include <ola/network/AdvancedTCPConnector.h>
 #include <ola/network/IPV4Address.h>
@@ -44,7 +45,6 @@
 #include "plugins/e131/e131/E133Inflator.h"
 #include "plugins/e131/e131/RootInflator.h"
 #include "plugins/e131/e131/TCPTransport.h"
-#include "tools/e133/MessageBuilder.h"
 
 using ola::TimeInterval;
 using ola::network::TCPSocket;
@@ -77,7 +77,7 @@ class DeviceManager {
     typedef ola::Callback1<void, const IPV4Address&> ReleaseDeviceCallback;
 
     DeviceManager(ola::io::SelectServerInterface *ss,
-                  MessageBuilder *message_builder);
+                  ola::e133::MessageBuilder *message_builder);
     ~DeviceManager();
 
     // Ownership of the callbacks is transferred.
@@ -106,7 +106,7 @@ class DeviceManager {
     ola::network::AdvancedTCPConnector m_connector;
     ola::LinearBackoffPolicy m_backoff_policy;
 
-    MessageBuilder *m_message_builder;
+    ola::e133::MessageBuilder *m_message_builder;
 
     // inflators
     ola::plugin::e131::RootInflator m_root_inflator;

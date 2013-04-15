@@ -103,7 +103,7 @@ const TimeInterval DeviceManager::MAX_TCP_RETRY_DELAY(30, 0);
  * @param cid the CID of this controller.
  */
 DeviceManager::DeviceManager(ola::io::SelectServerInterface *ss,
-                             MessageBuilder *message_builder)
+                             ola::e133::MessageBuilder *message_builder)
     : m_ss(ss),
       m_tcp_socket_factory(NewCallback(this, &DeviceManager::OnTCPConnect)),
       m_connector(m_ss, &m_tcp_socket_factory, TCP_CONNECT_TIMEOUT),

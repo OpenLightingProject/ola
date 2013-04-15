@@ -37,6 +37,7 @@
 #include <ola/Logging.h>
 #include <ola/acn/CID.h>
 #include <ola/e133/E133URLParser.h>
+#include <ola/e133/MessageBuilder.h>
 #include <ola/e133/OLASLPThread.h>
 #ifdef HAVE_LIBSLP
 #include <ola/e133/OpenSLPThread.h>
@@ -73,7 +74,6 @@
 #include "plugins/e131/e131/RootInflator.h"
 #include "plugins/e131/e131/UDPTransport.h"
 
-#include "tools/e133/MessageBuilder.h"
 
 using ola::NewCallback;
 using ola::io::IOStack;
@@ -310,7 +310,7 @@ class SimpleE133Controller {
     const IPV4Address m_controller_ip;
     ola::io::SelectServer m_ss;
 
-    MessageBuilder m_message_builder;
+    ola::e133::MessageBuilder m_message_builder;
 
     // inflators
     ola::plugin::e131::RootInflator m_root_inflator;

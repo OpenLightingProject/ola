@@ -34,6 +34,7 @@
 #include <ola/acn/CID.h>
 #include <ola/base/Flags.h>
 #include <ola/e133/E133URLParser.h>
+#include <ola/e133/MessageBuilder.h>
 #include <ola/e133/OLASLPThread.h>
 #ifdef HAVE_LIBSLP
 #include <ola/e133/OpenSLPThread.h>
@@ -54,7 +55,6 @@
 #include <vector>
 
 #include "tools/e133/DeviceManager.h"
-#include "tools/e133/MessageBuilder.h"
 
 using ola::NewCallback;
 using ola::network::IPV4Address;
@@ -103,7 +103,7 @@ class SimpleE133Monitor {
     ola::io::StdinHandler m_stdin_handler;
     auto_ptr<ola::e133::BaseSLPThread> m_slp_thread;
 
-    MessageBuilder m_message_builder;
+    ola::e133::MessageBuilder m_message_builder;
     DeviceManager m_device_manager;
 
     void Input(char c);
