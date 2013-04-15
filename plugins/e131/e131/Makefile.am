@@ -1,6 +1,6 @@
 include $(top_srcdir)/common.mk
 
-EXTRA_DIST = ACNPort.h ACNVectors.h BaseInflator.h CID.h \
+EXTRA_DIST = ACNPort.h ACNVectors.h BaseInflator.h CID.h CIDImpl.h \
              DMPE131Inflator.h DMPAddress.h DMPHeader.h \
              DMPInflator.h DMPPDU.h \
              E131Header.h E131Includes.h E131Inflator.h E131Sender.h \
@@ -14,7 +14,7 @@ EXTRA_DIST = ACNPort.h ACNVectors.h BaseInflator.h CID.h \
 COMMON_CXXFLAGS += -Wconversion
 
 noinst_LTLIBRARIES = libolae131core.la
-libolae131core_la_SOURCES = BaseInflator.cpp CID.cpp \
+libolae131core_la_SOURCES = BaseInflator.cpp CID.cpp CIDImpl.cpp \
                             DMPAddress.cpp DMPE131Inflator.cpp \
                             DMPInflator.cpp \
                             DMPPDU.cpp \

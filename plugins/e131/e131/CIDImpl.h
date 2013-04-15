@@ -13,52 +13,71 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * CID.h
- * The CID class, this just wraps a CIDImpl so we don't need to include all the
- *   UID headers.
+ * CIDImpl.h
+ * The actual implementation of a CID. The implementation changes based on
+ *   which uuid library is installed.
  * Copyright (C) 2007 Simon Newton
  */
 
-#ifndef PLUGINS_E131_E131_CID_H_
-#define PLUGINS_E131_E131_CID_H_
+#ifndef PLUGINS_E131_E131_CIDIMPL_H_
+#define PLUGINS_E131_E131_CIDIMPL_H_
+
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
 
 #include <stdint.h>
-#include <ola/io/OutputBuffer.h>
 
+#ifdef HAVE_OSSP_UUID_H
+#include <ossp/uuid.h>
+#else
+#ifdef HAVE_UUID_UUID_H
+#include <uuid/uuid.h>
+#else
+#include <uuid.h>
+#endif
+#endif
+
+#include <iostream>
 #include <string>
+
+#include "ola/io/OutputBuffer.h"
 
 namespace ola {
 namespace plugin {
 namespace e131 {
 
-class CID {
+class CIDImpl {
   public :
-    enum { CID_LENGTH = 16 };
+    enum { CIDImpl_LENGTH = 16 };
 
-    CID();
-    CID(const CID& other);
-    ~CID();
+    CIDImpl();
+    CIDImpl(const CIDImpl& other);
+    ~CIDImpl();
 
     bool IsNil() const;
     void Pack(uint8_t *buf) const;
     std::string ToString() const;
     void Write(ola::io::OutputBufferInterface *output) const;
 
-    CID& operator=(const CID& c1);
-    bool operator==(const CID& c1) const;
-    bool operator!=(const CID& c1) const;
+    CIDImpl& operator=(const CIDImpl& c1);
+    bool operator==(const CIDImpl& c1) const;
+    bool operator!=(const CIDImpl& c1) const;
 
-    static CID Generate();
-    static CID FromData(const uint8_t *data);
-    static CID FromString(const std::string &cid);
+    static CIDImpl* Generate();
+    static CIDImpl* FromData(const uint8_t *data);
+    static CIDImpl* FromString(const std::string &cid);
 
   private:
-    class CIDImpl *m_impl;
-
-    // Takes ownership;
-    explicit CID(class CIDImpl *impl);
+#ifdef USE_OSSP_UUID
+    uuid_t *m_uuid;
+    explicit CIDImpl(uuid_t *uuid);
+#else
+    uuid_t m_uuid;
+    explicit CIDImpl(uuid_t uuid);
+#endif
 };
 }  // e131
 }  // plugin
 }  // ola
-#endif  // PLUGINS_E131_E131_CID_H_
+#endif  // PLUGINS_E131_E131_CIDIMPL_H_
