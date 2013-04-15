@@ -101,6 +101,7 @@ endif
 COMMON_TEST_LDADD = $(CPPUNIT_LIBS) \
                     $(top_builddir)/common/libolacommon.la \
                     $(top_builddir)/common/testing/libolatesting.la \
+                    ./libolaslpcore.la \
                     ./libolaslpserver.la
 
 check_PROGRAMS = $(TESTS)
