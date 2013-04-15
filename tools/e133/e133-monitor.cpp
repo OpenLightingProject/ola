@@ -58,6 +58,7 @@
 
 using ola::NewCallback;
 using ola::network::IPV4Address;
+using ola::network::IPV4SocketAddress;
 using ola::rdm::PidStoreHelper;
 using ola::rdm::RDMCommand;
 using ola::rdm::UID;
@@ -104,14 +105,14 @@ class SimpleE133Monitor {
     auto_ptr<ola::e133::BaseSLPThread> m_slp_thread;
 
     ola::e133::MessageBuilder m_message_builder;
-    DeviceManager m_device_manager;
+    ola::e133::DeviceManager m_device_manager;
 
     void Input(char c);
     void DiscoveryCallback(bool status, const URLEntries &urls);
 
     bool EndpointRequest(
-        const ola::plugin::e131::TransportHeader &transport_header,
-        const ola::plugin::e131::E133Header &e133_header,
+        const IPV4SocketAddress &source,
+        uint16_t endpoint,
         const string &raw_request);
 };
 
@@ -215,14 +216,14 @@ void SimpleE133Monitor::DiscoveryCallback(bool ok, const URLEntries &urls) {
  * We received data to endpoint 0
  */
 bool SimpleE133Monitor::EndpointRequest(
-    const ola::plugin::e131::TransportHeader &transport_header,
-    const ola::plugin::e131::E133Header&,
+    const IPV4SocketAddress &source,
+    uint16_t endpoint,
     const string &raw_request) {
   unsigned int slot_count = raw_request.size();
   const uint8_t *rdm_data = reinterpret_cast<const uint8_t*>(
     raw_request.data());
 
-  cout << "From " << transport_header.Source() << ":" << endl;
+  cout << "From " << source << ":" << endpoint << endl;
   auto_ptr<RDMCommand> command(
       RDMCommand::Inflate(reinterpret_cast<const uint8_t*>(raw_request.data()),
                           raw_request.size()));

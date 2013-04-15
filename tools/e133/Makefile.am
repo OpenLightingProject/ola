@@ -1,6 +1,7 @@
 include $(top_srcdir)/common.mk
 
 EXTRA_DIST = DeviceManager.h \
+             DeviceManagerImpl.h \
              DesignatedControllerConnection.h \
              E133Device.h \
              E133Endpoint.h \
@@ -64,6 +65,7 @@ e133_receiver_LDADD = ./libolae133slp.la \
 
 e133_monitor_SOURCES = e133-monitor.cpp \
                        DeviceManager.cpp \
+                       DeviceManagerImpl.cpp \
                        E133HealthCheckedConnection.cpp
 e133_monitor_CXXFLAGS = @OLAD_DEFINES@ $(COMMON_CXXFLAGS)
 e133_monitor_LDADD = ./libolae133slp.la \
