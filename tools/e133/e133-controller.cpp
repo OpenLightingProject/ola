@@ -35,6 +35,7 @@
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>
 #include <ola/Logging.h>
+#include <ola/acn/CID.h>
 #include <ola/e133/E133URLParser.h>
 #include <ola/e133/OLASLPThread.h>
 #ifdef HAVE_LIBSLP
@@ -64,7 +65,6 @@
 
 #include "plugins/e131/e131/ACNPort.h"
 #include "plugins/e131/e131/ACNVectors.h"
-#include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/E133Inflator.h"
 #include "plugins/e131/e131/E133StatusHelper.h"
 #include "plugins/e131/e131/E133StatusInflator.h"
@@ -358,7 +358,7 @@ SimpleE133Controller::SimpleE133Controller(
     const Options &options,
     PidStoreHelper *pid_helper)
     : m_controller_ip(options.controller_ip),
-      m_message_builder(ola::plugin::e131::CID::Generate(), "E1.33 Controller"),
+      m_message_builder(ola::acn::CID::Generate(), "E1.33 Controller"),
       m_incoming_udp_transport(&m_udp_socket, &m_root_inflator),
       m_src_uid(OPEN_LIGHTING_ESTA_CODE, 0xabcdabcd),
       m_pid_helper(pid_helper),

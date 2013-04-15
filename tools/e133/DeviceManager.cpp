@@ -20,6 +20,7 @@
 #include <ola/Callback.h>
 #include <ola/Clock.h>
 #include <ola/Logging.h>
+#include <ola/acn/CID.h>
 #include <ola/io/SelectServer.h>
 #include <ola/network/AdvancedTCPConnector.h>
 #include <ola/network/IPV4Address.h>
@@ -32,7 +33,6 @@
 #include <vector>
 
 #include "plugins/e131/e131/ACNPort.h"
-#include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/E133Enums.h"
 #include "plugins/e131/e131/E133Inflator.h"
 #include "plugins/e131/e131/E133StatusPDU.h"
@@ -48,11 +48,11 @@ using ola::NewSingleCallback;
 using ola::STLContains;
 using ola::STLFindOrNull;
 using ola::TimeInterval;
-using ola::network::TCPSocket;
+using ola::acn::CID;
 using ola::network::GenericSocketAddress;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
-using ola::plugin::e131::CID;
+using ola::network::TCPSocket;
 using ola::plugin::e131::IncomingTCPTransport;
 
 using std::auto_ptr;

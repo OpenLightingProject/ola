@@ -26,10 +26,10 @@
 #include <string>
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
+#include "ola/acn/CID.h"
 #include "ola/network/Interface.h"
 #include "ola/network/Socket.h"
 #include "plugins/e131/e131/ACNPort.h"
-#include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/E131Sender.h"
 #include "plugins/e131/e131/E131Inflator.h"
 #include "plugins/e131/e131/RootInflator.h"
@@ -40,6 +40,8 @@
 namespace ola {
 namespace plugin {
 namespace e131 {
+
+using ola::acn::CID;
 
 class E131Node {
   public:

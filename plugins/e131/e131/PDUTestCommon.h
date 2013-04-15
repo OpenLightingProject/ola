@@ -22,16 +22,17 @@
 #define PLUGINS_E131_E131_PDUTESTCOMMON_H_
 
 #include "ola/Callback.h"
+#include "ola/acn/CID.h"
 #include "ola/io/OutputStream.h"
 #include "ola/io/IOStack.h"
 #include "plugins/e131/e131/BaseInflator.h"
-#include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/PDU.h"
 
 namespace ola {
 namespace plugin {
 namespace e131 {
 
+using ola::acn::CID;
 
 /*
  * This isn't a PDU at all, it just packs a uint32 for testing.

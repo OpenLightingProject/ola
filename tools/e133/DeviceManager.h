@@ -40,7 +40,6 @@
 
 #include HASH_MAP_H
 
-#include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/RDMInflator.h"
 #include "plugins/e131/e131/E133Inflator.h"
 #include "plugins/e131/e131/RootInflator.h"

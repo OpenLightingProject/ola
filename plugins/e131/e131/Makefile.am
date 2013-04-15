@@ -14,7 +14,22 @@ EXTRA_DIST = ACNPort.h ACNVectors.h BaseInflator.h CID.h CIDImpl.h \
 COMMON_CXXFLAGS += -Wconversion
 
 noinst_LTLIBRARIES = libolae131core.la
-libolae131core_la_SOURCES = BaseInflator.cpp CID.cpp CIDImpl.cpp \
+
+if INSTALL_ACN
+  lib_LTLIBRARIES = libolaacn.la
+else
+  noinst_LTLIBRARIES += libolaacn.la
+endif
+
+# libolaacn.la
+libolaacn_la_SOURCES = CID.cpp \
+                       CIDImpl.cpp
+libolaacn_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(uuid_CFLAGS)
+libolaacn_la_LIBADD = $(uuid_LIBS) \
+                      ../../../common/libolacommon.la
+
+# libolae131core.la
+libolae131core_la_SOURCES = BaseInflator.cpp \
                             DMPAddress.cpp DMPE131Inflator.cpp \
                             DMPInflator.cpp \
                             DMPPDU.cpp \
@@ -33,7 +48,8 @@ libolae131core_la_SOURCES = BaseInflator.cpp CID.cpp CIDImpl.cpp \
                             UDPTransport.cpp
 libolae131core_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(uuid_CFLAGS)
 libolae131core_la_LIBADD = $(uuid_LIBS) \
-                           ../../../common/libolacommon.la
+                           ../../../common/libolacommon.la \
+                           ./libolaacn.la
 
 # E1.31 dev programs
 noinst_PROGRAMS = e131_transmit_test e131_loadtest

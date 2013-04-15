@@ -23,20 +23,20 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include "ola/Logging.h"
+#include "ola/acn/CID.h"
 #include "ola/io/IOQueue.h"
 #include "ola/io/OutputStream.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/testing/TestUtils.h"
-#include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
 #include "plugins/e131/e131/RootPDU.h"
-#include "ola/testing/TestUtils.h"
 
 
 namespace ola {
 namespace plugin {
 namespace e131 {
 
+using ola::acn::CID;
 using ola::io::IOQueue;
 using ola::io::OutputStream;
 using ola::network::NetworkToHost;

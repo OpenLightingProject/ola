@@ -19,17 +19,15 @@
  * Copyright (C) 2007 Simon Newton
  */
 
-#ifndef PLUGINS_E131_E131_CID_H_
-#define PLUGINS_E131_E131_CID_H_
+#ifndef INCLUDE_OLA_ACN_CID_H_
+#define INCLUDE_OLA_ACN_CID_H_
 
 #include <stdint.h>
 #include <ola/io/OutputBuffer.h>
-
 #include <string>
 
 namespace ola {
-namespace plugin {
-namespace e131 {
+namespace acn {
 
 class CID {
   public :
@@ -58,7 +56,6 @@ class CID {
     // Takes ownership;
     explicit CID(class CIDImpl *impl);
 };
-}  // e131
-}  // plugin
+}  // acn
 }  // ola
-#endif  // PLUGINS_E131_E131_CID_H_
+#endif  // INCLUDE_OLA_ACN_CID_H_

@@ -44,8 +44,7 @@
 #include "ola/io/OutputBuffer.h"
 
 namespace ola {
-namespace plugin {
-namespace e131 {
+namespace acn {
 
 class CIDImpl {
   public :
@@ -77,7 +76,6 @@ class CIDImpl {
     explicit CIDImpl(uuid_t uuid);
 #endif
 };
-}  // e131
-}  // plugin
+}  // acn
 }  // ola
 #endif  // PLUGINS_E131_E131_CIDIMPL_H_

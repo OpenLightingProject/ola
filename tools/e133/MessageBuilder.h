@@ -22,14 +22,14 @@
 #ifndef TOOLS_E133_MESSAGEBUILDER_H_
 #define TOOLS_E133_MESSAGEBUILDER_H_
 
+#include <ola/acn/CID.h>
 #include <ola/io/IOStack.h>
 #include <ola/io/MemoryBlockPool.h>
 #include <string>
 
-#include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/E133Enums.h"
 
-using ola::plugin::e131::CID;
+using ola::acn::CID;
 using std::string;
 
 /**

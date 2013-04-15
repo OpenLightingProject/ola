@@ -21,6 +21,7 @@
 
 #include <ola/Callback.h>
 #include <ola/Logging.h>
+#include <ola/acn/CID.h>
 #include <ola/io/SelectServerInterface.h>
 #include <ola/network/HealthCheckedConnection.h>
 #include <ola/network/IPV4Address.h>
@@ -34,7 +35,6 @@
 #include <vector>
 
 #include "plugins/e131/e131/ACNVectors.h"
-#include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/E133Header.h"
 #include "plugins/e131/e131/E133PDU.h"
 #include "plugins/e131/e131/RDMPDU.h"
@@ -64,8 +64,7 @@ E133Device::E133Device(ola::io::SelectServerInterface *ss,
                        EndpointManager *endpoint_manager)
     : m_ss(ss),
       m_ip_address(ip_address),
-      m_message_builder(ola::plugin::e131::CID::Generate(),
-                        "OLA Device"),
+      m_message_builder(ola::acn::CID::Generate(), "OLA Device"),
       m_endpoint_manager(endpoint_manager),
       m_register_endpoint_callback(NULL),
       m_unregister_endpoint_callback(NULL),

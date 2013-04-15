@@ -27,20 +27,20 @@
 #include <unistd.h>
 #include <string>
 #include <vector>
+#include "ola/acn/CID.h"
 #include "ola/BaseTypes.h"
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
 #include "ola/io/SelectServer.h"
 #include "ola/network/Socket.h"
-#include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/E131Node.h"
 #include "plugins/e131/e131/E131TestFramework.h"
 
 
 using ola::DmxBuffer;
+using ola::acn::CID;
 using ola::io::SelectServer;
-using ola::plugin::e131::CID;
 using ola::plugin::e131::E131Node;
 using std::cout;
 using std::endl;
@@ -117,8 +117,7 @@ StateManager::~StateManager() {
 
 
 bool StateManager::Tick() {
-  if (m_ticker > (TIME_PER_STATE_MS / TICK_INTERVAL_MS) &&
-      ! m_interactive) {
+  if (m_ticker > (TIME_PER_STATE_MS / TICK_INTERVAL_MS) && !m_interactive) {
     NextState();
     if (m_count == m_states.size())
       return false;

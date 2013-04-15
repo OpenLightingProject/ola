@@ -19,19 +19,19 @@
  * A class to simplify some of the E1.33 packet building operations.
  */
 
+#include <ola/acn/CID.h>
 #include <ola/io/IOStack.h>
 #include <string>
 
 #include "tools/e133/MessageBuilder.h"
-#include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/RootPDU.h"
 #include "plugins/e131/e131/E133PDU.h"
 #include "plugins/e131/e131/E133StatusPDU.h"
 #include "plugins/e131/e131/PreamblePacker.h"
 #include "plugins/e131/e131/ACNVectors.h"
 
+using ola::acn::CID;
 using ola::io::IOStack;
-using ola::plugin::e131::CID;
 using ola::plugin::e131::E133PDU;
 using ola::plugin::e131::E133StatusCode;
 using ola::plugin::e131::PreamblePacker;

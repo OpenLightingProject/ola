@@ -48,7 +48,7 @@ const char E131Device::DEVICE_NAME[] = "E1.31 (DMX over ACN)";
  * Create a new device
  */
 E131Device::E131Device(Plugin *owner,
-                       const ola::plugin::e131::CID &cid,
+                       const ola::acn::CID &cid,
                        std::string ip_addr,
                        PluginAdaptor *plugin_adaptor,
                        const E131DeviceOptions &options)

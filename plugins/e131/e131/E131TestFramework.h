@@ -29,11 +29,12 @@
 #include <vector>
 #include "ola/BaseTypes.h"
 #include "ola/DmxBuffer.h"
+#include "ola/acn/CID.h"
 #include "ola/io/Descriptor.h"
 #include "ola/io/SelectServer.h"
-#include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/E131Node.h"
 
+using ola::acn::CID;
 using ola::DmxBuffer;
 using ola::io::SelectServer;
 using ola::plugin::e131::CID;

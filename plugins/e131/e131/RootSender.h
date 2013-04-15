@@ -21,7 +21,7 @@
 #ifndef PLUGINS_E131_E131_ROOTSENDER_H_
 #define PLUGINS_E131_E131_ROOTSENDER_H_
 
-#include "plugins/e131/e131/CID.h"
+#include "ola/acn/CID.h"
 #include "plugins/e131/e131/PDU.h"
 #include "plugins/e131/e131/RootPDU.h"
 #include "plugins/e131/e131/Transport.h"
@@ -29,6 +29,8 @@
 namespace ola {
 namespace plugin {
 namespace e131 {
+
+using ola::acn::CID;
 
 class RootSender {
   public:

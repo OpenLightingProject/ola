@@ -18,13 +18,12 @@
  * Copyright (C) 2007 Simon Newton
  */
 
+#include <ola/acn/CID.h>
 #include <string>
-#include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/CIDImpl.h"
 
 namespace ola {
-namespace plugin {
-namespace e131 {
+namespace acn {
 
 CID::CID() : m_impl(new CIDImpl()) {}
 
@@ -82,6 +81,5 @@ CID CID::FromData(const uint8_t *data) {
 CID CID::FromString(const std::string &cid) {
   return CID(CIDImpl::FromString(cid));
 }
-}  // e131
-}  // plugin
+}  // acn
 }  // ola

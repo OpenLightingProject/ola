@@ -31,6 +31,7 @@
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
+#include <ola/acn/CID.h>
 #include <ola/base/Flags.h>
 #include <ola/e133/E133URLParser.h>
 #include <ola/e133/OLASLPThread.h>
@@ -51,8 +52,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-
-#include "plugins/e131/e131/CID.h"
 
 #include "tools/e133/DeviceManager.h"
 #include "tools/e133/MessageBuilder.h"
@@ -126,7 +125,7 @@ SimpleE133Monitor::SimpleE133Monitor(
     : m_command_printer(&cout, pid_helper),
       m_stdin_handler(&m_ss,
                       ola::NewCallback(this, &SimpleE133Monitor::Input)),
-      m_message_builder(ola::plugin::e131::CID::Generate(), "OLA Monitor"),
+      m_message_builder(ola::acn::CID::Generate(), "OLA Monitor"),
       m_device_manager(&m_ss, &m_message_builder) {
   if (slp_option == OLA_SLP) {
     m_slp_thread.reset(new ola::e133::OLASLPThread(&m_ss));

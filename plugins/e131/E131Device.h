@@ -22,9 +22,9 @@
 #define PLUGINS_E131_E131DEVICE_H_
 
 #include <string>
+#include "ola/acn/CID.h"
 #include "olad/Device.h"
 #include "olad/Plugin.h"
-#include "plugins/e131/e131/CID.h"
 #include "plugins/e131/messages/E131ConfigMessages.pb.h"
 
 namespace ola {
@@ -56,7 +56,7 @@ class E131Device: public ola::Device {
     };
 
     E131Device(Plugin *owner,
-               const ola::plugin::e131::CID &cid,
+               const ola::acn::CID &cid,
                std::string ip_addr,
                class PluginAdaptor *plugin_adaptor,
                const E131DeviceOptions &options);
@@ -81,7 +81,7 @@ class E131Device: public ola::Device {
     uint8_t m_dscp;
     const unsigned int m_input_port_count, m_output_port_count;
     std::string m_ip_addr;
-    ola::plugin::e131::CID m_cid;
+    ola::acn::CID m_cid;
 
     void HandlePreviewMode(Request *request, string *response);
     void HandlePortStatusRequest(string *response);

@@ -25,8 +25,7 @@
 #include "plugins/e131/e131/CIDImpl.h"
 
 namespace ola {
-namespace plugin {
-namespace e131 {
+namespace acn {
 
 #ifdef USE_OSSP_UUID
 CIDImpl::CIDImpl()
@@ -233,6 +232,5 @@ CIDImpl* CIDImpl::FromString(const std::string &cid) {
   return new CIDImpl(uuid);
 }
 #endif  // end the e2fs progs uuid implementation
-}  // e131
-}  // plugin
+}  // acn
 }  // ola
