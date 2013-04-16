@@ -16,7 +16,7 @@ EXTRA_DIST = DeviceManagerImpl.h \
 pkgconfigdir = $(libdir)/pkgconfig
 
 if INSTALL_E133
-pkgconfig_DATA = libolae133slp.pc libolae133controller.pc
+pkgconfig_DATA = libolae133slp.pc libolae133common.pc libolae133controller.pc
 endif
 
 # Libraries
