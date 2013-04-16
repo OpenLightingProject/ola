@@ -69,7 +69,7 @@ class DeviceManagerImpl {
      * The callback used to receive RDMNet layer messages from the devices.
      * @returns true if the data should be acknowledged, false otherwise.
      */
-    typedef ola::Callback3<bool, const IPV4SocketAddress&, uint16_t,
+    typedef ola::Callback3<bool, const IPV4Address&, uint16_t,
                            const string&> RDMMesssageCallback;
 
     // Run when we acquire designated controller status for a device.
