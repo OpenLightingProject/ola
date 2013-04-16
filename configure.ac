@@ -646,6 +646,7 @@ AC_OUTPUT( Makefile \
     plugins/dummy/Makefile \
     plugins/e131/Makefile \
     plugins/e131/e131/Makefile \
+    plugins/e131/e131/libolaacn.pc \
     plugins/e131/messages/Makefile \
     plugins/e131/messages/libolae131conf.pc \
     plugins/espnet/Makefile \

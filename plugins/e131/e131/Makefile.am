@@ -13,6 +13,12 @@ EXTRA_DIST = ACNPort.h ACNVectors.h BaseInflator.h CID.h CIDImpl.h \
 
 COMMON_CXXFLAGS += -Wconversion
 
+pkgconfigdir = $(libdir)/pkgconfig
+
+if INSTALL_E133
+pkgconfig_DATA = libolaacn.pc
+endif
+
 noinst_LTLIBRARIES = libolae131core.la
 
 if INSTALL_ACN
