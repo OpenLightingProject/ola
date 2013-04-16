@@ -17,14 +17,14 @@
  * Copyright (C) 2013 Simon Newton
  */
 
-#include <ola/io/SelectServer.h>
-#include <ola/network/IPV4Address.h>
+#include "ola/e133/DeviceManager.h"
+#include "ola/io/SelectServer.h"
+#include "ola/network/IPV4Address.h"
 
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "tools/e133/DeviceManager.h"
 #include "tools/e133/DeviceManagerImpl.h"
 
 namespace ola {

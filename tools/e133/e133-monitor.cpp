@@ -33,6 +33,7 @@
 #include <ola/StringUtils.h>
 #include <ola/acn/CID.h>
 #include <ola/base/Flags.h>
+#include <ola/e133/DeviceManager.h>
 #include <ola/e133/E133URLParser.h>
 #include <ola/e133/MessageBuilder.h>
 #include <ola/e133/OLASLPThread.h>
@@ -54,7 +55,6 @@
 #include <string>
 #include <vector>
 
-#include "tools/e133/DeviceManager.h"
 
 using ola::NewCallback;
 using ola::network::IPV4Address;

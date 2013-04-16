@@ -667,6 +667,7 @@ AC_OUTPUT( Makefile \
     tools/Makefile \
     tools/ola_trigger/Makefile \
     tools/e133/Makefile \
+    tools/e133/libolae133controller.pc \
     tools/e133/libolae133slp.pc \
     tools/rdm/Makefile \
     tools/rdmpro/Makefile \

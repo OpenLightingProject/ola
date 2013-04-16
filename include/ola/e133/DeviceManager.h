@@ -18,8 +18,8 @@
  * The DeviceManager attempts to maintain a TCP connection to each E1.33 device.
  */
 
-#ifndef TOOLS_E133_DEVICEMANAGER_H_
-#define TOOLS_E133_DEVICEMANAGER_H_
+#ifndef INCLUDE_OLA_E133_DEVICEMANAGER_H_
+#define INCLUDE_OLA_E133_DEVICEMANAGER_H_
 
 #include <ola/Callback.h>
 #include <ola/e133/MessageBuilder.h>
@@ -79,4 +79,4 @@ class DeviceManager {
 };
 }  // e133
 }  // ola
-#endif  // TOOLS_E133_DEVICEMANAGER_H_
+#endif  // INCLUDE_OLA_E133_DEVICEMANAGER_H_
