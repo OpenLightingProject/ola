@@ -129,10 +129,11 @@ void ListPorts(const vector<PortClass> &ports, bool input) {
 
 /*
  * This is called when we recieve universe results from the client
- * @param list_ids_only show ids only?
+ * @param list_ids_only show ids only
  * @param universes a vector of OlaUniverses
  */
-void DisplayUniverses(SelectServer *ss, bool list_ids_only,
+void DisplayUniverses(SelectServer *ss,
+                      bool list_ids_only,
                       const vector <OlaUniverse> &universes,
                       const string &error) {
   vector<OlaUniverse>::const_iterator iter;
@@ -143,35 +144,36 @@ void DisplayUniverses(SelectServer *ss, bool list_ids_only,
     return;
   }
 
-  if (!list_ids_only) {
+  if (list_ids_only) {
+    for (iter = universes.begin(); iter != universes.end(); ++iter) {
+      cout << iter->Id() << endl;
+    }
+  } else {
     cout << setw(5) << "Id" << "\t" << setw(30) << "Name" << "\t\tMerge Mode"
       << endl;
     cout << "----------------------------------------------------------" <<
       endl;
-  }
 
-  for (iter = universes.begin(); iter != universes.end(); ++iter) {
-    if (!list_ids_only) {
+    for (iter = universes.begin(); iter != universes.end(); ++iter) {
       cout << setw(5) << iter->Id() << "\t" << setw(30) << iter->Name() <<
         "\t\t" << (iter->MergeMode() == OlaUniverse::MERGE_HTP ? "HTP" :
         "LTP") << endl;
-    } else {
-      cout << iter->Id() << endl;
     }
-  }
-  if (!list_ids_only) {
+
     cout << "----------------------------------------------------------" <<
       endl;
   }
+
   ss->Terminate();
 }
 
 
 /*
- * @param list_ids_only show ids only?
+ * @param list_ids_only show ids only
  * @params plugins a vector of OlaPlugins
  */
-void DisplayPlugins(SelectServer *ss, bool list_ids_only,
+void DisplayPlugins(SelectServer *ss,
+                    bool list_ids_only,
                     const vector <OlaPlugin> &plugins,
                     const string &error) {
   vector<OlaPlugin>::const_iterator iter;
@@ -182,20 +184,18 @@ void DisplayPlugins(SelectServer *ss, bool list_ids_only,
     return;
   }
 
-  if (!list_ids_only) {
-    cout << setw(5) << "Id" << "\tPlugin Name" << endl;
-    cout << "--------------------------------------" << endl;
-  }
-
-  for (iter = plugins.begin(); iter != plugins.end(); ++iter) {
-    if (!list_ids_only) {
-      cout << setw(5) << iter->Id() << "\t" << iter->Name() << endl;
-    } else {
+  if (list_ids_only) {
+    for (iter = plugins.begin(); iter != plugins.end(); ++iter) {
       cout << iter->Id() << endl;
     }
-  }
+  } else {
+    cout << setw(5) << "Id" << "\tPlugin Name" << endl;
+    cout << "--------------------------------------" << endl;
 
-  if (!list_ids_only) {
+    for (iter = plugins.begin(); iter != plugins.end(); ++iter) {
+      cout << setw(5) << iter->Id() << "\t" << iter->Name() << endl;
+    }
+
     cout << "--------------------------------------" << endl;
   }
 
@@ -575,7 +575,7 @@ void DisplayPluginInfoHelp(const options &opts) {
   "\n"
   "  -h, --help                  Display this help message and exit.\n"
   "  -p, --plugin-id <plugin_id> Id of the plugin to fetch the description of\n"
-  "  --list-plugin-ids List plugin Ids only.\n"
+  "  --list-plugin-ids           List plugin Ids only.\n"
   << endl;
 }
 
@@ -604,7 +604,7 @@ void DisplayUniverseInfoHelp(const options &opts) {
   "\n"
   "Shows info on the active universes in use.\n"
   "\n"
-  "  -h, --help Display this help message and exit.\n"
+  "  -h, --help          Display this help message and exit.\n"
   "  --list-universe-ids List universe Ids only.\n"
   << endl;
 }
@@ -760,8 +760,8 @@ int FetchPluginInfo(OlaCallbackClientWrapper *wrapper, const options &opts) {
         (ola::ola_plugin_id) opts.plugin_id,
         NewSingleCallback(&DisplayPluginDescription, ss));
   } else {
-    client->FetchPluginList(NewSingleCallback(&DisplayPlugins, ss,
-      opts.list_plugin_ids));
+    client->FetchPluginList(
+        NewSingleCallback(&DisplayPlugins, ss, opts.list_plugin_ids));
   }
   return 0;
 }
