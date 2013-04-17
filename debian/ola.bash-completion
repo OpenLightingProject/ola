@@ -53,12 +53,12 @@ _ola_get_options_for_list_pids()
 
 _ola_list_universes()
 {
-  _have ola_uni_info && COMPREPLY=( $( compgen -W '$( command ola_uni_info 2>/dev/null | sed -r -n "s/^\s+([0-9]+)\s+.+[HL]TP\s*$/\1/p" )' -- $cur  ) )
+  _have ola_uni_info && COMPREPLY=( $( compgen -W '$( command ola_uni_info --list-universe-ids 2>/dev/null )' -- $cur  ) )
 }
 
 _ola_list_plugins()
 {
-  _have ola_plugin_info && COMPREPLY=( $( compgen -W '$( command ola_plugin_info 2>/dev/null | sed -r -n "s/^\s+([0-9]+)\s+.+\s*$/\1/p" )' -- $cur  ) )
+  _have ola_plugin_info && COMPREPLY=( $( compgen -W '$( command ola_plugin_info --list-plugin-ids 2>/dev/null )' -- $cur  ) )
 }
 
 #Commands
