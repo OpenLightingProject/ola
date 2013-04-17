@@ -143,7 +143,8 @@ void DeviceManagerImpl::SetRDMMessageCallback(RDMMesssageCallback *callback) {
  * Set the callback to be run when we become the designated controller for a
  * device.
  */
-void DeviceManagerImpl::SetAcquireDeviceCallback(AcquireDeviceCallback *callback) {
+void DeviceManagerImpl::SetAcquireDeviceCallback(
+    AcquireDeviceCallback *callback) {
   m_acquire_device_cb_.reset(callback);
 }
 
@@ -152,7 +153,8 @@ void DeviceManagerImpl::SetAcquireDeviceCallback(AcquireDeviceCallback *callback
  * Set the callback to be run when we lose the designated controller status for
  * a device.
  */
-void DeviceManagerImpl::SetReleaseDeviceCallback(ReleaseDeviceCallback *callback) {
+void DeviceManagerImpl::SetReleaseDeviceCallback(
+    ReleaseDeviceCallback *callback) {
   m_release_device_cb_.reset(callback);
 }
 
@@ -192,7 +194,8 @@ void DeviceManagerImpl::RemoveDevice(const IPV4Address &ip_address) {
 /**
  * Remove a device if there is no open connection.
  */
-void DeviceManagerImpl::RemoveDeviceIfNotConnected(const IPV4Address &ip_address) {
+void DeviceManagerImpl::RemoveDeviceIfNotConnected(
+    const IPV4Address &ip_address) {
   DeviceMap::iterator iter = m_device_map.find(ip_address.AsInt());
   if (iter == m_device_map.end())
     return;
@@ -245,7 +248,8 @@ void DeviceManagerImpl::OnTCPConnect(TCPSocket *socket_ptr) {
       NewCallback(this, &DeviceManagerImpl::ReceiveTCPData, v4_address.Host(),
                   device_state->in_transport.get()));
   device_state->socket->SetOnClose(
-      NewSingleCallback(this, &DeviceManagerImpl::SocketClosed, v4_address.Host()));
+      NewSingleCallback(this, &DeviceManagerImpl::SocketClosed,
+                        v4_address.Host()));
   m_ss->AddReadDescriptor(socket_ptr);
 
   // TODO(simon): Setup a timeout that closes this connect if we don't receive
@@ -376,8 +380,8 @@ void DeviceManagerImpl::EndpointRequest(
   if (!m_rdm_callback.get())
     return;
 
-  if (!m_rdm_callback->Run(transport_header.Source(), e133_header.Endpoint(),
-                           raw_request)) {
+  if (!m_rdm_callback->Run(transport_header.Source().Host(),
+                           e133_header.Endpoint(), raw_request)) {
     // Don't send an ack
     return;
   }

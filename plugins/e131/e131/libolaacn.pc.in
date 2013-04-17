@@ -3,7 +3,7 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: libolae133slp
+Name: libolaacn
 Version: @VERSION@
 Description: Open Lighting Architecture ACN
 Requires:

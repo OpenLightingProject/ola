@@ -3,9 +3,9 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: libolae133controller
+Name: libolae133common
 Version: @VERSION@
-Description: Open Lighting Architecture E1.33 Controller
+Description: Open Lighting Architecture E1.33
 Requires:
-Libs: -L${libdir} -lolae133controller
+Libs: -L${libdir} -lolae133common
 Cflags: -I${includedir}

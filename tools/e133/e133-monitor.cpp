@@ -111,7 +111,7 @@ class SimpleE133Monitor {
     void DiscoveryCallback(bool status, const URLEntries &urls);
 
     bool EndpointRequest(
-        const IPV4SocketAddress &source,
+        const IPV4Address &source,
         uint16_t endpoint,
         const string &raw_request);
 };
@@ -216,7 +216,7 @@ void SimpleE133Monitor::DiscoveryCallback(bool ok, const URLEntries &urls) {
  * We received data to endpoint 0
  */
 bool SimpleE133Monitor::EndpointRequest(
-    const IPV4SocketAddress &source,
+    const IPV4Address &source,
     uint16_t endpoint,
     const string &raw_request) {
   unsigned int slot_count = raw_request.size();
