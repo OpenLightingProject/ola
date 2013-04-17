@@ -8,6 +8,8 @@ d/m/y ola-0.8.28
  * Standardised all the following long arguments from _ to - in programs and
    completion: --long_name --plugin_id --port_id --preview_mode --list_pids
    --sub_device
+ * Complete plugin and universe ids in completions and add options to
+   ola_uni_info and ola_plugin_info to assist with this
 
 2/3/2013 ola-0.8.27
  * Changed the arguments to dmxmonitor - #219
