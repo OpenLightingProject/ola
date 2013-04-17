@@ -42,7 +42,7 @@ class OutgoingUDPTransport: public OutgoingTransport {
   public:
     OutgoingUDPTransport(class OutgoingUDPTransportImpl *impl,
                          const IPV4Address &destination,
-                         uint16_t port = ACN_PORT)
+                         uint16_t port = ola::acn::ACN_PORT)
         : m_impl(impl),
           m_destination(destination),
           m_port(port) {

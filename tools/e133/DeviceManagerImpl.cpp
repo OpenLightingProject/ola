@@ -170,10 +170,10 @@ void DeviceManagerImpl::AddDevice(const IPV4Address &ip_address) {
   DeviceState *device_state = new DeviceState();
   m_device_map[ip_address.AsInt()] = device_state;
 
-  OLA_INFO << "Adding " << ip_address << ":" << ola::plugin::e131::E133_PORT;
+  OLA_INFO << "Adding " << ip_address << ":" << ola::acn::E133_PORT;
   // start the non-blocking connect
   m_connector.AddEndpoint(
-      IPV4SocketAddress(ip_address, ola::plugin::e131::E133_PORT),
+      IPV4SocketAddress(ip_address, ola::acn::E133_PORT),
       &m_backoff_policy);
 }
 
@@ -300,11 +300,11 @@ void DeviceManagerImpl::SocketClosed(IPV4Address ip_address) {
       m_release_device_cb_->Run(ip_address);
 
     m_connector.Disconnect(
-        IPV4SocketAddress(ip_address, ola::plugin::e131::E133_PORT));
+        IPV4SocketAddress(ip_address, ola::acn::E133_PORT));
   } else {
     // we lost the race, so don't try to reconnect
     m_connector.Disconnect(
-        IPV4SocketAddress(ip_address, ola::plugin::e131::E133_PORT), true);
+        IPV4SocketAddress(ip_address, ola::acn::E133_PORT), true);
   }
 
   device_state->health_checked_connection.reset();

@@ -147,7 +147,7 @@ bool E133Device::Init() {
   }
 
   if (!m_udp_socket.Bind(IPV4SocketAddress(IPV4Address::WildCard(),
-                                           ola::plugin::e131::E133_PORT))) {
+                                           ola::acn::E133_PORT))) {
     m_controller_connection.reset();
     return false;
   }

@@ -50,7 +50,7 @@ class E131Node {
              bool use_rev2 = false,
              bool ignore_preview = true,
              uint8_t dscp_value = 0,  // default off
-             uint16_t port = ACN_PORT);
+             uint16_t port = ola::acn::ACN_PORT);
     ~E131Node();
 
     bool Start();

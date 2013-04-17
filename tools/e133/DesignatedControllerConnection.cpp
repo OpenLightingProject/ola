@@ -133,7 +133,7 @@ DesignatedControllerConnection::~DesignatedControllerConnection() {
 bool DesignatedControllerConnection::Init() {
   // setup the TCP socket
   bool listen_ok = m_listening_tcp_socket.Listen(
-      IPV4SocketAddress(m_ip_address, ola::plugin::e131::E133_PORT));
+      IPV4SocketAddress(m_ip_address, ola::acn::E133_PORT));
   if (!listen_ok) {
     m_listening_tcp_socket.Close();
     return false;
