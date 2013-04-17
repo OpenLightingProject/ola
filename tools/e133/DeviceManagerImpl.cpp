@@ -20,6 +20,7 @@
 #include <ola/Callback.h>
 #include <ola/Clock.h>
 #include <ola/Logging.h>
+#include <ola/acn/ACNPort.h>
 #include <ola/acn/CID.h>
 #include <ola/e133/E133Enums.h>
 #include <ola/io/SelectServer.h>
@@ -33,7 +34,6 @@
 #include <string>
 #include <vector>
 
-#include "plugins/e131/e131/ACNPort.h"
 #include "plugins/e131/e131/E133Inflator.h"
 #include "plugins/e131/e131/E133StatusPDU.h"
 #include "plugins/e131/e131/TCPTransport.h"
