@@ -21,6 +21,7 @@
 
 #include <ola/Callback.h>
 #include <ola/Logging.h>
+#include <ola/acn/ACNVectors.h>
 #include <ola/acn/CID.h>
 #include <ola/io/SelectServerInterface.h>
 #include <ola/network/HealthCheckedConnection.h>
@@ -34,7 +35,6 @@
 #include <string>
 #include <vector>
 
-#include "plugins/e131/e131/ACNVectors.h"
 #include "plugins/e131/e131/E133Header.h"
 #include "plugins/e131/e131/E133PDU.h"
 #include "plugins/e131/e131/RDMPDU.h"
@@ -322,7 +322,7 @@ void E133Device::EndpointRequestComplete(
   ola::rdm::RDMCommandSerializer::Write(*response.get(), &packet);
   RDMPDU::PrependPDU(&packet);
   m_message_builder.BuildUDPRootE133(
-      &packet, ola::plugin::e131::VECTOR_FRAMING_RDMNET, sequence_number,
+      &packet, ola::acn::VECTOR_FRAMING_RDMNET, sequence_number,
       endpoint_id);
 
   if (!m_udp_socket.SendTo(&packet, target)) {

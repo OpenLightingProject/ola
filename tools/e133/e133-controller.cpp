@@ -36,6 +36,7 @@
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/acn/ACNPort.h>
+#include <ola/acn/ACNVectors.h>
 #include <ola/acn/CID.h>
 #include <ola/e133/E133URLParser.h>
 #include <ola/e133/MessageBuilder.h>
@@ -65,7 +66,6 @@
 #include <string>
 #include <vector>
 
-#include "plugins/e131/e131/ACNVectors.h"
 #include "plugins/e131/e131/E133Inflator.h"
 #include "plugins/e131/e131/E133StatusHelper.h"
 #include "plugins/e131/e131/E133StatusInflator.h"
@@ -562,7 +562,7 @@ bool SimpleE133Controller::SendRequest(const UID &uid,
   RDMCommandSerializer::Write(*request, &packet);
   RDMPDU::PrependPDU(&packet);
   m_message_builder.BuildUDPRootE133(
-      &packet, ola::plugin::e131::VECTOR_FRAMING_RDMNET, 0, endpoint);
+      &packet, ola::acn::VECTOR_FRAMING_RDMNET, 0, endpoint);
 
   // Send the packet
   m_udp_socket.SendTo(&packet, target);

@@ -20,7 +20,6 @@
 #include <ola/Logging.h>
 #include <ola/io/IOStack.h>
 
-#include "plugins/e131/e131/ACNVectors.h"
 #include "plugins/e131/e131/RootSender.h"
 #include "tools/e133/E133HealthCheckedConnection.h"
 #include "tools/e133/MessageQueue.h"

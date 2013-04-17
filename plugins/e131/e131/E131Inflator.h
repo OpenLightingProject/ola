@@ -24,7 +24,7 @@
 #ifndef PLUGINS_E131_E131_E131INFLATOR_H_
 #define PLUGINS_E131_E131_E131INFLATOR_H_
 
-#include "plugins/e131/e131/ACNVectors.h"
+#include "ola/acn/ACNVectors.h"
 #include "plugins/e131/e131/BaseInflator.h"
 #include "plugins/e131/e131/E131Header.h"
 
@@ -41,7 +41,7 @@ class E131Inflator: public BaseInflator {
     }
     ~E131Inflator() {}
 
-    uint32_t Id() const { return VECTOR_ROOT_E131; }
+    uint32_t Id() const { return ola::acn::VECTOR_ROOT_E131; }
 
   protected:
     bool DecodeHeader(HeaderSet &headers,
@@ -70,7 +70,7 @@ class E131InflatorRev2: public BaseInflator {
     }
     ~E131InflatorRev2() {}
 
-    uint32_t Id() const { return VECTOR_ROOT_E131_REV2; }
+    uint32_t Id() const { return ola::acn::VECTOR_ROOT_E131_REV2; }
 
   protected:
     bool DecodeHeader(HeaderSet &headers, const uint8_t *data,

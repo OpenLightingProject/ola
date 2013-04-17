@@ -20,6 +20,7 @@
  */
 
 #include <string>
+#include "ola/acn/ACNVectors.h"
 #include "ola/acn/CID.h"
 #include "ola/e133/MessageBuilder.h"
 #include "ola/io/IOStack.h"
@@ -28,7 +29,6 @@
 #include "plugins/e131/e131/E133PDU.h"
 #include "plugins/e131/e131/E133StatusPDU.h"
 #include "plugins/e131/e131/PreamblePacker.h"
-#include "plugins/e131/e131/ACNVectors.h"
 
 namespace ola {
 namespace e133 {
@@ -53,7 +53,7 @@ MessageBuilder::MessageBuilder(const CID &cid, const string &source_name)
  * Build a NULL TCP packet. These packets can be used for heartbeats.
  */
 void MessageBuilder::BuildNullTCPPacket(IOStack *packet) {
-  RootPDU::PrependPDU(packet, ola::plugin::e131::VECTOR_ROOT_NULL, m_cid);
+  RootPDU::PrependPDU(packet, ola::acn::VECTOR_ROOT_NULL, m_cid);
   PreamblePacker::AddTCPPreamble(packet);
 }
 
@@ -70,7 +70,7 @@ void MessageBuilder::BuildTCPE133StatusPDU(ola::io::IOStack *packet,
   ola::plugin::e131::E133StatusPDU::PrependPDU(
       packet, status_code, description);
   BuildTCPRootE133(
-      packet, ola::plugin::e131::VECTOR_FRAMING_STATUS,
+      packet, ola::acn::VECTOR_FRAMING_STATUS,
       sequence_number, endpoint_id);
 }
 
@@ -86,7 +86,7 @@ void MessageBuilder::BuildUDPE133StatusPDU(ola::io::IOStack *packet,
   ola::plugin::e131::E133StatusPDU::PrependPDU(
       packet, status_code, description);
   BuildUDPRootE133(
-      packet, ola::plugin::e131::VECTOR_FRAMING_STATUS,
+      packet, ola::acn::VECTOR_FRAMING_STATUS,
       sequence_number, endpoint_id);
 }
 
@@ -100,7 +100,7 @@ void MessageBuilder::BuildTCPRootE133(IOStack *packet,
                                       uint16_t endpoint_id) {
   E133PDU::PrependPDU(packet, vector, m_source_name, sequence_number,
                       endpoint_id);
-  RootPDU::PrependPDU(packet, ola::plugin::e131::VECTOR_ROOT_E133, m_cid);
+  RootPDU::PrependPDU(packet, ola::acn::VECTOR_ROOT_E133, m_cid);
   PreamblePacker::AddTCPPreamble(packet);
 }
 
@@ -114,7 +114,7 @@ void MessageBuilder::BuildUDPRootE133(IOStack *packet,
                                       uint16_t endpoint_id) {
   E133PDU::PrependPDU(packet, vector, m_source_name, sequence_number,
                       endpoint_id);
-  RootPDU::PrependPDU(packet, ola::plugin::e131::VECTOR_ROOT_E133, m_cid);
+  RootPDU::PrependPDU(packet, ola::acn::VECTOR_ROOT_E133, m_cid);
   PreamblePacker::AddUDPPreamble(packet);
 }
 }  // e133

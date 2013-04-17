@@ -24,8 +24,8 @@
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <memory>
+#include "ola/acn/ACNVectors.h"
 #include "plugins/e131/e131/BaseInflator.h"
-#include "plugins/e131/e131/ACNVectors.h"
 
 namespace ola {
 namespace plugin {
@@ -33,7 +33,7 @@ namespace e131 {
 
 class NullInflator : public InflatorInterface {
   public:
-    uint32_t Id() const { return VECTOR_ROOT_NULL; }
+    uint32_t Id() const { return ola::acn::VECTOR_ROOT_NULL; }
 
     unsigned int InflatePDUBlock(HeaderSet &,
                                  const uint8_t*,

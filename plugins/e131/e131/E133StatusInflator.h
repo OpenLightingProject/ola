@@ -23,8 +23,8 @@
 #include <memory>
 #include <string>
 #include "ola/Callback.h"
+#include "ola/acn/ACNVectors.h"
 #include "ola/e133/E133Enums.h"
-#include "plugins/e131/e131/ACNVectors.h"
 #include "plugins/e131/e131/BaseInflator.h"
 #include "plugins/e131/e131/TransportHeader.h"
 #include "plugins/e131/e131/E133Header.h"
@@ -44,7 +44,7 @@ class E133StatusInflator: public BaseInflator {
 
     E133StatusInflator();
 
-    uint32_t Id() const { return VECTOR_FRAMING_STATUS; }
+    uint32_t Id() const { return ola::acn::VECTOR_FRAMING_STATUS; }
 
     // Ownership is transferred.
     void SetStatusHandler(StatusMessageHandler *handler) {

@@ -1,4 +1,4 @@
-SOURCES = ACNPort.h CID.h
+SOURCES = ACNPort.h ACNVectors.h CID.h
 
 EXTRA_DIST = $(SOURCES)
 
