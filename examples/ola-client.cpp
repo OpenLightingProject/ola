@@ -81,6 +81,8 @@ typedef struct {
   string dmx;      // dmx string
   ola::port_priority_mode priority_mode;  // port priority mode
   uint8_t priority_value;  // port priority value
+  bool list_plugin_ids;
+  bool list_universe_ids;
 } options;
 
 
@@ -127,9 +129,11 @@ void ListPorts(const vector<PortClass> &ports, bool input) {
 
 /*
  * This is called when we recieve universe results from the client
+ * @param list_ids_only show ids only
  * @param universes a vector of OlaUniverses
  */
 void DisplayUniverses(SelectServer *ss,
+                      bool list_ids_only,
                       const vector <OlaUniverse> &universes,
                       const string &error) {
   vector<OlaUniverse>::const_iterator iter;
@@ -140,23 +144,36 @@ void DisplayUniverses(SelectServer *ss,
     return;
   }
 
-  cout << setw(5) << "Id" << "\t" << setw(30) << "Name" << "\t\tMerge Mode" <<
-    endl;
-  cout << "----------------------------------------------------------" << endl;
+  if (list_ids_only) {
+    for (iter = universes.begin(); iter != universes.end(); ++iter) {
+      cout << iter->Id() << endl;
+    }
+  } else {
+    cout << setw(5) << "Id" << "\t" << setw(30) << "Name" << "\t\tMerge Mode"
+      << endl;
+    cout << "----------------------------------------------------------" <<
+      endl;
 
-  for (iter = universes.begin(); iter != universes.end(); ++iter) {
-    cout << setw(5) << iter->Id() << "\t" << setw(30) << iter->Name() << "\t\t"
-      << (iter->MergeMode() == OlaUniverse::MERGE_HTP ? "HTP" : "LTP") << endl;
+    for (iter = universes.begin(); iter != universes.end(); ++iter) {
+      cout << setw(5) << iter->Id() << "\t" << setw(30) << iter->Name() <<
+        "\t\t" << (iter->MergeMode() == OlaUniverse::MERGE_HTP ? "HTP" :
+        "LTP") << endl;
+    }
+
+    cout << "----------------------------------------------------------" <<
+      endl;
   }
-  cout << "----------------------------------------------------------" << endl;
+
   ss->Terminate();
 }
 
 
 /*
+ * @param list_ids_only show ids only
  * @params plugins a vector of OlaPlugins
  */
 void DisplayPlugins(SelectServer *ss,
+                    bool list_ids_only,
                     const vector <OlaPlugin> &plugins,
                     const string &error) {
   vector<OlaPlugin>::const_iterator iter;
@@ -167,11 +184,21 @@ void DisplayPlugins(SelectServer *ss,
     return;
   }
 
-  cout << setw(5) << "Id" << "\tPlugin Name" << endl;
-  cout << "--------------------------------------" << endl;
-  for (iter = plugins.begin(); iter != plugins.end(); ++iter)
-    cout << setw(5) << iter->Id() << "\t" << iter->Name() << endl;
-  cout << "--------------------------------------" << endl;
+  if (list_ids_only) {
+    for (iter = plugins.begin(); iter != plugins.end(); ++iter) {
+      cout << iter->Id() << endl;
+    }
+  } else {
+    cout << setw(5) << "Id" << "\tPlugin Name" << endl;
+    cout << "--------------------------------------" << endl;
+
+    for (iter = plugins.begin(); iter != plugins.end(); ++iter) {
+      cout << setw(5) << iter->Id() << "\t" << iter->Name() << endl;
+    }
+
+    cout << "--------------------------------------" << endl;
+  }
+
   ss->Terminate();
 }
 
@@ -286,6 +313,8 @@ void InitOptions(options *opts) {
   opts->uni = INVALID_VALUE;
   opts->plugin_id = ola::OLA_PLUGIN_ALL;
   opts->help = false;
+  opts->list_plugin_ids = false;
+  opts->list_universe_ids = false;
   opts->patch_action = ola::PATCH;
   opts->port_id = INVALID_VALUE;
   opts->port_direction = ola::OUTPUT_PORT;
@@ -328,12 +357,19 @@ void SetMode(options *opts) {
  * parse our cmd line options
  */
 void ParseOptions(int argc, char *argv[], options *opts) {
+  enum {
+    LIST_PLUGIN_IDS_OPTION = 256,
+    LIST_UNIVERSE_IDS_OPTION,
+  };
+
   static struct option long_options[] = {
       {"dmx", required_argument, 0, 'd'},
       {"help", no_argument, 0, 'h'},
       {"ltp", no_argument, 0, 'l'},
       {"name", required_argument, 0, 'n'},
       {"plugin-id", required_argument, 0, 'p'},
+      {"list-plugin-ids", no_argument, 0, LIST_PLUGIN_IDS_OPTION},
+      {"list-universe-ids", no_argument, 0, LIST_UNIVERSE_IDS_OPTION},
       {"universe", required_argument, 0, 'u'},
       {0, 0, 0, 0}
     };
@@ -367,6 +403,12 @@ void ParseOptions(int argc, char *argv[], options *opts) {
         break;
       case 'u':
         opts->uni = atoi(optarg);
+        break;
+      case LIST_PLUGIN_IDS_OPTION:
+        opts->list_plugin_ids = true;
+        break;
+      case LIST_UNIVERSE_IDS_OPTION:
+        opts->list_universe_ids = true;
         break;
       case '?':
         break;
@@ -533,6 +575,7 @@ void DisplayPluginInfoHelp(const options &opts) {
   "\n"
   "  -h, --help                  Display this help message and exit.\n"
   "  -p, --plugin-id <plugin_id> Id of the plugin to fetch the description of\n"
+  "  --list-plugin-ids           List plugin Ids only.\n"
   << endl;
 }
 
@@ -561,7 +604,8 @@ void DisplayUniverseInfoHelp(const options &opts) {
   "\n"
   "Shows info on the active universes in use.\n"
   "\n"
-  "  -h, --help Display this help message and exit.\n"
+  "  -h, --help          Display this help message and exit.\n"
+  "  --list-universe-ids List universe Ids only.\n"
   << endl;
 }
 
@@ -711,12 +755,14 @@ void Patch(OlaCallbackClientWrapper *wrapper, const options &opts) {
 int FetchPluginInfo(OlaCallbackClientWrapper *wrapper, const options &opts) {
   SelectServer *ss = wrapper->GetSelectServer();
   OlaCallbackClient *client = wrapper->GetClient();
-  if (opts.plugin_id > 0)
+  if (opts.plugin_id > 0) {
     client->FetchPluginDescription(
         (ola::ola_plugin_id) opts.plugin_id,
         NewSingleCallback(&DisplayPluginDescription, ss));
-  else
-    client->FetchPluginList(NewSingleCallback(&DisplayPlugins, ss));
+  } else {
+    client->FetchPluginList(
+        NewSingleCallback(&DisplayPlugins, ss, opts.list_plugin_ids));
+  }
   return 0;
 }
 
@@ -871,7 +917,8 @@ int main(int argc, char *argv[]) {
       break;
     case UNIVERSE_INFO:
       ola_client.GetClient()->FetchUniverseList(
-          NewSingleCallback(&DisplayUniverses, ola_client.GetSelectServer()));
+          NewSingleCallback(&DisplayUniverses,
+          ola_client.GetSelectServer(), opts.list_universe_ids));
       break;
     case UNIVERSE_NAME:
       SetUniverseName(&ola_client, opts);
