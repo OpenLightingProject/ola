@@ -26,6 +26,7 @@
 #include <map>
 #include <sstream>
 #include <string>
+#include <vector>
 
 namespace ola {
 
@@ -221,6 +222,7 @@ class FlagRegistry {
 
     string GetShortOptsString() const;
     struct option *GetLongOpts(FlagMap *flag_map);
+    void PrintFlags(std::vector<string> *lines);
 };
 
 /**

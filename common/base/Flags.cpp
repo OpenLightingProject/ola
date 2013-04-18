@@ -184,7 +184,9 @@ void FlagRegistry::DisplayUsage() {
     cerr << m_description << endl << endl;
   }
 
-  vector<string> lines;
+  // - comes before a-z which means flags without long options appear first. To
+  // avoid this we keep two lists.
+  vector<string> short_flag_lines, long_flag_lines;
   LongOpts::const_iterator iter = m_long_opts.begin();
   for (; iter != m_long_opts.end(); ++iter) {
     std::ostringstream str;
@@ -199,13 +201,14 @@ void FlagRegistry::DisplayUsage() {
       str << " <" << flag->arg_type() << ">";
     }
     str << endl << "    " << iter->second->help() << endl;
-    lines.push_back(str.str());
+    if (flag->short_opt())
+      short_flag_lines.push_back(str.str());
+    else
+      long_flag_lines.push_back(str.str());
   }
-  std::sort(lines.begin(), lines.end());
-  vector<string>::const_iterator line_iter = lines.begin();
-  for (; line_iter != lines.end(); ++line_iter) {
-    cerr << *line_iter;
-  }
+
+  PrintFlags(&short_flag_lines);
+  PrintFlags(&long_flag_lines);
 }
 
 /**
@@ -254,5 +257,16 @@ struct option *FlagRegistry::GetLongOpts(FlagMap *flag_map) {
     opt++;
   }
   return long_options;
+}
+
+
+/**
+ * Given a vector of flags lines, sort them and print to stderr.
+ */
+void FlagRegistry::PrintFlags(std::vector<string> *lines) {
+  std::sort(lines->begin(), lines->end());
+  vector<string>::const_iterator iter = lines->begin();
+  for (; iter != lines->end(); ++iter)
+    cerr << *iter;
 }
 }  // ola
