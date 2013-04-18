@@ -313,8 +313,8 @@ void CommandPrinter::AppendPortId(const class RDMRequest *request) {
 
 
 void CommandPrinter::AppendVerboseUIDs(const class RDMCommand *command) {
-  *m_output << "  Dest UID       : " << command->DestinationUID() << endl;
   *m_output << "  Source UID     : " << command->SourceUID() << endl;
+  *m_output << "  Dest UID       : " << command->DestinationUID() << endl;
   *m_output << "  Transaction #  : " << std::dec <<
     static_cast<unsigned int>(command->TransactionNumber()) << endl;
 }
