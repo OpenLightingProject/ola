@@ -31,8 +31,11 @@
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
+#include <ola/acn/CID.h>
 #include <ola/base/Flags.h>
+#include <ola/e133/DeviceManager.h>
 #include <ola/e133/E133URLParser.h>
+#include <ola/e133/MessageBuilder.h>
 #include <ola/e133/OLASLPThread.h>
 #ifdef HAVE_LIBSLP
 #include <ola/e133/OpenSLPThread.h>
@@ -52,13 +55,10 @@
 #include <string>
 #include <vector>
 
-#include "plugins/e131/e131/CID.h"
-
-#include "tools/e133/DeviceManager.h"
-#include "tools/e133/MessageBuilder.h"
 
 using ola::NewCallback;
 using ola::network::IPV4Address;
+using ola::network::IPV4SocketAddress;
 using ola::rdm::PidStoreHelper;
 using ola::rdm::RDMCommand;
 using ola::rdm::UID;
@@ -104,15 +104,15 @@ class SimpleE133Monitor {
     ola::io::StdinHandler m_stdin_handler;
     auto_ptr<ola::e133::BaseSLPThread> m_slp_thread;
 
-    MessageBuilder m_message_builder;
-    DeviceManager m_device_manager;
+    ola::e133::MessageBuilder m_message_builder;
+    ola::e133::DeviceManager m_device_manager;
 
     void Input(char c);
     void DiscoveryCallback(bool status, const URLEntries &urls);
 
     bool EndpointRequest(
-        const ola::plugin::e131::TransportHeader &transport_header,
-        const ola::plugin::e131::E133Header &e133_header,
+        const IPV4Address &source,
+        uint16_t endpoint,
         const string &raw_request);
 };
 
@@ -126,7 +126,7 @@ SimpleE133Monitor::SimpleE133Monitor(
     : m_command_printer(&cout, pid_helper),
       m_stdin_handler(&m_ss,
                       ola::NewCallback(this, &SimpleE133Monitor::Input)),
-      m_message_builder(ola::plugin::e131::CID::Generate(), "OLA Monitor"),
+      m_message_builder(ola::acn::CID::Generate(), "OLA Monitor"),
       m_device_manager(&m_ss, &m_message_builder) {
   if (slp_option == OLA_SLP) {
     m_slp_thread.reset(new ola::e133::OLASLPThread(&m_ss));
@@ -216,14 +216,14 @@ void SimpleE133Monitor::DiscoveryCallback(bool ok, const URLEntries &urls) {
  * We received data to endpoint 0
  */
 bool SimpleE133Monitor::EndpointRequest(
-    const ola::plugin::e131::TransportHeader &transport_header,
-    const ola::plugin::e131::E133Header&,
+    const IPV4Address &source,
+    uint16_t endpoint,
     const string &raw_request) {
   unsigned int slot_count = raw_request.size();
   const uint8_t *rdm_data = reinterpret_cast<const uint8_t*>(
     raw_request.data());
 
-  cout << "From " << transport_header.Source() << ":" << endl;
+  cout << "From " << source << ":" << endpoint << endl;
   auto_ptr<RDMCommand> command(
       RDMCommand::Inflate(reinterpret_cast<const uint8_t*>(raw_request.data()),
                           raw_request.size()));
@@ -291,8 +291,12 @@ int main(int argc, char *argv[]) {
 
   SimpleE133Monitor::SLPOption slp_option = SimpleE133Monitor::NO_SLP;
   if (targets.empty()) {
+#ifdef HAVE_LIBSLP
     slp_option = FLAGS_openslp ? SimpleE133Monitor::OPEN_SLP :
         SimpleE133Monitor::OLA_SLP;
+#else
+    slp_option = SimpleE133Monitor::OLA_SLP;
+#endif
   }
   SimpleE133Monitor monitor(&pid_helper, slp_option);
   if (!monitor.Init())

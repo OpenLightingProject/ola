@@ -40,9 +40,9 @@ libolaslpproto_la_CXXFLAGS = $(WARNING_CXXFLAGS)
 # libolaslpcore.la
 libolaslpcore_la_SOURCES = SLPUtil.cpp \
                            URLEntry.cpp
-libolaslpcore_la_LIBADD = libolaslpproto.la
 
 # libolaslpserver.la
+# This is an SLP server, without the RPC interface.
 libolaslpserver_la_SOURCES = DATracker.cpp \
                              RegistrationFileParser.cpp \
                              SLPPacketBuilder.cpp \
@@ -61,6 +61,7 @@ libolaslpclient_la_SOURCES = SLPClient.cpp \
                              SLPClientCore.cpp
 libolaslpclient_la_LIBADD = $(top_builddir)/common/libolacommon.la \
                             $(top_builddir)/ola/libola.la \
+                            ./libolaslpproto.la \
                             ./libolaslpcore.la
 
 BUILT_SOURCES = SLP.pb.cc SLP.pb.h
@@ -79,12 +80,14 @@ slp_server_SOURCES = SLPDaemon.cpp \
                      slp-server.cpp
 slp_server_LDADD = $(top_builddir)/common/libolacommon.la \
                    $(top_builddir)/common/http/libolahttp.la \
+                   ./libolaslpproto.la \
                    ./libolaslpserver.la
 
 slp_client_SOURCES = slp-client.cpp
 slp_client_LDADD = $(top_builddir)/common/libolacommon.la \
                    $(top_builddir)/ola/libola.la \
-                   ./libolaslpclient.la
+                   ./libolaslpclient.la \
+                   ./libolaslpcore.la
 
 clean-local:
 	rm -f *.pb.{h,cc} *.gcno *.gcda
@@ -98,6 +101,7 @@ endif
 COMMON_TEST_LDADD = $(CPPUNIT_LIBS) \
                     $(top_builddir)/common/libolacommon.la \
                     $(top_builddir)/common/testing/libolatesting.la \
+                    ./libolaslpcore.la \
                     ./libolaslpserver.la
 
 check_PROGRAMS = $(TESTS)

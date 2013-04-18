@@ -20,7 +20,6 @@
 #include <ola/Logging.h>
 #include <ola/io/IOStack.h>
 
-#include "plugins/e131/e131/ACNVectors.h"
 #include "plugins/e131/e131/RootSender.h"
 #include "tools/e133/E133HealthCheckedConnection.h"
 #include "tools/e133/MessageQueue.h"
@@ -36,7 +35,7 @@ using ola::io::IOStack;
  * @param heartbeat_interval the TimeInterval between heartbeats
  */
 E133HealthCheckedConnection::E133HealthCheckedConnection(
-  MessageBuilder *message_builder,
+  ola::e133::MessageBuilder *message_builder,
   MessageQueue *message_queue,
   ola::SingleUseCallback0<void> *on_timeout,
   ola::thread::SchedulingExecutorInterface *scheduler,

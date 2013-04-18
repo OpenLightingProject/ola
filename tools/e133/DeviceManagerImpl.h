@@ -13,13 +13,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * DeviceManager.cpp
+ * DeviceManagerImpl.cpp
  * Copyright (C) 2013 Simon Newton
- * The DeviceManager maintains a TCP connection to each E1.33 device.
+ * The DeviceManagerImpl maintains a TCP connection to each E1.33 device.
  */
 
-#ifndef TOOLS_E133_DEVICEMANAGER_H_
-#define TOOLS_E133_DEVICEMANAGER_H_
+#ifndef TOOLS_E133_DEVICEMANAGERIMPL_H_
+#define TOOLS_E133_DEVICEMANAGERIMPL_H_
 
 #if HAVE_CONFIG_H
 #  include <config.h>
@@ -28,6 +28,7 @@
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>
 #include <ola/Clock.h>
+#include <ola/e133/MessageBuilder.h>
 #include <ola/io/SelectServerInterface.h>
 #include <ola/network/AdvancedTCPConnector.h>
 #include <ola/network/IPV4Address.h>
@@ -40,16 +41,18 @@
 
 #include HASH_MAP_H
 
-#include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/RDMInflator.h"
 #include "plugins/e131/e131/E133Inflator.h"
 #include "plugins/e131/e131/RootInflator.h"
 #include "plugins/e131/e131/TCPTransport.h"
-#include "tools/e133/MessageBuilder.h"
+
+namespace ola {
+namespace e133 {
 
 using ola::TimeInterval;
 using ola::network::TCPSocket;
 using ola::network::IPV4Address;
+using ola::network::IPV4SocketAddress;
 
 using std::auto_ptr;
 using std::string;
@@ -60,15 +63,13 @@ using std::vector;
  * TODO(simon): Some of this code can be re-used for the controller side. See
  * if we can factor it out.
  */
-class DeviceManager {
+class DeviceManagerImpl {
   public:
     /*
      * The callback used to receive RDMNet layer messages from the devices.
      * @returns true if the data should be acknowledged, false otherwise.
      */
-    typedef ola::Callback3<bool,
-                           const ola::plugin::e131::TransportHeader&,
-                           const ola::plugin::e131::E133Header&,
+    typedef ola::Callback3<bool, const IPV4Address&, uint16_t,
                            const string&> RDMMesssageCallback;
 
     // Run when we acquire designated controller status for a device.
@@ -77,9 +78,9 @@ class DeviceManager {
     // Run when we give up (or lose) designated controller status.
     typedef ola::Callback1<void, const IPV4Address&> ReleaseDeviceCallback;
 
-    DeviceManager(ola::io::SelectServerInterface *ss,
-                  MessageBuilder *message_builder);
-    ~DeviceManager();
+    DeviceManagerImpl(ola::io::SelectServerInterface *ss,
+                  ola::e133::MessageBuilder *message_builder);
+    ~DeviceManagerImpl();
 
     // Ownership of the callbacks is transferred.
     void SetRDMMessageCallback(RDMMesssageCallback *callback);
@@ -107,7 +108,7 @@ class DeviceManager {
     ola::network::AdvancedTCPConnector m_connector;
     ola::LinearBackoffPolicy m_backoff_policy;
 
-    MessageBuilder *m_message_builder;
+    ola::e133::MessageBuilder *m_message_builder;
 
     // inflators
     ola::plugin::e131::RootInflator m_root_inflator;
@@ -128,12 +129,14 @@ class DeviceManager {
     void RLPDataReceived(const ola::plugin::e131::TransportHeader &header);
 
     void EndpointRequest(
-        const ola::plugin::e131::TransportHeader &transport_header,
-        const ola::plugin::e131::E133Header &e133_header,
+        const ola::plugin::e131::TransportHeader *transport_header,
+        const ola::plugin::e131::E133Header *e133_header,
         const string &raw_request);
 
     static const TimeInterval TCP_CONNECT_TIMEOUT;
     static const TimeInterval INITIAL_TCP_RETRY_DELAY;
     static const TimeInterval MAX_TCP_RETRY_DELAY;
 };
-#endif  // TOOLS_E133_DEVICEMANAGER_H_
+}  // e133
+}  // ola
+#endif  // TOOLS_E133_DEVICEMANAGERIMPL_H_

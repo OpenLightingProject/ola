@@ -24,7 +24,7 @@
 #include <vector>
 
 #include "ola/Logging.h"
-#include "plugins/e131/e131/ACNVectors.h"
+#include "ola/acn/ACNVectors.h"
 #include "plugins/e131/e131/DMPAddress.h"
 #include "plugins/e131/e131/DMPInflator.h"
 #include "plugins/e131/e131/DMPPDU.h"
@@ -32,10 +32,12 @@
 #include "plugins/e131/e131/PDUTestCommon.h"
 #include "ola/testing/TestUtils.h"
 
-
 namespace ola {
 namespace plugin {
 namespace e131 {
+
+using ola::acn::DMP_GET_PROPERTY_VECTOR;
+using ola::acn::DMP_SET_PROPERTY_VECTOR;
 
 class MockDMPInflator: public DMPInflator {
   public:

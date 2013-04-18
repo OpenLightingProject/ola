@@ -81,6 +81,10 @@ class IPV4Address {
       return m_address.s_addr < other.m_address.s_addr;
     }
 
+    bool operator>(const IPV4Address &other) const {
+      return m_address.s_addr > other.m_address.s_addr;
+    }
+
     const struct in_addr Address() const {
       return m_address;
     }

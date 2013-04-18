@@ -1,8 +1,6 @@
 # bash completion for Debian ola tools
 # Copyright Peter Newman 2013, based on apache2 and apt-file completion
 
-#General todo: possibly add a list_uni_ids options to ola_uni_info to avoid using sed
-#General todo: possibly add a list_plugin_ids options to ola_plugin_info to avoid using sed
 #General todo: change over to use _get_comp_words_by_ref instead of ${COMP_WORDS[COMP_CWORD]}
 #General todo: tidy up and use logic to not call _ola_list_pids or offer unnecessary options when possible
 #General todo: add completion for all the python examples in python/examples/
@@ -53,12 +51,12 @@ _ola_get_options_for_list_pids()
 
 _ola_list_universes()
 {
-  _have ola_uni_info && COMPREPLY=( $( compgen -W '$( command ola_uni_info 2>/dev/null | sed -r -n "s/^\s+([0-9]+)\s+.+[HL]TP\s*$/\1/p" )' -- $cur  ) )
+  _have ola_uni_info && COMPREPLY=( $( compgen -W '$( command ola_uni_info --list-universe-ids 2>/dev/null )' -- $cur  ) )
 }
 
 _ola_list_plugins()
 {
-  _have ola_plugin_info && COMPREPLY=( $( compgen -W '$( command ola_plugin_info 2>/dev/null | sed -r -n "s/^\s+([0-9]+)\s+.+\s*$/\1/p" )' -- $cur  ) )
+  _have ola_plugin_info && COMPREPLY=( $( compgen -W '$( command ola_plugin_info --list-plugin-ids 2>/dev/null )' -- $cur  ) )
 }
 
 #Commands
@@ -232,7 +230,7 @@ have ola_plugin_info && _ola_plugin_info()
       ;;
   esac;
 
-  COMPREPLY=($( compgen -W '--plugin-id' -- $cur ) )
+  COMPREPLY=($( compgen -W '--list-plugin-ids --plugin-id' -- $cur ) )
 }
 complete -F _ola_plugin_info ola_plugin_info
 
@@ -456,6 +454,15 @@ complete -F _ola_trigger ola_trigger
 
 #ola_uni_info
 #No options apart from help
+have ola_uni_info && _ola_uni_info()
+{
+  local cur
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  COMPREPLY=($( compgen -W '--list-universe-ids' -- $cur ) )
+}
+complete -F _ola_uni_info ola_uni_info
 
 #ola_uni_merge
 have ola_uni_merge && _ola_uni_merge()

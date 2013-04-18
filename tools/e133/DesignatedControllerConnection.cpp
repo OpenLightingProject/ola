@@ -25,6 +25,7 @@
 
 #include "ola/Callback.h"
 #include "ola/Logging.h"
+#include "ola/acn/ACNVectors.h"
 #include "ola/io/SelectServerInterface.h"
 #include "ola/network/HealthCheckedConnection.h"
 #include "ola/stl/STLUtils.h"
@@ -32,7 +33,6 @@
 #include "ola/network/SocketAddress.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMCommandSerializer.h"
-#include "plugins/e131/e131/ACNVectors.h"
 #include "plugins/e131/e131/E133Header.h"
 #include "plugins/e131/e131/E133StatusInflator.h"
 #include "plugins/e131/e131/RDMPDU.h"
@@ -88,7 +88,7 @@ class OutstandingMessage {
 DesignatedControllerConnection::DesignatedControllerConnection(
     ola::io::SelectServerInterface *ss,
     const IPV4Address &ip_address,
-    MessageBuilder *message_builder,
+    ola::e133::MessageBuilder *message_builder,
     TCPConnectionStats *tcp_stats,
     unsigned int max_queue_size)
     : m_ip_address(ip_address),
@@ -133,7 +133,7 @@ DesignatedControllerConnection::~DesignatedControllerConnection() {
 bool DesignatedControllerConnection::Init() {
   // setup the TCP socket
   bool listen_ok = m_listening_tcp_socket.Listen(
-      IPV4SocketAddress(m_ip_address, ola::plugin::e131::E133_PORT));
+      IPV4SocketAddress(m_ip_address, ola::acn::E133_PORT));
   if (!listen_ok) {
     m_listening_tcp_socket.Close();
     return false;
@@ -346,7 +346,7 @@ bool DesignatedControllerConnection::SendRDMCommand(
   ola::rdm::RDMCommandSerializer::Write(*rdm_response, &packet);
   ola::plugin::e131::RDMPDU::PrependPDU(&packet);
   m_message_builder->BuildTCPRootE133(
-      &packet, ola::plugin::e131::VECTOR_FRAMING_RDMNET, sequence_number,
+      &packet, ola::acn::VECTOR_FRAMING_RDMNET, sequence_number,
       endpoint);
 
   return m_message_queue->SendMessage(&packet);
@@ -357,18 +357,18 @@ bool DesignatedControllerConnection::SendRDMCommand(
  * Handle a E1.33 Status PDU on the TCP connection.
  */
 void DesignatedControllerConnection::HandleStatusMessage(
-    const TransportHeader &transport_header,
-    const ola::plugin::e131::E133Header &e133_header,
+    const TransportHeader *transport_header,
+    const ola::plugin::e131::E133Header *e133_header,
     uint16_t status_code,
     const string &description) {
-  if (status_code != ola::plugin::e131::SC_E133_ACK) {
+  if (status_code != ola::e133::SC_E133_ACK) {
     OLA_INFO << "Received a non-ack status code from "
-             << transport_header.Source() << ": " << status_code << " : "
+             << transport_header->Source() << ": " << status_code << " : "
              << description;
   }
-  OLA_INFO << "Controller has ack'ed " << e133_header.Sequence();
+  OLA_INFO << "Controller has ack'ed " << e133_header->Sequence();
 
-  ola::STLRemoveAndDelete(&m_unacked_messages, e133_header.Sequence());
+  ola::STLRemoveAndDelete(&m_unacked_messages, e133_header->Sequence());
   if (m_unsent_messages && !m_message_queue->LimitReached()) {
     bool sent_all = true;
     PendingMessageMap::iterator iter = m_unacked_messages.begin();

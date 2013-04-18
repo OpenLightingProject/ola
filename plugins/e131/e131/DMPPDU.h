@@ -24,7 +24,7 @@
 #include <stdint.h>
 #include <vector>
 
-#include "plugins/e131/e131/ACNVectors.h"
+#include "ola/acn/ACNVectors.h"
 #include "plugins/e131/e131/DMPAddress.h"
 #include "plugins/e131/e131/DMPHeader.h"
 #include "plugins/e131/e131/PDU.h"
@@ -66,7 +66,7 @@ class DMPGetProperty: public DMPPDU {
   public:
     DMPGetProperty(const DMPHeader &header,
                    const vector<Address> &addresses):
-      DMPPDU(DMP_GET_PROPERTY_VECTOR, header),
+      DMPPDU(ola::acn::DMP_GET_PROPERTY_VECTOR, header),
       m_addresses(addresses) {}
 
     unsigned int DataSize() const {
@@ -208,7 +208,7 @@ class DMPSetProperty: public DMPPDU {
     typedef vector<DMPAddressData<type> > AddressDataChunks;
 
     DMPSetProperty(const DMPHeader &header, const AddressDataChunks &chunks):
-      DMPPDU(DMP_SET_PROPERTY_VECTOR, header),
+      DMPPDU(ola::acn::DMP_SET_PROPERTY_VECTOR, header),
       m_chunks(chunks) {}
 
     unsigned int DataSize() const {

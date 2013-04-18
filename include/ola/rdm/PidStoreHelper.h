@@ -82,6 +82,10 @@ class PidStoreHelper {
     void SupportedPids(uint16_t manufacturer_id,
                        vector<string> *pid_names) const;
 
+    void SupportedPids(
+        uint16_t manufacturer_id,
+        vector<const ola::rdm::PidDescriptor*> *descriptors) const;
+
   private:
     const string m_pid_location;
     const ola::rdm::RootPidStore *m_root_store;

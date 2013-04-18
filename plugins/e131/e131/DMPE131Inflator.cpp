@@ -57,7 +57,7 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
                                     HeaderSet &headers,
                                     const uint8_t *data,
                                     unsigned int pdu_len) {
-  if (vector != DMP_SET_PROPERTY_VECTOR) {
+  if (vector != ola::acn::DMP_SET_PROPERTY_VECTOR) {
     OLA_INFO << "not a set property msg: " << vector;
     return true;
   }

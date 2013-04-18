@@ -33,6 +33,7 @@
 
 #include <ola/BaseTypes.h>
 #include <ola/Logging.h>
+#include <ola/acn/ACNPort.h>
 #include <ola/base/Init.h>
 #include <ola/e133/OLASLPThread.h>
 #ifdef HAVE_LIBSLP
@@ -50,7 +51,6 @@
 #include <string>
 
 #include "plugins/dummy/DummyResponder.h"
-#include "plugins/e131/e131/ACNPort.h"
 
 #include "tools/e133/E133Device.h"
 #include "tools/e133/EndpointManager.h"

@@ -23,7 +23,8 @@
 #include <memory>
 #include <string>
 #include "ola/Callback.h"
-#include "plugins/e131/e131/ACNVectors.h"
+#include "ola/acn/ACNVectors.h"
+#include "ola/e133/E133Enums.h"
 #include "plugins/e131/e131/BaseInflator.h"
 #include "plugins/e131/e131/TransportHeader.h"
 #include "plugins/e131/e131/E133Header.h"
@@ -34,16 +35,17 @@ namespace e131 {
 
 class E133StatusInflator: public BaseInflator {
   public:
+    // These are pointers so the callers don't have to pull in all the headers.
     typedef ola::Callback4<void,
-                           const TransportHeader&,  // src ip & port
-                           const E133Header&,  // the E1.33 header
+                           const TransportHeader*,  // src ip & port
+                           const E133Header*,  // the E1.33 header
                            uint16_t,  // the E1.33 Status code
                            const std::string&  // rdm data
                           > StatusMessageHandler;
 
     E133StatusInflator();
 
-    uint32_t Id() const { return VECTOR_FRAMING_STATUS; }
+    uint32_t Id() const { return ola::acn::VECTOR_FRAMING_STATUS; }
 
     // Ownership is transferred.
     void SetStatusHandler(StatusMessageHandler *handler) {

@@ -24,6 +24,7 @@
 #include <map>
 #include <string>
 
+#include "ola/e133/MessageBuilder.h"
 #include "ola/io/SelectServerInterface.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/Socket.h"
@@ -35,7 +36,6 @@
 #include "plugins/e131/e131/RootInflator.h"
 #include "plugins/e131/e131/TCPTransport.h"
 #include "tools/e133/E133HealthCheckedConnection.h"
-#include "tools/e133/MessageBuilder.h"
 #include "tools/e133/MessageQueue.h"
 #include "tools/e133/TCPConnectionStats.h"
 
@@ -46,7 +46,7 @@ class DesignatedControllerConnection {
     DesignatedControllerConnection(
         ola::io::SelectServerInterface *ss,
         const ola::network::IPV4Address &ip_address,
-        MessageBuilder *message_builder,
+        ola::e133::MessageBuilder *message_builder,
         TCPConnectionStats *tcp_stats,
         unsigned int max_queue_size = MAX_QUEUE_SIZE);
     ~DesignatedControllerConnection();
@@ -65,7 +65,7 @@ class DesignatedControllerConnection {
     const ola::network::IPV4Address m_ip_address;
     const unsigned int m_max_queue_size;
     ola::io::SelectServerInterface *m_ss;
-    MessageBuilder *m_message_builder;
+    ola::e133::MessageBuilder *m_message_builder;
     TCPConnectionStats *m_tcp_stats;
 
     // TCP connection classes
@@ -101,8 +101,8 @@ class DesignatedControllerConnection {
                         const ola::rdm::RDMResponse *rdm_response);
 
     void HandleStatusMessage(
-        const ola::plugin::e131::TransportHeader &transport_header,
-        const ola::plugin::e131::E133Header &e133_header,
+        const ola::plugin::e131::TransportHeader *transport_header,
+        const ola::plugin::e131::E133Header *e133_header,
         uint16_t status_code,
         const string &description);
 

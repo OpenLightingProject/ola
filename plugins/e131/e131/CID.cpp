@@ -14,224 +14,72 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * CID.cpp
- * CID class
+ * CID class, passes everything through to CIDImpl.
  * Copyright (C) 2007 Simon Newton
  */
 
-#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
-#include <string.h>
+#include <ola/acn/CID.h>
 #include <string>
-#include "plugins/e131/e131/CID.h"
+#include "plugins/e131/e131/CIDImpl.h"
 
 namespace ola {
-namespace plugin {
-namespace e131 {
+namespace acn {
 
-#ifdef USE_OSSP_UUID
-CID::CID()
-  : m_uuid(NULL) {
-}
+CID::CID() : m_impl(new CIDImpl()) {}
 
+CID::CID(const CID& other) : m_impl(new CIDImpl(*other.m_impl)) {}
 
-CID::CID(uuid_t *uuid)
-  : m_uuid(uuid) {
-}
-
-
-CID::CID(const CID& other)
-  : m_uuid(NULL) {
-  if (other.m_uuid)
-    uuid_clone(other.m_uuid, &m_uuid);
-}
+CID::CID(CIDImpl *impl) : m_impl(impl) {}
 
 CID::~CID() {
-  if (m_uuid)
-    uuid_destroy(m_uuid);
+  delete m_impl;
 }
-
 
 bool CID::IsNil() const {
-  if (!m_uuid)
-    return true;
-
-  int result;
-  uuid_isnil(m_uuid, &result);
-  return result;
+  return m_impl->IsNil();
 }
-
 
 /**
  * Pack a CID into the binary representation
  */
 void CID::Pack(uint8_t *buffer) const {
-  size_t data_length = CID_LENGTH;
-  // buffer may not be 4 byte aligned
-  char uid_data[CID_LENGTH];
-  void *ptr = static_cast<void*>(uid_data);
-  if (m_uuid) {
-    uuid_export(m_uuid, UUID_FMT_BIN, &ptr, &data_length);
-    memcpy(buffer, uid_data, CID_LENGTH);
-  } else {
-    memset(buffer, 0, CID_LENGTH);
-  }
+  return m_impl->Pack(buffer);
 }
 
-
 CID& CID::operator=(const CID& other) {
-  if (this != &other) {
-    if (m_uuid)
-      uuid_destroy(m_uuid);
-
-    if (other.m_uuid)
-      uuid_clone(other.m_uuid, &m_uuid);
-    else
-      m_uuid = NULL;
-  }
+  *m_impl = *other.m_impl;
   return *this;
 }
 
-
-bool CID::operator==(const CID& c1) const {
-  int result;
-  uuid_compare(m_uuid, c1.m_uuid, &result);
-  return 0 == result;
+bool CID::operator==(const CID& other) const {
+  return (*m_impl == *other.m_impl);
 }
-
 
 bool CID::operator!=(const CID& c1) const {
   return !(*this == c1);
 }
 
-
 std::string CID::ToString() const {
-  char cid[UUID_LEN_STR + 1];
-  void *str = static_cast<void*>(cid);
-  size_t length = UUID_LEN_STR + 1;
-  uuid_export(m_uuid, UUID_FMT_STR, &str, &length);
-  return std::string(cid);
+  return m_impl->ToString();
 }
 
 void CID::Write(ola::io::OutputBufferInterface *output) const {
-  size_t data_length = CID_LENGTH;
-  // buffer may not be 4 byte aligned
-  uint8_t uid_data[CID_LENGTH];
-  void *ptr = static_cast<void*>(uid_data);
-  if (m_uuid) {
-    uuid_export(m_uuid, UUID_FMT_BIN, &ptr, &data_length);
-  } else {
-    memset(ptr, 0, CID_LENGTH);
-  }
-  output->Write(uid_data, CID_LENGTH);
+  m_impl->Write(output);
 }
 
 
 CID CID::Generate() {
-  uuid_t *uuid;
-  uuid_create(&uuid);
-  uuid_make(uuid, UUID_MAKE_V4);
-  return CID(uuid);
+  return CID(CIDImpl::Generate());
 }
 
 
 CID CID::FromData(const uint8_t *data) {
-  uuid_t *uuid;
-  uuid_create(&uuid);
-  uuid_import(uuid, UUID_FMT_BIN, data, CID_LENGTH);
-  return CID(uuid);
+  return CID(CIDImpl::FromData(data));
 }
 
 
 CID CID::FromString(const std::string &cid) {
-  uuid_t *uuid;
-  uuid_create(&uuid);
-  uuid_import(uuid, UUID_FMT_STR, cid.data(), cid.length());
-  return CID(uuid);
+  return CID(CIDImpl::FromString(cid));
 }
-
-
-#else
-// We're using the e2fs utils uuid library
-
-CID::CID() {
-  uuid_clear(m_uuid);
-}
-
-
-CID::CID(uuid_t uuid) {
-  uuid_copy(m_uuid, uuid);
-}
-
-
-CID::CID(const CID& other) {
-  uuid_copy(m_uuid, other.m_uuid);
-}
-
-
-CID::~CID() {
-}
-
-
-bool CID::IsNil() const {
-  return uuid_is_null(m_uuid);
-}
-
-
-void CID::Pack(uint8_t *buf) const {
-  memcpy(buf, m_uuid, CID_LENGTH);
-}
-
-void CID::Write(ola::io::OutputBufferInterface *output) const {
-  output->Write(m_uuid, CID_LENGTH);
-}
-
-
-CID& CID::operator=(const CID& other) {
-  if (this != &other) {
-    uuid_copy(m_uuid, other.m_uuid);
-  }
-  return *this;
-}
-
-
-bool CID::operator==(const CID& c1) const {
-  return !uuid_compare(m_uuid, c1.m_uuid);
-}
-
-
-bool CID::operator!=(const CID& c1) const {
-  return uuid_compare(m_uuid, c1.m_uuid);
-}
-
-
-std::string CID::ToString() const {
-  char str[37];
-  uuid_unparse(m_uuid, str);
-  return std::string(str);
-}
-
-
-CID CID::Generate() {
-  uuid_t uuid;
-  uuid_generate(uuid);
-  return CID(uuid);
-}
-
-
-CID CID::FromData(const uint8_t *data) {
-  uuid_t uuid;
-  uuid_copy(uuid, data);
-  return CID(uuid);
-}
-
-
-CID CID::FromString(const std::string &cid) {
-  uuid_t uuid;
-  int ret = uuid_parse(cid.data(), uuid);
-  if (ret == -1)
-    uuid_clear(uuid);
-  return CID(uuid);
-}
-#endif  // end the e2fs progs uuid implementation
-}  // e131
-}  // plugin
+}  // acn
 }  // ola

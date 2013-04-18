@@ -488,6 +488,14 @@ AC_ARG_ENABLE(
 
 AM_CONDITIONAL(BUILD_EXAMPLES, test "${enable_examples}" != "no")
 
+# Optionally install the E1.33 library.
+AC_ARG_ENABLE(
+  e133,
+  AC_HELP_STRING([--enable-e133], [Install the E1.33 library]),)
+# For now we install the ACN lib if the E1.33 lib is requested
+AM_CONDITIONAL(INSTALL_ACN, test "${enable_e133}" == "yes")
+AM_CONDITIONAL(INSTALL_E133, test "${enable_e133}" == "yes")
+
 # python wrappers & RDM Responder tests.
 AC_ARG_ENABLE(python-libs,
               AC_HELP_STRING([--enable-python-libs],
@@ -601,6 +609,7 @@ AC_OUTPUT( Makefile \
     debian/Makefile \
     include/Makefile \
     include/ola/Makefile \
+    include/ola/acn/Makefile \
     include/ola/base/Makefile \
     include/ola/file/Makefile \
     include/ola/e133/Makefile \
@@ -637,6 +646,7 @@ AC_OUTPUT( Makefile \
     plugins/dummy/Makefile \
     plugins/e131/Makefile \
     plugins/e131/e131/Makefile \
+    plugins/e131/e131/libolaacn.pc \
     plugins/e131/messages/Makefile \
     plugins/e131/messages/libolae131conf.pc \
     plugins/espnet/Makefile \
@@ -658,6 +668,8 @@ AC_OUTPUT( Makefile \
     tools/Makefile \
     tools/ola_trigger/Makefile \
     tools/e133/Makefile \
+    tools/e133/libolae133controller.pc \
+    tools/e133/libolae133common.pc \
     tools/e133/libolae133slp.pc \
     tools/rdm/Makefile \
     tools/rdmpro/Makefile \

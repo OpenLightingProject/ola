@@ -19,17 +19,20 @@
  * A class to simplify some of the E1.33 packet building operations.
  */
 
-#ifndef TOOLS_E133_MESSAGEBUILDER_H_
-#define TOOLS_E133_MESSAGEBUILDER_H_
+#ifndef INCLUDE_OLA_E133_MESSAGEBUILDER_H_
+#define INCLUDE_OLA_E133_MESSAGEBUILDER_H_
 
+#include <ola/acn/CID.h>
+#include <ola/e133/E133Enums.h>
 #include <ola/io/IOStack.h>
 #include <ola/io/MemoryBlockPool.h>
 #include <string>
 
-#include "plugins/e131/e131/CID.h"
-#include "plugins/e131/e131/E133Enums.h"
+namespace ola {
+namespace e133 {
 
-using ola::plugin::e131::CID;
+using ola::acn::CID;
+using ola::io::IOStack;
 using std::string;
 
 /**
@@ -40,20 +43,22 @@ class MessageBuilder {
     MessageBuilder(const CID &cid, const string &source_name);
     ~MessageBuilder() {}
 
-    void BuildNullTCPPacket(ola::io::IOStack *packet);
+    void PrependRDMHeader(IOStack *packet);
 
-    void BuildTCPE133StatusPDU(ola::io::IOStack *packet,
+    void BuildNullTCPPacket(IOStack *packet);
+
+    void BuildTCPE133StatusPDU(IOStack *packet,
                                uint32_t sequence_number, uint16_t endpoint_id,
-                               ola::plugin::e131::E133StatusCode status_code,
+                               ola::e133::E133StatusCode status_code,
                                const string &description);
-    void BuildUDPE133StatusPDU(ola::io::IOStack *packet,
+    void BuildUDPE133StatusPDU(IOStack *packet,
                                uint32_t sequence_number, uint16_t endpoint_id,
-                               ola::plugin::e131::E133StatusCode status_code,
+                               ola::e133::E133StatusCode status_code,
                                const string &description);
 
-    void BuildTCPRootE133(ola::io::IOStack *packet, uint32_t vector,
+    void BuildTCPRootE133(IOStack *packet, uint32_t vector,
                           uint32_t sequence_number, uint16_t endpoint_id);
-    void BuildUDPRootE133(ola::io::IOStack *packet, uint32_t vector,
+    void BuildUDPRootE133(IOStack *packet, uint32_t vector,
                           uint32_t sequence_number, uint16_t endpoint_id);
 
     ola::io::MemoryBlockPool *pool() { return &m_memory_pool; }
@@ -63,4 +68,6 @@ class MessageBuilder {
     const string m_source_name;
     ola::io::MemoryBlockPool m_memory_pool;
 };
-#endif  // TOOLS_E133_MESSAGEBUILDER_H_
+}  // e133
+}  // ola
+#endif  // INCLUDE_OLA_E133_MESSAGEBUILDER_H_

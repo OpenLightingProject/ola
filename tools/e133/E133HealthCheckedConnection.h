@@ -31,13 +31,13 @@
 
 #include <ola/Callback.h>
 #include <ola/Clock.h>
+#include <ola/e133/MessageBuilder.h>
 #include <ola/io/MemoryBlockPool.h>
 #include <ola/network/HealthCheckedConnection.h>
 #include <ola/thread/SchedulingExecutorInterface.h>
 
 #include <memory>
 
-#include "tools/e133/MessageBuilder.h"
 #include "tools/e133/MessageQueue.h"
 
 /**
@@ -47,7 +47,7 @@ class E133HealthCheckedConnection
     : public ola::network::HealthCheckedConnection {
   public:
     E133HealthCheckedConnection(
-        MessageBuilder *message_builder,
+        ola::e133::MessageBuilder *message_builder,
         MessageQueue *message_queue,
         ola::SingleUseCallback0<void> *on_timeout,
         ola::thread::SchedulingExecutorInterface *scheduler,
@@ -58,7 +58,7 @@ class E133HealthCheckedConnection
     void HeartbeatTimeout();
 
   private:
-    MessageBuilder *m_message_builder;
+    ola::e133::MessageBuilder *m_message_builder;
     MessageQueue *m_message_queue;
     std::auto_ptr<ola::SingleUseCallback0<void> > m_on_timeout;
     ola::thread::SchedulingExecutorInterface *m_executor;

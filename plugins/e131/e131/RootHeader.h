@@ -21,11 +21,13 @@
 #ifndef PLUGINS_E131_E131_ROOTHEADER_H_
 #define PLUGINS_E131_E131_ROOTHEADER_H_
 
-#include "plugins/e131/e131/CID.h"
+#include "ola/acn/CID.h"
 
 namespace ola {
 namespace plugin {
 namespace e131 {
+
+using ola::acn::CID;
 
 /*
  * The header for the root layer

@@ -26,15 +26,17 @@
 
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
+#include "ola/acn/CID.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
 #include "plugins/e131/E131Device.h"
 #include "plugins/e131/E131Plugin.h"
-#include "plugins/e131/e131/CID.h"
 
 namespace ola {
 namespace plugin {
 namespace e131 {
+
+using ola::acn::CID;
 
 const char E131Plugin::CID_KEY[] = "cid";
 const char E131Plugin::DEFAULT_DSCP_VALUE[] = "0";

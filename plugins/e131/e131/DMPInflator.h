@@ -21,7 +21,7 @@
 #ifndef PLUGINS_E131_E131_DMPINFLATOR_H_
 #define PLUGINS_E131_E131_DMPINFLATOR_H_
 
-#include "plugins/e131/e131/ACNVectors.h"
+#include "ola/acn/ACNVectors.h"
 #include "plugins/e131/e131/BaseInflator.h"
 #include "plugins/e131/e131/DMPHeader.h"
 
@@ -38,7 +38,7 @@ class DMPInflator: public BaseInflator {
     }
     virtual ~DMPInflator() {}
 
-    uint32_t Id() const { return VECTOR_E131_DMP; }
+    uint32_t Id() const { return ola::acn::VECTOR_E131_DMP; }
 
   protected:
     bool DecodeHeader(HeaderSet &headers,

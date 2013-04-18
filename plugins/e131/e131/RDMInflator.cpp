@@ -19,11 +19,9 @@
  */
 
 #include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
-#include <map>
 #include <memory>
 #include <string>
 #include "ola/Logging.h"
-#include "ola/stl/STLUtils.h"
 #include "ola/rdm/RDMCommand.h"
 #include "plugins/e131/e131/RDMInflator.h"
 
@@ -40,48 +38,13 @@ RDMInflator::RDMInflator()
     : BaseInflator(PDU::ONE_BYTE) {
 }
 
-
 /**
- * Clean up this inflator
- */
-RDMInflator::~RDMInflator() {
-  STLDeleteValues(&m_rdm_handlers);
-}
-
-
-/**
- * Set the RDM Handler for an endpoint, ownership of the handler is
- * transferred.
- * @param endpoint the endpoint to use the handler for
+ * Set a RDMHandler to run when receiving a RDM message.
  * @param handler the callback to invoke when there is rdm data for this
  * universe.
- * @return true if added, false otherwise
  */
-bool RDMInflator::SetRDMHandler(uint16_t endpoint,
-                                RDMMessageHandler *handler) {
-  if (!handler)
-    return false;
-
-  RemoveRDMHandler(endpoint);
-  m_rdm_handlers[endpoint] = handler;
-  return true;
-}
-
-
-/**
- * Remove the RDM handler for an endpoint
- * @param endpoint the endpoint to remove the handler for.
- * @return true if removed, false if it didn't exist
- */
-bool RDMInflator::RemoveRDMHandler(uint16_t endpoint) {
-  endpoint_handler_map::iterator iter = m_rdm_handlers.find(endpoint);
-
-  if (iter != m_rdm_handlers.end()) {
-    delete iter->second;
-    m_rdm_handlers.erase(iter);
-    return true;
-  }
-  return false;
+void RDMInflator::SetRDMHandler(RDMMessageHandler *handler) {
+  m_rdm_handler.reset(handler);
 }
 
 
@@ -113,25 +76,16 @@ bool RDMInflator::HandlePDUData(uint32_t vector,
     return true;
   }
 
-  E133Header e133_header = headers.GetE133Header();
-  endpoint_handler_map::iterator endpoint_iter =
-      m_rdm_handlers.find(e133_header.Endpoint());
-
-  if (endpoint_iter == m_rdm_handlers.end()) {
-    if (!e133_header.Endpoint()) {
-      OLA_WARN << "Received E1.33 message for Endpoint 0 but no handler set!";
-    } else {
-      OLA_INFO << "Received E1.33 message for Endpoint " <<
-        e133_header.Endpoint() << ", no handler set";
-    }
-    return true;
-  }
-
   string rdm_message(reinterpret_cast<const char*>(&data[0]), pdu_len);
 
-  endpoint_iter->second->Run(headers.GetTransportHeader(),
-                             e133_header,
-                             rdm_message);
+  E133Header e133_header = headers.GetE133Header();
+
+  if (m_rdm_handler.get()) {
+    m_rdm_handler->Run(&headers.GetTransportHeader(), &e133_header,
+                       rdm_message);
+  } else {
+    OLA_WARN << "No RDM handler defined!";
+  }
   return true;
 }
 }  // e131

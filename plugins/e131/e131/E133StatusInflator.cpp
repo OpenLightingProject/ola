@@ -21,8 +21,8 @@
 #include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <string>
 #include <algorithm>
+#include "ola/e133/E133Enums.h"
 #include "plugins/e131/e131/E133StatusInflator.h"
-#include "plugins/e131/e131/E133Enums.h"
 
 namespace ola {
 namespace plugin {
@@ -46,11 +46,12 @@ bool E133StatusInflator::HandlePDUData(uint32_t vector,
                                        const uint8_t *data,
                                        unsigned int pdu_len) {
   unsigned int size = std::min(
-      pdu_len, static_cast<unsigned int>(MAX_E133_STATUS_STRING_SIZE));
+      pdu_len,
+      static_cast<unsigned int>(ola::e133::MAX_E133_STATUS_STRING_SIZE));
   string description(reinterpret_cast<const char*>(&data[0]), size);
 
-  m_handler->Run(headers.GetTransportHeader(),
-                 headers.GetE133Header(),
+  m_handler->Run(&headers.GetTransportHeader(),
+                 &headers.GetE133Header(),
                  static_cast<uint16_t>(vector),
                  description);
   return true;

@@ -1,11 +1,11 @@
 include $(top_srcdir)/common.mk
 
-EXTRA_DIST = ACNPort.h ACNVectors.h BaseInflator.h CID.h \
+EXTRA_DIST = ACNPort.h ACNVectors.h BaseInflator.h CID.h CIDImpl.h \
              DMPE131Inflator.h DMPAddress.h DMPHeader.h \
              DMPInflator.h DMPPDU.h \
              E131Header.h E131Includes.h E131Inflator.h E131Sender.h \
              E131Node.h E131PDU.h E131TestFramework.h \
-             E133Enums.h E133Header.h E133Inflator.h E133PDU.h \
+             E133Header.h E133Inflator.h E133PDU.h \
              E133StatusHelper.h E133StatusInflator.h E133StatusPDU.h \
              HeaderSet.h PreamblePacker.h PDU.h PDUTestCommon.h RDMInflator.h \
              RDMPDU.h RootHeader.h RootInflator.h RootSender.h RootPDU.h \
@@ -13,8 +13,29 @@ EXTRA_DIST = ACNPort.h ACNVectors.h BaseInflator.h CID.h \
 
 COMMON_CXXFLAGS += -Wconversion
 
+pkgconfigdir = $(libdir)/pkgconfig
+
+if INSTALL_E133
+pkgconfig_DATA = libolaacn.pc
+endif
+
 noinst_LTLIBRARIES = libolae131core.la
-libolae131core_la_SOURCES = BaseInflator.cpp CID.cpp \
+
+if INSTALL_ACN
+  lib_LTLIBRARIES = libolaacn.la
+else
+  noinst_LTLIBRARIES += libolaacn.la
+endif
+
+# libolaacn.la
+libolaacn_la_SOURCES = CID.cpp \
+                       CIDImpl.cpp
+libolaacn_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(uuid_CFLAGS)
+libolaacn_la_LIBADD = $(uuid_LIBS) \
+                      ../../../common/libolacommon.la
+
+# libolae131core.la
+libolae131core_la_SOURCES = BaseInflator.cpp \
                             DMPAddress.cpp DMPE131Inflator.cpp \
                             DMPInflator.cpp \
                             DMPPDU.cpp \
@@ -33,7 +54,8 @@ libolae131core_la_SOURCES = BaseInflator.cpp CID.cpp \
                             UDPTransport.cpp
 libolae131core_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(uuid_CFLAGS)
 libolae131core_la_LIBADD = $(uuid_LIBS) \
-                           ../../../common/libolacommon.la
+                           ../../../common/libolacommon.la \
+                           ./libolaacn.la
 
 # E1.31 dev programs
 noinst_PROGRAMS = e131_transmit_test e131_loadtest

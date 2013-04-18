@@ -113,7 +113,8 @@ void RootSenderTest::testRootSenderWithCIDs(const CID &root_cid,
   ola::network::UDPSocket socket;
   OLA_ASSERT(socket.Init());
   OLA_ASSERT(
-      socket.Bind(IPV4SocketAddress(IPV4Address::WildCard(), ACN_PORT)));
+      socket.Bind(IPV4SocketAddress(IPV4Address::WildCard(),
+                                    ola::acn::ACN_PORT)));
   OLA_ASSERT(socket.EnableBroadcast());
 
   IncomingUDPTransport incoming_udp_transport(&socket, &root_inflator);

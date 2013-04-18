@@ -23,14 +23,16 @@
 
 #include <stdint.h>
 
-#include <ola/io/IOStack.h>
+#include "ola/acn/CID.h"
+#include "ola/io/IOStack.h"
 
-#include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/PDU.h"
 
 namespace ola {
 namespace plugin {
 namespace e131 {
+
+using ola::acn::CID;
 
 class RootPDU: public PDU {
   public:

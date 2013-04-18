@@ -19,8 +19,8 @@
 
 #include <stdint.h>
 #include <string>
+#include "ola/e133/E133Enums.h"
 #include "ola/rdm/RDMControllerInterface.h"
-#include "plugins/e131/e131/E133Enums.h"
 
 #ifndef TOOLS_E133_E133ENDPOINT_H_
 #define TOOLS_E133_E133ENDPOINT_H_
