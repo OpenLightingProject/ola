@@ -170,6 +170,7 @@ class Flag<string> : public BaseFlag {
     string default_value() const { return m_default; }
 
     operator const char*() const { return m_value.c_str(); }
+    string str() const { return m_value; }
 
     Flag &operator=(const string &v) {
       m_value = v;

@@ -18,4 +18,5 @@ UtilsTester_SOURCES = ActionQueueTest.cpp BackoffTest.cpp ClockTest.cpp \
 UtilsTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 UtilsTester_LDADD = $(CPPUNIT_LIBS) \
                     libolautils.la \
+                    ../base/libolabase.la \
                     ../logging/liblogging.la

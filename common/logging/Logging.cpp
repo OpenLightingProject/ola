@@ -30,6 +30,10 @@
 #include <iostream>
 #include <string>
 #include "ola/Logging.h"
+#include "ola/base/Flags.h"
+
+DEFINE_s_int8(log_level, l, ola::OLA_LOG_WARN, "Set the logging level 0 .. 4.");
+DEFINE_bool(syslog, false, "Send to syslog rather than stderr.");
 
 namespace ola {
 
@@ -57,6 +61,49 @@ void IncrementLogLevel() {
     logging_level = OLA_LOG_NONE;
 }
 
+
+/*
+ * Initialize logging from the command line flags.
+ */
+bool InitLoggingFromFlags() {
+  LogDestination *destination;
+  if (FLAGS_syslog) {
+    SyslogDestination *syslog_dest = new SyslogDestination();
+    if (!syslog_dest->Init()) {
+      delete syslog_dest;
+      return false;
+    }
+    destination = syslog_dest;
+  } else {
+    destination = new StdErrorLogDestination();
+  }
+
+  log_level log_level = ola::OLA_LOG_WARN;
+  switch (FLAGS_log_level) {
+    case 0:
+      // nothing is written at this level
+      // so this turns logging off
+      log_level = ola::OLA_LOG_NONE;
+      break;
+    case 1:
+      log_level = ola::OLA_LOG_FATAL;
+      break;
+    case 2:
+      log_level = ola::OLA_LOG_WARN;
+      break;
+    case 3:
+      log_level = ola::OLA_LOG_INFO;
+      break;
+    case 4:
+      log_level = ola::OLA_LOG_DEBUG;
+      break;
+    default :
+      break;
+  }
+
+  InitLogging(log_level, destination);
+  return true;
+}
 
 /*
  * Init the logging system.

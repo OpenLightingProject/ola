@@ -72,7 +72,7 @@ using std::vector;
 #ifdef HAVE_LIBSLP
 DEFINE_bool(openslp, false, "Use openslp rather than the OLA SLP server");
 #endif
-DEFINE_s_int8(log_level, l, ola::OLA_LOG_WARN, "Set the logging level 0 .. 4.");
+
 DEFINE_s_string(pid_location, p, PID_DATA_DIR,
                 "The directory to read PID definitiions from");
 DEFINE_s_string(target_addresses, t, "",
@@ -240,35 +240,14 @@ bool SimpleE133Monitor::EndpointRequest(
  * Startup a node
  */
 int main(int argc, char *argv[]) {
-  ola::SetHelpString("[options]", "Monitor E1.33 Devices.");
+  ola::SetHelpString(
+      "[options]",
+      "Open a TCP connection to E1.33 Devices and wait for E1.33 messages.");
   ola::ParseFlags(&argc, argv);
+  ola::InitLoggingFromFlags();
 
   PidStoreHelper pid_helper(string(FLAGS_pid_location), 4);
 
-  ola::log_level log_level = ola::OLA_LOG_WARN;
-  switch (FLAGS_log_level) {
-    case 0:
-      // nothing is written at this level
-      // so this turns logging off
-      log_level = ola::OLA_LOG_NONE;
-      break;
-    case 1:
-      log_level = ola::OLA_LOG_FATAL;
-      break;
-    case 2:
-      log_level = ola::OLA_LOG_WARN;
-      break;
-    case 3:
-      log_level = ola::OLA_LOG_INFO;
-      break;
-    case 4:
-      log_level = ola::OLA_LOG_DEBUG;
-      break;
-    default :
-      break;
-  }
-
-  ola::InitLogging(log_level, ola::OLA_LOG_STDERR);
 
   vector<IPV4Address> targets;
   if (!string(FLAGS_target_addresses).empty()) {

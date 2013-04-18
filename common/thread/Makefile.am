@@ -10,6 +10,7 @@ check_PROGRAMS = $(TESTS)
 ThreadTester_SOURCES = ThreadPoolTest.cpp ThreadTest.cpp ThreadTester.cpp
 ThreadTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 ThreadTester_LDADD = $(CPPUNIT_LIBS) \
+                     ../base/libolabase.la \
                      ../logging/liblogging.la \
                      ../utils/libolautils.la \
                      ./libthread.la

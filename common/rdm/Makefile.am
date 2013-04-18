@@ -30,6 +30,7 @@ DiscoveryAgentTester_SOURCES = DiscoveryAgentTester.cpp DiscoveryAgentTest.cpp
 DiscoveryAgentTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 DiscoveryAgentTester_LDADD = $(CPPUNIT_LIBS) \
                              libolardm.la \
+                             ../base/libolabase.la \
                              ../logging/liblogging.la \
                              ../utils/libolautils.la
 
@@ -39,11 +40,12 @@ RDMTester_SOURCES = RDMAPITest.cpp RDMCommandTest.cpp RDMTester.cpp \
 RDMTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 RDMTester_LDADD = $(CPPUNIT_LIBS) \
                   libolardm.la \
+                  ../base/libolabase.la \
                   ../io/libolaio.la \
                   ../logging/liblogging.la \
+                  ../messaging/libolamessaging.la \
                   ../network/libolanetwork.la \
                   ../testing/libolatesting.la \
-                  ../messaging/libolamessaging.la \
                   ../utils/libolautils.la
 
 PidStoreTester_SOURCES = DescriptorConsistencyCheckerTest.cpp \
@@ -51,6 +53,7 @@ PidStoreTester_SOURCES = DescriptorConsistencyCheckerTest.cpp \
 PidStoreTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 PidStoreTester_LDADD = $(CPPUNIT_LIBS) \
                        libolardm.la \
+                       ../base/libolabase.la \
                        ../logging/liblogging.la \
                        ../messaging/libolamessaging.la \
                        ../utils/libolautils.la
@@ -65,10 +68,11 @@ RDMMessageTester_SOURCES = GroupSizeCalculatorTest.cpp \
 RDMMessageTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 RDMMessageTester_LDADD = $(CPPUNIT_LIBS) \
                          libolardm.la \
-                          ../logging/liblogging.la \
-                          ../messaging/libolamessaging.la \
-                          ../network/libolanetwork.la \
-                          ../utils/libolautils.la
+                         ../base/libolabase.la \
+                         ../logging/liblogging.la \
+                         ../messaging/libolamessaging.la \
+                         ../network/libolanetwork.la \
+                         ../utils/libolautils.la
 
 Pids.pb.cc Pids.pb.h: Pids.proto
 	$(PROTOC) --cpp_out ./ Pids.proto
