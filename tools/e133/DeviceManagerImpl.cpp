@@ -116,7 +116,6 @@ DeviceManagerImpl::DeviceManagerImpl(ola::io::SelectServerInterface *ss,
   m_root_inflator.AddInflator(&m_e133_inflator);
   m_e133_inflator.AddInflator(&m_rdm_inflator);
   m_rdm_inflator.SetRDMHandler(
-      ROOT_E133_ENDPOINT,
       NewCallback(this, &DeviceManagerImpl::EndpointRequest));
 }
 
@@ -379,6 +378,12 @@ void DeviceManagerImpl::EndpointRequest(
     const string &raw_request) {
   if (!m_rdm_callback.get())
     return;
+
+  if (e133_header->Endpoint()) {
+    OLA_WARN << "TCP message for non-0 endpoint. Endpoint = "
+             << e133_header->Endpoint();
+    return;
+  }
 
   if (!m_rdm_callback->Run(transport_header->Source().Host(),
                            e133_header->Endpoint(), raw_request)) {

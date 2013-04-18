@@ -20,7 +20,6 @@
 #ifndef PLUGINS_E131_E131_RDMINFLATOR_H_
 #define PLUGINS_E131_E131_RDMINFLATOR_H_
 
-#include <map>
 #include <string>
 #include "ola/Callback.h"
 #include "ola/acn/ACNVectors.h"
@@ -44,13 +43,11 @@ class RDMInflator: public BaseInflator {
                           > RDMMessageHandler;
 
     explicit RDMInflator();
-    ~RDMInflator();
+    ~RDMInflator() {}
 
     uint32_t Id() const { return ola::acn::VECTOR_FRAMING_RDMNET; }
 
-    void SetWildcardRDMHandler(RDMMessageHandler *handler);
-    bool SetRDMHandler(uint16_t endpoint, RDMMessageHandler *handler);
-    bool RemoveRDMHandler(uint16_t endpoint);
+    void SetRDMHandler(RDMMessageHandler *handler);
 
     static const unsigned int VECTOR_RDMNET_DATA = 0xcc;
 
@@ -68,10 +65,7 @@ class RDMInflator: public BaseInflator {
                                unsigned int pdu_len);
 
   private:
-    typedef std::map<uint16_t, RDMMessageHandler*> endpoint_handler_map;
-    std::auto_ptr<RDMMessageHandler> m_wildcard_handler;
-
-    endpoint_handler_map m_rdm_handlers;
+    std::auto_ptr<RDMMessageHandler> m_rdm_handler;
 };
 }  // e131
 }  // plugin

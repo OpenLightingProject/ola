@@ -386,6 +386,8 @@ SimpleE133Controller::SimpleE133Controller(
 
   m_e133_status_inflator.SetStatusHandler(
       NewCallback(this, &SimpleE133Controller::HandleStatusMessage));
+  m_rdm_inflator.SetRDMHandler(
+      NewCallback(this, &SimpleE133Controller::HandlePacket));
 }
 
 
@@ -570,10 +572,6 @@ bool SimpleE133Controller::SendRequest(const UID &uid,
     return false;
   }
 
-  // Register a callback to catch the response
-  m_rdm_inflator.SetRDMHandler(
-      endpoint,
-      NewCallback(this, &SimpleE133Controller::HandlePacket));
   return true;
 }
 

@@ -69,7 +69,7 @@ E133Receiver::E133Receiver(ola::network::UDPSocket *socket,
   m_e133_inflator->AddInflator(m_rdm_inflator.get());
   m_e133_inflator->AddInflator(m_e133_status_inflator.get());
 
-  m_rdm_inflator->SetWildcardRDMHandler(
+  m_rdm_inflator->SetRDMHandler(
       NewCallback(this, &E133Receiver::HandlePacket));
   m_e133_status_inflator->SetStatusHandler(
       NewCallback(this, &E133Receiver::HandleStatusMessage));

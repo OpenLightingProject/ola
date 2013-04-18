@@ -19,11 +19,9 @@
  */
 
 #include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
-#include <map>
 #include <memory>
 #include <string>
 #include "ola/Logging.h"
-#include "ola/stl/STLUtils.h"
 #include "ola/rdm/RDMCommand.h"
 #include "plugins/e131/e131/RDMInflator.h"
 
@@ -40,57 +38,13 @@ RDMInflator::RDMInflator()
     : BaseInflator(PDU::ONE_BYTE) {
 }
 
-
 /**
- * Clean up this inflator
- */
-RDMInflator::~RDMInflator() {
-  STLDeleteValues(&m_rdm_handlers);
-}
-
-
-/**
- * Set a RDMHandler to run for every endpoint.
+ * Set a RDMHandler to run when receiving a RDM message.
  * @param handler the callback to invoke when there is rdm data for this
  * universe.
  */
-void RDMInflator::SetWildcardRDMHandler(RDMMessageHandler *handler) {
-  m_wildcard_handler.reset(handler);
-}
-
-
-/**
- * Set the RDM Handler for an endpoint, ownership of the handler is
- * transferred.
- * @param endpoint the endpoint to use the handler for
- * @param handler the callback to invoke when there is rdm data for this
- * universe.
- * @return true if added, false otherwise
- */
-bool RDMInflator::SetRDMHandler(uint16_t endpoint, RDMMessageHandler *handler) {
-  if (!handler)
-    return false;
-
-  RemoveRDMHandler(endpoint);
-  m_rdm_handlers[endpoint] = handler;
-  return true;
-}
-
-
-/**
- * Remove the RDM handler for an endpoint
- * @param endpoint the endpoint to remove the handler for.
- * @return true if removed, false if it didn't exist
- */
-bool RDMInflator::RemoveRDMHandler(uint16_t endpoint) {
-  endpoint_handler_map::iterator iter = m_rdm_handlers.find(endpoint);
-
-  if (iter != m_rdm_handlers.end()) {
-    delete iter->second;
-    m_rdm_handlers.erase(iter);
-    return true;
-  }
-  return false;
+void RDMInflator::SetRDMHandler(RDMMessageHandler *handler) {
+  m_rdm_handler.reset(handler);
 }
 
 
@@ -126,16 +80,11 @@ bool RDMInflator::HandlePDUData(uint32_t vector,
 
   E133Header e133_header = headers.GetE133Header();
 
-  if (m_wildcard_handler.get()) {
-    m_wildcard_handler->Run(&headers.GetTransportHeader(), &e133_header,
-                            rdm_message);
-  }
-
-  RDMMessageHandler *handler = STLFindOrNull(m_rdm_handlers,
-                                             e133_header.Endpoint());
-
-  if (handler) {
-    handler->Run(&headers.GetTransportHeader(), &e133_header, rdm_message);
+  if (m_rdm_handler.get()) {
+    m_rdm_handler->Run(&headers.GetTransportHeader(), &e133_header,
+                       rdm_message);
+  } else {
+    OLA_WARN << "No RDM handler defined!";
   }
   return true;
 }

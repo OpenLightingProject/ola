@@ -70,8 +70,6 @@ class E133Device {
     auto_ptr<DesignatedControllerConnection> m_controller_connection;
 
     class EndpointManager *m_endpoint_manager;
-    auto_ptr<ola::Callback1<void, uint16_t> > m_register_endpoint_callback;
-    auto_ptr<ola::Callback1<void, uint16_t> > m_unregister_endpoint_callback;
     E133EndpointInterface *m_root_endpoint;
 
     // The RDM device to handle requests to the Root Endpoint
@@ -88,11 +86,7 @@ class E133Device {
     // transports
     ola::plugin::e131::IncomingUDPTransport m_incoming_udp_transport;
 
-    void RegisterEndpoint(uint16_t endpoint_id);
-    void UnRegisterEndpoint(uint16_t endpoint_id);
-
     void EndpointRequest(
-        uint16_t endpoint_id,
         const ola::plugin::e131::TransportHeader *transport_header,
         const ola::plugin::e131::E133Header *e133_header,
         const string &raw_request);
