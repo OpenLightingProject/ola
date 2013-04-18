@@ -50,8 +50,8 @@ bool E133StatusInflator::HandlePDUData(uint32_t vector,
       static_cast<unsigned int>(ola::e133::MAX_E133_STATUS_STRING_SIZE));
   string description(reinterpret_cast<const char*>(&data[0]), size);
 
-  m_handler->Run(headers.GetTransportHeader(),
-                 headers.GetE133Header(),
+  m_handler->Run(&headers.GetTransportHeader(),
+                 &headers.GetE133Header(),
                  static_cast<uint16_t>(vector),
                  description);
   return true;

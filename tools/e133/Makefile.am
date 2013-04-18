@@ -51,6 +51,7 @@ endif
 # libolae133common.la
 # Code required by both the controller and device.
 libolae133common_la_SOURCES = E133HealthCheckedConnection.cpp \
+                              E133Receiver.cpp \
                               MessageQueue.cpp \
                               MessageBuilder.cpp
 libolae133common_la_LIBADD = $(top_builddir)/plugins/e131/e131/libolae131core.la

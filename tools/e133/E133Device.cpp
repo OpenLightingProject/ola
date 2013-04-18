@@ -220,10 +220,10 @@ void E133Device::UnRegisterEndpoint(uint16_t endpoint_id) {
  */
 void E133Device::EndpointRequest(
     uint16_t endpoint_id,
-    const ola::plugin::e131::TransportHeader &transport_header,
-    const ola::plugin::e131::E133Header &e133_header,
+    const ola::plugin::e131::TransportHeader *transport_header,
+    const ola::plugin::e131::E133Header *e133_header,
     const std::string &raw_request) {
-  IPV4SocketAddress target = transport_header.Source();
+  IPV4SocketAddress target = transport_header->Source();
   OLA_INFO << "Got request for to endpoint " << endpoint_id << " from "
            << target;
 
@@ -235,7 +235,7 @@ void E133Device::EndpointRequest(
 
   if (!endpoint) {
     OLA_INFO << "Request to non-existent endpoint " << endpoint_id;
-    SendStatusMessage(target, e133_header.Sequence(), endpoint_id,
+    SendStatusMessage(target, e133_header->Sequence(), endpoint_id,
                       ola::e133::SC_E133_NONEXISTANT_ENDPOINT,
                       "No such endpoint");
     return;
@@ -250,7 +250,7 @@ void E133Device::EndpointRequest(
     OLA_WARN << "Failed to unpack E1.33 RDM message, ignoring request.";
     // There is no way to return 'invalid request' so pretend this is a timeout
     // but give a descriptive error msg.
-    SendStatusMessage(target, e133_header.Sequence(), endpoint_id,
+    SendStatusMessage(target, e133_header->Sequence(), endpoint_id,
                       ola::e133::SC_E133_RDM_TIMEOUT,
                      "Invalid RDM request");
     return;
@@ -261,7 +261,7 @@ void E133Device::EndpointRequest(
       ola::NewSingleCallback(this,
                              &E133Device::EndpointRequestComplete,
                              target,
-                             e133_header.Sequence(),
+                             e133_header->Sequence(),
                              endpoint_id));
 }
 

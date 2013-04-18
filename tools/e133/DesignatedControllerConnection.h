@@ -101,8 +101,8 @@ class DesignatedControllerConnection {
                         const ola::rdm::RDMResponse *rdm_response);
 
     void HandleStatusMessage(
-        const ola::plugin::e131::TransportHeader &transport_header,
-        const ola::plugin::e131::E133Header &e133_header,
+        const ola::plugin::e131::TransportHeader *transport_header,
+        const ola::plugin::e131::E133Header *e133_header,
         uint16_t status_code,
         const string &description);
 

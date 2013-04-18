@@ -50,6 +50,16 @@ RDMInflator::~RDMInflator() {
 
 
 /**
+ * Set a RDMHandler to run for every endpoint.
+ * @param handler the callback to invoke when there is rdm data for this
+ * universe.
+ */
+void RDMInflator::SetWildcardRDMHandler(RDMMessageHandler *handler) {
+  m_wildcard_handler.reset(handler);
+}
+
+
+/**
  * Set the RDM Handler for an endpoint, ownership of the handler is
  * transferred.
  * @param endpoint the endpoint to use the handler for
@@ -57,8 +67,7 @@ RDMInflator::~RDMInflator() {
  * universe.
  * @return true if added, false otherwise
  */
-bool RDMInflator::SetRDMHandler(uint16_t endpoint,
-                                RDMMessageHandler *handler) {
+bool RDMInflator::SetRDMHandler(uint16_t endpoint, RDMMessageHandler *handler) {
   if (!handler)
     return false;
 
@@ -113,25 +122,21 @@ bool RDMInflator::HandlePDUData(uint32_t vector,
     return true;
   }
 
-  E133Header e133_header = headers.GetE133Header();
-  endpoint_handler_map::iterator endpoint_iter =
-      m_rdm_handlers.find(e133_header.Endpoint());
-
-  if (endpoint_iter == m_rdm_handlers.end()) {
-    if (!e133_header.Endpoint()) {
-      OLA_WARN << "Received E1.33 message for Endpoint 0 but no handler set!";
-    } else {
-      OLA_INFO << "Received E1.33 message for Endpoint " <<
-        e133_header.Endpoint() << ", no handler set";
-    }
-    return true;
-  }
-
   string rdm_message(reinterpret_cast<const char*>(&data[0]), pdu_len);
 
-  endpoint_iter->second->Run(headers.GetTransportHeader(),
-                             e133_header,
-                             rdm_message);
+  E133Header e133_header = headers.GetE133Header();
+
+  if (m_wildcard_handler.get()) {
+    m_wildcard_handler->Run(&headers.GetTransportHeader(), &e133_header,
+                            rdm_message);
+  }
+
+  RDMMessageHandler *handler = STLFindOrNull(m_rdm_handlers,
+                                             e133_header.Endpoint());
+
+  if (handler) {
+    handler->Run(&headers.GetTransportHeader(), &e133_header, rdm_message);
+  }
   return true;
 }
 }  // e131

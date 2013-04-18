@@ -357,18 +357,18 @@ bool DesignatedControllerConnection::SendRDMCommand(
  * Handle a E1.33 Status PDU on the TCP connection.
  */
 void DesignatedControllerConnection::HandleStatusMessage(
-    const TransportHeader &transport_header,
-    const ola::plugin::e131::E133Header &e133_header,
+    const TransportHeader *transport_header,
+    const ola::plugin::e131::E133Header *e133_header,
     uint16_t status_code,
     const string &description) {
   if (status_code != ola::e133::SC_E133_ACK) {
     OLA_INFO << "Received a non-ack status code from "
-             << transport_header.Source() << ": " << status_code << " : "
+             << transport_header->Source() << ": " << status_code << " : "
              << description;
   }
-  OLA_INFO << "Controller has ack'ed " << e133_header.Sequence();
+  OLA_INFO << "Controller has ack'ed " << e133_header->Sequence();
 
-  ola::STLRemoveAndDelete(&m_unacked_messages, e133_header.Sequence());
+  ola::STLRemoveAndDelete(&m_unacked_messages, e133_header->Sequence());
   if (m_unsent_messages && !m_message_queue->LimitReached()) {
     bool sent_all = true;
     PendingMessageMap::iterator iter = m_unacked_messages.begin();

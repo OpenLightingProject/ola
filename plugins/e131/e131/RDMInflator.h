@@ -36,9 +36,10 @@ class RDMInflator: public BaseInflator {
   friend class RDMInflatorTest;
 
   public:
+    // These are pointers so the callers don't have to pull in al the headers.
     typedef ola::Callback3<void,
-                           const TransportHeader&,  // src ip & port
-                           const E133Header&,  // the E1.33 header
+                           const TransportHeader*,  // src ip & port
+                           const E133Header*,  // the E1.33 header
                            const std::string&  // rdm data
                           > RDMMessageHandler;
 
@@ -47,6 +48,7 @@ class RDMInflator: public BaseInflator {
 
     uint32_t Id() const { return ola::acn::VECTOR_FRAMING_RDMNET; }
 
+    void SetWildcardRDMHandler(RDMMessageHandler *handler);
     bool SetRDMHandler(uint16_t endpoint, RDMMessageHandler *handler);
     bool RemoveRDMHandler(uint16_t endpoint);
 
@@ -67,6 +69,7 @@ class RDMInflator: public BaseInflator {
 
   private:
     typedef std::map<uint16_t, RDMMessageHandler*> endpoint_handler_map;
+    std::auto_ptr<RDMMessageHandler> m_wildcard_handler;
 
     endpoint_handler_map m_rdm_handlers;
 };

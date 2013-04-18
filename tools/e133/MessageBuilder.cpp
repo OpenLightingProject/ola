@@ -25,8 +25,9 @@
 #include "ola/e133/MessageBuilder.h"
 #include "ola/io/IOStack.h"
 
-#include "plugins/e131/e131/RootPDU.h"
 #include "plugins/e131/e131/E133PDU.h"
+#include "plugins/e131/e131/RDMPDU.h"
+#include "plugins/e131/e131/RootPDU.h"
 #include "plugins/e131/e131/E133StatusPDU.h"
 #include "plugins/e131/e131/PreamblePacker.h"
 
@@ -46,6 +47,14 @@ MessageBuilder::MessageBuilder(const CID &cid, const string &source_name)
       // The Max sized RDM packet is 256 bytes, E1.33 adds 118 bytes of
       // headers.
       m_memory_pool(400) {
+}
+
+
+/**
+ * Append a RDM PDU Header onto this packet
+ */
+void MessageBuilder::PrependRDMHeader(IOStack *packet) {
+  ola::plugin::e131::RDMPDU::PrependPDU(packet);
 }
 
 

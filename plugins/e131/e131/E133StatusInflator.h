@@ -35,9 +35,10 @@ namespace e131 {
 
 class E133StatusInflator: public BaseInflator {
   public:
+    // These are pointers so the callers don't have to pull in all the headers.
     typedef ola::Callback4<void,
-                           const TransportHeader&,  // src ip & port
-                           const E133Header&,  // the E1.33 header
+                           const TransportHeader*,  // src ip & port
+                           const E133Header*,  // the E1.33 header
                            uint16_t,  // the E1.33 Status code
                            const std::string&  // rdm data
                           > StatusMessageHandler;

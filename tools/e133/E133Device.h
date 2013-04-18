@@ -93,8 +93,8 @@ class E133Device {
 
     void EndpointRequest(
         uint16_t endpoint_id,
-        const ola::plugin::e131::TransportHeader &transport_header,
-        const ola::plugin::e131::E133Header &e133_header,
+        const ola::plugin::e131::TransportHeader *transport_header,
+        const ola::plugin::e131::E133Header *e133_header,
         const string &raw_request);
 
     void EndpointRequestComplete(ola::network::IPV4SocketAddress target,

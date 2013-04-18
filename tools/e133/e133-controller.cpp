@@ -335,8 +335,8 @@ class SimpleE133Controller {
     void DiscoveryCallback(bool status, const URLEntries &urls);
     bool SendRequest(const UID &uid, uint16_t endpoint, RDMRequest *request);
     void HandlePacket(
-        const ola::plugin::e131::TransportHeader &transport_header,
-        const ola::plugin::e131::E133Header &e133_header,
+        const ola::plugin::e131::TransportHeader *transport_header,
+        const ola::plugin::e131::E133Header *e133_header,
         const std::string &raw_response);
     void RequestCallback(ola::rdm::rdm_response_code rdm_code,
                          const RDMResponse *response,
@@ -344,8 +344,8 @@ class SimpleE133Controller {
     void HandleNack(const RDMResponse *response);
 
     void HandleStatusMessage(
-        const ola::plugin::e131::TransportHeader &transport_header,
-        const ola::plugin::e131::E133Header &e133_header,
+        const ola::plugin::e131::TransportHeader *transport_header,
+        const ola::plugin::e131::E133Header *e133_header,
         uint16_t status_code,
         const string &description);
 };
@@ -583,14 +583,14 @@ bool SimpleE133Controller::SendRequest(const UID &uid,
  * Handle a RDM response addressed to this universe
  */
 void SimpleE133Controller::HandlePacket(
-    const ola::plugin::e131::TransportHeader &transport_header,
-    const ola::plugin::e131::E133Header &e133_header,
+    const ola::plugin::e131::TransportHeader *transport_header,
+    const ola::plugin::e131::E133Header *e133_header,
     const std::string &raw_response) {
   // don't bother checking anything here
   (void) e133_header;
 
   // try to locate the pending request here
-  OLA_INFO << "Got data from " << transport_header.Source();
+  OLA_INFO << "Got data from " << transport_header->Source();
 
   // attempt to unpack as a response
   ola::rdm::rdm_response_code response_code;
@@ -686,12 +686,12 @@ void SimpleE133Controller::HandleNack(const RDMResponse *response) {
 
 
 void SimpleE133Controller::HandleStatusMessage(
-    const ola::plugin::e131::TransportHeader &transport_header,
-    const ola::plugin::e131::E133Header&,
+    const ola::plugin::e131::TransportHeader *transport_header,
+    const ola::plugin::e131::E133Header*,
     uint16_t status_code,
     const string &description) {
   // TODO(simon): match src IP, sequence # etc. here.
-  OLA_INFO << "Got status code from " << transport_header.Source();
+  OLA_INFO << "Got status code from " << transport_header->Source();
 
   ola::plugin::e131::E133StatusCode e133_status_code;
   if (!ola::plugin::e131::IntToStatusCode(status_code, &e133_status_code)) {

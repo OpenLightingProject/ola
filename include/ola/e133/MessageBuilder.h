@@ -32,6 +32,7 @@ namespace ola {
 namespace e133 {
 
 using ola::acn::CID;
+using ola::io::IOStack;
 using std::string;
 
 /**
@@ -42,20 +43,22 @@ class MessageBuilder {
     MessageBuilder(const CID &cid, const string &source_name);
     ~MessageBuilder() {}
 
-    void BuildNullTCPPacket(ola::io::IOStack *packet);
+    void PrependRDMHeader(IOStack *packet);
 
-    void BuildTCPE133StatusPDU(ola::io::IOStack *packet,
+    void BuildNullTCPPacket(IOStack *packet);
+
+    void BuildTCPE133StatusPDU(IOStack *packet,
                                uint32_t sequence_number, uint16_t endpoint_id,
                                ola::e133::E133StatusCode status_code,
                                const string &description);
-    void BuildUDPE133StatusPDU(ola::io::IOStack *packet,
+    void BuildUDPE133StatusPDU(IOStack *packet,
                                uint32_t sequence_number, uint16_t endpoint_id,
                                ola::e133::E133StatusCode status_code,
                                const string &description);
 
-    void BuildTCPRootE133(ola::io::IOStack *packet, uint32_t vector,
+    void BuildTCPRootE133(IOStack *packet, uint32_t vector,
                           uint32_t sequence_number, uint16_t endpoint_id);
-    void BuildUDPRootE133(ola::io::IOStack *packet, uint32_t vector,
+    void BuildUDPRootE133(IOStack *packet, uint32_t vector,
                           uint32_t sequence_number, uint16_t endpoint_id);
 
     ola::io::MemoryBlockPool *pool() { return &m_memory_pool; }

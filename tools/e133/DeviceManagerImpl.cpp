@@ -374,28 +374,28 @@ void DeviceManagerImpl::RLPDataReceived(
  * Handle a message on the TCP connection.
  */
 void DeviceManagerImpl::EndpointRequest(
-    const ola::plugin::e131::TransportHeader &transport_header,
-    const ola::plugin::e131::E133Header &e133_header,
+    const ola::plugin::e131::TransportHeader *transport_header,
+    const ola::plugin::e131::E133Header *e133_header,
     const string &raw_request) {
   if (!m_rdm_callback.get())
     return;
 
-  if (!m_rdm_callback->Run(transport_header.Source().Host(),
-                           e133_header.Endpoint(), raw_request)) {
+  if (!m_rdm_callback->Run(transport_header->Source().Host(),
+                           e133_header->Endpoint(), raw_request)) {
     // Don't send an ack
     return;
   }
 
   DeviceState *device_state = STLFindOrNull(
-      m_device_map, transport_header.Source().Host().AsInt());
+      m_device_map, transport_header->Source().Host().AsInt());
   if (!device_state) {
-    OLA_WARN << "Unable to find DeviceState for " << transport_header.Source();
+    OLA_WARN << "Unable to find DeviceState for " << transport_header->Source();
     return;
   }
 
   ola::io::IOStack packet(m_message_builder->pool());
   m_message_builder->BuildTCPE133StatusPDU(
-      &packet, e133_header.Sequence(), e133_header.Endpoint(),
+      &packet, e133_header->Sequence(), e133_header->Endpoint(),
       ola::e133::SC_E133_ACK, "OK");
   device_state->message_queue->SendMessage(&packet);
 }

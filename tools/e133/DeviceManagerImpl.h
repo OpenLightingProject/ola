@@ -129,8 +129,8 @@ class DeviceManagerImpl {
     void RLPDataReceived(const ola::plugin::e131::TransportHeader &header);
 
     void EndpointRequest(
-        const ola::plugin::e131::TransportHeader &transport_header,
-        const ola::plugin::e131::E133Header &e133_header,
+        const ola::plugin::e131::TransportHeader *transport_header,
+        const ola::plugin::e131::E133Header *e133_header,
         const string &raw_request);
 
     static const TimeInterval TCP_CONNECT_TIMEOUT;
