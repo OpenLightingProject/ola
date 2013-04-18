@@ -40,6 +40,7 @@
 #include <ola/acn/CID.h>
 #include <ola/e133/E133URLParser.h>
 #include <ola/e133/MessageBuilder.h>
+#include <ola/e133/E133Receiver.h>
 #include <ola/e133/OLASLPThread.h>
 #ifdef HAVE_LIBSLP
 #include <ola/e133/OpenSLPThread.h>
@@ -66,13 +67,8 @@
 #include <string>
 #include <vector>
 
-#include "plugins/e131/e131/E133Inflator.h"
 #include "plugins/e131/e131/E133StatusHelper.h"
-#include "plugins/e131/e131/E133StatusInflator.h"
-#include "plugins/e131/e131/RDMInflator.h"
 #include "plugins/e131/e131/RDMPDU.h"
-#include "plugins/e131/e131/RootInflator.h"
-#include "plugins/e131/e131/UDPTransport.h"
 
 
 using ola::NewCallback;
@@ -312,15 +308,9 @@ class SimpleE133Controller {
 
     ola::e133::MessageBuilder m_message_builder;
 
-    // inflators
-    ola::plugin::e131::RootInflator m_root_inflator;
-    ola::plugin::e131::E133Inflator m_e133_inflator;
-    ola::plugin::e131::RDMInflator m_rdm_inflator;
-    ola::plugin::e131::E133StatusInflator m_e133_status_inflator;
-
     // sockets & transports
     UDPSocket m_udp_socket;
-    ola::plugin::e131::IncomingUDPTransport m_incoming_udp_transport;
+    ola::e133::E133Receiver m_e133_receiver;
 
     // hash_map of UIDs to IPs
     typedef std::map<UID, IPV4Address> uid_to_ip_map;
@@ -334,20 +324,11 @@ class SimpleE133Controller {
 
     void DiscoveryCallback(bool status, const URLEntries &urls);
     bool SendRequest(const UID &uid, uint16_t endpoint, RDMRequest *request);
-    void HandlePacket(
-        const ola::plugin::e131::TransportHeader *transport_header,
-        const ola::plugin::e131::E133Header *e133_header,
-        const std::string &raw_response);
-    void RequestCallback(ola::rdm::rdm_response_code rdm_code,
-                         const RDMResponse *response,
-                         const vector<std::string> &packets);
+    void HandlePacket(const ola::e133::E133RDMMessage &rdm_message);
     void HandleNack(const RDMResponse *response);
 
     void HandleStatusMessage(
-        const ola::plugin::e131::TransportHeader *transport_header,
-        const ola::plugin::e131::E133Header *e133_header,
-        uint16_t status_code,
-        const string &description);
+        const ola::e133::E133StatusMessage &status_message);
 };
 
 
@@ -359,12 +340,14 @@ SimpleE133Controller::SimpleE133Controller(
     PidStoreHelper *pid_helper)
     : m_controller_ip(options.controller_ip),
       m_message_builder(ola::acn::CID::Generate(), "E1.33 Controller"),
-      m_incoming_udp_transport(&m_udp_socket, &m_root_inflator),
+      m_e133_receiver(
+          &m_udp_socket,
+          NewCallback(this, &SimpleE133Controller::HandleStatusMessage),
+          NewCallback(this, &SimpleE133Controller::HandlePacket)),
       m_src_uid(OPEN_LIGHTING_ESTA_CODE, 0xabcdabcd),
       m_pid_helper(pid_helper),
       m_command_printer(&cout, m_pid_helper),
       m_uid_list_updated(false) {
-
   if (options.slp_option == OPEN_SLP) {
 #ifdef HAVE_LIBSLP
     m_slp_thread.reset(new ola::e133::OpenSLPThread(&m_ss));
@@ -379,15 +362,6 @@ SimpleE133Controller::SimpleE133Controller(
     m_slp_thread->SetNewDeviceCallback(
         ola::NewCallback(this, &SimpleE133Controller::DiscoveryCallback));
   }
-
-  m_root_inflator.AddInflator(&m_e133_inflator);
-  m_e133_inflator.AddInflator(&m_rdm_inflator);
-  m_e133_inflator.AddInflator(&m_e133_status_inflator);
-
-  m_e133_status_inflator.SetStatusHandler(
-      NewCallback(this, &SimpleE133Controller::HandleStatusMessage));
-  m_rdm_inflator.SetRDMHandler(
-      NewCallback(this, &SimpleE133Controller::HandlePacket));
 }
 
 
@@ -414,9 +388,6 @@ bool SimpleE133Controller::Init() {
     return false;
   }
 
-  m_udp_socket.SetOnData(
-      NewCallback(&m_incoming_udp_transport,
-                  &ola::plugin::e131::IncomingUDPTransport::Receive));
   m_ss.AddReadDescriptor(&m_udp_socket);
 
   if (m_slp_thread.get()) {
@@ -578,58 +549,27 @@ bool SimpleE133Controller::SendRequest(const UID &uid,
 
 
 /**
- * Handle a RDM response addressed to this universe
+ * Handle a RDM message.
  */
 void SimpleE133Controller::HandlePacket(
-    const ola::plugin::e131::TransportHeader *transport_header,
-    const ola::plugin::e131::E133Header *e133_header,
-    const std::string &raw_response) {
-  // don't bother checking anything here
-  (void) e133_header;
-
-  // try to locate the pending request here
-  OLA_INFO << "Got data from " << transport_header->Source();
-
-  // attempt to unpack as a response
-  ola::rdm::rdm_response_code response_code;
-  const RDMResponse *response = RDMResponse::InflateFromData(
-    reinterpret_cast<const uint8_t*>(raw_response.data()),
-    raw_response.size(),
-    &response_code);
-
-  if (!response) {
-    OLA_WARN << "Failed to unpack E1.33 RDM message, ignoring request.";
-    return;
-  }
-
-  std::vector<std::string> raw_packets;
-  raw_packets.push_back(raw_response);
-  RequestCallback(response_code, response, raw_packets);
-}
-
-/**
- * Called when the RDM command completes
- */
-void SimpleE133Controller::RequestCallback(
-    ola::rdm::rdm_response_code rdm_code,
-    const RDMResponse *response_ptr,
-    const std::vector<std::string>&) {
-  auto_ptr<const RDMResponse> response(response_ptr);
+    const ola::e133::E133RDMMessage &rdm_message) {
   OLA_INFO << "RDM callback executed with code: " <<
-    ola::rdm::ResponseCodeToString(rdm_code);
+    ola::rdm::ResponseCodeToString(rdm_message.response_code);
 
   m_ss.Terminate();
 
-  if (rdm_code != ola::rdm::RDM_COMPLETED_OK)
+  if (rdm_message.response_code != ola::rdm::RDM_COMPLETED_OK)
     return;
 
-  switch (response->ResponseType()) {
+  switch (rdm_message.response->ResponseType()) {
     case ola::rdm::RDM_NACK_REASON:
-      HandleNack(response.get());
+      HandleNack(rdm_message.response);
       return;
     default:
       break;
   }
+
+  const RDMResponse *response = rdm_message.response;
 
   const ola::rdm::PidDescriptor *pid_descriptor = m_pid_helper->GetDescriptor(
       response->ParamId(),
@@ -662,7 +602,7 @@ void SimpleE133Controller::RequestCallback(
         response->ParamId(),
         message.get());
   else
-    m_command_printer.DisplayResponse(response.get(), true);
+    m_command_printer.DisplayResponse(response, true);
 }
 
 
@@ -684,20 +624,19 @@ void SimpleE133Controller::HandleNack(const RDMResponse *response) {
 
 
 void SimpleE133Controller::HandleStatusMessage(
-    const ola::plugin::e131::TransportHeader *transport_header,
-    const ola::plugin::e131::E133Header*,
-    uint16_t status_code,
-    const string &description) {
+    const ola::e133::E133StatusMessage &status_message) {
   // TODO(simon): match src IP, sequence # etc. here.
-  OLA_INFO << "Got status code from " << transport_header->Source();
+  OLA_INFO << "Got status code from " << status_message.ip;
 
   ola::plugin::e131::E133StatusCode e133_status_code;
-  if (!ola::plugin::e131::IntToStatusCode(status_code, &e133_status_code)) {
-    OLA_INFO << "Unknown E1.33 Status code " << status_code;
+  if (!ola::plugin::e131::IntToStatusCode(status_message.status_code,
+                                          &e133_status_code)) {
+    OLA_INFO << "Unknown E1.33 Status code " << status_message.status_code
+             << " : " << status_message.status_message;
   } else {
-    OLA_INFO << "Device returned code " << status_code << " : "
+    OLA_INFO << "Device returned code " << status_message.status_code << " : "
              << ola::plugin::e131::StatusMessageIdToString(e133_status_code)
-             << " : " << description;
+             << " : " << status_message.status_message;
   }
   Stop();
 }

@@ -123,7 +123,7 @@ void E133Receiver::HandlePacket(
 
   m_rdm_callback->Run(E133RDMMessage(
       transport_header->Source().Host(), e133_header->Endpoint(),
-      e133_header->Sequence(), response));
+      e133_header->Sequence(), response_code, response));
 }
 }  // e133
 }  // ola

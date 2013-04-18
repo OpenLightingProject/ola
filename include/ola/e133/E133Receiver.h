@@ -55,19 +55,19 @@ namespace e133 {
  */
 class E133StatusMessage {
   public:
-    E133StatusMessage(const IPV4Address &device,
+    E133StatusMessage(const IPV4Address &ip,
                       uint16_t endpoint,
                       uint32_t sequence_number,
                       uint16_t status_code,
                       string status_message)
-      : device(device),
+      : ip(ip),
         endpoint(endpoint),
         sequence_number(sequence_number),
         status_code(status_code),
         status_message(status_message) {
     }
 
-    IPV4Address device;
+    IPV4Address ip;
     uint16_t endpoint;
     uint32_t sequence_number;
     uint16_t status_code;
@@ -77,22 +77,26 @@ class E133StatusMessage {
 
 /**
  * Wraps a RDM message
+ * TODO(simon): sort out ownership here
  */
 class E133RDMMessage {
   public:
-    E133RDMMessage(const IPV4Address &device,
+    E133RDMMessage(const IPV4Address &ip,
                    uint16_t endpoint,
                    uint32_t sequence_number,
+                   ola::rdm::rdm_response_code response_code,
                    const ola::rdm::RDMResponse *response)
-      : device(device),
+      : ip(ip),
         endpoint(endpoint),
         sequence_number(sequence_number),
+        response_code(response_code),
         response(response) {
     }
 
-    IPV4Address device;
+    IPV4Address ip;
     uint16_t endpoint;
     uint32_t sequence_number;
+    ola::rdm::rdm_response_code response_code;
     const ola::rdm::RDMResponse *response;
 };
 
