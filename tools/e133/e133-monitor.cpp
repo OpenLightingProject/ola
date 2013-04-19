@@ -246,13 +246,13 @@ int main(int argc, char *argv[]) {
   ola::ParseFlags(&argc, argv);
   ola::InitLoggingFromFlags();
 
-  PidStoreHelper pid_helper(string(FLAGS_pid_location), 4);
+  PidStoreHelper pid_helper(FLAGS_pid_location, 4);
 
 
   vector<IPV4Address> targets;
-  if (!string(FLAGS_target_addresses).empty()) {
+  if (!FLAGS_target_addresses.str().empty()) {
     vector<string> tokens;
-    ola::StringSplit(string(FLAGS_target_addresses), tokens, ",");
+    ola::StringSplit(FLAGS_target_addresses, tokens, ",");
 
     vector<string>::const_iterator iter = tokens.begin();
     for (; iter != tokens.end(); ++iter) {
