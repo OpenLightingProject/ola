@@ -17,46 +17,31 @@
  * Copyright (C) 2011 Simon Newton
  *
  */
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
-#include <getopt.h>
 #include <ola/Callback.h>
 #include <ola/Logging.h>
+#include <ola/base/Flags.h>
 #include <ola/base/Init.h>
-#include <ola/e133/OLASLPThread.h>
-#ifdef HAVE_LIBSLP
-#include <ola/e133/OpenSLPThread.h>
-#endif
+#include <ola/e133/SLPThread.h>
 #include <ola/io/SelectServer.h>
 #include <ola/slp/URLEntry.h>
-#include <signal.h>
 #include <sysexits.h>
 
 #include <iostream>
 #include <memory>
 #include <string>
-#include <vector>
 
 using ola::slp::URLEntries;
 using std::auto_ptr;
 using std::string;
-using std::vector;
 
-// our command line options
-typedef struct {
-  string services;
-  bool use_openslp;
-  ola::log_level log_level;
-  uint16_t refresh;
-  bool help;
-} options;
+DEFINE_s_uint16(refresh, r, 60, "How often to check for new/expired services.");
 
-// globals
+// The SelectServer is global so we can access it from the signal handler.
 ola::io::SelectServer ss;
 
-// Called when we receive a new url list.
+/*
+ * Called when we receive a new url list.
+ */
 void DiscoveryDone(bool ok, const URLEntries &urls) {
   if (!ok) {
     OLA_WARN << "SLP discovery failed";
@@ -65,105 +50,10 @@ void DiscoveryDone(bool ok, const URLEntries &urls) {
   } else {
     URLEntries::const_iterator iter;
     for (iter = urls.begin(); iter != urls.end(); ++iter) {
-      OLA_INFO << "  " << iter->url();
+      std::cout << "  " << iter->url() << std::endl;
     }
   }
 }
-
-/*
- * Parse our command line options
- */
-void ParseOptions(int argc, char *argv[], options *opts) {
-  enum {
-    OPENSLP_OPTION = 256,
-  };
-
-  static struct option long_options[] = {
-      {"help", no_argument, 0, 'h'},
-      {"log-level", required_argument, 0, 'l'},
-      {"refresh", required_argument, 0, 'r'},
-#ifdef HAVE_LIBSLP
-      {"openslp", no_argument, 0, OPENSLP_OPTION},
-#endif
-      {0, 0, 0, 0}
-    };
-
-  opts->log_level = ola::OLA_LOG_WARN;
-  opts->refresh = 60;
-  opts->help = false;
-  opts->use_openslp = false;
-
-  int c;
-  int option_index = 0;
-
-  while (1) {
-    c = getopt_long(argc, argv, "l:hr:", long_options, &option_index);
-
-    if (c == -1)
-      break;
-
-    switch (c) {
-      case 0:
-        break;
-      case 'h':
-        opts->help = true;
-        break;
-      case 'l':
-        switch (atoi(optarg)) {
-          case 0:
-            // nothing is written at this level
-            // so this turns logging off
-            opts->log_level = ola::OLA_LOG_NONE;
-            break;
-          case 1:
-            opts->log_level = ola::OLA_LOG_FATAL;
-            break;
-          case 2:
-            opts->log_level = ola::OLA_LOG_WARN;
-            break;
-          case 3:
-            opts->log_level = ola::OLA_LOG_INFO;
-            break;
-          case 4:
-            opts->log_level = ola::OLA_LOG_DEBUG;
-            break;
-          default :
-            break;
-        }
-        break;
-      case 'r':
-        opts->refresh = atoi(optarg);
-        break;
-      case OPENSLP_OPTION:
-        opts->use_openslp = true;
-        break;
-      case '?':
-        break;
-      default:
-        break;
-    }
-  }
-}
-
-
-/*
- * Display the help message
- */
-void DisplayHelpAndExit(char arg[]) {
-  std::cout << "Usage: " << arg << "\n"
-  "\n"
-  "Locate E1.33 services.\n"
-  "\n"
-  "  -h, --help               Display this help message and exit.\n"
-  "  -l, --log-level <level>  Set the logging level 0 .. 4.\n"
-  "  -r, --refresh <seconds>  How often to check for new/expired services.\n"
-#ifdef HAVE_LIBSLP
-  "  --openslp                 Use openslp rather than the OLA SLP server\n"
-#endif
-  << std::endl;
-  exit(EX_USAGE);
-}
-
 
 /*
  * Terminate on interrupt.
@@ -179,42 +69,19 @@ static void InteruptSignal(int signo) {
  */
 int main(int argc, char *argv[]) {
   ola::AppInit(argc, argv);
-  options opts;
-  ParseOptions(argc, argv, &opts);
+  ola::SetHelpString("[options]", "Locate E1.33 SLP services.");
+  ola::ParseFlags(&argc, argv);
+  ola::InitLoggingFromFlags();
 
-  if (opts.help)
-    DisplayHelpAndExit(argv[0]);
+  ola::InstallSignal(SIGINT, InteruptSignal);
 
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-
-  // signal handler
-  struct sigaction act, oact;
-
-  act.sa_handler = InteruptSignal;
-  sigemptyset(&act.sa_mask);
-  act.sa_flags = 0;
-
-  if (sigaction(SIGINT, &act, &oact) < 0) {
-    OLA_WARN << "Failed to install signal SIGINT";
-    return false;
-  }
-
-  auto_ptr<ola::e133::BaseSLPThread> slp_thread;
-  if (opts.use_openslp) {
-#ifdef HAVE_LIBSLP
-    slp_thread.reset(new ola::e133::OpenSLPThread(&ss, opts.refresh));
-#else
-    OLA_WARN << "openslp not installed";
-    return false;
-#endif
-  } else {
-    slp_thread.reset(new ola::e133::OLASLPThread(&ss, opts.refresh));
-  }
+  auto_ptr<ola::e133::BaseSLPThread> slp_thread(
+    ola::e133::SLPThreadFactory::NewSLPThread(&ss));
   slp_thread->SetNewDeviceCallback(ola::NewCallback(&DiscoveryDone));
 
   if (!slp_thread->Init()) {
     OLA_WARN << "Init failed";
-    return 1;
+    exit(EX_UNAVAILABLE);
   }
 
   if (!slp_thread->Start()) {
