@@ -89,7 +89,7 @@ void FlagsTest::testDefaults() {
   OLA_ASSERT_EQ(static_cast<uint32_t>(2000),
                 static_cast<uint32_t>(FLAGS_f_uint32));
 
-  OLA_ASSERT_EQ(string("foo"), string(FLAGS_f_str));
+  OLA_ASSERT_EQ(string("foo"), FLAGS_f_str.str());
 
   OLA_ASSERT_EQ(static_cast<int8_t>(-10), static_cast<int8_t>(FLAGS_s_int8));
   OLA_ASSERT_EQ(static_cast<uint8_t>(10), static_cast<uint8_t>(FLAGS_s_uint8));
@@ -102,7 +102,7 @@ void FlagsTest::testDefaults() {
   OLA_ASSERT_EQ(static_cast<uint32_t>(2000),
                 static_cast<uint32_t>(FLAGS_s_uint32));
 
-  OLA_ASSERT_EQ(string("bar"), string(FLAGS_s_str));
+  OLA_ASSERT_EQ(string("bar"), FLAGS_s_str.str());
 }
 
 /**
@@ -121,7 +121,7 @@ void FlagsTest::testSetting() {
                 static_cast<int32_t>(FLAGS_f_int32));
   OLA_ASSERT_EQ(static_cast<uint32_t>(2000),
                 static_cast<uint32_t>(FLAGS_f_uint32));
-  OLA_ASSERT_EQ(string("foo"), string(FLAGS_f_str));
+  OLA_ASSERT_EQ(string("foo"), FLAGS_f_str.str());
 
   FLAGS_default_false = true;
   FLAGS_default_true = false;
@@ -146,7 +146,7 @@ void FlagsTest::testSetting() {
                 static_cast<int32_t>(FLAGS_f_int32));
   OLA_ASSERT_EQ(static_cast<uint32_t>(4000),
                 static_cast<uint32_t>(FLAGS_f_uint32));
-  OLA_ASSERT_EQ(string("hello"), string(FLAGS_f_str));
+  OLA_ASSERT_EQ(string("hello"), FLAGS_f_str.str());
 }
 
 
@@ -265,7 +265,7 @@ void FlagsTest::testStringFlags() {
   OLA_ASSERT_EQ(2, argc);
   OLA_ASSERT_EQ(string(bin_name), string(argv[0]));
   OLA_ASSERT_EQ(string(opt3), string(argv[1]));
-  OLA_ASSERT_EQ(string(opt2), string(FLAGS_f_str));
+  OLA_ASSERT_EQ(string(opt2), FLAGS_f_str.str());
 
   // try the --foo=bar version
   char opt4[] = "--f-str=data2";
@@ -275,7 +275,7 @@ void FlagsTest::testStringFlags() {
   ola::ParseFlags(&argc, argv2);
   OLA_ASSERT_EQ(1, argc);
   OLA_ASSERT_EQ(string(bin_name), string(argv[0]));
-  OLA_ASSERT_EQ(string("data2"), string(FLAGS_f_str));
+  OLA_ASSERT_EQ(string("data2"), FLAGS_f_str.str());
 
   // try the short version
   char opt5[] = "-j";
@@ -286,5 +286,5 @@ void FlagsTest::testStringFlags() {
   ola::ParseFlags(&argc, argv3);
   OLA_ASSERT_EQ(1, argc);
   OLA_ASSERT_EQ(string(bin_name), string(argv[0]));
-  OLA_ASSERT_EQ(string("data3"), string(FLAGS_s_str));
+  OLA_ASSERT_EQ(string("data3"), FLAGS_s_str.str());
 }
