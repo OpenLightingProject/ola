@@ -23,10 +23,6 @@
  * response.
  */
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
 #include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <sysexits.h>
 
@@ -40,10 +36,7 @@
 #include <ola/e133/E133URLParser.h>
 #include <ola/e133/MessageBuilder.h>
 #include <ola/e133/E133Receiver.h>
-#include <ola/e133/OLASLPThread.h>
-#ifdef HAVE_LIBSLP
-#include <ola/e133/OpenSLPThread.h>
-#endif
+#include <ola/e133/SLPThread.h>
 #include <ola/io/SelectServer.h>
 #include <ola/io/IOStack.h>
 #include <ola/network/IPV4Address.h>
@@ -76,9 +69,6 @@ DEFINE_s_string(pid_location, p, PID_DATA_DIR,
 DEFINE_s_bool(set, s, false, "Perform a SET (default is GET)");
 DEFINE_bool(list_pids, false, "Display a list of pids");
 DEFINE_s_string(uid, u, "", "The UID of the device to control.");
-#ifdef HAVE_LIBSLP
-DEFINE_bool(openslp, false, "Use openslp rather than the OLA SLP server");
-#endif
 
 using ola::NewCallback;
 using ola::io::IOStack;
@@ -120,18 +110,12 @@ void DisplayPIDsAndExit(uint16_t manufacturer_id,
  */
 class SimpleE133Controller {
   public:
-    enum SLPOption {
-      NO_SLP,
-      OPEN_SLP,
-      OLA_SLP,
-    };
-
     struct Options {
       IPV4Address controller_ip;
-      SLPOption slp_option;
+      bool use_slp;
 
-      Options(const IPV4Address &ip, SLPOption slp_option)
-          : controller_ip(ip), slp_option(slp_option) {
+      Options(const IPV4Address &ip, bool use_slp)
+          : controller_ip(ip), use_slp(use_slp) {
       }
     };
 
@@ -203,17 +187,8 @@ SimpleE133Controller::SimpleE133Controller(
       m_pid_helper(pid_helper),
       m_command_printer(&cout, m_pid_helper),
       m_uid_list_updated(false) {
-  if (options.slp_option == OPEN_SLP) {
-#ifdef HAVE_LIBSLP
-    m_slp_thread.reset(new ola::e133::OpenSLPThread(&m_ss));
-#else
-    OLA_WARN << "openslp not installed";
-#endif
-  } else if (options.slp_option == OLA_SLP) {
-    m_slp_thread.reset(new ola::e133::OLASLPThread(&m_ss));
-  }
-
-  if (m_slp_thread.get()) {
+  if (options.use_slp) {
+    m_slp_thread.reset(ola::e133::SLPThreadFactory::NewSLPThread(&m_ss));
     m_slp_thread->SetNewDeviceCallback(
         ola::NewCallback(this, &SimpleE133Controller::DiscoveryCallback));
   }
@@ -578,18 +553,8 @@ int main(int argc, char *argv[]) {
     exit(EX_USAGE);
   }
 
-  SimpleE133Controller::SLPOption slp_option = SimpleE133Controller::OLA_SLP;
-  if (target_ip.AsInt()) {
-    slp_option = SimpleE133Controller::NO_SLP;
-  } else {
-#ifdef HAVE_LIBSLP
-    slp_option = FLAGS_openslp ? SimpleE133Controller::OPEN_SLP :
-      SimpleE133Controller::OLA_SLP;
-#endif
-  }
-
   SimpleE133Controller controller(
-      SimpleE133Controller::Options(controller_ip, slp_option),
+      SimpleE133Controller::Options(controller_ip, target_ip.AsInt() == 0),
       &pid_helper);
 
   if (!controller.Init()) {

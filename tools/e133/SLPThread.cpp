@@ -17,8 +17,17 @@
  * Copyright (C) 2013 Simon Newton
  */
 
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <ola/Callback.h>
 #include <ola/Logging.h>
+#include <ola/base/Flags.h>
+#include <ola/e133/OLASLPThread.h>
+#ifdef HAVE_LIBSLP
+#include <ola/e133/OpenSLPThread.h>
+#endif
 #include <ola/e133/SLPThread.h>
 #include <ola/slp/URLEntry.h>
 #include <ola/stl/STLUtils.h>
@@ -28,6 +37,10 @@
 #include <utility>
 
 #include "tools/e133/SLPConstants.h"
+
+#ifdef HAVE_LIBSLP
+DEFINE_bool(openslp, false, "Use openslp rather than the OLA SLP server");
+#endif
 
 namespace ola {
 namespace e133 {
@@ -535,6 +548,20 @@ uint16_t BaseSLPThread::ClampLifetime(const string &url, uint16_t lifetime) {
     lifetime = MIN_SLP_LIFETIME;
   }
   return lifetime;
+}
+
+BaseSLPThread* SLPThreadFactory::NewSLPThread(
+    ola::thread::ExecutorInterface *ss,
+    unsigned int discovery_interval) {
+#ifdef HAVE_LIBSLP
+  if (FLAGS_openslp) {
+    return new OpenSLPThread(ss, discovery_interval);
+  } else {
+    return new OLASLPThread(ss, discovery_interval);
+  }
+#else
+  return new OLASLPThread(ss, discovery_interval);
+#endif
 }
 }  // e133
 }  // ola

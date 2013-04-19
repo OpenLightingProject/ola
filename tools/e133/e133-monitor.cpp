@@ -24,7 +24,6 @@
 
 #include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <errno.h>
-#include <getopt.h>
 #include <sysexits.h>
 
 #include <ola/BaseTypes.h>
@@ -36,10 +35,7 @@
 #include <ola/e133/DeviceManager.h>
 #include <ola/e133/E133URLParser.h>
 #include <ola/e133/MessageBuilder.h>
-#include <ola/e133/OLASLPThread.h>
-#ifdef HAVE_LIBSLP
-#include <ola/e133/OpenSLPThread.h>
-#endif
+#include <ola/e133/SLPThread.h>
 #include <ola/io/SelectServer.h>
 #include <ola/io/StdinHandler.h>
 #include <ola/network/IPV4Address.h>
@@ -69,10 +65,6 @@ using std::endl;
 using std::string;
 using std::vector;
 
-#ifdef HAVE_LIBSLP
-DEFINE_bool(openslp, false, "Use openslp rather than the OLA SLP server");
-#endif
-
 DEFINE_s_string(pid_location, p, PID_DATA_DIR,
                 "The directory to read PID definitiions from");
 DEFINE_s_string(target_addresses, t, "",
@@ -84,13 +76,7 @@ DEFINE_s_string(target_addresses, t, "",
  */
 class SimpleE133Monitor {
   public:
-    enum SLPOption {
-      OPEN_SLP,
-      OLA_SLP,
-      NO_SLP,
-    };
-    explicit SimpleE133Monitor(PidStoreHelper *pid_helper,
-                               SLPOption slp_option);
+    explicit SimpleE133Monitor(PidStoreHelper *pid_helper, bool enable_slp);
     ~SimpleE133Monitor();
 
     bool Init();
@@ -120,24 +106,15 @@ class SimpleE133Monitor {
 /**
  * Setup a new Monitor
  */
-SimpleE133Monitor::SimpleE133Monitor(
-    PidStoreHelper *pid_helper,
-    SLPOption slp_option)
+SimpleE133Monitor::SimpleE133Monitor(PidStoreHelper *pid_helper,
+                                     bool enable_slp)
     : m_command_printer(&cout, pid_helper),
       m_stdin_handler(&m_ss,
                       ola::NewCallback(this, &SimpleE133Monitor::Input)),
       m_message_builder(ola::acn::CID::Generate(), "OLA Monitor"),
       m_device_manager(&m_ss, &m_message_builder) {
-  if (slp_option == OLA_SLP) {
-    m_slp_thread.reset(new ola::e133::OLASLPThread(&m_ss));
-  } else if (slp_option == OPEN_SLP) {
-#ifdef HAVE_LIBSLP
-    m_slp_thread.reset(new ola::e133::OpenSLPThread(&m_ss));
-#else
-    OLA_WARN << "openslp not installed";
-#endif
-  }
-  if (m_slp_thread.get()) {
+  if (enable_slp) {
+    m_slp_thread.reset(ola::e133::SLPThreadFactory::NewSLPThread(&m_ss));
     m_slp_thread->SetNewDeviceCallback(
       NewCallback(this, &SimpleE133Monitor::DiscoveryCallback));
   }
@@ -268,16 +245,7 @@ int main(int argc, char *argv[]) {
   if (!pid_helper.Init())
     exit(EX_OSFILE);
 
-  SimpleE133Monitor::SLPOption slp_option = SimpleE133Monitor::NO_SLP;
-  if (targets.empty()) {
-#ifdef HAVE_LIBSLP
-    slp_option = FLAGS_openslp ? SimpleE133Monitor::OPEN_SLP :
-        SimpleE133Monitor::OLA_SLP;
-#else
-    slp_option = SimpleE133Monitor::OLA_SLP;
-#endif
-  }
-  SimpleE133Monitor monitor(&pid_helper, slp_option);
+  SimpleE133Monitor monitor(&pid_helper, targets.empty());
   if (!monitor.Init())
     exit(EX_UNAVAILABLE);
 

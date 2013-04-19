@@ -211,6 +211,22 @@ class BaseSLPThread: public ola::thread::Thread {
     static const char E133_DEVICE_SLP_SERVICE_NAME[];
     static const char E133_CONTROLLER_SLP_SERVICE_NAME[];
 };
+
+
+/**
+ * Creates new SLPThreads based on a command line flag.
+ */
+class SLPThreadFactory {
+  public:
+    static BaseSLPThread* NewSLPThread(
+      ola::thread::ExecutorInterface *ss,
+      unsigned int discovery_interval =
+          BaseSLPThread::DEFAULT_DISCOVERY_INTERVAL_SECONDS);
+
+  private:
+    SLPThreadFactory(const SLPThreadFactory&);
+    SLPThreadFactory& operator=(const SLPThreadFactory&);
+};
 }  // e133
 }  // ola
 #endif  // INCLUDE_OLA_E133_SLPTHREAD_H_
