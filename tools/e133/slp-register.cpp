@@ -17,25 +17,17 @@
  * Copyright (C) 2011 Simon Newton
  *
  */
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
-#include <getopt.h>
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
+#include <ola/base/Flags.h>
 #include <ola/base/Init.h>
-#include <ola/e133/OLASLPThread.h>
-#ifdef HAVE_LIBSLP
-#include <ola/e133/OpenSLPThread.h>
-#endif
+#include <ola/e133/SLPThread.h>
 #include <ola/io/SelectServer.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/Interface.h>
 #include <ola/network/InterfacePicker.h>
 #include <ola/rdm/UID.h>
-#include <signal.h>
 #include <sysexits.h>
 
 #include <iostream>
@@ -52,16 +44,9 @@ using std::pair;
 using std::string;
 using std::vector;
 
-// our command line options
-typedef struct {
-  bool use_openslp;
-  string services;
-  ola::log_level log_level;
-  uint16_t lifetime;
-  bool help;
-} options;
+DEFINE_s_uint16(lifetime, t, 60, "The value to use for the service lifetime");
 
-// stupid globals for now
+// The SelectServer is global so we can access it from the signal handler.
 ola::io::SelectServer ss;
 
 /**
@@ -100,113 +85,12 @@ static void InteruptSignal(int signo) {
 }
 
 
-/*
- * Parse our cmd line options
- */
-void ParseOptions(int argc, char *argv[], options *opts) {
-  enum {
-    OPENSLP_OPTION = 256,
-  };
-
-  static struct option long_options[] = {
-      {"help", no_argument, 0, 'h'},
-      {"log-level", required_argument, 0, 'l'},
-      {"timeout", required_argument, 0, 't'},
-#ifdef HAVE_LIBSLP
-      {"openslp", no_argument, 0, OPENSLP_OPTION},
-#endif
-      {0, 0, 0, 0}
-    };
-
-  opts->log_level = ola::OLA_LOG_WARN;
-  opts->services = "";
-  opts->lifetime = 60;
-  opts->help = false;
-  opts->use_openslp = false;
-
-  int c;
-  int option_index = 0;
-
-  while (1) {
-    c = getopt_long(argc, argv, "l:ht:", long_options, &option_index);
-
-    if (c == -1)
-      break;
-
-    switch (c) {
-      case 0:
-        break;
-      case 'h':
-        opts->help = true;
-        break;
-      case 'l':
-        switch (atoi(optarg)) {
-          case 0:
-            // nothing is written at this level
-            // so this turns logging off
-            opts->log_level = ola::OLA_LOG_NONE;
-            break;
-          case 1:
-            opts->log_level = ola::OLA_LOG_FATAL;
-            break;
-          case 2:
-            opts->log_level = ola::OLA_LOG_WARN;
-            break;
-          case 3:
-            opts->log_level = ola::OLA_LOG_INFO;
-            break;
-          case 4:
-            opts->log_level = ola::OLA_LOG_DEBUG;
-            break;
-          default :
-            break;
-        }
-        break;
-      case 't':
-        opts->lifetime = atoi(optarg);
-        break;
-      case OPENSLP_OPTION:
-        opts->use_openslp = true;
-        break;
-      case '?':
-        break;
-      default:
-        break;
-    }
-  }
-
-  if (optind + 1 == argc)
-    opts->services = argv[optind];
-}
-
-
-/*
- * Display the help message
- */
-void DisplayHelpAndExit(char arg[]) {
-  std::cout << "Usage: " << arg << " [services]\n"
-  "\n"
-  "Register one or more E1.33 services with SLP. [services] is a comma\n"
-  "separated list of IP, UIDs in the form: uid[@ip], e.g. \n"
-  "7a70:00000001 (default ip) or 7a70:00000001@192.168.1.1\n"
-  "\n"
-  "  -h, --help               Display this help message and exit.\n"
-  "  -l, --log-level <level>  Set the logging level 0 .. 4.\n"
-  "  -t, --timeout <seconds>  The value to use for the service lifetime\n"
-#ifdef HAVE_LIBSLP
-  "  --openslp                 Use openslp rather than the OLA SLP server\n"
-#endif
-  << std::endl;
-  exit(EX_USAGE);
-}
-
-
 /**
  * Process the list of services and build the list of properly formed service
  * names.
  */
-void ProcessServices(const string &service_spec,
-                     multimap<IPV4Address, UID> *services) {
+void ProcessService(const string &service_spec,
+                    multimap<IPV4Address, UID> *services) {
   auto_ptr<ola::network::InterfacePicker> picker(
       ola::network::InterfacePicker::NewPicker());
   ola::network::Interface iface;
@@ -216,38 +100,32 @@ void ProcessServices(const string &service_spec,
     exit(EX_NOHOST);
   }
 
-  vector<string> service_specs;
-  ola::StringSplit(service_spec, service_specs, ",");
-  vector<string>::const_iterator iter;
+  vector<string> ip_uid_pair;
+  ola::StringSplit(service_spec, ip_uid_pair, "@");
 
-  for (iter = service_specs.begin(); iter != service_specs.end(); ++iter) {
-    vector<string> ip_uid_pair;
-    ola::StringSplit(service_spec, ip_uid_pair, "@");
+  IPV4Address ipaddr;
+  string uid_str;
 
-    IPV4Address ipaddr;
-    string uid_str;
-
-    if (ip_uid_pair.size() == 1) {
-      ipaddr = iface.ip_address;
-      uid_str = ip_uid_pair[0];
-    } else if (ip_uid_pair.size() == 2) {
-      if (!IPV4Address::FromString(ip_uid_pair[1], &ipaddr)) {
-        OLA_FATAL << "Invalid ip address: " << ip_uid_pair[1];
-        exit(EX_USAGE);
-      }
-      uid_str = ip_uid_pair[0];
-    } else {
-      OLA_FATAL << "Invalid service spec: " << service_spec;
+  if (ip_uid_pair.size() == 1) {
+    ipaddr = iface.ip_address;
+    uid_str = ip_uid_pair[0];
+  } else if (ip_uid_pair.size() == 2) {
+    if (!IPV4Address::FromString(ip_uid_pair[1], &ipaddr)) {
+      OLA_FATAL << "Invalid ip address: " << ip_uid_pair[1];
       exit(EX_USAGE);
     }
-
-    auto_ptr<UID> uid(UID::FromString(uid_str));
-    if (!uid.get()) {
-      OLA_FATAL << "Invalid UID: " << uid_str;
-      exit(EX_USAGE);
-    }
-    services->insert(pair<IPV4Address, UID>(ipaddr, *uid));
+    uid_str = ip_uid_pair[0];
+  } else {
+    OLA_FATAL << "Invalid service spec: " << service_spec;
+    exit(EX_USAGE);
   }
+
+  auto_ptr<UID> uid(UID::FromString(uid_str));
+  if (!uid.get()) {
+    OLA_FATAL << "Invalid UID: " << uid_str;
+    exit(EX_USAGE);
+  }
+  services->insert(pair<IPV4Address, UID>(ipaddr, *uid));
 }
 
 
@@ -256,39 +134,27 @@ void ProcessServices(const string &service_spec,
  */
 int main(int argc, char *argv[]) {
   ola::AppInit(argc, argv);
-  options opts;
-  ParseOptions(argc, argv, &opts);
+  ola::SetHelpString("[options] [services]",
+    "Register one or more E1.33 services with SLP. [services] is\n"
+    "a list of IP, UIDs in the form: uid[@ip], e.g. \n"
+    "7a70:00000001 (default ip) or 7a70:00000001@192.168.1.1\n");
+  ola::ParseFlags(&argc, argv);
+  ola::InitLoggingFromFlags();
 
-  if (opts.help || opts.services == "")
-    DisplayHelpAndExit(argv[0]);
-
-  ola::InitLogging(opts.log_level, ola::OLA_LOG_STDERR);
+  if (argc < 2) {
+    ola::DisplayUsage();
+    exit(EX_USAGE);
+  }
 
   multimap<IPV4Address, UID> services;
-  ProcessServices(opts.services, &services);
+  for (int i = 1; i < argc; i++)
+    ProcessService(argv[i], &services);
 
   // signal handler
-  struct sigaction act, oact;
-  act.sa_handler = InteruptSignal;
-  sigemptyset(&act.sa_mask);
-  act.sa_flags = 0;
+  ola::InstallSignal(SIGINT, InteruptSignal);
 
-  if (sigaction(SIGINT, &act, &oact) < 0) {
-    OLA_WARN << "Failed to install signal SIGINT";
-    return false;
-  }
-
-  auto_ptr<ola::e133::BaseSLPThread> slp_thread;
-  if (opts.use_openslp) {
-#ifdef HAVE_LIBSLP
-    slp_thread.reset(new ola::e133::OpenSLPThread(&ss));
-#else
-    OLA_WARN << "openslp not installed";
-    return false;
-#endif
-  } else {
-    slp_thread.reset(new ola::e133::OLASLPThread(&ss));
-  }
+  auto_ptr<ola::e133::BaseSLPThread> slp_thread(
+    ola::e133::SLPThreadFactory::NewSLPThread(&ss));
 
   if (!slp_thread->Init()) {
     OLA_WARN << "SLPThread Init() failed";
@@ -303,7 +169,7 @@ int main(int argc, char *argv[]) {
   for (iter = services.begin(); iter != services.end(); ++iter) {
     slp_thread->RegisterDevice(
       ola::NewSingleCallback(&RegisterCallback),
-      iter->first, iter->second, opts.lifetime);
+      iter->first, iter->second, FLAGS_lifetime);
   }
 
   ss.Run();
