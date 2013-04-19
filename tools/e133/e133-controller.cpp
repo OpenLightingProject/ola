@@ -28,13 +28,12 @@
 #endif
 
 #include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
-#include <errno.h>
-#include <getopt.h>
 #include <sysexits.h>
 
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>
 #include <ola/Logging.h>
+#include <ola/base/Flags.h>
 #include <ola/acn/ACNPort.h>
 #include <ola/acn/ACNVectors.h>
 #include <ola/acn/CID.h>
@@ -55,7 +54,6 @@
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/RDMCommandSerializer.h>
 #include <ola/rdm/RDMEnums.h>
-#include <ola/rdm/RDMHelper.h>
 #include <ola/rdm/UID.h>
 #include <ola/slp/URLEntry.h>
 #include <ola/stl/STLUtils.h>
@@ -70,6 +68,17 @@
 #include "plugins/e131/e131/E133StatusHelper.h"
 #include "plugins/e131/e131/RDMPDU.h"
 
+DEFINE_s_uint16(endpoint, e, 0, "The endpoint to use");
+DEFINE_s_string(target, t, "", "List of IPs to connect to, overrides SLP");
+DEFINE_string(listen_ip, "", "The IP address to listen on");
+DEFINE_s_string(pid_location, p, PID_DATA_DIR,
+                "The directory to read PID definitiions from");
+DEFINE_s_bool(set, s, false, "Perform a SET (default is GET)");
+DEFINE_bool(list_pids, false, "Display a list of pids");
+DEFINE_s_string(uid, u, "", "The UID of the device to control.");
+#ifdef HAVE_LIBSLP
+DEFINE_bool(openslp, false, "Use openslp rather than the OLA SLP server");
+#endif
 
 using ola::NewCallback;
 using ola::io::IOStack;
@@ -89,164 +98,6 @@ using std::cout;
 using std::endl;
 using std::string;
 using std::vector;
-
-class ControllerOptions {
-  public:
-    ola::log_level log_level;
-    uint16_t endpoint;
-    bool help;
-    bool use_openslp;
-    string pid_location;
-    bool list_pids;  // show the pid list
-    bool rdm_set;
-    string ip_address;
-    string target_address;
-    auto_ptr<UID> uid;
-    string pid;  // the pid to get
-    vector<string> args;  // extra args
-
-    ControllerOptions()
-      : log_level(ola::OLA_LOG_WARN),
-        endpoint(0),
-        help(false),
-        use_openslp(false),
-        pid_location(PID_DATA_DIR),
-        list_pids(false),
-        rdm_set(false) {
-    }
-
- private:
-  ControllerOptions(const ControllerOptions&);
-  ControllerOptions& operator=(const ControllerOptions&);
-};
-
-
-/*
- * Parse our command line options
- */
-void ParseOptions(int argc, char *argv[], ControllerOptions *opts) {
-  enum {
-    OPENSLP_OPTION = 256,
-    LIST_PIDS_OPTION,
-  };
-
-  int uid_set = 0;
-  static struct option long_options[] = {
-      {"endpoint", required_argument, 0, 'e'},
-      {"help", no_argument, 0, 'h'},
-      {"ip", required_argument, 0, 'i'},
-      {"log-level", required_argument, 0, 'l'},
-      {"pid-location", required_argument, 0, 'p'},
-      {"list-pids", no_argument, 0, LIST_PIDS_OPTION},
-      {"set", no_argument, 0, 's'},
-      {"target", required_argument, 0, 't'},
-      {"uid", required_argument, &uid_set, 1},
-#ifdef HAVE_LIBSLP
-      {"openslp", no_argument, 0, OPENSLP_OPTION},
-#endif
-      {0, 0, 0, 0}
-    };
-
-  int option_index = 0;
-
-  while (1) {
-    int c = getopt_long(argc, argv,
-                        "e:hi:l:p:st:",
-                        long_options,
-                        &option_index);
-
-    if (c == -1)
-      break;
-
-    switch (c) {
-      case 0:
-        if (uid_set)
-          opts->uid.reset(UID::FromString(optarg));
-        break;
-      case 'e':
-        opts->endpoint = atoi(optarg);
-        break;
-      case 'h':
-        opts->help = true;
-        break;
-      case 'i':
-        opts->ip_address = optarg;
-        break;
-      case 'l':
-        switch (atoi(optarg)) {
-          case 0:
-            // nothing is written at this level
-            // so this turns logging off
-            opts->log_level = ola::OLA_LOG_NONE;
-            break;
-          case 1:
-            opts->log_level = ola::OLA_LOG_FATAL;
-            break;
-          case 2:
-            opts->log_level = ola::OLA_LOG_WARN;
-            break;
-          case 3:
-            opts->log_level = ola::OLA_LOG_INFO;
-            break;
-          case 4:
-            opts->log_level = ola::OLA_LOG_DEBUG;
-            break;
-          default :
-            break;
-        }
-        break;
-      case 'p':
-        opts->pid_location = optarg;
-        break;
-      case 's':
-        opts->rdm_set = true;
-        break;
-      case 't':
-        opts->target_address = optarg;
-        break;
-      case OPENSLP_OPTION:
-        opts->use_openslp = true;
-        break;
-      case LIST_PIDS_OPTION:
-        opts->list_pids = true;
-        break;
-      case '?':
-        break;
-      default:
-       break;
-    }
-  }
-
-  int index = optind;
-  for (; index < argc; index++)
-    opts->args.push_back(argv[index]);
-  return;
-}
-
-
-/*
- * Display the help message
- */
-void DisplayHelpAndExit(char *argv[]) {
-  cout << "Usage: " << argv[0] << " [options] <pid_name> [param_data]\n"
-  "\n"
-  "Search for a UID registered in SLP and send it an E1.33 Message.\n"
-  "\n"
-  "  -e, --endpoint <endpoint> The endpoint to use.\n"
-  "  -h, --help                Display this help message and exit.\n"
-  "  -t, --target <ip>         IP to send the message to, this overrides SLP\n"
-  "  -i, --ip                  The IP address to listen on.\n"
-  "  -l, --log-level <level>   Set the logging level 0 .. 4.\n"
-  "  -p, --pid-location        The directory to read PID definitions from\n"
-  "  -s, --set                 Perform a SET (default is GET)\n"
-  "  --list-pids               Display a list of pids\n"
-  "  --uid <uid>               The UID of the device to control.\n"
-#ifdef HAVE_LIBSLP
-  "  --openslp                 Use openslp rather than the OLA SLP server\n"
-#endif
-  << endl;
-  exit(0);
-}
 
 /*
  * Dump the list of known pids
@@ -278,6 +129,10 @@ class SimpleE133Controller {
     struct Options {
       IPV4Address controller_ip;
       SLPOption slp_option;
+
+      Options(const IPV4Address &ip, SLPOption slp_option)
+          : controller_ip(ip), slp_option(slp_option) {
+      }
     };
 
     SimpleE133Controller(const Options &options,
@@ -646,95 +501,97 @@ void SimpleE133Controller::HandleStatusMessage(
  * Startup a node
  */
 int main(int argc, char *argv[]) {
-  ControllerOptions opts;
-  ParseOptions(argc, argv, &opts);
-  PidStoreHelper pid_helper(opts.pid_location);
+  ola::SetHelpString("[options]", "E1.33 Controller.");
+  ola::ParseFlags(&argc, argv);
+  ola::InitLoggingFromFlags();
 
-  if (opts.help)
-    DisplayHelpAndExit(argv);
-
-  ola::InitLogging(opts.log_level, ola::OLA_LOG_STDERR);
+  PidStoreHelper pid_helper(FLAGS_pid_location.str());
 
   // convert the controller's IP address, or use the wildcard if not specified
   IPV4Address controller_ip = IPV4Address::WildCard();
-  if (!opts.ip_address.empty() &&
-      !IPV4Address::FromString(opts.ip_address, &controller_ip))
-    DisplayHelpAndExit(argv);
+  if (!FLAGS_listen_ip.str().empty() &&
+      !IPV4Address::FromString(FLAGS_listen_ip, &controller_ip)) {
+    ola::DisplayUsage();
+    exit(EX_USAGE);
+  }
 
   // convert the node's IP address if specified
   IPV4Address target_ip;
-  if (!opts.target_address.empty() &&
-      !IPV4Address::FromString(opts.target_address, &target_ip))
-    DisplayHelpAndExit(argv);
+  if (!FLAGS_target.str().empty() &&
+      !IPV4Address::FromString(FLAGS_target, &target_ip)) {
+    ola::DisplayUsage();
+    exit(EX_USAGE);
+  }
+
+  auto_ptr<UID> uid(UID::FromString(FLAGS_uid));
 
   // Make sure we can load our PIDs
   if (!pid_helper.Init())
     exit(EX_OSFILE);
 
-  if (opts.list_pids) {
-    DisplayPIDsAndExit(opts.uid.get() ? opts.uid->ManufacturerId() : 0,
-                       pid_helper);
-  }
+  if (FLAGS_list_pids)
+    DisplayPIDsAndExit(uid.get() ? uid->ManufacturerId() : 0, pid_helper);
 
   // check the UID
-  if (!opts.uid.get()) {
+  if (!uid.get()) {
     OLA_FATAL << "Invalid or missing UID, try xxxx:yyyyyyyy";
-    DisplayHelpAndExit(argv);
+    ola::DisplayUsage();
     exit(EX_USAGE);
   }
 
-  if (opts.args.size() < 1) {
-    DisplayHelpAndExit(argv);
+  if (argc < 2) {
+    ola::DisplayUsage();
     exit(EX_USAGE);
   }
 
   // get the pid descriptor
   const ola::rdm::PidDescriptor *pid_descriptor = pid_helper.GetDescriptor(
-      opts.args[0],
-      opts.uid->ManufacturerId());
+      argv[1], uid->ManufacturerId());
 
   if (!pid_descriptor) {
-    OLA_WARN << "Unknown PID: " << opts.args[0] << ".";
+    OLA_WARN << "Unknown PID: " << argv[1] << ".";
     OLA_WARN << "Use --list-pids to list the available PIDs.";
     exit(EX_USAGE);
   }
 
   const ola::messaging::Descriptor *descriptor = NULL;
-  if (opts.rdm_set)
+  if (FLAGS_set)
     descriptor = pid_descriptor->SetRequest();
   else
     descriptor = pid_descriptor->GetRequest();
 
   if (!descriptor) {
-    OLA_WARN << (opts.rdm_set ? "SET" : "GET") << " command not supported for "
-      << opts.args[0];
+    OLA_WARN << (FLAGS_set ? "SET" : "GET") << " command not supported for "
+             << argv[1];
     exit(EX_USAGE);
   }
 
   // attempt to build the message
-  vector<string> inputs(opts.args.size() - 1);
-  vector<string>::iterator args_iter = opts.args.begin();
-  copy(++args_iter, opts.args.end(), inputs.begin());
-  auto_ptr<const ola::messaging::Message> message(pid_helper.BuildMessage(
-      descriptor,
-      inputs));
+  vector<string> inputs(argc - 2);
+  for (int i = 2; i < argc; i++)
+    inputs.push_back(argv[i]);
+  auto_ptr<const ola::messaging::Message> message(
+      pid_helper.BuildMessage(descriptor, inputs));
 
   if (!message.get()) {
-    // print the schema here
     cout << pid_helper.SchemaAsString(descriptor);
     exit(EX_USAGE);
   }
 
-  SimpleE133Controller::Options controller_options;
-  controller_options.controller_ip = controller_ip;
+  SimpleE133Controller::SLPOption slp_option = SimpleE133Controller::OLA_SLP;
   if (target_ip.AsInt()) {
-    controller_options.slp_option = SimpleE133Controller::NO_SLP;
+    slp_option = SimpleE133Controller::NO_SLP;
   } else {
-    controller_options.slp_option = opts.use_openslp ?
-      SimpleE133Controller::OPEN_SLP : SimpleE133Controller::OLA_SLP;
+#ifdef HAVE_LIBSLP
+    slp_option = FLAGS_openslp ? SimpleE133Controller::OPEN_SLP :
+      SimpleE133Controller::OLA_SLP;
+#endif
   }
 
-  SimpleE133Controller controller(controller_options, &pid_helper);
+  SimpleE133Controller controller(
+      SimpleE133Controller::Options(controller_ip, slp_option),
+      &pid_helper);
+
   if (!controller.Init()) {
     OLA_FATAL << "Failed to init controller";
     exit(EX_UNAVAILABLE);
@@ -742,7 +599,7 @@ int main(int argc, char *argv[]) {
 
   if (target_ip.AsInt())
     // manually add the responder address
-    controller.AddUID(*opts.uid, target_ip);
+    controller.AddUID(*uid, target_ip);
   else
     // this blocks while the slp thread does it's thing
     controller.PopulateResponderList();
@@ -750,19 +607,18 @@ int main(int argc, char *argv[]) {
   // convert the message to binary form
   unsigned int param_data_length;
   const uint8_t *param_data = pid_helper.SerializeMessage(
-      message.get(),
-      &param_data_length);
+      message.get(), &param_data_length);
 
   // send the message
-  if (opts.rdm_set) {
-    controller.SendSetRequest(*opts.uid,
-                              opts.endpoint,
+  if (FLAGS_set) {
+    controller.SendSetRequest(*uid,
+                              FLAGS_endpoint,
                               pid_descriptor->Value(),
                               param_data,
                               param_data_length);
   } else {
-    controller.SendGetRequest(*opts.uid,
-                              opts.endpoint,
+    controller.SendGetRequest(*uid,
+                              FLAGS_endpoint,
                               pid_descriptor->Value(),
                               param_data,
                               param_data_length);
