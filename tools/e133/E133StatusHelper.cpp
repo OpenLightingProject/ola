@@ -20,11 +20,10 @@
 
 #include <stdint.h>
 #include <string>
-#include "plugins/e131/e131/E133StatusHelper.h"
+#include <ola/e133/E133StatusHelper.h>
 
 namespace ola {
-namespace plugin {
-namespace e131 {
+namespace e133 {
 
 using std::string;
 
@@ -97,6 +96,5 @@ string StatusMessageIdToString(E133StatusCode status_code) {
   }
   return "Unknown E1.33 Status Code";
 }
-}  // e131
-}  // plugin
+}  // e133
 }  // ola

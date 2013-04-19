@@ -18,23 +18,21 @@
  * Copyright (C) 2013 Simon Newton
  */
 
-#ifndef PLUGINS_E131_E131_E133STATUSHELPER_H_
-#define PLUGINS_E131_E131_E133STATUSHELPER_H_
+#ifndef INCLUDE_OLA_E133_E133STATUSHELPER_H_
+#define INCLUDE_OLA_E133_E133STATUSHELPER_H_
 
 #include <stdint.h>
 #include <string>
-#include "ola/e133/E133Enums.h"
+#include <ola/e133/E133Enums.h>
 
 namespace ola {
-namespace plugin {
-namespace e131 {
+namespace e133 {
 
 using std::string;
 using ola::e133::E133StatusCode;
 
 bool IntToStatusCode(uint16_t input, E133StatusCode *status_code);
 string StatusMessageIdToString(E133StatusCode status_code);
-}  // e131
-}  // plugin
+}  // e133
 }  // ola
-#endif  // PLUGINS_E131_E131_E133STATUSHELPER_H_
+#endif  // INCLUDE_OLA_E133_E133STATUSHELPER_H_

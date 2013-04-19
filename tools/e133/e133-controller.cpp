@@ -33,9 +33,10 @@
 #include <ola/acn/ACNPort.h>
 #include <ola/acn/ACNVectors.h>
 #include <ola/acn/CID.h>
+#include <ola/e133/E133StatusHelper.h>
+#include <ola/e133/E133Receiver.h>
 #include <ola/e133/E133URLParser.h>
 #include <ola/e133/MessageBuilder.h>
-#include <ola/e133/E133Receiver.h>
 #include <ola/e133/SLPThread.h>
 #include <ola/io/SelectServer.h>
 #include <ola/io/IOStack.h>
@@ -58,7 +59,6 @@
 #include <string>
 #include <vector>
 
-#include "plugins/e131/e131/E133StatusHelper.h"
 #include "plugins/e131/e131/RDMPDU.h"
 
 DEFINE_s_uint16(endpoint, e, 0, "The endpoint to use");
@@ -458,14 +458,14 @@ void SimpleE133Controller::HandleStatusMessage(
   // TODO(simon): match src IP, sequence # etc. here.
   OLA_INFO << "Got status code from " << status_message.ip;
 
-  ola::plugin::e131::E133StatusCode e133_status_code;
-  if (!ola::plugin::e131::IntToStatusCode(status_message.status_code,
-                                          &e133_status_code)) {
+  ola::e133::E133StatusCode e133_status_code;
+  if (!ola::e133::IntToStatusCode(status_message.status_code,
+                                  &e133_status_code)) {
     OLA_INFO << "Unknown E1.33 Status code " << status_message.status_code
              << " : " << status_message.status_message;
   } else {
     OLA_INFO << "Device returned code " << status_message.status_code << " : "
-             << ola::plugin::e131::StatusMessageIdToString(e133_status_code)
+             << ola::e133::StatusMessageIdToString(e133_status_code)
              << " : " << status_message.status_message;
   }
   Stop();
