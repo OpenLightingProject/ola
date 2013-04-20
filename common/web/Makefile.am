@@ -11,5 +11,5 @@ WebTester_SOURCES = JsonTest.cpp JsonSectionsTest.cpp WebTester.cpp
 WebTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 WebTester_LDADD = $(CPPUNIT_LIBS) \
                   libolaweb.la \
-                  ../logging/liblogging.la \
+                  ../base/libolabase.la \
                   ../utils/libolautils.la

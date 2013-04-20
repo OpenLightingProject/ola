@@ -589,7 +589,6 @@ AC_OUTPUT( Makefile \
     common/file/Makefile \
     common/http/Makefile \
     common/io/Makefile \
-    common/logging/Makefile \
     common/math/Makefile \
     common/messaging/Makefile \
     common/network/Makefile \

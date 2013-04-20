@@ -12,5 +12,4 @@ TimeCodeTester_SOURCES = TimeCodeTester.cpp \
 TimeCodeTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
 TimeCodeTester_LDADD = $(CPPUNIT_LIBS) \
                        ./libtimecode.la \
-                       ../base/libolabase.la \
-                       ../logging/liblogging.la
+                       ../base/libolabase.la

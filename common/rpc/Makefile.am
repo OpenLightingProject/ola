@@ -31,7 +31,6 @@ RpcTester_LDADD = $(CPPUNIT_LIBS) \
                   ../base/libolabase.la \
                   ../export_map/libolaexportmap.la \
                   ../io/libolaio.la \
-                  ../logging/liblogging.la \
                   ../network/libolanetwork.la \
                   ../thread/libthread.la \
                   ../utils/libolautils.la
