@@ -125,7 +125,7 @@ void CIDImpl::Write(ola::io::OutputBufferInterface *output) const {
 }
 
 
-CIDImpl CIDImpl::Generate() {
+CIDImpl* CIDImpl::Generate() {
   uuid_t *uuid;
   uuid_create(&uuid);
   uuid_make(uuid, UUID_MAKE_V4);
@@ -133,7 +133,7 @@ CIDImpl CIDImpl::Generate() {
 }
 
 
-CIDImpl CIDImpl::FromData(const uint8_t *data) {
+CIDImpl* CIDImpl::FromData(const uint8_t *data) {
   uuid_t *uuid;
   uuid_create(&uuid);
   uuid_import(uuid, UUID_FMT_BIN, data, CIDImpl_LENGTH);
@@ -141,7 +141,7 @@ CIDImpl CIDImpl::FromData(const uint8_t *data) {
 }
 
 
-CIDImpl CIDImpl::FromString(const std::string &cid) {
+CIDImpl* CIDImpl::FromString(const std::string &cid) {
   uuid_t *uuid;
   uuid_create(&uuid);
   uuid_import(uuid, UUID_FMT_STR, cid.data(), cid.length());
