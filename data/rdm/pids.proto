@@ -2768,7 +2768,7 @@ pid {
       }
     }
     field {
-      type: UINT16
+      type: UINT8
       name: "port_type"
       label {
         value: 0
