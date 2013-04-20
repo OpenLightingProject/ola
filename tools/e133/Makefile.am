@@ -124,8 +124,12 @@ if BUILD_TESTS
 TESTS = E133SLPTester
 endif
 check_PROGRAMS = $(TESTS)
-E133SLPTester_SOURCES = E133SLPTester.cpp E133URLParserTest.cpp
-E133SLPTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-E133SLPTester_LDADD = $(CPPUNIT_LIBS) \
-                      ./libolae133slp.la \
-                      $(top_builddir)/common/libolacommon.la
+
+E133SLPTester_SOURCES = E133URLParserTest.cpp
+E133SLPTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+E133SLPTester_LDADD = $(COMMON_TESTING_LIBS) \
+                      $(top_builddir)/common/libolacommon.la \
+                      $(top_builddir)/common/testing/libtestmain.la \
+                      ./libolae133slp.la
+
+

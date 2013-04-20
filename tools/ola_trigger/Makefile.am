@@ -42,10 +42,11 @@ if BUILD_TESTS
 TESTS = ActionTester
 endif
 check_PROGRAMS = $(TESTS)
-ActionTester_SOURCES = ActionTester.cpp ActionTest.cpp ContextTest.cpp \
+ActionTester_SOURCES = ActionTest.cpp ContextTest.cpp \
                        DMXTriggerTest.cpp IntervalTest.cpp \
                        SlotTest.cpp VariableInterpolatorTest.cpp
-ActionTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-ActionTester_LDADD = $(CPPUNIT_LIBS) \
+ActionTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+ActionTester_LDADD = $(COMMON_TESTING_LIBS) \
                      $(top_builddir)/common/libolacommon.la \
+                     $(top_builddir)/common/testing/libtestmain.la \
                      ./libolatrigger.la
