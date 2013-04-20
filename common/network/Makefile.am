@@ -26,7 +26,7 @@ endif
 check_PROGRAMS = $(TESTS)
 
 # required for all tests
-COMMON_TEST_LDADD = $(CPPUNIT_LIBS) \
+COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS) \
                     ../libolacommon.la
 
 HealthCheckedConnectionTester_SOURCES = HealthCheckedConnectionTest.cpp
