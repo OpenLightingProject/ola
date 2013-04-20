@@ -13,19 +13,21 @@ TESTS = CredentialsTester FlagsTester LoggingTester
 endif
 check_PROGRAMS = $(TESTS)
 
+COMMON_TEST_LDADD = $(CPPUNIT_LIBS) \
+                    ./libolabase.la \
+                    ../utils/libolautils.la \
+                    ../testing/libolatesting.la
+
 CredentialsTester_SOURCES = CredentialsTest.cpp \
                             GenericTester.cpp
 CredentialsTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-CredentialsTester_LDADD = $(CPPUNIT_LIBS) \
-                          ../libolacommon.la
+CredentialsTester_LDADD = $(COMMON_TEST_LDADD)
 
 FlagsTester_SOURCES = FlagsTest.cpp \
                       GenericTester.cpp
 FlagsTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-FlagsTester_LDADD = $(CPPUNIT_LIBS) \
-                    ../libolacommon.la
+FlagsTester_LDADD = $(COMMON_TEST_LDADD)
 
-LoggingTester_SOURCES = LoggingTester.cpp LoggingTest.cpp
+LoggingTester_SOURCES = GenericTester.cpp LoggingTest.cpp
 LoggingTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-LoggingTester_LDADD = $(CPPUNIT_LIBS) \
-                      ../libolacommon.la
+LoggingTester_LDADD = $(COMMON_TEST_LDADD)
