@@ -19,6 +19,5 @@ EspNetTester_SOURCES = RunLengthDecoderTest.cpp \
                        RunLengthDecoder.cpp
 EspNetTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 EspNetTester_LDADD = $(COMMON_TESTING_LIBS) \
-                     $(top_builddir)/common/testing/libtestmain.la \
                      ../../common/libolacommon.la
 endif

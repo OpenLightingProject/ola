@@ -28,8 +28,7 @@ nodist_RpcTester_SOURCES = TestService.pb.cc
 RpcTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 RpcTester_LDADD = $(COMMON_TESTING_LIBS) \
                   $(libprotobuf_LIBS) \
-                  ../libolacommon.la \
-                  ../testing/libtestmain.la
+                  ../libolacommon.la
 
 clean-local:
 	rm -f *.pb.{h,cc}

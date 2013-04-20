@@ -24,7 +24,6 @@ OSCTester_SOURCES = OSCAddressTemplateTest.cpp \
                     OSCNodeTest.cpp
 OSCTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 OSCTester_LDADD = $(COMMON_TESTING_LIBS) \
-                  $(top_builddir)/common/testing/libtestmain.la \
                   libolaoscnode.la \
                   ../../common/libolacommon.la
 endif

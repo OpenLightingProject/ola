@@ -27,8 +27,7 @@ check_PROGRAMS = $(TESTS)
 
 # required for all tests
 COMMON_TEST_LDADD = $(CPPUNIT_LIBS) \
-                    ../libolacommon.la \
-                    ../testing/libtestmain.la
+                    ../libolacommon.la
 
 HealthCheckedConnectionTester_SOURCES = HealthCheckedConnectionTest.cpp
 HealthCheckedConnectionTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)

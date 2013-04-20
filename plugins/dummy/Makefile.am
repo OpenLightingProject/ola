@@ -24,7 +24,6 @@ DummyPluginTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 # but if it isn't, the test breaks with gcc 4.6.1
 DummyPluginTester_LDADD = $(COMMON_TESTING_LIBS) \
                           $(top_builddir)/olad/libolaserver.la \
-                          $(top_builddir)/common/testing/libtestmain.la \
                           ./liboladummy.la \
                           ./liboladummyresponder.la \
                           ../../common/libolacommon.la

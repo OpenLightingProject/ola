@@ -100,7 +100,6 @@ TESTS = SLPServerTester DATrackerTester PacketParserTester \
 endif
 COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS) \
                     $(top_builddir)/common/libolacommon.la \
-                    $(top_builddir)/common/testing/libtestmain.la \
                     ./libolaslpcore.la \
                     ./libolaslpserver.la
 

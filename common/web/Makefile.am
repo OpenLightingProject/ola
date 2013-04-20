@@ -13,7 +13,6 @@ WebTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 WebTester_LDADD = $(COMMON_TESTING_LIBS) \
                   libolaweb.la \
                   ../base/libolabase.la \
-                  ../testing/libtestmain.la \
                   ../utils/libolautils.la
 
 

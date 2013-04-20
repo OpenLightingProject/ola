@@ -12,6 +12,5 @@ ExportMapTester_SOURCES = ExportMapTest.cpp
 ExportMapTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 ExportMapTester_LDADD = $(COMMON_TESTING_LIBS) \
                         ./libolaexportmap.la \
-                        ../testing/libtestmain.la \
                         ../utils/libolautils.la
 

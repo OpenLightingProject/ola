@@ -48,5 +48,4 @@ ActionTester_SOURCES = ActionTest.cpp ContextTest.cpp \
 ActionTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 ActionTester_LDADD = $(COMMON_TESTING_LIBS) \
                      $(top_builddir)/common/libolacommon.la \
-                     $(top_builddir)/common/testing/libtestmain.la \
                      ./libolatrigger.la

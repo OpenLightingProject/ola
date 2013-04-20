@@ -16,6 +16,5 @@ DescriptorTester_SOURCES = DescriptorTest.cpp \
                            MessagePrinterTest.cpp
 DescriptorTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 DescriptorTester_LDADD = $(COMMON_TESTING_LIBS) \
-                         ../libolacommon.la \
-                         ../testing/libtestmain.la
+                         ../libolacommon.la
 

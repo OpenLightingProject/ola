@@ -12,6 +12,5 @@ ThreadTester_SOURCES = ThreadPoolTest.cpp ThreadTest.cpp
 ThreadTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 ThreadTester_LDADD = $(COMMON_TESTING_LIBS) \
                      ../base/libolabase.la \
-                     ../testing/libtestmain.la \
                      ../utils/libolautils.la \
                      ./libthread.la

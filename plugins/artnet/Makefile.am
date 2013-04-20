@@ -24,6 +24,5 @@ check_PROGRAMS = $(TESTS)
 ArtNetTester_SOURCES = ArtNetNodeTest.cpp
 ArtNetTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 ArtNetTester_LDADD = $(COMMON_TESTING_LIBS) \
-                     $(top_builddir)/common/testing/libtestmain.la \
                      libolaartnetnode.la
 endif

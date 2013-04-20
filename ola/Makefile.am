@@ -29,7 +29,6 @@ OlaClientTester_LDADD = $(COMMON_TESTING_LIBS) \
                         $(PLUGIN_LIBS) \
                         $(top_builddir)/common/libolacommon.la \
                         $(top_builddir)/olad/libolaserver.la \
-                        $(top_builddir)/common/testing/libtestmain.la \
                         ./libola.la
 
 ## @end 1

@@ -14,8 +14,7 @@ endif
 check_PROGRAMS = $(TESTS)
 
 COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS) \
-                    ../libolacommon.la \
-                    ../testing/libtestmain.la
+                    ../libolacommon.la
 
 IOQueueTester_SOURCES = IOQueueTest.cpp
 IOQueueTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)

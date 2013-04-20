@@ -29,8 +29,7 @@ check_PROGRAMS = $(TESTS)
 COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS) \
                     libolardm.la \
                     ../base/libolabase.la \
-                    ../utils/libolautils.la \
-                    ../testing/libtestmain.la
+                    ../utils/libolautils.la
 
 DiscoveryAgentTester_SOURCES = DiscoveryAgentTest.cpp
 DiscoveryAgentTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)

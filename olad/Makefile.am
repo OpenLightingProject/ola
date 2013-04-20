@@ -60,8 +60,7 @@ endif
 check_PROGRAMS = $(TESTS)
 COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS) $(libprotobuf_LIBS) \
                     $(top_builddir)/olad/libolaserver.la \
-                    $(top_builddir)/common/libolacommon.la \
-                    $(top_builddir)/common/testing/libtestmain.la
+                    $(top_builddir)/common/libolacommon.la
 
 DeviceTester_SOURCES = DeviceTest.cpp DeviceManagerTest.cpp
 DeviceTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
