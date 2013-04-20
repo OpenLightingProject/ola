@@ -23,7 +23,7 @@ lib_LTLIBRARIES =
 noinst_LTLIBRARIES =
 
 if INSTALL_ACN
-  lib_LTLIBRARIES = libolaacn.la
+  lib_LTLIBRARIES += libolaacn.la
 else
   noinst_LTLIBRARIES += libolaacn.la
 endif
