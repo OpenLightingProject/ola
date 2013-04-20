@@ -129,7 +129,7 @@ CIDImpl* CIDImpl::Generate() {
   uuid_t *uuid;
   uuid_create(&uuid);
   uuid_make(uuid, UUID_MAKE_V4);
-  return CIDImpl(uuid);
+  return new CIDImpl(uuid);
 }
 
 
@@ -137,7 +137,7 @@ CIDImpl* CIDImpl::FromData(const uint8_t *data) {
   uuid_t *uuid;
   uuid_create(&uuid);
   uuid_import(uuid, UUID_FMT_BIN, data, CIDImpl_LENGTH);
-  return CIDImpl(uuid);
+  return new CIDImpl(uuid);
 }
 
 
@@ -145,7 +145,7 @@ CIDImpl* CIDImpl::FromString(const std::string &cid) {
   uuid_t *uuid;
   uuid_create(&uuid);
   uuid_import(uuid, UUID_FMT_STR, cid.data(), cid.length());
-  return CIDImpl(uuid);
+  return new CIDImpl(uuid);
 }
 
 
