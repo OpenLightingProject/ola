@@ -19,13 +19,18 @@ if INSTALL_E133
 pkgconfig_DATA = libolaacn.pc
 endif
 
-noinst_LTLIBRARIES = libolae131core.la
+lib_LTLIBRARIES =
+noinst_LTLIBRARIES =
 
 if INSTALL_ACN
   lib_LTLIBRARIES = libolaacn.la
 else
   noinst_LTLIBRARIES += libolaacn.la
 endif
+
+# This needs to be after libolaacn.la since it depends on it. Otherwise it
+# breaks the freeBSD build
+noinst_LTLIBRARIES += libolae131core.la
 
 # libolaacn.la
 libolaacn_la_SOURCES = CID.cpp \
