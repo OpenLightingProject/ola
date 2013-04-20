@@ -2544,7 +2544,7 @@ pid {
       type: UINT16
       name: "endpoint_id"
       range {
-        min: 1
+        min: 0
         max: 65534
       }
     }
@@ -2554,7 +2554,7 @@ pid {
       type: UINT16
       name: "endpoint_id"
       range {
-        min: 1
+        min: 0
         max: 65534
       }
     }
@@ -2577,7 +2577,7 @@ pid {
         label: "All Endpoints"
       }
       range {
-        min: 1
+        min: 0
         max: 65535
       }
     }
@@ -2620,7 +2620,7 @@ pid {
       type: UINT16
       name: "endpoint_id"
       range {
-        min: 1
+        min: 0
         max: 65534
       }
     }
@@ -2630,7 +2630,7 @@ pid {
       type: UINT16
       name: "endpoint_id"
       range {
-        min: 1
+        min: 0
         max: 65534
       }
     }
@@ -2649,7 +2649,7 @@ pid {
         label: "All Endpoints"
       }
       range {
-        min: 1
+        min: 0
         max: 65535
       }
     }
@@ -2674,7 +2674,7 @@ pid {
         label: "All Endpoints"
       }
       range {
-        min: 1
+        min: 0
         max: 65534
       }
     }
@@ -2695,7 +2695,7 @@ pid {
       type: UINT16
       name: "endpoint_id"
       range {
-        min: 1
+        min: 0
         max: 65534
       }
     }
@@ -2741,7 +2741,7 @@ pid {
       type: UINT16
       name: "endpoint_id"
       range {
-        min: 1
+        min: 0
         max: 65534
       }
     }
@@ -2750,10 +2750,6 @@ pid {
     field {
       type: UINT16
       name: "endpoint_id"
-      range {
-        min: 1
-        max: 65534
-      }
     }
     field {
       type: UINT16
@@ -2768,20 +2764,8 @@ pid {
       }
     }
     field {
-      type: UINT8
-      name: "port_type"
-      label {
-        value: 0
-        label: "virtual"
-      }
-      label {
-        value: 1
-        label: "physical"
-      }
-      range {
-        min: 0
-        max: 1
-      }
+      type: BOOL
+      name: "physical"
     }
   }
   get_sub_device_range: ROOT_DEVICE
@@ -2794,7 +2778,7 @@ pid {
         label: "All Endpoints"
       }
       range {
-        min: 1
+        min: 0
         max: 65535
       }
     }
@@ -2807,7 +2791,7 @@ pid {
       }
       range {
         min: 1
-        max: 65535
+        max: 63999
       }
     }
   }
@@ -2823,7 +2807,7 @@ pid {
       type: UINT16
       name: "endpoint_id"
       range {
-        min: 1
+        min: 0
         max: 65534
       }
     }
@@ -2833,7 +2817,7 @@ pid {
       type: UINT16
       name: "endpoint_id"
       range {
-        min: 1
+        min: 0
         max: 65534
       }
     }
@@ -2852,7 +2836,7 @@ pid {
         label: "All Endpoints"
       }
       range {
-        min: 1
+        min: 0
         max: 65535
       }
     }
@@ -2873,7 +2857,7 @@ pid {
       type: UINT16
       name: "endpoint_id"
       range {
-        min: 1
+        min: 0
         max: 65534
       }
     }
@@ -2883,7 +2867,7 @@ pid {
       type: UINT16
       name: "endpoint_id"
       range {
-        min: 1
+        min: 0
         max: 65534
       }
     }
@@ -2914,7 +2898,7 @@ pid {
         label: "All Endpoints"
       }
       range {
-        min: 1
+        min: 0
         max: 65535
       }
     }
@@ -2947,7 +2931,7 @@ pid {
       type: UINT16
       name: "endpoint_id"
       range {
-        min: 1
+        min: 0
         max: 65534
       }
     }
@@ -2957,7 +2941,7 @@ pid {
       type: UINT16
       name: "endpoint_id"
       range {
-        min: 1
+        min: 0
         max: 65534
       }
     }
@@ -2977,7 +2961,7 @@ pid {
         label: "All Endpoints"
       }
       range {
-        min: 1
+        min: 0
         max: 65535
       }
     }
@@ -2999,7 +2983,7 @@ pid {
       type: UINT16
       name: "endpoint_id"
       range {
-        min: 1
+        min: 0
         max: 65534
       }
     }
@@ -3009,7 +2993,7 @@ pid {
       type: UINT16
       name: "endpoint_id"
       range {
-        min: 1
+        min: 0
         max: 65534
       }
     }
@@ -3056,7 +3040,7 @@ pid {
         label: "All Endpoints"
       }
       range {
-        min: 1
+        min: 0
         max: 65535
       }
     }
@@ -3093,7 +3077,7 @@ pid {
       type: UINT16
       name: "endpoint_id"
       range {
-        min: 1
+        min: 0
         max: 65534
       }
     }
@@ -3103,7 +3087,7 @@ pid {
       type: UINT16
       name: "endpoint_id"
       range {
-        min: 1
+        min: 0
         max: 65534
       }
     }
@@ -3126,7 +3110,7 @@ pid {
         label: "All Endpoints"
       }
       range {
-        min: 1
+        min: 0
         max: 65535
       }
     }
@@ -3179,7 +3163,7 @@ pid {
       type: UINT16
       name: "endpoint_id"
       range {
-        min: 1
+        min: 0
         max: 65534
       }
     }
@@ -3202,7 +3186,7 @@ pid {
       type: UINT16
       name: "endpoint_id"
       range {
-        min: 1
+        min: 0
         max: 65534
       }
     }
@@ -3212,7 +3196,7 @@ pid {
       type: UINT16
       name: "endpoint_id"
       range {
-        min: 1
+        min: 0
         max: 65534
       }
     }
@@ -3231,7 +3215,7 @@ pid {
         label: "All Endpoints"
       }
       range {
-        min: 1
+        min: 0
         max: 65535
       }
     }
@@ -3252,7 +3236,7 @@ pid {
       type: UINT16
       name: "endpoint_id"
       range {
-        min: 1
+        min: 0
         max: 65534
       }
     }
@@ -3262,7 +3246,7 @@ pid {
       type: UINT16
       name: "endpoint_id"
       range {
-        min: 1
+        min: 0
         max: 65534
       }
     }
@@ -3281,7 +3265,7 @@ pid {
         label: "All Endpoints"
       }
       range {
-        min: 1
+        min: 0
         max: 65535
       }
     }
@@ -3302,7 +3286,7 @@ pid {
       type: UINT16
       name: "endpoint_id"
       range {
-        min: 1
+        min: 0
         max: 65534
       }
     }
@@ -3312,7 +3296,7 @@ pid {
       type: UINT16
       name: "endpoint_id"
       range {
-        min: 1
+        min: 0
         max: 65534
       }
     }
@@ -3331,7 +3315,7 @@ pid {
       type: UINT16
       name: "endpoint_id"
       range {
-        min: 1
+        min: 0
         max: 65534
       }
     }
@@ -3341,7 +3325,7 @@ pid {
       type: UINT16
       name: "endpoint_id"
       range {
-        min: 1
+        min: 0
         max: 65534
       }
     }
@@ -3403,4 +3387,4 @@ pid {
   }
   get_sub_device_range: ROOT_DEVICE
 }
-version: 1365898008
+version: 1366482943
