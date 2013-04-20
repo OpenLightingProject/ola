@@ -24,6 +24,7 @@
 #include <ola/e133/SLPThread.h>
 #include <ola/io/SelectServer.h>
 #include <ola/slp/URLEntry.h>
+#include <signal.h>
 #include <sysexits.h>
 
 #include <iostream>

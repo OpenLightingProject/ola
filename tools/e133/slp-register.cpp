@@ -28,6 +28,7 @@
 #include <ola/network/Interface.h>
 #include <ola/network/InterfacePicker.h>
 #include <ola/rdm/UID.h>
+#include <signal.h>
 #include <sysexits.h>
 
 #include <iostream>
