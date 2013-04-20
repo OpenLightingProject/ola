@@ -26,49 +26,41 @@ TESTS = DiscoveryAgentTester PidStoreTester RDMMessageTester RDMTester
 endif
 check_PROGRAMS = $(TESTS)
 
-DiscoveryAgentTester_SOURCES = DiscoveryAgentTester.cpp DiscoveryAgentTest.cpp
-DiscoveryAgentTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-DiscoveryAgentTester_LDADD = $(CPPUNIT_LIBS) \
-                             libolardm.la \
-                             ../base/libolabase.la \
-                             ../utils/libolautils.la
+COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS) \
+                    libolardm.la \
+                    ../base/libolabase.la \
+                    ../utils/libolautils.la \
+                    ../testing/libtestmain.la
 
-RDMTester_SOURCES = RDMAPITest.cpp RDMCommandTest.cpp RDMTester.cpp \
+DiscoveryAgentTester_SOURCES = DiscoveryAgentTest.cpp
+DiscoveryAgentTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+DiscoveryAgentTester_LDADD = $(COMMON_TEST_LDADD);
+
+RDMTester_SOURCES = RDMAPITest.cpp RDMCommandTest.cpp \
                     QueueingRDMControllerTest.cpp UIDAllocatorTest.cpp \
                     UIDTest.cpp
-RDMTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-RDMTester_LDADD = $(CPPUNIT_LIBS) \
-                  libolardm.la \
-                  ../base/libolabase.la \
+RDMTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+RDMTester_LDADD = $(COMMON_TEST_LDADD) \
                   ../io/libolaio.la \
                   ../messaging/libolamessaging.la \
-                  ../network/libolanetwork.la \
-                  ../testing/libolatesting.la \
-                  ../utils/libolautils.la
+                  ../network/libolanetwork.la
 
 PidStoreTester_SOURCES = DescriptorConsistencyCheckerTest.cpp \
-                         PidStoreTester.cpp PidStoreTest.cpp
-PidStoreTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-PidStoreTester_LDADD = $(CPPUNIT_LIBS) \
-                       libolardm.la \
-                       ../base/libolabase.la \
-                       ../messaging/libolamessaging.la \
-                       ../utils/libolautils.la
+                         PidStoreTest.cpp
+PidStoreTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+PidStoreTester_LDADD = $(COMMON_TEST_LDADD) \
+                       ../messaging/libolamessaging.la
 
 RDMMessageTester_SOURCES = GroupSizeCalculatorTest.cpp \
                            MessageSerializerTest.cpp \
                            MessageDeserializerTest.cpp \
-                           RDMMessageTester.cpp \
                            RDMMessageInterationTest.cpp \
                            StringMessageBuilderTest.cpp \
                            VariableFieldSizeCalculatorTest.cpp
-RDMMessageTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-RDMMessageTester_LDADD = $(CPPUNIT_LIBS) \
-                         libolardm.la \
-                         ../base/libolabase.la \
+RDMMessageTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+RDMMessageTester_LDADD = $(COMMON_TEST_LDADD) \
                          ../messaging/libolamessaging.la \
-                         ../network/libolanetwork.la \
-                         ../utils/libolautils.la
+                         ../network/libolanetwork.la
 
 Pids.pb.cc Pids.pb.h: Pids.proto
 	$(PROTOC) --cpp_out ./ Pids.proto

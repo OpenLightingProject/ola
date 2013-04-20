@@ -7,9 +7,13 @@ if BUILD_TESTS
 TESTS = WebTester
 endif
 check_PROGRAMS = $(TESTS)
-WebTester_SOURCES = JsonTest.cpp JsonSectionsTest.cpp WebTester.cpp
-WebTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-WebTester_LDADD = $(CPPUNIT_LIBS) \
+
+WebTester_SOURCES = JsonTest.cpp JsonSectionsTest.cpp
+WebTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+WebTester_LDADD = $(COMMON_TESTING_LIBS) \
                   libolaweb.la \
                   ../base/libolabase.la \
+                  ../testing/libtestmain.la \
                   ../utils/libolautils.la
+
+

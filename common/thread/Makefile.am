@@ -7,9 +7,11 @@ if BUILD_TESTS
 TESTS = ThreadTester
 endif
 check_PROGRAMS = $(TESTS)
-ThreadTester_SOURCES = ThreadPoolTest.cpp ThreadTest.cpp ThreadTester.cpp
-ThreadTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-ThreadTester_LDADD = $(CPPUNIT_LIBS) \
+
+ThreadTester_SOURCES = ThreadPoolTest.cpp ThreadTest.cpp
+ThreadTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+ThreadTester_LDADD = $(COMMON_TESTING_LIBS) \
                      ../base/libolabase.la \
+                     ../testing/libtestmain.la \
                      ../utils/libolautils.la \
                      ./libthread.la

@@ -12,10 +12,11 @@ TESTS = UtilsTester
 endif
 check_PROGRAMS = $(TESTS)
 UtilsTester_SOURCES = ActionQueueTest.cpp BackoffTest.cpp ClockTest.cpp \
-                      CallbackTest.cpp DmxBufferTest.cpp MultiCallbackTest.cpp \
-                      RunLengthEncoderTest.cpp  StringUtilsTest.cpp \
-                      TokenBucketTest.cpp UtilsTester.cpp
-UtilsTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-UtilsTester_LDADD = $(CPPUNIT_LIBS) \
+                      CallbackTest.cpp DmxBufferTest.cpp \
+                      MultiCallbackTest.cpp RunLengthEncoderTest.cpp \
+                      StringUtilsTest.cpp TokenBucketTest.cpp
+UtilsTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+UtilsTester_LDADD = $(COMMON_TESTING_LIBS) \
                     libolautils.la \
-                    ../base/libolabase.la
+                    ../base/libolabase.la \
+                    ../testing/libtestmain.la

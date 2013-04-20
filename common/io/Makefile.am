@@ -13,33 +13,28 @@ TESTS = DescriptorTester IOQueueTester \
 endif
 check_PROGRAMS = $(TESTS)
 
-COMMON_TEST_LDADD = $(CPPUNIT_LIBS) \
+COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS) \
                     ../libolacommon.la \
-                    ../testing/libolatesting.la
+                    ../testing/libtestmain.la
 
-IOQueueTester_SOURCES = IOQueueTest.cpp \
-                        GenericTester.cpp
-IOQueueTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+IOQueueTester_SOURCES = IOQueueTest.cpp
+IOQueueTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 IOQueueTester_LDADD = $(COMMON_TEST_LDADD)
 
-IOStackTester_SOURCES = IOStackTest.cpp \
-                        GenericTester.cpp
-IOStackTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+IOStackTester_SOURCES = IOStackTest.cpp
+IOStackTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 IOStackTester_LDADD = $(COMMON_TEST_LDADD)
 
-DescriptorTester_SOURCES = DescriptorTest.cpp \
-                           GenericTester.cpp
-DescriptorTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+DescriptorTester_SOURCES = DescriptorTest.cpp
+DescriptorTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 DescriptorTester_LDADD = $(COMMON_TEST_LDADD)
 
-SelectServerTester_SOURCES = GenericTester.cpp \
-                             SelectServerTest.cpp \
+SelectServerTester_SOURCES = SelectServerTest.cpp \
                              SelectServerThreadTest.cpp
-SelectServerTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+SelectServerTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 SelectServerTester_LDADD = $(COMMON_TEST_LDADD)
 
-StreamTester_SOURCES = GenericTester.cpp \
-                       InputStreamTest.cpp \
+StreamTester_SOURCES = InputStreamTest.cpp \
                        OutputStreamTest.cpp
-StreamTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+StreamTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 StreamTester_LDADD = $(COMMON_TEST_LDADD)

@@ -7,9 +7,11 @@ if BUILD_TESTS
 TESTS = TimeCodeTester
 endif
 check_PROGRAMS = $(TESTS)
-TimeCodeTester_SOURCES = TimeCodeTester.cpp \
-                         TimeCodeTest.cpp
-TimeCodeTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-TimeCodeTester_LDADD = $(CPPUNIT_LIBS) \
+
+TimeCodeTester_SOURCES = TimeCodeTest.cpp
+TimeCodeTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+TimeCodeTester_LDADD = $(COMMON_TESTING_LIBS) \
                        ./libtimecode.la \
-                       ../base/libolabase.la
+                       ../base/libolabase.la \
+                       ../testing/libtestmain.la
+
