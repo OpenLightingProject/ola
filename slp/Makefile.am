@@ -98,56 +98,54 @@ TESTS = SLPServerTester DATrackerTester PacketParserTester \
         RegistrationFileParserTester ServiceEntryTester SLPStoreTester \
         XIDAllocatorTester PacketBuilderTester ScopeSetTester SLPStringsTester
 endif
-COMMON_TEST_LDADD = $(CPPUNIT_LIBS) \
+COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS) \
                     $(top_builddir)/common/libolacommon.la \
-                    $(top_builddir)/common/testing/libolatesting.la \
+                    $(top_builddir)/common/testing/libtestmain.la \
                     ./libolaslpcore.la \
                     ./libolaslpserver.la
 
 check_PROGRAMS = $(TESTS)
-DATrackerTester_SOURCES = GenericTester.cpp DATrackerTest.cpp
-DATrackerTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+DATrackerTester_SOURCES = DATrackerTest.cpp
+DATrackerTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 DATrackerTester_LDADD = $(COMMON_TEST_LDADD)
 
-PacketBuilderTester_SOURCES = GenericTester.cpp PacketBuilderTest.cpp
-PacketBuilderTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+PacketBuilderTester_SOURCES = PacketBuilderTest.cpp
+PacketBuilderTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 PacketBuilderTester_LDADD = $(COMMON_TEST_LDADD)
 
-PacketParserTester_SOURCES = GenericTester.cpp PacketParserTest.cpp
-PacketParserTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+PacketParserTester_SOURCES = PacketParserTest.cpp
+PacketParserTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 PacketParserTester_LDADD = $(COMMON_TEST_LDADD)
 
-RegistrationFileParserTester_SOURCES = GenericTester.cpp \
-                                       RegistrationFileParserTest.cpp
-RegistrationFileParserTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+RegistrationFileParserTester_SOURCES = RegistrationFileParserTest.cpp
+RegistrationFileParserTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 RegistrationFileParserTester_LDADD = $(COMMON_TEST_LDADD)
 
-SLPServerTester_SOURCES = GenericTester.cpp SLPServerTestHelper.cpp \
+SLPServerTester_SOURCES = SLPServerTestHelper.cpp \
                           SLPServerDATest.cpp \
                           SLPServerNetworkTest.cpp \
                           SLPServerSATest.cpp \
                           SLPServerUATest.cpp
-SLPServerTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+SLPServerTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 SLPServerTester_LDADD = $(COMMON_TEST_LDADD)
 
-SLPStoreTester_SOURCES = GenericTester.cpp SLPStoreTest.cpp
-SLPStoreTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+SLPStoreTester_SOURCES = SLPStoreTest.cpp
+SLPStoreTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 SLPStoreTester_LDADD = $(COMMON_TEST_LDADD)
 
-SLPStringsTester_SOURCES = GenericTester.cpp SLPStringsTest.cpp
-SLPStringsTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+SLPStringsTester_SOURCES = SLPStringsTest.cpp
+SLPStringsTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 SLPStringsTester_LDADD = $(COMMON_TEST_LDADD)
 
-ScopeSetTester_SOURCES = GenericTester.cpp ScopeSetTest.cpp
-ScopeSetTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+ScopeSetTester_SOURCES = ScopeSetTest.cpp
+ScopeSetTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 ScopeSetTester_LDADD = $(COMMON_TEST_LDADD)
 
-ServiceEntryTester_SOURCES = GenericTester.cpp \
-                             ServiceEntryTest.cpp \
+ServiceEntryTester_SOURCES = ServiceEntryTest.cpp \
                              URLEntryTest.cpp
-ServiceEntryTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+ServiceEntryTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 ServiceEntryTester_LDADD = $(COMMON_TEST_LDADD)
 
-XIDAllocatorTester_SOURCES = GenericTester.cpp XIDAllocatorTest.cpp
-XIDAllocatorTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+XIDAllocatorTester_SOURCES = XIDAllocatorTest.cpp
+XIDAllocatorTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 XIDAllocatorTester_LDADD = $(COMMON_TEST_LDADD)

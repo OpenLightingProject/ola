@@ -37,7 +37,6 @@ HealthCheckedConnectionTester_LDADD = $(COMMON_TEST_LDADD)
 NetworkTester_SOURCES = IPAddressTest.cpp \
                         InterfacePickerTest.cpp \
                         InterfaceTest.cpp \
-                        NetworkTester.cpp \
                         NetworkUtilsTest.cpp \
                         SocketAddressTest.cpp \
                         SocketTest.cpp
@@ -49,7 +48,6 @@ if USING_WIN32
 endif
 
 TCPConnectorTester_SOURCES = AdvancedTCPConnectorTest.cpp \
-                             TCPConnectorTest.cpp \
-                             TCPConnectorTester.cpp
+                             TCPConnectorTest.cpp
 TCPConnectorTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 TCPConnectorTester_LDADD = $(COMMON_TEST_LDADD)
