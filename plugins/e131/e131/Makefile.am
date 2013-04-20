@@ -1,6 +1,6 @@
 include $(top_srcdir)/common.mk
 
-EXTRA_DIST = ACNPort.h ACNVectors.h BaseInflator.h CID.h CIDImpl.h \
+EXTRA_DIST = BaseInflator.h CIDImpl.h \
              DMPE131Inflator.h DMPAddress.h DMPHeader.h \
              DMPInflator.h DMPPDU.h \
              E131Header.h E131Includes.h E131Inflator.h E131Sender.h \
