@@ -1,7 +1,7 @@
-d/m/y ola-0.8.28
+20/4/2013 ola-0.8.28
  * Add support for the LPD8806 pixels using SPI.
  * Fix the build on OS X Lion 10.7 - #231
- * Fix to build with clang 4.2
+ * Fix the build with clang 4.2
  * Added a simple E1.31 load test tool
  * Added the first E1.33 (RDMNet) tools
  * Switched to using the new command line flags module in some programs.
