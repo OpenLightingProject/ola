@@ -77,27 +77,27 @@ E131Tester_SOURCES = BaseInflatorTest.cpp \
                      DMPPDUTest.cpp \
                      E131InflatorTest.cpp \
                      E131PDUTest.cpp \
-                     E131Tester.cpp \
                      HeaderSetTest.cpp \
                      PDUTest.cpp \
                      RootInflatorTest.cpp \
                      RootPDUTest.cpp \
                      RootSenderTest.cpp
-E131Tester_CPPFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+E131Tester_CPPFLAGS = $(COMMON_TESTING_FLAGS)
 # For some completely messed up reason on mac CPPUNIT_LIBS has to come after
 # the ossp uuid library.
 # CPPUNIT_LIBS contains -ldl which causes the unittests to fail in strange ways
-E131Tester_LDADD = ./libolae131core.la $(COMMON_TESTING_LIBS)
+E131Tester_LDADD = ./libolae131core.la $(COMMON_TESTING_LIBS) \
+                   $(top_builddir)/common/testing/libtestmain.la
 
 E133Tester_SOURCES = E133InflatorTest.cpp \
                      E133PDUTest.cpp \
-                     E133Tester.cpp \
                      RDMPDUTest.cpp
-E133Tester_CPPFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-E133Tester_LDADD = ./libolae131core.la $(COMMON_TESTING_LIBS)
+E133Tester_CPPFLAGS = $(COMMON_TESTING_FLAGS)
+E133Tester_LDADD = ./libolae131core.la $(COMMON_TESTING_LIBS) \
+                   $(top_builddir)/common/testing/libtestmain.la
 
 TransportTester_SOURCES = TCPTransportTest.cpp \
-                          TransportTester.cpp \
                           UDPTransportTest.cpp
-TransportTester_CPPFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-TransportTester_LDADD = ./libolae131core.la $(COMMON_TESTING_LIBS)
+TransportTester_CPPFLAGS = $(COMMON_TESTING_FLAGS)
+TransportTester_LDADD = ./libolae131core.la $(COMMON_TESTING_LIBS) \
+                        $(top_builddir)/common/testing/libtestmain.la

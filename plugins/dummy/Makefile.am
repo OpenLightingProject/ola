@@ -17,13 +17,15 @@ if BUILD_TESTS
 TESTS = DummyPluginTester
 endif
 check_PROGRAMS = $(TESTS)
-DummyPluginTester_SOURCES = DummyPluginTester.cpp DummyPortTest.cpp
-DummyPluginTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+
+DummyPluginTester_SOURCES = DummyPortTest.cpp
+DummyPluginTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 # it's unclear to me why liboladummyresponder has to be included here
 # but if it isn't, the test breaks with gcc 4.6.1
-DummyPluginTester_LDADD = ./liboladummy.la \
-                          ./liboladummyresponder.la \
-                          $(CPPUNIT_LIBS) \
+DummyPluginTester_LDADD = $(COMMON_TEST_LDADD) \
                           $(top_builddir)/olad/libolaserver.la \
+                          $(top_builddir)/common/testing/libtestmain.la \
+                          ./liboladummy.la \
+                          ./liboladummyresponder.la \
                           ../../common/libolacommon.la
 endif

@@ -15,10 +15,10 @@ if BUILD_TESTS
 TESTS = EspNetTester
 endif
 check_PROGRAMS = $(TESTS)
-EspNetTester_SOURCES = EspNetTester.cpp \
-                       RunLengthDecoderTest.cpp \
+EspNetTester_SOURCES = RunLengthDecoderTest.cpp \
                        RunLengthDecoder.cpp
-EspNetTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-EspNetTester_LDADD = $(CPPUNIT_LIBS) \
+EspNetTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+EspNetTester_LDADD = $(COMMON_TESTING_LIBS) \
+                     $(top_builddir)/common/testing/libtestmain.la \
                      ../../common/libolacommon.la
 endif

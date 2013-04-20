@@ -19,12 +19,12 @@ if BUILD_TESTS
 TESTS = OSCTester
 endif
 check_PROGRAMS = $(TESTS)
+
 OSCTester_SOURCES = OSCAddressTemplateTest.cpp \
-                    OSCNodeTest.cpp \
-                    OSCTester.cpp
-OSCTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-OSCTester_LDADD = $(CPPUNIT_LIBS) \
+                    OSCNodeTest.cpp
+OSCTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+OSCTester_LDADD = $(COMMON_TESTING_LIBS) \
+                  $(top_builddir)/common/testing/libtestmain.la \
                   libolaoscnode.la \
-                  ../../common/libolacommon.la \
-                  ../../common/testing/libolatesting.la
+                  ../../common/libolacommon.la
 endif
