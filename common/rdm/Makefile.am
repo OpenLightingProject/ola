@@ -34,7 +34,7 @@ COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS) \
 
 DiscoveryAgentTester_SOURCES = DiscoveryAgentTest.cpp
 DiscoveryAgentTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-DiscoveryAgentTester_LDADD = $(COMMON_TEST_LDADD);
+DiscoveryAgentTester_LDADD = $(COMMON_TEST_LDADD)
 
 RDMTester_SOURCES = RDMAPITest.cpp RDMCommandTest.cpp \
                     QueueingRDMControllerTest.cpp UIDAllocatorTest.cpp \
