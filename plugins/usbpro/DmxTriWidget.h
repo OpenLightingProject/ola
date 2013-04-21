@@ -206,7 +206,8 @@ class DmxTriWidgetImpl: public BaseUsbProWidget,
 /*
  * A DMX TRI Widget
  */
-class DmxTriWidget: public SerialWidgetInterface {
+class DmxTriWidget: public SerialWidgetInterface,
+                    public ola::rdm::DiscoverableRDMControllerInterface {
   public:
     DmxTriWidget(ola::thread::SchedulerInterface *ss,
                  ola::io::ConnectedDescriptor *descriptor,

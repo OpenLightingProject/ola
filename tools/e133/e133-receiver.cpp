@@ -27,6 +27,7 @@
 #include <ola/base/Flags.h>
 #include <ola/base/Init.h>
 #include <ola/BaseTypes.h>
+#include <ola/io/Descriptor.h>
 #include <ola/Logging.h>
 #include <ola/network/InterfacePicker.h>
 #include <ola/rdm/RDMControllerAdaptor.h>
@@ -38,6 +39,8 @@
 #include <string>
 #include <vector>
 
+#include "plugins/usbpro/BaseUsbProWidget.h"
+#include "plugins/usbpro/DmxTriWidget.h"
 #include "tools/e133/SimpleE133Node.h"
 
 using ola::network::IPV4Address;
@@ -46,11 +49,12 @@ using std::auto_ptr;
 using std::string;
 using std::vector;
 
-DEFINE_string(listen_ip, "", "The IP address to listen on.");
 DEFINE_bool(dummy, true, "Include a dummy responder endpoint");
-DEFINE_s_uint16(lifetime, t, 300, "The value to use for the service lifetime");
+DEFINE_string(listen_ip, "", "The IP address to listen on.");
 DEFINE_string(uid, "7a70:00000001", "The UID of the responder.");
+DEFINE_s_uint16(lifetime, t, 300, "The value to use for the service lifetime");
 DEFINE_s_uint32(universe, u, 1, "The E1.31 universe to listen on.");
+DEFINE_string(tri_device, "", "Path to the RDM-TRI device to use.");
 
 SimpleE133Node *simple_node;
 
@@ -81,10 +85,28 @@ int main(int argc, char *argv[]) {
     exit(EX_USAGE);
   }
 
+  // Find a network interface to use
+  ola::network::Interface interface;
+
+  {
+    auto_ptr<const ola::network::InterfacePicker> picker(
+      ola::network::InterfacePicker::NewPicker());
+    if (!picker->ChooseInterface(&interface, FLAGS_listen_ip)) {
+      OLA_INFO << "Failed to find an interface";
+      exit(EX_UNAVAILABLE);
+    }
+  }
+
+  // Setup the Node.
+  SimpleE133Node::Options opts(interface.ip_address, *uid, FLAGS_lifetime);
+  SimpleE133Node node(opts);
+
+  // Optionally attach some other endpoints.
   vector<E133Endpoint*> endpoints;
   auto_ptr<ola::plugin::dummy::DummyResponder> dummy_responder;
   auto_ptr<ola::rdm::DiscoverableRDMControllerAdaptor>
     discoverable_dummy_responder;
+  auto_ptr<ola::plugin::usbpro::DmxTriWidget> tri_widget;
 
   ola::rdm::UIDAllocator uid_allocator(*uid);
   // The first uid is used for the management endpoint so we burn a UID here.
@@ -107,19 +129,23 @@ int main(int argc, char *argv[]) {
                                          E133Endpoint::EndpointProperties()));
   }
 
-  ola::network::Interface interface;
-
-  {
-    auto_ptr<const ola::network::InterfacePicker> picker(
-      ola::network::InterfacePicker::NewPicker());
-    if (!picker->ChooseInterface(&interface, FLAGS_listen_ip)) {
-      OLA_INFO << "Failed to find an interface";
-      exit(EX_UNAVAILABLE);
+  if (!FLAGS_tri_device.str().empty()) {
+    ola::io::ConnectedDescriptor *descriptor =
+        ola::plugin::usbpro::BaseUsbProWidget::OpenDevice(FLAGS_tri_device);
+    if (!descriptor) {
+      OLA_WARN << "Failed to open " << FLAGS_tri_device;
+      exit(EX_USAGE);
     }
+    tri_widget.reset(
+        new ola::plugin::usbpro::DmxTriWidget(node.SelectServer(),
+                                              descriptor));
+    node.SelectServer()->AddReadDescriptor(descriptor);
+    E133Endpoint::EndpointProperties properties;
+    properties.is_physical = true;
+    endpoints.push_back(
+        new E133Endpoint(tri_widget.get(), properties));
   }
 
-  SimpleE133Node::Options opts(interface.ip_address, *uid, FLAGS_lifetime);
-  SimpleE133Node node(opts);
   for (unsigned int i = 0; i < endpoints.size(); i++) {
     node.AddEndpoint(i + 1, endpoints[i]);
   }
