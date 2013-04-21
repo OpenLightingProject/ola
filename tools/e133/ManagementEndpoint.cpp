@@ -410,7 +410,7 @@ void ManagementEndpoint::HandleEndpointDevices(const RDMRequest *request,
 
   endpoint->RunIncrementalDiscovery(
       NewSingleCallback(this, &ManagementEndpoint::EndpointDevicesComplete,
-                        request, on_complete));
+                        request->Duplicate(), on_complete));
 }
 
 /**
@@ -588,7 +588,7 @@ void ManagementEndpoint::DiscoveryComplete(RDMDiscoveryCallback *callback,
  * Called when a Endpoint discovery completes
  */
 void ManagementEndpoint::EndpointDevicesComplete(
-    const RDMRequest *request,
+    RDMRequest *request,
     RDMCallback *on_complete,
     const UIDSet &uids) {
   // TODO(simon): fix this hack.

@@ -63,6 +63,8 @@ class SimpleE133Node {
     explicit SimpleE133Node(const Options &options);
     ~SimpleE133Node();
 
+    ola::io::SelectServer *SelectServer() { return &m_ss; }
+
     bool Init();
     void Run();
     void Stop() { m_ss.Terminate(); }
