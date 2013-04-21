@@ -79,8 +79,8 @@ e133_receiver_SOURCES = e133-receiver.cpp \
                         E133Endpoint.cpp \
                         EndpointManager.cpp \
                         ManagementEndpoint.cpp
-e133_receiver_LDADD = ./libolae133slp.la \
-                      ./libolae133common.la \
+e133_receiver_LDADD = libolae133slp.la \
+                      libolae133common.la \
                       $(top_builddir)/common/libolacommon.la \
                       $(top_builddir)/plugins/dummy/liboladummyresponder.la \
                       $(top_builddir)/plugins/e131/e131/libolae131core.la
@@ -89,26 +89,26 @@ e133_monitor_SOURCES = e133-monitor.cpp
 e133_monitor_CXXFLAGS = @OLAD_DEFINES@ $(COMMON_CXXFLAGS)
 e133_monitor_LDADD = $(top_builddir)/common/libolacommon.la \
                      $(top_builddir)/plugins/e131/e131/libolaacn.la \
-                     ./libolae133slp.la \
-                     ./libolae133common.la \
-                     ./libolae133controller.la
+                     libolae133slp.la \
+                     libolae133common.la \
+                     libolae133controller.la
 
 e133_controller_SOURCES = e133-controller.cpp
 # required for PID_DATA_FILE
 e133_controller_CXXFLAGS = @OLAD_DEFINES@ $(COMMON_CXXFLAGS)
 e133_controller_LDADD = $(top_builddir)/common/libolacommon.la \
                         $(top_builddir)/plugins/e131/e131/libolae131core.la \
-                        ./libolae133slp.la \
-                        ./libolae133common.la \
-                        ./libolae133controller.la
+                        libolae133slp.la \
+                        libolae133common.la \
+                        libolae133controller.la
 
 slp_locate_SOURCES = slp-locate.cpp
 slp_locate_LDADD = $(top_builddir)/common/libolacommon.la \
-                   ./libolae133slp.la
+                   libolae133slp.la
 
 slp_register_SOURCES = slp-register.cpp
 slp_register_LDADD = $(top_builddir)/common/libolacommon.la \
-                     ./libolae133slp.la
+                     libolae133slp.la
 
 slp_sa_test_SOURCES = slp-sa-test.cpp \
                       SLPSATestHelpers.cpp \
@@ -116,7 +116,7 @@ slp_sa_test_SOURCES = slp-sa-test.cpp \
                       SLPSATests.cpp
 slp_sa_test_LDADD = $(top_builddir)/common/libolacommon.la \
                     $(top_builddir)/slp/libolaslpserver.la \
-                    ./libolae133slp.la
+                    libolae133slp.la
 
 # Tests
 #########################
@@ -129,6 +129,6 @@ E133SLPTester_SOURCES = E133URLParserTest.cpp
 E133SLPTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 E133SLPTester_LDADD = $(COMMON_TESTING_LIBS) \
                       $(top_builddir)/common/libolacommon.la \
-                      ./libolae133slp.la
+                      libolae133slp.la
 
 
