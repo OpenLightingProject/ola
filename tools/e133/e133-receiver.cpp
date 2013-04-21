@@ -20,12 +20,7 @@
  * registered in slp and the RDM responder responds to E1.33 commands.
  */
 
-#if HAVE_CONFIG_H
-#  include <config.h>
-#endif
-
 #include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
-#include <getopt.h>
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
@@ -34,11 +29,9 @@
 #include <ola/BaseTypes.h>
 #include <ola/Logging.h>
 #include <ola/acn/ACNPort.h>
+#include <ola/base/Flags.h>
 #include <ola/base/Init.h>
-#include <ola/e133/OLASLPThread.h>
-#ifdef HAVE_LIBSLP
-#include <ola/e133/OpenSLPThread.h>
-#endif
+#include <ola/e133/SLPThread.h>
 #include <ola/io/SelectServer.h>
 #include <ola/io/StdinHandler.h>
 #include <ola/network/InterfacePicker.h>
@@ -66,122 +59,10 @@ using std::cout;
 using std::endl;
 using std::string;
 
-
-typedef struct {
-  bool help;
-  bool use_openslp;
-  ola::log_level log_level;
-  unsigned int universe;
-  string ip_address;
-  uint16_t lifetime;
-  auto_ptr<UID> uid;
-} options;
-
-
-/*
- * Parse our command line options
- */
-void ParseOptions(int argc, char *argv[], options *opts) {
-  enum {
-    OPENSLP_OPTION = 256,
-  };
-
-  int uid_set = 0;
-  static struct option long_options[] = {
-      {"help", no_argument, 0, 'h'},
-      {"ip", required_argument, 0, 'i'},
-      {"log-level", required_argument, 0, 'l'},
-      {"timeout", required_argument, 0, 't'},
-      {"uid", required_argument, &uid_set, 1},
-      {"universe", required_argument, 0, 'u'},
-#ifdef HAVE_LIBSLP
-      {"openslp", no_argument, 0, OPENSLP_OPTION},
-#endif
-      {0, 0, 0, 0}
-    };
-
-  int option_index = 0;
-
-  while (1) {
-    int c = getopt_long(argc, argv, "hi:l:t:u:", long_options, &option_index);
-
-    if (c == -1)
-      break;
-
-    switch (c) {
-      case 0:
-        if (uid_set)
-          opts->uid.reset(UID::FromString(optarg));
-        break;
-      case 'h':
-        opts->help = true;
-        break;
-      case 'i':
-        opts->ip_address = optarg;
-        break;
-      case 'l':
-        switch (atoi(optarg)) {
-          case 0:
-            // nothing is written at this level
-            // so this turns logging off
-            opts->log_level = ola::OLA_LOG_NONE;
-            break;
-          case 1:
-            opts->log_level = ola::OLA_LOG_FATAL;
-            break;
-          case 2:
-            opts->log_level = ola::OLA_LOG_WARN;
-            break;
-          case 3:
-            opts->log_level = ola::OLA_LOG_INFO;
-            break;
-          case 4:
-            opts->log_level = ola::OLA_LOG_DEBUG;
-            break;
-          default :
-            break;
-        }
-        break;
-      case 't':
-        opts->lifetime = atoi(optarg);
-        break;
-      case 'u':
-        opts->universe = atoi(optarg);
-        break;
-      case OPENSLP_OPTION:
-        opts->use_openslp = true;
-        break;
-      case '?':
-        break;
-      default:
-       break;
-    }
-  }
-  return;
-}
-
-
-/*
- * Display the help message
- */
-void DisplayHelpAndExit(char *argv[]) {
-  cout << "Usage: " << argv[0] << " [options]\n"
-  "\n"
-  "Run a very simple E1.33 Responder.\n"
-  "\n"
-  "  -h, --help                Display this help message and exit.\n"
-  "  -i, --ip                  The IP address to listen on.\n"
-  "  -l, --log-level <level>   Set the logging level 0 .. 4.\n"
-  "  -t, --timeout <seconds>   The value to use for the service lifetime\n"
-  "  -u, --universe <universe> The universe to respond on (> 0).\n"
-  "  --uid <uid>               The UID of the responder.\n"
-#ifdef HAVE_LIBSLP
-  "  --openslp                 Use openslp rather than the OLA SLP server\n"
-#endif
-  << endl;
-  exit(0);
-}
-
+DEFINE_string(listen_ip, "", "The IP address to listen on.");
+DEFINE_s_uint16(lifetime, t, 300, "The value to use for the service lifetime");
+DEFINE_string(uid, "7a70:00000001", "The UID of the responder.");
+DEFINE_s_uint32(universe, u, 1, "The E1.31 universe to listen on.");
 
 /**
  * A very simple E1.33 node that registers itself using SLP and responds to
@@ -189,8 +70,17 @@ void DisplayHelpAndExit(char *argv[]) {
  */
 class SimpleE133Node {
   public:
-    explicit SimpleE133Node(const IPV4Address &ip_address,
-                            const options &opts);
+    struct Options {
+      IPV4Address ip_address;
+      UID uid;
+      uint16_t lifetime;
+
+      Options(const IPV4Address &ip, const UID &uid, uint16_t lifetime)
+        : ip_address(ip), uid(uid), lifetime(lifetime) {
+      }
+    };
+
+    explicit SimpleE133Node(const Options &options);
     ~SimpleE133Node();
 
     bool Init();
@@ -199,15 +89,15 @@ class SimpleE133Node {
 
   private:
     ola::io::SelectServer m_ss;
-    ola::io::StdinHandler m_stdin_handler;
     auto_ptr<ola::e133::BaseSLPThread> m_slp_thread;
+    ola::io::StdinHandler m_stdin_handler;
     EndpointManager m_endpoint_manager;
     E133Device m_e133_device;
     ManagementEndpoint m_management_endpoint;
     E133Endpoint m_first_endpoint;
     ola::plugin::dummy::DummyResponder m_responder;
-    uint16_t m_lifetime;
-    UID m_uid;
+    const uint16_t m_lifetime;
+    const UID m_uid;
     const IPV4Address m_ip_address;
 
     void RegisterCallback(bool ok);
@@ -225,26 +115,18 @@ class SimpleE133Node {
 /**
  * Constructor
  */
-SimpleE133Node::SimpleE133Node(const IPV4Address &ip_address,
-                               const options &opts)
-    : m_stdin_handler(&m_ss, ola::NewCallback(this, &SimpleE133Node::Input)),
-      m_e133_device(&m_ss, ip_address, &m_endpoint_manager),
-      m_management_endpoint(NULL, E133Endpoint::EndpointProperties(), *opts.uid,
-                            &m_endpoint_manager, m_e133_device.GetTCPStats()),
+SimpleE133Node::SimpleE133Node(const Options &options)
+    : m_slp_thread(ola::e133::SLPThreadFactory::NewSLPThread(&m_ss)),
+      m_stdin_handler(&m_ss, ola::NewCallback(this, &SimpleE133Node::Input)),
+      m_e133_device(&m_ss, options.ip_address, &m_endpoint_manager),
+      m_management_endpoint(NULL, E133Endpoint::EndpointProperties(),
+                            options.uid, &m_endpoint_manager,
+                            m_e133_device.GetTCPStats()),
       m_first_endpoint(NULL, E133Endpoint::EndpointProperties()),
-      m_responder(*opts.uid),
-      m_lifetime(opts.lifetime),
-      m_uid(*opts.uid),
-      m_ip_address(ip_address) {
-  if (opts.use_openslp) {
-#ifdef HAVE_LIBSLP
-    m_slp_thread.reset(new ola::e133::OpenSLPThread(&m_ss));
-#else
-    OLA_WARN << "openslp not installed";
-#endif
-  } else {
-    m_slp_thread.reset(new ola::e133::OLASLPThread(&m_ss));
-  }
+      m_responder(options.uid),
+      m_lifetime(options.lifetime),
+      m_uid(options.uid),
+      m_ip_address(options.ip_address) {
 }
 
 
@@ -273,6 +155,13 @@ bool SimpleE133Node::Init() {
     return false;
   }
   m_slp_thread->Start();
+
+  cout << "---------------  Controls  ----------------\n";
+  cout << " c - Close the TCP connection\n";
+  cout << " q - Quit\n";
+  cout << " s - Send Status Message\n";
+  cout << " t - Dump TCP stats\n";
+  cout << "-------------------------------------------\n";
   return true;
 }
 
@@ -399,20 +288,17 @@ static void InteruptSignal(int signo) {
  * Startup a node
  */
 int main(int argc, char *argv[]) {
-  options opts;
-  opts.use_openslp = false;
-  opts.log_level = ola::OLA_LOG_WARN;
-  opts.lifetime = 300;  // 5 mins is a good compromise
-  opts.universe = 1;
-  opts.help = false;
-  ParseOptions(argc, argv, &opts);
+  ola::SetHelpString(
+      "[options]",
+      "Run a very simple E1.33 Responder.");
+  ola::ParseFlags(&argc, argv);
+  ola::InitLoggingFromFlags();
 
-  if (opts.help)
-    DisplayHelpAndExit(argv);
-
-  ola::InitLogging(opts.log_level, ola::OLA_LOG_STDERR);
-  if (!opts.uid.get()) {
-    opts.uid.reset(new ola::rdm::UID(OPEN_LIGHTING_ESTA_CODE, 0xffffff00));
+  auto_ptr<UID> uid(UID::FromString(FLAGS_uid));
+  if (!uid.get()) {
+    OLA_WARN << "Invalid UID: " << FLAGS_uid;
+    ola::DisplayUsage();
+    exit(EX_USAGE);
   }
 
   ola::network::Interface interface;
@@ -420,13 +306,14 @@ int main(int argc, char *argv[]) {
   {
     auto_ptr<const ola::network::InterfacePicker> picker(
       ola::network::InterfacePicker::NewPicker());
-    if (!picker->ChooseInterface(&interface, opts.ip_address)) {
+    if (!picker->ChooseInterface(&interface, FLAGS_listen_ip)) {
       OLA_INFO << "Failed to find an interface";
       exit(EX_UNAVAILABLE);
     }
   }
 
-  SimpleE133Node node(interface.ip_address, opts);
+  SimpleE133Node::Options opts(interface.ip_address, *uid, FLAGS_lifetime);
+  SimpleE133Node node(opts);
   simple_node = &node;
 
   if (!node.Init())
@@ -435,13 +322,6 @@ int main(int argc, char *argv[]) {
   // signal handler
   if (!ola::InstallSignal(SIGINT, &InteruptSignal))
     return false;
-
-  cout << "---------------  Controls  ----------------\n";
-  cout << " c - Close the TCP connection\n";
-  cout << " q - Quit\n";
-  cout << " s - Send Status Message\n";
-  cout << " t - Dump TCP stats\n";
-  cout << "-------------------------------------------\n";
 
   node.Run();
 }
