@@ -692,20 +692,6 @@ int HTTPServer::ServeError(HTTPResponse *response, const string &details) {
 }
 
 /*
- * Serve a help redirect
- * @param response the response to use
- */
-int HTTPServer::ServeHelpRedirect(HTTPResponse *response) {
-  response->SetStatus(MHD_HTTP_FOUND);
-  response->SetContentType(CONTENT_TYPE_HTML);
-  response->SetHeader(MHD_HTTP_HEADER_LOCATION, "?help=1");
-  response->Append("<b>302 Found</b> See ?help=1");
-  int r = response->Send();
-  delete response;
-  return r;
-}
-
-/*
  * Serve a 404
  * @param response the response to use
  */
@@ -719,19 +705,15 @@ int HTTPServer::ServeNotFound(HTTPResponse *response) {
 }
 
 /*
- * Serve usage information.
- * @param response the reponse to use.
- * @param details the usage information
+ * Serve a redirect
+ * @param response the response to use
+ * @param location the location to redirect to
  */
-int HTTPServer::ServeUsage(HTTPResponse *response, const string &details) {
-  response->SetStatus(MHD_HTTP_OK);
+int HTTPServer::ServeRedirect(HTTPResponse *response, const string &location) {
+  response->SetStatus(MHD_HTTP_FOUND);
   response->SetContentType(CONTENT_TYPE_HTML);
-  response->Append("<b>Usage:</b>");
-  if (!details.empty()) {
-    response->Append("<p>");
-    response->Append(details);
-    response->Append("</p>");
-  }
+  response->SetHeader(MHD_HTTP_HEADER_LOCATION, location);
+  response->Append("<b>302 Found</b> See " + location);
   int r = response->Send();
   delete response;
   return r;

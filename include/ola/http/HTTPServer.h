@@ -179,9 +179,8 @@ class HTTPServer: public ola::thread::Thread {
 
     // Return an error
     int ServeError(HTTPResponse *response, const string &details="");
-    int ServeHelpRedirect(HTTPResponse *response);
     int ServeNotFound(HTTPResponse *response);
-    int ServeUsage(HTTPResponse *response, const string &details="");
+    int ServeRedirect(HTTPResponse *response, const string &location="");
 
     // Return the contents of a file.
     int ServeStaticContent(const string &path,
