@@ -60,8 +60,6 @@ SimpleE133Node::SimpleE133Node(const Options &options)
       m_management_endpoint(NULL, E133Endpoint::EndpointProperties(),
                             options.uid, &m_endpoint_manager,
                             m_e133_device.GetTCPStats()),
-      m_first_endpoint(NULL, E133Endpoint::EndpointProperties()),
-      m_responder(options.uid),
       m_lifetime(options.lifetime),
       m_uid(options.uid),
       m_ip_address(options.ip_address) {
@@ -84,8 +82,6 @@ bool SimpleE133Node::Init() {
 
   // register the root endpoint
   m_e133_device.SetRootEndpoint(&m_management_endpoint);
-  // add a single endpoint
-  m_endpoint_manager.RegisterEndpoint(1, &m_first_endpoint);
 
   // Start the SLP thread.
   if (!m_slp_thread->Init()) {
@@ -118,6 +114,14 @@ void SimpleE133Node::Run() {
   m_ss.Run();
 }
 
+void SimpleE133Node::AddEndpoint(uint16_t endpoint_id,
+                                 E133Endpoint *endpoint) {
+  m_endpoint_manager.RegisterEndpoint(endpoint_id, endpoint);
+}
+
+void SimpleE133Node::RemoveEndpoint(uint16_t endpoint_id) {
+  m_endpoint_manager.UnRegisterEndpoint(endpoint_id);
+}
 
 /**
  * Called when a registration request completes.

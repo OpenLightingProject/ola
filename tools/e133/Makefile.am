@@ -81,7 +81,6 @@ libolae133device_la_LIBADD = \
     $(top_builddir)/common/libolacommon.la \
     $(top_builddir)/plugins/e131/e131/libolae131core.la \
     $(top_builddir)/slp/libolaslpclient.la \
-    $(top_builddir)/plugins/dummy/liboladummyresponder.la \
     libolae133slp.la \
     libolae133common.la
 
@@ -93,6 +92,7 @@ noinst_PROGRAMS = e133_controller e133_monitor e133_receiver \
 
 e133_receiver_SOURCES = e133-receiver.cpp
 e133_receiver_LDADD = $(top_builddir)/common/libolacommon.la \
+                      $(top_builddir)/plugins/dummy/liboladummyresponder.la \
                       libolae133device.la
 
 e133_monitor_SOURCES = e133-monitor.cpp

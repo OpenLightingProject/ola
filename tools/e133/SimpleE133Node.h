@@ -67,6 +67,10 @@ class SimpleE133Node {
     void Run();
     void Stop() { m_ss.Terminate(); }
 
+    // Ownership not passed.
+    void AddEndpoint(uint16_t endpoint_id, E133Endpoint *endpoint);
+    void RemoveEndpoint(uint16_t endpoint_id);
+
   private:
     ola::io::SelectServer m_ss;
     auto_ptr<ola::e133::BaseSLPThread> m_slp_thread;
@@ -74,8 +78,6 @@ class SimpleE133Node {
     EndpointManager m_endpoint_manager;
     E133Device m_e133_device;
     ManagementEndpoint m_management_endpoint;
-    E133Endpoint m_first_endpoint;
-    ola::plugin::dummy::DummyResponder m_responder;
     const uint16_t m_lifetime;
     const UID m_uid;
     const IPV4Address m_ip_address;
