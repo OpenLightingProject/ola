@@ -286,10 +286,12 @@ bool HTTPRequest::CheckParameterExists(const string &key) const {
     return true;
   } else {
     return false;
-    //TODO: try and check the "trailer" ?key, only in since Tue Jul 17 2012 
-    //const char *trailer = MHD_lookup_connection_value(m_connection,
-    //                                                    MHD_GET_ARGUMENT_KIND,
-    //                                                    NULL);
+    /**
+     *TODO(Peter): try and check the "trailer" ?key, only in since Tue Jul 17 2012
+     *const char *trailer = MHD_lookup_connection_value(m_connection,
+     *                                                    MHD_GET_ARGUMENT_KIND,
+     *                                                    NULL);
+     */
   }
 }
 
