@@ -80,6 +80,7 @@ class HTTPRequest {
     void AddPostParameter(const string &key, const string &value);
     void ProcessPostData(const char *data, size_t *data_size);
     const string GetHeader(const string &key) const;
+    bool CheckParameterExists(const string &key) const;
     const string GetParameter(const string &key) const;
     const string GetPostParameter(const string &key) const;
 
@@ -178,7 +179,9 @@ class HTTPServer: public ola::thread::Thread {
 
     // Return an error
     int ServeError(HTTPResponse *response, const string &details="");
+    int ServeHelpRedirect(HTTPResponse *response);
     int ServeNotFound(HTTPResponse *response);
+    int ServeUsage(HTTPResponse *response, const string &details="");
 
     // Return the contents of a file.
     int ServeStaticContent(const string &path,

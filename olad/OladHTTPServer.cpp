@@ -173,7 +173,7 @@ int OladHTTPServer::JsonServerStats(const HTTPRequest*,
   json.Add("up_since", start_time_str);
   json.Add("quit_enabled", m_enable_quit);
 
-  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
+  response->SetNoCache();
   response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   int r = response->SendJson(json);
   delete response;
@@ -381,17 +381,21 @@ int OladHTTPServer::ModifyUniverse(const HTTPRequest *request,
  */
 int OladHTTPServer::GetDmx(const HTTPRequest *request,
                           HTTPResponse *response) {
-  string uni_id = request->GetParameter("u");
-  unsigned int universe_id;
-  if (!StringToInt(uni_id, &universe_id))
-    return m_server.ServeNotFound(response);
-  int ok = m_client.FetchDmx(universe_id,
-                             NewSingleCallback(this,
-                                               &OladHTTPServer::HandleGetDmx,
-                                               response));
+  if (request->CheckParameterExists("help")) {
+    return m_server.ServeUsage(response, "?u=[universe]");
+  } else {
+    string uni_id = request->GetParameter("u");
+    unsigned int universe_id;
+    if (!StringToInt(uni_id, &universe_id))
+      return m_server.ServeHelpRedirect(response);
+    int ok = m_client.FetchDmx(universe_id,
+                               NewSingleCallback(this,
+                                                 &OladHTTPServer::HandleGetDmx,
+                                                 response));
 
-  if (!ok)
-    return m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
+    if (!ok)
+      return m_server.ServeError(response, K_BACKEND_DISCONNECTED_ERROR);
+  }
 
   return MHD_YES;
 }
@@ -444,7 +448,7 @@ int OladHTTPServer::DisplayQuit(const HTTPRequest *request,
     response->SetContentType(HTTPServer::CONTENT_TYPE_HTML);
     response->Append("<b>403 Unauthorized</b>");
   }
-  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
+  response->SetNoCache();
   int r = response->Send();
   delete response;
   return r;
@@ -461,7 +465,7 @@ int OladHTTPServer::DisplayQuit(const HTTPRequest *request,
 int OladHTTPServer::ReloadPlugins(const HTTPRequest *request,
                                  HTTPResponse *response) {
   m_ola_server->ReloadPlugins();
-  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
+  response->SetNoCache();
   response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->Append("ok");
   int r = response->Send();
@@ -535,7 +539,7 @@ void OladHTTPServer::HandleUniverseList(HTTPResponse *response,
     }
   }
 
-  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
+  response->SetNoCache();
   response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->SendJson(*json);
   delete response;
@@ -600,7 +604,7 @@ void OladHTTPServer::HandlePluginInfo(
     plugin->Add("name", iter->Name());
   }
 
-  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
+  response->SetNoCache();
   response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->SendJson(json);
   delete response;
@@ -682,7 +686,7 @@ void OladHTTPServer::HandlePortsForUniverse(
     }
   }
 
-  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
+  response->SetNoCache();
   response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->SendJson(*json);
   delete json;
@@ -726,7 +730,7 @@ void OladHTTPServer::HandleCandidatePorts(
     }
   }
 
-  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
+  response->SetNoCache();
   response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->SendJson(json);
   delete response;
@@ -772,7 +776,7 @@ void OladHTTPServer::SendCreateUniverseResponse(
   json.Add("universe", universe_id);
   json.Add("message", (failed ? "Failed to patch any ports" : ""));
 
-  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
+  response->SetNoCache();
   response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->SendJson(json);
   delete action_queue;
@@ -828,7 +832,7 @@ void OladHTTPServer::HandleGetDmx(HTTPResponse *response,
   json.AddRaw("dmx", str.str());
   json.Add("error", error);
 
-  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
+  response->SetNoCache();
   response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->SendJson(json);
   delete response;

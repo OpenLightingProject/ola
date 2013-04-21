@@ -273,6 +273,25 @@ const string HTTPRequest::GetParameter(const string &key) const {
     return string();
 }
 
+/*
+ * Return whether an url parameter exists
+ * @param key the name of the parameter
+ * @return if the parameter exists
+ */
+bool HTTPRequest::CheckParameterExists(const string &key) const {
+  const char *value = MHD_lookup_connection_value(m_connection,
+                                                  MHD_GET_ARGUMENT_KIND,
+                                                  key.data());
+  if (value != NULL) {
+    return true;
+  } else {
+    return false;
+    //TODO: try and check the "trailer" ?key, only in since Tue Jul 17 2012 
+    //const char *trailer = MHD_lookup_connection_value(m_connection,
+    //                                                    MHD_GET_ARGUMENT_KIND,
+    //                                                    NULL);
+  }
+}
 
 /*
  * Lookup a post parameter in this request
@@ -303,7 +322,7 @@ void HTTPResponse::SetContentType(const string &type) {
  * Set the appropriate headers so this response isn't cached
  */
 void HTTPResponse::SetNoCache() {
-  SetHeader("Cache-Control", "no-cache, must-revalidate");
+  SetHeader(MHD_HTTP_HEADER_CACHE_CONTROL, "no-cache, must-revalidate");
 }
 
 
@@ -651,7 +670,6 @@ void HTTPServer::Handlers(vector<string> *handlers) const {
     handlers->push_back(file_iter->first);
 }
 
-
 /*
  * Serve an error.
  * @param response the reponse to use.
@@ -671,6 +689,19 @@ int HTTPServer::ServeError(HTTPResponse *response, const string &details) {
   return r;
 }
 
+/*
+ * Serve a help redirect
+ * @param response the response to use
+ */
+int HTTPServer::ServeHelpRedirect(HTTPResponse *response) {
+  response->SetStatus(MHD_HTTP_FOUND);
+  response->SetContentType(CONTENT_TYPE_HTML);
+  response->SetHeader(MHD_HTTP_HEADER_LOCATION, "?help=1");
+  response->Append("<b>302 Found</b> See ?help=1");
+  int r = response->Send();
+  delete response;
+  return r;
+}
 
 /*
  * Serve a 404
@@ -679,8 +710,26 @@ int HTTPServer::ServeError(HTTPResponse *response, const string &details) {
 int HTTPServer::ServeNotFound(HTTPResponse *response) {
   response->SetStatus(MHD_HTTP_NOT_FOUND);
   response->SetContentType(CONTENT_TYPE_HTML);
-  response->SetStatus(404);
   response->Append("<b>404 Not Found</b>");
+  int r = response->Send();
+  delete response;
+  return r;
+}
+
+/*
+ * Serve usage information.
+ * @param response the reponse to use.
+ * @param details the usage information
+ */
+int HTTPServer::ServeUsage(HTTPResponse *response, const string &details) {
+  response->SetStatus(MHD_HTTP_OK);
+  response->SetContentType(CONTENT_TYPE_HTML);
+  response->Append("<b>Usage:</b>");
+  if (!details.empty()) {
+    response->Append("<p>");
+    response->Append(details);
+    response->Append("</p>");
+  }
   int r = response->Send();
   delete response;
   return r;
