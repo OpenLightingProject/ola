@@ -180,7 +180,7 @@ class HTTPServer: public ola::thread::Thread {
     // Return an error
     int ServeError(HTTPResponse *response, const string &details="");
     int ServeNotFound(HTTPResponse *response);
-    int ServeRedirect(HTTPResponse *response, const string &location="");
+    int ServeRedirect(HTTPResponse *response, const string &location);
 
     // Return the contents of a file.
     int ServeStaticContent(const string &path,

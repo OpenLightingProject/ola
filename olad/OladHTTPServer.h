@@ -129,8 +129,8 @@ class OladHTTPServer: public ola::http::OlaHTTPServer {
     inline int ServeHelpRedirect(HTTPResponse *response) {
       return m_server.ServeRedirect(response, HELP_REDIRECTION);
     }
-    int ServeUsage(HTTPResponse *response,
-                                   const string &details);
+
+    int ServeUsage(HTTPResponse *response, const string &details);
 
   private:
     class ola::io::ConnectedDescriptor *m_client_socket;
@@ -176,6 +176,7 @@ class OladHTTPServer: public ola::http::OlaHTTPServer {
         const string &path,
         int (OladHTTPServer::*method)(const HTTPRequest*, HTTPResponse*));
 
+    static const char HELP_PARAMETER[];
     static const char HELP_REDIRECTION[];
     static const char K_BACKEND_DISCONNECTED_ERROR[];
     static const unsigned int K_UNIVERSE_NAME_LIMIT = 100;

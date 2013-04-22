@@ -48,6 +48,7 @@ using std::vector;
 using ola::web::JsonArray;
 using ola::web::JsonObject;
 
+const char OladHTTPServer::HELP_PARAMETER[] = "help";
 const char OladHTTPServer::HELP_REDIRECTION[] = "?help=1";
 const char OladHTTPServer::K_BACKEND_DISCONNECTED_ERROR[] =
   "Failed to send request, client isn't connected";
@@ -208,7 +209,7 @@ int OladHTTPServer::JsonUniversePluginList(const HTTPRequest*,
  */
 int OladHTTPServer::JsonPluginInfo(const HTTPRequest *request,
                                   HTTPResponse *response) {
-  if (request->CheckParameterExists("help"))
+  if (request->CheckParameterExists(HELP_PARAMETER))
     return ServeUsage(response, "?id=[plugin]");
   string val = request->GetParameter("id");
   int plugin_id;
@@ -235,7 +236,7 @@ int OladHTTPServer::JsonPluginInfo(const HTTPRequest *request,
  */
 int OladHTTPServer::JsonUniverseInfo(const HTTPRequest *request,
                                     HTTPResponse *response) {
-  if (request->CheckParameterExists("help"))
+  if (request->CheckParameterExists(HELP_PARAMETER))
     return ServeUsage(response, "?id=[universe]");
   string uni_id = request->GetParameter("id");
   unsigned int universe_id;
@@ -263,7 +264,7 @@ int OladHTTPServer::JsonUniverseInfo(const HTTPRequest *request,
  */
 int OladHTTPServer::JsonAvailablePorts(const HTTPRequest *request,
                                       HTTPResponse *response) {
-  if (request->CheckParameterExists("help"))
+  if (request->CheckParameterExists(HELP_PARAMETER))
     return ServeUsage(response, "? or ?id=[universe]");
   string uni_id = request->GetParameter("id");
   bool ok = false;
@@ -300,7 +301,7 @@ int OladHTTPServer::JsonAvailablePorts(const HTTPRequest *request,
  */
 int OladHTTPServer::CreateNewUniverse(const HTTPRequest *request,
                                      HTTPResponse *response) {
-  if (request->CheckParameterExists("help"))
+  if (request->CheckParameterExists(HELP_PARAMETER))
     return ServeUsage(response, "POST id=[universe], name=[name]");
   string uni_id = request->GetPostParameter("id");
   string name = request->GetPostParameter("name");
@@ -341,7 +342,7 @@ int OladHTTPServer::CreateNewUniverse(const HTTPRequest *request,
  */
 int OladHTTPServer::ModifyUniverse(const HTTPRequest *request,
                                   HTTPResponse *response) {
-  if (request->CheckParameterExists("help"))
+  if (request->CheckParameterExists(HELP_PARAMETER))
     return ServeUsage(response,
                       "POST id=[universe], name=[name], merge_mode=[HTP|LTP]");
   string uni_id = request->GetPostParameter("id");
@@ -394,7 +395,7 @@ int OladHTTPServer::ModifyUniverse(const HTTPRequest *request,
  */
 int OladHTTPServer::GetDmx(const HTTPRequest *request,
                           HTTPResponse *response) {
-  if (request->CheckParameterExists("help"))
+  if (request->CheckParameterExists(HELP_PARAMETER))
     return ServeUsage(response, "?u=[universe]");
   string uni_id = request->GetParameter("u");
   unsigned int universe_id;
@@ -420,7 +421,7 @@ int OladHTTPServer::GetDmx(const HTTPRequest *request,
  */
 int OladHTTPServer::HandleSetDmx(const HTTPRequest *request,
                                 HTTPResponse *response) {
-  if (request->CheckParameterExists("help"))
+  if (request->CheckParameterExists(HELP_PARAMETER))
     return ServeUsage(response, "POST u=[universe], d=[DMX data]");
   string dmx_data_str = request->GetPostParameter("d");
   string uni_id = request->GetPostParameter("u");
