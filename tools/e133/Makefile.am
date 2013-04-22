@@ -93,9 +93,12 @@ noinst_PROGRAMS = e133_controller e133_monitor e133_receiver \
 e133_receiver_SOURCES = e133-receiver.cpp
 e133_receiver_LDADD = $(top_builddir)/common/libolacommon.la \
                       $(top_builddir)/plugins/dummy/liboladummyresponder.la \
-                      $(top_builddir)/plugins/spi/libolaspicore.la \
                       $(top_builddir)/plugins/usbpro/libolausbprowidget.la \
                       libolae133device.la
+
+if USE_SPI
+e133_receiver_LDADD += $(top_builddir)/plugins/spi/libolaspicore.la
+endif
 
 e133_monitor_SOURCES = e133-monitor.cpp
 e133_monitor_CXXFLAGS = @OLAD_DEFINES@ $(COMMON_CXXFLAGS)

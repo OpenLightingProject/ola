@@ -39,13 +39,17 @@
 #include <string>
 #include <vector>
 
+#ifdef USE_SPI
 #include "plugins/spi/SPIBackend.h"
+using ola::plugin::spi::SPIBackend;
+DEFINE_string(spi_device, "", "Path to the SPI device to use.");
+#endif
+
 #include "plugins/usbpro/BaseUsbProWidget.h"
 #include "plugins/usbpro/DmxTriWidget.h"
 #include "tools/e133/SimpleE133Node.h"
 
 using ola::network::IPV4Address;
-using ola::plugin::spi::SPIBackend;
 using ola::rdm::UID;
 using std::auto_ptr;
 using std::string;
@@ -57,7 +61,6 @@ DEFINE_string(uid, "7a70:00000001", "The UID of the responder.");
 DEFINE_s_uint16(lifetime, t, 300, "The value to use for the service lifetime");
 DEFINE_s_uint32(universe, u, 1, "The E1.31 universe to listen on.");
 DEFINE_string(tri_device, "", "Path to the RDM-TRI device to use.");
-DEFINE_string(spi_device, "", "Path to the SPI device to use.");
 
 SimpleE133Node *simple_node;
 
@@ -110,7 +113,6 @@ int main(int argc, char *argv[]) {
   auto_ptr<ola::rdm::DiscoverableRDMControllerAdaptor>
     discoverable_dummy_responder;
   auto_ptr<ola::plugin::usbpro::DmxTriWidget> tri_widget;
-  auto_ptr<SPIBackend> spi_backend;
 
   ola::rdm::UIDAllocator uid_allocator(*uid);
   // The first uid is used for the management endpoint so we burn a UID here.
@@ -150,6 +152,9 @@ int main(int argc, char *argv[]) {
         new E133Endpoint(tri_widget.get(), properties));
   }
 
+#ifdef USE_SPI
+  auto_ptr<SPIBackend> spi_backend;
+
   if (!FLAGS_spi_device.str().empty()) {
     auto_ptr<UID> spi_uid(uid_allocator.AllocateNext());
     if (!spi_uid.get()) {
@@ -163,6 +168,7 @@ int main(int argc, char *argv[]) {
     properties.is_physical = true;
     endpoints.push_back(new E133Endpoint(spi_backend.get(), properties));
   }
+#endif
 
   for (unsigned int i = 0; i < endpoints.size(); i++) {
     node.AddEndpoint(i + 1, endpoints[i]);
