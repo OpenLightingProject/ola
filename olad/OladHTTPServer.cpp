@@ -48,11 +48,12 @@ using std::vector;
 using ola::web::JsonArray;
 using ola::web::JsonObject;
 
+const char OladHTTPServer::HELP_PARAMETER[] = "help";
+const char OladHTTPServer::HELP_REDIRECTION[] = "?help=1";
 const char OladHTTPServer::K_BACKEND_DISCONNECTED_ERROR[] =
   "Failed to send request, client isn't connected";
 const char OladHTTPServer::K_PRIORITY_VALUE_SUFFIX[] = "_priority_value";
 const char OladHTTPServer::K_PRIORITY_MODE_SUFFIX[] = "_priority_mode";
-
 
 /**
  * Create a new OLA HTTP server
@@ -173,7 +174,7 @@ int OladHTTPServer::JsonServerStats(const HTTPRequest*,
   json.Add("up_since", start_time_str);
   json.Add("quit_enabled", m_enable_quit);
 
-  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
+  response->SetNoCache();
   response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   int r = response->SendJson(json);
   delete response;
@@ -208,8 +209,12 @@ int OladHTTPServer::JsonUniversePluginList(const HTTPRequest*,
  */
 int OladHTTPServer::JsonPluginInfo(const HTTPRequest *request,
                                   HTTPResponse *response) {
+  if (request->CheckParameterExists(HELP_PARAMETER))
+    return ServeUsage(response, "?id=[plugin]");
   string val = request->GetParameter("id");
-  int plugin_id = atoi(val.data());
+  int plugin_id;
+  if (!StringToInt(val, &plugin_id))
+    return ServeHelpRedirect(response);
 
   bool ok = m_client.FetchPluginDescription(
       (ola_plugin_id) plugin_id,
@@ -231,10 +236,12 @@ int OladHTTPServer::JsonPluginInfo(const HTTPRequest *request,
  */
 int OladHTTPServer::JsonUniverseInfo(const HTTPRequest *request,
                                     HTTPResponse *response) {
+  if (request->CheckParameterExists(HELP_PARAMETER))
+    return ServeUsage(response, "?id=[universe]");
   string uni_id = request->GetParameter("id");
   unsigned int universe_id;
   if (!StringToInt(uni_id, &universe_id))
-    return m_server.ServeNotFound(response);
+    return ServeHelpRedirect(response);
 
   bool ok = m_client.FetchUniverseInfo(
       universe_id,
@@ -257,6 +264,8 @@ int OladHTTPServer::JsonUniverseInfo(const HTTPRequest *request,
  */
 int OladHTTPServer::JsonAvailablePorts(const HTTPRequest *request,
                                       HTTPResponse *response) {
+  if (request->CheckParameterExists(HELP_PARAMETER))
+    return ServeUsage(response, "? or ?id=[universe]");
   string uni_id = request->GetParameter("id");
   bool ok = false;
 
@@ -269,7 +278,7 @@ int OladHTTPServer::JsonAvailablePorts(const HTTPRequest *request,
   } else {
     unsigned int universe_id;
     if (!StringToInt(uni_id, &universe_id))
-      return m_server.ServeNotFound(response);
+      return ServeHelpRedirect(response);
 
     ok = m_client.FetchCandidatePorts(
         universe_id,
@@ -292,6 +301,8 @@ int OladHTTPServer::JsonAvailablePorts(const HTTPRequest *request,
  */
 int OladHTTPServer::CreateNewUniverse(const HTTPRequest *request,
                                      HTTPResponse *response) {
+  if (request->CheckParameterExists(HELP_PARAMETER))
+    return ServeUsage(response, "POST id=[universe], name=[name]");
   string uni_id = request->GetPostParameter("id");
   string name = request->GetPostParameter("name");
 
@@ -300,7 +311,7 @@ int OladHTTPServer::CreateNewUniverse(const HTTPRequest *request,
 
   unsigned int universe_id;
   if (!StringToInt(uni_id, &universe_id))
-    return m_server.ServeNotFound(response);
+    return ServeHelpRedirect(response);
 
   ActionQueue *action_queue = new ActionQueue(
       NewSingleCallback(this,
@@ -331,13 +342,16 @@ int OladHTTPServer::CreateNewUniverse(const HTTPRequest *request,
  */
 int OladHTTPServer::ModifyUniverse(const HTTPRequest *request,
                                   HTTPResponse *response) {
+  if (request->CheckParameterExists(HELP_PARAMETER))
+    return ServeUsage(response,
+                      "POST id=[universe], name=[name], merge_mode=[HTP|LTP]");
   string uni_id = request->GetPostParameter("id");
   string name = request->GetPostParameter("name");
   string merge_mode = request->GetPostParameter("merge_mode");
 
   unsigned int universe_id;
   if (!StringToInt(uni_id, &universe_id))
-    return m_server.ServeNotFound(response);
+    return ServeHelpRedirect(response);
 
   if (name.empty())
     return m_server.ServeError(response, "No name supplied");
@@ -381,10 +395,12 @@ int OladHTTPServer::ModifyUniverse(const HTTPRequest *request,
  */
 int OladHTTPServer::GetDmx(const HTTPRequest *request,
                           HTTPResponse *response) {
+  if (request->CheckParameterExists(HELP_PARAMETER))
+    return ServeUsage(response, "?u=[universe]");
   string uni_id = request->GetParameter("u");
   unsigned int universe_id;
   if (!StringToInt(uni_id, &universe_id))
-    return m_server.ServeNotFound(response);
+    return ServeHelpRedirect(response);
   int ok = m_client.FetchDmx(universe_id,
                              NewSingleCallback(this,
                                                &OladHTTPServer::HandleGetDmx,
@@ -405,11 +421,13 @@ int OladHTTPServer::GetDmx(const HTTPRequest *request,
  */
 int OladHTTPServer::HandleSetDmx(const HTTPRequest *request,
                                 HTTPResponse *response) {
+  if (request->CheckParameterExists(HELP_PARAMETER))
+    return ServeUsage(response, "POST u=[universe], d=[DMX data]");
   string dmx_data_str = request->GetPostParameter("d");
   string uni_id = request->GetPostParameter("u");
   unsigned int universe_id;
   if (!StringToInt(uni_id, &universe_id))
-    return m_server.ServeNotFound(response);
+    return ServeHelpRedirect(response);
 
   DmxBuffer buffer;
   buffer.SetFromString(dmx_data_str);
@@ -444,7 +462,7 @@ int OladHTTPServer::DisplayQuit(const HTTPRequest *request,
     response->SetContentType(HTTPServer::CONTENT_TYPE_HTML);
     response->Append("<b>403 Unauthorized</b>");
   }
-  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
+  response->SetNoCache();
   int r = response->Send();
   delete response;
   return r;
@@ -461,7 +479,7 @@ int OladHTTPServer::DisplayQuit(const HTTPRequest *request,
 int OladHTTPServer::ReloadPlugins(const HTTPRequest *request,
                                  HTTPResponse *response) {
   m_ola_server->ReloadPlugins();
-  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
+  response->SetNoCache();
   response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->Append("ok");
   int r = response->Send();
@@ -535,7 +553,7 @@ void OladHTTPServer::HandleUniverseList(HTTPResponse *response,
     }
   }
 
-  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
+  response->SetNoCache();
   response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->SendJson(*json);
   delete response;
@@ -600,7 +618,7 @@ void OladHTTPServer::HandlePluginInfo(
     plugin->Add("name", iter->Name());
   }
 
-  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
+  response->SetNoCache();
   response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->SendJson(json);
   delete response;
@@ -682,7 +700,7 @@ void OladHTTPServer::HandlePortsForUniverse(
     }
   }
 
-  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
+  response->SetNoCache();
   response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->SendJson(*json);
   delete json;
@@ -726,7 +744,7 @@ void OladHTTPServer::HandleCandidatePorts(
     }
   }
 
-  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
+  response->SetNoCache();
   response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->SendJson(json);
   delete response;
@@ -772,7 +790,7 @@ void OladHTTPServer::SendCreateUniverseResponse(
   json.Add("universe", universe_id);
   json.Add("message", (failed ? "Failed to patch any ports" : ""));
 
-  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
+  response->SetNoCache();
   response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->SendJson(json);
   delete action_queue;
@@ -811,6 +829,23 @@ void OladHTTPServer::SendModifyUniverseResponse(HTTPResponse *response,
   }
 }
 
+/*
+ * Serve usage information.
+ * @param response the reponse to use.
+ * @param details the usage information
+ */
+int OladHTTPServer::ServeUsage(HTTPResponse *response, const string &details) {
+  response->SetContentType(HTTPServer::CONTENT_TYPE_HTML);
+  response->Append("<b>Usage:</b>");
+  if (!details.empty()) {
+    response->Append("<p>");
+    response->Append(details);
+    response->Append("</p>");
+  }
+  int r = response->Send();
+  delete response;
+  return r;
+}
 
 /*
  * Callback for m_client.FetchDmx called by GetDmx
@@ -828,7 +863,7 @@ void OladHTTPServer::HandleGetDmx(HTTPResponse *response,
   json.AddRaw("dmx", str.str());
   json.Add("error", error);
 
-  response->SetHeader("Cache-Control", "no-cache, must-revalidate");
+  response->SetNoCache();
   response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->SendJson(json);
   delete response;
