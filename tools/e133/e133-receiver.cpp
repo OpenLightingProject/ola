@@ -20,6 +20,10 @@
  * registered in slp and the RDM responder responds to E1.33 commands.
  */
 
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <signal.h>
 #include <sysexits.h>
 
