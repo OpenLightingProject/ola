@@ -60,11 +60,12 @@ using std::vector;
 
 
 E133Device::E133Device(ola::io::SelectServerInterface *ss,
+                       const ola::acn::CID &cid,
                        const ola::network::IPV4Address &ip_address,
                        EndpointManager *endpoint_manager)
     : m_ss(ss),
       m_ip_address(ip_address),
-      m_message_builder(ola::acn::CID::Generate(), "OLA Device"),
+      m_message_builder(cid, "OLA Device"),
       m_endpoint_manager(endpoint_manager),
       m_root_endpoint(NULL),
       m_incoming_udp_transport(&m_udp_socket, &m_root_inflator) {

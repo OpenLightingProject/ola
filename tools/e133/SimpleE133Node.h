@@ -25,6 +25,7 @@
 
 #include <ola/BaseTypes.h>
 #include <ola/base/Init.h>
+#include <ola/acn/CID.h>
 #include <ola/e133/SLPThread.h>
 #include <ola/io/SelectServer.h>
 #include <ola/io/StdinHandler.h>
@@ -40,6 +41,7 @@
 #include "tools/e133/ManagementEndpoint.h"
 #include "tools/e133/TCPConnectionStats.h"
 
+using ola::acn::CID;
 using ola::network::IPV4Address;
 using ola::rdm::UID;
 using std::auto_ptr;
@@ -51,12 +53,19 @@ using std::auto_ptr;
 class SimpleE133Node {
   public:
     struct Options {
+      CID cid;
       IPV4Address ip_address;
       UID uid;
       uint16_t lifetime;
 
-      Options(const IPV4Address &ip, const UID &uid, uint16_t lifetime)
-        : ip_address(ip), uid(uid), lifetime(lifetime) {
+      Options(const CID &cid,
+              const IPV4Address &ip,
+              const UID &uid,
+              uint16_t lifetime)
+        : cid(cid),
+          ip_address(ip),
+          uid(uid),
+          lifetime(lifetime) {
       }
     };
 

@@ -56,7 +56,8 @@ using std::string;
 SimpleE133Node::SimpleE133Node(const Options &options)
     : m_slp_thread(ola::e133::SLPThreadFactory::NewSLPThread(&m_ss)),
       m_stdin_handler(&m_ss, ola::NewCallback(this, &SimpleE133Node::Input)),
-      m_e133_device(&m_ss, options.ip_address, &m_endpoint_manager),
+      m_e133_device(&m_ss, options.cid, options.ip_address,
+                    &m_endpoint_manager),
       m_management_endpoint(NULL, E133Endpoint::EndpointProperties(),
                             options.uid, &m_endpoint_manager,
                             m_e133_device.GetTCPStats()),

@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "ola/Clock.h"
+#include "ola/acn/CID.h"
 #include "ola/e133/MessageBuilder.h"
 #include "ola/io/SelectServerInterface.h"
 #include "ola/network/IPV4Address.h"
@@ -50,6 +51,7 @@ using std::auto_ptr;
 class E133Device {
   public:
     E133Device(ola::io::SelectServerInterface *ss,
+               const ola::acn::CID &cid,
                const ola::network::IPV4Address &ip_address,
                class EndpointManager *endpoint_manager);
     ~E133Device();
