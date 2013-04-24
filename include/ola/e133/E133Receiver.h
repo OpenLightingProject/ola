@@ -50,26 +50,38 @@ namespace e131 {
 
 namespace e133 {
 
+class E133Message {
+  public:
+    E133Message(const IPV4Address &ip,
+                uint16_t endpoint,
+                uint32_t sequence_number)
+      : ip(ip),
+        endpoint(endpoint),
+        sequence_number(sequence_number) {
+    }
+    virtual ~E133Message() {}
+
+    IPV4Address ip;
+    uint16_t endpoint;
+    uint32_t sequence_number;
+};
+
+
 /**
  * Wraps a E1.33 Status message.
  */
-class E133StatusMessage {
+class E133StatusMessage : public E133Message {
   public:
     E133StatusMessage(const IPV4Address &ip,
                       uint16_t endpoint,
                       uint32_t sequence_number,
                       uint16_t status_code,
                       string status_message)
-      : ip(ip),
-        endpoint(endpoint),
-        sequence_number(sequence_number),
+      : E133Message(ip, endpoint, sequence_number),
         status_code(status_code),
         status_message(status_message) {
     }
 
-    IPV4Address ip;
-    uint16_t endpoint;
-    uint32_t sequence_number;
     uint16_t status_code;
     string status_message;
 };
@@ -79,23 +91,18 @@ class E133StatusMessage {
  * Wraps a RDM message
  * TODO(simon): sort out ownership here
  */
-class E133RDMMessage {
+class E133RDMMessage : public E133Message {
   public:
     E133RDMMessage(const IPV4Address &ip,
                    uint16_t endpoint,
                    uint32_t sequence_number,
                    ola::rdm::rdm_response_code response_code,
                    const ola::rdm::RDMResponse *response)
-      : ip(ip),
-        endpoint(endpoint),
-        sequence_number(sequence_number),
+      : E133Message(ip, endpoint, sequence_number),
         response_code(response_code),
         response(response) {
     }
 
-    IPV4Address ip;
-    uint16_t endpoint;
-    uint32_t sequence_number;
     ola::rdm::rdm_response_code response_code;
     const ola::rdm::RDMResponse *response;
 };
