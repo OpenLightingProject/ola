@@ -212,6 +212,10 @@ int main(int argc, char *argv[]) {
 
     spi_backend.reset(
         new SPIBackend(FLAGS_spi_device, *spi_uid, SPIBackend::Options()));
+    if (!spi_backend->Init()) {
+      OLA_WARN << "Failed to init SPI backend";
+      exit(EX_USAGE);
+    }
     E133Endpoint::EndpointProperties properties;
     properties.is_physical = true;
     endpoints.push_back(new E133Endpoint(spi_backend.get(), properties));
