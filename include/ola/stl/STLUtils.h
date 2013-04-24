@@ -149,8 +149,8 @@ void STLReplaceAndDelete(T1 *container, const typename T1::key_type &key,
   std::pair<typename T1::iterator, bool> p = container->insert(
       typename T1::value_type(key, value));
   if (!p.second) {
-    delete p.first.second;
-    p.first.second = value;
+    delete p.first->second;
+    p.first->second = value;
   }
 }
 
