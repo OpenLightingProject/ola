@@ -84,13 +84,13 @@ static void InteruptSignal(int signo) {
   (void) signo;
 }
 
-void HandleDMX(DmxBuffer *buffer, DmxTriWidget *widget) {
+void HandleTriDMX(DmxBuffer *buffer, DmxTriWidget *widget) {
   widget->SendDMX(*buffer);
 }
 
 
 #ifdef USE_SPI
-void HandleDMX(DmxBuffer *buffer, SPIBackend *backend) {
+void HandleSpiDMX(DmxBuffer *buffer, SPIBackend *backend) {
   backend->WriteDMX(*buffer, 0);
 }
 #endif
@@ -193,7 +193,7 @@ int main(int argc, char *argv[]) {
       // Danger!
       e131_node->SetHandler(
           1, &tri_buffer, &unused_priority,
-          NewCallback(&HandleDMX, &tri_buffer, tri_widget.get()));
+          NewCallback(&HandleTriDMX, &tri_buffer, tri_widget.get()));
     }
   }
 
@@ -220,7 +220,7 @@ int main(int argc, char *argv[]) {
       // Danger!
       e131_node->SetHandler(
           1, &spi_buffer, &unused_priority,
-          NewCallback(&HandleDMX, &spi_buffer, spi_backend.get()));
+          NewCallback(&HandleSpiDMX, &spi_buffer, spi_backend.get()));
     }
   }
 #endif
