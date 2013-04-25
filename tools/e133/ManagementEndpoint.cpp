@@ -395,6 +395,8 @@ void ManagementEndpoint::HandleEndpointDevices(const RDMRequest *request,
   else
     endpoint = this;
 
+  OLA_INFO << "Endpoint ID: " << endpoint_id << ", endpoint " << endpoint;
+
   // endpoint not found
   if (!endpoint) {
     if (request->DestinationUID().IsBroadcast()) {
@@ -592,6 +594,7 @@ void ManagementEndpoint::EndpointDevicesComplete(
     RDMCallback *on_complete,
     uint16_t endpoint,
     const UIDSet &uids) {
+  OLA_INFO << endpoint << " Devices complete, " << uids.Size() << " uids";
   // TODO(simon): fix this hack.
 
   struct DeviceListParamData {
@@ -610,10 +613,12 @@ void ManagementEndpoint::EndpointDevicesComplete(
   // TODO(simon): fix this to track changes.
   param_data->endpoint = HostToNetwork(endpoint);
   param_data->list_change = HostToNetwork(0);
+  uint8_t *ptr = raw_data + 6;
   unsigned int offset = 0;
   UIDSet::Iterator iter = uids.Begin();
   for (; iter != uids.End(); ++iter) {
-    iter->Pack(param_data->data + offset, param_data_size - offset - 4);
+    OLA_INFO << "  " << *iter;
+    iter->Pack(ptr + offset, param_data_size - offset - 4);
     offset += UID::UID_SIZE;
   }
 

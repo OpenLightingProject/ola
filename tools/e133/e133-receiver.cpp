@@ -158,6 +158,7 @@ int main(int argc, char *argv[]) {
 
   if (FLAGS_dummy) {
     auto_ptr<UID> dummy_uid(uid_allocator.AllocateNext());
+    OLA_INFO << "Dummy UID is " << *dummy_uid;
     if (!dummy_uid.get()) {
       OLA_WARN << "Failed to allocate a UID for the DummyResponder.";
       exit(EX_USAGE);
