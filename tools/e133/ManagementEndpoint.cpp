@@ -410,7 +410,7 @@ void ManagementEndpoint::HandleEndpointDevices(const RDMRequest *request,
 
   endpoint->RunIncrementalDiscovery(
       NewSingleCallback(this, &ManagementEndpoint::EndpointDevicesComplete,
-                        request->Duplicate(), on_complete));
+                        request->Duplicate(), on_complete, endpoint_id));
 }
 
 /**
@@ -590,22 +590,25 @@ void ManagementEndpoint::DiscoveryComplete(RDMDiscoveryCallback *callback,
 void ManagementEndpoint::EndpointDevicesComplete(
     RDMRequest *request,
     RDMCallback *on_complete,
+    uint16_t endpoint,
     const UIDSet &uids) {
   // TODO(simon): fix this hack.
 
   struct DeviceListParamData {
+    uint16_t endpoint;
     uint32_t list_change;
     uint8_t data[0];
   };
 
   // TODO(simon): fix this - we can overflow an RDM packet if there are too
   // many devices!
-  unsigned int param_data_size = 4 + uids.Size() * UID::UID_SIZE;
+  unsigned int param_data_size = 2 + 4 + uids.Size() * UID::UID_SIZE;
   uint8_t *raw_data = new uint8_t[param_data_size];
   DeviceListParamData *param_data = reinterpret_cast<DeviceListParamData*>(
       raw_data);
 
   // TODO(simon): fix this to track changes.
+  param_data->endpoint = HostToNetwork(endpoint);
   param_data->list_change = HostToNetwork(0);
   unsigned int offset = 0;
   UIDSet::Iterator iter = uids.Begin();

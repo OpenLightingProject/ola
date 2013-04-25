@@ -93,6 +93,7 @@ class ManagementEndpoint: public E133Endpoint {
                            const ola::rdm::UIDSet &uids);
     void EndpointDevicesComplete(RDMRequest *request,
                                  RDMCallback *on_complete,
+                                 uint16_t endpoint,
                                  const ola::rdm::UIDSet &uids);
 };
 #endif  // TOOLS_E133_MANAGEMENTENDPOINT_H_
