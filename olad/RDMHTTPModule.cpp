@@ -594,7 +594,7 @@ void RDMHTTPModule::HandleUIDList(HTTPResponse *response,
   json.Add("universe", universe_id);
   JsonArray *json_uids = json.AddArray("uids");
 
-  for (;iter != uids.End(); ++iter) {
+  for (; iter != uids.End(); ++iter) {
     uid_iter = uid_state->resolved_uids.find(*iter);
 
     string manufacturer = "";
@@ -1027,7 +1027,7 @@ void RDMHTTPModule::SupportedSectionsDeviceInfoHandler(
 
   JsonArray json;
   vector<section_info>::const_iterator section_iter = sections.begin();
-  for (;section_iter != sections.end(); ++section_iter) {
+  for (; section_iter != sections.end(); ++section_iter) {
     JsonObject *json_obj = json.AppendObject();
     json_obj->Add("id", section_iter->id);
     json_obj->Add("name", section_iter->name);
