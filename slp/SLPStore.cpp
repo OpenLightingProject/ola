@@ -175,7 +175,7 @@ void SLPStore::GetLocalServices(const TimeStamp &now,
                                 const ScopeSet &scopes,
                                 ServiceEntries *local_services) {
   ServiceMap::iterator iter = m_services.begin();
-  for (;iter != m_services.end(); ++iter) {
+  for (; iter != m_services.end(); ++iter) {
     int64_t elapsed_seconds = (now - iter->second->last_cleaned).Seconds();
     ServiceEntryVector &services = iter->second->services;
     for (ServiceEntryVector::iterator service_iter = services.begin();
