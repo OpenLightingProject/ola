@@ -54,15 +54,15 @@ libolaslpserver_la_SOURCES = DATracker.cpp \
                              SLPUDPSender.cpp \
                              ScopeSet.cpp
 libolaslpserver_la_LIBADD = $(top_builddir)/common/libolacommon.la \
-                            ./libolaslpcore.la
+                            libolaslpcore.la
 
 #libolaslpclient.la
 libolaslpclient_la_SOURCES = SLPClient.cpp \
                              SLPClientCore.cpp
 libolaslpclient_la_LIBADD = $(top_builddir)/common/libolacommon.la \
                             $(top_builddir)/ola/libola.la \
-                            ./libolaslpproto.la \
-                            ./libolaslpcore.la
+                            libolaslpproto.la \
+                            libolaslpcore.la
 
 BUILT_SOURCES = SLP.pb.cc SLP.pb.h
 
@@ -80,14 +80,14 @@ slp_server_SOURCES = SLPDaemon.cpp \
                      slp-server.cpp
 slp_server_LDADD = $(top_builddir)/common/libolacommon.la \
                    $(top_builddir)/common/http/libolahttp.la \
-                   ./libolaslpproto.la \
-                   ./libolaslpserver.la
+                   libolaslpproto.la \
+                   libolaslpserver.la
 
 slp_client_SOURCES = slp-client.cpp
 slp_client_LDADD = $(top_builddir)/common/libolacommon.la \
                    $(top_builddir)/ola/libola.la \
-                   ./libolaslpclient.la \
-                   ./libolaslpcore.la
+                   libolaslpclient.la \
+                   libolaslpcore.la
 
 clean-local:
 	rm -f *.pb.{h,cc} *.gcno *.gcda
@@ -100,8 +100,8 @@ TESTS = SLPServerTester DATrackerTester PacketParserTester \
 endif
 COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS) \
                     $(top_builddir)/common/libolacommon.la \
-                    ./libolaslpcore.la \
-                    ./libolaslpserver.la
+                    libolaslpcore.la \
+                    libolaslpserver.la
 
 check_PROGRAMS = $(TESTS)
 DATrackerTester_SOURCES = DATrackerTest.cpp

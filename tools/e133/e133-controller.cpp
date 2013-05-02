@@ -542,7 +542,7 @@ int main(int argc, char *argv[]) {
   }
 
   // attempt to build the message
-  vector<string> inputs(argc - 2);
+  vector<string> inputs;
   for (int i = 2; i < argc; i++)
     inputs.push_back(argv[i]);
   auto_ptr<const ola::messaging::Message> message(

@@ -380,8 +380,39 @@ void ManagementEndpoint::HandleEndpointDeviceListChange(
  */
 void ManagementEndpoint::HandleEndpointDevices(const RDMRequest *request,
                                                RDMCallback *on_complete) {
-  // TODO(simon): add me
-  HandleUnknownPID(request, on_complete);
+  RDMPackets packets;
+  uint16_t endpoint_id;
+  if (!SanityCheckGet(request, on_complete, sizeof(endpoint_id)))
+    return;
+
+  memcpy(reinterpret_cast<uint8_t*>(&endpoint_id),
+         request->ParamData(), sizeof(endpoint_id));
+  endpoint_id = HostToNetwork(endpoint_id);
+
+  E133Endpoint *endpoint = NULL;
+  if (endpoint_id)
+    endpoint = m_endpoint_manager->GetEndpoint(endpoint_id);
+  else
+    endpoint = this;
+
+  OLA_INFO << "Endpoint ID: " << endpoint_id << ", endpoint " << endpoint;
+
+  // endpoint not found
+  if (!endpoint) {
+    if (request->DestinationUID().IsBroadcast()) {
+      on_complete->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
+      return;
+    } else {
+      RDMResponse *response = NackWithReason(
+          request, ola::rdm::NR_ENDPOINT_NUMBER_INVALID);
+      RunRDMCallback(on_complete, response);
+      return;
+    }
+  }
+
+  endpoint->RunIncrementalDiscovery(
+      NewSingleCallback(this, &ManagementEndpoint::EndpointDevicesComplete,
+                        request->Duplicate(), on_complete, endpoint_id));
 }
 
 /**
@@ -552,4 +583,47 @@ void ManagementEndpoint::DiscoveryComplete(RDMDiscoveryCallback *callback,
   UIDSet all_uids(uids);
   all_uids.AddUID(m_uid);
   callback->Run(all_uids);
+}
+
+
+/**
+ * Called when a Endpoint discovery completes
+ */
+void ManagementEndpoint::EndpointDevicesComplete(
+    RDMRequest *request,
+    RDMCallback *on_complete,
+    uint16_t endpoint,
+    const UIDSet &uids) {
+  OLA_INFO << endpoint << " Devices complete, " << uids.Size() << " uids";
+  // TODO(simon): fix this hack.
+
+  struct DeviceListParamData {
+    uint16_t endpoint;
+    uint32_t list_change;
+    uint8_t data[0];
+  };
+
+  // TODO(simon): fix this - we can overflow an RDM packet if there are too
+  // many devices!
+  unsigned int param_data_size = 2 + 4 + uids.Size() * UID::UID_SIZE;
+  uint8_t *raw_data = new uint8_t[param_data_size];
+  DeviceListParamData *param_data = reinterpret_cast<DeviceListParamData*>(
+      raw_data);
+
+  // TODO(simon): fix this to track changes.
+  param_data->endpoint = HostToNetwork(endpoint);
+  param_data->list_change = HostToNetwork(0);
+  uint8_t *ptr = raw_data + 6;
+  unsigned int offset = 0;
+  UIDSet::Iterator iter = uids.Begin();
+  for (; iter != uids.End(); ++iter) {
+    OLA_INFO << "  " << *iter;
+    iter->Pack(ptr + offset, param_data_size - offset - 4);
+    offset += UID::UID_SIZE;
+  }
+
+  RDMResponse *response = GetResponseFromData(request, raw_data,
+                                              param_data_size);
+  delete[] raw_data;
+  RunRDMCallback(on_complete, response);
 }

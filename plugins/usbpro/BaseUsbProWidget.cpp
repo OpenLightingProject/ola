@@ -130,6 +130,7 @@ ola::io::ConnectedDescriptor *BaseUsbProWidget::OpenDevice(
 
   bzero(&newtio, sizeof(newtio));  // clear struct for new port settings
   newtio.c_cflag |= CREAD;
+  newtio.c_cflag |= CS8;
   cfsetispeed(&newtio, B115200);
   cfsetospeed(&newtio, B115200);
   tcsetattr(fd, TCSANOW, &newtio);

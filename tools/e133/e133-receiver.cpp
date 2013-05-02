@@ -24,364 +24,54 @@
 #  include <config.h>
 #endif
 
-#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
-#include <getopt.h>
 #include <signal.h>
-#include <stdio.h>
-#include <string.h>
 #include <sysexits.h>
 
-#include <ola/BaseTypes.h>
-#include <ola/Logging.h>
 #include <ola/acn/ACNPort.h>
+#include <ola/acn/CID.h>
+#include <ola/DmxBuffer.h>
+#include <ola/base/Flags.h>
 #include <ola/base/Init.h>
-#include <ola/e133/OLASLPThread.h>
-#ifdef HAVE_LIBSLP
-#include <ola/e133/OpenSLPThread.h>
-#endif
-#include <ola/io/SelectServer.h>
-#include <ola/io/StdinHandler.h>
+#include <ola/BaseTypes.h>
+#include <ola/io/Descriptor.h>
+#include <ola/Logging.h>
 #include <ola/network/InterfacePicker.h>
-#include <ola/network/NetworkUtils.h>
-#include <ola/rdm/RDMCommand.h>
+#include <ola/rdm/RDMControllerAdaptor.h>
+#include <ola/rdm/UIDAllocator.h>
 #include <ola/rdm/UID.h>
+#include <ola/stl/STLUtils.h>
 
-#include <iostream>
 #include <memory>
 #include <string>
+#include <vector>
 
-#include "plugins/dummy/DummyResponder.h"
+#ifdef USE_SPI
+#include "plugins/spi/SPIBackend.h"
+using ola::plugin::spi::SPIBackend;
+DEFINE_string(spi_device, "", "Path to the SPI device to use.");
+#endif
 
-#include "tools/e133/E133Device.h"
-#include "tools/e133/EndpointManager.h"
-#include "tools/e133/ManagementEndpoint.h"
-#include "tools/e133/TCPConnectionStats.h"
+#include "plugins/e131/e131/E131Node.h"
+#include "plugins/usbpro/BaseUsbProWidget.h"
+#include "plugins/usbpro/DmxTriWidget.h"
+#include "tools/e133/SimpleE133Node.h"
 
-using ola::network::HostToNetwork;
+using ola::DmxBuffer;
+using ola::acn::CID;
 using ola::network::IPV4Address;
-using ola::rdm::RDMResponse;
 using ola::rdm::UID;
 using std::auto_ptr;
-using std::cout;
-using std::endl;
 using std::string;
+using std::vector;
+using ola::plugin::usbpro::DmxTriWidget;
 
-
-typedef struct {
-  bool help;
-  bool use_openslp;
-  ola::log_level log_level;
-  unsigned int universe;
-  string ip_address;
-  uint16_t lifetime;
-  auto_ptr<UID> uid;
-} options;
-
-
-/*
- * Parse our command line options
- */
-void ParseOptions(int argc, char *argv[], options *opts) {
-  enum {
-    OPENSLP_OPTION = 256,
-  };
-
-  int uid_set = 0;
-  static struct option long_options[] = {
-      {"help", no_argument, 0, 'h'},
-      {"ip", required_argument, 0, 'i'},
-      {"log-level", required_argument, 0, 'l'},
-      {"timeout", required_argument, 0, 't'},
-      {"uid", required_argument, &uid_set, 1},
-      {"universe", required_argument, 0, 'u'},
-#ifdef HAVE_LIBSLP
-      {"openslp", no_argument, 0, OPENSLP_OPTION},
-#endif
-      {0, 0, 0, 0}
-    };
-
-  int option_index = 0;
-
-  while (1) {
-    int c = getopt_long(argc, argv, "hi:l:t:u:", long_options, &option_index);
-
-    if (c == -1)
-      break;
-
-    switch (c) {
-      case 0:
-        if (uid_set)
-          opts->uid.reset(UID::FromString(optarg));
-        break;
-      case 'h':
-        opts->help = true;
-        break;
-      case 'i':
-        opts->ip_address = optarg;
-        break;
-      case 'l':
-        switch (atoi(optarg)) {
-          case 0:
-            // nothing is written at this level
-            // so this turns logging off
-            opts->log_level = ola::OLA_LOG_NONE;
-            break;
-          case 1:
-            opts->log_level = ola::OLA_LOG_FATAL;
-            break;
-          case 2:
-            opts->log_level = ola::OLA_LOG_WARN;
-            break;
-          case 3:
-            opts->log_level = ola::OLA_LOG_INFO;
-            break;
-          case 4:
-            opts->log_level = ola::OLA_LOG_DEBUG;
-            break;
-          default :
-            break;
-        }
-        break;
-      case 't':
-        opts->lifetime = atoi(optarg);
-        break;
-      case 'u':
-        opts->universe = atoi(optarg);
-        break;
-      case OPENSLP_OPTION:
-        opts->use_openslp = true;
-        break;
-      case '?':
-        break;
-      default:
-       break;
-    }
-  }
-  return;
-}
-
-
-/*
- * Display the help message
- */
-void DisplayHelpAndExit(char *argv[]) {
-  cout << "Usage: " << argv[0] << " [options]\n"
-  "\n"
-  "Run a very simple E1.33 Responder.\n"
-  "\n"
-  "  -h, --help                Display this help message and exit.\n"
-  "  -i, --ip                  The IP address to listen on.\n"
-  "  -l, --log-level <level>   Set the logging level 0 .. 4.\n"
-  "  -t, --timeout <seconds>   The value to use for the service lifetime\n"
-  "  -u, --universe <universe> The universe to respond on (> 0).\n"
-  "  --uid <uid>               The UID of the responder.\n"
-#ifdef HAVE_LIBSLP
-  "  --openslp                 Use openslp rather than the OLA SLP server\n"
-#endif
-  << endl;
-  exit(0);
-}
-
-
-/**
- * A very simple E1.33 node that registers itself using SLP and responds to
- * messages.
- */
-class SimpleE133Node {
-  public:
-    explicit SimpleE133Node(const IPV4Address &ip_address,
-                            const options &opts);
-    ~SimpleE133Node();
-
-    bool Init();
-    void Run();
-    void Stop() { m_ss.Terminate(); }
-
-  private:
-    ola::io::SelectServer m_ss;
-    ola::io::StdinHandler m_stdin_handler;
-    auto_ptr<ola::e133::BaseSLPThread> m_slp_thread;
-    EndpointManager m_endpoint_manager;
-    E133Device m_e133_device;
-    ManagementEndpoint m_management_endpoint;
-    E133Endpoint m_first_endpoint;
-    ola::plugin::dummy::DummyResponder m_responder;
-    uint16_t m_lifetime;
-    UID m_uid;
-    const IPV4Address m_ip_address;
-
-    void RegisterCallback(bool ok);
-    void DeRegisterCallback(bool ok);
-
-    void Input(char c);
-    void DumpTCPStats();
-    void SendUnsolicited();
-
-    SimpleE133Node(const SimpleE133Node&);
-    SimpleE133Node operator=(const SimpleE133Node&);
-};
-
-
-/**
- * Constructor
- */
-SimpleE133Node::SimpleE133Node(const IPV4Address &ip_address,
-                               const options &opts)
-    : m_stdin_handler(&m_ss, ola::NewCallback(this, &SimpleE133Node::Input)),
-      m_e133_device(&m_ss, ip_address, &m_endpoint_manager),
-      m_management_endpoint(NULL, E133Endpoint::EndpointProperties(), *opts.uid,
-                            &m_endpoint_manager, m_e133_device.GetTCPStats()),
-      m_first_endpoint(NULL, E133Endpoint::EndpointProperties()),
-      m_responder(*opts.uid),
-      m_lifetime(opts.lifetime),
-      m_uid(*opts.uid),
-      m_ip_address(ip_address) {
-  if (opts.use_openslp) {
-#ifdef HAVE_LIBSLP
-    m_slp_thread.reset(new ola::e133::OpenSLPThread(&m_ss));
-#else
-    OLA_WARN << "openslp not installed";
-#endif
-  } else {
-    m_slp_thread.reset(new ola::e133::OLASLPThread(&m_ss));
-  }
-}
-
-
-SimpleE133Node::~SimpleE133Node() {
-  m_endpoint_manager.UnRegisterEndpoint(1);
-  m_slp_thread->Join(NULL);
-  m_slp_thread->Cleanup();
-}
-
-
-/**
- * Init this node
- */
-bool SimpleE133Node::Init() {
-  if (!m_e133_device.Init())
-    return false;
-
-  // register the root endpoint
-  m_e133_device.SetRootEndpoint(&m_management_endpoint);
-  // add a single endpoint
-  m_endpoint_manager.RegisterEndpoint(1, &m_first_endpoint);
-
-  // Start the SLP thread.
-  if (!m_slp_thread->Init()) {
-    OLA_WARN << "SLPThread Init() failed";
-    return false;
-  }
-  m_slp_thread->Start();
-  return true;
-}
-
-
-void SimpleE133Node::Run() {
-  m_slp_thread->RegisterDevice(
-    ola::NewSingleCallback(this, &SimpleE133Node::RegisterCallback),
-    m_ip_address, m_uid, m_lifetime);
-
-  m_ss.Run();
-  OLA_INFO << "Starting shutdown process";
-
-  m_slp_thread->DeRegisterDevice(
-    ola::NewSingleCallback(this, &SimpleE133Node::DeRegisterCallback),
-    m_ip_address, m_uid);
-  m_ss.Run();
-}
-
-
-/**
- * Called when a registration request completes.
- */
-void SimpleE133Node::RegisterCallback(bool ok) {
-  if (!ok)
-    OLA_WARN << "Failed to register in SLP";
-}
-
-
-/**
- * Called when a de-registration request completes.
- */
-void SimpleE133Node::DeRegisterCallback(bool ok) {
-  if (!ok)
-    OLA_WARN << "Failed to de-register in SLP";
-  m_ss.Terminate();
-}
-
-
-/**
- * Called when there is data on stdin.
- */
-void SimpleE133Node::Input(char c) {
-  switch (c) {
-    case 'c':
-      m_e133_device.CloseTCPConnection();
-      break;
-    case 'q':
-      m_ss.Terminate();
-      break;
-    case 's':
-      SendUnsolicited();
-      break;
-    case 't':
-      DumpTCPStats();
-      break;
-    default:
-      break;
-  }
-}
-
-
-/**
- * Dump the TCP stats
- */
-void SimpleE133Node::DumpTCPStats() {
-  const TCPConnectionStats* stats = m_e133_device.GetTCPStats();
-  cout << "IP: " << stats->ip_address << endl;
-  cout << "Connection Unhealthy Events: " << stats->unhealthy_events <<
-    endl;
-  cout << "Connection Events: " << stats->connection_events << endl;
-}
-
-
-/**
- * Send an unsolicted message on the TCP connection
- */
-void SimpleE133Node::SendUnsolicited() {
-  OLA_INFO << "Sending unsolicited TCP stats message";
-
-  struct tcp_stats_message_s {
-    uint32_t ip_address;
-    uint16_t unhealthy_events;
-    uint16_t connection_events;
-  } __attribute__((packed));
-
-  struct tcp_stats_message_s tcp_stats_message;
-
-  const TCPConnectionStats* stats = m_e133_device.GetTCPStats();
-  tcp_stats_message.ip_address = stats->ip_address.AsInt();
-  tcp_stats_message.unhealthy_events =
-    HostToNetwork(stats->unhealthy_events);
-  tcp_stats_message.connection_events =
-    HostToNetwork(stats->connection_events);
-
-  UID bcast_uid = UID::AllDevices();
-  const RDMResponse *response = new ola::rdm::RDMGetResponse(
-      m_uid,
-      bcast_uid,
-      0,  // transaction number
-      ola::rdm::RDM_ACK,
-      0,  // message count
-      ola::rdm::ROOT_RDM_DEVICE,
-      ola::rdm::PID_TCP_COMMS_STATUS,
-      reinterpret_cast<const uint8_t*>(&tcp_stats_message),
-      sizeof(tcp_stats_message));
-
-  m_e133_device.SendStatusMessage(response);
-}
-
+DEFINE_bool(dummy, true, "Include a dummy responder endpoint");
+DEFINE_bool(e131, true, "Include E1.31 support");
+DEFINE_string(listen_ip, "", "The IP address to listen on.");
+DEFINE_string(uid, "7a70:00000001", "The UID of the responder.");
+DEFINE_s_uint16(lifetime, t, 300, "The value to use for the service lifetime");
+DEFINE_s_uint32(universe, u, 1, "The E1.31 universe to listen on.");
+DEFINE_string(tri_device, "", "Path to the RDM-TRI device to use.");
 
 SimpleE133Node *simple_node;
 
@@ -394,39 +84,155 @@ static void InteruptSignal(int signo) {
   (void) signo;
 }
 
+void HandleTriDMX(DmxBuffer *buffer, DmxTriWidget *widget) {
+  widget->SendDMX(*buffer);
+}
+
+
+#ifdef USE_SPI
+void HandleSpiDMX(DmxBuffer *buffer, SPIBackend *backend) {
+  backend->WriteDMX(*buffer, 0);
+}
+#endif
+
 
 /*
  * Startup a node
  */
 int main(int argc, char *argv[]) {
-  options opts;
-  opts.use_openslp = false;
-  opts.log_level = ola::OLA_LOG_WARN;
-  opts.lifetime = 300;  // 5 mins is a good compromise
-  opts.universe = 1;
-  opts.help = false;
-  ParseOptions(argc, argv, &opts);
+  ola::SetHelpString(
+      "[options]",
+      "Run a very simple E1.33 Responder.");
+  ola::ParseFlags(&argc, argv);
+  ola::InitLoggingFromFlags();
 
-  if (opts.help)
-    DisplayHelpAndExit(argv);
-
-  ola::InitLogging(opts.log_level, ola::OLA_LOG_STDERR);
-  if (!opts.uid.get()) {
-    opts.uid.reset(new ola::rdm::UID(OPEN_LIGHTING_ESTA_CODE, 0xffffff00));
+  auto_ptr<UID> uid(UID::FromString(FLAGS_uid));
+  if (!uid.get()) {
+    OLA_WARN << "Invalid UID: " << FLAGS_uid;
+    ola::DisplayUsage();
+    exit(EX_USAGE);
   }
 
+  CID cid = CID::Generate();
+
+  // Find a network interface to use
   ola::network::Interface interface;
 
   {
     auto_ptr<const ola::network::InterfacePicker> picker(
       ola::network::InterfacePicker::NewPicker());
-    if (!picker->ChooseInterface(&interface, opts.ip_address)) {
+    if (!picker->ChooseInterface(&interface, FLAGS_listen_ip)) {
       OLA_INFO << "Failed to find an interface";
       exit(EX_UNAVAILABLE);
     }
   }
 
-  SimpleE133Node node(interface.ip_address, opts);
+  // Setup the Node.
+  SimpleE133Node::Options opts(cid, interface.ip_address, *uid, FLAGS_lifetime);
+  SimpleE133Node node(opts);
+
+  // Optionally attach some other endpoints.
+  vector<E133Endpoint*> endpoints;
+  auto_ptr<ola::plugin::dummy::DummyResponder> dummy_responder;
+  auto_ptr<ola::rdm::DiscoverableRDMControllerAdaptor>
+    discoverable_dummy_responder;
+  auto_ptr<DmxTriWidget> tri_widget;
+
+  ola::rdm::UIDAllocator uid_allocator(*uid);
+  // The first uid is used for the management endpoint so we burn a UID here.
+  {
+    auto_ptr<UID> dummy_uid(uid_allocator.AllocateNext());
+  }
+
+  // Setup E1.31 if required.
+  auto_ptr<ola::plugin::e131::E131Node> e131_node;
+  if (FLAGS_e131) {
+    e131_node.reset(new ola::plugin::e131::E131Node(FLAGS_listen_ip, cid));
+    if (!e131_node->Start()) {
+      OLA_WARN << "Failed to start E1.31 node";
+      exit(EX_UNAVAILABLE);
+    }
+    OLA_INFO << "Started E1.31 node!";
+    node.SelectServer()->AddReadDescriptor(e131_node->GetSocket());
+  }
+
+  if (FLAGS_dummy) {
+    auto_ptr<UID> dummy_uid(uid_allocator.AllocateNext());
+    OLA_INFO << "Dummy UID is " << *dummy_uid;
+    if (!dummy_uid.get()) {
+      OLA_WARN << "Failed to allocate a UID for the DummyResponder.";
+      exit(EX_USAGE);
+    }
+
+    dummy_responder.reset(new ola::plugin::dummy::DummyResponder(*dummy_uid));
+    discoverable_dummy_responder.reset(
+        new ola::rdm::DiscoverableRDMControllerAdaptor(
+          *dummy_uid, dummy_responder.get()));
+    endpoints.push_back(new E133Endpoint(discoverable_dummy_responder.get(),
+                                         E133Endpoint::EndpointProperties()));
+  }
+
+  // uber hack for now.
+  // TODO(simon): fix this
+  DmxBuffer tri_buffer;
+  uint8_t unused_priority;
+  if (!FLAGS_tri_device.str().empty()) {
+    ola::io::ConnectedDescriptor *descriptor =
+        ola::plugin::usbpro::BaseUsbProWidget::OpenDevice(FLAGS_tri_device);
+    if (!descriptor) {
+      OLA_WARN << "Failed to open " << FLAGS_tri_device;
+      exit(EX_USAGE);
+    }
+    tri_widget.reset(new DmxTriWidget(node.SelectServer(), descriptor));
+    node.SelectServer()->AddReadDescriptor(descriptor);
+    E133Endpoint::EndpointProperties properties;
+    properties.is_physical = true;
+    endpoints.push_back(
+        new E133Endpoint(tri_widget.get(), properties));
+
+    if (e131_node.get()) {
+      // Danger!
+      e131_node->SetHandler(
+          1, &tri_buffer, &unused_priority,
+          NewCallback(&HandleTriDMX, &tri_buffer, tri_widget.get()));
+    }
+  }
+
+  // uber hack for now.
+  // TODO(simon): fix this
+#ifdef USE_SPI
+  auto_ptr<SPIBackend> spi_backend;
+  DmxBuffer spi_buffer;
+
+  if (!FLAGS_spi_device.str().empty()) {
+    auto_ptr<UID> spi_uid(uid_allocator.AllocateNext());
+    if (!spi_uid.get()) {
+      OLA_WARN << "Failed to allocate a UID for the SPI device.";
+      exit(EX_USAGE);
+    }
+
+    spi_backend.reset(
+        new SPIBackend(FLAGS_spi_device, *spi_uid, SPIBackend::Options()));
+    if (!spi_backend->Init()) {
+      OLA_WARN << "Failed to init SPI backend";
+      exit(EX_USAGE);
+    }
+    E133Endpoint::EndpointProperties properties;
+    properties.is_physical = true;
+    endpoints.push_back(new E133Endpoint(spi_backend.get(), properties));
+
+    if (e131_node.get()) {
+      // Danger!
+      e131_node->SetHandler(
+          1, &spi_buffer, &unused_priority,
+          NewCallback(&HandleSpiDMX, &spi_buffer, spi_backend.get()));
+    }
+  }
+#endif
+
+  for (unsigned int i = 0; i < endpoints.size(); i++) {
+    node.AddEndpoint(i + 1, endpoints[i]);
+  }
   simple_node = &node;
 
   if (!node.Init())
@@ -436,12 +242,12 @@ int main(int argc, char *argv[]) {
   if (!ola::InstallSignal(SIGINT, &InteruptSignal))
     return false;
 
-  cout << "---------------  Controls  ----------------\n";
-  cout << " c - Close the TCP connection\n";
-  cout << " q - Quit\n";
-  cout << " s - Send Status Message\n";
-  cout << " t - Dump TCP stats\n";
-  cout << "-------------------------------------------\n";
-
   node.Run();
+  if (e131_node.get()) {
+    node.SelectServer()->RemoveReadDescriptor(e131_node->GetSocket());
+  }
+  for (unsigned int i = 0; i < endpoints.size(); i++) {
+    node.RemoveEndpoint(i + 1);
+  }
+  ola::STLDeleteElements(&endpoints);
 }
