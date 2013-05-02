@@ -2135,7 +2135,8 @@ class GetSensorDefinition(OptionalParameterTestFixture):
     self._sensors[self._current_index] = fields
 
     # perform sanity checks on the sensor infomation
-    if fields['type'] not in RDMConstants.SENSOR_TYPE_TO_NAME:
+    if (fields['type'] not in RDMConstants.SENSOR_TYPE_TO_NAME and
+        fields['type'] < 0x80):
       self.AddWarning('Unknown type %d for sensor %d' %
                       (fields['type'], sensor_number))
 
