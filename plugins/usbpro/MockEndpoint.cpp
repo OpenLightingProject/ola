@@ -286,36 +286,39 @@ void MockEndpoint::Verify() {
  */
 void MockEndpoint::DescriptorReady() {
   OLA_ASSERT_FALSE(m_expected_data.empty());
-  expected_data call = m_expected_data.front();
-  m_expected_data.pop();
 
-  uint8_t data[call.expected_data_frame.length];
-  unsigned int data_received = 0;
+  while (m_descriptor->DataRemaining()) {
+    expected_data call = m_expected_data.front();
+    m_expected_data.pop();
 
-  while (data_received != call.expected_data_frame.length) {
-    unsigned int offset = data_received;
-    m_descriptor->Receive(data + offset,
-                          call.expected_data_frame.length - offset,
-                          data_received);
-    data_received += offset;
+    uint8_t data[call.expected_data_frame.length];
+    unsigned int data_received = 0;
+
+    while (data_received != call.expected_data_frame.length) {
+      unsigned int offset = data_received;
+      m_descriptor->Receive(data + offset,
+                            call.expected_data_frame.length - offset,
+                            data_received);
+      data_received += offset;
+    }
+
+    ASSERT_DATA_EQUALS(__LINE__, call.expected_data_frame.data,
+                       call.expected_data_frame.length,
+                       data, data_received);
+
+    if (call.free_request)
+      delete[] call.expected_data_frame.data;
+
+    if (call.send_response)
+      OLA_ASSERT_TRUE(m_descriptor->Send(call.return_data_frame.data,
+                                         call.return_data_frame.length));
+
+    if (call.callback)
+      call.callback->Run();
+
+    if (call.free_response)
+      delete[] call.return_data_frame.data;
   }
-
-  ASSERT_DATA_EQUALS(__LINE__, call.expected_data_frame.data,
-                     call.expected_data_frame.length,
-                     data, data_received);
-
-  if (call.free_request)
-    delete[] call.expected_data_frame.data;
-
-  if (call.send_response)
-    OLA_ASSERT_TRUE(m_descriptor->Send(call.return_data_frame.data,
-                                       call.return_data_frame.length));
-
-  if (call.callback)
-    call.callback->Run();
-
-  if (call.free_response)
-    delete[] call.return_data_frame.data;
 }
 
 
