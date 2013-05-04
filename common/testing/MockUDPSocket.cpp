@@ -21,6 +21,7 @@
 
 
 #include <cppunit/extensions/HelperMacros.h>
+#include <errno.h>
 #include <string.h>
 #include <algorithm>
 #include <iostream>
@@ -40,8 +41,25 @@ using ola::io::IOQueue;
 using ola::network::HostToNetwork;
 using ola::network::IPV4Address;
 
+MockUDPSocket::MockUDPSocket()
+    : ola::network::UDPSocketInterface(),
+      m_init_called(false),
+      m_dummy_sd(ola::io::INVALID_DESCRIPTOR),
+      m_bound_to_port(false),
+      m_broadcast_set(false),
+      m_port(0),
+      m_discard_mode(false) {
+}
+
 
 bool MockUDPSocket::Init() {
+  if (m_dummy_sd == ola::io::INVALID_DESCRIPTOR) {
+    m_dummy_sd = socket(PF_INET, SOCK_DGRAM, 0);
+    if (m_dummy_sd < 0) {
+      OLA_WARN << "Could not create socket " << strerror(errno);
+      return false;
+    }
+  }
   m_init_called = true;
   return true;
 }
@@ -62,13 +80,11 @@ bool MockUDPSocket::GetSocketAddress(IPV4SocketAddress *address) const {
 
 bool MockUDPSocket::Close() {
   m_bound_to_port = false;
+  if (m_dummy_sd != ola::io::INVALID_DESCRIPTOR) {
+    close(m_dummy_sd);
+  }
   return true;
 }
-
-
-int MockUDPSocket::ReadDescriptor() const { return 0; }
-int MockUDPSocket::WriteDescriptor() const { return 0; }
-
 
 ssize_t MockUDPSocket::SendTo(const uint8_t *buffer,
                               unsigned int size,
