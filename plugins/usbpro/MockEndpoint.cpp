@@ -21,11 +21,15 @@
 #include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include <queue>
+#include <sstream>
 
 #include "ola/Callback.h"
 #include "ola/Logging.h"
+#include "ola/testing/TestUtils.h"
 #include "plugins/usbpro/MockEndpoint.h"
 
+
+using ola::testing::ASSERT_DATA_EQUALS;
 
 MockEndpoint::MockEndpoint(ola::io::ConnectedDescriptor *descriptor)
     : m_descriptor(descriptor) {
@@ -226,7 +230,7 @@ void MockEndpoint::AddExpectedRobeDataAndReturn(
  */
 void MockEndpoint::SendUnsolicited(const uint8_t *data,
                                    unsigned int length) {
-  CPPUNIT_ASSERT(m_descriptor->Send(data, length));
+  OLA_ASSERT_TRUE(m_descriptor->Send(data, length));
 }
 
 
@@ -243,7 +247,7 @@ void MockEndpoint::SendUnsolicitedUsbProData(
                                          response_payload_size,
                                          &response_size);
 
-  CPPUNIT_ASSERT(m_descriptor->Send(response, response_size));
+  OLA_ASSERT_TRUE(m_descriptor->Send(response, response_size));
   delete[] response;
 }
 
@@ -260,8 +264,19 @@ void MockEndpoint::SendUnsolicitedRobeData(
                                        response_payload_data,
                                        response_payload_size,
                                        &response_size);
-  CPPUNIT_ASSERT(m_descriptor->Send(response, response_size));
+  OLA_ASSERT_TRUE(m_descriptor->Send(response, response_size));
   delete[] response;
+}
+
+
+/**
+ * Verify no data remains
+ */
+void MockEndpoint::Verify() {
+  std::ostringstream str;
+  str << m_expected_data.size() << " messages remain, "
+      << m_descriptor->DataRemaining() << " bytes remaing";
+  OLA_ASSERT_EQ_MSG(static_cast<size_t>(0), m_expected_data.size(), str.str());
 }
 
 
@@ -270,7 +285,7 @@ void MockEndpoint::SendUnsolicitedRobeData(
  * expected and if there is return data send it.
  */
 void MockEndpoint::DescriptorReady() {
-  CPPUNIT_ASSERT(!m_expected_data.empty());
+  OLA_ASSERT_FALSE(m_expected_data.empty());
   expected_data call = m_expected_data.front();
   m_expected_data.pop();
 
@@ -279,34 +294,22 @@ void MockEndpoint::DescriptorReady() {
 
   while (data_received != call.expected_data_frame.length) {
     unsigned int offset = data_received;
-    if (call.expected_data_frame.length - offset > 100) {
-      CPPUNIT_ASSERT(false);
-    }
-
     m_descriptor->Receive(data + offset,
                           call.expected_data_frame.length - offset,
                           data_received);
     data_received += offset;
   }
 
-  CPPUNIT_ASSERT_EQUAL(call.expected_data_frame.length, data_received);
-  bool data_matches = !memcmp(call.expected_data_frame.data,
-                              data,
-                              data_received);
-  if (!data_matches) {
-    for (unsigned int i = 0; i < data_received; ++i)
-      OLA_WARN << i << ": 0x" << std::hex << static_cast<int>(data[i]) << " 0x"
-        << static_cast<int>(call.expected_data_frame.data[i]) <<
-        (data[i] != call.expected_data_frame.data[i] ? " <---" : "");
-  }
-  CPPUNIT_ASSERT(data_matches);
+  ASSERT_DATA_EQUALS(__LINE__, call.expected_data_frame.data,
+                     call.expected_data_frame.length,
+                     data, data_received);
 
   if (call.free_request)
     delete[] call.expected_data_frame.data;
 
   if (call.send_response)
-    CPPUNIT_ASSERT(m_descriptor->Send(call.return_data_frame.data,
-                                      call.return_data_frame.length));
+    OLA_ASSERT_TRUE(m_descriptor->Send(call.return_data_frame.data,
+                                       call.return_data_frame.length));
 
   if (call.callback)
     call.callback->Run();
