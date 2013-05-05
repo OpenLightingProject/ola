@@ -93,13 +93,13 @@ ssize_t MockUDPSocket::SendTo(const uint8_t *buffer,
   if (m_discard_mode)
     return size;
 
-  CPPUNIT_ASSERT(m_expected_calls.size());
+  OLA_ASSERT_FALSE(m_expected_calls.empty());
   expected_call call = m_expected_calls.front();
 
   ola::testing::ASSERT_DATA_EQUALS(__LINE__, call.data, call.size, buffer,
                                    size);
-  CPPUNIT_ASSERT_EQUAL(call.address, ip_address);
-  CPPUNIT_ASSERT_EQUAL(call.port, port);
+  OLA_ASSERT_EQ(call.address, ip_address);
+  OLA_ASSERT_EQ(call.port, port);
   if (call.free_data)
     delete[] call.data;
 
@@ -156,10 +156,10 @@ bool MockUDPSocket::RecvFrom(uint8_t *buffer,
                              ssize_t *data_read,
                              ola::network::IPV4Address &source,
                              uint16_t &port) const {
-  CPPUNIT_ASSERT(m_received_data.size());
+  OLA_ASSERT_FALSE(m_received_data.empty());
   const received_data &new_data = m_received_data.front();
 
-  CPPUNIT_ASSERT(static_cast<unsigned int>(*data_read) >= new_data.size);
+  OLA_ASSERT_TRUE(static_cast<unsigned int>(*data_read) >= new_data.size);
   unsigned int size = std::min(new_data.size,
                                static_cast<unsigned int>(*data_read));
   memcpy(buffer, new_data.data, size);
@@ -181,7 +181,7 @@ bool MockUDPSocket::EnableBroadcast() {
 
 
 bool MockUDPSocket::SetMulticastInterface(const IPV4Address &interface) {
-  CPPUNIT_ASSERT_EQUAL(m_interface, interface);
+  OLA_ASSERT_EQ(m_interface, interface);
   return true;
 }
 
@@ -189,7 +189,7 @@ bool MockUDPSocket::SetMulticastInterface(const IPV4Address &interface) {
 bool MockUDPSocket::JoinMulticast(const IPV4Address &interface,
                                   const IPV4Address &group,
                                   bool loop) {
-  CPPUNIT_ASSERT_EQUAL(m_interface, interface);
+  OLA_ASSERT_EQ(m_interface, interface);
   (void) group;
   (void) loop;
   return true;
@@ -198,7 +198,7 @@ bool MockUDPSocket::JoinMulticast(const IPV4Address &interface,
 
 bool MockUDPSocket::LeaveMulticast(const IPV4Address &interface,
                                    const IPV4Address &group) {
-  CPPUNIT_ASSERT_EQUAL(m_interface, interface);
+  OLA_ASSERT_EQ(m_interface, interface);
   (void) group;
   return true;
 }
@@ -270,8 +270,12 @@ void MockUDPSocket::InjectData(IOQueue *ioqueue,
 void MockUDPSocket::Verify() {
   // if an exception is outstanding, don't both to check if we have consumed
   // all calls. This avoids raising a second exception which calls terminate.
-  if (!std::uncaught_exception())
-    CPPUNIT_ASSERT(m_expected_calls.empty());
+  if (!std::uncaught_exception()) {
+    std::ostringstream msg;
+    msg << m_expected_calls.size() << " packets remain on the MockUDPSocket";
+    OLA_ASSERT_TRUE_MSG(m_expected_calls.empty(), msg.str());
+
+  }
 }
 
 
