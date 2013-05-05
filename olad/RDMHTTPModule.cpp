@@ -1367,6 +1367,7 @@ void RDMHTTPModule::GetDeviceInfoHandler(
 
   section.AddItem(new UIntItem("Sub Devices", device.sub_device_count));
   section.AddItem(new UIntItem("Sensors", device.sensor_count));
+  section.AddItem(new StringItem("UID", dev_info.uid.ToString()));
   RespondWithSection(response, section);
 }
 
