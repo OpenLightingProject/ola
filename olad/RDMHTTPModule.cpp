@@ -88,8 +88,8 @@ const char RDMHTTPModule::SUB_DEVICE_FIELD[] = "sub_device";
 
 // section identifiers
 const char RDMHTTPModule::BOOT_SOFTWARE_SECTION[] = "boot_software";
-const char RDMHTTPModule::COMMS_STATUS_SECTION[] = "comms_status";
 const char RDMHTTPModule::CLOCK_SECTION[] = "clock";
+const char RDMHTTPModule::COMMS_STATUS_SECTION[] = "comms_status";
 const char RDMHTTPModule::DEVICE_HOURS_SECTION[] = "device_hours";
 const char RDMHTTPModule::DEVICE_INFO_SECTION[] = "device_info";
 const char RDMHTTPModule::DEVICE_LABEL_SECTION[] = "device_label";
@@ -101,7 +101,7 @@ const char RDMHTTPModule::IDENTIFY_SECTION[] = "identify";
 const char RDMHTTPModule::LAMP_HOURS_SECTION[] = "lamp_hours";
 const char RDMHTTPModule::LAMP_MODE_SECTION[] = "lamp_mode";
 const char RDMHTTPModule::LAMP_STATE_SECTION[] = "lamp_state";
-const char RDMHTTPModule::LAMP_STRIKES_SECITON[] = "lamp_strikes";
+const char RDMHTTPModule::LAMP_STRIKES_SECTION[] = "lamp_strikes";
 const char RDMHTTPModule::LANGUAGE_SECTION[] = "language";
 const char RDMHTTPModule::MANUFACTURER_LABEL_SECTION[] = "manufacturer_label";
 const char RDMHTTPModule::PAN_INVERT_SECTION[] = "pan_invert";
@@ -109,10 +109,39 @@ const char RDMHTTPModule::PAN_TILT_SWAP_SECTION[] = "pan_tilt_swap";
 const char RDMHTTPModule::PERSONALITY_SECTION[] = "personality";
 const char RDMHTTPModule::POWER_CYCLES_SECTION[] = "power_cycles";
 const char RDMHTTPModule::POWER_STATE_SECTION[] = "power_state";
-const char RDMHTTPModule::PROXIED_DEVICES_SECTION[] = "proxied_devices";
 const char RDMHTTPModule::PRODUCT_DETAIL_SECTION[] = "product_detail";
+const char RDMHTTPModule::PROXIED_DEVICES_SECTION[] = "proxied_devices";
 const char RDMHTTPModule::SENSOR_SECTION[] = "sensor";
 const char RDMHTTPModule::TILT_INVERT_SECTION[] = "tilt_invert";
+
+// section names
+const char RDMHTTPModule::BOOT_SOFTWARE_SECTION_NAME[] =
+  "Boot Software Version";
+const char RDMHTTPModule::CLOCK_SECTION_NAME[] = "Clock";
+const char RDMHTTPModule::COMMS_STATUS_SECTION_NAME[] = "Communication Status";
+const char RDMHTTPModule::DEVICE_HOURS_SECTION_NAME[] = "Device Hours";
+const char RDMHTTPModule::DEVICE_INFO_SECTION_NAME[] = "Device Info";
+const char RDMHTTPModule::DEVICE_LABEL_SECTION_NAME[] = "Device Label";
+const char RDMHTTPModule::DISPLAY_INVERT_SECTION_NAME[] = "Display Invert";
+const char RDMHTTPModule::DISPLAY_LEVEL_SECTION_NAME[] = "Display Level";
+const char RDMHTTPModule::DMX_ADDRESS_SECTION_NAME[] = "DMX Start Address";
+const char RDMHTTPModule::FACTORY_DEFAULTS_SECTION_NAME[] = "Factory Defaults";
+const char RDMHTTPModule::IDENTIFY_SECTION_NAME[] = "Identify Mode";
+const char RDMHTTPModule::LAMP_HOURS_SECTION_NAME[] = "Lamp Hours";
+const char RDMHTTPModule::LAMP_MODE_SECTION_NAME[] = "Lamp On Mode";
+const char RDMHTTPModule::LAMP_STATE_SECTION_NAME[] = "Lamp State";
+const char RDMHTTPModule::LAMP_STRIKES_SECTION_NAME[] = "Lamp Strikes";
+const char RDMHTTPModule::LANGUAGE_SECTION_NAME[] = "Language";
+const char RDMHTTPModule::MANUFACTURER_LABEL_SECTION_NAME[] =
+  "Manufacturer Label";
+const char RDMHTTPModule::PAN_INVERT_SECTION_NAME[] = "Pan Invert";
+const char RDMHTTPModule::PAN_TILT_SWAP_SECTION_NAME[] = "Pan/Tilt Swap";
+const char RDMHTTPModule::PERSONALITY_SECTION_NAME[] = "DMX Personality";
+const char RDMHTTPModule::POWER_CYCLES_SECTION_NAME[] = "Device Power Cycles";
+const char RDMHTTPModule::POWER_STATE_SECTION_NAME[] = "Power State";
+const char RDMHTTPModule::PRODUCT_DETAIL_SECTION_NAME[] = "Product Details";
+const char RDMHTTPModule::PROXIED_DEVICES_SECTION_NAME[] = "Proxied Devices";
+const char RDMHTTPModule::TILT_INVERT_SECTION_NAME[] = "Tilt Invert";
 
 RDMHTTPModule::RDMHTTPModule(HTTPServer *http_server,
                              OlaCallbackClient *client)
@@ -450,7 +479,7 @@ int RDMHTTPModule::JsonSectionInfo(const HTTPRequest *request,
     error = GetLampMode(request, response, universe_id, *uid);
   } else if (section_id == LAMP_STATE_SECTION) {
     error = GetLampState(request, response, universe_id, *uid);
-  } else if (section_id == LAMP_STRIKES_SECITON) {
+  } else if (section_id == LAMP_STRIKES_SECTION) {
     error = GetLampStrikes(request, response, universe_id, *uid);
   } else if (section_id == POWER_CYCLES_SECTION) {
     error = GetPowerCycles(request, response, universe_id, *uid);
@@ -528,7 +557,7 @@ int RDMHTTPModule::JsonSaveSectionInfo(const HTTPRequest *request,
     error = SetLampMode(request, response, universe_id, *uid);
   } else if (section_id == LAMP_STATE_SECTION) {
     error = SetLampState(request, response, universe_id, *uid);
-  } else if (section_id == LAMP_STRIKES_SECITON) {
+  } else if (section_id == LAMP_STRIKES_SECTION) {
     error = SetLampStrikes(request, response, universe_id, *uid);
   } else if (section_id == POWER_CYCLES_SECTION) {
     error = SetPowerCycles(request, response, universe_id, *uid);
@@ -943,9 +972,9 @@ void RDMHTTPModule::SupportedSectionsDeviceInfoHandler(
   string hint;
   if (pids.find(ola::rdm::PID_DEVICE_MODEL_DESCRIPTION) != pids.end())
       hint.push_back('m');  // m is for device model
-  AddSection(&sections, DEVICE_INFO_SECTION, "Device Info", hint);
+  AddSection(&sections, DEVICE_INFO_SECTION, DEVICE_INFO_SECTION_NAME, hint);
 
-  AddSection(&sections, IDENTIFY_SECTION, "Identify Mode");
+  AddSection(&sections, IDENTIFY_SECTION, IDENTIFY_SECTION_NAME);
 
   bool dmx_address_added = false;
   bool include_software_version = false;
@@ -953,26 +982,29 @@ void RDMHTTPModule::SupportedSectionsDeviceInfoHandler(
   for (; iter != pids.end(); ++iter) {
     switch (*iter) {
       case ola::rdm::PID_PROXIED_DEVICES:
-        AddSection(&sections, PROXIED_DEVICES_SECTION, "Proxied Devices");
+        AddSection(&sections, PROXIED_DEVICES_SECTION,
+                   PROXIED_DEVICES_SECTION_NAME);
         break;
       case ola::rdm::PID_COMMS_STATUS:
-        AddSection(&sections, COMMS_STATUS_SECTION, "Communication Status");
+        AddSection(&sections, COMMS_STATUS_SECTION, COMMS_STATUS_SECTION_NAME);
         break;
       case ola::rdm::PID_PRODUCT_DETAIL_ID_LIST:
-        AddSection(&sections, PRODUCT_DETAIL_SECTION, "Product Details");
+        AddSection(&sections, PRODUCT_DETAIL_SECTION,
+                   PRODUCT_DETAIL_SECTION_NAME);
         break;
       case ola::rdm::PID_MANUFACTURER_LABEL:
         AddSection(&sections, MANUFACTURER_LABEL_SECTION,
-                   "Manufacturer Label");
+                   MANUFACTURER_LABEL_SECTION_NAME);
         break;
       case ola::rdm::PID_DEVICE_LABEL:
-        AddSection(&sections, DEVICE_LABEL_SECTION, "Device Label");
+        AddSection(&sections, DEVICE_LABEL_SECTION, DEVICE_LABEL_SECTION_NAME);
         break;
       case ola::rdm::PID_FACTORY_DEFAULTS:
-        AddSection(&sections, FACTORY_DEFAULTS_SECTION, "Factory Defaults");
+        AddSection(&sections, FACTORY_DEFAULTS_SECTION,
+                   FACTORY_DEFAULTS_SECTION_NAME);
         break;
       case ola::rdm::PID_LANGUAGE:
-        AddSection(&sections, LANGUAGE_SECTION, "Language");
+        AddSection(&sections, LANGUAGE_SECTION, LANGUAGE_SECTION_NAME);
         break;
       case ola::rdm::PID_BOOT_SOFTWARE_VERSION_ID:
       case ola::rdm::PID_BOOT_SOFTWARE_VERSION_LABEL:
@@ -980,62 +1012,66 @@ void RDMHTTPModule::SupportedSectionsDeviceInfoHandler(
         break;
       case ola::rdm::PID_DMX_PERSONALITY:
         if (pids.find(ola::rdm::PID_DMX_PERSONALITY_DESCRIPTION) == pids.end())
-          AddSection(&sections, PERSONALITY_SECTION, "DMX Personality");
+          AddSection(&sections, PERSONALITY_SECTION, PERSONALITY_SECTION_NAME);
         else
-          AddSection(&sections, PERSONALITY_SECTION, "DMX Personality", "l");
+          AddSection(&sections, PERSONALITY_SECTION, PERSONALITY_SECTION_NAME,
+                     "l");
         break;
       case ola::rdm::PID_DMX_START_ADDRESS:
-        AddSection(&sections, DMX_ADDRESS_SECTION, "DMX Start Address");
+        AddSection(&sections, DMX_ADDRESS_SECTION, DMX_ADDRESS_SECTION_NAME);
         dmx_address_added = true;
         break;
       case ola::rdm::PID_DEVICE_HOURS:
-        AddSection(&sections, DEVICE_HOURS_SECTION, "Device Hours");
+        AddSection(&sections, DEVICE_HOURS_SECTION, DEVICE_HOURS_SECTION_NAME);
         break;
       case ola::rdm::PID_LAMP_HOURS:
-        AddSection(&sections, LAMP_HOURS_SECTION, "Lamp Hours");
+        AddSection(&sections, LAMP_HOURS_SECTION, LAMP_HOURS_SECTION_NAME);
         break;
       case ola::rdm::PID_LAMP_STRIKES:
-        AddSection(&sections, LAMP_STRIKES_SECITON, "Lamp Strikes");
+        AddSection(&sections, LAMP_STRIKES_SECTION, LAMP_STRIKES_SECTION_NAME);
         break;
       case ola::rdm::PID_LAMP_STATE:
-        AddSection(&sections, LAMP_STATE_SECTION, "Lamp State");
+        AddSection(&sections, LAMP_STATE_SECTION, LAMP_STATE_SECTION_NAME);
         break;
       case ola::rdm::PID_LAMP_ON_MODE:
-        AddSection(&sections, LAMP_MODE_SECTION, "Lamp On Mode");
+        AddSection(&sections, LAMP_MODE_SECTION, LAMP_MODE_SECTION_NAME);
         break;
       case ola::rdm::PID_DEVICE_POWER_CYCLES:
-        AddSection(&sections, POWER_CYCLES_SECTION, "Device Power Cycles");
+        AddSection(&sections, POWER_CYCLES_SECTION, POWER_CYCLES_SECTION_NAME);
         break;
       case ola::rdm::PID_DISPLAY_INVERT:
-        AddSection(&sections, DISPLAY_INVERT_SECTION, "Display Invert");
+        AddSection(&sections, DISPLAY_INVERT_SECTION,
+                   DISPLAY_INVERT_SECTION_NAME);
         break;
       case ola::rdm::PID_DISPLAY_LEVEL:
-        AddSection(&sections, DISPLAY_LEVEL_SECTION, "Display Level");
+        AddSection(&sections, DISPLAY_LEVEL_SECTION,
+                   DISPLAY_LEVEL_SECTION_NAME);
         break;
       case ola::rdm::PID_PAN_INVERT:
-        AddSection(&sections, PAN_INVERT_SECTION, "Pan Invert");
+        AddSection(&sections, PAN_INVERT_SECTION, PAN_INVERT_SECTION_NAME);
         break;
       case ola::rdm::PID_TILT_INVERT:
-        AddSection(&sections, TILT_INVERT_SECTION, "Tilt Invert");
+        AddSection(&sections, TILT_INVERT_SECTION, TILT_INVERT_SECTION_NAME);
         break;
       case ola::rdm::PID_PAN_TILT_SWAP:
-        AddSection(&sections, PAN_TILT_SWAP_SECTION, "Pan/Tilt Swap");
+        AddSection(&sections, PAN_TILT_SWAP_SECTION,
+                   PAN_TILT_SWAP_SECTION_NAME);
         break;
       case ola::rdm::PID_REAL_TIME_CLOCK:
-        AddSection(&sections, CLOCK_SECTION, "Clock");
+        AddSection(&sections, CLOCK_SECTION, CLOCK_SECTION_NAME);
         break;
       case ola::rdm::PID_POWER_STATE:
-        AddSection(&sections, POWER_STATE_SECTION, "Power State");
+        AddSection(&sections, POWER_STATE_SECTION, POWER_STATE_SECTION_NAME);
         break;
     }
   }
 
   if (include_software_version)
-    AddSection(&sections, BOOT_SOFTWARE_SECTION, "Boot Software Version");
+    AddSection(&sections, BOOT_SOFTWARE_SECTION, BOOT_SOFTWARE_SECTION_NAME);
 
   if (CheckForRDMSuccess(status)) {
     if (device.dmx_footprint && !dmx_address_added)
-      AddSection(&sections, DMX_ADDRESS_SECTION, "DMX Start Address");
+      AddSection(&sections, DMX_ADDRESS_SECTION, DMX_ADDRESS_SECTION_NAME);
     if (device.sensor_count &&
         pids.find(ola::rdm::PID_SENSOR_DEFINITION) != pids.end() &&
         pids.find(ola::rdm::PID_SENSOR_VALUE) != pids.end()) {
