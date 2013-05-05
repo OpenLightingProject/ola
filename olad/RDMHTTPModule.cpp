@@ -40,6 +40,7 @@
 #include "ola/web/Json.h"
 #include "ola/web/JsonSections.h"
 #include "olad/OlaServer.h"
+#include "olad/OladHTTPServer.h"
 #include "olad/RDMHTTPModule.h"
 
 
@@ -55,6 +56,7 @@ using ola::web::JsonSection;
 using ola::web::SelectItem;
 using ola::web::StringItem;
 using ola::web::UIntItem;
+using ola::OladHTTPServer;
 using std::endl;
 using std::pair;
 using std::set;
@@ -112,13 +114,6 @@ const char RDMHTTPModule::PRODUCT_DETAIL_SECTION[] = "product_detail";
 const char RDMHTTPModule::SENSOR_SECTION[] = "sensor";
 const char RDMHTTPModule::TILT_INVERT_SECTION[] = "tilt_invert";
 
-/**
- * Create a new OLA HTTP server
- * @param export_map the ExportMap to display when /debug is called
- * @param client_socket A ConnectedDescriptor which is used to communicate with
- *   the server.
- * @param
- */
 RDMHTTPModule::RDMHTTPModule(HTTPServer *http_server,
                              OlaCallbackClient *client)
     : m_server(http_server),
@@ -176,9 +171,12 @@ RDMHTTPModule::~RDMHTTPModule() {
  */
 int RDMHTTPModule::RunRDMDiscovery(const HTTPRequest *request,
                                    HTTPResponse *response) {
+  if (request->CheckParameterExists(OladHTTPServer::HELP_PARAMETER))
+    return OladHTTPServer::ServeUsage(response,
+                                      "?id=[universe]&amp;incremental=true");
   unsigned int universe_id;
   if (!CheckForInvalidId(request, &universe_id))
-    return m_server->ServeNotFound(response);
+    return OladHTTPServer::ServeHelpRedirect(response);
 
   string incremental_str = request->GetParameter("incremental");
   bool incremental = incremental_str == "true";
@@ -205,9 +203,11 @@ int RDMHTTPModule::RunRDMDiscovery(const HTTPRequest *request,
  */
 int RDMHTTPModule::JsonUIDs(const HTTPRequest *request,
                             HTTPResponse *response) {
+  if (request->CheckParameterExists(OladHTTPServer::HELP_PARAMETER))
+    return OladHTTPServer::ServeUsage(response, "?id=[universe]");
   unsigned int universe_id;
   if (!CheckForInvalidId(request, &universe_id))
-    return m_server->ServeNotFound(response);
+    return OladHTTPServer::ServeHelpRedirect(response);
 
   bool ok = m_client->FetchUIDList(
       universe_id,
@@ -230,13 +230,15 @@ int RDMHTTPModule::JsonUIDs(const HTTPRequest *request,
  */
 int RDMHTTPModule::JsonUIDInfo(const HTTPRequest *request,
                                HTTPResponse *response) {
+  if (request->CheckParameterExists(OladHTTPServer::HELP_PARAMETER))
+    return OladHTTPServer::ServeUsage(response, "?id=[universe]&amp;uid=[uid]");
   unsigned int universe_id;
   if (!CheckForInvalidId(request, &universe_id))
-    return m_server->ServeNotFound(response);
+    return OladHTTPServer::ServeHelpRedirect(response);
 
   UID *uid = NULL;
   if (!CheckForInvalidUid(request, &uid))
-    return m_server->ServeNotFound(response);
+    return OladHTTPServer::ServeHelpRedirect(response);
 
   string error;
   bool ok = m_rdm_api.GetDeviceInfo(
@@ -263,13 +265,15 @@ int RDMHTTPModule::JsonUIDInfo(const HTTPRequest *request,
  */
 int RDMHTTPModule::JsonUIDIdentifyMode(const HTTPRequest *request,
                                        HTTPResponse *response) {
+  if (request->CheckParameterExists(OladHTTPServer::HELP_PARAMETER))
+    return OladHTTPServer::ServeUsage(response, "?id=[universe]&amp;uid=[uid]");
   unsigned int universe_id;
   if (!CheckForInvalidId(request, &universe_id))
-    return m_server->ServeNotFound(response);
+    return OladHTTPServer::ServeHelpRedirect(response);
 
   UID *uid = NULL;
   if (!CheckForInvalidUid(request, &uid))
-    return m_server->ServeNotFound(response);
+    return OladHTTPServer::ServeHelpRedirect(response);
 
   string error;
   bool ok = m_rdm_api.GetIdentifyMode(
@@ -296,13 +300,15 @@ int RDMHTTPModule::JsonUIDIdentifyMode(const HTTPRequest *request,
  */
 int RDMHTTPModule::JsonUIDPersonalities(const HTTPRequest *request,
                                         HTTPResponse *response) {
+  if (request->CheckParameterExists(OladHTTPServer::HELP_PARAMETER))
+    return OladHTTPServer::ServeUsage(response, "?id=[universe]&amp;uid=[uid]");
   unsigned int universe_id;
   if (!CheckForInvalidId(request, &universe_id))
-    return m_server->ServeNotFound(response);
+    return OladHTTPServer::ServeHelpRedirect(response);
 
   UID *uid = NULL;
   if (!CheckForInvalidUid(request, &uid))
-    return m_server->ServeNotFound(response);
+    return OladHTTPServer::ServeHelpRedirect(response);
 
   string error = GetPersonalities(request, response, universe_id, *uid, false,
                                   true);
@@ -323,13 +329,15 @@ int RDMHTTPModule::JsonUIDPersonalities(const HTTPRequest *request,
  */
 int RDMHTTPModule::JsonSupportedPIDs(const HTTPRequest *request,
                                      HTTPResponse *response) {
+  if (request->CheckParameterExists(OladHTTPServer::HELP_PARAMETER))
+    return OladHTTPServer::ServeUsage(response, "?id=[universe]&amp;uid=[uid]");
   unsigned int universe_id;
   if (!CheckForInvalidId(request, &universe_id))
-    return m_server->ServeNotFound(response);
+    return OladHTTPServer::ServeHelpRedirect(response);
 
   UID *uid = NULL;
   if (!CheckForInvalidUid(request, &uid))
-    return m_server->ServeNotFound(response);
+    return OladHTTPServer::ServeHelpRedirect(response);
 
   string error;
   bool ok = m_rdm_api.GetSupportedParameters(
@@ -358,13 +366,15 @@ int RDMHTTPModule::JsonSupportedPIDs(const HTTPRequest *request,
  */
 int RDMHTTPModule::JsonSupportedSections(const HTTPRequest *request,
                                          HTTPResponse *response) {
+  if (request->CheckParameterExists(OladHTTPServer::HELP_PARAMETER))
+    return OladHTTPServer::ServeUsage(response, "?id=[universe]&amp;uid=[uid]");
   unsigned int universe_id;
   if (!CheckForInvalidId(request, &universe_id))
-    return m_server->ServeNotFound(response);
+    return OladHTTPServer::ServeHelpRedirect(response);
 
   UID *uid = NULL;
   if (!CheckForInvalidUid(request, &uid))
-    return m_server->ServeNotFound(response);
+    return OladHTTPServer::ServeHelpRedirect(response);
 
   string error;
   bool ok = m_rdm_api.GetSupportedParameters(
@@ -390,13 +400,21 @@ int RDMHTTPModule::JsonSupportedSections(const HTTPRequest *request,
  */
 int RDMHTTPModule::JsonSectionInfo(const HTTPRequest *request,
                                    HTTPResponse *response) {
+  if (request->CheckParameterExists(OladHTTPServer::HELP_PARAMETER)) {
+    return OladHTTPServer::ServeUsage(response,
+                                      string("?id=[universe]&amp;uid=[uid]")
+                                      + string("&amp;section=[section]<br />")
+                                      + string("See ")
+                                      + string("/json/rdm/supported_sections ")
+                                      + string("for sections"));
+  }
   unsigned int universe_id;
   if (!CheckForInvalidId(request, &universe_id))
-    return m_server->ServeNotFound(response);
+    return OladHTTPServer::ServeHelpRedirect(response);
 
   UID *uid = NULL;
   if (!CheckForInvalidUid(request, &uid))
-    return m_server->ServeNotFound(response);
+    return OladHTTPServer::ServeHelpRedirect(response);
 
   string section_id = request->GetParameter(SECTION_KEY);
   string error;
@@ -455,7 +473,7 @@ int RDMHTTPModule::JsonSectionInfo(const HTTPRequest *request,
   } else {
     OLA_INFO << "Missing or unknown section id: " << section_id;
     delete uid;
-    return m_server->ServeNotFound(response);
+    return OladHTTPServer::ServeHelpRedirect(response);
   }
 
   delete uid;
@@ -470,13 +488,21 @@ int RDMHTTPModule::JsonSectionInfo(const HTTPRequest *request,
  */
 int RDMHTTPModule::JsonSaveSectionInfo(const HTTPRequest *request,
                                        HTTPResponse *response) {
+  if (request->CheckParameterExists(OladHTTPServer::HELP_PARAMETER)) {
+    return OladHTTPServer::ServeUsage(response,
+                                      string("?id=[universe]&amp;uid=[uid]")
+                                      + string("&amp;section=[section]<br />")
+                                      + string("See ")
+                                      + string("/json/rdm/supported_sections ")
+                                      + string("for sections"));
+  }
   unsigned int universe_id;
   if (!CheckForInvalidId(request, &universe_id))
-    return m_server->ServeNotFound(response);
+    return OladHTTPServer::ServeHelpRedirect(response);
 
   UID *uid = NULL;
   if (!CheckForInvalidUid(request, &uid))
-    return m_server->ServeNotFound(response);
+    return OladHTTPServer::ServeHelpRedirect(response);
 
   string section_id = request->GetParameter(SECTION_KEY);
   string error;
@@ -525,7 +551,7 @@ int RDMHTTPModule::JsonSaveSectionInfo(const HTTPRequest *request,
   } else {
     OLA_INFO << "Missing or unknown section id: " << section_id;
     delete uid;
-    return m_server->ServeNotFound(response);
+    return OladHTTPServer::ServeHelpRedirect(response);
   }
 
   delete uid;
