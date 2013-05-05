@@ -50,7 +50,7 @@ using std::vector;
 typedef struct {
   bool set_mode;
   bool help;       // show the help
-  string pid_location; // alt pid store
+  string pid_location;  // alt pid store
   bool list_pids;  // show the pid list
   int universe;         // universe id
   UID *uid;         // uid
