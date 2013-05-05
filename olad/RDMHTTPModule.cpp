@@ -430,12 +430,10 @@ int RDMHTTPModule::JsonSupportedSections(const HTTPRequest *request,
 int RDMHTTPModule::JsonSectionInfo(const HTTPRequest *request,
                                    HTTPResponse *response) {
   if (request->CheckParameterExists(OladHTTPServer::HELP_PARAMETER)) {
-    return OladHTTPServer::ServeUsage(response,
-                                      string("?id=[universe]&amp;uid=[uid]")
-                                      + string("&amp;section=[section]<br />")
-                                      + string("See ")
-                                      + string("/json/rdm/supported_sections ")
-                                      + string("for sections"));
+    return OladHTTPServer::ServeUsage(response, "?id=[universe]&amp;uid=[uid]"
+                                      "&amp;section=[section]<br />See "
+                                      "/json/rdm/supported_sections for "
+                                      "sections");
   }
   unsigned int universe_id;
   if (!CheckForInvalidId(request, &universe_id))
@@ -518,12 +516,10 @@ int RDMHTTPModule::JsonSectionInfo(const HTTPRequest *request,
 int RDMHTTPModule::JsonSaveSectionInfo(const HTTPRequest *request,
                                        HTTPResponse *response) {
   if (request->CheckParameterExists(OladHTTPServer::HELP_PARAMETER)) {
-    return OladHTTPServer::ServeUsage(response,
-                                      string("?id=[universe]&amp;uid=[uid]")
-                                      + string("&amp;section=[section]<br />")
-                                      + string("See ")
-                                      + string("/json/rdm/supported_sections ")
-                                      + string("for sections"));
+    return OladHTTPServer::ServeUsage(response, "?id=[universe]&amp;uid=[uid]"
+                                      "&amp;section=[section]<br />See "
+                                      "/json/rdm/supported_sections for "
+                                      "sections");
   }
   unsigned int universe_id;
   if (!CheckForInvalidId(request, &universe_id))
