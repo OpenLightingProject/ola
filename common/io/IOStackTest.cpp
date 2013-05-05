@@ -135,7 +135,7 @@ void IOStackTest::testBlockOverflow() {
   uint8_t output[data_size];
   OLA_ASSERT_EQ(data_size, stack.Read(output, data_size));
 
-  const uint8_t expected_data[] = {0xa, 0xb, 0xc, 0xd, 0xe, 5 ,6 ,7, 8, 9,
+  const uint8_t expected_data[] = {0xa, 0xb, 0xc, 0xd, 0xe, 5, 6, 7, 8, 9,
                                    0, 1, 2, 3, 4};
   ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
                      output, data_size);

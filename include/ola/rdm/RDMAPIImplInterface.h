@@ -69,7 +69,6 @@ class ResponseStatus {
 
     // Returns the time (in ms) to wait before re-trying
     unsigned int AckTimer() const { return 100 * m_param; }
-
 };
 
 

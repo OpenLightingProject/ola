@@ -30,7 +30,6 @@
 #include "ola/testing/TestUtils.h"
 #include "plugins/e131/e131/E133PDU.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
-#include "ola/testing/TestUtils.h"
 
 
 namespace ola {
@@ -146,8 +145,8 @@ void E133PDUTest::testSimpleE133PDUToOutputStream() {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 101, // seq #
-    0, 2, // endpoint
+    0, 0, 0, 101,  // seq #
+    0, 2,  // endpoint
     0,
   };
   ASSERT_DATA_EQUALS(__LINE__,
