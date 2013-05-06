@@ -168,6 +168,7 @@ class Flag<string> : public BaseFlag {
     const char *name() const { return m_name; }
     bool has_arg() const { return true; }
     string default_value() const { return m_default; }
+    const char* arg_type() const { return "string"; }
 
     operator const char*() const { return m_value.c_str(); }
     operator string() const { return m_value; }
