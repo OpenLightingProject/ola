@@ -18,13 +18,13 @@
  */
 
 #include <stdio.h>
-#include <getopt.h>
 #include <signal.h>
 #include <sysexits.h>
 
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
+#include <ola/base/Flags.h>
 #include <ola/base/Init.h>
 #include <ola/io/SelectServer.h>
 
@@ -49,107 +49,9 @@ using std::endl;
 using std::string;
 using std::vector;
 
-
-struct Options {
-  public:
-    bool help;
-    uint16_t lifetime;
-    ola::log_level log_level;
-    string scopes;
-    vector<string> extra_args;
-
-    Options()
-        : help(false),
-          log_level(ola::OLA_LOG_WARN) {
-    }
-};
-
-
-/*
- * Parse our command line options
- */
-void ParseOptions(int argc, char *argv[],
-                  Options *options) {
-  static struct option long_options[] = {
-      {"help", no_argument, 0, 'h'},
-      {"log-level", required_argument, 0, 'l'},
-      {"scopes", required_argument, 0, 's'},
-      {"lifetime", required_argument, 0, 't'},
-      {0, 0, 0, 0}
-  };
-
-  int option_index = 0;
-
-  while (1) {
-    int c = getopt_long(argc, argv, "hl:s:t:", long_options, &option_index);
-
-    if (c == -1)
-      break;
-
-    switch (c) {
-      case 'h':
-        options->help = true;
-        break;
-      case 'l':
-        switch (atoi(optarg)) {
-          case 0:
-            // nothing is written at this level
-            // so this turns logging off
-            options->log_level = ola::OLA_LOG_NONE;
-            break;
-          case 1:
-            options->log_level = ola::OLA_LOG_FATAL;
-            break;
-          case 2:
-            options->log_level = ola::OLA_LOG_WARN;
-            break;
-          case 3:
-            options->log_level = ola::OLA_LOG_INFO;
-            break;
-          case 4:
-            options->log_level = ola::OLA_LOG_DEBUG;
-            break;
-          default :
-            break;
-        }
-        break;
-      case 's':
-        options->scopes = optarg;
-        break;
-      case 't':
-        options->lifetime = atoi(optarg);
-        break;
-      case '?':
-        break;
-      default:
-       break;
-    }
-  }
-
-  for (int index = optind; index < argc; index++)
-    options->extra_args.push_back(argv[index]);
-}
-
-
-/*
- * Display the help message
- */
-void DisplayHelpAndExit(char *argv[]) {
-  cout << "Usage: " << argv[0] << " [options] command-and-arguments\n"
-  "\n"
-  "The OLA SLP client.\n"
-  "\n"
-  "  -h, --help                 Display this help message and exit.\n"
-  "  -l, --log-level <level>    Set the logging level 0 .. 4.\n"
-  "  -s, --scopes scope1,scope2 Comma separated list of scopes.\n"
-  "  -t, --lifetime <int>       The lifetime of the service (seconds).\n"
-  " Examples:\n"
-  "   " << argv[0] << " -t 300 register service:myserv.x://myhost.com\n"
-  "   " << argv[0] << " findsrvs service:myserv.x\n"
-  "   " << argv[0] << " -s myorg findsrvs service:myserv.x\n"
-  << endl;
-  exit(0);
-}
+DEFINE_s_string(scopes, s, ola::slp::DEFAULT_SLP_SCOPE,
+                "Comma separated list of scopes.");
+DEFINE_uint16(lifetime, 300, "The lifetime of the service (seconds).");
 
 // The base slp client command class.
 class Command {
@@ -276,20 +178,21 @@ class DeRegisterCommand: public Command {
 /**
  * Return a command object or none if the args were invalid.
  */
-Command *CreateCommand(const Options &options) {
-  const vector<string> &args = options.extra_args;
+Command *CreateCommand(const vector<string> &args) {
   if (args.empty())
     return NULL;
 
   if (args[0] == "findsrvs") {
-    return args.size() == 2 ? new FindCommand(options.scopes, args[1]) : NULL;
+    return args.size() == 2 ?
+           new FindCommand(FLAGS_scopes.str(), args[1]) :
+           NULL;
   } else if (args[0] == "deregister") {
     return args.size() == 2 ?
-           new DeRegisterCommand(options.scopes, args[1])
+           new DeRegisterCommand(FLAGS_scopes.str(), args[1])
            : NULL;
   } else if (args[0] == "register") {
     return args.size() == 2 ?
-           new RegisterCommand(options.scopes, args[1], options.lifetime)
+           new RegisterCommand(FLAGS_scopes.str(), args[1], FLAGS_lifetime)
            : NULL;
   }
   return NULL;
@@ -300,19 +203,30 @@ Command *CreateCommand(const Options &options) {
  * Startup the server.
  */
 int main(int argc, char *argv[]) {
-  Options options;
-  options.scopes = ola::slp::DEFAULT_SLP_SCOPE;
-  options.lifetime = 300;
-  ParseOptions(argc, argv, &options);
+  std::ostringstream help_msg;
+  help_msg <<
+      "The OLA SLP client.\n"
+      "\n"
+      "Examples:\n"
+      "   " << argv[0] << " register service:myserv.x://myhost.com\n"
+      "   " << argv[0] << " findsrvs service:myserv.x\n"
+      "   " << argv[0] << " findsrvs service:myserv.x";
 
-  if (options.help)
-    DisplayHelpAndExit(argv);
+  ola::SetHelpString(" [options] command-and-arguments", help_msg.str());
+  ola::ParseFlags(&argc, argv);
 
-  auto_ptr<Command> command(CreateCommand(options));
-  if (!command.get())
-    DisplayHelpAndExit(argv);
+  vector<string> args;
+  for (int i = 1; i < argc; i++) {
+    args.push_back(argv[i]);
+  }
 
-  ola::InitLogging(options.log_level, ola::OLA_LOG_STDERR);
+  auto_ptr<Command> command(CreateCommand(args));
+  if (!command.get()) {
+    ola::DisplayUsage();
+    exit(EX_OK);
+  }
+
+  ola::InitLoggingFromFlags();
   ola::AppInit(argc, argv);
 
   ola::slp::SLPClientWrapper client_wrapper;
