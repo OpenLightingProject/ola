@@ -87,6 +87,10 @@
 #include "plugins/osc/OSCPlugin.h"
 #endif
 
+#ifdef USE_KARATE
+#include "plugins/karate/KaratePlugin.h"
+#endif
+
 namespace ola {
 
 using std::vector;
