@@ -24,7 +24,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "kl.h"
+#include "Kl.h"
 
 
 #ifdef WIN32
