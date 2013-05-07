@@ -197,6 +197,7 @@ PLUGIN_SUPPORT(opendmx, USE_OPENDMX)
 PLUGIN_SUPPORT(pathport, USE_PATHPORT)
 PLUGIN_SUPPORT(sandnet, USE_SANDNET)
 PLUGIN_SUPPORT(shownet, USE_SHOWNET)
+PLUGIN_SUPPORT(karate, USE_KARATE)
 
 # SPI support is only enabled if the header is found
 AC_CHECK_HEADER([linux/spi/spidev.h], [enable_spi="yes"], [enable_spi="no"])
