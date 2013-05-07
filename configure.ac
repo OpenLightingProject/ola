@@ -658,6 +658,7 @@ AC_OUTPUT( Makefile \
     plugins/spi/Makefile \
     plugins/stageprofi/Makefile \
     plugins/usbdmx/Makefile \
+    plugins/karate/Makefile \
     plugins/ftdidmx/Makefile \
     plugins/usbpro/Makefile \
     plugins/usbpro/messages/Makefile \
