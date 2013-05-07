@@ -141,6 +141,11 @@ void DynamicPluginLoader::PopulatePlugins() {
       new ola::plugin::opendmx::OpenDmxPlugin(m_plugin_adaptor));
 #endif
 
+#ifdef USE_KARATE
+  m_plugins.push_back(
+      new ola::plugin::karate::KaratePlugin(m_plugin_adaptor));
+#endif
+
 #ifdef HAVE_LIBLO
   m_plugins.push_back(
       new ola::plugin::osc::OSCPlugin(m_plugin_adaptor));
