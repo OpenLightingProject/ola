@@ -60,6 +60,7 @@ enum PluginIds {
   OLA_PLUGIN_FTDIDMX = 13;
   OLA_PLUGIN_OSC = 14;
   OLA_PLUGIN_SPI = 15;
+  OLA_PLUGIN_KARATE = 16;
 }
 
 /**
