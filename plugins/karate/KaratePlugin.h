@@ -18,8 +18,8 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#ifndef PLUGINS_OPENDMX_OPENDMXPLUGIN_H_
-#define PLUGINS_OPENDMX_OPENDMXPLUGIN_H_
+#ifndef PLUGINS_KARATE_KARATEPLUGIN_H_
+#define PLUGINS_KARATE_KARATEPLUGIN_H_
 
 #include <string>
 #include <vector>
@@ -54,12 +54,12 @@ class KaratePlugin: public Plugin {
     DeviceList m_devices;
     static const char PLUGIN_NAME[];
     static const char PLUGIN_PREFIX[];
-    static const char OPENDMX_DEVICE_PATH[];
-    static const char OPENDMX_DEVICE_NAME[];
+    static const char KARATE_DEVICE_PATH[];
+    static const char KARATE_DEVICE_NAME[];
     static const char DEVICE_KEY[];
 };
 }  // karate
 }  // plugins
 }  // ola
 
-#endif  // PLUGINS_OPENDMX_OPENDMXPLUGIN_H_
+#endif  // PLUGINS_KARATE_KARATEPLUGIN_H_

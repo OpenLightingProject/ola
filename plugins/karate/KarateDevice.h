@@ -19,8 +19,8 @@
  * Copyright (C) 2005  Simon Newton
  */
 
-#ifndef PLUGINS_OPENDMX_OPENDMXDEVICE_H_
-#define PLUGINS_OPENDMX_OPENDMXDEVICE_H_
+#ifndef PLUGINS_KARATE_KARATEDEVICE_H_
+#define PLUGINS_KARATE_KARATEDEVICE_H_
 
 #include <string>
 #include "olad/Device.h"
@@ -51,4 +51,4 @@ class KarateDevice: public ola::Device {
 }  // karate
 }  // plugins
 }  // ola
-#endif  // PLUGINS_OPENDMX_OPENDMXDEVICE_H_
+#endif  // PLUGINS_KARATE_KARATEDEVICE_H_

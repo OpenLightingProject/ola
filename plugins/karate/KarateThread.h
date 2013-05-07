@@ -18,8 +18,8 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef PLUGINS_OPENDMX_OPENDMXTHREAD_H_
-#define PLUGINS_OPENDMX_OPENDMXTHREAD_H_
+#ifndef PLUGINS_KARATE_KARATETHREAD_H_
+#define PLUGINS_KARATE_KARATETHREAD_H_
 
 #include <string>
 #include "ola/DmxBuffer.h"
@@ -52,4 +52,4 @@ class KarateThread: public ola::thread::Thread {
 }  // karate
 }  // plugin
 }  // ola
-#endif  // PLUGINS_OPENDMX_OPENDMXTHREAD_H_
+#endif  // PLUGINS_KARATE_KARATETHREAD_H_

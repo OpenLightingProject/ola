@@ -18,8 +18,8 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#ifndef PLUGINS_OPENDMX_OPENDMXPORT_H_
-#define PLUGINS_OPENDMX_OPENDMXPORT_H_
+#ifndef PLUGINS_KARATE_KARATEPORT_H_
+#define PLUGINS_KARATE_KARATEPORT_H_
 
 #include <string>
 #include "ola/DmxBuffer.h"
@@ -62,4 +62,4 @@ class KarateOutputPort: public BasicOutputPort {
 }  // karate
 }  // plugins
 }  // ola
-#endif  // PLUGINS_OPENDMX_OPENDMXPORT_H_
+#endif  // PLUGINS_KARATE_KARATEPORT_H_

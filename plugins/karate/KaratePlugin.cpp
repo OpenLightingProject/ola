@@ -39,8 +39,8 @@ namespace karate {
 using ola::PluginAdaptor;
 using std::vector;
 
-const char KaratePlugin::OPENDMX_DEVICE_PATH[] = "/dev/kldmx0";
-const char KaratePlugin::OPENDMX_DEVICE_NAME[] = "KL USB Device using kl";
+const char KaratePlugin::KARATE_DEVICE_PATH[] = "/dev/kldmx0";
+const char KaratePlugin::KARATE_DEVICE_NAME[] = "KL USB Device using kl";
 const char KaratePlugin::PLUGIN_NAME[] = "KL DMX";
 const char KaratePlugin::PLUGIN_PREFIX[] = "karate";
 const char KaratePlugin::DEVICE_KEY[] = "device";
@@ -64,7 +64,7 @@ bool KaratePlugin::StartHook() {
       close(fd);
       KarateDevice *device = new KarateDevice(
           this,
-          OPENDMX_DEVICE_NAME,
+          KARATE_DEVICE_NAME,
           *iter,
           device_id++);
       if (device->Start()) {
@@ -104,11 +104,11 @@ bool KaratePlugin::StopHook() {
  */
 string KaratePlugin::Description() const {
     return
-"KL Open DMX Plugin - Version 0.3\n"
+"KL DMX Plugin - Version 0.3\n"
 "----------------------------\n"
 "\n"
 "The plugin creates a single device with one output port using the Enttec\n"
-"Open DMX USB widget.\n\n"
+"DMX USB widget.\n\n"
 "--- Config file : ola-karate.conf ---\n"
 "\n"
 "device = /dev/dmx0\n"
@@ -124,7 +124,7 @@ bool KaratePlugin::SetDefaultPreferences() {
     return false;
 
   if (m_preferences->SetDefaultValue(DEVICE_KEY, StringValidator(),
-                                     OPENDMX_DEVICE_PATH))
+                                     KARATE_DEVICE_PATH))
     m_preferences->Save();
 
   // check if this save correctly
