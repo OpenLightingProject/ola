@@ -68,7 +68,7 @@ void *KarateThread::Run() {
   struct timespec ts;
 
   // should close other fd here
-  KarateLight k((static_cast<char*>)m_path.c_str());
+  KarateLight k((char*)m_path.c_str());
   k.Init();
   dmx_offset = k.GetDMXOffset();
   // OLA_INFO << "DMX_OFFSET " << m_path << ": " << dmx_offset;
