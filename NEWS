@@ -1,3 +1,6 @@
+X/Y/2013 ola-0.8.29
+ * Add KiNet output support.
+
 20/4/2013 ola-0.8.28
  * Add support for the LPD8806 pixels using SPI.
  * Fix the build on OS X Lion 10.7 - #231
