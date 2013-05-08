@@ -43,6 +43,10 @@
 #include "plugins/espnet/EspNetPlugin.h"
 #endif
 
+#ifdef USE_KINET
+#include "plugins/kinet/KiNetPlugin.h"
+#endif
+
 #ifdef USE_OPENDMX
 #include "plugins/opendmx/OpenDmxPlugin.h"
 #endif
@@ -130,6 +134,10 @@ void DynamicPluginLoader::PopulatePlugins() {
 
 #ifdef USE_ESPNET
   m_plugins.push_back(new ola::plugin::espnet::EspNetPlugin(m_plugin_adaptor));
+#endif
+
+#ifdef USE_KINET
+  m_plugins.push_back(new ola::plugin::kinet::KiNetPlugin(m_plugin_adaptor));
 #endif
 
 #ifdef USE_OPENDMX

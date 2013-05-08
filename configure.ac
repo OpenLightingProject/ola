@@ -193,6 +193,7 @@ PLUGIN_SUPPORT(artnet, USE_ARTNET)
 PLUGIN_SUPPORT(dummy, USE_DUMMY)
 PLUGIN_SUPPORT(e131, USE_E131)
 PLUGIN_SUPPORT(espnet, USE_ESPNET)
+PLUGIN_SUPPORT(kinet, USE_KINET)
 PLUGIN_SUPPORT(opendmx, USE_OPENDMX)
 PLUGIN_SUPPORT(pathport, USE_PATHPORT)
 PLUGIN_SUPPORT(sandnet, USE_SANDNET)
@@ -649,6 +650,7 @@ AC_OUTPUT( Makefile \
     plugins/e131/messages/Makefile \
     plugins/e131/messages/libolae131conf.pc \
     plugins/espnet/Makefile \
+    plugins/kinet/Makefile \
     plugins/opendmx/Makefile \
     plugins/osc/Makefile \
     plugins/pathport/Makefile \
