@@ -49,7 +49,7 @@ class KarateThread: public ola::thread::Thread {
 
     static const int INVALID_FD = -1;
 };
-}  // karate
-}  // plugin
-}  // ola
+}  // namespace karate
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_KARATE_KARATETHREAD_H_

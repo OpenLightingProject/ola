@@ -48,7 +48,7 @@ class KarateDevice: public ola::Device {
     string m_path;
     string m_device_id;
 };
-}  // karate
-}  // plugins
-}  // ola
+}  // namespace karate
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_KARATE_KARATEDEVICE_H_

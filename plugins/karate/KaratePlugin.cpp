@@ -134,6 +134,6 @@ bool KaratePlugin::SetDefaultPreferences() {
 
   return true;
 }
-}  // karate
-}  // plugins
-}  // ola
+}  // namespace karate
+}  // namespace plugin
+}  // namespace ola

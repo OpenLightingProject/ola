@@ -60,6 +60,6 @@ bool KarateDevice::StartHook() {
   AddPort(new KarateOutputPort(this, 0, m_path));
   return true;
 }
-}  // karate
-}  // plugins
-}  // ola
+}  // namespace karate
+}  // namespace plugin
+}  // namespace ola

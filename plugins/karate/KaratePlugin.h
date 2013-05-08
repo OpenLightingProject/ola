@@ -58,8 +58,8 @@ class KaratePlugin: public Plugin {
     static const char KARATE_DEVICE_NAME[];
     static const char DEVICE_KEY[];
 };
-}  // karate
-}  // plugins
-}  // ola
+}  // namespace karate
+}  // namespace plugin
+}  // namespace ola
 
 #endif  // PLUGINS_KARATE_KARATEPLUGIN_H_

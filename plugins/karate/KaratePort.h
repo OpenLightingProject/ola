@@ -59,7 +59,7 @@ class KarateOutputPort: public BasicOutputPort {
     KarateThread m_thread;
     string m_path;
 };
-}  // karate
-}  // plugins
-}  // ola
+}  // namespace karate
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_KARATE_KARATEPORT_H_

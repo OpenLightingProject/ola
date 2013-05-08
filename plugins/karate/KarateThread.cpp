@@ -27,10 +27,10 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <sys/file.h>
 #include <time.h>
 #include <unistd.h>
 #include <string>
-#include <sys/file.h>
 
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
@@ -66,13 +66,12 @@ void *KarateThread::Run() {
 
   struct timeval tv;
   struct timespec ts;
-  
 
   // should close other fd here
-  KarateLight k((char*)m_path.c_str());
+  KarateLight k((static_cast<char*>)m_path.c_str());
   k.Init();
   dmx_offset = k.GetDMXOffset();
-  //OLA_INFO << "DMX_OFFSET " << m_path << ": " << dmx_offset;
+  // OLA_INFO << "DMX_OFFSET " << m_path << ": " << dmx_offset;
 
   while (true) {
     {
@@ -81,7 +80,7 @@ void *KarateThread::Run() {
         break;
     }
 
-    if (! k.IsActive()) {
+    if (!k.IsActive()) {
       // try to reopen the device...
       if (gettimeofday(&tv, NULL) < 0) {
         OLA_WARN << "gettimeofday error";
@@ -99,9 +98,9 @@ void *KarateThread::Run() {
 
       k.Init();
       dmx_offset = k.GetDMXOffset();
-      //OLA_INFO << "DMX_OFFSET " << m_path << ": " << dmx_offset;
+      // OLA_INFO << "DMX_OFFSET " << m_path << ": " << dmx_offset;
 
-      if (! k.IsActive())
+      if (!k.IsActive())
         OLA_WARN << "Open " << m_path << ": " << k.GetLastError();
 
     } else {
@@ -115,15 +114,14 @@ void *KarateThread::Run() {
       if (length + dmx_offset > DMX_UNIVERSE_SIZE) {
         length = DMX_UNIVERSE_SIZE - dmx_offset;
       }
-      k.SetColors(&buffer[dmx_offset],length);
+      k.SetColors(&buffer[dmx_offset], length);
 
       if (k.UpdateColors() != KL_OK) {
           OLA_WARN << "Error writing to device: " << k.GetLastError();
       }  else {
-	  usleep(20000); // 50Hz
+          usleep(20000);  // 50Hz
       }
-
-    } // port is okay
+    }  // port is okay
   }
   return NULL;
 }
@@ -152,6 +150,6 @@ bool KarateThread::WriteDmx(const DmxBuffer &buffer) {
   m_buffer.Set(buffer);
   return true;
 }
-}  // karate
-}  // plugin
-}  // ola
+}  // namespace karate
+}  // namespace plugin
+}  // namespace ola
