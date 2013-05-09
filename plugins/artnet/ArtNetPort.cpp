@@ -5,7 +5,7 @@
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * but WITHOUT ANY WARRANTY; wix1thout even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Library General Public License for more details.
  *
@@ -38,10 +38,10 @@ using ola::NewCallback;
 void ArtNetPortHelper::PostSetUniverse(Universe *new_universe,
                                        unsigned int port_id) {
   artnet_port_type direction = m_is_output ?
-    ARTNET_INPUT_PORT : ARTNET_OUTPUT_PORT;
+      ARTNET_INPUT_PORT : ARTNET_OUTPUT_PORT;
 
   uint8_t universe_id = new_universe ? new_universe->UniverseId() % 0x10 :
-    ARTNET_DISABLE_PORT;
+      ARTNET_DISABLE_PORT;
 
   m_node->SetPortUniverse(direction, port_id, universe_id);
 }
@@ -56,13 +56,13 @@ string ArtNetPortHelper::Description(const Universe *universe,
     return "";
 
   artnet_port_type direction = m_is_output ?
-    ARTNET_INPUT_PORT : ARTNET_OUTPUT_PORT;
+      ARTNET_INPUT_PORT : ARTNET_OUTPUT_PORT;
 
   std::stringstream str;
   str << "ArtNet Universe " <<
-    static_cast<int>(m_node->NetAddress()) << ":" <<
-    static_cast<int>(m_node->SubnetAddress()) << ":" <<
-    static_cast<int>(m_node->GetPortUniverse(direction, port_id));
+      static_cast<int>(m_node->NetAddress()) << ":" <<
+      static_cast<int>(m_node->SubnetAddress()) << ":" <<
+      static_cast<int>(m_node->GetPortUniverse(direction, port_id));
   return str.str();
 }
 
@@ -80,19 +80,19 @@ void ArtNetInputPort::PostSetUniverse(Universe *old_universe,
         PortId(),
         &m_buffer,
         NewCallback(
-          static_cast<ola::BasicInputPort*>(this),
-          &ArtNetInputPort::DmxChanged));
+            static_cast<ola::BasicInputPort*>(this),
+            &ArtNetInputPort::DmxChanged));
     m_helper.GetNode()->SetOutputPortRDMHandlers(
         PortId(),
         NewCallback(
-          this,
-          &ArtNetInputPort::RespondWithTod),
+            this,
+            &ArtNetInputPort::RespondWithTod),
         NewCallback(
-          this,
-          &ArtNetInputPort::TriggerDiscovery),
+            this,
+            &ArtNetInputPort::TriggerDiscovery),
         ola::NewCallback(
-          static_cast<ola::BasicInputPort*>(this),
-          &ArtNetInputPort::HandleRDMRequest));
+            static_cast<ola::BasicInputPort*>(this),
+            &ArtNetInputPort::HandleRDMRequest));
 
   } else if (!new_universe) {
     m_helper.GetNode()->SetDMXHandler(PortId(), NULL, NULL);
@@ -203,8 +203,8 @@ void ArtNetOutputPort::PostSetUniverse(Universe *old_universe,
     m_helper.GetNode()->SetUnsolicatedUIDSetHandler(
         PortId(),
         ola::NewCallback(
-          static_cast<ola::BasicOutputPort*>(this),
-          &ArtNetOutputPort::UpdateUIDs));
+            static_cast<ola::BasicOutputPort*>(this),
+            &ArtNetOutputPort::UpdateUIDs));
   } else if (!new_universe) {
     m_helper.GetNode()->SetUnsolicatedUIDSetHandler(PortId(), NULL);
   }
