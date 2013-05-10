@@ -36,31 +36,31 @@ using std::string;
 class ArtNetDevice;
 
 class ArtNetPlugin : public Plugin {
-  public:
-    explicit ArtNetPlugin(PluginAdaptor *plugin_adaptor):
+ public:
+  explicit ArtNetPlugin(PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor),
       m_device(NULL) {}
 
-    ~ArtNetPlugin() {}
+  ~ArtNetPlugin() {}
 
-    string Name() const { return PLUGIN_NAME; }
-    ola_plugin_id Id() const { return OLA_PLUGIN_ARTNET; }
-    string Description() const;
-    string PluginPrefix() const { return PLUGIN_PREFIX; }
+  string Name() const { return PLUGIN_NAME; }
+  ola_plugin_id Id() const { return OLA_PLUGIN_ARTNET; }
+  string Description() const;
+  string PluginPrefix() const { return PLUGIN_PREFIX; }
 
-  private:
-    bool StartHook();
-    bool StopHook();
-    bool SetDefaultPreferences();
+ private:
+  bool StartHook();
+  bool StopHook();
+  bool SetDefaultPreferences();
 
-    ArtNetDevice *m_device;  // only have one device
+  ArtNetDevice *m_device;  // only have one device
 
-    static const char ARTNET_NET[];
-    static const char ARTNET_SUBNET[];
-    static const char ARTNET_LONG_NAME[];
-    static const char ARTNET_SHORT_NAME[];
-    static const char PLUGIN_NAME[];
-    static const char PLUGIN_PREFIX[];
+  static const char ARTNET_NET[];
+  static const char ARTNET_SUBNET[];
+  static const char ARTNET_LONG_NAME[];
+  static const char ARTNET_SHORT_NAME[];
+  static const char PLUGIN_NAME[];
+  static const char PLUGIN_PREFIX[];
 };
 }  // namespace artnet
 }  // namespace plugin
