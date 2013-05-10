@@ -36,6 +36,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <utility>
 
 using ola::network::IPV4Address;
 using ola::rdm::UID;

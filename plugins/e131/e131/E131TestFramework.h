@@ -294,6 +294,7 @@ class NodeVarySequenceNumber: public NodeAction {
       }
       m_counter++;
     }
+
   private:
     unsigned int m_counter, m_chance;
     uint8_t m_good, m_bad;

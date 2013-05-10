@@ -114,7 +114,6 @@ class WidgetDetectorThreadTest: public CppUnit::TestFixture,
     void testClose();
 
   private:
-
     typedef enum {
       NONE,
       ARDUINO,
