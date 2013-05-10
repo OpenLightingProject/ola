@@ -63,8 +63,9 @@ class MockPicker: public InterfacePicker {
         : InterfacePicker(),
           m_interfaces(interfaces) {}
 
-    std::vector<Interface> GetInterfaces(bool) const {
+    std::vector<Interface> GetInterfaces(bool loopback) const {
       return m_interfaces;
+      (void) loopback;
     }
   private:
     const vector<Interface> &m_interfaces;

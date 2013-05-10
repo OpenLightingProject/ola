@@ -307,6 +307,6 @@ bool FtdiWidget::SetupOutput() {
 
   return true;
 }
-}
-}
-}
+}  // namespace ftdidmx
+}  // namespace plugin
+}  // namespace ola

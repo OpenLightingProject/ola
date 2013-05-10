@@ -44,7 +44,7 @@ vector<Interface> WindowsInterfacePicker::GetInterfaces() const {
   PIP_ADAPTER_INFO pAdapterInfo;
   IP_ADDR_STRING *ipAddress;
   ULONG ulOutBufLen = sizeof(IP_ADAPTER_INFO);
-  unsigned long net, mask;
+  uint32_t net, mask;
 
   while (1) {
     pAdapterInfo = static_cast<IP_ADAPTER_INFO*>(malloc(ulOutBufLen));

@@ -242,7 +242,8 @@ void BaseInflatorTest::testDecodeVector() {
   flags = PDU::VFLAG_MASK;
   TestInflator inflator2(0, PDU::TWO_BYTES);
   for (unsigned int i = 0; i < 2; i++) {
-    OLA_ASSERT_FALSE(inflator2.DecodeVector(flags, data, i, vector, bytes_used));
+    OLA_ASSERT_FALSE(
+        inflator2.DecodeVector(flags, data, i, vector, bytes_used));
     OLA_ASSERT_EQ((unsigned int) 0, vector);
     OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
   }
@@ -266,7 +267,8 @@ void BaseInflatorTest::testDecodeVector() {
   // resetting doesn't allow us to reuse the vector
   inflator2.ResetPDUFields();
   for (unsigned int i = 0; i < sizeof(data); i++) {
-    OLA_ASSERT_FALSE(inflator2.DecodeVector(flags, data, i, vector, bytes_used));
+    OLA_ASSERT_FALSE(
+        inflator2.DecodeVector(flags, data, i, vector, bytes_used));
     OLA_ASSERT_EQ((unsigned int) 0, vector);
     OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
   }
@@ -275,7 +277,8 @@ void BaseInflatorTest::testDecodeVector() {
   flags = PDU::VFLAG_MASK;
   TestInflator inflator4(0, PDU::FOUR_BYTES);
   for (unsigned int i = 0; i < 4; i++) {
-    OLA_ASSERT_FALSE(inflator4.DecodeVector(flags, data, i, vector, bytes_used));
+    OLA_ASSERT_FALSE(
+        inflator4.DecodeVector(flags, data, i, vector, bytes_used));
     OLA_ASSERT_EQ((unsigned int) 0, vector);
     OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
   }

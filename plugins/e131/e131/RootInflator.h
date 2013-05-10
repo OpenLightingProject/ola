@@ -59,7 +59,7 @@ class RootInflator: public BaseInflator {
       AddInflator(&m_null_inflator);
     }
 
-    uint32_t Id() const { return 0; }  // namespace no effect for the root inflator
+    uint32_t Id() const { return 0; }  // no effect for the root inflator
 
   protected:
     // Decode a header block and adds any PduHeaders to the HeaderSet object

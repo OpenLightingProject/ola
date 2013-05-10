@@ -32,8 +32,6 @@
 #include "ola/testing/TestUtils.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
 #include "plugins/e131/e131/RDMPDU.h"
-#include "ola/testing/TestUtils.h"
-
 
 namespace ola {
 namespace plugin {
@@ -314,6 +312,6 @@ void RDMPDUTest::testRDMPDUWithDataToOutputStream() {
   output.Pop(output.Size());
   delete[] pdu_data;
 }
-}  // namespace ola
 }  // namespace e131
 }  // namespace plugin
+}  // namespace ola
