@@ -60,7 +60,7 @@ def Header():
 
 def Footer():
   print textwrap.dedent("""\
-  }  // ola
+  }  // namespace ola
   #endif  // INCLUDE_OLA_CALLBACK_H_""")
 
 def GenerateBase(number_of_args):
