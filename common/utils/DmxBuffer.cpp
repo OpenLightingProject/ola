@@ -402,17 +402,8 @@ string DmxBuffer::ToString() const {
  * Allocate memory
  */
 bool DmxBuffer::Init() {
-  try {
-    m_data = new uint8_t[DMX_UNIVERSE_SIZE];
-  } catch(std::bad_alloc &ex) {
-    return false;
-  }
-  try {
-    m_ref_count = new unsigned int;
-  } catch(std::bad_alloc &ex) {
-    delete[] m_data;
-    return false;
-  }
+  m_data = new uint8_t[DMX_UNIVERSE_SIZE];
+  m_ref_count = new unsigned int;
   m_length = 0;
   *m_ref_count = 1;
   return true;

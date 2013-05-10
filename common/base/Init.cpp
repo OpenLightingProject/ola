@@ -54,7 +54,7 @@ using std::endl;
 /*
  * Print a stack trace on seg fault.
  */
-static void _SIGSEGV_Handler(int) {
+static void _SIGSEGV_Handler(int signal) {
   cout << "Recieved SIGSEGV or SIGBUS" << endl;
   #ifdef HAVE_EXECINFO_H
   enum {STACK_SIZE = 64};
@@ -64,6 +64,7 @@ static void _SIGSEGV_Handler(int) {
   backtrace_symbols_fd(array, size, STDERR_FILENO);
   #endif
   exit(EX_SOFTWARE);
+  (void) signal;
 }
 
 
@@ -94,11 +95,13 @@ bool ServerInit(int argc, char *argv[], ExportMap *export_map) {
  * @param argc the number of arguments on the cmd line
  * @param argv the command line arguments
  */
-bool AppInit(int, char *[]) {
+bool AppInit(int argc, char *argv[]) {
   ola::math::InitRandom();
   if (!InstallSEGVHandler())
     return false;
   return true;
+  (void) argc;
+  (void) argv;
 }
 
 
@@ -107,7 +110,7 @@ bool AppInit(int, char *[]) {
  * @param signal the signal number to catch.
  * @param fp a function pointer to call.
  */
-bool InstallSignal(int signal, void(*fp)(int)) {
+bool InstallSignal(int signal, void(*fp)(int signo)) {
   struct sigaction action;
   action.sa_handler = fp;
   sigemptyset(&action.sa_mask);
