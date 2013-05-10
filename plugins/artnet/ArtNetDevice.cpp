@@ -76,12 +76,12 @@ const char ArtNetDevice::K_SUBNET_KEY[] = "subnet";
  */
 ArtNetDevice::ArtNetDevice(AbstractPlugin *owner,
                            ola::Preferences *preferences,
-                           PluginAdaptor *plugin_adaptor):
-    Device(owner, K_DEVICE_NAME),
-    m_preferences(preferences),
-    m_node(NULL),
-    m_plugin_adaptor(plugin_adaptor),
-    m_timeout_id(ola::thread::INVALID_TIMEOUT) {
+                           PluginAdaptor *plugin_adaptor)
+    : Device(owner, K_DEVICE_NAME),
+      m_preferences(preferences),
+      m_node(NULL),
+      m_plugin_adaptor(plugin_adaptor),
+      m_timeout_id(ola::thread::INVALID_TIMEOUT) {
 }
 
 
