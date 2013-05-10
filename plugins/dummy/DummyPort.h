@@ -76,7 +76,7 @@ class DummyPort: public BasicOutputPort {
     // Do not change.
     static const unsigned int kStartAddress = 0xffffff00;
 };
-}  // dummy
-}  // plugin
-}  // ola
+}  // namespace dummy
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_DUMMY_DUMMYPORT_H_

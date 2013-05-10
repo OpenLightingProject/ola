@@ -184,5 +184,5 @@ class OladHTTPServer: public ola::http::OlaHTTPServer {
     static const char K_PRIORITY_VALUE_SUFFIX[];
     static const char K_PRIORITY_MODE_SUFFIX[];
 };
-}  // ola
+}  // namespace ola
 #endif  // OLAD_OLADHTTPSERVER_H_

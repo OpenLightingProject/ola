@@ -32,6 +32,6 @@ namespace e133 {
 
 bool ParseE133URL(const string &url, ola::rdm::UID *uid,
                   ola::network::IPV4Address *ip);
-}  // e133
-}  // ola
+}  // namespace e133
+}  // namespace ola
 #endif  // INCLUDE_OLA_E133_E133URLPARSER_H_

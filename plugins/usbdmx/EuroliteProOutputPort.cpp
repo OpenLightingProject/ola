@@ -297,6 +297,6 @@ bool EuroliteProOutputPort::LocateInterface() {
   libusb_free_config_descriptor(device_config);
   return false;
 }
-}  // usbdmx
-}  // plugin
-}  // ola
+}  // namespace usbdmx
+}  // namespace plugin
+}  // namespace ola

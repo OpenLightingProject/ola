@@ -58,7 +58,7 @@ class ShowNetPlugin: public Plugin {
     static const char PLUGIN_PREFIX[];
     static const char SHOWNET_NAME_KEY[];
 };
-}  // shownet
-}  // plugin
-}  // ola
+}  // namespace shownet
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_SHOWNET_SHOWNETPLUGIN_H_

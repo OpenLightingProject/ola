@@ -198,6 +198,6 @@ void E131InflatorTest::testInflatePDU() {
   OLA_ASSERT(header == header_set.GetE131Header());
   delete[] data;
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

@@ -77,5 +77,5 @@ class DmxBuffer {
 };
 
 std::ostream& operator<<(std::ostream &out, const DmxBuffer &data);
-}  // ola
+}  // namespace ola
 #endif  // INCLUDE_OLA_DMXBUFFER_H_

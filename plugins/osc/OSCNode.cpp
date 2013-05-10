@@ -338,6 +338,6 @@ void OSCNode::DescriptorReady() {
   // Call into liblo with a timeout of 0 so we don't block.
   lo_server_recv_noblock(m_osc_server, 0);
 }
-}  // osc
-}  // plugin
-}  // ola
+}  // namespace osc
+}  // namespace plugin
+}  // namespace ola

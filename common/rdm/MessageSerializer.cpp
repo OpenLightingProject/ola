@@ -184,5 +184,5 @@ void MessageSerializer::IntVisit(
   memcpy(m_data + m_offset, ptr, sizeof(int_type));
   m_offset += sizeof(int_type);
 }
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola

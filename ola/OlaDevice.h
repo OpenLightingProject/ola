@@ -224,5 +224,5 @@ class OlaUniverse {
     unsigned int m_output_port_count;
     unsigned int m_rdm_device_count;
 };
-}  // ola
+}  // namespace ola
 #endif  // OLA_OLADEVICE_H_

@@ -484,6 +484,6 @@ void UsbProWidgetDetector::HandleSniffer(DispatchingUsbProWidget *widget) {
   if (m_failure_callback.get())
     m_failure_callback->Run(descriptor);
 }
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola

@@ -122,6 +122,6 @@ void _AssertSetEq(const CPPUNIT_NS::SourceLine &source_line,
 
 #define OLA_FAIL(reason)  \
   CPPUNIT_FAIL(reason)
-}  // testing
-}  // ola
+}  // namespace testing
+}  // namespace ola
 #endif  // INCLUDE_OLA_TESTING_TESTUTILS_H_

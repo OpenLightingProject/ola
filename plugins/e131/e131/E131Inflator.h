@@ -83,7 +83,7 @@ class E131InflatorRev2: public BaseInflator {
     E131Header m_last_header;
     bool m_last_header_valid;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_E131INFLATOR_H_

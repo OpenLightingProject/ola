@@ -249,4 +249,4 @@ bool PortManager::CheckForPortMatchingUniverse(
   }
   return false;
 }
-}  // ola
+}  // namespace ola

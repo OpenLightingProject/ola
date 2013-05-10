@@ -150,6 +150,6 @@ void FtdiDmxThread::CheckTimeGranularity() {
   OLA_INFO << "Granularity for ftdi thread is " <<
     (m_granularity == GOOD ? "GOOD" : "BAD");
 }
-}  // ftdidmx
-}  // plugin
-}  // ola
+}  // namespace ftdidmx
+}  // namespace plugin
+}  // namespace ola

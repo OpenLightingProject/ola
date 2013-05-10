@@ -20,8 +20,9 @@
 
 
 #include <string.h>
-#include <ola/Logging.h>
-#include <ola/network/NetworkUtils.h>
+#include <string>
+#include "ola/Logging.h"
+#include "ola/network/NetworkUtils.h"
 #include "plugins/e131/e131/E133PDU.h"
 #include "plugins/e131/e131/RDMPDU.h"
 
@@ -123,6 +124,6 @@ void E133PDU::PrependPDU(ola::io::IOStack *stack, uint32_t vector,
   stack->Write(reinterpret_cast<uint8_t*>(&vector), sizeof(vector));
   PrependFlagsAndLength(stack);
 }
-}  // ola
-}  // e131
-}  // plugin
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

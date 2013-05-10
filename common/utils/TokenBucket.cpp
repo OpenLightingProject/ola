@@ -51,4 +51,4 @@ unsigned int TokenBucket::Count(const TimeStamp &now) {
     m_last += ola::TimeInterval(tokens * USEC_IN_SECONDS / m_rate);
   return m_count;
 }
-}  // ola
+}  // namespace ola

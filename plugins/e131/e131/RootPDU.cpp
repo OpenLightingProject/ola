@@ -92,6 +92,6 @@ void RootPDU::PrependPDU(IOStack *stack, uint32_t vector, const CID &cid) {
   stack->Write(reinterpret_cast<uint8_t*>(&vector), sizeof(vector));
   PrependFlagsAndLength(stack);
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

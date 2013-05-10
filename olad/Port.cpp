@@ -255,4 +255,4 @@ template<>
 bool IsInputPort<InputPort>() {
   return true;
 }
-}  // ola
+}  // namespace ola

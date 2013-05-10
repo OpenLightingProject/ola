@@ -242,6 +242,6 @@ void RootPDUTest::testNestedRootPDUToOutputStream() {
   output.Pop(output.Size());
   delete[] raw_pdu;
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

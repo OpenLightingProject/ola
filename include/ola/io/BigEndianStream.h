@@ -201,6 +201,6 @@ class BigEndianOutputStream: public BigEndianOutputStreamInterface {
     BigEndianOutputStream(const BigEndianOutputStream&);
     BigEndianOutputStream& operator=(const BigEndianOutputStream&);
 };
-}  // io
-}  // ola
+}  // namespace io
+}  // namespace ola
 #endif  // INCLUDE_OLA_IO_BIGENDIANSTREAM_H_

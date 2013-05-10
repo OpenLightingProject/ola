@@ -224,6 +224,6 @@ void DMPAddressTest::testAddressData() {
   OLA_ASSERT_EQ((unsigned int) 6, chunk2.Size());
   OLA_ASSERT_FALSE(chunk2.Pack(buffer, length));
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

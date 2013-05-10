@@ -57,7 +57,7 @@ class SPIDevice: public ola::Device {
 
     static const char SPI_DEVICE_NAME[];
 };
-}  // spi
-}  // plugin
-}  // ola
+}  // namespace spi
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_SPI_SPIDEVICE_H_

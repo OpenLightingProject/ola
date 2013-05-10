@@ -1958,7 +1958,7 @@ template <typename ReturnType, typename Arg0, typename Arg1, typename Arg2>
 class Callback3: public BaseCallback3<ReturnType, Arg0, Arg1, Arg2> {
   public:
     virtual ~Callback3() {}
-    ReturnType Run(Arg0 arg0, Arg1 arg1, Arg2 arg2) { return this->DoRun(arg0, arg1, arg2); }  // NOLINT(whitespace/line_length)
+    ReturnType Run(Arg0 arg0, Arg1 arg1, Arg2 arg2) { return this->DoRun(arg0, arg1, arg2); }  // namespace NOLINT(whitespace/line_length)
   private:
     virtual ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2) = 0;
 };
@@ -2637,7 +2637,7 @@ template <typename ReturnType, typename Arg0, typename Arg1, typename Arg2, type
 class Callback4: public BaseCallback4<ReturnType, Arg0, Arg1, Arg2, Arg3> {
   public:
     virtual ~Callback4() {}
-    ReturnType Run(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) { return this->DoRun(arg0, arg1, arg2, arg3); }  // NOLINT(whitespace/line_length)
+    ReturnType Run(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) { return this->DoRun(arg0, arg1, arg2, arg3); }  // namespace NOLINT(whitespace/line_length)
   private:
     virtual ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) = 0;
 };
@@ -3322,5 +3322,5 @@ inline Callback4<ReturnType, Arg0, Arg1, Arg2, Arg3>* NewCallback(
 }
 
 
-}  // ola
+}  // namespace ola
 #endif  // INCLUDE_OLA_CALLBACK_H_

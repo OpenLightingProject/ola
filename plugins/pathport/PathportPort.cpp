@@ -82,6 +82,6 @@ bool PathportOutputPort::WriteDMX(const DmxBuffer &buffer,
   return true;
   (void) priority;
 }
-}  // pathport
-}  // plugin
-}  // ola
+}  // namespace pathport
+}  // namespace plugin
+}  // namespace ola

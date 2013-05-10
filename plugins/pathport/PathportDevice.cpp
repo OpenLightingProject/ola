@@ -145,7 +145,7 @@ bool PathportDevice::SendArpReply() {
     m_node->SendArpReply();
   return true;
 }
-}  // pathport
-}  // plugin
-}  // ola
+}  // namespace pathport
+}  // namespace plugin
+}  // namespace ola
 

@@ -39,5 +39,5 @@ class PluginLoader {
   protected:
     class PluginAdaptor *m_plugin_adaptor;
 };
-}  // ola
+}  // namespace ola
 #endif  // OLAD_PLUGINLOADER_H_

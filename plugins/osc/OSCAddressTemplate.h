@@ -30,7 +30,7 @@ namespace osc {
 using std::string;
 
 string ExpandTemplate(const string &str, unsigned int value);
-}  // osc
-}  // plugin
-}  // ola
+}  // namespace osc
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_OSC_OSCADDRESSTEMPLATE_H_

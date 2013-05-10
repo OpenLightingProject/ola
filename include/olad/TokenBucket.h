@@ -49,5 +49,5 @@ class TokenBucket {
     TokenBucket(const TokenBucket&);
     TokenBucket& operator=(const TokenBucket&);
 };
-}  // ola
+}  // namespace ola
 #endif  // INCLUDE_OLAD_TOKENBUCKET_H_

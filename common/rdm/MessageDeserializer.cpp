@@ -273,5 +273,5 @@ void MessageDeserializer::IntVisit(
   m_message_stack.top().push_back(
     new ola::messaging::BasicMessageField<int_type>(descriptor, value));
 }
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola

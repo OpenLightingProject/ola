@@ -211,6 +211,6 @@ void E131Device::HandlePortStatusRequest(string *response) {
   }
   reply.SerializeToString(response);
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

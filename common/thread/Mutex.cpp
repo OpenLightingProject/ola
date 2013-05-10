@@ -133,5 +133,5 @@ void ConditionVariable::Signal() {
 void ConditionVariable::Broadcast() {
   pthread_cond_broadcast(&m_condition);
 }
-}  // thread
-}  // ola
+}  // namespace thread
+}  // namespace ola

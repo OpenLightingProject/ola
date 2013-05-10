@@ -693,6 +693,6 @@ void DummyRDMDevice::RunRDMCallback(ola::rdm::RDMCallback *callback,
   vector<string> packets;
   callback->Run(ola::rdm::RDM_COMPLETED_OK, response, packets);
 }
-}  // dummy
-}  // plugin
-}  // ola
+}  // namespace dummy
+}  // namespace plugin
+}  // namespace ola

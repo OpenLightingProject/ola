@@ -136,6 +136,6 @@ bool OpenDmxPlugin::SetDefaultPreferences() {
 
   return true;
 }
-}  // opendmx
-}  // plugins
-}  // ola
+}  // namespace opendmx
+}  // namespace plugin
+}  // namespace ola

@@ -42,5 +42,5 @@ class DynamicPluginLoader: public PluginLoader {
 
     std::vector<class AbstractPlugin*> m_plugins;
 };
-}  // ola
+}  // namespace ola
 #endif  // OLAD_DYNAMICPLUGINLOADER_H_

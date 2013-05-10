@@ -59,7 +59,7 @@ class PreamblePacker {
     static const uint8_t TCP_ACN_HEADER[];
     static const unsigned int TCP_ACN_HEADER_SIZE;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_PREAMBLEPACKER_H_

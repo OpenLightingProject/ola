@@ -128,6 +128,6 @@ string SPIDevice::SPISpeedKey() const {
 string SPIDevice::PixelCountKey() const {
   return m_spi_device_name + "-pixel-count";
 }
-}  // spi
-}  // plugin
-}  // ola
+}  // namespace spi
+}  // namespace plugin
+}  // namespace ola

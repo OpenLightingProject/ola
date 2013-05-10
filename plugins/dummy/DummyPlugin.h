@@ -59,7 +59,7 @@ class DummyPlugin: public Plugin {
     static const char DEFAULT_DEVICE_COUNT[];
     static const char DEFAULT_SUBDEVICE_COUNT[];
 };
-}  // dummy
-}  // plugin
-}  // ola
+}  // namespace dummy
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_DUMMY_DUMMYPLUGIN_H_

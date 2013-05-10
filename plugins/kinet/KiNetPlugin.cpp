@@ -122,6 +122,6 @@ bool KiNetPlugin::SetDefaultPreferences() {
     m_preferences->Save();
   return true;
 }
-}  // kinet
-}  // plugin
-}  // ola
+}  // namespace kinet
+}  // namespace plugin
+}  // namespace ola

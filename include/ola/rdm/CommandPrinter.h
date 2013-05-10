@@ -94,6 +94,6 @@ class CommandPrinter {
         unsigned int param_length);
     bool GetNackReason(const class RDMCommand *command, uint16_t *reason);
 };
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola
 #endif  // INCLUDE_OLA_RDM_COMMANDPRINTER_H_

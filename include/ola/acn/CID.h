@@ -56,6 +56,6 @@ class CID {
     // Takes ownership;
     explicit CID(class CIDImpl *impl);
 };
-}  // acn
-}  // ola
+}  // namespace acn
+}  // namespace ola
 #endif  // INCLUDE_OLA_ACN_CID_H_

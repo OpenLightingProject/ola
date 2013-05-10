@@ -389,4 +389,4 @@ void DeviceManager::RestorePortSettings(
     m_port_manager->PatchPort(port, id);
   }
 }
-}  // ola
+}  // namespace ola

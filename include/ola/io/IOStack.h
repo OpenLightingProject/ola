@@ -86,6 +86,6 @@ class IOStack: public IOVecInterface,
     IOStack(const IOStack&);
     IOStack& operator=(const IOStack&);
 };
-}  // io
-}  // ola
+}  // namespace io
+}  // namespace ola
 #endif  // INCLUDE_OLA_IO_IOSTACK_H_

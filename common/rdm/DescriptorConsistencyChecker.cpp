@@ -96,5 +96,5 @@ void DescriptorConsistencyChecker::Visit(
 void DescriptorConsistencyChecker::PostVisit(
     const ola::messaging::FieldDescriptorGroup*) {
 }
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola

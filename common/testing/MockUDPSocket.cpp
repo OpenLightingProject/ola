@@ -274,7 +274,6 @@ void MockUDPSocket::Verify() {
     std::ostringstream msg;
     msg << m_expected_calls.size() << " packets remain on the MockUDPSocket";
     OLA_ASSERT_TRUE_MSG(m_expected_calls.empty(), msg.str());
-
   }
 }
 
@@ -302,5 +301,5 @@ uint8_t* MockUDPSocket::IOQueueToBuffer(IOQueue *ioqueue,
   *size = ioqueue->Read(data, *size);
   return data;
 }
-}  // testing
-}  // ola
+}  // namespace testing
+}  // namespace ola

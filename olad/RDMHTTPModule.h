@@ -648,5 +648,5 @@ class RDMHTTPModule {
     static const char PROXIED_DEVICES_SECTION_NAME[];
     static const char TILT_INVERT_SECTION_NAME[];
 };
-}  // ola
+}  // namespace ola
 #endif  // OLAD_RDMHTTPMODULE_H_

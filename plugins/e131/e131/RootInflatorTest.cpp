@@ -71,6 +71,6 @@ void RootInflatorTest::testInflatePDU() {
   OLA_ASSERT(inflator.InflatePDUBlock(header_set, data, size));
   delete[] data;
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

@@ -234,4 +234,4 @@ int Daemonise() {
   }
   return 0;
 }
-}  // ola
+}  // namespace ola

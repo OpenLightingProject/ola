@@ -261,5 +261,5 @@ bool DATracker::AddressFromURL(const string &url, IPV4Address *address) {
   }
   return ok;
 }
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola

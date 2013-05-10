@@ -48,5 +48,5 @@ bool PendingSrvRqst::Complete() const {
   }
   return true;
 }
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola

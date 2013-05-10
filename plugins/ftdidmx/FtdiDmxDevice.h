@@ -55,7 +55,7 @@ class FtdiDmxDevice : public Device {
   const FtdiWidgetInfo m_widget_info;
   unsigned int m_frequency;
 };
-}  // ftdidmx
-}  // plugin
-}  // ola
+}  // namespace ftdidmx
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_FTDIDMX_FTDIDMXDEVICE_H_

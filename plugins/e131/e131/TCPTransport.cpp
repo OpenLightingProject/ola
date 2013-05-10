@@ -330,6 +330,6 @@ IncomingTCPTransport::IncomingTCPTransport(BaseInflator *inflator,
     OLA_WARN << "Invalid address for fd " << socket->ReadDescriptor();
   }
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

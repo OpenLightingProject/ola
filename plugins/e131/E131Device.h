@@ -67,6 +67,7 @@ class E131Device: public ola::Device {
                    const string &request,
                    string *response,
                    google::protobuf::Closure *done);
+
   protected:
     bool StartHook();
     void PrePortStop();
@@ -88,7 +89,7 @@ class E131Device: public ola::Device {
 
     static const char DEVICE_NAME[];
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131DEVICE_H_

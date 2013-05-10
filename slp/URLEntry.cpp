@@ -31,5 +31,5 @@ void URLEntry::Write(ola::io::BigEndianOutputStreamInterface *output) const {
                 m_url.size());
   *output << static_cast<uint8_t>(0);  // # of URL auths
 }
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola

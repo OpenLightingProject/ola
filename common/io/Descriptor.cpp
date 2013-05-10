@@ -487,5 +487,5 @@ bool DeviceDescriptor::Close() {
   m_fd = INVALID_DESCRIPTOR;
   return ret == 0;
 }
-}  // io
-}  // ola
+}  // namespace io
+}  // namespace ola

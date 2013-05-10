@@ -103,7 +103,7 @@ void E133InflatorTest::testDecodeHeader() {
  */
 void E133InflatorTest::testInflatePDU() {
   const string source = "foobar source";
-  E133Header header(source, 2370, 2 );
+  E133Header header(source, 2370, 2);
   // TODO(simon): pass a DMP msg here as well
   E133PDU pdu(3, header, NULL);
   OLA_ASSERT_EQ((unsigned int) 77, pdu.Size());
@@ -120,6 +120,6 @@ void E133InflatorTest::testInflatePDU() {
   OLA_ASSERT(header == header_set.GetE133Header());
   delete[] data;
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

@@ -58,7 +58,7 @@ class E133PDU: public PDU {
     E133Header m_header;
     const PDU *m_pdu;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_E133PDU_H_

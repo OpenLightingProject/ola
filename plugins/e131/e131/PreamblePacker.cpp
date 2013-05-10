@@ -119,6 +119,6 @@ void PreamblePacker::Init() {
     memcpy(m_send_buffer, ACN_HEADER, sizeof(ACN_HEADER));
   }
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

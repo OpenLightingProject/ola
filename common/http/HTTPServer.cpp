@@ -794,5 +794,5 @@ UnmanagedFileDescriptor *HTTPServer::NewSocket(fd_set *r_set,
     m_select_server.AddWriteDescriptor(socket);
   return socket;
 }
-}  // http
-}  // ola
+}  // namespace http
+}  // namespace ola

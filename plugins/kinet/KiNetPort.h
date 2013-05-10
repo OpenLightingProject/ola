@@ -57,7 +57,7 @@ class KiNetOutputPort: public BasicOutputPort {
     KiNetNode *m_node;
     const IPV4Address m_target;
 };
-}  // kinet
-}  // plugin
-}  // ola
+}  // namespace kinet
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_KINET_KINETPORT_H_

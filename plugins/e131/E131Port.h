@@ -95,7 +95,7 @@ class E131OutputPort: public BasicOutputPort {
     E131Node *m_node;
     E131PortHelper m_helper;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131PORT_H_

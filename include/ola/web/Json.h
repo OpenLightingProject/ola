@@ -266,6 +266,6 @@ class JsonWriter {
     static void Write(ostream *output, const JsonValue &obj);
     static string AsString(const JsonValue &obj);
 };
-}  // web
-}  // ola
+}  // namespace web
+}  // namespace ola
 #endif  // INCLUDE_OLA_WEB_JSON_H_

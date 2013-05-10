@@ -379,6 +379,6 @@ void BaseInflatorTest::testInflatePDUBlock() {
   OLA_ASSERT_EQ((unsigned int) 1, child_inflator.BlocksHandled());
   delete[] data;
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

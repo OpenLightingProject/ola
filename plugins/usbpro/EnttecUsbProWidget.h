@@ -133,7 +133,7 @@ class EnttecUsbProWidget: public SerialWidgetInterface {
   private:
     class EnttecUsbProWidgetImpl *m_impl;
 };
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBPRO_ENTTECUSBPROWIDGET_H_

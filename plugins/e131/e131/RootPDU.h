@@ -68,7 +68,7 @@ class RootPDU: public PDU {
     const PDUBlock<PDU> *m_block;
     unsigned int m_block_size;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_ROOTPDU_H_

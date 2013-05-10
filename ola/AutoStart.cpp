@@ -71,5 +71,5 @@ TCPSocket *ConnectToServer(unsigned short port) {
   sleep(1);
   return TCPSocket::Connect(server_address);
 }
-}  // client
-}  // ola
+}  // namespace client
+}  // namespace ola

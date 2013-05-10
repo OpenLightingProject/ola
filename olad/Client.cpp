@@ -99,4 +99,4 @@ const DmxSource Client::SourceData(unsigned int universe) const {
     return source;
   }
 }
-}  // ola
+}  // namespace ola

@@ -70,6 +70,6 @@ bool DMPInflator::DecodeHeader(HeaderSet &headers,
 void DMPInflator::ResetHeaderField() {
   m_last_header_valid = false;
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

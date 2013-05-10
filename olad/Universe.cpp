@@ -909,4 +909,4 @@ bool Universe::GenericContainsPort(PortClass *port,
                                    const vector<PortClass*> &ports) const {
   return find(ports.begin(), ports.end(), port) != ports.end();
 }
-}  //  ola
+}  // namespace  ola

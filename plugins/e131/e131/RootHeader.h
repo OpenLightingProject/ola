@@ -45,7 +45,7 @@ class RootHeader {
   private:
     CID m_cid;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_ROOTHEADER_H_

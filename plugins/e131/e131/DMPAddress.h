@@ -285,7 +285,7 @@ class DMPAddressData {
     const uint8_t *m_data;
     unsigned int m_length;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_DMPADDRESS_H_

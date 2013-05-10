@@ -180,7 +180,7 @@ class FtdiWidget {
     struct ftdi_context m_handle;
 #endif
 };
-}  // ftdidmx
-}  // plugin
-}  // ola
+}  // namespace ftdidmx
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_FTDIDMX_FTDIWIDGET_H_

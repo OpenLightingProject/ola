@@ -34,7 +34,7 @@ class WindowsInterfacePicker: public InterfacePicker {
   public:
     std::vector<Interface> GetInterfaces() const;
 };
-}  // network
-}  // ola
+}  // namespace network
+}  // namespace ola
 #endif  // COMMON_NETWORK_WINDOWSINTERFACEPICKER_H_
 

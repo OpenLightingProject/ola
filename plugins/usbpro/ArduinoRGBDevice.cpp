@@ -74,6 +74,6 @@ ArduinoRGBOutputPort::ArduinoRGBOutputPort(ArduinoRGBDevice *parent,
     serial;
   m_description = str.str();
 }
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola

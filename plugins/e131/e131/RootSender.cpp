@@ -106,6 +106,6 @@ bool RootSender::SendPDUBlock(unsigned int vector,
   m_root_block.AddPDU(&m_root_pdu);
   return transport->Send(m_root_block);
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

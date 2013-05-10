@@ -87,7 +87,7 @@ class DMPE131Inflator: public DMPInflator {
     // expire sources after 2.5s
     static const TimeInterval EXPIRY_INTERVAL;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_DMPE131INFLATOR_H_

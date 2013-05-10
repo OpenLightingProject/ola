@@ -47,7 +47,7 @@ class SunliteFirmwareLoader: public FirmwareLoader {
     static const uint8_t UPLOAD_REQUEST = 0xa0;
     static const unsigned int UPLOAD_TIMEOUT = 300;  // ms
 };
-}  // usbdmx
-}  // plugin
-}  // ola
+}  // namespace usbdmx
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBDMX_SUNLITEFIRMWARELOADER_H_

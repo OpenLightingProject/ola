@@ -40,7 +40,7 @@ class MessageVisitor;
 
 class Message {
   public:
-    Message(const vector<const class MessageFieldInterface*> &fields)
+    explicit Message(const vector<const class MessageFieldInterface*> &fields)
         : m_fields(fields) {
     }
     ~Message();
@@ -238,7 +238,7 @@ class GroupMessageField: public MessageFieldInterface {
     const FieldDescriptorGroup *m_descriptor;
     vector<const class MessageFieldInterface*> m_fields;
 };
-}  // messaging
-}  // ola
+}  // namespace messaging
+}  // namespace ola
 
 #endif  // INCLUDE_OLA_MESSAGING_MESSAGE_H_

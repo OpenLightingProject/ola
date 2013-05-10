@@ -477,7 +477,7 @@ class ArtNetNode {
 
     bool CheckPortId(uint8_t port_id);
 };
-}  // artnet
-}  // plugin
-}  // ola
+}  // namespace artnet
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_ARTNET_ARTNETNODE_H_

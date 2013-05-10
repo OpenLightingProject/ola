@@ -208,5 +208,5 @@ void SLPUDPSender::Send(const IPV4SocketAddress &target) {
   m_udp_socket->SendTo(&m_output, target);
   m_output.Clear();
 }
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola

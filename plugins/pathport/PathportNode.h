@@ -63,7 +63,6 @@ class PathportNode {
     static const uint8_t MAX_UNIVERSES = 127;
 
   private:
-
     typedef struct {
       DmxBuffer *buffer;
       Callback0<void> *closure;
@@ -136,7 +135,7 @@ class PathportNode {
     static const uint8_t MAJOR_VERSION = 2;
     static const uint8_t MINOR_VERSION = 0;
 };
-}  // pathport
-}  // plugin
-}  // ola
+}  // namespace pathport
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_PATHPORT_PATHPORTNODE_H_

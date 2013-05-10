@@ -67,7 +67,7 @@ class OSCPlugin: public Plugin {
     static const char PORT_TARGETS_TEMPLATE[];
     static const char UDP_PORT_KEY[];
 };
-}  // osc
-}  // plugin
-}  // ola
+}  // namespace osc
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_OSC_OSCPLUGIN_H_

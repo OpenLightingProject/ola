@@ -774,6 +774,6 @@ void SPIBackend::RunRDMCallback(RDMCallback *callback,
   vector<string> packets;
   callback->Run(code, NULL, packets);
 }
-}  // spi
-}  // plugin
-}  // ola
+}  // namespace spi
+}  // namespace plugin
+}  // namespace ola

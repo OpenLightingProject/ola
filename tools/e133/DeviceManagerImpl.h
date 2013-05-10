@@ -137,6 +137,6 @@ class DeviceManagerImpl {
     static const TimeInterval INITIAL_TCP_RETRY_DELAY;
     static const TimeInterval MAX_TCP_RETRY_DELAY;
 };
-}  // e133
-}  // ola
+}  // namespace e133
+}  // namespace ola
 #endif  // TOOLS_E133_DEVICEMANAGERIMPL_H_

@@ -230,7 +230,7 @@ bool PidStoreLoader::GetPidList(vector<const PidDescriptor*> *pids,
       }
       seen_names.insert(pid.name());
 
-      if (limit_pid_values && pid.value() > 0x8000 and pid.value() < 0xffe0) {
+      if (limit_pid_values && pid.value() > 0x8000 && pid.value() < 0xffe0) {
         OLA_WARN << "ESTA Pid " << pid.name() << " (" << pid.value() << ")" <<
             " is outside acceptable range";
         ok = false;
@@ -547,5 +547,5 @@ PidDescriptor::sub_device_valiator PidStoreLoader::ConvertSubDeviceValidator(
       return PidDescriptor::ANY_SUB_DEVICE;
   }
 }
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola

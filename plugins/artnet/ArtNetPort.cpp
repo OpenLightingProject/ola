@@ -209,6 +209,6 @@ void ArtNetOutputPort::PostSetUniverse(Universe *old_universe,
     m_helper.GetNode()->SetUnsolicatedUIDSetHandler(PortId(), NULL);
   }
 }
-}  // artnet
-}  // plugin
-}  // ola
+}  // namespace artnet
+}  // namespace plugin
+}  // namespace ola

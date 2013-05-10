@@ -173,5 +173,5 @@ void GenericMessagePrinter::AppendMultipler(int8_t multipler) {
   if (multipler)
     Stream() << " x 10 ^ " << static_cast<int>(multipler);
 }
-}  // messaging
-}  // ola
+}  // namespace messaging
+}  // namespace ola

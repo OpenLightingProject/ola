@@ -126,5 +126,5 @@ void MessageBuilder::BuildUDPRootE133(IOStack *packet,
   RootPDU::PrependPDU(packet, ola::acn::VECTOR_ROOT_E133, m_cid);
   PreamblePacker::AddUDPPreamble(packet);
 }
-}  // e133
-}  // ola
+}  // namespace e133
+}  // namespace ola

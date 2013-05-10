@@ -98,6 +98,6 @@ class SchemaPrinter: public FieldDescriptorVisitor {
 
     static const unsigned int DEFAULT_INDENT = 2;
 };
-}  // messaging
-}  // ola
+}  // namespace messaging
+}  // namespace ola
 #endif  // INCLUDE_OLA_MESSAGING_SCHEMAPRINTER_H_

@@ -91,7 +91,7 @@ class UsbSerialPlugin: public ola::Plugin, public NewWidgetHandler {
     static const unsigned int MAX_PRO_FPS_LIMIT = 1000;
     static const unsigned int MAX_ULTRA_FPS_LIMIT = 1000;
 };
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBPRO_USBSERIALPLUGIN_H_

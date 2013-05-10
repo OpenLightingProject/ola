@@ -55,7 +55,7 @@ class SPIOutputPort: public BasicOutputPort {
   private:
     SPIBackend m_spi_backend;
 };
-}  // spi
-}  // plugin
-}  // ola
+}  // namespace spi
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_SPI_SPIPORT_H_

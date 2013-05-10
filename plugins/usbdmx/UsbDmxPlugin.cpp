@@ -434,6 +434,6 @@ bool UsbDmxPlugin::GetDescriptorString(libusb_device_handle *usb_handle,
   data->assign(reinterpret_cast<char*>(buffer));
   return true;
 }
-}  // usbdmx
-}  // plugin
-}  // ola
+}  // namespace usbdmx
+}  // namespace plugin
+}  // namespace ola

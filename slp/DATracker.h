@@ -95,13 +95,13 @@ class DirectoryAgent {
       return m_url != other.m_url;
     }
 
-    virtual void ToStream(ostream &out) const {
-      out << m_url << "(" << m_boot_time << ")";
-      out << ", [" << m_scopes << "]";
+    virtual void ToStream(ostream *out) const {
+      *out << m_url << "(" << m_boot_time << ")";
+      *out << ", [" << m_scopes << "]";
     }
 
     friend ostream& operator<<(ostream &out, const DirectoryAgent &entry) {
-      entry.ToStream(out);
+      entry.ToStream(&out);
       return out;
     }
 
@@ -172,6 +172,6 @@ class DATracker {
 
     static const string DA_SERVICE_PREFIX;
 };
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola
 #endif  // SLP_DATRACKER_H_

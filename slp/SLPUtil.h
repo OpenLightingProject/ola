@@ -32,6 +32,6 @@ namespace slp {
 using std::string;
 
 string SLPErrorToString(uint16_t error);
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola
 #endif  // SLP_SLPUTIL_H_

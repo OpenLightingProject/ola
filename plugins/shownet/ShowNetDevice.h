@@ -55,7 +55,7 @@ class ShowNetDevice: public ola::Device {
 
     static const char SHOWNET_DEVICE_NAME[];
 };
-}  // shownet
-}  // plugin
-}  // ola
+}  // namespace shownet
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_SHOWNET_SHOWNETDEVICE_H_

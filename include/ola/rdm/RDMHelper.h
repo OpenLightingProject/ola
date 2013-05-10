@@ -49,6 +49,6 @@ string StatusMessageIdToString(uint16_t message_id,
                                int16_t data2);
 string StatusTypeToString(uint8_t status_type);
 string UnitToString(uint8_t unit);
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola
 #endif  // INCLUDE_OLA_RDM_RDMHELPER_H_

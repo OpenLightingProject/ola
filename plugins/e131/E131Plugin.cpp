@@ -222,6 +222,6 @@ bool E131Plugin::SetDefaultPreferences() {
 
   return true;
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

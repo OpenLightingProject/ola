@@ -37,5 +37,5 @@ bool InstallSignal(int signal, void(*fp)(int));
 bool InstallSEGVHandler();
 void InitExportMap(int argc, char* argv[], ExportMap *export_map);
 int Daemonise();
-}  // ola
+}  // namespace ola
 #endif  // INCLUDE_OLA_BASE_INIT_H_

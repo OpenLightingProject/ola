@@ -48,7 +48,7 @@ class OpenDmxDevice: public ola::Device {
     string m_path;
     string m_device_id;
 };
-}  // opendmx
-}  // plugins
-}  // ola
+}  // namespace opendmx
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_OPENDMX_OPENDMXDEVICE_H_

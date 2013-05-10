@@ -253,5 +253,5 @@ void IOQueue::AppendBlock() {
   }
   m_blocks.push_back(block);
 }
-}  // io
-}  // ola
+}  // namespace io
+}  // namespace ola

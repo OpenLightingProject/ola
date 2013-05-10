@@ -95,6 +95,6 @@ class PidStoreHelper {
     ola::rdm::RDMMessagePrinter m_message_printer;
     ola::messaging::SchemaPrinter m_schema_printer;
 };
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola
 #endif  // INCLUDE_OLA_RDM_PIDSTOREHELPER_H_

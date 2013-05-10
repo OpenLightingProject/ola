@@ -181,5 +181,5 @@ void OpenSLPThread::SLPServerInfo(ServerInfoCallback *callback) {
   OLA_WARN << "ServerInfo not implemented for OpenSLP";
   callback->Run(false, server_info);
 }
-}  // e133
-}  // ola
+}  // namespace e133
+}  // namespace ola

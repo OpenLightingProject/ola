@@ -55,5 +55,5 @@ void GroupMessageField::Accept(MessageVisitor &visitor) const {
     (*iter)->Accept(visitor);
   visitor.PostVisit(this);
 }
-}  // messaging
-}  // ola
+}  // namespace messaging
+}  // namespace ola

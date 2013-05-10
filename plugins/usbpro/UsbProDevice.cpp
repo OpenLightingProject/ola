@@ -305,6 +305,6 @@ string UsbProDevice::SerialToString(uint32_t serial) {
   }
   return str.str();
 }
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola

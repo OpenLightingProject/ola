@@ -180,6 +180,6 @@ void PDU::PrependFlagsAndLength(ola::io::OutputBufferInterface *output,
     output->Write(flags_and_length, sizeof(flags_and_length));
   }
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

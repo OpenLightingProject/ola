@@ -64,6 +64,6 @@ class SelectServerInterface: public ola::thread::SchedulingExecutorInterface {
 
     virtual const TimeStamp *WakeUpTime() const = 0;
 };
-}  // io
-}  // ola
+}  // namespace io
+}  // namespace ola
 #endif  // INCLUDE_OLA_IO_SELECTSERVERINTERFACE_H_

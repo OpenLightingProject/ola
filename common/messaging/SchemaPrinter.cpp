@@ -116,5 +116,5 @@ void SchemaPrinter::PostVisit(const FieldDescriptorGroup *descriptor) {
 void SchemaPrinter::AppendHeading(const string &name, const string &type) {
   m_str << string(m_indent, ' ') << name << ": " << type;
 }
-}  // messaging
-}  // ola
+}  // namespace messaging
+}  // namespace ola

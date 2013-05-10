@@ -525,4 +525,4 @@ bool OlaCallbackClient::RDMSet(RDMAPIImplInterface::rdm_pid_callback *callback,
                         data,
                         data_length);
 }
-}  // ola
+}  // namespace ola

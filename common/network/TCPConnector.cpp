@@ -220,5 +220,5 @@ void TCPConnector::PendingTCPConnection::Close() {
 void TCPConnector::PendingTCPConnection::PerformWrite() {
   m_connector->SocketWritable(this);
 }
-}  // network
-}  // ola
+}  // namespace network
+}  // namespace ola

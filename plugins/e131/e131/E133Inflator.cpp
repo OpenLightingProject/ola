@@ -71,6 +71,6 @@ bool E133Inflator::DecodeHeader(HeaderSet &headers,
   headers.SetE133Header(m_last_header);
   return true;
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

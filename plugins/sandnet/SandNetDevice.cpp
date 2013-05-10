@@ -148,6 +148,6 @@ bool SandNetDevice::SendAdvertisement() {
   m_node->SendAdvertisement();
   return true;
 }
-}  // sandnet
-}  // plugin
-}  // ola
+}  // namespace sandnet
+}  // namespace plugin
+}  // namespace ola

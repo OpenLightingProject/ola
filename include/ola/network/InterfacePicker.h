@@ -53,7 +53,7 @@ class InterfacePicker {
 
     static InterfacePicker *NewPicker();
 };
-}  // network
-}  // ola
+}  // namespace network
+}  // namespace ola
 #endif  // INCLUDE_OLA_NETWORK_INTERFACEPICKER_H_
 

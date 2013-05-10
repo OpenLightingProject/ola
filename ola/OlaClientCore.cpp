@@ -1456,4 +1456,4 @@ void OlaClientCore::UpdateResponseAckData(
       reply->command_class() == ola::proto::RDM_SET_RESPONSE);
   new_status->pid_value = reply->param_id();
 }
-}  // ola
+}  // namespace ola

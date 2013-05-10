@@ -101,5 +101,5 @@ void *Thread::_InternalRun() {
   m_condition.Signal();
   return Run();
 }
-}  // thread
-}  // ola
+}  // namespace thread
+}  // namespace ola

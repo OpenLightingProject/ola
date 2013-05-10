@@ -1031,4 +1031,4 @@ inline void OladHTTPServer::RegisterHandler(
         this,
         method));
 }
-}  // ola
+}  // namespace ola

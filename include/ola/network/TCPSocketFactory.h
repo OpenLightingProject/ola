@@ -66,6 +66,6 @@ class GenericTCPSocketFactory: public TCPSocketFactoryInterface {
 };
 
 typedef GenericTCPSocketFactory<TCPSocket> TCPSocketFactory;
-}  // network
-}  // ola
+}  // namespace network
+}  // namespace ola
 #endif  // INCLUDE_OLA_NETWORK_TCPSOCKETFACTORY_H_

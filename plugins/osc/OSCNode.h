@@ -128,7 +128,7 @@ class OSCNode {
     static const uint16_t DEFAULT_OSC_PORT = 7770;
     static const char OSC_PORT_VARIABLE[];
 };
-}  // osc
-}  // plugin
-}  // ola
+}  // namespace osc
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_OSC_OSCNODE_H_

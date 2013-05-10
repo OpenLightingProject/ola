@@ -156,7 +156,7 @@ class EnttecPortImpl
                                const ola::rdm::RDMRequest *request);
     bool IsDUBRequest(const ola::rdm::RDMRequest *request);
 };
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBPRO_ENTTECUSBPROWIDGETIMPL_H_

@@ -510,5 +510,5 @@ void SLPPacketBuilder::BuildSLPHeader(BigEndianOutputStreamInterface *output,
   *output << static_cast<uint16_t>(0) << xid;
   WriteString(output, language);
 }
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola

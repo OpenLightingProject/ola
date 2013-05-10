@@ -192,7 +192,7 @@ class UsbProOutputPort: public BasicOutputPort {
     TokenBucket m_bucket;
     const TimeStamp *m_wake_time;
 };
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBPRO_USBPRODEVICE_H_

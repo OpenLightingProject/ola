@@ -473,4 +473,4 @@ void OlaServer::CleanupConnection(OlaClientService *service) {
   delete client;
   delete service;
 }
-}  // ola
+}  // namespace ola

@@ -114,6 +114,6 @@ class GroupSizeCalculator: public ola::messaging::FieldDescriptorVisitor {
     unsigned int DetermineGroupSize(const
         ola::messaging::FieldDescriptorGroup*);
 };
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola
 #endif  // COMMON_RDM_GROUPSIZECALCULATOR_H_

@@ -86,6 +86,6 @@ class OLASLPThread: public BaseSLPThread {
     bool ConnectAndSetupClient();
     void AttemptSLPConnection();
 };
-}  // e133
-}  // ola
+}  // namespace e133
+}  // namespace ola
 #endif  // INCLUDE_OLA_E133_OLASLPTHREAD_H_

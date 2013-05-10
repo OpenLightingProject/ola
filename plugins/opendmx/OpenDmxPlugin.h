@@ -58,8 +58,8 @@ class OpenDmxPlugin: public Plugin {
     static const char OPENDMX_DEVICE_NAME[];
     static const char DEVICE_KEY[];
 };
-}  // opendmx
-}  // plugins
-}  // ola
+}  // namespace opendmx
+}  // namespace plugin
+}  // namespace ola
 
 #endif  // PLUGINS_OPENDMX_OPENDMXPLUGIN_H_

@@ -108,6 +108,6 @@ bool OSCDevice::StartHook() {
   }
   return ok;
 }
-}  // osc
-}  // plugin
-}  // ola
+}  // namespace osc
+}  // namespace plugin
+}  // namespace ola

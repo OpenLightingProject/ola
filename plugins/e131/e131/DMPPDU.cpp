@@ -104,6 +104,6 @@ const DMPPDU *NewRangeDMPGetProperty(
                                              increment,
                                              number);
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

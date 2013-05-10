@@ -138,7 +138,7 @@ class DispatchingUsbProWidget: public BaseUsbProWidget {
       m_callback->Run(label, data, length);
     }
 };
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBPRO_BASEUSBPROWIDGET_H_

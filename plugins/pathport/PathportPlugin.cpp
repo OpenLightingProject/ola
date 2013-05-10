@@ -143,6 +143,6 @@ bool PathportPlugin::SetDefaultPreferences() {
 
   return true;
 }
-}  // pathport
-}  // plugin
-}  // ola
+}  // namespace pathport
+}  // namespace plugin
+}  // namespace ola

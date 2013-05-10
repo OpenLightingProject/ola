@@ -280,6 +280,6 @@ void TCPTransportTest::SendPacket(const string &message, IOStack *packet) {
   packet->MoveToIOQueue(&output);
   CPPUNIT_ASSERT_MESSAGE(message, m_loopback.Send(&output));
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

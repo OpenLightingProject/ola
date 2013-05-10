@@ -53,8 +53,8 @@ class EspNetPlugin: public ola::Plugin {
     static const char PLUGIN_NAME[];
     static const char PLUGIN_PREFIX[];
 };
-}  // espnet
-}  // plugin
-}  // ola
+}  // namespace espnet
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_ESPNET_ESPNETPLUGIN_H_
 

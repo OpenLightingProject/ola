@@ -1894,6 +1894,6 @@ bool ArtNetNode::CheckPortId(uint8_t port_id) {
   }
   return true;
 }
-}  // artnet
-}  // plugin
-}  // ola
+}  // namespace artnet
+}  // namespace plugin
+}  // namespace ola

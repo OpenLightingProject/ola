@@ -57,7 +57,7 @@ class RDMInflator: public BaseInflator {
                       unsigned int len,
                       unsigned int &bytes_used);
 
-    void ResetHeaderField() {}  // noop
+    void ResetHeaderField() {}  // namespace noop
 
     virtual bool HandlePDUData(uint32_t vector,
                                HeaderSet &headers,
@@ -67,7 +67,7 @@ class RDMInflator: public BaseInflator {
   private:
     std::auto_ptr<RDMMessageHandler> m_rdm_handler;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_RDMINFLATOR_H_

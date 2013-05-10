@@ -431,5 +431,5 @@ bool CommandPrinter::GetNackReason(const RDMCommand *response,
     return false;
   }
 }
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola

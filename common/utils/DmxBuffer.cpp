@@ -476,4 +476,4 @@ void DmxBuffer::CleanupMemory() {
 std::ostream& operator<<(std::ostream &out, const DmxBuffer &data) {
   return out << data.ToString();
 }
-}  //  ola
+}  // namespace  ola

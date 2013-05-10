@@ -25,17 +25,15 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <utility>
 
 using std::string;
 using std::vector;
 
-
 namespace ola {
 namespace messaging {
 
-
 class FieldDescriptorVisitor;
-
 
 /**
  * Describes a field, which may be a group of sub fields.
@@ -387,7 +385,7 @@ class Descriptor: public FieldDescriptorGroup {
 
     void Accept(FieldDescriptorVisitor &visitor) const;
 };
-}  // messaging
-}  // ola
+}  // namespace messaging
+}  // namespace ola
 
 #endif  // INCLUDE_OLA_MESSAGING_DESCRIPTOR_H_

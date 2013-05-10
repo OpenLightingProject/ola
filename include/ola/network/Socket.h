@@ -172,6 +172,6 @@ class UDPSocket: public UDPSocketInterface {
                    struct sockaddr_in *source,
                    socklen_t *src_size) const;
 };
-}  // network
-}  // ola
+}  // namespace network
+}  // namespace ola
 #endif  // INCLUDE_OLA_NETWORK_SOCKET_H_

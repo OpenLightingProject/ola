@@ -73,7 +73,7 @@ class VellemanOutputPort: public BasicOutputPort, ola::thread::Thread {
     bool SendDMX(const DmxBuffer &buffer_old);
     bool SendDataChunk(uint8_t *usb_data);
 };
-}  // usbdmx
-}  // plugin
-}  // ola
+}  // namespace usbdmx
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBDMX_VELLEMANOUTPUTPORT_H_

@@ -82,7 +82,7 @@ class ArtNetDevice: public Device {
                         string *response,
                         RpcController *controller);
 };
-}  // arntnet
-}  // plugin
-}  // ola
+}  // namespace arntnet
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_ARTNET_ARTNETDEVICE_H_

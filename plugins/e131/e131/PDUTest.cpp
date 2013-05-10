@@ -27,13 +27,10 @@
 #include "ola/testing/TestUtils.h"
 #include "plugins/e131/e131/PDU.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
-#include "ola/testing/TestUtils.h"
-
 
 namespace ola {
 namespace plugin {
 namespace e131 {
-
 
 using ola::io::IOQueue;
 using ola::testing::ASSERT_DATA_EQUALS;
@@ -118,6 +115,6 @@ void PDUTest::testBlockToOutputStream() {
   output.Pop(output.Size());
   delete[] block_data;
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

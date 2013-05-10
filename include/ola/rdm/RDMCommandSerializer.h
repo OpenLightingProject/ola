@@ -85,6 +85,6 @@ class RDMCommandSerializer {
                                uint8_t transaction_number,
                                uint8_t port_id);
 };
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola
 #endif  // INCLUDE_OLA_RDM_RDMCOMMANDSERIALIZER_H_

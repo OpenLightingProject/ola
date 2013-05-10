@@ -91,6 +91,6 @@ DmxTriOutputPort::~DmxTriOutputPort() {}
 bool DmxTriOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t) {
   return m_tri_widget->SendDMX(buffer);
 }
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola

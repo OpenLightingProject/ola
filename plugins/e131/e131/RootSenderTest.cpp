@@ -147,6 +147,6 @@ void RootSenderTest::testRootSenderWithCIDs(const CID &root_cid,
   m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS, closure);
   m_ss->Run();
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

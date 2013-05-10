@@ -159,6 +159,7 @@ class Preferences {
 
   protected:
     string m_preference_name;
+
   private:
     Preferences(const Preferences&);
     Preferences& operator=(const Preferences&);
@@ -296,5 +297,5 @@ class FileBackedPreferencesFactory: public PreferencesFactory {
       return new FileBackedPreferences(m_directory, name, &m_saver_thread);
     }
 };
-}  // ola
+}  // namespace ola
 #endif  // INCLUDE_OLAD_PREFERENCES_H_

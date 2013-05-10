@@ -118,24 +118,24 @@ class ScopeSet {
       return m_scopes != other.m_scopes;
     }
 
-    void ToStream(ostream &out) const {
-      out << ola::StringJoin(",", m_scopes);
+    void ToStream(ostream *out) const {
+      *out << ola::StringJoin(",", m_scopes);
     }
 
     string ToString() const {
       std::ostringstream str;
-      ToStream(str);
+      ToStream(&str);
       return str.str();
     }
 
     friend ostream& operator<<(ostream &out, const ScopeSet &entry) {
-      entry.ToStream(out);
+      entry.ToStream(&out);
       return out;
     }
 
   private:
     set<string> m_scopes;
 };
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola
 #endif  // SLP_SCOPESET_H_

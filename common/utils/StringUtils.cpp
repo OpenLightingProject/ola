@@ -502,4 +502,4 @@ void FormatData(std::ostream *out,
     *out << string(indent, ' ') << raw.str() << " " << ascii.str() << endl;
   }
 }
-}  // ola
+}  // namespace ola

@@ -315,6 +315,6 @@ class SLPServer {
     static const char UDP_RX_TOTAL_VAR[];
     static const char UDP_TX_PACKET_BY_TYPE_VAR[];
 };
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola
 #endif  // SLP_SLPSERVER_H_

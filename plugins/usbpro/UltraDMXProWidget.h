@@ -50,7 +50,7 @@ class UltraDMXProWidget: public GenericUsbProWidget {
     static const uint8_t DMX_PRIMARY_PORT = 100;
     static const uint8_t DMX_SECONDARY_PORT = 101;
 };
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBPRO_ULTRADMXPROWIDGET_H_

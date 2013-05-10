@@ -125,5 +125,5 @@ void E133Receiver::HandlePacket(
       transport_header->Source().Host(), e133_header->Endpoint(),
       e133_header->Sequence(), response_code, response));
 }
-}  // e133
-}  // ola
+}  // namespace e133
+}  // namespace ola

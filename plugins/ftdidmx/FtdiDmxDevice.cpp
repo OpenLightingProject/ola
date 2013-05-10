@@ -54,6 +54,6 @@ bool FtdiDmxDevice::StartHook() {
                                 m_frequency));
   return true;
 }
-}  // ftdidmx
-}  // plugin
-}  // ola
+}  // namespace ftdidmx
+}  // namespace plugin
+}  // namespace ola

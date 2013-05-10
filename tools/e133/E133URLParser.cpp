@@ -77,5 +77,5 @@ bool ParseE133URL(const string &url,
   *uid = temp_uid;
   return true;
 }
-}  // e133
-}  // ola
+}  // namespace e133
+}  // namespace ola

@@ -53,7 +53,7 @@ class KiNetDevice: public ola::Device {
     class KiNetNode *m_node;
     class PluginAdaptor *m_plugin_adaptor;
 };
-}  // arntnet
-}  // plugin
-}  // ola
+}  // namespace kinet
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_KINET_KINETDEVICE_H_

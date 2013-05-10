@@ -77,4 +77,4 @@ Action *ActionQueue::GetAction(unsigned int i) {
     return NULL;
   return m_actions[i];
 }
-}  // ola
+}  // namespace ola

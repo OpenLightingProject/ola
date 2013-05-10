@@ -76,6 +76,6 @@ bool RootInflator::PostHeader(uint32_t, HeaderSet &headers) {
     m_on_data->Run(headers.GetTransportHeader());
   return true;
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

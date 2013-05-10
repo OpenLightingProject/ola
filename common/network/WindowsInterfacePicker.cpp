@@ -96,5 +96,5 @@ vector<Interface> WindowsInterfacePicker::GetInterfaces() const {
   free(pAdapterInfo);
   return interfaces;
 }
-}  // network
-}  // ola
+}  // namespace network
+}  // namespace ola

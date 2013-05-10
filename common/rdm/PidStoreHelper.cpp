@@ -261,5 +261,5 @@ void PidStoreHelper::SupportedPids(
   if (store)
     store->AllPids(descriptors);
 }
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola

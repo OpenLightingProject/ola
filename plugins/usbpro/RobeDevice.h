@@ -109,7 +109,7 @@ class RobeOutputPort: public BasicOutputPort {
   private:
     RobeWidget *m_widget;
 };
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBPRO_ROBEDEVICE_H_

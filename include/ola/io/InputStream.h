@@ -90,6 +90,6 @@ class InputStream: public InputStreamInterface {
     InputStream(const InputStream&);
     InputStream& operator=(const InputStream&);
 };
-}  // io
-}  // ola
+}  // namespace io
+}  // namespace ola
 #endif  // INCLUDE_OLA_IO_INPUTSTREAM_H_

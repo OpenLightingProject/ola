@@ -113,7 +113,7 @@ class IncomingUDPTransport {
     class BaseInflator *m_inflator;
     uint8_t *m_recv_buffer;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_UDPTRANSPORT_H_

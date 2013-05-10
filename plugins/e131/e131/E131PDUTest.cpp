@@ -159,6 +159,6 @@ void E131PDUTest::testSimpleE131PDU() {
 void E131PDUTest::testNestedE131PDU() {
   // TODO(simon): add this test
 }
-}  // ola
-}  // e131
-}  // plugin
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

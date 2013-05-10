@@ -152,7 +152,7 @@ class OSCOutputPort: public BasicOutputPort {
     OSCNode *m_node;
     const string m_description;
 };
-}  // osc
-}  // plugin
-}  // ola
+}  // namespace osc
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_OSC_OSCPORT_H_

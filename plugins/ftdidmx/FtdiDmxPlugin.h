@@ -69,7 +69,7 @@ class FtdiDmxPlugin : public Plugin {
   static const char PLUGIN_NAME[];
   static const char PLUGIN_PREFIX[];
 };
-}  // ftdidmx
-}  // plugin
-}  // ola
+}  // namespace ftdidmx
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_FTDIDMX_FTDIDMXPLUGIN_H_

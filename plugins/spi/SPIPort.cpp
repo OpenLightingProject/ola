@@ -81,6 +81,6 @@ void SPIOutputPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
                                    ola::rdm::RDMCallback *callback) {
   return m_spi_backend.SendRDMRequest(request, callback);
 }
-}  // spi
-}  // plugin
-}  // ola
+}  // namespace spi
+}  // namespace plugin
+}  // namespace ola

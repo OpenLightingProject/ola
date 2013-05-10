@@ -213,4 +213,4 @@ bool OlaDaemon::InitConfigDir(const string &path) {
   }
   return true;
 }
-}  // ola
+}  // namespace ola

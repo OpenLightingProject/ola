@@ -44,6 +44,6 @@ void E133StatusPDU::PrependPDU(ola::io::IOStack *stack,
                sizeof(status_code));
   PrependFlagsAndLength(stack);
 }
-}  // ola
-}  // e131
-}  // plugin
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

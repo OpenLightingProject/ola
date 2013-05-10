@@ -217,5 +217,5 @@ class PortPriorityOverrideAction: public BaseHttpAction {
     PortPriorityOverrideAction(const PortPriorityOverrideAction&);
     PortPriorityOverrideAction& operator=(const PortPriorityOverrideAction&);
 };
-}  // ola
+}  // namespace ola
 #endif  // OLAD_HTTPSERVERACTIONS_H_

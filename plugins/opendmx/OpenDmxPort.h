@@ -59,7 +59,7 @@ class OpenDmxOutputPort: public BasicOutputPort {
     OpenDmxThread m_thread;
     string m_path;
 };
-}  // opendmx
-}  // plugins
-}  // ola
+}  // namespace opendmx
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_OPENDMX_OPENDMXPORT_H_

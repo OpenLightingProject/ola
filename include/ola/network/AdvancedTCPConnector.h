@@ -28,11 +28,10 @@
 #include <ola/network/TCPSocketFactory.h>
 #include <ola/util/Backoff.h>
 #include <map>
-
+#include <utility>
 
 namespace ola {
 namespace network {
-
 
 /**
  * Manages the TCP connections to ip:ports.
@@ -107,6 +106,6 @@ class AdvancedTCPConnector {
     void AttemptConnection(const IPPortPair &key, ConnectionInfo *state);
     void AbortConnection(ConnectionInfo *state);
 };
-}  // network
-}  // ola
+}  // namespace network
+}  // namespace ola
 #endif  // INCLUDE_OLA_NETWORK_ADVANCEDTCPCONNECTOR_H_

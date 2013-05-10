@@ -196,6 +196,6 @@ bool ArtNetPlugin::SetDefaultPreferences() {
 
   return true;
 }
-}  // artnet
-}  // plugin
-}  // ola
+}  // namespace artnet
+}  // namespace plugin
+}  // namespace ola

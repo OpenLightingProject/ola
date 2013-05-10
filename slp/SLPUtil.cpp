@@ -62,5 +62,5 @@ string SLPErrorToString(uint16_t error) {
       return "Unknown error code";
   }
 }
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola

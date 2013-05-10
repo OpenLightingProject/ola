@@ -116,6 +116,6 @@ class URLEntry {
 
 // typedef for convenience
 typedef std::vector<URLEntry> URLEntries;
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola
 #endif  // INCLUDE_OLA_SLP_URLENTRY_H_

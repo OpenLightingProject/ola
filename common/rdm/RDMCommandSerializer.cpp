@@ -217,5 +217,5 @@ void RDMCommandSerializer::PopulateHeader(RDMCommandHeader *header,
   header->param_id[1] = command.ParamId() & 0xff;
   header->param_data_length = command.ParamDataSize();
 };
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola

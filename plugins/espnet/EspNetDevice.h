@@ -52,7 +52,7 @@ class EspNetDevice: public Device {
 
     static const char ESPNET_DEVICE_NAME[];
 };
-}  // espnet
-}  // plugin
-}  // ola
+}  // namespace espnet
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_ESPNET_ESPNETDEVICE_H_

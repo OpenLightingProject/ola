@@ -60,7 +60,7 @@ class RDMPDU: public PDU {
   private:
     std::auto_ptr<const ola::rdm::RDMCommand> m_command;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_RDMPDU_H_

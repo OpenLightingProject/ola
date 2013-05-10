@@ -106,5 +106,5 @@ IPV4SocketAddress GenericSocketAddress::V4Addr() const {
     return IPV4SocketAddress(IPV4Address(), 0);
   }
 }
-}  // network
-}  // ola
+}  // namespace network
+}  // namespace ola

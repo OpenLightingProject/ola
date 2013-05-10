@@ -72,7 +72,7 @@ class SunliteOutputPort: public BasicOutputPort, ola::thread::Thread {
     void InitPacket();
     bool SendDMX(const DmxBuffer &buffer);
 };
-}  // usbdmx
-}  // plugin
-}  // ola
+}  // namespace usbdmx
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBDMX_SUNLITEOUTPUTPORT_H_

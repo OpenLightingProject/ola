@@ -49,7 +49,7 @@ struct OSCTarget {
         osc_address(osc_address) {
   }
 };
-}  // osc
-}  // plugin
-}  // ola
+}  // namespace osc
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_OSC_OSCTARGET_H_

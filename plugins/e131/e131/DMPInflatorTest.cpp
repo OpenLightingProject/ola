@@ -112,6 +112,6 @@ void DMPInflatorTest::testInflatePDU() {
   delete[] data;
   delete pdu;
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

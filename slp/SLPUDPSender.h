@@ -114,6 +114,6 @@ class SLPUDPSender {
     void EmptyBuffer();
     void Send(const IPV4SocketAddress &dest);
 };
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola
 #endif  // SLP_SLPUDPSENDER_H_

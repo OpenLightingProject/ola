@@ -273,6 +273,6 @@ bool BaseInflator::HandlePDUData(uint32_t vector,
     " a handler, vector id " << vector;
   return false;
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

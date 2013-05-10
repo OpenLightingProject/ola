@@ -136,7 +136,7 @@ class BaseInflator : public InflatorInterface {
                                const uint8_t *data,
                                unsigned int pdu_len);
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_BASEINFLATOR_H_

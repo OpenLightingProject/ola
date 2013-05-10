@@ -43,7 +43,7 @@ class WidgetDetectorInterface {
 
     virtual bool Discover(ola::io::ConnectedDescriptor *descriptor) = 0;
 };
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBPRO_WIDGETDETECTORINTERFACE_H_

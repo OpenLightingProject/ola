@@ -61,7 +61,7 @@ class PathportDevice: public ola::Device {
     static const uint32_t PORTS_PER_DEVICE = 8;
     static const int ADVERTISTMENT_PERIOD_MS = 6000;
 };
-}  // pathport
-}  // plugin
-}  // ola
+}  // namespace pathport
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_PATHPORT_PATHPORTDEVICE_H_

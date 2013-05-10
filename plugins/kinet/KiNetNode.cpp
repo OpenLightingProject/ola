@@ -168,6 +168,6 @@ bool KiNetNode::InitNetwork() {
   m_socket.reset(socket.release());
   return true;
 }
-}  // kinet
-}  // plugin
-}  // ola
+}  // namespace kinet
+}  // namespace plugin
+}  // namespace ola

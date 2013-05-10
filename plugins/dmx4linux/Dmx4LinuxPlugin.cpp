@@ -302,6 +302,6 @@ bool Dmx4LinuxPlugin::SetupDevices() {
   }
   return true;
 }
-}  // dmx4linux
-}  // plugin
-}  // ola
+}  // namespace dmx4linux
+}  // namespace plugin
+}  // namespace ola

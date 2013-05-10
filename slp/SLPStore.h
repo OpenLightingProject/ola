@@ -125,6 +125,6 @@ class SLPStore {
     bool AnyServiceMatchesScopes(const ScopeSet &scopes,
                                  const ServiceEntryVector &services);
 };
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola
 #endif  // SLP_SLPSTORE_H_

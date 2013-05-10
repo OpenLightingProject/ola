@@ -270,6 +270,6 @@ void ArtNetDevice::HandleNodeList(Request *request,
   }
   reply.SerializeToString(response);
 }
-}  // artnet
-}  // plugin
-}  // ola
+}  // namespace artnet
+}  // namespace plugin
+}  // namespace ola

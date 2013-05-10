@@ -242,5 +242,5 @@ unsigned int PosixInterfacePicker::GetIfReqSize(const char *data) const {
   else
     return sizeof(struct ifreq);
 }
-}  // network
-}  // ola
+}  // namespace network
+}  // namespace ola

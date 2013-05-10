@@ -410,5 +410,5 @@ void OlaClientCore::FreeArgs(arg_type *args) {
   delete args->reply;
   delete args;
 }
-}  // ola
+}  // namespace ola
 #endif  // OLA_OLACLIENTCORE_H_

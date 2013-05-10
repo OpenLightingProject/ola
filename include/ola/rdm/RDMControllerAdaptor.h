@@ -62,6 +62,6 @@ class DiscoverableRDMControllerAdaptor
       callback->Run(uids);
     }
 };
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola
 #endif  // INCLUDE_OLA_RDM_RDMCONTROLLERADAPTOR_H_

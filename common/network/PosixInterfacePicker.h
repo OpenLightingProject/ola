@@ -39,6 +39,6 @@ class PosixInterfacePicker: public InterfacePicker {
     static const unsigned int IFACE_COUNT_INC = 5;
     unsigned int GetIfReqSize(const char *data) const;
 };
-}  // network
-}  // ola
+}  // namespace network
+}  // namespace ola
 #endif  // COMMON_NETWORK_POSIXINTERFACEPICKER_H_

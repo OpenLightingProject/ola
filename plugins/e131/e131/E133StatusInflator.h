@@ -62,7 +62,7 @@ class E133StatusInflator: public BaseInflator {
       return true;
     }
 
-    void ResetHeaderField() {}  // noop
+    void ResetHeaderField() {}  // namespace noop
 
     virtual bool HandlePDUData(uint32_t vector,
                                HeaderSet &headers,
@@ -72,7 +72,7 @@ class E133StatusInflator: public BaseInflator {
   private:
     std::auto_ptr<StatusMessageHandler> m_handler;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_E133STATUSINFLATOR_H_

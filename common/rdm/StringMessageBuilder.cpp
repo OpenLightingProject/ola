@@ -340,5 +340,5 @@ void StringMessageBuilder::CleanUpVector() {
     m_groups.pop();
   }
 }
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola

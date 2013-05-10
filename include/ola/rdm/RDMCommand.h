@@ -554,6 +554,6 @@ class RDMDiscoveryResponse: public RDMResponse {
                                                  unsigned int length);
     static RDMDiscoveryResponse* InflateFromData(const string &data);
 };
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola
 #endif  // INCLUDE_OLA_RDM_RDMCOMMAND_H_

@@ -303,12 +303,13 @@ class ClockPrinter: public MessagePrinter {
         static_cast<int>(m_fields[3]) << ":" <<
         static_cast<int>(m_fields[4]) << endl;
     }
+
   private:
     enum { CLOCK_FIELDS = 5};
     uint16_t m_year;
     uint8_t m_fields[CLOCK_FIELDS];
     unsigned int m_offset;
 };
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola
 #endif  // INCLUDE_OLA_RDM_RDMMESSAGEPRINTERS_H_

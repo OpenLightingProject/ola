@@ -91,5 +91,5 @@ string StringJoin(const string &delim, const T &input) {
   }
   return str.str();
 }
-}  // ola
+}  // namespace ola
 #endif  // INCLUDE_OLA_STRINGUTILS_H_

@@ -52,6 +52,6 @@ bool StageProfiWidgetUsb::Connect(const std::string &path) {
       NewCallback<StageProfiWidget>(this, &StageProfiWidget::SocketReady));
   return true;
 }
-}  // stageprofi
-}  // plugin
-}  // ola
+}  // namespace stageprofi
+}  // namespace plugin
+}  // namespace ola

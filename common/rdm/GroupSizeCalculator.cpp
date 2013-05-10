@@ -289,5 +289,5 @@ void StaticGroupTokenCalculator::PostVisit(
   m_token_count.pop();
   m_token_count.top() += group_length * descriptor->MinBlocks();
 }
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola

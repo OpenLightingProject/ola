@@ -912,6 +912,6 @@ EnttecPort *EnttecUsbProWidget::GetPort(unsigned int i) {
 ola::io::ConnectedDescriptor *EnttecUsbProWidget::GetDescriptor() const {
   return m_impl->GetDescriptor();
 }
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola

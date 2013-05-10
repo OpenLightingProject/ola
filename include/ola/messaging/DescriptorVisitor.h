@@ -59,6 +59,6 @@ class FieldDescriptorVisitor {
     virtual void Visit(const FieldDescriptorGroup*) = 0;
     virtual void PostVisit(const FieldDescriptorGroup*) = 0;
 };
-}  // messaging
-}  // ola
+}  // namespace messaging
+}  // namespace ola
 #endif  // INCLUDE_OLA_MESSAGING_DESCRIPTORVISITOR_H_

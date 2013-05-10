@@ -352,6 +352,6 @@ bool ShowNetNode::InitNetwork() {
   m_socket->SetOnData(NewCallback(this, &ShowNetNode::SocketReady));
   return true;
 }
-}  // shownet
-}  // plugin
-}  // ola
+}  // namespace shownet
+}  // namespace plugin
+}  // namespace ola

@@ -304,5 +304,5 @@ bool PidDescriptor::RequestValid(uint16_t sub_device,
       return false;
   }
 }
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola

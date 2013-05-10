@@ -713,5 +713,5 @@ void SelectServer::SafeDecrement(const string &var_name) {
   if (m_export_map)
     (*m_export_map->GetIntegerVar(var_name))--;
 }
-}  // io
-}  // ola
+}  // namespace io
+}  // namespace ola

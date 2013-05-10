@@ -110,6 +110,6 @@ void IncomingUDPTransport::Receive() {
       static_cast<unsigned int>(size) - header_size);
   return;
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

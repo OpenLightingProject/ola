@@ -91,7 +91,7 @@ class GenericUsbProWidget: public BaseUsbProWidget {
     static const uint8_t DMX_RX_MODE_LABEL = 8;
     static const uint8_t DMX_CHANGED_LABEL = 9;
 };
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBPRO_GENERICUSBPROWIDGET_H_

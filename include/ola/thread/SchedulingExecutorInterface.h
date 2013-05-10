@@ -32,6 +32,6 @@ class SchedulingExecutorInterface: public ExecutorInterface,
   public:
     virtual ~SchedulingExecutorInterface() {}
 };
-}  // thread
-}  // ola
+}  // namespace thread
+}  // namespace ola
 #endif  // INCLUDE_OLA_THREAD_SCHEDULINGEXECUTORINTERFACE_H_

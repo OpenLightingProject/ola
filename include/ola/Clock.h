@@ -333,5 +333,5 @@ class MockClock: public Clock {
   private:
     TimeInterval m_offset;
 };
-}  // ola
+}  // namespace ola
 #endif  // INCLUDE_OLA_CLOCK_H_

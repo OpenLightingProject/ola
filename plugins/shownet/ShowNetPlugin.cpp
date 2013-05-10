@@ -114,6 +114,6 @@ bool ShowNetPlugin::SetDefaultPreferences() {
     return false;
   return true;
 }
-}  // shownet
-}  // plugin
-}  // ola
+}  // namespace shownet
+}  // namespace plugin
+}  // namespace ola

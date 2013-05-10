@@ -106,6 +106,6 @@ void StageProfiDevice::PrePortStop() {
 ConnectedDescriptor *StageProfiDevice::GetSocket() const {
   return m_widget->GetSocket();
 }
-}  // stageprofi
-}  // plugin
-}  // ola
+}  // namespace stageprofi
+}  // namespace plugin
+}  // namespace ola

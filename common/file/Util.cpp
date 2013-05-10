@@ -75,5 +75,5 @@ void FindMatchingFiles(const string &directory,
   }
   closedir(dp);
 }
-}  // file
-}  // ola
+}  // namespace file
+}  // namespace ola

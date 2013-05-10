@@ -314,6 +314,6 @@ void RDMPDUTest::testRDMPDUWithDataToOutputStream() {
   output.Pop(output.Size());
   delete[] pdu_data;
 }
-}  // ola
-}  // e131
-}  // plugin
+}  // namespace ola
+}  // namespace e131
+}  // namespace plugin

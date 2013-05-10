@@ -56,7 +56,7 @@ class UsbSerialDevice: public ola::Device {
   protected:
     SerialWidgetInterface *m_widget;
 };
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBPRO_USBSERIALDEVICE_H_

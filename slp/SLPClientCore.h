@@ -172,6 +172,6 @@ void SLPClientCore::FreeArgs(arg_type *args) {
   delete args->reply;
   delete args;
 }
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola
 #endif  // SLP_SLPCLIENTCORE_H_

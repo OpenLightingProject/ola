@@ -138,7 +138,7 @@ class RobeWidgetDetector: public WidgetDetectorInterface {
     // we need at least v 11 for decent RDM support
     static const uint8_t WTX_MIN_SOFTWARE_VERSION = 0x0b;
 };
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBPRO_ROBEWIDGETDETECTOR_H_

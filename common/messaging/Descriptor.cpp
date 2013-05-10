@@ -107,5 +107,5 @@ void Descriptor::Accept(FieldDescriptorVisitor &visitor) const {
   for (; iter != m_fields.end(); ++iter)
     (*iter)->Accept(visitor);
 }
-}  // messaging
-}  // ola
+}  // namespace messaging
+}  // namespace ola

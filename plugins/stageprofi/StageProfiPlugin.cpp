@@ -160,6 +160,6 @@ void StageProfiPlugin::DeleteDevice(StageProfiDevice *device) {
   device->Stop();
   delete device;
 }
-}  // stageprofi
-}  // plugin
-}  // ola
+}  // namespace stageprofi
+}  // namespace plugin
+}  // namespace ola

@@ -62,7 +62,7 @@ class ArtNetPlugin : public Plugin {
     static const char PLUGIN_NAME[];
     static const char PLUGIN_PREFIX[];
 };
-}  // artnet
-}  // plugin
-}  // ola
+}  // namespace artnet
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_ARTNET_ARTNETPLUGIN_H_

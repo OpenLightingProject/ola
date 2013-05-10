@@ -56,6 +56,6 @@ bool E133StatusInflator::HandlePDUData(uint32_t vector,
                  description);
   return true;
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

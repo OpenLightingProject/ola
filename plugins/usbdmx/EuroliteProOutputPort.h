@@ -75,7 +75,7 @@ class EuroliteProOutputPort: public BasicOutputPort, ola::thread::Thread {
     // 513 + header + code + size(2) + footer
     enum { FRAME_SIZE = 518 };
 };
-}  // usbdmx
-}  // plugin
-}  // ola
+}  // namespace usbdmx
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBDMX_EUROLITEPROOUTPUTPORT_H_

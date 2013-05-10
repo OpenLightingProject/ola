@@ -33,5 +33,5 @@ namespace ola {
     CAPABILITY_STATIC,  // port allows a static priority assignment
     CAPABILITY_FULL,  // port can either inherit or use a static assignment
   } port_priority_capability;
-}  // ola
+}  // namespace ola
 #endif  // INCLUDE_OLAD_PORTCONSTANTS_H_

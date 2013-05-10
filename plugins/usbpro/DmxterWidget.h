@@ -161,7 +161,7 @@ class DmxterWidget: public SerialWidgetInterface,
     DmxterWidgetImpl *m_impl;
     ola::rdm::DiscoverableQueueingRDMController *m_controller;
 };
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBPRO_DMXTERWIDGET_H_

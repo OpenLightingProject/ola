@@ -44,6 +44,6 @@ class SocketCloser {
   private:
     int m_fd;
 };
-}  // network
-}  // ola
+}  // namespace network
+}  // namespace ola
 #endif  // INCLUDE_OLA_NETWORK_SOCKETCLOSER_H_

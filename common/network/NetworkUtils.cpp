@@ -302,5 +302,5 @@ string Hostname() {
   StringSplit(hostname, tokens, ".");
   return string(tokens[0]);
 }
-}  // network
-}  // ola
+}  // namespace network
+}  // namespace ola

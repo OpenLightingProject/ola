@@ -107,7 +107,7 @@ class ArtNetOutputPort: public BasicOutputPort {
   private:
     ArtNetPortHelper m_helper;
 };
-}  // artnet
-}  // plugin
-}  // ola
+}  // namespace artnet
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_ARTNET_ARTNETPORT_H_

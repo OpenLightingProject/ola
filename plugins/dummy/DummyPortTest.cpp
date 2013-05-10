@@ -672,6 +672,6 @@ void DummyPortTest::checkNoBroadcastResponse(ola::rdm::rdm_pid pid) {
         NewSingleCallback(this, &DummyPortTest::HandleRDMResponse));
   Verify();
 }
-}  // dummy
-}  // ola
-}  // plugin
+}  // namespace dummy
+}  // namespace plugin
+}  // namespace ola

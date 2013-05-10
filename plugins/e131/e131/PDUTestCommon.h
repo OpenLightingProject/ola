@@ -188,7 +188,7 @@ class MockInflator: public BaseInflator {
     Callback0<void> *m_on_recv;
     unsigned int m_last_header;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_PDUTESTCOMMON_H_

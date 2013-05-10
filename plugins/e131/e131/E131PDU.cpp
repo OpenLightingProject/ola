@@ -140,6 +140,6 @@ void E131PDU::PackData(OutputStream *stream) const {
   if (m_dmp_pdu)
     m_dmp_pdu->Write(stream);
 }
-}  // ola
-}  // e131
-}  // plugin
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

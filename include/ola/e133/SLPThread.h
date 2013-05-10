@@ -68,7 +68,7 @@ class SLPThreadServerInfo : public ola::slp::ServerInfo {
           backend_type(server_info.backend_type) {
     }
 
-    SLPThreadServerInfo(const ola::slp::ServerInfo &server_info)
+    explicit SLPThreadServerInfo(const ola::slp::ServerInfo &server_info)
         : ServerInfo(server_info) {
     }
 };
@@ -227,6 +227,6 @@ class SLPThreadFactory {
     SLPThreadFactory(const SLPThreadFactory&);
     SLPThreadFactory& operator=(const SLPThreadFactory&);
 };
-}  // e133
-}  // ola
+}  // namespace e133
+}  // namespace ola
 #endif  // INCLUDE_OLA_E133_SLPTHREAD_H_

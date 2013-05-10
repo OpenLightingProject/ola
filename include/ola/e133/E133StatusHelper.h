@@ -33,6 +33,6 @@ using ola::e133::E133StatusCode;
 
 bool IntToStatusCode(uint16_t input, E133StatusCode *status_code);
 string StatusMessageIdToString(E133StatusCode status_code);
-}  // e133
-}  // ola
+}  // namespace e133
+}  // namespace ola
 #endif  // INCLUDE_OLA_E133_E133STATUSHELPER_H_

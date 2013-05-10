@@ -62,6 +62,6 @@ class OpenSLPThread: public BaseSLPThread {
     bool m_init_ok;
     SLPHandle m_slp_handle;
 };
-}  // e133
-}  // ola
+}  // namespace e133
+}  // namespace ola
 #endif  // INCLUDE_OLA_E133_OPENSLPTHREAD_H_

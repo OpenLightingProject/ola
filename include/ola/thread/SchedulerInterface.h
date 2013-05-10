@@ -53,6 +53,6 @@ class SchedulerInterface {
 
     virtual void RemoveTimeout(timeout_id id) = 0;
 };
-}  // thread
-}  // ola
+}  // namespace thread
+}  // namespace ola
 #endif  // INCLUDE_OLA_THREAD_SCHEDULERINTERFACE_H_

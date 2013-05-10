@@ -92,6 +92,6 @@ void KiNetDevice::PostPortStop() {
   delete m_node;
   m_node = NULL;
 }
-}  // kinet
-}  // plugin
-}  // ola
+}  // namespace kinet
+}  // namespace plugin
+}  // namespace ola

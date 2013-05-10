@@ -151,6 +151,6 @@ class DiscoveryAgent {
     // The number of times we'll attempt to mute a UID
     static const unsigned int MAX_MUTE_ATTEMPTS = 5;
 };
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola
 #endif  // INCLUDE_OLA_RDM_DISCOVERYAGENT_H_

@@ -53,7 +53,8 @@ void ASSERT_DATA_EQUALS(unsigned int line,
           << static_cast<int>(expected[i]);
       str << ((expected[i] == actual[i]) ? " == " : "  != ");
       str << "0x" << static_cast<int>(actual[i]) << " (";
-      str << ((expected[i] >= '!' && expected[i] <= '~') ? (char) expected[i] : ' ');
+      str << ((expected[i] >= '!' && expected[i] <= '~') ? (char) expected[i] :
+              ' ');
       str << ((expected[i] == actual[i]) ? " == " : "  != ");
       str << ((actual[i] >= '!' && actual[i] <= '~') ? (char) actual[i] : ' ');
       str << ")";
@@ -65,5 +66,5 @@ void ASSERT_DATA_EQUALS(unsigned int line,
   }
   CPPUNIT_ASSERT_MESSAGE(message, data_matches);
 }
-}  // testing
-}  // ola
+}  // namespace testing
+}  // namespace ola

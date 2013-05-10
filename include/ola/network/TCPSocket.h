@@ -101,6 +101,6 @@ class TCPAcceptingSocket: public ola::io::ReadFileDescriptor {
     TCPAcceptingSocket(const TCPAcceptingSocket &other);
     TCPAcceptingSocket& operator=(const TCPAcceptingSocket &other);
 };
-}  // network
-}  // ola
+}  // namespace network
+}  // namespace ola
 #endif  // INCLUDE_OLA_NETWORK_TCPSOCKET_H_

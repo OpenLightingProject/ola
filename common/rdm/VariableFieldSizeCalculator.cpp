@@ -181,5 +181,5 @@ void VariableFieldSizeCalculator::Visit(
   else
     m_variable_group_fields.push_back(descriptor);
 }
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola

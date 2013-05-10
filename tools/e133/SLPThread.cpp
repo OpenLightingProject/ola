@@ -563,5 +563,5 @@ BaseSLPThread* SLPThreadFactory::NewSLPThread(
   return new OLASLPThread(ss, discovery_interval);
 #endif
 }
-}  // e133
-}  // ola
+}  // namespace e133
+}  // namespace ola

@@ -80,6 +80,6 @@ void RDMPDU::PrependPDU(ola::io::IOStack *stack) {
   stack->Write(reinterpret_cast<uint8_t*>(&vector), sizeof(vector));
   PrependFlagsAndLength(stack);
 }
-}  // ola
-}  // e131
-}  // plugin
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

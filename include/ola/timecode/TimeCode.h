@@ -69,6 +69,6 @@ class TimeCode {
     static const uint8_t MAX_MINUTES = 59;
     static const uint8_t MAX_SECONDS = 59;
 };
-}  // timecode
-}  // ola
+}  // namespace timecode
+}  // namespace ola
 #endif  // INCLUDE_OLA_TIMECODE_TIMECODE_H_

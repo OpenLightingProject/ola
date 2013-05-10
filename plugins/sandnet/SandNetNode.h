@@ -24,6 +24,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <utility>
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/network/IPV4Address.h"
@@ -122,7 +123,7 @@ class SandNetNode {
     static const char DEFAULT_NODE_NAME[];
     static const uint32_t FIRMWARE_VERSION = 0x00050501;
 };
-}  // sandnet
-}  // plugin
-}  // ola
+}  // namespace sandnet
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_SANDNET_SANDNETNODE_H_

@@ -108,6 +108,6 @@ class DiscoverableQueueingRDMController: public QueueingRDMController {
     void StartRDMDiscovery();
     void DiscoveryComplete(const ola::rdm::UIDSet &uids);
 };
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola
 #endif  // INCLUDE_OLA_RDM_QUEUEINGRDMCONTROLLER_H_

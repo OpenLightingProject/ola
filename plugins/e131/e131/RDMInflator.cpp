@@ -88,6 +88,6 @@ bool RDMInflator::HandlePDUData(uint32_t vector,
   }
   return true;
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

@@ -155,6 +155,6 @@ void E133PDUTest::testSimpleE133PDUToOutputStream() {
   output.Pop(output.Size());
   delete[] pdu_data;
 }
-}  // ola
-}  // e131
-}  // plugin
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

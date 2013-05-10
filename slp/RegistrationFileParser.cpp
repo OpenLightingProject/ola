@@ -128,5 +128,5 @@ void RegistrationFileParser::SplitLine(const string &line,
       tokens->push_back(token);
   }
 }
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola

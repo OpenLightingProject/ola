@@ -71,5 +71,5 @@ class PluginManager {
     PluginMap m_active_plugins;  // active plugins
     PluginAdaptor *m_plugin_adaptor;
 };
-}  // ola
+}  // namespace ola
 #endif  // OLAD_PLUGINMANAGER_H_

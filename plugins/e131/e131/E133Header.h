@@ -70,7 +70,7 @@ class E133Header {
     uint32_t m_sequence;
     uint16_t m_endpoint;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_E133HEADER_H_

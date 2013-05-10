@@ -352,6 +352,6 @@ bool DMPE131Inflator::TrackSourceIfRequired(
     return true;
   }
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
