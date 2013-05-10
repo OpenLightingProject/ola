@@ -94,7 +94,7 @@ void MockCommandAction::CheckArgs(unsigned long line, const char* args[]) {
   const char **ptr = args;
   vector<string>::const_iterator iter = m_interpolated_args.begin();
   while (*ptr && iter != m_interpolated_args.end())
-    CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(), string(*ptr++), *iter++);
+    OLA_ASSERT_EQUAL_MESSAGE(str.str(), string(*ptr++), *iter++);
 
   if (iter != m_interpolated_args.end()) {
     str << ", got extra args: ";
@@ -104,7 +104,7 @@ void MockCommandAction::CheckArgs(unsigned long line, const char* args[]) {
       if (iter != m_interpolated_args.end())
         str << ", ";
     }
-    CPPUNIT_FAIL(str.str());
+    OLA_FAIL(str.str());
   } else if (*ptr) {
     str << ", missing args: ";
     while (*ptr) {
@@ -112,7 +112,7 @@ void MockCommandAction::CheckArgs(unsigned long line, const char* args[]) {
       if (*ptr)
         str << ", ";
     }
-    CPPUNIT_FAIL(str.str());
+    OLA_FAIL(str.str());
   }
   m_interpolated_args.clear();
 }

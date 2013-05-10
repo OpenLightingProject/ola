@@ -496,7 +496,7 @@ void RDMCommandTest::PackAndVerify(const RDMCommand &command,
     std::stringstream str;
     str << "Offset " << i << ", expected " << static_cast<int>(expected[i]) <<
       ", got " << static_cast<int>(buffer[i]);
-    CPPUNIT_ASSERT_MESSAGE(str.str(), buffer[i] == expected[i]);
+    OLA_ASSERT_TRUE_MSG(buffer[i] == expected[i], str.str());
   }
   delete[] buffer;
 }

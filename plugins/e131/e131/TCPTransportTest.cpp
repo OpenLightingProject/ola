@@ -278,7 +278,7 @@ void TCPTransportTest::SendPDUBlock(unsigned int line) {
 void TCPTransportTest::SendPacket(const string &message, IOStack *packet) {
   IOQueue output;
   packet->MoveToIOQueue(&output);
-  CPPUNIT_ASSERT_MESSAGE(message, m_loopback.Send(&output));
+  OLA_ASSERT_TRUE_MSG(m_loopback.Send(&output), message);
 }
 }  // e131
 }  // plugin

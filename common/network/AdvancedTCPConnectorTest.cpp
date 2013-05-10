@@ -319,12 +319,11 @@ void AdvancedTCPConnectorTest::ConfirmState(
 
   AdvancedTCPConnector::ConnectionState state;
   unsigned int failed_attempts;
-  CPPUNIT_ASSERT_MESSAGE(
-      str.str(),
-      connector.GetEndpointState(endpoint, &state, &failed_attempts));
-
-  CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(), expected_state, state);
-  CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(), expected_attempts, failed_attempts);
+  OLA_ASSERT_TRUE_MSG(
+      connector.GetEndpointState(endpoint, &state, &failed_attempts)
+      str.str());
+  OLA_ASSERT_EQUAL_MESSAGE(str.str(), expected_state, state);
+  OLA_ASSERT_EQUAL_MESSAGE(str.str(), expected_attempts, failed_attempts);
 }
 
 
@@ -334,8 +333,8 @@ void AdvancedTCPConnectorTest::ConfirmState(
  */
 void AdvancedTCPConnectorTest::SetupListeningSocket(
     TCPAcceptingSocket *listening_socket) {
-  CPPUNIT_ASSERT_MESSAGE("Check for another instance of olad running",
-                         listening_socket->Listen(m_server_address));
+  OLA_ASSERT_TRUE_MSG(listening_socket->Listen(m_server_address),
+                         "Check for another instance of olad running");
   // calling listen a second time should fail
   OLA_ASSERT_FALSE(listening_socket->Listen(m_server_address));
   OLA_INFO << "listening on " << m_server_address;
