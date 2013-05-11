@@ -51,7 +51,7 @@ class DMPE131Inflator: public DMPInflator {
 
   protected:
     virtual bool HandlePDUData(uint32_t vector,
-                               HeaderSet &headers,
+                               const HeaderSet &headers,
                                const uint8_t *data,
                                unsigned int pdu_len);
 

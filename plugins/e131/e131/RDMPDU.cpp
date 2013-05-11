@@ -46,8 +46,8 @@ unsigned int RDMPDU::DataSize() const {
 /*
  * RDM PDUs don't contain a header.
  */
-bool RDMPDU::PackHeader(uint8_t *, unsigned int &length) const {
-  length = 0;
+bool RDMPDU::PackHeader(uint8_t *, unsigned int *length) const {
+  *length = 0;
   return true;
 }
 
@@ -55,13 +55,13 @@ bool RDMPDU::PackHeader(uint8_t *, unsigned int &length) const {
 /*
  * Pack the data portion.
  */
-bool RDMPDU::PackData(uint8_t *data, unsigned int &length) const {
+bool RDMPDU::PackData(uint8_t *data, unsigned int *length) const {
   if (!m_command.get()) {
-    length = 0;
+    *length = 0;
     return true;
   }
 
-  return RDMCommandSerializer::Pack(*m_command, data, &length);
+  return RDMCommandSerializer::Pack(*m_command, data, length);
 }
 
 

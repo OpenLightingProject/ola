@@ -44,20 +44,24 @@ class FakePDU: public PDU {
     unsigned int HeaderSize() const { return 0; }
     unsigned int DataSize() const { return 0; }
 
-    bool Pack(uint8_t *data, unsigned int &length) const {
-      if (length < sizeof(m_value))
+    bool Pack(uint8_t *data, unsigned int *length) const {
+      if (*length < sizeof(m_value))
         return false;
       memcpy(data, &m_value, sizeof(m_value));
-      length = sizeof(m_value);
+      *length = sizeof(m_value);
       return true;
     }
 
-    bool PackHeader(uint8_t*, unsigned int&) const {
+    bool PackHeader(uint8_t *data, unsigned int *length) const {
       return true;
+      (void) data;
+      (void) length;
     }
 
-    bool PackData(uint8_t*, unsigned int&) const {
+    bool PackData(uint8_t *data, unsigned int *length) const {
       return true;
+      (void) data;
+      (void) length;
     }
 
     void Write(ola::io::OutputStream *stream) const {
@@ -86,13 +90,13 @@ class MockPDU: public PDU {
     unsigned int HeaderSize() const { return sizeof(m_header); }
     unsigned int DataSize() const { return sizeof(m_value); }
 
-    bool PackHeader(uint8_t *data, unsigned int &length) const {
-      if (length < HeaderSize()) {
-        length = 0;
+    bool PackHeader(uint8_t *data, unsigned int *length) const {
+      if (*length < HeaderSize()) {
+        *length = 0;
         return false;
       }
       memcpy(data, &m_header, sizeof(m_header));
-      length = HeaderSize();
+      *length = HeaderSize();
       return true;
     }
 
@@ -101,13 +105,13 @@ class MockPDU: public PDU {
                     sizeof(m_header));
     }
 
-    bool PackData(uint8_t *data, unsigned int &length) const {
-      if (length < DataSize()) {
-        length = 0;
+    bool PackData(uint8_t *data, unsigned int *length) const {
+      if (*length < DataSize()) {
+        *length = 0;
         return false;
       }
       memcpy(data, &m_value, sizeof(m_value));
-      length = DataSize();
+      *length = DataSize();
       return true;
     }
 
@@ -154,7 +158,7 @@ class MockInflator: public BaseInflator {
 
   protected:
     void ResetHeaderField() {}
-    bool DecodeHeader(HeaderSet &,
+    bool DecodeHeader(HeaderSet *,
                       const uint8_t *data,
                       unsigned int,
                       unsigned int &bytes_used) {
@@ -165,7 +169,7 @@ class MockInflator: public BaseInflator {
       return true;
     }
 
-    bool HandlePDUData(uint32_t vector, HeaderSet &headers,
+    bool HandlePDUData(uint32_t vector, const HeaderSet &headers,
                        const uint8_t *data, unsigned int pdu_length) {
       CPPUNIT_ASSERT_EQUAL((uint32_t) MockPDU::TEST_DATA_VECTOR, vector);
       CPPUNIT_ASSERT_EQUAL((unsigned int) 4, pdu_length);

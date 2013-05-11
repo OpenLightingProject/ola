@@ -61,14 +61,14 @@ void RootInflatorTest::testInflatePDU() {
   unsigned int size = pdu.Size();
   uint8_t *data = new uint8_t[size];
   unsigned int bytes_used = size;
-  OLA_ASSERT(pdu.Pack(data, bytes_used));
+  OLA_ASSERT(pdu.Pack(data, &bytes_used));
   OLA_ASSERT_EQ((unsigned int) size, bytes_used);
 
   MockInflator mock_inflator(cid);
   RootInflator inflator;
   inflator.AddInflator(&mock_inflator);
   HeaderSet header_set;
-  OLA_ASSERT(inflator.InflatePDUBlock(header_set, data, size));
+  OLA_ASSERT(inflator.InflatePDUBlock(&header_set, data, size));
   delete[] data;
 }
 }  // namespace e131

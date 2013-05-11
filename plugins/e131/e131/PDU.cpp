@@ -48,14 +48,14 @@ unsigned int PDU::Size() const {
  * @param length length of the buffer
  * @return false on error, true otherwise
  */
-bool PDU::Pack(uint8_t *buffer, unsigned int &length) const {
+bool PDU::Pack(uint8_t *buffer, unsigned int *length) const {
   unsigned int size = Size();
   unsigned int offset = 0;
 
-  if (length < size) {
+  if (*length < size) {
     OLA_WARN << "PDU Pack: buffer too small, required " << size << ", got "
-      << length;
-    length = 0;
+      << *length;
+    *length = 0;
     return false;
   }
 
@@ -93,20 +93,20 @@ bool PDU::Pack(uint8_t *buffer, unsigned int &length) const {
       return false;
   }
 
-  unsigned int bytes_used = length - offset;
-  if (!PackHeader(buffer + offset, bytes_used)) {
-    length = 0;
+  unsigned int bytes_used = *length - offset;
+  if (!PackHeader(buffer + offset, &bytes_used)) {
+    *length = 0;
     return false;
   }
   offset += bytes_used;
 
-  bytes_used = length - offset;
-  if (!PackData(buffer + offset, bytes_used)) {
-    length = 0;
+  bytes_used = *length - offset;
+  if (!PackData(buffer + offset, &bytes_used)) {
+    *length = 0;
     return false;
   }
   offset += bytes_used;
-  length = offset;
+  *length = offset;
   return true;
 }
 

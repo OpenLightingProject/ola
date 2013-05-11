@@ -38,7 +38,7 @@ using ola::network::NetworkToHost;
  * @param length length of the data
  * @returns true if successful, false otherwise
  */
-bool E131Inflator::DecodeHeader(HeaderSet &headers,
+bool E131Inflator::DecodeHeader(HeaderSet *headers,
                                 const uint8_t *data,
                                 unsigned int length,
                                 unsigned int &bytes_used) {
@@ -57,7 +57,7 @@ bool E131Inflator::DecodeHeader(HeaderSet &headers,
           raw_header.options & E131Header::STREAM_TERMINATED_MASK);
       m_last_header = header;
       m_last_header_valid = true;
-      headers.SetE131Header(header);
+      headers->SetE131Header(header);
       bytes_used = sizeof(E131Header::e131_pdu_header);
       return true;
     }
@@ -71,7 +71,7 @@ bool E131Inflator::DecodeHeader(HeaderSet &headers,
     OLA_WARN << "Missing E131 Header data";
     return false;
   }
-  headers.SetE131Header(m_last_header);
+  headers->SetE131Header(m_last_header);
   return true;
 }
 
@@ -84,7 +84,7 @@ bool E131Inflator::DecodeHeader(HeaderSet &headers,
  * @param length length of the data
  * @returns true if successful, false otherwise
  */
-bool E131InflatorRev2::DecodeHeader(HeaderSet &headers,
+bool E131InflatorRev2::DecodeHeader(HeaderSet *headers,
                                     const uint8_t *data,
                                     unsigned int length,
                                     unsigned int &bytes_used) {
@@ -100,7 +100,7 @@ bool E131InflatorRev2::DecodeHeader(HeaderSet &headers,
                             NetworkToHost(raw_header.universe));
       m_last_header = header;
       m_last_header_valid = true;
-      headers.SetE131Header(header);
+      headers->SetE131Header(header);
       bytes_used = sizeof(E131Rev2Header::e131_rev2_pdu_header);
       return true;
     }
@@ -114,7 +114,7 @@ bool E131InflatorRev2::DecodeHeader(HeaderSet &headers,
     OLA_WARN << "Missing E131 Header data";
     return false;
   }
-  headers.SetE131Header(m_last_header);
+  headers->SetE131Header(m_last_header);
   return true;
 }
 }  // namespace e131

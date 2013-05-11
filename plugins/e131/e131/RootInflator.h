@@ -35,13 +35,15 @@ class NullInflator : public InflatorInterface {
   public:
     uint32_t Id() const { return ola::acn::VECTOR_ROOT_NULL; }
 
-    unsigned int InflatePDUBlock(HeaderSet &,
-                                 const uint8_t*,
+    unsigned int InflatePDUBlock(HeaderSet *headers,
+                                 const uint8_t *data,
                                  unsigned int len) {
       if (len) {
         OLA_WARN << "VECTOR_ROOT_NULL contained data of size " << len;
       }
       return 0;
+      (void) data;
+      (void) headers;
     }
 };
 
@@ -63,11 +65,11 @@ class RootInflator: public BaseInflator {
 
   protected:
     // Decode a header block and adds any PduHeaders to the HeaderSet object
-    bool DecodeHeader(HeaderSet &headers, const uint8_t *data,
+    bool DecodeHeader(HeaderSet *headers, const uint8_t *data,
                       unsigned int len, unsigned int &bytes_used);
 
     void ResetHeaderField();
-    bool PostHeader(uint32_t vector, HeaderSet &headers);
+    bool PostHeader(uint32_t vector, const HeaderSet &headers);
 
   private :
     NullInflator m_null_inflator;

@@ -79,7 +79,7 @@ const uint8_t *PreamblePacker::Pack(const PDUBlock<PDU> &pdu_block,
     Init();
 
   unsigned int size = MAX_DATAGRAM_SIZE - sizeof(ACN_HEADER);
-  if (!pdu_block.Pack(m_send_buffer + sizeof(ACN_HEADER), size)) {
+  if (!pdu_block.Pack(m_send_buffer + sizeof(ACN_HEADER), &size)) {
     OLA_WARN << "Failed to pack E1.31 PDU";
     return NULL;
   }

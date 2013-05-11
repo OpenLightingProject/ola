@@ -48,7 +48,7 @@ class DMPPDU: public PDU {
     ~DMPPDU() {}
 
     unsigned int HeaderSize() const { return DMPHeader::DMP_HEADER_SIZE; }
-    bool PackHeader(uint8_t *data, unsigned int &length) const;
+    bool PackHeader(uint8_t *data, unsigned int *length) const;
     void PackHeader(OutputStream *stream) const;
 
   protected:
@@ -74,16 +74,16 @@ class DMPGetProperty: public DMPPDU {
               (m_header.Type() == NON_RANGE ? 1 : 3));
     }
 
-    bool PackData(uint8_t *data, unsigned int &length) const {
+    bool PackData(uint8_t *data, unsigned int *length) const {
       typename vector<Address>::const_iterator iter;
       unsigned int offset = 0;
       for (iter = m_addresses.begin(); iter != m_addresses.end(); ++iter) {
-        unsigned int remaining = length - offset;
-        if (!iter->Pack(data + offset, remaining))
+        unsigned int remaining = *length - offset;
+        if (!iter->Pack(data + offset, &remaining))
           return false;
         offset += remaining;
       }
-      length = offset;
+      *length = offset;
       return true;
     }
 
@@ -219,16 +219,16 @@ class DMPSetProperty: public DMPPDU {
       return length;
     }
 
-    bool PackData(uint8_t *data, unsigned int &length) const {
+    bool PackData(uint8_t *data, unsigned int *length) const {
       typename AddressDataChunks::const_iterator iter;
       unsigned int offset = 0;
       for (iter = m_chunks.begin(); iter != m_chunks.end(); ++iter) {
-        unsigned int remaining = length - offset;
-        if (!iter->Pack(data + offset, remaining))
+        unsigned int remaining = *length - offset;
+        if (!iter->Pack(data + offset, &remaining))
           return false;
         offset += remaining;
       }
-      length = offset;
+      *length = offset;
       return true;
     }
 

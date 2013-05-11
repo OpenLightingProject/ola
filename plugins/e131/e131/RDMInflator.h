@@ -35,7 +35,7 @@ class RDMInflator: public BaseInflator {
   friend class RDMInflatorTest;
 
   public:
-    // These are pointers so the callers don't have to pull in al the headers.
+    // These are pointers so the callers don't have to pull in all the headers.
     typedef ola::Callback3<void,
                            const TransportHeader*,  // src ip & port
                            const E133Header*,  // the E1.33 header
@@ -52,7 +52,7 @@ class RDMInflator: public BaseInflator {
     static const unsigned int VECTOR_RDMNET_DATA = 0xcc;
 
   protected:
-    bool DecodeHeader(HeaderSet &headers,
+    bool DecodeHeader(HeaderSet *headers,
                       const uint8_t *data,
                       unsigned int len,
                       unsigned int &bytes_used);
@@ -60,7 +60,7 @@ class RDMInflator: public BaseInflator {
     void ResetHeaderField() {}  // namespace noop
 
     virtual bool HandlePDUData(uint32_t vector,
-                               HeaderSet &headers,
+                               const HeaderSet &headers,
                                const uint8_t *data,
                                unsigned int pdu_len);
 

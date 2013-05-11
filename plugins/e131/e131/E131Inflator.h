@@ -44,7 +44,7 @@ class E131Inflator: public BaseInflator {
     uint32_t Id() const { return ola::acn::VECTOR_ROOT_E131; }
 
   protected:
-    bool DecodeHeader(HeaderSet &headers,
+    bool DecodeHeader(HeaderSet *headers,
                       const uint8_t *data,
                       unsigned int len,
                       unsigned int &bytes_used);
@@ -73,7 +73,7 @@ class E131InflatorRev2: public BaseInflator {
     uint32_t Id() const { return ola::acn::VECTOR_ROOT_E131_REV2; }
 
   protected:
-    bool DecodeHeader(HeaderSet &headers, const uint8_t *data,
+    bool DecodeHeader(HeaderSet *headers, const uint8_t *data,
                       unsigned int len, unsigned int &bytes_used);
 
     void ResetHeaderField() {

@@ -29,15 +29,15 @@ namespace e131 {
 /*
  * Pack the header portion.
  */
-bool DMPPDU::PackHeader(uint8_t *data, unsigned int &length) const {
-  if (length < DMPHeader::DMP_HEADER_SIZE) {
-    OLA_WARN << "DMPPDU::PackHeader: buffer too small, got " << length <<
+bool DMPPDU::PackHeader(uint8_t *data, unsigned int *length) const {
+  if (*length < DMPHeader::DMP_HEADER_SIZE) {
+    OLA_WARN << "DMPPDU::PackHeader: buffer too small, got " << *length <<
       " required " << DMPHeader::DMP_HEADER_SIZE;
-    length = 0;
+    *length = 0;
     return false;
   }
   *data = m_header.Header();
-  length = DMPHeader::DMP_HEADER_SIZE;
+  *length = DMPHeader::DMP_HEADER_SIZE;
   return true;
 }
 

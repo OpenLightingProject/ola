@@ -86,7 +86,7 @@ void RDMPDUTest::testEmptyPDU() {
 
   unsigned int length = pdu.Size();
   uint8_t *buffer = new uint8_t[length];
-  OLA_ASSERT(pdu.Pack(buffer, length));
+  OLA_ASSERT(pdu.Pack(buffer, &length));
 
   const uint8_t expected_data[] = {0x70, 3, TEST_VECTOR};
   ASSERT_DATA_EQUALS(__LINE__, expected_data, sizeof(expected_data),
@@ -149,7 +149,7 @@ void RDMPDUTest::testSimpleRDMPDU() {
 
   unsigned int length = pdu.Size();
   uint8_t *buffer = new uint8_t[length];
-  OLA_ASSERT(pdu.Pack(buffer, length));
+  OLA_ASSERT(pdu.Pack(buffer, &length));
 
   uint8_t expected_data[] = {
     0x70, 0x1c, TEST_VECTOR,
@@ -243,7 +243,7 @@ void RDMPDUTest::testRDMPDUWithData() {
 
   unsigned int length = pdu.Size();
   uint8_t *buffer = new uint8_t[length];
-  OLA_ASSERT(pdu.Pack(buffer, length));
+  OLA_ASSERT(pdu.Pack(buffer, &length));
 
   uint8_t expected_data[] = {
     0x70, 0x20, TEST_VECTOR,

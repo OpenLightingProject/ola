@@ -50,8 +50,8 @@ class RootPDU: public PDU {
 
     unsigned int HeaderSize() const { return CID::CID_LENGTH; }
     unsigned int DataSize() const { return m_block_size; }
-    bool PackHeader(uint8_t *data, unsigned int &length) const;
-    bool PackData(uint8_t *data, unsigned int &length) const;
+    bool PackHeader(uint8_t *data, unsigned int *length) const;
+    bool PackData(uint8_t *data, unsigned int *length) const;
 
     void PackHeader(OutputStream *stream) const;
     void PackData(OutputStream *stream) const;

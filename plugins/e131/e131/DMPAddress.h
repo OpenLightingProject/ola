@@ -101,7 +101,7 @@ class BaseDMPAddress {
     virtual dmp_address_size AddressSize() const = 0;
 
     // Pack this address into memory
-    virtual bool Pack(uint8_t *data, unsigned int &length) const = 0;
+    virtual bool Pack(uint8_t *data, unsigned int *length) const = 0;
 
     // Write this address to an OutputStream
     virtual void Write(ola::io::OutputStream *stream) const = 0;
@@ -129,14 +129,14 @@ class DMPAddress: public BaseDMPAddress {
     unsigned int Number() const { return 1; }
     dmp_address_size AddressSize() const { return TypeToDMPSize<type>(); }
 
-    bool Pack(uint8_t *data, unsigned int &length) const {
-      if (length < Size()) {
-        length = 0;
+    bool Pack(uint8_t *data, unsigned int *length) const {
+      if (*length < Size()) {
+        *length = 0;
         return false;
       }
       type field = HostToNetwork(m_start);
       memcpy(data, &field, BaseSize());
-      length = Size();
+      *length = Size();
       return true;
     }
 
@@ -182,9 +182,9 @@ class RangeDMPAddress: public BaseDMPAddress {
     unsigned int Number() const { return m_number; }
     dmp_address_size AddressSize() const { return TypeToDMPSize<type>(); }
 
-    bool Pack(uint8_t *data, unsigned int &length) const {
-      if (length < Size()) {
-        length = 0;
+    bool Pack(uint8_t *data, unsigned int *length) const {
+      if (*length < Size()) {
+        *length = 0;
         return false;
       }
       type field[3];
@@ -192,7 +192,7 @@ class RangeDMPAddress: public BaseDMPAddress {
       field[1] = HostToNetwork(m_increment);
       field[2] = HostToNetwork(m_number);
       memcpy(data, &field, Size());
-      length = Size();
+      *length = Size();
       return true;
     }
 
@@ -254,21 +254,21 @@ class DMPAddressData {
     unsigned int Size() const { return m_address->Size() + m_length; }
 
     // Pack the data into a buffer
-    bool Pack(uint8_t *data, unsigned int &length) const {
+    bool Pack(uint8_t *data, unsigned int *length) const {
       if (!m_data)
         return false;
 
-      unsigned int total = length;
+      unsigned int total = *length;
       if (!m_address->Pack(data, length)) {
         length = 0;
         return false;
       }
-      if (total - length < m_length) {
+      if (total - *length < m_length) {
         length = 0;
         return false;
       }
-      memcpy(data + length, m_data, m_length);
-      length += m_length;
+      memcpy(data + *length, m_data, m_length);
+      *length += m_length;
       return true;
     }
 

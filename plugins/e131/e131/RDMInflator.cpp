@@ -55,7 +55,7 @@ void RDMInflator::SetRDMHandler(RDMMessageHandler *handler) {
  * @param length length of the data
  * @returns true if successful, false otherwise
  */
-bool RDMInflator::DecodeHeader(HeaderSet&,
+bool RDMInflator::DecodeHeader(HeaderSet *,
                                const uint8_t*,
                                unsigned int,
                                unsigned int &bytes_used) {
@@ -68,7 +68,7 @@ bool RDMInflator::DecodeHeader(HeaderSet&,
  * Handle a DMP PDU for E1.33.
  */
 bool RDMInflator::HandlePDUData(uint32_t vector,
-                                HeaderSet &headers,
+                                const HeaderSet &headers,
                                 const uint8_t *data,
                                 unsigned int pdu_len) {
   if (vector != VECTOR_RDMNET_DATA) {

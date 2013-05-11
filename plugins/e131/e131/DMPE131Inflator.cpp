@@ -54,7 +54,7 @@ DMPE131Inflator::~DMPE131Inflator() {
  * Handle a DMP PDU for E1.31.
  */
 bool DMPE131Inflator::HandlePDUData(uint32_t vector,
-                                    HeaderSet &headers,
+                                    const HeaderSet &headers,
                                     const uint8_t *data,
                                     unsigned int pdu_len) {
   if (vector != ola::acn::DMP_SET_PROPERTY_VECTOR) {
@@ -123,7 +123,8 @@ bool DMPE131Inflator::HandlePDUData(uint32_t vector,
   }
 
   DmxBuffer *target_buffer;
-  if (!TrackSourceIfRequired(&universe_iter->second, headers, &target_buffer)) {
+  if (!TrackSourceIfRequired(&universe_iter->second, headers,
+                             &target_buffer)) {
     // no need to continue processing
     return true;
   }

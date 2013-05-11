@@ -55,13 +55,13 @@ unsigned int E131PDU::DataSize() const {
 /*
  * Pack the header portion.
  */
-bool E131PDU::PackHeader(uint8_t *data, unsigned int &length) const {
+bool E131PDU::PackHeader(uint8_t *data, unsigned int *length) const {
   unsigned int header_size = HeaderSize();
 
-  if (length < header_size) {
-    OLA_WARN << "E131PDU::PackHeader: buffer too small, got " << length <<
-      " required " << header_size;
-    length = 0;
+  if (*length < header_size) {
+    OLA_WARN << "E131PDU::PackHeader: buffer too small, got " << *length
+             << " required " << header_size;
+    *length = 0;
     return false;
   }
 
@@ -72,8 +72,8 @@ bool E131PDU::PackHeader(uint8_t *data, unsigned int &length) const {
     header.priority = m_header.Priority();
     header.sequence = m_header.Sequence();
     header.universe = HostToNetwork(m_header.Universe());
-    length = sizeof(E131Rev2Header::e131_rev2_pdu_header);
-    memcpy(data, &header, length);
+    *length = sizeof(E131Rev2Header::e131_rev2_pdu_header);
+    memcpy(data, &header, *length);
   } else {
     E131Header::e131_pdu_header header;
     strncpy(header.source, m_header.Source().data(),
@@ -85,8 +85,8 @@ bool E131PDU::PackHeader(uint8_t *data, unsigned int &length) const {
         (m_header.PreviewData() ? E131Header::PREVIEW_DATA_MASK : 0) |
         (m_header.StreamTerminated() ? E131Header::STREAM_TERMINATED_MASK : 0));
     header.universe = HostToNetwork(m_header.Universe());
-    length = sizeof(E131Header::e131_pdu_header);
-    memcpy(data, &header, length);
+    *length = sizeof(E131Header::e131_pdu_header);
+    memcpy(data, &header, *length);
   }
   return true;
 }
@@ -95,10 +95,10 @@ bool E131PDU::PackHeader(uint8_t *data, unsigned int &length) const {
 /*
  * Pack the data portion.
  */
-bool E131PDU::PackData(uint8_t *data, unsigned int &length) const {
+bool E131PDU::PackData(uint8_t *data, unsigned int *length) const {
   if (m_dmp_pdu)
     return m_dmp_pdu->Pack(data, length);
-  length = 0;
+  *length = 0;
   return true;
 }
 

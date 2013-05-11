@@ -67,10 +67,10 @@ void E133InflatorTest::testDecodeHeader() {
   header.sequence = HostToNetwork(72650u);
   header.endpoint = HostToNetwork(static_cast<uint16_t>(42));
 
-  OLA_ASSERT(inflator.DecodeHeader(header_set,
-                                       reinterpret_cast<uint8_t*>(&header),
-                                       sizeof(header),
-                                       bytes_used));
+  OLA_ASSERT(inflator.DecodeHeader(&header_set,
+                                   reinterpret_cast<uint8_t*>(&header),
+                                   sizeof(header),
+                                   bytes_used));
   OLA_ASSERT_EQ((unsigned int) sizeof(header), bytes_used);
   E133Header decoded_header = header_set.GetE133Header();
   OLA_ASSERT(source_name == decoded_header.Source());
@@ -78,14 +78,14 @@ void E133InflatorTest::testDecodeHeader() {
   OLA_ASSERT_EQ((uint16_t) 42, decoded_header.Endpoint());
 
   // try an undersized header
-  OLA_ASSERT_FALSE(inflator.DecodeHeader(header_set,
-                                        reinterpret_cast<uint8_t*>(&header),
-                                        sizeof(header) - 1,
-                                        bytes_used));
+  OLA_ASSERT_FALSE(inflator.DecodeHeader(&header_set,
+                                         reinterpret_cast<uint8_t*>(&header),
+                                         sizeof(header) - 1,
+                                         bytes_used));
   OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
 
   // test inherting the header from the prev call
-  OLA_ASSERT(inflator.DecodeHeader(header_set2, NULL, 0, bytes_used));
+  OLA_ASSERT(inflator.DecodeHeader(&header_set2, NULL, 0, bytes_used));
   OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
   decoded_header = header_set2.GetE133Header();
   OLA_ASSERT(source_name == decoded_header.Source());
@@ -93,7 +93,7 @@ void E133InflatorTest::testDecodeHeader() {
   OLA_ASSERT_EQ((uint16_t) 42, decoded_header.Endpoint());
 
   inflator.ResetHeaderField();
-  OLA_ASSERT_FALSE(inflator.DecodeHeader(header_set2, NULL, 0, bytes_used));
+  OLA_ASSERT_FALSE(inflator.DecodeHeader(&header_set2, NULL, 0, bytes_used));
   OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
 }
 
@@ -111,12 +111,12 @@ void E133InflatorTest::testInflatePDU() {
   unsigned int size = pdu.Size();
   uint8_t *data = new uint8_t[size];
   unsigned int bytes_used = size;
-  OLA_ASSERT(pdu.Pack(data, bytes_used));
+  OLA_ASSERT(pdu.Pack(data, &bytes_used));
   OLA_ASSERT_EQ((unsigned int) size, bytes_used);
 
   E133Inflator inflator;
   HeaderSet header_set;
-  OLA_ASSERT(inflator.InflatePDUBlock(header_set, data, size));
+  OLA_ASSERT(inflator.InflatePDUBlock(&header_set, data, size));
   OLA_ASSERT(header == header_set.GetE133Header());
   delete[] data;
 }

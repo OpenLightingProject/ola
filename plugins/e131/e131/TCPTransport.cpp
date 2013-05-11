@@ -219,7 +219,7 @@ void IncommingStreamTransport::HandlePDU() {
   header_set.SetTransportHeader(m_transport_header);
 
   unsigned int data_consumed = m_inflator->InflatePDUBlock(
-      header_set,
+      &header_set,
       m_buffer_start,
       m_pdu_size);
   OLA_DEBUG << "inflator consumed " << data_consumed << " bytes";

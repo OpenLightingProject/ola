@@ -54,7 +54,7 @@ class E133StatusInflator: public BaseInflator {
 
   protected:
     // The 'header' is 0 bytes in length.
-    bool DecodeHeader(HeaderSet&,
+    bool DecodeHeader(HeaderSet *,
                       const uint8_t*,
                       unsigned int,
                       unsigned int &bytes_used) {
@@ -65,7 +65,7 @@ class E133StatusInflator: public BaseInflator {
     void ResetHeaderField() {}  // namespace noop
 
     virtual bool HandlePDUData(uint32_t vector,
-                               HeaderSet &headers,
+                               const HeaderSet &headers,
                                const uint8_t *data,
                                unsigned int pdu_len);
 

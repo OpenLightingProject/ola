@@ -69,7 +69,7 @@ InflatorInterface *BaseInflator::GetInflator(uint32_t vector) const {
  * @param length length of the data
  * @returns the amount of data used
  */
-unsigned int BaseInflator::InflatePDUBlock(HeaderSet &headers,
+unsigned int BaseInflator::InflatePDUBlock(HeaderSet *headers,
                                            const uint8_t *data,
                                            unsigned int length) {
   unsigned int offset = 0;
@@ -212,7 +212,7 @@ bool BaseInflator::DecodeVector(uint8_t flags, const uint8_t *data,
  * @param pdu_len   length of the PDU
  * @return true if we inflated without errors
  */
-bool BaseInflator::InflatePDU(HeaderSet &headers,
+bool BaseInflator::InflatePDU(HeaderSet *headers,
                               uint8_t flags,
                               const uint8_t *data,
                               unsigned int pdu_len) {
@@ -234,7 +234,7 @@ bool BaseInflator::InflatePDU(HeaderSet &headers,
   if (!result)
     return false;
 
-  if (!PostHeader(vector, headers))
+  if (!PostHeader(vector, *headers))
     return true;
 
   // TODO(simon): handle the crazy DFLAG here
@@ -246,7 +246,7 @@ bool BaseInflator::InflatePDU(HeaderSet &headers,
     return inflator->InflatePDUBlock(headers, data + data_offset,
                                      pdu_len - data_offset);
   } else {
-    return HandlePDUData(vector, headers, data + data_offset,
+    return HandlePDUData(vector, *headers, data + data_offset,
                          pdu_len - data_offset);
   }
 }
@@ -257,8 +257,9 @@ bool BaseInflator::InflatePDU(HeaderSet &headers,
  * before either the next inflator or handle_data is called.
  * @return false will cease processing this PDU
  */
-bool BaseInflator::PostHeader(uint32_t, HeaderSet &) {
+bool BaseInflator::PostHeader(uint32_t, const HeaderSet &headers) {
   return true;
+  (void) headers;
 }
 
 
@@ -266,12 +267,13 @@ bool BaseInflator::PostHeader(uint32_t, HeaderSet &) {
  * The base handle data method - does nothing
  */
 bool BaseInflator::HandlePDUData(uint32_t vector,
-                                 HeaderSet &,
+                                 const HeaderSet &headers,
                                  const uint8_t *,
                                  unsigned int) {
-  OLA_WARN << "In BaseInflator::HandlePDUData, someone forgot to add" <<
-    " a handler, vector id " << vector;
+  OLA_WARN << "In BaseInflator::HandlePDUData, someone forgot to add"
+           << " a handler, vector id " << vector;
   return false;
+  (void) headers;
 }
 }  // namespace e131
 }  // namespace plugin

@@ -63,7 +63,7 @@ class TestInflator: public ola::plugin::e131::BaseInflator {
 
   protected:
     void ResetHeaderField() {}
-    bool DecodeHeader(HeaderSet &headers,
+    bool DecodeHeader(HeaderSet *headers,
                      const uint8_t *data,
                      unsigned int length,
                      unsigned int &bytes_used) {
@@ -74,7 +74,7 @@ class TestInflator: public ola::plugin::e131::BaseInflator {
       (void) length;
     }
 
-    bool HandlePDUData(uint32_t vector, HeaderSet &headers,
+    bool HandlePDUData(uint32_t vector, const HeaderSet &headers,
                        const uint8_t *data, unsigned int pdu_length) {
       OLA_ASSERT_EQ((uint32_t) 289, vector);
       OLA_ASSERT_EQ((unsigned int) sizeof(PDU_DATA), pdu_length);
@@ -309,7 +309,7 @@ void BaseInflatorTest::testInflatePDU() {
   data[1] = 0x21;
   memcpy(data + PDU::TWO_BYTES, PDU_DATA, sizeof(PDU_DATA));
 
-  OLA_ASSERT(inflator.InflatePDU(header_set, flags, data, data_size));
+  OLA_ASSERT(inflator.InflatePDU(&header_set, flags, data, data_size));
   delete[] data;
 }
 
@@ -334,7 +334,7 @@ void BaseInflatorTest::testInflatePDUBlock() {
   memcpy(data + length_size + PDU::TWO_BYTES, PDU_DATA,
          sizeof(PDU_DATA));
   OLA_ASSERT_EQ(data_size,
-                       inflator.InflatePDUBlock(header_set, data, data_size));
+                inflator.InflatePDUBlock(&header_set, data, data_size));
   OLA_ASSERT_EQ(1u, inflator.BlocksHandled());
   delete[] data;
 
@@ -355,7 +355,7 @@ void BaseInflatorTest::testInflatePDUBlock() {
          sizeof(PDU_DATA));
   OLA_ASSERT_EQ(
       2 * data_size,
-      inflator.InflatePDUBlock(header_set, data, 2 * data_size));
+      inflator.InflatePDUBlock(&header_set, data, 2 * data_size));
   delete[] data;
   OLA_ASSERT_EQ(3u, inflator.BlocksHandled());
 
@@ -377,7 +377,7 @@ void BaseInflatorTest::testInflatePDUBlock() {
          PDU_DATA,
          sizeof(PDU_DATA));
   OLA_ASSERT_EQ(pdu_size,
-                       inflator.InflatePDUBlock(header_set, data, pdu_size));
+                inflator.InflatePDUBlock(&header_set, data, pdu_size));
   OLA_ASSERT_EQ((unsigned int) 3, inflator.BlocksHandled());
   OLA_ASSERT_EQ((unsigned int) 1, child_inflator.BlocksHandled());
   delete[] data;

@@ -45,8 +45,8 @@ class E133PDU: public PDU {
 
     unsigned int HeaderSize() const;
     unsigned int DataSize() const;
-    bool PackHeader(uint8_t *data, unsigned int &length) const;
-    bool PackData(uint8_t *data, unsigned int &length) const;
+    bool PackHeader(uint8_t *data, unsigned int *length) const;
+    bool PackData(uint8_t *data, unsigned int *length) const;
 
     void PackHeader(OutputStream *stream) const;
     void PackData(OutputStream *stream) const;

@@ -52,7 +52,7 @@ class InflatorInterface {
     /*
      * Parse a block of PDU data
      */
-    virtual unsigned int InflatePDUBlock(HeaderSet &headers,
+    virtual unsigned int InflatePDUBlock(HeaderSet *headers,
                                          const uint8_t *data,
                                          unsigned int len) = 0;
 };
@@ -81,7 +81,7 @@ class BaseInflator : public InflatorInterface {
     /*
      * Parse a block of PDU data
      */
-    virtual unsigned int InflatePDUBlock(HeaderSet &headers,
+    virtual unsigned int InflatePDUBlock(HeaderSet *headers,
                                          const uint8_t *data,
                                          unsigned int len);
 
@@ -116,23 +116,23 @@ class BaseInflator : public InflatorInterface {
                       unsigned int &bytes_used);
 
     // Decode a header block and adds any PduHeaders to the HeaderSet object
-    virtual bool DecodeHeader(HeaderSet &headers,
+    virtual bool DecodeHeader(HeaderSet *headers,
                               const uint8_t *data,
                               unsigned int len,
                               unsigned int &bytes_used) = 0;
 
     // parse the body of a pdu
-    bool InflatePDU(HeaderSet &headers,
+    bool InflatePDU(HeaderSet *headers,
                     uint8_t flags,
                     const uint8_t *data,
                     unsigned int pdu_len);
 
     // called after the header is parsed
-    virtual bool PostHeader(uint32_t vector, HeaderSet &headers);
+    virtual bool PostHeader(uint32_t vector, const HeaderSet &headers);
 
     // called in the absence of an inflator to handle the pdu data
     virtual bool HandlePDUData(uint32_t vector,
-                               HeaderSet &headers,
+                               const HeaderSet &headers,
                                const uint8_t *data,
                                unsigned int pdu_len);
 };

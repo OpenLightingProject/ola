@@ -41,7 +41,7 @@ class DMPInflator: public BaseInflator {
     uint32_t Id() const { return ola::acn::VECTOR_E131_DMP; }
 
   protected:
-    bool DecodeHeader(HeaderSet &headers,
+    bool DecodeHeader(HeaderSet *headers,
                       const uint8_t *data,
                       unsigned int len,
                       unsigned int &bytes_used);

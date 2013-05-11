@@ -70,7 +70,7 @@ void E131PDUTest::testSimpleRev2E131PDU() {
   unsigned int size = pdu.Size();
   uint8_t *data = new uint8_t[size];
   unsigned int bytes_used = size;
-  OLA_ASSERT(pdu.Pack(data, bytes_used));
+  OLA_ASSERT(pdu.Pack(data, &bytes_used));
   OLA_ASSERT_EQ((unsigned int) size, bytes_used);
 
   // spot check the data
@@ -94,12 +94,12 @@ void E131PDUTest::testSimpleRev2E131PDU() {
 
   // test undersized buffer
   bytes_used = size - 1;
-  OLA_ASSERT_FALSE(pdu.Pack(data, bytes_used));
+  OLA_ASSERT_FALSE(pdu.Pack(data, &bytes_used));
   OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
 
   // test oversized buffer
   bytes_used = size + 1;
-  OLA_ASSERT(pdu.Pack(data, bytes_used));
+  OLA_ASSERT(pdu.Pack(data, &bytes_used));
   OLA_ASSERT_EQ((unsigned int) size, bytes_used);
 
   delete[] data;
@@ -121,7 +121,7 @@ void E131PDUTest::testSimpleE131PDU() {
   unsigned int size = pdu.Size();
   uint8_t *data = new uint8_t[size];
   unsigned int bytes_used = size;
-  OLA_ASSERT(pdu.Pack(data, bytes_used));
+  OLA_ASSERT(pdu.Pack(data, &bytes_used));
   OLA_ASSERT_EQ((unsigned int) size, bytes_used);
 
   // spot check the data
@@ -142,12 +142,12 @@ void E131PDUTest::testSimpleE131PDU() {
 
   // test undersized buffer
   bytes_used = size - 1;
-  OLA_ASSERT_FALSE(pdu.Pack(data, bytes_used));
+  OLA_ASSERT_FALSE(pdu.Pack(data, &bytes_used));
   OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
 
   // test oversized buffer
   bytes_used = size + 1;
-  OLA_ASSERT(pdu.Pack(data, bytes_used));
+  OLA_ASSERT(pdu.Pack(data, &bytes_used));
   OLA_ASSERT_EQ((unsigned int) size, bytes_used);
   delete[] data;
 }

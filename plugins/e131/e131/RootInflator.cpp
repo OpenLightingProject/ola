@@ -35,7 +35,7 @@ namespace e131 {
  * @param length length of the data
  * @returns true if successful, false otherwise
  */
-bool RootInflator::DecodeHeader(HeaderSet &headers,
+bool RootInflator::DecodeHeader(HeaderSet *headers,
                                 const uint8_t *data,
                                 unsigned int length,
                                 unsigned int &bytes_used) {
@@ -43,7 +43,7 @@ bool RootInflator::DecodeHeader(HeaderSet &headers,
     if (length >= CID::CID_LENGTH) {
       CID cid = CID::FromData(data);
       m_last_hdr.SetCid(cid);
-      headers.SetRootHeader(m_last_hdr);
+      headers->SetRootHeader(m_last_hdr);
       bytes_used = CID::CID_LENGTH;
       return true;
     }
@@ -54,7 +54,7 @@ bool RootInflator::DecodeHeader(HeaderSet &headers,
     OLA_WARN << "Missing CID data";
     return false;
   }
-  headers.SetRootHeader(m_last_hdr);
+  headers->SetRootHeader(m_last_hdr);
   return true;
 }
 
@@ -71,7 +71,7 @@ void RootInflator::ResetHeaderField() {
 /**
  * This runs the on_data callback if we have one
  */
-bool RootInflator::PostHeader(uint32_t, HeaderSet &headers) {
+bool RootInflator::PostHeader(uint32_t, const HeaderSet &headers) {
   if (m_on_data.get())
     m_on_data->Run(headers.GetTransportHeader());
   return true;
