@@ -88,7 +88,7 @@ void OLASLPThread::RunDiscovery(InternalDiscoveryCallback *callback,
 
 void OLASLPThread::RegisterSLPService(RegistrationCallback *callback,
                                       const string& url,
-                                      unsigned short lifetime) {
+                                      uint16_t lifetime) {
   if (!m_slp_client.get()) {
     callback->Run(false);
     return;

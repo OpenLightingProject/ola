@@ -49,7 +49,7 @@ typedef struct {
  */
 SLPBoolean ServiceCallback(SLPHandle slp_handle,
                            const char* srvurl,
-                           unsigned short lifetime,
+                           uint16_t lifetime,
                            SLPError errcode,
                            void *raw_cookie) {
   slp_cookie *cookie = static_cast<slp_cookie*>(raw_cookie);
@@ -136,7 +136,7 @@ void OpenSLPThread::RunDiscovery(InternalDiscoveryCallback *callback,
 
 void OpenSLPThread::RegisterSLPService(RegistrationCallback *callback,
                                        const string& url,
-                                       unsigned short lifetime) {
+                                       uint16_t lifetime) {
   SLPError callbackerr = SLP_OK;
   SLPError err = SLPReg(m_slp_handle, url.c_str(), lifetime, 0, "",
                         SLP_TRUE, RegisterCallback, &callbackerr);

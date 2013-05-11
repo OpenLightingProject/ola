@@ -56,7 +56,7 @@ class OLASLPThread: public BaseSLPThread {
                       const string &service);
     void RegisterSLPService(RegistrationCallback *callback,
                             const string& url,
-                            unsigned short lifetime);
+                            uint16_t lifetime);
     void DeRegisterSLPService(RegistrationCallback *callback,
                               const string& url);
     void SLPServerInfo(ServerInfoCallback *callback);

@@ -31,7 +31,7 @@ bool ServerInit(int argc, char *argv[], ExportMap *export_map);
 bool AppInit(int argc, char *argv[]);
 
 // Install a signal
-bool InstallSignal(int signal, void(*fp)(int));
+bool InstallSignal(int signal, void(*fp)(int signo));
 
 // Methods you probably don't need to use
 bool InstallSEGVHandler();
