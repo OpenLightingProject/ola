@@ -93,8 +93,8 @@ class E131Device: public ola::Device {
 
     void HandlePreviewMode(Request *request, string *response);
     void HandlePortStatusRequest(string *response);
-    E131InputPort *GetInputPort(unsigned int port_id);
-    E131OutputPort *GetOutputPort(unsigned int port_id);
+    E131InputPort *GetE131InputPort(unsigned int port_id);
+    E131OutputPort *GetE131OutputPort(unsigned int port_id);
 
     static const char DEVICE_NAME[];
 };

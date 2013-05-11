@@ -280,7 +280,7 @@ class NodeVarySequenceNumber: public NodeAction {
     }
 
     void Tick() {
-      int random = ola::math::Random(0, m_chance - 1);
+      int random = ola::math::Random(0, static_cast<int>(m_chance) - 1);
       if (!m_counter || random) {
         // start off with good data
         DmxBuffer output;

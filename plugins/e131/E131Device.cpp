@@ -164,13 +164,13 @@ void E131Device::HandlePreviewMode(Request *request, string *response) {
     bool preview_mode = preview_request.preview_mode();
 
     if (preview_request.input_port()) {
-      E131InputPort *e131_port = GetInputPort(port_id);
+      E131InputPort *e131_port = GetE131InputPort(port_id);
       if (e131_port) {
         // TODO(simon): figure out what to do here
         (void) e131_port;
       }
     } else {
-      E131OutputPort *e131_port = GetOutputPort(port_id);
+      E131OutputPort *e131_port = GetE131OutputPort(port_id);
       if (e131_port) {
         e131_port->SetPreviewMode(preview_mode);
       }
@@ -206,11 +206,11 @@ void E131Device::HandlePortStatusRequest(string *response) {
   reply.SerializeToString(response);
 }
 
-E131InputPort *E131Device::GetInputPort(unsigned int port_id) {
+E131InputPort *E131Device::GetE131InputPort(unsigned int port_id) {
   return (port_id < m_input_ports.size()) ? m_input_ports[port_id] : NULL;
 }
 
-E131OutputPort *E131Device::GetOutputPort(unsigned int port_id) {
+E131OutputPort *E131Device::GetE131OutputPort(unsigned int port_id) {
   return (port_id < m_output_ports.size()) ? m_output_ports[port_id] : NULL;
 }
 }  // namespace e131
