@@ -124,7 +124,7 @@ class DATracker {
   public:
     typedef ola::Callback1<void, const DirectoryAgent&> NewDACallback;
 
-    DATracker() {}
+    DATracker();
     ~DATracker();
 
     void AddNewDACallback(NewDACallback *callback);
@@ -170,7 +170,7 @@ class DATracker {
     void RunCallbacks(const DirectoryAgent &agent);
     bool AddressFromURL(const string &url, IPV4Address *address);
 
-    static const string DA_SERVICE_PREFIX;
+    const string m_da_service_prefix;
 };
 }  // namespace slp
 }  // namespace ola

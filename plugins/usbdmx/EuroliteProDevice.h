@@ -22,9 +22,8 @@
 #ifndef PLUGINS_USBDMX_EUROLITEPRODEVICE_H_
 #define PLUGINS_USBDMX_EUROLITEPRODEVICE_H_
 
-#include <string>
-
 #include <libusb.h>
+#include <string>
 #include "plugins/usbdmx/UsbDevice.h"
 #include "plugins/usbdmx/EuroliteProOutputPort.h"
 

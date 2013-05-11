@@ -20,8 +20,9 @@
 
 #include <limits.h>
 #include <string>
-#include "ola/StringUtils.h"
 #include "ola/Logging.h"
+#include "ola/StringUtils.h"
+#include "ola/math/Random.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
 #include "plugins/pathport/PathportDevice.h"
@@ -123,12 +124,9 @@ bool PathportPlugin::SetDefaultPreferences() {
                                          StringValidator(),
                                          PathportDevice::K_DEFAULT_NODE_NAME);
 
-  // generate a new node id in case we need it
-  srand((unsigned)time(0) * getpid());
-  uint32_t product_id = OLA_MANUFACTURER_CODE << 24;
-  product_id |= (rand() / (RAND_MAX / 0x100) << 16);
-  product_id |= (rand() / (RAND_MAX / 0x100) << 8);
-  product_id |= rand() / (RAND_MAX / 0x100);
+  // Generate a new node id in case we need it
+  uint32_t product_id = (OLA_MANUFACTURER_CODE << 24 +
+                         ola::math::Random(0, (1 << 24) - 1));
 
   save |= m_preferences->SetDefaultValue(PathportDevice::K_NODE_ID_KEY,
                                          IntValidator(0, UINT_MAX),

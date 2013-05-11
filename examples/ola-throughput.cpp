@@ -104,23 +104,6 @@ void DisplayHelpAndExit(char arg[]) {
 }
 
 
-bool SendDataFromString(StreamingClient &client,
-                        unsigned int universe,
-                        const string &data) {
-  ola::DmxBuffer buffer;
-  bool status = buffer.SetFromString(data);
-
-  if (!status || buffer.Size() == 0)
-    return false;
-
-  if (!client.SendDmx(universe, buffer)) {
-    cout << "Send DMX failed" << endl;
-    return false;
-  }
-  return true;
-}
-
-
 /*
  * Main
  */

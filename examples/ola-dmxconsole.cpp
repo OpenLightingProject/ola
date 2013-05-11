@@ -487,7 +487,7 @@ void CHECK(void *p) {
 void calcscreengeometry() {
   int c = LINES;
   if (c < 3) {
-    error_str ="screen too small, we need at least 3 lines";
+    error_str = "screen too small, we need at least 3 lines";
     exit(1);
   }
   c--;                /* one line for headline */

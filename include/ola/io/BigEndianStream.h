@@ -48,12 +48,12 @@ class BigEndianInputStreamAdaptor: public BigEndianInputStreamInterface {
     }
     ~BigEndianInputStreamAdaptor() {}
 
-    bool operator>>(int8_t &val) { return ExtractAndConvert(val); }
-    bool operator>>(uint8_t &val) { return ExtractAndConvert(val); }
-    bool operator>>(int16_t &val) { return ExtractAndConvert(val); }
-    bool operator>>(uint16_t &val) { return ExtractAndConvert(val); }
-    bool operator>>(int32_t &val) { return ExtractAndConvert(val); }
-    bool operator>>(uint32_t &val) { return ExtractAndConvert(val); }
+    bool operator>>(int8_t &val) { return ExtractAndConvert(&val); }
+    bool operator>>(uint8_t &val) { return ExtractAndConvert(&val); }
+    bool operator>>(int16_t &val) { return ExtractAndConvert(&val); }
+    bool operator>>(uint16_t &val) { return ExtractAndConvert(&val); }
+    bool operator>>(int32_t &val) { return ExtractAndConvert(&val); }
+    bool operator>>(uint32_t &val) { return ExtractAndConvert(&val); }
 
     unsigned int ReadString(string *output, unsigned int size) {
       return m_stream->ReadString(output, size);
@@ -63,9 +63,9 @@ class BigEndianInputStreamAdaptor: public BigEndianInputStreamInterface {
     InputStreamInterface *m_stream;
 
     template <typename T>
-    bool ExtractAndConvert(T &val) {
-      bool ok = (*m_stream) >> val;
-      val = ola::network::NetworkToHost(val);
+    bool ExtractAndConvert(T *val) {
+      bool ok = (*m_stream) >> *val;
+      *val = ola::network::NetworkToHost(*val);
       return ok;
     }
 
@@ -154,7 +154,7 @@ class BigEndianOutputStreamAdaptor: public BigEndianOutputStreamInterface {
     OutputStreamInterface *m_stream;
 
     template <typename T>
-    BigEndianOutputStreamAdaptor& ConvertAndWrite(T &val) {
+    BigEndianOutputStreamAdaptor& ConvertAndWrite(const T &val) {
       (*m_stream) << ola::network::HostToNetwork(val);
       return *this;
     }

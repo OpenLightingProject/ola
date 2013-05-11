@@ -21,13 +21,17 @@
 #ifndef COMMON_RPC_STREAMRPCCHANNEL_H_
 #define COMMON_RPC_STREAMRPCCHANNEL_H_
 
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <stdint.h>
 #include <google/protobuf/service.h>
 #include <ola/Callback.h>
 #include <ola/io/Descriptor.h>
 #include <ola/io/SelectServer.h>
 #include "ola/ExportMap.h"
-#include "config.h"
+
 #include HASH_MAP_H
 
 namespace ola {
