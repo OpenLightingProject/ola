@@ -433,11 +433,11 @@ class RDMResponse(object):
 
   def _command_class(self):
     if self.command_class == OlaClient.RDM_GET_RESPONSE:
-      return 'GET'
+      return 'Get'
     elif self.command_class == OlaClient.RDM_SET_RESPONSE :
-      return 'SET'
+      return 'Set'
     elif self.command_class == OlaClient.RDM_DISCOVERY_RESPONSE:
-      return 'DISCOVERY'
+      return 'Discovery'
     else:
       return "UNKNOWN_CC"
 
