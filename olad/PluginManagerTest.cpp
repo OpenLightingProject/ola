@@ -61,11 +61,11 @@ class PluginManagerTest: public CppUnit::TestFixture {
       str << "Line " << line;
       vector<AbstractPlugin*> plugins;
       manager->Plugins(&plugins);
-      OLA_ASSERT_EQUAL_MESSAGE(str.str(), loaded_plugins, plugins.size());
+      OLA_ASSERT_EQ_MSG(str.str(), loaded_plugins, plugins.size());
 
       plugins.clear();
       manager->ActivePlugins(&plugins);
-      OLA_ASSERT_EQUAL_MESSAGE(str.str(), active_plugins, plugins.size());
+      OLA_ASSERT_EQ_MSG(str.str(), active_plugins, plugins.size());
     }
 };
 

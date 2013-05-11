@@ -322,8 +322,8 @@ void AdvancedTCPConnectorTest::ConfirmState(
   OLA_ASSERT_TRUE_MSG(
       connector.GetEndpointState(endpoint, &state, &failed_attempts)
       str.str());
-  OLA_ASSERT_EQUAL_MESSAGE(str.str(), expected_state, state);
-  OLA_ASSERT_EQUAL_MESSAGE(str.str(), expected_attempts, failed_attempts);
+  OLA_ASSERT_EQ_MSG(str.str(), expected_state, state);
+  OLA_ASSERT_EQ_MSG(str.str(), expected_attempts, failed_attempts);
 }
 
 

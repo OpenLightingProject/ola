@@ -261,7 +261,7 @@ void TCPConnectorTest::OnConnect(int fd, int error) {
   if (error) {
     std::stringstream str;
     str << "Failed to connect: " << strerror(error);
-    OLA_ASSERT_EQUAL_MESSAGE(str.str(), 0, error);
+    OLA_ASSERT_EQ_MSG(str.str(), 0, error);
     m_ss->Terminate();
   } else {
     OLA_ASSERT_TRUE(fd >= 0);

@@ -94,7 +94,7 @@ void MockCommandAction::CheckArgs(unsigned long line, const char* args[]) {
   const char **ptr = args;
   vector<string>::const_iterator iter = m_interpolated_args.begin();
   while (*ptr && iter != m_interpolated_args.end())
-    OLA_ASSERT_EQUAL_MESSAGE(str.str(), string(*ptr++), *iter++);
+    OLA_ASSERT_EQ_MSG(str.str(), string(*ptr++), *iter++);
 
   if (iter != m_interpolated_args.end()) {
     str << ", got extra args: ";

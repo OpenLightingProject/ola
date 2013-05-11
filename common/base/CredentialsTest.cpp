@@ -69,10 +69,10 @@ CPPUNIT_TEST_SUITE_REGISTRATION(CredentialsTest);
  */
 void CredentialsTest::testGetUIDs() {
   uid_t uid = GetUID();
-  OLA_ASSERT_TRUE_MSG("Don't run the tests as root!", uid);
+  OLA_ASSERT_TRUE_MSG(uid, "Don't run the tests as root!");
 
   uid_t euid = GetEUID();
-  OLA_ASSERT_TRUE_MSG("Don't run the tests as suid root!", euid);
+  OLA_ASSERT_TRUE_MSG(euid, "Don't run the tests as suid root!");
 }
 
 
@@ -81,10 +81,10 @@ void CredentialsTest::testGetUIDs() {
  */
 void CredentialsTest::testGetGIDs() {
   gid_t gid = GetGID();
-  OLA_ASSERT_TRUE_MSG("Don't run the tests as root!", gid);
+  OLA_ASSERT_TRUE_MSG(gid, "Don't run the tests as root!");
 
   gid_t egid = GetEGID();
-  OLA_ASSERT_TRUE_MSG("Don't run the tests as sgid root!", egid);
+  OLA_ASSERT_TRUE_MSG(egid, "Don't run the tests as sgid root!");
 }
 
 
