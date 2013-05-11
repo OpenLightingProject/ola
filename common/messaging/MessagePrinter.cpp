@@ -37,7 +37,7 @@ using std::endl;
  */
 string MessagePrinter::AsString(const Message *message) {
   m_str.str("");
-  message->Accept(*this);
+  message->Accept(this);
   PostStringHook();
   return m_str.str();
 }

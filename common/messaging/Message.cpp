@@ -34,7 +34,7 @@ Message::~Message() {
 }
 
 
-void Message::Accept(MessageVisitor &visitor) const {
+void Message::Accept(MessageVisitor *visitor) const {
   vector<const MessageFieldInterface*>::const_iterator iter = m_fields.begin();
   for (; iter != m_fields.end(); ++iter)
     (*iter)->Accept(visitor);
@@ -48,12 +48,12 @@ GroupMessageField::~GroupMessageField() {
 }
 
 
-void GroupMessageField::Accept(MessageVisitor &visitor) const {
-  visitor.Visit(this);
+void GroupMessageField::Accept(MessageVisitor *visitor) const {
+  visitor->Visit(this);
   vector<const MessageFieldInterface*>::const_iterator iter = m_fields.begin();
   for (; iter != m_fields.end(); ++iter)
     (*iter)->Accept(visitor);
-  visitor.PostVisit(this);
+  visitor->PostVisit(this);
 }
 }  // namespace messaging
 }  // namespace ola

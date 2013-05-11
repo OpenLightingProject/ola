@@ -96,7 +96,7 @@ void SchemaPrinterTest::testPrinter() {
 
   Descriptor test_descriptor("Test Descriptor", fields);
   SchemaPrinter printer(false, false);
-  test_descriptor.Accept(printer);
+  test_descriptor.Accept(&printer);
 
   string expected = (
       "On/Off: bool\nName: string [0, 32]\nCount: uint8\n"
@@ -130,7 +130,7 @@ void SchemaPrinterTest::testGroupPrinter() {
   Descriptor test_descriptor("Test Descriptor2", fields2);
 
   SchemaPrinter printer(false, false);
-  test_descriptor.Accept(printer);
+  test_descriptor.Accept(&printer);
 
   string expected = "Device: string [0, 32]\nId: uint32\nGroup 1 {\n"
     "  On/Off: bool\n  Name: string [0, 32]\n  Count: uint8\n}\n";
@@ -153,7 +153,7 @@ void SchemaPrinterTest::testLabels() {
   Descriptor test_descriptor("Test Descriptor", fields);
 
   SchemaPrinter interval_printer(true, false);
-  test_descriptor.Accept(interval_printer);
+  test_descriptor.Accept(&interval_printer);
   string expected = "Count: uint16: 12, 13\n";
   OLA_ASSERT_EQ(expected, interval_printer.AsString());
 }
@@ -175,17 +175,17 @@ void SchemaPrinterTest::testIntervalsAndLabels() {
   Descriptor test_descriptor("Test Descriptor", fields);
 
   SchemaPrinter interval_printer(true, false);
-  test_descriptor.Accept(interval_printer);
+  test_descriptor.Accept(&interval_printer);
   string expected = "Count: uint16: (2, 8), (12, 14)\n";
   OLA_ASSERT_EQ(expected, interval_printer.AsString());
 
   SchemaPrinter label_printer(false, true);
-  test_descriptor.Accept(label_printer);
+  test_descriptor.Accept(&label_printer);
   string expected2 = "Count: uint16\n  bakers_dozen: 13\n  dozen: 12\n";
   OLA_ASSERT_EQ(expected2, label_printer.AsString());
 
   SchemaPrinter interval_label_printer(true, true);
-  test_descriptor.Accept(interval_label_printer);
+  test_descriptor.Accept(&interval_label_printer);
   string expected3 = (
       "Count: uint16: (2, 8), (12, 14)\n  bakers_dozen: 13\n  dozen: 12\n");
   OLA_ASSERT_EQ(expected3, interval_label_printer.AsString());
@@ -203,7 +203,7 @@ string SchemaPrinterTest::GenerateIntervalString(int_type min, int_type max) {
   Descriptor test_descriptor("Test Descriptor", fields);
 
   SchemaPrinter interval_printer(true, false);
-  test_descriptor.Accept(interval_printer);
+  test_descriptor.Accept(&interval_printer);
 
   return interval_printer.AsString();
 }

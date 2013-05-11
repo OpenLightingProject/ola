@@ -89,7 +89,7 @@ const ola::messaging::Message *StringMessageBuilder::GetMessage(
 
   // now we now that this list of inputs can be parsed, and we know the number
   // of instances of a repeating group if there is one.
-  descriptor->Accept(*this);
+  descriptor->Accept(this);
 
   if (m_error) {
     OLA_WARN << "Error building mesage, field is: " << m_error_string;
@@ -265,7 +265,7 @@ void StringMessageBuilder::Visit(
     m_groups.push(fields);
 
     for (unsigned int j = 0; j < descriptor->FieldCount(); ++j) {
-      descriptor->GetField(j)->Accept(*this);
+      descriptor->GetField(j)->Accept(this);
     }
 
     const vector<const MessageFieldInterface*> &populated_fields =

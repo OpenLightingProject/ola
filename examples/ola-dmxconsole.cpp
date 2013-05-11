@@ -627,7 +627,7 @@ void stdin_ready() {
 
     case KEY_IC:
       undoprep();
-      for (n = MAXCHANNELS - 1; n>current_channel && n > 0; n--)
+      for (n = MAXCHANNELS - 1; n > current_channel && n > 0; n--)
         dmx[n]=dmx[n - 1];
       setall();
       break;

@@ -53,7 +53,7 @@ VariableFieldSizeCalculator::calculator_state
 
   // split out the fields into fixed and variable length
   for (unsigned int i = 0; i < descriptor->FieldCount(); ++i)
-    descriptor->GetField(i)->Accept(*this);
+    descriptor->GetField(i)->Accept(this);
 
   if (data_size < m_fixed_size_sum)
     return TOO_SMALL;

@@ -212,7 +212,7 @@ const string PidStoreHelper::PrettyPrintMessage(
 const string PidStoreHelper::SchemaAsString(
     const ola::messaging::Descriptor *descriptor) {
   m_schema_printer.Reset();
-  descriptor->Accept(m_schema_printer);
+  descriptor->Accept(&m_schema_printer);
   return m_schema_printer.AsString();
 }
 

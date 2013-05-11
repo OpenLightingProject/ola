@@ -93,18 +93,18 @@ class URLEntry {
       return *this;
     }
 
-    void ToStream(ostream &out) const {
-      out << m_url << "(" << m_lifetime << ")";
+    void ToStream(ostream *out) const {
+      *out << m_url << "(" << m_lifetime << ")";
     }
 
     string ToString() const {
       std::ostringstream str;
-      ToStream(str);
+      ToStream(&str);
       return str.str();
     }
 
     friend ostream& operator<<(ostream &out, const URLEntry &entry) {
-      entry.ToStream(out);
+      entry.ToStream(&out);
       return out;
     }
 

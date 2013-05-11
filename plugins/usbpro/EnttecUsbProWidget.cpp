@@ -134,7 +134,8 @@ bool EnttecPortImpl::SendDMX(const DmxBuffer &buffer) {
   widget_dmx.start_code = DMX512_START_CODE;
   unsigned int length = DMX_UNIVERSE_SIZE;
   buffer.Get(widget_dmx.dmx, &length);
-  OLA_DEBUG << "sending frame with label " << (int) m_ops.send_dmx;
+  OLA_DEBUG << "sending frame with label "
+            << static_cast<int>(m_ops.send_dmx);
   return m_send_cb->Run(m_ops.send_dmx, reinterpret_cast<uint8_t*>(&widget_dmx),
                         length + 1);
 }

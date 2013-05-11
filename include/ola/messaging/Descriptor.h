@@ -46,7 +46,7 @@ class FieldDescriptorInterface {
     virtual const string& Name() const = 0;
 
     // Call back into a FieldDescriptorVisitor
-    virtual void Accept(FieldDescriptorVisitor &visitor) const = 0;
+    virtual void Accept(FieldDescriptorVisitor *visitor) const = 0;
 
     // Returns true if the size of this field is constant
     virtual bool FixedSize() const = 0;
@@ -91,8 +91,8 @@ class BoolFieldDescriptor: public FieldDescriptor {
     bool LimitedSize() const { return true; }
     unsigned int MaxSize() const { return 1; }
 
-    void Accept(FieldDescriptorVisitor &visitor) const {
-      visitor.Visit(this);
+    void Accept(FieldDescriptorVisitor *visitor) const {
+      visitor->Visit(this);
     }
 };
 
@@ -110,8 +110,8 @@ class IPV4FieldDescriptor: public FieldDescriptor {
     bool LimitedSize() const { return true; }
     unsigned int MaxSize() const { return 4; }
 
-    void Accept(FieldDescriptorVisitor &visitor) const {
-      visitor.Visit(this);
+    void Accept(FieldDescriptorVisitor *visitor) const {
+      visitor->Visit(this);
     }
 };
 
@@ -129,8 +129,8 @@ class UIDFieldDescriptor: public FieldDescriptor {
     bool LimitedSize() const { return true; }
     unsigned int MaxSize() const { return 6; }
 
-    void Accept(FieldDescriptorVisitor &visitor) const {
-      visitor.Visit(this);
+    void Accept(FieldDescriptorVisitor *visitor) const {
+      visitor->Visit(this);
     }
 };
 
@@ -153,8 +153,8 @@ class StringFieldDescriptor: public FieldDescriptor {
     unsigned int MinSize() const { return m_min_size; }
     unsigned int MaxSize() const { return m_max_size; }
 
-    void Accept(FieldDescriptorVisitor &visitor) const {
-      visitor.Visit(this);
+    void Accept(FieldDescriptorVisitor *visitor) const {
+      visitor->Visit(this);
     }
 
   private:
@@ -233,8 +233,8 @@ class IntegerFieldDescriptor: public FieldDescriptor {
       return "";
     }
 
-    void Accept(FieldDescriptorVisitor &visitor) const {
-      visitor.Visit(this);
+    void Accept(FieldDescriptorVisitor *visitor) const {
+      visitor->Visit(this);
     }
 
   private:
@@ -358,7 +358,7 @@ class FieldDescriptorGroup: public FieldDescriptor {
       return NULL;
     }
 
-    virtual void Accept(FieldDescriptorVisitor &visitor) const;
+    virtual void Accept(FieldDescriptorVisitor *visitor) const;
 
   protected:
     vector<const class FieldDescriptor *> m_fields;
@@ -383,7 +383,7 @@ class Descriptor: public FieldDescriptorGroup {
                const vector<const FieldDescriptor*> &fields)
         : FieldDescriptorGroup(name, fields, 1, 1) {}
 
-    void Accept(FieldDescriptorVisitor &visitor) const;
+    void Accept(FieldDescriptorVisitor *visitor) const;
 };
 }  // namespace messaging
 }  // namespace ola
