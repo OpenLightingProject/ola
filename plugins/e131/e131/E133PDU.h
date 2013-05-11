@@ -22,6 +22,7 @@
 #define PLUGINS_E131_E131_E133PDU_H_
 
 #include <ola/io/IOStack.h>
+#include <string>
 
 #include "plugins/e131/e131/PDU.h"
 #include "plugins/e131/e131/E133Header.h"

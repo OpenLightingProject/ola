@@ -79,7 +79,7 @@ class MessageSerializerTest: public CppUnit::TestFixture {
     const Message *BuildMessage(const Descriptor &descriptor,
                                 const vector<string> &inputs);
 
-    void ConfirmData(unsigned long line,
+    void ConfirmData(uint32_t line,
                      const uint8_t *expected,
                      unsigned int expected_length,
                      const uint8_t *actual,
@@ -93,7 +93,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(MessageSerializerTest);
 /**
  * Confirm the data matches what we expected
  */
-void MessageSerializerTest::ConfirmData(unsigned long line,
+void MessageSerializerTest::ConfirmData(uint32_t line,
                                         const uint8_t *expected,
                                         unsigned int expected_length,
                                         const uint8_t *actual,
