@@ -125,7 +125,7 @@ bool PathportPlugin::SetDefaultPreferences() {
                                          PathportDevice::K_DEFAULT_NODE_NAME);
 
   // Generate a new node id in case we need it
-  uint32_t product_id = (OLA_MANUFACTURER_CODE << 24 +
+  uint32_t product_id = ((OLA_MANUFACTURER_CODE << 24) +
                          ola::math::Random(0, (1 << 24) - 1));
 
   save |= m_preferences->SetDefaultValue(PathportDevice::K_NODE_ID_KEY,
