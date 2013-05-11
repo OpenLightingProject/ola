@@ -47,7 +47,7 @@ GroupSizeCalculator::calculator_state GroupSizeCalculator::CalculateGroupSize(
 
   // split out the fields into singular fields and groups
   for (unsigned int i = 0; i < descriptor->FieldCount(); ++i)
-    descriptor->GetField(i)->Accept(*this);
+    descriptor->GetField(i)->Accept(this);
 
   unsigned int required_tokens = m_non_groups.size();
 
@@ -196,7 +196,7 @@ bool StaticGroupTokenCalculator::CalculateTokensRequired(
   m_variable_sized_group_encountered = false;
 
   for (unsigned int i = 0; i < descriptor->FieldCount(); ++i)
-    descriptor->GetField(i)->Accept(*this);
+    descriptor->GetField(i)->Accept(this);
 
   if (m_variable_sized_group_encountered)
     return false;

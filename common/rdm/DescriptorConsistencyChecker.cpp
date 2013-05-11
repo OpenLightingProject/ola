@@ -27,7 +27,7 @@ namespace rdm {
 bool DescriptorConsistencyChecker::CheckConsistency(
     const ola::messaging::Descriptor *descriptor) {
   m_variable_sized_field_count = 0;
-  descriptor->Accept(*this);
+  descriptor->Accept(this);
   return m_variable_sized_field_count <= 1;
 }
 

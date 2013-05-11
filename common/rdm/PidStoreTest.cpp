@@ -299,7 +299,7 @@ void PidStoreTest::testPidStoreLoad() {
 
   // Check this prints correctly
   ola::messaging::SchemaPrinter printer;
-  get_response->Accept(printer);
+  get_response->Accept(&printer);
   string expected = (
       "uids {\n  manufacturer_id: uint16\n  device_id: uint32\n}\n");
   OLA_ASSERT_EQ(expected, printer.AsString());
@@ -352,7 +352,7 @@ void PidStoreTest::testPidStoreFileLoad() {
                        device_info->SetResponse());
 
   ola::messaging::SchemaPrinter printer;
-  device_info->GetResponse()->Accept(printer);
+  device_info->GetResponse()->Accept(&printer);
   string expected = (
       "protocol_major: uint8\nprotocol_minor: uint8\ndevice_model: uint16\n"
       "product_category: uint16\nsoftware_version: uint32\n"
@@ -382,7 +382,7 @@ void PidStoreTest::testPidStoreFileLoad() {
   OLA_ASSERT_TRUE(serial_number->SetResponse());
 
   printer.Reset();
-  serial_number->SetRequest()->Accept(printer);
+  serial_number->SetRequest()->Accept(&printer);
   string expected2 = "serial_number: uint32\n";
   OLA_ASSERT_EQ(expected2, printer.AsString());
 }
@@ -430,7 +430,7 @@ void PidStoreTest::testPidStoreDirectoryLoad() {
   OLA_ASSERT_TRUE(serial_number->SetResponse());
 
   ola::messaging::SchemaPrinter printer;
-  serial_number->SetRequest()->Accept(printer);
+  serial_number->SetRequest()->Accept(&printer);
   string expected2 = "serial_number: uint32\n";
   OLA_ASSERT_EQ(expected2, printer.AsString());
 }

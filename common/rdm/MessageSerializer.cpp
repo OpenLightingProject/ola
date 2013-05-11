@@ -53,7 +53,7 @@ const uint8_t *MessageSerializer::SerializeMessage(
   }
   m_offset = 0;
 
-  message->Accept(*this);
+  message->Accept(this);
 
   *length = m_offset;
   return m_data;

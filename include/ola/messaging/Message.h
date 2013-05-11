@@ -45,7 +45,7 @@ class Message {
     }
     ~Message();
 
-    void Accept(MessageVisitor &visitor) const;
+    void Accept(MessageVisitor *visitor) const;
 
     unsigned int FieldCount() const { return m_fields.size(); }
 
@@ -63,7 +63,7 @@ class MessageFieldInterface {
     virtual ~MessageFieldInterface() {}
 
     // Call back into a MessageVisitor
-    virtual void Accept(MessageVisitor &visitor) const = 0;
+    virtual void Accept(MessageVisitor *visitor) const = 0;
 };
 
 
@@ -84,8 +84,8 @@ class BoolMessageField: public MessageFieldInterface {
     }
     bool Value() const { return m_value; }
 
-    void Accept(MessageVisitor &visitor) const {
-      visitor.Visit(this);
+    void Accept(MessageVisitor *visitor) const {
+      visitor->Visit(this);
     }
 
   private:
@@ -116,8 +116,8 @@ class IPV4MessageField: public MessageFieldInterface {
     }
     ola::network::IPV4Address Value() const { return m_value; }
 
-    void Accept(MessageVisitor &visitor) const {
-      visitor.Visit(this);
+    void Accept(MessageVisitor *visitor) const {
+      visitor->Visit(this);
     }
 
   private:
@@ -142,8 +142,8 @@ class UIDMessageField: public MessageFieldInterface {
     }
     const ola::rdm::UID& Value() const { return m_uid; }
 
-    void Accept(MessageVisitor &visitor) const {
-      visitor.Visit(this);
+    void Accept(MessageVisitor *visitor) const {
+      visitor->Visit(this);
     }
 
   private:
@@ -166,8 +166,8 @@ class StringMessageField: public MessageFieldInterface {
     const StringFieldDescriptor *GetDescriptor() const { return m_descriptor; }
     const string& Value() const { return m_value; }
 
-    void Accept(MessageVisitor &visitor) const {
-      visitor.Visit(this);
+    void Accept(MessageVisitor *visitor) const {
+      visitor->Visit(this);
     }
 
   private:
@@ -193,8 +193,8 @@ class BasicMessageField: public MessageFieldInterface {
     }
     type Value() const { return m_value; }
 
-    void Accept(MessageVisitor &visitor) const {
-      visitor.Visit(this);
+    void Accept(MessageVisitor *visitor) const {
+      visitor->Visit(this);
     }
 
   private:
@@ -232,7 +232,7 @@ class GroupMessageField: public MessageFieldInterface {
       return NULL;
     }
 
-    void Accept(MessageVisitor &visitor) const;
+    void Accept(MessageVisitor *visitor) const;
 
   private:
     const FieldDescriptorGroup *m_descriptor;
