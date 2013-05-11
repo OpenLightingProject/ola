@@ -37,6 +37,7 @@
 #include <iterator>
 #include <algorithm>
 
+#include "ola/base/Array.h"
 #include "ola/Logging.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMEnums.h"
@@ -99,7 +100,7 @@ Universe::Universe(unsigned int universe_id, UniverseStore *store,
   };
 
   if (m_export_map) {
-    for (unsigned int i = 0; i < sizeof(vars) / sizeof(vars[0]); ++i)
+    for (unsigned int i = 0; i < arraysize(vars); ++i)
       (*m_export_map->GetUIntMapVar(vars[i]))[m_universe_id_str] = 0;
   }
 
@@ -129,9 +130,9 @@ Universe::~Universe() {
   };
 
   if (m_export_map) {
-    for (unsigned int i = 0; i < sizeof(string_vars) / sizeof(char*); ++i)
+    for (unsigned int i = 0; i < arraysize(string_vars); ++i)
       m_export_map->GetStringMapVar(string_vars[i])->Remove(m_universe_id_str);
-    for (unsigned int i = 0; i < sizeof(uint_vars) / sizeof(char*); ++i)
+    for (unsigned int i = 0; i < arraysize(uint_vars); ++i)
       m_export_map->GetUIntMapVar(uint_vars[i])->Remove(m_universe_id_str);
   }
 }
