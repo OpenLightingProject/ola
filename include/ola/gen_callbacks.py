@@ -60,7 +60,7 @@ def Header():
 
 def Footer():
   print textwrap.dedent("""\
-  }  // ola
+  }  // namespace ola
   #endif  // INCLUDE_OLA_CALLBACK_H_""")
 
 def GenerateBase(number_of_args):
@@ -278,11 +278,14 @@ def GenerateMethodCallback(bind_count,
   if bind_count:
     PrintLongLine('    %s%d_%d(%s%s callback, %s):' %
                   (class_name, bind_count, exec_count, class_param,
-                  method_or_function, bind_args))
+                   method_or_function, bind_args))
   else:
-    PrintLongLine('    %s%d_%d(%s%s callback):' %
-                  (class_name, bind_count, exec_count, class_param,
-                  method_or_function))
+    optional_explicit = ''
+    if bind_count == 0 and method_or_function == 'Function':
+      optional_explicit = 'explicit '
+    PrintLongLine('    %s%s%d_%d(%s%s callback):' %
+                  (optional_explicit, class_name, bind_count, exec_count,
+                   class_param, method_or_function))
   print '      Parent(),'
   if is_method:
     print '      m_object(object),'
