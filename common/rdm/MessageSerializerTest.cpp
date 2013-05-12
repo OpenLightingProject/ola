@@ -100,13 +100,13 @@ void MessageSerializerTest::ConfirmData(unsigned long line,
                                         unsigned int actual_length) {
   std::stringstream str;
   str << "Line " << line;
-  OLA_ASSERT_EQ_MSG(expected_length, actual_length, str.str());
+  OLA_ASSERT_EQ_MSG(str.str(), expected_length, actual_length);
   for (unsigned int i = 0; i < expected_length; ++i) {
     str.str("");
     str << "line " << line << ", offset " << i << ": " <<
       static_cast<unsigned int>(expected[i]) <<
       " != " << static_cast<unsigned int>(actual[i]);
-    OLA_ASSERT_EQ_MSG(expected[i], actual[i], str.str());
+    OLA_ASSERT_EQ_MSG(str.str(), expected[i], actual[i]);
   }
 }
 
