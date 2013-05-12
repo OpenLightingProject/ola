@@ -39,5 +39,5 @@ class SequenceNumber {
   private:
     sequence_type m_sequence_number;
 };
-}  // ola
+}  // namespace ola
 #endif  // INCLUDE_OLA_UTIL_SEQUENCENUMBER_H_

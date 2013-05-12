@@ -22,6 +22,7 @@
 #define PLUGINS_E131_E131DEVICE_H_
 
 #include <string>
+#include <vector>
 #include "ola/acn/CID.h"
 #include "olad/Device.h"
 #include "olad/Plugin.h"
@@ -34,6 +35,10 @@ namespace e131 {
 using google::protobuf::RpcController;
 using ola::Plugin;
 using ola::plugin::e131::Request;
+using std::vector;
+
+class E131InputPort;
+class E131OutputPort;
 
 class E131Device: public ola::Device {
   public:
@@ -67,6 +72,7 @@ class E131Device: public ola::Device {
                    const string &request,
                    string *response,
                    google::protobuf::Closure *done);
+
   protected:
     bool StartHook();
     void PrePortStop();
@@ -80,15 +86,19 @@ class E131Device: public ola::Device {
     bool m_ignore_preview;
     uint8_t m_dscp;
     const unsigned int m_input_port_count, m_output_port_count;
+    vector<E131InputPort*> m_input_ports;
+    vector<E131OutputPort*> m_output_ports;
     std::string m_ip_addr;
     ola::acn::CID m_cid;
 
     void HandlePreviewMode(Request *request, string *response);
     void HandlePortStatusRequest(string *response);
+    E131InputPort *GetE131InputPort(unsigned int port_id);
+    E131OutputPort *GetE131OutputPort(unsigned int port_id);
 
     static const char DEVICE_NAME[];
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131DEVICE_H_

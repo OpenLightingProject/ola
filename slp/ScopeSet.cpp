@@ -151,5 +151,5 @@ string ScopeSet::AsEscapedString() const {
   }
   return joined_scopes;
 }
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola

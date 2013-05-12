@@ -74,7 +74,7 @@ class Dmx4LinuxInputPort: public BasicInputPort {
   private:
     DmxBuffer m_read_buffer;
 };
-}  // dmx4linux
-}  // plugin
-}  // ola
+}  // namespace dmx4linux
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_DMX4LINUX_DMX4LINUXPORT_H_

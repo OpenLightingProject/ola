@@ -52,7 +52,7 @@ class SandNetPlugin: public ola::Plugin {
     static const char PLUGIN_NAME[];
     static const char PLUGIN_PREFIX[];
 };
-}  // sandnet
-}  // plugin
-}  // ola
+}  // namespace sandnet
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_SANDNET_SANDNETPLUGIN_H_

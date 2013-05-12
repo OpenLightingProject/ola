@@ -223,6 +223,6 @@ class SLPPacketParser {
       return false;
     }
 };
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola
 #endif  // SLP_SLPPACKETPARSER_H_

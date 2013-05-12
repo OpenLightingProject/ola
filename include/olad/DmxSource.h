@@ -134,5 +134,5 @@ class DmxSource {
 
     static const TimeInterval TIMEOUT_INTERVAL;
 };
-}  // ola
+}  // namespace ola
 #endif  // INCLUDE_OLAD_DMXSOURCE_H_

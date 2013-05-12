@@ -168,6 +168,6 @@ bool SPIPlugin::SetDefaultPreferences() {
 
   return true;
 }
-}  // spi
-}  // plugin
-}  // ola
+}  // namespace spi
+}  // namespace plugin
+}  // namespace ola

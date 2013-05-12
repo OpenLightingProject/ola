@@ -294,6 +294,6 @@ bool VellemanOutputPort::SendDataChunk(uint8_t *usb_data) {
       transferred;
   return ret == 0;
 }
-}  // usbdmx
-}  // plugin
-}  // ola
+}  // namespace usbdmx
+}  // namespace plugin
+}  // namespace ola

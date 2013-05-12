@@ -1003,4 +1003,4 @@ OlaClientService *OlaClientServiceFactory::New(
     OlaServerServiceImpl *impl) {
   return new OlaClientService(client, impl);
 };
-}  // ola
+}  // namespace ola

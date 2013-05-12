@@ -1219,6 +1219,6 @@ class RDMAPI {
                          unsigned int actual,
                          unsigned int expected);
 };
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola
 #endif  // INCLUDE_OLA_RDM_RDMAPI_H_

@@ -49,7 +49,7 @@ class UsbDevice: public ola::Device {
   protected:
     libusb_device *m_usb_device;
 };
-}  // usbdmx
-}  // plugin
-}  // ola
+}  // namespace usbdmx
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBDMX_USBDEVICE_H_

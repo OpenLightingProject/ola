@@ -45,7 +45,7 @@ class OutgoingTransport {
 
     virtual bool Send(const PDUBlock<PDU> &pdu_block) = 0;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_TRANSPORT_H_

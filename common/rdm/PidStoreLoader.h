@@ -86,6 +86,6 @@ class PidStoreLoader {
         const ola::rdm::pid::SubDeviceRange &sub_device_range);
     void CleanStore();
 };
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola
 #endif  // COMMON_RDM_PIDSTORELOADER_H_

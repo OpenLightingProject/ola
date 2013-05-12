@@ -30,6 +30,6 @@ static const char DEFAULT_SLP_SCOPE[] = "DEFAULT";
 
 // The default port the SLP uses for RPC servers, not part of the RFC.
 static const int OLA_SLP_DEFAULT_PORT = 9011;
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola
 #endif  // INCLUDE_OLA_SLP_BASE_H_

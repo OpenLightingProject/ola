@@ -39,8 +39,11 @@ string InitDAServicePrefix() {
   return s;
 }
 
-const string DATracker::DA_SERVICE_PREFIX = InitDAServicePrefix();
 
+
+DATracker::DATracker()
+    : m_da_service_prefix(string(DIRECTORY_AGENT_SERVICE) + "://") {
+}
 
 /**
  * Clean up
@@ -249,17 +252,17 @@ void DATracker::RunCallbacks(const DirectoryAgent &agent) {
  * Extract the IP address from a DA's URL.
  */
 bool DATracker::AddressFromURL(const string &url, IPV4Address *address) {
-  static const size_t PREFIX_LENGTH = DA_SERVICE_PREFIX.size();
-
   bool ok = false;
-  if (0 == url.compare(0, PREFIX_LENGTH, DA_SERVICE_PREFIX)) {
-    ok = IPV4Address::FromString(url.substr(PREFIX_LENGTH), address);
+  if (0 == url.compare(0, m_da_service_prefix.size(), m_da_service_prefix)) {
+    ok = IPV4Address::FromString(url.substr(m_da_service_prefix.size()),
+                                 address);
     if (!ok)
-      OLA_WARN << "Failed to extract IP from " << url.substr(PREFIX_LENGTH);
+      OLA_WARN << "Failed to extract IP from "
+               << url.substr(m_da_service_prefix.size());
   } else {
-    OLA_WARN << url << " did not start with " << DA_SERVICE_PREFIX;
+    OLA_WARN << url << " did not start with " << m_da_service_prefix;
   }
   return ok;
 }
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola

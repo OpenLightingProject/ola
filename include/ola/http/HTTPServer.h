@@ -227,6 +227,6 @@ class HTTPServer: public ola::thread::Thread {
                                                 fd_set *w_set,
                                                 int fd);
 };
-}  // http
-}  // ola
+}  // namespace http
+}  // namespace ola
 #endif  // INCLUDE_OLA_HTTP_HTTPSERVER_H_

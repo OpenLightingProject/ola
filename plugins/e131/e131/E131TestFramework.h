@@ -32,6 +32,7 @@
 #include "ola/acn/CID.h"
 #include "ola/io/Descriptor.h"
 #include "ola/io/SelectServer.h"
+#include "ola/math/Random.h"
 #include "plugins/e131/e131/E131Node.h"
 
 using ola::acn::CID;
@@ -108,6 +109,7 @@ class TestState {
   protected:
     bool m_passed;
     DmxBuffer m_expected_result;
+
   private:
     string m_name, m_expected;
     NodeAction *m_action1, *m_action2;
@@ -274,26 +276,27 @@ class NodeVarySequenceNumber: public NodeAction {
         m_chance(chance),
         m_good(good_value),
         m_bad(bad_value) {
-      srand(static_cast<uint32_t>(time(0)) * static_cast<uint32_t>(getpid()));
+      ola::math::InitRandom();
     }
 
     void Tick() {
-      int random = (rand() / static_cast<int>((RAND_MAX / m_chance)));
-      if (!m_counter || random % static_cast<int>(m_chance)) {
+      int random = ola::math::Random(0, static_cast<int>(m_chance) - 1);
+      if (!m_counter || random) {
         // start off with good data
         DmxBuffer output;
         output.SetRangeToValue(0, m_good, DMX_UNIVERSE_SIZE);
         m_node->SendDMX(UNIVERSE_ID, output);
       } else {
-        // fake an old packet
+        // fake an old packet, 1 to 18 packets behind.
         DmxBuffer output;
         output.SetRangeToValue(0, m_bad, DMX_UNIVERSE_SIZE);
-        int offset = 1 + (rand() / (RAND_MAX / 18));
+        int offset = ola::math::Random(1, 18);
         m_node->SendDMXWithSequenceOffset(UNIVERSE_ID, output,
                                           static_cast<int8_t>(-offset));
       }
       m_counter++;
     }
+
   private:
     unsigned int m_counter, m_chance;
     uint8_t m_good, m_bad;

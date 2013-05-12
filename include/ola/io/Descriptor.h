@@ -349,6 +349,6 @@ class DeviceDescriptor: public ConnectedDescriptor {
     DeviceDescriptor(const DeviceDescriptor &other);
     DeviceDescriptor& operator=(const DeviceDescriptor &other);
 };
-}  // io
-}  // ola
+}  // namespace io
+}  // namespace ola
 #endif  // INCLUDE_OLA_IO_DESCRIPTOR_H_

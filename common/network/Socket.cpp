@@ -440,5 +440,5 @@ bool UDPSocket::SetTos(uint8_t tos) {
   }
   return true;
 }
-}  // network
-}  // ola
+}  // namespace network
+}  // namespace ola

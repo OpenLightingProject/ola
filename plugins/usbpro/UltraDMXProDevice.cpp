@@ -261,6 +261,6 @@ void UltraDMXProDevice::HandleSerialRequest(
   (void) controller;
   (void) request;
 }
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola

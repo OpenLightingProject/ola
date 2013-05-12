@@ -101,6 +101,6 @@ class GenericMessagePrinter: public MessagePrinter {
                    int8_t multipler);
     void AppendMultipler(int8_t multipler);
 };
-}  // messaging
-}  // ola
+}  // namespace messaging
+}  // namespace ola
 #endif  // INCLUDE_OLA_MESSAGING_MESSAGEPRINTER_H_

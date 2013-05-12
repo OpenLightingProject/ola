@@ -56,6 +56,6 @@ class MessageVisitor {
     virtual void Visit(const GroupMessageField*) = 0;
     virtual void PostVisit(const GroupMessageField*) = 0;
 };
-}  // messaging
-}  // ola
+}  // namespace messaging
+}  // namespace ola
 #endif  // INCLUDE_OLA_MESSAGING_MESSAGEVISITOR_H_

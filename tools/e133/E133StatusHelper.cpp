@@ -20,7 +20,7 @@
 
 #include <stdint.h>
 #include <string>
-#include <ola/e133/E133StatusHelper.h>
+#include "ola/e133/E133StatusHelper.h"
 
 namespace ola {
 namespace e133 {
@@ -96,5 +96,5 @@ string StatusMessageIdToString(E133StatusCode status_code) {
   }
   return "Unknown E1.33 Status Code";
 }
-}  // e133
-}  // ola
+}  // namespace e133
+}  // namespace ola

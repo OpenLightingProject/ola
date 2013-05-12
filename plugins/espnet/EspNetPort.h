@@ -73,7 +73,7 @@ class EspNetOutputPort: public BasicOutputPort {
     EspNetPortHelper m_helper;
     EspNetNode *m_node;
 };
-}  // espnet
-}  // plugin
-}  // ola
+}  // namespace espnet
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_ESPNET_ESPNETPORT_H_

@@ -76,6 +76,6 @@ class CIDImpl {
     explicit CIDImpl(uuid_t uuid);
 #endif
 };
-}  // acn
-}  // ola
+}  // namespace acn
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_CIDIMPL_H_

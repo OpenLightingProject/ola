@@ -104,6 +104,6 @@ void EspNetDevice::PostPortStop() {
   delete m_node;
   m_node = NULL;
 }
-}  // espnet
-}  // plugin
-}  // ola
+}  // namespace espnet
+}  // namespace plugin
+}  // namespace ola

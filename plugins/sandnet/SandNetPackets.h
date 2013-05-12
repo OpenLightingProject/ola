@@ -197,7 +197,7 @@ struct sandnet_packet {
     sandnet_compressed_dmx  compressed_dmx;
   } contents;
 } __attribute__((packed));
-}  // sandnet
-}  // plugin
-}  // ola
+}  // namespace sandnet
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_SANDNET_SANDNETPACKETS_H_

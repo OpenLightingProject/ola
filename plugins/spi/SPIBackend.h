@@ -178,7 +178,7 @@ class SPIBackend: public ola::rdm::DiscoverableRDMControllerInterface {
     static const uint16_t WS2801_SLOTS_PER_PIXEL;
     static const uint16_t LPD8806_SLOTS_PER_PIXEL;
 };
-}  // spi
-}  // plugin
-}  // ola
+}  // namespace spi
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_SPI_SPIBACKEND_H_

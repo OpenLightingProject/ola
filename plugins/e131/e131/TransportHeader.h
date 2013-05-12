@@ -64,7 +64,7 @@ class TransportHeader {
     ola::network::IPV4SocketAddress m_source;
     TransportType m_transport_type;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_TRANSPORTHEADER_H_

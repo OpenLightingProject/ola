@@ -386,7 +386,7 @@ void BaseSLPThread::DiscoveryTriggered(const string service) {
  */
 void BaseSLPThread::RegisterService(RegistrationCallback *callback,
                                     const string url,
-                                    unsigned short lifetime) {
+                                    uint16_t lifetime) {
   lifetime = ClampLifetime(url, lifetime);
   uint16_t min_lifetime = MinRefreshTime();
   if (min_lifetime != 0 && lifetime < min_lifetime) {
@@ -563,5 +563,5 @@ BaseSLPThread* SLPThreadFactory::NewSLPThread(
   return new OLASLPThread(ss, discovery_interval);
 #endif
 }
-}  // e133
-}  // ola
+}  // namespace e133
+}  // namespace ola

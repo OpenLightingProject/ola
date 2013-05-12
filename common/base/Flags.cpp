@@ -269,4 +269,4 @@ void FlagRegistry::PrintFlags(std::vector<string> *lines) {
   for (; iter != lines->end(); ++iter)
     cerr << *iter;
 }
-}  // ola
+}  // namespace ola

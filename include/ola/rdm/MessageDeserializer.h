@@ -76,6 +76,6 @@ class MessageDeserializer: public ola::messaging::FieldDescriptorVisitor {
     template <typename int_type>
     void IntVisit(const ola::messaging::IntegerFieldDescriptor<int_type> *);
 };
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola
 #endif  // INCLUDE_OLA_RDM_MESSAGEDESERIALIZER_H_

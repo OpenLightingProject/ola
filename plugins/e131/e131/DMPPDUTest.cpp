@@ -65,7 +65,7 @@ class MockDMPInflator: public DMPInflator {
     unsigned int expected_number;
 
   protected:
-    bool HandlePDUData(uint32_t vector, HeaderSet &headers,
+    bool HandlePDUData(uint32_t vector, const HeaderSet &headers,
                        const uint8_t *data, unsigned int pdu_len);
 };
 
@@ -91,7 +91,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(DMPPDUTest);
  * Verify a PDU is what we expected
  */
 bool MockDMPInflator::HandlePDUData(uint32_t vector,
-                                    HeaderSet &headers,
+                                    const HeaderSet &headers,
                                     const uint8_t *data,
                                     unsigned int pdu_len) {
   DMPHeader header = headers.GetDMPHeader();
@@ -122,11 +122,11 @@ bool MockDMPInflator::HandlePDUData(uint32_t vector,
 void DMPPDUTest::PackPduAndInflate(const DMPPDU *pdu) {
   unsigned int size = pdu->Size() + 10;  // overallocate to catch overflows
   uint8_t *data = new uint8_t[size];
-  OLA_ASSERT(pdu->Pack(data, size));
+  OLA_ASSERT(pdu->Pack(data, &size));
   OLA_ASSERT_EQ(pdu->Size(), size);
 
   HeaderSet headers;
-  m_inflator.InflatePDUBlock(headers, data, size);
+  m_inflator.InflatePDUBlock(&headers, data, size);
   delete[] data;
 }
 
@@ -236,6 +236,6 @@ void DMPPDUTest::testSetProperty() {
   PackPduAndInflate(pdu);
   delete pdu;
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

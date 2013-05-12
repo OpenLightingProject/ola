@@ -81,7 +81,7 @@ template <typename Parent, typename ReturnType>
 class FunctionCallback0_0: public Parent {
   public:
     typedef ReturnType (*Function)();
-    FunctionCallback0_0(Function callback):
+    explicit FunctionCallback0_0(Function callback):
       Parent(),
       m_callback(callback) {}
     ReturnType DoRun() {
@@ -700,7 +700,7 @@ template <typename Parent, typename ReturnType, typename Arg0>
 class FunctionCallback0_1: public Parent {
   public:
     typedef ReturnType (*Function)(Arg0);
-    FunctionCallback0_1(Function callback):
+    explicit FunctionCallback0_1(Function callback):
       Parent(),
       m_callback(callback) {}
     ReturnType DoRun(Arg0 arg0) {
@@ -1339,7 +1339,7 @@ template <typename Parent, typename ReturnType, typename Arg0, typename Arg1>
 class FunctionCallback0_2: public Parent {
   public:
     typedef ReturnType (*Function)(Arg0, Arg1);
-    FunctionCallback0_2(Function callback):
+    explicit FunctionCallback0_2(Function callback):
       Parent(),
       m_callback(callback) {}
     ReturnType DoRun(Arg0 arg0, Arg1 arg1) {
@@ -1998,7 +1998,7 @@ template <typename Parent, typename ReturnType, typename Arg0, typename Arg1, ty
 class FunctionCallback0_3: public Parent {
   public:
     typedef ReturnType (*Function)(Arg0, Arg1, Arg2);
-    FunctionCallback0_3(Function callback):
+    explicit FunctionCallback0_3(Function callback):
       Parent(),
       m_callback(callback) {}
     ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2) {
@@ -2677,7 +2677,7 @@ template <typename Parent, typename ReturnType, typename Arg0, typename Arg1, ty
 class FunctionCallback0_4: public Parent {
   public:
     typedef ReturnType (*Function)(Arg0, Arg1, Arg2, Arg3);
-    FunctionCallback0_4(Function callback):
+    explicit FunctionCallback0_4(Function callback):
       Parent(),
       m_callback(callback) {}
     ReturnType DoRun(Arg0 arg0, Arg1 arg1, Arg2 arg2, Arg3 arg3) {
@@ -3322,5 +3322,5 @@ inline Callback4<ReturnType, Arg0, Arg1, Arg2, Arg3>* NewCallback(
 }
 
 
-}  // ola
+}  // namespace ola
 #endif  // INCLUDE_OLA_CALLBACK_H_

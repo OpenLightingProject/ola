@@ -37,7 +37,7 @@ using std::endl;
  */
 string MessagePrinter::AsString(const Message *message) {
   m_str.str("");
-  message->Accept(*this);
+  message->Accept(this);
   PostStringHook();
   return m_str.str();
 }
@@ -173,5 +173,5 @@ void GenericMessagePrinter::AppendMultipler(int8_t multipler) {
   if (multipler)
     Stream() << " x 10 ^ " << static_cast<int>(multipler);
 }
-}  // messaging
-}  // ola
+}  // namespace messaging
+}  // namespace ola

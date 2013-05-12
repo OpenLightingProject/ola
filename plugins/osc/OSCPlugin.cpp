@@ -207,6 +207,6 @@ bool OSCPlugin::ExtractOSCTarget(const string &str,
   target->osc_address = str.substr(pos);
   return true;
 }
-}  // osc
-}  // plugin
-}  // ola
+}  // namespace osc
+}  // namespace plugin
+}  // namespace ola

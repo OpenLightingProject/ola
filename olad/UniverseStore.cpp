@@ -250,4 +250,4 @@ bool UniverseStore::SaveUniverseSettings(Universe *universe) const {
 
   return 0;
 }
-}  // ola
+}  // namespace ola

@@ -70,7 +70,7 @@ int32_t LittleEndianToHost(int32_t value);
 
 std::string FullHostname();
 std::string Hostname();
-}  // network
-}  // ola
+}  // namespace network
+}  // namespace ola
 #endif  // INCLUDE_OLA_NETWORK_NETWORKUTILS_H_
 

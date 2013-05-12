@@ -58,9 +58,10 @@ using ola::slp::xid_t;
  * Try a 0-length UDP packet.
  */
 class EmptyPacketTest: public TestCase {
-void BuildPacket(BigEndianOutputStream *) {
+void BuildPacket(BigEndianOutputStream *output) {
   SetDestination(UNICAST);
   ExpectTimeout();
+  (void) output;
 }
 };
 REGISTER_TEST(EmptyPacketTest)

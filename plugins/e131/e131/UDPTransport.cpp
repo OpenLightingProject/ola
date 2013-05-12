@@ -105,11 +105,11 @@ void IncomingUDPTransport::Receive() {
   header_set.SetTransportHeader(transport_header);
 
   m_inflator->InflatePDUBlock(
-      header_set,
+      &header_set,
       m_recv_buffer + header_size,
       static_cast<unsigned int>(size) - header_size);
   return;
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

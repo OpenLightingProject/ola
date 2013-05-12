@@ -76,5 +76,5 @@ class PortBroker: public PortBrokerInterface {
 
     std::set<port_key> m_ports;
 };
-}  // ola
+}  // namespace ola
 #endif  // INCLUDE_OLAD_PORTBROKER_H_

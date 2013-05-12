@@ -165,6 +165,6 @@ class SLPDaemon {
     static const uint16_t DEFAULT_SLP_HTTP_PORT;
     static const uint16_t DEFAULT_SLP_RPC_PORT;
 };
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola
 #endif  // SLP_SLPDAEMON_H_

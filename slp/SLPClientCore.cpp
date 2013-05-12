@@ -313,5 +313,5 @@ bool SLPClientCore::GenericRegisterService(
   m_stub->RegisterService(controller, &request, reply, cb);
   return true;
 }
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola

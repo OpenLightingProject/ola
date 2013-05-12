@@ -127,6 +127,6 @@ class IPV4Address {
   private:
     struct in_addr m_address;
 };
-}  // network
-}  // ola
+}  // namespace network
+}  // namespace ola
 #endif  // INCLUDE_OLA_NETWORK_IPV4ADDRESS_H_

@@ -429,4 +429,4 @@ bool FileBackedPreferences::LoadFromFile(const string &filename) {
   pref_file.close();
   return true;
 }
-}  // ola
+}  // namespace ola

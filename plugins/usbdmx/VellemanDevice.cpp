@@ -45,6 +45,6 @@ bool VellemanDevice::StartHook() {
   AddPort(output_port);
   return true;
 }
-}  // usbdmx
-}  // plugin
-}  // ola
+}  // namespace usbdmx
+}  // namespace plugin
+}  // namespace ola

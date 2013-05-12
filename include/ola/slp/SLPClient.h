@@ -130,6 +130,6 @@ class SLPClientWrapper: public BaseClientWrapper {
             IPV4SocketAddress(IPV4Address::Loopback(), OLA_SLP_DEFAULT_PORT)));
     }
 };
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola
 #endif  // INCLUDE_OLA_SLP_SLPCLIENT_H_

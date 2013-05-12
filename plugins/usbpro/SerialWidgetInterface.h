@@ -44,7 +44,7 @@ class SerialWidgetInterface {
     virtual void Stop() = 0;
     virtual ola::io::ConnectedDescriptor *GetDescriptor() const = 0;
 };
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBPRO_SERIALWIDGETINTERFACE_H_

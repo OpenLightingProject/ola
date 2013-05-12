@@ -123,6 +123,6 @@ bool DummyPlugin::SetDefaultPreferences() {
 
   return true;
 }
-}  // dummy
-}  // plugin
-}  // ola
+}  // namespace dummy
+}  // namespace plugin
+}  // namespace ola

@@ -49,10 +49,13 @@ class RDMPDU: public PDU {
 
     unsigned int HeaderSize() const { return 0; }
     unsigned int DataSize() const;
-    bool PackHeader(uint8_t *data, unsigned int &length) const;
-    bool PackData(uint8_t *data, unsigned int &length) const;
+    bool PackHeader(uint8_t *data, unsigned int *length) const;
+    bool PackData(uint8_t *data, unsigned int *length) const;
 
-    void PackHeader(OutputStream*) const {}
+    void PackHeader(OutputStream *stream) const {
+      (void) stream;
+    }
+
     void PackData(OutputStream *stream) const;
 
     static void PrependPDU(ola::io::IOStack *stack);
@@ -60,7 +63,7 @@ class RDMPDU: public PDU {
   private:
     std::auto_ptr<const ola::rdm::RDMCommand> m_command;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_RDMPDU_H_

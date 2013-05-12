@@ -255,4 +255,4 @@ bool GetGroupGID(gid_t uid, GroupEntry *group_entry) {
   return GenericGetGroup(getgrgid, uid, group_entry);
 #endif
 }
-}  // ola
+}  // namespace ola

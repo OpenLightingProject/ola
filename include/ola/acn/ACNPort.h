@@ -28,6 +28,6 @@ namespace acn {
 
 const uint16_t ACN_PORT = 5568;
 const uint16_t E133_PORT = 5569;
-}  // acn
-}  // ola
+}  // namespace acn
+}  // namespace ola
 #endif  // INCLUDE_OLA_ACN_ACNPORT_H_

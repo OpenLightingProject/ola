@@ -31,6 +31,6 @@ namespace slp {
  * use it.
  */
 typedef SequenceNumber<xid_t> XIDAllocator;
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola
 #endif  // SLP_XIDALLOCATOR_H_

@@ -249,7 +249,7 @@ class DmxTriWidget: public SerialWidgetInterface,
       m_controller->Resume();
     }
 };
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBPRO_DMXTRIWIDGET_H_

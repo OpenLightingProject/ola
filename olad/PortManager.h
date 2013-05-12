@@ -79,5 +79,5 @@ class PortManager {
     UniverseStore * const m_universe_store;
     PortBroker *m_broker;
 };
-}  // ola
+}  // namespace ola
 #endif  // OLAD_PORTMANAGER_H_

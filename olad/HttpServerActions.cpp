@@ -98,4 +98,4 @@ bool PortPriorityOverrideAction::DoAction() {
     NewSingleCallback(static_cast<BaseHttpAction*>(this),
                       &SetNameAction::CallbackComplete));
 }
-}  // ola
+}  // namespace ola

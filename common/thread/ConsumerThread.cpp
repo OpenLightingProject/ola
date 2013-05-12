@@ -67,5 +67,5 @@ void ConsumerThread::EmptyQueue() {
     m_mutex->Lock();
   }
 }
-}  // thread
-}  // ola
+}  // namespace thread
+}  // namespace ola

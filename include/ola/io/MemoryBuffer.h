@@ -25,8 +25,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <algorithm>
-#include <string.h>
-
+#include <string>
 
 namespace ola {
 namespace io {
@@ -67,6 +66,6 @@ class MemoryBuffer: public InputBufferInterface {
     MemoryBuffer(const MemoryBuffer&);
     MemoryBuffer& operator=(const MemoryBuffer&);
 };
-}  // io
-}  // ola
+}  // namespace io
+}  // namespace ola
 #endif  // INCLUDE_OLA_IO_MEMORYBUFFER_H_

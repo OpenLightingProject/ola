@@ -63,5 +63,5 @@ int Random(int lower, int upper) {
   return lower + (random() % (upper - lower + 1));
 #endif
 }
-}  // math
-}  // ola
+}  // namespace math
+}  // namespace ola

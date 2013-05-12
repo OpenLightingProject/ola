@@ -243,6 +243,6 @@ class SelectServer: public SelectServerInterface {
     static const unsigned int POLL_INTERVAL_SECOND = 10;
     static const unsigned int POLL_INTERVAL_USECOND = 0;
 };
-}  // io
-}  // ola
+}  // namespace io
+}  // namespace ola
 #endif  // INCLUDE_OLA_IO_SELECTSERVER_H_

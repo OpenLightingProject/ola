@@ -284,5 +284,5 @@ class ExportMap {
     map<string, IntMap*> m_int_map_variables;
     map<string, UIntMap*> m_uint_map_variables;
 };
-}  // ola
+}  // namespace ola
 #endif  // INCLUDE_OLA_EXPORTMAP_H_

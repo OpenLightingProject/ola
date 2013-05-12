@@ -209,4 +209,4 @@ void Device::GenericDeletePort(PortClass *port) {
     universe->RemovePort(port);
   delete port;
 }
-}  // ola
+}  // namespace ola

@@ -93,18 +93,18 @@ class URLEntry {
       return *this;
     }
 
-    void ToStream(ostream &out) const {
-      out << m_url << "(" << m_lifetime << ")";
+    void ToStream(ostream *out) const {
+      *out << m_url << "(" << m_lifetime << ")";
     }
 
     string ToString() const {
       std::ostringstream str;
-      ToStream(str);
+      ToStream(&str);
       return str.str();
     }
 
     friend ostream& operator<<(ostream &out, const URLEntry &entry) {
-      entry.ToStream(out);
+      entry.ToStream(&out);
       return out;
     }
 
@@ -116,6 +116,6 @@ class URLEntry {
 
 // typedef for convenience
 typedef std::vector<URLEntry> URLEntries;
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola
 #endif  // INCLUDE_OLA_SLP_URLENTRY_H_

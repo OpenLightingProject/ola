@@ -42,6 +42,6 @@ static const uint16_t CONFIG_REG_ACTIVE_MAX = 3;
 static const char DIRECTORY_AGENT_SERVICE[] = "service:directory-agent";
 
 static const char SERVICE_AGENT_SERVICE[] = "service:service-agent";
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola
 #endif  // SLP_SERVERCOMMON_H_

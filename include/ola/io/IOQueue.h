@@ -89,6 +89,6 @@ class IOQueue: public InputBufferInterface,
     IOQueue(const IOQueue&);
     IOQueue& operator=(const IOQueue&);
 };
-}  // io
-}  // ola
+}  // namespace io
+}  // namespace ola
 #endif  // INCLUDE_OLA_IO_IOQUEUE_H_

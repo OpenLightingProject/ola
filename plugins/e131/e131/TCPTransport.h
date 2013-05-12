@@ -139,7 +139,7 @@ class IncomingTCPTransport {
   private:
     std::auto_ptr<IncommingStreamTransport> m_transport;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_TCPTRANSPORT_H_

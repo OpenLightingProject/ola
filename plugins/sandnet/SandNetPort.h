@@ -85,7 +85,7 @@ class SandNetOutputPort: public BasicOutputPort {
     SandNetPortHelper m_helper;
     SandNetNode *m_node;
 };
-}  // sandnet
-}  // plugin
-}  // ola
+}  // namespace sandnet
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_SANDNET_SANDNETPORT_H_

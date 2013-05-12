@@ -3230,4 +3230,4 @@ void RDMHTTPModule::AddSection(vector<section_info> *sections,
   section_info info = {section_id, section_name, hint};
   sections->push_back(info);
 }
-}  // ola
+}  // namespace ola

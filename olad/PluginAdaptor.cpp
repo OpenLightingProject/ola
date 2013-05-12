@@ -213,4 +213,4 @@ Preferences *PluginAdaptor::NewPreference(const string &name) const {
 const TimeStamp *PluginAdaptor::WakeUpTime() const {
   return m_ss->WakeUpTime();
 }
-}  // ola
+}  // namespace ola

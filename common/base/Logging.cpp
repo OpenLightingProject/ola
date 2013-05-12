@@ -245,4 +245,4 @@ void SyslogDestination::Write(log_level level, const string &log_line) {
   syslog(pri, "%s", log_line.data());
 #endif
 }
-}  //  ola
+}  // namespace  ola

@@ -88,7 +88,7 @@ void OLASLPThread::RunDiscovery(InternalDiscoveryCallback *callback,
 
 void OLASLPThread::RegisterSLPService(RegistrationCallback *callback,
                                       const string& url,
-                                      unsigned short lifetime) {
+                                      uint16_t lifetime) {
   if (!m_slp_client.get()) {
     callback->Run(false);
     return;
@@ -117,13 +117,13 @@ void OLASLPThread::DeRegisterSLPService(RegistrationCallback *callback,
 void OLASLPThread::SLPServerInfo(ServerInfoCallback *callback) {
   ola::slp::ServerInfo server_info;
   if (!m_slp_client.get()) {
-    callback->Run(false, server_info);
+    callback->Run(false, SLPThreadServerInfo(server_info));
     return;
   }
   bool ok = m_slp_client->GetServerInfo(
       NewSingleCallback(this, &OLASLPThread::HandleServerInfo, callback));
   if (!ok) {
-    callback->Run(false, server_info);
+    callback->Run(false, SLPThreadServerInfo(server_info));
     return;
   }
 }
@@ -218,5 +218,5 @@ void OLASLPThread::AttemptSLPConnection() {
         ola::NewSingleCallback(this, &OLASLPThread::AttemptSLPConnection));
   }
 }
-}  // e133
-}  // ola
+}  // namespace e133
+}  // namespace ola

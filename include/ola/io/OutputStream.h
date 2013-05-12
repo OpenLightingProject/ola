@@ -82,6 +82,6 @@ class OutputStream: public OutputStreamInterface {
     OutputStream(const OutputStream&);
     OutputStream& operator=(const OutputStream&);
 };
-}  // io
-}  // ola
+}  // namespace io
+}  // namespace ola
 #endif  // INCLUDE_OLA_IO_OUTPUTSTREAM_H_

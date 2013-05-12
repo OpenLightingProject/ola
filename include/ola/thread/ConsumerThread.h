@@ -66,6 +66,6 @@ class ConsumerThread: public ola::thread::Thread {
 
     void EmptyQueue();
 };
-}  // thread
-}  // ola
+}  // namespace thread
+}  // namespace ola
 #endif  // INCLUDE_OLA_THREAD_CONSUMERTHREAD_H_

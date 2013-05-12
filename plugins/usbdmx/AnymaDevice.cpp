@@ -74,6 +74,6 @@ string AnymaDevice::DeviceId() const {
     return "";
   }
 }
-}  // usbdmx
-}  // plugin
-}  // ola
+}  // namespace usbdmx
+}  // namespace plugin
+}  // namespace ola

@@ -72,5 +72,5 @@ class OlaDaemon {
     static const char K_RPC_PORT_VAR[];
     static const char OLA_CONFIG_DIR[];
 };
-}  // ola
+}  // namespace ola
 #endif  // OLAD_OLADAEMON_H_

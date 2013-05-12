@@ -106,7 +106,7 @@ void DisplayHelpAndExit(char arg[]) {
 }
 
 
-bool SendDataFromString(StreamingClient &client,
+bool SendDataFromString(StreamingClient *client,
                         unsigned int universe,
                         const string &data) {
   ola::DmxBuffer buffer;
@@ -115,7 +115,7 @@ bool SendDataFromString(StreamingClient &client,
   if (!status || buffer.Size() == 0)
     return false;
 
-  if (!client.SendDmx(universe, buffer)) {
+  if (!client->SendDmx(universe, buffer)) {
     cout << "Send DMX failed" << endl;
     terminate = true;
     return false;
@@ -146,10 +146,10 @@ int main(int argc, char *argv[]) {
     string input;
     while (!terminate && std::cin >> input) {
       ola::StringTrim(&input);
-      SendDataFromString(ola_client, opts.universe, input);
+      SendDataFromString(&ola_client, opts.universe, input);
     }
   } else {
-    SendDataFromString(ola_client, opts.universe, opts.dmx_data);
+    SendDataFromString(&ola_client, opts.universe, opts.dmx_data);
   }
   ola_client.Stop();
   return 0;

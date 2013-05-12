@@ -755,7 +755,7 @@ int HTTPServer::ServeStaticContent(static_file_info *file_info,
   length = i_stream.tellg();
   i_stream.seekg(0, std::ios::beg);
 
-  data = static_cast<char*>(malloc(length * sizeof(char)));
+  data = static_cast<char*>(malloc(length));
 
   i_stream.read(data, length);
   i_stream.close();
@@ -794,5 +794,5 @@ UnmanagedFileDescriptor *HTTPServer::NewSocket(fd_set *r_set,
     m_select_server.AddWriteDescriptor(socket);
   return socket;
 }
-}  // http
-}  // ola
+}  // namespace http
+}  // namespace ola

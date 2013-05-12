@@ -49,7 +49,7 @@ class OpenDmxThread: public ola::thread::Thread {
 
     static const int INVALID_FD = -1;
 };
-}  // opendmx
-}  // plugin
-}  // ola
+}  // namespace opendmx
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_OPENDMX_OPENDMXTHREAD_H_

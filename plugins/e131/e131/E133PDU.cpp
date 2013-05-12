@@ -20,8 +20,9 @@
 
 
 #include <string.h>
-#include <ola/Logging.h>
-#include <ola/network/NetworkUtils.h>
+#include <string>
+#include "ola/Logging.h"
+#include "ola/network/NetworkUtils.h"
 #include "plugins/e131/e131/E133PDU.h"
 #include "plugins/e131/e131/RDMPDU.h"
 
@@ -50,13 +51,13 @@ unsigned int E133PDU::DataSize() const {
 /*
  * Pack the header portion.
  */
-bool E133PDU::PackHeader(uint8_t *data, unsigned int &length) const {
+bool E133PDU::PackHeader(uint8_t *data, unsigned int *length) const {
   unsigned int header_size = HeaderSize();
 
-  if (length < header_size) {
-    OLA_WARN << "E133PDU::PackHeader: buffer too small, got " << length <<
-      " required " << header_size;
-    length = 0;
+  if (*length < header_size) {
+    OLA_WARN << "E133PDU::PackHeader: buffer too small, got " << *length
+             << " required " << header_size;
+    *length = 0;
     return false;
   }
 
@@ -66,8 +67,8 @@ bool E133PDU::PackHeader(uint8_t *data, unsigned int &length) const {
   header.sequence = HostToNetwork(m_header.Sequence());
   header.endpoint = HostToNetwork(m_header.Endpoint());
   header.reserved = 0;
-  length = sizeof(E133Header::e133_pdu_header);
-  memcpy(data, &header, length);
+  *length = sizeof(E133Header::e133_pdu_header);
+  memcpy(data, &header, *length);
   return true;
 }
 
@@ -75,10 +76,10 @@ bool E133PDU::PackHeader(uint8_t *data, unsigned int &length) const {
 /*
  * Pack the data portion.
  */
-bool E133PDU::PackData(uint8_t *data, unsigned int &length) const {
+bool E133PDU::PackData(uint8_t *data, unsigned int *length) const {
   if (m_pdu)
     return m_pdu->Pack(data, length);
-  length = 0;
+  *length = 0;
   return true;
 }
 
@@ -123,6 +124,6 @@ void E133PDU::PrependPDU(ola::io::IOStack *stack, uint32_t vector,
   stack->Write(reinterpret_cast<uint8_t*>(&vector), sizeof(vector));
   PrependFlagsAndLength(stack);
 }
-}  // ola
-}  // e131
-}  // plugin
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

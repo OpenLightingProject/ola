@@ -84,5 +84,5 @@ class PluginAdaptor: public ola::io::SelectServerInterface {
     class PreferencesFactory *m_preferences_factory;
     class PortBrokerInterface *m_port_broker;
 };
-}  // ola
+}  // namespace ola
 #endif  // INCLUDE_OLAD_PLUGINADAPTOR_H_

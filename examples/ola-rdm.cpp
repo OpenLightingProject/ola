@@ -203,7 +203,7 @@ void DisplayPIDsAndExit(uint16_t manufacturer_id,
 
 class RDMController {
   public:
-    RDMController(string pid_location);
+    explicit RDMController(string pid_location);
 
     bool InitPidHelper();
     bool Setup();

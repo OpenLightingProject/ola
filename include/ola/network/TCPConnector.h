@@ -95,6 +95,6 @@ class TCPConnector {
     void Timeout(const ConnectionSet::iterator &iter);
     void TimeoutEvent(PendingTCPConnection *connection);
 };
-}  // network
-}  // ola
+}  // namespace network
+}  // namespace ola
 #endif  // INCLUDE_OLA_NETWORK_TCPCONNECTOR_H_

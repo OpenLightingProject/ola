@@ -120,5 +120,5 @@ bool SLPClient::GetServerInfo(
     SingleUseCallback2<void, const string&, const ServerInfo&> *callback) {
   return m_core->GetServerInfo(callback);
 }
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola

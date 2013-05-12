@@ -44,6 +44,6 @@ string ExpandTemplate(const string &str, unsigned int value) {
   }
   return output;
 }
-}  // osc
-}  // plugin
-}  // ola
+}  // namespace osc
+}  // namespace plugin
+}  // namespace ola

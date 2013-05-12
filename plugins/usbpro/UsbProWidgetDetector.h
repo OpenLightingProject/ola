@@ -159,7 +159,7 @@ class UsbProWidgetDetector: public WidgetDetectorInterface {
     // The API key associated with OLA
     static const uint32_t USB_PRO_MKII_API_KEY = 0x0d11b2d7;
 };
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBPRO_USBPROWIDGETDETECTOR_H_

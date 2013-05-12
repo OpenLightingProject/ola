@@ -36,7 +36,7 @@ class E133StatusPDU : private PDU {
                            ola::e133::E133StatusCode status_code,
                            const std::string &status);
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_E133STATUSPDU_H_

@@ -114,6 +114,6 @@ bool E131OutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
 void E131OutputPort::UniverseNameChanged(const string &new_name) {
   m_node->SetSourceName(GetUniverse()->UniverseId(), new_name);
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

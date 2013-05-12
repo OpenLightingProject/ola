@@ -95,6 +95,6 @@ class MemoryBlockPool {
     const unsigned int m_block_size;
     unsigned int m_blocks_allocated;
 };
-}  // io
-}  // ola
+}  // namespace io
+}  // namespace ola
 #endif  // INCLUDE_OLA_IO_MEMORYBLOCKPOOL_H_

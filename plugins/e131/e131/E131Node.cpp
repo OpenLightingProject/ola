@@ -351,6 +351,6 @@ E131Node::tx_universe *E131Node::SetupOutgoingSettings(unsigned int universe) {
           std::pair<unsigned int, tx_universe>(universe, settings)).first;
   return &iter->second;
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

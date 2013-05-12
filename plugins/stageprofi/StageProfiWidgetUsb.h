@@ -35,7 +35,7 @@ class StageProfiWidgetUsb: public StageProfiWidget {
 
     bool Connect(const std::string &ip);
 };
-}  // stageprofi
-}  // plugin
-}  // ola
+}  // namespace stageprofi
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_STAGEPROFI_STAGEPROFIWIDGETUSB_H_

@@ -90,7 +90,7 @@ class ShowNetNode {
     static const uint8_t SHOWNET_ID_LOW = 0x8f;
     static const int MAGIC_INDEX_OFFSET = 11;
 };
-}  // shownet
-}  // plugin
-}  // ola
+}  // namespace shownet
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_SHOWNET_SHOWNETNODE_H_

@@ -209,5 +209,5 @@ class Universe: public ola::rdm::RDMControllerInterface {
     bool GenericContainsPort(PortClass *port,
                              const vector<PortClass*> &ports) const;
 };
-}  // ola
+}  // namespace ola
 #endif  // INCLUDE_OLAD_UNIVERSE_H_

@@ -69,7 +69,7 @@ class ShowNetOutputPort: public BasicOutputPort {
   private:
     ShowNetNode *m_node;
 };
-}  // shownet
-}  // plugin
-}  // ola
+}  // namespace shownet
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_SHOWNET_SHOWNETPORT_H_

@@ -272,18 +272,15 @@ bool Dmx4LinuxPlugin::SetupDevices() {
 
   if (info.max_in_universes > 0) {
     m_in_devices_count = info.max_in_universes;
-    try {
-      m_in_buffer = new uint8_t[DMX_UNIVERSE_SIZE * info.max_in_universes];
-    } catch(std::bad_alloc& ex) {
-      m_in_buffer = NULL;
-    }
+    m_in_buffer = new uint8_t[DMX_UNIVERSE_SIZE * info.max_in_universes];
   }
 
   for (int i = 0; i < info.max_in_universes; i++) {
     cap.direction = DMX_DIRECTION_INPUT;
     cap.universe = i;
 
-    if (ioctl(m_in_descriptor->ReadDescriptor(), DMX_IOCTL_GET_CAP, &cap) >= 0) {
+    if (ioctl(m_in_descriptor->ReadDescriptor(), DMX_IOCTL_GET_CAP, &cap) >=
+        0) {
       if (cap.maxSlots > 0) {
         SetupDevice(cap.family, cap.universe, cap.direction);
       }
@@ -294,7 +291,8 @@ bool Dmx4LinuxPlugin::SetupDevices() {
     cap.direction = DMX_DIRECTION_OUTPUT;
     cap.universe = i;
 
-    if (ioctl(m_in_descriptor->ReadDescriptor(), DMX_IOCTL_GET_CAP, &cap) >= 0) {
+    if (ioctl(m_in_descriptor->ReadDescriptor(), DMX_IOCTL_GET_CAP, &cap) >=
+        0) {
       if (cap.maxSlots > 0) {
         SetupDevice(cap.family, cap.universe, cap.direction);
       }
@@ -302,6 +300,6 @@ bool Dmx4LinuxPlugin::SetupDevices() {
   }
   return true;
 }
-}  // dmx4linux
-}  // plugin
-}  // ola
+}  // namespace dmx4linux
+}  // namespace plugin
+}  // namespace ola

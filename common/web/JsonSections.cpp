@@ -133,5 +133,5 @@ string JsonSection::AsString() const {
   }
   return JsonWriter::AsString(json);
 }
-}  // web
-}  // ola
+}  // namespace web
+}  // namespace ola

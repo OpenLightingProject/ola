@@ -63,7 +63,7 @@ class SandNetDevice: public ola::Device {
     // send an advertistment every 2s.
     static const int ADVERTISTMENT_PERIOD_MS = 2000;
 };
-}  // sandnet
-}  // plugin
-}  // ola
+}  // namespace sandnet
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_SANDNET_SANDNETDEVICE_H_

@@ -36,6 +36,6 @@ bool StageProfiOutputPort::WriteDMX(const DmxBuffer &buffer,
   return m_widget->SendDmx(buffer);
   (void) priority;
 }
-}  // stageprofi
-}  // plugin
-}  // ola
+}  // namespace stageprofi
+}  // namespace plugin
+}  // namespace ola

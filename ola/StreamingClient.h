@@ -67,5 +67,5 @@ class StreamingClient {
     class ola::proto::OlaServerService_Stub *m_stub;
     bool m_socket_closed;
 };
-}  // ola
+}  // namespace ola
 #endif  // OLA_STREAMINGCLIENT_H_

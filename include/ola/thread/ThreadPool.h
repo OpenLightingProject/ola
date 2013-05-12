@@ -53,6 +53,6 @@ class ThreadPool {
 
     void JoinAllThreads();
 };
-}  // thread
-}  // ola
+}  // namespace thread
+}  // namespace ola
 #endif  // INCLUDE_OLA_THREAD_THREADPOOL_H_

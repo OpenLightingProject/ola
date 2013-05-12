@@ -992,5 +992,5 @@ string UnitToString(uint8_t unit) {
       return str.str();
   }
 }
-}  // rdm
-}  //  ola
+}  // namespace rdm
+}  // namespace  ola

@@ -86,4 +86,4 @@ void ClientBroker::RequestComplete(const Client *key,
     callback->Run(code, response, packets);
   }
 }
-}  // ola
+}  // namespace ola

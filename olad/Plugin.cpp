@@ -116,4 +116,4 @@ bool Plugin::Stop() {
   m_enabled = false;
   return ret;
 }
-}  // ola
+}  // namespace ola

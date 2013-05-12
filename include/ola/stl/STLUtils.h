@@ -26,6 +26,7 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <utility>
 
 namespace ola {
 
@@ -253,5 +254,5 @@ typename T1::mapped_type STLLookupAndRemovePtr(
     return value;
   }
 }
-}  // ola
+}  // namespace ola
 #endif  // INCLUDE_OLA_STL_STLUTILS_H_

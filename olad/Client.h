@@ -57,5 +57,5 @@ class Client {
     class OlaClientService_Stub *m_client_stub;
     map<unsigned int, DmxSource> m_data_map;
 };
-}  // ola
+}  // namespace ola
 #endif  // OLAD_CLIENT_H_

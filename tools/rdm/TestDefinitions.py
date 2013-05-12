@@ -559,12 +559,15 @@ class GetMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
       self.NackGetResult(RDMNack.NR_PACKET_SIZE_UNSUPPORTED),
       self.AckGetResult(),  # some crazy devices continue to ack
       InvalidResponse(),
+      TimeoutResult(),
     ])
     self.SendRawGet(ROOT_DEVICE, self.pid, 'x' * self.MAX_PDL)
 
   def VerifyResult(self, response, fields):
-    self.SetProperty('supports_max_sized_pdl',
-                     response.response_code != OlaClient.RDM_INVALID_RESPONSE)
+    ok = response not in [OlaClient.RDM_INVALID_RESPONSE,
+                          OlaClient.RDM_TIMEOUT]
+
+    self.SetProperty('supports_max_sized_pdl', ok)
 
 
 class DetermineMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
@@ -594,6 +597,7 @@ class DetermineMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
       self.NackGetResult(RDMNack.NR_FORMAT_ERROR, action=self.GetPassed),
       self.AckGetResult(action=self.GetPassed),
       InvalidResponse(action=self.GetFailed),
+      TimeoutResult(action=self.GetFailed),
     ])
     self.SendRawGet(ROOT_DEVICE, self.pid, 'x' * self._current)
 

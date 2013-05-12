@@ -33,14 +33,14 @@ using ola::io::IOStack;
 /*
  * Pack the header into a buffer.
  */
-bool RootPDU::PackHeader(uint8_t *data, unsigned int &length) const {
-  if (length < HeaderSize()) {
-    length = 0;
+bool RootPDU::PackHeader(uint8_t *data, unsigned int *length) const {
+  if (*length < HeaderSize()) {
+    *length = 0;
     return false;
   }
 
   m_cid.Pack(data);
-  length = HeaderSize();
+  *length = HeaderSize();
   return true;
 }
 
@@ -48,11 +48,11 @@ bool RootPDU::PackHeader(uint8_t *data, unsigned int &length) const {
 /*
  * Pack the data into a buffer
  */
-bool RootPDU::PackData(uint8_t *data, unsigned int &length) const {
+bool RootPDU::PackData(uint8_t *data, unsigned int *length) const {
   if (m_block)
     return m_block->Pack(data, length);
 
-  length = 0;
+  *length = 0;
   return true;
 }
 
@@ -92,6 +92,6 @@ void RootPDU::PrependPDU(IOStack *stack, uint32_t vector, const CID &cid) {
   stack->Write(reinterpret_cast<uint8_t*>(&vector), sizeof(vector));
   PrependFlagsAndLength(stack);
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

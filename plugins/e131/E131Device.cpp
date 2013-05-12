@@ -88,12 +88,14 @@ bool E131Device::StartHook() {
     E131InputPort *input_port = new E131InputPort(
         this, i, m_node, m_plugin_adaptor);
     AddPort(input_port);
+    m_input_ports.push_back(input_port);
   }
 
   for (unsigned int i = 0; i < m_output_port_count; i++) {
     E131OutputPort *output_port = new E131OutputPort(
         this, i, m_node, m_prepend_hostname);
     AddPort(output_port);
+    m_output_ports.push_back(output_port);
   }
 
   m_plugin_adaptor->AddReadDescriptor(m_node->GetSocket());
@@ -162,17 +164,14 @@ void E131Device::HandlePreviewMode(Request *request, string *response) {
     bool preview_mode = preview_request.preview_mode();
 
     if (preview_request.input_port()) {
-      InputPort *port = GetInputPort(port_id);
-      if (port) {
-        E131InputPort *e131_port = dynamic_cast<E131InputPort*>(port);
+      E131InputPort *e131_port = GetE131InputPort(port_id);
+      if (e131_port) {
         // TODO(simon): figure out what to do here
         (void) e131_port;
-        // e131_port->SetPreviewMode(preview_mode);
       }
     } else {
-      OutputPort *port = GetOutputPort(port_id);
-      if (port) {
-        E131OutputPort *e131_port = dynamic_cast<E131OutputPort*>(port);
+      E131OutputPort *e131_port = GetE131OutputPort(port_id);
+      if (e131_port) {
         e131_port->SetPreviewMode(preview_mode);
       }
     }
@@ -189,28 +188,31 @@ void E131Device::HandlePortStatusRequest(string *response) {
   reply.set_type(ola::plugin::e131::Reply::E131_PORT_INFO);
   ola::plugin::e131::PortInfoReply *port_reply = reply.mutable_port_info();
 
-  vector<InputPort*> input_ports;
-  vector<OutputPort*> output_ports;
-  InputPorts(&input_ports);
-  OutputPorts(&output_ports);
-
-  for (unsigned int i = 0; i < input_ports.size(); i++) {
+  vector<E131InputPort*>::iterator input_iter = m_input_ports.begin();
+  for (; input_iter != m_input_ports.end(); ++input_iter) {
     ola::plugin::e131::InputPortInfo *input_port =
       port_reply->add_input_port();
-    input_port->set_port_id(i);
+    input_port->set_port_id((*input_iter)->PortId());
     input_port->set_preview_mode(m_ignore_preview);
   }
 
-  for (unsigned int i = 0; i < output_ports.size(); i++) {
+  vector<E131OutputPort*>::iterator output_iter = m_output_ports.begin();
+  for (; output_iter != m_output_ports.end(); ++output_iter) {
     ola::plugin::e131::OutputPortInfo *output_port =
       port_reply->add_output_port();
-    output_port->set_port_id(i);
-    E131OutputPort *e131_port =
-      dynamic_cast<E131OutputPort*>(output_ports[i]);
-    output_port->set_preview_mode(e131_port->PreviewMode());
+    output_port->set_port_id((*output_iter)->PortId());
+    output_port->set_preview_mode((*output_iter)->PreviewMode());
   }
   reply.SerializeToString(response);
 }
-}  // e131
-}  // plugin
-}  // ola
+
+E131InputPort *E131Device::GetE131InputPort(unsigned int port_id) {
+  return (port_id < m_input_ports.size()) ? m_input_ports[port_id] : NULL;
+}
+
+E131OutputPort *E131Device::GetE131OutputPort(unsigned int port_id) {
+  return (port_id < m_output_ports.size()) ? m_output_ports[port_id] : NULL;
+}
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

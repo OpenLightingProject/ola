@@ -77,6 +77,6 @@ class DeviceManager {
   private:
     class DeviceManagerImpl *m_impl;
 };
-}  // e133
-}  // ola
+}  // namespace e133
+}  // namespace ola
 #endif  // INCLUDE_OLA_E133_DEVICEMANAGER_H_

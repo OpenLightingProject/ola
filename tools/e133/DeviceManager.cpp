@@ -17,14 +17,13 @@
  * Copyright (C) 2013 Simon Newton
  */
 
-#include "ola/e133/DeviceManager.h"
-#include "ola/io/SelectServer.h"
-#include "ola/network/IPV4Address.h"
-
 #include <memory>
 #include <string>
 #include <vector>
 
+#include "ola/e133/DeviceManager.h"
+#include "ola/io/SelectServer.h"
+#include "ola/network/IPV4Address.h"
 #include "tools/e133/DeviceManagerImpl.h"
 
 namespace ola {
@@ -111,5 +110,5 @@ void DeviceManager::RemoveDeviceIfNotConnected(const IPV4Address &ip_address) {
 void DeviceManager::ListManagedDevices(vector<IPV4Address> *devices) const {
   m_impl->ListManagedDevices(devices);
 }
-}  // e133
-}  // ola
+}  // namespace e133
+}  // namespace ola

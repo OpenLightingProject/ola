@@ -39,7 +39,6 @@ using std::set;
  */
 class UIDSet {
   public:
-
     typedef set<UID>::const_iterator Iterator;
 
     UIDSet() {
@@ -139,6 +138,6 @@ class UIDSet {
       m_uids = uids;
     }
 };
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola
 #endif  // INCLUDE_OLA_RDM_UIDSET_H_

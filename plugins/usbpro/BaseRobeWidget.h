@@ -138,7 +138,7 @@ class DispatchingRobeWidget: public BaseRobeWidget {
       m_callback->Run(label, data, length);
     }
 };
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBPRO_BASEROBEWIDGET_H_

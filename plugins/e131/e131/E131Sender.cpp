@@ -94,6 +94,6 @@ bool E131Sender::UniverseIP(unsigned int universe, IPV4Address *addr) {
   OLA_WARN << "universe " << universe << " isn't a valid E1.31 universe";
   return false;
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

@@ -39,7 +39,7 @@ class RunLengthDecoder {
     static const uint8_t ESCAPE_VALUE = 0xFD;
     static const uint8_t REPEAT_VALUE = 0xFE;
 };
-}  // espnet
-}  // plugin
-}  // ola
+}  // namespace espnet
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_ESPNET_RUNLENGTHDECODER_H_

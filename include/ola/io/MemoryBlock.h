@@ -116,6 +116,6 @@ class MemoryBlock {
     uint8_t *m_first;
     uint8_t *m_last;  // points to one after last
 };
-}  // io
-}  // ola
+}  // namespace io
+}  // namespace ola
 #endif  // INCLUDE_OLA_IO_MEMORYBLOCK_H_

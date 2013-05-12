@@ -69,14 +69,14 @@ unsigned int FieldDescriptorGroup::MaxSize() const {
 }
 
 
-void FieldDescriptorGroup::Accept(FieldDescriptorVisitor &visitor) const {
-  visitor.Visit(this);
+void FieldDescriptorGroup::Accept(FieldDescriptorVisitor *visitor) const {
+  visitor->Visit(this);
   vector<const FieldDescriptor*>::const_iterator iter = m_fields.begin();
-  if (visitor.Descend()) {
+  if (visitor->Descend()) {
     for (; iter != m_fields.end(); ++iter)
       (*iter)->Accept(visitor);
   }
-  visitor.PostVisit(this);
+  visitor->PostVisit(this);
 }
 
 
@@ -102,10 +102,10 @@ void FieldDescriptorGroup::PopulateIfRequired() const {
 }
 
 
-void Descriptor::Accept(FieldDescriptorVisitor &visitor) const {
+void Descriptor::Accept(FieldDescriptorVisitor *visitor) const {
   vector<const FieldDescriptor*>::const_iterator iter = m_fields.begin();
   for (; iter != m_fields.end(); ++iter)
     (*iter)->Accept(visitor);
 }
-}  // messaging
-}  // ola
+}  // namespace messaging
+}  // namespace ola

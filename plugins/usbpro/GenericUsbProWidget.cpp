@@ -300,6 +300,6 @@ void GenericUsbProWidget::HandleDMXDiff(const uint8_t *data,
   if (m_dmx_callback)
     m_dmx_callback->Run();
 }
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola

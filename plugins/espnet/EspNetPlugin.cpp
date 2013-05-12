@@ -118,6 +118,6 @@ bool EspNetPlugin::SetDefaultPreferences() {
 
   return true;
 }
-}  // espnet
-}  // plugin
-}  // ola
+}  // namespace espnet
+}  // namespace plugin
+}  // namespace ola

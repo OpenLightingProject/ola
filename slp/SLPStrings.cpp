@@ -153,5 +153,5 @@ string SLPStripServiceFromURL(const string &url) {
     remainder = url.substr(pos + 3);
   return remainder;
 }
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola

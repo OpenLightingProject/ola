@@ -57,7 +57,7 @@ class SPIPlugin: public ola::Plugin {
     static const char SPI_BASE_UID_KEY[];
     static const char SPI_DEVICE_PREFIX_KEY[];
 };
-}  // spi
-}  // plugin
-}  // ola
+}  // namespace spi
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_SPI_SPIPLUGIN_H_

@@ -78,7 +78,7 @@ void DisplayUsage();
  * re-arranged so that it only contains non-flag arguments.
  */
 void ParseFlags(int *argc, char **argv);
-}  // ola
+}  // namespace ola
 
 // DECLARE_*
 

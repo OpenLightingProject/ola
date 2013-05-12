@@ -404,5 +404,5 @@ void DeviceManagerImpl::EndpointRequest(
       ola::e133::SC_E133_ACK, "OK");
   device_state->message_queue->SendMessage(&packet);
 }
-}  // e133
-}  // ola
+}  // namespace e133
+}  // namespace ola

@@ -86,6 +86,6 @@ static const uint16_t SLP_FRESH = 0x4000;
 static const uint16_t SLP_OVERFLOW = 0x8000;
 static const uint16_t SLP_REQUEST_MCAST = 0x2000;
 static const char EN_LANGUAGE_TAG[] = "en";
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola
 #endif  // SLP_SLPPACKETCONSTANTS_H_

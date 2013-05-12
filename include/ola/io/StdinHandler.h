@@ -48,6 +48,6 @@ class StdinHandler {
     // stdin
     void HandleData();
 };
-}  // io
-}  // ola
+}  // namespace io
+}  // namespace ola
 #endif  // INCLUDE_OLA_IO_STDINHANDLER_H_

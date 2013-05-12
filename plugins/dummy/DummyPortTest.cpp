@@ -18,7 +18,6 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include "plugins/dummy/DummyPort.h"  //  NOLINT, this has to be first
 #include <cppunit/extensions/HelperMacros.h>
 #include <string.h>
 #include <string>
@@ -33,7 +32,7 @@
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
 #include "ola/testing/TestUtils.h"
-
+#include "plugins/dummy/DummyPort.h"
 
 namespace ola {
 namespace plugin {
@@ -672,6 +671,6 @@ void DummyPortTest::checkNoBroadcastResponse(ola::rdm::rdm_pid pid) {
         NewSingleCallback(this, &DummyPortTest::HandleRDMResponse));
   Verify();
 }
-}  // dummy
-}  // ola
-}  // plugin
+}  // namespace dummy
+}  // namespace plugin
+}  // namespace ola

@@ -68,7 +68,7 @@ class KiNetNode {
     static const uint16_t KINET_VERSION_ONE = 0x0100;
     static const uint16_t KINET_DMX_MSG = 0x0101;
 };
-}  // kinet
-}  // plugin
-}  // ola
+}  // namespace kinet
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_KINET_KINETNODE_H_

@@ -383,5 +383,5 @@ void SLPDaemon::SLPServiceImpl::FindServiceHandler(
   }
   done->Run();
 }
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola

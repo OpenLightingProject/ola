@@ -487,7 +487,7 @@ void CHECK(void *p) {
 void calcscreengeometry() {
   int c = LINES;
   if (c < 3) {
-    error_str ="screen too small, we need at least 3 lines";
+    error_str = "screen too small, we need at least 3 lines";
     exit(1);
   }
   c--;                /* one line for headline */
@@ -627,7 +627,7 @@ void stdin_ready() {
 
     case KEY_IC:
       undoprep();
-      for (n = MAXCHANNELS - 1; n>current_channel && n > 0; n--)
+      for (n = MAXCHANNELS - 1; n > current_channel && n > 0; n--)
         dmx[n]=dmx[n - 1];
       setall();
       break;

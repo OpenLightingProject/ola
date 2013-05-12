@@ -64,5 +64,5 @@ typedef struct {
 // supports it.
 bool GetGroupName(const string &name, GroupEntry *passwd);
 bool GetGroupGID(gid_t gid, GroupEntry *passwd);
-}  // ola
+}  // namespace ola
 #endif  // INCLUDE_OLA_BASE_CREDENTIALS_H_

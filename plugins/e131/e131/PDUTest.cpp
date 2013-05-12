@@ -27,13 +27,10 @@
 #include "ola/testing/TestUtils.h"
 #include "plugins/e131/e131/PDU.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
-#include "ola/testing/TestUtils.h"
-
 
 namespace ola {
 namespace plugin {
 namespace e131 {
-
 
 using ola::io::IOQueue;
 using ola::testing::ASSERT_DATA_EQUALS;
@@ -72,7 +69,7 @@ void PDUTest::testPDUBlock() {
   OLA_ASSERT_EQ(12u, block_size);
   uint8_t *data = new uint8_t[block_size];
   unsigned int bytes_used = block_size;
-  OLA_ASSERT(block.Pack(data, bytes_used));
+  OLA_ASSERT(block.Pack(data, &bytes_used));
   OLA_ASSERT_EQ(block_size, bytes_used);
 
   unsigned int *test = (unsigned int*) data;
@@ -118,6 +115,6 @@ void PDUTest::testBlockToOutputStream() {
   output.Pop(output.Size());
   delete[] block_data;
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

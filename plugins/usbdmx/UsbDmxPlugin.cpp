@@ -60,7 +60,7 @@ int UsbDmxPlugin::LIBUSB_MAX_DEBUG_LEVEL = 3;
 /*
  * Called by libusb when a new descriptor is created.
  */
-void libusb_fd_added(int fd, short events, void *data) {
+void libusb_fd_added(int fd, short events, void *data) {  // NOLINT
   UsbDmxPlugin *plugin = static_cast<UsbDmxPlugin*>(data);
 
   OLA_INFO << "USB new FD: " << fd;
@@ -434,6 +434,6 @@ bool UsbDmxPlugin::GetDescriptorString(libusb_device_handle *usb_handle,
   data->assign(reinterpret_cast<char*>(buffer));
   return true;
 }
-}  // usbdmx
-}  // plugin
-}  // ola
+}  // namespace usbdmx
+}  // namespace plugin
+}  // namespace ola

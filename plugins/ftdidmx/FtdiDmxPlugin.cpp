@@ -141,6 +141,6 @@ int unsigned FtdiDmxPlugin::GetFrequency() {
     StringToInt(DEFAULT_FREQUENCY, &frequency);
   return frequency;
 }
-}  // ftdidmx
-}  // plugin
-}  // ola
+}  // namespace ftdidmx
+}  // namespace plugin
+}  // namespace ola

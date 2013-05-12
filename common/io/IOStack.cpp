@@ -245,5 +245,5 @@ void IOStack::PrependBlock() {
   block->SeekBack();  // put the block into prepend mode
   m_blocks.push_front(block);
 }
-}  // io
-}  // ola
+}  // namespace io
+}  // namespace ola

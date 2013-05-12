@@ -57,5 +57,5 @@ void StdinHandler::HandleData() {
   if (m_callback.get())
     m_callback->Run(c);
 }
-}  // io
-}  // ola
+}  // namespace io
+}  // namespace ola

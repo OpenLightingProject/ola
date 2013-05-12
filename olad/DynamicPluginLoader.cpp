@@ -189,4 +189,4 @@ void DynamicPluginLoader::PopulatePlugins() {
       new ola::plugin::ftdidmx::FtdiDmxPlugin(m_plugin_adaptor));
 #endif
 }
-}  // ola
+}  // namespace ola

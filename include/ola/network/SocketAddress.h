@@ -166,6 +166,6 @@ class GenericSocketAddress: public SocketAddress {
   private:
     struct sockaddr m_addr;
 };
-}  // network
-}  // ola
+}  // namespace network
+}  // namespace ola
 #endif  // INCLUDE_OLA_NETWORK_SOCKETADDRESS_H_

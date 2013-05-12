@@ -167,6 +167,6 @@ DummyPort::~DummyPort() {
     delete i->second;
   }
 }
-}  // dummy
-}  // plugin
-}  // ola
+}  // namespace dummy
+}  // namespace plugin
+}  // namespace ola

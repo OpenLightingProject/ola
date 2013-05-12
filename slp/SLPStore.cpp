@@ -372,5 +372,5 @@ bool SLPStore::AnyServiceMatchesScopes(const ScopeSet &scopes,
   }
   return false;
 }
-}  // slp
-}  // ola
+}  // namespace namespace slp
+}  // namespace namespace ola

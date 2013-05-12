@@ -68,7 +68,7 @@ class AnymaOutputPort: public BasicOutputPort, ola::thread::Thread {
                              uint8_t desc_index,
                              string *data);
 };
-}  // usbdmx
-}  // plugin
-}  // ola
+}  // namespace usbdmx
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBDMX_ANYMAOUTPUTPORT_H_

@@ -172,6 +172,6 @@ class SocketVerifier {
   private:
     MockUDPSocket *m_socket;
 };
-}  // testing
-}  // ola
+}  // namespace testing
+}  // namespace ola
 #endif  // INCLUDE_OLA_TESTING_MOCKUDPSOCKET_H_

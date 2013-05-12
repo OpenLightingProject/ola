@@ -35,6 +35,6 @@ namespace math {
 
 void InitRandom();
 int Random(int lower, int upper);
-}  // math
-}  // ola
+}  // namespace math
+}  // namespace ola
 #endif  // INCLUDE_OLA_MATH_RANDOM_H_

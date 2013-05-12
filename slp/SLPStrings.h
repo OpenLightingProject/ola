@@ -34,6 +34,6 @@ void SLPCanonicalizeString(string *str);
 string SLPGetCanonicalString(const string &str);
 string SLPServiceFromURL(const string &url);
 string SLPStripServiceFromURL(const string &url);
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola
 #endif  // SLP_SLPSTRINGS_H_

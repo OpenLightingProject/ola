@@ -155,16 +155,16 @@ class ServiceEntry {
 
     string ToString() const {
       std::ostringstream str;
-      ToStream(str);
+      ToStream(&str);
       return str.str();
     }
 
-    void ToStream(ostream &out) const {
-      out << m_url << ", [" << m_scopes << "]" << (m_local ? " LOCAL" : "");
+    void ToStream(ostream *out) const {
+      *out << m_url << ", [" << m_scopes << "]" << (m_local ? " LOCAL" : "");
     }
 
     friend ostream& operator<<(ostream &out, const ServiceEntry &service) {
-      service.ToStream(out);
+      service.ToStream(&out);
       return out;
     }
 
@@ -177,6 +177,6 @@ class ServiceEntry {
 
 // typedef for convenience
 typedef std::vector<ServiceEntry> ServiceEntries;
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola
 #endif  // SLP_SERVICEENTRY_H_

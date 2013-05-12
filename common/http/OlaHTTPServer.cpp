@@ -108,5 +108,5 @@ int OlaHTTPServer::DisplayHandlers(const HTTPRequest*,
   int r = response->Send();
   return r;
 }
-}  // http
-}  // ola
+}  // namespace http
+}  // namespace ola

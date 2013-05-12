@@ -215,7 +215,7 @@ bool SelectServer::AddReadDescriptor(ConnectedDescriptor *descriptor,
  */
 bool SelectServer::RemoveReadDescriptor(ReadFileDescriptor *descriptor) {
   if (!descriptor->ValidReadDescriptor())
-    OLA_WARN << "Removing a invalid file descriptor";
+    OLA_WARN << "Removing an invalid file descriptor";
 
   if (STLRemove(&m_read_descriptors, descriptor)) {
     SafeDecrement(K_READ_DESCRIPTOR_VAR);
@@ -232,7 +232,7 @@ bool SelectServer::RemoveReadDescriptor(ReadFileDescriptor *descriptor) {
  */
 bool SelectServer::RemoveReadDescriptor(ConnectedDescriptor *descriptor) {
   if (!descriptor->ValidReadDescriptor())
-    OLA_WARN << "Removing a invalid file descriptor";
+    OLA_WARN << "Removing an invalid file descriptor";
 
   // Comparison is based on descriptor only, so the second value is redundant.
   connected_descriptor_t registered_descriptor = {descriptor, false};
@@ -713,5 +713,5 @@ void SelectServer::SafeDecrement(const string &var_name) {
   if (m_export_map)
     (*m_export_map->GetIntegerVar(var_name))--;
 }
-}  // io
-}  // ola
+}  // namespace io
+}  // namespace ola

@@ -42,7 +42,7 @@ E133StatusInflator::E133StatusInflator()
  * Handle a E1.33 Status PDU.
  */
 bool E133StatusInflator::HandlePDUData(uint32_t vector,
-                                       HeaderSet &headers,
+                                       const HeaderSet &headers,
                                        const uint8_t *data,
                                        unsigned int pdu_len) {
   unsigned int size = std::min(
@@ -56,6 +56,6 @@ bool E133StatusInflator::HandlePDUData(uint32_t vector,
                  description);
   return true;
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

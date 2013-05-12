@@ -87,7 +87,7 @@ const ola::messaging::Message *MessageDeserializer::InflateMessage(
   message_vector root_messages;
   m_message_stack.push(root_messages);
 
-  descriptor->Accept(*this);
+  descriptor->Accept(this);
 
   // this should never trigger because we check the length in the
   // VariableFieldSizeCalculator
@@ -209,7 +209,7 @@ void MessageDeserializer::Visit(
     m_message_stack.push(fields);
 
     for (unsigned int j = 0; j < descriptor->FieldCount(); ++j) {
-      descriptor->GetField(j)->Accept(*this);
+      descriptor->GetField(j)->Accept(this);
     }
 
     const vector<const MessageFieldInterface*> &populated_fields =
@@ -273,5 +273,5 @@ void MessageDeserializer::IntVisit(
   m_message_stack.top().push_back(
     new ola::messaging::BasicMessageField<int_type>(descriptor, value));
 }
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola

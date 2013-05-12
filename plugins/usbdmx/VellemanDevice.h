@@ -44,7 +44,7 @@ class VellemanDevice: public UsbDevice {
   protected:
     bool StartHook();
 };
-}  // usbdmx
-}  // plugin
-}  // ola
+}  // namespace usbdmx
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBDMX_VELLEMANDEVICE_H_

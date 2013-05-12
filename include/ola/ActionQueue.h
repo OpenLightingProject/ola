@@ -73,5 +73,5 @@ class ActionQueue {
     int m_action_index;
     bool m_success;
 };
-}  // ola
+}  // namespace ola
 #endif  // INCLUDE_OLA_ACTIONQUEUE_H_

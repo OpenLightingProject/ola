@@ -45,8 +45,8 @@ namespace e131 {
   class RDMInflator;
   class RootInflator;
   class TransportHeader;
-}  // e131
-}  // plugin
+}  // namespace e131
+}  // namespace plugin
 
 namespace e133 {
 
@@ -143,6 +143,6 @@ class E133Receiver {
         const ola::plugin::e131::E133Header *e133_header,
         const std::string &raw_response);
 };
-}  // e133
-}  // ola
+}  // namespace e133
+}  // namespace ola
 #endif  // INCLUDE_OLA_E133_E133RECEIVER_H_

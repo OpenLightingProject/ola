@@ -115,7 +115,7 @@ class Plugin: public AbstractPlugin {
     Plugin(const Plugin&);
     Plugin& operator=(const Plugin&);
 };
-}  // ola
+}  // namespace ola
 
 // interface functions
 typedef ola::AbstractPlugin* create_t(ola::PluginAdaptor *plugin_adaptor);

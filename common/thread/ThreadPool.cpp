@@ -107,5 +107,5 @@ void ThreadPool::JoinAllThreads() {
     delete thread;
   }
 }
-}  // thread
-}  // ola
+}  // namespace thread
+}  // namespace ola

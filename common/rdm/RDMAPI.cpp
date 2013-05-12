@@ -3684,5 +3684,5 @@ void RDMAPI::SetIncorrectPDL(ResponseStatus *status,
     IntToString(actual) + " != " +
     IntToString(expected) + " (expected)");
 }
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola

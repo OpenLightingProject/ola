@@ -479,4 +479,4 @@ bool OlaClient::ConfigureDevice(unsigned int device_alias, const string &msg) {
   else
     return m_core->ConfigureDevice(device_alias, msg, NULL);
 }
-}  // ola
+}  // namespace ola

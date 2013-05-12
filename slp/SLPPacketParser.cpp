@@ -516,5 +516,5 @@ void SLPPacketParser::ConvertIPAddressList(
     }
   }
 }
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola

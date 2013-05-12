@@ -375,5 +375,5 @@ class OlaClientServiceFactory {
     OlaClientService *New(Client *client,
                           OlaServerServiceImpl *impl);
 };
-}  // ola
+}  // namespace ola
 #endif  // OLAD_OLASERVERSERVICEIMPL_H_

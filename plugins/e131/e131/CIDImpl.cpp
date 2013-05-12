@@ -232,5 +232,5 @@ CIDImpl* CIDImpl::FromString(const std::string &cid) {
   return new CIDImpl(uuid);
 }
 #endif  // end the e2fs progs uuid implementation
-}  // acn
-}  // ola
+}  // namespace acn
+}  // namespace ola

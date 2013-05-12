@@ -45,6 +45,6 @@ class RegistrationFileParser {
   private:
     void SplitLine(const string &line, std::vector<string> *tokens) const;
 };
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola
 #endif  // SLP_REGISTRATIONFILEPARSER_H_

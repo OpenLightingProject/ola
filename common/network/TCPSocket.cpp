@@ -218,5 +218,5 @@ void TCPAcceptingSocket::PerformRead() {
     close(sd);
   }
 }
-}  // network
-}  // ola
+}  // namespace network
+}  // namespace ola

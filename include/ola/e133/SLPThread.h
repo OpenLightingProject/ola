@@ -68,7 +68,7 @@ class SLPThreadServerInfo : public ola::slp::ServerInfo {
           backend_type(server_info.backend_type) {
     }
 
-    SLPThreadServerInfo(const ola::slp::ServerInfo &server_info)
+    explicit SLPThreadServerInfo(const ola::slp::ServerInfo &server_info)
         : ServerInfo(server_info) {
     }
 };
@@ -137,7 +137,7 @@ class BaseSLPThread: public ola::thread::Thread {
                               const string &service) = 0;
     virtual void RegisterSLPService(RegistrationCallback *callback,
                                     const string& url,
-                                    unsigned short lifetime) = 0;
+                                    uint16_t lifetime) = 0;
     virtual void DeRegisterSLPService(RegistrationCallback *callback,
                                       const string& url) = 0;
     virtual void SLPServerInfo(ServerInfoCallback *callback) = 0;
@@ -156,7 +156,7 @@ class BaseSLPThread: public ola::thread::Thread {
 
   private:
     typedef struct {
-      unsigned short lifetime;
+      uint16_t lifetime;
       ola::thread::timeout_id timeout;
     } URLRegistrationState;
     typedef std::map<string, URLRegistrationState> URLStateMap;
@@ -186,7 +186,7 @@ class BaseSLPThread: public ola::thread::Thread {
 
     // register / deregister methods
     void RegisterService(RegistrationCallback *callback, const string url,
-                         unsigned short lifetime);
+                         uint16_t lifetime);
     void RegistrationComplete(RegistrationCallback *callback, string url,
                               bool ok);
     void DeRegisterService(RegistrationCallback *callback, const string url);
@@ -227,6 +227,6 @@ class SLPThreadFactory {
     SLPThreadFactory(const SLPThreadFactory&);
     SLPThreadFactory& operator=(const SLPThreadFactory&);
 };
-}  // e133
-}  // ola
+}  // namespace e133
+}  // namespace ola
 #endif  // INCLUDE_OLA_E133_SLPTHREAD_H_

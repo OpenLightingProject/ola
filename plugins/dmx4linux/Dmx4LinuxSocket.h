@@ -33,8 +33,8 @@ class Dmx4LinuxSocket: public ola::network::DeviceDescriptor {
   protected:
     virtual bool IsClosed() const {return false;}
 };
-}  // dmx4linux
-}  // plugin
-}  // ola
+}  // namespace dmx4linux
+}  // namespace plugin
+}  // namespace ola
 
 #endif  // PLUGINS_DMX4LINUX_DMX4LINUXSOCKET_H_

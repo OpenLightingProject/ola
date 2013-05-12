@@ -49,6 +49,6 @@ class InputBufferInterface {
      */
     virtual unsigned int Read(std::string *output, unsigned int length) = 0;
 };
-}  // io
-}  // ola
+}  // namespace io
+}  // namespace ola
 #endif  // INCLUDE_OLA_IO_INPUTBUFFER_H_

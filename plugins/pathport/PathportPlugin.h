@@ -54,7 +54,7 @@ class PathportPlugin: public ola::Plugin {
     // 0x28 is assigned to the OLA project
     static const uint8_t OLA_MANUFACTURER_CODE = 0x28;
 };
-}  // pathport
-}  // plugin
-}  // ola
+}  // namespace pathport
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_PATHPORT_PATHPORTPLUGIN_H_

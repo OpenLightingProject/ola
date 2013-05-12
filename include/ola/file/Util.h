@@ -37,6 +37,6 @@ void FindMatchingFiles(const string &directory,
 void FindMatchingFiles(const string &directory,
                        const vector<string> &prefixes,
                        vector<string> *files);
-}  // file
-}  // ola
+}  // namespace file
+}  // namespace ola
 #endif  // INCLUDE_OLA_FILE_UTIL_H_

@@ -32,7 +32,7 @@ class FirmwareLoader {
 
     virtual bool LoadFirmware() = 0;
 };
-}  // usbdmx
-}  // plugin
-}  // ola
+}  // namespace usbdmx
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBDMX_FIRMWARELOADER_H_

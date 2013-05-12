@@ -42,6 +42,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <utility>
 
 #include "slp/SLPPacketBuilder.h"
 #include "slp/SLPPacketParser.h"
@@ -1582,5 +1583,5 @@ bool SLPServer::InPRList(const vector<IPV4Address> &pr_list) {
   return std::find(pr_list.begin(), pr_list.end(), m_iface_address) !=
     pr_list.end();
 }
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola

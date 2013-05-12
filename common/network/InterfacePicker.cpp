@@ -99,5 +99,5 @@ InterfacePicker *InterfacePicker::NewPicker() {
   return new PosixInterfacePicker();
 #endif
 }
-}  // network
-}  // ola
+}  // namespace network
+}  // namespace ola

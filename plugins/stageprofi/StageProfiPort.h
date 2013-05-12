@@ -45,7 +45,7 @@ class StageProfiOutputPort: public BasicOutputPort {
   private:
     StageProfiWidget *m_widget;
 };
-}  // stageprofi
-}  // plugin
-}  // ola
+}  // namespace stageprofi
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_STAGEPROFI_STAGEPROFIPORT_H_

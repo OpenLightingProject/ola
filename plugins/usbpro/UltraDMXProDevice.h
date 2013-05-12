@@ -171,7 +171,7 @@ class UltraDMXProOutputPort: public BasicOutputPort {
     const TimeStamp *m_wake_time;
     bool m_primary;
 };
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBPRO_ULTRADMXPRODEVICE_H_

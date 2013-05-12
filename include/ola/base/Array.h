@@ -13,37 +13,26 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * SocketCloser.h
- * Close a socket when the object goes out of scope.
- * Copyright (C) 2013 Simon Newton
+ * Array.h
+ * A macro for determining array size.
  */
 
-#ifndef INCLUDE_OLA_NETWORK_SOCKETCLOSER_H_
-#define INCLUDE_OLA_NETWORK_SOCKETCLOSER_H_
-
-#include <unistd.h>
+#ifndef INCLUDE_OLA_BASE_ARRAY_H_
+#define INCLUDE_OLA_BASE_ARRAY_H_
 
 namespace ola {
-namespace network {
 
-class SocketCloser {
-  public:
-    explicit SocketCloser(int fd)
-      : m_fd(fd) {
-    }
-    ~SocketCloser() {
-      if (m_fd >= 0)
-        close(m_fd);
-    }
+/*
+ * http://src.chromium.org/svn/trunk/src/third_party/cld/base/macros.h
+ * See that file for the gory details.
+ */
+template <typename T, size_t N>
+  char (&ArraySizeHelper(T (&array)[N]))[N];
 
-    int Release() {
-      int fd = m_fd;
-      m_fd = -1;
-      return fd;
-    }
-  private:
-    int m_fd;
-};
-}  // namespace network
+template <typename T, size_t N>
+  char (&ArraySizeHelper(const T (&array)[N]))[N];
+
+#define arraysize(array) (sizeof(ArraySizeHelper(array)))
+
 }  // namespace ola
-#endif  // INCLUDE_OLA_NETWORK_SOCKETCLOSER_H_
+#endif  // INCLUDE_OLA_BASE_ARRAY_H_

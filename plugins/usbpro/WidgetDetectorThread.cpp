@@ -194,7 +194,7 @@ bool WidgetDetectorThread::RunScan() {
     if (m_ignored_devices.find(*it) != m_ignored_devices.end())
       continue;
     // FreeBSD has .init and .lock files which we want to skip
-    if (StringEndsWith(*it, ".init") or StringEndsWith(*it, ".lock"))
+    if (StringEndsWith(*it, ".init") || StringEndsWith(*it, ".lock"))
       continue;
 
     OLA_INFO << "Found potential USB Serial device at " << *it;
@@ -432,6 +432,6 @@ void WidgetDetectorThread::MarkAsRunning() {
   m_mutex.Unlock();
   m_condition.Signal();
 }
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola

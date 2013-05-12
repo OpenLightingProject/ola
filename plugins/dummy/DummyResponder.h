@@ -51,7 +51,7 @@ class DummyResponder: public ola::rdm::RDMControllerInterface {
     ola::rdm::UID m_uid;
     std::vector<DummyRDMDevice*> m_subdevices;
 };
-}  // dummy
-}  // plugin
-}  // ola
+}  // namespace dummy
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_DUMMY_DUMMYRESPONDER_H_

@@ -233,5 +233,5 @@ class OlaClient: public ola::rdm::RDMAPIImplInterface {
     OlaClientCore *m_core;
     OlaClientObserver *m_observer;
 };
-}  // ola
+}  // namespace ola
 #endif  // OLA_OLACLIENT_H_

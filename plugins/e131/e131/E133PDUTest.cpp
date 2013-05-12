@@ -79,7 +79,7 @@ void E133PDUTest::testSimpleE133PDU() {
   unsigned int size = pdu.Size();
   uint8_t *data = new uint8_t[size];
   unsigned int bytes_used = size;
-  OLA_ASSERT(pdu.Pack(data, bytes_used));
+  OLA_ASSERT(pdu.Pack(data, &bytes_used));
   OLA_ASSERT_EQ(size, bytes_used);
 
   // spot check the data
@@ -104,12 +104,12 @@ void E133PDUTest::testSimpleE133PDU() {
 
   // test undersized buffer
   bytes_used = size - 1;
-  OLA_ASSERT_FALSE(pdu.Pack(data, bytes_used));
+  OLA_ASSERT_FALSE(pdu.Pack(data, &bytes_used));
   OLA_ASSERT_EQ(0u, bytes_used);
 
   // test oversized buffer
   bytes_used = size + 1;
-  OLA_ASSERT(pdu.Pack(data, bytes_used));
+  OLA_ASSERT(pdu.Pack(data, &bytes_used));
   OLA_ASSERT_EQ(size, bytes_used);
   delete[] data;
 }
@@ -155,6 +155,6 @@ void E133PDUTest::testSimpleE133PDUToOutputStream() {
   output.Pop(output.Size());
   delete[] pdu_data;
 }
-}  // ola
-}  // e131
-}  // plugin
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

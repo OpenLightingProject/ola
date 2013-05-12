@@ -192,4 +192,4 @@ void PluginManager::GetConflictList(ola_plugin_id plugin_id,
     }
   }
 }
-}  // ola
+}  // namespace ola

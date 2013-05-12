@@ -81,5 +81,5 @@ CID CID::FromData(const uint8_t *data) {
 CID CID::FromString(const std::string &cid) {
   return CID(CIDImpl::FromString(cid));
 }
-}  // acn
-}  // ola
+}  // namespace acn
+}  // namespace ola

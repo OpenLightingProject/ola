@@ -215,5 +215,5 @@ class OlaCallbackClient: public ola::rdm::RDMAPIImplInterface {
 
     class OlaClientCore *m_core;
 };
-}  // ola
+}  // namespace ola
 #endif  // OLA_OLACALLBACKCLIENT_H_

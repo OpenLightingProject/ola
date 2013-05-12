@@ -55,6 +55,6 @@ class IOVecInterface {
         delete[] iov;
     }
 };
-}  // io
-}  // ola
+}  // namespace io
+}  // namespace ola
 #endif  // INCLUDE_OLA_IO_IOVECINTERFACE_H_

@@ -82,6 +82,6 @@ bool EspNetOutputPort::WriteDMX(const DmxBuffer &buffer,
   return true;
   (void) priority;
 }
-}  // espnet
-}  // plugin
-}  // ola
+}  // namespace espnet
+}  // namespace plugin
+}  // namespace ola

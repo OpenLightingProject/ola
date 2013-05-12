@@ -125,6 +125,6 @@ const BaseDMPAddress *DecodeAddress(dmp_address_size size,
       return NULL;  // should never make it here because we checked above
   }
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

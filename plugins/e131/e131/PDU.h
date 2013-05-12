@@ -64,9 +64,9 @@ class PDU {
      * Pack the PDU into the memory pointed to by data
      * @return true on success, false on failure
      */
-    virtual bool Pack(uint8_t *data, unsigned int &length) const;
-    virtual bool PackHeader(uint8_t *data, unsigned int &length) const = 0;
-    virtual bool PackData(uint8_t *data, unsigned int &length) const = 0;
+    virtual bool Pack(uint8_t *data, unsigned int *length) const;
+    virtual bool PackHeader(uint8_t *data, unsigned int *length) const = 0;
+    virtual bool PackData(uint8_t *data, unsigned int *length) const = 0;
 
     /**
      * Write the PDU to an OutputStream
@@ -127,7 +127,7 @@ class PDUBlock {
      * Pack this PDUBlock into memory pointed to by data
      * @return true on success, false on failure
      */
-    bool Pack(uint8_t *data, unsigned int &length) const;
+    bool Pack(uint8_t *data, unsigned int *length) const;
 
     /**
      * Write this PDU block to an OutputStream
@@ -147,17 +147,17 @@ class PDUBlock {
  * @return true on success, false on failure
  */
 template <class C>
-bool PDUBlock<C>::Pack(uint8_t *data, unsigned int &length) const {
+bool PDUBlock<C>::Pack(uint8_t *data, unsigned int *length) const {
   bool status = true;
   unsigned int i = 0;
   typename std::vector<const C*>::const_iterator iter;
   for (iter = m_pdus.begin(); iter != m_pdus.end(); ++iter) {
     // TODO(simon): optimize repeated headers & vectors here
-    unsigned int remaining = i < length ? length - i : 0;
-    status &= (*iter)->Pack(data + i, remaining);
+    unsigned int remaining = i < *length ? *length - i : 0;
+    status &= (*iter)->Pack(data + i, &remaining);
     i+= remaining;
   }
-  length = i;
+  *length = i;
   return status;
 }
 
@@ -175,7 +175,7 @@ void PDUBlock<C>::Write(OutputStream *stream) const {
     (*iter)->Write(stream);
   }
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_PDU_H_

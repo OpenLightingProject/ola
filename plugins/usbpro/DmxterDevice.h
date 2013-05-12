@@ -82,7 +82,7 @@ class DmxterOutputPort: public BasicOutputPort {
   private:
     DmxterWidget *m_widget;
 };
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBPRO_DMXTERDEVICE_H_

@@ -372,6 +372,6 @@ unsigned int UsbSerialPlugin::GetUltraDMXProFrameLimit() {
     StringToInt(DEFAULT_ULTRA_FPS_LIMIT, &fps_limit);
   return fps_limit;
 }
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola

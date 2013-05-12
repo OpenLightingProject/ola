@@ -51,6 +51,6 @@ bool StageProfiWidgetLan::Connect(const std::string &ip) {
                                      &StageProfiWidget::SocketReady));
   return m_socket;
 }
-}  // stageprofi
-}  // plugin
-}  // ola
+}  // namespace stageprofi
+}  // namespace plugin
+}  // namespace ola

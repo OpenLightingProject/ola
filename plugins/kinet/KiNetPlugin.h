@@ -57,7 +57,7 @@ class KiNetPlugin : public Plugin {
     static const char PLUGIN_PREFIX[];
     static const char POWER_SUPPLY_KEY[];
 };
-}  // kinet
-}  // plugin
-}  // ola
+}  // namespace kinet
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_KINET_KINETPLUGIN_H_

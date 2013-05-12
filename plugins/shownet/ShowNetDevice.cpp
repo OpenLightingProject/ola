@@ -102,6 +102,6 @@ void ShowNetDevice::PostPortStop() {
   delete m_node;
   m_node = NULL;
 }
-}  // shownet
-}  // plugin
-}  // ola
+}  // namespace shownet
+}  // namespace plugin
+}  // namespace ola

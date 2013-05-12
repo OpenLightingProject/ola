@@ -280,6 +280,6 @@ void TCPTransportTest::SendPacket(const string &message, IOStack *packet) {
   packet->MoveToIOQueue(&output);
   OLA_ASSERT_TRUE_MSG(m_loopback.Send(&output), message);
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

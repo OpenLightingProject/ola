@@ -63,6 +63,6 @@ class UIDAllocator {
     uint32_t m_device_id;
     uint32_t m_last_device_id;
 };
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola
 #endif  // INCLUDE_OLA_RDM_UIDALLOCATOR_H_

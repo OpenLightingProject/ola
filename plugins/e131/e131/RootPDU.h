@@ -50,8 +50,8 @@ class RootPDU: public PDU {
 
     unsigned int HeaderSize() const { return CID::CID_LENGTH; }
     unsigned int DataSize() const { return m_block_size; }
-    bool PackHeader(uint8_t *data, unsigned int &length) const;
-    bool PackData(uint8_t *data, unsigned int &length) const;
+    bool PackHeader(uint8_t *data, unsigned int *length) const;
+    bool PackData(uint8_t *data, unsigned int *length) const;
 
     void PackHeader(OutputStream *stream) const;
     void PackData(OutputStream *stream) const;
@@ -68,7 +68,7 @@ class RootPDU: public PDU {
     const PDUBlock<PDU> *m_block;
     unsigned int m_block_size;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_ROOTPDU_H_

@@ -41,48 +41,48 @@ using ola::plugin::artnet::Request;
 using std::string;
 
 class ArtNetDevice: public Device {
-  public:
-    ArtNetDevice(AbstractPlugin *owner,
-                 class Preferences *preferences,
-                 class PluginAdaptor *plugin_adaptor);
+ public:
+  ArtNetDevice(AbstractPlugin *owner,
+               class Preferences *preferences,
+               class PluginAdaptor *plugin_adaptor);
 
-    // only one ArtNet device
-    string DeviceId() const { return "1"; }
+  // only one ArtNet device
+  string DeviceId() const { return "1"; }
 
-    void Configure(RpcController *controller,
-                   const string &request,
-                   string *response,
-                   google::protobuf::Closure *done);
+  void Configure(RpcController *controller,
+                 const string &request,
+                 string *response,
+                 google::protobuf::Closure *done);
 
-    static const char K_ALWAYS_BROADCAST_KEY[];
-    static const char K_DEVICE_NAME[];
-    static const char K_IP_KEY[];
-    static const char K_LIMITED_BROADCAST_KEY[];
-    static const char K_LONG_NAME_KEY[];
-    static const char K_LOOPBACK_KEY[];
-    static const char K_NET_KEY[];
-    static const char K_SHORT_NAME_KEY[];
-    static const char K_SUBNET_KEY[];
-    // 10s between polls when we're sending data, DMX-workshop uses 8s;
-    static const unsigned int POLL_INTERVAL = 10000;
+  static const char K_ALWAYS_BROADCAST_KEY[];
+  static const char K_DEVICE_NAME[];
+  static const char K_IP_KEY[];
+  static const char K_LIMITED_BROADCAST_KEY[];
+  static const char K_LONG_NAME_KEY[];
+  static const char K_LOOPBACK_KEY[];
+  static const char K_NET_KEY[];
+  static const char K_SHORT_NAME_KEY[];
+  static const char K_SUBNET_KEY[];
+  // 10s between polls when we're sending data, DMX-workshop uses 8s;
+  static const unsigned int POLL_INTERVAL = 10000;
 
-  protected:
-    bool StartHook();
-    void PrePortStop();
-    void PostPortStop();
+ protected:
+  bool StartHook();
+  void PrePortStop();
+  void PostPortStop();
 
-  private:
-    class Preferences *m_preferences;
-    ArtNetNode *m_node;
-    class PluginAdaptor *m_plugin_adaptor;
-    ola::thread::timeout_id m_timeout_id;
+ private:
+  class Preferences *m_preferences;
+  ArtNetNode *m_node;
+  class PluginAdaptor *m_plugin_adaptor;
+  ola::thread::timeout_id m_timeout_id;
 
-    void HandleOptions(Request *request, string *response);
-    void HandleNodeList(Request *request,
-                        string *response,
-                        RpcController *controller);
+  void HandleOptions(Request *request, string *response);
+  void HandleNodeList(Request *request,
+                      string *response,
+                      RpcController *controller);
 };
-}  // arntnet
-}  // plugin
-}  // ola
+}  // namespace arntnet
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_ARTNET_ARTNETDEVICE_H_

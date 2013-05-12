@@ -247,7 +247,7 @@ class FlagRegisterer {
       GetRegistry()->RegisterFlag(flag);
     }
 };
-}  // ola
+}  // namespace ola
 
 #define DECLARE_flag(type, name) \
   namespace ola_flags { extern Flag<type> FLAGS_##name  } \

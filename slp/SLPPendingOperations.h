@@ -27,6 +27,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include "slp/SLPPacketConstants.h"
 #include "slp/ServiceEntry.h"
 
@@ -199,6 +200,6 @@ class PendingSrvRqst {
     typedef map<string, ScopeStatus> ScopeStatusMap;
     ScopeStatusMap scope_status_map;
 };
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola
 #endif  // SLP_SLPPENDINGOPERATIONS_H_

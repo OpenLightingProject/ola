@@ -134,7 +134,7 @@ class EspNetNode {
     static const uint8_t DATA_RLE = 4;
     static const uint8_t START_CODE = 0;
 };
-}  // espnet
-}  // plugin
-}  // ola
+}  // namespace espnet
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_ESPNET_ESPNETNODE_H_

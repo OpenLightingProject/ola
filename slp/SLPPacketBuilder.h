@@ -137,6 +137,6 @@ class SLPPacketBuilder {
                                xid_t xid,
                                const string &language);
 };
-}  // slp
-}  // ola
+}  // namespace slp
+}  // namespace ola
 #endif  // SLP_SLPPACKETBUILDER_H_

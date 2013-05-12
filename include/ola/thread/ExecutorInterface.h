@@ -35,6 +35,6 @@ class ExecutorInterface {
 
     virtual void Execute(ola::BaseCallback0<void> *closure) = 0;
 };
-}  // thread
-}  // ola
+}  // namespace thread
+}  // namespace ola
 #endif  // INCLUDE_OLA_THREAD_EXECUTORINTERFACE_H_

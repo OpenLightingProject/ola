@@ -22,9 +22,8 @@
 #ifndef PLUGINS_USBDMX_EUROLITEPRODEVICE_H_
 #define PLUGINS_USBDMX_EUROLITEPRODEVICE_H_
 
-#include <string>
-
 #include <libusb.h>
+#include <string>
 #include "plugins/usbdmx/UsbDevice.h"
 #include "plugins/usbdmx/EuroliteProOutputPort.h"
 
@@ -51,7 +50,7 @@ class EuroliteProDevice: public UsbDevice {
   private:
     EuroliteProOutputPort *m_output_port;
 };
-}  // usbdmx
-}  // plugin
-}  // ola
+}  // namespace usbdmx
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBDMX_EUROLITEPRODEVICE_H_
