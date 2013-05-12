@@ -22,8 +22,8 @@
 #define INCLUDE_OLA_E133_E133STATUSHELPER_H_
 
 #include <stdint.h>
-#include <string>
 #include <ola/e133/E133Enums.h>
+#include <string>
 
 namespace ola {
 namespace e133 {

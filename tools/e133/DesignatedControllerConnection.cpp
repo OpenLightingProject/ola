@@ -17,8 +17,6 @@
  * Copyright (C) 2013 Simon Newton
  */
 
-#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
-
 #include <map>
 #include <memory>
 #include <string>

@@ -21,7 +21,6 @@
 #ifndef TOOLS_E133_E133DEVICE_H_
 #define TOOLS_E133_E133DEVICE_H_
 
-
 #include <string>
 #include <vector>
 

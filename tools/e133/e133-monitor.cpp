@@ -22,8 +22,6 @@
  * It then waits to receive E1.33 messages on the TCP connections.
  */
 
-#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
-#include <errno.h>
 #include <sysexits.h>
 
 #include <ola/BaseTypes.h>
@@ -50,7 +48,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-
 
 using ola::NewCallback;
 using ola::network::IPV4Address;

@@ -21,13 +21,13 @@
 #ifndef INCLUDE_OLA_E133_E133RECEIVER_H_
 #define INCLUDE_OLA_E133_E133RECEIVER_H_
 
-#include <memory>
-#include <string>
-
 #include <ola/Callback.h>
 #include <ola/network/Socket.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/rdm/RDMCommand.h>
+
+#include <memory>
+#include <string>
 
 using std::string;
 using std::auto_ptr;
