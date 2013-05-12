@@ -94,9 +94,10 @@ clean-local:
 
 # Tests
 if BUILD_TESTS
-TESTS = SLPServerTester DATrackerTester PacketParserTester \
-        RegistrationFileParserTester ServiceEntryTester SLPStoreTester \
-        XIDAllocatorTester PacketBuilderTester ScopeSetTester SLPStringsTester
+TESTS = DATrackerTester PacketBuilderTester PacketParserTester \
+        RegistrationFileParserTester SLPServerDATester SLPServerNetworkTester \
+        SLPServerSATester SLPServerUATester SLPStoreTester SLPStringsTester \
+        ScopeSetTester ServiceEntryTester XIDAllocatorTester
 endif
 COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS) \
                     $(top_builddir)/common/libolacommon.la \
@@ -120,13 +121,25 @@ RegistrationFileParserTester_SOURCES = RegistrationFileParserTest.cpp
 RegistrationFileParserTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 RegistrationFileParserTester_LDADD = $(COMMON_TEST_LDADD)
 
-SLPServerTester_SOURCES = SLPServerTestHelper.cpp \
-                          SLPServerDATest.cpp \
-                          SLPServerNetworkTest.cpp \
-                          SLPServerSATest.cpp \
-                          SLPServerUATest.cpp
-SLPServerTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
-SLPServerTester_LDADD = $(COMMON_TEST_LDADD)
+SLPServerDATester_SOURCES = SLPServerTestHelper.cpp \
+                            SLPServerDATest.cpp
+SLPServerDATester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+SLPServerDATester_LDADD = $(COMMON_TEST_LDADD)
+
+SLPServerSATester_SOURCES = SLPServerTestHelper.cpp \
+                            SLPServerSATest.cpp
+SLPServerSATester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+SLPServerSATester_LDADD = $(COMMON_TEST_LDADD)
+
+SLPServerUATester_SOURCES = SLPServerTestHelper.cpp \
+                            SLPServerUATest.cpp
+SLPServerUATester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+SLPServerUATester_LDADD = $(COMMON_TEST_LDADD)
+
+SLPServerNetworkTester_SOURCES = SLPServerTestHelper.cpp \
+                                 SLPServerNetworkTest.cpp
+SLPServerNetworkTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+SLPServerNetworkTester_LDADD = $(COMMON_TEST_LDADD)
 
 SLPStoreTester_SOURCES = SLPStoreTest.cpp
 SLPStoreTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
