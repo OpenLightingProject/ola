@@ -484,7 +484,18 @@ AC_ARG_ENABLE(gcov,
 if test "${enable_gov}" != "no"; then
   CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
   CXXFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
-  LDFLAGS="$LDFLAGS"
+fi
+
+# tcmalloc
+AC_ARG_ENABLE(tcmalloc,
+              AC_HELP_STRING([--enable-tcmalloc],
+                             [Use tcmalloc]),
+              [enable_tcmalloc=$enablevar],
+              [enable_tcmalloc="no"],
+             )
+
+if test "${enable_tcmalloc}" != "no"; then
+  LDFLAGS="$LDFLAGS -ltcmalloc"
 fi
 
 # Decide if we should build the example programs
