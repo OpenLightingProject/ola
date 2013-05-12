@@ -334,7 +334,7 @@ void AdvancedTCPConnectorTest::ConfirmState(
 void AdvancedTCPConnectorTest::SetupListeningSocket(
     TCPAcceptingSocket *listening_socket) {
   OLA_ASSERT_TRUE_MSG(listening_socket->Listen(m_server_address),
-                          "Check for another instance of olad running");
+                         "Check for another instance of olad running");
   // calling listen a second time should fail
   OLA_ASSERT_FALSE(listening_socket->Listen(m_server_address));
   OLA_INFO << "listening on " << m_server_address;
