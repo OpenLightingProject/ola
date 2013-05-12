@@ -18,7 +18,6 @@
  * Copyright (C) 2007 Simon Newton
  */
 
-#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include "ola/Logging.h"
 #include "plugins/e131/e131/RootSender.h"
 #include "plugins/e131/e131/Transport.h"

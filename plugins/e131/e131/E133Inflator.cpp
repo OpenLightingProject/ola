@@ -18,7 +18,6 @@
  * Copyright (C) 2011 Simon Newton
  */
 
-#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <string>
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"

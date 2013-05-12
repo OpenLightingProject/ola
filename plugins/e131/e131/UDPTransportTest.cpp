@@ -18,9 +18,8 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include "plugins/e131/e131/E131Includes.h"  //  This has to be first
-#include <cppunit/extensions/HelperMacros.h>  //  NOLINT
-#include <memory>  //  NOLINT
+#include <cppunit/extensions/HelperMacros.h>
+#include <memory>
 
 #include "ola/Logging.h"
 #include "ola/io/SelectServer.h"

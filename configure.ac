@@ -255,6 +255,12 @@ use_ossp_uuid="no"
 case "${host_os}" in
   *darwin*)
     # Running on mac, just use the built in UUID
+    # If we try to use ossp/uuid then we can get conflicts with <unistd.h>, if
+    # <unistd.h> is #include'd before ossp/uuid.h. The errors take the form:
+    #   /opt/local/include/ossp/uuid.h:94: error: conflicting declaration
+    #    'typedef struct uuid_st uuid_t'
+    #   /usr/include/unistd.h:133: error: 'uuid_t' has a previous declaration as
+    #     'typedef unsigned char uuid_t [16]'
     AC_CHECK_HEADERS(
       [uuid/uuid.h],
       [],

@@ -64,7 +64,7 @@ class MockCommandAction: CommandAction {
     }
 
     void Execute(Context *context, uint8_t slot_value);
-    void CheckArgs(unsigned long line, const char* args[]);
+    void CheckArgs(int32_t line, const char* args[]);
 
   private:
     vector<string> m_interpolated_args;
@@ -88,7 +88,7 @@ void MockCommandAction::Execute(Context *context, uint8_t) {
 /**
  * Check what we got matches what we expected
  */
-void MockCommandAction::CheckArgs(unsigned long line, const char* args[]) {
+void MockCommandAction::CheckArgs(int32_t line, const char* args[]) {
   std::stringstream str;
   str << "From ActionTest.cpp:" << line;
   const char **ptr = args;

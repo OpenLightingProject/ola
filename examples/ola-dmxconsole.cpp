@@ -108,9 +108,7 @@ static float fadetime = 1.0f;
 static int fading = 0;        /* percentage counter of fade process */
 static int palette_number = 0;
 static int palette[MAXCOLOR];
-string error_str;
-/* TODO: lint complains about the 'original' line above, wants it changed to 
-char[], but that will presumably break .empty() etc */
+static bool screen_to_small = false;
 static int channels_offset = 1;
 
 OlaClient *client;
@@ -219,7 +217,7 @@ void values() {
     asctime_r(&tt, s);
     s[strlen(s) - 1] = 0; /* strip newline at end of string */
 
-    (void) attrset(palette[HEADLINE]);
+    attrset(palette[HEADLINE]);
     mvprintw(0, 1, "%s", s);
   }
   width_total += (5 + universe_length);
@@ -230,38 +228,36 @@ void values() {
   }
   width_total += (5 + 2);
   if (COLS >= width_total) {
-    (void) attrset(palette[HEADLINE]);
+    attrset(palette[HEADLINE]);
     printw(" cue:");
-    (void) attrset(palette[HEADEMPH]);
+    attrset(palette[HEADEMPH]);
     printw("%02i", current_cue + 1);
   }
   width_total += (10 + 3);
   if (COLS >= width_total) {
-    (void) attrset(palette[HEADLINE]);
+    attrset(palette[HEADLINE]);
     printw(" fadetime:");
-    (void) attrset(palette[HEADEMPH]);
+    attrset(palette[HEADEMPH]);
     printw("%1.1f", fadetime);
   }
   width_total += (8 + 3);
   if (COLS >= width_total) {
     if (fading) {
-      (void) attrset(palette[HEADLINE]);
+      attrset(palette[HEADLINE]);
       printw(" fading:");
-      (void) attrset(palette[HEADEMPH]);
+      attrset(palette[HEADEMPH]);
       printw("%02i%%", (fading < 100) ? fading: 99);
     } else {
-      (void) attrset(palette[HEADLINE]);
+      attrset(palette[HEADLINE]);
       printw("           ");
     }
   }
   /* Use 10 as error string length, rather than error_str.length(),
      as a safety feature to ensure it's shown */
   width_total += (6 + 10);
-  if (COLS >= width_total) {
-    if (!error_str.empty()) {
-      (void) attrset(palette[HEADERROR]);
-      printw("ERROR:%s", error_str.data());
-    }
+  if (COLS >= width_total && screen_to_small) {
+    attrset(palette[HEADERROR]);
+    printw("ERROR: screen too small, we need at least 3 lines");
   }
 
   /* values */
@@ -274,13 +270,13 @@ void values() {
       const int d = dmx[z];
       switch (d) {
         case 0:
-          (void) attrset(palette[ZERO]);
+          attrset(palette[ZERO]);
           break;
         case 255:
-          (void) attrset(palette[FULL]);
+          attrset(palette[FULL]);
           break;
         default:
-          (void) attrset(palette[NORM]);
+          attrset(palette[NORM]);
       }
       if (z == current_channel)
         attron(A_REVERSE);
@@ -487,7 +483,7 @@ void CHECK(void *p) {
 void calcscreengeometry() {
   int c = LINES;
   if (c < 3) {
-    error_str = "screen too small, we need at least 3 lines";
+    screen_to_small = true;
     exit(1);
   }
   c--;                /* one line for headline */
@@ -518,8 +514,8 @@ void cleanup() {
     endwin();
   }
 
-  if (!error_str.empty())
-    puts(error_str.data());
+  if (screen_to_small)
+    puts("screen too small, we need at least 3 lines");
 }
 
 void stdin_ready() {
