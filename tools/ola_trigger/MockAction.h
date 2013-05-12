@@ -41,7 +41,7 @@ class MockAction: public Action {
       m_values.push(slot_value);
     }
 
-    void CheckForValue(unsigned long line, uint8_t expected_value) {
+    void CheckForValue(int32_t line, uint8_t expected_value) {
       std::stringstream str;
       str << "Line " << line;
       CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(),
