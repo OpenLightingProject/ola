@@ -18,10 +18,10 @@
  * Copyright (C) 2012 Simon Newton
  */
 
-#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
-#include <cppunit/extensions/HelperMacros.h>
-#include <memory>
-#include <string>
+#include "plugins/e131/e131/E131Includes.h"  //NOLINT, this has to be first
+#include <cppunit/extensions/HelperMacros.h> //NOLINT
+#include <memory>  //NOLINT
+#include <string>  //NOLINT cpplint would flag each of these standards as problems.
 
 #include "ola/Logging.h"
 #include "ola/io/IOQueue.h"
