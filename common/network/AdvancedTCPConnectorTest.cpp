@@ -320,10 +320,10 @@ void AdvancedTCPConnectorTest::ConfirmState(
   AdvancedTCPConnector::ConnectionState state;
   unsigned int failed_attempts;
   OLA_ASSERT_TRUE_MSG(
-      connector.GetEndpointState(endpoint, &state, &failed_attempts)
+      connector.GetEndpointState(endpoint, &state, &failed_attempts),
       str.str());
-  OLA_ASSERT_EQ_MSG(str.str(), expected_state, state);
-  OLA_ASSERT_EQ_MSG(str.str(), expected_attempts, failed_attempts);
+  OLA_ASSERT_EQ_MSG(expected_state, state, str.str());
+  OLA_ASSERT_EQ_MSG(expected_attempts, failed_attempts, str.str());
 }
 
 
