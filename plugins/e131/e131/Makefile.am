@@ -3,7 +3,7 @@ include $(top_srcdir)/common.mk
 EXTRA_DIST = BaseInflator.h CIDImpl.h \
              DMPE131Inflator.h DMPAddress.h DMPHeader.h \
              DMPInflator.h DMPPDU.h \
-             E131Header.h E131Includes.h E131Inflator.h E131Sender.h \
+             E131Header.h E131Inflator.h E131Sender.h \
              E131Node.h E131PDU.h E131TestFramework.h \
              E133Header.h E133Inflator.h E133PDU.h \
              E133StatusInflator.h E133StatusPDU.h \

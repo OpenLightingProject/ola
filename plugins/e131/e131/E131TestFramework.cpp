@@ -20,7 +20,6 @@
  * The remote node needs to be listening for Universe 1.
  */
 
-#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <assert.h>
 #include <stdio.h>
 #include <termios.h>
