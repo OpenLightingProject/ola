@@ -827,7 +827,7 @@ void UniverseTest::ConfirmRDM(int line,
   std::stringstream str;
   str << "Line " << line;
   OLA_ASSERT_EQ_MSG(str.str(),
-                               expected_response_code,
-                               response_code);
+                        expected_response_code,
+                        response_code);
   OLA_ASSERT_EQ_MSG(str.str(), expected_response, response);
 }
