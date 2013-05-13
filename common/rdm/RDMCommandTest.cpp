@@ -456,6 +456,7 @@ void RDMCommandTest::testRequestInflation() {
       bad_packet,
       sizeof(EXPECTED_GET_BUFFER)));
   OLA_ASSERT_NULL(command.get());
+  delete[] bad_packet;
 
   // change the param length of another packet and make sure the checksum fails
   bad_packet = new uint8_t[sizeof(EXPECTED_SET_BUFFER)];
