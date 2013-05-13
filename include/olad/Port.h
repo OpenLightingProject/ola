@@ -23,14 +23,14 @@
 
 #include <string>
 #include <vector>
-#include <ola/DmxBuffer.h>  // NOLINT
-#include <ola/rdm/RDMCommand.h>  // NOLINT
-#include <ola/rdm/RDMControllerInterface.h>  // NOLINT
-#include <ola/timecode/TimeCode.h>  // NOLINT
-#include <olad/DmxSource.h>  // NOLINT
-#include <olad/PluginAdaptor.h>  // NOLINT
-#include <olad/PortConstants.h>  // NOLINT
-#include <olad/Universe.h>  // NOLINT
+#include <ola/DmxBuffer.h>  // NOLINT(build/include_order)
+#include <ola/rdm/RDMCommand.h>  // NOLINT(build/include_order)
+#include <ola/rdm/RDMControllerInterface.h>  // NOLINT(build/include_order)
+#include <ola/timecode/TimeCode.h>  // NOLINT(build/include_order)
+#include <olad/DmxSource.h>  // NOLINT(build/include_order)
+#include <olad/PluginAdaptor.h>  // NOLINT(build/include_order)
+#include <olad/PortConstants.h>  // NOLINT(build/include_order)
+#include <olad/Universe.h>  // NOLINT(build/include_order)
 
 namespace ola {
 

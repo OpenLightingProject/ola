@@ -25,14 +25,14 @@
 #include <map>
 #include <vector>
 #include <string>
-#include <ola/Clock.h>  // NOLINT
-#include <ola/DmxBuffer.h>  // NOLINT
-#include <ola/ExportMap.h>  // NOLINT
-#include <ola/rdm/RDMCommand.h>  // NOLINT
-#include <ola/rdm/RDMControllerInterface.h>  // NOLINT
-#include <ola/rdm/UID.h>  // NOLINT
-#include <ola/rdm/UIDSet.h>  // NOLINT
-#include <olad/DmxSource.h>  // NOLINT
+#include <ola/Clock.h>  // NOLINT(build/include_order)
+#include <ola/DmxBuffer.h>  // NOLINT(build/include_order)
+#include <ola/ExportMap.h>  // NOLINT(build/include_order)
+#include <ola/rdm/RDMCommand.h>  // NOLINT(build/include_order)
+#include <ola/rdm/RDMControllerInterface.h>  // NOLINT(build/include_order)
+#include <ola/rdm/UID.h>  // NOLINT(build/include_order)
+#include <ola/rdm/UIDSet.h>  // NOLINT(build/include_order)
+#include <olad/DmxSource.h>  // NOLINT(build/include_order)
 
 namespace ola {
 
