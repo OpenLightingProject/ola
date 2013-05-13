@@ -136,7 +136,7 @@ void TCPConnectorTest::testNonBlockingConnect() {
       ola::NewCallback(this, &TCPConnectorTest::AcceptedConnection));
   TCPAcceptingSocket listening_socket(&socket_factory);
   OLA_ASSERT_TRUE_MSG(listening_socket.Listen(m_server_address),
-      "Check for another instance of olad running",
+                          "Check for another instance of olad running");
 
   // calling listen a second time should fail
   OLA_ASSERT_FALSE(listening_socket.Listen(m_server_address));

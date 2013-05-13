@@ -48,6 +48,7 @@ using ola::messaging::UInt8FieldDescriptor;
 using ola::messaging::UIDFieldDescriptor;
 using ola::rdm::StringMessageBuilder;
 using ola::rdm::MessageSerializer;
+using ola::testing::ASSERT_DATA_EQUALS;
 using std::auto_ptr;
 using std::string;
 using std::vector;
@@ -291,7 +292,7 @@ void MessageSerializerTest::testWithGroups() {
                         expected,
                         sizeof(expected),
                         data,
-                        d_length);
+                        packed_length);
 
   // now do multiple groups
   vector<string> inputs2;
