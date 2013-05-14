@@ -44,7 +44,7 @@ class MemoryBlock {
     }
 
     ~MemoryBlock() {
-      delete m_data;
+      delete[] m_data;
     }
 
     // Move the insertion point to the end of the block. This is useful if you

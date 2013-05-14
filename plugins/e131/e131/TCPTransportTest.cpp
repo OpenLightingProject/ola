@@ -61,6 +61,7 @@ class TCPTransportTest: public CppUnit::TestFixture {
     void testMultiplePDUsWithExtraData();
     void testSinglePDUBlock();
     void setUp();
+    void tearDown();
 
     void Stop();
     void FatalStop() { OLA_ASSERT(false); }
@@ -116,6 +117,13 @@ void TCPTransportTest::setUp() {
   m_loopback.SetOnData(
       NewCallback(this, &TCPTransportTest::Receive));
   OLA_ASSERT(m_ss->AddReadDescriptor(&m_loopback));
+}
+
+
+void TCPTransportTest::tearDown() {
+  // Close the loopback descriptor and drain the ss
+  m_loopback.Close();
+  m_ss->RunOnce(0, 0);
 }
 
 
