@@ -493,11 +493,8 @@ void RDMCommandTest::PackAndVerify(const RDMCommand &command,
   uint8_t *buffer = new uint8_t[buffer_size];
   OLA_ASSERT_TRUE(RDMCommandSerializer::Pack(command, buffer, &buffer_size));
 
-  ASSERT_DATA_EQUALS(__LINE__,
-                        expected,
-                        expected_length,
-                        buffer,
-                        buffer_size);
+  ASSERT_DATA_EQUALS(__LINE__, expected, expected_length,
+                     buffer, buffer_size);
   delete[] buffer;
 }
 
