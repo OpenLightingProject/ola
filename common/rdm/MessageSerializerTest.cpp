@@ -144,10 +144,10 @@ void MessageSerializerTest::testSimple() {
     'f', 'o', 'o'};
 
   ASSERT_DATA_EQUALS(__LINE__,
-                        expected,
-                        sizeof(expected),
-                        data,
-                        packed_length);
+                     expected,
+                     sizeof(expected),
+                     data,
+                     packed_length);
 }
 
 
@@ -178,10 +178,10 @@ void MessageSerializerTest::testString() {
 
   uint8_t expected[] = "foo bar\0\0\0long long foo bar baz";
   ASSERT_DATA_EQUALS(__LINE__,
-                        expected,
-                        sizeof(expected) - 1,  // ignore the trailing \0
-                        data,
-                        packed_length);
+                     expected,
+                     sizeof(expected) - 1,  // ignore the trailing \0
+                     data,
+                     packed_length);
 }
 
 
@@ -251,10 +251,10 @@ void MessageSerializerTest::testLittleEndian() {
     1, 253, 44, 1, 112, 254,
     208, 1, 1, 0, 48, 254, 254, 255};
   ASSERT_DATA_EQUALS(__LINE__,
-              expected,
-              sizeof(expected),
-              data,
-              packed_length);
+                     expected,
+                     sizeof(expected),
+                     data,
+                     packed_length);
 }
 
 
@@ -289,10 +289,10 @@ void MessageSerializerTest::testWithGroups() {
   OLA_ASSERT_EQ(2u, packed_length);
   uint8_t expected[] = {1, 10};
   ASSERT_DATA_EQUALS(__LINE__,
-                        expected,
-                        sizeof(expected),
-                        data,
-                        packed_length);
+                     expected,
+                     sizeof(expected),
+                     data,
+                     packed_length);
 
   // now do multiple groups
   vector<string> inputs2;
@@ -309,10 +309,10 @@ void MessageSerializerTest::testWithGroups() {
   OLA_ASSERT_EQ(6u, packed_length);
   uint8_t expected2[] = {1, 10, 1, 42, 0, 240};
   ASSERT_DATA_EQUALS(__LINE__,
-                        expected2,
-                        sizeof(expected2),
-                        data,
-                        packed_length);
+                     expected2,
+                     sizeof(expected2),
+                     data,
+                     packed_length);
 }
 
 
@@ -351,8 +351,8 @@ void MessageSerializerTest::testWithNestedGroups() {
   OLA_ASSERT_EQ(8u, packed_length);
   uint8_t expected[] = {0, 1, 1, 1, 0, 2, 1, 0};
   ASSERT_DATA_EQUALS(__LINE__,
-                        expected,
-                        sizeof(expected),
-                        data,
-                        packed_length);
+                     expected,
+                     sizeof(expected),
+                     data,
+                     packed_length);
 }
