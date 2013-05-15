@@ -133,8 +133,8 @@ void SocketTest::testTCPSocketClientClose() {
   ola::network::TCPSocketFactory socket_factory(
       ola::NewCallback(this, &SocketTest::NewConnectionSend));
   TCPAcceptingSocket socket(&socket_factory);
-  CPPUNIT_ASSERT_MESSAGE("Check for another instance of olad running",
-                         socket.Listen(socket_address));
+  OLA_ASSERT_TRUE_MSG(socket.Listen(socket_address),
+                      "Check for another instance of olad running");
   OLA_ASSERT_FALSE(socket.Listen(socket_address));
 
   OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&socket));
@@ -162,9 +162,10 @@ void SocketTest::testTCPSocketServerClose() {
   ola::network::TCPSocketFactory socket_factory(
       ola::NewCallback(this, &SocketTest::NewConnectionSendAndClose));
   TCPAcceptingSocket socket(&socket_factory);
-  CPPUNIT_ASSERT_MESSAGE("Check for another instance of olad running",
-                         socket.Listen(socket_address));
-  OLA_ASSERT_FALSE(socket.Listen(socket_address));
+  OLA_ASSERT_TRUE_MSG(socket.Listen(socket_address),
+        "Check for another instance of olad running");
+
+OLA_ASSERT_FALSE(socket.Listen(socket_address));
 
   OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&socket));
 

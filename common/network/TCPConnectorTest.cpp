@@ -135,8 +135,9 @@ void TCPConnectorTest::testNonBlockingConnect() {
   ola::network::TCPSocketFactory socket_factory(
       ola::NewCallback(this, &TCPConnectorTest::AcceptedConnection));
   TCPAcceptingSocket listening_socket(&socket_factory);
-  CPPUNIT_ASSERT_MESSAGE("Check for another instance of olad running",
-                         listening_socket.Listen(m_server_address));
+  OLA_ASSERT_TRUE_MSG(listening_socket.Listen(m_server_address),
+                      "Check for another instance of olad running");
+
   // calling listen a second time should fail
   OLA_ASSERT_FALSE(listening_socket.Listen(m_server_address));
   OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&listening_socket));
@@ -260,7 +261,7 @@ void TCPConnectorTest::OnConnect(int fd, int error) {
   if (error) {
     std::stringstream str;
     str << "Failed to connect: " << strerror(error);
-    CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(), 0, error);
+    OLA_ASSERT_EQ_MSG(0, error, str.str());
     m_ss->Terminate();
   } else {
     OLA_ASSERT_TRUE(fd >= 0);
