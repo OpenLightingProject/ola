@@ -81,7 +81,6 @@ ArtNetNodeImpl::ArtNetNodeImpl(const ola::network::Interface &interface,
       m_use_limited_broadcast_address(options.use_limited_broadcast_address),
       m_interface(interface),
       m_socket(socket) {
-  
   // reset all the port structures
   for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
     m_input_ports[i].universe_address = 0;
@@ -956,9 +955,10 @@ void ArtNetNodeImpl::HandleReplyPacket(const IPV4Address &source_address,
     return;
 
   if (packet.net_address != m_net_address) {
-    OLA_DEBUG << "Received ArtPollReply for net " << (int) packet.net_address
-              << " which doesn't match our net address " << (int) m_net_address
-              << ", discarding";
+    OLA_DEBUG << "Received ArtPollReply for net "
+              << static_cast<int>(packet.net_address)
+              << " which doesn't match our net address "
+              << static_cast<int>(m_net_address) << ", discarding";
     return;
   }
 
@@ -996,9 +996,9 @@ void ArtNetNodeImpl::HandleDataPacket(const IPV4Address &source_address,
     return;
 
   if (packet.net != m_net_address) {
-    OLA_DEBUG << "Received ArtDmx for net " << (int) packet.net
-              << " which doesn't match our net address " << (int) m_net_address
-              << ", discarding";
+    OLA_DEBUG << "Received ArtDmx for net " << static_cast<int>(packet.net)
+              << " which doesn't match our net address "
+              << static_cast<int>(m_net_address) << ", discarding";
     return;
   }
 
@@ -1038,9 +1038,10 @@ void ArtNetNodeImpl::HandleTodRequest(const IPV4Address &source_address,
     return;
 
   if (packet.net != m_net_address) {
-    OLA_DEBUG << "Received ArtTodRequest for net " << (int) packet.net
-              << " which doesn't match our net address " << (int) m_net_address
-              << ", discarding";
+    OLA_DEBUG << "Received ArtTodRequest for net "
+              << static_cast<int>(packet.net)
+              << " which doesn't match our net address "
+              << static_cast<int>(m_net_address) << ", discarding";
     return;
   }
 
@@ -1096,9 +1097,9 @@ void ArtNetNodeImpl::HandleTodData(const IPV4Address &source_address,
   }
 
   if (packet.net != m_net_address) {
-    OLA_DEBUG << "Received ArtTodData for net " << (int) packet.net
-              << " which doesn't match our net address " << (int) m_net_address
-              << ", discarding";
+    OLA_DEBUG << "Received ArtTodData for net " << static_cast<int>(packet.net)
+              << " which doesn't match our net address "
+              << static_cast<int>(m_net_address) << ", discarding";
     return;
   }
 
@@ -1131,9 +1132,10 @@ void ArtNetNodeImpl::HandleTodControl(const IPV4Address &source_address,
     return;
 
   if (packet.net != m_net_address) {
-    OLA_DEBUG << "Received ArtTodControl for net " << (int) packet.net
-              << " which doesn't match our net address " << (int) m_net_address
-              << ", discarding";
+    OLA_DEBUG << "Received ArtTodControl for net "
+              << static_cast<int>(packet.net)
+              << " which doesn't match our net address "
+              << static_cast<int>(m_net_address) << ", discarding";
     return;
   }
 
@@ -1175,9 +1177,9 @@ void ArtNetNodeImpl::HandleRdm(const IPV4Address &source_address,
   }
 
   if (packet.net != m_net_address) {
-    OLA_DEBUG << "Received ArtRDM for net " << (int) packet.net
-              << " which doesn't match our net address " << (int) m_net_address
-              << ", discarding";
+    OLA_DEBUG << "Received ArtRDM for net " << static_cast<int>(packet.net)
+              << " which doesn't match our net address "
+              << static_cast<int>(m_net_address) << ", discarding";
     return;
   }
 
@@ -1362,8 +1364,8 @@ void ArtNetNodeImpl::HandleIPProgram(const IPV4Address &source_address,
   if (!CheckPacketVersion(source_address, "ArtIpProg", packet.version))
     return;
 
-  OLA_INFO <<
-      "Got ArtIpProgram, ignoring because we don't support remote configuration";
+  OLA_INFO << "Got ArtIpProgram, ignoring because we don't support remote "
+           << "configuration";
 }
 
 /*

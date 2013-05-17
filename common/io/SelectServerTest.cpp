@@ -193,8 +193,8 @@ void SelectServerTest::testTimeout() {
   // This seems to go as low as 7
   std::stringstream str;
   str << "Timeout counter was " << m_timeout_counter;
-  CPPUNIT_ASSERT_MESSAGE(str.str(),
-                         m_timeout_counter >= 5 && m_timeout_counter <= 9);
+  OLA_ASSERT_TRUE_MSG(m_timeout_counter >= 5 && m_timeout_counter <= 9,
+                      str.str());
 
   // check timeouts are removed correctly
   ola::thread::timeout_id timeout1 = m_ss->RegisterSingleTimeout(
