@@ -1,5 +1,7 @@
 include $(top_srcdir)/common.mk
 
+EXTRA_DIST = SocketHelper.h
+
 noinst_LTLIBRARIES = libolanetwork.la
 libolanetwork_la_SOURCES = AdvancedTCPConnector.cpp \
                            HealthCheckedConnection.cpp \
@@ -9,6 +11,7 @@ libolanetwork_la_SOURCES = AdvancedTCPConnector.cpp \
                            NetworkUtils.cpp \
                            Socket.cpp \
                            SocketAddress.cpp \
+                           SocketHelper.cpp \
                            TCPConnector.cpp \
                            TCPSocket.cpp
 

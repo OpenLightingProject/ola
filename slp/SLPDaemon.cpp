@@ -220,7 +220,7 @@ void SLPDaemon::GetDirectoryAgents() {
  * Called when RPC client connects.
  */
 void SLPDaemon::NewTCPConnection(TCPSocket *socket) {
-  ola::network::GenericSocketAddress address = socket->GetPeer();
+  ola::network::GenericSocketAddress address = socket->GetPeerAddress();
   OLA_INFO << "New connection from " << address;
 
   // Ownership of the socket is transferred.

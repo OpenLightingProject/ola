@@ -39,6 +39,7 @@
 
 #include <string>
 
+#include "common/network/SocketHelper.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/Socket.h"
@@ -125,16 +126,11 @@ bool UDPSocket::Bind(const IPV4SocketAddress &endpoint) {
  * Returns the local address for this socket
  */
 bool UDPSocket::GetSocketAddress(IPV4SocketAddress *address) const {
-  struct sockaddr_in remote_address;
-  socklen_t length = sizeof(remote_address);
-  int r = getsockname(m_fd, (struct sockaddr*) &remote_address, &length);
-  if (r) {
-    OLA_WARN << "Failed to get peer information for fd: " << m_fd << ", " <<
-      strerror(errno);
+  GenericSocketAddress addr = ola::network::GetLocalAddress(m_fd);
+  if (!addr.IsValid()) {
     return false;
   }
-  *address = IPV4SocketAddress(IPV4Address(remote_address.sin_addr),
-                               NetworkToHost(remote_address.sin_port));
+  *address = addr.V4Addr();
   return true;
 }
 

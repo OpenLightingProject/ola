@@ -224,7 +224,7 @@ void DeviceManagerImpl::ListManagedDevices(vector<IPV4Address> *devices) const {
  */
 void DeviceManagerImpl::OnTCPConnect(TCPSocket *socket_ptr) {
   auto_ptr<TCPSocket> socket(socket_ptr);
-  GenericSocketAddress address = socket->GetPeer();
+  GenericSocketAddress address = socket->GetPeerAddress();
   if (address.Family() != AF_INET) {
     OLA_WARN << "Non IPv4 socket " << address;
     return;

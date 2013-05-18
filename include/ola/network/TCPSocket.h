@@ -63,7 +63,8 @@ class TCPSocket: public ola::io::ConnectedDescriptor {
     int WriteDescriptor() const { return m_sd; }
     bool Close();
 
-    GenericSocketAddress GetPeer();
+    GenericSocketAddress GetLocalAddress() const;
+    GenericSocketAddress GetPeerAddress() const;
 
     static TCPSocket* Connect(const SocketAddress &endpoint);
 
@@ -93,6 +94,8 @@ class TCPAcceptingSocket: public ola::io::ReadFileDescriptor {
     void SetFactory(class TCPSocketFactoryInterface *factory) {
       m_factory = factory;
     }
+
+    GenericSocketAddress GetLocalAddress() const;
 
   private:
     int m_sd;

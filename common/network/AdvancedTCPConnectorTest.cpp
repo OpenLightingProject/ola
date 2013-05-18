@@ -68,7 +68,7 @@ class AdvancedTCPConnectorTest: public CppUnit::TestFixture {
     AdvancedTCPConnectorTest()
         : CppUnit::TestFixture(),
           m_localhost(IPV4Address::Loopback()),
-          m_server_address(m_localhost, 9010) {
+          m_server_address(m_localhost, 0) {
     }
 
     void setUp();
@@ -103,6 +103,7 @@ class AdvancedTCPConnectorTest: public CppUnit::TestFixture {
                       AdvancedTCPConnector::ConnectionState state,
                       unsigned int failed_attempts);
     void SetupListeningSocket(TCPAcceptingSocket *socket);
+    uint16_t ReservePort();
     void AcceptedConnection(TCPSocket *socket);
     void OnConnect(TCPSocket *socket);
 };
@@ -239,6 +240,10 @@ void AdvancedTCPConnectorTest::testPause() {
  * This is quite brittle and should be fixed at some stage.
  */
 void AdvancedTCPConnectorTest::testBackoff() {
+  uint16_t port = ReservePort();
+  OLA_ASSERT_NE(0, port);
+  IPV4SocketAddress target(m_localhost, port);
+
   // we advance the clock so remove the timeout closure
   m_ss->RemoveTimeout(m_timeout_id);
   m_timeout_id = ola::thread::INVALID_TIMEOUT;
@@ -250,10 +255,10 @@ void AdvancedTCPConnectorTest::testBackoff() {
 
   // 5s per attempt, up to a max of 30
   LinearBackoffPolicy policy(TimeInterval(5, 0), TimeInterval(30, 0));
-  connector.AddEndpoint(m_server_address, &policy);
+  connector.AddEndpoint(target, &policy);
   OLA_ASSERT_EQ(1u, connector.EndpointCount());
 
-  ConfirmState(__LINE__, connector, m_server_address,
+  ConfirmState(__LINE__, connector, target,
                AdvancedTCPConnector::DISCONNECTED, 0);
 
   // the timeout is 500ms, so we advance by 490 and set a 200ms timeout
@@ -261,7 +266,7 @@ void AdvancedTCPConnectorTest::testBackoff() {
   m_ss->RunOnce(0, 200000);
 
   // should have one failure at this point
-  ConfirmState(__LINE__, connector, m_server_address,
+  ConfirmState(__LINE__, connector, target,
                AdvancedTCPConnector::DISCONNECTED, 1);
 
   // the next attempt should be in 5 seconds
@@ -272,14 +277,14 @@ void AdvancedTCPConnectorTest::testBackoff() {
   m_clock.AdvanceTime(0, 490000);
   m_ss->RunOnce(0, 200000);
 
-  ConfirmState(__LINE__, connector, m_server_address,
+  ConfirmState(__LINE__, connector, target,
                AdvancedTCPConnector::DISCONNECTED, 2);
 
   // run once more to clean up
   m_ss->RunOnce(0, 10000);
 
   // clean up
-  connector.RemoveEndpoint(m_server_address);
+  connector.RemoveEndpoint(target);
   OLA_ASSERT_EQ(0u, connector.EndpointCount());
 }
 
@@ -288,6 +293,10 @@ void AdvancedTCPConnectorTest::testBackoff() {
  * Test that we can destroy the Connector and everything will work.
  */
 void AdvancedTCPConnectorTest::testEarlyDestruction() {
+  uint16_t port = ReservePort();
+  OLA_ASSERT_NE(0, port);
+  IPV4SocketAddress target(m_localhost, port);
+
   // 5 per attempt, up to a max of 30
   LinearBackoffPolicy policy(TimeInterval(5, 0), TimeInterval(30, 0));
 
@@ -297,7 +306,7 @@ void AdvancedTCPConnectorTest::testEarlyDestruction() {
         m_tcp_socket_factory.get(),
         TimeInterval(0, CONNECT_TIMEOUT_IN_MS * 1000));
 
-    connector.AddEndpoint(m_server_address, &policy);
+    connector.AddEndpoint(target, &policy);
     OLA_ASSERT_EQ(1u, connector.EndpointCount());
   }
 
@@ -334,12 +343,34 @@ void AdvancedTCPConnectorTest::ConfirmState(
  */
 void AdvancedTCPConnectorTest::SetupListeningSocket(
     TCPAcceptingSocket *listening_socket) {
-  CPPUNIT_ASSERT_MESSAGE("Check for another instance of olad running",
-                         listening_socket->Listen(m_server_address));
+  IPV4SocketAddress listen_address(m_localhost, 0);
+  CPPUNIT_ASSERT_MESSAGE("Failed to listen",
+                         listening_socket->Listen(listen_address));
   // calling listen a second time should fail
-  OLA_ASSERT_FALSE(listening_socket->Listen(m_server_address));
+  OLA_ASSERT_FALSE(listening_socket->Listen(listen_address));
+
+  GenericSocketAddress addr = listening_socket->GetLocalAddress();
+  OLA_ASSERT_TRUE(addr.IsValid());
+  m_server_address = addr.V4Addr();
   OLA_INFO << "listening on " << m_server_address;
   OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(listening_socket));
+}
+
+
+/**
+ * For certain tests we need to ensure there isn't something listening on a TCP
+ * port. The best way I've come up with doing this is to bind to port 0, then
+ * close the socket. REUSE_ADDR means that the port shouldn't be allocated
+ * again for a while.
+ */
+uint16_t AdvancedTCPConnectorTest::ReservePort() {
+  TCPAcceptingSocket listening_socket(NULL);
+  IPV4SocketAddress listen_address(m_localhost, 0);
+  OLA_ASSERT_TRUE_MSG(listening_socket.Listen(listen_address),
+                      "Failed to listen");
+  GenericSocketAddress addr = listening_socket.GetLocalAddress();
+  OLA_ASSERT_TRUE(addr.IsValid());
+  return addr.V4Addr().Port();
 }
 
 
@@ -348,7 +379,7 @@ void AdvancedTCPConnectorTest::SetupListeningSocket(
  */
 void AdvancedTCPConnectorTest::AcceptedConnection(TCPSocket *new_socket) {
   OLA_ASSERT_NOT_NULL(new_socket);
-  GenericSocketAddress address = new_socket->GetPeer();
+  GenericSocketAddress address = new_socket->GetPeerAddress();
   OLA_ASSERT_TRUE(address.Family() == AF_INET);
   OLA_INFO << "Connection from " << address;
 
@@ -364,7 +395,7 @@ void AdvancedTCPConnectorTest::AcceptedConnection(TCPSocket *new_socket) {
 void AdvancedTCPConnectorTest::OnConnect(TCPSocket *socket) {
   OLA_ASSERT_NOT_NULL(socket);
 
-  GenericSocketAddress address = socket->GetPeer();
+  GenericSocketAddress address = socket->GetPeerAddress();
   OLA_ASSERT_TRUE(address.Family() == AF_INET);
   OLA_ASSERT_EQ(m_localhost, address.V4Addr().Host());
 
