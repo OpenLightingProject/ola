@@ -328,12 +328,11 @@ void AdvancedTCPConnectorTest::ConfirmState(
 
   AdvancedTCPConnector::ConnectionState state;
   unsigned int failed_attempts;
-  CPPUNIT_ASSERT_MESSAGE(
-      str.str(),
-      connector.GetEndpointState(endpoint, &state, &failed_attempts));
-
-  CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(), expected_state, state);
-  CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(), expected_attempts, failed_attempts);
+  OLA_ASSERT_TRUE_MSG(
+      connector.GetEndpointState(endpoint, &state, &failed_attempts),
+      str.str());
+  OLA_ASSERT_EQ_MSG(expected_state, state, str.str());
+  OLA_ASSERT_EQ_MSG(expected_attempts, failed_attempts, str.str());
 }
 
 
@@ -344,8 +343,8 @@ void AdvancedTCPConnectorTest::ConfirmState(
 void AdvancedTCPConnectorTest::SetupListeningSocket(
     TCPAcceptingSocket *listening_socket) {
   IPV4SocketAddress listen_address(m_localhost, 0);
-  CPPUNIT_ASSERT_MESSAGE("Failed to listen",
-                         listening_socket->Listen(listen_address));
+  OLA_ASSERT_TRUE_MSG(listening_socket->Listen(listen_address),
+                      "Failed to listen");
   // calling listen a second time should fail
   OLA_ASSERT_FALSE(listening_socket->Listen(listen_address));
 

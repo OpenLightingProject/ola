@@ -493,12 +493,8 @@ void RDMCommandTest::PackAndVerify(const RDMCommand &command,
   uint8_t *buffer = new uint8_t[buffer_size];
   OLA_ASSERT_TRUE(RDMCommandSerializer::Pack(command, buffer, &buffer_size));
 
-  for (unsigned int i = 0 ; i < expected_length; i++) {
-    std::stringstream str;
-    str << "Offset " << i << ", expected " << static_cast<int>(expected[i]) <<
-      ", got " << static_cast<int>(buffer[i]);
-    CPPUNIT_ASSERT_MESSAGE(str.str(), buffer[i] == expected[i]);
-  }
+  ASSERT_DATA_EQUALS(__LINE__, expected, expected_length,
+                     buffer, buffer_size);
   delete[] buffer;
 }
 

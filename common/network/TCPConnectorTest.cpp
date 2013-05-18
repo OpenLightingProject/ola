@@ -134,10 +134,13 @@ void TCPConnectorTest::testNonBlockingConnect() {
 
   TCPAcceptingSocket listening_socket(&socket_factory);
   IPV4SocketAddress listen_address(m_localhost, 0);
-  CPPUNIT_ASSERT_MESSAGE("Failed to listen",
-                         listening_socket.Listen(listen_address));
+  OLA_ASSERT_TRUE_MSG(listening_socket.Listen(listen_address),
+                      "Failed to listen");
   GenericSocketAddress addr = listening_socket.GetLocalAddress();
   OLA_ASSERT_TRUE(addr.IsValid());
+
+  // calling listen a second time should fail
+  OLA_ASSERT_FALSE(listening_socket.Listen(listen_address));
 
   OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&listening_socket));
 
@@ -266,7 +269,7 @@ void TCPConnectorTest::OnConnect(int fd, int error) {
   if (error) {
     std::stringstream str;
     str << "Failed to connect: " << strerror(error);
-    CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(), 0, error);
+    OLA_ASSERT_EQ_MSG(0, error, str.str());
     m_ss->Terminate();
   } else {
     OLA_ASSERT_TRUE(fd >= 0);
