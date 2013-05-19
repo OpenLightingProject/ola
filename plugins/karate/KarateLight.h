@@ -23,8 +23,13 @@
 #include <stdint.h>
 #include <string>
 
+#include "ola/DmxBuffer.h"
 
 using std::string;
+
+namespace ola {
+namespace plugin {
+namespace karate {
 
 class KarateLight {
   public:
@@ -32,7 +37,7 @@ class KarateLight {
     ~KarateLight();
     int Init();
 
-    int SetColors(uint8_t* buffer, int length);
+    int SetColors(DmxBuffer da);
 
     int Blank();
     int UpdateColors();
@@ -157,5 +162,8 @@ class KarateLight {
     bool m_active;
     string m_errortext;
 };
+}  // namespace karate
+}  // namespace plugin
+}  // namespace ola
 
 #endif  // PLUGINS_KARATE_KARATELIGHT_H_

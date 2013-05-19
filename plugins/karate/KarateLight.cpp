@@ -29,8 +29,12 @@
 #include <string>
 
 #include "ola/Logging.h"
+#include "ola/DmxBuffer.h"
 #include "plugins/karate/KarateLight.h"
 
+namespace ola {
+namespace plugin {
+namespace karate {
 
 /**
  * Default constructor
@@ -96,15 +100,15 @@ int KarateLight::UpdateColors() {
     return KL_OK;
 }
 
-int KarateLight::SetColors(uint8_t* buffer, int length) {
-    if (length <= MAX_CHANNELS) {
-        memcpy(&m_color_buffer[0], buffer, length);
-        return KL_OK;
-    } else {
-        // XXX TODO cpresser
-        OLA_INFO << "channel " << length << " out of range";
-        return KL_ERROR;
+int KarateLight::SetColors(DmxBuffer da) {
+    unsigned int length;
+    
+    length = da.Size();
+    while ((length + m_dmx_offset) > MAX_CHANNELS) {
+        length--;
     }
+    da.GetRange(m_dmx_offset, m_color_buffer, &length);
+    return KL_OK;
 }
 
 /**
@@ -277,7 +281,7 @@ int KarateLight::Init() {
     // set channels to zero
     KarateLight::Blank();
 
-    OLA_INFO << "Successfully initalized device " << m_devname \
+    OLA_INFO << "successfully initalized device " << m_devname \
              << " with firmware revision 0x" << std::hex << m_fw_version;
     return KL_OK;
 }
@@ -373,3 +377,6 @@ int KarateLight::ReadBack() {
         return KL_CHECKSUMFAIL;
     }
 }
+}  // namespace karate
+}  // namespace plugin
+}  // namespace ola

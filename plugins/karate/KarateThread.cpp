@@ -60,7 +60,6 @@ KarateThread::KarateThread(const string &path)
  * Run this thread
  */
 void *KarateThread::Run() {
-  uint8_t buffer[DMX_UNIVERSE_SIZE+1];
   unsigned int dmx_offset = 0;
   unsigned int length = DMX_UNIVERSE_SIZE;
 
@@ -104,16 +103,10 @@ void *KarateThread::Run() {
       length = DMX_UNIVERSE_SIZE;
       {
         MutexLocker locker(&m_mutex);
-        m_buffer.Get(buffer, &length);
+        k.SetColors(m_buffer);
       }
-
-      // shift by dmx_offset...
-      if (length + dmx_offset > DMX_UNIVERSE_SIZE) {
-        length = DMX_UNIVERSE_SIZE - dmx_offset;
-      }
-      k.SetColors(&buffer[dmx_offset], length);
-
       if (k.UpdateColors() != KarateLight::KL_OK) {
+         OLA_WARN << "Failed to write color data";
       }  else {
           usleep(20000);  // 50Hz
       }
