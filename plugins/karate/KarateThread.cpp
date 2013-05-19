@@ -116,7 +116,7 @@ void *KarateThread::Run() {
       }
       k.SetColors(&buffer[dmx_offset], length);
 
-      if (k.UpdateColors() != KL_OK) {
+      if (k.UpdateColors() != KarateLight::KL_OK) {
           OLA_WARN << "Error writing to device: " << k.GetLastError();
       }  else {
           usleep(20000);  // 50Hz

@@ -27,9 +27,6 @@
 #include <errno.h>
 #include <math.h>
 
-#define WRITE_DATA(fd, buf, len) byteswritten = write(fd, buf, len); tcdrain(fd)
-#define READ_DATA(fd, buf, len, bread) bread = read(fd, buf, len)
-
 #include "plugins/karate/KarateLight.h"
 
 
@@ -37,17 +34,15 @@
  * Default constructor
  * \param dev the filename of the device to use
  */
-KarateLight::KarateLight(const string dev) : m_active(false), m_use_memcpy(1), m_fw_version(0), m_hw_version(0), m_nChannels(0) {
-    // copy the device name into my context...
-    if (device != 0) {
-        devname = new char[strlen(device) + 1];
-        snprintf(devname, (strlen(device) + 1), "%s", device);
-        // strcpy(devname, device);
-    }
-    // set the error message
-    errortext ="not yet initalized";
+KarateLight::KarateLight(const string &dev) : 
+    m_devname(dev),
+    m_fw_version(0), 
+    m_hw_version(0), 
+    m_nChannels(0), 
+    m_use_memcmp(1), 
+    m_active(false),
+    m_errortext("not yet initalized") {
 }
-
 
 /**
  * Default desctuctor
@@ -71,20 +66,26 @@ int KarateLight::UpdateColors() {
     int j;
     int chunks;
 
-    if (!active)
+    if (!m_active)
         return KL_NOTACTIVE;
 
-    chunks = (nChannels+CHUNK_SIZE-1)/CHUNK_SIZE;
+    chunks = (m_nChannels + CHUNK_SIZE - 1)/CHUNK_SIZE;
 
     // write colors
     for (j = 0; j < chunks; j++) {
-        if ((memcmp(&color_buffer[j*CHUNK_SIZE], &color_buffer_old[j*CHUNK_SIZE], CHUNK_SIZE) == 0) && (m_use_memcmp == 1)) {
+        if ((memcmp(&m_color_buffer[j*CHUNK_SIZE], \
+                    &m_color_buffer_old[j*CHUNK_SIZE], CHUNK_SIZE) == 0) \
+            && (m_use_memcmp == 1)) {
             continue;
         }
-        WRITE_DATA(m_fd, m_wr_buffer, KarateLight::CreateCommand(j+CMD_SET_DATA_00, &m_color_buffer[j*CHUNK_SIZE], CHUNK_SIZE));
+        m_byteswritten = write(m_fd, m_wr_buffer, \
+                               KarateLight::CreateCommand(j+CMD_SET_DATA_00, \
+                               &m_color_buffer[j*CHUNK_SIZE], \
+                               CHUNK_SIZE));
         if (m_byteswritten != (CMD_DATA_START + CHUNK_SIZE)) {
             // set the error message
-            snprintf(m_errortext, MAX_ERROR_LENGTH, "failed to write data to %s", m_devname);
+            // XXX TODO cpresser
+            // snprintf(m_errortext, MAX_ERROR_LENGTH, "failed to write data to %s", m_devname);
             return KL_WRITEFAIL;
         }
         if (KarateLight::ReadBack() != KL_OK) {
@@ -101,7 +102,8 @@ int KarateLight::SetColors(uint8_t* buffer, int length) {
         memcpy(&m_color_buffer[0], buffer, length);
         return KL_OK;
     } else {
-        snprintf(m_errortext, MAX_ERROR_LENGTH, "channel %d out of range", length);
+        // XXX TODO cpresser
+        // snprintf(m_errortext, MAX_ERROR_LENGTH, "channel %d out of range", length);
         return KL_ERROR;
     }
 }
@@ -132,18 +134,20 @@ int KarateLight::Blank() {
 int KarateLight::ReadEeprom(uint8_t addr) {
     unsigned int j;
 
-    if (!active)
+    if (!m_active)
         return KL_NOTACTIVE;
 
-    WRITE_DATA(fd, wr_buffer, KarateLight::CreateCommand(CMD_READ_EEPROM, &addr, 1));
+    m_byteswritten = write(m_fd, m_wr_buffer, \
+                           KarateLight::CreateCommand(CMD_READ_EEPROM, &addr, 1));
     if (m_byteswritten != CMD_DATA_START+1) {
-        snprintf(m_errortext, MAX_ERROR_LENGTH, "failed to write data to %s", m_devname);
+        // XXX TODO cpresser
+        // snprintf(m_errortext, MAX_ERROR_LENGTH, "failed to write data to %s", m_devname);
         return KL_WRITEFAIL;
     }
 
     j = KarateLight::ReadBack();
     if (j == 1) {
-        return (unsigned int) m_rd_buffer[CMD_DATA_START];
+        return m_rd_buffer[CMD_DATA_START];
     }
     return j;  // if j!=2 the error-string will be set from within ReadBack();
 }
@@ -158,18 +162,19 @@ int KarateLight::Init() {
     int j, i;
     struct termios options;
 
-    if (active)
+    if (m_active)
         return KL_NOTACTIVE;
 
     // fd = open(devname, O_RDWR | O_NOCTTY |  O_NONBLOCK);
-    fd = open(devname, O_RDWR | O_NOCTTY);
+    m_fd = open(m_devname.c_str(), O_RDWR | O_NOCTTY);
     if (m_fd < 0) {
-        snprintf(errortext, MAX_ERROR_LENGTH, "failed to open %s", devname);
+        // XXX TODO cpresser
+        // snprintf(errortext, MAX_ERROR_LENGTH, "failed to open %s", devname);
         return KL_ERROR;
     }
 
     /* Clear the line */
-    tcflush(fd, TCOFLUSH);
+    tcflush(m_fd, TCOFLUSH);
 
     memset(&options, 0, sizeof(options));
 
@@ -185,70 +190,72 @@ int KarateLight::Init() {
 
 
     // Update the options and do it NOW
-    if (tcsetattr(fd, TCSANOW, &options) != 0) {
-        snprintf(errortext, MAX_ERROR_LENGTH, "tcsetattr failed on %s", devname);
+    if (tcsetattr(m_fd, TCSANOW, &options) != 0) {
+        // snprintf(errortext, MAX_ERROR_LENGTH, "tcsetattr failed on %s", devname);
         return KL_ERROR;
     }
 
 
     // clear possible junk data still in the systems fifo
     do {
-        READ_DATA(fd, rd_buffer, 255, bytesread);
+        m_bytesread = read(m_fd, m_rd_buffer, 255);
     }
-    while (bytesread > 0);
+    while (m_bytesread > 0);
 
 
     // read firmware version
-    WRITE_DATA(fd, wr_buffer, KarateLight::CreateCommand(CMD_GET_VERSION, NULL, 0));
-    if (byteswritten != CMD_DATA_START) {
+    m_byteswritten = write(m_fd, m_wr_buffer, \
+                           KarateLight::CreateCommand(CMD_GET_VERSION, NULL, 0));
+    if (m_byteswritten != CMD_DATA_START) {
         return KL_WRITEFAIL;
     }
 
     j = KarateLight::ReadBack();
     if (j == 1) {
-        fw_version = m_rd_buffer[CMD_DATA_START];
+        m_fw_version = m_rd_buffer[CMD_DATA_START];
     } else {
         return j;
     }
 
     // if an older Firware-Version is used. quit. the communication wont work out
     if (m_fw_version < 0x30) {
-        snprintf(m_errortext, MAX_ERROR_LENGTH, "Firmware 0x%0x is to old!\n", fw_version);
+        // snprintf(m_errortext, MAX_ERROR_LENGTH, "Firmware 0x%0x is to old!\n", fw_version);
         return KL_ERROR;
     }
     m_active = true;
 
     // read HW version
-    WRITE_DATA(fd, wr_buffer, KarateLight::CreateCommand(CMD_GET_HARDWARE, NULL, 0));
-    if (byteswritten != CMD_DATA_START) {
+    m_byteswritten = write(m_fd, m_wr_buffer, \
+                           KarateLight::CreateCommand(CMD_GET_HARDWARE, NULL, 0));
+    if (m_byteswritten != CMD_DATA_START) {
         return KL_WRITEFAIL;
     }
 
     j = KarateLight::ReadBack();
     if (j == 1) {
-        hw_version = m_rd_buffer[CMD_DATA_START];
+        m_hw_version = m_rd_buffer[CMD_DATA_START];
     } else {
         return j;
     }
 
     // read number of channels
-    WRITE_DATA(fd, wr_buffer, KarateLight::CreateCommand(CMD_GET_N_CHANNELS, NULL, 0));
-    if (byteswritten != CMD_DATA_START) {
+    m_byteswritten = write(m_fd, m_wr_buffer, \
+                           KarateLight::CreateCommand(CMD_GET_N_CHANNELS, NULL, 0));
+    if (m_byteswritten != CMD_DATA_START) {
         return KL_WRITEFAIL;
     }
 
     j = KarateLight::ReadBack();
     if (j == 2) {
-        nChannels = rd_buffer[CMD_DATA_START];
-        nChannels+=rd_buffer[CMD_DATA_START+1]*256;
+        m_nChannels = m_rd_buffer[CMD_DATA_START] + m_rd_buffer[CMD_DATA_START+1] * 256;;
     } else {
         return j;
     }
 
     // stuff specific for the KarateLight8/16
-    if (hw_version == HW_ID_KARATE) {
+    if (m_hw_version == HW_ID_KARATE) {
         // disable memcmp for the classic KarateLight Hardware
-        use_memcmp = 0;
+        m_use_memcmp = 0;
 
         j = KarateLight::ReadEeprom(0x03);
         i = KarateLight::ReadEeprom(0x02);
@@ -256,17 +263,18 @@ int KarateLight::Init() {
             m_dmx_offset = j*256;
             m_dmx_offset += i;
         } else {
-            snprintf(errortext, MAX_ERROR_LENGTH, "Error Reading EEPROM\n");
+            // snprintf(errortext, MAX_ERROR_LENGTH, "Error Reading EEPROM\n");
             return j;
         }
 
-        if (dmx_offset > 511) {
-            snprintf(errortext, MAX_ERROR_LENGTH, "DMX Offset to large (%d)\n", m_dmx_offset);
+        if (m_dmx_offset > 511) {
+            // snprintf(errortext, MAX_ERROR_LENGTH, "DMX Offset to large (%d)\n", m_dmx_offset);
             m_dmx_offset = 0;
             return KL_ERROR;
         }
 
     } else {
+        // KL-DMX-Device
         m_dmx_offset = 0;
     }
 
@@ -274,7 +282,6 @@ int KarateLight::Init() {
     // set channels to zero
     KarateLight::Blank();
 
-    snprintf(m_errortext, MAX_ERROR_LENGTH, "no error, fool!\n");
     return KL_OK;
 }
 
@@ -315,7 +322,7 @@ int KarateLight::CreateCommand(int cmd, uint8_t * data, int len) {
 
     // maximum command lenght
     if (len > (CMD_MAX_LENGTH - CMD_DATA_START)) {
-        snprintf(m_errortext, MAX_ERROR_LENGTH, "Error: Command is to long (%d > %d)\n", len, (CMD_MAX_LENGTH - CMD_DATA_START));
+        //snprintf(m_errortext, MAX_ERROR_LENGTH, "Error: Command is to long (%d > %d)\n", len, (CMD_MAX_LENGTH - CMD_DATA_START));
         return KL_ERROR;
     }
 
@@ -341,26 +348,26 @@ int KarateLight::CreateCommand(int cmd, uint8_t * data, int len) {
  * \return the number of bytes read, or an error value <0
  */
 int KarateLight::ReadBack() {
-    // read header
-    READ_DATA(fd, rd_buffer, CMD_DATA_START, bytesread);
+    // read header (4 bytes)
+    m_bytesread = read(m_fd, m_rd_buffer, CMD_DATA_START);
 
-    if (bytesread != CMD_DATA_START) {
-        snprintf(m_errortext, MAX_ERROR_LENGTH, "could not read 4 bytes (header) from %s", m_devname);
+    if (m_bytesread != CMD_DATA_START) {
+        //snprintf(m_errortext, MAX_ERROR_LENGTH, "could not read 4 bytes (header) from %s", m_devname);
         return KL_ERROR;
     }
 
     // read sequential
-    if (rd_buffer[CMD_HD_LEN] > 0) {
-        READ_DATA(fd, &rd_buffer[CMD_DATA_START], rd_buffer[CMD_HD_LEN], bytesread);
+    if (m_rd_buffer[CMD_HD_LEN] > 0) {
+        m_bytesread = read(m_fd, &m_rd_buffer[CMD_DATA_START], m_rd_buffer[CMD_HD_LEN]);
     } else {
-        bytesread = 0;
+        m_bytesread = 0;
     }
 
     if (m_bytesread == m_rd_buffer[CMD_HD_LEN]) {
         // TODO(cpresser) verify checksum
         return (m_bytesread);
     } else {
-        snprintf(m_errortext, MAX_ERROR_LENGTH, "number of bytes read(%d) does not match number of bytes expected(%d) \n", m_bytesread, m_rd_buffer[CMD_HD_LEN]);
+        //snprintf(m_errortext, MAX_ERROR_LENGTH, "number of bytes read(%d) does not match number of bytes expected(%d) \n", m_bytesread, m_rd_buffer[CMD_HD_LEN]);
         return KL_CHECKSUMFAIL;
     }
 }
