@@ -104,8 +104,8 @@ int KarateLight::SetColors(DmxBuffer da) {
     unsigned int length;
     
     length = da.Size();
-    while ((length + m_dmx_offset) > MAX_CHANNELS) {
-        length--;
+    if ((length + m_dmx_offset) > MAX_CHANNELS) {
+        length = MAX_CHANNELS - m_dmx_offset;
     }
     da.GetRange(m_dmx_offset, m_color_buffer, &length);
     return KL_OK;
