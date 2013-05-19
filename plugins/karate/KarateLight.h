@@ -152,9 +152,6 @@ class KarateLight {
     uint8_t m_wr_buffer[CMD_MAX_LENGTH];
     uint8_t m_rd_buffer[CMD_MAX_LENGTH];
 
-    uint16_t m_pwm_value;
-    uint16_t m_ldr_value;
-
     uint8_t m_color_buffer[MAX_CHANNELS];
     uint8_t m_color_buffer_old[MAX_CHANNELS];
     uint8_t m_use_memcmp;
