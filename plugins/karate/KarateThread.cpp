@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * KarateThread.h
- * Thread for the open dmx device
+ * Thread for the karate device
  * Copyright (C) 2005-2007  Simon Newton
  */
 
@@ -68,10 +68,10 @@ void *KarateThread::Run() {
   struct timespec ts;
 
   // should close other fd here
-  KarateLight k((char*)m_path.c_str());
+  KarateLight k(m_path);
   k.Init();
   dmx_offset = k.GetDMXOffset();
-  // OLA_INFO << "DMX_OFFSET " << m_path << ": " << dmx_offset;
+  OLA_INFO << "DMX_OFFSET " << m_path << ": " << dmx_offset;
 
   while (true) {
     {

@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * KarateThread.h
- * Thread for the open dmx device
+ * Thread for the karate dmx device
  * Copyright (C) 2005-2009 Simon Newton
  */
 

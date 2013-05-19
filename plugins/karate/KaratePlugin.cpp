@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * KaratePlugin.cpp
- * The Open DMX plugin for ola
+ * The karate plugin for ola
  * Copyright (C) 2005-2008 Simon Newton
  */
 
@@ -107,12 +107,11 @@ string KaratePlugin::Description() const {
 "KL DMX Plugin - Version 0.3\n"
 "----------------------------\n"
 "\n"
-"The plugin creates a single device with one output port using the Enttec\n"
-"DMX USB widget.\n\n"
+"The plugin creates a single device with one output port \n\n"q 
 "--- Config file : ola-karate.conf ---\n"
 "\n"
 "device = /dev/dmx0\n"
-"The path to the open dmx usb device. Multiple entries are supported.\n";
+"The path to the karatelight usb device. Multiple entries are supported.\n";
 }
 
 

@@ -14,7 +14,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * KaratePort.h
- * The Open DMX plugin for ola
+ * The karate plugin for ola
  * Copyright (C) 2005-2009 Simon Newton
  */
 
@@ -48,7 +48,7 @@ class KarateOutputPort: public BasicOutputPort {
       m_thread.Stop();
     }
 
-    string Description() const { return "Open Dmx at " + m_path; }
+    string Description() const { return "KarateLight at " + m_path; }
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
       return m_thread.WriteDmx(buffer);

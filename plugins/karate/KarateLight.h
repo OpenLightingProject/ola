@@ -20,8 +20,9 @@
 #ifndef PLUGINS_KARATE_KARATELIGHT_H_
 #define PLUGINS_KARATE_KARATELIGHT_H_
 
-#include <string>
 #include <stdint.h>
+#include <string>
+
 
 using std::string;
 

@@ -26,6 +26,7 @@
 #include <sys/file.h>
 #include <errno.h>
 #include <math.h>
+#include <string>
 
 #include "ola/Logging.h"
 #include "plugins/karate/KarateLight.h"
@@ -35,12 +36,12 @@
  * Default constructor
  * \param dev the filename of the device to use
  */
-KarateLight::KarateLight(const string &dev) : 
-    m_devname(dev),
-    m_fw_version(0), 
-    m_hw_version(0), 
-    m_nChannels(0), 
-    m_use_memcmp(1), 
+KarateLight::KarateLight(const string &dev)
+    :m_devname(dev),
+    m_fw_version(0),
+    m_hw_version(0),
+    m_nChannels(0),
+    m_use_memcmp(1),
     m_active(false) {
 }
 
@@ -130,7 +131,7 @@ int KarateLight::ReadEeprom(uint8_t addr) {
         return KL_NOTACTIVE;
 
     m_byteswritten = write(m_fd, m_wr_buffer, \
-                           KarateLight::CreateCommand(CMD_READ_EEPROM, &addr, 1));
+                     KarateLight::CreateCommand(CMD_READ_EEPROM, &addr, 1));
     if (m_byteswritten != CMD_DATA_START+1) {
         OLA_WARN << "failed to write data to " << m_devname;
         return KL_WRITEFAIL;
@@ -173,7 +174,10 @@ int KarateLight::Init() {
     // options.c_cflag = (CS8 | CSTOPB | CLOCAL | CREAD);
     options.c_cflag = (CS8 | CLOCAL | CREAD);
 
-    // If MIN = 0 and TIME > 0, TIME serves as a timeout value. The read will be satisfied if a single character is read, or TIME is exceeded (t = TIME *0.1 s). If TIME is exceeded, no character will be returned.
+    // If MIN = 0 and TIME > 0, TIME serves as a timeout value. The read
+    // will be satisfied if a single character is read, or TIME is
+    // exceeded (t = TIME *0.1 s). If TIME is exceeded, no character will
+    // be returned.
     options.c_cc[VTIME] = 1;
     options.c_cc[VMIN]  = 0;  // always require at least one byte returned
 
@@ -186,15 +190,14 @@ int KarateLight::Init() {
 
 
     // clear possible junk data still in the systems fifo
-    do {
+    m_bytesread = 1;
+    while (m_bytesread > 0) {
         m_bytesread = read(m_fd, m_rd_buffer, 255);
     }
-    while (m_bytesread > 0);
-
 
     // read firmware version
     m_byteswritten = write(m_fd, m_wr_buffer, \
-                           KarateLight::CreateCommand(CMD_GET_VERSION, NULL, 0));
+                     KarateLight::CreateCommand(CMD_GET_VERSION, NULL, 0));
     if (m_byteswritten != CMD_DATA_START) {
         OLA_WARN << "failed to write data to " << m_devname;
         return KL_WRITEFAIL;
@@ -203,21 +206,22 @@ int KarateLight::Init() {
     j = KarateLight::ReadBack();
     if (j == 1) {
         m_fw_version = m_rd_buffer[CMD_DATA_START];
+        OLA_INFO << "Firmware-Version is " << std::hex << m_fw_version;
     } else {
         OLA_FATAL << "failed to read the firmware-version ";
         return j;
     }
 
-    // if an older Firware-Version is used. quit. the communication wont work out
+    // if an older Firware-Version is used. quit. the communication wont work
     if (m_fw_version < 0x30) {
-        OLA_FATAL << "Firmware 0x%0x is to old! Found version" << m_devname;
+        OLA_FATAL << "Firmware 0x" << m_fw_version << "is to old!";
         return KL_ERROR;
     }
     m_active = true;
 
     // read HW version
     m_byteswritten = write(m_fd, m_wr_buffer, \
-                           KarateLight::CreateCommand(CMD_GET_HARDWARE, NULL, 0));
+                    KarateLight::CreateCommand(CMD_GET_HARDWARE, NULL, 0));
     if (m_byteswritten != CMD_DATA_START) {
         return KL_WRITEFAIL;
     }
@@ -231,14 +235,15 @@ int KarateLight::Init() {
 
     // read number of channels
     m_byteswritten = write(m_fd, m_wr_buffer, \
-                           KarateLight::CreateCommand(CMD_GET_N_CHANNELS, NULL, 0));
+                     KarateLight::CreateCommand(CMD_GET_N_CHANNELS, NULL, 0));
     if (m_byteswritten != CMD_DATA_START) {
         return KL_WRITEFAIL;
     }
 
     j = KarateLight::ReadBack();
     if (j == 2) {
-        m_nChannels = m_rd_buffer[CMD_DATA_START] + m_rd_buffer[CMD_DATA_START+1] * 256;;
+        m_nChannels = m_rd_buffer[CMD_DATA_START] \
+                    + m_rd_buffer[CMD_DATA_START+1] * 256;
     } else {
         return j;
     }
@@ -259,7 +264,8 @@ int KarateLight::Init() {
         }
 
         if (m_dmx_offset > 511) {
-            OLA_INFO << "DMX Offset to large" << m_dmx_offset << ". Setting it to 0";
+            OLA_INFO << "DMX Offset to large" << std::dec \
+                     << m_dmx_offset << ". Setting it to 0";
             m_dmx_offset = 0;
         }
 
@@ -271,7 +277,8 @@ int KarateLight::Init() {
     // set channels to zero
     KarateLight::Blank();
 
-    OLA_INFO << "Successfully initalized device " << m_devname << " with firmware revision " << m_fw_version;
+    OLA_INFO << "Successfully initalized device " << m_devname \
+             << " with firmware revision 0x" << std::hex << m_fw_version;
     return KL_OK;
 }
 
@@ -313,7 +320,8 @@ int KarateLight::CreateCommand(int cmd, uint8_t * data, int len) {
 
     // maximum command lenght
     if (len > (CMD_MAX_LENGTH - CMD_DATA_START)) {
-        OLA_WARN << "Error: Command is to long (" << len << " > " << (CMD_MAX_LENGTH - CMD_DATA_START);
+        OLA_WARN << "Error: Command is to long (" << std::dec << len << " > "\
+                 << (CMD_MAX_LENGTH - CMD_DATA_START);
         return KL_ERROR;
     }
 
@@ -349,7 +357,8 @@ int KarateLight::ReadBack() {
 
     // read sequential
     if (m_rd_buffer[CMD_HD_LEN] > 0) {
-        m_bytesread = read(m_fd, &m_rd_buffer[CMD_DATA_START], m_rd_buffer[CMD_HD_LEN]);
+        m_bytesread = read(m_fd, &m_rd_buffer[CMD_DATA_START], \
+                           m_rd_buffer[CMD_HD_LEN]);
     } else {
         m_bytesread = 0;
     }
@@ -358,7 +367,9 @@ int KarateLight::ReadBack() {
         // TODO(cpresser) verify checksum
         return (m_bytesread);
     } else {
-        OLA_WARN << "number of bytes read" << m_bytesread << "does not match number of bytes expected" << m_rd_buffer[CMD_HD_LEN];
+        OLA_WARN << "number of bytes read" << m_bytesread \
+                 << "does not match number of bytes expected" \
+                 << m_rd_buffer[CMD_HD_LEN];
         return KL_CHECKSUMFAIL;
     }
 }

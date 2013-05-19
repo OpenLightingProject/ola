@@ -15,7 +15,7 @@
  *
  *
  * karatedevice.h
- * Interface for the Open DMX device
+ * Interface for the karate device
  * Copyright (C) 2005  Simon Newton
  */
 
