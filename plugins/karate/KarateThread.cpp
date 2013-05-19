@@ -35,7 +35,7 @@
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
 #include "plugins/karate/KarateThread.h"
-#include "plugins/karate/Kl.h"
+#include "plugins/karate/KarateLight.h"
 
 namespace ola {
 namespace plugin {
