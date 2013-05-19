@@ -107,7 +107,7 @@ string KaratePlugin::Description() const {
 "KL DMX Plugin - Version 0.3\n"
 "----------------------------\n"
 "\n"
-"The plugin creates a single device with one output port \n\n"q 
+"The plugin creates a single device with one output port \n\n"
 "--- Config file : ola-karate.conf ---\n"
 "\n"
 "device = /dev/dmx0\n"
