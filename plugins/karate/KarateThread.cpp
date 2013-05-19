@@ -96,12 +96,9 @@ void *KarateThread::Run() {
       m_term_cond.TimedWait(&m_term_mutex, &ts);
       m_term_mutex.Unlock();
 
+      OLA_WARN << "Re-Initialising device " << m_path;
       k.Init();
       dmx_offset = k.GetDMXOffset();
-      // OLA_INFO << "DMX_OFFSET " << m_path << ": " << dmx_offset;
-
-      if (!k.IsActive())
-        OLA_WARN << "Open " << m_path << ": " << k.GetLastError();
 
     } else {
       length = DMX_UNIVERSE_SIZE;
@@ -117,7 +114,6 @@ void *KarateThread::Run() {
       k.SetColors(&buffer[dmx_offset], length);
 
       if (k.UpdateColors() != KarateLight::KL_OK) {
-          OLA_WARN << "Error writing to device: " << k.GetLastError();
       }  else {
           usleep(20000);  // 50Hz
       }
