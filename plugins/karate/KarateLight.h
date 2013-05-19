@@ -57,9 +57,6 @@ class KarateLight {
 
     int ReadEeprom(uint8_t addr);
 
-    string GetLastError() {
-        return m_errortext;
-    }
     bool IsActive() {
         return m_active;
     };
@@ -157,7 +154,6 @@ class KarateLight {
     uint8_t m_use_memcmp;
 
     bool m_active;
-    string m_errortext;
 };
 }  // namespace karate
 }  // namespace plugin

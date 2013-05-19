@@ -60,17 +60,13 @@ KarateThread::KarateThread(const string &path)
  * Run this thread
  */
 void *KarateThread::Run() {
-  unsigned int dmx_offset = 0;
-  unsigned int length = DMX_UNIVERSE_SIZE;
-
   struct timeval tv;
   struct timespec ts;
 
   // should close other fd here
   KarateLight k(m_path);
   k.Init();
-  dmx_offset = k.GetDMXOffset();
-  OLA_INFO << "DMX_OFFSET " << m_path << ": " << dmx_offset;
+  OLA_INFO << "DMX_OFFSET " << m_path << ": " << k.GetDMXOffset();
 
   while (true) {
     {
@@ -97,10 +93,8 @@ void *KarateThread::Run() {
 
       OLA_WARN << "Re-Initialising device " << m_path;
       k.Init();
-      dmx_offset = k.GetDMXOffset();
 
     } else {
-      length = DMX_UNIVERSE_SIZE;
       {
         MutexLocker locker(&m_mutex);
         k.SetColors(m_buffer);

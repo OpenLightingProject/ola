@@ -282,7 +282,7 @@ int KarateLight::Init() {
     KarateLight::Blank();
 
     OLA_INFO << "successfully initalized device " << m_devname \
-             << " with firmware revision 0x" << std::hex << m_fw_version;
+             << " with firmware revision 0x" << std::hex << KarateLight::GetFWVersion();
     return KL_OK;
 }
 
