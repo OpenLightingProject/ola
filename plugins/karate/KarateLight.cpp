@@ -102,7 +102,7 @@ int KarateLight::UpdateColors() {
 
 int KarateLight::SetColors(DmxBuffer da) {
     unsigned int length;
-    
+
     length = da.Size();
     if ((length + m_dmx_offset) > MAX_CHANNELS) {
         length = MAX_CHANNELS - m_dmx_offset;
@@ -282,7 +282,7 @@ int KarateLight::Init() {
     KarateLight::Blank();
 
     OLA_INFO << "successfully initalized device " << m_devname \
-             << " with firmware revision 0x" << std::hex << KarateLight::GetFWVersion();
+             << " with firmware revision 0x" << std::hex << m_fw_version;
     return KL_OK;
 }
 

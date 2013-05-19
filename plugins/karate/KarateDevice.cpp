@@ -21,7 +21,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <iostream>
 #include <string>
 
 #include "plugins/karate/KarateDevice.h"
