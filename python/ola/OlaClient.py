@@ -459,7 +459,7 @@ class OlaClient(Ola_pb2.OlaClientService):
       try:
         self._socket.connect(('localhost', 9010))
       except socket.error:
-        raise OLADNotRunningException()
+        raise OLADNotRunningException('Failed to connect to olad')
 
     self._close_callback = close_callback
     self._channel = StreamRpcChannel(self._socket, self, self._SocketClosed)
