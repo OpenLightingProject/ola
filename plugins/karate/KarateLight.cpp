@@ -101,14 +101,13 @@ int KarateLight::UpdateColors() {
 }
 
 int KarateLight::SetColors(DmxBuffer da) {
-    unsigned int length;
+    unsigned int length = da.Size();
 
-    length = da.Size();
     if ((length + m_dmx_offset) > MAX_CHANNELS) {
         length = MAX_CHANNELS - m_dmx_offset;
     }
     da.GetRange(m_dmx_offset, m_color_buffer, &length);
-    return KL_OK;
+    return KarateLight::UpdateColors();
 }
 
 /**
