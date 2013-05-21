@@ -37,9 +37,8 @@ class KarateLight {
     ~KarateLight();
     int Init();
 
-    int SetColors(DmxBuffer da);
-
     int Blank();
+    int SetColors(DmxBuffer da);
     int UpdateColors();
 
     uint16_t GetnChannels() {
@@ -54,8 +53,6 @@ class KarateLight {
     uint16_t GetDMXOffset() {
         return m_dmx_offset;
     };
-
-    int ReadEeprom(uint8_t addr);
 
     bool IsActive() {
         return m_active;
@@ -72,6 +69,31 @@ class KarateLight {
     static const unsigned char KL_CHECKSUMFAIL = -2;
     static const unsigned char KL_WRITEFAIL = -3;
     static const unsigned char KL_NOTACTIVE = -4;
+
+  private:
+    int CalcChecksum(int len);
+    int CreateCommand(int cmd, uint8_t * data, int len);
+    int ReadBack();
+    int ReadEeprom(uint8_t addr);
+
+    const string m_devname;
+    int m_fd;
+    int m_bytesread;
+    int m_byteswritten;
+
+    uint8_t m_fw_version;
+    uint8_t m_hw_version;
+    uint16_t m_nChannels;
+    uint16_t m_dmx_offset;
+
+    uint8_t m_wr_buffer[CMD_MAX_LENGTH];
+    uint8_t m_rd_buffer[CMD_MAX_LENGTH];
+
+    uint8_t m_color_buffer[MAX_CHANNELS];
+    uint8_t m_color_buffer_old[MAX_CHANNELS];
+    uint8_t m_use_memcmp;
+
+    bool m_active;
 
     // address
     static const uint8_t CMD_HD_SYNC = 0x00;
@@ -131,29 +153,6 @@ class KarateLight {
     static const uint8_t HW_ID_KARATE = 0x01;
     static const uint8_t HW_ID_USB2DMX = 0x02;
 
-  private:
-    int CreateCommand(int cmd, uint8_t * data, int len);
-    int CalcChecksum(int len);
-    int ReadBack();
-
-    const string m_devname;
-    int m_fd;
-    int m_bytesread;
-    int m_byteswritten;
-
-    uint8_t m_fw_version;
-    uint8_t m_hw_version;
-    uint16_t m_nChannels;
-    uint16_t m_dmx_offset;
-
-    uint8_t m_wr_buffer[CMD_MAX_LENGTH];
-    uint8_t m_rd_buffer[CMD_MAX_LENGTH];
-
-    uint8_t m_color_buffer[MAX_CHANNELS];
-    uint8_t m_color_buffer_old[MAX_CHANNELS];
-    uint8_t m_use_memcmp;
-
-    bool m_active;
 };
 }  // namespace karate
 }  // namespace plugin
