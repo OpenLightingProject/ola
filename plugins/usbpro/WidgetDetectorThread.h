@@ -26,6 +26,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <utility>
 #include "ola/Callback.h"
 #include "ola/io/Descriptor.h"
 #include "ola/io/SelectServer.h"
@@ -135,8 +136,6 @@ class WidgetDetectorThread: public ola::thread::Thread {
     // the descriptors that are in the discovery process
     ActiveDescriptors m_active_descriptors;
 
-    void FindCandiateDevices(vector<string> *device_paths);
-
     // called when we find new widgets of a particular type
     void UsbProWidgetReady(ConnectedDescriptor *descriptor,
                            const UsbProWidgetInformation *info);
@@ -178,7 +177,7 @@ class WidgetDetectorThread: public ola::thread::Thread {
     static const uint16_t OPEN_LIGHTING_PACKETHEADS_ID = 2;
     static const uint16_t OPEN_LIGHTING_RGB_MIXER_ID = 1;
 };
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBPRO_WIDGETDETECTORTHREAD_H_

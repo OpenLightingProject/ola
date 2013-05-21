@@ -48,14 +48,14 @@ unsigned int PDU::Size() const {
  * @param length length of the buffer
  * @return false on error, true otherwise
  */
-bool PDU::Pack(uint8_t *buffer, unsigned int &length) const {
+bool PDU::Pack(uint8_t *buffer, unsigned int *length) const {
   unsigned int size = Size();
   unsigned int offset = 0;
 
-  if (length < size) {
+  if (*length < size) {
     OLA_WARN << "PDU Pack: buffer too small, required " << size << ", got "
-      << length;
-    length = 0;
+      << *length;
+    *length = 0;
     return false;
   }
 
@@ -93,20 +93,20 @@ bool PDU::Pack(uint8_t *buffer, unsigned int &length) const {
       return false;
   }
 
-  unsigned int bytes_used = length - offset;
-  if (!PackHeader(buffer + offset, bytes_used)) {
-    length = 0;
+  unsigned int bytes_used = *length - offset;
+  if (!PackHeader(buffer + offset, &bytes_used)) {
+    *length = 0;
     return false;
   }
   offset += bytes_used;
 
-  bytes_used = length - offset;
-  if (!PackData(buffer + offset, bytes_used)) {
-    length = 0;
+  bytes_used = *length - offset;
+  if (!PackData(buffer + offset, &bytes_used)) {
+    *length = 0;
     return false;
   }
   offset += bytes_used;
-  length = offset;
+  *length = offset;
   return true;
 }
 
@@ -145,6 +145,41 @@ void PDU::Write(OutputStream *stream) const {
   PackHeader(stream);
   PackData(stream);
 }
-}  // e131
-}  // plugin
-}  // ola
+
+
+/**
+ * Prepend the flags and lenth to an OutputBufferInterface.
+ */
+void PDU::PrependFlagsAndLength(ola::io::OutputBufferInterface *output,
+                                uint8_t flags) {
+  PrependFlagsAndLength(output, output->Size(), flags);
+}
+
+
+/**
+ * Prepend the flags and lenth to an OutputBufferInterface.
+ */
+void PDU::PrependFlagsAndLength(ola::io::OutputBufferInterface *output,
+                                unsigned int size,
+                                uint8_t flags) {
+  if (size + 2 <= TWOB_LENGTH_LIMIT) {
+    size += 2;
+    uint16_t flags_and_length = (
+        static_cast<uint16_t>(size) |
+        static_cast<uint16_t>(flags << 8u));
+    flags_and_length = HostToNetwork(flags_and_length);
+    output->Write(reinterpret_cast<uint8_t*>(&flags_and_length),
+                  sizeof(flags_and_length));
+  } else {
+    size += 3;
+    uint8_t flags_and_length[3];
+    flags_and_length[0] = (flags |
+                           static_cast<uint8_t>((size & 0x0f0000) >> 16));
+    flags_and_length[1] = static_cast<uint8_t>((size & 0xff00) >> 8);
+    flags_and_length[2] = static_cast<uint8_t>(size & 0xff);
+    output->Write(flags_and_length, sizeof(flags_and_length));
+  }
+}
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

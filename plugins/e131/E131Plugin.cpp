@@ -18,23 +18,22 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
-#include <stdlib.h>
-#include <stdio.h>
 #include <set>
 #include <string>
 
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
+#include "ola/acn/CID.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
 #include "plugins/e131/E131Device.h"
 #include "plugins/e131/E131Plugin.h"
-#include "plugins/e131/e131/CID.h"
 
 namespace ola {
 namespace plugin {
 namespace e131 {
+
+using ola::acn::CID;
 
 const char E131Plugin::CID_KEY[] = "cid";
 const char E131Plugin::DEFAULT_DSCP_VALUE[] = "0";
@@ -122,12 +121,12 @@ string E131Plugin::Description() const {
 "This plugin creates a single device with a configurable number of input \n"
 "and output ports.\n"
 "\n"
-"Each port can be assigned to a diffent E1.31 Universe.\n"
+"Each port can be assigned to a different E1.31 Universe.\n"
 "\n"
 "--- Config file : ola-e131.conf ---\n"
 "\n"
 "cid = 00010203-0405-0607-0809-0A0B0C0D0E0F\n"
-"The CID to use for this device\n"
+"The CID to use for this device.\n"
 "\n"
 "dscp = [int]\n"
 "The DSCP value to tag the packets with, range is 0 to 63.\n"
@@ -220,6 +219,6 @@ bool E131Plugin::SetDefaultPreferences() {
 
   return true;
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

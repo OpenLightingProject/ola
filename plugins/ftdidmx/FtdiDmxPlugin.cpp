@@ -96,15 +96,19 @@ bool FtdiDmxPlugin::StopHook() {
  */
 string FtdiDmxPlugin::Description() const {
   return
-    "FTDI USB Chipset DMX Plugin\n"
-    "---------------------------\n"
-    "This plugin is compatible with Enttec OpenDmx and other\n"
-    "FTDI chipset based USB to DMX converters where the host\n"
-    "needs to create the DMX stream itself and not the interface\n"
-    "(the interface has no microprocessor to do so)\n\n"
-    "--- Config file : ola-ftdidmx.conf ---\n\n"
-    "frequency = 30\n"
-    "The DMX stream frequency (30hz to 44hz max are the usual)\n";
+"FTDI USB Chipset DMX Plugin\n"
+"----------------------------\n"
+"\n"
+"This plugin is compatible with Enttec OpenDmx and other\n"
+"FTDI chipset based USB to DMX converters where the host\n"
+"needs to create the DMX stream itself and not the interface\n"
+"(the interface has no microprocessor to do so).\n"
+"\n"
+"--- Config file : ola-ftdidmx.conf ---\n"
+"\n"
+"frequency = 30\n"
+"The DMX stream frequency (30 to 44 Hz max are the usual).\n"
+"\n";
 }
 
 
@@ -137,6 +141,6 @@ int unsigned FtdiDmxPlugin::GetFrequency() {
     StringToInt(DEFAULT_FREQUENCY, &frequency);
   return frequency;
 }
-}  // ftdidmx
-}  // plugin
-}  // ola
+}  // namespace ftdidmx
+}  // namespace plugin
+}  // namespace ola

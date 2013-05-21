@@ -20,10 +20,9 @@
 #ifndef PLUGINS_E131_E131_RDMINFLATOR_H_
 #define PLUGINS_E131_E131_RDMINFLATOR_H_
 
-#include <map>
 #include <string>
 #include "ola/Callback.h"
-#include "plugins/e131/e131/ACNVectors.h"
+#include "ola/acn/ACNVectors.h"
 #include "plugins/e131/e131/BaseInflator.h"
 #include "plugins/e131/e131/TransportHeader.h"
 #include "plugins/e131/e131/E133Header.h"
@@ -36,41 +35,39 @@ class RDMInflator: public BaseInflator {
   friend class RDMInflatorTest;
 
   public:
+    // These are pointers so the callers don't have to pull in all the headers.
     typedef ola::Callback3<void,
-                           const TransportHeader&,  // src ip & port
-                           const E133Header&,  // the E1.33 header
+                           const TransportHeader*,  // src ip & port
+                           const E133Header*,  // the E1.33 header
                            const std::string&  // rdm data
                           > RDMMessageHandler;
 
     explicit RDMInflator();
-    ~RDMInflator();
+    ~RDMInflator() {}
 
-    uint32_t Id() const { return VECTOR_FRAMING_RDMNET; }
+    uint32_t Id() const { return ola::acn::VECTOR_FRAMING_RDMNET; }
 
-    bool SetRDMHandler(uint16_t endpoint, RDMMessageHandler *handler);
-    bool RemoveRDMHandler(uint16_t endpoint);
+    void SetRDMHandler(RDMMessageHandler *handler);
 
     static const unsigned int VECTOR_RDMNET_DATA = 0xcc;
 
   protected:
-    bool DecodeHeader(HeaderSet &headers,
+    bool DecodeHeader(HeaderSet *headers,
                       const uint8_t *data,
                       unsigned int len,
                       unsigned int &bytes_used);
 
-    void ResetHeaderField() {}  // noop
+    void ResetHeaderField() {}  // namespace noop
 
     virtual bool HandlePDUData(uint32_t vector,
-                               HeaderSet &headers,
+                               const HeaderSet &headers,
                                const uint8_t *data,
                                unsigned int pdu_len);
 
   private:
-    typedef std::map<uint16_t, RDMMessageHandler*> endpoint_handler_map;
-
-    endpoint_handler_map m_rdm_handlers;
+    std::auto_ptr<RDMMessageHandler> m_rdm_handler;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_RDMINFLATOR_H_

@@ -29,9 +29,8 @@ namespace usbpro {
  * UltraDMXProWidget Constructor
  */
 UltraDMXProWidget::UltraDMXProWidget(
-  ola::thread::SchedulerInterface *scheduler,
   ola::io::ConnectedDescriptor *descriptor)
-    : GenericUsbProWidget(scheduler, descriptor) {
+    : GenericUsbProWidget(descriptor) {
 }
 
 
@@ -59,6 +58,6 @@ bool UltraDMXProWidget::SendDMXWithLabel(uint8_t label,
                      reinterpret_cast<uint8_t*>(&widget_dmx),
                      length + 1);
 }
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola

@@ -40,8 +40,8 @@ class UsbDmxPlugin: public ola::Plugin {
   public:
     explicit UsbDmxPlugin(PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor),
-      m_anyma_devices_missing_serial_numbers(false),
-      m_usb_context(NULL) {}
+      m_anyma_devices_missing_serial_numbers(false) {
+    }
 
     string Name() const { return PLUGIN_NAME; }
     string Description() const;
@@ -61,9 +61,8 @@ class UsbDmxPlugin: public ola::Plugin {
 
     bool m_anyma_devices_missing_serial_numbers;
     vector<class UsbDevice*> m_devices;  // list of our devices
-    struct libusb_context *m_usb_context;
     vector<ola::io::DeviceDescriptor*> m_descriptors;
-    set<pair<uint8_t, uint8_t> > m_registered_devices;
+    set<std::pair<uint8_t, uint8_t> > m_registered_devices;
 
     bool StartHook();
     bool LoadFirmware();
@@ -90,7 +89,7 @@ class UsbDmxPlugin: public ola::Plugin {
     static int LIBUSB_DEFAULT_DEBUG_LEVEL;
     static int LIBUSB_MAX_DEBUG_LEVEL;
 };
-}  // usbdmx
-}  // plugin
-}  // ola
+}  // namespace usbdmx
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBDMX_USBDMXPLUGIN_H_

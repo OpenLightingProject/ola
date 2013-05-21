@@ -149,6 +149,6 @@ class UID {
       return a < b ? -1 : 1;
     }
 };
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola
 #endif  // INCLUDE_OLA_RDM_UID_H_

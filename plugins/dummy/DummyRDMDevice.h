@@ -96,7 +96,7 @@ class DummyRDMDevice: public ola::rdm::RDMControllerInterface {
     static const personality_info PERSONALITIES[];
     static const unsigned int PERSONALITY_COUNT;
 };
-}  // dummy
-}  // plugin
-}  // ola
+}  // namespace dummy
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_DUMMY_DUMMYRDMDEVICE_H_

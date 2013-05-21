@@ -135,8 +135,9 @@ int ParseOptions(int argc, char *argv[], options *opts) {
   static struct option long_options[] = {
       {"dev",       required_argument,  0, 'd'},
       {"help",      no_argument,        0, 'h'},
-      {"port_id",   required_argument,  0, 'p'},
-      {"preview_mode", required_argument,  0, 'm'},
+      {"input",     no_argument,        0, 'i'},
+      {"port-id",   required_argument,  0, 'p'},
+      {"preview-mode", required_argument,  0, 'm'},
       {0, 0, 0, 0}
     };
 
@@ -180,13 +181,13 @@ int ParseOptions(int argc, char *argv[], options *opts) {
  */
 void DisplayHelpAndExit(const options &opts) {
   cout << "Usage: " << opts.command <<
-    " -d <dev_id> -p <port_id> [--input] --preview_mode <on|off>\n\n"
+    " -d <dev-id> -p <port-id> [--input] --preview-mode <on|off>\n\n"
     "Configure E1.31 Devices managed by OLA.\n\n"
     "  -d, --dev       Id of the device to control.\n"
     "  -h, --help      Display this help message and exit.\n"
-    "  -i              Input port\n"
-    "  -p, --port_id   Id of the port to control\n"
-    "  --preview_mode  Set the preview mode bit\n" <<
+    "  -i, --input     Input port\n"
+    "  -p, --port-id   Id of the port to control\n"
+    "  --preview-mode  Set the preview mode bit\n" <<
     endl;
   exit(0);
 }

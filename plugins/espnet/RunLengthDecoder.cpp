@@ -55,6 +55,6 @@ void RunLengthDecoder::Decode(DmxBuffer *dst,
     value++;
   }
 }
-}  // espnet
-}  // plugin
-}  // ola
+}  // namespace espnet
+}  // namespace plugin
+}  // namespace ola

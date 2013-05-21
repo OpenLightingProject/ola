@@ -12,8 +12,14 @@ General
 Code Reviews
 ------------
 
-To have patches reviewed, please open an issue with 'Type-Review' at
+To have patches reviewed please push your changes to a Google Code Repo, or
+github. Then open an issue with 'Type-Review' at
 http://code.google.com/p/linux-lighting/issues/list
+
+If you're using Google Code please enable comments on the repo. Under
+Administer -> Source check:
+  Enable code reviews
+  Allow non-members to review code
 
 Licensing
 ---------
@@ -23,6 +29,10 @@ Think carefully about the license for each file. Code to be used by clients
 commercial projects.
 
 Plugins and code used solely in olad should be under the GPL.
+
+scripts/enforce_licence.py will look for a LICENCE file in each directory, and
+ensure that all source files in the directory ( & subdirectories) start with
+the LICENCE. You can pass --fix to automatically add the licence.
 
 Unittests
 ---------
@@ -97,6 +107,20 @@ Valgrind
 --------
 
 All code must be tested with valgrind to ensure it doesn't leak memory.
+
+Coverage (gcov)
+---------------
+
+To enable the coverage tools, you need lcov and gcov installed. To enable run
+./configure --enable-gcov and then build as normal.
+
+To generate the HTML pages run:
+
+  mkdir /tmp/lcov
+  tmpdir=`mktemp -d /tmp/lcov.XXXXXX`
+  coverage="${tmpdir}/coverage.info"
+  lcov --capture --directory ./ --output-file $coverage
+  genhtml $coverage --output-directory /tmp/lcov
 
 
 Java

@@ -39,13 +39,11 @@ using std::string;
  */
 AnymaOutputPort::AnymaOutputPort(AnymaDevice *parent,
                                  unsigned int id,
-                                 libusb_device *usb_device,
                                  libusb_device_handle *usb_handle,
                                  const string &serial)
     : BasicOutputPort(parent, id),
       m_term(false),
       m_serial(serial),
-      m_usb_device(usb_device),
       m_usb_handle(usb_handle) {
 }
 
@@ -169,6 +167,6 @@ bool AnymaOutputPort::GetDescriptorString(libusb_device_handle *usb_handle,
   data->assign(reinterpret_cast<char*>(buffer));
   return true;
 }
-}  // usbdmx
-}  // plugin
-}  // ola
+}  // namespace usbdmx
+}  // namespace plugin
+}  // namespace ola

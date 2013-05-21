@@ -51,7 +51,7 @@ class AnymaDevice: public UsbDevice {
   private:
     AnymaOutputPort *m_output_port;
 };
-}  // usbdmx
-}  // plugin
-}  // ola
+}  // namespace usbdmx
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBDMX_ANYMADEVICE_H_

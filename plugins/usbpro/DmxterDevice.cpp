@@ -53,6 +53,6 @@ DmxterDevice::DmxterDevice(ola::AbstractPlugin *owner,
   ola::BasicOutputPort *port = new DmxterOutputPort(this, widget);
   AddPort(port);
 }
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola

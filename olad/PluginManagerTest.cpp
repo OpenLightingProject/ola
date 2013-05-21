@@ -56,16 +56,16 @@ class PluginManagerTest: public CppUnit::TestFixture {
 
   private:
     void VerifyPluginCounts(PluginManager *manager, size_t loaded_plugins,
-                            size_t enabled_plugins, unsigned int line) {
+                            size_t active_plugins, unsigned int line) {
       std::stringstream str;
       str << "Line " << line;
       vector<AbstractPlugin*> plugins;
       manager->Plugins(&plugins);
-      CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(), loaded_plugins, plugins.size());
+      OLA_ASSERT_EQ_MSG(loaded_plugins, plugins.size(), str.str());
 
       plugins.clear();
-      manager->EnabledPlugins(&plugins);
-      CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(), enabled_plugins, plugins.size());
+      manager->ActivePlugins(&plugins);
+      OLA_ASSERT_EQ_MSG(active_plugins, plugins.size(), str.str());
     }
 };
 

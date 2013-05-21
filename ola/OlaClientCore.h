@@ -30,6 +30,7 @@
 #include "common/rpc/StreamRpcChannel.h"
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
+#include "ola/OlaCallbackClient.h"
 #include "ola/OlaDevice.h"
 #include "ola/common.h"
 #include "ola/network/Socket.h"
@@ -65,6 +66,9 @@ class OlaClientCore: public ola::proto::OlaClientService {
     bool FetchPluginDescription(
         ola_plugin_id plugin_id,
         SingleUseCallback2<void, const string&, const string&> *callback);
+
+    bool FetchPluginState(ola_plugin_id plugin_id,
+                          OlaCallbackClient::PluginStateCallback *callback);
 
     // device methods
     bool FetchDeviceInfo(
@@ -229,6 +233,14 @@ class OlaClientCore: public ola::proto::OlaClientService {
     } plugin_description_arg;
 
     void HandlePluginDescription(plugin_description_arg *args);
+
+    typedef struct {
+      SimpleRpcController *controller;
+      ola::proto::PluginStateReply *reply;
+      OlaCallbackClient::PluginStateCallback *callback;
+    } plugin_state_arg;
+
+    void HandlePluginState(plugin_state_arg *args);
 
     typedef struct {
       SimpleRpcController *controller;
@@ -398,5 +410,5 @@ void OlaClientCore::FreeArgs(arg_type *args) {
   delete args->reply;
   delete args;
 }
-}  // ola
+}  // namespace ola
 #endif  // OLA_OLACLIENTCORE_H_

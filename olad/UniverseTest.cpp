@@ -826,8 +826,8 @@ void UniverseTest::ConfirmRDM(int line,
                               const vector<string>&) {
   std::stringstream str;
   str << "Line " << line;
-  CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(),
-                               expected_response_code,
-                               response_code);
-  CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(), expected_response, response);
+  OLA_ASSERT_EQ_MSG(expected_response_code,
+                    response_code,
+                    str.str());
+  OLA_ASSERT_EQ_MSG(expected_response, response, str.str());
 }

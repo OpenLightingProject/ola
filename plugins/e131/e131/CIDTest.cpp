@@ -18,7 +18,6 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <cppunit/extensions/HelperMacros.h>
 #include <string.h>
 #include <algorithm>
@@ -26,11 +25,14 @@
 #include <iostream>
 #include <string>
 
-#include "plugins/e131/e131/CID.h"
+#include "ola/acn/CID.h"
+#include "ola/io/IOQueue.h"
+#include "ola/io/OutputBuffer.h"
 #include "ola/testing/TestUtils.h"
 
+using ola::acn::CID;
+using ola::testing::ASSERT_DATA_EQUALS;
 using std::string;
-using ola::plugin::e131::CID;
 
 class CIDTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(CIDTest);
@@ -39,6 +41,7 @@ class CIDTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testGenerate);
   CPPUNIT_TEST(testToString);
   CPPUNIT_TEST(testFromString);
+  CPPUNIT_TEST(testToOutputBuffer);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -47,6 +50,7 @@ class CIDTest: public CppUnit::TestFixture {
     void testGenerate();
     void testToString();
     void testFromString();
+    void testToOutputBuffer();
   private:
     static const uint8_t TEST_DATA[];
 };
@@ -119,4 +123,23 @@ void CIDTest::testFromString() {
   const string bad_uuid = "foo";
   cid = CID::FromString(bad_uuid);
   OLA_ASSERT(cid.IsNil());
+}
+
+
+/**
+ * Check writing to an OutputBuffer works.
+ */
+void CIDTest::testToOutputBuffer() {
+  ola::io::IOQueue output;
+  const string uuid = "00010203-0405-0607-0809-0A0B0C0D0E0F";
+  CID cid = CID::FromString(uuid);
+
+  cid.Write(&output);
+  OLA_ASSERT_EQ(16u, output.Size());
+  unsigned int size = output.Size();
+  uint8_t cid_data[size];
+  OLA_ASSERT_EQ(size, output.Read(cid_data, size));
+
+  ASSERT_DATA_EQUALS(__LINE__, TEST_DATA, sizeof(TEST_DATA),
+                     cid_data, size);
 }

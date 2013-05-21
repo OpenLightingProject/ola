@@ -44,43 +44,6 @@ namespace plugin {
 namespace e131 {
 
 
-/*
- * Transport ACN messages over a stream.
- * This uses an OutputBuffer to build the messages. The reason for this is so
- * that we can know before attempting to send how much data is buffered. This
- * allows us to limit the growth of the buffers and cleanly drop messages,
- * thereby not breaking the framing.
- */
-class OutgoingStreamTransport: public OutgoingTransport {
-  public:
-    /**
-     * Setup a new transport
-     * @param descriptor the BufferedOutputDescriptor to write to
-     * @param max_buffer_size the max size that the userspace buffer is allowed
-     * to consume. Once we hit this limit we start dropping requests. Note that
-     * this doesn't include kernel buffers, so you need to account for that.
-     */
-    OutgoingStreamTransport(
-        ola::io::OutputBufferInterface *buffer,
-        unsigned int max_buffer_size = 2 << 10)  // default to 2k
-        : m_buffer(buffer),
-          m_stream(buffer),
-          m_max_buffer_size(max_buffer_size) {
-    }
-    ~OutgoingStreamTransport() {}
-
-    bool Send(const PDUBlock<PDU> &pdu_block);
-
-  private:
-    ola::io::OutputBufferInterface *m_buffer;
-    ola::io::OutputStream m_stream;
-    unsigned int m_max_buffer_size;
-
-    OutgoingStreamTransport(const OutgoingStreamTransport&);
-    OutgoingStreamTransport& operator=(const OutgoingStreamTransport&);
-};
-
-
 /**
  * Read ACN messages from a stream. Generally you want to use the
  * IncomingTCPTransport directly. This class is used for testing.
@@ -89,8 +52,7 @@ class IncommingStreamTransport {
   public:
     IncommingStreamTransport(class BaseInflator *inflator,
                              ola::io::ConnectedDescriptor *descriptor,
-                             const ola::network::IPV4Address &ip_address,
-                             uint16_t port);
+                             const ola::network::IPV4SocketAddress &source);
     ~IncommingStreamTransport();
 
     bool Receive();
@@ -177,7 +139,7 @@ class IncomingTCPTransport {
   private:
     std::auto_ptr<IncommingStreamTransport> m_transport;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_TCPTRANSPORT_H_

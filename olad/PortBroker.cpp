@@ -94,4 +94,4 @@ void PortBroker::RequestComplete(port_key key,
     callback->Run(code, response, packets);
   }
 }
-}  // ola
+}  // namespace ola

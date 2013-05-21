@@ -215,4 +215,4 @@ void ExportMap::DeleteVariables(Type *var_map) const {
     delete iter->second;
   var_map->clear();
 }
-}  // ola
+}  // namespace ola

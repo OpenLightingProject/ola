@@ -39,6 +39,7 @@
 
 #include <string>
 
+#include "common/network/SocketHelper.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/Socket.h"
@@ -125,16 +126,11 @@ bool UDPSocket::Bind(const IPV4SocketAddress &endpoint) {
  * Returns the local address for this socket
  */
 bool UDPSocket::GetSocketAddress(IPV4SocketAddress *address) const {
-  struct sockaddr_in remote_address;
-  socklen_t length = sizeof(remote_address);
-  int r = getsockname(m_fd, (struct sockaddr*) &remote_address, &length);
-  if (r) {
-    OLA_WARN << "Failed to get peer information for fd: " << m_fd << ", " <<
-      strerror(errno);
+  GenericSocketAddress addr = ola::network::GetLocalAddress(m_fd);
+  if (!addr.IsValid()) {
     return false;
   }
-  *address = IPV4SocketAddress(IPV4Address(remote_address.sin_addr),
-                               NetworkToHost(remote_address.sin_port));
+  *address = addr.V4Addr();
   return true;
 }
 
@@ -196,18 +192,25 @@ ssize_t UDPSocket::SendTo(const uint8_t *buffer,
 
 
 /*
- * Send data from an IOQueue. This will try to send as much data as possible.
+ * Send data from an IOVecInterface. This will try to send as much data as
+ * possible.
  * If the data exceeds the MTU the UDP packet will probably get fragmented at
  * the IP layer (depends on OS really). Try to avoid this.
- * @param ioqueue the IOQueue to send.
+ * @param data the IOVecInterface class to send.
  * @param ip_address the IP to send to
  * @param port the port to send to in HOST byte order.
- * @return the number of bytes sent
+ * @return the number of bytes sent.
  */
-ssize_t UDPSocket::SendTo(ola::io::IOQueue *ioqueue,
+ssize_t UDPSocket::SendTo(ola::io::IOVecInterface *data,
                           const IPV4Address &ip,
                           unsigned short port) const {
   if (!ValidWriteDescriptor())
+    return 0;
+
+  int io_len;
+  const struct iovec *iov = data->AsIOVec(&io_len);
+
+  if (iov == NULL)
     return 0;
 
   struct sockaddr_in destination;
@@ -215,9 +218,6 @@ ssize_t UDPSocket::SendTo(ola::io::IOQueue *ioqueue,
   destination.sin_family = AF_INET;
   destination.sin_port = HostToNetwork(port);
   destination.sin_addr = ip.Address();
-
-  int io_len;
-  const struct iovec *iov = ioqueue->AsIOVec(&io_len);
 
   struct msghdr message;
   message.msg_name = &destination;
@@ -227,14 +227,15 @@ ssize_t UDPSocket::SendTo(ola::io::IOQueue *ioqueue,
   message.msg_control = NULL;
   message.msg_controllen = 0;
   message.msg_flags = 0;
+
   ssize_t bytes_sent = sendmsg(WriteDescriptor(), &message, 0);
+  data->FreeIOVec(iov);
 
   if (bytes_sent < 0) {
     OLA_INFO << "Failed to send on " << WriteDescriptor() << ": " <<
       strerror(errno);
   } else {
-    ioqueue->FreeIOVec(iov);
-    ioqueue->Pop(bytes_sent);
+    data->Pop(bytes_sent);
   }
   return bytes_sent;
 }
@@ -435,5 +436,5 @@ bool UDPSocket::SetTos(uint8_t tos) {
   }
   return true;
 }
-}  // network
-}  // ola
+}  // namespace network
+}  // namespace ola

@@ -33,6 +33,7 @@ namespace ola {
 namespace testing {
 
 using ola::io::IOQueue;
+using ola::io::IOVecInterface;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 
@@ -55,12 +56,7 @@ using ola::network::IPV4SocketAddress;
  */
 class MockUDPSocket: public ola::network::UDPSocketInterface {
   public:
-    MockUDPSocket(): ola::network::UDPSocketInterface(),
-                     m_init_called(false),
-                     m_bound_to_port(false),
-                     m_broadcast_set(false),
-                     m_port(0),
-                     m_discard_mode(false) {}
+    MockUDPSocket();
     ~MockUDPSocket() { Close(); }
 
     // These are the socket methods
@@ -68,8 +64,8 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
     bool Bind(const ola::network::IPV4SocketAddress &endpoint);
     bool GetSocketAddress(IPV4SocketAddress *address) const;
     bool Close();
-    int ReadDescriptor() const;
-    int WriteDescriptor() const;
+    int ReadDescriptor() const { return m_dummy_sd; }
+    int WriteDescriptor() const { return m_dummy_sd; }
     ssize_t SendTo(const uint8_t *buffer,
                    unsigned int size,
                    const ola::network::IPV4Address &ip,
@@ -79,11 +75,12 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
                    const IPV4SocketAddress &dest) const {
       return SendTo(buffer, size, dest.Host(), dest.Port());
     }
-    ssize_t SendTo(IOQueue *ioqueue,
+    ssize_t SendTo(IOVecInterface *data,
                    const ola::network::IPV4Address &ip,
                    unsigned short port) const;
-    ssize_t SendTo(IOQueue *ioqueue, const IPV4SocketAddress &dest) const {
-      return SendTo(ioqueue, dest.Host(), dest.Port());
+    ssize_t SendTo(IOVecInterface *data,
+                   const IPV4SocketAddress &dest) const {
+      return SendTo(data, dest.Host(), dest.Port());
     }
 
     bool RecvFrom(uint8_t *buffer, ssize_t *data_read) const;
@@ -144,6 +141,9 @@ class MockUDPSocket: public ola::network::UDPSocketInterface {
     typedef expected_call received_data;
 
     bool m_init_called;
+    // We need a sd so that calls to select continue to work. This isn't used
+    // for anything else.
+    int m_dummy_sd;
     bool m_bound_to_port;
     bool m_broadcast_set;
     uint16_t m_port;
@@ -172,6 +172,6 @@ class SocketVerifier {
   private:
     MockUDPSocket *m_socket;
 };
-}  // testing
-}  // ola
+}  // namespace testing
+}  // namespace ola
 #endif  // INCLUDE_OLA_TESTING_MOCKUDPSOCKET_H_

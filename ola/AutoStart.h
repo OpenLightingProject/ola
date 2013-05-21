@@ -33,6 +33,6 @@ using ola::network::TCPSocket;
  * Open a connection to the server.
  */
 TCPSocket *ConnectToServer(unsigned short port);
-}  // client
-}  // ola
+}  // namespace client
+}  // namespace ola
 #endif  // OLA_AUTOSTART_H_

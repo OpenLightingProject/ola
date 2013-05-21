@@ -596,8 +596,8 @@ class RDMHTTPModule {
     static const char SUB_DEVICE_FIELD[];
 
     static const char BOOT_SOFTWARE_SECTION[];
-    static const char COMMS_STATUS_SECTION[];
     static const char CLOCK_SECTION[];
+    static const char COMMS_STATUS_SECTION[];
     static const char DEVICE_HOURS_SECTION[];
     static const char DEVICE_INFO_SECTION[];
     static const char DEVICE_LABEL_SECTION[];
@@ -609,7 +609,7 @@ class RDMHTTPModule {
     static const char LAMP_HOURS_SECTION[];
     static const char LAMP_MODE_SECTION[];
     static const char LAMP_STATE_SECTION[];
-    static const char LAMP_STRIKES_SECITON[];
+    static const char LAMP_STRIKES_SECTION[];
     static const char LANGUAGE_SECTION[];
     static const char MANUFACTURER_LABEL_SECTION[];
     static const char PAN_INVERT_SECTION[];
@@ -621,6 +621,32 @@ class RDMHTTPModule {
     static const char PROXIED_DEVICES_SECTION[];
     static const char SENSOR_SECTION[];
     static const char TILT_INVERT_SECTION[];
+
+    static const char BOOT_SOFTWARE_SECTION_NAME[];
+    static const char CLOCK_SECTION_NAME[];
+    static const char COMMS_STATUS_SECTION_NAME[];
+    static const char DEVICE_HOURS_SECTION_NAME[];
+    static const char DEVICE_INFO_SECTION_NAME[];
+    static const char DEVICE_LABEL_SECTION_NAME[];
+    static const char DISPLAY_INVERT_SECTION_NAME[];
+    static const char DISPLAY_LEVEL_SECTION_NAME[];
+    static const char DMX_ADDRESS_SECTION_NAME[];
+    static const char FACTORY_DEFAULTS_SECTION_NAME[];
+    static const char IDENTIFY_SECTION_NAME[];
+    static const char LAMP_HOURS_SECTION_NAME[];
+    static const char LAMP_MODE_SECTION_NAME[];
+    static const char LAMP_STATE_SECTION_NAME[];
+    static const char LAMP_STRIKES_SECTION_NAME[];
+    static const char LANGUAGE_SECTION_NAME[];
+    static const char MANUFACTURER_LABEL_SECTION_NAME[];
+    static const char PAN_INVERT_SECTION_NAME[];
+    static const char PAN_TILT_SWAP_SECTION_NAME[];
+    static const char PERSONALITY_SECTION_NAME[];
+    static const char POWER_CYCLES_SECTION_NAME[];
+    static const char POWER_STATE_SECTION_NAME[];
+    static const char PRODUCT_DETAIL_SECTION_NAME[];
+    static const char PROXIED_DEVICES_SECTION_NAME[];
+    static const char TILT_INVERT_SECTION_NAME[];
 };
-}  // ola
+}  // namespace ola
 #endif  // OLAD_RDMHTTPMODULE_H_

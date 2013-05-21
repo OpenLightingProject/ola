@@ -274,7 +274,7 @@ ola.common.Server.prototype.UpdateServerInfo = function() {
   var on_complete = function(e) {
     var obj = e.target.getResponseJson();
     this.dispatchEvent(new ola.common.ServerInfoChangeEvent(obj));
-  }
+  };
   this._initiateRequest(ola.common.Server.SERVER_INFO_URL, on_complete);
 };
 
@@ -318,7 +318,7 @@ ola.common.Server.prototype.FetchUniversePluginList = function() {
     }
     this.dispatchEvent(new ola.PluginListChangeEvent(obj['plugins']));
     this.dispatchEvent(new ola.UniverseListChangeEvent(obj['universes']));
-  }
+  };
   this._initiateRequest(ola.common.Server.PLUGIN_UNIVERSE_LIST_URL,
                         on_complete);
 };
@@ -332,7 +332,7 @@ ola.common.Server.prototype.FetchPluginInfo = function(plugin_id) {
   var on_complete = function(e) {
     var obj = e.target.getResponseJson();
     this.dispatchEvent(new ola.PluginChangeEvent(obj));
-  }
+  };
   var url = ola.common.Server.PLUGIN_INFO_URL + '?id=' + plugin_id;
   this._initiateRequest(url, on_complete);
 };
@@ -346,7 +346,7 @@ ola.common.Server.prototype.FetchUniverseInfo = function(universe_id) {
   var on_complete = function(e) {
     var obj = e.target.getResponseJson();
     this.dispatchEvent(new ola.UniverseChangeEvent(obj));
-  }
+  };
   var url = ola.common.Server.UNIVERSE_INFO_URL + '?id=' + universe_id;
   this._initiateRequest(url, on_complete);
 };

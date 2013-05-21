@@ -114,8 +114,10 @@ string OSCPlugin::Description() const {
 "--------------------------------\n"
 "\n"
 "This plugin allows OLA to send and receive OSC\n"
-"( http://www.opensoundcontrol.org/ ) messages. OLA uses the blob type for \n"
-"transporting DMX data\n"
+"( http://www.opensoundcontrol.org/ ) messages.\n"
+"\n"
+"OLA uses the blob type for transporting DMX data.\n"
+"\n"
 "--- Config file : ola-osc.conf ---\n"
 "\n"
 "input_ports = <int>\n"
@@ -133,7 +135,8 @@ string OSCPlugin::Description() const {
 "it's replaced by the universe number for port N.\n"
 "\n"
 "udp_listen_port = <int>\n"
-"The UDP Port to listen on for OSC messages.\n";
+"The UDP Port to listen on for OSC messages.\n"
+"\n";
 }
 
 
@@ -204,6 +207,6 @@ bool OSCPlugin::ExtractOSCTarget(const string &str,
   target->osc_address = str.substr(pos);
   return true;
 }
-}  // osc
-}  // plugin
-}  // ola
+}  // namespace osc
+}  // namespace plugin
+}  // namespace ola

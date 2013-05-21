@@ -37,24 +37,12 @@ namespace e131 {
 class BaseInflatorTest;
 
 
-/*
- * An abstract PDU inflator
+/**
+ * The inflator interface.
  */
-class BaseInflator {
-  friend class BaseInflatorTest;
-
+class InflatorInterface {
   public:
-    explicit BaseInflator(PDU::vector_size v_size = PDU::FOUR_BYTES);
-    virtual ~BaseInflator() {}
-
-    /*
-     * Add another inflator as a handler
-     */
-    bool AddInflator(class BaseInflator *inflator);
-    /*
-     * Return the inflator used for a particular protocol
-     */
-    class BaseInflator *GetInflator(uint32_t proto) const;
+    virtual ~InflatorInterface() {}
 
     /*
      * Return the id for this inflator
@@ -64,7 +52,36 @@ class BaseInflator {
     /*
      * Parse a block of PDU data
      */
-    virtual unsigned int InflatePDUBlock(HeaderSet &headers,
+    virtual unsigned int InflatePDUBlock(HeaderSet *headers,
+                                         const uint8_t *data,
+                                         unsigned int len) = 0;
+};
+
+
+/*
+ * An abstract PDU inflator
+ */
+class BaseInflator : public InflatorInterface {
+  friend class BaseInflatorTest;
+
+  public:
+    explicit BaseInflator(PDU::vector_size v_size = PDU::FOUR_BYTES);
+    virtual ~BaseInflator() {}
+
+    /*
+     * Add another inflator as a handler. Ownership is not transferred.
+     */
+    bool AddInflator(InflatorInterface *inflator);
+
+    /*
+     * Return the inflator used for a particular vector.
+     */
+    class InflatorInterface *GetInflator(uint32_t vector) const;
+
+    /*
+     * Parse a block of PDU data
+     */
+    virtual unsigned int InflatePDUBlock(HeaderSet *headers,
                                          const uint8_t *data,
                                          unsigned int len);
 
@@ -79,7 +96,7 @@ class BaseInflator {
     bool m_vector_set;
     PDU::vector_size m_vector_size;  // size of the vector field
     // map protos to inflators
-    std::map<uint32_t, class BaseInflator*> m_proto_map;
+    std::map<uint32_t, InflatorInterface*> m_proto_map;
 
     // Reset repeated pdu fields
     virtual void ResetPDUFields();
@@ -99,27 +116,27 @@ class BaseInflator {
                       unsigned int &bytes_used);
 
     // Decode a header block and adds any PduHeaders to the HeaderSet object
-    virtual bool DecodeHeader(HeaderSet &headers,
+    virtual bool DecodeHeader(HeaderSet *headers,
                               const uint8_t *data,
                               unsigned int len,
                               unsigned int &bytes_used) = 0;
 
     // parse the body of a pdu
-    bool InflatePDU(HeaderSet &headers,
+    bool InflatePDU(HeaderSet *headers,
                     uint8_t flags,
                     const uint8_t *data,
                     unsigned int pdu_len);
 
     // called after the header is parsed
-    virtual bool PostHeader(uint32_t vector, HeaderSet &headers);
+    virtual bool PostHeader(uint32_t vector, const HeaderSet &headers);
 
-    // called in the absence of a parse to handle the pdu data
+    // called in the absence of an inflator to handle the pdu data
     virtual bool HandlePDUData(uint32_t vector,
-                               HeaderSet &headers,
+                               const HeaderSet &headers,
                                const uint8_t *data,
                                unsigned int pdu_len);
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_BASEINFLATOR_H_

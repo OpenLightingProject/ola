@@ -26,10 +26,10 @@
 #include <string>
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
+#include "ola/acn/ACNPort.h"
+#include "ola/acn/CID.h"
 #include "ola/network/Interface.h"
 #include "ola/network/Socket.h"
-#include "plugins/e131/e131/ACNPort.h"
-#include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/E131Sender.h"
 #include "plugins/e131/e131/E131Inflator.h"
 #include "plugins/e131/e131/RootInflator.h"
@@ -41,6 +41,8 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
+using ola::acn::CID;
+
 class E131Node {
   public:
     E131Node(const std::string &ip_address,
@@ -48,7 +50,7 @@ class E131Node {
              bool use_rev2 = false,
              bool ignore_preview = true,
              uint8_t dscp_value = 0,  // default off
-             uint16_t port = ACN_PORT);
+             uint16_t port = ola::acn::ACN_PORT);
     ~E131Node();
 
     bool Start();
@@ -113,7 +115,7 @@ class E131Node {
 
     static const uint16_t DEFAULT_PRIORITY = 100;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_E131NODE_H_

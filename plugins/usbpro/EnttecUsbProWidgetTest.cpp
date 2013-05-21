@@ -28,15 +28,17 @@
 #include "ola/Logging.h"
 #include "ola/rdm/RDMCommandSerializer.h"
 #include "ola/rdm/UID.h"
-#include "plugins/usbpro/EnttecUsbProWidget.h"
-#include "plugins/usbpro/CommonWidgetTest.h"
 #include "ola/testing/TestUtils.h"
+#include "plugins/usbpro/CommonWidgetTest.h"
+#include "plugins/usbpro/EnttecUsbProWidget.h"
+#include "plugins/usbpro/EnttecUsbProWidgetImpl.h"
 
 
+using ola::plugin::usbpro::EnttecPort;
 using ola::plugin::usbpro::EnttecUsbProWidget;
-using ola::rdm::RDMDiscoveryRequest;
 using ola::rdm::GetResponseFromData;
 using ola::rdm::RDMCommandSerializer;
+using ola::rdm::RDMDiscoveryRequest;
 using ola::rdm::RDMRequest;
 using ola::rdm::RDMResponse;
 using ola::rdm::UID;
@@ -102,7 +104,8 @@ class EnttecUsbProWidgetTest: public CommonWidgetTest {
 
     void Terminate() { m_ss.Terminate(); }
     void ValidateParams(bool status, const usb_pro_parameters &params);
-    void ValidateDMX(const ola::DmxBuffer *expected_buffer);
+    void ValidateDMX(EnttecPort *port,
+                     const ola::DmxBuffer *expected_buffer);
 
     bool m_got_dmx;
 
@@ -138,10 +141,9 @@ void EnttecUsbProWidgetTest::setUp() {
   CommonWidgetTest::setUp();
   m_widget.reset(
       new EnttecUsbProWidget(
-          &m_ss,
           &m_descriptor,
-          EnttecUsbProWidget::ENTTEC_ESTA_ID,
-          1));
+          EnttecUsbProWidget::EnttecUsbProWidgetOptions(
+            EnttecUsbProWidget::ENTTEC_ESTA_ID, 1)));
 
   m_transaction_number = 0;
   m_got_dmx = false;
@@ -324,8 +326,9 @@ void EnttecUsbProWidgetTest::ValidateParams(
  * Check the DMX data is what we expected
  */
 void EnttecUsbProWidgetTest::ValidateDMX(
+    EnttecPort *port,
     const ola::DmxBuffer *expected_buffer) {
-  const ola::DmxBuffer &buffer = m_widget->FetchDMX();
+  const ola::DmxBuffer &buffer = port->FetchDMX();
   OLA_ASSERT(*expected_buffer == buffer);
   m_got_dmx = true;
   m_ss.Terminate();
@@ -336,6 +339,10 @@ void EnttecUsbProWidgetTest::ValidateDMX(
  * Check that discovery works for a device that just implements the serial #
  */
 void EnttecUsbProWidgetTest::testParams() {
+  EnttecPort *port = m_widget->GetPort(0);
+  OLA_ASSERT_NOT_NULL(port);
+  OLA_ASSERT_NULL(m_widget->GetPort(1));
+
   uint8_t get_param_request_data[] = {0, 0};
   uint8_t get_param_response_data[] = {0, 1, 10, 14, 40};
 
@@ -347,7 +354,7 @@ void EnttecUsbProWidgetTest::testParams() {
       get_param_response_data,
       sizeof(get_param_response_data));
 
-  m_widget->GetParameters(
+  port->GetParameters(
       ola::NewSingleCallback(this, &EnttecUsbProWidgetTest::ValidateParams));
 
   m_ss.Run();
@@ -361,7 +368,7 @@ void EnttecUsbProWidgetTest::testParams() {
       sizeof(set_param_request_data),
       ola::NewSingleCallback(this, &EnttecUsbProWidgetTest::Terminate));
 
-  OLA_ASSERT(m_widget->SetParameters(9, 63, 20));
+  OLA_ASSERT(port->SetParameters(9, 63, 20));
 
   m_ss.Run();
   m_endpoint->Verify();
@@ -372,11 +379,15 @@ void EnttecUsbProWidgetTest::testParams() {
  * Check that recieving DMX works.
  */
 void EnttecUsbProWidgetTest::testReceiveDMX() {
+  EnttecPort *port = m_widget->GetPort(0);
+  OLA_ASSERT_NOT_NULL(port);
+
   ola::DmxBuffer buffer;
   buffer.SetFromString("1,10,14,40");
-  m_widget->SetDMXCallback(ola::NewCallback(
+  port->SetDMXCallback(ola::NewCallback(
       this,
       &EnttecUsbProWidgetTest::ValidateDMX,
+      port,
       const_cast<const ola::DmxBuffer*>(&buffer)));
   uint8_t dmx_data[] = {
     0, 0,  // no error
@@ -446,6 +457,9 @@ void EnttecUsbProWidgetTest::testReceiveDMX() {
  * Check that changing mode works.
  */
 void EnttecUsbProWidgetTest::testChangeMode() {
+  EnttecPort *port = m_widget->GetPort(0);
+  OLA_ASSERT_NOT_NULL(port);
+
   // first we test 'send always' mode
   uint8_t change_mode_data[] = {0};
   m_endpoint->AddExpectedUsbProMessage(
@@ -454,7 +468,7 @@ void EnttecUsbProWidgetTest::testChangeMode() {
       sizeof(change_mode_data),
       ola::NewSingleCallback(this, &EnttecUsbProWidgetTest::Terminate));
 
-  m_widget->ChangeToReceiveMode(false);
+  port->ChangeToReceiveMode(false);
 
   m_ss.Run();
   m_endpoint->Verify();
@@ -467,7 +481,7 @@ void EnttecUsbProWidgetTest::testChangeMode() {
       sizeof(change_mode_data),
       ola::NewSingleCallback(this, &EnttecUsbProWidgetTest::Terminate));
 
-  m_widget->ChangeToReceiveMode(true);
+  port->ChangeToReceiveMode(true);
   m_ss.Run();
   m_endpoint->Verify();
 }
@@ -477,6 +491,9 @@ void EnttecUsbProWidgetTest::testChangeMode() {
  * Check that we send RDM messages correctly.
  */
 void EnttecUsbProWidgetTest::testSendRDMRequest() {
+  EnttecPort *port = m_widget->GetPort(0);
+  OLA_ASSERT_NOT_NULL(port);
+
   // request
   const RDMRequest *rdm_request = NewRequest(DESTINATION);
   unsigned int expected_request_frame_size;
@@ -499,7 +516,7 @@ void EnttecUsbProWidgetTest::testSendRDMRequest() {
       response_frame,
       response_size);
 
-  m_widget->SendRDMRequest(
+  port->SendRDMRequest(
       rdm_request,
       ola::NewSingleCallback(this, &EnttecUsbProWidgetTest::ValidateResponse));
   m_ss.Run();
@@ -526,7 +543,7 @@ void EnttecUsbProWidgetTest::testSendRDMRequest() {
 
   vector<string> packets;
   m_received_code = ola::rdm::RDM_COMPLETED_OK;
-  m_widget->SendRDMRequest(
+  port->SendRDMRequest(
       rdm_request,
       ola::NewSingleCallback(this,
                              &EnttecUsbProWidgetTest::ValidateStatus,
@@ -545,6 +562,9 @@ void EnttecUsbProWidgetTest::testSendRDMRequest() {
  * Check that RDM Mute requests work
  */
 void EnttecUsbProWidgetTest::testSendRDMMute() {
+  EnttecPort *port = m_widget->GetPort(0);
+  OLA_ASSERT_NOT_NULL(port);
+
   // request
   const RDMRequest *rdm_request = new ola::rdm::RDMDiscoveryRequest(
       SOURCE,
@@ -577,7 +597,7 @@ void EnttecUsbProWidgetTest::testSendRDMMute() {
       response_frame,
       response_size);
 
-  m_widget->SendRDMRequest(
+  port->SendRDMRequest(
       rdm_request,
       ola::NewSingleCallback(this, &EnttecUsbProWidgetTest::ValidateResponse));
   m_ss.Run();
@@ -592,6 +612,9 @@ void EnttecUsbProWidgetTest::testSendRDMMute() {
  * Check that we send RDM discovery messages correctly.
  */
 void EnttecUsbProWidgetTest::testSendRDMDUB() {
+  EnttecPort *port = m_widget->GetPort(0);
+  OLA_ASSERT_NOT_NULL(port);
+
   static const uint8_t REQUEST_DATA[] = {
     0x7a, 0x70, 0, 0, 0, 0,
     0x7a, 0x70, 0xff, 0xff, 0xff, 0xff
@@ -626,7 +649,7 @@ void EnttecUsbProWidgetTest::testSendRDMDUB() {
       sizeof(EMPTY_RESPONSE));
 
   vector<string> packets;
-  m_widget->SendRDMRequest(
+  port->SendRDMRequest(
       rdm_request,
       ola::NewSingleCallback(this,
                              &EnttecUsbProWidgetTest::ValidateStatus,
@@ -667,7 +690,7 @@ void EnttecUsbProWidgetTest::testSendRDMDUB() {
   packets.push_back(
       string(reinterpret_cast<const char*>(&FAKE_RESPONSE[1]),
              sizeof(FAKE_RESPONSE) - 1));
-  m_widget->SendRDMRequest(
+  port->SendRDMRequest(
       rdm_request,
       ola::NewSingleCallback(this,
                              &EnttecUsbProWidgetTest::ValidateStatus,
@@ -684,6 +707,9 @@ void EnttecUsbProWidgetTest::testSendRDMDUB() {
  * Test mute device
  */
 void EnttecUsbProWidgetTest::testMuteDevice() {
+  EnttecPort *port = m_widget->GetPort(0);
+  OLA_ASSERT_NOT_NULL(port);
+
   // first test when a device doesn't respond
   auto_ptr<RDMRequest> mute_request(
       ola::rdm::NewMuteRequest(SOURCE,
@@ -703,7 +729,7 @@ void EnttecUsbProWidgetTest::testMuteDevice() {
       NULL,
       0);
 
-  m_widget.get()->m_impl->MuteDevice(
+  port->m_impl->MuteDevice(
       DESTINATION,
       ola::NewSingleCallback(this,
                              &EnttecUsbProWidgetTest::ValidateMuteStatus,
@@ -737,7 +763,7 @@ void EnttecUsbProWidgetTest::testMuteDevice() {
       mute_response_frame,
       sizeof(mute_response_frame));
 
-  m_widget.get()->m_impl->MuteDevice(
+  port->m_impl->MuteDevice(
       DESTINATION,
       ola::NewSingleCallback(this,
                              &EnttecUsbProWidgetTest::ValidateMuteStatus,
@@ -752,6 +778,9 @@ void EnttecUsbProWidgetTest::testMuteDevice() {
  * Test the unmute all request works
  */
 void EnttecUsbProWidgetTest::testUnMuteAll() {
+  EnttecPort *port = m_widget->GetPort(0);
+  OLA_ASSERT_NOT_NULL(port);
+
   auto_ptr<RDMRequest> unmute_request(
       ola::rdm::NewUnMuteRequest(SOURCE,
                                  UID::AllDevices(),
@@ -770,9 +799,8 @@ void EnttecUsbProWidgetTest::testUnMuteAll() {
       NULL,
       0);
 
-  m_widget.get()->m_impl->UnMuteAll(
-      ola::NewSingleCallback(this,
-                             &EnttecUsbProWidgetTest::Terminate));
+  port->m_impl->UnMuteAll(
+      ola::NewSingleCallback(this, &EnttecUsbProWidgetTest::Terminate));
   m_ss.Run();
   m_endpoint->Verify();
   delete[] expected_request_frame;
@@ -783,6 +811,9 @@ void EnttecUsbProWidgetTest::testUnMuteAll() {
  * Test the DUB request works
  */
 void EnttecUsbProWidgetTest::testBranch() {
+  EnttecPort *port = m_widget->GetPort(0);
+  OLA_ASSERT_NOT_NULL(port);
+
   // first test when no devices respond
   auto_ptr<RDMRequest> discovery_request(
       ola::rdm::NewDiscoveryUniqueBranchRequest(
@@ -804,7 +835,7 @@ void EnttecUsbProWidgetTest::testBranch() {
       NULL,
       0);
 
-  m_widget.get()->m_impl->Branch(
+  port->m_impl->Branch(
       UID(0, 0),
       UID::AllDevices(),
       ola::NewSingleCallback(this,
@@ -840,7 +871,7 @@ void EnttecUsbProWidgetTest::testBranch() {
         static_cast<const uint8_t*>(response_frame2),
         static_cast<unsigned int>(sizeof(response_frame2))));
 
-  m_widget.get()->m_impl->Branch(
+  port->m_impl->Branch(
       UID(0, 0),
       UID::AllDevices(),
       ola::NewSingleCallback(

@@ -61,5 +61,5 @@ class ClientBroker {
     typedef std::set<const Client*> client_set;
     client_set m_clients;
 };
-}  // ola
+}  // namespace ola
 #endif  // OLAD_CLIENTBROKER_H_

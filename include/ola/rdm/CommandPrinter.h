@@ -37,6 +37,24 @@ class CommandPrinter {
                    class PidStoreHelper *pid_helper);
     ~CommandPrinter() {}
 
+    // New style overloaded methods.
+    void Print(const class RDMCommand *command,
+               bool summarize = false,
+               bool unpack_param_data = true);
+    void Print(const class RDMRequest *request,
+               bool summarize = false,
+               bool unpack_param_data = true);
+    void Print(const class RDMResponse *response,
+               bool summarize = false,
+               bool unpack_param_data = true);
+    void Print(const class RDMDiscoveryRequest *request,
+               bool summarize = false,
+               bool unpack_param_data = true);
+    void Print(const class RDMDiscoveryResponse *response,
+               bool summarize = false,
+               bool unpack_param_data = true);
+
+    // Deprecated
     void DisplayRequest(const class RDMRequest *request,
                         bool summarize = false,
                         bool unpack_param_data = true);
@@ -76,6 +94,6 @@ class CommandPrinter {
         unsigned int param_length);
     bool GetNackReason(const class RDMCommand *command, uint16_t *reason);
 };
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola
 #endif  // INCLUDE_OLA_RDM_COMMANDPRINTER_H_

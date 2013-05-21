@@ -162,4 +162,4 @@ void StreamingClient::SocketClosed() {
   OLA_WARN << "The RPC socket has been closed, this is more than likely due"
     << " to a framing error, perhaps you're sending too fast?";
 }
-}  // ola
+}  // namespace ola

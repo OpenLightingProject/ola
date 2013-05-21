@@ -30,12 +30,14 @@
 #include <algorithm>
 #include <queue>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "ola/Logging.h"
 #include "ola/io/Descriptor.h"
 #include "ola/io/SelectServer.h"
 #include "ola/network/Socket.h"
+#include "ola/stl/STLUtils.h"
 
 
 namespace ola {
@@ -60,9 +62,6 @@ using ola::ExportMap;
 using ola::thread::INVALID_TIMEOUT;
 using ola::thread::timeout_id;
 using std::max;
-
-
-
 
 
 /*
@@ -172,13 +171,11 @@ bool SelectServer::AddReadDescriptor(ReadFileDescriptor *descriptor) {
     return false;
   }
 
-  if (m_read_descriptors.find(descriptor) != m_read_descriptors.end())
-    return false;
-
-  m_read_descriptors.insert(descriptor);
-  if (m_export_map)
-    (*m_export_map->GetIntegerVar(K_READ_DESCRIPTOR_VAR))++;
-  return true;
+  if (STLInsertIfNotPresent(&m_read_descriptors, descriptor)) {
+    SafeIncrement(K_READ_DESCRIPTOR_VAR);
+    return true;
+  }
+  return false;
 }
 
 
@@ -198,21 +195,16 @@ bool SelectServer::AddReadDescriptor(ConnectedDescriptor *descriptor,
     return false;
   }
 
-  ConnectedDescriptorSet::const_iterator iter =
-      m_connected_read_descriptors.begin();
-  for (; iter != m_connected_read_descriptors.end(); ++iter) {
-    if (iter->descriptor == descriptor)
-      return false;
+  // We make use of the fact that connected_descriptor_t_lt operates on the
+  // descriptor value alone.
+  connected_descriptor_t registered_descriptor = {descriptor, delete_on_close};
+
+  if (STLInsertIfNotPresent(&m_connected_read_descriptors,
+                             registered_descriptor)) {
+    SafeIncrement(K_CONNECTED_DESCRIPTORS_VAR);
+    return true;
   }
-
-  connected_descriptor_t registered_descriptor;
-  registered_descriptor.descriptor = descriptor;
-  registered_descriptor.delete_on_close = delete_on_close;
-
-  m_connected_read_descriptors.insert(registered_descriptor);
-  if (m_export_map)
-    (*m_export_map->GetIntegerVar(K_CONNECTED_DESCRIPTORS_VAR))++;
-  return true;
+  return false;
 }
 
 
@@ -223,13 +215,10 @@ bool SelectServer::AddReadDescriptor(ConnectedDescriptor *descriptor,
  */
 bool SelectServer::RemoveReadDescriptor(ReadFileDescriptor *descriptor) {
   if (!descriptor->ValidReadDescriptor())
-    OLA_WARN << "Removing a invalid file descriptor";
+    OLA_WARN << "Removing an invalid file descriptor";
 
-  ReadDescriptorSet::iterator iter = m_read_descriptors.find(descriptor);
-  if (iter != m_read_descriptors.end()) {
-    m_read_descriptors.erase(iter);
-    if (m_export_map)
-      (*m_export_map->GetIntegerVar(K_READ_DESCRIPTOR_VAR))--;
+  if (STLRemove(&m_read_descriptors, descriptor)) {
+    SafeDecrement(K_READ_DESCRIPTOR_VAR);
     return true;
   }
   return false;
@@ -243,17 +232,13 @@ bool SelectServer::RemoveReadDescriptor(ReadFileDescriptor *descriptor) {
  */
 bool SelectServer::RemoveReadDescriptor(ConnectedDescriptor *descriptor) {
   if (!descriptor->ValidReadDescriptor())
-    OLA_WARN << "Removing a invalid file descriptor";
+    OLA_WARN << "Removing an invalid file descriptor";
 
-  ConnectedDescriptorSet::iterator iter =
-      m_connected_read_descriptors.begin();
-  for (; iter != m_connected_read_descriptors.end(); ++iter) {
-    if (iter->descriptor == descriptor) {
-      m_connected_read_descriptors.erase(iter);
-      if (m_export_map)
-        (*m_export_map->GetIntegerVar(K_CONNECTED_DESCRIPTORS_VAR))--;
-      return true;
-    }
+  // Comparison is based on descriptor only, so the second value is redundant.
+  connected_descriptor_t registered_descriptor = {descriptor, false};
+  if (STLRemove(&m_connected_read_descriptors, registered_descriptor)) {
+    SafeDecrement(K_CONNECTED_DESCRIPTORS_VAR);
+    return true;
   }
   return false;
 }
@@ -271,13 +256,11 @@ bool SelectServer::AddWriteDescriptor(WriteFileDescriptor *descriptor) {
     return false;
   }
 
-  if (m_write_descriptors.find(descriptor) != m_write_descriptors.end())
-    return false;
-
-  m_write_descriptors.insert(descriptor);
-  if (m_export_map)
-    (*m_export_map->GetIntegerVar(K_WRITE_DESCRIPTOR_VAR))++;
-  return true;
+  if (STLInsertIfNotPresent(&m_write_descriptors, descriptor)) {
+    SafeIncrement(K_WRITE_DESCRIPTOR_VAR);
+    return true;
+  }
+  return false;
 }
 
 
@@ -291,11 +274,8 @@ bool SelectServer::RemoveWriteDescriptor(WriteFileDescriptor *descriptor) {
   if (!descriptor->ValidWriteDescriptor())
     OLA_WARN << "Removing a closed descriptor";
 
-  WriteDescriptorSet::iterator iter = m_write_descriptors.find(descriptor);
-  if (iter != m_write_descriptors.end()) {
-    m_write_descriptors.erase(iter);
-    if (m_export_map)
-      (*m_export_map->GetIntegerVar(K_WRITE_DESCRIPTOR_VAR))--;
+  if (STLRemove(&m_write_descriptors, descriptor)) {
+    SafeDecrement(K_WRITE_DESCRIPTOR_VAR);
     return true;
   }
   return false;
@@ -334,8 +314,7 @@ timeout_id SelectServer::RegisterRepeatingTimeout(
   if (!closure)
     return INVALID_TIMEOUT;
 
-  if (m_export_map)
-    (*m_export_map->GetIntegerVar(K_TIMER_VAR))++;
+  SafeIncrement(K_TIMER_VAR);
 
   Event *event = new RepeatingEvent(interval, m_clock, closure);
   m_events.push(event);
@@ -371,8 +350,7 @@ timeout_id SelectServer::RegisterSingleTimeout(
   if (!closure)
     return INVALID_TIMEOUT;
 
-  if (m_export_map)
-    (*m_export_map->GetIntegerVar(K_TIMER_VAR))++;
+  SafeIncrement(K_TIMER_VAR);
 
   Event *event = new SingleEvent(interval, m_clock, closure);
   m_events.push(event);
@@ -523,8 +501,7 @@ bool SelectServer::AddDescriptorsToSet(fd_set *r_set,
     } else {
       // The descriptor was probably closed without removing it from the select
       // server
-      if (m_export_map)
-        (*m_export_map->GetIntegerVar(K_READ_DESCRIPTOR_VAR))--;
+      SafeDecrement(K_READ_DESCRIPTOR_VAR);
       m_read_descriptors.erase(this_iter);
       OLA_WARN << "Removed a inactive descriptor from the select server";
     }
@@ -555,8 +532,7 @@ bool SelectServer::AddDescriptorsToSet(fd_set *r_set,
     } else {
       // The descriptor was probably closed without removing it from the select
       // server
-      if (m_export_map)
-        (*m_export_map->GetIntegerVar(K_WRITE_DESCRIPTOR_VAR))--;
+      SafeDecrement(K_WRITE_DESCRIPTOR_VAR);
       m_write_descriptors.erase(this_iter);
       OLA_WARN << "Removed a disconnected descriptor from the select server";
     }
@@ -637,8 +613,7 @@ void SelectServer::CheckDescriptors(fd_set *r_set, fd_set *w_set) {
       on_close->Run();
     if (connected_descriptor.delete_on_close)
       delete connected_descriptor.descriptor;
-    if (m_export_map)
-      (*m_export_map->GetIntegerVar(K_CONNECTED_DESCRIPTORS_VAR))--;
+    SafeDecrement(K_CONNECTED_DESCRIPTORS_VAR);
     closed_queue.pop();
   }
 
@@ -665,8 +640,7 @@ TimeStamp SelectServer::CheckTimeouts(const TimeStamp &current_time) {
     // if this was removed, skip it
     if (m_removed_timeouts.erase(e)) {
       delete e;
-      if (m_export_map)
-        (*m_export_map->GetIntegerVar(K_TIMER_VAR))--;
+      SafeDecrement(K_TIMER_VAR);
       continue;
     }
 
@@ -676,8 +650,7 @@ TimeStamp SelectServer::CheckTimeouts(const TimeStamp &current_time) {
       m_events.push(e);
     } else {
       delete e;
-      if (m_export_map)
-        (*m_export_map->GetIntegerVar(K_TIMER_VAR))--;
+      SafeDecrement(K_TIMER_VAR);
     }
     m_clock->CurrentTime(&now);
   }
@@ -705,33 +678,40 @@ void SelectServer::UnregisterAll() {
     m_events.pop();
   }
 
-  LoopClosureSet::iterator loop_iter;
-  for (loop_iter = m_loop_closures.begin(); loop_iter != m_loop_closures.end();
-       ++loop_iter)
-    delete *loop_iter;
-  m_loop_closures.clear();
+  STLDeleteElements(&m_loop_closures);
 }
-
 
 void SelectServer::DrainAndExecute() {
   while (m_incoming_descriptor.DataRemaining()) {
-    uint8_t message;
+    // try to get everything in one read
+    uint8_t message[100];
     unsigned int size;
-    m_incoming_descriptor.Receive(&message, sizeof(message), size);
+    m_incoming_descriptor.Receive(reinterpret_cast<uint8_t*>(&message),
+                                  sizeof(message), size);
   }
 
   while (true) {
-    m_incoming_mutex.Lock();
-    if (m_incoming_queue.empty()) {
-      m_incoming_mutex.Unlock();
-      break;
+    ola::BaseCallback0<void> *callback = NULL;
+    {
+      thread::MutexLocker lock(&m_incoming_mutex);
+      if (m_incoming_queue.empty())
+        break;
+      callback = m_incoming_queue.front();
+      m_incoming_queue.pop();
     }
-
-    ola::BaseCallback0<void> *callback = m_incoming_queue.front();
-    m_incoming_queue.pop();
-    m_incoming_mutex.Unlock();
-    callback->Run();
+    if (callback)
+      callback->Run();
   }
 }
-}  // io
-}  // ola
+
+void SelectServer::SafeIncrement(const string &var_name) {
+  if (m_export_map)
+    (*m_export_map->GetIntegerVar(var_name))++;
+}
+
+void SelectServer::SafeDecrement(const string &var_name) {
+  if (m_export_map)
+    (*m_export_map->GetIntegerVar(var_name))--;
+}
+}  // namespace io
+}  // namespace ola

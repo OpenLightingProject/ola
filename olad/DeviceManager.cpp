@@ -28,6 +28,7 @@
 
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
+#include "ola/stl/STLUtils.h"
 #include "olad/DeviceManager.h"
 #include "olad/Port.h"
 #include "olad/PortManager.h"
@@ -192,11 +193,7 @@ unsigned int DeviceManager::DeviceCount() const {
  */
 vector<device_alias_pair> DeviceManager::Devices() const {
   vector<device_alias_pair> result;
-  map<string, device_alias_pair>::const_iterator iter;
-  for (iter = m_devices.begin(); iter != m_devices.end(); ++iter)
-    if (iter->second.device)
-      result.push_back(iter->second);
-
+  STLValues(m_devices, &result);
   return result;
 }
 
@@ -206,11 +203,7 @@ vector<device_alias_pair> DeviceManager::Devices() const {
  * @return a pointer to the device or NULL if the device wasn't found.
  */
 AbstractDevice *DeviceManager::GetDevice(unsigned int alias) const {
-  map<unsigned int, AbstractDevice*>::const_iterator alias_iter =
-    m_alias_map.find(alias);
-  if (alias_iter != m_alias_map.end())
-    return alias_iter->second;
-  return NULL;
+  return STLFindOrNull(m_alias_map, alias);
 }
 
 
@@ -396,4 +389,4 @@ void DeviceManager::RestorePortSettings(
     m_port_manager->PatchPort(port, id);
   }
 }
-}  // ola
+}  // namespace ola

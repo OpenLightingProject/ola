@@ -73,7 +73,6 @@ DmxTriOutputPort::DmxTriOutputPort(DmxTriDevice *parent,
                                    DmxTriWidget *widget,
                                    const string &serial)
     : BasicOutputPort(parent, 0, true, true),
-      m_device(parent),
       m_tri_widget(widget),
       m_serial(serial) {
 }
@@ -92,6 +91,6 @@ DmxTriOutputPort::~DmxTriOutputPort() {}
 bool DmxTriOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t) {
   return m_tri_widget->SendDMX(buffer);
 }
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola

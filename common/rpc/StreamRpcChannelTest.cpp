@@ -87,7 +87,6 @@ class StreamRpcChannelTest: public CppUnit::TestFixture {
     void FailedEchoComplete();
 
   private:
-    int m_fd_pair[2];
     SimpleRpcController m_controller;
     EchoRequest m_request;
     EchoReply m_reply;

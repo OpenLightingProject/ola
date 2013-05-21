@@ -78,6 +78,6 @@ class OlaHTTPServer {
     int DisplayDebug(const HTTPRequest *request, HTTPResponse *response);
     int DisplayHandlers(const HTTPRequest *request, HTTPResponse *response);
 };
-}  // http
-}  // ola
+}  // namespace http
+}  // namespace ola
 #endif  // INCLUDE_OLA_HTTP_OLAHTTPSERVER_H_

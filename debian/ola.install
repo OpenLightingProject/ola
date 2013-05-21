@@ -6,3 +6,4 @@ usr/lib/olad/libola*.so.?
 usr/lib/olad/libola*.so.?.?.*
 usr/share/olad/*
 usr/share/ola/pids/*
+usr/share/man/man1/*

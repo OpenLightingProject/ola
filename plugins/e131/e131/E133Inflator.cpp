@@ -18,7 +18,6 @@
  * Copyright (C) 2011 Simon Newton
  */
 
-#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <string>
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
@@ -38,7 +37,7 @@ using ola::network::NetworkToHost;
  * @param length length of the data
  * @returns true if successful, false otherwise
  */
-bool E133Inflator::DecodeHeader(HeaderSet &headers,
+bool E133Inflator::DecodeHeader(HeaderSet *headers,
                                 const uint8_t *data,
                                 unsigned int length,
                                 unsigned int &bytes_used) {
@@ -54,7 +53,7 @@ bool E133Inflator::DecodeHeader(HeaderSet &headers,
           NetworkToHost(raw_header.endpoint));
       m_last_header = header;
       m_last_header_valid = true;
-      headers.SetE133Header(header);
+      headers->SetE133Header(header);
       bytes_used = sizeof(E133Header::e133_pdu_header);
       return true;
     }
@@ -68,9 +67,9 @@ bool E133Inflator::DecodeHeader(HeaderSet &headers,
     OLA_WARN << "Missing E1.33 Header data";
     return false;
   }
-  headers.SetE133Header(m_last_header);
+  headers->SetE133Header(m_last_header);
   return true;
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

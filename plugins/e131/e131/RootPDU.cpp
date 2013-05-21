@@ -18,26 +18,28 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include "ola/Logging.h"
-#include "plugins/e131/e131/RootPDU.h"
+#include "ola/io/IOStack.h"
 #include "plugins/e131/e131/BaseInflator.h"
+#include "plugins/e131/e131/RootPDU.h"
 
 namespace ola {
 namespace plugin {
 namespace e131 {
 
+using ola::io::IOStack;
+
 /*
  * Pack the header into a buffer.
  */
-bool RootPDU::PackHeader(uint8_t *data, unsigned int &length) const {
-  if (length < HeaderSize()) {
-    length = 0;
+bool RootPDU::PackHeader(uint8_t *data, unsigned int *length) const {
+  if (*length < HeaderSize()) {
+    *length = 0;
     return false;
   }
 
   m_cid.Pack(data);
-  length = HeaderSize();
+  *length = HeaderSize();
   return true;
 }
 
@@ -45,11 +47,11 @@ bool RootPDU::PackHeader(uint8_t *data, unsigned int &length) const {
 /*
  * Pack the data into a buffer
  */
-bool RootPDU::PackData(uint8_t *data, unsigned int &length) const {
+bool RootPDU::PackData(uint8_t *data, unsigned int *length) const {
   if (m_block)
     return m_block->Pack(data, length);
 
-  length = 0;
+  *length = 0;
   return true;
 }
 
@@ -77,6 +79,18 @@ void RootPDU::SetBlock(const PDUBlock<PDU> *block) {
   m_block = block;
   m_block_size = m_block ? block->Size() : 0;
 }
-}  // e131
-}  // plugin
-}  // ola
+
+
+/*
+ * Prepend a Root Layer flags, length, vector & header
+ */
+void RootPDU::PrependPDU(IOStack *stack, uint32_t vector, const CID &cid) {
+  cid.Write(stack);
+
+  vector = HostToNetwork(vector);
+  stack->Write(reinterpret_cast<uint8_t*>(&vector), sizeof(vector));
+  PrependFlagsAndLength(stack);
+}
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

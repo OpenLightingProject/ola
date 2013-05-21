@@ -33,6 +33,8 @@ message ParameterReply {
  * read.
  */
 message ParameterRequest {
+  required uint32 port_id = 4;
+
   optional uint32 break_time = 1;
   optional uint32 mab_time = 2;
   optional uint32 rate = 3;
@@ -42,10 +44,16 @@ message SerialNumberReply {
   required string serial = 1;
 }
 
+message PortAssignmentReply {
+  required uint32 port_assignment1 = 1;
+  required uint32 port_assignment2 = 2;
+}
+
 message Request {
   enum RequestType {
     USBPRO_PARAMETER_REQUEST = 1;
     USBPRO_SERIAL_REQUEST = 2;
+    USBPRO_PORT_ASSIGNMENT_REQUEST = 3;
   }
   required RequestType type = 1;
   optional ParameterRequest parameters = 2;
@@ -55,8 +63,10 @@ message Reply {
   enum ReplyType {
     USBPRO_PARAMETER_REPLY = 1;
     USBPRO_SERIAL_REPLY = 2;
+    USBPRO_PORT_ASSIGNMENT_REPLY = 3;
   }
   required ReplyType type = 1;
   optional ParameterReply parameters = 2;
   optional SerialNumberReply serial_number = 3;
+  optional PortAssignmentReply port_assignment = 4;
 }

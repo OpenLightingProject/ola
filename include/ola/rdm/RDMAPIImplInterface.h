@@ -69,7 +69,6 @@ class ResponseStatus {
 
     // Returns the time (in ms) to wait before re-trying
     unsigned int AckTimer() const { return 100 * m_param; }
-
 };
 
 
@@ -119,6 +118,6 @@ class RDMAPIImplInterface {
                         const uint8_t *data = NULL,
                         unsigned int data_length = 0) = 0;
 };
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola
 #endif  // INCLUDE_OLA_RDM_RDMAPIIMPLINTERFACE_H_

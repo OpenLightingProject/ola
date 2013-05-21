@@ -20,9 +20,11 @@
  */
 
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
 #include "ola/Logging.h"
+#include "ola/rdm/UIDAllocator.h"
 #include "ola/rdm/UIDSet.h"
 #include "plugins/dummy/DummyPort.h"
 
@@ -30,6 +32,7 @@ namespace ola {
 namespace plugin {
 namespace dummy {
 
+using std::auto_ptr;
 
 /**
  * Create a new DummyPort
@@ -39,16 +42,22 @@ namespace dummy {
  * @param subdevice_count the number of subdevices each fake device should
  *   have.
  */
-DummyPort::DummyPort(
-  DummyDevice *parent,
-  unsigned int id,
-  uint16_t device_count,
-  uint16_t subdevice_count)
-  : BasicOutputPort(parent, id, true, true) {
-    for (unsigned int i = 0; i < device_count; i++) {
-      UID uid(OPEN_LIGHTING_ESTA_CODE, DummyPort::kStartAddress + i);
-      m_responders[uid] = new DummyResponder(uid, subdevice_count);
+DummyPort::DummyPort(DummyDevice *parent,
+                     unsigned int id,
+                     uint16_t device_count,
+                     uint16_t subdevice_count)
+    : BasicOutputPort(parent, id, true, true) {
+  UID first_uid(OPEN_LIGHTING_ESTA_CODE, DummyPort::kStartAddress);
+  ola::rdm::UIDAllocator allocator(first_uid);
+
+  for (unsigned int i = 0; i < device_count; i++) {
+    auto_ptr<UID> uid(allocator.AllocateNext());
+    if (!uid.get()) {
+      OLA_WARN << "Insufficient UIDs to create dummy RDM devices";
+      break;
     }
+    m_responders[*uid] = new DummyResponder(*uid, subdevice_count);
+  }
 }
 
 
@@ -158,6 +167,6 @@ DummyPort::~DummyPort() {
     delete i->second;
   }
 }
-}  // dummy
-}  // plugin
-}  // ola
+}  // namespace dummy
+}  // namespace plugin
+}  // namespace ola

@@ -76,12 +76,12 @@ const char ArtNetDevice::K_SUBNET_KEY[] = "subnet";
  */
 ArtNetDevice::ArtNetDevice(AbstractPlugin *owner,
                            ola::Preferences *preferences,
-                           PluginAdaptor *plugin_adaptor):
-  Device(owner, K_DEVICE_NAME),
-  m_preferences(preferences),
-  m_node(NULL),
-  m_plugin_adaptor(plugin_adaptor),
-  m_timeout_id(ola::thread::INVALID_TIMEOUT) {
+                           PluginAdaptor *plugin_adaptor)
+    : Device(owner, K_DEVICE_NAME),
+      m_preferences(preferences),
+      m_node(NULL),
+      m_plugin_adaptor(plugin_adaptor),
+      m_timeout_id(ola::thread::INVALID_TIMEOUT) {
 }
 
 
@@ -102,11 +102,11 @@ bool ArtNetDevice::StartHook() {
 
   ola::network::Interface interface;
   auto_ptr<ola::network::InterfacePicker> picker(
-    ola::network::InterfacePicker::NewPicker());
+      ola::network::InterfacePicker::NewPicker());
   if (!picker->ChooseInterface(
-        &interface,
-        m_preferences->GetValue(K_IP_KEY),
-        m_preferences->GetValueAsBool(K_LOOPBACK_KEY))) {
+          &interface,
+          m_preferences->GetValue(K_IP_KEY),
+          m_preferences->GetValueAsBool(K_LOOPBACK_KEY))) {
     OLA_INFO << "Failed to find an interface";
     return false;
   }
@@ -262,7 +262,7 @@ void ArtNetDevice::HandleNodeList(Request *request,
   ola::plugin::artnet::Reply reply;
   reply.set_type(ola::plugin::artnet::Reply::ARTNET_NODE_LIST_REPLY);
   ola::plugin::artnet::NodeListReply *node_list_reply =
-    reply.mutable_node_list();
+      reply.mutable_node_list();
   vector<IPV4Address>::const_iterator iter = node_addresses.begin();
   for (; iter != node_addresses.end(); ++iter) {
     OutputNode *node = node_list_reply->add_node();
@@ -270,6 +270,6 @@ void ArtNetDevice::HandleNodeList(Request *request,
   }
   reply.SerializeToString(response);
 }
-}  // artnet
-}  // plugin
-}  // ola
+}  // namespace artnet
+}  // namespace plugin
+}  // namespace ola

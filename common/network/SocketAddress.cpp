@@ -51,23 +51,6 @@ bool IPV4SocketAddress::ToSockAddr(struct sockaddr *addr,
 
 
 /**
- * Convert the sockaddr to a sockaddr_in.
- * The caller should check that Family() is AF_INET before calling this.
- */
-IPV4SocketAddress GenericSocketAddress::V4Addr() const {
-  if (Family() == AF_INET) {
-    const struct sockaddr_in *v4_addr =
-      reinterpret_cast<const struct sockaddr_in*>(&m_addr);
-    return IPV4SocketAddress(IPV4Address(v4_addr->sin_addr),
-                             NetworkToHost(v4_addr->sin_port));
-  } else {
-    OLA_FATAL << "Invalid conversion of socket family " << Family();
-    return IPV4SocketAddress(IPV4Address(), 0);
-  }
-}
-
-
-/**
  * Extract a IPV4SocketAddress from a string.
  */
 bool IPV4SocketAddress::FromString(const string &input,
@@ -93,5 +76,35 @@ IPV4SocketAddress IPV4SocketAddress::FromStringOrDie(
   assert(FromString(address, &socket_address));
   return socket_address;
 }
-}  // network
-}  // ola
+
+
+string GenericSocketAddress::ToString() const {
+  switch (Family()) {
+    case AF_INET:
+      return V4Addr().ToString();
+    case AF_INET6:
+    default:
+      std::ostringstream str;
+      str << "Generic sockaddr of type: " << m_addr.sa_family;
+      return str.str();
+  }
+}
+
+
+/**
+ * Convert the sockaddr to a sockaddr_in.
+ * The caller should check that Family() is AF_INET before calling this.
+ */
+IPV4SocketAddress GenericSocketAddress::V4Addr() const {
+  if (Family() == AF_INET) {
+    const struct sockaddr_in *v4_addr =
+      reinterpret_cast<const struct sockaddr_in*>(&m_addr);
+    return IPV4SocketAddress(IPV4Address(v4_addr->sin_addr),
+                             NetworkToHost(v4_addr->sin_port));
+  } else {
+    OLA_FATAL << "Invalid conversion of socket family " << Family();
+    return IPV4SocketAddress(IPV4Address(), 0);
+  }
+}
+}  // namespace network
+}  // namespace ola

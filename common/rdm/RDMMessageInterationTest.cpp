@@ -34,8 +34,6 @@
 #include "common/rdm/PidStoreLoader.h"
 #include "ola/testing/TestUtils.h"
 
-
-
 using ola::messaging::Descriptor;
 using ola::messaging::Message;
 using ola::rdm::PidDescriptor;
@@ -111,22 +109,21 @@ void RDMMessageInterationTest::testProxiedDevices() {
   inputs.push_back("21324");  // manufacturer ID
   inputs.push_back("1");  // device id
 
-  const Message *message = m_builder.GetMessage(inputs, descriptor);
-  OLA_ASSERT_TRUE(message);
+  auto_ptr<const Message> message(m_builder.GetMessage(inputs, descriptor));
+  OLA_ASSERT_TRUE(message.get());
 
   unsigned int data_length;
-  const uint8_t *data = m_serializer.SerializeMessage(message, &data_length);
+  const uint8_t *data = m_serializer.SerializeMessage(message.get(),
+                                                      &data_length);
   OLA_ASSERT_TRUE(data);
   OLA_ASSERT_EQ(18u, data_length);
 
-  const Message *inflated_message = m_deserializer.InflateMessage(
-      descriptor,
-      data,
-      data_length);
-  OLA_ASSERT_TRUE(inflated_message);
+  auto_ptr<const Message> inflated_message(
+      m_deserializer.InflateMessage(descriptor, data, data_length));
+  OLA_ASSERT_TRUE(inflated_message.get());
 
-  const string input = m_printer.AsString(message);
-  const string output = m_printer.AsString(inflated_message);
+  const string input = m_printer.AsString(message.get());
+  const string output = m_printer.AsString(inflated_message.get());
   OLA_ASSERT_EQ(input, output);
 
   const string expected = (
@@ -160,22 +157,21 @@ void RDMMessageInterationTest::testDeviceInfoRequest() {
   inputs.push_back("0");  // sub device count
   inputs.push_back("6");  // sensor count
 
-  const Message *message = m_builder.GetMessage(inputs, descriptor);
-  OLA_ASSERT_TRUE(message);
+  auto_ptr<const Message> message(m_builder.GetMessage(inputs, descriptor));
+  OLA_ASSERT_TRUE(message.get());
 
   unsigned int data_length;
-  const uint8_t *data = m_serializer.SerializeMessage(message, &data_length);
+  const uint8_t *data = m_serializer.SerializeMessage(message.get(),
+                                                      &data_length);
   OLA_ASSERT_TRUE(data);
   OLA_ASSERT_EQ(19u, data_length);
 
-  const Message *inflated_message = m_deserializer.InflateMessage(
-      descriptor,
-      data,
-      data_length);
-  OLA_ASSERT_TRUE(inflated_message);
+  auto_ptr<const Message> inflated_message(
+      m_deserializer.InflateMessage(descriptor, data, data_length));
+  OLA_ASSERT_TRUE(inflated_message.get());
 
-  const string input = m_printer.AsString(message);
-  const string output = m_printer.AsString(inflated_message);
+  const string input = m_printer.AsString(message.get());
+  const string output = m_printer.AsString(inflated_message.get());
   OLA_ASSERT_EQ(input, output);
 
   const string expected = (
@@ -200,22 +196,21 @@ void RDMMessageInterationTest::testDeviceModelDescription() {
   vector<string> inputs;
   inputs.push_back("wigglelight 2000");  // description
 
-  const Message *message = m_builder.GetMessage(inputs, descriptor);
-  OLA_ASSERT_TRUE(message);
+  auto_ptr<const Message> message(m_builder.GetMessage(inputs, descriptor));
+  OLA_ASSERT_TRUE(message.get());
 
   unsigned int data_length;
-  const uint8_t *data = m_serializer.SerializeMessage(message, &data_length);
+  const uint8_t *data = m_serializer.SerializeMessage(message.get(),
+                                                      &data_length);
   OLA_ASSERT_TRUE(data);
   OLA_ASSERT_EQ(16u, data_length);
 
-  const Message *inflated_message = m_deserializer.InflateMessage(
-      descriptor,
-      data,
-      data_length);
-  OLA_ASSERT_TRUE(inflated_message);
+  auto_ptr<const Message> inflated_message(
+      m_deserializer.InflateMessage(descriptor, data, data_length));
+  OLA_ASSERT_TRUE(inflated_message.get());
 
-  const string input = m_printer.AsString(message);
-  const string output = m_printer.AsString(inflated_message);
+  const string input = m_printer.AsString(message.get());
+  const string output = m_printer.AsString(inflated_message.get());
   OLA_ASSERT_EQ(input, output);
 
   const string expected = "description: wigglelight 2000\n";
@@ -246,22 +241,21 @@ void RDMMessageInterationTest::testParameterDescription() {
   inputs.push_back("0");  // default value
   inputs.push_back("room temp");  // description
 
-  const Message *message = m_builder.GetMessage(inputs, descriptor);
-  OLA_ASSERT_TRUE(message);
+  auto_ptr<const Message> message(m_builder.GetMessage(inputs, descriptor));
+  OLA_ASSERT_TRUE(message.get());
 
   unsigned int data_length;
-  const uint8_t *data = m_serializer.SerializeMessage(message, &data_length);
+  const uint8_t *data = m_serializer.SerializeMessage(message.get(),
+                                                      &data_length);
   OLA_ASSERT_TRUE(data);
   OLA_ASSERT_EQ(29u, data_length);
 
-  const Message *inflated_message = m_deserializer.InflateMessage(
-      descriptor,
-      data,
-      data_length);
-  OLA_ASSERT_TRUE(inflated_message);
+  auto_ptr<const Message> inflated_message(
+      m_deserializer.InflateMessage(descriptor, data, data_length));
+  OLA_ASSERT_TRUE(inflated_message.get());
 
-  const string input = m_printer.AsString(message);
-  const string output = m_printer.AsString(inflated_message);
+  const string input = m_printer.AsString(message.get());
+  const string output = m_printer.AsString(inflated_message.get());
   OLA_ASSERT_EQ(input, output);
 
   const string expected = (

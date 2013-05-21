@@ -21,10 +21,8 @@ if BUILD_TESTS
 TESTS = ArtNetTester
 endif
 check_PROGRAMS = $(TESTS)
-ArtNetTester_SOURCES = ArtNetNodeTest.cpp \
-                       ArtNetTester.cpp
-ArtNetTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-ArtNetTester_LDADD = $(CPPUNIT_LIBS) \
-                     libolaartnetnode.la \
-                     ../../common/testing/libolatesting.la
+ArtNetTester_SOURCES = ArtNetNodeTest.cpp
+ArtNetTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+ArtNetTester_LDADD = $(COMMON_TESTING_LIBS) \
+                     libolaartnetnode.la
 endif

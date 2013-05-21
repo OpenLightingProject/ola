@@ -57,7 +57,7 @@ class FtdiDmxOutputPort : public ola::BasicOutputPort {
     FtdiWidget *m_device;
     FtdiDmxThread m_thread;
 };
-}  // ftdidmx
-}  // plugin
-}  // ola
+}  // namespace ftdidmx
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_FTDIDMX_FTDIDMXPORT_H_

@@ -62,7 +62,7 @@ class E131Plugin: public ola::Plugin {
     static const char REVISION_0_46[];
     static const char REVISION_KEY[];
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131PLUGIN_H_

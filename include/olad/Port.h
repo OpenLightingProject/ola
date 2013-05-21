@@ -272,5 +272,5 @@ bool IsInputPort();
 
 template<>
 bool IsInputPort<OutputPort>();
-}  // ola
+}  // namespace ola
 #endif  // INCLUDE_OLAD_PORT_H_

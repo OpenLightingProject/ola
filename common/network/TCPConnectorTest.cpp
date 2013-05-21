@@ -38,6 +38,7 @@
 
 using ola::TimeInterval;
 using ola::io::ConnectedDescriptor;
+using ola::network::GenericSocketAddress;
 using ola::network::IPV4Address;
 using ola::network::IPV4SocketAddress;
 using ola::io::SelectServer;
@@ -66,8 +67,7 @@ class TCPConnectorTest: public CppUnit::TestFixture {
   public:
     TCPConnectorTest()
         : CppUnit::TestFixture(),
-          m_localhost(IPV4Address::Loopback()),
-          m_server_address(m_localhost, SERVER_PORT) {
+          m_localhost(IPV4Address::Loopback()) {
     }
 
     void setUp();
@@ -92,12 +92,12 @@ class TCPConnectorTest: public CppUnit::TestFixture {
   private:
     SelectServer *m_ss;
     IPV4Address m_localhost;
-    IPV4SocketAddress m_server_address;
     ola::SingleUseCallback0<void> *m_timeout_closure;
 
     void AcceptedConnection(TCPSocket *socket);
     void OnConnect(int fd, int error);
     void OnConnectFailure(int fd, int error);
+    uint16_t ReservePort();
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(TCPConnectorTest);
@@ -108,9 +108,6 @@ CPPUNIT_TEST_SUITE_REGISTRATION(TCPConnectorTest);
  */
 void TCPConnectorTest::setUp() {
   ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-
-  string localhost_str = "127.0.0.1";
-  OLA_ASSERT_TRUE(IPV4Address::FromString(localhost_str, &m_localhost));
 
   m_ss = new SelectServer();
   m_timeout_closure = ola::NewSingleCallback(this, &TCPConnectorTest::Timeout);
@@ -133,11 +130,18 @@ void TCPConnectorTest::tearDown() {
 void TCPConnectorTest::testNonBlockingConnect() {
   ola::network::TCPSocketFactory socket_factory(
       ola::NewCallback(this, &TCPConnectorTest::AcceptedConnection));
+
+
   TCPAcceptingSocket listening_socket(&socket_factory);
-  CPPUNIT_ASSERT_MESSAGE("Check for another instance of olad running",
-                         listening_socket.Listen(m_server_address));
+  IPV4SocketAddress listen_address(m_localhost, 0);
+  OLA_ASSERT_TRUE_MSG(listening_socket.Listen(listen_address),
+                      "Failed to listen");
+  GenericSocketAddress addr = listening_socket.GetLocalAddress();
+  OLA_ASSERT_TRUE(addr.IsValid());
+
   // calling listen a second time should fail
-  OLA_ASSERT_FALSE(listening_socket.Listen(m_server_address));
+  OLA_ASSERT_FALSE(listening_socket.Listen(listen_address));
+
   OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&listening_socket));
 
   // now attempt a non-blocking connect
@@ -146,7 +150,7 @@ void TCPConnectorTest::testNonBlockingConnect() {
   TCPConnector connector(m_ss);
   TimeInterval connect_timeout(0, CONNECT_TIMEOUT_IN_MS * 1000);
   TCPConnector::TCPConnectionID id = connector.Connect(
-      m_server_address,
+      addr.V4Addr(),
       connect_timeout,
       ola::NewSingleCallback(this, &TCPConnectorTest::OnConnect));
   OLA_ASSERT_TRUE(id);
@@ -161,11 +165,15 @@ void TCPConnectorTest::testNonBlockingConnect() {
  * Test a non-blocking TCP connect fails.
  */
 void TCPConnectorTest::testNonBlockingConnectFailure() {
+  uint16_t port = ReservePort();
+  OLA_ASSERT_NE(0, port);
+  IPV4SocketAddress target(m_localhost, port);
+
   // attempt a non-blocking connect, hopefully nothing is running on port 9010
   TCPConnector connector(m_ss);
   TimeInterval connect_timeout(0, CONNECT_TIMEOUT_IN_MS * 1000);
   TCPConnector::TCPConnectionID id = connector.Connect(
-      m_server_address,
+      target,
       connect_timeout,
       ola::NewSingleCallback(this, &TCPConnectorTest::OnConnectFailure));
   OLA_ASSERT_TRUE(id);
@@ -182,7 +190,6 @@ void TCPConnectorTest::testNonBlockingConnectError() {
   IPV4Address bcast_address;
   OLA_ASSERT_TRUE(IPV4Address::FromString("255.255.255.255", &bcast_address));
 
-  // attempt a non-blocking connect, hopefully nothing is running on port 9010
   TCPConnector connector(m_ss);
   TimeInterval connect_timeout(0, CONNECT_TIMEOUT_IN_MS * 1000);
   TCPConnector::TCPConnectionID id = connector.Connect(
@@ -198,11 +205,14 @@ void TCPConnectorTest::testNonBlockingConnectError() {
  * Test that cancelling a connect works.
  */
 void TCPConnectorTest::testNonBlockingCancel() {
-  // attempt a non-blocking connect, hopefully nothing is running on port 9010
+  uint16_t port = ReservePort();
+  OLA_ASSERT_NE(0, port);
+  IPV4SocketAddress target(m_localhost, port);
+
   TCPConnector connector(m_ss);
   TimeInterval connect_timeout(0, CONNECT_TIMEOUT_IN_MS * 1000);
   TCPConnector::TCPConnectionID id = connector.Connect(
-      m_server_address,
+      target,
       connect_timeout,
       ola::NewSingleCallback(this, &TCPConnectorTest::OnConnectFailure));
   OLA_ASSERT_TRUE(id);
@@ -217,16 +227,16 @@ void TCPConnectorTest::testNonBlockingCancel() {
  * Test that we can destroy the Connector and everything will work.
  */
 void TCPConnectorTest::testEarlyDestruction() {
-  string m_localhost_str = "127.0.0.1";
-  IPV4Address m_localhost;
-  OLA_ASSERT_TRUE(IPV4Address::FromString(m_localhost_str, &m_localhost));
+  uint16_t port = ReservePort();
+  OLA_ASSERT_NE(0, port);
+  IPV4SocketAddress target(m_localhost, port);
 
   // attempt a non-blocking connect, hopefully nothing is running on port 9010
   TimeInterval connect_timeout(0, CONNECT_TIMEOUT_IN_MS * 1000);
   {
     TCPConnector connector(m_ss);
     connector.Connect(
-        m_server_address,
+        target,
         connect_timeout,
         ola::NewSingleCallback(this, &TCPConnectorTest::OnConnectFailure));
     OLA_ASSERT_EQ(1u, connector.ConnectionsPending());
@@ -241,10 +251,9 @@ void TCPConnectorTest::testEarlyDestruction() {
  */
 void TCPConnectorTest::AcceptedConnection(TCPSocket *new_socket) {
   OLA_ASSERT_NOT_NULL(new_socket);
-  IPV4Address address;
-  uint16_t port;
-  OLA_ASSERT_TRUE(new_socket->GetPeer(&address, &port));
-  OLA_INFO << "Connection from " << address << ":" << port;
+  GenericSocketAddress address = new_socket->GetPeerAddress();
+  OLA_ASSERT_TRUE(address.Family() == AF_INET);
+  OLA_INFO << "Connection from " << address;
 
   // terminate the ss when this connection is closed
   new_socket->SetOnClose(
@@ -260,7 +269,7 @@ void TCPConnectorTest::OnConnect(int fd, int error) {
   if (error) {
     std::stringstream str;
     str << "Failed to connect: " << strerror(error);
-    CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(), 0, error);
+    OLA_ASSERT_EQ_MSG(0, error, str.str());
     m_ss->Terminate();
   } else {
     OLA_ASSERT_TRUE(fd >= 0);
@@ -277,4 +286,21 @@ void TCPConnectorTest::OnConnectFailure(int fd, int error) {
   OLA_ASSERT_NE(0, error);
   OLA_ASSERT_EQ(-1, fd);
   m_ss->Terminate();
+}
+
+
+/**
+ * For certain tests we need to ensure there isn't something listening on a TCP
+ * port. The best way I've come up with doing this is to bind to port 0, then
+ * close the socket. REUSE_ADDR means that the port shouldn't be allocated
+ * again for a while.
+ */
+uint16_t TCPConnectorTest::ReservePort() {
+  TCPAcceptingSocket listening_socket(NULL);
+  IPV4SocketAddress listen_address(m_localhost, 0);
+  OLA_ASSERT_TRUE_MSG(listening_socket.Listen(listen_address),
+                      "Failed to listen");
+  GenericSocketAddress addr = listening_socket.GetLocalAddress();
+  OLA_ASSERT_TRUE(addr.IsValid());
+  return addr.V4Addr().Port();
 }

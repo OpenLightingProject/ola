@@ -137,6 +137,40 @@ void RDMCommand::Write(ola::io::OutputStream *stream) const {
 
 
 /**
+ * Attempt to inflate RDM data (excluding the start code) into an RDMCommand
+ * object. This is really only useful for sniffer-style programs.
+ * @returns NULL if the RDM command is invalid.
+ */
+RDMCommand *RDMCommand::Inflate(const uint8_t *data, unsigned int length) {
+  if (length < 21) {
+    return NULL;
+  }
+
+  rdm_message_type type;
+  RDMCommandClass command_class;
+
+  if (!GuessMessageType(&type, &command_class, data, length))
+    return NULL;
+
+  rdm_response_code response_code = RDM_COMPLETED_OK;
+  switch (command_class) {
+    case RDMCommand::GET_COMMAND:
+    case RDMCommand::SET_COMMAND:
+      return RDMRequest::InflateFromData(data, length);
+    case RDMCommand::GET_COMMAND_RESPONSE:
+    case RDMCommand::SET_COMMAND_RESPONSE:
+      return RDMResponse::InflateFromData(data, length, &response_code);
+    case RDMCommand::DISCOVER_COMMAND:
+      return RDMDiscoveryRequest::InflateFromData(data, length);
+    case RDMCommand::DISCOVER_COMMAND_RESPONSE:
+      return RDMDiscoveryResponse::InflateFromData(data, length);
+    default:
+      return NULL;
+  }
+}
+
+
+/**
  * Set the parameter data
  */
 void RDMCommand::SetParamData(const uint8_t *data, unsigned int length) {
@@ -331,10 +365,7 @@ RDMResponse* RDMResponse::InflateFromData(const uint8_t *data,
                                           rdm_response_code *response_code,
                                           const RDMRequest *request) {
   if (request)
-    return InflateFromData(data,
-                           length,
-                           response_code,
-                           request,
+    return InflateFromData(data, length, response_code, request,
                            request->TransactionNumber());
   else
     return InflateFromData(data, length, response_code, request, 0);
@@ -886,5 +917,5 @@ RDMDiscoveryResponse* RDMDiscoveryResponse::InflateFromData(
   return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
                          data.size());
 }
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola

@@ -24,7 +24,7 @@
 #ifndef PLUGINS_E131_E131_TRANSPORTHEADER_H_
 #define PLUGINS_E131_E131_TRANSPORTHEADER_H_
 
-#include "ola/network/IPV4Address.h"
+#include "ola/network/SocketAddress.h"
 
 namespace ola {
 namespace plugin {
@@ -41,36 +41,30 @@ class TransportHeader {
     };
 
     TransportHeader() {}
-    TransportHeader(const ola::network::IPV4Address &src_ip,
-                    uint16_t source_port,
+    TransportHeader(const ola::network::IPV4SocketAddress &source,
                     TransportType type)
-        : m_src_ip(src_ip),
-          m_src_port(source_port),
+        : m_source(source),
           m_transport_type(type) {}
 
     ~TransportHeader() {}
-    const ola::network::IPV4Address& SourceIP() const { return m_src_ip; }
-    uint16_t SourcePort() const { return m_src_port; }
+    const ola::network::IPV4SocketAddress& Source() const { return m_source; }
     TransportType Transport() const { return m_transport_type; }
 
     bool operator==(const TransportHeader &other) const {
-      return (m_src_ip == other.m_src_ip &&
-              m_src_port == other.m_src_port &&
+      return (m_source == other.m_source &&
               m_transport_type == other.m_transport_type);
     }
 
     void operator=(const TransportHeader &other) {
-      m_src_ip = other.m_src_ip;
-      m_src_port = other.m_src_port;
+      m_source = other.m_source;
       m_transport_type = other.m_transport_type;
     }
 
   private:
-    ola::network::IPV4Address m_src_ip;
-    uint16_t m_src_port;
+    ola::network::IPV4SocketAddress m_source;
     TransportType m_transport_type;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_TRANSPORTHEADER_H_

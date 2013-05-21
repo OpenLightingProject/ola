@@ -24,7 +24,7 @@
 #include <stdint.h>
 #include <vector>
 
-#include "plugins/e131/e131/ACNVectors.h"
+#include "ola/acn/ACNVectors.h"
 #include "plugins/e131/e131/DMPAddress.h"
 #include "plugins/e131/e131/DMPHeader.h"
 #include "plugins/e131/e131/PDU.h"
@@ -48,7 +48,7 @@ class DMPPDU: public PDU {
     ~DMPPDU() {}
 
     unsigned int HeaderSize() const { return DMPHeader::DMP_HEADER_SIZE; }
-    bool PackHeader(uint8_t *data, unsigned int &length) const;
+    bool PackHeader(uint8_t *data, unsigned int *length) const;
     void PackHeader(OutputStream *stream) const;
 
   protected:
@@ -66,7 +66,7 @@ class DMPGetProperty: public DMPPDU {
   public:
     DMPGetProperty(const DMPHeader &header,
                    const vector<Address> &addresses):
-      DMPPDU(DMP_GET_PROPERTY_VECTOR, header),
+      DMPPDU(ola::acn::DMP_GET_PROPERTY_VECTOR, header),
       m_addresses(addresses) {}
 
     unsigned int DataSize() const {
@@ -74,16 +74,16 @@ class DMPGetProperty: public DMPPDU {
               (m_header.Type() == NON_RANGE ? 1 : 3));
     }
 
-    bool PackData(uint8_t *data, unsigned int &length) const {
+    bool PackData(uint8_t *data, unsigned int *length) const {
       typename vector<Address>::const_iterator iter;
       unsigned int offset = 0;
       for (iter = m_addresses.begin(); iter != m_addresses.end(); ++iter) {
-        unsigned int remaining = length - offset;
-        if (!iter->Pack(data + offset, remaining))
+        unsigned int remaining = *length - offset;
+        if (!iter->Pack(data + offset, &remaining))
           return false;
         offset += remaining;
       }
-      length = offset;
+      *length = offset;
       return true;
     }
 
@@ -208,7 +208,7 @@ class DMPSetProperty: public DMPPDU {
     typedef vector<DMPAddressData<type> > AddressDataChunks;
 
     DMPSetProperty(const DMPHeader &header, const AddressDataChunks &chunks):
-      DMPPDU(DMP_SET_PROPERTY_VECTOR, header),
+      DMPPDU(ola::acn::DMP_SET_PROPERTY_VECTOR, header),
       m_chunks(chunks) {}
 
     unsigned int DataSize() const {
@@ -219,16 +219,16 @@ class DMPSetProperty: public DMPPDU {
       return length;
     }
 
-    bool PackData(uint8_t *data, unsigned int &length) const {
+    bool PackData(uint8_t *data, unsigned int *length) const {
       typename AddressDataChunks::const_iterator iter;
       unsigned int offset = 0;
       for (iter = m_chunks.begin(); iter != m_chunks.end(); ++iter) {
-        unsigned int remaining = length - offset;
-        if (!iter->Pack(data + offset, remaining))
+        unsigned int remaining = *length - offset;
+        if (!iter->Pack(data + offset, &remaining))
           return false;
         offset += remaining;
       }
-      length = offset;
+      *length = offset;
       return true;
     }
 
@@ -291,7 +291,7 @@ const DMPPDU *NewRangeDMPSetProperty(
                    TypeToDMPSize<type>());
   return new DMPSetProperty<RangeDMPAddress<type> >(header, chunks);
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_DMPPDU_H_

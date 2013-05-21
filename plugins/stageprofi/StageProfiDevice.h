@@ -55,7 +55,7 @@ class StageProfiDevice: public Device {
     string m_path;
     class StageProfiWidget *m_widget;
 };
-}  // stageprofi
-}  // plugin
-}  // ola
+}  // namespace stageprofi
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_STAGEPROFI_STAGEPROFIDEVICE_H_

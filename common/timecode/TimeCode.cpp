@@ -96,5 +96,5 @@ bool TimeCode::operator==(const TimeCode &other) const {
 bool TimeCode::operator!=(const TimeCode &other) const {
   return !(*this == other);
 }
-}  // timecode
-}  // ola
+}  // namespace timecode
+}  // namespace ola

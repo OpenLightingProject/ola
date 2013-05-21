@@ -172,6 +172,6 @@ int StageProfiWidget::DoRecv() {
   m_got_response = true;
   return 0;
 }
-}  // stageprofi
-}  // plugin
-}  // ola
+}  // namespace stageprofi
+}  // namespace plugin
+}  // namespace ola

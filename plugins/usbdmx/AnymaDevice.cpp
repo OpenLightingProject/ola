@@ -46,8 +46,7 @@ AnymaDevice::AnymaDevice(ola::AbstractPlugin *owner,
                          libusb_device_handle *usb_handle,
                          const string &serial)
     : UsbDevice(owner, "Anyma USB Device", usb_device),
-      m_output_port(new AnymaOutputPort(this, 0, usb_device, usb_handle,
-                                        serial)) {
+      m_output_port(new AnymaOutputPort(this, 0, usb_handle, serial)) {
 }
 
 
@@ -75,6 +74,6 @@ string AnymaDevice::DeviceId() const {
     return "";
   }
 }
-}  // usbdmx
-}  // plugin
-}  // ola
+}  // namespace usbdmx
+}  // namespace plugin
+}  // namespace ola

@@ -50,6 +50,7 @@ using std::vector;
 typedef struct {
   bool set_mode;
   bool help;       // show the help
+  string pid_location;  // alt pid store
   bool list_pids;  // show the pid list
   int universe;         // universe id
   UID *uid;         // uid
@@ -67,6 +68,7 @@ typedef struct {
 void ParseOptions(int argc, char *argv[], options *opts) {
   opts->cmd = argv[0];
   opts->set_mode = false;
+  opts->pid_location = PID_DATA_DIR;
   opts->list_pids = false;
   opts->help = false;
   opts->universe = 1;
@@ -81,9 +83,10 @@ void ParseOptions(int argc, char *argv[], options *opts) {
 
   int uid_set = 0;
   static struct option long_options[] = {
-      {"sub_device", required_argument, 0, 'd'},
+      {"sub-device", required_argument, 0, 'd'},
       {"help", no_argument, 0, 'h'},
-      {"list_pids", no_argument, 0, 'l'},
+      {"pid-location", required_argument, 0, 'p'},
+      {"list-pids", no_argument, 0, 'l'},
       {"universe", required_argument, 0, 'u'},
       {"uid", required_argument, &uid_set, 1},
       {0, 0, 0, 0}
@@ -92,7 +95,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
   int option_index = 0;
 
   while (1) {
-    int c = getopt_long(argc, argv, "d:lu:hf", long_options, &option_index);
+    int c = getopt_long(argc, argv, "d:hlp:u:", long_options, &option_index);
 
     if (c == -1)
       break;
@@ -110,6 +113,9 @@ void ParseOptions(int argc, char *argv[], options *opts) {
         break;
       case 'l':
         opts->list_pids = true;
+        break;
+      case 'p':
+        opts->pid_location = optarg;
         break;
       case 'u':
         opts->universe = atoi(optarg);
@@ -133,11 +139,12 @@ void DisplayGetPidHelp(const options &opts) {
   " --universe <universe> --uid <uid> <pid> <value>\n"
   "\n"
   "Get the value of a pid for a device.\n"
-  "Use '" << opts.cmd << " --list_pids' to get a list of pids.\n"
+  "Use '" << opts.cmd << " --list-pids' to get a list of pids.\n"
   "\n"
-  "  -d, --sub_device <device> target a particular sub device (default is 0)\n"
+  "  -d, --sub-device <device> target a particular sub device (default is 0)\n"
   "  -h, --help                display this help message and exit.\n"
-  "  -l, --list_pids           display a list of pids\n"
+  "  -l, --list-pids           display a list of pids\n"
+  "  -p, --pid-location        the directory to read PID definitions from\n"
   "  -u, --universe <universe> universe number.\n"
   "  --uid <uid>               the UID of the device to control.\n"
   << endl;
@@ -152,11 +159,12 @@ void DisplaySetPidHelp(const options &opts) {
   " --universe <universe> --uid <uid> <pid> <value>\n"
   "\n"
   "Set the value of a pid for a device.\n"
-  "Use '" << opts.cmd << " --list_pids' to get a list of pids.\n"
+  "Use '" << opts.cmd << " --list-pids' to get a list of pids.\n"
   "\n"
-  "  -d, --sub_device <device> target a particular sub device (default is 0)\n"
+  "  -d, --sub-device <device> target a particular sub device (default is 0)\n"
   "  -h, --help                display this help message and exit.\n"
-  "  -l, --list_pids           display a list of pids\n"
+  "  -l, --list-pids           display a list of pids\n"
+  "  -p, --pid-location        the directory to read PID definitions from\n"
   "  -u, --universe <universe> universe number.\n"
   "  --uid <uid>               the UID of the device to control.\n"
   << endl;
@@ -195,7 +203,7 @@ void DisplayPIDsAndExit(uint16_t manufacturer_id,
 
 class RDMController {
   public:
-    RDMController();
+    explicit RDMController(string pid_location);
 
     bool InitPidHelper();
     bool Setup();
@@ -232,8 +240,8 @@ class RDMController {
 };
 
 
-RDMController::RDMController()
-    : m_pid_helper(PID_DATA_DIR) {
+RDMController::RDMController(string pid_location)
+    : m_pid_helper(pid_location) {
 }
 
 
@@ -331,7 +339,7 @@ int RDMController::PerformRequestAndWait(unsigned int universe,
 
   if (!pid_descriptor) {
     cout << "Unknown PID: " << pid_name << endl;
-    cout << "Use --list_pids to list the available PIDs." << endl;
+    cout << "Use --list-pids to list the available PIDs." << endl;
     return EX_USAGE;
   }
 
@@ -472,11 +480,12 @@ int main(int argc, char *argv[]) {
   ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
   options opts;
   ParseOptions(argc, argv, &opts);
-  RDMController controller;
+  RDMController controller(opts.pid_location);
 
   if (opts.help)
     DisplayHelpAndExit(opts);
 
+  // Make sure we can load our PIDs
   if (!controller.InitPidHelper())
     exit(EX_OSFILE);
 
@@ -484,7 +493,7 @@ int main(int argc, char *argv[]) {
     if (opts.list_pids) {
       DisplayPIDsAndExit(0, controller.PidHelper());
     } else {
-      OLA_FATAL << "Invalid UID";
+      OLA_FATAL << "Invalid or missing UID, try xxxx:yyyyyyyy";
       DisplayHelpAndExit(opts);
     }
   }

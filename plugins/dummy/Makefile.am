@@ -3,8 +3,9 @@ libdir = $(plugindir)
 
 EXTRA_DIST = DummyPlugin.h DummyDevice.h DummyPort.h DummyResponder.h DummyRDMDevice.h
 
-lib_LTLIBRARIES = liboladummyresponder.la liboladummy.la
 
+if USE_DUMMY
+lib_LTLIBRARIES = liboladummyresponder.la liboladummy.la
 liboladummyresponder_la_SOURCES = DummyResponder.cpp DummyRDMDevice.cpp
 liboladummyresponder_la_LIBADD = ../../common/libolacommon.la
 
@@ -16,12 +17,14 @@ if BUILD_TESTS
 TESTS = DummyPluginTester
 endif
 check_PROGRAMS = $(TESTS)
-DummyPluginTester_SOURCES = DummyPluginTester.cpp DummyPortTest.cpp
-DummyPluginTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+
+DummyPluginTester_SOURCES = DummyPortTest.cpp
+DummyPluginTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 # it's unclear to me why liboladummyresponder has to be included here
 # but if it isn't, the test breaks with gcc 4.6.1
-DummyPluginTester_LDADD = ./liboladummy.la \
-                          ./liboladummyresponder.la \
-                          $(CPPUNIT_LIBS) \
+DummyPluginTester_LDADD = $(COMMON_TESTING_LIBS) \
                           $(top_builddir)/olad/libolaserver.la \
+                          ./liboladummy.la \
+                          ./liboladummyresponder.la \
                           ../../common/libolacommon.la
+endif

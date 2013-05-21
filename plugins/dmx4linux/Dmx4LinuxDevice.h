@@ -38,7 +38,7 @@ class Dmx4LinuxDevice: public ola::Device {
   private:
     string m_device_id;
 };
-}  // dmx4linux
-}  // plugin
-}  // ola
+}  // namespace dmx4linux
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_DMX4LINUX_DMX4LINUXDEVICE_H_

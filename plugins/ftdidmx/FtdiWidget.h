@@ -86,7 +86,6 @@ class FtdiWidgetInfo {
     }
 
   private:
-    struct usb_device *m_device;
     string m_name;
     string m_serial;
     int unsigned m_id;
@@ -181,7 +180,7 @@ class FtdiWidget {
     struct ftdi_context m_handle;
 #endif
 };
-}  // ftdidmx
-}  // plugin
-}  // ola
+}  // namespace ftdidmx
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_FTDIDMX_FTDIWIDGET_H_

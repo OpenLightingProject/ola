@@ -18,7 +18,6 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <cppunit/extensions/HelperMacros.h>
 #include <memory>
 
@@ -27,11 +26,9 @@
 #include "ola/network/InterfacePicker.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/Socket.h"
+#include "ola/testing/TestUtils.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
 #include "plugins/e131/e131/UDPTransport.h"
-#include "ola/testing/TestUtils.h"
-
-
 
 namespace ola {
 namespace plugin {
@@ -87,7 +84,8 @@ void UDPTransportTest::testUDPTransport() {
   ola::network::UDPSocket socket;
   OLA_ASSERT(socket.Init());
   OLA_ASSERT(
-      socket.Bind(IPV4SocketAddress(IPV4Address::WildCard(), ACN_PORT)));
+      socket.Bind(IPV4SocketAddress(IPV4Address::WildCard(),
+                                    ola::acn::ACN_PORT)));
   OLA_ASSERT(socket.EnableBroadcast());
 
   IncomingUDPTransport incoming_udp_transport(&socket, &inflator);
@@ -113,6 +111,6 @@ void UDPTransportTest::testUDPTransport() {
   m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS, closure);
   m_ss->Run();
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

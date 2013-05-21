@@ -47,6 +47,6 @@ bool DummyDevice::StartHook() {
   }
   return true;
 }
-}  // dummy
-}  // plugin
-}  // ola
+}  // namespace dummy
+}  // namespace plugin
+}  // namespace ola

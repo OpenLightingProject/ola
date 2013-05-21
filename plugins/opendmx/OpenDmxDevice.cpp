@@ -60,6 +60,6 @@ bool OpenDmxDevice::StartHook() {
   AddPort(new OpenDmxOutputPort(this, 0, m_path));
   return true;
 }
-}  // opendmx
-}  // plugins
-}  // ola
+}  // namespace opendmx
+}  // namespace plugin
+}  // namespace ola

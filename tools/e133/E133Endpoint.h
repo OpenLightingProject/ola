@@ -19,6 +19,7 @@
 
 #include <stdint.h>
 #include <string>
+#include "ola/e133/E133Enums.h"
 #include "ola/rdm/RDMControllerInterface.h"
 
 #ifndef TOOLS_E133_E133ENDPOINT_H_
@@ -33,41 +34,119 @@ static const uint16_t ROOT_E133_ENDPOINT = 0;
  * The base class for E1.33 Endpoints.
  * Endpoints are tasked with handling RDM requests.
  */
-class E133EndpointInterface: public ola::rdm::RDMControllerInterface {
+class E133EndpointInterface
+    : public ola::rdm::DiscoverableRDMControllerInterface {
   public:
     E133EndpointInterface() {}
     virtual ~E133EndpointInterface() {}
+
+    // virtual bool supports_pid(ola::rdm::rdm_pid pid) const = 0;
+
+    // IDENTIFY_ENDPOINT
+    virtual bool identify_mode() const = 0;
+    virtual void set_identify_mode(bool identify_on) = 0;
+
+    // ENDPOINT_TO_UNIVERSE
+    virtual uint16_t universe() const = 0;
+    virtual void set_universe(uint16_t universe) = 0;
+    virtual bool is_physical() const = 0;
+
+    // RDM_TRAFFIC_ENABLE
+    // virtual bool rdm_enabled() const = 0;
+
+    // ENDPOINT_MODE
+    // virtual ola::plugin::e131::EndpointMode endpoint_mode() const = 0;
+
+    // ENDPOINT_LABEL
+    virtual string label() const = 0;
+    virtual void set_label(const string &endpoint_label)  = 0;
+
+    // DISCOVERY_STATE
+
+    // BACKGROUND_DISCOVERY
+
+    // BACKGROUND_QUEUED_STATUS_POLICY
+
+    // BACKGROUND_QUEUED_STATUS_POLICY_DESCRIPTION
+
+    // BACKGROUND_STATUS_TYPE
+
+    // QUEUED_STATUS_ENDPOINT_COLLECTION
+
+    // QUEUED_STATUS_UID_COLLECTION
+
+    // ENDPOINT_TIMING
+
+    // ENDPOINT_TIMING_DESCRIPTION
+
+    // ENDPOINT_LIST_CHANGE
+
+    // ENDPOINT_DEVICES
+
+    // BINDING_AND_CONTROL_FIELDS
+
+    static const uint16_t UNPATCHED_UNIVERSE;
+    static const uint16_t COMPOSITE_UNIVERSE;
 };
 
 
 /**
- * A non-root endpoint, which has properties like a label, identify mode etc.
+ * An E133Endpoint which wraps another RDM controller. This just passes
+ * everything through the to controller.
  */
-class E133Endpoint: public E133EndpointInterface,
-                           ola::rdm::DiscoverableRDMControllerInterface {
+class E133Endpoint: public E133EndpointInterface {
   public:
-    explicit E133Endpoint(DiscoverableRDMControllerInterface *controller);
+    // Callbacks which run various actions take place.
+    // TODO(simon): if we expect the callee to read the state, perhaps there
+    // should just be one callback with an enum indicating what changed?
+    /*
+    struct EventHandlers {
+      public:
+        ola::Callback0<void> *identify_changed;
+        ola::Callback0<void> *universe_changed;
+
+        EventHandlers()
+          : identify_changed(NULL),
+            universe_changed(NULL) {
+        }
+    };
+    */
+
+    /*
+     * The constant properties of an endpoint
+     */
+    struct EndpointProperties {
+      bool is_physical;
+
+      EndpointProperties() : is_physical(false) {}
+    };
+
+    E133Endpoint(DiscoverableRDMControllerInterface *controller,
+                 const EndpointProperties &properties);
     ~E133Endpoint() {}
 
-    bool IdentifyMode() const { return m_identify_mode; }
-    void SetIdentifyMode(bool identify_on);
+    bool identify_mode() const { return m_identify_mode; }
+    void set_identify_mode(bool identify_on);
 
-    uint16_t Universe() const { return m_universe; }
-    void SetUniverse(uint16_t universe) { m_universe = universe; }
+    uint16_t universe() const { return m_universe; }
+    void set_universe(uint16_t universe) { m_universe = universe; }
+    bool is_physical() const { return m_is_physical; }
 
-    string Label() const { return m_endpoint_label; }
-    void SetLabel(const string &endpoint_label) {
+    string label() const { return m_endpoint_label; }
+    void set_label(const string &endpoint_label) {
       m_endpoint_label = endpoint_label;
     }
 
-    void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
-    void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
+    virtual void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
+    virtual void RunIncrementalDiscovery(
+        ola::rdm::RDMDiscoveryCallback *callback);
 
-    void SendRDMRequest(const ola::rdm::RDMRequest *request,
-                        ola::rdm::RDMCallback *on_complete);
+    virtual void SendRDMRequest(const ola::rdm::RDMRequest *request,
+                                ola::rdm::RDMCallback *on_complete);
 
   private:
     bool m_identify_mode;
+    const bool m_is_physical;
     uint16_t m_universe;
     string m_endpoint_label;
     DiscoverableRDMControllerInterface *m_controller;

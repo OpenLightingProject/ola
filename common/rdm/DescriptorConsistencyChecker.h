@@ -66,6 +66,6 @@ class DescriptorConsistencyChecker
   private:
     unsigned int m_variable_sized_field_count;
 };
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola
 #endif  // COMMON_RDM_DESCRIPTORCONSISTENCYCHECKER_H_

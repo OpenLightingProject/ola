@@ -93,7 +93,7 @@ char **CommandAction::BuildArgList(const Context *context) {
   // we need to add the command here as the first arg, also +1 for the NULL
   unsigned int array_size = m_arguments.size() + 2;
   char **args = new char*[array_size];
-  memset(args, 0, sizeof(char*) * array_size);
+  memset(args, 0, sizeof(args[0]) * array_size);
 
   args[0] = StringToDynamicChar(m_command);
 

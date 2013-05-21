@@ -123,7 +123,7 @@ class ArduinoWidget: public SerialWidgetInterface,
     ArduinoWidgetImpl *m_impl;
     ola::rdm::DiscoverableQueueingRDMController *m_controller;
 };
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBPRO_ARDUINOWIDGET_H_

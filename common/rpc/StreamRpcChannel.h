@@ -21,13 +21,17 @@
 #ifndef COMMON_RPC_STREAMRPCCHANNEL_H_
 #define COMMON_RPC_STREAMRPCCHANNEL_H_
 
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <stdint.h>
 #include <google/protobuf/service.h>
 #include <ola/Callback.h>
 #include <ola/io/Descriptor.h>
 #include <ola/io/SelectServer.h>
 #include "ola/ExportMap.h"
-#include "config.h"
+
 #include HASH_MAP_H
 
 namespace ola {
@@ -95,6 +99,8 @@ class StreamRpcChannel: public RpcChannel {
                      ExportMap *export_map = NULL);
     ~StreamRpcChannel();
 
+    bool PendingRPCs() const { return !m_requests.empty(); }
+
     void DescriptorReady();
     void SetOnClose(SingleUseCallback0<void> *closure);
 
@@ -152,7 +158,7 @@ class StreamRpcChannel: public RpcChannel {
     static const unsigned int INITIAL_BUFFER_SIZE = 1 << 11;  // 2k
     static const unsigned int MAX_BUFFER_SIZE = 1 << 20;  // 1M
 };
-}  // rpc
-}  // ola
+}  // namespace rpc
+}  // namespace ola
 
 #endif  // COMMON_RPC_STREAMRPCCHANNEL_H_

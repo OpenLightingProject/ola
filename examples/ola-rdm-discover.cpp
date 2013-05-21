@@ -129,7 +129,7 @@ void ParseOptions(int argc, char *argv[], options *opts) {
  */
 void DisplayGetUIDsHelp(const options &opts) {
   cout << "Usage: " << opts.cmd <<
-  " --universe <universe> [--force_discovery]\n"
+  " --universe <universe> [--full|--incremental]\n"
   "\n"
   "Fetch the UID list for a universe.\n"
   "\n"

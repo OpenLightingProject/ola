@@ -47,6 +47,6 @@ typedef struct {
   uint8_t param_id[2];
   uint8_t param_data_length;
 } RDMCommandHeader;
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola
 #endif  // INCLUDE_OLA_RDM_RDMPACKET_H_

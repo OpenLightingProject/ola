@@ -42,5 +42,5 @@ UID* UID::FromString(const string &uid) {
 
   return new UID(esta_id, device_id);
 }
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola

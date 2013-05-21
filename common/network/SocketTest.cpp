@@ -39,6 +39,7 @@ using ola::io::ConnectedDescriptor;
 using ola::io::IOQueue;
 using ola::io::SelectServer;
 using ola::network::IPV4Address;
+using ola::network::GenericSocketAddress;
 using ola::network::IPV4SocketAddress;
 using ola::network::StringToAddress;
 using ola::network::TCPAcceptingSocket;
@@ -128,17 +129,20 @@ void SocketTest::tearDown() {
  * data matches and then closes the connection.
  */
 void SocketTest::testTCPSocketClientClose() {
-  IPV4SocketAddress socket_address(IPV4Address::Loopback(), 9010);
+  IPV4SocketAddress socket_address(IPV4Address::Loopback(), 0);
   ola::network::TCPSocketFactory socket_factory(
       ola::NewCallback(this, &SocketTest::NewConnectionSend));
   TCPAcceptingSocket socket(&socket_factory);
-  CPPUNIT_ASSERT_MESSAGE("Check for another instance of olad running",
-                         socket.Listen(socket_address));
+  OLA_ASSERT_TRUE_MSG(socket.Listen(socket_address),
+                      "Check for another instance of olad running");
   OLA_ASSERT_FALSE(socket.Listen(socket_address));
+
+  GenericSocketAddress local_address = socket.GetLocalAddress();
+  OLA_ASSERT_EQ(static_cast<uint16_t>(AF_INET), local_address.Family());
 
   OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&socket));
 
-  TCPSocket *client_socket = TCPSocket::Connect(socket_address);
+  TCPSocket *client_socket = TCPSocket::Connect(local_address);
   OLA_ASSERT_NOT_NULL(client_socket);
   client_socket->SetOnData(ola::NewCallback(
         this, &SocketTest::ReceiveAndClose,
@@ -157,18 +161,22 @@ void SocketTest::testTCPSocketClientClose() {
  * connection.
  */
 void SocketTest::testTCPSocketServerClose() {
-  IPV4SocketAddress socket_address(IPV4Address::Loopback(), 9010);
+  IPV4SocketAddress socket_address(IPV4Address::Loopback(), 0);
   ola::network::TCPSocketFactory socket_factory(
       ola::NewCallback(this, &SocketTest::NewConnectionSendAndClose));
   TCPAcceptingSocket socket(&socket_factory);
-  CPPUNIT_ASSERT_MESSAGE("Check for another instance of olad running",
-                         socket.Listen(socket_address));
+  OLA_ASSERT_TRUE_MSG(socket.Listen(socket_address),
+                      "Check for another instance of olad running");
+
   OLA_ASSERT_FALSE(socket.Listen(socket_address));
+
+  GenericSocketAddress local_address = socket.GetLocalAddress();
+  OLA_ASSERT_EQ(static_cast<uint16_t>(AF_INET), local_address.Family());
 
   OLA_ASSERT_TRUE(m_ss->AddReadDescriptor(&socket));
 
   // The client socket checks the response and terminates on close
-  TCPSocket *client_socket = TCPSocket::Connect(socket_address);
+  TCPSocket *client_socket = TCPSocket::Connect(local_address);
   OLA_ASSERT_NOT_NULL(client_socket);
 
   client_socket->SetOnData(ola::NewCallback(
@@ -191,12 +199,16 @@ void SocketTest::testTCPSocketServerClose() {
  * data matches and then closes the connection.
  */
 void SocketTest::testUDPSocket() {
-  IPV4SocketAddress socket_address(IPV4Address::Loopback(), 9010);
+  IPV4SocketAddress socket_address(IPV4Address::Loopback(), 0);
   UDPSocket socket;
   OLA_ASSERT_TRUE(socket.Init());
   OLA_ASSERT_FALSE(socket.Init());
   OLA_ASSERT_TRUE(socket.Bind(socket_address));
   OLA_ASSERT_FALSE(socket.Bind(socket_address));
+
+  IPV4SocketAddress local_address;
+  OLA_ASSERT_TRUE(socket.GetSocketAddress(&local_address));
+  OLA_ASSERT_EQ(static_cast<uint16_t>(AF_INET), local_address.Family());
 
   socket.SetOnData(
       ola::NewCallback(this, &SocketTest::UDPReceiveAndSend, &socket));
@@ -215,7 +227,7 @@ void SocketTest::testUDPSocket() {
   ssize_t bytes_sent = client_socket.SendTo(
       static_cast<const uint8_t*>(test_cstring),
       sizeof(test_cstring),
-      socket_address);
+      local_address);
   OLA_ASSERT_EQ(static_cast<ssize_t>(sizeof(test_cstring)), bytes_sent);
   m_ss->Run();
   m_ss->RemoveReadDescriptor(&socket);
@@ -323,10 +335,9 @@ void SocketTest::ReceiveSendAndClose(ConnectedDescriptor *socket) {
  */
 void SocketTest::NewConnectionSend(TCPSocket *new_socket) {
   OLA_ASSERT_TRUE(new_socket);
-  IPV4Address address;
-  uint16_t port;
-  OLA_ASSERT_TRUE(new_socket->GetPeer(&address, &port));
-  OLA_INFO << "Connection from " << address << ":" << port;
+  GenericSocketAddress address = new_socket->GetPeerAddress();
+  OLA_ASSERT_TRUE(address.Family() == AF_INET);
+  OLA_INFO << "Connection from " << address;
   ssize_t bytes_sent = new_socket->Send(
       static_cast<const uint8_t*>(test_cstring),
       sizeof(test_cstring));
@@ -342,10 +353,9 @@ void SocketTest::NewConnectionSend(TCPSocket *new_socket) {
  */
 void SocketTest::NewConnectionSendAndClose(TCPSocket *new_socket) {
   OLA_ASSERT_NOT_NULL(new_socket);
-  IPV4Address address;
-  uint16_t port;
-  OLA_ASSERT_TRUE(new_socket->GetPeer(&address, &port));
-  OLA_INFO << "Connection from " << address << ":" << port;
+  GenericSocketAddress address = new_socket->GetPeerAddress();
+  OLA_ASSERT_TRUE(address.Family() == AF_INET);
+  OLA_INFO << "Connection from " << address;
   ssize_t bytes_sent = new_socket->Send(
       static_cast<const uint8_t*>(test_cstring),
       sizeof(test_cstring));

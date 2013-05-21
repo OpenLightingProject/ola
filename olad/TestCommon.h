@@ -226,10 +226,10 @@ class TestMockPlugin: public ola::Plugin {
   public:
     TestMockPlugin(ola::PluginAdaptor *plugin_adaptor,
                    ola::ola_plugin_id plugin_id,
-                   bool should_start = true)
+                   bool enabled = true)
         : Plugin(plugin_adaptor),
           m_start_run(false),
-          m_should_start(should_start),
+          m_enabled(enabled),
           m_id(plugin_id) {}
 
     TestMockPlugin(ola::PluginAdaptor *plugin_adaptor,
@@ -237,14 +237,16 @@ class TestMockPlugin: public ola::Plugin {
                    const set<ola::ola_plugin_id> &conflict_set)
         : Plugin(plugin_adaptor),
           m_start_run(false),
-          m_should_start(true),
+          m_enabled(true),
           m_id(plugin_id),
           m_conflict_set(conflict_set) {}
 
     void ConflictsWith(set<ola::ola_plugin_id> *conflict_set) {
       *conflict_set = m_conflict_set;
     }
-    bool ShouldStart() { return m_should_start; }
+    bool LoadPreferences() { return true; }
+    string PreferencesSource() const { return ""; }
+    bool IsEnabled() const { return m_enabled; }
     bool StartHook() {
       m_start_run = true;
       return true;
@@ -262,7 +264,7 @@ class TestMockPlugin: public ola::Plugin {
 
   private:
     bool m_start_run;
-    bool m_should_start;
+    bool m_enabled;
     ola::ola_plugin_id m_id;
     set<ola::ola_plugin_id> m_conflict_set;
 };

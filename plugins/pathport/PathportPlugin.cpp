@@ -20,8 +20,9 @@
 
 #include <limits.h>
 #include <string>
-#include "ola/StringUtils.h"
 #include "ola/Logging.h"
+#include "ola/StringUtils.h"
+#include "ola/math/Random.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
 #include "plugins/pathport/PathportDevice.h"
@@ -90,7 +91,7 @@ string PathportPlugin::Description() const {
 "--- Config file : ola-pathport.conf ---\n"
 "\n"
 "dscp = <int>\n"
-"Set the DSCP value for the packets. Range is 0-63\n"
+"Set the DSCP value for the packets. Range is 0-63.\n"
 "\n"
 "ip = [a.b.c.d|<interface_name>]\n"
 "The ip address or interface name to bind to. If not specified it will\n"
@@ -100,7 +101,7 @@ string PathportPlugin::Description() const {
 "The name of the node.\n"
 "\n"
 "node-id = <int>\n"
-"The pathport id of the node\n"
+"The pathport id of the node.\n"
 "\n";
 }
 
@@ -123,12 +124,9 @@ bool PathportPlugin::SetDefaultPreferences() {
                                          StringValidator(),
                                          PathportDevice::K_DEFAULT_NODE_NAME);
 
-  // generate a new node id in case we need it
-  srand((unsigned)time(0) * getpid());
-  uint32_t product_id = OLA_MANUFACTURER_CODE << 24;
-  product_id |= (rand() / (RAND_MAX / 0x100) << 16);
-  product_id |= (rand() / (RAND_MAX / 0x100) << 8);
-  product_id |= rand() / (RAND_MAX / 0x100);
+  // Generate a new node id in case we need it
+  uint32_t product_id = ((OLA_MANUFACTURER_CODE << 24) +
+                         ola::math::Random(0, (1 << 24) - 1));
 
   save |= m_preferences->SetDefaultValue(PathportDevice::K_NODE_ID_KEY,
                                          IntValidator(0, UINT_MAX),
@@ -143,6 +141,6 @@ bool PathportPlugin::SetDefaultPreferences() {
 
   return true;
 }
-}  // pathport
-}  // plugin
-}  // ola
+}  // namespace pathport
+}  // namespace plugin
+}  // namespace ola

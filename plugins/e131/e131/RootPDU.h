@@ -22,12 +22,17 @@
 #define PLUGINS_E131_E131_ROOTPDU_H_
 
 #include <stdint.h>
-#include "plugins/e131/e131/CID.h"
+
+#include "ola/acn/CID.h"
+#include "ola/io/IOStack.h"
+
 #include "plugins/e131/e131/PDU.h"
 
 namespace ola {
 namespace plugin {
 namespace e131 {
+
+using ola::acn::CID;
 
 class RootPDU: public PDU {
   public:
@@ -45,8 +50,8 @@ class RootPDU: public PDU {
 
     unsigned int HeaderSize() const { return CID::CID_LENGTH; }
     unsigned int DataSize() const { return m_block_size; }
-    bool PackHeader(uint8_t *data, unsigned int &length) const;
-    bool PackData(uint8_t *data, unsigned int &length) const;
+    bool PackHeader(uint8_t *data, unsigned int *length) const;
+    bool PackData(uint8_t *data, unsigned int *length) const;
 
     void PackHeader(OutputStream *stream) const;
     void PackData(OutputStream *stream) const;
@@ -55,12 +60,15 @@ class RootPDU: public PDU {
     const CID &Cid(const CID &cid) { return m_cid = cid; }
     void SetBlock(const PDUBlock<PDU> *block);
 
+    static void PrependPDU(ola::io::IOStack *stack, uint32_t vector,
+                           const CID &cid);
+
   private:
     CID m_cid;
     const PDUBlock<PDU> *m_block;
     unsigned int m_block_size;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_ROOTPDU_H_

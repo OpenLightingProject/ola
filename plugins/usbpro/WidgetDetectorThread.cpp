@@ -20,10 +20,7 @@
  */
 
 
-#include <dirent.h>
-#include <errno.h>
 #include <string.h>
-#include <iostream>
 #include <string>
 #include <vector>
 
@@ -31,6 +28,7 @@
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "ola/StringUtils.h"
+#include "ola/file/Util.h"
 #include "ola/io/Descriptor.h"
 #include "plugins/usbpro/ArduinoWidget.h"
 #include "plugins/usbpro/BaseUsbProWidget.h"
@@ -187,7 +185,7 @@ void WidgetDetectorThread::WaitUntilRunning() {
  */
 bool WidgetDetectorThread::RunScan() {
   vector<string> device_paths;
-  FindCandiateDevices(&device_paths);
+  ola::file::FindMatchingFiles(m_directory, m_prefixes, &device_paths);
 
   vector<string>::iterator it;
   for (it = device_paths.begin(); it != device_paths.end(); ++it) {
@@ -196,7 +194,7 @@ bool WidgetDetectorThread::RunScan() {
     if (m_ignored_devices.find(*it) != m_ignored_devices.end())
       continue;
     // FreeBSD has .init and .lock files which we want to skip
-    if (StringEndsWith(*it, ".init") or StringEndsWith(*it, ".lock"))
+    if (StringEndsWith(*it, ".init") || StringEndsWith(*it, ".lock"))
       continue;
 
     OLA_INFO << "Found potential USB Serial device at " << *it;
@@ -223,39 +221,6 @@ void WidgetDetectorThread::PerformDiscovery(const string &path,
 }
 
 
-/*
- * Look for candidate devices in m_directory
- * @param device_paths a pointer to a vector to be populated with paths in
- * m_directory that match m_prefixes.
- */
-void WidgetDetectorThread::FindCandiateDevices(vector<string> *device_paths) {
-  if (!(m_directory.empty() || m_prefixes.empty())) {
-    DIR *dp;
-    struct dirent dir_ent;
-    struct dirent *dir_ent_p;
-    if ((dp  = opendir(m_directory.data())) == NULL) {
-      OLA_WARN << "Could not open " << m_directory << ":" << strerror(errno);
-      return;
-    }
-
-    readdir_r(dp, &dir_ent, &dir_ent_p);
-    while (dir_ent_p != NULL) {
-      vector<string>::const_iterator iter;
-      for (iter = m_prefixes.begin(); iter != m_prefixes.end();
-           ++iter) {
-        if (!strncmp(dir_ent_p->d_name, iter->data(), iter->size())) {
-          stringstream str;
-          str << m_directory << "/" << dir_ent_p->d_name;
-          device_paths->push_back(str.str());
-        }
-      }
-      readdir_r(dp, &dir_ent, &dir_ent_p);
-    }
-    closedir(dp);
-  }
-}
-
-
 /**
  * Called when a new widget becomes ready. Ownership of both objects transferrs
  * to use.
@@ -278,19 +243,15 @@ void WidgetDetectorThread::UsbProWidgetReady(
       if (information->device_id == DMX_KING_ULTRA_PRO_ID) {
         // The Ultra device has two outputs
         DispatchWidget(
-            new UltraDMXProWidget(
-              m_other_ss,
-              descriptor),
+            new UltraDMXProWidget(descriptor),
             information);
         return;
       } else {
         // DMXKing devices are drop in replacements for a Usb Pro
+        EnttecUsbProWidget::EnttecUsbProWidgetOptions options(
+            information->esta_id, information->serial);
         DispatchWidget(
-            new EnttecUsbProWidget(
-              m_other_ss,
-              descriptor,
-              information->esta_id,
-              information->serial),
+            new EnttecUsbProWidget(descriptor, options),
             information);
         return;
       }
@@ -332,13 +293,14 @@ void WidgetDetectorThread::UsbProWidgetReady(
       break;
   }
   OLA_WARN << "Defaulting to a Usb Pro device";
-  DispatchWidget(
-      new EnttecUsbProWidget(
-        m_other_ss,
-        descriptor,
-        information->esta_id,
-        information->serial),
-      information);
+  if (information->dual_port) {
+    OLA_INFO << "Found and unlocked an Enttec USB Pro Mk II";
+  }
+  EnttecUsbProWidget::EnttecUsbProWidgetOptions options(
+      information->esta_id, information->serial);
+  options.dual_ports = information->dual_port;
+  DispatchWidget(new EnttecUsbProWidget(descriptor, options),
+                 information);
 }
 
 
@@ -350,7 +312,7 @@ void WidgetDetectorThread::RobeWidgetReady(
     const RobeWidgetInformation *info) {
   // we're no longer interested in events from this descriptor
   m_ss.RemoveReadDescriptor(descriptor);
-  RobeWidget *widget = new RobeWidget(descriptor, m_other_ss, info->uid);
+  RobeWidget *widget = new RobeWidget(descriptor, info->uid);
 
   if (m_handler) {
     DispatchWidget(widget, info);
@@ -470,6 +432,6 @@ void WidgetDetectorThread::MarkAsRunning() {
   m_mutex.Unlock();
   m_condition.Signal();
 }
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola

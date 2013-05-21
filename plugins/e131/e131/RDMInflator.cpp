@@ -18,16 +18,11 @@
  * Copyright (C) 2011 Simon Newton
  */
 
-#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
-#include <map>
 #include <memory>
 #include <string>
 #include "ola/Logging.h"
-#include "ola/stl/STLUtils.h"
 #include "ola/rdm/RDMCommand.h"
 #include "plugins/e131/e131/RDMInflator.h"
-#include "plugins/e131/e131/DMPHeader.h"
-#include "plugins/e131/e131/DMPPDU.h"
 
 namespace ola {
 namespace plugin {
@@ -37,55 +32,18 @@ using std::string;
 
 /**
  * Create a new RDM inflator
- * @param on_data a callback which is run when ever we receive a packet. This
- * is used for healthchecking but should be removed.
  */
 RDMInflator::RDMInflator()
     : BaseInflator(PDU::ONE_BYTE) {
 }
 
-
 /**
- * Clean up this inflator
- */
-RDMInflator::~RDMInflator() {
-  STLDeleteValues(m_rdm_handlers);
-}
-
-
-/**
- * Set the RDM Handler for an endpoint, ownership of the handler is
- * transferred.
- * @param endpoint the endpoint to use the handler for
+ * Set a RDMHandler to run when receiving a RDM message.
  * @param handler the callback to invoke when there is rdm data for this
  * universe.
- * @return true if added, false otherwise
  */
-bool RDMInflator::SetRDMHandler(uint16_t endpoint,
-                                RDMMessageHandler *handler) {
-  if (!handler)
-    return false;
-
-  RemoveRDMHandler(endpoint);
-  m_rdm_handlers[endpoint] = handler;
-  return true;
-}
-
-
-/**
- * Remove the RDM handler for an endpoint
- * @param endpoint the endpoint to remove the handler for.
- * @return true if removed, false if it didn't exist
- */
-bool RDMInflator::RemoveRDMHandler(uint16_t endpoint) {
-  endpoint_handler_map::iterator iter = m_rdm_handlers.find(endpoint);
-
-  if (iter != m_rdm_handlers.end()) {
-    delete iter->second;
-    m_rdm_handlers.erase(iter);
-    return true;
-  }
-  return false;
+void RDMInflator::SetRDMHandler(RDMMessageHandler *handler) {
+  m_rdm_handler.reset(handler);
 }
 
 
@@ -96,7 +54,7 @@ bool RDMInflator::RemoveRDMHandler(uint16_t endpoint) {
  * @param length length of the data
  * @returns true if successful, false otherwise
  */
-bool RDMInflator::DecodeHeader(HeaderSet&,
+bool RDMInflator::DecodeHeader(HeaderSet *,
                                const uint8_t*,
                                unsigned int,
                                unsigned int &bytes_used) {
@@ -109,7 +67,7 @@ bool RDMInflator::DecodeHeader(HeaderSet&,
  * Handle a DMP PDU for E1.33.
  */
 bool RDMInflator::HandlePDUData(uint32_t vector,
-                                HeaderSet &headers,
+                                const HeaderSet &headers,
                                 const uint8_t *data,
                                 unsigned int pdu_len) {
   if (vector != VECTOR_RDMNET_DATA) {
@@ -117,28 +75,18 @@ bool RDMInflator::HandlePDUData(uint32_t vector,
     return true;
   }
 
+  string rdm_message(reinterpret_cast<const char*>(&data[0]), pdu_len);
+
   E133Header e133_header = headers.GetE133Header();
-  endpoint_handler_map::iterator endpoint_iter =
-      m_rdm_handlers.find(e133_header.Endpoint());
 
-  if (endpoint_iter == m_rdm_handlers.end()) {
-    if (!e133_header.Endpoint()) {
-      OLA_WARN << "Received E1.33 message for Endpoint 0 but no handler set!";
-    } else {
-      OLA_INFO << "Received E1.33 message for Endpoint " <<
-        e133_header.Endpoint() << ", no handler set";
-    }
-    return true;
+  if (m_rdm_handler.get()) {
+    m_rdm_handler->Run(&headers.GetTransportHeader(), &e133_header,
+                       rdm_message);
+  } else {
+    OLA_WARN << "No RDM handler defined!";
   }
-
-  string rdm_message(reinterpret_cast<const char*>(&data[0]),
-                     pdu_len - 1);
-
-  endpoint_iter->second->Run(headers.GetTransportHeader(),
-                             e133_header,
-                             rdm_message);
   return true;
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

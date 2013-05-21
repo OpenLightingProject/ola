@@ -18,11 +18,10 @@
  * Copyright (C) 2007 Simon Newton
  */
 
-#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include "ola/Logging.h"
+#include "ola/acn/ACNVectors.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
-#include "plugins/e131/e131/ACNVectors.h"
 #include "plugins/e131/e131/DMPE131Inflator.h"
 #include "plugins/e131/e131/E131Inflator.h"
 #include "plugins/e131/e131/E131Sender.h"
@@ -68,10 +67,10 @@ bool E131Sender::SendDMP(const E131Header &header, const DMPPDU *dmp_pdu) {
 
   OutgoingUDPTransport transport(&m_transport_impl, addr);
 
-  E131PDU pdu(VECTOR_E131_DMP, header, dmp_pdu);
-  unsigned int vector = VECTOR_ROOT_E131;
+  E131PDU pdu(ola::acn::VECTOR_E131_DMP, header, dmp_pdu);
+  unsigned int vector = ola::acn::VECTOR_ROOT_E131;
   if (header.UsingRev2())
-    vector = VECTOR_ROOT_E131_REV2;
+    vector = ola::acn::VECTOR_ROOT_E131_REV2;
   return m_root_sender->SendPDU(vector, pdu, &transport);
 }
 
@@ -94,6 +93,6 @@ bool E131Sender::UniverseIP(unsigned int universe, IPV4Address *addr) {
   OLA_WARN << "universe " << universe << " isn't a valid E1.31 universe";
   return false;
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

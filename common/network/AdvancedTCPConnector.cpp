@@ -275,5 +275,5 @@ void AdvancedTCPConnector::AbortConnection(ConnectionInfo *state) {
   if (state->retry_timeout != ola::thread::INVALID_TIMEOUT)
     m_ss->RemoveTimeout(state->retry_timeout);
 }
-}  // network
-}  // ola
+}  // namespace network
+}  // namespace ola

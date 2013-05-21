@@ -102,6 +102,6 @@ bool ShowNetOutputPort::WriteDMX(const DmxBuffer &buffer,
   return !m_node->SendDMX(PortId(), buffer);
   (void) priority;
 }
-}  // shownet
-}  // plugin
-}  // ola
+}  // namespace shownet
+}  // namespace plugin
+}  // namespace ola

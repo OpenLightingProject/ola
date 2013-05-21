@@ -119,7 +119,7 @@ class E131Rev2Header: public E131Header {
       uint16_t universe;
     } e131_rev2_pdu_header;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_E131HEADER_H_

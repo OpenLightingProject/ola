@@ -293,6 +293,7 @@ int VerifyShow(const string &filename) {
  */
 int main(int argc, char *argv[]) {
   options opts;
+  opts.cmd = argv[0];
 
   ParseOptions(argc, argv, &opts);
   ola::InitLogging(opts.level, ola::OLA_LOG_STDERR);

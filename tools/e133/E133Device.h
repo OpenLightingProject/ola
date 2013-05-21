@@ -14,84 +14,70 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * E133Device.h
- * The main E1.33 class.
+ * Encapsulates the functionality of an E1.33 device.
  * Copyright (C) 2011 Simon Newton
  */
 
 #ifndef TOOLS_E133_E133DEVICE_H_
 #define TOOLS_E133_E133DEVICE_H_
 
-
 #include <string>
 #include <vector>
 
 #include "ola/Clock.h"
+#include "ola/acn/CID.h"
+#include "ola/e133/MessageBuilder.h"
 #include "ola/io/SelectServerInterface.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/Socket.h"
-#include "ola/network/TCPSocketFactory.h"
 #include "ola/rdm/RDMControllerInterface.h"
-#include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/E133Inflator.h"
-#include "plugins/e131/e131/E133Sender.h"
 #include "plugins/e131/e131/RDMInflator.h"
 #include "plugins/e131/e131/RootInflator.h"
-#include "plugins/e131/e131/RootSender.h"
-#include "plugins/e131/e131/TCPTransport.h"
 #include "plugins/e131/e131/UDPTransport.h"
 
+#include "tools/e133/DesignatedControllerConnection.h"
 #include "tools/e133/E133Endpoint.h"
-#include "tools/e133/E133HealthCheckedConnection.h"
-#include "tools/e133/E133StreamSender.h"
+#include "tools/e133/TCPConnectionStats.h"
 
 using std::string;
 using std::auto_ptr;
 
 /**
- * A E1.33 Device.
+ * This encapulates the functionality of an E1.33 Device.
  * E1.33 Devices can either be native, or gateways to E1.20 devices.
  */
 class E133Device {
   public:
     E133Device(ola::io::SelectServerInterface *ss,
+               const ola::acn::CID &cid,
                const ola::network::IPV4Address &ip_address,
-               class EndpointManager *endpoint_manager,
-               class TCPConnectionStats *tcp_stats);
+               class EndpointManager *endpoint_manager);
     ~E133Device();
 
     void SetRootEndpoint(E133EndpointInterface *endpoint);
 
     bool Init();
 
-    void SendStatusMessage(const ola::rdm::RDMCommand *command);
+    TCPConnectionStats* GetTCPStats();
+    void SendStatusMessage(const ola::rdm::RDMResponse *response);
     bool CloseTCPConnection();
 
   private:
+    ola::io::SelectServerInterface *m_ss;
+    const ola::network::IPV4Address m_ip_address;
+    ola::e133::MessageBuilder m_message_builder;
+    TCPConnectionStats m_tcp_stats;
+    auto_ptr<DesignatedControllerConnection> m_controller_connection;
+
     class EndpointManager *m_endpoint_manager;
-    auto_ptr<ola::Callback1<void, uint16_t> > m_register_endpoint_callback;
-    auto_ptr<ola::Callback1<void, uint16_t> > m_unregister_endpoint_callback;
     E133EndpointInterface *m_root_endpoint;
 
-    class TCPConnectionStats *m_tcp_stats;
-
-    // The Node's CID
-    ola::plugin::e131::CID m_cid;
-
-    // TCP connection classes
-    ola::io::ConnectedDescriptor *m_tcp_descriptor;
-    ola::plugin::e131::OutgoingStreamTransport *m_outgoing_tcp_transport;
-    E133HealthCheckedConnection *m_health_checked_connection;
-
-    // the RDM device to handle requests to the Root Endpoint
+    // The RDM device to handle requests to the Root Endpoint
     ola::rdm::RDMControllerInterface *m_root_rdm_device;
 
-    // network members
-    const string m_preferred_ip;
-    ola::io::SelectServerInterface *m_ss;
-    ola::network::IPV4Address m_ip_address;
+    // Network members
     ola::network::UDPSocket m_udp_socket;
-    ola::network::BufferedTCPSocketFactory m_tcp_socket_factory;
-    ola::network::TCPAcceptingSocket m_tcp_socket;
 
     // inflators
     ola::plugin::e131::RootInflator m_root_inflator;
@@ -100,34 +86,23 @@ class E133Device {
 
     // transports
     ola::plugin::e131::IncomingUDPTransport m_incoming_udp_transport;
-    ola::plugin::e131::OutgoingUDPTransportImpl m_outgoing_udp_transport;
-    ola::plugin::e131::IncomingTCPTransport *m_incoming_tcp_transport;
-
-    // senders
-    ola::plugin::e131::RootSender m_root_sender;
-    ReliableE133StreamSender m_e133_sender;
-
-    void NewTCPConnection(ola::network::BufferedTCPSocket *descriptor);
-    void ReceiveTCPData(ola::plugin::e131::IncomingTCPTransport *transpport);
-    void TCPConnectionUnhealthy();
-    void TCPConnectionClosed();
-    void RLPDataReceived(const ola::plugin::e131::TransportHeader &header);
-
-    void RegisterEndpoint(uint16_t endpoint_id);
-    void UnRegisterEndpoint(uint16_t endpoint_id);
 
     void EndpointRequest(
-        uint16_t endpoint_id,
-        const ola::plugin::e131::TransportHeader &transport_header,
-        const ola::plugin::e131::E133Header &e133_header,
+        const ola::plugin::e131::TransportHeader *transport_header,
+        const ola::plugin::e131::E133Header *e133_header,
         const string &raw_request);
 
-    void EndpointRequestComplete(ola::network::IPV4Address src_ip,
-                                 uint16_t src_port,
+    void EndpointRequestComplete(ola::network::IPV4SocketAddress target,
                                  uint32_t sequence_number,
                                  uint16_t endpoint_id,
                                  ola::rdm::rdm_response_code response_code,
                                  const ola::rdm::RDMResponse *response,
                                  const std::vector<string> &packets);
+
+    void SendStatusMessage(const ola::network::IPV4SocketAddress target,
+                           uint32_t sequence_number,
+                           uint16_t endpoint_id,
+                           ola::e133::E133StatusCode status_code,
+                           const string &description);
 };
 #endif  // TOOLS_E133_E133DEVICE_H_

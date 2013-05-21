@@ -35,5 +35,5 @@ class CallbackRunner {
   private:
     CallbackClass *m_callback;
 };
-}  // ola
+}  // namespace ola
 #endif  // INCLUDE_OLA_CALLBACKRUNNER_H_

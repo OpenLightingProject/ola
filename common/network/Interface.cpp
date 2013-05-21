@@ -193,5 +193,5 @@ bool InterfaceBuilder::SetAddress(const string &str, IPV4Address *target) {
   *target = tmp_address;
   return true;
 }
-}  // network
-}  // ola
+}  // namespace network
+}  // namespace ola

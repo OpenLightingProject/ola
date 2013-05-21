@@ -139,6 +139,9 @@ class Preferences {
     virtual bool Save() const = 0;
     virtual void Clear() = 0;
 
+    // The location of where these preferences are stored.
+    virtual string Source() const = 0;
+
     virtual void SetValue(const string &key, const string &value) = 0;
     virtual void SetMultipleValue(const string &key, const string &value) = 0;
     virtual bool SetDefaultValue(const string &key,
@@ -156,6 +159,7 @@ class Preferences {
 
   protected:
     string m_preference_name;
+
   private:
     Preferences(const Preferences&);
     Preferences& operator=(const Preferences&);
@@ -186,6 +190,8 @@ class MemoryPreferences: public Preferences {
     virtual bool Load() { return true; }
     virtual bool Save() const { return true; }
     virtual void Clear();
+
+    virtual string Source() const { return "Not Saved"; }
 
     virtual void SetValue(const string &key, const string &value);
     virtual void SetMultipleValue(const string &key, const string &value);
@@ -259,6 +265,8 @@ class FileBackedPreferences: public MemoryPreferences {
     virtual bool Save() const;
     bool LoadFromFile(const string &filename);
 
+    string Source() const { return FileName(); }
+
   private:
     const string m_directory;
     FilePreferenceSaverThread *m_saver_thread;
@@ -289,5 +297,5 @@ class FileBackedPreferencesFactory: public PreferencesFactory {
       return new FileBackedPreferences(m_directory, name, &m_saver_thread);
     }
 };
-}  // ola
+}  // namespace ola
 #endif  // INCLUDE_OLAD_PREFERENCES_H_

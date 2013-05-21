@@ -51,7 +51,7 @@ class DummyDevice: public Device {
     uint16_t m_number_of_devices;
     uint16_t m_number_of_subdevices;
 };
-}  // dummy
-}  // plugin
-}  // ola
+}  // namespace dummy
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_DUMMY_DUMMYDEVICE_H_

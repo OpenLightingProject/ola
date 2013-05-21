@@ -81,11 +81,10 @@ class DmxTriOutputPort: public BasicOutputPort {
     }
 
   private:
-    DmxTriDevice *m_device;
     DmxTriWidget *m_tri_widget;
     const string m_serial;
 };
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBPRO_DMXTRIDEVICE_H_

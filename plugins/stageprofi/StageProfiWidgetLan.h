@@ -37,7 +37,7 @@ class StageProfiWidgetLan: public StageProfiWidget {
   private:
     static const uint16_t STAGEPROFI_PORT = 10001;
 };
-}  // stageprofi
-}  // plugin
-}  // ola
+}  // namespace stageprofi
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_STAGEPROFI_STAGEPROFIWIDGETLAN_H_

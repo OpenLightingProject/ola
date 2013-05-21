@@ -18,7 +18,6 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <cppunit/extensions/HelperMacros.h>
 #include <memory>
 
@@ -113,7 +112,8 @@ void RootSenderTest::testRootSenderWithCIDs(const CID &root_cid,
   ola::network::UDPSocket socket;
   OLA_ASSERT(socket.Init());
   OLA_ASSERT(
-      socket.Bind(IPV4SocketAddress(IPV4Address::WildCard(), ACN_PORT)));
+      socket.Bind(IPV4SocketAddress(IPV4Address::WildCard(),
+                                    ola::acn::ACN_PORT)));
   OLA_ASSERT(socket.EnableBroadcast());
 
   IncomingUDPTransport incoming_udp_transport(&socket, &root_inflator);
@@ -146,6 +146,6 @@ void RootSenderTest::testRootSenderWithCIDs(const CID &root_cid,
   m_ss->RegisterSingleTimeout(ABORT_TIMEOUT_IN_MS, closure);
   m_ss->Run();
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

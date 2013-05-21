@@ -54,7 +54,7 @@ class E131Sender {
     E131Sender(const E131Sender&);
     E131Sender& operator=(const E131Sender&);
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_E131SENDER_H_

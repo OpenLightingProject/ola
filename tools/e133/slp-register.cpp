@@ -17,11 +17,12 @@
  * Copyright (C) 2011 Simon Newton
  *
  */
-
-#include <getopt.h>
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
+#include <ola/base/Flags.h>
+#include <ola/base/Init.h>
+#include <ola/e133/SLPThread.h>
 #include <ola/io/SelectServer.h>
 #include <ola/network/IPV4Address.h>
 #include <ola/network/Interface.h>
@@ -31,44 +32,48 @@
 #include <sysexits.h>
 
 #include <iostream>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
-
-#include "SlpThread.h"
+#include <utility>
 
 using ola::network::IPV4Address;
+using ola::rdm::UID;
+using std::auto_ptr;
+using std::multimap;
+using std::pair;
 using std::string;
 using std::vector;
 
-// our command line options
-typedef struct {
-  string services;
-  ola::log_level log_level;
-  unsigned short lifetime;
-  bool help;
-} options;
+DEFINE_s_uint16(lifetime, t, 60, "The value to use for the service lifetime");
 
-
-// stupid globals for now
-SlpThread *thread;
+// The SelectServer is global so we can access it from the signal handler.
 ola::io::SelectServer ss;
-unsigned int registrations_active;
 
 /**
  * Called when a registration request completes.
  */
 void RegisterCallback(bool ok) {
-  OLA_INFO << "in register callback, state is " << ok;
+  if (ok) {
+    OLA_INFO << "Registered E1.33 device";
+  } else {
+    OLA_WARN << "Failed to register E1.33 device";
+  }
 }
 
 
 /**
  * Called when a de-registration request completes.
  */
-void DeRegisterCallback(ola::io::SelectServer *ss, bool ok) {
-  OLA_INFO << "in deregister callback, state is " << ok;
-  if (--registrations_active == 0)
+void DeRegisterCallback(ola::io::SelectServer *ss,
+                        unsigned int *registrations_active, bool ok) {
+  if (ok) {
+    OLA_INFO << "Registered E1.33 device";
+  } else {
+    OLA_WARN << "Failed to register E1.33 device";
+  }
+  if (--(*registrations_active) == 0)
     ss->Terminate();
 }
 
@@ -82,101 +87,21 @@ static void InteruptSignal(int signo) {
 }
 
 
-/*
- * Parse our cmd line options
+/**
+ * Process the list of services and build the list of properly formed service
+ * names.
  */
-void ParseOptions(int argc, char *argv[], options *opts) {
-  static struct option long_options[] = {
-      {"help", no_argument, 0, 'h'},
-      {"log-level", required_argument, 0, 'l'},
-      {"timeout", required_argument, 0, 't'},
-      {0, 0, 0, 0}
-    };
+void ProcessService(const string &service_spec,
+                    multimap<IPV4Address, UID> *services) {
+  auto_ptr<ola::network::InterfacePicker> picker(
+      ola::network::InterfacePicker::NewPicker());
+  ola::network::Interface iface;
 
-  opts->log_level = ola::OLA_LOG_WARN;
-  opts->services = "";
-  opts->lifetime = 60;
-  opts->help = false;
-
-  int c;
-  int option_index = 0;
-
-  while (1) {
-    c = getopt_long(argc, argv, "l:ht:", long_options, &option_index);
-
-    if (c == -1)
-      break;
-
-    switch (c) {
-      case 0:
-        break;
-      case 'h':
-        opts->help = true;
-        break;
-      case 'l':
-        switch (atoi(optarg)) {
-          case 0:
-            // nothing is written at this level
-            // so this turns logging off
-            opts->log_level = ola::OLA_LOG_NONE;
-            break;
-          case 1:
-            opts->log_level = ola::OLA_LOG_FATAL;
-            break;
-          case 2:
-            opts->log_level = ola::OLA_LOG_WARN;
-            break;
-          case 3:
-            opts->log_level = ola::OLA_LOG_INFO;
-            break;
-          case 4:
-            opts->log_level = ola::OLA_LOG_DEBUG;
-            break;
-          default :
-            break;
-        }
-        break;
-      case 't':
-        opts->lifetime = atoi(optarg);
-        break;
-      case '?':
-        break;
-      default:
-        break;
-    }
+  if (!picker->ChooseInterface(&iface, "")) {
+    OLA_WARN << "Failed to find interface";
+    exit(EX_NOHOST);
   }
 
-  if (optind + 1 == argc)
-    opts->services = argv[optind];
-}
-
-
-/*
- * Display the help message
- */
-void DisplayHelpAndExit(char arg[]) {
-  std::cout << "Usage: " << arg << " [services]\n"
-  "\n"
-  "Register one or more E1.33 services with SLP. [services] is a comma\n"
-  "separated list of IP, UIDs in the form: uid[@ip], e.g. \n"
-  "7a70:00000001 (default ip) or 7a70:00000001@192.168.1.1\n"
-  "\n"
-  "  -h, --help               Display this help message and exit.\n"
-  "  -l, --log-level <level>  Set the logging level 0 .. 4.\n"
-  "  -t, --timeout <seconds>  The value to use for the service lifetime\n"
-  << std::endl;
-  exit(EX_USAGE);
-}
-
-
-/**
- * Process a service spec in the form [ip].UID
- * If ip isn't supplied we use the default one.
- * Returns the canonical service name "ip:uid".
- * If the spec isn't valid we print a warning and exit.
- */
-string ProcessServiceSpec(const string &service_spec,
-                          const IPV4Address &default_address) {
   vector<string> ip_uid_pair;
   ola::StringSplit(service_spec, ip_uid_pair, "@");
 
@@ -184,7 +109,7 @@ string ProcessServiceSpec(const string &service_spec,
   string uid_str;
 
   if (ip_uid_pair.size() == 1) {
-    ipaddr = default_address;
+    ipaddr = iface.ip_address;
     uid_str = ip_uid_pair[0];
   } else if (ip_uid_pair.size() == 2) {
     if (!IPV4Address::FromString(ip_uid_pair[1], &ipaddr)) {
@@ -197,40 +122,12 @@ string ProcessServiceSpec(const string &service_spec,
     exit(EX_USAGE);
   }
 
-  std::auto_ptr<ola::rdm::UID> uid(ola::rdm::UID::FromString(uid_str));
+  auto_ptr<UID> uid(UID::FromString(uid_str));
   if (!uid.get()) {
     OLA_FATAL << "Invalid UID: " << uid_str;
     exit(EX_USAGE);
   }
-
-  std::stringstream str;
-  str << ipaddr << ":5568/" << std::setfill('0') << std::setw(4) << std::hex
-    << uid->ManufacturerId() << std::setw(8) << uid->DeviceId();
-
-  return str.str();
-}
-
-
-/**
- * Process the list of services and build the list of properly formed service
- * names.
- */
-void ProcessServices(const string &service_spec, vector<string> *services) {
-  std::auto_ptr<ola::network::InterfacePicker> picker(
-      ola::network::InterfacePicker::NewPicker());
-  ola::network::Interface iface;
-
-  if (!picker->ChooseInterface(&iface, "")) {
-    OLA_WARN << "Failed to find interface";
-    exit(EX_NOHOST);
-  }
-
-  vector<string> service_specs;
-  ola::StringSplit(service_spec, service_specs, ",");
-  vector<string>::const_iterator iter;
-
-  for (iter = service_specs.begin(); iter != service_specs.end(); ++iter)
-    services->push_back(ProcessServiceSpec(*iter, iface.ip_address));
+  services->insert(pair<IPV4Address, UID>(ipaddr, *uid));
 }
 
 
@@ -238,52 +135,55 @@ void ProcessServices(const string &service_spec, vector<string> *services) {
  * main
  */
 int main(int argc, char *argv[]) {
-  options opts;
-  ParseOptions(argc, argv, &opts);
+  ola::AppInit(argc, argv);
+  ola::SetHelpString("[options] [services]",
+    "Register one or more E1.33 services with SLP. [services] is\n"
+    "a list of IP, UIDs in the form: uid[@ip], e.g. \n"
+    "7a70:00000001 (default ip) or 7a70:00000001@192.168.1.1\n");
+  ola::ParseFlags(&argc, argv);
+  ola::InitLoggingFromFlags();
 
-  if (opts.help || opts.services == "")
-    DisplayHelpAndExit(argv[0]);
-
-  ola::InitLogging(opts.log_level, ola::OLA_LOG_STDERR);
-
-  vector<string> services;
-  ProcessServices(opts.services, &services);
-
-  // signal handler
-  struct sigaction act, oact;
-  act.sa_handler = InteruptSignal;
-  sigemptyset(&act.sa_mask);
-  act.sa_flags = 0;
-
-  if (sigaction(SIGINT, &act, &oact) < 0) {
-    OLA_WARN << "Failed to install signal SIGINT";
-    return false;
+  if (argc < 2) {
+    ola::DisplayUsage();
+    exit(EX_USAGE);
   }
 
-  // setup the Slpthread
-  thread = new SlpThread(&ss);
-  if (!thread->Init()) {
-    OLA_WARN << "SlpThread Init() failed";
-    delete thread;
+  multimap<IPV4Address, UID> services;
+  for (int i = 1; i < argc; i++)
+    ProcessService(argv[i], &services);
+
+  // signal handler
+  ola::InstallSignal(SIGINT, InteruptSignal);
+
+  auto_ptr<ola::e133::BaseSLPThread> slp_thread(
+    ola::e133::SLPThreadFactory::NewSLPThread(&ss));
+
+  if (!slp_thread->Init()) {
+    OLA_WARN << "SLPThread Init() failed";
     exit(EX_UNAVAILABLE);
   }
 
-  thread->Start();
-  vector<string>::const_iterator iter;
-  for (iter = services.begin(); iter != services.end(); ++iter)
-    thread->Register(
-      ola::NewSingleCallback(&RegisterCallback), *iter, opts.lifetime);
-  registrations_active = services.size();
+  if (!slp_thread->Start()) {
+    OLA_WARN << "SLPThread Start() failed";
+    exit(EX_UNAVAILABLE);
+  }
+  multimap<IPV4Address, UID>::const_iterator iter;
+  for (iter = services.begin(); iter != services.end(); ++iter) {
+    slp_thread->RegisterDevice(
+      ola::NewSingleCallback(&RegisterCallback),
+      iter->first, iter->second, FLAGS_lifetime);
+  }
 
   ss.Run();
 
   // start the de-registration process
+  unsigned int registrations_active = services.size();
   for (iter = services.begin(); iter != services.end(); ++iter) {
-  thread->DeRegister(ola::NewSingleCallback(&DeRegisterCallback, &ss),
-                     *iter);
+    slp_thread->DeRegisterDevice(
+        ola::NewSingleCallback(&DeRegisterCallback, &ss, &registrations_active),
+        iter->first, iter->second);
   }
   ss.Run();
 
-  thread->Join();
-  delete thread;
+  slp_thread->Join(NULL);
 }

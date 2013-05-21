@@ -127,6 +127,6 @@ void SandNetOutputPort::PostSetUniverse(Universe *old_universe,
                               m_helper.SandnetUniverse(new_universe));
   (void) old_universe;
 }
-}  // sandnet
-}  // plugin
-}  // ola
+}  // namespace sandnet
+}  // namespace plugin
+}  // namespace ola

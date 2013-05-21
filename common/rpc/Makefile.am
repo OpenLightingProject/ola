@@ -20,20 +20,15 @@ if BUILD_TESTS
 TESTS = RpcTester
 endif
 check_PROGRAMS = $(TESTS)
-RpcTester_SOURCES = RpcTester.cpp \
-                    RpcControllerTest.cpp \
+
+RpcTester_SOURCES = RpcControllerTest.cpp \
                     StreamRpcChannelTest.cpp \
                     StreamRpcHeaderTest.cpp
 nodist_RpcTester_SOURCES = TestService.pb.cc
-RpcTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-RpcTester_LDADD = $(CPPUNIT_LIBS) \
-                  ./libstreamrpcchannel.la \
-                  ../export_map/libolaexportmap.la \
-                  ../io/libolaio.la \
-                  ../logging/liblogging.la \
-                  ../network/libolanetwork.la \
-                  ../thread/libthread.la \
-                  ../utils/libolautils.la
+RpcTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+RpcTester_LDADD = $(COMMON_TESTING_LIBS) \
+                  $(libprotobuf_LIBS) \
+                  ../libolacommon.la
 
 clean-local:
 	rm -f *.pb.{h,cc}

@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.57)
-AC_INIT(ola, [0.8.26])
+AC_INIT(ola, [0.8.28])
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_AUX_DIR(config)
 AC_SUBST(ac_aux_dir)
@@ -187,9 +187,23 @@ fi
 
 # We build a list of plugins that we're going to compile here so the olad
 # knows what to link against.
-PLUGINS="dummy espnet e131 opendmx pathport sandnet shownet stageprofi usbpro"
+PLUGINS=""
 
 PLUGIN_SUPPORT(artnet, USE_ARTNET)
+PLUGIN_SUPPORT(dummy, USE_DUMMY)
+PLUGIN_SUPPORT(e131, USE_E131)
+PLUGIN_SUPPORT(espnet, USE_ESPNET)
+PLUGIN_SUPPORT(kinet, USE_KINET)
+PLUGIN_SUPPORT(opendmx, USE_OPENDMX)
+PLUGIN_SUPPORT(pathport, USE_PATHPORT)
+PLUGIN_SUPPORT(sandnet, USE_SANDNET)
+PLUGIN_SUPPORT(shownet, USE_SHOWNET)
+
+# SPI support is only enabled if the header is found
+AC_CHECK_HEADER([linux/spi/spidev.h], [enable_spi="yes"], [enable_spi="no"])
+PLUGIN_SUPPORT(spi, USE_SPI, $enable_spi)
+PLUGIN_SUPPORT(stageprofi, USE_STAGEPROFI)
+PLUGIN_SUPPORT(usbpro, USE_USBPRO)
 
 # LIBRARY: ncurses
 AC_CHECK_LIB([ncurses], [initscr], [have_ncurses="yes"])
@@ -241,6 +255,12 @@ use_ossp_uuid="no"
 case "${host_os}" in
   *darwin*)
     # Running on mac, just use the built in UUID
+    # If we try to use ossp/uuid then we can get conflicts with <unistd.h>, if
+    # <unistd.h> is #include'd before ossp/uuid.h. The errors take the form:
+    #   /opt/local/include/ossp/uuid.h:94: error: conflicting declaration
+    #    'typedef struct uuid_st uuid_t'
+    #   /usr/include/unistd.h:133: error: 'uuid_t' has a previous declaration as
+    #     'typedef unsigned char uuid_t [16]'
     AC_CHECK_HEADERS(
       [uuid/uuid.h],
       [],
@@ -322,7 +342,7 @@ fi
 # look for libusb if the user asked us to
 AC_ARG_ENABLE(
   [libusb],
-  AS_HELP_STRING([--disable-libusb], [Don't use libusb even if it exists]))
+  AS_HELP_STRING([--disable-libusb], [Avoid using libusb even if it exists]))
 
 have_libusb="no"
 
@@ -338,8 +358,16 @@ fi
 
 # LIBRARY: libftdi
 # look for libftdi (this requires libusb-0.1.4+ don't know if I should also check for it, since the libusb check above is not for 0.1.4 but for libusb-1
+AC_ARG_ENABLE(
+  [libftdi],
+  AS_HELP_STRING([--disable-libftdi], [Avoid using libftdi even if it exists]))
+
+
 have_libftdi="no"
-PKG_CHECK_MODULES(libftdi, [libftdi >= 0.18], [have_libftdi="yes"], [true])
+
+if test "${enable_libftdi}" != "no"; then
+  PKG_CHECK_MODULES(libftdi, [libftdi >= 0.18], [have_libftdi="yes"], [true])
+fi
 
 AM_CONDITIONAL(HAVE_LIBFTDI, test "${have_libftdi}" = "yes")
 
@@ -459,7 +487,18 @@ AC_ARG_ENABLE(gcov,
 if test "${enable_gov}" != "no"; then
   CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
   CXXFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
-  LDFLAGS="$LDFLAGS"
+fi
+
+# tcmalloc
+AC_ARG_ENABLE(tcmalloc,
+              AC_HELP_STRING([--enable-tcmalloc],
+                             [Use tcmalloc]),
+              [enable_tcmalloc=$enablevar],
+              [enable_tcmalloc="no"],
+             )
+
+if test "${enable_tcmalloc}" != "no"; then
+  LDFLAGS="$LDFLAGS -ltcmalloc"
 fi
 
 # Decide if we should build the example programs
@@ -469,6 +508,14 @@ AC_ARG_ENABLE(
                  [Disable the OLA example client programs]),)
 
 AM_CONDITIONAL(BUILD_EXAMPLES, test "${enable_examples}" != "no")
+
+# Optionally install the E1.33 library.
+AC_ARG_ENABLE(
+  e133,
+  AC_HELP_STRING([--enable-e133], [Install the E1.33 library]),)
+# For now we install the ACN lib if the E1.33 lib is requested
+AM_CONDITIONAL(INSTALL_ACN, test "${enable_e133}" == "yes")
+AM_CONDITIONAL(INSTALL_E133, test "${enable_e133}" == "yes")
 
 # python wrappers & RDM Responder tests.
 AC_ARG_ENABLE(python-libs,
@@ -560,9 +607,9 @@ AC_OUTPUT( Makefile \
     common/Makefile \
     common/base/Makefile \
     common/export_map/Makefile \
+    common/file/Makefile \
     common/http/Makefile \
     common/io/Makefile \
-    common/logging/Makefile \
     common/math/Makefile \
     common/messaging/Makefile \
     common/network/Makefile \
@@ -582,20 +629,26 @@ AC_OUTPUT( Makefile \
     debian/Makefile \
     include/Makefile \
     include/ola/Makefile \
+    include/ola/acn/Makefile \
     include/ola/base/Makefile \
+    include/ola/file/Makefile \
+    include/ola/e133/Makefile \
     include/ola/http/Makefile \
     include/ola/io/Makefile \
     include/ola/math/Makefile \
     include/ola/messaging/Makefile \
     include/ola/network/Makefile \
     include/ola/rdm/Makefile \
+    include/ola/slp/Makefile \
     include/ola/stl/Makefile \
     include/ola/testing/Makefile \
     include/ola/thread/Makefile \
     include/ola/timecode/Makefile \
+    include/ola/util/Makefile \
     include/ola/web/Makefile \
     include/olad/Makefile \
     java/Makefile \
+    man/Makefile \
     ola/Makefile \
     python/Makefile \
     python/examples/Makefile \
@@ -613,26 +666,34 @@ AC_OUTPUT( Makefile \
     plugins/dummy/Makefile \
     plugins/e131/Makefile \
     plugins/e131/e131/Makefile \
+    plugins/e131/e131/libolaacn.pc \
     plugins/e131/messages/Makefile \
     plugins/e131/messages/libolae131conf.pc \
     plugins/espnet/Makefile \
+    plugins/kinet/Makefile \
     plugins/opendmx/Makefile \
     plugins/osc/Makefile \
     plugins/pathport/Makefile \
     plugins/sandnet/Makefile \
     plugins/shownet/Makefile \
+    plugins/spi/Makefile \
     plugins/stageprofi/Makefile \
     plugins/usbdmx/Makefile \
     plugins/ftdidmx/Makefile \
     plugins/usbpro/Makefile \
     plugins/usbpro/messages/Makefile \
     plugins/usbpro/messages/libolausbproconf.pc \
+    slp/Makefile \
+    slp/libolaslpclient.pc \
+    slp/libolaslpserver.pc \
     tools/Makefile \
     tools/ola_trigger/Makefile \
     tools/e133/Makefile \
+    tools/e133/libolae133controller.pc \
+    tools/e133/libolae133common.pc \
+    tools/e133/libolae133slp.pc \
     tools/rdm/Makefile \
     tools/rdmpro/Makefile \
-    tools/slp/Makefile \
     tools/usbpro/Makefile \
     libola.pc \
     libolaserver.pc \

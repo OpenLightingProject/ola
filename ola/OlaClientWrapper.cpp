@@ -68,4 +68,4 @@ void BaseClientWrapper::SocketClosed() {
   OLA_INFO << "Server closed the connection";
   m_ss.Terminate();
 }
-}  // ola
+}  // namespace ola

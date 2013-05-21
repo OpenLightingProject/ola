@@ -1,3 +1,16 @@
+ola (0.8.28-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- RenZO <renzo@imaginux.com>  Sat, 20 Apr 2013 23:59:52 +0200
+
+ola (0.8.27-1) unstable; urgency=low
+
+  * New upstream release
+  * Display a message if init scripts are disabled
+
+ -- RenZO <renzo@imaginux.com>  Sat, 02 Mar 2013 02:12:02 +0100
+
 ola (0.8.26-1) unstable; urgency=low
 
   * New upstream release

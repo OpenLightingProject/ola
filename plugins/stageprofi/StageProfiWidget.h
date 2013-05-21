@@ -67,7 +67,7 @@ class StageProfiWidget {
   private:
     int DoRecv();
 };
-}  // stageprofi
-}  // plugin
-}  // ola
+}  // namespace stageprofi
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_STAGEPROFI_STAGEPROFIWIDGET_H_

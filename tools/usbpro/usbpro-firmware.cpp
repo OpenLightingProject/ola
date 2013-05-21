@@ -221,8 +221,8 @@ void DisplayHelpAndExit(char *argv[]) {
   "\n"
   "Flash the firmware on an Enttec USB Pro device.\n"
   "\n"
-  "  -d <device_path>   The path to the device.\n"
-  "  -f <firmware_file> The path to the firmware to use.\n"
+  "  -d, --device <device_path>   The path to the device.\n"
+  "  -f, --firmware <firmware_file> The path to the firmware to use.\n"
   "  -h, --help         Display this help message and exit.\n"
   "  -l, --log-level <level>  Set the logging level 0 .. 4.\n"
   << endl;

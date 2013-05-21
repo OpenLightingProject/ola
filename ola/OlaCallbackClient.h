@@ -42,6 +42,17 @@ using std::string;
 
 class OlaCallbackClient: public ola::rdm::RDMAPIImplInterface {
   public:
+    struct PluginState {
+      string name;
+      bool enabled;
+      bool active;
+      string preferences_source;
+      vector<OlaPlugin> conflicting_plugins;
+    };
+
+    typedef SingleUseCallback2<void, const PluginState&, const string&>
+      PluginStateCallback;
+
     explicit OlaCallbackClient(ola::io::ConnectedDescriptor *descriptor);
     ~OlaCallbackClient();
 
@@ -57,6 +68,9 @@ class OlaCallbackClient: public ola::rdm::RDMAPIImplInterface {
     bool FetchPluginDescription(
         ola_plugin_id plugin_id,
         SingleUseCallback2<void, const string&, const string&> *callback);
+
+    bool FetchPluginState(ola_plugin_id plugin_id,
+                          PluginStateCallback *callback);
 
     // device methods
     bool FetchDeviceInfo(
@@ -201,5 +215,5 @@ class OlaCallbackClient: public ola::rdm::RDMAPIImplInterface {
 
     class OlaClientCore *m_core;
 };
-}  // ola
+}  // namespace ola
 #endif  // OLA_OLACALLBACKCLIENT_H_

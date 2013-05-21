@@ -24,11 +24,11 @@ goog.require('goog.ui.Container');
 goog.require('ola.BaseFrame');
 goog.require('ola.UniverseControl');
 goog.require('ola.UniverseItem');
+goog.require('ola.common.DmxMonitor');
 goog.require('ola.common.SectionRenderer');
 goog.require('ola.common.Server');
 goog.require('ola.common.Server.EventType');
 goog.require('ola.common.SortedList');
-goog.require('ola.common.DmxMonitor');
 
 goog.provide('ola.mobile.MonitorTab');
 
@@ -53,10 +53,12 @@ ola.mobile.MonitorTab = function() {
       goog.dom.$('monitor_frame'));
 };
 
-/* The title of this tab */
+/**
+ *  The title of this tab
+ */
 ola.mobile.MonitorTab.prototype.title = function() {
   return 'DMX Monitor';
-}
+};
 
 
 /**
@@ -64,7 +66,7 @@ ola.mobile.MonitorTab.prototype.title = function() {
  */
 ola.mobile.MonitorTab.prototype.blur = function() {
   this.monitor.setState(false, undefined);
-}
+};
 
 /**
  * Reset certain variables to their default state

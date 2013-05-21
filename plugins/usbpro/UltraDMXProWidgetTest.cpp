@@ -59,7 +59,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(UltraDMXProWidgetTest);
 void UltraDMXProWidgetTest::setUp() {
   CommonWidgetTest::setUp();
   m_widget.reset(
-      new ola::plugin::usbpro::UltraDMXProWidget(&m_ss, &m_descriptor));
+      new ola::plugin::usbpro::UltraDMXProWidget(&m_descriptor));
 }
 
 

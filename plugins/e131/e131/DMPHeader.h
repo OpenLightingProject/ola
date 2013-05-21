@@ -81,7 +81,7 @@ class DMPHeader {
     static const uint8_t SIZE_MASK = 0x03;
     uint8_t m_header;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_DMPHEADER_H_

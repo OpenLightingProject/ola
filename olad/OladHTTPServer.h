@@ -18,8 +18,8 @@
  * Copyright (C) 2005-2010 Simon Newton
  */
 
-#ifndef OLAD_OLAHTTPSERVER_H_
-#define OLAD_OLAHTTPSERVER_H_
+#ifndef OLAD_OLADHTTPSERVER_H_
+#define OLAD_OLADHTTPSERVER_H_
 
 #include <time.h>
 #include <string>
@@ -84,8 +84,13 @@ class OladHTTPServer: public ola::http::OlaHTTPServer {
                             const vector<class OlaUniverse> &universes,
                             const string &error);
 
+    void HandlePartialPluginInfo(HTTPResponse *response,
+                                 int plugin_id,
+                                 const string &description,
+                                 const string &error);
     void HandlePluginInfo(HTTPResponse *response,
-                          const string &description,
+                          string description,
+                          const OlaCallbackClient::PluginState &state,
                           const string &error);
 
     void HandleUniverseInfo(HTTPResponse *response,
@@ -116,6 +121,18 @@ class OladHTTPServer: public ola::http::OlaHTTPServer {
                                 class ActionQueue *action_queue);
     void SendModifyUniverseResponse(HTTPResponse *response,
                                     class ActionQueue *action_queue);
+
+    /*
+     * Serve a help redirect
+     * @param response the response to use
+     */
+    inline static int ServeHelpRedirect(HTTPResponse *response) {
+      return HTTPServer::ServeRedirect(response, HELP_REDIRECTION);
+    }
+
+    static int ServeUsage(HTTPResponse *response, const string &details);
+
+    static const char HELP_PARAMETER[];
 
   private:
     class ola::io::ConnectedDescriptor *m_client_socket;
@@ -161,10 +178,11 @@ class OladHTTPServer: public ola::http::OlaHTTPServer {
         const string &path,
         int (OladHTTPServer::*method)(const HTTPRequest*, HTTPResponse*));
 
+    static const char HELP_REDIRECTION[];
     static const char K_BACKEND_DISCONNECTED_ERROR[];
     static const unsigned int K_UNIVERSE_NAME_LIMIT = 100;
     static const char K_PRIORITY_VALUE_SUFFIX[];
     static const char K_PRIORITY_MODE_SUFFIX[];
 };
-}  // ola
-#endif  // OLAD_OLAHTTPSERVER_H_
+}  // namespace ola
+#endif  // OLAD_OLADHTTPSERVER_H_

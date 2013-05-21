@@ -271,6 +271,6 @@ ArduinoWidget::~ArduinoWidget() {
   delete m_impl;
   delete m_controller;
 }
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola

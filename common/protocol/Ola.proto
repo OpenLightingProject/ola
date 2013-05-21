@@ -59,6 +59,8 @@ enum PluginIds {
   OLA_PLUGIN_USBDMX = 12;
   OLA_PLUGIN_FTDIDMX = 13;
   OLA_PLUGIN_OSC = 14;
+  OLA_PLUGIN_SPI = 15;
+  OLA_PLUGIN_KINET = 16;
 }
 
 /**
@@ -146,6 +148,7 @@ message PluginListRequest {}
 message PluginInfo {
   required int32 plugin_id = 1;
   required string name = 2;
+  required bool active = 3;
 }
 
 message PluginListReply {
@@ -162,6 +165,18 @@ message PluginDescriptionReply {
   required string description = 2;
 }
 
+// request the state for a plugin
+message PluginStateRequest {
+  required int32 plugin_id = 1;
+}
+
+message PluginStateReply {
+  required string name = 1;
+  required bool enabled = 2;
+  required bool active = 3;
+  required string preferences_source = 4;
+  repeated PluginInfo conflicts_with = 5;
+}
 
 // request info on a device
 message DeviceInfoRequest {
@@ -337,6 +352,7 @@ service OlaServerService {
   rpc GetPlugins (PluginListRequest) returns (PluginListReply);
   rpc GetPluginDescription (PluginDescriptionRequest) returns
     (PluginDescriptionReply);
+  rpc GetPluginState (PluginStateRequest) returns (PluginStateReply);
   rpc GetDeviceInfo (DeviceInfoRequest) returns (DeviceInfoReply);
   rpc GetCandidatePorts (OptionalUniverseRequest) returns (DeviceInfoReply);
   rpc ConfigureDevice (DeviceConfigRequest) returns (DeviceConfigReply);

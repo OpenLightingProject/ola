@@ -122,7 +122,7 @@ typedef union {
   espnet_ack_t ack;
   espnet_data_t dmx;
 } espnet_packet_union_t;
-}  // espnet
-}  // plugin
-}  // ola
+}  // namespace espnet
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_ESPNET_ESPNETPACKETS_H_

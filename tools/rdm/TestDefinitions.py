@@ -559,12 +559,15 @@ class GetMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
       self.NackGetResult(RDMNack.NR_PACKET_SIZE_UNSUPPORTED),
       self.AckGetResult(),  # some crazy devices continue to ack
       InvalidResponse(),
+      TimeoutResult(),
     ])
     self.SendRawGet(ROOT_DEVICE, self.pid, 'x' * self.MAX_PDL)
 
   def VerifyResult(self, response, fields):
-    self.SetProperty('supports_max_sized_pdl',
-                     response.response_code != OlaClient.RDM_INVALID_RESPONSE)
+    ok = response not in [OlaClient.RDM_INVALID_RESPONSE,
+                          OlaClient.RDM_TIMEOUT]
+
+    self.SetProperty('supports_max_sized_pdl', ok)
 
 
 class DetermineMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
@@ -594,6 +597,7 @@ class DetermineMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
       self.NackGetResult(RDMNack.NR_FORMAT_ERROR, action=self.GetPassed),
       self.AckGetResult(action=self.GetPassed),
       InvalidResponse(action=self.GetFailed),
+      TimeoutResult(action=self.GetFailed),
     ])
     self.SendRawGet(ROOT_DEVICE, self.pid, 'x' * self._current)
 
@@ -2135,7 +2139,8 @@ class GetSensorDefinition(OptionalParameterTestFixture):
     self._sensors[self._current_index] = fields
 
     # perform sanity checks on the sensor infomation
-    if fields['type'] not in RDMConstants.SENSOR_TYPE_TO_NAME:
+    if (fields['type'] not in RDMConstants.SENSOR_TYPE_TO_NAME and
+        fields['type'] < 0x80):
       self.AddWarning('Unknown type %d for sensor %d' %
                       (fields['type'], sensor_number))
 

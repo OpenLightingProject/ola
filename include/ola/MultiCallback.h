@@ -66,5 +66,5 @@ inline BaseCallback0<void>* NewMultiCallback(
     BaseCallback0<void> *callback) {
   return new MultiCallback(limit, callback);
 }
-}  // ola
+}  // namespace ola
 #endif  // INCLUDE_OLA_MULTICALLBACK_H_

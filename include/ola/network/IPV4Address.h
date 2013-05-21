@@ -81,6 +81,10 @@ class IPV4Address {
       return m_address.s_addr < other.m_address.s_addr;
     }
 
+    bool operator>(const IPV4Address &other) const {
+      return m_address.s_addr > other.m_address.s_addr;
+    }
+
     const struct in_addr Address() const {
       return m_address;
     }
@@ -123,6 +127,6 @@ class IPV4Address {
   private:
     struct in_addr m_address;
 };
-}  // network
-}  // ola
+}  // namespace network
+}  // namespace ola
 #endif  // INCLUDE_OLA_NETWORK_IPV4ADDRESS_H_

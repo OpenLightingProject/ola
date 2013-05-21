@@ -49,6 +49,41 @@ CommandPrinter::CommandPrinter(std::ostream *output,
 }
 
 
+void CommandPrinter::Print(const class RDMCommand *,
+                           bool,
+                           bool) {
+  *m_output << "Unknown RDM Command class";
+}
+
+
+void CommandPrinter::Print(const class RDMRequest *request,
+                           bool summarize,
+                           bool unpack_param_data) {
+  DisplayRequest(request, summarize, unpack_param_data);
+}
+
+
+void CommandPrinter::Print(const class RDMResponse *response,
+                           bool summarize,
+                           bool unpack_param_data) {
+  DisplayResponse(response, summarize, unpack_param_data);
+}
+
+
+void CommandPrinter::Print(const class RDMDiscoveryRequest *request,
+                           bool summarize,
+                           bool unpack_param_data) {
+  DisplayDiscoveryRequest(request, summarize, unpack_param_data);
+}
+
+
+void CommandPrinter::Print(const class RDMDiscoveryResponse *response,
+                           bool summarize,
+                           bool unpack_param_data) {
+  DisplayDiscoveryResponse(response, summarize, unpack_param_data);
+}
+
+
 /**
  * Write out a RDM Request
  * @param request the request to format
@@ -278,8 +313,8 @@ void CommandPrinter::AppendPortId(const class RDMRequest *request) {
 
 
 void CommandPrinter::AppendVerboseUIDs(const class RDMCommand *command) {
-  *m_output << "  Dest UID       : " << command->DestinationUID() << endl;
   *m_output << "  Source UID     : " << command->SourceUID() << endl;
+  *m_output << "  Dest UID       : " << command->DestinationUID() << endl;
   *m_output << "  Transaction #  : " << std::dec <<
     static_cast<unsigned int>(command->TransactionNumber()) << endl;
 }
@@ -396,5 +431,5 @@ bool CommandPrinter::GetNackReason(const RDMCommand *response,
     return false;
   }
 }
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola

@@ -79,8 +79,8 @@ class Dmx4LinuxPlugin: public ola::Plugin {
     static const char PLUGIN_NAME[];
     static const char PLUGIN_PREFIX[];
 };
-}  // dmx4linux
-}  // plugin
-}  // ola
+}  // namespace dmx4linux
+}  // namespace plugin
+}  // namespace ola
 
 #endif  // PLUGINS_DMX4LINUX_DMX4LINUXPLUGIN_H_

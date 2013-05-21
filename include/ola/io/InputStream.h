@@ -66,12 +66,12 @@ class InputStream: public InputStreamInterface {
     }
     virtual ~InputStream() {}
 
-    bool operator>>(int8_t &val) { return Extract(val); }
-    bool operator>>(uint8_t &val) { return Extract(val); }
-    bool operator>>(int16_t &val) { return Extract(val); }
-    bool operator>>(uint16_t &val) { return Extract(val); }
-    bool operator>>(int32_t &val) { return Extract(val); }
-    bool operator>>(uint32_t &val) { return Extract(val); }
+    bool operator>>(int8_t &val) { return Extract(&val); }
+    bool operator>>(uint8_t &val) { return Extract(&val); }
+    bool operator>>(int16_t &val) { return Extract(&val); }
+    bool operator>>(uint16_t &val) { return Extract(&val); }
+    bool operator>>(int32_t &val) { return Extract(&val); }
+    bool operator>>(uint32_t &val) { return Extract(&val); }
 
     unsigned int ReadString(std::string *output, unsigned int size) {
       return m_buffer->Read(output, size);
@@ -81,15 +81,15 @@ class InputStream: public InputStreamInterface {
     InputBufferInterface *m_buffer;
 
     template <typename T>
-    bool Extract(T &val) {
-      unsigned int length = m_buffer->Read(reinterpret_cast<uint8_t*>(&val),
-                                           sizeof(val));
-      return length == sizeof(val);
+    bool Extract(T *val) {
+      unsigned int length = m_buffer->Read(reinterpret_cast<uint8_t*>(val),
+                                           sizeof(*val));
+      return length == sizeof(*val);
     }
 
     InputStream(const InputStream&);
     InputStream& operator=(const InputStream&);
 };
-}  // io
-}  // ola
+}  // namespace io
+}  // namespace ola
 #endif  // INCLUDE_OLA_IO_INPUTSTREAM_H_

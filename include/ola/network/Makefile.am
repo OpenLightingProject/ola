@@ -1,5 +1,4 @@
 SOURCES = AdvancedTCPConnector.h\
-          BufferedTCPSocket.h \
           HealthCheckedConnection.h \
           IPV4Address.h \
           Interface.h \
@@ -7,6 +6,7 @@ SOURCES = AdvancedTCPConnector.h\
           NetworkUtils.h \
           Socket.h \
           SocketAddress.h \
+          SocketCloser.h \
           TCPConnector.h \
           TCPSocket.h \
           TCPSocketFactory.h

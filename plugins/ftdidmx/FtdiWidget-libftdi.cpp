@@ -302,6 +302,6 @@ void FtdiWidget::Widgets(vector<FtdiWidgetInfo> *widgets) {
   ftdi_list_free(&list);
   ftdi_free(ftdi);
 }
-}  // ftdidmx
-}  // plugin
-}  // ola
+}  // namespace ftdidmx
+}  // namespace plugin
+}  // namespace ola

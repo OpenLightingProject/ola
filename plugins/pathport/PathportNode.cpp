@@ -454,6 +454,6 @@ bool PathportNode::SendPacket(const pathport_packet_s &packet,
   }
   return true;
 }
-}  // pothport
-}  // plugin
-}  // ola
+}  // namespace pathport
+}  // namespace plugin
+}  // namespace ola

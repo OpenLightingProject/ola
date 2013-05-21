@@ -62,7 +62,7 @@ class StageProfiPlugin: public Plugin {
     static const char PLUGIN_PREFIX[];
     static const char DEVICE_KEY[];
 };
-}  // stageprofi
-}  // plugin
-}  // ola
+}  // namespace stageprofi
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_STAGEPROFI_STAGEPROFIPLUGIN_H_

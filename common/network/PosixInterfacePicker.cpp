@@ -50,6 +50,7 @@
 #include "ola/Logging.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/network/SocketCloser.h"
 
 namespace ola {
 namespace network {
@@ -74,6 +75,8 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
     OLA_WARN << "Could not create socket " << strerror(errno);
     return interfaces;
   }
+
+  SocketCloser closer(sd);
 
   // use ioctl to get a listing of interfaces
   char *buffer;  // holds the iface data
@@ -198,7 +201,6 @@ vector<Interface> PosixInterfacePicker::GetInterfaces(
       HardwareAddressToString(interface.hw_address);
     interfaces.push_back(interface);
   }
-  close(sd);
   delete[] buffer;
   return interfaces;
 }
@@ -240,5 +242,5 @@ unsigned int PosixInterfacePicker::GetIfReqSize(const char *data) const {
   else
     return sizeof(struct ifreq);
 }
-}  // network
-}  // ola
+}  // namespace network
+}  // namespace ola

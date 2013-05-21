@@ -93,7 +93,7 @@ class ArduinoRGBOutputPort: public BasicOutputPort {
     const TimeStamp *m_wake_time;
     string m_description;
 };
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBPRO_ARDUINORGBDEVICE_H_

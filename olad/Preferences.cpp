@@ -34,8 +34,9 @@
 #include <vector>
 
 #include "ola/Logging.h"
-#include "ola/thread/Thread.h"
 #include "ola/StringUtils.h"
+#include "ola/stl/STLUtils.h"
+#include "ola/thread/Thread.h"
 #include "olad/Preferences.h"
 
 namespace ola {
@@ -76,7 +77,7 @@ bool IntValidator::IsValid(const string &value) const {
 
 
 bool SetValidator::IsValid(const string &value) const {
-  return m_values.end() != m_values.find(value);
+  return STLContains(m_values, value);
 }
 
 
@@ -428,4 +429,4 @@ bool FileBackedPreferences::LoadFromFile(const string &filename) {
   pref_file.close();
   return true;
 }
-}  // ola
+}  // namespace ola

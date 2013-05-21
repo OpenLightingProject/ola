@@ -337,5 +337,5 @@ void DiscoverableQueueingRDMController::DiscoveryComplete(
   m_discovery_callbacks.clear();
   TakeNextAction();
 }
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola

@@ -41,13 +41,15 @@ enum PortDirection {INPUT_PORT, OUTPUT_PORT};
  */
 class OlaPlugin {
   public:
-    OlaPlugin(unsigned int id, const string &name):
+    OlaPlugin(unsigned int id, const string &name, bool active):
       m_id(id),
-      m_name(name) {}
+      m_name(name),
+      m_active(active) {}
     ~OlaPlugin() {}
 
     unsigned int Id() const { return m_id; }
     string Name() const { return m_name; }
+    bool IsActive() const { return m_active; }
 
     bool operator<(const OlaPlugin &other) const {
       return m_id < other.m_id;
@@ -55,6 +57,7 @@ class OlaPlugin {
   private:
     unsigned int m_id;  // id of this plugin
     string m_name;  // plugin name
+    bool m_active;
 };
 
 
@@ -221,5 +224,5 @@ class OlaUniverse {
     unsigned int m_output_port_count;
     unsigned int m_rdm_device_count;
 };
-}  // ola
+}  // namespace ola
 #endif  // OLA_OLADEVICE_H_

@@ -84,7 +84,7 @@ class PathportOutputPort: public BasicOutputPort {
     PathportPortHelper m_helper;
     PathportNode *m_node;
 };
-}  // pathport
-}  // plugin
-}  // ola
+}  // namespace pathport
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_PATHPORT_PATHPORTPORT_H_

@@ -28,7 +28,7 @@ namespace espnet {
 
 // modify this to increase the number of ports in the plugin
 enum { PORTS_PER_DEVICE = 5 };
-}  // espnet
-}  // plugin
-}  // ola
+}  // namespace espnet
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_ESPNET_ESPNETPLUGINCOMMON_H_

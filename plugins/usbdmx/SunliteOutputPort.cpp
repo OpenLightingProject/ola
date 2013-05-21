@@ -197,6 +197,6 @@ bool SunliteOutputPort::SendDMX(const DmxBuffer &buffer) {
     OLA_WARN << "Sunlite driver failed to transfer all data";
   return r == 0;
 }
-}  // usbdmx
-}  // plugin
-}  // ola
+}  // namespace usbdmx
+}  // namespace plugin
+}  // namespace ola

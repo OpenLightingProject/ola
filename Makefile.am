@@ -2,8 +2,8 @@ auxdir                  = @ac_aux_dir@
 AUX_DIST                = $(auxdir)/install-sh $(auxdir)/missing \
                           $(auxdir)/mkinstalldirs
 
-SUBDIRS = include data common ola plugins olad python tools examples debian \
-          java
+SUBDIRS = include data common ola plugins slp olad python tools examples debian \
+          java man
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libola.pc libolaserver.pc
@@ -25,6 +25,8 @@ EXTRA_DIST = \
   javascript/README \
   javascript/ola/base_frame.js \
   javascript/ola/common/dmx_monitor.js \
+  javascript/ola/common/keypad_controller.js \
+  javascript/ola/common/keypad_parser.js \
   javascript/ola/common/plugin_list.js \
   javascript/ola/common/rdm_section_list.js \
   javascript/ola/common/section_render.js \
@@ -51,8 +53,6 @@ EXTRA_DIST = \
   javascript/ola/logger.js \
   javascript/ola/mobile.js \
   javascript/ola/mobile/controller_tab.js \
-  javascript/ola/mobile/keypad_controller.js \
-  javascript/ola/mobile/keypad_parser.js \
   javascript/ola/mobile/monitor_tab.js \
   javascript/ola/mobile/plugin_tab.js \
   javascript/ola/mobile/universe_tab.js \

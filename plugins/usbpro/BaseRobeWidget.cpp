@@ -194,6 +194,6 @@ void BaseRobeWidget::ReceiveMessage() {
   }
   return;
 }
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola

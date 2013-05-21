@@ -84,6 +84,6 @@ class StringMessageBuilder: public ola::messaging::FieldDescriptorVisitor {
     void InitVars(const vector<string> &inputs);
     void CleanUpVector();
 };
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola
 #endif  // INCLUDE_OLA_RDM_STRINGMESSAGEBUILDER_H_

@@ -29,8 +29,9 @@
 
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
-#include "ola/network/SocketAddress.h"
 #include "ola/base/Credentials.h"
+#include "ola/network/SocketAddress.h"
+#include "ola/stl/STLUtils.h"
 
 #include "olad/DynamicPluginLoader.h"
 #include "olad/OlaDaemon.h"
@@ -150,10 +151,7 @@ void OlaDaemon::Shutdown() {
   m_service_factory = NULL;
   m_ss = NULL;
 
-  vector<PluginLoader*>::iterator iter;
-  for (iter = m_plugin_loaders.begin(); iter != m_plugin_loaders.end(); ++iter)
-    delete *iter;
-  m_plugin_loaders.clear();
+  STLDeleteElements(&m_plugin_loaders);
 }
 
 
@@ -215,4 +213,4 @@ bool OlaDaemon::InitConfigDir(const string &path) {
   }
   return true;
 }
-}  // ola
+}  // namespace ola

@@ -60,6 +60,6 @@ class StringMessageBuilder: public FieldDescriptorVisitor {
   private:
     vector<string> m_input;
 };
-}  // messaging
-}  // ola
+}  // namespace messaging
+}  // namespace ola
 #endif  // INCLUDE_OLA_MESSAGING_STRINGMESSAGEBUILDER_H_

@@ -18,7 +18,6 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
 
@@ -63,7 +62,7 @@ class TestInflator: public ola::plugin::e131::BaseInflator {
 
   protected:
     void ResetHeaderField() {}
-    bool DecodeHeader(HeaderSet &headers,
+    bool DecodeHeader(HeaderSet *headers,
                      const uint8_t *data,
                      unsigned int length,
                      unsigned int &bytes_used) {
@@ -74,7 +73,7 @@ class TestInflator: public ola::plugin::e131::BaseInflator {
       (void) length;
     }
 
-    bool HandlePDUData(uint32_t vector, HeaderSet &headers,
+    bool HandlePDUData(uint32_t vector, const HeaderSet &headers,
                        const uint8_t *data, unsigned int pdu_length) {
       OLA_ASSERT_EQ((uint32_t) 289, vector);
       OLA_ASSERT_EQ((unsigned int) sizeof(PDU_DATA), pdu_length);
@@ -242,7 +241,8 @@ void BaseInflatorTest::testDecodeVector() {
   flags = PDU::VFLAG_MASK;
   TestInflator inflator2(0, PDU::TWO_BYTES);
   for (unsigned int i = 0; i < 2; i++) {
-    OLA_ASSERT_FALSE(inflator2.DecodeVector(flags, data, i, vector, bytes_used));
+    OLA_ASSERT_FALSE(
+        inflator2.DecodeVector(flags, data, i, vector, bytes_used));
     OLA_ASSERT_EQ((unsigned int) 0, vector);
     OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
   }
@@ -266,7 +266,8 @@ void BaseInflatorTest::testDecodeVector() {
   // resetting doesn't allow us to reuse the vector
   inflator2.ResetPDUFields();
   for (unsigned int i = 0; i < sizeof(data); i++) {
-    OLA_ASSERT_FALSE(inflator2.DecodeVector(flags, data, i, vector, bytes_used));
+    OLA_ASSERT_FALSE(
+        inflator2.DecodeVector(flags, data, i, vector, bytes_used));
     OLA_ASSERT_EQ((unsigned int) 0, vector);
     OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
   }
@@ -275,7 +276,8 @@ void BaseInflatorTest::testDecodeVector() {
   flags = PDU::VFLAG_MASK;
   TestInflator inflator4(0, PDU::FOUR_BYTES);
   for (unsigned int i = 0; i < 4; i++) {
-    OLA_ASSERT_FALSE(inflator4.DecodeVector(flags, data, i, vector, bytes_used));
+    OLA_ASSERT_FALSE(
+        inflator4.DecodeVector(flags, data, i, vector, bytes_used));
     OLA_ASSERT_EQ((unsigned int) 0, vector);
     OLA_ASSERT_EQ((unsigned int) 0, bytes_used);
   }
@@ -306,7 +308,7 @@ void BaseInflatorTest::testInflatePDU() {
   data[1] = 0x21;
   memcpy(data + PDU::TWO_BYTES, PDU_DATA, sizeof(PDU_DATA));
 
-  OLA_ASSERT(inflator.InflatePDU(header_set, flags, data, data_size));
+  OLA_ASSERT(inflator.InflatePDU(&header_set, flags, data, data_size));
   delete[] data;
 }
 
@@ -331,7 +333,7 @@ void BaseInflatorTest::testInflatePDUBlock() {
   memcpy(data + length_size + PDU::TWO_BYTES, PDU_DATA,
          sizeof(PDU_DATA));
   OLA_ASSERT_EQ(data_size,
-                       inflator.InflatePDUBlock(header_set, data, data_size));
+                inflator.InflatePDUBlock(&header_set, data, data_size));
   OLA_ASSERT_EQ(1u, inflator.BlocksHandled());
   delete[] data;
 
@@ -352,7 +354,7 @@ void BaseInflatorTest::testInflatePDUBlock() {
          sizeof(PDU_DATA));
   OLA_ASSERT_EQ(
       2 * data_size,
-      inflator.InflatePDUBlock(header_set, data, 2 * data_size));
+      inflator.InflatePDUBlock(&header_set, data, 2 * data_size));
   delete[] data;
   OLA_ASSERT_EQ(3u, inflator.BlocksHandled());
 
@@ -374,11 +376,11 @@ void BaseInflatorTest::testInflatePDUBlock() {
          PDU_DATA,
          sizeof(PDU_DATA));
   OLA_ASSERT_EQ(pdu_size,
-                       inflator.InflatePDUBlock(header_set, data, pdu_size));
+                inflator.InflatePDUBlock(&header_set, data, pdu_size));
   OLA_ASSERT_EQ((unsigned int) 3, inflator.BlocksHandled());
   OLA_ASSERT_EQ((unsigned int) 1, child_inflator.BlocksHandled());
   delete[] data;
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

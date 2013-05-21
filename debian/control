@@ -1,9 +1,11 @@
 Source: ola
 Priority: extra
 Maintainer: RenZO <renzo@imaginux.com>
-Build-Depends: debhelper (>= 7), autotools-dev
+Build-Depends: debhelper (>= 7), autotools-dev, bash-completion
 Standards-Version: 3.9.1
 Section: libs
+Vcs-Git: https://code.google.com/p/open-lighting/
+Vcs-browser: https://code.google.com/p/open-lighting/source/browse/
 Homepage: http://code.google.com/p/open-lighting/
 
 Package: ola-dev
@@ -30,6 +32,7 @@ Package: ola-rdm-tests
 Section: libs
 Architecture: all
 Depends: ola (= ${binary:Version}), ola-python (= ${binary:Version}), ${python:Depends}, ${misc:Depends}
+Suggests: bash-completion
 Description: OLA RDM Responder Tests
  The Open Lighting Architecture (OLA) provides a plugin framework for
  distributing DMX512 control signals on Mac and Linux.
@@ -40,6 +43,7 @@ Package: ola
 Section: electronics
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, adduser
+Suggests: bash-completion
 Description: Open Lighting Architecture
  The Open Lighting Architecture (OLA) provides a plugin framework for
  distributing DMX512 control signals on Mac and Linux.

@@ -124,7 +124,8 @@ class LogLine {
 void SetLogLevel(log_level level);
 inline log_level LogLevel() { return logging_level; }
 void IncrementLogLevel();
+bool InitLoggingFromFlags();
 bool InitLogging(log_level level, log_output output);
 void InitLogging(log_level level, LogDestination *destination);
-}  // ola
+}  // namespace ola
 #endif  // INCLUDE_OLA_LOGGING_H_

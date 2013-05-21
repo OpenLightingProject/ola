@@ -35,6 +35,11 @@ class TCPConnectionStats {
         unhealthy_events(0) {
     }
 
+    void ResetCounters() {
+      connection_events = 0;
+      unhealthy_events = 0;
+    }
+
     ola::network::IPV4Address ip_address;
     uint16_t connection_events;
     uint16_t unhealthy_events;

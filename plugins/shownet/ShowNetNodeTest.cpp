@@ -298,6 +298,6 @@ void ShowNetNodeTest::SendAndReceiveForUniverse(unsigned int universe) {
       0,
       memcmp(buffer2.GetRaw(), received_data.GetRaw(), buffer2.Size()));
 }
-}  // shownet
-}  // plugin
-}  // ola
+}  // namespace shownet
+}  // namespace plugin
+}  // namespace ola

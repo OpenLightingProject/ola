@@ -1,5 +1,7 @@
 include $(top_srcdir)/common.mk
 
+EXTRA_DIST = SocketHelper.h
+
 noinst_LTLIBRARIES = libolanetwork.la
 libolanetwork_la_SOURCES = AdvancedTCPConnector.cpp \
                            HealthCheckedConnection.cpp \
@@ -9,6 +11,7 @@ libolanetwork_la_SOURCES = AdvancedTCPConnector.cpp \
                            NetworkUtils.cpp \
                            Socket.cpp \
                            SocketAddress.cpp \
+                           SocketHelper.cpp \
                            TCPConnector.cpp \
                            TCPSocket.cpp
 
@@ -26,22 +29,20 @@ endif
 check_PROGRAMS = $(TESTS)
 
 # required for all tests
-COMMON_TEST_LDADD = $(CPPUNIT_LIBS) \
+COMMON_TEST_LDADD = $(COMMON_TESTING_LIBS) \
                     ../libolacommon.la
 
-HealthCheckedConnectionTester_SOURCES = HealthCheckedConnectionTest.cpp \
-                                        HealthCheckedConnectionTester.cpp
-HealthCheckedConnectionTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+HealthCheckedConnectionTester_SOURCES = HealthCheckedConnectionTest.cpp
+HealthCheckedConnectionTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 HealthCheckedConnectionTester_LDADD = $(COMMON_TEST_LDADD)
 
 NetworkTester_SOURCES = IPAddressTest.cpp \
                         InterfacePickerTest.cpp \
                         InterfaceTest.cpp \
-                        NetworkTester.cpp \
                         NetworkUtilsTest.cpp \
                         SocketAddressTest.cpp \
                         SocketTest.cpp
-NetworkTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+NetworkTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 NetworkTester_LDADD = $(COMMON_TEST_LDADD)
 
 if USING_WIN32
@@ -49,7 +50,6 @@ if USING_WIN32
 endif
 
 TCPConnectorTester_SOURCES = AdvancedTCPConnectorTest.cpp \
-                             TCPConnectorTest.cpp \
-                             TCPConnectorTester.cpp
-TCPConnectorTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
+                             TCPConnectorTest.cpp
+TCPConnectorTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 TCPConnectorTester_LDADD = $(COMMON_TEST_LDADD)

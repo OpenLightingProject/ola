@@ -212,7 +212,7 @@ const string PidStoreHelper::PrettyPrintMessage(
 const string PidStoreHelper::SchemaAsString(
     const ola::messaging::Descriptor *descriptor) {
   m_schema_printer.Reset();
-  descriptor->Accept(m_schema_printer);
+  descriptor->Accept(&m_schema_printer);
   return m_schema_printer.AsString();
 }
 
@@ -241,5 +241,25 @@ void PidStoreHelper::SupportedPids(uint16_t manufacturer_id,
     pid_names->push_back(name);
   }
 }
-}  // rdm
-}  // ola
+
+
+/**
+ * Return the list of PidDescriptors supported. The caller does not owner the
+ * pointers, they are valid for the lifetime of the PidStoreHelper.
+ */
+void PidStoreHelper::SupportedPids(
+    uint16_t manufacturer_id,
+    vector<const PidDescriptor*> *descriptors) const {
+  if (!m_root_store)
+    return;
+
+  const ola::rdm::PidStore *store = m_root_store->EstaStore();
+  if (store)
+    store->AllPids(descriptors);
+
+  store = m_root_store->ManufacturerStore(manufacturer_id);
+  if (store)
+    store->AllPids(descriptors);
+}
+}  // namespace rdm
+}  // namespace ola

@@ -21,9 +21,9 @@
 #ifndef PLUGINS_E131_E131_UDPTRANSPORT_H_
 #define PLUGINS_E131_E131_UDPTRANSPORT_H_
 
+#include "ola/acn/ACNPort.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/Socket.h"
-#include "plugins/e131/e131/ACNPort.h"
 #include "plugins/e131/e131/PDU.h"
 #include "plugins/e131/e131/PreamblePacker.h"
 #include "plugins/e131/e131/Transport.h"
@@ -42,7 +42,7 @@ class OutgoingUDPTransport: public OutgoingTransport {
   public:
     OutgoingUDPTransport(class OutgoingUDPTransportImpl *impl,
                          const IPV4Address &destination,
-                         uint16_t port = ACN_PORT)
+                         uint16_t port = ola::acn::ACN_PORT)
         : m_impl(impl),
           m_destination(destination),
           m_port(port) {
@@ -113,7 +113,7 @@ class IncomingUDPTransport {
     class BaseInflator *m_inflator;
     uint8_t *m_recv_buffer;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_UDPTRANSPORT_H_

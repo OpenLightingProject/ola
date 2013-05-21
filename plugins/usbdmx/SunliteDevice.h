@@ -44,7 +44,7 @@ class SunliteDevice: public UsbDevice {
   protected:
     bool StartHook();
 };
-}  // usbdmx
-}  // plugin
-}  // ola
+}  // namespace usbdmx
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBDMX_SUNLITEDEVICE_H_

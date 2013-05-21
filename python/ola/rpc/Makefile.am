@@ -14,9 +14,9 @@ Rpc_pb2.py: ${top_builddir}/common/rpc/Rpc.proto
 clean-local:
 	rm -f Rpc_pb2.*
 
-TESTS_ENVIRONMENT = $(PYTHON)
-TESTS = SimpleRpcControllerTest.py
+TESTS_ENVIRONMENT = PYTHON=$(PYTHON)
+TESTS = SimpleRpcControllerTest.sh
 
 endif
 
-EXTRA_DIST = SimpleRpcControllerTest.py
+EXTRA_DIST = SimpleRpcControllerTest.py SimpleRpcControllerTest.sh

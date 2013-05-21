@@ -421,5 +421,5 @@ void DiscoveryAgent::FreeCurrentRange() {
   delete range;
   m_uid_ranges.pop();
 }
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola

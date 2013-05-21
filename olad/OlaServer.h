@@ -122,5 +122,5 @@ class OlaServer {
     static const char K_UID_VAR[];
     static const unsigned int K_HOUSEKEEPING_TIMEOUT_MS;
 };
-}  // ola
+}  // namespace ola
 #endif  // OLAD_OLASERVER_H_

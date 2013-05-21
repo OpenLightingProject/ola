@@ -117,7 +117,6 @@ class OSCNode {
     typedef map<string, DMXCallback*> AddressCallbackMap;
 
     SelectServerInterface *m_ss;
-    ExportMap *m_export_map;
     const uint16_t m_listen_port;
     ola::io::UnmanagedFileDescriptor *m_descriptor;
     lo_server m_osc_server;
@@ -129,7 +128,7 @@ class OSCNode {
     static const uint16_t DEFAULT_OSC_PORT = 7770;
     static const char OSC_PORT_VARIABLE[];
 };
-}  // osc
-}  // plugin
-}  // ola
+}  // namespace osc
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_OSC_OSCNODE_H_

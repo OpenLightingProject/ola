@@ -22,15 +22,17 @@
 #define PLUGINS_E131_E131_PDUTESTCOMMON_H_
 
 #include "ola/Callback.h"
+#include "ola/acn/CID.h"
 #include "ola/io/OutputStream.h"
+#include "ola/io/IOStack.h"
 #include "plugins/e131/e131/BaseInflator.h"
-#include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/PDU.h"
 
 namespace ola {
 namespace plugin {
 namespace e131 {
 
+using ola::acn::CID;
 
 /*
  * This isn't a PDU at all, it just packs a uint32 for testing.
@@ -42,20 +44,24 @@ class FakePDU: public PDU {
     unsigned int HeaderSize() const { return 0; }
     unsigned int DataSize() const { return 0; }
 
-    bool Pack(uint8_t *data, unsigned int &length) const {
-      if (length < sizeof(m_value))
+    bool Pack(uint8_t *data, unsigned int *length) const {
+      if (*length < sizeof(m_value))
         return false;
       memcpy(data, &m_value, sizeof(m_value));
-      length = sizeof(m_value);
+      *length = sizeof(m_value);
       return true;
     }
 
-    bool PackHeader(uint8_t*, unsigned int&) const {
+    bool PackHeader(uint8_t *data, unsigned int *length) const {
       return true;
+      (void) data;
+      (void) length;
     }
 
-    bool PackData(uint8_t*, unsigned int&) const {
+    bool PackData(uint8_t *data, unsigned int *length) const {
       return true;
+      (void) data;
+      (void) length;
     }
 
     void Write(ola::io::OutputStream *stream) const {
@@ -84,13 +90,13 @@ class MockPDU: public PDU {
     unsigned int HeaderSize() const { return sizeof(m_header); }
     unsigned int DataSize() const { return sizeof(m_value); }
 
-    bool PackHeader(uint8_t *data, unsigned int &length) const {
-      if (length < HeaderSize()) {
-        length = 0;
+    bool PackHeader(uint8_t *data, unsigned int *length) const {
+      if (*length < HeaderSize()) {
+        *length = 0;
         return false;
       }
       memcpy(data, &m_header, sizeof(m_header));
-      length = HeaderSize();
+      *length = HeaderSize();
       return true;
     }
 
@@ -99,19 +105,33 @@ class MockPDU: public PDU {
                     sizeof(m_header));
     }
 
-    bool PackData(uint8_t *data, unsigned int &length) const {
-      if (length < DataSize()) {
-        length = 0;
+    bool PackData(uint8_t *data, unsigned int *length) const {
+      if (*length < DataSize()) {
+        *length = 0;
         return false;
       }
       memcpy(data, &m_value, sizeof(m_value));
-      length = DataSize();
+      *length = DataSize();
       return true;
     }
 
     void PackData(ola::io::OutputStream *stream) const {
       stream->Write(reinterpret_cast<const uint8_t*>(&m_value),
                     sizeof(m_value));
+    }
+
+    static void PrependPDU(ola::io::IOStack *stack,
+                           unsigned int header,
+                           unsigned int data) {
+      stack->Write(reinterpret_cast<const uint8_t*>(&data),
+                   sizeof(data));
+      stack->Write(reinterpret_cast<const uint8_t*>(&header),
+                   sizeof(header));
+      unsigned int vector = HostToNetwork(TEST_DATA_VECTOR);
+      stack->Write(reinterpret_cast<uint8_t*>(&vector), sizeof(vector));
+      PrependFlagsAndLength(stack,
+                            sizeof(data) + sizeof(header) + sizeof(vector),
+                            VFLAG_MASK | HFLAG_MASK | DFLAG_MASK);
     }
 
     // This is used to id 'Mock' PDUs in the higher level protocol
@@ -138,7 +158,7 @@ class MockInflator: public BaseInflator {
 
   protected:
     void ResetHeaderField() {}
-    bool DecodeHeader(HeaderSet &,
+    bool DecodeHeader(HeaderSet *,
                       const uint8_t *data,
                       unsigned int,
                       unsigned int &bytes_used) {
@@ -149,7 +169,7 @@ class MockInflator: public BaseInflator {
       return true;
     }
 
-    bool HandlePDUData(uint32_t vector, HeaderSet &headers,
+    bool HandlePDUData(uint32_t vector, const HeaderSet &headers,
                        const uint8_t *data, unsigned int pdu_length) {
       CPPUNIT_ASSERT_EQUAL((uint32_t) MockPDU::TEST_DATA_VECTOR, vector);
       CPPUNIT_ASSERT_EQUAL((unsigned int) 4, pdu_length);
@@ -172,7 +192,7 @@ class MockInflator: public BaseInflator {
     Callback0<void> *m_on_recv;
     unsigned int m_last_header;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_PDUTESTCOMMON_H_

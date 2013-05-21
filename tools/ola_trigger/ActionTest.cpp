@@ -64,7 +64,7 @@ class MockCommandAction: CommandAction {
     }
 
     void Execute(Context *context, uint8_t slot_value);
-    void CheckArgs(unsigned long line, const char* args[]);
+    void CheckArgs(int32_t line, const char* args[]);
 
   private:
     vector<string> m_interpolated_args;
@@ -88,13 +88,13 @@ void MockCommandAction::Execute(Context *context, uint8_t) {
 /**
  * Check what we got matches what we expected
  */
-void MockCommandAction::CheckArgs(unsigned long line, const char* args[]) {
+void MockCommandAction::CheckArgs(int32_t line, const char* args[]) {
   std::stringstream str;
   str << "From ActionTest.cpp:" << line;
   const char **ptr = args;
   vector<string>::const_iterator iter = m_interpolated_args.begin();
   while (*ptr && iter != m_interpolated_args.end())
-    CPPUNIT_ASSERT_EQUAL_MESSAGE(str.str(), string(*ptr++), *iter++);
+    OLA_ASSERT_EQ_MSG(string(*ptr++), *iter++, str.str());
 
   if (iter != m_interpolated_args.end()) {
     str << ", got extra args: ";
@@ -104,7 +104,7 @@ void MockCommandAction::CheckArgs(unsigned long line, const char* args[]) {
       if (iter != m_interpolated_args.end())
         str << ", ";
     }
-    CPPUNIT_FAIL(str.str());
+    OLA_FAIL(str.str());
   } else if (*ptr) {
     str << ", missing args: ";
     while (*ptr) {
@@ -112,7 +112,7 @@ void MockCommandAction::CheckArgs(unsigned long line, const char* args[]) {
       if (*ptr)
         str << ", ";
     }
-    CPPUNIT_FAIL(str.str());
+    OLA_FAIL(str.str());
   }
   m_interpolated_args.clear();
 }

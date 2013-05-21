@@ -95,6 +95,16 @@ bool OlaCallbackClient::FetchPluginDescription(
 }
 
 
+/**
+ * Fetch the state of a plugin. This returns the enabled state and the list of
+ * plugins this plugin conflicts with.
+ */
+bool OlaCallbackClient::FetchPluginState(ola_plugin_id plugin_id,
+                                         PluginStateCallback *callback) {
+  return m_core->FetchPluginState(plugin_id, callback);
+}
+
+
 /*
  * Request a listing of what devices are attached.
  * @param filter only fetch devices that belong to this plugin
@@ -515,4 +525,4 @@ bool OlaCallbackClient::RDMSet(RDMAPIImplInterface::rdm_pid_callback *callback,
                         data,
                         data_length);
 }
-}  // ola
+}  // namespace ola

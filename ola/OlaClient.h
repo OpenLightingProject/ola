@@ -18,8 +18,11 @@
  * Copyright (C) 2005-2008 Simon Newton
  *
  * This is the legacy client which uses an Observer object. It suffers from the
- * de-multiplexing problem so it's recommended to use the OlaCallbackClient.
- * instead.
+ * de-multiplexing problem and API additions break old code, so it's
+ * recommended to use the OlaCallbackClient instead.
+ *
+ * As of Feb 2013 the OlaClient is deprecated, and will be removed in a future
+ * release.
  */
 
 #ifndef OLA_OLACLIENT_H_
@@ -230,5 +233,5 @@ class OlaClient: public ola::rdm::RDMAPIImplInterface {
     OlaClientCore *m_core;
     OlaClientObserver *m_observer;
 };
-}  // ola
+}  // namespace ola
 #endif  // OLA_OLACLIENT_H_

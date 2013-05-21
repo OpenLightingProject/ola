@@ -24,7 +24,7 @@ goog.provide('ola.common.BaseUniverseTab');
 
 /**
  * The base tab for the universe view.
- * @param {element} the element to use for the tab
+ * @param {element} element the element to use for the tab.
  * @constructor
  */
 ola.common.BaseUniverseTab = function(element) {

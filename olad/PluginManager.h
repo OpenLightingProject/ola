@@ -40,14 +40,25 @@ class PluginManager {
 
     void LoadAll();
     void UnloadAll();
-    // Return a list of all loaded plugins
+
+    // Return a list of all loaded plugins, this includes active and inactive
+    // plugins.
     void Plugins(vector<AbstractPlugin*> *plugins) const;
 
-    // Return a list of all enabled plugins
-    void EnabledPlugins(vector<AbstractPlugin*> *plugins) const;
+    // Return a list of all plugins that are active. Note that even though a
+    // plugin may be enabled, it may not be active due to conflicts with
+    // other plugins.
+    void ActivePlugins(vector<AbstractPlugin*> *plugins) const;
 
-    // Lookup a loaded plugin by ID
+    // Lookup a plugin by ID
     AbstractPlugin* GetPlugin(ola_plugin_id plugin_id) const;
+
+    // Returns if a plugin is active.
+    bool IsActive(ola_plugin_id plugin_id) const;
+
+    // Return a list of plugins that conflict with this plugin
+    void GetConflictList(ola_plugin_id plugin_id,
+                         vector<AbstractPlugin*> *plugins);
 
   private:
     PluginManager(const PluginManager&);
@@ -57,8 +68,8 @@ class PluginManager {
 
     vector<PluginLoader*> m_plugin_loaders;
     PluginMap m_loaded_plugins;  // plugins that are loaded
-    vector<AbstractPlugin*> m_enabled_plugins;  // enabled plugins
+    PluginMap m_active_plugins;  // active plugins
     PluginAdaptor *m_plugin_adaptor;
 };
-}  // ola
+}  // namespace ola
 #endif  // OLAD_PLUGINMANAGER_H_

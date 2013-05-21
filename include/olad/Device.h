@@ -128,6 +128,7 @@ class Device: public AbstractDevice {
                            const string &request,
                            string *response,
                            google::protobuf::Closure *done);
+
   protected:
     virtual bool StartHook() { return true; }
     virtual void PrePortStop() {}
@@ -151,13 +152,8 @@ class Device: public AbstractDevice {
     bool GenericAddPort(PortClass *port,
                         map<unsigned int, PortClass*> *ports);
 
-    template<class PortClass>
-    void GenericFetchPortsVector(
-        vector<PortClass*> *ports,
-        const map<unsigned int, PortClass*> &port_map) const;
-
     template <class PortClass>
     void GenericDeletePort(PortClass *p);
 };
-}  // ola
+}  // namespace ola
 #endif  // INCLUDE_OLAD_DEVICE_H_

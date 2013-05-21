@@ -19,6 +19,7 @@
  */
 
 #include <string>
+#include "ola/Logging.h"
 #include "ola/OlaClient.h"
 #include "ola/OlaClientCore.h"
 
@@ -42,6 +43,8 @@ OlaClient::~OlaClient() {
  * @returns true on success, false on failure
  */
 bool OlaClient::Setup() {
+  OLA_WARN << "Using OlaClient which has been deprecated, please upgrade "
+           << "to the OlaCallbackClient";
   return m_core->Setup();
 }
 
@@ -476,4 +479,4 @@ bool OlaClient::ConfigureDevice(unsigned int device_alias, const string &msg) {
   else
     return m_core->ConfigureDevice(device_alias, msg, NULL);
 }
-}  // ola
+}  // namespace ola

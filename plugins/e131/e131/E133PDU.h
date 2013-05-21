@@ -21,6 +21,9 @@
 #ifndef PLUGINS_E131_E131_E133PDU_H_
 #define PLUGINS_E131_E131_E133PDU_H_
 
+#include <ola/io/IOStack.h>
+#include <string>
+
 #include "plugins/e131/e131/PDU.h"
 #include "plugins/e131/e131/E133Header.h"
 
@@ -42,17 +45,21 @@ class E133PDU: public PDU {
 
     unsigned int HeaderSize() const;
     unsigned int DataSize() const;
-    bool PackHeader(uint8_t *data, unsigned int &length) const;
-    bool PackData(uint8_t *data, unsigned int &length) const;
+    bool PackHeader(uint8_t *data, unsigned int *length) const;
+    bool PackData(uint8_t *data, unsigned int *length) const;
 
     void PackHeader(OutputStream *stream) const;
     void PackData(OutputStream *stream) const;
+
+    static void PrependPDU(ola::io::IOStack *stack, uint32_t vector,
+                           const string &source, uint32_t sequence_number,
+                           uint16_t endpoint_id);
 
   private:
     E133Header m_header;
     const PDU *m_pdu;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_E133PDU_H_

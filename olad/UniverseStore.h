@@ -64,5 +64,5 @@ class UniverseStore {
 
     static const unsigned int MINIMUM_RDM_DISCOVERY_INTERVAL;
 };
-}  // ola
+}  // namespace ola
 #endif  // OLAD_UNIVERSESTORE_H_

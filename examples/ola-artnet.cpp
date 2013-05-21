@@ -172,7 +172,7 @@ int ParseOptions(int argc, char *argv[], options *opts) {
   static struct option long_options[] = {
       {"dev",       required_argument,  0, 'd'},
       {"help",      no_argument,        0, 'h'},
-      {"long_name", required_argument,  0, 'l'},
+      {"long-name", required_argument,  0, 'l'},
       {"name",      required_argument,  0, 'n'},
       {"subnet",    required_argument,  0, 's'},
       {"net",       required_argument,  0, 'e'},
@@ -232,9 +232,10 @@ void DisplayHelpAndExit(const options &opts) {
   cout << "Usage: " << opts.command <<
     " -d <dev_id> -n <name> -l <long_name> -s <subnet>\n\n"
     "Configure ArtNet Devices managed by OLA.\n\n"
+    "  -d, --dev       The ArtNet device to configure\n"
     "  -e, --net       Set the net parameter of the ArtNet device\n"
     "  -h, --help      Display this help message and exit.\n"
-    "  -l, --long_name Set the long name of the ArtNet device\n"
+    "  -l, --long-name Set the long name of the ArtNet device\n"
     "  -n, --name      Set the name of the ArtNet device\n"
     "  -s, --subnet    Set the subnet of the ArtNet device\n"
     "  -u, --universe  List the IPs of devices for this universe\n" <<

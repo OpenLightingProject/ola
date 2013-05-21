@@ -59,6 +59,6 @@ class Thread {
     Mutex m_mutex;  // protects m_running
     ConditionVariable m_condition;  // use to wait for the thread to start
 };
-}  // thread
-}  // ola
+}  // namespace thread
+}  // namespace ola
 #endif  // INCLUDE_OLA_THREAD_THREAD_H_

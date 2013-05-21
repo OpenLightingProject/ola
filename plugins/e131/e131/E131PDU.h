@@ -42,8 +42,8 @@ class E131PDU: public PDU {
 
     unsigned int HeaderSize() const;
     unsigned int DataSize() const;
-    bool PackHeader(uint8_t *data, unsigned int &length) const;
-    bool PackData(uint8_t *data, unsigned int &length) const;
+    bool PackHeader(uint8_t *data, unsigned int *length) const;
+    bool PackData(uint8_t *data, unsigned int *length) const;
 
     void PackHeader(OutputStream *stream) const;
     void PackData(OutputStream *stream) const;
@@ -52,7 +52,7 @@ class E131PDU: public PDU {
     E131Header m_header;
     const DMPPDU *m_dmp_pdu;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_E131PDU_H_

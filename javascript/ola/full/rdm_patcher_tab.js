@@ -113,6 +113,7 @@ ola.RDMPatcherTab.prototype.setActive = function(state) {
 
 /**
  * Called when the UID list changes.
+ * @param {Object} e the event object.
  */
 ola.RDMPatcherTab.prototype._updateUidList = function(e) {
   var response = ola.common.Server.getInstance().checkForErrorLog(e);
@@ -165,6 +166,7 @@ ola.RDMPatcherTab.prototype._fetchNextDeviceOrRender = function() {
 
 /**
  * Called when we get new information for a device
+ * @param {Object} e the event object.
  */
 ola.RDMPatcherTab.prototype._deviceInfoComplete = function(device, e) {
   if (!this.isActive()) {
@@ -236,6 +238,7 @@ ola.RDMPatcherTab.prototype._autoPatchButtonClicked = function() {
 
 /**
  * Called when the auto patch is confirmed
+ * @param {Object} e the event object.
  */
 ola.RDMPatcherTab.prototype._autoPatchConfirmed = function(e) {
   var dialog = ola.Dialog.getInstance();

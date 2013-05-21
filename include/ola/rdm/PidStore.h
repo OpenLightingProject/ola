@@ -179,6 +179,6 @@ class PidDescriptor {
     bool RequestValid(uint16_t sub_device,
                       const sub_device_valiator &validator) const;
 };
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola
 #endif  // INCLUDE_OLA_RDM_PIDSTORE_H_

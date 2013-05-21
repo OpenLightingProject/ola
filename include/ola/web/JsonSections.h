@@ -216,6 +216,6 @@ class JsonSection {
     string m_save_button_text;
     std::vector<const GenericItem*> m_items;
 };
-}  // web
-}  // ola
+}  // namespace web
+}  // namespace ola
 #endif  // INCLUDE_OLA_WEB_JSONSECTIONS_H_

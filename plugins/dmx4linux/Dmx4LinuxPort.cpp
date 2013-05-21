@@ -75,6 +75,6 @@ bool Dmx4LinuxInputPort::UpdateData(const uint8_t *in_buffer,
   }
   return true;
 }
-}  // dmx4linux
-}  // plugin
-}  // ola
+}  // namespace dmx4linux
+}  // namespace plugin
+}  // namespace ola

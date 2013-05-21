@@ -107,5 +107,5 @@ void HealthCheckedConnection::UpdateReceiveTimer() {
     timeout_interval,
     NewSingleCallback(this, &HealthCheckedConnection::HeartbeatTimeout));
 }
-}  // network
-}  // ola
+}  // namespace network
+}  // namespace ola

@@ -20,22 +20,28 @@
 import textwrap
 
 
+def PrintLongLine(line):
+  optional_nolint = ''
+  if len(line) > 80:
+    optional_nolint = '  // NOLINT(whitespace/line_length)'
+  print ('%s%s' % (line, optional_nolint))
+
 def Header():
   print textwrap.dedent("""\
   /*
-   *  This program is free software; you can redistribute it and/or modify
-   *  it under the terms of the GNU General Public License as published by
-   *  the Free Software Foundation; either version 2 of the License, or
-   *  (at your option) any later version.
+   * This library is free software; you can redistribute it and/or
+   * modify it under the terms of the GNU Lesser General Public
+   * License as published by the Free Software Foundation; either
+   * version 2.1 of the License, or (at your option) any later version.
    *
-   *  This program is distributed in the hope that it will be useful,
-   *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-   *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   *  GNU Library General Public License for more details.
+   * This library is distributed in the hope that it will be useful,
+   * but WITHOUT ANY WARRANTY; without even the implied warranty of
+   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   * Lesser General Public License for more details.
    *
-   *  You should have received a copy of the GNU General Public License
-   *  along with this program; if not, write to the Free Software
-   *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+   * You should have received a copy of the GNU Lesser General Public
+   * License along with this library; if not, write to the Free Software
+   * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
    *
    * Callback.h
    * Callback classes, these are similar to closures but can take arguments at
@@ -54,7 +60,7 @@ def Header():
 
 def Footer():
   print textwrap.dedent("""\
-  }  // ola
+  }  // namespace ola
   #endif  // INCLUDE_OLA_CALLBACK_H_""")
 
 def GenerateBase(number_of_args):
@@ -72,23 +78,25 @@ def GenerateBase(number_of_args):
 
   # generate the base callback class
   print '// %d argument callbacks' % number_of_args
-  print 'template <typename ReturnType%s%s>' % (optional_comma, typenames)
+  PrintLongLine('template <typename ReturnType%s%s>' %
+                (optional_comma, typenames))
   print 'class BaseCallback%d {' % number_of_args
   print '  public:'
   print '    virtual ~BaseCallback%d() {}' % number_of_args
-  print '    virtual ReturnType Run(%s) = 0;' % arg_list
+  PrintLongLine('    virtual ReturnType Run(%s) = 0;' % arg_list)
   print '};'
   print ''
   print ''
 
   # generate the multi-use version of the callback
   print '// A callback, this can be called multiple times'
-  print 'template <typename ReturnType%s%s>' % (optional_comma, typenames)
+  PrintLongLine('template <typename ReturnType%s%s>' %
+                (optional_comma, typenames))
   print ('class Callback%d: public BaseCallback%d<ReturnType%s%s> {' %
          (number_of_args, number_of_args, optional_comma, arg_types))
   print '  public:'
   print '    virtual ~Callback%d() {}' % number_of_args
-  print ('    ReturnType Run(%s) { return this->DoRun(%s); }' %
+  PrintLongLine('    ReturnType Run(%s) { return this->DoRun(%s); }' %
          (arg_list, args))
   print '  private:'
   print '    virtual ReturnType DoRun(%s) = 0;' % arg_list
@@ -98,9 +106,10 @@ def GenerateBase(number_of_args):
 
   # generate the single-use version of the callback
   print "// A single use callback, this deletes itself after it's run."
-  print 'template <typename ReturnType%s%s>' % (optional_comma, typenames)
-  print ('class SingleUseCallback%d: public BaseCallback%d<ReturnType%s%s> {' %
-         (number_of_args, number_of_args, optional_comma, arg_types))
+  PrintLongLine('template <typename ReturnType%s%s>' %
+                (optional_comma, typenames))
+  PrintLongLine('class SingleUseCallback%d: public BaseCallback%d<ReturnType%s%s> {' %
+                (number_of_args, number_of_args, optional_comma, arg_types))
   print '  public:'
   print '    virtual ~SingleUseCallback%d() {}' % number_of_args
   print '    ReturnType Run(%s) {' % arg_list
@@ -117,9 +126,9 @@ def GenerateBase(number_of_args):
   # the void specialization
   print "// A single use callback returning void."
   print 'template <%s>' % typenames
-  print ('class SingleUseCallback%d<void%s%s>: public BaseCallback%d<void%s%s> {' %
-         (number_of_args, optional_comma, arg_types, number_of_args,
-           optional_comma, arg_types))
+  PrintLongLine('class SingleUseCallback%d<void%s%s>: public BaseCallback%d<void%s%s> {' %
+                (number_of_args, optional_comma, arg_types, number_of_args,
+                optional_comma, arg_types))
   print '  public:'
   print '    virtual ~SingleUseCallback%d() {}' % number_of_args
   print '    void Run(%s) {' % arg_list
@@ -167,10 +176,10 @@ def GenerateHelperFunction(bind_count,
 
   # The single use helper function
   print '// Helper method to create a new %s.' % parent_class
-  print ('template <%stypename ReturnType%s%s>' %
-         (optional_class, optional_comma, ', '.join(typenames)))
-  print ('inline %s%d<ReturnType%s>* %s(' %
-         (parent_class, exec_count, exec_type_str, function_name))
+  PrintLongLine('template <%stypename ReturnType%s%s>' %
+                (optional_class, optional_comma, ', '.join(typenames)))
+  PrintLongLine('inline %s%d<ReturnType%s>* %s(' %
+                (parent_class, exec_count, exec_type_str, function_name))
   if is_method:
     print '    Class* object,'
   if bind_count:
@@ -187,8 +196,8 @@ def GenerateHelperFunction(bind_count,
     print '  return new MethodCallback%d_%d<Class,' % (bind_count, exec_count)
   else:
     print '  return new FunctionCallback%d_%d<' % (bind_count, exec_count)
-  print ('                               %s%d<ReturnType%s>,'
-         % (parent_class, exec_count, exec_type_str))
+  PrintLongLine('                               %s%d<ReturnType%s>,' %
+                (parent_class, exec_count, exec_type_str))
   if bind_count > 0 or exec_count > 0:
     print '                               ReturnType,'
   else:
@@ -256,8 +265,8 @@ def GenerateMethodCallback(bind_count,
 
   print ('// A %s callback with %d create-time args and %d exec time '
          'args' % (method_or_function, bind_count, exec_count))
-  print ('template <%stypename Parent, typename ReturnType%s%s>' %
-         (optional_class, optional_comma, ', '.join(typenames)))
+  PrintLongLine('template <%stypename Parent, typename ReturnType%s%s>' %
+                (optional_class, optional_comma, ', '.join(typenames)))
 
   print 'class %s%d_%d: public Parent {' % (class_name, bind_count, exec_count)
   print '  public:'
@@ -267,13 +276,16 @@ def GenerateMethodCallback(bind_count,
     print '    typedef ReturnType (*Function)(%s);' % (method_types)
 
   if bind_count:
-    print ('    %s%d_%d(%s%s callback, %s):' %
-           (class_name, bind_count, exec_count, class_param,
-            method_or_function, bind_args))
+    PrintLongLine('    %s%d_%d(%s%s callback, %s):' %
+                  (class_name, bind_count, exec_count, class_param,
+                   method_or_function, bind_args))
   else:
-    print ('    %s%d_%d(%s%s callback):' %
-           (class_name, bind_count, exec_count, class_param,
-            method_or_function))
+    optional_explicit = ''
+    if bind_count == 0 and method_or_function == 'Function':
+      optional_explicit = 'explicit '
+    PrintLongLine('    %s%s%d_%d(%s%s callback):' %
+                  (optional_explicit, class_name, bind_count, exec_count,
+                   class_param, method_or_function))
   print '      Parent(),'
   if is_method:
     print '      m_object(object),'
@@ -288,7 +300,8 @@ def GenerateMethodCallback(bind_count,
     print '      m_callback(callback) {}'
   print '    ReturnType DoRun(%s) {' % exec_args
   if is_method:
-    print '      return (m_object->*m_callback)(%s);' % ', '.join(method_args)
+    PrintLongLine('      return (m_object->*m_callback)(%s);' %
+                  ', '.join(method_args))
   else:
     print '      return m_callback(%s);' % ', '.join(method_args)
   print '    }'

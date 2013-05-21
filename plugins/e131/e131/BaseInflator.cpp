@@ -18,10 +18,10 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <algorithm>
 #include <map>
 #include "ola/Logging.h"
+#include "ola/stl/STLUtils.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/e131/e131/BaseInflator.h"
 
@@ -46,26 +46,18 @@ BaseInflator::BaseInflator(PDU::vector_size v_size)
  * @param inflator a inflator
  * @return true if added, false if an inflator with this id already exists.
  */
-bool BaseInflator::AddInflator(BaseInflator *inflator) {
-  if (m_proto_map.find(inflator->Id()) == m_proto_map.end()) {
-    m_proto_map[inflator->Id()] = inflator;
-    return true;
-  }
-  return false;
+bool BaseInflator::AddInflator(InflatorInterface *inflator) {
+  return STLInsertIfNotPresent(&m_proto_map, inflator->Id(), inflator);
 }
 
 
 /*
  * Get the current inflator for a protocol
- * @param proto the proto ID
- * @return the inflator for this protocol, or NULL if there isn't one set.
+ * @param proto the vector ID
+ * @return the inflator for this vector, or NULL if there isn't one set.
  */
-BaseInflator *BaseInflator::GetInflator(uint32_t proto) const {
-  std::map<uint32_t, class BaseInflator*>::const_iterator iter;
-  iter = m_proto_map.find(proto);
-  if (iter == m_proto_map.end())
-    return NULL;
-  return iter->second;
+InflatorInterface *BaseInflator::GetInflator(uint32_t vector) const {
+  return STLFindOrNull(m_proto_map, vector);
 }
 
 
@@ -76,7 +68,7 @@ BaseInflator *BaseInflator::GetInflator(uint32_t proto) const {
  * @param length length of the data
  * @returns the amount of data used
  */
-unsigned int BaseInflator::InflatePDUBlock(HeaderSet &headers,
+unsigned int BaseInflator::InflatePDUBlock(HeaderSet *headers,
                                            const uint8_t *data,
                                            unsigned int length) {
   unsigned int offset = 0;
@@ -219,7 +211,7 @@ bool BaseInflator::DecodeVector(uint8_t flags, const uint8_t *data,
  * @param pdu_len   length of the PDU
  * @return true if we inflated without errors
  */
-bool BaseInflator::InflatePDU(HeaderSet &headers,
+bool BaseInflator::InflatePDU(HeaderSet *headers,
                               uint8_t flags,
                               const uint8_t *data,
                               unsigned int pdu_len) {
@@ -241,19 +233,19 @@ bool BaseInflator::InflatePDU(HeaderSet &headers,
   if (!result)
     return false;
 
-  if (!PostHeader(vector, headers))
+  if (!PostHeader(vector, *headers))
     return true;
 
   // TODO(simon): handle the crazy DFLAG here
 
   data_offset += header_bytes_used;
 
-  BaseInflator *inflator = GetInflator(vector);
+  InflatorInterface *inflator = STLFindOrNull(m_proto_map, vector);
   if (inflator) {
     return inflator->InflatePDUBlock(headers, data + data_offset,
                                      pdu_len - data_offset);
   } else {
-    return HandlePDUData(vector, headers, data + data_offset,
+    return HandlePDUData(vector, *headers, data + data_offset,
                          pdu_len - data_offset);
   }
 }
@@ -264,8 +256,9 @@ bool BaseInflator::InflatePDU(HeaderSet &headers,
  * before either the next inflator or handle_data is called.
  * @return false will cease processing this PDU
  */
-bool BaseInflator::PostHeader(uint32_t, HeaderSet &) {
+bool BaseInflator::PostHeader(uint32_t, const HeaderSet &headers) {
   return true;
+  (void) headers;
 }
 
 
@@ -273,13 +266,14 @@ bool BaseInflator::PostHeader(uint32_t, HeaderSet &) {
  * The base handle data method - does nothing
  */
 bool BaseInflator::HandlePDUData(uint32_t vector,
-                                 HeaderSet &,
+                                 const HeaderSet &headers,
                                  const uint8_t *,
                                  unsigned int) {
-  OLA_WARN << "In BaseInflator::HandlePDUData, someone forgot to add" <<
-    " a handler, vector id " << vector;
+  OLA_WARN << "In BaseInflator::HandlePDUData, someone forgot to add"
+           << " a handler, vector id " << vector;
   return false;
+  (void) headers;
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

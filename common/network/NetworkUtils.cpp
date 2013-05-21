@@ -24,7 +24,7 @@
 
 #ifdef WIN32
 #include <winsock2.h>
-typedef unsigned long in_addr_t;
+typedef uint32_t in_addr_t;
 #else
 #include <arpa/inet.h>
 #endif
@@ -55,12 +55,7 @@ bool StringToAddress(const string &address, struct in_addr &addr) {
 #ifdef HAVE_INET_ATON
   ok = (1 == inet_aton(address.data(), &addr));
 #else
-#ifdef WIN32
-  unsigned long ip_addr4;
-#else
-  in_addr_t ip_addr4;
-#endif
-  ip_addr4 = inet_addr(address.c_str());
+  in_addr_t ip_addr4 = inet_addr(address.c_str());
   ok = (INADDR_NONE != ip_addr4 || address == "255.255.255.255");
   addr.s_addr = ip_addr4;
 #endif
@@ -302,5 +297,5 @@ string Hostname() {
   StringSplit(hostname, tokens, ".");
   return string(tokens[0]);
 }
-}  // network
-}  // ola
+}  // namespace network
+}  // namespace ola

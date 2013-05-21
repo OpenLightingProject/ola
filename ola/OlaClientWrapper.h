@@ -108,5 +108,5 @@ typedef GenericClientWrapper<OlaClient> SimpleClient;
 
 
 typedef GenericClientWrapper<OlaCallbackClient> OlaCallbackClientWrapper;
-}  // ola
+}  // namespace ola
 #endif  // OLA_OLACLIENTWRAPPER_H_

@@ -28,7 +28,7 @@
 
 
 #ifndef ARTNET_PORT_COUNT
-#define ARTNET_PORT_COUNT	4
+#define ARTNET_PORT_COUNT 4
 #endif
 
 namespace ola {
@@ -257,7 +257,7 @@ typedef struct {
     artnet_ip_reply_t ip_reply;
   } data;
 } artnet_packet;
-}  // artnet
-}  // plugin
-}  // ola
+}  // namespace artnet
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_ARTNET_ARTNETPACKETS_H_

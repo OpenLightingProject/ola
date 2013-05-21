@@ -62,6 +62,6 @@ class MessageSerializer: public ola::messaging::MessageVisitor {
     template <typename int_type>
     void IntVisit(const ola::messaging::BasicMessageField<int_type> *);
 };
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola
 #endif  // INCLUDE_OLA_RDM_MESSAGESERIALIZER_H_

@@ -21,9 +21,12 @@
 #ifndef INCLUDE_OLA_STL_STLUTILS_H_
 #define INCLUDE_OLA_STL_STLUTILS_H_
 
+#include <assert.h>
+#include <cstddef>
 #include <map>
 #include <set>
 #include <vector>
+#include <utility>
 
 namespace ola {
 
@@ -31,8 +34,37 @@ using std::map;
 using std::set;
 using std::vector;
 
+// Helper functions for sequences.
+//------------------------------------------------------------------------------
+
 /**
- * Returns true if the container contains the value
+ * Delete the elements of a Sequence.
+ */
+template<typename T>
+void STLDeleteElements(T *values) {
+  typename T::iterator iter = values->begin();
+  for (; iter != values->end(); ++iter)
+    delete *iter;
+  values->clear();
+}
+
+// Helper functions for associative containers.
+//------------------------------------------------------------------------------
+
+/**
+ * Delete the values of an Associative Container.
+ */
+template<typename T>
+void STLDeleteValues(T *values) {
+  typename T::iterator iter = values->begin();
+  for (; iter != values->end(); ++iter)
+    delete iter->second;
+  values->clear();
+}
+
+
+/**
+ * Returns true if the container contains the value.
  */
 template<typename T1, typename T2>
 inline bool STLContains(const T1 &container, const T2 &value) {
@@ -40,39 +72,187 @@ inline bool STLContains(const T1 &container, const T2 &value) {
 }
 
 /**
- * For a vector of pointers, loop through and delete all of them.
+ * Extract a vector of keys from an associative container.
  */
-template<typename T>
-void STLDeleteValues(vector<T*> &values) {
-  typename vector<T*>::iterator iter = values.begin();
-  for (; iter != values.end(); ++iter)
-    delete *iter;
-  values.clear();
+template<typename T1>
+void STLKeys(const T1 &container, vector<typename T1::key_type> *keys) {
+  keys->reserve(keys->size() + container.size());
+  typename T1::const_iterator iter = container.begin();
+  for (; iter != container.end(); ++iter)
+    keys->push_back(iter->first);
+}
+
+/**
+ * Extract a vector of values from an associative container.
+ */
+template<typename T1>
+void STLValues(const T1 &container, vector<typename T1::mapped_type> *values) {
+  values->reserve(values->size() + container.size());
+  typename T1::const_iterator iter = container.begin();
+  for (; iter != container.end(); ++iter)
+    values->push_back(iter->second);
+}
+
+/**
+ * Lookup a value by key in a associative container and return a pointer to the
+ * value. Returns NULL if the key doesn't exist.
+ */
+template<typename T1>
+typename T1::mapped_type* STLFind(T1 *container,
+                                  const typename T1::key_type &key) {
+  typename T1::iterator iter = container->find(key);
+  if (iter == container->end()) {
+    return NULL;
+  } else {
+    return &iter->second;
+  }
+}
+
+/**
+ * Lookup a value by key in a associative container or pointers, or return a
+ * NULL if the key doesn't exist.
+ */
+template<typename T1>
+typename T1::mapped_type STLFindOrNull(const T1 &container,
+                                       const typename T1::key_type &key) {
+  typename T1::const_iterator iter = container.find(key);
+  if (iter == container.end()) {
+    return NULL;
+  } else {
+    return iter->second;
+  }
 }
 
 
 /**
- * Same as above but for a set. We duplicate the code so that we're sure the
- * argument is a set of pointers, rather than any type with begin() and end()
- * defined.
+ * Sets key : value, replacing any existing value. Note if value_type is a
+ * pointer, you probably don't wait this since you'll leak memory if you
+ * replace a value.
  */
-template<typename T>
-void STLDeleteValues(set<T*> &values) {
-  typename set<T*>::iterator iter = values.begin();
-  for (; iter != values.end(); ++iter)
-    delete *iter;
-  values.clear();
+template<typename T1>
+void STLReplace(T1 *container, const typename T1::key_type &key,
+                const typename T1::mapped_type &value) {
+  std::pair<typename T1::iterator, bool> p = container->insert(
+      typename T1::value_type(key, value));
+  if (!p.second) {
+    p.first->second = value;
+  }
+}
+
+
+/**
+ * Insert an key : value into a map where value is a pointer. This replaces the
+ * previous value if it exists and deletes it.
+ */
+template<typename T1>
+void STLReplaceAndDelete(T1 *container, const typename T1::key_type &key,
+                         const typename T1::mapped_type &value) {
+  std::pair<typename T1::iterator, bool> p = container->insert(
+      typename T1::value_type(key, value));
+  if (!p.second) {
+    delete p.first->second;
+    p.first->second = value;
+  }
+}
+
+
+/**
+ * Insert a value into a container only if this value doesn't already exist.
+ * Returns true if the key was inserted, false if the key already exists.
+ */
+template<typename T1>
+bool STLInsertIfNotPresent(T1 *container,
+                           const typename T1::value_type &value) {
+  return container->insert(value).second;
+}
+
+
+/**
+ * Insert an key : value into a map only if a value for this key doesn't
+ * already exist.
+ * Returns true if the key was inserted, false if the key already exists.
+ */
+template<typename T1>
+bool STLInsertIfNotPresent(T1 *container, const typename T1::key_type &key,
+                           const typename T1::mapped_type &value) {
+  return container->insert(typename T1::value_type(key, value)).second;
+}
+
+
+/**
+ * Insert an key : value into a map or die if the key already exists.
+ */
+template<typename T1>
+void STLInsertOrDie(T1 *container, const typename T1::key_type &key,
+                    const typename T1::mapped_type &value) {
+  assert(container->insert(typename T1::value_type(key, value)).second);
+}
+
+
+/**
+ * Remove a item from a container.
+ * @returns true if the item was removed, false otherwise.
+ */
+template<typename T1>
+bool STLRemove(T1 *container, const typename T1::key_type &key) {
+  return container->erase(key);
 }
 
 /**
- * For a map of type : pointer, loop through and delete all of the pointers.
+ * Lookup a value by key in a associative container. If the value exists, it's
+ * removed from the container, the value placed in value and true is returned.
+ * If the value doesn't exist this returns false.
  */
-template<typename T1, typename T2>
-void STLDeleteValues(map<T1, T2*> &values) {
-  typename map<T1, T2*>::iterator iter = values.begin();
-  for (; iter != values.end(); ++iter)
+template<typename T1>
+bool STLLookupAndRemove(T1 *container,
+                        const typename T1::key_type &key,
+                        typename T1::mapped_type *value) {
+  typename T1::iterator iter = container->find(key);
+  if (iter == container->end()) {
+    return false;
+  } else {
+    *value = iter->second;
+    container->erase(iter);
+    return true;
+  }
+}
+
+
+/**
+ * Lookup a value by key in a associative container. If the value exists, it's
+ * deleted, removed from the container and true is returned.
+ * If the value doesn't exist this returns false.
+ */
+template<typename T1>
+bool STLRemoveAndDelete(T1 *container, const typename T1::key_type &key) {
+  typename T1::iterator iter = container->find(key);
+  if (iter == container->end()) {
+    return false;
+  } else {
     delete iter->second;
-  values.clear();
+    container->erase(iter);
+    return true;
+  }
 }
-}  // ola
+
+
+/**
+ * Similar to STLLookupAndRemove but this operates on containers of pointers.
+ * If the key exists, we remove it and return the value, if the key doesn't
+ * exist we return NULL.
+ */
+template<typename T1>
+typename T1::mapped_type STLLookupAndRemovePtr(
+    T1 *container,
+    const typename T1::key_type &key) {
+  typename T1::iterator iter = container->find(key);
+  if (iter == container->end()) {
+    return NULL;
+  } else {
+    typename T1::mapped_type value = iter->second;
+    container->erase(iter);
+    return value;
+  }
+}
+}  // namespace ola
 #endif  // INCLUDE_OLA_STL_STLUTILS_H_

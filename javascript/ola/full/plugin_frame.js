@@ -19,7 +19,9 @@
 
 goog.require('goog.dom');
 goog.require('goog.events');
+goog.require('goog.string');
 goog.require('ola.BaseFrame');
+goog.require('ola.common.PluginItem');
 goog.require('ola.common.Server');
 goog.require('ola.common.Server.EventType');
 
@@ -31,14 +33,17 @@ goog.provide('ola.PluginFrame');
  * @param {string} element_id the ID of the element to use.
  * @constructor
  */
-ola.PluginFrame = function(element_id) {
+ola.PluginFrame = function(element_id, show_plugin_fn) {
   ola.BaseFrame.call(this, element_id);
+  this._show_plugin_fn = show_plugin_fn;
   goog.events.listen(
       ola.common.Server.getInstance(),
       ola.common.Server.EventType.PLUGIN_EVENT,
       this._UpdateFromData,
       false,
       this);
+
+  this.controls = new Array();
 };
 goog.inherits(ola.PluginFrame, ola.BaseFrame);
 
@@ -48,7 +53,79 @@ goog.inherits(ola.PluginFrame, ola.BaseFrame);
  * @param {ola.PluginChangeEvent} e the plugin event.
  */
 ola.PluginFrame.prototype._UpdateFromData = function(e) {
-  var description = e.plugin['description']
+  goog.dom.$('plugin_name').innerHTML = e.plugin['name'];
+  goog.dom.$('plugin_preference_source').innerHTML =
+    e.plugin['preferences_source'];
+  var enabled_span = goog.dom.$('plugin_enabled');
+  if (e.plugin['enabled']) {
+    enabled_span.innerHTML = 'Yes';
+    enabled_span.className = 'plugin_enabled';
+  } else {
+    enabled_span.innerHTML = 'No';
+    enabled_span.className = 'plugin_disabled';
+  }
+
+  var active_span = goog.dom.$('plugin_active');
+  if (e.plugin['active']) {
+    active_span.innerHTML = 'Yes';
+    active_span.className = 'plugin_enabled';
+  } else {
+    active_span.innerHTML = 'No';
+    active_span.className = 'plugin_disabled';
+  }
+
+  var possible_conflicts = e.plugin['enabled'] && !e.plugin['active'];
+  var conflict_row = goog.dom.$('plugin_conflict_row');
+  var conflict_list = e.plugin['conflicts_with'];
+  if (conflict_list.length) {
+    conflict_row.style.display = 'table-row';
+
+    // remove old controls
+    for (var i = 0; i < this.controls.length; ++i) {
+      this.controls[i].dispose();
+    }
+    this.controls = new Array();
+    var conflicts = goog.dom.$('plugin_conflict_list');
+    conflicts.innerHTML = '';
+
+    // add new controls
+    for (var i = 0; i < conflict_list.length; ++i) {
+      var plugin = conflict_list[i];
+      var control = new goog.ui.Control(
+          goog.dom.createDom('span', null, plugin['name']));
+      control.render(conflicts);
+      this._AttachListener(control, plugin['id']);
+      this.controls.push(control);
+
+      if (possible_conflicts && plugin['active']) {
+        var icon = goog.dom.createDom('img', {'src': '/warning.png'});
+        goog.dom.appendChild(conflicts, icon);
+      }
+      goog.dom.appendChild(conflicts, goog.dom.createDom('br'));
+    }
+  } else {
+    conflict_row.style.display = 'none';
+  }
+  var description = goog.string.htmlEscape(e.plugin['description']);
   description = description.replace(/\n/g, '<br>');
   goog.dom.$('plugin_description').innerHTML = description;
+};
+
+
+/**
+ * Called when a plugin name is clicked.
+ * @param {ola.int} id the plugin id.
+ */
+ola.PluginFrame.prototype._PluginControlClicked = function(id) {
+  this._show_plugin_fn(id);
+};
+
+/**
+ * Attach a listener to a control.
+ */
+ola.PluginFrame.prototype._AttachListener = function(control, plugin_id) {
+  goog.events.listen(control, goog.ui.Component.EventType.ACTION,
+                     function(e) {
+                       this._PluginControlClicked(plugin_id);
+                     }, false, this);
 };

@@ -21,11 +21,15 @@
 #include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include <queue>
+#include <sstream>
 
 #include "ola/Callback.h"
 #include "ola/Logging.h"
+#include "ola/testing/TestUtils.h"
 #include "plugins/usbpro/MockEndpoint.h"
 
+
+using ola::testing::ASSERT_DATA_EQUALS;
 
 MockEndpoint::MockEndpoint(ola::io::ConnectedDescriptor *descriptor)
     : m_descriptor(descriptor) {
@@ -125,14 +129,15 @@ void MockEndpoint::AddExpectedRobeMessage(
 void MockEndpoint::AddExpectedDataAndReturn(const uint8_t *request_data,
                                             unsigned int request_size,
                                             const uint8_t *response_data,
-                                            unsigned int response_size) {
+                                            unsigned int response_size,
+                                            NotificationCallback *callback) {
   expected_data call = {
     true,
     false,
     false,
     {request_size, request_data},
     {response_size, response_data},
-    NULL
+    callback
   };
   m_expected_data.push(call);
 }
@@ -154,7 +159,8 @@ void MockEndpoint::AddExpectedUsbProDataAndReturn(
     unsigned int request_payload_size,
     uint8_t response_label,
     const uint8_t *response_payload_data,
-    unsigned int response_payload_size) {
+    unsigned int response_payload_size,
+    NotificationCallback *callback) {
   unsigned int request_size;
   uint8_t *request = BuildUsbProMessage(request_label,
                                         request_payload_data,
@@ -172,7 +178,7 @@ void MockEndpoint::AddExpectedUsbProDataAndReturn(
     true,
     {request_size, request},
     {response_size, response},
-    NULL
+    callback
   };
   m_expected_data.push(call);
 }
@@ -194,7 +200,8 @@ void MockEndpoint::AddExpectedRobeDataAndReturn(
     unsigned int request_payload_size,
     uint8_t response_label,
     const uint8_t *response_payload_data,
-    unsigned int response_payload_size) {
+    unsigned int response_payload_size,
+    NotificationCallback *callback) {
   unsigned int request_size;
   uint8_t *request = BuildRobeMessage(request_label,
                                       request_payload_data,
@@ -212,7 +219,7 @@ void MockEndpoint::AddExpectedRobeDataAndReturn(
     true,
     {request_size, request},
     {response_size, response},
-    NULL
+    callback
   };
   m_expected_data.push(call);
 }
@@ -223,7 +230,7 @@ void MockEndpoint::AddExpectedRobeDataAndReturn(
  */
 void MockEndpoint::SendUnsolicited(const uint8_t *data,
                                    unsigned int length) {
-  CPPUNIT_ASSERT(m_descriptor->Send(data, length));
+  OLA_ASSERT_TRUE(m_descriptor->Send(data, length));
 }
 
 
@@ -240,7 +247,7 @@ void MockEndpoint::SendUnsolicitedUsbProData(
                                          response_payload_size,
                                          &response_size);
 
-  CPPUNIT_ASSERT(m_descriptor->Send(response, response_size));
+  OLA_ASSERT_TRUE(m_descriptor->Send(response, response_size));
   delete[] response;
 }
 
@@ -257,8 +264,19 @@ void MockEndpoint::SendUnsolicitedRobeData(
                                        response_payload_data,
                                        response_payload_size,
                                        &response_size);
-  CPPUNIT_ASSERT(m_descriptor->Send(response, response_size));
+  OLA_ASSERT_TRUE(m_descriptor->Send(response, response_size));
   delete[] response;
+}
+
+
+/**
+ * Verify no data remains
+ */
+void MockEndpoint::Verify() {
+  std::ostringstream str;
+  str << m_expected_data.size() << " messages remain, "
+      << m_descriptor->DataRemaining() << " bytes remaing";
+  OLA_ASSERT_EQ_MSG(static_cast<size_t>(0), m_expected_data.size(), str.str());
 }
 
 
@@ -267,49 +285,40 @@ void MockEndpoint::SendUnsolicitedRobeData(
  * expected and if there is return data send it.
  */
 void MockEndpoint::DescriptorReady() {
-  CPPUNIT_ASSERT(!m_expected_data.empty());
-  expected_data call = m_expected_data.front();
-  m_expected_data.pop();
+  OLA_ASSERT_FALSE(m_expected_data.empty());
 
-  uint8_t data[call.expected_data_frame.length];
-  unsigned int data_received = 0;
+  while (m_descriptor->DataRemaining()) {
+    expected_data call = m_expected_data.front();
+    m_expected_data.pop();
 
-  while (data_received != call.expected_data_frame.length) {
-    unsigned int offset = data_received;
-    if (call.expected_data_frame.length - offset > 100) {
-      CPPUNIT_ASSERT(false);
+    uint8_t data[call.expected_data_frame.length];
+    unsigned int data_received = 0;
+
+    while (data_received != call.expected_data_frame.length) {
+      unsigned int offset = data_received;
+      m_descriptor->Receive(data + offset,
+                            call.expected_data_frame.length - offset,
+                            data_received);
+      data_received += offset;
     }
 
-    m_descriptor->Receive(data + offset,
-                          call.expected_data_frame.length - offset,
-                          data_received);
-    data_received += offset;
+    ASSERT_DATA_EQUALS(__LINE__, call.expected_data_frame.data,
+                       call.expected_data_frame.length,
+                       data, data_received);
+
+    if (call.free_request)
+      delete[] call.expected_data_frame.data;
+
+    if (call.send_response)
+      OLA_ASSERT_TRUE(m_descriptor->Send(call.return_data_frame.data,
+                                         call.return_data_frame.length));
+
+    if (call.callback)
+      call.callback->Run();
+
+    if (call.free_response)
+      delete[] call.return_data_frame.data;
   }
-
-  CPPUNIT_ASSERT_EQUAL(call.expected_data_frame.length, data_received);
-  bool data_matches = !memcmp(call.expected_data_frame.data,
-                              data,
-                              data_received);
-  if (!data_matches) {
-    for (unsigned int i = 0; i < data_received; ++i)
-      OLA_WARN << i << ": 0x" << std::hex << static_cast<int>(data[i]) << " 0x"
-        << static_cast<int>(call.expected_data_frame.data[i]) <<
-        (data[i] != call.expected_data_frame.data[i] ? " <---" : "");
-  }
-  CPPUNIT_ASSERT(data_matches);
-
-  if (call.free_request)
-    delete[] call.expected_data_frame.data;
-
-  if (call.send_response)
-    CPPUNIT_ASSERT(m_descriptor->Send(call.return_data_frame.data,
-                                      call.return_data_frame.length));
-
-  if (call.callback)
-    call.callback->Run();
-
-  if (call.free_response)
-    delete[] call.return_data_frame.data;
 }
 
 

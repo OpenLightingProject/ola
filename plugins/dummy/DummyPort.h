@@ -52,7 +52,6 @@ class DummyPort: public BasicOutputPort {
     void RunIncrementalDiscovery(RDMDiscoveryCallback *callback);
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
-    static const unsigned int kStartAddress = 0xffffff00;
 
   private:
     typedef struct {
@@ -62,17 +61,22 @@ class DummyPort: public BasicOutputPort {
       ola::rdm::RDMCallback *callback;
     } broadcast_request_tracker;
 
-    typedef map<UID, DummyResponder *> ResponderMap;
+    typedef map<UID, DummyResponder*> ResponderMap;
+
+    DmxBuffer m_buffer;
+    ResponderMap m_responders;
+
     void RunDiscovery(RDMDiscoveryCallback *callback);
     void HandleBroadcastAck(broadcast_request_tracker *tracker,
                             ola::rdm::rdm_response_code code,
                             const ola::rdm::RDMResponse *response,
                             const std::vector<std::string> &packets);
 
-    DmxBuffer m_buffer;
-    ResponderMap m_responders;
+    // See http://www.opendmx.net/index.php/Open_Lighting_Allocations
+    // Do not change.
+    static const unsigned int kStartAddress = 0xffffff00;
 };
-}  // dummy
-}  // plugin
-}  // ola
+}  // namespace dummy
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_DUMMY_DUMMYPORT_H_

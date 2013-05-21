@@ -40,6 +40,7 @@ namespace io {
 using ola::ExportMap;
 using ola::thread::timeout_id;
 using std::priority_queue;
+using std::set;
 using std::string;
 
 
@@ -178,7 +179,6 @@ class SelectServer: public SelectServerInterface {
         ola::BaseCallback0<bool> *m_closure;
     };
 
-
     typedef struct {
       ConnectedDescriptor *descriptor;
       bool delete_on_close;
@@ -198,11 +198,11 @@ class SelectServer: public SelectServerInterface {
       }
     };
 
-    typedef std::set<ReadFileDescriptor*> ReadDescriptorSet;
-    typedef std::set<WriteFileDescriptor*> WriteDescriptorSet;
-    typedef std::set<connected_descriptor_t, connected_descriptor_t_lt>
+    typedef set<ReadFileDescriptor*> ReadDescriptorSet;
+    typedef set<WriteFileDescriptor*> WriteDescriptorSet;
+    typedef set<connected_descriptor_t, connected_descriptor_t_lt>
       ConnectedDescriptorSet;
-    typedef std::set<ola::Callback0<void>*> LoopClosureSet;
+    typedef set<ola::Callback0<void>*> LoopClosureSet;
 
     bool m_terminate, m_is_running;
     TimeInterval m_poll_interval;
@@ -210,7 +210,7 @@ class SelectServer: public SelectServerInterface {
     ReadDescriptorSet m_read_descriptors;
     ConnectedDescriptorSet m_connected_read_descriptors;
     WriteDescriptorSet m_write_descriptors;
-    std::set<timeout_id> m_removed_timeouts;
+    set<timeout_id> m_removed_timeouts;
     ExportMap *m_export_map;
 
     typedef priority_queue<Event*, vector<Event*>, ltevent> event_queue_t;
@@ -234,6 +234,8 @@ class SelectServer: public SelectServerInterface {
     void UnregisterAll();
     void DrainAndExecute();
     void SetTerminate() { m_terminate = true; }
+    void SafeIncrement(const string &var_name);
+    void SafeDecrement(const string &var_name);
 
     static const int K_MS_IN_SECOND = 1000;
     static const int K_US_IN_SECOND = 1000000;
@@ -241,6 +243,6 @@ class SelectServer: public SelectServerInterface {
     static const unsigned int POLL_INTERVAL_SECOND = 10;
     static const unsigned int POLL_INTERVAL_USECOND = 0;
 };
-}  // io
-}  // ola
+}  // namespace io
+}  // namespace ola
 #endif  // INCLUDE_OLA_IO_SELECTSERVER_H_

@@ -18,7 +18,6 @@
  * Copyright (C) 2011 Simon Newton
  */
 
-#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <cppunit/extensions/HelperMacros.h>
 #include <string.h>
 #include <string>
@@ -30,7 +29,6 @@
 #include "ola/testing/TestUtils.h"
 #include "plugins/e131/e131/E133PDU.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
-#include "ola/testing/TestUtils.h"
 
 
 namespace ola {
@@ -80,7 +78,7 @@ void E133PDUTest::testSimpleE133PDU() {
   unsigned int size = pdu.Size();
   uint8_t *data = new uint8_t[size];
   unsigned int bytes_used = size;
-  OLA_ASSERT(pdu.Pack(data, bytes_used));
+  OLA_ASSERT(pdu.Pack(data, &bytes_used));
   OLA_ASSERT_EQ(size, bytes_used);
 
   // spot check the data
@@ -105,12 +103,12 @@ void E133PDUTest::testSimpleE133PDU() {
 
   // test undersized buffer
   bytes_used = size - 1;
-  OLA_ASSERT_FALSE(pdu.Pack(data, bytes_used));
+  OLA_ASSERT_FALSE(pdu.Pack(data, &bytes_used));
   OLA_ASSERT_EQ(0u, bytes_used);
 
   // test oversized buffer
   bytes_used = size + 1;
-  OLA_ASSERT(pdu.Pack(data, bytes_used));
+  OLA_ASSERT(pdu.Pack(data, &bytes_used));
   OLA_ASSERT_EQ(size, bytes_used);
   delete[] data;
 }
@@ -146,8 +144,8 @@ void E133PDUTest::testSimpleE133PDUToOutputStream() {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 101, // seq #
-    0, 2, // endpoint
+    0, 0, 0, 101,  // seq #
+    0, 2,  // endpoint
     0,
   };
   ASSERT_DATA_EQUALS(__LINE__,
@@ -156,6 +154,6 @@ void E133PDUTest::testSimpleE133PDUToOutputStream() {
   output.Pop(output.Size());
   delete[] pdu_data;
 }
-}  // ola
-}  // e131
-}  // plugin
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

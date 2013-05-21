@@ -18,10 +18,9 @@
  * Copyright (C) 2012 Simon Newton
  */
 
-#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
-
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
+#include <ola/network/SocketAddress.h>
 #include <algorithm>
 #include <iostream>
 #include "plugins/e131/e131/BaseInflator.h"
@@ -47,28 +46,6 @@ const unsigned int ACN_HEADER_SIZE = sizeof(ACN_HEADER);
 const unsigned int IncommingStreamTransport::INITIAL_SIZE = 500;
 
 
-/*
- * Send a block of PDU messages over a stream.
- * @param pdu_block the block of pdus to send
- */
-bool OutgoingStreamTransport::Send(const PDUBlock<PDU> &pdu_block) {
-  unsigned int pdu_block_size = pdu_block.Size();
-  unsigned int total_message_size = (
-      ACN_HEADER_SIZE +
-      static_cast<unsigned int>(sizeof(pdu_block_size)) +
-      pdu_block.Size());
-  if (m_buffer->Size() + total_message_size > m_max_buffer_size)
-    return false;
-
-  OLA_DEBUG << "TCP TX: block size is " << pdu_block_size;
-  // Write the ACN header, the block length and the block data
-  m_stream.Write(ACN_HEADER, ACN_HEADER_SIZE);
-  m_stream << HostToNetwork(pdu_block_size);
-  pdu_block.Write(&m_stream);
-  return true;
-}
-
-
 /**
  * Create a new IncommingStreamTransport.
  * @param inflator the inflator to call for each PDU
@@ -79,9 +56,8 @@ bool OutgoingStreamTransport::Send(const PDUBlock<PDU> &pdu_block) {
 IncommingStreamTransport::IncommingStreamTransport(
     BaseInflator *inflator,
     ola::io::ConnectedDescriptor *descriptor,
-    const IPV4Address &ip_address,
-    uint16_t port)
-    : m_transport_header(ip_address, port, TransportHeader::TCP),
+    const ola::network::IPV4SocketAddress &source)
+    : m_transport_header(source, TransportHeader::TCP),
       m_inflator(inflator),
       m_descriptor(descriptor),
       m_buffer_start(NULL),
@@ -241,7 +217,7 @@ void IncommingStreamTransport::HandlePDU() {
   header_set.SetTransportHeader(m_transport_header);
 
   unsigned int data_consumed = m_inflator->InflatePDUBlock(
-      header_set,
+      &header_set,
       m_buffer_start,
       m_pdu_size);
   OLA_DEBUG << "inflator consumed " << data_consumed << " bytes";
@@ -341,14 +317,17 @@ void IncommingStreamTransport::EnterWaitingForPDU() {
  * Create a new IncomingTCPTransport
  */
 IncomingTCPTransport::IncomingTCPTransport(BaseInflator *inflator,
-                                           ola::network::TCPSocket *socket):
-  m_transport(NULL) {
-  uint16_t port;
-  IPV4Address ip_address;
-  socket->GetPeer(&ip_address, &port);
-  m_transport.reset(
-      new IncommingStreamTransport(inflator, socket, ip_address, port));
+                                           ola::network::TCPSocket *socket)
+    : m_transport(NULL) {
+  ola::network::GenericSocketAddress address = socket->GetPeerAddress();
+  if (address.Family() == AF_INET) {
+    ola::network::IPV4SocketAddress v4_addr = address.V4Addr();
+    m_transport.reset(
+        new IncommingStreamTransport(inflator, socket, v4_addr));
+  } else {
+    OLA_WARN << "Invalid address for fd " << socket->ReadDescriptor();
+  }
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

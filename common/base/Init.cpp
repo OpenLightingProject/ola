@@ -34,9 +34,6 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <sys/resource.h>
-#ifdef HAVE_SYSEXITS_H
-#include <sysexits.h>
-#endif
 #include <unistd.h>
 
 #include <ola/base/Init.h>
@@ -46,30 +43,7 @@
 
 #include <iostream>
 
-
-#ifndef HAVE_SYSEXITS_H
-// Copied from the Berkeley sources.
-
-#define EX_OK       0   /* successful termination */
-#define EX__BASE    64  /* base value for error messages */
-#define EX_USAGE    64  /* command line usage error */
-#define EX_DATAERR  65  /* data format error */
-#define EX_NOINPUT  66  /* cannot open input */
-#define EX_NOUSER   67  /* addressee unknown */
-#define EX_NOHOST   68  /* host name unknown */
-#define EX_UNAVAILABLE  69  /* service unavailable */
-#define EX_SOFTWARE 70  /* internal software error */
-#define EX_OSERR    71  /* system error (e.g., can't fork) */
-#define EX_OSFILE   72  /* critical OS file missing */
-#define EX_CANTCREAT    73  /* can't create (user) output file */
-#define EX_IOERR    74  /* input/output error */
-#define EX_TEMPFAIL 75  /* temp failure; user is invited to retry */
-#define EX_PROTOCOL 76  /* remote error in protocol */
-#define EX_NOPERM   77  /* permission denied */
-#define EX_CONFIG   78  /* configuration error */
-#define EX__MAX 78  /* maximum listed value */
-#endif
-
+#include "common/base/SystemExits.h"
 
 namespace ola {
 
@@ -80,7 +54,7 @@ using std::endl;
 /*
  * Print a stack trace on seg fault.
  */
-static void _SIGSEGV_Handler(int) {
+static void _SIGSEGV_Handler(int signal) {
   cout << "Recieved SIGSEGV or SIGBUS" << endl;
   #ifdef HAVE_EXECINFO_H
   enum {STACK_SIZE = 64};
@@ -90,6 +64,7 @@ static void _SIGSEGV_Handler(int) {
   backtrace_symbols_fd(array, size, STDERR_FILENO);
   #endif
   exit(EX_SOFTWARE);
+  (void) signal;
 }
 
 
@@ -120,11 +95,13 @@ bool ServerInit(int argc, char *argv[], ExportMap *export_map) {
  * @param argc the number of arguments on the cmd line
  * @param argv the command line arguments
  */
-bool AppInit(int, char *[]) {
+bool AppInit(int argc, char *argv[]) {
   ola::math::InitRandom();
   if (!InstallSEGVHandler())
     return false;
   return true;
+  (void) argc;
+  (void) argv;
 }
 
 
@@ -133,7 +110,7 @@ bool AppInit(int, char *[]) {
  * @param signal the signal number to catch.
  * @param fp a function pointer to call.
  */
-bool InstallSignal(int signal, void(*fp)(int)) {
+bool InstallSignal(int signal, void(*fp)(int signo)) {
   struct sigaction action;
   action.sa_handler = fp;
   sigemptyset(&action.sa_mask);
@@ -260,4 +237,4 @@ int Daemonise() {
   }
   return 0;
 }
-}  // ola
+}  // namespace ola

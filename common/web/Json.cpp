@@ -173,5 +173,5 @@ string JsonWriter::AsString(const JsonValue &obj) {
   obj.ToString(&str, 0);
   return str.str();
 }
-}  // web
-}  // ola
+}  // namespace web
+}  // namespace ola

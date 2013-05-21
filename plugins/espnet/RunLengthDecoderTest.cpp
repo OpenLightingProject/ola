@@ -19,10 +19,9 @@
  */
 
 #include <cppunit/extensions/HelperMacros.h>
+#include <ola/DmxBuffer.h>
 
 #include "ola/testing/TestUtils.h"
-
-#include <ola/DmxBuffer.h>
 #include "plugins/espnet/RunLengthDecoder.h"
 
 class RunLengthDecoderTest: public CppUnit::TestFixture {

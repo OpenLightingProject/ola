@@ -18,7 +18,6 @@
  * Copyright (C) 2007 Simon Newton
  */
 
-#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <string.h>
 
 #include "ola/Callback.h"
@@ -99,17 +98,17 @@ void IncomingUDPTransport::Receive() {
   }
 
   HeaderSet header_set;
-  TransportHeader transport_header(src_address,
-                                   src_port,
-                                   TransportHeader::UDP);
+  TransportHeader transport_header(
+      ola::network::IPV4SocketAddress(src_address, src_port),
+      TransportHeader::UDP);
   header_set.SetTransportHeader(transport_header);
 
   m_inflator->InflatePDUBlock(
-      header_set,
+      &header_set,
       m_recv_buffer + header_size,
       static_cast<unsigned int>(size) - header_size);
   return;
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

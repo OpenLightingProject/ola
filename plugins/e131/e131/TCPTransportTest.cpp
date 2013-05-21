@@ -18,14 +18,16 @@
  * Copyright (C) 2012 Simon Newton
  */
 
-#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <cppunit/extensions/HelperMacros.h>
 #include <memory>
+#include <string>
 
 #include "ola/Logging.h"
-#include "ola/io/BufferedWriteDescriptor.h"
+#include "ola/io/IOQueue.h"
+#include "ola/io/IOStack.h"
 #include "ola/io/SelectServer.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
+#include "plugins/e131/e131/PreamblePacker.h"
 #include "plugins/e131/e131/TCPTransport.h"
 #include "ola/testing/TestUtils.h"
 
@@ -34,6 +36,9 @@ namespace ola {
 namespace plugin {
 namespace e131 {
 
+using ola::io::IOQueue;
+using ola::io::IOStack;
+using ola::network::IPV4SocketAddress;
 using std::auto_ptr;
 
 class TCPTransportTest: public CppUnit::TestFixture {
@@ -44,7 +49,6 @@ class TCPTransportTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testZeroLengthPDUBlock);
   CPPUNIT_TEST(testMultiplePDUs);
   CPPUNIT_TEST(testSinglePDUBlock);
-  CPPUNIT_TEST(testBufferExpansion);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -56,8 +60,8 @@ class TCPTransportTest: public CppUnit::TestFixture {
     void testMultiplePDUs();
     void testMultiplePDUsWithExtraData();
     void testSinglePDUBlock();
-    void testBufferExpansion();
     void setUp();
+    void tearDown();
 
     void Stop();
     void FatalStop() { OLA_ASSERT(false); }
@@ -67,9 +71,9 @@ class TCPTransportTest: public CppUnit::TestFixture {
   private:
     unsigned int m_pdus_received;
     bool m_stream_ok;
-    ola::network::IPV4Address m_localhost;
+    ola::network::IPV4SocketAddress m_localhost;
     auto_ptr<ola::io::SelectServer> m_ss;
-    ola::io::BufferedLoopbackDescriptor m_loopback;
+    ola::io::LoopbackDescriptor m_loopback;
     CID m_cid;
     auto_ptr<Callback0<void> > m_rx_callback;
     auto_ptr<MockInflator> m_inflator;
@@ -78,6 +82,7 @@ class TCPTransportTest: public CppUnit::TestFixture {
     void SendEmptyPDUBLock(unsigned int line);
     void SendPDU(unsigned int line);
     void SendPDUBlock(unsigned int line);
+    void SendPacket(const string &message, IOStack *packet);
 
     static const int ABORT_TIMEOUT_IN_MS = 1000;
 };
@@ -89,7 +94,7 @@ void TCPTransportTest::setUp() {
   m_stream_ok = true;
   m_pdus_received = 0;
 
-  OLA_ASSERT(IPV4Address::FromString("127.0.0.1", &m_localhost));
+  m_localhost = IPV4SocketAddress::FromStringOrDie("127.0.0.1:9999");
 
   // mock inflator
   CID cid;
@@ -98,10 +103,7 @@ void TCPTransportTest::setUp() {
 
   // transport to test
   m_transport.reset(
-      new IncommingStreamTransport(m_inflator.get(),
-                                   &m_loopback,
-                                   m_localhost,
-                                   9999));
+      new IncommingStreamTransport(m_inflator.get(), &m_loopback, m_localhost));
 
   // SelectServer
   m_ss.reset(new ola::io::SelectServer());
@@ -110,12 +112,18 @@ void TCPTransportTest::setUp() {
       NewSingleCallback(this, &TCPTransportTest::FatalStop));
 
   // loopback descriptor
-  m_loopback.AssociateSelectServer(m_ss.get());
   OLA_ASSERT(m_loopback.Init());
   m_loopback.SetOnClose(NewSingleCallback(this, &TCPTransportTest::Stop));
   m_loopback.SetOnData(
       NewCallback(this, &TCPTransportTest::Receive));
   OLA_ASSERT(m_ss->AddReadDescriptor(&m_loopback));
+}
+
+
+void TCPTransportTest::tearDown() {
+  // Close the loopback descriptor and drain the ss
+  m_loopback.Close();
+  m_ss->RunOnce(0, 0);
 }
 
 
@@ -234,47 +242,15 @@ void TCPTransportTest::testSinglePDUBlock() {
 
 
 /**
- * Test that we expand the buffer correctly when required
- */
-void TCPTransportTest::testBufferExpansion() {
-  OutgoingStreamTransport outgoing_transport(&m_loopback);
-
-  // first send a single PDU
-  PDUBlock<PDU> pdu_block;
-  MockPDU mock_pdu(4, 8);
-  pdu_block.AddPDU(&mock_pdu);
-  OLA_ASSERT(outgoing_transport.Send(pdu_block));
-
-  // now follow up with a block
-  pdu_block.Clear();
-  MockPDU mock_pdu1(1, 2);
-  MockPDU mock_pdu2(2, 4);
-  MockPDU mock_pdu3(3, 6);
-  pdu_block.AddPDU(&mock_pdu1);
-  pdu_block.AddPDU(&mock_pdu2);
-  pdu_block.AddPDU(&mock_pdu3);
-
-  OLA_ASSERT(outgoing_transport.Send(pdu_block));
-
-  m_ss->RunOnce(1, 0);
-  m_loopback.CloseClient();
-  m_ss->RunOnce(1, 0);
-  OLA_ASSERT(m_stream_ok);
-  OLA_ASSERT_EQ(4u, m_pdus_received);
-}
-
-
-/**
  * Send empty PDU block.
  */
 void TCPTransportTest::SendEmptyPDUBLock(unsigned int line) {
   std::stringstream str;
   str << "Line " << line;
-  OutgoingStreamTransport outgoing_transport(&m_loopback);
 
-  // now actually send some data
-  PDUBlock<PDU> pdu_block;
-  CPPUNIT_ASSERT_MESSAGE(str.str(), outgoing_transport.Send(pdu_block));
+  IOStack packet;
+  PreamblePacker::AddTCPPreamble(&packet);
+  SendPacket(str.str(), &packet);
 }
 
 
@@ -284,13 +260,10 @@ void TCPTransportTest::SendEmptyPDUBLock(unsigned int line) {
 void TCPTransportTest::SendPDU(unsigned int line) {
   std::stringstream str;
   str << "Line " << line;
-  OutgoingStreamTransport outgoing_transport(&m_loopback);
-
-  // now actually send some data
-  PDUBlock<PDU> pdu_block;
-  MockPDU mock_pdu(4, 8);
-  pdu_block.AddPDU(&mock_pdu);
-  CPPUNIT_ASSERT_MESSAGE(str.str(), outgoing_transport.Send(pdu_block));
+  IOStack packet;
+  MockPDU::PrependPDU(&packet, 4, 8);
+  PreamblePacker::AddTCPPreamble(&packet);
+  SendPacket(str.str(), &packet);
 }
 
 
@@ -300,19 +273,20 @@ void TCPTransportTest::SendPDU(unsigned int line) {
 void TCPTransportTest::SendPDUBlock(unsigned int line) {
   std::stringstream str;
   str << "Line " << line;
-  OutgoingStreamTransport outgoing_transport(&m_loopback);
-
-  // now actually send some data
-  PDUBlock<PDU> pdu_block;
-  MockPDU mock_pdu1(1, 2);
-  MockPDU mock_pdu2(2, 4);
-  MockPDU mock_pdu3(3, 6);
-
-  pdu_block.AddPDU(&mock_pdu1);
-  pdu_block.AddPDU(&mock_pdu2);
-  pdu_block.AddPDU(&mock_pdu3);
-  CPPUNIT_ASSERT_MESSAGE(str.str(), outgoing_transport.Send(pdu_block));
+  IOStack packet;
+  MockPDU::PrependPDU(&packet, 1, 2);
+  MockPDU::PrependPDU(&packet, 2, 4);
+  MockPDU::PrependPDU(&packet, 3, 6);
+  PreamblePacker::AddTCPPreamble(&packet);
+  SendPacket(str.str(), &packet);
 }
-}  // e131
-}  // plugin
-}  // ola
+
+
+void TCPTransportTest::SendPacket(const string &message, IOStack *packet) {
+  IOQueue output;
+  packet->MoveToIOQueue(&output);
+  OLA_ASSERT_TRUE_MSG(m_loopback.Send(&output), message);
+}
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

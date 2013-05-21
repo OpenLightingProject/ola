@@ -46,6 +46,6 @@ class OutputBufferInterface {
     // Append some data to this OutputBuffer
     virtual void Write(const uint8_t *data, unsigned int length) = 0;
 };
-}  // io
-}  // ola
+}  // namespace io
+}  // namespace ola
 #endif  // INCLUDE_OLA_IO_OUTPUTBUFFER_H_

@@ -18,7 +18,6 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include "ola/Logging.h"
 #include "plugins/e131/e131/DMPInflator.h"
 
@@ -35,7 +34,7 @@ namespace e131 {
  * @param length length of the data
  * @returns true if successful, false otherwise
  */
-bool DMPInflator::DecodeHeader(HeaderSet &headers,
+bool DMPInflator::DecodeHeader(HeaderSet *headers,
                                const uint8_t *data,
                                unsigned int length,
                                unsigned int &bytes_used) {
@@ -45,7 +44,7 @@ bool DMPInflator::DecodeHeader(HeaderSet &headers,
       DMPHeader header(*data);
       m_last_header = header;
       m_last_header_valid = true;
-      headers.SetDMPHeader(header);
+      headers->SetDMPHeader(header);
       bytes_used = DMPHeader::DMP_HEADER_SIZE;
       return true;
     }
@@ -59,7 +58,7 @@ bool DMPInflator::DecodeHeader(HeaderSet &headers,
     OLA_WARN << "Missing DMP Header data";
     return false;
   }
-  headers.SetDMPHeader(m_last_header);
+  headers->SetDMPHeader(m_last_header);
   return true;
 }
 
@@ -70,6 +69,6 @@ bool DMPInflator::DecodeHeader(HeaderSet &headers,
 void DMPInflator::ResetHeaderField() {
   m_last_header_valid = false;
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

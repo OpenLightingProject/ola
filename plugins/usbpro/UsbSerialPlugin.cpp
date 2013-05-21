@@ -93,22 +93,22 @@ string UsbSerialPlugin::Description() const {
 "--- Config file : ola-usbserial.conf ---\n"
 "\n"
 "device_dir = /dev\n"
-"The directory to look for devices in\n"
+"The directory to look for devices in.\n"
 "\n"
 "device_prefix = ttyUSB\n"
-"The prefix of filenames to consider as devices, multiple keys are allowed\n"
+"The prefix of filenames to consider as devices. Multiple keys are allowed.\n"
 "\n"
 "ignore_device = /dev/ttyUSB\n"
 "Ignore the device matching this string. Multiple keys are allowed.\n"
 "\n"
 "pro_fps_limit = 190\n"
-"The max frames per second to send to a Usb Pro or DMXKing device\n"
+"The max frames per second to send to a Usb Pro or DMXKing device.\n"
 "\n"
 "tri_use_raw_rdm = [true|false]\n"
 "Bypass RDM handling in the {DMX,RDM}-TRI widgets.\n"
 "\n"
 "ultra_fps_limit = 40\n"
-"The max frames per second to send to a Ultra DMX Pro device\n"
+"The max frames per second to send to a Ultra DMX Pro device.\n"
 "\n";
 }
 
@@ -162,13 +162,8 @@ void UsbSerialPlugin::NewWidget(
   if (device_name.empty())
     device_name = USBPRO_DEVICE_NAME;
 
-  AddDevice(new UsbProDevice(
-      m_plugin_adaptor,
-      this,
-      device_name,
-      widget,
-      information.serial,
-      GetProFrameLimit()));
+  AddDevice(new UsbProDevice(m_plugin_adaptor, this, device_name, widget,
+                             information.serial, GetProFrameLimit()));
 }
 
 
@@ -377,6 +372,6 @@ unsigned int UsbSerialPlugin::GetUltraDMXProFrameLimit() {
     StringToInt(DEFAULT_ULTRA_FPS_LIMIT, &fps_limit);
   return fps_limit;
 }
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola

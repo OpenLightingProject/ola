@@ -10,10 +10,11 @@ if BUILD_TESTS
 TESTS = DescriptorTester
 endif
 check_PROGRAMS = $(TESTS)
-DescriptorTester_SOURCES = DescriptorTester.cpp \
-                           DescriptorTest.cpp \
+
+DescriptorTester_SOURCES = DescriptorTest.cpp \
                            SchemaPrinterTest.cpp \
                            MessagePrinterTest.cpp
-DescriptorTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-DescriptorTester_LDADD = $(CPPUNIT_LIBS) \
+DescriptorTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+DescriptorTester_LDADD = $(COMMON_TESTING_LIBS) \
                          ../libolacommon.la
+

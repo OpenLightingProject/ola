@@ -1,9 +1,10 @@
 SOURCES = CommandPrinter.h DiscoveryAgent.h MessageDeserializer.h \
           MessageSerializer.h PidStore.h PidStoreHelper.h RDMAPI.h \
           RDMAPIImplInterface.h RDMCommand.h RDMCommandSerializer.h \
-          RDMControllerInterface.h RDMEnums.h RDMHelper.h \
-          RDMMessagePrinters.h RDMPacket.h StringMessageBuilder.h \
-          QueueingRDMController.h UID.h UIDSet.h
+          RDMControllerAdaptor.h RDMControllerInterface.h RDMEnums.h \
+          RDMHelper.h RDMMessagePrinters.h RDMPacket.h \
+          StringMessageBuilder.h QueueingRDMController.h UID.h UIDAllocator.h \
+          UIDSet.h
 
 BUILT_SOURCES = RDMResponseCodes.h
 

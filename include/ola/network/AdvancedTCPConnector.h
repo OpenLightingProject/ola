@@ -26,100 +26,16 @@
 #include <ola/io/SelectServerInterface.h>
 #include <ola/network/TCPConnector.h>
 #include <ola/network/TCPSocketFactory.h>
+#include <ola/util/Backoff.h>
 #include <map>
-
+#include <utility>
 
 namespace ola {
 namespace network {
 
-
-/**
- * The Interface for BackOff Policies.
- */
-class BackOffPolicy {
-  public:
-    BackOffPolicy() {}
-    virtual ~BackOffPolicy() {}
-
-    /**
-     * Failed attempts is the number of unsuccessfull connection attempts since
-     * the last successful connection. Will be >= 1.
-     */
-    virtual TimeInterval BackOffTime(unsigned int failed_attempts) const = 0;
-};
-
-
-/**
- * Constant time back off polcy
- */
-class ConstantBackoffPolicy: public BackOffPolicy {
-  public:
-    explicit ConstantBackoffPolicy(const TimeInterval &duration)
-        : m_duration(duration) {
-    }
-
-    TimeInterval BackOffTime(unsigned int) const {
-      return m_duration;
-    }
-
-  private:
-    const TimeInterval m_duration;
-};
-
-
-/**
- * A backoff policy which is:
- *   t = failed_attempts * duration
- */
-class LinearBackoffPolicy: public BackOffPolicy {
-  public:
-    LinearBackoffPolicy(const TimeInterval &duration, const TimeInterval &max)
-        : m_duration(duration),
-          m_max(max) {
-    }
-
-    TimeInterval BackOffTime(unsigned int failed_attempts) const {
-      TimeInterval interval = m_duration * failed_attempts;
-      if (interval > m_max)
-        interval = m_max;
-      return interval;
-    }
-
-  private:
-    const TimeInterval m_duration;
-    const TimeInterval m_max;
-};
-
-
-/**
- * A backoff policy which is:
- *   t = initial * 2 ^ failed_attempts
- */
-class ExponentialBackoffPolicy: public BackOffPolicy {
-  public:
-    ExponentialBackoffPolicy(const TimeInterval &initial,
-                             const TimeInterval &max)
-        : m_initial(initial),
-          m_max(max) {
-    }
-
-    TimeInterval BackOffTime(unsigned int failed_attempts) const {
-      TimeInterval interval = (
-          m_initial * static_cast<int>(::pow(2, failed_attempts - 1)));
-      if (interval > m_max)
-        interval = m_max;
-      return interval;
-    }
-
-  private:
-    const TimeInterval m_initial;
-    const TimeInterval m_max;
-};
-
-
 /**
  * Manages the TCP connections to ip:ports.
- * The AdvancedTCPConnector failed_attempts to open connections to ip:ports,
+ * The AdvancedTCPConnector attempts to open connections to ip:ports,
  * backing off exponentially if we can't connect.
  *
  * Limitiations:
@@ -190,6 +106,6 @@ class AdvancedTCPConnector {
     void AttemptConnection(const IPPortPair &key, ConnectionInfo *state);
     void AbortConnection(ConnectionInfo *state);
 };
-}  // network
-}  // ola
+}  // namespace network
+}  // namespace ola
 #endif  // INCLUDE_OLA_NETWORK_ADVANCEDTCPCONNECTOR_H_

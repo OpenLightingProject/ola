@@ -93,6 +93,6 @@ class DiscoverableRDMControllerInterface: public RDMControllerInterface {
 
     virtual void RunIncrementalDiscovery(RDMDiscoveryCallback *callback) = 0;
 };
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola
 #endif  // INCLUDE_OLA_RDM_RDMCONTROLLERINTERFACE_H_

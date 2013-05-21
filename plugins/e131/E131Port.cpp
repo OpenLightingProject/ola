@@ -18,7 +18,6 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <string>
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
@@ -114,6 +113,6 @@ bool E131OutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
 void E131OutputPort::UniverseNameChanged(const string &new_name) {
   m_node->SetSourceName(GetUniverse()->UniverseId(), new_name);
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola

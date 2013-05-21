@@ -70,6 +70,6 @@ bool SunliteFirmwareLoader::LoadFirmware() {
   libusb_close(handle);
   return true;
 }
-}  // usbdmx
-}  // plugin
-}  // ola
+}  // namespace usbdmx
+}  // namespace plugin
+}  // namespace ola

@@ -77,7 +77,7 @@ void SelectItem::AddItem(const string &label, unsigned int value) {
 void SelectItem::SetValue(JsonObject *item) const {
   JsonArray *options = item->AddArray("value");
   vector<pair<string, string> >::const_iterator iter = m_values.begin();
-  for (;iter != m_values.end(); ++iter) {
+  for (; iter != m_values.end(); ++iter) {
     JsonObject *option = options->AppendObject();
     option->Add("label", iter->first);
     option->Add("value", iter->second);
@@ -133,5 +133,5 @@ string JsonSection::AsString() const {
   }
   return JsonWriter::AsString(json);
 }
-}  // web
-}  // ola
+}  // namespace web
+}  // namespace ola

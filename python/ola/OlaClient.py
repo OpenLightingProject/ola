@@ -409,11 +409,13 @@ class RDMResponse(object):
       return 'RDMResponse: %s' % self.ResponseCodeAsString()
 
     if self.response_type == OlaClient.RDM_ACK:
-      return 'RDMResponse: ACK'
+      return 'RDMResponse: %s ACK' % self._command_class()
     elif self.response_type == OlaClient.RDM_ACK_TIMER:
-      return 'RDMResponse: ACK TIMER, %d ms' % self.ack_timer
+      return 'RDMResponse: %s ACK TIMER, %d ms' % (
+          self._command_class(), self.ack_timer)
     else:
-      return 'RDMResponse:, NACK %s' % self.nack_reason
+      return 'RDMResponse:, %s NACK %s' % (
+          self._command_class(), self.nack_reason)
 
   def _get_short_from_data(self, data):
     """Try to unpack the binary data into a short.
@@ -428,6 +430,16 @@ class RDMResponse(object):
       return struct.unpack('!h', data)[0]
     except struct.error:
       return None
+
+  def _command_class(self):
+    if self.command_class == OlaClient.RDM_GET_RESPONSE:
+      return 'Get'
+    elif self.command_class == OlaClient.RDM_SET_RESPONSE :
+      return 'Set'
+    elif self.command_class == OlaClient.RDM_DISCOVERY_RESPONSE:
+      return 'Discovery'
+    else:
+      return "UNKNOWN_CC"
 
 
 class OlaClient(Ola_pb2.OlaClientService):
@@ -447,7 +459,7 @@ class OlaClient(Ola_pb2.OlaClientService):
       try:
         self._socket.connect(('localhost', 9010))
       except socket.error:
-        raise OLADNotRunningException()
+        raise OLADNotRunningException('Failed to connect to olad')
 
     self._close_callback = close_callback
     self._channel = StreamRpcChannel(self._socket, self, self._SocketClosed)

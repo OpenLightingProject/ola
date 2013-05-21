@@ -140,6 +140,6 @@ bool OpenDmxThread::WriteDmx(const DmxBuffer &buffer) {
   m_buffer.Set(buffer);
   return true;
 }
-}  // opendmx
-}  // plugin
-}  // ola
+}  // namespace opendmx
+}  // namespace plugin
+}  // namespace ola

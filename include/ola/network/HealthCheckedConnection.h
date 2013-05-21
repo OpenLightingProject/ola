@@ -111,6 +111,6 @@ class HealthCheckedConnection {
     bool SendNextHeartbeat();
     void UpdateReceiveTimer();
 };
-}  // network
-}  // ola
+}  // namespace network
+}  // namespace ola
 #endif  // INCLUDE_OLA_NETWORK_HEALTHCHECKEDCONNECTION_H__

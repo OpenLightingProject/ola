@@ -18,20 +18,18 @@
  * Copyright (C) 2007-2009 Simon Newton
  */
 
-#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
 #include <iostream>
 
-#include "ola/network/IPV4Address.h"
+#include "ola/acn/CID.h"
+#include "ola/network/SocketAddress.h"
 #include "ola/network/NetworkUtils.h"
-#include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/HeaderSet.h"
 #include "ola/testing/TestUtils.h"
 
-
-using ola::network::IPV4Address;
-using ola::plugin::e131::CID;
+using ola::acn::CID;
+using ola::network::IPV4SocketAddress;
 using ola::plugin::e131::DMPHeader;
 using ola::plugin::e131::E131Header;
 using ola::plugin::e131::E131Rev2Header;
@@ -70,22 +68,18 @@ CPPUNIT_TEST_SUITE_REGISTRATION(HeaderSetTest);
  * Check that the transport header works.
  */
 void HeaderSetTest::testTransportHeader() {
-  IPV4Address address;
-  uint16_t port = 42;
-  OLA_ASSERT(IPV4Address::FromString("192.168.1.1", &address));
-  TransportHeader header(address, port, TransportHeader::UDP);
-  OLA_ASSERT(address == header.SourceIP());
-  OLA_ASSERT_EQ(port, header.SourcePort());
+  IPV4SocketAddress address = IPV4SocketAddress::FromStringOrDie(
+      "192.168.1.1:42");
+  TransportHeader header(address, TransportHeader::UDP);
+  OLA_ASSERT(address == header.Source());
   OLA_ASSERT_EQ(TransportHeader::UDP, header.Transport());
 
   // test copy and assign
   TransportHeader header2 = header;
-  OLA_ASSERT(address == header2.SourceIP());
-  OLA_ASSERT_EQ(port, header2.SourcePort());
+  OLA_ASSERT(address == header2.Source());
   OLA_ASSERT(header2 == header);
   TransportHeader header3(header);
-  OLA_ASSERT(address == header3.SourceIP());
-  OLA_ASSERT_EQ(port, header3.SourcePort());
+  OLA_ASSERT(address == header3.Source());
   OLA_ASSERT(header3 == header);
 }
 

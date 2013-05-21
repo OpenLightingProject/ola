@@ -57,7 +57,7 @@ string ResponseCodeToString(rdm_response_code status) {
       return "Sub device mismatch";
     case RDM_SRC_UID_MISMATCH:
       return "Source UID in response doesn't match";
-    case  RDM_DEST_UID_MISMATCH:
+    case RDM_DEST_UID_MISMATCH:
       return "Destination UID in response doesn't match";
     case RDM_WRONG_SUB_START_CODE:
       return "Incorrect sub start code";
@@ -185,6 +185,12 @@ string NackReasonToString(uint16_t reason) {
       return "Packet size unsupported";
     case NR_SUB_DEVICE_OUT_OF_RANGE:
       return "Sub device out of range";
+    case NR_PROXY_BUFFER_FULL:
+      return "Proxy buffer full";
+    case NR_ACTION_NOT_SUPPORTED:
+      return "Action not supported";
+    case NR_ENDPOINT_NUMBER_INVALID:
+      return "Invalid endpoint";
     default:
       stringstream str;
       str << "Unknown, was " << reason;
@@ -986,5 +992,5 @@ string UnitToString(uint8_t unit) {
       return str.str();
   }
 }
-}  // rdm
-}  //  ola
+}  // namespace rdm
+}  // namespace  ola

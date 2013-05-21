@@ -98,5 +98,5 @@ class DeviceManager {
     static const char PORT_PREFERENCES[];
     static const unsigned int FIRST_DEVICE_ALIAS = 1;
 };
-}  // ola
+}  // namespace ola
 #endif  // OLAD_DEVICEMANAGER_H_

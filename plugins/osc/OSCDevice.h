@@ -61,7 +61,7 @@ class OSCDevice: public Device {
 
     static const char DEVICE_NAME[];
 };
-}  // osc
-}  // plugin
-}  // ola
+}  // namespace osc
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_OSC_OSCDEVICE_H_

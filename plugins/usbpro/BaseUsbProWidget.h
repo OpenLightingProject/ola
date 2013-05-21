@@ -60,6 +60,7 @@ class BaseUsbProWidget: public SerialWidgetInterface {
     static const uint8_t SERIAL_LABEL = 10;
     static const uint8_t MANUFACTURER_LABEL = 77;
     static const uint8_t DEVICE_LABEL = 78;
+    static const uint8_t HARDWARE_VERSION_LABEL = 14;
 
   private:
     typedef enum {
@@ -137,7 +138,7 @@ class DispatchingUsbProWidget: public BaseUsbProWidget {
       m_callback->Run(label, data, length);
     }
 };
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBPRO_BASEUSBPROWIDGET_H_

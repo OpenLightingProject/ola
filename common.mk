@@ -16,4 +16,7 @@ endif
 AM_CXXFLAGS = $(COMMON_CXXFLAGS)
 
 COMMON_TESTING_LIBS = $(CPPUNIT_LIBS) \
-                      $(top_builddir)/common/testing/libolatesting.la
+                      $(top_builddir)/common/testing/libolatesting.la \
+                      $(top_builddir)/common/testing/libtestmain.la
+
+COMMON_TESTING_FLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)

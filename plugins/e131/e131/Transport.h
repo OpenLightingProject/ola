@@ -22,10 +22,10 @@
 #define PLUGINS_E131_E131_TRANSPORT_H_
 
 #include <string>
+#include "ola/acn/ACNPort.h"
 #include "ola/network/IPV4Address.h"
 #include "ola/network/Interface.h"
 #include "ola/network/Socket.h"
-#include "plugins/e131/e131/ACNPort.h"
 #include "plugins/e131/e131/PDU.h"
 
 namespace ola {
@@ -45,7 +45,7 @@ class OutgoingTransport {
 
     virtual bool Send(const PDUBlock<PDU> &pdu_block) = 0;
 };
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_E131_E131_TRANSPORT_H_

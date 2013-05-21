@@ -27,7 +27,7 @@ goog.provide('ola.CustomDragger');
 
 ola.CustomDragger = function(target, opt_handle, opt_limits) {
   goog.fx.Dragger.call(this, target, opt_handle, opt_limits);
-}
+};
 goog.inherits(ola.CustomDragger, goog.fx.Dragger);
 
 

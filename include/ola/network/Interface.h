@@ -98,7 +98,6 @@ class InterfaceBuilder {
 
     bool SetAddress(const string &str, IPV4Address *target);
 };
-}  // network
-}  // ola
+}  // namespace network
+}  // namespace ola
 #endif  // INCLUDE_OLA_NETWORK_INTERFACE_H_
-

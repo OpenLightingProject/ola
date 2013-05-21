@@ -86,194 +86,194 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testTimeCode);
   CPPUNIT_TEST_SUITE_END();
 
-  public:
-    ArtNetNodeTest()
-        : CppUnit::TestFixture(),
-          ss(NULL, &m_clock),
-          m_got_dmx(false),
-          m_got_rdm_timeout(false),
-          m_discovery_done(false),
-          m_tod_flush(false),
-          m_tod_request(false),
-          m_rdm_request(NULL),
-          m_rdm_callback(NULL),
-          m_rdm_response(NULL),
-          m_port_id(1),
-          broadcast_ip(IPV4Address::Broadcast()),
-          m_socket(new MockUDPSocket()) {
-    }
-    void setUp();
+ public:
+  ArtNetNodeTest()
+      : CppUnit::TestFixture(),
+        ss(NULL, &m_clock),
+        m_got_dmx(false),
+        m_got_rdm_timeout(false),
+        m_discovery_done(false),
+        m_tod_flush(false),
+        m_tod_request(false),
+        m_rdm_request(NULL),
+        m_rdm_callback(NULL),
+        m_rdm_response(NULL),
+        m_port_id(1),
+        broadcast_ip(IPV4Address::Broadcast()),
+        m_socket(new MockUDPSocket()) {
+  }
+  void setUp();
 
-    void testBasicBehaviour();
-    void testBroadcastSendDMX();
-    void testLimitedBroadcastDMX();
-    void testNonBroadcastSendDMX();
-    void testReceiveDMX();
-    void testHTPMerge();
-    void testLTPMerge();
-    void testControllerDiscovery();
-    void testControllerIncrementalDiscovery();
-    void testUnsolicitedTod();
-    void testResponderDiscovery();
-    void testRDMResponder();
-    void testRDMRequest();
-    void testRDMRequestTimeout();
-    void testRDMRequestIPMismatch();
-    void testRDMRequestUIDMismatch();
-    void testTimeCode();
+  void testBasicBehaviour();
+  void testBroadcastSendDMX();
+  void testLimitedBroadcastDMX();
+  void testNonBroadcastSendDMX();
+  void testReceiveDMX();
+  void testHTPMerge();
+  void testLTPMerge();
+  void testControllerDiscovery();
+  void testControllerIncrementalDiscovery();
+  void testUnsolicitedTod();
+  void testResponderDiscovery();
+  void testRDMResponder();
+  void testRDMRequest();
+  void testRDMRequestTimeout();
+  void testRDMRequestIPMismatch();
+  void testRDMRequestUIDMismatch();
+  void testTimeCode();
 
-  private:
-    ola::MockClock m_clock;
-    ola::io::SelectServer ss;
-    bool m_got_dmx;
-    bool m_got_rdm_timeout;
-    bool m_discovery_done;
-    bool m_tod_flush;
-    bool m_tod_request;
-    UIDSet m_uids;
-    const RDMRequest *m_rdm_request;
-    RDMCallback *m_rdm_callback;
-    const RDMResponse *m_rdm_response;
-    uint8_t m_port_id;
-    Interface interface;
-    IPV4Address peer_ip, peer_ip2, peer_ip3;
-    IPV4Address broadcast_ip;
-    MockUDPSocket *m_socket;
+ private:
+  ola::MockClock m_clock;
+  ola::io::SelectServer ss;
+  bool m_got_dmx;
+  bool m_got_rdm_timeout;
+  bool m_discovery_done;
+  bool m_tod_flush;
+  bool m_tod_request;
+  UIDSet m_uids;
+  const RDMRequest *m_rdm_request;
+  RDMCallback *m_rdm_callback;
+  const RDMResponse *m_rdm_response;
+  uint8_t m_port_id;
+  Interface interface;
+  IPV4Address peer_ip, peer_ip2, peer_ip3;
+  IPV4Address broadcast_ip;
+  MockUDPSocket *m_socket;
 
-    /**
-     * Called when new DMX arrives
-     */
-    void NewDmx() { m_got_dmx = true; }
+  /**
+   * Called when new DMX arrives
+   */
+  void NewDmx() { m_got_dmx = true; }
 
-    void DiscoveryComplete(const UIDSet &uids) {
-      m_uids = uids;
-      m_discovery_done = true;
-    }
+  void DiscoveryComplete(const UIDSet &uids) {
+    m_uids = uids;
+    m_discovery_done = true;
+  }
 
-    void TodRequest() { m_tod_request = true; }
-    void Flush() { m_tod_flush = true; }
+  void TodRequest() { m_tod_request = true; }
+  void Flush() { m_tod_flush = true; }
 
-    void HandleRDM(const RDMRequest *request, RDMCallback *callback) {
-      m_rdm_request = request;
-      m_rdm_callback = callback;
-    }
+  void HandleRDM(const RDMRequest *request, RDMCallback *callback) {
+    m_rdm_request = request;
+    m_rdm_callback = callback;
+  }
 
-    void FinalizeRDM(ola::rdm::rdm_response_code status,
+  void FinalizeRDM(ola::rdm::rdm_response_code status,
+                   const RDMResponse *response,
+                   const vector<string> &packets) {
+    OLA_ASSERT_EQ(ola::rdm::RDM_COMPLETED_OK, status);
+    m_rdm_response = response;
+    (void) packets;
+  }
+
+  void ExpectTimeout(ola::rdm::rdm_response_code status,
                      const RDMResponse *response,
                      const vector<string> &packets) {
-      OLA_ASSERT_EQ(ola::rdm::RDM_COMPLETED_OK, status);
-      m_rdm_response = response;
-      (void) packets;
-    }
+    OLA_ASSERT_EQ(ola::rdm::RDM_TIMEOUT, status);
+    OLA_ASSERT(NULL == response);
+    (void) packets;
+    m_got_rdm_timeout = true;
+  }
 
-    void ExpectTimeout(ola::rdm::rdm_response_code status,
-                       const RDMResponse *response,
-                       const vector<string> &packets) {
-      OLA_ASSERT_EQ(ola::rdm::RDM_TIMEOUT, status);
-      OLA_ASSERT(NULL == response);
-      (void) packets;
-      m_got_rdm_timeout = true;
-    }
+  void ExpectedSend(const uint8_t *data,
+                    unsigned int data_size,
+                    const IPV4Address &address) {
+    m_socket->AddExpectedData(data, data_size, address, ARTNET_PORT);
+  }
 
-    void ExpectedSend(const uint8_t *data,
-                      unsigned int data_size,
-                      const IPV4Address &address) {
-      m_socket->AddExpectedData(data, data_size, address, ARTNET_PORT);
-    }
+  void ExpectedBroadcast(const uint8_t *data, unsigned int data_size) {
+    ExpectedSend(data, data_size, interface.bcast_address);
+  }
 
-    void ExpectedBroadcast(const uint8_t *data, unsigned int data_size) {
-      ExpectedSend(data, data_size, interface.bcast_address);
-    }
+  void ReceiveFromPeer(const uint8_t *data,
+                       unsigned int data_size,
+                       const IPV4Address &address) {
+    ss.RunOnce(0, 0);  // update the wake up time
+    m_socket->InjectData(data, data_size, address, ARTNET_PORT);
+  }
 
-    void ReceiveFromPeer(const uint8_t *data,
-                         unsigned int data_size,
-                         const IPV4Address &address) {
-      ss.RunOnce(0, 0);  // update the wake up time
-      m_socket->InjectData(data, data_size, address, ARTNET_PORT);
-    }
+  void SetupInputPort(ArtNetNode *node) {
+    node->SetNetAddress(4);
+    node->SetSubnetAddress(2);
+    node->SetPortUniverse(
+        ola::plugin::artnet::ARTNET_INPUT_PORT,
+        m_port_id,
+        3);
+  }
 
-    void SetupInputPort(ArtNetNode *node) {
-      node->SetNetAddress(4);
-      node->SetSubnetAddress(2);
-      node->SetPortUniverse(
-          ola::plugin::artnet::ARTNET_INPUT_PORT,
-          m_port_id,
-          3);
-    }
+  void SetupOutputPort(ArtNetNode *node) {
+    node->SetNetAddress(4);
+    node->SetSubnetAddress(2);
+    node->SetPortUniverse(
+        ola::plugin::artnet::ARTNET_OUTPUT_PORT,
+        m_port_id,
+        3);
+  }
 
-    void SetupOutputPort(ArtNetNode *node) {
-      node->SetNetAddress(4);
-      node->SetSubnetAddress(2);
-      node->SetPortUniverse(
-          ola::plugin::artnet::ARTNET_OUTPUT_PORT,
-          m_port_id,
-          3);
-    }
+  // This sends a tod data so 7s70:00000000 is insert into the tod
+  void PopulateTod() {
+    SocketVerifier verifer(m_socket);
+    const uint8_t art_tod[] = {
+      'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+      0x00, 0x81,
+      0x0, 14,
+      1,  // rdm standard
+      1,  // first port
+      0, 0, 0, 0, 0, 0, 0,
+      4,  // net
+      0,  // full tod
+      0x23,  // universe address
+      0, 1,  // uid count
+      0,  // block count
+      1,  // uid count
+      0x7a, 0x70, 0, 0, 0, 0,
+    };
 
-    // This sends a tod data so 7s70:00000000 is insert into the tod
-    void PopulateTod() {
-      SocketVerifier verifer(m_socket);
-      const uint8_t art_tod[] = {
-        'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
-        0x00, 0x81,
-        0x0, 14,
-        1,  // rdm standard
-        1,  // first port
-        0, 0, 0, 0, 0, 0, 0,
-        4,  // net
-        0,  // full tod
-        0x23,  // universe address
-        0, 1,  // uid count
-        0,  // block count
-        1,  // uid count
-        0x7a, 0x70, 0, 0, 0, 0,
-      };
+    ReceiveFromPeer(art_tod, sizeof(art_tod), peer_ip);
+  }
 
-      ReceiveFromPeer(art_tod, sizeof(art_tod), peer_ip);
-    }
+  void SendRDMRequest(ArtNetNode *node,
+                      RDMCallback *callback) {
+    UID source(1, 2);
+    UID destination(0x7a70, 0);
 
-    void SendRDMRequest(ArtNetNode *node,
-                        RDMCallback *callback) {
-      UID source(1, 2);
-      UID destination(0x7a70, 0);
+    const RDMGetRequest *request = new RDMGetRequest(
+        source,
+        destination,
+        0,  // transaction #
+        1,  // port id
+        0,  // message count
+        10,  // sub device
+        296,  // param id
+        NULL,  // data
+        0);  // data length
 
-      const RDMGetRequest *request = new RDMGetRequest(
-          source,
-          destination,
-          0,  // transaction #
-          1,  // port id
-          0,  // message count
-          10,  // sub device
-          296,  // param id
-          NULL,  // data
-          0);  // data length
+    const uint8_t rdm_request[] = {
+      'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+      0x00, 0x83,
+      0x0, 14,
+      1, 0,
+      0, 0, 0, 0, 0, 0, 0,
+      4,  // net
+      0,  // process
+      0x23,
+      // rdm data
+      1, 24,  // sub code & length
+      0x7a, 0x70, 0, 0, 0, 0,   // dst uid
+      0, 1, 0, 0, 0, 2,   // src uid
+      0, 1, 0, 0, 10,  // transaction, port id, msg count & sub device
+      0x20, 0x1, 0x28, 0,  // command, param id, param data length
+      0x02, 0x26
+    };
 
-      const uint8_t rdm_request[] = {
-        'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
-        0x00, 0x83,
-        0x0, 14,
-        1, 0,
-        0, 0, 0, 0, 0, 0, 0,
-        4,  // net
-        0,  // process
-        0x23,
-        // rdm data
-        1, 24,  // sub code & length
-        0x7a, 0x70, 0, 0, 0, 0,   // dst uid
-        0, 1, 0, 0, 0, 2,   // src uid
-        0, 1, 0, 0, 10,  // transaction, port id, msg count & sub device
-        0x20, 0x1, 0x28, 0,  // command, param id, param data length
-        0x02, 0x26
-      };
+    ExpectedSend(rdm_request, sizeof(rdm_request), peer_ip);
+    node->SendRDMRequest(m_port_id, request, callback);
+  }
 
-      ExpectedSend(rdm_request, sizeof(rdm_request), peer_ip);
-      node->SendRDMRequest(m_port_id, request, callback);
-    }
-
-    static const uint8_t POLL_MESSAGE[];
-    static const uint8_t POLL_REPLY_MESSAGE[];
-    static const uint8_t TOD_CONTROL[];
-    static const uint16_t ARTNET_PORT = 6454;
+  static const uint8_t POLL_MESSAGE[];
+  static const uint8_t POLL_REPLY_MESSAGE[];
+  static const uint8_t TOD_CONTROL[];
+  static const uint16_t ARTNET_PORT = 6454;
 };
 
 
@@ -363,8 +363,8 @@ void ArtNetNodeTest::testBasicBehaviour() {
   OLA_ASSERT_EQ(string("Short Name"), node.ShortName());
   node.SetLongName("This is the very long name");
   OLA_ASSERT_EQ(
-    string("This is the very long name"),
-    node.LongName());
+      string("This is the very long name"),
+      node.LongName());
   node.SetNetAddress(4);
   OLA_ASSERT_EQ((uint8_t) 4, node.NetAddress());
   node.SetSubnetAddress(2);
@@ -374,11 +374,11 @@ void ArtNetNodeTest::testBasicBehaviour() {
   OLA_ASSERT(
       !node.SetPortUniverse(ola::plugin::artnet::ARTNET_OUTPUT_PORT, 4, 3));
   OLA_ASSERT_EQ(
-    (uint8_t) 0x23,
-    node.GetPortUniverse(ola::plugin::artnet::ARTNET_OUTPUT_PORT, 0));
+      (uint8_t) 0x23,
+      node.GetPortUniverse(ola::plugin::artnet::ARTNET_OUTPUT_PORT, 0));
   OLA_ASSERT_EQ(
-    (uint8_t) 0x20,
-    node.GetPortUniverse(ola::plugin::artnet::ARTNET_OUTPUT_PORT, 1));
+      (uint8_t) 0x20,
+      node.GetPortUniverse(ola::plugin::artnet::ARTNET_OUTPUT_PORT, 1));
 
   OLA_ASSERT(node.Start());
   ss.RemoveReadDescriptor(m_socket);
@@ -403,11 +403,11 @@ void ArtNetNodeTest::testBasicBehaviour() {
 
   node.SetPortUniverse(ola::plugin::artnet::ARTNET_INPUT_PORT, 1, 2);
   OLA_ASSERT_EQ(
-    (uint8_t) 0x20,
-    node.GetPortUniverse(ola::plugin::artnet::ARTNET_INPUT_PORT, 0));
+      (uint8_t) 0x20,
+      node.GetPortUniverse(ola::plugin::artnet::ARTNET_INPUT_PORT, 0));
   OLA_ASSERT_EQ(
-    (uint8_t) 0x22,
-    node.GetPortUniverse(ola::plugin::artnet::ARTNET_INPUT_PORT, 1));
+      (uint8_t) 0x22,
+      node.GetPortUniverse(ola::plugin::artnet::ARTNET_INPUT_PORT, 1));
   m_socket->Verify();
 
   // check sending a poll works
@@ -920,7 +920,7 @@ void ArtNetNodeTest::testHTPMerge() {
     ReceiveFromPeer(source1_message2, sizeof(source1_message2), peer_ip);
     OLA_ASSERT(m_got_dmx);
     OLA_ASSERT_EQ(string("10,11,12,2,2,1,0,0"),
-                         input_buffer.ToString());
+                  input_buffer.ToString());
   }
 
   // advance the clock by half the merge timeout
@@ -945,7 +945,7 @@ void ArtNetNodeTest::testHTPMerge() {
     ReceiveFromPeer(source1_message3, sizeof(source1_message3), peer_ip);
     OLA_ASSERT(m_got_dmx);
     OLA_ASSERT_EQ(string("5,4,3,3,4,5,7,9"),
-                         input_buffer.ToString());
+                  input_buffer.ToString());
   }
 
   // advance the clock so the second source times out
@@ -970,7 +970,7 @@ void ArtNetNodeTest::testHTPMerge() {
     ReceiveFromPeer(source1_message4, sizeof(source1_message4), peer_ip);
     OLA_ASSERT(m_got_dmx);
     OLA_ASSERT_EQ(string("0,1,2,3,4,5,7,9"),
-                         input_buffer.ToString());
+                  input_buffer.ToString());
   }
 }
 
@@ -1139,7 +1139,7 @@ void ArtNetNodeTest::testLTPMerge() {
     ReceiveFromPeer(source1_message2, sizeof(source1_message2), peer_ip);
     OLA_ASSERT(m_got_dmx);
     OLA_ASSERT_EQ(string("0,1,2,3,4,5,7,9"),
-                         input_buffer.ToString());
+                  input_buffer.ToString());
   }
 }
 
@@ -1632,10 +1632,10 @@ void ArtNetNodeTest::testRDMResponder() {
     OLA_ASSERT_EQ((uint8_t) 0, m_rdm_request->MessageCount());
     OLA_ASSERT_EQ((uint16_t) 10, m_rdm_request->SubDevice());
     OLA_ASSERT_EQ(RDMCommand::GET_COMMAND,
-                         m_rdm_request->CommandClass());
+                  m_rdm_request->CommandClass());
     OLA_ASSERT_EQ((uint16_t) 296, m_rdm_request->ParamId());
     OLA_ASSERT_EQ(static_cast<uint8_t*>(NULL),
-                         m_rdm_request->ParamData());
+                  m_rdm_request->ParamData());
     OLA_ASSERT_EQ(0u, m_rdm_request->ParamDataSize());
     OLA_ASSERT_EQ(25u, RDMCommandSerializer::RequiredSize(*m_rdm_request));
     OLA_ASSERT_EQ(ola::rdm::RDM_REQUEST, m_rdm_request->CommandType());
@@ -1698,8 +1698,8 @@ void ArtNetNodeTest::testRDMRequest() {
   {
     SocketVerifier verifer(m_socket);
     SendRDMRequest(
-      &node,
-      ola::NewSingleCallback(this, &ArtNetNodeTest::FinalizeRDM));
+        &node,
+        ola::NewSingleCallback(this, &ArtNetNodeTest::FinalizeRDM));
   }
 
   // send a response
@@ -1782,8 +1782,8 @@ void ArtNetNodeTest::testRDMRequestIPMismatch() {
   {
     SocketVerifier verifer(m_socket);
     SendRDMRequest(
-      &node,
-      ola::NewSingleCallback(this, &ArtNetNodeTest::ExpectTimeout));
+        &node,
+        ola::NewSingleCallback(this, &ArtNetNodeTest::ExpectTimeout));
   }
 
   // send a response from a different IP
@@ -1839,8 +1839,8 @@ void ArtNetNodeTest::testRDMRequestUIDMismatch() {
   {
     SocketVerifier verifer(m_socket);
     SendRDMRequest(
-      &node,
-      ola::NewSingleCallback(this, &ArtNetNodeTest::ExpectTimeout));
+        &node,
+        ola::NewSingleCallback(this, &ArtNetNodeTest::ExpectTimeout));
   }
 
   // send a response from a different IP

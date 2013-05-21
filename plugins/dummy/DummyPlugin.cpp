@@ -85,9 +85,11 @@ string DummyPlugin::Description() const {
 "----------------------------\n"
 "\n"
 "The plugin creates a single device with one port. When used as an output\n"
-"port it prints the first two bytes of dmx data to stdout.\n\n"
+"port it prints the first two bytes of dmx data to stdout.\n"
+"\n"
 "It also creates a fake RDM device which can be querried and the DMX start\n"
 "address can be changed.\n"
+"\n"
 "--- Config file : ola-dummy.conf ---\n"
 "\n"
 "number_of_devices = 1\n"
@@ -121,6 +123,6 @@ bool DummyPlugin::SetDefaultPreferences() {
 
   return true;
 }
-}  // dummy
-}  // plugin
-}  // ola
+}  // namespace dummy
+}  // namespace plugin
+}  // namespace ola

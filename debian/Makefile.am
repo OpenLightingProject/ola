@@ -11,12 +11,14 @@ EXTRA_DIST = changelog \
              ola-dev.install \
              ola-python.dirs \
              ola-python.install \
+             ola-rdm-tests.bash-completion \
              ola-rdm-tests.config \
              ola-rdm-tests.dirs \
              ola-rdm-tests.rdm_test_server.init \
              ola-rdm-tests.install \
              ola-rdm-tests.postinst \
              ola-rdm-tests.templates \
+             ola.bash-completion \
              ola.config \
              ola.dirs \
              ola.docs \

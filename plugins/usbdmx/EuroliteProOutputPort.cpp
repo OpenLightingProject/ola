@@ -115,7 +115,8 @@ bool EuroliteProOutputPort::Start() {
 
   // The Eurolite doesn't have a serial number, so instead we use the device &
   // bus number.
-  // TODO: check if this supports the SERIAL NUMBER label and use that instead.
+  // TODO(simon): check if this supports the SERIAL NUMBER label and use that
+  // instead.
 
   // There is no Serialnumber--> work around: bus+device number
   int bus_number = libusb_get_bus_number(m_usb_device);
@@ -297,6 +298,6 @@ bool EuroliteProOutputPort::LocateInterface() {
   libusb_free_config_descriptor(device_config);
   return false;
 }
-}  // usbdmx
-}  // plugin
-}  // ola
+}  // namespace usbdmx
+}  // namespace plugin
+}  // namespace ola

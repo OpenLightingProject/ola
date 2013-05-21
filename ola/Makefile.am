@@ -23,10 +23,9 @@ if BUILD_TESTS
 TESTS = OlaClientTester
 endif
 check_PROGRAMS = $(TESTS)
-OlaClientTester_SOURCES = OlaClientTester.cpp \
-                          StreamingClientTest.cpp
-OlaClientTester_CXXFLAGS = $(COMMON_CXXFLAGS) $(CPPUNIT_CFLAGS)
-OlaClientTester_LDADD = $(CPPUNIT_LIBS) \
+OlaClientTester_SOURCES = StreamingClientTest.cpp
+OlaClientTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
+OlaClientTester_LDADD = $(COMMON_TESTING_LIBS) \
                         $(PLUGIN_LIBS) \
                         $(top_builddir)/common/libolacommon.la \
                         $(top_builddir)/olad/libolaserver.la \

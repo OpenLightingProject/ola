@@ -154,7 +154,7 @@ struct pathport_packet_s {
     pathport_packet_pdu pdu;
   } d;
 }__attribute__((packed));
-}  // pathport
-}  // plugin
-}  // ola
+}  // namespace pathport
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_PATHPORT_PATHPORTPACKETS_H_

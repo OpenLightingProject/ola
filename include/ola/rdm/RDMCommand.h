@@ -23,6 +23,7 @@
 
 #include <stdint.h>
 #include <ola/io/OutputStream.h>
+#include <ola/rdm/CommandPrinter.h>
 #include <ola/rdm/RDMEnums.h>
 #include <ola/rdm/RDMPacket.h>
 #include <ola/rdm/RDMResponseCodes.h>
@@ -105,9 +106,17 @@ class RDMCommand {
     uint8_t *ParamData() const { return m_data; }
     unsigned int ParamDataSize() const { return m_data_length; }
 
+    virtual void Print(CommandPrinter *printer,
+                       bool summarize,
+                       bool unpack_param_data) const {
+      printer->Print(this, summarize, unpack_param_data);
+    }
+
     void Write(ola::io::OutputStream *stream) const;
 
     static const uint8_t START_CODE = 0xcc;
+
+    static RDMCommand *Inflate(const uint8_t *data, unsigned int length);
 
   protected:
     uint8_t m_port_id;
@@ -201,6 +210,12 @@ class RDMRequest: public RDMCommand {
         ParamId(),
         ParamData(),
         ParamDataSize());
+    }
+
+    virtual void Print(CommandPrinter *printer,
+                       bool summarize,
+                       bool unpack_param_data) const {
+      printer->Print(this, summarize, unpack_param_data);
     }
 
     // Convert a block of data to an RDMCommand object
@@ -321,6 +336,12 @@ class RDMResponse: public RDMCommand {
     }
 
     uint8_t ResponseType() const { return m_port_id; }
+
+    virtual void Print(CommandPrinter *printer,
+                       bool summarize,
+                       bool unpack_param_data) const {
+      printer->Print(this, summarize, unpack_param_data);
+    }
 
     // The maximum size of an ACK_OVERFLOW session that we'll buffer
     // 4k should be big enough for everyone ;)
@@ -454,6 +475,12 @@ class RDMDiscoveryRequest: public RDMRequest {
 
     uint8_t PortId() const { return m_port_id; }
 
+    virtual void Print(CommandPrinter *printer,
+                       bool summarize,
+                       bool unpack_param_data) const {
+      printer->Print(this, summarize, unpack_param_data);
+    }
+
     static RDMDiscoveryRequest* InflateFromData(const uint8_t *data,
                                                 unsigned int length);
     static RDMDiscoveryRequest* InflateFromData(const string &data);
@@ -517,10 +544,16 @@ class RDMDiscoveryResponse: public RDMResponse {
 
     RDMCommandClass CommandClass() const { return DISCOVER_COMMAND_RESPONSE; }
 
+    virtual void Print(CommandPrinter *printer,
+                       bool summarize,
+                       bool unpack_param_data) const {
+      printer->Print(this, summarize, unpack_param_data);
+    }
+
     static RDMDiscoveryResponse* InflateFromData(const uint8_t *data,
                                                  unsigned int length);
     static RDMDiscoveryResponse* InflateFromData(const string &data);
 };
-}  // rdm
-}  // ola
+}  // namespace rdm
+}  // namespace ola
 #endif  // INCLUDE_OLA_RDM_RDMCOMMAND_H_

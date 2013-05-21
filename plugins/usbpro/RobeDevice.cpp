@@ -69,6 +69,6 @@ bool RobeOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
   (void) priority;
   return true;
 }
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola

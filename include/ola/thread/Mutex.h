@@ -86,6 +86,6 @@ class ConditionVariable {
     ConditionVariable(const ConditionVariable&);
     ConditionVariable& operator=(const ConditionVariable&);
 };
-}  // thread
-}  // ola
+}  // namespace thread
+}  // namespace ola
 #endif  // INCLUDE_OLA_THREAD_MUTEX_H_

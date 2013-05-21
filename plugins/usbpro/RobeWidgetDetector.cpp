@@ -304,6 +304,6 @@ bool RobeWidgetDetector::IsUnlocked(const RobeWidgetInformation &info) {
       return false;
   }
 }
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola

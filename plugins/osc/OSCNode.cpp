@@ -90,7 +90,6 @@ OSCNode::OSCNode(SelectServerInterface *ss,
                  ExportMap *export_map,
                  const OSCNodeOptions &options)
     : m_ss(ss),
-      m_export_map(export_map),
       m_listen_port(options.listen_port),
       m_descriptor(NULL),
       m_osc_server(NULL) {
@@ -153,8 +152,7 @@ void OSCNode::Stop() {
   m_target_by_group.clear();
 
   // Delete all the RX callbacks.
-  STLDeleteValues(m_address_callbacks);
-  m_address_callbacks.clear();
+  STLDeleteValues(&m_address_callbacks);
 
   if (m_descriptor) {
     // if there was an UnmanagedFileDescriptor, de-register from the
@@ -340,6 +338,6 @@ void OSCNode::DescriptorReady() {
   // Call into liblo with a timeout of 0 so we don't block.
   lo_server_recv_noblock(m_osc_server, 0);
 }
-}  // osc
-}  // plugin
-}  // ola
+}  // namespace osc
+}  // namespace plugin
+}  // namespace ola

@@ -52,7 +52,6 @@ class RobeWidgetImpl: public BaseRobeWidget,
                       public ola::rdm::DiscoveryTargetInterface {
   public:
     explicit RobeWidgetImpl(ola::io::ConnectedDescriptor *descriptor,
-                            ola::thread::SchedulingExecutorInterface *ss,
                             const ola::rdm::UID &uid);
     ~RobeWidgetImpl() {}
 
@@ -84,7 +83,6 @@ class RobeWidgetImpl: public BaseRobeWidget,
     static const int DMX_FRAME_DATA_SIZE;
 
   private:
-    ola::thread::SchedulingExecutorInterface *m_ss;
     ola::rdm::RDMCallback *m_rdm_request_callback;
     MuteDeviceCallback *m_mute_callback;
     UnMuteDeviceCallback *m_unmute_callback;
@@ -120,7 +118,6 @@ class RobeWidget: public SerialWidgetInterface,
                   public ola::rdm::DiscoverableRDMControllerInterface {
   public:
     RobeWidget(ola::io::ConnectedDescriptor *descriptor,
-               ola::thread::SchedulingExecutorInterface *ss,
                const ola::rdm::UID &uid,
                unsigned int queue_size = 20);
     ~RobeWidget();
@@ -169,7 +166,7 @@ class RobeWidget: public SerialWidgetInterface,
     RobeWidgetImpl *m_impl;
     ola::rdm::DiscoverableQueueingRDMController *m_controller;
 };
-}  // usbpro
-}  // plugin
-}  // ola
+}  // namespace usbpro
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_USBPRO_ROBEWIDGET_H_

@@ -22,6 +22,8 @@ USER=olad
 
 if [ "$RUN_DAEMON" = "true" ] || [ "$RUN_DAEMON" = "yes" ] ; then
   DAEMON_ARGS="--syslog --log-level 3  --config-dir  /var/lib/ola/conf"
+elif [ "$1" = "start" ] || [ "$1" = "stop" ] ; then
+  echo "The init script is currently inactive;\nuse \"dpkg-reconfigure ola\" to change this." >&2
 fi
 
 [ -x "$DAEMON" ] || exit 0

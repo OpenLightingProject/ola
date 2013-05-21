@@ -18,25 +18,24 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
-#include "plugins/e131/e131/E131Includes.h"  //  NOLINT, this has to be first
 #include <string.h>
 #include <cppunit/extensions/HelperMacros.h>
 
 #include "ola/Logging.h"
+#include "ola/acn/CID.h"
 #include "ola/io/IOQueue.h"
 #include "ola/io/OutputStream.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/testing/TestUtils.h"
-#include "plugins/e131/e131/CID.h"
 #include "plugins/e131/e131/PDUTestCommon.h"
 #include "plugins/e131/e131/RootPDU.h"
-#include "ola/testing/TestUtils.h"
 
 
 namespace ola {
 namespace plugin {
 namespace e131 {
 
+using ola::acn::CID;
 using ola::io::IOQueue;
 using ola::io::OutputStream;
 using ola::network::NetworkToHost;
@@ -81,7 +80,7 @@ void RootPDUTest::testSimpleRootPDU() {
   unsigned int size = pdu1.Size();
   uint8_t *data = new uint8_t[size];
   unsigned int bytes_used = size;
-  OLA_ASSERT(pdu1.Pack(data, bytes_used));
+  OLA_ASSERT(pdu1.Pack(data, &bytes_used));
   OLA_ASSERT_EQ(size, bytes_used);
 
   // spot check the data
@@ -95,17 +94,17 @@ void RootPDUTest::testSimpleRootPDU() {
 
   // test undersized buffer
   bytes_used = size - 1;
-  OLA_ASSERT_FALSE(pdu1.Pack(data, bytes_used));
+  OLA_ASSERT_FALSE(pdu1.Pack(data, &bytes_used));
   OLA_ASSERT_EQ(0u, bytes_used);
 
   // test oversized buffer
   bytes_used = size + 1;
-  OLA_ASSERT(pdu1.Pack(data, bytes_used));
+  OLA_ASSERT(pdu1.Pack(data, &bytes_used));
   OLA_ASSERT_EQ(size, bytes_used);
 
   // change the vector
   pdu1.SetVector(TEST_VECTOR2);
-  OLA_ASSERT(pdu1.Pack(data, bytes_used));
+  OLA_ASSERT(pdu1.Pack(data, &bytes_used));
   OLA_ASSERT_EQ(size, bytes_used);
   OLA_ASSERT_EQ((uint8_t) 0x70, data[0]);
   OLA_ASSERT_EQ((uint8_t) bytes_used, data[1]);
@@ -122,7 +121,7 @@ void RootPDUTest::testSimpleRootPDU() {
   OLA_ASSERT_EQ(22u, pdu1.Size());
   bytes_used = size;
   uint8_t *data2 = new uint8_t[size];
-  OLA_ASSERT(pdu1.Pack(data2, bytes_used));
+  OLA_ASSERT(pdu1.Pack(data2, &bytes_used));
   OLA_ASSERT_EQ(size, bytes_used);
   OLA_ASSERT_FALSE(memcmp(data, data2, bytes_used));
 
@@ -188,7 +187,7 @@ void RootPDUTest::testNestedRootPDU() {
   unsigned int size = pdu.Size();
   uint8_t *data = new uint8_t[size];
   unsigned int bytes_used = size;
-  OLA_ASSERT(pdu.Pack(data, bytes_used));
+  OLA_ASSERT(pdu.Pack(data, &bytes_used));
   OLA_ASSERT_EQ(size, bytes_used);
 
   // spot check
@@ -242,6 +241,6 @@ void RootPDUTest::testNestedRootPDUToOutputStream() {
   output.Pop(output.Size());
   delete[] raw_pdu;
 }
-}  // e131
-}  // plugin
-}  // ola
+}  // namespace e131
+}  // namespace plugin
+}  // namespace ola
