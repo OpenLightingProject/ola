@@ -54,13 +54,16 @@ KarateLight::KarateLight(const string &dev)
  * closes the device and does release the file-lock
  */
 KarateLight::~KarateLight() {
+  KarateLight::Close();
+}
+
+void KarateLight::Close() {
   // remove lock and close file
   flock(m_fd, LOCK_UN);
   tcflush(m_fd, TCIOFLUSH);
   close(m_fd);
+  m_active = false;
 }
-
-
 
 /**
  * Sends color values previously set via
@@ -89,11 +92,11 @@ int KarateLight::UpdateColors() {
                       CHUNK_SIZE));
     if (m_byteswritten != (CMD_DATA_START + CHUNK_SIZE)) {
       OLA_WARN << "failed to write data to " << m_devname;
-      m_active = false;
+      KarateLight::Close();
       return KL_WRITEFAIL;
     }
     if (KarateLight::ReadBack() != KL_OK) {
-      m_active = false;
+      KarateLight::Close();
       return KL_WRITEFAIL;
     }
   }
@@ -193,7 +196,7 @@ int KarateLight::Init() {
   }
 
   // if an older Firware-Version is used. quit. the communication wont work
-  if (m_fw_version < 0x32) {
+  if (m_fw_version < 0x30) {
     OLA_FATAL << "Firmware 0x" << m_fw_version << "is to old!";
     return KL_ERROR;
   }
@@ -333,7 +336,7 @@ int KarateLight::ReadBack() {
 
   if (m_bytesread != CMD_DATA_START) {
     OLA_FATAL << "could not read 4 bytes (header) from " << m_devname;
-    m_active = false;
+    KarateLight::Close();
     return KL_ERROR;
   }
 
@@ -352,7 +355,7 @@ int KarateLight::ReadBack() {
     OLA_WARN << "number of bytes read" << m_bytesread \
              << "does not match number of bytes expected" \
              << m_rd_buffer[CMD_HD_LEN];
-    m_active = false;
+    KarateLight::Close();
     return KL_CHECKSUMFAIL;
   }
 }
@@ -372,7 +375,7 @@ int KarateLight::ReadEeprom(uint8_t addr) {
                     KarateLight::CreateCommand(CMD_READ_EEPROM, &addr, 1));
   if (m_byteswritten != CMD_DATA_START+1) {
     OLA_WARN << "failed to write data to " << m_devname;
-    m_active = false;
+    KarateLight::Close();
     return KL_WRITEFAIL;
   }
 

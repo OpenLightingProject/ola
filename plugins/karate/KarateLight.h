@@ -36,6 +36,7 @@ class KarateLight {
   explicit KarateLight(const string &dev);
   ~KarateLight();
   int Init();
+  void Close();
 
   int Blank();
   int SetColors(DmxBuffer da);
