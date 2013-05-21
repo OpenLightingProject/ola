@@ -65,7 +65,6 @@ void *KarateThread::Run() {
 
   KarateLight k(m_path);
   k.Init();
-  OLA_INFO << "DMX_OFFSET " << m_path << ": " << k.GetDMXOffset();
 
   while (true) {
     {
