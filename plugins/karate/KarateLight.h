@@ -153,7 +153,6 @@ class KarateLight {
 
   static const uint8_t HW_ID_KARATE = 0x01;
   static const uint8_t HW_ID_USB2DMX = 0x02;
-
 };
 }  // namespace karate
 }  // namespace plugin

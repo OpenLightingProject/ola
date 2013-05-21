@@ -41,12 +41,12 @@ namespace karate {
  * \param dev the filename of the device to use
  */
 KarateLight::KarateLight(const string &dev)
-  :m_devname(dev),
-   m_fw_version(0),
-   m_hw_version(0),
-   m_nChannels(0),
-   m_use_memcmp(1),
-   m_active(false) {
+  : m_devname(dev),
+    m_fw_version(0),
+    m_hw_version(0),
+    m_nChannels(0),
+    m_use_memcmp(1),
+    m_active(false) {
 }
 
 /**
@@ -196,7 +196,8 @@ int KarateLight::Init() {
 
   // if an older Firware-Version is used. quit. the communication wont work
   if (m_fw_version < 0x30) {
-    OLA_FATAL << "Firmware 0x" << m_fw_version << "is to old!";
+    OLA_FATAL << "Firmware 0x" << static_cast<int>(m_fw_version) \
+              << "is to old!";
     return KL_ERROR;
   }
 
@@ -245,7 +246,7 @@ int KarateLight::Init() {
     }
 
     if (m_dmx_offset > 511) {
-      OLA_INFO << "DMX Offset to large" << std::dec \
+      OLA_WARN << "DMX Offset to large" << std::dec \
                << m_dmx_offset << ". Setting it to 0";
       m_dmx_offset = 0;
     }
@@ -261,7 +262,12 @@ int KarateLight::Init() {
   KarateLight::Blank();
 
   OLA_INFO << "successfully initalized device " << m_devname \
-           << " with firmware revision 0x" << std::hex << m_fw_version;
+           << " with firmware revision 0x" \
+           << std::hex << static_cast<int>(m_fw_version) \
+           << ", hardware-id = 0x" \
+           << std::hex << static_cast<int>(m_hw_version) \
+           << ", channel_count = " << std::dec << m_nChannels \
+           << ", dmx_offset = " << m_dmx_offset;
   return KL_OK;
 }
 
@@ -353,7 +359,7 @@ int KarateLight::ReadBack() {
   } else {
     OLA_WARN << "number of bytes read" << m_bytesread \
              << "does not match number of bytes expected" \
-             << m_rd_buffer[CMD_HD_LEN];
+             << static_cast<int>(m_rd_buffer[CMD_HD_LEN]);
     KarateLight::Close();
     return KL_CHECKSUMFAIL;
   }
