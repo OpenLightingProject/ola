@@ -17,15 +17,15 @@
  * The KarateLight communication class
  * Copyright (C) 2013 Carsten Presser
  */
+
+#include <errno.h>
+#include <fcntl.h>
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
-
-
-#include <termios.h>
-#include <fcntl.h>
 #include <sys/file.h>
-#include <errno.h>
-#include <math.h>
+#include <termios.h>
+#include <iostream>
 #include <string>
 
 #include "ola/Logging.h"
@@ -42,11 +42,11 @@ namespace karate {
  */
 KarateLight::KarateLight(const string &dev)
     :m_devname(dev),
-    m_fw_version(0),
-    m_hw_version(0),
-    m_nChannels(0),
-    m_use_memcmp(1),
-    m_active(false) {
+     m_fw_version(0),
+     m_hw_version(0),
+     m_nChannels(0),
+     m_use_memcmp(1),
+     m_active(false) {
 }
 
 /**
