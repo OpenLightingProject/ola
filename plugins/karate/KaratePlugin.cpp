@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -40,8 +41,8 @@ using ola::PluginAdaptor;
 using std::vector;
 
 const char KaratePlugin::KARATE_DEVICE_PATH[] = "/dev/kldmx0";
-const char KaratePlugin::KARATE_DEVICE_NAME[] = "KL USB Device using kl";
-const char KaratePlugin::PLUGIN_NAME[] = "KL DMX";
+const char KaratePlugin::KARATE_DEVICE_NAME[] = "KarateLight Device";
+const char KaratePlugin::PLUGIN_NAME[] = "KarateLight";
 const char KaratePlugin::PLUGIN_PREFIX[] = "karate";
 const char KaratePlugin::DEVICE_KEY[] = "device";
 
@@ -71,7 +72,7 @@ bool KaratePlugin::StartHook() {
         m_devices.push_back(device);
         m_plugin_adaptor->RegisterDevice(device);
       } else {
-        OLA_WARN << "Failed to start KLDMX for " << *iter;
+        OLA_WARN << "Failed to start KarateLight for " << *iter;
         delete device;
       }
     } else {
@@ -104,14 +105,17 @@ bool KaratePlugin::StopHook() {
  */
 string KaratePlugin::Description() const {
     return
-"KL DMX Plugin - Version 0.3\n"
+"KarateLight - Version 0.1\n"
 "----------------------------\n"
 "\n"
-"The plugin creates a single device with one output port \n\n"
+"The plugin creates a single device with one output port.\n"
+"Info on the KarateLight Hardware can be found at http://karatelight.de\n"
+"Unfortunately the site is in german only, but the maintainer will respond "
+"to emails in english.\n\n"
 "--- Config file : ola-karate.conf ---\n"
 "\n"
-"device = /dev/dmx0\n"
-"The path to the karatelight usb device. Multiple entries are supported.\n";
+"device = /dev/kldmx0\n"
+"The path to the KarateLight device. Multiple entries are supported.\n";
 }
 
 
