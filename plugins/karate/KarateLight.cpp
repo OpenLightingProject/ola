@@ -189,7 +189,6 @@ int KarateLight::Init() {
   j = KarateLight::ReadBack();
   if (j == 1) {
     m_fw_version = m_rd_buffer[CMD_DATA_START];
-    OLA_INFO << "Firmware-Version is " << std::hex << m_fw_version;
   } else {
     OLA_FATAL << "failed to read the firmware-version ";
     return j;
