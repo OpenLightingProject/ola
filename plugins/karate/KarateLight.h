@@ -35,12 +35,12 @@ class KarateLight {
   public:
   explicit KarateLight(const string &dev);
   ~KarateLight();
-  int Init();
+  bool Init();
   void Close();
 
-  int Blank();
-  int SetColors(DmxBuffer da);
-  int UpdateColors();
+  bool Blank();
+  bool SetColors(DmxBuffer da);
+  bool UpdateColors();
 
   uint16_t GetnChannels() {
     return m_nChannels;
@@ -63,13 +63,6 @@ class KarateLight {
   static const uint16_t CMD_MAX_LENGTH = 64;
   static const uint16_t CHUNK_SIZE = 32;
   static const uint16_t MAX_CHANNELS = 512;
-
-  // communication stuff
-  static const unsigned char KL_OK = 0;
-  static const unsigned char KL_ERROR = -1;
-  static const unsigned char KL_CHECKSUMFAIL = -2;
-  static const unsigned char KL_WRITEFAIL = -3;
-  static const unsigned char KL_NOTACTIVE = -4;
 
   private:
   int CalcChecksum(int len);

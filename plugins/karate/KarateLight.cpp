@@ -70,12 +70,12 @@ void KarateLight::Close() {
  * \sa SetColor
  * \returns KL_OK on success, a negative error value otherwise
  */
-int KarateLight::UpdateColors() {
+bool KarateLight::UpdateColors() {
   int j;
   int chunks;
 
   if (!m_active)
-    return KL_NOTACTIVE;
+    return false;
 
   chunks = (m_nChannels + CHUNK_SIZE - 1)/CHUNK_SIZE;
 
@@ -93,19 +93,19 @@ int KarateLight::UpdateColors() {
     if (m_byteswritten != (CMD_DATA_START + CHUNK_SIZE)) {
       OLA_WARN << "failed to write data to " << m_devname;
       KarateLight::Close();
-      return KL_WRITEFAIL;
+      return false;
     }
-    if (KarateLight::ReadBack() != KL_OK) {
+    if (KarateLight::ReadBack() != 0) {
       KarateLight::Close();
-      return KL_WRITEFAIL;
+      return false;
     }
   }
   // update old_values
   memcpy(&m_color_buffer_old[0], &m_color_buffer[0], MAX_CHANNELS);
-  return KL_OK;
+  return true;
 }
 
-int KarateLight::SetColors(DmxBuffer da) {
+bool KarateLight::SetColors(DmxBuffer da) {
   unsigned int length = da.Size();
 
   if ((length + m_dmx_offset) > MAX_CHANNELS) {
@@ -119,7 +119,7 @@ int KarateLight::SetColors(DmxBuffer da) {
  * Sets all Channels to black and sends data to the device
  * \returns KL_OK on success, a negative error value otherwise
  */
-int KarateLight::Blank() {
+bool KarateLight::Blank() {
   // set channels to black
   memset(m_color_buffer, 0, MAX_CHANNELS);
   memset(m_color_buffer_old, 1, MAX_CHANNELS);
@@ -133,17 +133,17 @@ int KarateLight::Blank() {
  * 2. read defaults (firmware, hardware, channels count)
  * 3. set all channels to black
  */
-int KarateLight::Init() {
+bool KarateLight::Init() {
   int j, i;
   struct termios options;
 
   if (m_active)
-    return KL_NOTACTIVE;
+    return false;
 
   m_fd = open(m_devname.c_str(), O_RDWR | O_NOCTTY);
   if (m_fd < 0) {
     OLA_FATAL << "failed to open " << m_devname;
-    return KL_ERROR;
+    return false;
   }
 
   /* Clear the line */
@@ -168,7 +168,7 @@ int KarateLight::Init() {
   // Update the options and do it NOW
   if (tcsetattr(m_fd, TCSANOW, &options) != 0) {
     OLA_FATAL << "tcsetattr failed on " << m_devname;
-    return KL_ERROR;
+    return false;
   }
 
 
@@ -183,7 +183,7 @@ int KarateLight::Init() {
            KarateLight::CreateCommand(CMD_GET_VERSION, NULL, 0));
   if (m_byteswritten != CMD_DATA_START) {
     OLA_WARN << "failed to write data to " << m_devname;
-    return KL_WRITEFAIL;
+    return false;
   }
 
   j = KarateLight::ReadBack();
@@ -191,35 +191,35 @@ int KarateLight::Init() {
     m_fw_version = m_rd_buffer[CMD_DATA_START];
   } else {
     OLA_FATAL << "failed to read the firmware-version ";
-    return j;
+    return false;
   }
 
   // if an older Firware-Version is used. quit. the communication wont work
   if (m_fw_version < 0x30) {
     OLA_FATAL << "Firmware 0x" << static_cast<int>(m_fw_version) \
               << "is to old!";
-    return KL_ERROR;
+    return false;
   }
 
   // read HW version
   m_byteswritten = write(m_fd, m_wr_buffer, \
                     KarateLight::CreateCommand(CMD_GET_HARDWARE, NULL, 0));
   if (m_byteswritten != CMD_DATA_START) {
-    return KL_WRITEFAIL;
+    return false;
   }
 
   j = KarateLight::ReadBack();
   if (j == 1) {
     m_hw_version = m_rd_buffer[CMD_DATA_START];
   } else {
-    return j;
+    return false;
   }
 
   // read number of channels
   m_byteswritten = write(m_fd, m_wr_buffer, \
                     KarateLight::CreateCommand(CMD_GET_N_CHANNELS, NULL, 0));
   if (m_byteswritten != CMD_DATA_START) {
-    return KL_WRITEFAIL;
+    return false;
   }
 
   j = KarateLight::ReadBack();
@@ -227,7 +227,7 @@ int KarateLight::Init() {
     m_nChannels = m_rd_buffer[CMD_DATA_START] \
                 + m_rd_buffer[CMD_DATA_START+1] * 256;
   } else {
-    return j;
+    return false;
   }
 
   // stuff specific for the KarateLight8/16
@@ -242,7 +242,7 @@ int KarateLight::Init() {
       m_dmx_offset += i;
     } else {
       OLA_WARN << "Error Reading EEPROM";
-      return j;
+      return false;
     }
 
     if (m_dmx_offset > 511) {
@@ -258,9 +258,6 @@ int KarateLight::Init() {
 
   m_active = true;
 
-  // set channels to zero
-  KarateLight::Blank();
-
   OLA_INFO << "successfully initalized device " << m_devname \
            << " with firmware revision 0x" \
            << std::hex << static_cast<int>(m_fw_version) \
@@ -268,7 +265,9 @@ int KarateLight::Init() {
            << std::hex << static_cast<int>(m_hw_version) \
            << ", channel_count = " << std::dec << m_nChannels \
            << ", dmx_offset = " << m_dmx_offset;
-  return KL_OK;
+
+  // set channels to zero
+  return KarateLight::Blank();
 }
 
 /*
@@ -311,7 +310,7 @@ int KarateLight::CreateCommand(int cmd, uint8_t * data, int len) {
   if (len > (CMD_MAX_LENGTH - CMD_DATA_START)) {
     OLA_WARN << "Error: Command is to long (" << std::dec << len << " > "\
              << (CMD_MAX_LENGTH - CMD_DATA_START);
-    return KL_ERROR;
+    return -1;
   }
 
   // build header
@@ -342,7 +341,7 @@ int KarateLight::ReadBack() {
   if (m_bytesread != CMD_DATA_START) {
     OLA_FATAL << "could not read 4 bytes (header) from " << m_devname;
     KarateLight::Close();
-    return KL_ERROR;
+    return -1;
   }
 
   // read sequential
@@ -361,7 +360,7 @@ int KarateLight::ReadBack() {
              << "does not match number of bytes expected" \
              << static_cast<int>(m_rd_buffer[CMD_HD_LEN]);
     KarateLight::Close();
-    return KL_CHECKSUMFAIL;
+    return -1;
   }
 }
 
@@ -374,14 +373,14 @@ int KarateLight::ReadEeprom(uint8_t addr) {
   unsigned int j;
 
   if (!m_active)
-    return KL_NOTACTIVE;
+    return -1;
 
   m_byteswritten = write(m_fd, m_wr_buffer, \
                     KarateLight::CreateCommand(CMD_READ_EEPROM, &addr, 1));
   if (m_byteswritten != CMD_DATA_START+1) {
     OLA_WARN << "failed to write data to " << m_devname;
     KarateLight::Close();
-    return KL_WRITEFAIL;
+    return -1;
   }
 
   j = KarateLight::ReadBack();
