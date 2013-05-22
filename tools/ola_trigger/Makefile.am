@@ -22,8 +22,8 @@ ola_trigger_SOURCES = ParserActions.cpp config.tab.cpp ola-trigger.cpp \
                       lex.yy.cpp
 # required, otherwise we get build errors from flex
 ola_trigger_CXXFLAGS = $(WARNING_CXXFLAGS)
-ola_trigger_LDADD = $(top_builddir)/ola/libola.la \
-                    $(top_builddir)/common/libolacommon.la \
+ola_trigger_LDADD = $(top_builddir)/common/libolacommon.la \
+                    $(top_builddir)/ola/libola.la \
                     ./libolatrigger.la \
                     $(LEXLIB)
 
