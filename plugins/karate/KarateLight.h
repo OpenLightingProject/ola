@@ -54,14 +54,13 @@ class KarateLight {
   uint16_t GetDMXOffset() {
     return m_dmx_offset;
   };
-
   bool IsActive() {
     return m_active;
   };
 
   private:
-  int CalcChecksum(int len);
-  int CreateCommand(int cmd, uint8_t * data, int len);
+  int CalcChecksum(uint8_t len);
+  int CreateCommand(uint8_t cmd, uint8_t * data, uint8_t len);
   int ReadBack();
   int ReadEeprom(uint8_t addr);
 

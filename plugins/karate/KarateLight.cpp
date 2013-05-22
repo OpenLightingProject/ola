@@ -277,7 +277,7 @@ bool KarateLight::Init() {
  * \param the lenght of the command to be processed
  * \returns the lengh of the command
  */
-int KarateLight::CalcChecksum(int len) {
+int KarateLight::CalcChecksum(uint8_t len) {
   int i;
 
   // clear byte 2
@@ -300,7 +300,7 @@ int KarateLight::CalcChecksum(int len) {
  * \param len number of bytes to be read from data
  * \returns the lengh of the command, negative values indicate an error
  */
-int KarateLight::CreateCommand(int cmd, uint8_t * data, int len) {
+int KarateLight::CreateCommand(uint8_t cmd, uint8_t * data, uint8_t len) {
   int i = 0;
 
   // maximum command lenght
