@@ -26,8 +26,6 @@
 #  include <config.h>
 #endif
 
-#include "ola/base/SysExits.h"
-
 #ifdef HAVE_SYSEXITS_H
 #include <sysexits.h>
 #else
@@ -52,6 +50,8 @@
 #define EX_CONFIG   78  /* configuration error */
 #define EX__MAX 78  /* maximum listed value */
 #endif
+
+#include "ola/base/SysExits.h"
 
 namespace ola {
 

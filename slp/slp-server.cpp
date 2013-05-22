@@ -329,29 +329,29 @@ int main(int argc, char *argv[]) {
       ola::network::InterfacePicker::NewPicker());
     if (!picker->ChooseInterface(&interface, options.preferred_ip_address)) {
       OLA_INFO << "Failed to find an interface";
-      exit(EXIT_UNAVAILABLE);
+      exit(ola::EXIT_UNAVAILABLE);
     }
     slp_options.ip_address = interface.ip_address;
   }
 
   auto_ptr<UDPSocket> udp_socket(SetupUDPSocket(slp_options.slp_port));
   if (!udp_socket.get())
-    exit(EXIT_UNAVAILABLE);
+    exit(ola::EXIT_UNAVAILABLE);
 
   auto_ptr<TCPAcceptingSocket> tcp_socket(
       SetupTCPSocket(slp_options.ip_address, slp_options.slp_port));
   if (!tcp_socket.get())
-    exit(EXIT_UNAVAILABLE);
+    exit(ola::EXIT_UNAVAILABLE);
 
   if (!DropPrivileges(options.setuid, options.setgid))
-    exit(EXIT_UNAVAILABLE);
+    exit(ola::EXIT_UNAVAILABLE);
 
   ola::ServerInit(argc, argv, &export_map);
 
   SLPDaemon *daemon = new SLPDaemon(udp_socket.get(), tcp_socket.get(),
                                     slp_options, &export_map);
   if (!daemon->Init())
-    exit(EXIT_UNAVAILABLE);
+    exit(ola::EXIT_UNAVAILABLE);
 
   if (!options.registration_file.empty())
     PreRegisterServices(daemon, options.registration_file);
