@@ -20,11 +20,11 @@
 #include <stdio.h>
 #include <getopt.h>
 #include <signal.h>
-#include <sysexits.h>
 
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
 #include <ola/base/Init.h>
+#include <ola/base/SysExits.h>
 #include <ola/network/IPV4Address.h>
 
 #include <iostream>
@@ -199,7 +199,7 @@ int main(int argc, char *argv[]) {
     IPV4Address target_ip;
     if (!IPV4Address::FromString(options.extra_args[0], &target_ip)) {
       OLA_WARN << "Invalid target : " << options.extra_args[0];
-      return EX_USAGE;
+      return ola::EXIT_USAGE;
     }
     target_endpoint = IPV4SocketAddress(target_ip, ola::slp::DEFAULT_SLP_PORT);
   }

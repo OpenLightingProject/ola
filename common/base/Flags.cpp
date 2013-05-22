@@ -23,8 +23,8 @@
 #include <string>
 #include <vector>
 
-#include "common/base/SystemExits.h"
 #include "ola/base/Flags.h"
+#include "ola/base/SysExits.h"
 #include "ola/stl/STLUtils.h"
 
 DEFINE_s_bool(help, h, false, "Display the help message");
@@ -131,7 +131,7 @@ void FlagRegistry::ParseFlags(int *argc, char **argv) {
     if (c == -1) {
       break;
     } else if (c == '?') {
-      exit(EX_USAGE);
+      exit(EXIT_USAGE);
     }
 
 
@@ -142,12 +142,12 @@ void FlagRegistry::ParseFlags(int *argc, char **argv) {
       if (flag->has_arg()) {
         if (!flag->SetValue(optarg)) {
           cerr << "Invalid value " << optarg << endl;
-          exit(EX_USAGE);
+          exit(EXIT_USAGE);
         }
       } else {
         if (!flag->SetValue("1")) {
           cerr << "Invalid value " << optarg << endl;
-          exit(EX_USAGE);
+          exit(EXIT_USAGE);
         }
       }
     }
@@ -155,7 +155,7 @@ void FlagRegistry::ParseFlags(int *argc, char **argv) {
 
   if (FLAGS_help) {
     DisplayUsage();
-    exit(EX_OK);
+    exit(EXIT_OK);
   }
 
   delete[] long_options;

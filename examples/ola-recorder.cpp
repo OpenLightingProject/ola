@@ -22,11 +22,11 @@
 #include <getopt.h>
 #include <signal.h>
 #include <string.h>
-#include <sysexits.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
 #include <ola/base/Init.h>
+#include <ola/base/SysExits.h>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -215,7 +215,7 @@ void DisplayHelpAndExit(const options &opts) {
 int RecordShow(const options &opts) {
   if (opts.universes.empty()) {
     OLA_FATAL << "No universes specified, use -u";
-    exit(EX_USAGE);
+    exit(ola::EXIT_USAGE);
   }
 
   vector<string> universe_strs;
@@ -226,7 +226,7 @@ int RecordShow(const options &opts) {
     unsigned int universe;
     if (!ola::StringToInt(*iter, &universe)) {
       OLA_FATAL << *iter << " isn't a valid universe number";
-      exit(EX_USAGE);
+      exit(ola::EXIT_USAGE);
     }
     universes.push_back(universe);
   }
@@ -240,7 +240,7 @@ int RecordShow(const options &opts) {
   InstallSignals();
   show_recorder->Record();
   cout << "Saved " << show_recorder->FrameCount() << " frames" << endl;
-  return EX_OK;
+  return ola::EXIT_OK;
 }
 
 
@@ -250,7 +250,7 @@ int RecordShow(const options &opts) {
 int VerifyShow(const string &filename) {
   ShowLoader loader(filename);
   if (!loader.Load())
-    return EX_NOINPUT;
+    return ola::EXIT_NOINPUT;
 
   map<unsigned int, unsigned int> frames_by_universe;
   uint64_t total_time = 0;
@@ -284,7 +284,7 @@ int VerifyShow(const string &filename) {
   cout << "Playback time: " << total_time / 1000 << "." << total_time % 10 <<
     " seconds" << endl;
 
-  return EX_OK;
+  return ola::EXIT_OK;
 }
 
 
@@ -320,5 +320,5 @@ int main(int argc, char *argv[]) {
   } else if (opts.verify) {
     return VerifyShow(opts.file);
   }
-  return EX_OK;
+  return ola::EXIT_OK;
 }

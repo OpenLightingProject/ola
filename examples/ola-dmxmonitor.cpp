@@ -36,7 +36,6 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sysexits.h>
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
@@ -51,6 +50,7 @@
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
 #include <ola/DmxBuffer.h>
+#include <ola/base/SysExits.h>
 #include <ola/io/SelectServer.h>
 
 #include <string>
@@ -633,7 +633,7 @@ void DisplayHelpAndExit(char arg[]) {
   "  -u, --universe <universe_id> Id of universe to monitor (defaults to "
   << DEFAULT_UNIVERSE << ").\n"
   << std::endl;
-  exit(EX_OK);
+  exit(ola::EXIT_OK);
 }
 
 

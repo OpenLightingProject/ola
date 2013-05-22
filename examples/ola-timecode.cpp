@@ -21,11 +21,11 @@
 #include <errno.h>
 #include <getopt.h>
 #include <stdlib.h>
-#include <sysexits.h>
 #include <ola/Logging.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
 #include <ola/StringUtils.h>
+#include <ola/base/SysExits.h>
 #include <ola/timecode/TimeCode.h>
 #include <ola/timecode/TimeCodeEnums.h>
 
@@ -103,7 +103,7 @@ void DisplayHelpAndExit(char arg[]) {
   "  -h, --help     Display this help message and exit.\n"
   "  -f, --format   One of FILM, EBU, DF, SMPTE (default).\n"
   << std::endl;
-  exit(EX_USAGE);
+  exit(ola::EXIT_USAGE);
 }
 
 
@@ -166,12 +166,12 @@ int main(int argc, char *argv[]) {
   TimeCode timecode(time_code_type, hours, minutes, seconds, frames);
   if (!timecode.IsValid()) {
     OLA_FATAL << "Invalid TimeCode value";
-    exit(EX_USAGE);
+    exit(ola::EXIT_USAGE);
   }
 
   if (!ola_client.Setup()) {
     OLA_FATAL << "Setup failed";
-    exit(EX_UNAVAILABLE);
+    exit(ola::EXIT_UNAVAILABLE);
   }
 
   ola_client.GetClient()->SendTimeCode(
@@ -179,5 +179,5 @@ int main(int argc, char *argv[]) {
       timecode);
 
   ola_client.GetSelectServer()->Run();
-  return EX_OK;
+  return ola::EXIT_OK;
 }

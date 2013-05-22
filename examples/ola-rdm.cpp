@@ -20,11 +20,11 @@
 
 #include <errno.h>
 #include <getopt.h>
-#include <sysexits.h>
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
+#include <ola/base/SysExits.h>
 #include <ola/rdm/PidStoreHelper.h>
 #include <ola/rdm/RDMAPIImplInterface.h>
 #include <ola/rdm/RDMEnums.h>
@@ -180,7 +180,7 @@ void DisplayHelpAndExit(const options &opts) {
   } else {
     DisplayGetPidHelp(opts);
   }
-  exit(EX_USAGE);
+  exit(ola::EXIT_USAGE);
 }
 
 
@@ -197,7 +197,7 @@ void DisplayPIDsAndExit(uint16_t manufacturer_id,
   for (; iter != pid_names.end(); ++iter) {
     cout << *iter << endl;
   }
-  exit(EX_OK);
+  exit(ola::EXIT_OK);
 }
 
 
@@ -340,7 +340,7 @@ int RDMController::PerformRequestAndWait(unsigned int universe,
   if (!pid_descriptor) {
     cout << "Unknown PID: " << pid_name << endl;
     cout << "Use --list-pids to list the available PIDs." << endl;
-    return EX_USAGE;
+    return ola::EXIT_USAGE;
   }
 
   const ola::messaging::Descriptor *descriptor = NULL;
@@ -352,7 +352,7 @@ int RDMController::PerformRequestAndWait(unsigned int universe,
   if (!descriptor) {
     cout << (is_set ? "SET" : "GET") << " command not supported for "
       << pid_name << endl;
-    exit(EX_USAGE);
+    exit(ola::EXIT_USAGE);
   }
 
   // attempt to build the message
@@ -362,7 +362,7 @@ int RDMController::PerformRequestAndWait(unsigned int universe,
 
   if (!message.get()) {
     cout << m_pid_helper.SchemaAsString(descriptor);
-    return EX_USAGE;
+    return ola::EXIT_USAGE;
   }
 
   m_pending_request.universe = universe;
@@ -396,7 +396,7 @@ int RDMController::PerformRequestAndWait(unsigned int universe,
   }
 
   m_ola_client.GetSelectServer()->Run();
-  return EX_OK;
+  return ola::EXIT_OK;
 }
 
 
@@ -487,7 +487,7 @@ int main(int argc, char *argv[]) {
 
   // Make sure we can load our PIDs
   if (!controller.InitPidHelper())
-    exit(EX_OSFILE);
+    exit(ola::EXIT_OSFILE);
 
   if (!opts.uid) {
     if (opts.list_pids) {
@@ -509,7 +509,7 @@ int main(int argc, char *argv[]) {
 
   if (!controller.Setup()) {
     OLA_FATAL << "Setup failed";
-    exit(EX_UNAVAILABLE);
+    exit(ola::EXIT_UNAVAILABLE);
   }
 
   // split out rdm message params from the pid name

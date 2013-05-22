@@ -28,7 +28,6 @@
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sysexits.h>
 #include <unistd.h>
 
 #include <iostream>
@@ -36,8 +35,9 @@
 #include <string>
 
 #include "ola/Logging.h"
-#include "ola/base/Init.h"
 #include "ola/base/Credentials.h"
+#include "ola/base/Init.h"
+#include "ola/base/SysExits.h"
 #include "olad/OlaDaemon.h"
 
 using ola::OlaDaemon;
@@ -268,17 +268,17 @@ static void Setup(int argc, char*argv[], ola_options *opts) {
 
   if (!ParseOptions(argc, argv, opts)) {
     DisplayHelp();
-    exit(EX_USAGE);
+    exit(ola::EXIT_USAGE);
   }
 
   if (opts->help) {
     DisplayHelp();
-    exit(EX_OK);
+    exit(ola::EXIT_OK);
   }
 
   if (opts->version) {
     cout << "OLA Daemon version " << VERSION << endl;
-    exit(EX_OK);
+    exit(ola::EXIT_OK);
   }
 
   // setup the logging
@@ -301,7 +301,7 @@ int main(int argc, char *argv[]) {
   #ifndef OLAD_SKIP_ROOT_CHECK
   if (!ola::GetEUID()) {
     OLA_FATAL << "Attempting to run as root, aborting.";
-    return EX_UNAVAILABLE;
+    return ola::EXIT_UNAVAILABLE;
   }
   #endif
 
@@ -322,8 +322,8 @@ int main(int argc, char *argv[]) {
   if (olad.get() && olad->Init()) {
     global_olad = olad.get();
     olad->Run();
-    return EX_OK;
+    return ola::EXIT_OK;
   }
   global_olad = NULL;
-  return EX_UNAVAILABLE;
+  return ola::EXIT_UNAVAILABLE;
 }

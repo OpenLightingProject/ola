@@ -25,14 +25,14 @@
 #endif
 
 #include <signal.h>
-#include <sysexits.h>
 
 #include <ola/acn/ACNPort.h>
 #include <ola/acn/CID.h>
+#include <ola/BaseTypes.h>
 #include <ola/DmxBuffer.h>
 #include <ola/base/Flags.h>
 #include <ola/base/Init.h>
-#include <ola/BaseTypes.h>
+#include <ola/base/SysExits.h>
 #include <ola/io/Descriptor.h>
 #include <ola/Logging.h>
 #include <ola/network/InterfacePicker.h>
@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
   if (!uid.get()) {
     OLA_WARN << "Invalid UID: " << FLAGS_uid;
     ola::DisplayUsage();
-    exit(EX_USAGE);
+    exit(ola::EXIT_USAGE);
   }
 
   CID cid = CID::Generate();
@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) {
       ola::network::InterfacePicker::NewPicker());
     if (!picker->ChooseInterface(&interface, FLAGS_listen_ip)) {
       OLA_INFO << "Failed to find an interface";
-      exit(EX_UNAVAILABLE);
+      exit(ola::EXIT_UNAVAILABLE);
     }
   }
 
@@ -150,7 +150,7 @@ int main(int argc, char *argv[]) {
     e131_node.reset(new ola::plugin::e131::E131Node(FLAGS_listen_ip, cid));
     if (!e131_node->Start()) {
       OLA_WARN << "Failed to start E1.31 node";
-      exit(EX_UNAVAILABLE);
+      exit(ola::EXIT_UNAVAILABLE);
     }
     OLA_INFO << "Started E1.31 node!";
     node.SelectServer()->AddReadDescriptor(e131_node->GetSocket());
@@ -161,7 +161,7 @@ int main(int argc, char *argv[]) {
     OLA_INFO << "Dummy UID is " << *dummy_uid;
     if (!dummy_uid.get()) {
       OLA_WARN << "Failed to allocate a UID for the DummyResponder.";
-      exit(EX_USAGE);
+      exit(ola::EXIT_USAGE);
     }
 
     dummy_responder.reset(new ola::plugin::dummy::DummyResponder(*dummy_uid));
@@ -181,7 +181,7 @@ int main(int argc, char *argv[]) {
         ola::plugin::usbpro::BaseUsbProWidget::OpenDevice(FLAGS_tri_device);
     if (!descriptor) {
       OLA_WARN << "Failed to open " << FLAGS_tri_device;
-      exit(EX_USAGE);
+      exit(ola::EXIT_USAGE);
     }
     tri_widget.reset(new DmxTriWidget(node.SelectServer(), descriptor));
     node.SelectServer()->AddReadDescriptor(descriptor);
@@ -208,14 +208,14 @@ int main(int argc, char *argv[]) {
     auto_ptr<UID> spi_uid(uid_allocator.AllocateNext());
     if (!spi_uid.get()) {
       OLA_WARN << "Failed to allocate a UID for the SPI device.";
-      exit(EX_USAGE);
+      exit(ola::EXIT_USAGE);
     }
 
     spi_backend.reset(
         new SPIBackend(FLAGS_spi_device, *spi_uid, SPIBackend::Options()));
     if (!spi_backend->Init()) {
       OLA_WARN << "Failed to init SPI backend";
-      exit(EX_USAGE);
+      exit(ola::EXIT_USAGE);
     }
     E133Endpoint::EndpointProperties properties;
     properties.is_physical = true;
@@ -236,7 +236,7 @@ int main(int argc, char *argv[]) {
   simple_node = &node;
 
   if (!node.Init())
-    exit(EX_UNAVAILABLE);
+    exit(ola::EXIT_UNAVAILABLE);
 
   // signal handler
   if (!ola::InstallSignal(SIGINT, &InteruptSignal))

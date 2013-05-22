@@ -23,7 +23,7 @@
 #include <ola/Logging.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
-#include <sysexits.h>
+#include <ola/base/SysExits.h>
 #include <ola/io/SelectServer.h>
 
 
@@ -183,17 +183,17 @@ int main(int argc, char *argv[]) {
 
   if (opts.help) {
     DisplayGetUIDsHelp(opts);
-    exit(EX_OK);
+    exit(ola::EXIT_OK);
   }
 
   if (opts.full && opts.incremental) {
     cerr << "Only one of -i and -f can be specified" << endl;
-    exit(EX_USAGE);
+    exit(ola::EXIT_USAGE);
   }
 
   if (!ola_client.Setup()) {
     OLA_FATAL << "Setup failed";
-    exit(EX_UNAVAILABLE);
+    exit(ola::EXIT_UNAVAILABLE);
   }
 
   OlaCallbackClient *client = ola_client.GetClient();
@@ -201,5 +201,5 @@ int main(int argc, char *argv[]) {
 
   if (FetchUIDs(client, opts))
     ss->Run();
-  return EX_OK;
+  return ola::EXIT_OK;
 }

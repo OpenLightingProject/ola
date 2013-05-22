@@ -25,7 +25,6 @@
 
 #include <errno.h>
 #include <string.h>
-#include <sysexits.h>
 #include <ola/Callback.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
@@ -33,6 +32,7 @@
 #include <ola/OlaClientWrapper.h>
 #include <ola/OlaDevice.h>
 #include <ola/StringUtils.h>
+#include <ola/base/SysExits.h>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -63,11 +63,11 @@ ShowRecorder::~ShowRecorder() {
 int ShowRecorder::Init() {
   if (!m_client.Setup()) {
     OLA_FATAL << "Client Setup failed";
-    return EX_UNAVAILABLE;
+    return ola::EXIT_UNAVAILABLE;
   }
 
   if (!m_saver.Open())
-    return EX_CANTCREAT;
+    return ola::EXIT_CANTCREAT;
 
   m_client.GetClient()->SetDmxCallback(
       ola::NewCallback(this, &ShowRecorder::NewFrame));
@@ -80,7 +80,7 @@ int ShowRecorder::Init() {
         ola::NewSingleCallback(this, &ShowRecorder::RegisterComplete));
   }
 
-  return EX_OK;
+  return ola::EXIT_OK;
 }
 
 
@@ -89,7 +89,7 @@ int ShowRecorder::Init() {
  */
 int ShowRecorder::Record() {
   m_client.GetSelectServer()->Run();
-  return EX_OK;
+  return ola::EXIT_OK;
 }
 
 
