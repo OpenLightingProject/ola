@@ -97,7 +97,7 @@ void *KarateThread::Run() {
         MutexLocker locker(&m_mutex);
         k.SetColors(m_buffer);
       }
-      if (k.UpdateColors() != KarateLight::KL_OK) {
+      if (!k.UpdateColors()) {
          OLA_WARN << "Failed to write color data";
       }  else {
           usleep(20000);  // 50Hz

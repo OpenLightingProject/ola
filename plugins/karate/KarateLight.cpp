@@ -71,31 +71,31 @@ void KarateLight::Close() {
  * \returns KL_OK on success, a negative error value otherwise
  */
 bool KarateLight::UpdateColors() {
-  int j;
-  int chunks;
+  int block;
+  int n_chunks;
 
   if (!m_active)
     return false;
 
-  chunks = (m_nChannels + CHUNK_SIZE - 1)/CHUNK_SIZE;
+  n_chunks = (m_nChannels + CHUNK_SIZE - 1)/CHUNK_SIZE;
 
   // write colors
-  for (j = 0; j < chunks; j++) {
-    if ((memcmp(&m_color_buffer[j*CHUNK_SIZE], \
-         &m_color_buffer_old[j*CHUNK_SIZE], CHUNK_SIZE) == 0) \
+  for (block = 0; block < n_chunks; block++) {
+    if ((memcmp(&m_color_buffer[block*CHUNK_SIZE], \
+         &m_color_buffer_old[block*CHUNK_SIZE], CHUNK_SIZE) == 0) \
          && (m_use_memcmp == 1)) {
       continue;
     }
     m_byteswritten = write(m_fd, m_wr_buffer, \
-                      KarateLight::CreateCommand(j+CMD_SET_DATA_00, \
-                      &m_color_buffer[j*CHUNK_SIZE], \
+                      KarateLight::CreateCommand(block+CMD_SET_DATA_00, \
+                      &m_color_buffer[block*CHUNK_SIZE], \
                       CHUNK_SIZE));
     if (m_byteswritten != (CMD_DATA_START + CHUNK_SIZE)) {
       OLA_WARN << "failed to write data to " << m_devname;
       KarateLight::Close();
       return false;
     }
-    if (KarateLight::ReadBack() != 0) {
+    if (KarateLight::ReadBack() != 0) { // we expect a valid return with 0 databytes
       KarateLight::Close();
       return false;
     }
@@ -186,8 +186,7 @@ bool KarateLight::Init() {
     return false;
   }
 
-  j = KarateLight::ReadBack();
-  if (j == 1) {
+  if (KarateLight::ReadBack() == 1) { // we are expecting one byte
     m_fw_version = m_rd_buffer[CMD_DATA_START];
   } else {
     OLA_FATAL << "failed to read the firmware-version ";
@@ -208,8 +207,7 @@ bool KarateLight::Init() {
     return false;
   }
 
-  j = KarateLight::ReadBack();
-  if (j == 1) {
+  if (KarateLight::ReadBack() == 1) { // we are expecting one byte
     m_hw_version = m_rd_buffer[CMD_DATA_START];
   } else {
     return false;
@@ -222,8 +220,7 @@ bool KarateLight::Init() {
     return false;
   }
 
-  j = KarateLight::ReadBack();
-  if (j == 2) {
+  if (KarateLight::ReadBack() == 2) { // we are expecting two bytes
     m_nChannels = m_rd_buffer[CMD_DATA_START] \
                 + m_rd_buffer[CMD_DATA_START+1] * 256;
   } else {
