@@ -39,7 +39,7 @@ class KarateLight {
   void Close();
 
   bool Blank();
-  bool SetColors(DmxBuffer da);
+  bool SetColors(const DmxBuffer &da);
   bool UpdateColors();
 
   uint16_t GetnChannels() {

@@ -66,68 +66,6 @@ void KarateLight::Close() {
 }
 
 /**
- * Sends color values previously set via
- * \sa SetColor
- * \returns KL_OK on success, a negative error value otherwise
- */
-bool KarateLight::UpdateColors() {
-  int block;
-  int n_chunks;
-
-  if (!m_active)
-    return false;
-
-  n_chunks = (m_nChannels + CHUNK_SIZE - 1)/CHUNK_SIZE;
-
-  // write colors
-  for (block = 0; block < n_chunks; block++) {
-    if ((memcmp(&m_color_buffer[block*CHUNK_SIZE], \
-         &m_color_buffer_old[block*CHUNK_SIZE], CHUNK_SIZE) == 0) \
-         && (m_use_memcmp == 1)) {
-      continue;
-    }
-    m_byteswritten = write(m_fd, m_wr_buffer, \
-                      KarateLight::CreateCommand(block+CMD_SET_DATA_00, \
-                      &m_color_buffer[block*CHUNK_SIZE], \
-                      CHUNK_SIZE));
-    if (m_byteswritten != (CMD_DATA_START + CHUNK_SIZE)) {
-      OLA_WARN << "failed to write data to " << m_devname;
-      KarateLight::Close();
-      return false;
-    }
-    if (KarateLight::ReadBack() != 0) { // we expect a valid return with 0 databytes
-      KarateLight::Close();
-      return false;
-    }
-  }
-  // update old_values
-  memcpy(&m_color_buffer_old[0], &m_color_buffer[0], MAX_CHANNELS);
-  return true;
-}
-
-bool KarateLight::SetColors(DmxBuffer da) {
-  unsigned int length = da.Size();
-
-  if ((length + m_dmx_offset) > MAX_CHANNELS) {
-    length = MAX_CHANNELS - m_dmx_offset;
-  }
-  da.GetRange(m_dmx_offset, m_color_buffer, &length);
-  return KarateLight::UpdateColors();
-}
-
-/**
- * Sets all Channels to black and sends data to the device
- * \returns KL_OK on success, a negative error value otherwise
- */
-bool KarateLight::Blank() {
-  // set channels to black
-  memset(m_color_buffer, 0, MAX_CHANNELS);
-  memset(m_color_buffer_old, 1, MAX_CHANNELS);
-
-  return KarateLight::UpdateColors();
-}
-
-/**
  * Initialize the device
  * 1. open the devicefile and get a file lock
  * 2. read defaults (firmware, hardware, channels count)
@@ -164,13 +102,11 @@ bool KarateLight::Init() {
   options.c_cc[VTIME] = 1;
   options.c_cc[VMIN]  = 0;  // always require at least one byte returned
 
-
   // Update the options and do it NOW
   if (tcsetattr(m_fd, TCSANOW, &options) != 0) {
     OLA_FATAL << "tcsetattr failed on " << m_devname;
     return false;
   }
-
 
   // clear possible junk data still in the systems fifo
   m_bytesread = 1;
@@ -186,7 +122,7 @@ bool KarateLight::Init() {
     return false;
   }
 
-  if (KarateLight::ReadBack() == 1) { // we are expecting one byte
+  if (KarateLight::ReadBack() == 1) {  // we are expecting one byte
     m_fw_version = m_rd_buffer[CMD_DATA_START];
   } else {
     OLA_FATAL << "failed to read the firmware-version ";
@@ -207,7 +143,7 @@ bool KarateLight::Init() {
     return false;
   }
 
-  if (KarateLight::ReadBack() == 1) { // we are expecting one byte
+  if (KarateLight::ReadBack() == 1) {  // we are expecting one byte
     m_hw_version = m_rd_buffer[CMD_DATA_START];
   } else {
     return false;
@@ -220,7 +156,7 @@ bool KarateLight::Init() {
     return false;
   }
 
-  if (KarateLight::ReadBack() == 2) { // we are expecting two bytes
+  if (KarateLight::ReadBack() == 2) {  // we are expecting two bytes
     m_nChannels = m_rd_buffer[CMD_DATA_START] \
                 + m_rd_buffer[CMD_DATA_START+1] * 256;
   } else {
@@ -267,6 +203,72 @@ bool KarateLight::Init() {
   return KarateLight::Blank();
 }
 
+/**
+ * Sets all Channels to black and sends data to the device
+ * \returns true on success
+ */
+bool KarateLight::Blank() {
+  // set channels to black
+  memset(m_color_buffer, 0, MAX_CHANNELS);
+  memset(m_color_buffer_old, 1, MAX_CHANNELS);
+
+  return KarateLight::UpdateColors();
+}
+
+/**
+ * copy contents of the DmxBuffer into my local scope
+ * \returns true on success
+ */
+bool KarateLight::SetColors(const DmxBuffer &da) {
+  unsigned int length = da.Size();
+
+  if ((length + m_dmx_offset) > MAX_CHANNELS) {
+    length = MAX_CHANNELS - m_dmx_offset;
+  }
+  da.GetRange(m_dmx_offset, m_color_buffer, &length);
+  return KarateLight::UpdateColors();
+}
+
+/**
+ * Sends color values previously set via
+ * \sa SetColor
+ * \returns true on success
+ */
+bool KarateLight::UpdateColors() {
+  int block;
+  int n_chunks;
+
+  if (!m_active)
+    return false;
+
+  n_chunks = (m_nChannels + CHUNK_SIZE - 1)/CHUNK_SIZE;
+
+  // write colors
+  for (block = 0; block < n_chunks; block++) {
+    if ((memcmp(&m_color_buffer[block*CHUNK_SIZE], \
+         &m_color_buffer_old[block*CHUNK_SIZE], CHUNK_SIZE) == 0) \
+         && (m_use_memcmp == 1)) {
+      continue;
+    }
+    m_byteswritten = write(m_fd, m_wr_buffer, \
+                      KarateLight::CreateCommand(block+CMD_SET_DATA_00, \
+                      &m_color_buffer[block*CHUNK_SIZE], \
+                      CHUNK_SIZE));
+    if (m_byteswritten != (CMD_DATA_START + CHUNK_SIZE)) {
+      OLA_WARN << "failed to write data to " << m_devname;
+      KarateLight::Close();
+      return false;
+    }
+    if (KarateLight::ReadBack() != 0) {  // we expect a return with 0 bytes
+      KarateLight::Close();
+      return false;
+    }
+  }
+  // update old_values
+  memcpy(&m_color_buffer_old[0], &m_color_buffer[0], MAX_CHANNELS);
+  return true;
+}
+
 /*
  PRIVATE FUNCTIONS
 */
@@ -280,8 +282,7 @@ bool KarateLight::Init() {
 int KarateLight::CalcChecksum(uint8_t len) {
   int i;
 
-  // clear byte 2
-  m_wr_buffer[CMD_HD_CHECK] = 0;
+  m_wr_buffer[CMD_HD_CHECK] = 0;  // clear byte 2
 
   for (i = 0; i < len; i++) {
     if (i != CMD_HD_CHECK) {
@@ -291,7 +292,6 @@ int KarateLight::CalcChecksum(uint8_t len) {
 
   return len;
 }
-
 
 /**
  * Creates and stores a command in the command buffer
