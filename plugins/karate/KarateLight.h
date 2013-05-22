@@ -59,11 +59,6 @@ class KarateLight {
     return m_active;
   };
 
-  // basically defines
-  static const uint16_t CMD_MAX_LENGTH = 64;
-  static const uint16_t CHUNK_SIZE = 32;
-  static const uint16_t MAX_CHANNELS = 512;
-
   private:
   int CalcChecksum(int len);
   int CreateCommand(int cmd, uint8_t * data, int len);
@@ -74,6 +69,10 @@ class KarateLight {
   int m_fd;
   int m_bytesread;
   int m_byteswritten;
+
+  static const uint16_t CMD_MAX_LENGTH = 64;
+  static const uint16_t CHUNK_SIZE = 32;
+  static const uint16_t MAX_CHANNELS = 512;
 
   uint8_t m_fw_version;
   uint8_t m_hw_version;
