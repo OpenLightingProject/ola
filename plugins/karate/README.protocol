@@ -35,8 +35,8 @@ CMD_SET_DATA_00 = 0x20       32        Send a batch of 32 data bytes (1st. slot)
 CMD_SET_DATA_0F = 0x2F       32        Send a batch of 32 data bytes (16th. slot)
 CMD_GET_N_CHANNELS = 0x30    0         Read the number of Channels
 CMD_READ_ADC0 = 0x40         0         Read the value of A/D-Channel 0 (may be used for ambient light compensation)
-CMD_READ_EEPROM = 0x50       0         Read a single byte from the eeprom
-CMD_WRITE_EEPROM = 0x51      1         Write a single byte to the eeprom
+CMD_READ_EEPROM = 0x50       1         Read a single byte from the eeprom
+CMD_WRITE_EEPROM = 0x51      2         Write a single byte to the eeprom
 CMD_BOOT_REQUEST = 0x80      0         Start bootload-sequence
 CMD_BOOT_START = 0x81        2         Enter bootload-sequence
 
