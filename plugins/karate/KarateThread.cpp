@@ -62,6 +62,7 @@ KarateThread::KarateThread(const string &path)
 void *KarateThread::Run() {
   struct timeval tv;
   struct timespec ts;
+  bool write_success;
 
   KarateLight k(m_path);
   k.Init();
@@ -95,9 +96,9 @@ void *KarateThread::Run() {
     } else {
       {
         MutexLocker locker(&m_mutex);
-        k.SetColors(m_buffer);
+        write_success = k.SetColors(m_buffer);
       }
-      if (!k.UpdateColors()) {
+      if (!write_success) {
          OLA_WARN << "Failed to write color data";
       }  else {
           usleep(20000);  // 50Hz

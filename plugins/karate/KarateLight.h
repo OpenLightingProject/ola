@@ -40,7 +40,6 @@ class KarateLight {
 
   bool Blank();
   bool SetColors(const DmxBuffer &da);
-  bool UpdateColors();
 
   uint16_t GetnChannels() {
     return m_nChannels;
@@ -59,15 +58,15 @@ class KarateLight {
   };
 
   private:
-  int CalcChecksum(uint8_t len);
-  int CreateCommand(uint8_t cmd, uint8_t * data, uint8_t len);
-  int ReadBack();
-  int ReadEeprom(uint8_t addr);
+  bool ReadBack(uint8_t * rd_data, uint8_t * rd_len);
+  bool ReadByteFromEeprom(uint8_t addr, uint8_t * data);
+  bool SendCommand(uint8_t cmd, const uint8_t * output_buffer,
+                   int n_bytes_to_write, uint8_t * input_buffer,
+                   int n_bytes_expected);
+  bool UpdateColors();
 
   const string m_devname;
   int m_fd;
-  int m_bytesread;
-  int m_byteswritten;
 
   static const uint16_t CMD_MAX_LENGTH = 64;
   static const uint16_t CHUNK_SIZE = 32;
@@ -77,9 +76,6 @@ class KarateLight {
   uint8_t m_hw_version;
   uint16_t m_nChannels;
   uint16_t m_dmx_offset;
-
-  uint8_t m_wr_buffer[CMD_MAX_LENGTH];
-  uint8_t m_rd_buffer[CMD_MAX_LENGTH];
 
   uint8_t m_color_buffer[MAX_CHANNELS];
   uint8_t m_color_buffer_old[MAX_CHANNELS];
