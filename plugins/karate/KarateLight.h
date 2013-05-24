@@ -95,7 +95,6 @@ class KarateLight {
   static const uint8_t CMD_SYNC_RECV = 0x55;
 
   // status
-  static const uint8_t CMD_SYS_SYNC = 0x00;
   static const uint8_t CMD_SYS_ACK = 0x01;
   static const uint8_t CMD_SYS_NACK = 0x02;
   static const uint8_t CMD_SYS_NIMP = 0xFF;

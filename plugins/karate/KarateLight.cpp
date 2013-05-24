@@ -124,7 +124,7 @@ bool KarateLight::Init() {
   }
 
   // if an older Firware-Version is used. quit. the communication wont work
-  if (m_fw_version < 0x30) {
+  if (m_fw_version < 0x33) {
     OLA_WARN << "Firmware 0x" << static_cast<int>(m_fw_version) \
               << "is to old!";
     return false;
@@ -308,7 +308,7 @@ bool KarateLight::SendCommand(uint8_t cmd, const uint8_t * output_buffer,
   if (cmd_length > CMD_MAX_LENGTH) {
     OLA_WARN << "Error: Command is to long (" << std::dec
              << n_bytes_to_write << " > " << (CMD_MAX_LENGTH - CMD_DATA_START);
-    return -1;
+    return false;
   }
 
   // build header
@@ -317,15 +317,11 @@ bool KarateLight::SendCommand(uint8_t cmd, const uint8_t * output_buffer,
   wr_buffer[CMD_HD_LEN] = n_bytes_to_write;
 
   // copy data to our local buffer
-  int i = 0;
-  while (n_bytes_to_write > i) {
-    wr_buffer[CMD_DATA_START+i] = output_buffer[i];
-    i++;
-  }
+  memcpy(&wr_buffer[CMD_DATA_START], output_buffer, n_bytes_to_write);
 
   // calc checksum
   wr_buffer[CMD_HD_CHECK] = 0;  // clear byte 2
-  for (i = 0; i < cmd_length; i++) {
+  for (int i = 0; i < cmd_length; i++) {
     if (i != CMD_HD_CHECK) {
       wr_buffer[CMD_HD_CHECK] ^= wr_buffer[i];
     }
