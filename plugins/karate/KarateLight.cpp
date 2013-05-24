@@ -108,10 +108,10 @@ bool KarateLight::Init() {
     OLA_WARN << "tcsetattr failed on " << m_devname;
     return false;
   }
-  
+
   // Try to get a lock on the device, making access exclusive
   if (flock(m_fd, LOCK_EX | LOCK_NB) != 0) {
-    OLA_WARN << "Error getting a lock on " << m_devname 
+    OLA_WARN << "Error getting a lock on " << m_devname
              << "Maybe a other programm is accessing the device."
              << "Errorcode: " << strerror(errno);
     return false;
@@ -231,7 +231,7 @@ bool KarateLight::ReadBack(uint8_t * rd_data, uint8_t * rd_len) {
   while (bytesread != CMD_DATA_START) {
     bytesread = read(m_fd, rd_buffer, CMD_DATA_START);
     if (bytesread < 0) {
-      if (errno != EINTR ) {  // this is also true for EAGAIN
+      if (errno != EINTR) {  // this is also true for EAGAIN
         OLA_WARN << "could not read 4 bytes (header) from " << m_devname
                  << "ErrorCode: " << strerror(errno);
         KarateLight::Close();
@@ -246,7 +246,7 @@ bool KarateLight::ReadBack(uint8_t * rd_data, uint8_t * rd_len) {
     // we wont enter this loop if there are no bytes to receive
     bytesread = read(m_fd, &rd_buffer[CMD_DATA_START], rd_buffer[CMD_HD_LEN]);
     if (bytesread < 0) {
-      if (errno != EINTR ) {  // this is also true for EAGAIN (timeout)
+      if (errno != EINTR) {  // this is also true for EAGAIN (timeout)
         OLA_WARN << "reading " << static_cast<int>(rd_buffer[CMD_HD_LEN])
                  << "bytes payload from " << m_devname
                  << "ErrorCode: " << strerror(errno);
