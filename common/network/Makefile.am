@@ -1,6 +1,6 @@
 include $(top_srcdir)/common.mk
 
-EXTRA_DIST = SocketHelper.h
+EXTRA_DIST = PosixInterfacePicker.h SocketHelper.h WindowsInterfacePicker.h
 
 noinst_LTLIBRARIES = libolanetwork.la
 libolanetwork_la_SOURCES = AdvancedTCPConnector.cpp \
@@ -20,8 +20,6 @@ libolanetwork_la_SOURCES += WindowsInterfacePicker.cpp
 else
 libolanetwork_la_SOURCES += PosixInterfacePicker.cpp
 endif
-
-EXTRA_DIST = PosixInterfacePicker.h WindowsInterfacePicker.h
 
 if BUILD_TESTS
 TESTS = HealthCheckedConnectionTester NetworkTester TCPConnectorTester
