@@ -221,6 +221,8 @@ bool KarateLight::SetColors(const DmxBuffer &da) {
 
 /**
  * Tries to read an answer from the device
+ * \parm rd_data buffer for the received data (excluding the header)
+ * \parm rd_len number of bytes received (excluding the header)
  * \return true on success
  */
 bool KarateLight::ReadBack(uint8_t * rd_data, uint8_t * rd_len) {
@@ -292,7 +294,8 @@ bool KarateLight::ReadBack(uint8_t * rd_data, uint8_t * rd_len) {
 
 /**
  * Reads the a single byte from the eeprom
- * \parm addr the eeprom location
+ * \parm addr the eeprom address to read from (0..255)
+ * \parm data location to store the received byte to
  * \return true on success
  */
 bool KarateLight::ReadByteFromEeprom(uint8_t addr , uint8_t * data) {
@@ -310,12 +313,15 @@ bool KarateLight::ReadByteFromEeprom(uint8_t addr , uint8_t * data) {
 }
 
 /**
- * Creates and Command, sends it, reads the replay
+ * Creates and Command, sends it, reads the reply
+ * Will return false in case the number of bytes received does not match
+ * the number of bytes expected.
+ *
  * \param cmd the commandcode to be used
- * \param wr_data buffer containing payload-data to be included in the command
- * \param wr_len number of bytes to be written
- * \param rd_data returned payload data will be stored here
- * \param rd_len number of bytes returned (excluding the command header)
+ * \param output_buffer buffer containing payload-data to be send
+ * \param n_bytes_to_write number of bytes to be written
+ * \param input_buffer returned payload data will be stored here
+ * \param n_bytes_expected number of bytes expected (excluding the header)
  * \returns true on success
  */
 bool KarateLight::SendCommand(uint8_t cmd, const uint8_t * output_buffer,
@@ -366,8 +372,8 @@ bool KarateLight::SendCommand(uint8_t cmd, const uint8_t * output_buffer,
 }
 
 /**
- * Sends color values previously set via
- * \sa SetColor
+ * Sends color values currently stored in the local buffer
+ * to the hardware.
  * \returns true on success
  */
 bool KarateLight::UpdateColors() {
