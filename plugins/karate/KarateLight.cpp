@@ -259,7 +259,8 @@ bool KarateLight::ReadBack(uint8_t * rd_data, uint8_t * rd_len) {
   }  // while
 
   // verify data-length
-  if (bytesread != rd_buffer[CMD_HD_LEN]) {
+  if ((*rd_len != rd_buffer[CMD_HD_LEN]) ||
+      (bytesread != rd_buffer[CMD_HD_LEN])) {
     OLA_WARN << "number of bytes read" << bytesread
              << "does not match number of bytes expected"
              << static_cast<int>(rd_buffer[CMD_HD_LEN]);
@@ -362,6 +363,7 @@ bool KarateLight::SendCommand(uint8_t cmd, const uint8_t * output_buffer,
     }
 
   // read the answer, check if we got the number of bytes we expected
+  n_bytes_read = n_bytes_expected;
   if (!ReadBack(input_buffer, &n_bytes_read)
       || (n_bytes_read != n_bytes_expected)) {
     KarateLight::Close();
