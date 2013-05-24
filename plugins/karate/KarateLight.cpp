@@ -108,6 +108,14 @@ bool KarateLight::Init() {
     OLA_WARN << "tcsetattr failed on " << m_devname;
     return false;
   }
+  
+  // Try to get a lock on the device, making access exclusive
+  if (flock(m_fd, LOCK_EX | LOCK_NB) != 0) {
+    OLA_WARN << "Error getting a lock on " << m_devname 
+             << "Maybe a other programm is accessing the device."
+             << "Errorcode: " << strerror(errno);
+    return false;
+  }
 
   // clear possible junk data still in the systems fifo
   int bytesread = 1;
