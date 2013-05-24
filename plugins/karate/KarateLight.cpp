@@ -231,7 +231,7 @@ bool KarateLight::ReadBack(uint8_t * rd_data, uint8_t * rd_len) {
   while (bytesread != CMD_DATA_START) {
     bytesread = read(m_fd, rd_buffer, CMD_DATA_START);
     if (bytesread < 0) {
-      if (errno != EINTR ) {  // this is also true for EAGAIN (data not ready within timeout)
+      if (errno != EINTR ) {  // this is also true for EAGAIN
         OLA_WARN << "could not read 4 bytes (header) from " << m_devname
                  << "ErrorCode: " << strerror(errno);
         KarateLight::Close();
@@ -241,11 +241,20 @@ bool KarateLight::ReadBack(uint8_t * rd_data, uint8_t * rd_len) {
   }
 
   // read payload-data (if there is any)
-  if (rd_buffer[CMD_HD_LEN] > 0) {
+  bytesread = 0;
+  while (bytesread != rd_buffer[CMD_HD_LEN]) {
+    // we wont enter this loop if there are no bytes to receive
     bytesread = read(m_fd, &rd_buffer[CMD_DATA_START], rd_buffer[CMD_HD_LEN]);
-  } else {
-    bytesread = 0;
-  }
+    if (bytesread < 0) {
+      if (errno != EINTR ) {  // this is also true for EAGAIN (timeout)
+        OLA_WARN << "reading " << static_cast<int>(rd_buffer[CMD_HD_LEN])
+                 << "bytes payload from " << m_devname
+                 << "ErrorCode: " << strerror(errno);
+        KarateLight::Close();
+        return false;
+      }
+    }  // if (bytesread < request)
+  }  // while
 
   // verify data-length
   if (bytesread != rd_buffer[CMD_HD_LEN]) {
