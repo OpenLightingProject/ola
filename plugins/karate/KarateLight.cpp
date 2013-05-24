@@ -224,16 +224,20 @@ bool KarateLight::SetColors(const DmxBuffer &da) {
  * \return true on success
  */
 bool KarateLight::ReadBack(uint8_t * rd_data, uint8_t * rd_len) {
-  uint8_t bytesread;
+  int bytesread = 0;
   uint8_t rd_buffer[CMD_MAX_LENGTH];
 
   // read header (4 bytes)
-  bytesread = read(m_fd, rd_buffer, CMD_DATA_START);
-
-  if (bytesread != CMD_DATA_START) {
-    OLA_WARN << "could not read 4 bytes (header) from " << m_devname;
-    KarateLight::Close();
-    return false;
+  while (bytesread != CMD_DATA_START) {
+    bytesread = read(m_fd, rd_buffer, CMD_DATA_START);
+    if (bytesread < 0) {
+      if (errno != EINTR ) {  // this is also true for EAGAIN (data not ready within timeout)
+        OLA_WARN << "could not read 4 bytes (header) from " << m_devname
+                 << "ErrorCode: " << strerror(errno);
+        KarateLight::Close();
+        return false;
+      }
+    }
   }
 
   // read payload-data (if there is any)
@@ -271,7 +275,7 @@ bool KarateLight::ReadBack(uint8_t * rd_data, uint8_t * rd_len) {
   }
 
   // prepare data
-  *rd_len = bytesread;
+  *rd_len = static_cast<uint8_t>(bytesread);
   memcpy(rd_data, &rd_buffer[CMD_DATA_START], *rd_len);
 
   return true;
