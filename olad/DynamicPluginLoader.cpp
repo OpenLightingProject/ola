@@ -91,6 +91,10 @@
 #include "plugins/osc/OSCPlugin.h"
 #endif
 
+#ifdef USE_KARATE
+#include "plugins/karate/KaratePlugin.h"
+#endif
+
 namespace ola {
 
 using std::vector;
@@ -143,6 +147,11 @@ void DynamicPluginLoader::PopulatePlugins() {
 #ifdef USE_OPENDMX
   m_plugins.push_back(
       new ola::plugin::opendmx::OpenDmxPlugin(m_plugin_adaptor));
+#endif
+
+#ifdef USE_KARATE
+  m_plugins.push_back(
+      new ola::plugin::karate::KaratePlugin(m_plugin_adaptor));
 #endif
 
 #ifdef HAVE_LIBLO

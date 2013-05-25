@@ -6,9 +6,10 @@ EXTRA_DIST = DeviceManagerImpl.h \
              E133Endpoint.h \
              E133HealthCheckedConnection.h \
              EndpointManager.h \
-             MessageQueue.h \
              ManagementEndpoint.h \
+             MessageQueue.h \
              SLPConstants.h \
+             SimpleE133Node.h \
              SLPSATestHelpers.h \
              SLPSATestRunner.h \
              TCPConnectionStats.h
