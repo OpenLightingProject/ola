@@ -181,6 +181,17 @@ void OlaDaemon::ReloadPlugins() {
 }
 
 
+/**
+ * Return the address the RPC server is listening on
+ */
+ola::network::GenericSocketAddress OlaDaemon::RPCAddress() const {
+  if (m_accepting_socket) {
+    return m_accepting_socket->GetLocalAddress();
+  } else {
+    return ola::network::GenericSocketAddress();
+  }
+}
+
 
 /**
  * Return the home directory for the current user

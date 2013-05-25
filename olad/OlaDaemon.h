@@ -27,6 +27,7 @@
 #include "ola/ExportMap.h"
 #include "ola/io/SelectServer.h"
 #include "ola/network/Socket.h"
+#include "ola/network/SocketAddress.h"
 #include "olad/OlaServer.h"
 
 namespace ola {
@@ -46,6 +47,7 @@ class OlaDaemon {
     void Run();
     void Terminate();
     void ReloadPlugins();
+    ola::network::GenericSocketAddress RPCAddress() const;
     class SelectServer* GetSelectServer() const { return m_ss; }
     class OlaServer *GetOlaServer() const { return m_server; }
 

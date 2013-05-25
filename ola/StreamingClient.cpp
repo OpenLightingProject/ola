@@ -36,6 +36,7 @@ using ola::proto::OlaServerService_Stub;
 
 StreamingClient::StreamingClient(bool auto_start)
     : m_auto_start(auto_start),
+      m_server_port(OLA_DEFAULT_PORT),
       m_socket(NULL),
       m_ss(NULL),
       m_channel(NULL),
@@ -43,11 +44,19 @@ StreamingClient::StreamingClient(bool auto_start)
       m_socket_closed(false) {
 }
 
+StreamingClient::StreamingClient(const Options &options)
+    : m_auto_start(options.auto_start),
+      m_server_port(options.server_port),
+      m_socket(NULL),
+      m_ss(NULL),
+      m_channel(NULL),
+      m_stub(NULL),
+      m_socket_closed(false) {
+}
 
 StreamingClient::~StreamingClient() {
   Stop();
 }
-
 
 /*
  * Setup the Streaming Client
@@ -58,11 +67,11 @@ bool StreamingClient::Setup() {
     return false;
 
   if (m_auto_start)
-    m_socket = ola::client::ConnectToServer(OLA_DEFAULT_PORT);
+    m_socket = ola::client::ConnectToServer(m_server_port);
   else
     m_socket = TCPSocket::Connect(
       ola::network::IPV4SocketAddress(ola::network::IPV4Address::Loopback(),
-                                      OLA_DEFAULT_PORT));
+                                      m_server_port));
 
   if (!m_socket)
     return false;

@@ -21,21 +21,21 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
 
-#include "ola/StreamingClient.h"
 #include "ola/DmxBuffer.h"
-#include "ola/thread/Thread.h"
 #include "ola/Logging.h"
-#include "olad/OlaDaemon.h"
+#include "ola/StreamingClient.h"
+#include "ola/network/SocketAddress.h"
 #include "ola/testing/TestUtils.h"
-
-
+#include "ola/thread/Thread.h"
+#include "olad/OlaDaemon.h"
 
 static unsigned int TEST_UNIVERSE = 1;
 
+using ola::OlaDaemon;
+using ola::StreamingClient;
+using ola::network::GenericSocketAddress;
 using ola::thread::ConditionVariable;
 using ola::thread::Mutex;
-using ola::OlaDaemon;
-
 
 class StreamingClientTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(StreamingClientTest);
@@ -70,6 +70,7 @@ class OlaServerThread: public ola::thread::Thread {
     void *Run();
     void Terminate();
     void WaitForStart();
+    GenericSocketAddress RPCAddress() const;
 
   private:
     OlaDaemon *m_olad;
@@ -97,7 +98,7 @@ bool OlaServerThread::Setup() {
   ola_options.http_port = 0;
   ola_options.http_data_dir = "";
 
-  m_olad = new OlaDaemon(ola_options);
+  m_olad = new OlaDaemon(ola_options, NULL, 0);  // pick an unused port
   if (!m_olad->Init()) {
     delete m_olad;
     m_olad = NULL;
@@ -149,6 +150,14 @@ void OlaServerThread::MarkAsStarted() {
 }
 
 
+GenericSocketAddress OlaServerThread::RPCAddress() const {
+  if (m_olad) {
+    return m_olad->RPCAddress();
+  }
+  return GenericSocketAddress();
+}
+
+
 /*
  * Startup the Ola server
  */
@@ -177,7 +186,12 @@ void StreamingClientTest::tearDown() {
  */
 void StreamingClientTest::testSendDMX() {
   m_server_thread->WaitForStart();
-  ola::StreamingClient ola_client(false);
+  GenericSocketAddress server_address = m_server_thread->RPCAddress();
+  OLA_ASSERT_EQ(static_cast<uint16_t>(AF_INET), server_address.Family());
+  StreamingClient::Options options;
+  options.auto_start = false;
+  options.server_port = server_address.V4Addr().Port();
+  StreamingClient ola_client(options);
 
   ola::DmxBuffer buffer;
   buffer.Blackout();
