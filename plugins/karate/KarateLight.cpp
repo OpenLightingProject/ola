@@ -25,6 +25,7 @@
 #include <string.h>
 #include <sys/file.h>
 #include <termios.h>
+#include <unistd.h>
 #include <algorithm>
 #include <iostream>
 #include <string>
@@ -42,13 +43,13 @@ namespace karate {
  * \param dev the filename of the device to use
  */
 KarateLight::KarateLight(const string &dev)
-  : m_devname(dev),
-    m_fw_version(0),
-    m_hw_version(0),
-    m_nChannels(0),
-    m_dmx_offset(0),
-    m_use_memcmp(1),
-    m_active(false) {
+    : m_devname(dev),
+      m_fw_version(0),
+      m_hw_version(0),
+      m_nChannels(0),
+      m_dmx_offset(0),
+      m_use_memcmp(1),
+      m_active(false) {
 }
 
 /**
@@ -225,7 +226,7 @@ bool KarateLight::SetColors(const DmxBuffer &da) {
  * \parm rd_len number of bytes received (excluding the header)
  * \return true on success
  */
-bool KarateLight::ReadBack(uint8_t * rd_data, uint8_t * rd_len) {
+bool KarateLight::ReadBack(uint8_t *rd_data, uint8_t *rd_len) {
   int bytesread = 0;
   uint8_t rd_buffer[CMD_MAX_LENGTH];
 
@@ -299,7 +300,7 @@ bool KarateLight::ReadBack(uint8_t * rd_data, uint8_t * rd_len) {
  * \parm data location to store the received byte to
  * \return true on success
  */
-bool KarateLight::ReadByteFromEeprom(uint8_t addr , uint8_t * data) {
+bool KarateLight::ReadByteFromEeprom(uint8_t addr , uint8_t *data) {
   uint8_t rd_buffer[CMD_MAX_LENGTH];
 
   if (!m_active)
@@ -325,8 +326,8 @@ bool KarateLight::ReadByteFromEeprom(uint8_t addr , uint8_t * data) {
  * \param n_bytes_expected number of bytes expected (excluding the header)
  * \returns true on success
  */
-bool KarateLight::SendCommand(uint8_t cmd, const uint8_t * output_buffer,
-                              int n_bytes_to_write, uint8_t * input_buffer,
+bool KarateLight::SendCommand(uint8_t cmd, const uint8_t *output_buffer,
+                              int n_bytes_to_write, uint8_t *input_buffer,
                               int n_bytes_expected) {
   uint8_t wr_buffer[CMD_MAX_LENGTH];
   uint8_t n_bytes_read;
@@ -389,13 +390,13 @@ bool KarateLight::UpdateColors() {
 
   // write colors
   for (block = 0; block < n_chunks; block++) {
-    if ((memcmp(&m_color_buffer[block*CHUNK_SIZE],
-         &m_color_buffer_old[block*CHUNK_SIZE], CHUNK_SIZE) == 0)
+    if ((memcmp(&m_color_buffer[block * CHUNK_SIZE],
+         &m_color_buffer_old[block * CHUNK_SIZE], CHUNK_SIZE) == 0)
          && (m_use_memcmp == 1)) {
       continue;
     }
     if (!SendCommand(CMD_SET_DATA_00 + block,  // cmd-code
-                     &m_color_buffer[block*CHUNK_SIZE],  // data to write
+                     &m_color_buffer[block * CHUNK_SIZE],  // data to write
                      CHUNK_SIZE,  // len of data
                      NULL,  // buffer for incoming data
                      0)) {  // number of data-bytes expected
@@ -404,7 +405,7 @@ bool KarateLight::UpdateColors() {
     }
   }
   // update old_values
-  memcpy(&m_color_buffer_old[0], &m_color_buffer[0], MAX_CHANNELS);
+  memcpy(m_color_buffer_old, m_color_buffer, MAX_CHANNELS);
   return true;
 }  // end of UpdateColors()
 }  // namespace karate

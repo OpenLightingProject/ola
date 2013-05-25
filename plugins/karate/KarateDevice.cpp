@@ -18,10 +18,8 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <string>
+#include <sstream>
 
 #include "plugins/karate/KarateDevice.h"
 #include "plugins/karate/KaratePort.h"
@@ -32,7 +30,6 @@ namespace karate {
 
 using ola::Device;
 
-
 /*
  * Create a new device
  * @param owner
@@ -40,17 +37,15 @@ using ola::Device;
  * @param path to device
  */
 KarateDevice::KarateDevice(AbstractPlugin *owner,
-                             const string &name,
-                             const string &path,
-                             unsigned int device_id)
+                           const string &name,
+                           const string &path,
+                           unsigned int device_id)
     : Device(owner, name),
       m_path(path) {
   std::stringstream str;
   str << device_id;
   m_device_id = str.str();
 }
-
-
 
 /*
  * Start this device

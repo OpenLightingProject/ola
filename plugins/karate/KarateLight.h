@@ -41,27 +41,17 @@ class KarateLight {
   bool Blank();
   bool SetColors(const DmxBuffer &da);
 
-  uint16_t GetnChannels() {
-    return m_nChannels;
-  };
-  uint8_t GetFWVersion() {
-    return m_fw_version;
-  };
-  uint8_t GetHWVersion() {
-    return m_hw_version;
-  };
-  uint16_t GetDMXOffset() {
-    return m_dmx_offset;
-  };
-  bool IsActive() {
-    return m_active;
-  };
+  uint16_t GetnChannels() const { return m_nChannels; }
+  uint8_t GetFWVersion() const { return m_fw_version; }
+  uint8_t GetHWVersion() const { return m_hw_version; }
+  uint16_t GetDMXOffset() const { return m_dmx_offset; }
+  bool IsActive() const { return m_active; }
 
   private:
-  bool ReadBack(uint8_t * rd_data, uint8_t * rd_len);
-  bool ReadByteFromEeprom(uint8_t addr, uint8_t * data);
-  bool SendCommand(uint8_t cmd, const uint8_t * output_buffer,
-                   int n_bytes_to_write, uint8_t * input_buffer,
+  bool ReadBack(uint8_t *rd_data, uint8_t *rd_len);
+  bool ReadByteFromEeprom(uint8_t addr, uint8_t *data);
+  bool SendCommand(uint8_t cmd, const uint8_t *output_buffer,
+                   int n_bytes_to_write, uint8_t *input_buffer,
                    int n_bytes_expected);
   bool UpdateColors();
 

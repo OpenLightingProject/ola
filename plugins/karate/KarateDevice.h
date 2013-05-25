@@ -13,10 +13,9 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *
- * karatedevice.h
+ * KarateDevice.h
  * Interface for the karate device
- * Copyright (C) 2005  Simon Newton
+ * Copyright (C) 2005 Simon Newton
  */
 
 #ifndef PLUGINS_KARATE_KARATEDEVICE_H_
@@ -34,9 +33,9 @@ using std::string;
 class KarateDevice: public ola::Device {
   public:
     KarateDevice(ola::AbstractPlugin *owner,
-                  const string &name,
-                  const string &path,
-                  unsigned int device_id);
+                 const string &name,
+                 const string &path,
+                 unsigned int device_id);
 
     // we only support one widget for now
     string DeviceId() const { return m_device_id; }

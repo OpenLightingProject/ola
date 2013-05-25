@@ -50,9 +50,8 @@ using ola::thread::MutexLocker;
  */
 KarateThread::KarateThread(const string &path)
     : ola::thread::Thread(),
-    m_fd(INVALID_FD),
-    m_path(path),
-    m_term(false) {
+      m_path(path),
+      m_term(false) {
 }
 
 
@@ -99,9 +98,9 @@ void *KarateThread::Run() {
         write_success = k.SetColors(m_buffer);
       }
       if (!write_success) {
-         OLA_WARN << "Failed to write color data";
+        OLA_WARN << "Failed to write color data";
       }  else {
-          usleep(20000);  // 50Hz
+        usleep(20000);  // 50Hz
       }
     }  // port is okay
   }
@@ -123,8 +122,7 @@ bool KarateThread::Stop() {
 
 
 /*
- * Store the data in the shared buffer
- *
+ * Store the data in the shared buffer.
  */
 bool KarateThread::WriteDmx(const DmxBuffer &buffer) {
   MutexLocker locker(&m_mutex);

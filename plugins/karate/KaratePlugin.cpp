@@ -46,10 +46,8 @@ const char KaratePlugin::PLUGIN_NAME[] = "KarateLight";
 const char KaratePlugin::PLUGIN_PREFIX[] = "karate";
 const char KaratePlugin::DEVICE_KEY[] = "device";
 
-
 /*
  * Start the plugin
- * TODO: scan /dev for devices?
  */
 bool KaratePlugin::StartHook() {
   vector<string> devices = m_preferences->GetMultipleValue(DEVICE_KEY);
@@ -108,7 +106,7 @@ string KaratePlugin::Description() const {
 "KarateLight - Version 0.1\n"
 "----------------------------\n"
 "\n"
-"The plugin creates a single device with one output port.\n"
+"The plugin creates devices with a single output port.\n"
 "Info on the KarateLight Hardware can be found at http://karatelight.de\n"
 "Unfortunately the site is in german only, but the maintainer will respond "
 "to emails in english.\n\n"

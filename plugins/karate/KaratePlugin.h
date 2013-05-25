@@ -36,8 +36,8 @@ class KarateDevice;
 
 class KaratePlugin: public Plugin {
   public:
-    explicit KaratePlugin(PluginAdaptor *plugin_adaptor):
-      Plugin(plugin_adaptor) {
+    explicit KaratePlugin(PluginAdaptor *plugin_adaptor)
+        : Plugin(plugin_adaptor) {
     }
 
     string Name() const { return PLUGIN_NAME; }
@@ -52,6 +52,7 @@ class KaratePlugin: public Plugin {
 
     typedef std::vector<KarateDevice*> DeviceList;
     DeviceList m_devices;
+
     static const char PLUGIN_NAME[];
     static const char PLUGIN_PREFIX[];
     static const char KARATE_DEVICE_PATH[];

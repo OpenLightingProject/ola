@@ -32,22 +32,18 @@ namespace karate {
 class KarateThread: public ola::thread::Thread {
   public:
     explicit KarateThread(const string &path);
-    ~KarateThread() {}
 
     bool Stop();
     bool WriteDmx(const DmxBuffer &buffer);
     void *Run();
 
   private:
-    int m_fd;
     string m_path;
     DmxBuffer m_buffer;
     bool m_term;
     ola::thread::Mutex m_mutex;
     ola::thread::Mutex m_term_mutex;
     ola::thread::ConditionVariable m_term_cond;
-
-    static const int INVALID_FD = -1;
 };
 }  // namespace karate
 }  // namespace plugin
