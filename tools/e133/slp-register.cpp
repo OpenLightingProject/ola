@@ -127,7 +127,7 @@ void ProcessService(const string &service_spec,
     OLA_FATAL << "Invalid UID: " << uid_str;
     exit(ola::EXIT_USAGE);
   }
-  services->insert(pair<IPV4Address, UID>(ipaddr, *uid));
+  services->insert(std::make_pair(ipaddr, *uid));
 }
 
 

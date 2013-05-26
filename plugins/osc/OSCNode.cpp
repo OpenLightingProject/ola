@@ -35,7 +35,7 @@ namespace plugin {
 namespace osc {
 
 using ola::IntToString;
-using std::pair;
+using std::make_pair;
 
 const char OSCNode::OSC_PORT_VARIABLE[] = "osc-listen-port";
 
@@ -191,8 +191,7 @@ void OSCNode::AddTarget(unsigned int group, const OSCTarget &target) {
   if (group_iter == m_target_by_group.end()) {
     // not found, create a new one
     targets = new OSCTargetVector;
-    m_target_by_group.insert(
-        pair<unsigned int, OSCTargetVector*>(group, targets));
+    m_target_by_group.insert(make_pair(group, targets));
   } else {
     targets = group_iter->second;
   }
@@ -304,8 +303,7 @@ bool OSCNode::RegisterAddress(const string &osc_address,
 
     // This is a new registration, insert into the AddressCallbackMap and
     // register with liblo.
-    m_address_callbacks.insert(
-        pair<string, DMXCallback*>(osc_address, callback));
+    m_address_callbacks.insert(make_pair(osc_address, callback));
     lo_server_add_method(m_osc_server, osc_address.c_str(), "b", OSCDataHandler,
                          this);
   } else {

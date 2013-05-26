@@ -32,7 +32,7 @@ using ola::TimeInterval;
 using std::cout;
 using std::endl;
 using std::map;
-using std::pair;
+using std::make_pair;
 using std::string;
 
 namespace ola {
@@ -311,8 +311,7 @@ SLPStore::ServiceMap::iterator SLPStore::Populate(const TimeStamp &now,
                                                   const string &service) {
   ServiceList *service_list = new ServiceList;
   service_list->last_cleaned = now;
-  return m_services.insert(
-      pair<string, ServiceList*>(service, service_list)).first;
+  return m_services.insert(make_pair(service, service_list)).first;
 }
 
 
