@@ -19,6 +19,7 @@
  */
 
 #include <cppunit/extensions/HelperMacros.h>
+#include <memory>
 
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
@@ -40,6 +41,7 @@ using ola::network::UDPSocket;
 using ola::plugin::osc::OSCNode;
 using ola::plugin::osc::OSCTarget;
 using ola::testing::ASSERT_DATA_EQUALS;
+using std::auto_ptr;
 
 
 /**
@@ -57,14 +59,16 @@ class OSCNodeTest: public CppUnit::TestFixture {
      */
     OSCNodeTest()
         : CppUnit::TestFixture(),
-          m_osc_node(&m_ss, NULL, OSCNode::OSCNodeOptions()),
           m_timeout_id(ola::thread::INVALID_TIMEOUT) {
+      OSCNode::OSCNodeOptions options;
+      options.listen_port = 0;
+      m_osc_node.reset(new OSCNode(&m_ss, NULL, options));
     }
 
     // The setUp and tearDown methods. These are run before and after each test
     // case.
     void setUp();
-    void tearDown() { m_osc_node.Stop(); }
+    void tearDown() { m_osc_node->Stop(); }
 
     // our two tests
     void testSend();
@@ -75,7 +79,7 @@ class OSCNodeTest: public CppUnit::TestFixture {
 
   private:
     ola::io::SelectServer m_ss;
-    OSCNode m_osc_node;
+    auto_ptr<OSCNode> m_osc_node;
     UDPSocket m_udp_socket;
     ola::thread::timeout_id m_timeout_id;
     DmxBuffer m_dmx_data;
@@ -128,7 +132,7 @@ void OSCNodeTest::setUp() {
   m_dmx_data.SetFromString("0,1,2,3,4,5,6,7,8,9,10");
 
   // Initialize the OSCNode
-  OLA_ASSERT_TRUE(m_osc_node.Init());
+  OLA_ASSERT_TRUE(m_osc_node->Init());
 }
 
 /**
@@ -176,21 +180,21 @@ void OSCNodeTest::testSend() {
   // Setup the OSCTarget pointing to the local socket address
   OSCTarget target(socket_address, TEST_OSC_ADDRESS);
   // Add the target to the node.
-  m_osc_node.AddTarget(TEST_GROUP, target);
+  m_osc_node->AddTarget(TEST_GROUP, target);
   // Send the data
-  OLA_ASSERT_TRUE(m_osc_node.SendData(TEST_GROUP, m_dmx_data));
+  OLA_ASSERT_TRUE(m_osc_node->SendData(TEST_GROUP, m_dmx_data));
 
   // Run the SelectServer this will return either when UDPSocketReady
   // completes, or the abort timeout triggers.
   m_ss.Run();
 
   // Remove target
-  OLA_ASSERT_TRUE(m_osc_node.RemoveTarget(TEST_GROUP, target));
+  OLA_ASSERT_TRUE(m_osc_node->RemoveTarget(TEST_GROUP, target));
   // Try to remove it a second time
-  OLA_ASSERT_FALSE(m_osc_node.RemoveTarget(TEST_GROUP, target));
+  OLA_ASSERT_FALSE(m_osc_node->RemoveTarget(TEST_GROUP, target));
 
   // Try to remove the target from a group that doesn't exist
-  OLA_ASSERT_FALSE(m_osc_node.RemoveTarget(TEST_GROUP + 1, target));
+  OLA_ASSERT_FALSE(m_osc_node->RemoveTarget(TEST_GROUP + 1, target));
 }
 
 
@@ -200,18 +204,19 @@ void OSCNodeTest::testSend() {
 void OSCNodeTest::testReceive() {
   // Register the test OSC Address with the OSCNode using the DMXHandler as the
   // callback.
-  OLA_ASSERT_TRUE(m_osc_node.RegisterAddress(
+  OLA_ASSERT_TRUE(m_osc_node->RegisterAddress(
       TEST_OSC_ADDRESS, NewCallback(this, &OSCNodeTest::DMXHandler)));
 
   // Attempt to register the same address with a different path, this should
   // return false
-  OLA_ASSERT_FALSE(m_osc_node.RegisterAddress(
+  OLA_ASSERT_FALSE(m_osc_node->RegisterAddress(
       TEST_OSC_ADDRESS,
       NewCallback(this, &OSCNodeTest::DMXHandler)));
 
   // Using our test UDP socket, send the EXPECTED_OSC_PACKET to the default OSC
   // port. The OSCNode should receive the packet and call DMXHandler.
-  IPV4SocketAddress dest_address(IPV4Address::Loopback(), 7770);
+  IPV4SocketAddress dest_address(IPV4Address::Loopback(),
+                                 m_osc_node->ListeningPort());
   m_udp_socket.SendTo(EXPECTED_OSC_PACKET, sizeof(EXPECTED_OSC_PACKET),
                       dest_address);
   // Run the SelectServer, this will return either when DMXHandler
@@ -219,7 +224,7 @@ void OSCNodeTest::testReceive() {
   m_ss.Run();
 
   // De-regsiter
-  OLA_ASSERT_TRUE(m_osc_node.RegisterAddress(TEST_OSC_ADDRESS, NULL));
+  OLA_ASSERT_TRUE(m_osc_node->RegisterAddress(TEST_OSC_ADDRESS, NULL));
   // De-register a second time
-  OLA_ASSERT_TRUE(m_osc_node.RegisterAddress(TEST_OSC_ADDRESS, NULL));
+  OLA_ASSERT_TRUE(m_osc_node->RegisterAddress(TEST_OSC_ADDRESS, NULL));
 }

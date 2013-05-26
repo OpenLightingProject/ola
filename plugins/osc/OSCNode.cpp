@@ -115,8 +115,16 @@ OSCNode::~OSCNode() {
  */
 bool OSCNode::Init() {
   // create a new lo_server
-  m_osc_server = lo_server_new_with_proto(IntToString(m_listen_port).c_str(),
-                                          LO_UDP, OSCErrorHandler);
+  // lo_server_new_with_proto doesn't understand that "0" means "any port".
+  // Instead you have to pass in NULL. Weird.
+  if (m_listen_port) {
+    m_osc_server = lo_server_new_with_proto(IntToString(m_listen_port).c_str(),
+                                            LO_UDP, OSCErrorHandler);
+  } else {
+    m_osc_server = lo_server_new_with_proto(NULL,
+                                            LO_UDP, OSCErrorHandler);
+  }
+
   if (!m_osc_server)
     return false;
 
@@ -127,6 +135,7 @@ bool OSCNode::Init() {
   m_descriptor = new ola::io::UnmanagedFileDescriptor(fd);
   m_descriptor->SetOnData(NewCallback(this, &OSCNode::DescriptorReady));
   m_ss->AddReadDescriptor(m_descriptor);
+
   return true;
 }
 
@@ -328,6 +337,17 @@ void OSCNode::HandleDMXData(const string &osc_address, const DmxBuffer &data) {
   AddressCallbackMap::iterator iter = m_address_callbacks.find(osc_address);
   if (iter != m_address_callbacks.end())
     iter->second->Run(data);
+}
+
+
+/**
+ * Return the listening port. Will be 0 if the node isn't setup.
+ */
+uint16_t OSCNode::ListeningPort() const {
+  if (m_osc_server) {
+    return lo_server_get_port(m_osc_server);
+  }
+  return 0;
 }
 
 

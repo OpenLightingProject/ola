@@ -103,6 +103,9 @@ class OSCNode {
     // Called by liblo
     void HandleDMXData(const string &osc_address, const DmxBuffer &data);
 
+    // The port OSC is listening on.
+    uint16_t ListeningPort() const;
+
   private:
     struct NodeOSCTarget: public OSCTarget {
       public:
