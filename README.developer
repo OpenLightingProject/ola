@@ -169,3 +169,6 @@ Style / Coding Standards
 
 We use the Google Python style guide:
   http://google-styleguide.googlecode.com/svn/trunk/pyguide.html
+
+However we deviate from the standard and use 2 space indents, so it's
+consistent with the C++ code.
