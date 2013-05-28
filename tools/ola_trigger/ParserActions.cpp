@@ -23,9 +23,9 @@
 #define __STDC_LIMIT_MACROS  // for UINT8_MAX & friends
 #include <ola/BaseTypes.h>
 #include <ola/Logging.h>
+#include <ola/base/SysExits.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <sysexits.h>
 #include <string>
 #include <vector>
 #include "tools/ola_trigger/Action.h"
@@ -62,7 +62,7 @@ Slot *LookupSlot(uint16_t slot) {
 void CheckSlotOffset(unsigned int slot) {
   if (slot == 0 || slot > DMX_UNIVERSE_SIZE) {
     OLA_FATAL << "Line " << yylineno << ": slot offset " << slot << " invalid";
-    exit(EX_DATAERR);
+    exit(ola::EXIT_DATAERR);
   }
 }
 
@@ -75,7 +75,7 @@ void SetDefaultValue(vector<string> *input) {
   if (input->size() != 2) {
     OLA_FATAL << "Line " << yylineno << ": assignment size != 2. Size is " <<
        input->size();
-    exit(EX_DATAERR);
+    exit(ola::EXIT_DATAERR);
   }
 
   global_context->Update((*input)[0], (*input)[1]);
@@ -94,7 +94,7 @@ Action *CreateAssignmentAction(vector<string> *input) {
   if (input->size() != 2) {
     OLA_FATAL << "Line " << yylineno <<
       ": assignment action size != 2. Size is " << input->size();
-    exit(EX_DATAERR);
+    exit(ola::EXIT_DATAERR);
   }
 
   Action *action = new VariableAssignmentAction((*input)[0], (*input)[1]);
@@ -126,11 +126,11 @@ ValueInterval *CreateInterval(unsigned int lower, unsigned int upper) {
   if (lower > upper) {
     OLA_FATAL << "Line " << yylineno << ": invalid interval " << lower << "-"
         << upper;
-    exit(EX_DATAERR);
+    exit(ola::EXIT_DATAERR);
   }
   if (upper > UINT8_MAX) {
     OLA_FATAL << "Line " << yylineno << ": invalid DMX value " << upper;
-    exit(EX_DATAERR);
+    exit(ola::EXIT_DATAERR);
   }
   return new ValueInterval(lower, upper);
 }
@@ -155,7 +155,7 @@ void SetSlotAction(unsigned int slot,
     if (!slots->AddAction(**iter, rising_action, falling_action)) {
       OLA_FATAL << "Line " << yylineno << ": value " << **iter <<
          " collides with existing values.";
-      exit(EX_DATAERR);
+      exit(ola::EXIT_DATAERR);
     }
     delete  *iter;
   }
@@ -178,14 +178,14 @@ void SetDefaultAction(unsigned int slot,
     if (slots->SetDefaultRisingAction(rising_action)) {
       OLA_FATAL << "Multiple default rising actions defined for slot " <<
         slot + 1 << ", line " << yylineno;
-      exit(EX_DATAERR);
+      exit(ola::EXIT_DATAERR);
     }
   }
   if (falling_action) {
     if (slots->SetDefaultFallingAction(falling_action)) {
       OLA_FATAL << "Multiple default falling actions defined for slot " <<
         slot + 1 << ", line " << yylineno;
-      exit(EX_DATAERR);
+      exit(ola::EXIT_DATAERR);
     }
   }
 }

@@ -31,6 +31,7 @@ import socket
 import termios
 import threading
 import traceback
+import weakref
 from ola.OlaClient import OLADNotRunningException, OlaClient, Universe
 
 
@@ -90,7 +91,13 @@ class SelectServer(object):
     self._function_list_lock = threading.Lock()
     # the pipe used to wake up select() from other threads
     self._local_socket = os.pipe()
-    self.AddReadDescriptor(self._local_socket[0], self._DrainAndExecute)
+    # weakref so that __del__ is called when this object goes out of scope.
+    self.AddReadDescriptor(self._local_socket[0],
+                           weakref.ref(self._DrainAndExecute))
+
+  def __del__(self):
+    os.close(self._local_socket[0])
+    os.close(self._local_socket[1])
 
   def Execute(self, f):
     """Execute a function from within the SelectServer.

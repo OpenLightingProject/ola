@@ -346,8 +346,7 @@ E131Node::tx_universe *E131Node::SetupOutgoingSettings(unsigned int universe) {
   settings.source = str.str();
   settings.sequence = 0;
   map<unsigned int, tx_universe>::iterator iter =
-      m_tx_universes.insert(
-          std::pair<unsigned int, tx_universe>(universe, settings)).first;
+      m_tx_universes.insert(std::make_pair(universe, settings)).first;
   return &iter->second;
 }
 }  // namespace e131

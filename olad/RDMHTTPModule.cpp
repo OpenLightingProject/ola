@@ -653,10 +653,8 @@ void RDMHTTPModule::HandleUIDList(HTTPResponse *response,
 
     if (uid_iter == uid_state->resolved_uids.end()) {
       // schedule resolution
-      uid_state->pending_uids.push(
-          std::pair<UID, uid_resolve_action>(*iter, RESOLVE_MANUFACTURER));
-      uid_state->pending_uids.push(
-          std::pair<UID, uid_resolve_action>(*iter, RESOLVE_DEVICE));
+      uid_state->pending_uids.push(std::make_pair(*iter, RESOLVE_MANUFACTURER));
+      uid_state->pending_uids.push(std::make_pair(*iter, RESOLVE_DEVICE));
       resolved_uid uid_descriptor = {"", "", true};
       uid_state->resolved_uids[*iter] = uid_descriptor;
       OLA_INFO << "Adding UID " << *iter << " to resolution queue";

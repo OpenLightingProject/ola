@@ -13,13 +13,14 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * SystemExits.cpp
+ * SysExits.cpp
  * Exit codes.
- * Copyright (C) 2013 Simon Newton
+ *
+ * Some platforms (android) don't provide sysexits.h. To work around this we
+ * define our own exit codes, which use the system values if provided, or
+ * otherwise default values.
  */
 
-#ifndef COMMON_BASE_SYSTEMEXITS_H_
-#define COMMON_BASE_SYSTEMEXITS_H_
 
 #if HAVE_CONFIG_H
 #  include <config.h>
@@ -50,4 +51,27 @@
 #define EX__MAX 78  /* maximum listed value */
 #endif
 
-#endif  // COMMON_BASE_SYSTEMEXITS_H_
+#include "ola/base/SysExits.h"
+
+namespace ola {
+
+const int EXIT_OK = EX_OK;
+const int EXIT__BASE = EX__BASE;
+const int EXIT_USAGE = EX_USAGE;
+const int EXIT_DATAERR = EX_DATAERR;
+const int EXIT_NOINPUT = EX_NOINPUT;
+const int EXIT_NOUSER = EX_NOUSER;
+const int EXIT_NOHOST = EX_NOHOST;
+const int EXIT_UNAVAILABLE = EX_UNAVAILABLE;
+const int EXIT_SOFTWARE = EX_SOFTWARE;
+const int EXIT_OSERR = EX_OSERR;
+const int EXIT_OSFILE = EX_OSFILE;
+const int EXIT_CANTCREAT = EX_CANTCREAT;
+const int EXIT_IOERR = EX_IOERR;
+const int EXIT_TEMPFAIL = EX_TEMPFAIL;
+const int EXIT_PROTOCOL = EX_PROTOCOL;
+const int EXIT_NOPERM = EX_NOPERM;
+const int EXIT_CONFIG = EX_CONFIG;
+const int EXIT__MAX = EX__MAX;
+
+}  // namespace ola

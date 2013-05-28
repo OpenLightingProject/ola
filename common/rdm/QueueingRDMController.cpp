@@ -291,8 +291,7 @@ bool DiscoverableQueueingRDMController::CheckForBlockingCondition() {
 void DiscoverableQueueingRDMController::GenericDiscovery(
     RDMDiscoveryCallback *callback,
     bool full) {
-  m_pending_discovery_callbacks.push_back(
-      pair<bool, RDMDiscoveryCallback*>(full, callback));
+  m_pending_discovery_callbacks.push_back(std::make_pair(full, callback));
   TakeNextAction();
 }
 

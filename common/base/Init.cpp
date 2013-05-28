@@ -36,14 +36,13 @@
 #include <sys/resource.h>
 #include <unistd.h>
 
-#include <ola/base/Init.h>
 #include <ola/ExportMap.h>
 #include <ola/Logging.h>
+#include <ola/base/Init.h>
+#include <ola/base/SysExits.h>
 #include <ola/math/Random.h>
 
 #include <iostream>
-
-#include "common/base/SystemExits.h"
 
 namespace ola {
 
@@ -63,7 +62,7 @@ static void _SIGSEGV_Handler(int signal) {
 
   backtrace_symbols_fd(array, size, STDERR_FILENO);
   #endif
-  exit(EX_SOFTWARE);
+  exit(EXIT_SOFTWARE);
   (void) signal;
 }
 
@@ -183,15 +182,15 @@ int Daemonise() {
 
   if (getrlimit(RLIMIT_NOFILE, &rl) < 0) {
     OLA_FATAL << "Could not determine file limit";
-    exit(EX_OSFILE);
+    exit(EXIT_OSFILE);
   }
 
   // fork
   if ((pid = fork()) < 0) {
     OLA_FATAL << "Could not fork\n";
-    exit(EX_OSERR);
+    exit(EXIT_OSERR);
   } else if (pid != 0) {
-    exit(EX_OK);
+    exit(EXIT_OK);
   }
 
   // start a new session
@@ -203,20 +202,20 @@ int Daemonise() {
 
   if (sigaction(SIGHUP, &sa, NULL) < 0) {
     OLA_FATAL << "Could not install signal\n";
-    exit(EX_OSERR);
+    exit(EXIT_OSERR);
   }
 
   if ((pid= fork()) < 0) {
     OLA_FATAL << "Could not fork\n";
-    exit(EX_OSERR);
+    exit(EXIT_OSERR);
   } else if (pid != 0) {
-    exit(EX_OK);
+    exit(EXIT_OK);
   }
 
   // change the current working directory
   if (chdir("/") < 0) {
     OLA_FATAL << "Can't change directory to /";
-    exit(EX_OSERR);
+    exit(EXIT_OSERR);
   }
 
   // close all fds
@@ -233,7 +232,7 @@ int Daemonise() {
   if (fd0 != 0 || fd1 != 1 || fd2 != 2) {
     OLA_FATAL << "Unexpected file descriptors: " << fd0 << ", " << fd1 << ", "
       << fd2;
-    exit(EX_OSERR);
+    exit(EXIT_OSERR);
   }
   return 0;
 }

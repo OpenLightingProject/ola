@@ -22,14 +22,13 @@
  * It then waits to receive E1.33 messages on the TCP connections.
  */
 
-#include <sysexits.h>
-
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
 #include <ola/acn/CID.h>
 #include <ola/base/Flags.h>
+#include <ola/base/SysExits.h>
 #include <ola/e133/DeviceManager.h>
 #include <ola/e133/E133URLParser.h>
 #include <ola/e133/MessageBuilder.h>
@@ -240,11 +239,11 @@ int main(int argc, char *argv[]) {
   }
 
   if (!pid_helper.Init())
-    exit(EX_OSFILE);
+    exit(ola::EXIT_OSFILE);
 
   SimpleE133Monitor monitor(&pid_helper, targets.empty());
   if (!monitor.Init())
-    exit(EX_UNAVAILABLE);
+    exit(ola::EXIT_UNAVAILABLE);
 
   if (!targets.empty()) {
     // manually add the responder IPs

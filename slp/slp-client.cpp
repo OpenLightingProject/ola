@@ -19,13 +19,13 @@
 
 #include <stdio.h>
 #include <signal.h>
-#include <sysexits.h>
 
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/StringUtils.h>
 #include <ola/base/Flags.h>
 #include <ola/base/Init.h>
+#include <ola/base/SysExits.h>
 #include <ola/io/SelectServer.h>
 
 #include <iostream>
@@ -223,7 +223,7 @@ int main(int argc, char *argv[]) {
   auto_ptr<Command> command(CreateCommand(args));
   if (!command.get()) {
     ola::DisplayUsage();
-    exit(EX_OK);
+    exit(ola::EXIT_OK);
   }
 
   ola::InitLoggingFromFlags();

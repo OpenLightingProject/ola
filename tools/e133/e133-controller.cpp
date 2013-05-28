@@ -23,12 +23,11 @@
  * response.
  */
 
-#include <sysexits.h>
-
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>
 #include <ola/Logging.h>
 #include <ola/base/Flags.h>
+#include <ola/base/SysExits.h>
 #include <ola/acn/ACNPort.h>
 #include <ola/acn/ACNVectors.h>
 #include <ola/acn/CID.h>
@@ -101,7 +100,7 @@ void DisplayPIDsAndExit(uint16_t manufacturer_id,
   for (; iter != pid_names.end(); ++iter) {
     cout << *iter << endl;
   }
-  exit(EX_OK);
+  exit(ola::EXIT_OK);
 }
 
 /**
@@ -486,7 +485,7 @@ int main(int argc, char *argv[]) {
   if (!FLAGS_listen_ip.str().empty() &&
       !IPV4Address::FromString(FLAGS_listen_ip, &controller_ip)) {
     ola::DisplayUsage();
-    exit(EX_USAGE);
+    exit(ola::EXIT_USAGE);
   }
 
   // convert the node's IP address if specified
@@ -494,14 +493,14 @@ int main(int argc, char *argv[]) {
   if (!FLAGS_target.str().empty() &&
       !IPV4Address::FromString(FLAGS_target, &target_ip)) {
     ola::DisplayUsage();
-    exit(EX_USAGE);
+    exit(ola::EXIT_USAGE);
   }
 
   auto_ptr<UID> uid(UID::FromString(FLAGS_uid));
 
   // Make sure we can load our PIDs
   if (!pid_helper.Init())
-    exit(EX_OSFILE);
+    exit(ola::EXIT_OSFILE);
 
   if (FLAGS_list_pids)
     DisplayPIDsAndExit(uid.get() ? uid->ManufacturerId() : 0, pid_helper);
@@ -510,12 +509,12 @@ int main(int argc, char *argv[]) {
   if (!uid.get()) {
     OLA_FATAL << "Invalid or missing UID, try xxxx:yyyyyyyy";
     ola::DisplayUsage();
-    exit(EX_USAGE);
+    exit(ola::EXIT_USAGE);
   }
 
   if (argc < 2) {
     ola::DisplayUsage();
-    exit(EX_USAGE);
+    exit(ola::EXIT_USAGE);
   }
 
   // get the pid descriptor
@@ -525,7 +524,7 @@ int main(int argc, char *argv[]) {
   if (!pid_descriptor) {
     OLA_WARN << "Unknown PID: " << argv[1] << ".";
     OLA_WARN << "Use --list-pids to list the available PIDs.";
-    exit(EX_USAGE);
+    exit(ola::EXIT_USAGE);
   }
 
   const ola::messaging::Descriptor *descriptor = NULL;
@@ -537,7 +536,7 @@ int main(int argc, char *argv[]) {
   if (!descriptor) {
     OLA_WARN << (FLAGS_set ? "SET" : "GET") << " command not supported for "
              << argv[1];
-    exit(EX_USAGE);
+    exit(ola::EXIT_USAGE);
   }
 
   // attempt to build the message
@@ -549,7 +548,7 @@ int main(int argc, char *argv[]) {
 
   if (!message.get()) {
     cout << pid_helper.SchemaAsString(descriptor);
-    exit(EX_USAGE);
+    exit(ola::EXIT_USAGE);
   }
 
   SimpleE133Controller controller(
@@ -558,7 +557,7 @@ int main(int argc, char *argv[]) {
 
   if (!controller.Init()) {
     OLA_FATAL << "Failed to init controller";
-    exit(EX_UNAVAILABLE);
+    exit(ola::EXIT_UNAVAILABLE);
   }
 
   if (target_ip.AsInt())

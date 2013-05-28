@@ -20,11 +20,11 @@
 
 #include <getopt.h>
 #include <string.h>
-#include <sysexits.h>
 #include <time.h>
 
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>
+#include <ola/base/SysExits.h>
 #include <ola/Clock.h>
 #include <ola/Logging.h>
 #include <ola/io/SelectServer.h>
@@ -574,14 +574,14 @@ int main(int argc, char *argv[]) {
     if (!file.is_open()) {
       cerr << "Could not open file for writing: " << sniffer_options.write_file
         << endl;
-      exit(EX_UNAVAILABLE);
+      exit(ola::EXIT_UNAVAILABLE);
     }
   }
 
   if (!opts.read_file.empty()) {
     // we're reading from a file
     ParseFile(&sniffer_options, opts.read_file);
-    return EX_OK;
+    return ola::EXIT_OK;
   }
 
   if (opts.args.size() != 1)
@@ -592,7 +592,7 @@ int main(int argc, char *argv[]) {
   ola::io::ConnectedDescriptor *descriptor =
       ola::plugin::usbpro::BaseUsbProWidget::OpenDevice(device);
   if (!descriptor)
-    exit(EX_UNAVAILABLE);
+    exit(ola::EXIT_UNAVAILABLE);
 
   ola::io::SelectServer ss;
   descriptor->SetOnClose(ola::NewSingleCallback(&Stop, &ss));
@@ -605,5 +605,5 @@ int main(int argc, char *argv[]) {
 
   ss.Run();
 
-  return EX_OK;
+  return ola::EXIT_OK;
 }

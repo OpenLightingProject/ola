@@ -21,11 +21,11 @@
 #include <ola/Logging.h>
 #include <ola/base/Flags.h>
 #include <ola/base/Init.h>
+#include <ola/base/SysExits.h>
 #include <ola/e133/SLPThread.h>
 #include <ola/io/SelectServer.h>
 #include <ola/slp/URLEntry.h>
 #include <signal.h>
-#include <sysexits.h>
 
 #include <iostream>
 #include <memory>
@@ -82,12 +82,12 @@ int main(int argc, char *argv[]) {
 
   if (!slp_thread->Init()) {
     OLA_WARN << "Init failed";
-    exit(EX_UNAVAILABLE);
+    exit(ola::EXIT_UNAVAILABLE);
   }
 
   if (!slp_thread->Start()) {
     OLA_WARN << "SLPThread Start() failed";
-    exit(EX_UNAVAILABLE);
+    exit(ola::EXIT_UNAVAILABLE);
   }
 
   ss.Run();

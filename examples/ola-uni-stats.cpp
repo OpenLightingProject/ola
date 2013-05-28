@@ -22,7 +22,6 @@
 #include <getopt.h>
 #include <signal.h>
 #include <stdlib.h>
-#include <sysexits.h>
 
 #include <ola/BaseTypes.h>
 #include <ola/Clock.h>
@@ -32,6 +31,7 @@
 #include <ola/OlaClientWrapper.h>
 #include <ola/StringUtils.h>
 #include <ola/base/Init.h>
+#include <ola/base/SysExits.h>
 #include <ola/io/StdinHandler.h>
 
 #include <iostream>
@@ -311,7 +311,7 @@ void DisplayHelpAndExit(char arg[]) {
   "  -h, --help               Display this help message and exit.\n"
   "  -l, --log-level <level>  Set the logging level 0 .. 4.\n"
   << std::endl;
-  exit(EX_USAGE);
+  exit(ola::EXIT_USAGE);
 }
 
 SelectServer *ss = NULL;
@@ -344,7 +344,7 @@ int main(int argc, char *argv[]) {
     unsigned int universe;
     if (!StringToInt(*iter, &universe, true)) {
       cerr << "Invalid Universe " << *iter << endl;
-      exit(EX_USAGE);
+      exit(ola::EXIT_USAGE);
     }
     universes.push_back(universe);
   }
@@ -354,7 +354,7 @@ int main(int argc, char *argv[]) {
   ola::OlaCallbackClientWrapper ola_client;
   if (!ola_client.Setup()) {
     OLA_FATAL << "Setup failed";
-    exit(EX_UNAVAILABLE);
+    exit(ola::EXIT_UNAVAILABLE);
   }
   ss = ola_client.GetSelectServer();
 

@@ -124,7 +124,7 @@ Preferences *PreferencesFactory::NewPreference(const string &name) {
   map<string, Preferences*>::iterator iter = m_preferences_map.find(name);
   if (iter == m_preferences_map.end()) {
     Preferences *pref = Create(name);
-    m_preferences_map.insert(pair<string, Preferences*>(name, pref));
+    m_preferences_map.insert(make_pair(name, pref));
     return pref;
   } else {
     return iter->second;
@@ -158,7 +158,7 @@ void MemoryPreferences::Clear() {
  */
 void MemoryPreferences::SetValue(const string &key, const string &value) {
   m_pref_map.erase(key);
-  m_pref_map.insert(pair<string, string>(key, value));
+  m_pref_map.insert(make_pair(key, value));
 }
 
 
@@ -169,7 +169,7 @@ void MemoryPreferences::SetValue(const string &key, const string &value) {
  */
 void MemoryPreferences::SetMultipleValue(const string &key,
                                          const string &value) {
-  m_pref_map.insert(pair<string, string>(key, value));
+  m_pref_map.insert(make_pair(key, value));
 }
 
 
@@ -244,9 +244,9 @@ void MemoryPreferences::RemoveValue(const string &key) {
 void MemoryPreferences::SetValueAsBool(const string &key, bool value) {
   m_pref_map.erase(key);
   if (value)
-    m_pref_map.insert(pair<string, string>(key, BoolValidator::ENABLED));
+    m_pref_map.insert(make_pair(key, BoolValidator::ENABLED));
   else
-    m_pref_map.insert(pair<string, string>(key, BoolValidator::DISABLED));
+    m_pref_map.insert(make_pair(key, BoolValidator::DISABLED));
 }
 
 
@@ -424,7 +424,7 @@ bool FileBackedPreferences::LoadFromFile(const string &filename) {
     string value = tokens[1];
     StringTrim(&key);
     StringTrim(&value);
-    m_pref_map.insert(pair<string, string>(key, value));
+    m_pref_map.insert(make_pair(key, value));
   }
   pref_file.close();
   return true;

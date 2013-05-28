@@ -22,6 +22,7 @@
 #include <ola/StringUtils.h>
 #include <ola/base/Flags.h>
 #include <ola/base/Init.h>
+#include <ola/base/SysExits.h>
 #include <ola/e133/SLPThread.h>
 #include <ola/io/SelectServer.h>
 #include <ola/network/IPV4Address.h>
@@ -29,7 +30,6 @@
 #include <ola/network/InterfacePicker.h>
 #include <ola/rdm/UID.h>
 #include <signal.h>
-#include <sysexits.h>
 
 #include <iostream>
 #include <map>
@@ -99,7 +99,7 @@ void ProcessService(const string &service_spec,
 
   if (!picker->ChooseInterface(&iface, "")) {
     OLA_WARN << "Failed to find interface";
-    exit(EX_NOHOST);
+    exit(ola::EXIT_NOHOST);
   }
 
   vector<string> ip_uid_pair;
@@ -114,20 +114,20 @@ void ProcessService(const string &service_spec,
   } else if (ip_uid_pair.size() == 2) {
     if (!IPV4Address::FromString(ip_uid_pair[1], &ipaddr)) {
       OLA_FATAL << "Invalid ip address: " << ip_uid_pair[1];
-      exit(EX_USAGE);
+      exit(ola::EXIT_USAGE);
     }
     uid_str = ip_uid_pair[0];
   } else {
     OLA_FATAL << "Invalid service spec: " << service_spec;
-    exit(EX_USAGE);
+    exit(ola::EXIT_USAGE);
   }
 
   auto_ptr<UID> uid(UID::FromString(uid_str));
   if (!uid.get()) {
     OLA_FATAL << "Invalid UID: " << uid_str;
-    exit(EX_USAGE);
+    exit(ola::EXIT_USAGE);
   }
-  services->insert(pair<IPV4Address, UID>(ipaddr, *uid));
+  services->insert(std::make_pair(ipaddr, *uid));
 }
 
 
@@ -145,7 +145,7 @@ int main(int argc, char *argv[]) {
 
   if (argc < 2) {
     ola::DisplayUsage();
-    exit(EX_USAGE);
+    exit(ola::EXIT_USAGE);
   }
 
   multimap<IPV4Address, UID> services;
@@ -160,12 +160,12 @@ int main(int argc, char *argv[]) {
 
   if (!slp_thread->Init()) {
     OLA_WARN << "SLPThread Init() failed";
-    exit(EX_UNAVAILABLE);
+    exit(ola::EXIT_UNAVAILABLE);
   }
 
   if (!slp_thread->Start()) {
     OLA_WARN << "SLPThread Start() failed";
-    exit(EX_UNAVAILABLE);
+    exit(ola::EXIT_UNAVAILABLE);
   }
   multimap<IPV4Address, UID>::const_iterator iter;
   for (iter = services.begin(); iter != services.end(); ++iter) {

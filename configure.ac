@@ -198,6 +198,7 @@ PLUGIN_SUPPORT(opendmx, USE_OPENDMX)
 PLUGIN_SUPPORT(pathport, USE_PATHPORT)
 PLUGIN_SUPPORT(sandnet, USE_SANDNET)
 PLUGIN_SUPPORT(shownet, USE_SHOWNET)
+PLUGIN_SUPPORT(karate, USE_KARATE)
 
 # SPI support is only enabled if the header is found
 AC_CHECK_HEADER([linux/spi/spidev.h], [enable_spi="yes"], [enable_spi="no"])
@@ -279,7 +280,9 @@ case "${host_os}" in
       # uuid was found, now we need to determine which uuid library it is.
       # First modify the CPPFLAGS to use the correct include location.
       old_cppflags=$CPPFLAGS
+      old_libs=$LIBS
       CPPFLAGS="${CPPFLAGS} ${base_uuid_CFLAGS}"
+      LIBS="${LIBS} ${base_uuid_LIBS}"
       # see if we need to include uuid/uuid.h or just uuid.h
       AC_CHECK_HEADERS(
         [uuid/uuid.h],
@@ -292,6 +295,7 @@ case "${host_os}" in
                    [use_ossp_uuid="yes"])
       # restore CPPFLAGS
       CPPFLAGS=$old_cppflags
+      LIBS=$old_libs
       uuid_CFLAGS="${base_uuid_CFLAGS}"
       uuid_LIBS="${base_uuid_LIBS}"
     else
@@ -676,6 +680,7 @@ AC_OUTPUT( Makefile \
     plugins/spi/Makefile \
     plugins/stageprofi/Makefile \
     plugins/usbdmx/Makefile \
+    plugins/karate/Makefile \
     plugins/ftdidmx/Makefile \
     plugins/usbpro/Makefile \
     plugins/usbpro/messages/Makefile \

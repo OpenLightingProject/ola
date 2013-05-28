@@ -197,7 +197,7 @@ bool DesignatedControllerConnection::CloseTCPConnection() {
 void DesignatedControllerConnection::NewTCPConnection(
     ola::network::TCPSocket *socket_ptr) {
   auto_ptr<ola::network::TCPSocket> socket(socket_ptr);
-  ola::network::GenericSocketAddress addr = socket->GetPeer();
+  ola::network::GenericSocketAddress addr = socket->GetPeerAddress();
   if (addr.Family() != AF_INET) {
     OLA_WARN << "New TCP connection but failed to determine peer address";
     return;

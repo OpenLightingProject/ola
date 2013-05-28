@@ -25,6 +25,7 @@
 #ifndef OLA_STREAMINGCLIENT_H_
 #define OLA_STREAMINGCLIENT_H_
 
+#include <ola/BaseTypes.h>
 #include <ola/DmxBuffer.h>
 #include <ola/io/SelectServer.h>
 #include <ola/network/TCPSocket.h>
@@ -47,7 +48,16 @@ using ola::network::TCPSocket;
  */
 class StreamingClient {
   public:
+    struct Options {
+      public:
+        Options() : auto_start(true), server_port(OLA_DEFAULT_PORT) {}
+
+        bool auto_start;
+        uint16_t server_port;
+    };
+
     explicit StreamingClient(bool auto_start = true);
+    explicit StreamingClient(const Options &options);
     ~StreamingClient();
 
     bool Setup();
@@ -61,6 +71,7 @@ class StreamingClient {
     StreamingClient operator=(const StreamingClient&);
 
     bool m_auto_start;
+    uint16_t m_server_port;
     TCPSocket *m_socket;
     SelectServer *m_ss;
     class ola::rpc::StreamRpcChannel *m_channel;

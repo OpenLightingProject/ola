@@ -39,6 +39,7 @@
 
 #include <string>
 
+#include "common/network/SocketHelper.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/network/Socket.h"
@@ -55,16 +56,12 @@ namespace network {
 /**
  * Get the remote IPAddress and port for this socket
  */
-GenericSocketAddress TCPSocket::GetPeer() {
-  struct sockaddr remote_address;
-  socklen_t length = sizeof(remote_address);
-  int r = getpeername(m_sd, &remote_address, &length);
-  if (r) {
-    OLA_WARN << "Failed to get peer information for fd: " << m_sd << ", "
-             << strerror(errno);
-    return GenericSocketAddress();
-  }
-  return GenericSocketAddress(remote_address);
+GenericSocketAddress TCPSocket::GetPeerAddress() const {
+  return ola::network::GetPeerAddress(m_sd);
+}
+
+GenericSocketAddress TCPSocket::GetLocalAddress() const {
+  return ola::network::GetLocalAddress(m_sd);
 }
 
 /*
@@ -217,6 +214,13 @@ void TCPAcceptingSocket::PerformRead() {
     OLA_WARN << "Accepted new TCP Connection but no factory registered";
     close(sd);
   }
+}
+
+/**
+ * Get the local IPAddress and port for this socket
+ */
+GenericSocketAddress TCPAcceptingSocket::GetLocalAddress() const {
+  return ola::network::GetLocalAddress(m_sd);
 }
 }  // namespace network
 }  // namespace ola

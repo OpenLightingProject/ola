@@ -25,13 +25,13 @@
 
 #include <errno.h>
 #include <string.h>
-#include <sysexits.h>
 #include <ola/Callback.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
 #include <ola/StringUtils.h>
+#include <ola/base/SysExits.h>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -61,13 +61,13 @@ ShowPlayer::~ShowPlayer() {}
 int ShowPlayer::Init() {
   if (!m_client.Setup()) {
     OLA_FATAL << "Client Setup failed";
-    return EX_UNAVAILABLE;
+    return ola::EXIT_UNAVAILABLE;
   }
 
   if (!m_loader.Load())
-    return EX_NOINPUT;
+    return ola::EXIT_NOINPUT;
 
-  return EX_OK;
+  return ola::EXIT_OK;
 }
 
 
@@ -81,7 +81,7 @@ int ShowPlayer::Playback(unsigned int iterations,
   m_loop_delay = delay;
   SendNextFrame();
   m_client.GetSelectServer()->Run();
-  return EX_OK;
+  return ola::EXIT_OK;
 }
 
 

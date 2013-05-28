@@ -11,8 +11,8 @@ EXTRA_DIST = OlaConfigurator.h ShowLoader.h ShowPlayer.h ShowRecorder.h \
 if BUILD_EXAMPLES
 
 # The following should match what pkg-config --libs libola returns
-COMMON_LIBS = $(top_builddir)/ola/libola.la \
-              $(top_builddir)/common/libolacommon.la
+COMMON_LIBS = $(top_builddir)/common/libolacommon.la \
+              $(top_builddir)/ola/libola.la
 LDADD = $(COMMON_LIBS)
 
 bin_PROGRAMS = ola_dev_info ola_usbpro ola_e131 \

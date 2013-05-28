@@ -22,7 +22,6 @@
 #include <signal.h>
 #include <stdio.h>
 #include <sys/wait.h>
-#include <sysexits.h>
 
 #include <ola/BaseTypes.h>
 #include <ola/Callback.h>
@@ -30,6 +29,7 @@
 #include <ola/Logging.h>
 #include <ola/OlaCallbackClient.h>
 #include <ola/OlaClientWrapper.h>
+#include <ola/base/SysExits.h>
 #include <ola/io/SelectServer.h>
 
 #include <iostream>
@@ -299,7 +299,7 @@ int main(int argc, char *argv[]) {
   // open the config file
   if (freopen(opts.args[0].c_str(), "r", stdin) == NULL) {
     OLA_FATAL << "File " << opts.args[0] << " cannot be opened.\n";
-    exit(EX_DATAERR);
+    exit(ola::EXIT_DATAERR);
   }
 
   yyparse();
@@ -308,12 +308,12 @@ int main(int argc, char *argv[]) {
   ola::OlaCallbackClientWrapper wrapper;
 
   if (!wrapper.Setup())
-    exit(EX_UNAVAILABLE);
+    exit(ola::EXIT_UNAVAILABLE);
 
   ss = wrapper.GetSelectServer();
 
   if (!InstallSignals())
-    exit(EX_OSERR);
+    exit(ola::EXIT_OSERR);
 
   // create the vector of Slot
   SlotList slots;

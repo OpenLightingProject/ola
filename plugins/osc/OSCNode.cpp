@@ -35,7 +35,7 @@ namespace plugin {
 namespace osc {
 
 using ola::IntToString;
-using std::pair;
+using std::make_pair;
 
 const char OSCNode::OSC_PORT_VARIABLE[] = "osc-listen-port";
 
@@ -115,8 +115,16 @@ OSCNode::~OSCNode() {
  */
 bool OSCNode::Init() {
   // create a new lo_server
-  m_osc_server = lo_server_new_with_proto(IntToString(m_listen_port).c_str(),
-                                          LO_UDP, OSCErrorHandler);
+  // lo_server_new_with_proto doesn't understand that "0" means "any port".
+  // Instead you have to pass in NULL. Weird.
+  if (m_listen_port) {
+    m_osc_server = lo_server_new_with_proto(IntToString(m_listen_port).c_str(),
+                                            LO_UDP, OSCErrorHandler);
+  } else {
+    m_osc_server = lo_server_new_with_proto(NULL,
+                                            LO_UDP, OSCErrorHandler);
+  }
+
   if (!m_osc_server)
     return false;
 
@@ -127,6 +135,7 @@ bool OSCNode::Init() {
   m_descriptor = new ola::io::UnmanagedFileDescriptor(fd);
   m_descriptor->SetOnData(NewCallback(this, &OSCNode::DescriptorReady));
   m_ss->AddReadDescriptor(m_descriptor);
+
   return true;
 }
 
@@ -182,8 +191,7 @@ void OSCNode::AddTarget(unsigned int group, const OSCTarget &target) {
   if (group_iter == m_target_by_group.end()) {
     // not found, create a new one
     targets = new OSCTargetVector;
-    m_target_by_group.insert(
-        pair<unsigned int, OSCTargetVector*>(group, targets));
+    m_target_by_group.insert(make_pair(group, targets));
   } else {
     targets = group_iter->second;
   }
@@ -295,8 +303,7 @@ bool OSCNode::RegisterAddress(const string &osc_address,
 
     // This is a new registration, insert into the AddressCallbackMap and
     // register with liblo.
-    m_address_callbacks.insert(
-        pair<string, DMXCallback*>(osc_address, callback));
+    m_address_callbacks.insert(make_pair(osc_address, callback));
     lo_server_add_method(m_osc_server, osc_address.c_str(), "b", OSCDataHandler,
                          this);
   } else {
@@ -328,6 +335,17 @@ void OSCNode::HandleDMXData(const string &osc_address, const DmxBuffer &data) {
   AddressCallbackMap::iterator iter = m_address_callbacks.find(osc_address);
   if (iter != m_address_callbacks.end())
     iter->second->Run(data);
+}
+
+
+/**
+ * Return the listening port. Will be 0 if the node isn't setup.
+ */
+uint16_t OSCNode::ListeningPort() const {
+  if (m_osc_server) {
+    return lo_server_get_port(m_osc_server);
+  }
+  return 0;
 }
 
 

@@ -1366,8 +1366,7 @@ void SLPServer::RegisterWithDA(const DirectoryAgent &agent,
   op->timer_id = m_ss->RegisterSingleTimeout(
       op->retry_time(),
       NewSingleCallback(this, &SLPServer::RegistrationTimeout, op));
-  m_pending_ops.insert(
-      pair<string, UnicastSrvRegOperation*>(service.url().url(), op));
+  m_pending_ops.insert(make_pair(service.url().url(), op));
 
   ScopeSet scopes_to_use = agent.scopes().Intersection(service.scopes());
   m_udp_sender.SendServiceRegistration(
@@ -1393,8 +1392,7 @@ void SLPServer::DeRegisterWithDA(const DirectoryAgent &agent,
   op->timer_id = m_ss->RegisterSingleTimeout(
       op->retry_time(),
       NewSingleCallback(this, &SLPServer::DeRegistrationTimeout, op));
-  m_pending_ops.insert(
-      pair<string, UnicastSrvRegOperation*>(service.url().url(), op));
+  m_pending_ops.insert(make_pair(service.url().url(), op));
 
   // send message to DA
   // TODO(simon): how do we know what scopes to de-register with?

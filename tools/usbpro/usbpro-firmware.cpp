@@ -21,10 +21,10 @@
 #include <fcntl.h>
 #include <getopt.h>
 #include <string.h>
-#include <sysexits.h>
 #include <termios.h>
-#include <ola/Logging.h>
 #include <ola/Callback.h>
+#include <ola/Logging.h>
+#include <ola/base/SysExits.h>
 #include <ola/io/SelectServer.h>
 
 #include <iostream>
@@ -263,7 +263,7 @@ int main(int argc, char *argv[]) {
   ola::io::ConnectedDescriptor *descriptor =
      ola::plugin::usbpro::BaseUsbProWidget::OpenDevice(opts.device);
   if (!descriptor)
-    exit(EX_UNAVAILABLE);
+    exit(ola::EXIT_UNAVAILABLE);
 
   descriptor->SetOnClose(ola::NewSingleCallback(&Stop, &ss));
   ss.AddReadDescriptor(descriptor);
