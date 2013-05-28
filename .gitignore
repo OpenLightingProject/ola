@@ -57,12 +57,16 @@ examples/ola_dev_info
 examples/ola_dmxconsole
 examples/ola_dmxmonitor
 examples/ola_e131
+examples/ola_plugin_info
+examples/ola_plugin_state
 examples/ola_rdm_discover
 examples/ola_rdm_get
+examples/ola_rdm_set
 examples/ola_recorder
 examples/ola_streaming_client
 examples/ola_throughput
 examples/ola_timecode
+examples/ola_uni_info
 examples/ola_uni_stats
 examples/ola_usbpro
 include/ola/plugin_id.h
