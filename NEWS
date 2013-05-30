@@ -1,6 +1,6 @@
-X/Y/2013 ola-0.8.29
- * Add KiNet output support.
- * Add support for the Karate devices.
+29/5/2013 ola-0.8.29
+ * Added KiNet output support.
+ * Added support for the Karate USB devices.
  * More E1.33 enhancements
  * Added usage information to the json urls
  * Minor fixes to the RDM responder tests
@@ -8,7 +8,7 @@ X/Y/2013 ola-0.8.29
  * Fixed various flaky unittests
  * Introduced a new command line flags handling
  * Print command classes in the RDM Responder tests
- * Fix a memory leak defected by the leak checker
+ * Fix a memory leak detected by the leak checker
  * Patches to build correctly on Android
 
 20/4/2013 ola-0.8.28
