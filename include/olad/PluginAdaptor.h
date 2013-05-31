@@ -22,10 +22,10 @@
 #define INCLUDE_OLAD_PLUGINADAPTOR_H_
 
 #include <string>
-#include <ola/Clock.h>  // NOLINT
-#include <ola/Callback.h>  // NOLINT
-#include <ola/ExportMap.h>  // NOLINT
-#include <ola/io/SelectServerInterface.h>  // NOLINT
+#include <ola/Clock.h>  // NOLINT(build/include_order)
+#include <ola/Callback.h>  // NOLINT(build/include_order)
+#include <ola/ExportMap.h>  // NOLINT(build/include_order)
+#include <ola/io/SelectServerInterface.h>  // NOLINT(build/include_order)
 
 namespace ola {
 

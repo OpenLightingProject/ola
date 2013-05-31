@@ -4,7 +4,7 @@
  * More E1.33 enhancements
  * Added usage information to the json urls
  * Minor fixes to the RDM responder tests
- * Lint the entire codebase.
+ * Lint the entire C++ codebase.
  * Fixed various flaky unittests
  * Introduced a new command line flags handling
  * Print command classes in the RDM Responder tests

@@ -26,13 +26,13 @@
 #include <string>
 #include <vector>
 
-#include <ola/Callback.h>  // NOLINT
-#include <ola/Clock.h>  // NOLINT
-#include <ola/ExportMap.h>  // NOLINT
-#include <ola/io/Descriptor.h>  // NOLINT
-#include <ola/io/SelectServerInterface.h>  // NOLINT
-#include <ola/network/Socket.h>  // NOLINT
-#include <ola/thread/Thread.h>  // NOLINT
+#include <ola/Callback.h>  // NOLINT(build/include_order)
+#include <ola/Clock.h>  // NOLINT(build/include_order)
+#include <ola/ExportMap.h>  // NOLINT(build/include_order)
+#include <ola/io/Descriptor.h>  // NOLINT(build/include_order)
+#include <ola/io/SelectServerInterface.h>  // NOLINT(build/include_order)
+#include <ola/network/Socket.h>  // NOLINT(build/include_order)
+#include <ola/thread/Thread.h>  // NOLINT(build/include_order)
 
 namespace ola {
 namespace io {

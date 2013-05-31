@@ -24,7 +24,7 @@
 #include <set>
 #include <string>
 #include <functional>
-#include <ola/plugin_id.h>  // NOLINT
+#include <ola/plugin_id.h>  // NOLINT(build/include_order)
 
 namespace ola {
 

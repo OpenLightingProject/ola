@@ -137,14 +137,14 @@ bool StringToInt(const string &value, unsigned int *output, bool strict) {
     return false;
   char *end_ptr;
   errno = 0;
-  long long l = strtoll(value.data(), &end_ptr, 10);  // NOLINT
+  long long l = strtoll(value.data(), &end_ptr, 10);  // NOLINT(runtime/int)
   if (l < 0 || (l == 0 && errno != 0))
     return false;
   if (value == end_ptr)
     return false;
   if (strict && *end_ptr != 0)
     return false;
-  if (l > static_cast<long long>(UINT32_MAX))  // NOLINT
+  if (l > static_cast<long long>(UINT32_MAX))  // NOLINT(runtime/int)
     return false;
   *output = static_cast<unsigned int>(l);
   return true;
@@ -190,7 +190,7 @@ bool StringToInt(const string &value, int *output, bool strict) {
     return false;
   char *end_ptr;
   errno = 0;
-  long long l = strtoll(value.data(), &end_ptr, 10);  // NOLINT
+  long long l = strtoll(value.data(), &end_ptr, 10);  // NOLINT(runtime/int)
   if (l == 0 && errno != 0)
     return false;
   if (value == end_ptr)

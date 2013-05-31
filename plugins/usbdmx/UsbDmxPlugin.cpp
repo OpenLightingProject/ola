@@ -60,7 +60,7 @@ int UsbDmxPlugin::LIBUSB_MAX_DEBUG_LEVEL = 3;
 /*
  * Called by libusb when a new descriptor is created.
  */
-void libusb_fd_added(int fd, short events, void *data) {  // NOLINT
+void libusb_fd_added(int fd, short events, void *data) {  // NOLINT(runtime/int)
   UsbDmxPlugin *plugin = static_cast<UsbDmxPlugin*>(data);
 
   OLA_INFO << "USB new FD: " << fd;

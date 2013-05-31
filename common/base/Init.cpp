@@ -89,7 +89,7 @@ bool ServerInit(int argc, char *argv[], ExportMap *export_map) {
 
 /**
  * This does the following:
- *  Intalls the SEGV handler.
+ *  Installs the SEGV handler.
  *
  * @param argc the number of arguments on the cmd line
  * @param argv the command line arguments
