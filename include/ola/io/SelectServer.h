@@ -21,18 +21,18 @@
 #ifndef INCLUDE_OLA_IO_SELECTSERVER_H_
 #define INCLUDE_OLA_IO_SELECTSERVER_H_
 
+#include <ola/Callback.h>
+#include <ola/Clock.h>
+#include <ola/ExportMap.h>
+#include <ola/io/Descriptor.h>
+#include <ola/io/SelectServerInterface.h>
+#include <ola/network/Socket.h>
+#include <ola/thread/Thread.h>
+
 #include <queue>
 #include <set>
 #include <string>
 #include <vector>
-
-#include <ola/Callback.h>  // NOLINT(build/include_order)
-#include <ola/Clock.h>  // NOLINT(build/include_order)
-#include <ola/ExportMap.h>  // NOLINT(build/include_order)
-#include <ola/io/Descriptor.h>  // NOLINT(build/include_order)
-#include <ola/io/SelectServerInterface.h>  // NOLINT(build/include_order)
-#include <ola/network/Socket.h>  // NOLINT(build/include_order)
-#include <ola/thread/Thread.h>  // NOLINT(build/include_order)
 
 namespace ola {
 namespace io {

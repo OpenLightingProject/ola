@@ -21,10 +21,10 @@
 #ifndef INCLUDE_OLA_IO_SELECTSERVERINTERFACE_H_
 #define INCLUDE_OLA_IO_SELECTSERVERINTERFACE_H_
 
-#include <ola/Clock.h>  // NOLINT(build/include_order)
-#include <ola/Callback.h>  // NOLINT(build/include_order)
-#include <ola/io/Descriptor.h>  // NOLINT(build/include_order)
-#include <ola/thread/SchedulingExecutorInterface.h>  // NOLINT(build/include_order)
+#include <ola/Callback.h>
+#include <ola/Clock.h>
+#include <ola/io/Descriptor.h>
+#include <ola/thread/SchedulingExecutorInterface.h>
 
 namespace ola {
 namespace io {

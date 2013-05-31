@@ -21,18 +21,19 @@
 #ifndef INCLUDE_OLAD_UNIVERSE_H_
 #define INCLUDE_OLAD_UNIVERSE_H_
 
+#include <ola/Clock.h>
+#include <ola/DmxBuffer.h>
+#include <ola/ExportMap.h>
+#include <ola/rdm/RDMCommand.h>
+#include <ola/rdm/RDMControllerInterface.h>
+#include <ola/rdm/UID.h>
+#include <ola/rdm/UIDSet.h>
+#include <olad/DmxSource.h>
+
 #include <set>
 #include <map>
 #include <vector>
 #include <string>
-#include <ola/Clock.h>  // NOLINT(build/include_order)
-#include <ola/DmxBuffer.h>  // NOLINT(build/include_order)
-#include <ola/ExportMap.h>  // NOLINT(build/include_order)
-#include <ola/rdm/RDMCommand.h>  // NOLINT(build/include_order)
-#include <ola/rdm/RDMControllerInterface.h>  // NOLINT(build/include_order)
-#include <ola/rdm/UID.h>  // NOLINT(build/include_order)
-#include <ola/rdm/UIDSet.h>  // NOLINT(build/include_order)
-#include <olad/DmxSource.h>  // NOLINT(build/include_order)
 
 namespace ola {
 

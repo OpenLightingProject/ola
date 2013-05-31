@@ -21,16 +21,17 @@
 #ifndef INCLUDE_OLAD_PORT_H_
 #define INCLUDE_OLAD_PORT_H_
 
+#include <ola/DmxBuffer.h>
+#include <ola/rdm/RDMCommand.h>
+#include <ola/rdm/RDMControllerInterface.h>
+#include <ola/timecode/TimeCode.h>
+#include <olad/DmxSource.h>
+#include <olad/PluginAdaptor.h>
+#include <olad/PortConstants.h>
+#include <olad/Universe.h>
+
 #include <string>
 #include <vector>
-#include <ola/DmxBuffer.h>  // NOLINT(build/include_order)
-#include <ola/rdm/RDMCommand.h>  // NOLINT(build/include_order)
-#include <ola/rdm/RDMControllerInterface.h>  // NOLINT(build/include_order)
-#include <ola/timecode/TimeCode.h>  // NOLINT(build/include_order)
-#include <olad/DmxSource.h>  // NOLINT(build/include_order)
-#include <olad/PluginAdaptor.h>  // NOLINT(build/include_order)
-#include <olad/PortConstants.h>  // NOLINT(build/include_order)
-#include <olad/Universe.h>  // NOLINT(build/include_order)
 
 namespace ola {
 

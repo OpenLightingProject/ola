@@ -21,11 +21,12 @@
 #ifndef INCLUDE_OLAD_PLUGINADAPTOR_H_
 #define INCLUDE_OLAD_PLUGINADAPTOR_H_
 
+#include <ola/Clock.h>
+#include <ola/Callback.h>
+#include <ola/ExportMap.h>
+#include <ola/io/SelectServerInterface.h>
+
 #include <string>
-#include <ola/Clock.h>  // NOLINT(build/include_order)
-#include <ola/Callback.h>  // NOLINT(build/include_order)
-#include <ola/ExportMap.h>  // NOLINT(build/include_order)
-#include <ola/io/SelectServerInterface.h>  // NOLINT(build/include_order)
 
 namespace ola {
 

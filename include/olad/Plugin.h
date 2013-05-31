@@ -21,10 +21,11 @@
 #ifndef INCLUDE_OLAD_PLUGIN_H_
 #define INCLUDE_OLAD_PLUGIN_H_
 
+#include <ola/plugin_id.h>
+
 #include <set>
 #include <string>
 #include <functional>
-#include <ola/plugin_id.h>  // NOLINT(build/include_order)
 
 namespace ola {
 
