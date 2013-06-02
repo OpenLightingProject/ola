@@ -37,14 +37,13 @@
 #include "ola/base/Flags.h"
 #include "ola/base/Init.h"
 #include "ola/base/SysExits.h"
+#include "ola/thread/SignalThread.h"
 #include "olad/OlaDaemon.h"
 
 using ola::OlaDaemon;
+using ola::thread::SignalThread;
 using std::cout;
 using std::endl;
-
-// the daemon
-OlaDaemon *global_olad = NULL;
 
 DEFINE_bool(http, true, "Disable the HTTP server");
 DEFINE_bool(http_quit, true, "Disable the HTTP /quit hanlder");
@@ -60,52 +59,15 @@ DEFINE_s_uint16(http_port, p, ola::OlaServer::DEFAULT_HTTP_PORT,
 DEFINE_s_uint16(rpc_port, r, ola::OlaDaemon::DEFAULT_RPC_PORT,
                 "Port to listen for RPCs on");
 
-/*
- * Terminate cleanly on interrupt
+
+/**
+ * This is called by the SelectServer loop to start up the SignalThread. If the
+ * thread fails to start, we terminate the SelectServer
  */
-static void sig_interupt(int signo) {
-  if (global_olad)
-    global_olad->Terminate();
-  (void) signo;
-}
-
-/*
- * Reload plugins
- */
-static void sig_hup(int signo) {
-  if (global_olad)
-    global_olad->ReloadPlugins();
-  (void) signo;
-}
-
-/*
- * Change logging level
- *
- * need to fix race conditions here
- */
-static void sig_user1(int signo) {
-  ola::IncrementLogLevel();
-  (void) signo;
-}
-
-
-/*
- * Set up the signal handlers.
- * @return true on success, false on failure
- */
-static bool InstallSignals() {
-  if (!ola::InstallSignal(SIGINT, sig_interupt))
-    return false;
-
-  if (!ola::InstallSignal(SIGTERM, sig_interupt))
-    return false;
-
-  if (!ola::InstallSignal(SIGHUP, sig_hup))
-    return false;
-
-  if (!ola::InstallSignal(SIGUSR1, sig_user1))
-    return false;
-  return true;
+void StartSignalThread(ola::SelectServer *ss, SignalThread *signal_thread) {
+  if (!signal_thread->Start()) {
+    ss->Terminate();
+  }
 }
 
 
@@ -137,8 +99,15 @@ int main(int argc, char *argv[]) {
   ola::ExportMap export_map;
   ola::ServerInit(argc, argv, &export_map);
 
-  if (!InstallSignals())
-    OLA_WARN << "Failed to install signal handlers";
+  // We need to block signals before we start any threads.
+  // Signal setup is complex. First of all we need to install NULL handlers to
+  // the signals are blocked before we start *any* threads. It's safest if we
+  // do this before creating the OlaDaemon.
+  SignalThread signal_thread;
+  signal_thread.InstallSignalHandler(SIGINT, NULL);
+  signal_thread.InstallSignalHandler(SIGTERM, NULL);
+  signal_thread.InstallSignalHandler(SIGHUP, NULL);
+  signal_thread.InstallSignalHandler(SIGUSR1, NULL);
 
   ola::ola_server_options ola_options;
   ola_options.http_enable = FLAGS_http;
@@ -150,11 +119,36 @@ int main(int argc, char *argv[]) {
   std::auto_ptr<OlaDaemon> olad(
       new OlaDaemon(ola_options, &export_map, FLAGS_rpc_port,
                     FLAGS_config_dir));
-  if (olad.get() && olad->Init()) {
-    global_olad = olad.get();
-    olad->Run();
-    return ola::EXIT_OK;
+  if (!olad.get()) {
+    return ola::EXIT_UNAVAILABLE;
   }
-  global_olad = NULL;
-  return ola::EXIT_UNAVAILABLE;
+
+  // Now that the OlaDaemon has been created, we can reset the signal handlers
+  // to do what we actually want them to.
+  signal_thread.InstallSignalHandler(
+      SIGINT,
+      ola::NewCallback(olad->GetSelectServer(), &ola::SelectServer::Terminate));
+  signal_thread.InstallSignalHandler(
+      SIGTERM,
+      ola::NewCallback(olad->GetSelectServer(), &ola::SelectServer::Terminate));
+  signal_thread.InstallSignalHandler(
+      SIGHUP,
+      ola::NewCallback(olad.get(), &OlaDaemon::ReloadPlugins));
+  signal_thread.InstallSignalHandler(
+      SIGUSR1, ola::NewCallback(&ola::IncrementLogLevel));
+
+  // We can't start the signal thread here, otherwise there is a race
+  // condition if a signal arrives before we enter the SelectServer Run()
+  // method. Instead we schedule it to start from the SelectServer loop.
+  olad->GetSelectServer()->Execute(ola::NewSingleCallback(
+        &StartSignalThread,
+        olad->GetSelectServer(),
+        &signal_thread));
+
+  if (!olad->Init()) {
+    return ola::EXIT_UNAVAILABLE;
+  }
+
+  olad->Run();
+  return ola::EXIT_OK;
 }

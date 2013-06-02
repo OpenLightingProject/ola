@@ -57,7 +57,7 @@ OlaDaemon::OlaDaemon(const ola_server_options &options,
                      ExportMap *export_map,
                      unsigned int rpc_port,
                      std::string config_dir)
-    : m_ss(NULL),
+    : m_ss(export_map),
       m_server(NULL),
       m_preferences_factory(NULL),
       m_accepting_socket(NULL),
@@ -106,7 +106,6 @@ bool OlaDaemon::Init() {
   OLA_INFO << "Using configs in " << m_config_dir;
   m_preferences_factory = new FileBackedPreferencesFactory(m_config_dir);
 
-  m_ss = new SelectServer(m_export_map);
   m_service_factory = new OlaClientServiceFactory();
 
   // Order is important here as we won't load the same plugin twice.
@@ -123,7 +122,7 @@ bool OlaDaemon::Init() {
   m_server = new OlaServer(m_service_factory,
                            m_plugin_loaders,
                            m_preferences_factory,
-                           m_ss,
+                           &m_ss,
                            &m_options,
                            m_accepting_socket,
                            m_export_map);
@@ -141,15 +140,12 @@ void OlaDaemon::Shutdown() {
     delete m_service_factory;
   if (m_preferences_factory)
     delete m_preferences_factory;
-  if (m_ss)
-    delete m_ss;
   if (m_accepting_socket)
     delete m_accepting_socket;
   m_accepting_socket = NULL;
   m_preferences_factory = NULL;
   m_server = NULL;
   m_service_factory = NULL;
-  m_ss = NULL;
 
   STLDeleteElements(&m_plugin_loaders);
 }
@@ -159,8 +155,7 @@ void OlaDaemon::Shutdown() {
  * Run the daemon
  */
 void OlaDaemon::Run() {
-  if (m_ss)
-    m_ss->Run();
+  m_ss.Run();
 }
 
 
@@ -168,8 +163,7 @@ void OlaDaemon::Run() {
  * Stop the daemon
  */
 void OlaDaemon::Terminate() {
-  if (m_ss)
-    m_ss->Terminate();
+  m_ss.Terminate();
 }
 
 /*

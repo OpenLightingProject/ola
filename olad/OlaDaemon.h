@@ -48,20 +48,15 @@ class OlaDaemon {
     void Terminate();
     void ReloadPlugins();
     ola::network::GenericSocketAddress RPCAddress() const;
-    class SelectServer* GetSelectServer() const { return m_ss; }
+    SelectServer* GetSelectServer() { return &m_ss; }
     class OlaServer *GetOlaServer() const { return m_server; }
 
     static const unsigned int DEFAULT_RPC_PORT = OLA_DEFAULT_PORT;
 
   private:
-    OlaDaemon(const OlaDaemon&);
-    OlaDaemon& operator=(const OlaDaemon&);
-
-    string DefaultConfigDir();
-    bool InitConfigDir(const string &path);
-
     vector<class PluginLoader *> m_plugin_loaders;
-    class SelectServer *m_ss;
+    SelectServer m_ss;
+
     class OlaServer *m_server;
     class PreferencesFactory *m_preferences_factory;
     class TCPAcceptingSocket *m_accepting_socket;
@@ -70,6 +65,12 @@ class OlaDaemon {
     class ExportMap *m_export_map;
     unsigned int m_rpc_port;
     std::string m_config_dir;
+
+    string DefaultConfigDir();
+    bool InitConfigDir(const string &path);
+
+    OlaDaemon(const OlaDaemon&);
+    OlaDaemon& operator=(const OlaDaemon&);
 
     static const char K_RPC_PORT_VAR[];
     static const char OLA_CONFIG_DIR[];
