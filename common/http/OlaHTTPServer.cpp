@@ -73,7 +73,7 @@ int OlaHTTPServer::DisplayDebug(const HTTPRequest*,
   m_clock.CurrentTime(&now);
   ola::TimeInterval diff = now - m_start_time;
   stringstream str;
-  str << (diff.AsInt() / 1000);
+  str << diff.InMilliSeconds();
   m_export_map->GetStringVar(K_UPTIME_VAR)->Set(str.str());
 
   vector<BaseVariable*> variables = m_export_map->AllVariables();

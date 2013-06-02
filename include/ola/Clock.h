@@ -13,9 +13,17 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * Timing.h
- * Interface for the Clock & TimeStamp classes
+ * Clock.h
+ * Provides the TimeInterval and TimeStamp classes.
  * Copyright (C) 2005-2012 Simon Newton
+ *
+ * The struct timeval can represent both absolute time and time intervals.
+ * We define our own wrapper classes that:
+ *   - hide some of the platform differences, like the fact windows doesn't
+ *     provide timersub.
+ *   - Reduces bugs by using the compiler to check if the value was supposed
+ *     to be an interval or absolute time. For example, passing an absolute
+ *     time intstead of an Interval to RegisterTimeout would be bad.
  */
 
 #ifndef INCLUDE_OLA_CLOCK_H_
@@ -35,239 +43,132 @@
 
 namespace ola {
 
-
 using std::ostream;
 
 static const int USEC_IN_SECONDS = 1000000;
 static const int ONE_THOUSAND = 1000;
 
-
-/*
- * A time interval, with usecond accuracy
+/**
+ * Don't use this class directly. It's an implementation detail of TimeInterval
+ * and TimeStamp.
  */
-class TimeInterval {
+class BaseTimeVal {
   public:
-    TimeInterval() {
-      Set(0);
+    // Constructors
+    BaseTimeVal() { timerclear(&m_tv); }
+
+    BaseTimeVal(int32_t sec, int32_t usec) {
+      m_tv.tv_sec = sec;
+      m_tv.tv_usec = usec;
     }
 
-    explicit TimeInterval(int64_t interval_useconds) {
-      Set(interval_useconds);
-    }
+    explicit BaseTimeVal(const struct timeval &timestamp) { m_tv = timestamp; }
+    explicit BaseTimeVal(int64_t interval_useconds) { Set(interval_useconds); }
 
-    TimeInterval(const TimeInterval &other) {
-      m_interval = other.m_interval;
-    }
+    BaseTimeVal(const BaseTimeVal &other) : m_tv(other.m_tv) {}
 
-    TimeInterval(int32_t sec, int32_t usec) {
-      m_interval.tv_sec = sec;
-      m_interval.tv_usec = usec;
-    }
-
-    TimeInterval& operator=(int64_t interval_useconds) {
-      Set(interval_useconds);
-      return *this;
-    }
-
-    TimeInterval& operator=(const TimeInterval& other) {
-      if (this != &other) {
-        m_interval = other.m_interval;
-      }
-      return *this;
-    }
-
-    TimeInterval& operator+=(const TimeInterval& other) {
-      if (this != &other) {
-        timeradd(&m_interval, &other.m_interval, &m_interval);
-      }
-      return *this;
-    }
-
-    TimeInterval operator*(unsigned int i) const {
-      int64_t as_int = (*this).AsInt();
-      as_int *= i;
-      return TimeInterval(as_int);
-    }
-
-    bool operator==(const TimeInterval &other) const {
-      return timercmp(&m_interval, &other.m_interval, ==);
-    }
-
-    bool operator!=(const TimeInterval &other) const {
-      return !(*this == other);
-    }
-
-    bool operator>(const TimeInterval &other) const {
-      return timercmp(&m_interval, &other.m_interval, >);
-    }
-
-    bool operator>=(const TimeInterval &other) const {
-      return timercmp(&m_interval, &other.m_interval, >=);
-    }
-
-    bool operator<(const TimeInterval &other) const {
-      return timercmp(&m_interval, &other.m_interval, <);
-    }
-
-    bool operator<=(const TimeInterval &other) const {
-      return timercmp(&m_interval, &other.m_interval, <=);
-    }
-
-    std::string ToString() const {
-      std::stringstream str;
-      str << m_interval.tv_sec << "." << std::setfill('0') << std::setw(6) <<
-        m_interval.tv_usec;
-      return str.str();
-    }
-
-    int64_t AsInt() const {
-      return (m_interval.tv_sec * static_cast<int64_t>(USEC_IN_SECONDS) +
-              m_interval.tv_usec);
-    }
-
-    int64_t InMilliSeconds() const {
-      return (m_interval.tv_sec * static_cast<int64_t>(ONE_THOUSAND) +
-              m_interval.tv_usec / ONE_THOUSAND);
-    }
-
-    time_t Seconds() const {
-      return m_interval.tv_sec;
-    }
-
-    void AsTimeval(struct timeval *tv) const {
-      *tv = m_interval;
-    }
-
-    friend ostream& operator<< (ostream &out, const TimeInterval &interval) {
-      return out << interval.ToString();
-    }
-
-  private:
-    void Set(int64_t interval_useconds) {
-#ifdef HAVE_TIME_T
-      m_interval.tv_sec = static_cast<time_t>(
-          interval_useconds / USEC_IN_SECONDS);
-#else
-      m_interval.tv_sec = (
-          interval_useconds / USEC_IN_SECONDS);
-#endif
-
-#ifdef HAVE_SUSECONDS_T
-       m_interval.tv_usec = static_cast<suseconds_t>(
-         interval_useconds % USEC_IN_SECONDS);
-#else
-      m_interval.tv_usec = (
-          interval_useconds % USEC_IN_SECONDS);
-#endif
-    }
-    struct timeval m_interval;
-
-  friend class TimeStamp;
-};
-
-
-/*
- * Represents a point in time with usecond accuracy
- */
-class TimeStamp {
-  public:
-    TimeStamp() {
-      timerclear(&m_tv);
-    }
-
-    TimeStamp(const TimeStamp &other) {
-      m_tv = other.m_tv;
-    }
-
-    explicit TimeStamp(const struct timeval &timestamp) {
-      m_tv = timestamp;
-    }
-
-    TimeStamp& operator=(const TimeStamp& other) {
+    // Assignable
+    BaseTimeVal& operator=(const BaseTimeVal& other) {
       if (this != &other) {
         m_tv = other.m_tv;
       }
       return *this;
     }
 
-    TimeStamp& operator=(const struct timeval &tv) {
+    BaseTimeVal& operator=(const struct timeval &tv) {
       m_tv = tv;
       return *this;
     }
 
-    bool operator==(const TimeStamp &other) const {
+    // Comparables
+    bool operator==(const BaseTimeVal &other) const {
       return timercmp(&m_tv, &other.m_tv, ==);
     }
 
-    bool operator!=(const TimeStamp &other) const {
+    bool operator!=(const BaseTimeVal &other) const {
       return !(*this == other);
     }
 
-    bool operator>(const TimeStamp &other) const {
+    bool operator>(const BaseTimeVal &other) const {
       return timercmp(&m_tv, &other.m_tv, >);
     }
 
-    bool operator>=(const TimeStamp &other) const {
+    bool operator>=(const BaseTimeVal &other) const {
       return timercmp(&m_tv, &other.m_tv, >=);
     }
 
-    bool operator<(const TimeStamp &other) const {
+    bool operator<(const BaseTimeVal &other) const {
       return timercmp(&m_tv, &other.m_tv, <);
     }
 
-    bool operator<=(const TimeStamp &other) const {
+    bool operator<=(const BaseTimeVal &other) const {
       return timercmp(&m_tv, &other.m_tv, <=);
     }
 
-    TimeStamp &operator+=(const TimeInterval &interval) {
-      timeradd(&m_tv, &interval.m_interval, &m_tv);
+    // Arithmetic
+    BaseTimeVal& operator+=(const BaseTimeVal& other) {
+      if (this != &other) {
+        timeradd(&m_tv, &other.m_tv, &m_tv);
+      }
       return *this;
     }
 
-    TimeStamp &operator-=(const TimeInterval &interval) {
-      TimerSub(m_tv, interval.m_interval, &m_tv);
+    BaseTimeVal &operator-=(const BaseTimeVal &other) {
+      if (this != &other) {
+        TimerSub(m_tv, other.m_tv, &m_tv);
+      }
       return *this;
     }
 
-    const TimeStamp operator+(const TimeInterval &interval) const {
-      TimeStamp result = *this;
+    const BaseTimeVal operator+(const BaseTimeVal &interval) const {
+      BaseTimeVal result = *this;
       result += interval;
       return result;
     }
 
-    const TimeInterval operator-(const TimeStamp &other) const {
-      TimeInterval result;
-      TimerSub(m_tv, other.m_tv, &result.m_interval);
+    const BaseTimeVal operator-(const BaseTimeVal &other) const {
+      BaseTimeVal result;
+      TimerSub(m_tv, other.m_tv, &result.m_tv);
       return result;
     }
 
-    const TimeStamp operator-(const TimeInterval &interval) const {
-      TimeStamp result;
-      TimerSub(m_tv, interval.m_interval, &result.m_tv);
-      return result;
+    BaseTimeVal operator*(unsigned int i) const {
+      int64_t as_int = (*this).AsInt();
+      as_int *= i;
+      return BaseTimeVal(as_int);
     }
 
+    // Various other methods.
     bool IsSet() const {
       return timerisset(&m_tv);
     }
 
-    time_t Seconds() const {
-      return m_tv.tv_sec;
+    void AsTimeval(struct timeval *tv) const {
+      *tv = m_tv;
     }
 
-    suseconds_t MicroSeconds() const {
-      return m_tv.tv_usec;
+    // Returns the seconds portion.
+    time_t Seconds() const { return m_tv.tv_sec; }
+    // Returns the microseconds portion
+    suseconds_t MicroSeconds() const { return m_tv.tv_usec; }
+
+    // Returns the entire BaseTimeVal as milliseconds
+    int64_t InMilliSeconds() const {
+      return (m_tv.tv_sec * static_cast<int64_t>(ONE_THOUSAND) +
+              m_tv.tv_usec / ONE_THOUSAND);
+    }
+
+    // Returns the entire BaseTimeVal as microseconds.
+    int64_t AsInt() const {
+      return (m_tv.tv_sec * static_cast<int64_t>(USEC_IN_SECONDS) +
+              m_tv.tv_usec);
     }
 
     std::string ToString() const {
       std::stringstream str;
-      str << m_tv.tv_sec << "." << std::setfill('0') << std::setw(6) <<
-        m_tv.tv_usec;
+      str << m_tv.tv_sec << "." << std::setfill('0') << std::setw(6)
+          << m_tv.tv_usec;
       return str.str();
-    }
-
-    friend ostream& operator<< (ostream &out, const TimeStamp &timestamp) {
-      return out << timestamp.ToString();
     }
 
   private:
@@ -285,11 +186,180 @@ class TimeStamp {
           result->tv_usec += USEC_IN_SECONDS;
       }
     }
+
+    void Set(int64_t interval_useconds) {
+#ifdef HAVE_TIME_T
+      m_tv.tv_sec = static_cast<time_t>(
+          interval_useconds / USEC_IN_SECONDS);
+#else
+      m_tv.tv_sec = interval_useconds / USEC_IN_SECONDS;
+#endif
+
+#ifdef HAVE_SUSECONDS_T
+       m_tv.tv_usec = static_cast<suseconds_t>(
+         interval_useconds % USEC_IN_SECONDS);
+#else
+      m_tv.tv_usec = interval_useconds % USEC_IN_SECONDS;
+#endif
+    }
+};
+
+/*
+ * A time interval, with usecond accuracy.
+ */
+class TimeInterval {
+  public:
+    // Constructors
+    TimeInterval() {}
+    TimeInterval(int32_t sec, int32_t usec) : m_interval(sec, usec) {}
+    explicit TimeInterval(int64_t usec) : m_interval(usec) {}
+
+    TimeInterval(const TimeInterval &other) : m_interval(other.m_interval) {}
+
+    // Assignable
+    TimeInterval& operator=(const TimeInterval& other) {
+      if (this != &other) {
+        m_interval = other.m_interval;
+      }
+      return *this;
+    }
+
+    // Comparables
+    bool operator==(const TimeInterval &other) const {
+      return m_interval == other.m_interval;
+    }
+
+    bool operator!=(const TimeInterval &other) const {
+      return m_interval != other.m_interval;
+    }
+
+    bool operator>(const TimeInterval &other) const {
+      return m_interval > other.m_interval;
+    }
+
+    bool operator>=(const TimeInterval &other) const {
+      return m_interval >= other.m_interval;
+    }
+
+    bool operator<(const TimeInterval &other) const {
+      return m_interval < other.m_interval;
+    }
+
+    bool operator<=(const TimeInterval &other) const {
+      return m_interval <= other.m_interval;
+    }
+
+    // Arithmetic
+    TimeInterval& operator+=(const TimeInterval& other) {
+      if (this != &other) {
+        m_interval += other.m_interval;
+      }
+      return *this;
+    }
+
+    TimeInterval operator*(unsigned int i) const {
+      return TimeInterval(m_interval * i);
+    }
+
+    // Various other methods.
+    void AsTimeval(struct timeval *tv) const { m_interval.AsTimeval(tv); }
+
+    time_t Seconds() const { return m_interval.Seconds(); }
+    suseconds_t MicroSeconds() const { return m_interval.MicroSeconds(); }
+
+    int64_t InMilliSeconds() const { return m_interval.InMilliSeconds(); }
+    int64_t AsInt() const { return m_interval.AsInt(); }
+
+    std::string ToString() const { return m_interval.ToString(); }
+
+    friend ostream& operator<< (ostream &out, const TimeInterval &interval) {
+      return out << interval.m_interval.ToString();
+    }
+
+  private:
+    explicit TimeInterval(const BaseTimeVal &time_val) : m_interval(time_val) {}
+
+    BaseTimeVal m_interval;
+    friend class TimeStamp;
 };
 
 
 /*
- * Used to get the current time
+ * Represents a point in time with usecond accuracy.
+ */
+class TimeStamp {
+  public:
+    // Constructors
+    TimeStamp() {}
+    explicit TimeStamp(const struct timeval &timestamp) : m_tv(timestamp) {}
+
+    TimeStamp(const TimeStamp &other) : m_tv(other.m_tv) {}
+
+    // Assignable
+    TimeStamp& operator=(const TimeStamp& other) {
+      if (this != &other) {
+        m_tv = other.m_tv;
+      }
+      return *this;
+    }
+
+    TimeStamp& operator=(const struct timeval &tv) {
+      m_tv = tv;
+      return *this;
+    }
+
+    // Comparables
+    bool operator==(const TimeStamp &other) const { return m_tv == other.m_tv; }
+    bool operator!=(const TimeStamp &other) const { return m_tv != other.m_tv; }
+    bool operator>(const TimeStamp &other) const { return m_tv > other.m_tv; }
+    bool operator>=(const TimeStamp &other) const { return m_tv >= other.m_tv; }
+    bool operator<(const TimeStamp &other) const { return m_tv < other.m_tv; }
+    bool operator<=(const TimeStamp &other) const { return m_tv <= other.m_tv; }
+
+    // Arithmetic
+    TimeStamp &operator+=(const TimeInterval &interval) {
+      m_tv += interval.m_interval;
+      return *this;
+    }
+
+    TimeStamp &operator-=(const TimeInterval &interval) {
+      m_tv -= interval.m_interval;
+      return *this;
+    }
+
+    const TimeStamp operator+(const TimeInterval &interval) const {
+      return TimeStamp(m_tv + interval.m_interval);
+    }
+
+    const TimeInterval operator-(const TimeStamp &other) const {
+      return TimeInterval(m_tv - other.m_tv);
+    }
+
+    const TimeStamp operator-(const TimeInterval &interval) const {
+      return TimeStamp(m_tv - interval.m_interval);
+    }
+
+    // Various other methods.
+    bool IsSet() const { return m_tv.IsSet(); }
+
+    time_t Seconds() const { return m_tv.Seconds(); }
+    suseconds_t MicroSeconds() const { return m_tv.MicroSeconds(); }
+
+    std::string ToString() const { return m_tv.ToString(); }
+
+    friend ostream& operator<< (ostream &out, const TimeStamp &timestamp) {
+      return out << timestamp.m_tv.ToString();
+    }
+
+  private:
+    BaseTimeVal m_tv;
+
+    explicit TimeStamp(const BaseTimeVal &time_val) : m_tv(time_val) {}
+};
+
+
+/*
+ * Used to get the current time.
  */
 class Clock {
   public:
@@ -308,7 +378,7 @@ class Clock {
 
 
 /**
- * A Mock Clock used for testing
+ * A Mock Clock used for testing.
  */
 class MockClock: public Clock {
   public:
