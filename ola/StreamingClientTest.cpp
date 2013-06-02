@@ -20,6 +20,7 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
+#include <memory>
 
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
@@ -36,6 +37,7 @@ using ola::StreamingClient;
 using ola::network::GenericSocketAddress;
 using ola::thread::ConditionVariable;
 using ola::thread::Mutex;
+using std::auto_ptr;
 
 class StreamingClientTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(StreamingClientTest);
@@ -62,10 +64,9 @@ class OlaServerThread: public ola::thread::Thread {
   public:
     OlaServerThread() :
         Thread(),
-        m_olad(NULL),
         m_is_running(false) {
     }
-    ~OlaServerThread();
+    ~OlaServerThread() {}
     bool Setup();
     void *Run();
     void Terminate();
@@ -73,21 +74,13 @@ class OlaServerThread: public ola::thread::Thread {
     GenericSocketAddress RPCAddress() const;
 
   private:
-    OlaDaemon *m_olad;
+    auto_ptr<OlaDaemon> m_olad;
     bool m_is_running;
     Mutex m_mutex;
     ConditionVariable m_condition;
 
     void MarkAsStarted();
 };
-
-
-OlaServerThread::~OlaServerThread() {
-  if (m_olad) {
-    delete m_olad;
-    m_olad = NULL;
-  }
-}
 
 
 bool OlaServerThread::Setup() {
@@ -98,13 +91,14 @@ bool OlaServerThread::Setup() {
   ola_options.http_port = 0;
   ola_options.http_data_dir = "";
 
-  m_olad = new OlaDaemon(ola_options, NULL, 0);  // pick an unused port
-  if (!m_olad->Init()) {
-    delete m_olad;
-    m_olad = NULL;
+  // pick an unused port
+  auto_ptr<OlaDaemon> olad(new OlaDaemon(ola_options, NULL, 0));
+  if (olad->Init()) {
+    m_olad.reset(olad.release());
+    return true;
+  } else {
     return false;
   }
-  return true;
 }
 
 
@@ -112,7 +106,7 @@ bool OlaServerThread::Setup() {
  * Run the ola Server
  */
 void *OlaServerThread::Run() {
-  if (m_olad) {
+  if (m_olad.get()) {
     m_olad->GetSelectServer()->Execute(
         ola::NewSingleCallback(this, &OlaServerThread::MarkAsStarted));
     m_olad->Run();
@@ -126,7 +120,7 @@ void *OlaServerThread::Run() {
  * Stop the OLA server
  */
 void OlaServerThread::Terminate() {
-  if (m_olad)
+  if (m_olad.get())
     m_olad->Terminate();
 }
 
@@ -151,7 +145,7 @@ void OlaServerThread::MarkAsStarted() {
 
 
 GenericSocketAddress OlaServerThread::RPCAddress() const {
-  if (m_olad) {
+  if (m_olad.get()) {
     return m_olad->RPCAddress();
   }
   return GenericSocketAddress();
