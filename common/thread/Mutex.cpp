@@ -110,11 +110,15 @@ void ConditionVariable::Wait(Mutex *mutex) {
 /**
  * Timed Wait
  * @param mutex the mutex that is locked
- * @param wait_time the time to sleep
+ * @param wake_up_time the time to wait up.
  * @returns true if we received a signal, false if the timeout expired.
  */
-bool ConditionVariable::TimedWait(Mutex *mutex, struct timespec *wait_time) {
-  int i = pthread_cond_timedwait(&m_condition, &mutex->m_mutex, wait_time);
+bool ConditionVariable::TimedWait(Mutex *mutex, const TimeStamp &wake_up_time) {
+  struct timespec ts = {
+    wake_up_time.Seconds(),
+    wake_up_time.MicroSeconds() * ONE_THOUSAND
+  };
+  int i = pthread_cond_timedwait(&m_condition, &mutex->m_mutex, &ts);
   return i == 0;
 }
 

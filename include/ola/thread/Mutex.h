@@ -22,6 +22,7 @@
 #define INCLUDE_OLA_THREAD_MUTEX_H_
 
 #include <pthread.h>
+#include <ola/Clock.h>
 
 namespace ola {
 namespace thread {
@@ -75,7 +76,7 @@ class ConditionVariable {
     ~ConditionVariable();
 
     void Wait(Mutex *mutex);
-    bool TimedWait(Mutex *mutex, struct timespec *wait_time);
+    bool TimedWait(Mutex *mutex, const ola::TimeStamp &wake_up_time);
 
     void Signal();
     void Broadcast();

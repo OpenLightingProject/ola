@@ -33,9 +33,10 @@
 #include <string>
 
 #include "ola/BaseTypes.h"
+#include "ola/Clock.h"
 #include "ola/Logging.h"
-#include "plugins/karate/KarateThread.h"
 #include "plugins/karate/KarateLight.h"
+#include "plugins/karate/KarateThread.h"
 
 namespace ola {
 namespace plugin {
@@ -59,9 +60,8 @@ KarateThread::KarateThread(const string &path)
  * Run this thread
  */
 void *KarateThread::Run() {
-  struct timeval tv;
-  struct timespec ts;
   bool write_success;
+  Clock clock;
 
   KarateLight k(m_path);
   k.Init();
@@ -75,18 +75,15 @@ void *KarateThread::Run() {
 
     if (!k.IsActive()) {
       // try to reopen the device...
-      if (gettimeofday(&tv, NULL) < 0) {
-        OLA_WARN << "gettimeofday error";
-        break;
-      }
-      ts.tv_sec = tv.tv_sec + 1;
-      ts.tv_nsec = tv.tv_usec * 1000;
+      TimeStamp wake_up;
+      clock.CurrentTime(&wake_up);
+      wake_up += TimeInterval(1, 0);
 
       // wait for either a signal that we should terminate, or ts seconds
       m_term_mutex.Lock();
       if (m_term)
         break;
-      m_term_cond.TimedWait(&m_term_mutex, &ts);
+      m_term_cond.TimedWait(&m_term_mutex, wake_up);
       m_term_mutex.Unlock();
 
       OLA_WARN << "Re-Initialising device " << m_path;

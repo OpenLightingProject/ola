@@ -32,6 +32,7 @@
 #include <string>
 
 #include "ola/BaseTypes.h"
+#include "ola/Clock.h"
 #include "ola/Logging.h"
 #include "plugins/opendmx/OpenDmxThread.h"
 
@@ -60,8 +61,7 @@ OpenDmxThread::OpenDmxThread(const string &path)
 void *OpenDmxThread::Run() {
   uint8_t buffer[DMX_UNIVERSE_SIZE+1];
   unsigned int length = DMX_UNIVERSE_SIZE;
-  struct timeval tv;
-  struct timespec ts;
+  Clock clock;
 
   // should close other fd here
 
@@ -77,18 +77,15 @@ void *OpenDmxThread::Run() {
     }
 
     if (m_fd == INVALID_FD) {
-      if (gettimeofday(&tv, NULL) < 0) {
-        OLA_WARN << "gettimeofday error";
-        break;
-      }
-      ts.tv_sec = tv.tv_sec + 1;
-      ts.tv_nsec = tv.tv_usec * 1000;
+      TimeStamp wake_up;
+      clock.CurrentTime(&wake_up);
+      wake_up += TimeInterval(1, 0);
 
       // wait for either a signal that we should terminate, or ts seconds
       m_term_mutex.Lock();
       if (m_term)
         break;
-      m_term_cond.TimedWait(&m_term_mutex, &ts);
+      m_term_cond.TimedWait(&m_term_mutex, wake_up);
       m_term_mutex.Unlock();
 
       m_fd = open(m_path.c_str(), O_WRONLY);
