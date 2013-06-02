@@ -70,6 +70,7 @@ void* SignalThread::Run() {
       handler->Run();
     }
   }
+  return NULL;
 }
 
 /**
