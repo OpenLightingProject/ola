@@ -107,7 +107,8 @@ int main(int argc, char *argv[]) {
   signal_thread.InstallSignalHandler(SIGINT, NULL);
   signal_thread.InstallSignalHandler(SIGTERM, NULL);
   signal_thread.InstallSignalHandler(SIGHUP, NULL);
-  signal_thread.InstallSignalHandler(SIGUSR1, NULL);
+  signal_thread.InstallSignalHandler(
+      SIGUSR1, ola::NewCallback(&ola::IncrementLogLevel));
 
   ola::ola_server_options ola_options;
   ola_options.http_enable = FLAGS_http;
@@ -134,8 +135,6 @@ int main(int argc, char *argv[]) {
   signal_thread.InstallSignalHandler(
       SIGHUP,
       ola::NewCallback(olad.get(), &OlaDaemon::ReloadPlugins));
-  signal_thread.InstallSignalHandler(
-      SIGUSR1, ola::NewCallback(&ola::IncrementLogLevel));
 
   // We can't start the signal thread here, otherwise there is a race
   // condition if a signal arrives before we enter the SelectServer Run()
