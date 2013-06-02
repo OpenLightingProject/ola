@@ -29,6 +29,7 @@
 #include "ola/http/HTTPServer.h"
 #include "ola/http/OlaHTTPServer.h"
 #include "ola/network/Interface.h"
+#include "ola/rdm/PidStore.h"
 #include "olad/RDMHTTPModule.h"
 
 namespace ola {
@@ -60,6 +61,7 @@ class OladHTTPServer: public ola::http::OlaHTTPServer {
     virtual ~OladHTTPServer();
 
     bool Init();
+    void SetPidStore(const ola::rdm::RootPidStore *pid_store);
 
     int JsonServerStats(const HTTPRequest *request, HTTPResponse *response);
     int JsonUniversePluginList(const HTTPRequest *request,
@@ -74,6 +76,7 @@ class OladHTTPServer: public ola::http::OlaHTTPServer {
     int HandleSetDmx(const HTTPRequest *request, HTTPResponse *response);
     int DisplayQuit(const HTTPRequest *request, HTTPResponse *response);
     int ReloadPlugins(const HTTPRequest *request, HTTPResponse *response);
+    int ReloadPidStore(const HTTPRequest *request, HTTPResponse *response);
 
     void HandlePluginList(HTTPResponse *response,
                           const vector<class OlaPlugin> &plugins,

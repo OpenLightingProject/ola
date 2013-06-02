@@ -27,10 +27,12 @@
 #include <utility>
 #include <vector>
 #include "ola/OlaCallbackClient.h"
+#include "ola/http/HTTPServer.h"
+#include "ola/rdm/PidStore.h"
 #include "ola/rdm/RDMAPI.h"
 #include "ola/rdm/UID.h"
+#include "ola/thread/Mutex.h"
 #include "ola/web/JsonSections.h"
-#include "ola/http/HTTPServer.h"
 
 namespace ola {
 
@@ -49,6 +51,8 @@ class RDMHTTPModule {
     RDMHTTPModule(HTTPServer *http_server,
                   class OlaCallbackClient *client);
     ~RDMHTTPModule();
+
+    void SetPidStore(const ola::rdm::RootPidStore *pid_store);
 
     int RunRDMDiscovery(const HTTPRequest *request, HTTPResponse *response);
 
@@ -95,6 +99,9 @@ class RDMHTTPModule {
     class OlaCallbackClient *m_client;
     ola::rdm::RDMAPI m_rdm_api;
     map<unsigned int, uid_resolution_state*> m_universe_uids;
+
+    ola::thread::Mutex m_pid_store_mu;
+    const ola::rdm::RootPidStore *m_pid_store;  // GUARDED_BY(m_pid_store_mu);
 
     typedef struct {
       string id;

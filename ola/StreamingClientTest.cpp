@@ -25,10 +25,13 @@
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
 #include "ola/StreamingClient.h"
+#include "ola/base/Flags.h"
 #include "ola/network/SocketAddress.h"
 #include "ola/testing/TestUtils.h"
 #include "ola/thread/Thread.h"
 #include "olad/OlaDaemon.h"
+
+DECLARE_uint16(rpc_port);
 
 static unsigned int TEST_UNIVERSE = 1;
 
@@ -75,7 +78,8 @@ class OlaServerThread: public ola::thread::Thread {
 
 
 bool OlaServerThread::Setup() {
-  ola::ola_server_options ola_options;
+  FLAGS_rpc_port = 0;  // pick an unused port
+  ola::OlaServer::Options ola_options;
   ola_options.http_enable = false;
   ola_options.http_localhost_only = false;
   ola_options.http_enable_quit = false;
@@ -83,7 +87,7 @@ bool OlaServerThread::Setup() {
   ola_options.http_data_dir = "";
 
   // pick an unused port
-  auto_ptr<OlaDaemon> olad(new OlaDaemon(ola_options, NULL, 0));
+  auto_ptr<OlaDaemon> olad(new OlaDaemon(ola_options, NULL));
   if (olad->Init()) {
     m_olad.reset(olad.release());
     return true;
@@ -110,7 +114,7 @@ void *OlaServerThread::Run() {
  */
 void OlaServerThread::Terminate() {
   if (m_olad.get())
-    m_olad->Terminate();
+    m_olad->GetSelectServer()->Terminate();
 }
 
 GenericSocketAddress OlaServerThread::RPCAddress() const {

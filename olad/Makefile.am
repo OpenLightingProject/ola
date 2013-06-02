@@ -42,6 +42,7 @@ EXTRA_DIST = Client.h ClientBroker.h DeviceManager.h \
 # Olad Server
 bin_PROGRAMS = olad
 olad_SOURCES = Olad.cpp
+olad_CXXFLAGS = $(COMMON_CXXFLAGS) @OLAD_DEFINES@
 
 if SUPPORTS_RDYNAMIC
 olad_LDFLAGS = -rdynamic

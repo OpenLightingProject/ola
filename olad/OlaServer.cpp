@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <map>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -37,6 +38,7 @@
 #include "ola/ExportMap.h"
 #include "ola/Logging.h"
 #include "ola/network/InterfacePicker.h"
+#include "ola/rdm/PidStore.h"
 #include "ola/rdm/UID.h"
 #include "olad/Client.h"
 #include "olad/DeviceManager.h"
@@ -59,7 +61,9 @@
 
 namespace ola {
 
+using ola::rdm::RootPidStore;
 using ola::rpc::StreamRpcChannel;
+using std::auto_ptr;
 using std::pair;
 
 const char OlaServer::UNIVERSE_PREFERENCES[] = "universe";
@@ -78,7 +82,7 @@ OlaServer::OlaServer(OlaClientServiceFactory *factory,
                      const vector<PluginLoader*> &plugin_loaders,
                      PreferencesFactory *preferences_factory,
                      ola::io::SelectServer *select_server,
-                     ola_server_options *ola_options,
+                     const Options &ola_options,
                      ola::network::TCPAcceptingSocket *socket,
                      ExportMap *export_map)
     : m_service_factory(factory),
@@ -103,15 +107,12 @@ OlaServer::OlaServer(OlaClientServiceFactory *factory,
       m_free_export_map(false),
       m_housekeeping_timeout(ola::thread::INVALID_TIMEOUT),
       m_httpd(NULL),
-      m_options(*ola_options),
+      m_options(ola_options),
       m_default_uid(OPEN_LIGHTING_ESTA_CODE, 0) {
   if (!m_export_map) {
     m_export_map = new ExportMap();
     m_free_export_map = true;
   }
-
-  if (!m_options.http_port)
-    m_options.http_port = DEFAULT_HTTP_PORT;
 
   m_export_map->GetIntegerVar(K_CLIENT_VAR);
 }
@@ -190,6 +191,13 @@ bool OlaServer::Init() {
   if (m_plugin_loaders.empty() || !m_preferences_factory)
     return false;
 
+  const RootPidStore* pid_store =
+    RootPidStore::LoadFromDirectory(m_options.pid_data_dir);
+  if (!pid_store)
+    OLA_WARN << "No PID definitions loaded";
+
+  UpdatePidStore(pid_store);
+
   if (m_accepting_socket) {
     m_accepting_socket->SetFactory(&m_tcp_socket_factory);
     m_ss->AddReadDescriptor(m_accepting_socket);
@@ -201,16 +209,17 @@ bool OlaServer::Init() {
 
   // fetch the interface info
   ola::network::Interface iface;
-  ola::network::InterfacePicker *picker =
-    ola::network::InterfacePicker::NewPicker();
-  if (!picker->ChooseInterface(&iface, m_options.interface)) {
-    OLA_WARN << "No network interface found";
-  } else {
-    // default to using the ip as a id
-    m_default_uid = ola::rdm::UID(OPEN_LIGHTING_ESTA_CODE,
-                                  iface.ip_address.AsInt());
+  {
+    auto_ptr<ola::network::InterfacePicker> picker(
+      ola::network::InterfacePicker::NewPicker());
+    if (!picker->ChooseInterface(&iface, m_options.interface)) {
+      OLA_WARN << "No network interface found";
+    } else {
+      // default to using the ip as a id
+      m_default_uid = ola::rdm::UID(OPEN_LIGHTING_ESTA_CODE,
+                                    iface.ip_address.AsInt());
+    }
   }
-  delete picker;
   m_export_map->GetStringVar(K_UID_VAR)->Set(m_default_uid.ToString());
   OLA_INFO << "Server UID is " << m_default_uid;
 
@@ -262,7 +271,6 @@ bool OlaServer::Init() {
   m_housekeeping_timeout = m_ss->RegisterRepeatingTimeout(
       K_HOUSEKEEPING_TIMEOUT_MS,
       ola::NewCallback(this, &OlaServer::RunHousekeeping));
-  m_ss->RunInLoop(ola::NewCallback(this, &OlaServer::CheckForReload));
 
   m_init_run = true;
   return true;
@@ -274,7 +282,22 @@ bool OlaServer::Init() {
  * interrupt handler.
  */
 void OlaServer::ReloadPlugins() {
-  m_reload_plugins = true;
+  m_ss->Execute(NewCallback(this, &OlaServer::ReloadPluginsInternal));
+}
+
+
+/*
+ * Reload the pid store.
+ */
+void OlaServer::ReloadPidStore() {
+  // We load the pids in this thread, and then hand the RootPidStore over to
+  // the main thread. This avoids doing disk I/O in the network thread.
+  const RootPidStore* pid_store =
+    RootPidStore::LoadFromDirectory(m_options.pid_data_dir);
+  if (!pid_store)
+    return;
+
+  m_ss->Execute(NewCallback(this, &OlaServer::UpdatePidStore, pid_store));
 }
 
 
@@ -343,19 +366,6 @@ bool OlaServer::RunHousekeeping() {
 
 
 /*
- * Called once per loop iteration
- */
-void OlaServer::CheckForReload() {
-  if (m_reload_plugins) {
-    m_reload_plugins = false;
-    OLA_INFO << "Reloading plugins";
-    StopPlugins();
-    m_plugin_manager->LoadAll();
-  }
-}
-
-
-/*
  * Setup the HTTP server if required.
  * @param interface the primary interface that the server is using.
  */
@@ -374,12 +384,9 @@ bool OlaServer::StartHttpServer(const ola::network::Interface &iface) {
 
   // ownership of the pipe_descriptor is transferred here.
   OladHTTPServer::OladHTTPServerOptions options;
-  if (m_options.http_port)
-    options.port = m_options.http_port;
-  if (!m_options.http_data_dir.empty())
-    options.data_dir = m_options.http_data_dir;
-  else
-    options.data_dir = HTTP_DATA_DIR;
+  options.port = m_options.http_port ? m_options.http_port : DEFAULT_HTTP_PORT;
+  options.data_dir = (m_options.http_data_dir.empty() ? HTTP_DATA_DIR :
+                      m_options.http_data_dir);
   options.enable_quit = m_options.http_enable_quit;
 
   m_httpd = new OladHTTPServer(m_export_map,
@@ -472,5 +479,26 @@ void OlaServer::CleanupConnection(OlaClientService *service) {
   delete client->Stub();
   delete client;
   delete service;
+}
+
+/**
+ * Reload the plugins. Called from the SelectServer thread.
+ */
+void OlaServer::ReloadPluginsInternal() {
+  OLA_INFO << "Reloading plugins";
+  StopPlugins();
+  m_plugin_manager->LoadAll();
+}
+
+/**
+ * Update the Pid store with the new values.
+ */
+void OlaServer::UpdatePidStore(const RootPidStore *pid_store) {
+  OLA_INFO << "Updated PID definitions.";
+  if (m_httpd) {
+    m_httpd->SetPidStore(pid_store);
+  }
+
+  m_pid_store.reset(pid_store);
 }
 }  // namespace ola

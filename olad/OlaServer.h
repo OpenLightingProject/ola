@@ -35,9 +35,14 @@
 #include "ola/network/Socket.h"
 #include "ola/network/TCPSocketFactory.h"
 #include "ola/plugin_id.h"
+#include "ola/rdm/PidStore.h"
 #include "ola/rdm/UID.h"
 
 namespace ola {
+
+using ola::rdm::RootPidStore;
+using std::auto_ptr;
+using std::string;
 
 #ifdef HAVE_LIBMICROHTTPD
 typedef class OladHTTPServer OladHTTPServer_t;
@@ -45,51 +50,46 @@ typedef class OladHTTPServer OladHTTPServer_t;
 typedef int OladHTTPServer_t;
 #endif
 
-typedef struct {
-  bool http_enable;  // run the http server
-  bool http_localhost_only;  // restrict access to localhost only
-  bool http_enable_quit;  // enable /quit
-  unsigned int http_port;  // port to run the http server on
-  std::string http_data_dir;  // directory that contains the static content
-  std::string interface;
-} ola_server_options;
-
-
 /*
  * The main OlaServer class
  */
 class OlaServer {
   public:
+    struct Options {
+      bool http_enable;  // run the http server
+      bool http_localhost_only;  // restrict access to localhost only
+      bool http_enable_quit;  // enable /quit
+      unsigned int http_port;  // port to run the http server on
+      string http_data_dir;  // directory that contains the static content
+      string interface;
+      string pid_data_dir;  // directory with the pid definitions.
+    };
+
+
     OlaServer(class OlaClientServiceFactory *factory,
               const vector<class PluginLoader*> &plugin_loaders,
               class PreferencesFactory *preferences_factory,
               ola::io::SelectServer *ss,
-              ola_server_options *ola_options,
+              const Options &ola_options,
               ola::network::TCPAcceptingSocket *socket = NULL,
               ExportMap *export_map = NULL);
     ~OlaServer();
+
     bool Init();
+
+    // Thread safe.
     void ReloadPlugins();
+    void ReloadPidStore();
+
     void StopServer() { m_ss->Terminate(); }
     void NewConnection(ola::io::ConnectedDescriptor *descriptor);
     void NewTCPConnection(ola::network::TCPSocket *socket);
     void SocketClosed(ola::io::ConnectedDescriptor *socket);
     bool RunHousekeeping();
-    void CheckForReload();
 
     static const unsigned int DEFAULT_HTTP_PORT = 9090;
 
   private :
-    OlaServer(const OlaServer&);
-    OlaServer& operator=(const OlaServer&);
-
-#ifdef HAVE_LIBMICROHTTPD
-    bool StartHttpServer(const ola::network::Interface &interface);
-#endif
-    void StopPlugins();
-    void InternalNewConnection(ola::io::ConnectedDescriptor *descriptor);
-    void CleanupConnection(class OlaClientService *service);
-
     class OlaClientServiceFactory *m_service_factory;
     vector<class PluginLoader*> m_plugin_loaders;
     ola::io::SelectServer *m_ss;
@@ -107,6 +107,7 @@ class OlaServer {
     class OlaServerServiceImpl *m_service_impl;
     class ClientBroker *m_broker;
     class PortBroker *m_port_broker;
+    auto_ptr<const RootPidStore> m_pid_store;
 
     bool m_reload_plugins;
     bool m_init_run;
@@ -114,8 +115,20 @@ class OlaServer {
     ola::thread::timeout_id m_housekeeping_timeout;
     std::map<int, class OlaClientService*> m_sd_to_service;
     OladHTTPServer_t *m_httpd;
-    ola_server_options m_options;
+    const Options m_options;
     ola::rdm::UID m_default_uid;
+
+#ifdef HAVE_LIBMICROHTTPD
+    bool StartHttpServer(const ola::network::Interface &interface);
+#endif
+    void StopPlugins();
+    void InternalNewConnection(ola::io::ConnectedDescriptor *descriptor);
+    void CleanupConnection(class OlaClientService *service);
+    void ReloadPluginsInternal();
+    void UpdatePidStore(const RootPidStore *pid_store);
+
+    OlaServer(const OlaServer&);
+    OlaServer& operator=(const OlaServer&);
 
     static const char UNIVERSE_PREFERENCES[];
     static const char K_CLIENT_VAR[];

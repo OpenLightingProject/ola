@@ -21,6 +21,7 @@
 #ifndef OLAD_OLADAEMON_H_
 #define OLAD_OLADAEMON_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 #include "ola/BaseTypes.h"
@@ -31,40 +32,39 @@
 #include "olad/OlaServer.h"
 
 namespace ola {
+namespace rdm {
+  class RootPidStore;
+}  // rdm
 
 using ola::io::SelectServer;
 using ola::network::TCPAcceptingSocket;
+using std::auto_ptr;
 
 class OlaDaemon {
   public:
-    OlaDaemon(const ola_server_options &options,
-              ExportMap *export_map = NULL,
-              unsigned int rpc_port = OLA_DEFAULT_PORT,
-              std::string config_dir = "");
+    OlaDaemon(const OlaServer::Options &options,
+              ExportMap *export_map = NULL);
     ~OlaDaemon();
     bool Init();
     void Shutdown();
     void Run();
-    void Terminate();
-    void ReloadPlugins();
+
     ola::network::GenericSocketAddress RPCAddress() const;
     SelectServer* GetSelectServer() { return &m_ss; }
-    class OlaServer *GetOlaServer() const { return m_server; }
+    OlaServer *GetOlaServer() const { return m_server.get(); }
 
     static const unsigned int DEFAULT_RPC_PORT = OLA_DEFAULT_PORT;
 
   private:
-    vector<class PluginLoader *> m_plugin_loaders;
-    SelectServer m_ss;
-
-    class OlaServer *m_server;
-    class PreferencesFactory *m_preferences_factory;
-    class TCPAcceptingSocket *m_accepting_socket;
-    class OlaClientServiceFactory *m_service_factory;
-    ola_server_options m_options;
+    const OlaServer::Options m_options;
     class ExportMap *m_export_map;
-    unsigned int m_rpc_port;
-    std::string m_config_dir;
+    SelectServer m_ss;
+    vector<class PluginLoader*> m_plugin_loaders;
+
+    auto_ptr<class PreferencesFactory> m_preferences_factory;
+    auto_ptr<class OlaClientServiceFactory> m_service_factory;
+    auto_ptr<TCPAcceptingSocket> m_accepting_socket;
+    auto_ptr<OlaServer> m_server;
 
     string DefaultConfigDir();
     bool InitConfigDir(const string &path);

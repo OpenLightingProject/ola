@@ -37,16 +37,18 @@
 #include "ola/rdm/RDMHelper.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
+#include "ola/thread/Mutex.h"
 #include "ola/web/Json.h"
 #include "ola/web/JsonSections.h"
 #include "olad/OlaServer.h"
 #include "olad/OladHTTPServer.h"
 #include "olad/RDMHTTPModule.h"
 
-
 namespace ola {
 
+using ola::OladHTTPServer;
 using ola::rdm::UID;
+using ola::thread::MutexLocker;
 using ola::web::BoolItem;
 using ola::web::GenericItem;
 using ola::web::HiddenItem;
@@ -56,7 +58,6 @@ using ola::web::JsonSection;
 using ola::web::SelectItem;
 using ola::web::StringItem;
 using ola::web::UIntItem;
-using ola::OladHTTPServer;
 using std::endl;
 using std::pair;
 using std::set;
@@ -189,6 +190,14 @@ RDMHTTPModule::~RDMHTTPModule() {
     delete uid_iter->second;
   }
   m_universe_uids.clear();
+}
+
+/**
+ * Can be called while the server is running. Ownership is not transferred.
+ */
+void RDMHTTPModule::SetPidStore(const ola::rdm::RootPidStore *pid_store) {
+  MutexLocker lock(&m_pid_store_mu);
+  m_pid_store = pid_store;
 }
 
 

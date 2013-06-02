@@ -77,6 +77,7 @@ OladHTTPServer::OladHTTPServer(ExportMap *export_map,
   // The main handlers
   RegisterHandler("/quit", &OladHTTPServer::DisplayQuit);
   RegisterHandler("/reload", &OladHTTPServer::ReloadPlugins);
+  RegisterHandler("/reload_pids", &OladHTTPServer::ReloadPidStore);
   RegisterHandler("/new_universe", &OladHTTPServer::CreateNewUniverse);
   RegisterHandler("/modify_universe", &OladHTTPServer::ModifyUniverse);
   RegisterHandler("/set_dmx", &OladHTTPServer::HandleSetDmx);
@@ -147,6 +148,14 @@ bool OladHTTPServer::Init() {
   */
   m_server.SelectServer()->AddReadDescriptor(m_client_socket);
   return true;
+}
+
+
+/**
+ * Can be called while the http server is running
+ */
+void OladHTTPServer::SetPidStore(const ola::rdm::RootPidStore *pid_store) {
+  m_rdm_module.SetPidStore(pid_store);
 }
 
 
@@ -477,8 +486,27 @@ int OladHTTPServer::DisplayQuit(const HTTPRequest *request,
  * @returns MHD_NO or MHD_YES
  */
 int OladHTTPServer::ReloadPlugins(const HTTPRequest *request,
-                                 HTTPResponse *response) {
+                                  HTTPResponse *response) {
   m_ola_server->ReloadPlugins();
+  response->SetNoCache();
+  response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
+  response->Append("ok");
+  int r = response->Send();
+  delete response;
+  return r;
+  (void) request;
+}
+
+
+/*
+ * Reload the Pid Store.
+ * @param request the HTTPRequest
+ * @param response the HTTPResponse
+ * @returns MHD_NO or MHD_YES
+ */
+int OladHTTPServer::ReloadPidStore(const HTTPRequest *request,
+                                   HTTPResponse *response) {
+  m_ola_server->ReloadPidStore();
   response->SetNoCache();
   response->SetContentType(HTTPServer::CONTENT_TYPE_PLAIN);
   response->Append("ok");

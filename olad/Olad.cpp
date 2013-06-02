@@ -49,15 +49,14 @@ DEFINE_bool(http, true, "Disable the HTTP server");
 DEFINE_bool(http_quit, true, "Disable the HTTP /quit hanlder");
 DEFINE_s_bool(daemon, f, false, "Fork and run in the background");
 DEFINE_s_bool(version, v, false, "Print version information");
-DEFINE_s_string(config_dir, c, "", "Path to the config directory");
 DEFINE_s_string(http_data_dir, d, "", "Path to the static www content");
 DEFINE_s_string(interface, i, "",
                 "The interface name (e.g. eth0) or IP of the network interface "
                 "to use");
+DEFINE_string(pid_location, PID_DATA_DIR,
+              "The directory containing the PID definitions");
 DEFINE_s_uint16(http_port, p, ola::OlaServer::DEFAULT_HTTP_PORT,
                 "Port to run the http server on");
-DEFINE_s_uint16(rpc_port, r, ola::OlaDaemon::DEFAULT_RPC_PORT,
-                "Port to listen for RPCs on");
 
 
 /**
@@ -110,16 +109,15 @@ int main(int argc, char *argv[]) {
   signal_thread.InstallSignalHandler(
       SIGUSR1, ola::NewCallback(&ola::IncrementLogLevel));
 
-  ola::ola_server_options ola_options;
-  ola_options.http_enable = FLAGS_http;
-  ola_options.http_enable_quit = FLAGS_http_quit;
-  ola_options.http_port = FLAGS_http_port;
-  ola_options.http_data_dir = FLAGS_http_data_dir.str();
-  ola_options.interface = FLAGS_interface.str();
+  ola::OlaServer::Options options;
+  options.http_enable = FLAGS_http;
+  options.http_enable_quit = FLAGS_http_quit;
+  options.http_port = FLAGS_http_port;
+  options.http_data_dir = FLAGS_http_data_dir.str();
+  options.interface = FLAGS_interface.str();
+  options.pid_data_dir = FLAGS_pid_location.str();
 
-  std::auto_ptr<OlaDaemon> olad(
-      new OlaDaemon(ola_options, &export_map, FLAGS_rpc_port,
-                    FLAGS_config_dir));
+  std::auto_ptr<OlaDaemon> olad(new OlaDaemon(options, &export_map));
   if (!olad.get()) {
     return ola::EXIT_UNAVAILABLE;
   }
@@ -132,9 +130,6 @@ int main(int argc, char *argv[]) {
   signal_thread.InstallSignalHandler(
       SIGTERM,
       ola::NewCallback(olad->GetSelectServer(), &ola::SelectServer::Terminate));
-  signal_thread.InstallSignalHandler(
-      SIGHUP,
-      ola::NewCallback(olad.get(), &OlaDaemon::ReloadPlugins));
 
   // We can't start the signal thread here, otherwise there is a race
   // condition if a signal arrives before we enter the SelectServer Run()
@@ -147,6 +142,11 @@ int main(int argc, char *argv[]) {
   if (!olad->Init()) {
     return ola::EXIT_UNAVAILABLE;
   }
+
+  // Finally the OlaServer is not-null.
+  signal_thread.InstallSignalHandler(
+      SIGHUP,
+      ola::NewCallback(olad->GetOlaServer(), &ola::OlaServer::ReloadPlugins));
 
   olad->Run();
   return ola::EXIT_OK;
