@@ -1,3 +1,6 @@
+X/Y/2013 ola-0.8.30
+ * Clean up olad signal handling to avoid race conditions.
+
 29/5/2013 ola-0.8.29
  * Added KiNet output support.
  * Added support for the Karate USB devices.
