@@ -62,24 +62,15 @@ CPPUNIT_TEST_SUITE_REGISTRATION(StreamingClientTest);
  */
 class OlaServerThread: public ola::thread::Thread {
   public:
-    OlaServerThread() :
-        Thread(),
-        m_is_running(false) {
-    }
+    OlaServerThread() : Thread() { }
     ~OlaServerThread() {}
     bool Setup();
     void *Run();
     void Terminate();
-    void WaitForStart();
     GenericSocketAddress RPCAddress() const;
 
   private:
     auto_ptr<OlaDaemon> m_olad;
-    bool m_is_running;
-    Mutex m_mutex;
-    ConditionVariable m_condition;
-
-    void MarkAsStarted();
 };
 
 
@@ -107,8 +98,6 @@ bool OlaServerThread::Setup() {
  */
 void *OlaServerThread::Run() {
   if (m_olad.get()) {
-    m_olad->GetSelectServer()->Execute(
-        ola::NewSingleCallback(this, &OlaServerThread::MarkAsStarted));
     m_olad->Run();
     m_olad->Shutdown();
   }
@@ -123,26 +112,6 @@ void OlaServerThread::Terminate() {
   if (m_olad.get())
     m_olad->Terminate();
 }
-
-
-/**
- * Block until the OLA Server is running
- */
-void OlaServerThread::WaitForStart() {
-  m_mutex.Lock();
-  if (!m_is_running)
-    m_condition.Wait(&m_mutex);
-  m_mutex.Unlock();
-}
-
-
-void OlaServerThread::MarkAsStarted() {
-  m_mutex.Lock();
-  m_is_running = true;
-  m_mutex.Unlock();
-  m_condition.Signal();
-}
-
 
 GenericSocketAddress OlaServerThread::RPCAddress() const {
   if (m_olad.get()) {
@@ -179,7 +148,6 @@ void StreamingClientTest::tearDown() {
  * Check that the SendDMX method works correctly.
  */
 void StreamingClientTest::testSendDMX() {
-  m_server_thread->WaitForStart();
   GenericSocketAddress server_address = m_server_thread->RPCAddress();
   OLA_ASSERT_EQ(static_cast<uint16_t>(AF_INET), server_address.Family());
   StreamingClient::Options options;
