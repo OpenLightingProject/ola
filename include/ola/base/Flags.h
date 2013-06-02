@@ -83,25 +83,28 @@ void ParseFlags(int *argc, char **argv);
 // DECLARE_*
 
 #define DECLARE_bool(name) \
-  DEFINE_flag(bool, name)
+  DECLARE_flag(bool, name)
 
 #define DECLARE_int8(name) \
-  DEFINE_flag(int8_t, name)
+  DECLARE_flag(int8_t, name)
 
 #define DECLARE_int16(name) \
-  DEFINE_flag(int16_t, name)
+  DECLARE_flag(int16_t, name)
 
 #define DECLARE_int32(name) \
-  DEFINE_flag(int32_t, name)
+  DECLARE_flag(int32_t, name)
 
 #define DECLARE_uint8(name) \
-  DEFINE_flag(uint8_t, name)
+  DECLARE_flag(uint8_t, name)
 
 #define DECLARE_uint16(name) \
-  DEFINE_flag(uint16_t, name)
+  DECLARE_flag(uint16_t, name)
 
 #define DECLARE_uint32(name) \
-  DEFINE_flag(uint32_t, name)
+  DECLARE_flag(uint32_t, name)
+
+#define DECLARE_string(name) \
+  DECLARE_flag(std::string, name)
 
 // DEFINE_*
 

@@ -250,7 +250,7 @@ class FlagRegisterer {
 }  // namespace ola
 
 #define DECLARE_flag(type, name) \
-  namespace ola_flags { extern Flag<type> FLAGS_##name  } \
+  namespace ola_flags { extern ola::Flag<type> FLAGS_##name; } \
   using ola_flags::FLAGS_##name;
 
 #define DEFINE_flag(type, name, short_opt, default_value, help_str) \
