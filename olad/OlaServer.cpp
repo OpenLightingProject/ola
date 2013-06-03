@@ -123,15 +123,14 @@ OlaServer::~OlaServer() {
 
   StopPlugins();
 
-  map<int, OlaClientService*>::iterator iter;
-  for (iter = m_sd_to_service.begin(); iter != m_sd_to_service.end(); ++iter) {
-    CleanupConnection(iter->second);
-    // TODO(simon): close the socket here
+  ClientMap::iterator iter = m_sd_to_service.begin();
+  for (; iter != m_sd_to_service.end(); ++iter) {
+    CleanupConnection(iter->second.client_service);
 
-    /*Socket *socket = ;
-    m_ss->RemoveReadDescriptor(socket);
-    socket->Close();
-    */
+    ola::io::ConnectedDescriptor *descriptor = iter->second.client_descriptor;
+    m_ss->RemoveReadDescriptor(descriptor);
+    descriptor->Close();
+    delete descriptor;
   }
 
   m_broker.reset();
@@ -301,12 +300,12 @@ void OlaServer::NewTCPConnection(ola::network::TCPSocket *socket) {
  * Called when a socket is closed
  */
 void OlaServer::SocketClosed(ola::io::ConnectedDescriptor *socket) {
-  OlaClientService *client_service;
+  ClientEntry client_entry;
   bool removed = STLLookupAndRemove(&m_sd_to_service, socket->ReadDescriptor(),
-                                    &client_service);
+                                    &client_entry);
   if (removed) {
     (*m_export_map->GetIntegerVar(K_CLIENT_VAR))--;
-    CleanupConnection(client_service);
+    CleanupConnection(client_entry.client_service);
   } else {
     OLA_WARN << "A socket was closed but we didn't find the client";
   }
@@ -412,8 +411,9 @@ void OlaServer::InternalNewConnection(
   m_broker->AddClient(client);
   channel->SetService(service);
 
+  ClientEntry client_entry = {socket, service};
   bool replaced = STLReplace(&m_sd_to_service, socket->ReadDescriptor(),
-                             service);
+                             client_entry);
   if (replaced) {
     OLA_WARN << "New socket but the client already exists!";
   } else {

@@ -91,6 +91,13 @@ class OlaServer {
     static const unsigned int DEFAULT_HTTP_PORT = 9090;
 
   private :
+    struct ClientEntry {
+      ola::io::ConnectedDescriptor *client_descriptor;
+      class OlaClientService *client_service;
+    };
+
+    typedef std::map<int, ClientEntry> ClientMap;
+
     class OlaClientServiceFactory *m_service_factory;
     vector<class PluginLoader*> m_plugin_loaders;
     ola::io::SelectServer *m_ss;
@@ -113,7 +120,7 @@ class OlaServer {
     auto_ptr<const RootPidStore> m_pid_store;
 
     ola::thread::timeout_id m_housekeeping_timeout;
-    std::map<int, class OlaClientService*> m_sd_to_service;
+    ClientMap m_sd_to_service;
     auto_ptr<OladHTTPServer_t> m_httpd;
     const Options m_options;
     ola::rdm::UID m_default_uid;
