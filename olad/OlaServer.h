@@ -97,22 +97,21 @@ class OlaServer {
     ola::network::TCPSocketFactory m_tcp_socket_factory;
     ola::network::TCPAcceptingSocket *m_accepting_socket;
 
-    class DeviceManager *m_device_manager;
-    class PluginManager *m_plugin_manager;
-    class PluginAdaptor *m_plugin_adaptor;
+    auto_ptr<class ExportMap> m_our_export_map;
+    class ExportMap *m_export_map;
     class PreferencesFactory *m_preferences_factory;
     class Preferences *m_universe_preferences;
-    class UniverseStore *m_universe_store;
-    class ExportMap *m_export_map;
-    class PortManager *m_port_manager;
-    class OlaServerServiceImpl *m_service_impl;
-    class ClientBroker *m_broker;
-    class PortBroker *m_port_broker;
+
+    auto_ptr<class DeviceManager> m_device_manager;
+    auto_ptr<class PluginManager> m_plugin_manager;
+    auto_ptr<class PluginAdaptor> m_plugin_adaptor;
+    auto_ptr<class UniverseStore> m_universe_store;
+    auto_ptr<class PortManager> m_port_manager;
+    auto_ptr<class OlaServerServiceImpl> m_service_impl;
+    auto_ptr<class ClientBroker> m_broker;
+    auto_ptr<class PortBroker> m_port_broker;
     auto_ptr<const RootPidStore> m_pid_store;
 
-    bool m_reload_plugins;
-    bool m_init_run;
-    bool m_free_export_map;
     ola::thread::timeout_id m_housekeeping_timeout;
     std::map<int, class OlaClientService*> m_sd_to_service;
     auto_ptr<OladHTTPServer_t> m_httpd;

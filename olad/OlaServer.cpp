@@ -92,26 +92,15 @@ OlaServer::OlaServer(OlaClientServiceFactory *factory,
       m_tcp_socket_factory(
           ola::NewCallback(this, &OlaServer::NewTCPConnection)),
       m_accepting_socket(socket),
-      m_device_manager(NULL),
-      m_plugin_manager(NULL),
-      m_plugin_adaptor(NULL),
+      m_export_map(export_map),
       m_preferences_factory(preferences_factory),
       m_universe_preferences(NULL),
-      m_universe_store(NULL),
-      m_export_map(export_map),
-      m_port_manager(NULL),
-      m_service_impl(NULL),
-      m_broker(NULL),
-      m_port_broker(NULL),
-      m_reload_plugins(false),
-      m_init_run(false),
-      m_free_export_map(false),
       m_housekeeping_timeout(ola::thread::INVALID_TIMEOUT),
       m_options(ola_options),
       m_default_uid(OPEN_LIGHTING_ESTA_CODE, 0) {
   if (!m_export_map) {
-    m_export_map = new ExportMap();
-    m_free_export_map = true;
+    m_our_export_map.reset(new ExportMap());
+    m_export_map = m_our_export_map.get();
   }
 
   m_export_map->GetIntegerVar(K_CLIENT_VAR);
@@ -145,33 +134,26 @@ OlaServer::~OlaServer() {
     */
   }
 
-  if (m_broker)
-    delete m_broker;
+  m_broker.reset();
+  m_port_broker.reset();
 
-  if (m_port_broker)
-    delete m_port_broker;
-
-  if (m_accepting_socket &&
-      m_accepting_socket->ValidReadDescriptor())
+  if (m_accepting_socket && m_accepting_socket->ValidReadDescriptor())
     m_ss->RemoveReadDescriptor(m_accepting_socket);
 
-  if (m_universe_store) {
+  if (m_universe_store.get()) {
     m_universe_store->DeleteAll();
-    delete m_universe_store;
+    m_universe_store.reset();
   }
 
   if (m_universe_preferences) {
     m_universe_preferences->Save();
   }
 
-  delete m_port_manager;
-  delete m_plugin_adaptor;
-  delete m_device_manager;
-  delete m_plugin_manager;
-  delete m_service_impl;
-
-  if (m_free_export_map)
-    delete m_export_map;
+  m_port_manager.reset();
+  m_plugin_adaptor.reset();
+  m_device_manager.reset();
+  m_plugin_manager.reset();
+  m_service_impl.reset();
 }
 
 
@@ -180,7 +162,7 @@ OlaServer::~OlaServer() {
  * * @return true on success, false on failure
  */
 bool OlaServer::Init() {
-  if (m_init_run)
+  if (m_service_impl.get())
     return false;
 
   if (!m_service_factory || !m_ss)
@@ -225,42 +207,36 @@ bool OlaServer::Init() {
   m_universe_preferences = m_preferences_factory->NewPreference(
       UNIVERSE_PREFERENCES);
   m_universe_preferences->Load();
-  m_universe_store = new UniverseStore(m_universe_preferences, m_export_map);
+  m_universe_store.reset(
+      new UniverseStore(m_universe_preferences, m_export_map));
 
-  m_port_broker = new PortBroker();
-  m_port_manager = new PortManager(m_universe_store, m_port_broker);
-  m_broker = new ClientBroker();
+  m_port_broker.reset(new PortBroker());
+  m_port_manager.reset(
+      new PortManager(m_universe_store.get(), m_port_broker.get()));
+  m_broker.reset(new ClientBroker());
 
   // setup the objects
-  m_device_manager = new DeviceManager(m_preferences_factory, m_port_manager);
-  m_plugin_adaptor = new PluginAdaptor(m_device_manager, m_ss, m_export_map,
-                                       m_preferences_factory, m_port_broker);
+  m_device_manager.reset(
+      new DeviceManager(m_preferences_factory, m_port_manager.get()));
+  m_plugin_adaptor.reset(
+      new PluginAdaptor(m_device_manager.get(), m_ss, m_export_map,
+                        m_preferences_factory, m_port_broker.get()));
 
-  m_plugin_manager = new PluginManager(m_plugin_loaders, m_plugin_adaptor);
-  m_service_impl = new OlaServerServiceImpl(
-      m_universe_store,
-      m_device_manager,
-      m_plugin_manager,
+  m_plugin_manager.reset(
+    new PluginManager(m_plugin_loaders, m_plugin_adaptor.get()));
+  m_service_impl.reset(new OlaServerServiceImpl(
+      m_universe_store.get(),
+      m_device_manager.get(),
+      m_plugin_manager.get(),
       m_export_map,
-      m_port_manager,
-      m_broker,
+      m_port_manager.get(),
+      m_broker.get(),
       m_ss->WakeUpTime(),
-      m_default_uid);
-
-  if (!m_port_broker || !m_universe_store || !m_device_manager ||
-      !m_plugin_adaptor || !m_port_manager || !m_plugin_manager || !m_broker ||
-      !m_service_impl) {
-    delete m_plugin_adaptor;
-    delete m_device_manager;
-    delete m_port_manager;
-    delete m_universe_store;
-    delete m_plugin_manager;
-    return false;
-  }
+      m_default_uid));
 
   // The plugin load procedure can take a while so we run it in the main loop.
   m_ss->Execute(
-      ola::NewSingleCallback(m_plugin_manager, &PluginManager::LoadAll));
+      ola::NewSingleCallback(m_plugin_manager.get(), &PluginManager::LoadAll));
 
 #ifdef HAVE_LIBMICROHTTPD
   if (!StartHttpServer(iface))
@@ -271,7 +247,6 @@ bool OlaServer::Init() {
       K_HOUSEKEEPING_TIMEOUT_MS,
       ola::NewCallback(this, &OlaServer::RunHousekeeping));
 
-  m_init_run = true;
   return true;
 }
 
@@ -291,8 +266,8 @@ void OlaServer::ReloadPlugins() {
 void OlaServer::ReloadPidStore() {
   // We load the pids in this thread, and then hand the RootPidStore over to
   // the main thread. This avoids doing disk I/O in the network thread.
-  const RootPidStore* pid_store =
-    RootPidStore::LoadFromDirectory(m_options.pid_data_dir);
+  const RootPidStore* pid_store = RootPidStore::LoadFromDirectory(
+      m_options.pid_data_dir);
   if (!pid_store)
     return;
 
@@ -409,9 +384,9 @@ bool OlaServer::StartHttpServer(const ola::network::Interface &iface) {
  * Stop and unload all the plugins
  */
 void OlaServer::StopPlugins() {
-  if (m_plugin_manager)
+  if (m_plugin_manager.get())
     m_plugin_manager->UnloadAll();
-  if (m_device_manager) {
+  if (m_device_manager.get()) {
     if (m_device_manager->DeviceCount()) {
       OLA_WARN << "Some devices failed to unload, we're probably leaking "
         << "memory now";
@@ -432,7 +407,8 @@ void OlaServer::InternalNewConnection(
       NewSingleCallback(this, &OlaServer::SocketClosed, socket));
   OlaClientService_Stub *stub = new OlaClientService_Stub(channel);
   Client *client = new Client(stub);
-  OlaClientService *service = m_service_factory->New(client, m_service_impl);
+  OlaClientService *service = m_service_factory->New(
+      client, m_service_impl.get());
   m_broker->AddClient(client);
   channel->SetService(service);
 
