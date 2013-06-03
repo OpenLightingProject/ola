@@ -127,16 +127,19 @@ typename T1::mapped_type STLFindOrNull(const T1 &container,
 /**
  * Sets key : value, replacing any existing value. Note if value_type is a
  * pointer, you probably don't wait this since you'll leak memory if you
- * replace a value.
+ * replace a value. Returns true if the value was replaced, false if it was
+ * inserted.
  */
 template<typename T1>
-void STLReplace(T1 *container, const typename T1::key_type &key,
+bool STLReplace(T1 *container, const typename T1::key_type &key,
                 const typename T1::mapped_type &value) {
   std::pair<typename T1::iterator, bool> p = container->insert(
       typename T1::value_type(key, value));
   if (!p.second) {
     p.first->second = value;
+    return true;
   }
+  return false;
 }
 
 

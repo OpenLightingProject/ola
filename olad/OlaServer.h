@@ -115,7 +115,7 @@ class OlaServer {
     bool m_free_export_map;
     ola::thread::timeout_id m_housekeeping_timeout;
     std::map<int, class OlaClientService*> m_sd_to_service;
-    OladHTTPServer_t *m_httpd;
+    auto_ptr<OladHTTPServer_t> m_httpd;
     const Options m_options;
     ola::rdm::UID m_default_uid;
 

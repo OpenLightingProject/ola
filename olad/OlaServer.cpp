@@ -40,6 +40,7 @@
 #include "ola/network/InterfacePicker.h"
 #include "ola/rdm/PidStore.h"
 #include "ola/rdm/UID.h"
+#include "ola/stl/STLUtils.h"
 #include "olad/Client.h"
 #include "olad/DeviceManager.h"
 #include "olad/ClientBroker.h"
@@ -106,7 +107,6 @@ OlaServer::OlaServer(OlaClientServiceFactory *factory,
       m_init_run(false),
       m_free_export_map(false),
       m_housekeeping_timeout(ola::thread::INVALID_TIMEOUT),
-      m_httpd(NULL),
       m_options(ola_options),
       m_default_uid(OPEN_LIGHTING_ESTA_CODE, 0) {
   if (!m_export_map) {
@@ -123,10 +123,9 @@ OlaServer::OlaServer(OlaClientServiceFactory *factory,
  */
 OlaServer::~OlaServer() {
 #ifdef HAVE_LIBMICROHTTPD
-  if (m_httpd) {
+  if (m_httpd.get()) {
     m_httpd->Stop();
-    delete m_httpd;
-    m_httpd = NULL;
+    m_httpd.reset();
   }
 #endif
 
@@ -327,17 +326,15 @@ void OlaServer::NewTCPConnection(ola::network::TCPSocket *socket) {
  * Called when a socket is closed
  */
 void OlaServer::SocketClosed(ola::io::ConnectedDescriptor *socket) {
-  map<int, OlaClientService*>::iterator iter;
-  iter = m_sd_to_service.find(socket->ReadDescriptor());
-
-  if (iter == m_sd_to_service.end()) {
+  OlaClientService *client_service;
+  bool removed = STLLookupAndRemove(&m_sd_to_service, socket->ReadDescriptor(),
+                                    &client_service);
+  if (removed) {
+    (*m_export_map->GetIntegerVar(K_CLIENT_VAR))--;
+    CleanupConnection(client_service);
+  } else {
     OLA_WARN << "A socket was closed but we didn't find the client";
-    return;
   }
-
-  (*m_export_map->GetIntegerVar(K_CLIENT_VAR))--;
-  CleanupConnection(iter->second);
-  m_sd_to_service.erase(iter);
 }
 
 
@@ -374,11 +371,11 @@ bool OlaServer::StartHttpServer(const ola::network::Interface &iface) {
   if (!m_options.http_enable)
     return true;
 
-  // create a pipe socket for the http server to communicate with the main
+  // create a pipe for the http server to communicate with the main
   // server on.
-  ola::io::PipeDescriptor *pipe_descriptor = new ola::io::PipeDescriptor();
+  auto_ptr<ola::io::PipeDescriptor> pipe_descriptor(
+      new ola::io::PipeDescriptor());
   if (!pipe_descriptor->Init()) {
-    delete pipe_descriptor;
     return false;
   }
 
@@ -389,22 +386,19 @@ bool OlaServer::StartHttpServer(const ola::network::Interface &iface) {
                       m_options.http_data_dir);
   options.enable_quit = m_options.http_enable_quit;
 
-  m_httpd = new OladHTTPServer(m_export_map,
-                               options,
-                               pipe_descriptor->OppositeEnd(),
-                               this,
-                               iface);
+  auto_ptr<OladHTTPServer> httpd(
+      new OladHTTPServer(m_export_map, options,
+                         pipe_descriptor->OppositeEnd(),
+                         this, iface));
 
-  if (m_httpd->Init()) {
-    m_httpd->Start();
+  if (httpd->Init()) {
+    httpd->Start();
     // register the pipe descriptor as a client
-    InternalNewConnection(pipe_descriptor);
+    InternalNewConnection(pipe_descriptor.release());
+    m_httpd.reset(httpd.release());
     return true;
   } else {
     pipe_descriptor->Close();
-    delete pipe_descriptor;
-    delete m_httpd;
-    m_httpd = NULL;
     return false;
   }
 }
@@ -442,18 +436,16 @@ void OlaServer::InternalNewConnection(
   m_broker->AddClient(client);
   channel->SetService(service);
 
-  map<int, OlaClientService*>::const_iterator iter;
-  iter = m_sd_to_service.find(socket->ReadDescriptor());
+  bool replaced = STLReplace(&m_sd_to_service, socket->ReadDescriptor(),
+                             service);
+  if (replaced) {
+    OLA_WARN << "New socket but the client already exists!";
+  } else {
+    (*m_export_map->GetIntegerVar(K_CLIENT_VAR))++;
+  }
 
-  if (iter != m_sd_to_service.end())
-    OLA_INFO << "New socket but the client already exists!";
-
-  pair<int, OlaClientService*> pair(socket->ReadDescriptor(), service);
-  m_sd_to_service.insert(pair);
-
-  // This hands off ownership to the select server
+  // This hands off socket ownership to the select server
   m_ss->AddReadDescriptor(socket, true);
-  (*m_export_map->GetIntegerVar(K_CLIENT_VAR))++;
 }
 
 
@@ -495,7 +487,7 @@ void OlaServer::ReloadPluginsInternal() {
  */
 void OlaServer::UpdatePidStore(const RootPidStore *pid_store) {
   OLA_INFO << "Updated PID definitions.";
-  if (m_httpd) {
+  if (m_httpd.get()) {
     m_httpd->SetPidStore(pid_store);
   }
 
