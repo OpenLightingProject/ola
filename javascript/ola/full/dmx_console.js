@@ -74,7 +74,6 @@ ola.DmxConsole.prototype.getData = function() {
 
 /**
  * Set the data for this console
- * @return {Array.<number>} a list of channel data for the console.
  */
 ola.DmxConsole.prototype.setData = function(data) {
   var data_length = Math.min(ola.DmxMonitorTab.NUMBER_OF_CHANNELS,
