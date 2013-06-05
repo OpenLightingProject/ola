@@ -181,7 +181,7 @@ void OnConnect(U64 device_id, GenericInterface* device_interface,
   reader->DeviceConnected(device_id, device_interface);
 }
 
-void OnDisconnect(U64 device_id, void* user_data) {
+void OnDisconnect(U64 device_id, void *user_data) {
   if (!user_data)
     return;
 
