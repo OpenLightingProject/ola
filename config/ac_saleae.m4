@@ -39,7 +39,7 @@ AC_DEFUN([SALEAE_DEVICE],
   AC_LINK_IFELSE(
     [AC_LANG_PROGRAM([#include <SaleaeDeviceApi.h>],
                        [DevicesManagerInterface::RegisterOnConnect(NULL)])],
-    [have_saleae=1],
+    [have_saleae=yes],
     [AC_MSG_WARN([SaleaeDevice is not installed.])])
   LIBS=$old_libs
 
