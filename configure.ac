@@ -537,6 +537,9 @@ if test "${build_python_libs}" = "yes"; then
  AX_PYTHON_MODULE("google.protobuf", "fatal")
 fi
 
+# Maybe build the logic sniffer tools
+SALEAE_DEVICE
+
 # Enable running as root
 AC_ARG_ENABLE(
   root-check,
