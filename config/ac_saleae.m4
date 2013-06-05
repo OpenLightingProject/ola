@@ -35,7 +35,7 @@ AC_DEFUN([SALEAE_DEVICE],
   AC_SUBST(libSaleaeDevice_LIBS)
 
   old_libs=$LIBS
-  LIBS="${LIBS} -l${libSaleaeDevice_LIBS}"
+  LIBS="${LIBS} ${libSaleaeDevice_LIBS}"
   AC_LINK_IFELSE(
     [AC_LANG_PROGRAM([#include <SaleaeDeviceApi.h>],
                        [DevicesManagerInterface::RegisterOnConnect(NULL)])],
