@@ -38,9 +38,11 @@ ola.common.DmxMonitor = function(container) {
 };
 
 
+/** The number of channels @type {number} */
 ola.common.DmxMonitor.NUMBER_OF_CHANNELS = 512;
+/** The maximum value of a channel @type {number} */
 ola.common.DmxMonitor.MAX_CHANNEL_VALUE = 255;
-// The time between data fetches
+/** The time between data fetches @type {number} */
 ola.common.DmxMonitor.PAUSE_TIME_IN_MS = 1000;
 
 

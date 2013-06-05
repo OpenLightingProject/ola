@@ -45,12 +45,14 @@ ola.DmxConsole = function() {
 };
 goog.inherits(ola.DmxConsole, goog.events.EventTarget);
 
-/** The number of sliders to render */
+/** The number of sliders to render @type {number} */
 ola.DmxConsole.NUMBER_OF_SLIDERS = 16;
+/** The number of channels @type {number} */
 ola.DmxConsole.NUMBER_OF_CHANNELS = 512;
+/** The maximum value of a channel @type {number} */
 ola.DmxConsole.MAX_CHANNEL_VALUE = 255;
+/** The name of the change event @type {string} */
 ola.DmxConsole.CHANGE_EVENT = 'console-change-event';
-ola.DmxConsole.CHANNELS_PER_ROW = 10;
 
 
 /**

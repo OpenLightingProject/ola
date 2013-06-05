@@ -186,9 +186,13 @@ ola.RDMPatcher = function(element_id, status_id) {
 
 
 /* Constants */
+/** The number of channels @type {number} */
 ola.RDMPatcher.NUMBER_OF_CHANNELS = 512;
+/** The number of channels per row @type {number} */
 ola.RDMPatcher.CHANNELS_PER_ROW = 8;
+/** The height of each row @type {number} */
 ola.RDMPatcher.HEIGHT_PER_DEVICE = 14;
+/** The number of rows @type {number} */
 ola.RDMPatcher.NUMBER_OF_ROWS = (ola.RDMPatcher.NUMBER_OF_CHANNELS /
   ola.RDMPatcher.CHANNELS_PER_ROW);
 
