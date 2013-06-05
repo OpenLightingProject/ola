@@ -20,6 +20,7 @@
 
 goog.require('goog.Timer');
 goog.require('goog.events');
+goog.require('ola.common.BaseTypes');
 goog.require('ola.common.Server');
 
 goog.provide('ola.common.DmxMonitor');
@@ -38,10 +39,6 @@ ola.common.DmxMonitor = function(container) {
 };
 
 
-/** The number of channels @type {number} */
-ola.common.DmxMonitor.NUMBER_OF_CHANNELS = 512;
-/** The maximum value of a channel @type {number} */
-ola.common.DmxMonitor.MAX_CHANNEL_VALUE = 255;
 /** The time between data fetches @type {number} */
 ola.common.DmxMonitor.PAUSE_TIME_IN_MS = 1000;
 
@@ -69,7 +66,7 @@ ola.common.DmxMonitor.prototype.setState = function(enabled,
  * Setup the boxes if required.
  */
 ola.common.DmxMonitor.prototype.setupCells = function() {
-  for (var i = 0; i < ola.common.DmxMonitor.NUMBER_OF_CHANNELS; ++i) {
+  for (var i = 0; i < ola.common.BaseTypes.MAX_CHANNEL_NUMBER; ++i) {
     var cell = goog.dom.createElement('div');
     cell.title = 'Channel ' + (i + 1);
     var channel = goog.dom.createElement('div');
@@ -105,13 +102,13 @@ ola.common.DmxMonitor.prototype.fetchValues = function(e) {
  * Called when new data arrives.
  */
 ola.common.DmxMonitor.prototype.updateData = function(data) {
-  var data_length = Math.min(ola.common.DmxMonitor.NUMBER_OF_CHANNELS,
+  var data_length = Math.min(ola.common.BaseTypes.MAX_CHANNEL_NUMBER,
                              data.length);
   for (var i = 0; i < data_length; ++i) {
     this._setCellValue(i, data[i]);
   }
 
-  for (var i = data_length; i < ola.common.DmxMonitor.NUMBER_OF_CHANNELS;
+  for (var i = data_length; i < ola.common.BaseTypes.MAX_CHANNEL_NUMBER;
        ++i) {
     this._clearCellValue(i);
   }
@@ -137,7 +134,7 @@ ola.common.DmxMonitor.prototype._setCellValue = function(offset, value) {
     return;
   }
   element.innerHTML = value;
-  var remaining = ola.common.DmxMonitor.MAX_CHANNEL_VALUE - value;
+  var remaining = ola.common.BaseTypes.MAX_CHANNEL_VALUE - value;
   element.style.background = 'rgb(' + remaining + ',' + remaining + ',' +
     remaining + ')';
   if (value > 90) {

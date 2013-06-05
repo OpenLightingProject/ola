@@ -93,7 +93,7 @@ ola.RDMPatcherDevice.prototype.setFootprint = function(footprint) {
  */
 ola.RDMPatcherDevice.prototype._updateEnd = function() {
   this.end = Math.min(this.start + this.footprint - 1,
-                      ola.RDMPatcher.NUMBER_OF_CHANNELS);
+                      ola.common.BaseTypes.MAX_CHANNEL_NUMBER);
 };
 
 
@@ -128,7 +128,7 @@ ola.RDMPatcherDevice.prototype.getDivs = function() {
  * Check if a device overflows the 512 channel count.
  */
 ola.RDMPatcherDevice.prototype.overflows = function(div) {
-  return this.start + this.footprint > ola.RDMPatcher.NUMBER_OF_CHANNELS;
+  return this.start + this.footprint > ola.common.BaseTypes.MAX_CHANNEL_NUMBER;
 };
 
 
@@ -186,14 +186,12 @@ ola.RDMPatcher = function(element_id, status_id) {
 
 
 /* Constants */
-/** The number of channels @type {number} */
-ola.RDMPatcher.NUMBER_OF_CHANNELS = 512;
 /** The number of channels per row @type {number} */
 ola.RDMPatcher.CHANNELS_PER_ROW = 8;
 /** The height of each row @type {number} */
 ola.RDMPatcher.HEIGHT_PER_DEVICE = 14;
 /** The number of rows @type {number} */
-ola.RDMPatcher.NUMBER_OF_ROWS = (ola.RDMPatcher.NUMBER_OF_CHANNELS /
+ola.RDMPatcher.NUMBER_OF_ROWS = (ola.common.BaseTypes.MAX_CHANNEL_NUMBER /
   ola.RDMPatcher.CHANNELS_PER_ROW);
 
 
@@ -266,7 +264,7 @@ ola.RDMPatcher.prototype.autoPatch = function() {
   // sort by ascending footprint
   this.devices.sort(ola.RDMPatcherDevice.sortByFootprint);
 
-  if (channels_required > ola.RDMPatcher.NUMBER_OF_CHANNELS) {
+  if (channels_required > ola.common.BaseTypes.MAX_CHANNEL_NUMBER) {
     // we're going to have to overlap. to minimize overlapping we assign
     // largest footprint first
 
@@ -278,9 +276,9 @@ ola.RDMPatcher.prototype.autoPatch = function() {
       ola.logger.info('new round');
 
       while (devices.length &&
-             channel < ola.RDMPatcher.NUMBER_OF_CHANNELS) {
+             channel < ola.common.BaseTypes.MAX_CHANNEL_NUMBER) {
         var device = devices.pop();
-        var remaining = ola.RDMPatcher.NUMBER_OF_CHANNELS - channel;
+        var remaining = ola.common.BaseTypes.MAX_CHANNEL_NUMBER - channel;
         ola.logger.info(device.label + ' : ' + device.footprint);
         if (device.footprint > remaining) {
           // deal with this device next round
@@ -371,7 +369,7 @@ ola.RDMPatcher.prototype.render_ = function() {
   var slots = new Array();
   slots.push(goog.array.repeat(
       false,
-      ola.RDMPatcher.NUMBER_OF_CHANNELS));
+      ola.common.BaseTypes.MAX_CHANNEL_NUMBER));
 
   for (var i = 0; i < this.draggers.length; ++i) {
     goog.events.removeAll(this.draggers[i]);
@@ -399,7 +397,7 @@ ola.RDMPatcher.prototype.render_ = function() {
     if (!found_free_slot) {
       slots.push(goog.array.repeat(
           false,
-          ola.RDMPatcher.NUMBER_OF_CHANNELS));
+          ola.common.BaseTypes.MAX_CHANNEL_NUMBER));
     }
     // mark all appropriate channels in this slot as occupied.
     for (channel = device.start; channel <= device.end; ++channel) {
@@ -409,13 +407,13 @@ ola.RDMPatcher.prototype.render_ = function() {
   }
 
   // calculate the first/last free slot & max unused channels
-  var first_free_channel = ola.RDMPatcher.NUMBER_OF_CHANNELS;
+  var first_free_channel = ola.common.BaseTypes.MAX_CHANNEL_NUMBER;
   var last_free_channel = -1;
   var max_unused_channels = 0;
   var last_channel_used = true;
   var running_channel_count = 0;
 
-  for (var channel = 0; channel < ola.RDMPatcher.NUMBER_OF_CHANNELS;
+  for (var channel = 0; channel < ola.common.BaseTypes.MAX_CHANNEL_NUMBER;
     ++channel) {
     var used = false;
     for (var slot = 0; slot < slots.length; ++slot) {
@@ -448,7 +446,7 @@ ola.RDMPatcher.prototype.render_ = function() {
 
   // update the status line
   var status_line;
-  if (first_free_channel == ola.RDMPatcher.NUMBER_OF_CHANNELS) {
+  if (first_free_channel == ola.common.BaseTypes.MAX_CHANNEL_NUMBER) {
     status_line = 'No slots free';
   } else {
     first_free_channel++;
@@ -532,7 +530,7 @@ ola.RDMPatcher.prototype.renderSlot_ = function(tr, slot_data, start_channel) {
       if (device.overflows()) {
         div.className = 'patcher_overflow_device';
         div.title = 'Device overflows the ' +
-          ola.RDMPatcher.NUMBER_OF_CHANNELS + ' slot limit';
+          ola.common.BaseTypes.MAX_CHANNEL_NUMBER + ' slot limit';
       } else {
         div.className = 'patcher_device';
       }
@@ -860,8 +858,10 @@ ola.RDMPatcher.prototype._saveDevice = function(e) {
   }
 
   var value = parseInt(this.start_address_input.value);
-  if (isNaN(value) || value < 1 || value > ola.RDMPatcher.NUMBER_OF_CHANNELS) {
-    alert('Must be between 1 and ' + ola.RDMPatcher.NUMBER_OF_CHANNELS);
+  if (isNaN(value) || value < ola.common.BaseTypes.MIN_CHANNEL_NUMBER ||
+      value > ola.common.BaseTypes.MAX_CHANNEL_NUMBER) {
+    alert('Must be between ' + ola.common.BaseTypes.MIN_CHANNEL_NUMBER +
+    ' and ' + ola.common.BaseTypes.MAX_CHANNEL_NUMBER);
     return;
   }
 
