@@ -23,6 +23,7 @@
 #include <stdint.h>
 #include <string>
 
+#include "ola/BaseTypes.h"
 #include "ola/DmxBuffer.h"
 
 using std::string;
@@ -60,15 +61,14 @@ class KarateLight {
 
   static const uint16_t CMD_MAX_LENGTH = 64;
   static const uint16_t CHUNK_SIZE = 32;
-  static const uint16_t MAX_CHANNELS = 512;
 
   uint8_t m_fw_version;
   uint8_t m_hw_version;
   uint16_t m_nChannels;
   uint16_t m_dmx_offset;
 
-  uint8_t m_color_buffer[MAX_CHANNELS];
-  uint8_t m_color_buffer_old[MAX_CHANNELS];
+  uint8_t m_color_buffer[DMX_UNIVERSE_SIZE];
+  uint8_t m_color_buffer_old[DMX_UNIVERSE_SIZE];
   uint8_t m_use_memcmp;
 
   bool m_active;

@@ -30,8 +30,9 @@
 #include <iostream>
 #include <string>
 
-#include "ola/Logging.h"
+#include "ola/BaseTypes.h"
 #include "ola/DmxBuffer.h"
+#include "ola/Logging.h"
 #include "plugins/karate/KarateLight.h"
 
 namespace ola {
@@ -198,8 +199,8 @@ bool KarateLight::Init() {
  * \returns true on success
  */
 bool KarateLight::Blank() {
-  memset(m_color_buffer, 0, MAX_CHANNELS);
-  memset(m_color_buffer_old, 1, MAX_CHANNELS);
+  memset(m_color_buffer, 0, DMX_UNIVERSE_SIZE);
+  memset(m_color_buffer_old, 1, DMX_UNIVERSE_SIZE);
   return KarateLight::UpdateColors();
 }
 
@@ -210,7 +211,7 @@ bool KarateLight::Blank() {
 bool KarateLight::SetColors(const DmxBuffer &da) {
   // make sure not to request data beyond the bounds of the universe
   unsigned int length = std::min(static_cast<int>(da.Size()),
-                                 MAX_CHANNELS - m_dmx_offset);
+                                 DMX_UNIVERSE_SIZE - m_dmx_offset);
 
   da.GetRange(m_dmx_offset, m_color_buffer, &length);
   return KarateLight::UpdateColors();
@@ -405,7 +406,7 @@ bool KarateLight::UpdateColors() {
     }
   }
   // update old_values
-  memcpy(m_color_buffer_old, m_color_buffer, MAX_CHANNELS);
+  memcpy(m_color_buffer_old, m_color_buffer, DMX_UNIVERSE_SIZE);
   return true;
 }  // end of UpdateColors()
 }  // namespace karate
