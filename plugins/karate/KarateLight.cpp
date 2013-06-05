@@ -53,7 +53,7 @@ KarateLight::KarateLight(const string &dev)
 }
 
 /**
- * Default desctuctor
+ * Default destructor
  * closes the device and does release the file-lock
  */
 KarateLight::~KarateLight() {
