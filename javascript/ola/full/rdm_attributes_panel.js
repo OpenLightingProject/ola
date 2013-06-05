@@ -54,7 +54,7 @@ ola.RDMAttributesPanel = function(element_id, toolbar) {
   this.expander_button.setEnabled(false);
   goog.events.listen(this.expander_button,
                      goog.ui.Component.EventType.ACTION,
-                     function() { this._expandAllSections(); },
+                     function() { this.expandAllSections_(); },
                      false,
                      this);
 
@@ -63,7 +63,7 @@ ola.RDMAttributesPanel = function(element_id, toolbar) {
   this.collapse_button.setEnabled(false);
   goog.events.listen(this.collapse_button,
                      goog.ui.Component.EventType.ACTION,
-                     function() { this._hideAllSections(); },
+                     function() { this.hideAllSections_(); },
                      false,
                      this);
 
@@ -117,7 +117,7 @@ ola.RDMAttributesPanel.prototype.showUID = function(item) {
   server.rdmGetSupportedSections(
       this.current_universe,
       item.asString(),
-      function(e) { panel._supportedSections(e); });
+      function(e) { panel.supportedSections_(e); });
   this.current_uid = item.asString();
   this.expander_button.setEnabled(true);
   this.collapse_button.setEnabled(true);
@@ -131,7 +131,7 @@ ola.RDMAttributesPanel.prototype.clear = function() {
   this.current_uid = undefined;
   this.expander_button.setEnabled(false);
   this.collapse_button.setEnabled(false);
-  this._setEmpty();
+  this.setEmpty_();
 };
 
 
@@ -139,11 +139,11 @@ ola.RDMAttributesPanel.prototype.clear = function() {
  * Expand all the sections.
  * @private
  */
-ola.RDMAttributesPanel.prototype._expandAllSections = function() {
+ola.RDMAttributesPanel.prototype.expandAllSections_ = function() {
   for (var i = 0; i < this.zippies.length; ++i) {
     if (!this.zippies[i].isExpanded()) {
       this.zippies[i].setExpanded(true);
-      this._expandSection(i);
+      this.expandSection_(i);
     }
   }
 };
@@ -153,7 +153,7 @@ ola.RDMAttributesPanel.prototype._expandAllSections = function() {
  * Hide all the sections.
  * @private
  */
-ola.RDMAttributesPanel.prototype._hideAllSections = function() {
+ola.RDMAttributesPanel.prototype.hideAllSections_ = function() {
   for (var i = 0; i < this.zippies.length; ++i) {
     if (this.zippies[i].isExpanded()) {
       this.zippies[i].setExpanded(false);
@@ -188,7 +188,7 @@ ola.RDMAttributesPanel.prototype._refreshChanged = function(e) {
 ola.RDMAttributesPanel.prototype._refreshEvent = function(e) {
   for (var i = 0; i < this.zippies.length; ++i) {
     if (this.zippies[i].isExpanded()) {
-      this._loadSection(i);
+      this.loadSection_(i);
     }
   }
 };
@@ -198,7 +198,7 @@ ola.RDMAttributesPanel.prototype._refreshEvent = function(e) {
  * Display the 'empty' page.
  * @private
  */
-ola.RDMAttributesPanel.prototype._setEmpty = function() {
+ola.RDMAttributesPanel.prototype.setEmpty_ = function() {
   this.element.innerHTML = '';
 };
 
@@ -207,7 +207,7 @@ ola.RDMAttributesPanel.prototype._setEmpty = function() {
  * Display the loading image
  * @private
  */
-ola.RDMAttributesPanel.prototype._setLoading = function(element) {
+ola.RDMAttributesPanel.prototype.setLoading_ = function(element) {
   element.innerHTML = (
       '<div align="center"><img src="/loader.gif">' +
       '<br>Loading...</div>');
@@ -219,7 +219,7 @@ ola.RDMAttributesPanel.prototype._setLoading = function(element) {
  * @param {Object} e the event object.
  * @private
  */
-ola.RDMAttributesPanel.prototype._supportedSections = function(e) {
+ola.RDMAttributesPanel.prototype.supportedSections_ = function(e) {
   this.element.innerHTML = '';
   this.divs = new Array();
   this.zippies = new Array();
@@ -239,7 +239,7 @@ ola.RDMAttributesPanel.prototype._supportedSections = function(e) {
     goog.dom.appendChild(legend, title);
     var div = goog.dom.createElement('div');
     div.align = 'center';
-    this._setLoading(div);
+    this.setLoading_(div);
     goog.dom.appendChild(fieldset, legend);
     goog.dom.appendChild(fieldset, div);
     goog.dom.appendChild(this.element, fieldset);
@@ -253,7 +253,7 @@ ola.RDMAttributesPanel.prototype._supportedSections = function(e) {
           return function(e) {
             if (e.expanded)
               return;
-            this._expandSection(x);
+            this.expandSection_(x);
           }
         })(i),
         false,
@@ -270,11 +270,11 @@ ola.RDMAttributesPanel.prototype._supportedSections = function(e) {
  * Called when one of the zippies is expanded
  * @private
  */
-ola.RDMAttributesPanel.prototype._expandSection = function(index) {
+ola.RDMAttributesPanel.prototype.expandSection_ = function(index) {
   if (this.section_data[index]['loaded'])
     return;
 
-  this._loadSection(index);
+  this.loadSection_(index);
 };
 
 
@@ -282,7 +282,7 @@ ola.RDMAttributesPanel.prototype._expandSection = function(index) {
  * Load the contents for a zippy section
  * @private
  */
-ola.RDMAttributesPanel.prototype._loadSection = function(index) {
+ola.RDMAttributesPanel.prototype.loadSection_ = function(index) {
   var server = ola.common.Server.getInstance();
   var panel = this;
   server.rdmGetSectionInfo(
@@ -290,7 +290,7 @@ ola.RDMAttributesPanel.prototype._loadSection = function(index) {
       this.current_uid,
       this.section_data[index]['id'],
       this.section_data[index]['hint'],
-      function(e) { panel._populateSection(e, index); });
+      function(e) { panel.populateSection_(e, index); });
   this.section_data[index]['loaded'] = true;
 };
 
@@ -301,7 +301,7 @@ ola.RDMAttributesPanel.prototype._loadSection = function(index) {
  * @param {int} index the index of the zippy to populate.
  * @private
  */
-ola.RDMAttributesPanel.prototype._populateSection = function(e, index) {
+ola.RDMAttributesPanel.prototype.populateSection_ = function(e, index) {
   var section_response = e.target.getResponseJson();
   var div = this.divs[index];
   div.innerHTML = '';
@@ -342,7 +342,7 @@ ola.RDMAttributesPanel.prototype._populateSection = function(e, index) {
 
     goog.events.listen(button,
                        goog.ui.Component.EventType.ACTION,
-                       function() { this._loadSection(index) },
+                       function() { this.loadSection_(index) },
                        false, this);
   }
 
@@ -434,7 +434,7 @@ ola.RDMAttributesPanel.prototype._saveSectionComplete = function(e, index) {
     this._showErrorDialog(error_title, response['error']);
   } else {
     // reload data
-    this._loadSection(index);
+    this.loadSection_(index);
   }
 };
 

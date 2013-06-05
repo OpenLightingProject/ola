@@ -241,13 +241,13 @@ ola.RDMPatcher.prototype.hide = function() {
  */
 ola.RDMPatcher.prototype.update = function() {
   if (this.rows.length == 0) {
-    this._setup();
+    this.setup_();
   }
 
   for (var i = 0; i < this.rows.length; ++i) {
     this.rows[i].style.display = 'block';
   }
-  this._render();
+  this.render_();
 };
 
 
@@ -323,7 +323,7 @@ ola.RDMPatcher.prototype.autoPatch = function() {
  * Setup the patcher
  * @private
  */
-ola.RDMPatcher.prototype._setup = function() {
+ola.RDMPatcher.prototype.setup_ = function() {
   for (var i = 0; i < ola.RDMPatcher.NUMBER_OF_ROWS; ++i) {
     var row_div = goog.dom.createElement('div');
     row_div.className = 'patch_row';
@@ -362,7 +362,7 @@ ola.RDMPatcher.prototype._setup = function() {
  * Render the patcher.
  * @private
  */
-ola.RDMPatcher.prototype._render = function() {
+ola.RDMPatcher.prototype.render_ = function() {
   this.devices.sort(ola.RDMPatcherDevice.sortByAddress);
 
   // Each channel is assigned N slots, where N is the max number of devices
@@ -482,7 +482,7 @@ ola.RDMPatcher.prototype._render = function() {
           td = goog.dom.getNextElementSibling(td);
         }
       }
-      this._renderSlot(tr, slots[slot], offset);
+      this.renderSlot_(tr, slots[slot], offset);
       tr = goog.dom.getNextElementSibling(tr);
       slot++;
     }
@@ -505,7 +505,7 @@ ola.RDMPatcher.prototype._render = function() {
  * @param {element} tr the row to use. May contain tds already.
  * @private
  */
-ola.RDMPatcher.prototype._renderSlot = function(tr, slot_data, start_channel) {
+ola.RDMPatcher.prototype.renderSlot_ = function(tr, slot_data, start_channel) {
   var channel = start_channel;
   var end_channel = start_channel + ola.RDMPatcher.CHANNELS_PER_ROW;
   var td = goog.dom.getFirstElementChild(tr);
@@ -903,7 +903,7 @@ ola.RDMPatcher.prototype._setStartAddressComplete = function(device,
     dialog.setVisible(false);
     device.setStart(start_address);
   }
-  this._render();
+  this.render_();
 };
 
 
@@ -939,7 +939,7 @@ ola.RDMPatcher.prototype._personalityComplete = function(e, new_footprint) {
     this.dialog.setVisible(false);
   } else {
     this.active_device.setFootprint(new_footprint);
-    this._render();
+    this.render_();
   }
 };
 
@@ -1023,6 +1023,6 @@ ola.RDMPatcher.prototype._updateStartAddressComplete = function(e) {
     } else {
       dialog.setVisible(false);
     }
-    this._render();
+    this.render_();
   }
 };
