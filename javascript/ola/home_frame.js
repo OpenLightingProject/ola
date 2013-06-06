@@ -19,6 +19,7 @@
 
 goog.require('goog.dom');
 goog.require('goog.events');
+goog.require('goog.net.HttpStatus');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.CustomButton');
 goog.require('ola.BaseFrame');
@@ -247,7 +248,7 @@ ola.HomeFrame.prototype.stopServerConfirmed = function(e) {
  */
 ola.HomeFrame.prototype.stopServerComplete = function(e) {
   var dialog = ola.Dialog.getInstance();
-  if (e.target.getStatus() == 200) {
+  if (e.target.getStatus() == goog.net.HttpStatus.OK) {
     dialog.setVisible(false);
   } else {
     dialog.setTitle('Failed to stop the server');
@@ -277,7 +278,7 @@ ola.HomeFrame.prototype.reloadButtonClicked = function(e) {
  */
 ola.HomeFrame.prototype.pluginReloadComplete = function(e) {
   var dialog = ola.Dialog.getInstance();
-  if (e.target.getStatus() == 200) {
+  if (e.target.getStatus() == goog.net.HttpStatus.OK) {
     dialog.setVisible(false);
   } else {
     dialog.setTitle('Failed to Reload plugins');

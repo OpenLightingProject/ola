@@ -21,6 +21,7 @@ goog.require('goog.Timer');
 goog.require('goog.dom');
 goog.require('goog.events');
 goog.require('goog.math');
+goog.require('goog.net.HttpStatus');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.Container');
 goog.require('goog.ui.SplitPane');
@@ -164,7 +165,7 @@ ola.RDMTab.prototype.updateUidList_ = function() {
  * @private
  */
 ola.RDMTab.prototype.newUIDs_ = function(e) {
-  if (e.target.getStatus() != 200) {
+  if (e.target.getStatus() != goog.net.HttpStatus.OK) {
     ola.logger.info('Request failed: ' + e.target.getLastUri() + ' : ' +
         e.target.getLastError());
     return;
@@ -200,7 +201,7 @@ ola.RDMTab.prototype.discoveryButtonClicked_ = function(full) {
 ola.RDMTab.prototype.discoveryComplete_ = function(e) {
   var dialog = ola.Dialog.getInstance();
   dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
-  if (e.target.getStatus() == 200) {
+  if (e.target.getStatus() == goog.net.HttpStatus.OK) {
     dialog.setVisible(false);
     this.updateUIDList_(e);
   } else {

@@ -19,6 +19,7 @@
 
 goog.require('goog.dom');
 goog.require('goog.events');
+goog.require('goog.net.HttpStatus');
 goog.require('goog.net.XhrIoPool');
 
 goog.provide('ola.common.Server');
@@ -304,7 +305,7 @@ ola.common.Server.prototype.stopServer = function(callback) {
  */
 ola.common.Server.prototype.FetchUniversePluginList = function() {
   var on_complete = function(e) {
-    if (e.target.getStatus() != 200) {
+    if (e.target.getStatus() != goog.net.HttpStatus.OK) {
       ola.logger.info('Request failed: ' + e.target.getLastUri() + ' : ' +
           e.target.getLastError());
       return;
@@ -611,7 +612,7 @@ ola.common.Server.prototype.setChannelValues = function(universe_id,
  * @return {boolean} true if ok, false otherwise.
  */
 ola.common.Server.prototype.checkStatusDialog = function(e) {
-  if (e.target.getStatus() != 200) {
+  if (e.target.getStatus() != goog.net.HttpStatus.OK) {
     this.showErrorDialog_(e.target.getLastUri() + ' : ' +
                           e.target.getLastError());
     return false;
@@ -628,7 +629,7 @@ ola.common.Server.prototype.checkStatusDialog = function(e) {
  * @return {object} The JSON output, or undefined if an error occured.
  */
 ola.common.Server.prototype.checkForErrorDialog = function(e) {
-  if (e.target.getStatus() == 200) {
+  if (e.target.getStatus() == goog.net.HttpStatus.OK) {
     var response = e.target.getResponseJson();
     if (response['error']) {
       this.showErrorDialog_(response['error']);
@@ -651,7 +652,7 @@ ola.common.Server.prototype.checkForErrorDialog = function(e) {
  * @return {object} The JSON output, or undefined if an error occured.
  */
 ola.common.Server.prototype.checkForErrorLog = function(e) {
-  if (e.target.getStatus() == 200) {
+  if (e.target.getStatus() == goog.net.HttpStatus.OK) {
     var response = e.target.getResponseJson();
     if (response['error']) {
       ola.logger.info(response['error']);

@@ -19,6 +19,7 @@
 
 goog.require('goog.dom');
 goog.require('goog.events');
+goog.require('goog.net.HttpStatus');
 goog.require('ola.AvailablePort');
 goog.require('ola.AvailablePortTable');
 goog.require('ola.BaseFrame');
@@ -126,7 +127,7 @@ ola.NewUniverseFrame.prototype.addUniverseButtonClicked = function(e) {
  */
 ola.NewUniverseFrame.prototype.newUniverseComplete = function(e) {
   var dialog = ola.Dialog.getInstance();
-  if (e.target.getStatus() != 200) {
+  if (e.target.getStatus() != goog.net.HttpStatus.OK) {
     dialog.setTitle('New Universe Failed');
     dialog.setContent(e.target.getLastUri() + ' : ' + e.target.getLastError());
     dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);

@@ -18,6 +18,7 @@
  */
 
 goog.require('goog.events');
+goog.require('goog.net.HttpStatus');
 goog.require('goog.ui.Button');
 goog.require('goog.ui.Container');
 
@@ -160,7 +161,7 @@ ola.mobile.UniverseTab.prototype.universeSelected_ = function(universe_id) {
  * @private
  */
 ola.mobile.UniverseTab.prototype.updateUidList_ = function(e) {
-  if (e.target.getStatus() != 200) {
+  if (e.target.getStatus() != goog.net.HttpStatus.OK) {
     return;
   }
 

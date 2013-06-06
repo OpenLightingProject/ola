@@ -18,6 +18,7 @@
  */
 
 goog.require('goog.events');
+goog.require('goog.net.HttpStatus');
 goog.require('goog.ui.AnimatedZippy');
 
 goog.require('ola.AvailablePort');
@@ -273,7 +274,7 @@ ola.UniverseSettingsTab.prototype.removeConfirmed_ = function(e) {
  */
 ola.UniverseSettingsTab.prototype.saveCompleted_ = function(e) {
   var dialog = ola.Dialog.getInstance();
-  if (e.target.getStatus() == 200) {
+  if (e.target.getStatus() == goog.net.HttpStatus.OK) {
     dialog.setVisible(false);
     if (this.was_removed && this.on_remove) {
       this.on_remove();
