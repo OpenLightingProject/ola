@@ -537,6 +537,9 @@ if test "${build_python_libs}" = "yes"; then
  AX_PYTHON_MODULE("google.protobuf", "fatal")
 fi
 
+# Maybe build the logic sniffer tools
+SALEAE_DEVICE
+
 # Enable running as root
 AC_ARG_ENABLE(
   root-check,
@@ -694,6 +697,7 @@ AC_OUTPUT( Makefile \
     tools/e133/libolae133controller.pc \
     tools/e133/libolae133common.pc \
     tools/e133/libolae133slp.pc \
+    tools/logic/Makefile \
     tools/rdm/Makefile \
     tools/rdmpro/Makefile \
     tools/usbpro/Makefile \
