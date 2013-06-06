@@ -75,12 +75,12 @@ ola.UniverseFrame = function(element_id, ola_ui) {
   this.tabs.push(new ola.DmxConsoleTab('tab_page_5'));
 
   goog.events.listen(this.tabPane, goog.ui.TabPane.Events.CHANGE,
-                     this._updateSelectedTab, false, this);
+                     this.updateSelectedTab_, false, this);
 
   var server = ola.common.Server.getInstance();
   goog.events.listen(server,
                      ola.common.Server.EventType.UNIVERSE_LIST_EVENT,
-                     this._newUniverseList,
+                     this.newUniverseList_,
                      false, this);
 };
 goog.inherits(ola.UniverseFrame, ola.BaseFrame);
@@ -116,7 +116,7 @@ ola.UniverseFrame.prototype.Show = function(universe_id, opt_select_main_tab) {
   if (opt_select_main_tab) {
     this.tabPane.setSelectedIndex(0);
   }
-  this._updateSelectedTab();
+  this.updateSelectedTab_();
 };
 
 
@@ -136,8 +136,9 @@ ola.UniverseFrame.prototype.Hide = function() {
 /**
  * Update the tab that was selected
  * @param {Object} e the event object.
+ * @private
  */
-ola.UniverseFrame.prototype._updateSelectedTab = function(e) {
+ola.UniverseFrame.prototype.updateSelectedTab_ = function(e) {
   if (!this.IsVisible()) {
     return;
   }
@@ -158,8 +159,9 @@ ola.UniverseFrame.prototype._updateSelectedTab = function(e) {
  * Called when new universes are available. We use this to detect if this
  * universe has been deleted.
  * @param {Object} e the event object.
+ * @private
  */
-ola.UniverseFrame.prototype._newUniverseList = function(e) {
+ola.UniverseFrame.prototype.newUniverseList_ = function(e) {
   var found = false;
   for (var i = 0; i < e.universes.length; ++i) {
     if (e.universes[i]['id'] == this.current_universe) {

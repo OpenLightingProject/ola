@@ -40,7 +40,7 @@ ola.mobile.ControllerTab = function() {
   this.controller_frame = new ola.BaseFrame('controller_frame');
   this.universe_frame = new ola.BaseFrame('controller_universe_frame');
   this.hideAllFrames_();
-  this._resetState();
+  this.resetState_();
 
   this.ola_server = ola.common.Server.getInstance();
   goog.events.listen(this.ola_server,
@@ -66,8 +66,9 @@ ola.mobile.ControllerTab.prototype.blur = function() {};
 
 /**
  * Reset certain variables to their default state
+ * @private
  */
-ola.mobile.ControllerTab.prototype._resetState = function() {
+ola.mobile.ControllerTab.prototype.resetState_ = function() {
   this.universe_list = undefined;
   this.active_universe = undefined;
 };
@@ -88,7 +89,7 @@ ola.mobile.ControllerTab.prototype.hideAllFrames_ = function() {
  */
 ola.mobile.ControllerTab.prototype.update = function() {
   this.hideAllFrames_();
-  this._resetState();
+  this.resetState_();
 
   this.universe_frame.setAsBusy();
   this.universe_frame.Show();

@@ -57,8 +57,9 @@ ola.common.UidItem.prototype.id = function() { return this.asString(); };
  * @param {number} n the number to convert.
  * @param {number} padding the length to pad to.
  * @return {string} the hex representation of the number.
+ * @private
  */
-ola.common.UidItem.prototype._toHex = function(n, padding) {
+ola.common.UidItem.prototype.toHex_ = function(n, padding) {
   if (n < 0) {
     n = 0xffffffff + n + 1;
   }
@@ -75,8 +76,8 @@ ola.common.UidItem.prototype._toHex = function(n, padding) {
  * @return {string} the uid.
  */
 ola.common.UidItem.prototype.asString = function() {
-  return (this._toHex(this._manufacturer_id, 4) + ':' +
-          this._toHex(this._device_id, 8));
+  return (this.toHex_(this._manufacturer_id, 4) + ':' +
+          this.toHex_(this._device_id, 8));
 };
 
 

@@ -27,3 +27,5 @@ ola.common.BaseTypes.MAX_CHANNEL_NUMBER = 512;
 ola.common.BaseTypes.MIN_CHANNEL_VALUE = 0;
 /** The maximum value of a channel @type {number} */
 ola.common.BaseTypes.MAX_CHANNEL_VALUE = 255;
+/** The channel level at which to change the background colour @type {number} */
+ola.common.BaseTypes.BACKGROUND_CHANGE_CHANNEL_LEVEL = 90;

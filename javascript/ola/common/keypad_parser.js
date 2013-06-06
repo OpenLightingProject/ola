@@ -92,14 +92,14 @@ ola.common.KeypadParser.prototype.parsePartialCommand = function(str) {
     return false;
   }
 
-  var result = this.partial_command_regex.exec(this._aliases(str));
+  var result = this.partial_command_regex.exec(this.aliases_(str));
   if (result == null) {
     return false;
   }
 
   var start_token = result[1];
   if (start_token != undefined) {
-    var start = this._intOrUndefined(result[1]);
+    var start = this.intOrUndefined_(result[1]);
     if (start == undefined || start == 0 ||
         start > ola.common.BaseTypes.MAX_CHANNEL_NUMBER) {
       return false;
@@ -108,7 +108,7 @@ ola.common.KeypadParser.prototype.parsePartialCommand = function(str) {
 
   var end_token = result[2];
   if (end_token != undefined && end_token != '') {
-    var end = this._intOrUndefined(result[2]);
+    var end = this.intOrUndefined_(result[2]);
     if (end == undefined || end == 0 ||
         end > ola.common.BaseTypes.MAX_CHANNEL_NUMBER) {
       return false;
@@ -117,7 +117,7 @@ ola.common.KeypadParser.prototype.parsePartialCommand = function(str) {
 
   var value_token = result[3];
   if (value_token != undefined && value_token != '') {
-    var value = this._intOrUndefined(result[3]);
+    var value = this.intOrUndefined_(result[3]);
     if (value == undefined || value > ola.common.BaseTypes.MAX_CHANNEL_VALUE) {
       return false;
     }
@@ -138,14 +138,14 @@ ola.common.KeypadParser.prototype.parseFullCommand = function(str) {
     return undefined;
   }
 
-  var result = this.full_command_regex.exec(this._aliases(str));
+  var result = this.full_command_regex.exec(this.aliases_(str));
   if (result == null) {
     return undefined;
   }
 
-  var start = this._intOrUndefined(result[1]);
-  var end = this._intOrUndefined(result[2]);
-  var value = this._intOrUndefined(result[3]);
+  var start = this.intOrUndefined_(result[1]);
+  var end = this.intOrUndefined_(result[2]);
+  var value = this.intOrUndefined_(result[3]);
 
   if (start == undefined || value == undefined) {
     return undefined;
@@ -166,8 +166,9 @@ ola.common.KeypadParser.prototype.parseFullCommand = function(str) {
  * Convert a string to an int, or return undefined
  * @param {string} token the string to convert.
  * @return {number|undefined} The integer, or undefined.
+ * @private
  */
-ola.common.KeypadParser.prototype._intOrUndefined = function(token) {
+ola.common.KeypadParser.prototype.intOrUndefined_ = function(token) {
   if (token == null || token == undefined)
     return undefined;
   var i = parseInt(token);
@@ -179,8 +180,9 @@ ola.common.KeypadParser.prototype._intOrUndefined = function(token) {
  * Converts aliases.
  * @param {string} str the input string.
  * @return {string} the output string.
+ * @private
  */
-ola.common.KeypadParser.prototype._aliases = function(str) {
+ola.common.KeypadParser.prototype.aliases_ = function(str) {
   str = str.replace('>', 'THRU');
   str = str.replace('*', ola.common.BaseTypes.MIN_CHANNEL_NUMBER + ' THRU ' +
                     ola.common.BaseTypes.MAX_CHANNEL_NUMBER);

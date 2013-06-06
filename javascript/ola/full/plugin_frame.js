@@ -39,7 +39,7 @@ ola.PluginFrame = function(element_id, show_plugin_fn) {
   goog.events.listen(
       ola.common.Server.getInstance(),
       ola.common.Server.EventType.PLUGIN_EVENT,
-      this._UpdateFromData,
+      this.UpdateFromData_,
       false,
       this);
 
@@ -51,8 +51,9 @@ goog.inherits(ola.PluginFrame, ola.BaseFrame);
 /**
  * Update this plugin frame from a Plugin object
  * @param {ola.PluginChangeEvent} e the plugin event.
+ * @private
  */
-ola.PluginFrame.prototype._UpdateFromData = function(e) {
+ola.PluginFrame.prototype.UpdateFromData_ = function(e) {
   goog.dom.$('plugin_name').innerHTML = e.plugin['name'];
   goog.dom.$('plugin_preference_source').innerHTML =
     e.plugin['preferences_source'];
@@ -94,7 +95,7 @@ ola.PluginFrame.prototype._UpdateFromData = function(e) {
       var control = new goog.ui.Control(
           goog.dom.createDom('span', null, plugin['name']));
       control.render(conflicts);
-      this._AttachListener(control, plugin['id']);
+      this.AttachListener_(control, plugin['id']);
       this.controls.push(control);
 
       if (possible_conflicts && plugin['active']) {
@@ -115,17 +116,19 @@ ola.PluginFrame.prototype._UpdateFromData = function(e) {
 /**
  * Called when a plugin name is clicked.
  * @param {ola.int} id the plugin id.
+ * @private
  */
-ola.PluginFrame.prototype._PluginControlClicked = function(id) {
+ola.PluginFrame.prototype.PluginControlClicked_ = function(id) {
   this._show_plugin_fn(id);
 };
 
 /**
  * Attach a listener to a control.
+ * @private
  */
-ola.PluginFrame.prototype._AttachListener = function(control, plugin_id) {
+ola.PluginFrame.prototype.AttachListener_ = function(control, plugin_id) {
   goog.events.listen(control, goog.ui.Component.EventType.ACTION,
                      function(e) {
-                       this._PluginControlClicked(plugin_id);
+                       this.PluginControlClicked_(plugin_id);
                      }, false, this);
 };

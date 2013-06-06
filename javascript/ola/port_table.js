@@ -90,7 +90,7 @@ ola.Port.prototype.createDom = function() {
       this.priority_select.addItem(new goog.ui.MenuItem('Override'));
       this.priority_select.setSelectedIndex(
         priority['current_mode'] == 'inherit' ? 0 : 1);
-      this._prioritySelectChanged();
+      this.prioritySelectChanged_();
 
       var td = goog.dom.createElement('td');
       this.priority_select.render(td);
@@ -112,7 +112,7 @@ ola.Port.prototype.enterDocument = function() {
     goog.events.listen(
         this.priority_select,
         goog.ui.Component.EventType.ACTION,
-        this._prioritySelectChanged,
+        this.prioritySelectChanged_,
         false, this);
 
     // don't toggle the check box if we're changing priorities
@@ -226,8 +226,9 @@ ola.Port.prototype.priorityMode = function() {
 /**
  * Called when the port priority changes
  * @param {Object} e the event object.
+ * @private
  */
-ola.Port.prototype._prioritySelectChanged = function(e) {
+ola.Port.prototype.prioritySelectChanged_ = function(e) {
   if (this.priority_select.getSelectedIndex()) {
     // override mode
     this.priority_input.style.visibility = 'visible';

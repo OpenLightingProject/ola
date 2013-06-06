@@ -71,7 +71,7 @@ ola.RDMAttributesPanel = function(element_id, toolbar) {
   refresh_menu.setTooltip('Configure how often attributes are refreshed');
   goog.events.listen(refresh_menu,
                      goog.ui.Component.EventType.ACTION,
-                     this._refreshChanged,
+                     this.refreshChanged_,
                      false,
                      this);
 
@@ -80,7 +80,7 @@ ola.RDMAttributesPanel = function(element_id, toolbar) {
   goog.events.listen(
       this.refresh_timer,
       goog.Timer.TICK,
-      this._refreshEvent,
+      this.refreshEvent_,
       false,
       this);
 };
@@ -165,8 +165,9 @@ ola.RDMAttributesPanel.prototype.hideAllSections_ = function() {
 /**
  * Set the refresh rate
  * @param {Object} e the event object.
+ * @private
  */
-ola.RDMAttributesPanel.prototype._refreshChanged = function(e) {
+ola.RDMAttributesPanel.prototype.refreshChanged_ = function(e) {
   var value = e.target.getCaption();
   if (value == 'Never') {
     this.refresh_timer.stop();
@@ -184,8 +185,9 @@ ola.RDMAttributesPanel.prototype._refreshChanged = function(e) {
 
 /**
  * Called when the refresh timer fires
+ * @private
  */
-ola.RDMAttributesPanel.prototype._refreshEvent = function(e) {
+ola.RDMAttributesPanel.prototype.refreshEvent_ = function(e) {
   for (var i = 0; i < this.zippies.length; ++i) {
     if (this.zippies[i].isExpanded()) {
       this.loadSection_(i);
@@ -308,7 +310,7 @@ ola.RDMAttributesPanel.prototype.populateSection_ = function(e, index) {
 
   if (section_response['error']) {
     var error_title = 'Error: ' + this.section_data[index]['name'];
-    this._showErrorDialog(error_title, section_response['error']);
+    this.showErrorDialog_(error_title, section_response['error']);
     this.section_data[index]['loaded'] = false;
     var zippy = this.zippies[index];
     if (zippy.isExpanded()) {
@@ -322,7 +324,7 @@ ola.RDMAttributesPanel.prototype.populateSection_ = function(e, index) {
   var count = items.length;
   var form = goog.dom.createElement('form');
   form.id = this.section_data[index]['id'];
-  form.onsubmit = function() { panel._saveSection(index); return false};
+  form.onsubmit = function() { panel.saveSection_(index); return false};
   var table = goog.dom.createElement('table');
   table.className = 'ola-table';
   var editable = false;
@@ -353,7 +355,7 @@ ola.RDMAttributesPanel.prototype.populateSection_ = function(e, index) {
 
     goog.events.listen(button,
                        goog.ui.Component.EventType.ACTION,
-                       function() { this._saveSection(index) },
+                       function() { this.saveSection_(index) },
                        false, this);
   }
 
@@ -363,8 +365,9 @@ ola.RDMAttributesPanel.prototype.populateSection_ = function(e, index) {
 
 /**
  * Save the contents of a section.
+ * @private
  */
-ola.RDMAttributesPanel.prototype._saveSection = function(index) {
+ola.RDMAttributesPanel.prototype.saveSection_ = function(index) {
   var items = this.section_data[index]['data']['items'];
   var count = items.length;
 
@@ -379,19 +382,19 @@ ola.RDMAttributesPanel.prototype._saveSection = function(index) {
         var value = form.elements[id].value;
         var int_val = parseInt(value);
         if (isNaN(int_val)) {
-          this._showErrorDialog('Invalid Value',
+          this.showErrorDialog_('Invalid Value',
              items[i]['description'] + ' must be an integer');
           return;
         }
         var min = items[i]['min'];
         if (min != undefined && int_val < min) {
-          this._showErrorDialog('Invalid Value',
+          this.showErrorDialog_('Invalid Value',
              items[i]['description'] + ' must be > ' + (min - 1));
           return;
         }
         var max = items[i]['max'];
         if (max != undefined && int_val > max) {
-          this._showErrorDialog('Invalid Value',
+          this.showErrorDialog_('Invalid Value',
              items[i]['description'] + ' must be < ' + (max + 1));
           return;
         }
@@ -418,20 +421,21 @@ ola.RDMAttributesPanel.prototype._saveSection = function(index) {
       this.section_data[index]['id'],
       this.section_data[index]['hint'],
       data,
-      function(e) { panel._saveSectionComplete(e, index); });
+      function(e) { panel.saveSectionComplete_(e, index); });
 };
 
 
 /**
  * Called when the save is complete
  * @param {Object} e the event object.
+ * @private
  */
-ola.RDMAttributesPanel.prototype._saveSectionComplete = function(e, index) {
+ola.RDMAttributesPanel.prototype.saveSectionComplete_ = function(e, index) {
   var response = e.target.getResponseJson();
 
   if (response['error']) {
     var error_title = 'Set ' + this.section_data[index]['name'] + ' Failed';
-    this._showErrorDialog(error_title, response['error']);
+    this.showErrorDialog_(error_title, response['error']);
   } else {
     // reload data
     this.loadSection_(index);
@@ -439,10 +443,11 @@ ola.RDMAttributesPanel.prototype._saveSectionComplete = function(e, index) {
 };
 
 
-/*
+/**
  * Show the dialog with an error message
+ * @private
  */
-ola.RDMAttributesPanel.prototype._showErrorDialog = function(title, error) {
+ola.RDMAttributesPanel.prototype.showErrorDialog_ = function(title, error) {
   var dialog = ola.Dialog.getInstance();
   dialog.setTitle(title);
   dialog.setContent(error);
