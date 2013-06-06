@@ -39,13 +39,13 @@ goog.provide('ola.mobile.ControllerTab');
 ola.mobile.ControllerTab = function() {
   this.controller_frame = new ola.BaseFrame('controller_frame');
   this.universe_frame = new ola.BaseFrame('controller_universe_frame');
-  this._hideAllFrames();
+  this.hideAllFrames_();
   this._resetState();
 
   this.ola_server = ola.common.Server.getInstance();
   goog.events.listen(this.ola_server,
                      ola.common.Server.EventType.UNIVERSE_LIST_EVENT,
-                     this._updateUniverseList,
+                     this.updateUniverseList_,
                      false, this);
 };
 
@@ -75,8 +75,9 @@ ola.mobile.ControllerTab.prototype._resetState = function() {
 
 /**
  * Hide all frames
+ * @private
  */
-ola.mobile.ControllerTab.prototype._hideAllFrames = function() {
+ola.mobile.ControllerTab.prototype.hideAllFrames_ = function() {
   this.controller_frame.Hide();
   this.universe_frame.Hide();
 };
@@ -86,7 +87,7 @@ ola.mobile.ControllerTab.prototype._hideAllFrames = function() {
  * Called when the controller tab is clicked
  */
 ola.mobile.ControllerTab.prototype.update = function() {
-  this._hideAllFrames();
+  this.hideAllFrames_();
   this._resetState();
 
   this.universe_frame.setAsBusy();
@@ -98,8 +99,9 @@ ola.mobile.ControllerTab.prototype.update = function() {
 /**
  * Called when a list of universes is received
  * @param {Object} e the event object.
+ * @private
  */
-ola.mobile.ControllerTab.prototype._updateUniverseList = function(e) {
+ola.mobile.ControllerTab.prototype.updateUniverseList_ = function(e) {
   if (this.universe_list == undefined) {
     this.universe_frame.Clear();
     var universe_container = new goog.ui.Container();
@@ -110,7 +112,7 @@ ola.mobile.ControllerTab.prototype._updateUniverseList = function(e) {
         universe_container,
         new ola.UniverseControlFactory(
           function(item) {
-            tab._universeSelected(item.id(), item.name());
+            tab.universeSelected_(item.id(), item.name());
           }));
   }
 
@@ -128,11 +130,12 @@ ola.mobile.ControllerTab.prototype._updateUniverseList = function(e) {
  * Called when a universe is selected
  * @param {number} universe_id the id of the universe selected.
  * @param {string} universe_name the name of the universe selected.
+ * @private
  */
-ola.mobile.ControllerTab.prototype._universeSelected = function(
+ola.mobile.ControllerTab.prototype.universeSelected_ = function(
     universe_id,
     universe_name) {
-  this._hideAllFrames();
+  this.hideAllFrames_();
   this.active_universe = universe_id;
 
   this.keypad = new ola.common.KeypadController(
