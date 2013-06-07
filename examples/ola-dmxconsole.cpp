@@ -744,7 +744,7 @@ int main(int argc, char *argv[]) {
   // 10 bytes security, for file IO routines, will be optimized and checked
   // later
   dmx = reinterpret_cast<dmx_t*>(calloc(DMX_UNIVERSE_SIZE + 10,
-                                  sizeof(dmx_t)));
+                                 sizeof(dmx_t)));
   CHECK(dmx);
 
   dmxsave = reinterpret_cast<dmx_t*>(
