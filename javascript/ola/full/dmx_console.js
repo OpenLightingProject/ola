@@ -39,7 +39,7 @@ ola.DmxConsole = function() {
 
   this.sliders = new Array();
   this.slider_values = new Array();
-  this.data = new Array(ola.common.BaseTypes.MAX_CHANNEL_NUMBER);
+  this.data = new Array(ola.common.DmxConstants.MAX_CHANNEL_NUMBER);
   this.value_cells = new Array();
   this.slider_offset = 0;
 };
@@ -74,12 +74,13 @@ ola.DmxConsole.prototype.getData = function() {
  * Set the data for this console
  */
 ola.DmxConsole.prototype.setData = function(data) {
-  var data_length = Math.min(ola.common.BaseTypes.MAX_CHANNEL_NUMBER,
+  var data_length = Math.min(ola.common.DmxConstants.MAX_CHANNEL_NUMBER,
                              data.length);
   for (var i = 0; i < data_length; ++i) {
     this.data[i] = data[i];
   }
-  for (var i = data_length; i < ola.common.BaseTypes.MAX_CHANNEL_NUMBER; ++i) {
+  for (var i = data_length; i < ola.common.DmxConstants.MAX_CHANNEL_NUMBER;
+       ++i) {
     this.data[i] = 0;
   }
 
@@ -162,7 +163,7 @@ ola.DmxConsole.prototype.setupIfRequired = function() {
 
   // setup the value display
   var value_table = goog.dom.$('channel_values');
-  for (var i = 0; i < ola.common.BaseTypes.MAX_CHANNEL_NUMBER; ++i) {
+  for (var i = 0; i < ola.common.DmxConstants.MAX_CHANNEL_NUMBER; ++i) {
     var div = goog.dom.createElement('div');
     div.innerHTML = 0;
     div.title = 'Channel ' + (i + 1);
@@ -190,7 +191,7 @@ ola.DmxConsole.prototype.setupIfRequired = function() {
     var slider = new goog.ui.Slider;
     slider.setOrientation(goog.ui.Slider.Orientation.VERTICAL);
     slider.setMinimum(0);
-    slider.setMaximum(ola.common.BaseTypes.MAX_CHANNEL_VALUE);
+    slider.setMaximum(ola.common.DmxConstants.MAX_CHANNEL_VALUE);
     slider.render(slider_td);
 
     goog.events.listen(
@@ -205,7 +206,7 @@ ola.DmxConsole.prototype.setupIfRequired = function() {
   this.setup = true;
 
   // zero data
-  this.setAllChannels_(ola.common.BaseTypes.MIN_CHANNEL_VALUE);
+  this.setAllChannels_(ola.common.DmxConstants.MIN_CHANNEL_VALUE);
 };
 
 
@@ -221,7 +222,7 @@ ola.DmxConsole.prototype.update = function() {
     this.previous_page_button.setEnabled(true);
   }
 
-  if (this.slider_offset == ola.common.BaseTypes.MAX_CHANNEL_NUMBER -
+  if (this.slider_offset == ola.common.DmxConstants.MAX_CHANNEL_NUMBER -
              ola.DmxConsole.NUMBER_OF_SLIDERS) {
     this.next_page_button.setEnabled(false);
   } else {
@@ -236,7 +237,7 @@ ola.DmxConsole.prototype.update = function() {
 ola.DmxConsole.prototype.nextPageClicked_ = function() {
   this.slider_offset += ola.DmxConsole.NUMBER_OF_SLIDERS;
   this.previous_page_button.setEnabled(true);
-  var page_limit = (ola.common.BaseTypes.MAX_CHANNEL_NUMBER -
+  var page_limit = (ola.common.DmxConstants.MAX_CHANNEL_NUMBER -
     ola.DmxConsole.NUMBER_OF_SLIDERS);
   if (this.slider_offset >= page_limit) {
     this.slider_offset = page_limit;
@@ -287,7 +288,7 @@ ola.DmxConsole.prototype.updateSliderOffsets_ = function() {
  * @private
  */
 ola.DmxConsole.prototype.blackoutButtonClicked_ = function() {
-  this.setAllChannels_(ola.common.BaseTypes.MIN_CHANNEL_VALUE);
+  this.setAllChannels_(ola.common.DmxConstants.MIN_CHANNEL_VALUE);
 };
 
 
@@ -296,7 +297,7 @@ ola.DmxConsole.prototype.blackoutButtonClicked_ = function() {
  * @private
  */
 ola.DmxConsole.prototype.fullButtonClicked_ = function() {
-  this.setAllChannels_(ola.common.BaseTypes.MAX_CHANNEL_VALUE);
+  this.setAllChannels_(ola.common.DmxConstants.MAX_CHANNEL_VALUE);
 };
 
 
@@ -348,10 +349,10 @@ ola.DmxConsole.prototype.setCellValue_ = function(offset, value) {
     return;
   }
   element.innerHTML = value;
-  var remaining = ola.common.BaseTypes.MAX_CHANNEL_VALUE - value;
+  var remaining = ola.common.DmxConstants.MAX_CHANNEL_VALUE - value;
   element.style.background = 'rgb(' + remaining + ',' + remaining + ',' +
     remaining + ')';
-  if (value > ola.common.BaseTypes.BACKGROUND_CHANGE_CHANNEL_LEVEL) {
+  if (value > ola.common.DmxConstants.BACKGROUND_CHANGE_CHANNEL_LEVEL) {
     element.style.color = '#ffffff';
   } else {
     element.style.color = '#000000';

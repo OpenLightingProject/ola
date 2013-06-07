@@ -32,7 +32,7 @@
  *      Values range between 0 and 255.
  */
 
-goog.require('ola.common.BaseTypes');
+goog.require('ola.common.DmxConstants');
 goog.provide('ola.common.KeypadCommand');
 goog.provide('ola.common.KeypadParser');
 
@@ -57,13 +57,13 @@ ola.common.KeypadCommand = function(start, end, value) {
  */
 ola.common.KeypadCommand.prototype.isValid = function() {
   return (
-      (this.start >= ola.common.BaseTypes.MIN_CHANNEL_NUMBER &&
-       this.start <= ola.common.BaseTypes.MAX_CHANNEL_NUMBER) &&
-      (this.value >= ola.common.BaseTypes.MIN_CHANNEL_VALUE &&
-       this.value <= ola.common.BaseTypes.MAX_CHANNEL_VALUE) &&
+      (this.start >= ola.common.DmxConstants.MIN_CHANNEL_NUMBER &&
+       this.start <= ola.common.DmxConstants.MAX_CHANNEL_NUMBER) &&
+      (this.value >= ola.common.DmxConstants.MIN_CHANNEL_VALUE &&
+       this.value <= ola.common.DmxConstants.MAX_CHANNEL_VALUE) &&
       (this.end == undefined ||
-       (this.end >= ola.common.BaseTypes.MIN_CHANNEL_NUMBER &&
-        this.end <= ola.common.BaseTypes.MAX_CHANNEL_NUMBER &&
+       (this.end >= ola.common.DmxConstants.MIN_CHANNEL_NUMBER &&
+        this.end <= ola.common.DmxConstants.MAX_CHANNEL_NUMBER &&
         this.end >= this.start))
   );
 };
@@ -101,7 +101,7 @@ ola.common.KeypadParser.prototype.parsePartialCommand = function(str) {
   if (start_token != undefined) {
     var start = this.intOrUndefined_(result[1]);
     if (start == undefined || start == 0 ||
-        start > ola.common.BaseTypes.MAX_CHANNEL_NUMBER) {
+        start > ola.common.DmxConstants.MAX_CHANNEL_NUMBER) {
       return false;
     }
   }
@@ -110,7 +110,7 @@ ola.common.KeypadParser.prototype.parsePartialCommand = function(str) {
   if (end_token != undefined && end_token != '') {
     var end = this.intOrUndefined_(result[2]);
     if (end == undefined || end == 0 ||
-        end > ola.common.BaseTypes.MAX_CHANNEL_NUMBER) {
+        end > ola.common.DmxConstants.MAX_CHANNEL_NUMBER) {
       return false;
     }
   }
@@ -118,7 +118,8 @@ ola.common.KeypadParser.prototype.parsePartialCommand = function(str) {
   var value_token = result[3];
   if (value_token != undefined && value_token != '') {
     var value = this.intOrUndefined_(result[3]);
-    if (value == undefined || value > ola.common.BaseTypes.MAX_CHANNEL_VALUE) {
+    if (value == undefined ||
+        value > ola.common.DmxConstants.MAX_CHANNEL_VALUE) {
       return false;
     }
   }
@@ -184,11 +185,11 @@ ola.common.KeypadParser.prototype.intOrUndefined_ = function(token) {
  */
 ola.common.KeypadParser.prototype.aliases_ = function(str) {
   str = str.replace('>', 'THRU');
-  str = str.replace('*', ola.common.BaseTypes.MIN_CHANNEL_NUMBER + ' THRU ' +
-                    ola.common.BaseTypes.MAX_CHANNEL_NUMBER);
-  str = str.replace('ALL', ola.common.BaseTypes.MIN_CHANNEL_NUMBER + ' THRU ' +
-                    ola.common.BaseTypes.MAX_CHANNEL_NUMBER);
-  str = str.replace('@ +', '@ ' + ola.common.BaseTypes.MAX_CHANNEL_VALUE);
-  str = str.replace('@ FULL', '@ ' + ola.common.BaseTypes.MAX_CHANNEL_VALUE);
+  str = str.replace('*', ola.common.DmxConstants.MIN_CHANNEL_NUMBER +
+                    ' THRU ' + ola.common.DmxConstants.MAX_CHANNEL_NUMBER);
+  str = str.replace('ALL', ola.common.DmxConstants.MIN_CHANNEL_NUMBER +
+                    ' THRU ' + ola.common.DmxConstants.MAX_CHANNEL_NUMBER);
+  str = str.replace('@ +', '@ ' + ola.common.DmxConstants.MAX_CHANNEL_VALUE);
+  str = str.replace('@ FULL', '@ ' + ola.common.DmxConstants.MAX_CHANNEL_VALUE);
   return str;
 };
