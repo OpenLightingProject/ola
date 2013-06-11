@@ -22,10 +22,13 @@ endif
 
 # Libraries
 #########################
+# olae133device depends on olaee133slp. On ubunutu (and maybe others)
+# the order the libs are installed in matters otherwise libtool fails with
+# cannot find -lolae133slp
 E133_LIBS = libolae133common.la \
             libolae133controller.la \
-            libolae133device.la \
-            libolae133slp.la
+            libolae133slp.la \
+            libolae133device.la
 
 noinst_LTLIBRARIES =
 lib_LTLIBRARIES =
