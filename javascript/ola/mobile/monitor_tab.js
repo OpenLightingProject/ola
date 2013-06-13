@@ -13,7 +13,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * The dmx monitor tab
+ * The DMX monitor tab
  * Copyright (C) 2012 Simon Newton
  */
 
@@ -40,13 +40,13 @@ goog.provide('ola.mobile.MonitorTab');
 ola.mobile.MonitorTab = function() {
   this.monitor_frame = new ola.BaseFrame('monitor_frame');
   this.universe_frame = new ola.BaseFrame('monitor_universe_frame');
-  this._hideAllFrames();
-  this._resetState();
+  this.hideAllFrames_();
+  this.resetState_();
 
   this.ola_server = ola.common.Server.getInstance();
   goog.events.listen(this.ola_server,
                      ola.common.Server.EventType.UNIVERSE_LIST_EVENT,
-                     this._updateUniverseList,
+                     this.updateUniverseList_,
                      false, this);
 
   this.monitor = new ola.common.DmxMonitor(
@@ -70,16 +70,18 @@ ola.mobile.MonitorTab.prototype.blur = function() {
 
 /**
  * Reset certain variables to their default state
+ * @private
  */
-ola.mobile.MonitorTab.prototype._resetState = function() {
+ola.mobile.MonitorTab.prototype.resetState_ = function() {
   this.universe_list = undefined;
 };
 
 
 /**
  * Hide all frames
+ * @private
  */
-ola.mobile.MonitorTab.prototype._hideAllFrames = function() {
+ola.mobile.MonitorTab.prototype.hideAllFrames_ = function() {
   this.monitor_frame.Hide();
   this.universe_frame.Hide();
 };
@@ -89,8 +91,8 @@ ola.mobile.MonitorTab.prototype._hideAllFrames = function() {
  * Called when the controller tab is clicked
  */
 ola.mobile.MonitorTab.prototype.update = function() {
-  this._hideAllFrames();
-  this._resetState();
+  this.hideAllFrames_();
+  this.resetState_();
 
   this.universe_frame.setAsBusy();
   this.universe_frame.Show();
@@ -101,8 +103,9 @@ ola.mobile.MonitorTab.prototype.update = function() {
 /**
  * Called when a list of universes is received
  * @param {Object} e the event object.
+ * @private
  */
-ola.mobile.MonitorTab.prototype._updateUniverseList = function(e) {
+ola.mobile.MonitorTab.prototype.updateUniverseList_ = function(e) {
   if (this.universe_list == undefined) {
     this.universe_frame.Clear();
     var universe_container = new goog.ui.Container();
@@ -113,7 +116,7 @@ ola.mobile.MonitorTab.prototype._updateUniverseList = function(e) {
         universe_container,
         new ola.UniverseControlFactory(
           function(item) {
-            tab._universeSelected(item.id(), item.name());
+            tab.universeSelected_(item.id(), item.name());
           }));
   }
 
@@ -131,11 +134,12 @@ ola.mobile.MonitorTab.prototype._updateUniverseList = function(e) {
  * Called when a universe is selected
  * @param {number} universe_id the id of the universe selected.
  * @param {string} universe_name the name of the universe selected.
+ * @private
  */
-ola.mobile.MonitorTab.prototype._universeSelected = function(
+ola.mobile.MonitorTab.prototype.universeSelected_ = function(
     universe_id,
     universe_name) {
-  this._hideAllFrames();
+  this.hideAllFrames_();
   this.monitor.setState(true, universe_id);
   this.monitor_frame.Show();
 };

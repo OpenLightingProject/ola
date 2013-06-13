@@ -57,7 +57,7 @@ ola.RDMTab = function(element) {
   discovery_button.setTooltip('Run full RDM discovery for this universe');
   goog.events.listen(discovery_button,
                      goog.ui.Component.EventType.ACTION,
-                     function() { this._discoveryButtonClicked(true); },
+                     function() { this.discoveryButtonClicked_(true); },
                      false,
                      this);
 
@@ -67,7 +67,7 @@ ola.RDMTab = function(element) {
       'Run incremental RDM discovery for this universe');
   goog.events.listen(incremental_discovery_button,
                      goog.ui.Component.EventType.ACTION,
-                     function() { this._discoveryButtonClicked(false); },
+                     function() { this.discoveryButtonClicked_(false); },
                      false,
                      this);
 
@@ -95,7 +95,7 @@ ola.RDMTab = function(element) {
   goog.events.listen(
       this.uid_timer,
       goog.Timer.TICK,
-      this._updateUidList,
+      this.updateUidList_,
       false,
       this);
 };
@@ -134,10 +134,10 @@ ola.RDMTab.prototype.sizeChanged = function(frame_size) {
  */
 ola.RDMTab.prototype.setActive = function(state) {
   ola.RDMTab.superClass_.setActive.call(this, state);
-  this._updateUidList();
+  this.updateUidList_();
 
   if (this.isActive()) {
-    this._updateUidList();
+    this.updateUidList_();
   } else {
     this.uid_timer.stop();
   }
@@ -146,13 +146,14 @@ ola.RDMTab.prototype.setActive = function(state) {
 
 /**
  * Fetch the uid list
+ * @private
  */
-ola.RDMTab.prototype._updateUidList = function() {
+ola.RDMTab.prototype.updateUidList_ = function() {
   var tab = this;
   var server = ola.common.Server.getInstance();
   server.fetchUids(
       this.getUniverse(),
-      function(e) { tab._newUIDs(e); });
+      function(e) { tab.newUIDs_(e); });
   this.uid_timer.start();
 };
 
@@ -160,27 +161,29 @@ ola.RDMTab.prototype._updateUidList = function() {
 /**
  * Update the UID list
  * @param {Object} e the event object.
+ * @private
  */
-ola.RDMTab.prototype._newUIDs = function(e) {
+ola.RDMTab.prototype.newUIDs_ = function(e) {
   if (e.target.getStatus() != 200) {
     ola.logger.info('Request failed: ' + e.target.getLastUri() + ' : ' +
         e.target.getLastError());
     return;
   }
-  this._updateUIDList(e);
+  this.updateUIDList_(e);
 };
 
 
 /**
  * Called when the discovery button is clicked.
+ * @private
  */
-ola.RDMTab.prototype._discoveryButtonClicked = function(full) {
+ola.RDMTab.prototype.discoveryButtonClicked_ = function(full) {
   var server = ola.common.Server.getInstance();
   var tab = this;
   server.runRDMDiscovery(
       this.getUniverse(),
       full,
-      function(e) { tab._discoveryComplete(e); });
+      function(e) { tab.discoveryComplete_(e); });
 
   var dialog = ola.Dialog.getInstance();
   dialog.setAsBusy();
@@ -192,13 +195,14 @@ ola.RDMTab.prototype._discoveryButtonClicked = function(full) {
 /**
  * Called when the discovery request returns.
  * @param {Object} e the event object.
+ * @private
  */
-ola.RDMTab.prototype._discoveryComplete = function(e) {
+ola.RDMTab.prototype.discoveryComplete_ = function(e) {
   var dialog = ola.Dialog.getInstance();
   dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK);
   if (e.target.getStatus() == 200) {
     dialog.setVisible(false);
-    this._updateUIDList(e);
+    this.updateUIDList_(e);
   } else {
     dialog.setTitle('Failed to Start Discovery Process');
     dialog.setContent(e.target.getLastUri() + ' : ' + e.target.getLastError());
@@ -210,8 +214,9 @@ ola.RDMTab.prototype._discoveryComplete = function(e) {
 /**
  * Update the UID list from a http response
  * @param {Object} e the event object.
+ * @private
  */
-ola.RDMTab.prototype._updateUIDList = function(e) {
+ola.RDMTab.prototype.updateUIDList_ = function(e) {
   var obj = e.target.getResponseJson();
   var uids = obj['uids'];
 

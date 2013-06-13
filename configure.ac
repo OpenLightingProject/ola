@@ -193,12 +193,12 @@ PLUGIN_SUPPORT(artnet, USE_ARTNET)
 PLUGIN_SUPPORT(dummy, USE_DUMMY)
 PLUGIN_SUPPORT(e131, USE_E131)
 PLUGIN_SUPPORT(espnet, USE_ESPNET)
+PLUGIN_SUPPORT(karate, USE_KARATE)
 PLUGIN_SUPPORT(kinet, USE_KINET)
 PLUGIN_SUPPORT(opendmx, USE_OPENDMX)
 PLUGIN_SUPPORT(pathport, USE_PATHPORT)
 PLUGIN_SUPPORT(sandnet, USE_SANDNET)
 PLUGIN_SUPPORT(shownet, USE_SHOWNET)
-PLUGIN_SUPPORT(karate, USE_KARATE)
 
 # SPI support is only enabled if the header is found
 AC_CHECK_HEADER([linux/spi/spidev.h], [enable_spi="yes"], [enable_spi="no"])
@@ -674,6 +674,8 @@ AC_OUTPUT( Makefile \
     plugins/e131/messages/Makefile \
     plugins/e131/messages/libolae131conf.pc \
     plugins/espnet/Makefile \
+    plugins/ftdidmx/Makefile \
+    plugins/karate/Makefile \
     plugins/kinet/Makefile \
     plugins/opendmx/Makefile \
     plugins/osc/Makefile \
@@ -683,8 +685,6 @@ AC_OUTPUT( Makefile \
     plugins/spi/Makefile \
     plugins/stageprofi/Makefile \
     plugins/usbdmx/Makefile \
-    plugins/karate/Makefile \
-    plugins/ftdidmx/Makefile \
     plugins/usbpro/Makefile \
     plugins/usbpro/messages/Makefile \
     plugins/usbpro/messages/libolausbproconf.pc \

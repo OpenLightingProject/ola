@@ -26,7 +26,12 @@
 extern "C" {
 #endif
 
-enum { DMX_UNIVERSE_SIZE = 512 };
+enum {
+  DMX_MIN_CHANNEL_VALUE = 0,
+  DMX_MAX_CHANNEL_VALUE = 255,
+  DMX_MIN_CHANNEL_NUMBER = 1,
+  DMX_UNIVERSE_SIZE = 512
+};
 static const uint8_t DMX512_START_CODE = 0;
 static const int OLA_DEFAULT_PORT = 9010;
 static const uint16_t OPEN_LIGHTING_ESTA_CODE = 0x7a70;

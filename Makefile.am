@@ -12,10 +12,15 @@ ACLOCAL         = aclocal -I $(auxdir)
 ACLOCAL_AMFLAGS = -I config
 
 EXTRA_DIST = \
-  config/ac_pkg_swig.m4 \
+  config/ac_prog_java_cc.m4 \
   config/ac_python_devel.m4 \
-  config/swig_enable_cxx.m4 \
-  config/swig_python.m4 \
+  config/ac_saleae.m4 \
+  config/ax_python_module.m4 \
+  config/cppunit.m4 \
+  config/maven.m4 \
+  config/ola.m4 \
+  config/pkg.m4 \
+  config/stl_hash.m4 \
   GPL \
   LGPL \
   LICENCE \

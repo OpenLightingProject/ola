@@ -32,6 +32,7 @@
  *      Values range between 0 and 255.
  */
 
+goog.require('ola.common.BaseTypes');
 goog.provide('ola.common.KeypadCommand');
 goog.provide('ola.common.KeypadParser');
 
@@ -56,10 +57,14 @@ ola.common.KeypadCommand = function(start, end, value) {
  */
 ola.common.KeypadCommand.prototype.isValid = function() {
   return (
-      (this.start >= 1 && this.start <= 512) &&
-      (this.value >= 0 && this.value <= 255) &&
+      (this.start >= ola.common.BaseTypes.MIN_CHANNEL_NUMBER &&
+       this.start <= ola.common.BaseTypes.MAX_CHANNEL_NUMBER) &&
+      (this.value >= ola.common.BaseTypes.MIN_CHANNEL_VALUE &&
+       this.value <= ola.common.BaseTypes.MAX_CHANNEL_VALUE) &&
       (this.end == undefined ||
-       (this.end >= 1 && this.end <= 512 && this.end >= this.start))
+       (this.end >= ola.common.BaseTypes.MIN_CHANNEL_NUMBER &&
+        this.end <= ola.common.BaseTypes.MAX_CHANNEL_NUMBER &&
+        this.end >= this.start))
   );
 };
 
@@ -78,19 +83,6 @@ ola.common.KeypadParser = function() {
 
 
 /**
- * The maximum slot number.
- * @type {number}
- */
-ola.common.KeypadParser.MAX_SLOT = 512;
-
-/**
- * The maximum slot value.
- * @type {number}
- */
-ola.common.KeypadParser.MAX_VALUE = 255;
-
-
-/**
  * Parse a full command
  * @param {string} str the input string.
  * @return {bool} true if the command is valid, false otherwise.
@@ -100,33 +92,33 @@ ola.common.KeypadParser.prototype.parsePartialCommand = function(str) {
     return false;
   }
 
-  var result = this.partial_command_regex.exec(this._aliases(str));
+  var result = this.partial_command_regex.exec(this.aliases_(str));
   if (result == null) {
     return false;
   }
 
   var start_token = result[1];
   if (start_token != undefined) {
-    var start = this._intOrUndefined(result[1]);
+    var start = this.intOrUndefined_(result[1]);
     if (start == undefined || start == 0 ||
-        start > ola.common.KeypadParser.MAX_SLOT) {
+        start > ola.common.BaseTypes.MAX_CHANNEL_NUMBER) {
       return false;
     }
   }
 
   var end_token = result[2];
   if (end_token != undefined && end_token != '') {
-    var end = this._intOrUndefined(result[2]);
+    var end = this.intOrUndefined_(result[2]);
     if (end == undefined || end == 0 ||
-        end > ola.common.KeypadParser.MAX_SLOT) {
+        end > ola.common.BaseTypes.MAX_CHANNEL_NUMBER) {
       return false;
     }
   }
 
   var value_token = result[3];
   if (value_token != undefined && value_token != '') {
-    var value = this._intOrUndefined(result[3]);
-    if (value == undefined || value > ola.common.KeypadParser.MAX_VALUE) {
+    var value = this.intOrUndefined_(result[3]);
+    if (value == undefined || value > ola.common.BaseTypes.MAX_CHANNEL_VALUE) {
       return false;
     }
   }
@@ -146,14 +138,14 @@ ola.common.KeypadParser.prototype.parseFullCommand = function(str) {
     return undefined;
   }
 
-  var result = this.full_command_regex.exec(this._aliases(str));
+  var result = this.full_command_regex.exec(this.aliases_(str));
   if (result == null) {
     return undefined;
   }
 
-  var start = this._intOrUndefined(result[1]);
-  var end = this._intOrUndefined(result[2]);
-  var value = this._intOrUndefined(result[3]);
+  var start = this.intOrUndefined_(result[1]);
+  var end = this.intOrUndefined_(result[2]);
+  var value = this.intOrUndefined_(result[3]);
 
   if (start == undefined || value == undefined) {
     return undefined;
@@ -174,8 +166,9 @@ ola.common.KeypadParser.prototype.parseFullCommand = function(str) {
  * Convert a string to an int, or return undefined
  * @param {string} token the string to convert.
  * @return {number|undefined} The integer, or undefined.
+ * @private
  */
-ola.common.KeypadParser.prototype._intOrUndefined = function(token) {
+ola.common.KeypadParser.prototype.intOrUndefined_ = function(token) {
   if (token == null || token == undefined)
     return undefined;
   var i = parseInt(token);
@@ -187,12 +180,15 @@ ola.common.KeypadParser.prototype._intOrUndefined = function(token) {
  * Converts aliases.
  * @param {string} str the input string.
  * @return {string} the output string.
+ * @private
  */
-ola.common.KeypadParser.prototype._aliases = function(str) {
+ola.common.KeypadParser.prototype.aliases_ = function(str) {
   str = str.replace('>', 'THRU');
-  str = str.replace('*', '1 THRU 512');
-  str = str.replace('ALL', '1 THRU 512');
-  str = str.replace('@ +', '@ 255');
-  str = str.replace('@ FULL', '@ 255');
+  str = str.replace('*', ola.common.BaseTypes.MIN_CHANNEL_NUMBER + ' THRU ' +
+                    ola.common.BaseTypes.MAX_CHANNEL_NUMBER);
+  str = str.replace('ALL', ola.common.BaseTypes.MIN_CHANNEL_NUMBER + ' THRU ' +
+                    ola.common.BaseTypes.MAX_CHANNEL_NUMBER);
+  str = str.replace('@ +', '@ ' + ola.common.BaseTypes.MAX_CHANNEL_VALUE);
+  str = str.replace('@ FULL', '@ ' + ola.common.BaseTypes.MAX_CHANNEL_VALUE);
   return str;
 };

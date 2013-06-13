@@ -96,13 +96,13 @@ ola.OlaUI = function() {
   var t = this;
   this.plugin_frame = new ola.PluginFrame(
       ola.PLUGIN_FRAME_ID,
-      function(item) { t._ShowPlugin(item); });
+      function(item) { t.ShowPlugin_(item); });
   this.new_universe_frame = new ola.NewUniverseFrame(ola.NEW_UNIVERSE_FRAME_ID,
                                                      this);
 
   goog.events.listen(goog.dom.$('new_universe_button'),
                      goog.events.EventType.CLICK,
-                     this._ShowNewUniverse,
+                     this.ShowNewUniverse_,
                      false,
                      this);
 
@@ -117,11 +117,11 @@ ola.OlaUI = function() {
 
   // redraw on resize events
   this.vsm = new goog.dom.ViewportSizeMonitor();
-  this._UpdateUI();
-  goog.events.listen(this.vsm, goog.events.EventType.RESIZE, this._UpdateUI,
+  this.UpdateUI_();
+  goog.events.listen(this.vsm, goog.events.EventType.RESIZE, this.UpdateUI_,
     false, this);
 
-  this._SetupNavigation();
+  this.SetupNavigation_();
   this.ShowHome();
 
   // show the main frame now
@@ -131,8 +131,9 @@ ola.OlaUI = function() {
 
 /**
  * Setup the navigation section of the UI
+ * @private
  */
-ola.OlaUI.prototype._SetupNavigation = function() {
+ola.OlaUI.prototype.SetupNavigation_ = function() {
   var home_control = goog.dom.$('home_control');
   goog.ui.decorate(home_control);
   goog.events.listen(home_control,
@@ -153,11 +154,11 @@ ola.OlaUI.prototype._SetupNavigation = function() {
   this.plugin_list = new ola.common.SortedList(
       plugin_container,
       new ola.common.PluginControlFactory(
-        function(item) { ui._ShowPlugin(item.id()); }));
+        function(item) { ui.ShowPlugin_(item.id()); }));
 
   goog.events.listen(this.ola_server,
                      ola.common.Server.EventType.PLUGIN_LIST_EVENT,
-                     this._updatePluginList,
+                     this.updatePluginList_,
                      false, this);
 
   var universe_container = new goog.ui.Container();
@@ -169,7 +170,7 @@ ola.OlaUI.prototype._SetupNavigation = function() {
 
   goog.events.listen(this.ola_server,
                      ola.common.Server.EventType.UNIVERSE_LIST_EVENT,
-                     this._updateUniverseList,
+                     this.updateUniverseList_,
                      false, this);
 
   this.timer = new goog.Timer(ola.LIST_UPDATE_INTERVAL_MS);
@@ -185,8 +186,9 @@ ola.OlaUI.prototype._SetupNavigation = function() {
 /**
  * Update universe list.
  * @param {Object} e the event object.
+ * @private
  */
-ola.OlaUI.prototype._updateUniverseList = function(e) {
+ola.OlaUI.prototype.updateUniverseList_ = function(e) {
   var items = new Array();
   ola.logger.info('Got ' + e.universes.length + ' universes');
   for (var i = 0; i < e.universes.length; ++i) {
@@ -199,8 +201,9 @@ ola.OlaUI.prototype._updateUniverseList = function(e) {
 /**
  * Update the plugin list
  * @param {Object} e the event object.
+ * @private
  */
-ola.OlaUI.prototype._updatePluginList = function(e) {
+ola.OlaUI.prototype.updatePluginList_ = function(e) {
   var items = new Array();
   for (var i = 0; i < e.plugins.length; ++i) {
     var item = new ola.common.PluginItem(e.plugins[i]);
@@ -214,7 +217,7 @@ ola.OlaUI.prototype._updatePluginList = function(e) {
  * Display the home frame
  */
 ola.OlaUI.prototype.ShowHome = function() {
-  this._HideAllFrames();
+  this.HideAllFrames_();
   this.home_frame.Show();
 };
 
@@ -225,16 +228,17 @@ ola.OlaUI.prototype.ShowHome = function() {
  * @param {boolean} opt_select_main_tab set to true to display the main tab.
  */
 ola.OlaUI.prototype.ShowUniverse = function(universe_id, opt_select_main_tab) {
-  this._HideAllFrames();
+  this.HideAllFrames_();
   this.universe_frame.Show(universe_id, opt_select_main_tab);
 };
 
 
 /**
  * Display the new universe frame
+ * @private
  */
-ola.OlaUI.prototype._ShowNewUniverse = function() {
-  this._HideAllFrames();
+ola.OlaUI.prototype.ShowNewUniverse_ = function() {
+  this.HideAllFrames_();
   this.new_universe_frame.Show();
 };
 
@@ -242,18 +246,20 @@ ola.OlaUI.prototype._ShowNewUniverse = function() {
 /**
  * Display the plugin frame
  * @param {number} plugin_id the ID of the plugin to show in the frame.
+ * @private
  */
-ola.OlaUI.prototype._ShowPlugin = function(plugin_id) {
+ola.OlaUI.prototype.ShowPlugin_ = function(plugin_id) {
   this.ola_server.FetchPluginInfo(plugin_id);
-  this._HideAllFrames();
+  this.HideAllFrames_();
   this.plugin_frame.Show();
 };
 
 
 /**
  * Hide all the frames.
+ * @private
  */
-ola.OlaUI.prototype._HideAllFrames = function() {
+ola.OlaUI.prototype.HideAllFrames_ = function() {
   this.home_frame.Hide();
   this.universe_frame.Hide();
   this.plugin_frame.Hide();
@@ -264,8 +270,9 @@ ola.OlaUI.prototype._HideAllFrames = function() {
 /**
  * Update the UI size. This is called when the window size changes
  * @param {Object} e the event object.
+ * @private
  */
-ola.OlaUI.prototype._UpdateUI = function(e) {
+ola.OlaUI.prototype.UpdateUI_ = function(e) {
   var size = this.vsm.getSize();
   this.splitpane1.setSize(new goog.math.Size(size.width, size.height - 85));
   this.logger_window.SetSize(size);

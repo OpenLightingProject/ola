@@ -42,14 +42,14 @@ ola.DmxConsoleTab = function(element) {
   goog.events.listen(
       this.tick_timer,
       goog.Timer.TICK,
-      this._consoleChanged,
+      this.consoleChanged_,
       false,
       this);
 
   goog.events.listen(
       this.dmx_console,
       ola.DmxConsole.CHANGE_EVENT,
-      this._consoleChanged,
+      this.consoleChanged_,
       false,
       this);
 };
@@ -108,8 +108,9 @@ ola.DmxConsoleTab.prototype.newValues = function(data) {
 
 /**
  * Called when the console values change
+ * @private
  */
-ola.DmxConsoleTab.prototype._consoleChanged = function(e) {
+ola.DmxConsoleTab.prototype.consoleChanged_ = function(e) {
   if (this.mute_events) {
     return;
   }

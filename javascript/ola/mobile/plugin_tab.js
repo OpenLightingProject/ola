@@ -38,19 +38,19 @@ ola.mobile.PluginTab = function() {
   this.plugin_frame = new ola.BaseFrame('plugin_frame');
   this.plugin_info_frame = new ola.BaseFrame('plugin_info_frame');
 
-  this._hideAllFrames();
+  this.hideAllFrames_();
 
   this.plugin_list = undefined;
 
   this.ola_server = ola.common.Server.getInstance();
   goog.events.listen(this.ola_server,
                      ola.common.Server.EventType.PLUGIN_LIST_EVENT,
-                     this._updatePluginList,
+                     this.updatePluginList_,
                      false, this);
 
   goog.events.listen(this.ola_server,
                      ola.common.Server.EventType.PLUGIN_EVENT,
-                     this._updatePluginInfo,
+                     this.updatePluginInfo_,
                      false, this);
 };
 
@@ -71,18 +71,19 @@ ola.mobile.PluginTab.prototype.blur = function() {};
 
 /**
  * Hide all frames
+ * @private
  */
-ola.mobile.PluginTab.prototype._hideAllFrames = function() {
+ola.mobile.PluginTab.prototype.hideAllFrames_ = function() {
   this.plugin_frame.Hide();
   this.plugin_info_frame.Hide();
 };
 
 
 /**
- * Caled when the plugin tab is clicked
+ * Called when the plugin tab is clicked
  */
 ola.mobile.PluginTab.prototype.update = function() {
-  this._hideAllFrames();
+  this.hideAllFrames_();
   this.plugin_frame.setAsBusy();
   this.plugin_list = undefined;
   this.plugin_frame.Show();
@@ -93,8 +94,9 @@ ola.mobile.PluginTab.prototype.update = function() {
 /**
  * Called when a new list of plugins is received.
  * @param {Object} e the event object.
+ * @private
  */
-ola.mobile.PluginTab.prototype._updatePluginList = function(e) {
+ola.mobile.PluginTab.prototype.updatePluginList_ = function(e) {
   if (this.plugin_list == undefined) {
     this.plugin_frame.Clear();
     var plugin_container = new goog.ui.Container();
@@ -104,7 +106,7 @@ ola.mobile.PluginTab.prototype._updatePluginList = function(e) {
     this.plugin_list = new ola.common.SortedList(
         plugin_container,
         new ola.common.PluginControlFactory(
-          function(item) { tab._pluginSelected(item.id()); }));
+          function(item) { tab.pluginSelected_(item.id()); }));
   }
 
   var items = new Array();
@@ -119,9 +121,10 @@ ola.mobile.PluginTab.prototype._updatePluginList = function(e) {
 /**
  * Called when a plugin is selected.
  * @param {number} plugin_id the id of the plugin selected.
+ * @private
  */
-ola.mobile.PluginTab.prototype._pluginSelected = function(plugin_id) {
-  this._hideAllFrames();
+ola.mobile.PluginTab.prototype.pluginSelected_ = function(plugin_id) {
+  this.hideAllFrames_();
   this.plugin_info_frame.setAsBusy();
   this.plugin_info_frame.Show();
   this.ola_server.FetchPluginInfo(plugin_id);
@@ -131,8 +134,9 @@ ola.mobile.PluginTab.prototype._pluginSelected = function(plugin_id) {
 /**
  * Called when new plugin info is available
  * @param {Object} e the event object.
+ * @private
  */
-ola.mobile.PluginTab.prototype._updatePluginInfo = function(e) {
+ola.mobile.PluginTab.prototype.updatePluginInfo_ = function(e) {
   this.plugin_info_frame.Clear();
   var description = e.plugin['description'];
   description = description.replace(/\n/g, '<br>');

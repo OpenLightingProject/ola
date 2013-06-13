@@ -51,7 +51,7 @@ ola.DmxMonitorTab.prototype.setActive = function(state) {
     view_button.setTooltip('Change the DMX Monitor layout');
     goog.events.listen(view_button,
                        goog.ui.Component.EventType.ACTION,
-                       this._viewChanged,
+                       this.viewChanged_,
                        false,
                        this);
     this.setup = true;
@@ -63,8 +63,9 @@ ola.DmxMonitorTab.prototype.setActive = function(state) {
 /**
  * Called when the view changes
  * @param {Object} e the event object.
+ * @private
  */
-ola.DmxMonitorTab.prototype._viewChanged = function(e) {
+ola.DmxMonitorTab.prototype.viewChanged_ = function(e) {
   var value = e.target.getCaption();
   if (value == 'Full') {
     goog.dom.$('monitor_values').className = 'monitor_full';

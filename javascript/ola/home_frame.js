@@ -176,7 +176,7 @@ ola.HomeFrame = function(element_id) {
 
   goog.events.listen(ola_server,
                      ola.common.Server.EventType.UNIVERSE_LIST_EVENT,
-                     this._universeListChanged,
+                     this.universeListChanged_,
                      false, this);
 
   this.server_stats = new ola.common.ServerStats();
@@ -192,8 +192,9 @@ goog.inherits(ola.HomeFrame, ola.BaseFrame);
 /**
  * Update the universe set
  * @param {Object} e the event object.
+ * @private
  */
-ola.HomeFrame.prototype._universeListChanged = function(e) {
+ola.HomeFrame.prototype.universeListChanged_ = function(e) {
   var items = new Array();
   for (var i = 0; i < e.universes.length; ++i) {
     items.push(new ola.UniverseItem(e.universes[i]));

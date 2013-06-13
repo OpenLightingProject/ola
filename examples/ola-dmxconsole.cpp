@@ -45,6 +45,7 @@
 #include <time.h>
 #include <math.h>
 
+#include <ola/BaseTypes.h>
 #include <ola/Callback.h>
 #include <ola/DmxBuffer.h>
 #include <ola/OlaClient.h>
@@ -86,7 +87,6 @@ typedef struct {
   bool help;        // help
 } options;
 
-int MAXCHANNELS = 512;
 unsigned int MAXFKEY = 12;
 
 unsigned int universe = 0;
@@ -147,7 +147,7 @@ uint64_t timeGetTime() {
 
 /* set all DMX channels */
 void setall() {
-  ola::DmxBuffer buffer(dmx, MAXCHANNELS);
+  ola::DmxBuffer buffer(dmx, DMX_UNIVERSE_SIZE);
   client->SendDmx(universe, buffer);
 }
 
@@ -173,11 +173,13 @@ void mask() {
 
   /* write channel numbers */
   (void) attrset(palette[CHANNEL]);
-  for (y = 1; y < LINES && z < MAXCHANNELS && i < channels_per_screen;
+  for (y = 1; y < LINES && z < DMX_UNIVERSE_SIZE && i < channels_per_screen;
        y += 2) {
     move(y, 0);
     for (x = 0;
-         x < channels_per_line && z < MAXCHANNELS && i < channels_per_screen;
+         x < channels_per_line &&
+         z < DMX_UNIVERSE_SIZE &&
+         i < channels_per_screen;
          x++, i++, z++) {
       switch (display_mode) {
         case DISP_MODE_DMX:
@@ -261,11 +263,13 @@ void values() {
   }
 
   /* values */
-  for (y = 2; y < LINES && z < MAXCHANNELS && i < channels_per_screen;
+  for (y = 2; y < LINES && z < DMX_UNIVERSE_SIZE && i < channels_per_screen;
        y += 2) {
     move(y, 0);
     for (x = 0;
-         x < channels_per_line && z < MAXCHANNELS && i < channels_per_screen;
+         x < channels_per_line &&
+         z < DMX_UNIVERSE_SIZE &&
+         i < channels_per_screen;
          x++, z++, i++) {
       const int d = dmx[z];
       switch (d) {
@@ -314,12 +318,12 @@ void values() {
 
 /* save current cue into cuebuffer */
 void savecue() {
-  memcpy(&dmxsave[current_cue*MAXCHANNELS], dmx, MAXCHANNELS);
+  memcpy(&dmxsave[current_cue * DMX_UNIVERSE_SIZE], dmx, DMX_UNIVERSE_SIZE);
 }
 
 /* get new cue from cuebuffer */
 void loadcue() {
-  memcpy(dmx, &dmxsave[current_cue*MAXCHANNELS], MAXCHANNELS);
+  memcpy(dmx, &dmxsave[current_cue * DMX_UNIVERSE_SIZE], DMX_UNIVERSE_SIZE);
 }
 
 /* fade cue "new_cue" into current cue */
@@ -327,7 +331,7 @@ void crossfade(unsigned int new_cue) {
   dmx_t *dmxold;
   dmx_t *dmxnew;
   int i;
-  int max = MAXCHANNELS;
+  int max = DMX_UNIVERSE_SIZE;
 
   /* check parameter */
   if (new_cue > MAXFKEY)
@@ -345,12 +349,12 @@ void crossfade(unsigned int new_cue) {
   }
 
   savecue();
-  dmxold = &dmxsave[current_cue * MAXCHANNELS];
-  dmxnew = &dmxsave[new_cue * MAXCHANNELS];
+  dmxold = &dmxsave[current_cue * DMX_UNIVERSE_SIZE];
+  dmxnew = &dmxsave[new_cue * DMX_UNIVERSE_SIZE];
 
   /* try to find the last channel value > 0, so we don't have to
      crossfade large blocks of 0s */
-  for (i = MAXCHANNELS - 1; i >= 0; max = i, i--)
+  for (i = DMX_UNIVERSE_SIZE - 1; i >= 0; max = i, i--)
     if (dmxold[i]||dmxnew[i])
       break;
 
@@ -392,13 +396,13 @@ void crossfade(unsigned int new_cue) {
 
 void undo() {
   if (undo_possible) {
-    memcpy(dmx, dmxundo, MAXCHANNELS);
+    memcpy(dmx, dmxundo, DMX_UNIVERSE_SIZE);
     undo_possible = 0;
   }
 }
 
 void undoprep() {
-  memcpy(dmxundo, dmx, MAXCHANNELS);
+  memcpy(dmxundo, dmx, DMX_UNIVERSE_SIZE);
   undo_possible = 1;
 }
 
@@ -578,7 +582,7 @@ void stdin_ready() {
       break;
 
     case KEY_RIGHT:
-      if (current_channel < MAXCHANNELS-1) {
+      if (current_channel < DMX_UNIVERSE_SIZE-1) {
         current_channel++;
         if (current_channel >= first_channel+channels_per_screen) {
           first_channel += channels_per_line;
@@ -601,8 +605,8 @@ void stdin_ready() {
 
     case KEY_DOWN:
       current_channel += channels_per_line;
-      if (current_channel >= MAXCHANNELS)
-        current_channel = MAXCHANNELS - 1;
+      if (current_channel >= DMX_UNIVERSE_SIZE)
+        current_channel = DMX_UNIVERSE_SIZE - 1;
       if (current_channel >= first_channel+channels_per_screen) {
         first_channel += channels_per_line;
         mask();
@@ -623,26 +627,26 @@ void stdin_ready() {
 
     case KEY_IC:
       undoprep();
-      for (n = MAXCHANNELS - 1; n > current_channel && n > 0; n--)
+      for (n = DMX_UNIVERSE_SIZE - 1; n > current_channel && n > 0; n--)
         dmx[n]=dmx[n - 1];
       setall();
       break;
     case KEY_DC:
       undoprep();
-      for (n = current_channel; n < MAXCHANNELS - 1; n++)
+      for (n = current_channel; n < DMX_UNIVERSE_SIZE - 1; n++)
         dmx[n] = dmx[n + 1];
       setall();
       break;
     case 'B':
     case 'b':
       undoprep();
-      memset(dmx, 0, MAXCHANNELS);
+      memset(dmx, DMX_MIN_CHANNEL_VALUE, DMX_UNIVERSE_SIZE);
       setall();
       break;
     case 'F':
     case 'f':
       undoprep();
-      memset(dmx, 0xff, MAXCHANNELS);
+      memset(dmx, DMX_MAX_CHANNEL_VALUE, DMX_UNIVERSE_SIZE);
       setall();
       break;
     case 'M':
@@ -739,14 +743,15 @@ int main(int argc, char *argv[]) {
 
   // 10 bytes security, for file IO routines, will be optimized and checked
   // later
-  dmx = reinterpret_cast<dmx_t*>(calloc(MAXCHANNELS+10, sizeof(dmx_t)));
+  dmx = reinterpret_cast<dmx_t*>(calloc(DMX_UNIVERSE_SIZE + 10,
+                                  sizeof(dmx_t)));
   CHECK(dmx);
 
   dmxsave = reinterpret_cast<dmx_t*>(
-      calloc(MAXCHANNELS * MAXFKEY, sizeof(dmx_t)));
+      calloc(DMX_UNIVERSE_SIZE * MAXFKEY, sizeof(dmx_t)));
   CHECK(dmxsave);
 
-  dmxundo = reinterpret_cast<dmx_t*>(calloc(MAXCHANNELS, sizeof(dmx_t)));
+  dmxundo = reinterpret_cast<dmx_t*>(calloc(DMX_UNIVERSE_SIZE, sizeof(dmx_t)));
   CHECK(dmxundo);
 
   options opts;

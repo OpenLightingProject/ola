@@ -47,7 +47,7 @@ ola.mobile.UniverseTab = function() {
   this.rdm_frame = new ola.BaseFrame('rdm_frame');
   this.rdm_section_frame = new ola.BaseFrame('rdm_section_frame');
 
-  this._hideAllFrames();
+  this.hideAllFrames_();
 
   this.universe_list = undefined;
   this.active_universe = undefined;
@@ -60,7 +60,7 @@ ola.mobile.UniverseTab = function() {
   this.ola_server = ola.common.Server.getInstance();
   goog.events.listen(this.ola_server,
                      ola.common.Server.EventType.UNIVERSE_LIST_EVENT,
-                     this._updateUniverseList,
+                     this.updateUniverseList_,
                      false, this);
 
 };
@@ -80,8 +80,9 @@ ola.mobile.UniverseTab.prototype.blur = function() {};
 
 /**
  * Hide all frames
+ * @private
  */
-ola.mobile.UniverseTab.prototype._hideAllFrames = function() {
+ola.mobile.UniverseTab.prototype.hideAllFrames_ = function() {
   this.universe_frame.Hide();
   this.uid_frame.Hide();
   this.rdm_frame.Hide();
@@ -90,10 +91,10 @@ ola.mobile.UniverseTab.prototype._hideAllFrames = function() {
 
 
 /**
- * Caled when the universe tab is clicked
+ * Called when the universe tab is clicked
  */
 ola.mobile.UniverseTab.prototype.update = function() {
-  this._hideAllFrames();
+  this.hideAllFrames_();
   this.universe_frame.setAsBusy();
   this.universe_list = undefined;
   this.active_universe = undefined;
@@ -107,8 +108,9 @@ ola.mobile.UniverseTab.prototype.update = function() {
 /**
  * Called when a new list of universes is received.
  * @param {Object} e the event object.
+ * @private
  */
-ola.mobile.UniverseTab.prototype._updateUniverseList = function(e) {
+ola.mobile.UniverseTab.prototype.updateUniverseList_ = function(e) {
   if (this.universe_list == undefined) {
     this.universe_frame.Clear();
     var universe_container = new goog.ui.Container();
@@ -118,7 +120,7 @@ ola.mobile.UniverseTab.prototype._updateUniverseList = function(e) {
     this.universe_list = new ola.common.SortedList(
         universe_container,
         new ola.UniverseControlFactory(
-          function(item) { tab._universeSelected(item.id()); }));
+          function(item) { tab.universeSelected_(item.id()); }));
   }
 
   var items = new Array();
@@ -133,9 +135,10 @@ ola.mobile.UniverseTab.prototype._updateUniverseList = function(e) {
 /**
  * Called when a universe is selected
  * @param {number} universe_id the id of the universe selected.
+ * @private
  */
-ola.mobile.UniverseTab.prototype._universeSelected = function(universe_id) {
-  this._hideAllFrames();
+ola.mobile.UniverseTab.prototype.universeSelected_ = function(universe_id) {
+  this.hideAllFrames_();
   this.uid_frame.setAsBusy();
   this.uid_list = undefined;
   this.rdm_list = undefined;
@@ -145,7 +148,7 @@ ola.mobile.UniverseTab.prototype._universeSelected = function(universe_id) {
   var tab = this;
   this.ola_server.fetchUids(
       universe_id,
-      function(e) { tab._updateUidList(e); });
+      function(e) { tab.updateUidList_(e); });
 
   // setup a timer here
 };
@@ -154,8 +157,9 @@ ola.mobile.UniverseTab.prototype._universeSelected = function(universe_id) {
 /**
  * Called when a new list of uids is received.
  * @param {Object} e the event object.
+ * @private
  */
-ola.mobile.UniverseTab.prototype._updateUidList = function(e) {
+ola.mobile.UniverseTab.prototype.updateUidList_ = function(e) {
   if (e.target.getStatus() != 200) {
     return;
   }
@@ -170,7 +174,7 @@ ola.mobile.UniverseTab.prototype._updateUidList = function(e) {
     this.uid_list = new ola.common.SortedList(
         uid_container,
         new ola.common.UidControlFactory(
-          function(item) { tab._uidSelected(item.id()); }));
+          function(item) { tab.uidSelected_(item.id()); }));
 
     var button = new goog.ui.Button('Back');
     button.render(this.uid_frame.element);
@@ -194,9 +198,10 @@ ola.mobile.UniverseTab.prototype._updateUidList = function(e) {
 /**
  * Called when a uid is selected
  * @param {Object} uid the UID selected.
+ * @private
  */
-ola.mobile.UniverseTab.prototype._uidSelected = function(uid) {
-  this._hideAllFrames();
+ola.mobile.UniverseTab.prototype.uidSelected_ = function(uid) {
+  this.hideAllFrames_();
   this.rdm_frame.setAsBusy();
   this.rdm_list = undefined;
   this.active_uid = uid;
@@ -206,15 +211,16 @@ ola.mobile.UniverseTab.prototype._uidSelected = function(uid) {
   this.ola_server.rdmGetSupportedSections(
       this.active_universe,
       uid,
-      function(e) { tab._updateSupportedSections(e); });
+      function(e) { tab.updateSupportedSections_(e); });
 };
 
 
 /**
  * Called when a list of supported sections is received.
  * @param {Object} e the event object.
+ * @private
  */
-ola.mobile.UniverseTab.prototype._updateSupportedSections = function(e) {
+ola.mobile.UniverseTab.prototype.updateSupportedSections_ = function(e) {
   if (this.rdm_list == undefined) {
     this.rdm_frame.Clear();
 
@@ -225,7 +231,7 @@ ola.mobile.UniverseTab.prototype._updateSupportedSections = function(e) {
     this.rdm_list = new ola.common.SortedList(
         rdm_container,
         new ola.common.RdmSectionControlFactory(
-          function(item) { tab._sectionSelected(item); }));
+          function(item) { tab.sectionSelected_(item); }));
 
     var button = new goog.ui.Button('Back');
     button.render(this.rdm_frame.element);
@@ -233,7 +239,7 @@ ola.mobile.UniverseTab.prototype._updateSupportedSections = function(e) {
     goog.events.listen(
         button,
         goog.ui.Component.EventType.ACTION,
-        function() { this._universeSelected(this.active_universe) },
+        function() { this.universeSelected_(this.active_universe) },
         false, this);
   }
 
@@ -250,20 +256,22 @@ ola.mobile.UniverseTab.prototype._updateSupportedSections = function(e) {
 /**
  * Called when a section is selected
  * @param {Object} section the Section object.
+ * @private
  */
-ola.mobile.UniverseTab.prototype._sectionSelected = function(section) {
-  this._hideAllFrames();
+ola.mobile.UniverseTab.prototype.sectionSelected_ = function(section) {
+  this.hideAllFrames_();
   this.rdm_section_frame.setAsBusy();
   this.rdm_section_frame.Show();
   this.active_section = section;
-  this._loadSection();
+  this.loadSection_();
 };
 
 
 /**
  * Called when we need to load a section
+ * @private
  */
-ola.mobile.UniverseTab.prototype._loadSection = function() {
+ola.mobile.UniverseTab.prototype.loadSection_ = function() {
   var tab = this;
 
   this.ola_server.rdmGetSectionInfo(
@@ -271,15 +279,16 @@ ola.mobile.UniverseTab.prototype._loadSection = function() {
       this.active_uid,
       this.active_section.id(),
       this.active_section.hint(),
-      function(e) { tab._updateSection(e); });
+      function(e) { tab.updateSection_(e); });
 };
 
 
 /**
  * Called when a section is ready to be drawn
  * @param {Object} e the event object.
+ * @private
  */
-ola.mobile.UniverseTab.prototype._updateSection = function(e) {
+ola.mobile.UniverseTab.prototype.updateSection_ = function(e) {
   var section_response = e.target.getResponseJson();
 
   this.rdm_section_frame.Clear();
@@ -296,7 +305,7 @@ ola.mobile.UniverseTab.prototype._updateSection = function(e) {
   var form = goog.dom.createElement('form');
   form.id = this.active_section.id();
   var tab = this;
-  form.onsubmit = function() { tab._saveSection(); return false};
+  form.onsubmit = function() { tab.saveSection_(); return false};
   var table = goog.dom.createElement('table');
   table.className = 'ola-table';
   var editable = false;
@@ -315,7 +324,7 @@ ola.mobile.UniverseTab.prototype._updateSection = function(e) {
 
   goog.events.listen(button,
                      goog.ui.Component.EventType.ACTION,
-                     function() { this._uidSelected(this.active_uid) },
+                     function() { this.uidSelected_(this.active_uid) },
                      false, this);
 
   if (section_response['refresh']) {
@@ -324,7 +333,7 @@ ola.mobile.UniverseTab.prototype._updateSection = function(e) {
 
     goog.events.listen(button,
                        goog.ui.Component.EventType.ACTION,
-                       function() { this._loadSection() },
+                       function() { this.loadSection_() },
                        false, this);
   }
 
@@ -335,7 +344,7 @@ ola.mobile.UniverseTab.prototype._updateSection = function(e) {
 
     goog.events.listen(button,
                        goog.ui.Component.EventType.ACTION,
-                       function() { this._saveSection() },
+                       function() { this.saveSection_() },
                        false, this);
   }
 
@@ -345,8 +354,9 @@ ola.mobile.UniverseTab.prototype._updateSection = function(e) {
 
 /**
  * Called when we need to save a section
+ * @private
  */
-ola.mobile.UniverseTab.prototype._saveSection = function() {
+ola.mobile.UniverseTab.prototype.saveSection_ = function() {
   var items = this.items;
   var count = items.length;
 
@@ -399,20 +409,21 @@ ola.mobile.UniverseTab.prototype._saveSection = function() {
       this.active_section.id(),
       this.active_section.hint(),
       data,
-      function(e) { tab._saveSectionComplete(e); });
+      function(e) { tab.saveSectionComplete_(e); });
 };
 
 
 /**
  * Called when the save section completes.
  * @param {Object} e the event object.
+ * @private
  */
-ola.mobile.UniverseTab.prototype._saveSectionComplete = function(e) {
+ola.mobile.UniverseTab.prototype.saveSectionComplete_ = function(e) {
   var response = e.target.getResponseJson();
   if (response['error']) {
     alert(response['error']);
   } else {
     // reload data
-    this._loadSection();
+    this.loadSection_();
   }
 };

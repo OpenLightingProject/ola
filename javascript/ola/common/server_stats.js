@@ -34,7 +34,7 @@ ola.common.ServerStats = function(element_id) {
   var ola_server = ola.common.Server.getInstance();
 
   goog.events.listen(ola_server, ola.common.Server.EventType.SERVER_INFO_EVENT,
-                     this._updateServerInfo,
+                     this.updateServerInfo_,
                      false, this);
 
   // update the server info now
@@ -67,8 +67,9 @@ ola.common.ServerStats.prototype.update = function() {
 /**
  * Update the home frame with new server data
  * @param {Object} e the event object.
+ * @private
  */
-ola.common.ServerStats.prototype._updateServerInfo = function(e) {
+ola.common.ServerStats.prototype.updateServerInfo_ = function(e) {
   goog.dom.$('server_hostname').innerHTML = e.server_info['hostname'];
   goog.dom.$('server_ip').innerHTML = e.server_info['ip'];
   goog.dom.$('server_broadcast').innerHTML = e.server_info['broadcast'];

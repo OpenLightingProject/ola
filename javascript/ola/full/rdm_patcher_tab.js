@@ -48,14 +48,14 @@ ola.RDMPatcherTab = function(element) {
   autopatch_button.setTooltip('Automatically Patch Devices');
   goog.events.listen(autopatch_button,
                      goog.ui.Component.EventType.ACTION,
-                     function() { this._autoPatchButtonClicked(); },
+                     function() { this.autoPatchButtonClicked_(); },
                      false,
                      this);
   var refresh_button = toolbar.getChild('patcherRefreshButton');
   refresh_button.setTooltip('Refresh Devices');
   goog.events.listen(refresh_button,
                      goog.ui.Component.EventType.ACTION,
-                     function() { this._update(); },
+                     function() { this.update_(); },
                      false,
                      this);
 
@@ -107,15 +107,16 @@ ola.RDMPatcherTab.prototype.setActive = function(state) {
 
   if (!this.isActive())
     return;
-  this._update();
+  this.update_();
 };
 
 
 /**
  * Called when the UID list changes.
  * @param {Object} e the event object.
+ * @private
  */
-ola.RDMPatcherTab.prototype._updateUidList = function(e) {
+ola.RDMPatcherTab.prototype.updateUidList_ = function(e) {
   var response = ola.common.Server.getInstance().checkForErrorLog(e);
   if (response == undefined) {
     return;
@@ -133,7 +134,7 @@ ola.RDMPatcherTab.prototype._updateUidList = function(e) {
   }
 
   if (this.isActive()) {
-    this._fetchNextDeviceOrRender();
+    this.fetchNextDeviceOrRender_();
   }
 };
 
@@ -141,8 +142,9 @@ ola.RDMPatcherTab.prototype._updateUidList = function(e) {
 /**
  * Fetch the information for the next device in the list, or render the patcher
  * if we've run out of devices.
+ * @private
  */
-ola.RDMPatcherTab.prototype._fetchNextDeviceOrRender = function() {
+ola.RDMPatcherTab.prototype.fetchNextDeviceOrRender_ = function() {
   // fetch the new device in the list
   if (!this.pending_devices.length) {
     this.patcher.setDevices(this.devices);
@@ -159,7 +161,7 @@ ola.RDMPatcherTab.prototype._fetchNextDeviceOrRender = function() {
       this.getUniverse(),
       device.asString(),
       function(e) {
-        tab._deviceInfoComplete(device, e);
+        tab.deviceInfoComplete_(device, e);
       });
 };
 
@@ -167,15 +169,16 @@ ola.RDMPatcherTab.prototype._fetchNextDeviceOrRender = function() {
 /**
  * Called when we get new information for a device
  * @param {Object} e the event object.
+ * @private
  */
-ola.RDMPatcherTab.prototype._deviceInfoComplete = function(device, e) {
+ola.RDMPatcherTab.prototype.deviceInfoComplete_ = function(device, e) {
   if (!this.isActive()) {
     return;
   }
 
   var response = ola.common.Server.getInstance().checkForErrorLog(e);
   if (response == undefined) {
-    this._fetchNextDeviceOrRender();
+    this.fetchNextDeviceOrRender_();
     return;
   }
 
@@ -197,14 +200,15 @@ ola.RDMPatcherTab.prototype._deviceInfoComplete = function(device, e) {
         response['personality_count'])
     );
   }
-  this._fetchNextDeviceOrRender();
+  this.fetchNextDeviceOrRender_();
 };
 
 
 /**
  * Fetch the devices and render
+ * @private
  */
-ola.RDMPatcherTab.prototype._update = function() {
+ola.RDMPatcherTab.prototype.update_ = function() {
   // we've just become visible
   this.patcher.hide();
   this.loading_div.style.display = 'block';
@@ -212,14 +216,15 @@ ola.RDMPatcherTab.prototype._update = function() {
   var tab = this;
   server.fetchUids(
       this.universe_id,
-      function(e) { tab._updateUidList(e); });
+      function(e) { tab.updateUidList_(e); });
 };
 
 
 /**
  * Called when the user clicks on the auto patch button
+ * @private
  */
-ola.RDMPatcherTab.prototype._autoPatchButtonClicked = function() {
+ola.RDMPatcherTab.prototype.autoPatchButtonClicked_ = function() {
   var dialog = ola.Dialog.getInstance();
   dialog.setTitle('Confirm Auto Patch');
   dialog.setButtonSet(goog.ui.Dialog.ButtonSet.YES_NO);
@@ -229,7 +234,7 @@ ola.RDMPatcherTab.prototype._autoPatchButtonClicked = function() {
   goog.events.listen(
       dialog,
       goog.ui.Dialog.EventType.SELECT,
-      this._autoPatchConfirmed,
+      this.autoPatchConfirmed_,
       false,
       this);
   dialog.setVisible(true);
@@ -239,12 +244,13 @@ ola.RDMPatcherTab.prototype._autoPatchButtonClicked = function() {
 /**
  * Called when the auto patch is confirmed
  * @param {Object} e the event object.
+ * @private
  */
-ola.RDMPatcherTab.prototype._autoPatchConfirmed = function(e) {
+ola.RDMPatcherTab.prototype.autoPatchConfirmed_ = function(e) {
   var dialog = ola.Dialog.getInstance();
 
   goog.events.unlisten(dialog, goog.ui.Dialog.EventType.SELECT,
-      this._autoPatchButtonClicked, false, this);
+      this.autoPatchButtonClicked_, false, this);
 
   if (e.key == goog.ui.Dialog.DefaultButtonKeys.YES) {
     this.patcher.autoPatch();

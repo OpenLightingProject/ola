@@ -44,7 +44,7 @@ ola.UniverseSettingsTab = function(element, on_remove) {
   goog.ui.decorate(save_button);
   goog.events.listen(save_button,
                      goog.events.EventType.CLICK,
-                     function() { this._saveButtonClicked(false); },
+                     function() { this.saveButtonClicked_(false); },
                      false,
                      this);
 
@@ -65,7 +65,7 @@ ola.UniverseSettingsTab = function(element, on_remove) {
   // setup notifications when the universe list changes
   goog.events.listen(this.server,
                      ola.common.Server.EventType.UNIVERSE_EVENT,
-                     this._updateFromData,
+                     this.updateFromData_,
                      false, this);
 };
 goog.inherits(ola.UniverseSettingsTab, ola.common.BaseUniverseTab);
@@ -95,14 +95,15 @@ ola.UniverseSettingsTab.prototype.setActive = function(state) {
   ola.UniverseSettingsTab.superClass_.setActive.call(this, state);
 
   if (this.isActive())
-    this._updateView();
+    this.updateView_();
 };
 
 
 /**
  * Fetch the latest data from the server to update the view
+ * @private
  */
-ola.UniverseSettingsTab.prototype._updateView = function() {
+ola.UniverseSettingsTab.prototype.updateView_ = function() {
   this.server.FetchUniverseInfo(this.getUniverse());
   this.available_ports.update(this.getUniverse());
 };
@@ -111,8 +112,9 @@ ola.UniverseSettingsTab.prototype._updateView = function() {
 /**
  * Update the tab from a Universe object
  * @param {Object} e the event object.
+ * @private
  */
-ola.UniverseSettingsTab.prototype._updateFromData = function(e) {
+ola.UniverseSettingsTab.prototype.updateFromData_ = function(e) {
   if (this.getUniverse() != e.universe['id']) {
     ola.logger.info('Mismatched universe, expected ' + this.getUniverse() +
         ', got ' + e.universe['id']);
@@ -138,8 +140,9 @@ ola.UniverseSettingsTab.prototype._updateFromData = function(e) {
  * @param {Object} port_component the port component to generate the setting
  *   from.
  * @param {Array.<Object>} setting_list the list to add the setting to.
+ * @private
  */
-ola.UniverseSettingsTab.prototype._generatePrioritySettingFromComponent =
+ola.UniverseSettingsTab.prototype.generatePrioritySettingFromComponent_ =
     function(port_component, setting_list) {
   var priority = port_component.priority();
   if (priority != undefined) {
@@ -160,8 +163,9 @@ ola.UniverseSettingsTab.prototype._generatePrioritySettingFromComponent =
  * Called when the save button is clicked
  * @param {boolean} remove_confirmed true if the user confirmed the removal of
  *   this universe.
+ * @private
  */
-ola.UniverseSettingsTab.prototype._saveButtonClicked = function(
+ola.UniverseSettingsTab.prototype.saveButtonClicked_ = function(
     remove_confirmed) {
   var dialog = ola.Dialog.getInstance();
 
@@ -174,7 +178,7 @@ ola.UniverseSettingsTab.prototype._saveButtonClicked = function(
     var port = this.input_table.getChildAt(i);
     if (port.isSelected()) {
       one_port_selected = true;
-      this._generatePrioritySettingFromComponent(port, port_priorities);
+      this.generatePrioritySettingFromComponent_(port, port_priorities);
     } else {
       remove_ports.push(port.portId());
     }
@@ -184,7 +188,7 @@ ola.UniverseSettingsTab.prototype._saveButtonClicked = function(
     var port = this.output_table.getChildAt(i);
     if (port.isSelected()) {
       one_port_selected = true;
-      this._generatePrioritySettingFromComponent(port, port_priorities);
+      this.generatePrioritySettingFromComponent_(port, port_priorities);
     } else {
       remove_ports.push(port.portId());
     }
@@ -201,7 +205,7 @@ ola.UniverseSettingsTab.prototype._saveButtonClicked = function(
       goog.events.listen(
           dialog,
           goog.ui.Dialog.EventType.SELECT,
-          this._removeConfirmed,
+          this.removeConfirmed_,
           false,
           this);
       dialog.setTitle('Confirm Universe Removal');
@@ -234,7 +238,7 @@ ola.UniverseSettingsTab.prototype._saveButtonClicked = function(
       port_priorities,
       remove_ports,
       new_ports,
-      function(e) { tab._saveCompleted(e); });
+      function(e) { tab.saveCompleted_(e); });
 
   var dialog = ola.Dialog.getInstance();
   dialog.setAsBusy();
@@ -245,18 +249,19 @@ ola.UniverseSettingsTab.prototype._saveButtonClicked = function(
 /**
  * Called when the universe removal is confirmed
  * @param {Object} e the event object.
+ * @private
  */
-ola.UniverseSettingsTab.prototype._removeConfirmed = function(e) {
+ola.UniverseSettingsTab.prototype.removeConfirmed_ = function(e) {
   var dialog = ola.Dialog.getInstance();
   goog.events.unlisten(
       dialog,
       goog.ui.Dialog.EventType.SELECT,
-      this._removeConfirmed,
+      this.removeConfirmed_,
       false,
       this);
   if (e.key == goog.ui.Dialog.DefaultButtonKeys.YES) {
     dialog.setVisible(false);
-    this._saveButtonClicked(true);
+    this.saveButtonClicked_(true);
   }
 };
 
@@ -264,15 +269,16 @@ ola.UniverseSettingsTab.prototype._removeConfirmed = function(e) {
 /**
  * Called when the changes are saved
  * @param {Object} e the event object.
+ * @private
  */
-ola.UniverseSettingsTab.prototype._saveCompleted = function(e) {
+ola.UniverseSettingsTab.prototype.saveCompleted_ = function(e) {
   var dialog = ola.Dialog.getInstance();
   if (e.target.getStatus() == 200) {
     dialog.setVisible(false);
     if (this.was_removed && this.on_remove) {
       this.on_remove();
     }
-    this._updateView();
+    this.updateView_();
   } else {
     dialog.setTitle('Failed to Save Settings');
     dialog.setContent(e.target.getLastUri() + ' : ' + e.target.getLastError());

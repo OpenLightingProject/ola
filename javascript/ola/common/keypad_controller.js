@@ -39,9 +39,9 @@ ola.common.KeypadController = function(name, universe_id) {
   this.universe_id = universe_id;
   this.parser = new ola.common.KeypadParser();
   this.table = goog.dom.createElement('table');
-  this._caption(name);
-  this._display();
-  this._keypad();
+  this.caption_(name);
+  this.display_();
+  this.keypad_();
 };
 
 
@@ -49,13 +49,14 @@ ola.common.KeypadController = function(name, universe_id) {
  * Button
  * @param {string} value the caption for the button.
  * @return {Element} the new Button element.
+ * @private
  */
-ola.common.KeypadController.prototype._button = function(value) {
+ola.common.KeypadController.prototype.button_ = function(value) {
    var button = new goog.ui.Button(goog.ui.FlatButtonRenderer);
    button.setContent(value);
    goog.events.listen(button,
                       goog.ui.Component.EventType.ACTION,
-                      function() { this._buttonAction(value); },
+                      function() { this.buttonAction_(value); },
                       false,
                       this);
    return button;
@@ -65,8 +66,9 @@ ola.common.KeypadController.prototype._button = function(value) {
 /**
  * Input event. Triggered when text is entered into text box.
  * @param {string} key the key that was pressed.
+ * @private
  */
-ola.common.KeypadController.prototype._textEntry = function(key) {
+ola.common.KeypadController.prototype.textEntry_ = function(key) {
   var text = this.command_input.value;
   var autocomplete = null;
 
@@ -75,7 +77,7 @@ ola.common.KeypadController.prototype._textEntry = function(key) {
       break;
 
     case goog.events.KeyCodes.ENTER:
-      this._buttonAction('ENTER');
+      this.buttonAction_('ENTER');
       return;
 
     default:
@@ -111,8 +113,9 @@ ola.common.KeypadController.prototype._textEntry = function(key) {
 /**
  * Button event. Triggered when a button is pushed.
  * @param {string} name the button that was pressed.
+ * @private
  */
-ola.common.KeypadController.prototype._buttonAction = function(name) {
+ola.common.KeypadController.prototype.buttonAction_ = function(name) {
   if (name == '<') {
     // Go Backward. Must scan for whitespace
     var end = this.command_input.value.length - 1;
@@ -135,7 +138,7 @@ ola.common.KeypadController.prototype._buttonAction = function(name) {
        end -= length;
     }
     this.command_input.value = this.command_input.value.substr(0, end);
-    this._buttonAction('');
+    this.buttonAction_('');
   } else if (name == 'ENTER') {
     // Execute
     var command = this.parser.parseFullCommand(this.command_input.value);
@@ -155,8 +158,9 @@ ola.common.KeypadController.prototype._buttonAction = function(name) {
 /**
  * Caption of the Table
  * @param {string} title the title for the table.
+ * @private
  */
-ola.common.KeypadController.prototype._caption = function(title) {
+ola.common.KeypadController.prototype.caption_ = function(title) {
   var caption = goog.dom.createElement('caption');
   caption.innerHTML = title;
   this.table.appendChild(caption);
@@ -164,8 +168,9 @@ ola.common.KeypadController.prototype._caption = function(title) {
 
 /**
  * First tr row
+ * @private
  */
-ola.common.KeypadController.prototype._display = function() {
+ola.common.KeypadController.prototype.display_ = function() {
   var tr = goog.dom.createElement('tr');
   var td = goog.dom.createElement('td');
   td.colSpan = '4';
@@ -176,11 +181,11 @@ ola.common.KeypadController.prototype._display = function() {
 
    var key_handler = new goog.events.KeyHandler(this.command_input);
    goog.events.listen(key_handler, 'key',
-                      function(e) { this._textEntry(e.keyCode); },
+                      function(e) { this.textEntry_(e.keyCode); },
                       true,
                       this);
 
-  var button = this._button('<');
+  var button = this.button_('<');
   button.addClassName('backspace-button');
   button.render(td);
 
@@ -191,8 +196,9 @@ ola.common.KeypadController.prototype._display = function() {
 
 /**
  * The main keypad button matrix
+ * @private
  */
-ola.common.KeypadController.prototype._keypad = function() {
+ola.common.KeypadController.prototype.keypad_ = function() {
   var values = ['7', '8', '9', ' THRU ', '4', '5', '6', ' @ ', '1', '2', '3',
                 'FULL', '0', 'ENTER'];
 
@@ -200,7 +206,7 @@ ola.common.KeypadController.prototype._keypad = function() {
     var tr = goog.dom.createElement('tr');
     for (x = 0; x < 4; ++x) {
       var td = goog.dom.createElement('td');
-      var button = this._button(values[(i * 4) + x]);
+      var button = this.button_(values[(i * 4) + x]);
       button.render(td);
       tr.appendChild(td);
     }
@@ -210,12 +216,12 @@ ola.common.KeypadController.prototype._keypad = function() {
   var tr = goog.dom.createElement('tr');
 
   var zerotd = goog.dom.createElement('td');
-  var button = this._button(values[12]);
+  var button = this.button_(values[12]);
   button.render(zerotd);
   this.table.appendChild(zerotd);
 
   var entertd = goog.dom.createElement('td');
-  button = this._button(values[13]);
+  button = this.button_(values[13]);
   button.render(entertd);
   entertd.colSpan = '3';
   this.table.appendChild(entertd);
@@ -225,14 +231,14 @@ ola.common.KeypadController.prototype._keypad = function() {
 /**
  * Execute a KeypadCommand.
  * This asks ola for current dmx values before
- * running _execute() where the real work happens.
+ * running execute_() where the real work happens.
  * @param {KeypadCommand} command the command to execute.
  */
 ola.common.KeypadController.prototype.execute = function(command) {
   var tab = this;
   ola.common.Server.getInstance().getChannelValues(
       this.universe_id,
-      function(e) { tab._execute(e, command); });
+      function(e) { tab.execute_(e, command); });
 };
 
 
@@ -241,8 +247,9 @@ ola.common.KeypadController.prototype.execute = function(command) {
  * is called once DMX values are retrieved by the server.
  * @param {Object} e the event object.
  * @param {KeypadCommand} command the command to execute.
+ * @private
  */
-ola.common.KeypadController.prototype._execute = function(e, command) {
+ola.common.KeypadController.prototype.execute_ = function(e, command) {
   var dmx_values = e['dmx'];
 
   if (command.start == command.end) {

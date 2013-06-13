@@ -193,14 +193,15 @@ ola.AvailablePortTable.prototype.update = function(universe_id) {
   var table = this;
   ola.common.Server.getInstance().fetchAvailablePorts(
       universe_id,
-      function(e) { table._updateCompleted(e); });
+      function(e) { table.updateCompleted_(e); });
 };
 
 
 /**
  * Called when the list of available ports is returned
+ * @private
  */
-ola.AvailablePortTable.prototype._updateCompleted = function(e) {
+ola.AvailablePortTable.prototype.updateCompleted_ = function(e) {
   if (!ola.common.Server.getInstance().checkStatusDialog(e)) {
     return;
   }

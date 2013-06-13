@@ -75,7 +75,7 @@ ola.RDMPatcherDevice = function(uid, label, start_address, footprint,
  */
 ola.RDMPatcherDevice.prototype.setStart = function(start_address) {
   this.start = start_address - 1;
-  this._updateEnd();
+  this.updateEnd_();
 };
 
 
@@ -85,15 +85,16 @@ ola.RDMPatcherDevice.prototype.setStart = function(start_address) {
  */
 ola.RDMPatcherDevice.prototype.setFootprint = function(footprint) {
   this.footprint = footprint;
-  this._updateEnd();
+  this.updateEnd_();
 };
 
 /**
  * Update the end address.
+ * @private
  */
-ola.RDMPatcherDevice.prototype._updateEnd = function() {
+ola.RDMPatcherDevice.prototype.updateEnd_ = function() {
   this.end = Math.min(this.start + this.footprint - 1,
-                      ola.RDMPatcher.NUMBER_OF_CHANNELS);
+                      ola.common.BaseTypes.MAX_CHANNEL_NUMBER);
 };
 
 
@@ -128,7 +129,7 @@ ola.RDMPatcherDevice.prototype.getDivs = function() {
  * Check if a device overflows the 512 channel count.
  */
 ola.RDMPatcherDevice.prototype.overflows = function(div) {
-  return this.start + this.footprint > ola.RDMPatcher.NUMBER_OF_CHANNELS;
+  return this.start + this.footprint > ola.common.BaseTypes.MAX_CHANNEL_NUMBER;
 };
 
 
@@ -186,10 +187,12 @@ ola.RDMPatcher = function(element_id, status_id) {
 
 
 /* Constants */
-ola.RDMPatcher.NUMBER_OF_CHANNELS = 512;
+/** The number of channels per row @type {number} */
 ola.RDMPatcher.CHANNELS_PER_ROW = 8;
+/** The height of each row @type {number} */
 ola.RDMPatcher.HEIGHT_PER_DEVICE = 14;
-ola.RDMPatcher.NUMBER_OF_ROWS = (ola.RDMPatcher.NUMBER_OF_CHANNELS /
+/** The number of rows @type {number} */
+ola.RDMPatcher.NUMBER_OF_ROWS = (ola.common.BaseTypes.MAX_CHANNEL_NUMBER /
   ola.RDMPatcher.CHANNELS_PER_ROW);
 
 
@@ -237,13 +240,13 @@ ola.RDMPatcher.prototype.hide = function() {
  */
 ola.RDMPatcher.prototype.update = function() {
   if (this.rows.length == 0) {
-    this._setup();
+    this.setup_();
   }
 
   for (var i = 0; i < this.rows.length; ++i) {
     this.rows[i].style.display = 'block';
   }
-  this._render();
+  this.render_();
 };
 
 
@@ -262,7 +265,7 @@ ola.RDMPatcher.prototype.autoPatch = function() {
   // sort by ascending footprint
   this.devices.sort(ola.RDMPatcherDevice.sortByFootprint);
 
-  if (channels_required > ola.RDMPatcher.NUMBER_OF_CHANNELS) {
+  if (channels_required > ola.common.BaseTypes.MAX_CHANNEL_NUMBER) {
     // we're going to have to overlap. to minimize overlapping we assign
     // largest footprint first
 
@@ -274,9 +277,9 @@ ola.RDMPatcher.prototype.autoPatch = function() {
       ola.logger.info('new round');
 
       while (devices.length &&
-             channel < ola.RDMPatcher.NUMBER_OF_CHANNELS) {
+             channel < ola.common.BaseTypes.MAX_CHANNEL_NUMBER) {
         var device = devices.pop();
-        var remaining = ola.RDMPatcher.NUMBER_OF_CHANNELS - channel;
+        var remaining = ola.common.BaseTypes.MAX_CHANNEL_NUMBER - channel;
         ola.logger.info(device.label + ' : ' + device.footprint);
         if (device.footprint > remaining) {
           // deal with this device next round
@@ -310,7 +313,7 @@ ola.RDMPatcher.prototype.autoPatch = function() {
 
     // start the update sequence
     this.patching_failures = false;
-    this._updateNextDevice();
+    this.updateNextDevice_();
   }
 };
 
@@ -319,7 +322,7 @@ ola.RDMPatcher.prototype.autoPatch = function() {
  * Setup the patcher
  * @private
  */
-ola.RDMPatcher.prototype._setup = function() {
+ola.RDMPatcher.prototype.setup_ = function() {
   for (var i = 0; i < ola.RDMPatcher.NUMBER_OF_ROWS; ++i) {
     var row_div = goog.dom.createElement('div');
     row_div.className = 'patch_row';
@@ -358,7 +361,7 @@ ola.RDMPatcher.prototype._setup = function() {
  * Render the patcher.
  * @private
  */
-ola.RDMPatcher.prototype._render = function() {
+ola.RDMPatcher.prototype.render_ = function() {
   this.devices.sort(ola.RDMPatcherDevice.sortByAddress);
 
   // Each channel is assigned N slots, where N is the max number of devices
@@ -367,7 +370,7 @@ ola.RDMPatcher.prototype._render = function() {
   var slots = new Array();
   slots.push(goog.array.repeat(
       false,
-      ola.RDMPatcher.NUMBER_OF_CHANNELS));
+      ola.common.BaseTypes.MAX_CHANNEL_NUMBER));
 
   for (var i = 0; i < this.draggers.length; ++i) {
     goog.events.removeAll(this.draggers[i]);
@@ -395,7 +398,7 @@ ola.RDMPatcher.prototype._render = function() {
     if (!found_free_slot) {
       slots.push(goog.array.repeat(
           false,
-          ola.RDMPatcher.NUMBER_OF_CHANNELS));
+          ola.common.BaseTypes.MAX_CHANNEL_NUMBER));
     }
     // mark all appropriate channels in this slot as occupied.
     for (channel = device.start; channel <= device.end; ++channel) {
@@ -405,13 +408,13 @@ ola.RDMPatcher.prototype._render = function() {
   }
 
   // calculate the first/last free slot & max unused channels
-  var first_free_channel = ola.RDMPatcher.NUMBER_OF_CHANNELS;
+  var first_free_channel = ola.common.BaseTypes.MAX_CHANNEL_NUMBER;
   var last_free_channel = -1;
   var max_unused_channels = 0;
   var last_channel_used = true;
   var running_channel_count = 0;
 
-  for (var channel = 0; channel < ola.RDMPatcher.NUMBER_OF_CHANNELS;
+  for (var channel = 0; channel < ola.common.BaseTypes.MAX_CHANNEL_NUMBER;
     ++channel) {
     var used = false;
     for (var slot = 0; slot < slots.length; ++slot) {
@@ -444,7 +447,7 @@ ola.RDMPatcher.prototype._render = function() {
 
   // update the status line
   var status_line;
-  if (first_free_channel == ola.RDMPatcher.NUMBER_OF_CHANNELS) {
+  if (first_free_channel == ola.common.BaseTypes.MAX_CHANNEL_NUMBER) {
     status_line = 'No slots free';
   } else {
     first_free_channel++;
@@ -455,7 +458,7 @@ ola.RDMPatcher.prototype._render = function() {
   this.status_line.innerHTML = status_line;
 
   // now update the cell heights according to how many slots we need
-  this._updateCellHeights(slots.length);
+  this.updateCellHeights_(slots.length);
 
   // now loop over all the rows in the patcher table, and render them
   for (var row = 0; row < this.device_tables.length; ++row) {
@@ -478,7 +481,7 @@ ola.RDMPatcher.prototype._render = function() {
           td = goog.dom.getNextElementSibling(td);
         }
       }
-      this._renderSlot(tr, slots[slot], offset);
+      this.renderSlot_(tr, slots[slot], offset);
       tr = goog.dom.getNextElementSibling(tr);
       slot++;
     }
@@ -501,7 +504,7 @@ ola.RDMPatcher.prototype._render = function() {
  * @param {element} tr the row to use. May contain tds already.
  * @private
  */
-ola.RDMPatcher.prototype._renderSlot = function(tr, slot_data, start_channel) {
+ola.RDMPatcher.prototype.renderSlot_ = function(tr, slot_data, start_channel) {
   var channel = start_channel;
   var end_channel = start_channel + ola.RDMPatcher.CHANNELS_PER_ROW;
   var td = goog.dom.getFirstElementChild(tr);
@@ -528,7 +531,7 @@ ola.RDMPatcher.prototype._renderSlot = function(tr, slot_data, start_channel) {
       if (device.overflows()) {
         div.className = 'patcher_overflow_device';
         div.title = 'Device overflows the ' +
-          ola.RDMPatcher.NUMBER_OF_CHANNELS + ' slot limit';
+          ola.common.BaseTypes.MAX_CHANNEL_NUMBER + ' slot limit';
       } else {
         div.className = 'patcher_device';
       }
@@ -538,7 +541,7 @@ ola.RDMPatcher.prototype._renderSlot = function(tr, slot_data, start_channel) {
         div,
         goog.events.EventType.CLICK,
         function(d) {
-          return function(e) { this._configureDevice(d, e); };
+          return function(e) { this.configureDevice_(d, e); };
         }(device),
         false,
         this);
@@ -551,7 +554,7 @@ ola.RDMPatcher.prototype._renderSlot = function(tr, slot_data, start_channel) {
           dragger,
           goog.fx.Dragger.EventType.START,
           function(d1, d2, d3) {
-            return function(e) { this._startDrag(d1, d2, e); };
+            return function(e) { this.startDrag_(d1, d2, e); };
           }(div, device),
           false,
           this);
@@ -559,7 +562,7 @@ ola.RDMPatcher.prototype._renderSlot = function(tr, slot_data, start_channel) {
           dragger,
           goog.fx.Dragger.EventType.END,
           function(d1, d2) {
-            return function(e) { this._endDrag(d1, d2, e); };
+            return function(e) { this.endDrag_(d1, d2, e); };
           }(div, device),
           false,
           this);
@@ -581,8 +584,9 @@ ola.RDMPatcher.prototype._renderSlot = function(tr, slot_data, start_channel) {
 
 /**
  * Called when we start dragging a device
+ * @private
  */
-ola.RDMPatcher.prototype._startDrag = function(div, device, e) {
+ola.RDMPatcher.prototype.startDrag_ = function(div, device, e) {
   // remove any other divs associated with this device
   var device_divs = device.getDivs();
   for (var i = 0; i < device_divs.length; ++i) {
@@ -628,8 +632,9 @@ ola.RDMPatcher.prototype._startDrag = function(div, device, e) {
 
 /**
  * Called when the dragging finishes
+ * @private
  */
-ola.RDMPatcher.prototype._endDrag = function(div, device, e) {
+ola.RDMPatcher.prototype.endDrag_ = function(div, device, e) {
   goog.style.setOpacity(div, 1);
   this.scroller.setEnabled(false);
   var box = goog.style.getBorderBoxSize(div);
@@ -649,14 +654,15 @@ ola.RDMPatcher.prototype._endDrag = function(div, device, e) {
         Math.floor(center_y / this.cell_height));
 
   goog.dom.removeNode(div);
-  this._setStartAddress(device, new_start_address + 1);
+  this.setStartAddress_(device, new_start_address + 1);
 };
 
 
 /**
  * Update the heights of the cells, given the current layout of devices
+ * @private
  */
-ola.RDMPatcher.prototype._updateCellHeights = function(overlapping_devices) {
+ola.RDMPatcher.prototype.updateCellHeights_ = function(overlapping_devices) {
   // +1 for the title row, and always render at least one row so it looks nice
   var rows = 1 + Math.max(1, overlapping_devices);
   var height = rows * ola.RDMPatcher.HEIGHT_PER_DEVICE;
@@ -674,8 +680,9 @@ ola.RDMPatcher.prototype._updateCellHeights = function(overlapping_devices) {
 /**
  * Called when the user clicks on a device to configure it.
  * @param {Object} e the event object.
+ * @private
  */
-ola.RDMPatcher.prototype._configureDevice = function(device, e) {
+ola.RDMPatcher.prototype.configureDevice_ = function(device, e) {
   if (!e.target.parentNode) {
     // this was a drag action and the div has been removed, don't show the
     // dialog.
@@ -687,7 +694,7 @@ ola.RDMPatcher.prototype._configureDevice = function(device, e) {
     this.dialog.setButtonSet(goog.ui.Dialog.ButtonSet.OK_CANCEL);
     goog.events.listen(this.dialog,
                        goog.ui.Dialog.EventType.SELECT,
-                       this._saveDevice, false, this);
+                       this.saveDevice_, false, this);
     var table = goog.dom.createElement('table');
 
     // start address
@@ -722,7 +729,7 @@ ola.RDMPatcher.prototype._configureDevice = function(device, e) {
     goog.events.listen(
       this.personality_select,
       goog.ui.Component.EventType.ACTION,
-      this._setPersonality,
+      this.setPersonality_,
       false,
       this);
 
@@ -739,7 +746,7 @@ ola.RDMPatcher.prototype._configureDevice = function(device, e) {
     goog.events.listen(
       check,
       goog.ui.Component.EventType.CHANGE,
-      this._toggleIdentify,
+      this.toggleIdentify_,
       false,
       this);
 
@@ -764,7 +771,7 @@ ola.RDMPatcher.prototype._configureDevice = function(device, e) {
   server.rdmGetUIDIdentifyMode(
       this.universe_id,
       device.uid,
-      function(e) { patcher._getIdentifyComplete(e); });
+      function(e) { patcher.getIdentifyComplete_(e); });
 
   this.personality_row.style.display = 'none';
   var dialog = ola.Dialog.getInstance();
@@ -776,8 +783,9 @@ ola.RDMPatcher.prototype._configureDevice = function(device, e) {
 /**
  * Called when the get identify mode completes.
  * @param {Object} e the event object.
+ * @private
  */
-ola.RDMPatcher.prototype._getIdentifyComplete = function(e) {
+ola.RDMPatcher.prototype.getIdentifyComplete_ = function(e) {
   var response = ola.common.Server.getInstance().checkForErrorLog(e);
   if (response != undefined) {
     var mode = (response['identify_mode'] ?
@@ -788,14 +796,14 @@ ola.RDMPatcher.prototype._getIdentifyComplete = function(e) {
 
   if (this.active_device.personality_count == undefined ||
       this.active_device.personality_count < 2) {
-    this._displayConfigureDevice();
+    this.displayConfigureDevice_();
   } else {
     var server = ola.common.Server.getInstance();
     var patcher = this;
     server.rdmGetUIDPersonalities(
         this.universe_id,
         this.active_device.uid,
-        function(e) { patcher._getPersonalitiesComplete(e); });
+        function(e) { patcher.getPersonalitiesComplete_(e); });
   }
 };
 
@@ -803,8 +811,9 @@ ola.RDMPatcher.prototype._getIdentifyComplete = function(e) {
 /**
  * Called when the fetch personalities completes.
  * @param {Object} e the event object.
+ * @private
  */
-ola.RDMPatcher.prototype._getPersonalitiesComplete = function(e) {
+ola.RDMPatcher.prototype.getPersonalitiesComplete_ = function(e) {
   var response = ola.common.Server.getInstance().checkForErrorLog(e);
   if (response != undefined) {
     // remove all items from select
@@ -828,14 +837,15 @@ ola.RDMPatcher.prototype._getPersonalitiesComplete = function(e) {
     }
     this.personality_row.style.display = 'table-row';
   }
-  this._displayConfigureDevice();
+  this.displayConfigureDevice_();
 };
 
 
 /**
  * Display the configure device dialog
+ * @private
  */
-ola.RDMPatcher.prototype._displayConfigureDevice = function(e) {
+ola.RDMPatcher.prototype.displayConfigureDevice_ = function(e) {
   ola.Dialog.getInstance().setVisible(false);
   this.start_address_input.value = this.active_device.start + 1;
   this.dialog.setTitle(this.active_device.label);
@@ -847,8 +857,9 @@ ola.RDMPatcher.prototype._displayConfigureDevice = function(e) {
 /**
  * Save the start address for a device
  * @param {Object} e the event object.
+ * @private
  */
-ola.RDMPatcher.prototype._saveDevice = function(e) {
+ola.RDMPatcher.prototype.saveDevice_ = function(e) {
   if (e.key == goog.ui.Dialog.DefaultButtonKeys.CANCEL ||
       this.start_address_input == undefined ||
       this.active_device == undefined) {
@@ -856,19 +867,22 @@ ola.RDMPatcher.prototype._saveDevice = function(e) {
   }
 
   var value = parseInt(this.start_address_input.value);
-  if (isNaN(value) || value < 1 || value > ola.RDMPatcher.NUMBER_OF_CHANNELS) {
-    alert('Must be between 1 and ' + ola.RDMPatcher.NUMBER_OF_CHANNELS);
+  if (isNaN(value) || value < ola.common.BaseTypes.MIN_CHANNEL_NUMBER ||
+      value > ola.common.BaseTypes.MAX_CHANNEL_NUMBER) {
+    alert('Must be between ' + ola.common.BaseTypes.MIN_CHANNEL_NUMBER +
+    ' and ' + ola.common.BaseTypes.MAX_CHANNEL_NUMBER);
     return;
   }
 
-  this._setStartAddress(this.active_device, value);
+  this.setStartAddress_(this.active_device, value);
 };
 
 
 /**
  * Called to set the start address of a device
+ * @private
  */
-ola.RDMPatcher.prototype._setStartAddress = function(device, start_address) {
+ola.RDMPatcher.prototype.setStartAddress_ = function(device, start_address) {
   var server = ola.common.Server.getInstance();
   var patcher = this;
   server.rdmSetSectionInfo(
@@ -878,7 +892,7 @@ ola.RDMPatcher.prototype._setStartAddress = function(device, start_address) {
       '',
       'address=' + start_address,
       function(e) {
-        patcher._setStartAddressComplete(device, start_address, e);
+        patcher.setStartAddressComplete_(device, start_address, e);
       });
 
   var dialog = ola.Dialog.getInstance();
@@ -889,8 +903,9 @@ ola.RDMPatcher.prototype._setStartAddress = function(device, start_address) {
 
 /**
  * Called when the start address set command completes
+ * @private
  */
-ola.RDMPatcher.prototype._setStartAddressComplete = function(device,
+ola.RDMPatcher.prototype.setStartAddressComplete_ = function(device,
                                                              start_address,
                                                              e) {
   var response = ola.common.Server.getInstance().checkForErrorDialog(e);
@@ -899,15 +914,16 @@ ola.RDMPatcher.prototype._setStartAddressComplete = function(device,
     dialog.setVisible(false);
     device.setStart(start_address);
   }
-  this._render();
+  this.render_();
 };
 
 
 /**
  * Set the personality.
  * @param {Object} e the event object.
+ * @private
  */
-ola.RDMPatcher.prototype._setPersonality = function(e) {
+ola.RDMPatcher.prototype.setPersonality_ = function(e) {
   var server = ola.common.Server.getInstance();
   this.personality_spinner.style.display = 'inline';
 
@@ -920,22 +936,23 @@ ola.RDMPatcher.prototype._setPersonality = function(e) {
       'personality',
       '',
       'int=' + selected['index'],
-      function(e) { patcher._personalityComplete(e, new_footprint); });
+      function(e) { patcher.personalityComplete_(e, new_footprint); });
 };
 
 
 /**
  * Called when the set personality request completes.
  * @param {Object} e the event object.
+ * @private
  */
-ola.RDMPatcher.prototype._personalityComplete = function(e, new_footprint) {
+ola.RDMPatcher.prototype.personalityComplete_ = function(e, new_footprint) {
   this.personality_spinner.style.display = 'none';
   var response = ola.common.Server.getInstance().checkForErrorDialog(e);
   if (response == undefined) {
     this.dialog.setVisible(false);
   } else {
     this.active_device.setFootprint(new_footprint);
-    this._render();
+    this.render_();
   }
 };
 
@@ -943,8 +960,9 @@ ola.RDMPatcher.prototype._personalityComplete = function(e, new_footprint) {
 /**
  * Toggle the identify mode
  * @param {Object} e the event object.
+ * @private
  */
-ola.RDMPatcher.prototype._toggleIdentify = function(e) {
+ola.RDMPatcher.prototype.toggleIdentify_ = function(e) {
   var server = ola.common.Server.getInstance();
   this.identify_spinner.style.display = 'inline';
   var patcher = this;
@@ -954,15 +972,16 @@ ola.RDMPatcher.prototype._toggleIdentify = function(e) {
       'identify',
       '',
       'bool=' + (e.target.isChecked() ? '1' : '0'),
-      function(e) { patcher._identifyComplete(e); });
+      function(e) { patcher.identifyComplete_(e); });
 };
 
 
 /**
  * Called when the identify request completes.
  * @param {Object} e the event object.
+ * @private
  */
-ola.RDMPatcher.prototype._identifyComplete = function(e) {
+ola.RDMPatcher.prototype.identifyComplete_ = function(e) {
   this.identify_spinner.style.display = 'none';
   var response = ola.common.Server.getInstance().checkForErrorDialog(e);
   if (response == undefined) {
@@ -974,8 +993,9 @@ ola.RDMPatcher.prototype._identifyComplete = function(e) {
 /**
  * Update the start address for the next device in the queue.
  * @param {Object} e the event object.
+ * @private
  */
-ola.RDMPatcher.prototype._updateNextDevice = function(e) {
+ola.RDMPatcher.prototype.updateNextDevice_ = function(e) {
   var server = ola.common.Server.getInstance();
   var address_change = this.address_changes[0];
   var patcher = this;
@@ -986,7 +1006,7 @@ ola.RDMPatcher.prototype._updateNextDevice = function(e) {
       '',
       'address=' + address_change.new_start_address,
       function(e) {
-        patcher._updateStartAddressComplete(e);
+        patcher.updateStartAddressComplete_(e);
       });
 };
 
@@ -994,8 +1014,9 @@ ola.RDMPatcher.prototype._updateNextDevice = function(e) {
 /**
  * Called when a device's start address is updated.
  * @param {Object} e the event object.
+ * @private
  */
-ola.RDMPatcher.prototype._updateStartAddressComplete = function(e) {
+ola.RDMPatcher.prototype.updateStartAddressComplete_ = function(e) {
   var response = ola.common.Server.getInstance().checkForErrorLog(e);
   var address_change = this.address_changes.shift();
   if (response == undefined) {
@@ -1006,7 +1027,7 @@ ola.RDMPatcher.prototype._updateStartAddressComplete = function(e) {
   }
 
   if (this.address_changes.length) {
-    this._updateNextDevice();
+    this.updateNextDevice_();
   } else {
     var dialog = ola.Dialog.getInstance();
     if (this.patching_failures) {
@@ -1019,6 +1040,6 @@ ola.RDMPatcher.prototype._updateStartAddressComplete = function(e) {
     } else {
       dialog.setVisible(false);
     }
-    this._render();
+    this.render_();
   }
 };
