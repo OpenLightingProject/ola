@@ -7,6 +7,7 @@ EXTRA_DIST = DummyPlugin.h DummyDevice.h DummyPort.h DummyResponder.h DummyRDMDe
 if USE_DUMMY
 lib_LTLIBRARIES = liboladummyresponder.la liboladummy.la
 liboladummyresponder_la_SOURCES = DummyResponder.cpp DummyRDMDevice.cpp
+liboladummyresponder_la_CXXFLAGS = $(COMMON_CXXFLAGS) @OLAD_DEFINES@
 liboladummyresponder_la_LIBADD = ../../common/libolacommon.la
 
 liboladummy_la_SOURCES = DummyPlugin.cpp DummyDevice.cpp DummyPort.cpp

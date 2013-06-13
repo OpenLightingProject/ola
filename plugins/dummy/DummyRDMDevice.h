@@ -63,6 +63,8 @@ class DummyRDMDevice: public ola::rdm::RDMControllerInterface {
                              ola::rdm::RDMCallback *callback);
     void HandleSupportedParams(const ola::rdm::RDMRequest *request,
                                ola::rdm::RDMCallback *callback);
+    void HandleParamDescription(const ola::rdm::RDMRequest *request,
+                                ola::rdm::RDMCallback *callback);
     void HandleDeviceInfo(const ola::rdm::RDMRequest *request,
                           ola::rdm::RDMCallback *callback);
     void HandleFactoryDefaults(const ola::rdm::RDMRequest *request,

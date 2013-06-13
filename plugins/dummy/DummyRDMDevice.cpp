@@ -89,6 +89,9 @@ void DummyRDMDevice::SendRDMRequest(const ola::rdm::RDMRequest *request,
     case ola::rdm::PID_DEVICE_INFO:
       HandleDeviceInfo(request, callback);
       break;
+    case ola::rdm::PID_PARAMETER_DESCRIPTION:
+      HandleParamDescription(request, callback);
+      break;
     case ola::rdm::PID_FACTORY_DEFAULTS:
       HandleFactoryDefaults(request, callback);
       break;
@@ -125,6 +128,9 @@ void DummyRDMDevice::SendRDMRequest(const ola::rdm::RDMRequest *request,
     case ola::rdm::PID_REAL_TIME_CLOCK:
       HandleRealTimeClock(request, callback);
       break;
+    case MANUFACTURER_PID_CODE_VERSION:
+      HandleStringResponse(request, callback, VERSION);
+      break;
     default:
       HandleUnknownPacket(request, callback);
   }
@@ -154,6 +160,7 @@ void DummyRDMDevice::HandleSupportedParams(const RDMRequest *request,
     return;
 
   uint16_t supported_params[] = {
+    ola::rdm::PID_PARAMETER_DESCRIPTION,
     ola::rdm::PID_DEVICE_LABEL,
     ola::rdm::PID_FACTORY_DEFAULTS,
     ola::rdm::PID_DEVICE_MODEL_DESCRIPTION,
@@ -162,7 +169,8 @@ void DummyRDMDevice::HandleSupportedParams(const RDMRequest *request,
     ola::rdm::PID_MANUFACTURER_LABEL,
     ola::rdm::PID_PRODUCT_DETAIL_ID_LIST,
     ola::rdm::PID_LAMP_STRIKES,
-    ola::rdm::PID_REAL_TIME_CLOCK
+    ola::rdm::PID_REAL_TIME_CLOCK,
+    MANUFACTURER_PID_CODE_VERSION
   };
 
   for (unsigned int i = 0; i < sizeof(supported_params) / 2; i++)
@@ -172,6 +180,75 @@ void DummyRDMDevice::HandleSupportedParams(const RDMRequest *request,
       request,
       reinterpret_cast<uint8_t*>(supported_params),
       sizeof(supported_params));
+
+  RunRDMCallback(callback, response);
+  delete request;
+}
+
+
+void DummyRDMDevice::HandleParamDescription(const RDMRequest *request,
+                                      ola::rdm::RDMCallback *callback) {
+  RDMResponse *response;
+// Not sure if this is necessary, it fails as it checks for no data and we have
+// some
+//  if (!CheckForBroadcastSubdeviceOrData(request, callback))
+//    return;
+
+  if (request->ParamDataSize() != sizeof(uint16_t)) {
+    OLA_WARN << "Dummy responder received param description request with wrong "
+      "number of parameters, expected " << sizeof(uint16_t) << ", got " <<
+      request->ParamDataSize();
+    response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+  } else if (request->CommandClass() != ola::rdm::RDMCommand::GET_COMMAND) {
+    response = NackWithReason(request, ola::rdm::NR_UNSUPPORTED_COMMAND_CLASS);
+  } else {
+    // Check that it's MANUFACTURER_PID_CODE_VERSION being requested
+    uint16_t parameter_id = NetworkToHost(
+        *(reinterpret_cast<uint16_t*>(request->ParamData())));
+    if (parameter_id != MANUFACTURER_PID_CODE_VERSION) {
+      OLA_WARN << "Dummy responder received param description request with "
+        "unknown PID, expected " << MANUFACTURER_PID_CODE_VERSION << ", got " <<
+        parameter_id;
+        response = NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
+    } else {
+      struct parameter_description_s {
+        uint16_t pid;
+        uint8_t pdl_size;
+        uint8_t data_type;
+        uint8_t command_class;
+        uint8_t type;
+        uint8_t unit;
+        uint8_t prefix;
+        uint32_t min_value;
+        uint32_t default_value;
+        uint32_t max_value;
+        char description[32];
+      } __attribute__((packed));
+
+      struct parameter_description_s param_description;
+      param_description.pid = HostToNetwork(
+          static_cast<uint16_t>(MANUFACTURER_PID_CODE_VERSION));
+      param_description.pdl_size = HostToNetwork(static_cast<uint8_t>(32));
+      param_description.data_type = HostToNetwork(
+          static_cast<uint8_t>(ola::rdm::DS_ASCII));
+      param_description.command_class = HostToNetwork(
+          static_cast<uint8_t>(ola::rdm::CC_GET));
+      param_description.type = HostToNetwork(static_cast<uint8_t>(0));
+      param_description.unit = HostToNetwork(
+          static_cast<uint8_t>(ola::rdm::UNITS_NONE));
+      param_description.prefix = HostToNetwork(
+          static_cast<uint8_t>(ola::rdm::PREFIX_NONE));
+      param_description.min_value = HostToNetwork(static_cast<uint32_t>(0));
+      param_description.default_value = HostToNetwork(
+          static_cast<uint32_t>(0));
+      param_description.max_value = HostToNetwork(static_cast<uint32_t>(0));
+      strncpy(param_description.description, "Code Version", 32);
+      response = GetResponseFromData(
+          request,
+          reinterpret_cast<uint8_t*>(&param_description),
+          sizeof(param_description));
+    }
+  }
 
   RunRDMCallback(callback, response);
   delete request;

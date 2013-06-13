@@ -37,6 +37,13 @@ static const int OLA_DEFAULT_PORT = 9010;
 static const uint16_t OPEN_LIGHTING_ESTA_CODE = 0x7a70;
 static const uint32_t MAX_UNIVERSE = 0xffffffff;
 
+/**
+ * Please discuss on open-lighting@googlegroups.com before claiming additional
+ * manufacturer PIDs and update http://opendmx.net/index.php/Open_Lighting_PIDs
+ */
+static const uint16_t MANUFACTURER_PID_SERIAL_NUMBER = 0x8000;
+static const uint16_t MANUFACTURER_PID_CODE_VERSION = 0x8001;
+
 #ifdef __cplusplus
 }
 #endif
