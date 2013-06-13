@@ -268,9 +268,11 @@ void WidgetDetectorThread::UsbProWidgetReady(
       }
       break;
     case JESE_ESTA_ID:
-      if (information->device_id == JESE_DMX_TRI_ID ||
-          information->device_id == JESE_RDM_TRI_ID ||
-          information->device_id == JESE_RDM_TRI_MK2_ID) {
+      if (information->device_id == JESE_DMX_TRI_MK1_ID ||
+          information->device_id == JESE_RDM_TRI_MK1_ID ||
+          information->device_id == JESE_RDM_TRI_MK2_ID ||
+          information->device_id == JESE_RDM_TXI_MK2_ID ||
+          information->device_id == JESE_DMX_TRI_MK1_SE_ID) {
         DispatchWidget(
             new DmxTriWidget(
               m_other_ss,
