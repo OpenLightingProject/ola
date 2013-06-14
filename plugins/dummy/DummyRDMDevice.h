@@ -87,7 +87,14 @@ class DummyRDMDevice: public ola::rdm::RDMControllerInterface {
     void HandleRealTimeClock(const ola::rdm::RDMRequest *request,
                              ola::rdm::RDMCallback *callback);
     bool CheckForBroadcastSubdeviceOrData(const ola::rdm::RDMRequest *request,
-                                          ola::rdm::RDMCallback *callback);
+                                          ola::rdm::RDMCallback *callback,
+                                          uint8_t parameter_size = 0);
+    bool CheckForBroadcastOrSubdevice(const ola::rdm::RDMRequest *request,
+                                      ola::rdm::RDMCallback *callback);
+    bool CheckForBroadcast(const ola::rdm::RDMRequest *request,
+                           ola::rdm::RDMCallback *callback);
+    bool CheckForSubdevice(const ola::rdm::RDMRequest *request,
+                           ola::rdm::RDMCallback *callback);
     void RunRDMCallback(ola::rdm::RDMCallback *callback,
                         ola::rdm::RDMResponse *response);
     typedef struct {

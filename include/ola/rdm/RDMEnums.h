@@ -29,6 +29,7 @@ namespace rdm {
 static const uint16_t ROOT_RDM_DEVICE = 0;
 static const uint16_t ALL_RDM_SUBDEVICES = 0xffff;
 static const uint16_t MAX_SUBDEVICE_NUMBER = 0x0200;
+static const uint8_t MAX_RDM_STRING_LENGTH = 32;
 // This is separated out because we never propagate OVERFLOWs up to the
 // clients.
 static const uint8_t ACK_OVERFLOW = 3;

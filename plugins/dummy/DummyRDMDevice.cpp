@@ -24,6 +24,7 @@
 #include "ola/Clock.h"
 #include "ola/Logging.h"
 #include "ola/rdm/RDMEnums.h"
+#include "ola/rdm/RDMManufacturerPIDs.h"
 #include "ola/network/NetworkUtils.h"
 #include "plugins/dummy/DummyRDMDevice.h"
 
@@ -128,7 +129,7 @@ void DummyRDMDevice::SendRDMRequest(const ola::rdm::RDMRequest *request,
     case ola::rdm::PID_REAL_TIME_CLOCK:
       HandleRealTimeClock(request, callback);
       break;
-    case MANUFACTURER_PID_CODE_VERSION:
+    case ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION:
       HandleStringResponse(request, callback, VERSION);
       break;
     default:
@@ -160,7 +161,6 @@ void DummyRDMDevice::HandleSupportedParams(const RDMRequest *request,
     return;
 
   uint16_t supported_params[] = {
-    ola::rdm::PID_PARAMETER_DESCRIPTION,
     ola::rdm::PID_DEVICE_LABEL,
     ola::rdm::PID_FACTORY_DEFAULTS,
     ola::rdm::PID_DEVICE_MODEL_DESCRIPTION,
@@ -170,7 +170,7 @@ void DummyRDMDevice::HandleSupportedParams(const RDMRequest *request,
     ola::rdm::PID_PRODUCT_DETAIL_ID_LIST,
     ola::rdm::PID_LAMP_STRIKES,
     ola::rdm::PID_REAL_TIME_CLOCK,
-    MANUFACTURER_PID_CODE_VERSION
+    ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION
   };
 
   for (unsigned int i = 0; i < sizeof(supported_params) / 2; i++)
@@ -181,76 +181,71 @@ void DummyRDMDevice::HandleSupportedParams(const RDMRequest *request,
       reinterpret_cast<uint8_t*>(supported_params),
       sizeof(supported_params));
 
-  RunRDMCallback(callback, response);
+  if (response) {
+    RunRDMCallback(callback, response);
+  }
   delete request;
 }
 
 
 void DummyRDMDevice::HandleParamDescription(const RDMRequest *request,
                                       ola::rdm::RDMCallback *callback) {
-  RDMResponse *response;
-// Not sure if this is necessary, it fails as it checks for no data and we have
-// some
-//  if (!CheckForBroadcastSubdeviceOrData(request, callback))
-//    return;
+  RDMResponse *response = NULL;
+  if (!CheckForBroadcastSubdeviceOrData(request, callback, sizeof(uint16_t)))
+    return;
 
-  if (request->ParamDataSize() != sizeof(uint16_t)) {
-    OLA_WARN << "Dummy responder received param description request with wrong "
-      "number of parameters, expected " << sizeof(uint16_t) << ", got " <<
-      request->ParamDataSize();
-    response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
-  } else if (request->CommandClass() != ola::rdm::RDMCommand::GET_COMMAND) {
-    response = NackWithReason(request, ola::rdm::NR_UNSUPPORTED_COMMAND_CLASS);
+  // Check that it's MANUFACTURER_PID_CODE_VERSION being requested
+  uint16_t parameter_id = NetworkToHost(
+      *(reinterpret_cast<uint16_t*>(request->ParamData())));
+  if (parameter_id != ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION) {
+    OLA_WARN << "Dummy responder received param description request with "
+      "unknown PID, expected " << ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION
+      << ", got " << parameter_id;
+      response = NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
   } else {
-    // Check that it's MANUFACTURER_PID_CODE_VERSION being requested
-    uint16_t parameter_id = NetworkToHost(
-        *(reinterpret_cast<uint16_t*>(request->ParamData())));
-    if (parameter_id != MANUFACTURER_PID_CODE_VERSION) {
-      OLA_WARN << "Dummy responder received param description request with "
-        "unknown PID, expected " << MANUFACTURER_PID_CODE_VERSION << ", got " <<
-        parameter_id;
-        response = NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
-    } else {
-      struct parameter_description_s {
-        uint16_t pid;
-        uint8_t pdl_size;
-        uint8_t data_type;
-        uint8_t command_class;
-        uint8_t type;
-        uint8_t unit;
-        uint8_t prefix;
-        uint32_t min_value;
-        uint32_t default_value;
-        uint32_t max_value;
-        char description[32];
-      } __attribute__((packed));
+    struct parameter_description_s {
+      uint16_t pid;
+      uint8_t pdl_size;
+      uint8_t data_type;
+      uint8_t command_class;
+      uint8_t type;
+      uint8_t unit;
+      uint8_t prefix;
+      uint32_t min_value;
+      uint32_t default_value;
+      uint32_t max_value;
+      char description[ola::rdm::MAX_RDM_STRING_LENGTH];
+    } __attribute__((packed));
 
-      struct parameter_description_s param_description;
-      param_description.pid = HostToNetwork(
-          static_cast<uint16_t>(MANUFACTURER_PID_CODE_VERSION));
-      param_description.pdl_size = HostToNetwork(static_cast<uint8_t>(32));
-      param_description.data_type = HostToNetwork(
-          static_cast<uint8_t>(ola::rdm::DS_ASCII));
-      param_description.command_class = HostToNetwork(
-          static_cast<uint8_t>(ola::rdm::CC_GET));
-      param_description.type = HostToNetwork(static_cast<uint8_t>(0));
-      param_description.unit = HostToNetwork(
-          static_cast<uint8_t>(ola::rdm::UNITS_NONE));
-      param_description.prefix = HostToNetwork(
-          static_cast<uint8_t>(ola::rdm::PREFIX_NONE));
-      param_description.min_value = HostToNetwork(static_cast<uint32_t>(0));
-      param_description.default_value = HostToNetwork(
-          static_cast<uint32_t>(0));
-      param_description.max_value = HostToNetwork(static_cast<uint32_t>(0));
-      strncpy(param_description.description, "Code Version", 32);
-      response = GetResponseFromData(
-          request,
-          reinterpret_cast<uint8_t*>(&param_description),
-          sizeof(param_description));
-    }
+    struct parameter_description_s param_description;
+    param_description.pid = HostToNetwork(
+        static_cast<uint16_t>(ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION));
+    param_description.pdl_size = HostToNetwork(
+        static_cast<uint8_t>(ola::rdm::MAX_RDM_STRING_LENGTH));
+    param_description.data_type = HostToNetwork(
+        static_cast<uint8_t>(ola::rdm::DS_ASCII));
+    param_description.command_class = HostToNetwork(
+        static_cast<uint8_t>(ola::rdm::CC_GET));
+    param_description.type = 0;
+    param_description.unit = HostToNetwork(
+        static_cast<uint8_t>(ola::rdm::UNITS_NONE));
+    param_description.prefix = HostToNetwork(
+        static_cast<uint8_t>(ola::rdm::PREFIX_NONE));
+    param_description.min_value = 0;
+    param_description.default_value = 0;
+    param_description.max_value = 0;
+    strncpy(param_description.description,
+            "Code Version",
+            ola::rdm::MAX_RDM_STRING_LENGTH);
+    response = GetResponseFromData(
+      request,
+        reinterpret_cast<uint8_t*>(&param_description),
+        sizeof(param_description));
   }
 
-  RunRDMCallback(callback, response);
+  if (response) {
+    RunRDMCallback(callback, response);
+  }
   delete request;
 }
 
@@ -290,7 +285,10 @@ void DummyRDMDevice::HandleDeviceInfo(const RDMRequest *request,
       request,
       reinterpret_cast<uint8_t*>(&device_info),
       sizeof(device_info));
-  RunRDMCallback(callback, response);
+
+  if (response) {
+    RunRDMCallback(callback, response);
+  }
   delete request;
 }
 
@@ -300,10 +298,11 @@ void DummyRDMDevice::HandleDeviceInfo(const RDMRequest *request,
  */
 void DummyRDMDevice::HandleFactoryDefaults(const ola::rdm::RDMRequest *request,
                                            ola::rdm::RDMCallback *callback) {
-  RDMResponse *response;
-  if (request->SubDevice()) {
-    response = NackWithReason(request, ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
-  } else if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
+  if (!CheckForBroadcastOrSubdevice(request, callback))
+    return;
+
+  RDMResponse *response = NULL;
+  if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
     // do set
     if (request->ParamDataSize()) {
       response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
@@ -337,11 +336,8 @@ void DummyRDMDevice::HandleFactoryDefaults(const ola::rdm::RDMRequest *request,
         sizeof(using_defaults));
     }
   }
-  if (request->DestinationUID().IsBroadcast()) {
-    vector<string> packets;
-    delete response;
-    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
-  } else {
+
+  if (response) {
     RunRDMCallback(callback, response);
   }
   delete request;
@@ -368,7 +364,10 @@ void DummyRDMDevice::HandleProductDetailList(const RDMRequest *request,
       request,
       reinterpret_cast<uint8_t*>(&product_details),
       sizeof(product_details));
-  RunRDMCallback(callback, response);
+
+  if (response) {
+    RunRDMCallback(callback, response);
+  }
   delete request;
 }
 
@@ -386,7 +385,10 @@ void DummyRDMDevice::HandleStringResponse(const ola::rdm::RDMRequest *request,
         request,
         reinterpret_cast<const uint8_t*>(value.data()),
         value.size());
-  RunRDMCallback(callback, response);
+
+  if (response) {
+    RunRDMCallback(callback, response);
+  }
   delete request;
 }
 
@@ -396,10 +398,11 @@ void DummyRDMDevice::HandleStringResponse(const ola::rdm::RDMRequest *request,
  */
 void DummyRDMDevice::HandlePersonality(const ola::rdm::RDMRequest *request,
                                        ola::rdm::RDMCallback *callback) {
-  RDMResponse *response;
-  if (request->SubDevice()) {
-    response = NackWithReason(request, ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
-  } else if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
+  if (!CheckForBroadcastOrSubdevice(request, callback))
+    return;
+
+  RDMResponse *response = NULL;
+  if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
     // do set
     if (request->ParamDataSize() != 1) {
       response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
@@ -442,11 +445,8 @@ void DummyRDMDevice::HandlePersonality(const ola::rdm::RDMRequest *request,
         sizeof(personality_info));
     }
   }
-  if (request->DestinationUID().IsBroadcast()) {
-    vector<string> packets;
-    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
-    delete response;
-  } else {
+
+  if (response) {
     RunRDMCallback(callback, response);
   }
   delete request;
@@ -459,39 +459,25 @@ void DummyRDMDevice::HandlePersonality(const ola::rdm::RDMRequest *request,
 void DummyRDMDevice::HandlePersonalityDescription(
     const ola::rdm::RDMRequest *request,
     ola::rdm::RDMCallback *callback) {
-  if (request->DestinationUID().IsBroadcast()) {
-    delete request;
-    vector<string> packets;
-    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
+  if (!CheckForBroadcastSubdeviceOrData(request, callback, 1))
     return;
-  }
 
   RDMResponse *response = NULL;
   uint8_t personality = 0;
-  if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
-    response = NackWithReason(request, ola::rdm::NR_UNSUPPORTED_COMMAND_CLASS);
-  } else if (request->SubDevice()) {
-    response = NackWithReason(request, ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
-  } else if (request->ParamDataSize() != 1) {
-    response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+  personality = *request->ParamData() - 1;
+  if (personality >= PERSONALITY_COUNT) {
+    response = NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
   } else {
-    personality = *request->ParamData() - 1;
-    if (personality >= PERSONALITY_COUNT) {
-      response = NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
-    }
-  }
-
-  if (!response) {
     struct personality_description_s {
       uint8_t personality;
       uint16_t slots_required;
-      char description[32];
+      char description[ola::rdm::MAX_RDM_STRING_LENGTH];
     } __attribute__((packed));
 
     struct personality_description_s personality_description;
     personality_description.personality = personality + 1;
     personality_description.slots_required =
-      HostToNetwork(PERSONALITIES[personality].footprint);
+        HostToNetwork(PERSONALITIES[personality].footprint);
     strncpy(personality_description.description,
             PERSONALITIES[personality].description,
             sizeof(personality_description.description));
@@ -501,7 +487,10 @@ void DummyRDMDevice::HandlePersonalityDescription(
         reinterpret_cast<uint8_t*>(&personality_description),
         sizeof(personality_description));
   }
-  RunRDMCallback(callback, response);
+
+  if (response) {
+    RunRDMCallback(callback, response);
+  }
   delete request;
 }
 
@@ -511,10 +500,11 @@ void DummyRDMDevice::HandlePersonalityDescription(
  */
 void DummyRDMDevice::HandleDmxStartAddress(const RDMRequest *request,
                                            ola::rdm::RDMCallback *callback) {
-  RDMResponse *response;
-  if (request->SubDevice()) {
-    response = NackWithReason(request, ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
-  } else if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
+  if (!CheckForSubdevice(request, callback))
+    return;
+
+  RDMResponse *response = NULL;
+  if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
     // do set
     if (request->ParamDataSize() != sizeof(m_start_address)) {
       response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
@@ -553,14 +543,16 @@ void DummyRDMDevice::HandleDmxStartAddress(const RDMRequest *request,
         sizeof(address));
     }
   }
-  if (request->DestinationUID().IsBroadcast()) {
-    vector<string> packets;
-    delete response;
-    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
+
+  if (!CheckForBroadcast(request, callback)) {
+    // Broadcast request, no response
+    return;
   } else {
-    RunRDMCallback(callback, response);
+    if (response) {
+      RunRDMCallback(callback, response);
+    }
+    delete request;
   }
-  delete request;
 }
 
 
@@ -569,10 +561,11 @@ void DummyRDMDevice::HandleDmxStartAddress(const RDMRequest *request,
  */
 void DummyRDMDevice::HandleLampStrikes(const ola::rdm::RDMRequest *request,
                                        ola::rdm::RDMCallback *callback) {
-  RDMResponse *response;
-  if (request->SubDevice()) {
-    response = NackWithReason(request, ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
-  } else if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
+  if (!CheckForBroadcastOrSubdevice(request, callback))
+    return;
+
+  RDMResponse *response = NULL;
+  if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
     // do set
     if (request->ParamDataSize() != sizeof(m_lamp_strikes)) {
       response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
@@ -601,11 +594,8 @@ void DummyRDMDevice::HandleLampStrikes(const ola::rdm::RDMRequest *request,
         sizeof(strikes));
     }
   }
-  if (request->DestinationUID().IsBroadcast()) {
-    vector<string> packets;
-    delete response;
-    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
-  } else {
+
+  if (response) {
     RunRDMCallback(callback, response);
   }
   delete request;
@@ -618,10 +608,11 @@ void DummyRDMDevice::HandleLampStrikes(const ola::rdm::RDMRequest *request,
  */
 void DummyRDMDevice::HandleIdentifyDevice(const RDMRequest *request,
                                           ola::rdm::RDMCallback *callback) {
-  RDMResponse *response;
-  if (request->SubDevice()) {
-    response = NackWithReason(request, ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
-  } else if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
+  if (!CheckForSubdevice(request, callback))
+    return;
+
+  RDMResponse *response = NULL;
+  if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
     // do set
     if (request->ParamDataSize() != sizeof(m_identify_mode)) {
       response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
@@ -655,14 +646,16 @@ void DummyRDMDevice::HandleIdentifyDevice(const RDMRequest *request,
         sizeof(m_identify_mode));
     }
   }
-  if (request->DestinationUID().IsBroadcast()) {
-    vector<string> packets;
-    delete response;
-    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
+
+  if (!CheckForBroadcast(request, callback)) {
+    // Broadcast request, no response
+    return;
   } else {
-    RunRDMCallback(callback, response);
+    if (response) {
+      RunRDMCallback(callback, response);
+    }
+    delete request;
   }
-  delete request;
 }
 
 
@@ -671,51 +664,39 @@ void DummyRDMDevice::HandleIdentifyDevice(const RDMRequest *request,
  */
 void DummyRDMDevice::HandleRealTimeClock(const RDMRequest *request,
                                          ola::rdm::RDMCallback *callback) {
-  if (request->DestinationUID().IsBroadcast()) {
-    delete request;
-    vector<string> packets;
-    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
+  if (!CheckForBroadcastSubdeviceOrData(request, callback))
     return;
+
+  struct clock_s {
+    uint16_t year;
+    uint8_t month;
+    uint8_t day;
+    uint8_t hour;
+    uint8_t minute;
+    uint8_t second;
+  } __attribute__((packed));
+
+  time_t now;
+  now = time(NULL);
+  struct tm tm_now;
+  localtime_r(&now, &tm_now);
+
+  struct clock_s clock;
+  clock.year = HostToNetwork(static_cast<uint16_t>(1900 + tm_now.tm_year));
+  clock.month = tm_now.tm_mon + 1;
+  clock.day = tm_now.tm_mday;
+  clock.hour = tm_now.tm_hour;
+  clock.minute = tm_now.tm_min;
+  clock.second = tm_now.tm_sec;
+
+  RDMResponse *response = GetResponseFromData(
+      request,
+      reinterpret_cast<uint8_t*>(&clock),
+      sizeof(clock));
+
+  if (response) {
+    RunRDMCallback(callback, response);
   }
-
-  RDMResponse *response = NULL;
-  if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
-    response = NackWithReason(request, ola::rdm::NR_UNSUPPORTED_COMMAND_CLASS);
-  } else if (request->SubDevice()) {
-    response = NackWithReason(request, ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
-  } else if (request->ParamDataSize()) {
-    response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
-  }
-
-  if (!response) {
-    struct clock_s {
-      uint16_t year;
-      uint8_t month;
-      uint8_t day;
-      uint8_t hour;
-      uint8_t minute;
-      uint8_t second;
-    } __attribute__((packed));
-
-    time_t now;
-    now = time(NULL);
-    struct tm tm_now;
-    localtime_r(&now, &tm_now);
-
-    struct clock_s clock;
-    clock.year = HostToNetwork(static_cast<uint16_t>(1900 + tm_now.tm_year));
-    clock.month = tm_now.tm_mon + 1;
-    clock.day = tm_now.tm_mday;
-    clock.hour = tm_now.tm_hour;
-    clock.minute = tm_now.tm_min;
-    clock.second = tm_now.tm_sec;
-
-    response = GetResponseFromData(
-        request,
-        reinterpret_cast<uint8_t*>(&clock),
-        sizeof(clock));
-  }
-  RunRDMCallback(callback, response);
   delete request;
 }
 
@@ -724,12 +705,63 @@ void DummyRDMDevice::HandleRealTimeClock(const RDMRequest *request,
  * Check for the following:
  *   - the callback was non-null
  *   - broadcast request
+ *   - set requests
  *   - request with a sub device set
- *   - request with data
+ *   - request with data that isn't the expected size (defaults to 0)
  * And return the correct NACK reason
  * @returns true is this request was ok, false if we nack'ed it
  */
 bool DummyRDMDevice::CheckForBroadcastSubdeviceOrData(
+    const ola::rdm::RDMRequest *request,
+    ola::rdm::RDMCallback *callback,
+    uint8_t parameter_size) {
+  if (!CheckForBroadcastOrSubdevice(request, callback))
+    return false;
+
+  RDMResponse *response = NULL;
+  if (request->CommandClass() != ola::rdm::RDMCommand::GET_COMMAND) {
+    response = NackWithReason(request, ola::rdm::NR_UNSUPPORTED_COMMAND_CLASS);
+  } else if (request->ParamDataSize() != parameter_size) {
+    response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+  }
+
+  if (response) {
+    RunRDMCallback(callback, response);
+    delete request;
+    return false;
+  }
+  return true;
+}
+
+
+/**
+ * Check for the following:
+ *   - the callback was non-null
+ *   - broadcast request
+ *   - request with a sub device set
+ * And return the correct NACK reason
+ * @returns true is this request was ok, false if we nack'ed it
+ */
+bool DummyRDMDevice::CheckForBroadcastOrSubdevice(
+    const ola::rdm::RDMRequest *request,
+    ola::rdm::RDMCallback *callback) {
+  if (!CheckForBroadcast(request, callback)) {
+    return false;
+  } else if (!CheckForSubdevice(request, callback)) {
+    return false;
+  }
+  return true;
+}
+
+
+/**
+ * Check for the following:
+ *   - the callback was non-null
+ *   - broadcast request
+ * And return the correct NACK reason
+ * @returns true is this request was ok, false if we nack'ed it
+ */
+bool DummyRDMDevice::CheckForBroadcast(
     const ola::rdm::RDMRequest *request,
     ola::rdm::RDMCallback *callback) {
   if (!callback) {
@@ -743,17 +775,28 @@ bool DummyRDMDevice::CheckForBroadcastSubdeviceOrData(
     callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
     return false;
   }
+  return true;
+}
 
-  RDMResponse *response = NULL;
-  if (request->CommandClass() == ola::rdm::RDMCommand::SET_COMMAND) {
-    response = NackWithReason(request, ola::rdm::NR_UNSUPPORTED_COMMAND_CLASS);
-  } else if (request->SubDevice()) {
-    response = NackWithReason(request, ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
-  } else if (request->ParamDataSize()) {
-    response = NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+
+/**
+ * Check for the following:
+ *   - the callback was non-null
+ *   - request with a sub device set
+ * And return the correct NACK reason
+ * @returns true is this request was ok, false if we nack'ed it
+ */
+bool DummyRDMDevice::CheckForSubdevice(
+    const ola::rdm::RDMRequest *request,
+    ola::rdm::RDMCallback *callback) {
+  if (!callback) {
+    delete request;
+    return false;
   }
 
-  if (response) {
+  if (request->SubDevice()) {
+    RDMResponse *response = NackWithReason(
+        request, ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
     RunRDMCallback(callback, response);
     delete request;
     return false;

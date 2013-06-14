@@ -29,6 +29,7 @@
 #include "ola/rdm/RDMAPI.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMControllerInterface.h"
+#include "ola/rdm/RDMManufacturerPIDs.h"
 #include "ola/rdm/UID.h"
 #include "ola/rdm/UIDSet.h"
 #include "ola/testing/TestUtils.h"
@@ -195,7 +196,8 @@ void DummyPortTest::testSupportedParams() {
     ola::rdm::PID_MANUFACTURER_LABEL,
     ola::rdm::PID_PRODUCT_DETAIL_ID_LIST,
     ola::rdm::PID_LAMP_STRIKES,
-    ola::rdm::PID_REAL_TIME_CLOCK
+    ola::rdm::PID_REAL_TIME_CLOCK,
+    ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION
   };
 
   for (unsigned int i = 0; i < sizeof(supported_params) / 2; i++)
@@ -495,7 +497,7 @@ void DummyPortTest::testIdentifyDevice() {
         NewSingleCallback(this, &DummyPortTest::HandleRDMResponse));
   Verify();
 
-  // check that broadcasting changes the address
+  // check that broadcasting changes the identify
   new_mode = 0;
   UID broadcast_uid = UID::AllManufactureDevices(OPEN_LIGHTING_ESTA_CODE);
   request = new RDMSetRequest(
