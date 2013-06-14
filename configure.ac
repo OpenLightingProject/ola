@@ -221,16 +221,13 @@ fi
 
 # Java API, this requires Maven
 AC_ARG_ENABLE(java-libs,
-              AC_HELP_STRING([--enable-java-libs],
-                             [Build the Java interface]),
-              [build_java_libs="yes"]
-             )
-if test "${build_java_libs}" = "yes"; then
+              AC_HELP_STRING([--enable-java-libs], [Build the Java interface]))
+if test "${enable_java_libs}" = "yes"; then
   AC_PROG_JAVA_CC()
   MAVEN_SUPPORT([2.2.1])
 fi
 
-AM_CONDITIONAL(BUILD_JAVA_LIBS, test "${build_java_libs}" = "yes")
+AM_CONDITIONAL(BUILD_JAVA_LIBS, test "${enable_java_libs}" = "yes")
 
 
 # LIBRARY: protobuf
@@ -465,8 +462,7 @@ AC_SUBST(OLAD_DEFINES)
 # check for cppunit
 AC_ARG_ENABLE(
   unittests,
-  AC_HELP_STRING([--disable-unittests],
-                 [Disable all unittests]),)
+  AC_HELP_STRING([--disable-unittests], [Disable all unittests]),)
 
 if test "${enable_unittests}" != "no"; then
 AM_PATH_CPPUNIT(
@@ -478,27 +474,19 @@ fi
 AM_CONDITIONAL(BUILD_TESTS, test "${enable_unittests}" != "no")
 
 # gcov
-AC_ARG_ENABLE(gcov,
-              AC_HELP_STRING([--enable-gcov],
-                             [turn on code coverage analysis tools]),
-              [enable_gov=$enablevar],
-              [enable_gov="no"],
-             )
+AC_ARG_ENABLE(
+  gcov,
+  AC_HELP_STRING([--enable-gcov], [turn on code coverage analysis tools]))
 
-if test "${enable_gov}" != "no"; then
+if test "${enable_gov}" = "yes"; then
   CFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
   CXXFLAGS="$CFLAGS -fprofile-arcs -ftest-coverage"
 fi
 
 # tcmalloc
-AC_ARG_ENABLE(tcmalloc,
-              AC_HELP_STRING([--enable-tcmalloc],
-                             [Use tcmalloc]),
-              [enable_tcmalloc=$enablevar],
-              [enable_tcmalloc="no"],
-             )
+AC_ARG_ENABLE(tcmalloc, AC_HELP_STRING([--enable-tcmalloc], [Use tcmalloc]))
 
-if test "${enable_tcmalloc}" != "no"; then
+if test "${enable_tcmalloc}" = "yes"; then
   LDFLAGS="$LDFLAGS -ltcmalloc"
 fi
 
@@ -519,20 +507,22 @@ AM_CONDITIONAL(INSTALL_ACN, test "${enable_e133}" == "yes")
 AM_CONDITIONAL(INSTALL_E133, test "${enable_e133}" == "yes")
 
 # python wrappers & RDM Responder tests.
-AC_ARG_ENABLE(python-libs,
-              AC_HELP_STRING([--enable-python-libs],
-                             [Build the python interface]),
-              [build_python_libs="yes"]
-             )
-AC_ARG_ENABLE(rdm-tests,
-              AC_HELP_STRING([--enable-rdm-tests],
-                             [Install the RDM responder tests]),
-              [build_python_libs="yes"; install_rdm_tests="yes"]
-             )
-AM_CONDITIONAL(BUILD_PYTHON_LIBS, test "${build_python_libs}" = "yes")
-AM_CONDITIONAL(INSTALL_RDM_TESTS, test "${install_rdm_tests}" = "yes")
+AC_ARG_ENABLE(
+  python-libs,
+  AC_HELP_STRING([--enable-python-libs], [Build the python interface]))
 
-if test "${build_python_libs}" = "yes"; then
+AC_ARG_ENABLE(
+  rdm-tests,
+  AC_HELP_STRING([--enable-rdm-tests], [Install the RDM responder tests]))
+
+if test "${enable_rdm_tests}" = "yes"; then
+  enable_python_libs="yes";
+fi
+
+AM_CONDITIONAL(BUILD_PYTHON_LIBS, test "${enable_python_libs}" = "yes")
+AM_CONDITIONAL(INSTALL_RDM_TESTS, test "${enable_rdm_tests}" = "yes")
+
+if test "${enable_python_libs}" = "yes"; then
  AM_PATH_PYTHON(2.6)
  AX_PYTHON_MODULE("google.protobuf", "fatal")
 fi

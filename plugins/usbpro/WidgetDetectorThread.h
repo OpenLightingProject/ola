@@ -161,21 +161,34 @@ class WidgetDetectorThread: public ola::thread::Thread {
     // This is how device identification is done, see
     // http://opendmx.net/index.php/USB_Protocol_Extensions
     // OPEN_LIGHTING_ESTA_CODE is in BaseTypes.h
+
+    // DmxKing Device Models
     static const uint16_t DMX_KING_DMX512_ID = 0;
     static const uint16_t DMX_KING_ULTRA_ID = 1;
     static const uint16_t DMX_KING_ULTRA_PRO_ID = 2;
     static const uint16_t DMX_KING_ULTRA_MICRO_ID = 3;
     static const uint16_t DMX_KING_ULTRA_RDM_ID = 4;
-    static const uint16_t DMX_KING_ESTA_ID = 0x6a6b;
-    static const uint16_t GODDARD_DMXTER4_ID = 0x444d;
-    static const uint16_t GODDARD_ESTA_ID = 0x4744;
-    static const uint16_t GODDARD_MINI_DMXTER4_ID = 0x4d49;
-    static const uint16_t JESE_DMX_TRI_ID = 1;
-    static const uint16_t JESE_ESTA_ID = 0x6864;
-    static const uint16_t JESE_RDM_TRI_ID = 2;
+
+    // Jese device models.
+    static const uint16_t JESE_DMX_TRI_MK1_ID = 1;  // Original DMX-TRI
+    static const uint16_t JESE_RDM_TRI_MK1_ID = 2;  // Original RDM-TRI
     static const uint16_t JESE_RDM_TRI_MK2_ID = 3;
+    static const uint16_t JESE_RDM_TXI_MK2_ID = 4;
+    // DMX-TRI, with new hardware
+    static const uint16_t JESE_DMX_TRI_MK1_SE_ID = 5;
+
+    // Goddard device models
+    static const uint16_t GODDARD_DMXTER4_ID = 0x444d;
+    static const uint16_t GODDARD_MINI_DMXTER4_ID = 0x4d49;
+
+    // Open Lighting device models
     static const uint16_t OPEN_LIGHTING_PACKETHEADS_ID = 2;
     static const uint16_t OPEN_LIGHTING_RGB_MIXER_ID = 1;
+
+    // ESTA Ids
+    static const uint16_t DMX_KING_ESTA_ID = 0x6a6b;
+    static const uint16_t GODDARD_ESTA_ID = 0x4744;
+    static const uint16_t JESE_ESTA_ID = 0x6864;
 };
 }  // namespace usbpro
 }  // namespace plugin

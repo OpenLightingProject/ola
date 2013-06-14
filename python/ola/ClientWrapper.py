@@ -31,7 +31,6 @@ import socket
 import termios
 import threading
 import traceback
-import weakref
 from ola.OlaClient import OLADNotRunningException, OlaClient, Universe
 
 
@@ -91,9 +90,6 @@ class SelectServer(object):
     self._function_list_lock = threading.Lock()
     # the pipe used to wake up select() from other threads
     self._local_socket = os.pipe()
-    # weakref so that __del__ is called when this object goes out of scope.
-    self.AddReadDescriptor(self._local_socket[0],
-                           weakref.ref(self._DrainAndExecute))
 
   def __del__(self):
     os.close(self._local_socket[0])
@@ -183,6 +179,9 @@ class SelectServer(object):
          'SelectServer called in a thread other than the owner. '
          'Owner %d, caller %d' % (self._ss_thread_id, self._GetThreadID()))
       traceback.print_stack()
+
+    # Add the internal descriptor, see comments below
+    self.AddReadDescriptor(self._local_socket[0], self._DrainAndExecute)
     self._quit = False
     while not self._quit:
       # default to 1s sleep
@@ -201,6 +200,11 @@ class SelectServer(object):
       self._CheckDescriptors(i, self._read_descriptors)
       self._CheckDescriptors(o, self._write_descriptors)
       self._CheckDescriptors(e, self._error_descriptors)
+
+    # remove the internal socket from the read set to avoid a circular
+    # reference which in turn breaks garbage collection (and leaks the socket
+    # descriptors).
+    self.RemoveReadDescriptor(self._local_socket[0])
 
   def AddEvent(self, time_in_ms, callback):
     """Schedule an event to run in the future.
