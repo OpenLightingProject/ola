@@ -1,5 +1,8 @@
 X/Y/2013 ola-0.8.30
  * Clean up olad signal handling to avoid race conditions.
+ * Added support for the new Jese USB widgets
+ * Fixed a bug in the python API which broke the RDM test server.
+ * Fixed the E1.33 library install.
  * Add an OLA manufacturer specific PID to the Dummy RDM Responder.
 
 29/5/2013 ola-0.8.29
