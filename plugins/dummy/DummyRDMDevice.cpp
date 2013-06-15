@@ -192,8 +192,11 @@ void DummyRDMDevice::HandleParamDescription(const RDMRequest *request,
     return;
 
   // Check that it's MANUFACTURER_PID_CODE_VERSION being requested
-  uint16_t parameter_id = NetworkToHost(
-      *(reinterpret_cast<uint16_t*>(request->ParamData())));
+  uint16_t parameter_id;
+  memcpy(reinterpret_cast<uint8_t*>(&parameter_id),
+         request->ParamData(),
+         sizeof(parameter_id));
+  parameter_id = NetworkToHost(parameter_id);
   if (parameter_id != ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION) {
     OLA_WARN << "Dummy responder received param description request with "
       "unknown PID, expected " << ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION
@@ -235,7 +238,7 @@ void DummyRDMDevice::HandleParamDescription(const RDMRequest *request,
             "Code Version",
             ola::rdm::MAX_RDM_STRING_LENGTH);
     response = GetResponseFromData(
-      request,
+        request,
         reinterpret_cast<uint8_t*>(&param_description),
         sizeof(param_description));
   }
@@ -289,7 +292,7 @@ void DummyRDMDevice::HandleDeviceInfo(const RDMRequest *request,
  */
 void DummyRDMDevice::HandleFactoryDefaults(const ola::rdm::RDMRequest *request,
                                            ola::rdm::RDMCallback *callback) {
-  if (!CheckForBroadcastOrSubdevice(request, callback))
+  if (!CheckForSubdevice(request, callback))
     return;
 
   RDMResponse *response = NULL;
@@ -327,6 +330,10 @@ void DummyRDMDevice::HandleFactoryDefaults(const ola::rdm::RDMRequest *request,
         sizeof(using_defaults));
     }
   }
+
+  if (!CheckForBroadcast(request, callback))
+    return;  // Broadcast request, no response
+
   RunRDMCallback(callback, response);
   delete request;
 }
@@ -380,7 +387,7 @@ void DummyRDMDevice::HandleStringResponse(const ola::rdm::RDMRequest *request,
  */
 void DummyRDMDevice::HandlePersonality(const ola::rdm::RDMRequest *request,
                                        ola::rdm::RDMCallback *callback) {
-  if (!CheckForBroadcastOrSubdevice(request, callback))
+  if (!CheckForSubdevice(request, callback))
     return;
 
   RDMResponse *response = NULL;
@@ -427,6 +434,10 @@ void DummyRDMDevice::HandlePersonality(const ola::rdm::RDMRequest *request,
         sizeof(personality_info));
     }
   }
+
+  if (!CheckForBroadcast(request, callback))
+    return;  // Broadcast request, no response
+
   RunRDMCallback(callback, response);
   delete request;
 }
@@ -533,7 +544,7 @@ void DummyRDMDevice::HandleDmxStartAddress(const RDMRequest *request,
  */
 void DummyRDMDevice::HandleLampStrikes(const ola::rdm::RDMRequest *request,
                                        ola::rdm::RDMCallback *callback) {
-  if (!CheckForBroadcastOrSubdevice(request, callback))
+  if (!CheckForSubdevice(request, callback))
     return;
 
   RDMResponse *response = NULL;
@@ -566,6 +577,10 @@ void DummyRDMDevice::HandleLampStrikes(const ola::rdm::RDMRequest *request,
         sizeof(strikes));
     }
   }
+
+  if (!CheckForBroadcast(request, callback))
+    return;  // Broadcast request, no response
+
   RunRDMCallback(callback, response);
   delete request;
 }
