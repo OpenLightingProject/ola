@@ -180,16 +180,13 @@ void DummyRDMDevice::HandleSupportedParams(const RDMRequest *request,
       request,
       reinterpret_cast<uint8_t*>(supported_params),
       sizeof(supported_params));
-
-  if (response) {
-    RunRDMCallback(callback, response);
-  }
+  RunRDMCallback(callback, response);
   delete request;
 }
 
 
 void DummyRDMDevice::HandleParamDescription(const RDMRequest *request,
-                                      ola::rdm::RDMCallback *callback) {
+                                            ola::rdm::RDMCallback *callback) {
   RDMResponse *response = NULL;
   if (!CheckForBroadcastSubdeviceOrData(request, callback, sizeof(uint16_t)))
     return;
@@ -242,10 +239,7 @@ void DummyRDMDevice::HandleParamDescription(const RDMRequest *request,
         reinterpret_cast<uint8_t*>(&param_description),
         sizeof(param_description));
   }
-
-  if (response) {
-    RunRDMCallback(callback, response);
-  }
+  RunRDMCallback(callback, response);
   delete request;
 }
 
@@ -285,10 +279,7 @@ void DummyRDMDevice::HandleDeviceInfo(const RDMRequest *request,
       request,
       reinterpret_cast<uint8_t*>(&device_info),
       sizeof(device_info));
-
-  if (response) {
-    RunRDMCallback(callback, response);
-  }
+  RunRDMCallback(callback, response);
   delete request;
 }
 
@@ -336,10 +327,7 @@ void DummyRDMDevice::HandleFactoryDefaults(const ola::rdm::RDMRequest *request,
         sizeof(using_defaults));
     }
   }
-
-  if (response) {
-    RunRDMCallback(callback, response);
-  }
+  RunRDMCallback(callback, response);
   delete request;
 }
 
@@ -364,10 +352,7 @@ void DummyRDMDevice::HandleProductDetailList(const RDMRequest *request,
       request,
       reinterpret_cast<uint8_t*>(&product_details),
       sizeof(product_details));
-
-  if (response) {
-    RunRDMCallback(callback, response);
-  }
+  RunRDMCallback(callback, response);
   delete request;
 }
 
@@ -385,10 +370,7 @@ void DummyRDMDevice::HandleStringResponse(const ola::rdm::RDMRequest *request,
         request,
         reinterpret_cast<const uint8_t*>(value.data()),
         value.size());
-
-  if (response) {
-    RunRDMCallback(callback, response);
-  }
+  RunRDMCallback(callback, response);
   delete request;
 }
 
@@ -445,10 +427,7 @@ void DummyRDMDevice::HandlePersonality(const ola::rdm::RDMRequest *request,
         sizeof(personality_info));
     }
   }
-
-  if (response) {
-    RunRDMCallback(callback, response);
-  }
+  RunRDMCallback(callback, response);
   delete request;
 }
 
@@ -487,10 +466,7 @@ void DummyRDMDevice::HandlePersonalityDescription(
         reinterpret_cast<uint8_t*>(&personality_description),
         sizeof(personality_description));
   }
-
-  if (response) {
-    RunRDMCallback(callback, response);
-  }
+  RunRDMCallback(callback, response);
   delete request;
 }
 
@@ -544,15 +520,11 @@ void DummyRDMDevice::HandleDmxStartAddress(const RDMRequest *request,
     }
   }
 
-  if (!CheckForBroadcast(request, callback)) {
-    // Broadcast request, no response
-    return;
-  } else {
-    if (response) {
-      RunRDMCallback(callback, response);
-    }
-    delete request;
-  }
+  if (!CheckForBroadcast(request, callback))
+    return;  // Broadcast request, no response
+
+  RunRDMCallback(callback, response);
+  delete request;
 }
 
 
@@ -594,10 +566,7 @@ void DummyRDMDevice::HandleLampStrikes(const ola::rdm::RDMRequest *request,
         sizeof(strikes));
     }
   }
-
-  if (response) {
-    RunRDMCallback(callback, response);
-  }
+  RunRDMCallback(callback, response);
   delete request;
 }
 
@@ -647,15 +616,11 @@ void DummyRDMDevice::HandleIdentifyDevice(const RDMRequest *request,
     }
   }
 
-  if (!CheckForBroadcast(request, callback)) {
-    // Broadcast request, no response
-    return;
-  } else {
-    if (response) {
-      RunRDMCallback(callback, response);
-    }
-    delete request;
-  }
+  if (!CheckForBroadcast(request, callback))
+    return;  // Broadcast request, no response
+
+  RunRDMCallback(callback, response);
+  delete request;
 }
 
 
@@ -693,10 +658,7 @@ void DummyRDMDevice::HandleRealTimeClock(const RDMRequest *request,
       request,
       reinterpret_cast<uint8_t*>(&clock),
       sizeof(clock));
-
-  if (response) {
-    RunRDMCallback(callback, response);
-  }
+  RunRDMCallback(callback, response);
   delete request;
 }
 
