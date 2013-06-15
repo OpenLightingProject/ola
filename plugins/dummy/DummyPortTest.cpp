@@ -66,6 +66,8 @@ class DummyPortTest: public CppUnit::TestFixture {
   CPPUNIT_TEST(testSoftwareVersion);
   CPPUNIT_TEST(testDmxAddress);
   CPPUNIT_TEST(testIdentifyDevice);
+  CPPUNIT_TEST(testParamDescription);
+  CPPUNIT_TEST(testOlaManufacturerPidCodeVersion);
   CPPUNIT_TEST_SUITE_END();
 
   public:
@@ -94,6 +96,8 @@ class DummyPortTest: public CppUnit::TestFixture {
     void testSoftwareVersion();
     void testDmxAddress();
     void testIdentifyDevice();
+    void testParamDescription();
+    void testOlaManufacturerPidCodeVersion();
 
 
   private:
@@ -105,10 +109,42 @@ class DummyPortTest: public CppUnit::TestFixture {
     bool m_got_uids;
 
     void VerifyUIDs(const UIDSet &uids);
-    void checkSubDeviceOutOfRange(ola::rdm::rdm_pid pid);
-    void checkMalformedRequest(ola::rdm::rdm_pid pid);
-    void checkSetRequest(ola::rdm::rdm_pid pid);
-    void checkNoBroadcastResponse(ola::rdm::rdm_pid pid);
+    void checkSubDeviceOutOfRange(uint16_t pid);
+    void checkSubDeviceOutOfRange(ola::rdm::rdm_pid pid) {
+        checkSubDeviceOutOfRange(static_cast<uint16_t>(pid));
+    };
+    void checkSubDeviceOutOfRange(ola::rdm::rdm_ola_manufacturer_pid pid) {
+        checkSubDeviceOutOfRange(static_cast<uint16_t>(pid));
+    };
+    void checkMalformedRequest(uint16_t pid,
+        ola::rdm::rdm_nack_reason expected_response =
+        ola::rdm::NR_FORMAT_ERROR);
+    void checkMalformedRequest(ola::rdm::rdm_pid pid,
+        ola::rdm::rdm_nack_reason expected_response =
+        ola::rdm::NR_FORMAT_ERROR) {
+            checkMalformedRequest(static_cast<uint16_t>(pid),
+                                  expected_response);
+        };
+    void checkMalformedRequest(ola::rdm::rdm_ola_manufacturer_pid pid,
+        ola::rdm::rdm_nack_reason expected_response =
+        ola::rdm::NR_FORMAT_ERROR) {
+            checkMalformedRequest(static_cast<uint16_t>(pid),
+                                  expected_response);
+        };
+    void checkSetRequest(uint16_t pid);
+    void checkSetRequest(ola::rdm::rdm_pid pid) {
+        checkSetRequest(static_cast<uint16_t>(pid));
+    };
+    void checkSetRequest(ola::rdm::rdm_ola_manufacturer_pid pid) {
+        checkSetRequest(static_cast<uint16_t>(pid));
+    };
+    void checkNoBroadcastResponse(uint16_t pid);
+    void checkNoBroadcastResponse(ola::rdm::rdm_pid pid) {
+        checkNoBroadcastResponse(static_cast<uint16_t>(pid));
+    };
+    void checkNoBroadcastResponse(ola::rdm::rdm_ola_manufacturer_pid pid) {
+        checkNoBroadcastResponse(static_cast<uint16_t>(pid));
+    };
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(DummyPortTest);
@@ -548,6 +584,132 @@ void DummyPortTest::testIdentifyDevice() {
 }
 
 
+/*
+ * Check that the param description command works
+ */
+void DummyPortTest::testParamDescription() {
+  uint16_t param_id = HostToNetwork(
+      static_cast<uint16_t>(ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION));
+  RDMRequest *request = new RDMGetRequest(
+      m_test_source,
+      m_expected_uid,
+      0,  // transaction #
+      1,  // port id
+      0,  // message count
+      0,  // sub device
+      ola::rdm::PID_PARAMETER_DESCRIPTION,  // param id
+      reinterpret_cast<uint8_t*>(&param_id),  // data
+      sizeof(param_id));  // data length
+
+  struct parameter_description_s {
+    uint16_t pid;
+    uint8_t pdl_size;
+    uint8_t data_type;
+    uint8_t command_class;
+    uint8_t type;
+    uint8_t unit;
+    uint8_t prefix;
+    uint32_t min_value;
+    uint32_t default_value;
+    uint32_t max_value;
+    char description[ola::rdm::MAX_RDM_STRING_LENGTH];
+  } __attribute__((packed));
+
+  struct parameter_description_s param_description;
+  param_description.pid = HostToNetwork(
+      static_cast<uint16_t>(ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION));
+  param_description.pdl_size = HostToNetwork(
+      static_cast<uint8_t>(ola::rdm::MAX_RDM_STRING_LENGTH));
+  param_description.data_type = HostToNetwork(
+      static_cast<uint8_t>(ola::rdm::DS_ASCII));
+  param_description.command_class = HostToNetwork(
+      static_cast<uint8_t>(ola::rdm::CC_GET));
+  param_description.type = 0;
+  param_description.unit = HostToNetwork(
+      static_cast<uint8_t>(ola::rdm::UNITS_NONE));
+  param_description.prefix = HostToNetwork(
+      static_cast<uint8_t>(ola::rdm::PREFIX_NONE));
+  param_description.min_value = 0;
+  param_description.default_value = 0;
+  param_description.max_value = 0;
+  strncpy(param_description.description,
+          "Code Version",
+          ola::rdm::MAX_RDM_STRING_LENGTH);
+  RDMResponse *response = GetResponseFromData(
+      request,
+      reinterpret_cast<uint8_t*>(&param_description),
+      sizeof(param_description));
+
+  SetExpectedResponse(ola::rdm::RDM_COMPLETED_OK, response);
+  m_port.SendRDMRequest(
+        request,
+        NewSingleCallback(this, &DummyPortTest::HandleRDMResponse));
+  Verify();
+
+
+  // Alternative PID
+  // This PID should be one the device won't respond to for the check to work
+  uint16_t unknown_param_id = HostToNetwork(static_cast<uint16_t>(0xFFDF));
+  request = new RDMGetRequest(
+      m_test_source,
+      m_expected_uid,
+      0,  // transaction #
+      1,  // port id
+      0,  // message count
+      0,  // sub device
+      ola::rdm::PID_PARAMETER_DESCRIPTION,  // param id
+      reinterpret_cast<uint8_t*>(&unknown_param_id),  // data
+      sizeof(unknown_param_id));  // data length
+
+  response = NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
+  SetExpectedResponse(ola::rdm::RDM_COMPLETED_OK, response);
+  m_port.SendRDMRequest(
+        request,
+        NewSingleCallback(this, &DummyPortTest::HandleRDMResponse));
+  Verify();
+
+  checkSubDeviceOutOfRange(ola::rdm::PID_PARAMETER_DESCRIPTION);
+  // We don't get the normal format error here, as we're expecting data anyway
+  checkMalformedRequest(ola::rdm::PID_PARAMETER_DESCRIPTION,
+                        ola::rdm::NR_DATA_OUT_OF_RANGE);
+  checkSetRequest(ola::rdm::PID_PARAMETER_DESCRIPTION);
+  checkNoBroadcastResponse(ola::rdm::PID_PARAMETER_DESCRIPTION);
+}
+
+
+/*
+ * Check that the OLA manufacturer PID code version works
+ */
+void DummyPortTest::testOlaManufacturerPidCodeVersion() {
+  RDMRequest *request = new RDMGetRequest(
+      m_test_source,
+      m_expected_uid,
+      0,  // transaction #
+      1,  // port id
+      0,  // message count
+      0,  // sub device
+      ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION,  // param id
+      NULL,  // data
+      0);  // data length
+
+  const string code_version = VERSION;
+  RDMResponse *response = GetResponseFromData(
+    request,
+    reinterpret_cast<const uint8_t*>(code_version.data()),
+    code_version.size());
+
+  SetExpectedResponse(ola::rdm::RDM_COMPLETED_OK, response);
+  m_port.SendRDMRequest(
+      request,
+      NewSingleCallback(this, &DummyPortTest::HandleRDMResponse));
+  Verify();
+
+  checkSubDeviceOutOfRange(ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION);
+  checkMalformedRequest(ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION);
+  checkSetRequest(ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION);
+  checkNoBroadcastResponse(ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION);
+}
+
 
 void DummyPortTest::VerifyUIDs(const UIDSet &uids) {
   UIDSet expected_uids;
@@ -560,7 +722,7 @@ void DummyPortTest::VerifyUIDs(const UIDSet &uids) {
 }
 
 
-void DummyPortTest::checkSubDeviceOutOfRange(ola::rdm::rdm_pid pid) {
+void DummyPortTest::checkSubDeviceOutOfRange(uint16_t pid) {
   // a request with a non-0 subdevice
   RDMRequest *request = new RDMGetRequest(
       m_test_source,
@@ -584,7 +746,8 @@ void DummyPortTest::checkSubDeviceOutOfRange(ola::rdm::rdm_pid pid) {
 }
 
 
-void DummyPortTest::checkMalformedRequest(ola::rdm::rdm_pid pid) {
+void DummyPortTest::checkMalformedRequest(uint16_t pid,
+      ola::rdm::rdm_nack_reason expected_response) {
   // a malformed request
   uint16_t bad_data = 0;
   RDMRequest *request = new RDMGetRequest(
@@ -600,7 +763,7 @@ void DummyPortTest::checkMalformedRequest(ola::rdm::rdm_pid pid) {
 
   RDMResponse *response = NackWithReason(
       request,
-      ola::rdm::NR_FORMAT_ERROR);
+      expected_response);
   SetExpectedResponse(ola::rdm::RDM_COMPLETED_OK, response);
   m_port.SendRDMRequest(
         request,
@@ -609,7 +772,7 @@ void DummyPortTest::checkMalformedRequest(ola::rdm::rdm_pid pid) {
 }
 
 
-void DummyPortTest::checkSetRequest(ola::rdm::rdm_pid pid) {
+void DummyPortTest::checkSetRequest(uint16_t pid) {
   // a set request
   RDMRequest *request = new RDMSetRequest(
       m_test_source,
@@ -633,7 +796,7 @@ void DummyPortTest::checkSetRequest(ola::rdm::rdm_pid pid) {
 }
 
 
-void DummyPortTest::checkNoBroadcastResponse(ola::rdm::rdm_pid pid) {
+void DummyPortTest::checkNoBroadcastResponse(uint16_t pid) {
   // a broadcast request
   UID broadcast_uid = UID::AllDevices();
   RDMRequest *request = new RDMGetRequest(
