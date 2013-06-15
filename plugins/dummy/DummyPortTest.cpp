@@ -646,7 +646,6 @@ void DummyPortTest::testParamDescription() {
         NewSingleCallback(this, &DummyPortTest::HandleRDMResponse));
   Verify();
 
-
   // Alternative PID
   // This PID should be one the device won't respond to for the check to work
   uint16_t unknown_param_id = HostToNetwork(static_cast<uint16_t>(0xFFDF));
