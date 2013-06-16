@@ -111,7 +111,7 @@ ola.RDMAttributesPanel.prototype.updateUniverse = function(universe_id) {
  * @param {ola.UidItem} item the uid to show.
  */
 ola.RDMAttributesPanel.prototype.showUID = function(item) {
-  this._setLoading(this.element);
+  this.setLoading_(this.element);
   var server = ola.common.Server.getInstance();
   var panel = this;
   server.rdmGetSupportedSections(
