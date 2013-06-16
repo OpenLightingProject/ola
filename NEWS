@@ -4,6 +4,7 @@ X/Y/2013 ola-0.8.30
  * Fixed a bug in the python API which broke the RDM test server.
  * Fixed the E1.33 library install.
  * Add an OLA manufacturer specific PID to the Dummy RDM Responder.
+ * Update the model collector to gather info on manufacturer specific PIDs.
 
 29/5/2013 ola-0.8.29
  * Added KiNet output support.
