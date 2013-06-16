@@ -22,6 +22,7 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 
 import logging
+import ola.RDMConstants
 from ola import PidStore
 from ola.ClientWrapper import ClientWrapper
 from ola.OlaClient import OlaClient, RDMNack
@@ -45,7 +46,8 @@ class ModelCollector(object):
    SUPPORTED_PARAMS,
    SOFTWARE_VERSION_LABEL,
    PERSONALITIES,
-   SENSORS) = xrange(7)
+   SENSORS,
+   MANUFACTURER_PIDS) = xrange(8)
 
   def __init__(self, wrapper, pid_store):
     self.wrapper = wrapper
@@ -84,6 +86,7 @@ class ModelCollector(object):
     self.work_state = None
     self.personalities = []
     self.sensors = []
+    self.manufacturer_pids = []
     # keyed by manufacturer id
     self.data = {}
 
@@ -128,6 +131,8 @@ class ModelCollector(object):
       self._HandlePersonalityData(unpacked_data)
     elif self.work_state == self.SENSORS:
       self._HandleSensorData(unpacked_data)
+    elif self.work_state == self.MANUFACTURER_PIDS:
+      self._HandleManufacturerPids(unpacked_data)
 
   def _HandleDeviceInfo(self, data):
     """Called when we get a DEVICE_INFO response."""
@@ -142,6 +147,7 @@ class ModelCollector(object):
 
     this_device['software_versions'][data['software_version']] = {
         'personalities': [],
+        'manufacturer_pids': [],
         'supported_parameters': [],
         'sensors': [],
     }
@@ -161,6 +167,8 @@ class ModelCollector(object):
     this_version = self._GetVersion()
     for param_info in data['params']:
       this_version['supported_parameters'].append(param_info['param_id'])
+      if (param_info['param_id'] >= ola.RDMConstants.RDM_MANUFACTURER_PID_MIN):
+        self.manufacturer_pids.append(param_info['param_id'])
     self._NextState()
 
   def _HandleSoftwareVersionLabel(self, data):
@@ -190,6 +198,22 @@ class ModelCollector(object):
     })
     self._FetchNextSensor()
 
+  def _HandleManufacturerPids(self, data):
+    """Called when we get a PARAMETER_DESCRIPTION response."""
+    this_version = self._GetVersion()
+    this_version['manufacturer_pids'].append({
+      'pid': data['pid'],
+      'description': data['description'],
+      'command_class': data['command_class'],
+      'data_type': data['data_type'],
+      'unit': data['unit'],
+      'prefix': data['prefix'],
+      'min_value': data['min_value'],
+      'default_value': data['default_value'],
+      'max_value': data['max_value'],
+    })
+    self._FetchNextManufacturerPid()
+
   def _NextState(self):
     """Move to the next state of information fetching."""
     if self.work_state == self.EMPTYING_QUEUE:
@@ -218,6 +242,9 @@ class ModelCollector(object):
     elif self.work_state == self.PERSONALITIES:
       self.work_state = self.SENSORS
       self._FetchNextSensor()
+    elif self.work_state == self.SENSORS:
+      self.work_state = self.MANUFACTURER_PIDS
+      self._FetchNextManufacturerPid()
     else:
       # this one is done, onto the next UID
       self._FetchNextUID()
@@ -277,6 +304,24 @@ class ModelCollector(object):
                        self._RDMRequestComplete,
                        [sensor_index])
       logging.debug('Sent SENSOR_DEFINITION request')
+      self.outstanding_pid = pid
+    else:
+      self._NextState()
+
+  def _FetchNextManufacturerPid(self):
+    """Fetch the info for the next manufacturer PID, or proceed to the next
+       state if there are none left.
+    """
+    if self.manufacturer_pids:
+      manufacturer_pid = self.manufacturer_pids.pop(0)
+      pid = self.pid_store.GetName('PARAMETER_DESCRIPTION')
+      self.rdm_api.Get(self.universe,
+                       self.uid,
+                       PidStore.ROOT_DEVICE,
+                       pid,
+                       self._RDMRequestComplete,
+                       [manufacturer_pid])
+      logging.debug('Sent PARAMETER_DESCRIPTION request')
       self.outstanding_pid = pid
     else:
       self._NextState()
