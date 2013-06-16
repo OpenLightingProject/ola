@@ -23,6 +23,7 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import binascii
 import math
+import ola.RDMConstants
 import os
 import struct
 import sys
@@ -831,9 +832,12 @@ class PidStore(object):
 
     for pid_pb in self._pid_store.pid:
       if validate:
-        if pid_pb.value > 0x8000 and pid_pb.value < 0xffe0:
-          raise InvalidPidFormat('%0x04hx between 0x8000 and 0xffdf in %s' %
-                                 (pid_pb.value, file))
+        if pid_pb.value >= ola.RDMConstants.RDM_MANUFACTURER_PID_MIN and pid_pb.value <= ola.RDMConstants.RDM_MANUFACTURER_PID_MAX:
+          raise InvalidPidFormat('%0x04hx between %0x04hx and %0x04hx in %s' %
+                                 (pid_pb.value,
+                                  ola.RDMConstants.RDM_MANUFACTURER_PID_MIN,
+                                  ola.RDMConstants.RDM_MANUFACTURER_PID_MAX,
+                                  file))
         if pid_pb.value in self._pids:
           raise InvalidPidFormat('0x%04hx listed more than once in %s' %
                                  (pid_pb.value, file))
@@ -858,10 +862,12 @@ class PidStore(object):
 
       for pid_pb in manufacturer.pid:
         if validate:
-          if pid_pb.value < 0x8000 or pid_pb.value > 0xffdf:
+          if pid_pb.value < ola.RDMConstants.RDM_MANUFACTURER_PID_MIN or pid_pb.value > ola.RDMConstants.RDM_MANUFACTURER_PID_MAX:
             raise InvalidPidFormat(
-              'Manufacturer pid 0x%04hx not between 0x8000 and 0xffdf' %
-              pid_pb.value)
+              'Manufacturer pid 0x%04hx not between %0x04hx and %0x04hx' %
+              pid_pb.value
+              ola.RDMConstants.RDM_MANUFACTURER_PID_MIN,
+              ola.RDMConstants.RDM_MANUFACTURER_PID_MAX)
           if pid_pb.value in pid_dict:
             raise InvalidPidFormat(
                 '0x%04hx listed more than once for 0x%04hx in %s' % (
