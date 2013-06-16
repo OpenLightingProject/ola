@@ -204,6 +204,7 @@ class ModelCollector(object):
     this_version['manufacturer_pids'].append({
       'pid': data['pid'],
       'description': data['description'],
+      'command_class': data['command_class'],
       'data_type': data['data_type'],
       'unit': data['unit'],
       'prefix': data['prefix'],
@@ -211,7 +212,7 @@ class ModelCollector(object):
       'default_value': data['default_value'],
       'max_value': data['max_value'],
     })
-    self._FetchNextSensor()
+    self._FetchNextManufacturerPid()
 
   def _NextState(self):
     """Move to the next state of information fetching."""
