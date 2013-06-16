@@ -26,6 +26,7 @@ goog.require('goog.ui.Slider');
 goog.require('goog.ui.Toolbar');
 goog.require('goog.ui.ToolbarButton');
 goog.require('goog.ui.ToolbarSeparator');
+goog.require('ola.common.DmxConstants');
 
 goog.provide('ola.DmxConsole');
 

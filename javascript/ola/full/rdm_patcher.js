@@ -29,6 +29,7 @@ goog.require('ola.CustomDragScrollSupport');
 goog.require('ola.CustomDragger');
 goog.require('ola.Dialog');
 
+goog.require('ola.common.DmxConstants');
 goog.require('ola.common.Server');
 goog.require('ola.common.Server.EventType');
 goog.require('ola.common.UidItem');
