@@ -331,8 +331,11 @@ void DummyRDMDevice::HandleFactoryDefaults(const ola::rdm::RDMRequest *request,
     }
   }
 
-  if (!CheckForBroadcast(request, callback))
+  if (!CheckForBroadcast(request, callback)) {
+    if (response)
+      delete response;
     return;  // Broadcast request, no response
+  }
 
   RunRDMCallback(callback, response);
   delete request;
@@ -435,8 +438,11 @@ void DummyRDMDevice::HandlePersonality(const ola::rdm::RDMRequest *request,
     }
   }
 
-  if (!CheckForBroadcast(request, callback))
+  if (!CheckForBroadcast(request, callback)) {
+    if (response)
+      delete response;
     return;  // Broadcast request, no response
+  }
 
   RunRDMCallback(callback, response);
   delete request;
@@ -531,8 +537,11 @@ void DummyRDMDevice::HandleDmxStartAddress(const RDMRequest *request,
     }
   }
 
-  if (!CheckForBroadcast(request, callback))
+  if (!CheckForBroadcast(request, callback)) {
+    if (response)
+      delete response;
     return;  // Broadcast request, no response
+  }
 
   RunRDMCallback(callback, response);
   delete request;
@@ -578,8 +587,11 @@ void DummyRDMDevice::HandleLampStrikes(const ola::rdm::RDMRequest *request,
     }
   }
 
-  if (!CheckForBroadcast(request, callback))
+  if (!CheckForBroadcast(request, callback)) {
+    if (response)
+      delete response;
     return;  // Broadcast request, no response
+  }
 
   RunRDMCallback(callback, response);
   delete request;
@@ -631,8 +643,11 @@ void DummyRDMDevice::HandleIdentifyDevice(const RDMRequest *request,
     }
   }
 
-  if (!CheckForBroadcast(request, callback))
+  if (!CheckForBroadcast(request, callback)) {
+    if (response)
+      delete response;
     return;  // Broadcast request, no response
+  }
 
   RunRDMCallback(callback, response);
   delete request;
