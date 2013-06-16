@@ -331,7 +331,8 @@ int RDMController::PerformRequestAndWait(unsigned int universe,
 
   uint16_t pid_value;
   if (!pid_descriptor &&
-      ola::PrefixedHexStringToInt(pid_name, &pid_value)) {
+      (ola::PrefixedHexStringToInt(pid_name, &pid_value) ||
+       ola::StringToInt(pid_name, &pid_value))) {
     pid_descriptor = m_pid_helper.GetDescriptor(
         pid_value,
         uid.ManufacturerId());
