@@ -1,5 +1,6 @@
 x/y/2013 ola-0.8.31
  * Bash Completions of UIDs in the RDM commands
+ * Change example scripts to error to STDERR not STDOUT.
 
 16/6/2013 ola-0.8.30
  * Clean up olad signal handling to avoid race conditions.

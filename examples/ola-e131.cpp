@@ -26,6 +26,7 @@
 #include <string>
 #include "examples/OlaConfigurator.h"
 
+using std::cerr;
 using std::cout;
 using std::endl;
 using std::string;
@@ -69,7 +70,7 @@ void E131Configurator::HandleConfigResponse(const string &reply,
                                             const string &error) {
   Terminate();
   if (!error.empty()) {
-    cout << error << endl;
+    cerr << error << endl;
     return;
   }
   ola::plugin::e131::Reply reply_pb;

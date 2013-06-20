@@ -28,6 +28,7 @@
 #include "examples/OlaConfigurator.h"
 
 
+using std::cerr;
 using std::cout;
 using std::endl;
 using std::string;
@@ -87,7 +88,7 @@ void UsbProConfigurator::HandleConfigResponse(const string &reply,
                                               const string &error) {
   Terminate();
   if (!error.empty()) {
-    cout << error << endl;
+    cerr << error << endl;
     return;
   }
 
