@@ -214,7 +214,7 @@ int main(int argc, char*argv[]) {
 
   E131Configurator configurator(opts);
   if (!configurator.Setup()) {
-    cout << "error: " << strerror(errno) << endl;
+    cerr << "Error: " << strerror(errno) << endl;
     exit(1);
   }
 

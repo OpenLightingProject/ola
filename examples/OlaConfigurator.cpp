@@ -31,6 +31,7 @@ using ola::NewSingleCallback;
 using ola::OlaCallbackClient;
 using ola::OlaDevice;
 using ola::io::SelectServer;
+using std::cerr;
 using std::cout;
 using std::endl;
 using std::string;
@@ -92,7 +93,7 @@ bool OlaConfigurator::SendMessage(const google::protobuf::Message &message) {
 void OlaConfigurator::HandleDevices(const vector <OlaDevice> &devices,
                                     const string &error) {
   if (!error.empty()) {
-    cout << "Error: " << error << endl;
+    cerr << "Error: " << error << endl;
     m_ss->Terminate();
     return;
   }

@@ -267,7 +267,7 @@ int main(int argc, char*argv[]) {
 
   ArtnetConfigurator configurator(opts);
   if (!configurator.Setup()) {
-    cout << "error: " << strerror(errno) << endl;
+    cerr << "Error: " << strerror(errno) << endl;
     exit(1);
   }
 

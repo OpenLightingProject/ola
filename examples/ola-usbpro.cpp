@@ -338,7 +338,7 @@ int main(int argc, char *argv[]) {
 
   UsbProConfigurator configurator(opts);
   if (!configurator.Setup()) {
-    cout << "error: " << strerror(errno) << endl;
+    cerr << "Error: " << strerror(errno) << endl;
     exit(1);
   }
 

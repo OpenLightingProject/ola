@@ -42,6 +42,7 @@
 using ola::rdm::PidStoreHelper;
 using ola::rdm::UID;
 using std::auto_ptr;
+using std::cerr;
 using std::cout;
 using std::endl;
 using std::string;
@@ -262,7 +263,7 @@ void RDMController::HandleResponse(
     const ola::rdm::ResponseStatus &response_status,
     const string &rdm_data) {
   if (!response_status.error.empty()) {
-    cout << "Error: " << response_status.error << endl;
+    cerr << "Error: " << response_status.error << endl;
     m_ola_client.GetSelectServer()->Terminate();
     return;
   }
@@ -271,7 +272,7 @@ void RDMController::HandleResponse(
     m_ola_client.GetSelectServer()->Terminate();
     return;
   } else if (response_status.response_code != ola::rdm::RDM_COMPLETED_OK) {
-    cout << "Error: " <<
+    cerr << "Error: " <<
       ola::rdm::ResponseCodeToString(response_status.response_code) << endl;
     m_ola_client.GetSelectServer()->Terminate();
     return;
