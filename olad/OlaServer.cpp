@@ -463,9 +463,11 @@ void OlaServer::ReloadPluginsInternal() {
  */
 void OlaServer::UpdatePidStore(const RootPidStore *pid_store) {
   OLA_INFO << "Updated PID definitions.";
+#ifdef HAVE_LIBMICROHTTPD
   if (m_httpd.get()) {
     m_httpd->SetPidStore(pid_store);
   }
+#endif
 
   m_pid_store.reset(pid_store);
 }
