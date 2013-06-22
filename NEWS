@@ -1,4 +1,4 @@
-X/Y/2013 ola-0.8.30
+16/6/2013 ola-0.8.30
  * Clean up olad signal handling to avoid race conditions.
  * Added support for the new Jese USB widgets
  * Fixed a bug in the python API which broke the RDM test server.
