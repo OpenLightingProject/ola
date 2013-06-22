@@ -78,26 +78,141 @@ DEFINE_bool(display_asc, false,
 DEFINE_s_bool(display_dmx, d, false, "Display DMX Frames");
 DEFINE_s_bool(full_rdm, r, true, "Display the full RDM frame");
 DEFINE_bool(timestamp, false, "Include timestamps");
-
 DEFINE_uint16(dmx_slot_limit, DMX_UNIVERSE_SIZE,
               "Only display the first N DMX slots");
 
+/**
+ * Process a DMX signal.
+ *
+ * See E1.11 for the details. It generally goes something like
+ *  Mark (Idle) - High
+ *  Break - Low
+ *  Mark After Break - High
+ * start bit (low)
+ * LSB to MSB
+ * 2 stop bits (high)
+ */
+class DMXSignalProcessor {
+  public:
+    typedef Callback2<void, const uint8_t *data, unsigned int length>
+      DataCallback;
 
-void OnReadData(U64 device_id, uint8_t *data, uint32_t data_length,
-                void *user_data) {
-  std::cout << "Read " << data_length << " bytes, starting with 0x"
-            << std::hex << static_cast<int>(*data) << std::dec << std::endl;
-  DevicesManagerInterface::DeleteU8ArrayPtr(data);
-  (void) device_id;
-  (void) user_data;
-}
+    DMXSignalProcessor(DataCallback *callback,
+                       unsigned int sample_rate)
+        : m_callback(callbacks),
+          m_sample_rate(sample_rate),
+          m_state(IDLE),
+          m_ticks(0)m
+          m_microseconds_per_tick(1000000.0 / sample_rate) {
+      if (m_sample_rate % DMX_BITRATE) {
+        OLA_WARN << "Sample rate is not a multiple of " << DMX_BITRATE;
+      }
+    }
 
-void OnError(U64 device_id, void *user_data) {
-  OLA_INFO << "A device reported an Error.";
-  (void) device_id;
-  (void) user_data;
-}
+    // Reset the processor. Used if there is a gap in the stream.
+    void Reset() {
+      SetState(IDLE);
+    }
 
+    // Process more data.
+    void Process(bool *ptr, unsigned int size) {
+      for (unsigned int i = 0 ; i < size; i++) {
+        ProcessBit(ptr[i]);
+      }
+    }
+
+  private:
+    enum State {
+      UNDEFINED,  // when the signal is low and we have no idea where we are.
+      IDLE,
+      BREAK,
+      MAB,
+      START_BIT,
+    }
+
+    DataCallback *m_callback;
+    unsigned int m_sample_rate;
+    State m_state;
+    unsigned int m_ticks;
+    double m_microseconds_per_tick;
+
+    void ProcessBit(bool bit) {
+      switch (m_state) {
+        case UNDEFINED:
+          if (bit) {
+            SetState(IDLE);
+          }
+          break;
+        case IDLE:
+          if (bit) {
+            m_ticks++;
+          } else {
+            SetState(BREAK);
+          }
+          break;
+        case BREAK:
+          if (bit) {
+            if (DurationExceeds(MIN_BREAK_TIME)) {
+              SetState(MAB);
+            } else {
+              OLA_INFO << "Break too short, was "
+                       << TicksAsMicroSeconds(m_ticks);
+              SetState(IDLE);
+            }
+          } else {
+            m_ticks++;
+          }
+          break;
+        case MAB:
+          if (bit) {
+            m_ticks++;
+            if (DurationExceeds(MAX_MAB_TIME)) {
+              SetState(IDLE, m_ticks);
+            }
+          } else {
+            if (DurationExceeds(MIN_MAB_TIME)) {
+              SetState(START_BIT);
+            } else {
+              OLA_INFO << "Mark too short, was "
+                       << TicksAsMicroSeconds(m_ticks);
+              SetState(UNDEFINED);
+            }
+          }
+          break;
+        case START_BIT:
+          if (bit) {
+
+          } else {
+
+
+          }
+          break;
+      }
+    }
+
+    // 
+    void SetState(State state, unsigned int ticks = 1) {
+      m_state = state;
+      m_ticks = ticks;
+    }
+
+    // Return true if the current number of ticks exceeds micro_seconds.
+    // Due to sampling this can be wrong by +- m_microseconds_per_tick.
+    bool DurationExceeds(double micro_seconds) {
+      return m_ticks * m_microseconds_per_tick > micro_seconds;
+    }
+
+    // Return the current number of ticks in microseconds.
+    double TicksAsMicroSeconds() {
+      return m_ticks * m_microseconds_per_tick;
+    }
+
+    static const unsigned int DMX_BITRATE = 250000;
+    // These are all in microseconds.
+    static const double MIN_BREAK_TIME = 88.0;
+    static const double MIN_MAB_TIME = 1.0;
+    static const double MAX_MAB_TIME = 1000000.0;
+};
 
 class LogicReader {
   public:
@@ -109,6 +224,7 @@ class LogicReader {
 
     void DeviceConnected(U64 device, GenericInterface *interface);
     void DeviceDisconnected(U64 device);
+    void DataReceived(U64 device, const uint8_t *data, uint32_t data_length);
 
     void Stop();
 
@@ -118,6 +234,8 @@ class LogicReader {
     Mutex m_mu;
 
     SelectServer *m_ss;
+
+    void ProcessData(const uint8_t *data, uint32_t data_length);
 
     static const uint32_t SAMPLE_HZ = 4000000;
 };
@@ -164,7 +282,29 @@ void LogicReader::DeviceDisconnected(U64 device) {
   //
 }
 
+/**
+ * Called by the receive thread when new data arrives
+ * @param device the device id which produced the data
+ * @param data pointer to the data, ownership is transferred, use
+ *   DeleteU8ArrayPtr to free.
+ * @param data_length the size of the data
+ */
+void LogicReader::DataReceived(U64 device, const uint8_t *data,
+                               uint32_t data_length) {
+  {
+    MutexLocker lock(&m_mu);
+    if (device != m_device_id) {
+      DevicesManagerInterface::DeleteU8ArrayPtr(data);
+      return;
+    }
+  }
+  m_ss->Execute(
+      NewSingleCallback(this, &LogicReader::ProcessData, data, data_length));
+}
 
+/**
+ *
+ */
 void LogicReader::Stop() {
   MutexLocker lock(&m_mu);
   if (m_logic) {
@@ -172,6 +312,26 @@ void LogicReader::Stop() {
   }
 }
 
+
+/**
+ * Called in the main thread.
+ * @param data pointer to the data, ownership is transferred, use
+ *   DeleteU8ArrayPtr to free.
+ * @param data_length the size of the data
+ */
+void ProcessData::ProcessData(const uint8_t *data, uint32_t data_length) {
+  OLA_INFO << "processing data " << data_length;
+
+  bool *
+  for (uint32_t i =0; i < data_length; i++) {
+
+  }
+
+  DevicesManagerInterface::DeleteU8ArrayPtr(data);
+}
+
+
+// SaleaeDeviceApi callbacks
 void OnConnect(U64 device_id, GenericInterface* device_interface,
                void* user_data) {
   if (!user_data)
@@ -189,6 +349,21 @@ void OnDisconnect(U64 device_id, void *user_data) {
   reader->DeviceDisconnected(device_id);
 }
 
+void OnReadData(U64 device_id, uint8_t *data, uint32_t data_length,
+                void *user_data) {
+  if (!user_data) {
+    DevicesManagerInterface::DeleteU8ArrayPtr(data);
+    return;
+  }
+  LogicReader *reader = (LogicReader*) user_data;  // NOLINT
+  reader->DataReceived(device_id, data, data_length);
+}
+
+void OnError(U64 device_id, void *user_data) {
+  OLA_INFO << "A device reported an Error.";
+  (void) device_id;
+  (void) user_data;
+}
 
 /*
  * Main.
