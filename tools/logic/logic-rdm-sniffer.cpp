@@ -51,6 +51,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <queue>
 
 
 using std::auto_ptr;
@@ -71,6 +72,7 @@ using ola::rdm::UID;
 
 using ola::thread::Mutex;
 using ola::thread::MutexLocker;
+using ola::NewSingleCallback;
 
 
 DEFINE_bool(display_asc, false,
@@ -80,6 +82,11 @@ DEFINE_s_bool(full_rdm, r, true, "Display the full RDM frame");
 DEFINE_bool(timestamp, false, "Include timestamps");
 DEFINE_uint16(dmx_slot_limit, DMX_UNIVERSE_SIZE,
               "Only display the first N DMX slots");
+
+void OnReadData(U64 device_id, U8 *data, uint32_t data_length,
+                void *user_data);
+void OnError(U64 device_id, void *user_data);
+void ProcessData(U8 *data, uint32_t data_length);
 
 /**
  * Process a DMX signal.
@@ -94,15 +101,14 @@ DEFINE_uint16(dmx_slot_limit, DMX_UNIVERSE_SIZE,
  */
 class DMXSignalProcessor {
   public:
-    typedef Callback2<void, const uint8_t *data, unsigned int length>
-      DataCallback;
+    typedef ola::Callback2<void, const uint8_t*, unsigned int> DataCallback;
 
     DMXSignalProcessor(DataCallback *callback,
                        unsigned int sample_rate)
-        : m_callback(callbacks),
+        : m_callback(callback),
           m_sample_rate(sample_rate),
           m_state(IDLE),
-          m_ticks(0)m
+          m_ticks(0),
           m_microseconds_per_tick(1000000.0 / sample_rate) {
       if (m_sample_rate % DMX_BITRATE) {
         OLA_WARN << "Sample rate is not a multiple of " << DMX_BITRATE;
@@ -114,10 +120,29 @@ class DMXSignalProcessor {
       SetState(IDLE);
     }
 
+    const string byte_to_binary(int x) {
+      string s;
+      for (int z = 0x80; z > 0; z >>= 1) {
+        s += ((x & z) == z) ? "1" : "0";
+      }
+      return s;
+    }
+
     // Process more data.
-    void Process(bool *ptr, unsigned int size) {
+    void Process(uint8_t *ptr, unsigned int size, uint8_t mask = 0xff) {
+      OLA_INFO << "processing " << size << " samples";
+      /*
+      stringstream str;
+      for (unsigned int i = 0 ; i < 100; i++) {
+        str << std::hex << byte_to_binary(ptr[i]) << " ";
+        if (i % 8 == 7) {
+          OLA_INFO << i << ": " << str.str();
+          str.str("");
+        }
+      }
+      */
       for (unsigned int i = 0 ; i < size; i++) {
-        ProcessBit(ptr[i]);
+        ProcessBit(ptr[i] & mask);
       }
     }
 
@@ -128,7 +153,7 @@ class DMXSignalProcessor {
       BREAK,
       MAB,
       START_BIT,
-    }
+    };
 
     DataCallback *m_callback;
     unsigned int m_sample_rate;
@@ -156,7 +181,7 @@ class DMXSignalProcessor {
               SetState(MAB);
             } else {
               OLA_INFO << "Break too short, was "
-                       << TicksAsMicroSeconds(m_ticks);
+                       << TicksAsMicroSeconds() << " us";
               SetState(IDLE);
             }
           } else {
@@ -171,10 +196,11 @@ class DMXSignalProcessor {
             }
           } else {
             if (DurationExceeds(MIN_MAB_TIME)) {
+              OLA_INFO << "In start bit!";
               SetState(START_BIT);
             } else {
               OLA_INFO << "Mark too short, was "
-                       << TicksAsMicroSeconds(m_ticks);
+                       << TicksAsMicroSeconds() << "us";
               SetState(UNDEFINED);
             }
           }
@@ -184,13 +210,11 @@ class DMXSignalProcessor {
 
           } else {
 
-
           }
           break;
       }
     }
 
-    // 
     void SetState(State state, unsigned int ticks = 1) {
       m_state = state;
       m_ticks = ticks;
@@ -219,12 +243,13 @@ class LogicReader {
     explicit LogicReader(SelectServer *ss)
       : m_device_id(0),
         m_logic(NULL),
-        m_ss(ss) {
+        m_ss(ss),
+        m_signal_processor(NULL, SAMPLE_HZ) {
     }
 
     void DeviceConnected(U64 device, GenericInterface *interface);
     void DeviceDisconnected(U64 device);
-    void DataReceived(U64 device, const uint8_t *data, uint32_t data_length);
+    void DataReceived(U64 device, U8 *data, uint32_t data_length);
 
     void Stop();
 
@@ -232,10 +257,12 @@ class LogicReader {
     U64 m_device_id;  // GUARDED_BY(mu_);
     LogicInterface *m_logic;  // GUARDED_BY(mu_);
     Mutex m_mu;
-
     SelectServer *m_ss;
+    DMXSignalProcessor m_signal_processor;
+    Mutex m_data_mu;
+    std::queue<U8*> m_free_data;
 
-    void ProcessData(const uint8_t *data, uint32_t data_length);
+    void ProcessData(U8 *data, uint32_t data_length);
 
     static const uint32_t SAMPLE_HZ = 4000000;
 };
@@ -260,7 +287,7 @@ void LogicReader::DeviceConnected(U64 device,
   m_logic = logic;
 
   // do stuff here
-  m_logic->RegisterOnReadData(&OnReadData);
+  m_logic->RegisterOnReadData(&OnReadData, this);
   m_logic->RegisterOnError(&OnError);
 
   m_logic->SetSampleRateHz(SAMPLE_HZ);
@@ -289,8 +316,7 @@ void LogicReader::DeviceDisconnected(U64 device) {
  *   DeleteU8ArrayPtr to free.
  * @param data_length the size of the data
  */
-void LogicReader::DataReceived(U64 device, const uint8_t *data,
-                               uint32_t data_length) {
+void LogicReader::DataReceived(U64 device, U8 *data, uint32_t data_length) {
   {
     MutexLocker lock(&m_mu);
     if (device != m_device_id) {
@@ -300,6 +326,15 @@ void LogicReader::DataReceived(U64 device, const uint8_t *data,
   }
   m_ss->Execute(
       NewSingleCallback(this, &LogicReader::ProcessData, data, data_length));
+
+  {
+    MutexLocker lock(&m_data_mu);
+    while (!m_free_data.empty()) {
+      U8 *data = m_free_data.front();
+      DevicesManagerInterface::DeleteU8ArrayPtr(data);
+      m_free_data.pop();
+    }
+  }
 }
 
 /**
@@ -319,17 +354,21 @@ void LogicReader::Stop() {
  *   DeleteU8ArrayPtr to free.
  * @param data_length the size of the data
  */
-void ProcessData::ProcessData(const uint8_t *data, uint32_t data_length) {
-  OLA_INFO << "processing data " << data_length;
-
-  bool *
-  for (uint32_t i =0; i < data_length; i++) {
-
-  }
-
+void LogicReader::ProcessData(U8 *data, uint32_t data_length) {
+  m_signal_processor.Process(data, data_length, 0x01);
   DevicesManagerInterface::DeleteU8ArrayPtr(data);
-}
 
+  /*
+   * This is commented out until we get clarification on if DeleteU8ArrayPtr is
+   * thread safe. http://community.saleae.com/node/403
+   */
+  /*
+  {
+    MutexLocker lock(&m_data_mu);
+    m_free_data.push(data);
+  }
+  */
+}
 
 // SaleaeDeviceApi callbacks
 void OnConnect(U64 device_id, GenericInterface* device_interface,
@@ -349,7 +388,7 @@ void OnDisconnect(U64 device_id, void *user_data) {
   reader->DeviceDisconnected(device_id);
 }
 
-void OnReadData(U64 device_id, uint8_t *data, uint32_t data_length,
+void OnReadData(U64 device_id, U8 *data, uint32_t data_length,
                 void *user_data) {
   if (!user_data) {
     DevicesManagerInterface::DeleteU8ArrayPtr(data);
