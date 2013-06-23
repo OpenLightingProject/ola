@@ -7,7 +7,7 @@
 
 #General functions
 #Martin (lots of extra pids) 4d50:ffffffff
-#Open Lighting (standard selection) 0081:ffffffff
+#Open Lighting (only up to two extra pids) 0081:ffffffff
 _ola_list_pids()
 {
   local pidstore uid
@@ -44,6 +44,40 @@ _ola_get_options_for_list_pids()
         #Found a possible UID, capture to pass into _ola_list_pids
         #For manufacturer specific ones
         uid=${words[$i+1]}
+        ;;
+    esac;
+  done
+}
+
+_ola_list_uids()
+{
+  local universe
+  if [ -n "$1" ]
+  then
+    COMPREPLY=( $( compgen -W '$( command ola_rdm_discover -u $1 2>/dev/null )' -- $cur  ) )
+
+    #Strip colons to fix completion with colons in
+    __ltrim_colon_completions "$cur"
+  fi
+}
+
+_ola_get_options_for_list_uids()
+{
+  local i cword words
+
+  #Fetch complete words, without splitting on :, so we get the UID as one item
+  __reassemble_comp_words_by_ref ":" words cword
+
+  #Check from 1 to count-1, ignoring first word, the command
+  #and last, count-1, as we're looking for the option, we then check it's value
+  for (( i=1; i<=(cword-1); i++ )) do
+    case "${words[$i]}" in
+      -u | --universe)
+        if [ -n "${words[$i+1]}" ]
+        then
+          #Found a universe, capture to pass into _ola_list_pids
+          universe=${words[$i+1]}
+        fi
         ;;
     esac;
   done
@@ -281,11 +315,11 @@ complete -F _ola_rdm_discover ola_rdm_discover
 #Same command and same set of options, so use same completion
 _ola_rdm_getset()
 {
-  local cur prev pidstore uid
+  local cur prev pidstore universe uid
 
   COMPREPLY=()
-  cur=${COMP_WORDS[COMP_CWORD]}
-  prev=${COMP_WORDS[COMP_CWORD-1]}
+  #Fetch complete words, without splitting on :, so we get the UID as one item
+  _get_comp_words_by_ref -n : cur prev
   
   case "$prev" in
     -p | --pid-location)
@@ -296,6 +330,12 @@ _ola_rdm_getset()
     -u | --universe)
       #We're not interested in supplying opts, so set compreply and break out with a return
       _ola_list_universes
+      return 0
+      ;;
+    --uid)
+      #We're not interested in supplying opts, so set compreply and break out with a return
+      _ola_get_options_for_list_uids
+      _ola_list_uids "$universe"
       return 0
       ;;
   esac;

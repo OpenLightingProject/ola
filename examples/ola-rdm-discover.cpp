@@ -68,7 +68,7 @@ void UIDList(const ola::rdm::UIDSet &uids,
       cout << *iter << endl;
     }
   } else {
-    cout << error << endl;
+    cerr << error << endl;
   }
   ss->Terminate();
 }

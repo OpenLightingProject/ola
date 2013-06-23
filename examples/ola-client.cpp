@@ -42,6 +42,7 @@ using ola::OlaOutputPort;
 using ola::OlaPlugin;
 using ola::OlaUniverse;
 using ola::io::SelectServer;
+using std::cerr;
 using std::cout;
 using std::endl;
 using std::setw;
@@ -139,7 +140,7 @@ void DisplayUniverses(SelectServer *ss,
   vector<OlaUniverse>::const_iterator iter;
 
   if (!error.empty()) {
-    cout << error << endl;
+    cerr << error << endl;
     ss->Terminate();
     return;
   }
@@ -179,7 +180,7 @@ void DisplayPlugins(SelectServer *ss,
   vector<OlaPlugin>::const_iterator iter;
 
   if (!error.empty()) {
-    cout << error << endl;
+    cerr << error << endl;
     ss->Terminate();
     return;
   }
@@ -210,7 +211,7 @@ void DisplayPluginDescription(SelectServer *ss,
                               const string &description,
                               const string &error) {
   if (!error.empty())
-    cout << error << endl;
+    cerr << error << endl;
   else
     cout << description << endl;
   ss->Terminate();
@@ -225,7 +226,7 @@ void DisplayPluginState(SelectServer *ss,
                         const OlaCallbackClient::PluginState &state,
                         const string &error) {
   if (!error.empty()) {
-    cout << error << endl;
+    cerr << error << endl;
   } else {
     cout << state.name << endl;
     cout << "Enabled: " << (state.enabled ? "True" : "False") << endl;
@@ -250,7 +251,7 @@ void DisplayDevices(SelectServer *ss,
   vector<OlaDevice>::const_iterator iter;
 
   if (!error.empty()) {
-    cout << error << endl;
+    cerr << error << endl;
     ss->Terminate();
     return;
   }
@@ -271,7 +272,7 @@ void DisplayDevices(SelectServer *ss,
  */
 void PatchComplete(SelectServer *ss, const string &error) {
   if (!error.empty())
-    cout << error << endl;
+    cerr << error << endl;
   ss->Terminate();
 }
 
@@ -280,27 +281,27 @@ void PatchComplete(SelectServer *ss, const string &error) {
  */
 void UniverseNameComplete(SelectServer *ss, const string &error) {
   if (!error.empty())
-    cout << error << endl;
+    cerr << error << endl;
   ss->Terminate();
 }
 
 
 void UniverseMergeModeComplete(SelectServer *ss, const string &error) {
   if (!error.empty())
-    cout << error << endl;
+    cerr << error << endl;
   ss->Terminate();
 }
 
 
 void SendDmxComplete(SelectServer *ss, const string &error) {
   if (!error.empty())
-    cout << error << endl;
+    cerr << error << endl;
   ss->Terminate();
 }
 
 void SetPortPriorityComplete(SelectServer *ss, const string &error) {
   if (!error.empty())
-    cout << error << endl;
+    cerr << error << endl;
   ss->Terminate();
 }
 

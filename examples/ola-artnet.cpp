@@ -27,6 +27,7 @@
 #include <string>
 #include "examples/OlaConfigurator.h"
 
+using std::cerr;
 using std::cout;
 using std::endl;
 using std::string;
@@ -74,7 +75,7 @@ void ArtnetConfigurator::HandleConfigResponse(const string &reply,
                                               const string &error) {
   Terminate();
   if (!error.empty()) {
-    cout << error << endl;
+    cerr << error << endl;
     return;
   }
   ola::plugin::artnet::Reply reply_pb;
@@ -266,7 +267,7 @@ int main(int argc, char*argv[]) {
 
   ArtnetConfigurator configurator(opts);
   if (!configurator.Setup()) {
-    cout << "error: " << strerror(errno) << endl;
+    cerr << "Error: " << strerror(errno) << endl;
     exit(1);
   }
 

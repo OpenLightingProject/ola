@@ -44,6 +44,7 @@ using ola::slp::SLPClient;
 using ola::slp::SLPErrorToString;
 using ola::slp::URLEntry;
 using std::auto_ptr;
+using std::cerr;
 using std::cout;
 using std::endl;
 using std::string;
@@ -143,7 +144,7 @@ class RegisterCommand: public Command {
       Terminate();
       if (IsError(error))
         return;
-      cout << "SLP code is " << code << " : " << SLPErrorToString(code) << endl;
+      cerr << "SLP code is " << code << " : " << SLPErrorToString(code) << endl;
     }
 };
 
@@ -170,7 +171,7 @@ class DeRegisterCommand: public Command {
       Terminate();
       if (IsError(error))
         return;
-      cout << "SLP code is " << code << " : " << SLPErrorToString(code) << endl;
+      cerr << "SLP code is " << code << " : " << SLPErrorToString(code) << endl;
     }
 };
 
