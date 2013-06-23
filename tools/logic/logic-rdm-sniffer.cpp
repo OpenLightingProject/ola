@@ -37,6 +37,7 @@
 #include <ola/Callback.h>
 #include <ola/base/SysExits.h>
 #include <ola/Clock.h>
+#include <ola/DmxBuffer.h>
 #include <ola/network/NetworkUtils.h>
 #include <ola/rdm/CommandPrinter.h>
 #include <ola/rdm/PidStoreHelper.h>
@@ -77,12 +78,14 @@ using ola::NewSingleCallback;
 
 
 DEFINE_bool(display_asc, false,
-              "Display non-RDM alternate start code frames");
+            "Display non-RDM alternate start code frames");
 DEFINE_s_bool(display_dmx, d, false, "Display DMX Frames");
 DEFINE_s_bool(full_rdm, r, true, "Display the full RDM frame");
 DEFINE_bool(timestamp, false, "Include timestamps");
 DEFINE_uint16(dmx_slot_limit, DMX_UNIVERSE_SIZE,
               "Only display the first N DMX slots");
+DEFINE_string(pid_location, PID_DATA_DIR,
+              "The directory containing the PID definitions");
 
 void OnReadData(U64 device_id, U8 *data, uint32_t data_length,
                 void *user_data);
@@ -95,12 +98,16 @@ class LogicReader {
       : m_device_id(0),
         m_logic(NULL),
         m_ss(ss),
-        m_signal_processor(NULL, SAMPLE_HZ) {
+        m_signal_processor(ola::NewCallback(this, &LogicReader::FrameReceived),
+                           SAMPLE_HZ),
+        m_pid_helper(FLAGS_pid_location.str(), 4),
+        m_command_printer(&cout, &m_pid_helper) {
     }
 
     void DeviceConnected(U64 device, GenericInterface *interface);
     void DeviceDisconnected(U64 device);
     void DataReceived(U64 device, U8 *data, uint32_t data_length);
+    void FrameReceived(const uint8_t *data, unsigned int length);
 
     void Stop();
 
@@ -110,17 +117,22 @@ class LogicReader {
     Mutex m_mu;
     SelectServer *m_ss;
     DMXSignalProcessor m_signal_processor;
+    PidStoreHelper m_pid_helper;
+    CommandPrinter m_command_printer;
     Mutex m_data_mu;
     std::queue<U8*> m_free_data;
 
     void ProcessData(U8 *data, uint32_t data_length);
+    void DisplayDMXFrame(const uint8_t *data, unsigned int length);
+    void DisplayRDMFrame(const uint8_t *data, unsigned int length);
+    void DisplayAlternateFrame(const uint8_t *data, unsigned int length);
+    void DisplayRawData(const uint8_t *data, unsigned int length);
 
     static const uint32_t SAMPLE_HZ = 4000000;
 };
 
 
-void LogicReader::DeviceConnected(U64 device,
-                                  GenericInterface *interface) {
+void LogicReader::DeviceConnected(U64 device, GenericInterface *interface) {
   OLA_INFO << "Device " << device << " connected";
   MutexLocker lock(&m_mu);
   if (m_logic != NULL) {
@@ -188,6 +200,24 @@ void LogicReader::DataReceived(U64 device, U8 *data, uint32_t data_length) {
   }
 }
 
+
+void LogicReader::FrameReceived(const uint8_t *data, unsigned int length) {
+  if (!length) {
+    return;
+  }
+
+  switch (data[0]) {
+    case 0:
+      DisplayDMXFrame(data + 1, length - 1);
+      break;
+    case RDMCommand::START_CODE:
+      DisplayRDMFrame(data + 1, length - 1);
+      break;
+    default:
+      DisplayAlternateFrame(data, length);
+  }
+}
+
 /**
  *
  */
@@ -219,6 +249,52 @@ void LogicReader::ProcessData(U8 *data, uint32_t data_length) {
     m_free_data.push(data);
   }
   */
+}
+
+
+void LogicReader::DisplayDMXFrame(const uint8_t *data, unsigned int length) {
+  if (!FLAGS_display_dmx)
+    return;
+
+  cout << "DMX " << std::dec;
+  cout << length << ":" << std::hex;
+  DisplayRawData(data, length);
+}
+
+void LogicReader::DisplayRDMFrame(const uint8_t *data, unsigned int length) {
+  auto_ptr<RDMCommand> command(
+      RDMCommand::Inflate(reinterpret_cast<const uint8_t*>(data), length));
+  if (command.get()) {
+    if (FLAGS_full_rdm)
+      cout << "---------------------------------------" << endl;
+
+    command->Print(&m_command_printer, FLAGS_full_rdm, true);
+  } else {
+    DisplayRawData(data, length);
+  }
+}
+
+
+void LogicReader::DisplayAlternateFrame(const uint8_t *data,
+                                        unsigned int length) {
+  if (!FLAGS_display_asc || length == 0)
+    return;
+
+  unsigned int slot_count = length - 1;
+  cout << "SC 0x" << std::hex << std::setw(2) << static_cast<int>(data[0])
+       << " " << std::dec << slot_count << ":" << std::hex;
+  DisplayRawData(data + 1, slot_count);
+}
+
+
+/**
+ * Dump out the raw data if we couldn't parse it correctly.
+ */
+void LogicReader::DisplayRawData(const uint8_t *data, unsigned int length) {
+  for (unsigned int i = 0; i < length; i++) {
+    cout << std::hex << std::setw(2) << static_cast<int>(data[i]) << " ";
+  }
+  cout << endl;
 }
 
 // SaleaeDeviceApi callbacks

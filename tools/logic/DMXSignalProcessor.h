@@ -28,6 +28,8 @@
 #include <ola/Callback.h>
 #include <ola/network/NetworkUtils.h>
 
+#include <vector>
+
 using ola::io::SelectServer;
 
 using ola::thread::Mutex;
@@ -66,15 +68,38 @@ class DMXSignalProcessor {
       BREAK,
       MAB,
       START_BIT,
+      BIT_1,
+      BIT_2,
+      BIT_3,
+      BIT_4,
+      BIT_5,
+      BIT_6,
+      BIT_7,
+      BIT_8,
+      STOP_BITS,
+      MARK_BETWEEN_SLOTS,
     };
 
     DataCallback *m_callback;
     unsigned int m_sample_rate;
     State m_state;
     unsigned int m_ticks;
-    double m_microseconds_per_tick;
+    const double m_microseconds_per_tick;
+    bool m_may_be_in_break;
+    unsigned int m_ticks_in_break;
 
+    // here we accumulate the bits in the current byte
+    std::vector<bool> m_bits_defined;
+    std::vector<bool> m_current_byte;
+
+    // The bytes are stored here
+    std::vector<uint8_t> m_dmx_data;
+
+    void ProcessSample(bool bit);
     void ProcessBit(bool bit);
+    bool SetBitIfNotDefined(bool bit);
+    void AppendDataByte();
+    void HandleFrame();
 
     void SetState(State state, unsigned int ticks = 1);
     bool DurationExceeds(double micro_seconds);
@@ -85,5 +110,8 @@ class DMXSignalProcessor {
     static const double MIN_BREAK_TIME = 88.0;
     static const double MIN_MAB_TIME = 1.0;
     static const double MAX_MAB_TIME = 1000000.0;
+    static const double MIN_BIT_TIME = 3.92;
+    static const double MAX_BIT_TIME = 4.08;
+    static const double MAX_MARK_BETWEEN_SLOTS = 1000000.0;
 };
 #endif  // TOOLS_LOGIC_DMXSIGNALPROCESSOR_H_
