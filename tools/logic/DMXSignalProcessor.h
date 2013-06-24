@@ -38,14 +38,6 @@ using ola::NewSingleCallback;
 
 /**
  * Process a DMX signal.
- *
- * See E1.11 for the details. It generally goes something like
- *  Mark (Idle) - High
- *  Break - Low
- *  Mark After Break - High
- * start bit (low)
- * LSB to MSB
- * 2 stop bits (high)
  */
 class DMXSignalProcessor {
   public:
@@ -80,19 +72,25 @@ class DMXSignalProcessor {
       MARK_BETWEEN_SLOTS,
     };
 
-    DataCallback *m_callback;
-    unsigned int m_sample_rate;
-    State m_state;
-    unsigned int m_ticks;
+    // Set once in the constructor
+    DataCallback* const m_callback;
+    const unsigned int m_sample_rate;
     const double m_microseconds_per_tick;
+
+    // our current state.
+    State m_state;
+    // the number of ticks (samples) we've been in this state.
+    unsigned int m_ticks;
+    // sometimes we may not know if we're in a break or not, see the comments
+    // in DMXSignalProcessor.cpp
     bool m_may_be_in_break;
     unsigned int m_ticks_in_break;
 
-    // here we accumulate the bits in the current byte
+    // Used to accumulate the bits in the current byte.
     std::vector<bool> m_bits_defined;
     std::vector<bool> m_current_byte;
 
-    // The bytes are stored here
+    // The bytes are stored here.
     std::vector<uint8_t> m_dmx_data;
 
     void ProcessSample(bool bit);
@@ -110,8 +108,11 @@ class DMXSignalProcessor {
     static const double MIN_BREAK_TIME = 88.0;
     static const double MIN_MAB_TIME = 1.0;
     static const double MAX_MAB_TIME = 1000000.0;
-    static const double MIN_BIT_TIME = 3.92;
+    // The minimum bit time, based on a 4MHz sample rate.
+    // TODO(simon): adjust this based on the sample rate.
+    static const double MIN_BIT_TIME = 3.75;
     static const double MAX_BIT_TIME = 4.08;
+    static const double MIN_LAST_BIT_TIME = 2.64;
     static const double MAX_MARK_BETWEEN_SLOTS = 1000000.0;
 };
 #endif  // TOOLS_LOGIC_DMXSIGNALPROCESSOR_H_
