@@ -63,6 +63,7 @@ class ResponderOps {
 
     void HandleRDMRequest(Target *target,
                           const UID &target_uid,
+                          uint16_t sub_device,
                           const RDMRequest *request,
                           RDMCallback *on_complete);
 
@@ -100,6 +101,7 @@ ResponderOps<Target>::ResponderOps(const ParamHandler param_handlers[]) {
 template <class Target>
 void ResponderOps<Target>::HandleRDMRequest(Target *target,
                                             const UID &target_uid,
+                                            uint16_t sub_device,
                                             const RDMRequest *raw_request,
                                             RDMCallback *on_complete) {
   // Take ownership of the request object, so the targets don't have to.
@@ -133,17 +135,37 @@ void ResponderOps<Target>::HandleRDMRequest(Target *target,
     return;
   }
 
+  // broadcast GETs are noops.
+  if (request->CommandClass() == RDMCommand::GET_COMMAND &&
+      request->DestinationUID().IsBroadcast()) {
+    OLA_WARN << "Received broadcast GET command";
+    on_complete->Run(RDM_WAS_BROADCAST, NULL, packets);
+    return;
+  }
+
   RDMResponse *response = NULL;
   rdm_response_code response_code = RDM_COMPLETED_OK;
 
   // Right now we don't support sub devices
-  if (request->SubDevice()) {
+  bool for_our_subdevice = request->SubDevice() == sub_device ||
+                           request->SubDevice() == ALL_RDM_SUBDEVICES;
+
+  if (!for_our_subdevice) {
     if (request->DestinationUID().IsBroadcast()) {
       on_complete->Run(RDM_WAS_BROADCAST, NULL, packets);
     } else {
       response = NackWithReason(request.get(), NR_SUB_DEVICE_OUT_OF_RANGE);
       on_complete->Run(RDM_COMPLETED_OK, response, packets);
     }
+    return;
+  }
+
+  // gets to ALL_RDM_SUBDEVICES are a special case
+  if (request->SubDevice() == ALL_RDM_SUBDEVICES &&
+      request->CommandClass() == RDMCommand::GET_COMMAND) {
+    // the broadcast get case was handled above.
+    response = NackWithReason(request.get(), NR_SUB_DEVICE_OUT_OF_RANGE);
+    on_complete->Run(RDM_COMPLETED_OK, response, packets);
     return;
   }
 
@@ -160,7 +182,7 @@ void ResponderOps<Target>::HandleRDMRequest(Target *target,
 
   if (request->CommandClass() == RDMCommand::GET_COMMAND) {
     if (request->DestinationUID().IsBroadcast()) {
-      // don't even both calling the handler now
+      // this should have been handled above, but be safe.
       response_code = RDM_WAS_BROADCAST;
     } else {
       if (handler->get_handler) {

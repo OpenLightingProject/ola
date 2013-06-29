@@ -106,7 +106,8 @@ const DummyRDMDevice::personality_info DummyRDMDevice::PERSONALITIES[] = {
  */
 void DummyRDMDevice::SendRDMRequest(const ola::rdm::RDMRequest *request,
                                     ola::rdm::RDMCallback *callback) {
-  RDMOps::Instance()->HandleRDMRequest(this, m_uid, request, callback);
+  RDMOps::Instance()->HandleRDMRequest(this, m_uid, m_sub_device_number,
+                                       request, callback);
 }
 
 RDMResponse *DummyRDMDevice::GetParamDescription(
