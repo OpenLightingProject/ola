@@ -13,13 +13,13 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * RDMManufacturerPIDs.h
- * Provide OLA's RDM Manufacturer PIDs.
+ * OpenLightingEnums.h
+ * Provide OLA's RDM Manufacturer PIDs & Model IDs.
  * Copyright (C) 2013 Peter Newman
  */
 
-#ifndef INCLUDE_OLA_RDM_RDMMANUFACTURERPIDS_H_
-#define INCLUDE_OLA_RDM_RDMMANUFACTURERPIDS_H_
+#ifndef INCLUDE_OLA_RDM_OPENLIGHTINGENUMS_H_
+#define INCLUDE_OLA_RDM_OPENLIGHTINGENUMS_H_
 
 #include <stdint.h>
 
@@ -40,6 +40,19 @@ typedef enum {
   OLA_MANUFACTURER_PID_CODE_VERSION = 0x8001,
 } rdm_ola_manufacturer_pid;
 
+typedef enum {
+  // OLA Dummy RDM Responder
+  OLA_DUMMY_DEVICE_MODEL = 1,
+  // Arduino RGB Mixer
+  //OLA_RGB_MIXER_MODEL = 2,
+  // SPI Device
+  OLA_SPI_DEVICE_MODEL = 3,
+  // Dummy Dimmer
+  OLA_DUMMY_DIMMER_MODEL = 4,
+  // Dummy Moving Light
+  OLA_DUMMY_MOVING_LIGHT_MODEL = 5,
+} ola_rdm_model_id;
+
 }  // namespace rdm
 }  // namespace ola
-#endif  // INCLUDE_OLA_RDM_RDMMANUFACTURERPIDS_H_
+#endif  // INCLUDE_OLA_RDM_OPENLIGHTINGENUMS_H_

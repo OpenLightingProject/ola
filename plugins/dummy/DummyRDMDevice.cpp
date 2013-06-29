@@ -25,8 +25,8 @@
 #include "ola/Logging.h"
 #include "ola/base/Array.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/rdm/OpenLightingEnums.h"
 #include "ola/rdm/RDMEnums.h"
-#include "ola/rdm/RDMManufacturerPIDs.h"
 #include "plugins/dummy/DummyRDMDevice.h"
 
 namespace ola {
@@ -92,6 +92,7 @@ const ola::rdm::ResponderOps<DummyRDMDevice>::ParamHandler
   { ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION,
     &DummyRDMDevice::GetOlaCodeVersion,
     NULL},
+  { 0, NULL, NULL},
 };
 
 const DummyRDMDevice::personality_info DummyRDMDevice::PERSONALITIES[] = {
