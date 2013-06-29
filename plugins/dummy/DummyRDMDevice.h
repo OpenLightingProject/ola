@@ -57,18 +57,18 @@ class DummyRDMDevice: public ola::rdm::RDMControllerInterface {
     /**
      * The RDM Operations for the DummyRDMDevice.
      */
-    class DummyRDMDeviceOps : public ola::rdm::ResponderOps<DummyRDMDevice> {
+    class RDMOps : public ola::rdm::ResponderOps<DummyRDMDevice> {
       public:
-        static DummyRDMDeviceOps *Instance() {
+        static RDMOps *Instance() {
           if (!instance)
-            instance = new DummyRDMDeviceOps();
+            instance = new RDMOps();
           return instance;
         }
 
       private:
-        DummyRDMDeviceOps() : ResponderOps(PARAM_HANDLERS) {}
+        RDMOps() : ResponderOps(PARAM_HANDLERS) {}
 
-        static DummyRDMDeviceOps *instance;
+        static RDMOps *instance;
     };
 
     const ola::rdm::UID m_uid;

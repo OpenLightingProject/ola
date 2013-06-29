@@ -43,8 +43,7 @@ using ola::rdm::rdm_response_code;
 using std::string;
 using std::vector;
 
-DummyRDMDevice::DummyRDMDeviceOps *DummyRDMDevice::DummyRDMDeviceOps::instance
-  = NULL;
+DummyRDMDevice::RDMOps *DummyRDMDevice::RDMOps::instance = NULL;
 
 const ola::rdm::ResponderOps<DummyRDMDevice>::ParamHandler
     DummyRDMDevice::PARAM_HANDLERS[] = {
@@ -107,8 +106,7 @@ const DummyRDMDevice::personality_info DummyRDMDevice::PERSONALITIES[] = {
  */
 void DummyRDMDevice::SendRDMRequest(const ola::rdm::RDMRequest *request,
                                     ola::rdm::RDMCallback *callback) {
-  DummyRDMDeviceOps::Instance()->HandleRDMRequest(this, m_uid, request,
-      callback);
+  RDMOps::Instance()->HandleRDMRequest(this, m_uid, request, callback);
 }
 
 RDMResponse *DummyRDMDevice::GetParamDescription(
