@@ -34,12 +34,7 @@ using ola::rdm::RDMResponse;
 
 class MovingLightResponder: public ola::rdm::RDMControllerInterface {
   public:
-    explicit MovingLightResponder(const ola::rdm::UID &uid)
-        : m_uid(uid),
-          m_start_address(1),
-          m_personality(1),
-          m_identify_mode(0),
-          m_lamp_strikes(0) {}
+    explicit MovingLightResponder(const ola::rdm::UID &uid);
 
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
@@ -73,6 +68,8 @@ class MovingLightResponder: public ola::rdm::RDMControllerInterface {
     uint16_t m_start_address;
     uint8_t m_personality;
     uint8_t m_identify_mode;
+    uint8_t m_pan_invert;
+    uint8_t m_tilt_invert;
     uint32_t m_lamp_strikes;
 
     RDMResponse *GetParamDescription(const ola::rdm::RDMRequest *request);
@@ -89,6 +86,10 @@ class MovingLightResponder: public ola::rdm::RDMControllerInterface {
     RDMResponse *SetLampStrikes(const ola::rdm::RDMRequest *request);
     RDMResponse *GetIdentify(const ola::rdm::RDMRequest *request);
     RDMResponse *SetIdentify(const ola::rdm::RDMRequest *request);
+    RDMResponse *GetPanInvert(const ola::rdm::RDMRequest *request);
+    RDMResponse *SetPanInvert(const ola::rdm::RDMRequest *request);
+    RDMResponse *GetTiltInvert(const ola::rdm::RDMRequest *request);
+    RDMResponse *SetTiltInvert(const ola::rdm::RDMRequest *request);
     RDMResponse *GetRealTimeClock(const ola::rdm::RDMRequest *request);
     RDMResponse *GetManufacturerLabel(const ola::rdm::RDMRequest *request);
     RDMResponse *GetDeviceLabel(const ola::rdm::RDMRequest *request);
@@ -99,6 +100,9 @@ class MovingLightResponder: public ola::rdm::RDMControllerInterface {
     RDMResponse *HandleStringResponse(
         const ola::rdm::RDMRequest *request,
         const std::string &value);
+
+    RDMResponse *SetBoolValue(const ola::rdm::RDMRequest *request,
+                              uint8_t *value);
 
     typedef struct {
       uint16_t footprint;

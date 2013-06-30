@@ -86,6 +86,12 @@ const ola::rdm::ResponderOps<MovingLightResponder>::ParamHandler
   { ola::rdm::PID_IDENTIFY_DEVICE,
     &MovingLightResponder::GetIdentify,
     &MovingLightResponder::SetIdentify},
+  { ola::rdm::PID_PAN_INVERT,
+    &MovingLightResponder::GetPanInvert,
+    &MovingLightResponder::SetPanInvert},
+  { ola::rdm::PID_TILT_INVERT,
+    &MovingLightResponder::GetTiltInvert,
+    &MovingLightResponder::SetTiltInvert},
   { ola::rdm::PID_REAL_TIME_CLOCK,
     &MovingLightResponder::GetRealTimeClock,
     NULL},
@@ -102,6 +108,20 @@ const MovingLightResponder::personality_info
   {10, "Personality 3"},
   {20, "Personality 4"},
 };
+
+
+/**
+ * New MovingLightResponder
+ */
+MovingLightResponder::MovingLightResponder(const ola::rdm::UID &uid)
+    : m_uid(uid),
+      m_start_address(1),
+      m_personality(1),
+      m_identify_mode(0),
+      m_pan_invert(0),
+      m_tilt_invert(0),
+      m_lamp_strikes(0) {
+}
 
 /*
  * Handle an RDM Request
@@ -475,6 +495,33 @@ RDMResponse *MovingLightResponder::SetIdentify(
   }
 }
 
+RDMResponse *MovingLightResponder::GetPanInvert(
+    const ola::rdm::RDMRequest *request) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+  }
+  return GetResponseFromData(request, &m_pan_invert, sizeof(m_pan_invert));
+}
+
+
+RDMResponse *MovingLightResponder::SetPanInvert(
+    const ola::rdm::RDMRequest *request) {
+  return SetBoolValue(request, &m_pan_invert);
+}
+
+RDMResponse *MovingLightResponder::GetTiltInvert(
+    const ola::rdm::RDMRequest *request) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+  }
+  return GetResponseFromData(request, &m_tilt_invert, sizeof(m_tilt_invert));
+}
+
+RDMResponse *MovingLightResponder::SetTiltInvert(
+    const ola::rdm::RDMRequest *request) {
+  return SetBoolValue(request, &m_tilt_invert);
+}
+
 RDMResponse *MovingLightResponder::GetRealTimeClock(
     const ola::rdm::RDMRequest *request) {
   if (request->ParamDataSize()) {
@@ -547,6 +594,32 @@ RDMResponse *MovingLightResponder::HandleStringResponse(
         request,
         reinterpret_cast<const uint8_t*>(value.data()),
         value.size());
+}
+
+RDMResponse *MovingLightResponder::SetBoolValue(
+    const ola::rdm::RDMRequest *request,
+    uint8_t *value) {
+  uint8_t arg;
+  if (request->ParamDataSize() != sizeof(arg)) {
+    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+  }
+
+  arg = *request->ParamData();
+  if (arg == 0 || arg == 1) {
+    *value = arg;
+    return new ola::rdm::RDMSetResponse(
+      request->DestinationUID(),
+      request->SourceUID(),
+      request->TransactionNumber(),
+      ola::rdm::RDM_ACK,
+      0,
+      request->SubDevice(),
+      request->ParamId(),
+      NULL,
+      0);
+  } else {
+    return NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
+  }
 }
 }  // namespace dummy
 }  // namespace plugin
