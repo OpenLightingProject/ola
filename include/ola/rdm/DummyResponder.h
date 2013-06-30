@@ -19,39 +19,29 @@
  * Copyright (C) 2009 Simon Newton
  */
 
-#ifndef PLUGINS_DUMMY_DUMMYRESPONDER_H_
-#define PLUGINS_DUMMY_DUMMYRESPONDER_H_
+#ifndef INCLUDE_OLA_RDM_DUMMYRESPONDER_H_
+#define INCLUDE_OLA_RDM_DUMMYRESPONDER_H_
 
 #include <vector>
+#include "ola/rdm/DummyRDMDevice.h"
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/UID.h"
-#include "plugins/dummy/DummyRDMDevice.h"
 
 namespace ola {
-namespace plugin {
-namespace dummy {
+namespace rdm {
 
-class DummyResponder: public ola::rdm::RDMControllerInterface {
+class DummyResponder: public RDMControllerInterface {
   public:
-    DummyResponder(const ola::rdm::UID &uid,
-                   unsigned int number_of_subdevices = 0);
+    DummyResponder(const UID &uid, unsigned int number_of_subdevices = 0);
     virtual ~DummyResponder();
 
-    void SendRDMRequest(const ola::rdm::RDMRequest *request,
-                        ola::rdm::RDMCallback *callback);
-
-    uint16_t RootDeviceFootprint() const {
-      return m_subdevices[0]->Footprint();
-    }
-
-    const ola::rdm::UID &UID() const { return m_uid; }
+    void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
 
   private:
-    ola::rdm::UID m_uid;
+    UID m_uid;
     std::vector<DummyRDMDevice*> m_subdevices;
 };
-}  // namespace dummy
-}  // namespace plugin
+}  // namespace rdm
 }  // namespace ola
-#endif  // PLUGINS_DUMMY_DUMMYRESPONDER_H_
+#endif  // INCLUDE_OLA_RDM_DUMMYRESPONDER_H_

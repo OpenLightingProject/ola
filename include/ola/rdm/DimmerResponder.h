@@ -18,42 +18,37 @@
  * Copyright (C) 2013 Simon Newton
  */
 
-#ifndef PLUGINS_DUMMY_DIMMERRESPONDER_H_
-#define PLUGINS_DUMMY_DIMMERRESPONDER_H_
+#ifndef INCLUDE_OLA_RDM_DIMMERRESPONDER_H_
+#define INCLUDE_OLA_RDM_DIMMERRESPONDER_H_
 
 #include <map>
 #include <memory>
+#include "ola/rdm/DimmerRootDevice.h"
 #include "ola/rdm/RDMControllerInterface.h"
-#include "ola/rdm/RDMEnums.h"
+#include "ola/rdm/SubDeviceDispatcher.h"
 #include "ola/rdm/UID.h"
-#include "plugins/dummy/DimmerRootDevice.h"
-#include "plugins/dummy/DimmerSubDevice.h"
-#include "plugins/dummy/SubDeviceDispatcher.h"
 
 namespace ola {
-namespace plugin {
-namespace dummy {
+namespace rdm {
 
 using std::auto_ptr;
 
-class DimmerResponder: public ola::rdm::RDMControllerInterface {
+/**
+ * A RDM responder that simulates a dimmer rack. This has a configurable number
+ * of sub-devices.
+ */
+class DimmerResponder: public RDMControllerInterface {
   public:
-    DimmerResponder(const ola::rdm::UID &uid,
-                    uint16_t number_of_subdevices = 0);
+    DimmerResponder(const UID &uid, uint16_t number_of_subdevices);
     virtual ~DimmerResponder();
 
-    void SendRDMRequest(const ola::rdm::RDMRequest *request,
-                        ola::rdm::RDMCallback *callback);
-
-    const ola::rdm::UID &UID() const { return m_uid; }
+    void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
 
   private:
-    ola::rdm::UID m_uid;
     SubDeviceDispatcher m_dispatcher;
     auto_ptr<DimmerRootDevice> m_root_device;
-    std::map<uint16_t, DimmerSubDevice*> m_sub_devices;
+    std::map<uint16_t, class DimmerSubDevice*> m_sub_devices;
 };
-}  // namespace dummy
-}  // namespace plugin
+}  // namespace rdm
 }  // namespace ola
-#endif  // PLUGINS_DUMMY_DIMMERRESPONDER_H_
+#endif  // INCLUDE_OLA_RDM_DIMMERRESPONDER_H_

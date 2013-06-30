@@ -21,11 +21,10 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include "plugins/dummy/DummyResponder.h"
+#include "ola/rdm/DummyResponder.h"
 
 namespace ola {
-namespace plugin {
-namespace dummy {
+namespace rdm {
 
 /**
  * Create a new dummy responder
@@ -33,13 +32,13 @@ namespace dummy {
  * @param number_of_subdevices the number of sub devices for this responder.
  * Valid range is 0 to 254 for now.
  */
-DummyResponder::DummyResponder(const ola::rdm::UID &uid,
+DummyResponder::DummyResponder(const UID &uid,
                                unsigned int number_of_subdevices)
-: m_uid(uid) {
+    : m_uid(uid) {
   number_of_subdevices++;  // add one for the root device
   for (unsigned int i = 0; i < std::min(number_of_subdevices, 255u); i++) {
     m_subdevices.push_back(
-        new DummyRDMDevice(m_uid, ola::rdm::ROOT_RDM_DEVICE + i));
+        new DummyRDMDevice(m_uid, ROOT_RDM_DEVICE + i));
   }
 }
 
@@ -58,10 +57,9 @@ DummyResponder::~DummyResponder() {
 /*
  * Handle an RDM Request
  */
-void DummyResponder::SendRDMRequest(const ola::rdm::RDMRequest *request,
-                                    ola::rdm::RDMCallback *callback) {
+void DummyResponder::SendRDMRequest(const RDMRequest *request,
+                                    RDMCallback *callback) {
   m_subdevices[0]->SendRDMRequest(request, callback);
 }
-}  // namespace dummy
-}  // namespace plugin
+}  // namespace rdm
 }  // namespace ola

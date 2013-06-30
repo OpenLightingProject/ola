@@ -25,77 +25,71 @@
 #include "ola/Logging.h"
 #include "ola/base/Array.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/rdm/MovingLightResponder.h"
 #include "ola/rdm/OpenLightingEnums.h"
 #include "ola/rdm/RDMEnums.h"
-#include "plugins/dummy/MovingLightResponder.h"
 
 namespace ola {
-namespace plugin {
-namespace dummy {
+namespace rdm {
 
 using ola::network::HostToNetwork;
 using ola::network::NetworkToHost;
-using ola::rdm::GetResponseFromData;
-using ola::rdm::NackWithReason;
-using ola::rdm::RDMRequest;
-using ola::rdm::RDMResponse;
-using ola::rdm::rdm_response_code;
 using std::string;
 using std::vector;
 
 MovingLightResponder::RDMOps *MovingLightResponder::RDMOps::instance = NULL;
 
-const ola::rdm::ResponderOps<MovingLightResponder>::ParamHandler
+const ResponderOps<MovingLightResponder>::ParamHandler
     MovingLightResponder::PARAM_HANDLERS[] = {
-  { ola::rdm::PID_PARAMETER_DESCRIPTION,
+  { PID_PARAMETER_DESCRIPTION,
     &MovingLightResponder::GetParamDescription,
     NULL},
-  { ola::rdm::PID_DEVICE_INFO,
+  { PID_DEVICE_INFO,
     &MovingLightResponder::GetDeviceInfo,
     NULL},
-  { ola::rdm::PID_PRODUCT_DETAIL_ID_LIST,
+  { PID_PRODUCT_DETAIL_ID_LIST,
     &MovingLightResponder::GetProductDetailList,
     NULL},
-  { ola::rdm::PID_DEVICE_MODEL_DESCRIPTION,
+  { PID_DEVICE_MODEL_DESCRIPTION,
     &MovingLightResponder::GetDeviceModelDescription,
     NULL},
-  { ola::rdm::PID_MANUFACTURER_LABEL,
+  { PID_MANUFACTURER_LABEL,
     &MovingLightResponder::GetManufacturerLabel,
     NULL},
-  { ola::rdm::PID_DEVICE_LABEL,
+  { PID_DEVICE_LABEL,
     &MovingLightResponder::GetDeviceLabel,
     NULL},
-  { ola::rdm::PID_FACTORY_DEFAULTS,
+  { PID_FACTORY_DEFAULTS,
     &MovingLightResponder::GetFactoryDefaults,
     &MovingLightResponder::SetFactoryDefaults},
-  { ola::rdm::PID_SOFTWARE_VERSION_LABEL,
+  { PID_SOFTWARE_VERSION_LABEL,
     &MovingLightResponder::GetSoftwareVersionLabel,
     NULL},
-  { ola::rdm::PID_DMX_PERSONALITY,
+  { PID_DMX_PERSONALITY,
     &MovingLightResponder::GetPersonality,
     &MovingLightResponder::SetPersonality},
-  { ola::rdm::PID_DMX_PERSONALITY_DESCRIPTION,
+  { PID_DMX_PERSONALITY_DESCRIPTION,
     &MovingLightResponder::GetPersonalityDescription,
     NULL},
-  { ola::rdm::PID_DMX_START_ADDRESS,
+  { PID_DMX_START_ADDRESS,
     &MovingLightResponder::GetDmxStartAddress,
     &MovingLightResponder::SetDmxStartAddress},
-  { ola::rdm::PID_LAMP_STRIKES,
+  { PID_LAMP_STRIKES,
     &MovingLightResponder::GetLampStrikes,
     &MovingLightResponder::SetLampStrikes},
-  { ola::rdm::PID_IDENTIFY_DEVICE,
+  { PID_IDENTIFY_DEVICE,
     &MovingLightResponder::GetIdentify,
     &MovingLightResponder::SetIdentify},
-  { ola::rdm::PID_PAN_INVERT,
+  { PID_PAN_INVERT,
     &MovingLightResponder::GetPanInvert,
     &MovingLightResponder::SetPanInvert},
-  { ola::rdm::PID_TILT_INVERT,
+  { PID_TILT_INVERT,
     &MovingLightResponder::GetTiltInvert,
     &MovingLightResponder::SetTiltInvert},
-  { ola::rdm::PID_REAL_TIME_CLOCK,
+  { PID_REAL_TIME_CLOCK,
     &MovingLightResponder::GetRealTimeClock,
     NULL},
-  { ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION,
+  { OLA_MANUFACTURER_PID_CODE_VERSION,
     &MovingLightResponder::GetOlaCodeVersion,
     NULL},
   { 0, NULL, NULL},
@@ -113,7 +107,7 @@ const MovingLightResponder::personality_info
 /**
  * New MovingLightResponder
  */
-MovingLightResponder::MovingLightResponder(const ola::rdm::UID &uid)
+MovingLightResponder::MovingLightResponder(const UID &uid)
     : m_uid(uid),
       m_start_address(1),
       m_personality(1),
@@ -126,18 +120,18 @@ MovingLightResponder::MovingLightResponder(const ola::rdm::UID &uid)
 /*
  * Handle an RDM Request
  */
-void MovingLightResponder::SendRDMRequest(const ola::rdm::RDMRequest *request,
-                                    ola::rdm::RDMCallback *callback) {
-  RDMOps::Instance()->HandleRDMRequest(this, m_uid, ola::rdm::ROOT_RDM_DEVICE,
+void MovingLightResponder::SendRDMRequest(const RDMRequest *request,
+                                    RDMCallback *callback) {
+  RDMOps::Instance()->HandleRDMRequest(this, m_uid, ROOT_RDM_DEVICE,
                                        request, callback);
 }
 
 RDMResponse *MovingLightResponder::GetParamDescription(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   // Check that it's MANUFACTURER_PID_CODE_VERSION being requested
   uint16_t parameter_id;
   if (request->ParamDataSize() != sizeof(parameter_id)) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   memcpy(reinterpret_cast<uint8_t*>(&parameter_id),
@@ -145,11 +139,11 @@ RDMResponse *MovingLightResponder::GetParamDescription(
          sizeof(parameter_id));
   parameter_id = NetworkToHost(parameter_id);
 
-  if (parameter_id != ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION) {
+  if (parameter_id != OLA_MANUFACTURER_PID_CODE_VERSION) {
     OLA_WARN << "Dummy responder received param description request with "
-      "unknown PID, expected " << ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION
+      "unknown PID, expected " << OLA_MANUFACTURER_PID_CODE_VERSION
       << ", got " << parameter_id;
-    return NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   } else {
     struct parameter_description_s {
       uint16_t pid;
@@ -162,28 +156,28 @@ RDMResponse *MovingLightResponder::GetParamDescription(
       uint32_t min_value;
       uint32_t default_value;
       uint32_t max_value;
-      char description[ola::rdm::MAX_RDM_STRING_LENGTH];
+      char description[MAX_RDM_STRING_LENGTH];
     } __attribute__((packed));
 
     struct parameter_description_s param_description;
     param_description.pid = HostToNetwork(
-        static_cast<uint16_t>(ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION));
+        static_cast<uint16_t>(OLA_MANUFACTURER_PID_CODE_VERSION));
     param_description.pdl_size = HostToNetwork(
-        static_cast<uint8_t>(ola::rdm::MAX_RDM_STRING_LENGTH));
+        static_cast<uint8_t>(MAX_RDM_STRING_LENGTH));
     param_description.data_type = HostToNetwork(
-        static_cast<uint8_t>(ola::rdm::DS_ASCII));
+        static_cast<uint8_t>(DS_ASCII));
     param_description.command_class = HostToNetwork(
-        static_cast<uint8_t>(ola::rdm::CC_GET));
+        static_cast<uint8_t>(CC_GET));
     param_description.type = 0;
     param_description.unit = HostToNetwork(
-        static_cast<uint8_t>(ola::rdm::UNITS_NONE));
+        static_cast<uint8_t>(UNITS_NONE));
     param_description.prefix = HostToNetwork(
-        static_cast<uint8_t>(ola::rdm::PREFIX_NONE));
+        static_cast<uint8_t>(PREFIX_NONE));
     param_description.min_value = 0;
     param_description.default_value = 0;
     param_description.max_value = 0;
     strncpy(param_description.description, "Code Version",
-            ola::rdm::MAX_RDM_STRING_LENGTH);
+            MAX_RDM_STRING_LENGTH);
     return GetResponseFromData(
         request,
         reinterpret_cast<uint8_t*>(&param_description),
@@ -192,9 +186,9 @@ RDMResponse *MovingLightResponder::GetParamDescription(
 }
 
 RDMResponse *MovingLightResponder::GetDeviceInfo(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   struct device_info_s {
@@ -213,9 +207,9 @@ RDMResponse *MovingLightResponder::GetDeviceInfo(
   struct device_info_s device_info;
   device_info.rdm_version = HostToNetwork(static_cast<uint16_t>(0x100));
   device_info.model = HostToNetwork(
-      static_cast<uint16_t>(ola::rdm::OLA_DUMMY_MOVING_LIGHT_MODEL));
+      static_cast<uint16_t>(OLA_DUMMY_MOVING_LIGHT_MODEL));
   device_info.product_category = HostToNetwork(
-      static_cast<uint16_t>(ola::rdm::PRODUCT_CATEGORY_FIXTURE_MOVING_YOKE));
+      static_cast<uint16_t>(PRODUCT_CATEGORY_FIXTURE_MOVING_YOKE));
   device_info.software_version = HostToNetwork(static_cast<uint32_t>(1));
   device_info.dmx_footprint = HostToNetwork(Footprint());
   device_info.current_personality = m_personality + 1;
@@ -235,9 +229,9 @@ RDMResponse *MovingLightResponder::GetDeviceInfo(
  * Reset to factory defaults
  */
 RDMResponse *MovingLightResponder::GetFactoryDefaults(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   uint8_t using_defaults = (m_start_address == 1 && m_personality == 1 &&
@@ -250,20 +244,20 @@ RDMResponse *MovingLightResponder::GetFactoryDefaults(
 
 
 RDMResponse *MovingLightResponder::SetFactoryDefaults(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   m_start_address = 1;
   m_personality = 1;
   m_identify_mode = 0;
 
-  return new ola::rdm::RDMSetResponse(
+  return new RDMSetResponse(
     request->DestinationUID(),
     request->SourceUID(),
     request->TransactionNumber(),
-    ola::rdm::RDM_ACK,
+    RDM_ACK,
     0,
     request->SubDevice(),
     request->ParamId(),
@@ -272,13 +266,13 @@ RDMResponse *MovingLightResponder::SetFactoryDefaults(
 }
 
 RDMResponse *MovingLightResponder::GetProductDetailList(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   uint16_t product_details[] = {
-    ola::rdm::PRODUCT_DETAIL_TEST,
+    PRODUCT_DETAIL_TEST,
   };
 
   for (unsigned int i = 0; i < arraysize(product_details); i++)
@@ -291,9 +285,9 @@ RDMResponse *MovingLightResponder::GetProductDetailList(
 }
 
 RDMResponse *MovingLightResponder::GetPersonality(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   struct personality_info_s {
@@ -311,10 +305,10 @@ RDMResponse *MovingLightResponder::GetPersonality(
 }
 
 RDMResponse *MovingLightResponder::SetPersonality(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   uint8_t personality;
   if (request->ParamDataSize() != sizeof(personality)) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   memcpy(reinterpret_cast<uint8_t*>(&personality), request->ParamData(),
@@ -322,17 +316,17 @@ RDMResponse *MovingLightResponder::SetPersonality(
   personality = NetworkToHost(personality);
 
   if (personality > arraysize(PERSONALITIES) || personality == 0) {
-    return NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   } else if (m_start_address + PERSONALITIES[personality - 1].footprint - 1
              > DMX_UNIVERSE_SIZE) {
-    return NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   } else {
     m_personality = personality - 1;
-    return new ola::rdm::RDMSetResponse(
+    return new RDMSetResponse(
       request->DestinationUID(),
       request->SourceUID(),
       request->TransactionNumber(),
-      ola::rdm::RDM_ACK,
+      RDM_ACK,
       0,
       request->SubDevice(),
       request->ParamId(),
@@ -343,22 +337,22 @@ RDMResponse *MovingLightResponder::SetPersonality(
 
 
 RDMResponse *MovingLightResponder::GetPersonalityDescription(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   uint8_t personality = 0;
   if (request->ParamDataSize() != sizeof(personality)) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   memcpy(reinterpret_cast<uint8_t*>(&personality), request->ParamData(),
          sizeof(personality));
   personality = NetworkToHost(personality) - 1;
   if (personality >= arraysize(PERSONALITIES)) {
-    return NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   } else {
     struct personality_description_s {
       uint8_t personality;
       uint16_t slots_required;
-      char description[ola::rdm::MAX_RDM_STRING_LENGTH];
+      char description[MAX_RDM_STRING_LENGTH];
     } __attribute__((packed));
 
     struct personality_description_s personality_description;
@@ -377,9 +371,9 @@ RDMResponse *MovingLightResponder::GetPersonalityDescription(
 }
 
 RDMResponse *MovingLightResponder::GetDmxStartAddress(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   uint16_t address = HostToNetwork(m_start_address);
@@ -392,10 +386,10 @@ RDMResponse *MovingLightResponder::GetDmxStartAddress(
 }
 
 RDMResponse *MovingLightResponder::SetDmxStartAddress(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   uint16_t address;
   if (request->ParamDataSize() != sizeof(address)) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   memcpy(reinterpret_cast<uint8_t*>(&address), request->ParamData(),
@@ -403,16 +397,16 @@ RDMResponse *MovingLightResponder::SetDmxStartAddress(
   address = NetworkToHost(address);
   uint16_t end_address = DMX_UNIVERSE_SIZE - Footprint() + 1;
   if (address == 0 || address > end_address) {
-    return NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   } else if (Footprint() == 0) {
-    return NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   } else {
     m_start_address = address;
-    return new ola::rdm::RDMSetResponse(
+    return new RDMSetResponse(
       request->DestinationUID(),
       request->SourceUID(),
       request->TransactionNumber(),
-      ola::rdm::RDM_ACK,
+      RDM_ACK,
       0,
       request->SubDevice(),
       request->ParamId(),
@@ -422,9 +416,9 @@ RDMResponse *MovingLightResponder::SetDmxStartAddress(
 }
 
 RDMResponse *MovingLightResponder::GetLampStrikes(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   uint32_t strikes = HostToNetwork(m_lamp_strikes);
@@ -435,20 +429,20 @@ RDMResponse *MovingLightResponder::GetLampStrikes(
 }
 
 RDMResponse *MovingLightResponder::SetLampStrikes(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   uint32_t lamp_strikes;
   if (request->ParamDataSize() != sizeof(lamp_strikes)) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   memcpy(reinterpret_cast<uint8_t*>(&lamp_strikes), request->ParamData(),
          sizeof(lamp_strikes));
   m_lamp_strikes = HostToNetwork(lamp_strikes);
-  return new ola::rdm::RDMSetResponse(
+  return new RDMSetResponse(
     request->DestinationUID(),
     request->SourceUID(),
     request->TransactionNumber(),
-    ola::rdm::RDM_ACK,
+    RDM_ACK,
     0,
     request->SubDevice(),
     request->ParamId(),
@@ -457,9 +451,9 @@ RDMResponse *MovingLightResponder::SetLampStrikes(
 }
 
 RDMResponse *MovingLightResponder::GetIdentify(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   return GetResponseFromData(
@@ -469,10 +463,10 @@ RDMResponse *MovingLightResponder::GetIdentify(
 }
 
 RDMResponse *MovingLightResponder::SetIdentify(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   uint8_t mode;
   if (request->ParamDataSize() != sizeof(mode)) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   mode = *request->ParamData();
@@ -480,52 +474,52 @@ RDMResponse *MovingLightResponder::SetIdentify(
     m_identify_mode = mode;
     OLA_INFO << "Dummy Moving Light " << m_uid << ", identify mode "
              << (m_identify_mode ? "on" : "off");
-    return new ola::rdm::RDMSetResponse(
+    return new RDMSetResponse(
       request->DestinationUID(),
       request->SourceUID(),
       request->TransactionNumber(),
-      ola::rdm::RDM_ACK,
+      RDM_ACK,
       0,
       request->SubDevice(),
       request->ParamId(),
       NULL,
       0);
   } else {
-    return NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 }
 
 RDMResponse *MovingLightResponder::GetPanInvert(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
   return GetResponseFromData(request, &m_pan_invert, sizeof(m_pan_invert));
 }
 
 
 RDMResponse *MovingLightResponder::SetPanInvert(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   return SetBoolValue(request, &m_pan_invert);
 }
 
 RDMResponse *MovingLightResponder::GetTiltInvert(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
   return GetResponseFromData(request, &m_tilt_invert, sizeof(m_tilt_invert));
 }
 
 RDMResponse *MovingLightResponder::SetTiltInvert(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   return SetBoolValue(request, &m_tilt_invert);
 }
 
 RDMResponse *MovingLightResponder::GetRealTimeClock(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   struct clock_s {
@@ -557,27 +551,27 @@ RDMResponse *MovingLightResponder::GetRealTimeClock(
 }
 
 RDMResponse *MovingLightResponder::GetDeviceModelDescription(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   return HandleStringResponse(request, "OLA Moving Light");
 }
 
 RDMResponse *MovingLightResponder::GetManufacturerLabel(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   return HandleStringResponse(request, "Open Lighting Project");
 }
 
 RDMResponse *MovingLightResponder::GetDeviceLabel(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   return HandleStringResponse(request, "Dummy Moving Light");
 }
 
 RDMResponse *MovingLightResponder::GetSoftwareVersionLabel(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   return HandleStringResponse(request, string("OLA Version ") + VERSION);
 }
 
 RDMResponse *MovingLightResponder::GetOlaCodeVersion(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   return HandleStringResponse(request, VERSION);
 }
 
@@ -585,10 +579,10 @@ RDMResponse *MovingLightResponder::GetOlaCodeVersion(
  * Handle a request that returns a string
  */
 RDMResponse *MovingLightResponder::HandleStringResponse(
-    const ola::rdm::RDMRequest *request,
+    const RDMRequest *request,
     const std::string &value) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
   return GetResponseFromData(
         request,
@@ -597,30 +591,29 @@ RDMResponse *MovingLightResponder::HandleStringResponse(
 }
 
 RDMResponse *MovingLightResponder::SetBoolValue(
-    const ola::rdm::RDMRequest *request,
+    const RDMRequest *request,
     uint8_t *value) {
   uint8_t arg;
   if (request->ParamDataSize() != sizeof(arg)) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   arg = *request->ParamData();
   if (arg == 0 || arg == 1) {
     *value = arg;
-    return new ola::rdm::RDMSetResponse(
+    return new RDMSetResponse(
       request->DestinationUID(),
       request->SourceUID(),
       request->TransactionNumber(),
-      ola::rdm::RDM_ACK,
+      RDM_ACK,
       0,
       request->SubDevice(),
       request->ParamId(),
       NULL,
       0);
   } else {
-    return NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 }
-}  // namespace dummy
-}  // namespace plugin
+}  // namespace rdm
 }  // namespace ola

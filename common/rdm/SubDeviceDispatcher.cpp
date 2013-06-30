@@ -22,20 +22,15 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "ola/stl/STLUtils.h"
 #include "ola/Logging.h"
-#include "plugins/dummy/SubDeviceDispatcher.h"
+#include "ola/rdm/SubDeviceDispatcher.h"
+#include "ola/stl/STLUtils.h"
 
 namespace ola {
-namespace plugin {
-namespace dummy {
+namespace rdm {
 
-using ola::rdm::RDMControllerInterface;
-using ola::rdm::RDMRequest;
-using ola::rdm::RDMCallback;
 using std::string;
 using std::vector;
-
 
 /**
  * Add or remove a sub device. Ownership of the device is not transferred.
@@ -48,9 +43,9 @@ void SubDeviceDispatcher::AddSubDevice(uint16_t sub_device_number,
 /*
  * Handle an RDM Request
  */
-void SubDeviceDispatcher::SendRDMRequest(const ola::rdm::RDMRequest *request,
+void SubDeviceDispatcher::SendRDMRequest(const RDMRequest *request,
                                          RDMCallback *callback) {
-  if (request->SubDevice() == ola::rdm::ALL_RDM_SUBDEVICES) {
+  if (request->SubDevice() == ALL_RDM_SUBDEVICES) {
     FanOutToSubDevices(request, callback);
   } else {
     RDMControllerInterface *device = STLFindOrNull(
@@ -58,8 +53,7 @@ void SubDeviceDispatcher::SendRDMRequest(const ola::rdm::RDMRequest *request,
     if (device) {
       device->SendRDMRequest(request, callback);
     } else {
-      NackIfNotBroadcast(request, callback,
-                         ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
+      NackIfNotBroadcast(request, callback, NR_SUB_DEVICE_OUT_OF_RANGE);
     }
   }
 }
@@ -69,13 +63,12 @@ void SubDeviceDispatcher::SendRDMRequest(const ola::rdm::RDMRequest *request,
  * Handle commands sent to the SUB_DEVICE_ALL_CALL target.
  */
 void SubDeviceDispatcher::FanOutToSubDevices(
-    const ola::rdm::RDMRequest *request,
+    const RDMRequest *request,
     RDMCallback *callback) {
   // GETs to the all subdevices don't make any sense.
   // Section 9.2.2
-  if (request->CommandClass() == ola::rdm::RDMCommand::GET_COMMAND) {
-    NackIfNotBroadcast(request, callback,
-                       ola::rdm::NR_SUB_DEVICE_OUT_OF_RANGE);
+  if (request->CommandClass() == RDMCommand::GET_COMMAND) {
+    NackIfNotBroadcast(request, callback, NR_SUB_DEVICE_OUT_OF_RANGE);
     return;
   }
 
@@ -98,17 +91,17 @@ void SubDeviceDispatcher::FanOutToSubDevices(
  * Takes ownership of the request object.
  */
 void SubDeviceDispatcher::NackIfNotBroadcast(
-    const ola::rdm::RDMRequest *request_ptr,
+    const RDMRequest *request_ptr,
     RDMCallback *callback,
-    ola::rdm::rdm_nack_reason nack_reason) {
+    rdm_nack_reason nack_reason) {
   std::auto_ptr<const RDMRequest> request(request_ptr);
   vector<string> packets;
   if (request->DestinationUID().IsBroadcast()) {
-    callback->Run(ola::rdm::RDM_WAS_BROADCAST, NULL, packets);
+    callback->Run(RDM_WAS_BROADCAST, NULL, packets);
   } else {
-    ola::rdm::RDMResponse *response = ola::rdm::NackWithReason(
+    RDMResponse *response = NackWithReason(
         request.get(), nack_reason);
-    callback->Run(ola::rdm::RDM_COMPLETED_OK, response, packets);
+    callback->Run(RDM_COMPLETED_OK, response, packets);
   }
 }
 
@@ -118,17 +111,17 @@ void SubDeviceDispatcher::NackIfNotBroadcast(
 void SubDeviceDispatcher::HandleSubDeviceResponse(
     FanOutTracker *tracker,
     uint16_t sub_device_id,
-    ola::rdm::rdm_response_code code,
-    const ola::rdm::RDMResponse *response_ptr,
+    rdm_response_code code,
+    const RDMResponse *response_ptr,
     const std::vector<std::string> &packets) {
-  std::auto_ptr<const ola::rdm::RDMResponse> response(response_ptr);
+  std::auto_ptr<const RDMResponse> response(response_ptr);
 
   if (tracker->IncrementAndCheckIfComplete()) {
     // now it's not really clear what we're supposed to return here.
     // We do the least crazy thing, which is to return the root device response.
     tracker->RunCallback();
     delete tracker;
-  } else if (sub_device_id == ola::rdm::ROOT_RDM_DEVICE) {
+  } else if (sub_device_id == ROOT_RDM_DEVICE) {
     tracker->SetRootResponse(code, response.release());
   }
   (void) packets;
@@ -136,7 +129,7 @@ void SubDeviceDispatcher::HandleSubDeviceResponse(
 
 SubDeviceDispatcher::FanOutTracker::FanOutTracker(
     uint16_t number_of_subdevices,
-    ola::rdm::RDMCallback *callback)
+    RDMCallback *callback)
     : m_number_of_subdevices(number_of_subdevices),
       m_responses_so_far(0),
       m_callback(callback),
@@ -144,8 +137,8 @@ SubDeviceDispatcher::FanOutTracker::FanOutTracker(
 }
 
 void SubDeviceDispatcher::FanOutTracker::SetRootResponse(
-    ola::rdm::rdm_response_code code,
-    const ola::rdm::RDMResponse *response) {
+    rdm_response_code code,
+    const RDMResponse *response) {
   m_response_code = code;
   m_response = response;
 }
@@ -157,6 +150,5 @@ void SubDeviceDispatcher::FanOutTracker::RunCallback() {
   }
   m_callback = NULL;
 }
-}  // namespace dummy
-}  // namespace plugin
+}  // namespace rdm
 }  // namespace ola

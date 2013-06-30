@@ -14,18 +14,19 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * DimmerResponder.cpp
- * The Dummy Responder for ola
+ * A fake dimmer responder for OLA.
  * Copyright (C) 2013 Simon Newton
  */
 
 #include <ola/stl/STLUtils.h>
 #include <algorithm>
 #include <map>
-#include "plugins/dummy/DimmerResponder.h"
+#include "ola/rdm/DimmerResponder.h"
+#include "ola/rdm/DimmerRootDevice.h"
+#include "ola/rdm/DimmerSubDevice.h"
 
 namespace ola {
-namespace plugin {
-namespace dummy {
+namespace rdm {
 
 /**
  * Create a new dummy dimmer responder.
@@ -33,10 +34,9 @@ namespace dummy {
  * @param number_of_subdevices the number of sub devices for this responder.
  * Valid range is 0 to 512.
  */
-DimmerResponder::DimmerResponder(const ola::rdm::UID &uid,
-                                 uint16_t number_of_subdevices)
-    : m_uid(uid) {
-  uint16_t sub_devices = std::min(ola::rdm::MAX_SUBDEVICE_NUMBER,
+DimmerResponder::DimmerResponder(const UID &uid,
+                                 uint16_t number_of_subdevices) {
+  uint16_t sub_devices = std::min(MAX_SUBDEVICE_NUMBER,
                                   number_of_subdevices);
   for (uint16_t i = 1; i <= sub_devices; i++) {
     DimmerSubDevice *sub_device = new DimmerSubDevice(uid, i);
@@ -44,7 +44,7 @@ DimmerResponder::DimmerResponder(const ola::rdm::UID &uid,
     m_dispatcher.AddSubDevice(i, sub_device);
   }
   m_root_device.reset(new DimmerRootDevice(uid, m_sub_devices));
-  m_dispatcher.AddSubDevice(ola::rdm::ROOT_RDM_DEVICE, m_root_device.get());
+  m_dispatcher.AddSubDevice(ROOT_RDM_DEVICE, m_root_device.get());
 }
 
 /**
@@ -58,10 +58,9 @@ DimmerResponder::~DimmerResponder() {
  * Handle an RDM Request. This just uses the SubDeviceDispatcher to call the
  * correct sub device.
  */
-void DimmerResponder::SendRDMRequest(const ola::rdm::RDMRequest *request,
-                                     ola::rdm::RDMCallback *callback) {
+void DimmerResponder::SendRDMRequest(const RDMRequest *request,
+                                     RDMCallback *callback) {
   m_dispatcher.SendRDMRequest(request, callback);
 }
-}  // namespace dummy
-}  // namespace plugin
+}  // namespace rdm
 }  // namespace ola

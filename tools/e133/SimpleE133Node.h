@@ -35,7 +35,6 @@
 
 #include <memory>
 
-#include "plugins/dummy/DummyResponder.h"
 #include "tools/e133/E133Device.h"
 #include "tools/e133/EndpointManager.h"
 #include "tools/e133/ManagementEndpoint.h"

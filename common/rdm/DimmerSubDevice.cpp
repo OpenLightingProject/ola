@@ -24,50 +24,44 @@
 #include "ola/Logging.h"
 #include "ola/base/Array.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/rdm/DimmerSubDevice.h"
 #include "ola/rdm/OpenLightingEnums.h"
 #include "ola/rdm/RDMEnums.h"
-#include "plugins/dummy/DimmerSubDevice.h"
 
 namespace ola {
-namespace plugin {
-namespace dummy {
+namespace rdm {
 
 using ola::network::HostToNetwork;
 using ola::network::NetworkToHost;
-using ola::rdm::GetResponseFromData;
-using ola::rdm::NackWithReason;
-using ola::rdm::RDMRequest;
-using ola::rdm::RDMResponse;
-using ola::rdm::rdm_response_code;
 using std::string;
 using std::vector;
 
 DimmerSubDevice::RDMOps *DimmerSubDevice::RDMOps::instance = NULL;
 
-const ola::rdm::ResponderOps<DimmerSubDevice>::ParamHandler
+const ResponderOps<DimmerSubDevice>::ParamHandler
     DimmerSubDevice::PARAM_HANDLERS[] = {
-  { ola::rdm::PID_DEVICE_INFO,
+  { PID_DEVICE_INFO,
     &DimmerSubDevice::GetDeviceInfo,
     NULL},
-  { ola::rdm::PID_PRODUCT_DETAIL_ID_LIST,
+  { PID_PRODUCT_DETAIL_ID_LIST,
     &DimmerSubDevice::GetProductDetailList,
     NULL},
-  { ola::rdm::PID_DEVICE_MODEL_DESCRIPTION,
+  { PID_DEVICE_MODEL_DESCRIPTION,
     &DimmerSubDevice::GetDeviceModelDescription,
     NULL},
-  { ola::rdm::PID_MANUFACTURER_LABEL,
+  { PID_MANUFACTURER_LABEL,
     &DimmerSubDevice::GetManufacturerLabel,
     NULL},
-  { ola::rdm::PID_DEVICE_LABEL,
+  { PID_DEVICE_LABEL,
     &DimmerSubDevice::GetDeviceLabel,
     NULL},
-  { ola::rdm::PID_SOFTWARE_VERSION_LABEL,
+  { PID_SOFTWARE_VERSION_LABEL,
     &DimmerSubDevice::GetSoftwareVersionLabel,
     NULL},
-  { ola::rdm::PID_DMX_START_ADDRESS,
+  { PID_DMX_START_ADDRESS,
     &DimmerSubDevice::GetDmxStartAddress,
     &DimmerSubDevice::SetDmxStartAddress},
-  { ola::rdm::PID_IDENTIFY_DEVICE,
+  { PID_IDENTIFY_DEVICE,
     &DimmerSubDevice::GetIdentify,
     &DimmerSubDevice::SetIdentify},
   { 0, NULL, NULL},
@@ -76,16 +70,16 @@ const ola::rdm::ResponderOps<DimmerSubDevice>::ParamHandler
 /*
  * Handle an RDM Request
  */
-void DimmerSubDevice::SendRDMRequest(const ola::rdm::RDMRequest *request,
-                                    ola::rdm::RDMCallback *callback) {
+void DimmerSubDevice::SendRDMRequest(const RDMRequest *request,
+                                    RDMCallback *callback) {
   RDMOps::Instance()->HandleRDMRequest(this, m_uid, m_sub_device_number,
                                        request, callback);
 }
 
 RDMResponse *DimmerSubDevice::GetDeviceInfo(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   struct device_info_s {
@@ -105,9 +99,9 @@ RDMResponse *DimmerSubDevice::GetDeviceInfo(
   device_info.rdm_version = HostToNetwork(static_cast<uint16_t>(0x100));
   device_info.model = HostToNetwork(static_cast<uint16_t>(1));
   device_info.product_category = HostToNetwork(
-      static_cast<uint16_t>(ola::rdm::PRODUCT_CATEGORY_DIMMER));
+      static_cast<uint16_t>(PRODUCT_CATEGORY_DIMMER));
   device_info.software_version = HostToNetwork(
-      static_cast<uint32_t>(ola::rdm::OLA_DUMMY_DIMMER_MODEL));
+      static_cast<uint32_t>(OLA_DUMMY_DIMMER_MODEL));
   device_info.dmx_footprint = HostToNetwork(1);
   device_info.current_personality = 1;
   device_info.personality_count = 1;
@@ -121,13 +115,13 @@ RDMResponse *DimmerSubDevice::GetDeviceInfo(
 }
 
 RDMResponse *DimmerSubDevice::GetProductDetailList(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   uint16_t product_details[] = {
-    ola::rdm::PRODUCT_DETAIL_TEST,
+    PRODUCT_DETAIL_TEST,
   };
 
   for (unsigned int i = 0; i < arraysize(product_details); i++)
@@ -140,9 +134,9 @@ RDMResponse *DimmerSubDevice::GetProductDetailList(
 }
 
 RDMResponse *DimmerSubDevice::GetDmxStartAddress(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   uint16_t address = HostToNetwork(m_start_address);
@@ -153,49 +147,49 @@ RDMResponse *DimmerSubDevice::GetDmxStartAddress(
 }
 
 RDMResponse *DimmerSubDevice::SetDmxStartAddress(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   uint16_t address;
   if (request->ParamDataSize() != sizeof(address)) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   memcpy(reinterpret_cast<uint8_t*>(&address), request->ParamData(),
          sizeof(address));
   address = NetworkToHost(address);
   if (address == 0 || address > DMX_UNIVERSE_SIZE) {
-    return NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   } else {
     m_start_address = address;
-    return new ola::rdm::RDMSetResponse(
+    return new RDMSetResponse(
         request->DestinationUID(), request->SourceUID(),
-        request->TransactionNumber(), ola::rdm::RDM_ACK, 0,
+        request->TransactionNumber(), RDM_ACK, 0,
         request->SubDevice(), request->ParamId(), NULL, 0);
   }
 }
 
 RDMResponse *DimmerSubDevice::GetDeviceModelDescription(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   return HandleStringResponse(request, "OLA Dimmer");
 }
 
 RDMResponse *DimmerSubDevice::GetManufacturerLabel(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   return HandleStringResponse(request, "Open Lighting Project");
 }
 
 RDMResponse *DimmerSubDevice::GetDeviceLabel(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   return HandleStringResponse(request, "Dummy Dimmer");
 }
 
 RDMResponse *DimmerSubDevice::GetSoftwareVersionLabel(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   return HandleStringResponse(request, string("OLA Version ") + VERSION);
 }
 
-RDMResponse *DimmerSubDevice::GetIdentify(const ola::rdm::RDMRequest *request) {
+RDMResponse *DimmerSubDevice::GetIdentify(const RDMRequest *request) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   return GetResponseFromData(
@@ -204,10 +198,10 @@ RDMResponse *DimmerSubDevice::GetIdentify(const ola::rdm::RDMRequest *request) {
       sizeof(m_identify_mode));
 }
 
-RDMResponse *DimmerSubDevice::SetIdentify(const ola::rdm::RDMRequest *request) {
+RDMResponse *DimmerSubDevice::SetIdentify(const RDMRequest *request) {
   uint8_t mode;
   if (request->ParamDataSize() != sizeof(mode)) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   mode = *request->ParamData();
@@ -215,35 +209,33 @@ RDMResponse *DimmerSubDevice::SetIdentify(const ola::rdm::RDMRequest *request) {
     m_identify_mode = mode;
     OLA_INFO << "Dummy dimmer device " << m_uid << ":" << m_sub_device_number
              << ", identify mode " << (m_identify_mode ? "on" : "off");
-    return new ola::rdm::RDMSetResponse(
+    return new RDMSetResponse(
       request->DestinationUID(),
       request->SourceUID(),
       request->TransactionNumber(),
-      ola::rdm::RDM_ACK,
+      RDM_ACK,
       0,
       request->SubDevice(),
       request->ParamId(),
       NULL,
       0);
   } else {
-    return NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 }
 
 /*
  * Handle a request that returns a string
  */
-RDMResponse *DimmerSubDevice::HandleStringResponse(
-    const ola::rdm::RDMRequest *request,
-    const std::string &value) {
+RDMResponse *DimmerSubDevice::HandleStringResponse(const RDMRequest *request,
+                                                   const std::string &value) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
   return GetResponseFromData(
       request,
       reinterpret_cast<const uint8_t*>(value.data()),
       value.size());
 }
-}  // namespace dummy
-}  // namespace plugin
+}  // namespace rdm
 }  // namespace ola

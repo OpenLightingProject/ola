@@ -18,8 +18,8 @@
  * Copyright (C) 2013 Simon Newton
  */
 
-#ifndef PLUGINS_DUMMY_SUBDEVICEDISPATCHER_H_
-#define PLUGINS_DUMMY_SUBDEVICEDISPATCHER_H_
+#ifndef INCLUDE_OLA_RDM_SUBDEVICEDISPATCHER_H_
+#define INCLUDE_OLA_RDM_SUBDEVICEDISPATCHER_H_
 
 #include <map>
 #include <string>
@@ -27,8 +27,7 @@
 #include "ola/rdm/RDMControllerInterface.h"
 
 namespace ola {
-namespace plugin {
-namespace dummy {
+namespace rdm {
 
 class SubDeviceDispatcher: public ola::rdm::RDMControllerInterface {
   public:
@@ -83,7 +82,6 @@ class SubDeviceDispatcher: public ola::rdm::RDMControllerInterface {
         const ola::rdm::RDMResponse *response,
         const std::vector<std::string> &packets);
 };
-}  // namespace dummy
-}  // namespace plugin
+}  // namespace rdm
 }  // namespace ola
-#endif  // PLUGINS_DUMMY_SUBDEVICEDISPATCHER_H_
+#endif  // INCLUDE_OLA_RDM_SUBDEVICEDISPATCHER_H_

@@ -1,21 +1,13 @@
 include $(top_srcdir)/common.mk
 libdir = $(plugindir)
 
-EXTRA_DIST = DimmerResponder.h DimmerRootDevice.h DimmerSubDevice.h \
-             DummyPlugin.h DummyDevice.h DummyPort.h DummyResponder.h \
-             DummyRDMDevice.h MovingLightResponder.h SubDeviceDispatcher.h
+EXTRA_DIST = DummyPlugin.h DummyDevice.h DummyPort.h
 
 if USE_DUMMY
-lib_LTLIBRARIES = liboladummyresponder.la liboladummy.la
-liboladummyresponder_la_SOURCES = DimmerResponder.cpp DimmerRootDevice.cpp \
-                                  DimmerSubDevice.cpp DummyResponder.cpp \
-                                  DummyRDMDevice.cpp MovingLightResponder.cpp \
-                                  SubDeviceDispatcher.cpp
-liboladummyresponder_la_CXXFLAGS = $(COMMON_CXXFLAGS) @OLAD_DEFINES@
-liboladummyresponder_la_LIBADD = ../../common/libolacommon.la
+lib_LTLIBRARIES = liboladummy.la
 
 liboladummy_la_SOURCES = DummyPlugin.cpp DummyDevice.cpp DummyPort.cpp
-liboladummy_la_LIBADD = ./liboladummyresponder.la
+liboladummy_la_LIBADD = $(top_builddir)/common/libolacommon.la
 
 # Test programs
 if BUILD_TESTS
@@ -30,6 +22,6 @@ DummyPluginTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 DummyPluginTester_LDADD = $(COMMON_TESTING_LIBS) \
                           $(top_builddir)/olad/libolaserver.la \
                           ./liboladummy.la \
-                          ./liboladummyresponder.la \
                           ../../common/libolacommon.la
+
 endif

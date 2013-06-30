@@ -30,15 +30,16 @@
 #include <ola/acn/CID.h>
 #include <ola/BaseTypes.h>
 #include <ola/DmxBuffer.h>
+#include <ola/Logging.h>
 #include <ola/base/Flags.h>
 #include <ola/base/Init.h>
 #include <ola/base/SysExits.h>
 #include <ola/io/Descriptor.h>
-#include <ola/Logging.h>
 #include <ola/network/InterfacePicker.h>
+#include <ola/rdm/DummyResponder.h>
 #include <ola/rdm/RDMControllerAdaptor.h>
-#include <ola/rdm/UIDAllocator.h>
 #include <ola/rdm/UID.h>
+#include <ola/rdm/UIDAllocator.h>
 #include <ola/stl/STLUtils.h>
 
 #include <memory>
@@ -133,7 +134,7 @@ int main(int argc, char *argv[]) {
 
   // Optionally attach some other endpoints.
   vector<E133Endpoint*> endpoints;
-  auto_ptr<ola::plugin::dummy::DummyResponder> dummy_responder;
+  auto_ptr<ola::rdm::DummyResponder> dummy_responder;
   auto_ptr<ola::rdm::DiscoverableRDMControllerAdaptor>
     discoverable_dummy_responder;
   auto_ptr<DmxTriWidget> tri_widget;
@@ -164,7 +165,7 @@ int main(int argc, char *argv[]) {
       exit(ola::EXIT_USAGE);
     }
 
-    dummy_responder.reset(new ola::plugin::dummy::DummyResponder(*dummy_uid));
+    dummy_responder.reset(new ola::rdm::DummyResponder(*dummy_uid));
     discoverable_dummy_responder.reset(
         new ola::rdm::DiscoverableRDMControllerAdaptor(
           *dummy_uid, dummy_responder.get()));

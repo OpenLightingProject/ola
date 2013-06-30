@@ -24,20 +24,23 @@
 #include <string>
 #include <vector>
 #include "ola/Logging.h"
+#include "ola/rdm/DimmerResponder.h"
+#include "ola/rdm/DummyResponder.h"
+#include "ola/rdm/MovingLightResponder.h"
 #include "ola/rdm/UIDAllocator.h"
 #include "ola/rdm/UIDSet.h"
 #include "ola/stl/STLUtils.h"
-#include "plugins/dummy/DimmerResponder.h"
 #include "plugins/dummy/DummyDevice.h"
 #include "plugins/dummy/DummyPort.h"
-#include "plugins/dummy/DummyResponder.h"
-#include "plugins/dummy/MovingLightResponder.h"
 
 namespace ola {
 namespace plugin {
 namespace dummy {
 
 using std::auto_ptr;
+using ola::rdm::DimmerResponder;
+using ola::rdm::DummyResponder;
+using ola::rdm::MovingLightResponder;
 
 /**
  * Create a new DummyPort

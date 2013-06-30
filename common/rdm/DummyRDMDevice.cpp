@@ -25,71 +25,65 @@
 #include "ola/Logging.h"
 #include "ola/base/Array.h"
 #include "ola/network/NetworkUtils.h"
+#include "ola/rdm/DummyRDMDevice.h"
 #include "ola/rdm/OpenLightingEnums.h"
 #include "ola/rdm/RDMEnums.h"
-#include "plugins/dummy/DummyRDMDevice.h"
 
 namespace ola {
-namespace plugin {
-namespace dummy {
+namespace rdm {
 
 using ola::network::HostToNetwork;
 using ola::network::NetworkToHost;
-using ola::rdm::GetResponseFromData;
-using ola::rdm::NackWithReason;
-using ola::rdm::RDMRequest;
-using ola::rdm::RDMResponse;
-using ola::rdm::rdm_response_code;
 using std::string;
 using std::vector;
 
 DummyRDMDevice::RDMOps *DummyRDMDevice::RDMOps::instance = NULL;
 
-const ola::rdm::ResponderOps<DummyRDMDevice>::ParamHandler
+const ResponderOps<DummyRDMDevice>::ParamHandler
     DummyRDMDevice::PARAM_HANDLERS[] = {
-  { ola::rdm::PID_PARAMETER_DESCRIPTION,
+  { PID_PARAMETER_DESCRIPTION,
     &DummyRDMDevice::GetParamDescription,
     NULL},
-  { ola::rdm::PID_DEVICE_INFO,
+  { PID_DEVICE_INFO,
     &DummyRDMDevice::GetDeviceInfo,
     NULL},
-  { ola::rdm::PID_PRODUCT_DETAIL_ID_LIST,
+  { PID_PRODUCT_DETAIL_ID_LIST,
     &DummyRDMDevice::GetProductDetailList,
     NULL},
-  { ola::rdm::PID_DEVICE_MODEL_DESCRIPTION,
+  { PID_DEVICE_MODEL_DESCRIPTION,
     &DummyRDMDevice::GetDeviceModelDescription,
     NULL},
-  { ola::rdm::PID_MANUFACTURER_LABEL,
+  { PID_MANUFACTURER_LABEL,
     &DummyRDMDevice::GetManufacturerLabel,
     NULL},
-  { ola::rdm::PID_DEVICE_LABEL,
+  { PID_DEVICE_LABEL,
     &DummyRDMDevice::GetDeviceLabel,
     NULL},
-  { ola::rdm::PID_FACTORY_DEFAULTS,
+  { PID_FACTORY_DEFAULTS,
     &DummyRDMDevice::GetFactoryDefaults,
     &DummyRDMDevice::SetFactoryDefaults},
-  { ola::rdm::PID_SOFTWARE_VERSION_LABEL,
+  { PID_SOFTWARE_VERSION_LABEL,
     &DummyRDMDevice::GetSoftwareVersionLabel,
     NULL},
-  { ola::rdm::PID_DMX_PERSONALITY,
+  { PID_DMX_PERSONALITY,
     &DummyRDMDevice::GetPersonality,
     &DummyRDMDevice::SetPersonality},
-  { ola::rdm::PID_DMX_PERSONALITY_DESCRIPTION,
+  { PID_DMX_PERSONALITY_DESCRIPTION,
     &DummyRDMDevice::GetPersonalityDescription,
     NULL},
-  { ola::rdm::PID_DMX_START_ADDRESS,
+  { PID_DMX_START_ADDRESS,
     &DummyRDMDevice::GetDmxStartAddress,
     &DummyRDMDevice::SetDmxStartAddress},
-  { ola::rdm::PID_LAMP_STRIKES,
+  { PID_LAMP_STRIKES,
     &DummyRDMDevice::GetLampStrikes,
     &DummyRDMDevice::SetLampStrikes},
-  { ola::rdm::PID_IDENTIFY_DEVICE,
+  { PID_IDENTIFY_DEVICE,
     &DummyRDMDevice::GetIdentify,
     &DummyRDMDevice::SetIdentify},
-  { ola::rdm::PID_REAL_TIME_CLOCK,
+  { PID_REAL_TIME_CLOCK,
     &DummyRDMDevice::GetRealTimeClock,
     NULL},
-  { ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION,
+  { OLA_MANUFACTURER_PID_CODE_VERSION,
     &DummyRDMDevice::GetOlaCodeVersion,
     NULL},
   { 0, NULL, NULL},
@@ -105,18 +99,18 @@ const DummyRDMDevice::personality_info DummyRDMDevice::PERSONALITIES[] = {
 /*
  * Handle an RDM Request
  */
-void DummyRDMDevice::SendRDMRequest(const ola::rdm::RDMRequest *request,
-                                    ola::rdm::RDMCallback *callback) {
+void DummyRDMDevice::SendRDMRequest(const RDMRequest *request,
+                                    RDMCallback *callback) {
   RDMOps::Instance()->HandleRDMRequest(this, m_uid, m_sub_device_number,
                                        request, callback);
 }
 
 RDMResponse *DummyRDMDevice::GetParamDescription(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   // Check that it's MANUFACTURER_PID_CODE_VERSION being requested
   uint16_t parameter_id;
   if (request->ParamDataSize() != sizeof(parameter_id)) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   memcpy(reinterpret_cast<uint8_t*>(&parameter_id),
@@ -124,11 +118,11 @@ RDMResponse *DummyRDMDevice::GetParamDescription(
          sizeof(parameter_id));
   parameter_id = NetworkToHost(parameter_id);
 
-  if (parameter_id != ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION) {
+  if (parameter_id != OLA_MANUFACTURER_PID_CODE_VERSION) {
     OLA_WARN << "Dummy responder received param description request with "
-      "unknown PID, expected " << ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION
+      "unknown PID, expected " << OLA_MANUFACTURER_PID_CODE_VERSION
       << ", got " << parameter_id;
-    return NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   } else {
     struct parameter_description_s {
       uint16_t pid;
@@ -141,28 +135,28 @@ RDMResponse *DummyRDMDevice::GetParamDescription(
       uint32_t min_value;
       uint32_t default_value;
       uint32_t max_value;
-      char description[ola::rdm::MAX_RDM_STRING_LENGTH];
+      char description[MAX_RDM_STRING_LENGTH];
     } __attribute__((packed));
 
     struct parameter_description_s param_description;
     param_description.pid = HostToNetwork(
-        static_cast<uint16_t>(ola::rdm::OLA_MANUFACTURER_PID_CODE_VERSION));
+        static_cast<uint16_t>(OLA_MANUFACTURER_PID_CODE_VERSION));
     param_description.pdl_size = HostToNetwork(
-        static_cast<uint8_t>(ola::rdm::MAX_RDM_STRING_LENGTH));
+        static_cast<uint8_t>(MAX_RDM_STRING_LENGTH));
     param_description.data_type = HostToNetwork(
-        static_cast<uint8_t>(ola::rdm::DS_ASCII));
+        static_cast<uint8_t>(DS_ASCII));
     param_description.command_class = HostToNetwork(
-        static_cast<uint8_t>(ola::rdm::CC_GET));
+        static_cast<uint8_t>(CC_GET));
     param_description.type = 0;
     param_description.unit = HostToNetwork(
-        static_cast<uint8_t>(ola::rdm::UNITS_NONE));
+        static_cast<uint8_t>(UNITS_NONE));
     param_description.prefix = HostToNetwork(
-        static_cast<uint8_t>(ola::rdm::PREFIX_NONE));
+        static_cast<uint8_t>(PREFIX_NONE));
     param_description.min_value = 0;
     param_description.default_value = 0;
     param_description.max_value = 0;
     strncpy(param_description.description, "Code Version",
-            ola::rdm::MAX_RDM_STRING_LENGTH);
+            MAX_RDM_STRING_LENGTH);
     return GetResponseFromData(
         request,
         reinterpret_cast<uint8_t*>(&param_description),
@@ -171,9 +165,9 @@ RDMResponse *DummyRDMDevice::GetParamDescription(
 }
 
 RDMResponse *DummyRDMDevice::GetDeviceInfo(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   struct device_info_s {
@@ -193,7 +187,7 @@ RDMResponse *DummyRDMDevice::GetDeviceInfo(
   device_info.rdm_version = HostToNetwork(static_cast<uint16_t>(0x100));
   device_info.model = HostToNetwork(static_cast<uint16_t>(1));
   device_info.product_category = HostToNetwork(
-      static_cast<uint16_t>(ola::rdm::PRODUCT_CATEGORY_OTHER));
+      static_cast<uint16_t>(PRODUCT_CATEGORY_OTHER));
   device_info.software_version = HostToNetwork(static_cast<uint32_t>(1));
   device_info.dmx_footprint = HostToNetwork(Footprint());
   device_info.current_personality = m_personality + 1;
@@ -213,9 +207,9 @@ RDMResponse *DummyRDMDevice::GetDeviceInfo(
  * Reset to factory defaults
  */
 RDMResponse *DummyRDMDevice::GetFactoryDefaults(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   uint8_t using_defaults = (m_start_address == 1 && m_personality == 1 &&
@@ -228,20 +222,20 @@ RDMResponse *DummyRDMDevice::GetFactoryDefaults(
 
 
 RDMResponse *DummyRDMDevice::SetFactoryDefaults(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   m_start_address = 1;
   m_personality = 1;
   m_identify_mode = 0;
 
-  return new ola::rdm::RDMSetResponse(
+  return new RDMSetResponse(
     request->DestinationUID(),
     request->SourceUID(),
     request->TransactionNumber(),
-    ola::rdm::RDM_ACK,
+    RDM_ACK,
     0,
     request->SubDevice(),
     request->ParamId(),
@@ -250,14 +244,14 @@ RDMResponse *DummyRDMDevice::SetFactoryDefaults(
 }
 
 RDMResponse *DummyRDMDevice::GetProductDetailList(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   uint16_t product_details[] = {
-    ola::rdm::PRODUCT_DETAIL_TEST,
-    ola::rdm::PRODUCT_DETAIL_OTHER
+    PRODUCT_DETAIL_TEST,
+    PRODUCT_DETAIL_OTHER
   };
 
   for (unsigned int i = 0; i < arraysize(product_details); i++)
@@ -270,9 +264,9 @@ RDMResponse *DummyRDMDevice::GetProductDetailList(
 }
 
 RDMResponse *DummyRDMDevice::GetPersonality(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   struct personality_info_s {
@@ -290,10 +284,10 @@ RDMResponse *DummyRDMDevice::GetPersonality(
 }
 
 RDMResponse *DummyRDMDevice::SetPersonality(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   uint8_t personality;
   if (request->ParamDataSize() != sizeof(personality)) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   memcpy(reinterpret_cast<uint8_t*>(&personality), request->ParamData(),
@@ -301,17 +295,17 @@ RDMResponse *DummyRDMDevice::SetPersonality(
   personality = NetworkToHost(personality);
 
   if (personality > arraysize(PERSONALITIES) || personality == 0) {
-    return NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   } else if (m_start_address + PERSONALITIES[personality - 1].footprint - 1
              > DMX_UNIVERSE_SIZE) {
-    return NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   } else {
     m_personality = personality - 1;
-    return new ola::rdm::RDMSetResponse(
+    return new RDMSetResponse(
       request->DestinationUID(),
       request->SourceUID(),
       request->TransactionNumber(),
-      ola::rdm::RDM_ACK,
+      RDM_ACK,
       0,
       request->SubDevice(),
       request->ParamId(),
@@ -322,22 +316,22 @@ RDMResponse *DummyRDMDevice::SetPersonality(
 
 
 RDMResponse *DummyRDMDevice::GetPersonalityDescription(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   uint8_t personality = 0;
   if (request->ParamDataSize() != sizeof(personality)) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   memcpy(reinterpret_cast<uint8_t*>(&personality), request->ParamData(),
          sizeof(personality));
   personality = NetworkToHost(personality) - 1;
   if (personality >= arraysize(PERSONALITIES)) {
-    return NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   } else {
     struct personality_description_s {
       uint8_t personality;
       uint16_t slots_required;
-      char description[ola::rdm::MAX_RDM_STRING_LENGTH];
+      char description[MAX_RDM_STRING_LENGTH];
     } __attribute__((packed));
 
     struct personality_description_s personality_description;
@@ -356,9 +350,9 @@ RDMResponse *DummyRDMDevice::GetPersonalityDescription(
 }
 
 RDMResponse *DummyRDMDevice::GetDmxStartAddress(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   uint16_t address = HostToNetwork(m_start_address);
@@ -371,10 +365,10 @@ RDMResponse *DummyRDMDevice::GetDmxStartAddress(
 }
 
 RDMResponse *DummyRDMDevice::SetDmxStartAddress(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   uint16_t address;
   if (request->ParamDataSize() != sizeof(address)) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   memcpy(reinterpret_cast<uint8_t*>(&address), request->ParamData(),
@@ -382,16 +376,16 @@ RDMResponse *DummyRDMDevice::SetDmxStartAddress(
   address = NetworkToHost(address);
   uint16_t end_address = DMX_UNIVERSE_SIZE - Footprint() + 1;
   if (address == 0 || address > end_address) {
-    return NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   } else if (Footprint() == 0) {
-    return NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   } else {
     m_start_address = address;
-    return new ola::rdm::RDMSetResponse(
+    return new RDMSetResponse(
       request->DestinationUID(),
       request->SourceUID(),
       request->TransactionNumber(),
-      ola::rdm::RDM_ACK,
+      RDM_ACK,
       0,
       request->SubDevice(),
       request->ParamId(),
@@ -401,9 +395,9 @@ RDMResponse *DummyRDMDevice::SetDmxStartAddress(
 }
 
 RDMResponse *DummyRDMDevice::GetLampStrikes(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   uint32_t strikes = HostToNetwork(m_lamp_strikes);
@@ -414,20 +408,20 @@ RDMResponse *DummyRDMDevice::GetLampStrikes(
 }
 
 RDMResponse *DummyRDMDevice::SetLampStrikes(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   uint32_t lamp_strikes;
   if (request->ParamDataSize() != sizeof(lamp_strikes)) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   memcpy(reinterpret_cast<uint8_t*>(&lamp_strikes), request->ParamData(),
          sizeof(lamp_strikes));
   m_lamp_strikes = HostToNetwork(lamp_strikes);
-  return new ola::rdm::RDMSetResponse(
+  return new RDMSetResponse(
     request->DestinationUID(),
     request->SourceUID(),
     request->TransactionNumber(),
-    ola::rdm::RDM_ACK,
+    RDM_ACK,
     0,
     request->SubDevice(),
     request->ParamId(),
@@ -435,9 +429,9 @@ RDMResponse *DummyRDMDevice::SetLampStrikes(
     0);
 }
 
-RDMResponse *DummyRDMDevice::GetIdentify(const ola::rdm::RDMRequest *request) {
+RDMResponse *DummyRDMDevice::GetIdentify(const RDMRequest *request) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   return GetResponseFromData(
@@ -446,10 +440,10 @@ RDMResponse *DummyRDMDevice::GetIdentify(const ola::rdm::RDMRequest *request) {
       sizeof(m_identify_mode));
 }
 
-RDMResponse *DummyRDMDevice::SetIdentify(const ola::rdm::RDMRequest *request) {
+RDMResponse *DummyRDMDevice::SetIdentify(const RDMRequest *request) {
   uint8_t mode;
   if (request->ParamDataSize() != sizeof(mode)) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   mode = *request->ParamData();
@@ -457,25 +451,25 @@ RDMResponse *DummyRDMDevice::SetIdentify(const ola::rdm::RDMRequest *request) {
     m_identify_mode = mode;
     OLA_INFO << "Dummy device, identify mode "
              << (m_identify_mode ? "on" : "off");
-    return new ola::rdm::RDMSetResponse(
+    return new RDMSetResponse(
       request->DestinationUID(),
       request->SourceUID(),
       request->TransactionNumber(),
-      ola::rdm::RDM_ACK,
+      RDM_ACK,
       0,
       request->SubDevice(),
       request->ParamId(),
       NULL,
       0);
   } else {
-    return NackWithReason(request, ola::rdm::NR_DATA_OUT_OF_RANGE);
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 }
 
 RDMResponse *DummyRDMDevice::GetRealTimeClock(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
   struct clock_s {
@@ -508,44 +502,42 @@ RDMResponse *DummyRDMDevice::GetRealTimeClock(
 
 
 RDMResponse *DummyRDMDevice::GetManufacturerLabel(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   return HandleStringResponse(request, "Open Lighting Project");
 }
 
 RDMResponse *DummyRDMDevice::GetDeviceLabel(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   return HandleStringResponse(request, "Dummy RDM Device");
 }
 
 RDMResponse *DummyRDMDevice::GetDeviceModelDescription(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   return HandleStringResponse(request, "Dummy Model");
 }
 
 RDMResponse *DummyRDMDevice::GetSoftwareVersionLabel(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   return HandleStringResponse(request, "Dummy Software Version");
 }
 
 RDMResponse *DummyRDMDevice::GetOlaCodeVersion(
-    const ola::rdm::RDMRequest *request) {
+    const RDMRequest *request) {
   return HandleStringResponse(request, VERSION);
 }
 
 /*
  * Handle a request that returns a string
  */
-RDMResponse *DummyRDMDevice::HandleStringResponse(
-    const ola::rdm::RDMRequest *request,
-    const std::string &value) {
+RDMResponse *DummyRDMDevice::HandleStringResponse(const RDMRequest *request,
+                                                  const std::string &value) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR);
   }
   return GetResponseFromData(
         request,
         reinterpret_cast<const uint8_t*>(value.data()),
         value.size());
 }
-}  // namespace dummy
-}  // namespace plugin
+}  // namespace rdm
 }  // namespace ola
