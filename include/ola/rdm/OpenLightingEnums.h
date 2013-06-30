@@ -44,7 +44,7 @@ typedef enum {
   // OLA Dummy RDM Responder
   OLA_DUMMY_DEVICE_MODEL = 1,
   // Arduino RGB Mixer
-  //OLA_RGB_MIXER_MODEL = 2,
+  // OLA_RGB_MIXER_MODEL = 2,
   // SPI Device
   OLA_SPI_DEVICE_MODEL = 3,
   // Dummy Dimmer
