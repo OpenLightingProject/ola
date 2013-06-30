@@ -32,23 +32,26 @@ namespace rdm {
  */
 class ResponderHelper {
   public:
-    static RDMResponse *GetDeviceInfo(const RDMRequest *request,
-                                      uint16_t device_model,
-                                      rdm_product_category product_category,
-                                      uint32_t software_version,
-                                      uint16_t dmx_footprint,
-                                      uint8_t current_personality,
-                                      uint8_t personality_count,
-                                      uint16_t dmx_start_address,
-                                      uint16_t sub_device_count,
-                                      uint8_t sensor_count);
+    static const RDMResponse *GetDeviceInfo(
+        const RDMRequest *request,
+        uint16_t device_model,
+        rdm_product_category product_category,
+        uint32_t software_version,
+        uint16_t dmx_footprint,
+        uint8_t current_personality,
+        uint8_t personality_count,
+        uint16_t dmx_start_address,
+        uint16_t sub_device_count,
+        uint8_t sensor_count);
 
-    static RDMResponse *GetRealTimeClock(const RDMRequest *request);
+    static const RDMResponse *GetRealTimeClock(const RDMRequest *request);
 
-    static RDMResponse *GetString(const RDMRequest *request,
-                                  const std::string &value);
-    static RDMResponse *GetBoolValue(const RDMRequest *request, bool value);
-    static RDMResponse *SetBoolValue(const RDMRequest *request, bool *value);
+    static const RDMResponse *GetString(const RDMRequest *request,
+                                        const std::string &value);
+    static const RDMResponse *GetBoolValue(
+        const RDMRequest *request, bool value);
+    static const RDMResponse *SetBoolValue(
+        const RDMRequest *request, bool *value);
 };
 }  // namespace rdm
 }  // namespace ola

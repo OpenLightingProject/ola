@@ -63,14 +63,14 @@ class DimmerRootDevice: public RDMControllerInterface {
     bool m_identify_mode;
     SubDeviceMap m_sub_devices;
 
-    RDMResponse *GetDeviceInfo(const RDMRequest *request);
-    RDMResponse *GetProductDetailList(const RDMRequest *request);
-    RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
-    RDMResponse *GetManufacturerLabel(const RDMRequest *request);
-    RDMResponse *GetDeviceLabel(const RDMRequest *request);
-    RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
-    RDMResponse *GetIdentify(const RDMRequest *request);
-    RDMResponse *SetIdentify(const RDMRequest *request);
+    const RDMResponse *GetDeviceInfo(const RDMRequest *request);
+    const RDMResponse *GetProductDetailList(const RDMRequest *request);
+    const RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
+    const RDMResponse *GetManufacturerLabel(const RDMRequest *request);
+    const RDMResponse *GetDeviceLabel(const RDMRequest *request);
+    const RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
+    const RDMResponse *GetIdentify(const RDMRequest *request);
+    const RDMResponse *SetIdentify(const RDMRequest *request);
 
     static const ResponderOps<DimmerRootDevice>::ParamHandler PARAM_HANDLERS[];
 };

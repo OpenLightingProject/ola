@@ -92,13 +92,14 @@ void DimmerRootDevice::SendRDMRequest(const RDMRequest *request,
                                        callback);
 }
 
-RDMResponse *DimmerRootDevice::GetDeviceInfo(const RDMRequest *request) {
+const RDMResponse *DimmerRootDevice::GetDeviceInfo(const RDMRequest *request) {
   return ResponderHelper::GetDeviceInfo(
       request, OLA_DUMMY_DIMMER_MODEL, PRODUCT_CATEGORY_DIMMER, 1, 0, 1,
       1, 0, m_sub_devices.size(), 0);
 }
 
-RDMResponse *DimmerRootDevice::GetProductDetailList(const RDMRequest *request) {
+const RDMResponse *DimmerRootDevice::GetProductDetailList(
+    const RDMRequest *request) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
@@ -114,33 +115,33 @@ RDMResponse *DimmerRootDevice::GetProductDetailList(const RDMRequest *request) {
       sizeof(product_details));
 }
 
-RDMResponse *DimmerRootDevice::GetDeviceModelDescription(
+const RDMResponse *DimmerRootDevice::GetDeviceModelDescription(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, "OLA Dimmer");
 }
 
-RDMResponse *DimmerRootDevice::GetManufacturerLabel(
+const RDMResponse *DimmerRootDevice::GetManufacturerLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, "Open Lighting Project");
 }
 
-RDMResponse *DimmerRootDevice::GetDeviceLabel(
+const RDMResponse *DimmerRootDevice::GetDeviceLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, "Dummy Dimmer");
 }
 
-RDMResponse *DimmerRootDevice::GetSoftwareVersionLabel(
+const RDMResponse *DimmerRootDevice::GetSoftwareVersionLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, string("OLA Version ") + VERSION);
 }
 
-RDMResponse *DimmerRootDevice::GetIdentify(const RDMRequest *request) {
+const RDMResponse *DimmerRootDevice::GetIdentify(const RDMRequest *request) {
   return ResponderHelper::GetBoolValue(request, m_identify_mode);
 }
 
-RDMResponse *DimmerRootDevice::SetIdentify(const RDMRequest *request) {
+const RDMResponse *DimmerRootDevice::SetIdentify(const RDMRequest *request) {
   bool old_value = m_identify_mode;
-  RDMResponse *response = ResponderHelper::SetBoolValue(
+  const RDMResponse *response = ResponderHelper::SetBoolValue(
       request, &m_identify_mode);
   if (m_identify_mode != old_value) {
     OLA_INFO << "Dimmer Root Device " << m_uid << ", identify mode "

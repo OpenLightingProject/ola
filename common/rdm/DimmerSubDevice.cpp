@@ -77,13 +77,14 @@ void DimmerSubDevice::SendRDMRequest(const RDMRequest *request,
                                        request, callback);
 }
 
-RDMResponse *DimmerSubDevice::GetDeviceInfo(const RDMRequest *request) {
+const RDMResponse *DimmerSubDevice::GetDeviceInfo(const RDMRequest *request) {
   return ResponderHelper::GetDeviceInfo(
       request, OLA_DUMMY_DIMMER_MODEL, PRODUCT_CATEGORY_DIMMER, 1, 0, 1,
       1, 0, 0, 0);
 }
 
-RDMResponse *DimmerSubDevice::GetProductDetailList(const RDMRequest *request) {
+const RDMResponse *DimmerSubDevice::GetProductDetailList(
+    const RDMRequest *request) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
@@ -99,7 +100,8 @@ RDMResponse *DimmerSubDevice::GetProductDetailList(const RDMRequest *request) {
       sizeof(product_details));
 }
 
-RDMResponse *DimmerSubDevice::GetDmxStartAddress(const RDMRequest *request) {
+const RDMResponse *DimmerSubDevice::GetDmxStartAddress(
+    const RDMRequest *request) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
@@ -111,7 +113,8 @@ RDMResponse *DimmerSubDevice::GetDmxStartAddress(const RDMRequest *request) {
       sizeof(address));
 }
 
-RDMResponse *DimmerSubDevice::SetDmxStartAddress(const RDMRequest *request) {
+const RDMResponse *DimmerSubDevice::SetDmxStartAddress(
+    const RDMRequest *request) {
   uint16_t address;
   if (request->ParamDataSize() != sizeof(address)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -131,33 +134,33 @@ RDMResponse *DimmerSubDevice::SetDmxStartAddress(const RDMRequest *request) {
   }
 }
 
-RDMResponse *DimmerSubDevice::GetDeviceModelDescription(
+const RDMResponse *DimmerSubDevice::GetDeviceModelDescription(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, "OLA Dimmer");
 }
 
-RDMResponse *DimmerSubDevice::GetManufacturerLabel(
+const RDMResponse *DimmerSubDevice::GetManufacturerLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, "Open Lighting Project");
 }
 
-RDMResponse *DimmerSubDevice::GetDeviceLabel(
+const RDMResponse *DimmerSubDevice::GetDeviceLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, "Dummy Dimmer");
 }
 
-RDMResponse *DimmerSubDevice::GetSoftwareVersionLabel(
+const RDMResponse *DimmerSubDevice::GetSoftwareVersionLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, string("OLA Version ") + VERSION);
 }
 
-RDMResponse *DimmerSubDevice::GetIdentify(const RDMRequest *request) {
+const RDMResponse *DimmerSubDevice::GetIdentify(const RDMRequest *request) {
   return ResponderHelper::GetBoolValue(request, m_identify_mode);
 }
 
-RDMResponse *DimmerSubDevice::SetIdentify(const RDMRequest *request) {
+const RDMResponse *DimmerSubDevice::SetIdentify(const RDMRequest *request) {
   bool old_value = m_identify_mode;
-  RDMResponse *response = ResponderHelper::SetBoolValue(
+  const RDMResponse *response = ResponderHelper::SetBoolValue(
       request, &m_identify_mode);
   if (m_identify_mode != old_value) {
     OLA_INFO << "Dummy dimmer device " << m_uid << ":" << m_sub_device_number

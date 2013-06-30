@@ -101,7 +101,7 @@ void ResponderOps<Target>::HandleRDMRequest(Target *target,
     return;
   }
 
-  RDMResponse *response = NULL;
+  const RDMResponse *response = NULL;
   rdm_response_code response_code = RDM_COMPLETED_OK;
 
   // Right now we don't support sub devices

@@ -39,7 +39,7 @@ class ResponderOps {
   public:
     // Each callback takes a RDMRequest object. The handler returns a
     // RDMResponse, or NULL.
-    typedef RDMResponse *(Target::*RDMHandler)(const RDMRequest *request);
+    typedef const RDMResponse *(Target::*RDMHandler)(const RDMRequest *request);
 
     struct ParamHandler {
       uint16_t pid;

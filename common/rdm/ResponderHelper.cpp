@@ -34,7 +34,7 @@ using ola::network::NetworkToHost;
 using std::string;
 using std::vector;
 
-RDMResponse *ResponderHelper::GetDeviceInfo(
+const RDMResponse *ResponderHelper::GetDeviceInfo(
     const RDMRequest *request,
     uint16_t device_model,
     rdm_product_category product_category,
@@ -83,7 +83,7 @@ RDMResponse *ResponderHelper::GetDeviceInfo(
 /**
  * Get the clock response.
  */
-RDMResponse *ResponderHelper::GetRealTimeClock(
+const RDMResponse *ResponderHelper::GetRealTimeClock(
     const RDMRequest *request) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -120,7 +120,7 @@ RDMResponse *ResponderHelper::GetRealTimeClock(
 /*
  * Handle a request that returns a string
  */
-RDMResponse *ResponderHelper::GetString(
+const RDMResponse *ResponderHelper::GetString(
     const RDMRequest *request,
     const std::string &value) {
   if (request->ParamDataSize()) {
@@ -132,8 +132,8 @@ RDMResponse *ResponderHelper::GetString(
         value.size());
 }
 
-RDMResponse *ResponderHelper::GetBoolValue(const RDMRequest *request,
-                                           bool value) {
+const RDMResponse *ResponderHelper::GetBoolValue(const RDMRequest *request,
+                                                 bool value) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
@@ -142,8 +142,8 @@ RDMResponse *ResponderHelper::GetBoolValue(const RDMRequest *request,
   return GetResponseFromData(request, &param, sizeof(param));
 }
 
-RDMResponse *ResponderHelper::SetBoolValue(const RDMRequest *request,
-                                           bool *value) {
+const RDMResponse *ResponderHelper::SetBoolValue(const RDMRequest *request,
+                                                 bool *value) {
   uint8_t arg;
   if (request->ParamDataSize() != sizeof(arg)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
