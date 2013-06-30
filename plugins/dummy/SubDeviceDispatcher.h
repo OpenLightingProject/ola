@@ -22,6 +22,8 @@
 #define PLUGINS_DUMMY_SUBDEVICEDISPATCHER_H_
 
 #include <map>
+#include <string>
+#include <vector>
 #include "ola/rdm/RDMControllerInterface.h"
 
 namespace ola {
