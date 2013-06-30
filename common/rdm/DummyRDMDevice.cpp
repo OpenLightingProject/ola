@@ -28,6 +28,7 @@
 #include "ola/rdm/DummyRDMDevice.h"
 #include "ola/rdm/OpenLightingEnums.h"
 #include "ola/rdm/RDMEnums.h"
+#include "ola/rdm/ResponderHelper.h"
 
 namespace ola {
 namespace rdm {
@@ -164,44 +165,12 @@ RDMResponse *DummyRDMDevice::GetParamDescription(
   }
 }
 
-RDMResponse *DummyRDMDevice::GetDeviceInfo(
-    const RDMRequest *request) {
-  if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-
-  struct device_info_s {
-    uint16_t rdm_version;
-    uint16_t model;
-    uint16_t product_category;
-    uint32_t software_version;
-    uint16_t dmx_footprint;
-    uint8_t current_personality;
-    uint8_t personality_count;
-    uint16_t dmx_start_address;
-    uint16_t sub_device_count;
-    uint8_t sensor_count;
-  } __attribute__((packed));
-
-  struct device_info_s device_info;
-  device_info.rdm_version = HostToNetwork(static_cast<uint16_t>(0x100));
-  device_info.model = HostToNetwork(static_cast<uint16_t>(1));
-  device_info.product_category = HostToNetwork(
-      static_cast<uint16_t>(PRODUCT_CATEGORY_OTHER));
-  device_info.software_version = HostToNetwork(static_cast<uint32_t>(1));
-  device_info.dmx_footprint = HostToNetwork(Footprint());
-  device_info.current_personality = m_personality + 1;
-  device_info.personality_count = arraysize(PERSONALITIES);
-  device_info.dmx_start_address = device_info.dmx_footprint ?
-    HostToNetwork(m_start_address) : 0xffff;
-  device_info.sub_device_count = 0;
-  device_info.sensor_count = 0;
-  return GetResponseFromData(
-      request,
-      reinterpret_cast<uint8_t*>(&device_info),
-      sizeof(device_info));
+RDMResponse *DummyRDMDevice::GetDeviceInfo(const RDMRequest *request) {
+  return ResponderHelper::GetDeviceInfo(
+      request, OLA_DUMMY_DEVICE_MODEL, PRODUCT_CATEGORY_OTHER, 1, Footprint(),
+      m_personality + 1, arraysize(PERSONALITIES),
+      Footprint() ? m_start_address : 0xffff, 0, 0);
 }
-
 
 /**
  * Reset to factory defaults
@@ -214,10 +183,7 @@ RDMResponse *DummyRDMDevice::GetFactoryDefaults(
 
   uint8_t using_defaults = (m_start_address == 1 && m_personality == 1 &&
                             m_identify_mode == false);
-  return GetResponseFromData(
-    request,
-    &using_defaults,
-    sizeof(using_defaults));
+  return GetResponseFromData(request, &using_defaults, sizeof(using_defaults));
 }
 
 
@@ -243,8 +209,7 @@ RDMResponse *DummyRDMDevice::SetFactoryDefaults(
     0);
 }
 
-RDMResponse *DummyRDMDevice::GetProductDetailList(
-    const RDMRequest *request) {
+RDMResponse *DummyRDMDevice::GetProductDetailList(const RDMRequest *request) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
@@ -263,8 +228,7 @@ RDMResponse *DummyRDMDevice::GetProductDetailList(
       sizeof(product_details));
 }
 
-RDMResponse *DummyRDMDevice::GetPersonality(
-    const RDMRequest *request) {
+RDMResponse *DummyRDMDevice::GetPersonality(const RDMRequest *request) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
@@ -283,8 +247,7 @@ RDMResponse *DummyRDMDevice::GetPersonality(
     sizeof(personality_info));
 }
 
-RDMResponse *DummyRDMDevice::SetPersonality(
-    const RDMRequest *request) {
+RDMResponse *DummyRDMDevice::SetPersonality(const RDMRequest *request) {
   uint8_t personality;
   if (request->ParamDataSize() != sizeof(personality)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -313,7 +276,6 @@ RDMResponse *DummyRDMDevice::SetPersonality(
       0);
   }
 }
-
 
 RDMResponse *DummyRDMDevice::GetPersonalityDescription(
     const RDMRequest *request) {
@@ -349,8 +311,7 @@ RDMResponse *DummyRDMDevice::GetPersonalityDescription(
   }
 }
 
-RDMResponse *DummyRDMDevice::GetDmxStartAddress(
-    const RDMRequest *request) {
+RDMResponse *DummyRDMDevice::GetDmxStartAddress(const RDMRequest *request) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
@@ -364,8 +325,7 @@ RDMResponse *DummyRDMDevice::GetDmxStartAddress(
     sizeof(address));
 }
 
-RDMResponse *DummyRDMDevice::SetDmxStartAddress(
-    const RDMRequest *request) {
+RDMResponse *DummyRDMDevice::SetDmxStartAddress(const RDMRequest *request) {
   uint16_t address;
   if (request->ParamDataSize() != sizeof(address)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -394,8 +354,7 @@ RDMResponse *DummyRDMDevice::SetDmxStartAddress(
   }
 }
 
-RDMResponse *DummyRDMDevice::GetLampStrikes(
-    const RDMRequest *request) {
+RDMResponse *DummyRDMDevice::GetLampStrikes(const RDMRequest *request) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
@@ -407,8 +366,7 @@ RDMResponse *DummyRDMDevice::GetLampStrikes(
     sizeof(strikes));
 }
 
-RDMResponse *DummyRDMDevice::SetLampStrikes(
-    const RDMRequest *request) {
+RDMResponse *DummyRDMDevice::SetLampStrikes(const RDMRequest *request) {
   uint32_t lamp_strikes;
   if (request->ParamDataSize() != sizeof(lamp_strikes)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -430,114 +388,44 @@ RDMResponse *DummyRDMDevice::SetLampStrikes(
 }
 
 RDMResponse *DummyRDMDevice::GetIdentify(const RDMRequest *request) {
-  if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-
-  return GetResponseFromData(
-      request,
-      &m_identify_mode,
-      sizeof(m_identify_mode));
+  return ResponderHelper::GetBoolValue(request, m_identify_mode);
 }
 
 RDMResponse *DummyRDMDevice::SetIdentify(const RDMRequest *request) {
-  uint8_t mode;
-  if (request->ParamDataSize() != sizeof(mode)) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-
-  mode = *request->ParamData();
-  if (mode == 0 || mode == 1) {
-    m_identify_mode = mode;
+  bool old_value = m_identify_mode;
+  RDMResponse *response = ResponderHelper::SetBoolValue(
+      request, &m_identify_mode);
+  if (m_identify_mode != old_value) {
     OLA_INFO << "Dummy device, identify mode "
              << (m_identify_mode ? "on" : "off");
-    return new RDMSetResponse(
-      request->DestinationUID(),
-      request->SourceUID(),
-      request->TransactionNumber(),
-      RDM_ACK,
-      0,
-      request->SubDevice(),
-      request->ParamId(),
-      NULL,
-      0);
-  } else {
-    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
+  return response;
 }
 
-RDMResponse *DummyRDMDevice::GetRealTimeClock(
-    const RDMRequest *request) {
-  if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-
-  struct clock_s {
-    uint16_t year;
-    uint8_t month;
-    uint8_t day;
-    uint8_t hour;
-    uint8_t minute;
-    uint8_t second;
-  } __attribute__((packed));
-
-  time_t now;
-  now = time(NULL);
-  struct tm tm_now;
-  localtime_r(&now, &tm_now);
-
-  struct clock_s clock;
-  clock.year = HostToNetwork(static_cast<uint16_t>(1900 + tm_now.tm_year));
-  clock.month = tm_now.tm_mon + 1;
-  clock.day = tm_now.tm_mday;
-  clock.hour = tm_now.tm_hour;
-  clock.minute = tm_now.tm_min;
-  clock.second = tm_now.tm_sec;
-
-  return GetResponseFromData(
-      request,
-      reinterpret_cast<uint8_t*>(&clock),
-      sizeof(clock));
+RDMResponse *DummyRDMDevice::GetRealTimeClock(const RDMRequest *request) {
+  return ResponderHelper::GetRealTimeClock(request);
 }
 
-
-RDMResponse *DummyRDMDevice::GetManufacturerLabel(
-    const RDMRequest *request) {
-  return HandleStringResponse(request, "Open Lighting Project");
+RDMResponse *DummyRDMDevice::GetManufacturerLabel(const RDMRequest *request) {
+  return ResponderHelper::GetString(request, "Open Lighting Project");
 }
 
-RDMResponse *DummyRDMDevice::GetDeviceLabel(
-    const RDMRequest *request) {
-  return HandleStringResponse(request, "Dummy RDM Device");
+RDMResponse *DummyRDMDevice::GetDeviceLabel(const RDMRequest *request) {
+  return ResponderHelper::GetString(request, "Dummy RDM Device");
 }
 
 RDMResponse *DummyRDMDevice::GetDeviceModelDescription(
     const RDMRequest *request) {
-  return HandleStringResponse(request, "Dummy Model");
+  return ResponderHelper::GetString(request, "Dummy Model");
 }
 
 RDMResponse *DummyRDMDevice::GetSoftwareVersionLabel(
     const RDMRequest *request) {
-  return HandleStringResponse(request, "Dummy Software Version");
+  return ResponderHelper::GetString(request, "Dummy Software Version");
 }
 
-RDMResponse *DummyRDMDevice::GetOlaCodeVersion(
-    const RDMRequest *request) {
-  return HandleStringResponse(request, VERSION);
-}
-
-/*
- * Handle a request that returns a string
- */
-RDMResponse *DummyRDMDevice::HandleStringResponse(const RDMRequest *request,
-                                                  const std::string &value) {
-  if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-  return GetResponseFromData(
-        request,
-        reinterpret_cast<const uint8_t*>(value.data()),
-        value.size());
+RDMResponse *DummyRDMDevice::GetOlaCodeVersion(const RDMRequest *request) {
+  return ResponderHelper::GetString(request, VERSION);
 }
 }  // namespace rdm
 }  // namespace ola

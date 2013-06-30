@@ -104,7 +104,6 @@ const MovingLightResponder::personality_info
   {20, "Personality 4"},
 };
 
-
 /**
  * New MovingLightResponder
  */
@@ -122,7 +121,7 @@ MovingLightResponder::MovingLightResponder(const UID &uid)
  * Handle an RDM Request
  */
 void MovingLightResponder::SendRDMRequest(const RDMRequest *request,
-                                    RDMCallback *callback) {
+                                          RDMCallback *callback) {
   RDMOps::Instance()->HandleRDMRequest(this, m_uid, ROOT_RDM_DEVICE, request,
                                        callback);
 }
@@ -188,7 +187,8 @@ RDMResponse *MovingLightResponder::GetParamDescription(
 
 RDMResponse *MovingLightResponder::GetDeviceInfo(
     const RDMRequest *request) {
-  return ResponderHelper::GetDeviceInfo(request, OLA_DUMMY_MOVING_LIGHT_MODEL,
+  return ResponderHelper::GetDeviceInfo(
+      request, OLA_DUMMY_MOVING_LIGHT_MODEL,
       PRODUCT_CATEGORY_FIXTURE_MOVING_YOKE, 1, Footprint(), m_personality + 1,
       arraysize(PERSONALITIES), (Footprint() ? m_start_address : 0xffff),
       0, 0);
@@ -211,7 +211,6 @@ RDMResponse *MovingLightResponder::GetFactoryDefaults(
     &using_defaults,
     sizeof(using_defaults));
 }
-
 
 RDMResponse *MovingLightResponder::SetFactoryDefaults(
     const RDMRequest *request) {
@@ -304,7 +303,6 @@ RDMResponse *MovingLightResponder::SetPersonality(
       0);
   }
 }
-
 
 RDMResponse *MovingLightResponder::GetPersonalityDescription(
     const RDMRequest *request) {

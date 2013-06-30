@@ -68,7 +68,7 @@ class DummyRDMDevice: public RDMControllerInterface {
     const UID m_uid;
     uint16_t m_start_address;
     uint8_t m_personality;
-    uint8_t m_identify_mode;
+    bool m_identify_mode;
     uint32_t m_lamp_strikes;
     uint16_t m_sub_device_number;
 
@@ -93,16 +93,12 @@ class DummyRDMDevice: public RDMControllerInterface {
     RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
     RDMResponse *GetOlaCodeVersion(const RDMRequest *request);
 
-    RDMResponse *HandleStringResponse(const RDMRequest *request,
-                                      const std::string &value);
-
     typedef struct {
       uint16_t footprint;
       const char *description;
     } personality_info;
 
-    static const ResponderOps<DummyRDMDevice>::ParamHandler
-      PARAM_HANDLERS[];
+    static const ResponderOps<DummyRDMDevice>::ParamHandler PARAM_HANDLERS[];
     static const personality_info PERSONALITIES[];
 };
 }  // namespace rdm

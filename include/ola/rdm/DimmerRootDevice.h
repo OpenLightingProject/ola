@@ -60,7 +60,7 @@ class DimmerRootDevice: public RDMControllerInterface {
     };
 
     const UID m_uid;
-    uint8_t m_identify_mode;
+    bool m_identify_mode;
     SubDeviceMap m_sub_devices;
 
     RDMResponse *GetDeviceInfo(const RDMRequest *request);
@@ -72,11 +72,7 @@ class DimmerRootDevice: public RDMControllerInterface {
     RDMResponse *GetIdentify(const RDMRequest *request);
     RDMResponse *SetIdentify(const RDMRequest *request);
 
-    RDMResponse *HandleStringResponse(const RDMRequest *request,
-                                      const std::string &value);
-
-    static const ResponderOps<DimmerRootDevice>::ParamHandler
-      PARAM_HANDLERS[];
+    static const ResponderOps<DimmerRootDevice>::ParamHandler PARAM_HANDLERS[];
 };
 }  // namespace rdm
 }  // namespace ola

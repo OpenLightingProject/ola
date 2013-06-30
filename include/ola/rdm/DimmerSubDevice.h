@@ -36,9 +36,10 @@ class DimmerSubDevice: public RDMControllerInterface {
   public:
     DimmerSubDevice(const UID &uid, uint16_t sub_device_number)
         : m_uid(uid),
+          m_sub_device_number(sub_device_number),
           m_start_address(sub_device_number),
-          m_identify_mode(0),
-          m_sub_device_number(sub_device_number) {}
+          m_identify_mode(false) {
+    }
 
     void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
 
@@ -61,9 +62,9 @@ class DimmerSubDevice: public RDMControllerInterface {
     };
 
     const UID m_uid;
+    const uint16_t m_sub_device_number;
     uint16_t m_start_address;
-    uint8_t m_identify_mode;
-    uint16_t m_sub_device_number;
+    bool m_identify_mode;
 
     RDMResponse *GetDeviceInfo(const RDMRequest *request);
     RDMResponse *GetProductDetailList(const RDMRequest *request);
@@ -77,11 +78,7 @@ class DimmerSubDevice: public RDMControllerInterface {
     RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
     RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
 
-    RDMResponse *HandleStringResponse(const RDMRequest *request,
-                                      const std::string &value);
-
-    static const ResponderOps<DimmerSubDevice>::ParamHandler
-      PARAM_HANDLERS[];
+    static const ResponderOps<DimmerSubDevice>::ParamHandler PARAM_HANDLERS[];
 };
 }  // namespace rdm
 }  // namespace ola
