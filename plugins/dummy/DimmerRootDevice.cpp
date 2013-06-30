@@ -158,7 +158,7 @@ RDMResponse *DimmerRootDevice::GetProductDetailList(
 
 RDMResponse *DimmerRootDevice::GetDeviceModelDescription(
     const ola::rdm::RDMRequest *request) {
-  return HandleStringResponse(request, "OLA Dummy Dimmer ");
+  return HandleStringResponse(request, "OLA Dimmer");
 }
 
 RDMResponse *DimmerRootDevice::GetManufacturerLabel(

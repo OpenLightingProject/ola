@@ -51,8 +51,8 @@ using ola::rdm::UIDSet;
 
 class MockDummyPort: public DummyPort {
   public:
-    MockDummyPort():
-      DummyPort(NULL, 0, 10, 0) {
+    MockDummyPort()
+      : DummyPort(NULL, DummyPort::Options(), 0) {
     }
 };
 
@@ -712,7 +712,7 @@ void DummyPortTest::testOlaManufacturerPidCodeVersion() {
 
 void DummyPortTest::VerifyUIDs(const UIDSet &uids) {
   UIDSet expected_uids;
-  for (unsigned int i = 0; i < 10; i++) {
+  for (unsigned int i = 0; i < 3; i++) {
     UID uid(OPEN_LIGHTING_ESTA_CODE, 0xffffff00 + i);
     expected_uids.AddUID(uid);
   }

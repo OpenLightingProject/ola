@@ -26,7 +26,12 @@
 #include "ola/Logging.h"
 #include "ola/rdm/UIDAllocator.h"
 #include "ola/rdm/UIDSet.h"
+#include "ola/stl/STLUtils.h"
+#include "plugins/dummy/DimmerResponder.h"
+#include "plugins/dummy/DummyDevice.h"
 #include "plugins/dummy/DummyPort.h"
+#include "plugins/dummy/DummyResponder.h"
+#include "plugins/dummy/MovingLightResponder.h"
 
 namespace ola {
 namespace plugin {
@@ -43,20 +48,39 @@ using std::auto_ptr;
  *   have.
  */
 DummyPort::DummyPort(DummyDevice *parent,
-                     unsigned int id,
-                     uint16_t device_count,
-                     uint16_t subdevice_count)
+                     const Options &options,
+                     unsigned int id)
     : BasicOutputPort(parent, id, true, true) {
   UID first_uid(OPEN_LIGHTING_ESTA_CODE, DummyPort::kStartAddress);
   ola::rdm::UIDAllocator allocator(first_uid);
 
-  for (unsigned int i = 0; i < device_count; i++) {
+  for (unsigned int i = 0; i < options.number_of_dummy_responders; i++) {
     auto_ptr<UID> uid(allocator.AllocateNext());
     if (!uid.get()) {
       OLA_WARN << "Insufficient UIDs to create dummy RDM devices";
       break;
     }
-    m_responders[*uid] = new DummyResponder(*uid, subdevice_count);
+    STLReplaceAndDelete(&m_responders, *uid, new DummyResponder(*uid, 0));
+  }
+
+  for (unsigned int i = 0; i < options.number_of_dimmers; i++) {
+    auto_ptr<UID> uid(allocator.AllocateNext());
+    if (!uid.get()) {
+      OLA_WARN << "Insufficient UIDs to create dummy RDM devices";
+      break;
+    }
+    STLReplaceAndDelete(
+        &m_responders, *uid,
+        new DimmerResponder(*uid, options.dimmer_sub_device_count));
+  }
+
+  for (unsigned int i = 0; i < options.number_of_moving_lights; i++) {
+    auto_ptr<UID> uid(allocator.AllocateNext());
+    if (!uid.get()) {
+      OLA_WARN << "Insufficient UIDs to create dummy RDM devices";
+      break;
+    }
+    STLReplaceAndDelete(&m_responders, *uid, new MovingLightResponder(*uid));
   }
 }
 
@@ -74,9 +98,7 @@ bool DummyPort::WriteDMX(const DmxBuffer &buffer,
   std::string data = buffer.Get();
 
   str << "Dummy port: got " << buffer.Size() << " bytes: ";
-  for (unsigned int i = 0;
-       i < m_responders.begin()->second->RootDeviceFootprint()
-        && i < data.size(); i++)
+  for (unsigned int i = 0; i < 10 && i < data.size(); i++)
     str << "0x" << std::hex << 0 + (uint8_t) data.at(i) << " ";
   OLA_INFO << str.str();
   return true;
@@ -135,7 +157,7 @@ void DummyPort::RunDiscovery(RDMDiscoveryCallback *callback) {
   ola::rdm::UIDSet uid_set;
   for (ResponderMap::iterator i = m_responders.begin();
     i != m_responders.end(); i++) {
-    uid_set.AddUID(i->second->UID());
+    uid_set.AddUID(i->first);
   }
   callback->Run(uid_set);
 }

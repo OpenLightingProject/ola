@@ -23,6 +23,7 @@
 
 #include <string>
 #include "olad/Device.h"
+#include "plugins/dummy/DummyPort.h"
 
 namespace ola {
 
@@ -38,18 +39,18 @@ class DummyDevice: public Device {
     DummyDevice(
         AbstractPlugin *owner,
         const string &name,
-        uint16_t number_of_devices,
-        uint16_t number_of_subdevices):
-      Device(owner, name),
-      m_number_of_devices(number_of_devices),
-      m_number_of_subdevices(number_of_subdevices) {
+        const DummyPort::Options &port_options)
+        : Device(owner, name),
+          m_port_options(port_options) {
     }
     string DeviceId() const { return "1"; }
 
   protected:
-    bool StartHook();
     uint16_t m_number_of_devices;
     uint16_t m_number_of_subdevices;
+    const DummyPort::Options m_port_options;
+
+    bool StartHook();
 };
 }  // namespace dummy
 }  // namespace plugin

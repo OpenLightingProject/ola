@@ -175,7 +175,7 @@ RDMResponse *DimmerSubDevice::SetDmxStartAddress(
 
 RDMResponse *DimmerSubDevice::GetDeviceModelDescription(
     const ola::rdm::RDMRequest *request) {
-  return HandleStringResponse(request, "OLA Dummy Dimmer ");
+  return HandleStringResponse(request, "OLA Dimmer");
 }
 
 RDMResponse *DimmerSubDevice::GetManufacturerLabel(

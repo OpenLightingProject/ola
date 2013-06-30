@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * DummyPort_h
+ * DummyPort.h
  * The interface to the Dummy port
  * Copyright (C) 2005-2009 Simon Newton
  */
@@ -30,8 +30,6 @@
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/UID.h"
 #include "olad/Port.h"
-#include "plugins/dummy/DummyDevice.h"
-#include "plugins/dummy/DummyResponder.h"
 
 using ola::rdm::UID;
 
@@ -41,10 +39,24 @@ namespace dummy {
 
 class DummyPort: public BasicOutputPort {
   public:
-    DummyPort(DummyDevice *parent,
-              unsigned int id,
-              uint16_t device_count,
-              uint16_t subdevice_count);
+    struct Options {
+      public:
+        Options()
+            : number_of_dimmers(1),
+              dimmer_sub_device_count(4),
+              number_of_moving_lights(1),
+              number_of_dummy_responders(1) {
+        }
+
+        uint8_t number_of_dimmers;
+        uint16_t dimmer_sub_device_count;
+        uint8_t number_of_moving_lights;
+        uint8_t number_of_dummy_responders;
+    };
+
+    DummyPort(class DummyDevice *parent,
+              const Options &options,
+              unsigned int id);
     virtual ~DummyPort();
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
     string Description() const { return "Dummy Port"; }
@@ -61,7 +73,7 @@ class DummyPort: public BasicOutputPort {
       ola::rdm::RDMCallback *callback;
     } broadcast_request_tracker;
 
-    typedef map<UID, DummyResponder*> ResponderMap;
+    typedef map<UID, ola::rdm::RDMControllerInterface*> ResponderMap;
 
     DmxBuffer m_buffer;
     ResponderMap m_responders;

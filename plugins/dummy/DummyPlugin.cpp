@@ -26,6 +26,7 @@
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
 #include "plugins/dummy/DummyDevice.h"
+#include "plugins/dummy/DummyPort.h"
 #include "plugins/dummy/DummyPlugin.h"
 
 namespace ola {
@@ -34,30 +35,41 @@ namespace dummy {
 
 using std::string;
 
+const char DummyPlugin::DEFAULT_DEVICE_COUNT[] = "1";
+const char DummyPlugin::DEFAULT_SUBDEVICE_COUNT[] = "4";
+const char DummyPlugin::DEVICE_NAME[] = "Dummy Device";
+const char DummyPlugin::DIMMER_COUNT_KEY[] = "dimmer_count";
+const char DummyPlugin::DIMMER_SUBDEVICE_COUNT_KEY[] = "dimmer_subdevice_count";
+const char DummyPlugin::DUMMY_DEVICE_COUNT_KEY[] = "dummy_device_count";
+const char DummyPlugin::MOVING_LIGHT_COUNT_KEY[] = "moving_light_count";
 const char DummyPlugin::PLUGIN_NAME[] = "Dummy";
 const char DummyPlugin::PLUGIN_PREFIX[] = "dummy";
-const char DummyPlugin::DEVICE_NAME[] = "Dummy Device";
-const char DummyPlugin::DEVICE_COUNT_KEY[] = "number_of_devices";
-const char DummyPlugin::SUBDEVICE_COUNT_KEY[] = "number_of_subdevices";
-const char DummyPlugin::DEFAULT_DEVICE_COUNT[] = "5";
-const char DummyPlugin::DEFAULT_SUBDEVICE_COUNT[] = "0";
 
 /*
  * Start the plugin
  *
- * Lets keep it simple, one device for this plugin
+ * Lets keep it simple, one device for this plugin.
  */
 bool DummyPlugin::StartHook() {
-  unsigned int device_count, subdevice_count;
-  if (!StringToInt(m_preferences->GetValue(DEVICE_COUNT_KEY) ,
-                   &device_count))
-    StringToInt(DEFAULT_DEVICE_COUNT, &device_count);
+  DummyPort::Options options;
 
-  if (!StringToInt(m_preferences->GetValue(SUBDEVICE_COUNT_KEY) ,
-                   &subdevice_count))
-    StringToInt(DEFAULT_SUBDEVICE_COUNT, &subdevice_count);
+  if (!StringToInt(m_preferences->GetValue(DUMMY_DEVICE_COUNT_KEY) ,
+                   &options.number_of_dummy_responders))
+    StringToInt(DEFAULT_DEVICE_COUNT, &options.number_of_dummy_responders);
 
-  m_device = new DummyDevice(this, DEVICE_NAME, device_count, subdevice_count);
+  if (!StringToInt(m_preferences->GetValue(DIMMER_COUNT_KEY) ,
+                   &options.number_of_dimmers))
+    StringToInt(DEFAULT_DEVICE_COUNT, &options.number_of_dimmers);
+
+  if (!StringToInt(m_preferences->GetValue(DIMMER_SUBDEVICE_COUNT_KEY) ,
+                   &options.dimmer_sub_device_count))
+    StringToInt(DEFAULT_SUBDEVICE_COUNT, &options.dimmer_sub_device_count);
+
+  if (!StringToInt(m_preferences->GetValue(MOVING_LIGHT_COUNT_KEY) ,
+                   &options.number_of_moving_lights))
+    StringToInt(DEFAULT_DEVICE_COUNT, &options.number_of_moving_lights);
+
+  m_device = new DummyDevice(this, DEVICE_NAME, options);
   m_device->Start();
   m_plugin_adaptor->RegisterDevice(m_device);
   return true;
@@ -87,16 +99,27 @@ string DummyPlugin::Description() const {
 "The plugin creates a single device with one port. When used as an output\n"
 "port it prints the first two bytes of dmx data to stdout.\n"
 "\n"
-"It also creates a fake RDM device which can be querried and the DMX start\n"
-"address can be changed.\n"
+"The Dummy plugin can also emulate a range of RDM devices. It supports the\n"
+"following RDM device types:\n"
+" * Dummy Device (original)\n"
+" * Dimmer Rack, with a configurable number of sub-devices\n"
+" * Moving Light\n"
+"\n"
+"The number of each device is configurable.\n"
 "\n"
 "--- Config file : ola-dummy.conf ---\n"
 "\n"
-"number_of_devices = 1\n"
-"The number of fake RDM devices to create.\n"
+"dimmer_count = 1\n"
+"The number of dimmer devices to create.\n"
 "\n"
-"number_of_subdevices = 1\n"
-"The number of sub-devices each RDM device should have.\n"
+"dimmer_subdevice_count = 1\n"
+"The number of sub-devices each dimmer device should have.\n"
+"\n"
+"dummy_device_count = 1\n"
+"The number of dummy devices to create.\n"
+"\n"
+"moving_light_count = 1\n"
+"The number of moving light devices to create.\n"
 "\n";
 }
 
@@ -110,13 +133,21 @@ bool DummyPlugin::SetDefaultPreferences() {
 
   bool save = false;
 
-  save |= m_preferences->SetDefaultValue(DEVICE_COUNT_KEY,
+  save |= m_preferences->SetDefaultValue(DUMMY_DEVICE_COUNT_KEY,
                                          IntValidator(0, 254),
                                          DEFAULT_DEVICE_COUNT);
 
-  save |= m_preferences->SetDefaultValue(SUBDEVICE_COUNT_KEY,
+  save |= m_preferences->SetDefaultValue(DIMMER_COUNT_KEY,
+                                         IntValidator(0, 254),
+                                         DEFAULT_DEVICE_COUNT);
+
+  save |= m_preferences->SetDefaultValue(DIMMER_SUBDEVICE_COUNT_KEY,
                                          IntValidator(0, 255),
                                          DEFAULT_SUBDEVICE_COUNT);
+
+  save |= m_preferences->SetDefaultValue(MOVING_LIGHT_COUNT_KEY,
+                                         IntValidator(0, 254),
+                                         DEFAULT_DEVICE_COUNT);
 
   if (save)
     m_preferences->Save();

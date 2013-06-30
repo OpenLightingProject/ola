@@ -3,13 +3,14 @@ libdir = $(plugindir)
 
 EXTRA_DIST = DimmerResponder.h DimmerRootDevice.h DimmerSubDevice.h \
              DummyPlugin.h DummyDevice.h DummyPort.h DummyResponder.h \
-             DummyRDMDevice.h SubDeviceDispatcher.h
+             DummyRDMDevice.h MovingLightResponder.h SubDeviceDispatcher.h
 
 if USE_DUMMY
 lib_LTLIBRARIES = liboladummyresponder.la liboladummy.la
 liboladummyresponder_la_SOURCES = DimmerResponder.cpp DimmerRootDevice.cpp \
                                   DimmerSubDevice.cpp DummyResponder.cpp \
-                                  DummyRDMDevice.cpp SubDeviceDispatcher.cpp
+                                  DummyRDMDevice.cpp MovingLightResponder.cpp \
+                                  SubDeviceDispatcher.cpp
 liboladummyresponder_la_CXXFLAGS = $(COMMON_CXXFLAGS) @OLAD_DEFINES@
 liboladummyresponder_la_LIBADD = ../../common/libolacommon.la
 
