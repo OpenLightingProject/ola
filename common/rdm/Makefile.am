@@ -17,8 +17,9 @@ libolardm_la_SOURCES = CommandPrinter.cpp DescriptorConsistencyChecker.cpp \
                        PidStore.cpp PidStoreHelper.cpp PidStoreLoader.cpp \
                        QueueingRDMController.cpp RDMAPI.cpp RDMCommand.cpp \
                        RDMCommandSerializer.cpp RDMHelper.cpp \
-                       StringMessageBuilder.cpp SubDeviceDispatcher.cpp \
-                       UID.cpp VariableFieldSizeCalculator.cpp
+                       ResponderHelper.cpp StringMessageBuilder.cpp \
+                       SubDeviceDispatcher.cpp UID.cpp \
+                       VariableFieldSizeCalculator.cpp
 
 nodist_libolardm_la_SOURCES = Pids.pb.cc
 libolardm_la_LIBADD = $(libprotobuf_LIBS)

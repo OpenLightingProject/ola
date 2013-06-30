@@ -64,9 +64,9 @@ class MovingLightResponder: public RDMControllerInterface {
     const UID m_uid;
     uint16_t m_start_address;
     uint8_t m_personality;
-    uint8_t m_identify_mode;
-    uint8_t m_pan_invert;
-    uint8_t m_tilt_invert;
+    bool m_identify_mode;
+    bool m_pan_invert;
+    bool m_tilt_invert;
     uint32_t m_lamp_strikes;
 
     RDMResponse *GetParamDescription(const RDMRequest *request);
@@ -93,11 +93,6 @@ class MovingLightResponder: public RDMControllerInterface {
     RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
     RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
     RDMResponse *GetOlaCodeVersion(const RDMRequest *request);
-
-    RDMResponse *HandleStringResponse(const RDMRequest *request,
-                                      const std::string &value);
-
-    RDMResponse *SetBoolValue(const RDMRequest *request, uint8_t *value);
 
     typedef struct {
       uint16_t footprint;

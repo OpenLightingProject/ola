@@ -5,9 +5,9 @@ SOURCES = CommandPrinter.h DimmerResponder.h DimmerRootDevice.h \
           PidStoreHelper.h QueueingRDMController.h RDMAPI.h \
           RDMAPIImplInterface.h RDMCommand.h RDMCommandSerializer.h \
           RDMControllerAdaptor.h RDMControllerInterface.h RDMEnums.h \
-          RDMHelper.h RDMMessagePrinters.h RDMPacket.h ResponderOps.h \
-          ResponderOpsPrivate.h StringMessageBuilder.h SubDeviceDispatcher.h \
-          UID.h UIDAllocator.h UIDSet.h
+          RDMHelper.h RDMMessagePrinters.h RDMPacket.h ResponderHelper.h \
+          ResponderOps.h ResponderOpsPrivate.h StringMessageBuilder.h \
+          SubDeviceDispatcher.h UID.h UIDAllocator.h UIDSet.h
 
 BUILT_SOURCES = RDMResponseCodes.h
 

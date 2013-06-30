@@ -28,6 +28,7 @@
 #include "ola/rdm/MovingLightResponder.h"
 #include "ola/rdm/OpenLightingEnums.h"
 #include "ola/rdm/RDMEnums.h"
+#include "ola/rdm/ResponderHelper.h"
 
 namespace ola {
 namespace rdm {
@@ -111,9 +112,9 @@ MovingLightResponder::MovingLightResponder(const UID &uid)
     : m_uid(uid),
       m_start_address(1),
       m_personality(1),
-      m_identify_mode(0),
-      m_pan_invert(0),
-      m_tilt_invert(0),
+      m_identify_mode(false),
+      m_pan_invert(false),
+      m_tilt_invert(false),
       m_lamp_strikes(0) {
 }
 
@@ -122,8 +123,8 @@ MovingLightResponder::MovingLightResponder(const UID &uid)
  */
 void MovingLightResponder::SendRDMRequest(const RDMRequest *request,
                                     RDMCallback *callback) {
-  RDMOps::Instance()->HandleRDMRequest(this, m_uid, ROOT_RDM_DEVICE,
-                                       request, callback);
+  RDMOps::Instance()->HandleRDMRequest(this, m_uid, ROOT_RDM_DEVICE, request,
+                                       callback);
 }
 
 RDMResponse *MovingLightResponder::GetParamDescription(
@@ -187,41 +188,10 @@ RDMResponse *MovingLightResponder::GetParamDescription(
 
 RDMResponse *MovingLightResponder::GetDeviceInfo(
     const RDMRequest *request) {
-  if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-
-  struct device_info_s {
-    uint16_t rdm_version;
-    uint16_t model;
-    uint16_t product_category;
-    uint32_t software_version;
-    uint16_t dmx_footprint;
-    uint8_t current_personality;
-    uint8_t personality_count;
-    uint16_t dmx_start_address;
-    uint16_t sub_device_count;
-    uint8_t sensor_count;
-  } __attribute__((packed));
-
-  struct device_info_s device_info;
-  device_info.rdm_version = HostToNetwork(static_cast<uint16_t>(0x100));
-  device_info.model = HostToNetwork(
-      static_cast<uint16_t>(OLA_DUMMY_MOVING_LIGHT_MODEL));
-  device_info.product_category = HostToNetwork(
-      static_cast<uint16_t>(PRODUCT_CATEGORY_FIXTURE_MOVING_YOKE));
-  device_info.software_version = HostToNetwork(static_cast<uint32_t>(1));
-  device_info.dmx_footprint = HostToNetwork(Footprint());
-  device_info.current_personality = m_personality + 1;
-  device_info.personality_count = arraysize(PERSONALITIES);
-  device_info.dmx_start_address = device_info.dmx_footprint ?
-    HostToNetwork(m_start_address) : 0xffff;
-  device_info.sub_device_count = 0;
-  device_info.sensor_count = 0;
-  return GetResponseFromData(
-      request,
-      reinterpret_cast<uint8_t*>(&device_info),
-      sizeof(device_info));
+  return ResponderHelper::GetDeviceInfo(request, OLA_DUMMY_MOVING_LIGHT_MODEL,
+      PRODUCT_CATEGORY_FIXTURE_MOVING_YOKE, 1, Footprint(), m_personality + 1,
+      arraysize(PERSONALITIES), (Footprint() ? m_start_address : 0xffff),
+      0, 0);
 }
 
 
@@ -452,168 +422,64 @@ RDMResponse *MovingLightResponder::SetLampStrikes(
 
 RDMResponse *MovingLightResponder::GetIdentify(
     const RDMRequest *request) {
-  if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-
-  return GetResponseFromData(
-      request,
-      &m_identify_mode,
-      sizeof(m_identify_mode));
+  return ResponderHelper::GetBoolValue(request, m_identify_mode);
 }
 
 RDMResponse *MovingLightResponder::SetIdentify(
     const RDMRequest *request) {
-  uint8_t mode;
-  if (request->ParamDataSize() != sizeof(mode)) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-
-  mode = *request->ParamData();
-  if (mode == 0 || mode == 1) {
-    m_identify_mode = mode;
+  bool old_value = m_identify_mode;
+  RDMResponse *response = ResponderHelper::SetBoolValue(
+      request, &m_identify_mode);
+  if (m_identify_mode != old_value) {
     OLA_INFO << "Dummy Moving Light " << m_uid << ", identify mode "
              << (m_identify_mode ? "on" : "off");
-    return new RDMSetResponse(
-      request->DestinationUID(),
-      request->SourceUID(),
-      request->TransactionNumber(),
-      RDM_ACK,
-      0,
-      request->SubDevice(),
-      request->ParamId(),
-      NULL,
-      0);
-  } else {
-    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
+  return response;
 }
 
-RDMResponse *MovingLightResponder::GetPanInvert(
-    const RDMRequest *request) {
-  if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-  return GetResponseFromData(request, &m_pan_invert, sizeof(m_pan_invert));
+RDMResponse *MovingLightResponder::GetPanInvert(const RDMRequest *request) {
+  return ResponderHelper::GetBoolValue(request, m_pan_invert);
 }
 
 
-RDMResponse *MovingLightResponder::SetPanInvert(
-    const RDMRequest *request) {
-  return SetBoolValue(request, &m_pan_invert);
+RDMResponse *MovingLightResponder::SetPanInvert(const RDMRequest *request) {
+  return ResponderHelper::SetBoolValue(request, &m_pan_invert);
 }
 
-RDMResponse *MovingLightResponder::GetTiltInvert(
-    const RDMRequest *request) {
-  if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-  return GetResponseFromData(request, &m_tilt_invert, sizeof(m_tilt_invert));
+RDMResponse *MovingLightResponder::GetTiltInvert(const RDMRequest *request) {
+  return ResponderHelper::GetBoolValue(request, m_tilt_invert);
 }
 
-RDMResponse *MovingLightResponder::SetTiltInvert(
-    const RDMRequest *request) {
-  return SetBoolValue(request, &m_tilt_invert);
+RDMResponse *MovingLightResponder::SetTiltInvert(const RDMRequest *request) {
+  return ResponderHelper::SetBoolValue(request, &m_tilt_invert);
 }
 
-RDMResponse *MovingLightResponder::GetRealTimeClock(
-    const RDMRequest *request) {
-  if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-
-  struct clock_s {
-    uint16_t year;
-    uint8_t month;
-    uint8_t day;
-    uint8_t hour;
-    uint8_t minute;
-    uint8_t second;
-  } __attribute__((packed));
-
-  time_t now;
-  now = time(NULL);
-  struct tm tm_now;
-  localtime_r(&now, &tm_now);
-
-  struct clock_s clock;
-  clock.year = HostToNetwork(static_cast<uint16_t>(1900 + tm_now.tm_year));
-  clock.month = tm_now.tm_mon + 1;
-  clock.day = tm_now.tm_mday;
-  clock.hour = tm_now.tm_hour;
-  clock.minute = tm_now.tm_min;
-  clock.second = tm_now.tm_sec;
-
-  return GetResponseFromData(
-      request,
-      reinterpret_cast<uint8_t*>(&clock),
-      sizeof(clock));
+RDMResponse *MovingLightResponder::GetRealTimeClock(const RDMRequest *request) {
+  return ResponderHelper::GetRealTimeClock(request);
 }
 
 RDMResponse *MovingLightResponder::GetDeviceModelDescription(
     const RDMRequest *request) {
-  return HandleStringResponse(request, "OLA Moving Light");
+  return ResponderHelper::GetString(request, "OLA Moving Light");
 }
 
 RDMResponse *MovingLightResponder::GetManufacturerLabel(
     const RDMRequest *request) {
-  return HandleStringResponse(request, "Open Lighting Project");
+  return ResponderHelper::GetString(request, "Open Lighting Project");
 }
 
-RDMResponse *MovingLightResponder::GetDeviceLabel(
-    const RDMRequest *request) {
-  return HandleStringResponse(request, "Dummy Moving Light");
+RDMResponse *MovingLightResponder::GetDeviceLabel(const RDMRequest *request) {
+  return ResponderHelper::GetString(request, "Dummy Moving Light");
 }
 
 RDMResponse *MovingLightResponder::GetSoftwareVersionLabel(
     const RDMRequest *request) {
-  return HandleStringResponse(request, string("OLA Version ") + VERSION);
+  return ResponderHelper::GetString(request, string("OLA Version ") + VERSION);
 }
 
 RDMResponse *MovingLightResponder::GetOlaCodeVersion(
     const RDMRequest *request) {
-  return HandleStringResponse(request, VERSION);
-}
-
-/*
- * Handle a request that returns a string
- */
-RDMResponse *MovingLightResponder::HandleStringResponse(
-    const RDMRequest *request,
-    const std::string &value) {
-  if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-  return GetResponseFromData(
-        request,
-        reinterpret_cast<const uint8_t*>(value.data()),
-        value.size());
-}
-
-RDMResponse *MovingLightResponder::SetBoolValue(
-    const RDMRequest *request,
-    uint8_t *value) {
-  uint8_t arg;
-  if (request->ParamDataSize() != sizeof(arg)) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-
-  arg = *request->ParamData();
-  if (arg == 0 || arg == 1) {
-    *value = arg;
-    return new RDMSetResponse(
-      request->DestinationUID(),
-      request->SourceUID(),
-      request->TransactionNumber(),
-      RDM_ACK,
-      0,
-      request->SubDevice(),
-      request->ParamId(),
-      NULL,
-      0);
-  } else {
-    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
-  }
+  return ResponderHelper::GetString(request, VERSION);
 }
 }  // namespace rdm
 }  // namespace ola
