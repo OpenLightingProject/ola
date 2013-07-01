@@ -2,6 +2,7 @@ x/y/2013 ola-0.8.31
  * Bash Completions of UIDs in the RDM commands
  * Change example scripts to error to STDERR not STDOUT.
  * Added support for new Dummy RDM device types
+ * Added support for the KMTRONIC usb device (ftdi clone).
 
 16/6/2013 ola-0.8.30
  * Clean up olad signal handling to avoid race conditions.
