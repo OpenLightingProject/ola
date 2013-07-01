@@ -78,6 +78,10 @@ void DimmerSubDevice::SendRDMRequest(const RDMRequest *request,
 }
 
 const RDMResponse *DimmerSubDevice::GetDeviceInfo(const RDMRequest *request) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
   return ResponderHelper::GetDeviceInfo(
       request, OLA_DUMMY_DIMMER_MODEL, PRODUCT_CATEGORY_DIMMER, 1, 0, 1,
       1, 0, 0, 0);
@@ -116,13 +120,10 @@ const RDMResponse *DimmerSubDevice::GetDmxStartAddress(
 const RDMResponse *DimmerSubDevice::SetDmxStartAddress(
     const RDMRequest *request) {
   uint16_t address;
-  if (request->ParamDataSize() != sizeof(address)) {
+  if (!ResponderHelper::ExtractUInt16(request, &address)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
-  memcpy(reinterpret_cast<uint8_t*>(&address), request->ParamData(),
-         sizeof(address));
-  address = NetworkToHost(address);
   if (address == 0 || address > DMX_UNIVERSE_SIZE) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   } else {

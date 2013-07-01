@@ -93,6 +93,10 @@ void DimmerRootDevice::SendRDMRequest(const RDMRequest *request,
 }
 
 const RDMResponse *DimmerRootDevice::GetDeviceInfo(const RDMRequest *request) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
   return ResponderHelper::GetDeviceInfo(
       request, OLA_DUMMY_DIMMER_MODEL, PRODUCT_CATEGORY_DIMMER, 1, 0, 1,
       1, 0, m_sub_devices.size(), 0);

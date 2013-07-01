@@ -110,14 +110,9 @@ const RDMResponse *DummyRDMDevice::GetParamDescription(
     const RDMRequest *request) {
   // Check that it's MANUFACTURER_PID_CODE_VERSION being requested
   uint16_t parameter_id;
-  if (request->ParamDataSize() != sizeof(parameter_id)) {
+  if (!ResponderHelper::ExtractUInt16(request, &parameter_id)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
-
-  memcpy(reinterpret_cast<uint8_t*>(&parameter_id),
-         request->ParamData(),
-         sizeof(parameter_id));
-  parameter_id = NetworkToHost(parameter_id);
 
   if (parameter_id != OLA_MANUFACTURER_PID_CODE_VERSION) {
     OLA_WARN << "Dummy responder received param description request with "
@@ -166,6 +161,10 @@ const RDMResponse *DummyRDMDevice::GetParamDescription(
 }
 
 const RDMResponse *DummyRDMDevice::GetDeviceInfo(const RDMRequest *request) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
   return ResponderHelper::GetDeviceInfo(
       request, OLA_DUMMY_DEVICE_MODEL, PRODUCT_CATEGORY_OTHER, 1, Footprint(),
       m_personality + 1, arraysize(PERSONALITIES),
@@ -249,13 +248,9 @@ const RDMResponse *DummyRDMDevice::GetPersonality(const RDMRequest *request) {
 
 const RDMResponse *DummyRDMDevice::SetPersonality(const RDMRequest *request) {
   uint8_t personality;
-  if (request->ParamDataSize() != sizeof(personality)) {
+  if (!ResponderHelper::ExtractUInt8(request, &personality)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
-
-  memcpy(reinterpret_cast<uint8_t*>(&personality), request->ParamData(),
-         sizeof(personality));
-  personality = NetworkToHost(personality);
 
   if (personality > arraysize(PERSONALITIES) || personality == 0) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
@@ -279,14 +274,11 @@ const RDMResponse *DummyRDMDevice::SetPersonality(const RDMRequest *request) {
 
 const RDMResponse *DummyRDMDevice::GetPersonalityDescription(
     const RDMRequest *request) {
-  uint8_t personality = 0;
-  if (request->ParamDataSize() != sizeof(personality)) {
+  uint8_t personality;
+  if (!ResponderHelper::ExtractUInt8(request, &personality)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
-
-  memcpy(reinterpret_cast<uint8_t*>(&personality), request->ParamData(),
-         sizeof(personality));
-  personality = NetworkToHost(personality) - 1;
+  personality-= 1;
   if (personality >= arraysize(PERSONALITIES)) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   } else {
@@ -329,13 +321,10 @@ const RDMResponse *DummyRDMDevice::GetDmxStartAddress(
 const RDMResponse *DummyRDMDevice::SetDmxStartAddress(
     const RDMRequest *request) {
   uint16_t address;
-  if (request->ParamDataSize() != sizeof(address)) {
+  if (!ResponderHelper::ExtractUInt16(request, &address)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
-  memcpy(reinterpret_cast<uint8_t*>(&address), request->ParamData(),
-         sizeof(address));
-  address = NetworkToHost(address);
   uint16_t end_address = DMX_UNIVERSE_SIZE - Footprint() + 1;
   if (address == 0 || address > end_address) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
@@ -370,13 +359,10 @@ const RDMResponse *DummyRDMDevice::GetLampStrikes(const RDMRequest *request) {
 
 const RDMResponse *DummyRDMDevice::SetLampStrikes(const RDMRequest *request) {
   uint32_t lamp_strikes;
-  if (request->ParamDataSize() != sizeof(lamp_strikes)) {
+  if (!ResponderHelper::ExtractUInt32(request, &lamp_strikes)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
-  memcpy(reinterpret_cast<uint8_t*>(&lamp_strikes), request->ParamData(),
-         sizeof(lamp_strikes));
-  m_lamp_strikes = HostToNetwork(lamp_strikes);
   return new RDMSetResponse(
     request->DestinationUID(),
     request->SourceUID(),

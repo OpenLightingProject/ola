@@ -32,6 +32,12 @@ namespace rdm {
  */
 class ResponderHelper {
   public:
+    // Request Parsing methods
+    static bool ExtractUInt8(const RDMRequest *request, uint8_t *output);
+    static bool ExtractUInt16(const RDMRequest *request, uint16_t *output);
+    static bool ExtractUInt32(const RDMRequest *request, uint32_t *output);
+
+    // Response Generation methods
     static const RDMResponse *GetDeviceInfo(
         const RDMRequest *request,
         uint16_t device_model,

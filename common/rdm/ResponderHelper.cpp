@@ -34,6 +34,35 @@ using ola::network::NetworkToHost;
 using std::string;
 using std::vector;
 
+template<typename T>
+static bool GenericExtractValue(const RDMRequest *request, T *output) {
+  T value;
+  if (request->ParamDataSize() != sizeof(value)) {
+    return false;
+  }
+
+  memcpy(reinterpret_cast<uint8_t*>(&value), request->ParamData(),
+         sizeof(value));
+  *output = NetworkToHost(value);
+  return true;
+}
+
+bool ResponderHelper::ExtractUInt8(const RDMRequest *request,
+                                   uint8_t *output) {
+  return GenericExtractValue(request, output);
+}
+
+bool ResponderHelper::ExtractUInt16(const RDMRequest *request,
+                                    uint16_t *output) {
+  return GenericExtractValue(request, output);
+}
+
+bool ResponderHelper::ExtractUInt32(const RDMRequest *request,
+                                    uint32_t *output) {
+  return GenericExtractValue(request, output);
+}
+
+
 const RDMResponse *ResponderHelper::GetDeviceInfo(
     const RDMRequest *request,
     uint16_t device_model,
