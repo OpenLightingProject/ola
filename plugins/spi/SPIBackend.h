@@ -27,12 +27,15 @@
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/UID.h"
 #include "ola/stl/STLUtils.h"
+#include "ola/rdm/ResponderOps.h"
 
 namespace ola {
 namespace plugin {
 namespace spi {
 
 using ola::rdm::UID;
+using ola::rdm::RDMRequest;
+using ola::rdm::RDMResponse;
 
 class Personality {
   public:
@@ -126,6 +129,23 @@ class SPIBackend: public ola::rdm::DiscoverableRDMControllerInterface {
                         ola::rdm::RDMCallback *callback);
 
   private:
+    /**
+     * The RDM Operations for the MovingLightResponder.
+     */
+    class RDMOps : public ola::rdm::ResponderOps<SPIBackend> {
+      public:
+        static RDMOps *Instance() {
+          if (!instance)
+            instance = new RDMOps();
+          return instance;
+        }
+
+      private:
+        RDMOps() : ResponderOps(PARAM_HANDLERS) {}
+
+        static RDMOps *instance;
+    };
+
     const string m_device_path;
     string m_spi_device_name;
     const UID m_uid;
@@ -145,31 +165,19 @@ class SPIBackend: public ola::rdm::DiscoverableRDMControllerInterface {
     void WriteSPIData(const uint8_t *data, unsigned int length);
 
     // RDM methods
-    void HandleUnknownPacket(const ola::rdm::RDMRequest *request,
-                             ola::rdm::RDMCallback *callback);
-    void HandleSupportedParams(const ola::rdm::RDMRequest *request,
-                               ola::rdm::RDMCallback *callback);
-    void HandleDeviceInfo(const ola::rdm::RDMRequest *request,
-                          ola::rdm::RDMCallback *callback);
-    void HandleProductDetailList(const ola::rdm::RDMRequest *request,
-                                 ola::rdm::RDMCallback *callback);
-    void HandleStringResponse(const ola::rdm::RDMRequest *request,
-                              ola::rdm::RDMCallback *callback,
-                              const std::string &value);
-    void HandlePersonality(const ola::rdm::RDMRequest *request,
-                           ola::rdm::RDMCallback *callback);
-    void HandlePersonalityDescription(const ola::rdm::RDMRequest *request,
-                                      ola::rdm::RDMCallback *callback);
-    void HandleDmxStartAddress(const ola::rdm::RDMRequest *request,
-                               ola::rdm::RDMCallback *callback);
-    void HandleIdentifyDevice(const ola::rdm::RDMRequest *request,
-                              ola::rdm::RDMCallback *callback);
-    bool CheckForBroadcastSubdeviceOrData(const ola::rdm::RDMRequest *request,
-                                          ola::rdm::RDMCallback *callback);
-    void RunRDMCallback(ola::rdm::RDMCallback *callback,
-                        ola::rdm::RDMResponse *response);
-    void RunRDMCallback(ola::rdm::RDMCallback *callback,
-                        ola::rdm::rdm_response_code code);
+    const RDMResponse *GetDeviceInfo(const RDMRequest *request);
+    const RDMResponse *GetProductDetailList(const RDMRequest *request);
+    const RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
+    const RDMResponse *GetManufacturerLabel(const RDMRequest *request);
+    const RDMResponse *GetDeviceLabel(const RDMRequest *request);
+    const RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
+    const RDMResponse *GetDmxPersonality(const RDMRequest *request);
+    const RDMResponse *SetDmxPersonality(const RDMRequest *request);
+    const RDMResponse *GetPersonalityDescription(const RDMRequest *request);
+    const RDMResponse *GetDmxStartAddress(const RDMRequest *request);
+    const RDMResponse *SetDmxStartAddress(const RDMRequest *request);
+    const RDMResponse *GetIdentify(const RDMRequest *request);
+    const RDMResponse *SetIdentify(const RDMRequest *request);
 
     static const uint8_t SPI_MODE;
     static const uint8_t SPI_BITS_PER_WORD;
@@ -177,6 +185,9 @@ class SPIBackend: public ola::rdm::DiscoverableRDMControllerInterface {
     static const uint32_t SPI_SPEED;
     static const uint16_t WS2801_SLOTS_PER_PIXEL;
     static const uint16_t LPD8806_SLOTS_PER_PIXEL;
+
+    static const ola::rdm::ResponderOps<SPIBackend>::ParamHandler
+        PARAM_HANDLERS[];
 };
 }  // namespace spi
 }  // namespace plugin

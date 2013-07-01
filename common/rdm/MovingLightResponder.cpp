@@ -17,6 +17,10 @@
  * Copyright (C) 2013 Simon Newton
  */
 
+#if HAVE_CONFIG_H
+#  include <config.h>
+#endif
+
 #include <iostream>
 #include <string>
 #include <vector>
