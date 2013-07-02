@@ -81,6 +81,13 @@ E133Receiver::E133Receiver(ola::network::UDPSocket *socket,
 
 
 /**
+ * Clean up.
+ */
+E133Receiver::~E133Receiver() {
+}
+
+
+/**
  * Handle a E1.33 Status Message.
  */
 void E133Receiver::HandleStatusMessage(

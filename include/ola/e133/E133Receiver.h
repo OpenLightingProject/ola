@@ -119,7 +119,7 @@ class E133Receiver {
     explicit E133Receiver(ola::network::UDPSocket *socket,
                           StatusCallback *status_callback,
                           RDMCallback *rdm_callback);
-    ~E133Receiver() {}
+    ~E133Receiver();
 
   private:
     ola::network::UDPSocket *m_udp_socket;

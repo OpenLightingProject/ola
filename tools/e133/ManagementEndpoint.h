@@ -20,11 +20,13 @@
 #include <ola/rdm/UID.h>
 
 #include "tools/e133/E133Endpoint.h"
+#include "ola/rdm/ResponderOps.h"
 
 #ifndef TOOLS_E133_MANAGEMENTENDPOINT_H_
 #define TOOLS_E133_MANAGEMENTENDPOINT_H_
 
 using ola::rdm::RDMRequest;
+using ola::rdm::RDMResponse;
 using ola::rdm::RDMCallback;
 
 /**
@@ -41,59 +43,54 @@ class ManagementEndpoint: public E133Endpoint {
                        class TCPConnectionStats *tcp_stats);
     ~ManagementEndpoint() {}
 
-    void SendRDMRequest(const RDMRequest *request,
-                        RDMCallback *on_complete);
+    void SendRDMRequest(const RDMRequest *request, RDMCallback *on_complete);
 
     void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
     void RunIncrementalDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
 
   private:
+    /**
+     * The RDM Operations for the MovingLightResponder.
+     */
+    class RDMOps : public ola::rdm::ResponderOps<ManagementEndpoint> {
+      public:
+        static RDMOps *Instance() {
+          if (!instance)
+            instance = new RDMOps();
+          return instance;
+        }
+
+      private:
+        RDMOps() : ola::rdm::ResponderOps<ManagementEndpoint>(PARAM_HANDLERS) {}
+
+        static RDMOps *instance;
+    };
+
     const ola::rdm::UID m_uid;
     const class EndpointManager *m_endpoint_manager;
     class TCPConnectionStats *m_tcp_stats;
     DiscoverableRDMControllerInterface *m_controller;
 
-    void HandleManagementRequest(const RDMRequest *request,
-                                 RDMCallback *on_complete);
-    void HandleSupportedParams(const RDMRequest *request,
-                               RDMCallback *on_complete);
-    void HandleEndpointList(const RDMRequest *request,
-                            RDMCallback *on_complete);
-    void HandleEndpointListChange(const RDMRequest *request,
-                                  RDMCallback *on_complete);
-    void HandleEndpointIdentify(const RDMRequest *request,
-                                RDMCallback *on_complete);
-    void HandleEndpointToUniverse(const RDMRequest *request,
-                                  RDMCallback *on_complete);
-    void HandleEndpointMode(const RDMRequest *request,
-                            RDMCallback *on_complete);
-    void HandleEndpointLabel(const RDMRequest *request,
-                             RDMCallback *on_complete);
-    void HandleEndpointDeviceListChange(const RDMRequest *request,
-                                        RDMCallback *on_complete);
-    void HandleEndpointDevices(const RDMRequest *request,
-                               RDMCallback *on_complete);
-    void HandleTCPCommsStatus(const RDMRequest *request,
-                              RDMCallback *on_complete);
-    void HandleUnknownPID(const RDMRequest *request,
-                          RDMCallback *on_complete);
+    // RDM PID handlers.
+    const RDMResponse *GetEndpointList(const RDMRequest *request);
+    const RDMResponse *GetEndpointListChange(const RDMRequest *request);
+    const RDMResponse *GetEndpointIdentify(const RDMRequest *request);
+    const RDMResponse *SetEndpointIdentify(const RDMRequest *request);
+    const RDMResponse *GetEndpointToUniverse(const RDMRequest *request);
+    const RDMResponse *SetEndpointToUniverse(const RDMRequest *request);
+    const RDMResponse *GetEndpointMode(const RDMRequest *request);
+    const RDMResponse *SetEndpointMode(const RDMRequest *request);
+    const RDMResponse *GetEndpointLabel(const RDMRequest *request);
+    const RDMResponse *SetEndpointLabel(const RDMRequest *request);
+    const RDMResponse *GetEndpointDeviceListChange(const RDMRequest *request);
+    const RDMResponse *GetEndpointDevices(const RDMRequest *request);
+    const RDMResponse *GetTCPCommsStatus(const RDMRequest *request);
+    const RDMResponse *SetTCPCommsStatus(const RDMRequest *request);
 
-    bool SanityCheckGet(const RDMRequest *request,
-                        RDMCallback *callback,
-                        unsigned int data_length);
-    bool SanityCheckGetOrSet(const RDMRequest *request,
-                             RDMCallback *callback,
-                             unsigned int get_length,
-                             unsigned int min_set_length,
-                             unsigned int max_set_length);
-
-    void RunRDMCallback(RDMCallback *callback,
-                        ola::rdm::RDMResponse *response);
     void DiscoveryComplete(ola::rdm::RDMDiscoveryCallback *callback,
                            const ola::rdm::UIDSet &uids);
-    void EndpointDevicesComplete(RDMRequest *request,
-                                 RDMCallback *on_complete,
-                                 uint16_t endpoint,
-                                 const ola::rdm::UIDSet &uids);
+
+    static const ola::rdm::ResponderOps<ManagementEndpoint>::ParamHandler
+      PARAM_HANDLERS[];
 };
 #endif  // TOOLS_E133_MANAGEMENTENDPOINT_H_

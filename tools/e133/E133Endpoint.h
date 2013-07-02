@@ -21,10 +21,12 @@
 #include <string>
 #include "ola/e133/E133Enums.h"
 #include "ola/rdm/RDMControllerInterface.h"
+#include "ola/rdm/UIDSet.h"
 
 #ifndef TOOLS_E133_E133ENDPOINT_H_
 #define TOOLS_E133_E133ENDPOINT_H_
 
+using ola::rdm::UIDSet;
 using std::string;
 
 
@@ -79,9 +81,11 @@ class E133EndpointInterface
 
     // ENDPOINT_TIMING_DESCRIPTION
 
-    // ENDPOINT_LIST_CHANGE
+    // ENDPOINT_DEVICE_LIST_CHANGE
+    virtual uint32_t device_list_change() const = 0;
 
     // ENDPOINT_DEVICES
+    virtual void EndpointDevices(UIDSet *uids) const = 0;
 
     // BINDING_AND_CONTROL_FIELDS
 
@@ -137,6 +141,9 @@ class E133Endpoint: public E133EndpointInterface {
       m_endpoint_label = endpoint_label;
     }
 
+    uint32_t device_list_change() const { return m_device_list_change; }
+    void EndpointDevices(UIDSet *uids) const { *uids = m_uids; }
+
     virtual void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
     virtual void RunIncrementalDiscovery(
         ola::rdm::RDMDiscoveryCallback *callback);
@@ -149,6 +156,8 @@ class E133Endpoint: public E133EndpointInterface {
     const bool m_is_physical;
     uint16_t m_universe;
     string m_endpoint_label;
+    uint32_t m_device_list_change;
+    UIDSet m_uids;
     DiscoverableRDMControllerInterface *m_controller;
 };
 #endif  // TOOLS_E133_E133ENDPOINT_H_
