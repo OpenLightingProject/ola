@@ -60,7 +60,7 @@ class DummyRDMDevice: public RDMControllerInterface {
         }
 
       private:
-        RDMOps() : ResponderOps(PARAM_HANDLERS) {}
+        RDMOps() : ResponderOps<DummyRDMDevice>(PARAM_HANDLERS) {}
 
         static RDMOps *instance;
     };

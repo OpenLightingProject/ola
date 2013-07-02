@@ -56,7 +56,7 @@ class MovingLightResponder: public RDMControllerInterface {
         }
 
       private:
-        RDMOps() : ResponderOps(PARAM_HANDLERS) {}
+        RDMOps() : ResponderOps<MovingLightResponder>(PARAM_HANDLERS) {}
 
         static RDMOps *instance;
     };

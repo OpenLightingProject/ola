@@ -55,7 +55,7 @@ class DimmerRootDevice: public RDMControllerInterface {
         }
 
       private:
-        RDMOps() : ResponderOps(PARAM_HANDLERS) {}
+        RDMOps() : ResponderOps<DimmerRootDevice>(PARAM_HANDLERS) {}
         static RDMOps *instance;
     };
 
