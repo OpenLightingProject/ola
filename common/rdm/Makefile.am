@@ -11,7 +11,7 @@ noinst_LTLIBRARIES = libolardm.la
 libolardm_la_SOURCES = CommandPrinter.cpp DescriptorConsistencyChecker.cpp \
                        DimmerResponder.cpp DimmerRootDevice.cpp \
                        DimmerSubDevice.cpp DiscoveryAgent.cpp \
-                       DummyRDMDevice.cpp DummyResponder.cpp \
+                       DummyResponder.cpp \
                        GroupSizeCalculator.cpp MessageDeserializer.cpp \
                        MessageSerializer.cpp MovingLightResponder.cpp \
                        PidStore.cpp PidStoreHelper.cpp PidStoreLoader.cpp \

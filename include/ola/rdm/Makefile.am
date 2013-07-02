@@ -1,11 +1,11 @@
 SOURCES = CommandPrinter.h DimmerResponder.h DimmerRootDevice.h \
-          DimmerSubDevice.h DiscoveryAgent.h DummyRDMDevice.h \
-          DummyResponder.h MessageDeserializer.h MessageSerializer.h \
-          MovingLightResponder.h OpenLightingEnums.h PidStore.h \
-          PidStoreHelper.h QueueingRDMController.h RDMAPI.h \
-          RDMAPIImplInterface.h RDMCommand.h RDMCommandSerializer.h \
-          RDMControllerAdaptor.h RDMControllerInterface.h RDMEnums.h \
-          RDMHelper.h RDMMessagePrinters.h RDMPacket.h ResponderHelper.h \
+          DimmerSubDevice.h DiscoveryAgent.h DummyResponder.h \
+          MessageDeserializer.h MessageSerializer.h MovingLightResponder.h \
+          OpenLightingEnums.h PidStore.h PidStoreHelper.h \
+          QueueingRDMController.h RDMAPI.h RDMAPIImplInterface.h \
+          RDMCommand.h RDMCommandSerializer.h RDMControllerAdaptor.h \
+          RDMControllerInterface.h RDMEnums.h RDMHelper.h \
+          RDMMessagePrinters.h RDMPacket.h ResponderHelper.h \
           ResponderOps.h ResponderOpsPrivate.h StringMessageBuilder.h \
           SubDeviceDispatcher.h UID.h UIDAllocator.h UIDSet.h
 

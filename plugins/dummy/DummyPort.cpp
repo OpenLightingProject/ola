@@ -63,7 +63,7 @@ DummyPort::DummyPort(DummyDevice *parent,
       OLA_WARN << "Insufficient UIDs to create dummy RDM devices";
       break;
     }
-    STLReplaceAndDelete(&m_responders, *uid, new DummyResponder(*uid, 0));
+    STLReplaceAndDelete(&m_responders, *uid, new DummyResponder(*uid));
   }
 
   for (unsigned int i = 0; i < options.number_of_dimmers; i++) {
