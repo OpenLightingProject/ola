@@ -343,6 +343,9 @@ void SPIBackend::WriteSPIData(const uint8_t *data, unsigned int length) {
 
 const RDMResponse *SPIBackend::GetDeviceInfo(const RDMRequest *request) {
   uint16_t footprint = m_personality_manager.ActivePersonalityFootprint();
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
   return ResponderHelper::GetDeviceInfo(
       request, ola::rdm::OLA_SPI_DEVICE_MODEL,
       ola::rdm::PRODUCT_CATEGORY_FIXTURE, 1,
@@ -410,14 +413,11 @@ const RDMResponse *SPIBackend::GetDmxPersonality(const RDMRequest *request) {
 }
 
 const RDMResponse *SPIBackend::SetDmxPersonality(const RDMRequest *request) {
-  uint8_t personality_number = 0;
-  if (request->ParamDataSize() != sizeof(personality_number)) {
+  uint8_t personality_number;
+  if (!ResponderHelper::ExtractUInt8(request, &personality_number)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
-  memcpy(reinterpret_cast<uint8_t*>(&personality_number), request->ParamData(),
-         sizeof(personality_number));
-  personality_number = NetworkToHost(personality_number);
   const Personality *personality = m_personality_manager.Lookup(
       personality_number);
 
@@ -443,14 +443,10 @@ const RDMResponse *SPIBackend::SetDmxPersonality(const RDMRequest *request) {
 
 const RDMResponse *SPIBackend::GetPersonalityDescription(
     const RDMRequest *request) {
-  uint8_t personality_number = 0;
-  if (request->ParamDataSize() != sizeof(personality_number)) {
+  uint8_t personality_number;
+  if (!ResponderHelper::ExtractUInt8(request, &personality_number)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
-
-  memcpy(reinterpret_cast<uint8_t*>(&personality_number), request->ParamData(),
-         sizeof(personality_number));
-  personality_number = NetworkToHost(personality_number);
 
   const Personality *personality = m_personality_manager.Lookup(
       personality_number);
@@ -495,14 +491,10 @@ const RDMResponse *SPIBackend::GetDmxStartAddress(const RDMRequest *request) {
 }
 
 const RDMResponse *SPIBackend::SetDmxStartAddress(const RDMRequest *request) {
-  if (request->ParamDataSize() != sizeof(m_start_address)) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
-  }
-
   uint16_t address;
-  memcpy(reinterpret_cast<uint8_t*>(&address), request->ParamData(),
-         sizeof(address));
-  address = NetworkToHost(address);
+  if (!ResponderHelper::ExtractUInt16(request, &address)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
   if (!SetStartAddress(address)) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
