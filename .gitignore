@@ -73,6 +73,7 @@ include/ola/plugin_id.h
 include/ola/rdm/RDMResponseCodes.h
 include/ola/timecode/TimeCodeEnums.h
 java/src/main/java/ola/rpc/Rpc.java
+javascript/compiler.jar
 javascript/trunk/
 ola/common.h
 ola/stamp-common
