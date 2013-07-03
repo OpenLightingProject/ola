@@ -108,7 +108,7 @@ void DummyResponder::SendRDMRequest(const RDMRequest *request,
 
 const RDMResponse *DummyResponder::GetParamDescription(
     const RDMRequest *request) {
-  // Check that it's MANUFACTURER_PID_CODE_VERSION being requested
+  // Check that it's OLA_MANUFACTURER_PID_CODE_VERSION being requested
   uint16_t parameter_id;
   if (!ResponderHelper::ExtractUInt16(request, &parameter_id)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -205,13 +205,10 @@ const RDMResponse *DummyResponder::SetFactoryDefaults(
 
 const RDMResponse *DummyResponder::GetProductDetailList(
     const RDMRequest *request) {
-  rdm_product_detail product_details[] = {
-    PRODUCT_DETAIL_TEST,
-    PRODUCT_DETAIL_OTHER
-  };
-  std::vector<rdm_product_detail> vData(product_details,
-    product_details + sizeof(product_details) / sizeof(product_details[0]));
-  return ResponderHelper::GetProductDetailList(request, vData);
+  std::vector<rdm_product_detail> product_details;
+  product_details.push_back(PRODUCT_DETAIL_TEST);
+  product_details.push_back(PRODUCT_DETAIL_OTHER);
+  return ResponderHelper::GetProductDetailList(request, product_details);
 }
 
 const RDMResponse *DummyResponder::GetPersonality(const RDMRequest *request) {
@@ -353,7 +350,8 @@ const RDMResponse *DummyResponder::GetRealTimeClock(const RDMRequest *request) {
 
 const RDMResponse *DummyResponder::GetManufacturerLabel(
     const RDMRequest *request) {
-  return ResponderHelper::GetString(request, OLA_MANUFACTURER_LABEL);
+    return ResponderHelper::GetString(request,
+                                    OpenLightingEnums::OLA_MANUFACTURER_LABEL);
 }
 
 const RDMResponse *DummyResponder::GetDeviceLabel(const RDMRequest *request) {

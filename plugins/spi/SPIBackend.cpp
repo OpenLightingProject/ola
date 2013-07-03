@@ -370,7 +370,8 @@ const RDMResponse *SPIBackend::GetDeviceModelDescription(
 
 const RDMResponse *SPIBackend::GetManufacturerLabel(
     const RDMRequest *request) {
-  return ResponderHelper::GetString(request, OLA_MANUFACTURER_LABEL);
+  return ResponderHelper::GetString(request,
+                                    OpenLightingEnums::OLA_MANUFACTURER_LABEL);
 }
 
 const RDMResponse *SPIBackend::GetDeviceLabel(const RDMRequest *request) {

@@ -116,7 +116,8 @@ const RDMResponse *DimmerRootDevice::GetDeviceModelDescription(
 
 const RDMResponse *DimmerRootDevice::GetManufacturerLabel(
     const RDMRequest *request) {
-  return ResponderHelper::GetString(request, OLA_MANUFACTURER_LABEL);
+  return ResponderHelper::GetString(request,
+                                    OpenLightingEnums::OLA_MANUFACTURER_LABEL);
 }
 
 const RDMResponse *DimmerRootDevice::GetDeviceLabel(
