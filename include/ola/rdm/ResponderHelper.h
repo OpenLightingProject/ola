@@ -58,6 +58,18 @@ class ResponderHelper {
         const RDMRequest *request, bool value);
     static const RDMResponse *SetBoolValue(
         const RDMRequest *request, bool *value);
+    static const RDMResponse *GetUInt8Value(
+        const RDMRequest *request, uint8_t value);
+    static const RDMResponse *GetUInt16Value(
+        const RDMRequest *request, uint16_t value);
+    static const RDMResponse *GetUInt32Value(
+        const RDMRequest *request, uint32_t value);
+    static const RDMResponse *SetUInt8Value(
+        const RDMRequest *request, uint8_t *value);
+    static const RDMResponse *SetUInt16Value(
+        const RDMRequest *request, uint16_t *value);
+    static const RDMResponse *SetUInt32Value(
+        const RDMRequest *request, uint32_t *value);
 };
 }  // namespace rdm
 }  // namespace ola

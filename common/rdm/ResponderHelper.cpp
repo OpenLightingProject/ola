@@ -174,11 +174,10 @@ const RDMResponse *ResponderHelper::GetBoolValue(const RDMRequest *request,
 const RDMResponse *ResponderHelper::SetBoolValue(const RDMRequest *request,
                                                  bool *value) {
   uint8_t arg;
-  if (request->ParamDataSize() != sizeof(arg)) {
+  if (!ResponderHelper::ExtractUInt8(request, &arg)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
-  arg = *request->ParamData();
   if (arg == 0 || arg == 1) {
     *value = arg;
     return new RDMSetResponse(
@@ -194,6 +193,68 @@ const RDMResponse *ResponderHelper::SetBoolValue(const RDMRequest *request,
   } else {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
+}
+
+template<typename T>
+static const RDMResponse *GenericGetIntValue(const RDMRequest *request,
+                                             T value) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+  T param = HostToNetwork(value);
+  return GetResponseFromData(
+    request,
+    reinterpret_cast<const uint8_t*>(&param),
+    sizeof(param));
+}
+
+const RDMResponse *ResponderHelper::GetUInt8Value(const RDMRequest *request,
+                                                 uint8_t value) {
+  return GenericGetIntValue(request, value);
+}
+
+const RDMResponse *ResponderHelper::GetUInt16Value(const RDMRequest *request,
+                                                 uint16_t value) {
+  return GenericGetIntValue(request, value);
+}
+
+const RDMResponse *ResponderHelper::GetUInt32Value(const RDMRequest *request,
+                                                 uint32_t value) {
+  return GenericGetIntValue(request, value);
+}
+
+template<typename T>
+static const RDMResponse *GenericSetIntValue(const RDMRequest *request,
+                                             T *value) {
+  if (!GenericExtractValue(request, value)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  return new RDMSetResponse(
+    request->DestinationUID(),
+    request->SourceUID(),
+    request->TransactionNumber(),
+    RDM_ACK,
+    0,
+    request->SubDevice(),
+    request->ParamId(),
+    NULL,
+    0);
+}
+
+const RDMResponse *ResponderHelper::SetUInt8Value(const RDMRequest *request,
+                                                 uint8_t *value) {
+  return GenericSetIntValue(request, value);
+}
+
+const RDMResponse *ResponderHelper::SetUInt16Value(const RDMRequest *request,
+                                                 uint16_t *value) {
+  return GenericSetIntValue(request, value);
+}
+
+const RDMResponse *ResponderHelper::SetUInt32Value(const RDMRequest *request,
+                                                 uint32_t *value) {
+  return GenericSetIntValue(request, value);
 }
 }  // namespace rdm
 }  // namespace ola

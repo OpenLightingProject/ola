@@ -305,17 +305,8 @@ const RDMResponse *DummyResponder::GetPersonalityDescription(
 
 const RDMResponse *DummyResponder::GetDmxStartAddress(
     const RDMRequest *request) {
-  if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-
-  uint16_t address = HostToNetwork(m_start_address);
-  if (Footprint() == 0)
-    address = 0xffff;
-  return GetResponseFromData(
-    request,
-    reinterpret_cast<const uint8_t*>(&address),
-    sizeof(address));
+  return ResponderHelper::GetUInt16Value(request, ((Footprint() == 0) ?
+                                                    0xffff : m_start_address));
 }
 
 const RDMResponse *DummyResponder::SetDmxStartAddress(
@@ -346,33 +337,11 @@ const RDMResponse *DummyResponder::SetDmxStartAddress(
 }
 
 const RDMResponse *DummyResponder::GetLampStrikes(const RDMRequest *request) {
-  if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-
-  uint32_t strikes = HostToNetwork(m_lamp_strikes);
-  return GetResponseFromData(
-    request,
-    reinterpret_cast<const uint8_t*>(&strikes),
-    sizeof(strikes));
+  return ResponderHelper::GetUInt32Value(request, m_lamp_strikes);
 }
 
 const RDMResponse *DummyResponder::SetLampStrikes(const RDMRequest *request) {
-  uint32_t lamp_strikes;
-  if (!ResponderHelper::ExtractUInt32(request, &lamp_strikes)) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-
-  return new RDMSetResponse(
-    request->DestinationUID(),
-    request->SourceUID(),
-    request->TransactionNumber(),
-    RDM_ACK,
-    0,
-    request->SubDevice(),
-    request->ParamId(),
-    NULL,
-    0);
+  return ResponderHelper::SetUInt32Value(request, &m_lamp_strikes);
 }
 
 const RDMResponse *DummyResponder::GetIdentify(const RDMRequest *request) {
