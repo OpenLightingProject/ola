@@ -30,10 +30,14 @@ static const uint16_t ROOT_RDM_DEVICE = 0;
 static const uint16_t ALL_RDM_SUBDEVICES = 0xffff;
 static const uint16_t MAX_SUBDEVICE_NUMBER = 0x0200;
 static const uint8_t MAX_RDM_STRING_LENGTH = 32;
+static const uint16_t ZERO_FOOTPRINT_DMX_ADDRESS = 0xffff;
 // This is separated out because we never propagate OVERFLOWs up to the
 // clients.
 static const uint8_t ACK_OVERFLOW = 3;
 
+typedef enum {
+  RDM_VERSION_1_0 = 0x100,
+} rdm_protocol_version;
 
 typedef enum {
   // discovery

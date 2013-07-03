@@ -191,9 +191,14 @@ const RDMResponse *MovingLightResponder::GetDeviceInfo(
   }
 
   return ResponderHelper::GetDeviceInfo(
-      request, OLA_DUMMY_MOVING_LIGHT_MODEL,
-      PRODUCT_CATEGORY_FIXTURE_MOVING_YOKE, 1, Footprint(), m_personality + 1,
-      arraysize(PERSONALITIES), (Footprint() ? m_start_address : 0xffff),
+      request,
+      OLA_DUMMY_MOVING_LIGHT_MODEL,
+      PRODUCT_CATEGORY_FIXTURE_MOVING_YOKE,
+      1,
+      Footprint(),
+      m_personality + 1,
+      arraysize(PERSONALITIES),
+      (Footprint() ? m_start_address : ZERO_FOOTPRINT_DMX_ADDRESS),
       0, 0);
 }
 
@@ -239,21 +244,9 @@ const RDMResponse *MovingLightResponder::SetFactoryDefaults(
 
 const RDMResponse *MovingLightResponder::GetProductDetailList(
     const RDMRequest *request) {
-  if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-
-  uint16_t product_details[] = {
-    PRODUCT_DETAIL_TEST,
-  };
-
-  for (unsigned int i = 0; i < arraysize(product_details); i++)
-    product_details[i] = HostToNetwork(product_details[i]);
-
-  return GetResponseFromData(
-      request,
-      reinterpret_cast<uint8_t*>(&product_details),
-      sizeof(product_details));
+  // Shortcut for only one item in the vector
+  return ResponderHelper::GetProductDetailList(request,
+    std::vector<rdm_product_detail> (1, PRODUCT_DETAIL_TEST));
 }
 
 const RDMResponse *MovingLightResponder::GetPersonality(
@@ -337,8 +330,9 @@ const RDMResponse *MovingLightResponder::GetPersonalityDescription(
 
 const RDMResponse *MovingLightResponder::GetDmxStartAddress(
     const RDMRequest *request) {
-  return ResponderHelper::GetUInt16Value(request, ((Footprint() == 0) ?
-                                                    0xffff : m_start_address));
+  return ResponderHelper::GetUInt16Value(
+    request,
+    ((Footprint() == 0) ? ZERO_FOOTPRINT_DMX_ADDRESS : m_start_address));
 }
 
 const RDMResponse *MovingLightResponder::SetDmxStartAddress(
@@ -427,7 +421,8 @@ const RDMResponse *MovingLightResponder::GetDeviceModelDescription(
 
 const RDMResponse *MovingLightResponder::GetManufacturerLabel(
     const RDMRequest *request) {
-  return ResponderHelper::GetString(request, "Open Lighting Project");
+    return ResponderHelper::GetString(request,
+                                    OpenLightingEnums::OLA_MANUFACTURER_LABEL);
 }
 
 const RDMResponse *MovingLightResponder::GetDeviceLabel(

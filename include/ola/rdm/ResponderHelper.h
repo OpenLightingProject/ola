@@ -21,6 +21,7 @@
 #define INCLUDE_OLA_RDM_RESPONDERHELPER_H_
 
 #include <string>
+#include <vector>
 #include "ola/rdm/RDMCommand.h"
 
 namespace ola {
@@ -49,6 +50,10 @@ class ResponderHelper {
         uint16_t dmx_start_address,
         uint16_t sub_device_count,
         uint8_t sensor_count);
+
+    static const RDMResponse *GetProductDetailList(
+        const RDMRequest *request,
+        const std::vector<rdm_product_detail> &product_details);
 
     static const RDMResponse *GetRealTimeClock(const RDMRequest *request);
 

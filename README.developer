@@ -95,7 +95,7 @@ cpplint.py can be downloaded here:
   http://google-styleguide.googlecode.com/svn/trunk/cpplint/cpplint.py
 
 Run it with:
-   --filter=-legal/copyright,-readability/streams
+   --filter=-legal/copyright,-readability/streams,-runtime/arrays
 
 Race Conditions
 ---------------

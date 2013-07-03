@@ -14,9 +14,9 @@ libolardm_la_SOURCES = CommandPrinter.cpp DescriptorConsistencyChecker.cpp \
                        DummyResponder.cpp \
                        GroupSizeCalculator.cpp MessageDeserializer.cpp \
                        MessageSerializer.cpp MovingLightResponder.cpp \
-                       PidStore.cpp PidStoreHelper.cpp PidStoreLoader.cpp \
-                       QueueingRDMController.cpp RDMAPI.cpp RDMCommand.cpp \
-                       RDMCommandSerializer.cpp RDMHelper.cpp \
+                       OpenLightingEnums.cpp PidStore.cpp PidStoreHelper.cpp \
+                       PidStoreLoader.cpp QueueingRDMController.cpp RDMAPI.cpp \
+                       RDMCommand.cpp RDMCommandSerializer.cpp RDMHelper.cpp \
                        ResponderHelper.cpp StringMessageBuilder.cpp \
                        SubDeviceDispatcher.cpp UID.cpp \
                        VariableFieldSizeCalculator.cpp
