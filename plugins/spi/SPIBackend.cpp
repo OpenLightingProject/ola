@@ -352,25 +352,15 @@ const RDMResponse *SPIBackend::GetDeviceInfo(const RDMRequest *request) {
       footprint,
       m_personality_manager.ActivePersonalityNumber(),
       m_personality_manager.PersonalityCount(),
-      footprint ? m_start_address : 0xffff,
+      footprint ? m_start_address : ZERO_FOOTPRINT_DMX_ADDRESS,
       0, 0);
 }
 
 const RDMResponse *SPIBackend::GetProductDetailList(
     const RDMRequest *request) {
-  if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-
-  uint16_t product_details[] = { ola::rdm::PRODUCT_DETAIL_LED };
-
-  for (unsigned int i = 0; i < arraysize(product_details); i++)
-    product_details[i] = HostToNetwork(product_details[i]);
-
-  return GetResponseFromData(
-      request,
-      reinterpret_cast<uint8_t*>(&product_details),
-      sizeof(product_details));
+  // Shortcut for only one item in the vector
+  return ResponderHelper::GetProductDetailList(request,
+    std::vector<rdm_product_detail> (1, ola::rdm::PRODUCT_DETAIL_LED));
 }
 
 const RDMResponse *SPIBackend::GetDeviceModelDescription(
@@ -380,7 +370,7 @@ const RDMResponse *SPIBackend::GetDeviceModelDescription(
 
 const RDMResponse *SPIBackend::GetManufacturerLabel(
     const RDMRequest *request) {
-  return ResponderHelper::GetString(request, "Open Lighting Project");
+  return ResponderHelper::GetString(request, OLA_MANUFACTURER_LABEL);
 }
 
 const RDMResponse *SPIBackend::GetDeviceLabel(const RDMRequest *request) {
@@ -474,20 +464,10 @@ const RDMResponse *SPIBackend::GetPersonalityDescription(
 }
 
 const RDMResponse *SPIBackend::GetDmxStartAddress(const RDMRequest *request) {
-  uint16_t footprint = m_personality_manager.ActivePersonalityFootprint();
-
-  if (request->ParamDataSize()) {
-    return NackWithReason(request, ola::rdm::NR_FORMAT_ERROR);
-  }
-
-  uint16_t address = HostToNetwork(m_start_address);
-  if (footprint == 0)
-    address = 0xffff;
-
-  return GetResponseFromData(
+  return ResponderHelper::GetUInt16Value(
     request,
-    reinterpret_cast<const uint8_t*>(&address),
-    sizeof(address));
+    ((m_personality_manager.ActivePersonalityFootprint() == 0) ?
+     ZERO_FOOTPRINT_DMX_ADDRESS : m_start_address));
 }
 
 const RDMResponse *SPIBackend::SetDmxStartAddress(const RDMRequest *request) {

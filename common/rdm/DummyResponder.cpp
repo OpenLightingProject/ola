@@ -161,14 +161,10 @@ const RDMResponse *DummyResponder::GetParamDescription(
 }
 
 const RDMResponse *DummyResponder::GetDeviceInfo(const RDMRequest *request) {
-  if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-
   return ResponderHelper::GetDeviceInfo(
       request, OLA_DUMMY_DEVICE_MODEL, PRODUCT_CATEGORY_OTHER, 1, Footprint(),
       m_personality + 1, arraysize(PERSONALITIES),
-      Footprint() ? m_start_address : 0xffff, 0, 0);
+      Footprint() ? m_start_address : ZERO_FOOTPRINT_DMX_ADDRESS, 0, 0);
 }
 
 /**
@@ -209,22 +205,13 @@ const RDMResponse *DummyResponder::SetFactoryDefaults(
 
 const RDMResponse *DummyResponder::GetProductDetailList(
     const RDMRequest *request) {
-  if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-
-  uint16_t product_details[] = {
+  rdm_product_detail product_details[] = {
     PRODUCT_DETAIL_TEST,
     PRODUCT_DETAIL_OTHER
   };
-
-  for (unsigned int i = 0; i < arraysize(product_details); i++)
-    product_details[i] = HostToNetwork(product_details[i]);
-
-  return GetResponseFromData(
-      request,
-      reinterpret_cast<uint8_t*>(&product_details),
-      sizeof(product_details));
+  std::vector<rdm_product_detail> vData(product_details,
+    product_details + sizeof(product_details) / sizeof(product_details[0]));
+  return ResponderHelper::GetProductDetailList(request, vData);
 }
 
 const RDMResponse *DummyResponder::GetPersonality(const RDMRequest *request) {
@@ -305,8 +292,9 @@ const RDMResponse *DummyResponder::GetPersonalityDescription(
 
 const RDMResponse *DummyResponder::GetDmxStartAddress(
     const RDMRequest *request) {
-  return ResponderHelper::GetUInt16Value(request, ((Footprint() == 0) ?
-                                                    0xffff : m_start_address));
+  return ResponderHelper::GetUInt16Value(
+    request,
+    ((Footprint() == 0) ? ZERO_FOOTPRINT_DMX_ADDRESS : m_start_address));
 }
 
 const RDMResponse *DummyResponder::SetDmxStartAddress(
@@ -365,7 +353,7 @@ const RDMResponse *DummyResponder::GetRealTimeClock(const RDMRequest *request) {
 
 const RDMResponse *DummyResponder::GetManufacturerLabel(
     const RDMRequest *request) {
-  return ResponderHelper::GetString(request, "Open Lighting Project");
+  return ResponderHelper::GetString(request, OLA_MANUFACTURER_LABEL);
 }
 
 const RDMResponse *DummyResponder::GetDeviceLabel(const RDMRequest *request) {

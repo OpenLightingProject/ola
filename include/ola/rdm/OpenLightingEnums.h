@@ -53,6 +53,7 @@ typedef enum {
   OLA_DUMMY_MOVING_LIGHT_MODEL = 5,
 } ola_rdm_model_id;
 
+static const  std::string OLA_MANUFACTURER_LABEL = "Open Lighting Project";
 }  // namespace rdm
 }  // namespace ola
 #endif  // INCLUDE_OLA_RDM_OPENLIGHTINGENUMS_H_
