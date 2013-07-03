@@ -365,7 +365,7 @@ bool DmxBuffer::Blackout() {
   if (!m_data)
     if (!Init())
       return false;
-  memset(m_data, 0, DMX_UNIVERSE_SIZE);
+  memset(m_data, DMX_MIN_CHANNEL_VALUE, DMX_UNIVERSE_SIZE);
   m_length = DMX_UNIVERSE_SIZE;
   return true;
 }

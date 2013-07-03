@@ -352,7 +352,7 @@ const RDMResponse *SPIBackend::GetDeviceInfo(const RDMRequest *request) {
       footprint,
       m_personality_manager.ActivePersonalityNumber(),
       m_personality_manager.PersonalityCount(),
-      footprint ? m_start_address : ZERO_FOOTPRINT_DMX_ADDRESS,
+      footprint ? m_start_address : ola::rdm::ZERO_FOOTPRINT_DMX_ADDRESS,
       0, 0);
 }
 
@@ -360,7 +360,8 @@ const RDMResponse *SPIBackend::GetProductDetailList(
     const RDMRequest *request) {
   // Shortcut for only one item in the vector
   return ResponderHelper::GetProductDetailList(request,
-    std::vector<rdm_product_detail> (1, ola::rdm::PRODUCT_DETAIL_LED));
+    std::vector<ola::rdm::rdm_product_detail>
+        (1, ola::rdm::PRODUCT_DETAIL_LED));
 }
 
 const RDMResponse *SPIBackend::GetDeviceModelDescription(
@@ -370,8 +371,9 @@ const RDMResponse *SPIBackend::GetDeviceModelDescription(
 
 const RDMResponse *SPIBackend::GetManufacturerLabel(
     const RDMRequest *request) {
-  return ResponderHelper::GetString(request,
-                                    OpenLightingEnums::OLA_MANUFACTURER_LABEL);
+  return ResponderHelper::GetString(
+      request,
+      ola::rdm::OpenLightingEnums::OLA_MANUFACTURER_LABEL);
 }
 
 const RDMResponse *SPIBackend::GetDeviceLabel(const RDMRequest *request) {
@@ -468,7 +470,7 @@ const RDMResponse *SPIBackend::GetDmxStartAddress(const RDMRequest *request) {
   return ResponderHelper::GetUInt16Value(
     request,
     ((m_personality_manager.ActivePersonalityFootprint() == 0) ?
-     ZERO_FOOTPRINT_DMX_ADDRESS : m_start_address));
+     ola::rdm::ZERO_FOOTPRINT_DMX_ADDRESS : m_start_address));
 }
 
 const RDMResponse *SPIBackend::SetDmxStartAddress(const RDMRequest *request) {
@@ -506,7 +508,8 @@ const RDMResponse *SPIBackend::SetIdentify(const RDMRequest *request) {
         m_identify_mode ? "on" : "off");
     DmxBuffer identify_buffer;
     if (m_identify_mode)
-      identify_buffer.SetRangeToValue(0, 255, DMX_UNIVERSE_SIZE);
+      identify_buffer.SetRangeToValue(0, DMX_MAX_CHANNEL_VALUE,
+                                      DMX_UNIVERSE_SIZE);
     else
       identify_buffer.Blackout();
   }

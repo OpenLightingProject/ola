@@ -61,6 +61,7 @@ using ola::io::SelectServer;
 using std::string;
 
 static const unsigned int DEFAULT_UNIVERSE = 0;
+static const unsigned char CHANNEL_NUDGE_VALUE = 0x10;
 
 /* color names used */
 enum {
@@ -273,10 +274,10 @@ void values() {
          x++, z++, i++) {
       const int d = dmx[z];
       switch (d) {
-        case 0:
+        case DMX_MIN_CHANNEL_VALUE:
           attrset(palette[ZERO]);
           break;
-        case 255:
+        case DMX_MAX_CHANNEL_VALUE:
           attrset(palette[FULL]);
           break;
         default:
@@ -302,14 +303,14 @@ void values() {
         case DISP_MODE_DMX:
         default:
           switch (d) {
-            case 0:
+            case DMX_MIN_CHANNEL_VALUE:
               addstr("    ");
               break;
-            case 255:
+            case DMX_MAX_CHANNEL_VALUE:
               addstr(" FL ");
               break;
             default:
-              printw(" %02d ", (d * 100) / 255);
+              printw(" %02d ", (d * 100) / DMX_MAX_CHANNEL_VALUE);
           }
       }
     }
@@ -528,15 +529,15 @@ void stdin_ready() {
   switch (c) {
     case KEY_PPAGE:
       undoprep();
-      if (dmx[current_channel] < 255-0x10)
-        dmx[current_channel] += 0x10;
+      if (dmx[current_channel] < DMX_MAX_CHANNEL_VALUE-CHANNEL_NUDGE_VALUE)
+        dmx[current_channel] += CHANNEL_NUDGE_VALUE;
       else
-        dmx[current_channel] = 255;
+        dmx[current_channel] = DMX_MAX_CHANNEL_VALUE;
       set();
       break;
 
     case '+':
-      if (dmx[current_channel] < 255) {
+      if (dmx[current_channel] < DMX_MAX_CHANNEL_VALUE) {
         undoprep();
         dmx[current_channel]++;
       }
@@ -545,17 +546,20 @@ void stdin_ready() {
 
     case KEY_NPAGE:
       undoprep();
-      if (dmx[current_channel] == 255)
-        dmx[current_channel] = 0xe0;
-      else if (dmx[current_channel] > 0x10)
-        dmx[current_channel] -= 0x10;
-      else
-        dmx[current_channel] = 0;
+      if (dmx[current_channel] == DMX_MAX_CHANNEL_VALUE) {
+        // Smooth out the fade down
+        dmx[current_channel] = (DMX_MAX_CHANNEL_VALUE + 1) -
+            CHANNEL_NUDGE_VALUE;
+      } else if (dmx[current_channel] > CHANNEL_NUDGE_VALUE) {
+        dmx[current_channel] -= CHANNEL_NUDGE_VALUE;
+      } else {
+        dmx[current_channel] = DMX_MIN_CHANNEL_VALUE;
+      }
       set();
       break;
 
     case '-':
-      if (dmx[current_channel] > 0) {
+      if (dmx[current_channel] > DMX_MIN_CHANNEL_VALUE) {
         undoprep();
         dmx[current_channel]--;
       }
@@ -564,10 +568,10 @@ void stdin_ready() {
 
     case ' ':
       undoprep();
-      if (dmx[current_channel] < 128)
-        dmx[current_channel] = 255;
+      if (dmx[current_channel] < ((DMX_MAX_CHANNEL_VALUE + 1)/2))
+        dmx[current_channel] = DMX_MAX_CHANNEL_VALUE;
       else
-        dmx[current_channel] = 0;
+        dmx[current_channel] = DMX_MIN_CHANNEL_VALUE;
       set();
       break;
 
