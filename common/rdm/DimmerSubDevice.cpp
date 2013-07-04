@@ -106,15 +106,7 @@ const RDMResponse *DimmerSubDevice::GetProductDetailList(
 
 const RDMResponse *DimmerSubDevice::GetDmxStartAddress(
     const RDMRequest *request) {
-  if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-
-  uint16_t address = HostToNetwork(m_start_address);
-  return GetResponseFromData(
-      request,
-      reinterpret_cast<const uint8_t*>(&address),
-      sizeof(address));
+  return ResponderHelper::GetUInt16Value(request, m_start_address);
 }
 
 const RDMResponse *DimmerSubDevice::SetDmxStartAddress(
