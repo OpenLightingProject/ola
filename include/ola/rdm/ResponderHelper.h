@@ -49,7 +49,8 @@ class ResponderHelper {
         uint8_t personality_count,
         uint16_t dmx_start_address,
         uint16_t sub_device_count,
-        uint8_t sensor_count);
+        uint8_t sensor_count,
+        uint8_t queue_message_count = 0);
 
     static const RDMResponse *GetProductDetailList(
         const RDMRequest *request,
@@ -58,11 +59,15 @@ class ResponderHelper {
     static const RDMResponse *GetRealTimeClock(const RDMRequest *request);
 
     static const RDMResponse *GetString(const RDMRequest *request,
-                                        const std::string &value);
+                                        const std::string &value,
+                                        uint8_t queue_message_count = 0);
     static const RDMResponse *GetBoolValue(
-        const RDMRequest *request, bool value);
+        const RDMRequest *request, bool value,
+        uint8_t queue_message_count = 0);
     static const RDMResponse *SetBoolValue(
-        const RDMRequest *request, bool *value);
+        const RDMRequest *request, bool *value,
+        uint8_t queue_message_count = 0);
+
     static const RDMResponse *GetUInt8Value(
         const RDMRequest *request, uint8_t value);
     static const RDMResponse *GetUInt16Value(

@@ -45,13 +45,15 @@ class DummyPort: public BasicOutputPort {
             : number_of_dimmers(1),
               dimmer_sub_device_count(4),
               number_of_moving_lights(1),
-              number_of_dummy_responders(1) {
+              number_of_dummy_responders(1),
+              number_of_ack_timer_responders(0) {
         }
 
         uint8_t number_of_dimmers;
         uint16_t dimmer_sub_device_count;
         uint8_t number_of_moving_lights;
         uint8_t number_of_dummy_responders;
+        uint8_t number_of_ack_timer_responders;
     };
 
     DummyPort(class DummyDevice *parent,

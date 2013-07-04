@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 #include "ola/Logging.h"
+#include "ola/rdm/AckTimerResponder.h"
 #include "ola/rdm/DimmerResponder.h"
 #include "ola/rdm/DummyResponder.h"
 #include "ola/rdm/MovingLightResponder.h"
@@ -38,6 +39,7 @@ namespace plugin {
 namespace dummy {
 
 using std::auto_ptr;
+using ola::rdm::AckTimerResponder;
 using ola::rdm::DimmerResponder;
 using ola::rdm::DummyResponder;
 using ola::rdm::MovingLightResponder;
@@ -84,6 +86,15 @@ DummyPort::DummyPort(DummyDevice *parent,
       break;
     }
     STLReplaceAndDelete(&m_responders, *uid, new MovingLightResponder(*uid));
+  }
+
+  for (unsigned int i = 0; i < options.number_of_ack_timer_responders; i++) {
+    auto_ptr<UID> uid(allocator.AllocateNext());
+    if (!uid.get()) {
+      OLA_WARN << "Insufficient UIDs to create dummy RDM devices";
+      break;
+    }
+    STLReplaceAndDelete(&m_responders, *uid, new AckTimerResponder(*uid));
   }
 }
 
