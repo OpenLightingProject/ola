@@ -350,8 +350,7 @@ const RDMResponse *DummyResponder::GetRealTimeClock(const RDMRequest *request) {
 
 const RDMResponse *DummyResponder::GetManufacturerLabel(
     const RDMRequest *request) {
-    return ResponderHelper::GetString(request,
-                                    OpenLightingEnums::OLA_MANUFACTURER_LABEL);
+  return ResponderHelper::GetString(request, OLA_MANUFACTURER_LABEL);
 }
 
 const RDMResponse *DummyResponder::GetDeviceLabel(const RDMRequest *request) {

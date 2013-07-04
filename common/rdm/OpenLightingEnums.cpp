@@ -22,7 +22,6 @@
 namespace ola {
 namespace rdm {
 
-const char OpenLightingEnums::OLA_MANUFACTURER_LABEL[] =
-    "Open Lighting Project";
+const char OLA_MANUFACTURER_LABEL[] = "Open Lighting Project";
 }  // namespace rdm
 }  // namespace ola
