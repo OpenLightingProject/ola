@@ -366,8 +366,9 @@ void Universe::SendRDMRequest(const ola::rdm::RDMRequest *request,
                               ola::rdm::RDMCallback *callback) {
   OLA_INFO << "Universe " << UniverseId() << ", RDM request to " <<
     request->DestinationUID() << ", SD: " << request->SubDevice() << ", CC "
-      << std::hex << request->CommandClass()
-      << ", PID 0x" << std::hex << request->ParamId() << ", PDL: " << std::dec
+      << std::hex << request->CommandClass() << ", TN "
+      << static_cast<int>(request->TransactionNumber()) << ", PID 0x"
+      << std::hex << request->ParamId() << ", PDL: " << std::dec
       << request->ParamDataSize();
 
   if (m_export_map)

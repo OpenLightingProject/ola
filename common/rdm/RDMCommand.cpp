@@ -668,7 +668,8 @@ bool GuessMessageType(rdm_message_type *type_arg,
  * Generate a NACK response with a reason code
  */
 RDMResponse *NackWithReason(const RDMRequest *request,
-                            rdm_nack_reason reason_enum) {
+                            rdm_nack_reason reason_enum,
+                            uint8_t outstanding_messages) {
   uint16_t reason = ola::network::HostToNetwork(static_cast<uint16_t>(
     reason_enum));
   if (request->CommandClass() == ola::rdm::RDMCommand::GET_COMMAND) {
@@ -677,7 +678,7 @@ RDMResponse *NackWithReason(const RDMRequest *request,
       request->SourceUID(),
       request->TransactionNumber(),
       RDM_NACK_REASON,
-      0,
+      outstanding_messages,
       request->SubDevice(),
       request->ParamId(),
       reinterpret_cast<uint8_t*>(&reason),
@@ -688,7 +689,7 @@ RDMResponse *NackWithReason(const RDMRequest *request,
       request->SourceUID(),
       request->TransactionNumber(),
       RDM_NACK_REASON,
-      0,
+      outstanding_messages,
       request->SubDevice(),
       request->ParamId(),
       reinterpret_cast<uint8_t*>(&reason),

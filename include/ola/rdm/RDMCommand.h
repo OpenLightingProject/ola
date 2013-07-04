@@ -433,7 +433,8 @@ bool GuessMessageType(rdm_message_type *type,
                       const uint8_t *data,
                       unsigned int length);
 RDMResponse *NackWithReason(const RDMRequest *request,
-                            rdm_nack_reason reason);
+                            rdm_nack_reason reason,
+                            uint8_t outstanding_messages = 0);
 RDMResponse *GetResponseFromData(const RDMRequest *request,
                                  const uint8_t *data = NULL,
                                  unsigned int length = 0,

@@ -51,6 +51,8 @@ typedef enum {
   OLA_DUMMY_DIMMER_MODEL = 4,
   // Dummy Moving Light
   OLA_DUMMY_MOVING_LIGHT_MODEL = 5,
+  // A responder which ack timers
+  OLA_ACK_TIMER_MODEL = 6,
 } ola_rdm_model_id;
 
 }  // namespace rdm

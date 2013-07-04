@@ -73,9 +73,10 @@ const RDMResponse *ResponderHelper::GetDeviceInfo(
     uint8_t personality_count,
     uint16_t dmx_start_address,
     uint16_t sub_device_count,
-    uint8_t sensor_count) {
+    uint8_t sensor_count,
+    uint8_t queued_message_count) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
 
   struct device_info_s {
@@ -106,7 +107,9 @@ const RDMResponse *ResponderHelper::GetDeviceInfo(
   return GetResponseFromData(
       request,
       reinterpret_cast<uint8_t*>(&device_info),
-      sizeof(device_info));
+      sizeof(device_info),
+      RDM_ACK,
+      queued_message_count);
 }
 
 /**
@@ -151,31 +154,37 @@ const RDMResponse *ResponderHelper::GetRealTimeClock(
  */
 const RDMResponse *ResponderHelper::GetString(
     const RDMRequest *request,
-    const std::string &value) {
+    const std::string &value,
+    uint8_t queued_message_count) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
   return GetResponseFromData(
         request,
         reinterpret_cast<const uint8_t*>(value.data()),
-        value.size());
+        value.size(),
+        RDM_ACK,
+        queued_message_count);
 }
 
 const RDMResponse *ResponderHelper::GetBoolValue(const RDMRequest *request,
-                                                 bool value) {
+                                                 bool value,
+                                                 uint8_t queued_message_count) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
   uint8_t param = value ? 1 : 0;
 
-  return GetResponseFromData(request, &param, sizeof(param));
+  return GetResponseFromData(request, &param, sizeof(param),
+                             RDM_ACK, queued_message_count);
 }
 
 const RDMResponse *ResponderHelper::SetBoolValue(const RDMRequest *request,
-                                                 bool *value) {
+                                                 bool *value,
+                                                 uint8_t queued_message_count) {
   uint8_t arg;
   if (request->ParamDataSize() != sizeof(arg)) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
 
   arg = *request->ParamData();
@@ -186,13 +195,13 @@ const RDMResponse *ResponderHelper::SetBoolValue(const RDMRequest *request,
       request->SourceUID(),
       request->TransactionNumber(),
       RDM_ACK,
-      0,
+      queued_message_count,
       request->SubDevice(),
       request->ParamId(),
       NULL,
       0);
   } else {
-    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
   }
 }
 }  // namespace rdm
