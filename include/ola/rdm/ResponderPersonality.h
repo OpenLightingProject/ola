@@ -21,6 +21,7 @@
 #ifndef INCLUDE_OLA_RDM_RESPONDERPERSONALITY_H_
 #define INCLUDE_OLA_RDM_RESPONDERPERSONALITY_H_
 
+#include <stdint.h>
 #include <string>
 #include <vector>
 
