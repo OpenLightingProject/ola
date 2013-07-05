@@ -105,15 +105,10 @@ void DimmerSubDevice::SendRDMRequest(const RDMRequest *request,
 }
 
 const RDMResponse *DimmerSubDevice::GetDeviceInfo(const RDMRequest *request) {
-  if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-
   return ResponderHelper::GetDeviceInfo(
-      request, OLA_DUMMY_DIMMER_MODEL, PRODUCT_CATEGORY_DIMMER, 1,
-      Footprint(),
-      m_personality_manager.ActivePersonalityNumber(),
-      m_personality_manager.PersonalityCount(),
+      request, OLA_DUMMY_DIMMER_MODEL,
+      PRODUCT_CATEGORY_DIMMER, 1,
+      &m_personality_manager,
       m_start_address,
       0, 0);
 }

@@ -53,6 +53,17 @@ class ResponderHelper {
         uint8_t sensor_count,
         uint8_t queued_message_count = 0);
 
+    static const RDMResponse *GetDeviceInfo(
+        const RDMRequest *request,
+        uint16_t device_model,
+        rdm_product_category product_category,
+        uint32_t software_version,
+        const PersonalityManager *personality_manager,
+        uint16_t dmx_start_address,
+        uint16_t sub_device_count,
+        uint8_t sensor_count,
+        uint8_t queued_message_count = 0);
+
     static const RDMResponse *GetProductDetailList(
         const RDMRequest *request,
         const std::vector<rdm_product_detail> &product_details);

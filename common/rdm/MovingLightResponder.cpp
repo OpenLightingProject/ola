@@ -194,19 +194,11 @@ const RDMResponse *MovingLightResponder::GetParamDescription(
 
 const RDMResponse *MovingLightResponder::GetDeviceInfo(
     const RDMRequest *request) {
-  if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-
   return ResponderHelper::GetDeviceInfo(
-      request,
-      OLA_DUMMY_MOVING_LIGHT_MODEL,
-      PRODUCT_CATEGORY_FIXTURE_MOVING_YOKE,
-      1,
-      Footprint(),
-      m_personality_manager.ActivePersonalityNumber(),
-      m_personality_manager.PersonalityCount(),
-      (Footprint() ? m_start_address : ZERO_FOOTPRINT_DMX_ADDRESS),
+      request, OLA_DUMMY_MOVING_LIGHT_MODEL,
+      PRODUCT_CATEGORY_FIXTURE_MOVING_YOKE, 1,
+      &m_personality_manager,
+      m_start_address,
       0, 0);
 }
 

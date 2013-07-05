@@ -113,6 +113,26 @@ const RDMResponse *ResponderHelper::GetDeviceInfo(
       queued_message_count);
 }
 
+const RDMResponse *ResponderHelper::GetDeviceInfo(
+    const RDMRequest *request,
+    uint16_t device_model,
+    rdm_product_category product_category,
+    uint32_t software_version,
+    const PersonalityManager *personality_manager,
+    uint16_t start_address,
+    uint16_t sub_device_count,
+    uint8_t sensor_count,
+    uint8_t queued_message_count) {
+  return ResponderHelper::GetDeviceInfo(
+      request, device_model, product_category, software_version,
+      personality_manager->ActivePersonalityFootprint(),
+      personality_manager->ActivePersonalityNumber(),
+      personality_manager->PersonalityCount(),
+      (personality_manager->ActivePersonalityFootprint() ?
+        start_address : ZERO_FOOTPRINT_DMX_ADDRESS),
+      sub_device_count, sensor_count, queued_message_count);
+}
+
 const RDMResponse *ResponderHelper::GetProductDetailList(
     const RDMRequest *request,
     const std::vector<rdm_product_detail> &product_details) {

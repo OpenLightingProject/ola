@@ -112,7 +112,7 @@ DummyResponder::DummyResponder(const UID &uid)
       m_lamp_strikes(0),
       m_personality_manager(Personalities::Instance()) {
   // default to a personality with a non-0 footprint.
-  m_personality_manager.SetActivePersonality(2);
+  m_personality_manager.SetActivePersonality(DEFAULT_PERSONALITY);
 }
 
 /*
@@ -180,11 +180,10 @@ const RDMResponse *DummyResponder::GetParamDescription(
 
 const RDMResponse *DummyResponder::GetDeviceInfo(const RDMRequest *request) {
   return ResponderHelper::GetDeviceInfo(
-      request, OLA_DUMMY_DEVICE_MODEL, PRODUCT_CATEGORY_OTHER, 1,
-      Footprint(),
-      m_personality_manager.ActivePersonalityNumber(),
-      m_personality_manager.PersonalityCount(),
-      (Footprint() ? m_start_address : ZERO_FOOTPRINT_DMX_ADDRESS),
+      request, OLA_DUMMY_DEVICE_MODEL,
+      PRODUCT_CATEGORY_OTHER, 1,
+      &m_personality_manager,
+      m_start_address,
       0, 0);
 }
 
@@ -199,7 +198,7 @@ const RDMResponse *DummyResponder::GetFactoryDefaults(
 
   uint8_t using_defaults = (
       m_start_address == 1 &&
-      m_personality_manager.ActivePersonalityNumber() == 1 &&
+      m_personality_manager.ActivePersonalityNumber() == DEFAULT_PERSONALITY &&
       m_identify_mode == false);
   return GetResponseFromData(request, &using_defaults, sizeof(using_defaults));
 }
@@ -211,7 +210,7 @@ const RDMResponse *DummyResponder::SetFactoryDefaults(
   }
 
   m_start_address = 1;
-  m_personality_manager.SetActivePersonality(1);
+  m_personality_manager.SetActivePersonality(DEFAULT_PERSONALITY);
   m_identify_mode = 0;
 
   return new RDMSetResponse(

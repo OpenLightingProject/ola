@@ -27,6 +27,7 @@
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/ResponderOps.h"
+#include "ola/rdm/ResponderPersonality.h"
 #include "ola/rdm/UID.h"
 
 namespace ola {
@@ -41,10 +42,6 @@ class AckTimerResponder: public RDMControllerInterface {
     ~AckTimerResponder();
 
     void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
-
-    uint16_t Footprint() const {
-      return PERSONALITIES[m_personality].footprint;
-    }
 
   private:
     /**
@@ -64,6 +61,21 @@ class AckTimerResponder: public RDMControllerInterface {
         static RDMOps *instance;
     };
 
+    /**
+     * The personalities
+     */
+    class Personalities : public PersonalityCollection {
+      public:
+        static const Personalities *Instance();
+
+      private:
+        explicit Personalities(const PersonalityList &personalities) :
+          PersonalityCollection(personalities) {
+        }
+
+        static Personalities *instance;
+    };
+
     // The actual queue of messages to be collected.
     typedef std::queue<class QueuedResponse*> ResponseQueue;
 
@@ -73,13 +85,17 @@ class AckTimerResponder: public RDMControllerInterface {
 
     const UID m_uid;
     uint16_t m_start_address;
-    uint8_t m_personality;
     bool m_identify_mode;
+    PersonalityManager m_personality_manager;
 
     ResponseQueue m_queued_messages;
     PendingResponses m_upcoming_queued_messages;
     auto_ptr<class QueuedResponse> m_last_queued_message;
     ola::Clock m_clock;
+
+    uint16_t Footprint() const {
+      return m_personality_manager.ActivePersonalityFootprint();
+    }
 
     uint8_t QueuedMessageCount() const;
     void QueueAnyNewMessages();
@@ -101,14 +117,8 @@ class AckTimerResponder: public RDMControllerInterface {
     const RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
     const RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
 
-    typedef struct {
-      uint16_t footprint;
-      const char *description;
-    } personality_info;
-
     static const ResponderOps<AckTimerResponder>::ParamHandler
       PARAM_HANDLERS[];
-    static const personality_info PERSONALITIES[];
     static const uint16_t ACK_TIMER_MS;
 };
 }  // namespace rdm

@@ -44,6 +44,22 @@ using std::vector;
 
 AckTimerResponder::RDMOps *AckTimerResponder::RDMOps::instance = NULL;
 
+const AckTimerResponder::Personalities *
+    AckTimerResponder::Personalities::Instance() {
+  if (!instance) {
+    PersonalityList personalities;
+    personalities.push_back(new Personality(0, "Personality 1"));
+    personalities.push_back(new Personality(5, "Personality 2"));
+    personalities.push_back(new Personality(10, "Personality 3"));
+    personalities.push_back(new Personality(20, "Personality 4"));
+    instance = new Personalities(personalities);
+  }
+  return instance;
+}
+
+AckTimerResponder::Personalities *
+  AckTimerResponder::Personalities::instance = NULL;
+
 const ResponderOps<AckTimerResponder>::ParamHandler
     AckTimerResponder::PARAM_HANDLERS[] = {
   { PID_QUEUED_MESSAGE,
@@ -123,14 +139,6 @@ class QueuedResponse {
     unsigned int m_param_data_size;
 };
 
-const AckTimerResponder::personality_info
-    AckTimerResponder::PERSONALITIES[] = {
-  {0, "Personality 1"},
-  {5, "Personality 2"},
-  {10, "Personality 3"},
-  {20, "Personality 4"},
-};
-
 // Use 400ms for the ack timers.
 const uint16_t AckTimerResponder::ACK_TIMER_MS = 400;
 
@@ -140,8 +148,8 @@ const uint16_t AckTimerResponder::ACK_TIMER_MS = 400;
 AckTimerResponder::AckTimerResponder(const UID &uid)
     : m_uid(uid),
       m_start_address(1),
-      m_personality(1),
-      m_identify_mode(false) {
+      m_identify_mode(false),
+      m_personality_manager(Personalities::Instance()) {
 }
 
 /**
@@ -275,14 +283,11 @@ const RDMResponse *AckTimerResponder::GetQueuedMessage(
  */
 const RDMResponse *AckTimerResponder::GetDeviceInfo(
     const RDMRequest *request) {
-  if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR, QueuedMessageCount());
-  }
-
   return ResponderHelper::GetDeviceInfo(
       request, OLA_ACK_TIMER_MODEL,
-      PRODUCT_CATEGORY_TEST, 1, Footprint(), m_personality + 1,
-      arraysize(PERSONALITIES), (Footprint() ? m_start_address : 0xffff),
+      PRODUCT_CATEGORY_TEST, 1,
+      &m_personality_manager,
+      m_start_address,
       0, 0, QueuedMessageCount());
 }
 
@@ -291,53 +296,14 @@ const RDMResponse *AckTimerResponder::GetDeviceInfo(
  */
 const RDMResponse *AckTimerResponder::GetPersonality(
     const RDMRequest *request) {
-  if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR, QueuedMessageCount());
-  }
-
-  struct personality_info_s {
-    uint8_t personality;
-    uint8_t total;
-  } __attribute__((packed));
-
-  struct personality_info_s personality_info;
-  personality_info.personality = m_personality + 1;
-  personality_info.total = arraysize(PERSONALITIES);
-  return GetResponseFromData(
-    request,
-    reinterpret_cast<const uint8_t*>(&personality_info),
-    sizeof(personality_info),
-    RDM_ACK,
-    QueuedMessageCount());
+  return ResponderHelper::GetPersonality(request, &m_personality_manager,
+                                         QueuedMessageCount());
 }
 
 const RDMResponse *AckTimerResponder::SetPersonality(
     const RDMRequest *request) {
-  uint8_t personality;
-  if (!ResponderHelper::ExtractUInt8(request, &personality)) {
-    return NackWithReason(request, NR_FORMAT_ERROR, QueuedMessageCount());
-  }
-
-  if (personality > arraysize(PERSONALITIES) || personality == 0) {
-    return NackWithReason(request, NR_DATA_OUT_OF_RANGE,
-                          QueuedMessageCount());
-  } else if (m_start_address + PERSONALITIES[personality - 1].footprint - 1
-             > DMX_UNIVERSE_SIZE) {
-    return NackWithReason(request, NR_DATA_OUT_OF_RANGE,
-                          QueuedMessageCount());
-  } else {
-    m_personality = personality - 1;
-    return new RDMSetResponse(
-      request->DestinationUID(),
-      request->SourceUID(),
-      request->TransactionNumber(),
-      RDM_ACK,
-      QueuedMessageCount(),
-      request->SubDevice(),
-      request->ParamId(),
-      NULL,
-      0);
-  }
+  return ResponderHelper::SetPersonality(request, &m_personality_manager,
+                                         m_start_address, QueuedMessageCount());
 }
 
 /**
@@ -345,36 +311,8 @@ const RDMResponse *AckTimerResponder::SetPersonality(
  */
 const RDMResponse *AckTimerResponder::GetPersonalityDescription(
     const RDMRequest *request) {
-  uint8_t personality;
-  if (!ResponderHelper::ExtractUInt8(request, &personality)) {
-    return NackWithReason(request, NR_FORMAT_ERROR, QueuedMessageCount());
-  }
-  personality-= 1;
-
-  if (personality >= arraysize(PERSONALITIES)) {
-    return NackWithReason(request, NR_DATA_OUT_OF_RANGE, QueuedMessageCount());
-  } else {
-    struct personality_description_s {
-      uint8_t personality;
-      uint16_t slots_required;
-      char description[MAX_RDM_STRING_LENGTH];
-    } __attribute__((packed));
-
-    struct personality_description_s personality_description;
-    personality_description.personality = personality + 1;
-    personality_description.slots_required =
-        HostToNetwork(PERSONALITIES[personality].footprint);
-    strncpy(personality_description.description,
-            PERSONALITIES[personality].description,
-            sizeof(personality_description.description));
-
-    return GetResponseFromData(
-        request,
-        reinterpret_cast<uint8_t*>(&personality_description),
-        sizeof(personality_description),
-        RDM_ACK,
-        QueuedMessageCount());
-  }
+  return ResponderHelper::GetPersonalityDescription(
+      request, &m_personality_manager, QueuedMessageCount());
 }
 
 /**
@@ -382,19 +320,8 @@ const RDMResponse *AckTimerResponder::GetPersonalityDescription(
  */
 const RDMResponse *AckTimerResponder::GetDmxStartAddress(
     const RDMRequest *request) {
-  if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR, QueuedMessageCount());
-  }
-
-  uint16_t address = HostToNetwork(m_start_address);
-  if (Footprint() == 0)
-    address = 0xffff;
-  return GetResponseFromData(
-    request,
-    reinterpret_cast<const uint8_t*>(&address),
-    sizeof(address),
-    RDM_ACK,
-    QueuedMessageCount());
+  return ResponderHelper::GetDmxAddress(request, &m_personality_manager,
+                                        m_start_address, QueuedMessageCount());
 }
 
 const RDMResponse *AckTimerResponder::SetDmxStartAddress(
@@ -404,7 +331,8 @@ const RDMResponse *AckTimerResponder::SetDmxStartAddress(
     return NackWithReason(request, NR_FORMAT_ERROR, QueuedMessageCount());
   }
 
-  uint16_t end_address = DMX_UNIVERSE_SIZE - Footprint() + 1;
+  uint16_t end_address = (1 + DMX_UNIVERSE_SIZE -
+                          m_personality_manager.ActivePersonalityFootprint());
   if (address == 0 || address > end_address) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE, QueuedMessageCount());
   } else if (Footprint() == 0) {

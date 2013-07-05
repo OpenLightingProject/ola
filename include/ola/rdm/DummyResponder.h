@@ -102,6 +102,7 @@ class DummyResponder: public RDMControllerInterface {
     const RDMResponse *GetOlaCodeVersion(const RDMRequest *request);
 
     static const ResponderOps<DummyResponder>::ParamHandler PARAM_HANDLERS[];
+    static const uint8_t DEFAULT_PERSONALITY = 2;
 };
 }  // namespace rdm
 }  // namespace ola
