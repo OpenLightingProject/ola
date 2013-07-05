@@ -44,6 +44,22 @@ using std::vector;
 
 MovingLightResponder::RDMOps *MovingLightResponder::RDMOps::instance = NULL;
 
+const MovingLightResponder::Personalities *
+    MovingLightResponder::Personalities::Instance() {
+  if (!instance) {
+    PersonalityList personalities;
+    personalities.push_back(new Personality(0, "Personality 1"));
+    personalities.push_back(new Personality(5, "Personality 2"));
+    personalities.push_back(new Personality(10, "Personality 3"));
+    personalities.push_back(new Personality(20, "Personality 4"));
+    instance = new Personalities(personalities);
+  }
+  return instance;
+}
+
+MovingLightResponder::Personalities *
+  MovingLightResponder::Personalities::instance = NULL;
+
 const ResponderOps<MovingLightResponder>::ParamHandler
     MovingLightResponder::PARAM_HANDLERS[] = {
   { PID_PARAMETER_DESCRIPTION,
@@ -100,25 +116,17 @@ const ResponderOps<MovingLightResponder>::ParamHandler
   { 0, NULL, NULL},
 };
 
-const MovingLightResponder::personality_info
-    MovingLightResponder::PERSONALITIES[] = {
-  {0, "Personality 1"},
-  {5, "Personality 2"},
-  {10, "Personality 3"},
-  {20, "Personality 4"},
-};
-
 /**
  * New MovingLightResponder
  */
 MovingLightResponder::MovingLightResponder(const UID &uid)
     : m_uid(uid),
       m_start_address(1),
-      m_personality(1),
       m_identify_mode(false),
       m_pan_invert(false),
       m_tilt_invert(false),
-      m_lamp_strikes(0) {
+      m_lamp_strikes(0),
+      m_personality_manager(Personalities::Instance()) {
 }
 
 /*
@@ -196,8 +204,8 @@ const RDMResponse *MovingLightResponder::GetDeviceInfo(
       PRODUCT_CATEGORY_FIXTURE_MOVING_YOKE,
       1,
       Footprint(),
-      m_personality + 1,
-      arraysize(PERSONALITIES),
+      m_personality_manager.ActivePersonalityNumber(),
+      m_personality_manager.PersonalityCount(),
       (Footprint() ? m_start_address : ZERO_FOOTPRINT_DMX_ADDRESS),
       0, 0);
 }
@@ -212,8 +220,10 @@ const RDMResponse *MovingLightResponder::GetFactoryDefaults(
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
-  uint8_t using_defaults = (m_start_address == 1 && m_personality == 1 &&
-                            m_identify_mode == false);
+  uint8_t using_defaults = (
+      m_start_address == 1 &&
+      m_personality_manager.ActivePersonalityNumber() == 1 &&
+      m_identify_mode == false);
   return GetResponseFromData(
     request,
     &using_defaults,
@@ -227,7 +237,7 @@ const RDMResponse *MovingLightResponder::SetFactoryDefaults(
   }
 
   m_start_address = 1;
-  m_personality = 1;
+  m_personality_manager.SetActivePersonality(1);
   m_identify_mode = 0;
 
   return new RDMSetResponse(
@@ -245,121 +255,37 @@ const RDMResponse *MovingLightResponder::SetFactoryDefaults(
 const RDMResponse *MovingLightResponder::GetProductDetailList(
     const RDMRequest *request) {
   // Shortcut for only one item in the vector
-  return ResponderHelper::GetProductDetailList(request,
-    std::vector<rdm_product_detail> (1, PRODUCT_DETAIL_TEST));
+  return ResponderHelper::GetProductDetailList(
+      request, vector<rdm_product_detail>(1, PRODUCT_DETAIL_TEST));
 }
 
 const RDMResponse *MovingLightResponder::GetPersonality(
     const RDMRequest *request) {
-  if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-
-  struct personality_info_s {
-    uint8_t personality;
-    uint8_t total;
-  } __attribute__((packed));
-
-  struct personality_info_s personality_info;
-  personality_info.personality = m_personality + 1;
-  personality_info.total = arraysize(PERSONALITIES);
-  return GetResponseFromData(
-    request,
-    reinterpret_cast<const uint8_t*>(&personality_info),
-    sizeof(personality_info));
+  return ResponderHelper::GetPersonality(request, &m_personality_manager);
 }
 
 const RDMResponse *MovingLightResponder::SetPersonality(
     const RDMRequest *request) {
-  uint8_t personality;
-  if (!ResponderHelper::ExtractUInt8(request, &personality)) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-
-  if (personality > arraysize(PERSONALITIES) || personality == 0) {
-    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
-  } else if (m_start_address + PERSONALITIES[personality - 1].footprint - 1
-             > DMX_UNIVERSE_SIZE) {
-    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
-  } else {
-    m_personality = personality - 1;
-    return new RDMSetResponse(
-      request->DestinationUID(),
-      request->SourceUID(),
-      request->TransactionNumber(),
-      RDM_ACK,
-      0,
-      request->SubDevice(),
-      request->ParamId(),
-      NULL,
-      0);
-  }
+  return ResponderHelper::SetPersonality(request, &m_personality_manager,
+                                         m_start_address);
 }
 
 const RDMResponse *MovingLightResponder::GetPersonalityDescription(
     const RDMRequest *request) {
-  uint8_t personality;
-  if (!ResponderHelper::ExtractUInt8(request, &personality)) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-  personality-= 1;
-
-  if (personality >= arraysize(PERSONALITIES)) {
-    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
-  } else {
-    struct personality_description_s {
-      uint8_t personality;
-      uint16_t slots_required;
-      char description[MAX_RDM_STRING_LENGTH];
-    } __attribute__((packed));
-
-    struct personality_description_s personality_description;
-    personality_description.personality = personality + 1;
-    personality_description.slots_required =
-        HostToNetwork(PERSONALITIES[personality].footprint);
-    strncpy(personality_description.description,
-            PERSONALITIES[personality].description,
-            sizeof(personality_description.description));
-
-    return GetResponseFromData(
-        request,
-        reinterpret_cast<uint8_t*>(&personality_description),
-        sizeof(personality_description));
-  }
+  return ResponderHelper::GetPersonalityDescription(
+      request, &m_personality_manager);
 }
 
 const RDMResponse *MovingLightResponder::GetDmxStartAddress(
     const RDMRequest *request) {
-  return ResponderHelper::GetUInt16Value(
-    request,
-    ((Footprint() == 0) ? ZERO_FOOTPRINT_DMX_ADDRESS : m_start_address));
+  return ResponderHelper::GetDmxAddress(request, &m_personality_manager,
+                                        m_start_address);
 }
 
 const RDMResponse *MovingLightResponder::SetDmxStartAddress(
     const RDMRequest *request) {
-  uint16_t address;
-  if (!ResponderHelper::ExtractUInt16(request, &address)) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-
-  uint16_t end_address = DMX_UNIVERSE_SIZE - Footprint() + 1;
-  if (address == 0 || address > end_address) {
-    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
-  } else if (Footprint() == 0) {
-    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
-  } else {
-    m_start_address = address;
-    return new RDMSetResponse(
-      request->DestinationUID(),
-      request->SourceUID(),
-      request->TransactionNumber(),
-      RDM_ACK,
-      0,
-      request->SubDevice(),
-      request->ParamId(),
-      NULL,
-      0);
-  }
+  return ResponderHelper::SetDmxAddress(request, &m_personality_manager,
+                                        &m_start_address);
 }
 
 const RDMResponse *MovingLightResponder::GetLampStrikes(

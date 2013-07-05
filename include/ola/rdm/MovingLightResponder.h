@@ -24,6 +24,7 @@
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/ResponderOps.h"
+#include "ola/rdm/ResponderPersonality.h"
 #include "ola/rdm/UID.h"
 
 namespace ola {
@@ -40,7 +41,7 @@ class MovingLightResponder: public RDMControllerInterface {
 
     uint16_t StartAddress() const { return m_start_address; }
     uint16_t Footprint() const {
-      return PERSONALITIES[m_personality].footprint;
+      return m_personality_manager.ActivePersonalityFootprint();
     }
 
   private:
@@ -61,13 +62,28 @@ class MovingLightResponder: public RDMControllerInterface {
         static RDMOps *instance;
     };
 
+    /**
+     * The personalities
+     */
+    class Personalities : public PersonalityCollection {
+      public:
+        static const Personalities *Instance();
+
+      private:
+        explicit Personalities(const PersonalityList &personalities) :
+          PersonalityCollection(personalities) {
+        }
+
+        static Personalities *instance;
+    };
+
     const UID m_uid;
     uint16_t m_start_address;
-    uint8_t m_personality;
     bool m_identify_mode;
     bool m_pan_invert;
     bool m_tilt_invert;
     uint32_t m_lamp_strikes;
+    PersonalityManager m_personality_manager;
 
     const RDMResponse *GetParamDescription(const RDMRequest *request);
     const RDMResponse *GetDeviceInfo(const RDMRequest *request);
@@ -94,14 +110,8 @@ class MovingLightResponder: public RDMControllerInterface {
     const RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
     const RDMResponse *GetOlaCodeVersion(const RDMRequest *request);
 
-    typedef struct {
-      uint16_t footprint;
-      const char *description;
-    } personality_info;
-
     static const ResponderOps<MovingLightResponder>::ParamHandler
       PARAM_HANDLERS[];
-    static const personality_info PERSONALITIES[];
 };
 }  // namespace rdm
 }  // namespace ola

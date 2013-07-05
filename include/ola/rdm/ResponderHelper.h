@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 #include "ola/rdm/RDMCommand.h"
+#include "ola/rdm/ResponderPersonality.h"
 
 namespace ola {
 namespace rdm {
@@ -50,28 +51,53 @@ class ResponderHelper {
         uint16_t dmx_start_address,
         uint16_t sub_device_count,
         uint8_t sensor_count,
-        uint8_t queue_message_count = 0);
+        uint8_t queued_message_count = 0);
 
     static const RDMResponse *GetProductDetailList(
         const RDMRequest *request,
         const std::vector<rdm_product_detail> &product_details);
 
+    static const RDMResponse *GetPersonality(
+        const RDMRequest *request,
+        const PersonalityManager *personality_manager,
+        uint8_t queued_message_count = 0);
+    static const RDMResponse *SetPersonality(
+        const RDMRequest *request,
+        PersonalityManager *personality_manager,
+        uint16_t start_address,
+        uint8_t queued_message_count = 0);
+    static const RDMResponse *GetPersonalityDescription(
+        const RDMRequest *request,
+        const PersonalityManager *personality_manager,
+        uint8_t queued_message_count = 0);
+    static const RDMResponse *GetDmxAddress(
+        const RDMRequest *request,
+        const PersonalityManager *personality_manager,
+        uint16_t start_address,
+        uint8_t queued_message_count = 0);
+    static const RDMResponse *SetDmxAddress(
+        const RDMRequest *request,
+        const PersonalityManager *personality_manager,
+        uint16_t *dmx_address,
+        uint8_t queued_message_count = 0);
+
     static const RDMResponse *GetRealTimeClock(const RDMRequest *request);
 
     static const RDMResponse *GetString(const RDMRequest *request,
                                         const std::string &value,
-                                        uint8_t queue_message_count = 0);
+                                        uint8_t queued_message_count = 0);
     static const RDMResponse *GetBoolValue(
         const RDMRequest *request, bool value,
-        uint8_t queue_message_count = 0);
+        uint8_t queued_message_count = 0);
     static const RDMResponse *SetBoolValue(
         const RDMRequest *request, bool *value,
-        uint8_t queue_message_count = 0);
+        uint8_t queued_message_count = 0);
 
     static const RDMResponse *GetUInt8Value(
         const RDMRequest *request, uint8_t value);
     static const RDMResponse *GetUInt16Value(
-        const RDMRequest *request, uint16_t value);
+        const RDMRequest *request, uint16_t value,
+        uint8_t queued_message_count = 0);
     static const RDMResponse *GetUInt32Value(
         const RDMRequest *request, uint32_t value);
     static const RDMResponse *SetUInt8Value(

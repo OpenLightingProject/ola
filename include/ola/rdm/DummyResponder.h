@@ -24,6 +24,7 @@
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/ResponderOps.h"
+#include "ola/rdm/ResponderPersonality.h"
 #include "ola/rdm/UID.h"
 
 namespace ola {
@@ -31,19 +32,13 @@ namespace rdm {
 
 class DummyResponder: public RDMControllerInterface {
   public:
-    explicit DummyResponder(const UID &uid)
-        : m_uid(uid),
-          m_start_address(1),
-          m_personality(1),
-          m_identify_mode(0),
-          m_lamp_strikes(0) {
-    }
+    explicit DummyResponder(const UID &uid);
 
     void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
 
     uint16_t StartAddress() const { return m_start_address; }
     uint16_t Footprint() const {
-      return PERSONALITIES[m_personality].footprint;
+      return m_personality_manager.ActivePersonalityFootprint();
     }
 
   private:
@@ -64,11 +59,26 @@ class DummyResponder: public RDMControllerInterface {
         static RDMOps *instance;
     };
 
+    /**
+     * The personalities
+     */
+    class Personalities : public PersonalityCollection {
+      public:
+        static const Personalities *Instance();
+
+      private:
+        explicit Personalities(const PersonalityList &personalities) :
+          PersonalityCollection(personalities) {
+        }
+
+        static Personalities *instance;
+    };
+
     const UID m_uid;
     uint16_t m_start_address;
-    uint8_t m_personality;
     bool m_identify_mode;
     uint32_t m_lamp_strikes;
+    PersonalityManager m_personality_manager;
 
     const RDMResponse *GetParamDescription(const RDMRequest *request);
     const RDMResponse *GetDeviceInfo(const RDMRequest *request);
@@ -91,13 +101,7 @@ class DummyResponder: public RDMControllerInterface {
     const RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
     const RDMResponse *GetOlaCodeVersion(const RDMRequest *request);
 
-    typedef struct {
-      uint16_t footprint;
-      const char *description;
-    } personality_info;
-
     static const ResponderOps<DummyResponder>::ParamHandler PARAM_HANDLERS[];
-    static const personality_info PERSONALITIES[];
 };
 }  // namespace rdm
 }  // namespace ola

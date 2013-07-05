@@ -133,6 +133,150 @@ const RDMResponse *ResponderHelper::GetProductDetailList(
       sizeof(product_details_raw));
 }
 
+const RDMResponse *ResponderHelper::GetPersonality(
+    const RDMRequest *request,
+    const PersonalityManager *personality_manager,
+    uint8_t queued_message_count) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
+  }
+
+  struct personality_info_s {
+    uint8_t personality;
+    uint8_t total;
+  } __attribute__((packed));
+
+  struct personality_info_s personality_info = {
+      personality_manager->ActivePersonalityNumber(),
+      personality_manager->PersonalityCount()
+  };
+  return GetResponseFromData(
+    request,
+    reinterpret_cast<const uint8_t*>(&personality_info),
+    sizeof(personality_info),
+    RDM_ACK,
+    queued_message_count);
+}
+
+const RDMResponse *ResponderHelper::SetPersonality(
+    const RDMRequest *request,
+    PersonalityManager *personality_manager,
+    uint16_t start_address,
+    uint8_t queued_message_count) {
+  uint8_t personality_number;
+  if (!ExtractUInt8(request, &personality_number)) {
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
+  }
+
+  const Personality *personality = personality_manager->Lookup(
+    personality_number);
+
+  if (!personality) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
+  } else if (start_address + personality->Footprint() - 1 > DMX_UNIVERSE_SIZE) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
+  } else {
+    personality_manager->SetActivePersonality(personality_number);
+    return new RDMSetResponse(
+      request->DestinationUID(),
+      request->SourceUID(),
+      request->TransactionNumber(),
+      RDM_ACK,
+      queued_message_count,
+      request->SubDevice(),
+      request->ParamId(),
+      NULL,
+      0);
+  }
+}
+
+const RDMResponse *ResponderHelper::GetPersonalityDescription(
+    const RDMRequest *request,
+    const PersonalityManager *personality_manager,
+    uint8_t queued_message_count) {
+  uint8_t personality_number;
+  if (!ExtractUInt8(request, &personality_number)) {
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
+  }
+  const Personality *personality = personality_manager->Lookup(
+    personality_number);
+
+  if (!personality) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
+  } else {
+    struct personality_description_s {
+      uint8_t personality;
+      uint16_t slots_required;
+      char description[MAX_RDM_STRING_LENGTH];
+    } __attribute__((packed));
+
+    struct personality_description_s personality_description;
+    personality_description.personality = personality_number;
+    personality_description.slots_required =
+        HostToNetwork(personality->Footprint());
+    strncpy(personality_description.description,
+            personality->Description().c_str(),
+            sizeof(personality_description.description));
+
+    return GetResponseFromData(
+        request,
+        reinterpret_cast<uint8_t*>(&personality_description),
+        sizeof(personality_description),
+        RDM_ACK,
+        queued_message_count);
+  }
+}
+
+
+/**
+ * Get the start address
+ */
+const RDMResponse *ResponderHelper::GetDmxAddress(
+    const RDMRequest *request,
+    const PersonalityManager *personality_manager,
+    uint16_t start_address,
+    uint8_t queued_message_count) {
+  return ResponderHelper::GetUInt16Value(
+    request,
+    ((personality_manager->ActivePersonalityFootprint() == 0) ?
+        ZERO_FOOTPRINT_DMX_ADDRESS : start_address),
+    queued_message_count);
+}
+
+/**
+ * Set the start address
+ */
+const RDMResponse *ResponderHelper::SetDmxAddress(
+    const RDMRequest *request,
+    const PersonalityManager *personality_manager,
+    uint16_t *dmx_address,
+    uint8_t queued_message_count) {
+  uint16_t address;
+  if (!ResponderHelper::ExtractUInt16(request, &address)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  uint16_t end_address = (1 + DMX_UNIVERSE_SIZE -
+                          personality_manager->ActivePersonalityFootprint());
+  if (address == 0 || address > end_address) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
+  } else if (personality_manager->ActivePersonalityFootprint() == 0) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
+  } else {
+    *dmx_address = address;
+    return new RDMSetResponse(
+      request->DestinationUID(),
+      request->SourceUID(),
+      request->TransactionNumber(),
+      RDM_ACK,
+      queued_message_count,
+      request->SubDevice(),
+      request->ParamId(),
+      NULL,
+      0);
+  }
+}
+
 /**
  * Get the clock response.
  */
@@ -227,15 +371,18 @@ const RDMResponse *ResponderHelper::SetBoolValue(const RDMRequest *request,
 
 template<typename T>
 static const RDMResponse *GenericGetIntValue(const RDMRequest *request,
-                                             T value) {
+                                             T value,
+                                             uint8_t queued_message_count = 0) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
   T param = HostToNetwork(value);
   return GetResponseFromData(
     request,
     reinterpret_cast<const uint8_t*>(&param),
-    sizeof(param));
+    sizeof(param),
+    RDM_ACK,
+    queued_message_count);
 }
 
 const RDMResponse *ResponderHelper::GetUInt8Value(const RDMRequest *request,
@@ -243,9 +390,11 @@ const RDMResponse *ResponderHelper::GetUInt8Value(const RDMRequest *request,
   return GenericGetIntValue(request, value);
 }
 
-const RDMResponse *ResponderHelper::GetUInt16Value(const RDMRequest *request,
-                                                   uint16_t value) {
-  return GenericGetIntValue(request, value);
+const RDMResponse *ResponderHelper::GetUInt16Value(
+    const RDMRequest *request,
+    uint16_t value,
+    uint8_t queued_message_count) {
+  return GenericGetIntValue(request, value, queued_message_count);
 }
 
 const RDMResponse *ResponderHelper::GetUInt32Value(const RDMRequest *request,

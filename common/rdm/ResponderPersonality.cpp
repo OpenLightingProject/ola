@@ -43,7 +43,7 @@ Personality::Personality(uint16_t footprint, const string &description)
  * Takes ownership of the personalites
  */
 PersonalityCollection::PersonalityCollection(
-    const vector<Personality*> &personalities)
+    const PersonalityList &personalities)
     : m_personalities(personalities) {
 }
 
@@ -72,7 +72,8 @@ const Personality *PersonalityCollection::Lookup(uint8_t personality) const {
 
 PersonalityManager::PersonalityManager(
     const PersonalityCollection *personalities)
-    : m_personalities(personalities) {
+    : m_personalities(personalities),
+      m_active_personality(1) {
 }
 
 uint8_t PersonalityManager::PersonalityCount() const {

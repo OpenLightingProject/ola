@@ -29,7 +29,6 @@ namespace ola {
 namespace rdm {
 
 using std::string;
-using std::vector;
 
 /**
  * Represents a personality.
@@ -54,7 +53,9 @@ class Personality {
  */
 class PersonalityCollection {
   public:
-    explicit PersonalityCollection(const vector<Personality*> &personalities);
+    typedef std::vector<Personality*> PersonalityList;
+
+    explicit PersonalityCollection(const PersonalityList &personalities);
     virtual ~PersonalityCollection();
 
     uint8_t PersonalityCount() const;
@@ -65,7 +66,7 @@ class PersonalityCollection {
     PersonalityCollection() {}
 
   private:
-    std::vector<Personality*> m_personalities;
+    PersonalityList m_personalities;
 };
 
 

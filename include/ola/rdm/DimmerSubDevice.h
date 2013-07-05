@@ -24,6 +24,7 @@
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/ResponderOps.h"
+#include "ola/rdm/ResponderPersonality.h"
 #include "ola/rdm/UID.h"
 
 namespace ola {
@@ -34,12 +35,7 @@ namespace rdm {
  */
 class DimmerSubDevice: public RDMControllerInterface {
   public:
-    DimmerSubDevice(const UID &uid, uint16_t sub_device_number)
-        : m_uid(uid),
-          m_sub_device_number(sub_device_number),
-          m_start_address(sub_device_number),
-          m_identify_mode(false) {
-    }
+    DimmerSubDevice(const UID &uid, uint16_t sub_device_number);
 
     void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
 
@@ -61,13 +57,36 @@ class DimmerSubDevice: public RDMControllerInterface {
         static RDMOps *instance;
     };
 
+    /**
+     * The personalities
+     */
+    class Personalities : public PersonalityCollection {
+      public:
+        static const Personalities *Instance();
+
+      private:
+        explicit Personalities(const PersonalityList &personalities) :
+          PersonalityCollection(personalities) {
+        }
+
+        static Personalities *instance;
+    };
+
     const UID m_uid;
     const uint16_t m_sub_device_number;
     uint16_t m_start_address;
     bool m_identify_mode;
+    PersonalityManager m_personality_manager;
+
+    uint16_t Footprint() const {
+      return m_personality_manager.ActivePersonalityFootprint();
+    }
 
     const RDMResponse *GetDeviceInfo(const RDMRequest *request);
     const RDMResponse *GetProductDetailList(const RDMRequest *request);
+    const RDMResponse *GetPersonality(const RDMRequest *request);
+    const RDMResponse *SetPersonality(const RDMRequest *request);
+    const RDMResponse *GetPersonalityDescription(const RDMRequest *request);
     const RDMResponse *GetDmxStartAddress(const RDMRequest *request);
     const RDMResponse *SetDmxStartAddress(const RDMRequest *request);
     const RDMResponse *GetIdentify(const RDMRequest *request);
