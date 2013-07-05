@@ -22,6 +22,7 @@
 
 #include <queue>
 #include <string>
+#include <vector>
 #include "ola/Clock.h"
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/RDMEnums.h"

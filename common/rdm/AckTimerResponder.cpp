@@ -249,7 +249,6 @@ const RDMResponse *AckTimerResponder::GetQueuedMessage(
     return NackWithReason(request, NR_FORMAT_ERROR, QueuedMessageCount());
   }
 
-  OLA_DEBUG << "handling get QUEUED_MESSAGE, arg is " << (int) status_type;
   if (m_queued_messages.empty()) {
     // respond with empty status message
     return EmptyStatusMessage(request);
