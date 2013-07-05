@@ -1,0 +1,60 @@
+.TH ola_dmxconsole 1 "July 2013"
+.SH NAME
+ola_dmxconsole \- Send DMX512 information to
+.B olad
+.SH SYNOPSIS
+.B ola_dmxconsole [-u
+.I universe-id
+.B ]
+.SH DESCRIPTION
+.B ola_dmxconsole
+provides a simple 12 scene console to send DMX512 data. Each DMX512 universe is
+512 slots. Each slot can have a value between 0 and 255. For most dimmers, a
+value of 0 is off, and a value of 255 is on.
+.SH OPTIONS
+.IP "-u universe-id, --universe universe-id"
+The universe ID to monitor.
+.IP "-h, --help"
+Displays a short help message.
+.SH CONTROLS
+Once running, the following keys control the behavior:
+.IP "+"
+Increment the current slot data by one.
+.IP "-"
+Decrement the current slot data by one.
+.IP "Page Up"
+Increment the current slot data by 16.
+.IP "Page Down"
+Decrement the current slot data by 16.
+.IP "<space>"
+Toggle the current slot between 0 and 255.
+.IP "Insert"
+Insert a channel (slot), shifting the existing values up one channel.
+.IP "Delete"
+Delete a channel (slot), shifting the existing values down one channel.
+.IP "0 .. 9
+Set the fade time from 0 to 9 seconds.
+.IP "b, B"
+Blackout, sets all slots to 0.
+.IP "f, F"
+Full, sets all slots to 255.
+.IP "m, M"
+Toggle display modes: hex, DMX and decimal.
+.IP "n, N"
+Toggle channel (slot) indexing mode. 0-indexed or 1-indexed.
+.IP "p, P"
+Toggle display palette.
+.IP "q, Q"
+Quit the program.
+.IP "u, U"
+Undo the last change. Only one level of undo is supported.
+.IP "Arrow keys"
+Move the channel (slot) cursor.
+.IP "Home"
+Move the channel (slot) cursor to the first channel.
+.IP "F1 - F12"
+Change scene honoring the fade time.
+.SH SEE ALSO
+.BR ola_dmxmonitor(1) ,
+.BR olad(1) ,
+.

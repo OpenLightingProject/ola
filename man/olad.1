@@ -1,0 +1,66 @@
+.TH olad 1 "July 2013"
+.SH NAME
+olad \- The Open Lighting Architecture Daemon
+.SH SYNOPSIS
+.B olad [ options ]
+.SH DESCRIPTION
+.B olad
+is the Open Lighting Architecture (OLA) daemon. It handles communication
+with DMX512 / RDM hardware devices and remote network hosts via various
+lighting control protocols.
+.SH OPTIONS
+.IP "-c, --config-dir"
+Path to the config directory. Defaults to ~/.ola
+.IP "-d, --http-data-dir <string>"
+The path to the static www content.
+.IP "-f, --daemon"
+Fork and run as a background process.
+.IP "-h, --help"
+Display the help message
+.IP "-i, --interface <string>"
+The interface name (e.g. eth0) or IP address of the network interface to use
+.IP "-l, --log-level <int8_t>"
+Set the logging level 0 .. 4. See LOGGING.
+.IP "-p, --http-port <uint16_t>"
+Port to run the http server on. Defaults to 9090.
+.IP "-r, --rpc-port <uint16_t>"
+The port to listen for RPCs on. Defaults to 9010.
+.IP "-v, --version"
+Print
+.B olad
+version information
+.IP "--nohttp"
+Disable the HTTP server.
+.IP "--nohttp-quit"
+Disable the HTTP /quit handler.
+.IP "--pid-location <string>"
+The directory containing the PID definitions
+.IP "--syslog"
+Send to syslog rather than stderr.
+.SH LOGGING
+.B olad
+can either log to
+.BR stderr(4)
+or
+.BR syslog(5).
+Each log level includes those of higher severity.
+.IP 0
+No logging.
+.IP 1
+Fatal logging.
+.IP 2
+Warnings.
+.IP 3
+Infomational logging.
+.IP 4
+Debug logging.
+.SH SIGNALS
+Once running, the following signals control the behavior of olad:
+.IP "SIGUP"
+Reloads the plugins.
+.IP "SIGUSR1"
+Increases the logging level, eventually wrapping 
+.SH SEE ALSO
+.BR ola_dmxconsole(1) ,
+.BR ola_dmxmonitor(1) ,
+.
