@@ -135,9 +135,10 @@ const RDMResponse *ResponderHelper::GetDeviceInfo(
 
 const RDMResponse *ResponderHelper::GetProductDetailList(
     const RDMRequest *request,
-    const std::vector<rdm_product_detail> &product_details) {
+    const std::vector<rdm_product_detail> &product_details,
+    uint8_t queued_message_count) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
 
   uint16_t product_details_raw[product_details.size()];
@@ -150,7 +151,9 @@ const RDMResponse *ResponderHelper::GetProductDetailList(
   return GetResponseFromData(
       request,
       reinterpret_cast<uint8_t*>(&product_details_raw),
-      sizeof(product_details_raw));
+      sizeof(product_details_raw),
+      RDM_ACK,
+      queued_message_count);
 }
 
 const RDMResponse *ResponderHelper::GetPersonality(
@@ -301,9 +304,10 @@ const RDMResponse *ResponderHelper::SetDmxAddress(
  * Get the clock response.
  */
 const RDMResponse *ResponderHelper::GetRealTimeClock(
-    const RDMRequest *request) {
+    const RDMRequest *request,
+    uint8_t queued_message_count) {
   if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
 
   struct clock_s {
@@ -331,7 +335,9 @@ const RDMResponse *ResponderHelper::GetRealTimeClock(
   return GetResponseFromData(
       request,
       reinterpret_cast<uint8_t*>(&clock),
-      sizeof(clock));
+      sizeof(clock),
+      RDM_ACK,
+      queued_message_count);
 }
 
 /*
@@ -405,9 +411,11 @@ static const RDMResponse *GenericGetIntValue(const RDMRequest *request,
     queued_message_count);
 }
 
-const RDMResponse *ResponderHelper::GetUInt8Value(const RDMRequest *request,
-                                                  uint8_t value) {
-  return GenericGetIntValue(request, value);
+const RDMResponse *ResponderHelper::GetUInt8Value(
+    const RDMRequest *request,
+    uint8_t value,
+    uint8_t queued_message_count) {
+  return GenericGetIntValue(request, value, queued_message_count);
 }
 
 const RDMResponse *ResponderHelper::GetUInt16Value(
@@ -417,16 +425,19 @@ const RDMResponse *ResponderHelper::GetUInt16Value(
   return GenericGetIntValue(request, value, queued_message_count);
 }
 
-const RDMResponse *ResponderHelper::GetUInt32Value(const RDMRequest *request,
-                                                   uint32_t value) {
-  return GenericGetIntValue(request, value);
+const RDMResponse *ResponderHelper::GetUInt32Value(
+    const RDMRequest *request,
+    uint32_t value,
+    uint8_t queued_message_count) {
+  return GenericGetIntValue(request, value, queued_message_count);
 }
 
 template<typename T>
 static const RDMResponse *GenericSetIntValue(const RDMRequest *request,
-                                             T *value) {
+                                             T *value,
+                                             uint8_t queued_message_count = 0) {
   if (!GenericExtractValue(request, value)) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
 
   return new RDMSetResponse(
@@ -434,26 +445,32 @@ static const RDMResponse *GenericSetIntValue(const RDMRequest *request,
     request->SourceUID(),
     request->TransactionNumber(),
     RDM_ACK,
-    0,
+    queued_message_count,
     request->SubDevice(),
     request->ParamId(),
     NULL,
     0);
 }
 
-const RDMResponse *ResponderHelper::SetUInt8Value(const RDMRequest *request,
-                                                 uint8_t *value) {
-  return GenericSetIntValue(request, value);
+const RDMResponse *ResponderHelper::SetUInt8Value(
+    const RDMRequest *request,
+    uint8_t *value,
+    uint8_t queued_message_count) {
+  return GenericSetIntValue(request, value, queued_message_count);
 }
 
-const RDMResponse *ResponderHelper::SetUInt16Value(const RDMRequest *request,
-                                                 uint16_t *value) {
-  return GenericSetIntValue(request, value);
+const RDMResponse *ResponderHelper::SetUInt16Value(
+    const RDMRequest *request,
+    uint16_t *value,
+    uint8_t queued_message_count) {
+  return GenericSetIntValue(request, value, queued_message_count);
 }
 
-const RDMResponse *ResponderHelper::SetUInt32Value(const RDMRequest *request,
-                                                 uint32_t *value) {
-  return GenericSetIntValue(request, value);
+const RDMResponse *ResponderHelper::SetUInt32Value(
+    const RDMRequest *request,
+    uint32_t *value,
+    uint8_t queued_message_count) {
+  return GenericSetIntValue(request, value, queued_message_count);
 }
 }  // namespace rdm
 }  // namespace ola

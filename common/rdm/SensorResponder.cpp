@@ -186,30 +186,16 @@ void SensorResponder::SendRDMRequest(const RDMRequest *request,
 
 const RDMResponse *SensorResponder::GetDeviceInfo(
     const RDMRequest *request) {
-  if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-
   return ResponderHelper::GetDeviceInfo(
       request, OLA_SENSOR_ONLY_MODEL, PRODUCT_CATEGORY_TEST,
-      1, 0, 1, 1, 0xffff, 0, m_sensors.size());
+      1, 0, 1, 1, ZERO_FOOTPRINT_DMX_ADDRESS, 0, m_sensors.size());
 }
 
 const RDMResponse *SensorResponder::GetProductDetailList(
     const RDMRequest *request) {
-  if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-
-  uint16_t product_details[] = { PRODUCT_DETAIL_TEST, };
-
-  for (unsigned int i = 0; i < arraysize(product_details); i++)
-    product_details[i] = HostToNetwork(product_details[i]);
-
-  return GetResponseFromData(
-      request,
-      reinterpret_cast<uint8_t*>(&product_details),
-      sizeof(product_details));
+  // Shortcut for only one item in the vector
+  return ResponderHelper::GetProductDetailList(
+      request, vector<rdm_product_detail>(1, PRODUCT_DETAIL_TEST));
 }
 
 const RDMResponse *SensorResponder::GetIdentify(
@@ -236,7 +222,7 @@ const RDMResponse *SensorResponder::GetDeviceModelDescription(
 
 const RDMResponse *SensorResponder::GetManufacturerLabel(
     const RDMRequest *request) {
-  return ResponderHelper::GetString(request, "Open Lighting Project");
+  return ResponderHelper::GetString(request, OLA_MANUFACTURER_LABEL);
 }
 
 const RDMResponse *SensorResponder::GetDeviceLabel(

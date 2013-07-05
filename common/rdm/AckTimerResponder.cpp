@@ -180,7 +180,7 @@ void AckTimerResponder::SendRDMRequest(const RDMRequest *request,
  */
 uint8_t AckTimerResponder::QueuedMessageCount() const {
   unsigned int size = m_queued_messages.size();
-  return size > 255 ? 255 : size;
+  return size > MAX_QUEUED_MESSAGE_COUNT ? MAX_QUEUED_MESSAGE_COUNT : size;
 }
 
 /**
@@ -369,9 +369,6 @@ const RDMResponse *AckTimerResponder::SetDmxStartAddress(
  */
 const RDMResponse *AckTimerResponder::GetIdentify(
     const RDMRequest *request) {
-  if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR, QueuedMessageCount());
-  }
   return ResponderHelper::GetBoolValue(request, m_identify_mode,
                                        QueuedMessageCount());
 }
@@ -425,7 +422,7 @@ const RDMResponse *AckTimerResponder::GetDeviceModelDescription(
 
 const RDMResponse *AckTimerResponder::GetManufacturerLabel(
     const RDMRequest *request) {
-  return ResponderHelper::GetString(request, "Open Lighting Project",
+  return ResponderHelper::GetString(request, OLA_MANUFACTURER_LABEL,
                                     QueuedMessageCount());
 }
 

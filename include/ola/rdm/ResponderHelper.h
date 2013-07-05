@@ -66,7 +66,8 @@ class ResponderHelper {
 
     static const RDMResponse *GetProductDetailList(
         const RDMRequest *request,
-        const std::vector<rdm_product_detail> &product_details);
+        const std::vector<rdm_product_detail> &product_details,
+        uint8_t queued_message_count = 0);
 
     static const RDMResponse *GetPersonality(
         const RDMRequest *request,
@@ -92,7 +93,9 @@ class ResponderHelper {
         uint16_t *dmx_address,
         uint8_t queued_message_count = 0);
 
-    static const RDMResponse *GetRealTimeClock(const RDMRequest *request);
+    static const RDMResponse *GetRealTimeClock(
+        const RDMRequest *request,
+        uint8_t queued_message_count = 0);
 
     static const RDMResponse *GetString(const RDMRequest *request,
                                         const std::string &value,
@@ -105,18 +108,23 @@ class ResponderHelper {
         uint8_t queued_message_count = 0);
 
     static const RDMResponse *GetUInt8Value(
-        const RDMRequest *request, uint8_t value);
+        const RDMRequest *request, uint8_t value,
+        uint8_t queued_message_count = 0);
     static const RDMResponse *GetUInt16Value(
         const RDMRequest *request, uint16_t value,
         uint8_t queued_message_count = 0);
     static const RDMResponse *GetUInt32Value(
-        const RDMRequest *request, uint32_t value);
+        const RDMRequest *request, uint32_t value,
+        uint8_t queued_message_count = 0);
     static const RDMResponse *SetUInt8Value(
-        const RDMRequest *request, uint8_t *value);
+        const RDMRequest *request, uint8_t *value,
+        uint8_t queued_message_count = 0);
     static const RDMResponse *SetUInt16Value(
-        const RDMRequest *request, uint16_t *value);
+        const RDMRequest *request, uint16_t *value,
+        uint8_t queued_message_count = 0);
     static const RDMResponse *SetUInt32Value(
-        const RDMRequest *request, uint32_t *value);
+        const RDMRequest *request, uint32_t *value,
+        uint8_t queued_message_count = 0);
 };
 }  // namespace rdm
 }  // namespace ola

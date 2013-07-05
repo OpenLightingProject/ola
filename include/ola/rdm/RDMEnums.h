@@ -31,6 +31,7 @@ static const uint16_t ALL_RDM_SUBDEVICES = 0xffff;
 static const uint16_t MAX_SUBDEVICE_NUMBER = 0x0200;
 static const uint8_t MAX_RDM_STRING_LENGTH = 32;
 static const uint16_t ZERO_FOOTPRINT_DMX_ADDRESS = 0xffff;
+static const uint8_t MAX_QUEUED_MESSAGE_COUNT = 255;
 // This is separated out because we never propagate OVERFLOWs up to the
 // clients.
 static const uint8_t ACK_OVERFLOW = 3;
