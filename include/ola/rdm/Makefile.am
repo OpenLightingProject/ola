@@ -6,9 +6,9 @@ SOURCES = AckTimerResponder.h CommandPrinter.h DimmerResponder.h \
           RDMAPIImplInterface.h RDMCommand.h RDMCommandSerializer.h \
           RDMControllerAdaptor.h RDMControllerInterface.h RDMEnums.h \
           RDMHelper.h RDMMessagePrinters.h RDMPacket.h ResponderHelper.h \
-          ResponderOps.h ResponderOpsPrivate.h SensorResponder.h \
-          StringMessageBuilder.h SubDeviceDispatcher.h UID.h UIDAllocator.h \
-          UIDSet.h
+          ResponderOps.h ResponderOpsPrivate.h ResponderPersonality.h \
+          SensorResponder.h StringMessageBuilder.h SubDeviceDispatcher.h \
+          UID.h UIDAllocator.h UIDSet.h
 
 BUILT_SOURCES = RDMResponseCodes.h
 
