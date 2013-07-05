@@ -13,8 +13,8 @@ fi
 
 index_file=$output_dir/index.html;
 
-echo 'Output dir: $output_dir';
-echo 'Index file: $index_file';
+echo "Output dir: $output_dir";
+echo "Index file: $index_file";
 
 cat << 'EOF' > $index_file
 <html>
@@ -24,7 +24,7 @@ cat << 'EOF' > $index_file
 EOF
 
 for man_file in *.1; do
-  echo 'Generating $man_file';
+  echo "Generating $man_file";
   man2html -r $man_file | sed 1d > "$output_dir/man1/$man_file.html";
   echo "<li><a href='./man1/$man_file.html'>$man_file</a></li>" >> $index_file
 done
