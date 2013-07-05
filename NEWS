@@ -3,6 +3,7 @@ x/y/2013 ola-0.8.31
  * Change example scripts to error to STDERR not STDOUT.
  * Added support for new Dummy RDM device types
  * Added support for the KMTRONIC usb device (ftdi clone).
+ * Added 4 software RDM responder types (sensor, dimmer, moving light, etc.)
 
 16/6/2013 ola-0.8.30
  * Clean up olad signal handling to avoid race conditions.
