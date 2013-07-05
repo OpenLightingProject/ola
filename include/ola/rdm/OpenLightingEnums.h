@@ -57,6 +57,7 @@ typedef enum {
   OLA_SENSOR_ONLY_MODEL = 7,
 } ola_rdm_model_id;
 
+extern const char OLA_MANUFACTURER_LABEL[];
 }  // namespace rdm
 }  // namespace ola
 #endif  // INCLUDE_OLA_RDM_OPENLIGHTINGENUMS_H_

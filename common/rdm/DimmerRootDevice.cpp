@@ -104,19 +104,9 @@ const RDMResponse *DimmerRootDevice::GetDeviceInfo(const RDMRequest *request) {
 
 const RDMResponse *DimmerRootDevice::GetProductDetailList(
     const RDMRequest *request) {
-  if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-
-  uint16_t product_details[] = { PRODUCT_DETAIL_TEST };
-
-  for (unsigned int i = 0; i < arraysize(product_details); i++)
-    product_details[i] = HostToNetwork(product_details[i]);
-
-  return GetResponseFromData(
-      request,
-      reinterpret_cast<uint8_t*>(&product_details),
-      sizeof(product_details));
+  // Shortcut for only one item in the vector
+  return ResponderHelper::GetProductDetailList(request,
+    std::vector<rdm_product_detail> (1, PRODUCT_DETAIL_TEST));
 }
 
 const RDMResponse *DimmerRootDevice::GetDeviceModelDescription(
@@ -126,7 +116,7 @@ const RDMResponse *DimmerRootDevice::GetDeviceModelDescription(
 
 const RDMResponse *DimmerRootDevice::GetManufacturerLabel(
     const RDMRequest *request) {
-  return ResponderHelper::GetString(request, "Open Lighting Project");
+  return ResponderHelper::GetString(request, OLA_MANUFACTURER_LABEL);
 }
 
 const RDMResponse *DimmerRootDevice::GetDeviceLabel(

@@ -93,7 +93,8 @@ const RDMResponse *ResponderHelper::GetDeviceInfo(
   } __attribute__((packed));
 
   struct device_info_s device_info;
-  device_info.rdm_version = HostToNetwork(static_cast<uint16_t>(0x100));
+  device_info.rdm_version = HostToNetwork(
+      static_cast<uint16_t>(RDM_VERSION_1_0));
   device_info.model = HostToNetwork(device_model);
   device_info.product_category = HostToNetwork(
       static_cast<uint16_t>(product_category));
@@ -110,6 +111,26 @@ const RDMResponse *ResponderHelper::GetDeviceInfo(
       sizeof(device_info),
       RDM_ACK,
       queued_message_count);
+}
+
+const RDMResponse *ResponderHelper::GetProductDetailList(
+    const RDMRequest *request,
+    const std::vector<rdm_product_detail> &product_details) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  uint16_t product_details_raw[product_details.size()];
+
+  for (unsigned int i = 0; i < product_details.size(); i++) {
+    product_details_raw[i] =
+      HostToNetwork(static_cast<uint16_t>(product_details[i]));
+  }
+
+  return GetResponseFromData(
+      request,
+      reinterpret_cast<uint8_t*>(&product_details_raw),
+      sizeof(product_details_raw));
 }
 
 /**
@@ -218,17 +239,17 @@ static const RDMResponse *GenericGetIntValue(const RDMRequest *request,
 }
 
 const RDMResponse *ResponderHelper::GetUInt8Value(const RDMRequest *request,
-                                                 uint8_t value) {
+                                                  uint8_t value) {
   return GenericGetIntValue(request, value);
 }
 
 const RDMResponse *ResponderHelper::GetUInt16Value(const RDMRequest *request,
-                                                 uint16_t value) {
+                                                   uint16_t value) {
   return GenericGetIntValue(request, value);
 }
 
 const RDMResponse *ResponderHelper::GetUInt32Value(const RDMRequest *request,
-                                                 uint32_t value) {
+                                                   uint32_t value) {
   return GenericGetIntValue(request, value);
 }
 

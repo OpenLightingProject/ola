@@ -141,7 +141,7 @@ class SPIBackend: public ola::rdm::DiscoverableRDMControllerInterface {
         }
 
       private:
-        RDMOps() : ResponderOps<SPIBackend>(PARAM_HANDLERS) {}
+        RDMOps() : ola::rdm::ResponderOps<SPIBackend>(PARAM_HANDLERS) {}
 
         static RDMOps *instance;
     };
