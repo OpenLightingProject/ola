@@ -534,6 +534,7 @@ static const uint16_t PRESET_PLAYBACK_ALL = 0xffff;
 // bit masks for sensor values
 static const uint8_t SENSOR_RECORDED_VALUE = 0x01;
 static const uint8_t SENSOR_RECORDED_RANGE_VALUES = 0x02;
+static const uint8_t ALL_SENSORS = 0xff;
 }  // namespace rdm
 }  // namespace ola
 #endif  // INCLUDE_OLA_RDM_RDMENUMS_H_

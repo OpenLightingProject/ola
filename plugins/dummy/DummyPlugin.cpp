@@ -47,6 +47,7 @@ const char DummyPlugin::DUMMY_DEVICE_COUNT_KEY[] = "dummy_device_count";
 const char DummyPlugin::MOVING_LIGHT_COUNT_KEY[] = "moving_light_count";
 const char DummyPlugin::PLUGIN_NAME[] = "Dummy";
 const char DummyPlugin::PLUGIN_PREFIX[] = "dummy";
+const char DummyPlugin::SENSOR_COUNT_KEY[] = "sensor_device_count";
 
 /*
  * Start the plugin
@@ -76,6 +77,11 @@ bool DummyPlugin::StartHook() {
                    &options.number_of_ack_timer_responders))
     StringToInt(DEFAULT_ACK_TIMER_DEVICE_COUNT,
                 &options.number_of_ack_timer_responders);
+
+  if (!StringToInt(m_preferences->GetValue(SENSOR_COUNT_KEY) ,
+                   &options.number_of_sensor_responders))
+    StringToInt(DEFAULT_DEVICE_COUNT,
+                &options.number_of_sensor_responders);
 
   m_device = new DummyDevice(this, DEVICE_NAME, options);
   m_device->Start();
@@ -131,6 +137,9 @@ string DummyPlugin::Description() const {
 "\n"
 "moving_light_count = 1\n"
 "The number of moving light devices to create.\n"
+"\n"
+"sensor_device_count = 1\n"
+"The number of sensor-only devices to create.\n"
 "\n";
 }
 
@@ -163,6 +172,10 @@ bool DummyPlugin::SetDefaultPreferences() {
   save |= m_preferences->SetDefaultValue(ACK_TIMER_COUNT_KEY,
                                          IntValidator(0, 254),
                                          DEFAULT_ACK_TIMER_DEVICE_COUNT);
+
+  save |= m_preferences->SetDefaultValue(SENSOR_COUNT_KEY,
+                                         IntValidator(0, 254),
+                                         DEFAULT_DEVICE_COUNT);
 
   if (save)
     m_preferences->Save();

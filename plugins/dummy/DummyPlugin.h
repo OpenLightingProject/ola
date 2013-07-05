@@ -62,6 +62,7 @@ class DummyPlugin: public Plugin {
     static const char MOVING_LIGHT_COUNT_KEY[];
     static const char PLUGIN_NAME[];
     static const char PLUGIN_PREFIX[];
+    static const char SENSOR_COUNT_KEY[];
     static const char SUBDEVICE_COUNT_KEY[];
 };
 }  // namespace dummy

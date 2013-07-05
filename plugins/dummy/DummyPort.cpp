@@ -20,6 +20,7 @@
  */
 
 #include <iostream>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -28,6 +29,7 @@
 #include "ola/rdm/DimmerResponder.h"
 #include "ola/rdm/DummyResponder.h"
 #include "ola/rdm/MovingLightResponder.h"
+#include "ola/rdm/SensorResponder.h"
 #include "ola/rdm/UIDAllocator.h"
 #include "ola/rdm/UIDSet.h"
 #include "ola/stl/STLUtils.h"
@@ -39,10 +41,25 @@ namespace plugin {
 namespace dummy {
 
 using std::auto_ptr;
-using ola::rdm::AckTimerResponder;
 using ola::rdm::DimmerResponder;
 using ola::rdm::DummyResponder;
-using ola::rdm::MovingLightResponder;
+
+/**
+ * A count number of responders of type T.
+ */
+template <typename T>
+void AddResponders(map<UID, ola::rdm::RDMControllerInterface*> *responders,
+                   ola::rdm::UIDAllocator *uid_allocator,
+                   unsigned int count) {
+  for (unsigned int i = 0; i < count; i++) {
+    auto_ptr<UID> uid(uid_allocator->AllocateNext());
+    if (!uid.get()) {
+      OLA_WARN << "Insufficient UIDs to create Dummy RDM devices";
+      break;
+    }
+    STLReplaceAndDelete(responders, *uid, new T(*uid));
+  }
+}
 
 /**
  * Create a new DummyPort
@@ -79,23 +96,12 @@ DummyPort::DummyPort(DummyDevice *parent,
         new DimmerResponder(*uid, options.dimmer_sub_device_count));
   }
 
-  for (unsigned int i = 0; i < options.number_of_moving_lights; i++) {
-    auto_ptr<UID> uid(allocator.AllocateNext());
-    if (!uid.get()) {
-      OLA_WARN << "Insufficient UIDs to create dummy RDM devices";
-      break;
-    }
-    STLReplaceAndDelete(&m_responders, *uid, new MovingLightResponder(*uid));
-  }
-
-  for (unsigned int i = 0; i < options.number_of_ack_timer_responders; i++) {
-    auto_ptr<UID> uid(allocator.AllocateNext());
-    if (!uid.get()) {
-      OLA_WARN << "Insufficient UIDs to create dummy RDM devices";
-      break;
-    }
-    STLReplaceAndDelete(&m_responders, *uid, new AckTimerResponder(*uid));
-  }
+  AddResponders<ola::rdm::MovingLightResponder>(
+      &m_responders, &allocator, options.number_of_moving_lights);
+  AddResponders<ola::rdm::AckTimerResponder>(
+      &m_responders, &allocator, options.number_of_ack_timer_responders);
+  AddResponders<ola::rdm::SensorResponder>(
+      &m_responders, &allocator, options.number_of_sensor_responders);
 }
 
 
