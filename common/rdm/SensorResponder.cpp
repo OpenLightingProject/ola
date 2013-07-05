@@ -277,17 +277,17 @@ const RDMResponse *SensorResponder::GetSensorDefinition(
   } __attribute__((packed));
 
   FakeSensor *sensor = m_sensors[sensor_number];
-  struct sensor_definition_s sensor_definition = {
-    .sensor =  sensor_number,
-    .type = sensor->type,
-    .unit = sensor->unit,
-    .prefix = sensor->prefix,
-    .range_min = HostToNetwork(sensor->range_min),
-    .range_max = HostToNetwork(sensor->range_max),
-    .normal_min = HostToNetwork(sensor->normal_min),
-    .normal_max = HostToNetwork(sensor->normal_max),
-    .recorded_support = SENSOR_RECORDED_VALUE | SENSOR_RECORDED_RANGE_VALUES,
-  };
+  struct sensor_definition_s sensor_definition;
+  sensor_definition.sensor =  sensor_number;
+  sensor_definition.type = sensor->type;
+  sensor_definition.unit = sensor->unit;
+  sensor_definition.prefix = sensor->prefix;
+  sensor_definition.range_min = HostToNetwork(sensor->range_min);
+  sensor_definition.range_max = HostToNetwork(sensor->range_max);
+  sensor_definition.normal_min = HostToNetwork(sensor->normal_min);
+  sensor_definition.normal_max = HostToNetwork(sensor->normal_max);
+  sensor_definition.recorded_support = (
+      SENSOR_RECORDED_VALUE | SENSOR_RECORDED_RANGE_VALUES);
   strncpy(sensor_definition.description, sensor->description.c_str(),
           sizeof(sensor_definition.description));
 
