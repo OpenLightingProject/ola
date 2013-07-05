@@ -1,27 +1,38 @@
 .TH ola_dmxmonitor 1 "March 2013"
 .SH NAME
-ola_dmxmonitor \- Monitor the values on a DMX512 universe.
+ola_dmxmonitor \- Monitor the DMX512 values on an OLA universe.
 .SH SYNOPSIS
-.PP
-.B ola_dmxmonitor 
-.RI [ option "...]"
-.PP
+.B ola_dmxmonitor [-u
+.I universe-id
+.B ]
 .SH DESCRIPTION
 .B ola_dmxmonitor
-is a piece of software that lets you monitor the values on an
-.B OLA
-DMX512 universe 
-.PP
-.PP
+provides a simple monitor for DMX512 data.
 .SH OPTIONS
-\fB\-u\fInumber\fP, \fB\-\-universe=\fP\fInumber\fP
-The universe ID to monitor 
 .TP
-.BR \-h ", " \-\-help
+.BR "-u universe-id, --universe universe-id"
+The universe ID to monitor.
+.TP
+.BR "-h, --help"
 Displays a short help message.
-.SH ENVIRONMENT
-None
+.SH CONTROLS
+Once running, the following keys control the behavior:
+.TP
+.BR "m, M"
+Toggle display modes: hex, dmx and decimal.
+.TP
+.BR "n, N"
+Toggle channel (slot) indexing mode. 0-indexed or 1-indexed.
+.TP
+.BR "p, P"
+Toggle display palette.
+.TP
+.BR "q, Q"
+Quit the program
+.TP
+.BR "Arrow keys"
+Move the channel (slot) cursor.
 .SH SEE ALSO
-.BR ola(1) ,
+.BR ola_dmxconsole(1) ,
 .BR olad(1) ,
 .
