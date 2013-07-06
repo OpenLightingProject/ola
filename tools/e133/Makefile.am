@@ -132,7 +132,7 @@ slp_register_LDADD = $(top_builddir)/common/libolacommon.la \
 slp_sa_test_SOURCES = slp-sa-test.cpp \
                       SLPSATestHelpers.cpp \
                       SLPSATestRunner.cpp \
-                      SLPSATests.cpp
+                      SLPSATest.cpp
 slp_sa_test_LDADD = $(top_builddir)/common/libolacommon.la \
                     $(top_builddir)/slp/libolaslpserver.la \
                     libolae133slp.la
