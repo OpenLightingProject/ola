@@ -2,6 +2,7 @@
 *.gcno
 *.la
 *.lo
+*.log
 *.o
 *.pb.cc
 *.pb.h
@@ -9,6 +10,7 @@
 *.pyc
 *.swp
 *.tar.gz
+*.trs
 *_pb2.py
 INSTALL
 Makefile
