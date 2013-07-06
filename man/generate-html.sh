@@ -25,7 +25,9 @@ EOF
 
 for man_file in *.1; do
   echo "Generating $man_file";
-  man2html -r $man_file | sed 1d > "$output_dir/man1/$man_file.html";
+  output_file=$output_dir/man1/$man_file.html;
+  man2html -r $man_file | sed 1d > $output_file;
+  chmod a+r $output_file;
   echo "<li><a href='./man1/$man_file.html'>$man_file</a></li>" >> $index_file
 done
 
