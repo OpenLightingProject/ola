@@ -1,0 +1,21 @@
+/**
+ * @mainpage Open Lighting Architecture Documentation
+ *
+ * [TOC]
+ *
+ * @section sec_Overview Overview
+ * The Open Lighting Architecture is a flexible framework for dealing with
+ * lighting control protocols such as
+ * [DMX512](http://en.wikipedia.org/wiki/DMX512) and
+ * [RDM](http://en.wikipedia.org/wiki/RDM_(lighting%29). It contains a framework
+ * library (libola), a C++ API (libolaclient) and the main
+ * program (olad).
+ *
+ * The easiest way to get started using OLA is with the @ref client_tutorial.
+ *
+ * @section sec_Licensing Licensing
+ * The OLA framework and C++ client library is licensed under the
+ * [LGPL](http://www.gnu.org/licenses/lgpl.html). The
+ * OLA Daemon (olad) is licenced under the
+ * [GPL](http://www.gnu.org/licenses/gpl.html).
+ */
