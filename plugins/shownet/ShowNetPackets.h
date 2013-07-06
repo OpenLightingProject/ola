@@ -23,6 +23,10 @@
 
 #include "ola/BaseTypes.h"
 
+namespace ola {
+namespace plugin {
+namespace shownet {
+
 enum { SHOWNET_MAC_LENGTH = 6 };
 enum { SHOWNET_NAME_LENGTH = 9 };
 
@@ -43,4 +47,7 @@ struct shownet_data_s {
 
 typedef struct shownet_data_s shownet_data_packet;
 
+}  // namespace shownet
+}  // namespace plugin
+}  // namespace ola
 #endif  // PLUGINS_SHOWNET_SHOWNETPACKETS_H_
