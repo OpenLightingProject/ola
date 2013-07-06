@@ -2,6 +2,8 @@ auxdir                  = @ac_aux_dir@
 AUX_DIST                = $(auxdir)/install-sh $(auxdir)/missing \
                           $(auxdir)/mkinstalldirs
 
+include aminclude.am
+
 SUBDIRS = include data doxygen common ola plugins slp olad python tools \
           examples debian java man
 
