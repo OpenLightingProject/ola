@@ -29,20 +29,78 @@ namespace ola {
 
 using std::string;
 
-/*
- * The DmxBuffer class
+/**
+ * @class DmxBuffer ola/DmxBuffer.h
+ * @brief Used to hold a single DMX universe of data
+ *
+ * DmxBuffer is used to hold a single universe of dmx data. This class includes
+ * functions to translate to/from strings, and manipulate channels in the 
+ * buffer
+ *
+ * @note DmxBuffer uses a copy-on-write (COW) optimization, more info can be 
+ * found here: http://en.wikipedia.org/wiki/Copy-on-write
+ * 
+ * @note This class is <b>NOT<\b> thread safe
  */
 class DmxBuffer {
   public:
+    /**
+     * Constructor
+     */
     DmxBuffer();
+
+    /*
+     * Copy constructor. We just copy the underlying pointers and mark 
+     * m_copy_on_write as true if the other buffer has data.
+     * @param other The other DmxBuffer to copy from
+     */
     DmxBuffer(const DmxBuffer &other);
+    
+    /**
+     * Create a new buffer from raw data
+     * @param data is a pointer to an array of data used to populate DmxBufer
+     * @param length is the length of data in array data
+     */
     DmxBuffer(const uint8_t *data, unsigned int length);
+    
+    /**
+     * Create a new buffer from a string
+     * @param data is a string of raw data values
+     * 
+     * @deprecated Use DmxBuffer(const uint8_t *data, unsigned int length)
+     * instead
+     */
     explicit DmxBuffer(const string &data);
+
+    /**
+     * Deconstructor calls CleanupMemory
+     */
     ~DmxBuffer();
+
+    /**
+     * Assignmnent operator used to make this buffer equal to another buffer
+     * @param other the other DmxBuffer to copy/link from
+     */    
     DmxBuffer& operator=(const DmxBuffer &other);
 
+    /**
+     * Equality operator used to check if two DmxBuffers are equal
+     * @param other is the other DmxBuffer to check against
+     * @return true if equal, and false if not
+     */
     bool operator==(const DmxBuffer &other) const;
+
+    /**
+     * Inequality operator used to check if two DmxBuffers are not equal
+     * @param other is the other DmxBuffer to check against
+     * @return true if not equal and false if the are equal
+     */
     bool operator!=(const DmxBuffer &other) const;
+    
+    /**
+     * Returns th size of the buffer
+     *
+     */
     unsigned int Size() const { return m_length; }
 
     bool HTPMerge(const DmxBuffer &other);

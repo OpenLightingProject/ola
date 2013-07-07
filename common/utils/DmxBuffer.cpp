@@ -47,10 +47,6 @@ DmxBuffer::DmxBuffer()
 }
 
 
-/*
- * Copy constructor. We just copy the underlying pointers and mark COW as
- * true if the other buffer has data.
- */
 DmxBuffer::DmxBuffer(const DmxBuffer &other)
     : m_ref_count(NULL),
       m_copy_on_write(false),
@@ -63,9 +59,6 @@ DmxBuffer::DmxBuffer(const DmxBuffer &other)
 }
 
 
-/*
- * Create a new buffer from data
- */
 DmxBuffer::DmxBuffer(const uint8_t *data, unsigned int length)
     : m_ref_count(0),
       m_copy_on_write(false),
@@ -75,9 +68,6 @@ DmxBuffer::DmxBuffer(const uint8_t *data, unsigned int length)
 }
 
 
-/*
- * Create a new buffer from a string
- */
 DmxBuffer::DmxBuffer(const string &data)
     : m_ref_count(0),
       m_copy_on_write(false),
@@ -87,18 +77,11 @@ DmxBuffer::DmxBuffer(const string &data)
 }
 
 
-/*
- * Cleanup
- */
 DmxBuffer::~DmxBuffer() {
   CleanupMemory();
 }
 
 
-/*
- * Make this buffer equal to another one
- * @param other the other DmxBuffer
- */
 DmxBuffer& DmxBuffer::operator=(const DmxBuffer &other) {
   if (this != &other) {
     CleanupMemory();
@@ -110,9 +93,6 @@ DmxBuffer& DmxBuffer::operator=(const DmxBuffer &other) {
 }
 
 
-/*
- * Check for equality.
- */
 bool DmxBuffer::operator==(const DmxBuffer &other) const {
   return (m_length == other.m_length &&
           (m_data == other.m_data ||
