@@ -36,7 +36,7 @@ namespace ola {
  * @brief The number of slots in a DMX512 universe.
  */
 enum {
-  DMX_UNIVERSE_SIZE = 512  ///< The number of slots in a DMX512 universe.
+  DMX_UNIVERSE_SIZE = 512  /**< The number of slots in a DMX512 universe. */
 };
 
 /**
@@ -70,6 +70,6 @@ static const uint16_t OPEN_LIGHTING_ESTA_CODE = 0x7a70;
  */
 static const uint32_t MAX_UNIVERSE = 0xffffffff;
 
-}  // ola
+}  // namespace ola
 
 #endif  // INCLUDE_OLA_CONSTANTS_H_

@@ -38,13 +38,6 @@ using std::string;
 using std::stringstream;
 using std::vector;
 
-/*
- * Split a string on delimiters. If two delimiters appear next to each other an
- * empty string is added to the output list.
- * @param input the string to split
- * @param tokens the vector to store the result in
- * @param delimiters what to split on
- */
 void StringSplit(const string &input,
                  vector<string> &tokens,
                  const string &delimiters) {
@@ -63,11 +56,6 @@ void StringSplit(const string &input,
   }
 }
 
-
-/*
- * Trim leading and trailing whitespace from a string.
- * @param the string to trim
- */
 void StringTrim(std::string *input) {
   string characters_to_trim = " \n\r\t";
   string::size_type start = input->find_first_not_of(characters_to_trim);
@@ -79,11 +67,6 @@ void StringTrim(std::string *input) {
     *input = input->substr(start, end - start + 1);
 }
 
-
-/**
- * Take care of any NULLs embedded in the string
- * @param the string to shorten
- */
 void ShortenString(string *input) {
   size_t index = input->find(static_cast<char>(0));
   if (index != string::npos)
@@ -91,9 +74,6 @@ void ShortenString(string *input) {
 }
 
 
-/**
- * Check if one string ends with another
- */
 bool StringEndsWith(const string &s, const string &ending) {
   if (s.length() >= ending.length()) {
     return
@@ -103,35 +83,18 @@ bool StringEndsWith(const string &s, const string &ending) {
   }
 }
 
-
-/*
- * Convert an int to a string.
- * @param i the int to convert
- * @return the string representation of the int
- */
 string IntToString(int i) {
   stringstream str;
   str << i;
   return str.str();
 }
 
-
-/*
- * Convert an int to a string.
- * @param i the int to convert
- * @return the string representation of the int
- */
 string IntToString(unsigned int i) {
   stringstream str;
   str << i;
   return str.str();
 }
 
-
-/*
- * Convert a string to a unsigned int.
- * @returns true if sucessfull, false otherwise
- */
 bool StringToInt(const string &value, unsigned int *output, bool strict) {
   if (value.empty())
     return false;
@@ -150,11 +113,6 @@ bool StringToInt(const string &value, unsigned int *output, bool strict) {
   return true;
 }
 
-
-/*
- * Convert a string to a uint16_t.
- * @returns true if sucessfull, false otherwise
- */
 bool StringToInt(const string &value, uint16_t *output, bool strict) {
   unsigned int v;
   if (!StringToInt(value, &v, strict))
@@ -165,11 +123,6 @@ bool StringToInt(const string &value, uint16_t *output, bool strict) {
   return true;
 }
 
-
-/*
- * Convert a string to a uint8_t.
- * @returns true if sucessfull, false otherwise
- */
 bool StringToInt(const string &value, uint8_t *output, bool strict) {
   unsigned int v;
   if (!StringToInt(value, &v, strict))
@@ -180,11 +133,6 @@ bool StringToInt(const string &value, uint8_t *output, bool strict) {
   return true;
 }
 
-
-/*
- * Convert a string to a int.
- * @returns true if sucessfull, false otherwise
- */
 bool StringToInt(const string &value, int *output, bool strict) {
   if (value.empty())
     return false;
@@ -203,11 +151,6 @@ bool StringToInt(const string &value, int *output, bool strict) {
   return true;
 }
 
-
-/*
- * Convert a string to a int16_t.
- * @returns true if sucessfull, false otherwise
- */
 bool StringToInt(const string &value, int16_t *output, bool strict) {
   int v;
   if (!StringToInt(value, &v, strict))
@@ -218,11 +161,6 @@ bool StringToInt(const string &value, int16_t *output, bool strict) {
   return true;
 }
 
-
-/*
- * Convert a string to a int16_t.
- * @returns true if sucessfull, false otherwise
- */
 bool StringToInt(const string &value, int8_t *output, bool strict) {
   int v;
   if (!StringToInt(value, &v, strict))
@@ -233,10 +171,6 @@ bool StringToInt(const string &value, int8_t *output, bool strict) {
   return true;
 }
 
-
-/*
- * Escape \
- */
 void Escape(string *original) {
   for (string::iterator iter = original->begin(); iter != original->end();
       ++iter) {
@@ -284,20 +218,12 @@ void Escape(string *original) {
   }
 }
 
-
-/**
- * Escape a string, returning a copy
- */
 string EscapeString(const string &original) {
   string result = original;
   Escape(&result);
   return result;
 }
 
-
-/*
- * Convert a hex string to a uint8_t
- */
 bool HexStringToInt(const string &value, uint8_t *output) {
   uint32_t temp;
   if (!HexStringToInt(value, &temp))
@@ -308,10 +234,6 @@ bool HexStringToInt(const string &value, uint8_t *output) {
   return true;
 }
 
-
-/*
- * Convert a hex string to a uint16_t
- */
 bool HexStringToInt(const string &value, uint16_t *output) {
   uint32_t temp;
   if (!HexStringToInt(value, &temp))
@@ -322,10 +244,6 @@ bool HexStringToInt(const string &value, uint16_t *output) {
   return true;
 }
 
-
-/*
- * Convert a hex string to a uint32_t
- */
 bool HexStringToInt(const string &value, uint32_t *output) {
   if (value.empty())
     return false;
@@ -337,10 +255,6 @@ bool HexStringToInt(const string &value, uint32_t *output) {
   return true;
 }
 
-
-/*
- * Convert a hex string to a int8_t
- */
 bool HexStringToInt(const string &value, int8_t *output) {
   int32_t temp;
   if (!HexStringToInt(value, &temp))
@@ -351,10 +265,6 @@ bool HexStringToInt(const string &value, int8_t *output) {
   return true;
 }
 
-
-/*
- * Convert a hex string to a int16_t
- */
 bool HexStringToInt(const string &value, int16_t *output) {
   int32_t temp;
   if (!HexStringToInt(value, &temp))
@@ -365,10 +275,6 @@ bool HexStringToInt(const string &value, int16_t *output) {
   return true;
 }
 
-
-/*
- * Convert a hex string to a int32_t
- */
 bool HexStringToInt(const string &value, int32_t *output) {
   if (value.empty())
     return false;
@@ -380,30 +286,16 @@ bool HexStringToInt(const string &value, int32_t *output) {
   return true;
 }
 
-
-/*
- * Return a lower case version of this string
- */
 void ToLower(string *s) {
   std::transform(s->begin(), s->end(), s->begin(),
       std::ptr_fun<int, int>(std::tolower));
 }
 
-
-/*
- * Return an upper case version of this string
- */
 void ToUpper(string *s) {
   std::transform(s->begin(), s->end(), s->begin(),
       std::ptr_fun<int, int>(std::toupper));
 }
 
-
-/**
- * Given a label in the form ([a-zA-Z0-9][-_])?[a-zA-Z0-9], return the string
- * with the transform s/-_/ / and words capitalized
- * @param s a string to transform.
- */
 void CapitalizeLabel(string *s) {
   bool capitalize = true;
   for (string::iterator iter = s->begin(); iter != s->end(); ++iter) {
@@ -422,13 +314,6 @@ void CapitalizeLabel(string *s) {
   }
 }
 
-
-/**
- * Given a label in the form ([a-zA-Z0-9][-_])?[a-zA-Z0-9], return the string
- * with the transform s/-_/ / and words capitalized.
- * This also capitalizes ancronyns like DMX
- * @param s a string to transform.
- */
 void CustomCapitalizeLabel(string *s) {
   static const char* const transforms[] = {
     "dmx",
@@ -463,18 +348,6 @@ void CustomCapitalizeLabel(string *s) {
   CapitalizeLabel(s);
 }
 
-
-/**
- * Write formatted output data to the ostream
- * @param out the ostream to write to
- * @param data pointer to the data
- * @param length length of the data
- * @param indent the number of spaces to prefix each line with
- * @param byte_per_line the number of bytes to display per line
- *
- * The data is printed in two columns, hex on the left, ascii on the right.
- * Non ascii values are printed as .
- */
 void FormatData(std::ostream *out,
                 const uint8_t *data,
                 unsigned int length,
