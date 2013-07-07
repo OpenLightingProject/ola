@@ -13,12 +13,15 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * logging.h
+ * Logging.h
  * Header file for the logging
  * Copyright (C) 2005-2009 Simon Newton
+ */
+/**
+ * @file
+ * @brief The OLA logging system.
  *
- * How to use:
- *
+ * ~~~~~~~~~~~~~~~~~~~~~
  * #include <ola/Logging.h>
  *
  * // Call this once
@@ -28,6 +31,7 @@
  * OLA_WARN << "foo";
  * OLA_INFO << "foo";
  * OLA_DEBUG << "foo";
+ * ~~~~~~~~~~~~~~~~~~~~~
  */
 
 #ifndef INCLUDE_OLA_LOGGING_H_
@@ -52,30 +56,32 @@ namespace ola {
 
 using std::string;
 
-/*
- * The log levels
+/**
+ * @brief The OLA log levels.
+ * This controls the verbosity of logging. Each level also includes those below
+ * it.
  */
 enum log_level {
-  OLA_LOG_NONE,
-  OLA_LOG_FATAL,
-  OLA_LOG_WARN,
-  OLA_LOG_INFO,
-  OLA_LOG_DEBUG,
+  OLA_LOG_NONE,   ///< No messages are logged.
+  OLA_LOG_FATAL,  ///< Fatal messages are logged.
+  OLA_LOG_WARN,   ///< Warnings messages are logged.
+  OLA_LOG_INFO,   ///< Informational messages are logged.
+  OLA_LOG_DEBUG,  ///< Debug messages are logged.
   OLA_LOG_MAX,
 };
 
 extern log_level logging_level;
 
-/*
- * The log outputs
+/**
+ * @brief The destination to write log messages to
  */
 typedef enum {
-  OLA_LOG_STDERR,
-  OLA_LOG_SYSLOG,
+  OLA_LOG_STDERR,  ///< Log to stderr
+  OLA_LOG_SYSLOG,  ///< Log to syslog
   OLA_LOG_NULL,
 } log_output;
 
-/*
+/**
  * The base class for log destinations.
  */
 class LogDestination {
@@ -84,7 +90,7 @@ class LogDestination {
     virtual void Write(log_level level, const string &log_line) = 0;
 };
 
-/*
+/**
  * A LogDestination that writes to stderr
  */
 class StdErrorLogDestination: public LogDestination {
@@ -92,7 +98,7 @@ class StdErrorLogDestination: public LogDestination {
     void Write(log_level level, const string &log_line);
 };
 
-/*
+/**
  * A LogDestination that writes to syslog
  */
 class SyslogDestination: public LogDestination {
@@ -105,7 +111,7 @@ class SyslogDestination: public LogDestination {
 #endif
 };
 
-/*
+/**
  * A LogLine, this represents a single log message.
  */
 class LogLine {
@@ -121,10 +127,29 @@ class LogLine {
     unsigned int m_prefix_length;
 };
 
+/**
+ * Set the logging level
+ */
 void SetLogLevel(log_level level);
 inline log_level LogLevel() { return logging_level; }
+
+/**
+ * Increment the log level by one. The log level wraps to OLA_LOG_NONE.
+ */
 void IncrementLogLevel();
+
+/**
+ * Initialize the OLA logging system from flags. ParseFlags must have been
+ * called before calling this.
+ */
 bool InitLoggingFromFlags();
+
+/**
+ * Initialize the OLA logging system
+ * @param level the level to log at
+ * @param output the destintion for the logs
+ * @returns true if logging was initialized sucessfully, false otherwise.
+ */
 bool InitLogging(log_level level, log_output output);
 void InitLogging(log_level level, LogDestination *destination);
 }  // namespace ola
