@@ -41,7 +41,7 @@ using std::string;
  * @note DmxBuffer uses a copy-on-write (COW) optimization, more info can be
  * found here: http://en.wikipedia.org/wiki/Copy-on-write
  *
- * @note This class is <b>NOT<\b> thread safe
+ * @note This class is <b>NOT</b> thread safe
  */
 class DmxBuffer {
   public:
