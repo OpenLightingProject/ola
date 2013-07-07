@@ -138,8 +138,8 @@ class DmxBuffer {
     bool Set(const DmxBuffer &other);
 
     /**
-     * Convert a ',' separated list of values into a DmxBuffer. Invalid values
-     * are set to 0. 0s can be dropped between the commas.
+     * Convert a comma separated list of values into for the DmxBuffer. Invalid
+     * values are set to 0. 0s can be dropped between the commas.
      * @param input the string to split
      * @return true if the set was successful and false if it failed
      *
