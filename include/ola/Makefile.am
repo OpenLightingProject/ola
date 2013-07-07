@@ -2,7 +2,7 @@ SUBDIRS = base network file http io rdm thread web math messaging slp acn \
           e133 stl testing timecode util
 
 SOURCES = ActionQueue.h BaseTypes.h Callback.h CallbackRunner.h Clock.h \
-          DmxBuffer.h ExportMap.h Logging.h MultiCallback.h \
+          Constants.h DmxBuffer.h ExportMap.h Logging.h MultiCallback.h \
           RunLengthEncoder.h StringUtils.h
 
 BUILT_SOURCES = plugin_id.h
