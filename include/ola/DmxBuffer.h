@@ -13,9 +13,14 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * @file DmxBuffer.h
+ * DmxBuffer.h
  * Interface for the DmxBuffer
  * Copyright (C) 2005-2009 Simon Newton
+ */
+
+/**
+ * @file DmxBuffer.h
+ * @brief A class used to hold a single DMX universe of data
  */
 
 #ifndef INCLUDE_OLA_DMXBUFFER_H_
@@ -36,21 +41,22 @@ using std::string;
  *
  * DmxBuffer is used to hold a single universe of dmx data. This class includes
  * functions to translate to/from strings, and manipulate channels in the
- * buffer
+ * buffer.
  *
  * @note DmxBuffer uses a copy-on-write (COW) optimization, more info can be
  * found here: http://en.wikipedia.org/wiki/Copy-on-write
  *
- * @note This class is <b>NOT</b> thread safe
+ * @note This class is <b>NOT</b> thread safe.
  */
 class DmxBuffer {
   public:
     /**
      * Constructor
+     * This initializes and empty DmxBuffer, Size() == 0
      */
     DmxBuffer();
 
-    /*
+    /**
      * Copy constructor. We just copy the underlying pointers and mark
      * m_copy_on_write as true if the other buffer has data.
      * @param other The other DmxBuffer to copy from
@@ -58,14 +64,14 @@ class DmxBuffer {
     DmxBuffer(const DmxBuffer &other);
 
     /**
-     * Create a new buffer from raw data
-     * @param data is a pointer to an array of data used to populate DmxBufer
+     * Create a new buffer from raw data.
+     * @param data is a pointer to an array of data used to populate DmxBuffer
      * @param length is the length of data in array data
      */
     DmxBuffer(const uint8_t *data, unsigned int length);
 
     /**
-     * Create a new buffer from a string
+     * Create a new buffer from a string.
      * @param data is a string of raw data values
      *
      * @deprecated Use DmxBuffer(const uint8_t *data, unsigned int length)
@@ -74,18 +80,18 @@ class DmxBuffer {
     explicit DmxBuffer(const string &data);
 
     /**
-     * Deconstructor calls CleanupMemory
+     * Destructor
      */
     ~DmxBuffer();
 
     /**
-     * Assignmnent operator used to make this buffer equal to another buffer
+     * Assignment operator used to make this buffer equal to another buffer.
      * @param other the other DmxBuffer to copy/link from
      */
     DmxBuffer& operator=(const DmxBuffer &other);
 
     /**
-     * Equality operator used to check if two DmxBuffers are equal
+     * Equality operator used to check if two DmxBuffers are equal.
      * @param other is the other DmxBuffer to check against
      * @return true if equal, and false if not
      */
@@ -99,8 +105,8 @@ class DmxBuffer {
     bool operator!=(const DmxBuffer &other) const;
 
     /**
-     * Returns the current size of the buffer
-     * @return the current size of the buffer
+     * Returns the current number of slots in the buffer.
+     * @return the current number of slots in the buffer.
      */
     unsigned int Size() const { return m_length; }
 
@@ -130,7 +136,7 @@ class DmxBuffer {
 
     /**
      * Sets the data in this buffer to be the same as the other one.
-     * Used instead of a COW to optimise.
+     * This forces a copy of the data rather than using copy-on-write.
      * @param other is another DmxBuffer with data to point to/copy from
      * @return true if the set was successful and false if it failed
      * @post Size() == other.Size()
@@ -140,7 +146,7 @@ class DmxBuffer {
     /**
      * Convert a comma separated list of values into for the DmxBuffer. Invalid
      * values are set to 0. 0s can be dropped between the commas.
-     * @param input the string to split
+     * @param data the string to split
      * @return true if the set was successful and false if it failed
      *
      * @example of the String format
@@ -159,7 +165,7 @@ class DmxBuffer {
      * buffer will call Blackout() first. Attempted to set data with an offset
      * greater than Size() is an error
      * @param offset the starting channel
-     * @param value the value to set the range to
+     * @param data is the value to set the range to
      * @param length the length of the range to set
      * @return true if the call successful and false if it failed
      */
@@ -188,7 +194,8 @@ class DmxBuffer {
     void SetChannel(unsigned int channel, uint8_t data);
 
     /**
-     * Get the contents of this buffer
+     * Get the contents of this DmxBuffer. This function copies the contents of
+     * the DmxBuffer into the memory region pointed to by data.
      * @param data is a pointer to an array to store the data from DmxBuffer
      * @param length is a pointer to the length of data
      * @post *length == Size()
@@ -196,7 +203,7 @@ class DmxBuffer {
     void Get(uint8_t *data, unsigned int *length) const;
 
     /**
-     * Get a range of values starting from a particular slot
+     * Get a range of values starting from a particular slot.
      * @param slot is the dmx slot to start from
      * @param data is a pointer to where you want to store the gathered data
      * @param length is the length of the data you wish to retrieve
@@ -204,41 +211,41 @@ class DmxBuffer {
     void GetRange(unsigned int slot, uint8_t *data,
                   unsigned int *length) const;
 
-    /*
-     * Returns the value of a channel. This returns 0 if the buffer wasn't
-     * initialized or the channel was out-of-bounds.
+    /**
+     * This functio returns the value of a channel, and returns 0 if the buffer 
+     * wasn't initialized or the channel was out-of-bounds.
      * @param channel is the channel to return
      * @return the value for the requested channel, returns 0 if the channel
      * does not exist
      */
     uint8_t Get(unsigned int channel) const;
 
-    /*
-     * Get a raw pointer to the internal data
+    /**
+     * Get a raw pointer to the internal data.
      * @return constant pointer to internal data
      */
     const uint8_t *GetRaw() const { return m_data; }
 
-    /*
-     * Get the raw contents of the DmxBuffer as a string
+    /**
+     * Get the raw contents of the DmxBuffer as a string.
      * @return a string of raw channel values
      */
     string Get() const;
 
-    /*
+    /**
      * Set the buffer to all zeros.
      * @post Size() == DMX_UNIVERSE_SIZE
      */
     bool Blackout();
 
-    /*
+    /**
      * Reset the bufer to hold no data.
      * @post Size() == 0
      */
     void Reset();
 
-    /*
-     * Convert to a human readable representation
+    /**
+     * Convert the DmxBuffer to a human readable representation.
      * @return a string in a human readable form
      *
      * @example "0,0,255,128,100"
@@ -256,6 +263,14 @@ class DmxBuffer {
     unsigned int m_length;
 };
 
+/**
+ * @fn operator<<
+ * Stream operator to allow DmxBuffer to be output to stdout
+ *
+ * @example DmxBuffer dmx_buffer();
+ *          cout << dmx_buffer << endl; //Show channel values of
+ *                                      //dmx_buffer
+ */
 std::ostream& operator<<(std::ostream &out, const DmxBuffer &data);
 }  // namespace ola
 #endif  // INCLUDE_OLA_DMXBUFFER_H_

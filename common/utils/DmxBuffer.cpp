@@ -1,4 +1,4 @@
-/*
+/**
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -13,7 +13,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * DmxBuffer.cpp
+ * @file DmxBuffer.cpp
  * The DmxBuffer class
  * Copyright (C) 2005-2009 Simon Newton
  *
@@ -384,13 +384,6 @@ void DmxBuffer::CleanupMemory() {
   }
 }
 
-/*
- * Stream operator to allow DmxBuffer to be output to stdout
- *
- * @example DmxBuffer dmx_buffer();
- *          cout << dmx_buffer << endl; //Show channel values of
- *                                      //dmx_buffer
- */
 std::ostream& operator<<(std::ostream &out, const DmxBuffer &data) {
   return out << data.ToString();
 }
