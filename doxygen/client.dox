@@ -5,15 +5,34 @@
  *
  * @section sec_Overview Overview
  * This page introduces the OLA Client API, and provides sample programs to
- * send and receive DMX512 from olad.
+ * send and receive DMX512 data from olad.
  *
  * @section sec_Building Building
  * Once OLA is installed on your system, the examples can be built with:
  *
- *     g++ example.cpp $(pkg-config --cflags --libs libolaclient)
+ *     g++ example.cpp $(pkg-config --cflags --libs libola)
  *
  * @section sec_StreamingClient Streaming Client
- * The simplest way to get started is by using ola::StreamingClient.
+ * The quickest way to get started is by using ola::StreamingClient. The
+ * program below sends 100 frames of DMX data to the olad server on universe 1.
+ * The frames are sent 25ms apart which gives a frame rate of 40 fps.
+ *
+ * Each frame consists of 512 DMX data slots. The first slot is incremented by
+ * one each frame, the other slots are always 0. This produces the following
+ * DMX frames:
+ *
+ * ~~~~~~~~~~~~~~~~~~~~~
+ *   Time (ms)  DMX Data
+ *        0     0,0,0,0,.....
+ *       25     1,0,0,0,.....
+ *       50     2,0,0,0,.....
+ *       75     3,0,0,0,.....
+ *     ....
+ *     2475     100,0,0,0,.....
+ * ~~~~~~~~~~~~~~~~~~~~~
+ *
+ * example1.cpp
+ *
  * ~~~~~~~~~~~~~~~~~~~~~
  * #include <stdlib.h>
  * #include <ola/DmxBuffer.h>
@@ -31,34 +50,83 @@
  *   // turn on OLA logging
  *   ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
  *
- *   // Create a new DmxBuffer to hold the data
- *   ola::DmxBuffer buffer;
- *   // set all channels to 0
- *   buffer.Blackout();
+ *   ola::DmxBuffer buffer;  // A DmxBuffer to hold the data.
+ *   buffer.Blackout();  // Set all channels to 0
  *
- *   // Create a new client and set the Error Closure
- *   ola::StreamingClient ola_client(ola::StreamingClient::Options());
+ *   // Create a new client.
+ *   ola::StreamingClient ola_client((ola::StreamingClient::Options()));
  *
  *   // Setup the client, this connects to the server
  *   if (!ola_client.Setup()) {
- *     cout << "Setup failed" << endl;
+ *     std::cerr << "Setup failed" << endl;
  *     exit(1);
  *   }
  *
- *   // Send the data to the ola server
+ *   // Send 100 frames to the server. Increment slot (channel) 0 each time a
+ *   // frame is sent.
  *   for (unsigned int i = 0; i < 100; i++) {
  *     buffer.SetChannel(0, i);
  *     if (!ola_client.SendDmx(universe, buffer)) {
  *       cout << "Send DMX failed" << endl;
  *       exit(1);
  *     }
- *     usleep(20000);   // sleep for 20ms between updates
+ *     usleep(20000);   // sleep for 25ms between frames.
  *   }
- *
- *   // Close the connection
- *   ola_client.Stop();
  *   return 0;
  * }
  * ~~~~~~~~~~~~~~~~~~~~~
  *
+ * While ola::StreamingClient is easy to use it has the drawback that it can
+ * only send DMX512 data. It's not possible to retrieve information (like the
+ * active universes etc.) from olad using the StreamingClient.
+ *
+ * @section sec_CallbackClient Callback Client
+ *
+ * The ola::OlaCallbackClient provides a much richer interface for interacting
+ * with the server. However, because of this it's slightly harder to use.
+ *
+ * The following code behaves thes same as the \ref sec_StreamingClient example.
+ *
+ * ~~~~~~~~~~~~~~~~~~~~~
+ * #include <ola/DmxBuffer.h>
+ * #include <ola/io/SelectServer.h>
+ * #include <ola/Logging.h>
+ * #include <ola/OlaClientWrapper.h>
+ * #include <ola/Callback.h>
+ *
+ * using std::cout;
+ * using std::endl;
+ *
+ * bool SendData(ola::OlaCallbackClientWrapper *wrapper) {
+ *   static unsigned int universe = 1;
+ *   static unsigned int i = 0;
+ *   ola::DmxBuffer buffer;
+ *   buffer.Blackout();
+ *   buffer.SetChannel(0, i);
+ *   wrapper->GetClient()->SendDmx(universe, buffer);
+ *
+ *   if (++i == 100) {
+ *     wrapper->GetSelectServer()->Terminate();
+ *   }
+ *   return true;
+ * };
+ *
+ * int main() {
+ *  ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
+ *  ola::OlaCallbackClientWrapper wrapper;
+ *
+ *  if (!wrapper.Setup()) {
+ *    std::cerr << "Setup failed" << endl;
+ *    exit(1);
+ *  }
+ *
+ *  // Create a timeout and register it with the SelectServer
+ *  ola::io::SelectServer *ss = wrapper.GetSelectServer();
+ *  ss->RegisterRepeatingTimeout(25, ola::NewCallback(&SendData, &wrapper));
+ *
+ *  // Start the main loop
+ *  ss->Run();
+ * }
+ *
+ * ~~~~~~~~~~~~~~~~~~~~~
  */

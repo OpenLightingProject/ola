@@ -16,10 +16,10 @@
  * StreamingClient.h
  * Interface to the Streaming Client class.
  * Copyright (C) 2005-2010 Simon Newton
- *
- * This client does one thing and one thing only. Sends DMX data to a OLA
- * server. It doesn't support any callbacks. This is very useful in integrating
- * OLA into programs like QLC and Max.
+ */
+/**
+ * @file
+ * @brief A client for sending DMX512 data to olad.
  */
 
 #ifndef OLA_STREAMINGCLIENT_H_
@@ -48,7 +48,7 @@ using ola::network::TCPSocket;
  * @brief Send DMX512 data to olad.
  *
  * StreamingClient sends DMX512 data to OLAD without waiting for an
- * acknowledgement. It's best used for simple clients which only ever send
+ * acknowledgement. It's best suited to simple clients which only ever send
  * DMX512 data.
  *
  * Example:
@@ -56,7 +56,7 @@ using ola::network::TCPSocket;
  *  unsigned int universe = 1;
  *  ola::DmxBuffer dmx_data;
  *  dmx_data.Blackout();
- *  ola::StreamingClient client(ola::StreamingClient::Options());
+ *  ola::StreamingClient client((ola::StreamingClient::Options()));
  *
  *  if (!client.SendDmx(universe, dmx_data)) {
  *    // Failed to send
@@ -67,21 +67,24 @@ using ola::network::TCPSocket;
 class StreamingClient {
   public:
     /**
-     *
+     * Controls the options for the StreamingClient class.
      */
-    struct Options {
+    class Options {
       public:
         /**
-         * Create a new options structure with the default options.
+         * Create a new options structure with the default options. This
+         * includes automatically starting olad if it's not already running.
          */
         Options() : auto_start(true), server_port(OLA_DEFAULT_PORT) {}
 
         /**
-         * Automatically start olad if it's not already running.
+         * If true, the client will automatically start olad if it's not
+         * already running.
          */
         bool auto_start;
+
         /**
-         * Specifiy the olad RPC port to connect to.
+         * The RPC port olad is listening on.
          */
         uint16_t server_port;
     };
