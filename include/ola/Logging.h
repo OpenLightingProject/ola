@@ -27,10 +27,10 @@
  * // Call this once
  * ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
  *
- * OLA_FATAL << "foo";
- * OLA_WARN << "foo";
- * OLA_INFO << "foo";
- * OLA_DEBUG << "foo";
+ * OLA_FATAL << "Null pointer!";
+ * OLA_WARN << "Could not connect to server: " << ip_address;
+ * OLA_INFO << "Reading configs from " << config_dir;
+ * OLA_DEBUG << "Counter was " << counter;
  * ~~~~~~~~~~~~~~~~~~~~~
  */
 
@@ -45,11 +45,40 @@
 #include <string>
 #include <sstream>
 
+/**
+ * Provide a stream interface to log a message at the specified log level.
+ * Rather than calling this directly use one of the OLA_FATAL, OLA_WARN,
+ * OLA_INFO or OLA_DEBUG macros.
+ * @param level the log_level to log at.
+ */
 #define OLA_LOG(level) (level <= ola::LogLevel()) && \
-                       ola::LogLine(__FILE__, __LINE__, level).stream()
+                        ola::LogLine(__FILE__, __LINE__, level).stream()
+/**
+ * Provide a stream to log a fatal message. e.g.
+ *
+ *     OLA_FATAL << "Null pointer!";
+ */
 #define OLA_FATAL OLA_LOG(ola::OLA_LOG_FATAL)
+
+/**
+ * Provide a stream to log a warning message.
+ *
+ *     OLA_WARN << "Could not connect to server: " << ip_address;
+ */
 #define OLA_WARN OLA_LOG(ola::OLA_LOG_WARN)
+
+/**
+ * Provide a stream to log an infomational message.
+ *
+ *     OLA_INFO << "Reading configs from " << config_dir;
+ */
 #define OLA_INFO OLA_LOG(ola::OLA_LOG_INFO)
+
+/**
+ * Provide a stream to log a debug message.
+ *
+ *     OLA_DEBUG << "Counter was " << counter;
+ */
 #define OLA_DEBUG OLA_LOG(ola::OLA_LOG_DEBUG)
 
 namespace ola {
@@ -128,29 +157,43 @@ class LogLine {
 };
 
 /**
- * Set the logging level
+ * @brief Set the logging level.
+ * @param level the new log_level to use.
  */
 void SetLogLevel(log_level level);
+
+/**
+ * @brief Fetch the current level of logging.
+ * @returns the current log_level.
+ */
 inline log_level LogLevel() { return logging_level; }
 
 /**
- * Increment the log level by one. The log level wraps to OLA_LOG_NONE.
+ * @brief Increment the log level by one. The log level wraps to OLA_LOG_NONE.
  */
 void IncrementLogLevel();
 
 /**
- * Initialize the OLA logging system from flags. ParseFlags must have been
- * called before calling this.
+ * @brief Initialize the OLA logging system from flags.
+ * @pre ParseFlags() must have been called before calling this.
+ * @returns true if logging was initialized sucessfully, false otherwise.
  */
 bool InitLoggingFromFlags();
 
 /**
- * Initialize the OLA logging system
+ * @brief Initialize the OLA logging system
  * @param level the level to log at
  * @param output the destintion for the logs
  * @returns true if logging was initialized sucessfully, false otherwise.
  */
 bool InitLogging(log_level level, log_output output);
+
+/**
+ * @brief Initialize the OLA logging system using the specified LogDestination.
+ * @param level the level to log at
+ * @param destination the LogDestination to use.
+ * @returns true if logging was initialized sucessfully, false otherwise.
+ */
 void InitLogging(log_level level, LogDestination *destination);
 }  // namespace ola
 #endif  // INCLUDE_OLA_LOGGING_H_
