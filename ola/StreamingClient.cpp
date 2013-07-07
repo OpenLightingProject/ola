@@ -58,10 +58,6 @@ StreamingClient::~StreamingClient() {
   Stop();
 }
 
-/*
- * Setup the Streaming Client
- * @returns true on success, false on failure
- */
 bool StreamingClient::Setup() {
   if (m_socket || m_channel || m_stub)
     return false;
@@ -105,10 +101,6 @@ bool StreamingClient::Setup() {
   return true;
 }
 
-
-/*
- * Close the ola connection.
- */
 void StreamingClient::Stop() {
   if (m_stub)
     delete m_stub;
@@ -128,12 +120,6 @@ void StreamingClient::Stop() {
   m_stub = NULL;
 }
 
-
-/*
- * Send DMX to the remote OLA server
- * @returns True is sent sucessfully, false if the connection to the server has
- * been closed and Setup() needs to be run again.
- */
 bool StreamingClient::SendDmx(unsigned int universe,
                               const DmxBuffer &data) {
   if (!m_stub || !m_socket->ValidReadDescriptor())
@@ -162,10 +148,6 @@ bool StreamingClient::SendDmx(unsigned int universe,
   return true;
 }
 
-
-/*
- * Called when the socket is closed
- */
 void StreamingClient::SocketClosed() {
   m_socket_closed = true;
   OLA_WARN << "The RPC socket has been closed, this is more than likely due"

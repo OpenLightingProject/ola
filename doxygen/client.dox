@@ -4,9 +4,61 @@
  * [TOC]
  *
  * @section sec_Overview Overview
+ * This page introduces the OLA Client API, and provides sample programs to
+ * send and receive DMX512 from olad.
  *
  * @section sec_Building Building
+ * Once OLA is installed on your system, the examples can be built with:
  *
+ *     g++ example.cpp $(pkg-config --cflags --libs libolaclient)
  *
+ * @section sec_StreamingClient Streaming Client
+ * The simplest way to get started is by using ola::StreamingClient.
+ * ~~~~~~~~~~~~~~~~~~~~~
+ * #include <stdlib.h>
+ * #include <ola/DmxBuffer.h>
+ * #include <ola/Logging.h>
+ * #include <ola/StreamingClient.h>
+ *
+ * #include <iostream>
+ *
+ * using std::cout;
+ * using std::endl;
+ *
+ * int main(int argc, char *argv[]) {
+ *   unsigned int universe = 1;  // universe to use for sending data
+ *
+ *   // turn on OLA logging
+ *   ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
+ *
+ *   // Create a new DmxBuffer to hold the data
+ *   ola::DmxBuffer buffer;
+ *   // set all channels to 0
+ *   buffer.Blackout();
+ *
+ *   // Create a new client and set the Error Closure
+ *   ola::StreamingClient ola_client(ola::StreamingClient::Options());
+ *
+ *   // Setup the client, this connects to the server
+ *   if (!ola_client.Setup()) {
+ *     cout << "Setup failed" << endl;
+ *     exit(1);
+ *   }
+ *
+ *   // Send the data to the ola server
+ *   for (unsigned int i = 0; i < 100; i++) {
+ *     buffer.SetChannel(0, i);
+ *     if (!ola_client.SendDmx(universe, buffer)) {
+ *       cout << "Send DMX failed" << endl;
+ *       exit(1);
+ *     }
+ *     usleep(20000);   // sleep for 20ms between updates
+ *   }
+ *
+ *   // Close the connection
+ *   ola_client.Stop();
+ *   return 0;
+ * }
+ * ~~~~~~~~~~~~~~~~~~~~~
  *
  */
