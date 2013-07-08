@@ -18,20 +18,61 @@
  * Copyright (C) 2011 Simon Newton
  */
 
+/**
+ * @file CallbackRunner.h
+ * @brief Automatically execute a callback when it goes out of scope.
+ */
+
 #ifndef INCLUDE_OLA_CALLBACKRUNNER_H_
 #define INCLUDE_OLA_CALLBACKRUNNER_H_
 
 namespace ola {
 
+/**
+ * @class CallbackRunner <ola/CallbackRunner.h>
+ * @brief Automatically execute a callback when it goes out of scope.
+ *
+ * This is useful if the function or method has multiple return points and
+ * you need to ensure that the callback is always executed before the function
+ * returns. It's most useful for handling RPCs.
+ *
+ * ~~~~~~~~~~~~~~~~~~~~~
+ * int Foo(MyCallback *callback) {
+ *   CallbackRunner runner(callback);
+ *   if (...) {
+ *      // do something here.
+ *      return 1;
+ *   } else {
+ *     if (...) {
+ *       // do something here.
+ *       return 2;
+ *     } else {
+ *       // do something here.
+ *       return 3;
+ *     }
+ *   }
+ * }
+ * ~~~~~~~~~~~~~~~~~~~~~
+ * @tparam CallbackClass An class which has a Run() method.
+ */
 template <typename CallbackClass>
 class CallbackRunner {
   public:
+    /**
+     * Construct a new CallbackRunner.
+     * @param callback the Callback to execute.
+     */
     explicit CallbackRunner(CallbackClass *callback)
         : m_callback(callback) {
     }
+
+    /**
+     * Destructor, this executes the callback.
+     */
     ~CallbackRunner() {
       m_callback->Run();
     }
+
   private:
     CallbackClass *m_callback;
 };
