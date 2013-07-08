@@ -21,6 +21,7 @@
  * @file
  * @brief The OLA logging system.
  *
+ * @snippet
  * ~~~~~~~~~~~~~~~~~~~~~
  * #include <ola/Logging.h>
  *

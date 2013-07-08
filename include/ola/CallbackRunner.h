@@ -31,11 +31,13 @@ namespace ola {
 /**
  * @class CallbackRunner <ola/CallbackRunner.h>
  * @brief Automatically execute a callback when it goes out of scope.
+ * @tparam CallbackClass An class which has a Run() method.
  *
  * This is useful if the function or method has multiple return points and
  * you need to ensure that the callback is always executed before the function
  * returns. It's most useful for handling RPCs.
  *
+ * @snippet
  * ~~~~~~~~~~~~~~~~~~~~~
  * int Foo(MyCallback *callback) {
  *   CallbackRunner runner(callback);
@@ -53,7 +55,6 @@ namespace ola {
  *   }
  * }
  * ~~~~~~~~~~~~~~~~~~~~~
- * @tparam CallbackClass An class which has a Run() method.
  */
 template <typename CallbackClass>
 class CallbackRunner {
