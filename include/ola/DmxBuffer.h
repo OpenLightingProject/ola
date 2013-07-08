@@ -149,14 +149,18 @@ class DmxBuffer {
      * @param data the string to split
      * @return true if the set was successful and false if it failed
      *
-     * @example of the String format
-     *
+     * @note
+     * Here is an example of the string format used:
+     * @code
      * dmx_buffer.SetFromString("0,1,2,3,4")
-     * Would set channels 1 through 5 to 0,1,2,3,4 respectively
-     *
+     * @endcode
+     * The above code would set channels 1 through 5 to 0,1,2,3,4 respectively,
+     * and
+     * @code
      * dmx_buffer.SetFromString(",,,,,255,255,128")
-     * Would set channel 1 through 5 to 0 and channel 6,7 to 255 and channel
-     * 8 to 128
+     * @endcode
+     * would set channel 1 through 5 to 0 and channel 6,7 to 255 and channel
+     * 8 to 128.
      */
     bool SetFromString(const string &data);
 
@@ -248,7 +252,11 @@ class DmxBuffer {
      * Convert the DmxBuffer to a human readable representation.
      * @return a string in a human readable form
      *
-     * @example "0,0,255,128,100"
+     * @note
+     * Here is an example of the output.
+     * @code
+     * "0,0,255,128,100"
+     * @endcode
      */
     string ToString() const;
 
