@@ -91,11 +91,11 @@ using std::string;
  * it.
  */
 enum log_level {
-  OLA_LOG_NONE,   ///< No messages are logged.
-  OLA_LOG_FATAL,  ///< Fatal messages are logged.
-  OLA_LOG_WARN,   ///< Warnings messages are logged.
-  OLA_LOG_INFO,   ///< Informational messages are logged.
-  OLA_LOG_DEBUG,  ///< Debug messages are logged.
+  OLA_LOG_NONE,   /**< No messages are logged. */
+  OLA_LOG_FATAL,  /**< Fatal messages are logged. */
+  OLA_LOG_WARN,   /**< Warnings messages are logged. */
+  OLA_LOG_INFO,   /**< Informational messages are logged. */
+  OLA_LOG_DEBUG,  /**< Debug messages are logged. */
   OLA_LOG_MAX,
 };
 
@@ -105,8 +105,8 @@ extern log_level logging_level;
  * @brief The destination to write log messages to
  */
 typedef enum {
-  OLA_LOG_STDERR,  ///< Log to stderr
-  OLA_LOG_SYSLOG,  ///< Log to syslog
+  OLA_LOG_STDERR,  /**< Log to stderr. */
+  OLA_LOG_SYSLOG,  /**< Log to syslog. */
   OLA_LOG_NULL,
 } log_output;
 
