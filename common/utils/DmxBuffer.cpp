@@ -23,6 +23,10 @@
  * valid data is returned by calling Size().
  */
 
+/**
+ * @file DmxBuffer.cpp
+ */
+
 #include <string.h>
 #include <algorithm>
 #include <iostream>
@@ -47,10 +51,6 @@ DmxBuffer::DmxBuffer()
 }
 
 
-/*
- * Copy constructor. We just copy the underlying pointers and mark COW as
- * true if the other buffer has data.
- */
 DmxBuffer::DmxBuffer(const DmxBuffer &other)
     : m_ref_count(NULL),
       m_copy_on_write(false),
@@ -63,9 +63,6 @@ DmxBuffer::DmxBuffer(const DmxBuffer &other)
 }
 
 
-/*
- * Create a new buffer from data
- */
 DmxBuffer::DmxBuffer(const uint8_t *data, unsigned int length)
     : m_ref_count(0),
       m_copy_on_write(false),
@@ -75,9 +72,6 @@ DmxBuffer::DmxBuffer(const uint8_t *data, unsigned int length)
 }
 
 
-/*
- * Create a new buffer from a string
- */
 DmxBuffer::DmxBuffer(const string &data)
     : m_ref_count(0),
       m_copy_on_write(false),
@@ -87,18 +81,11 @@ DmxBuffer::DmxBuffer(const string &data)
 }
 
 
-/*
- * Cleanup
- */
 DmxBuffer::~DmxBuffer() {
   CleanupMemory();
 }
 
 
-/*
- * Make this buffer equal to another one
- * @param other the other DmxBuffer
- */
 DmxBuffer& DmxBuffer::operator=(const DmxBuffer &other) {
   if (this != &other) {
     CleanupMemory();
@@ -110,9 +97,6 @@ DmxBuffer& DmxBuffer::operator=(const DmxBuffer &other) {
 }
 
 
-/*
- * Check for equality.
- */
 bool DmxBuffer::operator==(const DmxBuffer &other) const {
   return (m_length == other.m_length &&
           (m_data == other.m_data ||
@@ -125,10 +109,6 @@ bool DmxBuffer::operator!=(const DmxBuffer &other) const {
 }
 
 
-/*
- * HTP Merge from another DmxBuffer.
- * @param other the DmxBuffer to HTP merge into this one
- */
 bool DmxBuffer::HTPMerge(const DmxBuffer &other) {
   if (!m_data) {
     if (!Init())
@@ -153,10 +133,6 @@ bool DmxBuffer::HTPMerge(const DmxBuffer &other) {
 }
 
 
-/*
- * Set the contents of this DmxBuffer
- * @post Size() == length
- */
 bool DmxBuffer::Set(const uint8_t *data, unsigned int length) {
   if (!data)
     return false;
@@ -173,31 +149,16 @@ bool DmxBuffer::Set(const uint8_t *data, unsigned int length) {
 }
 
 
-/*
- * Set the contents of this DmxBuffer
- * @param data the string with the dmx data
- * @post Size() == data.length()
- */
 bool DmxBuffer::Set(const string &data) {
   return Set(reinterpret_cast<const uint8_t*>(data.data()), data.length());
 }
 
 
-/*
- * Sets the data in this buffer to be the same as the other one.
- * Used instead of a COW to optimise.
- * @post Size() == other.Size()
- */
 bool DmxBuffer::Set(const DmxBuffer &other) {
   return Set(other.m_data, other.m_length);
 }
 
 
-/*
- * Convert a ',' separated list into a DmxBuffer. Invalid values are set to
- * 0. 0s can be dropped between the commas.
- * @param input the string to split
- */
 bool DmxBuffer::SetFromString(const string &input) {
   unsigned int i = 0;
   vector<string> dmx_values;
@@ -223,12 +184,6 @@ bool DmxBuffer::SetFromString(const string &input) {
 }
 
 
-/*
- * Set a Range of data to a single value
- * @param offset the starting channel
- * @param value the value to set the range to
- * @param length the length of the range to set
- */
 bool DmxBuffer::SetRangeToValue(unsigned int offset,
                                 uint8_t value,
                                 unsigned int length) {
@@ -251,14 +206,6 @@ bool DmxBuffer::SetRangeToValue(unsigned int offset,
 }
 
 
-/*
- * Set a range of data. Calling this on an uninitialized buffer will call
- * Blackout() first. Attempting to set data with an offset > Size() is an
- * error.
- * @param offset the starting channel
- * @param data a pointer to the new data
- * @param length the length of the data
- */
 bool DmxBuffer::SetRange(unsigned int offset,
                          const uint8_t *data,
                          unsigned int length) {
@@ -281,11 +228,6 @@ bool DmxBuffer::SetRange(unsigned int offset,
 }
 
 
-/*
- * Set a single channel. Calling this on an uninitialized buffer will call
- * Blackout() first. Trying to set a channel more than 1 channel past the end
- * of the valid data is an error.
- */
 void DmxBuffer::SetChannel(unsigned int channel, uint8_t data) {
   if (channel >= DMX_UNIVERSE_SIZE)
     return;
@@ -306,9 +248,6 @@ void DmxBuffer::SetChannel(unsigned int channel, uint8_t data) {
 }
 
 
-/*
- * Get the contents of this buffer
- */
 void DmxBuffer::Get(uint8_t *data, unsigned int *length) const {
   if (m_data) {
     *length = min(*length, m_length);
@@ -319,9 +258,6 @@ void DmxBuffer::Get(uint8_t *data, unsigned int *length) const {
 }
 
 
-/**
- * Get a range of values starting from a particular slot
- */
 void DmxBuffer::GetRange(unsigned int slot, uint8_t *data,
                          unsigned int *length) const {
   if (m_data) {
@@ -333,10 +269,6 @@ void DmxBuffer::GetRange(unsigned int slot, uint8_t *data,
 }
 
 
-/*
- * Returns the value of a channel. This returns 0 if the buffer wasn't
- * initialized or the channel was out-of-bounds.
- */
 uint8_t DmxBuffer::Get(unsigned int channel) const {
   if (m_data && channel < m_length)
     return m_data[channel];
@@ -345,9 +277,6 @@ uint8_t DmxBuffer::Get(unsigned int channel) const {
 }
 
 
-/*
- * Get the contents of the DmxBuffer as a string
- */
 string DmxBuffer::Get() const {
   string data;
   data.append(reinterpret_cast<char*>(m_data), m_length);
@@ -371,19 +300,12 @@ bool DmxBuffer::Blackout() {
 }
 
 
-/*
- * Reset the bufer to hold no data.
- * @post Size() == 0
- */
 void DmxBuffer::Reset() {
   if (m_data)
     m_length = 0;
 }
 
 
-/*
- * Convert to a human readable representation
- */
 string DmxBuffer::ToString() const {
   if (!m_data)
     return "";
@@ -400,6 +322,7 @@ string DmxBuffer::ToString() const {
 
 /*
  * Allocate memory
+ * @return true on success, otherwise raises an exception
  */
 bool DmxBuffer::Init() {
   m_data = new uint8_t[DMX_UNIVERSE_SIZE];
@@ -412,6 +335,7 @@ bool DmxBuffer::Init() {
 
 /*
  * Called before making a change, this duplicates the data if required.
+ * @return true on Duplication, and false it duplication was not needed
  */
 bool DmxBuffer::DuplicateIfNeeded() {
   if (m_copy_on_write && *m_ref_count == 1)

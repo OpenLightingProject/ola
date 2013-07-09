@@ -19,8 +19,7 @@
 
 /**
  * @file Array.h
- * @brief This file holds a macro for determing the array size of a staticly
- * allocated array.
+ * @brief Helper macros / methods for static arrays.
  */
 
 #ifndef INCLUDE_OLA_BASE_ARRAY_H_
@@ -29,9 +28,9 @@
 namespace ola {
 
 /**
- * @brief Part of a helper to determine the size of a statically allocated
- * array
- * @tparam T is your class or variable
+ * @brief A helper to determine the size of a statically allocated array.
+ * @private
+ * @tparam T is the type of your object.
  * @tparam N is the size of your type T.
  *
  * @note
@@ -45,6 +44,7 @@ template <typename T, size_t N>
 /**
  * @brief Part of a helper to determine the size of a statically allocated
  * const array
+ * @private
  *
  * @tparam T is your class or variable
  * @tparam N is the size of your type T
@@ -55,9 +55,9 @@ template <typename T, size_t N>
 
 /**
  * @def arraysize(array)
- * @brief Computes the size of the statically allocated array
- * @param array is the array you wish to get the size of
- * @return a size_t of the number of elements in the array
+ * @brief Computes the size of the statically allocated array.
+ * @param array the array to get the size of.
+ * @return the number of elements in the array.
  */
 #define arraysize(array) (sizeof(ArraySizeHelper(array)))
 
