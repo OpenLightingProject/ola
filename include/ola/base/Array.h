@@ -31,7 +31,7 @@ namespace ola {
 /**
  * @brief Part of a helper to determine the size of a statically allocated
  * array
- * @tparam T is the type of your object.
+ * @tparam T is your class or variable
  * @tparam N is the size of your type T.
  *
  * @note
@@ -46,7 +46,7 @@ template <typename T, size_t N>
  * @brief Part of a helper to determine the size of a statically allocated
  * const array
  *
- * @tparam T is the type of your object
+ * @tparam T is your class or variable
  * @tparam N is the size of your type T
  */
 template <typename T, size_t N>

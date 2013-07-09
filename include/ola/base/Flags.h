@@ -15,12 +15,16 @@
  *
  * Flags.h
  * Command line flag (option) handling.
- * Copyright (C) 2013 Simon Newton
- *
- * This provides an easy mechanism for handling command line flags. It's
+ * dCopyright (C) 2013 Simon Newton
+ */
+
+/**
+ * @file Flags.h
+ * @brief This provides an easy mechanism for handling command line flags. It's
  * based off gflags (https://code.google.com/p/gflags/) but much simpler
  * because we leave out features.
  *
+ * @Note
  * Limitations
  *   - Setting flags is not thread safe
  *   - Flags cannot be used at global construction time.
@@ -31,26 +35,36 @@
  *  - short options supported
  *  - inverted bools, e.g. --nofoo
  *
- * Usage:
+ * @snippet - Create new flags
+ *  @code
  *  DEFINE_bool(foo, false, "Enable feature foo");
  *  DEFINE_bool(bar, true, "Disable feature bar");
- *
  *  // Can now use FLAGS_foo and FLAGS_bar, the options are --foo and --nobar.
+ *  @endcode
  *
+ * @snippet - Set defaults
+ *  @code
  *  DEFINE_string(name, "simon", "Specify the name");
  *  // FLAGS_name defaults to "simon" and can be set with --name bob
+ *  @endcode
  *
+ * @snippet - Short Options
+ *  @code
  *  //Short options can also be specified:
  *  DEFINE_s_int8(baz, b, 0, "Sets the value of baz");
  *  // FLAGS_baz can be set with --baz or -b
+ *  @endcode
  *
- * You can access flags from files other than the one they were DEFINE_*'d in by
- * using DECLARE_*:
- *
- * DECLARE_bool(foo);
- * DECLARE_bool(bar);
- * // Can now use FLAGS_foo and FLAGS_bar
+ * @snippet - Use flags from other files
+ *  You can access flags from files other than the one they were DEFINE_*'d in
+ *  by using DECLARE_*:
+ *  @code
+ *  DECLARE_bool(foo);
+ *  DECLARE_bool(bar);
+ *  // Can now use FLAGS_foo and FLAGS_bar
+ *  @endcode
  */
+
 #ifndef INCLUDE_OLA_BASE_FLAGS_H_
 #define INCLUDE_OLA_BASE_FLAGS_H_
 
@@ -63,96 +77,282 @@ namespace ola {
 using std::string;
 
 /**
- * Set the help string for the program. The first argument is what's displayed
- * after argv[0], the second can be a multi-line description of the program.
+ * @brief Set the help string for the program.
+ * @param first_line is the inital line that is displayed in the help section.
+ * This is displayed after argv[0].
+ * @param description is a multiline description of the program
+ *
  */
 void SetHelpString(const string &first_line, const string &description);
 
 /**
- * Print the usage text to stderr.
+ * @brief Print the usage text to stderr.
  */
 void DisplayUsage();
 
 /**
- * Parses the command line flags up to the first non-flag value. argv is
+ * @brief Parses the command line flags up to the first non-flag value. argv is
  * re-arranged so that it only contains non-flag arguments.
+ *
+ * @param argc is the argument count taken straight from your main()
+ * @param argv is the argument vector which holds the actual arguments from the
+ * command line. Also comes from main().
  */
 void ParseFlags(int *argc, char **argv);
 }  // namespace ola
 
 // DECLARE_*
 
+/**
+ * @def DECLARE_bool(name)
+ * @brief Reuse a bool flag from another file
+ * @param name is the name of the flag to reuse
+ */
 #define DECLARE_bool(name) \
   DECLARE_flag(bool, name)
 
+/**
+ * @def DECLARE_int8(name)
+ * @brief Reuse an int8_t flag from another file
+ * @param name is the name of the flag to reuse
+ */
 #define DECLARE_int8(name) \
   DECLARE_flag(int8_t, name)
 
+/**
+ * @def DECLARE_int16(name)
+ * @brief Reuse an int16_t flag from another file
+ * @param name is the name of the flag to reuse
+ */
 #define DECLARE_int16(name) \
   DECLARE_flag(int16_t, name)
 
+/**
+ * @def DECLARE_int32(name)
+ * @brief Reuse an int32_t flag from another file
+ * @param name is the name of the flag to reuse
+ */
 #define DECLARE_int32(name) \
   DECLARE_flag(int32_t, name)
 
+/**
+ * @def DECLARE_uint8(name)
+ * @brief Reuse a uint8_t flag from another file
+ * @param name is the name of the flag to reuse
+ */
 #define DECLARE_uint8(name) \
   DECLARE_flag(uint8_t, name)
 
+/**
+ * @def DECLARE_uint16(name)
+ * @brief Reuse a uint16_t flag from another file
+ * @param name is the name of the flag to reuse
+ */
 #define DECLARE_uint16(name) \
   DECLARE_flag(uint16_t, name)
 
+/**
+ * @def DECLARE_uint32(name)
+ * @brief Reuse a uint32_t flag from another file
+ * @param name is the name of the flag to reuse
+ */
 #define DECLARE_uint32(name) \
   DECLARE_flag(uint32_t, name)
 
+/**
+ * @def DECLARE_string(name)
+ * @brief Reuse a string flag from another file
+ * @param name is the name of the flag to reuse
+ */
 #define DECLARE_string(name) \
   DECLARE_flag(std::string, name)
 
 // DEFINE_*
 
+/**
+ * @def DEFINE_bool(name, default_value, help_str)
+ * @brief Create a new longname bool flag
+ * @param name is the name of the flag to create
+ * @param default_value is the default value for the flag.
+ * Either true, or false.
+ * @param help_str is the string displayed when the program is asked to display
+ * the help screen
+ */
 #define DEFINE_bool(name, default_value, help_str) \
   DEFINE_flag(bool, name, \0, default_value, help_str)
 
+/**
+ * @def DEFINE_s_bool(name, short_opt, default_value, help_str)
+ * @brief Create a new flag with a long and short name
+ * @param name is the full name of the flag to create
+ * @param short_opt is the short name of the flag. For example "-h", or "-d".
+ * @param default_value is the default value for the flag.
+ * Either true, or false
+ * @param help_str is the string displayed when the program is asked to display
+ * the help screen
+ */
 #define DEFINE_s_bool(name, short_opt, default_value, help_str) \
   DEFINE_flag_with_short(bool, name, short_opt, default_value, help_str)
 
+/**
+ * @def DEFINE_int8(name, default_value, help_str)
+ * @brief Create a new longname int8_t flag
+ * @param name is the name of the flag to create
+ * @param default_value is the default value for the flag.
+ * @param help_str is the string displayed when the program is asked to display
+ * the help screen
+ */
 #define DEFINE_int8(name, default_value, help_str) \
   DEFINE_flag(int8_t, name, \0, default_value, help_str)
 
+/**
+ * @def DEFINE_s_int8(name, short_opt, default_value, help_str)
+ * @brief Create a new int8_t flag with a long and short name
+ * @param name is the full name of the flag to create
+ * @param short_opt is the short name of the flag. For example "-h", or "-d".
+ * @param default_value is the default value for the flag.
+ * @param help_str is the string displayed when the program is asked to display
+ * the help screen
+ */
 #define DEFINE_s_int8(name, short_opt, default_value, help_str) \
   DEFINE_flag_with_short(int8_t, name, short_opt, default_value, help_str)
 
+/**
+ * @def DEFINE_uint8(name, default_value, help_str)
+ * @brief Create a new longname uint8_t flag
+ * @param name is the name of the flag to create
+ * @param default_value is the default value for the flag.
+ * @param help_str is the string displayed when the program is asked to display
+ * the help screen
+ */
 #define DEFINE_uint8(name, default_value, help_str) \
   DEFINE_flag(uint8_t, name, \0, default_value, help_str)
 
+/**
+ * @def DEFINE_s_uint8(name, short_opt, default_value, help_str)
+ * @brief Create a new uint8_t flag with a long and short name
+ * @param name is the full name of the flag to create
+ * @param short_opt is the short name of the flag. For example "-h", or "-d".
+ * @param default_value is the default value for the flag.
+ * @param help_str is the string displayed when the program is asked to display
+ * the help screen
+ */
 #define DEFINE_s_uint8(name, short_opt, default_value, help_str) \
   DEFINE_flag_with_short(uint8_t, name, short_opt, default_value, help_str)
 
+/**
+ * @def DEFINE_int16(name, default_value, help_str)
+ * @brief Create a new longname int16_t flag
+ * @param name is the name of the flag to create
+ * @param default_value is the default value for the flag.
+ * @param help_str is the string displayed when the program is asked to display
+ * the help screen
+ */
 #define DEFINE_int16(name, default_value, help_str) \
   DEFINE_flag(int16_t, name, \0, default_value, help_str)
 
+/**
+ * @def DEFINE_s_int16(name, short_opt, default_value, help_str)
+ * @brief Create a new int16_t flag with a long and short name
+ * @param name is the full name of the flag to create
+ * @param short_opt is the short name of the flag. For example "-h", or "-d".
+ * @param default_value is the default value for the flag.
+ * @param help_str is the string displayed when the program is asked to display
+ * the help screen
+ */
 #define DEFINE_s_int16(name, short_opt, default_value, help_str) \
   DEFINE_flag_with_short(int16_t, name, short_opt, default_value, help_str)
 
+
+/**
+ * @def DEFINE_uint16(name, default_value, help_str)
+ * @brief Create a new longname uint16_t flag
+ * @param name is the name of the flag to create
+ * @param default_value is the default value for the flag.
+ * @param help_str is the string displayed when the program is asked to display
+ * the help screen
+ */
 #define DEFINE_uint16(name, default_value, help_str) \
   DEFINE_flag(uint16_t, name, \0, default_value, help_str)
 
+/**
+ * @def DEFINE_s_uint16(name, short_opt, default_value, help_str)
+ * @brief Create a new uint16_t flag with a long and short name
+ * @param name is the full name of the flag to create
+ * @param short_opt is the short name of the flag. For example "-h", or "-d".
+ * @param default_value is the default value for the flag.
+ * @param help_str is the string displayed when the program is asked to display
+ * the help screen
+ */
 #define DEFINE_s_uint16(name, short_opt, default_value, help_str) \
   DEFINE_flag_with_short(uint16_t, name, short_opt, default_value, help_str)
 
+/**
+ * @def DEFINE_int32(name, default_value, help_str)
+ * @brief Create a new longname int32_t flag
+ * @param name is the name of the flag to create
+ * @param default_value is the default value for the flag.
+ * @param help_str is the string displayed when the program is asked to display
+ * the help screen
+ */
 #define DEFINE_int32(name, default_value, help_str) \
   DEFINE_flag(int32_t, name, \0, default_value, help_str)
 
+/**
+ * @def DEFINE_s_int32(name, short_opt, default_value, help_str)
+ * @brief Create a new int32_t flag with a long and short name
+ * @param name is the full name of the flag to create
+ * @param short_opt is the short name of the flag. For example "-h", or "-d".
+ * @param default_value is the default value for the flag.
+ * @param help_str is the string displayed when the program is asked to display
+ * the help screen
+ */
 #define DEFINE_s_int32(name, short_opt, default_value, help_str) \
   DEFINE_flag_with_short(int32_t, name, short_opt, default_value, help_str)
 
+/**
+ * @def DEFINE_uint32(name, default_value, help_str)
+ * @brief Create a new longname uint32_t flag
+ * @param name is the name of the flag to create
+ * @param default_value is the default value for the flag.
+ * @param help_str is the string displayed when the program is asked to display
+ * the help screen
+ */
 #define DEFINE_uint32(name, default_value, help_str) \
   DEFINE_flag(uint32_t, name, \0, default_value, help_str)
 
+/**
+ * @def DEFINE_s_uint32(name, short_opt, default_value, help_str)
+ * @brief Create a new int32_t flag with a long and short name
+ * @param name is the full name of the flag to create
+ * @param short_opt is the short name of the flag. For example "-h", or "-d".
+ * @param default_value is the default value for the flag.
+ * @param help_str is the string displayed when the program is asked to display
+ * the help screen
+ */
 #define DEFINE_s_uint32(name, short_opt, default_value, help_str) \
   DEFINE_flag_with_short(uint32_t, name, short_opt, default_value, help_str)
 
+/**
+ * @def DEFINE_string(name, default_value, help_str)
+ * @brief Create a new longname string flag
+ * @param name is the name of the flag to create
+ * @param default_value is the default value for the flag.
+ * @param help_str is the string displayed when the program is asked to display
+ * the help screen
+ */
 #define DEFINE_string(name, default_value, help_str) \
   DEFINE_flag(std::string, name, \0, default_value, help_str)
 
+/**
+ * @def DEFINE_s_string(name, short_opt, default_value, help_str)
+ * @brief Create a new string flag with a long and short name
+ * @param name is the full name of the flag to create
+ * @param short_opt is the short name of the flag. For example "-h", or "-d".
+ * @param default_value is the default value for the flag.
+ * @param help_str is the string displayed when the program is asked to display
+ * the help screen
+ */
 #define DEFINE_s_string(name, short_opt, default_value, help_str) \
   DEFINE_flag_with_short(std::string, name, short_opt, default_value, help_str)
 
