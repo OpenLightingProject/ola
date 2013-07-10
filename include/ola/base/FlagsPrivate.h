@@ -17,6 +17,11 @@
  * Command line flag (option) handling.
  * Copyright (C) 2013 Simon Newton
  */
+
+/**
+ * @file FlagsPrivate.h
+ */
+
 #ifndef INCLUDE_OLA_BASE_FLAGSPRIVATE_H_
 #define INCLUDE_OLA_BASE_FLAGSPRIVATE_H_
 
@@ -33,7 +38,7 @@ namespace ola {
 using std::string;
 
 /**
- * The interface for the Flag clases.
+ * @brief The interface for the Flag clases.
  */
 class FlagInterface {
   public:
@@ -48,7 +53,7 @@ class FlagInterface {
 };
 
 /**
- * The common implementation.
+ * @brief The common implementation.
  */
 class BaseFlag : public FlagInterface {
   public:
@@ -73,7 +78,7 @@ class BaseFlag : public FlagInterface {
 };
 
 /**
- * A templated Flag class, this one is used for the int types.
+ * @brief A templated Flag class, this one is used for the int types.
  */
 template <typename T>
 class Flag : public BaseFlag {
@@ -106,6 +111,9 @@ class Flag : public BaseFlag {
     T m_value;
 };
 
+/**
+ * @brief a bool flag
+ */
 template<>
 class Flag<bool> : public BaseFlag {
   public:
@@ -152,7 +160,9 @@ class Flag<bool> : public BaseFlag {
     static const char NO_PREFIX[];
 };
 
-
+/**
+ * @brief a string flag
+ */
 template<>
 class Flag<string> : public BaseFlag {
   public:
@@ -190,7 +200,9 @@ class Flag<string> : public BaseFlag {
     string m_value;
 };
 
-
+/**
+ * @brief Used to set the value of a flag
+ */
 template <typename T>
 bool Flag<T>::SetValue(const std::string &input) {
   return ola::StringToInt(input, &m_value, true);
@@ -198,8 +210,8 @@ bool Flag<T>::SetValue(const std::string &input) {
 
 
 /**
- * This class holds all the flags, and is responsbile for parsing the command
- * line.
+ * @brief This class holds all the flags, and is responsbile for parsing the
+ * command line.
  */
 class FlagRegistry {
   public:
@@ -229,12 +241,12 @@ class FlagRegistry {
 };
 
 /**
- * Get the global FlagRegistry.
+ * @brief Get the global FlagRegistry.
  */
 FlagRegistry *GetRegistry();
 
 /**
- * This class is responsible for registering a flag
+ * @brief This class is responsible for registering a flag
  */
 class FlagRegisterer {
   public:
@@ -249,10 +261,16 @@ class FlagRegisterer {
 };
 }  // namespace ola
 
+/**
+ * @def
+ */
 #define DECLARE_flag(type, name) \
   namespace ola_flags { extern ola::Flag<type> FLAGS_##name; } \
   using ola_flags::FLAGS_##name;
 
+/**
+ * @internal
+ */
 #define DEFINE_flag(type, name, short_opt, default_value, help_str) \
   namespace ola_flags { \
     ola::Flag<type> FLAGS_##name(#name, #type, #short_opt, default_value, \
@@ -261,6 +279,9 @@ class FlagRegisterer {
   } \
   using ola_flags::FLAGS_##name
 
+/**
+ * @internal
+ */
 #define DEFINE_flag_with_short(type, name, short_opt, default_value, help_str) \
   namespace ola_flags { char flag_short_##short_opt = 0; } \
   namespace ola_flags { \
