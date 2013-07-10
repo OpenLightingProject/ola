@@ -19,11 +19,7 @@
  */
 
 /**
- * @defgroup flags Flags Module
- * @addtogroup flags
- * @{
- *
- * @file Flags.h
+ * @defgroup flags Command Line Flags
  * @brief This provides an easy mechanism for handling command line flags. It's
  * based off gflags (https://code.google.com/p/gflags/) but much simpler
  * because we leave out features.
@@ -69,6 +65,12 @@
  *  @endcode
  */
 
+/**
+ * @addtogroup flags
+ * @{
+ * @file Flags.h
+ * @brief Defines macros to ease creation of command line flags
+ */
 #ifndef INCLUDE_OLA_BASE_FLAGS_H_
 #define INCLUDE_OLA_BASE_FLAGS_H_
 
