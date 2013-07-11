@@ -19,6 +19,12 @@
  */
 
 /**
+ * @defgroup stl STL
+ * @brief STL Helper Functions.
+ *
+ * @addtogroup stl
+ * @{
+ *
  * @file STLUtils.h
  * @brief Helper functions for STL types.
  */
@@ -136,7 +142,6 @@ void STLKeys(const T1 &container, vector<typename T1::key_type> *keys) {
  * @param[in] container the container to extract the values for.
  * @param[out] values the vector to populate with the values.
  */
-
 template<typename T1, typename T2>
 void STLValues(const T1 &container, vector<T2> *values) {
   values->reserve(values->size() + container.size());
@@ -368,3 +373,6 @@ typename T1::mapped_type STLLookupAndRemovePtr(
 }
 }  // namespace ola
 #endif  // INCLUDE_OLA_STL_STLUTILS_H_
+/**
+ * @}
+ */

@@ -26,7 +26,7 @@
  * @{
  *
  * @file Credentials.h
- * @brief
+ * @brief User & Group Information
  */
 
 #ifndef INCLUDE_OLA_BASE_CREDENTIALS_H_
