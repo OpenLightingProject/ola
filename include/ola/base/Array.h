@@ -46,7 +46,7 @@ template <typename T, size_t N>
  * const array
  * @private
  *
- * @tparam T is the type of your object
+ * @tparam T is your class or variable
  * @tparam N is the size of your type T
  */
 template <typename T, size_t N>

@@ -18,6 +18,12 @@
  * Copyright (C) 2013 Simon Newton
  */
 
+/**
+ * @addtogroup flags
+ * @{
+ * @file Flags.cpp
+ */
+
 #include <algorithm>
 #include <iostream>
 #include <string>
@@ -27,6 +33,9 @@
 #include "ola/base/SysExits.h"
 #include "ola/stl/STLUtils.h"
 
+/**
+ * @private
+ */
 DEFINE_s_bool(help, h, false, "Display the help message");
 
 namespace ola {
@@ -36,31 +45,24 @@ using std::endl;
 
 const char Flag<bool>::NO_PREFIX[] = "no";
 
-/**
- * Set the help string for the program. The first argument is what's displayed
- * after argv[0], the second can be a multi-line description of the program.
- */
 void SetHelpString(const string &first_line, const string &description) {
   GetRegistry()->SetFirstLine(first_line);
   GetRegistry()->SetDecription(description);
 }
 
-/**
- * Print the usage text to stderr.
- */
+
 void DisplayUsage() {
   GetRegistry()->DisplayUsage();
 }
 
-/**
- * Parses the command line flags up to the first non-flag value. argv is
- * re-arranged so that it only contains non-flag arguments.
- */
+
 void ParseFlags(int *argc, char **argv) {
   GetRegistry()->ParseFlags(argc, argv);
 }
 
-/**
+/**@}*/
+
+/*
  * Change the input to s/_/-/g
  */
 void BaseFlag::ReplaceUnderscoreWithHyphen(char *input) {
@@ -70,7 +72,7 @@ void BaseFlag::ReplaceUnderscoreWithHyphen(char *input) {
   }
 }
 
-/**
+/*
  * Convert a flag name to the canonical representation.
  */
 const char *BaseFlag::NewCanonicalName(const char *name) {
@@ -88,6 +90,7 @@ const char *BaseFlag::NewCanonicalName(const char *name) {
 }
 
 /**
+ * @private
  * Get the global FlagRegistry object.
  */
 FlagRegistry *GetRegistry() {
@@ -96,6 +99,7 @@ FlagRegistry *GetRegistry() {
 }
 
 /**
+ * @private
  * Register a flag.
  */
 void FlagRegistry::RegisterFlag(FlagInterface *flag) {
@@ -106,8 +110,9 @@ void FlagRegistry::RegisterFlag(FlagInterface *flag) {
 }
 
 
-/*
- * Parse the command line flags. This re-arranges argv so that only the
+/**
+ * @private
+ * @brief Parse the command line flags. This re-arranges argv so that only the
  * non-flag options remain.
  */
 void FlagRegistry::ParseFlags(int *argc, char **argv) {
@@ -167,16 +172,23 @@ void FlagRegistry::ParseFlags(int *argc, char **argv) {
   *argc = 1 + *argc - optind;
 }
 
+/**
+ * @private
+ */
 void FlagRegistry::SetFirstLine(const string &first_line) {
   m_first_line = first_line;
 }
 
+/**
+ * @private
+ */
 void FlagRegistry::SetDecription(const string &description) {
   m_description = description;
 }
 
 /**
- * Print the usage text to stderr
+ * @private
+ * @brief Print the usage text to stderr
  */
 void FlagRegistry::DisplayUsage() {
   cerr << "Usage: " << m_argv0 << " " << m_first_line << endl << endl;
@@ -212,7 +224,9 @@ void FlagRegistry::DisplayUsage() {
 }
 
 /**
- * Generate the short opts string for getopt. See `man 3 getopt` for the format.
+ * @private
+ * @brief Generate the short opts string for getopt. See `man 3 getopt` for the
+ * format.
  */
 string FlagRegistry::GetShortOptsString() const {
   string short_opts;
@@ -231,8 +245,9 @@ string FlagRegistry::GetShortOptsString() const {
 }
 
 /**
- * Allocate & populate the array of option structs for the call to getopt_long.
- * The caller is responsible for deleting the array.o
+ * @private
+ * @brief Allocate & populate the array of option structs for the call to
+ * getopt_long. The caller is responsible for deleting the array.o
  *
  * The flag_map is populated with the option identifier (int) to FlagInterface*
  * mappings. The ownership of the pointers to FlagInterfaces is not transferred
@@ -261,7 +276,8 @@ struct option *FlagRegistry::GetLongOpts(FlagMap *flag_map) {
 
 
 /**
- * Given a vector of flags lines, sort them and print to stderr.
+ * @private
+ * @brief Given a vector of flags lines, sort them and print to stderr.
  */
 void FlagRegistry::PrintFlags(std::vector<string> *lines) {
   std::sort(lines->begin(), lines->end());
