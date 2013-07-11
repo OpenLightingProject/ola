@@ -39,7 +39,7 @@ class KiNetPlugin : public Plugin {
     explicit KiNetPlugin(PluginAdaptor *plugin_adaptor):
       Plugin(plugin_adaptor) {}
 
-    ~KiNetPlugin() {}
+    ~KiNetPlugin();
 
     string Name() const { return PLUGIN_NAME; }
     ola_plugin_id Id() const { return OLA_PLUGIN_KINET; }
