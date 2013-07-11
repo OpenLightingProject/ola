@@ -136,8 +136,9 @@ void STLKeys(const T1 &container, vector<typename T1::key_type> *keys) {
  * @param[in] container the container to extract the values for.
  * @param[out] values the vector to populate with the values.
  */
-template<typename T1>
-void STLValues(const T1 &container, vector<typename T1::mapped_type> *values) {
+
+template<typename T1, typename T2>
+void STLValues(const T1 &container, vector<T2> *values) {
   values->reserve(values->size() + container.size());
   typename T1::const_iterator iter = container.begin();
   for (; iter != container.end(); ++iter)
