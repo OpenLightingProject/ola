@@ -20,7 +20,7 @@
 
 /**
  * @defgroup flags Command Line Flags
- * @brief This provides an easy mechanism for handling command line flags.
+ * @brief Command line flag processing.
  *
  * This is based on gflags (https://code.google.com/p/gflags/) but we reduce
  * the feature set to make things simpler.
