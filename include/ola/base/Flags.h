@@ -20,39 +20,43 @@
 
 /**
  * @defgroup flags Command Line Flags
- * @brief This provides an easy mechanism for handling command line flags. It's
- * based off gflags (https://code.google.com/p/gflags/) but much simpler
- * because we leave out features.
+ * @brief This provides an easy mechanism for handling command line flags.
  *
- * @Note
- * Limitations
+ * This is based on gflags (https://code.google.com/p/gflags/) but we reduce
+ * the feature set to make things simpler.
+ *
+ * Features:
+ *  - bool, uint8, uint16, uint32, int8, int16, int32 & string types.
+ *  - short options (e.g. -x).
+ *  - inverted bools, e.g. --nofoo
+ *
+ * @note
  *   - Setting flags is not thread safe
  *   - Flags cannot be used at global construction time.
  *   - DEFINE_ and DECLARE_ must be outside of any namespaces.
  *
- * Features:
- *  - bool, (unsigned) int{8,16,32}, string types supported
- *  - short options supported
- *  - inverted bools, e.g. --nofoo
- *
- * @snippet - Create new flags
+ * @snippet
  *  @code
+ *  // These options are --foo and --nobar.
  *  DEFINE_bool(foo, false, "Enable feature foo");
  *  DEFINE_bool(bar, true, "Disable feature bar");
- *  // Can now use FLAGS_foo and FLAGS_bar, the options are --foo and --nobar.
- *  @endcode
  *
- * @snippet - Set defaults
- *  @code
+ *  // FLAGS_name defaults to "simon" and can be changed with --name bob
  *  DEFINE_string(name, "simon", "Specify the name");
- *  // FLAGS_name defaults to "simon" and can be set with --name bob
- *  @endcode
  *
- * @snippet - Short Options
- *  @code
- *  //Short options can also be specified:
- *  DEFINE_s_int8(baz, b, 0, "Sets the value of baz");
+ *  // Short options can also be specified:
  *  // FLAGS_baz can be set with --baz or -b
+ *  DEFINE_s_int8(baz, b, 0, "Sets the value of baz");
+ *
+ *  int main(int argc, char* argv[]) {
+ *    ola::SetHelpString("<options>", "Description of binary");
+ *    ola::ParseFlags(argc, argv);
+ *
+ *    cout << "--foo is " << FLAGS_foo << endl;
+ *    cout << "--bar is " << FLAGS_bar << endl;
+ *    cout << "--name is " << FLAGS_name.str() << endl;
+ *    cout << "--baz (-b) is " << FLAGS_baz << endl;
+ *  }
  *  @endcode
  *
  * @snippet - Use flags from other files
@@ -337,7 +341,6 @@ void ParseFlags(int *argc, char **argv);
  */
 #define DEFINE_s_string(name, short_opt, default_value, help_str) \
   DEFINE_flag_with_short(std::string, name, short_opt, default_value, help_str)
-
 
 /** @}*/
 

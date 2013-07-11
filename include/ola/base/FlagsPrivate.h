@@ -19,6 +19,8 @@
  */
 
 /**
+ * @addtogroup flags
+ * @{
  * @file FlagsPrivate.h
  */
 
@@ -38,7 +40,7 @@ namespace ola {
 using std::string;
 
 /**
- * @brief The interface for the Flag clases.
+ * @brief The interface for the Flag classes.
  */
 class FlagInterface {
   public:
@@ -78,7 +80,8 @@ class BaseFlag : public FlagInterface {
 };
 
 /**
- * @brief A templated Flag class, this one is used for the int types.
+ * @brief A templated Flag class.
+ * @tparam T the type of the flag.
  */
 template <typename T>
 class Flag : public BaseFlag {
@@ -262,14 +265,14 @@ class FlagRegisterer {
 }  // namespace ola
 
 /**
- * @def
+ * @brief Declare a flag which was defined in another file.
  */
 #define DECLARE_flag(type, name) \
   namespace ola_flags { extern ola::Flag<type> FLAGS_##name; } \
   using ola_flags::FLAGS_##name;
 
 /**
- * @internal
+ * @brief Generic macro to define a flag
  */
 #define DEFINE_flag(type, name, short_opt, default_value, help_str) \
   namespace ola_flags { \
@@ -280,7 +283,7 @@ class FlagRegisterer {
   using ola_flags::FLAGS_##name
 
 /**
- * @internal
+ * @brief Generic macro to define a flag with a short option.
  */
 #define DEFINE_flag_with_short(type, name, short_opt, default_value, help_str) \
   namespace ola_flags { char flag_short_##short_opt = 0; } \
@@ -293,3 +296,4 @@ class FlagRegisterer {
   using ola_flags::FLAGS_##name
 
 #endif  // INCLUDE_OLA_BASE_FLAGSPRIVATE_H_
+/**@}*/
