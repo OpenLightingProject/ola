@@ -113,8 +113,8 @@ typedef struct {
  * success
  * @note Only thread safe and reentrant if the underlying OS supports it.
  *   @par
- *   Wraps getpwnam()/getpwnam_r(). For more info please visit:
- *   http://man7.org/linux/man-pages/man3/getpwnam.3.html
+ *   Wraps [getpwnam()/getpwnam_r()](
+ *   http://man7.org/linux/man-pages/man3/getpwnam.3.html).
  * @param name username to match against
  * @param passwd struct to hold information for username name
  * @return true on success, false otherwise
@@ -126,8 +126,8 @@ bool GetPasswdName(const string &name, PasswdEntry *passwd);
  * success.
  * @note Only thread safe and reentrant if the underlying OS supports it.
  *   @par
- *   Wraps getpwuid()/getpwuid_r(). For more info please visit:
- *   http://man7.org/linux/man-pages/man3/getpwnam.3.html
+ *   Wraps [getpwuid()/getpwuid_r()](
+ *   http://man7.org/linux/man-pages/man3/getpwnam.3.html).
  * @param uid is the User ID to match against
  * @param passwd struct to hold information for uid
  * @return true on success, false otherwise
@@ -156,8 +156,8 @@ typedef struct {
  * on success.
  * @note This is only thread safe & reentrant if the underlying OS supports it.
  *   @par
- *   Wraps getgrnam()/getgrnam_r(). For more info please visit:
- *   http://man7.org/linux/man-pages/man3/getgrgid.3.html
+ *   Wraps [getgrnam()/getgrnam_r()](
+ *   http://man7.org/linux/man-pages/man3/getgrgid.3.html).
  * @param name the name of the group to match
  * @param passwd is a GroupEntry to be populated upon success
  * @returns true on success and false otherwise
@@ -169,8 +169,8 @@ bool GetGroupName(const string &name, GroupEntry *passwd);
  * success.
  * @note This is only thread safe & reentrant if the underlying OS supports it.
  *   @par
- *   Wraps getgrpid()/getgrpid_r(). For more info please visit:
- *   http://man7.org/linux/man-pages/man3/getgrgid.3.html
+ *   Wraps [getgrpid()/getgrpid_r()](
+ *   http://man7.org/linux/man-pages/man3/getgrgid.3.html).
  * @param gid is the Group ID to match against
  * @passwd is a GroupEntry to be populated upon success
  * @returns true on success and false otherwise
