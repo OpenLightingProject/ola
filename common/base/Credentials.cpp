@@ -18,6 +18,12 @@
  * Copyright (C) 2012 Simon Newton
  */
 
+/**
+ * @addtogroup cred
+ * @{
+ * @file Credentials.cpp
+ */
+
 #if HAVE_CONFIG_H
 #  include <config.h>
 #endif
@@ -35,42 +41,26 @@
 namespace ola {
 
 
-/**
- * Get the effective UID
- */
 uid_t GetUID() {
   return getuid();
 }
 
 
-/**
- * Get the effective UID
- */
 uid_t GetEUID() {
   return geteuid();
 }
 
 
-/**
- * Get the effective GID
- */
 gid_t GetGID() {
   return getgid();
 }
 
 
-/**
- * Get the effective GID
- */
 gid_t GetEGID() {
   return getegid();
 }
 
 
-/**
- * Set the UID, this is a one way street.
- * Only valid if the current euid is 0, or euid == new_uid.
- */
 bool SetUID(uid_t new_uid) {
   if (setuid(new_uid)) {
     OLA_WARN << "setuid failed with " << strerror(errno);
@@ -80,10 +70,6 @@ bool SetUID(uid_t new_uid) {
 }
 
 
-/**
- * Set the UID, this is a one way street.
- * Only valid if the current egid is 0, or egid == new_gid.
- */
 bool SetGID(gid_t new_gid) {
   if (setgid(new_gid)) {
     OLA_WARN << "setgid failed with " << strerror(errno);
@@ -92,7 +78,9 @@ bool SetGID(gid_t new_gid) {
   return true;
 }
 
+/**@}*/
 
+/** @private */
 template <typename F, typename arg>
 bool GenericGetPasswdReentrant(F f, arg a, PasswdEntry *passwd) {
   if (!passwd)
@@ -132,10 +120,11 @@ bool GenericGetPasswdReentrant(F f, arg a, PasswdEntry *passwd) {
   return true;
 }
 
-/**
+/*
  * Some platforms (Android) don't have the _r versions. So we fall back to the
  * non-thread safe versions.
  */
+/** @private */
 template <typename F, typename arg>
 bool GenericGetPasswd(F f, arg a, PasswdEntry *passwd) {
   if (!passwd)
@@ -154,9 +143,6 @@ bool GenericGetPasswd(F f, arg a, PasswdEntry *passwd) {
 }
 
 
-/**
- * Wrapper for getpwnam
- */
 bool GetPasswdName(const string &name, PasswdEntry *passwd) {
 #ifdef HAVE_GETPWNAM_R
   return GenericGetPasswdReentrant(getpwnam_r, name.c_str(), passwd);
@@ -166,9 +152,6 @@ bool GetPasswdName(const string &name, PasswdEntry *passwd) {
 }
 
 
-/**
- * Wrapper for getpwuid
- */
 bool GetPasswdUID(uid_t uid, PasswdEntry *passwd) {
 #ifdef HAVE_GETPWUID_R
   return GenericGetPasswdReentrant(getpwuid_r, uid, passwd);
@@ -178,6 +161,7 @@ bool GetPasswdUID(uid_t uid, PasswdEntry *passwd) {
 }
 
 
+/** @private */
 template <typename F, typename arg>
 bool GenericGetGroupReentrant(F f, arg a, GroupEntry *group_entry) {
   if (!group_entry)
@@ -215,10 +199,11 @@ bool GenericGetGroupReentrant(F f, arg a, GroupEntry *group_entry) {
 }
 
 
-/**
+/*
  * Some platforms (Android) don't have the _r versions. So we fall back to the
  * non-thread safe versions.
  */
+/** @private */
 template <typename F, typename arg>
 bool GenericGetGroup(F f, arg a, GroupEntry *group_entry) {
   if (!group_entry)
@@ -233,9 +218,7 @@ bool GenericGetGroup(F f, arg a, GroupEntry *group_entry) {
   return true;
 }
 
-/**
- * Wrapper for getpwnam
- */
+
 bool GetGroupName(const string &name, GroupEntry *group_entry) {
 #ifdef HAVE_GETGRNAM_R
   return GenericGetGroupReentrant(getgrnam_r, name.c_str(), group_entry);
@@ -245,9 +228,6 @@ bool GetGroupName(const string &name, GroupEntry *group_entry) {
 }
 
 
-/**
- * Wrapper for getgrgid
- */
 bool GetGroupGID(gid_t uid, GroupEntry *group_entry) {
 #ifdef HAVE_GETGRGID_R
   return GenericGetGroupReentrant(getgrgid_r, uid, group_entry);
