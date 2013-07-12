@@ -21,6 +21,12 @@
  * otherwise default values.
  */
 
+/**
+ * @addtogroup sysexit
+ * @{
+ * @file SysExits.cpp
+ * @}
+ */
 
 #if HAVE_CONFIG_H
 #  include <config.h>
@@ -30,30 +36,51 @@
 #include <sysexits.h>
 #else
 // Copied from the Berkeley sources.
+/**
+ * @addtogroup sysexit
+ * @{
+ */
 
-#define EX_OK       0   /* successful termination */
-#define EX__BASE    64  /* base value for error messages */
-#define EX_USAGE    64  /* command line usage error */
-#define EX_DATAERR  65  /* data format error */
-#define EX_NOINPUT  66  /* cannot open input */
-#define EX_NOUSER   67  /* addressee unknown */
-#define EX_NOHOST   68  /* host name unknown */
-#define EX_UNAVAILABLE  69  /* service unavailable */
-#define EX_SOFTWARE 70  /* internal software error */
-#define EX_OSERR    71  /* system error (e.g., can't fork) */
-#define EX_OSFILE   72  /* critical OS file missing */
-#define EX_CANTCREAT    73  /* can't create (user) output file */
-#define EX_IOERR    74  /* input/output error */
-#define EX_TEMPFAIL 75  /* temp failure; user is invited to retry */
-#define EX_PROTOCOL 76  /* remote error in protocol */
-#define EX_NOPERM   77  /* permission denied */
-#define EX_CONFIG   78  /* configuration error */
-#define EX__MAX 78  /* maximum listed value */
+/**
+ * @name Fallback values
+ * @details These are the values we fall back to in case the os doesn't provide
+ * exit codes
+ * @{
+ */
+#define EX_OK       0   /**< @brief successful termination */
+#define EX__BASE    64  /**< @brief base value for error messages */
+#define EX_USAGE    64  /**< @brief command line usage error */
+#define EX_DATAERR  65  /**< @brief data format error */
+#define EX_NOINPUT  66  /**< @brief cannot open input */
+#define EX_NOUSER   67  /**< @brief addressee unknown */
+#define EX_NOHOST   68  /**< @brief host name unknown */
+#define EX_UNAVAILABLE  69  /**< @brief service unavailable */
+#define EX_SOFTWARE 70  /**< @brief internal software error */
+#define EX_OSERR    71  /**< @brief system error (e.g., can't fork) */
+#define EX_OSFILE   72  /**< @brief critical OS file missing */
+#define EX_CANTCREAT    73  /**< @brief can't create (user) output file */
+#define EX_IOERR    74  /**< @brief input/output error */
+#define EX_TEMPFAIL 75  /**< @brief temp failure; user is invited to retry */
+#define EX_PROTOCOL 76  /**< @brief remote error in protocol */
+#define EX_NOPERM   77  /**< @brief permission denied */
+#define EX_CONFIG   78  /**< @brief configuration error */
+#define EX__MAX 78  /**< @brief maximum listed value */
+
+/**
+ * @}
+ * @}
+ */
+
 #endif
 
 #include "ola/base/SysExits.h"
 
 namespace ola {
+
+/**
+ * @addtogroup sysexit
+ * @{
+ */
 
 const int EXIT_OK = EX_OK;
 const int EXIT__BASE = EX__BASE;
@@ -74,4 +101,5 @@ const int EXIT_NOPERM = EX_NOPERM;
 const int EXIT_CONFIG = EX_CONFIG;
 const int EXIT__MAX = EX__MAX;
 
+/**@}*/
 }  // namespace ola

@@ -21,29 +21,50 @@
  * otherwise default values.
  */
 
+/**
+ * @defgroup sysexit System Exit Values
+ * @brief Exit codes
+ * @details Some platforms (android) don't provide sysexits.h. To work around
+ * this we define our own exit codes, which use the system values if provided
+ * or otherwise our default values.
+ */
+
+/**
+ * @addtogroup sysexit
+ * @{
+ * @file SysExits.h
+ * @}
+ */
+
 #ifndef INCLUDE_OLA_BASE_SYSEXITS_H_
 #define INCLUDE_OLA_BASE_SYSEXITS_H_
 
 namespace ola {
 
-extern const int EXIT_OK;
-extern const int EXIT__BASE;
-extern const int EXIT_USAGE;
-extern const int EXIT_DATAERR;
-extern const int EXIT_NOINPUT;
-extern const int EXIT_NOUSER;
-extern const int EXIT_NOHOST;
-extern const int EXIT_UNAVAILABLE;
-extern const int EXIT_SOFTWARE;
-extern const int EXIT_OSERR;
-extern const int EXIT_OSFILE;
-extern const int EXIT_CANTCREAT;
-extern const int EXIT_IOERR;
-extern const int EXIT_TEMPFAIL;
-extern const int EXIT_PROTOCOL;
-extern const int EXIT_NOPERM;
-extern const int EXIT_CONFIG;
-extern const int EXIT__MAX;
+/**
+ * @addtogroup sysexit
+ * @{
+ */
 
+extern const int EXIT_OK; /**< @brief successful termination*/
+extern const int EXIT__BASE; /**< @brief base value for error messages */
+extern const int EXIT_USAGE; /**< @brief command line usage error*/
+extern const int EXIT_DATAERR; /**< @brief data format error*/
+extern const int EXIT_NOINPUT;  /**< @brief cannot open input*/
+extern const int EXIT_NOUSER; /**< @brief addresses unknown*/
+extern const int EXIT_NOHOST; /**< @brief host name unknown*/
+extern const int EXIT_UNAVAILABLE; /**< @brief service unavailable*/
+extern const int EXIT_SOFTWARE; /**< @brief internal software error*/
+extern const int EXIT_OSERR; /**< @brief system error (e.g can't fork)*/
+extern const int EXIT_OSFILE; /**< @brief critical OS file missing*/
+extern const int EXIT_CANTCREAT; /**< @brief can't create (user) output file*/
+extern const int EXIT_IOERR; /**< @brief input/output error*/
+extern const int EXIT_TEMPFAIL; /**< @brief temp faliure; user can rety*/
+extern const int EXIT_PROTOCOL; /**< @brief remote error in protocol*/
+extern const int EXIT_NOPERM; /**< @brief permission denied*/
+extern const int EXIT_CONFIG; /**< @brief configuration error*/
+extern const int EXIT__MAX; /**< @brief maximum listed value*/
+
+/**@}*/
 }  // namespace ola
 #endif  // INCLUDE_OLA_BASE_SYSEXITS_H_
