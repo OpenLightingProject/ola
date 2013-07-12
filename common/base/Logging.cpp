@@ -19,6 +19,14 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 
+/**
+ * @addtogroup logging
+ * @{
+ *
+ * @file Logging.cpp
+ *
+ * @}
+ */
 #include <stdio.h>
 
 #ifdef WIN32
@@ -32,7 +40,9 @@
 #include "ola/Logging.h"
 #include "ola/base/Flags.h"
 
+/**@private*/
 DEFINE_s_int8(log_level, l, ola::OLA_LOG_WARN, "Set the logging level 0 .. 4.");
+/**@private*/
 DEFINE_bool(syslog, false, "Send to syslog rather than stderr.");
 
 namespace ola {
@@ -40,21 +50,25 @@ namespace ola {
 using std::string;
 using std::ostringstream;
 
+/**
+ * @cond HIDDEN_SYMBOLS
+ * @brief pointer to a log target
+ */
 LogDestination *log_target = NULL;
+/**@endcond*/
+
+/**
+ * @addtogroup logging
+ * @{
+ */
 log_level logging_level = OLA_LOG_WARN;
 
-/*
- * Set the log level.
- * @param level the new log level
- */
+
 void SetLogLevel(log_level level) {
   logging_level = level;
 }
 
 
-/*
- * Increment the log level, We reset to OLA_LOG_FATAL when we wrap.
- */
 void IncrementLogLevel() {
   logging_level = (log_level) (logging_level + 1);
   if (logging_level == OLA_LOG_MAX)
@@ -62,9 +76,6 @@ void IncrementLogLevel() {
 }
 
 
-/*
- * Initialize logging from the command line flags.
- */
 bool InitLoggingFromFlags() {
   LogDestination *destination;
   if (FLAGS_syslog) {
@@ -105,11 +116,7 @@ bool InitLoggingFromFlags() {
   return true;
 }
 
-/*
- * Init the logging system.
- * @param level the log level
- * @param output the log output
- */
+
 bool InitLogging(log_level level, log_output output) {
   LogDestination *destination;
   if (output == OLA_LOG_SYSLOG) {
@@ -129,11 +136,6 @@ bool InitLogging(log_level level, log_output output) {
 }
 
 
-/*
- * Init the logging system.
- * @param level the log level
- * @param destination A LogDestination object
- */
 void InitLogging(log_level level, LogDestination *destination) {
   SetLogLevel(level);
   if (log_target)
@@ -141,7 +143,8 @@ void InitLogging(log_level level, LogDestination *destination) {
   log_target = destination;
 }
 
-
+/**@}*/
+/**@cond HIDDEN_SYMBOLS*/
 LogLine::LogLine(const char *file,
                  int line,
                  log_level level):
@@ -170,7 +173,12 @@ void LogLine::Write() {
   if (log_target)
     log_target->Write(m_level, line);
 }
+/**@endcond*/
 
+/**
+ * @addtogroup logging
+ * @{
+ */
 void StdErrorLogDestination::Write(log_level level, const string &log_line) {
   std::cerr << log_line;
   (void) level;
@@ -189,10 +197,6 @@ bool SyslogDestination::Init() {
 }
 
 
-/*
- * Write a line to the system logger. This is syslog on *nix or the event log
- * on widnows
- */
 void SyslogDestination::Write(log_level level, const string &log_line) {
 #ifdef WIN32
   WORD pri;
@@ -246,3 +250,4 @@ void SyslogDestination::Write(log_level level, const string &log_line) {
 #endif
 }
 }  // namespace  ola
+/**@}*/

@@ -22,6 +22,7 @@
  * @addtogroup cred
  * @{
  * @file Credentials.cpp
+ * @}
  */
 
 #if HAVE_CONFIG_H
@@ -40,6 +41,10 @@
 
 namespace ola {
 
+/**
+ * @addtogroup cred
+ * @{
+ */
 
 uid_t GetUID() {
   return getuid();
@@ -78,7 +83,9 @@ bool SetGID(gid_t new_gid) {
   return true;
 }
 
-/**@}*/
+/**
+ * @}
+ */
 
 /** @private */
 template <typename F, typename arg>

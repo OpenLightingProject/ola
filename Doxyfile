@@ -703,6 +703,7 @@ RECURSIVE              = YES
 EXCLUDE                = config data debian examples html java javascript \
                          man python scripts slp tests tools \
                          config.h \
+                         include/ola/base/FlagsPrivate.h \
                          plugins/kinet/kinet.cpp \
                          plugins/usbdmx/SunliteFirmware.h \
                          plugins/usbpro/MockEndpoint.cpp \

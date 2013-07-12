@@ -21,6 +21,12 @@
  * be nice.
  */
 
+/**
+ * @addtogroup init
+ * @{
+ * @file Init.cpp
+ * @}
+ */
 
 #if HAVE_CONFIG_H
 #  include <config.h>
@@ -46,11 +52,17 @@
 
 namespace ola {
 
+/**
+ * @addtogroup init
+ * @{
+ */
+
 using std::cout;
 using std::endl;
 
 
-/*
+/**
+ * @private
  * Print a stack trace on seg fault.
  */
 static void _SIGSEGV_Handler(int signal) {
@@ -62,20 +74,12 @@ static void _SIGSEGV_Handler(int signal) {
 
   backtrace_symbols_fd(array, size, STDERR_FILENO);
   #endif
-  exit(EXIT_SOFTWARE);
+  exlso in all seriousness if you guys need someone to hop in for a bit let me
+    know.it(EXIT_SOFTWARE);
   (void) signal;
 }
 
 
-/**
- * This does the following:
- *  Installs the SEGV handler.
- *  Populates the export map.
- *
- * @param argc the number of arguments on the cmd line
- * @param argv the command line arguments
- * @param export_map an optional pointer to an ExportMap
- */
 bool ServerInit(int argc, char *argv[], ExportMap *export_map) {
   ola::math::InitRandom();
   if (!InstallSEGVHandler())
@@ -87,13 +91,6 @@ bool ServerInit(int argc, char *argv[], ExportMap *export_map) {
 }
 
 
-/**
- * This does the following:
- *  Installs the SEGV handler.
- *
- * @param argc the number of arguments on the cmd line
- * @param argv the command line arguments
- */
 bool AppInit(int argc, char *argv[]) {
   ola::math::InitRandom();
   if (!InstallSEGVHandler())
@@ -104,11 +101,6 @@ bool AppInit(int argc, char *argv[]) {
 }
 
 
-/**
- * Install a signal handler.
- * @param signal the signal number to catch.
- * @param fp a function pointer to call.
- */
 bool InstallSignal(int signal, void(*fp)(int signo)) {
   struct sigaction action;
   action.sa_handler = fp;
@@ -123,9 +115,6 @@ bool InstallSignal(int signal, void(*fp)(int signo)) {
 }
 
 
-/**
- * Install the SIGBUS & SIGSEGV handlers.
- */
 bool InstallSEGVHandler() {
   if (!InstallSignal(SIGBUS, _SIGSEGV_Handler)) {
     OLA_WARN << "Failed to install signal SIGBUS";
@@ -139,9 +128,6 @@ bool InstallSEGVHandler() {
 }
 
 
-/**
- * Populate the ExportMap with a couple of basic variables.
- */
 void InitExportMap(int argc, char* argv[], ExportMap *export_map) {
   struct rlimit rl;
   ola::StringVariable *var = export_map->GetStringVar("binary");
@@ -166,13 +152,6 @@ void InitExportMap(int argc, char* argv[], ExportMap *export_map) {
 }
 
 
-/*
- * Run as a daemon.
- * This uses the logging system, so you really should have initialized logging
- * before calling this. However, this also closes all open FDs so logging to
- * stdout / stderr will go to /dev/null after this call. Therefore if running
- * as a daemon, you should only use syslog logging.
- */
 int Daemonise() {
   pid_t pid;
   unsigned int i;
@@ -236,4 +215,5 @@ int Daemonise() {
   }
   return 0;
 }
+/**@}*/
 }  // namespace ola

@@ -18,7 +18,7 @@
  * Copyright (C) 2005-2009 Simon Newton
  */
 /**
- * @file
+ * @defgroup logging Logging
  * @brief The OLA logging system.
  *
  * @snippet
@@ -33,6 +33,12 @@
  * OLA_INFO << "Reading configs from " << config_dir;
  * OLA_DEBUG << "Counter was " << counter;
  * ~~~~~~~~~~~~~~~~~~~~~
+ *
+ * @addtogroup logging
+ * @{
+ *
+ * @file Logging.h
+ * @brief Header file for OLA Logging
  */
 
 #ifndef INCLUDE_OLA_LOGGING_H_
@@ -56,29 +62,33 @@
                         ola::LogLine(__FILE__, __LINE__, level).stream()
 /**
  * Provide a stream to log a fatal message. e.g.
- *
+ * @code
  *     OLA_FATAL << "Null pointer!";
+ * @endcode
  */
 #define OLA_FATAL OLA_LOG(ola::OLA_LOG_FATAL)
 
 /**
  * Provide a stream to log a warning message.
- *
+ * @code
  *     OLA_WARN << "Could not connect to server: " << ip_address;
+ * @endcode
  */
 #define OLA_WARN OLA_LOG(ola::OLA_LOG_WARN)
 
 /**
  * Provide a stream to log an infomational message.
- *
+ * @code
  *     OLA_INFO << "Reading configs from " << config_dir;
+ * @endcode
  */
 #define OLA_INFO OLA_LOG(ola::OLA_LOG_INFO)
 
 /**
  * Provide a stream to log a debug message.
- *
+ * @code
  *     OLA_DEBUG << "Counter was " << counter;
+ * @endcode
  */
 #define OLA_DEBUG OLA_LOG(ola::OLA_LOG_DEBUG)
 
@@ -100,6 +110,9 @@ enum log_level {
   OLA_LOG_MAX,
 };
 
+/**
+ * @brief Application global logging level
+ */
 extern log_level logging_level;
 
 /**
@@ -112,28 +125,49 @@ typedef enum {
 } log_output;
 
 /**
- * The base class for log destinations.
+ * @class LogDestination
+ * @brief The base class for log destinations.
  */
 class LogDestination {
   public:
+    /**
+     * @brief Destructor
+     */
     virtual ~LogDestination() {}
+
+    /**
+     * @brief An abstract function for writing to your log destination
+     * @note You must over load this if you want to create a new log
+     * destination
+     */
     virtual void Write(log_level level, const string &log_line) = 0;
 };
 
 /**
- * A LogDestination that writes to stderr
+ * @brief A LogDestination that writes to stderr
  */
 class StdErrorLogDestination: public LogDestination {
   public:
+    /**
+     * @brief Writes a messages out to stderr.
+     */
     void Write(log_level level, const string &log_line);
 };
 
 /**
- * A LogDestination that writes to syslog
+ * @brief A LogDestination that writes to syslog
  */
 class SyslogDestination: public LogDestination {
   public:
+    /**
+     * @brief Initialize the SyslogDestination
+     */
     bool Init();
+
+    /**
+     * @brief Write a line to the system logger.
+     * @note This is syslog on *nix or the event log on windows.
+     */
     void Write(log_level level, const string &log_line);
   private:
 #ifdef WIN32
@@ -141,8 +175,12 @@ class SyslogDestination: public LogDestination {
 #endif
 };
 
+/**@}*/
+
 /**
- * A LogLine, this represents a single log message.
+ * @cond HIDDEN_SYMBOLS
+ * @class LogLine
+ * @brief A LogLine, this represents a single log message.
  */
 class LogLine {
   public:
@@ -156,6 +194,12 @@ class LogLine {
     std::ostringstream m_stream;
     unsigned int m_prefix_length;
 };
+/**@endcond*/
+
+/**
+ * @addtogroup logging
+ * @{
+ */
 
 /**
  * @brief Set the logging level.
@@ -196,5 +240,7 @@ bool InitLogging(log_level level, log_output output);
  * @returns true if logging was initialized sucessfully, false otherwise.
  */
 void InitLogging(log_level level, LogDestination *destination);
+/***/
 }  // namespace ola
+/**@}*/
 #endif  // INCLUDE_OLA_LOGGING_H_

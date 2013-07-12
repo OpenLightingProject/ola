@@ -27,6 +27,7 @@
  *
  * @file Credentials.h
  * @brief User & Group Information
+ * @}
  */
 
 #ifndef INCLUDE_OLA_BASE_CREDENTIALS_H_
@@ -37,6 +38,10 @@
 
 namespace ola {
 
+/**
+ * @addtogroup cred
+ * @{
+ */
 using std::string;
 
 // These functions wrap their POSIX counterparts.
@@ -135,8 +140,8 @@ typedef struct {
  *   @par
  *   Wraps [getpwnam() / getpwnam_r()](
  *   http://man7.org/linux/man-pages/man3/getpwnam.3.html).
- * @param name[in] username to search for.
- * @param passwd[out] struct to hold information for username name
+ * @param[in] name username to search for.
+ * @param[out] passwd struct to hold information for username name
  * @return true on success, false otherwise
  */
 bool GetPasswdName(const string &name, PasswdEntry *passwd);
@@ -147,8 +152,8 @@ bool GetPasswdName(const string &name, PasswdEntry *passwd);
  *   @par
  *   Wraps [getpwuid()/getpwuid_r()](
  *   http://man7.org/linux/man-pages/man3/getpwnam.3.html).
- * @param uid[in] is the User ID to match against
- * @param passwd[out] struct to hold information for uid
+ * @param[in] uid is the User ID to match against
+ * @param[out] passwd struct to hold information for uid
  * @return true on success, false otherwise
  */
 bool GetPasswdUID(uid_t uid, PasswdEntry *passwd);
@@ -185,8 +190,8 @@ typedef struct {
  *   @par
  *   Wraps [getgrnam()/getgrnam_r()](
  *   http://man7.org/linux/man-pages/man3/getgrgid.3.html).
- * @param name[in] the name of the group to match
- * @param passwd[out] is a GroupEntry to be populated upon success
+ * @param[in] name the name of the group to match
+ * @param[out] passwd is a GroupEntry to be populated upon success
  * @returns true on success and false otherwise
  */
 bool GetGroupName(const string &name, GroupEntry *passwd);
@@ -197,8 +202,8 @@ bool GetGroupName(const string &name, GroupEntry *passwd);
  *   @par
  *   Wraps [getgrpid()/getgrpid_r()](
  *   http://man7.org/linux/man-pages/man3/getgrgid.3.html).
- * @param gid[in] is the Group ID to match against
- * @passwd[out] is a GroupEntry to be populated upon success
+ * @param[in] gid is the Group ID to match against
+ * @param[out] passwd is a GroupEntry to be populated upon success
  * @returns true on success and false otherwise
  */
 bool GetGroupGID(gid_t gid, GroupEntry *passwd);
