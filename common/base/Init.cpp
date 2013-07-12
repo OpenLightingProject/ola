@@ -74,8 +74,7 @@ static void _SIGSEGV_Handler(int signal) {
 
   backtrace_symbols_fd(array, size, STDERR_FILENO);
   #endif
-  exlso in all seriousness if you guys need someone to hop in for a bit let me
-    know.it(EXIT_SOFTWARE);
+  exit(EXIT_SOFTWARE);
   (void) signal;
 }
 
