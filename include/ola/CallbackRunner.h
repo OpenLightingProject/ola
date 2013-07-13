@@ -19,14 +19,35 @@
  */
 
 /**
+ * @defgroup callback_runner CallbackRunner
+ * @brief Automatically execute a 0-arg callback when this object goes out of
+ * scope.
+ *
+ * @snippet
+ *   @code
+ *   void Foo(MyCallback *on_complete) {
+ *     CallbackRunner runner(on_complete);
+ *     // do work here, which may contain return statements, on_complete will
+ *     // always be executed.
+ *   }
+ *   @endcode
+ *
+ * @addtogroup callback_runner
+ * @{
  * @file CallbackRunner.h
  * @brief Automatically execute a callback when it goes out of scope.
+ * @}
  */
 
 #ifndef INCLUDE_OLA_CALLBACKRUNNER_H_
 #define INCLUDE_OLA_CALLBACKRUNNER_H_
 
 namespace ola {
+
+/**
+ * @addtogroup callback_runner
+ * @{
+ */
 
 /**
  * @class CallbackRunner <ola/CallbackRunner.h>
@@ -38,23 +59,23 @@ namespace ola {
  * returns. It's most useful for handling RPCs.
  *
  * @snippet
- * ~~~~~~~~~~~~~~~~~~~~~
- * int Foo(MyCallback *callback) {
- *   CallbackRunner runner(callback);
- *   if (...) {
- *      // do something here.
- *      return 1;
- *   } else {
+ *   @code
+ *   int Foo(MyCallback *callback) {
+ *     CallbackRunner runner(callback);
  *     if (...) {
- *       // do something here.
- *       return 2;
+ *        // do something here.
+ *        return 1;
  *     } else {
- *       // do something here.
- *       return 3;
+ *       if (...) {
+ *         // do something here.
+ *         return 2;
+ *       } else {
+ *         // do something here.
+ *         return 3;
+ *       }
  *     }
  *   }
- * }
- * ~~~~~~~~~~~~~~~~~~~~~
+ *   @endcode
  */
 template <typename CallbackClass>
 class CallbackRunner {
@@ -77,5 +98,9 @@ class CallbackRunner {
   private:
     CallbackClass *m_callback;
 };
+
+/**
+ * @}
+ */
 }  // namespace ola
 #endif  // INCLUDE_OLA_CALLBACKRUNNER_H_
