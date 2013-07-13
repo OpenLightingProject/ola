@@ -59,23 +59,23 @@ namespace ola {
  * returns. It's most useful for handling RPCs.
  *
  * @snippet
- * ~~~~~~~~~~~~~~~~~~~~~
- * int Foo(MyCallback *callback) {
- *   CallbackRunner runner(callback);
- *   if (...) {
- *      // do something here.
- *      return 1;
- *   } else {
+ *   @code
+ *   int Foo(MyCallback *callback) {
+ *     CallbackRunner runner(callback);
  *     if (...) {
- *       // do something here.
- *       return 2;
+ *        // do something here.
+ *        return 1;
  *     } else {
- *       // do something here.
- *       return 3;
+ *       if (...) {
+ *         // do something here.
+ *         return 2;
+ *       } else {
+ *         // do something here.
+ *         return 3;
+ *       }
  *     }
  *   }
- * }
- * ~~~~~~~~~~~~~~~~~~~~~
+ *   @endcode
  */
 template <typename CallbackClass>
 class CallbackRunner {
