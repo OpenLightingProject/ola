@@ -19,10 +19,14 @@
  */
 
 /**
- * @defgroup callback_runner CallbackRunner
- * @brief Automatically execute a 0-arg callback when this object goes out of
- * scope.
+ * @defgroup callback_helpers Callback Helpers
+ * @brief A series a Callback helpers that simplify complex behavior.
+ * @note Please see CallbackRunner.h and MultiCallback.h for examples of each.
  *
+ * @addtogroup callback_helpers
+ * @{
+ * @file CallbackRunner.h
+ * @brief Automatically execute a 0-arg callback when it goes out of scope.
  * @snippet
  *   @code
  *   void Foo(MyCallback *on_complete) {
@@ -31,11 +35,6 @@
  *     // always be executed.
  *   }
  *   @endcode
- *
- * @addtogroup callback_runner
- * @{
- * @file CallbackRunner.h
- * @brief Automatically execute a callback when it goes out of scope.
  * @}
  */
 
@@ -45,7 +44,7 @@
 namespace ola {
 
 /**
- * @addtogroup callback_runner
+ * @addtogroup callback_helpers
  * @{
  */
 
