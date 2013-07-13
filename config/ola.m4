@@ -29,7 +29,21 @@ PKG_CHECK_MODULES(libprotobuf, [protobuf >= $1])
 libprotobuf_CFLAGS=`echo $libprotobuf_CFLAGS | sed 's/-I/-isystem /'`
 AC_SUBST([libprotobuf_CFLAGS])
 
-AC_PATH_PROG([PROTOC],[protoc])
+
+AC_ARG_WITH([protoc],
+  [AS_HELP_STRING([--with-protoc=COMMAND],
+    [use the given protoc command instead of searching $PATH (useful for cross-compiling)])],
+  [],[with_protoc=no])
+
+if test "$with_protoc" != "no"; then
+  PROTOC=$with_protoc;
+  echo "set protoc to $with_protoc"
+  AC_SUBST([PROTOC])
+else
+  AC_PATH_PROG([PROTOC],[protoc])
+fi
+
+
 if test -z "$PROTOC" ; then
   AC_MSG_ERROR([cannot find 'protoc' program]);
 elif test -n "$1" ; then
