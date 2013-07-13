@@ -20,18 +20,24 @@
 
 /**
  * @defgroup init Initialization
- * @brief Helper functions that should be called on startup. They do things
- * like install SEGV stack trace handlers, initialize the random number
- * generator etc.
+ * @brief Functions called during program startup.
+ *
+ * Programs using the OLA libraries should call either ServerInit() or
+ * AppInit(). There are also extra functions to help with installing signal
+ * handlers and daemonizing a process.
+ *
  * @snippet
  *   @code
- *   AppInit(argc, argv)
+ *   // For client applications
+ *   AppInit(argc, argv);
+ *   // For server applications
+ *   ServerInit(argc, argv, &export_map);
  *   @endcode
  *
  * @addtogroup init
  * @{
  * @file Init.h
- * @brief A grab bag of functions useful for programs.
+ * @brief Functions called during program startup.
  * @}
  */
 
@@ -54,7 +60,7 @@ namespace ola {
  * @param argv pointer to argument strings
  * @param export_map an optional pointer to an ExportMap
  * @return true on success and false otherwise
- * @note If you are a client/application then you must call AppInit().
+ * @note If you are a client/application then call AppInit() instead.
  */
 bool ServerInit(int argc, char *argv[], ExportMap *export_map);
 
@@ -64,45 +70,53 @@ bool ServerInit(int argc, char *argv[], ExportMap *export_map);
  * @param argc argument count
  * @param argv pointer to the argument strings
  * @return true on success and false otherwise
- * @note If you are a server then you must call ServerInit().
+ * @note If you are a server then call ServerInit() instead.
  */
 bool AppInit(int argc, char *argv[]);
 
 /**
- * @brief Install a signal
+ * @brief Install a signal handler.
  * @param signal the signal number to catch
  * @param fp is a function pointer to the handler
  * @return true on success and false otherwise
  */
 bool InstallSignal(int signal, void(*fp)(int signo));
 
-// Methods you probably don't need to use
-
 /**
- * @brief Install signal handlers to deal with SIGBUS & SIGSEGV
+ * @brief Install signal handlers to deal with SIGBUS & SIGSEGV.
  * @return true on success and false otherwise
+ *
+ * On receiving a SIGBUS or SIGSEGV a stack trace will be printed.
  */
 bool InstallSEGVHandler();
 
 /**
- * @brief Populate the ExportMap with a couple of basic variables
+ * @brief Populate the ExportMap with a couple of basic variables.
  * @param argc argument count
  * @param argv pointer to the arugment strings
  * @param export_map ExportMap to populate
+ *
+ * This is called by ServerInit(). It sets the following variables:
+ *  - binary: name of the binary.
+ *  - cmd-line: command line used to start the binary
+ *  - fd-limit: the max number of file descriptors
  */
 void InitExportMap(int argc, char* argv[], ExportMap *export_map);
 
 /**
  * @brief Run as a daemon
- * @note This uses the logging system, so you really should have initialized
- * logging before calling this. However, Daemonize() also closes all open file
- * descriptors so logging to stdout/stderr will go to /dev/null after this call.
- * Therefore if running as a daemon, you should only use syslog logging.
+ *
+ * Daemonize logs messages if it fails, so it's best to initialize the
+ * logging system (ola::InitLogging) before calling. However Daemonize() closes
+ * all open file descriptors so stdout/stderr will point to /dev/null in the
+ * daemon process. Therefore daemons should always use syslog logging.
+ *
+ * If we can't daemonize the process is terminated.
+ *
  * See logging.
  * @sa @ref logging
- * @return 
  */
-int Daemonise();
+void Daemonise();
 /**@}*/
 }  // namespace ola
 #endif  // INCLUDE_OLA_BASE_INIT_H_

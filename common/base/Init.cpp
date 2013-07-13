@@ -151,7 +151,7 @@ void InitExportMap(int argc, char* argv[], ExportMap *export_map) {
 }
 
 
-int Daemonise() {
+void Daemonise() {
   pid_t pid;
   unsigned int i;
   int fd0, fd1, fd2;
@@ -212,7 +212,6 @@ int Daemonise() {
       << fd2;
     exit(EXIT_OSERR);
   }
-  return 0;
 }
 /**@}*/
 }  // namespace ola

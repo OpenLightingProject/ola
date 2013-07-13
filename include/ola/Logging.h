@@ -111,6 +111,7 @@ enum log_level {
 };
 
 /**
+ * @private
  * @brief Application global logging level
  */
 extern log_level logging_level;
