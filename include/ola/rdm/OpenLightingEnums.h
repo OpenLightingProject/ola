@@ -18,6 +18,13 @@
  * Copyright (C) 2013 Peter Newman
  */
 
+/**
+ * @addtogroup rdm_helpers
+ * @{
+ * @file OpenLightingEnums.h
+ * @brief Provide OLA's RDM Manufacturer PIDs & Model IDs.
+ * @}
+ */
 #ifndef INCLUDE_OLA_RDM_OPENLIGHTINGENUMS_H_
 #define INCLUDE_OLA_RDM_OPENLIGHTINGENUMS_H_
 

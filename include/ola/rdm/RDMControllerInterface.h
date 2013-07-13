@@ -13,11 +13,19 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * RDMController.h
+ * RDMControllerInterface.h
  * A RDM Controller that sends a single message at a time.
  * Copyright (C) 2010 Simon Newton
  */
 
+/**
+ * @addtogroup rdm_controller
+ * @{
+ * @file RDMControllerInterface.h
+ * @brief Definitions and Interfaces to implement an RDMController that sends a
+ * single message at a time.
+ * @}
+ */
 #ifndef INCLUDE_OLA_RDM_RDMCONTROLLERINTERFACE_H_
 #define INCLUDE_OLA_RDM_RDMCONTROLLERINTERFACE_H_
 

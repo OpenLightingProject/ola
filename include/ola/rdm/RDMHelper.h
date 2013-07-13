@@ -18,6 +18,14 @@
  * Copyright (C) 2005-2010 Simon Newton
  */
 
+/**
+ * @addtogroup rdm_helpers
+ * @{
+ * @file RDMHelper.h
+ * @brief Various misc RDM functions
+ * @}
+ */
+
 #ifndef INCLUDE_OLA_RDM_RDMHELPER_H_
 #define INCLUDE_OLA_RDM_RDMHELPER_H_
 

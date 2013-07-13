@@ -18,6 +18,14 @@
  * Copyright (C) 2011 Simon Newton
  */
 
+/**
+ * @addtogroup rdm_command
+ * @{
+ * @file MessageSerializer.h
+ * @brief Serialize an RDM message.
+ * @}
+ */
+
 #ifndef INCLUDE_OLA_RDM_MESSAGESERIALIZER_H_
 #define INCLUDE_OLA_RDM_MESSAGESERIALIZER_H_
 

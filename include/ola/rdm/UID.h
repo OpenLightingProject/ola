@@ -18,6 +18,13 @@
  * Copyright (C) 2005-2010 Simon Newton
  */
 
+/**
+ * @addtogroup rdm_uid
+ * @{
+ * @file UID.h
+ * @brief A class for RDM UIDs
+ * @}
+ */
 #ifndef INCLUDE_OLA_RDM_UID_H_
 #define INCLUDE_OLA_RDM_UID_H_
 

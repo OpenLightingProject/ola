@@ -17,6 +17,13 @@
  * Copyright (C) 2013 Simon Newton
  */
 
+/**
+ * @addtogroup rdm_resp
+ * @{
+ * @file ResponderHelper.h
+ * @brief Helper methods for building RDM responders.
+ * @}
+ */
 #ifndef INCLUDE_OLA_RDM_RESPONDERHELPER_H_
 #define INCLUDE_OLA_RDM_RESPONDERHELPER_H_
 

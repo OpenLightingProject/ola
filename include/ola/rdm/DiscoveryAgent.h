@@ -18,6 +18,14 @@
  * Copyright (C) 2011 Simon Newton
  */
 
+/**
+ * @addtogroup rdm_controller
+ * @{
+ * @file DiscoveryAgent.h
+ * @brief Implements the RDM Discovery algorithm
+ * @}
+ */
+
 #ifndef INCLUDE_OLA_RDM_DISCOVERYAGENT_H_
 #define INCLUDE_OLA_RDM_DISCOVERYAGENT_H_
 

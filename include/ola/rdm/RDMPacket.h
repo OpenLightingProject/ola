@@ -18,6 +18,13 @@
  * Copyright (C) 2005-2012 Simon Newton
  */
 
+/**
+ * @addtogroup rdm_helpers
+ * @{
+ * @file RDMPacket.h
+ * @brief Structures and constants used with RDM Packets
+ * @}
+ */
 #ifndef INCLUDE_OLA_RDM_RDMPACKET_H_
 #define INCLUDE_OLA_RDM_RDMPACKET_H_
 

@@ -18,6 +18,14 @@
  * Copyright (C) 2012 Simon Newton
  */
 
+/**
+ * @addtogroup rdm_command
+ * @{
+ * @file RDMCommandSerializer.h
+ * @brief Write RDMCommands to a memory buffer.
+ * @}
+ */
+
 #ifndef INCLUDE_OLA_RDM_RDMCOMMANDSERIALIZER_H_
 #define INCLUDE_OLA_RDM_RDMCOMMANDSERIALIZER_H_
 

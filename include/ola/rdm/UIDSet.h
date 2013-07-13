@@ -18,6 +18,14 @@
  * Copyright (C) 2005-2010 Simon Newton
  */
 
+/**
+ * @addtogroup rdm_uid
+ * @{
+ * @file UIDSet.h
+ * @brief A Set of UIDs
+ * @}
+ */
+
 #ifndef INCLUDE_OLA_RDM_UIDSET_H_
 #define INCLUDE_OLA_RDM_UIDSET_H_
 

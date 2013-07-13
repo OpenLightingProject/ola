@@ -19,6 +19,15 @@
  * Copyright (C) 2013 Simon Newton
  */
 
+/**
+ * @addtogroup rdm_controller
+ * @{
+ * @file RDMControllerAdaptor.h
+ * @brief Allows an RDMControllerInterface to be used as an
+ * DiscoverableRDMControllerInterface.
+ * @}
+ */
+
 #ifndef INCLUDE_OLA_RDM_RDMCONTROLLERADAPTOR_H_
 #define INCLUDE_OLA_RDM_RDMCONTROLLERADAPTOR_H_
 

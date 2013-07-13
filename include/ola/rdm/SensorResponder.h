@@ -17,6 +17,14 @@
  * Copyright (C) 2013 Simon Newton
  */
 
+/**
+ * @addtogroup rdm_resp
+ * @{
+ * @file SensorResponder.h
+ * @brief A soft RDM responder that has sensors
+ * @}
+ */
+
 #ifndef INCLUDE_OLA_RDM_SENSORRESPONDER_H_
 #define INCLUDE_OLA_RDM_SENSORRESPONDER_H_
 

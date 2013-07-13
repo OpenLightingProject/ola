@@ -18,6 +18,14 @@
  * Copyright (C) 2010 Simon Newton
  */
 
+/**
+ * @addtogroup rdm_api
+ * @{
+ * @file RDMAPIImplInterface.h
+ * @brief The interface for an RDM API Implementation
+ * @}
+ */
+
 #ifndef INCLUDE_OLA_RDM_RDMAPIIMPLINTERFACE_H_
 #define INCLUDE_OLA_RDM_RDMAPIIMPLINTERFACE_H_
 

@@ -13,9 +13,17 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * ResponderOps.h
- * A framework for building RDM responders.
+ * ResponderOpsPrivate.h
+ * A private helper functions for building RDM responders.
  * Copyright (C) 2013 Simon Newton
+ */
+
+/**
+ * @addtogroup rdm_resp
+ * @{
+ * @file ResponderOpsPrivate.h
+ * @brief Private helper functions for building RDM responders.
+ * @}
  */
 
 #ifndef INCLUDE_OLA_RDM_RESPONDEROPSPRIVATE_H_

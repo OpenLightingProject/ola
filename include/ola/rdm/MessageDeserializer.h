@@ -18,6 +18,15 @@
  * Copyright (C) 2011 Simon Newton
  */
 
+/**
+ * @addtogroup rdm_command
+ * @{
+ * @file MessageDeserializer.h
+ * @brief Inflate a message from raw data
+ * @}
+ *
+ */
+
 #ifndef INCLUDE_OLA_RDM_MESSAGEDESERIALIZER_H_
 #define INCLUDE_OLA_RDM_MESSAGEDESERIALIZER_H_
 

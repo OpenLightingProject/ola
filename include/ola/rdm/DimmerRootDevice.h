@@ -17,6 +17,15 @@
  * Copyright (C) 2013 Simon Newton
  */
 
+/**
+ * @addtogroup rdm_resp
+ * @{
+ * @file DimmmerRootDevice.h
+ * @brief Soft responder that implements the Root device in the
+ * DimmerResponder.
+ * @}
+ */
+
 #ifndef INCLUDE_OLA_RDM_DIMMERROOTDEVICE_H_
 #define INCLUDE_OLA_RDM_DIMMERROOTDEVICE_H_
 

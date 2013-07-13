@@ -17,6 +17,14 @@
  * Copyright (C) 2013 Simon Newton
  */
 
+/**
+ * @addtogroup rdm_resp
+ * @{
+ * @file AckTimerResponder.h
+ * @brief This responder implements the code needed to deal with AckTimers
+ * @}
+ */
+
 #ifndef INCLUDE_OLA_RDM_ACKTIMERRESPONDER_H_
 #define INCLUDE_OLA_RDM_ACKTIMERRESPONDER_H_
 

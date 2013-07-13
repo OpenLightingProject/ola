@@ -18,6 +18,14 @@
  * Copyright (C) 2010 Simon Newton
  */
 
+/**
+ * @addtogroup rdm_helpers
+ * @{
+ * @file RDMENUMS.h
+ * @brief Provides a generic RDM ENUMS that can use different implementations
+ * @}
+ */
+
 #ifndef INCLUDE_OLA_RDM_RDMENUMS_H_
 #define INCLUDE_OLA_RDM_RDMENUMS_H_
 

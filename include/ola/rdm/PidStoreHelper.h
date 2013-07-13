@@ -19,6 +19,15 @@
  * Copyright (C) 2011 Simon Newton
  */
 
+/**
+ * @addtogroup rdm_pids
+ * @{
+ * @file PidStoreHelper.h
+ * @brief Provices helper methods for loading / accessing the pid store, and
+ * dealing with pids.
+ * @}
+ */
+
 #ifndef INCLUDE_OLA_RDM_PIDSTOREHELPER_H_
 #define INCLUDE_OLA_RDM_PIDSTOREHELPER_H_
 
