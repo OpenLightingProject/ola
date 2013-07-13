@@ -20,12 +20,30 @@
  */
 
 /**
- * @defgroup multi_callbacks MultiCallback
+ * @addtogroup callback_helpers
+ * @{
+ * @file MultiCallback.h
  * @brief A callback which can be executed multiple times. When a pre-defined
  * limit is reached, then the underlying callback is executed.
  *
- * @addtogroup multi_callbacks
- * @file MultiCallback.h
+ * @snippet
+ *   @code
+ *   // Calls DoSomething() for each Port and runs the on_complete callback once
+ *   // each port's callback has run.
+ *   void DoSomethingForAllPorts(const vector<OutputPort> &ports,
+ *                               SomethingCalback *on_complete) {
+ *     // This will call on_complete once it itself has been Run ports.size()
+ *     // times.
+ *     BaseCallback0<void> *multi_callback = NewMultiCallback( ports.size(),
+ *         NewSingleCallback(this, &SomethingComplete,
+ *         on_complete));
+ *
+ *     vector<OutputPort*>::iterator iter;
+ *     for (iter = output_ports.begin(); iter != output_ports.end(); ++iter) {
+ *       (*iter)->DoSomething(multi_callback);
+ *     }
+ *   }
+ *   @endcode
  * @}
  */
 
@@ -37,7 +55,7 @@
 namespace ola {
 
 /**
- * @addtogroup multi_callbacks
+ * @addtogroup callback_helpers
  * @{
  */
 
@@ -79,6 +97,7 @@ class MultiCallback: public BaseCallback0<void> {
         delete this;
       }
     }
+
   private:
     unsigned int m_count;
     unsigned int m_limit;
