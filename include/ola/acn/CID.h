@@ -118,7 +118,7 @@ class CID {
 
     /**
      * @brief Create a new CID from a human readable string
-     * @param the CID in string format.
+     * @param cid the CID in string format.
      */
     static CID FromString(const std::string &cid);
 
@@ -130,4 +130,8 @@ class CID {
 };
 }  // namespace acn
 }  // namespace ola
+
+/**
+ * @}
+ */
 #endif  // INCLUDE_OLA_ACN_CID_H_
