@@ -15,8 +15,18 @@
  *
  * MultiCallback.h
  * A callback which can be exectuted multiple times. When a pre-defined limit
- * is reached, then the underlying callback is exectued.
+ * is reached, then the underlying callback is executed.
  * Copyright (C) 2011 Simon Newton
+ */
+
+/**
+ * @defgroup multi_callbacks MultiCallback
+ * @brief A callback which can be executed multiple times. When a pre-defined
+ * limit is reached, then the underlying callback is executed.
+ *
+ * @addtogroup multi_callbacks
+ * @file MultiCallback.h
+ * @}
  */
 
 #ifndef INCLUDE_OLA_MULTICALLBACK_H_
@@ -26,18 +36,28 @@
 
 namespace ola {
 
+/**
+ * @addtogroup multi_callbacks
+ * @{
+ */
 
 /**
- * The MultiCallback class takes a limit & a callback. When the Run() method is
- * called limit times, the callback is executed and the MultiCallback object
- * deleted.
+ * @brief The MultiCallback class takes a limit & a callback. When the Run()
+ * method is called limit times, the callback is executed and the MultiCallback
+ * object deleted.
  *
- * MultiCallback is NOT thread safe.
+ * @note MultiCallback is <b>NOT</b> thread safe.
  *
- * If limit is 0, the callback is exectuted immediately.
+ * @note If limit is 0, the callback is exectuted immediately.
  */
 class MultiCallback: public BaseCallback0<void> {
   public:
+    /**
+     * @brief Constructor
+     * @param limit after limit the object is deleted
+     * @param callback is a BaseCallback0<void> to be executed after Run is
+     * called limit times
+     */
     MultiCallback(unsigned int limit,
                   BaseCallback0<void> *callback)
       : m_count(0),
@@ -49,6 +69,10 @@ class MultiCallback: public BaseCallback0<void> {
       }
     }
 
+    /**
+     * @brief Executes the callback passed in during creation after limit
+     * calls. Then MultiCallback deletes itself.
+     */
     void Run() {
       if (++m_count == m_limit) {
         m_callback->Run();
@@ -61,10 +85,17 @@ class MultiCallback: public BaseCallback0<void> {
     BaseCallback0<void> *m_callback;
 };
 
+/**
+ * @brief A helper function to create a new MultiCallback
+ * @param limit the number of times to run before calling callback
+ * @param callback the callback to call after limit times
+ * @return a pointer to a MultiCallback object
+ */
 inline BaseCallback0<void>* NewMultiCallback(
     unsigned int limit,
     BaseCallback0<void> *callback) {
   return new MultiCallback(limit, callback);
 }
+/**@}*/
 }  // namespace ola
 #endif  // INCLUDE_OLA_MULTICALLBACK_H_

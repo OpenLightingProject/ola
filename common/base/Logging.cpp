@@ -55,15 +55,14 @@ using std::ostringstream;
  * @brief pointer to a log target
  */
 LogDestination *log_target = NULL;
+
+log_level logging_level = OLA_LOG_WARN;
 /**@endcond*/
 
 /**
  * @addtogroup logging
  * @{
  */
-log_level logging_level = OLA_LOG_WARN;
-
-
 void SetLogLevel(log_level level) {
   logging_level = level;
 }
