@@ -39,9 +39,6 @@ bool CID::IsNil() const {
   return m_impl->IsNil();
 }
 
-/**
- * Pack a CID into the binary representation
- */
 void CID::Pack(uint8_t *buffer) const {
   return m_impl->Pack(buffer);
 }

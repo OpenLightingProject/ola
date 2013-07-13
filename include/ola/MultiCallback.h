@@ -79,6 +79,7 @@ class MultiCallback: public BaseCallback0<void> {
         delete this;
       }
     }
+
   private:
     unsigned int m_count;
     unsigned int m_limit;

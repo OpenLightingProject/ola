@@ -18,16 +18,50 @@
  * Copyright (C) 2011 Simon Newton
  */
 
+/**
+ * @defgroup acn ACN
+ * @brief Architecture for Control Networks
+ *
+ * ACN is a suite of ANSI Standard protocols for transporting lighting control
+ * data. See
+ * [ACN on
+ * wikipedia](http://en.wikipedia.org/wiki/Architecture_for_Control_Networks).
+ *
+ * This emcompasses code for E1.31 (Streaming ACN) and E1.33 (RDMNet).
+ */
+
+/**
+ * @addtogroup acn
+ * @{
+ * @file ACNPort.h
+ * @brief The TCP / UDP Ports used for transporting ACN.
+ */
+
 #ifndef INCLUDE_OLA_ACN_ACNPORT_H_
 #define INCLUDE_OLA_ACN_ACNPORT_H_
 
 #include <stdint.h>
 
 namespace ola {
+
+/**
+ * @brief ACN related code.
+ */
 namespace acn {
 
+/**
+ * @brief The port used for E1.31 & SDT communication.
+ */
 const uint16_t ACN_PORT = 5568;
+
+/**
+ * @brief The port used for E1.33 communication.
+ */
 const uint16_t E133_PORT = 5569;
 }  // namespace acn
 }  // namespace ola
+
+/**
+ * @}
+ */
 #endif  // INCLUDE_OLA_ACN_ACNPORT_H_
