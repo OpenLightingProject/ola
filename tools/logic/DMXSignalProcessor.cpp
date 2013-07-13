@@ -249,7 +249,10 @@ void DMXSignalProcessor::AppendDataByte() {
     // LSB first
     byte |= (m_current_byte[i] << i);
   }
-  // OLA_INFO << "Byte " << m_dmx_data.size() << " is " << (int) byte;
+  /*
+  OLA_INFO << "Byte " << m_dmx_data.size() << " is " << (int) byte << " ( 0x"
+           << std::hex << (int) byte << " )";
+  */
   m_dmx_data.push_back(byte);
   m_bits_defined.assign(8, false);
   m_current_byte.clear();
@@ -272,10 +275,16 @@ void DMXSignalProcessor::HandleFrame() {
  * Used to transition between states
  */
 void DMXSignalProcessor::SetState(State state, unsigned int ticks) {
+  /*
+  OLA_INFO << "Transition to " << state << ", prev duration was "
+           << TicksAsMicroSeconds();
+  */
   m_state = state;
   m_ticks = ticks;
-  // OLA_INFO << "moving to state " << state;
-  if (state == MAB) {
+  if (state == UNDEFINED) {
+    // if we have a partial frame, we should send that up the stack
+    HandleFrame();
+  } else if (state == MAB) {
     m_dmx_data.clear();
   } else if (state == START_BIT) {
     // The reset should be done in AppendDataByte but do it again to be safe.
