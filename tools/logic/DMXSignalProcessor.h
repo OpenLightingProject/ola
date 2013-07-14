@@ -104,9 +104,9 @@ class DMXSignalProcessor {
     double TicksAsMicroSeconds();
 
     static const unsigned int DMX_BITRATE = 250000;
-    // These are all in microseconds.
+    // These are all in microseconds and are the receiver side limits.
     static const double MIN_BREAK_TIME = 88.0;
-    static const double MIN_MAB_TIME = 1.0;
+    static const double MIN_MAB_TIME = 8.0;
     static const double MAX_MAB_TIME = 1000000.0;
     // The minimum bit time, based on a 4MHz sample rate.
     // TODO(simon): adjust this based on the sample rate.

@@ -109,7 +109,7 @@ void DMXSignalProcessor::ProcessSample(bool bit) {
         if (DurationExceeds(MIN_BREAK_TIME)) {
           SetState(MAB);
         } else {
-          OLA_INFO << "Break too short, was " << TicksAsMicroSeconds()
+          OLA_WARN << "Break too short, was " << TicksAsMicroSeconds()
                    << " us";
           SetState(IDLE);
         }
@@ -128,7 +128,7 @@ void DMXSignalProcessor::ProcessSample(bool bit) {
           // OLA_INFO << "In start bit!";
           SetState(START_BIT);
         } else {
-          OLA_INFO << "Mark too short, was " << TicksAsMicroSeconds() << "us";
+          OLA_WARN << "Mark too short, was " << TicksAsMicroSeconds() << "us";
           SetState(UNDEFINED);
         }
       }
@@ -156,7 +156,7 @@ void DMXSignalProcessor::ProcessSample(bool bit) {
           HandleFrame();
           SetState(BREAK, m_ticks_in_break);
         } else {
-          OLA_INFO << "Saw a low during a stop bit";
+          OLA_WARN << "Saw a low during a stop bit";
           SetState(UNDEFINED);
         }
       }
@@ -213,7 +213,7 @@ void DMXSignalProcessor::ProcessBit(bool bit) {
         DurationExceeds(MIN_BIT_TIME)) {
       SetState(static_cast<State>(m_state + 1));
     } else {
-      OLA_INFO << "Bit " << m_state << " was too short, was "
+      OLA_WARN << "Bit " << m_state << " was too short, was "
                << TicksAsMicroSeconds() << "us";
       SetState(UNDEFINED);
     }
@@ -249,7 +249,8 @@ void DMXSignalProcessor::AppendDataByte() {
     // LSB first
     byte |= (m_current_byte[i] << i);
   }
-  // OLA_INFO << "Byte " << m_dmx_data.size() << " is " << (int) byte;
+  OLA_INFO << "Byte " << m_dmx_data.size() << " is " << (int) byte << " ( 0x"
+           << std::hex << (int) byte << " )";
   m_dmx_data.push_back(byte);
   m_bits_defined.assign(8, false);
   m_current_byte.clear();
@@ -272,10 +273,14 @@ void DMXSignalProcessor::HandleFrame() {
  * Used to transition between states
  */
 void DMXSignalProcessor::SetState(State state, unsigned int ticks) {
+  OLA_INFO << "Transition to " << state << ", prev duration was "
+           << TicksAsMicroSeconds();
   m_state = state;
   m_ticks = ticks;
-  // OLA_INFO << "moving to state " << state;
-  if (state == MAB) {
+  if (state == UNDEFINED) {
+    // if we have a partial frame, we should send that up the stack
+    HandleFrame();
+  } else if (state == MAB) {
     m_dmx_data.clear();
   } else if (state == START_BIT) {
     // The reset should be done in AppendDataByte but do it again to be safe.
