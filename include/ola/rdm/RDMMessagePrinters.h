@@ -13,9 +13,17 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- *  RDMController.h
+ *
  *  A command line based RDM controller
  *  Copyright (C) 2010 Simon Newton
+ */
+
+/**
+ * @addtogroup rdm_helpers
+ * @{
+ * @file RDMMessagePrinters.h
+ * @brief Used for displaying the RDM data to the command line
+ * @}
  */
 
 #ifndef INCLUDE_OLA_RDM_RDMMESSAGEPRINTERS_H_

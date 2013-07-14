@@ -17,6 +17,13 @@
  * Copyright (C) 2009 Simon Newton
  */
 
+/**
+ * @addtogroup rdm_resp
+ * @{
+ * @file DummyResponder.h
+ * @brief Basic soft RDM responder.
+ * @}
+ */
 #ifndef INCLUDE_OLA_RDM_DUMMYRESPONDER_H_
 #define INCLUDE_OLA_RDM_DUMMYRESPONDER_H_
 

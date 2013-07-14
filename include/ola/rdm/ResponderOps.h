@@ -18,6 +18,14 @@
  * Copyright (C) 2013 Simon Newton
  */
 
+/**
+ * @addtogroup rdm_resp
+ * @{
+ * @file ResponderOps.h
+ * @brief A framework for building RDM responders.
+ * @}
+ */
+
 #ifndef INCLUDE_OLA_RDM_RESPONDEROPS_H_
 #define INCLUDE_OLA_RDM_RESPONDEROPS_H_
 

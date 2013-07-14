@@ -14,8 +14,16 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * PidStore.h
- * Holds information abouts RDM PIDs.
+ * Holds information about RDM PIDs.
  * Copyright (C) 2011 Simon Newton
+ */
+
+/**
+ * @addtogroup rdm_pids
+ * @{
+ * @file PidStore.h
+ * @brief Holds information about RDM PIDs.
+ * @}
  */
 
 #ifndef INCLUDE_OLA_RDM_PIDSTORE_H_

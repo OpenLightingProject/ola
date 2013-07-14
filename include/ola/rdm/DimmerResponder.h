@@ -18,6 +18,15 @@
  * Copyright (C) 2013 Simon Newton
  */
 
+/**
+ * @addtogroup rdm_resp
+ * @{
+ * @file DimmerResponder.h
+ * @brief A soft responder that acts like an RDM enabled dimmer with sub
+ * devices.
+ * @}
+ */
+
 #ifndef INCLUDE_OLA_RDM_DIMMERRESPONDER_H_
 #define INCLUDE_OLA_RDM_DIMMERRESPONDER_H_
 

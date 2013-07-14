@@ -18,6 +18,14 @@
  * Copyright (C) 2013 Simon Newton
  */
 
+/**
+ * @addtogroup rdm_controller
+ * @{
+ * @file SubDeviceDispatcher.h
+ * @brief Handles the dispatching of RDM requests to the correct sub device.
+ * @}
+ */
+
 #ifndef INCLUDE_OLA_RDM_SUBDEVICEDISPATCHER_H_
 #define INCLUDE_OLA_RDM_SUBDEVICEDISPATCHER_H_
 

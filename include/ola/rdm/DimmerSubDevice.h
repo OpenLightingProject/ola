@@ -17,6 +17,14 @@
  * Copyright (C) 2013 Simon Newton
  */
 
+/**
+ * @addtogroup rdm_resp
+ * @{
+ * @file DimmerSubDevice.h
+ * @brief A soft responder that impements a SubDevice in DimmerResponder
+ * @}
+ */
+
 #ifndef INCLUDE_OLA_RDM_DIMMERSUBDEVICE_H_
 #define INCLUDE_OLA_RDM_DIMMERSUBDEVICE_H_
 

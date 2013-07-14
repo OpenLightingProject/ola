@@ -17,6 +17,15 @@
  * Copyright (C) 2013 Simon Newton
  */
 
+/**
+ * @addtogroup rdm_resp
+ * @{
+ * @file MovingLightResponder.h
+ * @brief A soft RDM responder that implements the basics of a moving light
+ * responder.
+ * @}
+ */
+
 #ifndef INCLUDE_OLA_RDM_MOVINGLIGHTRESPONDER_H_
 #define INCLUDE_OLA_RDM_MOVINGLIGHTRESPONDER_H_
 

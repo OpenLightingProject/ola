@@ -18,6 +18,14 @@
  * Copyright (C) 2010 Simon Newton
  */
 
+/**
+ * @addtogroup rdm_controller
+ * @{
+ * @file QueueingRDMController.h
+ * @brief An RDM Controller that queues messages and only sends a single message
+ * at a time.
+ * @}
+ */
 #ifndef INCLUDE_OLA_RDM_QUEUEINGRDMCONTROLLER_H_
 #define INCLUDE_OLA_RDM_QUEUEINGRDMCONTROLLER_H_
 

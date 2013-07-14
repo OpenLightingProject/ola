@@ -18,6 +18,15 @@
  * Copyright (C) 2005-2012 Simon Newton
  */
 
+
+/**
+ * @addtogroup rdm_command
+ * @{
+ * @file RDMCommand.h
+ * @brief All the classes that represent RDM commands.
+ * @}
+ */
+
 #ifndef INCLUDE_OLA_RDM_RDMCOMMAND_H_
 #define INCLUDE_OLA_RDM_RDMCOMMAND_H_
 

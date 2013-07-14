@@ -18,6 +18,14 @@
  * Copyright (C) 2011 Simon Newton
  */
 
+/**
+ * @addtogroup rdm_helpers
+ * @{
+ * @file StringMessageBuilder.h
+ * @brief Builds a Messagse object from a list of strings and a Descriptor.
+ * @}
+ */
+
 #ifndef INCLUDE_OLA_RDM_STRINGMESSAGEBUILDER_H_
 #define INCLUDE_OLA_RDM_STRINGMESSAGEBUILDER_H_
 

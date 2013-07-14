@@ -18,6 +18,13 @@
  * Copyright (C) 2013 Simon Newton
  */
 
+/**
+ * @addtogroup rdm_uid
+ * @{
+ * @file UIDAllocator.h
+ * @brief A class to allocate UIDs
+ * @}
+ */
 #ifndef INCLUDE_OLA_RDM_UIDALLOCATOR_H_
 #define INCLUDE_OLA_RDM_UIDALLOCATOR_H_
 
