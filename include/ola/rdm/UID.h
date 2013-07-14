@@ -22,7 +22,7 @@
  * @addtogroup rdm_uid
  * @{
  * @file UID.h
- * @brief A class for RDM UIDs
+ * @brief A RDM unique identifier (UID).
  * @}
  */
 #ifndef INCLUDE_OLA_RDM_UID_H_
@@ -39,25 +39,48 @@ namespace rdm {
 using std::ostream;
 using std::string;
 
+/**
+ * @addtogroup rdm_uid
+ * @{
+ */
 
 /*
- * Represents a RDM UID.
+ * @brief Represents a RDM UID.
+ *
+ * UIDs are 6 bytes, the first two bytes are the
+ * [manufacturer code](http://tsp.plasa.org/tsp/working_groups/CP/mfctrIDs.php)
+ * and the last 4 bytes are the device id. UIDs are written as:
+ *
+ * @code
+ *   XXXX:YYYYYYYY
+ * @endcode
  */
 class UID {
   public:
+    /**
+     * @brief Constructs a new UID
+     * @param esta_id the ESTA (manufacturer ID).
+     * @param device_id the device ID.
+     */
     UID(uint16_t esta_id, uint32_t device_id) {
       m_uid.esta_id = esta_id;
       m_uid.device_id = device_id;
     }
 
-    UID& operator=(const UID& other) {
-      if (this != &other) {
-        m_uid.esta_id = other.m_uid.esta_id;
-        m_uid.device_id = other.m_uid.device_id;
-      }
-      return *this;
+    /**
+     * @brief Copy constructor.
+     * @param uid the UID to copy.
+     */
+    UID(const UID &uid) {
+      m_uid.esta_id = uid.m_uid.esta_id;
+      m_uid.device_id = uid.m_uid.device_id;
     }
 
+    /**
+     * @brief Construct a new UID from binary data.
+     * @param data a pointer to the memory containing the UID data. The data
+     * should be most significant byte first.
+     */
     explicit UID(const uint8_t *data) {
       m_uid.esta_id = static_cast<uint16_t>((data[0] << 8) + data[1]);
       m_uid.device_id = static_cast<uint32_t>(data[2] << 24) +
@@ -66,30 +89,89 @@ class UID {
                         data[5];
     }
 
+    /**
+     * @brief Assignment operator
+     */
+    UID& operator=(const UID& other) {
+      if (this != &other) {
+        m_uid.esta_id = other.m_uid.esta_id;
+        m_uid.device_id = other.m_uid.device_id;
+      }
+      return *this;
+    }
+
+    /**
+     * @brief Equality operator.
+     * @param other the UID to compare to.
+     */
     bool operator==(const UID &other) const {
       return 0 == cmp(*this, other);
     }
 
+    /**
+     * @brief Inequality operator.
+     * @param other the UID to compare to.
+     */
     bool operator!=(const UID &other) const {
       return 0 != cmp(*this, other);
     }
 
+    /**
+     * @brief Greater than.
+     * @param other the UID to compare to.
+     */
     bool operator>(const UID &other) const {
       return cmp(*this, other) > 0;
     }
 
+    /**
+     * @brief Less than.
+     * @param other the UID to compare to.
+     */
     bool operator<(const UID &other) const {
       return cmp(*this, other) < 0;
     }
 
+    /**
+     * @brief The manufacturer ID for this UID
+     * @returns the manufacturer id for this UID.
+     */
     uint16_t ManufacturerId() const { return m_uid.esta_id; }
 
+    /**
+     * @brief The device ID for this UID
+     * @returns the device id for this UID.
+     */
     uint32_t DeviceId() const { return m_uid.device_id; }
 
+    /**
+     * @brief Check if this UID is a broadcast or vendorcast UID.
+     * @returns true if the device id is 0xffffffff.
+     */
     bool IsBroadcast() const { return m_uid.device_id == ALL_DEVICES; }
 
     /**
-     * Returns true if the uid in the argument should react to a command
+     * @brief Check if this UID matches against another.
+     * @param uid the UID to check against
+     * @returns true if the UIDs are equal or if this UID is a broadcast UID
+     * and the uid argument falls within the broadcast range.
+     *
+     * This is useful to determine if a responder should reply to a message.
+     *
+     * @snippet
+     * @code
+     *   UID uid(0x7a70, 1);
+     *   uid.DirectedToUID(uid);  // always true.
+     *
+     *   UID broadcast_uid(UID::AllDevices());
+     *   broadcast_uid.DirectedToUID(uid);  // true
+     *
+     *   UID vendorcast_uid(UID::AllManufactureDevices(0x7a70));
+     *   vendorcast_uid.DirectedToUID(uid);  // true
+     *
+     *   UID other_vendorcast_uid(UID::AllManufactureDevices(0x0808));
+     *   other_vendorcast_uid.DirectedToUID(uid);  // false
+     * @endcode
      */
     bool DirectedToUID(const UID &uid) const {
       return *this == uid ||
@@ -98,6 +180,10 @@ class UID {
               ManufacturerId() == uid.ManufacturerId()));
     }
 
+    /**
+     * @brief Convert a UID to a human readable string.
+     * @returns a string in the form XXXX:YYYYYYYY.
+     */
     std::string ToString() const {
       std::stringstream str;
       str << std::setfill('0') << std::setw(4) << std::hex << m_uid.esta_id
@@ -105,10 +191,21 @@ class UID {
       return str.str();
     }
 
+    /**
+     * @brief A helper function to write a UID to an ostream.
+     * @param out the ostream
+     * @param uid the UID to write.
+     */
     friend ostream& operator<< (ostream &out, const UID &uid) {
       return out << uid.ToString();
     }
 
+    /**
+     * @brief Write the binary representation of the UID to memory.
+     * @param buffer a pointer to memory to write the UID to
+     * @param length the size of the memory block, should be at least UID_SIZE.
+     * @returns true if length was >= UID_SIZE, false otherwise.
+     */
     bool Pack(uint8_t *buffer, unsigned int length) const {
       if (length < UID_SIZE)
         return false;
@@ -121,19 +218,47 @@ class UID {
       return true;
     }
 
+    /**
+     * @brief Returns a UID that matches all devices (ffff:ffffffff).
+     * @returns a UID(0xffff, 0xffffffff).
+     */
     static UID AllDevices() {
       return UID(ALL_MANUFACTURERS, ALL_DEVICES);
     }
 
+    /**
+     * @brief Returns a UID that matches all devices for a particular
+     * manufacturer.
+     * @param esta_id the manufacturer id of the devices to match.
+     * @returns a UID(X, 0xffffffff).
+     */
     static UID AllManufactureDevices(uint16_t esta_id) {
       return UID(esta_id, ALL_DEVICES);
     }
 
+    /**
+     * @brief Return a new UID from a string.
+     * @param uid the UID as a string i.e. XXXX:YYYYYYYY.
+     * @return a new UID object, or NULL if the string is not a valid UID.
+     * Ownership of the new UID object is transferred to the caller.
+     */
     static UID* FromString(const string &uid);
 
-    enum { UID_SIZE = 6 };
+    /**
+     * The size of a UID.
+     */
+    enum {
+      UID_SIZE = 6  /**< The size of a UID in binary form */
+    };
 
+    /**
+     * @brief The value for the 'all manufacturers' id.
+     */
     static const uint16_t ALL_MANUFACTURERS = 0xffff;
+
+    /**
+     * @brief The value for the 'all devices' id.
+     */
     static const uint32_t ALL_DEVICES = 0xffffffff;
 
   private:
@@ -156,6 +281,9 @@ class UID {
       return a < b ? -1 : 1;
     }
 };
+/**
+ * @}
+ */
 }  // namespace rdm
 }  // namespace ola
 #endif  // INCLUDE_OLA_RDM_UID_H_

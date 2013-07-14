@@ -35,6 +35,7 @@
  * if the command fails.
  * @}
  *
+ */
 #ifndef INCLUDE_OLA_RDM_RDMAPI_H_
 #define INCLUDE_OLA_RDM_RDMAPI_H_
 
