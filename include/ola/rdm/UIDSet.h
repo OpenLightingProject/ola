@@ -121,7 +121,7 @@ class UIDSet {
     /**
      * @brief Return the union of this set and another UIDSet.
      * @param other the UIDSet to perform the union with.
-     * @result
+     * @return the union of the two UIDSets.
      */
     UIDSet Union(const UIDSet &other) {
       set<UID> result;

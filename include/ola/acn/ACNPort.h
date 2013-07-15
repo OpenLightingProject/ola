@@ -35,6 +35,7 @@
  * @{
  * @file ACNPort.h
  * @brief The TCP / UDP Ports used for transporting ACN.
+ * @}
  */
 
 #ifndef INCLUDE_OLA_ACN_ACNPORT_H_
@@ -50,6 +51,11 @@ namespace ola {
 namespace acn {
 
 /**
+ * @addtogroup acn
+ * @{
+ */
+
+/**
  * @brief The port used for E1.31 & SDT communication.
  */
 const uint16_t ACN_PORT = 5568;
@@ -58,10 +64,10 @@ const uint16_t ACN_PORT = 5568;
  * @brief The port used for E1.33 communication.
  */
 const uint16_t E133_PORT = 5569;
-}  // namespace acn
-}  // namespace ola
 
 /**
  * @}
  */
+}  // namespace acn
+}  // namespace ola
 #endif  // INCLUDE_OLA_ACN_ACNPORT_H_

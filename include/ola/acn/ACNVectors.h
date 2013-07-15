@@ -26,12 +26,18 @@
  * @{
  * @file ACNVectors.h
  * @brief ACN Vector values.
+ * @}
  */
 
 #include <stdint.h>
 
 namespace ola {
 namespace acn {
+
+/**
+ * @addtogroup acn
+ * @{
+ */
 
 /**
  * @brief ACN vectors used at the root layer.

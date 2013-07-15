@@ -27,6 +27,7 @@
  *
  * @file STLUtils.h
  * @brief Helper functions for STL types.
+ * @}
  */
 
 #ifndef INCLUDE_OLA_STL_STLUTILS_H_
@@ -44,6 +45,11 @@ namespace ola {
 using std::map;
 using std::set;
 using std::vector;
+
+/**
+ * @addtogroup stl
+ * @{
+ */
 
 /**
  * @brief Delete the elements of a Sequence.
