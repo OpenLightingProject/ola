@@ -249,8 +249,9 @@ void DMXSignalProcessor::AppendDataByte() {
     // LSB first
     byte |= (m_current_byte[i] << i);
   }
-  OLA_INFO << "Byte " << m_dmx_data.size() << " is " << (int) byte << " ( 0x"
-           << std::hex << (int) byte << " )";
+  OLA_INFO << "Byte " << m_dmx_data.size() << " is "
+           << static_cast<int>(byte) << " ( 0x" << std::hex
+           << static_cast<int>(byte) << " )";
   m_dmx_data.push_back(byte);
   m_bits_defined.assign(8, false);
   m_current_byte.clear();
