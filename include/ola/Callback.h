@@ -39,7 +39,7 @@
  * Avoid creating Callbacks by directly calling the constructor. Instead use
  * the NewSingleCallback() and NewCallback() helper methods.
  *
- * @snippet Simple function pointer replacement.
+ * @examplepara Simple function pointer replacement.
  *   @code
  *   // wrap a function that takes no args and returns a bool
  *   SingleUseCallback<bool> *callback1 = NewSingleCallback(&Function0);
@@ -49,7 +49,7 @@
  *   // callback1 has deleted itself at this point
  *   @endcode
  *
- * @snippet Method pointer with a single bound argument
+ * @examplepara Method pointer with a single bound argument
  *   @code
  *   // Create a Callback for Method1 of the Object class and bind TEST_VALUE
  *   // as the first argument.
@@ -63,7 +63,7 @@
  *   delete callback2;
  *   @endcode
  *
- * @snippet Method pointer that takes a single argument at execution time.
+ * @examplepara Method pointer that takes a single argument at execution time.
  *   @code
  *   // Create a Callback for a method that takes 1 argument and returns void.
  *   BaseCallback1<void, unsigned int> *callback3 = NewCallback(
@@ -75,7 +75,7 @@
  *   delete callback3;
  *   @endcode
  *
- * @snippet Method pointer with one bound argument and one execution time
+ * @examplepara Method pointer with one bound argument and one execution time
  * argument.
  *   @code
  *   // Create a callback for a method that takes 2 args and returns void

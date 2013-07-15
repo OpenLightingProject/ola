@@ -52,7 +52,7 @@ using std::endl;
 
 /**
  * @brief the prefix used on inverted bool flags
- * @snippet'
+ * @examplepara
  *   @code
  *   DEFINE_s_bool(noMaster, d, false, "Dummy flag to show NO_PREFIX")
  *   @endcode

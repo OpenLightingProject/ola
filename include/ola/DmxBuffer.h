@@ -152,7 +152,7 @@ class DmxBuffer {
      * @param data the string to split
      * @return true if the set was successful and false if it failed
      *
-     * @snippet
+     * @examplepara
      * Here is an example of the string format used:
      * @code
      * dmx_buffer.SetFromString("0,1,2,3,4")
@@ -258,7 +258,7 @@ class DmxBuffer {
      * @brief Convert the DmxBuffer to a human readable representation.
      * @return a string in a human readable form
      *
-     * @snippet
+     * @examplepara
      * Here is an example of the output.
      * @code
      * "0,0,255,128,100"
@@ -282,7 +282,7 @@ class DmxBuffer {
  * @param out is the output stream
  * @param data is the DmxBuffer to output from
  *
- * @snippet
+ * @examplepara
  * @code
  * DmxBuffer dmx_buffer();
  * cout << dmx_buffer << endl; //Show channel values of

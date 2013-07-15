@@ -27,7 +27,7 @@
  * @{
  * @file CallbackRunner.h
  * @brief Automatically execute a 0-arg callback when it goes out of scope.
- * @snippet
+ * @examplepara
  *   @code
  *   void Foo(MyCallback *on_complete) {
  *     CallbackRunner runner(on_complete);
@@ -57,7 +57,7 @@ namespace ola {
  * you need to ensure that the callback is always executed before the function
  * returns. It's most useful for handling RPCs.
  *
- * @snippet
+ * @examplepara
  *   @code
  *   int Foo(MyCallback *callback) {
  *     CallbackRunner runner(callback);

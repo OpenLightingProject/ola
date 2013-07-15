@@ -26,7 +26,7 @@
  * AppInit(). There are also extra functions to help with installing signal
  * handlers and daemonizing a process.
  *
- * @snippet
+ * @examplepara
  *   @code
  *   // For client applications
  *   AppInit(argc, argv);

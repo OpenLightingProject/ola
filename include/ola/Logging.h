@@ -21,7 +21,7 @@
  * @defgroup logging Logging
  * @brief The OLA logging system.
  *
- * @snippet
+ * @examplepara
  * ~~~~~~~~~~~~~~~~~~~~~
  * #include <ola/Logging.h>
  *

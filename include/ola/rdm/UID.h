@@ -157,7 +157,7 @@ class UID {
      *
      * This is useful to determine if a responder should reply to a message.
      *
-     * @snippet
+     * @examplepara
      * @code
      *   UID uid(0x7a70, 1);
      *   uid.DirectedToUID(uid);  // always true.

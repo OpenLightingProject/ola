@@ -26,7 +26,7 @@
  * @brief A callback which can be executed multiple times. When a pre-defined
  * limit is reached, then the underlying callback is executed.
  *
- * @snippet
+ * @examplepara
  *   @code
  *   // Calls DoSomething() for each Port and runs the on_complete callback once
  *   // each port's callback has run.

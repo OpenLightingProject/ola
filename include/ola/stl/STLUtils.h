@@ -59,7 +59,7 @@ using std::vector;
  *
  * All elements in the sequence will be deleted. The sequence will be cleared.
  *
- * @snippet
+ * @examplepara
  * ~~~~~~~~~~~~~~~~~~~~~
  * class Foo() {
  *  public:
@@ -90,7 +90,7 @@ void STLDeleteElements(T *sequence) {
  *
  * All elements in the container will be deleted. The container will be cleared.
  *
- * @snippet
+ * @examplepara
  * ~~~~~~~~~~~~~~~~~~~~~
  * class Foo() {
  *  public:

@@ -35,7 +35,7 @@
  *   - Flags cannot be used at global construction time.
  *   - DEFINE_ and DECLARE_ must be outside of any namespaces.
  *
- * @snippet
+ * @examplepara
  *  @code
  *  // These options are --foo and --nobar.
  *  DEFINE_bool(foo, false, "Enable feature foo");
@@ -59,7 +59,7 @@
  *  }
  *  @endcode
  *
- * @snippet - Use flags from other files
+ * @examplepara - Use flags from other files
  *  You can access flags from files other than the one they were DEFINE_*'d in
  *  by using DECLARE_*:
  *  @code

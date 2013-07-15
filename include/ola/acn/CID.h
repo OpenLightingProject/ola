@@ -82,7 +82,7 @@ class CID {
 
     /**
      * @brief Return the CID as a human readable string.
-     * @snippet
+     * @examplepara
      * @code
      * "D5D46622-ECCB-410D-BC9A-267C6099C136"
      * @endcode
