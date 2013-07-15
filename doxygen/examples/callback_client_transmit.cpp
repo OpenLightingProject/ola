@@ -15,43 +15,44 @@
  *
  * Copyright (C) 2010 Simon Newton
  */
-#include <stdlib.h>
+//! [Tutorial Example]
 #include <ola/DmxBuffer.h>
+#include <ola/io/SelectServer.h>
 #include <ola/Logging.h>
-#include <ola/StreamingClient.h>
-
-#include <iostream>
+#include <ola/OlaClientWrapper.h>
+#include <ola/Callback.h>
 
 using std::cout;
 using std::endl;
 
+bool SendData(ola::OlaCallbackClientWrapper *wrapper) {
+  static unsigned int universe = 1;
+  static unsigned int i = 0;
+  ola::DmxBuffer buffer;
+  buffer.Blackout();
+  buffer.SetChannel(0, i);
+  wrapper->GetClient()->SendDmx(universe, buffer);
+
+  if (++i == 100) {
+    wrapper->GetSelectServer()->Terminate();
+  }
+  return true;
+};
+
 int main(int, char *[]) {
-  unsigned int universe = 1;  // universe to use for sending data
-
-  // turn on OLA logging
   ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
+  ola::OlaCallbackClientWrapper wrapper;
 
-  ola::DmxBuffer buffer;  // A DmxBuffer to hold the data.
-  buffer.Blackout();  // Set all channels to 0
-
-  // Create a new client.
-  ola::StreamingClient ola_client((ola::StreamingClient::Options()));
-
-  // Setup the client, this connects to the server
-  if (!ola_client.Setup()) {
+  if (!wrapper.Setup()) {
     std::cerr << "Setup failed" << endl;
     exit(1);
   }
 
-  // Send 100 frames to the server. Increment slot (channel) 0 each time a
-  // frame is sent.
-  for (unsigned int i = 0; i < 100; i++) {
-    buffer.SetChannel(0, i);
-    if (!ola_client.SendDmx(universe, buffer)) {
-      cout << "Send DMX failed" << endl;
-      exit(1);
-    }
-    usleep(20000);   // sleep for 25ms between frames.
-  }
-  return 0;
+  // Create a timeout and register it with the SelectServer
+  ola::io::SelectServer *ss = wrapper.GetSelectServer();
+  ss->RegisterRepeatingTimeout(25, ola::NewCallback(&SendData, &wrapper));
+
+  // Start the main loop
+  ss->Run();
 }
+//! [Tutorial Example]

@@ -31,7 +31,7 @@
  *     2475     100,0,0,0,.....
  * ~~~~~~~~~~~~~~~~~~~~~
  *
- * @include streaming_client.cpp
+ * @snippet streaming_client.cpp Tutorial Example
  *
  * While ola::StreamingClient is easy to use it has the drawback that it can
  * only send DMX512 data. It's not possible to retrieve information (like the
@@ -44,5 +44,5 @@
  *
  * The following code behaves thes same as the \ref sec_StreamingClient example.
  *
- * @include callback_client_transmit.cpp
+ * @snippet callback_client_transmit.cpp Tutorial Example
  */

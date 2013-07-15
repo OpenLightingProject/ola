@@ -51,18 +51,7 @@ using ola::network::TCPSocket;
  * acknowledgement. It's best suited to simple clients which only ever send
  * DMX512 data.
  *
- * Example:
- * ~~~~~~~~~~~~~~~~~~~~~
- *  unsigned int universe = 1;
- *  ola::DmxBuffer dmx_data;
- *  dmx_data.Blackout();
- *  ola::StreamingClient client((ola::StreamingClient::Options()));
- *
- *  if (!client.SendDmx(universe, dmx_data)) {
- *    // Failed to send
- *    ...
- *  }
- * ~~~~~~~~~~~~~~~~~~~~~
+ * @snippet streaming_client.cpp Tutorial Example
  */
 class StreamingClient {
   public:
