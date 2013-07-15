@@ -243,12 +243,12 @@ void UIDTest::testUIDSetUnion() {
   set2.AddUID(uid2);
   set2.AddUID(uid3);
   set2.AddUID(uid4);
-  set1.Union(set2);
-  OLA_ASSERT_EQ(4u, set1.Size());
-  OLA_ASSERT_TRUE(set1.Contains(uid));
-  OLA_ASSERT_TRUE(set1.Contains(uid2));
-  OLA_ASSERT_TRUE(set1.Contains(uid3));
-  OLA_ASSERT_TRUE(set1.Contains(uid4));
+  UIDSet union_set = set1.Union(set2);
+  OLA_ASSERT_EQ(4u, union_set.Size());
+  OLA_ASSERT_TRUE(union_set.Contains(uid));
+  OLA_ASSERT_TRUE(union_set.Contains(uid2));
+  OLA_ASSERT_TRUE(union_set.Contains(uid3));
+  OLA_ASSERT_TRUE(union_set.Contains(uid4));
 }
 
 

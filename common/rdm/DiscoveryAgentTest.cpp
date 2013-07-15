@@ -424,8 +424,7 @@ void DiscoveryAgentTest::testProxy() {
   proxied_uids2.AddUID(UID(0x1021, 0x00005678));
   PopulateResponderListFromUIDs(proxied_uids2, &proxied_responders2);
   // add the two proxies
-  UIDSet uids(proxied_uids);
-  uids.Union(proxied_uids2);
+  UIDSet uids = proxied_uids.Union(proxied_uids2);
   UID proxy_uid = UID(0x1010, 0x00002002);
   uids.AddUID(proxy_uid);
   responders.push_back(new ProxyResponder(proxy_uid, proxied_responders));

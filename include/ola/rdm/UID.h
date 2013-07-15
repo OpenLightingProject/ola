@@ -42,9 +42,7 @@ using std::string;
 /**
  * @addtogroup rdm_uid
  * @{
- */
-
-/*
+ * @class UID
  * @brief Represents a RDM UID.
  *
  * UIDs are 6 bytes, the first two bytes are the
@@ -54,6 +52,7 @@ using std::string;
  * @code
  *   XXXX:YYYYYYYY
  * @endcode
+ * @}
  */
 class UID {
   public:
@@ -281,9 +280,6 @@ class UID {
       return a < b ? -1 : 1;
     }
 };
-/**
- * @}
- */
 }  // namespace rdm
 }  // namespace ola
 #endif  // INCLUDE_OLA_RDM_UID_H_

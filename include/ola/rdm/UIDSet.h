@@ -22,7 +22,7 @@
  * @addtogroup rdm_uid
  * @{
  * @file UIDSet.h
- * @brief A Set of UIDs
+ * @brief A set of UIDs.
  * @}
  */
 
@@ -41,21 +41,36 @@ namespace rdm {
 using std::ostream;
 using std::set;
 
-
-/*
- * Represents a set of RDM UIDs.
+/**
+ * @addtogroup rdm_uid
+ * @{
+ * @class UIDSet
+ * @brief Represents a set of RDM UIDs.
+ * @}
  */
 class UIDSet {
   public:
+    /**
+     * @brief the Iterator for a UIDSets
+     */
     typedef set<UID>::const_iterator Iterator;
 
-    UIDSet() {
-    }
+    /**
+     * @brief Construct an empty set
+     */
+    UIDSet() {}
 
+    /**
+     * @brief Copy constructor.
+     * @param other the UIDSet to copy.
+     */
     UIDSet(const UIDSet &other):
       m_uids(other.m_uids) {
     }
 
+    /**
+     * @brief Assignment operator
+     */
     UIDSet& operator=(const UIDSet &other) {
       if (this != &other) {
         m_uids = other.m_uids;
@@ -63,49 +78,80 @@ class UIDSet {
       return *this;
     }
 
+    /**
+     * @brief Remove all members from the set.
+     */
     void Clear() {
       m_uids.clear();
     }
 
-    // Number of UIDs in the set
+    /**
+     * @brief Return the number of UIDs in the set.
+     * @return the number of UIDs in the set.
+     */
     unsigned int Size() const {
       return m_uids.size();
     }
 
-    // Add this UID to the set
+    /**
+     * @brief Add a UID to the set.
+     * @param uid the UID to add.
+     */
     void AddUID(const UID &uid) {
       m_uids.insert(uid);
     }
 
-    // Remove this UID from the set
+    /**
+     * @brief Remove a UID from the set.
+     * @param uid the UID to remove.
+     */
     void RemoveUID(const UID &uid) {
       m_uids.erase(uid);
     }
 
-    // Return true if the set contains this UID
+    /**
+     * @brief Check if the set contains a UID.
+     * @param uid the UID to check for.
+     * @return true if the set contains this UID.
+     */
     bool Contains(const UID &uid) const {
       return m_uids.find(uid) != m_uids.end();
     }
 
-    void Union(const UIDSet &other) {
-      set<UID> result = m_uids;
+    /**
+     * @brief Return the union of this set and another UIDSet.
+     * @param other the UIDSet to perform the union with.
+     * @result
+     */
+    UIDSet Union(const UIDSet &other) {
+      set<UID> result;
       set_union(m_uids.begin(),
                 m_uids.end(),
                 other.Begin(),
                 other.End(),
                 inserter(result, result.begin()));
-      m_uids = result;
+      return UIDSet(result);
     }
 
+    /**
+     * @brief Return an Iterator to the first member of the set.
+     */
     Iterator Begin() const {
       return m_uids.begin();
     }
 
+    /**
+     * @brief Return an Iterator to one-pass-the-last member of the set.
+     */
     Iterator End() const {
       return m_uids.end();
     }
 
-    // Return the UIDs in this set that don't exist in other
+    /**
+     * @brief Return the UIDs in this set that don't exist in other.
+     * @param other the UIDSet to subtract from this set.
+     * @return the difference between this UIDSet and other.
+     */
     UIDSet SetDifference(const UIDSet &other) {
       set<UID> difference;
       std::set_difference(m_uids.begin(),
@@ -116,14 +162,26 @@ class UIDSet {
       return UIDSet(difference);
     }
 
+    /**
+     * @brief Equality operator.
+     * @param other the UIDSet to compare to.
+     */
     bool operator==(const UIDSet &other) const {
       return m_uids == other.m_uids;
     }
 
+    /**
+     * @brief Inequality operator.
+     * @param other the UIDSet to compare to.
+     */
     bool operator!=(const UIDSet &other) const {
       return !(*this == other);
     }
 
+    /**
+     * @brief Convert a UIDSet to a human readable string.
+     * @returns a comma separated string with the UIDs from the set.
+     */
     std::string ToString() const {
       std::stringstream str;
       set<UID>::const_iterator iter;
@@ -135,6 +193,11 @@ class UIDSet {
       return str.str();
     }
 
+    /**
+     * @brief A helper function to write a UIDSet to an ostream.
+     * @param out the ostream
+     * @param uid_set the UIDSet to write.
+     */
     friend ostream& operator<< (ostream &out, const UIDSet &uid_set) {
       return out << uid_set.ToString();
     }

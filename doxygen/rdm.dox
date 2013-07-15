@@ -27,13 +27,13 @@
  * @brief Code related to RDM controllers.
  *
  * @defgroup rdm_helpers Helpers and Constants
- * @brief Helper functions, constants and enumerations.
+ * @brief RDM Helper functions, constants and enumerations.
  *
  * @defgroup rdm_pids Parameter IDs
- * @brief A flexible system to handle parameter data.
+ * @brief A flexible system to handle RDM parameter data.
  *
  * @defgroup rdm_uid UID
- * @brief UID Storage and allocation
+ * @brief RDM UID Storage and allocation
  *
  * @defgroup rdm_api RDM API
  * @brief Old interface for RDM mesage handling.

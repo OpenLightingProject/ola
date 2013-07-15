@@ -34,35 +34,49 @@ namespace ola {
 namespace rdm {
 
 /**
- * Given a starting UID, this returns successive UIDs until the space is
- * exhausted.
+ * @addtogroup rdm_uid
+ * @{
+ * @class UIDAllocator
+ * @brief Allocate UIDs from a pool.
+ *
+ * Given a starting UID, this returns successive UIDs until the manufacturer
+ * range is exhausted.
+ * @}
  */
 class UIDAllocator {
   public:
+    /**
+     * @brief Create a new allocator with the starting UID.
+     * @param uid the first UID to allocate.
+     */
     explicit UIDAllocator(const UID &uid)
       : m_esta_id(uid.ManufacturerId()),
         m_device_id(uid.DeviceId()),
         m_last_device_id(UID::ALL_DEVICES) {
     }
 
-    // upper bound is inclusive.
+    /**
+     * @brief Create a new allocator with the starting UID that ends at the
+     * specified last_device_id.
+     * @param uid the first UID to allocate.
+     * @param last_device_id the last device_id to use.
+     */
     UIDAllocator(const UID &uid, uint32_t last_device_id)
       : m_esta_id(uid.ManufacturerId()),
         m_device_id(uid.DeviceId()),
-        m_last_device_id(last_device_id + 1) {
-      // never hand out the broadcast UID, even if asked to
-      if (last_device_id == UID::ALL_DEVICES)
-        m_last_device_id = UID::ALL_DEVICES;
+        m_last_device_id(last_device_id) {
     }
 
-    // Returns the next UID in the range or NULL if not available UIDs remain.
+    /**
+     * @brief Allocate the next UID from the pool.
+     * @returns a new UID object, or NULL if the pool is empty. Ownership of
+     * the UID object is transferred to the caller.
+     */
     UID *AllocateNext() {
-      if (m_device_id == m_last_device_id)
+      if (m_device_id == UID::ALL_DEVICES || m_device_id > m_last_device_id)
         return NULL;
 
-      UID *uid = new UID(m_esta_id, m_device_id);
-      m_device_id++;
-      return uid;
+      return new UID(m_esta_id, m_device_id++);
     }
 
   private:
