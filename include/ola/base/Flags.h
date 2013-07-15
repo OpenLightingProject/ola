@@ -36,27 +36,20 @@
  *   - DEFINE_ and DECLARE_ must be outside of any namespaces.
  *
  * @examplepara
+ *  @snippet flags.cpp Example
+ *  When <tt>./flags</tt> is run, this produces:
  *  @code
- *  // These options are --foo and --nobar.
- *  DEFINE_bool(foo, false, "Enable feature foo");
- *  DEFINE_bool(bar, true, "Disable feature bar");
- *
- *  // FLAGS_name defaults to "simon" and can be changed with --name bob
- *  DEFINE_string(name, "simon", "Specify the name");
- *
- *  // Short options can also be specified:
- *  // FLAGS_baz can be set with --baz or -b
- *  DEFINE_s_int8(baz, b, 0, "Sets the value of baz");
- *
- *  int main(int argc, char* argv[]) {
- *    ola::SetHelpString("<options>", "Description of binary");
- *    ola::ParseFlags(argc, argv);
- *
- *    cout << "--foo is " << FLAGS_foo << endl;
- *    cout << "--bar is " << FLAGS_bar << endl;
- *    cout << "--name is " << FLAGS_name.str() << endl;
- *    cout << "--baz (-b) is " << FLAGS_baz << endl;
- *  }
+ *  --foo is 0
+ *  --bar is 1
+ *  --name is simon
+ *  --baz (-b) is 0
+ *  @endcode
+ *  Compare with <tt>./flags  --foo --name bob -b 10 --nobar</tt>
+ *  @code
+ *  --foo is 1
+ *  --bar is 0
+ *  --name is bob
+ *  --baz (-b) is 10
  *  @endcode
  *
  * @examplepara - Use flags from other files
