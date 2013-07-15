@@ -27,7 +27,7 @@
  * [ACN on
  * wikipedia](http://en.wikipedia.org/wiki/Architecture_for_Control_Networks).
  *
- * This emcompasses code for E1.31 (Streaming ACN) and E1.33 (RDMNet).
+ * This covers code for E1.31 (Streaming ACN) and E1.33 (RDMNet).
  */
 
 /**
