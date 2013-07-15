@@ -625,6 +625,7 @@ AC_OUTPUT( Makefile \
     data/Makefile \
     data/rdm/Makefile \
     doxygen/Makefile \
+    doxygen/examples/Makefile \
     examples/Makefile \
     debian/Makefile \
     include/Makefile \

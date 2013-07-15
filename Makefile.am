@@ -4,8 +4,8 @@ AUX_DIST                = $(auxdir)/install-sh $(auxdir)/missing \
 
 include aminclude.am
 
-SUBDIRS = include data doxygen common ola plugins slp olad python tools \
-          examples debian java man
+SUBDIRS = include data common ola plugins slp olad python tools \
+          examples debian java man doxygen
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libola.pc libolaserver.pc
