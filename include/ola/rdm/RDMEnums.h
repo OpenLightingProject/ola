@@ -526,7 +526,6 @@ typedef enum {
   LAMP_ON_MODE_AFTER_CAL = 0x03,
 } rdm_lamp_mode;
 
-
 typedef enum {
   POWER_STATE_FULL_OFF = 0x00,
   POWER_STATE_SHUTDOWN = 0x01,

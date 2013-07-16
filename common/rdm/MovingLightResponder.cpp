@@ -83,6 +83,12 @@ const ResponderOps<MovingLightResponder>::ParamHandler
   { PID_FACTORY_DEFAULTS,
     &MovingLightResponder::GetFactoryDefaults,
     &MovingLightResponder::SetFactoryDefaults},
+  { PID_LANGUAGE_CAPABILITIES,
+    &MovingLightResponder::GetLanguageCapabilities,
+    NULL},
+  { PID_LANGUAGE,
+    &MovingLightResponder::GetLanguage,
+    &MovingLightResponder::SetLanguage},
   { PID_SOFTWARE_VERSION_LABEL,
     &MovingLightResponder::GetSoftwareVersionLabel,
     NULL},
@@ -95,21 +101,48 @@ const ResponderOps<MovingLightResponder>::ParamHandler
   { PID_DMX_START_ADDRESS,
     &MovingLightResponder::GetDmxStartAddress,
     &MovingLightResponder::SetDmxStartAddress},
+  { PID_DEVICE_HOURS,
+    &MovingLightResponder::GetDeviceHours,
+    &MovingLightResponder::SetDeviceHours},
+  { PID_LAMP_HOURS,
+    &MovingLightResponder::GetLampHours,
+    &MovingLightResponder::SetLampHours},
   { PID_LAMP_STRIKES,
     &MovingLightResponder::GetLampStrikes,
     &MovingLightResponder::SetLampStrikes},
+  { PID_LAMP_STATE,
+    &MovingLightResponder::GetLampState,
+    &MovingLightResponder::SetLampState},
+  { PID_LAMP_ON_MODE,
+    &MovingLightResponder::GetLampOnMode,
+    &MovingLightResponder::SetLampOnMode},
+  { PID_DEVICE_POWER_CYCLES,
+    &MovingLightResponder::GetDevicePowerCycles,
+    &MovingLightResponder::SetDevicePowerCycles},
   { PID_IDENTIFY_DEVICE,
     &MovingLightResponder::GetIdentify,
     &MovingLightResponder::SetIdentify},
+  { PID_DISPLAY_INVERT,
+    &MovingLightResponder::GetDisplayInvert,
+    &MovingLightResponder::SetDisplayInvert},
+  { PID_DISPLAY_LEVEL,
+    &MovingLightResponder::GetDisplayLevel,
+    &MovingLightResponder::SetDisplayLevel},
   { PID_PAN_INVERT,
     &MovingLightResponder::GetPanInvert,
     &MovingLightResponder::SetPanInvert},
   { PID_TILT_INVERT,
     &MovingLightResponder::GetTiltInvert,
     &MovingLightResponder::SetTiltInvert},
+  { PID_PAN_TILT_SWAP,
+    &MovingLightResponder::GetPanTiltSwap,
+    &MovingLightResponder::SetPanTiltSwap},
   { PID_REAL_TIME_CLOCK,
     &MovingLightResponder::GetRealTimeClock,
     NULL},
+  { PID_POWER_STATE,
+    &MovingLightResponder::GetPowerState,
+    &MovingLightResponder::SetPowerState},
   { OLA_MANUFACTURER_PID_CODE_VERSION,
     &MovingLightResponder::GetOlaCodeVersion,
     NULL},
@@ -122,10 +155,20 @@ const ResponderOps<MovingLightResponder>::ParamHandler
 MovingLightResponder::MovingLightResponder(const UID &uid)
     : m_uid(uid),
       m_start_address(1),
+      m_language("en"),
       m_identify_mode(false),
       m_pan_invert(false),
       m_tilt_invert(false),
+      m_device_hours(0),
+      m_lamp_hours(0),
       m_lamp_strikes(0),
+      m_lamp_state(LAMP_ON),
+      m_lamp_on_mode(LAMP_ON_MODE_DMX),
+      m_device_power_cycles(0),
+      m_display_invert(DISPLAY_INVERT_AUTO),
+      m_display_level(255),
+      m_pan_tilt_swap(false),
+      m_power_state(POWER_STATE_NORMAL),
       m_personality_manager(Personalities::Instance()) {
 }
 
@@ -244,6 +287,73 @@ const RDMResponse *MovingLightResponder::SetFactoryDefaults(
     0);
 }
 
+const RDMResponse *MovingLightResponder::GetLanguageCapabilities(
+    const RDMRequest *request) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  const char languages[] = {
+    'e', 'n',
+    'f', 'r',
+    'd', 'e',
+  };
+  return new RDMGetResponse(
+    request->DestinationUID(),
+    request->SourceUID(),
+    request->TransactionNumber(),
+    RDM_ACK,
+    0,
+    request->SubDevice(),
+    request->ParamId(),
+    reinterpret_cast<const uint8_t*>(languages),
+    arraysize(languages));
+}
+
+const RDMResponse *MovingLightResponder::GetLanguage(
+    const RDMRequest *request) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  return new RDMGetResponse(
+    request->DestinationUID(),
+    request->SourceUID(),
+    request->TransactionNumber(),
+    RDM_ACK,
+    0,
+    request->SubDevice(),
+    request->ParamId(),
+    reinterpret_cast<const uint8_t*>(m_language.c_str()),
+    m_language.size());
+}
+
+const RDMResponse *MovingLightResponder::SetLanguage(
+    const RDMRequest *request) {
+  uint16_t new_value;
+  if (!ResponderHelper::ExtractUInt16(request, &new_value)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  const string new_lang(reinterpret_cast<const char*>(request->ParamData()),
+                        request->ParamDataSize());
+  if (new_lang != "en" && new_lang != "fr" && new_lang != "de") {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+  m_language = new_lang;
+
+  return new RDMSetResponse(
+    request->DestinationUID(),
+    request->SourceUID(),
+    request->TransactionNumber(),
+    RDM_ACK,
+    0,
+    request->SubDevice(),
+    request->ParamId(),
+    NULL,
+    0);
+}
+
 const RDMResponse *MovingLightResponder::GetProductDetailList(
     const RDMRequest *request) {
   // Shortcut for only one item in the vector
@@ -280,6 +390,26 @@ const RDMResponse *MovingLightResponder::SetDmxStartAddress(
                                         &m_start_address);
 }
 
+const RDMResponse *MovingLightResponder::GetDeviceHours(
+    const RDMRequest *request) {
+  return ResponderHelper::GetUInt32Value(request, m_device_hours++);
+}
+
+const RDMResponse *MovingLightResponder::SetDeviceHours(
+    const RDMRequest *request) {
+  return ResponderHelper::SetUInt32Value(request, &m_device_hours);
+}
+
+const RDMResponse *MovingLightResponder::GetLampHours(
+    const RDMRequest *request) {
+  return ResponderHelper::GetUInt32Value(request, m_lamp_hours++);
+}
+
+const RDMResponse *MovingLightResponder::SetLampHours(
+    const RDMRequest *request) {
+  return ResponderHelper::SetUInt32Value(request, &m_lamp_hours);
+}
+
 const RDMResponse *MovingLightResponder::GetLampStrikes(
     const RDMRequest *request) {
   return ResponderHelper::GetUInt32Value(request, m_lamp_strikes);
@@ -288,6 +418,76 @@ const RDMResponse *MovingLightResponder::GetLampStrikes(
 const RDMResponse *MovingLightResponder::SetLampStrikes(
     const RDMRequest *request) {
   return ResponderHelper::SetUInt32Value(request, &m_lamp_strikes);
+}
+
+const RDMResponse *MovingLightResponder::GetLampState(
+    const RDMRequest *request) {
+  uint8_t value = m_lamp_state;
+  return ResponderHelper::GetUInt8Value(request, value);
+}
+
+const RDMResponse *MovingLightResponder::SetLampState(
+    const RDMRequest *request) {
+  uint8_t new_value;
+  if (!ResponderHelper::ExtractUInt8(request, &new_value)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  if (new_value > static_cast<uint8_t>(LAMP_STANDBY)) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  m_lamp_state = static_cast<rdm_lamp_state>(new_value);
+  return new RDMSetResponse(
+    request->DestinationUID(),
+    request->SourceUID(),
+    request->TransactionNumber(),
+    RDM_ACK,
+    0,
+    request->SubDevice(),
+    request->ParamId(),
+    NULL,
+    0);
+}
+
+const RDMResponse *MovingLightResponder::GetLampOnMode(
+    const RDMRequest *request) {
+  uint8_t value = m_lamp_on_mode;
+  return ResponderHelper::GetUInt8Value(request, value);
+}
+
+const RDMResponse *MovingLightResponder::SetLampOnMode(
+    const RDMRequest *request) {
+  uint8_t new_value;
+  if (!ResponderHelper::ExtractUInt8(request, &new_value)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  if (new_value > static_cast<uint8_t>(LAMP_ON_MODE_AFTER_CAL)) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  m_lamp_on_mode = static_cast<rdm_lamp_mode>(new_value);
+  return new RDMSetResponse(
+    request->DestinationUID(),
+    request->SourceUID(),
+    request->TransactionNumber(),
+    RDM_ACK,
+    0,
+    request->SubDevice(),
+    request->ParamId(),
+    NULL,
+    0);
+}
+
+const RDMResponse *MovingLightResponder::GetDevicePowerCycles(
+    const RDMRequest *request) {
+  return ResponderHelper::GetUInt32Value(request, m_device_power_cycles++);
+}
+
+const RDMResponse *MovingLightResponder::SetDevicePowerCycles(
+    const RDMRequest *request) {
+  return ResponderHelper::SetUInt32Value(request, &m_device_power_cycles);
 }
 
 const RDMResponse *MovingLightResponder::GetIdentify(
@@ -305,6 +505,46 @@ const RDMResponse *MovingLightResponder::SetIdentify(
              << (m_identify_mode ? "on" : "off");
   }
   return response;
+}
+
+const RDMResponse *MovingLightResponder::GetDisplayInvert(
+    const RDMRequest *request) {
+  uint8_t value = m_display_invert;
+  return ResponderHelper::GetUInt8Value(request, value);
+}
+
+const RDMResponse *MovingLightResponder::SetDisplayInvert(
+    const RDMRequest *request) {
+  uint8_t new_value;
+  if (!ResponderHelper::ExtractUInt8(request, &new_value)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  if (new_value > static_cast<uint8_t>(DISPLAY_INVERT_AUTO)) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  m_display_invert = static_cast<rdm_display_invert>(new_value);
+  return new RDMSetResponse(
+    request->DestinationUID(),
+    request->SourceUID(),
+    request->TransactionNumber(),
+    RDM_ACK,
+    0,
+    request->SubDevice(),
+    request->ParamId(),
+    NULL,
+    0);
+}
+
+const RDMResponse *MovingLightResponder::GetDisplayLevel(
+    const RDMRequest *request) {
+  return ResponderHelper::GetUInt8Value(request, m_display_level);
+}
+
+const RDMResponse *MovingLightResponder::SetDisplayLevel(
+    const RDMRequest *request) {
+  return ResponderHelper::SetUInt8Value(request, &m_display_level);
 }
 
 const RDMResponse *MovingLightResponder::GetPanInvert(
@@ -327,9 +567,50 @@ const RDMResponse *MovingLightResponder::SetTiltInvert(
   return ResponderHelper::SetBoolValue(request, &m_tilt_invert);
 }
 
+const RDMResponse *MovingLightResponder::GetPanTiltSwap(
+    const RDMRequest *request) {
+  return ResponderHelper::GetBoolValue(request, m_pan_tilt_swap);
+}
+
+const RDMResponse *MovingLightResponder::SetPanTiltSwap(
+    const RDMRequest *request) {
+  return ResponderHelper::SetBoolValue(request, &m_pan_tilt_swap);
+}
+
 const RDMResponse *MovingLightResponder::GetRealTimeClock(
     const RDMRequest *request) {
   return ResponderHelper::GetRealTimeClock(request);
+}
+
+const RDMResponse *MovingLightResponder::GetPowerState(
+    const RDMRequest *request) {
+  uint8_t value = m_power_state;
+  return ResponderHelper::GetUInt8Value(request, value);
+}
+
+const RDMResponse *MovingLightResponder::SetPowerState(
+    const RDMRequest *request) {
+  uint8_t new_value;
+  if (!ResponderHelper::ExtractUInt8(request, &new_value)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  if (new_value > static_cast<uint8_t>(POWER_STATE_STANDBY) &&
+      new_value != static_cast<uint8_t>(POWER_STATE_NORMAL)) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  m_power_state = static_cast<rdm_power_state>(new_value);
+  return new RDMSetResponse(
+    request->DestinationUID(),
+    request->SourceUID(),
+    request->TransactionNumber(),
+    RDM_ACK,
+    0,
+    request->SubDevice(),
+    request->ParamId(),
+    NULL,
+    0);
 }
 
 const RDMResponse *MovingLightResponder::GetDeviceModelDescription(
