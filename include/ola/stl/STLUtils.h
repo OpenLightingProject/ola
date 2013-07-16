@@ -20,13 +20,13 @@
 
 /**
  * @defgroup stl STL
- * @brief STL Helper Functions.
+ * @brief Various helper functions related to STL classes.
  *
  * @addtogroup stl
  * @{
  *
  * @file STLUtils.h
- * @brief Helper functions for STL types.
+ * @brief Helper functions for STL classes.
  * @}
  */
 

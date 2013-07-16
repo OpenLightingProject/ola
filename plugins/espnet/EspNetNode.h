@@ -48,10 +48,11 @@ typedef enum {
 
 enum { ESPNET_MAX_UNIVERSES = 512 };
 
+using std::string;
 
 class EspNetNode {
   public:
-    explicit EspNetNode(const std::string &ip_address);
+    explicit EspNetNode(const string &ip_address);
     virtual ~EspNetNode();
 
     bool Start();
@@ -61,7 +62,7 @@ class EspNetNode {
       return m_interface;
     }
 
-    void SetName(const std::string &name) { m_node_name = name; }
+    void SetName(const string &name) { m_node_name = name; }
     void SetType(espnet_node_type type) { m_type = type; }
     void SetUniverse(uint8_t universe) { m_universe = universe; }
 
@@ -115,8 +116,8 @@ class EspNetNode {
     uint8_t m_ttl;
     uint8_t m_universe;
     espnet_node_type m_type;
-    std::string m_node_name;
-    std::string m_preferred_ip;
+    string m_node_name;
+    string m_preferred_ip;
     std::map<uint8_t, universe_handler> m_handlers;
     ola::network::Interface m_interface;
     ola::network::UDPSocket m_socket;

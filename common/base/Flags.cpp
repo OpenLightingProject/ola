@@ -21,7 +21,7 @@
 /**
  * @addtogroup flags
  * @{
- * @file Flags.cpp
+ * @file common/base/Flags.cpp
  * @}
  */
 
@@ -62,7 +62,6 @@ using std::endl;
  *   bash$myappliation -d
  *   @endcode
  *   Then the noMaster flag would be true.
- *
  */
 const char Flag<bool>::NO_PREFIX[] = "no";
 

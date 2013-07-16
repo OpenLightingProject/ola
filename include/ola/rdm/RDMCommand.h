@@ -23,7 +23,7 @@
  * @addtogroup rdm_command
  * @{
  * @file RDMCommand.h
- * @brief A series of classes that represent RDM commands.
+ * @brief Classes that represent RDM commands.
  * @}
  */
 
@@ -53,11 +53,9 @@ namespace rdm {
  * or a response. See RDMCommandClass for more information.
  */
 typedef enum {
-  RDM_REQUEST, /**< Request*/
-  RDM_RESPONSE, /**< Response*/
-  RDM_INVALID,  /**< Invalid
-                   @note This should never happen and is an error.
-                 */
+  RDM_REQUEST, /**< Request */
+  RDM_RESPONSE, /**< Response */
+  RDM_INVALID,  /**< Invalid */
 } rdm_message_type;
 
 
@@ -66,6 +64,8 @@ typedef enum {
  * @note RDMCommands are immutable.
  * @note RDMCommands may hold more than 231 bytes of data. Use the
  * RDMCommandSerializer class if you want the wire format.
+ */
+/*
  *
  * TODO: make these reference counted so that fan out during broadcasts isn't
  *   as expensive.
@@ -74,24 +74,23 @@ class RDMCommand {
   public:
     /**
      * @brief A set of values representing CommandClasses in E1.20.
-     *
      * @note Please see section 6.2.10 of ANSI E1.20 for more information.
      */
     typedef enum {
       DISCOVER_COMMAND = 0x10, /**< Discovery Command */
-      DISCOVER_COMMAND_RESPONSE = 0x11, /**< Discovery Response*/
+      DISCOVER_COMMAND_RESPONSE = 0x11, /**< Discovery Response */
       GET_COMMAND = 0x20, /**< Get Command */
-      GET_COMMAND_RESPONSE = 0x21, /**< Get Response*/
-      SET_COMMAND = 0x30, /**< Set Command*/
-      SET_COMMAND_RESPONSE = 0x31, /**< Set Response*/
-      INVALID_COMMAND = 0xff, /**< Invalid Command, specific to OLA*/
+      GET_COMMAND_RESPONSE = 0x21, /**< Get Response */
+      SET_COMMAND = 0x30, /**< Set Command */
+      SET_COMMAND_RESPONSE = 0x31, /**< Set Response */
+      INVALID_COMMAND = 0xff, /**< Invalid Command, specific to OLA */
     } RDMCommandClass;
 
     virtual ~RDMCommand();
 
     /**
      * @brief Equality Operator
-     * @param other is the other RDMCommand you wish to compare against
+     * @param other is the other RDMCommand you wish to compare against.
      */
     bool operator==(const RDMCommand &other) const;
 
@@ -101,7 +100,7 @@ class RDMCommand {
      *
      * @note This doesn't correspond to a field in the RDM message, but it's a
      * useful shortcut to determine the direction of the message.
-     * @return RDM_REQUEST or RDM_RESPONSE.
+     * @returns RDM_REQUEST or RDM_RESPONSE.
      */
     rdm_message_type CommandType() const {
       switch (CommandClass()) {
@@ -118,7 +117,6 @@ class RDMCommand {
       }
     }
 
-    // String methods.
     /**
      * @name String Methods
      * @{
@@ -126,7 +124,7 @@ class RDMCommand {
 
     /**
      * @brief Create a string from the RDMCommand object.
-     * @reurns A string containing the source and destination UIDS, transaction
+     * @returns A string containing the source and destination UIDS, transaction
      * number, port ID, Message count, Sub Device, Cmd Class, Param ID, Data,
      * and a raw string of the parameter data.
      * @param out ostream to output to
@@ -138,48 +136,46 @@ class RDMCommand {
       return out << command.ToString();
     }
 
-    /**@}*/
+    /** @} */
 
     /**
      * @brief a virtual method to return the current CommmandClass.
-     * @note Provided by the subclasses.
      */
     virtual RDMCommandClass CommandClass() const = 0;
 
-    // Accessors
     /**
      * @name Accessors
      * @{
      */
 
-    /**@brief Returns the Source UID of the RDMCommand*/
+    /** @brief Returns the Source UID of the RDMCommand */
     const UID& SourceUID() const { return m_source; }
 
-    /**@brief Returns the Destination UID of the RDMCommand*/
+    /** @brief Returns the Destination UID of the RDMCommand */
     const UID& DestinationUID() const { return m_destination; }
 
-    /**@brief Returns the Transaction Number of the RDMCommand*/
+    /** @brief Returns the Transaction Number of the RDMCommand */
     uint8_t TransactionNumber() const { return m_transaction_number; }
 
-    /**@brief Returns the Message Count of the RDMCommand*/
+    /** @brief Returns the Message Count of the RDMCommand */
     uint8_t MessageCount() const { return m_message_count; }
 
-    /**@brief Returns the SubDevice of the RDMCommand*/
+    /** @brief Returns the SubDevice of the RDMCommand */
     uint16_t SubDevice() const { return m_sub_device; }
 
-    /**@brief Returns the Port ID of the RDMCommand*/
+    /** @brief Returns the Port ID of the RDMCommand */
     uint8_t PortIdResponseType() const { return m_port_id; }
 
-    /**@brief Returns the Parameter ID of the RDMCommand*/
+    /** @brief Returns the Parameter ID of the RDMCommand */
     uint16_t ParamId() const { return m_param_id; }
 
-    /**@brief Returns the Parameter Data of the RDMCommand*/
+    /** @brief Returns the Parameter Data of the RDMCommand */
     uint8_t *ParamData() const { return m_data; }
 
-    /**@brief Returns the Size of the Parameter Data of the RDMCommand*/
+    /** @brief Returns the Size of the Parameter Data of the RDMCommand */
     unsigned int ParamDataSize() const { return m_data_length; }
 
-    /**@}*/
+    /** @} */
 
     /**
      * @brief Used to print the data in an RDM Command to a CommandPrinter
@@ -244,8 +240,8 @@ class RDMCommand {
 };
 
 
-/*
- * RDM Commands that represent requests (GET, SET or DISCOVER).
+/**
+ * @brief RDM Commands that represent requests (GET, SET or DISCOVER).
  */
 class RDMRequest: public RDMCommand {
   public:
@@ -315,7 +311,7 @@ class RDMRequest: public RDMCommand {
 
 
 /**
- * The parent class for GET/SET requests.
+ * @brief The parent class for GET/SET requests.
  */
 class RDMGetSetRequest: public RDMRequest {
   public:
@@ -396,8 +392,9 @@ typedef BaseRDMRequest<RDMCommand::GET_COMMAND> RDMGetRequest;
 typedef BaseRDMRequest<RDMCommand::SET_COMMAND> RDMSetRequest;
 
 
-/*
- * The subset of RDM Commands that represent responses (GET, SET or DISCOVER).
+/**
+ * @brief The set of RDM Commands that represent responses (GET, SET or
+ * DISCOVER).
  */
 class RDMResponse: public RDMCommand {
   public:
@@ -458,7 +455,7 @@ class RDMResponse: public RDMCommand {
 
 
 /**
- * The base class for GET/SET responses
+ * @brief The base class for GET/SET responses.
  */
 class RDMGetSetResponse: public RDMResponse {
   public:
@@ -535,7 +532,7 @@ RDMResponse *GetResponseWithPid(const RDMRequest *request,
                                 uint8_t outstanding_messages = 0);
 
 /**
- * An RDM request of type DISCOVER_COMMAND
+ * @brief An RDM request of type DISCOVER_COMMAND.
  */
 class RDMDiscoveryRequest: public RDMRequest {
   public:
@@ -576,8 +573,8 @@ class RDMDiscoveryRequest: public RDMRequest {
 
 // Because the number of discovery requests is small (3 type) we provide a
 // helper method for each here.
-/*
- * Create a new DUB request object.
+/**
+ * @brief Create a new DUB request object.
  */
 RDMDiscoveryRequest *NewDiscoveryUniqueBranchRequest(
     const UID &source,
@@ -587,8 +584,8 @@ RDMDiscoveryRequest *NewDiscoveryUniqueBranchRequest(
     uint8_t port_id = 1);
 
 
-/*
- * Create a new Mute Request Object.
+/**
+ * @brief Create a new Mute Request Object.
  */
 RDMDiscoveryRequest *NewMuteRequest(const UID &source,
                                     const UID &destination,
@@ -605,7 +602,7 @@ RDMDiscoveryRequest *NewUnMuteRequest(const UID &source,
 
 
 /**
- * An RDM response of type DISCOVER_COMMAND
+ * @brief An RDM response of type DISCOVER_COMMAND
  */
 class RDMDiscoveryResponse: public RDMResponse {
   public:
@@ -641,7 +638,7 @@ class RDMDiscoveryResponse: public RDMResponse {
                                                  unsigned int length);
     static RDMDiscoveryResponse* InflateFromData(const string &data);
 };
-/**@}*/
+/** @} */
 }  // namespace rdm
 }  // namespace ola
 #endif  // INCLUDE_OLA_RDM_RDMCOMMAND_H_

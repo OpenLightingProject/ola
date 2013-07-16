@@ -84,7 +84,7 @@ string IntToString(int i);
 string IntToString(unsigned int i);
 
 /**
- * @brief Escape a string with \\.
+ * @brief Escape a string with \\ .
  *
  * The string is modified in place.
  * The following characters are escaped:

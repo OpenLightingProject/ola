@@ -20,7 +20,7 @@
 /**
  * @addtogroup rdm_resp
  * @{
- * @file DimmmerRootDevice.h
+ * @file DimmerRootDevice.h
  * @brief Soft responder that implements the Root device in the
  * DimmerResponder.
  * @}

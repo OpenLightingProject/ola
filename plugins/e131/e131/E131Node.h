@@ -42,10 +42,11 @@ namespace plugin {
 namespace e131 {
 
 using ola::acn::CID;
+using std::string;
 
 class E131Node {
   public:
-    E131Node(const std::string &ip_address,
+    E131Node(const string &ip_address,
              const CID &cid = CID::Generate(),
              bool use_rev2 = false,
              bool ignore_preview = true,
