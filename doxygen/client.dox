@@ -12,7 +12,8 @@
  *
  *     g++ example.cpp $(pkg-config --cflags --libs libola)
  *
- * @section sec_StreamingClient Streaming Client
+ * @section sec_StreamingClient Streaming Client Sender
+ *
  * The quickest way to get started is by using ola::StreamingClient. The
  * program below sends 100 frames of DMX data to the olad server on universe 1.
  * The frames are sent 25ms apart which gives a frame rate of 40 fps.
@@ -37,7 +38,7 @@
  * only send DMX512 data. It's not possible to retrieve information (like the
  * active universes etc.) from olad using the StreamingClient.
  *
- * @section sec_CallbackClient Callback Client
+ * @section sec_CallbackClient Callback Client Sender
  *
  * The ola::OlaCallbackClient provides a much richer interface for interacting
  * with the server. However, because of this it's slightly harder to use.
@@ -45,4 +46,8 @@
  * The following code behaves thes same as the \ref sec_StreamingClient example.
  *
  * @snippet callback_client_transmit.cpp Tutorial Example
+ *
+ * @section sec_Receiver DMX Receiver
+ *
+ * @snippet receiver.cpp Tutorial Example
  */
