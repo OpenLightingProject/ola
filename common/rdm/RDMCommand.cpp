@@ -18,6 +18,13 @@
  * Copyright (C) 2010 Simon Newton
  */
 
+/**
+ * @addtogroup rdm_command
+ * @{
+ * @file RDMCommand.cpp
+ * @}
+ */
+
 #include <string.h>
 #include <string>
 #include "ola/Logging.h"
@@ -27,6 +34,11 @@
 
 namespace ola {
 namespace rdm {
+
+/**
+ * @addtogroup rdm_command
+ * @{
+ */
 
 /*
  * Constructor
@@ -53,18 +65,12 @@ RDMCommand::RDMCommand(const UID &source,
 }
 
 
-/*
- * Destructor
- */
 RDMCommand::~RDMCommand() {
   if (m_data)
     delete[] m_data;
 }
 
 
-/*
- * Equality test
- */
 bool RDMCommand::operator==(const RDMCommand &other) const {
   if (m_source == other.m_source &&
       m_destination == other.m_destination &&
@@ -95,9 +101,6 @@ std::string RDMCommand::ToString() const {
 }
 
 
-/**
- * Write this RDMCommand to an output stream
- */
 void RDMCommand::Write(ola::io::OutputStream *stream) const {
   unsigned int packet_length = (sizeof(RDMCommandHeader) +
     m_data_length);  // size of packet excluding start code + checksum
@@ -918,5 +921,6 @@ RDMDiscoveryResponse* RDMDiscoveryResponse::InflateFromData(
   return InflateFromData(reinterpret_cast<const uint8_t*>(data.data()),
                          data.size());
 }
+/**@}*/
 }  // namespace rdm
 }  // namespace ola
