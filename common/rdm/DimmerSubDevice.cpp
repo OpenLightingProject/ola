@@ -91,7 +91,7 @@ DimmerSubDevice::DimmerSubDevice(const UID &uid, uint16_t sub_device_number)
     : m_uid(uid),
       m_sub_device_number(sub_device_number),
       m_start_address(sub_device_number),
-      m_identify_mode(false),
+      m_identify_on(false),
       m_personality_manager(Personalities::Instance()) {
 }
 
@@ -178,16 +178,16 @@ const RDMResponse *DimmerSubDevice::GetSoftwareVersionLabel(
 }
 
 const RDMResponse *DimmerSubDevice::GetIdentify(const RDMRequest *request) {
-  return ResponderHelper::GetBoolValue(request, m_identify_mode);
+  return ResponderHelper::GetBoolValue(request, m_identify_on);
 }
 
 const RDMResponse *DimmerSubDevice::SetIdentify(const RDMRequest *request) {
-  bool old_value = m_identify_mode;
+  bool old_value = m_identify_on;
   const RDMResponse *response = ResponderHelper::SetBoolValue(
-      request, &m_identify_mode);
-  if (m_identify_mode != old_value) {
+      request, &m_identify_on);
+  if (m_identify_on != old_value) {
     OLA_INFO << "Dummy dimmer device " << m_uid << ":" << m_sub_device_number
-             << ", identify mode " << (m_identify_mode ? "on" : "off");
+             << ", identify mode " << (m_identify_on ? "on" : "off");
   }
   return response;
 }

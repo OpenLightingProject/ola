@@ -56,7 +56,7 @@ class DimmerSubDevice: public RDMControllerInterface {
     uint16_t GetDmxStartAddress() const {
        return m_start_address;
     }
-    
+
   private:
     /**
      * The RDM Operations for the DimmerSubDevice.
@@ -93,7 +93,7 @@ class DimmerSubDevice: public RDMControllerInterface {
     const UID m_uid;
     const uint16_t m_sub_device_number;
     uint16_t m_start_address;
-    bool m_identify_mode;
+    bool m_identify_on;
     PersonalityManager m_personality_manager;
 
     const RDMResponse *GetDeviceInfo(const RDMRequest *request);

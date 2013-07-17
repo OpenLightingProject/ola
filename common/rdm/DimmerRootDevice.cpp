@@ -155,27 +155,33 @@ const RDMResponse *DimmerRootDevice::GetDmxBlockAddress(
   struct block_address_pdl{
     uint16_t total_footprint;
     uint16_t base_address;
-  };
+  } __attribute__((packed));
 
-  SubDeviceMap::const_iterator iter = m_sub_devices.begin();
   block_address_pdl pdl;
-  pdl.base_address = iter->second->GetDmxStartAddress();
-  pdl.total_footprint = iter->second->Footprint();
-  uint16_t next_address = pdl.base_address + pdl.total_footprint;
+  pdl.base_address = 0;
+  pdl.total_footprint = 0;
+  uint16_t next_address = 0;
 
-  for(++iter; iter != m_sub_devices.end(); ++iter) {
-    if(iter->second->Footprint()) {
-      if(pdl.base_address != 0xFFFF &&
-          (iter->second->GetDmxStartAddress() < pdl.base_address ||
-          iter->second->GetDmxStartAddress() != next_address)) {
-        pdl.base_address = 0xFFFF; // NEEDS TO BE A CONSTANT SOMEWHERE
+
+  for(SubDeviceMap::const_iterator iter = m_sub_devices.begin();
+      iter != m_sub_devices.end();
+      ++iter) {
+    if(iter->second->Footprint() != 0) {
+      if(next_address == iter->second->GetDmxStartAddress()) {
+        next_address += iter->second->Footprint();
+      } else if(next_address == 0) {
+        next_address = iter->second->GetDmxStartAddress() +
+            iter->second->Footprint();
+        pdl.base_address = iter->second->GetDmxStartAddress();
+      } else {
+        pdl.base_address = 0xFFFF;
       }
+      pdl.total_footprint += iter->second->Footprint();
     }
-
-    pdl.total_footprint += iter->second->Footprint();
-    next_address += iter->second->Footprint();
   }
 
+  pdl.base_address = HostToNetwork(pdl.base_address);
+  pdl.total_footprint = HostToNetwork(pdl.total_footprint);
   return GetResponseFromData(request,
                              reinterpret_cast<uint8_t*>(&pdl),
                              sizeof(pdl));
