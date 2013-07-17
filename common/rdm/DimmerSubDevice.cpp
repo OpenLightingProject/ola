@@ -113,6 +113,15 @@ const RDMResponse *DimmerSubDevice::GetDeviceInfo(const RDMRequest *request) {
       0, 0);
 }
 
+
+bool DimmerSubDevice::SetDmxStartAddress(uint16_t start_address) {
+  if(start_address < 1 || start_address + Footprint() > DMX_MAX_CHANNEL_VALUE)
+    return false;
+
+  m_start_address = start_address;
+  return true;
+}
+
 const RDMResponse *DimmerSubDevice::GetProductDetailList(
     const RDMRequest *request) {
   // Shortcut for only one item in the vector

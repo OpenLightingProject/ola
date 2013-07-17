@@ -29,6 +29,7 @@
 #include "ola/base/Array.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/DimmerRootDevice.h"
+#include "ola/rdm/DimmerSubDevice.h"
 #include "ola/rdm/OpenLightingEnums.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/ResponderHelper.h"
@@ -66,7 +67,11 @@ const ResponderOps<DimmerRootDevice>::ParamHandler
   { PID_IDENTIFY_DEVICE,
     &DimmerRootDevice::GetIdentify,
     &DimmerRootDevice::SetIdentify},
+  { PID_DMX_BLOCK_ADDRESS,
+    &DimmerRootDevice::GetDmxBlockAddress,
+    &DimmerRootDevice::SetDmxBlockAddress},
   { 0, NULL, NULL},
+
 };
 
 /**
@@ -143,5 +148,69 @@ const RDMResponse *DimmerRootDevice::SetIdentify(const RDMRequest *request) {
   }
   return response;
 }
+
+const RDMResponse *DimmerRootDevice::GetDmxBlockAddress(
+    const RDMRequest *request){
+
+  struct block_address_pdl{
+    uint16_t total_footprint;
+    uint16_t base_address;
+  };
+
+  SubDeviceMap::const_iterator iter = m_sub_devices.begin();
+  block_address_pdl pdl;
+  pdl.base_address = iter->second->GetDmxStartAddress();
+  pdl.total_footprint = iter->second->Footprint();
+  uint16_t next_address = pdl.base_address + pdl.total_footprint;
+
+  for(++iter; iter != m_sub_devices.end(); ++iter) {
+    if(iter->second->Footprint()) {
+      if(pdl.base_address != 0xFFFF &&
+          (iter->second->GetDmxStartAddress() < pdl.base_address ||
+          iter->second->GetDmxStartAddress() != next_address)) {
+        pdl.base_address = 0xFFFF; // NEEDS TO BE A CONSTANT SOMEWHERE
+      }
+    }
+
+    pdl.total_footprint += iter->second->Footprint();
+    next_address += iter->second->Footprint();
+  }
+
+  return GetResponseFromData(request,
+                             reinterpret_cast<uint8_t*>(&pdl),
+                             sizeof(pdl));
+}
+
+const RDMResponse *DimmerRootDevice::SetDmxBlockAddress(
+    const RDMRequest *request){
+  uint16_t base_start_address = 0;
+  uint16_t total_footprint = 0;
+
+  if(!ResponderHelper::ExtractUInt16(request, &base_start_address)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  for(SubDeviceMap::const_iterator i = m_sub_devices.begin();
+      i != m_sub_devices.end();
+      ++i) {
+    total_footprint += i->second->Footprint();
+  }
+
+  if(base_start_address < 1 ||
+      base_start_address + total_footprint > DMX_MAX_CHANNEL_VALUE) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+   for(SubDeviceMap::const_iterator iter = m_sub_devices.begin();
+       iter != m_sub_devices.end();
+       ++iter) {
+     // We don't check here because we already have for every Sub Device
+     iter->second->SetDmxStartAddress(base_start_address);
+     base_start_address += iter->second->Footprint();
+  }
+
+  return GetResponseFromData(request, NULL, 0);
+}
+
 }  // namespace rdm
 }  // namespace ola

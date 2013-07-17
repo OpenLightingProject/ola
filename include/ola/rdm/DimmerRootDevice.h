@@ -31,6 +31,7 @@
 
 #include <string>
 #include <map>
+#include "ola/rdm/DimmerSubDevice.h"
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/ResponderOps.h"
 #include "ola/rdm/UID.h"
@@ -80,6 +81,8 @@ class DimmerRootDevice: public RDMControllerInterface {
     const RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
     const RDMResponse *GetIdentify(const RDMRequest *request);
     const RDMResponse *SetIdentify(const RDMRequest *request);
+    const RDMResponse *GetDmxBlockAddress(const RDMRequest *request);
+    const RDMResponse *SetDmxBlockAddress(const RDMRequest *request);
 
     static const ResponderOps<DimmerRootDevice>::ParamHandler PARAM_HANDLERS[];
 };

@@ -47,6 +47,16 @@ class DimmerSubDevice: public RDMControllerInterface {
 
     void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
 
+    uint16_t Footprint() const {
+      return m_personality_manager.ActivePersonalityFootprint();
+    }
+
+    bool SetDmxStartAddress(uint16_t start_address);
+
+    uint16_t GetDmxStartAddress() const {
+       return m_start_address;
+    }
+    
   private:
     /**
      * The RDM Operations for the DimmerSubDevice.
@@ -85,10 +95,6 @@ class DimmerSubDevice: public RDMControllerInterface {
     uint16_t m_start_address;
     bool m_identify_mode;
     PersonalityManager m_personality_manager;
-
-    uint16_t Footprint() const {
-      return m_personality_manager.ActivePersonalityFootprint();
-    }
 
     const RDMResponse *GetDeviceInfo(const RDMRequest *request);
     const RDMResponse *GetProductDetailList(const RDMRequest *request);
