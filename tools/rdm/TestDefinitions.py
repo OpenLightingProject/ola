@@ -558,8 +558,13 @@ class GetMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
       self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
       self.NackGetResult(RDMNack.NR_PACKET_SIZE_UNSUPPORTED),
       self.AckGetResult(),  # some crazy devices continue to ack
-      InvalidResponse(),
-      TimeoutResult(),
+      InvalidResponse(
+          advisory='Responder returned an invalid response to a command with '
+                   'PDL of %d' % self.MAX_PDL
+      ),
+      TimeoutResult(
+          advisory='Responder timed out to a command with PDL of %d' %
+                   self.MAX_PDL),
     ])
     self.SendRawGet(ROOT_DEVICE, self.pid, 'x' * self.MAX_PDL)
 
