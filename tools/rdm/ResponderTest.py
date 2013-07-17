@@ -424,12 +424,12 @@ class ResponderTestFixture(TestFixture):
     self.LogDebug(' SET: uid: %s, pid: %s, sub device: %d, args: %s' %
                   (uid, pid, sub_device, self._EscapeData(args)))
     self._outstanding_request = (sub_device, PidStore.RDM_SET, pid.value)
-    ret_code =  self._api.Set(self._universe,
-                              uid,
-                              sub_device,
-                              pid,
-                              self._HandleResponse,
-                              args)
+    ret_code = self._api.Set(self._universe,
+                             uid,
+                             sub_device,
+                             pid,
+                             self._HandleResponse,
+                             args)
     if uid.IsBroadcast():
       self.SleepAfterBroadcastSet()
     return ret_code
@@ -535,14 +535,15 @@ class ResponderTestFixture(TestFixture):
     # now log the result
     if response.WasAcked():
       if unpack_exception:
-        self.LogDebug(' Response: %s, PID = 0x%04hx, Error: %s' %
+        self.LogDebug(' Response: %s, PID: 0x%04hx, Error: %s' %
                       (response, response.pid, unpack_exception))
       else:
         escaped_string = '%s' % self._EscapeData(unpacked_data)
-        self.LogDebug(' Response: %s, PID = 0x%04hx, data = %s' %
-                      (response, response.pid, escaped_string))
+        self.LogDebug(' Response: %s, PID: 0x%04hx, PDL: %d, data: %s' %
+                      (response, response.pid, len(response.data),
+                       escaped_string))
     else:
-      self.LogDebug(' Response: %s, PID = 0x%04hx' % (response, response.pid))
+      self.LogDebug(' Response: %s, PID: 0x%04hx' % (response, response.pid))
 
     return True
 
@@ -605,7 +606,7 @@ class ResponderTestFixture(TestFixture):
     """Fetch queued messages."""
     queued_message_pid = self.LookupPid('QUEUED_MESSAGE')
     data = ['error']
-    self.LogDebug(' GET: pid = %s, data = %s' % (queued_message_pid, data))
+    self.LogDebug(' GET: pid: %s, data: %s' % (queued_message_pid, data))
 
     self._api.Get(self._universe,
                   self._uid,
