@@ -280,10 +280,8 @@ bool ShowNetNode::HandlePacket(const shownet_data_packet &packet,
   }
 
   if (packet.slotSize[0] != enc_len) {
-    m_encoder.Decode(iter->second.buffer,
-                     start_channel,
-                     packet.data + data_offset,
-                     enc_len);
+    m_encoder.Decode(start_channel, packet.data + data_offset,
+                     enc_len, iter->second.buffer);
   } else {
     iter->second.buffer->SetRange(start_channel,
                                   packet.data + data_offset,

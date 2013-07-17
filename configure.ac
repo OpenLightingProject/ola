@@ -605,6 +605,7 @@ _EOF_
 AC_OUTPUT( Makefile \
     common/Makefile \
     common/base/Makefile \
+    common/dmx/Makefile \
     common/export_map/Makefile \
     common/file/Makefile \
     common/http/Makefile \
@@ -632,6 +633,7 @@ AC_OUTPUT( Makefile \
     include/ola/Makefile \
     include/ola/acn/Makefile \
     include/ola/base/Makefile \
+    include/ola/dmx/Makefile \
     include/ola/file/Makefile \
     include/ola/e133/Makefile \
     include/ola/http/Makefile \

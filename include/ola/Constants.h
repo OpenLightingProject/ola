@@ -27,9 +27,6 @@
 
 #include <stdint.h>
 
-/**
- * @brief The namespace containing all OLA symbols.
- */
 namespace ola {
 
 /**

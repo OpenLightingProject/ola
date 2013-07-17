@@ -30,6 +30,7 @@
 #include <ola/DmxBuffer.h>
 
 namespace ola {
+namespace dmx {
 
 /**
  * A Run Length Encoder class. The first bit is used to indicate a repeated
@@ -54,18 +55,20 @@ class RunLengthEncoder {
 
     /**
      * Decode an DMX frame and place the output in a DmxBuffer
-     * @param[out] The DmxBuffer to store the frame in
      * @param[in] start_channel the first channel for the RLE'ed data
      * @param[in] data the encoded frame.
      * @param[in] length the length of the encoded frame.
+     * @param[out] The DmxBuffer to store the frame in
+     * @returns true if decoding was successful, false otherwise.
      */
-    bool Decode(DmxBuffer *dst,
-                unsigned int start_channel,
+    bool Decode(unsigned int start_channel,
                 const uint8_t *data,
-                unsigned int length);
+                unsigned int length,
+                DmxBuffer *output);
 
   private:
     static const uint8_t REPEAT_FLAG = 0x80;
 };
+}  // dmx
 }  // namespace ola
 #endif  // INCLUDE_OLA_RUNLENGTHENCODER_H_

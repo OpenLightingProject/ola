@@ -44,10 +44,6 @@
 #include <stdint.h>
 
 namespace ola {
-
-/**
- * @brief ACN related code.
- */
 namespace acn {
 
 /**
