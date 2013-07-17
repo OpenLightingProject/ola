@@ -79,7 +79,7 @@ const ResponderOps<MovingLightResponder>::ParamHandler
     NULL},
   { PID_DEVICE_LABEL,
     &MovingLightResponder::GetDeviceLabel,
-    NULL},
+    &MovingLightResponder::SetDeviceLabel},
   { PID_FACTORY_DEFAULTS,
     &MovingLightResponder::GetFactoryDefaults,
     &MovingLightResponder::SetFactoryDefaults},
@@ -169,6 +169,7 @@ MovingLightResponder::MovingLightResponder(const UID &uid)
       m_display_level(255),
       m_pan_tilt_swap(false),
       m_power_state(POWER_STATE_NORMAL),
+      m_device_label("Dummy Moving Light"),
       m_personality_manager(Personalities::Instance()) {
 }
 
@@ -330,8 +331,7 @@ const RDMResponse *MovingLightResponder::GetLanguage(
 
 const RDMResponse *MovingLightResponder::SetLanguage(
     const RDMRequest *request) {
-  uint16_t new_value;
-  if (!ResponderHelper::ExtractUInt16(request, &new_value)) {
+  if (request->ParamDataSize() != 2) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
@@ -625,7 +625,29 @@ const RDMResponse *MovingLightResponder::GetManufacturerLabel(
 
 const RDMResponse *MovingLightResponder::GetDeviceLabel(
     const RDMRequest *request) {
-  return ResponderHelper::GetString(request, "Dummy Moving Light");
+  return ResponderHelper::GetString(request, m_device_label);
+}
+
+const RDMResponse *MovingLightResponder::SetDeviceLabel(
+    const RDMRequest *request) {
+  if (request->ParamDataSize() > MAX_RDM_STRING_LENGTH) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  const string new_label(reinterpret_cast<const char*>(request->ParamData()),
+                         request->ParamDataSize());
+  m_device_label = new_label;
+
+  return new RDMSetResponse(
+    request->DestinationUID(),
+    request->SourceUID(),
+    request->TransactionNumber(),
+    RDM_ACK,
+    0,
+    request->SubDevice(),
+    request->ParamId(),
+    NULL,
+    0);
 }
 
 const RDMResponse *MovingLightResponder::GetSoftwareVersionLabel(
