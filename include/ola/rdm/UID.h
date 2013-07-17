@@ -236,17 +236,6 @@ class UID {
     }
 
     /**
-     * @brief Returns a UID that matches all devices for a particular
-     * manufacturer.
-     * @param esta_id the manufacturer id of the devices to match.
-     * @returns a UID(X, 0xffffffff).
-     * @deprecated Use AllManufacturerDevices instead
-     */
-    static UID AllManufactureDevices(uint16_t esta_id) {
-      return AllManufacturerDevices(esta_id);
-    }
-
-    /**
      * @brief Return a new UID from a string.
      * @param uid the UID as a string i.e. XXXX:YYYYYYYY.
      * @return a new UID object, or NULL if the string is not a valid UID.
