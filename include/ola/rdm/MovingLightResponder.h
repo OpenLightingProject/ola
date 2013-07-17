@@ -102,6 +102,7 @@ class MovingLightResponder: public RDMControllerInterface {
     uint8_t m_display_level;
     bool m_pan_tilt_swap;
     rdm_power_state m_power_state;
+    string m_device_label;
     PersonalityManager m_personality_manager;
 
     const RDMResponse *GetParamDescription(const RDMRequest *request);
@@ -146,6 +147,7 @@ class MovingLightResponder: public RDMControllerInterface {
     const RDMResponse *SetPowerState(const RDMRequest *request);
     const RDMResponse *GetManufacturerLabel(const RDMRequest *request);
     const RDMResponse *GetDeviceLabel(const RDMRequest *request);
+    const RDMResponse *SetDeviceLabel(const RDMRequest *request);
     const RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
     const RDMResponse *GetSoftwareVersionLabel(const RDMRequest *request);
     const RDMResponse *GetOlaCodeVersion(const RDMRequest *request);

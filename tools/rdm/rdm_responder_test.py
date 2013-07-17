@@ -29,6 +29,7 @@ import sys
 import textwrap
 import time
 from ola import PidStore
+from ola import Version
 from ola.ClientWrapper import ClientWrapper
 from ola.UID import UID
 from optparse import OptionParser, OptionGroup, OptionValueError
@@ -179,6 +180,7 @@ def main():
     sys.exit(0)
 
   SetupLogging(options)
+  logging.info('OLA Responder Tests Version %s' % Version.version)
   pid_store = PidStore.GetStore(options.pid_store, ('pids.proto',))
   wrapper = ClientWrapper()
 

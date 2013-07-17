@@ -21,6 +21,7 @@ import os
 import pickle
 import re
 
+from ola import Version
 from ola.testing.rdm.TestState import TestState
 
 
@@ -81,6 +82,7 @@ class TestLogger(object):
       })
 
     output = dict(test_parameters)
+    output['version'] = Version.version
     output['test_results'] = test_results
     filename = '%s.%d.log' % (self.UIDToString(uid), timestamp)
     filename = os.path.join(self._log_dir, filename)
@@ -154,6 +156,8 @@ class TestLogger(object):
     failed = 0
     not_run = 0
     passed = 0
+
+    results_log.append('Test Version %s' % test_data['version'])
 
     if requested_category is None or requested_category.lower() == 'all':
       requested_category = None

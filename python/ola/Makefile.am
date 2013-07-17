@@ -17,7 +17,7 @@ usbpro_proto = $(usbpro_path)/UsbProConfigMessages.proto
 
 output_files = ArtnetConfigMessages_pb2.py Ola_pb2.py \
                UsbProConfigMessages_pb2.py Pids_pb2.py \
-               PidStoreLocation.py
+               PidStoreLocation.py Version.py
 
 BUILT_SOURCES = $(output_files)
 nodist_pkgpython_PYTHON = $(output_files)
@@ -40,8 +40,12 @@ UsbProConfigMessages_pb2.py: $(usbpro_proto)
 PidStoreLocation.py:
 	echo "location = '${pid_datadir}'" > PidStoreLocation.py
 
+Version.py:
+	echo "version = '${VERSION}'" > Version.py
+
 clean-local:
-	rm -f ArtnetConfigMessages_pb2.* Ola_pb2.* Pids_pb2.* UsbProConfigMessages_pb2.* PidStoreLocation.py
+	rm -f ArtnetConfigMessages_pb2.* Ola_pb2.* Pids_pb2.* \
+      UsbProConfigMessages_pb2.* PidStoreLocation.py Version.py
 
 TESTS_ENVIRONMENT = PYTHONPATH=${top_builddir}/python
 TESTS = DUBDecoderTest.py UIDTest.py
