@@ -15,7 +15,7 @@
  *
  * Copyright (C) 2010 Simon Newton
  */
-//! [Example]
+//! [Example] NOLINT(whitespace/comments)
 #include <ola/base/Flags.h>
 #include <iostream>
 
@@ -42,4 +42,4 @@ int main(int argc, char* argv[]) {
   cout << "--name is " << FLAGS_name.str() << endl;
   cout << "--baz (-b) is " << static_cast<int>(FLAGS_baz) << endl;
 }
-//! [Example]
+//! [Example] NOLINT(whitespace/comments)

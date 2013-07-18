@@ -185,7 +185,7 @@ ssize_t UDPSocket::SendTo(const uint8_t *buffer,
     reinterpret_cast<const struct sockaddr*>(&destination),
     sizeof(struct sockaddr));
   if (bytes_sent < 0 || static_cast<unsigned int>(bytes_sent) != size)
-    OLA_INFO << "Failed to send, " << strerror(errno);
+    OLA_INFO << "Failed to send to addr: " << ip << " : " << strerror(errno);
   return bytes_sent;
 }
 
@@ -232,8 +232,8 @@ ssize_t UDPSocket::SendTo(ola::io::IOVecInterface *data,
   data->FreeIOVec(iov);
 
   if (bytes_sent < 0) {
-    OLA_INFO << "Failed to send on " << WriteDescriptor() << ": " <<
-      strerror(errno);
+    OLA_INFO << "Failed to send on " << WriteDescriptor() << ": to addr: "
+             << ip << " : " <<  strerror(errno);
   } else {
     data->Pop(bytes_sent);
   }
