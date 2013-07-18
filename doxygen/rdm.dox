@@ -1,7 +1,4 @@
 /**
- * @namespace rdm
- * @brief PLASA E1.20 Remote Device Management
- *
  * See (PLASA Standards)[
  * http://tsp.plasa.org/tsp/documents/published_docs.php] to download a
  * copy of E1.20.

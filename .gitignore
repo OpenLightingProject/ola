@@ -24,6 +24,7 @@ config.h.in~
 config.log
 config.status
 configure
+doxygen_objdb_*.tmp
 html/
 libtool
 stamp-h1
@@ -55,6 +56,10 @@ debian/*.prerm.debhelper
 debian/ola-rdm-tests/
 debian/ola/
 debian/tmp/
+doxygen/examples/callback_client_transmit
+doxygen/examples/flags
+doxygen/examples/receiver
+doxygen/examples/streaming_client
 examples/ola_artnet
 examples/ola_dev_info
 examples/ola_dmxconsole

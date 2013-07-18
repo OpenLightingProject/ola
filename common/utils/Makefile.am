@@ -3,7 +3,6 @@ include $(top_srcdir)/common.mk
 noinst_LTLIBRARIES = libolautils.la
 libolautils_la_SOURCES = ActionQueue.cpp \
                          DmxBuffer.cpp \
-                         RunLengthEncoder.cpp \
                          StringUtils.cpp \
                          TokenBucket.cpp
 
@@ -13,8 +12,8 @@ endif
 check_PROGRAMS = $(TESTS)
 UtilsTester_SOURCES = ActionQueueTest.cpp BackoffTest.cpp ClockTest.cpp \
                       CallbackTest.cpp DmxBufferTest.cpp \
-                      MultiCallbackTest.cpp RunLengthEncoderTest.cpp \
-                      StringUtilsTest.cpp TokenBucketTest.cpp
+                      MultiCallbackTest.cpp StringUtilsTest.cpp \
+                      TokenBucketTest.cpp
 UtilsTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 UtilsTester_LDADD = $(COMMON_TESTING_LIBS) \
                     libolautils.la \

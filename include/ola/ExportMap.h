@@ -18,6 +18,15 @@
  * Copyright (C) 2005-2008 Simon Newton
  */
 
+/**
+ * @file ExportMap.h
+ * @brief Export variables on the http server.
+ *
+ * Exported variables can be used to expose the internal state on the /debug
+ * page of the webserver. This allows real time debugging and monitoring of the
+ * applications.
+ */
+
 #ifndef INCLUDE_OLA_EXPORTMAP_H_
 #define INCLUDE_OLA_EXPORTMAP_H_
 
@@ -35,16 +44,35 @@ using std::stringstream;
 using std::map;
 using std::vector;
 
-
-/*
- * Base Variable
+/**
+ * @class BaseVariable <ola/ExportMap.h>
+ * @brief The base variable class.
+ *
+ * All other exported variables derive from this.
  */
 class BaseVariable {
   public:
+    /**
+     * @brief Create a new BaseVariable.
+     * @param name the variable name.
+     */
     explicit BaseVariable(const string &name): m_name(name) {}
+
+    /**
+     * The Destructor.
+     */
     virtual ~BaseVariable() {}
 
+    /**
+     * @brief Return the name of this variable.
+     * @returns the variable name.
+     */
     const string Name() const { return m_name; }
+
+    /**
+     * @brief Return the value of the variable as a string.
+     * @returns the value of the variable.
+     */
     virtual const string Value() const = 0;
 
   private:
@@ -59,19 +87,39 @@ struct VariableLessThan: public std::binary_function<BaseVariable*,
 };
 
 
-
-/*
- * Represents a bool variable
+/**
+ * @class BoolVariable <ola/ExportMap.h>
+ * @brief A boolean variable.
  */
 class BoolVariable: public BaseVariable {
   public:
+    /**
+     * @brief Create a new BoolVariable.
+     * @param name the variable name.
+     */
     explicit BoolVariable(const string &name)
         : BaseVariable(name),
           m_value(false) {}
     ~BoolVariable() {}
 
+    /**
+     * @brief Set the value of the variable.
+     * @param value the new value.
+     */
     void Set(bool value) { m_value = value; }
+
+    /**
+     * @brief Get the value of this variable.
+     * @return the value of the boolean variable.
+     */
     bool Get() const { return m_value; }
+
+    /**
+     * @brief Get the value of this variable as a string.
+     * @return the value of the boolean variable.
+     *
+     * Booleans are represented by a 1 or 0.
+     */
     const string Value() const { return m_value ? "1" : "0"; }
 
   private:
@@ -177,7 +225,7 @@ typedef MapVariable<string> StringMap;
 
 
 /**
- * An IntMap. This provides an increment operation.
+ * An map of integer values. This provides an increment operation.
  */
 class IntMap: public MapVariable<int> {
   public:
@@ -225,7 +273,7 @@ void MapVariable<Type>::Set(const string &key, Type value) {
 }
 
 
-/*
+/**
  * Remove a value from the map
  * @param key the key to remove
  */
@@ -238,23 +286,64 @@ void MapVariable<Type>::Remove(const string &key) {
 }
 
 
-/*
- * Holds all the exported variables
+/**
+ * @brief A container for the exported variables.
+ *
  */
 class ExportMap {
   public:
     ExportMap() {}
     ~ExportMap();
-    vector<BaseVariable*> AllVariables() const;
 
+    /**
+     * @brief Lookup or create a BoolVariable.
+     * @param name the name of this variable.
+     * @return a pointer to the BoolVariable.
+     *
+     * The variable is created if it doesn't already exist. The pointer is
+     * valid for the lifetime of the ExportMap.
+     */
     BoolVariable *GetBoolVar(const string &name);
+
+    /**
+     * @brief Lookup or create an IntegerVariable.
+     * @param name the name of this variable.
+     * @return an IntegerVariable.
+     *
+     * The variable is created if it doesn't already exist. The pointer is
+     * valid for the lifetime of the ExportMap.
+     */
     IntegerVariable *GetIntegerVar(const string &name);
+
+    /**
+     * @brief Lookup or create a CounterVariable.
+     * @param name the name of this variable.
+     * @return a CounterVariable.
+     *
+     * The variable is created if it doesn't already exist. The pointer is
+     * valid for the lifetime of the ExportMap.
+     */
     CounterVariable *GetCounterVar(const string &name);
+
+    /**
+     * @brief Lookup or create a StringVariable.
+     * @param name the name of this variable.
+     * @return a StringVariable.
+     *
+     * The variable is created if it doesn't already exist. The pointer is
+     * valid for the lifetime of the ExportMap.
+     */
     StringVariable *GetStringVar(const string &name);
 
     StringMap *GetStringMapVar(const string &name, const string &label="");
     IntMap *GetIntMapVar(const string &name, const string &label="");
     UIntMap *GetUIntMapVar(const string &name, const string &label="");
+
+    /**
+     * @brief Fetch a list of all known variables.
+     * @returns a vector of all variables.
+     */
+    vector<BaseVariable*> AllVariables() const;
 
   private :
     ExportMap(const ExportMap&);
@@ -267,13 +356,6 @@ class ExportMap {
     Type *GetMapVar(map<string, Type*> *var_map,
                     const string &name,
                     const string &label);
-
-    template<typename Type>
-    void AddVariablesToVector(vector<BaseVariable*> *variables,
-                              const Type &var_map) const;
-
-    template<typename Type>
-    void DeleteVariables(Type *var_map) const;
 
     map<string, BoolVariable*> m_bool_variables;
     map<string, CounterVariable*> m_counter_variables;

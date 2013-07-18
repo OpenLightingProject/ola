@@ -234,7 +234,7 @@ class RDMAPITest: public CppUnit::TestFixture {
       m_api(&m_impl),
       m_uid(1, 2),
       m_bcast_uid(UID::AllDevices()),
-      m_group_uid(UID::AllManufactureDevices(52)),
+      m_group_uid(UID::AllManufacturerDevices(52)),
       m_test_uid1(4, 5),
       m_test_uid2(7, 9) {
     }
