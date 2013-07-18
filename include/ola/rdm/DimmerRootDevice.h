@@ -70,7 +70,8 @@ class DimmerRootDevice: public RDMControllerInterface {
     };
 
     const UID m_uid;
-    bool m_identify_mode;
+    bool m_identify_on;
+    uint8_t m_identify_mode;
     SubDeviceMap m_sub_devices;
 
     const RDMResponse *GetDeviceInfo(const RDMRequest *request);
@@ -83,6 +84,8 @@ class DimmerRootDevice: public RDMControllerInterface {
     const RDMResponse *SetIdentify(const RDMRequest *request);
     const RDMResponse *GetDmxBlockAddress(const RDMRequest *request);
     const RDMResponse *SetDmxBlockAddress(const RDMRequest *request);
+    const RDMResponse *GetIdentifyMode(const RDMRequest *request);
+    const RDMResponse *SetIdentifyMode(const RDMRequest *request);
 
     static const ResponderOps<DimmerRootDevice>::ParamHandler PARAM_HANDLERS[];
 };

@@ -70,8 +70,10 @@ const ResponderOps<DimmerRootDevice>::ParamHandler
   { PID_DMX_BLOCK_ADDRESS,
     &DimmerRootDevice::GetDmxBlockAddress,
     &DimmerRootDevice::SetDmxBlockAddress},
-  { 0, NULL, NULL},
-
+  { PID_IDENTIFY_MODE,
+    &DimmerRootDevice::GetIdentifyMode,
+    &DimmerRootDevice::SetIdentifyMode},
+  { 0, NULL, NULL}
 };
 
 /**
@@ -80,7 +82,8 @@ const ResponderOps<DimmerRootDevice>::ParamHandler
  */
 DimmerRootDevice::DimmerRootDevice(const UID &uid, SubDeviceMap sub_devices)
     : m_uid(uid),
-      m_identify_mode(false),
+      m_identify_on(false),
+      m_identify_mode(255),
       m_sub_devices(sub_devices) {
   if (m_sub_devices.size() > MAX_SUBDEVICE_NUMBER) {
     OLA_FATAL << "More than " << MAX_SUBDEVICE_NUMBER
@@ -135,16 +138,16 @@ const RDMResponse *DimmerRootDevice::GetSoftwareVersionLabel(
 }
 
 const RDMResponse *DimmerRootDevice::GetIdentify(const RDMRequest *request) {
-  return ResponderHelper::GetBoolValue(request, m_identify_mode);
+  return ResponderHelper::GetBoolValue(request, m_identify_on);
 }
 
 const RDMResponse *DimmerRootDevice::SetIdentify(const RDMRequest *request) {
-  bool old_value = m_identify_mode;
+  bool old_value = m_identify_on;
   const RDMResponse *response = ResponderHelper::SetBoolValue(
-      request, &m_identify_mode);
+      request, &m_identify_on);
   if (m_identify_mode != old_value) {
     OLA_INFO << "Dimmer Root Device " << m_uid << ", identify mode "
-             << (m_identify_mode ? "on" : "off");
+             << (m_identify_on ? "on" : "off");
   }
   return response;
 }
@@ -214,6 +217,26 @@ const RDMResponse *DimmerRootDevice::SetDmxBlockAddress(
      iter->second->SetDmxStartAddress(base_start_address);
      base_start_address += iter->second->Footprint();
   }
+
+  return GetResponseFromData(request, NULL, 0);
+}
+
+const RDMResponse *DimmerRootDevice::GetIdentifyMode(
+    const RDMRequest *request) {
+  return ResponderHelper::GetUInt8Value(request, m_identify_mode);
+}
+
+const RDMResponse *DimmerRootDevice::SetIdentifyMode(
+    const RDMRequest *request) {
+  uint8_t new_identify_mode;
+
+  if(!ResponderHelper::ExtractUInt8(request, &new_identify_mode))
+    return NackWithReason(request, NR_FORMAT_ERROR);
+
+  if(new_identify_mode != IDENTIFY_QUIET && new_identify_mode != IDENTIFY_LOUD)
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+
+  m_identify_mode = new_identify_mode;
 
   return GetResponseFromData(request, NULL, 0);
 }
