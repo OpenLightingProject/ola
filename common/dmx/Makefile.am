@@ -10,6 +10,4 @@ check_PROGRAMS = $(TESTS)
 RunLengthEncoderTester_SOURCES = RunLengthEncoderTest.cpp
 RunLengthEncoderTester_CXXFLAGS = $(COMMON_TESTING_FLAGS)
 RunLengthEncoderTester_LDADD = $(COMMON_TESTING_LIBS) \
-                               liboladmx.la \
-                               ../base/libolabase.la \
-                               ../utils/libolautils.la
+                               ../libolacommon.la
