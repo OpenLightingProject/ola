@@ -84,6 +84,9 @@ const ResponderOps<DimmerSubDevice>::ParamHandler
   { PID_IDENTIFY_DEVICE,
     &DimmerSubDevice::GetIdentify,
     &DimmerSubDevice::SetIdentify},
+  { PID_IDENTIFY_MODE,
+    &DimmerSubDevice::GetIdentifyMode,
+    &DimmerSubDevice::SetIdentifyMode},
   { 0, NULL, NULL},
 };
 
@@ -190,6 +193,26 @@ const RDMResponse *DimmerSubDevice::SetIdentify(const RDMRequest *request) {
              << ", identify mode " << (m_identify_on ? "on" : "off");
   }
   return response;
+}
+
+const RDMResponse *DimmerSubDevice::GetIdentifyMode(
+    const RDMRequest *request) {
+  return ResponderHelper::GetUInt8Value(request, m_identify_mode);
+}
+
+const RDMResponse *DimmerSubDevice::SetIdentifyMode(
+    const RDMRequest *request) {
+  uint8_t new_identify_mode;
+
+  if(!ResponderHelper::ExtractUInt8(request, &new_identify_mode))
+    return NackWithReason(request, NR_FORMAT_ERROR);
+
+  if(new_identify_mode != 0 && new_identify_mode != 0xFF)
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+
+  m_identify_mode = new_identify_mode;
+
+  return GetResponseFromData(request, NULL, 0);
 }
 }  // namespace rdm
 }  // namespace ola

@@ -94,6 +94,7 @@ class DimmerSubDevice: public RDMControllerInterface {
     const uint16_t m_sub_device_number;
     uint16_t m_start_address;
     bool m_identify_on;
+    uint8_t m_identify_mode;
     PersonalityManager m_personality_manager;
 
     const RDMResponse *GetDeviceInfo(const RDMRequest *request);
@@ -105,6 +106,8 @@ class DimmerSubDevice: public RDMControllerInterface {
     const RDMResponse *SetDmxStartAddress(const RDMRequest *request);
     const RDMResponse *GetIdentify(const RDMRequest *request);
     const RDMResponse *SetIdentify(const RDMRequest *request);
+    const RDMResponse *SetIdentifyMode(const RDMRequest *request);
+    const RDMResponse *GetIdentifyMode(const RDMRequest *request);
     const RDMResponse *GetRealTimeClock(const RDMRequest *request);
     const RDMResponse *GetManufacturerLabel(const RDMRequest *request);
     const RDMResponse *GetDeviceLabel(const RDMRequest *request);
