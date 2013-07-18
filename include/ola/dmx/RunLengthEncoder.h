@@ -24,8 +24,8 @@
  * Encoding](http://en.wikipedia.org/wiki/Run-length_encoding)
  */
 
-#ifndef INCLUDE_OLA_RUNLENGTHENCODER_H_
-#define INCLUDE_OLA_RUNLENGTHENCODER_H_
+#ifndef INCLUDE_OLA_DMX_RUNLENGTHENCODER_H_
+#define INCLUDE_OLA_DMX_RUNLENGTHENCODER_H_
 
 #include <ola/DmxBuffer.h>
 
@@ -69,6 +69,6 @@ class RunLengthEncoder {
   private:
     static const uint8_t REPEAT_FLAG = 0x80;
 };
-}  // dmx
+}  // namespace dmx
 }  // namespace ola
-#endif  // INCLUDE_OLA_RUNLENGTHENCODER_H_
+#endif  // INCLUDE_OLA_DMX_RUNLENGTHENCODER_H_
