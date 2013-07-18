@@ -25,6 +25,7 @@
 #include <iostream>
 #include "ola/ExportMap.h"
 #include "ola/StringUtils.h"
+#include "ola/stl/STLUtils.h"
 
 namespace ola {
 
@@ -67,52 +68,27 @@ const string MapVariable<string>::Value() const {
 
 
 ExportMap::~ExportMap() {
-  DeleteVariables(&m_bool_variables);
-  DeleteVariables(&m_counter_variables);
-  DeleteVariables(&m_int_map_variables);
-  DeleteVariables(&m_int_variables);
-  DeleteVariables(&m_str_map_variables);
-  DeleteVariables(&m_string_variables);
-  DeleteVariables(&m_uint_map_variables);
+  STLDeleteValues(&m_bool_variables);
+  STLDeleteValues(&m_counter_variables);
+  STLDeleteValues(&m_int_map_variables);
+  STLDeleteValues(&m_int_variables);
+  STLDeleteValues(&m_str_map_variables);
+  STLDeleteValues(&m_string_variables);
+  STLDeleteValues(&m_uint_map_variables);
 }
 
-
-
-/*
- * Lookup or create an integer variable.
- * @param name the name of this variable.
- * @return an IntergerVariable
- */
 BoolVariable *ExportMap::GetBoolVar(const string &name) {
   return GetVar(&m_bool_variables, name);
 }
 
-
-/*
- * Lookup or create an integer variable.
- * @param name the name of this variable.
- * @return an IntergerVariable
- */
 IntegerVariable *ExportMap::GetIntegerVar(const string &name) {
   return GetVar(&m_int_variables, name);
 }
 
-
-/*
- * Lookup or create a counter variable.
- * @param name the name of the variable.
- * @return a CounterVariable.
- */
 CounterVariable *ExportMap::GetCounterVar(const string &name) {
   return GetVar(&m_counter_variables, name);
 }
 
-
-/*
- * Lookup or create a string variable.
- * @param name the name of the variable.
- * @return a StringVariable.
- */
 StringVariable *ExportMap::GetStringVar(const string &name) {
   return GetVar(&m_string_variables, name);
 }
@@ -157,13 +133,13 @@ UIntMap *ExportMap::GetUIntMapVar(const string &name, const string &label) {
  */
 vector<BaseVariable*> ExportMap::AllVariables() const {
   vector<BaseVariable*> variables;
-  AddVariablesToVector(&variables, m_bool_variables);
-  AddVariablesToVector(&variables, m_counter_variables);
-  AddVariablesToVector(&variables, m_int_map_variables);
-  AddVariablesToVector(&variables, m_int_variables);
-  AddVariablesToVector(&variables, m_str_map_variables);
-  AddVariablesToVector(&variables, m_string_variables);
-  AddVariablesToVector(&variables, m_uint_map_variables);
+  STLValues(m_bool_variables, &variables);
+  STLValues(m_counter_variables, &variables);
+  STLValues(m_int_map_variables, &variables);
+  STLValues(m_int_variables, &variables);
+  STLValues(m_str_map_variables, &variables);
+  STLValues(m_string_variables, &variables);
+  STLValues(m_uint_map_variables, &variables);
 
   sort(variables.begin(), variables.end(), VariableLessThan());
   return variables;
@@ -197,22 +173,5 @@ Type *ExportMap::GetMapVar(map<string, Type*> *var_map,
     return var;
   }
   return iter->second;
-}
-
-template<typename Type>
-void ExportMap::AddVariablesToVector(vector<BaseVariable*> *variables,
-                                     const Type &var_map) const {
-  typename Type::const_iterator iter;
-  for (iter = var_map.begin(); iter != var_map.end(); ++iter)
-    variables->push_back(iter->second);
-}
-
-
-template<typename Type>
-void ExportMap::DeleteVariables(Type *var_map) const {
-  typename Type::const_iterator iter;
-  for (iter = var_map->begin(); iter != var_map->end(); iter++)
-    delete iter->second;
-  var_map->clear();
 }
 }  // namespace ola

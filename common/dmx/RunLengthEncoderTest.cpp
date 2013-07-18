@@ -24,11 +24,11 @@
 
 #include "ola/BaseTypes.h"
 #include "ola/DmxBuffer.h"
-#include "ola/RunLengthEncoder.h"
+#include "ola/dmx/RunLengthEncoder.h"
 #include "ola/testing/TestUtils.h"
 
 
-using ola::RunLengthEncoder;
+using ola::dmx::RunLengthEncoder;
 using ola::DmxBuffer;
 
 class RunLengthEncoderTest: public CppUnit::TestFixture {
@@ -44,7 +44,7 @@ class RunLengthEncoderTest: public CppUnit::TestFixture {
     void setUp();
     void tearDown();
   private:
-    ola::RunLengthEncoder m_encoder;
+    RunLengthEncoder m_encoder;
     uint8_t *m_dst;
 
     void checkEncode(const DmxBuffer &buffer,
@@ -148,7 +148,7 @@ void RunLengthEncoderTest::checkEncodeDecode(const uint8_t *data,
   memset(m_dst, 0, dst_size);
   OLA_ASSERT_TRUE(m_encoder.Encode(src, m_dst, dst_size));
 
-  OLA_ASSERT_TRUE(m_encoder.Decode(&dst, 0, m_dst, dst_size));
+  OLA_ASSERT_TRUE(m_encoder.Decode(0, m_dst, dst_size, &dst));
   OLA_ASSERT_TRUE(src == dst);
   OLA_ASSERT_EQ(dst.Size(), data_size);
   OLA_ASSERT_NE(0, memcmp(data, dst.GetRaw(), dst.Size()));

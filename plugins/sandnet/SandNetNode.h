@@ -30,7 +30,7 @@
 #include "ola/network/IPV4Address.h"
 #include "ola/network/InterfacePicker.h"
 #include "ola/network/Socket.h"
-#include "ola/RunLengthEncoder.h"
+#include "ola/dmx/RunLengthEncoder.h"
 #include "plugins/sandnet/SandNetPackets.h"
 
 namespace ola {
@@ -112,7 +112,7 @@ class SandNetNode {
     ola::network::Interface m_interface;
     UDPSocket m_control_socket;
     UDPSocket m_data_socket;
-    RunLengthEncoder m_encoder;
+    ola::dmx::RunLengthEncoder m_encoder;
     IPV4Address m_control_addr;
     IPV4Address m_data_addr;
 

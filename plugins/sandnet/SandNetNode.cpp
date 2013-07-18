@@ -382,8 +382,7 @@ bool SandNetNode::HandleCompressedDMX(const sandnet_compressed_dmx &dmx_packet,
     return false;
 
   unsigned int data_size = size - header_size;
-  bool r = m_encoder.Decode(iter->second.buffer, 0, dmx_packet.dmx,
-                            data_size);
+  bool r = m_encoder.Decode(0, dmx_packet.dmx, data_size, iter->second.buffer);
   if (!r) {
     OLA_WARN << "Failed to decode Sandnet Data";
     return false;

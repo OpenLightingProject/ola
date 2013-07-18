@@ -25,7 +25,7 @@
 #include <map>
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
-#include "ola/RunLengthEncoder.h"
+#include "ola/dmx/RunLengthEncoder.h"
 #include "ola/network/InterfacePicker.h"
 #include "ola/network/Socket.h"
 #include "plugins/shownet/ShowNetPackets.h"
@@ -74,7 +74,7 @@ class ShowNetNode {
     string m_preferred_ip;
     std::map<unsigned int, universe_handler> m_handlers;
     ola::network::Interface m_interface;
-    ola::RunLengthEncoder m_encoder;
+    ola::dmx::RunLengthEncoder m_encoder;
     ola::network::UDPSocket *m_socket;
 
     ShowNetNode(const ShowNetNode&);

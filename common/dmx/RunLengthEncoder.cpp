@@ -19,17 +19,11 @@
  */
 
 #include <string.h>
-#include <ola/RunLengthEncoder.h>
+#include <ola/dmx/RunLengthEncoder.h>
 
 namespace ola {
+namespace dmx {
 
-/*
- * Take a DMXBuffer and RunLengthEncode the data
- * @param src the DmxBuffer with the DMX data
- * @param data where to store the RLE data
- * @param size the size of the data segment, set to the amount of data encoded
- * @return true if we encoded all data, false if we ran out of space
- */
 bool RunLengthEncoder::Encode(const DmxBuffer &src,
                               uint8_t *data,
                               unsigned int &data_size) {
@@ -104,18 +98,10 @@ bool RunLengthEncoder::Encode(const DmxBuffer &src,
     return true;
 }
 
-
-/*
- * Decode the RLE'ed data into a DmxBuffer.
- * @param dst the DmxBuffer to store the result
- * @param start_channel the first channel for the RLE'ed data
- * @param src_data the data to decode
- * @param length the length of the data to decode
- */
-bool RunLengthEncoder::Decode(DmxBuffer *dst,
-                              unsigned int start_channel,
+bool RunLengthEncoder::Decode(unsigned int start_channel,
                               const uint8_t *src_data,
-                              unsigned int length) {
+                              unsigned int length,
+                              DmxBuffer *dst) {
   int destination_index = start_channel;
 
   for (unsigned int i = 0; i < length;) {
@@ -132,4 +118,5 @@ bool RunLengthEncoder::Decode(DmxBuffer *dst,
   }
   return true;
 }
+}  // namespace dmx
 }  // namespace ola
