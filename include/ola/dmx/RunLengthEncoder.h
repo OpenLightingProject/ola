@@ -33,8 +33,8 @@ namespace ola {
 namespace dmx {
 
 /**
- * A Run Length Encoder class. The first bit is used to indicate a repeated
- * value.
+ * @brief Encode / Decode DMX data using [Run Length
+ * Encoding](http://en.wikipedia.org/wiki/Run-length_encoding)
  */
 class RunLengthEncoder {
   public :
