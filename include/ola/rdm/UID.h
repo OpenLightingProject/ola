@@ -132,6 +132,15 @@ class UID {
     }
 
     /**
+     * @brief Returns a UID that matches all devices for this UID's
+     * manufacturer.
+     * @returns a UID(X, 0xffffffff).
+     */
+    UID AllManufacturerDevices() const {
+      return UID(m_uid.esta_id, ALL_DEVICES);
+    }
+
+    /**
      * @brief The manufacturer ID for this UID
      * @returns the manufacturer id for this UID.
      */
