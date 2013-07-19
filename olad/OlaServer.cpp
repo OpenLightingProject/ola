@@ -299,13 +299,14 @@ void OlaServer::NewTCPConnection(ola::network::TCPSocket *socket) {
 /*
  * Called when a socket is closed
  */
-void OlaServer::SocketClosed(ola::io::ConnectedDescriptor *socket) {
+void OlaServer::ChannelClosed(int read_descriptor) {
   ClientEntry client_entry;
-  bool removed = STLLookupAndRemove(&m_sd_to_service, socket->ReadDescriptor(),
-                                    &client_entry);
-  if (removed) {
+  bool found = STLLookupAndRemove(&m_sd_to_service, read_descriptor,
+                                  &client_entry);
+  if (found) {
     (*m_export_map->GetIntegerVar(K_CLIENT_VAR))--;
-    CleanupConnection(client_entry.client_service);
+    m_ss->Execute(NewSingleCallback(this, &OlaServer::CleanupConnection,
+                                    client_entry.client_service));
   } else {
     OLA_WARN << "A socket was closed but we didn't find the client";
   }
@@ -402,8 +403,9 @@ void OlaServer::StopPlugins() {
 void OlaServer::InternalNewConnection(
     ola::io::ConnectedDescriptor *socket) {
   StreamRpcChannel *channel = new StreamRpcChannel(NULL, socket, m_export_map);
-  socket->SetOnClose(
-      NewSingleCallback(this, &OlaServer::SocketClosed, socket));
+  channel->SetChannelCloseHandler(
+      NewSingleCallback(this, &OlaServer::ChannelClosed,
+                        socket->ReadDescriptor()));
   OlaClientService_Stub *stub = new OlaClientService_Stub(channel);
   Client *client = new Client(stub);
   OlaClientService *service = m_service_factory->New(

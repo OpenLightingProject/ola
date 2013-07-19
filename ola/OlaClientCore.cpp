@@ -103,6 +103,13 @@ bool OlaClientCore::Stop() {
   return 0;
 }
 
+/**
+ * Set the close handler.
+ */
+void OlaClientCore::SetCloseHandler(ola::SingleUseCallback0<void> *callback) {
+  m_channel->SetChannelCloseHandler(callback);
+}
+
 
 /*
  * Fetch the list of plugins loaded.

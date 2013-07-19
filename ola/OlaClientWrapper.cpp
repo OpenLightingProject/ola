@@ -41,11 +41,10 @@ bool BaseClientWrapper::Setup() {
 
     if (!m_socket.get())
       return false;
-    m_socket->SetOnClose(
-        ola::NewSingleCallback(this, &OlaClientWrapper::SocketClosed));
   }
 
   CreateClient();
+
   m_ss.AddReadDescriptor(m_socket.get());
   return StartupClient();
 }

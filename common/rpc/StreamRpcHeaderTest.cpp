@@ -13,8 +13,8 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * StreamRpcChannelTest.cpp
- * Test fixture for the StreamRpcChannel class
+ * StreamRpcHeaderTest.cpp
+ * Test fixture for the StreamRpcHeader class
  * Copyright (C) 2005-2008 Simon Newton
  */
 
@@ -22,6 +22,7 @@
 #include <cppunit/extensions/HelperMacros.h>
 
 #include "common/rpc/StreamRpcChannel.h"
+#include "common/rpc/StreamRpcHeader.h"
 #include "ola/testing/TestUtils.h"
 
 
