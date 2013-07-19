@@ -183,7 +183,7 @@ int ParseOptions(int argc, char *argv[], options *opts) {
 void DisplayHelpAndExit(const options &opts) {
   cout << "Usage: " << opts.command <<
     " -d <dev-id> -p <port-id> [--input] --preview-mode <on|off>\n\n"
-    "Configure E1.31 Devices managed by OLA.\n\n"
+    "Configure E1.31 devices managed by OLA.\n\n"
     "  -d, --dev       Id of the device to control.\n"
     "  -h, --help      Display this help message and exit.\n"
     "  -i, --input     Input port\n"
