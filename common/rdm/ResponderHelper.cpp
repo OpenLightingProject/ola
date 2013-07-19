@@ -358,6 +358,28 @@ const RDMResponse *ResponderHelper::GetString(
         queued_message_count);
 }
 
+const RDMResponse *ResponderHelper::SetString(
+    const RDMRequest *request,
+    std::string *value,
+    uint8_t queued_message_count) {
+  if (request->ParamDataSize() > MAX_RDM_STRING_LENGTH) {
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
+  }
+  const string new_label(reinterpret_cast<const char*>(request->ParamData()),
+                         request->ParamDataSize());
+  *value = new_label;
+  return new RDMSetResponse(
+    request->DestinationUID(),
+    request->SourceUID(),
+    request->TransactionNumber(),
+    RDM_ACK,
+    queued_message_count,
+    request->SubDevice(),
+    request->ParamId(),
+    NULL,
+    0);
+}
+
 const RDMResponse *ResponderHelper::GetBoolValue(const RDMRequest *request,
                                                  bool value,
                                                  uint8_t queued_message_count) {
