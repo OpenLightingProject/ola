@@ -29,6 +29,9 @@
  * @namespace ola::rdm
  * @brief PLASA E1.20 Remote %Device Management
  *
+ * @namespace ola::rpc
+ * @brief The RPC (Remote Procedure Call) system
+ *
  * @namespace ola::stl
  * @brief STL Helper functions.
  *
