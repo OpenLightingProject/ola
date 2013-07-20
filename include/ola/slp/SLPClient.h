@@ -60,6 +60,8 @@ class SLPClient {
     bool Setup();
     bool Stop();
 
+    void SetCloseHandler(ola::SingleUseCallback0<void> *callback);
+
     /**
      * Register a service
      */
@@ -119,8 +121,12 @@ class SLPClientWrapper: public BaseClientWrapper {
     auto_ptr<SLPClient> m_client;
 
     void CreateClient() {
-      if (!m_client.get())
+      if (!m_client.get()) {
         m_client.reset(new SLPClient(m_socket.get()));
+      }
+      m_client->SetCloseHandler(
+        ola::NewSingleCallback(static_cast<BaseClientWrapper*>(this),
+                               &BaseClientWrapper::SocketClosed));
     }
 
     bool StartupClient() { return m_client->Setup(); }

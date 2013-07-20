@@ -87,6 +87,9 @@ class GenericClientWrapper: public BaseClientWrapper {
       if (!m_client.get()) {
         m_client.reset(new client_class(m_socket.get()));
       }
+      m_client->SetCloseHandler(
+        ola::NewSingleCallback(static_cast<BaseClientWrapper*>(this),
+                               &BaseClientWrapper::SocketClosed));
     }
 
     bool StartupClient() { return m_client->Setup(); }

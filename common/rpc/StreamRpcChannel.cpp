@@ -28,14 +28,17 @@
 #include "common/rpc/Rpc.pb.h"
 #include "common/rpc/SimpleRpcController.h"
 #include "common/rpc/StreamRpcChannel.h"
+#include "common/rpc/StreamRpcHeader.h"
 #include "ola/Callback.h"
 #include "ola/Logging.h"
-
+#include "ola/base/Array.h"
+#include "ola/stl/STLUtils.h"
 
 namespace ola {
 namespace rpc {
 
 using google::protobuf::ServiceDescriptor;
+using std::auto_ptr;
 
 const char StreamRpcChannel::K_RPC_RECEIVED_TYPE_VAR[] = "rpc-received-type";
 const char StreamRpcChannel::K_RPC_RECEIVED_VAR[] = "rpc-received";
@@ -43,50 +46,44 @@ const char StreamRpcChannel::K_RPC_SENT_ERROR_VAR[] = "rpc-send-errors";
 const char StreamRpcChannel::K_RPC_SENT_VAR[] = "rpc-sent";
 const char StreamRpcChannel::STREAMING_NO_RESPONSE[] = "STREAMING_NO_RESPONSE";
 
+const char *StreamRpcChannel::K_RPC_VARIABLES[] = {
+  K_RPC_RECEIVED_VAR,
+  K_RPC_SENT_ERROR_VAR,
+  K_RPC_SENT_VAR,
+};
+
 StreamRpcChannel::StreamRpcChannel(
     Service *service,
     ola::io::ConnectedDescriptor *descriptor,
     ExportMap *export_map)
     : m_service(service),
-      m_on_close(NULL),
       m_descriptor(descriptor),
-      m_seq(0),
       m_buffer(NULL),
       m_buffer_size(0),
       m_expected_size(0),
       m_current_size(0),
       m_export_map(export_map),
       m_recv_type_map(NULL) {
-  descriptor->SetOnData(
-      ola::NewCallback(this, &StreamRpcChannel::DescriptorReady));
-
-  // init the counters
-  const char *vars[] = {
-    K_RPC_RECEIVED_VAR,
-    K_RPC_SENT_ERROR_VAR,
-    K_RPC_SENT_VAR,
-  };
+  if (descriptor) {
+    descriptor->SetOnData(
+        ola::NewCallback(this, &StreamRpcChannel::DescriptorReady));
+    descriptor->SetOnClose(
+        ola::NewSingleCallback(this, &StreamRpcChannel::HandleChannelClose));
+  }
 
   if (m_export_map) {
-    for (unsigned int i = 0; i < sizeof(vars) / sizeof(vars[0]); ++i)
-      m_export_map->GetCounterVar(string(vars[i]));
+    for (unsigned int i = 0; i < arraysize(K_RPC_VARIABLES); ++i) {
+      m_export_map->GetCounterVar(string(K_RPC_VARIABLES[i]));
+    }
     m_recv_type_map = m_export_map->GetUIntMapVar(K_RPC_RECEIVED_TYPE_VAR,
                                                   "type");
   }
 }
 
-
 StreamRpcChannel::~StreamRpcChannel() {
-  if (m_on_close)
-    delete m_on_close;
   free(m_buffer);
 }
 
-
-/*
- * Receive a message for this RPCChannel. Called when data is available on the
- * descriptor.
- */
 void StreamRpcChannel::DescriptorReady() {
   if (!m_expected_size) {
     // this is a new msg
@@ -112,6 +109,10 @@ void StreamRpcChannel::DescriptorReady() {
     }
   }
 
+  if (!m_descriptor) {
+    return;
+  }
+
   unsigned int data_read;
   if (m_descriptor->Receive(m_buffer + m_current_size,
                             m_expected_size - m_current_size,
@@ -134,30 +135,18 @@ void StreamRpcChannel::DescriptorReady() {
   return;
 }
 
-
-/*
- * Set the Closure to be called if a write on this channel fails. This is
- * different from the Descriptor on close handler which is called when reads hit
- * EOF/
- */
-void StreamRpcChannel::SetOnClose(SingleUseCallback0<void> *closure) {
-  if (closure != m_on_close) {
-    delete m_on_close;
-    m_on_close = closure;
-  }
+void StreamRpcChannel::SetChannelCloseHandler(
+    SingleUseCallback0<void> *closure) {
+  m_on_close.reset(closure);
 }
 
-
-/*
- * Call a method with the given request and reply
- * TODO(simonn): reduce the number of copies here
- */
 void StreamRpcChannel::CallMethod(
     const MethodDescriptor *method,
     RpcController *controller,
     const Message *request,
     Message *reply,
     google::protobuf::Closure *done) {
+  // TODO(simonn): reduce the number of copies here
   string output;
   RpcMessage message;
   bool is_streaming = false;
@@ -174,7 +163,7 @@ void StreamRpcChannel::CallMethod(
   }
 
   message.set_type(is_streaming ? STREAM_REQUEST : REQUEST);
-  message.set_id(m_seq++);
+  message.set_id(m_sequence.Next());
   message.set_name(method->name());
 
   request->SerializeToString(&output);
@@ -185,33 +174,30 @@ void StreamRpcChannel::CallMethod(
     return;
 
   if (!r) {
-    // send failed, call the handler now
+    // Send failed, call the handler now.
     controller->SetFailed("Failed to send request");
     done->Run();
     return;
   }
 
-  OutstandingResponse *response = GetOutstandingResponse(message.id());
-  if (response) {
-    // fail any outstanding response with the same id
-    OLA_WARN << "response " << response->id << " already pending, failing " <<
-      "now";
-    response->controller->SetFailed("Duplicate request found");
-    InvokeCallbackAndCleanup(response);
-  }
-
-  response = new OutstandingResponse();
+  OutstandingResponse *response = new OutstandingResponse();
   response->id = message.id();
   response->controller = controller;
   response->callback = done;
   response->reply = reply;
-  m_responses[message.id()] = response;
+
+  auto_ptr<OutstandingResponse> old_response(
+      STLReplacePtr(&m_responses, message.id(), response));
+
+  if (old_response.get()) {
+    // fail any outstanding response with the same id
+    OLA_WARN << "response " << old_response->id << " already pending, failing "
+             << "now";
+    response->controller->SetFailed("Duplicate request found");
+    response->callback->Run();
+  }
 }
 
-
-/*
- * Called when a response is ready.
- */
 void StreamRpcChannel::RequestComplete(OutstandingRequest *request) {
   string output;
   RpcMessage message;
@@ -229,7 +215,6 @@ void StreamRpcChannel::RequestComplete(OutstandingRequest *request) {
   DeleteOutstandingRequest(request);
 }
 
-
 // private
 //-----------------------------------------------------------------------------
 
@@ -237,7 +222,7 @@ void StreamRpcChannel::RequestComplete(OutstandingRequest *request) {
  * Write an RpcMessage to the write descriptor.
  */
 bool StreamRpcChannel::SendMsg(RpcMessage *msg) {
-  if (!m_descriptor->ValidReadDescriptor()) {
+  if (!(m_descriptor && m_descriptor->ValidReadDescriptor())) {
     OLA_WARN << "RPC descriptor closed, not sending messages";
     return false;
   }
@@ -254,22 +239,25 @@ bool StreamRpcChannel::SendMsg(RpcMessage *msg) {
                            length);
 
   if (ret != length) {
-    if (ret == -1)
-      OLA_WARN << "Send failed " << strerror(errno);
-    else
-      OLA_WARN << "Failed to send full datagram, closing channel";
-    // At the point framing is screwed and we should shut the channel down
-    m_descriptor->Close();
-    if (m_on_close)
-      m_on_close->Run();
+    OLA_WARN << "Failed to send full RPC message, closing channel";
 
-    if (m_export_map)
+    if (m_export_map) {
       (*m_export_map->GetCounterVar(K_RPC_SENT_ERROR_VAR))++;
+    }
+
+    // At this point there is no point using the descriptor since framing has
+    // probably been messed up.
+    // TODO(simon): consider if it's worth leaving the descriptor open for
+    // reading.
+    m_descriptor = NULL;
+
+    HandleChannelClose();
     return false;
   }
 
-  if (m_export_map)
+  if (m_export_map) {
     (*m_export_map->GetCounterVar(K_RPC_SENT_VAR))++;
+  }
   return true;
 }
 
@@ -516,10 +504,11 @@ void StreamRpcChannel::DeleteOutstandingRequest(OutstandingRequest *request) {
  * Handle a RPC response by invoking the callback.
  */
 void StreamRpcChannel::HandleResponse(RpcMessage *msg) {
-  OutstandingResponse *response = GetOutstandingResponse(msg->id());
-  if (response) {
+  auto_ptr<OutstandingResponse> response(
+      STLLookupAndRemovePtr(&m_responses, msg->id()));
+  if (response.get()) {
     response->reply->ParseFromString(msg->buffer());
-    InvokeCallbackAndCleanup(response);
+    response->callback->Run();
   }
 }
 
@@ -528,10 +517,11 @@ void StreamRpcChannel::HandleResponse(RpcMessage *msg) {
  * Handle a RPC response by invoking the callback.
  */
 void StreamRpcChannel::HandleFailedResponse(RpcMessage *msg) {
-  OutstandingResponse *response = GetOutstandingResponse(msg->id());
-  if (response) {
+  auto_ptr<OutstandingResponse> response(
+      STLLookupAndRemovePtr(&m_responses, msg->id()));
+  if (response.get()) {
     response->controller->SetFailed(msg->buffer());
-    InvokeCallbackAndCleanup(response);
+    response->callback->Run();
   }
 }
 
@@ -541,10 +531,11 @@ void StreamRpcChannel::HandleFailedResponse(RpcMessage *msg) {
  */
 void StreamRpcChannel::HandleCanceledResponse(RpcMessage *msg) {
   OLA_INFO << "Received a canceled response";
-  OutstandingResponse *response = GetOutstandingResponse(msg->id());
-  if (response) {
+  auto_ptr<OutstandingResponse> response(
+      STLLookupAndRemovePtr(&m_responses, msg->id()));
+  if (response.get()) {
     response->controller->SetFailed(msg->buffer());
-    InvokeCallbackAndCleanup(response);
+    response->callback->Run();
   }
 }
 
@@ -554,58 +545,21 @@ void StreamRpcChannel::HandleCanceledResponse(RpcMessage *msg) {
  */
 void StreamRpcChannel::HandleNotImplemented(RpcMessage *msg) {
   OLA_INFO << "Received a non-implemented response";
-  OutstandingResponse *response = GetOutstandingResponse(msg->id());
-  if (response) {
+  auto_ptr<OutstandingResponse> response(
+      STLLookupAndRemovePtr(&m_responses, msg->id()));
+  if (response.get()) {
     response->controller->SetFailed("Not Implemented");
-    InvokeCallbackAndCleanup(response);
-  }
-}
-
-
-/*
- * Find the outstanding response with id msg_id.
- */
-OutstandingResponse *StreamRpcChannel::GetOutstandingResponse(int msg_id) {
-  if (m_responses.find(msg_id) != m_responses.end()) {
-    return m_responses[msg_id];
-  }
-  return NULL;
-}
-
-
-/*
- * Run the callback for a request.
- */
-void StreamRpcChannel::InvokeCallbackAndCleanup(OutstandingResponse *response) {
-  if (response) {
-    int id = response->id;
     response->callback->Run();
-    delete response;
-    m_responses.erase(id);
   }
 }
 
-
-// StreamRpcHeader
-//--------------------------------------------------------------
-
-/**
- * Encode a header
+/*
+ * Invoke the Channel close handler/
  */
-void StreamRpcHeader::EncodeHeader(uint32_t *header, unsigned int version,
-                                   unsigned int size) {
-  *header = (version << 28) & VERSION_MASK;
-  *header |= size & SIZE_MASK;
-}
-
-
-/**
- * Decode a header
- */
-void StreamRpcHeader::DecodeHeader(uint32_t header, unsigned int *version,
-                                   unsigned int *size) {
-  *version = (header & VERSION_MASK) >> 28;
-  *size = header & SIZE_MASK;
+void StreamRpcChannel::HandleChannelClose() {
+  if (m_on_close.get()) {
+    m_on_close.release()->Run();
+  }
 }
 }  // namespace rpc
 }  // namespace ola

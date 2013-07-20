@@ -125,12 +125,7 @@ OlaServer::~OlaServer() {
 
   ClientMap::iterator iter = m_sd_to_service.begin();
   for (; iter != m_sd_to_service.end(); ++iter) {
-    CleanupConnection(iter->second.client_service);
-
-    ola::io::ConnectedDescriptor *descriptor = iter->second.client_descriptor;
-    m_ss->RemoveReadDescriptor(descriptor);
-    descriptor->Close();
-    delete descriptor;
+    CleanupConnection(iter->second);
   }
 
   m_broker.reset();
@@ -299,13 +294,14 @@ void OlaServer::NewTCPConnection(ola::network::TCPSocket *socket) {
 /*
  * Called when a socket is closed
  */
-void OlaServer::SocketClosed(ola::io::ConnectedDescriptor *socket) {
+void OlaServer::ChannelClosed(int read_descriptor) {
   ClientEntry client_entry;
-  bool removed = STLLookupAndRemove(&m_sd_to_service, socket->ReadDescriptor(),
-                                    &client_entry);
-  if (removed) {
+  bool found = STLLookupAndRemove(&m_sd_to_service, read_descriptor,
+                                  &client_entry);
+  if (found) {
     (*m_export_map->GetIntegerVar(K_CLIENT_VAR))--;
-    CleanupConnection(client_entry.client_service);
+    m_ss->Execute(NewSingleCallback(this, &OlaServer::CleanupConnection,
+                                    client_entry));
   } else {
     OLA_WARN << "A socket was closed but we didn't find the client";
   }
@@ -402,8 +398,9 @@ void OlaServer::StopPlugins() {
 void OlaServer::InternalNewConnection(
     ola::io::ConnectedDescriptor *socket) {
   StreamRpcChannel *channel = new StreamRpcChannel(NULL, socket, m_export_map);
-  socket->SetOnClose(
-      NewSingleCallback(this, &OlaServer::SocketClosed, socket));
+  channel->SetChannelCloseHandler(
+      NewSingleCallback(this, &OlaServer::ChannelClosed,
+                        socket->ReadDescriptor()));
   OlaClientService_Stub *stub = new OlaClientService_Stub(channel);
   Client *client = new Client(stub);
   OlaClientService *service = m_service_factory->New(
@@ -421,15 +418,15 @@ void OlaServer::InternalNewConnection(
   }
 
   // This hands off socket ownership to the select server
-  m_ss->AddReadDescriptor(socket, true);
+  m_ss->AddReadDescriptor(socket);
 }
 
 
 /*
  * Cleanup everything related to a client connection
  */
-void OlaServer::CleanupConnection(OlaClientService *service) {
-  Client *client = service->GetClient();
+void OlaServer::CleanupConnection(ClientEntry client_entry) {
+  Client *client = client_entry.client_service->GetClient();
   m_broker->RemoveClient(client);
 
   vector<Universe*> universe_list;
@@ -446,7 +443,9 @@ void OlaServer::CleanupConnection(OlaClientService *service) {
   delete client->Stub()->channel();
   delete client->Stub();
   delete client;
-  delete service;
+  delete client_entry.client_service;
+  m_ss->RemoveReadDescriptor(client_entry.client_descriptor);
+  delete client_entry.client_descriptor;
 }
 
 /**

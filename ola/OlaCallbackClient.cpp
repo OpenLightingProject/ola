@@ -70,6 +70,14 @@ bool OlaCallbackClient::Stop() {
   return m_core->Stop();
 }
 
+/**
+ * Set the close handler.
+ */
+void OlaCallbackClient::SetCloseHandler(
+    ola::SingleUseCallback0<void> *callback) {
+  m_core->SetCloseHandler(callback);
+}
+
 
 /*
  * Fetch the list of available plugins.

@@ -85,7 +85,7 @@ class OlaServer {
     void StopServer() { m_ss->Terminate(); }
     void NewConnection(ola::io::ConnectedDescriptor *descriptor);
     void NewTCPConnection(ola::network::TCPSocket *socket);
-    void SocketClosed(ola::io::ConnectedDescriptor *socket);
+    void ChannelClosed(int read_descriptor);
     bool RunHousekeeping();
 
     static const unsigned int DEFAULT_HTTP_PORT = 9090;
@@ -130,7 +130,7 @@ class OlaServer {
 #endif
     void StopPlugins();
     void InternalNewConnection(ola::io::ConnectedDescriptor *descriptor);
-    void CleanupConnection(class OlaClientService *service);
+    void CleanupConnection(ClientEntry client);
     void ReloadPluginsInternal();
     void UpdatePidStore(const RootPidStore *pid_store);
 

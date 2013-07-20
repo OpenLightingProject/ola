@@ -159,7 +159,7 @@ class SLPDaemon {
 
     // RPC methods
     void NewTCPConnection(TCPSocket *socket);
-    void RPCSocketClosed(TCPSocket *socket);
+    void RPCSocketClosed(int read_descriptor);
     bool CleanOldClients();
 
     static const uint16_t DEFAULT_SLP_HTTP_PORT;

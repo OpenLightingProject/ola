@@ -50,6 +50,8 @@ class SLPClientCore {
     bool Setup();
     bool Stop();
 
+    void SetCloseHandler(ola::SingleUseCallback0<void> *callback);
+
     /**
      * Register a service
      */
