@@ -71,7 +71,7 @@ void UIDList(const ola::rdm::UIDSet &uids,
     UIDSet::Iterator iter = uids.Begin();
     for (; iter != uids.End(); ++iter) {
       cout << *iter << endl;
-      vendorcast.AddUID(iter->AllManufacturerDevices());
+      vendorcast.AddUID(UID::VendorcastAddress(*iter));
     }
     if (opts.vendorcast) {
       iter = vendorcast.Begin();
@@ -161,7 +161,8 @@ void DisplayGetUIDsHelp(const options &opts) {
   "  -b, --include-broadcast   Include broadcast UID for this universe\n"
   "  -h, --help                Display this help message and exit.\n"
   "  -f, --full                Force full RDM Discovery for this universe\n"
-  "  -i, --incremental         Force incremental RDM Discovery for this universe\n"
+  "  -i, --incremental         Force incremental RDM Discovery for this\n"
+  "                            universe\n"
   "  -u, --universe <universe> Universe number.\n"
   "  -v, --include-vendorcast  Include vendorcast UID for this universe\n"
   << endl;
