@@ -168,6 +168,7 @@ class OlaClient: public ola::rdm::RDMAPIImplInterface {
     bool Setup();
     bool Stop();
     void SetObserver(OlaClientObserver *observer);
+    void SetCloseHandler(ola::SingleUseCallback0<void> *callback);
 
     bool FetchPluginList();
     bool FetchPluginDescription(ola_plugin_id plugin_id);

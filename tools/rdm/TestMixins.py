@@ -89,8 +89,6 @@ class GetRequiredMixin(object):
 
 class GetWithDataMixin(object):
   """GET a PID with random param data."""
-  DATA = 'foobarbaz'
-
   def Test(self):
     self.AddIfGetSupported([
       self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
@@ -107,6 +105,16 @@ class GetWithNoDataMixin(object):
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid)
 
 
+class AllSubDevicesGetMixin(object):
+  """Attempt a get to ALL_SUB_DEVICES."""
+  DATA = []
+
+  def Test(self):
+    # 9.2.2
+    self.AddExpectedResults(
+        self.NackGetResult(RDMNack.NR_SUB_DEVICE_OUT_OF_RANGE))
+    self.SendGet(PidStore.ALL_SUB_DEVICES, self.pid, self.DATA)
+
 class UnsupportedSetMixin(object):
   """Check that SET fails with NR_UNSUPPORTED_COMMAND_CLASS."""
   DATA = ''
@@ -118,8 +126,6 @@ class UnsupportedSetMixin(object):
 
 class SetWithDataMixin(ResponderTestFixture):
   """SET a PID with random param data."""
-  DATA = 'foobarbaz'
-
   def Test(self):
     self.AddIfSetSupported([
       self.NackSetResult(RDMNack.NR_FORMAT_ERROR),

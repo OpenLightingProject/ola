@@ -57,6 +57,8 @@ class OlaClientCore: public ola::proto::OlaClientService {
     bool Setup();
     bool Stop();
 
+    void SetCloseHandler(ola::SingleUseCallback0<void> *callback);
+
     // plugin methods
     bool FetchPluginList(
         SingleUseCallback2<void,

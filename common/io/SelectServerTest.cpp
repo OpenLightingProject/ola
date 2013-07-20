@@ -31,14 +31,33 @@
 
 using ola::ExportMap;
 using ola::IntegerVariable;
+using ola::TimeStamp;
 using ola::io::LoopbackDescriptor;
 using ola::io::SelectServer;
 using ola::network::UDPSocket;
+
+/*
+ * For some of the tests we need precise control over the timing.
+ */
+class CustomMockClock: public ola::Clock {
+  public:
+    explicit CustomMockClock(TimeStamp *timestamp)
+        : m_timestamp(timestamp) {
+    }
+
+    void CurrentTime(TimeStamp *timestamp) const {
+      *timestamp = *m_timestamp;
+    }
+
+  private:
+    TimeStamp *m_timestamp;
+};
 
 class SelectServerTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(SelectServerTest);
   CPPUNIT_TEST(testAddRemoveReadDescriptor);
   CPPUNIT_TEST(testTimeout);
+  CPPUNIT_TEST(testOffByOneTimeout);
   CPPUNIT_TEST(testLoopCallbacks);
   CPPUNIT_TEST_SUITE_END();
 
@@ -47,6 +66,7 @@ class SelectServerTest: public CppUnit::TestFixture {
     void tearDown();
     void testAddRemoveReadDescriptor();
     void testTimeout();
+    void testOffByOneTimeout();
     void testLoopCallbacks();
 
     void FatalTimeout() {
@@ -205,6 +225,26 @@ void SelectServerTest::testTimeout() {
       ola::NewSingleCallback(this, &SelectServerTest::TerminateTimeout));
   m_ss->RemoveTimeout(timeout1);
   m_ss->Run();
+}
+
+/*
+ * Test that timeouts aren't skipped
+ */
+void SelectServerTest::testOffByOneTimeout() {
+  TimeStamp now;
+  ola::Clock actual_clock;
+  actual_clock.CurrentTime(&now);
+
+  CustomMockClock clock(&now);;
+  SelectServer ss(NULL, &clock);
+
+  ss.RegisterSingleTimeout(
+      10,
+      ola::NewSingleCallback(this, &SelectServerTest::SingleIncrementTimeout));
+
+  now += ola::TimeInterval(0, 10000);
+  ss.CheckTimeouts(now);
+  OLA_ASSERT_EQ(m_timeout_counter, 1u);
 }
 
 

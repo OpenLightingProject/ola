@@ -69,6 +69,12 @@ void OlaClient::SetObserver(OlaClientObserver *observer) {
   m_core->SetDmxCallback(NewCallback(observer, &OlaClientObserver::NewDmx));
 }
 
+/**
+ * Set the close handler.
+ */
+void OlaClient::SetCloseHandler(ola::SingleUseCallback0<void> *callback) {
+  m_core->SetCloseHandler(callback);
+}
 
 /*
  * Fetch info about available plugins. This results in a call to
