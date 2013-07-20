@@ -62,6 +62,8 @@ typedef enum {
   OLA_ACK_TIMER_MODEL = 6,
   // A sensor only responder
   OLA_SENSOR_ONLY_MODEL = 7,
+  // A E1.37 Dimmer
+  OLA_E137_DIMMER_MODEL = 8,
 } ola_rdm_model_id;
 
 extern const char OLA_MANUFACTURER_LABEL[];

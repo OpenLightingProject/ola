@@ -52,6 +52,7 @@ class DummyPlugin: public Plugin {
 
     DummyDevice *m_device;  // the dummy device
     static const char ACK_TIMER_COUNT_KEY[];
+    static const char ADVANCED_DIMMER_KEY[];
     static const char DEFAULT_DEVICE_COUNT[];
     static const char DEFAULT_ACK_TIMER_DEVICE_COUNT[];
     static const char DEFAULT_SUBDEVICE_COUNT[];
