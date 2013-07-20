@@ -71,6 +71,7 @@ examples/ola_rdm_discover
 examples/ola_rdm_get
 examples/ola_rdm_set
 examples/ola_recorder
+examples/ola_set_priority
 examples/ola_streaming_client
 examples/ola_throughput
 examples/ola_timecode
