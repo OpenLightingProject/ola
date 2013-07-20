@@ -70,7 +70,7 @@ void DmxSourceTest::testDmxSource() {
   DmxBuffer buffer2("987654321");
   TimeStamp timestamp2;
   m_clock.CurrentTime(&timestamp2);
-  OLA_ASSERT_NE(timestamp, timestamp2);
+  OLA_ASSERT_TRUE(timestamp <= timestamp2);
 
   source.UpdateData(buffer2, timestamp2, 120);
   OLA_ASSERT(buffer2 == source.Data());
