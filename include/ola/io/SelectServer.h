@@ -245,7 +245,7 @@ class SelectServer: public SelectServerInterface {
     static const unsigned int POLL_INTERVAL_SECOND = 10;
     static const unsigned int POLL_INTERVAL_USECOND = 0;
 
-    friend class SelectServerTest;
+    friend class ::SelectServerTest;
 };
 }  // namespace io
 }  // namespace ola
