@@ -805,9 +805,10 @@ class GetSubDeviceSupportedParameters(ResponderTestFixture):
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'SUPPORTED_PARAMETERS'
   REQUIRES = ['sub_device_indices']
+  PROVIDES = ['sub_device_supported_parameters']
 
   def Test(self):
-    self._sub_devices = self.Property('sub_device_indices')
+    self._sub_devices = list(self.Property('sub_device_indices'))
     self._sub_devices.reverse()
     self._params = {}
     self._GetSupportedParams();
@@ -829,13 +830,14 @@ class GetSubDeviceSupportedParameters(ResponderTestFixture):
     self._params[sub_device] = supported_params
 
   def _CheckForConsistency(self):
-    our_params = {}
+    our_params = set()
     for params in self._params.itervalues():
       if not our_params:
         our_params = params
       elif our_params != params:
         self.SetFailed('SUPPORTED_PARAMETERS for sub-devices do not match')
         return
+    self.SetProperty('sub_device_supported_parameters', our_params)
 
 
 # Sub Devices Test
@@ -942,7 +944,6 @@ class GetParamDescription(ResponderTestFixture):
     self.SendGet(ROOT_DEVICE, self.pid, [self.current_param])
 
   def VerifyResult(self, response, fields):
-    #TODO(simon): Hook into this to add new PIDs to the store
     if not response.WasAcked():
       return
 
@@ -1527,8 +1528,25 @@ class AllSubDevicesGetSoftwareVersionLabel(TestMixins.AllSubDevicesGetMixin,
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'SOFTWARE_VERSION_LABEL'
 
-# TODO(simon): Add a test for every sub device
+class GetSubDeviceSoftwareVersionLabel(ResponderTestFixture):
+  """Check that SOFTWARE_VERSION_LABEL is supported on all sub devices."""
+  CATEGORY = TestCategory.SUB_DEVICES
+  PID = 'SOFTWARE_VERSION_LABEL'
+  REQUIRES = ['sub_device_indices']
 
+  def Test(self):
+    self._sub_devices = list(self.Property('sub_device_indices'))
+    self._sub_devices.reverse()
+    self._GetSoftwareVersion();
+
+  def _GetSoftwareVersion(self):
+    if not self._sub_devices:
+      self.Stop()
+      return
+
+    self.AddExpectedResults(self.AckGetResult(action=self._GetSoftwareVersion))
+    sub_device = self._sub_devices.pop()
+    self.SendGet(sub_device, self.pid)
 
 # Boot Software Version
 #------------------------------------------------------------------------------
@@ -3474,6 +3492,26 @@ class AllSubDevicesGetIdentifyDevice(TestMixins.AllSubDevicesGetMixin,
   """Send a Get IDENTIFY_DEVICE to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'IDENTIFY_DEVICE'
+
+class GetSubDeviceIdentifyDevice(ResponderTestFixture):
+  """Check that IDENTIFY_DEVICE is supported on all sub devices."""
+  CATEGORY = TestCategory.SUB_DEVICES
+  PID = 'IDENTIFY_DEVICE'
+  REQUIRES = ['sub_device_indices']
+
+  def Test(self):
+    self._sub_devices = list(self.Property('sub_device_indices'))
+    self._sub_devices.reverse()
+    self._GetIdentifyDevice();
+
+  def _GetIdentifyDevice(self):
+    if not self._sub_devices:
+      self.Stop()
+      return
+
+    self.AddExpectedResults(self.AckGetResult(action=self._GetIdentifyDevice))
+    sub_device = self._sub_devices.pop()
+    self.SendGet(sub_device, self.pid)
 
 # Power State
 #------------------------------------------------------------------------------
