@@ -28,8 +28,9 @@
 #ifndef INCLUDE_OLA_RDM_ADVANCEDDIMMERRESPONDER_H_
 #define INCLUDE_OLA_RDM_ADVANCEDDIMMERRESPONDER_H_
 
+#include <memory>
 #include <string>
-#include <map>
+#include <vector>
 #include "ola/rdm/RDMControllerInterface.h"
 #include "ola/rdm/ResponderOps.h"
 #include "ola/rdm/ResponderPersonality.h"
@@ -38,7 +39,7 @@
 namespace ola {
 namespace rdm {
 
-using std::vector;
+using std::auto_ptr;
 
 /**
  * A dimmer that supports many of the E1.37-1 PIDs.
@@ -86,6 +87,9 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     uint16_t m_start_address;
     uint8_t m_identify_mode;
     PersonalityManager m_personality_manager;
+    auto_ptr<class SettingCollection> m_curve_setting;
+    auto_ptr<class SettingCollection> m_response_time_setting;
+    auto_ptr<class SettingCollection> m_frequency_setting;
 
     const RDMResponse *GetDeviceInfo(const RDMRequest *request);
     const RDMResponse *GetProductDetailList(const RDMRequest *request);
@@ -102,9 +106,21 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     const RDMResponse *SetIdentify(const RDMRequest *request);
     const RDMResponse *GetIdentifyMode(const RDMRequest *request);
     const RDMResponse *SetIdentifyMode(const RDMRequest *request);
+    const RDMResponse *GetCurve(const RDMRequest *request);
+    const RDMResponse *SetCurve(const RDMRequest *request);
+    const RDMResponse *GetCurveDescription(const RDMRequest *request);
+    const RDMResponse *GetResponseTime(const RDMRequest *request);
+    const RDMResponse *SetResponseTime(const RDMRequest *request);
+    const RDMResponse *GetResponseTimeDescription(const RDMRequest *request);
+    const RDMResponse *GetPWMFrequency(const RDMRequest *request);
+    const RDMResponse *SetPWMFrequency(const RDMRequest *request);
+    const RDMResponse *GetPWMFrequencyDescription(const RDMRequest *request);
 
     static const ResponderOps<AdvancedDimmerResponder>::ParamHandler
       PARAM_HANDLERS[];
+    static const char* CURVES[];
+    static const char* RESPONSE_TIMES[];
+    static const char* PWM_FREQUENCIES[];
 };
 }  // namespace rdm
 }  // namespace ola

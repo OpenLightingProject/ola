@@ -41,6 +41,94 @@ using ola::network::NetworkToHost;
 using std::string;
 using std::vector;
 
+const char* AdvancedDimmerResponder::CURVES[] = {
+  "Linear Curve",
+  "Square Law Curve",
+  "S Curve",
+};
+
+const char* AdvancedDimmerResponder::RESPONSE_TIMES[] = {
+  "Super fast",
+  "Fast",
+  "Slow",
+  "Very slow",
+};
+
+const char* AdvancedDimmerResponder::PWM_FREQUENCIES[] = {
+  "120Hz",
+  "500Hz",
+  "1kHz",
+  "5kHz",
+  "10kHz",
+};
+
+class SettingCollection {
+  public:
+    SettingCollection(const char *settings[], unsigned int size)
+      : m_current_setting(1) {
+      for (unsigned int i = 0; i < size; i++) {
+        m_settings.push_back(settings[i]);
+      }
+    }
+
+    const RDMResponse *Get(const RDMRequest *request) const;
+    const RDMResponse *Set(const RDMRequest *request);
+    const RDMResponse *GetDescription(const RDMRequest *request) const;
+
+  private:
+    struct setting_description_s {
+      uint8_t setting;
+      char description[MAX_RDM_STRING_LENGTH];
+    } __attribute__((packed));
+
+    uint8_t m_current_setting;
+    vector<string> m_settings;
+};
+
+const RDMResponse *SettingCollection::Get(const RDMRequest *request) const {
+  uint16_t data = m_current_setting << 8 | m_settings.size();
+  return ResponderHelper::GetUInt16Value(request, data);
+}
+
+const RDMResponse *SettingCollection::Set(const RDMRequest *request) {
+  uint8_t arg;
+  if (!ResponderHelper::ExtractUInt8(request, &arg)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  if (arg == 0 || arg > m_settings.size()) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  } else {
+    m_current_setting = arg;
+    return ResponderHelper::EmptySetResponse(request);
+  }
+}
+
+const RDMResponse *SettingCollection::GetDescription(
+    const RDMRequest *request) const {
+  uint8_t arg;
+  if (!ResponderHelper::ExtractUInt8(request, &arg)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  if (arg == 0 || arg > m_settings.size()) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  } else {
+    const string value = m_settings[arg - 1];
+
+    struct setting_description_s setting_description;
+    setting_description.setting = arg;
+    strncpy(setting_description.description, value.c_str(),
+            sizeof(setting_description.description));
+
+    return GetResponseFromData(
+        request,
+        reinterpret_cast<uint8_t*>(&setting_description),
+        sizeof(setting_description),
+        RDM_ACK);
+  }
+}
+
 const AdvancedDimmerResponder::Personalities *
     AdvancedDimmerResponder::Personalities::Instance() {
   if (!instance) {
@@ -92,6 +180,30 @@ const ResponderOps<AdvancedDimmerResponder>::ParamHandler
   { PID_IDENTIFY_MODE,
     &AdvancedDimmerResponder::GetIdentifyMode,
     &AdvancedDimmerResponder::SetIdentifyMode},
+  { PID_CURVE,
+    &AdvancedDimmerResponder::GetCurve,
+    &AdvancedDimmerResponder::SetCurve},
+  { PID_CURVE_DESCRIPTION,
+    &AdvancedDimmerResponder::GetCurveDescription,
+    NULL},
+  { PID_CURVE,
+    &AdvancedDimmerResponder::GetCurve,
+    &AdvancedDimmerResponder::SetCurve},
+  { PID_CURVE_DESCRIPTION,
+    &AdvancedDimmerResponder::GetCurveDescription,
+    NULL},
+  { PID_OUTPUT_RESPONSE_TIME,
+    &AdvancedDimmerResponder::GetResponseTime,
+    &AdvancedDimmerResponder::SetResponseTime},
+  { PID_OUTPUT_RESPONSE_TIME_DESCRIPTION,
+    &AdvancedDimmerResponder::GetResponseTimeDescription,
+    NULL},
+  { PID_MODULATION_FREQUENCY,
+    &AdvancedDimmerResponder::GetPWMFrequency,
+    &AdvancedDimmerResponder::SetPWMFrequency},
+  { PID_MODULATION_FREQUENCY_DESCRIPTION,
+    &AdvancedDimmerResponder::GetPWMFrequencyDescription,
+    NULL},
   { 0, NULL, NULL},
 };
 
@@ -104,7 +216,12 @@ AdvancedDimmerResponder::AdvancedDimmerResponder(const UID &uid)
       m_identify_state(false),
       m_start_address(1),
       m_identify_mode(0),
-      m_personality_manager(Personalities::Instance()) {
+      m_personality_manager(Personalities::Instance()),
+      m_curve_setting(new SettingCollection(CURVES, arraysize(CURVES))),
+      m_response_time_setting(new SettingCollection(
+          RESPONSE_TIMES, arraysize(RESPONSE_TIMES))),
+      m_frequency_setting(new SettingCollection(
+          PWM_FREQUENCIES, arraysize(PWM_FREQUENCIES))) {
 }
 
 /*
@@ -220,6 +337,51 @@ const RDMResponse *AdvancedDimmerResponder::SetIdentifyMode(
   } else {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
+}
+
+const RDMResponse *AdvancedDimmerResponder::GetCurve(
+    const RDMRequest *request) {
+  return m_curve_setting->Get(request);
+}
+
+const RDMResponse *AdvancedDimmerResponder::SetCurve(
+    const RDMRequest *request) {
+  return m_curve_setting->Set(request);
+}
+
+const RDMResponse *AdvancedDimmerResponder::GetCurveDescription(
+    const RDMRequest *request) {
+  return m_curve_setting->GetDescription(request);
+}
+
+const RDMResponse *AdvancedDimmerResponder::GetResponseTime(
+    const RDMRequest *request) {
+  return m_response_time_setting->Get(request);
+}
+
+const RDMResponse *AdvancedDimmerResponder::SetResponseTime(
+    const RDMRequest *request) {
+  return m_response_time_setting->Set(request);
+}
+
+const RDMResponse *AdvancedDimmerResponder::GetResponseTimeDescription(
+    const RDMRequest *request) {
+  return m_response_time_setting->GetDescription(request);
+}
+
+const RDMResponse *AdvancedDimmerResponder::GetPWMFrequency(
+    const RDMRequest *request) {
+  return m_frequency_setting->Get(request);
+}
+
+const RDMResponse *AdvancedDimmerResponder::SetPWMFrequency(
+    const RDMRequest *request) {
+  return m_frequency_setting->Set(request);
+}
+
+const RDMResponse *AdvancedDimmerResponder::GetPWMFrequencyDescription(
+    const RDMRequest *request) {
+  return m_frequency_setting->GetDescription(request);
 }
 }  // namespace rdm
 }  // namespace ola
