@@ -130,7 +130,7 @@ class OlaServer {
 #endif
     void StopPlugins();
     void InternalNewConnection(ola::io::ConnectedDescriptor *descriptor);
-    void CleanupConnection(class OlaClientService *service);
+    void CleanupConnection(ClientEntry client);
     void ReloadPluginsInternal();
     void UpdatePidStore(const RootPidStore *pid_store);
 

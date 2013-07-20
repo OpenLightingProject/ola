@@ -125,12 +125,7 @@ OlaServer::~OlaServer() {
 
   ClientMap::iterator iter = m_sd_to_service.begin();
   for (; iter != m_sd_to_service.end(); ++iter) {
-    CleanupConnection(iter->second.client_service);
-
-    ola::io::ConnectedDescriptor *descriptor = iter->second.client_descriptor;
-    m_ss->RemoveReadDescriptor(descriptor);
-    descriptor->Close();
-    delete descriptor;
+    CleanupConnection(iter->second);
   }
 
   m_broker.reset();
@@ -306,7 +301,7 @@ void OlaServer::ChannelClosed(int read_descriptor) {
   if (found) {
     (*m_export_map->GetIntegerVar(K_CLIENT_VAR))--;
     m_ss->Execute(NewSingleCallback(this, &OlaServer::CleanupConnection,
-                                    client_entry.client_service));
+                                    client_entry));
   } else {
     OLA_WARN << "A socket was closed but we didn't find the client";
   }
@@ -423,15 +418,15 @@ void OlaServer::InternalNewConnection(
   }
 
   // This hands off socket ownership to the select server
-  m_ss->AddReadDescriptor(socket, true);
+  m_ss->AddReadDescriptor(socket);
 }
 
 
 /*
  * Cleanup everything related to a client connection
  */
-void OlaServer::CleanupConnection(OlaClientService *service) {
-  Client *client = service->GetClient();
+void OlaServer::CleanupConnection(ClientEntry client_entry) {
+  Client *client = client_entry.client_service->GetClient();
   m_broker->RemoveClient(client);
 
   vector<Universe*> universe_list;
@@ -448,7 +443,9 @@ void OlaServer::CleanupConnection(OlaClientService *service) {
   delete client->Stub()->channel();
   delete client->Stub();
   delete client;
-  delete service;
+  delete client_entry.client_service;
+  m_ss->RemoveReadDescriptor(client_entry.client_descriptor);
+  delete client_entry.client_descriptor;
 }
 
 /**
