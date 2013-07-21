@@ -124,16 +124,38 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
         static FrequencySettings *instance;
     };
 
+    class LockSettings : public BasicSettingCollection {
+      public:
+        static const LockSettings *Instance();
+
+     private:
+        explicit LockSettings(const BasicSetting::ArgType arg[],
+                              unsigned int arg_count)
+          : BasicSettingCollection(arg, arg_count) {
+        }
+
+        static LockSettings *instance;
+    };
+
+    class LockManager: public BasicSettingManager {
+      public:
+        explicit LockManager(const LockSettings *settings):
+            BasicSettingManager(settings) {
+        }
+
+        const RDMResponse *Set(const RDMRequest *request, uint16_t *pin);
+    };
+
     const UID m_uid;
     bool m_identify_state;
     uint16_t m_start_address;
     uint16_t m_lock_pin;
     uint8_t m_identify_mode;
     PersonalityManager m_personality_manager;
-    auto_ptr<class LockCollection> m_lock_setting;
 
     BasicSettingManager m_curve_settings;
     BasicSettingManager m_response_time_settings;
+    LockManager m_lock_settings;
     SettingManager<FrequencyModulationSetting> m_frequency_settings;
 
     const RDMResponse *GetDeviceInfo(const RDMRequest *request);

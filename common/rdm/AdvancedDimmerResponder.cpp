@@ -96,9 +96,18 @@ const AdvancedDimmerResponder::FrequencySettings *
   return instance;
 }
 
+const AdvancedDimmerResponder::LockSettings *
+    AdvancedDimmerResponder::LockSettings::Instance() {
+  if (!instance) {
+    instance = new LockSettings(
+        LOCK_STATES, arraysize(LOCK_STATES));
+  }
+  return instance;
+}
+
 // Begin Lock Collection
 
-class LockCollection: public SettingCollection {
+class LockManager: public BasicSettingManager {
   public:
     LockCollection(const char *settings[], unsigned int size)
       :SettingCollection(settings, size) {}
@@ -110,8 +119,8 @@ class LockCollection: public SettingCollection {
     };
 };
 
-const RDMResponse *LockCollection::Set(const RDMRequest *request,
-                                       const uint16_t &pin) {
+const RDMResponse *LockManager::Set(const RDMRequest *request,
+                                       const uint16_t *pin) {
   uint8_t arg;
   uint16_t recieved_pin;
 
@@ -123,15 +132,15 @@ const RDMResponse *LockCollection::Set(const RDMRequest *request,
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
-  if (arg > m_settings.size()) {
+  if (arg > Count()) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
-  if (pin != recieved_pin) {
+  if (*pin != recieved_pin) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
-  m_current_setting = arg;
+  SetState(arg);
   return ResponderHelper::EmptySetResponse(request);
 }
 
@@ -162,6 +171,9 @@ AdvancedDimmerResponder::ResponseTimeSettings *
 
 AdvancedDimmerResponder::FrequencySettings *
     AdvancedDimmerResponder::FrequencySettings::instance = NULL;
+
+AdvancedDimmerResponder::LockSettings *
+    AdvancedDimmerResponder::LockSettings::instance = NULL;
 
 const ResponderOps<AdvancedDimmerResponder>::ParamHandler
     AdvancedDimmerResponder::PARAM_HANDLERS[] = {
@@ -245,8 +257,7 @@ AdvancedDimmerResponder::AdvancedDimmerResponder(const UID &uid)
       m_lock_pin(0),
       m_identify_mode(IDENTIFY_MODE_QUIET),
       m_personality_manager(Personalities::Instance()),
-      m_lock_setting(new LockCollection(
-           LOCK_STATES, arraysize(LOCK_STATES))) {
+      m_lock_setting(LockSettings::Instance()),
       m_curve_settings(CurveSettings::Instance()),
       m_response_time_settings(ResponseTimeSettings::Instance()),
       m_frequency_settings(FrequencySettings::Instance()) {
@@ -415,12 +426,12 @@ const RDMResponse *AdvancedDimmerResponder::GetLockState(
 
 const RDMResponse *AdvancedDimmerResponder::SetLockState(
     const RDMRequest *request) {
-  return m_lock_setting->Set(request, m_lock_pin);
+  return m_lock_settings->Set(request, m_lock_pin);
 }
 
 const RDMResponse *AdvancedDimmerResponder::GetLockStateDescription(
     const RDMRequest *request) {
-  return m_lock_setting->Get(request);
+  return m_lock_settings->GetDescription(request);
 }
 
 const RDMResponse *AdvancedDimmerResponder::GetLockPin(
