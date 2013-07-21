@@ -234,10 +234,6 @@ void AdvancedDimmerResponder::SendRDMRequest(const RDMRequest *request,
 }
 const RDMResponse *AdvancedDimmerResponder::GetDeviceInfo(
     const RDMRequest *request) {
-  if (request->ParamDataSize()) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-
   return ResponderHelper::GetDeviceInfo(
       request, OLA_E137_DIMMER_MODEL,
       PRODUCT_CATEGORY_DIMMER, 1,
