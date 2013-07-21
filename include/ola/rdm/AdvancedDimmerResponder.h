@@ -87,6 +87,7 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     bool m_identify_state;
     uint16_t m_start_address;
     uint8_t m_identify_mode;
+    uint8_t m_burn_in;
     PersonalityManager m_personality_manager;
     BasicSettingManager m_curve_settings;
     BasicSettingManager m_response_time_settings;
@@ -107,6 +108,8 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     const RDMResponse *SetIdentify(const RDMRequest *request);
     const RDMResponse *GetIdentifyMode(const RDMRequest *request);
     const RDMResponse *SetIdentifyMode(const RDMRequest *request);
+    const RDMResponse *GetBurnIn(const RDMRequest *request);
+    const RDMResponse *SetBurnIn(const RDMRequest *request);
     const RDMResponse *GetCurve(const RDMRequest *request);
     const RDMResponse *SetCurve(const RDMRequest *request);
     const RDMResponse *GetCurveDescription(const RDMRequest *request);
