@@ -584,6 +584,10 @@ static const uint16_t PRESET_PLAYBACK_ALL = 0xffff;
 static const uint8_t SENSOR_RECORDED_VALUE = 0x01;
 static const uint8_t SENSOR_RECORDED_RANGE_VALUES = 0x02;
 static const uint8_t ALL_SENSORS = 0xff;
+
+// The identify modes from E1.37-1
+static const uint8_t IDENTIFY_MODE_QUIET = 0x00;
+static const uint8_t IDENTIFY_MODE_LOUD = 0xff;
 }  // namespace rdm
 }  // namespace ola
 #endif  // INCLUDE_OLA_RDM_RDMENUMS_H_

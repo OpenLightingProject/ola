@@ -273,7 +273,7 @@ AdvancedDimmerResponder::AdvancedDimmerResponder(const UID &uid)
       m_identify_state(false),
       m_start_address(1),
       m_lock_pin(0),
-      m_identify_mode(0),
+      m_identify_mode(IDENTIFY_MODE_QUIET),
       m_personality_manager(Personalities::Instance()),
       m_curve_setting(new SettingCollection(CURVES, arraysize(CURVES))),
       m_response_time_setting(new SettingCollection(
@@ -387,7 +387,7 @@ const RDMResponse *AdvancedDimmerResponder::SetIdentifyMode(
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
-  if (arg == 0 || arg == 0xff) {
+  if (arg == IDENTIFY_MODE_QUIET || arg == IDENTIFY_MODE_LOUD) {
     m_identify_mode = arg;
     return ResponderHelper::EmptySetResponse(request);
   } else {
