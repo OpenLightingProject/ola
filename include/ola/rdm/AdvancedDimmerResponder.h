@@ -151,6 +151,7 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     uint16_t m_start_address;
     uint16_t m_lock_pin;
     uint8_t m_identify_mode;
+    uint8_t m_burn_in;
     PersonalityManager m_personality_manager;
 
     BasicSettingManager m_curve_settings;
@@ -173,6 +174,8 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     const RDMResponse *SetIdentify(const RDMRequest *request);
     const RDMResponse *GetIdentifyMode(const RDMRequest *request);
     const RDMResponse *SetIdentifyMode(const RDMRequest *request);
+    const RDMResponse *GetBurnIn(const RDMRequest *request);
+    const RDMResponse *SetBurnIn(const RDMRequest *request);
     const RDMResponse *GetCurve(const RDMRequest *request);
     const RDMResponse *SetCurve(const RDMRequest *request);
     const RDMResponse *GetCurveDescription(const RDMRequest *request);
@@ -191,13 +194,16 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
 
     static const ResponderOps<AdvancedDimmerResponder>::ParamHandler
       PARAM_HANDLERS[];
-
     static const char* CURVES[];
     static const char* RESPONSE_TIMES[];
     static const char* LOCK_STATES[];
     static const FrequencyModulationSetting::FrequencyModulationArg
         PWM_FREQUENCIES[];
 
+    static const SettingCollection<BasicSetting> CurveSettings;
+    static const SettingCollection<BasicSetting> ResponseTimeSettings;
+    static const SettingCollection<FrequencyModulationSetting>
+      FrequencySettings;
 };
 }  // namespace rdm
 }  // namespace ola

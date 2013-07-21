@@ -4062,6 +4062,19 @@ class SetBurnIn(TestMixins.SetUInt8Mixin, OptionalParameterTestFixture):
   def OldValue(self):
     return self.Property('burn_in_hours')
 
+  def VerifySet(self):
+    new_value = self.NewValue()
+    results = [
+      self.AckGetResult(field_values={self.EXPECTED_FIELD: self.NewValue()}),
+    ]
+    # Since this is hours remaining, it may be decremented before we can read
+    # it back
+    if new_value:
+      results.append(
+        self.AckGetResult(field_values={self.EXPECTED_FIELD: new_value - 1}))
+    self.AddExpectedResults(results)
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
 
 class SetBurnInWithNoData(TestMixins.SetWithNoDataMixin,
                           OptionalParameterTestFixture):

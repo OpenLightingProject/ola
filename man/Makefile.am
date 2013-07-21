@@ -5,5 +5,6 @@ dist_man_MANS = ola_artnet.1 \
                 ola_e131.1 \
                 ola_patch.1 \
                 ola_set_priority.1 \
+                ola_streaming_client.1 \
                 ola_uni_info.1 \
                 olad.1

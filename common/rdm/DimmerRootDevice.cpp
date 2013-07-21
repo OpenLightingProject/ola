@@ -153,9 +153,9 @@ const RDMResponse *DimmerRootDevice::SetIdentify(const RDMRequest *request) {
 }
 
 const RDMResponse *DimmerRootDevice::GetDmxBlockAddress(
-    const RDMRequest *request){
+    const RDMRequest *request) {
 
-  struct block_address_pdl{
+  struct block_address_pdl {
     uint16_t total_footprint;
     uint16_t base_address;
   } __attribute__((packed));
@@ -166,13 +166,13 @@ const RDMResponse *DimmerRootDevice::GetDmxBlockAddress(
   uint16_t next_address = 0;
 
 
-  for(SubDeviceMap::const_iterator iter = m_sub_devices.begin();
+  for (SubDeviceMap::const_iterator iter = m_sub_devices.begin();
       iter != m_sub_devices.end();
       ++iter) {
-    if(iter->second->Footprint() != 0) {
-      if(next_address == iter->second->GetDmxStartAddress()) {
+    if (iter->second->Footprint() != 0) {
+      if (next_address == iter->second->GetDmxStartAddress()) {
         next_address += iter->second->Footprint();
-      } else if(next_address == 0) {
+      } else if (next_address == 0) {
         next_address = iter->second->GetDmxStartAddress() +
             iter->second->Footprint();
         pdl.base_address = iter->second->GetDmxStartAddress();
@@ -191,31 +191,31 @@ const RDMResponse *DimmerRootDevice::GetDmxBlockAddress(
 }
 
 const RDMResponse *DimmerRootDevice::SetDmxBlockAddress(
-    const RDMRequest *request){
+    const RDMRequest *request) {
   uint16_t base_start_address = 0;
   uint16_t total_footprint = 0;
 
-  if(!ResponderHelper::ExtractUInt16(request, &base_start_address)) {
+  if (!ResponderHelper::ExtractUInt16(request, &base_start_address)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
-  for(SubDeviceMap::const_iterator i = m_sub_devices.begin();
+  for (SubDeviceMap::const_iterator i = m_sub_devices.begin();
       i != m_sub_devices.end();
       ++i) {
     total_footprint += i->second->Footprint();
   }
 
-  if(base_start_address < 1 ||
-      base_start_address + total_footprint - 1 > DMX_UNIVERSE_SIZE) {
+  if (base_start_address < 1 ||
+      base_start_address + total_footprint > DMX_MAX_CHANNEL_VALUE) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
-   for(SubDeviceMap::const_iterator iter = m_sub_devices.begin();
-       iter != m_sub_devices.end();
-       ++iter) {
-     // We don't check here because we already have for every Sub Device
-     iter->second->SetDmxStartAddress(base_start_address);
-     base_start_address += iter->second->Footprint();
+  for (SubDeviceMap::const_iterator iter = m_sub_devices.begin();
+      iter != m_sub_devices.end();
+      ++iter) {
+    // We don't check here because we already have for every Sub Device
+    iter->second->SetDmxStartAddress(base_start_address);
+    base_start_address += iter->second->Footprint();
   }
 
   return GetResponseFromData(request, NULL, 0);
@@ -230,10 +230,10 @@ const RDMResponse *DimmerRootDevice::SetIdentifyMode(
     const RDMRequest *request) {
   uint8_t new_identify_mode;
 
-  if(!ResponderHelper::ExtractUInt8(request, &new_identify_mode))
+  if (!ResponderHelper::ExtractUInt8(request, &new_identify_mode))
     return NackWithReason(request, NR_FORMAT_ERROR);
 
-  if(new_identify_mode != IDENTIFY_QUIET && new_identify_mode != IDENTIFY_LOUD)
+  if (new_identify_mode != IDENTIFY_QUIET && new_identify_mode != IDENTIFY_LOUD)
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
 
   m_identify_mode = new_identify_mode;

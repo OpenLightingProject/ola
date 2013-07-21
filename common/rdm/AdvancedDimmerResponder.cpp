@@ -87,14 +87,9 @@ const AdvancedDimmerResponder::ResponseTimeSettings *
   return instance;
 }
 
-const AdvancedDimmerResponder::FrequencySettings *
-    AdvancedDimmerResponder::FrequencySettings::Instance() {
-  if (!instance) {
-    instance = new FrequencySettings(
+const SettingCollection<FrequencyModulationSetting>
+    AdvancedDimmerResponder::FrequencySettings(
         PWM_FREQUENCIES, arraysize(PWM_FREQUENCIES));
-  }
-  return instance;
-}
 
 const AdvancedDimmerResponder::LockSettings *
     AdvancedDimmerResponder::LockSettings::Instance() {
@@ -151,6 +146,7 @@ AdvancedDimmerResponder::Personalities *
 AdvancedDimmerResponder::RDMOps *
     AdvancedDimmerResponder::RDMOps::instance = NULL;
 
+
 AdvancedDimmerResponder::CurveSettings *
     AdvancedDimmerResponder::CurveSettings::instance = NULL;
 
@@ -198,6 +194,9 @@ const ResponderOps<AdvancedDimmerResponder>::ParamHandler
   { PID_IDENTIFY_MODE,
     &AdvancedDimmerResponder::GetIdentifyMode,
     &AdvancedDimmerResponder::SetIdentifyMode},
+  { PID_BURN_IN,
+    &AdvancedDimmerResponder::GetBurnIn,
+    &AdvancedDimmerResponder::SetBurnIn},
   { PID_CURVE,
     &AdvancedDimmerResponder::GetCurve,
     &AdvancedDimmerResponder::SetCurve},
@@ -244,6 +243,7 @@ AdvancedDimmerResponder::AdvancedDimmerResponder(const UID &uid)
       m_start_address(1),
       m_lock_pin(0),
       m_identify_mode(IDENTIFY_MODE_QUIET),
+      m_burn_in(0),
       m_personality_manager(Personalities::Instance()),
       m_curve_settings(CurveSettings::Instance()),
       m_response_time_settings(ResponseTimeSettings::Instance()),
@@ -360,6 +360,24 @@ const RDMResponse *AdvancedDimmerResponder::SetIdentifyMode(
   } else {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
+}
+
+const RDMResponse *AdvancedDimmerResponder::GetBurnIn(
+    const RDMRequest *request) {
+  return ResponderHelper::GetUInt8Value(request, m_burn_in);
+}
+
+const RDMResponse *AdvancedDimmerResponder::SetBurnIn(
+    const RDMRequest *request) {
+  uint8_t arg;
+  if (!ResponderHelper::ExtractUInt8(request, &arg)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  // We start the 'clock' immediately, so the hours remaining is one less than
+  // what was requested.
+  m_burn_in = (arg ? arg - 1 : 0);
+  return ResponderHelper::EmptySetResponse(request);
 }
 
 const RDMResponse *AdvancedDimmerResponder::GetCurve(
