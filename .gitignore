@@ -101,6 +101,7 @@ tools/e133/e133_receiver
 tools/e133/slp_locate
 tools/e133/slp_register
 tools/e133/slp_sa_test
+tools/logic/logic_rdm_sniffer
 tools/ola_trigger/config.tab.cpp
 tools/ola_trigger/config.tab.h
 tools/ola_trigger/lex.yy.cpp

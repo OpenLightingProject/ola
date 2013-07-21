@@ -321,7 +321,7 @@ const RDMResponse *AdvancedDimmerResponder::GetManufacturerLabel(
 
 const RDMResponse *AdvancedDimmerResponder::GetDeviceLabel(
     const RDMRequest *request) {
-  return ResponderHelper::GetString(request, "Dummy Dimmer");
+  return ResponderHelper::GetString(request, "Dummy Adv Dimmer");
 }
 
 const RDMResponse *AdvancedDimmerResponder::GetSoftwareVersionLabel(
