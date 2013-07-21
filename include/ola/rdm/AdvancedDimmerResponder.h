@@ -28,13 +28,14 @@
 #ifndef INCLUDE_OLA_RDM_ADVANCEDDIMMERRESPONDER_H_
 #define INCLUDE_OLA_RDM_ADVANCEDDIMMERRESPONDER_H_
 
+#include <ola/rdm/RDMControllerInterface.h>
+#include <ola/rdm/ResponderOps.h>
+#include <ola/rdm/ResponderPersonality.h>
+#include <ola/rdm/ResponderSettings.h>
+#include <ola/rdm/UID.h>
 #include <memory>
 #include <string>
 #include <vector>
-#include "ola/rdm/RDMControllerInterface.h"
-#include "ola/rdm/ResponderOps.h"
-#include "ola/rdm/ResponderPersonality.h"
-#include "ola/rdm/UID.h"
 
 namespace ola {
 namespace rdm {
@@ -82,14 +83,55 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
         static Personalities *instance;
     };
 
+    class CurveSettings : public BasicSettingCollection {
+      public:
+        static const CurveSettings *Instance();
+
+      private:
+        explicit CurveSettings(const BasicSetting::ArgType args[],
+                               unsigned int arg_count)
+            : BasicSettingCollection(args, arg_count) {
+        }
+
+        static CurveSettings *instance;
+    };
+
+    class ResponseTimeSettings : public BasicSettingCollection {
+      public:
+        static const ResponseTimeSettings *Instance();
+
+      private:
+        explicit ResponseTimeSettings(const BasicSetting::ArgType args[],
+                               unsigned int arg_count)
+            : BasicSettingCollection(args, arg_count) {
+        }
+
+        static ResponseTimeSettings *instance;
+    };
+
+    class FrequencySettings : public
+                              SettingCollection<FrequencyModulationSetting> {
+      public:
+        static const FrequencySettings *Instance();
+
+      private:
+        explicit FrequencySettings(
+            const FrequencyModulationSetting::ArgType args[],
+            unsigned int arg_count)
+            : SettingCollection<FrequencyModulationSetting>(args, arg_count) {
+        }
+
+        static FrequencySettings *instance;
+    };
+
     const UID m_uid;
     bool m_identify_state;
     uint16_t m_start_address;
     uint8_t m_identify_mode;
     PersonalityManager m_personality_manager;
-    auto_ptr<class SettingCollection> m_curve_setting;
-    auto_ptr<class SettingCollection> m_response_time_setting;
-    auto_ptr<class SettingCollection> m_frequency_setting;
+    BasicSettingManager m_curve_settings;
+    BasicSettingManager m_response_time_settings;
+    SettingManager<FrequencyModulationSetting> m_frequency_settings;
 
     const RDMResponse *GetDeviceInfo(const RDMRequest *request);
     const RDMResponse *GetProductDetailList(const RDMRequest *request);
@@ -118,9 +160,11 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
 
     static const ResponderOps<AdvancedDimmerResponder>::ParamHandler
       PARAM_HANDLERS[];
+
     static const char* CURVES[];
     static const char* RESPONSE_TIMES[];
-    static const char* PWM_FREQUENCIES[];
+    static const FrequencyModulationSetting::FrequencyModulationArg
+        PWM_FREQUENCIES[];
 };
 }  // namespace rdm
 }  // namespace ola
