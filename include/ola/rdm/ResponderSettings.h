@@ -20,7 +20,6 @@
 #ifndef INCLUDE_OLA_RDM_RESPONDERSETTINGS_H_
 #define INCLUDE_OLA_RDM_RESPONDERSETTINGS_H_
 
-#include <ola/network/NetworkUtils.h>
 #include <ola/rdm/RDMCommand.h>
 #include <ola/rdm/ResponderHelper.h>
 #include <stdint.h>
@@ -45,17 +44,18 @@ class SettingInterface {
      */
     virtual string Description() const = 0;
 
+    /**
+     * @brief Return the size of the _DESCRIPTION parameter data.
+     */
     virtual unsigned int DescriptionResponseSize() const = 0;
 
+    /**
+     * @brief Populate the _DESCRIPTION parameter data.
+     * @param index the index for this setting
+     * @param data the RDM parameter data to write to.
+     */
     virtual unsigned int GenerateDescriptionResponse(uint8_t index,
                                                      uint8_t *data) const = 0;
-  protected:
-    static unsigned int MakeDescription(const string &description,
-                                        uint8_t *data) {
-      char *c = reinterpret_cast<char*>(data);
-      strncpy(c, description.c_str(), MAX_RDM_STRING_LENGTH);
-      return strlen(c);
-    }
 };
 
 /**
@@ -69,9 +69,7 @@ class BasicSetting : SettingInterface {
      * @brief Construct a new BasicSetting
      * @param description the description for this setting.
      */
-    explicit BasicSetting(const ArgType description)
-        : m_description(description) {
-    }
+    explicit BasicSetting(const ArgType description);
 
     /**
      * @brief The text description of this setting
@@ -84,12 +82,7 @@ class BasicSetting : SettingInterface {
     }
 
     unsigned int GenerateDescriptionResponse(uint8_t index,
-                                             uint8_t *data) const {
-      description_s *output = reinterpret_cast<description_s*>(data);
-      output->setting = index;
-      strncpy(output->description, m_description.c_str(), MAX_RDM_STRING_LENGTH);
-      return sizeof(description_s) - MAX_RDM_STRING_LENGTH + strlen(output->description);
-    }
+                                             uint8_t *data) const;
 
   private:
     struct description_s {
@@ -121,10 +114,7 @@ class FrequencyModulationSetting : SettingInterface {
      * @brief Construct a new FrequencyModulationSetting.
      * @param arg the FrequencyModulationArg for this setting.
      */
-    explicit FrequencyModulationSetting(const ArgType &arg)
-        : m_frequency(arg.frequency),
-          m_description(arg.description) {
-    }
+    explicit FrequencyModulationSetting(const ArgType &arg);
 
     /**
      * @brief The text description of this setting
@@ -142,14 +132,7 @@ class FrequencyModulationSetting : SettingInterface {
     }
 
     unsigned int GenerateDescriptionResponse(uint8_t index,
-                                             uint8_t *data) const {
-      description_s *output = reinterpret_cast<description_s*>(data);
-      output->setting = index;
-      OLA_INFO << m_frequency;
-      output->frequency = ola::network::HostToNetwork(m_frequency);
-      strncpy(output->description, m_description.c_str(), MAX_RDM_STRING_LENGTH);
-      return sizeof(description_s) - MAX_RDM_STRING_LENGTH + strlen(output->description);
-    }
+                                             uint8_t *data) const;
 
   private:
     struct description_s {
