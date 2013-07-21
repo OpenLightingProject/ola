@@ -136,6 +136,11 @@ class ResponderHelper {
     static const RDMResponse *GetString(const RDMRequest *request,
                                         const std::string &value,
                                         uint8_t queued_message_count = 0);
+
+    static const RDMResponse *EmptySetResponse(
+        const RDMRequest *request,
+        uint8_t queued_message_count = 0);
+
     static const RDMResponse *SetString(const RDMRequest *request,
                                         std::string *value,
                                         uint8_t queued_message_count = 0);

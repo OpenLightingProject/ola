@@ -200,16 +200,7 @@ const RDMResponse *ResponderHelper::SetPersonality(
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
   } else {
     personality_manager->SetActivePersonality(personality_number);
-    return new RDMSetResponse(
-      request->DestinationUID(),
-      request->SourceUID(),
-      request->TransactionNumber(),
-      RDM_ACK,
-      queued_message_count,
-      request->SubDevice(),
-      request->ParamId(),
-      NULL,
-      0);
+    return EmptySetResponse(request, queued_message_count);
   }
 }
 
@@ -287,16 +278,7 @@ const RDMResponse *ResponderHelper::SetDmxAddress(
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
   } else {
     *dmx_address = address;
-    return new RDMSetResponse(
-      request->DestinationUID(),
-      request->SourceUID(),
-      request->TransactionNumber(),
-      RDM_ACK,
-      queued_message_count,
-      request->SubDevice(),
-      request->ParamId(),
-      NULL,
-      0);
+    return EmptySetResponse(request, queued_message_count);
   }
 }
 
@@ -453,16 +435,9 @@ const RDMResponse *ResponderHelper::GetString(
         queued_message_count);
 }
 
-const RDMResponse *ResponderHelper::SetString(
+const RDMResponse *ResponderHelper::EmptySetResponse(
     const RDMRequest *request,
-    std::string *value,
     uint8_t queued_message_count) {
-  if (request->ParamDataSize() > MAX_RDM_STRING_LENGTH) {
-    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
-  }
-  const string new_label(reinterpret_cast<const char*>(request->ParamData()),
-                         request->ParamDataSize());
-  *value = new_label;
   return new RDMSetResponse(
     request->DestinationUID(),
     request->SourceUID(),
@@ -473,6 +448,19 @@ const RDMResponse *ResponderHelper::SetString(
     request->ParamId(),
     NULL,
     0);
+}
+
+const RDMResponse *ResponderHelper::SetString(
+    const RDMRequest *request,
+    std::string *value,
+    uint8_t queued_message_count) {
+  if (request->ParamDataSize() > MAX_RDM_STRING_LENGTH) {
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
+  }
+  const string new_label(reinterpret_cast<const char*>(request->ParamData()),
+                         request->ParamDataSize());
+  *value = new_label;
+  return EmptySetResponse(request, queued_message_count);
 }
 
 const RDMResponse *ResponderHelper::GetBoolValue(const RDMRequest *request,
@@ -497,16 +485,7 @@ const RDMResponse *ResponderHelper::SetBoolValue(const RDMRequest *request,
 
   if (arg == 0 || arg == 1) {
     *value = arg;
-    return new RDMSetResponse(
-      request->DestinationUID(),
-      request->SourceUID(),
-      request->TransactionNumber(),
-      RDM_ACK,
-      queued_message_count,
-      request->SubDevice(),
-      request->ParamId(),
-      NULL,
-      0);
+    return EmptySetResponse(request, queued_message_count);
   } else {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
   }
@@ -556,17 +535,7 @@ static const RDMResponse *GenericSetIntValue(const RDMRequest *request,
   if (!GenericExtractValue(request, value)) {
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
-
-  return new RDMSetResponse(
-    request->DestinationUID(),
-    request->SourceUID(),
-    request->TransactionNumber(),
-    RDM_ACK,
-    queued_message_count,
-    request->SubDevice(),
-    request->ParamId(),
-    NULL,
-    0);
+  return ResponderHelper::EmptySetResponse(request, queued_message_count);
 }
 
 const RDMResponse *ResponderHelper::SetUInt8Value(
