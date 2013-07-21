@@ -85,10 +85,12 @@ class ResponderHelper {
         PersonalityManager *personality_manager,
         uint16_t start_address,
         uint8_t queued_message_count = 0);
+
     static const RDMResponse *GetPersonalityDescription(
         const RDMRequest *request,
         const PersonalityManager *personality_manager,
         uint8_t queued_message_count = 0);
+
     static const RDMResponse *GetDmxAddress(
         const RDMRequest *request,
         const PersonalityManager *personality_manager,
@@ -104,6 +106,33 @@ class ResponderHelper {
         const RDMRequest *request,
         uint8_t queued_message_count = 0);
 
+    static const RDMResponse *GetParamDescription(
+        const RDMRequest *request,
+        uint16_t pid,
+        uint8_t pdl_size,
+        rdm_data_type data_type,
+        rdm_command_class command_class,
+        rdm_pid_unit unit,
+        rdm_pid_prefix prefix,
+        uint32_t min_value,
+        uint32_t default_value,
+        uint32_t max_value,
+        string description,
+        uint8_t queued_message_count = 0);
+    static const RDMResponse *GetASCIIParamDescription(
+        const RDMRequest *request,
+        uint16_t pid,
+        rdm_command_class command_class,
+        string description,
+        uint8_t queued_message_count = 0);
+    static const RDMResponse *GetBitFieldParamDescription(
+        const RDMRequest *request,
+        uint16_t pid,
+        uint8_t pdl_size,
+        rdm_command_class command_class,
+        string description,
+        uint8_t queued_message_count = 0);
+
     static const RDMResponse *GetString(const RDMRequest *request,
                                         const std::string &value,
                                         uint8_t queued_message_count = 0);
@@ -112,6 +141,9 @@ class ResponderHelper {
         const RDMRequest *request,
         uint8_t queued_message_count = 0);
 
+    static const RDMResponse *SetString(const RDMRequest *request,
+                                        std::string *value,
+                                        uint8_t queued_message_count = 0);
     static const RDMResponse *GetBoolValue(
         const RDMRequest *request, bool value,
         uint8_t queued_message_count = 0);

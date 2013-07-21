@@ -413,7 +413,7 @@ void DummyPortTest::testDmxAddress() {
 
   // check that broadcasting changes the address
   dmx_address = HostToNetwork(static_cast<uint16_t>(48));
-  UID broadcast_uid = UID::AllManufacturerDevices(OPEN_LIGHTING_ESTA_CODE);
+  UID broadcast_uid = UID::VendorcastAddress(OPEN_LIGHTING_ESTA_CODE);
   request = new RDMSetRequest(
       m_test_source,
       broadcast_uid,
@@ -535,7 +535,7 @@ void DummyPortTest::testIdentifyDevice() {
 
   // check that broadcasting changes the identify
   new_mode = 0;
-  UID broadcast_uid = UID::AllManufacturerDevices(OPEN_LIGHTING_ESTA_CODE);
+  UID broadcast_uid = UID::VendorcastAddress(OPEN_LIGHTING_ESTA_CODE);
   request = new RDMSetRequest(
       m_test_source,
       broadcast_uid,
@@ -816,7 +816,7 @@ void DummyPortTest::checkNoBroadcastResponse(uint16_t pid) {
         NewSingleCallback(this, &DummyPortTest::HandleRDMResponse));
   Verify();
 
-  broadcast_uid = UID::AllManufacturerDevices(OPEN_LIGHTING_ESTA_CODE);
+  broadcast_uid = UID::VendorcastAddress(OPEN_LIGHTING_ESTA_CODE);
   request = new RDMGetRequest(
       m_test_source,
       broadcast_uid,

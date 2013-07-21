@@ -25,7 +25,7 @@
 #include <ola/OlaClientWrapper.h>
 #include <ola/base/SysExits.h>
 #include <ola/io/SelectServer.h>
-
+#include <ola/rdm/UID.h>
 
 #include <iostream>
 #include <iomanip>
@@ -41,6 +41,7 @@ using std::vector;
 using ola::OlaCallbackClient;
 using ola::OlaCallbackClientWrapper;
 using ola::io::SelectServer;
+using ola::rdm::UID;
 using ola::rdm::UIDSet;
 
 static const int INVALID_VALUE = -1;
@@ -50,10 +51,13 @@ typedef struct {
   bool help;       // show the help
   bool full;       // full discovery
   bool incremental;  // incremental discovery
+  bool broadcast;  // broadcast UID
+  bool vendorcast;  // vendorcast UID
   string cmd;      // argv[0]
 } options;
 
 
+options opts;
 SelectServer *ss;
 
 /*
@@ -62,10 +66,21 @@ SelectServer *ss;
  */
 void UIDList(const ola::rdm::UIDSet &uids,
              const string &error) {
+  UIDSet vendorcast;
   if (error.empty()) {
     UIDSet::Iterator iter = uids.Begin();
     for (; iter != uids.End(); ++iter) {
       cout << *iter << endl;
+      vendorcast.AddUID(UID::VendorcastAddress(*iter));
+    }
+    if (opts.vendorcast) {
+      iter = vendorcast.Begin();
+      for (; iter != vendorcast.End(); ++iter) {
+        cout << *iter << endl;
+      }
+    }
+    if (opts.broadcast) {
+      cout << UID::AllDevices().ToString() << endl;
     }
   } else {
     cerr << error << endl;
@@ -82,12 +97,16 @@ void ParseOptions(int argc, char *argv[], options *opts) {
   opts->help = false;
   opts->full = false;
   opts->incremental = false;
+  opts->broadcast = false;
+  opts->vendorcast = false;
 
   static struct option long_options[] = {
+      {"include-broadcast", no_argument, 0, 'b'},
       {"help", no_argument, 0, 'h'},
       {"full", no_argument, 0, 'f'},
       {"incremental", no_argument, 0, 'i'},
       {"universe", required_argument, 0, 'u'},
+      {"include-vendorcast", no_argument, 0, 'v'},
       {0, 0, 0, 0}
     };
 
@@ -95,13 +114,16 @@ void ParseOptions(int argc, char *argv[], options *opts) {
   int option_index = 0;
 
   while (1) {
-    c = getopt_long(argc, argv, "u:fhi", long_options, &option_index);
+    c = getopt_long(argc, argv, "u:bfhiv", long_options, &option_index);
 
     if (c == -1)
       break;
 
     switch (c) {
       case 0:
+        break;
+      case 'b':
+        opts->broadcast = true;
         break;
       case 'f':
         opts->full = true;
@@ -114,6 +136,9 @@ void ParseOptions(int argc, char *argv[], options *opts) {
         break;
       case 'u':
         opts->uni = atoi(optarg);
+        break;
+      case 'v':
+        opts->vendorcast = true;
         break;
       case '?':
         break;
@@ -133,10 +158,13 @@ void DisplayGetUIDsHelp(const options &opts) {
   "\n"
   "Fetch the UID list for a universe.\n"
   "\n"
-  "  -h, --help        Display this help message and exit.\n"
-  "  -f, --full        Force full RDM Discovery for this universe\n"
-  "  -i, --incremental Force incremental RDM Discovery for this universe\n"
+  "  -b, --include-broadcast   Include broadcast UID for this universe\n"
+  "  -h, --help                Display this help message and exit.\n"
+  "  -f, --full                Force full RDM Discovery for this universe\n"
+  "  -i, --incremental         Force incremental RDM Discovery for this\n"
+  "                            universe\n"
   "  -u, --universe <universe> Universe number.\n"
+  "  -v, --include-vendorcast  Include vendorcast UID for this universe\n"
   << endl;
 }
 
@@ -176,7 +204,6 @@ bool FetchUIDs(OlaCallbackClient *client, const options &opts) {
 int main(int argc, char *argv[]) {
   ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
   OlaCallbackClientWrapper ola_client;
-  options opts;
   opts.cmd = argv[0];
 
   ParseOptions(argc, argv, &opts);

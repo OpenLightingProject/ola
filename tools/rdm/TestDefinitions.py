@@ -210,7 +210,7 @@ class DUBManufacturerTree(TestMixins.DiscoveryMixin,
     return UID(self.uid.manufacturer_id, 0)
 
   def UpperBound(self):
-    return UID.AllManufacturerDevices(self.uid.manufacturer_id)
+    return UID.VendorcastAddress(self.uid.manufacturer_id)
 
 
 class DUBSingleUID(TestMixins.DiscoveryMixin,
@@ -1293,7 +1293,7 @@ class SetVendorcastDeviceLabel(TestMixins.NonUnicastSetLabelMixin,
   TEST_LABEL = 'vendorcast label'
 
   def Uid(self):
-    return UID.AllManufacturerDevices(self._uid.manufacturer_id)
+    return UID.VendorcastAddress(self._uid.manufacturer_id)
 
   def OldValue(self):
     return self.Property('device_label')
@@ -1936,7 +1936,7 @@ class SetVendorcastStartAddress(TestMixins.SetNonUnicastStartAddressMixin,
   REQUIRES = ['dmx_footprint', 'dmx_address', 'set_dmx_address_supported']
 
   def Uid(self):
-    return UID.AllManufacturerDevices(self._uid.manufacturer_id)
+    return UID.VendorcastAddress(self._uid.manufacturer_id)
 
 
 class SetBroadcastStartAddress(TestMixins.SetNonUnicastStartAddressMixin,
@@ -3435,7 +3435,7 @@ class SetVendorcastIdentifyDevice(TestMixins.SetNonUnicastIdentifyMixin,
   PID = 'IDENTIFY_DEVICE'
 
   def Uid(self):
-    return UID.AllManufacturerDevices(self._uid.manufacturer_id)
+    return UID.VendorcastAddress(self._uid.manufacturer_id)
 
 
 class SetBroadcastIdentifyDevice(TestMixins.SetNonUnicastIdentifyMixin,
