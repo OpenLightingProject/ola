@@ -143,7 +143,7 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
             BasicSettingManager(settings) {
         }
 
-        const RDMResponse *Set(const RDMRequest *request, uint16_t *pin);
+        const RDMResponse *Set(const RDMRequest *request, const uint16_t *pin);
     };
 
     const UID m_uid;

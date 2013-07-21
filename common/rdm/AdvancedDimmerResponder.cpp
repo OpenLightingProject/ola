@@ -107,20 +107,8 @@ const AdvancedDimmerResponder::LockSettings *
 
 // Begin Lock Collection
 
-class LockManager: public BasicSettingManager {
-  public:
-    LockCollection(const char *settings[], unsigned int size)
-      :SettingCollection(settings, size) {}
-
-    const RDMResponse *Set(const RDMRequest *request, const uint16_t &pin);
-
-    uint8_t CurrentSetting() {
-      return m_current_setting;
-    };
-};
-
-const RDMResponse *LockManager::Set(const RDMRequest *request,
-                                       const uint16_t *pin) {
+const RDMResponse *AdvancedDimmerResponder::
+    LockManager::Set(const RDMRequest *request, const uint16_t *pin) {
   uint8_t arg;
   uint16_t recieved_pin;
 
@@ -257,9 +245,9 @@ AdvancedDimmerResponder::AdvancedDimmerResponder(const UID &uid)
       m_lock_pin(0),
       m_identify_mode(IDENTIFY_MODE_QUIET),
       m_personality_manager(Personalities::Instance()),
-      m_lock_setting(LockSettings::Instance()),
       m_curve_settings(CurveSettings::Instance()),
       m_response_time_settings(ResponseTimeSettings::Instance()),
+      m_lock_settings(LockSettings::Instance()),
       m_frequency_settings(FrequencySettings::Instance()) {
 }
 
@@ -421,17 +409,17 @@ const RDMResponse *AdvancedDimmerResponder::GetPWMFrequencyDescription(
 
 const RDMResponse *AdvancedDimmerResponder::GetLockState(
     const RDMRequest *request) {
-  return m_lock_setting->Get(request);
+  return m_lock_settings.Get(request);
 }
 
 const RDMResponse *AdvancedDimmerResponder::SetLockState(
     const RDMRequest *request) {
-  return m_lock_settings->Set(request, m_lock_pin);
+  return m_lock_settings.Set(request, &m_lock_pin);
 }
 
 const RDMResponse *AdvancedDimmerResponder::GetLockStateDescription(
     const RDMRequest *request) {
-  return m_lock_settings->GetDescription(request);
+  return m_lock_settings.GetDescription(request);
 }
 
 const RDMResponse *AdvancedDimmerResponder::GetLockPin(
