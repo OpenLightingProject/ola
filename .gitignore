@@ -92,6 +92,7 @@ olad/testdata/ola-output.conf
 plugins/e131/e131/e131_loadtest
 plugins/e131/e131/e131_transmit_test
 python/ola/PidStoreLocation.py
+python/ola/Version.py
 slp/slp_client
 slp/slp_server
 tools/e133/e133_controller
