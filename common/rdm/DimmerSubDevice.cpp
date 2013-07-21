@@ -119,7 +119,7 @@ const RDMResponse *DimmerSubDevice::GetDeviceInfo(const RDMRequest *request) {
 
 
 bool DimmerSubDevice::SetDmxStartAddress(uint16_t start_address) {
-  if(start_address < 1 || start_address + Footprint() > DMX_MAX_CHANNEL_VALUE)
+  if (start_address < 1 || start_address + Footprint() - 1 > DMX_UNIVERSE_SIZE)
     return false;
 
   m_start_address = start_address;
@@ -205,10 +205,10 @@ const RDMResponse *DimmerSubDevice::SetIdentifyMode(
     const RDMRequest *request) {
   uint8_t new_identify_mode;
 
-  if(!ResponderHelper::ExtractUInt8(request, &new_identify_mode))
+  if (!ResponderHelper::ExtractUInt8(request, &new_identify_mode))
     return NackWithReason(request, NR_FORMAT_ERROR);
 
-  if(new_identify_mode != IDENTIFY_QUIET && new_identify_mode != IDENTIFY_LOUD)
+  if (new_identify_mode != IDENTIFY_QUIET && new_identify_mode != IDENTIFY_LOUD)
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
 
   m_identify_mode = new_identify_mode;
