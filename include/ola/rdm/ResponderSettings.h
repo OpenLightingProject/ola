@@ -155,7 +155,9 @@ template <class SettingType>
 class SettingCollection {
   public:
     SettingCollection(const typename SettingType::ArgType args[],
-                      unsigned int arg_count) {
+                      unsigned int arg_count,
+                      bool zero_offset = false)
+        : m_zero_offset(zero_offset) {
       for (unsigned int i = 0; i < arg_count; i++) {
         m_settings.push_back(SettingType(args[i]));
       }
@@ -170,11 +172,16 @@ class SettingCollection {
       return &m_settings[index];
     }
 
+    unsigned int Offset() const {
+      return m_zero_offset ? 0 : 1;
+    }
+
   protected:
     SettingCollection() {}
 
   private:
     std::vector<SettingType> m_settings;
+    const bool m_zero_offset;
 };
 
 
@@ -186,7 +193,7 @@ class SettingManager {
   public:
     explicit SettingManager(const SettingCollection<SettingType> *settings)
         : m_settings(settings),
-          m_current_setting(1) {
+          m_current_setting(settings->Offset()) {
     }
 
     const RDMResponse *Get(const RDMRequest *request) const;
@@ -205,7 +212,8 @@ typedef SettingManager<BasicSetting> BasicSettingManager;
 template <class SettingType>
 const RDMResponse *SettingManager<SettingType>::Get(
     const RDMRequest *request) const {
-  uint16_t data = m_current_setting << 8 | m_settings->Count();
+  uint16_t data = (m_current_setting << 8 |
+                   (m_settings->Count() + m_settings->Offset()));
   return ResponderHelper::GetUInt16Value(request, data);
 }
 
@@ -217,10 +225,11 @@ const RDMResponse *SettingManager<SettingType>::Set(
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
-  if (arg == 0 || arg > m_settings->Count()) {
+  unsigned int offset = m_settings->Offset();
+  if (arg < offset || arg >= m_settings->Count() + offset) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   } else {
-    m_current_setting = arg;
+    m_current_setting = arg - offset;
     return ResponderHelper::EmptySetResponse(request);
   }
 }
@@ -233,10 +242,11 @@ const RDMResponse *SettingManager<SettingType>::GetDescription(
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
-  if (arg == 0 || arg > m_settings->Count()) {
+  unsigned int offset = m_settings->Offset();
+  if (arg < offset || arg >= m_settings->Count() + offset) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   } else {
-    const SettingType *setting = m_settings->Lookup(arg - 1);
+    const SettingType *setting = m_settings->Lookup(arg - offset);
 
     uint8_t output[setting->DescriptionResponseSize()];
     unsigned int size = setting->GenerateDescriptionResponse(arg, output);
