@@ -83,47 +83,6 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
         static Personalities *instance;
     };
 
-    class CurveSettings : public BasicSettingCollection {
-      public:
-        static const CurveSettings *Instance();
-
-      private:
-        explicit CurveSettings(const BasicSetting::ArgType args[],
-                               unsigned int arg_count)
-            : BasicSettingCollection(args, arg_count) {
-        }
-
-        static CurveSettings *instance;
-    };
-
-    class ResponseTimeSettings : public BasicSettingCollection {
-      public:
-        static const ResponseTimeSettings *Instance();
-
-      private:
-        explicit ResponseTimeSettings(const BasicSetting::ArgType args[],
-                               unsigned int arg_count)
-            : BasicSettingCollection(args, arg_count) {
-        }
-
-        static ResponseTimeSettings *instance;
-    };
-
-    class FrequencySettings : public
-                              SettingCollection<FrequencyModulationSetting> {
-      public:
-        static const FrequencySettings *Instance();
-
-      private:
-        explicit FrequencySettings(
-            const FrequencyModulationSetting::ArgType args[],
-            unsigned int arg_count)
-            : SettingCollection<FrequencyModulationSetting>(args, arg_count) {
-        }
-
-        static FrequencySettings *instance;
-    };
-
     const UID m_uid;
     bool m_identify_state;
     uint16_t m_start_address;
@@ -160,11 +119,15 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
 
     static const ResponderOps<AdvancedDimmerResponder>::ParamHandler
       PARAM_HANDLERS[];
-
     static const char* CURVES[];
     static const char* RESPONSE_TIMES[];
     static const FrequencyModulationSetting::FrequencyModulationArg
         PWM_FREQUENCIES[];
+
+    static const SettingCollection<BasicSetting> CurveSettings;
+    static const SettingCollection<BasicSetting> ResponseTimeSettings;
+    static const SettingCollection<FrequencyModulationSetting>
+      FrequencySettings;
 };
 }  // namespace rdm
 }  // namespace ola

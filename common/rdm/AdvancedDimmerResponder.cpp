@@ -64,31 +64,14 @@ const FrequencyModulationSetting::ArgType
   {10000, "10kHz"},
 };
 
-const AdvancedDimmerResponder::CurveSettings *
-    AdvancedDimmerResponder::CurveSettings::Instance() {
-  if (!instance) {
-    instance = new CurveSettings(CURVES, arraysize(CURVES));
-  }
-  return instance;
-}
-
-const AdvancedDimmerResponder::ResponseTimeSettings *
-    AdvancedDimmerResponder::ResponseTimeSettings::Instance() {
-  if (!instance) {
-    instance = new ResponseTimeSettings(
+const SettingCollection<BasicSetting>
+    AdvancedDimmerResponder::CurveSettings(CURVES, arraysize(CURVES));
+const SettingCollection<BasicSetting>
+    AdvancedDimmerResponder::ResponseTimeSettings(
         RESPONSE_TIMES, arraysize(RESPONSE_TIMES));
-  }
-  return instance;
-}
-
-const AdvancedDimmerResponder::FrequencySettings *
-    AdvancedDimmerResponder::FrequencySettings::Instance() {
-  if (!instance) {
-    instance = new FrequencySettings(
+const SettingCollection<FrequencyModulationSetting>
+    AdvancedDimmerResponder::FrequencySettings(
         PWM_FREQUENCIES, arraysize(PWM_FREQUENCIES));
-  }
-  return instance;
-}
 
 const AdvancedDimmerResponder::Personalities *
     AdvancedDimmerResponder::Personalities::Instance() {
@@ -105,15 +88,6 @@ AdvancedDimmerResponder::Personalities *
 
 AdvancedDimmerResponder::RDMOps *
     AdvancedDimmerResponder::RDMOps::instance = NULL;
-
-AdvancedDimmerResponder::CurveSettings *
-    AdvancedDimmerResponder::CurveSettings::instance = NULL;
-
-AdvancedDimmerResponder::ResponseTimeSettings *
-    AdvancedDimmerResponder::ResponseTimeSettings::instance = NULL;
-
-AdvancedDimmerResponder::FrequencySettings *
-    AdvancedDimmerResponder::FrequencySettings::instance = NULL;
 
 const ResponderOps<AdvancedDimmerResponder>::ParamHandler
     AdvancedDimmerResponder::PARAM_HANDLERS[] = {
@@ -187,9 +161,9 @@ AdvancedDimmerResponder::AdvancedDimmerResponder(const UID &uid)
       m_start_address(1),
       m_identify_mode(IDENTIFY_MODE_QUIET),
       m_personality_manager(Personalities::Instance()),
-      m_curve_settings(CurveSettings::Instance()),
-      m_response_time_settings(ResponseTimeSettings::Instance()),
-      m_frequency_settings(FrequencySettings::Instance()) {
+      m_curve_settings(&CurveSettings),
+      m_response_time_settings(&ResponseTimeSettings),
+      m_frequency_settings(&FrequencySettings) {
 }
 
 /*
