@@ -322,6 +322,101 @@ const RDMResponse *ResponderHelper::GetRealTimeClock(
       queued_message_count);
 }
 
+const RDMResponse *ResponderHelper::GetParamDescription(
+    const RDMRequest *request,
+    uint16_t pid,
+    uint8_t pdl_size,
+    rdm_data_type data_type,
+    rdm_command_class command_class,
+    rdm_pid_unit unit,
+    rdm_pid_prefix prefix,
+    uint32_t min_value,
+    uint32_t default_value,
+    uint32_t max_value,
+    string description,
+    uint8_t queued_message_count) {
+  struct parameter_description_s {
+    uint16_t pid;
+    uint8_t pdl_size;
+    uint8_t data_type;
+    uint8_t command_class;
+    uint8_t type;
+    uint8_t unit;
+    uint8_t prefix;
+    uint32_t min_value;
+    uint32_t default_value;
+    uint32_t max_value;
+    char description[MAX_RDM_STRING_LENGTH];
+  } __attribute__((packed));
+
+  struct parameter_description_s param_description;
+  param_description.pid = HostToNetwork(pid);
+  param_description.pdl_size = HostToNetwork(pdl_size);
+  param_description.data_type = HostToNetwork(
+      static_cast<uint8_t>(data_type));
+  param_description.command_class = HostToNetwork(
+      static_cast<uint8_t>(command_class));
+  param_description.type = 0;
+  param_description.unit = HostToNetwork(
+      static_cast<uint8_t>(unit));
+  param_description.prefix = HostToNetwork(
+      static_cast<uint8_t>(prefix));
+  param_description.min_value = min_value;
+  param_description.default_value = default_value;
+  param_description.max_value = max_value;
+  strncpy(param_description.description, description.c_str(),
+          MAX_RDM_STRING_LENGTH);
+  return GetResponseFromData(
+      request,
+      reinterpret_cast<uint8_t*>(&param_description),
+      sizeof(param_description),
+      RDM_ACK,
+      queued_message_count);
+}
+
+const RDMResponse *ResponderHelper::GetASCIIParamDescription(
+        const RDMRequest *request,
+        uint16_t pid,
+        rdm_command_class command_class,
+        string description,
+        uint8_t queued_message_count) {
+  return GetParamDescription(
+      request,
+      pid,
+      static_cast<uint8_t>(MAX_RDM_STRING_LENGTH),
+      DS_ASCII,
+      command_class,
+      UNITS_NONE,
+      PREFIX_NONE,
+      static_cast<uint32_t>(0),
+      static_cast<uint32_t>(0),
+      static_cast<uint32_t>(0),
+      description,
+      queued_message_count);
+}
+
+const RDMResponse *ResponderHelper::GetBitFieldParamDescription(
+        const RDMRequest *request,
+        uint16_t pid,
+        uint8_t pdl_size,
+        rdm_command_class command_class,
+        string description,
+        uint8_t queued_message_count) {
+  return GetParamDescription(
+      request,
+      pid,
+      pdl_size,
+      DS_BIT_FIELD,
+      command_class,
+      UNITS_NONE,
+      PREFIX_NONE,
+      static_cast<uint32_t>(0),
+      static_cast<uint32_t>(0),
+      static_cast<uint32_t>(0),
+      description,
+      queued_message_count);
+}
+
 /*
  * Handle a request that returns a string
  */
@@ -340,8 +435,9 @@ const RDMResponse *ResponderHelper::GetString(
         queued_message_count);
 }
 
-const RDMResponse *ResponderHelper::EmptySetResponse(const RDMRequest *request,
-                                                uint8_t queued_message_count) {
+const RDMResponse *ResponderHelper::EmptySetResponse(
+    const RDMRequest *request,
+    uint8_t queued_message_count) {
   return new RDMSetResponse(
     request->DestinationUID(),
     request->SourceUID(),
@@ -352,6 +448,19 @@ const RDMResponse *ResponderHelper::EmptySetResponse(const RDMRequest *request,
     request->ParamId(),
     NULL,
     0);
+}
+
+const RDMResponse *ResponderHelper::SetString(
+    const RDMRequest *request,
+    std::string *value,
+    uint8_t queued_message_count) {
+  if (request->ParamDataSize() > MAX_RDM_STRING_LENGTH) {
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
+  }
+  const string new_label(reinterpret_cast<const char*>(request->ParamData()),
+                         request->ParamDataSize());
+  *value = new_label;
+  return EmptySetResponse(request, queued_message_count);
 }
 
 const RDMResponse *ResponderHelper::GetBoolValue(const RDMRequest *request,

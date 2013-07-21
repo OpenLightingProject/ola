@@ -18,15 +18,22 @@ echo "Index file: $index_file";
 
 cat << 'EOF' > $index_file
 <html>
+<head>
+<title>Man pages for the Open Lighting Project</title>
+</head>
 <body>
-<h1>Man pages for the Open Lighting Project</h1>
+<h1>Man pages for the <a href="http://openlighting.org">Open Lighting Project</a></h1>
 <ul>
 EOF
 
+if [ ! -d $output_dir/man1/ ]; then
+  echo $output_dir/man1/ doesn\'t exist, please create it
+  exit 1;
+fi
 for man_file in *.1; do
   echo "Generating $man_file";
   output_file=$output_dir/man1/$man_file.html;
-  man2html -r $man_file | sed 1d > $output_file;
+  man2html -r $man_file -M ../index.html | sed 1,2d > $output_file;
   chmod a+r $output_file;
   echo "<li><a href='./man1/$man_file.html'>$man_file</a></li>" >> $index_file
 done

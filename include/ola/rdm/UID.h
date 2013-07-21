@@ -165,10 +165,10 @@ class UID {
      *   UID broadcast_uid(UID::AllDevices());
      *   broadcast_uid.DirectedToUID(uid);  // true
      *
-     *   UID vendorcast_uid(UID::AllManufacturerDevices(0x7a70));
+     *   UID vendorcast_uid(UID::VendorcastAddress(0x7a70));
      *   vendorcast_uid.DirectedToUID(uid);  // true
      *
-     *   UID other_vendorcast_uid(UID::AllManufacturerDevices(0x0808));
+     *   UID other_vendorcast_uid(UID::VendorcastAddress(0x0808));
      *   other_vendorcast_uid.DirectedToUID(uid);  // false
      * @endcode
      */
@@ -231,8 +231,18 @@ class UID {
      * @param esta_id the manufacturer id of the devices to match.
      * @returns a UID(X, 0xffffffff).
      */
-    static UID AllManufacturerDevices(uint16_t esta_id) {
+    static UID VendorcastAddress(uint16_t esta_id) {
       return UID(esta_id, ALL_DEVICES);
+    }
+
+    /**
+     * @brief Returns a UID that matches all devices for a particular
+     * manufacturer.
+     * @param uid a UID whose manufacturer id you want to match.
+     * @returns a UID(X, 0xffffffff).
+     */
+    static UID VendorcastAddress(UID uid) {
+      return UID(uid.ManufacturerId(), ALL_DEVICES);
     }
 
     /**

@@ -39,27 +39,65 @@ namespace ola {
 namespace rdm {
 
 /**
- * ResponderOps handles dispatching requests based on the PID. Have a look at
- * the dummy responder for an example.
+ * @brief A class which dispatches RDM requests to registered PID handlers.
+ *
+ * ResponderOps is a stateless RDM request dispatcher. The constructor takes a
+ * list of parameter handlers in the form of pointers to member functions. When
+ * HandleRDMRequest is called, it invokes the registered handler after
+ * performing a common set of checks. If no handler is found, a response
+ * containing NR_UNKNOWN_PID is returned.
+ *
+ * The stateless nature of ResponderOps means a single ResponderOps
+ * object can handle requests for all responders of the same type. This
+ * conserves memory when large numbers of responders are active.
+ *
+ * ResponderOps handles SUPPORTED_PARAMETERS internally, however this can be
+ * overridden by registering a handler for SUPPORTED_PARAMETERS.
+ *
+ * @tparam Target the object to invoke the PID handlers on.
  */
 template <class Target>
 class ResponderOps {
   public:
-    // Each callback takes a RDMRequest object. The handler returns a
-    // RDMResponse, or NULL.
+    /**
+     * @brief The member function to call on the target to handle a request.
+     *
+     * The member function should return a RDMResponse object. If the request
+     * was broadcast, this object will be discarded.
+     */
     typedef const RDMResponse *(Target::*RDMHandler)(const RDMRequest *request);
 
+    /**
+     * @brief the structure that defines the behaviour for a specific PID.o
+     *
+     * Either the get_handler or set_handlers may be NULL if the command
+     * class isn't defined for this PID.
+     */
     struct ParamHandler {
-      uint16_t pid;
-      RDMHandler get_handler;
-      RDMHandler set_handler;
+      uint16_t pid;  /**< The PID this handler is for */
+      RDMHandler get_handler;  /**< The method used to handle GETs */
+      RDMHandler set_handler;  /**< The method used to handle SETs */
     };
 
-    /*
-     * param_handlers must be terminated with {0, NULL, NULL}
+    /**
+     * @brief Construct a new ResponderOps object.
+     * @param param_handlers an array of ParamHandlers. Must be terminated with
+     * {0, NULL, NULL}
+     * @param include_required_pids if true, the internal SUPPORTED_PARAMETERS
+     *   handler includes those PIDs that are marked a required in E1.20. This
+     *   is required for sub-devices, see Section 2 of E1.37.
      */
-    explicit ResponderOps(const ParamHandler param_handlers[]);
+    explicit ResponderOps(const ParamHandler param_handlers[],
+                          bool include_required_pids = false);
 
+    /**
+     * @brief Handle a RDMRequest
+     * @param target the target object to invoke the registered handler on
+     * @param target_uid the UID of the target
+     * @param sub_device the sub_device of the target
+     * @param request the RDM request object
+     * @param on_complete the callback to run when the request completes.
+     */
     void HandleRDMRequest(Target *target,
                           const UID &target_uid,
                           uint16_t sub_device,
@@ -73,6 +111,7 @@ class ResponderOps {
     };
     typedef std::map<uint16_t, InternalParamHandler> RDMHandlers;
 
+    bool m_include_required_pids;
     RDMHandlers m_handlers;
 
     RDMResponse *HandleSupportedParams(const RDMRequest *request);
@@ -80,6 +119,5 @@ class ResponderOps {
 
 }  // namespace rdm
 }  // namespace ola
-
 #include <ola/rdm/ResponderOpsPrivate.h>  // NOLINT(build/include_order)
 #endif  // INCLUDE_OLA_RDM_RESPONDEROPS_H_

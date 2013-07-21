@@ -76,7 +76,7 @@ void UIDTest::testUID() {
   OLA_ASSERT_EQ(string("0002:0000000a"), uid3.ToString());
 
   UID all_devices = UID::AllDevices();
-  UID manufacturer_devices = UID::AllManufacturerDevices(0x52);
+  UID manufacturer_devices = UID::VendorcastAddress(0x52);
   OLA_ASSERT_EQ(string("ffff:ffffffff"), all_devices.ToString());
   OLA_ASSERT_EQ(string("0052:ffffffff"),
                        manufacturer_devices.ToString());
@@ -304,11 +304,21 @@ void UIDTest::testDirectedToUID() {
   UID broadcast_uid = UID::AllDevices();
   OLA_ASSERT_TRUE(broadcast_uid.DirectedToUID(device_uid));
 
-  // test vendorcast
-  UID vendorcast_uid = UID::AllManufacturerDevices(MANUFACTURER_ID);
+  // test vendorcast passing manufacturer ID
+  UID vendorcast_uid = UID::VendorcastAddress(MANUFACTURER_ID);
   OLA_ASSERT_TRUE(vendorcast_uid.DirectedToUID(device_uid));
 
-  // test another vendor
-  UID other_vendorcast_uid = UID::AllManufacturerDevices(MANUFACTURER_ID - 1);
+  // test vendorcast passing UID
+  UID other_device_uid(MANUFACTURER_ID, 11);
+  UID vendorcast_uid_2 = UID::VendorcastAddress(other_device_uid);
+  OLA_ASSERT_TRUE(vendorcast_uid_2.DirectedToUID(device_uid));
+
+  // test another vendor passing manufacturer ID
+  UID other_vendorcast_uid = UID::VendorcastAddress(MANUFACTURER_ID - 1);
   OLA_ASSERT_FALSE(other_vendorcast_uid.DirectedToUID(device_uid));
+
+  // test another vendor passing UID
+  UID other_manufacturer_uid(MANUFACTURER_ID - 1, 10);
+  UID other_vendorcast_uid_2 = UID::VendorcastAddress(other_manufacturer_uid);
+  OLA_ASSERT_FALSE(other_vendorcast_uid_2.DirectedToUID(device_uid));
 }

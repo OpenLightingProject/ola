@@ -48,7 +48,9 @@ namespace rdm {
 using std::auto_ptr;
 
 template <class Target>
-ResponderOps<Target>::ResponderOps(const ParamHandler param_handlers[]) {
+ResponderOps<Target>::ResponderOps(const ParamHandler param_handlers[],
+                                   bool include_required_pids)
+    : m_include_required_pids(include_required_pids) {
   // We install placeholders for any pids which are handled internally.
   struct InternalParamHandler placeholder = {NULL, NULL};
   STLReplace(&m_handlers, PID_SUPPORTED_PARAMETERS, placeholder);
@@ -194,12 +196,13 @@ RDMResponse *ResponderOps<Target>::HandleSupportedParams(
   for (; iter != m_handlers.end(); ++iter) {
     uint16_t pid = iter->first;
     // some pids never appear in supported_parameters.
-    if (pid != PID_SUPPORTED_PARAMETERS &&
+    if (m_include_required_pids || (
+        pid != PID_SUPPORTED_PARAMETERS &&
         pid != PID_PARAMETER_DESCRIPTION &&
         pid != PID_DEVICE_INFO &&
         pid != PID_SOFTWARE_VERSION_LABEL &&
         pid != PID_DMX_START_ADDRESS &&
-        pid != PID_IDENTIFY_DEVICE) {
+        pid != PID_IDENTIFY_DEVICE)) {
       params.push_back(iter->first);
     }
   }

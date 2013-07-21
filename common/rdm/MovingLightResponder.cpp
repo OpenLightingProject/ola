@@ -630,24 +630,7 @@ const RDMResponse *MovingLightResponder::GetDeviceLabel(
 
 const RDMResponse *MovingLightResponder::SetDeviceLabel(
     const RDMRequest *request) {
-  if (request->ParamDataSize() > MAX_RDM_STRING_LENGTH) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
-
-  const string new_label(reinterpret_cast<const char*>(request->ParamData()),
-                         request->ParamDataSize());
-  m_device_label = new_label;
-
-  return new RDMSetResponse(
-    request->DestinationUID(),
-    request->SourceUID(),
-    request->TransactionNumber(),
-    RDM_ACK,
-    0,
-    request->SubDevice(),
-    request->ParamId(),
-    NULL,
-    0);
+  return ResponderHelper::SetString(request, &m_device_label);
 }
 
 const RDMResponse *MovingLightResponder::GetSoftwareVersionLabel(
