@@ -124,12 +124,15 @@ class SLPClientWrapper: public BaseClientWrapper {
       if (!m_client.get()) {
         m_client.reset(new SLPClient(m_socket.get()));
       }
+    }
+
+    bool StartupClient() {
+      bool ok = m_client->Setup();
       m_client->SetCloseHandler(
         ola::NewSingleCallback(static_cast<BaseClientWrapper*>(this),
                                &BaseClientWrapper::SocketClosed));
+      return ok;
     }
-
-    bool StartupClient() { return m_client->Setup(); }
 
     void InitSocket() {
       m_socket.reset(TCPSocket::Connect(
