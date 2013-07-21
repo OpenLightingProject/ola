@@ -19,7 +19,8 @@ libolardm_la_SOURCES = AckTimerResponder.cpp AdvancedDimmerResponder.cpp \
                        QueueingRDMController.cpp RDMAPI.cpp RDMCommand.cpp \
                        RDMCommandSerializer.cpp RDMHelper.cpp \
                        ResponderHelper.cpp ResponderPersonality.cpp \
-                       SensorResponder.cpp StringMessageBuilder.cpp \
+                       ResponderSettings.cpp SensorResponder.cpp \
+                       StringMessageBuilder.cpp \
                        SubDeviceDispatcher.cpp UID.cpp \
                        VariableFieldSizeCalculator.cpp
 
