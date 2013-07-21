@@ -807,6 +807,12 @@ class GetSubDeviceSupportedParameters(ResponderTestFixture):
   REQUIRES = ['sub_device_indices']
   PROVIDES = ['sub_device_supported_parameters']
 
+  # E1.37, 2.1 Sub devices are required to support these.
+  MANDATORY_PIDS = ['SUPPORTED_PARAMETERS',
+                    'DEVICE_INFO',
+                    'SOFTWARE_VERSION_LABEL',
+                    'IDENTIFY_DEVICE']
+
   def Test(self):
     self._sub_devices = list(self.Property('sub_device_indices'))
     self._sub_devices.reverse()
@@ -830,14 +836,25 @@ class GetSubDeviceSupportedParameters(ResponderTestFixture):
     self._params[sub_device] = supported_params
 
   def _CheckForConsistency(self):
-    our_params = set()
-    for params in self._params.itervalues():
-      if not our_params:
-        our_params = params
-      elif our_params != params:
+    if not self._params:
+      return
+
+    supported_pids = set()
+    for pids in self._params.itervalues():
+      if not supported_pids:
+        supported_pids = pids
+      elif supported_pids != pids:
         self.SetFailed('SUPPORTED_PARAMETERS for sub-devices do not match')
         return
-    self.SetProperty('sub_device_supported_parameters', our_params)
+
+    mandatory_pids = set(self.LookupPid(p).value for p in self.MANDATORY_PIDS)
+    missing_pids = mandatory_pids - supported_pids
+    if missing_pids:
+      self.SetFailed("Missing PIDs %s from sub device's supported pid list" %
+                     ', '.join('0x%04hx' % p for p in missing_pids));
+      return
+
+    self.SetProperty('sub_device_supported_parameters', supported_pids)
 
 
 # Sub Devices Test
