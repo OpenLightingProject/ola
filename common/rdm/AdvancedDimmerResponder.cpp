@@ -32,6 +32,7 @@
 #include "ola/rdm/OpenLightingEnums.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/ResponderHelper.h"
+#include "ola/rdm/ResponderSettings.h"
 
 namespace ola {
 namespace rdm {
@@ -54,12 +55,13 @@ const char* AdvancedDimmerResponder::RESPONSE_TIMES[] = {
   "Very slow",
 };
 
-const char* AdvancedDimmerResponder::PWM_FREQUENCIES[] = {
-  "120Hz",
-  "500Hz",
-  "1kHz",
-  "5kHz",
-  "10kHz",
+const FrequencyModulationSetting::ArgType
+    AdvancedDimmerResponder::PWM_FREQUENCIES[] = {
+  {120, "120Hz"},
+  {500, "500Hz"},
+  {1000, "1kHz"},
+  {5000, "5kHz"},
+  {10000, "10kHz"},
 };
 
 const char* AdvancedDimmerResponder::LOCK_STATES[] = {
@@ -68,71 +70,30 @@ const char* AdvancedDimmerResponder::LOCK_STATES[] = {
   "Pesonalities Locked",
 };
 
-class SettingCollection {
-  public:
-    SettingCollection(const char *settings[], unsigned int size)
-      : m_current_setting(1) {
-      for (unsigned int i = 0; i < size; i++) {
-        m_settings.push_back(settings[i]);
-      }
-    }
-
-    const RDMResponse *Get(const RDMRequest *request) const;
-    const RDMResponse *Set(const RDMRequest *request);
-    const RDMResponse *GetDescription(const RDMRequest *request) const;
-
-  protected:
-    struct setting_description_s {
-      uint8_t setting;
-      char description[MAX_RDM_STRING_LENGTH];
-    } __attribute__((packed));
-
-    uint8_t m_current_setting;
-    vector<string> m_settings;
-};
-
-const RDMResponse *SettingCollection::Get(const RDMRequest *request) const {
-  uint16_t data = m_current_setting << 8 | m_settings.size();
-  return ResponderHelper::GetUInt16Value(request, data);
+const AdvancedDimmerResponder::CurveSettings *
+    AdvancedDimmerResponder::CurveSettings::Instance() {
+  if (!instance) {
+    instance = new CurveSettings(CURVES, arraysize(CURVES));
+  }
+  return instance;
 }
 
-const RDMResponse *SettingCollection::Set(const RDMRequest *request) {
-  uint8_t arg;
-  if (!ResponderHelper::ExtractUInt8(request, &arg)) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
+const AdvancedDimmerResponder::ResponseTimeSettings *
+    AdvancedDimmerResponder::ResponseTimeSettings::Instance() {
+  if (!instance) {
+    instance = new ResponseTimeSettings(
+        RESPONSE_TIMES, arraysize(RESPONSE_TIMES));
   }
-
-  if (arg == 0 || arg > m_settings.size()) {
-    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
-  } else {
-    m_current_setting = arg;
-    return ResponderHelper::EmptySetResponse(request);
-  }
+  return instance;
 }
 
-const RDMResponse *SettingCollection::GetDescription(
-    const RDMRequest *request) const {
-  uint8_t arg;
-  if (!ResponderHelper::ExtractUInt8(request, &arg)) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
+const AdvancedDimmerResponder::FrequencySettings *
+    AdvancedDimmerResponder::FrequencySettings::Instance() {
+  if (!instance) {
+    instance = new FrequencySettings(
+        PWM_FREQUENCIES, arraysize(PWM_FREQUENCIES));
   }
-
-  if (arg == 0 || arg > m_settings.size()) {
-    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
-  } else {
-    const string value = m_settings[arg - 1];
-
-    struct setting_description_s setting_description;
-    setting_description.setting = arg;
-    strncpy(setting_description.description, value.c_str(),
-            sizeof(setting_description.description));
-
-    return GetResponseFromData(
-        request,
-        reinterpret_cast<uint8_t*>(&setting_description),
-        sizeof(setting_description),
-        RDM_ACK);
-  }
+  return instance;
 }
 
 // Begin Lock Collection
@@ -190,8 +151,17 @@ const AdvancedDimmerResponder::Personalities *
 AdvancedDimmerResponder::Personalities *
     AdvancedDimmerResponder::Personalities::instance = NULL;
 
-AdvancedDimmerResponder::RDMOps *AdvancedDimmerResponder::RDMOps::instance =
-  NULL;
+AdvancedDimmerResponder::RDMOps *
+    AdvancedDimmerResponder::RDMOps::instance = NULL;
+
+AdvancedDimmerResponder::CurveSettings *
+    AdvancedDimmerResponder::CurveSettings::instance = NULL;
+
+AdvancedDimmerResponder::ResponseTimeSettings *
+    AdvancedDimmerResponder::ResponseTimeSettings::instance = NULL;
+
+AdvancedDimmerResponder::FrequencySettings *
+    AdvancedDimmerResponder::FrequencySettings::instance = NULL;
 
 const ResponderOps<AdvancedDimmerResponder>::ParamHandler
     AdvancedDimmerResponder::PARAM_HANDLERS[] = {
@@ -275,13 +245,11 @@ AdvancedDimmerResponder::AdvancedDimmerResponder(const UID &uid)
       m_lock_pin(0),
       m_identify_mode(IDENTIFY_MODE_QUIET),
       m_personality_manager(Personalities::Instance()),
-      m_curve_setting(new SettingCollection(CURVES, arraysize(CURVES))),
-      m_response_time_setting(new SettingCollection(
-          RESPONSE_TIMES, arraysize(RESPONSE_TIMES))),
-      m_frequency_setting(new SettingCollection(
-          PWM_FREQUENCIES, arraysize(PWM_FREQUENCIES))),
       m_lock_setting(new LockCollection(
-           LOCK_STATES, arraysize(LOCK_STATES))){
+           LOCK_STATES, arraysize(LOCK_STATES))) {
+      m_curve_settings(CurveSettings::Instance()),
+      m_response_time_settings(ResponseTimeSettings::Instance()),
+      m_frequency_settings(FrequencySettings::Instance()) {
 }
 
 /*
@@ -397,47 +365,47 @@ const RDMResponse *AdvancedDimmerResponder::SetIdentifyMode(
 
 const RDMResponse *AdvancedDimmerResponder::GetCurve(
     const RDMRequest *request) {
-  return m_curve_setting->Get(request);
+  return m_curve_settings.Get(request);
 }
 
 const RDMResponse *AdvancedDimmerResponder::SetCurve(
     const RDMRequest *request) {
-  return m_curve_setting->Set(request);
+  return m_curve_settings.Set(request);
 }
 
 const RDMResponse *AdvancedDimmerResponder::GetCurveDescription(
     const RDMRequest *request) {
-  return m_curve_setting->GetDescription(request);
+  return m_curve_settings.GetDescription(request);
 }
 
 const RDMResponse *AdvancedDimmerResponder::GetResponseTime(
     const RDMRequest *request) {
-  return m_response_time_setting->Get(request);
+  return m_response_time_settings.Get(request);
 }
 
 const RDMResponse *AdvancedDimmerResponder::SetResponseTime(
     const RDMRequest *request) {
-  return m_response_time_setting->Set(request);
+  return m_response_time_settings.Set(request);
 }
 
 const RDMResponse *AdvancedDimmerResponder::GetResponseTimeDescription(
     const RDMRequest *request) {
-  return m_response_time_setting->GetDescription(request);
+  return m_response_time_settings.GetDescription(request);
 }
 
 const RDMResponse *AdvancedDimmerResponder::GetPWMFrequency(
     const RDMRequest *request) {
-  return m_frequency_setting->Get(request);
+  return m_frequency_settings.Get(request);
 }
 
 const RDMResponse *AdvancedDimmerResponder::SetPWMFrequency(
     const RDMRequest *request) {
-  return m_frequency_setting->Set(request);
+  return m_frequency_settings.Set(request);
 }
 
 const RDMResponse *AdvancedDimmerResponder::GetPWMFrequencyDescription(
     const RDMRequest *request) {
-  return m_frequency_setting->GetDescription(request);
+  return m_frequency_settings.GetDescription(request);
 }
 
 const RDMResponse *AdvancedDimmerResponder::GetLockState(
