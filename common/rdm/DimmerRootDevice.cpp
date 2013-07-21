@@ -29,6 +29,7 @@
 #include "ola/base/Array.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/DimmerRootDevice.h"
+#include "ola/rdm/DimmerSubDevice.h"
 #include "ola/rdm/OpenLightingEnums.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/ResponderHelper.h"
@@ -66,7 +67,13 @@ const ResponderOps<DimmerRootDevice>::ParamHandler
   { PID_IDENTIFY_DEVICE,
     &DimmerRootDevice::GetIdentify,
     &DimmerRootDevice::SetIdentify},
-  { 0, NULL, NULL},
+  { PID_DMX_BLOCK_ADDRESS,
+    &DimmerRootDevice::GetDmxBlockAddress,
+    &DimmerRootDevice::SetDmxBlockAddress},
+  { PID_IDENTIFY_MODE,
+    &DimmerRootDevice::GetIdentifyMode,
+    &DimmerRootDevice::SetIdentifyMode},
+  { 0, NULL, NULL}
 };
 
 /**
@@ -75,7 +82,8 @@ const ResponderOps<DimmerRootDevice>::ParamHandler
  */
 DimmerRootDevice::DimmerRootDevice(const UID &uid, SubDeviceMap sub_devices)
     : m_uid(uid),
-      m_identify_mode(false),
+      m_identify_on(false),
+      m_identify_mode(255),
       m_sub_devices(sub_devices) {
   if (m_sub_devices.size() > MAX_SUBDEVICE_NUMBER) {
     OLA_FATAL << "More than " << MAX_SUBDEVICE_NUMBER
@@ -130,18 +138,108 @@ const RDMResponse *DimmerRootDevice::GetSoftwareVersionLabel(
 }
 
 const RDMResponse *DimmerRootDevice::GetIdentify(const RDMRequest *request) {
-  return ResponderHelper::GetBoolValue(request, m_identify_mode);
+  return ResponderHelper::GetBoolValue(request, m_identify_on);
 }
 
 const RDMResponse *DimmerRootDevice::SetIdentify(const RDMRequest *request) {
-  bool old_value = m_identify_mode;
+  bool old_value = m_identify_on;
   const RDMResponse *response = ResponderHelper::SetBoolValue(
-      request, &m_identify_mode);
+      request, &m_identify_on);
   if (m_identify_mode != old_value) {
     OLA_INFO << "Dimmer Root Device " << m_uid << ", identify mode "
-             << (m_identify_mode ? "on" : "off");
+             << (m_identify_on ? "on" : "off");
   }
   return response;
 }
+
+const RDMResponse *DimmerRootDevice::GetDmxBlockAddress(
+    const RDMRequest *request) {
+
+  struct block_address_pdl {
+    uint16_t total_footprint;
+    uint16_t base_address;
+  } __attribute__((packed));
+
+  block_address_pdl pdl;
+  pdl.base_address = 0;
+  pdl.total_footprint = 0;
+  uint16_t next_address = 0;
+
+
+  for (SubDeviceMap::const_iterator iter = m_sub_devices.begin();
+      iter != m_sub_devices.end();
+      ++iter) {
+    if (iter->second->Footprint() != 0) {
+      if (next_address == iter->second->GetDmxStartAddress()) {
+        next_address += iter->second->Footprint();
+      } else if (next_address == 0) {
+        next_address = iter->second->GetDmxStartAddress() +
+            iter->second->Footprint();
+        pdl.base_address = iter->second->GetDmxStartAddress();
+      } else {
+        pdl.base_address = 0xFFFF;
+      }
+      pdl.total_footprint += iter->second->Footprint();
+    }
+  }
+
+  pdl.base_address = HostToNetwork(pdl.base_address);
+  pdl.total_footprint = HostToNetwork(pdl.total_footprint);
+  return GetResponseFromData(request,
+                             reinterpret_cast<uint8_t*>(&pdl),
+                             sizeof(pdl));
+}
+
+const RDMResponse *DimmerRootDevice::SetDmxBlockAddress(
+    const RDMRequest *request) {
+  uint16_t base_start_address = 0;
+  uint16_t total_footprint = 0;
+
+  if (!ResponderHelper::ExtractUInt16(request, &base_start_address)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  for (SubDeviceMap::const_iterator i = m_sub_devices.begin();
+      i != m_sub_devices.end();
+      ++i) {
+    total_footprint += i->second->Footprint();
+  }
+
+  if (base_start_address < 1 ||
+      base_start_address + total_footprint > DMX_MAX_CHANNEL_VALUE) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  for (SubDeviceMap::const_iterator iter = m_sub_devices.begin();
+      iter != m_sub_devices.end();
+      ++iter) {
+    // We don't check here because we already have for every Sub Device
+    iter->second->SetDmxStartAddress(base_start_address);
+    base_start_address += iter->second->Footprint();
+  }
+
+  return GetResponseFromData(request, NULL, 0);
+}
+
+const RDMResponse *DimmerRootDevice::GetIdentifyMode(
+    const RDMRequest *request) {
+  return ResponderHelper::GetUInt8Value(request, m_identify_mode);
+}
+
+const RDMResponse *DimmerRootDevice::SetIdentifyMode(
+    const RDMRequest *request) {
+  uint8_t new_identify_mode;
+
+  if (!ResponderHelper::ExtractUInt8(request, &new_identify_mode))
+    return NackWithReason(request, NR_FORMAT_ERROR);
+
+  if (new_identify_mode != IDENTIFY_QUIET && new_identify_mode != IDENTIFY_LOUD)
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+
+  m_identify_mode = new_identify_mode;
+
+  return GetResponseFromData(request, NULL, 0);
+}
+
 }  // namespace rdm
 }  // namespace ola

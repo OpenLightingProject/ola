@@ -84,6 +84,9 @@ const ResponderOps<DimmerSubDevice>::ParamHandler
   { PID_IDENTIFY_DEVICE,
     &DimmerSubDevice::GetIdentify,
     &DimmerSubDevice::SetIdentify},
+  { PID_IDENTIFY_MODE,
+    &DimmerSubDevice::GetIdentifyMode,
+    &DimmerSubDevice::SetIdentifyMode},
   { 0, NULL, NULL},
 };
 
@@ -91,7 +94,8 @@ DimmerSubDevice::DimmerSubDevice(const UID &uid, uint16_t sub_device_number)
     : m_uid(uid),
       m_sub_device_number(sub_device_number),
       m_start_address(sub_device_number),
-      m_identify_mode(false),
+      m_identify_on(false),
+      m_identify_mode(IDENTIFY_LOUD),
       m_personality_manager(Personalities::Instance()) {
 }
 
@@ -111,6 +115,15 @@ const RDMResponse *DimmerSubDevice::GetDeviceInfo(const RDMRequest *request) {
       &m_personality_manager,
       m_start_address,
       0, 0);
+}
+
+
+bool DimmerSubDevice::SetDmxStartAddress(uint16_t start_address) {
+  if (start_address < 1 || start_address + Footprint() - 1 > DMX_UNIVERSE_SIZE)
+    return false;
+
+  m_start_address = start_address;
+  return true;
 }
 
 const RDMResponse *DimmerSubDevice::GetProductDetailList(
@@ -169,18 +182,38 @@ const RDMResponse *DimmerSubDevice::GetSoftwareVersionLabel(
 }
 
 const RDMResponse *DimmerSubDevice::GetIdentify(const RDMRequest *request) {
-  return ResponderHelper::GetBoolValue(request, m_identify_mode);
+  return ResponderHelper::GetBoolValue(request, m_identify_on);
 }
 
 const RDMResponse *DimmerSubDevice::SetIdentify(const RDMRequest *request) {
-  bool old_value = m_identify_mode;
+  bool old_value = m_identify_on;
   const RDMResponse *response = ResponderHelper::SetBoolValue(
-      request, &m_identify_mode);
-  if (m_identify_mode != old_value) {
+      request, &m_identify_on);
+  if (m_identify_on != old_value) {
     OLA_INFO << "Dummy dimmer device " << m_uid << ":" << m_sub_device_number
-             << ", identify mode " << (m_identify_mode ? "on" : "off");
+             << ", identify mode " << (m_identify_on ? "on" : "off");
   }
   return response;
+}
+
+const RDMResponse *DimmerSubDevice::GetIdentifyMode(
+    const RDMRequest *request) {
+  return ResponderHelper::GetUInt8Value(request, m_identify_mode);
+}
+
+const RDMResponse *DimmerSubDevice::SetIdentifyMode(
+    const RDMRequest *request) {
+  uint8_t new_identify_mode;
+
+  if (!ResponderHelper::ExtractUInt8(request, &new_identify_mode))
+    return NackWithReason(request, NR_FORMAT_ERROR);
+
+  if (new_identify_mode != IDENTIFY_QUIET && new_identify_mode != IDENTIFY_LOUD)
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+
+  m_identify_mode = new_identify_mode;
+
+  return GetResponseFromData(request, NULL, 0);
 }
 }  // namespace rdm
 }  // namespace ola
