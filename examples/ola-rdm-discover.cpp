@@ -202,7 +202,7 @@ bool FetchUIDs(OlaCallbackClient *client, const options &opts) {
  * Main
  */
 int main(int argc, char *argv[]) {
-  ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
+  ola::InitLogging(ola::OLA_LOG_DEBUG, ola::OLA_LOG_STDOUT);
   OlaCallbackClientWrapper ola_client;
   opts.cmd = argv[0];
 
@@ -218,13 +218,18 @@ int main(int argc, char *argv[]) {
     exit(ola::EXIT_USAGE);
   }
 
+  OLA_WARN << "Here 0";
+
   if (!ola_client.Setup()) {
     OLA_FATAL << "Setup failed";
     exit(ola::EXIT_UNAVAILABLE);
   }
 
+  OLA_WARN << "Here 1";
   OlaCallbackClient *client = ola_client.GetClient();
   ss = ola_client.GetSelectServer();
+
+  OLA_WARN << "Here 2";
 
   if (FetchUIDs(client, opts))
     ss->Run();

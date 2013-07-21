@@ -85,11 +85,13 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     const UID m_uid;
     bool m_identify_state;
     uint16_t m_start_address;
+    uint16_t m_lock_pin;
     uint8_t m_identify_mode;
     PersonalityManager m_personality_manager;
     auto_ptr<class SettingCollection> m_curve_setting;
     auto_ptr<class SettingCollection> m_response_time_setting;
     auto_ptr<class SettingCollection> m_frequency_setting;
+    auto_ptr<class LockCollection> m_lock_setting;
 
     const RDMResponse *GetDeviceInfo(const RDMRequest *request);
     const RDMResponse *GetProductDetailList(const RDMRequest *request);
@@ -115,12 +117,19 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     const RDMResponse *GetPWMFrequency(const RDMRequest *request);
     const RDMResponse *SetPWMFrequency(const RDMRequest *request);
     const RDMResponse *GetPWMFrequencyDescription(const RDMRequest *request);
+    const RDMResponse *GetLockState(const RDMRequest *request);
+    const RDMResponse *SetLockState(const RDMRequest *request);
+    const RDMResponse *GetLockStateDescription(const RDMRequest *request);
+    const RDMResponse *GetLockPin(const RDMRequest *request);
+    const RDMResponse *SetLockPin(const RDMRequest *request);
+
 
     static const ResponderOps<AdvancedDimmerResponder>::ParamHandler
       PARAM_HANDLERS[];
     static const char* CURVES[];
     static const char* RESPONSE_TIMES[];
     static const char* PWM_FREQUENCIES[];
+    static const char* LOCK_STATES[];
 };
 }  // namespace rdm
 }  // namespace ola

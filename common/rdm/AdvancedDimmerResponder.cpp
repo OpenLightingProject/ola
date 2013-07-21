@@ -62,6 +62,12 @@ const char* AdvancedDimmerResponder::PWM_FREQUENCIES[] = {
   "10kHz",
 };
 
+const char* AdvancedDimmerResponder::LOCK_STATES[] = {
+  "Unlocked",
+  "Start Address Locked",
+  "Pesonalities Locked",
+};
+
 class SettingCollection {
   public:
     SettingCollection(const char *settings[], unsigned int size)
@@ -75,7 +81,7 @@ class SettingCollection {
     const RDMResponse *Set(const RDMRequest *request);
     const RDMResponse *GetDescription(const RDMRequest *request) const;
 
-  private:
+  protected:
     struct setting_description_s {
       uint8_t setting;
       char description[MAX_RDM_STRING_LENGTH];
@@ -128,6 +134,48 @@ const RDMResponse *SettingCollection::GetDescription(
         RDM_ACK);
   }
 }
+
+// Begin Lock Collection
+
+class LockCollection: public SettingCollection {
+  public:
+    LockCollection(const char *settings[], unsigned int size)
+      :SettingCollection(settings, size) {}
+
+    const RDMResponse *Set(const RDMRequest *request, const uint16_t &pin);
+
+    uint8_t CurrentSetting() {
+      return m_current_setting;
+    };
+};
+
+const RDMResponse *LockCollection::Set(const RDMRequest *request,
+                                       const uint16_t &pin) {
+  uint8_t arg;
+  uint16_t recieved_pin;
+
+  if (!ResponderHelper::ExtractUInt16(request, &recieved_pin)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  if (!ResponderHelper::ExtractUInt8(request, &arg)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  if (arg > m_settings.size()) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  if (pin != recieved_pin) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  m_current_setting = arg;
+  return ResponderHelper::EmptySetResponse(request);
+}
+
+
+// End Lock Collection
 
 const AdvancedDimmerResponder::Personalities *
     AdvancedDimmerResponder::Personalities::Instance() {
@@ -204,6 +252,15 @@ const ResponderOps<AdvancedDimmerResponder>::ParamHandler
   { PID_MODULATION_FREQUENCY_DESCRIPTION,
     &AdvancedDimmerResponder::GetPWMFrequencyDescription,
     NULL},
+  {PID_LOCK_STATE,
+    &AdvancedDimmerResponder::GetLockState,
+    &AdvancedDimmerResponder::SetLockState},
+  {PID_LOCK_STATE_DESCRIPTION,
+    &AdvancedDimmerResponder::GetLockStateDescription,
+    NULL},
+  {PID_LOCK_PIN,
+    &AdvancedDimmerResponder::GetLockPin,
+    &AdvancedDimmerResponder::SetLockPin,},
   { 0, NULL, NULL},
 };
 
@@ -215,13 +272,16 @@ AdvancedDimmerResponder::AdvancedDimmerResponder(const UID &uid)
     : m_uid(uid),
       m_identify_state(false),
       m_start_address(1),
+      m_lock_pin(0),
       m_identify_mode(0),
       m_personality_manager(Personalities::Instance()),
       m_curve_setting(new SettingCollection(CURVES, arraysize(CURVES))),
       m_response_time_setting(new SettingCollection(
           RESPONSE_TIMES, arraysize(RESPONSE_TIMES))),
       m_frequency_setting(new SettingCollection(
-          PWM_FREQUENCIES, arraysize(PWM_FREQUENCIES))) {
+          PWM_FREQUENCIES, arraysize(PWM_FREQUENCIES))),
+      m_lock_setting(new LockCollection(
+           LOCK_STATES, arraysize(LOCK_STATES))){
 }
 
 /*
@@ -379,5 +439,31 @@ const RDMResponse *AdvancedDimmerResponder::GetPWMFrequencyDescription(
     const RDMRequest *request) {
   return m_frequency_setting->GetDescription(request);
 }
+
+const RDMResponse *AdvancedDimmerResponder::GetLockState(
+    const RDMRequest *request) {
+  return m_lock_setting->Get(request);
+}
+
+const RDMResponse *AdvancedDimmerResponder::SetLockState(
+    const RDMRequest *request) {
+  return m_lock_setting->Set(request, m_lock_pin);
+}
+
+const RDMResponse *AdvancedDimmerResponder::GetLockStateDescription(
+    const RDMRequest *request) {
+  return m_lock_setting->Get(request);
+}
+
+const RDMResponse *AdvancedDimmerResponder::GetLockPin(
+    const RDMRequest *request) {
+  return ResponderHelper::GetUInt16Value(request, m_lock_pin, 0);
+}
+
+const RDMResponse *AdvancedDimmerResponder::SetLockPin(
+    const RDMRequest *request) {
+  return ResponderHelper::SetUInt16Value(request, &m_lock_pin, 0);
+}
+
 }  // namespace rdm
 }  // namespace ola
