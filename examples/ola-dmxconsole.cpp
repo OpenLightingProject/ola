@@ -62,6 +62,8 @@ using std::string;
 
 static const unsigned int DEFAULT_UNIVERSE = 0;
 static const unsigned char CHANNEL_NUDGE_VALUE = 0x10;
+static const unsigned char CHANNEL_DISPLAY_WIDTH = 4;
+static const unsigned char ROWS_PER_CHANNEL_ROW = 2;
 
 /* color names used */
 enum {
@@ -99,14 +101,17 @@ static dmx_t *dmxsave;
 static dmx_t *dmxundo;
 
 static int display_mode = DISP_MODE_DMX;
-static int current_channel = 0;    /* channel cursor is positioned on */
-static int first_channel = 0;    /* channel in upper left corner */
-static int channels_per_line = 80 / 4;
-static int channels_per_screen = 80 / 4 * 24 / 2;
+static int current_channel = 0;  // channel cursor is positioned on
+static int first_channel = 0;  // channel in upper left corner
+static int channels_per_line = 80 / CHANNEL_DISPLAY_WIDTH;
+// Default chans/screen is 80x24, less a row for the header,
+// and one at the bottom to get an even number of rows
+static int channels_per_screen =
+    (80 / CHANNEL_DISPLAY_WIDTH) * ((24 - 2) / ROWS_PER_CHANNEL_ROW);
 static int undo_possible = 0;
-static int current_cue = 0;    /* select with F keys */
+static int current_cue = 0;  // select with F keys
 static float fadetime = 1.0f;
-static int fading = 0;        /* percentage counter of fade process */
+static int fading = 0;  // percentage counter of fade process
 static int palette_number = 0;
 static int palette[MAXCOLOR];
 static bool screen_to_small = false;
@@ -175,7 +180,7 @@ void mask() {
   /* write channel numbers */
   (void) attrset(palette[CHANNEL]);
   for (y = 1; y < LINES && z < DMX_UNIVERSE_SIZE && i < channels_per_screen;
-       y += 2) {
+       y += ROWS_PER_CHANNEL_ROW) {
     move(y, 0);
     for (x = 0;
          x < channels_per_line &&
@@ -226,7 +231,9 @@ void values() {
   width_total += (5 + universe_length);
   if (COLS >= width_total) {
     /* Max universe 4294967295 - see MAX_UNIVERSE in include/ola/BaseTypes.h */
+    attrset(palette[HEADLINE]);
     printw(" uni:");
+    attrset(palette[HEADEMPH]);
     printw("%u", universe);
   }
   width_total += (5 + 2);
@@ -264,8 +271,9 @@ void values() {
   }
 
   /* values */
-  for (y = 2; y < LINES && z < DMX_UNIVERSE_SIZE && i < channels_per_screen;
-       y += 2) {
+  for (y = ROWS_PER_CHANNEL_ROW;
+       y < LINES && z < DMX_UNIVERSE_SIZE && i < channels_per_screen;
+       y += ROWS_PER_CHANNEL_ROW) {
     move(y, 0);
     for (x = 0;
          x < channels_per_line &&
@@ -491,11 +499,11 @@ void calcscreengeometry() {
     screen_to_small = true;
     exit(1);
   }
-  c--;                /* one line for headline */
-  if (c % 2 == 1)
-    c--;
-  channels_per_line = COLS/4;
-  channels_per_screen = channels_per_line*c/2;
+  c--;  // One line for headline
+  if (c % ROWS_PER_CHANNEL_ROW == 1)
+    c--;  // Need an even number of lines for data
+  channels_per_line = COLS / CHANNEL_DISPLAY_WIDTH;
+  channels_per_screen = channels_per_line * (c/ROWS_PER_CHANNEL_ROW);
 }
 
 /* signal handler for SIGWINCH */
@@ -635,47 +643,57 @@ void stdin_ready() {
         dmx[n]=dmx[n - 1];
       setall();
       break;
+
     case KEY_DC:
       undoprep();
       for (n = current_channel; n < DMX_UNIVERSE_SIZE - 1; n++)
         dmx[n] = dmx[n + 1];
       setall();
       break;
+
     case 'B':
     case 'b':
       undoprep();
       memset(dmx, DMX_MIN_CHANNEL_VALUE, DMX_UNIVERSE_SIZE);
       setall();
       break;
+
     case 'F':
     case 'f':
       undoprep();
       memset(dmx, DMX_MAX_CHANNEL_VALUE, DMX_UNIVERSE_SIZE);
       setall();
       break;
+
     case 'M':
     case 'm':
       if (++display_mode >= DISP_MODE_MAX)
         display_mode = 0;
       mask();
       break;
+
     case 'N':
     case 'n':
       if (++channels_offset > 1)
         channels_offset = 0;
       mask();
       break;
+
     case 'P':
     case 'p':
       changepalette(++palette_number);
       break;
+
     case 'U':
     case 'u':
       undo();
       break;
+
     case 'Q':
     case 'q':
       ss->Terminate();
+      break;
+
     default:
       if (c >= static_cast<int>(KEY_F(1)) &&
           c <= static_cast<int>(KEY_F(MAXFKEY)))
