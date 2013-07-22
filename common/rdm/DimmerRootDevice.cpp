@@ -83,7 +83,7 @@ const ResponderOps<DimmerRootDevice>::ParamHandler
 DimmerRootDevice::DimmerRootDevice(const UID &uid, SubDeviceMap sub_devices)
     : m_uid(uid),
       m_identify_on(false),
-      m_identify_mode(255),
+      m_identify_mode(IDENTIFY_LOUD),
       m_sub_devices(sub_devices) {
   if (m_sub_devices.size() > MAX_SUBDEVICE_NUMBER) {
     OLA_FATAL << "More than " << MAX_SUBDEVICE_NUMBER
@@ -206,7 +206,7 @@ const RDMResponse *DimmerRootDevice::SetDmxBlockAddress(
   }
 
   if (base_start_address < 1 ||
-      base_start_address + total_footprint > DMX_MAX_CHANNEL_VALUE) {
+      base_start_address + total_footprint - 1 > DMX_MAX_CHANNEL_VALUE) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
