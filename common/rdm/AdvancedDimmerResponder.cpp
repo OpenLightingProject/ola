@@ -121,6 +121,9 @@ const ResponderOps<AdvancedDimmerResponder>::ParamHandler
   { PID_IDENTIFY_DEVICE,
     &AdvancedDimmerResponder::GetIdentify,
     &AdvancedDimmerResponder::SetIdentify},
+  { PID_DIMMER_INFO,
+    &AdvancedDimmerResponder::GetDimmerInfo,
+    NULL},
   { PID_IDENTIFY_MODE,
     &AdvancedDimmerResponder::GetIdentifyMode,
     &AdvancedDimmerResponder::SetIdentifyMode},
@@ -242,6 +245,38 @@ const RDMResponse *AdvancedDimmerResponder::SetDmxStartAddress(
     const RDMRequest *request) {
   return ResponderHelper::SetDmxAddress(request, &m_personality_manager,
                                         &m_start_address);
+}
+
+const RDMResponse *AdvancedDimmerResponder::GetDimmerInfo(
+    const RDMRequest *request) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  struct dimmer_info_s {
+    uint16_t min_level_lower;
+    uint16_t min_level_upper;
+    uint16_t max_level_lower;
+    uint16_t max_level_upper;
+    uint8_t curve_count;
+    uint8_t level_resolution;
+    uint8_t level_support;
+  } __attribute__((packed));
+
+  struct dimmer_info_s dimmer_info;
+  dimmer_info.min_level_lower = HostToNetwork(static_cast<uint16_t>(0));
+  dimmer_info.min_level_upper = HostToNetwork(static_cast<uint16_t>(0));
+  dimmer_info.max_level_lower = HostToNetwork(static_cast<uint16_t>(0xffff));
+  dimmer_info.max_level_upper = HostToNetwork(static_cast<uint16_t>(0xffff));
+  dimmer_info.curve_count = CurveSettings.Count();
+  dimmer_info.level_resolution = 0;
+  dimmer_info.level_support = 0;
+
+  return GetResponseFromData(
+      request,
+      reinterpret_cast<uint8_t*>(&dimmer_info),
+      sizeof(dimmer_info),
+      RDM_ACK);
 }
 
 const RDMResponse *AdvancedDimmerResponder::GetIdentify(

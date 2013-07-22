@@ -104,6 +104,7 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     const RDMResponse *GetPersonalityDescription(const RDMRequest *request);
     const RDMResponse *GetDmxStartAddress(const RDMRequest *request);
     const RDMResponse *SetDmxStartAddress(const RDMRequest *request);
+    const RDMResponse *GetDimmerInfo(const RDMRequest *request);
     const RDMResponse *GetIdentify(const RDMRequest *request);
     const RDMResponse *SetIdentify(const RDMRequest *request);
     const RDMResponse *GetIdentifyMode(const RDMRequest *request);
