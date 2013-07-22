@@ -574,6 +574,22 @@ static const uint8_t ALL_SENSORS = 0xff;
 // The identify modes from E1.37-1
 static const uint8_t IDENTIFY_MODE_QUIET = 0x00;
 static const uint8_t IDENTIFY_MODE_LOUD = 0xff;
+
+// The Preset programmed modes
+typedef enum {
+  PRESET_NOT_PROGRAMMED = 0,
+  PRESET_PROGRAMMED = 1,
+  PRESET_PROGRAMMED_READ_ONLY = 2,
+} rdm_preset_programmed_mode;
+
+// The RDM merge modes
+typedef enum {
+  MERGEMODE_DEFAULT = 0,
+  MERGEMODE_HTP = 1,
+  MERGEMODE_LTP = 2,
+  MERGEMODE_DMX_ONLY = 3,
+  MERGEMODE_OTHER = 0xff,
+} rdm_merge_mode;
 }  // namespace rdm
 }  // namespace ola
 #endif  // INCLUDE_OLA_RDM_RDMENUMS_H_
