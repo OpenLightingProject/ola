@@ -42,6 +42,10 @@ using ola::network::NetworkToHost;
 using std::string;
 using std::vector;
 
+const uint8_t AdvancedDimmerResponder::DIMMER_RESOLUTION = 14;
+const uint16_t AdvancedDimmerResponder::LOWER_MAX_LEVEL = 0x7fff;
+const uint16_t AdvancedDimmerResponder::UPPER_MAX_LEVEL = 0xffff;
+
 const char* AdvancedDimmerResponder::CURVES[] = {
   "Linear Curve",
   "Square Law Curve",
@@ -134,7 +138,7 @@ const AdvancedDimmerResponder::Personalities *
     AdvancedDimmerResponder::Personalities::Instance() {
   if (!instance) {
     PersonalityList personalities;
-    personalities.push_back(new Personality(6, "6-Channel"));
+    personalities.push_back(new Personality(12, "6-Channel 16-bit"));
     instance = new Personalities(personalities);
   }
   return instance;
@@ -191,6 +195,12 @@ const ResponderOps<AdvancedDimmerResponder>::ParamHandler
   { PID_IDENTIFY_DEVICE,
     &AdvancedDimmerResponder::GetIdentify,
     &AdvancedDimmerResponder::SetIdentify},
+  { PID_DIMMER_INFO,
+    &AdvancedDimmerResponder::GetDimmerInfo,
+    NULL},
+  { PID_MAXIMUM_LEVEL,
+    &AdvancedDimmerResponder::GetMaximumLevel,
+    &AdvancedDimmerResponder::SetMaximumLevel},
   { PID_IDENTIFY_MODE,
     &AdvancedDimmerResponder::GetIdentifyMode,
     &AdvancedDimmerResponder::SetIdentifyMode},
@@ -230,6 +240,9 @@ const ResponderOps<AdvancedDimmerResponder>::ParamHandler
   {PID_LOCK_PIN,
     &AdvancedDimmerResponder::GetLockPin,
     &AdvancedDimmerResponder::SetLockPin,},
+  { PID_POWER_ON_SELF_TEST,
+    &AdvancedDimmerResponder::GetPowerOnSelfTest,
+    &AdvancedDimmerResponder::SetPowerOnSelfTest},
   { 0, NULL, NULL},
 };
 
@@ -242,8 +255,10 @@ AdvancedDimmerResponder::AdvancedDimmerResponder(const UID &uid)
       m_identify_state(false),
       m_start_address(1),
       m_lock_pin(0),
+      m_maximum_level(UPPER_MAX_LEVEL),
       m_identify_mode(IDENTIFY_MODE_QUIET),
       m_burn_in(0),
+      m_power_on_self_test(true),
       m_personality_manager(Personalities::Instance()),
       m_curve_settings(CurveSettings::Instance()),
       m_response_time_settings(ResponseTimeSettings::Instance()),
@@ -323,6 +338,60 @@ const RDMResponse *AdvancedDimmerResponder::SetDmxStartAddress(
     const RDMRequest *request) {
   return ResponderHelper::SetDmxAddress(request, &m_personality_manager,
                                         &m_start_address);
+}
+
+const RDMResponse *AdvancedDimmerResponder::GetDimmerInfo(
+    const RDMRequest *request) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  struct dimmer_info_s {
+    uint16_t min_level_lower;
+    uint16_t min_level_upper;
+    uint16_t max_level_lower;
+    uint16_t max_level_upper;
+    uint8_t curve_count;
+    uint8_t level_resolution;
+    uint8_t level_support;
+  } __attribute__((packed));
+
+  struct dimmer_info_s dimmer_info;
+  dimmer_info.min_level_lower = HostToNetwork(static_cast<uint16_t>(0));
+  dimmer_info.min_level_upper = HostToNetwork(static_cast<uint16_t>(0));
+  dimmer_info.max_level_lower =
+      HostToNetwork(static_cast<uint16_t>(LOWER_MAX_LEVEL));
+  dimmer_info.max_level_upper =
+      HostToNetwork(static_cast<uint16_t>(UPPER_MAX_LEVEL));
+  dimmer_info.curve_count = CurveSettings.Count();
+  dimmer_info.level_resolution = DIMMER_RESOLUTION;
+  dimmer_info.level_support = 0;
+
+  return GetResponseFromData(
+      request,
+      reinterpret_cast<uint8_t*>(&dimmer_info),
+      sizeof(dimmer_info),
+      RDM_ACK);
+}
+
+const RDMResponse *AdvancedDimmerResponder::GetMaximumLevel(
+    const RDMRequest *request) {
+  return ResponderHelper::GetUInt16Value(request, m_maximum_level);
+}
+
+const RDMResponse *AdvancedDimmerResponder::SetMaximumLevel(
+    const RDMRequest *request) {
+  uint16_t arg;
+  if (!ResponderHelper::ExtractUInt16(request, &arg)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  if (arg < LOWER_MAX_LEVEL || arg > UPPER_MAX_LEVEL) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  } else {
+    m_maximum_level = arg;
+    return ResponderHelper::EmptySetResponse(request);
+  }
 }
 
 const RDMResponse *AdvancedDimmerResponder::GetIdentify(
@@ -448,6 +517,16 @@ const RDMResponse *AdvancedDimmerResponder::GetLockPin(
 const RDMResponse *AdvancedDimmerResponder::SetLockPin(
     const RDMRequest *request) {
   return ResponderHelper::SetUInt16Value(request, &m_lock_pin, 0);
+}
+
+const RDMResponse *AdvancedDimmerResponder::GetPowerOnSelfTest(
+    const RDMRequest *request) {
+  return ResponderHelper::GetBoolValue(request, m_power_on_self_test);
+}
+
+const RDMResponse *AdvancedDimmerResponder::SetPowerOnSelfTest(
+    const RDMRequest *request) {
+  return ResponderHelper::SetBoolValue(request, &m_power_on_self_test);
 }
 
 }  // namespace rdm

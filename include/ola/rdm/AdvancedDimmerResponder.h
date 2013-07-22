@@ -150,8 +150,10 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     bool m_identify_state;
     uint16_t m_start_address;
     uint16_t m_lock_pin;
+    uint16_t m_maximum_level;
     uint8_t m_identify_mode;
     uint8_t m_burn_in;
+    bool m_power_on_self_test;
     PersonalityManager m_personality_manager;
 
     BasicSettingManager m_curve_settings;
@@ -170,6 +172,9 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     const RDMResponse *GetPersonalityDescription(const RDMRequest *request);
     const RDMResponse *GetDmxStartAddress(const RDMRequest *request);
     const RDMResponse *SetDmxStartAddress(const RDMRequest *request);
+    const RDMResponse *GetDimmerInfo(const RDMRequest *request);
+    const RDMResponse *GetMaximumLevel(const RDMRequest *request);
+    const RDMResponse *SetMaximumLevel(const RDMRequest *request);
     const RDMResponse *GetIdentify(const RDMRequest *request);
     const RDMResponse *SetIdentify(const RDMRequest *request);
     const RDMResponse *GetIdentifyMode(const RDMRequest *request);
@@ -190,7 +195,12 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     const RDMResponse *GetLockStateDescription(const RDMRequest *request);
     const RDMResponse *GetLockPin(const RDMRequest *request);
     const RDMResponse *SetLockPin(const RDMRequest *request);
+    const RDMResponse *GetPowerOnSelfTest(const RDMRequest *request);
+    const RDMResponse *SetPowerOnSelfTest(const RDMRequest *request);
 
+    static const uint8_t DIMMER_RESOLUTION;
+    static const uint16_t LOWER_MAX_LEVEL;
+    static const uint16_t UPPER_MAX_LEVEL;
 
     static const ResponderOps<AdvancedDimmerResponder>::ParamHandler
       PARAM_HANDLERS[];
