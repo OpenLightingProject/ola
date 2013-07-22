@@ -165,10 +165,13 @@ const RDMResponse *DimmerRootDevice::GetDmxBlockAddress(
   pdl.total_footprint = 0;
   uint16_t next_address = 0;
 
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
 
   for (SubDeviceMap::const_iterator iter = m_sub_devices.begin();
-      iter != m_sub_devices.end();
-      ++iter) {
+       iter != m_sub_devices.end();
+       ++iter) {
     if (iter->second->Footprint() != 0) {
       if (next_address == iter->second->GetDmxStartAddress()) {
         next_address += iter->second->Footprint();
@@ -200,19 +203,19 @@ const RDMResponse *DimmerRootDevice::SetDmxBlockAddress(
   }
 
   for (SubDeviceMap::const_iterator i = m_sub_devices.begin();
-      i != m_sub_devices.end();
-      ++i) {
+       i != m_sub_devices.end();
+       ++i) {
     total_footprint += i->second->Footprint();
   }
 
   if (base_start_address < 1 ||
-      base_start_address + total_footprint > DMX_MAX_CHANNEL_VALUE) {
+      base_start_address + total_footprint - 1 > DMX_MAX_CHANNEL_VALUE) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
   for (SubDeviceMap::const_iterator iter = m_sub_devices.begin();
-      iter != m_sub_devices.end();
-      ++iter) {
+       iter != m_sub_devices.end();
+       ++iter) {
     // We don't check here because we already have for every Sub Device
     iter->second->SetDmxStartAddress(base_start_address);
     base_start_address += iter->second->Footprint();
