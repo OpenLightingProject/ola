@@ -165,6 +165,10 @@ const RDMResponse *DimmerRootDevice::GetDmxBlockAddress(
   pdl.total_footprint = 0;
   uint16_t next_address = 0;
 
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
   for (SubDeviceMap::const_iterator iter = m_sub_devices.begin();
        iter != m_sub_devices.end();
        ++iter) {
