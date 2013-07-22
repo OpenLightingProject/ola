@@ -94,6 +94,14 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
       uint8_t level;
     } __attribute__((packed));
 
+    struct preset_status_s {
+      uint16_t scene;
+      uint16_t fade_up_time;
+      uint16_t fade_down_time;
+      uint16_t wait_time;
+      bool programmed;
+    } __attribute__((packed));
+
     /*
      * Represents a preset
      */
@@ -150,6 +158,8 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     const RDMResponse *SetCapturePreset(const RDMRequest *request);
     const RDMResponse *GetPresetPlayback(const RDMRequest *request);
     const RDMResponse *SetPresetPlayback(const RDMRequest *request);
+    const RDMResponse *GetPresetStatus(const RDMRequest *request);
+    const RDMResponse *SetPresetStatus(const RDMRequest *request);
     const RDMResponse *GetIdentifyMode(const RDMRequest *request);
     const RDMResponse *SetIdentifyMode(const RDMRequest *request);
     const RDMResponse *GetBurnIn(const RDMRequest *request);

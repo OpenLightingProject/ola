@@ -176,6 +176,9 @@ const ResponderOps<AdvancedDimmerResponder>::ParamHandler
   { PID_POWER_ON_SELF_TEST,
     &AdvancedDimmerResponder::GetPowerOnSelfTest,
     &AdvancedDimmerResponder::SetPowerOnSelfTest},
+  { PID_PRESET_STATUS,
+    &AdvancedDimmerResponder::GetPresetStatus,
+    &AdvancedDimmerResponder::SetPresetStatus},
   { 0, NULL, NULL},
 };
 
@@ -557,6 +560,62 @@ const RDMResponse *AdvancedDimmerResponder::GetPowerOnSelfTest(
 const RDMResponse *AdvancedDimmerResponder::SetPowerOnSelfTest(
     const RDMRequest *request) {
   return ResponderHelper::SetBoolValue(request, &m_power_on_self_test);
+}
+
+const RDMResponse *AdvancedDimmerResponder::GetPresetStatus(
+    const RDMRequest *request) {
+  uint16_t arg;
+  if (!ResponderHelper::ExtractUInt16(request, &arg)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  if (arg == 0 || arg >= m_presets.size()) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  preset_status_s output;
+  const Preset &preset = m_presets[arg - 1];
+  output.scene = HostToNetwork(arg);
+  output.fade_up_time = HostToNetwork(preset.fade_up_time);
+  output.fade_down_time = HostToNetwork(preset.fade_down_time);
+  output.wait_time = HostToNetwork(preset.wait_time);
+  output.programmed = preset.programmed;
+
+  return GetResponseFromData(
+      request,
+      reinterpret_cast<uint8_t*>(&output),
+      sizeof(output),
+      RDM_ACK);
+}
+
+const RDMResponse *AdvancedDimmerResponder::SetPresetStatus(
+    const RDMRequest *request) {
+  preset_status_s args;
+
+  if (request->ParamDataSize() != sizeof(args)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  memcpy(reinterpret_cast<uint8_t*>(&args), request->ParamData(),
+         sizeof(args));
+
+  uint16_t scene = NetworkToHost(args.scene);
+
+  if (scene == 0 || scene >= m_presets.size()) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  if (args.programmed > 1) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  Preset &preset = m_presets[scene - 1];
+  preset.fade_up_time = NetworkToHost(args.fade_up_time);
+  preset.fade_down_time= NetworkToHost(args.fade_down_time);
+  preset.wait_time = NetworkToHost(args.wait_time);
+  preset.programmed = args.programmed;
+
+  return ResponderHelper::EmptySetResponse(request);
 }
 }  // namespace rdm
 }  // namespace ola
