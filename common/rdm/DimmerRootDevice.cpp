@@ -83,7 +83,7 @@ const ResponderOps<DimmerRootDevice>::ParamHandler
 DimmerRootDevice::DimmerRootDevice(const UID &uid, SubDeviceMap sub_devices)
     : m_uid(uid),
       m_identify_on(false),
-      m_identify_mode(IDENTIFY_LOUD),
+      m_identify_mode(IDENTIFY_MODE_LOUD),
       m_sub_devices(sub_devices) {
   if (m_sub_devices.size() > MAX_SUBDEVICE_NUMBER) {
     OLA_FATAL << "More than " << MAX_SUBDEVICE_NUMBER
@@ -232,7 +232,8 @@ const RDMResponse *DimmerRootDevice::SetIdentifyMode(
   if (!ResponderHelper::ExtractUInt8(request, &new_identify_mode))
     return NackWithReason(request, NR_FORMAT_ERROR);
 
-  if (new_identify_mode != IDENTIFY_QUIET && new_identify_mode != IDENTIFY_LOUD)
+  if (new_identify_mode != IDENTIFY_MODE_QUIET &&
+      new_identify_mode != IDENTIFY_MODE_LOUD)
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
 
   m_identify_mode = new_identify_mode;

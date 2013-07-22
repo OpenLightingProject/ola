@@ -95,7 +95,7 @@ DimmerSubDevice::DimmerSubDevice(const UID &uid, uint16_t sub_device_number)
       m_sub_device_number(sub_device_number),
       m_start_address(sub_device_number),
       m_identify_on(false),
-      m_identify_mode(IDENTIFY_LOUD),
+      m_identify_mode(IDENTIFY_MODE_LOUD),
       m_personality_manager(Personalities::Instance()) {
 }
 
@@ -208,7 +208,8 @@ const RDMResponse *DimmerSubDevice::SetIdentifyMode(
   if (!ResponderHelper::ExtractUInt8(request, &new_identify_mode))
     return NackWithReason(request, NR_FORMAT_ERROR);
 
-  if (new_identify_mode != IDENTIFY_QUIET && new_identify_mode != IDENTIFY_LOUD)
+  if (new_identify_mode != IDENTIFY_MODE_QUIET &&
+      new_identify_mode != IDENTIFY_MODE_LOUD)
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
 
   m_identify_mode = new_identify_mode;
