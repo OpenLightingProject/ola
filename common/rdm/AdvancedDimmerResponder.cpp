@@ -45,6 +45,8 @@ using std::vector;
 const uint8_t AdvancedDimmerResponder::DIMMER_RESOLUTION = 14;
 const uint16_t AdvancedDimmerResponder::LOWER_MAX_LEVEL = 0x7fff;
 const uint16_t AdvancedDimmerResponder::UPPER_MAX_LEVEL = 0xffff;
+const uint16_t AdvancedDimmerResponder::LOWER_MIN_LEVEL = 0x0;
+const uint16_t AdvancedDimmerResponder::UPPER_MIN_LEVEL = 0x7fff;
 
 const char* AdvancedDimmerResponder::CURVES[] = {
   "Linear Curve",
@@ -128,6 +130,9 @@ const ResponderOps<AdvancedDimmerResponder>::ParamHandler
   { PID_DIMMER_INFO,
     &AdvancedDimmerResponder::GetDimmerInfo,
     NULL},
+  { PID_MINIMUM_LEVEL,
+    &AdvancedDimmerResponder::GetMinimumLevel,
+    &AdvancedDimmerResponder::SetMinimumLevel},
   { PID_MAXIMUM_LEVEL,
     &AdvancedDimmerResponder::GetMaximumLevel,
     &AdvancedDimmerResponder::SetMaximumLevel},
@@ -183,6 +188,9 @@ AdvancedDimmerResponder::AdvancedDimmerResponder(const UID &uid)
       m_curve_settings(&CurveSettings),
       m_response_time_settings(&ResponseTimeSettings),
       m_frequency_settings(&FrequencySettings) {
+  m_min_level.min_level_increasing = 10;
+  m_min_level.min_level_decreasing = 20;
+  m_min_level.on_below_min = true;
 }
 
 /*
@@ -284,13 +292,56 @@ const RDMResponse *AdvancedDimmerResponder::GetDimmerInfo(
       HostToNetwork(static_cast<uint16_t>(UPPER_MAX_LEVEL));
   dimmer_info.curve_count = CurveSettings.Count();
   dimmer_info.level_resolution = DIMMER_RESOLUTION;
-  dimmer_info.level_support = 0;
+  dimmer_info.level_support = 1;
 
   return GetResponseFromData(
       request,
       reinterpret_cast<uint8_t*>(&dimmer_info),
       sizeof(dimmer_info),
       RDM_ACK);
+}
+
+const RDMResponse *AdvancedDimmerResponder::GetMinimumLevel(
+    const RDMRequest *request) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  min_level_s output = m_min_level;
+  output.min_level_increasing = HostToNetwork(output.min_level_increasing);
+  output.min_level_decreasing = HostToNetwork(output.min_level_decreasing);
+
+  return GetResponseFromData(
+      request,
+      reinterpret_cast<uint8_t*>(&output),
+      sizeof(output),
+      RDM_ACK);
+}
+
+
+const RDMResponse *AdvancedDimmerResponder::SetMinimumLevel(
+    const RDMRequest *request) {
+  min_level_s args;
+  if (request->ParamDataSize() != sizeof(args)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  memcpy(reinterpret_cast<uint8_t*>(&args), request->ParamData(),
+         sizeof(args));
+
+  args.min_level_increasing = NetworkToHost(args.min_level_increasing);
+  args.min_level_decreasing = NetworkToHost(args.min_level_decreasing);
+
+  if (args.min_level_decreasing < LOWER_MIN_LEVEL ||
+       args.min_level_decreasing > UPPER_MIN_LEVEL ||
+       args.min_level_increasing < LOWER_MIN_LEVEL ||
+       args.min_level_increasing > UPPER_MIN_LEVEL ||
+       args.on_below_min > 2) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  } else {
+    m_min_level = args;
+    return ResponderHelper::EmptySetResponse(request);
+  }
 }
 
 const RDMResponse *AdvancedDimmerResponder::GetMaximumLevel(
