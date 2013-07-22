@@ -89,6 +89,11 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
       uint8_t on_below_min;
     } __attribute__((packed));
 
+    struct preset_playback_s {
+      uint16_t mode;
+      uint8_t level;
+    } __attribute__((packed));
+
     /*
      * Represents a preset
      */
@@ -121,6 +126,8 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     BasicSettingManager m_response_time_settings;
     SettingManager<FrequencyModulationSetting> m_frequency_settings;
     std::vector<Preset> m_presets;
+    uint16_t m_preset_scene;
+    uint8_t m_preset_level;
 
     const RDMResponse *GetDeviceInfo(const RDMRequest *request);
     const RDMResponse *GetProductDetailList(const RDMRequest *request);
@@ -141,6 +148,8 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     const RDMResponse *GetIdentify(const RDMRequest *request);
     const RDMResponse *SetIdentify(const RDMRequest *request);
     const RDMResponse *SetCapturePreset(const RDMRequest *request);
+    const RDMResponse *GetPresetPlayback(const RDMRequest *request);
+    const RDMResponse *SetPresetPlayback(const RDMRequest *request);
     const RDMResponse *GetIdentifyMode(const RDMRequest *request);
     const RDMResponse *SetIdentifyMode(const RDMRequest *request);
     const RDMResponse *GetBurnIn(const RDMRequest *request);

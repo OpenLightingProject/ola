@@ -131,6 +131,9 @@ const ResponderOps<AdvancedDimmerResponder>::ParamHandler
   { PID_CAPTURE_PRESET,
     NULL,
     &AdvancedDimmerResponder::SetCapturePreset},
+  { PID_PRESET_PLAYBACK,
+    &AdvancedDimmerResponder::GetPresetPlayback,
+    &AdvancedDimmerResponder::SetPresetPlayback},
   { PID_DIMMER_INFO,
     &AdvancedDimmerResponder::GetDimmerInfo,
     NULL},
@@ -192,7 +195,9 @@ AdvancedDimmerResponder::AdvancedDimmerResponder(const UID &uid)
       m_curve_settings(&CurveSettings),
       m_response_time_settings(&ResponseTimeSettings),
       m_frequency_settings(&FrequencySettings),
-      m_presets(PRESENT_COUNT) {
+      m_presets(PRESENT_COUNT),
+      m_preset_scene(0),
+      m_preset_level(0) {
   m_min_level.min_level_increasing = 10;
   m_min_level.min_level_decreasing = 20;
   m_min_level.on_below_min = true;
@@ -413,11 +418,51 @@ const RDMResponse *AdvancedDimmerResponder::SetCapturePreset(
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
-  Preset &preset = m_presets[args.scene];
+  Preset &preset = m_presets[args.scene - 1];
   preset.fade_up_time = args.fade_up_time;
   preset.fade_down_time = args.fade_down_time;
   preset.wait_time = args.wait_time;
   preset.programmed = true;
+  return ResponderHelper::EmptySetResponse(request);
+}
+
+const RDMResponse *AdvancedDimmerResponder::GetPresetPlayback(
+    const RDMRequest *request) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  preset_playback_s output;
+  output.mode = HostToNetwork(m_preset_scene);
+  output.level = m_preset_level;
+
+  return GetResponseFromData(
+      request,
+      reinterpret_cast<uint8_t*>(&output),
+      sizeof(output),
+      RDM_ACK);
+}
+
+const RDMResponse *AdvancedDimmerResponder::SetPresetPlayback(
+    const RDMRequest *request) {
+  preset_playback_s args;
+
+  if (request->ParamDataSize() != sizeof(args)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  memcpy(reinterpret_cast<uint8_t*>(&args), request->ParamData(),
+         sizeof(args));
+
+  args.mode = NetworkToHost(args.mode);
+
+  if (args.mode >= m_presets.size() &&
+      args.mode != 0xffff) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  m_preset_scene = args.mode;
+  m_preset_level = args.level;
   return ResponderHelper::EmptySetResponse(request);
 }
 
