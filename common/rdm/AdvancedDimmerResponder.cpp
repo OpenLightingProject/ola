@@ -154,6 +154,9 @@ const ResponderOps<AdvancedDimmerResponder>::ParamHandler
   { PID_MODULATION_FREQUENCY_DESCRIPTION,
     &AdvancedDimmerResponder::GetPWMFrequencyDescription,
     NULL},
+  { PID_POWER_ON_SELF_TEST,
+    &AdvancedDimmerResponder::GetPowerOnSelfTest,
+    &AdvancedDimmerResponder::SetPowerOnSelfTest},
   { 0, NULL, NULL},
 };
 
@@ -167,6 +170,7 @@ AdvancedDimmerResponder::AdvancedDimmerResponder(const UID &uid)
       m_start_address(1),
       m_identify_mode(IDENTIFY_MODE_QUIET),
       m_burn_in(0),
+      m_power_on_self_test(true),
       m_personality_manager(Personalities::Instance()),
       m_curve_settings(&CurveSettings),
       m_response_time_settings(&ResponseTimeSettings),
@@ -377,6 +381,16 @@ const RDMResponse *AdvancedDimmerResponder::SetPWMFrequency(
 const RDMResponse *AdvancedDimmerResponder::GetPWMFrequencyDescription(
     const RDMRequest *request) {
   return m_frequency_settings.GetDescription(request);
+}
+
+const RDMResponse *AdvancedDimmerResponder::GetPowerOnSelfTest(
+    const RDMRequest *request) {
+  return ResponderHelper::GetBoolValue(request, m_power_on_self_test);
+}
+
+const RDMResponse *AdvancedDimmerResponder::SetPowerOnSelfTest(
+    const RDMRequest *request) {
+  return ResponderHelper::SetBoolValue(request, &m_power_on_self_test);
 }
 }  // namespace rdm
 }  // namespace ola
