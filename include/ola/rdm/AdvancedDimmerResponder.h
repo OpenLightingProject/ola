@@ -88,6 +88,7 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     uint16_t m_start_address;
     uint8_t m_identify_mode;
     uint8_t m_burn_in;
+    bool m_power_on_self_test;
     PersonalityManager m_personality_manager;
     BasicSettingManager m_curve_settings;
     BasicSettingManager m_response_time_settings;
@@ -120,6 +121,8 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     const RDMResponse *GetPWMFrequency(const RDMRequest *request);
     const RDMResponse *SetPWMFrequency(const RDMRequest *request);
     const RDMResponse *GetPWMFrequencyDescription(const RDMRequest *request);
+    const RDMResponse *GetPowerOnSelfTest(const RDMRequest *request);
+    const RDMResponse *SetPowerOnSelfTest(const RDMRequest *request);
 
     static const ResponderOps<AdvancedDimmerResponder>::ParamHandler
       PARAM_HANDLERS[];
