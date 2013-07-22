@@ -165,10 +165,9 @@ const RDMResponse *DimmerRootDevice::GetDmxBlockAddress(
   pdl.total_footprint = 0;
   uint16_t next_address = 0;
 
-
   for (SubDeviceMap::const_iterator iter = m_sub_devices.begin();
-      iter != m_sub_devices.end();
-      ++iter) {
+       iter != m_sub_devices.end();
+       ++iter) {
     if (iter->second->Footprint() != 0) {
       if (next_address == iter->second->GetDmxStartAddress()) {
         next_address += iter->second->Footprint();
@@ -200,8 +199,8 @@ const RDMResponse *DimmerRootDevice::SetDmxBlockAddress(
   }
 
   for (SubDeviceMap::const_iterator i = m_sub_devices.begin();
-      i != m_sub_devices.end();
-      ++i) {
+       i != m_sub_devices.end();
+       ++i) {
     total_footprint += i->second->Footprint();
   }
 
@@ -211,8 +210,8 @@ const RDMResponse *DimmerRootDevice::SetDmxBlockAddress(
   }
 
   for (SubDeviceMap::const_iterator iter = m_sub_devices.begin();
-      iter != m_sub_devices.end();
-      ++iter) {
+       iter != m_sub_devices.end();
+       ++iter) {
     // We don't check here because we already have for every Sub Device
     iter->second->SetDmxStartAddress(base_start_address);
     base_start_address += iter->second->Footprint();
