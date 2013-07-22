@@ -47,6 +47,7 @@ const uint16_t AdvancedDimmerResponder::LOWER_MAX_LEVEL = 0x7fff;
 const uint16_t AdvancedDimmerResponder::UPPER_MAX_LEVEL = 0xffff;
 const uint16_t AdvancedDimmerResponder::LOWER_MIN_LEVEL = 0x0;
 const uint16_t AdvancedDimmerResponder::UPPER_MIN_LEVEL = 0x7fff;
+const unsigned int AdvancedDimmerResponder::PRESENT_COUNT = 6;
 
 const char* AdvancedDimmerResponder::CURVES[] = {
   "Linear Curve",
@@ -127,6 +128,9 @@ const ResponderOps<AdvancedDimmerResponder>::ParamHandler
   { PID_IDENTIFY_DEVICE,
     &AdvancedDimmerResponder::GetIdentify,
     &AdvancedDimmerResponder::SetIdentify},
+  { PID_CAPTURE_PRESET,
+    NULL,
+    &AdvancedDimmerResponder::SetCapturePreset},
   { PID_DIMMER_INFO,
     &AdvancedDimmerResponder::GetDimmerInfo,
     NULL},
@@ -187,7 +191,8 @@ AdvancedDimmerResponder::AdvancedDimmerResponder(const UID &uid)
       m_personality_manager(Personalities::Instance()),
       m_curve_settings(&CurveSettings),
       m_response_time_settings(&ResponseTimeSettings),
-      m_frequency_settings(&FrequencySettings) {
+      m_frequency_settings(&FrequencySettings),
+      m_presets(PRESENT_COUNT) {
   m_min_level.min_level_increasing = 10;
   m_min_level.min_level_decreasing = 20;
   m_min_level.on_below_min = true;
@@ -333,10 +338,10 @@ const RDMResponse *AdvancedDimmerResponder::SetMinimumLevel(
   args.min_level_decreasing = NetworkToHost(args.min_level_decreasing);
 
   if (args.min_level_decreasing < LOWER_MIN_LEVEL ||
-       args.min_level_decreasing > UPPER_MIN_LEVEL ||
-       args.min_level_increasing < LOWER_MIN_LEVEL ||
-       args.min_level_increasing > UPPER_MIN_LEVEL ||
-       args.on_below_min > 2) {
+      args.min_level_decreasing > UPPER_MIN_LEVEL ||
+      args.min_level_increasing < LOWER_MIN_LEVEL ||
+      args.min_level_increasing > UPPER_MIN_LEVEL ||
+      args.on_below_min > 2) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   } else {
     m_min_level = args;
@@ -379,6 +384,41 @@ const RDMResponse *AdvancedDimmerResponder::SetIdentify(
              << (m_identify_state ? "on" : "off");
   }
   return response;
+}
+
+const RDMResponse *AdvancedDimmerResponder::SetCapturePreset(
+    const RDMRequest *request) {
+  struct preset_s {
+    uint16_t scene;
+    uint16_t fade_up_time;
+    uint16_t fade_down_time;
+    uint16_t wait_time;
+  } __attribute__((packed));
+
+  preset_s args;
+
+  if (request->ParamDataSize() != sizeof(args)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  memcpy(reinterpret_cast<uint8_t*>(&args), request->ParamData(),
+         sizeof(args));
+
+  args.scene = NetworkToHost(args.scene);
+  args.fade_up_time = NetworkToHost(args.fade_up_time);
+  args.fade_down_time = NetworkToHost(args.fade_down_time);
+  args.wait_time = NetworkToHost(args.wait_time);
+
+  if (args.scene == 0 || args.scene >= m_presets.size()) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  Preset &preset = m_presets[args.scene];
+  preset.fade_up_time = args.fade_up_time;
+  preset.fade_down_time = args.fade_down_time;
+  preset.wait_time = args.wait_time;
+  preset.programmed = true;
+  return ResponderHelper::EmptySetResponse(request);
 }
 
 const RDMResponse *AdvancedDimmerResponder::GetIdentifyMode(

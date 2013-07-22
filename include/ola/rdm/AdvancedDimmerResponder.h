@@ -89,6 +89,25 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
       uint8_t on_below_min;
     } __attribute__((packed));
 
+    /*
+     * Represents a preset
+     */
+    class Preset {
+      public:
+        Preset()
+          : fade_up_time(0),
+            fade_down_time(0),
+            wait_time(30),
+            programmed(false) {
+        }
+
+        // Times are in 1/0ths of a second.
+        uint16_t fade_up_time;
+        uint16_t fade_down_time;
+        uint16_t wait_time;
+        bool programmed;
+    };
+
     const UID m_uid;
     bool m_identify_state;
     uint16_t m_start_address;
@@ -101,6 +120,7 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     BasicSettingManager m_curve_settings;
     BasicSettingManager m_response_time_settings;
     SettingManager<FrequencyModulationSetting> m_frequency_settings;
+    std::vector<Preset> m_presets;
 
     const RDMResponse *GetDeviceInfo(const RDMRequest *request);
     const RDMResponse *GetProductDetailList(const RDMRequest *request);
@@ -120,6 +140,7 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     const RDMResponse *SetMaximumLevel(const RDMRequest *request);
     const RDMResponse *GetIdentify(const RDMRequest *request);
     const RDMResponse *SetIdentify(const RDMRequest *request);
+    const RDMResponse *SetCapturePreset(const RDMRequest *request);
     const RDMResponse *GetIdentifyMode(const RDMRequest *request);
     const RDMResponse *SetIdentifyMode(const RDMRequest *request);
     const RDMResponse *GetBurnIn(const RDMRequest *request);
@@ -141,6 +162,7 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     static const uint16_t UPPER_MIN_LEVEL;
     static const uint16_t LOWER_MAX_LEVEL;
     static const uint16_t UPPER_MAX_LEVEL;
+    static const unsigned int PRESENT_COUNT;
 
     static const ResponderOps<AdvancedDimmerResponder>::ParamHandler
       PARAM_HANDLERS[];
