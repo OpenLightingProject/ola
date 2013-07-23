@@ -119,7 +119,7 @@ typedef enum {
   PID_DMX_FAIL_MODE = 0x0141,
   PID_DMX_STARTUP_MODE = 0x0142,
 
-  //Dimmer Settings
+  // Dimmer Settings
   PID_DIMMER_INFO = 0x0340,
   PID_MINIMUM_LEVEL = 0x0341,
   PID_MAXIMUM_LEVEL = 0x0342,
@@ -588,6 +588,9 @@ static const uint8_t ALL_SENSORS = 0xff;
 // The identify modes from E1.37-1
 static const uint8_t IDENTIFY_MODE_QUIET = 0x00;
 static const uint8_t IDENTIFY_MODE_LOUD = 0xff;
+
+// The maximum pin
+static const uint16_t MAX_LOCK_PIN = 9999;
 
 // The Preset programmed modes
 typedef enum {

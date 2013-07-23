@@ -74,7 +74,7 @@ const FrequencyModulationSetting::ArgType
 const char* AdvancedDimmerResponder::LOCK_STATES[] = {
   "Unlocked",
   "Start Address Locked",
-  "Pesonalities Locked",
+  "Address and Pesonalities Locked",
 };
 
 const SettingCollection<BasicSetting>
@@ -85,41 +85,33 @@ const SettingCollection<BasicSetting>
 const SettingCollection<FrequencyModulationSetting>
     AdvancedDimmerResponder::FrequencySettings(
         PWM_FREQUENCIES, arraysize(PWM_FREQUENCIES));
-
-const AdvancedDimmerResponder::LockSettings *
-    AdvancedDimmerResponder::LockSettings::Instance() {
-  if (!instance) {
-    instance = new LockSettings(
-        LOCK_STATES, arraysize(LOCK_STATES));
-  }
-  return instance;
-}
+const SettingCollection<BasicSetting>
+    AdvancedDimmerResponder::LockSettings(
+        LOCK_STATES, arraysize(LOCK_STATES), true);
 
 const RDMResponse *AdvancedDimmerResponder::
     LockManager::Set(const RDMRequest *request, const uint16_t *pin) {
-
   struct lock_s {
     uint16_t pin;
     uint8_t state;
   } __attribute__((packed));
 
-  if (request->ParamDataSize()) {
-    
-  }
+  lock_s data;
 
-  if (!ResponderHelper::ExtractUInt16(request, &recieved_pin)) {
+  if (request->ParamDataSize() == 0 ||
+      request->ParamDataSize() > sizeof(lock_s)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
-  if (!ResponderHelper::ExtractUInt8(request, &arg)) {
-    return NackWithReason(request, NR_FORMAT_ERROR);
-  }
+  memcpy(reinterpret_cast<uint8_t*>(&data), request->ParamData(), sizeof(data));
 
-  if (*pin != recieved_pin) {
+  data.pin = NetworkToHost(data.pin);
+
+  if (data.pin != *pin) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
-  if (!ChangeSetting(arg)) {
+  if (!ChangeSetting(data.state)) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
@@ -141,9 +133,6 @@ AdvancedDimmerResponder::Personalities *
 
 AdvancedDimmerResponder::RDMOps *
     AdvancedDimmerResponder::RDMOps::instance = NULL;
-
-AdvancedDimmerResponder::LockSettings *
-    AdvancedDimmerResponder::LockSettings::instance = NULL;
 
 const ResponderOps<AdvancedDimmerResponder>::ParamHandler
     AdvancedDimmerResponder::PARAM_HANDLERS[] = {
@@ -262,7 +251,7 @@ AdvancedDimmerResponder::AdvancedDimmerResponder(const UID &uid)
       m_personality_manager(Personalities::Instance()),
       m_curve_settings(&CurveSettings),
       m_response_time_settings(&ResponseTimeSettings),
-      m_lock_settings(LockSettings::Instance()),
+      m_lock_settings(&LockSettings),
       m_frequency_settings(&FrequencySettings),
       m_presets(PRESENT_COUNT),
       m_preset_scene(0),
@@ -337,6 +326,10 @@ const RDMResponse *AdvancedDimmerResponder::GetPersonality(
 
 const RDMResponse *AdvancedDimmerResponder::SetPersonality(
     const RDMRequest *request) {
+  if (m_lock_settings.CurrentSetting() > 1) {
+    return NackWithReason(request, NR_WRITE_PROTECT);
+  }
+
   return ResponderHelper::SetPersonality(request, &m_personality_manager,
                                          m_start_address);
 }
@@ -355,6 +348,10 @@ const RDMResponse *AdvancedDimmerResponder::GetDmxStartAddress(
 
 const RDMResponse *AdvancedDimmerResponder::SetDmxStartAddress(
     const RDMRequest *request) {
+  if (m_lock_settings.CurrentSetting() > 0) {
+    return NackWithReason(request, NR_WRITE_PROTECT);
+  }
+
   return ResponderHelper::SetDmxAddress(request, &m_personality_manager,
                                         &m_start_address);
 }
@@ -659,7 +656,35 @@ const RDMResponse *AdvancedDimmerResponder::GetLockPin(
 
 const RDMResponse *AdvancedDimmerResponder::SetLockPin(
     const RDMRequest *request) {
-  return ResponderHelper::SetUInt16Value(request, &m_lock_pin, 0);
+  struct set_pin_s {
+    uint16_t new_pin;
+    uint16_t current_pin;
+  } __attribute__((packed));
+
+  set_pin_s data;
+
+  if (request->ParamDataSize() == 0 ||
+      request->ParamDataSize() > sizeof(data)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  memcpy(reinterpret_cast<uint8_t*>(&data), request->ParamData(),
+      sizeof(data));
+
+  data.new_pin = NetworkToHost(data.new_pin);
+  data.current_pin = NetworkToHost(data.current_pin);
+
+  if (data.current_pin != m_lock_pin) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  if (data.new_pin > MAX_LOCK_PIN) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  m_lock_pin = data.new_pin;
+
+  return ResponderHelper::EmptySetResponse(request);
 }
 
 const RDMResponse *AdvancedDimmerResponder::GetPowerOnSelfTest(

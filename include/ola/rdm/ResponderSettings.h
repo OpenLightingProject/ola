@@ -251,7 +251,6 @@ const RDMResponse *SettingManager<SettingType>::GetDescription(
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   } else {
     const SettingType *setting = m_settings->Lookup(arg - offset);
-
     uint8_t output[setting->DescriptionResponseSize()]; // NOLINT
     unsigned int size = setting->GenerateDescriptionResponse(arg, output);
     return GetResponseFromData(request, output, size, RDM_ACK);
@@ -265,12 +264,14 @@ uint8_t SettingManager<SettingType>::Count() const {
 
 template <class SettingType>
 uint8_t SettingManager<SettingType>::CurrentSetting() const {
-  return m_current_setting;
+  return m_current_setting - m_settings->Offset();
 }
 
 template <class SettingType>
 bool SettingManager<SettingType>::ChangeSetting(uint8_t new_setting) {
-  if (new_setting >= m_settings->Count())
+  uint8_t offset = m_settings->Offset();
+
+  if (new_setting < offset || new_setting  >= m_settings->Count() + offset)
     return false;
 
   m_current_setting = new_setting;

@@ -83,22 +83,9 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
         static Personalities *instance;
     };
 
-    class LockSettings : public BasicSettingCollection {
-      public:
-        static const LockSettings *Instance();
-
-     private:
-        explicit LockSettings(const BasicSetting::ArgType arg[],
-                              unsigned int arg_count)
-          : BasicSettingCollection(arg, arg_count) {
-        }
-
-        static LockSettings *instance;
-    };
-
     class LockManager: public BasicSettingManager {
       public:
-        explicit LockManager(const LockSettings *settings):
+        explicit LockManager(const SettingCollection<BasicSetting> *settings):
             BasicSettingManager(settings) {
         }
 
@@ -248,6 +235,7 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     static const SettingCollection<BasicSetting> ResponseTimeSettings;
     static const SettingCollection<FrequencyModulationSetting>
       FrequencySettings;
+    static const SettingCollection<BasicSetting> LockSettings;
 };
 }  // namespace rdm
 }  // namespace ola
