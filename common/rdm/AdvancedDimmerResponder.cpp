@@ -204,6 +204,9 @@ AdvancedDimmerResponder::AdvancedDimmerResponder(const UID &uid)
   m_min_level.min_level_increasing = 10;
   m_min_level.min_level_decreasing = 20;
   m_min_level.on_below_min = true;
+
+  // make the first preset read only
+  m_presets[0].programmed = PRESET_PROGRAMMED_READ_ONLY;
 }
 
 /*
@@ -422,10 +425,15 @@ const RDMResponse *AdvancedDimmerResponder::SetCapturePreset(
   }
 
   Preset &preset = m_presets[args.scene - 1];
+
+  if (preset.programmed == PRESET_PROGRAMMED_READ_ONLY) {
+    return NackWithReason(request, NR_WRITE_PROTECT);
+  }
+
   preset.fade_up_time = args.fade_up_time;
   preset.fade_down_time = args.fade_down_time;
   preset.wait_time = args.wait_time;
-  preset.programmed = true;
+  preset.programmed = PRESET_PROGRAMMED;
   return ResponderHelper::EmptySetResponse(request);
 }
 
@@ -605,15 +613,26 @@ const RDMResponse *AdvancedDimmerResponder::SetPresetStatus(
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
+  Preset &preset = m_presets[scene - 1];
+  if (preset.programmed == PRESET_PROGRAMMED_READ_ONLY) {
+    return NackWithReason(request, NR_WRITE_PROTECT);
+  }
+
   if (args.programmed > 1) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
-  Preset &preset = m_presets[scene - 1];
-  preset.fade_up_time = NetworkToHost(args.fade_up_time);
-  preset.fade_down_time= NetworkToHost(args.fade_down_time);
-  preset.wait_time = NetworkToHost(args.wait_time);
-  preset.programmed = args.programmed;
+  if (args.programmed == 1) {
+    preset.fade_up_time = 0;
+    preset.fade_down_time= 0;
+    preset.wait_time = 0;
+    preset.programmed = PRESET_NOT_PROGRAMMED;
+  } else {
+    preset.fade_up_time = NetworkToHost(args.fade_up_time);
+    preset.fade_down_time= NetworkToHost(args.fade_down_time);
+    preset.wait_time = NetworkToHost(args.wait_time);
+    preset.programmed = PRESET_PROGRAMMED;
+  }
 
   return ResponderHelper::EmptySetResponse(request);
 }

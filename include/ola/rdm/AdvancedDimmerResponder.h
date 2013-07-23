@@ -99,7 +99,7 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
       uint16_t fade_up_time;
       uint16_t fade_down_time;
       uint16_t wait_time;
-      bool programmed;
+      uint8_t programmed;
     } __attribute__((packed));
 
     /*
@@ -110,15 +110,15 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
         Preset()
           : fade_up_time(0),
             fade_down_time(0),
-            wait_time(30),
-            programmed(false) {
+            wait_time(0),
+            programmed(PRESET_NOT_PROGRAMMED) {
         }
 
         // Times are in 1/0ths of a second.
         uint16_t fade_up_time;
         uint16_t fade_down_time;
         uint16_t wait_time;
-        bool programmed;
+        rdm_preset_programmed_mode programmed;
     };
 
     const UID m_uid;
