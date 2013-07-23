@@ -131,6 +131,9 @@ const ResponderOps<AdvancedDimmerResponder>::ParamHandler
   { PID_CAPTURE_PRESET,
     NULL,
     &AdvancedDimmerResponder::SetCapturePreset},
+  { PID_PRESET_PLAYBACK,
+    &AdvancedDimmerResponder::GetPresetPlayback,
+    &AdvancedDimmerResponder::SetPresetPlayback},
   { PID_DIMMER_INFO,
     &AdvancedDimmerResponder::GetDimmerInfo,
     NULL},
@@ -173,6 +176,12 @@ const ResponderOps<AdvancedDimmerResponder>::ParamHandler
   { PID_POWER_ON_SELF_TEST,
     &AdvancedDimmerResponder::GetPowerOnSelfTest,
     &AdvancedDimmerResponder::SetPowerOnSelfTest},
+  { PID_PRESET_STATUS,
+    &AdvancedDimmerResponder::GetPresetStatus,
+    &AdvancedDimmerResponder::SetPresetStatus},
+  { PID_PRESET_MERGEMODE,
+    &AdvancedDimmerResponder::GetPresetMergeMode,
+    &AdvancedDimmerResponder::SetPresetMergeMode},
   { 0, NULL, NULL},
 };
 
@@ -192,10 +201,16 @@ AdvancedDimmerResponder::AdvancedDimmerResponder(const UID &uid)
       m_curve_settings(&CurveSettings),
       m_response_time_settings(&ResponseTimeSettings),
       m_frequency_settings(&FrequencySettings),
-      m_presets(PRESENT_COUNT) {
+      m_presets(PRESENT_COUNT),
+      m_preset_scene(0),
+      m_preset_level(0),
+      m_preset_merge_mode(MERGEMODE_DEFAULT) {
   m_min_level.min_level_increasing = 10;
   m_min_level.min_level_decreasing = 20;
   m_min_level.on_below_min = true;
+
+  // make the first preset read only
+  m_presets[0].programmed = PRESET_PROGRAMMED_READ_ONLY;
 }
 
 /*
@@ -440,11 +455,56 @@ const RDMResponse *AdvancedDimmerResponder::SetCapturePreset(
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
-  Preset &preset = m_presets[args.scene];
+  Preset &preset = m_presets[args.scene - 1];
+
+  if (preset.programmed == PRESET_PROGRAMMED_READ_ONLY) {
+    return NackWithReason(request, NR_WRITE_PROTECT);
+  }
+
   preset.fade_up_time = args.fade_up_time;
   preset.fade_down_time = args.fade_down_time;
   preset.wait_time = args.wait_time;
-  preset.programmed = true;
+  preset.programmed = PRESET_PROGRAMMED;
+  return ResponderHelper::EmptySetResponse(request);
+}
+
+const RDMResponse *AdvancedDimmerResponder::GetPresetPlayback(
+    const RDMRequest *request) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  preset_playback_s output;
+  output.mode = HostToNetwork(m_preset_scene);
+  output.level = m_preset_level;
+
+  return GetResponseFromData(
+      request,
+      reinterpret_cast<uint8_t*>(&output),
+      sizeof(output),
+      RDM_ACK);
+}
+
+const RDMResponse *AdvancedDimmerResponder::SetPresetPlayback(
+    const RDMRequest *request) {
+  preset_playback_s args;
+
+  if (request->ParamDataSize() != sizeof(args)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  memcpy(reinterpret_cast<uint8_t*>(&args), request->ParamData(),
+         sizeof(args));
+
+  args.mode = NetworkToHost(args.mode);
+
+  if (args.mode >= m_presets.size() &&
+      args.mode != 0xffff) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  m_preset_scene = args.mode;
+  m_preset_level = args.level;
   return ResponderHelper::EmptySetResponse(request);
 }
 
@@ -539,6 +599,97 @@ const RDMResponse *AdvancedDimmerResponder::GetPowerOnSelfTest(
 const RDMResponse *AdvancedDimmerResponder::SetPowerOnSelfTest(
     const RDMRequest *request) {
   return ResponderHelper::SetBoolValue(request, &m_power_on_self_test);
+}
+
+const RDMResponse *AdvancedDimmerResponder::GetPresetStatus(
+    const RDMRequest *request) {
+  uint16_t arg;
+  if (!ResponderHelper::ExtractUInt16(request, &arg)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  if (arg == 0 || arg >= m_presets.size()) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  preset_status_s output;
+  const Preset &preset = m_presets[arg - 1];
+  output.scene = HostToNetwork(arg);
+  output.fade_up_time = HostToNetwork(preset.fade_up_time);
+  output.fade_down_time = HostToNetwork(preset.fade_down_time);
+  output.wait_time = HostToNetwork(preset.wait_time);
+  output.programmed = preset.programmed;
+
+  return GetResponseFromData(
+      request,
+      reinterpret_cast<uint8_t*>(&output),
+      sizeof(output),
+      RDM_ACK);
+}
+
+const RDMResponse *AdvancedDimmerResponder::SetPresetStatus(
+    const RDMRequest *request) {
+  preset_status_s args;
+
+  if (request->ParamDataSize() != sizeof(args)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  memcpy(reinterpret_cast<uint8_t*>(&args), request->ParamData(),
+         sizeof(args));
+
+  uint16_t scene = NetworkToHost(args.scene);
+
+  if (scene == 0 || scene >= m_presets.size()) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  Preset &preset = m_presets[scene - 1];
+  if (preset.programmed == PRESET_PROGRAMMED_READ_ONLY) {
+    return NackWithReason(request, NR_WRITE_PROTECT);
+  }
+
+  if (args.programmed > 1) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  if (args.programmed == 1) {
+    preset.fade_up_time = 0;
+    preset.fade_down_time= 0;
+    preset.wait_time = 0;
+    preset.programmed = PRESET_NOT_PROGRAMMED;
+  } else {
+    preset.fade_up_time = NetworkToHost(args.fade_up_time);
+    preset.fade_down_time= NetworkToHost(args.fade_down_time);
+    preset.wait_time = NetworkToHost(args.wait_time);
+    preset.programmed = PRESET_PROGRAMMED;
+  }
+
+  return ResponderHelper::EmptySetResponse(request);
+}
+
+const RDMResponse *AdvancedDimmerResponder::GetPresetMergeMode(
+    const RDMRequest *request) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  uint8_t output = m_preset_merge_mode;
+  return GetResponseFromData(request, &output, sizeof(output), RDM_ACK);
+}
+
+const RDMResponse *AdvancedDimmerResponder::SetPresetMergeMode(
+    const RDMRequest *request) {
+  uint8_t arg;
+  if (!ResponderHelper::ExtractUInt8(request, &arg)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  if (arg > MERGEMODE_DMX_ONLY) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+  m_preset_merge_mode = static_cast<rdm_preset_merge_mode>(arg);
+  return ResponderHelper::EmptySetResponse(request);
 }
 }  // namespace rdm
 }  // namespace ola

@@ -2402,7 +2402,7 @@ pid {
       multiplier: -1
     }
     field {
-      type: UINT16
+      type: UINT8
       name: "programmed"
       label {
         value: 0

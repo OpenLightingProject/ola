@@ -89,6 +89,19 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
       uint8_t on_below_min;
     } __attribute__((packed));
 
+    struct preset_playback_s {
+      uint16_t mode;
+      uint8_t level;
+    } __attribute__((packed));
+
+    struct preset_status_s {
+      uint16_t scene;
+      uint16_t fade_up_time;
+      uint16_t fade_down_time;
+      uint16_t wait_time;
+      uint8_t programmed;
+    } __attribute__((packed));
+
     /*
      * Represents a preset
      */
@@ -97,15 +110,15 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
         Preset()
           : fade_up_time(0),
             fade_down_time(0),
-            wait_time(30),
-            programmed(false) {
+            wait_time(0),
+            programmed(PRESET_NOT_PROGRAMMED) {
         }
 
         // Times are in 1/0ths of a second.
         uint16_t fade_up_time;
         uint16_t fade_down_time;
         uint16_t wait_time;
-        bool programmed;
+        rdm_preset_programmed_mode programmed;
     };
 
     const UID m_uid;
@@ -121,6 +134,9 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     BasicSettingManager m_response_time_settings;
     SettingManager<FrequencyModulationSetting> m_frequency_settings;
     std::vector<Preset> m_presets;
+    uint16_t m_preset_scene;
+    uint8_t m_preset_level;
+    rdm_preset_merge_mode m_preset_merge_mode;
 
     // Helpers
     bool CheckMinLevelRange(min_level_s *newargs,
@@ -150,6 +166,12 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     const RDMResponse *GetIdentify(const RDMRequest *request);
     const RDMResponse *SetIdentify(const RDMRequest *request);
     const RDMResponse *SetCapturePreset(const RDMRequest *request);
+    const RDMResponse *GetPresetPlayback(const RDMRequest *request);
+    const RDMResponse *SetPresetPlayback(const RDMRequest *request);
+    const RDMResponse *GetPresetStatus(const RDMRequest *request);
+    const RDMResponse *SetPresetStatus(const RDMRequest *request);
+    const RDMResponse *GetPresetMergeMode(const RDMRequest *request);
+    const RDMResponse *SetPresetMergeMode(const RDMRequest *request);
     const RDMResponse *GetIdentifyMode(const RDMRequest *request);
     const RDMResponse *SetIdentifyMode(const RDMRequest *request);
     const RDMResponse *GetBurnIn(const RDMRequest *request);
