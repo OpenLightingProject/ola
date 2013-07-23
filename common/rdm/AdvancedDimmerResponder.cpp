@@ -97,8 +97,15 @@ const AdvancedDimmerResponder::LockSettings *
 
 const RDMResponse *AdvancedDimmerResponder::
     LockManager::Set(const RDMRequest *request, const uint16_t *pin) {
-  uint8_t arg;
-  uint16_t recieved_pin;
+
+  struct lock_s {
+    uint16_t pin;
+    uint8_t state;
+  } __attribute__((packed));
+
+  if (request->ParamDataSize()) {
+    
+  }
 
   if (!ResponderHelper::ExtractUInt16(request, &recieved_pin)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
