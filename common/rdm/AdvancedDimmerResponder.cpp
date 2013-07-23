@@ -761,6 +761,7 @@ const RDMResponse *AdvancedDimmerResponder::SetStartUpMode(
   m_startup_mode.level = args.level;
 
   return ResponderHelper::EmptySetResponse(request);
+}
 
 bool AdvancedDimmerResponder::ValueBetweenRange(const uint16_t value,
                                                 const uint16_t lower,
