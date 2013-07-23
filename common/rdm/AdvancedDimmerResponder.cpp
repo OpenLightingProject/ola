@@ -232,6 +232,9 @@ const ResponderOps<AdvancedDimmerResponder>::ParamHandler
   { PID_PRESET_MERGEMODE,
     &AdvancedDimmerResponder::GetPresetMergeMode,
     &AdvancedDimmerResponder::SetPresetMergeMode},
+  { PID_PRESET_INFO,
+    &AdvancedDimmerResponder::GetPresetInfo,
+    NULL},
   { 0, NULL, NULL},
 };
 
@@ -763,6 +766,57 @@ const RDMResponse *AdvancedDimmerResponder::SetPresetStatus(
   return ResponderHelper::EmptySetResponse(request);
 }
 
+const RDMResponse *AdvancedDimmerResponder::GetPresetInfo(
+    const RDMRequest *request) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  struct preset_info_s {
+    uint8_t level_supported;
+    uint8_t preset_seq_supported;
+    uint8_t split_times_supported;
+    uint8_t fail_infinite_delay_supported;
+    uint8_t fail_infinite_hold_supported;
+    uint8_t startup_infinite_hold_supported;
+    uint16_t max_scene_number;
+    uint16_t min_preset_fade_time;
+    uint16_t max_preset_fade_time;
+    uint16_t min_preset_wait_time;
+    uint16_t max_preset_wait_time;
+    uint16_t min_fail_delay_time;
+    uint16_t max_fail_delay_time;
+    uint16_t min_fail_hold_time;
+    uint16_t max_fail_hold_time;
+    uint16_t min_startup_delay;
+    uint16_t max_startup_delay;
+    uint16_t min_startup_hold;
+    uint16_t max_startup_hold;
+  } __attribute__((packed));
+
+  preset_info_s preset_info = {
+    1,  // level_supported
+    1,  // preset_seq_supported
+    1,  // split_times_supported
+    1,  // fail_infinite_delay_supported
+    1,  // fail_infinite_hold_supported
+    1,  // startup_infinite_hold_supported
+    m_presets.size(),
+    0, 0xfffe,  // fade time
+    0, 0xfffe,  // wait time
+    0, 0xfffe,  // fail delay
+    0, 0xfffe,  // hold time
+    0, 0xfffe,  // startup delay
+    0, 0xfffe,  // startup hold
+  };
+
+  return GetResponseFromData(
+      request,
+      reinterpret_cast<uint8_t*>(&preset_info),
+      sizeof(preset_info),
+      RDM_ACK);
+}
+
 const RDMResponse *AdvancedDimmerResponder::GetPresetMergeMode(
     const RDMRequest *request) {
   if (request->ParamDataSize()) {
@@ -785,16 +839,6 @@ const RDMResponse *AdvancedDimmerResponder::SetPresetMergeMode(
   }
   m_preset_merge_mode = static_cast<rdm_preset_merge_mode>(arg);
   return ResponderHelper::EmptySetResponse(request);
-}
-
-bool AdvancedDimmerResponder::ValueBetweenRange(
-    const uint16_t value,
-    const uint16_t lower,
-    const uint16_t upper) {
-  if (value < lower || value > upper) {
-    return false;
-  }
-  return true;
 }
 
 const RDMResponse *AdvancedDimmerResponder::GetFailMode(
@@ -881,6 +925,12 @@ const RDMResponse *AdvancedDimmerResponder::SetStartUpMode(
   m_startup_mode.level = args.level;
 
   return ResponderHelper::EmptySetResponse(request);
+}
+
+bool AdvancedDimmerResponder::ValueBetweenRange(const uint16_t value,
+                                                const uint16_t lower,
+                                                const uint16_t upper) {
+  return value >= lower && value <= upper;
 }
 }  // namespace rdm
 }  // namespace ola

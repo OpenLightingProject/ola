@@ -191,6 +191,7 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     const RDMResponse *SetPresetStatus(const RDMRequest *request);
     const RDMResponse *GetPresetMergeMode(const RDMRequest *request);
     const RDMResponse *SetPresetMergeMode(const RDMRequest *request);
+    const RDMResponse *GetPresetInfo(const RDMRequest *request);
     const RDMResponse *GetFailMode(const RDMRequest *request);
     const RDMResponse *SetFailMode(const RDMRequest *request);
     const RDMResponse *GetStartUpMode(const RDMRequest *request);
