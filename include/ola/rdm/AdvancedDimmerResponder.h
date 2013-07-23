@@ -136,6 +136,7 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     std::vector<Preset> m_presets;
     uint16_t m_preset_scene;
     uint8_t m_preset_level;
+    rdm_preset_merge_mode m_preset_merge_mode;
 
     const RDMResponse *GetDeviceInfo(const RDMRequest *request);
     const RDMResponse *GetProductDetailList(const RDMRequest *request);
@@ -160,6 +161,8 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     const RDMResponse *SetPresetPlayback(const RDMRequest *request);
     const RDMResponse *GetPresetStatus(const RDMRequest *request);
     const RDMResponse *SetPresetStatus(const RDMRequest *request);
+    const RDMResponse *GetPresetMergeMode(const RDMRequest *request);
+    const RDMResponse *SetPresetMergeMode(const RDMRequest *request);
     const RDMResponse *GetIdentifyMode(const RDMRequest *request);
     const RDMResponse *SetIdentifyMode(const RDMRequest *request);
     const RDMResponse *GetBurnIn(const RDMRequest *request);

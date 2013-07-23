@@ -589,7 +589,7 @@ typedef enum {
   MERGEMODE_LTP = 2,
   MERGEMODE_DMX_ONLY = 3,
   MERGEMODE_OTHER = 0xff,
-} rdm_merge_mode;
+} rdm_preset_merge_mode;
 }  // namespace rdm
 }  // namespace ola
 #endif  // INCLUDE_OLA_RDM_RDMENUMS_H_

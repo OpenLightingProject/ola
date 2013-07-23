@@ -179,6 +179,9 @@ const ResponderOps<AdvancedDimmerResponder>::ParamHandler
   { PID_PRESET_STATUS,
     &AdvancedDimmerResponder::GetPresetStatus,
     &AdvancedDimmerResponder::SetPresetStatus},
+  { PID_PRESET_MERGEMODE,
+    &AdvancedDimmerResponder::GetPresetMergeMode,
+    &AdvancedDimmerResponder::SetPresetMergeMode},
   { 0, NULL, NULL},
 };
 
@@ -200,7 +203,8 @@ AdvancedDimmerResponder::AdvancedDimmerResponder(const UID &uid)
       m_frequency_settings(&FrequencySettings),
       m_presets(PRESENT_COUNT),
       m_preset_scene(0),
-      m_preset_level(0) {
+      m_preset_level(0),
+      m_preset_merge_mode(MERGEMODE_DEFAULT) {
   m_min_level.min_level_increasing = 10;
   m_min_level.min_level_decreasing = 20;
   m_min_level.on_below_min = true;
@@ -634,6 +638,30 @@ const RDMResponse *AdvancedDimmerResponder::SetPresetStatus(
     preset.programmed = PRESET_PROGRAMMED;
   }
 
+  return ResponderHelper::EmptySetResponse(request);
+}
+
+const RDMResponse *AdvancedDimmerResponder::GetPresetMergeMode(
+    const RDMRequest *request) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  uint8_t output = m_preset_merge_mode;
+  return GetResponseFromData(request, &output, sizeof(output), RDM_ACK);
+}
+
+const RDMResponse *AdvancedDimmerResponder::SetPresetMergeMode(
+    const RDMRequest *request) {
+  uint8_t arg;
+  if (!ResponderHelper::ExtractUInt8(request, &arg)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  if (arg > MERGEMODE_DMX_ONLY) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+  m_preset_merge_mode = static_cast<rdm_preset_merge_mode>(arg);
   return ResponderHelper::EmptySetResponse(request);
 }
 }  // namespace rdm
