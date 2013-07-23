@@ -149,6 +149,12 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     fail_mode_s m_fail_mode;
     startup_mode_s m_startup_mode;
 
+    // Helpers
+    bool ValueBetweenRange(const uint16_t value,
+                           const uint16_t lower,
+                           const uint16_t upper);
+
+    // Pids
     const RDMResponse *GetDeviceInfo(const RDMRequest *request);
     const RDMResponse *GetProductDetailList(const RDMRequest *request);
     const RDMResponse *GetDeviceModelDescription(const RDMRequest *request);

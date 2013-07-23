@@ -350,7 +350,6 @@ const RDMResponse *AdvancedDimmerResponder::GetMinimumLevel(
       RDM_ACK);
 }
 
-
 const RDMResponse *AdvancedDimmerResponder::SetMinimumLevel(
     const RDMRequest *request) {
   min_level_s args;
@@ -364,11 +363,13 @@ const RDMResponse *AdvancedDimmerResponder::SetMinimumLevel(
   args.min_level_increasing = NetworkToHost(args.min_level_increasing);
   args.min_level_decreasing = NetworkToHost(args.min_level_decreasing);
 
-  if (args.min_level_decreasing < LOWER_MIN_LEVEL ||
-      args.min_level_decreasing > UPPER_MIN_LEVEL ||
-      args.min_level_increasing < LOWER_MIN_LEVEL ||
-      args.min_level_increasing > UPPER_MIN_LEVEL ||
-      args.on_below_min > 2) {
+  if (!ValueBetweenRange(args.min_level_decreasing,
+                         LOWER_MIN_LEVEL,
+                         UPPER_MIN_LEVEL)  ||
+      !ValueBetweenRange(args.min_level_increasing,
+                         LOWER_MIN_LEVEL,
+                         UPPER_MIN_LEVEL) ||
+      args.on_below_min > 1) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   } else {
     m_min_level = args;
@@ -388,7 +389,7 @@ const RDMResponse *AdvancedDimmerResponder::SetMaximumLevel(
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
-  if (arg < LOWER_MAX_LEVEL || arg > UPPER_MAX_LEVEL) {
+  if (!ValueBetweenRange(arg, LOWER_MAX_LEVEL, UPPER_MAX_LEVEL)) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   } else {
     m_maximum_level = arg;
@@ -676,6 +677,7 @@ const RDMResponse *AdvancedDimmerResponder::SetPresetMergeMode(
   return ResponderHelper::EmptySetResponse(request);
 }
 
+<<<<<<< HEAD
 const RDMResponse *AdvancedDimmerResponder::GetFailMode(
     const RDMRequest *request) {
   if (request->ParamDataSize()) {
@@ -760,6 +762,11 @@ const RDMResponse *AdvancedDimmerResponder::SetStartUpMode(
   m_startup_mode.level = args.level;
 
   return ResponderHelper::EmptySetResponse(request);
+
+bool AdvancedDimmerResponder::ValueBetweenRange(const uint16_t value,
+                                                const uint16_t lower,
+                                                const uint16_t upper) {
+  return value >= lower && value <= upper;
 }
 }  // namespace rdm
 }  // namespace ola
