@@ -677,7 +677,6 @@ const RDMResponse *AdvancedDimmerResponder::SetPresetMergeMode(
   return ResponderHelper::EmptySetResponse(request);
 }
 
-<<<<<<< HEAD
 const RDMResponse *AdvancedDimmerResponder::GetFailMode(
     const RDMRequest *request) {
   if (request->ParamDataSize()) {
@@ -762,6 +761,7 @@ const RDMResponse *AdvancedDimmerResponder::SetStartUpMode(
   m_startup_mode.level = args.level;
 
   return ResponderHelper::EmptySetResponse(request);
+}
 
 bool AdvancedDimmerResponder::ValueBetweenRange(const uint16_t value,
                                                 const uint16_t lower,
