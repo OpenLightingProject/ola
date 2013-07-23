@@ -200,6 +200,10 @@ class SettingManager {
     const RDMResponse *Set(const RDMRequest *request);
     const RDMResponse *GetDescription(const RDMRequest *request) const;
 
+    uint8_t Count() const;
+    uint8_t CurrentSetting() const;
+    bool ChangeSetting(uint8_t state);
+
   private:
     const SettingCollection<SettingType> *m_settings;
     uint8_t m_current_setting;
@@ -248,10 +252,29 @@ const RDMResponse *SettingManager<SettingType>::GetDescription(
   } else {
     const SettingType *setting = m_settings->Lookup(arg - offset);
 
-    uint8_t output[setting->DescriptionResponseSize()];
+    uint8_t output[setting->DescriptionResponseSize()]; // NOLINT
     unsigned int size = setting->GenerateDescriptionResponse(arg, output);
     return GetResponseFromData(request, output, size, RDM_ACK);
   }
+}
+
+template <class SettingType>
+uint8_t SettingManager<SettingType>::Count() const {
+  return m_settings->Count();
+}
+
+template <class SettingType>
+uint8_t SettingManager<SettingType>::CurrentSetting() const {
+  return m_current_setting;
+}
+
+template <class SettingType>
+bool SettingManager<SettingType>::ChangeSetting(uint8_t new_setting) {
+  if (new_setting >= m_settings->Count())
+    return false;
+
+  m_current_setting = new_setting;
+  return true;
 }
 }  // namespace rdm
 }  // namespace ola

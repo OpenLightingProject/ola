@@ -108,15 +108,14 @@ const RDMResponse *AdvancedDimmerResponder::
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
-  if (arg > Count()) {
-    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
-  }
-
   if (*pin != recieved_pin) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
-  SetState(arg);
+  if (!ChangeSetting(arg)) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
   return ResponderHelper::EmptySetResponse(request);
 }
 
@@ -219,15 +218,15 @@ const ResponderOps<AdvancedDimmerResponder>::ParamHandler
   { PID_MODULATION_FREQUENCY_DESCRIPTION,
     &AdvancedDimmerResponder::GetPWMFrequencyDescription,
     NULL},
-  {PID_LOCK_STATE,
+  { PID_LOCK_STATE,
     &AdvancedDimmerResponder::GetLockState,
     &AdvancedDimmerResponder::SetLockState},
-  {PID_LOCK_STATE_DESCRIPTION,
+  { PID_LOCK_STATE_DESCRIPTION,
     &AdvancedDimmerResponder::GetLockStateDescription,
     NULL},
-  {PID_LOCK_PIN,
+  { PID_LOCK_PIN,
     &AdvancedDimmerResponder::GetLockPin,
-    &AdvancedDimmerResponder::SetLockPin,},
+    &AdvancedDimmerResponder::SetLockPin},
   { PID_POWER_ON_SELF_TEST,
     &AdvancedDimmerResponder::GetPowerOnSelfTest,
     &AdvancedDimmerResponder::SetPowerOnSelfTest},
