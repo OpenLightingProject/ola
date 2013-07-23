@@ -122,6 +122,15 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     SettingManager<FrequencyModulationSetting> m_frequency_settings;
     std::vector<Preset> m_presets;
 
+    // Helpers
+    bool CheckMinLevelRange(min_level_s *newargs,
+                            uint16_t lower_min,
+                            uint16_t upper_min);
+    bool CheckMaxLevelRange(uint16_t new_max,
+                            uint16_t lower_max,
+                            uint16_t upper_max);
+
+    // Pids
     const RDMResponse *GetDeviceInfo(const RDMRequest *request);
     const RDMResponse *GetProductDetailList(const RDMRequest *request);
     const RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
