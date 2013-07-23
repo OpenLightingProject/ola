@@ -102,6 +102,15 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
       uint8_t programmed;
     } __attribute__((packed));
 
+    struct fail_mode_s {
+      uint16_t scene;
+      uint16_t delay;
+      uint16_t hold_time;
+      uint8_t level;
+    } __attribute__((packed));
+
+    typedef fail_mode_s startup_mode_s;
+
     /*
      * Represents a preset
      */
@@ -137,6 +146,8 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     uint16_t m_preset_scene;
     uint8_t m_preset_level;
     rdm_preset_merge_mode m_preset_merge_mode;
+    fail_mode_s m_fail_mode;
+    startup_mode_s m_startup_mode;
 
     const RDMResponse *GetDeviceInfo(const RDMRequest *request);
     const RDMResponse *GetProductDetailList(const RDMRequest *request);
@@ -163,6 +174,10 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     const RDMResponse *SetPresetStatus(const RDMRequest *request);
     const RDMResponse *GetPresetMergeMode(const RDMRequest *request);
     const RDMResponse *SetPresetMergeMode(const RDMRequest *request);
+    const RDMResponse *GetFailMode(const RDMRequest *request);
+    const RDMResponse *SetFailMode(const RDMRequest *request);
+    const RDMResponse *GetStartUpMode(const RDMRequest *request);
+    const RDMResponse *SetStartUpMode(const RDMRequest *request);
     const RDMResponse *GetIdentifyMode(const RDMRequest *request);
     const RDMResponse *SetIdentifyMode(const RDMRequest *request);
     const RDMResponse *GetBurnIn(const RDMRequest *request);
