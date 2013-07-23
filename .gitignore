@@ -106,6 +106,7 @@ tools/ola_trigger/config.tab.cpp
 tools/ola_trigger/config.tab.h
 tools/ola_trigger/lex.yy.cpp
 tools/ola_trigger/ola_trigger
+tools/logic/logic_rdm_sniffer
 tools/rdm/DataLocation.py
 tools/rdmpro/rdmpro_sniffer
 tools/slp/slp_client

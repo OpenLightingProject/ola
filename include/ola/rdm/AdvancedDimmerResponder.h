@@ -83,47 +83,6 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
         static Personalities *instance;
     };
 
-    class CurveSettings : public BasicSettingCollection {
-      public:
-        static const CurveSettings *Instance();
-
-      private:
-        explicit CurveSettings(const BasicSetting::ArgType args[],
-                               unsigned int arg_count)
-            : BasicSettingCollection(args, arg_count) {
-        }
-
-        static CurveSettings *instance;
-    };
-
-    class ResponseTimeSettings : public BasicSettingCollection {
-      public:
-        static const ResponseTimeSettings *Instance();
-
-      private:
-        explicit ResponseTimeSettings(const BasicSetting::ArgType args[],
-                               unsigned int arg_count)
-            : BasicSettingCollection(args, arg_count) {
-        }
-
-        static ResponseTimeSettings *instance;
-    };
-
-    class FrequencySettings : public
-                              SettingCollection<FrequencyModulationSetting> {
-      public:
-        static const FrequencySettings *Instance();
-
-      private:
-        explicit FrequencySettings(
-            const FrequencyModulationSetting::ArgType args[],
-            unsigned int arg_count)
-            : SettingCollection<FrequencyModulationSetting>(args, arg_count) {
-        }
-
-        static FrequencySettings *instance;
-    };
-
     class LockSettings : public BasicSettingCollection {
       public:
         static const LockSettings *Instance();
@@ -146,21 +105,80 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
         const RDMResponse *Set(const RDMRequest *request, const uint16_t *pin);
     };
 
+    struct min_level_s {
+      uint16_t min_level_increasing;
+      uint16_t min_level_decreasing;
+      uint8_t on_below_min;
+    } __attribute__((packed));
+
+    struct preset_playback_s {
+      uint16_t mode;
+      uint8_t level;
+    } __attribute__((packed));
+
+    struct preset_status_s {
+      uint16_t scene;
+      uint16_t fade_up_time;
+      uint16_t fade_down_time;
+      uint16_t wait_time;
+      uint8_t programmed;
+    } __attribute__((packed));
+
+    struct fail_mode_s {
+      uint16_t scene;
+      uint16_t delay;
+      uint16_t hold_time;
+      uint8_t level;
+    } __attribute__((packed));
+
+    typedef fail_mode_s startup_mode_s;
+
+    /*
+     * Represents a preset
+     */
+    class Preset {
+      public:
+        Preset()
+          : fade_up_time(0),
+            fade_down_time(0),
+            wait_time(0),
+            programmed(PRESET_NOT_PROGRAMMED) {
+        }
+
+        // Times are in 1/0ths of a second.
+        uint16_t fade_up_time;
+        uint16_t fade_down_time;
+        uint16_t wait_time;
+        rdm_preset_programmed_mode programmed;
+    };
+
     const UID m_uid;
     bool m_identify_state;
     uint16_t m_start_address;
     uint16_t m_lock_pin;
     uint16_t m_maximum_level;
+    min_level_s m_min_level;
     uint8_t m_identify_mode;
     uint8_t m_burn_in;
     bool m_power_on_self_test;
     PersonalityManager m_personality_manager;
-
     BasicSettingManager m_curve_settings;
     BasicSettingManager m_response_time_settings;
     LockManager m_lock_settings;
     SettingManager<FrequencyModulationSetting> m_frequency_settings;
+    std::vector<Preset> m_presets;
+    uint16_t m_preset_scene;
+    uint8_t m_preset_level;
+    rdm_preset_merge_mode m_preset_merge_mode;
+    fail_mode_s m_fail_mode;
+    startup_mode_s m_startup_mode;
 
+    // Helpers
+    bool ValueBetweenRange(const uint16_t value,
+                           const uint16_t lower,
+                           const uint16_t upper);
+
+    // Pids
     const RDMResponse *GetDeviceInfo(const RDMRequest *request);
     const RDMResponse *GetProductDetailList(const RDMRequest *request);
     const RDMResponse *GetDeviceModelDescription(const RDMRequest *request);
@@ -173,10 +191,23 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     const RDMResponse *GetDmxStartAddress(const RDMRequest *request);
     const RDMResponse *SetDmxStartAddress(const RDMRequest *request);
     const RDMResponse *GetDimmerInfo(const RDMRequest *request);
+    const RDMResponse *GetMinimumLevel(const RDMRequest *request);
+    const RDMResponse *SetMinimumLevel(const RDMRequest *request);
     const RDMResponse *GetMaximumLevel(const RDMRequest *request);
     const RDMResponse *SetMaximumLevel(const RDMRequest *request);
     const RDMResponse *GetIdentify(const RDMRequest *request);
     const RDMResponse *SetIdentify(const RDMRequest *request);
+    const RDMResponse *SetCapturePreset(const RDMRequest *request);
+    const RDMResponse *GetPresetPlayback(const RDMRequest *request);
+    const RDMResponse *SetPresetPlayback(const RDMRequest *request);
+    const RDMResponse *GetPresetStatus(const RDMRequest *request);
+    const RDMResponse *SetPresetStatus(const RDMRequest *request);
+    const RDMResponse *GetPresetMergeMode(const RDMRequest *request);
+    const RDMResponse *SetPresetMergeMode(const RDMRequest *request);
+    const RDMResponse *GetFailMode(const RDMRequest *request);
+    const RDMResponse *SetFailMode(const RDMRequest *request);
+    const RDMResponse *GetStartUpMode(const RDMRequest *request);
+    const RDMResponse *SetStartUpMode(const RDMRequest *request);
     const RDMResponse *GetIdentifyMode(const RDMRequest *request);
     const RDMResponse *SetIdentifyMode(const RDMRequest *request);
     const RDMResponse *GetBurnIn(const RDMRequest *request);
@@ -199,8 +230,11 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     const RDMResponse *SetPowerOnSelfTest(const RDMRequest *request);
 
     static const uint8_t DIMMER_RESOLUTION;
+    static const uint16_t LOWER_MIN_LEVEL;
+    static const uint16_t UPPER_MIN_LEVEL;
     static const uint16_t LOWER_MAX_LEVEL;
     static const uint16_t UPPER_MAX_LEVEL;
+    static const unsigned int PRESENT_COUNT;
 
     static const ResponderOps<AdvancedDimmerResponder>::ParamHandler
       PARAM_HANDLERS[];
