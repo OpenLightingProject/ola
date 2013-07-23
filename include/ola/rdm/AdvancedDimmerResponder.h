@@ -139,12 +139,9 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     rdm_preset_merge_mode m_preset_merge_mode;
 
     // Helpers
-    bool CheckMinLevelRange(min_level_s *newargs,
-                            uint16_t lower_min,
-                            uint16_t upper_min);
-    bool CheckMaxLevelRange(uint16_t new_max,
-                            uint16_t lower_max,
-                            uint16_t upper_max);
+    bool ValueBetweenRange(const uint16_t value,
+                           const uint16_t lower,
+                           const uint16_t upper);
 
     // Pids
     const RDMResponse *GetDeviceInfo(const RDMRequest *request);

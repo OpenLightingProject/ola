@@ -338,20 +338,6 @@ const RDMResponse *AdvancedDimmerResponder::GetMinimumLevel(
       RDM_ACK);
 }
 
-bool AdvancedDimmerResponder::CheckMinLevelRange(
-    AdvancedDimmerResponder::min_level_s *newargs,
-    uint16_t lower_min,
-    uint16_t upper_min) {
-  if (newargs->min_level_decreasing < lower_min ||
-      newargs->min_level_decreasing > upper_min ||
-      newargs->min_level_increasing < lower_min ||
-      newargs->min_level_increasing > upper_min ||
-      newargs->on_below_min > 2) {
-    return false;
-  }
-  return true;
-}
-
 const RDMResponse *AdvancedDimmerResponder::SetMinimumLevel(
     const RDMRequest *request) {
   min_level_s args;
@@ -365,7 +351,13 @@ const RDMResponse *AdvancedDimmerResponder::SetMinimumLevel(
   args.min_level_increasing = NetworkToHost(args.min_level_increasing);
   args.min_level_decreasing = NetworkToHost(args.min_level_decreasing);
 
-  if (!CheckMinLevelRange(&args, LOWER_MIN_LEVEL, UPPER_MIN_LEVEL)) {
+  if (!ValueBetweenRange(args.min_level_decreasing,
+                         LOWER_MIN_LEVEL,
+                         UPPER_MIN_LEVEL)  ||
+      !ValueBetweenRange(args.min_level_increasing,
+                         LOWER_MIN_LEVEL,
+                         UPPER_MIN_LEVEL) ||
+      args.on_below_min > 1) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   } else {
     m_min_level = args;
@@ -378,16 +370,6 @@ const RDMResponse *AdvancedDimmerResponder::GetMaximumLevel(
   return ResponderHelper::GetUInt16Value(request, m_maximum_level);
 }
 
-bool AdvancedDimmerResponder::CheckMaxLevelRange(
-    uint16_t new_max,
-    uint16_t lower_max,
-    uint16_t upper_max) {
-  if (new_max < lower_max || new_max > upper_max) {
-    return false;
-  }
-  return true;
-}
-
 const RDMResponse *AdvancedDimmerResponder::SetMaximumLevel(
     const RDMRequest *request) {
   uint16_t arg;
@@ -395,15 +377,7 @@ const RDMResponse *AdvancedDimmerResponder::SetMaximumLevel(
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
-  /*
-  if (arg < LOWER_MAX_LEVEL || arg > UPPER_MAX_LEVEL) {
-    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
-  } else {
-    m_maximum_level = arg;
-    return ResponderHelper::EmptySetResponse(request);
-  }*/
-
-  if (!CheckMaxLevelRange(arg, LOWER_MAX_LEVEL, UPPER_MAX_LEVEL)) {
+  if (!ValueBetweenRange(arg, LOWER_MAX_LEVEL, UPPER_MAX_LEVEL)) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   } else {
     m_maximum_level = arg;
@@ -690,6 +664,16 @@ const RDMResponse *AdvancedDimmerResponder::SetPresetMergeMode(
   }
   m_preset_merge_mode = static_cast<rdm_preset_merge_mode>(arg);
   return ResponderHelper::EmptySetResponse(request);
+}
+
+bool AdvancedDimmerResponder::ValueBetweenRange(
+    const uint16_t value,
+    const uint16_t lower,
+    const uint16_t upper) {
+  if (value < lower || value > upper) {
+    return false;
+  }
+  return true;
 }
 }  // namespace rdm
 }  // namespace ola
