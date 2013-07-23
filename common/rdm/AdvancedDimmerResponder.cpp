@@ -47,7 +47,7 @@ const uint16_t AdvancedDimmerResponder::LOWER_MAX_LEVEL = 0x7fff;
 const uint16_t AdvancedDimmerResponder::UPPER_MAX_LEVEL = 0xffff;
 const uint16_t AdvancedDimmerResponder::LOWER_MIN_LEVEL = 0x0;
 const uint16_t AdvancedDimmerResponder::UPPER_MIN_LEVEL = 0x7fff;
-const unsigned int AdvancedDimmerResponder::PRESENT_COUNT = 6;
+const unsigned int AdvancedDimmerResponder::PRESET_COUNT = 6;
 
 const char* AdvancedDimmerResponder::CURVES[] = {
   "Linear Curve",
@@ -256,7 +256,7 @@ AdvancedDimmerResponder::AdvancedDimmerResponder(const UID &uid)
       m_response_time_settings(&ResponseTimeSettings),
       m_lock_settings(&LockSettings),
       m_frequency_settings(&FrequencySettings),
-      m_presets(PRESENT_COUNT),
+      m_presets(PRESET_COUNT),
       m_preset_scene(0),
       m_preset_level(0),
       m_preset_merge_mode(MERGEMODE_DEFAULT) {
