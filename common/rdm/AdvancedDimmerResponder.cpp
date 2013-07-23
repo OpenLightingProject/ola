@@ -143,9 +143,12 @@ const ResponderOps<AdvancedDimmerResponder>::ParamHandler
   { PID_MAXIMUM_LEVEL,
     &AdvancedDimmerResponder::GetMaximumLevel,
     &AdvancedDimmerResponder::SetMaximumLevel},
-  { PID_IDENTIFY_MODE,
-    &AdvancedDimmerResponder::GetIdentifyMode,
-    &AdvancedDimmerResponder::SetIdentifyMode},
+  { PID_DMX_FAIL_MODE,
+    &AdvancedDimmerResponder::GetFailMode,
+    &AdvancedDimmerResponder::SetFailMode},
+  { PID_DMX_STARTUP_MODE,
+    &AdvancedDimmerResponder::GetStartUpMode,
+    &AdvancedDimmerResponder::SetStartUpMode},
   { PID_BURN_IN,
     &AdvancedDimmerResponder::GetBurnIn,
     &AdvancedDimmerResponder::SetBurnIn},
@@ -208,6 +211,15 @@ AdvancedDimmerResponder::AdvancedDimmerResponder(const UID &uid)
   m_min_level.min_level_increasing = 10;
   m_min_level.min_level_decreasing = 20;
   m_min_level.on_below_min = true;
+
+  m_fail_mode.scene = 0;
+  m_fail_mode.delay = 0;
+  m_fail_mode.hold_time = 0;
+  m_fail_mode.level = 0;
+  m_startup_mode.scene = 0;
+  m_startup_mode.delay = 0;
+  m_startup_mode.hold_time = 0;
+  m_startup_mode.level = 0;
 
   // make the first preset read only
   m_presets[0].programmed = PRESET_PROGRAMMED_READ_ONLY;
@@ -604,7 +616,6 @@ const RDMResponse *AdvancedDimmerResponder::GetPresetStatus(
 const RDMResponse *AdvancedDimmerResponder::SetPresetStatus(
     const RDMRequest *request) {
   preset_status_s args;
-
   if (request->ParamDataSize() != sizeof(args)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
@@ -674,6 +685,91 @@ bool AdvancedDimmerResponder::ValueBetweenRange(
     return false;
   }
   return true;
+
+const RDMResponse *AdvancedDimmerResponder::GetFailMode(
+    const RDMRequest *request) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  fail_mode_s fail_mode = {
+    HostToNetwork(m_fail_mode.scene),
+    HostToNetwork(m_fail_mode.delay),
+    HostToNetwork(m_fail_mode.hold_time),
+    m_fail_mode.level
+  };
+
+  return GetResponseFromData(
+      request,
+      reinterpret_cast<uint8_t*>(&fail_mode),
+      sizeof(fail_mode),
+      RDM_ACK);
+}
+
+const RDMResponse *AdvancedDimmerResponder::SetFailMode(
+    const RDMRequest *request) {
+  fail_mode_s args;
+  if (request->ParamDataSize() != sizeof(args)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  memcpy(reinterpret_cast<uint8_t*>(&args), request->ParamData(),
+         sizeof(args));
+
+  uint16_t scene = NetworkToHost(args.scene);
+  if (scene >= m_presets.size()) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  m_fail_mode.scene = NetworkToHost(args.scene);
+  m_fail_mode.delay = NetworkToHost(args.delay);
+  m_fail_mode.hold_time = NetworkToHost(args.hold_time);
+  m_fail_mode.level = args.level;
+
+  return ResponderHelper::EmptySetResponse(request);
+}
+
+const RDMResponse *AdvancedDimmerResponder::GetStartUpMode(
+    const RDMRequest *request) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  startup_mode_s startup_mode = {
+    HostToNetwork(m_startup_mode.scene),
+    HostToNetwork(m_startup_mode.delay),
+    HostToNetwork(m_startup_mode.hold_time),
+    m_startup_mode.level
+  };
+
+  return GetResponseFromData(
+      request,
+      reinterpret_cast<uint8_t*>(&startup_mode),
+      sizeof(startup_mode),
+      RDM_ACK);
+}
+
+const RDMResponse *AdvancedDimmerResponder::SetStartUpMode(
+    const RDMRequest *request) {
+  startup_mode_s args;
+  if (request->ParamDataSize() != sizeof(args)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  memcpy(reinterpret_cast<uint8_t*>(&args), request->ParamData(),
+         sizeof(args));
+
+  uint16_t scene = NetworkToHost(args.scene);
+  if (scene >= m_presets.size()) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  m_startup_mode.scene = NetworkToHost(args.scene);
+  m_startup_mode.delay = NetworkToHost(args.delay);
+  m_startup_mode.hold_time = NetworkToHost(args.hold_time);
+  m_startup_mode.level = args.level;
+
+  return ResponderHelper::EmptySetResponse(request);
 }
 }  // namespace rdm
 }  // namespace ola
