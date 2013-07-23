@@ -677,15 +677,6 @@ const RDMResponse *AdvancedDimmerResponder::SetPresetMergeMode(
   return ResponderHelper::EmptySetResponse(request);
 }
 
-bool AdvancedDimmerResponder::ValueBetweenRange(
-    const uint16_t value,
-    const uint16_t lower,
-    const uint16_t upper) {
-  if (value < lower || value > upper) {
-    return false;
-  }
-  return true;
-
 const RDMResponse *AdvancedDimmerResponder::GetFailMode(
     const RDMRequest *request) {
   if (request->ParamDataSize()) {
@@ -770,6 +761,11 @@ const RDMResponse *AdvancedDimmerResponder::SetStartUpMode(
   m_startup_mode.level = args.level;
 
   return ResponderHelper::EmptySetResponse(request);
+
+bool AdvancedDimmerResponder::ValueBetweenRange(const uint16_t value,
+                                                const uint16_t lower,
+                                                const uint16_t upper) {
+  return value >= lower && value <= upper;
 }
 }  // namespace rdm
 }  // namespace ola
