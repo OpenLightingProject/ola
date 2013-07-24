@@ -147,9 +147,12 @@ class FrequencyModulationSetting : SettingInterface {
 
 
 /**
- * Holds the list of settings for a class of responder. A single instance
+ * @brief Holds the list of settings for a class of responder. A single instance
  * is shared between all responders of the same type. Subclass this and use a
  * singleton.
+ *
+ * @note Settings are indexed from zero. SettingManager responsible for
+ * reporting correct indicies with correct offset.
  */
 template <class SettingType>
 class SettingCollection {
@@ -214,18 +217,17 @@ class SettingManager {
 
   private:
     const SettingCollection<SettingType> *m_settings;
-    uint8_t m_current_setting;
+    uint8_t m_current_setting; /**< Index to m_settings, including zero*/
 };
 
 typedef SettingCollection<BasicSetting> BasicSettingCollection;
 typedef SettingManager<BasicSetting> BasicSettingManager;
 
-
 template <class SettingType>
 const RDMResponse *SettingManager<SettingType>::Get(
     const RDMRequest *request) const {
-  uint16_t data = ((m_current_setting + m_settings->Offset())
-      << 8 | m_settings->Count());
+  uint16_t data = ((m_current_setting + m_settings->Offset()) << 8 |
+      m_settings->Count());
   return ResponderHelper::GetUInt16Value(request, data);
 }
 
