@@ -1,9 +1,13 @@
 x/y/2013 ola-0.8.31
  * Bash Completions of UIDs in the RDM commands
- * Change example scripts to error to STDERR not STDOUT.
+ * Change example and SLP scripts to error to STDERR not STDOUT.
  * Added support for new Dummy RDM device types
  * Added support for the KMTRONIC usb device (ftdi clone).
  * Added 4 software RDM responder types (sensor, dimmer, moving light, etc.)
+ * Rename AllManufactureDevices(sic) to VendorcastAddress in UID interface
+ * Add vendorcast and broadcast options to ola_rdm_discover, to list the
+   vendor/broadcast UIDs as well.
+ * Added lots more man pages.
 
 16/6/2013 ola-0.8.30
  * Clean up olad signal handling to avoid race conditions.
