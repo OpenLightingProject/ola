@@ -90,7 +90,7 @@ const SettingCollection<BasicSetting>
         LOCK_STATES, arraysize(LOCK_STATES), true);
 
 const RDMResponse *AdvancedDimmerResponder::
-    LockManager::Set(const RDMRequest *request, const uint16_t *pin) {
+    LockManager::Set(const RDMRequest *request, uint16_t pin) {
   struct lock_s {
     uint16_t pin;
     uint8_t state;
@@ -98,8 +98,7 @@ const RDMResponse *AdvancedDimmerResponder::
 
   lock_s data;
 
-  if (request->ParamDataSize() == 0 ||
-      request->ParamDataSize() > sizeof(lock_s)) {
+  if (request->ParamDataSize() != sizeof(lock_s)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
@@ -107,7 +106,7 @@ const RDMResponse *AdvancedDimmerResponder::
 
   data.pin = NetworkToHost(data.pin);
 
-  if (data.pin != *pin) {
+  if (data.pin != pin) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
@@ -644,7 +643,7 @@ const RDMResponse *AdvancedDimmerResponder::GetLockState(
 
 const RDMResponse *AdvancedDimmerResponder::SetLockState(
     const RDMRequest *request) {
-  return m_lock_settings.Set(request, &m_lock_pin);
+  return m_lock_settings.Set(request, m_lock_pin);
 }
 
 const RDMResponse *AdvancedDimmerResponder::GetLockStateDescription(
@@ -666,8 +665,7 @@ const RDMResponse *AdvancedDimmerResponder::SetLockPin(
 
   set_pin_s data;
 
-  if (request->ParamDataSize() == 0 ||
-      request->ParamDataSize() > sizeof(data)) {
+  if (request->ParamDataSize() != sizeof(data)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 

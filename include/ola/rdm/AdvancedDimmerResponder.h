@@ -85,11 +85,11 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
 
     class LockManager: public BasicSettingManager {
       public:
-        explicit LockManager(const SettingCollection<BasicSetting> *settings):
-            BasicSettingManager(settings) {
+        explicit LockManager(const SettingCollection<BasicSetting> *settings)
+            : BasicSettingManager(settings) {
         }
 
-        const RDMResponse *Set(const RDMRequest *request, const uint16_t *pin);
+        const RDMResponse *Set(const RDMRequest *request, uint16_t pin);
     };
 
     struct min_level_s {
@@ -222,7 +222,7 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     static const uint16_t UPPER_MIN_LEVEL;
     static const uint16_t LOWER_MAX_LEVEL;
     static const uint16_t UPPER_MAX_LEVEL;
-    static const unsigned int PRESENT_COUNT;
+    static const unsigned int PRESET_COUNT;
 
     static const ResponderOps<AdvancedDimmerResponder>::ParamHandler
       PARAM_HANDLERS[];

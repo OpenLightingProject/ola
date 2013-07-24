@@ -196,12 +196,20 @@ class SettingManager {
           m_current_setting(settings->Offset()) {
     }
 
+    virtual ~SettingManager() {}
+
     const RDMResponse *Get(const RDMRequest *request) const;
-    const RDMResponse *Set(const RDMRequest *request);
+    virtual const RDMResponse *Set(const RDMRequest *request);
     const RDMResponse *GetDescription(const RDMRequest *request) const;
 
-    uint8_t Count() const;
-    uint8_t CurrentSetting() const;
+    uint8_t Count() const {
+      return m_settings->Count();
+    }
+
+    uint8_t CurrentSetting() const {
+      return m_current_setting + m_settings->Offset();
+    }
+
     bool ChangeSetting(uint8_t state);
 
   private:
@@ -216,8 +224,8 @@ typedef SettingManager<BasicSetting> BasicSettingManager;
 template <class SettingType>
 const RDMResponse *SettingManager<SettingType>::Get(
     const RDMRequest *request) const {
-  uint16_t data = (m_current_setting << 8 |
-                   (m_settings->Count() + m_settings->Offset()));
+  uint16_t data = ((m_current_setting + m_settings->Offset())
+      << 8 | m_settings->Count());
   return ResponderHelper::GetUInt16Value(request, data);
 }
 
@@ -258,23 +266,13 @@ const RDMResponse *SettingManager<SettingType>::GetDescription(
 }
 
 template <class SettingType>
-uint8_t SettingManager<SettingType>::Count() const {
-  return m_settings->Count();
-}
-
-template <class SettingType>
-uint8_t SettingManager<SettingType>::CurrentSetting() const {
-  return m_current_setting - m_settings->Offset();
-}
-
-template <class SettingType>
 bool SettingManager<SettingType>::ChangeSetting(uint8_t new_setting) {
   uint8_t offset = m_settings->Offset();
 
   if (new_setting < offset || new_setting  >= m_settings->Count() + offset)
     return false;
 
-  m_current_setting = new_setting;
+  m_current_setting = new_setting - offset;
   return true;
 }
 }  // namespace rdm
