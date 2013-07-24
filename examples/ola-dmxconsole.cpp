@@ -593,6 +593,16 @@ void stdin_ready() {
       mask();
       break;
 
+    case KEY_END:
+      current_channel = DMX_UNIVERSE_SIZE-1;
+      if (channels_per_screen >= DMX_UNIVERSE_SIZE) {
+        first_channel = 0;
+      } else {
+        first_channel = current_channel-(channels_per_screen-1);
+      }
+      mask();
+      break;
+
     case KEY_RIGHT:
       if (current_channel < DMX_UNIVERSE_SIZE-1) {
         current_channel++;

@@ -63,6 +63,9 @@ using ola::io::SelectServer;
 using std::string;
 
 static const unsigned int DEFAULT_UNIVERSE = 0;
+static const unsigned char CHANNEL_NUDGE_VALUE = 0x10;
+static const unsigned char CHANNEL_DISPLAY_WIDTH = 4;
+static const unsigned char ROWS_PER_CHANNEL_ROW = 2;
 
 /* color names used */
 enum {
@@ -94,8 +97,11 @@ class DmxMonitor *dmx_monitor;
 static int display_mode = DISP_MODE_DMX;
 static int current_channel = 0;    /* channel cursor is positioned on */
 static int first_channel = 0;    /* channel in upper left corner */
-static int channels_per_line = 80/4;
-static int channels_per_screen = 80/4*24/2;
+static int channels_per_line = 80 / CHANNEL_DISPLAY_WIDTH;
+// Default chans/screen is 80x24, less a row for the header,
+// and one at the bottom to get an even number of rows
+static int channels_per_screen =
+    (80 / CHANNEL_DISPLAY_WIDTH) * ((24 - 2) / ROWS_PER_CHANNEL_ROW);
 static int palette[MAXCOLOR];
 
 /*
@@ -258,6 +264,16 @@ void DmxMonitor::StdinReady() {
       DrawScreen();
       break;
 
+    case KEY_END:
+      current_channel = DMX_UNIVERSE_SIZE-1;
+      if (channels_per_screen >= DMX_UNIVERSE_SIZE) {
+        first_channel = 0;
+      } else {
+        first_channel = current_channel-(channels_per_screen-1);
+      }
+      DrawScreen();
+      break;
+
     case 'l':
     case 'L':
     case KEY_RIGHT:
@@ -414,11 +430,17 @@ void DmxMonitor::Mask() {
 
   /* write channel numbers */
   (void) attrset(palette[CHANNEL]);
-  for (y = 1; y < LINES && channel < DMX_UNIVERSE_SIZE &&
-       i < channels_per_screen; y+=2) {
+  for (y = 1;
+       y < LINES &&
+       channel < DMX_UNIVERSE_SIZE &&
+       i < channels_per_screen;
+       y += ROWS_PER_CHANNEL_ROW) {
     move(y, 0);
-    for (x = 0; x < channels_per_line && channel < DMX_UNIVERSE_SIZE &&
-         i < channels_per_screen; x++, i++, channel++) {
+    for (x = 0;
+         x < channels_per_line &&
+         channel < DMX_UNIVERSE_SIZE &&
+         i < channels_per_screen;
+         x++, i++, channel++) {
       switch (display_mode) {
         case DISP_MODE_HEX:
           printw("%03X ", channel + (m_channels_offset ? 1 : 0));
@@ -441,17 +463,21 @@ void DmxMonitor::Values() {
   int i = 0, x, y, z = first_channel;
 
   /* values */
-  for (y = 2; y < LINES && z < DMX_UNIVERSE_SIZE && i < channels_per_screen;
-       y+=2) {
+  for (y = ROWS_PER_CHANNEL_ROW;
+       y < LINES && z < DMX_UNIVERSE_SIZE && i < channels_per_screen;
+       y += ROWS_PER_CHANNEL_ROW) {
     move(y, 0);
-    for (x = 0; x < channels_per_line && z < DMX_UNIVERSE_SIZE &&
-        i < channels_per_screen; x++, z++, i++) {
+    for (x = 0;
+         x < channels_per_line &&
+         z < DMX_UNIVERSE_SIZE &&
+         i < channels_per_screen;
+         x++, z++, i++) {
       const int d = m_buffer.Get(z);
       switch (d) {
-        case 0:
+        case DMX_MIN_CHANNEL_VALUE:
           (void) attrset(palette[ZERO]);
           break;
-        case 255:
+        case DMX_MAX_CHANNEL_VALUE:
           (void) attrset(palette[FULL]);
           break;
         default:
@@ -477,9 +503,14 @@ void DmxMonitor::Values() {
         case DISP_MODE_DMX:
         default:
           switch (d) {
-            case 0: addstr("    "); break;
-            case 255: addstr(" FL "); break;
-            default: printw(" %02d ", (d * 100) / 255);
+            case DMX_MIN_CHANNEL_VALUE:
+              addstr("    ");
+              break;
+            case DMX_MAX_CHANNEL_VALUE:
+              addstr(" FL ");
+              break;
+            default:
+              printw(" %02d ", (d * 100) / DMX_MAX_CHANNEL_VALUE);
           }
       }
     }
@@ -565,10 +596,10 @@ void DmxMonitor::CalcScreenGeometry() {
     exit(1);
   }
   c--;   // one line for headline
-  if (c % 2 == 1)
-    c--;
-  channels_per_line = COLS / 4;
-  channels_per_screen = channels_per_line * c / 2;
+  if (c % ROWS_PER_CHANNEL_ROW == 1)
+    c--;  // Need an even number of lines for data
+  channels_per_line = COLS / CHANNEL_DISPLAY_WIDTH;
+  channels_per_screen = channels_per_line * (c/ROWS_PER_CHANNEL_ROW);
 }
 
 
