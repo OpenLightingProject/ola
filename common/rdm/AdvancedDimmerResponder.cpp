@@ -792,6 +792,8 @@ const RDMResponse *AdvancedDimmerResponder::GetPresetInfo(
     uint16_t max_startup_hold;
   } __attribute__((packed));
 
+  uint16_t preset_count = m_presets.size();
+
   preset_info_s preset_info = {
     1,  // level_supported
     1,  // preset_seq_supported
@@ -799,7 +801,7 @@ const RDMResponse *AdvancedDimmerResponder::GetPresetInfo(
     1,  // fail_infinite_delay_supported
     1,  // fail_infinite_hold_supported
     1,  // startup_infinite_hold_supported
-    m_presets.size(),
+    HostToNetwork(preset_count),
     0, 0xfffe,  // fade time
     0, 0xfffe,  // wait time
     0, 0xfffe,  // fail delay
