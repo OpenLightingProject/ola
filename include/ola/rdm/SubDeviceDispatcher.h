@@ -58,10 +58,14 @@ class SubDeviceDispatcher: public ola::rdm::RDMControllerInterface {
           return ++m_responses_so_far == m_number_of_subdevices;
         }
 
-        void SetAllCallResponse(ola::rdm::rdm_response_code code,
-                                const ola::rdm::RDMResponse *response);
+        void SetResponse(ola::rdm::rdm_response_code code,
+                         const ola::rdm::RDMResponse *response);
 
         void RunCallback();
+
+        uint16_t NumResponses() const {
+          return m_responses_so_far;
+        }
 
       private:
         uint16_t m_number_of_subdevices;
