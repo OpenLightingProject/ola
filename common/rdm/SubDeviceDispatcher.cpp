@@ -72,8 +72,9 @@ void SubDeviceDispatcher::FanOutToSubDevices(
     return;
   }
 
-  SubDeviceMap::iterator iter = m_subdevices.begin();
-  FanOutTracker *tracker = new FanOutTracker(m_subdevices.size(), callback);
+  // Fan out to all sub devices but don't include the root device
+  SubDeviceMap::iterator iter = ++(m_subdevices.begin());
+  FanOutTracker *tracker = new FanOutTracker(m_subdevices.size() - 1, callback);
 
   for (; iter != m_subdevices.end(); ++iter) {
     iter->second->SendRDMRequest(
@@ -121,8 +122,8 @@ void SubDeviceDispatcher::HandleSubDeviceResponse(
     // We do the least crazy thing, which is to return the root device response.
     tracker->RunCallback();
     delete tracker;
-  } else if (sub_device_id == ROOT_RDM_DEVICE) {
-    tracker->SetRootResponse(code, response.release());
+  } else if (sub_device_id == 1) {
+    tracker->SetAllCallResponse(code, response.release());
   }
   (void) packets;
 }
@@ -136,7 +137,7 @@ SubDeviceDispatcher::FanOutTracker::FanOutTracker(
       m_response(NULL) {
 }
 
-void SubDeviceDispatcher::FanOutTracker::SetRootResponse(
+void SubDeviceDispatcher::FanOutTracker::SetAllCallResponse(
     rdm_response_code code,
     const RDMResponse *response) {
   m_response_code = code;
