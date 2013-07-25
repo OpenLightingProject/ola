@@ -503,7 +503,7 @@ void calcscreengeometry() {
   if (c % ROWS_PER_CHANNEL_ROW == 1)
     c--;  // Need an even number of lines for data
   channels_per_line = COLS / CHANNEL_DISPLAY_WIDTH;
-  channels_per_screen = channels_per_line * (c/ROWS_PER_CHANNEL_ROW);
+  channels_per_screen = channels_per_line * (c / ROWS_PER_CHANNEL_ROW);
 }
 
 /* signal handler for SIGWINCH */
@@ -537,7 +537,7 @@ void stdin_ready() {
   switch (c) {
     case KEY_PPAGE:
       undoprep();
-      if (dmx[current_channel] < DMX_MAX_CHANNEL_VALUE-CHANNEL_NUDGE_VALUE)
+      if (dmx[current_channel] < DMX_MAX_CHANNEL_VALUE - CHANNEL_NUDGE_VALUE)
         dmx[current_channel] += CHANNEL_NUDGE_VALUE;
       else
         dmx[current_channel] = DMX_MAX_CHANNEL_VALUE;
@@ -576,7 +576,7 @@ void stdin_ready() {
 
     case ' ':
       undoprep();
-      if (dmx[current_channel] < ((DMX_MAX_CHANNEL_VALUE + 1)/2))
+      if (dmx[current_channel] < ((DMX_MAX_CHANNEL_VALUE + 1) / 2))
         dmx[current_channel] = DMX_MAX_CHANNEL_VALUE;
       else
         dmx[current_channel] = DMX_MIN_CHANNEL_VALUE;
@@ -594,19 +594,19 @@ void stdin_ready() {
       break;
 
     case KEY_END:
-      current_channel = DMX_UNIVERSE_SIZE-1;
+      current_channel = DMX_UNIVERSE_SIZE - 1;
       if (channels_per_screen >= DMX_UNIVERSE_SIZE) {
         first_channel = 0;
       } else {
-        first_channel = current_channel-(channels_per_screen-1);
+        first_channel = current_channel - (channels_per_screen - 1);
       }
       mask();
       break;
 
     case KEY_RIGHT:
-      if (current_channel < DMX_UNIVERSE_SIZE-1) {
+      if (current_channel < DMX_UNIVERSE_SIZE - 1) {
         current_channel++;
-        if (current_channel >= first_channel+channels_per_screen) {
+        if (current_channel >= first_channel + channels_per_screen) {
           first_channel += channels_per_line;
           mask();
         }
@@ -629,7 +629,7 @@ void stdin_ready() {
       current_channel += channels_per_line;
       if (current_channel >= DMX_UNIVERSE_SIZE)
         current_channel = DMX_UNIVERSE_SIZE - 1;
-      if (current_channel >= first_channel+channels_per_screen) {
+      if (current_channel >= first_channel + channels_per_screen) {
         first_channel += channels_per_line;
         mask();
       }

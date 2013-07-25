@@ -265,11 +265,11 @@ void DmxMonitor::StdinReady() {
       break;
 
     case KEY_END:
-      current_channel = DMX_UNIVERSE_SIZE-1;
+      current_channel = DMX_UNIVERSE_SIZE - 1;
       if (channels_per_screen >= DMX_UNIVERSE_SIZE) {
         first_channel = 0;
       } else {
-        first_channel = current_channel-(channels_per_screen-1);
+        first_channel = current_channel - (channels_per_screen - 1);
       }
       DrawScreen();
       break;
@@ -306,7 +306,7 @@ void DmxMonitor::StdinReady() {
       current_channel += channels_per_line;
       if (current_channel >= DMX_UNIVERSE_SIZE)
         current_channel = DMX_UNIVERSE_SIZE - 1;
-      if (current_channel >= first_channel+channels_per_screen) {
+      if (current_channel >= first_channel + channels_per_screen) {
         first_channel += channels_per_line;
       }
       DrawScreen();
@@ -599,7 +599,7 @@ void DmxMonitor::CalcScreenGeometry() {
   if (c % ROWS_PER_CHANNEL_ROW == 1)
     c--;  // Need an even number of lines for data
   channels_per_line = COLS / CHANNEL_DISPLAY_WIDTH;
-  channels_per_screen = channels_per_line * (c/ROWS_PER_CHANNEL_ROW);
+  channels_per_screen = channels_per_line * (c / ROWS_PER_CHANNEL_ROW);
 }
 
 
