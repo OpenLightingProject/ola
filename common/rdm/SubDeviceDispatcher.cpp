@@ -39,8 +39,9 @@ void SubDeviceDispatcher::AddSubDevice(uint16_t sub_device_number,
                                        RDMControllerInterface *device) {
   if (sub_device_number != ROOT_RDM_DEVICE) {
     STLReplace(&m_subdevices, sub_device_number, device);
+  } else {
+    OLA_WARN << "SubDeviceDispatcher does not accept Root Devices";
   }
-  OLA_WARN << "SubDeviceDispatcher does not accept Root Devices";
 }
 
 /*
@@ -84,8 +85,7 @@ void SubDeviceDispatcher::FanOutToSubDevices(
         request->Duplicate(),
         NewSingleCallback(this,
                           &SubDeviceDispatcher::HandleSubDeviceResponse,
-                          tracker,
-                          iter->first));
+                          tracker));
   }
 }
 
@@ -114,7 +114,6 @@ void SubDeviceDispatcher::NackIfNotBroadcast(
  */
 void SubDeviceDispatcher::HandleSubDeviceResponse(
     FanOutTracker *tracker,
-    uint16_t sub_device_id,
     rdm_response_code code,
     const RDMResponse *response_ptr,
     const std::vector<std::string> &packets) {
@@ -130,7 +129,6 @@ void SubDeviceDispatcher::HandleSubDeviceResponse(
     tracker->RunCallback();
     delete tracker;
   }
-  (void) sub_device_id;
   (void) packets;
 }
 

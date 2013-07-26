@@ -89,7 +89,6 @@ class SubDeviceDispatcher: public ola::rdm::RDMControllerInterface {
 
     void HandleSubDeviceResponse(
         FanOutTracker *tracker,
-        uint16_t sub_device_id,
         ola::rdm::rdm_response_code code,
         const ola::rdm::RDMResponse *response,
         const std::vector<std::string> &packets);
