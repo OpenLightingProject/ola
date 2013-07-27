@@ -804,7 +804,7 @@ class GetSubDeviceSupportedParameters(ResponderTestFixture):
   """Check that SUPPORTED_PARAMETERS is consistent across sub devices."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'SUPPORTED_PARAMETERS'
-  REQUIRES = ['sub_device_indices']
+  REQUIRES = ['sub_device_addresses']
   PROVIDES = ['sub_device_supported_parameters']
 
   # E1.37, 2.1 Sub devices are required to support these.
@@ -814,7 +814,7 @@ class GetSubDeviceSupportedParameters(ResponderTestFixture):
                     'IDENTIFY_DEVICE']
 
   def Test(self):
-    self._sub_devices = list(self.Property('sub_device_indices'))
+    self._sub_devices = self.Property('sub_device_addresses').keys()
     self._sub_devices.reverse()
     self._params = {}
     self._GetSupportedParams();
@@ -863,22 +863,24 @@ class FindSubDevices(ResponderTestFixture):
   """Locate the sub devices by sending DEVICE_INFO messages."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DEVICE_INFO'
-  PROVIDES = ['sub_device_indices']
+  PROVIDES = ['sub_device_addresses', 'sub_device_footprints']
   REQUIRES = ['sub_device_count']
 
   def Test(self):
     self._device_count = self.Property('sub_device_count')
-    self._sub_devices = []  # stores the sub device indices
+    self._sub_device_addresses = {}  # index to start address mapping
+    self._sub_device_footprints = {}  # index to footprint mapping
     self._current_index = 0  # the current sub device we're trying to query
     self._CheckForSubDevice()
 
   def _CheckForSubDevice(self):
     # For each supported param message we should either see a sub device out of
     # range or an ack
-    if len(self._sub_devices) == self._device_count:
+    if len(self._sub_device_addresses) == self._device_count:
       if self._device_count == 0:
         self.SetNotRun(' No sub devices declared')
-      self.SetProperty('sub_device_indices', self._sub_devices)
+      self.SetProperty('sub_device_addresses', self._sub_device_addresses)
+      self.SetProperty('sub_device_footprints', self._sub_device_footprints)
       self.Stop()
       return
 
@@ -902,7 +904,9 @@ class FindSubDevices(ResponderTestFixture):
         self.SetFailed('Sub-device %d reported sub-devices in DEVICE_INFO' %
                        self._current_index);
         self.Stop()
-      self._sub_devices.append(self._current_index)
+      self._sub_device_addresses[self._current_index] = (
+          fields['dmx_start_address'])
+      self._sub_device_footprints[self._current_index] = fields['dmx_footprint']
 
 # Clear Status ID
 #------------------------------------------------------------------------------
@@ -1549,10 +1553,10 @@ class GetSubDeviceSoftwareVersionLabel(ResponderTestFixture):
   """Check that SOFTWARE_VERSION_LABEL is supported on all sub devices."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'SOFTWARE_VERSION_LABEL'
-  REQUIRES = ['sub_device_indices']
+  REQUIRES = ['sub_device_addresses']
 
   def Test(self):
-    self._sub_devices = list(self.Property('sub_device_indices'))
+    self._sub_devices = self.Property('sub_device_addresses').keys()
     self._sub_devices.reverse()
     self._GetSoftwareVersion();
 
@@ -3514,10 +3518,10 @@ class GetSubDeviceIdentifyDevice(ResponderTestFixture):
   """Check that IDENTIFY_DEVICE is supported on all sub devices."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'IDENTIFY_DEVICE'
-  REQUIRES = ['sub_device_indices']
+  REQUIRES = ['sub_device_addresses']
 
   def Test(self):
-    self._sub_devices = list(self.Property('sub_device_indices'))
+    self._sub_devices = self.Property('sub_device_addresses').keys()
     self._sub_devices.reverse()
     self._GetIdentifyDevice();
 
@@ -3850,13 +3854,11 @@ class GetIdentifyMode(TestMixins.GetMixin, OptionalParameterTestFixture):
   PROVIDES = ['identify_mode']
   EXPECTED_FIELD = 'identify_mode'
 
-
 class GetIdentifyModeWithData(TestMixins.GetWithDataMixin,
                               OptionalParameterTestFixture):
   """Get identify mode with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'IDENTIFY_MODE'
-
 
 class SetIdentifyMode(TestMixins.SetMixin, OptionalParameterTestFixture):
   """Set identify mode with extra data."""
@@ -3880,7 +3882,6 @@ class SetIdentifyMode(TestMixins.SetMixin, OptionalParameterTestFixture):
     else:
       return self.LOUD
 
-
 class SetIdentifyModeWithNoData(TestMixins.SetWithNoDataMixin,
                                 OptionalParameterTestFixture):
   """Set identify mode with no data."""
@@ -3899,10 +3900,13 @@ class GetDMXBlockAddress(OptionalParameterTestFixture):
   """Get the DMX block address."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_BLOCK_ADDRESS'
-  PROVIDES = ['sub_device_footprint', 'base_dmx_address']
+  PROVIDES = ['total_sub_device_footprint', 'base_dmx_address']
+  REQUIRES = ['sub_device_footprints']
   NON_CONTIGUOUS = 0xffff
 
   def Test(self):
+    self.expected_footprint = sum(
+        self.Property('sub_device_footprints').values())
     self.AddIfGetSupported(self.AckGetResult())
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
@@ -3913,16 +3917,21 @@ class GetDMXBlockAddress(OptionalParameterTestFixture):
       footprint = fields['sub_device_footprint']
       base_address = fields['base_dmx_address']
 
-      if footprint > MAX_DMX_ADDRESS and footprint != self.NON_CONTIGUOUS:
+      if footprint > MAX_DMX_ADDRESS:
         self.AddWarning('Sub device footprint > 512, was %d' % footprint)
 
       if (base_address == 0 or
           base_address > MAX_DMX_ADDRESS and base_address != 0xffff):
         self.AddWarning('Base DMX address is outside range 1- 512, was %d' %
                         base_address)
-    self.SetProperty('sub_device_footprint', footprint)
-    self.SetProperty('base_dmx_address', base_address)
 
+      if fields['sub_device_footprint'] != self.expected_footprint:
+        self.SetFailed(
+            "Sub device footprint (%d) didn't match sum of sub-device "
+            "footprints (%d)" %
+            (fields['sub_device_footprint'], self.expected_footprint))
+    self.SetProperty('total_sub_device_footprint', footprint)
+    self.SetProperty('base_dmx_address', base_address)
 
 class GetDMXBlockAddressWithData(TestMixins.GetWithDataMixin,
                                  OptionalParameterTestFixture):
@@ -3935,12 +3944,12 @@ class SetDMXBlockAddress(TestMixins.SetMixin, OptionalParameterTestFixture):
   """Attempt to SET the dmx block address."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_BLOCK_ADDRESS'
-  REQUIRES = ['sub_device_footprint', 'base_dmx_address']
+  REQUIRES = ['total_sub_device_footprint', 'base_dmx_address']
   EXPECTED_FIELD = 'base_dmx_address'
 
   def NewValue(self):
     base_address =  self.Property('base_dmx_address')
-    footprint = self.Property('sub_device_footprint')
+    footprint = self.Property('total_sub_device_footprint')
 
     if base_address is None or footprint is None:
       return 1
