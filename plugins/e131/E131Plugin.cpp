@@ -183,12 +183,12 @@ bool E131Plugin::SetDefaultPreferences() {
 
   save |= m_preferences->SetDefaultValue(
       INPUT_PORT_COUNT_KEY,
-      IntValidator(0, 32),
+      IntValidator(0, 128),
       DEFAULT_PORT_COUNT);
 
   save |= m_preferences->SetDefaultValue(
       OUTPUT_PORT_COUNT_KEY,
-      IntValidator(0, 32),
+      IntValidator(0, 128),
       DEFAULT_PORT_COUNT);
 
   save |= m_preferences->SetDefaultValue(IP_KEY, StringValidator(true), "");
