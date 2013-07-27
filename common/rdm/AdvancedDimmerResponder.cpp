@@ -90,7 +90,7 @@ const SettingCollection<BasicSetting>
         LOCK_STATES, arraysize(LOCK_STATES), true);
 
 const RDMResponse *AdvancedDimmerResponder::
-    LockManager::Set(const RDMRequest *request, uint16_t pin) {
+    LockManager::SetWithPin(const RDMRequest *request, uint16_t pin) {
   struct lock_s {
     uint16_t pin;
     uint8_t state;
@@ -643,7 +643,7 @@ const RDMResponse *AdvancedDimmerResponder::GetLockState(
 
 const RDMResponse *AdvancedDimmerResponder::SetLockState(
     const RDMRequest *request) {
-  return m_lock_settings.Set(request, m_lock_pin);
+  return m_lock_settings.SetWithPin(request, m_lock_pin);
 }
 
 const RDMResponse *AdvancedDimmerResponder::GetLockStateDescription(
