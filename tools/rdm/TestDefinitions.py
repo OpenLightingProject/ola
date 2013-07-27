@@ -3772,13 +3772,11 @@ class GetCapturePreset(TestMixins.UnsupportedGetMixin,
   CATEGORY = TestCategory.CONTROL
   PID = 'CAPTURE_PRESET'
 
-
 class SetCapturePresetWithNoData(TestMixins.SetWithNoDataMixin,
                                  OptionalParameterTestFixture):
   """Set capture preset with no data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'CAPTURE_PRESET'
-
 
 class CapturePreset(TestMixins.SetWithNoDataMixin,
                     OptionalParameterTestFixture):
@@ -4024,6 +4022,47 @@ class AllSubDevicesGetDmxBlockAddress(TestMixins.AllSubDevicesGetMixin,
   """Send a Get DMX_BLOCK_ADDRESS to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DMX_BLOCK_ADDRESS'
+
+# DMX_FAIL_MODE
+#------------------------------------------------------------------------------
+class GetDmxFailMode(OptionalParameterTestFixture):
+  """GET the DMX fail mode setting."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'DMX_FAIL_MODE'
+
+  def Test(self):
+    self.AddIfGetSupported(self.AckGetResult())
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def VerifyResult(self, response, fields):
+    pass
+
+class AllSubDevicesGetDmxFailMode(TestMixins.AllSubDevicesGetMixin,
+                                  ResponderTestFixture):
+  """Send a Get DMX_FAIL_MODE to ALL_SUB_DEVICES."""
+  CATEGORY = TestCategory.SUB_DEVICES
+  PID = 'DMX_FAIL_MODE'
+
+# DMX_STARTUP_MODE
+#------------------------------------------------------------------------------
+class GetDmxStartupMode(OptionalParameterTestFixture):
+  """GET the DMX startup mode setting."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'DMX_STARTUP_MODE'
+
+  def Test(self):
+    self.AddIfGetSupported(self.AckGetResult())
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def VerifyResult(self, response, fields):
+    pass
+
+
+class AllSubDevicesGetDmxStartupMode(TestMixins.AllSubDevicesGetMixin,
+                                     ResponderTestFixture):
+  """Send a Get DMX_STARTUP_MODE to ALL_SUB_DEVICES."""
+  CATEGORY = TestCategory.SUB_DEVICES
+  PID = 'DMX_STARTUP_MODE'
 
 # POWER_ON_SELF_TEST
 #------------------------------------------------------------------------------
