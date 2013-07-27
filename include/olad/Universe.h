@@ -40,6 +40,7 @@ namespace ola {
 using ola::rdm::UID;
 using std::pair;
 using std::set;
+using std::map;
 using ola::rdm::RDMDiscoveryCallback;
 
 class Client;
@@ -66,7 +67,7 @@ class Universe: public ola::rdm::RDMControllerInterface {
     uint8_t ActivePriority() const { return m_active_priority; }
 
     /**
-     * Return the time between RDM discovery operations.
+     * @brief Return the time between RDM discovery operations.
      * @return the amount of time in seconds between RDM discovery runs. A
      * value of 0 means that periodic discovery is disabled for this universe.
      */
@@ -75,7 +76,7 @@ class Universe: public ola::rdm::RDMControllerInterface {
     }
 
     /**
-     * Get the time of the last discovery run
+     * @brief Get the time of the last discovery run
      */
     const TimeStamp& LastRDMDiscovery() const {
       return m_last_discovery_time;
@@ -124,6 +125,10 @@ class Universe: public ola::rdm::RDMControllerInterface {
     bool PortDataChanged(InputPort *port);
     bool SourceClientDataChanged(Client *client);
 
+    // This is can be called periodically to clean stale clients
+    //    stale == client that has not sent data
+    void CleanStaleSourceClients();
+
     // RDM methods
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
@@ -166,6 +171,7 @@ class Universe: public ola::rdm::RDMControllerInterface {
     vector<InputPort*> m_input_ports;
     vector<OutputPort*> m_output_ports;
     set<Client*> m_sink_clients;  // clients that require updates
+    map<Client*, bool> m_source_clients_stale;  // track what clients are alive
     set<Client*> m_source_clients;  // clients that provide data
     class UniverseStore *m_universe_store;
     DmxBuffer m_buffer;
@@ -188,6 +194,7 @@ class Universe: public ola::rdm::RDMControllerInterface {
     bool UpdateDependants();
     void UpdateName();
     void UpdateMode();
+    bool SetSourceClientLively(Client* client);
     bool RemoveClient(Client *client, bool is_source);
     bool AddClient(Client *client, bool is_source);
     void HTPMergeSources(const vector<DmxSource> &sources);

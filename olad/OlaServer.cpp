@@ -327,6 +327,7 @@ bool OlaServer::RunHousekeeping() {
       // run incremental discovery
       (*iter)->RunRDMDiscovery(NULL, false);
     }
+    (*iter)->CleanStaleSourceClients();
   }
   return true;
 }

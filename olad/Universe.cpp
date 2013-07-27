@@ -36,9 +36,11 @@
 #include <vector>
 #include <iterator>
 #include <algorithm>
+#include <utility>
 
 #include "ola/base/Array.h"
 #include "ola/Logging.h"
+#include "ola/stl/STLUtils.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/MultiCallback.h"
@@ -351,9 +353,44 @@ bool Universe::SourceClientDataChanged(Client *client) {
     return false;
 
   AddSourceClient(client);   // always add since this may be the first call
+  SetSourceClientLively(client);
   if (MergeAll(NULL, client))
     UpdateDependants();
   return true;
+}
+
+
+/*
+ * @brief Set client as not stale
+ * @return true on success, and false otherwise
+ */
+bool Universe::SetSourceClientLively(Client* client) {
+  map<Client*, bool>::iterator iter = m_source_clients_stale.find(client);
+  if (iter->second) {
+    iter->second = false;
+    return true;
+  }
+  return false;
+}
+
+/**
+ * @brief Clean old source clients
+ */
+void Universe::CleanStaleSourceClients() {
+  map<Client*, bool>::iterator iter = m_source_clients_stale.begin();
+  map<Client*, bool>::iterator remove_iter;
+  while (iter != m_source_clients_stale.end()) {
+    if (iter->second) {
+      // if stale remove it
+      remove_iter = iter++;
+      RemoveClient(remove_iter->first, true);
+      OLA_INFO << "Removed Stale Client";
+    } else {
+      // clear the stale flag
+      iter->second = true;
+      ++iter;
+    }
+  }
 }
 
 
@@ -584,6 +621,11 @@ void Universe::UpdateMode() {
 bool Universe::AddClient(Client *client, bool is_source) {
   set<Client*> &clients = is_source ? m_source_clients : m_sink_clients;
   clients.insert(client);
+
+  // If source insert as active so we don't delete right away
+  if (is_source)
+    m_source_clients_stale.insert(std::pair<Client*, bool>(client, true));
+
   OLA_INFO << "Added " << (is_source ? "source" : "sink") << " client, " <<
     client << " to universe " << m_universe_id;
 
@@ -610,6 +652,8 @@ bool Universe::RemoveClient(Client *client, bool is_source) {
     return false;
 
   clients.erase(iter);
+  m_source_clients_stale.erase(client);
+
   if (m_export_map) {
     const string &map_name = is_source ? K_UNIVERSE_SOURCE_CLIENTS_VAR :
       K_UNIVERSE_SINK_CLIENTS_VAR;
