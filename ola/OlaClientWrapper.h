@@ -68,7 +68,7 @@ class BaseClientWrapper {
 /*
  * This wrapper uses the OlaClient class.
  */
-template <typename client_class>
+template <typename ClientClass>
 class GenericClientWrapper: public BaseClientWrapper {
   public:
     explicit GenericClientWrapper(bool auto_start = true):
@@ -77,19 +77,25 @@ class GenericClientWrapper: public BaseClientWrapper {
     }
     ~GenericClientWrapper() {}
 
-    client_class *GetClient() const { return m_client.get(); }
+    ClientClass *GetClient() const { return m_client.get(); }
 
   private:
-    auto_ptr<client_class> m_client;
+    auto_ptr<ClientClass> m_client;
     bool m_auto_start;
 
     void CreateClient() {
       if (!m_client.get()) {
-        m_client.reset(new client_class(m_socket.get()));
+        m_client.reset(new ClientClass(m_socket.get()));
       }
     }
 
-    bool StartupClient() { return m_client->Setup(); }
+    bool StartupClient() {
+      bool ok = m_client->Setup();
+      m_client->SetCloseHandler(
+        ola::NewSingleCallback(static_cast<BaseClientWrapper*>(this),
+                               &BaseClientWrapper::SocketClosed));
+      return ok;
+    }
 
     void InitSocket() {
       if (m_auto_start)

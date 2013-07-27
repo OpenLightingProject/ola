@@ -96,7 +96,8 @@ void DisplayHelpAndExit(char arg[]) {
   cout << "Usage: " << arg <<
   " --dmx <dmx_data> --universe <universe_id>\n"
   "\n"
-  "Send DMX512 data to OLA. If dmx data isn't provided we read from stdin.\n"
+  "Send DMX512 data to OLA. If DMX512 data isn't provided, it will read from "
+  "STDIN.\n"
   "\n"
   "  -d, --dmx <dmx_data>         DMX512 data, e.g. '1,240,0,255'\n"
   "  -h, --help                   Display this help message and exit.\n"

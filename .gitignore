@@ -71,6 +71,7 @@ examples/ola_rdm_discover
 examples/ola_rdm_get
 examples/ola_rdm_set
 examples/ola_recorder
+examples/ola_set_priority
 examples/ola_streaming_client
 examples/ola_throughput
 examples/ola_timecode
@@ -91,6 +92,7 @@ olad/testdata/ola-output.conf
 plugins/e131/e131/e131_loadtest
 plugins/e131/e131/e131_transmit_test
 python/ola/PidStoreLocation.py
+python/ola/Version.py
 slp/slp_client
 slp/slp_server
 tools/e133/e133_controller
@@ -99,10 +101,12 @@ tools/e133/e133_receiver
 tools/e133/slp_locate
 tools/e133/slp_register
 tools/e133/slp_sa_test
+tools/logic/logic_rdm_sniffer
 tools/ola_trigger/config.tab.cpp
 tools/ola_trigger/config.tab.h
 tools/ola_trigger/lex.yy.cpp
 tools/ola_trigger/ola_trigger
+tools/logic/logic_rdm_sniffer
 tools/rdm/DataLocation.py
 tools/rdmpro/rdmpro_sniffer
 tools/slp/slp_client

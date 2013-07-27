@@ -113,6 +113,38 @@ typedef enum {
   PID_CAPTURE_PRESET = 0x1030,
   PID_PRESET_PLAYBACK = 0x1031,
 
+  // E1.37-1 PIDS
+  // Dmx512 setup
+  PID_DMX_BLOCK_ADDRESS = 0x0140,
+  PID_DMX_FAIL_MODE = 0x0141,
+  PID_DMX_STARTUP_MODE = 0x0142,
+
+  // Dimmer Settings
+  PID_DIMMER_INFO = 0x0340,
+  PID_MINIMUM_LEVEL = 0x0341,
+  PID_MAXIMUM_LEVEL = 0x0342,
+  PID_CURVE = 0x0343,
+  PID_CURVE_DESCRIPTION = 0x0344,
+
+  // Control
+  PID_OUTPUT_RESPONSE_TIME = 0x0345,
+  PID_OUTPUT_RESPONSE_TIME_DESCRIPTION = 0x0346,
+  PID_MODULATION_FREQUENCY = 0x0347,
+  PID_MODULATION_FREQUENCY_DESCRIPTION = 0x0348,
+
+  // Power/Lamp Settings
+  PID_BURN_IN = 0x0440,
+
+  // Configuration
+  PID_LOCK_PIN = 0x0640,
+  PID_LOCK_STATE = 0x0641,
+  PID_LOCK_STATE_DESCRIPTION = 0x0642,
+  PID_IDENTIFY_MODE = 0x1040,
+  PID_PRESET_INFO = 0x1041,
+  PID_PRESET_STATUS = 0x1042,
+  PID_PRESET_MERGEMODE = 0x1043,
+  PID_POWER_ON_SELF_TEST = 0x1044,
+
   // Draft E1.33 PIDs - DO NOT USE
   PID_ENDPOINT_LIST = 0x7fe0,
   PID_ENDPOINT_LIST_CHANGE = 0x7fee,
@@ -539,6 +571,11 @@ typedef enum {
   DISPLAY_INVERT_AUTO = 0x02,
 } rdm_display_invert;
 
+typedef enum {
+  IDENTIFY_QUIET = 0,
+  IDENTIFY_LOUD = 255
+} rdm_identify_mode;
+
 // the two special presets
 static const uint16_t PRESET_PLAYBACK_OFF = 0x0000;
 static const uint16_t PRESET_PLAYBACK_ALL = 0xffff;
@@ -547,6 +584,29 @@ static const uint16_t PRESET_PLAYBACK_ALL = 0xffff;
 static const uint8_t SENSOR_RECORDED_VALUE = 0x01;
 static const uint8_t SENSOR_RECORDED_RANGE_VALUES = 0x02;
 static const uint8_t ALL_SENSORS = 0xff;
+
+// The identify modes from E1.37-1
+static const uint8_t IDENTIFY_MODE_QUIET = 0x00;
+static const uint8_t IDENTIFY_MODE_LOUD = 0xff;
+
+// The maximum pin
+static const uint16_t MAX_LOCK_PIN = 9999;
+
+// The Preset programmed modes
+typedef enum {
+  PRESET_NOT_PROGRAMMED = 0,
+  PRESET_PROGRAMMED = 1,
+  PRESET_PROGRAMMED_READ_ONLY = 2,
+} rdm_preset_programmed_mode;
+
+// The RDM merge modes
+typedef enum {
+  MERGEMODE_DEFAULT = 0,
+  MERGEMODE_HTP = 1,
+  MERGEMODE_LTP = 2,
+  MERGEMODE_DMX_ONLY = 3,
+  MERGEMODE_OTHER = 0xff,
+} rdm_preset_merge_mode;
 }  // namespace rdm
 }  // namespace ola
 #endif  // INCLUDE_OLA_RDM_RDMENUMS_H_

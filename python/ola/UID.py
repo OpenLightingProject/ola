@@ -67,7 +67,7 @@ class UID(object):
     return UID(0xffff, 0xffffffff)
 
   @staticmethod
-  def AllManufacturerDevices(manufacturer_id):
+  def VendorcastAddress(manufacturer_id):
     return UID(manufacturer_id, 0xffffffff)
 
   @staticmethod

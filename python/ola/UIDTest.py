@@ -39,7 +39,7 @@ class UIDTest(unittest.TestCase):
     uids = [uid, uid2, uid3]
     self.assertEquals([uid3, uid, uid2], sorted(uids))
 
-    vendorcast_uid = UID.AllManufacturerDevices(0x707a)
+    vendorcast_uid = UID.VendorcastAddress(0x707a)
     self.assertTrue(vendorcast_uid.IsBroadcast())
     broadcast_uid = UID.AllDevices()
     self.assertTrue(broadcast_uid.IsBroadcast())

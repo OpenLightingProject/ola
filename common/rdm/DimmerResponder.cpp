@@ -44,7 +44,6 @@ DimmerResponder::DimmerResponder(const UID &uid,
     m_dispatcher.AddSubDevice(i, sub_device);
   }
   m_root_device.reset(new DimmerRootDevice(uid, m_sub_devices));
-  m_dispatcher.AddSubDevice(ROOT_RDM_DEVICE, m_root_device.get());
 }
 
 /**
@@ -60,7 +59,11 @@ DimmerResponder::~DimmerResponder() {
  */
 void DimmerResponder::SendRDMRequest(const RDMRequest *request,
                                      RDMCallback *callback) {
-  m_dispatcher.SendRDMRequest(request, callback);
+  if (request->SubDevice() == ROOT_RDM_DEVICE) {
+    m_root_device->SendRDMRequest(request, callback);
+  } else {
+    m_dispatcher.SendRDMRequest(request, callback);
+  }
 }
 }  // namespace rdm
 }  // namespace ola

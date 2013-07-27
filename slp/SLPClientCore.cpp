@@ -88,6 +88,15 @@ bool SLPClientCore::Stop() {
 
 
 /**
+ * Set the close handler.
+ */
+void SLPClientCore::SetCloseHandler(ola::SingleUseCallback0<void> *callback) {
+  m_channel->SetChannelCloseHandler(callback);
+}
+
+
+
+/**
  * Register a service in SLP
  * @return true on success, false on failure.
  */

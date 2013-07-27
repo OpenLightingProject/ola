@@ -36,6 +36,7 @@ namespace dummy {
 using std::string;
 
 const char DummyPlugin::ACK_TIMER_COUNT_KEY[] = "ack_timer_count";
+const char DummyPlugin::ADVANCED_DIMMER_KEY[] = "advanced_dimmer_count";
 const char DummyPlugin::DEFAULT_DEVICE_COUNT[] = "1";
 // 0 for now, since the web UI doesn't handle it.
 const char DummyPlugin::DEFAULT_ACK_TIMER_DEVICE_COUNT[] = "0";
@@ -77,6 +78,11 @@ bool DummyPlugin::StartHook() {
                    &options.number_of_ack_timer_responders))
     StringToInt(DEFAULT_ACK_TIMER_DEVICE_COUNT,
                 &options.number_of_ack_timer_responders);
+
+  if (!StringToInt(m_preferences->GetValue(ADVANCED_DIMMER_KEY) ,
+                   &options.number_of_advanced_dimmers))
+    StringToInt(DEFAULT_DEVICE_COUNT,
+                &options.number_of_advanced_dimmers);
 
   if (!StringToInt(m_preferences->GetValue(SENSOR_COUNT_KEY) ,
                    &options.number_of_sensor_responders))
@@ -126,6 +132,9 @@ string DummyPlugin::Description() const {
 "ack_timer_count = 0\n"
 "The number of ack timer responders to create.\n"
 "\n"
+"advanced_dimmer_count = 0\n"
+"The number of E1.37-1 dimmer responders to create.\n"
+"\n"
 "dimmer_count = 1\n"
 "The number of dimmer devices to create.\n"
 "\n"
@@ -172,6 +181,10 @@ bool DummyPlugin::SetDefaultPreferences() {
   save |= m_preferences->SetDefaultValue(ACK_TIMER_COUNT_KEY,
                                          IntValidator(0, 254),
                                          DEFAULT_ACK_TIMER_DEVICE_COUNT);
+
+  save |= m_preferences->SetDefaultValue(ADVANCED_DIMMER_KEY,
+                                         IntValidator(0, 254),
+                                         DEFAULT_DEVICE_COUNT);
 
   save |= m_preferences->SetDefaultValue(SENSOR_COUNT_KEY,
                                          IntValidator(0, 254),

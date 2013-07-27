@@ -259,6 +259,7 @@ void DmxMonitor::StdinReady() {
       break;
 
     case 'l':
+    case 'L':
     case KEY_RIGHT:
       if (current_channel < DMX_UNIVERSE_SIZE - 1) {
         current_channel++;
@@ -270,6 +271,7 @@ void DmxMonitor::StdinReady() {
       break;
 
     case 'h':
+    case 'H':
     case KEY_LEFT:
       if (current_channel > 0) {
         current_channel--;
@@ -283,6 +285,7 @@ void DmxMonitor::StdinReady() {
       break;
 
     case 'j':
+    case 'J':
     case KEY_DOWN:
       current_channel += channels_per_line;
       if (current_channel >= DMX_UNIVERSE_SIZE)
@@ -294,6 +297,7 @@ void DmxMonitor::StdinReady() {
       break;
 
     case 'k':
+    case 'K':
     case KEY_UP:
       current_channel -= channels_per_line;
       if (current_channel < 0)

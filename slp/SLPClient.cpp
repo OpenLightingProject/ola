@@ -45,13 +45,18 @@ SLPClient::~SLPClient() {}
  */
 bool SLPClient::Setup() { return m_core->Setup(); }
 
-
 /*
  * Close the ola connection.
  * @return true on sucess, false on failure
  */
 bool SLPClient::Stop() { return m_core->Stop(); }
 
+/**
+ * Set the close handler.
+ */
+void SLPClient::SetCloseHandler(ola::SingleUseCallback0<void> *callback) {
+  m_core->SetCloseHandler(callback);
+}
 
 /*
  * Register a service in SLP.

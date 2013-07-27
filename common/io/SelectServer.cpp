@@ -633,7 +633,7 @@ TimeStamp SelectServer::CheckTimeouts(const TimeStamp &current_time) {
   if (m_events.empty())
     return now;
 
-  for (e = m_events.top(); !m_events.empty() && (e->NextTime() < now);
+  for (e = m_events.top(); !m_events.empty() && (e->NextTime() <= now);
        e = m_events.top()) {
     m_events.pop();
 

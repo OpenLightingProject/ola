@@ -15,7 +15,7 @@
  *
  * Copyright (C) 2010 Simon Newton
  */
-//! [Tutorial Example]
+//! [Tutorial Example] NOLINT(whitespace/comments)
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
 #include <ola/OlaClientWrapper.h>
@@ -57,4 +57,4 @@ int main() {
 
   wrapper.GetSelectServer()->Run();
 }
-//! [Tutorial Example]
+//! [Tutorial Example] NOLINT(whitespace/comments)

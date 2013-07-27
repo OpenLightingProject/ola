@@ -15,7 +15,7 @@
  *
  * Copyright (C) 2010 Simon Newton
  */
-//! [Tutorial Example]
+//! [Tutorial Example] NOLINT(whitespace/comments)
 #include <stdlib.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
@@ -56,4 +56,4 @@ int main(int, char *[]) {
   }
   return 0;
 }
-//! [Tutorial Example]
+//! [Tutorial Example] NOLINT(whitespace/comments)

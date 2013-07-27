@@ -26,6 +26,7 @@
 #include <vector>
 #include "ola/Logging.h"
 #include "ola/rdm/AckTimerResponder.h"
+#include "ola/rdm/AdvancedDimmerResponder.h"
 #include "ola/rdm/DimmerResponder.h"
 #include "ola/rdm/DummyResponder.h"
 #include "ola/rdm/MovingLightResponder.h"
@@ -100,6 +101,8 @@ DummyPort::DummyPort(DummyDevice *parent,
       &m_responders, &allocator, options.number_of_moving_lights);
   AddResponders<ola::rdm::AckTimerResponder>(
       &m_responders, &allocator, options.number_of_ack_timer_responders);
+  AddResponders<ola::rdm::AdvancedDimmerResponder>(
+      &m_responders, &allocator, options.number_of_advanced_dimmers);
   AddResponders<ola::rdm::SensorResponder>(
       &m_responders, &allocator, options.number_of_sensor_responders);
 }

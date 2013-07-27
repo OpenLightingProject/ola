@@ -234,8 +234,8 @@ void SLPDaemon::NewTCPConnection(TCPSocket *socket) {
   client->channel = new StreamRpcChannel(m_service_impl.get(), socket,
                                          m_export_map),
 
-  socket->SetOnClose(
-      NewSingleCallback(this, &SLPDaemon::RPCSocketClosed, socket));
+  client->channel->SetChannelCloseHandler(NewSingleCallback(
+      this, &SLPDaemon::RPCSocketClosed, socket->ReadDescriptor()));
 
   m_ss.AddReadDescriptor(socket);
 }
@@ -244,12 +244,12 @@ void SLPDaemon::NewTCPConnection(TCPSocket *socket) {
 /**
  * Called when RPC socket is closed by the remote end.
  */
-void SLPDaemon::RPCSocketClosed(TCPSocket *socket) {
+void SLPDaemon::RPCSocketClosed(int read_descriptor) {
   ConnectedClient *client = STLLookupAndRemovePtr(&m_connected_clients,
-      socket->ReadDescriptor());
+      read_descriptor);
   OLA_DEBUG << "RPC Socket closed";
   if (!client) {
-    OLA_WARN << "Socket " << socket->ReadDescriptor()
+    OLA_WARN << "Socket " << read_descriptor
              << " closed but the ConnectedClient couldn't be found";
   } else {
     m_disconnected_clients.push_back(client);

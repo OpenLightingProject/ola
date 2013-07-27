@@ -206,7 +206,7 @@ typename T1::mapped_type STLFindOrNull(const T1 &container,
  * @returns true if the value was replaced, false if the value was inserted.
  *
  * @note
- * Note if the value type is a pointer, and the container has ownershop of the
+ * Note if the value type is a pointer, and the container has ownership of the
  * pointer, replacing a value will leak memory. Use STLReplaceAndDelete to
  * avoid this.
  * @sa STLReplaceAndDelete.
@@ -221,6 +221,34 @@ bool STLReplace(T1 *container, const typename T1::key_type &key,
     return true;
   }
   return false;
+}
+
+/**
+ * @brief Replace a value in a pair associative container. If the key existed,
+ * the old value is returned, otherwise NULL is returned.
+ * @tparam T1 A container.
+ * @param container the container to replace the value in.
+ * @param key the key to insert / replace.
+ * @param value the value to insert / replace.
+ * @returns The value matching the key, or NULL if the value isn't found.
+ *
+ * @note
+ * This assumes that NULL can be co-erced to the mapped_type of the container.
+ * It's most sutiable for containers with pointers.
+ * @sa STLReplaceAndDelete.
+ */
+template<typename T1>
+typename T1::mapped_type STLReplacePtr(T1 *container,
+                                       const typename T1::key_type &key,
+                                       const typename T1::mapped_type &value) {
+  std::pair<typename T1::iterator, bool> p = container->insert(
+      typename T1::value_type(key, value));
+  if (!p.second) {
+    typename T1::mapped_type old_value = p.first->second;
+    p.first->second = value;
+    return old_value;
+  }
+  return NULL;
 }
 
 

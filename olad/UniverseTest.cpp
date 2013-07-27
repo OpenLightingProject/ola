@@ -662,7 +662,7 @@ void UniverseTest::testRDMSend() {
                         reinterpret_cast<const RDMResponse*>(NULL)));
 
   // now try a broadcast fan out
-  UID vendorcast_uid = UID::AllManufacturerDevices(0x7a70);
+  UID vendorcast_uid = UID::VendorcastAddress(0x7a70);
   request = new ola::rdm::RDMGetRequest(
       source_uid,
       vendorcast_uid,

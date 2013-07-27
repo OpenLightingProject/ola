@@ -34,6 +34,8 @@
 #include <string>
 #include <vector>
 
+class SelectServerTest;
+
 namespace ola {
 namespace io {
 
@@ -242,6 +244,8 @@ class SelectServer: public SelectServerInterface {
     // the maximum time we'll wait in the select call
     static const unsigned int POLL_INTERVAL_SECOND = 10;
     static const unsigned int POLL_INTERVAL_USECOND = 0;
+
+    friend class ::SelectServerTest;
 };
 }  // namespace io
 }  // namespace ola

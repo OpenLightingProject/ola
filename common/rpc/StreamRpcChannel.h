@@ -30,6 +30,9 @@
 #include <ola/Callback.h>
 #include <ola/io/Descriptor.h>
 #include <ola/io/SelectServer.h>
+#include <ola/util/SequenceNumber.h>
+#include <memory>
+
 #include "ola/ExportMap.h"
 
 #include HASH_MAP_H
@@ -73,37 +76,67 @@ class OutstandingResponse {
 };
 
 
-class StreamRpcHeader {
-  /*
-   * The first 4 bytes are the header which contains the RPC protocol version
-   * (this is separate from the protobuf version) and the size of the protobuf.
-   */
-  public:
-    static void EncodeHeader(uint32_t *header, unsigned int version,
-                             unsigned int size);
-    static void DecodeHeader(uint32_t header, unsigned int *version,
-                             unsigned int *size);
-  private:
-    static const unsigned int VERSION_MASK = 0xf0000000;
-    static const unsigned int SIZE_MASK = 0x0fffffff;
-};
-
-
+/**
+ * @brief The RPC channel used to communicate between the client and the
+ * server.
+ * This implementation runs over a ConnectedDescriptor which means it can be
+ * used over TCP or pipes.
+ */
 class StreamRpcChannel: public RpcChannel {
-  /*
-   * Implements a RpcChannel over a descriptor.
-   */
   public :
+    /**
+     * @@brief Create a new StreamRpcChannel.
+     * @param service the Service to use to handle incoming requests. Ownership
+     *   is not transferred.
+     * @param descriptor the descriptor to use for reading/writing data. The
+     *   caller is responsible for registering the descriptor with the
+     *   SelectServer. Ownership of the descriptor is not transferred.
+     * @param export_map the ExportMap to use for stats
+     */
     StreamRpcChannel(Service *service,
                      ola::io::ConnectedDescriptor *descriptor,
                      ExportMap *export_map = NULL);
+
+    /**
+     * @brief Destructor
+     */
     ~StreamRpcChannel();
 
+    /**
+     * @brief Set the Service to use to handle incoming requests.
+     * @param service the new Service to use, ownership is not transferred.
+     */
+    void SetService(Service *service) { m_service = service; }
+
+    /**
+     * @brief Check if there are any pending RPCs on the channel.
+     * Pending RPCs are those where a request has been sent, but no reply has
+     * been received.
+     * @returns true if there is one or more pending RPCs.
+     */
     bool PendingRPCs() const { return !m_requests.empty(); }
 
+    /**
+     * @brief Called when new data arrives on the descriptor.
+     */
     void DescriptorReady();
-    void SetOnClose(SingleUseCallback0<void> *closure);
 
+    /**
+     * @brief Set the Callback to be run when the channel fails.
+     * The callback will be invoked if the descriptor is closed, or if writes
+     * to the descriptor fail.
+     * @param callback the callback to run when the channel fails.
+     *
+     * @note
+     * The callback will be run from the call stack of the StreamRpcChannel
+     * object. This means you can't delete the StreamRpcChannel object from
+     * within the called, you'll need to queue it up an delete it later.
+     */
+    void SetChannelCloseHandler(SingleUseCallback0<void> *callback);
+
+    /**
+     * @brief Invoke an RPC method on this channel.
+     */
     void CallMethod(
         const MethodDescriptor *method,
         RpcController *controller,
@@ -111,11 +144,22 @@ class StreamRpcChannel: public RpcChannel {
         Message *response,
         google::protobuf::Closure *done);
 
+    /**
+     * @brief Invoked by the RPC completion handler when the server side
+     * response is ready.
+     * @param request the OutstandingRequest that is now complete.
+     */
     void RequestComplete(OutstandingRequest *request);
-    void SetService(Service *service) { m_service = service; }
+
+    /**
+     * @brief the RPC protocol version.
+     */
     static const unsigned int PROTOCOL_VERSION = 1;
 
   private:
+    typedef HASH_NAMESPACE::HASH_MAP_CLASS<int, OutstandingResponse*>
+      ResponseMap;
+
     bool SendMsg(RpcMessage *msg);
     int AllocateMsgBuffer(unsigned int size);
     int ReadHeader(unsigned int *version, unsigned int *size) const;
@@ -133,20 +177,20 @@ class StreamRpcChannel: public RpcChannel {
     void HandleFailedResponse(RpcMessage *msg);
     void HandleCanceledResponse(RpcMessage *msg);
     void HandleNotImplemented(RpcMessage *msg);
-    OutstandingResponse *GetOutstandingResponse(int msg_id);
-    void InvokeCallbackAndCleanup(OutstandingResponse *response);
+
+    void HandleChannelClose();
 
     Service *m_service;  // service to dispatch requests to
-    SingleUseCallback0<void> *m_on_close;
+    std::auto_ptr<SingleUseCallback0<void> > m_on_close;
     // the descriptor to read/write to.
     class ola::io::ConnectedDescriptor *m_descriptor;
-    uint32_t m_seq;  // sequence number
+    SequenceNumber<uint32_t> m_sequence;
     uint8_t *m_buffer;  // buffer for incomming msgs
     unsigned int m_buffer_size;  // size of the buffer
     unsigned int m_expected_size;  // the total size of the current msg
     unsigned int m_current_size;  // the amount of data read for the current msg
     HASH_NAMESPACE::HASH_MAP_CLASS<int, OutstandingRequest*> m_requests;
-    HASH_NAMESPACE::HASH_MAP_CLASS<int, OutstandingResponse*> m_responses;
+    ResponseMap m_responses;
     ExportMap *m_export_map;
     UIntMap *m_recv_type_map;
 
@@ -154,11 +198,11 @@ class StreamRpcChannel: public RpcChannel {
     static const char K_RPC_RECEIVED_VAR[];
     static const char K_RPC_SENT_ERROR_VAR[];
     static const char K_RPC_SENT_VAR[];
+    static const char *K_RPC_VARIABLES[];
     static const char STREAMING_NO_RESPONSE[];
     static const unsigned int INITIAL_BUFFER_SIZE = 1 << 11;  // 2k
     static const unsigned int MAX_BUFFER_SIZE = 1 << 20;  // 1M
 };
 }  // namespace rpc
 }  // namespace ola
-
 #endif  // COMMON_RPC_STREAMRPCCHANNEL_H_

@@ -93,10 +93,8 @@ bool StreamingClient::Setup() {
     return false;
   }
 
-  m_socket->SetOnClose(
-      NewSingleCallback(this, &StreamingClient::SocketClosed));
-  m_channel->SetOnClose(
-      NewSingleCallback(this, &StreamingClient::SocketClosed));
+  m_channel->SetChannelCloseHandler(
+      NewSingleCallback(this, &StreamingClient::ChannelClosed));
 
   return true;
 }
@@ -148,7 +146,7 @@ bool StreamingClient::SendDmx(unsigned int universe,
   return true;
 }
 
-void StreamingClient::SocketClosed() {
+void StreamingClient::ChannelClosed() {
   m_socket_closed = true;
   OLA_WARN << "The RPC socket has been closed, this is more than likely due"
     << " to a framing error, perhaps you're sending too fast?";

@@ -59,6 +59,8 @@ class OlaCallbackClient: public ola::rdm::RDMAPIImplInterface {
     bool Setup();
     bool Stop();
 
+    void SetCloseHandler(ola::SingleUseCallback0<void> *callback);
+
     // plugin methods
     bool FetchPluginList(
         SingleUseCallback2<void,
