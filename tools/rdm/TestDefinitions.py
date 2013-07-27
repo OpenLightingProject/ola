@@ -3901,7 +3901,7 @@ class GetDMXBlockAddress(OptionalParameterTestFixture):
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_BLOCK_ADDRESS'
   PROVIDES = ['total_sub_device_footprint', 'base_dmx_address']
-  REQUIRES = ['sub_device_footprints']
+  REQUIRES = ['sub_device_addresses', 'sub_device_footprints']
   NON_CONTIGUOUS = 0xffff
 
   def Test(self):
@@ -3921,24 +3921,48 @@ class GetDMXBlockAddress(OptionalParameterTestFixture):
         self.AddWarning('Sub device footprint > 512, was %d' % footprint)
 
       if (base_address == 0 or
-          base_address > MAX_DMX_ADDRESS and base_address != 0xffff):
+          (base_address > MAX_DMX_ADDRESS and
+           base_address != self.NON_CONTIGUOUS)):
         self.AddWarning('Base DMX address is outside range 1- 512, was %d' %
                         base_address)
 
-      if fields['sub_device_footprint'] != self.expected_footprint:
+      if footprint != self.expected_footprint:
         self.SetFailed(
             "Sub device footprint (%d) didn't match sum of sub-device "
             "footprints (%d)" %
             (fields['sub_device_footprint'], self.expected_footprint))
+
+      is_contiguous = self.CheckForContiguousSubDevices()
+      if is_contiguous and base_address == self.NON_CONTIGUOUS:
+        self.SetFailed(
+            'Sub device addresses are contiguous, but block address returned '
+            '0xffff')
+      elif not (is_contiguous or base_address == self.NON_CONTIGUOUS):
+        self.SetFailed(
+            "Sub device addresses aren't contiguous, but block address "
+            "didn't return 0xffff")
+
     self.SetProperty('total_sub_device_footprint', footprint)
     self.SetProperty('base_dmx_address', base_address)
+
+  def CheckForContiguousSubDevices(self):
+    addresses = self.Property('sub_device_addresses')
+    footprints = self.Property('sub_device_footprints')
+    next_address = None
+    for index in sorted(addresses):
+      if next_address == None:
+        next_address = addresses[index] + footprints[index]
+      elif addresses[index] != next_address:
+        return False
+      else:
+        next_address += footprints[index]
+    return True;
 
 class GetDMXBlockAddressWithData(TestMixins.GetWithDataMixin,
                                  OptionalParameterTestFixture):
   """Get the dmx block address with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_BLOCK_ADDRESS'
-
 
 class SetDMXBlockAddress(TestMixins.SetMixin, OptionalParameterTestFixture):
   """Attempt to SET the dmx block address."""
@@ -3966,7 +3990,6 @@ class SetDMXBlockAddress(TestMixins.SetMixin, OptionalParameterTestFixture):
     # we can't reset as the addresses may not have been contiguous
     pass
 
-
 class SetZeroDMXBlockAddress(OptionalParameterTestFixture):
   """Set the DMX block address to 0."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
@@ -3989,7 +4012,6 @@ class SetOversizedDMXBlockAddress(OptionalParameterTestFixture):
     self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
     data = struct.pack('!H', MAX_DMX_ADDRESS + 1)
     self.SendRawSet(ROOT_DEVICE, self.pid, data)
-
 
 class SetDMXBlockAddressWithNoData(TestMixins.SetWithNoDataMixin,
                                    OptionalParameterTestFixture):
