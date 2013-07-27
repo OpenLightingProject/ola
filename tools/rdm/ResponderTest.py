@@ -601,7 +601,6 @@ class ResponderTestFixture(TestFixture):
       self.LogDebug('  %s' % result)
     self.Stop()
 
-
   def _GetQueuedMessage(self):
     """Fetch queued messages."""
     queued_message_pid = self.LookupPid('QUEUED_MESSAGE')
@@ -633,6 +632,20 @@ class OptionalParameterTestFixture(ResponderTestFixture):
     self.AddExpectedResults(result)
 
   def AddIfSetSupported(self, result):
+    # The lock modes means that some sets may return NR_WRITE_PROTECT. Account
+    # for that here.
     if not self.PidSupported():
-      result = self.NackSetResult(RDMNack.NR_UNKNOWN_PID)
-    self.AddExpectedResults(result)
+      expected_results = self.NackSetResult(RDMNack.NR_UNKNOWN_PID)
+    else:
+      expected_results = [
+        self.NackSetResult(
+          RDMNack.NR_WRITE_PROTECT,
+          advisory='SET %s was locked, try changing the lock mode' %
+            self.pid.name)
+      ]
+      if isinstance(result, list):
+        expected_results.extend(result)
+      else:
+        expected_results.append(result)
+
+    self.AddExpectedResults(expected_results)
