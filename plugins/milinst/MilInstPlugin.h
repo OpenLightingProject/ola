@@ -57,7 +57,8 @@ class MilInstPlugin: public Plugin {
     std::vector<MilInstDevice*> m_devices;  // list of our devices
 
     static const char MILINST_DEVICE_PATH[];
-    static const char MILINST_DEVICE_NAME[];
+    static const char MILINST_BASE_DEVICE_NAME[];
+    static const char MILINST_1463_DEVICE_NAME[];
     static const char PLUGIN_NAME[];
     static const char PLUGIN_PREFIX[];
     static const char DEVICE_KEY[];

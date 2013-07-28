@@ -36,7 +36,10 @@ namespace milinst {
 using std::string;
 
 const char MilInstPlugin::MILINST_DEVICE_PATH[] = "/dev/ttyS0";
-const char MilInstPlugin::MILINST_DEVICE_NAME[] = "Milford Instruments Device";
+const char MilInstPlugin::MILINST_BASE_DEVICE_NAME[] =
+    "Milford Instruments Device";  // This is just for generic MilInst devices
+const char MilInstPlugin::MILINST_1463_DEVICE_NAME[] =
+    "Milford Instruments 1-463 Device";
 const char MilInstPlugin::PLUGIN_NAME[] = "Milford Instruments";
 const char MilInstPlugin::PLUGIN_PREFIX[] = "milinst";
 const char MilInstPlugin::DEVICE_KEY[] = "device";
@@ -58,7 +61,9 @@ bool MilInstPlugin::StartHook() {
     if (it->empty())
       continue;
 
-    device = new MilInstDevice(this, MILINST_DEVICE_NAME, *it);
+    // TODO(Peter): When support is added for multiple device types, ensure the
+    // correct name is passed in here
+    device = new MilInstDevice(this, MILINST_1463_DEVICE_NAME, *it);
     OLA_DEBUG << "Adding device " << *it;
 
     if (!device->Start()) {
@@ -99,7 +104,8 @@ string MilInstPlugin::Description() const {
 "Milford Instruments Plugin\n"
 "----------------------------\n"
 "\n"
-"This plugin creates devices with one output port.\n"
+"This plugin creates devices with one output port. It currently only supports "
+"the 1-463 DMX Protocol Converter.\n"
 "\n"
 "--- Config file : ola-milinst.conf ---\n"
 "\n"
