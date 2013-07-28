@@ -4165,7 +4165,6 @@ class GetDimmerInfo(OptionalParameterTestFixture):
               'maximum_level_lower', 'maximum_level_upper',
               'number_curves_supported', 'levels_resolution',
               'split_levels_supported']
-  SPLIT_LEVEL_MASK = 0x01
 
   def Test(self):
     self.AddIfGetSupported(self.AckGetResult())
@@ -4194,12 +4193,7 @@ class GetDimmerInfo(OptionalParameterTestFixture):
     self.SetPropertyFromDict(fields, 'number_curves_supported')
     self.SetPropertyFromDict(fields, 'levels_resolution')
 
-    self.SetProperty('split_levels_supported',
-                     fields['split_levels_supported'] & self.SPLIT_LEVEL_MASK)
-
-    if fields['split_levels_supported'] & (~self.SPLIT_LEVEL_MASK):
-      self.AddWarning('split level field not 0 or 1, was %d' %
-                      fields['split_levels_supported'])
+    self.SetProperty('split_levels_supported', fields['split_levels_supported'])
 
 
 class GetDimmerInfoWithData(TestMixins.GetWithDataMixin,
@@ -4227,7 +4221,7 @@ class GetPresetInfo(TestMixins.GetMixin,
   """Get preset info."""
   CATEGORY = TestCategory.CONTROL
   PID = 'PRESET_INFO'
-  PROVIDES = ['preset_info']
+  PROVIDES = ['preset_info', 'max_scene_number']
 
   def Test(self):
     self.AddIfGetSupported(self.AckGetResult())
@@ -4236,9 +4230,57 @@ class GetPresetInfo(TestMixins.GetMixin,
   def VerifyResult(self, response, fields):
     if not response.WasAcked():
       self.SetProperty('preset_info', None)
+      self.SetProperty('max_scene_number', None)
       return
 
+    self.CheckBounds(fields, 'preset_fade_time')
+    self.CheckBounds(fields, 'preset_wait_time')
+    self.CheckBounds(fields, 'fail_delay_time')
+    self.CheckBounds(fields, 'fail_hold_time')
+    self.CheckBounds(fields, 'startup_delay_time')
+    self.CheckBounds(fields, 'startup_hold_time')
+
+    self.CrossCheckPidSupportIsZero('DMX_FAIL_MODE', fields,
+                                    'fail_infitite_hold_supported')
+    self.CrossCheckPidSupportIsZero('DMX_FAIL_MODE', fields,
+                                    'fail_infitite_delay_supported')
+    self.CrossCheckPidSupportIsZero('DMX_STARTUP_MODE', fields,
+                                    'startup_infitite_hold_supported')
+
+    self.CrossCheckPidSupportIsMax('DMX_FAIL_MODE', fields,
+                                   'fail_delay_time')
+    self.CrossCheckPidSupportIsMax('DMX_FAIL_MODE', fields,
+                                   'fail_hold_time')
+    self.CrossCheckPidSupportIsMax('DMX_STARTUP_MODE', fields,
+                                   'startup_delay_time')
+    self.CrossCheckPidSupportIsMax('DMX_STARTUP_MODE', fields,
+                                   'startup_hold_time')
+
     self.SetProperty('preset_info', fields)
+    self.SetProperty('max_scene_number', fields['max_scene_number'])
+
+  def CrossCheckPidSupportIsZero(self, pid_name, fields, key):
+    if not (self.IsSupported(pid_name) or fields[key] == False):
+      self.AddWarning('%s not supported, but %s in PRESET_INFO is non-0' %
+                      (pid_name, key))
+
+  def CrossCheckPidSupportIsMax(self, pid_name, fields, key):
+    for key in ['min_%s' % key, 'max_%s' % key]:
+      if not (self.IsSupported(pid_name) or fields[key] == 0xffff):
+        self.AddWarning(
+            '%s not supported, but %s in PRESET_INFO is not 0xffff' %
+            (pid_name, key))
+
+  def IsSupported(self, pid_name):
+    pid = self.LookupPid(pid_name)
+    return pid.value in self.Property('supported_parameters')
+
+  def CheckBounds(self, fields, key):
+    min_key = 'min_%s' % key
+    max_key = 'max_%s' % key
+    if fields[min_key] > fields[max_key]:
+      self.AddAdvisory('%s (%d) > %s (%d)'
+                       % (min_key, fields[min_key], max_key, fields[max_key]))
 
 class GetPresetInfoWithData(TestMixins.GetWithDataMixin,
                             OptionalParameterTestFixture):
