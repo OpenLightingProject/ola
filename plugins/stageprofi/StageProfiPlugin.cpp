@@ -67,7 +67,7 @@ bool StageProfiPlugin::StartHook() {
 
     m_plugin_adaptor->AddReadDescriptor(device->GetSocket());
     m_plugin_adaptor->RegisterDevice(device);
-    m_devices.insert(m_devices.end(), device);
+    m_devices.push_back(device);
   }
   return true;
 }

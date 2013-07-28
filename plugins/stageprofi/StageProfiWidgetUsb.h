@@ -33,7 +33,7 @@ class StageProfiWidgetUsb: public StageProfiWidget {
     StageProfiWidgetUsb(): StageProfiWidget() {}
     ~StageProfiWidgetUsb() {}
 
-    bool Connect(const std::string &ip);
+    bool Connect(const std::string &path);
 };
 }  // namespace stageprofi
 }  // namespace plugin

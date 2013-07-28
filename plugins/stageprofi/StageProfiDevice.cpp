@@ -49,22 +49,12 @@ StageProfiDevice::StageProfiDevice(AbstractPlugin *owner,
                                    const string &name,
                                    const string &dev_path):
   Device(owner, name),
-  m_path(dev_path),
-  m_widget(NULL) {
+  m_path(dev_path) {
     if (dev_path.at(0) == '/') {
-      m_widget = new StageProfiWidgetUsb();
+      m_widget.reset(new StageProfiWidgetUsb());
     } else {
-      m_widget = new StageProfiWidgetLan();
+      m_widget.reset(new StageProfiWidgetLan());
     }
-}
-
-
-/*
- * Destroy this device
- */
-StageProfiDevice::~StageProfiDevice() {
-  if (m_widget)
-    delete m_widget;
 }
 
 
@@ -72,7 +62,7 @@ StageProfiDevice::~StageProfiDevice() {
  * Start this device
  */
 bool StageProfiDevice::StartHook() {
-  if (!m_widget)
+  if (!m_widget.get())
     return false;
 
   if (!m_widget->Connect(m_path)) {
@@ -85,7 +75,9 @@ bool StageProfiDevice::StartHook() {
     return false;
   }
 
-  StageProfiOutputPort *port = new StageProfiOutputPort(this, 0, m_widget);
+  StageProfiOutputPort *port = new StageProfiOutputPort(this,
+                                                        0,
+                                                        m_widget.get());
   AddPort(port);
   return true;
 }

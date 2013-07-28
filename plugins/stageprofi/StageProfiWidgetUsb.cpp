@@ -50,6 +50,7 @@ bool StageProfiWidgetUsb::Connect(const std::string &path) {
   m_socket = new ola::io::DeviceDescriptor(fd);
   m_socket->SetOnData(
       NewCallback<StageProfiWidget>(this, &StageProfiWidget::SocketReady));
+  m_device_path = path;
   return true;
 }
 }  // namespace stageprofi

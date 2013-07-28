@@ -48,7 +48,8 @@ bool StageProfiWidgetLan::Connect(const std::string &ip) {
   if (m_socket)
     m_socket->SetOnData(
         NewCallback<StageProfiWidget>(this,
-                                     &StageProfiWidget::SocketReady));
+                                      &StageProfiWidget::SocketReady));
+  m_device_path = ip;
   return m_socket;
 }
 }  // namespace stageprofi

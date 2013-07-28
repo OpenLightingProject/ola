@@ -45,6 +45,7 @@ class StageProfiWidget {
     // these methods are for communicating with the device
     virtual bool Connect(const string &path) = 0;
     int Disconnect();
+    string GetDevicePath() { return m_device_path; }
     ConnectedDescriptor *GetSocket() { return m_socket; }
     bool SendDmx(const DmxBuffer &buffer) const;
     bool DetectDevice();
@@ -58,6 +59,7 @@ class StageProfiWidget {
     // instance variables
     bool m_enabled;
     bool m_got_response;
+    string m_device_path;
     ConnectedDescriptor *m_socket;
     SelectServer *m_ss;
 

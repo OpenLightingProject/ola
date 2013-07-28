@@ -40,7 +40,7 @@ class StageProfiOutputPort: public BasicOutputPort {
           m_widget(widget) {}
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-    string Description() const { return ""; }
+    string Description() const { return m_widget->GetDevicePath(); }
 
   private:
     StageProfiWidget *m_widget;
