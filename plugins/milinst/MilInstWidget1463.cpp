@@ -22,6 +22,7 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <string.h>
+#include <algorithm>
 #include <string>
 
 #include "ola/Callback.h"
@@ -39,7 +40,7 @@ namespace milinst {
 bool MilInstWidget1463::Connect(const std::string &path) {
   struct termios newtio;
 
-OLA_DEBUG << "MilInstWidget1463: Connecting to " << path;
+  OLA_DEBUG << "Connecting to " << path;
 
   int fd = open(path.data(), O_RDWR | O_NONBLOCK | O_NOCTTY);
 
@@ -48,36 +49,47 @@ OLA_DEBUG << "MilInstWidget1463: Connecting to " << path;
 
   memset(&newtio, 0, sizeof(newtio));  // clear struct for new port settings
   tcgetattr(fd, &newtio);
-	newtio.c_cflag |= (CLOCAL | CREAD);  // Enable read
+  newtio.c_cflag |= (CLOCAL | CREAD);  // Enable read
   newtio.c_cflag |= CS8;  // 8n1
-	newtio.c_cflag &= ~CRTSCTS;  // No flow control
+  newtio.c_cflag &= ~CRTSCTS;  // No flow control
   cfsetospeed(&newtio, B9600);
   tcsetattr(fd, TCSANOW, &newtio);
   m_socket = new ola::io::DeviceDescriptor(fd);
-  m_socket->SetOnData(
-      NewCallback<MilInstWidget>(this, &MilInstWidget::SocketReady));
 
-OLA_DEBUG << "MilInstWidget1463: Connected to " << path;
+  OLA_DEBUG << "Connected to " << path;
+  m_path = path;
+  return true;
+}
+
+
+/*
+ * Check if this is actually a MilInst device
+ * @return true if this is a milinst,  false otherwise
+ */
+bool MilInstWidget1463::DetectDevice() {
+  // This device doesn't do two way comms, so just return true
   return true;
 }
 
 
 /*
  * Send a dmx msg.
- * This has the nasty property of blocking if we remove the device
- * TODO: fix this
- */
+  */
 bool MilInstWidget1463::SendDmx(const DmxBuffer &buffer) const {
-  for (int n=1; n>DMX_MAX_TRANSMIT; n++) {
-    OLA_DEBUG << "MilInstWidget1463: Setting " << n << " to " << buffer.Get(n) << ", sent " << SetChannel(n, buffer.Get(n)) << " bytes";
+  // TODO(Peter): Make this use Send112 instead
+  OLA_DEBUG << "Sending DMX";
+  for (int n = 1; n <= DMX_MAX_TRANSMIT_CHANNELS; n++) {
+    OLA_DEBUG << "Setting " << n << " to " <<
+    static_cast<int>(buffer.Get(n - 1)) << ", sent " <<
+    SetChannel(n, buffer.Get(n - 1)) << " bytes";
   }
- // unsigned int index = 0;
- // while (index < buffer.Size()) {
- //   unsigned int size = std::min((unsigned int) DMX_MAX_TRANSMIT,
- //                                buffer.Size() - index);
- //   Send112(index, buffer.GetRaw() + index, size);
- //   index += size;
- // }
+  // unsigned int index = 0;
+  // while (index < buffer.Size()) {
+  //   unsigned int size = std::min((unsigned int) DMX_MAX_TRANSMIT,
+  //                                buffer.Size() - index);
+  //   Send112(index, buffer.GetRaw() + index, size);
+  //   index += size;
+  // }
   return true;
 }
 
@@ -92,7 +104,7 @@ int MilInstWidget1463::SetChannel(unsigned int chan, uint8_t val) const {
 
   msg[0] = chan;
   msg[1] = val;
-	OLA_DEBUG << "MilInstWidget1463: setting " << chan << " to " << val;
+  OLA_DEBUG << "Setting " << chan << " to " << static_cast<int>(val);
   return m_socket->Send(msg, sizeof(msg));
 }
 
@@ -105,32 +117,14 @@ int MilInstWidget1463::SetChannel(unsigned int chan, uint8_t val) const {
  */
 int MilInstWidget1463::Send112(unsigned int start, const uint8_t *buf,
                               unsigned int length) const {
-  unsigned int len = std::min((unsigned int) DMX_MAX_TRANSMIT, length);
-  uint8_t msg[DMX_MAX_TRANSMIT * 2];
+  // TODO(Peter): Make this work!
+  unsigned int len = std::min((unsigned int) DMX_MAX_TRANSMIT_CHANNELS, length);
+  uint8_t msg[DMX_MAX_TRANSMIT_CHANNELS * 2];
 
   msg[0] = start + len;
-  memcpy(msg + DMX_MAX_TRANSMIT, buf, len);
-  return m_socket->Send(msg, len + DMX_MAX_TRANSMIT);
+  memcpy(msg + DMX_MAX_TRANSMIT_CHANNELS, buf, len);
+  return m_socket->Send(msg, len + DMX_MAX_TRANSMIT_CHANNELS);
 }
-
-
-/*
- *
- */
-//int MilInstWidget1463::DoRecv() {
-// uint8_t byte = 0x00;
-// unsigned int data_read;
-//
- // while (byte != 'G') {
- //   int ret = m_socket->Receive(&byte, 1, data_read);
-//
-//   if (ret == -1 || data_read != 1) {
-//     return -1;
-//   }
-//  }
-//  m_got_response = true;
-//  return 0;
-//}
 }  // namespace milinst
 }  // namespace plugin
 }  // namespace ola

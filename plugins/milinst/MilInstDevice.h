@@ -21,10 +21,12 @@
 #ifndef PLUGINS_MILINST_MILINSTDEVICE_H_
 #define PLUGINS_MILINST_MILINSTDEVICE_H_
 
+#include <memory>
 #include <string>
 #include "ola/DmxBuffer.h"
 #include "ola/network/Socket.h"
 #include "olad/Device.h"
+#include "plugins/milinst/MilInstWidget.h"
 
 namespace ola {
 
@@ -34,16 +36,14 @@ namespace plugin {
 namespace milinst {
 
 using ola::Device;
+using std::auto_ptr;
 
 class MilInstDevice: public Device {
   public:
     MilInstDevice(AbstractPlugin *owner,
-                     const string &name,
-                     const string &dev_path);
-    ~MilInstDevice();
+                  const string &name,
+                  const string &dev_path);
 
-    // I don't think this get us full stickiness because USB devices may
-    // appear as different devices.
     string DeviceId() const { return m_path; }
     ola::io::ConnectedDescriptor *GetSocket() const;
 
@@ -53,7 +53,7 @@ class MilInstDevice: public Device {
 
   private:
     string m_path;
-    class MilInstWidget *m_widget;
+    auto_ptr<MilInstWidget> m_widget;
 };
 }  // namespace milinst
 }  // namespace plugin

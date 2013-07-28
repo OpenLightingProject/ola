@@ -32,7 +32,6 @@ namespace milinst {
  * New widget
  */
 MilInstWidget::~MilInstWidget() {
-OLA_DEBUG << "MilInstWidget: ~";
   if (m_socket) {
     m_socket->Close();
     delete m_socket;
@@ -44,56 +43,14 @@ OLA_DEBUG << "MilInstWidget: ~";
  * Disconnect from the widget
  */
 int MilInstWidget::Disconnect() {
-OLA_DEBUG << "MilInstWidget: disconnect";
   m_socket->Close();
   return 0;
 }
 
 
-/*
- * Called when there is data to read
- */
-void MilInstWidget::SocketReady() {
-OLA_DEBUG << "MilInstWidget: soc ready";
-  //while (m_socket->DataRemaining() > 0) {
-    //DoRecv();
-  //}
-}
-
-
 void MilInstWidget::Timeout() {
-  OLA_DEBUG << "MilInstWidget: timing out";
   if (m_ss)
     m_ss->Terminate();
-}
-
-/*
- * Check if this is actually a MilInst device
- * @return true if this is a milinst,  false otherwise
- */
-bool MilInstWidget::DetectDevice() {
-return true;
- // if (m_ss)
- //   delete m_ss;
-////
- // m_got_response = false;
- // m_ss = new SelectServer();
- // m_ss->AddReadDescriptor(m_socket, false);
- // m_ss->RegisterSingleTimeout(
- //     100,
- //     ola::NewSingleCallback(this, &MilInstWidget::Timeout));
-////
- // // try a command, we should get a response
- // SetChannel(0, 0);
-////
- // m_ss->Run();
- // delete m_ss;
- // m_ss = NULL;
- // if (m_got_response)
- //   return true;
-
- // m_socket->Close();
- // return false;
 }
 }  // namespace milinst
 }  // namespace plugin

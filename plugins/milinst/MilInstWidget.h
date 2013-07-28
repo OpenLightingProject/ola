@@ -45,9 +45,9 @@ class MilInstWidget {
     virtual bool Connect(const string &path) = 0;
     int Disconnect();
     ConnectedDescriptor *GetSocket() { return m_socket; }
+    string GetPath() { return m_path; }
     virtual bool SendDmx(const DmxBuffer &buffer) const = 0;
-    bool DetectDevice();
-    void SocketReady();
+    virtual bool DetectDevice() = 0;
     void Timeout();
 
   protected:
@@ -55,11 +55,9 @@ class MilInstWidget {
 
     // instance variables
     bool m_enabled;
+    string m_path;
     ConnectedDescriptor *m_socket;
     SelectServer *m_ss;
-
-  private:
-    //virtual int DoRecv();
 };
 }  // namespace milinst
 }  // namespace plugin

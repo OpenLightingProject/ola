@@ -35,10 +35,9 @@ namespace milinst {
 
 using std::string;
 
-//const char MilInstPlugin::MILINST_DEVICE_PATH[] = "/dev/ttyUSB0"; //TODO: default serial port
-const char MilInstPlugin::MILINST_DEVICE_PATH[] = "/home/peter/homeautomation/ttyMSS4-3";
-const char MilInstPlugin::MILINST_DEVICE_NAME[] = "MilInst Device";
-const char MilInstPlugin::PLUGIN_NAME[] = "MilInst";
+const char MilInstPlugin::MILINST_DEVICE_PATH[] = "/dev/ttyS0";
+const char MilInstPlugin::MILINST_DEVICE_NAME[] = "Milford Instruments Device";
+const char MilInstPlugin::PLUGIN_NAME[] = "Milford Instruments";
 const char MilInstPlugin::PLUGIN_PREFIX[] = "milinst";
 const char MilInstPlugin::DEVICE_KEY[] = "device";
 
@@ -52,8 +51,6 @@ bool MilInstPlugin::StartHook() {
   vector<string>::iterator it;
   MilInstDevice *device;
 
-OLA_DEBUG << "MilInstPlugin: start hook";
-
   // fetch device listing
   device_names = m_preferences->GetMultipleValue(DEVICE_KEY);
 
@@ -62,18 +59,18 @@ OLA_DEBUG << "MilInstPlugin: start hook";
       continue;
 
     device = new MilInstDevice(this, MILINST_DEVICE_NAME, *it);
-		OLA_DEBUG << "MilInstPlugin: adding device " << it;
+    OLA_DEBUG << "Adding device " << *it;
 
     if (!device->Start()) {
       delete device;
       continue;
     }
 
-		OLA_DEBUG << "MilInstPlugin: started device " << it;
+    OLA_DEBUG << "Started device " << *it;
 
     m_plugin_adaptor->AddReadDescriptor(device->GetSocket());
     m_plugin_adaptor->RegisterDevice(device);
-    m_devices.insert(m_devices.end(), device);
+    m_devices.push_back(device);
   }
   return true;
 }
@@ -99,14 +96,14 @@ bool MilInstPlugin::StopHook() {
  */
 string MilInstPlugin::Description() const {
     return
-"MilInst Plugin\n"
+"Milford Instruments Plugin\n"
 "----------------------------\n"
 "\n"
 "This plugin creates devices with one output port.\n"
 "\n"
 "--- Config file : ola-milinst.conf ---\n"
 "\n"
-"device = /dev/ttyUSB0\n"
+"device = /dev/ttyS0\n"
 "The device to use as a path for the serial port. Multiple devices are "
 "supported.\n"
 "\n";
@@ -146,7 +143,7 @@ bool MilInstPlugin::SetDefaultPreferences() {
   bool save = false;
 
   save |= m_preferences->SetDefaultValue(DEVICE_KEY, StringValidator(),
-                                         MILINST_DEVICE_PATH);
+                                          MILINST_DEVICE_PATH);
 
   if (save)
     m_preferences->Save();

@@ -45,21 +45,11 @@ using ola::AbstractPlugin;
  * @param dev_path  path to the pro widget
  */
 MilInstDevice::MilInstDevice(AbstractPlugin *owner,
-                                   const string &name,
-                                   const string &dev_path):
+                             const string &name,
+                             const string &dev_path):
   Device(owner, name),
-  m_path(dev_path),
-  m_widget(NULL) {
-    m_widget = new MilInstWidget1463();
-}
-
-
-/*
- * Destroy this device
- */
-MilInstDevice::~MilInstDevice() {
-  if (m_widget)
-    delete m_widget;
+  m_path(dev_path) {
+  m_widget.reset(new MilInstWidget1463());
 }
 
 
@@ -67,20 +57,20 @@ MilInstDevice::~MilInstDevice() {
  * Start this device
  */
 bool MilInstDevice::StartHook() {
-  if (!m_widget)
+  if (!m_widget.get())
     return false;
 
   if (!m_widget->Connect(m_path)) {
-    OLA_WARN << "MilInstPlugin: failed to connect to " << m_path;
+    OLA_WARN << "Failed to connect to " << m_path;
     return false;
   }
 
   if (!m_widget->DetectDevice()) {
-    OLA_WARN << "MilInstPlugin: no device found at " << m_path;
+    OLA_WARN << "No device found at " << m_path;
     return false;
   }
 
-  MilInstOutputPort *port = new MilInstOutputPort(this, 0, m_widget);
+  MilInstOutputPort *port = new MilInstOutputPort(this, 0, m_widget.get());
   AddPort(port);
   return true;
 }

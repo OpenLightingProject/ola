@@ -33,16 +33,15 @@ class MilInstWidget1463: public MilInstWidget {
     MilInstWidget1463(): MilInstWidget() {}
     ~MilInstWidget1463() {}
 
-    bool Connect(const std::string &ip);
-		bool SendDmx(const DmxBuffer &buffer) const;
-	protected:
+    bool Connect(const std::string &path);
+    bool DetectDevice();
+    bool SendDmx(const DmxBuffer &buffer) const;
+  protected:
     int SetChannel(unsigned int chan, uint8_t val) const;
     int Send112(unsigned int start, const uint8_t *buf, unsigned int len) const;
-		
-    enum { DMX_MAX_TRANSMIT = 112 };
-		
-  private:
-    //int DoRecv();
+
+    // This interface can only transmit 112 channels
+    enum { DMX_MAX_TRANSMIT_CHANNELS = 112 };
 };
 }  // namespace milinst
 }  // namespace plugin
