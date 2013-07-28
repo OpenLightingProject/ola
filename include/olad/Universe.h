@@ -171,8 +171,8 @@ class Universe: public ola::rdm::RDMControllerInterface {
     vector<InputPort*> m_input_ports;
     vector<OutputPort*> m_output_ports;
     set<Client*> m_sink_clients;  // clients that require updates
-    map<Client*, bool> m_source_clients_stale;  // track what clients are alive
-    set<Client*> m_source_clients;  // clients that provide data
+    map<Client*, bool> m_source_clients;  // track what clients we have
+                                         //    and which ones are active
     class UniverseStore *m_universe_store;
     DmxBuffer m_buffer;
     ExportMap *m_export_map;
@@ -195,8 +195,6 @@ class Universe: public ola::rdm::RDMControllerInterface {
     void UpdateName();
     void UpdateMode();
     bool SetSourceClientLively(Client* client);
-    bool RemoveClient(Client *client, bool is_source);
-    bool AddClient(Client *client, bool is_source);
     void HTPMergeSources(const vector<DmxSource> &sources);
     bool MergeAll(const InputPort *port, const Client *client);
     void PortDiscoveryComplete(BaseCallback0<void> *on_complete,
