@@ -4027,7 +4027,7 @@ class AllSubDevicesGetDmxBlockAddress(TestMixins.AllSubDevicesGetMixin,
 #------------------------------------------------------------------------------
 class GetDmxFailMode(OptionalParameterTestFixture):
   """GET the DMX fail mode setting."""
-  CATEGORY = TestCategory.CONTROL
+  CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_FAIL_MODE'
 
   def Test(self):
@@ -4047,7 +4047,7 @@ class AllSubDevicesGetDmxFailMode(TestMixins.AllSubDevicesGetMixin,
 #------------------------------------------------------------------------------
 class GetDmxStartupMode(OptionalParameterTestFixture):
   """GET the DMX startup mode setting."""
-  CATEGORY = TestCategory.CONTROL
+  CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_STARTUP_MODE'
 
   def Test(self):
@@ -4073,13 +4073,11 @@ class GetPowerOnSelfTest(TestMixins.GetMixin, OptionalParameterTestFixture):
   EXPECTED_FIELD = 'power_on_self_test'
   PROVIDES = ['power_on_self_test']
 
-
 class GetPowerOnSelfTestWithData(TestMixins.GetWithDataMixin,
                                  OptionalParameterTestFixture):
   """GET the power on self test setting with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'POWER_ON_SELF_TEST'
-
 
 class SetPowerOnSelfTest(TestMixins.SetBoolMixin,
                          OptionalParameterTestFixture):
@@ -4091,7 +4089,6 @@ class SetPowerOnSelfTest(TestMixins.SetBoolMixin,
 
   def OldValue(self):
     return self.Property('power_on_self_test')
-
 
 class SetPowerOnSelfTestWithNoData(TestMixins.SetWithNoDataMixin,
                                    OptionalParameterTestFixture):
@@ -4222,6 +4219,61 @@ class AllSubDevicesGetDimmerInfo(TestMixins.AllSubDevicesGetMixin,
   """Send a Get DIMMER_INFO to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DIMMER_INFO'
+
+# PRESET_INFO
+#------------------------------------------------------------------------------
+class GetPresetInfo(TestMixins.GetMixin,
+                    OptionalParameterTestFixture):
+  """Get preset info."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'PRESET_INFO'
+  PROVIDES = ['preset_info']
+
+  def Test(self):
+    self.AddIfGetSupported(self.AckGetResult())
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
+      self.SetProperty('preset_info', None)
+      return
+
+    self.SetProperty('preset_info', fields)
+
+class GetPresetInfoWithData(TestMixins.GetWithDataMixin,
+                            OptionalParameterTestFixture):
+  """GET preset info with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PRESET_INFO'
+
+class SetPresetInfo(ResponderTestFixture, DeviceInfoTest):
+  """SET preset info."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PRESET_INFO'
+
+  def Test(self):
+    self.AddExpectedResults(TestMixins.UnsupportedSetNacks(self.pid))
+    self.SendRawSet(ROOT_DEVICE, self.pid)
+
+class AllSubDevicesGetPresetInfo(ResponderTestFixture):
+  """Send a Get Preset Info to ALL_SUB_DEVICES."""
+  CATEGORY = TestCategory.SUB_DEVICES
+  PID = 'PRESET_INFO'
+
+  def Test(self):
+    self.AddExpectedResults(
+        self.NackGetResult(RDMNack.NR_SUB_DEVICE_OUT_OF_RANGE))
+    self.SendGet(PidStore.ALL_SUB_DEVICES, self.pid)
+
+# PRESET_STATUS
+#------------------------------------------------------------------------------
+
+class GetPresetStatusWithNoData(TestMixins.GetWithNoDataMixin,
+                                OptionalParameterTestFixture):
+  """Get the preset status with no preset number specified."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PRESET_STATUS'
+
 
 # PRESET_MERGE_MODE
 #------------------------------------------------------------------------------
