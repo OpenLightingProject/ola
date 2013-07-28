@@ -4316,6 +4316,15 @@ class GetPresetStatusWithNoData(TestMixins.GetWithNoDataMixin,
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PRESET_STATUS'
 
+class AllSubDevicesGetPresetStatus(ResponderTestFixture):
+  """Send a Get Preset Status to ALL_SUB_DEVICES."""
+  CATEGORY = TestCategory.SUB_DEVICES
+  PID = 'PRESET_STATUS'
+
+  def Test(self):
+    self.AddExpectedResults(
+        self.NackGetResult(RDMNack.NR_SUB_DEVICE_OUT_OF_RANGE))
+    self.SendGet(PidStore.ALL_SUB_DEVICES, self.pid, [1])
 
 # PRESET_MERGE_MODE
 #------------------------------------------------------------------------------
