@@ -4027,7 +4027,7 @@ class AllSubDevicesGetDmxBlockAddress(TestMixins.AllSubDevicesGetMixin,
 #------------------------------------------------------------------------------
 class GetDmxFailMode(OptionalParameterTestFixture):
   """GET the DMX fail mode setting."""
-  CATEGORY = TestCategory.CONTROL
+  CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_FAIL_MODE'
 
   def Test(self):
@@ -4047,7 +4047,7 @@ class AllSubDevicesGetDmxFailMode(TestMixins.AllSubDevicesGetMixin,
 #------------------------------------------------------------------------------
 class GetDmxStartupMode(OptionalParameterTestFixture):
   """GET the DMX startup mode setting."""
-  CATEGORY = TestCategory.CONTROL
+  CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_STARTUP_MODE'
 
   def Test(self):
@@ -4073,13 +4073,11 @@ class GetPowerOnSelfTest(TestMixins.GetMixin, OptionalParameterTestFixture):
   EXPECTED_FIELD = 'power_on_self_test'
   PROVIDES = ['power_on_self_test']
 
-
 class GetPowerOnSelfTestWithData(TestMixins.GetWithDataMixin,
                                  OptionalParameterTestFixture):
   """GET the power on self test setting with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'POWER_ON_SELF_TEST'
-
 
 class SetPowerOnSelfTest(TestMixins.SetBoolMixin,
                          OptionalParameterTestFixture):
@@ -4091,7 +4089,6 @@ class SetPowerOnSelfTest(TestMixins.SetBoolMixin,
 
   def OldValue(self):
     return self.Property('power_on_self_test')
-
 
 class SetPowerOnSelfTestWithNoData(TestMixins.SetWithNoDataMixin,
                                    OptionalParameterTestFixture):
@@ -4168,7 +4165,6 @@ class GetDimmerInfo(OptionalParameterTestFixture):
               'maximum_level_lower', 'maximum_level_upper',
               'number_curves_supported', 'levels_resolution',
               'split_levels_supported']
-  SPLIT_LEVEL_MASK = 0x01
 
   def Test(self):
     self.AddIfGetSupported(self.AckGetResult())
@@ -4197,12 +4193,7 @@ class GetDimmerInfo(OptionalParameterTestFixture):
     self.SetPropertyFromDict(fields, 'number_curves_supported')
     self.SetPropertyFromDict(fields, 'levels_resolution')
 
-    self.SetProperty('split_levels_supported',
-                     fields['split_levels_supported'] & self.SPLIT_LEVEL_MASK)
-
-    if fields['split_levels_supported'] & (~self.SPLIT_LEVEL_MASK):
-      self.AddWarning('split level field not 0 or 1, was %d' %
-                      fields['split_levels_supported'])
+    self.SetProperty('split_levels_supported', fields['split_levels_supported'])
 
 
 class GetDimmerInfoWithData(TestMixins.GetWithDataMixin,
@@ -4222,6 +4213,118 @@ class AllSubDevicesGetDimmerInfo(TestMixins.AllSubDevicesGetMixin,
   """Send a Get DIMMER_INFO to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DIMMER_INFO'
+
+# PRESET_INFO
+#------------------------------------------------------------------------------
+class GetPresetInfo(TestMixins.GetMixin,
+                    OptionalParameterTestFixture):
+  """Get preset info."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'PRESET_INFO'
+  PROVIDES = ['preset_info', 'max_scene_number']
+
+  def Test(self):
+    self.AddIfGetSupported(self.AckGetResult())
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
+      self.SetProperty('preset_info', None)
+      self.SetProperty('max_scene_number', None)
+      return
+
+    self.CheckBounds(fields, 'preset_fade_time')
+    self.CheckBounds(fields, 'preset_wait_time')
+    self.CheckBounds(fields, 'fail_delay_time')
+    self.CheckBounds(fields, 'fail_hold_time')
+    self.CheckBounds(fields, 'startup_delay_time')
+    self.CheckBounds(fields, 'startup_hold_time')
+
+    self.CrossCheckPidSupportIsZero('DMX_FAIL_MODE', fields,
+                                    'fail_infitite_hold_supported')
+    self.CrossCheckPidSupportIsZero('DMX_FAIL_MODE', fields,
+                                    'fail_infitite_delay_supported')
+    self.CrossCheckPidSupportIsZero('DMX_STARTUP_MODE', fields,
+                                    'startup_infitite_hold_supported')
+
+    self.CrossCheckPidSupportIsMax('DMX_FAIL_MODE', fields,
+                                   'fail_delay_time')
+    self.CrossCheckPidSupportIsMax('DMX_FAIL_MODE', fields,
+                                   'fail_hold_time')
+    self.CrossCheckPidSupportIsMax('DMX_STARTUP_MODE', fields,
+                                   'startup_delay_time')
+    self.CrossCheckPidSupportIsMax('DMX_STARTUP_MODE', fields,
+                                   'startup_hold_time')
+
+    self.SetProperty('preset_info', fields)
+    self.SetProperty('max_scene_number', fields['max_scene_number'])
+
+  def CrossCheckPidSupportIsZero(self, pid_name, fields, key):
+    if not (self.IsSupported(pid_name) or fields[key] == False):
+      self.AddWarning('%s not supported, but %s in PRESET_INFO is non-0' %
+                      (pid_name, key))
+
+  def CrossCheckPidSupportIsMax(self, pid_name, fields, key):
+    for key in ['min_%s' % key, 'max_%s' % key]:
+      if not (self.IsSupported(pid_name) or fields[key] == 0xffff):
+        self.AddWarning(
+            '%s not supported, but %s in PRESET_INFO is not 0xffff' %
+            (pid_name, key))
+
+  def IsSupported(self, pid_name):
+    pid = self.LookupPid(pid_name)
+    return pid.value in self.Property('supported_parameters')
+
+  def CheckBounds(self, fields, key):
+    min_key = 'min_%s' % key
+    max_key = 'max_%s' % key
+    if fields[min_key] > fields[max_key]:
+      self.AddAdvisory('%s (%d) > %s (%d)'
+                       % (min_key, fields[min_key], max_key, fields[max_key]))
+
+class GetPresetInfoWithData(TestMixins.GetWithDataMixin,
+                            OptionalParameterTestFixture):
+  """GET preset info with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PRESET_INFO'
+
+class SetPresetInfo(ResponderTestFixture, DeviceInfoTest):
+  """SET preset info."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PRESET_INFO'
+
+  def Test(self):
+    self.AddExpectedResults(TestMixins.UnsupportedSetNacks(self.pid))
+    self.SendRawSet(ROOT_DEVICE, self.pid)
+
+class AllSubDevicesGetPresetInfo(ResponderTestFixture):
+  """Send a Get Preset Info to ALL_SUB_DEVICES."""
+  CATEGORY = TestCategory.SUB_DEVICES
+  PID = 'PRESET_INFO'
+
+  def Test(self):
+    self.AddExpectedResults(
+        self.NackGetResult(RDMNack.NR_SUB_DEVICE_OUT_OF_RANGE))
+    self.SendGet(PidStore.ALL_SUB_DEVICES, self.pid)
+
+# PRESET_STATUS
+#------------------------------------------------------------------------------
+
+class GetPresetStatusWithNoData(TestMixins.GetWithNoDataMixin,
+                                OptionalParameterTestFixture):
+  """Get the preset status with no preset number specified."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PRESET_STATUS'
+
+class AllSubDevicesGetPresetStatus(ResponderTestFixture):
+  """Send a Get Preset Status to ALL_SUB_DEVICES."""
+  CATEGORY = TestCategory.SUB_DEVICES
+  PID = 'PRESET_STATUS'
+
+  def Test(self):
+    self.AddExpectedResults(
+        self.NackGetResult(RDMNack.NR_SUB_DEVICE_OUT_OF_RANGE))
+    self.SendGet(PidStore.ALL_SUB_DEVICES, self.pid, [1])
 
 # PRESET_MERGE_MODE
 #------------------------------------------------------------------------------
@@ -4246,6 +4349,86 @@ class GetPresetMergeMode(TestMixins.GetMixin,
 class GetPresetMergeModeWithData(TestMixins.GetWithDataMixin,
                                  OptionalParameterTestFixture):
   """GET preset merge mode with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PRESET_MERGE_MODE'
+
+class SetPresetMergeMode(OptionalParameterTestFixture):
+  """SET preset merge mode."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'PRESET_MERGE_MODE'
+  REQUIRES = ['preset_merge_mode']
+  PROVIDES = ['set_preset_merge_mode_supported']
+
+  def Test(self):
+    self.value = self.Property('preset_merge_mode')
+    if self.value is None:
+      self.value = 0
+
+    self.in_set = True
+    self.AddIfSetSupported([
+      self.AckSetResult(action=self.VerifySet),
+      self.NackSetResult(
+        RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
+        advisory='SET for %s returned unsupported command class' % self.PID),
+    ])
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.value])
+
+  def VerifySet(self):
+    self.AddExpectedResults(
+      self.AckGetResult(field_values={'merge_mode': self.value}))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def VerifyResult(self, response, fields):
+    if self.in_set:
+      self.SetProperty(self.PROVIDES[0], response.WasAcked())
+      self.in_set = False
+
+class SetAllPresetMergeModes(OptionalParameterTestFixture):
+  """SET preset merge mode to each of the defined values."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'PRESET_MERGE_MODE'
+  REQUIRES = ['preset_merge_mode', 'set_preset_merge_mode_supported']
+  MODES = [0, 1, 2, 3, 0xff]
+
+  def Test(self):
+    if not self.Property('set_preset_merge_mode_supported'):
+      self.SetNotRun('SET PRESET_MERGE_MODE not supported')
+      self.Stop()
+      return
+
+    self.old_value = self.Property('preset_merge_mode')
+    self.merge_modes = [m for m in self.MODES if m != self.old_value]
+    # PerformSet pop's the last value, so we add a dummy value to the end of
+    # the list.
+    self.merge_modes.append(self.old_value)
+    self.PerformSet()
+
+  def PerformSet(self):
+    self.merge_modes.pop()
+    if not self.merge_modes:
+      self.Stop()
+      return
+
+    self.AddIfSetSupported([
+      self.AckSetResult(action=self.VerifySet),
+      self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE, action=self.PerformSet),
+    ])
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.merge_modes[-1]])
+
+  def VerifySet(self):
+    self.AddExpectedResults(
+      self.AckGetResult(field_values={'merge_mode': self.merge_modes[-1]},
+                        action=self.PerformSet))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def ResetState(self):
+    self.AddExpectedResults(self.AckSetResult())
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.old_value])
+    self._wrapper.Run()
+
+class SetPresetMergeModeWithNoData(TestMixins.SetWithNoDataMixin,
+                                   OptionalParameterTestFixture):
+  """SET PRESET_MERGE_MODE without any data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PRESET_MERGE_MODE'
 
