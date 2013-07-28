@@ -4240,6 +4240,9 @@ class GetPresetInfo(TestMixins.GetMixin,
     self.CheckBounds(fields, 'startup_delay_time')
     self.CheckBounds(fields, 'startup_hold_time')
 
+    if fields['max_scene_number'] == 0xffff:
+      self.AddWarning('PRESET_INFO had max_scene_number of 0xffff')
+
     self.CrossCheckPidSupportIsZero('DMX_FAIL_MODE', fields,
                                     'fail_infitite_hold_supported')
     self.CrossCheckPidSupportIsZero('DMX_FAIL_MODE', fields,
@@ -4309,6 +4312,128 @@ class AllSubDevicesGetPresetInfo(ResponderTestFixture):
 
 # PRESET_STATUS
 #------------------------------------------------------------------------------
+
+class GetPresetStatusPresetOff(OptionalParameterTestFixture):
+  """Get the preset status for PRESET_PLAYBACK_OFF."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PRESET_STATUS'
+
+  def Test(self):
+    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    data = struct.pack('!H', 0)
+    self.SendRawGet(ROOT_DEVICE, self.pid, data)
+
+class GetPresetStatusPresetScene(OptionalParameterTestFixture):
+  """Get the preset status for PRESET_PLAYBACK_SCENE."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PRESET_STATUS'
+
+  def Test(self):
+    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    data = struct.pack('!H', 0xffff)
+    self.SendRawGet(ROOT_DEVICE, self.pid, data)
+
+class GetOutOfRangePresetStatus(OptionalParameterTestFixture):
+  """Get the preset status for max_scene + 1."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'PRESET_STATUS'
+  REQUIRES = ['max_scene_number']
+
+  def Test(self):
+    max_scene = self.Property('max_scene_number')
+    if max_scene is None or max_scene == 0xfffe:
+      self.SetNotRun('Device supports all scenes')
+      self.Stop()
+      return
+
+    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid, [max_scene + 1])
+
+class GetPresetStatus(OptionalParameterTestFixture):
+  """Get the preset status for all scenes."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'PRESET_STATUS'
+  REQUIRES = ['max_scene_number', 'preset_info']
+  PROVIDES = ['scene_writable_states']
+  NOT_PROGRAMMED = 0
+  PROGRAMMED = 1
+  READ_ONLY = 2
+
+  def Test(self):
+    self.scene_writable_states = {}
+    self.index = 0
+    self.max_scene = self.Property('max_scene_number')
+    # defaults if PRESET_INFO isn't supported
+    self.min_fade = 0
+    self.max_fade = 0xffff
+    self.min_wait = 0
+    self.max_wait = 0xffff
+    preset_info = self.Property('preset_info')
+    if preset_info is not None:
+      self.min_fade = preset_info['min_preset_fade_time']
+      self.max_fade = preset_info['max_preset_fade_time']
+      self.min_wait = preset_info['min_preset_wait_time']
+      self.max_wait = preset_info['max_preset_wait_time']
+
+    if self.max_scene is None or self.max_scene == 0:
+      self.SetNotRun('No scenes supported')
+      self.Stop()
+      return
+
+    self.FetchNextScene()
+
+  def FetchNextScene(self):
+    self.index += 1
+    if self.index > self.max_scene:
+      self.SetProperty('scene_writable_states', self.scene_writable_states)
+      self.Stop()
+      return
+
+    self.AddIfGetSupported(self.AckGetResult(action=self.FetchNextScene))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid, [self.index])
+
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
+      return
+
+    if fields['scene_number'] != self.index:
+      self.SetFailed('Scene number mismatch, expected %d, got %d' %
+                     (self.index, fields['scene_number']))
+      self.Stop()
+
+    if fields['programmed'] == self.NOT_PROGRAMMED:
+      # assume that NOT_PROGRAMMED means that it's writable.
+      self.scene_writable_states[self.index] = True
+      self.CheckFieldIsZero(fields, 'down_fade_time')
+      self.CheckFieldIsZero(fields, 'up_fade_time')
+      self.CheckFieldIsZero(fields, 'wait_time')
+      return
+    elif fields['programmed'] == self.READ_ONLY:
+      self.scene_writable_states[self.index] = False
+    else:
+      self.scene_writable_states[self.index] = True
+
+    for key in ['up_fade_time', 'down_fade_time']:
+      self.CheckFieldIsBetween(fields, key, self.min_fade, self.max_fade)
+
+    self.CheckFieldIsBetween(fields, 'wait_time', self.min_wait, self.max_wait)
+
+  def CheckFieldIsZero(self, fields, key):
+    if fields[key] != 0:
+      self.AddWarning(
+          '%s for scene %d was not zero, value is %d' %
+          (key, self.index, fields[key]))
+
+  def CheckFieldIsBetween(self, fields, key, min_value, max_value):
+    if fields[key] < min_value:
+          self.AddWarning(
+              '%s for scene %d (%d s) is less than the min of %s' %
+              (key, self.index, fields[key], min_value))
+    if fields[key] > max_value:
+          self.AddWarning(
+              '%s for scene %d (%d s) is more than the min of %s' %
+              (key, self.index, fields[key], max_value))
+
 
 class GetPresetStatusWithNoData(TestMixins.GetWithNoDataMixin,
                                 OptionalParameterTestFixture):
