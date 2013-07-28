@@ -705,7 +705,7 @@ const RDMResponse *AdvancedDimmerResponder::GetPresetStatus(
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
-  if (arg == 0 || arg >= m_presets.size()) {
+  if (arg == 0 || arg > m_presets.size()) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
@@ -736,7 +736,7 @@ const RDMResponse *AdvancedDimmerResponder::SetPresetStatus(
 
   uint16_t scene = NetworkToHost(args.scene);
 
-  if (scene == 0 || scene >= m_presets.size()) {
+  if (scene == 0 || scene > m_presets.size()) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
