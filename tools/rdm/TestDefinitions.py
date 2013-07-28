@@ -4343,6 +4343,86 @@ class GetPresetMergeModeWithData(TestMixins.GetWithDataMixin,
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PRESET_MERGE_MODE'
 
+class SetPresetMergeMode(OptionalParameterTestFixture):
+  """SET preset merge mode."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'PRESET_MERGE_MODE'
+  REQUIRES = ['preset_merge_mode']
+  PROVIDES = ['set_preset_merge_mode_supported']
+
+  def Test(self):
+    self.value = self.Property('preset_merge_mode')
+    if self.value is None:
+      self.value = 0
+
+    self.in_set = True
+    self.AddIfSetSupported([
+      self.AckSetResult(action=self.VerifySet),
+      self.NackSetResult(
+        RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
+        advisory='SET for %s returned unsupported command class' % self.PID),
+    ])
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.value])
+
+  def VerifySet(self):
+    self.AddExpectedResults(
+      self.AckGetResult(field_values={'merge_mode': self.value}))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def VerifyResult(self, response, fields):
+    if self.in_set:
+      self.SetProperty(self.PROVIDES[0], response.WasAcked())
+      self.in_set = False
+
+class SetAllPresetMergeModes(OptionalParameterTestFixture):
+  """SET preset merge mode to each of the defined values."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'PRESET_MERGE_MODE'
+  REQUIRES = ['preset_merge_mode', 'set_preset_merge_mode_supported']
+  MODES = [0, 1, 2, 3, 0xff]
+
+  def Test(self):
+    if not self.Property('set_preset_merge_mode_supported'):
+      self.SetNotRun('SET PRESET_MERGE_MODE not supported')
+      self.Stop()
+      return
+
+    self.old_value = self.Property('preset_merge_mode')
+    self.merge_modes = [m for m in self.MODES if m != self.old_value]
+    # PerformSet pop's the last value, so we add a dummy value to the end of
+    # the list.
+    self.merge_modes.append(self.old_value)
+    self.PerformSet()
+
+  def PerformSet(self):
+    self.merge_modes.pop()
+    if not self.merge_modes:
+      self.Stop()
+      return
+
+    self.AddIfSetSupported([
+      self.AckSetResult(action=self.VerifySet),
+      self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE, action=self.PerformSet),
+    ])
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.merge_modes[-1]])
+
+  def VerifySet(self):
+    self.AddExpectedResults(
+      self.AckGetResult(field_values={'merge_mode': self.merge_modes[-1]},
+                        action=self.PerformSet))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def ResetState(self):
+    self.AddExpectedResults(self.AckSetResult())
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.old_value])
+    self._wrapper.Run()
+
+class SetPresetMergeModeWithNoData(TestMixins.SetWithNoDataMixin,
+                                   OptionalParameterTestFixture):
+  """SET PRESET_MERGE_MODE without any data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PRESET_MERGE_MODE'
+
 class AllSubDevicesGetPresetMergeMode(TestMixins.AllSubDevicesGetMixin,
                                       ResponderTestFixture):
   """Send a Get PRESET_MERGE_MODE to ALL_SUB_DEVICES."""
