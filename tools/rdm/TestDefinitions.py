@@ -4487,6 +4487,47 @@ class SetOutOfRangePresetStatus(TestMixins.SetPresetStatusMixin,
     data = self.BuildPresetStatus(max_scene + 1)
     self.SendRawSet(ROOT_DEVICE, self.pid, data)
 
+class ClearPresetStatus(OptionalParameterTestFixture):
+  """Set the PRESET_STATUS with clear preset = 1"""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'PRESET_STATUS'
+  REQUIRES = ['scene_writable_states', 'preset_info']
+
+  def Test(self):
+    self.scene = None
+    scene_writable_states = self.Property('scene_writable_states')
+    if scene_writable_states is not None:
+      for scene_number, is_writeable in scene_writable_states.iteritems():
+        if is_writeable:
+          self.scene = scene_number
+          break
+
+    if self.scene is None:
+      self.SetNotRun('No writeable scenes found')
+      self.Stop()
+      return
+
+    preset_info = self.Property('preset_info')
+    fade_time = 0
+    wait_time = 0
+    if preset_info:
+      fade_time = preset_info['min_preset_fade_time']
+      wait_time = preset_info['min_preset_wait_time']
+
+    self.AddIfSetSupported(self.AckSetResult(action=self.VerifySet))
+    self.SendSet(ROOT_DEVICE, self.pid,
+                 [self.scene, fade_time, fade_time, wait_time, True])
+
+  def VerifySet(self):
+    self.AddExpectedResults(self.AckGetResult(field_values={
+      'up_fade_time': 0.0,
+      'wait_time': 0.0,
+      'scene_number': self.scene,
+      'programmed': 0,
+      'down_fade_time': 0.0,
+    }))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid, [self.scene])
+
 class AllSubDevicesGetPresetStatus(ResponderTestFixture):
   """Send a Get Preset Status to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
