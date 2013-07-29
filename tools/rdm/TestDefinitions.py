@@ -3956,6 +3956,19 @@ class GetDMXBlockAddress(OptionalParameterTestFixture):
         next_address += footprints[index]
     return True;
 
+class CheckBlockAddressConsistency(ResponderTestFixture):
+  """Check that the device has subdevices if DMX_BLOCK_ADDRESS is supported."""
+  CATEGORY = TestCategory.CONTROL
+  REQUIRES = ['sub_device_count', 'supported_parameters']
+
+  def Test(self):
+    pid = self.LookupPid('DMX_BLOCK_ADDRESS')
+    if (pid.value in self.Property('supported_parameters') and
+        self.Property('sub_device_count') == 0):
+      self.AddAdvisory('DMX_BLOCK_ADDRESS supported but sub device count as 0')
+    self.SetPassed()
+    self.Stop()
+
 class GetDMXBlockAddressWithData(TestMixins.GetWithDataMixin,
                                  OptionalParameterTestFixture):
   """Get the dmx block address with extra data."""
