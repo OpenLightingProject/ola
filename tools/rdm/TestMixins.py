@@ -24,6 +24,7 @@ test definitions.
 
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
+import struct
 from collections import deque
 from ola import PidStore
 from ola.DUBDecoder import DecodeResponse
@@ -493,6 +494,21 @@ class SetUndefinedSensorValues(object):
                            action=self._DoAction),
                            ])
     self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self._missing_sensors.pop(0)])
+
+# Preset Status mixins
+#------------------------------------------------------------------------------
+class SetPresetStatusMixin(object):
+  REQUIRES = ['preset_info']
+
+  def BuildPresetStatus(self, scene):
+    preset_info = self.Property('preset_info')
+    fade_time = 0
+    wait_time = 0
+    if preset_info:
+      fade_time = preset_info['min_preset_fade_time']
+      wait_time = preset_info['min_preset_wait_time']
+
+    return struct.pack('!HHHHB', scene, fade_time, fade_time, wait_time, 0)
 
 
 # Discovery Mixins

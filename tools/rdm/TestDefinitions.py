@@ -4441,6 +4441,52 @@ class GetPresetStatusWithNoData(TestMixins.GetWithNoDataMixin,
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'PRESET_STATUS'
 
+class SetPresetStatusWithNoData(TestMixins.SetWithNoDataMixin,
+                                OptionalParameterTestFixture):
+  """SET PRESET_STATUS without any data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PRESET_STATUS'
+
+class SetPresetStatusPresetOff(TestMixins.SetPresetStatusMixin,
+                               OptionalParameterTestFixture):
+  """Set the PRESET_STATUS for PRESET_PLAYBACK_OFF."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PRESET_STATUS'
+
+  def Test(self):
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    data = self.BuildPresetStatus(0)
+    self.SendRawSet(ROOT_DEVICE, self.pid, data)
+
+class SetPresetStatusPresetScene(TestMixins.SetPresetStatusMixin,
+                                 OptionalParameterTestFixture):
+  """Set the PRESET_STATUS for PRESET_PLAYBACK_SCENE."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PRESET_STATUS'
+
+  def Test(self):
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    data = self.BuildPresetStatus(0xffff)
+    self.SendRawSet(ROOT_DEVICE, self.pid, data)
+
+class SetOutOfRangePresetStatus(TestMixins.SetPresetStatusMixin,
+                                OptionalParameterTestFixture):
+  """Set the PRESET_STATUS for max_scene + 1."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'PRESET_STATUS'
+  REQUIRES = ['max_scene_number', 'preset_info']
+
+  def Test(self):
+    max_scene = self.Property('max_scene_number')
+    if max_scene is None or max_scene == 0xfffe:
+      self.SetNotRun('Device supports all scenes')
+      self.Stop()
+      return
+
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    data = self.BuildPresetStatus(max_scene + 1)
+    self.SendRawSet(ROOT_DEVICE, self.pid, data)
+
 class AllSubDevicesGetPresetStatus(ResponderTestFixture):
   """Send a Get Preset Status to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
