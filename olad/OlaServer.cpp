@@ -322,12 +322,13 @@ bool OlaServer::RunHousekeeping() {
   vector<Universe*>::iterator iter = universes.begin();
   const TimeStamp *now = m_ss->WakeUpTime();
   for (; iter != universes.end(); ++iter) {
-    if ((*iter)->RDMDiscoveryInterval().Seconds() &&
+    (*iter)->CleanStaleSourceClients();
+    if ((*iter)->IsActive() &&
+        (*iter)->RDMDiscoveryInterval().Seconds() &&
         *now - (*iter)->LastRDMDiscovery() > (*iter)->RDMDiscoveryInterval()) {
       // run incremental discovery
       (*iter)->RunRDMDiscovery(NULL, false);
     }
-    (*iter)->CleanStaleSourceClients();
   }
   return true;
 }

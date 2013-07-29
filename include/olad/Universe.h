@@ -37,11 +37,11 @@
 
 namespace ola {
 
+using ola::rdm::RDMDiscoveryCallback;
 using ola::rdm::UID;
+using std::map;
 using std::pair;
 using std::set;
-using std::map;
-using ola::rdm::RDMDiscoveryCallback;
 
 class Client;
 class InputPort;
@@ -163,6 +163,8 @@ class Universe: public ola::rdm::RDMControllerInterface {
       vector<string> packets;
     } broadcast_request_tracker;
 
+    typedef map<Client*, bool> SourceClientMap;
+
     string m_universe_name;
     unsigned int m_universe_id;
     string m_universe_id_str;
@@ -171,8 +173,11 @@ class Universe: public ola::rdm::RDMControllerInterface {
     vector<InputPort*> m_input_ports;
     vector<OutputPort*> m_output_ports;
     set<Client*> m_sink_clients;  // clients that require updates
-    map<Client*, bool> m_source_clients;  // track what clients we have
-                                         //    and which ones are active
+    /**
+     * Tracks current source clients and whether or not they are stale.
+     * true == stale and can be removed, false == active is to be kept
+     */
+    SourceClientMap m_source_clients;
     class UniverseStore *m_universe_store;
     DmxBuffer m_buffer;
     ExportMap *m_export_map;
@@ -201,6 +206,9 @@ class Universe: public ola::rdm::RDMControllerInterface {
                                OutputPort *output_port,
                                const ola::rdm::UIDSet &uids);
     void DiscoveryComplete(RDMDiscoveryCallback *on_complete);
+
+    void SafeIncrement(const string &name);
+    void SafeDecrement(const string &name);
 
     template<class PortClass>
     bool GenericAddPort(PortClass *port,
