@@ -23,10 +23,8 @@
 
 #include <memory>
 #include <string>
-#include "ola/DmxBuffer.h"
 #include "ola/network/Socket.h"
 #include "olad/Device.h"
-#include "plugins/stageprofi/StageProfiWidget.h"
 
 namespace ola {
 
@@ -43,6 +41,7 @@ class StageProfiDevice: public Device {
     StageProfiDevice(AbstractPlugin *owner,
                      const string &name,
                      const string &dev_path);
+    ~StageProfiDevice();
 
     // I don't think this get us full stickiness because USB devices may
     // appear as different devices.
@@ -55,7 +54,7 @@ class StageProfiDevice: public Device {
 
   private:
     string m_path;
-    auto_ptr<StageProfiWidget> m_widget;
+    auto_ptr<class StageProfiWidget> m_widget;
 };
 }  // namespace stageprofi
 }  // namespace plugin

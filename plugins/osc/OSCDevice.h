@@ -27,7 +27,6 @@
 #include "ola/io/SelectServerInterface.h"
 #include "ola/network/SocketAddress.h"
 #include "olad/Device.h"
-#include "plugins/osc/OSCNode.h"
 #include "plugins/osc/OSCTarget.h"
 
 namespace ola {
@@ -55,7 +54,7 @@ class OSCDevice: public Device {
     PluginAdaptor *m_plugin_adaptor;
     const vector<string> m_port_addresses;
     const vector<vector<OSCTarget> > m_port_targets;
-    std::auto_ptr<OSCNode> m_osc_node;
+    std::auto_ptr<class OSCNode> m_osc_node;
 
     bool StartHook();
 

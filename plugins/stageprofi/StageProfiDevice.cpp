@@ -47,9 +47,9 @@ using ola::AbstractPlugin;
  */
 StageProfiDevice::StageProfiDevice(AbstractPlugin *owner,
                                    const string &name,
-                                   const string &dev_path):
-  Device(owner, name),
-  m_path(dev_path) {
+                                   const string &dev_path)
+    : Device(owner, name),
+      m_path(dev_path) {
     if (dev_path.at(0) == '/') {
       m_widget.reset(new StageProfiWidgetUsb());
     } else {
@@ -57,6 +57,13 @@ StageProfiDevice::StageProfiDevice(AbstractPlugin *owner,
     }
 }
 
+
+/*
+ * Destroy this device
+*/
+StageProfiDevice::~StageProfiDevice() {
+  // Stub destructor for compatibility with StageProfiWidget subclasses
+}
 
 /*
  * Start this device
