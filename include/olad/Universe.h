@@ -199,7 +199,6 @@ class Universe: public ola::rdm::RDMControllerInterface {
     bool UpdateDependants();
     void UpdateName();
     void UpdateMode();
-    bool SetSourceClientLively(Client* client);
     void HTPMergeSources(const vector<DmxSource> &sources);
     bool MergeAll(const InputPort *port, const Client *client);
     void PortDiscoveryComplete(BaseCallback0<void> *on_complete,

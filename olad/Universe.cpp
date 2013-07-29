@@ -259,7 +259,7 @@ void Universe::OutputPorts(vector<OutputPort*> *ports) {
 bool Universe::AddSourceClient(Client *client) {
   // Check to see if it exists already. It doesn't make sense to have multiple
   //  clients
-  if (STLReplace(&m_source_clients, client, true))
+  if (STLReplace(&m_source_clients, client, false))
     return true;
 
   OLA_INFO << "Added source client, " << client << " to universe "
@@ -396,20 +396,6 @@ bool Universe::SourceClientDataChanged(Client *client) {
   return true;
 }
 
-
-/*
- * @brief Set client as not stale
- * @return true on success, and false otherwise
- */
-bool Universe::SetSourceClientLively(Client* client) {
-  bool* stale = NULL;
-  stale = STLFind(&m_source_clients, client);
-  if (stale) {
-    *stale = false;
-    return true;
-  }
-  return false;
-}
 
 /**
  * @brief Clean old source clients
