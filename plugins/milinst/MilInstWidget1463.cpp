@@ -40,6 +40,10 @@ bool MilInstWidget1463::Connect(const std::string &path) {
   OLA_DEBUG << "Connecting to " << path;
 
   int fd = ConnectToWidget(path);
+
+  if (fd < 0)
+    return false;
+
   m_socket = new ola::io::DeviceDescriptor(fd);
 
   OLA_DEBUG << "Connected to " << path;

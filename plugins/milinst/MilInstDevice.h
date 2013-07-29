@@ -41,6 +41,7 @@ class MilInstDevice: public Device {
     MilInstDevice(AbstractPlugin *owner,
                   const string &name,
                   const string &dev_path);
+    ~MilInstDevice();
 
     string DeviceId() const { return m_path; }
     ola::io::ConnectedDescriptor *GetSocket() const;

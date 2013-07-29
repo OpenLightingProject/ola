@@ -55,6 +55,14 @@ MilInstDevice::MilInstDevice(AbstractPlugin *owner,
 
 
 /*
+ * Destroy this device
+ */
+MilInstDevice::~MilInstDevice() {
+  // Stub destructor for compatibility with MilInstWidget subclasses
+}
+
+
+/*
  * Start this device
  */
 bool MilInstDevice::StartHook() {
