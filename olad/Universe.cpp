@@ -31,23 +31,23 @@
  */
 
 #include <algorithm>
+#include <iterator>
 #include <map>
 #include <set>
 #include <string>
-#include <vector>
-#include <iterator>
 #include <utility>
+#include <vector>
 
 #include "ola/base/Array.h"
 #include "ola/Logging.h"
+#include "ola/MultiCallback.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/stl/STLUtils.h"
-#include "ola/MultiCallback.h"
 #include "olad/Client.h"
-#include "olad/UniverseStore.h"
 #include "olad/Port.h"
 #include "olad/Universe.h"
+#include "olad/UniverseStore.h"
 
 namespace ola {
 
