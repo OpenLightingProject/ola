@@ -4195,13 +4195,11 @@ class GetDimmerInfo(OptionalParameterTestFixture):
 
     self.SetProperty('split_levels_supported', fields['split_levels_supported'])
 
-
 class GetDimmerInfoWithData(TestMixins.GetWithDataMixin,
                             OptionalParameterTestFixture):
   """GET dimmer info with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DIMMER_INFO'
-
 
 class SetDimmerInfo(TestMixins.UnsupportedSetMixin, ResponderTestFixture):
   """SET dimmer info."""
@@ -4525,6 +4523,46 @@ class ClearReadOnlyPresetStatus(OptionalParameterTestFixture):
     self.SendSet(ROOT_DEVICE, self.pid,
                  [self.scene, fade_time, fade_time, wait_time, True])
 
+class SetPresetStatus(OptionalParameterTestFixture):
+  """Set the PRESET_STATUS."""
+  CATEGORY = TestCategory.CONTROL
+  PID = 'PRESET_STATUS'
+  REQUIRES = ['scene_writable_states', 'preset_info']
+
+  def Test(self):
+    self.scene = None
+    scene_writable_states = self.Property('scene_writable_states')
+    if scene_writable_states is not None:
+      for scene_number, is_writeable in scene_writable_states.iteritems():
+        if is_writeable:
+          self.scene = scene_number
+          break
+
+    if self.scene is None:
+      self.SetNotRun('No writeable scenes found')
+      self.Stop()
+      return
+
+    self.max_fade = 0xffff
+    self.max_wait = 0xffff
+    preset_info = self.Property('preset_info')
+    if preset_info is not None:
+      self.max_fade = round(preset_info['max_preset_fade_time'], 1)
+      self.max_wait = round(preset_info['max_preset_wait_time'], 1)
+
+    self.AddIfSetSupported(self.AckSetResult(action=self.VerifySet))
+    self.SendSet(ROOT_DEVICE, self.pid,
+                 [self.scene, self.max_fade, self.max_fade, self.max_wait,
+                   False])
+
+  def VerifySet(self):
+    self.AddExpectedResults(self.AckGetResult(field_values={
+      'up_fade_time': self.max_fade,
+      'wait_time': self.max_wait,
+      'scene_number': self.scene,
+      'down_fade_time': self.max_fade,
+    }))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid, [self.scene])
 
 class ClearPresetStatus(OptionalParameterTestFixture):
   """Set the PRESET_STATUS with clear preset = 1"""
