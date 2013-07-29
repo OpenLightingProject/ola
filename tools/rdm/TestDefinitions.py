@@ -4487,6 +4487,45 @@ class SetOutOfRangePresetStatus(TestMixins.SetPresetStatusMixin,
     data = self.BuildPresetStatus(max_scene + 1)
     self.SendRawSet(ROOT_DEVICE, self.pid, data)
 
+class ClearReadOnlyPresetStatus(OptionalParameterTestFixture):
+  """Attempt to clear a read only preset."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'PRESET_STATUS'
+  REQUIRES = ['scene_writable_states', 'preset_info']
+
+  def Test(self):
+    self.scene = None
+    scene_writable_states = self.Property('scene_writable_states')
+    if scene_writable_states is not None:
+      for scene_number, is_writeable in scene_writable_states.iteritems():
+        if not is_writeable:
+          self.scene = scene_number
+          break
+
+    if self.scene is None:
+      self.SetNotRun('No read-only scenes found')
+      self.Stop()
+      return
+
+    preset_info = self.Property('preset_info')
+    fade_time = 0
+    wait_time = 0
+    if preset_info:
+      fade_time = preset_info['min_preset_fade_time']
+      wait_time = preset_info['min_preset_wait_time']
+
+    # don't use AddIfSetSupported here, because we don't want to log an
+    # advisory for NR_WRITE_PROTECT
+    if self.PidSupported():
+      results = self.NackSetResult(RDMNack.NR_WRITE_PROTECT)
+    else:
+      results = self.NackSetResult(RDMNack.NR_UNKNOWN_PID)
+    self.AddExpectedResults(results)
+
+    self.SendSet(ROOT_DEVICE, self.pid,
+                 [self.scene, fade_time, fade_time, wait_time, True])
+
+
 class ClearPresetStatus(OptionalParameterTestFixture):
   """Set the PRESET_STATUS with clear preset = 1"""
   CATEGORY = TestCategory.CONTROL
@@ -4507,16 +4546,9 @@ class ClearPresetStatus(OptionalParameterTestFixture):
       self.Stop()
       return
 
-    preset_info = self.Property('preset_info')
-    fade_time = 0
-    wait_time = 0
-    if preset_info:
-      fade_time = preset_info['min_preset_fade_time']
-      wait_time = preset_info['min_preset_wait_time']
-
     self.AddIfSetSupported(self.AckSetResult(action=self.VerifySet))
-    self.SendSet(ROOT_DEVICE, self.pid,
-                 [self.scene, fade_time, fade_time, wait_time, True])
+    # we use made up values here to check that the device doesn't use them
+    self.SendSet(ROOT_DEVICE, self.pid, [self.scene, 10, 10, 20, True])
 
   def VerifySet(self):
     self.AddExpectedResults(self.AckGetResult(field_values={
