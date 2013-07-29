@@ -46,9 +46,10 @@ using ola::AbstractPlugin;
  */
 MilInstDevice::MilInstDevice(AbstractPlugin *owner,
                              const string &name,
-                             const string &dev_path):
-  Device(owner, name),
-  m_path(dev_path) {
+                             const string &dev_path)
+    : Device(owner, name),
+      m_path(dev_path) {
+  // Currently always create a 1-463 interface pending future options
   m_widget.reset(new MilInstWidget1463());
 }
 

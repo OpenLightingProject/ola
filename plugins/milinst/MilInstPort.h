@@ -34,8 +34,8 @@ namespace milinst {
 class MilInstOutputPort: public BasicOutputPort {
   public:
     MilInstOutputPort(MilInstDevice *parent,
-                         unsigned int id,
-                         MilInstWidget *widget)
+                      unsigned int id,
+                      MilInstWidget *widget)
         : BasicOutputPort(parent, id),
           m_widget(widget) {}
 

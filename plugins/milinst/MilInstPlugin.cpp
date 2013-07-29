@@ -46,8 +46,6 @@ const char MilInstPlugin::DEVICE_KEY[] = "device";
 
 /*
  * Start the plugin
- *
- * Multiple devices now supported
  */
 bool MilInstPlugin::StartHook() {
   vector<string> device_names;
@@ -149,7 +147,7 @@ bool MilInstPlugin::SetDefaultPreferences() {
   bool save = false;
 
   save |= m_preferences->SetDefaultValue(DEVICE_KEY, StringValidator(),
-                                          MILINST_DEVICE_PATH);
+                                         MILINST_DEVICE_PATH);
 
   if (save)
     m_preferences->Save();

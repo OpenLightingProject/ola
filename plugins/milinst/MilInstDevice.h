@@ -23,10 +23,8 @@
 
 #include <memory>
 #include <string>
-#include "ola/DmxBuffer.h"
 #include "ola/network/Socket.h"
 #include "olad/Device.h"
-#include "plugins/milinst/MilInstWidget.h"
 
 namespace ola {
 
@@ -53,7 +51,7 @@ class MilInstDevice: public Device {
 
   private:
     string m_path;
-    auto_ptr<MilInstWidget> m_widget;
+    auto_ptr<class MilInstWidget> m_widget;
 };
 }  // namespace milinst
 }  // namespace plugin

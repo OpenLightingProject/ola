@@ -18,8 +18,10 @@
  * Copyright (C) 2013 Peter Newman
  */
 
-#include <string.h>
+#include <fcntl.h>
+#include <termios.h>
 #include <algorithm>
+#include <string>
 #include "ola/Callback.h"
 #include "ola/Logging.h"
 #include "plugins/milinst/MilInstWidget.h"
@@ -38,6 +40,29 @@ MilInstWidget::~MilInstWidget() {
   }
 }
 
+/*
+ * Connect to the widget
+ */
+int MilInstWidget::ConnectToWidget(const std::string &path, speed_t speed) {
+  struct termios newtio;
+
+  int fd = open(path.data(), O_RDWR | O_NONBLOCK | O_NOCTTY);
+
+  if (fd == -1)
+    return false;
+
+  memset(&newtio, 0, sizeof(newtio));  // clear struct for new port settings
+  tcgetattr(fd, &newtio);
+  newtio.c_cflag |= (CLOCAL | CREAD);  // Enable read
+  newtio.c_cflag |= CS8;  // 8n1
+  newtio.c_cflag &= ~CRTSCTS;  // No flow control
+  cfsetispeed(&newtio, speed);
+  cfsetospeed(&newtio, speed);
+  tcsetattr(fd, TCSANOW, &newtio);
+
+  return fd;
+}
+
 
 /*
  * Disconnect from the widget
@@ -45,12 +70,6 @@ MilInstWidget::~MilInstWidget() {
 int MilInstWidget::Disconnect() {
   m_socket->Close();
   return 0;
-}
-
-
-void MilInstWidget::Timeout() {
-  if (m_ss)
-    m_ss->Terminate();
 }
 }  // namespace milinst
 }  // namespace plugin

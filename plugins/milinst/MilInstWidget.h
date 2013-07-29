@@ -21,6 +21,8 @@
 #ifndef PLUGINS_MILINST_MILINSTWIDGET_H_
 #define PLUGINS_MILINST_MILINSTWIDGET_H_
 
+#include <fcntl.h>
+#include <termios.h>
 #include <string>
 #include "ola/io/SelectServer.h"
 #include "ola/network/Socket.h"
@@ -35,6 +37,8 @@ using ola::io::SelectServer;
 
 class MilInstWidget {
   public:
+    static int ConnectToWidget(const std::string &path, speed_t speed = B9600);
+
     MilInstWidget():
       m_enabled(false),
       m_socket(NULL),
@@ -48,7 +52,6 @@ class MilInstWidget {
     string GetPath() { return m_path; }
     virtual bool SendDmx(const DmxBuffer &buffer) const = 0;
     virtual bool DetectDevice() = 0;
-    void Timeout();
 
   protected:
     virtual int SetChannel(unsigned int chan, uint8_t val) const = 0;
