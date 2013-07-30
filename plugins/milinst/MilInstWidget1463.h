@@ -38,7 +38,7 @@ class MilInstWidget1463: public MilInstWidget {
     bool SendDmx(const DmxBuffer &buffer) const;
   protected:
     int SetChannel(unsigned int chan, uint8_t val) const;
-    int Send112(unsigned int start, const uint8_t *buf, unsigned int len) const;
+    int Send112(const uint8_t *buf, unsigned int len) const;
 
     // This interface can only transmit 112 channels
     enum { DMX_MAX_TRANSMIT_CHANNELS = 112 };

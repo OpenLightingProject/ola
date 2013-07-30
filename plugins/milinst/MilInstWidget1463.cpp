@@ -66,21 +66,13 @@ bool MilInstWidget1463::DetectDevice() {
  * Send a DMX msg.
   */
 bool MilInstWidget1463::SendDmx(const DmxBuffer &buffer) const {
-  // TODO(Peter): Make this use Send112 instead
-  OLA_DEBUG << "Sending DMX";
-  int bytes_sent;
-  for (int n = 1; n <= DMX_MAX_TRANSMIT_CHANNELS; n++) {
-    bytes_sent = SetChannel(n, buffer.Get(n - 1));
-    OLA_DEBUG << "Setting " << n << " to " <<
-    static_cast<int>(buffer.Get(n - 1)) << ", sent " << bytes_sent << " bytes";
-  }
-  // unsigned int index = 0;
-  // while (index < buffer.Size()) {
-  //   unsigned int size = std::min((unsigned int) DMX_MAX_TRANSMIT,
-  //                                buffer.Size() - index);
-  //   Send112(index, buffer.GetRaw() + index, size);
-  //   index += size;
-  // }
+  // TODO(Peter): Probably add offset in here to send higher channels shifted
+  // down
+  unsigned int size = std::min((unsigned int) DMX_MAX_TRANSMIT_CHANNELS,
+                               buffer.Size());
+  int bytes_sent = Send112(buffer.GetRaw(), size);
+  OLA_DEBUG << "Sending DMX, sent " << bytes_sent << " bytes";
+  // Should this confirm we've sent more than 0 bytes and return false if not?
   return true;
 }
 
@@ -106,15 +98,17 @@ int MilInstWidget1463::SetChannel(unsigned int chan, uint8_t val) const {
  * @param buf a pointer to the data
  * @param len the length of the data
  */
-int MilInstWidget1463::Send112(unsigned int start, const uint8_t *buf,
-                              unsigned int length) const {
-  // TODO(Peter): Make this work!
-  unsigned int len = std::min((unsigned int) DMX_MAX_TRANSMIT_CHANNELS, length);
-  uint8_t msg[DMX_MAX_TRANSMIT_CHANNELS * 2];
+int MilInstWidget1463::Send112(const uint8_t *buf, unsigned int length) const {
+  unsigned int channels = std::min((unsigned int) DMX_MAX_TRANSMIT_CHANNELS,
+                                   length);
+  uint8_t msg[channels * 2];
 
-  msg[0] = start + len;
-  memcpy(msg + DMX_MAX_TRANSMIT_CHANNELS, buf, len);
-  return m_socket->Send(msg, len + DMX_MAX_TRANSMIT_CHANNELS);
+  for (unsigned int i = 0; i <= channels; i++) {
+    msg[i * 2] = i + 1;
+    msg[(i * 2) + 1] = buf[i];
+    OLA_DEBUG << "Setting " << (i + 1) << " to " << static_cast<int>(buf[i]);
+  }
+  return m_socket->Send(msg, (channels * 2));
 }
 }  // namespace milinst
 }  // namespace plugin
