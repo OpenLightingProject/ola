@@ -50,7 +50,7 @@ MilInstDevice::MilInstDevice(AbstractPlugin *owner,
     : Device(owner, name),
       m_path(dev_path) {
   // Currently always create a 1-463 interface pending future options
-  m_widget.reset(new MilInstWidget1463());
+  m_widget.reset(new MilInstWidget1463(m_path));
 }
 
 
@@ -69,7 +69,7 @@ bool MilInstDevice::StartHook() {
   if (!m_widget.get())
     return false;
 
-  if (!m_widget->Connect(m_path)) {
+  if (!m_widget->Connect()) {
     OLA_WARN << "Failed to connect to " << m_path;
     return false;
   }

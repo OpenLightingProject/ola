@@ -30,10 +30,10 @@ namespace milinst {
 
 class MilInstWidget1463: public MilInstWidget {
   public:
-    MilInstWidget1463(): MilInstWidget() {}
+    explicit MilInstWidget1463(const std::string &path): MilInstWidget(path) {}
     ~MilInstWidget1463() {}
 
-    bool Connect(const std::string &path);
+    bool Connect();
     bool DetectDevice();
     bool SendDmx(const DmxBuffer &buffer) const;
   protected:

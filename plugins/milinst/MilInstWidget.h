@@ -39,14 +39,15 @@ class MilInstWidget {
   public:
     static int ConnectToWidget(const std::string &path, speed_t speed = B9600);
 
-    MilInstWidget():
+    explicit MilInstWidget(const std::string &path):
       m_enabled(false),
+      m_path(path),
       m_socket(NULL),
       m_ss(NULL) {}
     virtual ~MilInstWidget();
 
     // these methods are for communicating with the device
-    virtual bool Connect(const string &path) = 0;
+    virtual bool Connect() = 0;
     int Disconnect();
     ConnectedDescriptor *GetSocket() { return m_socket; }
     string GetPath() { return m_path; }
@@ -58,7 +59,7 @@ class MilInstWidget {
 
     // instance variables
     bool m_enabled;
-    string m_path;
+    const string m_path;
     ConnectedDescriptor *m_socket;
     SelectServer *m_ss;
 };

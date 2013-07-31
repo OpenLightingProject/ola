@@ -20,7 +20,6 @@
 
 #include <string.h>
 #include "plugins/milinst/MilInstPort.h"
-#include "plugins/milinst/MilInstDevice.h"
 
 namespace ola {
 namespace plugin {

@@ -155,8 +155,7 @@ void DynamicPluginLoader::PopulatePlugins() {
 
 #ifdef USE_MILINST
   m_plugins.push_back(
-      new ola::plugin::milinst::MilInstPlugin(
-          m_plugin_adaptor));
+      new ola::plugin::milinst::MilInstPlugin(m_plugin_adaptor));
 #endif
 
 #ifdef USE_OPENDMX

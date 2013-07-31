@@ -36,18 +36,17 @@ namespace milinst {
 /*
  * Connect to the widget
  */
-bool MilInstWidget1463::Connect(const std::string &path) {
-  OLA_DEBUG << "Connecting to " << path;
+bool MilInstWidget1463::Connect() {
+  OLA_DEBUG << "Connecting to " << m_path;
 
-  int fd = ConnectToWidget(path);
+  int fd = ConnectToWidget(m_path);
 
   if (fd < 0)
     return false;
 
   m_socket = new ola::io::DeviceDescriptor(fd);
 
-  OLA_DEBUG << "Connected to " << path;
-  m_path = path;
+  OLA_DEBUG << "Connected to " << m_path;
   return true;
 }
 
