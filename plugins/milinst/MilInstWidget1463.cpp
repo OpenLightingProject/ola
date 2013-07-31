@@ -61,7 +61,7 @@ bool MilInstWidget1463::DetectDevice() {
 bool MilInstWidget1463::SendDmx(const DmxBuffer &buffer) const {
   // TODO(Peter): Probably add offset in here to send higher channels shifted
   // down
-  int bytes_sent = Send112(buffer.GetRaw(), buffer.Size());
+  int bytes_sent = Send112(buffer);
   OLA_DEBUG << "Sending DMX, sent " << bytes_sent << " bytes";
   // Should this confirm we've sent more than 0 bytes and return false if not?
   return true;
@@ -85,19 +85,18 @@ int MilInstWidget1463::SetChannel(unsigned int chan, uint8_t val) const {
 
 /*
  * Send 112 channels worth of data
- * @param start the start channel for the data
- * @param buf a pointer to the data
- * @param len the length of the data
+ * @param buf a DmxBuffer with the data
  */
-int MilInstWidget1463::Send112(const uint8_t *buf, unsigned int length) const {
+int MilInstWidget1463::Send112(const DmxBuffer &buffer) const {
   unsigned int channels = std::min((unsigned int) DMX_MAX_TRANSMIT_CHANNELS,
-                                   length);
+                                   buffer.Size());
   uint8_t msg[channels * 2];
 
   for (unsigned int i = 0; i <= channels; i++) {
     msg[i * 2] = i + 1;
-    msg[(i * 2) + 1] = buf[i];
-    OLA_DEBUG << "Setting " << (i + 1) << " to " << static_cast<int>(buf[i]);
+    msg[(i * 2) + 1] = buffer.Get(i);
+    OLA_DEBUG << "Setting " << (i + 1) << " to " <<
+        static_cast<int>(buffer.Get(i));
   }
   return m_socket->Send(msg, (channels * 2));
 }
