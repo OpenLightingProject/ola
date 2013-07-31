@@ -377,7 +377,10 @@ class IntAtom(FixedSizeAtom):
 
 
   def _AccountForMultiplier(self, value):
-    return value * (10 ** self._multiplier)
+    new_value = value * (10 ** self._multiplier)
+    if self._multiplier < 0:
+      new_value = round(new_value, abs(self._multiplier))
+    return new_value
 
 
 class Int8(IntAtom):
