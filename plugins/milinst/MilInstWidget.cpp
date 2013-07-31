@@ -18,12 +18,8 @@
  * Copyright (C) 2013 Peter Newman
  */
 
-#include <fcntl.h>
-#include <termios.h>
-#include <algorithm>
 #include <string>
-#include "ola/Callback.h"
-#include "ola/Logging.h"
+
 #include "plugins/milinst/MilInstWidget.h"
 
 namespace ola {

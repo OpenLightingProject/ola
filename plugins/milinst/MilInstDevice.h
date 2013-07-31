@@ -23,7 +23,7 @@
 
 #include <memory>
 #include <string>
-#include "ola/network/Socket.h"
+
 #include "olad/Device.h"
 
 namespace ola {

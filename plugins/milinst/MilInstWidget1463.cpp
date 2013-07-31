@@ -18,15 +18,9 @@
  * Copyright (C) 2013 Peter Newman
  */
 
-#include <errno.h>
-#include <string.h>
 #include <algorithm>
-#include <string>
 
-#include "ola/Callback.h"
 #include "ola/Logging.h"
-#include "ola/io/Descriptor.h"
-#include "plugins/milinst/MilInstWidget.h"
 #include "plugins/milinst/MilInstWidget1463.h"
 
 namespace ola {
@@ -67,9 +61,7 @@ bool MilInstWidget1463::DetectDevice() {
 bool MilInstWidget1463::SendDmx(const DmxBuffer &buffer) const {
   // TODO(Peter): Probably add offset in here to send higher channels shifted
   // down
-  unsigned int size = std::min((unsigned int) DMX_MAX_TRANSMIT_CHANNELS,
-                               buffer.Size());
-  int bytes_sent = Send112(buffer.GetRaw(), size);
+  int bytes_sent = Send112(buffer.GetRaw(), buffer.Size());
   OLA_DEBUG << "Sending DMX, sent " << bytes_sent << " bytes";
   // Should this confirm we've sent more than 0 bytes and return false if not?
   return true;

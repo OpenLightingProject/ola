@@ -22,8 +22,7 @@
 #define PLUGINS_MILINST_MILINSTPORT_H_
 
 #include <string>
-#include "ola/DmxBuffer.h"
-#include "olad/Port.h"
+
 #include "plugins/milinst/MilInstDevice.h"
 #include "plugins/milinst/MilInstWidget.h"
 

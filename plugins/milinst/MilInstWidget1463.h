@@ -22,6 +22,7 @@
 #define PLUGINS_MILINST_MILINSTWIDGET1463_H_
 
 #include <string>
+
 #include "plugins/milinst/MilInstWidget.h"
 
 namespace ola {

@@ -21,11 +21,10 @@
 #ifndef PLUGINS_MILINST_MILINSTPLUGIN_H_
 #define PLUGINS_MILINST_MILINSTPLUGIN_H_
 
-#include <vector>
 #include <string>
+#include <vector>
+
 #include "olad/Plugin.h"
-#include "ola/network/Socket.h"
-#include "ola/plugin_id.h"
 
 namespace ola {
 namespace plugin {

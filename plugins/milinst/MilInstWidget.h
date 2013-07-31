@@ -24,8 +24,8 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <string>
+
 #include "ola/io/SelectServer.h"
-#include "ola/network/Socket.h"
 #include "ola/DmxBuffer.h"
 
 namespace ola {

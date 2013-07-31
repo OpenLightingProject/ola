@@ -18,16 +18,9 @@
  * Copyright (C) 2013 Peter Newman
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/types.h>
 #include <string>
 
 #include "ola/Logging.h"
-#include "olad/Preferences.h"
-#include "olad/Universe.h"
-#include "plugins/milinst/MilInstDevice.h"
 #include "plugins/milinst/MilInstPort.h"
 #include "plugins/milinst/MilInstWidget1463.h"
 

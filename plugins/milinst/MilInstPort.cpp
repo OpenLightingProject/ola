@@ -18,7 +18,6 @@
  * Copyright (C) 2013 Peter Newman
  */
 
-#include <string.h>
 #include "plugins/milinst/MilInstPort.h"
 
 namespace ola {

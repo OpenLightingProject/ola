@@ -18,8 +18,6 @@
  * Copyright (C) 2013 Peter Newman
  */
 
-#include <stdlib.h>
-#include <stdio.h>
 #include <string>
 #include <vector>
 
