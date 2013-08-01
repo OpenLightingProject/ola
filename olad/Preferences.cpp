@@ -233,12 +233,7 @@ vector<string> MemoryPreferences::GetMultipleValue(const string &key) const {
  * @return if the key exists.
  */
 bool MemoryPreferences::HasKey(const string &key) const {
-  map<string, string>::const_iterator iter;
-  iter = m_pref_map.find(key);
-
-  if (iter != m_pref_map.end())
-    return true;
-  return false;
+  return STLContains(m_pref_map, key);
 }
 
 
