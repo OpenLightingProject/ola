@@ -37,7 +37,11 @@ using std::vector;
  */
 void SubDeviceDispatcher::AddSubDevice(uint16_t sub_device_number,
                                        RDMControllerInterface *device) {
-  STLReplace(&m_subdevices, sub_device_number, device);
+  if (sub_device_number != ROOT_RDM_DEVICE) {
+    STLReplace(&m_subdevices, sub_device_number, device);
+  } else {
+    OLA_WARN << "SubDeviceDispatcher does not accept Root Devices";
+  }
 }
 
 /*
@@ -72,6 +76,7 @@ void SubDeviceDispatcher::FanOutToSubDevices(
     return;
   }
 
+  // Fan out to all sub devices but don't include the root device
   SubDeviceMap::iterator iter = m_subdevices.begin();
   FanOutTracker *tracker = new FanOutTracker(m_subdevices.size(), callback);
 
@@ -80,8 +85,7 @@ void SubDeviceDispatcher::FanOutToSubDevices(
         request->Duplicate(),
         NewSingleCallback(this,
                           &SubDeviceDispatcher::HandleSubDeviceResponse,
-                          tracker,
-                          iter->first));
+                          tracker));
   }
 }
 
@@ -110,19 +114,20 @@ void SubDeviceDispatcher::NackIfNotBroadcast(
  */
 void SubDeviceDispatcher::HandleSubDeviceResponse(
     FanOutTracker *tracker,
-    uint16_t sub_device_id,
     rdm_response_code code,
     const RDMResponse *response_ptr,
     const std::vector<std::string> &packets) {
   std::auto_ptr<const RDMResponse> response(response_ptr);
+
+  if (tracker->NumResponses() == 0) {
+    tracker->SetResponse(code, response.release());
+  }
 
   if (tracker->IncrementAndCheckIfComplete()) {
     // now it's not really clear what we're supposed to return here.
     // We do the least crazy thing, which is to return the root device response.
     tracker->RunCallback();
     delete tracker;
-  } else if (sub_device_id == ROOT_RDM_DEVICE) {
-    tracker->SetRootResponse(code, response.release());
   }
   (void) packets;
 }
@@ -136,7 +141,7 @@ SubDeviceDispatcher::FanOutTracker::FanOutTracker(
       m_response(NULL) {
 }
 
-void SubDeviceDispatcher::FanOutTracker::SetRootResponse(
+void SubDeviceDispatcher::FanOutTracker::SetResponse(
     rdm_response_code code,
     const RDMResponse *response) {
   m_response_code = code;

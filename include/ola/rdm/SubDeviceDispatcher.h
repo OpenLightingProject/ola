@@ -58,10 +58,14 @@ class SubDeviceDispatcher: public ola::rdm::RDMControllerInterface {
           return ++m_responses_so_far == m_number_of_subdevices;
         }
 
-        void SetRootResponse(ola::rdm::rdm_response_code code,
-                             const ola::rdm::RDMResponse *response);
+        void SetResponse(ola::rdm::rdm_response_code code,
+                         const ola::rdm::RDMResponse *response);
 
         void RunCallback();
+
+        uint16_t NumResponses() const {
+          return m_responses_so_far;
+        }
 
       private:
         uint16_t m_number_of_subdevices;
@@ -85,7 +89,6 @@ class SubDeviceDispatcher: public ola::rdm::RDMControllerInterface {
 
     void HandleSubDeviceResponse(
         FanOutTracker *tracker,
-        uint16_t sub_device_id,
         ola::rdm::rdm_response_code code,
         const ola::rdm::RDMResponse *response,
         const std::vector<std::string> &packets);
