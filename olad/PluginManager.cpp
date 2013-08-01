@@ -69,7 +69,7 @@ void PluginManager::LoadAll() {
       }
 
       if (!plugin->LoadPreferences()) {
-        OLA_WARN << "Failed to load prefernes for " << plugin->Name();
+        OLA_WARN << "Failed to load preferences for " << plugin->Name();
         continue;
       }
 

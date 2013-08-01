@@ -20,6 +20,7 @@
 
 #include <string>
 
+#include "ola/Logging.h"
 #include "plugins/milinst/MilInstWidget.h"
 
 namespace ola {
@@ -41,6 +42,12 @@ MilInstWidget::~MilInstWidget() {
  */
 int MilInstWidget::ConnectToWidget(const std::string &path, speed_t speed) {
   struct termios newtio;
+
+  if (path.empty()) {
+    OLA_DEBUG << "No path configured for device, please set one in "
+        "ola-milinst.conf";
+    return -1;
+  }
 
   int fd = open(path.data(), O_RDWR | O_NONBLOCK | O_NOCTTY);
 
