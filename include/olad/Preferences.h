@@ -150,6 +150,7 @@ class Preferences {
 
     virtual string GetValue(const string &key) const = 0;
     virtual vector<string> GetMultipleValue(const string &key) const = 0;
+    virtual bool HasKey(const string &key) const = 0;
 
     virtual void RemoveValue(const string &key) = 0;
 
@@ -201,6 +202,7 @@ class MemoryPreferences: public Preferences {
 
     virtual string GetValue(const string &key) const;
     virtual vector<string> GetMultipleValue(const string &key) const;
+    virtual bool HasKey(const string &key) const;
 
     virtual void RemoveValue(const string &key);
 
