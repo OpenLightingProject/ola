@@ -33,6 +33,7 @@
 #include "ola/rdm/OpenLightingEnums.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/ResponderHelper.h"
+#include "ola/rdm/ResponderSlotData.h"
 
 namespace ola {
 namespace rdm {
@@ -47,9 +48,16 @@ MovingLightResponder::RDMOps *MovingLightResponder::RDMOps::instance = NULL;
 const MovingLightResponder::Personalities *
     MovingLightResponder::Personalities::Instance() {
   if (!instance) {
+    SlotDataCollection::SlotDataList p2_slot_data;
+		p2_slot_data.push_back(new SlotData(ST_PRIMARY, SD_INTENSITY, 0, "Int"));
+		p2_slot_data.push_back(new SlotData(ST_SEC_FINE, SD_INTENSITY, 0));
+		p2_slot_data.push_back(new SlotData(ST_PRIMARY, SD_PAN, 127));
+		//SlotDatas p2_sdc = new SlotDatas(p2_slot_data);
     PersonalityList personalities;
     personalities.push_back(new Personality(0, "Personality 1"));
-    personalities.push_back(new Personality(5, "Personality 2"));
+    //personalities.push_back(new Personality(5, "Personality 2", p2_sdc));
+    personalities.push_back(new Personality(5, "Personality 2", SlotDataCollection(p2_slot_data)));
+		//personalities.push_back(new Personality(5, "Personality 2"));
     personalities.push_back(new Personality(10, "Personality 3"));
     personalities.push_back(new Personality(20, "Personality 4"));
     instance = new Personalities(personalities);
@@ -97,6 +105,12 @@ const ResponderOps<MovingLightResponder>::ParamHandler
     &MovingLightResponder::SetPersonality},
   { PID_DMX_PERSONALITY_DESCRIPTION,
     &MovingLightResponder::GetPersonalityDescription,
+    NULL},
+  { PID_SLOT_INFO,
+    &MovingLightResponder::GetSlotInfo,
+    NULL},
+  { PID_SLOT_DESCRIPTION,
+    &MovingLightResponder::GetSlotDescription,
     NULL},
   { PID_DMX_START_ADDRESS,
     &MovingLightResponder::GetDmxStartAddress,
@@ -375,6 +389,18 @@ const RDMResponse *MovingLightResponder::SetPersonality(
 const RDMResponse *MovingLightResponder::GetPersonalityDescription(
     const RDMRequest *request) {
   return ResponderHelper::GetPersonalityDescription(
+      request, &m_personality_manager);
+}
+
+const RDMResponse *MovingLightResponder::GetSlotInfo(
+    const RDMRequest *request) {
+  return ResponderHelper::GetSlotInfo(
+      request, &m_personality_manager);
+}
+
+const RDMResponse *MovingLightResponder::GetSlotDescription(
+    const RDMRequest *request) {
+  return ResponderHelper::GetSlotDescription(
       request, &m_personality_manager);
 }
 

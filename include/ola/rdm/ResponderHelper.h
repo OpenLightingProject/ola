@@ -91,6 +91,16 @@ class ResponderHelper {
         const PersonalityManager *personality_manager,
         uint8_t queued_message_count = 0);
 
+    static const RDMResponse *GetSlotInfo(
+        const RDMRequest *request,
+        const PersonalityManager *personality_manager,
+        uint8_t queued_message_count = 0);
+
+    static const RDMResponse *GetSlotDescription(
+        const RDMRequest *request,
+        const PersonalityManager *personality_manager,
+        uint8_t queued_message_count = 0);
+
     static const RDMResponse *GetDmxAddress(
         const RDMRequest *request,
         const PersonalityManager *personality_manager,

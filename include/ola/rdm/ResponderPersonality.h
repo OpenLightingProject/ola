@@ -25,6 +25,9 @@
 #include <string>
 #include <vector>
 
+#include "ola/Logging.h"
+#include "ola/rdm/ResponderSlotData.h"
+
 namespace ola {
 namespace rdm {
 
@@ -35,14 +38,24 @@ using std::string;
  */
 class Personality {
   public:
-    Personality(uint16_t footprint, const string &description);
+		//Personality(uint16_t footprint, const string &description, const SlotDataCollection::SlotDataList &slot_data_list = SlotDataCollection::SlotDataList());
+    //Personality(uint16_t footprint, const string &description, const SlotDataCollection::SlotDataCollection &slot_data_list = SlotDataCollection());
+		Personality(uint16_t footprint, const string &description, const SlotDataCollection::SlotDataCollection &slot_data_list = SlotDataCollection());
 
     uint16_t Footprint() const { return m_footprint; }
     string Description() const { return m_description; }
+		//SlotDataCollection::SlotDataList SlotDataList() const { return m_slot_data_list; }
+		SlotDataCollection::SlotDataCollection SDC() const { return m_slot_data_list; }
+		const SlotData *GetSlotData(uint16_t slot_number) const { 
+		  OLA_DEBUG << "Looking for slot data for slot " << slot_number << " of a total of " << m_slot_data_list.SlotDataCount();
+		  return m_slot_data_list.Lookup(slot_number);
+		}
 
   private:
     uint16_t m_footprint;
     const string m_description;
+		//const SlotDataCollection::SlotDataList m_slot_data_list;
+		SlotDataCollection::SlotDataCollection m_slot_data_list;
 };
 
 

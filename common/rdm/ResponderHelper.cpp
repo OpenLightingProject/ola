@@ -242,6 +242,105 @@ const RDMResponse *ResponderHelper::GetPersonalityDescription(
 }
 
 
+const RDMResponse *ResponderHelper::GetSlotInfo(
+    const RDMRequest *request,
+    const PersonalityManager *personality_manager,
+    uint8_t queued_message_count) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
+  }
+  OLA_DEBUG << "Looking for slot info";
+  //const SlotDataCollection *slot_data_list = personality_manager->ActivePersonality()->SDC();
+	//if (!slot_data_list)
+  //  return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
+
+  //const SlotData slot_data = slot_data_list.Lookup(slot_number);
+	//const SlotDataCollection::SlotDataCollection *slot_data_collection = personality_manager->ActivePersonality()->SDC();
+	const SlotDataCollection::SlotDataCollection slot_data_collection = personality_manager->ActivePersonality()->SDC();
+
+  OLA_DEBUG << "Got slot data collection";
+
+
+//  if (!slot_data_collection) {
+//    return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
+//  } else {
+    OLA_DEBUG << "Got a VALID slot data collection";
+		OLA_DEBUG << "Got count " << slot_data_collection.SlotDataCount();
+
+  for (uint16_t slot = 0; slot < slot_data_collection.SlotDataCount(); slot++) {
+    const SlotData *sd = slot_data_collection.Lookup(slot);
+		OLA_DEBUG << "Got slot " << slot << " type " <<  static_cast<uint16_t>(sd->SlotType());
+  }
+
+return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
+
+    struct slot_info_s {
+      uint16_t offset;
+			uint8_t type;
+      uint16_t label;
+    } __attribute__((packed));
+
+  //  struct slot_info_s slot_info;
+  //  slot_description.slot = HostToNetwork(slot_number);
+  //  strncpy(slot_description.description,
+  //          slot_data->Description().c_str(),
+  //          sizeof(slot_description.description));
+
+////    return GetResponseFromData(
+  //      request,
+  //      reinterpret_cast<uint8_t*>(&slot_description),
+  //      sizeof(slot_description),
+  //      RDM_ACK,
+  //      queued_message_count);
+//  }
+}
+
+
+const RDMResponse *ResponderHelper::GetSlotDescription(
+    const RDMRequest *request,
+    const PersonalityManager *personality_manager,
+    uint8_t queued_message_count) {
+  uint16_t slot_number;
+  if (!ExtractUInt16(request, &slot_number)) {
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
+  }
+  OLA_DEBUG << "Looking for slot desc for slot " << slot_number;
+  //const SlotDataCollection *slot_data_list = personality_manager->ActivePersonality()->SDC();
+	//if (!slot_data_list)
+  //  return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
+
+  //const SlotData slot_data = slot_data_list.Lookup(slot_number);
+	const SlotData *slot_data = personality_manager->ActivePersonality()->GetSlotData(slot_number);
+
+  OLA_DEBUG << "Got a chunk of slot_data";
+
+  if (!slot_data) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
+  } else {
+    OLA_DEBUG << "Got a VALID chunk of slot_data";
+		OLA_DEBUG << "Got slot type " << slot_data->SlotType() << " for slot " << slot_number;
+	  OLA_DEBUG << "Got slot desc " << slot_data->Description() << " for slot " << slot_number;
+    struct slot_description_s {
+      uint16_t slot;
+      char description[MAX_RDM_STRING_LENGTH];
+    } __attribute__((packed));
+
+    struct slot_description_s slot_description;
+    slot_description.slot = HostToNetwork(slot_number);
+    strncpy(slot_description.description,
+            slot_data->Description().c_str(),
+            sizeof(slot_description.description));
+
+    return GetResponseFromData(
+        request,
+        reinterpret_cast<uint8_t*>(&slot_description),
+        sizeof(slot_description),
+        RDM_ACK,
+        queued_message_count);
+  }
+}
+
+
 /**
  * Get the start address
  */

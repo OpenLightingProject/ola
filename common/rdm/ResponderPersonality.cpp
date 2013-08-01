@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * SPIBackend.cpp
+ * ResponderPersonality.cpp
  * Manages personalities for a RDM responder.
  * Copyright (C) 2013 Simon Newton
  */
@@ -23,7 +23,9 @@
 
 #include <string>
 #include <vector>
+
 #include "ola/rdm/ResponderPersonality.h"
+#include "ola/rdm/ResponderSlotData.h"
 #include "ola/stl/STLUtils.h"
 
 namespace ola {
@@ -34,9 +36,12 @@ namespace rdm {
  * @param footprint the number of dmx slots consumed
  * @param description the personality name (32 chars)
  */
-Personality::Personality(uint16_t footprint, const string &description)
+//Personality::Personality(uint16_t footprint, const string &description, const SlotDataCollection::SlotDataList &slot_data_list)
+//Personality::Personality(uint16_t footprint, const string &description, const SlotDataCollection::SlotDataCollection &slot_data_list)
+Personality::Personality(uint16_t footprint, const string &description, const SlotDataCollection::SlotDataCollection &slot_data_list)
     : m_footprint(footprint),
-      m_description(description) {
+      m_description(description),
+      m_slot_data_list(slot_data_list) {
 }
 
 /**
