@@ -200,6 +200,7 @@ PLUGIN_SUPPORT(e131, USE_E131)
 PLUGIN_SUPPORT(espnet, USE_ESPNET)
 PLUGIN_SUPPORT(karate, USE_KARATE)
 PLUGIN_SUPPORT(kinet, USE_KINET)
+PLUGIN_SUPPORT(milinst, USE_MILINST)
 PLUGIN_SUPPORT(opendmx, USE_OPENDMX)
 PLUGIN_SUPPORT(pathport, USE_PATHPORT)
 PLUGIN_SUPPORT(sandnet, USE_SANDNET)
@@ -676,6 +677,7 @@ AC_OUTPUT( Makefile \
     plugins/ftdidmx/Makefile \
     plugins/karate/Makefile \
     plugins/kinet/Makefile \
+    plugins/milinst/Makefile \
     plugins/opendmx/Makefile \
     plugins/osc/Makefile \
     plugins/pathport/Makefile \

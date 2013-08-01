@@ -13,46 +13,60 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * StageProfiWidgetUsb.cpp
- * The StageProfi Usb Widget.
- * Copyright (C) 2006-2009 Simon Newton
+ * MilInstWidget.cpp
+ * This is the base widget class
+ * Copyright (C) 2013 Peter Newman
  */
 
-#include <errno.h>
-#include <fcntl.h>
-#include <termios.h>
-#include <string.h>
 #include <string>
 
-#include "ola/Callback.h"
-#include "ola/io/Descriptor.h"
-#include "plugins/stageprofi/StageProfiWidgetUsb.h"
+#include "plugins/milinst/MilInstWidget.h"
 
 namespace ola {
 namespace plugin {
-namespace stageprofi {
+namespace milinst {
+
+/*
+ * New widget
+ */
+MilInstWidget::~MilInstWidget() {
+  if (m_socket) {
+    m_socket->Close();
+    delete m_socket;
+  }
+}
 
 /*
  * Connect to the widget
  */
-bool StageProfiWidgetUsb::Connect(const std::string &path) {
+int MilInstWidget::ConnectToWidget(const std::string &path, speed_t speed) {
   struct termios newtio;
 
   int fd = open(path.data(), O_RDWR | O_NONBLOCK | O_NOCTTY);
 
   if (fd == -1)
-    return false;
+    return -1;
 
-  memset(&newtio, 0, sizeof(newtio));  // clear struct for new port settings
+  memset(&newtio, 0, sizeof(newtio));  // Clear struct for new port settings
   tcgetattr(fd, &newtio);
-  cfsetospeed(&newtio, B38400);
+  newtio.c_cflag |= (CLOCAL | CREAD);  // Enable read
+  newtio.c_cflag |= CS8;  // 8n1
+  newtio.c_cflag &= ~CRTSCTS;  // No flow control
+  cfsetispeed(&newtio, speed);
+  cfsetospeed(&newtio, speed);
   tcsetattr(fd, TCSANOW, &newtio);
-  m_socket = new ola::io::DeviceDescriptor(fd);
-  m_socket->SetOnData(
-      NewCallback<StageProfiWidget>(this, &StageProfiWidget::SocketReady));
-  m_device_path = path;
-  return true;
+
+  return fd;
 }
-}  // namespace stageprofi
+
+
+/*
+ * Disconnect from the widget
+ */
+int MilInstWidget::Disconnect() {
+  m_socket->Close();
+  return 0;
+}
+}  // namespace milinst
 }  // namespace plugin
 }  // namespace ola

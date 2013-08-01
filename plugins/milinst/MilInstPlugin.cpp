@@ -13,43 +13,42 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * StageProfiPlugin.cpp
- * The StageProfi plugin for ola
- * Copyright (C) 2006-2008 Simon Newton
+ * MilInstPlugin.cpp
+ * The Milford Instruments plugin for ola
+ * Copyright (C) 2013 Peter Newman
  */
 
-#include <stdlib.h>
-#include <stdio.h>
 #include <string>
 #include <vector>
 
 #include "ola/Logging.h"
 #include "olad/PluginAdaptor.h"
 #include "olad/Preferences.h"
-#include "plugins/stageprofi/StageProfiDevice.h"
-#include "plugins/stageprofi/StageProfiPlugin.h"
+#include "plugins/milinst/MilInstDevice.h"
+#include "plugins/milinst/MilInstPlugin.h"
 
 namespace ola {
 namespace plugin {
-namespace stageprofi {
+namespace milinst {
 
 using std::string;
 
-const char StageProfiPlugin::STAGEPROFI_DEVICE_PATH[] = "/dev/ttyUSB0";
-const char StageProfiPlugin::STAGEPROFI_DEVICE_NAME[] = "StageProfi Device";
-const char StageProfiPlugin::PLUGIN_NAME[] = "StageProfi";
-const char StageProfiPlugin::PLUGIN_PREFIX[] = "stageprofi";
-const char StageProfiPlugin::DEVICE_KEY[] = "device";
+const char MilInstPlugin::MILINST_DEVICE_PATH[] = "/dev/ttyS0";
+const char MilInstPlugin::MILINST_BASE_DEVICE_NAME[] =
+    "Milford Instruments Device";  // This is just for generic MilInst devices
+const char MilInstPlugin::MILINST_1463_DEVICE_NAME[] =
+    "Milford Instruments 1-463 Device";
+const char MilInstPlugin::PLUGIN_NAME[] = "Milford Instruments";
+const char MilInstPlugin::PLUGIN_PREFIX[] = "milinst";
+const char MilInstPlugin::DEVICE_KEY[] = "device";
 
 /*
  * Start the plugin
- *
- * Multiple devices now supported
  */
-bool StageProfiPlugin::StartHook() {
+bool MilInstPlugin::StartHook() {
   vector<string> device_names;
   vector<string>::iterator it;
-  StageProfiDevice *device;
+  MilInstDevice *device;
 
   // fetch device listing
   device_names = m_preferences->GetMultipleValue(DEVICE_KEY);
@@ -58,12 +57,17 @@ bool StageProfiPlugin::StartHook() {
     if (it->empty())
       continue;
 
-    device = new StageProfiDevice(this, STAGEPROFI_DEVICE_NAME, *it);
+    // TODO(Peter): When support is added for multiple device types, ensure the
+    // correct name is passed in here
+    device = new MilInstDevice(this, MILINST_1463_DEVICE_NAME, *it);
+    OLA_DEBUG << "Adding device " << *it;
 
     if (!device->Start()) {
       delete device;
       continue;
     }
+
+    OLA_DEBUG << "Started device " << *it;
 
     m_plugin_adaptor->AddReadDescriptor(device->GetSocket());
     m_plugin_adaptor->RegisterDevice(device);
@@ -77,8 +81,8 @@ bool StageProfiPlugin::StartHook() {
  * Stop the plugin
  * @return true on success, false on failure
  */
-bool StageProfiPlugin::StopHook() {
-  vector<StageProfiDevice*>::iterator iter;
+bool MilInstPlugin::StopHook() {
+  vector<MilInstDevice*>::iterator iter;
   for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
     m_plugin_adaptor->RemoveReadDescriptor((*iter)->GetSocket());
     DeleteDevice(*iter);
@@ -91,19 +95,19 @@ bool StageProfiPlugin::StopHook() {
 /*
  * Return the description for this plugin
  */
-string StageProfiPlugin::Description() const {
+string MilInstPlugin::Description() const {
     return
-"StageProfi Plugin\n"
+"Milford Instruments Plugin\n"
 "----------------------------\n"
 "\n"
-"This plugin creates devices with one output port.\n"
+"This plugin creates devices with one output port. It currently only supports "
+"the 1-463 DMX Protocol Converter.\n"
 "\n"
-"--- Config file : ola-stageprofi.conf ---\n"
+"--- Config file : ola-milinst.conf ---\n"
 "\n"
-"device = /dev/ttyUSB0\n"
-"device = 192.168.1.250\n"
-"The device to use either as a path for the USB version or an IP address\n"
-"for the LAN version. Multiple devices are supported.\n"
+"device = /dev/ttyS0\n"
+"The device to use as a path for the serial port. Multiple devices are "
+"supported.\n"
 "\n";
 }
 
@@ -111,8 +115,8 @@ string StageProfiPlugin::Description() const {
 /*
  * Called when the file descriptor is closed.
  */
-int StageProfiPlugin::SocketClosed(ConnectedDescriptor *socket) {
-  vector<StageProfiDevice*>::iterator iter;
+int MilInstPlugin::SocketClosed(ConnectedDescriptor *socket) {
+  vector<MilInstDevice*>::iterator iter;
 
   for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
     if ((*iter)->GetSocket() == socket)
@@ -134,14 +138,14 @@ int StageProfiPlugin::SocketClosed(ConnectedDescriptor *socket) {
  * load the plugin prefs and default to sensible values
  *
  */
-bool StageProfiPlugin::SetDefaultPreferences() {
+bool MilInstPlugin::SetDefaultPreferences() {
   if (!m_preferences)
     return false;
 
   bool save = false;
 
   save |= m_preferences->SetDefaultValue(DEVICE_KEY, StringValidator(),
-                                         STAGEPROFI_DEVICE_PATH);
+                                         MILINST_DEVICE_PATH);
 
   if (save)
     m_preferences->Save();
@@ -155,11 +159,11 @@ bool StageProfiPlugin::SetDefaultPreferences() {
 /*
  * Cleanup a single device
  */
-void StageProfiPlugin::DeleteDevice(StageProfiDevice *device) {
+void MilInstPlugin::DeleteDevice(MilInstDevice *device) {
   m_plugin_adaptor->UnregisterDevice(device);
   device->Stop();
   delete device;
 }
-}  // namespace stageprofi
+}  // namespace milinst
 }  // namespace plugin
 }  // namespace ola

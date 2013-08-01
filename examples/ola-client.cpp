@@ -101,7 +101,9 @@ void ListPorts(const vector<PortClass> &ports, bool input) {
     else
       cout << "OUT";
 
-    cout << " " << port_iter->Description();
+    if (!port_iter->Description().empty()) {
+      cout << " " << port_iter->Description();
+    }
 
     switch (port_iter->PriorityCapability()) {
       case ola::CAPABILITY_STATIC:
