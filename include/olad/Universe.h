@@ -37,11 +37,10 @@
 
 namespace ola {
 
-using ola::rdm::RDMDiscoveryCallback;
 using ola::rdm::UID;
-using std::map;
 using std::pair;
 using std::set;
+using ola::rdm::RDMDiscoveryCallback;
 
 class Client;
 class InputPort;
@@ -67,7 +66,7 @@ class Universe: public ola::rdm::RDMControllerInterface {
     uint8_t ActivePriority() const { return m_active_priority; }
 
     /**
-     * @brief Return the time between RDM discovery operations.
+     * Return the time between RDM discovery operations.
      * @return the amount of time in seconds between RDM discovery runs. A
      * value of 0 means that periodic discovery is disabled for this universe.
      */
@@ -76,7 +75,7 @@ class Universe: public ola::rdm::RDMControllerInterface {
     }
 
     /**
-     * @brief Get the time of the last discovery run
+     * Get the time of the last discovery run
      */
     const TimeStamp& LastRDMDiscovery() const {
       return m_last_discovery_time;
@@ -125,10 +124,6 @@ class Universe: public ola::rdm::RDMControllerInterface {
     bool PortDataChanged(InputPort *port);
     bool SourceClientDataChanged(Client *client);
 
-    // This is can be called periodically to clean stale clients
-    //    stale == client that has not sent data
-    void CleanStaleSourceClients();
-
     // RDM methods
     void SendRDMRequest(const ola::rdm::RDMRequest *request,
                         ola::rdm::RDMCallback *callback);
@@ -163,8 +158,6 @@ class Universe: public ola::rdm::RDMControllerInterface {
       vector<string> packets;
     } broadcast_request_tracker;
 
-    typedef map<Client*, bool> SourceClientMap;
-
     string m_universe_name;
     unsigned int m_universe_id;
     string m_universe_id_str;
@@ -173,11 +166,7 @@ class Universe: public ola::rdm::RDMControllerInterface {
     vector<InputPort*> m_input_ports;
     vector<OutputPort*> m_output_ports;
     set<Client*> m_sink_clients;  // clients that require updates
-    /**
-     * Tracks current source clients and whether or not they are stale.
-     * true == stale and can be removed, false == active is to be kept
-     */
-    SourceClientMap m_source_clients;
+    set<Client*> m_source_clients;  // clients that provide data
     class UniverseStore *m_universe_store;
     DmxBuffer m_buffer;
     ExportMap *m_export_map;
@@ -199,15 +188,14 @@ class Universe: public ola::rdm::RDMControllerInterface {
     bool UpdateDependants();
     void UpdateName();
     void UpdateMode();
+    bool RemoveClient(Client *client, bool is_source);
+    bool AddClient(Client *client, bool is_source);
     void HTPMergeSources(const vector<DmxSource> &sources);
     bool MergeAll(const InputPort *port, const Client *client);
     void PortDiscoveryComplete(BaseCallback0<void> *on_complete,
                                OutputPort *output_port,
                                const ola::rdm::UIDSet &uids);
     void DiscoveryComplete(RDMDiscoveryCallback *on_complete);
-
-    void SafeIncrement(const string &name);
-    void SafeDecrement(const string &name);
 
     template<class PortClass>
     bool GenericAddPort(PortClass *port,

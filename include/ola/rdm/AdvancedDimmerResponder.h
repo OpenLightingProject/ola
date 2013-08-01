@@ -89,7 +89,7 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
             : BasicSettingManager(settings) {
         }
 
-        const RDMResponse *SetWithPin(const RDMRequest *request, uint16_t pin);
+        const RDMResponse *Set(const RDMRequest *request, uint16_t pin);
     };
 
     struct min_level_s {

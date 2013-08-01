@@ -202,7 +202,7 @@ class SettingManager {
     virtual ~SettingManager() {}
 
     const RDMResponse *Get(const RDMRequest *request) const;
-    const RDMResponse *Set(const RDMRequest *request);
+    virtual const RDMResponse *Set(const RDMRequest *request);
     const RDMResponse *GetDescription(const RDMRequest *request) const;
 
     uint8_t Count() const {

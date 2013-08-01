@@ -30,24 +30,22 @@
  *   A list of sink clients, which we update whenever the DmxBuffer changes.
  */
 
-#include <algorithm>
-#include <iterator>
 #include <map>
 #include <set>
 #include <string>
-#include <utility>
 #include <vector>
+#include <iterator>
+#include <algorithm>
 
 #include "ola/base/Array.h"
 #include "ola/Logging.h"
-#include "ola/MultiCallback.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMEnums.h"
-#include "ola/stl/STLUtils.h"
+#include "ola/MultiCallback.h"
 #include "olad/Client.h"
+#include "olad/UniverseStore.h"
 #include "olad/Port.h"
 #include "olad/Universe.h"
-#include "olad/UniverseStore.h"
 
 namespace ola {
 
@@ -252,43 +250,22 @@ void Universe::OutputPorts(vector<OutputPort*> *ports) {
 
 
 /*
- * @brief Add a client as a source for this universe
+ * Add a client as a source for this universe
  * @param client the client to add
- * @return true
  */
 bool Universe::AddSourceClient(Client *client) {
-  // Check to see if it exists already. It doesn't make sense to have multiple
-  //  clients
-  if (STLReplace(&m_source_clients, client, false))
-    return true;
-
-  OLA_INFO << "Added source client, " << client << " to universe "
-    << m_universe_id;
-
-  SafeIncrement(K_UNIVERSE_SOURCE_CLIENTS_VAR);
-  return true;
+  if (ContainsSourceClient(client))
+    return false;
+  return AddClient(client, true);
 }
 
 
 /*
- * @param Remove this client from the universe.
- * @note After the client is removed we internally check if this universe is
- * still in use, and if not delete it
+ * Remove a client as a source for this universe
  * @param client the client to remove
- * @return true is this client was removed, false if it didn't exist
  */
 bool Universe::RemoveSourceClient(Client *client) {
-  if (!STLRemove(&m_source_clients, client))
-    return false;
-
-  SafeDecrement(K_UNIVERSE_SOURCE_CLIENTS_VAR);
-
-  OLA_INFO << "Source client " << client << " has been removed from uni " <<
-    m_universe_id;
-
-  if (!IsActive())
-    m_universe_store->AddUniverseGarbageCollection(this);
-  return true;
+  return RemoveClient(client, true);
 }
 
 
@@ -298,46 +275,28 @@ bool Universe::RemoveSourceClient(Client *client) {
  * @returns true if this universe contains the client, false otherwise
  */
 bool Universe::ContainsSourceClient(Client *client) const {
-  return STLContains(m_source_clients, client);
+  return find(m_source_clients.begin(), m_source_clients.end(), client) !=
+    m_source_clients.end();
 }
 
 
 /*
- * @brief Add a client as a sink for this universe
+ * Add a client as a sink for this universe
  * @param client the client to add
- * @return true if client was added, and false if it was already a sink client
  */
 bool Universe::AddSinkClient(Client *client) {
-  if (!STLInsertIfNotPresent(&m_sink_clients, client))
+  if (ContainsSinkClient(client))
     return false;
-
-  OLA_INFO << "Added sink client, " << client << " to universe " <<
-    m_universe_id;
-
-  SafeIncrement(K_UNIVERSE_SINK_CLIENTS_VAR);
-  return true;
+  return AddClient(client, false);
 }
 
 
 /*
- * @param Remove this sink client from the universe.
- * @note After the client is removed we internally check if this universe is
- * still in use, and if not delete it
+ * Remove a client as a sink for this universe
  * @param client the client to remove
- * @return true is this client was removed, false if it didn't exist
  */
 bool Universe::RemoveSinkClient(Client *client) {
-  if (!STLRemove(&m_sink_clients, client))
-    return false;
-
-  SafeDecrement(K_UNIVERSE_SINK_CLIENTS_VAR);
-
-  OLA_INFO << "Sink client " << client << " has been removed from uni " <<
-    m_universe_id;
-
-  if (!IsActive())
-    m_universe_store->AddUniverseGarbageCollection(this);
-  return true;
+  return RemoveClient(client, false);
 }
 
 /*
@@ -346,7 +305,8 @@ bool Universe::RemoveSinkClient(Client *client) {
  * @returns true if this universe contains the client, false otherwise
  */
 bool Universe::ContainsSinkClient(Client *client) const {
-  return STLContains(m_sink_clients, client);
+  return find(m_sink_clients.begin(), m_sink_clients.end(), client) !=
+    m_sink_clients.end();
 }
 
 
@@ -397,28 +357,6 @@ bool Universe::SourceClientDataChanged(Client *client) {
 }
 
 
-/**
- * @brief Clean old source clients
- */
-void Universe::CleanStaleSourceClients() {
-  SourceClientMap::iterator iter = m_source_clients.begin();
-  while (iter != m_source_clients.end()) {
-    if (iter->second) {
-      // if stale remove it
-      m_source_clients.erase(iter++);
-      SafeDecrement(K_UNIVERSE_SOURCE_CLIENTS_VAR);
-      OLA_INFO << "Removed Stale Client";
-      if (!IsActive())
-        m_universe_store->AddUniverseGarbageCollection(this);
-    } else {
-      // clear the stale flag
-      iter->second = true;
-      ++iter;
-    }
-  }
-}
-
-
 /*
  * Handle a RDM request for this universe, ownership of the request object is
  * transferred to this method.
@@ -433,7 +371,9 @@ void Universe::SendRDMRequest(const ola::rdm::RDMRequest *request,
       << std::hex << request->ParamId() << ", PDL: " << std::dec
       << request->ParamDataSize();
 
-  SafeIncrement(K_UNIVERSE_RDM_REQUESTS);
+  if (m_export_map)
+    (*m_export_map->GetUIntMapVar(K_UNIVERSE_RDM_REQUESTS))[
+      m_universe_id_str]++;
 
   if (request->DestinationUID().IsBroadcast()) {
     const bool is_dub = (
@@ -607,7 +547,8 @@ bool Universe::UpdateDependants() {
     (*client_iter)->SendDMX(m_universe_id, m_buffer);
   }
 
-  SafeIncrement(K_FPS_VAR);
+  if (m_export_map)
+    (*m_export_map->GetUIntMapVar(K_FPS_VAR))[m_universe_id_str]++;
   return true;
 }
 
@@ -633,6 +574,55 @@ void Universe::UpdateMode() {
   (*mode_map)[m_universe_id_str] = (m_merge_mode == Universe::MERGE_LTP ?
                                     K_MERGE_LTP_STR : K_MERGE_HTP_STR);
 }
+
+
+/*
+ * Add this client to this universe
+ * @param client the client to add
+ * @pre the client doesn't already exist in the set
+ */
+bool Universe::AddClient(Client *client, bool is_source) {
+  set<Client*> &clients = is_source ? m_source_clients : m_sink_clients;
+  clients.insert(client);
+  OLA_INFO << "Added " << (is_source ? "source" : "sink") << " client, " <<
+    client << " to universe " << m_universe_id;
+
+  if (m_export_map) {
+    const string &map_name = is_source ? K_UNIVERSE_SOURCE_CLIENTS_VAR :
+      K_UNIVERSE_SINK_CLIENTS_VAR;
+    (*m_export_map->GetUIntMapVar(map_name))[m_universe_id_str]++;
+  }
+  return true;
+}
+
+
+/*
+ * Remove this client from the universe. After calling this method you need to
+ * check if this universe is still in use, and if not delete it
+ * @param client the client to remove
+ * @return true is this client was removed, false if it didn't exist
+ */
+bool Universe::RemoveClient(Client *client, bool is_source) {
+  set<Client*> &clients = is_source ? m_source_clients : m_sink_clients;
+  set<Client*>::iterator iter = find(clients.begin(), clients.end(), client);
+
+  if (iter == clients.end())
+    return false;
+
+  clients.erase(iter);
+  if (m_export_map) {
+    const string &map_name = is_source ? K_UNIVERSE_SOURCE_CLIENTS_VAR :
+      K_UNIVERSE_SINK_CLIENTS_VAR;
+    (*m_export_map->GetUIntMapVar(map_name))[m_universe_id_str]--;
+  }
+  OLA_INFO << "Client " << client << " has been removed from uni " <<
+    m_universe_id;
+
+  if (!IsActive())
+    m_universe_store->AddUniverseGarbageCollection(this);
+  return true;
+}
+
 
 
 /*
@@ -662,7 +652,7 @@ bool Universe::MergeAll(const InputPort *port, const Client *client) {
   vector<DmxSource> active_sources;
 
   vector<InputPort*>::const_iterator iter;
-  SourceClientMap::const_iterator client_iter;
+  set<Client*>::const_iterator client_iter;
 
   m_active_priority = DmxSource::PRIORITY_MIN;
   TimeStamp now;
@@ -688,11 +678,11 @@ bool Universe::MergeAll(const InputPort *port, const Client *client) {
     }
   }
 
-  // find the highest priority active clients
+  // find the highest active clients
   for (client_iter = m_source_clients.begin();
        client_iter != m_source_clients.end();
        ++client_iter) {
-    const DmxSource &source = client_iter->first->SourceData(UniverseId());
+    const DmxSource &source = (*client_iter)->SourceData(UniverseId());
 
     if (!source.IsSet() || !source.IsActive(now) || !source.Data().Size())
       continue;
@@ -705,7 +695,7 @@ bool Universe::MergeAll(const InputPort *port, const Client *client) {
 
     if (source.Priority() == m_active_priority) {
       active_sources.push_back(source);
-      if (client_iter->first == client)
+      if (*client_iter == client)
         changed_source_is_active = true;
     }
   }
@@ -850,25 +840,6 @@ void Universe::HandleBroadcastDiscovery(
 
 
 /*
- * Helper function to increment an Export Map variable
- */
-void Universe::SafeIncrement(const string &name) {
-  if (m_export_map) {
-    (*m_export_map->GetUIntMapVar(name))[m_universe_id_str]++;
-  }
-}
-
-/*
- * Helper function to decrement an Export Map variable
- */
-void Universe::SafeDecrement(const string &name) {
-  if (m_export_map) {
-    (*m_export_map->GetUIntMapVar(name))[m_universe_id_str]--;
-  }
-}
-
-
-/*
  * Add an Input or Output port to this universe.
  * @param port, the port to add
  * @param ports, the vector of ports to add to
@@ -914,7 +885,6 @@ bool Universe::GenericRemovePort(PortClass *port,
         K_UNIVERSE_OUTPUT_PORT_VAR);
     (*map)[m_universe_id_str]--;
   }
-
   if (!IsActive())
     m_universe_store->AddUniverseGarbageCollection(this);
 
