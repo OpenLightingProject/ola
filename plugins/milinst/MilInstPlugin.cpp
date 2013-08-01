@@ -33,7 +33,8 @@ namespace milinst {
 
 using std::string;
 
-const char MilInstPlugin::MILINST_DEVICE_PATH[] = "/dev/ttyS0";
+// Blank default path, so we don't start using a serial port without being asked
+const char MilInstPlugin::MILINST_DEVICE_PATH[] = "";
 const char MilInstPlugin::MILINST_BASE_DEVICE_NAME[] =
     "Milford Instruments Device";  // This is just for generic MilInst devices
 const char MilInstPlugin::MILINST_1463_DEVICE_NAME[] =
@@ -54,8 +55,11 @@ bool MilInstPlugin::StartHook() {
   device_names = m_preferences->GetMultipleValue(DEVICE_KEY);
 
   for (it = device_names.begin(); it != device_names.end(); ++it) {
-    if (it->empty())
+    if (it->empty()) {
+      OLA_DEBUG << "No path configured for device, please set one in "
+          "ola-milinst.conf";
       continue;
+    }
 
     // TODO(Peter): When support is added for multiple device types, ensure the
     // correct name is passed in here
@@ -150,8 +154,9 @@ bool MilInstPlugin::SetDefaultPreferences() {
   if (save)
     m_preferences->Save();
 
-  if (m_preferences->GetValue(DEVICE_KEY).empty())
-    return false;
+  // Todo(Peter): Find a way to confirm we've written the blank device key
+  // if (m_preferences->GetValue(DEVICE_KEY).empty())
+  //   return false;
   return true;
 }
 
