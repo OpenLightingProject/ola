@@ -145,6 +145,7 @@ class MovingLightResponder: public RDMControllerInterface {
     const RDMResponse *GetPanTiltSwap(const RDMRequest *request);
     const RDMResponse *SetPanTiltSwap(const RDMRequest *request);
     const RDMResponse *GetRealTimeClock(const RDMRequest *request);
+    const RDMResponse *SetResetDevice(const RDMRequest *request);
     const RDMResponse *GetPowerState(const RDMRequest *request);
     const RDMResponse *SetPowerState(const RDMRequest *request);
     const RDMResponse *GetManufacturerLabel(const RDMRequest *request);

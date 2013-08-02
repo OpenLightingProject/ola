@@ -49,15 +49,15 @@ const MovingLightResponder::Personalities *
     MovingLightResponder::Personalities::Instance() {
   if (!instance) {
     SlotDataCollection::SlotDataList p2_slot_data;
-		p2_slot_data.push_back(new SlotData(ST_PRIMARY, SD_INTENSITY, 0, "Int"));
-		p2_slot_data.push_back(new SlotData(ST_SEC_FINE, SD_INTENSITY, 0));
-		p2_slot_data.push_back(new SlotData(ST_PRIMARY, SD_PAN, 127));
-		//SlotDatas p2_sdc = new SlotDatas(p2_slot_data);
+    p2_slot_data.push_back(new SlotData(ST_PRIMARY, SD_INTENSITY, 0, "Int"));
+    p2_slot_data.push_back(new SlotData(ST_SEC_FINE, SD_INTENSITY, 0));
+    p2_slot_data.push_back(new SlotData(ST_PRIMARY, SD_PAN, 127));
+    //SlotDatas p2_sdc = new SlotDatas(p2_slot_data);
     PersonalityList personalities;
     personalities.push_back(new Personality(0, "Personality 1"));
     //personalities.push_back(new Personality(5, "Personality 2", p2_sdc));
     personalities.push_back(new Personality(5, "Personality 2", SlotDataCollection(p2_slot_data)));
-		//personalities.push_back(new Personality(5, "Personality 2"));
+    //personalities.push_back(new Personality(5, "Personality 2"));
     personalities.push_back(new Personality(10, "Personality 3"));
     personalities.push_back(new Personality(20, "Personality 4"));
     instance = new Personalities(personalities);
@@ -154,6 +154,9 @@ const ResponderOps<MovingLightResponder>::ParamHandler
   { PID_REAL_TIME_CLOCK,
     &MovingLightResponder::GetRealTimeClock,
     NULL},
+  { PID_RESET_DEVICE,
+    NULL,
+    &MovingLightResponder::SetResetDevice},
   { PID_POWER_STATE,
     &MovingLightResponder::GetPowerState,
     &MovingLightResponder::SetPowerState},
@@ -627,6 +630,34 @@ const RDMResponse *MovingLightResponder::SetPowerState(
   }
 
   m_power_state = static_cast<rdm_power_state>(new_value);
+  return new RDMSetResponse(
+    request->DestinationUID(),
+    request->SourceUID(),
+    request->TransactionNumber(),
+    RDM_ACK,
+    0,
+    request->SubDevice(),
+    request->ParamId(),
+    NULL,
+    0);
+}
+
+const RDMResponse *MovingLightResponder::SetResetDevice(
+    const RDMRequest *request) {
+  uint8_t value;
+  if (!ResponderHelper::ExtractUInt8(request, &value)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  if (value != static_cast<uint8_t>(RESET_WARM) &&
+      value != static_cast<uint8_t>(RESET_COLD)) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  OLA_INFO << "Dummy Moving Light " << m_uid << " " <<
+      ((value == static_cast<uint8_t>(RESET_WARM)) ? "warm" : "cold") <<
+      " reset device";
+
   return new RDMSetResponse(
     request->DestinationUID(),
     request->SourceUID(),
