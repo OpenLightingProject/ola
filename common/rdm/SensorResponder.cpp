@@ -29,6 +29,7 @@
 #include "ola/Clock.h"
 #include "ola/Logging.h"
 #include "ola/base/Array.h"
+#include "ola/stl/STLUtils.h"
 #include "ola/math/Random.h"
 #include "ola/network/NetworkUtils.h"
 #include "ola/rdm/OpenLightingEnums.h"
@@ -173,6 +174,11 @@ SensorResponder::SensorResponder(const UID &uid)
   m_sensors.push_back(new FakeSensor(
         SENSOR_ITEMS, UNITS_NONE, PREFIX_KILO,
         0, 100, 0, 1, "Fake Beta Particle Counter"));
+}
+
+
+SensorResponder::~SensorResponder() {
+  STLDeleteElements(&m_sensors);
 }
 
 /*
