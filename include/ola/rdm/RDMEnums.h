@@ -576,6 +576,11 @@ typedef enum {
   IDENTIFY_LOUD = 255
 } rdm_identify_mode;
 
+typedef enum {
+  RESET_WARM = 0x01,
+  RESET_COLD = 0xff,
+} rdm_reset_device_mode;
+
 // the two special presets
 static const uint16_t PRESET_PLAYBACK_OFF = 0x0000;
 static const uint16_t PRESET_PLAYBACK_ALL = 0xffff;

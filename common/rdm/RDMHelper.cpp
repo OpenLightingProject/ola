@@ -611,6 +611,44 @@ string ProductDetailToString(uint16_t detail) {
 }
 
 
+string ResetDeviceToString(uint8_t reset_device);
+bool UIntToResetDevice(uint8_t state, rdm_reset_device_mode *reset_device);
+
+/**
+ * Convert a uint8_t representing a reset device to a human-readable string.
+ * @param reset_device the reset device value
+ */
+string ResetDeviceToString(uint8_t reset_device) {
+  switch (reset_device) {
+    case RESET_WARM:
+      return "Warm";
+    case RESET_COLD:
+      return "Cold";
+    default:
+      stringstream str;
+      str << "Unknown, was " << static_cast<int>(reset_device);
+      return str.str();
+  }
+}
+
+
+/**
+ * Safely convert a uint8_t to a rdm_reset_device_mode
+ */
+bool UIntToResetDevice(uint8_t state, rdm_reset_device_mode *reset_device) {
+  switch (state) {
+    case RESET_WARM:
+      *reset_device = RESET_WARM;
+      return true;
+    case RESET_COLD:
+      *reset_device = RESET_COLD;
+      return true;
+    default:
+      return false;
+  }
+}
+
+
 /**
  * Convert a uint8_t representing a sensor type to a human-readable string.
  * @param type the sensor type value

@@ -541,6 +541,13 @@ class RDMHTTPModule {
                          unsigned int universe_id,
                          const UID &uid);
 
+    string GetResetDevice(HTTPResponse *response);
+
+    string SetResetDevice(const HTTPRequest *request,
+                         HTTPResponse *response,
+                         unsigned int universe_id,
+                         const UID &uid);
+
     // util methods
     bool CheckForInvalidId(const HTTPRequest *request,
                            unsigned int *universe_id);
@@ -626,6 +633,7 @@ class RDMHTTPModule {
     static const char POWER_STATE_SECTION[];
     static const char PRODUCT_DETAIL_SECTION[];
     static const char PROXIED_DEVICES_SECTION[];
+    static const char RESET_DEVICE_SECTION[];
     static const char SENSOR_SECTION[];
     static const char TILT_INVERT_SECTION[];
 
@@ -653,6 +661,7 @@ class RDMHTTPModule {
     static const char POWER_STATE_SECTION_NAME[];
     static const char PRODUCT_DETAIL_SECTION_NAME[];
     static const char PROXIED_DEVICES_SECTION_NAME[];
+    static const char RESET_DEVICE_SECTION_NAME[];
     static const char TILT_INVERT_SECTION_NAME[];
 };
 }  // namespace ola

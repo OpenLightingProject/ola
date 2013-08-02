@@ -112,6 +112,7 @@ const char RDMHTTPModule::POWER_CYCLES_SECTION[] = "power_cycles";
 const char RDMHTTPModule::POWER_STATE_SECTION[] = "power_state";
 const char RDMHTTPModule::PRODUCT_DETAIL_SECTION[] = "product_detail";
 const char RDMHTTPModule::PROXIED_DEVICES_SECTION[] = "proxied_devices";
+const char RDMHTTPModule::RESET_DEVICE_SECTION[] = "reset_device";
 const char RDMHTTPModule::SENSOR_SECTION[] = "sensor";
 const char RDMHTTPModule::TILT_INVERT_SECTION[] = "tilt_invert";
 
@@ -142,6 +143,7 @@ const char RDMHTTPModule::POWER_CYCLES_SECTION_NAME[] = "Device Power Cycles";
 const char RDMHTTPModule::POWER_STATE_SECTION_NAME[] = "Power State";
 const char RDMHTTPModule::PRODUCT_DETAIL_SECTION_NAME[] = "Product Details";
 const char RDMHTTPModule::PROXIED_DEVICES_SECTION_NAME[] = "Proxied Devices";
+const char RDMHTTPModule::RESET_DEVICE_SECTION_NAME[] = "Reset Device";
 const char RDMHTTPModule::TILT_INVERT_SECTION_NAME[] = "Tilt Invert";
 
 RDMHTTPModule::RDMHTTPModule(HTTPServer *http_server,
@@ -506,6 +508,9 @@ int RDMHTTPModule::JsonSectionInfo(const HTTPRequest *request,
     error = GetIdentifyMode(response, universe_id, *uid);
   } else if (section_id == POWER_STATE_SECTION) {
     error = GetPowerState(response, universe_id, *uid);
+  } else if (section_id == RESET_DEVICE_SECTION) {
+    // No get command available, so just generate the JSON
+    error = GetResetDevice(response);
   } else {
     OLA_INFO << "Missing or unknown section id: " << section_id;
     delete uid;
@@ -582,6 +587,8 @@ int RDMHTTPModule::JsonSaveSectionInfo(const HTTPRequest *request,
     error = SetIdentifyMode(request, response, universe_id, *uid);
   } else if (section_id == POWER_STATE_SECTION) {
     error = SetPowerState(request, response, universe_id, *uid);
+  } else if (section_id == RESET_DEVICE_SECTION) {
+    error = SetResetDevice(request, response, universe_id, *uid);
   } else {
     OLA_INFO << "Missing or unknown section id: " << section_id;
     delete uid;
@@ -1065,6 +1072,9 @@ void RDMHTTPModule::SupportedSectionsDeviceInfoHandler(
         break;
       case ola::rdm::PID_POWER_STATE:
         AddSection(&sections, POWER_STATE_SECTION, POWER_STATE_SECTION_NAME);
+        break;
+      case ola::rdm::PID_RESET_DEVICE:
+        AddSection(&sections, RESET_DEVICE_SECTION, RESET_DEVICE_SECTION_NAME);
         break;
     }
   }
@@ -3002,6 +3012,64 @@ string RDMHTTPModule::SetPowerState(const HTTPRequest *request,
       uid,
       ola::rdm::ROOT_RDM_DEVICE,
       power_state_enum,
+      NewSingleCallback(this,
+                        &RDMHTTPModule::SetHandler,
+                        response),
+      &error);
+  return error;
+}
+
+
+/**
+ * Handle the request for the device reset section.
+ */
+string RDMHTTPModule::GetResetDevice(HTTPResponse *response) {
+  JsonSection section = JsonSection(false);
+  SelectItem *item = new SelectItem("Reset Device", GENERIC_UINT_FIELD);
+
+  typedef struct {
+    string label;
+    ola::rdm::rdm_reset_device_mode state;
+  } values_s;
+
+  values_s possible_values[] = {
+    {"Warm Reset", ola::rdm::RESET_WARM},
+    {"Cold Reset", ola::rdm::RESET_COLD}};
+
+  for (unsigned int i = 0; i != sizeof(possible_values) / sizeof(values_s);
+       ++i) {
+    item->AddItem(possible_values[i].label, possible_values[i].state);
+  }
+
+  section.AddItem(item);
+  section.SetSaveButton("Reset Device");
+  RespondWithSection(response, section);
+
+  return "";
+}
+
+
+/*
+ * Set the reset device.
+ */
+string RDMHTTPModule::SetResetDevice(const HTTPRequest *request,
+                                    HTTPResponse *response,
+                                    unsigned int universe_id,
+                                    const UID &uid) {
+  string reset_device_str = request->GetParameter(GENERIC_UINT_FIELD);
+  uint8_t reset_device;
+  ola::rdm::rdm_reset_device_mode reset_device_enum;
+  if (!StringToInt(reset_device_str, &reset_device) ||
+      !ola::rdm::UIntToResetDevice(reset_device, &reset_device_enum)) {
+    return "Invalid reset device";
+  }
+
+  string error;
+  m_rdm_api.SetResetDevice(
+      universe_id,
+      uid,
+      ola::rdm::ROOT_RDM_DEVICE,
+      reset_device_enum,
       NewSingleCallback(this,
                         &RDMHTTPModule::SetHandler,
                         response),
