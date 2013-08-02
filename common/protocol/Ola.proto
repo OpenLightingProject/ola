@@ -62,7 +62,15 @@ enum PluginIds {
   OLA_PLUGIN_SPI = 15;
   OLA_PLUGIN_KINET = 16;
   OLA_PLUGIN_KARATE = 17;
-  OLA_PLUGIN_ENLIGHTENMENT = 18;
+  OLA_PLUGIN_MILINST = 18;
+
+  /*
+   * To obtain a new plugin ID open a ticket at
+   * https://code.google.com/p/open-lighting/issues/entry
+   * Plugin IDs are usually assigned just prior to merging the code into the
+   * mainline. For development of plugins please use OLA_PLUGIN_EXPERIMENTAL.
+   */
+  OLA_PLUGIN_EXPERIMENTAL = 10000;
 }
 
 /**

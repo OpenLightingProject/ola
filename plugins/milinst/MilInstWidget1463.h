@@ -13,29 +13,38 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * StageProfiWidgetUsb.h
- * Interface for the StageProfi USB device
- * Copyright (C) 2006-2009 Simon Newton
+ * MilInstWidget1463.h
+ * Interface for the MilInst 1-463 device
+ * Copyright (C) 2013 Peter Newman
  */
 
-#ifndef PLUGINS_STAGEPROFI_STAGEPROFIWIDGETUSB_H_
-#define PLUGINS_STAGEPROFI_STAGEPROFIWIDGETUSB_H_
+#ifndef PLUGINS_MILINST_MILINSTWIDGET1463_H_
+#define PLUGINS_MILINST_MILINSTWIDGET1463_H_
 
 #include <string>
-#include "plugins/stageprofi/StageProfiWidget.h"
+
+#include "plugins/milinst/MilInstWidget.h"
 
 namespace ola {
 namespace plugin {
-namespace stageprofi {
+namespace milinst {
 
-class StageProfiWidgetUsb: public StageProfiWidget {
+class MilInstWidget1463: public MilInstWidget {
   public:
-    StageProfiWidgetUsb(): StageProfiWidget() {}
-    ~StageProfiWidgetUsb() {}
+    explicit MilInstWidget1463(const std::string &path): MilInstWidget(path) {}
+    ~MilInstWidget1463() {}
 
-    bool Connect(const std::string &path);
+    bool Connect();
+    bool DetectDevice();
+    bool SendDmx(const DmxBuffer &buffer) const;
+  protected:
+    int SetChannel(unsigned int chan, uint8_t val) const;
+    int Send112(const DmxBuffer &buffer) const;
+
+    // This interface can only transmit 112 channels
+    enum { DMX_MAX_TRANSMIT_CHANNELS = 112 };
 };
-}  // namespace stageprofi
+}  // namespace milinst
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_STAGEPROFI_STAGEPROFIWIDGETUSB_H_
+#endif  // PLUGINS_MILINST_MILINSTWIDGET1463_H_

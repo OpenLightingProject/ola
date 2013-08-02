@@ -13,39 +13,38 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * StageProfiPort.h
- * The StageProfi plugin for ola
- * Copyright (C) 2006-2009 Simon Newton
+ * MilInstPort.h
+ * The MilInst plugin for ola
+ * Copyright (C) 2013 Peter Newman
  */
 
-#ifndef PLUGINS_STAGEPROFI_STAGEPROFIPORT_H_
-#define PLUGINS_STAGEPROFI_STAGEPROFIPORT_H_
+#ifndef PLUGINS_MILINST_MILINSTPORT_H_
+#define PLUGINS_MILINST_MILINSTPORT_H_
 
 #include <string>
-#include "ola/DmxBuffer.h"
-#include "olad/Port.h"
-#include "plugins/stageprofi/StageProfiDevice.h"
-#include "plugins/stageprofi/StageProfiWidget.h"
+
+#include "plugins/milinst/MilInstDevice.h"
+#include "plugins/milinst/MilInstWidget.h"
 
 namespace ola {
 namespace plugin {
-namespace stageprofi {
+namespace milinst {
 
-class StageProfiOutputPort: public BasicOutputPort {
+class MilInstOutputPort: public BasicOutputPort {
   public:
-    StageProfiOutputPort(StageProfiDevice *parent,
-                         unsigned int id,
-                         StageProfiWidget *widget)
+    MilInstOutputPort(MilInstDevice *parent,
+                      unsigned int id,
+                      MilInstWidget *widget)
         : BasicOutputPort(parent, id),
           m_widget(widget) {}
 
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
-    string Description() const { return m_widget->GetDevicePath(); }
+    string Description() const { return m_widget->GetPath(); }
 
   private:
-    StageProfiWidget *m_widget;
+    MilInstWidget *m_widget;
 };
-}  // namespace stageprofi
+}  // namespace milinst
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_STAGEPROFI_STAGEPROFIPORT_H_
+#endif  // PLUGINS_MILINST_MILINSTPORT_H_

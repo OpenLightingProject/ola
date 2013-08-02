@@ -13,28 +13,20 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * StageProfiDevice.cpp
- * StageProfi device
- * Copyright (C) 2006-2009 Simon Newton
+ * MilInstDevice.cpp
+ * MilInst device
+ * Copyright (C) 2013 Peter Newman
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/types.h>
 #include <string>
 
 #include "ola/Logging.h"
-#include "olad/Preferences.h"
-#include "olad/Universe.h"
-#include "plugins/stageprofi/StageProfiDevice.h"
-#include "plugins/stageprofi/StageProfiPort.h"
-#include "plugins/stageprofi/StageProfiWidgetLan.h"
-#include "plugins/stageprofi/StageProfiWidgetUsb.h"
+#include "plugins/milinst/MilInstPort.h"
+#include "plugins/milinst/MilInstWidget1463.h"
 
 namespace ola {
 namespace plugin {
-namespace stageprofi {
+namespace milinst {
 
 using ola::AbstractPlugin;
 
@@ -45,46 +37,42 @@ using ola::AbstractPlugin;
  * @param name  the device name
  * @param dev_path  path to the pro widget
  */
-StageProfiDevice::StageProfiDevice(AbstractPlugin *owner,
-                                   const string &name,
-                                   const string &dev_path)
+MilInstDevice::MilInstDevice(AbstractPlugin *owner,
+                             const string &name,
+                             const string &dev_path)
     : Device(owner, name),
       m_path(dev_path) {
-    if (dev_path.at(0) == '/') {
-      m_widget.reset(new StageProfiWidgetUsb());
-    } else {
-      m_widget.reset(new StageProfiWidgetLan());
-    }
+  // Currently always create a 1-463 interface pending future options
+  m_widget.reset(new MilInstWidget1463(m_path));
 }
 
 
 /*
  * Destroy this device
-*/
-StageProfiDevice::~StageProfiDevice() {
-  // Stub destructor for compatibility with StageProfiWidget subclasses
+ */
+MilInstDevice::~MilInstDevice() {
+  // Stub destructor for compatibility with MilInstWidget subclasses
 }
+
 
 /*
  * Start this device
  */
-bool StageProfiDevice::StartHook() {
+bool MilInstDevice::StartHook() {
   if (!m_widget.get())
     return false;
 
-  if (!m_widget->Connect(m_path)) {
-    OLA_WARN << "StageProfiPlugin: failed to connect to " << m_path;
+  if (!m_widget->Connect()) {
+    OLA_WARN << "Failed to connect to " << m_path;
     return false;
   }
 
   if (!m_widget->DetectDevice()) {
-    OLA_WARN << "StageProfiPlugin: no device found at " << m_path;
+    OLA_WARN << "No device found at " << m_path;
     return false;
   }
 
-  StageProfiOutputPort *port = new StageProfiOutputPort(this,
-                                                        0,
-                                                        m_widget.get());
+  MilInstOutputPort *port = new MilInstOutputPort(this, 0, m_widget.get());
   AddPort(port);
   return true;
 }
@@ -93,7 +81,7 @@ bool StageProfiDevice::StartHook() {
 /*
  * Stop this device
  */
-void StageProfiDevice::PrePortStop() {
+void MilInstDevice::PrePortStop() {
   // disconnect from widget
   m_widget->Disconnect();
 }
@@ -102,9 +90,9 @@ void StageProfiDevice::PrePortStop() {
 /*
  * return the sd for this device
  */
-ConnectedDescriptor *StageProfiDevice::GetSocket() const {
+ConnectedDescriptor *MilInstDevice::GetSocket() const {
   return m_widget->GetSocket();
 }
-}  // namespace stageprofi
+}  // namespace milinst
 }  // namespace plugin
 }  // namespace ola

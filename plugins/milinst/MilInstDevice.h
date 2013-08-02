@@ -13,17 +13,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * StageProfiDevice.h
- * Interface for the stageprofi device
- * Copyright (C) 2006-2009 Simon Newton
+ * MilInstDevice.h
+ * Interface for the milinst device
+ * Copyright (C) 2013 Peter Newman
  */
 
-#ifndef PLUGINS_STAGEPROFI_STAGEPROFIDEVICE_H_
-#define PLUGINS_STAGEPROFI_STAGEPROFIDEVICE_H_
+#ifndef PLUGINS_MILINST_MILINSTDEVICE_H_
+#define PLUGINS_MILINST_MILINSTDEVICE_H_
 
 #include <memory>
 #include <string>
-#include "ola/network/Socket.h"
+
 #include "olad/Device.h"
 
 namespace ola {
@@ -31,20 +31,18 @@ namespace ola {
 class AbstractPlugin;
 
 namespace plugin {
-namespace stageprofi {
+namespace milinst {
 
 using ola::Device;
 using std::auto_ptr;
 
-class StageProfiDevice: public Device {
+class MilInstDevice: public Device {
   public:
-    StageProfiDevice(AbstractPlugin *owner,
-                     const string &name,
-                     const string &dev_path);
-    ~StageProfiDevice();
+    MilInstDevice(AbstractPlugin *owner,
+                  const string &name,
+                  const string &dev_path);
+    ~MilInstDevice();
 
-    // I don't think this get us full stickiness because USB devices may
-    // appear as different devices.
     string DeviceId() const { return m_path; }
     ola::io::ConnectedDescriptor *GetSocket() const;
 
@@ -54,9 +52,9 @@ class StageProfiDevice: public Device {
 
   private:
     string m_path;
-    auto_ptr<class StageProfiWidget> m_widget;
+    auto_ptr<class MilInstWidget> m_widget;
 };
-}  // namespace stageprofi
+}  // namespace milinst
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_STAGEPROFI_STAGEPROFIDEVICE_H_
+#endif  // PLUGINS_MILINST_MILINSTDEVICE_H_

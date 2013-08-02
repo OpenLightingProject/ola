@@ -13,29 +13,27 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * StageProfiWidgetUsb.h
- * Interface for the StageProfi USB device
- * Copyright (C) 2006-2009 Simon Newton
+ * MilInstPort.cpp
+ * The MilInst plugin for ola
+ * Copyright (C) 2013 Peter Newman
  */
 
-#ifndef PLUGINS_STAGEPROFI_STAGEPROFIWIDGETUSB_H_
-#define PLUGINS_STAGEPROFI_STAGEPROFIWIDGETUSB_H_
-
-#include <string>
-#include "plugins/stageprofi/StageProfiWidget.h"
+#include "plugins/milinst/MilInstPort.h"
 
 namespace ola {
 namespace plugin {
-namespace stageprofi {
+namespace milinst {
 
-class StageProfiWidgetUsb: public StageProfiWidget {
-  public:
-    StageProfiWidgetUsb(): StageProfiWidget() {}
-    ~StageProfiWidgetUsb() {}
-
-    bool Connect(const std::string &path);
-};
-}  // namespace stageprofi
+/*
+ * Write operation
+ * @param the buffer to write
+ * @return true on success, false on failure
+ */
+bool MilInstOutputPort::WriteDMX(const DmxBuffer &buffer,
+                                    uint8_t priority) {
+  return m_widget->SendDmx(buffer);
+  (void) priority;
+}
+}  // namespace milinst
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_STAGEPROFI_STAGEPROFIWIDGETUSB_H_
