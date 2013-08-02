@@ -145,7 +145,7 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     uint16_t m_lock_pin;
     uint16_t m_maximum_level;
     min_level_s m_min_level;
-    uint8_t m_identify_mode;
+    rdm_identify_mode m_identify_mode;
     uint8_t m_burn_in;
     bool m_power_on_self_test;
     PersonalityManager m_personality_manager;

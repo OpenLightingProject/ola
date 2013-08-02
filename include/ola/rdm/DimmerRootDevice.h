@@ -71,7 +71,7 @@ class DimmerRootDevice: public RDMControllerInterface {
 
     const UID m_uid;
     bool m_identify_on;
-    uint8_t m_identify_mode;
+    rdm_identify_mode m_identify_mode;
     SubDeviceMap m_sub_devices;
 
     const RDMResponse *GetDeviceInfo(const RDMRequest *request);

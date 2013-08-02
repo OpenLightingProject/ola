@@ -571,9 +571,10 @@ typedef enum {
   DISPLAY_INVERT_AUTO = 0x02,
 } rdm_display_invert;
 
+// The identify modes from E1.37-1
 typedef enum {
-  IDENTIFY_QUIET = 0,
-  IDENTIFY_LOUD = 255
+  IDENTIFY_MODE_QUIET = 0x00,
+  IDENTIFY_MODE_LOUD = 0xff
 } rdm_identify_mode;
 
 typedef enum {
@@ -590,11 +591,7 @@ static const uint8_t SENSOR_RECORDED_VALUE = 0x01;
 static const uint8_t SENSOR_RECORDED_RANGE_VALUES = 0x02;
 static const uint8_t ALL_SENSORS = 0xff;
 
-// The identify modes from E1.37-1
-static const uint8_t IDENTIFY_MODE_QUIET = 0x00;
-static const uint8_t IDENTIFY_MODE_LOUD = 0xff;
-
-// The maximum pin
+// The maximum PIN
 static const uint16_t MAX_LOCK_PIN = 9999;
 
 // The Preset programmed modes

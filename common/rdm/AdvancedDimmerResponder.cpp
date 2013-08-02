@@ -565,8 +565,9 @@ const RDMResponse *AdvancedDimmerResponder::SetIdentifyMode(
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
-  if (arg == IDENTIFY_MODE_QUIET || arg == IDENTIFY_MODE_LOUD) {
-    m_identify_mode = arg;
+  if (arg == static_cast<uint8_t>(IDENTIFY_MODE_QUIET) ||
+      arg == static_cast<uint8_t>(IDENTIFY_MODE_LOUD)) {
+    m_identify_mode = static_cast<rdm_identify_mode>(arg);
     return ResponderHelper::EmptySetResponse(request);
   } else {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
