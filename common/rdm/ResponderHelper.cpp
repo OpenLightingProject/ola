@@ -256,7 +256,7 @@ const RDMResponse *ResponderHelper::GetSlotInfo(
 
   //const SlotData slot_data = slot_data_list.Lookup(slot_number);
 	//const SlotDataCollection::SlotDataCollection *slot_data_collection = personality_manager->ActivePersonality()->SDC();
-	const SlotDataCollection::SlotDataCollection slot_data_collection = personality_manager->ActivePersonality()->SDC();
+	const SlotDataCollection slot_data_collection = personality_manager->ActivePersonality()->SDC();
 
   OLA_DEBUG << "Got slot data collection";
 
@@ -268,9 +268,12 @@ const RDMResponse *ResponderHelper::GetSlotInfo(
 		OLA_DEBUG << "Got count " << slot_data_collection.SlotDataCount();
 
   for (uint16_t slot = 0; slot < slot_data_collection.SlotDataCount(); slot++) {
+	  OLA_DEBUG << "Looking for slot " << slot;
     const SlotData *sd = slot_data_collection.Lookup(slot);
-		OLA_DEBUG << "Got slot " << slot << " type " <<  static_cast<uint16_t>(sd->SlotType());
+		OLA_DEBUG << "Got slot " << slot << " type " <<  static_cast<int>(sd->SlotType()) << ", def " << static_cast<uint16_t>(sd->SlotDefinition()) << ", default val " << static_cast<uint16_t>(sd->DefaultSlotValue());
   }
+
+OLA_DEBUG << "Done collecting slot data";
 
 return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
 

@@ -41,7 +41,7 @@ SlotData::SlotData(rdm_slot_type slot_type, rdm_slot_definition slot_definition,
       m_slot_definition(slot_definition),
       m_default_slot_value(default_slot_value),
       m_description(description) {
-OLA_DEBUG << "Intialised slot data as type " << m_slot_type << ", def " << m_slot_definition << ", default val " << m_default_slot_value << ", desc " << m_description;
+OLA_DEBUG << "Intialised slot data as type " << m_slot_type << ", def " << m_slot_definition << ", default val " << static_cast<int>(m_default_slot_value) << ", desc " << m_description;
 }
 
 /**
@@ -70,7 +70,7 @@ const SlotData *SlotDataCollection::Lookup(uint16_t slot) const {
   OLA_DEBUG << "Looking for slot data for slot " << slot << " of a total of " << m_slot_data.size();
   if (slot >= m_slot_data.size())
     return NULL;
-	OLA_DEBUG << "Looking at slot data as type " << static_cast<uint8_t>(m_slot_data[slot]->SlotType()) << ", def " << static_cast<uint16_t>(m_slot_data[slot]->SlotDefinition()) << ", default val " << static_cast<uint16_t>(m_slot_data[slot]->DefaultSlotValue());
+	OLA_DEBUG << "Looking at slot data as type " << static_cast<int>(m_slot_data[slot]->SlotType()) << ", def " << static_cast<uint16_t>(m_slot_data[slot]->SlotDefinition()) << ", default val " << static_cast<uint16_t>(m_slot_data[slot]->DefaultSlotValue());
 // << ", desc " << m_slot_data[slot]->Description();
   return m_slot_data[slot];
 }
