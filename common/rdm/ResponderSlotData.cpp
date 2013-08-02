@@ -70,7 +70,7 @@ const SlotData *SlotDataCollection::Lookup(uint16_t slot) const {
   OLA_DEBUG << "Looking for slot data for slot " << slot << " of a total of " << m_slot_data.size();
   if (slot >= m_slot_data.size())
     return NULL;
-	OLA_DEBUG << "Looking at slot data as type " << m_slot_data[slot]->SlotType() << ", def " << m_slot_data[slot]->SlotDefinition() << ", default val " << m_slot_data[slot]->DefaultSlotValue();
+	OLA_DEBUG << "Looking at slot data as type " << static_cast<uint8_t>(m_slot_data[slot]->SlotType()) << ", def " << static_cast<uint16_t>(m_slot_data[slot]->SlotDefinition()) << ", default val " << static_cast<uint16_t>(m_slot_data[slot]->DefaultSlotValue());
 // << ", desc " << m_slot_data[slot]->Description();
   return m_slot_data[slot];
 }
