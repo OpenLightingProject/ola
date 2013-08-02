@@ -125,15 +125,17 @@ void PreferencesTest::testGetSetRemove() {
   string value1 = "bar";
   string value2 = "baz";
 
-  // test get/set single values
+  // test get/set/has single values
   OLA_ASSERT_EQ(string(""), preferences->GetValue(key1));
   preferences->SetValue(key1, value1);
   OLA_ASSERT_EQ(value1, preferences->GetValue(key1));
+  OLA_ASSERT(preferences->HasKey(key1));
   preferences->SetValue(key1, value2);
   OLA_ASSERT_EQ(value2, preferences->GetValue(key1));
 
   preferences->RemoveValue(key1);
   OLA_ASSERT_EQ(string(""), preferences->GetValue(key1));
+  OLA_ASSERT_FALSE(preferences->HasKey(key1));
 
   // test get/set multiple value
   string key2 = "bat";
@@ -141,6 +143,7 @@ void PreferencesTest::testGetSetRemove() {
   OLA_ASSERT_EQ((size_t) 0, values.size());
   preferences->SetMultipleValue(key2, value1);
   values = preferences->GetMultipleValue(key2);
+  OLA_ASSERT(preferences->HasKey(key2));
   OLA_ASSERT_EQ((size_t) 1, values.size());
   OLA_ASSERT_EQ(value1, values.at(0));
   preferences->SetMultipleValue(key2, value2);
@@ -155,6 +158,7 @@ void PreferencesTest::testGetSetRemove() {
   OLA_ASSERT_FALSE(preferences->SetDefaultValue(key1, StringValidator(),
                                                value2));
   OLA_ASSERT_EQ(value1, preferences->GetValue(key1));
+  OLA_ASSERT(preferences->HasKey(key1));
 }
 
 
@@ -202,7 +206,9 @@ void PreferencesTest::testLoad() {
   preferences->LoadFromFile("./testdata/test_preferences.conf");
 
   OLA_ASSERT_EQ(string("bar"), preferences->GetValue("foo"));
+  OLA_ASSERT(preferences->HasKey("foo"));
   OLA_ASSERT_EQ(string("bat"), preferences->GetValue("baz"));
+  OLA_ASSERT(preferences->HasKey("baz"));
 
   vector<string> values = preferences->GetMultipleValue("multi");
   OLA_ASSERT_EQ((size_t) 3, values.size());

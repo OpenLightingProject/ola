@@ -228,6 +228,16 @@ vector<string> MemoryPreferences::GetMultipleValue(const string &key) const {
 
 
 /*
+ * Check if a preference key exists
+ * @param key the key to check
+ * @return if the key exists.
+ */
+bool MemoryPreferences::HasKey(const string &key) const {
+  return STLContains(m_pref_map, key);
+}
+
+
+/*
  * Remove a preference value.
  * @param key
  */
