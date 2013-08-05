@@ -32,7 +32,7 @@ namespace ola {
 
 typedef enum {
 EOM
-grep "^\s\+OLA_PLUGIN_" ../../common/protocol/Ola.proto | sed "s/;/,/"
+grep -E "^[ \t]+OLA_PLUGIN_" ../../common/protocol/Ola.proto | sed "s/;/,/"
 cat <<EOM
 } ola_plugin_id;
 }

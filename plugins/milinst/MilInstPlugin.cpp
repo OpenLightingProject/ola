@@ -154,9 +154,9 @@ bool MilInstPlugin::SetDefaultPreferences() {
   if (save)
     m_preferences->Save();
 
-  // Todo(Peter): Find a way to confirm we've written the blank device key
-  // if (m_preferences->GetValue(DEVICE_KEY).empty())
-  //   return false;
+  // Just check key exists, as we've set it to ""
+  if (!m_preferences->HasKey(DEVICE_KEY))
+    return false;
   return true;
 }
 

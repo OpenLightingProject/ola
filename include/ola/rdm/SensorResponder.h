@@ -44,6 +44,7 @@ namespace rdm {
 class SensorResponder: public RDMControllerInterface {
   public:
     explicit SensorResponder(const UID &uid);
+    ~SensorResponder();
 
     void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
 

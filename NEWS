@@ -1,12 +1,20 @@
 x/y/2013 ola-0.8.31
+ * Added more RDM responder tests for E1.37-1
+ * Added new software RDM responders (Sensor, Dimmer, Moving Light, etc.)
+ * Updates the to Saleae Logic RDM sniffer
+ * Changed the max number of E1.31 ports to 128
+ * Added support for the MilInst 1-463 interface.
+ * Added support for the KMTRONIC usb device (ftdi clone).
+ * Fixed sub device RDM request fan out - bug #246
+ * Fixed universe garbage collection - bug #149
+ * Print the OLA version when running the RDM responder tests
+ * Display the response param data length in the responder tests
  * Bash Completions of UIDs in the RDM commands
  * Change example and SLP scripts to error to STDERR not STDOUT.
- * Added support for new Dummy RDM device types
- * Added support for the KMTRONIC usb device (ftdi clone).
- * Added 4 software RDM responder types (sensor, dimmer, moving light, etc.)
  * Rename AllManufactureDevices(sic) to VendorcastAddress in UID interface
  * Add vendorcast and broadcast options to ola_rdm_discover, to list the
    vendor/broadcast UIDs as well.
+ * Started adding doxygen comments
  * Added lots more man pages.
 
 16/6/2013 ola-0.8.30

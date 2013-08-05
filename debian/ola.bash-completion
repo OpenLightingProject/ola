@@ -4,6 +4,7 @@
 #General todo: change over to use _get_comp_words_by_ref instead of ${COMP_WORDS[COMP_CWORD]}
 #General todo: tidy up and use logic to not call _ola_list_pids or offer unnecessary options when possible
 #General todo: add completion for all the python examples in python/examples/
+#Todo: ola_dev_info feeds into ola_usbpro -d <dev>
 
 #General functions
 #Martin (lots of extra pids) 4d50:ffffffff
