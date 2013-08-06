@@ -121,7 +121,7 @@ const AdvancedDimmerResponder::Personalities *
     AdvancedDimmerResponder::Personalities::Instance() {
   if (!instance) {
     PersonalityList personalities;
-    personalities.push_back(new Personality(12, "6-Channel 16-bit"));
+    personalities.push_back(Personality(12, "6-Channel 16-bit"));
     instance = new Personalities(personalities);
   }
   return instance;

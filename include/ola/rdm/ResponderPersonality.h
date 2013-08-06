@@ -42,7 +42,7 @@ class Personality {
 
   private:
     uint16_t m_footprint;
-    const string m_description;
+    string m_description;
 };
 
 
@@ -53,7 +53,7 @@ class Personality {
  */
 class PersonalityCollection {
   public:
-    typedef std::vector<Personality*> PersonalityList;
+    typedef std::vector<Personality> PersonalityList;
 
     explicit PersonalityCollection(const PersonalityList &personalities);
     virtual ~PersonalityCollection();
@@ -66,7 +66,7 @@ class PersonalityCollection {
     PersonalityCollection() {}
 
   private:
-    PersonalityList m_personalities;
+    const PersonalityList m_personalities;
 };
 
 

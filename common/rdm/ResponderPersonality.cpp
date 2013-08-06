@@ -51,7 +51,6 @@ PersonalityCollection::PersonalityCollection(
  * Clean up
  */
 PersonalityCollection::~PersonalityCollection() {
-  STLDeleteElements(&m_personalities);
 }
 
 /**
@@ -67,7 +66,7 @@ uint8_t PersonalityCollection::PersonalityCount() const {
 const Personality *PersonalityCollection::Lookup(uint8_t personality) const {
   if (personality == 0 || personality > m_personalities.size())
     return NULL;
-  return m_personalities[personality - 1];
+  return &m_personalities[personality - 1];
 }
 
 PersonalityManager::PersonalityManager(

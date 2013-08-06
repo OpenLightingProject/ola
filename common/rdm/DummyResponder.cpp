@@ -44,10 +44,10 @@ const DummyResponder::Personalities *
     DummyResponder::Personalities::Instance() {
   if (!instance) {
     PersonalityList personalities;
-    personalities.push_back(new Personality(0, "Personality 1"));
-    personalities.push_back(new Personality(5, "Personality 2"));
-    personalities.push_back(new Personality(10, "Personality 3"));
-    personalities.push_back(new Personality(20, "Personality 4"));
+    personalities.push_back(Personality(0, "Personality 1"));
+    personalities.push_back(Personality(5, "Personality 2"));
+    personalities.push_back(Personality(10, "Personality 3"));
+    personalities.push_back(Personality(20, "Personality 4"));
     instance = new Personalities(personalities);
   }
   return instance;
