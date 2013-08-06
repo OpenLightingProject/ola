@@ -75,23 +75,24 @@ class SlotDataCollection {
     SlotDataCollection() {}
 
   private:
-    const SlotDataList m_slot_data;
+    //const SlotDataList m_slot_data;
+    SlotDataList m_slot_data;
 };
 
 
 /**
  * Manages the slot data for a single responder
  */
-class SlotDataManager {
-  public:
-    explicit SlotDataManager(const SlotDataCollection *slot_data);
-
-    uint16_t SlotDataCount() const;
-    const SlotData *Lookup(uint16_t slot) const;
-
-  private:
-    const SlotDataCollection *m_slot_data;
-};
+//class SlotDataManager {
+//  public:
+//    explicit SlotDataManager(const SlotDataCollection *slot_data);
+//
+//    uint16_t SlotDataCount() const;
+//    const SlotData *Lookup(uint16_t slot) const;
+//
+//  private:
+//    const SlotDataCollection *m_slot_data;
+//};
 }  // namespace rdm
 }  // namespace ola
 #endif  // INCLUDE_OLA_RDM_RESPONDERSLOTDATA_H_

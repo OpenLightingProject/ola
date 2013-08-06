@@ -77,19 +77,19 @@ const SlotData *SlotDataCollection::Lookup(uint16_t slot) const {
   return &m_slot_data[slot];
 }
 
-SlotDataManager::SlotDataManager(
-    const SlotDataCollection *slot_data)
-    : m_slot_data(slot_data) {
-}
+//SlotDataManager::SlotDataManager(
+//    const SlotDataCollection *slot_data)
+//    : m_slot_data(slot_data) {
+//}
 
-uint16_t SlotDataManager::SlotDataCount() const {
-  return m_slot_data->SlotDataCount();
-}
+//uint16_t SlotDataManager::SlotDataCount() const {
+//  return m_slot_data->SlotDataCount();
+//}
 
 // Lookup some slot data.
-const SlotData *SlotDataManager::Lookup(uint16_t slot) const {
-  return m_slot_data->Lookup(slot);
-}
+//const SlotData *SlotDataManager::Lookup(uint16_t slot) const {
+//  return m_slot_data->Lookup(slot);
+//}
 
 }  // namespace rdm
 }  // namespace ola
