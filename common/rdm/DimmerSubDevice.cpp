@@ -43,8 +43,8 @@ const DimmerSubDevice::Personalities *
     DimmerSubDevice::Personalities::Instance() {
   if (!instance) {
     PersonalityList personalities;
-    personalities.push_back(new Personality(1, "8 bit dimming"));
-    personalities.push_back(new Personality(2, "16 bit dimming"));
+    personalities.push_back(Personality(1, "8 bit dimming"));
+    personalities.push_back(Personality(2, "16 bit dimming"));
     instance = new Personalities(personalities);
   }
   return instance;

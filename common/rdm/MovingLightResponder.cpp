@@ -54,12 +54,12 @@ const MovingLightResponder::Personalities *
     p2_slot_data.push_back(SlotData(ST_PRIMARY, SD_PAN, 127));
     //SlotDatas p2_sdc = new SlotDatas(p2_slot_data);
     PersonalityList personalities;
-    personalities.push_back(new Personality(0, "Personality 1"));
-    //personalities.push_back(new Personality(5, "Personality 2", p2_sdc));
-    personalities.push_back(new Personality(5, "Personality 2", SlotDataCollection(p2_slot_data)));
-    //personalities.push_back(new Personality(5, "Personality 2"));
-    personalities.push_back(new Personality(10, "Personality 3"));
-    personalities.push_back(new Personality(20, "Personality 4"));
+    personalities.push_back(Personality(0, "Personality 1"));
+    //personalities.push_back(Personality(5, "Personality 2", p2_sdc));
+    personalities.push_back(Personality(5, "Personality 2", SlotDataCollection(p2_slot_data)));
+    //personalities.push_back(Personality(5, "Personality 2"));
+    personalities.push_back(Personality(10, "Personality 3"));
+    personalities.push_back(Personality(20, "Personality 4"));
     instance = new Personalities(personalities);
   }
   return instance;
