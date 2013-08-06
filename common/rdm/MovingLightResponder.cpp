@@ -49,9 +49,9 @@ const MovingLightResponder::Personalities *
     MovingLightResponder::Personalities::Instance() {
   if (!instance) {
     SlotDataCollection::SlotDataList p2_slot_data;
-    p2_slot_data.push_back(new SlotData(ST_PRIMARY, SD_INTENSITY, 0, "Int"));
-    p2_slot_data.push_back(new SlotData(ST_SEC_FINE, SD_INTENSITY, 0));
-    p2_slot_data.push_back(new SlotData(ST_PRIMARY, SD_PAN, 127));
+    p2_slot_data.push_back(SlotData(ST_PRIMARY, SD_INTENSITY, 0, "Int"));
+    p2_slot_data.push_back(SlotData(ST_SEC_FINE, SD_INTENSITY, 0));
+    p2_slot_data.push_back(SlotData(ST_PRIMARY, SD_PAN, 127));
     //SlotDatas p2_sdc = new SlotDatas(p2_slot_data);
     PersonalityList personalities;
     personalities.push_back(new Personality(0, "Personality 1"));

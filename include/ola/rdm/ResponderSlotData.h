@@ -33,33 +33,36 @@ namespace rdm {
 using std::string;
 
 /**
- * Represents a personality.
+ * Represents slot data.
  */
 class SlotData {
   public:
-    SlotData(rdm_slot_type slot_type, rdm_slot_definition slot_definition, uint8_t default_slot_value, const string &description = string());
+    SlotData(rdm_slot_type slot_type,
+             rdm_slot_definition slot_definition,
+             uint8_t default_slot_value,
+             const string &description = string());
 
     rdm_slot_type SlotType() const { return m_slot_type; }
     rdm_slot_definition SlotDefinition() const { return m_slot_definition; }
-		uint8_t DefaultSlotValue() const { return m_default_slot_value; }
+    uint8_t DefaultSlotValue() const { return m_default_slot_value; }
     string Description() const { return m_description; }
 
   private:
     rdm_slot_type m_slot_type;
     rdm_slot_definition m_slot_definition;
-		uint8_t m_default_slot_value;
-    const string m_description;
+    uint8_t m_default_slot_value;
+    string m_description;
 };
 
 
 /**
- * Holds the list of personalities for a class of responder. A single instance
- * is shared between all responders of the same type. Subclass this and use a
- * singleton.
+ * Holds the list of slot data for a personality for a class of responder. A
+ * single instance is shared between all responders of the same type. Subclass
+ * this and use a singleton.
  */
 class SlotDataCollection {
   public:
-    typedef std::vector<SlotData*> SlotDataList;
+    typedef std::vector<SlotData> SlotDataList;
 
     explicit SlotDataCollection(const SlotDataList &slot_data);
     virtual ~SlotDataCollection();
@@ -72,7 +75,7 @@ class SlotDataCollection {
     SlotDataCollection() {}
 
   private:
-    SlotDataList m_slot_data;
+    const SlotDataList m_slot_data;
 };
 
 
