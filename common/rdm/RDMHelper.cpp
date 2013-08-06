@@ -611,9 +611,6 @@ string ProductDetailToString(uint16_t detail) {
 }
 
 
-string ResetDeviceToString(uint8_t reset_device);
-bool UIntToResetDevice(uint8_t state, rdm_reset_device_mode *reset_device);
-
 /**
  * Convert a uint8_t representing a reset device to a human-readable string.
  * @param reset_device the reset device value

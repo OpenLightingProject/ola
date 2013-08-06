@@ -630,16 +630,7 @@ const RDMResponse *MovingLightResponder::SetPowerState(
   }
 
   m_power_state = static_cast<rdm_power_state>(new_value);
-  return new RDMSetResponse(
-    request->DestinationUID(),
-    request->SourceUID(),
-    request->TransactionNumber(),
-    RDM_ACK,
-    0,
-    request->SubDevice(),
-    request->ParamId(),
-    NULL,
-    0);
+  return ResponderHelper::EmptySetResponse(request);
 }
 
 const RDMResponse *MovingLightResponder::SetResetDevice(
@@ -658,16 +649,7 @@ const RDMResponse *MovingLightResponder::SetResetDevice(
       ((value == static_cast<uint8_t>(RESET_WARM)) ? "warm" : "cold") <<
       " reset device";
 
-  return new RDMSetResponse(
-    request->DestinationUID(),
-    request->SourceUID(),
-    request->TransactionNumber(),
-    RDM_ACK,
-    0,
-    request->SubDevice(),
-    request->ParamId(),
-    NULL,
-    0);
+  return ResponderHelper::EmptySetResponse(request);
 }
 
 const RDMResponse *MovingLightResponder::GetDeviceModelDescription(
