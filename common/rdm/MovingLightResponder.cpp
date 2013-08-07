@@ -49,15 +49,17 @@ const MovingLightResponder::Personalities *
     MovingLightResponder::Personalities::Instance() {
   if (!instance) {
     SlotDataCollection::SlotDataList p2_slot_data;
-    p2_slot_data.push_back(SlotData(ST_PRIMARY, SD_INTENSITY, 0, "Int"));
-    p2_slot_data.push_back(SlotData(ST_SEC_FINE, SD_INTENSITY, 0));
+    p2_slot_data.push_back(
+        SlotData(ST_PRIMARY, SD_INTENSITY, 0, "Intensity Coarse"));
+    // Todo(Peter): SD_INTENSITY needs to become a 0 for offset
+    p2_slot_data.push_back(
+        SlotData(ST_SEC_FINE, SD_INTENSITY, 0, "Intensity Fine"));
     p2_slot_data.push_back(SlotData(ST_PRIMARY, SD_PAN, 127));
-    //SlotDatas p2_sdc = new SlotDatas(p2_slot_data);
     PersonalityList personalities;
     personalities.push_back(Personality(0, "Personality 1"));
-    //personalities.push_back(Personality(5, "Personality 2", p2_sdc));
-    personalities.push_back(Personality(5, "Personality 2", SlotDataCollection(p2_slot_data)));
-    //personalities.push_back(Personality(5, "Personality 2"));
+    personalities.push_back(Personality(5,
+                                        "Personality 2",
+                                        SlotDataCollection(p2_slot_data)));
     personalities.push_back(Personality(10, "Personality 3"));
     personalities.push_back(Personality(20, "Personality 4"));
     instance = new Personalities(personalities);
@@ -111,6 +113,9 @@ const ResponderOps<MovingLightResponder>::ParamHandler
     NULL},
   { PID_SLOT_DESCRIPTION,
     &MovingLightResponder::GetSlotDescription,
+    NULL},
+  { PID_DEFAULT_SLOT_VALUE,
+    &MovingLightResponder::GetSlotDefaultValues,
     NULL},
   { PID_DMX_START_ADDRESS,
     &MovingLightResponder::GetDmxStartAddress,
@@ -397,14 +402,17 @@ const RDMResponse *MovingLightResponder::GetPersonalityDescription(
 
 const RDMResponse *MovingLightResponder::GetSlotInfo(
     const RDMRequest *request) {
-  return ResponderHelper::GetSlotInfo(
-      request, &m_personality_manager);
+  return ResponderHelper::GetSlotInfo(request, &m_personality_manager);
 }
 
 const RDMResponse *MovingLightResponder::GetSlotDescription(
     const RDMRequest *request) {
-  return ResponderHelper::GetSlotDescription(
-      request, &m_personality_manager);
+  return ResponderHelper::GetSlotDescription(request, &m_personality_manager);
+}
+
+const RDMResponse *MovingLightResponder::GetSlotDefaultValues(
+    const RDMRequest *request) {
+  return ResponderHelper::GetSlotDefaultValues(request, &m_personality_manager);
 }
 
 const RDMResponse *MovingLightResponder::GetDmxStartAddress(
