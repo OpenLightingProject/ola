@@ -28,7 +28,7 @@
 #include "ola/rdm/ResponderSlotData.h"
 #include "ola/stl/STLUtils.h"
 
-// Todo(Peter): Future work, add ability to respond with different languages for
+// TODO(Peter): Future work, add ability to respond with different languages for
 // the slot description
 
 namespace ola {
@@ -52,12 +52,6 @@ SlotData::SlotData(rdm_slot_type slot_type,
 SlotDataCollection::SlotDataCollection(
     const SlotDataList &slot_data)
     : m_slot_data(slot_data) {
-}
-
-/**
- * Clean up
- */
-SlotDataCollection::~SlotDataCollection() {
 }
 
 uint16_t SlotDataCollection::SlotDataCount() const {

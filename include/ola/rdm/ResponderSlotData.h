@@ -57,8 +57,7 @@ class SlotData {
 
 /**
  * Holds the list of slot data for a personality for a class of responder. A
- * single instance is shared between all responders of the same type. Subclass
- * this and use a singleton.
+ * single instance is shared between all responders of the same type.
  */
 class SlotDataCollection {
   public:
@@ -66,7 +65,6 @@ class SlotDataCollection {
 
     explicit SlotDataCollection(const SlotDataList &slot_data);
     SlotDataCollection() {}  // Create an empty slot data collection
-    virtual ~SlotDataCollection();
 
     uint16_t SlotDataCount() const;
 

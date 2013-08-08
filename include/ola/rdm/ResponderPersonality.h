@@ -39,13 +39,16 @@ using std::string;
 class Personality {
   public:
     Personality(uint16_t footprint,
+                const string &description);
+    Personality(uint16_t footprint,
                 const string &description,
-                const SlotDataCollection &slot_data_list =
-                    SlotDataCollection());
+                const SlotDataCollection &slot_data_list);
 
     uint16_t Footprint() const { return m_footprint; }
     string Description() const { return m_description; }
-    SlotDataCollection GetAllSlotData() const { return m_slot_data_list; }
+    const SlotDataCollection *GetAllSlotData() const {
+      return &m_slot_data_list;
+    }
     const SlotData *GetSlotData(uint16_t slot_number) const {
       return m_slot_data_list.Lookup(slot_number);
     }

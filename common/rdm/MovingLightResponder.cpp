@@ -51,7 +51,7 @@ const MovingLightResponder::Personalities *
     SlotDataCollection::SlotDataList p2_slot_data;
     p2_slot_data.push_back(
         SlotData(ST_PRIMARY, SD_INTENSITY, 0, "Intensity Coarse"));
-    // Todo(Peter): SD_INTENSITY needs to become a 0 for offset
+    // TODO(Peter): SD_INTENSITY needs to become a 0 for offset
     p2_slot_data.push_back(
         SlotData(ST_SEC_FINE, SD_INTENSITY, 0, "Intensity Fine"));
     p2_slot_data.push_back(SlotData(ST_PRIMARY, SD_PAN, 127));

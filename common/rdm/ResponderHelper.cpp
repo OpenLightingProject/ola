@@ -253,14 +253,13 @@ const RDMResponse *ResponderHelper::GetSlotInfo(
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
   OLA_DEBUG << "Looking for slot info";
-  const SlotDataCollection slot_data_collection =
+  const SlotDataCollection *slot_data_collection =
       personality_manager->ActivePersonality()->GetAllSlotData();
   OLA_DEBUG << "Got slot data collection with count " <<
-      slot_data_collection.SlotDataCount();
+      slot_data_collection->SlotDataCount();
 
-  if (slot_data_collection.SlotDataCount() <= 0) {
-    // Is this the correct error to return?
-    return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
+  if (slot_data_collection->SlotDataCount() <= 0) {
+    return EmptyGetResponse(request, queued_message_count);
   }
 
   struct slot_info_s {
@@ -269,16 +268,17 @@ const RDMResponse *ResponderHelper::GetSlotInfo(
     uint16_t label;
   } __attribute__((packed));
 
-  slot_info_s slot_info_raw[slot_data_collection.SlotDataCount()];
+  slot_info_s slot_info_raw[slot_data_collection->SlotDataCount()];
 
-  for (uint16_t slot = 0; slot < slot_data_collection.SlotDataCount(); slot++) {
-    const SlotData *sd = slot_data_collection.Lookup(slot);
+  for (uint16_t slot = 0;
+       slot < slot_data_collection->SlotDataCount();
+       slot++) {
+    const SlotData *sd = slot_data_collection->Lookup(slot);
     OLA_DEBUG << "Processing slot " << slot << " type " <<
         static_cast<int>(sd->SlotType()) << ", definition " <<
         static_cast<uint16_t>(sd->SlotDefinition());
     slot_info_raw[slot].offset = HostToNetwork(slot);
-    slot_info_raw[slot].type =
-        HostToNetwork(static_cast<uint8_t>(sd->SlotType()));
+    slot_info_raw[slot].type = static_cast<uint8_t>(sd->SlotType());
     slot_info_raw[slot].label =
         HostToNetwork(static_cast<uint16_t>(sd->SlotDefinition()));
   }
@@ -328,12 +328,11 @@ const RDMResponse *ResponderHelper::GetSlotDescription(
             slot_data->Description().c_str(),
             sizeof(slot_description.description));
 
-    return GetResponseFromData(
-        request,
-        reinterpret_cast<uint8_t*>(&slot_description),
-        sizeof(slot_description),
-        RDM_ACK,
-        queued_message_count);
+    return GetResponseFromData(request,
+                               reinterpret_cast<uint8_t*>(&slot_description),
+                               sizeof(slot_description),
+                               RDM_ACK,
+                               queued_message_count);
   }
 }
 
@@ -349,14 +348,13 @@ const RDMResponse *ResponderHelper::GetSlotDefaultValues(
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
   OLA_DEBUG << "Looking for slot defaults";
-  const SlotDataCollection slot_data_collection =
+  const SlotDataCollection *slot_data_collection =
       personality_manager->ActivePersonality()->GetAllSlotData();
   OLA_DEBUG << "Got slot data collection with count " <<
-      slot_data_collection.SlotDataCount();
+      slot_data_collection->SlotDataCount();
 
-  if (slot_data_collection.SlotDataCount() <= 0) {
-    // Is this the correct error to return?
-    return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
+  if (slot_data_collection->SlotDataCount() <= 0) {
+    return EmptyGetResponse(request, queued_message_count);
   }
 
   struct slot_default_s {
@@ -364,15 +362,17 @@ const RDMResponse *ResponderHelper::GetSlotDefaultValues(
     uint8_t value;
   } __attribute__((packed));
 
-  slot_default_s slot_default_raw[slot_data_collection.SlotDataCount()];
+  slot_default_s slot_default_raw[slot_data_collection->SlotDataCount()];
 
-  for (uint16_t slot = 0; slot < slot_data_collection.SlotDataCount(); slot++) {
-    const SlotData *sd = slot_data_collection.Lookup(slot);
+  for (uint16_t slot = 0;
+       slot < slot_data_collection->SlotDataCount();
+       slot++) {
+    const SlotData *sd = slot_data_collection->Lookup(slot);
     OLA_DEBUG << "Processing slot " << slot << " default " <<
         static_cast<int>(sd->DefaultSlotValue());
     slot_default_raw[slot].offset = HostToNetwork(slot);
     slot_default_raw[slot].value =
-        HostToNetwork(static_cast<uint8_t>(sd->DefaultSlotValue()));
+        static_cast<uint8_t>(sd->DefaultSlotValue());
   }
 
   return GetResponseFromData(
@@ -569,12 +569,21 @@ const RDMResponse *ResponderHelper::GetString(
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
-  return GetResponseFromData(
-        request,
-        reinterpret_cast<const uint8_t*>(value.data()),
-        value.size(),
-        RDM_ACK,
-        queued_message_count);
+  return GetResponseFromData(request,
+                             reinterpret_cast<const uint8_t*>(value.data()),
+                             value.size(),
+                             RDM_ACK,
+                             queued_message_count);
+}
+
+const RDMResponse *ResponderHelper::EmptyGetResponse(
+    const RDMRequest *request,
+    uint8_t queued_message_count) {
+  return GetResponseFromData(request,
+                             NULL,
+                             0,
+                             RDM_ACK,
+                             queued_message_count);
 }
 
 const RDMResponse *ResponderHelper::EmptySetResponse(

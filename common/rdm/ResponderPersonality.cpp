@@ -36,9 +36,21 @@ namespace rdm {
  * @param footprint the number of dmx slots consumed
  * @param description the personality name (32 chars)
  */
-//Personality::Personality(uint16_t footprint, const string &description, const SlotDataCollection::SlotDataList &slot_data_list)
-//Personality::Personality(uint16_t footprint, const string &description, const SlotDataCollection::SlotDataCollection &slot_data_list)
-Personality::Personality(uint16_t footprint, const string &description, const SlotDataCollection &slot_data_list)
+Personality::Personality(uint16_t footprint, const string &description)
+    : m_footprint(footprint),
+      m_description(description),
+      m_slot_data_list(SlotDataCollection()) {
+}
+
+/**
+ * Create a new personality.
+ * @param footprint the number of dmx slots consumed
+ * @param description the personality name (32 chars)
+  * @param slot_data_list the slot data
+ */
+Personality::Personality(uint16_t footprint,
+                         const string &description,
+                         const SlotDataCollection &slot_data_list)
     : m_footprint(footprint),
       m_description(description),
       m_slot_data_list(slot_data_list) {
