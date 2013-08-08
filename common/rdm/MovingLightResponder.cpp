@@ -50,16 +50,15 @@ const MovingLightResponder::Personalities *
   if (!instance) {
     SlotDataCollection::SlotDataList p2_slot_data;
     p2_slot_data.push_back(
-        SlotData(ST_PRIMARY, SD_INTENSITY, 0, "Intensity Coarse"));
-    // TODO(Peter): SD_INTENSITY needs to become a 0 for offset
+        new PrimarySlotData(SD_INTENSITY, 0, "Intensity Coarse"));
     p2_slot_data.push_back(
-        SlotData(ST_SEC_FINE, SD_INTENSITY, 0, "Intensity Fine"));
-    p2_slot_data.push_back(SlotData(ST_PRIMARY, SD_PAN, 127));
+        new SecondarySlotData(ST_SEC_FINE, 0, 0, "Intensity Fine"));
+    p2_slot_data.push_back(new PrimarySlotData(SD_PAN, 127, "Pan"));
+    p2_slot_data.push_back(new PrimarySlotData(SD_TILT, 127, "Tilt"));
     PersonalityList personalities;
     personalities.push_back(Personality(0, "Personality 1"));
-    personalities.push_back(Personality(5,
-                                        "Personality 2",
-                                        SlotDataCollection(p2_slot_data)));
+    personalities.push_back(
+        Personality(5, "Personality 2", SlotDataCollection(p2_slot_data)));
     personalities.push_back(Personality(10, "Personality 3"));
     personalities.push_back(Personality(20, "Personality 4"));
     instance = new Personalities(personalities);

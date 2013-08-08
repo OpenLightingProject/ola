@@ -276,11 +276,11 @@ const RDMResponse *ResponderHelper::GetSlotInfo(
     const SlotData *sd = slot_data_collection->Lookup(slot);
     OLA_DEBUG << "Processing slot " << slot << " type " <<
         static_cast<int>(sd->SlotType()) << ", definition " <<
-        static_cast<uint16_t>(sd->SlotDefinition());
+        sd->RawSlotDefinition();
     slot_info_raw[slot].offset = HostToNetwork(slot);
     slot_info_raw[slot].type = static_cast<uint8_t>(sd->SlotType());
     slot_info_raw[slot].label =
-        HostToNetwork(static_cast<uint16_t>(sd->SlotDefinition()));
+        HostToNetwork(sd->RawSlotDefinition());
   }
 
   return GetResponseFromData(
