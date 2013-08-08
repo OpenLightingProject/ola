@@ -65,12 +65,6 @@ PersonalityCollection::PersonalityCollection(
 }
 
 /**
- * Clean up
- */
-PersonalityCollection::~PersonalityCollection() {
-}
-
-/**
  * @returns the number of personalities
  */
 uint8_t PersonalityCollection::PersonalityCount() const {

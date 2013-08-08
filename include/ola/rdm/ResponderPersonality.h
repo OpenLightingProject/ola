@@ -70,7 +70,6 @@ class PersonalityCollection {
     typedef std::vector<Personality> PersonalityList;
 
     explicit PersonalityCollection(const PersonalityList &personalities);
-    virtual ~PersonalityCollection();
 
     uint8_t PersonalityCount() const;
 
