@@ -33,61 +33,74 @@ namespace rdm {
 using std::string;
 
 /**
- * Represents a personality.
+ * Represents slot data.
  */
 class SlotData {
   public:
-    SlotData(rdm_slot_type slot_type, rdm_slot_definition slot_definition, uint8_t default_slot_value, const string &description = string());
+    SlotData(rdm_slot_type slot_type,
+             uint8_t default_slot_value,
+             const string &description = "");
 
     rdm_slot_type SlotType() const { return m_slot_type; }
-    rdm_slot_definition SlotDefinition() const { return m_slot_definition; }
-		uint8_t DefaultSlotValue() const { return m_default_slot_value; }
+    virtual uint16_t RawSlotDefinition() const = 0;
+    uint8_t DefaultSlotValue() const { return m_default_slot_value; }
     string Description() const { return m_description; }
+    bool IsPrimary() const { return (m_slot_type == ST_PRIMARY); }
 
   private:
     rdm_slot_type m_slot_type;
+    uint8_t m_default_slot_value;
+    string m_description;
+};
+
+
+class PrimarySlotData: public SlotData {
+  public:
+    PrimarySlotData(rdm_slot_definition slot_definition,
+                    uint8_t default_slot_value,
+                    const string &description = "");
+
+    uint16_t RawSlotDefinition() const {
+      return static_cast<uint16_t>(m_slot_definition);
+    }
+    rdm_slot_definition SlotDefinition() const { return m_slot_definition; }
+
+  private:
     rdm_slot_definition m_slot_definition;
-		uint8_t m_default_slot_value;
-    const string m_description;
+};
+
+
+class SecondarySlotData: public SlotData {
+  public:
+    SecondarySlotData(rdm_slot_type slot_type,
+                      uint16_t slot_definition,
+                      uint8_t default_slot_value,
+                      const string &description = "");
+
+    uint16_t RawSlotDefinition() const { return m_slot_definition; }
+
+  private:
+    uint16_t m_slot_definition;
 };
 
 
 /**
- * Holds the list of personalities for a class of responder. A single instance
- * is shared between all responders of the same type. Subclass this and use a
- * singleton.
+ * Holds the list of slot data for a personality for a class of responder. A
+ * single instance is shared between all responders of the same type.
  */
 class SlotDataCollection {
   public:
     typedef std::vector<SlotData*> SlotDataList;
 
     explicit SlotDataCollection(const SlotDataList &slot_data);
-    virtual ~SlotDataCollection();
+    SlotDataCollection() {}  // Create an empty slot data collection
 
     uint16_t SlotDataCount() const;
 
-    const SlotData *Lookup(uint16_t slot) const;
-
-  //protected:
-    SlotDataCollection() {}
+    SlotData *Lookup(uint16_t slot) const;
 
   private:
     SlotDataList m_slot_data;
-};
-
-
-/**
- * Manages the slot data for a single responder
- */
-class SlotDataManager {
-  public:
-    explicit SlotDataManager(const SlotDataCollection *slot_data);
-
-    uint16_t SlotDataCount() const;
-    const SlotData *Lookup(uint16_t slot) const;
-
-  private:
-    const SlotDataCollection *m_slot_data;
 };
 }  // namespace rdm
 }  // namespace ola

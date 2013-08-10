@@ -49,17 +49,18 @@ const MovingLightResponder::Personalities *
     MovingLightResponder::Personalities::Instance() {
   if (!instance) {
     SlotDataCollection::SlotDataList p2_slot_data;
-    p2_slot_data.push_back(new SlotData(ST_PRIMARY, SD_INTENSITY, 0, "Int"));
-    p2_slot_data.push_back(new SlotData(ST_SEC_FINE, SD_INTENSITY, 0));
-    p2_slot_data.push_back(new SlotData(ST_PRIMARY, SD_PAN, 127));
-    //SlotDatas p2_sdc = new SlotDatas(p2_slot_data);
+    p2_slot_data.push_back(
+        new PrimarySlotData(SD_INTENSITY, 0, "Intensity Coarse"));
+    p2_slot_data.push_back(
+        new SecondarySlotData(ST_SEC_FINE, 0, 0, "Intensity Fine"));
+    p2_slot_data.push_back(new PrimarySlotData(SD_PAN, 127, "Pan"));
+    p2_slot_data.push_back(new PrimarySlotData(SD_TILT, 127, "Tilt"));
     PersonalityList personalities;
-    personalities.push_back(new Personality(0, "Personality 1"));
-    //personalities.push_back(new Personality(5, "Personality 2", p2_sdc));
-    personalities.push_back(new Personality(5, "Personality 2", SlotDataCollection(p2_slot_data)));
-    //personalities.push_back(new Personality(5, "Personality 2"));
-    personalities.push_back(new Personality(10, "Personality 3"));
-    personalities.push_back(new Personality(20, "Personality 4"));
+    personalities.push_back(Personality(0, "Personality 1"));
+    personalities.push_back(
+        Personality(5, "Personality 2", SlotDataCollection(p2_slot_data)));
+    personalities.push_back(Personality(10, "Personality 3"));
+    personalities.push_back(Personality(20, "Personality 4"));
     instance = new Personalities(personalities);
   }
   return instance;
@@ -111,6 +112,9 @@ const ResponderOps<MovingLightResponder>::ParamHandler
     NULL},
   { PID_SLOT_DESCRIPTION,
     &MovingLightResponder::GetSlotDescription,
+    NULL},
+  { PID_DEFAULT_SLOT_VALUE,
+    &MovingLightResponder::GetSlotDefaultValues,
     NULL},
   { PID_DMX_START_ADDRESS,
     &MovingLightResponder::GetDmxStartAddress,
@@ -397,14 +401,17 @@ const RDMResponse *MovingLightResponder::GetPersonalityDescription(
 
 const RDMResponse *MovingLightResponder::GetSlotInfo(
     const RDMRequest *request) {
-  return ResponderHelper::GetSlotInfo(
-      request, &m_personality_manager);
+  return ResponderHelper::GetSlotInfo(request, &m_personality_manager);
 }
 
 const RDMResponse *MovingLightResponder::GetSlotDescription(
     const RDMRequest *request) {
-  return ResponderHelper::GetSlotDescription(
-      request, &m_personality_manager);
+  return ResponderHelper::GetSlotDescription(request, &m_personality_manager);
+}
+
+const RDMResponse *MovingLightResponder::GetSlotDefaultValues(
+    const RDMRequest *request) {
+  return ResponderHelper::GetSlotDefaultValues(request, &m_personality_manager);
 }
 
 const RDMResponse *MovingLightResponder::GetDmxStartAddress(
@@ -630,16 +637,7 @@ const RDMResponse *MovingLightResponder::SetPowerState(
   }
 
   m_power_state = static_cast<rdm_power_state>(new_value);
-  return new RDMSetResponse(
-    request->DestinationUID(),
-    request->SourceUID(),
-    request->TransactionNumber(),
-    RDM_ACK,
-    0,
-    request->SubDevice(),
-    request->ParamId(),
-    NULL,
-    0);
+  return ResponderHelper::EmptySetResponse(request);
 }
 
 const RDMResponse *MovingLightResponder::SetResetDevice(
@@ -658,16 +656,7 @@ const RDMResponse *MovingLightResponder::SetResetDevice(
       ((value == static_cast<uint8_t>(RESET_WARM)) ? "warm" : "cold") <<
       " reset device";
 
-  return new RDMSetResponse(
-    request->DestinationUID(),
-    request->SourceUID(),
-    request->TransactionNumber(),
-    RDM_ACK,
-    0,
-    request->SubDevice(),
-    request->ParamId(),
-    NULL,
-    0);
+  return ResponderHelper::EmptySetResponse(request);
 }
 
 const RDMResponse *MovingLightResponder::GetDeviceModelDescription(

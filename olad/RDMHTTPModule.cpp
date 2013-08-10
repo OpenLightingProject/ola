@@ -2387,7 +2387,7 @@ void RDMHTTPModule::LampStateHandler(HTTPResponse *response,
     {"Strike", ola::rdm::LAMP_STRIKE},
     {"Standby", ola::rdm::LAMP_STANDBY}};
 
-  for (unsigned int i = 0; i != sizeof(possible_values) / sizeof(values_s);
+  for (unsigned int i = 0; i < sizeof(possible_values) / sizeof(values_s);
        ++i) {
     item->AddItem(possible_values[i].label, possible_values[i].state);
     if (state == possible_values[i].state)
@@ -2470,7 +2470,7 @@ void RDMHTTPModule::LampModeHandler(HTTPResponse *response,
     {"On", ola::rdm::LAMP_ON_MODE_ON},
     {"On After Calibration", ola::rdm::LAMP_ON_MODE_AFTER_CAL}};
 
-  for (unsigned int i = 0; i != sizeof(possible_values) / sizeof(values_s);
+  for (unsigned int i = 0; i < sizeof(possible_values) / sizeof(values_s);
        ++i) {
     item->AddItem(possible_values[i].label, possible_values[i].mode);
     if (mode == possible_values[i].mode)
@@ -2979,7 +2979,7 @@ void RDMHTTPModule::PowerStateHandler(HTTPResponse *response,
     {"Standby", ola::rdm::POWER_STATE_STANDBY},
     {"Normal", ola::rdm::POWER_STATE_NORMAL}};
 
-  for (unsigned int i = 0; i != sizeof(possible_values) / sizeof(values_s);
+  for (unsigned int i = 0; i < sizeof(possible_values) / sizeof(values_s);
        ++i) {
     item->AddItem(possible_values[i].label, possible_values[i].state);
     if (value == possible_values[i].state)
@@ -3036,7 +3036,7 @@ string RDMHTTPModule::GetResetDevice(HTTPResponse *response) {
     {"Warm Reset", ola::rdm::RESET_WARM},
     {"Cold Reset", ola::rdm::RESET_COLD}};
 
-  for (unsigned int i = 0; i != sizeof(possible_values) / sizeof(values_s);
+  for (unsigned int i = 0; i < sizeof(possible_values) / sizeof(values_s);
        ++i) {
     item->AddItem(possible_values[i].label, possible_values[i].state);
   }

@@ -242,6 +242,9 @@ const RDMResponse *ResponderHelper::GetPersonalityDescription(
 }
 
 
+/**
+ * Get slot info
+ */
 const RDMResponse *ResponderHelper::GetSlotInfo(
     const RDMRequest *request,
     const PersonalityManager *personality_manager,
@@ -250,55 +253,48 @@ const RDMResponse *ResponderHelper::GetSlotInfo(
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
   OLA_DEBUG << "Looking for slot info";
-  //const SlotDataCollection *slot_data_list = personality_manager->ActivePersonality()->SDC();
-	//if (!slot_data_list)
-  //  return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
+  const SlotDataCollection *slot_data_collection =
+      personality_manager->ActivePersonality()->GetAllSlotData();
+  OLA_DEBUG << "Got slot data collection with count " <<
+      slot_data_collection->SlotDataCount();
 
-  //const SlotData slot_data = slot_data_list.Lookup(slot_number);
-	//const SlotDataCollection::SlotDataCollection *slot_data_collection = personality_manager->ActivePersonality()->SDC();
-	const SlotDataCollection slot_data_collection = personality_manager->ActivePersonality()->SDC();
-
-  OLA_DEBUG << "Got slot data collection";
-
-
-//  if (!slot_data_collection) {
-//    return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
-//  } else {
-    OLA_DEBUG << "Got a VALID slot data collection";
-		OLA_DEBUG << "Got count " << slot_data_collection.SlotDataCount();
-
-  for (uint16_t slot = 0; slot < slot_data_collection.SlotDataCount(); slot++) {
-	  OLA_DEBUG << "Looking for slot " << slot;
-    const SlotData *sd = slot_data_collection.Lookup(slot);
-		OLA_DEBUG << "Got slot " << slot << " type " <<  static_cast<int>(sd->SlotType()) << ", def " << static_cast<uint16_t>(sd->SlotDefinition()) << ", default val " << static_cast<uint16_t>(sd->DefaultSlotValue());
+  if (slot_data_collection->SlotDataCount() <= 0) {
+    return EmptyGetResponse(request, queued_message_count);
   }
 
-OLA_DEBUG << "Done collecting slot data";
+  struct slot_info_s {
+    uint16_t offset;
+    uint8_t type;
+    uint16_t label;
+  } __attribute__((packed));
 
-return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
+  slot_info_s slot_info_raw[slot_data_collection->SlotDataCount()];
 
-    struct slot_info_s {
-      uint16_t offset;
-			uint8_t type;
-      uint16_t label;
-    } __attribute__((packed));
+  for (uint16_t slot = 0;
+       slot < slot_data_collection->SlotDataCount();
+       slot++) {
+    const SlotData *sd = slot_data_collection->Lookup(slot);
+    OLA_DEBUG << "Processing slot " << slot << " type " <<
+        static_cast<int>(sd->SlotType()) << ", definition " <<
+        sd->RawSlotDefinition();
+    slot_info_raw[slot].offset = HostToNetwork(slot);
+    slot_info_raw[slot].type = static_cast<uint8_t>(sd->SlotType());
+    slot_info_raw[slot].label =
+        HostToNetwork(sd->RawSlotDefinition());
+  }
 
-  //  struct slot_info_s slot_info;
-  //  slot_description.slot = HostToNetwork(slot_number);
-  //  strncpy(slot_description.description,
-  //          slot_data->Description().c_str(),
-  //          sizeof(slot_description.description));
-
-////    return GetResponseFromData(
-  //      request,
-  //      reinterpret_cast<uint8_t*>(&slot_description),
-  //      sizeof(slot_description),
-  //      RDM_ACK,
-  //      queued_message_count);
-//  }
+  return GetResponseFromData(
+      request,
+      reinterpret_cast<uint8_t*>(&slot_info_raw),
+      sizeof(slot_info_raw),
+      RDM_ACK,
+      queued_message_count);
 }
 
 
+/**
+ * Get a slot description
+ */
 const RDMResponse *ResponderHelper::GetSlotDescription(
     const RDMRequest *request,
     const PersonalityManager *personality_manager,
@@ -308,21 +304,19 @@ const RDMResponse *ResponderHelper::GetSlotDescription(
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
   OLA_DEBUG << "Looking for slot desc for slot " << slot_number;
-  //const SlotDataCollection *slot_data_list = personality_manager->ActivePersonality()->SDC();
-	//if (!slot_data_list)
-  //  return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
-
-  //const SlotData slot_data = slot_data_list.Lookup(slot_number);
-	const SlotData *slot_data = personality_manager->ActivePersonality()->GetSlotData(slot_number);
-
-  OLA_DEBUG << "Got a chunk of slot_data";
+  const SlotData *slot_data =
+      personality_manager->ActivePersonality()->GetSlotData(slot_number);
 
   if (!slot_data) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
   } else {
-    OLA_DEBUG << "Got a VALID chunk of slot_data";
-		OLA_DEBUG << "Got slot type " << slot_data->SlotType() << " for slot " << slot_number;
-	  OLA_DEBUG << "Got slot desc " << slot_data->Description() << " for slot " << slot_number;
+    OLA_DEBUG << "Got slot description " << slot_data->Description() <<
+        " for slot " << slot_number;
+    if (slot_data->Description().empty())
+      return NackWithReason(request,
+                            NR_DATA_OUT_OF_RANGE,
+                            queued_message_count);
+
     struct slot_description_s {
       uint16_t slot;
       char description[MAX_RDM_STRING_LENGTH];
@@ -334,13 +328,59 @@ const RDMResponse *ResponderHelper::GetSlotDescription(
             slot_data->Description().c_str(),
             sizeof(slot_description.description));
 
-    return GetResponseFromData(
-        request,
-        reinterpret_cast<uint8_t*>(&slot_description),
-        sizeof(slot_description),
-        RDM_ACK,
-        queued_message_count);
+    return GetResponseFromData(request,
+                               reinterpret_cast<uint8_t*>(&slot_description),
+                               sizeof(slot_description),
+                               RDM_ACK,
+                               queued_message_count);
   }
+}
+
+
+/**
+ * Get slot default values
+ */
+const RDMResponse *ResponderHelper::GetSlotDefaultValues(
+    const RDMRequest *request,
+    const PersonalityManager *personality_manager,
+    uint8_t queued_message_count) {
+  if (request->ParamDataSize()) {
+    return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
+  }
+  OLA_DEBUG << "Looking for slot defaults";
+  const SlotDataCollection *slot_data_collection =
+      personality_manager->ActivePersonality()->GetAllSlotData();
+  OLA_DEBUG << "Got slot data collection with count " <<
+      slot_data_collection->SlotDataCount();
+
+  if (slot_data_collection->SlotDataCount() <= 0) {
+    return EmptyGetResponse(request, queued_message_count);
+  }
+
+  struct slot_default_s {
+    uint16_t offset;
+    uint8_t value;
+  } __attribute__((packed));
+
+  slot_default_s slot_default_raw[slot_data_collection->SlotDataCount()];
+
+  for (uint16_t slot = 0;
+       slot < slot_data_collection->SlotDataCount();
+       slot++) {
+    const SlotData *sd = slot_data_collection->Lookup(slot);
+    OLA_DEBUG << "Processing slot " << slot << " default " <<
+        static_cast<int>(sd->DefaultSlotValue());
+    slot_default_raw[slot].offset = HostToNetwork(slot);
+    slot_default_raw[slot].value =
+        static_cast<uint8_t>(sd->DefaultSlotValue());
+  }
+
+  return GetResponseFromData(
+      request,
+      reinterpret_cast<uint8_t*>(&slot_default_raw),
+      sizeof(slot_default_raw),
+      RDM_ACK,
+      queued_message_count);
 }
 
 
@@ -529,12 +569,21 @@ const RDMResponse *ResponderHelper::GetString(
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
-  return GetResponseFromData(
-        request,
-        reinterpret_cast<const uint8_t*>(value.data()),
-        value.size(),
-        RDM_ACK,
-        queued_message_count);
+  return GetResponseFromData(request,
+                             reinterpret_cast<const uint8_t*>(value.data()),
+                             value.size(),
+                             RDM_ACK,
+                             queued_message_count);
+}
+
+const RDMResponse *ResponderHelper::EmptyGetResponse(
+    const RDMRequest *request,
+    uint8_t queued_message_count) {
+  return GetResponseFromData(request,
+                             NULL,
+                             0,
+                             RDM_ACK,
+                             queued_message_count);
 }
 
 const RDMResponse *ResponderHelper::EmptySetResponse(

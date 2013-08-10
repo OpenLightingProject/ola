@@ -272,7 +272,7 @@ class QueuedMessageHandler {
     virtual void PowerState(const ResponseStatus &status,
                             uint8_t power_state) = 0;
     virtual void ResetDevice(const ResponseStatus &status,
-                            uint8_t reset_device) = 0;
+                             uint8_t reset_device) = 0;
     virtual void SelfTestEnabled(const ResponseStatus &status,
                                  bool is_enabled) = 0;
     virtual void SelfTestDescription(const ResponseStatus &status,
