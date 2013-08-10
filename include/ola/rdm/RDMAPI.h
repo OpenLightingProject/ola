@@ -271,6 +271,8 @@ class QueuedMessageHandler {
                        const ClockValue &clock) = 0;
     virtual void PowerState(const ResponseStatus &status,
                             uint8_t power_state) = 0;
+    virtual void ResetDevice(const ResponseStatus &status,
+                            uint8_t reset_device) = 0;
     virtual void SelfTestEnabled(const ResponseStatus &status,
                                  bool is_enabled) = 0;
     virtual void SelfTestDescription(const ResponseStatus &status,
@@ -870,6 +872,14 @@ class RDMAPI {
         const UID &uid,
         uint16_t sub_device,
         rdm_power_state power_state,
+        SingleUseCallback1<void, const ResponseStatus&> *callback,
+        string *error);
+
+    bool SetResetDevice(
+        unsigned int universe,
+        const UID &uid,
+        uint16_t sub_device,
+        rdm_reset_device_mode reset_device,
         SingleUseCallback1<void, const ResponseStatus&> *callback,
         string *error);
 

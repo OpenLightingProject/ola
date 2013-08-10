@@ -33,6 +33,7 @@
 #include "ola/rdm/OpenLightingEnums.h"
 #include "ola/rdm/RDMEnums.h"
 #include "ola/rdm/ResponderHelper.h"
+#include "ola/rdm/ResponderSlotData.h"
 
 namespace ola {
 namespace rdm {
@@ -47,11 +48,18 @@ MovingLightResponder::RDMOps *MovingLightResponder::RDMOps::instance = NULL;
 const MovingLightResponder::Personalities *
     MovingLightResponder::Personalities::Instance() {
   if (!instance) {
+    SlotDataCollection::SlotDataList p2_slot_data;
+    p2_slot_data.push_back(new SlotData(ST_PRIMARY, SD_INTENSITY, 0, "Int"));
+    p2_slot_data.push_back(new SlotData(ST_SEC_FINE, SD_INTENSITY, 0));
+    p2_slot_data.push_back(new SlotData(ST_PRIMARY, SD_PAN, 127));
+    //SlotDatas p2_sdc = new SlotDatas(p2_slot_data);
     PersonalityList personalities;
-    personalities.push_back(Personality(0, "Personality 1"));
-    personalities.push_back(Personality(5, "Personality 2"));
-    personalities.push_back(Personality(10, "Personality 3"));
-    personalities.push_back(Personality(20, "Personality 4"));
+    personalities.push_back(new Personality(0, "Personality 1"));
+    //personalities.push_back(new Personality(5, "Personality 2", p2_sdc));
+    personalities.push_back(new Personality(5, "Personality 2", SlotDataCollection(p2_slot_data)));
+    //personalities.push_back(new Personality(5, "Personality 2"));
+    personalities.push_back(new Personality(10, "Personality 3"));
+    personalities.push_back(new Personality(20, "Personality 4"));
     instance = new Personalities(personalities);
   }
   return instance;
@@ -98,6 +106,12 @@ const ResponderOps<MovingLightResponder>::ParamHandler
   { PID_DMX_PERSONALITY_DESCRIPTION,
     &MovingLightResponder::GetPersonalityDescription,
     NULL},
+  { PID_SLOT_INFO,
+    &MovingLightResponder::GetSlotInfo,
+    NULL},
+  { PID_SLOT_DESCRIPTION,
+    &MovingLightResponder::GetSlotDescription,
+    NULL},
   { PID_DMX_START_ADDRESS,
     &MovingLightResponder::GetDmxStartAddress,
     &MovingLightResponder::SetDmxStartAddress},
@@ -140,6 +154,9 @@ const ResponderOps<MovingLightResponder>::ParamHandler
   { PID_REAL_TIME_CLOCK,
     &MovingLightResponder::GetRealTimeClock,
     NULL},
+  { PID_RESET_DEVICE,
+    NULL,
+    &MovingLightResponder::SetResetDevice},
   { PID_POWER_STATE,
     &MovingLightResponder::GetPowerState,
     &MovingLightResponder::SetPowerState},
@@ -378,6 +395,18 @@ const RDMResponse *MovingLightResponder::GetPersonalityDescription(
       request, &m_personality_manager);
 }
 
+const RDMResponse *MovingLightResponder::GetSlotInfo(
+    const RDMRequest *request) {
+  return ResponderHelper::GetSlotInfo(
+      request, &m_personality_manager);
+}
+
+const RDMResponse *MovingLightResponder::GetSlotDescription(
+    const RDMRequest *request) {
+  return ResponderHelper::GetSlotDescription(
+      request, &m_personality_manager);
+}
+
 const RDMResponse *MovingLightResponder::GetDmxStartAddress(
     const RDMRequest *request) {
   return ResponderHelper::GetDmxAddress(request, &m_personality_manager,
@@ -601,6 +630,34 @@ const RDMResponse *MovingLightResponder::SetPowerState(
   }
 
   m_power_state = static_cast<rdm_power_state>(new_value);
+  return new RDMSetResponse(
+    request->DestinationUID(),
+    request->SourceUID(),
+    request->TransactionNumber(),
+    RDM_ACK,
+    0,
+    request->SubDevice(),
+    request->ParamId(),
+    NULL,
+    0);
+}
+
+const RDMResponse *MovingLightResponder::SetResetDevice(
+    const RDMRequest *request) {
+  uint8_t value;
+  if (!ResponderHelper::ExtractUInt8(request, &value)) {
+    return NackWithReason(request, NR_FORMAT_ERROR);
+  }
+
+  if (value != static_cast<uint8_t>(RESET_WARM) &&
+      value != static_cast<uint8_t>(RESET_COLD)) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
+  }
+
+  OLA_INFO << "Dummy Moving Light " << m_uid << " " <<
+      ((value == static_cast<uint8_t>(RESET_WARM)) ? "warm" : "cold") <<
+      " reset device";
+
   return new RDMSetResponse(
     request->DestinationUID(),
     request->SourceUID(),

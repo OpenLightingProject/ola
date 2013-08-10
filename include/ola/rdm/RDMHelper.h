@@ -50,6 +50,8 @@ bool UIntToPowerState(uint8_t state, rdm_power_state *power_state);
 string PrefixToString(uint8_t prefix);
 string ProductCategoryToString(uint16_t category);
 string ProductDetailToString(uint16_t detail);
+string ResetDeviceToString(uint8_t reset_device);
+bool UIntToResetDevice(uint8_t state, rdm_reset_device_mode *reset_device);
 string SensorTypeToString(uint8_t type);
 string SlotInfoToString(uint8_t slot_type, uint16_t slot_label);
 string StatusMessageIdToString(uint16_t message_id,
