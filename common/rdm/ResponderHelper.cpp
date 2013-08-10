@@ -252,13 +252,10 @@ const RDMResponse *ResponderHelper::GetSlotInfo(
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
-  OLA_DEBUG << "Looking for slot info";
-  const SlotDataCollection *slot_data_collection =
-      personality_manager->ActivePersonality()->GetAllSlotData();
-  OLA_DEBUG << "Got slot data collection with count " <<
-      slot_data_collection->SlotDataCount();
+  const SlotDataCollection *slot_data =
+      personality_manager->ActivePersonality()->GetSlotData();
 
-  if (slot_data_collection->SlotDataCount() <= 0) {
+  if (slot_data->SlotCount() == 0) {
     return EmptyGetResponse(request, queued_message_count);
   }
 
@@ -268,19 +265,13 @@ const RDMResponse *ResponderHelper::GetSlotInfo(
     uint16_t label;
   } __attribute__((packed));
 
-  slot_info_s slot_info_raw[slot_data_collection->SlotDataCount()];
+  slot_info_s slot_info_raw[slot_data->SlotCount()];
 
-  for (uint16_t slot = 0;
-       slot < slot_data_collection->SlotDataCount();
-       slot++) {
-    const SlotData *sd = slot_data_collection->Lookup(slot);
-    OLA_DEBUG << "Processing slot " << slot << " type " <<
-        static_cast<int>(sd->SlotType()) << ", definition " <<
-        sd->RawSlotDefinition();
+  for (uint16_t slot = 0; slot < slot_data->SlotCount(); slot++) {
+    const SlotData *sd = slot_data->Lookup(slot);
     slot_info_raw[slot].offset = HostToNetwork(slot);
     slot_info_raw[slot].type = static_cast<uint8_t>(sd->SlotType());
-    slot_info_raw[slot].label =
-        HostToNetwork(sd->RawSlotDefinition());
+    slot_info_raw[slot].label = HostToNetwork(sd->SlotIDDefinition());
   }
 
   return GetResponseFromData(
@@ -303,20 +294,13 @@ const RDMResponse *ResponderHelper::GetSlotDescription(
   if (!ExtractUInt16(request, &slot_number)) {
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
-  OLA_DEBUG << "Looking for slot desc for slot " << slot_number;
+
   const SlotData *slot_data =
       personality_manager->ActivePersonality()->GetSlotData(slot_number);
 
   if (!slot_data) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
   } else {
-    OLA_DEBUG << "Got slot description " << slot_data->Description() <<
-        " for slot " << slot_number;
-    if (slot_data->Description().empty())
-      return NackWithReason(request,
-                            NR_DATA_OUT_OF_RANGE,
-                            queued_message_count);
-
     struct slot_description_s {
       uint16_t slot;
       char description[MAX_RDM_STRING_LENGTH];
@@ -328,9 +312,12 @@ const RDMResponse *ResponderHelper::GetSlotDescription(
             slot_data->Description().c_str(),
             sizeof(slot_description.description));
 
+    unsigned int param_data_size = (
+        sizeof(slot_description.slot) + slot_data->Description().size());
+
     return GetResponseFromData(request,
                                reinterpret_cast<uint8_t*>(&slot_description),
-                               sizeof(slot_description),
+                               param_data_size,
                                RDM_ACK,
                                queued_message_count);
   }
@@ -347,13 +334,10 @@ const RDMResponse *ResponderHelper::GetSlotDefaultValues(
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR, queued_message_count);
   }
-  OLA_DEBUG << "Looking for slot defaults";
-  const SlotDataCollection *slot_data_collection =
-      personality_manager->ActivePersonality()->GetAllSlotData();
-  OLA_DEBUG << "Got slot data collection with count " <<
-      slot_data_collection->SlotDataCount();
+  const SlotDataCollection *slot_data =
+      personality_manager->ActivePersonality()->GetSlotData();
 
-  if (slot_data_collection->SlotDataCount() <= 0) {
+  if (slot_data->SlotCount() == 0) {
     return EmptyGetResponse(request, queued_message_count);
   }
 
@@ -362,14 +346,10 @@ const RDMResponse *ResponderHelper::GetSlotDefaultValues(
     uint8_t value;
   } __attribute__((packed));
 
-  slot_default_s slot_default_raw[slot_data_collection->SlotDataCount()];
+  slot_default_s slot_default_raw[slot_data->SlotCount()];
 
-  for (uint16_t slot = 0;
-       slot < slot_data_collection->SlotDataCount();
-       slot++) {
-    const SlotData *sd = slot_data_collection->Lookup(slot);
-    OLA_DEBUG << "Processing slot " << slot << " default " <<
-        static_cast<int>(sd->DefaultSlotValue());
+  for (uint16_t slot = 0; slot < slot_data->SlotCount(); slot++) {
+    const SlotData *sd = slot_data->Lookup(slot);
     slot_default_raw[slot].offset = HostToNetwork(slot);
     slot_default_raw[slot].value =
         static_cast<uint8_t>(sd->DefaultSlotValue());

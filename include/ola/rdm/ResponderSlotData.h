@@ -18,6 +18,14 @@
  * Copyright (C) 2013 Peter Newman
  */
 
+/**
+ * @addtogroup rdm_resp
+ * @{
+ * @file ResponderSlotData.h
+ * @brief Holds the information about DMX slots.
+ * @}
+ */
+
 #ifndef INCLUDE_OLA_RDM_RESPONDERSLOTDATA_H_
 #define INCLUDE_OLA_RDM_RESPONDERSLOTDATA_H_
 
@@ -33,71 +41,100 @@ namespace rdm {
 using std::string;
 
 /**
- * Represents slot data.
+ * @brief Holds information about a single DMX slot.
  */
 class SlotData {
   public:
-    SlotData(rdm_slot_type slot_type,
-             uint8_t default_slot_value,
-             const string &description = "");
-
+    /**
+     * @brief The Slot Type.
+     * Used in the SLOT_INFO message.
+     * @returns the slot type.
+     */
     rdm_slot_type SlotType() const { return m_slot_type; }
-    virtual uint16_t RawSlotDefinition() const = 0;
+
+    /**
+     * @brief The Slot ID Definition.
+     * Used in the SLOT_INFO message. This can either be a rdm_slot_definition
+     * for a primary slot, or the index of the primary slot in the case of a
+     * secondary slot.
+     * @returns The slot ID Definition.
+     */
+    uint16_t SlotIDDefinition() const { return m_slot_id; }
+
+    /**
+     * @brief The default slot value.
+     * Used in the DEFAULT_SLOT_VALUE message.
+     * @returns the default slot value.
+     */
     uint8_t DefaultSlotValue() const { return m_default_slot_value; }
+
+    /**
+     * @brief The slot description.
+     * Used in the SLOT_DESCRIPTION message.
+     * @returns the slot description.
+     */
     string Description() const { return m_description; }
-    bool IsPrimary() const { return (m_slot_type == ST_PRIMARY); }
+
+    /**
+     * @brief Create a new Primary slot
+     * @param slot_definition the slot id definition.
+     * @param default_slot_value the default value for the slot
+     * @param description the slot description
+     * @returns a SlotData object.
+     */
+    static SlotData PrimarySlot(
+        rdm_slot_definition slot_definition,
+        uint8_t default_slot_value,
+        const string &description);
+
+    /**
+     * @brief Create a new Secondary slot.
+     * @param slot_type the secondary slot type
+     * @param primary_slot the primary slot index.
+     * @param default_slot_value the default value for the slot
+     * @param description the slot description
+     * @returns a SlotData object.
+     */
+    static SlotData SecondarySlot(
+        rdm_slot_type slot_type,
+        uint16_t primary_slot,
+        uint8_t default_slot_value,
+        const string &description);
 
   private:
+    SlotData(rdm_slot_type slot_type,
+             uint16_t slot_id,
+             uint8_t default_slot_value,
+             const string &description);
+
     rdm_slot_type m_slot_type;
+    uint16_t m_slot_id;
     uint8_t m_default_slot_value;
     string m_description;
 };
 
 
-class PrimarySlotData: public SlotData {
-  public:
-    PrimarySlotData(rdm_slot_definition slot_definition,
-                    uint8_t default_slot_value,
-                    const string &description = "");
-
-    uint16_t RawSlotDefinition() const {
-      return static_cast<uint16_t>(m_slot_definition);
-    }
-    rdm_slot_definition SlotDefinition() const { return m_slot_definition; }
-
-  private:
-    rdm_slot_definition m_slot_definition;
-};
-
-
-class SecondarySlotData: public SlotData {
-  public:
-    SecondarySlotData(rdm_slot_type slot_type,
-                      uint16_t slot_definition,
-                      uint8_t default_slot_value,
-                      const string &description = "");
-
-    uint16_t RawSlotDefinition() const { return m_slot_definition; }
-
-  private:
-    uint16_t m_slot_definition;
-};
-
-
 /**
- * Holds the list of slot data for a personality for a class of responder. A
- * single instance is shared between all responders of the same type.
+ * @brief Holds information about a set of slots.
  */
 class SlotDataCollection {
   public:
-    typedef std::vector<SlotData*> SlotDataList;
+    typedef std::vector<SlotData> SlotDataList;
 
     explicit SlotDataCollection(const SlotDataList &slot_data);
-    SlotDataCollection() {}  // Create an empty slot data collection
+    SlotDataCollection() {}
 
-    uint16_t SlotDataCount() const;
+    /**
+     * @brief The number of slots we have information for.
+     * @returns the number of slots we have information for.
+     */
+    uint16_t SlotCount() const;
 
-    SlotData *Lookup(uint16_t slot) const;
+    /**
+     * @brief Lookup slot data based on the slot index
+     * @returns A pointer to a SlotData object, or null if no such slot exists.
+     */
+    const SlotData *Lookup(uint16_t slot) const;
 
   private:
     SlotDataList m_slot_data;

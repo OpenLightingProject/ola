@@ -21,8 +21,8 @@
 /**
  * @addtogroup rdm_helpers
  * @{
- * @file RDMENUMS.h
- * @brief Provides a generic RDM ENUMS that can use different implementations
+ * @file RDMEnums.h
+ * @brief Various constants used in RDM.
  * @}
  */
 
@@ -463,7 +463,9 @@ typedef enum {
 } rdm_product_detail;
 
 
-// slot types
+/**
+ * @brief The RDM slot types, from table C-1 of the standard.
+ */
 typedef enum {
   ST_PRIMARY = 0x00,
   ST_SEC_FINE = 0x01,
@@ -477,7 +479,9 @@ typedef enum {
 } rdm_slot_type;
 
 
-// slot definitions
+/**
+ * @brief The RDM slot definitions, from table C-2 of the standard.
+ */
 typedef enum {
   SD_INTENSITY = 0x0001,
   SD_INTENSITY_MASTER = 0x0002,

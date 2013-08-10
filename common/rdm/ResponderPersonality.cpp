@@ -38,22 +38,14 @@ namespace rdm {
  */
 Personality::Personality(uint16_t footprint, const string &description)
     : m_footprint(footprint),
-      m_description(description),
-      m_slot_data_list(SlotDataCollection()) {
+      m_description(description) {
 }
 
-/**
- * Create a new personality.
- * @param footprint the number of dmx slots consumed
- * @param description the personality name (32 chars)
-  * @param slot_data_list the slot data
- */
-Personality::Personality(uint16_t footprint,
-                         const string &description,
-                         const SlotDataCollection &slot_data_list)
+Personality::Personality(uint16_t footprint, const string &description,
+                         const SlotDataCollection &slot_data)
     : m_footprint(footprint),
       m_description(description),
-      m_slot_data_list(slot_data_list) {
+      m_slot_data(slot_data) {
 }
 
 /**
@@ -62,6 +54,12 @@ Personality::Personality(uint16_t footprint,
 PersonalityCollection::PersonalityCollection(
     const PersonalityList &personalities)
     : m_personalities(personalities) {
+}
+
+/**
+ * Clean up
+ */
+PersonalityCollection::~PersonalityCollection() {
 }
 
 /**
