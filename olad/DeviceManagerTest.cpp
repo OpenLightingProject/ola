@@ -69,7 +69,7 @@ CPPUNIT_TEST_SUITE_REGISTRATION(DeviceManagerTest);
  */
 void DeviceManagerTest::testDeviceManager() {
   DeviceManager manager(NULL, NULL);
-  OLA_ASSERT_EQ((unsigned int) 0, manager.DeviceCount());
+  OLA_ASSERT_EQ(0u, manager.DeviceCount());
 
   TestMockPlugin plugin(NULL, ola::OLA_PLUGIN_ARTNET);
   MockDevice orphaned_device(NULL, "orphaned device");
@@ -89,30 +89,25 @@ void DeviceManagerTest::testDeviceManager() {
 
   // register a second device
   OLA_ASSERT(manager.RegisterDevice(&device2));
-  OLA_ASSERT_EQ((unsigned int) 2, manager.DeviceCount());
+  OLA_ASSERT_EQ(2u, manager.DeviceCount());
 
   vector<ola::device_alias_pair> devices = manager.Devices();
-  OLA_ASSERT_EQ((unsigned int) 1, devices[0].alias);
-  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device1),
-                       devices[0].device);
-  OLA_ASSERT_EQ((unsigned int) 2, devices[1].alias);
-  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device2),
-                       devices[1].device);
+  OLA_ASSERT_EQ(1u, devices[0].alias);
+  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device1), devices[0].device);
+  OLA_ASSERT_EQ(2u, devices[1].alias);
+  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device2), devices[1].device);
 
   // test fetching a device by alias
-  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device1),
-                       manager.GetDevice(1));
-  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device2),
-                       manager.GetDevice(2));
-  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(NULL),
-                       manager.GetDevice(3));
+  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device1), manager.GetDevice(1));
+  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device2), manager.GetDevice(2));
+  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(NULL), manager.GetDevice(3));
 
   // test fetching a device by id
   ola::device_alias_pair result = manager.GetDevice(device1.UniqueId());
-  OLA_ASSERT_EQ((unsigned int) 1, result.alias);
+  OLA_ASSERT_EQ(1u, result.alias);
   OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device1), result.device);
   result = manager.GetDevice(device2.UniqueId());
-  OLA_ASSERT_EQ((unsigned int) 2, result.alias);
+  OLA_ASSERT_EQ(2u, result.alias);
   OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device2), result.device);
   result = manager.GetDevice("foo");
   OLA_ASSERT_EQ(DeviceManager::MISSING_DEVICE_ALIAS, result.alias);
@@ -127,31 +122,30 @@ void DeviceManagerTest::testDeviceManager() {
 
   // unregistering the first device doesn't change the ID of the second
   OLA_ASSERT(manager.UnregisterDevice(&device1));
-  OLA_ASSERT_EQ((unsigned int) 1, manager.DeviceCount());
-  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(NULL),
-                       manager.GetDevice(1));
-  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device2),
-                       manager.GetDevice(2));
+  OLA_ASSERT_EQ(1u, manager.DeviceCount());
+  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(NULL), manager.GetDevice(1));
+  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device2), manager.GetDevice(2));
+
+  devices = manager.Devices();
+  OLA_ASSERT_EQ(2u, devices[0].alias);
+  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device2), devices[0].device);
 
   // unregister by id
   OLA_ASSERT_FALSE(manager.UnregisterDevice(device1.UniqueId()));
   OLA_ASSERT(manager.UnregisterDevice(device2.UniqueId()));
-  OLA_ASSERT_EQ((unsigned int) 0, manager.DeviceCount());
+  OLA_ASSERT_EQ(0u, manager.DeviceCount());
   manager.UnregisterAllDevices();
 
   // add one back and check that ids reset
   OLA_ASSERT(manager.RegisterDevice(&device1));
-  OLA_ASSERT_EQ((unsigned int) 1, manager.DeviceCount());
+  OLA_ASSERT_EQ(1u, manager.DeviceCount());
   devices = manager.Devices();
-  OLA_ASSERT_EQ((unsigned int) 1, devices[0].alias);
-  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device1),
-                       devices[0].device);
-  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device1),
-                       manager.GetDevice(1));
+  OLA_ASSERT_EQ(1u, devices[0].alias);
+  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device1), devices[0].device);
+  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device1), manager.GetDevice(1));
   result = manager.GetDevice(device1.UniqueId());
-  OLA_ASSERT_EQ((unsigned int) 1, result.alias);
-  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device1),
-                       result.device);
+  OLA_ASSERT_EQ(1u, result.alias);
+  OLA_ASSERT_EQ(static_cast<AbstractDevice*>(&device1), result.device);
 }
 
 
@@ -164,7 +158,7 @@ void DeviceManagerTest::testRestorePatchings() {
   ola::PortBroker broker;
   PortManager port_manager(&uni_store, &broker);
   DeviceManager manager(&prefs_factory, &port_manager);
-  OLA_ASSERT_EQ((unsigned int) 0, manager.DeviceCount());
+  OLA_ASSERT_EQ(0u, manager.DeviceCount());
 
   ola::Preferences *prefs = prefs_factory.NewPreference("port");
   OLA_ASSERT(prefs);
@@ -179,13 +173,11 @@ void DeviceManagerTest::testRestorePatchings() {
   device1.AddPort(&output_port);
 
   OLA_ASSERT(manager.RegisterDevice(&device1));
-  OLA_ASSERT_EQ((unsigned int) 1, manager.DeviceCount());
+  OLA_ASSERT_EQ(1u, manager.DeviceCount());
   OLA_ASSERT(input_port.GetUniverse());
-  OLA_ASSERT_EQ(input_port.GetUniverse()->UniverseId(),
-                       (unsigned int) 1);
+  OLA_ASSERT_EQ(input_port.GetUniverse()->UniverseId(), 1u);
   OLA_ASSERT(output_port.GetUniverse());
-  OLA_ASSERT_EQ(output_port.GetUniverse()->UniverseId(),
-                       (unsigned int) 3);
+  OLA_ASSERT_EQ(output_port.GetUniverse()->UniverseId(), 3u);
 
   // Now check that patching a universe saves the settings
   Universe *uni = uni_store.GetUniverseOrCreate(10);
@@ -194,12 +186,11 @@ void DeviceManagerTest::testRestorePatchings() {
 
   // unregister all
   manager.UnregisterAllDevices();
-  OLA_ASSERT_EQ((unsigned int) 0, manager.DeviceCount());
+  OLA_ASSERT_EQ(0u, manager.DeviceCount());
 
   OLA_ASSERT_EQ(string("10"), prefs->GetValue("2-test_device_1-I-1"));
   OLA_ASSERT_EQ(string("3"), prefs->GetValue("2-test_device_1-O-1"));
 }
-
 
 
 /*
@@ -211,7 +202,7 @@ void DeviceManagerTest::testRestorePriorities() {
   ola::PortBroker broker;
   PortManager port_manager(&uni_store, &broker);
   DeviceManager manager(&prefs_factory, &port_manager);
-  OLA_ASSERT_EQ((unsigned int) 0, manager.DeviceCount());
+  OLA_ASSERT_EQ(0u, manager.DeviceCount());
 
   ola::Preferences *prefs = prefs_factory.NewPreference("port");
   OLA_ASSERT(prefs);
@@ -247,7 +238,7 @@ void DeviceManagerTest::testRestorePriorities() {
   device1.AddPort(&output_port3);
 
   OLA_ASSERT(manager.RegisterDevice(&device1));
-  OLA_ASSERT_EQ((unsigned int) 1, manager.DeviceCount());
+  OLA_ASSERT_EQ(1u, manager.DeviceCount());
   OLA_ASSERT_EQ(ola::CAPABILITY_STATIC,
                        input_port.PriorityCapability());
   OLA_ASSERT_EQ(ola::PRIORITY_MODE_INHERIT,
@@ -291,18 +282,18 @@ void DeviceManagerTest::testRestorePriorities() {
 
   // unregister all
   manager.UnregisterAllDevices();
-  OLA_ASSERT_EQ((unsigned int) 0, manager.DeviceCount());
+  OLA_ASSERT_EQ(0u, manager.DeviceCount());
 
   OLA_ASSERT_EQ(string("0"),
-                       prefs->GetValue("2-test_device_1-I-2_priority_mode"));
+                prefs->GetValue("2-test_device_1-I-2_priority_mode"));
   OLA_ASSERT_EQ(string("0"),
-                       prefs->GetValue("2-test_device_1-O-2_priority_mode"));
+                prefs->GetValue("2-test_device_1-O-2_priority_mode"));
   OLA_ASSERT_EQ(string("1"),
-                       prefs->GetValue("2-test_device_1-I-3_priority_mode"));
+                prefs->GetValue("2-test_device_1-I-3_priority_mode"));
   OLA_ASSERT_EQ(string("40"),
-                       prefs->GetValue("2-test_device_1-I-3_priority_value"));
+                prefs->GetValue("2-test_device_1-I-3_priority_value"));
   OLA_ASSERT_EQ(string("1"),
-                       prefs->GetValue("2-test_device_1-O-3_priority_mode"));
+                prefs->GetValue("2-test_device_1-O-3_priority_mode"));
   OLA_ASSERT_EQ(string("60"),
-                       prefs->GetValue("2-test_device_1-O-3_priority_value"));
+                prefs->GetValue("2-test_device_1-O-3_priority_value"));
 }

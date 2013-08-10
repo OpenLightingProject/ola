@@ -81,13 +81,14 @@ bool DeviceManager::RegisterDevice(AbstractDevice *device) {
   if (!device)
     return false;
 
-  string device_id = device->UniqueId();
+  const string device_id = device->UniqueId();
 
   if (device_id.empty()) {
     OLA_WARN << "Device: " << device->Name() << " is missing UniqueId";
     return false;
   }
 
+  // See if we already have an alias for this device.
   unsigned int alias;
   map<string, device_alias_pair>::iterator iter = m_devices.find(device_id);
   if (iter != m_devices.end()) {
@@ -102,15 +103,13 @@ bool DeviceManager::RegisterDevice(AbstractDevice *device) {
     }
   } else {
     alias = m_next_device_alias++;
-    device_alias_pair pair;
-    pair.alias = alias;
-    pair.device = device;
-    m_devices[device_id] = pair;
+    device_alias_pair pair = {alias, device};
+    STLReplace(&m_devices, device_id, pair);
   }
 
-  m_alias_map[alias] = device;
-  OLA_INFO << "Installed device: " << device->Name() << ":" <<
-    device->UniqueId();
+  STLReplace(&m_alias_map, alias, device);
+  OLA_INFO << "Installed device: " << device->Name() << ":"
+           << device->UniqueId();
 
   vector<InputPort*> input_ports;
   device->InputPorts(&input_ports);
@@ -136,22 +135,16 @@ bool DeviceManager::RegisterDevice(AbstractDevice *device) {
  * @return true on sucess, false on failure
  */
 bool DeviceManager::UnregisterDevice(const string &device_id) {
-  map<string, device_alias_pair>::iterator iter =
-    m_devices.find(device_id);
-
-  if (iter == m_devices.end() || !iter->second.device) {
+  device_alias_pair *pair = STLFind(&m_devices, device_id);
+  if (!pair || !pair->device) {
     OLA_WARN << "Device " << device_id << "not found";
     return false;
   }
 
-  ReleaseDevice(iter->second.device);
-  map<unsigned int, AbstractDevice*>::iterator alias_iter =
-    m_alias_map.find(iter->second.alias);
+  ReleaseDevice(pair->device);
+  STLRemove(&m_alias_map, pair->alias);
 
-  if (alias_iter != m_alias_map.end())
-    m_alias_map.erase(alias_iter);
-
-  iter->second.device = NULL;
+  pair->device = NULL;
   return true;
 }
 
@@ -177,13 +170,7 @@ bool DeviceManager::UnregisterDevice(const AbstractDevice *device) {
  * @return the number of active devices
  */
 unsigned int DeviceManager::DeviceCount() const {
-  unsigned int count = 0;
-  map<string, device_alias_pair>::const_iterator iter;
-  for (iter = m_devices.begin(); iter != m_devices.end(); ++iter)
-    if (iter->second.device)
-      count++;
-
-  return count;
+  return m_alias_map.size();
 }
 
 
@@ -193,7 +180,12 @@ unsigned int DeviceManager::DeviceCount() const {
  */
 vector<device_alias_pair> DeviceManager::Devices() const {
   vector<device_alias_pair> result;
-  STLValues(m_devices, &result);
+  map<string, device_alias_pair>::const_iterator iter;
+  for (iter = m_devices.begin(); iter != m_devices.end(); ++iter) {
+    if (iter->second.device) {
+      result.push_back(iter->second);
+    }
+  }
   return result;
 }
 
@@ -275,10 +267,7 @@ void DeviceManager::ReleaseDevice(const AbstractDevice *device) {
     SavePortPriority(**output_iter);
 
     // remove from the timecode port set
-    set<OutputPort*>::iterator timecode_iter = m_timecode_ports.find(
-        *output_iter);
-    if (timecode_iter != m_timecode_ports.end())
-      m_timecode_ports.erase(timecode_iter);
+    STLRemove(&m_timecode_ports, *output_iter);
   }
 }
 
