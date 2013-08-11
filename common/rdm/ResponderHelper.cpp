@@ -17,6 +17,7 @@
  * Copyright (C) 2013 Simon Newton
  */
 
+#include <algorithm>
 #include <string>
 #include <vector>
 #include "ola/BaseTypes.h"
@@ -31,6 +32,7 @@ namespace rdm {
 
 using ola::network::HostToNetwork;
 using ola::network::NetworkToHost;
+using std::min;
 using std::string;
 using std::vector;
 
@@ -228,14 +230,20 @@ const RDMResponse *ResponderHelper::GetPersonalityDescription(
     personality_description.personality = personality_number;
     personality_description.slots_required =
         HostToNetwork(personality->Footprint());
+
+    size_t str_len = min(personality->Description().size(),
+                         sizeof(personality_description.description));
     strncpy(personality_description.description,
-            personality->Description().c_str(),
-            sizeof(personality_description.description));
+            personality->Description().c_str(), str_len);
+
+    unsigned int param_data_size = (
+        sizeof(personality_description) -
+        sizeof(personality_description.description) + str_len);
 
     return GetResponseFromData(
         request,
         reinterpret_cast<uint8_t*>(&personality_description),
-        sizeof(personality_description),
+        param_data_size,
         RDM_ACK,
         queued_message_count);
   }
@@ -313,12 +321,15 @@ const RDMResponse *ResponderHelper::GetSlotDescription(
 
   struct slot_description_s slot_description;
   slot_description.slot = HostToNetwork(slot_number);
-  strncpy(slot_description.description,
-          slot_data->Description().c_str(),
-          sizeof(slot_description.description));
+
+  size_t str_len = min(slot_data->Description().size(),
+                       sizeof(slot_description.description));
+  strncpy(slot_description.description, slot_data->Description().c_str(),
+          str_len);
 
   unsigned int param_data_size = (
-      sizeof(slot_description.slot) + slot_data->Description().size());
+      sizeof(slot_description) -
+      sizeof(slot_description.description) + str_len);
 
   return GetResponseFromData(request,
                              reinterpret_cast<uint8_t*>(&slot_description),
@@ -490,12 +501,19 @@ const RDMResponse *ResponderHelper::GetParamDescription(
   param_description.min_value = min_value;
   param_description.default_value = default_value;
   param_description.max_value = max_value;
-  strncpy(param_description.description, description.c_str(),
-          MAX_RDM_STRING_LENGTH);
+
+  size_t str_len = min(description.size(),
+                       sizeof(param_description.description));
+  strncpy(param_description.description, description.c_str(), str_len);
+
+  unsigned int param_data_size = (
+      sizeof(param_description) -
+      sizeof(param_description.description) + str_len);
+
   return GetResponseFromData(
       request,
       reinterpret_cast<uint8_t*>(&param_description),
-      sizeof(param_description),
+      param_data_size,
       RDM_ACK,
       queued_message_count);
 }
