@@ -300,27 +300,31 @@ const RDMResponse *ResponderHelper::GetSlotDescription(
 
   if (!slot_data) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
-  } else {
-    struct slot_description_s {
-      uint16_t slot;
-      char description[MAX_RDM_STRING_LENGTH];
-    } __attribute__((packed));
-
-    struct slot_description_s slot_description;
-    slot_description.slot = HostToNetwork(slot_number);
-    strncpy(slot_description.description,
-            slot_data->Description().c_str(),
-            sizeof(slot_description.description));
-
-    unsigned int param_data_size = (
-        sizeof(slot_description.slot) + slot_data->Description().size());
-
-    return GetResponseFromData(request,
-                               reinterpret_cast<uint8_t*>(&slot_description),
-                               param_data_size,
-                               RDM_ACK,
-                               queued_message_count);
   }
+
+  if (!slot_data->HasDescription()) {
+    return NackWithReason(request, NR_DATA_OUT_OF_RANGE, queued_message_count);
+  }
+
+  struct slot_description_s {
+    uint16_t slot;
+    char description[MAX_RDM_STRING_LENGTH];
+  } __attribute__((packed));
+
+  struct slot_description_s slot_description;
+  slot_description.slot = HostToNetwork(slot_number);
+  strncpy(slot_description.description,
+          slot_data->Description().c_str(),
+          sizeof(slot_description.description));
+
+  unsigned int param_data_size = (
+      sizeof(slot_description.slot) + slot_data->Description().size());
+
+  return GetResponseFromData(request,
+                             reinterpret_cast<uint8_t*>(&slot_description),
+                             param_data_size,
+                             RDM_ACK,
+                             queued_message_count);
 }
 
 

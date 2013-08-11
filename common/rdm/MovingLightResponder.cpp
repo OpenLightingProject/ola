@@ -53,8 +53,8 @@ const MovingLightResponder::Personalities *
         SlotData::PrimarySlot(SD_INTENSITY, 0, "Intensity Coarse"));
     p2_slot_data.push_back(
         SlotData::SecondarySlot(ST_SEC_FINE, 0, 0, "Intensity Fine"));
-    p2_slot_data.push_back(SlotData::PrimarySlot(SD_PAN, 127, "Pan"));
-    p2_slot_data.push_back(SlotData::PrimarySlot(SD_TILT, 127, "Tilt"));
+    p2_slot_data.push_back(SlotData::PrimarySlot(SD_PAN, 127));
+    p2_slot_data.push_back(SlotData::PrimarySlot(SD_TILT, 127));
 
     PersonalityList personalities;
     personalities.push_back(Personality(0, "Personality 1"));

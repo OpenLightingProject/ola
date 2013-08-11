@@ -69,6 +69,12 @@ class SlotData {
     uint8_t DefaultSlotValue() const { return m_default_slot_value; }
 
     /**
+     * @brief true if there is a description for this slot, false otherwise.
+     * @returns true if there is a description for this slot.
+     */
+    bool HasDescription() const { return m_has_description; }
+
+    /**
      * @brief The slot description.
      * Used in the SLOT_DESCRIPTION message.
      * @returns the slot description.
@@ -77,6 +83,16 @@ class SlotData {
 
     /**
      * @brief Create a new Primary slot
+     * @param slot_definition the slot id definition.
+     * @param default_slot_value the default value for the slot
+     * @returns a SlotData object.
+     */
+    static SlotData PrimarySlot(
+        rdm_slot_definition slot_definition,
+        uint8_t default_slot_value);
+
+    /**
+     * @brief Create a new Primary slot with a description
      * @param slot_definition the slot id definition.
      * @param default_slot_value the default value for the slot
      * @param description the slot description
@@ -98,10 +114,27 @@ class SlotData {
     static SlotData SecondarySlot(
         rdm_slot_type slot_type,
         uint16_t primary_slot,
+        uint8_t default_slot_value);
+
+    /**
+     * @brief Create a new Secondary slot with a description.
+     * @param slot_type the secondary slot type
+     * @param primary_slot the primary slot index.
+     * @param default_slot_value the default value for the slot
+     * @param description the slot description
+     * @returns a SlotData object.
+     */
+    static SlotData SecondarySlot(
+        rdm_slot_type slot_type,
+        uint16_t primary_slot,
         uint8_t default_slot_value,
         const string &description);
 
   private:
+    SlotData(rdm_slot_type slot_type,
+             uint16_t slot_id,
+             uint8_t default_slot_value);
+
     SlotData(rdm_slot_type slot_type,
              uint16_t slot_id,
              uint8_t default_slot_value,
@@ -110,6 +143,7 @@ class SlotData {
     rdm_slot_type m_slot_type;
     uint16_t m_slot_id;
     uint8_t m_default_slot_value;
+    bool m_has_description;
     string m_description;
 };
 

@@ -31,9 +31,23 @@ namespace ola {
 namespace rdm {
 
 SlotData SlotData::PrimarySlot(rdm_slot_definition slot_definition,
+                               uint8_t default_slot_value) {
+  return SlotData(ST_PRIMARY, slot_definition, default_slot_value);
+}
+
+SlotData SlotData::PrimarySlot(rdm_slot_definition slot_definition,
                                uint8_t default_slot_value,
                                const string &description) {
   return SlotData(ST_PRIMARY, slot_definition, default_slot_value, description);
+}
+
+SlotData SlotData::SecondarySlot(rdm_slot_type slot_type,
+                                 uint16_t primary_slot,
+                                 uint8_t default_slot_value) {
+  if (slot_type == ST_PRIMARY) {
+    OLA_WARN << "Secondary slot created with slot_type == ST_PRIMARY";
+  }
+  return SlotData(slot_type, primary_slot, default_slot_value);
 }
 
 SlotData SlotData::SecondarySlot(rdm_slot_type slot_type,
@@ -49,11 +63,21 @@ SlotData SlotData::SecondarySlot(rdm_slot_type slot_type,
 
 SlotData::SlotData(rdm_slot_type slot_type,
                    uint16_t slot_id,
+                   uint8_t default_slot_value)
+    : m_slot_type(slot_type),
+      m_slot_id(slot_id),
+      m_default_slot_value(default_slot_value),
+      m_has_description(false) {
+}
+
+SlotData::SlotData(rdm_slot_type slot_type,
+                   uint16_t slot_id,
                    uint8_t default_slot_value,
                    const string &description)
     : m_slot_type(slot_type),
       m_slot_id(slot_id),
       m_default_slot_value(default_slot_value),
+      m_has_description(true),
       m_description(description) {
 }
 
