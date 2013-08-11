@@ -32,12 +32,18 @@ namespace rdm {
 
 SlotData SlotData::PrimarySlot(rdm_slot_definition slot_definition,
                                uint8_t default_slot_value) {
+  if (slot_definition == SD_UNDEFINED) {
+    OLA_WARN << "Undefined slot definition and no slot description!";
+  }
   return SlotData(ST_PRIMARY, slot_definition, default_slot_value);
 }
 
 SlotData SlotData::PrimarySlot(rdm_slot_definition slot_definition,
                                uint8_t default_slot_value,
                                const string &description) {
+  if ((slot_definition == SD_UNDEFINED) && description.empty()) {
+    OLA_WARN << "Undefined slot definition and no slot description!";
+  }
   return SlotData(ST_PRIMARY, slot_definition, default_slot_value, description);
 }
 
