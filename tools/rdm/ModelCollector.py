@@ -47,7 +47,9 @@ class ModelCollector(object):
    SOFTWARE_VERSION_LABEL,
    PERSONALITIES,
    SENSORS,
-   MANUFACTURER_PIDS) = xrange(8)
+   MANUFACTURER_PIDS,
+   LANGUAGE,
+   LANGUAGES) = xrange(10)
 
   def __init__(self, wrapper, pid_store):
     self.wrapper = wrapper
@@ -133,6 +135,10 @@ class ModelCollector(object):
       self._HandleSensorData(unpacked_data)
     elif self.work_state == self.MANUFACTURER_PIDS:
       self._HandleManufacturerPids(unpacked_data)
+    elif self.work_state == self.LANGUAGE:
+      self._HandleLanguage(unpacked_data)
+    elif self.work_state == self.LANGUAGES:
+      self._HandleLanguages(unpacked_data)
 
   def _HandleDeviceInfo(self, data):
     """Called when we get a DEVICE_INFO response."""
@@ -146,6 +152,7 @@ class ModelCollector(object):
       this_device[field] = data[field]
 
     this_device['software_versions'][data['software_version']] = {
+        'languages': [],
         'personalities': [],
         'manufacturer_pids': [],
         'supported_parameters': [],
@@ -214,6 +221,19 @@ class ModelCollector(object):
     })
     self._FetchNextManufacturerPid()
 
+  def _HandleLanguage(self, data):
+    """Called when we get a LANGUAGE response."""
+    this_version = self._GetVersion()
+    this_version['language'] = data['language']
+    self._NextState()
+
+  def _HandleLanguages(self, data):
+    """Called when we get a LANGUAGE_CAPABILITIES response."""
+    this_version = self._GetVersion()
+    for language in data['languages']:
+      this_version['languages'].append(language['language'])
+    self._NextState()
+
   def _NextState(self):
     """Move to the next state of information fetching."""
     if self.work_state == self.EMPTYING_QUEUE:
@@ -232,7 +252,7 @@ class ModelCollector(object):
       self._GetPid(pid)
       self.work_state = self.SUPPORTED_PARAMS
     elif self.work_state == self.SUPPORTED_PARAMS:
-      # fetch supported params
+      # fetch software version label
       pid = self.pid_store.GetName('SOFTWARE_VERSION_LABEL')
       self._GetPid(pid)
       self.work_state = self.SOFTWARE_VERSION_LABEL
@@ -245,6 +265,15 @@ class ModelCollector(object):
     elif self.work_state == self.SENSORS:
       self.work_state = self.MANUFACTURER_PIDS
       self._FetchNextManufacturerPid()
+    elif self.work_state == self.MANUFACTURER_PIDS:
+      pid = self.pid_store.GetName('LANGUAGE')
+      self._GetPid(pid)
+      self.work_state = self.LANGUAGE
+    elif self.work_state == self.LANGUAGE:
+      # fetch language capabilities
+      pid = self.pid_store.GetName('LANGUAGE_CAPABILITIES')
+      self._GetPid(pid)
+      self.work_state = self.LANGUAGES
     else:
       # this one is done, onto the next UID
       self._FetchNextUID()
