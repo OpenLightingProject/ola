@@ -20,6 +20,7 @@
 
 #include <cppunit/extensions/HelperMacros.h>
 #include <string.h>
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -48,6 +49,8 @@ using ola::rdm::RDMSetRequest;
 using ola::rdm::RDMSetResponse;
 using ola::rdm::UID;
 using ola::rdm::UIDSet;
+using std::min;
+
 
 class MockDummyPort: public DummyPort {
   public:
@@ -632,13 +635,19 @@ void DummyPortTest::testParamDescription() {
   param_description.min_value = 0;
   param_description.default_value = 0;
   param_description.max_value = 0;
-  strncpy(param_description.description,
-          "Code Version",
-          ola::rdm::MAX_RDM_STRING_LENGTH);
+
+  const string description("Code Version");
+  size_t str_len = std::min(sizeof(param_description.description),
+                            description.size());
+  strncpy(param_description.description, description.c_str(), str_len);
+
+  unsigned int param_data_length = (
+      sizeof(param_description) - sizeof(param_description.description) +
+      str_len);
+
   RDMResponse *response = GetResponseFromData(
       request,
-      reinterpret_cast<uint8_t*>(&param_description),
-      sizeof(param_description));
+      reinterpret_cast<uint8_t*>(&param_description), param_data_length);
 
   SetExpectedResponse(ola::rdm::RDM_COMPLETED_OK, response);
   m_port.SendRDMRequest(
