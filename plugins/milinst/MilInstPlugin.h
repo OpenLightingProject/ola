@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+#include "ola/io/Descriptor.h"
 #include "olad/Plugin.h"
 
 namespace ola {
