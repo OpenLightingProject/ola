@@ -6,6 +6,7 @@ x/y/2013 ola-0.8.31
  * Changed the max number of E1.31 ports to 128
  * Added support for the MilInst 1-463 interface.
  * Added support for the KMTRONIC usb device (ftdi clone).
+ * Fixed crash when a USB device was unplugged - bug #248
  * Fixed sub device RDM request fan out - bug #246
  * Fixed universe garbage collection - bug #149
  * Print the OLA version when running the RDM responder tests
