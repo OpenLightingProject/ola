@@ -18,6 +18,7 @@ x/y/2013 ola-0.8.31
  * Started adding doxygen comments
  * Added lots more man pages.
  * Add support for reset device to the web UI
+ * Added more PIDs to the RDM model collector
 
 16/6/2013 ola-0.8.30
  * Clean up olad signal handling to avoid race conditions.
