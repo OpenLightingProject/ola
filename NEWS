@@ -1,24 +1,23 @@
-x/y/2013 ola-0.8.31
- * Added more RDM responder tests for E1.37-1
- * Added new software RDM responders (Sensor, Dimmer, Moving Light, etc.)
- * Added slot info support to the software RDM responders
- * Updates to the Saleae Logic RDM sniffer
+12/8/2013 ola-0.8.31
  * Changed the max number of E1.31 ports to 128
  * Added support for the MilInst 1-463 interface.
  * Added support for the KMTRONIC usb device (ftdi clone).
- * Fixed crash when a USB device was unplugged - bug #248
+ * Added more RDM responder tests for E1.37-1 PIDs
+ * Display the OLA version in the RDM responder test output
+ * Display the response param data length in the responder test output
+ * Added new software RDM responders (Sensor, Dimmer, Moving Light, etc.)
+ * Added slot info support to the software RDM responders
+ * Updates to the Saleae Logic RDM sniffer
+ * Fixed a crash when a USB device was unplugged - bug #248
  * Fixed sub device RDM request fan out - bug #246
  * Fixed universe garbage collection - bug #149
- * Print the OLA version when running the RDM responder tests
- * Display the response param data length in the responder tests
- * Bash Completions of UIDs in the RDM commands
- * Change example and SLP scripts to error to STDERR not STDOUT.
- * Rename AllManufactureDevices(sic) to VendorcastAddress in UID interface
- * Add vendorcast and broadcast options to ola_rdm_discover, to list the
-   vendor/broadcast UIDs as well.
- * Started adding doxygen comments
- * Added lots more man pages.
- * Add support for reset device to the web UI
+ * Added Bash completions of UIDs for the RDM commands
+ * Change the examples and SLP programs to write errors to STDERR not STDOUT.
+ * Renamed AllManufactureDevices(sic) to VendorcastAddress in UID interface
+ * Add vendorcast and broadcast options to ola_rdm_discover.
+ * Started commenting the codebase with doxygen
+ * Added more man pages.
+ * Added support for reset device to the web UI
  * Added more PIDs to the RDM model collector
 
 16/6/2013 ola-0.8.30
