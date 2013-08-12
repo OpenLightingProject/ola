@@ -98,15 +98,15 @@ const MovingLightResponder::Personalities *
         SlotData::SecondarySlot(ST_SEC_FINE, 0, 0, ""));
 
     PersonalityList personalities;
-    personalities.push_back(Personality(16,
-                                        "Personality 1 (Full)",
+    personalities.push_back(Personality(17,
+                                        "Full",
                                         SlotDataCollection(p1_slot_data)));
     personalities.push_back(Personality(5,
-                                        "Personality 2 (Basic)",
+                                        "Basic",
                                         SlotDataCollection(p2_slot_data)));
-    personalities.push_back(Personality(0, "Personality 3 (None)"));
+    personalities.push_back(Personality(0, "No Channels"));
     personalities.push_back(Personality(3,  // One more slot than highest
-                                        "Personality 4 (Quirks)",
+                                        "Quirks Mode",
                                         SlotDataCollection(p4_slot_data)));
     instance = new Personalities(personalities);
   }
