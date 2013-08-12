@@ -48,20 +48,66 @@ MovingLightResponder::RDMOps *MovingLightResponder::RDMOps::instance = NULL;
 const MovingLightResponder::Personalities *
     MovingLightResponder::Personalities::Instance() {
   if (!instance) {
+    SlotDataCollection::SlotDataList p1_slot_data;
+    p1_slot_data.push_back(
+        SlotData::PrimarySlot(SD_INTENSITY, 0, "Intensity Coarse"));  // 0
+    p1_slot_data.push_back(
+        SlotData::SecondarySlot(ST_SEC_FINE, 0, 0, "Intensity Fine"));  // 1
+    p1_slot_data.push_back(
+        SlotData::SecondarySlot(ST_SEC_CONTROL, 0, 0, "Shutter"));  // 2
+    p1_slot_data.push_back(SlotData::PrimarySlot(SD_PAN, 127));  // 3
+    p1_slot_data.push_back(
+        SlotData::SecondarySlot(ST_SEC_SPEED, 3, 0, "Pan Speed"));  // 4
+    p1_slot_data.push_back(SlotData::PrimarySlot(SD_TILT, 127));  // 5
+    p1_slot_data.push_back(
+        SlotData::SecondarySlot(ST_SEC_TIMING, 5, 0, "Tilt Timing"));  // 6
+    p1_slot_data.push_back(SlotData::PrimarySlot(SD_ROTO_GOBO_WHEEL, 0));  // 7
+    p1_slot_data.push_back(
+        SlotData::SecondarySlot(ST_SEC_INDEX, 7, 0));  // 8
+    p1_slot_data.push_back(SlotData::PrimarySlot(SD_PRISM_WHEEL, 0));  // 9
+    p1_slot_data.push_back(
+        SlotData::SecondarySlot(ST_SEC_ROTATION, 8, 0));  // 10
+    p1_slot_data.push_back(SlotData::PrimarySlot(SD_EFFECTS_WHEEL, 0));  // 11
+    p1_slot_data.push_back(
+        SlotData::SecondarySlot(ST_SEC_INDEX_ROTATE, 8, 0));  // 12
+    p1_slot_data.push_back(
+        SlotData::PrimarySlot(SD_FIXTURE_SPEED, 0, "Speed"));  // 13
+    p1_slot_data.push_back(
+        SlotData::SecondarySlot(ST_SEC_SPEED, 13, 0, "Speed ^ 2"));  // 14
+    p1_slot_data.push_back(
+        SlotData::PrimarySlot(SD_UNDEFINED,
+                              0,
+                              "Open Sourceiness Foo"));  // 15
+    p1_slot_data.push_back(
+        SlotData::SecondarySlot(ST_SEC_UNDEFINED,
+                                15,
+                                0,
+                                "Open Sourceiness Bar"));  // 16
+
     SlotDataCollection::SlotDataList p2_slot_data;
-    p2_slot_data.push_back(
-        SlotData::PrimarySlot(SD_INTENSITY, 0, "Intensity Coarse"));
-    p2_slot_data.push_back(
-        SlotData::SecondarySlot(ST_SEC_FINE, 0, 0, "Intensity Fine"));
+    p2_slot_data.push_back(SlotData::PrimarySlot(SD_INTENSITY, 0));
     p2_slot_data.push_back(SlotData::PrimarySlot(SD_PAN, 127));
     p2_slot_data.push_back(SlotData::PrimarySlot(SD_TILT, 127));
+    p2_slot_data.push_back(SlotData::PrimarySlot(SD_COLOR_WHEEL, 0));
+    p2_slot_data.push_back(SlotData::PrimarySlot(SD_STATIC_GOBO_WHEEL, 0));
+
+    SlotDataCollection::SlotDataList p4_slot_data;
+    p4_slot_data.push_back(
+        SlotData::PrimarySlot(SD_INTENSITY, 0, ""));
+    p4_slot_data.push_back(
+        SlotData::SecondarySlot(ST_SEC_FINE, 0, 0, ""));
 
     PersonalityList personalities;
-    personalities.push_back(Personality(0, "Personality 1"));
-    personalities.push_back(
-        Personality(5, "Personality 2", SlotDataCollection(p2_slot_data)));
-    personalities.push_back(Personality(10, "Personality 3"));
-    personalities.push_back(Personality(20, "Personality 4"));
+    personalities.push_back(Personality(16,
+                                        "Personality 1 (Full)",
+                                        SlotDataCollection(p1_slot_data)));
+    personalities.push_back(Personality(5,
+                                        "Personality 2 (Basic)",
+                                        SlotDataCollection(p2_slot_data)));
+    personalities.push_back(Personality(0, "Personality 3 (None)"));
+    personalities.push_back(Personality(3,  // One more slot than highest
+                                        "Personality 4 (Quirks)",
+                                        SlotDataCollection(p4_slot_data)));
     instance = new Personalities(personalities);
   }
   return instance;
@@ -262,7 +308,7 @@ const RDMResponse *MovingLightResponder::GetDeviceInfo(
     const RDMRequest *request) {
   return ResponderHelper::GetDeviceInfo(
       request, OLA_DUMMY_MOVING_LIGHT_MODEL,
-      PRODUCT_CATEGORY_FIXTURE_MOVING_YOKE, 1,
+      PRODUCT_CATEGORY_FIXTURE_MOVING_YOKE, 2,
       &m_personality_manager,
       m_start_address,
       0, 0);
