@@ -29,6 +29,8 @@ from ola.OlaClient import OlaClient, RDMNack
 from ola.RDMAPI import RDMAPI
 from ola.UID import UID
 
+DEFAULT_LANGUAGE = "en"
+
 class Error(Exception):
   """Base exception class."""
 
@@ -47,7 +49,12 @@ class ModelCollector(object):
    SOFTWARE_VERSION_LABEL,
    PERSONALITIES,
    SENSORS,
-   MANUFACTURER_PIDS) = xrange(8)
+   MANUFACTURER_PIDS,
+   LANGUAGE,
+   LANGUAGES,
+   SLOT_INFO,
+   SLOT_DESCRIPTION,
+   SLOT_DEFAULT_VALUE) = xrange(13)
 
   def __init__(self, wrapper, pid_store):
     self.wrapper = wrapper
@@ -69,13 +76,13 @@ class ModelCollector(object):
     self.client.RunRDMDiscovery(self.universe, True, self._HandleUIDList)
     self.wrapper.Run()
 
-    # strip personality count from info as it's redundant
+    # strip various info that is redundant
     for model_list in self.data.values():
       for model in model_list:
-        if 'personality_count' in model:
-          del model['personality_count']
-        if 'sensor_count' in model:
-          del model['sensor_count']
+        for key in ['language', 'current_personality', 'personality_count',
+                    'sensor_count']:
+          if key in model:
+            del model[key]
     return self.data
 
   def _ResetData(self):
@@ -84,16 +91,41 @@ class ModelCollector(object):
     self.uid = None  # the current uid we're fetching from
     self.outstanding_pid = None
     self.work_state = None
+    self.manufacturer_pids = []
+    self.slots = []
     self.personalities = []
     self.sensors = []
-    self.manufacturer_pids = []
     # keyed by manufacturer id
     self.data = {}
 
+  def _GetDevice(self):
+    return self.data[self.uid.manufacturer_id][-1]
+
   def _GetVersion(self):
-    this_device = self.data[self.uid.manufacturer_id][-1]
+    this_device = self._GetDevice()
     software_versions = this_device['software_versions']
     return software_versions[software_versions.keys()[0]]
+
+  def _GetCurrentPersonality(self):
+    this_device = self._GetDevice()
+    this_version = self._GetVersion()
+    personalities = this_version['personalities']
+    return personalities[(this_device['current_personality'] - 1)]
+
+  def _GetSlotData(self, slot):
+    this_personality = self._GetCurrentPersonality()
+    return this_personality.setdefault('slots', {}).setdefault(slot, {})
+
+  def _GetLanguage(self):
+    this_device = self._GetDevice()
+    return this_device.get('language', DEFAULT_LANGUAGE)
+
+  def _CheckPidSupported(self, pid):
+    this_version = self._GetVersion()
+    if pid.value in this_version['supported_parameters']:
+      return True
+    else:
+      return False
 
   def _GetPid(self, pid):
       self.rdm_api.Get(self.universe,
@@ -133,12 +165,23 @@ class ModelCollector(object):
       self._HandleSensorData(unpacked_data)
     elif self.work_state == self.MANUFACTURER_PIDS:
       self._HandleManufacturerPids(unpacked_data)
+    elif self.work_state == self.LANGUAGE:
+      self._HandleLanguage(unpacked_data)
+    elif self.work_state == self.LANGUAGES:
+      self._HandleLanguages(unpacked_data)
+    elif self.work_state == self.SLOT_INFO:
+      self._HandleSlotInfo(unpacked_data)
+    elif self.work_state == self.SLOT_DESCRIPTION:
+      self._HandleSlotDescription(unpacked_data)
+    elif self.work_state == self.SLOT_DEFAULT_VALUE:
+      self._HandleSlotDefaultValue(unpacked_data)
 
   def _HandleDeviceInfo(self, data):
     """Called when we get a DEVICE_INFO response."""
-    this_device = self.data[self.uid.manufacturer_id][-1]
+    this_device = self._GetDevice()
     fields = ['device_model',
               'product_category',
+              'current_personality',
               'personality_count',
               'sensor_count',
               'sub_device_count']
@@ -146,6 +189,7 @@ class ModelCollector(object):
       this_device[field] = data[field]
 
     this_device['software_versions'][data['software_version']] = {
+        'languages': [],
         'personalities': [],
         'manufacturer_pids': [],
         'supported_parameters': [],
@@ -158,7 +202,7 @@ class ModelCollector(object):
 
   def _HandleDeviceModelDescription(self, data):
     """Called when we get a DEVICE_MODEL_DESCRIPTION response."""
-    this_device = self.data[self.uid.manufacturer_id][-1]
+    this_device = self._GetDevice()
     this_device['model_description'] = data['description']
     self._NextState()
 
@@ -214,6 +258,43 @@ class ModelCollector(object):
     })
     self._FetchNextManufacturerPid()
 
+  def _HandleLanguage(self, data):
+    """Called when we get a LANGUAGE response."""
+    this_device = self._GetDevice()
+    this_device['language'] = data['language']
+    self._NextState()
+
+  def _HandleLanguages(self, data):
+    """Called when we get a LANGUAGE_CAPABILITIES response."""
+    this_version = self._GetVersion()
+    for language in data['languages']:
+      this_version['languages'].append(language['language'])
+    self._NextState()
+
+  def _HandleSlotInfo(self, data):
+    """Called when we get a SLOT_INFO response."""
+    for slot in data['slots']:
+      this_slot_data = self._GetSlotData(slot['slot_offset'])
+      this_slot_data['label_id'] = slot['slot_label_id']
+      this_slot_data['type'] = slot['slot_type']
+      self.slots.append(slot['slot_offset'])
+    self._NextState()
+
+  def _HandleSlotDescription(self, data):
+    """Called when we get a SLOT_DESCRIPTION response."""
+    if data is not None:
+      # Got valid data, not a nack
+      this_slot_data = self._GetSlotData(data['slot_number'])
+      this_slot_data.setdefault('name', {})[self._GetLanguage()] = data['name']
+    self._FetchNextSlotDescription()
+
+  def _HandleSlotDefaultValue(self, data):
+    """Called when we get a DEFAULT_SLOT_VALUE response."""
+    for slot in data['slot_values']:
+      this_slot_data = self._GetSlotData(slot['slot_offset'])
+      this_slot_data['default_value'] = slot['default_slot_value']
+    self._NextState()
+
   def _NextState(self):
     """Move to the next state of information fetching."""
     if self.work_state == self.EMPTYING_QUEUE:
@@ -232,7 +313,7 @@ class ModelCollector(object):
       self._GetPid(pid)
       self.work_state = self.SUPPORTED_PARAMS
     elif self.work_state == self.SUPPORTED_PARAMS:
-      # fetch supported params
+      # fetch software version label
       pid = self.pid_store.GetName('SOFTWARE_VERSION_LABEL')
       self._GetPid(pid)
       self.work_state = self.SOFTWARE_VERSION_LABEL
@@ -245,6 +326,48 @@ class ModelCollector(object):
     elif self.work_state == self.SENSORS:
       self.work_state = self.MANUFACTURER_PIDS
       self._FetchNextManufacturerPid()
+    elif self.work_state == self.MANUFACTURER_PIDS:
+      self.work_state = self.LANGUAGE
+      pid = self.pid_store.GetName('LANGUAGE')
+      if self._CheckPidSupported(pid):
+        self._GetPid(pid)
+      else:
+        logging.debug("Skipping pid %s as it's not supported on this device" %
+                      pid)
+        self._NextState()
+    elif self.work_state == self.LANGUAGE:
+      # fetch language capabilities
+      self.work_state = self.LANGUAGES
+      pid = self.pid_store.GetName('LANGUAGE_CAPABILITIES')
+      if self._CheckPidSupported(pid):
+        self._GetPid(pid)
+      else:
+        logging.debug("Skipping pid %s as it's not supported on this device" %
+                      pid)
+        self._NextState()
+    elif self.work_state == self.LANGUAGES:
+      # fetch slot info
+      self.work_state = self.SLOT_INFO
+      pid = self.pid_store.GetName('SLOT_INFO')
+      if self._CheckPidSupported(pid):
+        self._GetPid(pid)
+      else:
+        logging.debug("Skipping pid %s as it's not supported on this device" %
+                      pid)
+        self._NextState()
+    elif self.work_state == self.SLOT_INFO:
+      self.work_state = self.SLOT_DESCRIPTION
+      self._FetchNextSlotDescription()
+    elif self.work_state == self.SLOT_DESCRIPTION:
+      # fetch slot default value
+      self.work_state = self.SLOT_DEFAULT_VALUE
+      pid = self.pid_store.GetName('DEFAULT_SLOT_VALUE')
+      if self._CheckPidSupported(pid):
+        self._GetPid(pid)
+      else:
+        logging.debug("Skipping pid %s as it's not supported on this device" %
+                      pid)
+        self._NextState()
     else:
       # this one is done, onto the next UID
       self._FetchNextUID()
@@ -276,18 +399,23 @@ class ModelCollector(object):
     """Fetch the info for the next personality, or proceed to the next state if
        there are none left.
     """
-    if self.personalities:
-      personality_index = self.personalities.pop(0)
-      pid = self.pid_store.GetName('DMX_PERSONALITY_DESCRIPTION')
-      self.rdm_api.Get(self.universe,
-                       self.uid,
-                       PidStore.ROOT_DEVICE,
-                       pid,
-                       self._RDMRequestComplete,
-                       [personality_index])
-      logging.debug('Sent DMX_PERSONALITY_DESCRIPTION request')
-      self.outstanding_pid = pid
+    pid = self.pid_store.GetName('DMX_PERSONALITY_DESCRIPTION')
+    if self._CheckPidSupported(pid):
+      if self.personalities:
+        personality_index = self.personalities.pop(0)
+        self.rdm_api.Get(self.universe,
+                         self.uid,
+                         PidStore.ROOT_DEVICE,
+                         pid,
+                         self._RDMRequestComplete,
+                         [personality_index])
+        logging.debug('Sent DMX_PERSONALITY_DESCRIPTION request')
+        self.outstanding_pid = pid
+      else:
+        self._NextState()
     else:
+      logging.debug("Skipping pid %s as it's not supported on this device" %
+                    pid)
       self._NextState()
 
   def _FetchNextSensor(self):
@@ -326,6 +454,29 @@ class ModelCollector(object):
     else:
       self._NextState()
 
+  def _FetchNextSlotDescription(self):
+    """Fetch the description for the next slot, or proceed to the next state if
+       there are none left.
+    """
+    pid = self.pid_store.GetName('SLOT_DESCRIPTION')
+    if self._CheckPidSupported(pid):
+      if self.slots:
+        slot = self.slots.pop(0)
+        self.rdm_api.Get(self.universe,
+                         self.uid,
+                         PidStore.ROOT_DEVICE,
+                         pid,
+                         self._RDMRequestComplete,
+                         [slot])
+        logging.debug('Sent SLOT_DESCRIPTION request for slot %d' % slot)
+        self.outstanding_pid = pid
+      else:
+        self._NextState()
+    else:
+      logging.debug("Skipping pid %s as it's not supported on this device" %
+                    pid)
+      self._NextState()
+
   def _FetchQueuedMessages(self):
     """Fetch messages until the queue is empty."""
     pid = self.pid_store.GetName('QUEUED_MESSAGE')
@@ -342,8 +493,12 @@ class ModelCollector(object):
       return
 
     # at this stage the response is either a ack or nack
-    if response.response_type == OlaClient.RDM_NACK_REASON:
-      print 'Got nack with reason: %s' % response.nack_reason
+    # We have to allow nacks from SLOT_DESCRIPTION, as it may not have a
+    # description for every slot
+    if (response.response_type == OlaClient.RDM_NACK_REASON and
+        response.pid != self.pid_store.GetName('SLOT_DESCRIPTION').value):
+      print ('Got nack with reason for pid %s: %s' %
+          (response.pid, response.nack_reason))
       self._NextState()
     elif unpack_exception:
       print unpack_exception
