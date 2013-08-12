@@ -79,14 +79,10 @@ class ModelCollector(object):
     # strip various info that is redundant
     for model_list in self.data.values():
       for model in model_list:
-        if 'language' in model:
-          del model['language']
-        if 'current_personality' in model:
-          del model['current_personality']
-        if 'personality_count' in model:
-          del model['personality_count']
-        if 'sensor_count' in model:
-          del model['sensor_count']
+        for key in ['language', 'current_personality', 'personality_count',
+                    'sensor_count']:
+          if key in model:
+            del model[key]
     return self.data
 
   def _ResetData(self):
@@ -118,19 +114,11 @@ class ModelCollector(object):
 
   def _GetSlotData(self, slot):
     this_personality = self._GetCurrentPersonality()
-    if 'slots' not in this_personality:
-      # Create dict as it doesn't exist
-      this_personality['slots'] = {}
-    if slot not in this_personality['slots']:
-      # Create dict as it doesn't exist
-      this_personality['slots'][slot] = {}
-    return this_personality['slots'][slot]
+    return this_personality.setdefault('slots', {}).setdefault(slot, {})
 
   def _GetLanguage(self):
     this_device = self._GetDevice()
-    if 'language' not in this_device:
-      return DEFAULT_LANGUAGE
-    return this_device['language']
+    return this_device.get('language', DEFAULT_LANGUAGE)
 
   def _CheckPidSupported(self, pid):
     this_version = self._GetVersion()
@@ -297,10 +285,7 @@ class ModelCollector(object):
     if data is not None:
       # Got valid data, not a nack
       this_slot_data = self._GetSlotData(data['slot_number'])
-      if 'name' not in this_slot_data:
-        # Create dict as it doesn't exist
-        this_slot_data['name'] = {}
-      this_slot_data['name'][self._GetLanguage()] = data['name']
+      this_slot_data.setdefault('name', {})[self._GetLanguage()] = data['name']
     self._FetchNextSlotDescription()
 
   def _HandleSlotDefaultValue(self, data):
@@ -508,6 +493,8 @@ class ModelCollector(object):
       return
 
     # at this stage the response is either a ack or nack
+    # We have to allow nacks from SLOT_DESCRIPTION, as it may not have a
+    # description for every slot
     if (response.response_type == OlaClient.RDM_NACK_REASON and
         response.pid != self.pid_store.GetName('SLOT_DESCRIPTION').value):
       print ('Got nack with reason for pid %s: %s' %
