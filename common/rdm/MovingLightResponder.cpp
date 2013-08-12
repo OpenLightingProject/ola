@@ -312,16 +312,7 @@ const RDMResponse *MovingLightResponder::SetFactoryDefaults(
   m_personality_manager.SetActivePersonality(1);
   m_identify_mode = 0;
 
-  return new RDMSetResponse(
-    request->DestinationUID(),
-    request->SourceUID(),
-    request->TransactionNumber(),
-    RDM_ACK,
-    0,
-    request->SubDevice(),
-    request->ParamId(),
-    NULL,
-    0);
+  return ResponderHelper::EmptySetResponse(request);
 }
 
 const RDMResponse *MovingLightResponder::GetLanguageCapabilities(
@@ -378,16 +369,7 @@ const RDMResponse *MovingLightResponder::SetLanguage(
   }
   m_language = new_lang;
 
-  return new RDMSetResponse(
-    request->DestinationUID(),
-    request->SourceUID(),
-    request->TransactionNumber(),
-    RDM_ACK,
-    0,
-    request->SubDevice(),
-    request->ParamId(),
-    NULL,
-    0);
+  return ResponderHelper::EmptySetResponse(request);
 }
 
 const RDMResponse *MovingLightResponder::GetProductDetailList(
@@ -489,16 +471,7 @@ const RDMResponse *MovingLightResponder::SetLampState(
   }
 
   m_lamp_state = static_cast<rdm_lamp_state>(new_value);
-  return new RDMSetResponse(
-    request->DestinationUID(),
-    request->SourceUID(),
-    request->TransactionNumber(),
-    RDM_ACK,
-    0,
-    request->SubDevice(),
-    request->ParamId(),
-    NULL,
-    0);
+  return ResponderHelper::EmptySetResponse(request);
 }
 
 const RDMResponse *MovingLightResponder::GetLampOnMode(
@@ -519,16 +492,7 @@ const RDMResponse *MovingLightResponder::SetLampOnMode(
   }
 
   m_lamp_on_mode = static_cast<rdm_lamp_mode>(new_value);
-  return new RDMSetResponse(
-    request->DestinationUID(),
-    request->SourceUID(),
-    request->TransactionNumber(),
-    RDM_ACK,
-    0,
-    request->SubDevice(),
-    request->ParamId(),
-    NULL,
-    0);
+  return ResponderHelper::EmptySetResponse(request);
 }
 
 const RDMResponse *MovingLightResponder::GetDevicePowerCycles(
@@ -576,16 +540,7 @@ const RDMResponse *MovingLightResponder::SetDisplayInvert(
   }
 
   m_display_invert = static_cast<rdm_display_invert>(new_value);
-  return new RDMSetResponse(
-    request->DestinationUID(),
-    request->SourceUID(),
-    request->TransactionNumber(),
-    RDM_ACK,
-    0,
-    request->SubDevice(),
-    request->ParamId(),
-    NULL,
-    0);
+  return ResponderHelper::EmptySetResponse(request);
 }
 
 const RDMResponse *MovingLightResponder::GetDisplayLevel(

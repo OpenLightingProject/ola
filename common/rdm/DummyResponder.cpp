@@ -181,16 +181,7 @@ const RDMResponse *DummyResponder::SetFactoryDefaults(
   m_personality_manager.SetActivePersonality(DEFAULT_PERSONALITY);
   m_identify_mode = 0;
 
-  return new RDMSetResponse(
-    request->DestinationUID(),
-    request->SourceUID(),
-    request->TransactionNumber(),
-    RDM_ACK,
-    0,
-    request->SubDevice(),
-    request->ParamId(),
-    NULL,
-    0);
+  return ResponderHelper::EmptySetResponse(request);
 }
 
 const RDMResponse *DummyResponder::GetProductDetailList(
