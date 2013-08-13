@@ -96,10 +96,10 @@ binary-arch: build install
 	dh_installudev --noscripts
 #	dh_installcron
 #	dh_installman
-	#Work around http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=680852
-	#By running it on each package one at a time. Would otherwise need a file
-	#containing one line, saying to install another file, but could then just use
-	#dh_bash-completion
+#	Work around http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=680852
+#	By running it on each package one at a time. Would otherwise need a file
+#	containing one line, saying to install another file, but could then just use
+#	dh_bash-completion
 	dh_bash-completion -p ola
 	dh_bash-completion -p ola-rdm-tests
 	dh_link
