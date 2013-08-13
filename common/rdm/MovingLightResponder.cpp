@@ -264,43 +264,11 @@ const RDMResponse *MovingLightResponder::GetParamDescription(
       << ", got " << parameter_id;
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   } else {
-    struct parameter_description_s {
-      uint16_t pid;
-      uint8_t pdl_size;
-      uint8_t data_type;
-      uint8_t command_class;
-      uint8_t type;
-      uint8_t unit;
-      uint8_t prefix;
-      uint32_t min_value;
-      uint32_t default_value;
-      uint32_t max_value;
-      char description[MAX_RDM_STRING_LENGTH];
-    } __attribute__((packed));
-
-    struct parameter_description_s param_description;
-    param_description.pid = HostToNetwork(
-        static_cast<uint16_t>(OLA_MANUFACTURER_PID_CODE_VERSION));
-    param_description.pdl_size = HostToNetwork(
-        static_cast<uint8_t>(MAX_RDM_STRING_LENGTH));
-    param_description.data_type = HostToNetwork(
-        static_cast<uint8_t>(DS_ASCII));
-    param_description.command_class = HostToNetwork(
-        static_cast<uint8_t>(CC_GET));
-    param_description.type = 0;
-    param_description.unit = HostToNetwork(
-        static_cast<uint8_t>(UNITS_NONE));
-    param_description.prefix = HostToNetwork(
-        static_cast<uint8_t>(PREFIX_NONE));
-    param_description.min_value = 0;
-    param_description.default_value = 0;
-    param_description.max_value = 0;
-    strncpy(param_description.description, "Code Version",
-            MAX_RDM_STRING_LENGTH);
-    return GetResponseFromData(
+    return ResponderHelper::GetASCIIParamDescription(
         request,
-        reinterpret_cast<uint8_t*>(&param_description),
-        sizeof(param_description));
+        OLA_MANUFACTURER_PID_CODE_VERSION,
+        CC_GET,
+        "Code Version");
   }
 }
 
@@ -344,16 +312,7 @@ const RDMResponse *MovingLightResponder::SetFactoryDefaults(
   m_personality_manager.SetActivePersonality(1);
   m_identify_mode = 0;
 
-  return new RDMSetResponse(
-    request->DestinationUID(),
-    request->SourceUID(),
-    request->TransactionNumber(),
-    RDM_ACK,
-    0,
-    request->SubDevice(),
-    request->ParamId(),
-    NULL,
-    0);
+  return ResponderHelper::EmptySetResponse(request);
 }
 
 const RDMResponse *MovingLightResponder::GetLanguageCapabilities(
@@ -410,16 +369,7 @@ const RDMResponse *MovingLightResponder::SetLanguage(
   }
   m_language = new_lang;
 
-  return new RDMSetResponse(
-    request->DestinationUID(),
-    request->SourceUID(),
-    request->TransactionNumber(),
-    RDM_ACK,
-    0,
-    request->SubDevice(),
-    request->ParamId(),
-    NULL,
-    0);
+  return ResponderHelper::EmptySetResponse(request);
 }
 
 const RDMResponse *MovingLightResponder::GetProductDetailList(
@@ -521,16 +471,7 @@ const RDMResponse *MovingLightResponder::SetLampState(
   }
 
   m_lamp_state = static_cast<rdm_lamp_state>(new_value);
-  return new RDMSetResponse(
-    request->DestinationUID(),
-    request->SourceUID(),
-    request->TransactionNumber(),
-    RDM_ACK,
-    0,
-    request->SubDevice(),
-    request->ParamId(),
-    NULL,
-    0);
+  return ResponderHelper::EmptySetResponse(request);
 }
 
 const RDMResponse *MovingLightResponder::GetLampOnMode(
@@ -551,16 +492,7 @@ const RDMResponse *MovingLightResponder::SetLampOnMode(
   }
 
   m_lamp_on_mode = static_cast<rdm_lamp_mode>(new_value);
-  return new RDMSetResponse(
-    request->DestinationUID(),
-    request->SourceUID(),
-    request->TransactionNumber(),
-    RDM_ACK,
-    0,
-    request->SubDevice(),
-    request->ParamId(),
-    NULL,
-    0);
+  return ResponderHelper::EmptySetResponse(request);
 }
 
 const RDMResponse *MovingLightResponder::GetDevicePowerCycles(
@@ -608,16 +540,7 @@ const RDMResponse *MovingLightResponder::SetDisplayInvert(
   }
 
   m_display_invert = static_cast<rdm_display_invert>(new_value);
-  return new RDMSetResponse(
-    request->DestinationUID(),
-    request->SourceUID(),
-    request->TransactionNumber(),
-    RDM_ACK,
-    0,
-    request->SubDevice(),
-    request->ParamId(),
-    NULL,
-    0);
+  return ResponderHelper::EmptySetResponse(request);
 }
 
 const RDMResponse *MovingLightResponder::GetDisplayLevel(

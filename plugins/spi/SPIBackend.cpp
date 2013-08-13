@@ -422,16 +422,7 @@ const RDMResponse *SPIBackend::SetDmxPersonality(const RDMRequest *request) {
   }
 
   m_personality_manager.SetActivePersonality(personality_number);
-  return new ola::rdm::RDMSetResponse(
-      request->DestinationUID(),
-      request->SourceUID(),
-      request->TransactionNumber(),
-      ola::rdm::RDM_ACK,
-      0,
-      request->SubDevice(),
-      request->ParamId(),
-      NULL,
-      0);
+  return ResponderHelper::EmptySetResponse(request);
 }
 
 const RDMResponse *SPIBackend::GetPersonalityDescription(
@@ -483,16 +474,7 @@ const RDMResponse *SPIBackend::SetDmxStartAddress(const RDMRequest *request) {
   }
 
   m_start_address = address;
-  return new ola::rdm::RDMSetResponse(
-    request->DestinationUID(),
-    request->SourceUID(),
-    request->TransactionNumber(),
-    ola::rdm::RDM_ACK,
-    0,
-    request->SubDevice(),
-    request->ParamId(),
-    NULL,
-    0);
+  return ResponderHelper::EmptySetResponse(request);
 }
 
 const RDMResponse *SPIBackend::GetIdentify(const RDMRequest *request) {
