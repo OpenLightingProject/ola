@@ -47,7 +47,14 @@ const char OSCPlugin::PLUGIN_NAME[] = "OSC";
 const char OSCPlugin::PLUGIN_PREFIX[] = "osc";
 const char OSCPlugin::PORT_ADDRESS_TEMPLATE[] = "port_%d_address";
 const char OSCPlugin::PORT_TARGETS_TEMPLATE[] = "port_%d_targets";
+const char OSCPlugin::PORT_FORMAT_TEMPLATE[] = "port_%d_output_format";
 const char OSCPlugin::UDP_PORT_KEY[] = "udp_listen_port";
+
+const char OSCPlugin::BLOB_FORMAT[] = "blob";
+const char OSCPlugin::FLOAT_ARRAY_FORMAT[] = "float_array";
+const char OSCPlugin::FLOAT_INDIVIDUAL_FORMAT[] = "individual_float";
+const char OSCPlugin::INT_ARRAY_FORMAT[] = "int_array";
+const char OSCPlugin::INT_INDIVIDUAL_FORMAT[] = "individual_int";
 
 /*
  * Start the plugin.
@@ -67,10 +74,12 @@ bool OSCPlugin::StartHook() {
 
   // For each ouput port, extract the list of OSCTargets and store them in
   // port_targets.
-  vector<vector<OSCTarget> > port_targets;
+  OSCDevice::PortConfigs port_configs;
   for (unsigned int i = 0; i < GetPortCount(OUTPUT_PORT_COUNT_KEY); i++) {
-    port_targets.push_back(vector<OSCTarget>());
-    vector<OSCTarget> &targets = port_targets.back();
+    OSCDevice::PortConfig port_config;
+
+    const string format_key = ExpandTemplate(PORT_FORMAT_TEMPLATE, i);
+    SetDataFormat(m_preferences->GetValue(format_key), &port_config);
 
     const string key = ExpandTemplate(PORT_TARGETS_TEMPLATE, i);
     vector<string> tokens;
@@ -80,13 +89,15 @@ bool OSCPlugin::StartHook() {
     for (; iter != tokens.end(); ++iter) {
       OSCTarget target;
       if (ExtractOSCTarget(*iter, &target))
-        targets.push_back(target);
+        port_config.targets.push_back(target);
     }
+
+    port_configs.push_back(port_config);
   }
 
   // Finally create the new OSCDevice, start it and register the device.
   m_device = new OSCDevice(this, m_plugin_adaptor, udp_port,
-                           port_addresses, port_targets);
+                           port_addresses, port_configs);
   m_device->Start();
   m_plugin_adaptor->RegisterDevice(m_device);
   return true;
@@ -128,11 +139,18 @@ string OSCPlugin::Description() const {
 "\n"
 "port_N_targets = ip:port/address,ip:port/address,...\n"
 "For output port N, the list of targets to send OSC messages to.\n"
-"If the address contains %d, it's replaced by the universe number.\n"
 "\n"
 "port_N_address = /address\n"
 "The OSC address to listen on for port N. If the address contains %d\n"
 "it's replaced by the universe number for port N.\n"
+"\n"
+"port_N_format = [blob|float_array,individual_float,individual_int,int_array]\n"
+"The format (OSC Type) to send the DMX data in:\n"
+" - blob: a OSC-blob\n"
+" - float_array: an array of float values. 0.0 - 1.0\n"
+" - individual_float: one float message for each slot (channel). 0.0 - 1.0 \n"
+" - individual_int: one int message for each slot (channel). 0 - 255.\n"
+" - int_array: an array of int values. 0 - 255.\n"
 "\n"
 "udp_listen_port = <int>\n"
 "The UDP Port to listen on for OSC messages.\n"
@@ -168,9 +186,14 @@ bool OSCPlugin::SetDefaultPreferences() {
   }
 
   for (unsigned int i = 0; i < GetPortCount(OUTPUT_PORT_COUNT_KEY); i++) {
-    const string key = ExpandTemplate(PORT_TARGETS_TEMPLATE, i);
-    save |= m_preferences->SetDefaultValue(key, StringValidator(true),
-                                           DEFAULT_TARGETS_TEMPLATE);
+    save |= m_preferences->SetDefaultValue(
+        ExpandTemplate(PORT_TARGETS_TEMPLATE, i),
+        StringValidator(true),
+        DEFAULT_TARGETS_TEMPLATE);
+
+    save |= m_preferences->SetDefaultValue(
+        ExpandTemplate(PORT_FORMAT_TEMPLATE, i),
+        StringValidator(true), BLOB_FORMAT);
   }
 
   if (save)
@@ -206,6 +229,28 @@ bool OSCPlugin::ExtractOSCTarget(const string &str,
     return false;
   target->osc_address = str.substr(pos);
   return true;
+}
+
+
+/**
+ * Set the PortConfig data format based on the option the user provides
+ */
+void OSCPlugin::SetDataFormat(const string &format_option,
+                              OSCDevice::PortConfig *port_config) {
+  if (format_option == BLOB_FORMAT) {
+    port_config->data_format = OSCNode::FORMAT_BLOB;
+  } else if (format_option == FLOAT_ARRAY_FORMAT) {
+    port_config->data_format = OSCNode::FORMAT_FLOAT_ARRAY;
+  } else if (format_option == FLOAT_INDIVIDUAL_FORMAT) {
+    port_config->data_format = OSCNode::FORMAT_FLOAT_INDIVIDUAL;
+  } else if (format_option == INT_ARRAY_FORMAT) {
+    port_config->data_format = OSCNode::FORMAT_INT_ARRAY;
+  } else if (format_option == INT_INDIVIDUAL_FORMAT) {
+    port_config->data_format = OSCNode::FORMAT_INT_INDIVIDUAL;
+  } else {
+    OLA_WARN << "Unknown OSC format " << format_option
+             << ", defaulting to blob";
+  }
 }
 }  // namespace osc
 }  // namespace plugin

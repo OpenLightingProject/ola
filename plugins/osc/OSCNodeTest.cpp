@@ -182,7 +182,8 @@ void OSCNodeTest::testSend() {
   // Add the target to the node.
   m_osc_node->AddTarget(TEST_GROUP, target);
   // Send the data
-  OLA_ASSERT_TRUE(m_osc_node->SendData(TEST_GROUP, m_dmx_data));
+  OLA_ASSERT_TRUE(m_osc_node->SendData(TEST_GROUP, OSCNode::FORMAT_BLOB,
+                  m_dmx_data));
 
   // Run the SelectServer this will return either when UDPSocketReady
   // completes, or the abort timeout triggers.

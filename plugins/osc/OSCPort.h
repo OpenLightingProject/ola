@@ -128,10 +128,12 @@ class OSCOutputPort: public BasicOutputPort {
     OSCOutputPort(OSCDevice *device,
                   unsigned int port_id,
                   OSCNode *node,
-                  const string &description)
+                  const string &description,
+                  OSCNode::DataFormat data_format)
         : BasicOutputPort(device, port_id),
           m_node(node),
-          m_description(description) {
+          m_description(description),
+          m_data_format(data_format) {
     }
 
     /**
@@ -140,7 +142,7 @@ class OSCOutputPort: public BasicOutputPort {
      * @param buffer the DMX data
      */
     bool WriteDMX(const DmxBuffer &buffer, uint8_t) {
-      return m_node->SendData(this->PortId(), buffer);
+      return m_node->SendData(this->PortId(), m_data_format, buffer);
     }
 
     /**
@@ -151,6 +153,7 @@ class OSCOutputPort: public BasicOutputPort {
   private:
     OSCNode *m_node;
     const string m_description;
+    OSCNode::DataFormat m_data_format;
 };
 }  // namespace osc
 }  // namespace plugin

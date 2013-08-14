@@ -24,6 +24,7 @@
 #include <string>
 #include "olad/Plugin.h"
 #include "ola/plugin_id.h"
+#include "plugins/osc/OSCDevice.h"
 #include "plugins/osc/OSCTarget.h"
 
 namespace ola {
@@ -53,6 +54,8 @@ class OSCPlugin: public Plugin {
 
     unsigned int GetPortCount(const string &key) const;
     bool ExtractOSCTarget(const string &str, OSCTarget *target);
+    void SetDataFormat(const string &format_option,
+                       OSCDevice::PortConfig *port_config);
 
     OSCDevice *m_device;
     static const char DEFAULT_ADDRESS_TEMPLATE[];
@@ -65,7 +68,14 @@ class OSCPlugin: public Plugin {
     static const char PLUGIN_PREFIX[];
     static const char PORT_ADDRESS_TEMPLATE[];
     static const char PORT_TARGETS_TEMPLATE[];
+    static const char PORT_FORMAT_TEMPLATE[];
     static const char UDP_PORT_KEY[];
+
+    static const char BLOB_FORMAT[];
+    static const char FLOAT_ARRAY_FORMAT[];
+    static const char FLOAT_INDIVIDUAL_FORMAT[];
+    static const char INT_ARRAY_FORMAT[];
+    static const char INT_INDIVIDUAL_FORMAT[];
 };
 }  // namespace osc
 }  // namespace plugin

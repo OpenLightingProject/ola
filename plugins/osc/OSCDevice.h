@@ -28,6 +28,7 @@
 #include "ola/network/SocketAddress.h"
 #include "olad/Device.h"
 #include "plugins/osc/OSCTarget.h"
+#include "plugins/osc/OSCNode.h"
 
 namespace ola {
 
@@ -41,11 +42,20 @@ using ola::network::IPV4SocketAddress;
 
 class OSCDevice: public Device {
   public:
+    struct PortConfig {
+      PortConfig() : data_format(OSCNode::FORMAT_BLOB) {}
+
+      vector<OSCTarget> targets;
+      OSCNode::DataFormat data_format;
+    };
+
+    typedef vector<PortConfig> PortConfigs;
+
     OSCDevice(AbstractPlugin *owner,
               PluginAdaptor *plugin_adaptor,
               uint16_t udp_port,
               const vector<string> &addresses,
-              const vector<vector<OSCTarget> > &targets);
+              const PortConfigs &port_configs);
     string DeviceId() const { return "1"; }
 
     bool AllowMultiPortPatching() const { return true; }
@@ -53,7 +63,7 @@ class OSCDevice: public Device {
   protected:
     PluginAdaptor *m_plugin_adaptor;
     const vector<string> m_port_addresses;
-    const vector<vector<OSCTarget> > m_port_targets;
+    const PortConfigs m_port_configs;
     std::auto_ptr<class OSCNode> m_osc_node;
 
     bool StartHook();
