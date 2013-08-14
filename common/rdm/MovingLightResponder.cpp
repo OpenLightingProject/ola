@@ -32,8 +32,10 @@
 #include "ola/rdm/MovingLightResponder.h"
 #include "ola/rdm/OpenLightingEnums.h"
 #include "ola/rdm/RDMEnums.h"
+#include "ola/rdm/RDMHelper.h"
 #include "ola/rdm/ResponderHelper.h"
 #include "ola/rdm/ResponderSlotData.h"
+#include "ola/StringUtils.h"
 
 namespace ola {
 namespace rdm {
@@ -601,29 +603,28 @@ const RDMResponse *MovingLightResponder::SetPowerState(
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
-  if (new_value > static_cast<uint8_t>(POWER_STATE_STANDBY) &&
-      new_value != static_cast<uint8_t>(POWER_STATE_NORMAL)) {
+  if (!UIntToPowerState(new_value, &m_power_state)) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
-
-  m_power_state = static_cast<rdm_power_state>(new_value);
   return ResponderHelper::EmptySetResponse(request);
 }
 
 const RDMResponse *MovingLightResponder::SetResetDevice(
     const RDMRequest *request) {
   uint8_t value;
+  rdm_reset_device_mode reset_device_enum;
   if (!ResponderHelper::ExtractUInt8(request, &value)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
 
-  if (value != static_cast<uint8_t>(RESET_WARM) &&
-      value != static_cast<uint8_t>(RESET_COLD)) {
+  if (!UIntToResetDevice(value, &reset_device_enum)) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
-  OLA_INFO << "Dummy Moving Light " << m_uid << " " <<
-      ((value == static_cast<uint8_t>(RESET_WARM)) ? "warm" : "cold") <<
+  string reset_type = ResetDeviceToString(reset_device_enum);
+  ToLower(&reset_type);
+
+  OLA_INFO << "Dummy Moving Light " << m_uid << " " << reset_type <<
       " reset device";
 
   return ResponderHelper::EmptySetResponse(request);
