@@ -313,8 +313,7 @@ bool OSCNode::RegisterAddress(const string &osc_address,
                               DMXCallback *callback) {
   if (callback) {
     // register
-    OSCInputGroup *universe_data = STLFindOrNull(m_input_map,
-                                                 osc_address);
+    OSCInputGroup *universe_data = STLFindOrNull(m_input_map, osc_address);
     if (universe_data) {
       OLA_WARN << "Attempt to register a second callback for " << osc_address;
       // delete the callback, since we have ownership of it
@@ -332,8 +331,7 @@ bool OSCNode::RegisterAddress(const string &osc_address,
     }
   } else {
     // deregister
-    bool removed = STLRemoveAndDelete(&m_input_map, osc_address);
-    if (removed) {
+    if (STLRemoveAndDelete(&m_input_map, osc_address)) {
       lo_server_del_method(m_osc_server, osc_address.c_str(), "b");
       lo_server_del_method(m_osc_server, osc_address.c_str(), "f");
     }
@@ -350,14 +348,14 @@ bool OSCNode::RegisterAddress(const string &osc_address,
  */
 void OSCNode::SetUniverse(const string &osc_address, const uint8_t *data,
                           unsigned int size) {
-  OSCInputGroup *universe_data = STLFindOrNull(m_input_map,
-                                                  osc_address);
+  OSCInputGroup *universe_data = STLFindOrNull(m_input_map, osc_address);
   if (!universe_data)
     return;
 
   universe_data->dmx.Set(data, size);
-  if (universe_data->callback.get())
+  if (universe_data->callback.get()) {
     universe_data->callback->Run(universe_data->dmx);
+  }
 }
 
 /**
@@ -367,15 +365,15 @@ void OSCNode::SetUniverse(const string &osc_address, const uint8_t *data,
  * @param value the DMX value for the slot
  */
 void OSCNode::SetSlot(const string &osc_address, uint16_t slot, uint8_t value) {
-  OSCInputGroup *universe_data = STLFindOrNull(m_input_map,
-                                                  osc_address);
+  OSCInputGroup *universe_data = STLFindOrNull(m_input_map, osc_address);
   if (!universe_data)
     return;
 
   universe_data->dmx.SetChannel(slot, value);
 
-  if (universe_data->callback.get())
+  if (universe_data->callback.get()) {
     universe_data->callback->Run(universe_data->dmx);
+  }
 }
 
 
@@ -421,7 +419,6 @@ bool OSCNode::SendBlob(const DmxBuffer &dmx_data,
   }
   // free the blob
   lo_blob_free(osc_data);
-  OLA_INFO << "ret code is " << ok;
   return ok;
 }
 
@@ -475,7 +472,9 @@ bool OSCNode::SendFloatArray(const DmxBuffer &dmx_data,
 }
 
 /**
- * Send an lo_message to all targets.
+ * Send an lo_message to each target in a set.
+ * @param message the lo_message to send.
+ * @param targets the list of targets to send the message to.
  */
 bool OSCNode::SendMessageToTargets(lo_message message,
                                    const OSCTargetVector &targets) {
@@ -493,6 +492,12 @@ bool OSCNode::SendMessageToTargets(lo_message message,
 }
 
 
+/**
+ * Send individual messages (one slot per message) to a set of targets.
+ * @param dmx_data the DmxBuffer to send
+ * @param group the OSCOutputGroup with the targets.
+ * @param osc_type the type of OSC message, either "i" or "f"
+ */
 bool OSCNode::SendIndividualMessages(const DmxBuffer &dmx_data,
                                      OSCOutputGroup *group,
                                      const string &osc_type) {
@@ -502,6 +507,7 @@ bool OSCNode::SendIndividualMessages(const DmxBuffer &dmx_data,
 
   vector<SlotMessage> messages;
 
+  // We only send the slots that have changed.
   for (unsigned int i = 0; i < dmx_data.Size(); ++i) {
     if (first_send || dmx_data.Get(i) != group->dmx.Get(i)) {
       SlotMessage message = {i, lo_message_new()};
@@ -515,6 +521,7 @@ bool OSCNode::SendIndividualMessages(const DmxBuffer &dmx_data,
   }
   group->dmx.Set(dmx_data);
 
+  // Send all messages to each target.
   OSCTargetVector::const_iterator target_iter = targets.begin();
   for (; target_iter != targets.end(); ++target_iter) {
     OLA_DEBUG << "Sending to " << (*target_iter)->socket_address;
@@ -532,6 +539,7 @@ bool OSCNode::SendIndividualMessages(const DmxBuffer &dmx_data,
     }
   }
 
+  // Clean up the messages.
   vector<SlotMessage>::iterator message_iter = messages.begin();
   for (; message_iter != messages.end(); ++message_iter) {
     lo_message_free(message_iter->message);
