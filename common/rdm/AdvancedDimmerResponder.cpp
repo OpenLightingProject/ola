@@ -544,7 +544,7 @@ const RDMResponse *AdvancedDimmerResponder::SetPresetPlayback(
   args.mode = NetworkToHost(args.mode);
 
   if (args.mode >= m_presets.size() &&
-      args.mode != 0xffff) {
+      args.mode != PRESET_PLAYBACK_ALL) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   }
 
