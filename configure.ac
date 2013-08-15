@@ -207,8 +207,8 @@ PLUGIN_SUPPORT(sandnet, USE_SANDNET)
 PLUGIN_SUPPORT(shownet, USE_SHOWNET)
 
 # SPI support is only enabled if the header is found
-AC_CHECK_HEADER([linux/spi/spidev.h], [enable_spi="yes"], [enable_spi="no"])
-PLUGIN_SUPPORT(spi, USE_SPI, $enable_spi)
+AC_CHECK_HEADER([linux/spi/spidev.h], [have_spi="yes"], [have_spi="no"])
+PLUGIN_SUPPORT(spi, USE_SPI, $have_spi)
 PLUGIN_SUPPORT(stageprofi, USE_STAGEPROFI)
 PLUGIN_SUPPORT(usbpro, USE_USBPRO)
 
