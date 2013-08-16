@@ -48,6 +48,19 @@ struct OSCTarget {
       : socket_address(socket_address),
         osc_address(osc_address) {
   }
+
+  string ToString() const {
+    return socket_address.ToString() + osc_address;
+  }
+
+  /**
+   * @brief A helper function to write a OSCTarget to an ostream.
+   * @param out the ostream
+   * @param uid the UID to write.
+   */
+  friend ostream& operator<<(ostream &out, const OSCTarget &target) {
+    return out << target.ToString();
+  }
 };
 }  // namespace osc
 }  // namespace plugin

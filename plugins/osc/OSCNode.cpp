@@ -304,8 +304,9 @@ bool OSCNode::SendData(unsigned int group, DataFormat data_format,
                        const ola::DmxBuffer &dmx_data) {
   OSCOutputGroup *output_group = STLFindOrNull(m_output_map, group);
   if (!output_group) {
+    OLA_WARN << "failed to find " << group;
     // group doesn't exist, just return
-    return true;
+    return false;
   }
 
   switch (data_format) {

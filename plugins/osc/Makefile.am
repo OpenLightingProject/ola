@@ -11,7 +11,7 @@ if HAVE_LIBLO
   libolaoscnode_la_LIBADD = $(liblo_LIBS)
 
   lib_LTLIBRARIES = libolaosc.la
-  libolaosc_la_SOURCES = OSCDevice.cpp OSCPlugin.cpp
+  libolaosc_la_SOURCES = OSCDevice.cpp OSCPlugin.cpp OSCPort.cpp
   libolaosc_la_CXXFLAGS = $(COMMON_CXXFLAGS) $(liblo_CFLAGS)
   libolaosc_la_LIBADD = libolaoscnode.la
 

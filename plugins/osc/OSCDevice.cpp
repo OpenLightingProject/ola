@@ -18,7 +18,6 @@
  * Copyright (C) 2012 Simon Newton
  */
 
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -31,7 +30,6 @@ namespace ola {
 namespace plugin {
 namespace osc {
 
-using std::ostringstream;
 using std::vector;
 
 const char OSCDevice::DEVICE_NAME[] = "OSC Device";
@@ -86,22 +84,14 @@ bool OSCDevice::StartHook() {
   PortConfigs::const_iterator port_iter = m_port_configs.begin();
   for (int i = 0; port_iter != m_port_configs.end(); ++port_iter, ++i) {
     const PortConfig &port_config = *port_iter;
-    ostringstream str;
-
     if (port_config.targets.empty()) {
       OLA_INFO << "No targets specified for OSC Output port " << i;
       continue;
     }
 
-    vector<OSCTarget>::const_iterator iter = port_config.targets.begin();
-    for (; iter != port_config.targets.end(); ++iter) {
-      if (iter != port_config.targets.begin())
-        str << ", ";
-      str << iter->socket_address << iter->osc_address;
-      m_osc_node->AddTarget(i, *iter);
-    }
     OSCOutputPort *port = new OSCOutputPort(this, i, m_osc_node.get(),
-                                            str.str(), port_config.data_format);
+                                            port_config.targets,
+                                            port_config.data_format);
     if (!AddPort(port)) {
       delete port;
       ok = false;
