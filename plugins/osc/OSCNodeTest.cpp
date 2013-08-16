@@ -49,7 +49,7 @@ using std::auto_ptr;
  */
 class OSCNodeTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(OSCNodeTest);
-  CPPUNIT_TEST(testSend);
+  CPPUNIT_TEST(testSendBlob);
   CPPUNIT_TEST(testReceive);
   CPPUNIT_TEST_SUITE_END();
 
@@ -71,7 +71,7 @@ class OSCNodeTest: public CppUnit::TestFixture {
     void tearDown() { m_osc_node->Stop(); }
 
     // our two tests
-    void testSend();
+    void testSendBlob();
     void testReceive();
 
     // Called if we don't receive data in ABORT_TIMEOUT_IN_MS
@@ -83,6 +83,7 @@ class OSCNodeTest: public CppUnit::TestFixture {
     UDPSocket m_udp_socket;
     ola::thread::timeout_id m_timeout_id;
     DmxBuffer m_dmx_data;
+    DmxBuffer m_received_data;
 
     void UDPSocketReady();
     void DMXHandler(const DmxBuffer &dmx);
@@ -90,17 +91,18 @@ class OSCNodeTest: public CppUnit::TestFixture {
     static const unsigned int TEST_GROUP = 10;  // the group to use for testing
     // The number of mseconds to wait before failing the test.
     static const int ABORT_TIMEOUT_IN_MS = 2000;
-    // The expected OSC packet on the wire
-    static const uint8_t EXPECTED_OSC_PACKET[];
+    static const uint8_t OSC_BLOB_DATA[];
+    static const uint8_t OSC_SINGLE_FLOAT_DATA[];
+    static const uint8_t OSC_SINGLE_INT_DATA[];
     // The OSC address to use for testing
     static const char TEST_OSC_ADDRESS[];
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION(OSCNodeTest);
 
-// The expected OSC packet. See http://opensoundcontrol.org/ for what each
+// A OSC blob packet. See http://opensoundcontrol.org/ for what each
 // byte means.
-const uint8_t OSCNodeTest::EXPECTED_OSC_PACKET[] = {
+const uint8_t OSCNodeTest::OSC_BLOB_DATA[] = {
   // osc address
   '/', 'd', 'm', 'x', '/', 'u', 'n', 'i',
   'v', 'e', 'r', 's', 'e', '/', '1', '0',
@@ -112,9 +114,32 @@ const uint8_t OSCNodeTest::EXPECTED_OSC_PACKET[] = {
   8, 9, 0xa, 0
 };
 
+// An OSC single float packet for slot 1
+const uint8_t OSCNodeTest::OSC_SINGLE_FLOAT_DATA[] = {
+  // osc address
+  '/', 'd', 'm', 'x', '/', 'u', 'n', 'i',
+  'v', 'e', 'r', 's', 'e', '/', '1', '0',
+  '/', '0', 0, 0,
+  // tag type
+  ',', 'f', 0, 0,
+  // data (0.5 which translates to 127)
+  0x3f, 0, 0, 0
+};
+
+// An OSC single int packet for slot 5
+const uint8_t OSCNodeTest::OSC_SINGLE_INT_DATA[] = {
+  // osc address
+  '/', 'd', 'm', 'x', '/', 'u', 'n', 'i',
+  'v', 'e', 'r', 's', 'e', '/', '1', '0',
+  '/', '5', 0, 0,
+  // tag type
+  ',', 'i', 0, 0,
+  // data
+  0, 0, 0, 140
+};
+
 // An OSC Address used for testing.
 const char OSCNodeTest::TEST_OSC_ADDRESS[] = "/dmx/universe/10";
-
 
 void OSCNodeTest::setUp() {
   // Init logging
@@ -145,8 +170,8 @@ void OSCNodeTest::UDPSocketReady() {
   // Read the received packet into 'data'.
   OLA_ASSERT_TRUE(m_udp_socket.RecvFrom(data, &data_read));
   // Verify it matches the expected packet
-  ASSERT_DATA_EQUALS(__LINE__, EXPECTED_OSC_PACKET,
-                     sizeof(EXPECTED_OSC_PACKET), data, data_read);
+  ASSERT_DATA_EQUALS(__LINE__, OSC_BLOB_DATA,
+                     sizeof(OSC_BLOB_DATA), data, data_read);
   // Stop the SelectServer
   m_ss.Terminate();
 }
@@ -156,8 +181,7 @@ void OSCNodeTest::UDPSocketReady() {
  * expect, and then stop the SelectServer.
  */
 void OSCNodeTest::DMXHandler(const DmxBuffer &dmx) {
-  OLA_ASSERT_EQ(11u, dmx.Size());
-  OLA_ASSERT_EQ(m_dmx_data, dmx);
+  m_received_data = dmx;
   m_ss.Terminate();
 }
 
@@ -165,7 +189,7 @@ void OSCNodeTest::DMXHandler(const DmxBuffer &dmx) {
 /**
  * Check that we send OSC messages correctly.
  */
-void OSCNodeTest::testSend() {
+void OSCNodeTest::testSendBlob() {
   // First up create a UDP socket to receive the messages on.
   // Port 0 means 'ANY'
   IPV4SocketAddress socket_address(IPV4Address::Loopback(), 0);
@@ -203,6 +227,8 @@ void OSCNodeTest::testSend() {
  * Check that we receive OSC messages correctly.
  */
 void OSCNodeTest::testReceive() {
+  DmxBuffer expected_data;
+
   // Register the test OSC Address with the OSCNode using the DMXHandler as the
   // callback.
   OLA_ASSERT_TRUE(m_osc_node->RegisterAddress(
@@ -214,15 +240,45 @@ void OSCNodeTest::testReceive() {
       TEST_OSC_ADDRESS,
       NewCallback(this, &OSCNodeTest::DMXHandler)));
 
-  // Using our test UDP socket, send the EXPECTED_OSC_PACKET to the default OSC
+  // Using our test UDP socket, send the OSC_BLOB_DATA to the default OSC
   // port. The OSCNode should receive the packet and call DMXHandler.
   IPV4SocketAddress dest_address(IPV4Address::Loopback(),
                                  m_osc_node->ListeningPort());
-  m_udp_socket.SendTo(EXPECTED_OSC_PACKET, sizeof(EXPECTED_OSC_PACKET),
+
+  // send a single float update
+  m_udp_socket.SendTo(OSC_SINGLE_FLOAT_DATA, sizeof(OSC_SINGLE_FLOAT_DATA),
+                      dest_address);
+  m_ss.Run();
+  OLA_ASSERT_EQ(512u, m_received_data.Size());
+  expected_data.SetChannel(0, 127);
+  OLA_ASSERT_EQ(expected_data, m_received_data);
+
+  // now send a blob update
+  m_udp_socket.SendTo(OSC_BLOB_DATA, sizeof(OSC_BLOB_DATA),
                       dest_address);
   // Run the SelectServer, this will return either when DMXHandler
   // completes, or the abort timeout triggers.
   m_ss.Run();
+
+  OLA_ASSERT_EQ(11u, m_received_data.Size());
+  expected_data.SetFromString("0,1,2,3,4,5,6,7,8,9,10");
+  OLA_ASSERT_EQ(expected_data, m_received_data);
+
+  // Now try sending a float update.
+  m_udp_socket.SendTo(OSC_SINGLE_FLOAT_DATA, sizeof(OSC_SINGLE_FLOAT_DATA),
+                      dest_address);
+  m_ss.Run();
+  OLA_ASSERT_EQ(11u, m_received_data.Size());
+  expected_data.SetChannel(0, 127);
+  OLA_ASSERT_EQ(expected_data, m_received_data);
+
+  // Now try sending an int update.
+  m_udp_socket.SendTo(OSC_SINGLE_INT_DATA, sizeof(OSC_SINGLE_INT_DATA),
+                      dest_address);
+  m_ss.Run();
+  OLA_ASSERT_EQ(11u, m_received_data.Size());
+  expected_data.SetChannel(5, 140);
+  OLA_ASSERT_EQ(expected_data, m_received_data);
 
   // De-regsiter
   OLA_ASSERT_TRUE(m_osc_node->RegisterAddress(TEST_OSC_ADDRESS, NULL));

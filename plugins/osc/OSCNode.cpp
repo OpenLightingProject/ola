@@ -36,6 +36,8 @@ namespace osc {
 
 using ola::IntToString;
 using std::make_pair;
+using std::max;
+using std::min;
 
 const char OSCNode::OSC_PORT_VARIABLE[] = "osc-listen-port";
 
@@ -44,6 +46,32 @@ const char OSCNode::OSC_PORT_VARIABLE[] = "osc-listen-port";
  */
 void OSCErrorHandler(int error_code, const char *msg, const char *stack) {
   OLA_WARN << "OSC Error. Code " << error_code << ", " << msg << ", " << stack;
+}
+
+
+/**
+ * Extract the slot number and group address from an OSC address
+ */
+bool ExtractSlotFromPath(const string &osc_address,
+                         string *group_address,
+                         uint16_t *slot) {
+  size_t pos = osc_address.find_last_of("/");
+  if (pos == string::npos) {
+    OLA_WARN << "Got invalid OSC message to " << osc_address;
+    return false;
+  }
+  if (!StringToInt(osc_address.substr(pos + 1), slot, true)) {
+    OLA_WARN << "Unable to extract slot from " << osc_address.substr(pos + 1);
+    return false;
+  }
+
+  if (*slot >= DMX_UNIVERSE_SIZE) {
+    OLA_WARN << "Ignoring slot " << *slot;
+    return 0;
+  }
+
+  *group_address = osc_address.substr(0, pos);
+  return true;
 }
 
 /**
@@ -61,12 +89,6 @@ int OSCDataHandler(const char *osc_address, const char *types, lo_arg **argv,
   OSCNode *node = reinterpret_cast<OSCNode*>(user_data);
   const string type(types);
 
-  if (type != "b" && type != "f") {
-    OLA_WARN << "Got invalid OSC message to " << osc_address << ", types was "
-             << types;
-    return 0;
-  }
-
   if (argc != 1) {
     OLA_WARN << "Got invalid OSC message to " << osc_address << ", argc was "
              << argc;
@@ -75,33 +97,28 @@ int OSCDataHandler(const char *osc_address, const char *types, lo_arg **argv,
 
   if (type == "b") {
     lo_blob blob = argv[0];
-    unsigned int size = std::min(static_cast<uint32_t>(DMX_UNIVERSE_SIZE),
-                                 lo_blob_datasize(blob));
+    unsigned int size = min(static_cast<uint32_t>(DMX_UNIVERSE_SIZE),
+                            lo_blob_datasize(blob));
     node->SetUniverse(
         osc_address, static_cast<uint8_t*>(lo_blob_dataptr(blob)), size);
-  } else {
-    float val = argv[0]->f;
-    const string path(osc_address);
-    size_t pos = path.find_last_of("/");
-
-    if (pos == string::npos) {
-      OLA_WARN << "Got invalid OSC message to " << osc_address << ", path was "
-               << path;
-      return 0;
-    }
+  } else if (type == "f") {
+    float val = max(0.0f, min(1.0f, argv[0]->f));
+    string group_address;
     uint16_t slot;
-    if (!StringToInt(path.substr(pos + 1), &slot, true)) {
-      OLA_WARN << "Unable to extract slot from " << path.substr(pos + 1);
+    if (!ExtractSlotFromPath(osc_address, &group_address, &slot))
       return 0;
-    }
 
-    if (slot >= DMX_UNIVERSE_SIZE) {
-      OLA_WARN << "Ignoring slot " << slot;
+    node->SetSlot(group_address, slot,  val * DMX_MAX_SLOT_VALUE);
+  } else if (type == "i") {
+    int val = min(static_cast<int>(DMX_MAX_SLOT_VALUE), max(0, argv[0]->i));
+    string group_address;
+    uint16_t slot;
+    if (!ExtractSlotFromPath(osc_address, &group_address, &slot))
       return 0;
-    }
 
-    const string address = path.substr(0, pos);
-    node->SetSlot(address, slot,  val * DMX_MAX_SLOT_VALUE);
+    node->SetSlot(group_address, slot,  val);
+  } else {
+    OLA_WARN << "Unknown OSC message type " <<  type;
   }
   return 0;
 }
@@ -174,6 +191,12 @@ bool OSCNode::Init() {
   m_descriptor->SetOnData(NewCallback(this, &OSCNode::DescriptorReady));
   m_ss->AddReadDescriptor(m_descriptor.get());
 
+  // liblo doesn't support address pattern matching. So rather than registering
+  // a bunch of handlers, we just register for any address matching the types
+  // we want, and handle the dispatching ourselves. NULL means 'any address'
+  // Similarly liblo tries to coerce types so rather than letting it do
+  // anything we just register for all types and sort it out ourselves.
+  lo_server_add_method(m_osc_server, NULL, NULL, OSCDataHandler, this);
   return true;
 }
 
@@ -182,6 +205,10 @@ bool OSCNode::Init() {
  * Stop this node. This removes all registrations and targets.
  */
 void OSCNode::Stop() {
+  if (m_osc_server) {
+    lo_server_del_method(m_osc_server, NULL, NULL);
+  }
+
   // Clean up the m_output_map map
   OutputGroupMap::iterator group_iter = m_output_map.begin();
   for (; group_iter != m_output_map.end(); ++group_iter) {
@@ -324,17 +351,10 @@ bool OSCNode::RegisterAddress(const string &osc_address,
       // register with liblo.
       m_input_map.insert(
           make_pair(osc_address, new OSCInputGroup(callback)));
-      lo_server_add_method(m_osc_server, osc_address.c_str(), "b",
-                           OSCDataHandler, this);
-      lo_server_add_method(m_osc_server, osc_address.c_str(), "f",
-                           OSCDataHandler, this);
     }
   } else {
     // deregister
-    if (STLRemoveAndDelete(&m_input_map, osc_address)) {
-      lo_server_del_method(m_osc_server, osc_address.c_str(), "b");
-      lo_server_del_method(m_osc_server, osc_address.c_str(), "f");
-    }
+    STLRemoveAndDelete(&m_input_map, osc_address);
   }
   return true;
 }
@@ -502,14 +522,13 @@ bool OSCNode::SendIndividualMessages(const DmxBuffer &dmx_data,
                                      OSCOutputGroup *group,
                                      const string &osc_type) {
   bool ok = true;
-  bool first_send = group->dmx.Size() == 0;
   const OSCTargetVector &targets = group->targets;
 
   vector<SlotMessage> messages;
 
   // We only send the slots that have changed.
   for (unsigned int i = 0; i < dmx_data.Size(); ++i) {
-    if (first_send || dmx_data.Get(i) != group->dmx.Get(i)) {
+    if (i > group->dmx.Size() || dmx_data.Get(i) != group->dmx.Get(i)) {
       SlotMessage message = {i, lo_message_new()};
       if (osc_type == "i") {
         lo_message_add_int32(message.message, dmx_data.Get(i));
