@@ -1,3 +1,10 @@
+ola (0.8.31-2) unstable; urgency=low
+
+  * Add logic_rdm_sniffer
+    (requires libSaleaeDevice.so from Saleae Device SDK)
+
+ -- RenZO <renzo@imaginux.com>  Sat, 17 Aug 2013 15:33:24 +0200
+
 ola (0.8.31-1) unstable; urgency=low
 
   * New upstream release

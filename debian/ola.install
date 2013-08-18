@@ -1,5 +1,6 @@
 usr/bin/ola*
 usr/bin/rdmpro_sniffer
+usr/bin/logic_rdm_sniffer
 usr/lib/libola*.so.?
 usr/lib/libola*.so.?.?.*
 usr/lib/olad/libola*.so.?
