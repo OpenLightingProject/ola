@@ -128,7 +128,7 @@ class Flag<bool> : public BaseFlag {
         m_value(default_value) {
       if (default_value) {
         // prefix the long option with 'no'
-        unsigned int total_size = strlen(NO_PREFIX) + strlen(name) + 1;
+        size_t total_size = strlen(NO_PREFIX) + strlen(name) + 1;
         char* new_name = new char[total_size];
         strncpy(new_name, NO_PREFIX, strlen(NO_PREFIX) + 1);
         strncat(new_name, name, total_size);

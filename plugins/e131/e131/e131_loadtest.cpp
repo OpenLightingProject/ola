@@ -18,13 +18,13 @@
  * Copyright (C) 2013 Simon Newton
  */
 
-#include <getopt.h>
 #include <stdlib.h>
 #include <algorithm>
 #include <string>
 #include "ola/Callback.h"
 #include "ola/DmxBuffer.h"
 #include "ola/Logging.h"
+#include "ola/base/Flags.h"
 #include "ola/io/SelectServer.h"
 #include "plugins/e131/e131/E131Node.h"
 
@@ -32,10 +32,10 @@ using ola::DmxBuffer;
 using ola::io::SelectServer;
 using ola::plugin::e131::E131Node;
 using ola::NewCallback;
-using std::cout;
 using std::min;
-using std::max;
-using std::endl;
+
+DEFINE_s_uint32(fps, s, 10, "Frames per second per universe [1 - 40]");
+DEFINE_s_uint16(universes, u, 1, "Number of universes to send");
 
 /**
  * Send N DMX frames using E1.31, where N is given by number_of_universes.
@@ -48,86 +48,29 @@ bool SendFrames(E131Node *node, DmxBuffer *buffer,
   return true;
 }
 
-/**
- * Run the load test until we get a terminate signal
- */
-void RunLoadTest(uint16_t number_of_universes, unsigned int frames_per_second) {
+int main(int argc, char* argv[]) {
+  ola::SetHelpString("", "Run the E1.31 load test.");
+  ola::ParseFlags(&argc, argv);
+  ola::InitLoggingFromFlags();
+
+  if (FLAGS_universes == 0 || FLAGS_fps == 0)
+    return -1;
+
+  unsigned int fps = min(40u, static_cast<unsigned int>(FLAGS_fps));
+  uint16_t universes = FLAGS_universes;
+
   DmxBuffer output;
   output.Blackout();
 
   E131Node node("");
   if (!node.Start())
-    return;
+    return -1;
 
   SelectServer ss;
   ss.AddReadDescriptor(node.GetSocket());
   ss.RegisterRepeatingTimeout(
-      1000 / frames_per_second,
-      NewCallback(&SendFrames, &node, &output, number_of_universes));
+      1000 / fps,
+      NewCallback(&SendFrames, &node, &output, universes));
   OLA_INFO << "Starting loadtester...";
   ss.Run();
-}
-
-/*
- * Display the help message
- */
-void DisplayHelp(const char *binary_name) {
-  cout << "Usage: " << binary_name << "\n"
-  "\n"
-  "Run the E1.31 load test.\n"
-  "\n"
-  "  -h, --help          Display this help message and exit.\n"
-  "  -s, --fps           Frames per second [1, 40].\n"
-  "  -u, --universes     Number of universes to send.\n"
-  << endl;
-}
-
-int main(int argc, char* argv[]) {
-  int number_of_universes = 1;
-  int frames_per_second = 10;
-
-  ola::InitLogging(ola::OLA_LOG_INFO, ola::OLA_LOG_STDERR);
-
-  static struct option long_options[] = {
-      {"fps", required_argument, 0, 'f'},
-      {"help", no_argument, 0, 'h'},
-      {"universes", required_argument, 0, 'u'},
-      {0, 0, 0, 0}
-    };
-
-  int option_index = 0;
-
-  while (1) {
-    int c = getopt_long(argc, argv, "f:hu:", long_options, &option_index);
-
-    if (c == -1)
-      break;
-
-    switch (c) {
-      case 0:
-        break;
-      case 'f':
-        frames_per_second = atoi(optarg);
-        break;
-      case 'h':
-        DisplayHelp(argv[0]);
-        return 0;
-      case 'u':
-        number_of_universes = atoi(optarg);
-        break;
-      case '?':
-        break;
-      default:
-        break;
-    }
-  }
-
-  if (number_of_universes <= 0 || frames_per_second <= 0)
-    return -1;
-
-  unsigned int fps = max(
-      1u,
-      min(40u, static_cast<unsigned int>(frames_per_second)));
-  uint16_t universe_count = static_cast<uint16_t>(number_of_universes);
-  RunLoadTest(universe_count, fps);
 }
