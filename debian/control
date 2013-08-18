@@ -18,6 +18,16 @@ Description: Open Lighting Architecture
  .
  OLA is written and maintained by Simon Newton <nomis52@gmail.com>
 
+Package: ola-logic-sniffer
+Section: electronics
+Architecture: any
+Depends: ola (= ${binary:Version}), ${misc:Depends}, libsaleaedevice1
+Description: Open Lighting Architecture
+ The Open Lighting Architecture (OLA) provides a plugin framework for
+ distributing DMX512 control signals on Mac and Linux.
+ .
+ OLA is written and maintained by Simon Newton <nomis52@gmail.com>
+
 Package: ola-python
 Section: libs
 Architecture: all
