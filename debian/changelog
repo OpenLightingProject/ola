@@ -1,3 +1,9 @@
+ola (0.8.31-3) unstable; urgency=low
+
+  * New ola-logic-sniffer package
+
+ -- RenZO <renzo@imaginux.com>  Mon, 19 Aug 2013 00:16:57 +0200
+
 ola (0.8.31-2) unstable; urgency=low
 
   * Add logic_rdm_sniffer
