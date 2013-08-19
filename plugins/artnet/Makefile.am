@@ -16,6 +16,12 @@ libolaartnet_la_SOURCES = ArtNetPlugin.cpp ArtNetDevice.cpp ArtNetPort.cpp
 libolaartnet_la_LIBADD = libolaartnetnode.la \
                          messages/libolaartnetconf.la
 
+# ArtNet dev programs
+noinst_PROGRAMS = artnet_loadtest
+
+artnet_loadtest_SOURCES = artnet_loadtest.cpp
+artnet_loadtest_LDADD = libolaartnetnode.la
+
 # Test programs
 if BUILD_TESTS
 TESTS = ArtNetTester
