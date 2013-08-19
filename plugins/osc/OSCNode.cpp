@@ -65,12 +65,40 @@ bool ExtractSlotFromPath(const string &osc_address,
     return false;
   }
 
-  if (*slot >= DMX_UNIVERSE_SIZE) {
+  if (*slot == 0 || *slot > DMX_UNIVERSE_SIZE) {
     OLA_WARN << "Ignoring slot " << *slot;
     return 0;
   }
+  (*slot)--;
 
   *group_address = osc_address.substr(0, pos);
+  return true;
+}
+
+/**
+ * Extract the slot and value from a tuple (either ii or if)
+ */
+bool ExtractSlotValueFromPair(const string &type, lo_arg **argv,
+                              int argc, uint16_t *slot, uint8_t *value) {
+  if (argc != 2 || !(type == "ii" || type == "if")) {
+    OLA_WARN << "Unknown OSC message type " << type;
+    return false;
+  }
+
+  int raw_slot = argv[0]->i;
+  if (raw_slot <= 0 || raw_slot > DMX_UNIVERSE_SIZE) {
+    OLA_WARN << "Invalid slot # " << raw_slot;
+    return false;
+  }
+  *slot = static_cast<uint16_t>(raw_slot - 1);
+
+  if (type == "ii") {
+    *value = min(static_cast<int>(DMX_MAX_SLOT_VALUE), max(0, argv[1]->i));
+  } else if (type == "if") {
+    float val = max(0.0f, min(1.0f, argv[1]->f));
+    *value = val * DMX_MAX_SLOT_VALUE;
+  }
+
   return true;
 }
 
@@ -88,38 +116,43 @@ int OSCDataHandler(const char *osc_address, const char *types, lo_arg **argv,
 
   OSCNode *node = reinterpret_cast<OSCNode*>(user_data);
   const string type(types);
+  uint16_t slot;
 
-  if (argc != 1) {
-    OLA_WARN << "Got invalid OSC message to " << osc_address << ", argc was "
-             << argc;
+  if (argc == 1) {
+    if (type == "b") {
+      lo_blob blob = argv[0];
+      unsigned int size = min(static_cast<uint32_t>(DMX_UNIVERSE_SIZE),
+                              lo_blob_datasize(blob));
+      node->SetUniverse(
+          osc_address, static_cast<uint8_t*>(lo_blob_dataptr(blob)), size);
+      return 0;
+    } else if (type == "f") {
+      float val = max(0.0f, min(1.0f, argv[0]->f));
+      string group_address;
+      if (!ExtractSlotFromPath(osc_address, &group_address, &slot))
+        return 0;
+
+      node->SetSlot(group_address, slot,  val * DMX_MAX_SLOT_VALUE);
+      return 0;
+    } else if (type == "i") {
+      int val = min(static_cast<int>(DMX_MAX_SLOT_VALUE), max(0, argv[0]->i));
+      string group_address;
+      if (!ExtractSlotFromPath(osc_address, &group_address, &slot))
+        return 0;
+
+      node->SetSlot(group_address, slot,  val);
+      return 0;
+    }
+  } else if (argc == 2) {
+    uint8_t value;
+    if (!ExtractSlotValueFromPair(type, argv, argc, &slot, &value)) {
+      return 0;
+    }
+
+    node->SetSlot(osc_address, slot,  value);
     return 0;
   }
-
-  if (type == "b") {
-    lo_blob blob = argv[0];
-    unsigned int size = min(static_cast<uint32_t>(DMX_UNIVERSE_SIZE),
-                            lo_blob_datasize(blob));
-    node->SetUniverse(
-        osc_address, static_cast<uint8_t*>(lo_blob_dataptr(blob)), size);
-  } else if (type == "f") {
-    float val = max(0.0f, min(1.0f, argv[0]->f));
-    string group_address;
-    uint16_t slot;
-    if (!ExtractSlotFromPath(osc_address, &group_address, &slot))
-      return 0;
-
-    node->SetSlot(group_address, slot,  val * DMX_MAX_SLOT_VALUE);
-  } else if (type == "i") {
-    int val = min(static_cast<int>(DMX_MAX_SLOT_VALUE), max(0, argv[0]->i));
-    string group_address;
-    uint16_t slot;
-    if (!ExtractSlotFromPath(osc_address, &group_address, &slot))
-      return 0;
-
-    node->SetSlot(group_address, slot,  val);
-  } else {
-    OLA_WARN << "Unknown OSC message type " <<  type;
-  }
+  OLA_WARN << "Unknown OSC message type " << type;
   return 0;
 }
 
@@ -549,7 +582,7 @@ bool OSCNode::SendIndividualMessages(const DmxBuffer &dmx_data,
     vector<SlotMessage>::const_iterator message_iter = messages.begin();
     for (; message_iter != messages.end(); ++message_iter) {
       std::stringstream path;
-      path << (*target_iter)->osc_address << "/" << message_iter->slot;
+      path << (*target_iter)->osc_address << "/" << message_iter->slot + 1;
 
       int ret = lo_send_message_from((*target_iter)->liblo_address,
                                      m_osc_server,

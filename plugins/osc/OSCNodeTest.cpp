@@ -94,6 +94,8 @@ class OSCNodeTest: public CppUnit::TestFixture {
     static const uint8_t OSC_BLOB_DATA[];
     static const uint8_t OSC_SINGLE_FLOAT_DATA[];
     static const uint8_t OSC_SINGLE_INT_DATA[];
+    static const uint8_t OSC_INT_TUPLE_DATA[];
+    static const uint8_t OSC_FLOAT_TUPLE_DATA[];
     // The OSC address to use for testing
     static const char TEST_OSC_ADDRESS[];
 };
@@ -119,7 +121,7 @@ const uint8_t OSCNodeTest::OSC_SINGLE_FLOAT_DATA[] = {
   // osc address
   '/', 'd', 'm', 'x', '/', 'u', 'n', 'i',
   'v', 'e', 'r', 's', 'e', '/', '1', '0',
-  '/', '0', 0, 0,
+  '/', '1', 0, 0,
   // tag type
   ',', 'f', 0, 0,
   // data (0.5 which translates to 127)
@@ -131,11 +133,37 @@ const uint8_t OSCNodeTest::OSC_SINGLE_INT_DATA[] = {
   // osc address
   '/', 'd', 'm', 'x', '/', 'u', 'n', 'i',
   'v', 'e', 'r', 's', 'e', '/', '1', '0',
-  '/', '5', 0, 0,
+  '/', '6', 0, 0,
   // tag type
   ',', 'i', 0, 0,
   // data
   0, 0, 0, 140
+};
+
+// An OSC 'ii' packet for slot 7
+const uint8_t OSCNodeTest::OSC_INT_TUPLE_DATA[] = {
+  // osc address
+  '/', 'd', 'm', 'x', '/', 'u', 'n', 'i',
+  'v', 'e', 'r', 's', 'e', '/', '1', '0',
+  0, 0, 0, 0,
+  // tag type
+  ',', 'i', 'i', 0,
+  // data
+  0, 0, 0, 8,
+  0, 0, 0, 90
+};
+
+// An OSC 'if' packet for slot 8
+const uint8_t OSCNodeTest::OSC_FLOAT_TUPLE_DATA[] = {
+  // osc address
+  '/', 'd', 'm', 'x', '/', 'u', 'n', 'i',
+  'v', 'e', 'r', 's', 'e', '/', '1', '0',
+  0, 0, 0, 0,
+  // tag type
+  ',', 'i', 'f', 0,
+  // data
+  0, 0, 0, 9,
+  0x3f, 0, 0, 0
 };
 
 // An OSC Address used for testing.
@@ -278,6 +306,22 @@ void OSCNodeTest::testReceive() {
   m_ss.Run();
   OLA_ASSERT_EQ(11u, m_received_data.Size());
   expected_data.SetChannel(5, 140);
+  OLA_ASSERT_EQ(expected_data, m_received_data);
+
+  // An 'ii' update
+  m_udp_socket.SendTo(OSC_INT_TUPLE_DATA, sizeof(OSC_INT_TUPLE_DATA),
+                      dest_address);
+  m_ss.Run();
+  OLA_ASSERT_EQ(11u, m_received_data.Size());
+  expected_data.SetChannel(7, 90);
+  OLA_ASSERT_EQ(expected_data, m_received_data);
+
+  // An 'if' update
+  m_udp_socket.SendTo(OSC_FLOAT_TUPLE_DATA, sizeof(OSC_FLOAT_TUPLE_DATA),
+                      dest_address);
+  m_ss.Run();
+  OLA_ASSERT_EQ(11u, m_received_data.Size());
+  expected_data.SetChannel(8, 127);
   OLA_ASSERT_EQ(expected_data, m_received_data);
 
   // De-regsiter
