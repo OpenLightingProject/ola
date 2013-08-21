@@ -54,6 +54,7 @@ namespace artnet {
 
 using google::protobuf::Closure;
 using google::protobuf::RpcController;
+using ola::StringToInt;
 using ola::network::AddressToString;
 using ola::network::IPV4Address;
 using ola::plugin::artnet::Reply;
@@ -62,12 +63,13 @@ using std::auto_ptr;
 using std::vector;
 
 const char ArtNetDevice::K_ALWAYS_BROADCAST_KEY[] = "always_broadcast";
-const char ArtNetDevice::K_LIMITED_BROADCAST_KEY[] = "use_limited_broadcast";
 const char ArtNetDevice::K_DEVICE_NAME[] = "ArtNet";
 const char ArtNetDevice::K_IP_KEY[] = "ip";
+const char ArtNetDevice::K_LIMITED_BROADCAST_KEY[] = "use_limited_broadcast";
 const char ArtNetDevice::K_LONG_NAME_KEY[] = "long_name";
 const char ArtNetDevice::K_LOOPBACK_KEY[] = "use_loopback";
 const char ArtNetDevice::K_NET_KEY[] = "net";
+const char ArtNetDevice::K_OUTPUT_PORT_KEY[] = "output_ports";
 const char ArtNetDevice::K_SHORT_NAME_KEY[] = "short_name";
 const char ArtNetDevice::K_SUBNET_KEY[] = "subnet";
 
@@ -90,15 +92,11 @@ ArtNetDevice::ArtNetDevice(AbstractPlugin *owner,
  * @return true on success, false on failure
  */
 bool ArtNetDevice::StartHook() {
-  string value = m_preferences->GetValue(K_SUBNET_KEY);
-  unsigned int subnet;
-  if (!ola::StringToInt(m_preferences->GetValue(K_SUBNET_KEY), &subnet))
-    subnet = 0;
+  unsigned int subnet = 0;
+  StringToInt(m_preferences->GetValue(K_SUBNET_KEY), &subnet);
 
-  value = m_preferences->GetValue(K_NET_KEY);
   unsigned int net;
-  if (!ola::StringToInt(m_preferences->GetValue(K_NET_KEY), &net))
-    net = 0;
+  StringToInt(m_preferences->GetValue(K_NET_KEY), &net);
 
   ola::network::Interface interface;
   auto_ptr<ola::network::InterfacePicker> picker(
@@ -116,6 +114,9 @@ bool ArtNetDevice::StartHook() {
       K_ALWAYS_BROADCAST_KEY);
   node_options.use_limited_broadcast_address = m_preferences->GetValueAsBool(
       K_LIMITED_BROADCAST_KEY);
+  // OLA Output ports are ArtNet input ports
+  StringToInt(m_preferences->GetValue(K_OUTPUT_PORT_KEY),
+              &node_options.input_port_count);
 
   m_node = new ArtNetNode(interface, m_plugin_adaptor, node_options);
   m_node->SetNetAddress(net);
@@ -123,12 +124,12 @@ bool ArtNetDevice::StartHook() {
   m_node->SetShortName(m_preferences->GetValue(K_SHORT_NAME_KEY));
   m_node->SetLongName(m_preferences->GetValue(K_LONG_NAME_KEY));
 
-  for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
+  for (unsigned int i = 0; i < node_options.input_port_count; i++) {
     AddPort(new ArtNetOutputPort(this, i, m_node));
-    AddPort(new ArtNetInputPort(this,
-                                i,
-                                m_plugin_adaptor,
-                                m_node));
+  }
+
+  for (unsigned int i = 0; i < ARTNET_MAX_PORTS; i++) {
+    AddPort(new ArtNetInputPort(this, i, m_plugin_adaptor, m_node));
   }
 
   if (!m_node->Start()) {

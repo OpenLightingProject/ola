@@ -68,6 +68,8 @@ using std::vector;
 class ArtNetNodeTest: public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(ArtNetNodeTest);
   CPPUNIT_TEST(testBasicBehaviour);
+  CPPUNIT_TEST(testConfigurationMode);
+  CPPUNIT_TEST(testExtendedInputPorts);
   CPPUNIT_TEST(testBroadcastSendDMX);
   CPPUNIT_TEST(testLimitedBroadcastDMX);
   CPPUNIT_TEST(testNonBroadcastSendDMX);
@@ -105,6 +107,8 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
   void setUp();
 
   void testBasicBehaviour();
+  void testConfigurationMode();
+  void testExtendedInputPorts();
   void testBroadcastSendDMX();
   void testLimitedBroadcastDMX();
   void testNonBroadcastSendDMX();
@@ -195,19 +199,13 @@ class ArtNetNodeTest: public CppUnit::TestFixture {
   void SetupInputPort(ArtNetNode *node) {
     node->SetNetAddress(4);
     node->SetSubnetAddress(2);
-    node->SetPortUniverse(
-        ola::plugin::artnet::ARTNET_INPUT_PORT,
-        m_port_id,
-        3);
+    node->SetInputPortUniverse(m_port_id, 3);
   }
 
   void SetupOutputPort(ArtNetNode *node) {
     node->SetNetAddress(4);
     node->SetSubnetAddress(2);
-    node->SetPortUniverse(
-        ola::plugin::artnet::ARTNET_OUTPUT_PORT,
-        m_port_id,
-        3);
+    node->SetOutputPortUniverse(m_port_id, 3);
   }
 
   // This sends a tod data so 7s70:00000000 is insert into the tod
@@ -362,28 +360,32 @@ void ArtNetNodeTest::testBasicBehaviour() {
   node.SetShortName("Short Name");
   OLA_ASSERT_EQ(string("Short Name"), node.ShortName());
   node.SetLongName("This is the very long name");
-  OLA_ASSERT_EQ(
-      string("This is the very long name"),
-      node.LongName());
+  OLA_ASSERT_EQ(string("This is the very long name"), node.LongName());
   node.SetNetAddress(4);
   OLA_ASSERT_EQ((uint8_t) 4, node.NetAddress());
   node.SetSubnetAddress(2);
   OLA_ASSERT_EQ((uint8_t) 2, node.SubnetAddress());
 
-  node.SetPortUniverse(ola::plugin::artnet::ARTNET_OUTPUT_PORT, 0, 3);
-  OLA_ASSERT(
-      !node.SetPortUniverse(ola::plugin::artnet::ARTNET_OUTPUT_PORT, 4, 3));
-  OLA_ASSERT_EQ(
-      (uint8_t) 0x23,
-      node.GetPortUniverse(ola::plugin::artnet::ARTNET_OUTPUT_PORT, 0));
-  OLA_ASSERT_EQ(
-      (uint8_t) 0x20,
-      node.GetPortUniverse(ola::plugin::artnet::ARTNET_OUTPUT_PORT, 1));
+  node.SetOutputPortUniverse(0, 3);
+  OLA_ASSERT(!node.SetOutputPortUniverse(4, 3));
+  OLA_ASSERT_EQ((uint8_t) 0x23, node.GetOutputPortUniverse(0));
+  OLA_ASSERT_EQ((uint8_t) 0x20, node.GetOutputPortUniverse(1));
 
   OLA_ASSERT(node.Start());
   ss.RemoveReadDescriptor(m_socket);
   m_socket->Verify();
   OLA_ASSERT(m_socket->CheckNetworkParamsMatch(true, true, 6454, true));
+
+  // check port states
+  OLA_ASSERT_EQ((uint8_t) 4, node.InputPortCount());
+  OLA_ASSERT_FALSE(node.InputPortState(0));
+  OLA_ASSERT_FALSE(node.InputPortState(1));
+  OLA_ASSERT_FALSE(node.InputPortState(2));
+  OLA_ASSERT_FALSE(node.InputPortState(3));
+  OLA_ASSERT(node.OutputPortState(0));
+  OLA_ASSERT_FALSE(node.OutputPortState(1));
+  OLA_ASSERT_FALSE(node.OutputPortState(2));
+  OLA_ASSERT_FALSE(node.OutputPortState(3));
 
   // enable an input port and check that we send a poll
   ExpectedBroadcast(POLL_MESSAGE, sizeof(POLL_MESSAGE));
@@ -391,8 +393,7 @@ void ArtNetNodeTest::testBasicBehaviour() {
   // we should see an unsolicted poll reply sent because conditions have
   // changed.
   uint8_t expected_poll_reply_packet[sizeof(POLL_REPLY_MESSAGE)];
-  memcpy(expected_poll_reply_packet,
-         POLL_REPLY_MESSAGE,
+  memcpy(expected_poll_reply_packet, POLL_REPLY_MESSAGE,
          sizeof(POLL_REPLY_MESSAGE));
   expected_poll_reply_packet[115] = '1';  // node report
   expected_poll_reply_packet[179] = 0;  // good input
@@ -401,13 +402,9 @@ void ArtNetNodeTest::testBasicBehaviour() {
   ExpectedBroadcast(expected_poll_reply_packet,
                     sizeof(expected_poll_reply_packet));
 
-  node.SetPortUniverse(ola::plugin::artnet::ARTNET_INPUT_PORT, 1, 2);
-  OLA_ASSERT_EQ(
-      (uint8_t) 0x20,
-      node.GetPortUniverse(ola::plugin::artnet::ARTNET_INPUT_PORT, 0));
-  OLA_ASSERT_EQ(
-      (uint8_t) 0x22,
-      node.GetPortUniverse(ola::plugin::artnet::ARTNET_INPUT_PORT, 1));
+  node.SetInputPortUniverse(1, 2);
+  OLA_ASSERT_EQ((uint8_t) 0x20, node.GetInputPortUniverse(0));
+  OLA_ASSERT_EQ((uint8_t) 0x22, node.GetInputPortUniverse(1));
   m_socket->Verify();
 
   // check sending a poll works
@@ -416,6 +413,217 @@ void ArtNetNodeTest::testBasicBehaviour() {
   m_socket->Verify();
 
   OLA_ASSERT(node.Stop());
+}
+
+
+/**
+ * Check that configuration mode works correctly.
+ */
+void ArtNetNodeTest::testConfigurationMode() {
+  ArtNetNodeOptions node_options;
+  ArtNetNode node(interface, &ss, node_options, m_socket);
+
+  OLA_ASSERT(node.Start());
+  ss.RemoveReadDescriptor(m_socket);
+  m_socket->Verify();
+
+  // no changes should cause no messages
+  node.EnterConfigurationMode();
+  node.EnterConfigurationMode();  // enter a second time
+  node.ExitConfigurationMode();
+  m_socket->Verify();
+
+  // exit again just to make sure
+  node.ExitConfigurationMode();
+  m_socket->Verify();
+
+  uint8_t poll_reply_message[] = {
+    'A', 'r', 't', '-', 'N', 'e', 't', 0x00,
+    0x00, 0x21,
+    10, 0, 0, 1,
+    0x36, 0x19,
+    0, 0,
+    0, 0,  // subnet address
+    0x4, 0x31,  // oem
+    0,
+    0xd2,
+    0x70, 0x7a,  // esta
+    'S', 'h', 'o', 'r', 't', ' ', 'N', 'a', 'm', 'e',
+    0, 0, 0, 0, 0, 0, 0, 0,  // short name
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,  // long name
+    '#', '0', '0', '0', '1', ' ', '[', '1', ']', ' ', 'O', 'L', 'A',
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0,  // node report
+    0, 4,  // num ports
+    0xc0, 0xc0, 0xc0, 0xc0,  // port types
+    8, 8, 8, 8,  // good input
+    0, 0, 0, 0,  // good output
+    0x0, 0x0, 0x0, 0x0,  // swin
+    0x0, 0x0, 0x0, 0x0,  // swout
+    0, 0, 0, 0, 0, 0, 0,  // video, macro, remote, spare, style
+    0xa, 0xb, 0xc, 0x12, 0x34, 0x56,  // mac address
+    0xa, 0x0, 0x0, 0x1,
+    0,
+    8,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0  // filler
+  };
+
+  node.EnterConfigurationMode();
+  node.SetShortName("Short Name");
+  m_socket->Verify();
+  OLA_ASSERT_EQ(string("Short Name"), node.ShortName());
+  ExpectedBroadcast(poll_reply_message, sizeof(poll_reply_message));
+  node.ExitConfigurationMode();
+  m_socket->Verify();
+
+  node.EnterConfigurationMode();
+  const string long_name("This is a long name");
+  node.SetLongName(long_name);
+  m_socket->Verify();
+  OLA_ASSERT_EQ(long_name, node.LongName());
+  strncpy(reinterpret_cast<char*>(&poll_reply_message[44]), long_name.c_str(),
+          long_name.size());
+  poll_reply_message[115] = '2';
+  ExpectedBroadcast(poll_reply_message, sizeof(poll_reply_message));
+  node.ExitConfigurationMode();
+  m_socket->Verify();
+
+  node.EnterConfigurationMode();
+  node.SetNetAddress(4);
+  m_socket->Verify();
+  OLA_ASSERT_EQ((uint8_t) 4, node.NetAddress());
+  poll_reply_message[18] = 4;
+  poll_reply_message[115] = '3';
+  ExpectedBroadcast(poll_reply_message, sizeof(poll_reply_message));
+  node.ExitConfigurationMode();
+  m_socket->Verify();
+
+  node.EnterConfigurationMode();
+  node.SetSubnetAddress(2);
+  OLA_ASSERT_EQ((uint8_t) 2, node.SubnetAddress());
+  poll_reply_message[19] = 2;
+  poll_reply_message[115] = '4';
+  for (unsigned int i = 186; i <= 193; i++)
+    poll_reply_message[i] = 0x20;
+  ExpectedBroadcast(poll_reply_message, sizeof(poll_reply_message));
+  node.ExitConfigurationMode();
+  m_socket->Verify();
+
+  node.EnterConfigurationMode();
+  node.SetOutputPortUniverse(0, 3);
+  OLA_ASSERT(!node.SetOutputPortUniverse(4, 3));
+  OLA_ASSERT(node.OutputPortState(0));
+  OLA_ASSERT_EQ((uint8_t) 0x23, node.GetOutputPortUniverse(0));
+  poll_reply_message[182] = 0x80;
+  poll_reply_message[190] = 0x23;
+  poll_reply_message[115] = '5';
+  ExpectedBroadcast(poll_reply_message, sizeof(poll_reply_message));
+  node.ExitConfigurationMode();
+  m_socket->Verify();
+
+  // now try an input port, this should trigger a poll
+  node.EnterConfigurationMode();
+  node.SetInputPortUniverse(0, 2);
+  OLA_ASSERT(node.OutputPortState(0));
+  OLA_ASSERT_EQ((uint8_t) 0x22, node.GetInputPortUniverse(0));
+  poll_reply_message[178] = 0;
+  poll_reply_message[186] = 0x22;
+  poll_reply_message[115] = '6';
+  ExpectedBroadcast(POLL_MESSAGE, sizeof(POLL_MESSAGE));
+  ExpectedBroadcast(poll_reply_message, sizeof(poll_reply_message));
+  node.ExitConfigurationMode();
+  m_socket->Verify();
+
+  // change the subnet, which should trigger another poll
+  node.EnterConfigurationMode();
+  node.SetSubnetAddress(4);
+  poll_reply_message[19] = 4;
+  poll_reply_message[186] = 0x42;
+  poll_reply_message[187] = 0x40;
+  poll_reply_message[188] = 0x40;
+  poll_reply_message[189] = 0x40;
+  poll_reply_message[190] = 0x43;
+  poll_reply_message[191] = 0x40;
+  poll_reply_message[192] = 0x40;
+  poll_reply_message[193] = 0x40;
+  poll_reply_message[115] = '7';
+  ExpectedBroadcast(POLL_MESSAGE, sizeof(POLL_MESSAGE));
+  ExpectedBroadcast(poll_reply_message, sizeof(poll_reply_message));
+  node.ExitConfigurationMode();
+  m_socket->Verify();
+
+  // if nothing changes, no messages are sent
+  node.EnterConfigurationMode();
+  node.SetShortName("Short Name");
+  node.SetLongName(long_name);
+  node.SetNetAddress(4);
+  node.SetSubnetAddress(4);
+  node.SetOutputPortUniverse(0, 3);
+  node.SetInputPortUniverse(0, 2);
+  node.ExitConfigurationMode();
+  m_socket->Verify();
+
+  // disable input port
+  node.EnterConfigurationMode();
+  node.DisableInputPort(0);
+  poll_reply_message[115] = '8';
+  poll_reply_message[178] = 0x8;
+  ExpectedBroadcast(poll_reply_message, sizeof(poll_reply_message));
+  node.ExitConfigurationMode();
+  m_socket->Verify();
+
+  // disable output port
+  node.EnterConfigurationMode();
+  node.DisableOutputPort(0);
+  poll_reply_message[115] = '9';
+  poll_reply_message[182] = 0;
+  ExpectedBroadcast(poll_reply_message, sizeof(poll_reply_message));
+  node.ExitConfigurationMode();
+  m_socket->Verify();
+
+  OLA_ASSERT(node.Stop());
+}
+
+
+/**
+ * Check a node with more than the default number of input ports.
+ */
+void ArtNetNodeTest::testExtendedInputPorts() {
+  ArtNetNodeOptions node_options;
+  node_options.input_port_count = 8;
+  ArtNetNode node(interface, &ss, node_options, m_socket);
+
+  OLA_ASSERT(node.Start());
+  ss.RemoveReadDescriptor(m_socket);
+  m_socket->Verify();
+
+  OLA_ASSERT_EQ((uint8_t) 8, node.InputPortCount());
+  OLA_ASSERT_FALSE(node.InputPortState(0));
+  OLA_ASSERT_FALSE(node.InputPortState(1));
+  OLA_ASSERT_FALSE(node.InputPortState(2));
+  OLA_ASSERT_FALSE(node.InputPortState(3));
+  OLA_ASSERT_FALSE(node.InputPortState(4));
+  OLA_ASSERT_FALSE(node.InputPortState(5));
+  OLA_ASSERT_FALSE(node.InputPortState(6));
+  OLA_ASSERT_FALSE(node.InputPortState(6));
+  OLA_ASSERT_FALSE(node.InputPortState(7));
+  OLA_ASSERT_FALSE(node.OutputPortState(0));
+  OLA_ASSERT_FALSE(node.OutputPortState(1));
+  OLA_ASSERT_FALSE(node.OutputPortState(2));
+  OLA_ASSERT_FALSE(node.OutputPortState(3));
+  OLA_ASSERT_FALSE(node.OutputPortState(4));
+  OLA_ASSERT_FALSE(node.OutputPortState(5));
+  OLA_ASSERT_FALSE(node.OutputPortState(6));
+  OLA_ASSERT_FALSE(node.OutputPortState(7));
+
+  // no changes should cause no messages
+  node.EnterConfigurationMode();
+  node.ExitConfigurationMode();
+  m_socket->Verify();
 }
 
 
@@ -1402,7 +1610,7 @@ void ArtNetNodeTest::testUnsolicitedTod() {
   ArtNetNodeOptions node_options;
   ArtNetNode node(interface, &ss, node_options, m_socket);
   SetupInputPort(&node);
-  OLA_ASSERT(node.SetUnsolicatedUIDSetHandler(
+  OLA_ASSERT(node.SetUnsolicitedUIDSetHandler(
       m_port_id,
       ola::NewCallback(this, &ArtNetNodeTest::DiscoveryComplete)));
 
