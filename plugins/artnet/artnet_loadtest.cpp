@@ -87,7 +87,7 @@ int main(int argc, char* argv[]) {
   ArtNetNode node(iface, &ss, options);
 
   for (uint16_t i = 0; i < universes; i++) {
-    if (!node.SetPortUniverse(ola::plugin::artnet::ARTNET_INPUT_PORT, i, i)) {
+    if (!node.SetInputPortUniverse(i, i)) {
       OLA_WARN << "Failed to set port";
     }
   }
