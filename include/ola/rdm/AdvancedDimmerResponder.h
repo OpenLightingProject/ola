@@ -224,6 +224,12 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     static const uint16_t UPPER_MAX_LEVEL;
     static const unsigned int PRESET_COUNT;
 
+    static const uint16_t MIN_FAIL_DELAY_TIME;
+    static const uint16_t MIN_FAIL_HOLD_TIME;
+    static const uint16_t MAX_FAIL_DELAY_TIME;
+    static const uint16_t MAX_FAIL_HOLD_TIME;
+    static const uint16_t INFINIITE_TIME;
+
     static const ResponderOps<AdvancedDimmerResponder>::ParamHandler
       PARAM_HANDLERS[];
     static const char* CURVES[];

@@ -21,6 +21,7 @@
 #  include <config.h>
 #endif
 
+#include <algorithm>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -39,6 +40,8 @@ namespace rdm {
 
 using ola::network::HostToNetwork;
 using ola::network::NetworkToHost;
+using std::max;
+using std::min;
 using std::string;
 using std::vector;
 
@@ -48,6 +51,12 @@ const uint16_t AdvancedDimmerResponder::UPPER_MAX_LEVEL = 0xffff;
 const uint16_t AdvancedDimmerResponder::LOWER_MIN_LEVEL = 0x0;
 const uint16_t AdvancedDimmerResponder::UPPER_MIN_LEVEL = 0x7fff;
 const unsigned int AdvancedDimmerResponder::PRESET_COUNT = 6;
+
+const uint16_t AdvancedDimmerResponder::MIN_FAIL_DELAY_TIME = 10;
+const uint16_t AdvancedDimmerResponder::MIN_FAIL_HOLD_TIME = 0;
+const uint16_t AdvancedDimmerResponder::MAX_FAIL_DELAY_TIME = 0x00ff;
+const uint16_t AdvancedDimmerResponder::MAX_FAIL_HOLD_TIME = 0xff00;
+const uint16_t AdvancedDimmerResponder::INFINIITE_TIME = 0xffff;
 
 const char* AdvancedDimmerResponder::CURVES[] = {
   "Linear Curve",
@@ -264,8 +273,8 @@ AdvancedDimmerResponder::AdvancedDimmerResponder(const UID &uid)
   m_min_level.on_below_min = true;
 
   m_fail_mode.scene = 0;
-  m_fail_mode.delay = 0;
-  m_fail_mode.hold_time = 0;
+  m_fail_mode.delay = MIN_FAIL_DELAY_TIME;
+  m_fail_mode.hold_time = MIN_FAIL_HOLD_TIME;
   m_fail_mode.level = 0;
   m_startup_mode.scene = 0;
   m_startup_mode.delay = 0;
@@ -805,10 +814,12 @@ const RDMResponse *AdvancedDimmerResponder::GetPresetInfo(
     HostToNetwork(preset_count),
     0, 0xfffe,  // fade time
     0, 0xfffe,  // wait time
-    0, 0xfffe,  // fail delay
-    0, 0xfffe,  // hold time
+    HostToNetwork(MIN_FAIL_DELAY_TIME),
+    HostToNetwork(MAX_FAIL_DELAY_TIME),  // fail delay
+    HostToNetwork(MIN_FAIL_HOLD_TIME),
+    HostToNetwork(MAX_FAIL_HOLD_TIME),  // hold time
     0, 0xfffe,  // startup delay
-    0, 0xfffe,  // startup hold
+    0, 0xfe00,  // startup hold
   };
 
   return GetResponseFromData(
@@ -878,8 +889,21 @@ const RDMResponse *AdvancedDimmerResponder::SetFailMode(
   }
 
   m_fail_mode.scene = NetworkToHost(args.scene);
-  m_fail_mode.delay = NetworkToHost(args.delay);
-  m_fail_mode.hold_time = NetworkToHost(args.hold_time);
+  uint16_t delay = NetworkToHost(args.delay);
+  if (delay == INFINIITE_TIME) {
+    m_fail_mode.delay = INFINIITE_TIME;
+  } else {
+    m_fail_mode.delay = max(MIN_FAIL_DELAY_TIME,
+                            min(MAX_FAIL_DELAY_TIME, delay));
+  }
+  uint16_t hold = NetworkToHost(args.hold_time);
+  if (hold == INFINIITE_TIME) {
+    m_fail_mode.hold_time = INFINIITE_TIME;
+  } else {
+  m_fail_mode.hold_time = max(MIN_FAIL_HOLD_TIME,
+                              min(MAX_FAIL_HOLD_TIME, hold));
+  }
+
   m_fail_mode.level = args.level;
 
   return ResponderHelper::EmptySetResponse(request);
