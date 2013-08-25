@@ -138,7 +138,7 @@ class TestFixture(object):
     logging.debug(string)
     self._debug.append(string)
 
-  def Property(self, property):
+  def Property(self, property, default=None):
     """Lookup a device property.
 
     Args:
@@ -151,7 +151,7 @@ class TestFixture(object):
       raise UndeclaredPropertyException(
         '%s attempted to get %s which wasn\'t declared' %
         (self.__class__.__name__, property))
-    return getattr(self._device_properties, property)
+    return getattr(self._device_properties, property, default)
 
   def SetProperty(self, property, value):
     """Set a device property.

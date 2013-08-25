@@ -25,13 +25,15 @@ test definitions.
 __author__ = 'nomis52@gmail.com (Simon Newton)'
 
 import struct
+from ExpectedResults import *
+from ResponderTest import ResponderTestFixture
+from TestCategory import TestCategory
 from collections import deque
 from ola import PidStore
 from ola.DUBDecoder import DecodeResponse
 from ola.OlaClient import RDMNack
+from ola.PidStore import ROOT_DEVICE
 from ola.UID import UID
-from ExpectedResults import *
-from ResponderTest import ResponderTestFixture
 
 MAX_LABEL_SIZE = 32
 MAX_DMX_ADDRESS = 512
@@ -599,4 +601,34 @@ class DiscoveryMixin(ResponderTestFixture):
     # mute the device again
     mute_pid = self.LookupPid('DISC_MUTE')
     self.SendDiscovery(PidStore.ROOT_DEVICE, mute_pid)
+    self._wrapper.Run()
+
+# E1.37-1 Mixins
+#------------------------------------------------------------------------------
+class SetDmxFailModeMixin(object):
+  PID = 'DMX_FAIL_MODE'
+  REQUIRES = ['dmx_fail_settings', 'preset_info', 'set_dmx_fail_mode_supported']
+  CATEGORY = TestCategory.DMX_SETUP
+
+  INFINITE_TIME = 6553.5
+
+  def ResetState(self):
+    if not self.PidSupported():
+      return
+
+    settings = self.Property('dmx_fail_settings')
+    if settings is None:
+      self.SetBroken('Failed to restore DMX_FAIL_MODE settings')
+      return
+
+    for key in ('scene_number', 'hold_time', 'loss_of_signal_delay', 'level'):
+      if key not in settings:
+        self.SetBroken(
+            'Failed to restore DMX_FAIL_MODE settings, missing %s' % key)
+        return;
+
+    self.SendSet(
+        ROOT_DEVICE, self.pid,
+        [settings['scene_number'], settings['loss_of_signal_delay'],
+         settings['hold_time'], settings['level']])
     self._wrapper.Run()

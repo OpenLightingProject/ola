@@ -523,6 +523,11 @@ class GetDeviceInfo(ResponderTestFixture, DeviceInfoTest):
                         'personality count (%d)' %
                         (current_personality, personality_count))
 
+    start_address = fields['dmx_start_address']
+    if (start_address == 0 or
+        (start_address > 512 and start_address != 0xffff)):
+      self.AddWarning('Invalid DMX address %d in DEVICE_INFO' % start_address)
+
     sub_devices = fields['sub_device_count']
     if sub_devices > 512:
       self.AddWarning('Sub device count > 512, was %d' % sub_devices)
@@ -4042,13 +4047,234 @@ class GetDmxFailMode(OptionalParameterTestFixture):
   """GET the DMX fail mode setting."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_FAIL_MODE'
+  PROVIDES = ['dmx_fail_settings']
 
   def Test(self):
     self.AddIfGetSupported(self.AckGetResult())
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, fields):
-    pass
+    if fields is None:
+      fields = {}
+    self.SetProperty('dmx_fail_settings', fields)
+
+class SetDmxFailMode(OptionalParameterTestFixture):
+  """Set DMX Fail Mode without changing the settings."""
+  CATEGORY = TestCategory.DMX_SETUP
+  PID = 'DMX_FAIL_MODE'
+  PROVIDES = ['set_dmx_fail_mode_supported']
+  REQUIRES = ['dmx_fail_settings']
+
+  def Test(self):
+    settings = self.Property('dmx_fail_settings', {})
+
+    self.AddIfSetSupported([
+      self.AckSetResult(),
+      self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+    ])
+    self.SendSet(
+        ROOT_DEVICE, self.pid,
+        [settings.get('scene_number', 0),
+         settings.get('hold_time', 0),
+         settings.get('loss_of_signal_delay', 0),
+         settings.get('level', 0),
+        ])
+
+  def VerifyResult(self, response, fields):
+    self.SetProperty('set_dmx_fail_mode_supported', response.WasAcked())
+
+class SetDmxFailModeMinimumTime(TestMixins.SetDmxFailModeMixin,
+                                OptionalParameterTestFixture):
+  """Check that the minimum times reported by PRESET info are supported."""
+  def Test(self):
+    self.in_get = False
+
+    if self.Property('set_dmx_fail_mode_supported'):
+      self.AddIfSetSupported(self.AckSetResult(action=self.GetFailMode))
+    else:
+      self.AddIfSetSupported(
+          self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
+
+    preset_info = self.Property('preset_info', {})
+    self.known_limits = preset_info != {}
+    self.delay_time = preset_info.get('min_fail_delay_time', 0)
+    self.hold_time = preset_info.get('min_fail_hold_time', 0)
+
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid,
+                 [0, self.delay_time, self.hold_time, 255])
+
+  def GetFailMode(self):
+    self.in_get = True
+    fields = {}
+    if self.known_limits:
+      fields['loss_of_signal_delay'] = self.delay_time
+      fields['hold_time'] = self.hold_time
+
+    self.AddIfGetSupported(self.AckGetResult(field_values=fields))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+class SetDmxFailModeMaximumTime(TestMixins.SetDmxFailModeMixin,
+                                OptionalParameterTestFixture):
+  """Check that the maximum times reported by PRESET info are supported."""
+  def Test(self):
+    self.in_get = False
+
+    if self.Property('set_dmx_fail_mode_supported'):
+      self.AddIfSetSupported(self.AckSetResult(action=self.GetFailMode))
+    else:
+      self.AddIfSetSupported(
+          self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
+
+    preset_info = self.Property('preset_info', {})
+    self.known_limits = preset_info != {}
+    self.delay_time = preset_info.get('max_fail_delay_time', self.INFINITE_TIME)
+    self.hold_time = preset_info.get('max_fail_hold_time', self.INFINITE_TIME)
+
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid,
+                 [0, self.delay_time, self.hold_time, 255])
+
+  def GetFailMode(self):
+    self.in_get = True
+    fields = {}
+    if self.known_limits:
+      fields['loss_of_signal_delay'] = self.delay_time
+      fields['hold_time'] = self.hold_time
+
+    self.AddIfGetSupported(self.AckGetResult(field_values=fields))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+class SetDmxFailModeInfiniteTimes(TestMixins.SetDmxFailModeMixin,
+                                  OptionalParameterTestFixture):
+  """Check if infinite times are supported for DMX_FAIL_MODEe."""
+  def Test(self):
+    self.in_get = False
+
+    if self.Property('set_dmx_fail_mode_supported'):
+      self.AddIfSetSupported(self.AckSetResult(action=self.GetFailMode))
+    else:
+      self.AddIfSetSupported(
+          self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
+
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid,
+                 [0, 'infinite', 'infinite', 255])
+
+  def GetFailMode(self):
+    self.in_get = True
+    self.AddIfGetSupported(self.AckGetResult())
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked() or not self.in_get:
+      return
+
+    self.CheckField(
+        'delay time',
+        self.Property('preset_info', {}).get('fail_infinite_delay_supported'),
+        fields['loss_of_signal_delay'])
+    self.CheckField(
+        'hold time',
+        self.Property('preset_info', {}).get('fail_infinite_hold_supported'),
+        fields['hold_time'])
+
+  def CheckField(self, field_name, is_supported, new_value):
+    if is_supported is None:
+      # We can't tell is the new value is correct or not
+      return;
+
+    if is_supported and new_value != self.INFINITE_TIME:
+      self.SetFailed(
+          'infinite %s was supported, but the value was truncated after a set.'
+          ' Expected %d, got %d' %
+          (field_name, self.INFINITE_TIME, new_value))
+    elif not is_supported and new_value == self.INFINITE_TIME:
+      self.SetFailed(
+          'infinite %s was not supported, but the value was not truncated '
+          'after a set.' % field_name)
+
+class SetDmxFailModeOutOfRangeMaximumTime(TestMixins.SetDmxFailModeMixin,
+                                          OptionalParameterTestFixture):
+  """Check that the maximum times for DMX_FAIL_MODE are honored."""
+  def Test(self):
+    self.in_get = False
+    preset_info = self.Property('preset_info', {})
+    self.max_delay_time = preset_info.get('max_fail_delay_time')
+    self.max_hold_time = preset_info.get('max_fail_hold_time')
+
+    if self.max_delay_time is None or self.max_hold_time is None:
+      self.SetNotRun("Max times unknown - PRESET_INFO wasn't acked")
+      self.Stop()
+      return
+
+    delay_time = self.max_delay_time
+    # 0xffff means 'fail mode not supported'
+    if self.max_delay_time * 10 < 0xfffe:
+      delay_time = (self.max_delay_time * 10 + 1) / 10.0  # increment by 1
+
+    hold_time = self.max_hold_time
+    # 0xffff means 'fail mode not supported'
+    if self.max_hold_time * 10 < 0xfffe:
+      hold_time = (self.max_hold_time * 10 + 1) / 10.0  # increment by 1
+
+    if self.Property('set_dmx_fail_mode_supported'):
+      self.AddIfSetSupported(self.AckSetResult(action=self.GetFailMode))
+    else:
+      self.AddIfSetSupported(
+          self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
+
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid,
+                 [0, delay_time, hold_time, 255])
+
+  def GetFailMode(self):
+    self.in_get = True
+    fields = {
+      'loss_of_signal_delay': self.max_delay_time,
+      'hold_time': self.max_hold_time,
+    }
+    self.AddIfGetSupported(self.AckGetResult(field_values=fields))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+class SetDmxFailModeOutOfRangeMinimumTime(TestMixins.SetDmxFailModeMixin,
+                                          OptionalParameterTestFixture):
+  """Check that the minimum times for DMX_FAIL_MODE are honored."""
+  def Test(self):
+    self.in_get = False
+    preset_info = self.Property('preset_info', {})
+    self.min_delay_time = preset_info.get('min_fail_delay_time')
+    self.min_hold_time = preset_info.get('min_fail_hold_time')
+
+    if self.min_delay_time is None or self.min_hold_time is None:
+      self.SetNotRun("Max times unknown - PRESET_INFO wasn't acked")
+      self.Stop()
+      return
+
+    delay_time = self.min_delay_time
+    # 0xffff means 'fail mode not supported'
+    if self.min_delay_time * 10 > 1:
+      delay_time = (self.min_delay_time * 10 - 1) / 10.0  # decrement by 1
+
+    hold_time = self.min_hold_time
+    # 0xffff means 'fail mode not supported'
+    if self.min_hold_time * 10 > 1:
+      hold_time = (self.min_hold_time * 10 - 1) / 10.0  # decrement by 1
+
+    if self.Property('set_dmx_fail_mode_supported'):
+      self.AddIfSetSupported(self.AckSetResult(action=self.GetFailMode))
+    else:
+      self.AddIfSetSupported(
+          self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
+
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid,
+                 [0, delay_time, hold_time, 255])
+
+  def GetFailMode(self):
+    self.in_get = True
+    fields = {
+      'loss_of_signal_delay': self.min_delay_time,
+      'hold_time': self.min_hold_time,
+    }
+    self.AddIfGetSupported(self.AckGetResult(field_values=fields))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
 
 class AllSubDevicesGetDmxFailMode(TestMixins.AllSubDevicesGetMixin,
                                   ResponderTestFixture):
@@ -4240,7 +4466,7 @@ class GetPresetInfo(TestMixins.GetMixin,
 
   def VerifyResult(self, response, fields):
     if not response.WasAcked():
-      self.SetProperty('preset_info', None)
+      self.SetProperty('preset_info', {})
       self.SetProperty('max_scene_number', None)
       return
 
@@ -4255,11 +4481,11 @@ class GetPresetInfo(TestMixins.GetMixin,
       self.AddWarning('PRESET_INFO had max_scene_number of 0xffff')
 
     self.CrossCheckPidSupportIsZero('DMX_FAIL_MODE', fields,
-                                    'fail_infitite_hold_supported')
+                                    'fail_infinite_hold_supported')
     self.CrossCheckPidSupportIsZero('DMX_FAIL_MODE', fields,
-                                    'fail_infitite_delay_supported')
+                                    'fail_infinite_delay_supported')
     self.CrossCheckPidSupportIsZero('DMX_STARTUP_MODE', fields,
-                                    'startup_infitite_hold_supported')
+                                    'startup_infinite_hold_supported')
 
     self.CrossCheckPidSupportIsMax('DMX_FAIL_MODE', fields,
                                    'fail_delay_time')
@@ -4374,17 +4600,11 @@ class GetPresetStatus(OptionalParameterTestFixture):
     self.scene_writable_states = {}
     self.index = 0
     self.max_scene = self.Property('max_scene_number')
-    # defaults if PRESET_INFO isn't supported
-    self.min_fade = 0
-    self.max_fade = 0xffff
-    self.min_wait = 0
-    self.max_wait = 0xffff
     preset_info = self.Property('preset_info')
-    if preset_info is not None:
-      self.min_fade = preset_info['min_preset_fade_time']
-      self.max_fade = preset_info['max_preset_fade_time']
-      self.min_wait = preset_info['min_preset_wait_time']
-      self.max_wait = preset_info['max_preset_wait_time']
+    self.min_fade = preset_info.get('min_preset_fade_time', 0)
+    self.max_fade = preset_info.get('max_preset_fade_time', 0xffff)
+    self.min_wait = preset_info.get('min_preset_wait_time', 0)
+    self.max_wait = preset_info.get('max_preset_wait_time', 0xffff)
 
     if self.max_scene is None or self.max_scene == 0:
       self.SetNotRun('No scenes supported')
