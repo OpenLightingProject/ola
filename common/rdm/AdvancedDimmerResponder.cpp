@@ -56,6 +56,10 @@ const uint16_t AdvancedDimmerResponder::MIN_FAIL_DELAY_TIME = 10;
 const uint16_t AdvancedDimmerResponder::MIN_FAIL_HOLD_TIME = 0;
 const uint16_t AdvancedDimmerResponder::MAX_FAIL_DELAY_TIME = 0x00ff;
 const uint16_t AdvancedDimmerResponder::MAX_FAIL_HOLD_TIME = 0xff00;
+const uint16_t AdvancedDimmerResponder::MIN_STARTUP_DELAY_TIME = 0;
+const uint16_t AdvancedDimmerResponder::MIN_STARTUP_HOLD_TIME = 0;
+const uint16_t AdvancedDimmerResponder::MAX_STARTUP_DELAY_TIME = 1200;
+const uint16_t AdvancedDimmerResponder::MAX_STARTUP_HOLD_TIME = 36000;
 const uint16_t AdvancedDimmerResponder::INFINIITE_TIME = 0xffff;
 
 const char* AdvancedDimmerResponder::CURVES[] = {
@@ -277,9 +281,9 @@ AdvancedDimmerResponder::AdvancedDimmerResponder(const UID &uid)
   m_fail_mode.hold_time = MIN_FAIL_HOLD_TIME;
   m_fail_mode.level = 0;
   m_startup_mode.scene = 0;
-  m_startup_mode.delay = 0;
-  m_startup_mode.hold_time = 0;
-  m_startup_mode.level = 0;
+  m_startup_mode.delay = MIN_STARTUP_DELAY_TIME;
+  m_startup_mode.hold_time = MIN_STARTUP_HOLD_TIME;
+  m_startup_mode.level = 255;
 
   // make the first preset read only
   m_presets[0].programmed = PRESET_PROGRAMMED_READ_ONLY;
@@ -817,9 +821,11 @@ const RDMResponse *AdvancedDimmerResponder::GetPresetInfo(
     HostToNetwork(MIN_FAIL_DELAY_TIME),
     HostToNetwork(MAX_FAIL_DELAY_TIME),  // fail delay
     HostToNetwork(MIN_FAIL_HOLD_TIME),
-    HostToNetwork(MAX_FAIL_HOLD_TIME),  // hold time
-    0, 0xfffe,  // startup delay
-    0, 0xfe00,  // startup hold
+    HostToNetwork(MAX_FAIL_HOLD_TIME),  // fail hold time
+    HostToNetwork(MIN_STARTUP_DELAY_TIME),
+    HostToNetwork(MAX_STARTUP_DELAY_TIME),  // startup delay
+    HostToNetwork(MIN_STARTUP_HOLD_TIME),
+    HostToNetwork(MAX_STARTUP_HOLD_TIME),  // startup hold time
   };
 
   return GetResponseFromData(
@@ -900,8 +906,8 @@ const RDMResponse *AdvancedDimmerResponder::SetFailMode(
   if (hold == INFINIITE_TIME) {
     m_fail_mode.hold_time = INFINIITE_TIME;
   } else {
-  m_fail_mode.hold_time = max(MIN_FAIL_HOLD_TIME,
-                              min(MAX_FAIL_HOLD_TIME, hold));
+    m_fail_mode.hold_time = max(MIN_FAIL_HOLD_TIME,
+                                min(MAX_FAIL_HOLD_TIME, hold));
   }
 
   m_fail_mode.level = args.level;
@@ -945,8 +951,23 @@ const RDMResponse *AdvancedDimmerResponder::SetStartUpMode(
   }
 
   m_startup_mode.scene = NetworkToHost(args.scene);
-  m_startup_mode.delay = NetworkToHost(args.delay);
-  m_startup_mode.hold_time = NetworkToHost(args.hold_time);
+
+  uint16_t delay = NetworkToHost(args.delay);
+  if (delay == INFINIITE_TIME) {
+    m_startup_mode.delay = INFINIITE_TIME;
+  } else {
+    m_startup_mode.delay = max(MIN_STARTUP_DELAY_TIME,
+                            min(MAX_STARTUP_DELAY_TIME, delay));
+  }
+
+  uint16_t hold = NetworkToHost(args.hold_time);
+  if (hold == INFINIITE_TIME) {
+    m_startup_mode.hold_time = INFINIITE_TIME;
+  } else {
+    m_startup_mode.hold_time = max(MIN_STARTUP_HOLD_TIME,
+                                   min(MAX_STARTUP_HOLD_TIME, hold));
+  }
+
   m_startup_mode.level = args.level;
 
   return ResponderHelper::EmptySetResponse(request);

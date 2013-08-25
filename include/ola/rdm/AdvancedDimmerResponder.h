@@ -228,6 +228,10 @@ class AdvancedDimmerResponder: public RDMControllerInterface {
     static const uint16_t MIN_FAIL_HOLD_TIME;
     static const uint16_t MAX_FAIL_DELAY_TIME;
     static const uint16_t MAX_FAIL_HOLD_TIME;
+    static const uint16_t MIN_STARTUP_DELAY_TIME;
+    static const uint16_t MIN_STARTUP_HOLD_TIME;
+    static const uint16_t MAX_STARTUP_DELAY_TIME;
+    static const uint16_t MAX_STARTUP_HOLD_TIME;
     static const uint16_t INFINIITE_TIME;
 
     static const ResponderOps<AdvancedDimmerResponder>::ParamHandler

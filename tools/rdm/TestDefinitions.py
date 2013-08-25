@@ -4288,14 +4288,233 @@ class GetDmxStartupMode(OptionalParameterTestFixture):
   """GET the DMX startup mode setting."""
   CATEGORY = TestCategory.DMX_SETUP
   PID = 'DMX_STARTUP_MODE'
+  PROVIDES = ['dmx_startup_settings']
 
   def Test(self):
     self.AddIfGetSupported(self.AckGetResult())
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, fields):
-    pass
+    if fields is None:
+      fields = {}
+    self.SetProperty('dmx_startup_settings', fields)
 
+class SetDmxStartupMode(OptionalParameterTestFixture):
+  """Set DMX Startup Mode without changing the settings."""
+  CATEGORY = TestCategory.DMX_SETUP
+  PID = 'DMX_FAIL_MODE'
+  PROVIDES = ['set_dmx_startup_mode_supported']
+  REQUIRES = ['dmx_startup_settings']
+
+  def Test(self):
+    settings = self.Property('dmx_startup_settings', {})
+
+    self.AddIfSetSupported([
+      self.AckSetResult(),
+      self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+    ])
+    self.SendSet(
+        ROOT_DEVICE, self.pid,
+        [settings.get('scene_number', 0),
+         settings.get('hold_time', 0),
+         settings.get('startup_delay', 0),
+         settings.get('level', 0),
+        ])
+
+  def VerifyResult(self, response, fields):
+    self.SetProperty('set_dmx_startup_mode_supported', response.WasAcked())
+
+class SetDmxStartupModeMinimumTime(TestMixins.SetDmxStartupModeMixin,
+                                   OptionalParameterTestFixture):
+  """Check that the minimum times reported by PRESET info are supported."""
+  def Test(self):
+    self.in_get = False
+
+    if self.Property('set_dmx_startup_mode_supported'):
+      self.AddIfSetSupported(self.AckSetResult(action=self.GetStartupMode))
+    else:
+      self.AddIfSetSupported(
+          self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
+
+    preset_info = self.Property('preset_info', {})
+    self.known_limits = preset_info != {}
+    self.delay_time = preset_info.get('min_startup_delay_time', 0)
+    self.hold_time = preset_info.get('min_startup_hold_time', 0)
+
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid,
+                 [0, self.delay_time, self.hold_time, 255])
+
+  def GetStartupMode(self):
+    self.in_get = True
+    fields = {}
+    if self.known_limits:
+      fields['startup_delay'] = self.delay_time
+      fields['hold_time'] = self.hold_time
+
+    self.AddIfGetSupported(self.AckGetResult(field_values=fields))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+class SetDmxStartupModeMaximumTime(TestMixins.SetDmxStartupModeMixin,
+                                   OptionalParameterTestFixture):
+  """Check that the maximum times reported by PRESET info are supported."""
+  def Test(self):
+    self.in_get = False
+
+    if self.Property('set_dmx_startup_mode_supported'):
+      self.AddIfSetSupported(self.AckSetResult(action=self.GetStartupMode))
+    else:
+      self.AddIfSetSupported(
+          self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
+
+    preset_info = self.Property('preset_info', {})
+    self.known_limits = preset_info != {}
+    self.delay_time = preset_info.get('max_startup_delay_time', self.INFINITE_TIME)
+    self.hold_time = preset_info.get('max_startup_hold_time', self.INFINITE_TIME)
+
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid,
+                 [0, self.delay_time, self.hold_time, 255])
+
+  def GetStartupMode(self):
+    self.in_get = True
+    fields = {}
+    if self.known_limits:
+      fields['startup_delay'] = self.delay_time
+      fields['hold_time'] = self.hold_time
+
+    self.AddIfGetSupported(self.AckGetResult(field_values=fields))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+class SetDmxStartupModeInfiniteTimes(TestMixins.SetDmxStartupModeMixin,
+                                     OptionalParameterTestFixture):
+  """Check if infinite times are supported for DMX_FAIL_MODEe."""
+  def Test(self):
+    self.in_get = False
+
+    if self.Property('set_dmx_startup_mode_supported'):
+      self.AddIfSetSupported(self.AckSetResult(action=self.GetStartupMode))
+    else:
+      self.AddIfSetSupported(
+          self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
+
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid,
+                 [0, 'infinite', 'infinite', 255])
+
+  def GetStartupMode(self):
+    self.in_get = True
+    self.AddIfGetSupported(self.AckGetResult())
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked() or not self.in_get:
+      return
+
+    self.CheckField(
+        'delay time',
+        self.Property('preset_info', {}).get('startup_infinite_delay_supported'),
+        fields['startup_delay'])
+    self.CheckField(
+        'hold time',
+        self.Property('preset_info', {}).get('startup_infinite_hold_supported'),
+        fields['hold_time'])
+
+  def CheckField(self, field_name, is_supported, new_value):
+    if is_supported is None:
+      # We can't tell is the new value is correct or not
+      return;
+
+    if is_supported and new_value != self.INFINITE_TIME:
+      self.SetStartuped(
+          'infinite %s was supported, but the value was truncated after a set.'
+          ' Expected %d, got %d' %
+          (field_name, self.INFINITE_TIME, new_value))
+    elif not is_supported and new_value == self.INFINITE_TIME:
+      self.SetStartuped(
+          'infinite %s was not supported, but the value was not truncated '
+          'after a set.' % field_name)
+
+class SetDmxStartupModeOutOfRangeMaximumTime(TestMixins.SetDmxStartupModeMixin,
+                                             OptionalParameterTestFixture):
+  """Check that the maximum times for DMX_FAIL_MODE are honored."""
+  def Test(self):
+    self.in_get = False
+    preset_info = self.Property('preset_info', {})
+    self.max_delay_time = preset_info.get('max_startup_delay_time')
+    self.max_hold_time = preset_info.get('max_startup_hold_time')
+
+    if self.max_delay_time is None or self.max_hold_time is None:
+      self.SetNotRun("Max times unknown - PRESET_INFO wasn't acked")
+      self.Stop()
+      return
+
+    delay_time = self.max_delay_time
+    # 0xffff means 'startup mode not supported'
+    if self.max_delay_time * 10 < 0xfffe:
+      delay_time = (self.max_delay_time * 10 + 1) / 10.0  # increment by 1
+
+    hold_time = self.max_hold_time
+    # 0xffff means 'startup mode not supported'
+    if self.max_hold_time * 10 < 0xfffe:
+      hold_time = (self.max_hold_time * 10 + 1) / 10.0  # increment by 1
+
+    if self.Property('set_dmx_startup_mode_supported'):
+      self.AddIfSetSupported(self.AckSetResult(action=self.GetStartupMode))
+    else:
+      self.AddIfSetSupported(
+          self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
+
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid,
+                 [0, delay_time, hold_time, 255])
+
+  def GetStartupMode(self):
+    self.in_get = True
+    fields = {
+      'startup_delay': self.max_delay_time,
+      'hold_time': self.max_hold_time,
+    }
+    self.AddIfGetSupported(self.AckGetResult(field_values=fields))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+class SetDmxStartupModeOutOfRangeMinimumTime(TestMixins.SetDmxStartupModeMixin,
+                                             OptionalParameterTestFixture):
+  """Check that the minimum times for DMX_FAIL_MODE are honored."""
+  def Test(self):
+    self.in_get = False
+    preset_info = self.Property('preset_info', {})
+    self.min_delay_time = preset_info.get('min_startup_delay_time')
+    self.min_hold_time = preset_info.get('min_startup_hold_time')
+
+    if self.min_delay_time is None or self.min_hold_time is None:
+      self.SetNotRun("Max times unknown - PRESET_INFO wasn't acked")
+      self.Stop()
+      return
+
+    delay_time = self.min_delay_time
+    # 0xffff means 'startup mode not supported'
+    if self.min_delay_time * 10 > 1:
+      delay_time = (self.min_delay_time * 10 - 1) / 10.0  # decrement by 1
+
+    hold_time = self.min_hold_time
+    # 0xffff means 'startup mode not supported'
+    if self.min_hold_time * 10 > 1:
+      hold_time = (self.min_hold_time * 10 - 1) / 10.0  # decrement by 1
+
+    if self.Property('set_dmx_startup_mode_supported'):
+      self.AddIfSetSupported(self.AckSetResult(action=self.GetStartupMode))
+    else:
+      self.AddIfSetSupported(
+          self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
+
+    self.SendSet(PidStore.ROOT_DEVICE, self.pid,
+                 [0, delay_time, hold_time, 255])
+
+  def GetStartupMode(self):
+    self.in_get = True
+    fields = {
+      'startup_delay': self.min_delay_time,
+      'hold_time': self.min_hold_time,
+    }
+    self.AddIfGetSupported(self.AckGetResult(field_values=fields))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
 class AllSubDevicesGetDmxStartupMode(TestMixins.AllSubDevicesGetMixin,
                                      ResponderTestFixture):

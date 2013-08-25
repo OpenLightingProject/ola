@@ -632,3 +632,32 @@ class SetDmxFailModeMixin(object):
         [settings['scene_number'], settings['loss_of_signal_delay'],
          settings['hold_time'], settings['level']])
     self._wrapper.Run()
+
+class SetDmxStartupModeMixin(object):
+  PID = 'DMX_STARTUP_MODE'
+  REQUIRES = ['dmx_startup_settings', 'preset_info',
+              'set_dmx_startup_mode_supported']
+  CATEGORY = TestCategory.DMX_SETUP
+
+  INFINITE_TIME = 6553.5
+
+  def ResetState(self):
+    if not self.PidSupported():
+      return
+
+    settings = self.Property('dmx_startup_settings')
+    if settings is None:
+      self.SetBroken('Failed to restore DMX_STARTUP_MODE settings')
+      return
+
+    for key in ('scene_number', 'hold_time', 'startup_delay', 'level'):
+      if key not in settings:
+        self.SetBroken(
+            'Failed to restore DMX_STARTUP_MODE settings, missing %s' % key)
+        return;
+
+    self.SendSet(
+        ROOT_DEVICE, self.pid,
+        [settings['scene_number'], settings['startup_delay'],
+         settings['hold_time'], settings['level']])
+    self._wrapper.Run()
