@@ -2287,15 +2287,15 @@ pid {
     }
     field {
       type: BOOL
-      name: "fail_infitite_delay_supported"
+      name: "fail_infinite_delay_supported"
     }
     field {
       type: BOOL
-      name: "fail_infitite_hold_supported"
+      name: "fail_infinite_hold_supported"
     }
     field {
       type: BOOL
-      name: "startup_infitite_hold_supported"
+      name: "startup_infinite_hold_supported"
     }
     field {
       type: UINT16
