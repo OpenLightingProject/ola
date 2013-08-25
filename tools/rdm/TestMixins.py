@@ -661,3 +661,18 @@ class SetDmxStartupModeMixin(object):
         [settings['scene_number'], settings['startup_delay'],
          settings['hold_time'], settings['level']])
     self._wrapper.Run()
+
+class SetMaximumLevelMixin(object):
+  PID = 'MAXIMUM_LEVEL'
+  REQUIRES = ['maximum_level', 'set_maximum_level_supported']
+  CATEGORY = TestCategory.DIMMER_SETTINGS
+
+  def ResetState(self):
+    if (not self.PidSupported() or
+        not self.Property('set_maximum_level_supported')):
+      return
+
+    level = self.Property('maximum_level')
+    if level is not None:
+      self.SendSet(ROOT_DEVICE, self.pid, [level])
+      self._wrapper.Run()

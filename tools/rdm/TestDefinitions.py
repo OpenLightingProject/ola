@@ -4619,6 +4619,7 @@ class GetDimmerInfo(OptionalParameterTestFixture):
   """GET dimmer info."""
   CATEGORY = TestCategory.DIMMER_SETTINGS
   PID = 'DIMMER_INFO'
+  REQUIRES = ['supported_parameters']
   PROVIDES = ['minimum_level_lower', 'minimum_level_upper',
               'maximum_level_lower', 'maximum_level_upper',
               'number_curves_supported', 'levels_resolution',
@@ -4653,6 +4654,25 @@ class GetDimmerInfo(OptionalParameterTestFixture):
 
     self.SetProperty('split_levels_supported', fields['split_levels_supported'])
 
+    self.CheckFieldsAreUnsupported(
+        'MINIMUM_LEVEL', fields,
+        {'minimum_level_lower': 0, 'minimum_level_upper': 0xffff,
+         'split_levels_supported': 0})
+    self.CheckFieldsAreUnsupported(
+        'MAXIMUM_LEVEL', fields,
+        {'maximum_level_lower': 0, 'maximum_level_upper': 0xffff})
+
+  def CheckFieldsAreUnsupported(self, pid_name, fields, keys):
+    if self.LookupPid(pid_name).value in self.Property('supported_parameters'):
+      return
+
+    for key, expected_value in keys.iteritems():
+      if fields[key] != expected_value:
+        self.AddWarning(
+            "%s isn't supported but %s in DIMMER_INFO was not %hx" %
+            (pid_name, key, expected_value))
+
+
 class GetDimmerInfoWithData(TestMixins.GetWithDataMixin,
                             OptionalParameterTestFixture):
   """GET dimmer info with extra data."""
@@ -4670,10 +4690,160 @@ class AllSubDevicesGetDimmerInfo(TestMixins.AllSubDevicesGetMixin,
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DIMMER_INFO'
 
+# MINIMUM_LEVEL
+#------------------------------------------------------------------------------
+class GetMinimumLevel(TestMixins.GetMixin, OptionalParameterTestFixture):
+  """Get the MINIMUM_LEVEL."""
+  CATEGORY = TestCategory.DIMMER_SETTINGS
+  PID = "MINIMUM_LEVEL"
+  PROVIDES = ['minimum_level_settings']
+
+  def Test(self):
+    self.AddIfGetSupported(self.AckGetResult())
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def VerifyResult(self, response, fields):
+    if fields is None:
+      fields = {}
+    self.SetProperty('minimum_level_settings', fields)
+
+# MAXIMUM_LEVEL
+#------------------------------------------------------------------------------
+class GetMaximumLevel(TestMixins.GetMixin, OptionalParameterTestFixture):
+  """Get the MAXIMUM_LEVEL."""
+  CATEGORY = TestCategory.DIMMER_SETTINGS
+  PID = "MAXIMUM_LEVEL"
+  PROVIDES = ['maximum_level']
+  EXPECTED_FIELD = 'maximum_level'
+
+class SetMaximumLevel(OptionalParameterTestFixture):
+  """Set MAXIMUM_LEVEL without changing the settings."""
+  CATEGORY = TestCategory.DIMMER_SETTINGS
+  PID = 'MAXIMUM_LEVEL'
+  REQUIRES = ['maximum_level']
+  PROVIDES = ['set_maximum_level_supported']
+
+  def Test(self):
+    current_value = self.Property('maximum_level')
+    if current_value is None:
+      current_value = 0xffff
+
+    self.AddIfSetSupported([
+      self.AckSetResult(),
+      self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+    ])
+    self.SendSet(ROOT_DEVICE, self.pid, [current_value])
+
+  def VerifyResult(self, response, fields):
+    self.SetProperty('set_maximum_level_supported', response.WasAcked())
+
+class SetLowerMaximumLevel(TestMixins.SetMaximumLevelMixin,
+                           OptionalParameterTestFixture):
+  """Set MAXIMUM_LEVEL to the smallest value from DIMMER_INFO."""
+  REQUIRES = TestMixins.SetMaximumLevelMixin.REQUIRES + ['maximum_level_lower']
+
+  def Test(self):
+    self.value = self.Property('maximum_level_lower')
+    if self.value is None:
+      self.SetNotRun('No lower maximum level from DIMMER_INFO')
+      self.Stop()
+      return
+
+    if self.Property('set_maximum_level_supported'):
+      self.AddIfSetSupported(self.AckSetResult(action=self.GetMaxLevel))
+    else:
+      self.AddIfSetSupported(
+          self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
+
+    self.SendSet(ROOT_DEVICE, self.pid, [self.value])
+
+  def GetMaxLevel(self):
+    self.AddIfGetSupported(self.AckGetResult(
+        field_values={'maximum_level': self.value}))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+class SetUpperMaximumLevel(TestMixins.SetMaximumLevelMixin,
+                           OptionalParameterTestFixture):
+  """Set MAXIMUM_LEVEL to the largest value from DIMMER_INFO."""
+  REQUIRES = TestMixins.SetMaximumLevelMixin.REQUIRES + ['maximum_level_upper']
+
+  def Test(self):
+    self.value = self.Property('maximum_level_upper')
+    if self.value is None:
+      self.SetNotRun('No upper maximum level from DIMMER_INFO')
+      self.Stop()
+      return
+
+    if self.Property('set_maximum_level_supported'):
+      self.AddIfSetSupported(self.AckSetResult(action=self.GetMaxLevel))
+    else:
+      self.AddIfSetSupported(
+          self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
+
+    self.SendSet(ROOT_DEVICE, self.pid, [self.value])
+
+  def GetMaxLevel(self):
+    self.AddIfGetSupported(self.AckGetResult(
+        field_values={'maximum_level': self.value}))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+class SetLowerOutOfRangeMaximumLevel(OptionalParameterTestFixture):
+  """Set MAXIMUM_LEVEL a value smaller than the minimum."""
+  CATEGORY = TestCategory.DIMMER_SETTINGS
+  PID = 'MAXIMUM_LEVEL'
+  REQUIRES = ['maximum_level_lower', 'set_maximum_level_supported']
+
+  def Test(self):
+    self.value = self.Property('maximum_level_lower')
+    if self.value is None:
+      self.SetNotRun('No lower maximum level from DIMMER_INFO')
+      self.Stop()
+      return
+
+    if self.value == 0:
+      self.SetNotRun('Range for maximum level begins at 0')
+      self.Stop()
+      return
+    self.value -= 1
+
+    if self.Property('set_maximum_level_supported'):
+      self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    else:
+      self.AddIfSetSupported(
+          self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
+
+    self.SendSet(ROOT_DEVICE, self.pid, [self.value])
+
+class SetUpperOutOfRangeMaximumLevel(OptionalParameterTestFixture):
+  """Set MAXIMUM_LEVEL a value larger than the maximum."""
+  CATEGORY = TestCategory.DIMMER_SETTINGS
+  PID = 'MAXIMUM_LEVEL'
+  REQUIRES = ['maximum_level_upper', 'set_maximum_level_supported']
+
+  def Test(self):
+    self.value = self.Property('maximum_level_upper')
+    if self.value is None:
+      self.SetNotRun('No upper maximum level from DIMMER_INFO')
+      self.Stop()
+      return
+
+    if self.value == 0xffff:
+      self.SetNotRun('Range for maximum level ends at 0xffff')
+      self.Stop()
+      return
+    self.value += 1
+
+    if self.Property('set_maximum_level_supported'):
+      self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    else:
+      self.AddIfSetSupported(
+          self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
+
+    self.SendSet(ROOT_DEVICE, self.pid, [self.value])
+
 # PRESET_INFO
 #------------------------------------------------------------------------------
-class GetPresetInfo(TestMixins.GetMixin,
-                    OptionalParameterTestFixture):
+class GetPresetInfo(TestMixins.GetMixin, OptionalParameterTestFixture):
   """Get preset info."""
   CATEGORY = TestCategory.CONTROL
   PID = 'PRESET_INFO'
