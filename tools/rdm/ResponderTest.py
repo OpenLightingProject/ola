@@ -166,7 +166,7 @@ class TestFixture(object):
         (self.__class__.__name__, property))
     setattr(self._device_properties, property, value)
 
-  def SetPropertyFromDict(self, dictionary, property):
+  def SetPropertyFromDict(self, dictionary, property, default=None):
     """Set a property to the value of the same name in a dictionary.
 
     Often it's useful to set a property to a value in a dictionary where the
@@ -176,7 +176,7 @@ class TestFixture(object):
       dictionary: A dictionary that has a value for the property key
       property: the name of the property.
     """
-    self.SetProperty(property, dictionary[property])
+    self.SetProperty(property, dictionary.get(property, default))
 
   @property
   def state(self):
@@ -196,9 +196,11 @@ class TestFixture(object):
     self.Test()
 
   def SetNotRun(self, message=None):
+    """Set the state of the test to NOT_RUN and stop further processing."""
     self._state = TestState.NOT_RUN
     if message:
       self.LogDebug(' ' + message)
+    self.Stop()
 
   def SetBroken(self, message):
     self.LogDebug(' Broken: %s' % message)

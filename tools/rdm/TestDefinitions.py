@@ -136,7 +136,6 @@ class RequestsWhileUnmuted(ResponderTestFixture):
     if not (self.Property('unmute_supported') and
             self.Property('mute_supported')):
       self.SetNotRun('Controller does not support mute / unmute commands')
-      self.Stop()
       return
 
     self.AddExpectedResults(self.AckDiscoveryResult(action=self.GetDeviceInfo))
@@ -150,7 +149,7 @@ class RequestsWhileUnmuted(ResponderTestFixture):
   def ResetState(self):
     # mute the device again
     mute_pid = self.LookupPid('DISC_MUTE')
-    self.SendDiscovery(PidStore.ROOT_DEVICE, mute_pid)
+    self.SendDiscovery(ROOT_DEVICE, mute_pid)
     self._wrapper.Run()
 
 
@@ -588,7 +587,6 @@ class DetermineMaxPacketSize(ResponderTestFixture, DeviceInfoTest):
   def Test(self):
     if self.Property('supports_max_sized_pdl'):
       self.SetNotRun(' Device supports full sized packet')
-      self.Stop()
       return
 
     self._lower = 1
@@ -940,7 +938,7 @@ class ClearStatusMessages(TestMixins.SetWithNoDataMixin,
     # cleared. Note that this pid should only clear status messages, not
     # responses to ACK_TIMERS so we can't check if the message count is 0.
     self.AddIfSetSupported(self.AckSetResult())
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [])
+    self.SendSet(ROOT_DEVICE, self.pid, [])
 
 
 # Parameter Description
@@ -955,7 +953,6 @@ class GetParamDescription(ResponderTestFixture):
     self.params = self.Property('manufacturer_parameters')[:]
     if len(self.params) == 0:
       self.SetNotRun(' No manufacturer params found')
-      self.Stop()
       return
     self._GetParam()
 
@@ -1052,7 +1049,7 @@ class GetProxiedDeviceCount(OptionalParameterTestFixture):
 
   def Test(self):
     self.AddIfGetSupported(self.AckGetResult())
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+    self.SendGet(ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, unpacked_data):
     if not response.WasAcked():
@@ -1539,7 +1536,7 @@ class GetSoftwareVersionLabelWithData(ResponderTestFixture):
       self.AckGetResult(
         warning='Get %s with data returned an ack' % self.pid.name)
     ])
-    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foo')
+    self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
 
 
 class SetSoftwareVersionLabel(TestMixins.UnsupportedSetMixin,
@@ -1847,7 +1844,7 @@ class SetPersonality(OptionalParameterTestFixture):
     if personality == 0 or personality > 255:
       return
 
-    self.SendSet(PidStore.ROOT_DEVICE,
+    self.SendSet(ROOT_DEVICE,
                  self.pid,
                  [self.Property('current_personality')])
     self._wrapper.Run()
@@ -2049,7 +2046,7 @@ class GetSlotInfo(OptionalParameterTestFixture):
 
   def Test(self):
     self.AddIfGetSupported(self.AckGetResult())
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+    self.SendGet(ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, fields):
     if not response.WasAcked():
@@ -2109,7 +2106,7 @@ class GetSlotDescriptions(OptionalParameterTestFixture):
 
     if footprint == 0:
       self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-      self.SendGet(PidStore.ROOT_DEVICE, self.pid, [0])
+      self.SendGet(ROOT_DEVICE, self.pid, [0])
     else:
       self._slots = range(footprint)
       self._GetSlotDescription()
@@ -2124,7 +2121,7 @@ class GetSlotDescriptions(OptionalParameterTestFixture):
       self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE,
                          action=self._GetNextSlot)
     ])
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid, [self._slots[0]])
+    self.SendGet(ROOT_DEVICE, self.pid, [self._slots[0]])
 
   def _GetNextSlot(self):
     self._slots.pop(0)
@@ -2155,7 +2152,7 @@ class GetSlotDescriptionWithTooMuchData(OptionalParameterTestFixture):
 
   def Test(self):
     self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_FORMAT_ERROR))
-    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foo')
+    self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
 
 
 class SetSlotDescription(TestMixins.UnsupportedSetMixin,
@@ -2181,7 +2178,7 @@ class GetDefaultSlotValues(OptionalParameterTestFixture):
 
   def Test(self):
     self.AddIfGetSupported(self.AckGetResult())
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+    self.SendGet(ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, fields):
     if not response.WasAcked():
@@ -2388,7 +2385,7 @@ class GetSensorDefinitionWithTooMuchData(OptionalParameterTestFixture):
 
   def Test(self):
     self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_FORMAT_ERROR))
-    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foo')
+    self.SendRawGet(ROOT_DEVICE, self.pid, 'foo')
 
 
 class GetInvalidSensorDefinition(OptionalParameterTestFixture):
@@ -2399,7 +2396,7 @@ class GetInvalidSensorDefinition(OptionalParameterTestFixture):
   def Test(self):
     self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
     data = struct.pack('!B', 0xff)
-    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, data)
+    self.SendRawGet(ROOT_DEVICE, self.pid, data)
 
 
 class SetSensorDefinition(TestMixins.UnsupportedSetMixin,
@@ -2528,7 +2525,6 @@ class GetUndefinedSensorValues(OptionalParameterTestFixture):
       self._GetSensorValue()
     else:
       self.SetNotRun(' All sensors declared')
-      self.Stop()
       return
 
   def _GetSensorValue(self):
@@ -2550,7 +2546,7 @@ class GetInvalidSensorValue(OptionalParameterTestFixture):
   def Test(self):
     self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
     data = struct.pack('!B', 0xff)
-    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, data)
+    self.SendRawGet(ROOT_DEVICE, self.pid, data)
 
 
 class GetSensorValueWithNoData(TestMixins.GetWithNoDataMixin,
@@ -2660,7 +2656,7 @@ class ResetSensorValueWithNoData(OptionalParameterTestFixture):
         self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
         self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
     ])
-    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
+    self.SendRawSet(ROOT_DEVICE, self.pid, '')
 
 class AllSubDevicesGetSensorValue(TestMixins.AllSubDevicesGetMixin,
                                   ResponderTestFixture):
@@ -2802,7 +2798,7 @@ class SetDeviceHoursWithNoData(OptionalParameterTestFixture):
     else:
       expected_result = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
     self.AddIfSetSupported(self.NackSetResult(expected_result))
-    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
+    self.SendRawSet(ROOT_DEVICE, self.pid, '')
 
 class AllSubDevicesGetDeviceHours(TestMixins.AllSubDevicesGetMixin,
                                   ResponderTestFixture):
@@ -2858,7 +2854,7 @@ class SetLampHoursWithNoData(OptionalParameterTestFixture):
     else:
       expected_result = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
     self.AddIfSetSupported(self.NackSetResult(expected_result))
-    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
+    self.SendRawSet(ROOT_DEVICE, self.pid, '')
 
 class AllSubDevicesGetLampHours(TestMixins.AllSubDevicesGetMixin,
                                 ResponderTestFixture):
@@ -2912,7 +2908,7 @@ class SetLampStrikesWithNoData(OptionalParameterTestFixture):
     else:
       expected_result = RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
     self.AddIfSetSupported(self.NackSetResult(expected_result))
-    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
+    self.SendRawSet(ROOT_DEVICE, self.pid, '')
 
 class AllSubDevicesGetLampStrikes(TestMixins.AllSubDevicesGetMixin,
                                   ResponderTestFixture):
@@ -3072,7 +3068,7 @@ class SetDevicePowerCycles(TestMixins.SetUInt32Mixin,
         RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
         advisory='SET for %s returned unsupported command class' % self.PID),
     ])
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.NewValue()])
+    self.SendSet(ROOT_DEVICE, self.pid, [self.NewValue()])
 
 
 class SetDevicePowerCyclesWithNoData(OptionalParameterTestFixture):
@@ -3087,7 +3083,7 @@ class SetDevicePowerCyclesWithNoData(OptionalParameterTestFixture):
     else:
       expected_result= RDMNack.NR_UNSUPPORTED_COMMAND_CLASS
     self.AddIfSetSupported(self.NackSetResult(expected_result))
-    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
+    self.SendRawSet(ROOT_DEVICE, self.pid, '')
 
 class AllSubDevicesGetDevicePowerCycles(TestMixins.AllSubDevicesGetMixin,
                                         ResponderTestFixture):
@@ -3377,7 +3373,7 @@ class SetRealTimeClockWithNoData(OptionalParameterTestFixture):
         self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
         self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
     ])
-    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, '')
+    self.SendRawSet(ROOT_DEVICE, self.pid, '')
 
 class AllSubDevicesGetRealTimeClock(TestMixins.AllSubDevicesGetMixin,
                                     ResponderTestFixture):
@@ -3422,16 +3418,16 @@ class SetIdentifyDevice(ResponderTestFixture):
 
     self.AddExpectedResults(
         self.AckSetResult(action=self.VerifyIdentifyMode))
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.new_mode])
+    self.SendSet(ROOT_DEVICE, self.pid, [self.new_mode])
 
   def VerifyIdentifyMode(self):
     self.AddExpectedResults(
         self.AckGetResult(field_values={'identify_state': self.new_mode}))
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+    self.SendGet(ROOT_DEVICE, self.pid)
 
   def ResetState(self):
     # reset back to the old value
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.identify_mode])
+    self.SendSet(ROOT_DEVICE, self.pid, [self.identify_mode])
     self._wrapper.Run()
 
 
@@ -3444,11 +3440,11 @@ class SetOutOfRangeIdentifyDevice(ResponderTestFixture):
   def Test(self):
     self.AddExpectedResults(
         self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [2])
+    self.SendSet(ROOT_DEVICE, self.pid, [2])
 
   def ResetState(self):
     # reset back to the old value
-    self.SendSet(PidStore.ROOT_DEVICE,
+    self.SendSet(ROOT_DEVICE,
                  self.pid,
                  [self.Property('identify_state')])
     self._wrapper.Run()
@@ -3665,7 +3661,7 @@ class GetSelfTestDescription(OptionalParameterTestFixture):
       self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE),
     ])
     # try to get a description for the first self test
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid, [1])
+    self.SendGet(ROOT_DEVICE, self.pid, [1])
 
 
 class GetSelfTestDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
@@ -3795,7 +3791,7 @@ class CapturePreset(TestMixins.SetWithNoDataMixin,
     # tell if this worked.
     self.AddIfSetSupported(self.AckSetResult())
     # scene 1, no timing information
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [1, 0, 0, 0])
+    self.SendSet(ROOT_DEVICE, self.pid, [1, 0, 0, 0])
 
 
 # PRESET_PLAYBACK
@@ -3830,14 +3826,14 @@ class SetPresetPlayback(OptionalParameterTestFixture):
 
   def Test(self):
     self.AddIfSetSupported(self.AckSetResult(action=self.VerifySet))
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.OFF, self.FULL])
+    self.SendSet(ROOT_DEVICE, self.pid, [self.OFF, self.FULL])
 
   def VerifySet(self):
     self.AddExpectedResults(
       self.AckGetResult(field_values={
         'mode': self.OFF,
         'level': self.FULL}))
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+    self.SendGet(ROOT_DEVICE, self.pid)
 
 class AllSubDevicesGetPresetPlayback(TestMixins.AllSubDevicesGetMixin,
                                      ResponderTestFixture):
@@ -3911,7 +3907,7 @@ class GetDMXBlockAddress(OptionalParameterTestFixture):
     self.expected_footprint = sum(
         self.Property('sub_device_footprints').values())
     self.AddIfGetSupported(self.AckGetResult())
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+    self.SendGet(ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, fields):
     footprint = None
@@ -4051,7 +4047,7 @@ class GetDmxFailMode(OptionalParameterTestFixture):
 
   def Test(self):
     self.AddIfGetSupported(self.AckGetResult())
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+    self.SendGet(ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, fields):
     if fields is None:
@@ -4100,7 +4096,7 @@ class SetDmxFailModeMinimumTime(TestMixins.SetDmxFailModeMixin,
     self.delay_time = preset_info.get('min_fail_delay_time', 0)
     self.hold_time = preset_info.get('min_fail_hold_time', 0)
 
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid,
+    self.SendSet(ROOT_DEVICE, self.pid,
                  [0, self.delay_time, self.hold_time, 255])
 
   def GetFailMode(self):
@@ -4111,7 +4107,7 @@ class SetDmxFailModeMinimumTime(TestMixins.SetDmxFailModeMixin,
       fields['hold_time'] = self.hold_time
 
     self.AddIfGetSupported(self.AckGetResult(field_values=fields))
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+    self.SendGet(ROOT_DEVICE, self.pid)
 
 class SetDmxFailModeMaximumTime(TestMixins.SetDmxFailModeMixin,
                                 OptionalParameterTestFixture):
@@ -4130,7 +4126,7 @@ class SetDmxFailModeMaximumTime(TestMixins.SetDmxFailModeMixin,
     self.delay_time = preset_info.get('max_fail_delay_time', self.INFINITE_TIME)
     self.hold_time = preset_info.get('max_fail_hold_time', self.INFINITE_TIME)
 
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid,
+    self.SendSet(ROOT_DEVICE, self.pid,
                  [0, self.delay_time, self.hold_time, 255])
 
   def GetFailMode(self):
@@ -4141,7 +4137,7 @@ class SetDmxFailModeMaximumTime(TestMixins.SetDmxFailModeMixin,
       fields['hold_time'] = self.hold_time
 
     self.AddIfGetSupported(self.AckGetResult(field_values=fields))
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+    self.SendGet(ROOT_DEVICE, self.pid)
 
 class SetDmxFailModeInfiniteTimes(TestMixins.SetDmxFailModeMixin,
                                   OptionalParameterTestFixture):
@@ -4155,13 +4151,13 @@ class SetDmxFailModeInfiniteTimes(TestMixins.SetDmxFailModeMixin,
       self.AddIfSetSupported(
           self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
 
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid,
+    self.SendSet(ROOT_DEVICE, self.pid,
                  [0, 'infinite', 'infinite', 255])
 
   def GetFailMode(self):
     self.in_get = True
     self.AddIfGetSupported(self.AckGetResult())
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+    self.SendGet(ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, fields):
     if not response.WasAcked() or not self.in_get:
@@ -4202,7 +4198,6 @@ class SetDmxFailModeOutOfRangeMaximumTime(TestMixins.SetDmxFailModeMixin,
 
     if self.max_delay_time is None or self.max_hold_time is None:
       self.SetNotRun("Max times unknown - PRESET_INFO wasn't acked")
-      self.Stop()
       return
 
     delay_time = self.max_delay_time
@@ -4221,7 +4216,7 @@ class SetDmxFailModeOutOfRangeMaximumTime(TestMixins.SetDmxFailModeMixin,
       self.AddIfSetSupported(
           self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
 
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid,
+    self.SendSet(ROOT_DEVICE, self.pid,
                  [0, delay_time, hold_time, 255])
 
   def GetFailMode(self):
@@ -4231,7 +4226,7 @@ class SetDmxFailModeOutOfRangeMaximumTime(TestMixins.SetDmxFailModeMixin,
       'hold_time': self.max_hold_time,
     }
     self.AddIfGetSupported(self.AckGetResult(field_values=fields))
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+    self.SendGet(ROOT_DEVICE, self.pid)
 
 class SetDmxFailModeOutOfRangeMinimumTime(TestMixins.SetDmxFailModeMixin,
                                           OptionalParameterTestFixture):
@@ -4244,7 +4239,6 @@ class SetDmxFailModeOutOfRangeMinimumTime(TestMixins.SetDmxFailModeMixin,
 
     if self.min_delay_time is None or self.min_hold_time is None:
       self.SetNotRun("Max times unknown - PRESET_INFO wasn't acked")
-      self.Stop()
       return
 
     delay_time = self.min_delay_time
@@ -4263,7 +4257,7 @@ class SetDmxFailModeOutOfRangeMinimumTime(TestMixins.SetDmxFailModeMixin,
       self.AddIfSetSupported(
           self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
 
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid,
+    self.SendSet(ROOT_DEVICE, self.pid,
                  [0, delay_time, hold_time, 255])
 
   def GetFailMode(self):
@@ -4273,7 +4267,7 @@ class SetDmxFailModeOutOfRangeMinimumTime(TestMixins.SetDmxFailModeMixin,
       'hold_time': self.min_hold_time,
     }
     self.AddIfGetSupported(self.AckGetResult(field_values=fields))
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+    self.SendGet(ROOT_DEVICE, self.pid)
 
 
 class AllSubDevicesGetDmxFailMode(TestMixins.AllSubDevicesGetMixin,
@@ -4292,7 +4286,7 @@ class GetDmxStartupMode(OptionalParameterTestFixture):
 
   def Test(self):
     self.AddIfGetSupported(self.AckGetResult())
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+    self.SendGet(ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, fields):
     if fields is None:
@@ -4341,7 +4335,7 @@ class SetDmxStartupModeMinimumTime(TestMixins.SetDmxStartupModeMixin,
     self.delay_time = preset_info.get('min_startup_delay_time', 0)
     self.hold_time = preset_info.get('min_startup_hold_time', 0)
 
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid,
+    self.SendSet(ROOT_DEVICE, self.pid,
                  [0, self.delay_time, self.hold_time, 255])
 
   def GetStartupMode(self):
@@ -4352,7 +4346,7 @@ class SetDmxStartupModeMinimumTime(TestMixins.SetDmxStartupModeMixin,
       fields['hold_time'] = self.hold_time
 
     self.AddIfGetSupported(self.AckGetResult(field_values=fields))
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+    self.SendGet(ROOT_DEVICE, self.pid)
 
 class SetDmxStartupModeMaximumTime(TestMixins.SetDmxStartupModeMixin,
                                    OptionalParameterTestFixture):
@@ -4371,7 +4365,7 @@ class SetDmxStartupModeMaximumTime(TestMixins.SetDmxStartupModeMixin,
     self.delay_time = preset_info.get('max_startup_delay_time', self.INFINITE_TIME)
     self.hold_time = preset_info.get('max_startup_hold_time', self.INFINITE_TIME)
 
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid,
+    self.SendSet(ROOT_DEVICE, self.pid,
                  [0, self.delay_time, self.hold_time, 255])
 
   def GetStartupMode(self):
@@ -4382,7 +4376,7 @@ class SetDmxStartupModeMaximumTime(TestMixins.SetDmxStartupModeMixin,
       fields['hold_time'] = self.hold_time
 
     self.AddIfGetSupported(self.AckGetResult(field_values=fields))
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+    self.SendGet(ROOT_DEVICE, self.pid)
 
 class SetDmxStartupModeInfiniteTimes(TestMixins.SetDmxStartupModeMixin,
                                      OptionalParameterTestFixture):
@@ -4396,13 +4390,13 @@ class SetDmxStartupModeInfiniteTimes(TestMixins.SetDmxStartupModeMixin,
       self.AddIfSetSupported(
           self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
 
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid,
+    self.SendSet(ROOT_DEVICE, self.pid,
                  [0, 'infinite', 'infinite', 255])
 
   def GetStartupMode(self):
     self.in_get = True
     self.AddIfGetSupported(self.AckGetResult())
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+    self.SendGet(ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, fields):
     if not response.WasAcked() or not self.in_get:
@@ -4443,7 +4437,6 @@ class SetDmxStartupModeOutOfRangeMaximumTime(TestMixins.SetDmxStartupModeMixin,
 
     if self.max_delay_time is None or self.max_hold_time is None:
       self.SetNotRun("Max times unknown - PRESET_INFO wasn't acked")
-      self.Stop()
       return
 
     delay_time = self.max_delay_time
@@ -4462,7 +4455,7 @@ class SetDmxStartupModeOutOfRangeMaximumTime(TestMixins.SetDmxStartupModeMixin,
       self.AddIfSetSupported(
           self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
 
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid,
+    self.SendSet(ROOT_DEVICE, self.pid,
                  [0, delay_time, hold_time, 255])
 
   def GetStartupMode(self):
@@ -4472,7 +4465,7 @@ class SetDmxStartupModeOutOfRangeMaximumTime(TestMixins.SetDmxStartupModeMixin,
       'hold_time': self.max_hold_time,
     }
     self.AddIfGetSupported(self.AckGetResult(field_values=fields))
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+    self.SendGet(ROOT_DEVICE, self.pid)
 
 class SetDmxStartupModeOutOfRangeMinimumTime(TestMixins.SetDmxStartupModeMixin,
                                              OptionalParameterTestFixture):
@@ -4485,7 +4478,6 @@ class SetDmxStartupModeOutOfRangeMinimumTime(TestMixins.SetDmxStartupModeMixin,
 
     if self.min_delay_time is None or self.min_hold_time is None:
       self.SetNotRun("Max times unknown - PRESET_INFO wasn't acked")
-      self.Stop()
       return
 
     delay_time = self.min_delay_time
@@ -4504,7 +4496,7 @@ class SetDmxStartupModeOutOfRangeMinimumTime(TestMixins.SetDmxStartupModeMixin,
       self.AddIfSetSupported(
           self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
 
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid,
+    self.SendSet(ROOT_DEVICE, self.pid,
                  [0, delay_time, hold_time, 255])
 
   def GetStartupMode(self):
@@ -4514,7 +4506,7 @@ class SetDmxStartupModeOutOfRangeMinimumTime(TestMixins.SetDmxStartupModeMixin,
       'hold_time': self.min_hold_time,
     }
     self.AddIfGetSupported(self.AckGetResult(field_values=fields))
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+    self.SendGet(ROOT_DEVICE, self.pid)
 
 class AllSubDevicesGetDmxStartupMode(TestMixins.AllSubDevicesGetMixin,
                                      ResponderTestFixture):
@@ -4598,7 +4590,7 @@ class SetBurnIn(TestMixins.SetUInt8Mixin, OptionalParameterTestFixture):
       results.append(
         self.AckGetResult(field_values={self.EXPECTED_FIELD: new_value - 1}))
     self.AddExpectedResults(results)
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+    self.SendGet(ROOT_DEVICE, self.pid)
 
 
 class SetBurnInWithNoData(TestMixins.SetWithNoDataMixin,
@@ -4627,7 +4619,7 @@ class GetDimmerInfo(OptionalParameterTestFixture):
 
   def Test(self):
     self.AddIfGetSupported(self.AckGetResult())
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+    self.SendGet(ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, fields):
     if not response.WasAcked():
@@ -4700,12 +4692,22 @@ class GetMinimumLevel(TestMixins.GetMixin, OptionalParameterTestFixture):
 
   def Test(self):
     self.AddIfGetSupported(self.AckGetResult())
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+    self.SendGet(ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, fields):
     if fields is None:
       fields = {}
     self.SetProperty('minimum_level_settings', fields)
+
+class AllSubDevicesGetMinimumLevel(ResponderTestFixture):
+  """Send a Get MINIMUM_LEVEL to ALL_SUB_DEVICES."""
+  CATEGORY = TestCategory.SUB_DEVICES
+  PID = 'MINIMUM_LEVEL'
+
+  def Test(self):
+    self.AddExpectedResults(
+        self.NackGetResult(RDMNack.NR_SUB_DEVICE_OUT_OF_RANGE))
+    self.SendGet(PidStore.ALL_SUB_DEVICES, self.pid)
 
 # MAXIMUM_LEVEL
 #------------------------------------------------------------------------------
@@ -4746,7 +4748,6 @@ class SetLowerMaximumLevel(TestMixins.SetMaximumLevelMixin,
     self.value = self.Property('maximum_level_lower')
     if self.value is None:
       self.SetNotRun('No lower maximum level from DIMMER_INFO')
-      self.Stop()
       return
 
     if self.Property('set_maximum_level_supported'):
@@ -4760,7 +4761,7 @@ class SetLowerMaximumLevel(TestMixins.SetMaximumLevelMixin,
   def GetMaxLevel(self):
     self.AddIfGetSupported(self.AckGetResult(
         field_values={'maximum_level': self.value}))
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+    self.SendGet(ROOT_DEVICE, self.pid)
 
 class SetUpperMaximumLevel(TestMixins.SetMaximumLevelMixin,
                            OptionalParameterTestFixture):
@@ -4771,7 +4772,6 @@ class SetUpperMaximumLevel(TestMixins.SetMaximumLevelMixin,
     self.value = self.Property('maximum_level_upper')
     if self.value is None:
       self.SetNotRun('No upper maximum level from DIMMER_INFO')
-      self.Stop()
       return
 
     if self.Property('set_maximum_level_supported'):
@@ -4785,7 +4785,7 @@ class SetUpperMaximumLevel(TestMixins.SetMaximumLevelMixin,
   def GetMaxLevel(self):
     self.AddIfGetSupported(self.AckGetResult(
         field_values={'maximum_level': self.value}))
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+    self.SendGet(ROOT_DEVICE, self.pid)
 
 class SetLowerOutOfRangeMaximumLevel(OptionalParameterTestFixture):
   """Set MAXIMUM_LEVEL a value smaller than the minimum."""
@@ -4797,12 +4797,10 @@ class SetLowerOutOfRangeMaximumLevel(OptionalParameterTestFixture):
     self.value = self.Property('maximum_level_lower')
     if self.value is None:
       self.SetNotRun('No lower maximum level from DIMMER_INFO')
-      self.Stop()
       return
 
     if self.value == 0:
       self.SetNotRun('Range for maximum level begins at 0')
-      self.Stop()
       return
     self.value -= 1
 
@@ -4824,12 +4822,10 @@ class SetUpperOutOfRangeMaximumLevel(OptionalParameterTestFixture):
     self.value = self.Property('maximum_level_upper')
     if self.value is None:
       self.SetNotRun('No upper maximum level from DIMMER_INFO')
-      self.Stop()
       return
 
     if self.value == 0xffff:
       self.SetNotRun('Range for maximum level ends at 0xffff')
-      self.Stop()
       return
     self.value += 1
 
@@ -4841,6 +4837,229 @@ class SetUpperOutOfRangeMaximumLevel(OptionalParameterTestFixture):
 
     self.SendSet(ROOT_DEVICE, self.pid, [self.value])
 
+class AllSubDevicesGetMaximumLevel(ResponderTestFixture):
+  """Send a Get MAXIMUM_LEVEL to ALL_SUB_DEVICES."""
+  CATEGORY = TestCategory.SUB_DEVICES
+  PID = 'MAXIMUM_LEVEL'
+
+  def Test(self):
+    self.AddExpectedResults(
+        self.NackGetResult(RDMNack.NR_SUB_DEVICE_OUT_OF_RANGE))
+    self.SendGet(PidStore.ALL_SUB_DEVICES, self.pid)
+
+# CURVE
+#------------------------------------------------------------------------------
+class GetCurve(TestMixins.GetMixin, OptionalParameterTestFixture):
+  """Get the CURVE settings."""
+  CATEGORY = TestCategory.DIMMER_SETTINGS
+  PID = "CURVE"
+  REQUIRES = ['number_curves_supported']
+  PROVIDES = ['current_curve', 'number_curves']
+
+  def Test(self):
+    self.AddIfGetSupported(self.AckGetResult())
+    self.SendGet(ROOT_DEVICE, self.pid)
+
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
+      for key in self.PROVIDES:
+        self.SetProperty(key, None)
+      return
+
+    self.SetPropertyFromDict(fields, 'current_curve')
+    self.SetPropertyFromDict(fields, 'number_curves')
+    expected_curves = self.Property('number_curves_supported')
+    if expected_curves is not None:
+      if expected_curves != fields['number_curves']:
+        self.AddWarning(
+            'The number of curves reported in DIMMER_INFO (%d) does not '
+            'match the number from CURVE (%d)' %
+            (expected_curves, fields['number_curves']))
+
+class GetCurveWithData(TestMixins.GetWithDataMixin,
+                       OptionalParameterTestFixture):
+  """GET CURVE with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'CURVE'
+
+class SetCurve(OptionalParameterTestFixture):
+  """Set the curve."""
+  CATEGORY = TestCategory.DIMMER_SETTINGS
+  PID = "CURVE"
+  REQUIRES = ['current_curve', 'number_curves']
+
+  def Test(self):
+    curves = self.Property('number_curves')
+    if curves:
+      self.curves = [i + 1 for i in xrange(self.Property('number_curves'))]
+      self._SetCurve()
+    else:
+      # check we get a NR_UNKNOWN_PID
+      self.AddExpectedResults(self.NackSetResult(RDMNack.NR_UNKNOWN_PID))
+      self.curve = 1  # can use anything here really
+      self.SendSet(ROOT_DEVICE, self.pid, [1])
+
+  def _SetCurve(self):
+    if not self.curves:
+      # end of the list, we're done
+      self.Stop()
+      return
+
+    self.AddIfSetSupported(self.AckSetResult(action=self.VerifySet))
+    self.SendSet(ROOT_DEVICE, self.pid, [self.curves[0]])
+
+  def VerifySet(self):
+    self.AddIfGetSupported(
+      self.AckGetResult(
+        field_values={'current_curve': self.curves[0]},
+        action=self.NextCurve))
+    self.SendGet(ROOT_DEVICE, self.pid)
+
+  def NextCurve(self):
+    self.curves = self.curves[1:]
+    self._SetCurve()
+
+  def ResetState(self):
+    if not self.PidSupported() or not self.Property('current_curve'):
+      return
+
+    self.SendSet(ROOT_DEVICE, self.pid, [self.Property('current_curve')])
+    self._wrapper.Run()
+
+class SetZeroCurve(OptionalParameterTestFixture):
+  """Send a set CURVE for curve 0."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'CURVE'
+
+  def Test(self):
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    data = struct.pack('!B', 0)
+    self.SendRawSet(ROOT_DEVICE, self.pid, data)
+
+class SetOutOfRangeCurve(OptionalParameterTestFixture):
+  """Send a set CURVE for a curve which doesn't exist."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'CURVE'
+  REQUIRES = ['number_curves']
+
+  def Test(self):
+    curves = self.Property('number_curves')
+    if curves is None:
+      self.SetNotRun('Unable to determine curve count from CURVE')
+      return
+
+    if curves == 255:
+      self.SetNotRun('All curves are supported')
+      return
+
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.SendSet(ROOT_DEVICE, self.pid, [curves + 1])
+
+class SetCurveWithNoData(TestMixins.SetWithNoDataMixin,
+                         OptionalParameterTestFixture):
+  """SET CURVE without any data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'CURVE'
+
+class AllSubDevicesGetCurve(ResponderTestFixture):
+  """Send a Get CURVE to ALL_SUB_DEVICES."""
+  CATEGORY = TestCategory.SUB_DEVICES
+  PID = 'CURVE'
+
+  def Test(self):
+    self.AddExpectedResults(
+        self.NackGetResult(RDMNack.NR_SUB_DEVICE_OUT_OF_RANGE))
+    self.SendGet(PidStore.ALL_SUB_DEVICES, self.pid)
+
+# CURVE_DESCRIPTION
+#------------------------------------------------------------------------------
+class GetCurveDescription(OptionalParameterTestFixture):
+  """Get the CURVE_DESCRIPTION for all known curves."""
+  CATEGORY = TestCategory.DIMMER_SETTINGS
+  PID = 'CURVE_DESCRIPTION'
+  REQUIRES = ['number_curves']
+
+  def Test(self):
+    count = self.Property('number_curves')
+    if count is None:
+      # Try to GET curve 1, this should NACK
+      self.AddIfGetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+      self.SendGet(ROOT_DEVICE, self.pid, [1])
+      return
+
+    # Otherwise fetch the description for each known curve.
+    self.curves = [i + 1 for i in xrange(count)]
+    self._GetCurve()
+
+  def _GetCurve(self):
+    if not self.curves:
+      self.Stop()
+      return
+
+    self.AddIfGetSupported(self.AckGetResult(action=self._GetCurve))
+    self.current_curve = self.curves.pop()
+    self.SendGet(ROOT_DEVICE, self.pid, [self.current_curve])
+
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
+      return
+
+    if fields['curve_number'] != self.current_curve:
+      self.AddWarning(
+          'CURVE_DESCRIPTION number mismatch, sent %d, received %d' %
+          (self.current_curve, fields['curve_number']))
+
+class GetCurveDescriptionWithData(TestMixins.GetWithDataMixin,
+                                 OptionalParameterTestFixture):
+  """GET CURVE_DESCRIPTION with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'CURVE_DESCRIPTION'
+
+class GetZeroCurveDescription(OptionalParameterTestFixture):
+  """Send a Get CURVE_DESCRIPTION for curve 0."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'CURVE_DESCRIPTION'
+
+  def Test(self):
+    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    data = struct.pack('!B', 0)
+    self.SendRawGet(ROOT_DEVICE, self.pid, data)
+
+class GetOutOfRangeCurveDescription(OptionalParameterTestFixture):
+  """Send a Get CURVE_DESCRIPTION for a curve which doesn't exist."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'CURVE_DESCRIPTION'
+  REQUIRES = ['number_curves']
+
+  def Test(self):
+    curves = self.Property('number_curves')
+    if curves is None:
+      self.SetNotRun('Unable to determine curve count from CURVE')
+      return
+
+    if curves == 255:
+      self.SetNotRun('All curves are supported')
+      return
+
+    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.SendGet(ROOT_DEVICE, self.pid, [curves + 1])
+
+class SetCurveDescription(TestMixins.UnsupportedSetMixin,
+                          ResponderTestFixture):
+  """SET the parameter description."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'CURVE_DESCRIPTION'
+
+class AllSubDevicesGetCurveDescription(ResponderTestFixture):
+  """Send a Get CURVE_DESCRIPTION to ALL_SUB_DEVICES."""
+  CATEGORY = TestCategory.SUB_DEVICES
+  PID = 'CURVE_DESCRIPTION'
+
+  def Test(self):
+    self.AddExpectedResults(
+        self.NackGetResult(RDMNack.NR_SUB_DEVICE_OUT_OF_RANGE))
+    self.SendGet(PidStore.ALL_SUB_DEVICES, self.pid, [1])
+
 # PRESET_INFO
 #------------------------------------------------------------------------------
 class GetPresetInfo(TestMixins.GetMixin, OptionalParameterTestFixture):
@@ -4851,7 +5070,7 @@ class GetPresetInfo(TestMixins.GetMixin, OptionalParameterTestFixture):
 
   def Test(self):
     self.AddIfGetSupported(self.AckGetResult())
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+    self.SendGet(ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, fields):
     if not response.WasAcked():
@@ -4969,11 +5188,10 @@ class GetOutOfRangePresetStatus(OptionalParameterTestFixture):
     max_scene = self.Property('max_scene_number')
     if max_scene is None or max_scene == 0xfffe:
       self.SetNotRun('Device supports all scenes')
-      self.Stop()
       return
 
     self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid, [max_scene + 1])
+    self.SendGet(ROOT_DEVICE, self.pid, [max_scene + 1])
 
 class GetPresetStatus(OptionalParameterTestFixture):
   """Get the preset status for all scenes."""
@@ -4997,7 +5215,6 @@ class GetPresetStatus(OptionalParameterTestFixture):
 
     if self.max_scene is None or self.max_scene == 0:
       self.SetNotRun('No scenes supported')
-      self.Stop()
       return
 
     self.FetchNextScene()
@@ -5010,7 +5227,7 @@ class GetPresetStatus(OptionalParameterTestFixture):
       return
 
     self.AddIfGetSupported(self.AckGetResult(action=self.FetchNextScene))
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid, [self.index])
+    self.SendGet(ROOT_DEVICE, self.pid, [self.index])
 
   def VerifyResult(self, response, fields):
     if not response.WasAcked():
@@ -5100,7 +5317,6 @@ class SetOutOfRangePresetStatus(TestMixins.SetPresetStatusMixin,
     max_scene = self.Property('max_scene_number')
     if max_scene is None or max_scene == 0xfffe:
       self.SetNotRun('Device supports all scenes')
-      self.Stop()
       return
 
     self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
@@ -5124,7 +5340,6 @@ class ClearReadOnlyPresetStatus(OptionalParameterTestFixture):
 
     if self.scene is None:
       self.SetNotRun('No read-only scenes found')
-      self.Stop()
       return
 
     preset_info = self.Property('preset_info')
@@ -5162,7 +5377,6 @@ class SetPresetStatus(OptionalParameterTestFixture):
 
     if self.scene is None:
       self.SetNotRun('No writeable scenes found')
-      self.Stop()
       return
 
     self.max_fade = 0xffff
@@ -5184,7 +5398,7 @@ class SetPresetStatus(OptionalParameterTestFixture):
       'scene_number': self.scene,
       'down_fade_time': self.max_fade,
     }))
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid, [self.scene])
+    self.SendGet(ROOT_DEVICE, self.pid, [self.scene])
 
 class ClearPresetStatus(OptionalParameterTestFixture):
   """Set the PRESET_STATUS with clear preset = 1"""
@@ -5203,7 +5417,6 @@ class ClearPresetStatus(OptionalParameterTestFixture):
 
     if self.scene is None:
       self.SetNotRun('No writeable scenes found')
-      self.Stop()
       return
 
     self.AddIfSetSupported(self.AckSetResult(action=self.VerifySet))
@@ -5218,7 +5431,7 @@ class ClearPresetStatus(OptionalParameterTestFixture):
       'programmed': 0,
       'down_fade_time': 0.0,
     }))
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid, [self.scene])
+    self.SendGet(ROOT_DEVICE, self.pid, [self.scene])
 
 class AllSubDevicesGetPresetStatus(ResponderTestFixture):
   """Send a Get Preset Status to ALL_SUB_DEVICES."""
@@ -5241,7 +5454,7 @@ class GetPresetMergeMode(TestMixins.GetMixin,
 
   def Test(self):
     self.AddIfGetSupported(self.AckGetResult())
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+    self.SendGet(ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, fields):
     if not response.WasAcked():
@@ -5275,12 +5488,12 @@ class SetPresetMergeMode(OptionalParameterTestFixture):
         RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
         advisory='SET for %s returned unsupported command class' % self.PID),
     ])
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.value])
+    self.SendSet(ROOT_DEVICE, self.pid, [self.value])
 
   def VerifySet(self):
     self.AddExpectedResults(
       self.AckGetResult(field_values={'merge_mode': self.value}))
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+    self.SendGet(ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, fields):
     if self.in_set:
@@ -5297,7 +5510,6 @@ class SetAllPresetMergeModes(OptionalParameterTestFixture):
   def Test(self):
     if not self.Property('set_preset_merge_mode_supported'):
       self.SetNotRun('SET PRESET_MERGE_MODE not supported')
-      self.Stop()
       return
 
     self.old_value = self.Property('preset_merge_mode')
@@ -5317,17 +5529,17 @@ class SetAllPresetMergeModes(OptionalParameterTestFixture):
       self.AckSetResult(action=self.VerifySet),
       self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE, action=self.PerformSet),
     ])
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.merge_modes[-1]])
+    self.SendSet(ROOT_DEVICE, self.pid, [self.merge_modes[-1]])
 
   def VerifySet(self):
     self.AddExpectedResults(
       self.AckGetResult(field_values={'merge_mode': self.merge_modes[-1]},
                         action=self.PerformSet))
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+    self.SendGet(ROOT_DEVICE, self.pid)
 
   def ResetState(self):
     self.AddExpectedResults(self.AckSetResult())
-    self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.old_value])
+    self.SendSet(ROOT_DEVICE, self.pid, [self.old_value])
     self._wrapper.Run()
 
 class SetPresetMergeModeWithNoData(TestMixins.SetWithNoDataMixin,
