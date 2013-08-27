@@ -626,16 +626,11 @@ class SetDeviceInfo(ResponderTestFixture, DeviceInfoTest):
     self.SendRawSet(ROOT_DEVICE, self.pid)
 
 
-class AllSubDevicesGetDeviceInfo(ResponderTestFixture):
+class AllSubDevicesGetDeviceInfo(TestMixins.AllSubDevicesGetMixin,
+                                 ResponderTestFixture):
   """Send a Get Device Info to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'DEVICE_INFO'
-
-  def Test(self):
-    self.AddExpectedResults(
-        self.NackGetResult(RDMNack.NR_SUB_DEVICE_OUT_OF_RANGE))
-    self.SendGet(PidStore.ALL_SUB_DEVICES, self.pid)
-
 
 # Supported Parameters Tests & Mixin
 #------------------------------------------------------------------------------
@@ -3966,7 +3961,7 @@ class CheckBlockAddressConsistency(ResponderTestFixture):
     pid = self.LookupPid('DMX_BLOCK_ADDRESS')
     if (pid.value in self.Property('supported_parameters') and
         self.Property('sub_device_count') == 0):
-      self.AddAdvisory('DMX_BLOCK_ADDRESS supported but sub device count as 0')
+      self.AddAdvisory('DMX_BLOCK_ADDRESS supported but sub device count was 0')
     self.SetPassed()
     self.Stop()
 
@@ -4699,15 +4694,11 @@ class GetMinimumLevel(TestMixins.GetMixin, OptionalParameterTestFixture):
       fields = {}
     self.SetProperty('minimum_level_settings', fields)
 
-class AllSubDevicesGetMinimumLevel(ResponderTestFixture):
+class AllSubDevicesGetMinimumLevel(TestMixins.AllSubDevicesGetMixin,
+                                   ResponderTestFixture):
   """Send a Get MINIMUM_LEVEL to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'MINIMUM_LEVEL'
-
-  def Test(self):
-    self.AddExpectedResults(
-        self.NackGetResult(RDMNack.NR_SUB_DEVICE_OUT_OF_RANGE))
-    self.SendGet(PidStore.ALL_SUB_DEVICES, self.pid)
 
 # MAXIMUM_LEVEL
 #------------------------------------------------------------------------------
@@ -4837,15 +4828,11 @@ class SetUpperOutOfRangeMaximumLevel(OptionalParameterTestFixture):
 
     self.SendSet(ROOT_DEVICE, self.pid, [self.value])
 
-class AllSubDevicesGetMaximumLevel(ResponderTestFixture):
+class AllSubDevicesGetMaximumLevel(TestMixins.AllSubDevicesGetMixin,
+                                   ResponderTestFixture):
   """Send a Get MAXIMUM_LEVEL to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'MAXIMUM_LEVEL'
-
-  def Test(self):
-    self.AddExpectedResults(
-        self.NackGetResult(RDMNack.NR_SUB_DEVICE_OUT_OF_RANGE))
-    self.SendGet(PidStore.ALL_SUB_DEVICES, self.pid)
 
 # CURVE
 #------------------------------------------------------------------------------
@@ -4961,15 +4948,11 @@ class SetCurveWithNoData(TestMixins.SetWithNoDataMixin,
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'CURVE'
 
-class AllSubDevicesGetCurve(ResponderTestFixture):
+class AllSubDevicesGetCurve(TestMixins.AllSubDevicesGetMixin,
+                            ResponderTestFixture):
   """Send a Get CURVE to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'CURVE'
-
-  def Test(self):
-    self.AddExpectedResults(
-        self.NackGetResult(RDMNack.NR_SUB_DEVICE_OUT_OF_RANGE))
-    self.SendGet(PidStore.ALL_SUB_DEVICES, self.pid)
 
 # CURVE_DESCRIPTION
 #------------------------------------------------------------------------------
@@ -5050,15 +5033,12 @@ class SetCurveDescription(TestMixins.UnsupportedSetMixin,
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'CURVE_DESCRIPTION'
 
-class AllSubDevicesGetCurveDescription(ResponderTestFixture):
+class AllSubDevicesGetCurveDescription(TestMixins.AllSubDevicesGetMixin,
+                                       ResponderTestFixture):
   """Send a Get CURVE_DESCRIPTION to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'CURVE_DESCRIPTION'
-
-  def Test(self):
-    self.AddExpectedResults(
-        self.NackGetResult(RDMNack.NR_SUB_DEVICE_OUT_OF_RANGE))
-    self.SendGet(PidStore.ALL_SUB_DEVICES, self.pid, [1])
+  DATA = [1]
 
 # PRESET_INFO
 #------------------------------------------------------------------------------
@@ -5145,15 +5125,11 @@ class SetPresetInfo(ResponderTestFixture, DeviceInfoTest):
     self.AddExpectedResults(TestMixins.UnsupportedSetNacks(self.pid))
     self.SendRawSet(ROOT_DEVICE, self.pid)
 
-class AllSubDevicesGetPresetInfo(ResponderTestFixture):
+class AllSubDevicesGetPresetInfo(TestMixins.AllSubDevicesGetMixin,
+                                 ResponderTestFixture):
   """Send a Get Preset Info to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'PRESET_INFO'
-
-  def Test(self):
-    self.AddExpectedResults(
-        self.NackGetResult(RDMNack.NR_SUB_DEVICE_OUT_OF_RANGE))
-    self.SendGet(PidStore.ALL_SUB_DEVICES, self.pid)
 
 # PRESET_STATUS
 #------------------------------------------------------------------------------
@@ -5433,15 +5409,12 @@ class ClearPresetStatus(OptionalParameterTestFixture):
     }))
     self.SendGet(ROOT_DEVICE, self.pid, [self.scene])
 
-class AllSubDevicesGetPresetStatus(ResponderTestFixture):
+class AllSubDevicesGetPresetStatus(TestMixins.AllSubDevicesGetMixin,
+                                   ResponderTestFixture):
   """Send a Get Preset Status to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'PRESET_STATUS'
-
-  def Test(self):
-    self.AddExpectedResults(
-        self.NackGetResult(RDMNack.NR_SUB_DEVICE_OUT_OF_RANGE))
-    self.SendGet(PidStore.ALL_SUB_DEVICES, self.pid, [1])
+  DATA = [1]
 
 # PRESET_MERGE_MODE
 #------------------------------------------------------------------------------
