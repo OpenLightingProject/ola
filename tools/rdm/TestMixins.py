@@ -691,6 +691,27 @@ class SetZeroByteMixin(object):
     data = struct.pack('!B', 0)
     self.SendRawSet(ROOT_DEVICE, self.pid, data)
 
+class GetOutOfRangeByteMixin(object):
+  """The subclass provides the NumberOfSettings() method."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+
+  def NumberOfSettings(self):
+    # By default we use the first property from REQUIRES
+    return self.Property(self.REQUIRES[0])
+
+  def Test(self):
+    settings_supported = self.NumberOfSettings()
+    if settings_supported is None:
+      self.SetNotRun('Unable to determine number of %s' % self.LABEL)
+      return
+
+    if settings_supported == 255:
+      self.SetNotRun('All %s are supported' % self.LABEL)
+      return
+
+    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.SendGet(ROOT_DEVICE, self.pid, [settings_supported + 1])
+
 class SetOutOfRangeByteMixin(object):
   """The subclass provides the NumberOfSettings() method."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
@@ -711,3 +732,45 @@ class SetOutOfRangeByteMixin(object):
 
     self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
     self.SendSet(ROOT_DEVICE, self.pid, [settings_supported + 1])
+
+class GetSettingDescriptionsMixin(object):
+  """Perform a GET for each setting in the range 0 .. NumberOfSettings().
+
+    Subclasses must define EXPECTED_FIELD, which is the field to validate the
+    index against.
+  """
+  CATEGORY = TestCategory.DIMMER_SETTINGS
+
+  def NumberOfSettings(self):
+    # By default we use the first property from REQUIRES
+    return self.Property(self.REQUIRES[0])
+
+  def Test(self):
+    count = self.NumberOfSettings()
+    if count is None:
+      # Try to GET item 1, this should NACK
+      self.AddIfGetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+      self.SendGet(ROOT_DEVICE, self.pid, [1])
+      return
+
+    # Otherwise fetch the description for each known setting.
+    self.items = [i + 1 for i in xrange(count)]
+    self._GetNextDescription()
+
+  def _GetNextDescription(self):
+    if not self.items:
+      self.Stop()
+      return
+
+    self.AddIfGetSupported(self.AckGetResult(action=self._GetNextDescription))
+    self.current_item = self.items.pop()
+    self.SendGet(ROOT_DEVICE, self.pid, [self.current_item])
+
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
+      return
+
+    if fields[self.EXPECTED_FIELD] != self.current_item:
+      self.AddWarning(
+          '%s mismatch, sent %d, received %d' %
+          (self.pid, self.current_item, fields[self.EXPECTED_FIELD]))
