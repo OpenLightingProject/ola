@@ -4537,7 +4537,7 @@ class AllSubDevicesGetPowerOnSelfTest(TestMixins.AllSubDevicesGetMixin,
 #------------------------------------------------------------------------------
 class GetLockState(TestMixins.GetMixin, OptionalParameterTestFixture):
   """Get the LOCK_STATE settings."""
-  CATEGORY = TestCategory.DIMMER_SETTINGS
+  CATEGORY = TestCategory.CONFIGURATION
   PID = "LOCK_STATE"
   PROVIDES = ['current_lock_state', 'number_of_lock_states']
 
@@ -4626,6 +4626,108 @@ class AllSubDevicesGetLockStateDescription(TestMixins.AllSubDevicesGetMixin,
   PID = 'LOCK_STATE_DESCRIPTION'
   DATA = [1]
 
+# LOCK_PIN
+#------------------------------------------------------------------------------
+class GetLockPin(OptionalParameterTestFixture):
+  """Get LOCK_PIN."""
+  CATEGORY = TestCategory.CONFIGURATION
+  PID = 'LOCK_PIN'
+  PROVIDES = ['pin_code']
+
+  def Test(self):
+    self.AddIfGetSupported([
+      self.AckGetResult(field_names=['pin_code']),
+      self.NackGetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+    ])
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def VerifyResult(self, response, fields):
+    self.SetPropertyFromDict(fields, 'pin_code')
+
+class GetLockPinWithData(TestMixins.GetWithDataMixin,
+                         OptionalParameterTestFixture):
+  """GET LOCK_PIN with data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'LOCK_PIN'
+
+class AllSubDevicesGetLockPin(TestMixins.AllSubDevicesGetMixin,
+                              ResponderTestFixture):
+  """Get LOCK_PIN to ALL_SUB_DEVICES."""
+  CATEGORY = TestCategory.SUB_DEVICES
+  PID = 'LOCK_PIN'
+
+class SetLockPinWithNoData(TestMixins.SetWithNoDataMixin,
+                           OptionalParameterTestFixture):
+  """Set LOCK_PIN with no param data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'LOCK_PIN'
+
+class SetLockPin(OptionalParameterTestFixture):
+  """Set LOCK_PIN."""
+  CATEGORY = TestCategory.CONFIGURATION
+  PID = 'LOCK_PIN'
+  REQUIRES = ['pin_code']
+
+  def Test(self):
+    self.pin = self.Property('pin_code')
+    if self.pin is None:
+      # try setting to a static value, we make old and new the same just on the
+      # off chance this is actually the pin
+      # http://www.datagenetics.com/blog/september32012/
+      self.AddIfSetSupported([
+        self.AckSetResult(),
+        self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE),
+      ])
+      self.SendSet(PidStore.ROOT_DEVICE, self.pid, [439, 439])
+
+    else:
+      self.AddIfSetSupported([
+        self.AckSetResult(action=self.VerifySet),
+        self.NackSetResult(
+          RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
+          advisory='SET for %s returned unsupported command class' % self.PID),
+      ])
+      self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.pin, self.pin])
+
+  def VerifySet(self):
+    self.AddExpectedResults([
+      self.AckGetResult(field_values={'pin_code': self.pin}),
+      self.NackGetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+    ])
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+class SetInvalidLockPin(OptionalParameterTestFixture):
+  """Set LOCK_PIN with the wrong pin code."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'LOCK_PIN'
+
+  REQUIRES = ['pin_code']
+
+  def Test(self):
+    self.pin = self.Property('pin_code')
+    if self.pin is None:
+      self.SetNotRun('Unable to determine pin code')
+      return
+
+    bad_pin = (self.pin + 1) % 10000
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.SendSet(ROOT_DEVICE, self.pid, [0, bad_pin])
+
+class SetOutOfRangeLockPin(OptionalParameterTestFixture):
+  """Set LOCK_PIN with an out-of-range pin code."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'LOCK_PIN'
+  REQUIRES = ['pin_code']
+
+  def Test(self):
+    self.pin = self.Property('pin_code')
+    if self.pin is None:
+      self.SetNotRun('Unable to determine pin code')
+      return
+
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_FORMAT_ERROR))
+    data = struct.pack('!HH', 10001, self.pin)
+    self.SendRawSet(ROOT_DEVICE, self.pid, data)
 
 # BURN_IN
 #------------------------------------------------------------------------------
