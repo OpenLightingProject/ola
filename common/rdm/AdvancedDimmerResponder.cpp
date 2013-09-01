@@ -60,7 +60,7 @@ const uint16_t AdvancedDimmerResponder::MIN_STARTUP_DELAY_TIME = 0;
 const uint16_t AdvancedDimmerResponder::MIN_STARTUP_HOLD_TIME = 0;
 const uint16_t AdvancedDimmerResponder::MAX_STARTUP_DELAY_TIME = 1200;
 const uint16_t AdvancedDimmerResponder::MAX_STARTUP_HOLD_TIME = 36000;
-const uint16_t AdvancedDimmerResponder::INFINIITE_TIME = 0xffff;
+const uint16_t AdvancedDimmerResponder::INFINITE_TIME = 0xffff;
 
 const char* AdvancedDimmerResponder::CURVES[] = {
   "Linear Curve",
@@ -890,15 +890,15 @@ const RDMResponse *AdvancedDimmerResponder::SetFailMode(
 
   m_fail_mode.scene = NetworkToHost(args.scene);
   uint16_t delay = NetworkToHost(args.delay);
-  if (delay == INFINIITE_TIME) {
-    m_fail_mode.delay = INFINIITE_TIME;
+  if (delay == INFINITE_TIME) {
+    m_fail_mode.delay = INFINITE_TIME;
   } else {
     m_fail_mode.delay = max(MIN_FAIL_DELAY_TIME,
                             min(MAX_FAIL_DELAY_TIME, delay));
   }
   uint16_t hold = NetworkToHost(args.hold_time);
-  if (hold == INFINIITE_TIME) {
-    m_fail_mode.hold_time = INFINIITE_TIME;
+  if (hold == INFINITE_TIME) {
+    m_fail_mode.hold_time = INFINITE_TIME;
   } else {
     m_fail_mode.hold_time = max(MIN_FAIL_HOLD_TIME,
                                 min(MAX_FAIL_HOLD_TIME, hold));
@@ -947,16 +947,16 @@ const RDMResponse *AdvancedDimmerResponder::SetStartUpMode(
   m_startup_mode.scene = NetworkToHost(args.scene);
 
   uint16_t delay = NetworkToHost(args.delay);
-  if (delay == INFINIITE_TIME) {
-    m_startup_mode.delay = INFINIITE_TIME;
+  if (delay == INFINITE_TIME) {
+    m_startup_mode.delay = INFINITE_TIME;
   } else {
     m_startup_mode.delay = max(MIN_STARTUP_DELAY_TIME,
                             min(MAX_STARTUP_DELAY_TIME, delay));
   }
 
   uint16_t hold = NetworkToHost(args.hold_time);
-  if (hold == INFINIITE_TIME) {
-    m_startup_mode.hold_time = INFINIITE_TIME;
+  if (hold == INFINITE_TIME) {
+    m_startup_mode.hold_time = INFINITE_TIME;
   } else {
     m_startup_mode.hold_time = max(MIN_STARTUP_HOLD_TIME,
                                    min(MAX_STARTUP_HOLD_TIME, hold));
