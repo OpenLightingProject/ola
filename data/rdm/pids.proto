@@ -1346,11 +1346,11 @@ pid {
   get_response {
     field {
       type: UINT8
-      name: "current_moduluation_frequency"
+      name: "modulation_frequency"
     }
     field {
       type: UINT8
-      name: "number_modluation_frequencies"
+      name: "number_modulation_frequencies"
     }
   }
   get_sub_device_range: ROOT_OR_SUBDEVICE

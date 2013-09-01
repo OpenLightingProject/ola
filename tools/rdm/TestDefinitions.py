@@ -5276,6 +5276,130 @@ class AllSubDevicesGetOutputResponseTimeDescription(
   PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
   DATA = [1]
 
+# MODULATION_FREQUENCY
+#------------------------------------------------------------------------------
+class GetModulationFrequency(TestMixins.GetMixin, OptionalParameterTestFixture):
+  """Get the MODULATION_FREQUENCY settings."""
+  CATEGORY = TestCategory.DIMMER_SETTINGS
+  PID = "MODULATION_FREQUENCY"
+  PROVIDES = ['modulation_frequency', 'number_modulation_frequencies']
+
+  def Test(self):
+    self.AddIfGetSupported(self.AckGetResult())
+    self.SendGet(ROOT_DEVICE, self.pid)
+
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
+      for key in self.PROVIDES:
+        self.SetProperty(key, None)
+      return
+
+    self.SetPropertyFromDict(fields, 'modulation_frequency')
+    self.SetPropertyFromDict(fields, 'number_modulation_frequencies')
+
+    if fields['modulation_frequency'] == 0:
+      self.SetFailed('Modulation frequency must be numbered from 1')
+      return
+
+    if fields['modulation_frequency'] > fields['number_modulation_frequencies']:
+      self.SetFailed(
+          'Output response time %d exceeded number of response times %d' %
+          (fields['output_response_time'],
+           fields['number_output_response_times']))
+      return
+
+class GetModulationFrequencyWithData(TestMixins.GetWithDataMixin,
+                                     OptionalParameterTestFixture):
+  """GET MODULATION_FREQUENCY with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'MODULATION_FREQUENCY'
+
+class SetModulationFrequency(OptionalParameterTestFixture):
+  """Set the MODULATION_FREQUENCY."""
+  CATEGORY = TestCategory.DIMMER_SETTINGS
+  PID = "MODULATION_FREQUENCY"
+  REQUIRES = ['modulation_frequency', 'number_modulation_frequencies']
+
+  def Test(self):
+    items = self.Property('number_modulation_frequencies')
+    if items:
+      self.frequencies = [i + 1 for i in xrange(items)]
+      self._SetModulationFrequency()
+    else:
+      # check we get a NR_UNKNOWN_PID
+      self.AddExpectedResults(self.NackSetResult(RDMNack.NR_UNKNOWN_PID))
+      self.frequency = 1  # can use anything here really
+      self.SendSet(ROOT_DEVICE, self.pid, [1])
+
+  def _SetModulationFrequency(self):
+    if not self.frequencies:
+      # end of the list, we're done
+      self.Stop()
+      return
+
+    self.AddIfSetSupported(self.AckSetResult(action=self.VerifySet))
+    self.SendSet(ROOT_DEVICE, self.pid, [self.frequencies[0]])
+
+  def VerifySet(self):
+    self.AddIfGetSupported(
+      self.AckGetResult(
+        field_values={'modulation_frequency': self.frequencies[0]},
+        action=self.NextModulationFrequency))
+    self.SendGet(ROOT_DEVICE, self.pid)
+
+  def NextModulationFrequency(self):
+    self.frequencies = self.frequencies[1:]
+    self._SetModulationFrequency()
+
+  def ResetState(self):
+    if not self.PidSupported() or not self.Property('modulation_frequency'):
+      return
+
+    self.SendSet(ROOT_DEVICE, self.pid, [self.Property('modulation_frequency')])
+    self._wrapper.Run()
+
+class SetZeroModulationFrequency(OptionalParameterTestFixture):
+  """Send a set MODULATION_FREQUENCY for output_response_time 0."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'MODULATION_FREQUENCY'
+
+  def Test(self):
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    data = struct.pack('!B', 0)
+    self.SendRawSet(ROOT_DEVICE, self.pid, data)
+
+class SetOutOfRangeModulationFrequency(OptionalParameterTestFixture):
+  """Send a set MODULATION_FREQUENCY for a time which doesn't exist."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'MODULATION_FREQUENCY'
+  REQUIRES = ['number_modulation_frequencies']
+
+  def Test(self):
+    output_response_times = self.Property('number_modulation_frequencies')
+    if output_response_times is None:
+      self.SetNotRun(
+          'Unable to determine number of modulation_frequencies')
+      return
+
+    if output_response_times == 255:
+      self.SetNotRun('All modulation_frequencies are supported')
+      return
+
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.SendSet(ROOT_DEVICE, self.pid, [output_response_times + 1])
+
+class SetModulationFrequencyWithNoData(TestMixins.SetWithNoDataMixin,
+                                       OptionalParameterTestFixture):
+  """SET MODULATION_FREQUENCY without any data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'MODULATION_FREQUENCY'
+
+class AllSubDevicesGetModulationFrequency(TestMixins.AllSubDevicesGetMixin,
+                                          ResponderTestFixture):
+  """Send a Get MODULATION_FREQUENCY to ALL_SUB_DEVICES."""
+  CATEGORY = TestCategory.SUB_DEVICES
+  PID = 'MODULATION_FREQUENCY'
+
 # PRESET_INFO
 #------------------------------------------------------------------------------
 class GetPresetInfo(TestMixins.GetMixin, OptionalParameterTestFixture):
