@@ -4533,6 +4533,100 @@ class AllSubDevicesGetPowerOnSelfTest(TestMixins.AllSubDevicesGetMixin,
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'POWER_ON_SELF_TEST'
 
+# LOCK_STATE
+#------------------------------------------------------------------------------
+class GetLockState(TestMixins.GetMixin, OptionalParameterTestFixture):
+  """Get the LOCK_STATE settings."""
+  CATEGORY = TestCategory.DIMMER_SETTINGS
+  PID = "LOCK_STATE"
+  PROVIDES = ['current_lock_state', 'number_of_lock_states']
+
+  def Test(self):
+    self.AddIfGetSupported(self.AckGetResult())
+    self.SendGet(ROOT_DEVICE, self.pid)
+
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
+      for key in self.PROVIDES:
+        self.SetProperty(key, None)
+      return
+
+    self.SetPropertyFromDict(fields, 'current_lock_state')
+    self.SetPropertyFromDict(fields, 'number_of_lock_states')
+
+    if fields['current_lock_state'] > fields['number_of_lock_states']:
+      self.SetFailed('Lock State %d exceeded number of lock states %d' %
+                     (fields['current_lock_state'],
+                      fields['number_of_lock_states']))
+      return
+
+class GetLockStateWithData(TestMixins.GetWithDataMixin,
+                           OptionalParameterTestFixture):
+  """GET LOCK_STATE with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'LOCK_STATE'
+
+class SetLockStateWithNoData(TestMixins.SetWithNoDataMixin,
+                             OptionalParameterTestFixture):
+  """Set LOCK_STATE without any data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'LOCK_STATE'
+
+class AllSubDevicesGetLockState(TestMixins.AllSubDevicesGetMixin,
+                                ResponderTestFixture):
+  """Send a Get LOCK_STATE to ALL_SUB_DEVICES."""
+  CATEGORY = TestCategory.SUB_DEVICES
+  PID = 'LOCK_STATE'
+
+# LOCK_STATE_DESCRIPTION
+#------------------------------------------------------------------------------
+class GetLockStateDescription(TestMixins.GetSettingDescriptionsMixin,
+                              OptionalParameterTestFixture):
+  """Get the LOCK_STATE_DESCRIPTION for all known states."""
+  CATEGORY = TestCategory.DIMMER_SETTINGS
+  PID = 'LOCK_STATE_DESCRIPTION'
+  REQUIRES = ['number_of_lock_states']
+  EXPECTED_FIELD = 'lock_state'
+
+class GetLockStateDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
+                                        OptionalParameterTestFixture):
+  """Get LOCK_STATE_DESCRIPTION with no lock state specified."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'LOCK_STATE_DESCRIPTION'
+
+class GetLockStateDescriptionWithExtraData(TestMixins.GetWithDataMixin,
+                                           OptionalParameterTestFixture):
+  """GET LOCK_STATE_DESCRIPTION with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'LOCK_STATE_DESCRIPTION'
+
+class GetZeroLockStateDescription(TestMixins.GetZeroByteMixin,
+                                  OptionalParameterTestFixture):
+  """Get LOCK_STATE_DESCRIPTION for lock state 0."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'LOCK_STATE_DESCRIPTION'
+
+class GetOutOfRangeLockStateDescription(TestMixins.GetOutOfRangeByteMixin,
+                                        OptionalParameterTestFixture):
+  """Get LOCK_STATE_DESCRIPTION for an out-of-range curve."""
+  PID = 'LOCK_STATE_DESCRIPTION'
+  REQUIRES = ['number_of_lock_states']
+  LABEL = 'lock states'
+
+class SetLockStateDescription(TestMixins.UnsupportedSetMixin,
+                              ResponderTestFixture):
+  """SET the LOCK_STATE_DESCRIPTION."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'LOCK_STATE_DESCRIPTION'
+
+class AllSubDevicesGetLockStateDescription(TestMixins.AllSubDevicesGetMixin,
+                                           ResponderTestFixture):
+  """Send a Get LOCK_STATE_DESCRIPTION to ALL_SUB_DEVICES."""
+  CATEGORY = TestCategory.SUB_DEVICES
+  PID = 'LOCK_STATE_DESCRIPTION'
+  DATA = [1]
+
+
 # BURN_IN
 #------------------------------------------------------------------------------
 class GetBurnIn(TestMixins.GetMixin, OptionalParameterTestFixture):
@@ -5278,8 +5372,8 @@ class GetOutOfRangeModulationFrequencyDescription(
     OptionalParameterTestFixture):
   """Get MODULATION_FREQUENCY_DESCRIPTION for an out-of-range response time."""
   PID = 'MODULATION_FREQUENCY_DESCRIPTION'
-  REQUIRES = ['number_output_response_times']
-  LABEL = 'output response times'
+  REQUIRES = ['number_modulation_frequencies']
+  LABEL = 'modulation frequencies'
 
 class SetModulationFrequencyDescription(TestMixins.UnsupportedSetMixin,
                                         ResponderTestFixture):
