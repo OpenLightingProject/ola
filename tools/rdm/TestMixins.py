@@ -672,3 +672,42 @@ class SetMaximumLevelMixin(object):
     if level is not None:
       self.SendSet(ROOT_DEVICE, self.pid, [level])
       self._wrapper.Run()
+
+class GetZeroByteMixin(object):
+  """Get a single byte parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+
+  def Test(self):
+    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    data = struct.pack('!B', 0)
+    self.SendRawGet(ROOT_DEVICE, self.pid, data)
+
+class SetZeroByteMixin(object):
+  """Set a single byte parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+
+  def Test(self):
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    data = struct.pack('!B', 0)
+    self.SendRawSet(ROOT_DEVICE, self.pid, data)
+
+class SetOutOfRangeByteMixin(object):
+  """The subclass provides the NumberOfSettings() method."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+
+  def NumberOfSettings(self):
+    # By default we use the first property from REQUIRES
+    return self.Property(self.REQUIRES[0])
+
+  def Test(self):
+    settings_supported = self.NumberOfSettings()
+    if settings_supported is None:
+      self.SetNotRun('Unable to determine number of %s' % self.LABEL)
+      return
+
+    if settings_supported == 255:
+      self.SetNotRun('All %s are supported' % self.LABEL)
+      return
+
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.SendSet(ROOT_DEVICE, self.pid, [settings_supported + 1])

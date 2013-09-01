@@ -1627,16 +1627,11 @@ class AllSubDevicesGetBootSoftwareVersionLabel(TestMixins.AllSubDevicesGetMixin,
 
 # DMX Personality & DMX Personality Description
 #------------------------------------------------------------------------------
-class GetZeroPersonalityDescription(OptionalParameterTestFixture):
-  """GET the personality description for the 0th personality."""
+class GetZeroPersonalityDescription(TestMixins.GetZeroByteMixin,
+                                    OptionalParameterTestFixture):
+  """GET DMX_PERSONALITY_DESCRIPTION for personality 0."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_PERSONALITY_DESCRIPTION'
-
-  def Test(self):
-    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    data = struct.pack('!B', 0)
-    self.SendRawGet(ROOT_DEVICE, self.pid, data)
-
 
 class GetOutOfRangePersonalityDescription(OptionalParameterTestFixture):
   """GET the personality description for the N + 1 personality."""
@@ -1845,28 +1840,19 @@ class SetPersonality(OptionalParameterTestFixture):
     self._wrapper.Run()
 
 
-class SetZeroPersonality(OptionalParameterTestFixture):
-  """Try to set the personality to 0."""
+class SetZeroPersonality(TestMixins.SetZeroByteMixin,
+                         OptionalParameterTestFixture):
+  """Set DMX_PERSONALITY for personality 0."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_PERSONALITY'
 
-  def Test(self):
-    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    data = struct.pack('!B', 0)
-    self.SendRawSet(ROOT_DEVICE, self.pid, data)
-
-
-class SetOutOfRangePersonality(OptionalParameterTestFixture):
-  """Try to set the personality to 0."""
+class SetOutOfRangePersonality(TestMixins.SetOutOfRangeByteMixin,
+                               OptionalParameterTestFixture):
+  """Set DMX_PERSONALITY to an out-of-range value."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'DMX_PERSONALITY'
   REQUIRES = ['personality_count']
-
-  def Test(self):
-    personality_count = self.Property('personality_count')
-    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    self.SendSet(ROOT_DEVICE, self.pid, [personality_count + 1])
-
+  LABEL = 'personalities'
 
 class SetOversizedPersonality(OptionalParameterTestFixture):
   """Send an over-sized SET personality command."""
@@ -4923,34 +4909,17 @@ class SetCurve(OptionalParameterTestFixture):
     self.SendSet(ROOT_DEVICE, self.pid, [self.Property('current_curve')])
     self._wrapper.Run()
 
-class SetZeroCurve(OptionalParameterTestFixture):
-  """Send a set CURVE for curve 0."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
+class SetZeroCurve(TestMixins.SetZeroByteMixin,
+                   OptionalParameterTestFixture):
+  """Set CURVE to 0."""
   PID = 'CURVE'
 
-  def Test(self):
-    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    data = struct.pack('!B', 0)
-    self.SendRawSet(ROOT_DEVICE, self.pid, data)
-
-class SetOutOfRangeCurve(OptionalParameterTestFixture):
-  """Send a set CURVE for a curve which doesn't exist."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
+class SetOutOfRangeCurve(TestMixins.SetOutOfRangeByteMixin,
+                         OptionalParameterTestFixture):
+  """Set CURVE to an out-of-range value."""
   PID = 'CURVE'
   REQUIRES = ['number_curves']
-
-  def Test(self):
-    curves = self.Property('number_curves')
-    if curves is None:
-      self.SetNotRun('Unable to determine curve count from CURVE')
-      return
-
-    if curves == 255:
-      self.SetNotRun('All curves are supported')
-      return
-
-    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    self.SendSet(ROOT_DEVICE, self.pid, [curves + 1])
+  LABEL = 'curves'
 
 class SetCurveWithNoData(TestMixins.SetWithNoDataMixin,
                          OptionalParameterTestFixture):
@@ -5014,15 +4983,11 @@ class GetCurveDescriptionWithExtraData(TestMixins.GetWithDataMixin,
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'CURVE_DESCRIPTION'
 
-class GetZeroCurveDescription(OptionalParameterTestFixture):
-  """Send a Get CURVE_DESCRIPTION for curve 0."""
+class GetZeroCurveDescription(TestMixins.GetZeroByteMixin,
+                              OptionalParameterTestFixture):
+  """Get CURVE_DESCRIPTION for curve 0."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'CURVE_DESCRIPTION'
-
-  def Test(self):
-    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    data = struct.pack('!B', 0)
-    self.SendRawGet(ROOT_DEVICE, self.pid, data)
 
 class GetOutOfRangeCurveDescription(OptionalParameterTestFixture):
   """Send a Get CURVE_DESCRIPTION for a curve which doesn't exist."""
@@ -5138,35 +5103,17 @@ class SetOutputResponseTime(OptionalParameterTestFixture):
     self.SendSet(ROOT_DEVICE, self.pid, [self.Property('output_response_time')])
     self._wrapper.Run()
 
-class SetZeroOutputResponseTime(OptionalParameterTestFixture):
-  """Send a set OUTPUT_RESPONSE_TIME for output_response_time 0."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
+class SetZeroOutputResponseTime(TestMixins.SetZeroByteMixin,
+                                OptionalParameterTestFixture):
+  """Set OUTPUT_RESPONSE_TIME to 0."""
   PID = 'OUTPUT_RESPONSE_TIME'
 
-  def Test(self):
-    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    data = struct.pack('!B', 0)
-    self.SendRawSet(ROOT_DEVICE, self.pid, data)
-
-class SetOutOfRangeOutputResponseTime(OptionalParameterTestFixture):
-  """Send a set OUTPUT_RESPONSE_TIME for a time which doesn't exist."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
+class SetOutOfRangeOutputResponseTime(TestMixins.SetOutOfRangeByteMixin,
+                                      OptionalParameterTestFixture):
+  """Set OUTPUT_RESPONSE_TIME to an out-of-range value."""
   PID = 'OUTPUT_RESPONSE_TIME'
   REQUIRES = ['number_output_response_times']
-
-  def Test(self):
-    output_response_times = self.Property('number_output_response_times')
-    if output_response_times is None:
-      self.SetNotRun(
-          'Unable to determine number of output_response_times')
-      return
-
-    if output_response_times == 255:
-      self.SetNotRun('All output_response_times are supported')
-      return
-
-    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    self.SendSet(ROOT_DEVICE, self.pid, [output_response_times + 1])
+  LABEL = 'output response times'
 
 class SetOutputResponseTimeWithNoData(TestMixins.SetWithNoDataMixin,
                                       OptionalParameterTestFixture):
@@ -5176,7 +5123,7 @@ class SetOutputResponseTimeWithNoData(TestMixins.SetWithNoDataMixin,
 
 class AllSubDevicesGetOutputResponseTime(TestMixins.AllSubDevicesGetMixin,
                                          ResponderTestFixture):
-  """Send a Get OUTPUT_RESPONSE_TIME to ALL_SUB_DEVICES."""
+  """Get OUTPUT_RESPONSE_TIME to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'OUTPUT_RESPONSE_TIME'
 
@@ -5232,15 +5179,11 @@ class GetOutputResponseTimeDescriptionWithExtraData(
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
 
-class GetZeroOutputResponseTimeDescription(OptionalParameterTestFixture):
+class GetZeroOutputResponseTimeDescription(TestMixins.GetZeroByteMixin,
+                                           OptionalParameterTestFixture):
   """Get OUTPUT_RESPONSE_TIME_DESCRIPTION for output_response_time 0."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
-
-  def Test(self):
-    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    data = struct.pack('!B', 0)
-    self.SendRawGet(ROOT_DEVICE, self.pid, data)
 
 class GetOutOfRangeOutputResponseTimeDescription(OptionalParameterTestFixture):
   """Get OUTPUT_RESPONSE_TIME_DESCRIPTION for an invalid response time."""
@@ -5358,35 +5301,17 @@ class SetModulationFrequency(OptionalParameterTestFixture):
     self.SendSet(ROOT_DEVICE, self.pid, [self.Property('modulation_frequency')])
     self._wrapper.Run()
 
-class SetZeroModulationFrequency(OptionalParameterTestFixture):
+class SetZeroModulationFrequency(TestMixins.SetZeroByteMixin,
+                                 OptionalParameterTestFixture):
   """Send a set MODULATION_FREQUENCY for output_response_time 0."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'MODULATION_FREQUENCY'
 
-  def Test(self):
-    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    data = struct.pack('!B', 0)
-    self.SendRawSet(ROOT_DEVICE, self.pid, data)
-
-class SetOutOfRangeModulationFrequency(OptionalParameterTestFixture):
-  """Send a set MODULATION_FREQUENCY for a time which doesn't exist."""
-  CATEGORY = TestCategory.ERROR_CONDITIONS
+class SetOutOfRangeModulationFrequency(TestMixins.SetOutOfRangeByteMixin,
+                                       OptionalParameterTestFixture):
+  """SET MODULATION_FREQUENCY to an out-of-range value."""
   PID = 'MODULATION_FREQUENCY'
   REQUIRES = ['number_modulation_frequencies']
-
-  def Test(self):
-    output_response_times = self.Property('number_modulation_frequencies')
-    if output_response_times is None:
-      self.SetNotRun(
-          'Unable to determine number of modulation_frequencies')
-      return
-
-    if output_response_times == 255:
-      self.SetNotRun('All modulation_frequencies are supported')
-      return
-
-    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
-    self.SendSet(ROOT_DEVICE, self.pid, [output_response_times + 1])
+  LABEL = 'modulation frequencies'
 
 class SetModulationFrequencyWithNoData(TestMixins.SetWithNoDataMixin,
                                        OptionalParameterTestFixture):
