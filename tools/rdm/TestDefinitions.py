@@ -4855,6 +4855,16 @@ class GetCurve(TestMixins.GetMixin, OptionalParameterTestFixture):
 
     self.SetPropertyFromDict(fields, 'current_curve')
     self.SetPropertyFromDict(fields, 'number_curves')
+
+    if fields['current_curve'] == 0:
+      self.SetFailed('Curves must be numbered from 1')
+      return
+
+    if fields['current_curve'] > fields['number_curves']:
+      self.SetFailed('Curve %d exceeded number of curves %d' %
+                     (fields['current_curve'], fields['number_curves']))
+      return
+
     expected_curves = self.Property('number_curves_supported')
     if expected_curves is not None:
       if expected_curves != fields['number_curves']:
@@ -5066,6 +5076,17 @@ class GetOutputResponseTime(TestMixins.GetMixin, OptionalParameterTestFixture):
 
     self.SetPropertyFromDict(fields, 'output_response_time')
     self.SetPropertyFromDict(fields, 'number_output_response_times')
+
+    if fields['output_response_time'] == 0:
+      self.SetFailed('Output response times must be numbered from 1')
+      return
+
+    if fields['output_response_time'] > fields['number_output_response_times']:
+      self.SetFailed(
+          'Output response time %d exceeded number of response times %d' %
+          (fields['output_response_time'],
+           fields['number_output_response_times']))
+      return
 
 class GetOutputResponseTimeWithData(TestMixins.GetWithDataMixin,
                                     OptionalParameterTestFixture):
