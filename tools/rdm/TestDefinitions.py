@@ -4878,7 +4878,7 @@ class SetCurve(OptionalParameterTestFixture):
   def Test(self):
     curves = self.Property('number_curves')
     if curves:
-      self.curves = [i + 1 for i in xrange(self.Property('number_curves'))]
+      self.curves = [i + 1 for i in xrange(curves)]
       self._SetCurve()
     else:
       # check we get a NR_UNKNOWN_PID
@@ -4992,8 +4992,14 @@ class GetCurveDescription(OptionalParameterTestFixture):
           'CURVE_DESCRIPTION number mismatch, sent %d, received %d' %
           (self.current_curve, fields['curve_number']))
 
-class GetCurveDescriptionWithData(TestMixins.GetWithDataMixin,
-                                 OptionalParameterTestFixture):
+class GetCurveDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
+                                    OptionalParameterTestFixture):
+  """Get CURVE_DESCRIPTION with no curve number specified."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'CURVE_DESCRIPTION'
+
+class GetCurveDescriptionWithExtraData(TestMixins.GetWithDataMixin,
+                                       OptionalParameterTestFixture):
   """GET CURVE_DESCRIPTION with extra data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'CURVE_DESCRIPTION'
@@ -5038,6 +5044,215 @@ class AllSubDevicesGetCurveDescription(TestMixins.AllSubDevicesGetMixin,
   """Send a Get CURVE_DESCRIPTION to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'CURVE_DESCRIPTION'
+  DATA = [1]
+
+# OUTPUT_RESPONSE_TIME
+#------------------------------------------------------------------------------
+class GetOutputResponseTime(TestMixins.GetMixin, OptionalParameterTestFixture):
+  """Get the OUTPUT_RESPONSE_TIME settings."""
+  CATEGORY = TestCategory.DIMMER_SETTINGS
+  PID = "OUTPUT_RESPONSE_TIME"
+  PROVIDES = ['output_response_time', 'number_output_response_times']
+
+  def Test(self):
+    self.AddIfGetSupported(self.AckGetResult())
+    self.SendGet(ROOT_DEVICE, self.pid)
+
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
+      for key in self.PROVIDES:
+        self.SetProperty(key, None)
+      return
+
+    self.SetPropertyFromDict(fields, 'output_response_time')
+    self.SetPropertyFromDict(fields, 'number_output_response_times')
+
+class GetOutputResponseTimeWithData(TestMixins.GetWithDataMixin,
+                                    OptionalParameterTestFixture):
+  """GET OUTPUT_RESPONSE_TIME with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'OUTPUT_RESPONSE_TIME'
+
+class SetOutputResponseTime(OptionalParameterTestFixture):
+  """Set the output_response_time."""
+  CATEGORY = TestCategory.DIMMER_SETTINGS
+  PID = "OUTPUT_RESPONSE_TIME"
+  REQUIRES = ['output_response_time', 'number_output_response_times']
+
+  def Test(self):
+    times = self.Property('number_output_response_times')
+    if times:
+      self.output_response_times = [i + 1 for i in xrange(times)]
+      self._SetOutputResponseTime()
+    else:
+      # check we get a NR_UNKNOWN_PID
+      self.AddExpectedResults(self.NackSetResult(RDMNack.NR_UNKNOWN_PID))
+      self.output_response_time = 1  # can use anything here really
+      self.SendSet(ROOT_DEVICE, self.pid, [1])
+
+  def _SetOutputResponseTime(self):
+    if not self.output_response_times:
+      # end of the list, we're done
+      self.Stop()
+      return
+
+    self.AddIfSetSupported(self.AckSetResult(action=self.VerifySet))
+    self.SendSet(ROOT_DEVICE, self.pid, [self.output_response_times[0]])
+
+  def VerifySet(self):
+    self.AddIfGetSupported(
+      self.AckGetResult(
+        field_values={'output_response_time': self.output_response_times[0]},
+        action=self.NextOutputResponseTime))
+    self.SendGet(ROOT_DEVICE, self.pid)
+
+  def NextOutputResponseTime(self):
+    self.output_response_times = self.output_response_times[1:]
+    self._SetOutputResponseTime()
+
+  def ResetState(self):
+    if not self.PidSupported() or not self.Property('output_response_time'):
+      return
+
+    self.SendSet(ROOT_DEVICE, self.pid, [self.Property('output_response_time')])
+    self._wrapper.Run()
+
+class SetZeroOutputResponseTime(OptionalParameterTestFixture):
+  """Send a set OUTPUT_RESPONSE_TIME for output_response_time 0."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'OUTPUT_RESPONSE_TIME'
+
+  def Test(self):
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    data = struct.pack('!B', 0)
+    self.SendRawSet(ROOT_DEVICE, self.pid, data)
+
+class SetOutOfRangeOutputResponseTime(OptionalParameterTestFixture):
+  """Send a set OUTPUT_RESPONSE_TIME for a time which doesn't exist."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'OUTPUT_RESPONSE_TIME'
+  REQUIRES = ['number_output_response_times']
+
+  def Test(self):
+    output_response_times = self.Property('number_output_response_times')
+    if output_response_times is None:
+      self.SetNotRun(
+          'Unable to determine number of output_response_times')
+      return
+
+    if output_response_times == 255:
+      self.SetNotRun('All output_response_times are supported')
+      return
+
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.SendSet(ROOT_DEVICE, self.pid, [output_response_times + 1])
+
+class SetOutputResponseTimeWithNoData(TestMixins.SetWithNoDataMixin,
+                                      OptionalParameterTestFixture):
+  """SET OUTPUT_RESPONSE_TIME without any data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'OUTPUT_RESPONSE_TIME'
+
+class AllSubDevicesGetOutputResponseTime(TestMixins.AllSubDevicesGetMixin,
+                                         ResponderTestFixture):
+  """Send a Get OUTPUT_RESPONSE_TIME to ALL_SUB_DEVICES."""
+  CATEGORY = TestCategory.SUB_DEVICES
+  PID = 'OUTPUT_RESPONSE_TIME'
+
+# OUTPUT_RESPONSE_TIME_DESCRIPTION
+#------------------------------------------------------------------------------
+class GetOutputResponseTimeDescription(OptionalParameterTestFixture):
+  """Get the OUTPUT_RESPONSE_TIME_DESCRIPTION for all response times."""
+  CATEGORY = TestCategory.DIMMER_SETTINGS
+  PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
+  REQUIRES = ['number_output_response_times']
+
+  def Test(self):
+    count = self.Property('number_output_response_times')
+    if count is None:
+      # Try to GET output_response_time 1, this should NACK
+      self.AddIfGetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+      self.SendGet(ROOT_DEVICE, self.pid, [1])
+      return
+
+    # Otherwise fetch the description for each known output_response_time.
+    self.output_response_times = [i + 1 for i in xrange(count)]
+    self._GetOutputResponseTime()
+
+  def _GetOutputResponseTime(self):
+    if not self.output_response_times:
+      self.Stop()
+      return
+
+    self.AddIfGetSupported(
+        self.AckGetResult(action=self._GetOutputResponseTime))
+    self.current_output_response_time = self.output_response_times.pop()
+    self.SendGet(ROOT_DEVICE, self.pid, [self.current_output_response_time])
+
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
+      return
+
+    if fields['output_response_time'] != self.current_output_response_time:
+      self.AddWarning(
+          'OUTPUT_RESPONSE_TIME_DESCRIPTION mismatch, sent %d, received %d' %
+          (self.current_output_response_time, fields['output_response_time']))
+
+class GetOutputResponseTimeDescriptionWithNoData(TestMixins.GetWithNoDataMixin,
+                                                 OptionalParameterTestFixture):
+  """Get OUTPUT_RESPONSE_TIME_DESCRIPTION with no response time number."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
+
+class GetOutputResponseTimeDescriptionWithExtraData(
+    TestMixins.GetWithDataMixin,
+    OptionalParameterTestFixture):
+  """GET OUTPUT_RESPONSE_TIME_DESCRIPTION with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
+
+class GetZeroOutputResponseTimeDescription(OptionalParameterTestFixture):
+  """Get OUTPUT_RESPONSE_TIME_DESCRIPTION for output_response_time 0."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
+
+  def Test(self):
+    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    data = struct.pack('!B', 0)
+    self.SendRawGet(ROOT_DEVICE, self.pid, data)
+
+class GetOutOfRangeOutputResponseTimeDescription(OptionalParameterTestFixture):
+  """Get OUTPUT_RESPONSE_TIME_DESCRIPTION for an invalid response time."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
+  REQUIRES = ['number_output_response_times']
+
+  def Test(self):
+    output_response_times = self.Property('number_output_response_times')
+    if output_response_times is None:
+      self.SetNotRun(
+          'Unable to determine number of output_response_times')
+      return
+
+    if output_response_times == 255:
+      self.SetNotRun('All output_response_times are supported')
+      return
+
+    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.SendGet(ROOT_DEVICE, self.pid, [output_response_times + 1])
+
+class SetOutputResponseTimeDescription(TestMixins.UnsupportedSetMixin,
+                                       ResponderTestFixture):
+  """SET the parameter description."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
+
+class AllSubDevicesGetOutputResponseTimeDescription(
+    TestMixins.AllSubDevicesGetMixin,
+    ResponderTestFixture):
+  """Send a Get OUTPUT_RESPONSE_TIME_DESCRIPTION to ALL_SUB_DEVICES."""
+  CATEGORY = TestCategory.SUB_DEVICES
+  PID = 'OUTPUT_RESPONSE_TIME_DESCRIPTION'
   DATA = [1]
 
 # PRESET_INFO

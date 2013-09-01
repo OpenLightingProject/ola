@@ -1286,18 +1286,18 @@ pid {
   get_response {
     field {
       type: UINT8
-      name: "current_response_time"
+      name: "output_response_time"
     }
     field {
       type: UINT8
-      name: "number_response_options"
+      name: "number_output_response_times"
     }
   }
   get_sub_device_range: ROOT_OR_SUBDEVICE
   set_request {
     field {
       type: UINT8
-      name: "response_time"
+      name: "output_response_time"
       range {
         min: 1
         max: 255
@@ -1314,7 +1314,7 @@ pid {
   get_request {
     field {
       type: UINT8
-      name: "response_time"
+      name: "output_response_time"
       range {
         min: 1
         max: 255
@@ -1324,7 +1324,7 @@ pid {
   get_response {
     field {
       type: UINT8
-      name: "response_time"
+      name: "output_response_time"
       range {
         min: 1
         max: 255
