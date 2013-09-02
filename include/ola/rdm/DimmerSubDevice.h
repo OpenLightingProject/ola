@@ -43,7 +43,13 @@ namespace rdm {
  */
 class DimmerSubDevice: public RDMControllerInterface {
   public:
-    DimmerSubDevice(const UID &uid, uint16_t sub_device_number);
+    /**
+     * We need the total sub device count here because the sub device field in
+     * DEVICE_INFO must be the same for both the root and all sub devices
+     * (10.5).
+     */
+    DimmerSubDevice(const UID &uid, uint16_t sub_device_number,
+                    uint16_t total_sub_devices);
 
     void SendRDMRequest(const RDMRequest *request, RDMCallback *callback);
 
@@ -92,6 +98,7 @@ class DimmerSubDevice: public RDMControllerInterface {
 
     const UID m_uid;
     const uint16_t m_sub_device_number;
+    const uint16_t m_sub_device_count;
     uint16_t m_start_address;
     bool m_identify_on;
     uint8_t m_identify_mode;

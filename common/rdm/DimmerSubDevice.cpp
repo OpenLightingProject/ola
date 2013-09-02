@@ -90,9 +90,12 @@ const ResponderOps<DimmerSubDevice>::ParamHandler
   { 0, NULL, NULL},
 };
 
-DimmerSubDevice::DimmerSubDevice(const UID &uid, uint16_t sub_device_number)
+DimmerSubDevice::DimmerSubDevice(const UID &uid,
+                                 uint16_t sub_device_number,
+                                 uint16_t sub_device_count)
     : m_uid(uid),
       m_sub_device_number(sub_device_number),
+      m_sub_device_count(sub_device_count),
       m_start_address(sub_device_number),
       m_identify_on(false),
       m_identify_mode(IDENTIFY_MODE_LOUD),
@@ -114,7 +117,7 @@ const RDMResponse *DimmerSubDevice::GetDeviceInfo(const RDMRequest *request) {
       PRODUCT_CATEGORY_DIMMER, 1,
       &m_personality_manager,
       m_start_address,
-      0, 0);
+      m_sub_device_count, 0);
 }
 
 
