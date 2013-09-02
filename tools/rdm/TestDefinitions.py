@@ -4566,17 +4566,54 @@ class GetLockStateWithData(TestMixins.GetWithDataMixin,
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LOCK_STATE'
 
+class AllSubDevicesGetLockState(TestMixins.AllSubDevicesGetMixin,
+                                ResponderTestFixture):
+  """Send a Get LOCK_STATE to ALL_SUB_DEVICES."""
+  CATEGORY = TestCategory.SUB_DEVICES
+  PID = 'LOCK_STATE'
+
 class SetLockStateWithNoData(TestMixins.SetWithNoDataMixin,
                              OptionalParameterTestFixture):
   """Set LOCK_STATE without any data."""
   CATEGORY = TestCategory.ERROR_CONDITIONS
   PID = 'LOCK_STATE'
 
-class AllSubDevicesGetLockState(TestMixins.AllSubDevicesGetMixin,
-                                ResponderTestFixture):
-  """Send a Get LOCK_STATE to ALL_SUB_DEVICES."""
-  CATEGORY = TestCategory.SUB_DEVICES
+class SetLockState(OptionalParameterTestFixture):
+  """Set LOCK_STATE."""
+  CATEGORY = TestCategory.CONFIGURATION
   PID = 'LOCK_STATE'
+  REQUIRES = ['current_lock_state', 'pin_code']
+
+  def Test(self):
+    self.lock_state = self.Property('current_lock_state')
+    if self.lock_state is None:
+      self.SetNotRun('Unable to determine pin code')
+      return
+
+    self.pin = self.Property('pin_code')
+    if self.pin is None:
+      # try setting to a static value, we make old and new the same just on the
+      # off chance this is actually the pin
+      # http://www.datagenetics.com/blog/september32012/
+      self.AddIfSetSupported([
+        self.AckSetResult(),
+        self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE),
+      ])
+      self.SendSet(PidStore.ROOT_DEVICE, self.pid, [439, self.lock_state])
+
+    else:
+      self.AddIfSetSupported([
+        self.AckSetResult(action=self.VerifySet),
+        self.NackSetResult(
+          RDMNack.NR_UNSUPPORTED_COMMAND_CLASS,
+          advisory='SET for %s returned unsupported command class' % self.PID),
+      ])
+      self.SendSet(PidStore.ROOT_DEVICE, self.pid, [self.pin, self.lock_state])
+
+  def VerifySet(self):
+    self.AddExpectedResults(
+        self.AckGetResult(field_values={'current_lock_state': self.lock_state}))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
 # LOCK_STATE_DESCRIPTION
 #------------------------------------------------------------------------------
@@ -4642,7 +4679,8 @@ class GetLockPin(OptionalParameterTestFixture):
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, fields):
-    self.SetPropertyFromDict(fields, 'pin_code')
+    if response.WasAcked():
+      self.SetPropertyFromDict(fields, 'pin_code')
 
 class GetLockPinWithData(TestMixins.GetWithDataMixin,
                          OptionalParameterTestFixture):
