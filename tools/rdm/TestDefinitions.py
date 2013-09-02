@@ -898,9 +898,12 @@ class FindSubDevices(ResponderTestFixture):
 
   def VerifyResult(self, response, fields):
     if response.WasAcked():
-      if fields['sub_device_count'] > 0:
-        self.SetFailed('Sub-device %d reported sub-devices in DEVICE_INFO' %
-                       self._current_index);
+      if fields['sub_device_count'] != self._device_count:
+        self.SetFailed(
+            'For sub-device %d, DEVICE_INFO reported %d sub devices '
+            ' but the root device reported %s. See section 10.5' %
+            (self._current_index, fields['sub_device_count'],
+             self._device_count))
         self.Stop()
       self._sub_device_addresses[self._current_index] = (
           fields['dmx_start_address'])
