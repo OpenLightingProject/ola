@@ -107,7 +107,7 @@ const RDMResponse *DimmerRootDevice::GetDeviceInfo(const RDMRequest *request) {
 
   return ResponderHelper::GetDeviceInfo(
       request, OLA_DUMMY_DIMMER_MODEL, PRODUCT_CATEGORY_DIMMER, 1, 0,
-      1, 1, // personality
+      1, 1,  // personality
       0xffff,  // start address
       m_sub_devices.size(), 0);
 }
