@@ -157,6 +157,11 @@ class FrequencyModulationSetting : SettingInterface {
 template <class SettingType>
 class SettingCollection {
   public:
+    /**
+     * zero_offset is used for the LOCK_STATE which is special because it has
+     * the unlocked state at index 0. However the 0 state isn't counted towards
+     * the total and does not have a description
+     */
     SettingCollection(const typename SettingType::ArgType args[],
                       unsigned int arg_count,
                       bool zero_offset = false)
@@ -228,6 +233,10 @@ const RDMResponse *SettingManager<SettingType>::Get(
     const RDMRequest *request) const {
   uint16_t data = ((m_current_setting + m_settings->Offset()) << 8 |
       m_settings->Count());
+  if (m_settings->Offset() == 0) {
+    // don't count the 0-state
+    data--;
+  }
   return ResponderHelper::GetUInt16Value(request, data);
 }
 
@@ -257,7 +266,8 @@ const RDMResponse *SettingManager<SettingType>::GetDescription(
   }
 
   unsigned int offset = m_settings->Offset();
-  if (arg < offset || arg >= m_settings->Count() + offset) {
+  // never reply for the first setting - see LOCK_STATE
+  if (arg == 0 || arg >= m_settings->Count() + offset) {
     return NackWithReason(request, NR_DATA_OUT_OF_RANGE);
   } else {
     const SettingType *setting = m_settings->Lookup(arg - offset);

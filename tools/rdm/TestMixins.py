@@ -46,7 +46,7 @@ def UnsupportedSetNacks(pid):
   ]
 
 
-# Generic Get / Set Mixins
+# Generic GET Mixins
 # These don't care about the format of the message.
 #------------------------------------------------------------------------------
 class UnsupportedGetMixin(object):
@@ -56,87 +56,83 @@ class UnsupportedGetMixin(object):
         self.NackGetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS))
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid)
 
-
 class GetMixin(object):
-  """GET Mixin that also sets a property if PROVIDES is set.
+  """GET Mixin for an optional PID. Verify EXPECTED_FIELD is in the response.
 
-  The target class needs to set EXPECTED_FIELD and optionally PROVIDES.
+    This mixin also sets a property if PROVIDES is defined.  The target class
+    needs to defined EXPECTED_FIELD and optionally PROVIDES.
   """
   def Test(self):
-    self.AddIfGetSupported(self.AckGetResult(
-      field_names=[self.EXPECTED_FIELD]))
-    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
-
-  def VerifyResult(self, response, fields):
-    if self.PROVIDES:
-      value = None
-      if response.WasAcked():
-        value = fields[self.EXPECTED_FIELD]
-      self.SetProperty(self.PROVIDES[0], value)
-
-
-class GetRequiredMixin(object):
-  """GET Mixin that also sets a property if PROVIDES is set.
-
-  The target class needs to set EXPECTED_FIELD and optionally PROVIDES.
-  """
-  def Test(self):
-    self.AddExpectedResults(self.AckGetResult(
-      field_names=[self.EXPECTED_FIELD]))
+    self.AddIfGetSupported(self.AckGetResult(field_names=[self.EXPECTED_FIELD]))
     self.SendGet(PidStore.ROOT_DEVICE, self.pid)
 
   def VerifyResult(self, response, fields):
     if response.WasAcked() and self.PROVIDES:
       self.SetProperty(self.PROVIDES[0], fields[self.EXPECTED_FIELD])
 
+class GetRequiredMixin(object):
+  """GET Mixin for an optional PID. Verify EXPECTED_FIELD is in the response.
+
+    This mixin also sets a property if PROVIDES is defined.  The target class
+    needs to defined EXPECTED_FIELD and optionally PROVIDES.
+  """
+  def Test(self):
+    self.AddExpectedResults(
+        self.AckGetResult(field_names=[self.EXPECTED_FIELD]))
+    self.SendGet(PidStore.ROOT_DEVICE, self.pid)
+
+  def VerifyResult(self, response, fields):
+    if response.WasAcked() and self.PROVIDES:
+      self.SetProperty(self.PROVIDES[0], fields[self.EXPECTED_FIELD])
 
 class GetWithDataMixin(object):
-  """GET a PID with random param data."""
+  """GET a PID with junk param data."""
+  DATA = 'foo'
+
   def Test(self):
     self.AddIfGetSupported([
       self.NackGetResult(RDMNack.NR_FORMAT_ERROR),
       self.AckGetResult(
         warning='Get %s with data returned an ack' % self.pid.name)
     ])
-    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, 'foo')
-
+    self.SendRawGet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
 
 class GetWithNoDataMixin(object):
-  """Attempt a get with no data."""
+  """GET with no data, expect NR_FORMAT_ERROR."""
   def Test(self):
     self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_FORMAT_ERROR))
     self.SendRawGet(PidStore.ROOT_DEVICE, self.pid)
 
-
 class AllSubDevicesGetMixin(object):
-  """Attempt a get to ALL_SUB_DEVICES."""
+  """Send a GET to ALL_SUB_DEVICES."""
   DATA = []
 
   def Test(self):
-    # 9.2.2
+    # E1.20, section 9.2.2
     self.AddExpectedResults(
         self.NackGetResult(RDMNack.NR_SUB_DEVICE_OUT_OF_RANGE))
     self.SendGet(PidStore.ALL_SUB_DEVICES, self.pid, self.DATA)
 
+# Generic SET Mixins
+# These don't care about the format of the message.
+#------------------------------------------------------------------------------
 class UnsupportedSetMixin(object):
   """Check that SET fails with NR_UNSUPPORTED_COMMAND_CLASS."""
-  DATA = ''
-
   def Test(self):
     self.AddExpectedResults(UnsupportedSetNacks(self.pid))
-    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
-
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid)
 
 class SetWithDataMixin(ResponderTestFixture):
   """SET a PID with random param data."""
+  DATA = 'foo'
+
   def Test(self):
     self.AddIfSetSupported([
       self.NackSetResult(RDMNack.NR_FORMAT_ERROR),
       self.AckSetResult(
         warning='Set %s with data returned an ack' % self.pid.name)
     ])
-    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, 'foo')
-
+    self.SendRawSet(PidStore.ROOT_DEVICE, self.pid, self.DATA)
 
 class SetWithNoDataMixin(object):
   """Attempt a set with no data."""
@@ -151,7 +147,7 @@ class SetWithNoDataMixin(object):
 # These all work in conjunction with the IsSupportedMixin
 #------------------------------------------------------------------------------
 class SetLabelMixin(object):
-  """Set a PID and make sure the value is saved.
+  """Set a PID and make sure the label is updated.
 
   If PROVIDES is non empty, the first property will be used to indicate if the
   set action is supported. If an ack is returned it'll be set to true,
@@ -676,3 +672,166 @@ class SetMaximumLevelMixin(object):
     if level is not None:
       self.SendSet(ROOT_DEVICE, self.pid, [level])
       self._wrapper.Run()
+
+class SetMinimumLevelMixin(object):
+  PID = 'MINIMUM_LEVEL'
+  REQUIRES = ['minimum_level_settings', 'set_minimum_level_supported']
+  CATEGORY = TestCategory.DIMMER_SETTINGS
+
+  def MinLevelIncreasing(self):
+    return self.settings['minimum_level_increasing']
+
+  def MinLevelDecreasing(self):
+    return self.settings['minimum_level_decreasing']
+
+  def OnBelowMin(self):
+    return self.settings['on_below_minimum']
+
+  def ExpectedResults(self):
+    return self.AckSetResult(action=self.GetMinLevel)
+
+  def ShouldSkip(self):
+    return False
+
+  def Test(self):
+    self.settings = self.Property('minimum_level_settings')
+    if self.settings is None:
+      self.SetNotRun('Unable to determine current minimum level settings')
+      return
+
+    set_supported = self.Property('set_minimum_level_supported')
+    if set_supported is None or not set_supported:
+      self.SetNotRun('SET MINIMUM_LEVEL not supported')
+      return
+
+    if self.ShouldSkip():
+      return
+
+    self.AddIfSetSupported(self.ExpectedResults())
+    self.SendSet(
+        ROOT_DEVICE, self.pid,
+        [self.MinLevelIncreasing(),
+         self.MinLevelDecreasing(),
+         self.OnBelowMin()])
+
+  def GetMinLevel(self):
+    self.AddIfGetSupported(self.AckGetResult(
+        field_values={
+          'minimum_level_increasing': self.MinLevelIncreasing(),
+          'minimum_level_decreasing': self.MinLevelDecreasing(),
+          'on_below_minimum': self.OnBelowMin(),
+    }))
+    self.SendGet(ROOT_DEVICE, self.pid)
+
+  def ResetState(self):
+    if not self.PidSupported():
+      return
+
+    self.SendSet(
+        ROOT_DEVICE, self.pid,
+        [self.settings['minimum_level_increasing'],
+         self.settings['minimum_level_decreasing'],
+         self.settings['on_below_minimum']])
+    self._wrapper.Run()
+
+class GetZeroByteMixin(object):
+  """Get a single byte parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+
+  def Test(self):
+    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    data = struct.pack('!B', 0)
+    self.SendRawGet(ROOT_DEVICE, self.pid, data)
+
+class SetZeroByteMixin(object):
+  """Set a single byte parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+
+  def Test(self):
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    data = struct.pack('!B', 0)
+    self.SendRawSet(ROOT_DEVICE, self.pid, data)
+
+class GetOutOfRangeByteMixin(object):
+  """The subclass provides the NumberOfSettings() method."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+
+  def NumberOfSettings(self):
+    # By default we use the first property from REQUIRES
+    return self.Property(self.REQUIRES[0])
+
+  def Test(self):
+    settings_supported = self.NumberOfSettings()
+    if settings_supported is None:
+      self.SetNotRun('Unable to determine number of %s' % self.LABEL)
+      return
+
+    if settings_supported == 255:
+      self.SetNotRun('All %s are supported' % self.LABEL)
+      return
+
+    self.AddIfGetSupported(self.NackGetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.SendGet(ROOT_DEVICE, self.pid, [settings_supported + 1])
+
+class SetOutOfRangeByteMixin(object):
+  """The subclass provides the NumberOfSettings() method."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+
+  def NumberOfSettings(self):
+    # By default we use the first property from REQUIRES
+    return self.Property(self.REQUIRES[0])
+
+  def Test(self):
+    settings_supported = self.NumberOfSettings()
+    if settings_supported is None:
+      self.SetNotRun('Unable to determine number of %s' % self.LABEL)
+      return
+
+    if settings_supported == 255:
+      self.SetNotRun('All %s are supported' % self.LABEL)
+      return
+
+    self.AddIfSetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+    self.SendSet(ROOT_DEVICE, self.pid, [settings_supported + 1])
+
+class GetSettingDescriptionsMixin(object):
+  """Perform a GET for each setting in the range 0 .. NumberOfSettings().
+
+    Subclasses must define EXPECTED_FIELD, which is the field to validate the
+    index against.
+  """
+  CATEGORY = TestCategory.DIMMER_SETTINGS
+
+  def NumberOfSettings(self):
+    # By default we use the first property from REQUIRES
+    return self.Property(self.REQUIRES[0])
+
+  def Test(self):
+    count = self.NumberOfSettings()
+    if count is None:
+      # Try to GET item 1, this should NACK
+      self.AddIfGetSupported(self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE))
+      self.SendGet(ROOT_DEVICE, self.pid, [1])
+      return
+
+    # Otherwise fetch the description for each known setting.
+    self.items = [i + 1 for i in xrange(count)]
+    self._GetNextDescription()
+
+  def _GetNextDescription(self):
+    if not self.items:
+      self.Stop()
+      return
+
+    self.AddIfGetSupported(self.AckGetResult(action=self._GetNextDescription))
+    self.current_item = self.items.pop()
+    self.SendGet(ROOT_DEVICE, self.pid, [self.current_item])
+
+  def VerifyResult(self, response, fields):
+    if not response.WasAcked():
+      return
+
+    if fields[self.EXPECTED_FIELD] != self.current_item:
+      self.AddWarning(
+          '%s mismatch, sent %d, received %d' %
+          (self.pid, self.current_item, fields[self.EXPECTED_FIELD]))
