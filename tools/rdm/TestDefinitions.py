@@ -4903,6 +4903,8 @@ class GetMinimumLevel(TestMixins.GetMixin, OptionalParameterTestFixture):
   """Get the MINIMUM_LEVEL."""
   CATEGORY = TestCategory.DIMMER_SETTINGS
   PID = "MINIMUM_LEVEL"
+  REQUIRES = ['minimum_level_lower', 'minimum_level_upper',
+              'split_levels_supported']
   PROVIDES = ['minimum_level_settings']
 
   def Test(self):
@@ -4914,11 +4916,123 @@ class GetMinimumLevel(TestMixins.GetMixin, OptionalParameterTestFixture):
       fields = {}
     self.SetProperty('minimum_level_settings', fields)
 
+    if not response.WasAcked():
+      return
+
+    min_increasing = fields['minimum_level_increasing']
+    min_decreasing = fields['minimum_level_decreasing']
+    lower_limit = self.Property('minimum_level_lower')
+    upper_limit = self.Property('minimum_level_upper')
+    if lower_limit is not None and upper_limit is not None:
+      if min_increasing < lower_limit or min_increasing > upper_limit:
+        self.SetFailed(
+            'minimum_level_increasing is outside the range [%d, %d] from '
+            'DIMMER_INFO' % (lower_limit, upper_limit))
+        return
+      if min_decreasing < lower_limit or min_decreasing > upper_limit:
+        self.SetFailed(
+            'minimum_level_decreasing is outside the range [%d, %d] from '
+            'DIMMER_INFO' % (lower_limit, upper_limit))
+        return
+
+    split_supported = self.Property('split_levels_supported')
+    if split_supported is not None:
+      if not split_supported and min_increasing != min_decreasing:
+        self.SetFailed(
+            'Split min levels not supported but min level increasing (%d)'
+            ' != min level decreasing (%d)' % (min_increasing, min_decreasing))
+
+
+class GetMinimumLevelWithData(TestMixins.GetWithDataMixin,
+                              OptionalParameterTestFixture):
+  """GET MINIMUM_LEVEL with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'MINIMUM_LEVEL'
+
 class AllSubDevicesGetMinimumLevel(TestMixins.AllSubDevicesGetMixin,
                                    ResponderTestFixture):
   """Send a Get MINIMUM_LEVEL to ALL_SUB_DEVICES."""
   CATEGORY = TestCategory.SUB_DEVICES
   PID = 'MINIMUM_LEVEL'
+
+class SetMinimumLevel(OptionalParameterTestFixture):
+  """Set MINIMUM_LEVEL without changing the settings."""
+  CATEGORY = TestCategory.DIMMER_SETTINGS
+  PID = 'MINIMUM_LEVEL'
+  REQUIRES = ['minimum_level_settings']
+  PROVIDES = ['set_minimum_level_supported']
+
+  def Test(self):
+    settings = self.Property('minimum_level_settings')
+    if not settings:
+      self.SetNotRun('Unable to determine current MINIMUM_LEVEL settings')
+      return
+
+    self.AddIfSetSupported([
+      self.AckSetResult(),
+      self.NackSetResult(RDMNack.NR_UNSUPPORTED_COMMAND_CLASS),
+    ])
+    self.SendSet(
+        ROOT_DEVICE, self.pid,
+        [settings['minimum_level_increasing'],
+         settings['minimum_level_decreasing'],
+         settings['on_below_minimum']])
+
+  def VerifyResult(self, response, fields):
+    self.SetProperty('set_minimum_level_supported', response.WasAcked())
+
+class SetLowerIncreasingMiniumLevel(TestMixins.SetMinimumLevelMixin,
+                                    OptionalParameterTestFixture):
+  """Set MINIMUM_LEVEL to the smallest value from DIMMER_INFO."""
+  REQUIRES = TestMixins.SetMinimumLevelMixin.REQUIRES + ['minimum_level_lower']
+
+  def MinLevelIncreasing(self):
+    return self.Property('minimum_level_lower')
+
+class SetUpperIncreasingMiniumLevel(TestMixins.SetMinimumLevelMixin,
+                                    OptionalParameterTestFixture):
+  """Set MINIMUM_LEVEL to the largest value from DIMMER_INFO."""
+  REQUIRES = TestMixins.SetMinimumLevelMixin.REQUIRES + ['minimum_level_upper']
+
+  def MinLevelIncreasing(self):
+    return self.Property('minimum_level_upper')
+
+class SetOutOfRangeLowerIncreasingMiniumLevel(TestMixins.SetMinimumLevelMixin,
+                                              OptionalParameterTestFixture):
+  """Set MINIMUM_LEVEL to one less than the smallest value from DIMMER_INFO."""
+  REQUIRES = TestMixins.SetMinimumLevelMixin.REQUIRES + ['minimum_level_lower']
+
+  def ExpectedResults(self):
+    return self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE)
+
+  def ShouldSkip(self):
+    self.lower = self.Property('minimum_level_lower')
+    if self.lower == 0:
+      self.SetNotRun('All values supported')
+      return True
+    return False
+
+  def MinLevelIncreasing(self):
+    return self.lower - 1
+
+class SetOutOfRangeUpperIncreasingMiniumLevel(TestMixins.SetMinimumLevelMixin,
+                                              OptionalParameterTestFixture):
+  """Set MINIMUM_LEVEL to one more than the largest value from DIMMER_INFO."""
+  REQUIRES = TestMixins.SetMinimumLevelMixin.REQUIRES + ['minimum_level_upper']
+
+  def ExpectedResults(self):
+    return self.NackSetResult(RDMNack.NR_DATA_OUT_OF_RANGE)
+
+  def ShouldSkip(self):
+    self.upper = self.Property('minimum_level_upper')
+    if self.upper == 0xfffe:
+      self.SetNotRun('All values supported')
+      return True
+    return False
+
+  def MinLevelIncreasing(self):
+    return self.upper + 1
+
 
 # MAXIMUM_LEVEL
 #------------------------------------------------------------------------------
@@ -4928,6 +5042,12 @@ class GetMaximumLevel(TestMixins.GetMixin, OptionalParameterTestFixture):
   PID = "MAXIMUM_LEVEL"
   PROVIDES = ['maximum_level']
   EXPECTED_FIELD = 'maximum_level'
+
+class GetMaximumLevelWithData(TestMixins.GetWithDataMixin,
+                              OptionalParameterTestFixture):
+  """GET MAXIMUM_LEVEL with extra data."""
+  CATEGORY = TestCategory.ERROR_CONDITIONS
+  PID = 'MAXIMUM_LEVEL'
 
 class SetMaximumLevel(OptionalParameterTestFixture):
   """Set MAXIMUM_LEVEL without changing the settings."""

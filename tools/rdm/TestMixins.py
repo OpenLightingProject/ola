@@ -673,6 +673,67 @@ class SetMaximumLevelMixin(object):
       self.SendSet(ROOT_DEVICE, self.pid, [level])
       self._wrapper.Run()
 
+class SetMinimumLevelMixin(object):
+  PID = 'MINIMUM_LEVEL'
+  REQUIRES = ['minimum_level_settings', 'set_minimum_level_supported']
+  CATEGORY = TestCategory.DIMMER_SETTINGS
+
+  def MinLevelIncreasing(self):
+    return self.settings['minimum_level_increasing']
+
+  def MinLevelDecreasing(self):
+    return self.settings['minimum_level_decreasing']
+
+  def OnBelowMin(self):
+    return self.settings['on_below_minimum']
+
+  def ExpectedResults(self):
+    return self.AckSetResult(action=self.GetMinLevel)
+
+  def ShouldSkip(self):
+    return False
+
+  def Test(self):
+    self.settings = self.Property('minimum_level_settings')
+    if self.settings is None:
+      self.SetNotRun('Unable to determine current minimum level settings')
+      return
+
+    set_supported = self.Property('set_minimum_level_supported')
+    if set_supported is None or not set_supported:
+      self.SetNotRun('SET MINIMUM_LEVEL not supported')
+      return
+
+    if self.ShouldSkip():
+      return
+
+    self.AddIfSetSupported(self.ExpectedResults())
+    self.SendSet(
+        ROOT_DEVICE, self.pid,
+        [self.MinLevelIncreasing(),
+         self.MinLevelDecreasing(),
+         self.OnBelowMin()])
+
+  def GetMinLevel(self):
+    self.AddIfGetSupported(self.AckGetResult(
+        field_values={
+          'minimum_level_increasing': self.MinLevelIncreasing(),
+          'minimum_level_decreasing': self.MinLevelDecreasing(),
+          'on_below_minimum': self.OnBelowMin(),
+    }))
+    self.SendGet(ROOT_DEVICE, self.pid)
+
+  def ResetState(self):
+    if not self.PidSupported():
+      return
+
+    self.SendSet(
+        ROOT_DEVICE, self.pid,
+        [self.settings['minimum_level_increasing'],
+         self.settings['minimum_level_decreasing'],
+         self.settings['on_below_minimum']])
+    self._wrapper.Run()
+
 class GetZeroByteMixin(object):
   """Get a single byte parameter with value 0, expect NR_DATA_OUT_OF_RANGE"""
   CATEGORY = TestCategory.ERROR_CONDITIONS

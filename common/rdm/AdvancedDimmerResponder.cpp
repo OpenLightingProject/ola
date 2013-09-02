@@ -382,12 +382,10 @@ const RDMResponse *AdvancedDimmerResponder::GetDimmerInfo(
   } __attribute__((packed));
 
   struct dimmer_info_s dimmer_info;
-  dimmer_info.min_level_lower = HostToNetwork(static_cast<uint16_t>(0));
-  dimmer_info.min_level_upper = HostToNetwork(static_cast<uint16_t>(0));
-  dimmer_info.max_level_lower =
-      HostToNetwork(static_cast<uint16_t>(LOWER_MAX_LEVEL));
-  dimmer_info.max_level_upper =
-      HostToNetwork(static_cast<uint16_t>(UPPER_MAX_LEVEL));
+  dimmer_info.min_level_lower = HostToNetwork(LOWER_MIN_LEVEL);
+  dimmer_info.min_level_upper = HostToNetwork(UPPER_MIN_LEVEL);
+  dimmer_info.max_level_lower = HostToNetwork(LOWER_MAX_LEVEL);
+  dimmer_info.max_level_upper = HostToNetwork(UPPER_MAX_LEVEL);
   dimmer_info.curve_count = CurveSettings.Count();
   dimmer_info.level_resolution = DIMMER_RESOLUTION;
   dimmer_info.level_support = 1;
