@@ -165,7 +165,7 @@ class StatusMessagePrinter: public MessagePrinter {
         uint8_t status_type;
         bool status_type_defined;
 
-        status_message() : status_type(0), int_offset(0), uint_offset(0),
+        status_message() : uint_offset(0), int_offset(0), status_type(0),
             status_type_defined(false) {}
     };
     vector<status_message> m_messages;
