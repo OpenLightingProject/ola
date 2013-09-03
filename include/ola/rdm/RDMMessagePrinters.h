@@ -318,6 +318,78 @@ class ClockPrinter: public MessagePrinter {
     uint8_t m_fields[CLOCK_FIELDS];
     unsigned int m_offset;
 };
+
+/**
+ * Print slot info.
+ */
+class SlotInfoPrinter: public MessagePrinter {
+  public:
+    void Visit(const UInt8MessageField *field) {
+      if (m_slot_info.empty())
+        return;
+      m_slot_info.back().type = field->Value();
+      m_slot_info.back().type_defined = true;
+    }
+
+    void Visit(const UInt16MessageField *field) {
+      if (m_slot_info.empty())
+        return;
+      if (!m_slot_info.back().offset_defined) {
+        m_slot_info.back().offset = field->Value();
+        m_slot_info.back().offset_defined = true;
+      } else {
+        m_slot_info.back().label = field->Value();
+        m_slot_info.back().label_defined = true;
+      }
+    }
+
+    void Visit(const GroupMessageField*) {
+      slot_info slot;
+      slot.offset = 0;
+      slot.offset_defined = false;
+      slot.type = 0;
+      slot.type_defined = false;
+      slot.label = 0;
+      slot.label_defined = false;
+      m_slot_info.push_back(slot);
+    }
+
+  protected:
+    void PostStringHook() {
+      vector<slot_info>::const_iterator iter = m_slot_info.begin();
+      for (; iter != m_slot_info.end(); ++iter) {
+        if (!iter->offset_defined ||
+            !iter->type_defined ||
+            !iter->label_defined) {
+          OLA_WARN << "Invalid slot info";
+          continue;
+        }
+
+        const string slot = SlotInfoToString(
+            iter->type,
+            iter->label);
+
+        if (slot.empty()) {
+          Stream() << " offset: " <<
+            iter->offset << ", type: " << iter->type <<
+            ", label: " << iter->label << endl;
+        } else {
+          Stream() << "Slot offset " << iter->offset << ": " << slot << endl;
+        }
+      }
+    }
+
+  private:
+    typedef struct {
+      uint16_t offset;
+      bool offset_defined;
+      uint8_t type;
+      bool type_defined;
+      uint16_t label;
+      bool label_defined;
+    }  slot_info;
+    vector<slot_info> m_slot_info;
+};
 }  // namespace rdm
 }  // namespace ola
 #endif  // INCLUDE_OLA_RDM_RDMMESSAGEPRINTERS_H_

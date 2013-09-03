@@ -215,7 +215,7 @@ bool PidStoreLoader::GetPidList(vector<const PidDescriptor*> *pids,
       set<uint16_t>::const_iterator value_iter = seen_values.find(pid.value());
       if (value_iter != seen_values.end()) {
         OLA_WARN << "Pid " << pid.value() << " exists multiple times in the "
-            " pid file";
+            "pid file";
         ok = false;
         break;
       }
@@ -224,7 +224,7 @@ bool PidStoreLoader::GetPidList(vector<const PidDescriptor*> *pids,
       set<string>::const_iterator name_iter = seen_names.find(pid.name());
       if (name_iter != seen_names.end()) {
         OLA_WARN << "Pid " << pid.name() << " exists multiple times in the "
-            " pid file";
+            "pid file";
         ok = false;
         break;
       }

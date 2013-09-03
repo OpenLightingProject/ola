@@ -802,11 +802,12 @@ string SlotInfoToString(uint8_t slot_type, uint16_t slot_label) {
         return "Primary, undefined";
       default:
         stringstream str;
-        str << "Primary unknown, was " << slot_label;
+        str << "Primary, unknown, was " << slot_label;
         return str.str();
     }
   } else {
     stringstream str;
+    str << "Secondary, ";
     switch (slot_type) {
       case ST_SEC_FINE:
         str << "fine control for slot " << slot_label;
