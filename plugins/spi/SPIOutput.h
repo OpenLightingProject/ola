@@ -13,13 +13,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * SPIBackend.h
+ * SPIOutput.h
  * Provides a SPI device which can be managed by RDM.
  * Copyright (C) 2013 Simon Newton
  */
 
-#ifndef PLUGINS_SPI_SPIBACKEND_H_
-#define PLUGINS_SPI_SPIBACKEND_H_
+#ifndef PLUGINS_SPI_SPIOUTPUT_H_
+#define PLUGINS_SPI_SPIOUTPUT_H_
 
 #include <string>
 #include <vector>
@@ -98,7 +98,7 @@ class PersonalityManager {
 };
 
 
-class SPIBackend: public ola::rdm::DiscoverableRDMControllerInterface {
+class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   public:
     struct Options {
       uint8_t pixel_count;
@@ -110,9 +110,9 @@ class SPIBackend: public ola::rdm::DiscoverableRDMControllerInterface {
       }
     };
 
-    SPIBackend(const string &spi_device,
+    SPIOutput(const string &spi_device,
                const UID &uid, const Options &options);
-    ~SPIBackend();
+    ~SPIOutput();
 
     uint8_t GetPersonality() const;
     bool SetPersonality(uint16_t personality);
@@ -132,7 +132,7 @@ class SPIBackend: public ola::rdm::DiscoverableRDMControllerInterface {
     /**
      * The RDM Operations for the MovingLightResponder.
      */
-    class RDMOps : public ola::rdm::ResponderOps<SPIBackend> {
+    class RDMOps : public ola::rdm::ResponderOps<SPIOutput> {
       public:
         static RDMOps *Instance() {
           if (!instance)
@@ -141,7 +141,7 @@ class SPIBackend: public ola::rdm::DiscoverableRDMControllerInterface {
         }
 
       private:
-        RDMOps() : ola::rdm::ResponderOps<SPIBackend>(PARAM_HANDLERS) {}
+        RDMOps() : ola::rdm::ResponderOps<SPIOutput>(PARAM_HANDLERS) {}
 
         static RDMOps *instance;
     };
@@ -186,10 +186,10 @@ class SPIBackend: public ola::rdm::DiscoverableRDMControllerInterface {
     static const uint16_t WS2801_SLOTS_PER_PIXEL;
     static const uint16_t LPD8806_SLOTS_PER_PIXEL;
 
-    static const ola::rdm::ResponderOps<SPIBackend>::ParamHandler
+    static const ola::rdm::ResponderOps<SPIOutput>::ParamHandler
         PARAM_HANDLERS[];
 };
 }  // namespace spi
 }  // namespace plugin
 }  // namespace ola
-#endif  // PLUGINS_SPI_SPIBACKEND_H_
+#endif  // PLUGINS_SPI_SPIOUTPUT_H_
