@@ -199,6 +199,10 @@ const string PidStoreHelper::PrettyPrintMessage(
         ClockPrinter printer;
         return printer.AsString(message);
       }
+      case PID_SLOT_INFO: {
+        SlotInfoPrinter printer;
+        return printer.AsString(message);
+      }
     }
   }
 
