@@ -13,7 +13,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- * SPIBackend.cpp
+ * SPIOutput.cpp
  * Provides a SPI device which can be managed by RDM.
  * Copyright (C) 2013 Simon Newton
  *
@@ -48,7 +48,7 @@
 #include "ola/rdm/UIDSet.h"
 #include "ola/stl/STLUtils.h"
 
-#include "plugins/spi/SPIBackend.h"
+#include "plugins/spi/SPIOutput.h"
 
 namespace ola {
 namespace plugin {
@@ -67,51 +67,51 @@ using ola::rdm::UID;
 using ola::rdm::UIDSet;
 using std::auto_ptr;
 
-const uint16_t SPIBackend::SPI_DELAY = 0;
-const uint8_t SPIBackend::SPI_BITS_PER_WORD = 8;
-const uint8_t SPIBackend::SPI_MODE = 0;
-const uint16_t SPIBackend::WS2801_SLOTS_PER_PIXEL = 3;
-const uint16_t SPIBackend::LPD8806_SLOTS_PER_PIXEL = 3;
+const uint16_t SPIOutput::SPI_DELAY = 0;
+const uint8_t SPIOutput::SPI_BITS_PER_WORD = 8;
+const uint8_t SPIOutput::SPI_MODE = 0;
+const uint16_t SPIOutput::WS2801_SLOTS_PER_PIXEL = 3;
+const uint16_t SPIOutput::LPD8806_SLOTS_PER_PIXEL = 3;
 
-SPIBackend::RDMOps *SPIBackend::RDMOps::instance = NULL;
+SPIOutput::RDMOps *SPIOutput::RDMOps::instance = NULL;
 
-const ola::rdm::ResponderOps<SPIBackend>::ParamHandler
-    SPIBackend::PARAM_HANDLERS[] = {
+const ola::rdm::ResponderOps<SPIOutput>::ParamHandler
+    SPIOutput::PARAM_HANDLERS[] = {
   { ola::rdm::PID_DEVICE_INFO,
-    &SPIBackend::GetDeviceInfo,
+    &SPIOutput::GetDeviceInfo,
     NULL},
   { ola::rdm::PID_PRODUCT_DETAIL_ID_LIST,
-    &SPIBackend::GetProductDetailList,
+    &SPIOutput::GetProductDetailList,
     NULL},
   { ola::rdm::PID_DEVICE_MODEL_DESCRIPTION,
-    &SPIBackend::GetDeviceModelDescription,
+    &SPIOutput::GetDeviceModelDescription,
     NULL},
   { ola::rdm::PID_MANUFACTURER_LABEL,
-    &SPIBackend::GetManufacturerLabel,
+    &SPIOutput::GetManufacturerLabel,
     NULL},
   { ola::rdm::PID_DEVICE_LABEL,
-    &SPIBackend::GetDeviceLabel,
+    &SPIOutput::GetDeviceLabel,
     NULL},
   { ola::rdm::PID_SOFTWARE_VERSION_LABEL,
-    &SPIBackend::GetSoftwareVersionLabel,
+    &SPIOutput::GetSoftwareVersionLabel,
     NULL},
   { ola::rdm::PID_DMX_PERSONALITY,
-    &SPIBackend::GetDmxPersonality,
-    &SPIBackend::SetDmxPersonality},
+    &SPIOutput::GetDmxPersonality,
+    &SPIOutput::SetDmxPersonality},
   { ola::rdm::PID_DMX_PERSONALITY_DESCRIPTION,
-    &SPIBackend::GetPersonalityDescription,
+    &SPIOutput::GetPersonalityDescription,
     NULL},
   { ola::rdm::PID_DMX_START_ADDRESS,
-    &SPIBackend::GetDmxStartAddress,
-    &SPIBackend::SetDmxStartAddress},
+    &SPIOutput::GetDmxStartAddress,
+    &SPIOutput::SetDmxStartAddress},
   { ola::rdm::PID_IDENTIFY_DEVICE,
-    &SPIBackend::GetIdentify,
-    &SPIBackend::SetIdentify},
+    &SPIOutput::GetIdentify,
+    &SPIOutput::SetIdentify},
   { 0, NULL, NULL},
 };
 
 
-SPIBackend::SPIBackend(const string &spi_device,
+SPIOutput::SPIOutput(const string &spi_device,
                        const UID &uid, const Options &options)
     : m_device_path(spi_device),
       m_spi_device_name(spi_device),
@@ -137,24 +137,24 @@ SPIBackend::SPIBackend(const string &spi_device,
 }
 
 
-SPIBackend::~SPIBackend() {
+SPIOutput::~SPIOutput() {
   if (m_fd >= 0)
     close(m_fd);
 }
 
-uint8_t SPIBackend::GetPersonality() const {
+uint8_t SPIOutput::GetPersonality() const {
   return m_personality_manager.ActivePersonalityNumber();
 }
 
-bool SPIBackend::SetPersonality(uint16_t personality) {
+bool SPIOutput::SetPersonality(uint16_t personality) {
   return m_personality_manager.SetActivePersonality(personality);
 }
 
-uint16_t SPIBackend::GetStartAddress() const {
+uint16_t SPIOutput::GetStartAddress() const {
   return m_start_address;
 }
 
-bool SPIBackend::SetStartAddress(uint16_t address) {
+bool SPIOutput::SetStartAddress(uint16_t address) {
   uint16_t footprint = m_personality_manager.ActivePersonalityFootprint();
   uint16_t end_address = DMX_UNIVERSE_SIZE - footprint + 1;
   if (address == 0 || address > end_address || footprint == 0) {
@@ -167,7 +167,7 @@ bool SPIBackend::SetStartAddress(uint16_t address) {
 /**
  * Open the SPI device
  */
-bool SPIBackend::Init() {
+bool SPIOutput::Init() {
   int fd = open(m_device_path.c_str(), O_RDWR);
   ola::network::SocketCloser closer(fd);
   if (fd < 0) {
@@ -199,7 +199,7 @@ bool SPIBackend::Init() {
 /*
  * Send DMX data over SPI.
  */
-bool SPIBackend::WriteDMX(const DmxBuffer &buffer, uint8_t) {
+bool SPIOutput::WriteDMX(const DmxBuffer &buffer, uint8_t) {
   if (m_fd < 0)
     return false;
 
@@ -226,14 +226,14 @@ bool SPIBackend::WriteDMX(const DmxBuffer &buffer, uint8_t) {
 }
 
 
-void SPIBackend::RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
+void SPIOutput::RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback) {
   UIDSet uids;
   uids.AddUID(m_uid);
   callback->Run(uids);
 }
 
 
-void SPIBackend::RunIncrementalDiscovery(
+void SPIOutput::RunIncrementalDiscovery(
     ola::rdm::RDMDiscoveryCallback *callback) {
   UIDSet uids;
   uids.AddUID(m_uid);
@@ -241,20 +241,20 @@ void SPIBackend::RunIncrementalDiscovery(
 }
 
 
-void SPIBackend::SendRDMRequest(const RDMRequest *request,
+void SPIOutput::SendRDMRequest(const RDMRequest *request,
                                 RDMCallback *callback) {
   RDMOps::Instance()->HandleRDMRequest(this, m_uid, ola::rdm::ROOT_RDM_DEVICE,
                                        request, callback);
 }
 
-void SPIBackend::IndividualWS2801Control(const DmxBuffer &buffer) {
+void SPIOutput::IndividualWS2801Control(const DmxBuffer &buffer) {
   unsigned int length = m_pixel_count * WS2801_SLOTS_PER_PIXEL;
   uint8_t output_data[length];
   buffer.GetRange(m_start_address - 1, output_data, &length);
   WriteSPIData(output_data, length);
 }
 
-void SPIBackend::CombinedWS2801Control(const DmxBuffer &buffer) {
+void SPIOutput::CombinedWS2801Control(const DmxBuffer &buffer) {
   unsigned int pixel_data_length = WS2801_SLOTS_PER_PIXEL;
   uint8_t pixel_data[pixel_data_length];
   buffer.GetRange(m_start_address - 1, pixel_data, &pixel_data_length);
@@ -273,7 +273,7 @@ void SPIBackend::CombinedWS2801Control(const DmxBuffer &buffer) {
   WriteSPIData(output_data, length);
 }
 
-void SPIBackend::IndividualLPD8806Control(const DmxBuffer &buffer) {
+void SPIOutput::IndividualLPD8806Control(const DmxBuffer &buffer) {
   unsigned int length = LPD8806BufferSize();
   uint8_t output_data[length];
   memset(output_data, 0, length);
@@ -298,7 +298,7 @@ void SPIBackend::IndividualLPD8806Control(const DmxBuffer &buffer) {
   WriteSPIData(output_data, length);
 }
 
-void SPIBackend::CombinedLPD8806Control(const DmxBuffer &buffer) {
+void SPIOutput::CombinedLPD8806Control(const DmxBuffer &buffer) {
   unsigned int pixel_data_length = LPD8806_SLOTS_PER_PIXEL;
   uint8_t pixel_data[pixel_data_length];
   buffer.GetRange(m_start_address - 1, pixel_data, &pixel_data_length);
@@ -325,12 +325,12 @@ void SPIBackend::CombinedLPD8806Control(const DmxBuffer &buffer) {
   WriteSPIData(output_data, length);
 }
 
-unsigned int SPIBackend::LPD8806BufferSize() const {
+unsigned int SPIOutput::LPD8806BufferSize() const {
   uint8_t latch_bytes = (m_pixel_count + 31) / 32;
   return m_pixel_count * LPD8806_SLOTS_PER_PIXEL + latch_bytes;
 }
 
-void SPIBackend::WriteSPIData(const uint8_t *data, unsigned int length) {
+void SPIOutput::WriteSPIData(const uint8_t *data, unsigned int length) {
   struct spi_ioc_transfer spi;
   memset(&spi, 0, sizeof(spi));
   spi.tx_buf = reinterpret_cast<__u64>(data);
@@ -341,7 +341,7 @@ void SPIBackend::WriteSPIData(const uint8_t *data, unsigned int length) {
   }
 }
 
-const RDMResponse *SPIBackend::GetDeviceInfo(const RDMRequest *request) {
+const RDMResponse *SPIOutput::GetDeviceInfo(const RDMRequest *request) {
   uint16_t footprint = m_personality_manager.ActivePersonalityFootprint();
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -356,7 +356,7 @@ const RDMResponse *SPIBackend::GetDeviceInfo(const RDMRequest *request) {
       0, 0);
 }
 
-const RDMResponse *SPIBackend::GetProductDetailList(
+const RDMResponse *SPIOutput::GetProductDetailList(
     const RDMRequest *request) {
   // Shortcut for only one item in the vector
   return ResponderHelper::GetProductDetailList(request,
@@ -364,28 +364,28 @@ const RDMResponse *SPIBackend::GetProductDetailList(
         (1, ola::rdm::PRODUCT_DETAIL_LED));
 }
 
-const RDMResponse *SPIBackend::GetDeviceModelDescription(
+const RDMResponse *SPIOutput::GetDeviceModelDescription(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, "OLA SPI Device");
 }
 
-const RDMResponse *SPIBackend::GetManufacturerLabel(
+const RDMResponse *SPIOutput::GetManufacturerLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetString(
       request,
       ola::rdm::OLA_MANUFACTURER_LABEL);
 }
 
-const RDMResponse *SPIBackend::GetDeviceLabel(const RDMRequest *request) {
+const RDMResponse *SPIOutput::GetDeviceLabel(const RDMRequest *request) {
   return ResponderHelper::GetString(request, "SPI Device");
 }
 
-const RDMResponse *SPIBackend::GetSoftwareVersionLabel(
+const RDMResponse *SPIOutput::GetSoftwareVersionLabel(
     const RDMRequest *request) {
   return ResponderHelper::GetString(request, string("OLA Version ") + VERSION);
 }
 
-const RDMResponse *SPIBackend::GetDmxPersonality(const RDMRequest *request) {
+const RDMResponse *SPIOutput::GetDmxPersonality(const RDMRequest *request) {
   if (request->ParamDataSize()) {
     return NackWithReason(request, NR_FORMAT_ERROR);
   }
@@ -405,7 +405,7 @@ const RDMResponse *SPIBackend::GetDmxPersonality(const RDMRequest *request) {
     sizeof(personality_info));
 }
 
-const RDMResponse *SPIBackend::SetDmxPersonality(const RDMRequest *request) {
+const RDMResponse *SPIOutput::SetDmxPersonality(const RDMRequest *request) {
   uint8_t personality_number;
   if (!ResponderHelper::ExtractUInt8(request, &personality_number)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -425,7 +425,7 @@ const RDMResponse *SPIBackend::SetDmxPersonality(const RDMRequest *request) {
   return ResponderHelper::EmptySetResponse(request);
 }
 
-const RDMResponse *SPIBackend::GetPersonalityDescription(
+const RDMResponse *SPIOutput::GetPersonalityDescription(
     const RDMRequest *request) {
   uint8_t personality_number;
   if (!ResponderHelper::ExtractUInt8(request, &personality_number)) {
@@ -457,14 +457,14 @@ const RDMResponse *SPIBackend::GetPersonalityDescription(
       sizeof(personality_description));
 }
 
-const RDMResponse *SPIBackend::GetDmxStartAddress(const RDMRequest *request) {
+const RDMResponse *SPIOutput::GetDmxStartAddress(const RDMRequest *request) {
   return ResponderHelper::GetUInt16Value(
     request,
     ((m_personality_manager.ActivePersonalityFootprint() == 0) ?
      ola::rdm::ZERO_FOOTPRINT_DMX_ADDRESS : m_start_address));
 }
 
-const RDMResponse *SPIBackend::SetDmxStartAddress(const RDMRequest *request) {
+const RDMResponse *SPIOutput::SetDmxStartAddress(const RDMRequest *request) {
   uint16_t address;
   if (!ResponderHelper::ExtractUInt16(request, &address)) {
     return NackWithReason(request, NR_FORMAT_ERROR);
@@ -477,11 +477,11 @@ const RDMResponse *SPIBackend::SetDmxStartAddress(const RDMRequest *request) {
   return ResponderHelper::EmptySetResponse(request);
 }
 
-const RDMResponse *SPIBackend::GetIdentify(const RDMRequest *request) {
+const RDMResponse *SPIOutput::GetIdentify(const RDMRequest *request) {
   return ResponderHelper::GetBoolValue(request, m_identify_mode);
 }
 
-const RDMResponse *SPIBackend::SetIdentify(const RDMRequest *request) {
+const RDMResponse *SPIOutput::SetIdentify(const RDMRequest *request) {
   bool old_value = m_identify_mode;
   const RDMResponse *response = ResponderHelper::SetBoolValue(
       request, &m_identify_mode);

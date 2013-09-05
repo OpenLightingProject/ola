@@ -14,7 +14,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * SPIPort.h
- * An OLA SPI Port. This simply wraps the SPIBackend.
+ * An OLA SPI Port. This simply wraps the SPIOutput.
  * Copyright (C) 2013 Simon Newton
  */
 
@@ -26,7 +26,7 @@
 #include "ola/DmxBuffer.h"
 #include "olad/Port.h"
 #include "plugins/spi/SPIDevice.h"
-#include "plugins/spi/SPIBackend.h"
+#include "plugins/spi/SPIOutput.h"
 
 namespace ola {
 namespace plugin {
@@ -35,7 +35,7 @@ namespace spi {
 class SPIOutputPort: public BasicOutputPort {
   public:
     SPIOutputPort(SPIDevice *parent, const string &spi_device,
-                  const UID &uid, const SPIBackend::Options &options);
+                  const UID &uid, const SPIOutput::Options &options);
     ~SPIOutputPort() {}
 
     uint8_t GetPersonality() const;
@@ -53,7 +53,7 @@ class SPIOutputPort: public BasicOutputPort {
                         ola::rdm::RDMCallback *callback);
 
   private:
-    SPIBackend m_spi_backend;
+    SPIOutput m_spi_output;
 };
 }  // namespace spi
 }  // namespace plugin

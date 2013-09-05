@@ -35,51 +35,51 @@ using ola::rdm::UID;
 
 SPIOutputPort::SPIOutputPort(SPIDevice *parent, const string &spi_device,
                              const UID &uid,
-                             const SPIBackend::Options &options)
+                             const SPIOutput::Options &options)
     : BasicOutputPort(parent, 0, true),
-      m_spi_backend(spi_device, uid, options) {
+      m_spi_output(spi_device, uid, options) {
 }
 
 
 uint8_t SPIOutputPort::GetPersonality() const {
-  return m_spi_backend.GetPersonality();
+  return m_spi_output.GetPersonality();
 }
 
 bool SPIOutputPort::SetPersonality(uint16_t personality) {
-  return m_spi_backend.SetPersonality(personality);
+  return m_spi_output.SetPersonality(personality);
 }
 
 uint16_t SPIOutputPort::GetStartAddress() const {
-  return m_spi_backend.GetStartAddress();
+  return m_spi_output.GetStartAddress();
 }
 
 bool SPIOutputPort::SetStartAddress(uint16_t address) {
-  return m_spi_backend.SetStartAddress(address);
+  return m_spi_output.SetStartAddress(address);
 }
 
 string SPIOutputPort::Description() const {
-  return m_spi_backend.Description();
+  return m_spi_output.Description();
 }
 
 bool SPIOutputPort::Init() {
-  return m_spi_backend.Init();
+  return m_spi_output.Init();
 }
 
 bool SPIOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t priority) {
-  return m_spi_backend.WriteDMX(buffer, priority);
+  return m_spi_output.WriteDMX(buffer, priority);
 }
 
 void SPIOutputPort::RunFullDiscovery(RDMDiscoveryCallback *callback) {
-  return m_spi_backend.RunFullDiscovery(callback);
+  return m_spi_output.RunFullDiscovery(callback);
 }
 
 void SPIOutputPort::RunIncrementalDiscovery(RDMDiscoveryCallback *callback) {
-  return m_spi_backend.RunIncrementalDiscovery(callback);
+  return m_spi_output.RunIncrementalDiscovery(callback);
 }
 
 void SPIOutputPort::SendRDMRequest(const ola::rdm::RDMRequest *request,
                                    ola::rdm::RDMCallback *callback) {
-  return m_spi_backend.SendRDMRequest(request, callback);
+  return m_spi_output.SendRDMRequest(request, callback);
 }
 }  // namespace spi
 }  // namespace plugin
