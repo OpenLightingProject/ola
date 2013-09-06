@@ -70,6 +70,9 @@ class DeviceProperties(object):
       logging.warning('Multiple sets of property %s' % property)
     self._properties[property] = value
 
+  def AsDict(self):
+    return dict(self._properties)
+
 
 class QueuedMessageFetcher(object):
   """This class sends Get QUEUED_MESSAGE until all Ack Timers have expired and

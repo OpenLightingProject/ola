@@ -55,13 +55,15 @@ class TestLogger(object):
     """
     return '%04x-%08x' % (uid.manufacturer_id, uid.device_id)
 
-  def SaveLog(self, uid, timestamp, tests, test_parameters):
+  def SaveLog(self, uid, timestamp, end_time, tests, device, test_parameters):
     """Log the results to a file.
 
     Args:
       uid: the UID
-      timestamp: the timestamp for the logs
+      timestamp: the timestamp for the logs as an int
+      end_time: the datetime object when the tests completed.
       tests: The list of Test objects
+      device: The device properties
       test_parameters: a dict of values representing the parameters for the
         test. Can contain things like the broadcast_write_delay, timing info
         etc.
@@ -82,8 +84,11 @@ class TestLogger(object):
       })
 
     output = dict(test_parameters)
-    output['version'] = Version.version
     output['test_results'] = test_results
+    output['timestamp'] = end_time.strftime('%F %r %z')
+    output['uid'] = uid
+    output['version'] = Version.version
+    output['properties'] = device.AsDict()
     filename = '%s.%d.log' % (self.UIDToString(uid), timestamp)
     filename = os.path.join(self._log_dir, filename)
 
@@ -198,6 +203,18 @@ class TestLogger(object):
       results_log.append('')
       warnings.extend(str(s) for s in test.get('warnings', []))
       advisories.extend(str(s) for s in test.get('advisories', []))
+
+    results_log.append('------------------- Summary --------------------')
+    results_log.append('Test Run: %s' % test_data['timestamp'])
+    results_log.append('UID: %s' % test_data['uid'])
+
+    model_description = test_data['properties'].get('model_description', None)
+    if model_description:
+      results_log.append('Model Description: %s' % model_description)
+
+    software_version = test_data['properties'].get('software_version', None)
+    if software_version:
+      results_log.append('Software Version: %s' % software_version)
 
     results_log.append("------------------- Warnings --------------------")
     results_log.extend(warnings)

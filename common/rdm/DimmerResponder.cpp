@@ -40,7 +40,7 @@ DimmerResponder::DimmerResponder(const UID &uid,
                                   number_of_subdevices);
   for (uint16_t i = 1; i <= sub_devices; i++) {
     DimmerSubDevice *sub_device = new DimmerSubDevice(
-        uid, i, number_of_subdevices);
+        uid, i, sub_devices);
     STLInsertIfNotPresent(&m_sub_devices, i, sub_device);
     m_dispatcher.AddSubDevice(i, sub_device);
   }

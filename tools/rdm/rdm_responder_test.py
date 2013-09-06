@@ -23,6 +23,7 @@ __author__ = 'nomis52@gmail.com (Simon Newton)'
 from ola.testing.rdm import TestDefinitions, TestRunner
 from ola.testing.rdm.DMXSender import DMXSender
 from ola.testing.rdm.TestState import TestState
+import datetime
 import logging
 import re
 import sys
@@ -124,7 +125,7 @@ def SetupLogging(options):
     logging.getLogger('').addHandler(file_handler)
 
 
-def DisplaySummary(tests):
+def DisplaySummary(uid, tests, device):
   """Print a summary of the tests."""
   by_category = {}
   warnings = []
@@ -141,6 +142,19 @@ def DisplaySummary(tests):
         by_category[test.category].get(state, 0))
 
   total = sum(count_by_state.values())
+
+  logging.info('------------------- Summary --------------------')
+  now = datetime.datetime.now()
+  logging.info('Test Run: %s' % now.strftime('%F %r %z'))
+  logging.info('UID: %s' % uid)
+
+  model_description = getattr(device, 'model_description', None)
+  if model_description:
+    logging.info('Model Description: %s' % model_description)
+
+  software_version = getattr(device, 'software_version', None)
+  if software_version:
+    logging.info('Software Version: %s' % software_version)
 
   logging.info('------------------- Warnings --------------------')
   for warning in sorted(warnings):
@@ -248,7 +262,7 @@ def main():
                          options.slot_count)
 
   tests, device = runner.RunTests(test_filter, options.no_factory_defaults)
-  DisplaySummary(tests)
+  DisplaySummary(options.uid, tests, device)
 
 
 if __name__ == '__main__':

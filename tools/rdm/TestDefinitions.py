@@ -492,6 +492,7 @@ class GetDeviceInfo(ResponderTestFixture, DeviceInfoTest):
       'dmx_start_address',
       'personality_count',
       'sensor_count',
+      'software_version',
       'sub_device_count',
   ]
 
@@ -1204,6 +1205,7 @@ class GetDeviceModelDescription(TestMixins.GetMixin,
   CATEGORY = TestCategory.PRODUCT_INFORMATION
   PID = 'DEVICE_MODEL_DESCRIPTION'
   EXPECTED_FIELD = 'description'
+  PROVIDES = ['model_description']
 
 
 class GetDeviceModelDescriptionWithData(TestMixins.GetWithDataMixin,

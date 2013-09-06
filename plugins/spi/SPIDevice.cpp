@@ -59,7 +59,7 @@ SPIDevice::SPIDevice(SPIPlugin *owner,
   m_preferences->SetDefaultValue(SPISpeedKey(), IntValidator(0, 32000000),
                                  "100000");
 
-  SPIBackend::Options settings;
+  SPIOutput::Options settings;
 
   uint8_t pixel_count;
   if (StringToInt(m_preferences->GetValue(PixelCountKey()), &pixel_count)) {

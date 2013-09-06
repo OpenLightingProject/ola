@@ -256,7 +256,7 @@ class RDMTestThread(Thread):
       dmx_sender = DMXSender(self._wrapper, universe, dmx_frame_rate, slot_count)
 
     try:
-      tests, unused_device = runner.RunTests(test_filter, False, self._UpdateStats)
+      tests, device = runner.RunTests(test_filter, False, self._UpdateStats)
     except Exception as e:
       self._test_state_lock.acquire()
       self._test_state['state'] = self.ERROR
@@ -278,8 +278,9 @@ class RDMTestThread(Thread):
     log_saver = TestLogger.TestLogger(self._logs_directory)
     logs_saved = True
     try:
-      log_saver.SaveLog(uid, timestamp, tests, test_parameters)
-    except TestLoggerException:
+      log_saver.SaveLog(uid, timestamp, end_time, tests, device,
+                        test_parameters)
+    except TestLogger.TestLoggerException:
       logs_saved = False
 
     self._test_state_lock.acquire()
