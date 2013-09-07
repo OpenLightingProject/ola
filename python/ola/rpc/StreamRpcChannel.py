@@ -169,10 +169,8 @@ class StreamRpcChannel(service.RpcChannel):
       True if the send succeeded, False otherwise.
     """
     data = message.SerializeToString()
-    header = self._EncodeHeader(len(data))
-    if self._socket.send(header) < 1:
-      logging.warning('Failed to send header')
-      return False
+    # combine into one buffer to send so we avoid sending two packets
+    data = self._EncodeHeader(len(data)) + data
 
     sent_bytes = self._socket.send(data)
     if sent_bytes != len(data):
