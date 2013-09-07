@@ -1,5 +1,7 @@
 x/y/2013 ola-0.8.32
  * Added pretty printing of slot info messages
+ * Improved the performance of the RPC system, leading to a 1000x reduction in
+   RPC latency and 4x speedup of the RDM tests.
 
 12/8/2013 ola-0.8.31
  * Changed the max number of E1.31 ports to 128
