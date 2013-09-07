@@ -287,6 +287,7 @@ void OlaServer::NewConnection(ola::io::ConnectedDescriptor *descriptor) {
 void OlaServer::NewTCPConnection(ola::network::TCPSocket *socket) {
   if (!socket)
     return;
+  socket->SetNoDelay();
   InternalNewConnection(socket);
 }
 

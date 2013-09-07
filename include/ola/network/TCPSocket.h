@@ -68,6 +68,8 @@ class TCPSocket: public ola::io::ConnectedDescriptor {
 
     static TCPSocket* Connect(const SocketAddress &endpoint);
 
+    bool SetNoDelay();
+
   protected:
     bool IsSocket() const { return true; }
 

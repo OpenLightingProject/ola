@@ -98,13 +98,15 @@ class GenericClientWrapper: public BaseClientWrapper {
     }
 
     void InitSocket() {
-      if (m_auto_start)
+      if (m_auto_start) {
         m_socket.reset(ola::client::ConnectToServer(OLA_DEFAULT_PORT));
-      else
+      } else {
         m_socket.reset(TCPSocket::Connect(
             ola::network::IPV4SocketAddress(
               ola::network::IPV4Address::Loopback(),
              OLA_DEFAULT_PORT)));
+      }
+      m_socket->SetNoDelay();
     }
 };
 
