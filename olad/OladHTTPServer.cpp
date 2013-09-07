@@ -431,7 +431,8 @@ int OladHTTPServer::GetDmx(const HTTPRequest *request,
 int OladHTTPServer::HandleSetDmx(const HTTPRequest *request,
                                 HTTPResponse *response) {
   if (request->CheckParameterExists(HELP_PARAMETER))
-    return ServeUsage(response, "POST u=[universe], d=[DMX data]");
+    return ServeUsage(response,
+        "POST u=[universe], d=[DMX data (a comma separated list of values)]");
   string dmx_data_str = request->GetPostParameter("d");
   string uni_id = request->GetPostParameter("u");
   unsigned int universe_id;

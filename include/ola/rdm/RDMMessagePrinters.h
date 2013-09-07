@@ -120,10 +120,6 @@ class StatusMessagePrinter: public MessagePrinter {
 
     void Visit(const GroupMessageField*) {
       status_message message;
-      message.status_type = 0;
-      message.int_offset = 0;
-      message.uint_offset = 0;
-      message.status_type_defined = false;
       m_messages.push_back(message);
     }
 
@@ -160,14 +156,18 @@ class StatusMessagePrinter: public MessagePrinter {
   private:
     enum { MAX_INT_FIELDS = 2 };
     enum { MAX_UINT_FIELDS = 2 };
-    typedef struct {
-      uint16_t uint16_fields[MAX_UINT_FIELDS];
-      int16_t int16_fields[MAX_INT_FIELDS];
-      uint8_t uint_offset;
-      uint8_t int_offset;
-      uint8_t status_type;
-      bool status_type_defined;
-    }  status_message;
+    struct status_message {
+      public:
+        uint16_t uint16_fields[MAX_UINT_FIELDS];
+        int16_t int16_fields[MAX_INT_FIELDS];
+        uint8_t uint_offset;
+        uint8_t int_offset;
+        uint8_t status_type;
+        bool status_type_defined;
+
+        status_message() : uint_offset(0), int_offset(0), status_type(0),
+            status_type_defined(false) {}
+    };
     vector<status_message> m_messages;
 };
 
@@ -345,12 +345,6 @@ class SlotInfoPrinter: public MessagePrinter {
 
     void Visit(const GroupMessageField*) {
       slot_info slot;
-      slot.offset = 0;
-      slot.offset_defined = false;
-      slot.type = 0;
-      slot.type_defined = false;
-      slot.label = 0;
-      slot.label_defined = false;
       m_slot_info.push_back(slot);
     }
 
@@ -365,9 +359,7 @@ class SlotInfoPrinter: public MessagePrinter {
           continue;
         }
 
-        const string slot = SlotInfoToString(
-            iter->type,
-            iter->label);
+        const string slot = SlotInfoToString(iter->type, iter->label);
 
         if (slot.empty()) {
           Stream() << " offset: " <<
@@ -380,14 +372,18 @@ class SlotInfoPrinter: public MessagePrinter {
     }
 
   private:
-    typedef struct {
-      uint16_t offset;
-      bool offset_defined;
-      uint8_t type;
-      bool type_defined;
-      uint16_t label;
-      bool label_defined;
-    }  slot_info;
+    struct slot_info {
+      public:
+        uint16_t offset;
+        bool offset_defined;
+        uint8_t type;
+        bool type_defined;
+        uint16_t label;
+        bool label_defined;
+
+        slot_info() : offset(0), offset_defined(false), type(0),
+            type_defined(false), label(0), label_defined(false) {}
+    };
     vector<slot_info> m_slot_info;
 };
 }  // namespace rdm
