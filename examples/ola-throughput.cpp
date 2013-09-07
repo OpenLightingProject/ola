@@ -13,14 +13,15 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
- *  ola-throughput.cpp
- *  Send a bunch of frames quickly to load test the server.
- *  Copyright (C) 2005-2010 Simon Newton
+ * ola-throughput.cpp
+ * Send a bunch of frames quickly to load test the server.
+ * Copyright (C) 2005-2010 Simon Newton
  */
 
 #include <errno.h>
-#include <getopt.h>
 #include <stdlib.h>
+#include <ola/base/Flags.h>
+#include <ola/base/Init.h>
 #include <ola/DmxBuffer.h>
 #include <ola/Logging.h>
 #include <ola/StreamingClient.h>
@@ -34,100 +35,30 @@ using std::endl;
 using std::string;
 using ola::StreamingClient;
 
-
-typedef struct {
-  unsigned int universe;
-  unsigned int sleep_time;
-  bool help;
-} options;
-
-
-/*
- * parse our cmd line options
- */
-void ParseOptions(int argc, char *argv[], options *opts) {
-  static struct option long_options[] = {
-      {"help", no_argument, 0, 'h'},
-      {"sleep", required_argument, 0, 's'},
-      {"universe", required_argument, 0, 'u'},
-      {0, 0, 0, 0}
-    };
-
-  opts->sleep_time = 40000;
-  opts->universe = 1;
-  opts->help = false;
-
-  int c;
-  int option_index = 0;
-
-  while (1) {
-    c = getopt_long(argc, argv, "hs:u:", long_options, &option_index);
-
-    if (c == -1)
-      break;
-
-    switch (c) {
-      case 0:
-        break;
-      case 'h':
-        opts->help = true;
-        break;
-      case 's':
-        opts->sleep_time = atoi(optarg);
-        break;
-      case 'u':
-        opts->universe = atoi(optarg);
-        break;
-      case '?':
-        break;
-      default:
-        break;
-    }
-  }
-}
-
-
-/*
- * Display the help message
- */
-void DisplayHelpAndExit(char arg[]) {
-  cout << "Usage: " << arg <<
-  " --dmx <dmx_data> --universe <universe_id>\n"
-  "\n"
-  "Send DMX512 data to OLA. If dmx data isn't provided we read from stdin.\n"
-  "\n"
-  "  -h, --help                   Display this help message and exit.\n"
-  "  -s, --sleep <time_in_uS>     Time to sleep between frames.\n"
-  "  -u, --universe <universe_id> Id of universe to send data for.\n"
-  << endl;
-  exit(1);
-}
-
+DEFINE_s_uint32(universe, u, 1, "The universe to send data on");
+DEFINE_s_uint32(sleep, s, 40000, "Time between DMX updates in micro-seconds");
 
 /*
  * Main
  */
 int main(int argc, char *argv[]) {
-  ola::InitLogging(ola::OLA_LOG_WARN, ola::OLA_LOG_STDERR);
+  ola::AppInit(argc, argv);
+  ola::SetHelpString("[options]", "Send DMX512 data to OLA.");
+  ola::ParseFlags(&argc, argv);
+  ola::InitLoggingFromFlags();
+
   StreamingClient ola_client;
-  options opts;
-
-  ParseOptions(argc, argv, &opts);
-
-  if (opts.help)
-    DisplayHelpAndExit(argv[0]);
-
   if (!ola_client.Setup()) {
     OLA_FATAL << "Setup failed";
     exit(1);
   }
 
-  while (1) {
-    usleep(opts.sleep_time);
-    ola::DmxBuffer buffer;
-    buffer.Blackout();
+  ola::DmxBuffer buffer;
+  buffer.Blackout();
 
-    if (!ola_client.SendDmx(opts.universe, buffer)) {
+  while (1) {
+    usleep(FLAGS_sleep);
+    if (!ola_client.SendDmx(FLAGS_universe, buffer)) {
       cout << "Send DMX failed" << endl;
       return false;
     }
