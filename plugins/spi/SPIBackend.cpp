@@ -22,6 +22,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <linux/spi/spidev.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
 
@@ -91,23 +92,23 @@ bool SPIBackend::WriteSPIData(const uint8_t *data, unsigned int length) {
   return true;
 }
 
-MultiplexedSPIBackend::MultiplexedSPIBackend(const string &spi_device,
-                                             const Options &options)
+HardwareBackend::HardwareBackend(const string &spi_device,
+                                       const Options &options)
     : SPIBackend(spi_device, options),
       m_output_count(1 << options.gpio_pins.size()),
       m_gpio_pins(options.gpio_pins) {
 }
 
 
-MultiplexedSPIBackend::~MultiplexedSPIBackend() {
+HardwareBackend::~HardwareBackend() {
   GPIOFds::iterator iter = m_gpio_fds.begin();
   for (; iter != m_gpio_fds.end(); ++iter) {
     close(*iter);
   }
 }
 
-bool MultiplexedSPIBackend::Write(uint8_t output, const uint8_t *data,
-                                  unsigned int length) {
+bool HardwareBackend::Write(uint8_t output, const uint8_t *data,
+                            unsigned int length) {
   if (output < m_output_count) {
     return false;
   }
@@ -122,7 +123,7 @@ bool MultiplexedSPIBackend::Write(uint8_t output, const uint8_t *data,
   return WriteSPIData(data, length);
 }
 
-bool MultiplexedSPIBackend::InitHook() {
+bool HardwareBackend::InitHook() {
   // open each pin.
   vector<uint8_t>::const_iterator iter = m_gpio_pins.begin();
   for (; iter != m_gpio_pins.end(); ++iter) {
@@ -131,25 +132,50 @@ bool MultiplexedSPIBackend::InitHook() {
   return true;
 }
 
-ChainedSPIBackend::ChainedSPIBackend(const string &spi_device,
-                                     const Options &options)
+SoftwareBackend::SoftwareBackend(const string &spi_device,
+                                 const Options &options)
     : SPIBackend(spi_device, options),
-      m_output_sizes(options.outputs, 0) {
+      m_output_sizes(options.outputs, 0),
+      m_output(NULL),
+      m_length(0) {
 }
 
-bool ChainedSPIBackend::Write(uint8_t output, const uint8_t *data,
-                              unsigned int length) {
+SoftwareBackend::~SoftwareBackend() {
+  free(m_output);
+}
+
+bool SoftwareBackend::Write(uint8_t output, const uint8_t *data,
+                            unsigned int length) {
   if (output >= m_output_sizes.size()) {
     return false;
   }
 
-  if (length != m_output_sizes[output]) {
-    // need to resize here
+  unsigned int leading = 0;
+  unsigned int trailing = 0;
+  for (uint8_t i = 0; i < m_output_sizes.size(); i++) {
+    if (i < output) {
+      leading += m_output_sizes[i];
+    } else if (i > output) {
+      trailing += m_output_sizes[i];
+    }
   }
+  const unsigned int required_size = leading + length + trailing;
 
-  // copy to buffer
-
-  return WriteSPIData(data, length);
+  // Check if the current buffer is large enough to hold our data.
+  if (required_size > m_length) {
+    // This is a resize of the existing data
+    uint8_t *new_output = reinterpret_cast<uint8_t*>(malloc(required_size));
+    memcpy(new_output, m_output, leading);
+    memcpy(m_output + leading, data, length);
+    memcpy(new_output + leading + length, m_output + leading, trailing);
+    free(m_output);
+    m_output = new_output;
+    m_length = required_size;
+  } else {
+    // This is just an update
+    memcpy(m_output + leading, data, length);
+  }
+  return WriteSPIData(m_output, m_length);
 }
 }  // namespace spi
 }  // namespace plugin

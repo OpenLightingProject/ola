@@ -62,9 +62,9 @@ SPIDevice::SPIDevice(SPIPlugin *owner,
 
   string backend_type = m_preferences->GetValue(SPIBackendKey());
   if (backend_type == HARDWARE_BACKEND) {
-    MultiplexedSPIBackend::Options options;
+    HardwareBackend::Options options;
     PopulateHardwareBackendOptions(&options);
-    m_backend.reset(new MultiplexedSPIBackend(spi_device, options));
+    m_backend.reset(new HardwareBackend(spi_device, options));
     port_count = 1 << options.gpio_pins.size();
 
   } else {
@@ -73,9 +73,9 @@ SPIDevice::SPIDevice(SPIPlugin *owner,
                << "' for SPI device " << m_spi_device_name;
     }
 
-    ChainedSPIBackend::Options options;
+    SoftwareBackend::Options options;
     PopulateSoftwareBackendOptions(&options);
-    m_backend.reset(new ChainedSPIBackend(spi_device, options));
+    m_backend.reset(new SoftwareBackend(spi_device, options));
     port_count = options.outputs;
   }
 
@@ -189,14 +189,14 @@ void SPIDevice::SetDefaults() {
 }
 
 void SPIDevice::PopulateHardwareBackendOptions(
-    MultiplexedSPIBackend::Options *options) {
+    HardwareBackend::Options *options) {
   PopulateOptions(options);
 
   // add gpio pins here
 }
 
 void SPIDevice::PopulateSoftwareBackendOptions(
-    ChainedSPIBackend::Options *options) {
+    SoftwareBackend::Options *options) {
   PopulateOptions(options);
 
   options->outputs = 1;

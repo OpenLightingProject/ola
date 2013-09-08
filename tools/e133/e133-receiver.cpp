@@ -49,7 +49,7 @@
 #ifdef USE_SPI
 #include "plugins/spi/SPIOutput.h"
 #include "plugins/spi/SPIBackend.h"
-using ola::plugin::spi::ChainedSPIBackend;
+using ola::plugin::spi::SoftwareBackend;
 using ola::plugin::spi::SPIBackend;
 using ola::plugin::spi::SPIOutput;
 DEFINE_string(spi_device, "", "Path to the SPI device to use.");
@@ -216,9 +216,9 @@ int main(int argc, char *argv[]) {
       exit(ola::EXIT_USAGE);
     }
 
-    ChainedSPIBackend::Options options;
+    SoftwareBackend::Options options;
     options.outputs = 1;
-    spi_backend.reset(new ChainedSPIBackend(FLAGS_spi_device, options));
+    spi_backend.reset(new SoftwareBackend(FLAGS_spi_device, options));
     if (!spi_backend->Init()) {
       OLA_WARN << "Failed to init SPI backend";
       exit(ola::EXIT_USAGE);

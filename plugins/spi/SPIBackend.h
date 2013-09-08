@@ -85,7 +85,7 @@ class SPIBackend {
  * control the multiplexer and route the SPI signal to the correct pixel
  * string.
  */
-class MultiplexedSPIBackend : public SPIBackend {
+class HardwareBackend : public SPIBackend {
   public:
     struct Options : public SPIBackend::Options {
       // Which GPIO bits to use to select the output. The number of outputs
@@ -93,8 +93,8 @@ class MultiplexedSPIBackend : public SPIBackend {
       vector<uint8_t> gpio_pins;
     };
 
-    MultiplexedSPIBackend(const string &spi_device, const Options &options);
-    ~MultiplexedSPIBackend();
+    HardwareBackend(const string &spi_device, const Options &options);
+    ~HardwareBackend();
 
     bool Write(uint8_t output, const uint8_t *data, unsigned int length);
 
@@ -114,18 +114,21 @@ class MultiplexedSPIBackend : public SPIBackend {
  * An SPI Backend which uses a software multipliexer. This accumulates all data
  * into a single buffer and then writes it to the SPI bus.
  */
-class ChainedSPIBackend : public SPIBackend {
+class SoftwareBackend : public SPIBackend {
   public:
     struct Options : public SPIBackend::Options {
       uint8_t outputs;
     };
 
-    ChainedSPIBackend(const string &spi_device, const Options &options);
+    SoftwareBackend(const string &spi_device, const Options &options);
+    ~SoftwareBackend();
 
     bool Write(uint8_t output, const uint8_t *data, unsigned int length);
 
   private:
     vector<unsigned int> m_output_sizes;
+    uint8_t *m_output;
+    unsigned int m_length;
 };
 }  // namespace spi
 }  // namespace plugin

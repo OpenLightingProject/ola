@@ -71,10 +71,8 @@ class SPIDevice: public ola::Device {
     string GetPortKey(const string &suffix, uint8_t port) const;
 
     void SetDefaults();
-    void PopulateHardwareBackendOptions(
-        MultiplexedSPIBackend::Options *options);
-    void PopulateSoftwareBackendOptions(
-        ChainedSPIBackend::Options *options);
+    void PopulateHardwareBackendOptions(HardwareBackend::Options *options);
+    void PopulateSoftwareBackendOptions(SoftwareBackend::Options *options);
     void PopulateOptions(SPIBackend::Options *options);
 
     static const char SPI_DEVICE_NAME[];
