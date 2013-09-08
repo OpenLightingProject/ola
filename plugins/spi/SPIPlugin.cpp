@@ -79,7 +79,7 @@ bool SPIPlugin::StartHook() {
     }
 
     SPIDevice *device = new SPIDevice(this, m_preferences, m_plugin_adaptor,
-                                      *iter, *(uid.get()));
+                                      *iter, &uid_allocator);
 
     if (!device)
       continue;

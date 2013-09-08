@@ -25,9 +25,10 @@
 #include <string>
 #include <vector>
 
-#include "ola/io/SelectServer.h"
-#include "ola/rdm/UID.h"
 #include "olad/Device.h"
+#include "ola/io/SelectServer.h"
+#include "ola/rdm/UIDAllocator.h"
+#include "ola/rdm/UID.h"
 #include "plugins/spi/SPIBackend.h"
 
 namespace ola {
@@ -42,7 +43,7 @@ class SPIDevice: public ola::Device {
               class Preferences *preferences,
               class PluginAdaptor *plugin_adaptor,
               const string &spi_device,
-              const ola::rdm::UID &uid);
+              ola::rdm::UIDAllocator *uid_allocator);
 
     string DeviceId() const;
 

@@ -48,7 +48,7 @@ SPIDevice::SPIDevice(SPIPlugin *owner,
                      Preferences *prefs,
                      PluginAdaptor *plugin_adaptor,
                      const string &spi_device,
-                     const UID &uid)
+                     ola::rdm::UIDAllocator *uid_allocator)
     : Device(owner, SPI_DEVICE_NAME),
       m_preferences(prefs),
       m_plugin_adaptor(plugin_adaptor),
@@ -89,8 +89,16 @@ SPIDevice::SPIDevice(SPIPlugin *owner,
       spi_output_options.pixel_count = pixel_count;
     }
 
+    auto_ptr<UID> uid(uid_allocator->AllocateNext());
+    if (!uid.get()) {
+      OLA_WARN << "Insufficient UIDs remaining to allocate a UID for SPI port "
+               << static_cast<int>(i);
+      continue;
+    }
+
     m_spi_ports.push_back(
-        new SPIOutputPort(this, m_backend.get(), uid, spi_output_options));
+        new SPIOutputPort(this, m_backend.get(), *uid.get(),
+                          spi_output_options));
   }
 }
 
