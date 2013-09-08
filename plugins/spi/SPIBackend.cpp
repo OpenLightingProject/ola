@@ -14,25 +14,30 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * SPIBackend.cpp
- * The backend for SPI output. These are the classes which write the data to the
- * SPI bus.
+ * The backend for SPI output. These are the classes which write the data to
+ * the SPI bus.
  * Copyright (C) 2013 Simon Newton
  */
 
+#include <errno.h>
 #include <fcntl.h>
 #include <linux/spi/spidev.h>
+#include <string.h>
 #include <sys/ioctl.h>
 
 #include <string>
 #include <vector>
 #include "ola/Logging.h"
 #include "ola/network/SocketCloser.h"
-#include "ola/plugins/spi/SPIBackend.h"
+#include "plugins/spi/SPIBackend.h"
 
 
 namespace ola {
 namespace plugin {
 namespace spi {
+
+const uint8_t SPIBackend::SPI_BITS_PER_WORD = 8;
+const uint8_t SPIBackend::SPI_MODE = 0;
 
 SPIBackend::SPIBackend(const string &spi_device, const Options &options)
     : m_device_path(spi_device),
@@ -89,7 +94,16 @@ bool SPIBackend::WriteSPIData(const uint8_t *data, unsigned int length) {
 MultiplexedSPIBackend::MultiplexedSPIBackend(const string &spi_device,
                                              const Options &options)
     : SPIBackend(spi_device, options),
-      m_output_count(2 ** options.gpio_pins.size()) {
+      m_output_count(1 << options.gpio_pins.size()),
+      m_gpio_pins(options.gpio_pins) {
+}
+
+
+MultiplexedSPIBackend::~MultiplexedSPIBackend() {
+  GPIOFds::iterator iter = m_gpio_fds.begin();
+  for (; iter != m_gpio_fds.end(); ++iter) {
+    close(*iter);
+  }
 }
 
 bool MultiplexedSPIBackend::Write(uint8_t output, const uint8_t *data,
@@ -98,11 +112,24 @@ bool MultiplexedSPIBackend::Write(uint8_t output, const uint8_t *data,
     return false;
   }
 
-  // TODO(simon): Select output here
+  // TODO(simon): Select GPIO output here
+  for (unsigned int i = 0; i < m_gpio_fds.size(); i++) {
+    uint8_t on = output & (1 << i);
+    OLA_INFO << "Pin " << i << " is " << (int) on;
+    // Write m_gpio_fds[i] = on;
+  }
 
   return WriteSPIData(data, length);
 }
 
+bool MultiplexedSPIBackend::InitHook() {
+  // open each pin.
+  vector<uint8_t>::const_iterator iter = m_gpio_pins.begin();
+  for (; iter != m_gpio_pins.end(); ++iter) {
+    // open GPIO fd here
+  }
+  return true;
+}
 
 ChainedSPIBackend::ChainedSPIBackend(const string &spi_device,
                                      const Options &options)
@@ -111,9 +138,9 @@ ChainedSPIBackend::ChainedSPIBackend(const string &spi_device,
 }
 
 bool ChainedSPIBackend::Write(uint8_t output, const uint8_t *data,
-                              unsigned int length)
+                              unsigned int length) {
   if (output >= m_output_sizes.size()) {
-    return false
+    return false;
   }
 
   if (length != m_output_sizes[output]) {

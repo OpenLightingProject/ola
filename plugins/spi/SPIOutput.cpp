@@ -14,7 +14,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * SPIOutput.cpp
- * Provides a SPI device which can be managed by RDM.
+ * An RDM-controllable SPI device. Takes up to one universe of DMX.
  * Copyright (C) 2013 Simon Newton
  *
  * The LPD8806 code was based on
@@ -107,15 +107,15 @@ const ola::rdm::ResponderOps<SPIOutput>::ParamHandler
 };
 
 
-SPIOutput::SPIOutput(SPIBackend *backend
-                     const UID &uid, const Options &options)
+SPIOutput::SPIOutput(const UID &uid, SPIBackend *backend,
+                     const Options &options)
     : m_backend(backend),
       m_output_number(options.output_number),
       m_uid(uid),
       m_pixel_count(options.pixel_count),
       m_start_address(1),
       m_identify_mode(false) {
-  const string device_path(m_backend-<DevicePath());
+  const string device_path(m_backend->DevicePath());
   size_t pos = device_path.find_last_of("/");
   if (pos != string::npos)
     m_spi_device_name = device_path.substr(pos + 1);
@@ -206,7 +206,7 @@ void SPIOutput::IndividualWS2801Control(const DmxBuffer &buffer) {
   unsigned int length = m_pixel_count * WS2801_SLOTS_PER_PIXEL;
   uint8_t output_data[length];
   buffer.GetRange(m_start_address - 1, output_data, &length);
-  m_backend->WriteSPIData(m_output_number, output_data, length);
+  m_backend->Write(m_output_number, output_data, length);
 }
 
 void SPIOutput::CombinedWS2801Control(const DmxBuffer &buffer) {
@@ -225,7 +225,7 @@ void SPIOutput::CombinedWS2801Control(const DmxBuffer &buffer) {
     memcpy(output_data + (i * WS2801_SLOTS_PER_PIXEL), pixel_data,
            pixel_data_length);
   }
-  m_backend->WriteSPIData(m_output_number, output_data, length);
+  m_backend->Write(m_output_number, output_data, length);
 }
 
 void SPIOutput::IndividualLPD8806Control(const DmxBuffer &buffer) {
@@ -250,7 +250,7 @@ void SPIOutput::IndividualLPD8806Control(const DmxBuffer &buffer) {
         output_data[i] = 0x80 | (d >> 1);
     }
   }
-  m_backend->WriteSPIData(m_output_number, output_data, length);
+  m_backend->Write(m_output_number, output_data, length);
 }
 
 void SPIOutput::CombinedLPD8806Control(const DmxBuffer &buffer) {
@@ -277,7 +277,7 @@ void SPIOutput::CombinedLPD8806Control(const DmxBuffer &buffer) {
         0x80 | (pixel_data[j] >> 1);
     }
   }
-  m_backend->WriteSPIData(m_output_number, output_data, length);
+  m_backend->Write(m_output_number, output_data, length);
 }
 
 unsigned int SPIOutput::LPD8806BufferSize() const {

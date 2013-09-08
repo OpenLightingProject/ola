@@ -48,6 +48,9 @@
 
 #ifdef USE_SPI
 #include "plugins/spi/SPIOutput.h"
+#include "plugins/spi/SPIBackend.h"
+using ola::plugin::spi::ChainedSPIBackend;
+using ola::plugin::spi::SPIBackend;
 using ola::plugin::spi::SPIOutput;
 DEFINE_string(spi_device, "", "Path to the SPI device to use.");
 #endif
@@ -91,8 +94,8 @@ void HandleTriDMX(DmxBuffer *buffer, DmxTriWidget *widget) {
 
 
 #ifdef USE_SPI
-void HandleSpiDMX(DmxBuffer *buffer, SPIOutput *backend) {
-  backend->WriteDMX(*buffer, 0);
+void HandleSpiDMX(DmxBuffer *buffer, SPIOutput *output) {
+  output->WriteDMX(*buffer, 0);
 }
 #endif
 
@@ -202,7 +205,8 @@ int main(int argc, char *argv[]) {
   // uber hack for now.
   // TODO(simon): fix this
 #ifdef USE_SPI
-  auto_ptr<SPIOutput> spi_backend;
+  auto_ptr<SPIBackend> spi_backend;
+  auto_ptr<SPIOutput> spi_output;
   DmxBuffer spi_buffer;
 
   if (!FLAGS_spi_device.str().empty()) {
@@ -212,21 +216,25 @@ int main(int argc, char *argv[]) {
       exit(ola::EXIT_USAGE);
     }
 
-    spi_backend.reset(
-        new SPIOutput(FLAGS_spi_device, *spi_uid, SPIOutput::Options()));
+    ChainedSPIBackend::Options options;
+    options.outputs = 1;
+    spi_backend.reset(new ChainedSPIBackend(FLAGS_spi_device, options));
     if (!spi_backend->Init()) {
       OLA_WARN << "Failed to init SPI backend";
       exit(ola::EXIT_USAGE);
     }
+
+    spi_output.reset(
+        new SPIOutput(*spi_uid, spi_backend.get(), SPIOutput::Options(0)));
     E133Endpoint::EndpointProperties properties;
     properties.is_physical = true;
-    endpoints.push_back(new E133Endpoint(spi_backend.get(), properties));
+    endpoints.push_back(new E133Endpoint(spi_output.get(), properties));
 
     if (e131_node.get()) {
       // Danger!
       e131_node->SetHandler(
           1, &spi_buffer, &unused_priority,
-          NewCallback(&HandleSpiDMX, &spi_buffer, spi_backend.get()));
+          NewCallback(&HandleSpiDMX, &spi_buffer, spi_output.get()));
     }
   }
 #endif

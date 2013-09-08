@@ -18,6 +18,7 @@
  * Copyright (C) 2013 Simon Newton
  */
 
+#include <set>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -36,9 +37,9 @@ namespace ola {
 namespace plugin {
 namespace spi {
 
-const char SPIDevice::SPI_DEVICE_NAME[] = "SPI Plugin";
-const char SPIDevice::HARDWARE_BACKEND[] = "hardware_multiplexer";
-const char SPIDevice::MERGED_BACKEND[] = "software_multiplexer";
+const char SPIDevice::SPI_DEVICE_NAME[] = "SPI Device";
+const char SPIDevice::HARDWARE_BACKEND[] = "hardware";
+const char SPIDevice::SOFTWARE_BACKEND[] = "software";
 
 /*
  * Create a new device
@@ -57,35 +58,34 @@ SPIDevice::SPIDevice(SPIPlugin *owner,
     m_spi_device_name = spi_device.substr(pos + 1);
 
   SetDefaults();
+  unsigned int port_count;
 
-  uint8_t port_count = 1;
-  StringToInt(m_preferences->GetValue(PortCountKey()), &pixel_count);
-
-  string backend_type;
-  m_preferences->GetValue(SPIBackendKey(), &backend_type);
+  string backend_type = m_preferences->GetValue(SPIBackendKey());
   if (backend_type == HARDWARE_BACKEND) {
     MultiplexedSPIBackend::Options options;
-    PopulateMergedBackendOptions(&options);
+    PopulateHardwareBackendOptions(&options);
     m_backend.reset(new MultiplexedSPIBackend(spi_device, options));
+    port_count = 1 << options.gpio_pins.size();
 
   } else {
-    if (backend_type != MERGED_BACKEND) {
+    if (backend_type != SOFTWARE_BACKEND) {
       OLA_WARN << "Unknown backend_type '" << backend_type
                << "' for SPI device " << m_spi_device_name;
     }
 
     ChainedSPIBackend::Options options;
-    PopulateChainedBackendOptions(&options);
-    options.outputs = port_count;
+    PopulateSoftwareBackendOptions(&options);
     m_backend.reset(new ChainedSPIBackend(spi_device, options));
+    port_count = options.outputs;
   }
 
+  OLA_INFO << "Setting up " << port_count << " ports for "
+           << m_spi_device_name;
   for (uint8_t i = 0; i < port_count; i++) {
-    SPIOutput::Options spi_output_options;
-    spi_output_options.output_number = i;
+    SPIOutput::Options spi_output_options(i);
 
     uint8_t pixel_count;
-    if (StringToInt(m_preferences->GetValue(PixelCountKey()), &pixel_count)) {
+    if (StringToInt(m_preferences->GetValue(PixelCountKey(i)), &pixel_count)) {
       spi_output_options.pixel_count = pixel_count;
     }
 
@@ -96,7 +96,7 @@ SPIDevice::SPIDevice(SPIPlugin *owner,
 
 
 string SPIDevice::DeviceId() const {
-  return m_port->Description();
+  return m_spi_device_name;
 }
 
 
@@ -109,14 +109,16 @@ bool SPIDevice::StartHook() {
   }
 
   SPIPorts::iterator iter = m_spi_ports.begin();
-  for (; iter != m_spi_ports.end(); iter++) {
+  for (uint8_t i = 0; iter != m_spi_ports.end(); iter++, i++) {
     uint8_t personality;
-    if (StringToInt(m_preferences->GetValue(PersonalityKey()), &personality)) {
+    if (StringToInt(m_preferences->GetValue(PersonalityKey(i)),
+                    &personality)) {
       (*iter)->SetPersonality(personality);
     }
 
     uint16_t dmx_address;
-    if (StringToInt(m_preferences->GetValue(StartAddressKey()), &dmx_address)) {
+    if (StringToInt(m_preferences->GetValue(StartAddressKey(i)),
+                                            &dmx_address)) {
       (*iter)->SetStartAddress(dmx_address);
     }
 
@@ -128,13 +130,13 @@ bool SPIDevice::StartHook() {
 
 void SPIDevice::PrePortStop() {
   SPIPorts::iterator iter = m_spi_ports.begin();
-  for (; iter != m_spi_ports.end(); iter++) {
+  for (uint8_t i = 0; iter != m_spi_ports.end(); iter++, i++) {
     stringstream str;
     str << static_cast<int>((*iter)->GetPersonality());
-    m_preferences->SetValue(PersonalityKey(), str.str());
+    m_preferences->SetValue(PersonalityKey(i), str.str());
     str.str("");
     str << (*iter)->GetStartAddress();
-    m_preferences->SetValue(StartAddressKey(), str.str());
+    m_preferences->SetValue(StartAddressKey(i), str.str());
   }
   m_preferences->Save();
 }
@@ -151,43 +153,54 @@ string SPIDevice::PortCountKey() const {
   return m_spi_device_name + "-ports";
 }
 
-string SPIDevice::PersonalityKey() const {
-  return m_spi_device_name + "-personality";
+string SPIDevice::PersonalityKey(uint8_t port) const {
+  return GetPortKey("personality", port);
 }
 
-string SPIDevice::StartAddressKey() const {
-  return m_spi_device_name + "-dmx-address";
+string SPIDevice::StartAddressKey(uint8_t port) const {
+  return GetPortKey("dmx-address", port);
 }
 
-string SPIDevice::PixelCountKey() const {
-  return m_spi_device_name + "-pixel-count";
+string SPIDevice::PixelCountKey(uint8_t port) const {
+  return GetPortKey("pixel-count", port);
+}
+
+string SPIDevice::GetPortKey(const string &suffix, uint8_t port) const {
+  std::ostringstream str;
+  str << m_spi_device_name << "-" << static_cast<int>(port) << "-" << suffix;
+  return str.str();
 }
 
 void SPIDevice::SetDefaults() {
+  // Set device options
   set<string> valid_backends;
   valid_backends.insert(HARDWARE_BACKEND);
-  valid_backends.insert(MERGED_BACKEND);
+  valid_backends.insert(SOFTWARE_BACKEND);
   m_preferences->SetDefaultValue(SPIBackendKey(), SetValidator(valid_backends),
-                                 "MERGED_BACKEND");
-
-  m_preferences->SetDefaultValue(PortCountKey(), IntValidator(1, 8), "1");
-  // 512 / 3 = 170.
-  m_preferences->SetDefaultValue(PixelCountKey(), IntValidator(0, 170), "25");
+                                 SOFTWARE_BACKEND);
   m_preferences->SetDefaultValue(SPISpeedKey(), IntValidator(0, 32000000),
                                  "100000");
+  m_preferences->SetDefaultValue(PortCountKey(), IntValidator(1, 8), "1");
+
+
+  // 512 / 3 = 170.
+  // m_preferences->SetDefaultValue(PixelCountKey(),
+  //                                IntValidator(0, 170), "25");
 }
 
-void SPIDevice::PopulateMultipliexerBackendOptions(
+void SPIDevice::PopulateHardwareBackendOptions(
     MultiplexedSPIBackend::Options *options) {
   PopulateOptions(options);
 
   // add gpio pins here
 }
 
-void SPIDevice::PopulateChainedBackendOptions(
+void SPIDevice::PopulateSoftwareBackendOptions(
     ChainedSPIBackend::Options *options) {
   PopulateOptions(options);
 
+  options->outputs = 1;
+  StringToInt(m_preferences->GetValue(PortCountKey()), &options->outputs);
 }
 
 void SPIDevice::PopulateOptions(SPIBackend::Options *options) {

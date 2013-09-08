@@ -38,7 +38,7 @@ SPIOutputPort::SPIOutputPort(SPIDevice *parent, SPIBackend *backend,
                              const UID &uid,
                              const SPIOutput::Options &options)
     : BasicOutputPort(parent, 0, true),
-      m_spi_output(backend, uid, options) {
+      m_spi_output(uid, backend, options) {
 }
 
 

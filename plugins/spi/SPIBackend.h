@@ -14,14 +14,15 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * SPIBackend.h
- * The backend for SPI output. These are the classes which write the data to the
- * SPI bus.
+ * The backend for SPI output. These are the classes which write the data to
+ * the SPI bus.
  * Copyright (C) 2013 Simon Newton
  */
 
 #ifndef PLUGINS_SPI_SPIBACKEND_H_
 #define PLUGINS_SPI_SPIBACKEND_H_
 
+#include <stdint.h>
 #include <string>
 #include <vector>
 
@@ -29,11 +30,18 @@ namespace ola {
 namespace plugin {
 namespace spi {
 
+using std::string;
+using std::vector;
+
 /**
- * The base class for all SPI Backends
+ * The base class for all SPI Backends.
  */
 class SPIBackend {
   public:
+
+    /**
+     * SPIBackend Options
+     */
     struct Options {
       uint32_t spi_speed;
 
@@ -41,44 +49,65 @@ class SPIBackend {
     };
 
     SPIBackend(const string &spi_device, const Options &options);
+
     virtual ~SPIBackend();
 
+    /**
+     * Init the SPI backend
+     * @returns false if initialization failed.
+     */
     bool Init();
-    string DevicePath() const {
-      return m_device_path;
-    }
 
+    string DevicePath() const { return m_device_path; }
+
+    /**
+     * Write data for a single output (device / universe) to the backend
+     */
     virtual bool Write(uint8_t output, const uint8_t *data,
                        unsigned int length) = 0;
 
   protected:
     bool WriteSPIData(const uint8_t *data, unsigned int length);
 
+    virtual bool InitHook() { return true; }
+
   private:
     const string m_device_path;
     uint32_t m_spi_speed;
     int m_fd;
+
+    static const uint8_t SPI_MODE;
+    static const uint8_t SPI_BITS_PER_WORD;
 };
 
 /**
- * A SPIBackend which uses a hardware multiplexier.
+ * A SPIBackend which uses a hardware multiplexier. This uses the GPIO pins to
+ * control the multiplexer and route the SPI signal to the correct pixel
+ * string.
  */
 class MultiplexedSPIBackend : public SPIBackend {
   public:
     struct Options : public SPIBackend::Options {
-      // which GPIO bits to use to select the output. The number of outputs
+      // Which GPIO bits to use to select the output. The number of outputs
       // will be 2 ** gpio_pins.size();
       vector<uint8_t> gpio_pins;
     };
 
     MultiplexedSPIBackend(const string &spi_device, const Options &options);
+    ~MultiplexedSPIBackend();
 
+    bool Write(uint8_t output, const uint8_t *data, unsigned int length);
 
-    bool Write(uint8_t output, const uint8_t *data, unsigned int length)
+  protected:
+    bool InitHook();
 
   private:
+    typedef vector<int> GPIOFds;
+
     const uint8_t m_output_count;
-}
+    const vector<uint8_t> m_gpio_pins;
+    GPIOFds m_gpio_fds;
+};
 
 
 /**
@@ -93,11 +122,11 @@ class ChainedSPIBackend : public SPIBackend {
 
     ChainedSPIBackend(const string &spi_device, const Options &options);
 
-    bool Write(uint8_t output, const uint8_t *data, unsigned int length)
+    bool Write(uint8_t output, const uint8_t *data, unsigned int length);
 
   private:
     vector<unsigned int> m_output_sizes;
-}
+};
 }  // namespace spi
 }  // namespace plugin
 }  // namespace ola

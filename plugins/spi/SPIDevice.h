@@ -23,6 +23,8 @@
 
 #include <memory>
 #include <string>
+#include <vector>
+
 #include "ola/io/SelectServer.h"
 #include "ola/rdm/UID.h"
 #include "olad/Device.h"
@@ -49,7 +51,7 @@ class SPIDevice: public ola::Device {
     void PrePortStop();
 
   private:
-    typedef vector<SPIOutputPort> SPIPorts;
+    typedef std::vector<class SPIOutputPort*> SPIPorts;
 
     auto_ptr<SPIBackend> m_backend;
     class Preferences *m_preferences;
@@ -63,20 +65,21 @@ class SPIDevice: public ola::Device {
     string PortCountKey() const;
 
     // Per port options
-    string PersonalityKey() const;
-    string PixelCountKey() const;
-    string StartAddressKey() const;
+    string PersonalityKey(uint8_t port) const;
+    string PixelCountKey(uint8_t port) const;
+    string StartAddressKey(uint8_t port) const;
+    string GetPortKey(const string &suffix, uint8_t port) const;
 
     void SetDefaults();
-    void PopulateMultipliexerBackendOptions(
+    void PopulateHardwareBackendOptions(
         MultiplexedSPIBackend::Options *options);
-    void PopulateChainedBackendOptions(
+    void PopulateSoftwareBackendOptions(
         ChainedSPIBackend::Options *options);
     void PopulateOptions(SPIBackend::Options *options);
 
     static const char SPI_DEVICE_NAME[];
     static const char HARDWARE_BACKEND[];
-    static const char MERGED_BACKEND[];
+    static const char SOFTWARE_BACKEND[];
 };
 }  // namespace spi
 }  // namespace plugin

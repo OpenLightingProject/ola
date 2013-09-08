@@ -14,7 +14,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * SPIOutput.h
- * Provides a SPI device which can be managed by RDM.
+ * An RDM-controllable SPI device. Takes up to one universe of DMX.
  * Copyright (C) 2013 Simon Newton
  */
 
@@ -51,7 +51,6 @@ class Personality {
     uint16_t m_footprint;
     const string m_description;
 };
-
 
 class PersonalityManager {
   public:
@@ -104,7 +103,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
       uint8_t pixel_count;
       uint8_t output_number;
 
-      Options(uint8_t output_number)
+      explicit Options(uint8_t output_number)
           : pixel_count(25),  // For the https://www.adafruit.com/products/738
             output_number(output_number) {
       }
