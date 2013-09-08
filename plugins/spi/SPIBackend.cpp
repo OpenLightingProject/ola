@@ -135,6 +135,7 @@ bool HardwareBackend::InitHook() {
 SoftwareBackend::SoftwareBackend(const string &spi_device,
                                  const Options &options)
     : SPIBackend(spi_device, options),
+      m_sync_output(options.sync_output),
       m_output_sizes(options.outputs, 0),
       m_output(NULL),
       m_length(0) {
@@ -147,6 +148,7 @@ SoftwareBackend::~SoftwareBackend() {
 bool SoftwareBackend::Write(uint8_t output, const uint8_t *data,
                             unsigned int length) {
   if (output >= m_output_sizes.size()) {
+    OLA_WARN << "Invalid SPI output " << static_cast<int>(output);
     return false;
   }
 
@@ -166,7 +168,7 @@ bool SoftwareBackend::Write(uint8_t output, const uint8_t *data,
     // This is a resize of the existing data
     uint8_t *new_output = reinterpret_cast<uint8_t*>(malloc(required_size));
     memcpy(new_output, m_output, leading);
-    memcpy(m_output + leading, data, length);
+    memcpy(new_output + leading, data, length);
     memcpy(new_output + leading + length, m_output + leading, trailing);
     free(m_output);
     m_output = new_output;
@@ -175,7 +177,12 @@ bool SoftwareBackend::Write(uint8_t output, const uint8_t *data,
     // This is just an update
     memcpy(m_output + leading, data, length);
   }
-  return WriteSPIData(m_output, m_length);
+
+  if (m_sync_output < 0 || output == m_sync_output) {
+    return WriteSPIData(m_output, m_length);
+  } else {
+    return true;
+  }
 }
 }  // namespace spi
 }  // namespace plugin

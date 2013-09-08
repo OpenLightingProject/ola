@@ -117,7 +117,19 @@ class HardwareBackend : public SPIBackend {
 class SoftwareBackend : public SPIBackend {
   public:
     struct Options : public SPIBackend::Options {
+      /**
+       * The number of outputs.
+       */
       uint8_t outputs;
+      /**
+       * Controls if we designate one of the outputs as the 'sync' output.
+       * If set >= 0, it denotes the output which triggers the SPI write.
+       * If set to -1, we perform an SPI write on each update.
+       */
+      int16_t sync_output;
+
+      explicit Options() : outputs(1), sync_output(-1) {}
+
     };
 
     SoftwareBackend(const string &spi_device, const Options &options);
@@ -126,6 +138,7 @@ class SoftwareBackend : public SPIBackend {
     bool Write(uint8_t output, const uint8_t *data, unsigned int length);
 
   private:
+    const int16_t m_sync_output;
     vector<unsigned int> m_output_sizes;
     uint8_t *m_output;
     unsigned int m_length;

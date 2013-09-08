@@ -158,7 +158,7 @@ string SPIPlugin::Description() const {
 "will be created.\n"
 "\n"
 "--- Per Port Settings ---\n"
-"Ports are indexed from 0\n"
+"Ports are indexed from 0.\n"
 "\n"
 "<device>-<port>-dmx-address = <int>\n"
 "The DMX address to use. e.g. spidev0.1-0-dmx-address = 1\n"
