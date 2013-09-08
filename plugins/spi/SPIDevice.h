@@ -21,14 +21,18 @@
 #ifndef PLUGINS_SPI_SPIDEVICE_H_
 #define PLUGINS_SPI_SPIDEVICE_H_
 
+#include <memory>
 #include <string>
-#include "olad/Device.h"
 #include "ola/io/SelectServer.h"
 #include "ola/rdm/UID.h"
+#include "olad/Device.h"
+#include "plugins/spi/SPIBackend.h"
 
 namespace ola {
 namespace plugin {
 namespace spi {
+
+using std::auto_ptr;
 
 class SPIDevice: public ola::Device {
   public:
@@ -45,17 +49,34 @@ class SPIDevice: public ola::Device {
     void PrePortStop();
 
   private:
+    typedef vector<SPIOutputPort> SPIPorts;
+
+    auto_ptr<SPIBackend> m_backend;
     class Preferences *m_preferences;
     class PluginAdaptor *m_plugin_adaptor;
-    class SPIOutputPort *m_port;
+    SPIPorts m_spi_ports;
     string m_spi_device_name;
 
-    string PersonalityKey() const;
-    string StartAddressKey() const;
+    // Per device options
+    string SPIBackendKey() const;
     string SPISpeedKey() const;
+    string PortCountKey() const;
+
+    // Per port options
+    string PersonalityKey() const;
     string PixelCountKey() const;
+    string StartAddressKey() const;
+
+    void SetDefaults();
+    void PopulateMultipliexerBackendOptions(
+        MultiplexedSPIBackend::Options *options);
+    void PopulateChainedBackendOptions(
+        ChainedSPIBackend::Options *options);
+    void PopulateOptions(SPIBackend::Options *options);
 
     static const char SPI_DEVICE_NAME[];
+    static const char HARDWARE_BACKEND[];
+    static const char MERGED_BACKEND[];
 };
 }  // namespace spi
 }  // namespace plugin

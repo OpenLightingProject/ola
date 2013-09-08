@@ -25,11 +25,7 @@
 #  include <config.h>
 #endif
 
-#include <errno.h>
-#include <fcntl.h>
-#include <linux/spi/spidev.h>
 #include <string.h>
-#include <sys/ioctl.h>
 #include <algorithm>
 #include <memory>
 #include <sstream>
@@ -39,7 +35,6 @@
 #include "ola/BaseTypes.h"
 #include "ola/Logging.h"
 #include "ola/network/NetworkUtils.h"
-#include "ola/network/SocketCloser.h"
 #include "ola/rdm/OpenLightingEnums.h"
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/RDMEnums.h"
@@ -48,6 +43,7 @@
 #include "ola/rdm/UIDSet.h"
 #include "ola/stl/STLUtils.h"
 
+#include "plugins/spi/SPIBackend.h"
 #include "plugins/spi/SPIOutput.h"
 
 namespace ola {
@@ -111,19 +107,18 @@ const ola::rdm::ResponderOps<SPIOutput>::ParamHandler
 };
 
 
-SPIOutput::SPIOutput(const string &spi_device,
-                       const UID &uid, const Options &options)
-    : m_device_path(spi_device),
-      m_spi_device_name(spi_device),
+SPIOutput::SPIOutput(SPIBackend *backend
+                     const UID &uid, const Options &options)
+    : m_backend(backend),
+      m_output_number(options.output_number),
       m_uid(uid),
       m_pixel_count(options.pixel_count),
-      m_spi_speed(options.spi_speed),
-      m_fd(-1),
       m_start_address(1),
       m_identify_mode(false) {
-  size_t pos = spi_device.find_last_of("/");
+  const string device_path(m_backend-<DevicePath());
+  size_t pos = device_path.find_last_of("/");
   if (pos != string::npos)
-    m_spi_device_name = spi_device.substr(pos + 1);
+    m_spi_device_name = device_path.substr(pos + 1);
 
   m_personality_manager.AddPersonality(m_pixel_count * WS2801_SLOTS_PER_PIXEL,
                                        "WS2801 Individual Control");
@@ -136,11 +131,6 @@ SPIOutput::SPIOutput(const string &spi_device,
   m_personality_manager.SetActivePersonality(1);
 }
 
-
-SPIOutput::~SPIOutput() {
-  if (m_fd >= 0)
-    close(m_fd);
-}
 
 uint8_t SPIOutput::GetPersonality() const {
   return m_personality_manager.ActivePersonalityNumber();
@@ -164,45 +154,10 @@ bool SPIOutput::SetStartAddress(uint16_t address) {
   return true;
 }
 
-/**
- * Open the SPI device
- */
-bool SPIOutput::Init() {
-  int fd = open(m_device_path.c_str(), O_RDWR);
-  ola::network::SocketCloser closer(fd);
-  if (fd < 0) {
-    OLA_WARN << "Failed to open " << m_device_path << " : " << strerror(errno);
-    return false;
-  }
-
-  uint8_t spi_mode = SPI_MODE;
-  if (ioctl(fd, SPI_IOC_WR_MODE, &spi_mode) < 0) {
-    OLA_WARN << "Failed to set SPI_IOC_WR_MODE for " << m_device_path;
-    return false;
-  }
-
-  uint8_t spi_bits_per_word = SPI_BITS_PER_WORD;
-  if (ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &spi_bits_per_word) < 0) {
-    OLA_WARN << "Failed to set SPI_IOC_WR_BITS_PER_WORD for " << m_device_path;
-    return false;
-  }
-
-  if (ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &m_spi_speed) < 0) {
-    OLA_WARN << "Failed to set SPI_IOC_WR_MAX_SPEED_HZ for " << m_device_path;
-    return false;
-  }
-  m_fd = closer.Release();
-  return true;
-}
-
-
 /*
  * Send DMX data over SPI.
  */
 bool SPIOutput::WriteDMX(const DmxBuffer &buffer, uint8_t) {
-  if (m_fd < 0)
-    return false;
-
   if (m_identify_mode)
     return true;
 
@@ -251,7 +206,7 @@ void SPIOutput::IndividualWS2801Control(const DmxBuffer &buffer) {
   unsigned int length = m_pixel_count * WS2801_SLOTS_PER_PIXEL;
   uint8_t output_data[length];
   buffer.GetRange(m_start_address - 1, output_data, &length);
-  WriteSPIData(output_data, length);
+  m_backend->WriteSPIData(m_output_number, output_data, length);
 }
 
 void SPIOutput::CombinedWS2801Control(const DmxBuffer &buffer) {
@@ -270,7 +225,7 @@ void SPIOutput::CombinedWS2801Control(const DmxBuffer &buffer) {
     memcpy(output_data + (i * WS2801_SLOTS_PER_PIXEL), pixel_data,
            pixel_data_length);
   }
-  WriteSPIData(output_data, length);
+  m_backend->WriteSPIData(m_output_number, output_data, length);
 }
 
 void SPIOutput::IndividualLPD8806Control(const DmxBuffer &buffer) {
@@ -295,7 +250,7 @@ void SPIOutput::IndividualLPD8806Control(const DmxBuffer &buffer) {
         output_data[i] = 0x80 | (d >> 1);
     }
   }
-  WriteSPIData(output_data, length);
+  m_backend->WriteSPIData(m_output_number, output_data, length);
 }
 
 void SPIOutput::CombinedLPD8806Control(const DmxBuffer &buffer) {
@@ -322,23 +277,12 @@ void SPIOutput::CombinedLPD8806Control(const DmxBuffer &buffer) {
         0x80 | (pixel_data[j] >> 1);
     }
   }
-  WriteSPIData(output_data, length);
+  m_backend->WriteSPIData(m_output_number, output_data, length);
 }
 
 unsigned int SPIOutput::LPD8806BufferSize() const {
   uint8_t latch_bytes = (m_pixel_count + 31) / 32;
   return m_pixel_count * LPD8806_SLOTS_PER_PIXEL + latch_bytes;
-}
-
-void SPIOutput::WriteSPIData(const uint8_t *data, unsigned int length) {
-  struct spi_ioc_transfer spi;
-  memset(&spi, 0, sizeof(spi));
-  spi.tx_buf = reinterpret_cast<__u64>(data);
-  spi.len = length;
-  int bytes_written = ioctl(m_fd, SPI_IOC_MESSAGE(1), &spi);
-  if (bytes_written != static_cast<int>(length)) {
-    OLA_WARN << "Failed to write all the SPI data: " << strerror(errno);
-  }
 }
 
 const RDMResponse *SPIOutput::GetDeviceInfo(const RDMRequest *request) {

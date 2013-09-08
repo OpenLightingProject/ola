@@ -1,7 +1,7 @@
 include $(top_srcdir)/common.mk
 
 libdir = $(plugindir)
-EXTRA_DIST = SPIOutput.h SPIPlugin.h SPIDevice.h SPIPort.h
+EXTRA_DIST = SPIBackend.h SPIOutput.h SPIPlugin.h SPIDevice.h SPIPort.h
 
 if USE_SPI
 lib_LTLIBRARIES = libolaspicore.la libolaspi.la

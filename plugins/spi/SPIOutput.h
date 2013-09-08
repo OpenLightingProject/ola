@@ -102,17 +102,17 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   public:
     struct Options {
       uint8_t pixel_count;
-      uint32_t spi_speed;
+      uint8_t output_number;
 
-      Options()
+      Options(uint8_t output_number)
           : pixel_count(25),  // For the https://www.adafruit.com/products/738
-            spi_speed(1000000) {
+            output_number(output_number) {
       }
     };
 
-    SPIOutput(const string &spi_device,
-               const UID &uid, const Options &options);
-    ~SPIOutput();
+    SPIOutput(const UID &uid,
+              class SPIBackend *backend,
+              const Options &options);
 
     uint8_t GetPersonality() const;
     bool SetPersonality(uint16_t personality);
@@ -120,7 +120,6 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
     bool SetStartAddress(uint16_t start_address);
 
     string Description() const { return m_spi_device_name; }
-    bool Init();
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
     void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
@@ -146,12 +145,11 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
         static RDMOps *instance;
     };
 
-    const string m_device_path;
+    class SPIBackend *m_backend;
+    const uint8_t m_output_number;
     string m_spi_device_name;
     const UID m_uid;
     const unsigned int m_pixel_count;
-    uint32_t m_spi_speed;
-    int m_fd;
     uint16_t m_start_address;  // starts from 1
     bool m_identify_mode;
     PersonalityManager m_personality_manager;
