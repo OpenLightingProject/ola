@@ -42,7 +42,7 @@ SPIOutputPort::SPIOutputPort(SPIDevice *parent, SPIBackend *backend,
       m_spi_output(uid, backend, options) {
   std::ostringstream str;
   str << m_spi_output.Description() << ", Pixel String "
-      << options.output_number << " (" << uid << ")";
+      << static_cast<int>(options.output_number) << " (" << uid << ")";
   m_description = str.str();
 }
 

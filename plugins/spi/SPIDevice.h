@@ -46,6 +46,8 @@ class SPIDevice: public ola::Device {
 
     string DeviceId() const;
 
+    bool AllowMultiPortPatching() const { return true; }
+
   protected:
     bool StartHook();
     void PrePortStop();
