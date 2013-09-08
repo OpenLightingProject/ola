@@ -164,8 +164,8 @@ bool SoftwareBackend::Write(uint8_t output, const uint8_t *data,
   const unsigned int required_size = leading + length + trailing;
 
   // Check if the current buffer is large enough to hold our data.
-  if (required_size > m_length) {
-    // This is a resize of the existing data
+  if (required_size != m_length) {
+    // The length changed
     uint8_t *new_output = reinterpret_cast<uint8_t*>(malloc(required_size));
     memcpy(new_output, m_output, leading);
     memcpy(new_output + leading, data, length);
@@ -173,6 +173,7 @@ bool SoftwareBackend::Write(uint8_t output, const uint8_t *data,
     free(m_output);
     m_output = new_output;
     m_length = required_size;
+    m_output_sizes[output] = length;
   } else {
     // This is just an update
     memcpy(m_output + leading, data, length);
