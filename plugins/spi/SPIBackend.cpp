@@ -116,7 +116,7 @@ bool HardwareBackend::Write(uint8_t output, const uint8_t *data,
   // TODO(simon): Select GPIO output here
   for (unsigned int i = 0; i < m_gpio_fds.size(); i++) {
     uint8_t on = output & (1 << i);
-    OLA_INFO << "Pin " << i << " is " << (int) on;
+    OLA_INFO << "Pin " << i << " is " << static_cast<int>(on);
     // Write m_gpio_fds[i] = on;
   }
 
