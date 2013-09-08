@@ -18,7 +18,6 @@
  * Copyright (C) 2013 Simon Newton
  */
 
-#include <sstream>
 #include <string>
 #include "ola/BaseTypes.h"
 #include "ola/rdm/RDMCommand.h"
@@ -40,10 +39,6 @@ SPIOutputPort::SPIOutputPort(SPIDevice *parent, SPIBackend *backend,
                              const SPIOutput::Options &options)
     : BasicOutputPort(parent, options.output_number, true),
       m_spi_output(uid, backend, options) {
-  std::ostringstream str;
-  str << m_spi_output.Description() << ", Pixel String "
-      << static_cast<int>(options.output_number) << " (" << uid << ")";
-  m_description = str.str();
 }
 
 
@@ -64,7 +59,7 @@ bool SPIOutputPort::SetStartAddress(uint16_t address) {
 }
 
 string SPIOutputPort::Description() const {
-  return m_description;
+  return m_spi_output.Description();
 }
 
 bool SPIOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t priority) {

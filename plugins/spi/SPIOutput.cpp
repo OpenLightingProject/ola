@@ -154,6 +154,16 @@ bool SPIOutput::SetStartAddress(uint16_t address) {
   return true;
 }
 
+string SPIOutput::Description() const {
+  std::ostringstream str;
+  str << m_spi_device_name << ", output "
+      << static_cast<int>(m_output_number) << ", "
+      << m_personality_manager.ActivePersonalityDescription() << ", "
+      << m_personality_manager.ActivePersonalityFootprint()
+      << " slots @ " << m_start_address << ". (" << m_uid << ")";
+  return str.str();
+}
+
 /*
  * Send DMX data over SPI.
  */

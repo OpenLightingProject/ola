@@ -84,6 +84,11 @@ class PersonalityManager {
       return personality ? personality->footprint() : 0;
     }
 
+    string ActivePersonalityDescription() const {
+      const Personality *personality = Lookup(m_active_personality);
+      return personality ? personality->description() : "";
+    }
+
     // Lookup a personality. Personalities are numbers from 1.
     const Personality *Lookup(uint8_t personality) const {
       if (personality == 0 || personality > m_personalities.size())
@@ -118,7 +123,7 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
     uint16_t GetStartAddress() const;
     bool SetStartAddress(uint16_t start_address);
 
-    string Description() const { return m_spi_device_name; }
+    string Description() const;
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
     void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);

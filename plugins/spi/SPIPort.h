@@ -53,7 +53,6 @@ class SPIOutputPort: public BasicOutputPort {
 
   private:
     SPIOutput m_spi_output;
-    string m_description;
 };
 }  // namespace spi
 }  // namespace plugin
