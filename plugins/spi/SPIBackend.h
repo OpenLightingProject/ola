@@ -127,7 +127,7 @@ class SoftwareBackend : public SPIBackend {
        */
       int16_t sync_output;
 
-      explicit Options() : outputs(1), sync_output(-1) {}
+      explicit Options() : outputs(1), sync_output(0) {}
     };
 
     SoftwareBackend(const string &spi_device, const Options &options);

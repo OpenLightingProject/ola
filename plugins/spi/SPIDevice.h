@@ -66,6 +66,7 @@ class SPIDevice: public ola::Device {
     string SPIBackendKey() const;
     string SPISpeedKey() const;
     string PortCountKey() const;
+    string SyncPortKey() const;
 
     // Per port options
     string PersonalityKey(uint8_t port) const;

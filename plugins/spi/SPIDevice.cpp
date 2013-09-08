@@ -161,6 +161,10 @@ string SPIDevice::PortCountKey() const {
   return m_spi_device_name + "-ports";
 }
 
+string SPIDevice::SyncPortKey() const {
+  return m_spi_device_name + "-sync-port";
+}
+
 string SPIDevice::PersonalityKey(uint8_t port) const {
   return GetPortKey("personality", port);
 }
@@ -206,9 +210,11 @@ void SPIDevice::PopulateHardwareBackendOptions(
 void SPIDevice::PopulateSoftwareBackendOptions(
     SoftwareBackend::Options *options) {
   PopulateOptions(options);
-
-  options->outputs = 1;
   StringToInt(m_preferences->GetValue(PortCountKey()), &options->outputs);
+  StringToInt(m_preferences->GetValue(SyncPortKey()), &options->sync_output);
+  if (options->sync_output == -2) {
+    options->sync_output = options->outputs - 1;
+  }
 }
 
 void SPIDevice::PopulateOptions(SPIBackend::Options *options) {
