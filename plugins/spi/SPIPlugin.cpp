@@ -71,13 +71,6 @@ bool SPIPlugin::StartHook() {
   ola::rdm::UIDAllocator uid_allocator(*base_uid);
   vector<string>::const_iterator iter = spi_files.begin();
   for (; iter != spi_files.end(); ++iter) {
-    auto_ptr<UID> uid(uid_allocator.AllocateNext());
-    if (!uid.get()) {
-      OLA_WARN << "Insufficient UIDs remaining to allocate a UID for "
-               << *iter;
-      continue;
-    }
-
     SPIDevice *device = new SPIDevice(this, m_preferences, m_plugin_adaptor,
                                       *iter, &uid_allocator);
 
