@@ -34,7 +34,7 @@ namespace spi {
 
 class SPIOutputPort: public BasicOutputPort {
   public:
-    SPIOutputPort(SPIDevice *parent, const string &spi_device,
+    SPIOutputPort(SPIDevice *parent, class SPIBackend *backend,
                   const UID &uid, const SPIOutput::Options &options);
     ~SPIOutputPort() {}
 
@@ -44,7 +44,6 @@ class SPIOutputPort: public BasicOutputPort {
     bool SetStartAddress(uint16_t start_address);
 
     string Description() const;
-    bool Init();
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
     void RunFullDiscovery(RDMDiscoveryCallback *callback);

@@ -71,15 +71,8 @@ bool SPIPlugin::StartHook() {
   ola::rdm::UIDAllocator uid_allocator(*base_uid);
   vector<string>::const_iterator iter = spi_files.begin();
   for (; iter != spi_files.end(); ++iter) {
-    auto_ptr<UID> uid(uid_allocator.AllocateNext());
-    if (!uid.get()) {
-      OLA_WARN << "Insufficient UIDs remaining to allocate a UID for "
-               << *iter;
-      continue;
-    }
-
     SPIDevice *device = new SPIDevice(this, m_preferences, m_plugin_adaptor,
-                                      *iter, *(uid.get()));
+                                      *iter, &uid_allocator);
 
     if (!device)
       continue;
@@ -119,28 +112,60 @@ string SPIPlugin::Description() const {
 "SPI Plugin\n"
 "----------------------------\n"
 "\n"
-"This plugin allows you to control LED strings using SPI.\n"
+"This plugin enables control of LED pixel strings using SPI. Each SPI output\n"
+"is represented as an OLA Device. Devices can have multiple Ports, each of\n"
+"which controls a pixel string. Each Port can use a different\n"
+"personality (pixel type) and DMX start address, this allows a combination\n"
+"of various strings lengths & pixel hardware types. The start address and\n"
+"personality settings are controllable via RDM (each Port appears as a RDM\n"
+"responder).\n"
+"\n"
+"To support multiple ports per SPI output, we use an SPI-Backend. Two\n"
+"backends are supported right now, a software backend which concatenates\n"
+"all the pixel data into a single buffer and a hardware multiplexer backend\n"
+"which uses the GPIO pins to control an off-host multiplexer. It's\n"
+"recommended to use the hardware multiplexer.\n"
 "\n"
 "--- Config file : ola-spi.conf ---\n"
 "\n"
 "base_uid = <string>\n"
-"The starting UID to use for the devices, e.g. 7a70:00000100.\n"
+"The starting UID to use for the SPI RDM , e.g. 7a70:00000100.\n"
 "\n"
 "device_prefix = <string>\n"
-"The prefix of files to match in /dev. Usually set to 'spidev'.\n"
+"The prefix of files to match in /dev. Usually set to 'spidev'. Each match\n"
+"will instantiate a Device.\n"
 "\n"
-"<device>-dmx-address = <int>\n"
-"The DMX address to use.\n"
+"--- Per Device Settings ---\n"
+"<device>-spi-speed = <int>\n"
+"The speed of the SPI bus, range is 0 - 32000000 Hz.\n"
 "\n"
-"<device>-personality = <int>\n"
+"<device>-backend = [software | hardware]\n"
+"The backend to use to multiplex the SPI data.\n"
+"\n"
+"<device>-gpio-pin = <int>\n"
+"The GPIO pins to use for the hardware multiplexer. Add one line for each\n"
+"pin. The number of ports will be 2 ** (# of pins).\n"
+"\n"
+"<device>-ports = <int>\n"
+"If the software backend is used, this defines the number of ports which\n"
+"will be created.\n"
+"\n"
+"<device>-sync-ports = <int>\n"
+"Controls which port triggers a flush (write) of the SPI data. If set to -1\n"
+"the SPI data is written when any port changes. This can result in a lot of\n"
+"data writes (slow) and partial frames. If set to -2, the last port is used.\n"
+"\n"
+"--- Per Port Settings ---\n"
+"Ports are indexed from 0.\n"
+"\n"
+"<device>-<port>-dmx-address = <int>\n"
+"The DMX address to use. e.g. spidev0.1-0-dmx-address = 1\n"
+"\n"
+"<device>-<port>-personality = <int>\n"
 "The RDM personality to use.\n"
 "\n"
-"<device>-pixel-count = <int>\n"
-"The number of pixels per spi device. The key is the name of the device in\n"
-"/dev. e.g. spidev0.1-pixel-count.\n"
-"\n"
-"<device>-spi-speed = <int>\n"
-"The speed of the SPI bus, range is 0 - 32000000.\n"
+"<device>-<port>-pixel-count = <int>\n"
+"The number of pixels for this port. e.g. spidev0.1-1-pixel-count = 20.\n"
 "\n";
 }
 

@@ -99,6 +99,14 @@ void StreamRpcChannel::DescriptorReady() {
         PROTOCOL_VERSION;
       return;
     }
+
+    if (m_expected_size > MAX_BUFFER_SIZE) {
+      OLA_WARN << "Incoming message size " << m_expected_size
+                << " is larger than MAX_BUFFER_SIZE: " << MAX_BUFFER_SIZE;
+      m_descriptor->Close();
+      return;
+    }
+
     m_current_size = 0;
     m_buffer_size = AllocateMsgBuffer(m_expected_size);
 
@@ -227,16 +235,20 @@ bool StreamRpcChannel::SendMsg(RpcMessage *msg) {
     return false;
   }
 
-  string output;
-  msg->SerializeToString(&output);
-  int length = output.length();
   uint32_t header;
-  StreamRpcHeader::EncodeHeader(&header, PROTOCOL_VERSION, length);
+  // reserve the first 4 bytes for the header
+  string output(sizeof(header), 0);
+  msg->AppendToString(&output);
+  int length = output.size();
 
-  ssize_t ret = m_descriptor->Send(reinterpret_cast<const uint8_t*>(&header),
-                                   sizeof(header));
-  ret = m_descriptor->Send(reinterpret_cast<const uint8_t*>(output.data()),
-                           length);
+  StreamRpcHeader::EncodeHeader(&header, PROTOCOL_VERSION,
+                                length - sizeof(header));
+  output.replace(
+      0, sizeof(header),
+      reinterpret_cast<const char*>(&header), sizeof(header));
+
+  ssize_t ret = m_descriptor->Send(
+      reinterpret_cast<const uint8_t*>(output.data()), length);
 
   if (ret != length) {
     OLA_WARN << "Failed to send full RPC message, closing channel";
@@ -277,8 +289,11 @@ int StreamRpcChannel::AllocateMsgBuffer(unsigned int size) {
   if (m_buffer_size == 0 && size < INITIAL_BUFFER_SIZE)
     requested_size = INITIAL_BUFFER_SIZE;
 
-  if (requested_size > MAX_BUFFER_SIZE)
+  if (requested_size > MAX_BUFFER_SIZE) {
+    OLA_WARN << "Incoming message size " << requested_size
+              << " is larger than MAX_BUFFER_SIZE: " << MAX_BUFFER_SIZE;
     return m_buffer_size;
+  }
 
   new_buffer = static_cast<uint8_t*>(realloc(m_buffer, requested_size));
   if (!new_buffer)

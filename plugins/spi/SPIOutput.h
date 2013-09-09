@@ -14,7 +14,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  * SPIOutput.h
- * Provides a SPI device which can be managed by RDM.
+ * An RDM-controllable SPI device. Takes up to one universe of DMX.
  * Copyright (C) 2013 Simon Newton
  */
 
@@ -52,7 +52,6 @@ class Personality {
     const string m_description;
 };
 
-
 class PersonalityManager {
   public:
     PersonalityManager() : m_active_personality(0) {}
@@ -85,6 +84,11 @@ class PersonalityManager {
       return personality ? personality->footprint() : 0;
     }
 
+    string ActivePersonalityDescription() const {
+      const Personality *personality = Lookup(m_active_personality);
+      return personality ? personality->description() : "";
+    }
+
     // Lookup a personality. Personalities are numbers from 1.
     const Personality *Lookup(uint8_t personality) const {
       if (personality == 0 || personality > m_personalities.size())
@@ -102,25 +106,24 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
   public:
     struct Options {
       uint8_t pixel_count;
-      uint32_t spi_speed;
+      uint8_t output_number;
 
-      Options()
+      explicit Options(uint8_t output_number)
           : pixel_count(25),  // For the https://www.adafruit.com/products/738
-            spi_speed(1000000) {
+            output_number(output_number) {
       }
     };
 
-    SPIOutput(const string &spi_device,
-               const UID &uid, const Options &options);
-    ~SPIOutput();
+    SPIOutput(const UID &uid,
+              class SPIBackend *backend,
+              const Options &options);
 
     uint8_t GetPersonality() const;
     bool SetPersonality(uint16_t personality);
     uint16_t GetStartAddress() const;
     bool SetStartAddress(uint16_t start_address);
 
-    string Description() const { return m_spi_device_name; }
-    bool Init();
+    string Description() const;
     bool WriteDMX(const DmxBuffer &buffer, uint8_t priority);
 
     void RunFullDiscovery(ola::rdm::RDMDiscoveryCallback *callback);
@@ -146,12 +149,11 @@ class SPIOutput: public ola::rdm::DiscoverableRDMControllerInterface {
         static RDMOps *instance;
     };
 
-    const string m_device_path;
+    class SPIBackend *m_backend;
+    const uint8_t m_output_number;
     string m_spi_device_name;
     const UID m_uid;
     const unsigned int m_pixel_count;
-    uint32_t m_spi_speed;
-    int m_fd;
     uint16_t m_start_address;  // starts from 1
     bool m_identify_mode;
     PersonalityManager m_personality_manager;

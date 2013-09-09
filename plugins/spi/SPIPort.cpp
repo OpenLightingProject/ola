@@ -23,6 +23,7 @@
 #include "ola/rdm/RDMCommand.h"
 #include "ola/rdm/UID.h"
 
+#include "plugins/spi/SPIBackend.h"
 #include "plugins/spi/SPIPort.h"
 
 namespace ola {
@@ -33,11 +34,11 @@ using ola::rdm::RDMCallback;
 using ola::rdm::RDMRequest;
 using ola::rdm::UID;
 
-SPIOutputPort::SPIOutputPort(SPIDevice *parent, const string &spi_device,
+SPIOutputPort::SPIOutputPort(SPIDevice *parent, SPIBackend *backend,
                              const UID &uid,
                              const SPIOutput::Options &options)
-    : BasicOutputPort(parent, 0, true),
-      m_spi_output(spi_device, uid, options) {
+    : BasicOutputPort(parent, options.output_number, true),
+      m_spi_output(uid, backend, options) {
 }
 
 
@@ -59,10 +60,6 @@ bool SPIOutputPort::SetStartAddress(uint16_t address) {
 
 string SPIOutputPort::Description() const {
   return m_spi_output.Description();
-}
-
-bool SPIOutputPort::Init() {
-  return m_spi_output.Init();
 }
 
 bool SPIOutputPort::WriteDMX(const DmxBuffer &buffer, uint8_t priority) {

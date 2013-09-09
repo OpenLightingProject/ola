@@ -58,9 +58,9 @@ ola_dmxmonitor_SOURCES = ola-dmxmonitor.cpp
 ola_dmxmonitor_LDADD = @LIBS@ -lcurses $(COMMON_LIBS)
 endif
 
-
-noinst_PROGRAMS = ola_throughput
+noinst_PROGRAMS = ola_throughput ola_latency
 ola_throughput_SOURCES = ola-throughput.cpp
+ola_latency_SOURCES = ola-latency.cpp
 
 noinst_LTLIBRARIES = libolaconfig.la
 libolaconfig_la_SOURCES = OlaConfigurator.cpp

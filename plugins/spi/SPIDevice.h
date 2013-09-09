@@ -21,14 +21,21 @@
 #ifndef PLUGINS_SPI_SPIDEVICE_H_
 #define PLUGINS_SPI_SPIDEVICE_H_
 
+#include <memory>
 #include <string>
+#include <vector>
+
 #include "olad/Device.h"
 #include "ola/io/SelectServer.h"
+#include "ola/rdm/UIDAllocator.h"
 #include "ola/rdm/UID.h"
+#include "plugins/spi/SPIBackend.h"
 
 namespace ola {
 namespace plugin {
 namespace spi {
+
+using std::auto_ptr;
 
 class SPIDevice: public ola::Device {
   public:
@@ -36,26 +43,47 @@ class SPIDevice: public ola::Device {
               class Preferences *preferences,
               class PluginAdaptor *plugin_adaptor,
               const string &spi_device,
-              const ola::rdm::UID &uid);
+              ola::rdm::UIDAllocator *uid_allocator);
 
     string DeviceId() const;
+
+    bool AllowMultiPortPatching() const { return true; }
 
   protected:
     bool StartHook();
     void PrePortStop();
 
   private:
+    typedef std::vector<class SPIOutputPort*> SPIPorts;
+
+    auto_ptr<SPIBackend> m_backend;
     class Preferences *m_preferences;
     class PluginAdaptor *m_plugin_adaptor;
-    class SPIOutputPort *m_port;
+    SPIPorts m_spi_ports;
     string m_spi_device_name;
 
-    string PersonalityKey() const;
-    string StartAddressKey() const;
+    // Per device options
+    string SPIBackendKey() const;
     string SPISpeedKey() const;
-    string PixelCountKey() const;
+    string PortCountKey() const;
+    string SyncPortKey() const;
+    string GPIOPinKey() const;
+
+    // Per port options
+    string PersonalityKey(uint8_t port) const;
+    string PixelCountKey(uint8_t port) const;
+    string StartAddressKey(uint8_t port) const;
+    string GetPortKey(const string &suffix, uint8_t port) const;
+
+    void SetDefaults();
+    void PopulateHardwareBackendOptions(HardwareBackend::Options *options);
+    void PopulateSoftwareBackendOptions(SoftwareBackend::Options *options);
+    void PopulateOptions(SPIBackend::Options *options);
 
     static const char SPI_DEVICE_NAME[];
+    static const char HARDWARE_BACKEND[];
+    static const char SOFTWARE_BACKEND[];
+    static const uint8_t MAX_GPIO_PIN = 25;
 };
 }  // namespace spi
 }  // namespace plugin
