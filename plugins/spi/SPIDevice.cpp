@@ -66,7 +66,8 @@ SPIDevice::SPIDevice(SPIPlugin *owner,
     PopulateHardwareBackendOptions(&options);
     m_backend.reset(new HardwareBackend(spi_device, options));
     port_count = 1 << options.gpio_pins.size();
-
+    OLA_INFO << m_spi_device_name << ", Hardware backend, " << port_count
+             << " ports";
   } else {
     if (backend_type != SOFTWARE_BACKEND) {
       OLA_WARN << "Unknown backend_type '" << backend_type
@@ -77,10 +78,10 @@ SPIDevice::SPIDevice(SPIPlugin *owner,
     PopulateSoftwareBackendOptions(&options);
     m_backend.reset(new SoftwareBackend(spi_device, options));
     port_count = options.outputs;
+    OLA_INFO << m_spi_device_name << ", Software backend, " << port_count
+             << " ports";
   }
 
-  OLA_INFO << "Setting up " << port_count << " ports for "
-           << m_spi_device_name;
   for (uint8_t i = 0; i < port_count; i++) {
     SPIOutput::Options spi_output_options(i);
 
@@ -213,8 +214,13 @@ void SPIDevice::PopulateHardwareBackendOptions(
       continue;
     }
 
-    // Do we need extra checking here?
-    options.gpio_pins.push_back(pin);
+    if (pin > MAX_GPIO_PIN) {
+      OLA_WARN << "Invalid GPIO pin " << *iter << ", must be < "
+               << static_cast<int>(MAX_GPIO_PIN);
+      continue;
+    }
+
+    options->gpio_pins.push_back(pin);
   }
 }
 

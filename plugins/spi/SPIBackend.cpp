@@ -53,6 +53,10 @@ SPIBackend::~SPIBackend() {
 }
 
 bool SPIBackend::Init() {
+  bool ok = InitHook();
+  if (!ok)
+    return false;
+
   int fd = open(m_device_path.c_str(), O_RDWR);
   ola::network::SocketCloser closer(fd);
   if (fd < 0) {
@@ -107,7 +111,7 @@ HardwareBackend::~HardwareBackend() {
 
 bool HardwareBackend::Write(uint8_t output, const uint8_t *data,
                             unsigned int length) {
-  if (output < m_output_count) {
+  if (output >= m_output_count) {
     return false;
   }
 
@@ -116,7 +120,6 @@ bool HardwareBackend::Write(uint8_t output, const uint8_t *data,
 
   for (unsigned int i = 0; i < m_gpio_fds.size(); i++) {
     uint8_t pin = output & (1 << i);
-    OLA_INFO << "Pin " << i << " is " << static_cast<int>(pin);
     if (pin) {
       write(m_gpio_fds[i], on.c_str(), on.size());
     } else {
