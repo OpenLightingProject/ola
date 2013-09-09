@@ -115,9 +115,9 @@ bool HardwareBackend::Write(uint8_t output, const uint8_t *data,
   string off("0\n");
 
   for (unsigned int i = 0; i < m_gpio_fds.size(); i++) {
-    uint8_t on = output & (1 << i);
-    OLA_INFO << "Pin " << i << " is " << static_cast<int>(on);
-    if (on) {
+    uint8_t pin = output & (1 << i);
+    OLA_INFO << "Pin " << i << " is " << static_cast<int>(pin);
+    if (pin) {
       write(m_gpio_fds[i], on.c_str(), on.size());
     } else {
       write(m_gpio_fds[i], off.c_str(), off.size());
